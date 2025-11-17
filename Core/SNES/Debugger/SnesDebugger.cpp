@@ -175,7 +175,13 @@ void SnesDebugger::ProcessInstruction()
 	if(addressInfo.Address >= 0) {
 		uint8_t cpuFlags = state.PS & (ProcFlags::IndexMode8 | ProcFlags::MemoryMode8);
 		if(addressInfo.Type == MemoryType::SnesPrgRom) {
-			_cdl->SetCode(addressInfo.Address, SnesDisUtils::GetOpFlags(_prevOpCode, pc, _prevProgramCounter) | cpuFlags);
+			uint8_t cdlFlags = SnesDisUtils::GetOpFlags(_prevOpCode, pc, _prevProgramCounter) | cpuFlags;
+			_cdl->SetCode(addressInfo.Address, cdlFlags);
+			
+			// DiztinGUIsh streaming: Notify CDL change
+			if(_diztinguishBridge && _diztinguishBridge->IsClientConnected()) {
+				_diztinguishBridge->OnCdlChanged(addressInfo.Address, cdlFlags);
+			}
 		}
 		if(_traceLogger->IsEnabled() || _debuggerEnabled) {
 			_disassembler->BuildCache(addressInfo, cpuFlags, _cpuType);
