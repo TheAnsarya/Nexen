@@ -158,6 +158,20 @@ void SnesDebugger::ProcessInstruction()
 	InstructionProgress.LastMemOperation = operation;
 	InstructionProgress.StartCycle = state.CycleCount;
 
+	// DiztinGUIsh streaming: Track frame start (check if PPU frame changed)
+	if(_diztinguishBridge && _diztinguishBridge->IsClientConnected()) {
+		static uint32_t lastFrame = 0;
+		uint32_t currentFrame = _ppu->GetFrameCount();
+		if(currentFrame != lastFrame) {
+			if(lastFrame > 0) {
+				// Frame ended, flush previous frame's data
+				_diztinguishBridge->OnFrameEnd();
+			}
+			_diztinguishBridge->OnFrameStart(currentFrame);
+			lastFrame = currentFrame;
+		}
+	}
+
 	if(addressInfo.Address >= 0) {
 		uint8_t cpuFlags = state.PS & (ProcFlags::IndexMode8 | ProcFlags::MemoryMode8);
 		if(addressInfo.Type == MemoryType::SnesPrgRom) {
@@ -205,6 +219,18 @@ void SnesDebugger::ProcessInstruction()
 	}
 
 	_debugger->ProcessBreakConditions(_cpuType, *_step.get(), _breakpointManager.get(), operation, addressInfo);
+
+	// DiztinGUIsh streaming: Send execution trace
+	if(_diztinguishBridge && _diztinguishBridge->IsClientConnected()) {
+		// Extract M and X flags from processor status
+		bool mFlag = (state.PS & ProcFlags::MemoryMode8) != 0;
+		bool xFlag = (state.PS & ProcFlags::IndexMode8) != 0;
+		
+		// Calculate effective address (for now, use 0 - will be enhanced later)
+		uint32_t effectiveAddr = 0;
+		
+		_diztinguishBridge->OnCpuExec(pc, opCode, mFlag, xFlag, state.DBR, state.D, effectiveAddr);
+	}
 }
 
 void SnesDebugger::ProcessRead(uint32_t addr, uint8_t value, MemoryOperationType type)
