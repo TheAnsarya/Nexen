@@ -1,0 +1,39 @@
+
+
+Add all markdown documentation to `\docs\` and subfolders based on category and document our changes and API here starting with a `README.md`; create session logs in `\~docs\session_logs\` and chat logs in `\~docs\chat_logs\`; research and analyze the project and create todo lists, documentation, and github hub issues for implementing a connection to DiztinGUIsh `https://github.com/IsoFrieze/DiztinGUIsh` which is also a local project at `C:\Users\me\source\repos\DiztinGUIsh\`
+git commit with descriptions and git push; All github Issues should be connected to the github Project `https://github.com/users/TheAnsarya/projects/4` which is our primary work orgnanization for this repository; All work should be associated with an Issue with a todolist and be updated as work is completed/commited; git commit with descriptions and git push when you think appropriate; make sure to create real issues in github;  part of the diztinguish connection is a streaming of all emulated code and data and state so check the diztinguish code and documentation to add further plans for diztinguish interacting with mesen and streaming the code back as diztinguish requires through a socket connection as well as other api connections between them;
+
+Do this first: *** git commit with descriptions and git push ***; make sure you are creating and updating session and chat logs; Add all markdown documentation to `\docs\` and subfolders based on category and document our changes and API here starting with a `README.md`; create session logs in `\~docs\session_logs\` and chat logs in `\~docs\chat_logs\`; research and analyze the project and create todo lists, documentation, and github hub issues for implementing a connection to DiztinGUIsh `https://github.com/IsoFrieze/DiztinGUIsh` which is also a local project at `C:\Users\me\source\repos\DiztinGUIsh\`; git commit with descriptions and git push; All github Issues should be connected to the github Project `https://github.com/users/TheAnsarya/projects/4` which is our primary work orgnanization for this repository; All work should be associated with an Issue with a todolist and be updated as work is completed/commited; git commit with descriptions and git push when you think appropriate; make sure to create real issues in github so figure out how to add issues to github; continue on connecting diztinguish and mesen so we can use mesen for live tracing in diztinguish
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
