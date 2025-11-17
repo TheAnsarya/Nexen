@@ -17,6 +17,7 @@
 #include "SNES/Debugger/TraceLogger/SnesCpuTraceLogger.h"
 #include "SNES/Debugger/SnesPpuTools.h"
 #include "Debugger/CdlManager.h"
+#include "Debugger/DiztinguishBridge.h"
 #include "Debugger/DebugTypes.h"
 #include "Debugger/DisassemblyInfo.h"
 #include "Debugger/Disassembler.h"
@@ -85,6 +86,11 @@ SnesDebugger::SnesDebugger(Debugger* debugger, CpuType cpuType) : IDebugger(debu
 	_assembler.reset(new SnesAssembler(_debugger->GetLabelManager()));
 
 	_dummyCpu.reset(new DummySnesCpu(_console, _cpuType));
+
+	// Initialize DiztinGUIsh Bridge (only for main SNES CPU)
+	if(cpuType == CpuType::Snes) {
+		_diztinguishBridge.reset(new DiztinguishBridge(_console, this));
+	}
 }
 
 SnesDebugger::~SnesDebugger()
@@ -599,4 +605,27 @@ void SnesDebugger::ProcessInputOverrides(DebugControllerState inputOverrides[8])
 		}
 	}
 	controlManager->RefreshHubState();
+}
+
+// DiztinGUIsh streaming integration API
+DiztinguishBridge* SnesDebugger::GetDiztinguishBridge()
+{
+	return _diztinguishBridge.get();
+}
+
+bool SnesDebugger::StartDiztinguishServer(uint16_t port)
+{
+	if(!_diztinguishBridge) {
+		Log("[SnesDebugger] DiztinGUIsh bridge not available (SA-1 debugger?)");
+		return false;
+	}
+
+	return _diztinguishBridge->StartServer(port);
+}
+
+void SnesDebugger::StopDiztinguishServer()
+{
+	if(_diztinguishBridge) {
+		_diztinguishBridge->StopServer();
+	}
 }

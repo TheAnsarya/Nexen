@@ -27,6 +27,7 @@ class SnesAssembler;
 class SnesPpuTools;
 class PpuTools;
 class DummySnesCpu;
+class DiztinguishBridge;
 enum class MemoryOperationType;
 
 class SnesDebugger final : public IDebugger
@@ -54,6 +55,7 @@ class SnesDebugger final : public IDebugger
 	unique_ptr<SnesCpuTraceLogger> _traceLogger;
 	unique_ptr<SnesPpuTools> _ppuTools;
 	unique_ptr<DummySnesCpu> _dummyCpu;
+	unique_ptr<DiztinguishBridge> _diztinguishBridge;
 
 	ITraceLogger* _spcTraceLogger = nullptr;
 	ITraceLogger* _dspTraceLogger = nullptr;
@@ -123,4 +125,9 @@ public:
 	void SetPpuState(BaseState& state) override;
 	bool SaveRomToDisk(string filename, bool saveAsIps, CdlStripOption stripOption);
 	void ProcessInputOverrides(DebugControllerState inputOverrides[8]) override;
+
+	// DiztinGUIsh streaming integration
+	DiztinguishBridge* GetDiztinguishBridge();
+	bool StartDiztinguishServer(uint16_t port = 9998);
+	void StopDiztinguishServer();
 };
