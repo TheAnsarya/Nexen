@@ -798,8 +798,8 @@ namespace Mesen.ViewModels
 				new MainMenuAction() {
 					ActionType = ActionType.DiztinGUIshServer,
 					IsEnabled = () => IsGameRunning && MainWindow.RomInfo.ConsoleType == ConsoleType.Snes,
-					OnClick = async () => {
-						await MesenMsgBox.Show(wnd, "DiztinGUIsh server functionality will be available here.\n\nThis feature will allow you to start/stop the streaming server and view connection status.", MessageBoxButtons.OK, MessageBoxIcon.Info);
+					OnClick = () => {
+						ApplicationHelper.GetOrCreateUniqueWindow(wnd, () => new DiztinGUIshServerWindow());
 					}
 				},
 			};
