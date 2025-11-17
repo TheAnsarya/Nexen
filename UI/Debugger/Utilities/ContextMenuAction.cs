@@ -617,6 +617,9 @@ namespace Mesen.Debugger.Utilities
 		[IconFile("Camera")]
 		TakeScreenshot,
 
+		[IconFile("Network")]
+		DiztinGUIshServer,
+
 		[IconFile("Help")]
 		OnlineHelp,
 		[IconFile("CommandLine")]
