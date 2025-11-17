@@ -20,7 +20,14 @@ This directory contains comprehensive documentation for the Mesen2 ↔ DiztinGUI
 ## 📚 Documentation Files
 
 ### Quick Start
-- **[TESTING.md](TESTING.md)** - Start here for testing the integration
+- **[QUICK_START.md](QUICK_START.md)** - **START HERE!** 7-minute guide to get streaming working
+  - Prerequisites and build instructions
+  - Step-by-step server and client setup
+  - Expected outputs and verification
+  - Troubleshooting common issues
+
+### Testing
+- **[TESTING.md](TESTING.md)** - Comprehensive testing procedures
   - 3-step setup guide (build → client → server)
   - 7 comprehensive test scenarios
   - Expected outputs and pass criteria
