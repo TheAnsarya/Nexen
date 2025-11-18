@@ -1,12 +1,14 @@
 #pragma once
 #include "pch.h"
 #include "Debugger/DiztinguishProtocol.h"
+#include "Debugger/DiztinguishProtocolV2.h"
 #include "Utilities/Socket.h"
 #include <queue>
 #include <mutex>
 #include <thread>
 #include <atomic>
 
+enum class MemoryType;
 class SnesConsole;
 class SnesDebugger;
 class Debugger;
@@ -43,6 +45,10 @@ private:
 	DiztinguishProtocol::ConfigStreamMessage _config;
 	bool _configReceived;
 
+	// DiztinGUIsh Breakpoint Management
+	std::vector<DiztinguishProtocol::BreakpointMessage> _diztinguishBreakpoints;
+	mutable std::mutex _breakpointMutex;
+
 	// Execution trace buffering
 	std::vector<DiztinguishProtocol::ExecTraceEntry> _traceBuffer;
 	uint32_t _currentFrame;
@@ -77,9 +83,20 @@ private:
 	void HandleLabelSyncRequest();
 	void HandleBreakpointAdd(const DiztinguishProtocol::BreakpointMessage& msg);
 	void HandleBreakpointRemove(const DiztinguishProtocol::BreakpointMessage& msg);
-	void HandleMemoryDumpRequest(const DiztinguishProtocol::MemoryDumpRequest& msg);
+	void HandleMemoryDumpRequest(const DiztinguishProtocolV2::MemoryDumpRequest& request, DiztinguishProtocolV2::MemoryDumpResponse& response);
+	void HandleMemoryDumpRequest(const DiztinguishProtocol::MemoryDumpRequest& msg);  // V1 bridge function
 	void HandleHeartbeat();
 	void HandleDisconnect();
+
+	// Memory dump helper functions
+	DiztinguishProtocolV2::DumpStatus GetMemoryDump(DiztinguishProtocolV2::MemoryRegion region, std::vector<uint8_t>& data, uint32_t startAddr = 0, uint32_t length = 0);
+	DiztinguishProtocolV2::DumpStatus GetWramDump(std::vector<uint8_t>& data, uint32_t startAddr = 0, uint32_t length = 0);
+	
+	uint32_t CalculateMemoryChecksum(const std::vector<uint8_t>& data);
+
+	// Label management helper functions
+	MemoryType GetMemoryTypeFromAddress(uint32_t address) const;
+	string GetLabelTypeComment(uint8_t type) const;
 
 public:
 	DiztinguishBridge(SnesConsole* console, SnesDebugger* snesDebugger, Debugger* debugger);
@@ -108,6 +125,10 @@ public:
 	void SendLabelUpdate(uint32_t address, const char* name, uint8_t type);
 	void SendLabelDelete(uint32_t address);
 	void SendError(DiztinguishProtocol::ErrorCode code, const char* message);
+
+	// DiztinGUIsh Breakpoint Management
+	std::vector<DiztinguishProtocol::BreakpointMessage> GetDiztinguishBreakpoints() const;
+	void NotifyBreakpointsChanged();
 
 	// Statistics
 	uint64_t GetMessagesSent() const { return _messagesSent; }

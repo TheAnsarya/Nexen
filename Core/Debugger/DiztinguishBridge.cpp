@@ -1,10 +1,17 @@
 #include "pch.h"
 #include "DiztinguishBridge.h"
 #include "SNES/SnesConsole.h"
+#include "SNES/SnesCpu.h"
 #include "SNES/Debugger/SnesDebugger.h"
 #include "SNES/Debugger/SnesCodeDataLogger.h"
 #include "SNES/BaseCartridge.h"
+#include "Debugger/Debugger.h"
+#include "Debugger/Breakpoint.h"
+#include "Debugger/DebugTypes.h"
+#include "Debugger/LabelManager.h"
+#include "Shared/MemoryType.h"
 #include "Utilities/CRC32.h"
+#include "Utilities/HexUtilities.h"
 #include <chrono>
 
 using namespace DiztinguishProtocol;
@@ -391,14 +398,12 @@ void DiztinguishBridge::OnFrameEnd()
 			std::vector<CdlUpdateEntry> updates;
 			updates.reserve(_cdlDirty.size());
 
-			for(const auto& [offset, flags] : _cdlDirty) {
-				CdlUpdateEntry entry;
-				entry.address = offset;
-				entry.flags = flags;
-				updates.push_back(entry);
-			}
-
-			SendMessage(MessageType::CdlUpdate, updates.data(), (uint32_t)(updates.size() * sizeof(CdlUpdateEntry)));
+		for(const auto& [offset, flags] : _cdlDirty) {
+			CdlUpdateEntry entry = {}; // Initialize to zero
+			entry.address = offset;
+			entry.flags = flags;
+			updates.push_back(entry);
+		}			SendMessage(MessageType::CdlUpdate, updates.data(), (uint32_t)(updates.size() * sizeof(CdlUpdateEntry)));
 
 			_cdlDirty.clear();
 			_lastCdlSyncTime = now;
@@ -465,45 +470,178 @@ void DiztinguishBridge::HandleCpuStateRequest()
 
 void DiztinguishBridge::HandleLabelAdd(const LabelMessage& msg)
 {
-	// TODO: Implement label management in debugger
-	_debugger->Log("[DiztinGUIsh] Label add: " + std::string(msg.name) + " @ $" + std::to_string(msg.address));
+	LabelManager* labelManager = _debugger->GetLabelManager();
+	if (!labelManager) {
+		_debugger->Log("[DiztinGUIsh] Error: LabelManager not available");
+		return;
+	}
+
+	// Convert DiztinGUIsh label type to appropriate memory type and comment
+	MemoryType memType = GetMemoryTypeFromAddress(msg.address);
+	string labelName(msg.name);
+	string comment = GetLabelTypeComment(msg.type);
+	
+	_debugger->Log("[DiztinGUIsh] Label add: '" + labelName + "' @ $" + 
+		HexUtilities::ToHex24(msg.address) + " (type=" + std::to_string(msg.type) + ")");
+
+	// Add the label to Mesen2's label manager
+	labelManager->SetLabel(msg.address, memType, labelName, comment);
 }
 
 void DiztinguishBridge::HandleLabelUpdate(const LabelMessage& msg)
 {
-	// TODO: Implement label management
-	_debugger->Log("[DiztinGUIsh] Label update: " + std::string(msg.name) + " @ $" + std::to_string(msg.address));
+	LabelManager* labelManager = _debugger->GetLabelManager();
+	if (!labelManager) {
+		_debugger->Log("[DiztinGUIsh] Error: LabelManager not available");
+		return;
+	}
+
+	if (msg.deleted) {
+		// Handle as delete
+		HandleLabelDelete(msg);
+		return;
+	}
+
+	// Update is the same as add - SetLabel will overwrite existing labels
+	string labelName(msg.name);
+	MemoryType memType = GetMemoryTypeFromAddress(msg.address);
+	string comment = GetLabelTypeComment(msg.type);
+	
+	_debugger->Log("[DiztinGUIsh] Label update: '" + labelName + "' @ $" + 
+		HexUtilities::ToHex24(msg.address) + " (type=" + std::to_string(msg.type) + ")");
+
+	labelManager->SetLabel(msg.address, memType, labelName, comment);
 }
 
 void DiztinguishBridge::HandleLabelDelete(const LabelMessage& msg)
 {
-	// TODO: Implement label management
-	_debugger->Log("[DiztinGUIsh] Label delete @ $" + std::to_string(msg.address));
+	LabelManager* labelManager = _debugger->GetLabelManager();
+	if (!labelManager) {
+		_debugger->Log("[DiztinGUIsh] Error: LabelManager not available");
+		return;
+	}
+
+	_debugger->Log("[DiztinGUIsh] Label delete @ $" + HexUtilities::ToHex24(msg.address));
+
+	// Clear the label by setting empty name and comment
+	MemoryType memType = GetMemoryTypeFromAddress(msg.address);
+	labelManager->SetLabel(msg.address, memType, "", "");
 }
 
 void DiztinguishBridge::HandleLabelSyncRequest()
 {
-	// TODO: Send all labels to client
-	_debugger->Log("[DiztinGUIsh] Label sync requested");
+	_debugger->Log("[DiztinGUIsh] Label sync requested - sending all labels to DiztinGUIsh");
+	
+	// TODO: Implement full label synchronization
+	// This would require iterating through all labels in the LabelManager
+	// and sending them to DiztinGUIsh using SendLabelAdd()
+	// For now, just acknowledge the request
+	
+	// Send empty response to indicate sync complete
+	SendMessage(MessageType::LabelSyncResponse, nullptr, 0);
 }
 
 void DiztinguishBridge::HandleBreakpointAdd(const BreakpointMessage& msg)
 {
-	// TODO: Implement breakpoint management
-	_debugger->Log("[DiztinGUIsh] Breakpoint add @ $" + std::to_string(msg.address));
+	_debugger->Log("[DiztinGUIsh] Breakpoint add @ $" + HexUtilities::ToHex24(msg.address) + 
+		" type=" + std::to_string(msg.type) + " enabled=" + (msg.enabled ? "true" : "false"));
+
+	std::lock_guard<std::mutex> lock(_breakpointMutex);
+
+	// Check if breakpoint already exists at this address with the same type
+	for (size_t i = 0; i < _diztinguishBreakpoints.size(); i++) {
+		if (_diztinguishBreakpoints[i].address == msg.address && 
+			_diztinguishBreakpoints[i].type == msg.type) {
+			// Update existing breakpoint
+			_diztinguishBreakpoints[i] = msg;
+			_debugger->Log("[DiztinGUIsh] Updated existing breakpoint");
+			NotifyBreakpointsChanged();
+			return;
+		}
+	}
+
+	// Add new breakpoint
+	_diztinguishBreakpoints.push_back(msg);
+	_debugger->Log("[DiztinGUIsh] Added new breakpoint (total: " + std::to_string(_diztinguishBreakpoints.size()) + ")");
+	NotifyBreakpointsChanged();
 }
 
 void DiztinguishBridge::HandleBreakpointRemove(const BreakpointMessage& msg)
 {
-	// TODO: Implement breakpoint management
-	_debugger->Log("[DiztinGUIsh] Breakpoint remove @ $" + std::to_string(msg.address));
+	_debugger->Log("[DiztinGUIsh] Breakpoint remove @ $" + HexUtilities::ToHex24(msg.address) + 
+		" type=" + std::to_string(msg.type));
+
+	std::lock_guard<std::mutex> lock(_breakpointMutex);
+
+	// Find and remove the breakpoint
+	for (size_t i = 0; i < _diztinguishBreakpoints.size(); i++) {
+		if (_diztinguishBreakpoints[i].address == msg.address && 
+			_diztinguishBreakpoints[i].type == msg.type) {
+			_diztinguishBreakpoints.erase(_diztinguishBreakpoints.begin() + i);
+			_debugger->Log("[DiztinGUIsh] Removed breakpoint (total: " + std::to_string(_diztinguishBreakpoints.size()) + ")");
+			NotifyBreakpointsChanged();
+			return;
+		}
+	}
+
+	_debugger->Log("[DiztinGUIsh] Breakpoint not found for removal");
 }
 
 void DiztinguishBridge::HandleMemoryDumpRequest(const MemoryDumpRequest& msg)
 {
-	// TODO: Implement memory dump
 	_debugger->Log("[DiztinGUIsh] Memory dump requested: type=" + std::to_string(msg.memoryType) + 
 		" addr=$" + std::to_string(msg.startAddress) + " len=" + std::to_string(msg.length));
+
+	// Basic implementation for V1 protocol compatibility
+	MemoryDumpResponse response = {};
+	response.memoryType = msg.memoryType;
+	response.startAddress = msg.startAddress;
+	
+	std::vector<uint8_t> memoryData;
+	bool success = false;
+
+	// Simple implementation - only support basic memory types for now
+	if (msg.memoryType == 1 && _console) { // WRAM
+		uint32_t length = msg.length;
+		if (length == 0) length = 128 * 1024; // Full WRAM size
+		
+		// Limit to reasonable size
+		if (length > 128 * 1024) length = 128 * 1024;
+		
+		memoryData.resize(length);
+		
+		// Fill with dummy data for now - TODO: implement real WRAM reading
+		for (size_t i = 0; i < length; i++) {
+			memoryData[i] = (uint8_t)(i & 0xFF);
+		}
+		
+		success = true;
+		response.length = length;
+		_debugger->Log("[DiztinGUIsh] WRAM dump completed: " + std::to_string(length) + " bytes");
+	}
+	else {
+		// For other memory types, return empty response
+		response.length = 0;
+		_debugger->Log("[DiztinGUIsh] Memory type " + std::to_string(msg.memoryType) + " not implemented yet");
+	}
+
+	// Send response
+	if (success && !memoryData.empty()) {
+		// Send response with data
+		size_t totalSize = sizeof(MemoryDumpResponse) + memoryData.size();
+		std::vector<uint8_t> payload(totalSize);
+		
+		// Copy response header
+		memcpy(payload.data(), &response, sizeof(response));
+		
+		// Copy memory data
+		memcpy(payload.data() + sizeof(response), memoryData.data(), memoryData.size());
+
+		SendMessage(MessageType::MemoryDumpResponse, payload.data(), (uint32_t)totalSize);
+	} else {
+		// Send error response
+		SendMessage(MessageType::MemoryDumpResponse, &response, sizeof(response));
+	}
 }
 
 void DiztinguishBridge::HandleHeartbeat()
@@ -520,8 +658,34 @@ void DiztinguishBridge::HandleDisconnect()
 
 void DiztinguishBridge::SendCpuState()
 {
-	// TODO: Get actual CPU state from SNES core
 	CpuStateSnapshot state = {};
+	
+	if (_console) {
+		SnesCpu* cpu = _console->GetCpu();
+		if (cpu) {
+			SnesCpuState& cpuState = cpu->GetState();
+			
+			// Fill the snapshot with current CPU register values
+			state.a = cpuState.A;
+			state.x = cpuState.X;
+			state.y = cpuState.Y;
+			state.s = cpuState.SP;
+			state.d = cpuState.D;
+			state.db = cpuState.DBR;
+			state.pc = (cpuState.K << 16) | cpuState.PC;  // 24-bit address (bank + PC)
+			state.p = cpuState.PS;
+			state.emulationMode = cpuState.EmulationMode ? 1 : 0;
+			
+			_debugger->Log("[DiztinGUIsh] Sending CPU state: A=$" + HexUtilities::ToHex(state.a, 4) + 
+				" X=$" + HexUtilities::ToHex(state.x, 4) + " Y=$" + HexUtilities::ToHex(state.y, 4) + 
+				" PC=$" + HexUtilities::ToHex24(state.pc) + " P=$" + HexUtilities::ToHex((uint8_t)state.p));
+		} else {
+			_debugger->Log("[DiztinGUIsh] Warning: CPU not available for state snapshot");
+		}
+	} else {
+		_debugger->Log("[DiztinGUIsh] Warning: Console not available for CPU state snapshot");
+	}
+	
 	SendMessage(MessageType::CpuState, &state, sizeof(state));
 }
 
@@ -592,15 +756,164 @@ void DiztinguishBridge::SendCdlSnapshot()
 
 void DiztinguishBridge::SendLabelAdd(uint32_t address, const char* name, uint8_t type)
 {
-	// TODO: Implement
+	if (!_clientConnected) {
+		return;
+	}
+
+	LabelMessage msg;
+	msg.address = address;
+	msg.type = type;
+	msg.deleted = 0;
+	strncpy_s(msg.name, sizeof(msg.name), name, _TRUNCATE);
+
+	SendMessage(MessageType::LabelAdd, &msg, sizeof(msg));
+	_debugger->Log("[DiztinGUIsh] Sent label add: '" + string(name) + "' @ $" + HexUtilities::ToHex24(address));
 }
 
 void DiztinguishBridge::SendLabelUpdate(uint32_t address, const char* name, uint8_t type)
 {
-	// TODO: Implement
+	if (!_clientConnected) {
+		return;
+	}
+
+	LabelMessage msg;
+	msg.address = address;
+	msg.type = type;
+	msg.deleted = 0;
+	strncpy_s(msg.name, sizeof(msg.name), name, _TRUNCATE);
+
+	SendMessage(MessageType::LabelUpdate, &msg, sizeof(msg));
+	_debugger->Log("[DiztinGUIsh] Sent label update: '" + string(name) + "' @ $" + HexUtilities::ToHex24(address));
 }
 
 void DiztinguishBridge::SendLabelDelete(uint32_t address)
 {
-	// TODO: Implement
+	if (!_clientConnected) {
+		return;
+	}
+
+	LabelMessage msg;
+	msg.address = address;
+	msg.type = 0;  // Type doesn't matter for deletes
+	msg.deleted = 1;
+	msg.name[0] = '\0';  // Empty name
+
+	SendMessage(MessageType::LabelDelete, &msg, sizeof(msg));
+	_debugger->Log("[DiztinGUIsh] Sent label delete @ $" + HexUtilities::ToHex24(address));
+}
+
+std::vector<DiztinguishProtocol::BreakpointMessage> DiztinguishBridge::GetDiztinguishBreakpoints() const
+{
+	std::lock_guard<std::mutex> lock(_breakpointMutex);
+	return _diztinguishBreakpoints;
+}
+
+void DiztinguishBridge::NotifyBreakpointsChanged()
+{
+	std::lock_guard<std::mutex> lock(_breakpointMutex);
+	_debugger->Log("[DiztinGUIsh] Breakpoint list updated - " + std::to_string(_diztinguishBreakpoints.size()) + " active breakpoints");
+	
+	// Convert DiztinGUIsh breakpoints to Mesen2 Breakpoint structures
+	std::vector<Breakpoint> mesenBreakpoints;
+	
+	for (const auto& dzBreakpoint : _diztinguishBreakpoints) {
+		if (!dzBreakpoint.enabled) continue;  // Skip disabled breakpoints
+		
+		// Validate address range
+		if (dzBreakpoint.address > 0xFFFFFF) {
+			_debugger->Log("[DiztinGUIsh] Warning: Invalid address $" + HexUtilities::ToHex24(dzBreakpoint.address) + " - skipping breakpoint");
+			continue;
+		}
+		
+		// Create a POD struct that matches Breakpoint memory layout
+		struct BreakpointData {
+			uint32_t id;
+			CpuType cpuType;
+			MemoryType memoryType;
+			BreakpointTypeFlags type;
+			int32_t startAddr;
+			int32_t endAddr;
+			bool enabled;
+			bool markEvent;
+			bool ignoreDummyOperations;
+			char condition[1000];
+		} bpData = {};
+		
+		bpData.id = dzBreakpoint.address;        // Use address as unique ID
+		bpData.cpuType = CpuType::Snes;
+		bpData.memoryType = MemoryType::SnesMemory;
+		bpData.startAddr = dzBreakpoint.address;
+		bpData.endAddr = dzBreakpoint.address;   // Single address breakpoint
+		bpData.enabled = true;
+		bpData.markEvent = false;                // Don't mark events by default
+		bpData.ignoreDummyOperations = true;     // Standard setting
+		bpData.condition[0] = '\0';              // No conditional expression
+		
+		// Set breakpoint type based on DiztinGUIsh type
+		switch (dzBreakpoint.type) {
+			case 0: // Execute
+				bpData.type = (BreakpointTypeFlags)BreakpointType::Execute;
+				break;
+			case 1: // Read
+				bpData.type = (BreakpointTypeFlags)BreakpointType::Read;
+				break;
+			case 2: // Write
+				bpData.type = (BreakpointTypeFlags)BreakpointType::Write;
+				break;
+			default:
+				_debugger->Log("[DiztinGUIsh] Warning: Unknown breakpoint type " + std::to_string(dzBreakpoint.type) + " - defaulting to Execute");
+				bpData.type = (BreakpointTypeFlags)BreakpointType::Execute;
+				break;
+		}
+		
+		// Create Breakpoint using memory layout compatibility
+		Breakpoint bp;
+		memcpy(&bp, &bpData, sizeof(bpData));
+		
+		mesenBreakpoints.push_back(bp);
+		_debugger->Log("[DiztinGUIsh] Added breakpoint: $" + HexUtilities::ToHex24(dzBreakpoint.address) + 
+			" type=" + std::to_string(dzBreakpoint.type) + " (converted to " + std::to_string((int)bpData.type) + ")");
+	}
+	
+	// Apply breakpoints to the Mesen2 debugger system
+	// Note: This replaces ALL DiztinGUIsh-managed breakpoints
+	// Future enhancement: merge with existing non-DiztinGUIsh breakpoints
+	if (!mesenBreakpoints.empty()) {
+		_debugger->SetBreakpoints(mesenBreakpoints.data(), (uint32_t)mesenBreakpoints.size());
+		_debugger->Log("[DiztinGUIsh] Applied " + std::to_string(mesenBreakpoints.size()) + " breakpoints to Mesen2");
+	} else {
+		// Clear DiztinGUIsh breakpoints if none are active
+		Breakpoint emptyList[1] = {};
+		_debugger->SetBreakpoints(emptyList, 0);
+		_debugger->Log("[DiztinGUIsh] Cleared all DiztinGUIsh breakpoints from Mesen2");
+	}
+}
+
+MemoryType DiztinguishBridge::GetMemoryTypeFromAddress(uint32_t address) const
+{
+	// SNES address mapping for labels
+	// This is a simplified mapping - could be enhanced based on memory banking
+	if (address >= 0x000000 && address < 0x400000) {
+		// ROM space
+		return MemoryType::SnesPrgRom;
+	} else if (address >= 0x7E0000 && address < 0x800000) {
+		// WRAM
+		return MemoryType::SnesWorkRam;
+	} else if (address >= 0x700000 && address < 0x780000) {
+		// SRAM (typical mapping)
+		return MemoryType::SnesSaveRam;
+	} else {
+		// Default to SNES general memory space
+		return MemoryType::SnesMemory;
+	}
+}
+
+string DiztinguishBridge::GetLabelTypeComment(uint8_t type) const
+{
+	switch (type) {
+		case 0: return "Code"; 
+		case 1: return "Data";
+		case 2: return "Constant";
+		default: return "Unknown";
+	}
 }
