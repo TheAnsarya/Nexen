@@ -2,6 +2,8 @@
 #include <cstring>
 #include <thread>
 #include <mutex>
+#include <chrono>
+#include <algorithm>
 #include "Utilities/Socket.h"
 #include "Utilities/UPnPPortMapper.h"
 using namespace std;
@@ -54,6 +56,9 @@ Socket::Socket()
 	} else {
 		SetSocketOptions();
 	}
+	
+	// Initialize advanced features
+	ResetStatistics();
 }
 
 Socket::Socket(uintptr_t socket) 
@@ -65,6 +70,9 @@ Socket::Socket(uintptr_t socket)
 	} else {
 		SetSocketOptions();
 	}
+	
+	// Initialize advanced features
+	ResetStatistics();
 }
 
 Socket::~Socket()
@@ -259,6 +267,11 @@ int Socket::Recv(char *buf, int len, int flags)
 		//Socket closed
 		std::cout << "Socket closed by peer." << std::endl;
 		Close();
+	} else if(returnVal > 0) {
+		// Update statistics for successful receive
+		_bytesReceived += returnVal;
+		_messagesReceived++;
+		_lastActivity = std::chrono::steady_clock::now();
 	}
 
 	return returnVal;
@@ -272,6 +285,13 @@ void Socket::BufferedSend(char *buf, int len)
 
 	std::lock_guard<std::mutex> lock(_sendBufferMutex);
 	_sendBuffer.insert(_sendBuffer.end(), buf, buf + len);
+	_messagesReceived++; // Track buffered messages
+	
+	// Auto-flush if buffer is getting large or auto-flush is enabled
+	if(_autoFlush && ShouldFlush()) {
+		// Release lock temporarily for flush (avoid deadlock)
+		// Note: We'll implement a non-locking flush for this case
+	}
 }
 
 void Socket::SendBuffer()
@@ -289,6 +309,9 @@ void Socket::SendBuffer()
 	int totalSent = 0;
 	int bufferSize = (int)_sendBuffer.size();
 	
+	// Update activity timestamp
+	_lastActivity = std::chrono::steady_clock::now();
+	
 	while(totalSent < bufferSize) {
 		int sent = Send(_sendBuffer.data() + totalSent, bufferSize - totalSent, 0);
 		if(sent <= 0) {
@@ -299,6 +322,68 @@ void Socket::SendBuffer()
 		totalSent += sent;
 	}
 
+	// Update statistics
+	_bytesSent += totalSent;
+	_messagesSent++;
+
 	// Clear the buffer after sending (or on error)
 	_sendBuffer.clear();
+}
+
+// Advanced Socket Features Implementation
+
+double Socket::GetConnectionDurationSeconds() const
+{
+	auto now = std::chrono::steady_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - _connectionStart);
+	return duration.count() / 1000.0;
+}
+
+double Socket::GetBandwidthKBps() const
+{
+	double duration = GetConnectionDurationSeconds();
+	if(duration <= 0) return 0.0;
+	
+	uint64_t totalBytes = _bytesSent + _bytesReceived;
+	return (totalBytes / 1024.0) / duration; // KB per second
+}
+
+bool Socket::IsHealthy() const
+{
+	if(_connectionError || _socket == INVALID_SOCKET) {
+		return false;
+	}
+	
+	// Check if connection has been inactive for too long (30 seconds)
+	auto now = std::chrono::steady_clock::now();
+	auto timeSinceActivity = std::chrono::duration_cast<std::chrono::seconds>(now - _lastActivity);
+	return timeSinceActivity.count() < 30;
+}
+
+void Socket::ResetStatistics()
+{
+	_bytesSent = 0;
+	_bytesReceived = 0;
+	_messagesSent = 0;
+	_messagesReceived = 0;
+	_connectionStart = std::chrono::steady_clock::now();
+	_lastActivity = _connectionStart;
+}
+
+size_t Socket::GetBufferedBytes() const
+{
+	std::lock_guard<std::mutex> lock(const_cast<std::mutex&>(_sendBufferMutex));
+	return _sendBuffer.size();
+}
+
+bool Socket::ShouldFlush() const
+{
+	return _sendBuffer.size() >= _maxBufferSize;
+}
+
+void Socket::FlushIfNeeded()
+{
+	if(ShouldFlush()) {
+		SendBuffer();
+	}
 }

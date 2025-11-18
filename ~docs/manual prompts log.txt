@@ -58,6 +58,44 @@ Create the git commits with descriptions and documentation for all of the `Dizti
 don't commit to the original github repos, we don't have permission, only commit to my forks using the github account `TheAnsarya`; if a sub-github project is at stake, fork it and pull it to local and update that;
 https://github.com/TheAnsarya/Diz.Ui.Winforms.git
 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error	C2039	'Log': is not a member of 'SnesDebugger'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	474		
+Error	C3861	'Log': identifier not found	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	480		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error	C2039	'Log': is not a member of 'SnesDebugger'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	454		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+hey, `dotnet build` doesn't build the `*.cpp` files, and for C++ projects use `msbuild` or whatever to get the errors and verify the build
+dont downgrade from 145 to 142, use 145 as before
+
+^^^^^^^^^^^^^^^^^^^^^^
+use msbuild using the VS2026 version at `C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin` and fix this error: `Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error	C2039	'Log': is not a member of 'SnesDebugger'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	452		`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error	LNK2019	unresolved external symbol "public: void __cdecl Socket::SendBuffer(void)" (?SendBuffer@Socket@@QEAAXXZ) referenced in function "private: void __cdecl DiztinguishBridge::FlushOutgoingMessages(void)" (?FlushOutgoingMessages@DiztinguishBridge@@AEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\Core.lib(DiztinguishBridge.obj)	1		
+Error	LNK2019	unresolved external symbol "public: void __cdecl Socket::BufferedSend(char *,int)" (?BufferedSend@Socket@@QEAAXPEADH@Z) referenced in function "private: void __cdecl DiztinguishBridge::FlushOutgoingMessages(void)" (?FlushOutgoingMessages@DiztinguishBridge@@AEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\Core.lib(DiztinguishBridge.obj)	1		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Create the git commits with descriptions and documentation and push; continue working the github issues, while updating them and creating new issues for new work; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space;
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
