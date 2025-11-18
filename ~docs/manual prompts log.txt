@@ -143,7 +143,8 @@ Message	lnt-uninitialized-local	Local variable is not initialized.	Core	C:\Users
 
 I cannot see the text in the terminal window, reset the text colors;
 continue, starting with issue #14 `[DOCS] User Documentation and Troubleshooting Guides` and do the rest of the issues; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space;
-make sure you're updating the session logs and chat logs; Create the multiple git commits for all projects with descriptions and commit them and then push;
+make sure you're updating the session logs and chat logs; Create the multiple git commits for all projects with descriptions and commit them and then push; then continue updating the documentation in smaller batches
+
 
 
 
