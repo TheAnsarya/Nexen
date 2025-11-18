@@ -477,31 +477,31 @@ void DiztinguishBridge::HandleLabelUpdate(const LabelMessage& msg)
 void DiztinguishBridge::HandleLabelDelete(const LabelMessage& msg)
 {
 	// TODO: Implement label management
-	Log("[DiztinGUIsh] Label delete @ $" + std::to_string(msg.address));
+	_debugger->Log("[DiztinGUIsh] Label delete @ $" + std::to_string(msg.address));
 }
 
 void DiztinguishBridge::HandleLabelSyncRequest()
 {
 	// TODO: Send all labels to client
-	Log("[DiztinGUIsh] Label sync requested");
+	_debugger->Log("[DiztinGUIsh] Label sync requested");
 }
 
 void DiztinguishBridge::HandleBreakpointAdd(const BreakpointMessage& msg)
 {
 	// TODO: Implement breakpoint management
-	Log("[DiztinGUIsh] Breakpoint add @ $" + std::to_string(msg.address));
+	_debugger->Log("[DiztinGUIsh] Breakpoint add @ $" + std::to_string(msg.address));
 }
 
 void DiztinguishBridge::HandleBreakpointRemove(const BreakpointMessage& msg)
 {
 	// TODO: Implement breakpoint management
-	Log("[DiztinGUIsh] Breakpoint remove @ $" + std::to_string(msg.address));
+	_debugger->Log("[DiztinGUIsh] Breakpoint remove @ $" + std::to_string(msg.address));
 }
 
 void DiztinguishBridge::HandleMemoryDumpRequest(const MemoryDumpRequest& msg)
 {
 	// TODO: Implement memory dump
-	Log("[DiztinGUIsh] Memory dump requested: type=" + std::to_string(msg.memoryType) + 
+	_debugger->Log("[DiztinGUIsh] Memory dump requested: type=" + std::to_string(msg.memoryType) + 
 		" addr=$" + std::to_string(msg.startAddress) + " len=" + std::to_string(msg.length));
 }
 
@@ -513,7 +513,7 @@ void DiztinguishBridge::HandleHeartbeat()
 
 void DiztinguishBridge::HandleDisconnect()
 {
-	Log("[DiztinGUIsh] Client requested disconnect");
+	_debugger->Log("[DiztinGUIsh] Client requested disconnect");
 	_clientConnected = false;
 }
 
