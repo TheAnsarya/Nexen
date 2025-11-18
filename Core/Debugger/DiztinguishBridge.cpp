@@ -9,8 +9,9 @@
 
 using namespace DiztinguishProtocol;
 
-DiztinguishBridge::DiztinguishBridge(SnesConsole* console, SnesDebugger* debugger)
+DiztinguishBridge::DiztinguishBridge(SnesConsole* console, SnesDebugger* snesDebugger, Debugger* debugger)
 	: _console(console)
+	, _snesDebugger(snesDebugger)
 	, _debugger(debugger)
 	, _cart(nullptr)
 	, _port(0)

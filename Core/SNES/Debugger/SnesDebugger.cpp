@@ -89,7 +89,7 @@ SnesDebugger::SnesDebugger(Debugger* debugger, CpuType cpuType) : IDebugger(debu
 
 	// Initialize DiztinGUIsh Bridge (only for main SNES CPU)
 	if(cpuType == CpuType::Snes) {
-		_diztinguishBridge.reset(new DiztinguishBridge(_console, this));
+		_diztinguishBridge.reset(new DiztinguishBridge(_console, this, _debugger));
 	}
 }
 

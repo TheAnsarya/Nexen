@@ -9,6 +9,7 @@
 
 class SnesConsole;
 class SnesDebugger;
+class Debugger;
 class SnesCodeDataLogger;
 class BaseCartridge;
 
@@ -19,7 +20,8 @@ class DiztinguishBridge
 {
 private:
 	SnesConsole* _console;
-	SnesDebugger* _debugger;
+	SnesDebugger* _snesDebugger;
+	Debugger* _debugger;
 	BaseCartridge* _cart;
 
 	// Server socket
@@ -80,7 +82,7 @@ private:
 	void HandleDisconnect();
 
 public:
-	DiztinguishBridge(SnesConsole* console, SnesDebugger* debugger);
+	DiztinguishBridge(SnesConsole* console, SnesDebugger* snesDebugger, Debugger* debugger);
 	~DiztinguishBridge();
 
 	// Server control
