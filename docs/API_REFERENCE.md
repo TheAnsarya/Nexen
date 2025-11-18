@@ -1,19 +1,26 @@
-# DiztinGUIsh Integration API Reference
+# DiztinGUIsh-Mesen2 Integration: Complete API Reference
 
 ## Overview
 
-The DiztinGUIsh Integration provides a comprehensive C++ API for real-time communication between Mesen2 and DiztinGUIsh disassembly tool. This document covers the complete API surface including the enhanced Socket layer, configuration system, and Protocol V2.0 implementation.
+The DiztinGUIsh-Mesen2 Integration provides a comprehensive API for real-time communication between Mesen2 and DiztinGUIsh disassembly tool. This document covers both the C++ (Mesen2 side) and C# (DiztinGUIsh side) APIs, including networking protocols, service integration, and extension points.
 
 ## Table of Contents
 
-1. [Socket Layer API](#socket-layer-api)
-2. [Configuration System](#configuration-system)
-3. [Protocol V2.0](#protocol-v2)
-4. [Message Management](#message-management)
-5. [Compression System](#compression-system)
-6. [Error Handling](#error-handling)
-7. [Performance Monitoring](#performance-monitoring)
-8. [Usage Examples](#usage-examples)
+1. [C++ API (Mesen2 Side)](#c-api-mesen2-side)
+   - [Socket Layer API](#socket-layer-api)
+   - [Protocol V2.0](#protocol-v2)
+   - [Configuration System](#configuration-system)
+   - [Message Management](#message-management)
+2. [C# API (DiztinGUIsh Side)](#c-api-diztinguish-side)
+   - [Core Interfaces](#core-interfaces)
+   - [Communication Protocol](#communication-protocol)
+   - [Client API](#client-api)
+   - [Service Integration](#service-integration)
+3. [Cross-Platform Integration](#cross-platform-integration)
+   - [Event System](#event-system)
+   - [Error Handling](#error-handling)
+   - [Extension Points](#extension-points)
+4. [Usage Examples](#usage-examples)
 
 ## Socket Layer API
 
@@ -705,4 +712,380 @@ For optimal performance, consider these configuration settings:
 - **High throughput**: Increase buffer sizes and batch timeouts
 - **Debug scenarios**: Enable comprehensive logging and profiling
 
-This API provides a complete foundation for integrating DiztinGUIsh with Mesen2, offering advanced networking, compression, error handling, and performance monitoring capabilities.
+---
+
+## C# API (DiztinGUIsh Side)
+
+### Core Interfaces
+
+#### IMesen2StreamingClient
+
+Primary interface for communicating with Mesen2.
+
+```csharp
+public interface IMesen2StreamingClient : IDisposable
+{
+    // Connection Management
+    Task<bool> ConnectAsync(string host, int port, CancellationToken cancellationToken = default);
+    Task DisconnectAsync();
+    bool IsConnected { get; }
+    
+    // Events
+    event EventHandler<CpuStateEventArgs> CpuStateReceived;
+    event EventHandler<MemoryDumpEventArgs> MemoryDumpReceived;
+    event EventHandler<TraceEventArgs> TraceReceived;
+    event EventHandler<ConnectionStatusEventArgs> ConnectionStatusChanged;
+    
+    // Data Requests
+    Task RequestCpuStateAsync();
+    Task RequestMemoryDumpAsync(MemoryType memoryType, uint startAddress, uint length);
+    Task RequestTraceAsync(int frameCount = 1);
+    
+    // Breakpoint Management
+    Task AddBreakpointAsync(Mesen2Breakpoint breakpoint);
+    Task RemoveBreakpointAsync(uint breakpointId);
+    Task<IEnumerable<Mesen2Breakpoint>> GetBreakpointsAsync();
+    
+    // Label Management
+    Task AddLabelAsync(uint address, string label, LabelType type = LabelType.Code);
+    Task RemoveLabelAsync(uint address);
+    Task SyncLabelsAsync(IEnumerable<DiztinLabel> labels);
+    
+    // Advanced Operations
+    Task SetMemoryAsync(MemoryType memoryType, uint address, byte[] data);
+    Task ResetAsync();
+    Task PauseAsync();
+    Task ResumeAsync();
+}
+```
+
+#### IMesen2IntegrationController
+
+High-level controller for integration management.
+
+```csharp
+public interface IMesen2IntegrationController
+{
+    // Connection Management
+    Task<ConnectionResult> ConnectToMesen2Async(Mesen2ConnectionSettings settings);
+    Task DisconnectFromMesen2Async();
+    ConnectionStatus CurrentStatus { get; }
+    
+    // Data Synchronization
+    Task StartTraceSyncAsync();
+    Task StopTraceSyncAsync();
+    Task SyncCurrentProjectAsync();
+    
+    // Project Integration
+    Task ImportMesen2LabelsAsync();
+    Task ExportLabelsToMesen2Async();
+    Task SyncBreakpointsAsync();
+    
+    // Events
+    event EventHandler<IntegrationStatusEventArgs> StatusChanged;
+    event EventHandler<IntegrationErrorEventArgs> ErrorOccurred;
+    event EventHandler<TraceDataEventArgs> TraceDataReceived;
+}
+```
+
+### Communication Protocol
+
+#### Message Types
+
+```csharp
+public enum Mesen2Command : byte
+{
+    // Connection
+    Handshake = 0x01,
+    Disconnect = 0x02,
+    
+    // Data Requests
+    RequestCpuState = 0x10,
+    RequestMemoryDump = 0x11,
+    RequestTrace = 0x12,
+    
+    // Breakpoints
+    AddBreakpoint = 0x20,
+    RemoveBreakpoint = 0x21,
+    GetBreakpoints = 0x22,
+    
+    // Labels
+    AddLabel = 0x30,
+    RemoveLabel = 0x31,
+    SyncLabels = 0x32,
+    
+    // Memory Operations
+    SetMemory = 0x40,
+    
+    // Emulation Control
+    Reset = 0x50,
+    Pause = 0x51,
+    Resume = 0x52
+}
+```
+
+#### Message Structure
+
+```csharp
+public struct Mesen2Message
+{
+    public byte MessageType { get; set; }      // Command or Response type
+    public ushort Length { get; set; }         // Payload length
+    public uint SequenceNumber { get; set; }   // For response correlation
+    public byte[] Payload { get; set; }        // Message data
+    public uint Checksum { get; set; }         // Data integrity
+}
+
+public struct CpuStateData
+{
+    public uint PC { get; set; }               // Program Counter
+    public ushort A { get; set; }              // Accumulator
+    public ushort X { get; set; }              // X Register
+    public ushort Y { get; set; }              // Y Register
+    public ushort SP { get; set; }             // Stack Pointer
+    public ushort DP { get; set; }             // Direct Page
+    public byte DB { get; set; }               // Data Bank
+    public byte Flags { get; set; }            // Processor Flags
+    public ulong CycleCount { get; set; }      // Total cycles
+}
+
+public struct TraceEntry
+{
+    public uint Address { get; set; }          // Instruction address
+    public byte Opcode { get; set; }           // Instruction opcode
+    public ushort Operand { get; set; }        // Instruction operand
+    public CpuStateData CpuState { get; set; } // CPU state before execution
+    public byte MemoryAccess { get; set; }     // Memory access flags
+    public uint EffectiveAddress { get; set; } // Effective address for memory ops
+    public byte MemoryValue { get; set; }      // Memory value read/written
+}
+```
+
+### Client API Usage Examples
+
+#### Basic Connection Workflow
+
+The connection process follows a structured pattern implemented in `Mesen2StreamingClient.ConnectAsync()`:
+
+**Phase 1: Event Handler Registration**
+Before establishing connection, the client registers event handlers for real-time data reception:
+- `CpuStateReceived` events deliver processor state updates every frame
+- `TraceReceived` events provide instruction execution traces with CPU context
+- `ConnectionStatusChanged` events notify of network state transitions
+
+**Phase 2: TCP Connection Establishment**
+The client attempts TCP socket connection to Mesen2's DiztinGUIsh server (typically localhost:1234). The underlying socket layer in `Socket.Connect()` handles network protocol negotiation and establishes the communication channel.
+
+**Phase 3: Protocol Handshake**
+Once the TCP connection is established, a Protocol V2.0 handshake occurs:
+1. Client sends handshake request with protocol version and capabilities
+2. Mesen2 responds with server capabilities and configuration
+3. Both sides validate protocol compatibility and establish message sequencing
+
+**Phase 4: Active Communication**
+After successful handshake, the client can immediately begin requesting data:
+- `RequestTraceAsync()` initiates real-time execution trace streaming
+- `RequestCpuStateAsync()` pulls current processor state
+- All subsequent communication uses asynchronous message passing
+
+**Error Handling Integration**
+The connection process includes comprehensive error recovery implemented in `RobustMesen2Client`:
+- Automatic retry logic with exponential backoff
+- Circuit breaker pattern prevents overwhelming failed connections
+- Graceful degradation when network issues occur
+
+#### Advanced Integration Example
+
+```csharp
+public class AdvancedMesen2Integration
+{
+    private readonly IMesen2StreamingClient _client;
+    private readonly IMesen2Configuration _config;
+    private readonly ILogger _logger;
+    
+    public AdvancedMesen2Integration(
+        IMesen2StreamingClient client,
+        IMesen2Configuration config,
+        ILogger<AdvancedMesen2Integration> logger)
+    {
+        _client = client;
+        _config = config;
+        _logger = logger;
+    }
+    
+    public async Task StartAdvancedDebuggingSession()
+    {
+        try
+        {
+            // Configure for high-performance debugging
+            _config.TraceBufferSize = 100000;
+            _config.EnableTraceCompression = true;
+            _config.MaxTracesPerSecond = 60000;
+            await _config.SaveAsync();
+            
+            // Connect with retry logic
+            await ConnectWithRetry();
+            
+            // Set up breakpoints
+            await SetupBreakpoints();
+            
+            // Sync labels from current project
+            await SyncProjectLabels();
+            
+            // Start trace collection
+            await _client.RequestTraceAsync(frameCount: -1); // Continuous
+            
+            _logger.LogInformation("Advanced debugging session started");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to start debugging session");
+            throw;
+        }
+    }
+    
+    private async Task SetupBreakpoints()
+    {
+        var breakpoints = new[]
+        {
+            new Mesen2Breakpoint
+            {
+                Address = 0x808000,
+                Type = BreakpointType.Execute,
+                Enabled = true,
+                Condition = "A == 0x1234"
+            },
+            new Mesen2Breakpoint
+            {
+                Address = 0x7E0100,
+                Type = BreakpointType.WriteMemory,
+                Enabled = true
+            }
+        };
+        
+        foreach (var bp in breakpoints)
+        {
+            await _client.AddBreakpointAsync(bp);
+            _logger.LogDebug("Added breakpoint at ${Address:X6}", bp.Address);
+        }
+    }
+}
+```
+
+### Service Integration
+
+#### Dependency Injection Registration
+
+```csharp
+// In your service registration (e.g., Program.cs or Startup.cs)
+public static void RegisterMesen2Integration(this IServiceCollection services)
+{
+    // Core services
+    services.AddSingleton<IMesen2Configuration, Mesen2Configuration>();
+    services.AddTransient<IMesen2StreamingClient, Mesen2StreamingClient>();
+    services.AddTransient<IMesen2IntegrationController, Mesen2IntegrationController>();
+    
+    // Factory for client creation
+    services.AddSingleton<IMesen2StreamingClientFactory, Mesen2StreamingClientFactory>();
+    
+    // Configuration
+    services.Configure<Mesen2Settings>(options =>
+    {
+        options.DefaultHost = "localhost";
+        options.DefaultPort = 1234;
+        options.ConnectionTimeoutMs = 5000;
+        options.AutoReconnectEnabled = true;
+        options.MaxReconnectAttempts = 5;
+    });
+    
+    // Background services
+    services.AddHostedService<Mesen2IntegrationBackgroundService>();
+}
+```
+
+---
+
+## Cross-Platform Integration
+
+### Event System
+
+The integration provides a comprehensive event system for real-time communication:
+
+```csharp
+// Subscribe to events
+client.CpuStateReceived += (sender, e) => {
+    UpdateCpuDisplay(e.CpuState);
+};
+
+client.TraceReceived += (sender, e) => {
+    foreach (var trace in e.Traces)
+    {
+        AddTraceToView(trace);
+    }
+};
+
+client.ConnectionStatusChanged += (sender, e) => {
+    UpdateConnectionStatus(e.Status);
+};
+```
+
+### Error Handling
+
+#### Exception Types
+
+```csharp
+public class Mesen2IntegrationException : Exception { }
+public class Mesen2ConnectionException : Mesen2IntegrationException { }
+public class Mesen2ProtocolException : Mesen2IntegrationException { }
+public class Mesen2TimeoutException : Mesen2IntegrationException { }
+```
+
+#### Robust Error Handling Pattern
+
+```csharp
+public async Task<T> ExecuteWithRetry<T>(Func<Task<T>> operation, string operationName)
+{
+    var retryPolicy = Policy
+        .Handle<Mesen2IntegrationException>()
+        .WaitAndRetryAsync(
+            retryCount: 3,
+            sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+            onRetry: (outcome, timespan, retryCount, context) =>
+            {
+                _logger.LogWarning("Retry {RetryCount} for {Operation} in {Delay}ms", 
+                    retryCount, operationName, timespan.TotalMilliseconds);
+            });
+    
+    return await retryPolicy.ExecuteAsync(operation);
+}
+```
+
+### Extension Points
+
+#### Custom Message Handlers
+
+```csharp
+public interface IMesen2MessageHandler
+{
+    bool CanHandle(Mesen2Response responseType);
+    Task<bool> HandleAsync(Mesen2Message message, CancellationToken cancellationToken);
+}
+
+public class CustomTraceHandler : IMesen2MessageHandler
+{
+    public bool CanHandle(Mesen2Response responseType)
+    {
+        return responseType == Mesen2Response.TraceData;
+    }
+    
+    public async Task<bool> HandleAsync(Mesen2Message message, CancellationToken cancellationToken)
+    {
+        // Custom trace processing logic
+        var traceData = ParseTraceData(message.Payload);
+        await ProcessCustomTraces(traceData);
+        return true;
+    }
+}
+```
+
+This comprehensive API provides a complete foundation for integrating DiztinGUIsh with Mesen2, offering advanced networking, real-time communication, and extensible architecture for SNES development and debugging.
