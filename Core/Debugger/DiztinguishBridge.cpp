@@ -58,11 +58,11 @@ bool DiztinguishBridge::StartServer(uint16_t port)
 		// Start server thread to accept connections
 		_serverThread = std::make_unique<std::thread>(&DiztinguishBridge::ServerThreadMain, this);
 
-		Log("[DiztinGUIsh] Server started on port " + std::to_string(_port));
+		_debugger->Log("[DiztinGUIsh] Server started on port " + std::to_string(_port));
 		return true;
 	}
 	catch(const std::exception& e) {
-		Log("[DiztinGUIsh] Failed to start server: " + std::string(e.what()));
+		_debugger->Log("[DiztinGUIsh] Failed to start server: " + std::string(e.what()));
 		_serverSocket.reset();
 		_serverRunning = false;
 		return false;
@@ -96,12 +96,12 @@ void DiztinguishBridge::StopServer()
 		_receiveThread->join();
 	}
 
-	Log("[DiztinGUIsh] Server stopped");
+	_debugger->Log("[DiztinGUIsh] Server stopped");
 }
 
 void DiztinguishBridge::ServerThreadMain()
 {
-	Log("[DiztinGUIsh] Waiting for client connection...");
+	_debugger->Log("[DiztinGUIsh] Waiting for client connection...");
 
 	while(_serverRunning) {
 		try {
@@ -114,7 +114,7 @@ void DiztinguishBridge::ServerThreadMain()
 					std::chrono::system_clock::now().time_since_epoch()
 				).count();
 
-				Log("[DiztinGUIsh] Client connected!");
+				_debugger->Log("[DiztinGUIsh] Client connected!");
 
 				// Send handshake
 				SendHandshake();
@@ -132,12 +132,12 @@ void DiztinguishBridge::ServerThreadMain()
 				_traceBuffer.clear();
 				_cdlDirty.clear();
 
-				Log("[DiztinGUIsh] Client disconnected");
+				_debugger->Log("[DiztinGUIsh] Client disconnected");
 			}
 		}
 		catch(const std::exception& e) {
-			if(_serverRunning) {
-				Log("[DiztinGUIsh] Error in server thread: " + std::string(e.what()));
+		if(_serverRunning) {
+			_debugger->Log("[DiztinGUIsh] Error in server thread: " + std::string(e.what()));
 			}
 		}
 	}
@@ -162,7 +162,7 @@ void DiztinguishBridge::ReceiveThreadMain()
 
 			// Validate length
 			if(header.length > 1024 * 1024) {  // Max 1MB per message
-				Log("[DiztinGUIsh] Invalid message length: " + std::to_string(header.length));
+				_debugger->Log("[DiztinGUIsh] Invalid message length: " + std::to_string(header.length));
 				SendError(ErrorCode::InvalidMessage, "Message too large");
 				break;
 			}
@@ -183,7 +183,7 @@ void DiztinguishBridge::ReceiveThreadMain()
 			ProcessIncomingMessage(header.type, payload);
 		}
 		catch(const std::exception& e) {
-			Log("[DiztinGUIsh] Error receiving message: " + std::string(e.what()));
+			_debugger->Log("[DiztinGUIsh] Error receiving message: " + std::string(e.what()));
 			break;
 		}
 	}
@@ -259,7 +259,7 @@ void DiztinguishBridge::ProcessIncomingMessage(MessageType type, const std::vect
 			break;
 
 		default:
-			Log("[DiztinGUIsh] Unknown message type: " + std::to_string((int)type));
+			_debugger->Log("[DiztinGUIsh] Unknown message type: " + std::to_string((int)type));
 			SendError(ErrorCode::InvalidMessage, "Unknown message type");
 			break;
 	}
@@ -282,10 +282,10 @@ void DiztinguishBridge::SendHandshake()
 
 	// Get ROM name
 	// TODO: Get actual ROM name from cart
-	strncpy(msg.romName, "Unknown ROM", sizeof(msg.romName) - 1);
+	strncpy_s(msg.romName, sizeof(msg.romName), "Unknown ROM", _TRUNCATE);
 
 	SendMessage(MessageType::Handshake, &msg, sizeof(msg));
-	Log("[DiztinGUIsh] Sent handshake");
+	_debugger->Log("[DiztinGUIsh] Sent handshake");
 }
 
 void DiztinguishBridge::SendMessage(MessageType type, const void* payload, uint32_t length)
@@ -326,7 +326,7 @@ void DiztinguishBridge::FlushOutgoingMessages()
 			_bytesSent += message.size();
 		}
 		catch(const std::exception& e) {
-			Log("[DiztinGUIsh] Error sending message: " + std::string(e.what()));
+			_debugger->Log("[DiztinGUIsh] Error sending message: " + std::string(e.what()));
 			_clientConnected = false;
 			break;
 		}
@@ -436,12 +436,12 @@ void DiztinguishBridge::OnCpuExec(uint32_t pc, uint8_t opcode, bool mFlag, bool 
 void DiztinguishBridge::HandleHandshakeAck(const HandshakeAckMessage& msg)
 {
 	if(!msg.accepted) {
-		Log("[DiztinGUIsh] Handshake rejected by client");
+		_debugger->Log("[DiztinGUIsh] Handshake rejected by client");
 		_clientConnected = false;
 		return;
 	}
 
-	Log("[DiztinGUIsh] Handshake accepted by " + std::string(msg.clientName));
+	_debugger->Log("[DiztinGUIsh] Handshake accepted by " + std::string(msg.clientName));
 }
 
 void DiztinguishBridge::HandleConfigStream(const ConfigStreamMessage& msg)
@@ -449,12 +449,12 @@ void DiztinguishBridge::HandleConfigStream(const ConfigStreamMessage& msg)
 	_config = msg;
 	_configReceived = true;
 
-	Log("[DiztinGUIsh] Configuration received:");
-	Log("  ExecTrace: " + std::string(_config.enableExecTrace ? "ON" : "OFF"));
-	Log("  MemoryAccess: " + std::string(_config.enableMemoryAccess ? "ON" : "OFF"));
-	Log("  CDL Updates: " + std::string(_config.enableCdlUpdates ? "ON" : "OFF"));
-	Log("  Trace Interval: " + std::to_string(_config.traceFrameInterval) + " frames");
-	Log("  Max Traces/Frame: " + std::to_string(_config.maxTracesPerFrame));
+	_debugger->Log("[DiztinGUIsh] Configuration received:");
+	_debugger->Log("  ExecTrace: " + std::string(_config.enableExecTrace ? "ON" : "OFF"));
+	_debugger->Log("  MemoryAccess: " + std::string(_config.enableMemoryAccess ? "ON" : "OFF"));
+	_debugger->Log("  CDL Updates: " + std::string(_config.enableCdlUpdates ? "ON" : "OFF"));
+	_debugger->Log("  Trace Interval: " + std::to_string(_config.traceFrameInterval) + " frames");
+	_debugger->Log("  Max Traces/Frame: " + std::to_string(_config.maxTracesPerFrame));
 }
 
 void DiztinguishBridge::HandleCpuStateRequest()
@@ -465,13 +465,13 @@ void DiztinguishBridge::HandleCpuStateRequest()
 void DiztinguishBridge::HandleLabelAdd(const LabelMessage& msg)
 {
 	// TODO: Implement label management in debugger
-	Log("[DiztinGUIsh] Label add: " + std::string(msg.name) + " @ $" + std::to_string(msg.address));
+	_debugger->Log("[DiztinGUIsh] Label add: " + std::string(msg.name) + " @ $" + std::to_string(msg.address));
 }
 
 void DiztinguishBridge::HandleLabelUpdate(const LabelMessage& msg)
 {
 	// TODO: Implement label management
-	Log("[DiztinGUIsh] Label update: " + std::string(msg.name) + " @ $" + std::to_string(msg.address));
+	_debugger->Log("[DiztinGUIsh] Label update: " + std::string(msg.name) + " @ $" + std::to_string(msg.address));
 }
 
 void DiztinguishBridge::HandleLabelDelete(const LabelMessage& msg)
@@ -528,7 +528,7 @@ void DiztinguishBridge::SendError(ErrorCode code, const char* message)
 {
 	ErrorMessage msg;
 	msg.errorCode = (uint8_t)code;
-	strncpy(msg.message, message, sizeof(msg.message) - 1);
+	strncpy_s(msg.message, sizeof(msg.message), message, _TRUNCATE);
 	SendMessage(MessageType::Error, &msg, sizeof(msg));
 }
 

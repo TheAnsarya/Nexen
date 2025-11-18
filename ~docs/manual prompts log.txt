@@ -54,6 +54,7 @@ Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge
 Error	LNK1120	10 unresolved externals	InteropDLL	C:\Users\me\source\repos\Mesen2\bin\win-x64\Debug\MesenCore.dll	1		
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Create the git commits with descriptions and documenttation for all of the `DiztinGUIsh` github git repos and commit them and then oush, there shouldn't be any uncommitted files; then continue updating and working github issues;
 
 
 
