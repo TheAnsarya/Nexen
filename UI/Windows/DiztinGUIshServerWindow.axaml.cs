@@ -14,17 +14,17 @@ namespace Mesen.Windows
 {
 	public class DiztinGUIshServerWindow : MesenWindow
 	{
-		private DispatcherTimer _updateTimer;
+		private readonly DispatcherTimer _updateTimer;
 		private bool _serverRunning = false;
 
 		public DiztinGUIshServerWindow()
 		{
 			InitializeComponent();
-			
+
 			// Start update timer to refresh status every 500ms
 			_updateTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(500), DispatcherPriority.Normal, (s, e) => UpdateStatus());
 			_updateTimer.Start();
-			
+
 			// Update initial status
 			UpdateStatus();
 		}
@@ -36,65 +36,52 @@ namespace Mesen.Windows
 
 		private void UpdateStatus()
 		{
-			try 
-			{
+			try {
 				bool serverRunning = DiztinguishApi.IsServerRunning();
 				bool clientConnected = DiztinguishApi.IsClientConnected();
-				
+
 				// Update server status
 				var lblStatus = this.GetControl<TextBlock>("lblStatus");
 				var btnStartStop = this.GetControl<Button>("btnStartStop");
-				
-				if (serverRunning) 
-				{
+
+				if(serverRunning) {
 					bool emulationRunning = !EmuApi.IsPaused() && EmuApi.IsRunning();
 					lblStatus.Text = $"Server running on port {DiztinguishApi.GetServerPort()} - Emulation {(emulationRunning ? "RUNNING" : "PAUSED")}";
 					lblStatus.Foreground = emulationRunning ? Avalonia.Media.Brushes.Green : Avalonia.Media.Brushes.Orange;
 					btnStartStop.Content = "Stop Server";
-				} 
-				else 
-				{
+				} else {
 					lblStatus.Text = "Server stopped";
 					lblStatus.Foreground = Avalonia.Media.Brushes.Red;
 					btnStartStop.Content = "Start Server";
 				}
-				
+
 				_serverRunning = serverRunning;
 
 				// Update connection status
 				var lblClientConnected = this.GetControl<TextBlock>("lblClientConnected");
-				if (clientConnected) 
-				{
+				if(clientConnected) {
 					lblClientConnected.Text = "Yes";
 					lblClientConnected.Foreground = Avalonia.Media.Brushes.Green;
-				} 
-				else 
-				{
+				} else {
 					lblClientConnected.Text = "No";
 					lblClientConnected.Foreground = Avalonia.Media.Brushes.Gray;
 				}
 
 				// Update connection duration
 				var lblConnectionDuration = this.GetControl<TextBlock>("lblConnectionDuration");
-				if (clientConnected) 
-				{
+				if(clientConnected) {
 					var duration = DiztinguishApi.GetConnectionDuration();
 					lblConnectionDuration.Text = $"{duration.Minutes:D2}:{duration.Seconds:D2}";
-				} 
-				else 
-				{
+				} else {
 					lblConnectionDuration.Text = "--";
 				}
 
 				// Update bandwidth
 				var lblBandwidth = this.GetControl<TextBlock>("lblBandwidth");
-				if (clientConnected) 
-				{
+				if(clientConnected) {
 					double bandwidthKBps = DiztinguishApi.GetBandwidthKBps();
 					lblBandwidth.Text = $"{bandwidthKBps:F1} KB/s";
-				} 
-				else 
-				{
+				} else {
 					lblBandwidth.Text = "--";
 				}
 
@@ -105,25 +92,20 @@ namespace Mesen.Windows
 				this.GetControl<TextBlock>("lblBytesReceived").Text = DiztinguishApi.GetBytesReceived().ToString("N0");
 
 				// Add diagnostic info for troubleshooting
-				if (serverRunning && clientConnected)
-				{
+				if(serverRunning && clientConnected) {
 					uint currentFrame = DiztinguishApi.GetCurrentFrame();
 					uint traceBufferSize = DiztinguishApi.GetTraceBufferSize();
 					bool configReceived = DiztinguishApi.IsConfigReceived();
 					bool emulationRunning = !EmuApi.IsPaused() && EmuApi.IsRunning();
-					
+
 					string diagnostics = $"Frame: {currentFrame}, Buffer: {traceBufferSize}, Config: {(configReceived ? "OK" : "MISSING")}, Emu: {(emulationRunning ? "RUN" : "PAUSE")}";
-					
+
 					// Update the bandwidth label to show diagnostics when no data is flowing
-					var lblBandwidth = this.GetControl<TextBlock>("lblBandwidth");
-					if (DiztinguishApi.GetBytesSent() == 0 && clientConnected)
-					{
+					if(DiztinguishApi.GetBytesSent() == 0 && clientConnected) {
 						lblBandwidth.Text = diagnostics;
 					}
 				}
-			}
-			catch (Exception ex)
-			{
+			} catch(Exception ex) {
 				// Handle any API access errors gracefully
 				try {
 					var lblStatus = this.GetControl<TextBlock>("lblStatus");
@@ -137,37 +119,27 @@ namespace Mesen.Windows
 
 		private async void StartStop_OnClick(object? sender, RoutedEventArgs e)
 		{
-			try 
-			{
-				if (_serverRunning) 
-				{
+			try {
+				if(_serverRunning) {
 					// Stop server
 					DiztinguishApi.StopServer();
-				} 
-				else 
-				{
+				} else {
 					// Start server
 					var txtPort = this.GetControl<TextBox>("txtPort");
-					if (ushort.TryParse(txtPort.Text, out ushort port)) 
-					{
+					if(ushort.TryParse(txtPort.Text, out ushort port)) {
 						bool success = DiztinguishApi.StartServer(port);
-						if (!success) 
-						{
+						if(!success) {
 							await MesenMsgBox.Show(this, $"Failed to start server on port {port}. Port may be in use.", MessageBoxButtons.OK, MessageBoxIcon.Error);
 						}
-					} 
-					else 
-					{
+					} else {
 						await MesenMsgBox.Show(this, "Invalid port number. Please enter a valid port (1-65535).", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 						return;
 					}
 				}
-				
+
 				// Update status immediately
 				UpdateStatus();
-			}
-			catch (Exception ex)
-			{
+			} catch(Exception ex) {
 				await MesenMsgBox.Show(this, $"Error controlling server: {ex.Message}", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
