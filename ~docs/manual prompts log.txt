@@ -182,12 +182,33 @@ OK, you found a way to tap into the bsnes pipeline (add an option in Mesen and t
 
 test Mesen/DiztinGUIsh intregration through the secondary modern pipeline for live streaming the executed code and state; and continue fixing it; also, the Diztinguish Mesen integration UI is just a bunch of placeholders, implement them;
 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Message (active)	IDE0044	Make field readonly	UI	C:\Users\me\source\repos\Mesen2\UI\Windows\DiztinGUIshServerWindow.axaml.cs	17		
+Error	C2065	'Socket': undeclared identifier	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	20		
+Error	C2923	'std::unique_ptr': 'Socket' is not a valid template type argument for parameter '_Ty'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	20		
+Error	C2976	'std::unique_ptr': too few template arguments	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	20		
+Error	C2955	'std::unique_ptr': use of class template requires template argument list	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	20		
+Error	C2065	'Socket': undeclared identifier	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	21		
+Error	C2923	'std::unique_ptr': 'Socket' is not a valid template type argument for parameter '_Ty'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	21		
+Error	C2976	'std::unique_ptr': too few template arguments	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	21		
+Error	C2955	'std::unique_ptr': use of class template requires template argument list	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	21		
+Error	C2039	'mutex': is not a member of 'std'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	34		
+Error	C3646	'_socketMutex': unknown override specifier	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	34		
+Error	C4430	missing type specifier - int assumed. Note: C++ does not support default-int	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	34		
+Error	C1083	Cannot open include file: '../Debugger/SnesDebugger.h': No such file or directory	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.cpp	4		
+Warning	C4305	'argument': truncation from 'int' to 'bool'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	701		
+Warning	C4305	'argument': truncation from 'int' to 'bool'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	702		
+Warning	C4305	'argument': truncation from 'int' to 'bool'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	702		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+git commit all updated and new files in all projects with descriptions and broken into batches by intent or purpose
 
+use msbuild using the VS2026 version at `C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin`; fix the mesen build errors; fix an complete and fill out the diztinguish UI screens for the Mesen integreation;
 
+The Mesen `DiztinGUIsh Server` UI is borked, fix it (see screenshot #1); The DiztinGUIsh UI for Mesen integration is a bunch of placeholders (see other screen shots), replace them with actual code and UI;
 
-
-
+git commit ***ALL** updated and new files in all projects with descriptions and broken into batches by intent or purpose
 
 
 
