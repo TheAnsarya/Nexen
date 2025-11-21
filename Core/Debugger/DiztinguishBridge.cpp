@@ -10,6 +10,8 @@
 #include "Debugger/DebugTypes.h"
 #include "Debugger/LabelManager.h"
 #include "Shared/MemoryType.h"
+#include "Shared/EmuSettings.h"
+#include "Shared/SettingTypes.h"
 #include "Utilities/CRC32.h"
 #include "Utilities/HexUtilities.h"
 #include <chrono>
@@ -53,6 +55,11 @@ bool DiztinguishBridge::StartServer(uint16_t port)
 	if(_serverRunning) {
 		return false;  // Already running
 	}
+
+	// CRITICAL: Enable the SNES debugger so ProcessInstruction() gets called!
+	// Without this, the CPU won't call OnCpuExec and no data will be streamed.
+	_debugger->GetSettings()->SetDebuggerFlag(DebuggerFlags::SnesDebuggerEnabled, true);
+	_debugger->Log("[DiztinGUIsh] Enabled SNES debugger for streaming");
 
 	_port = port;
 	_serverSocket = std::make_unique<Socket>();
