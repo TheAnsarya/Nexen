@@ -53,6 +53,7 @@ DiztinguishBridge::~DiztinguishBridge()
 bool DiztinguishBridge::StartServer(uint16_t port)
 {
 	if(_serverRunning) {
+		_debugger->Log("[DiztinGUIsh] StartServer called but already running!");
 		return false;  // Already running
 	}
 
@@ -64,19 +65,26 @@ bool DiztinguishBridge::StartServer(uint16_t port)
 	_port = port;
 	_serverSocket = std::make_unique<Socket>();
 
+	_debugger->Log("[DiztinGUIsh] Created socket, attempting to bind to port " + std::to_string(_port) + "...");
+	
 	try {
 		_serverSocket->Bind(_port);
+		_debugger->Log("[DiztinGUIsh] Socket bound successfully, calling Listen(1)...");
+		
 		_serverSocket->Listen(1);  // Only accept 1 client
+		_debugger->Log("[DiztinGUIsh] Socket listening, setting server running flag...");
+		
 		_serverRunning = true;
 
 		// Start server thread to accept connections
+		_debugger->Log("[DiztinGUIsh] Starting server thread...");
 		_serverThread = std::make_unique<std::thread>(&DiztinguishBridge::ServerThreadMain, this);
 
-		_debugger->Log("[DiztinGUIsh] Server started on port " + std::to_string(_port));
+		_debugger->Log("[DiztinGUIsh] Server started successfully on port " + std::to_string(_port) + " - waiting for connections");
 		return true;
 	}
 	catch(const std::exception& e) {
-		_debugger->Log("[DiztinGUIsh] Failed to start server: " + std::string(e.what()));
+		_debugger->Log("[DiztinGUIsh] EXCEPTION during server startup: " + std::string(e.what()));
 		_serverSocket.reset();
 		_serverRunning = false;
 		return false;
@@ -121,27 +129,35 @@ void DiztinguishBridge::StopServer()
 
 void DiztinguishBridge::ServerThreadMain()
 {
-	_debugger->Log("[DiztinGUIsh] Waiting for client connection...");
+	_debugger->Log("[DiztinGUIsh] Server thread started, waiting for client connection on port " + std::to_string(_port) + "...");
 
 	while(_serverRunning) {
 		try {
+			_debugger->Log("[DiztinGUIsh] Calling Accept() - this will block until client connects...");
+			
 			// Accept incoming connection (blocking)
 			_clientSocket = _serverSocket->Accept();
 
+			_debugger->Log("[DiztinGUIsh] Accept() returned, checking socket status...");
+			
 			if(_clientSocket && !_clientSocket->ConnectionError()) {
 				_clientConnected = true;
 				_connectionStartTime = std::chrono::duration_cast<std::chrono::milliseconds>(
 					std::chrono::system_clock::now().time_since_epoch()
 				).count();
 
-				_debugger->Log("[DiztinGUIsh] Client connected!");
+				_debugger->Log("[DiztinGUIsh] Client connected successfully! Sending handshake...");
 
 				// Send handshake
 				SendHandshake();
 
+				_debugger->Log("[DiztinGUIsh] Handshake sent, starting receive thread...");
+				
 				// Start receive thread
 				_receiveThread = std::make_unique<std::thread>(&DiztinguishBridge::ReceiveThreadMain, this);
 
+				_debugger->Log("[DiztinGUIsh] Receive thread started, waiting for it to complete...");
+				
 				// Wait for disconnect
 				if(_receiveThread->joinable()) {
 					_receiveThread->join();
