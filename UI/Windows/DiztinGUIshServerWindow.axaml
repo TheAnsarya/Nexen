@@ -12,9 +12,12 @@
 	x:Class="Mesen.Windows.DiztinGUIshServerWindow"
 	Width="450" Height="350"
 	MinWidth="400" MinHeight="300"
+	MaxWidth="800" MaxHeight="600"
 	Icon="/Assets/Network.png"
 	Title="{l:Translate DiztinGUIshServer}"
 	Name="root"
+	RenderOptions.BitmapInterpolationMode="Default"
+	TextOptions.TextHintingMode="Enabled"
 >
 	<Grid Margin="10">
 		<Grid.RowDefinitions>
@@ -28,7 +31,7 @@
 		</Grid.RowDefinitions>
 
 		<!-- Server Control Section -->
-		<Border Grid.Row="0" BorderThickness="1" BorderBrush="{StaticResource MesenGrayBorderColor}" Padding="10" Margin="0,0,0,5">
+		<Border Grid.Row="0" BorderThickness="1" BorderBrush="{StaticResource MesenGrayBorderColor, FallbackValue=Gray}" Padding="10" Margin="0,0,0,5">
 			<StackPanel>
 				<TextBlock Text="Server Control" FontWeight="Bold" Margin="0,0,0,10" />
 				<Grid>
@@ -57,7 +60,7 @@
 		</Border>
 
 		<!-- Connection Status Section -->
-		<Border Grid.Row="1" BorderThickness="1" BorderBrush="{StaticResource MesenGrayBorderColor}" Padding="10" Margin="0,0,0,5">
+		<Border Grid.Row="1" BorderThickness="1" BorderBrush="{StaticResource MesenGrayBorderColor, FallbackValue=Gray}" Padding="10" Margin="0,0,0,5">
 			<StackPanel>
 				<TextBlock Text="Connection Status" FontWeight="Bold" Margin="0,0,0,10" />
 				<Grid>
@@ -86,7 +89,7 @@
 		</Border>
 
 		<!-- Statistics Section -->
-		<Border Grid.Row="4" BorderThickness="1" BorderBrush="{StaticResource MesenGrayBorderColor}" Padding="10" Margin="0,0,0,5">
+		<Border Grid.Row="4" BorderThickness="1" BorderBrush="{StaticResource MesenGrayBorderColor, FallbackValue=Gray}" Padding="10" Margin="0,0,0,5">
 			<StackPanel>
 				<TextBlock Text="Statistics" FontWeight="Bold" Margin="0,0,0,10" />
 				<Grid>
@@ -130,7 +133,7 @@
 		</Border>
 
 		<!-- Instructions Section -->
-		<Border Grid.Row="5" BorderThickness="1" BorderBrush="{StaticResource MesenGrayBorderColor}" Padding="10" Margin="0,0,0,5">
+		<Border Grid.Row="5" BorderThickness="1" BorderBrush="{StaticResource MesenGrayBorderColor, FallbackValue=Gray}" Padding="10" Margin="0,0,0,5">
 			<StackPanel>
 				<TextBlock Text="Instructions" FontWeight="Bold" Margin="0,0,0,10" />
 				<TextBlock TextWrapping="Wrap" FontSize="11">

@@ -11,6 +11,8 @@ namespace DiztinguishProtocol {
 	constexpr uint16_t PROTOCOL_VERSION_MAJOR = 1;
 	constexpr uint16_t PROTOCOL_VERSION_MINOR = 0;
 
+#pragma pack(push, 1)  // Force 1-byte packing for protocol structures
+
 	// Message types
 	enum class MessageType : uint8_t {
 		// Connection lifecycle
@@ -266,5 +268,7 @@ namespace DiztinguishProtocol {
 			default: return "Unknown";
 		}
 	}
+
+#pragma pack(pop)  // Restore default packing
 
 } // namespace DiztinguishProtocol

@@ -47,8 +47,9 @@ namespace Mesen.Windows
 				
 				if (serverRunning) 
 				{
-					lblStatus.Text = $"Server running on port {DiztinguishApi.GetServerPort()}";
-					lblStatus.Foreground = Avalonia.Media.Brushes.Green;
+					bool emulationRunning = !EmuApi.IsPaused() && EmuApi.IsRunning();
+					lblStatus.Text = $"Server running on port {DiztinguishApi.GetServerPort()} - Emulation {(emulationRunning ? "RUNNING" : "PAUSED")}";
+					lblStatus.Foreground = emulationRunning ? Avalonia.Media.Brushes.Green : Avalonia.Media.Brushes.Orange;
 					btnStartStop.Content = "Stop Server";
 				} 
 				else 
@@ -102,13 +103,35 @@ namespace Mesen.Windows
 				this.GetControl<TextBlock>("lblMessagesReceived").Text = DiztinguishApi.GetMessagesReceived().ToString("N0");
 				this.GetControl<TextBlock>("lblBytesSent").Text = DiztinguishApi.GetBytesSent().ToString("N0");
 				this.GetControl<TextBlock>("lblBytesReceived").Text = DiztinguishApi.GetBytesReceived().ToString("N0");
+
+				// Add diagnostic info for troubleshooting
+				if (serverRunning && clientConnected)
+				{
+					uint currentFrame = DiztinguishApi.GetCurrentFrame();
+					uint traceBufferSize = DiztinguishApi.GetTraceBufferSize();
+					bool configReceived = DiztinguishApi.IsConfigReceived();
+					bool emulationRunning = !EmuApi.IsPaused() && EmuApi.IsRunning();
+					
+					string diagnostics = $"Frame: {currentFrame}, Buffer: {traceBufferSize}, Config: {(configReceived ? "OK" : "MISSING")}, Emu: {(emulationRunning ? "RUN" : "PAUSE")}";
+					
+					// Update the bandwidth label to show diagnostics when no data is flowing
+					var lblBandwidth = this.GetControl<TextBlock>("lblBandwidth");
+					if (DiztinguishApi.GetBytesSent() == 0 && clientConnected)
+					{
+						lblBandwidth.Text = diagnostics;
+					}
+				}
 			}
 			catch (Exception ex)
 			{
 				// Handle any API access errors gracefully
-				var lblStatus = this.GetControl<TextBlock>("lblStatus");
-				lblStatus.Text = $"Error accessing server status: {ex.Message}";
-				lblStatus.Foreground = Avalonia.Media.Brushes.Red;
+				try {
+					var lblStatus = this.GetControl<TextBlock>("lblStatus");
+					lblStatus.Text = $"Error accessing DiztinGUIsh server: {ex.Message}";
+					lblStatus.Foreground = Avalonia.Media.Brushes.Red;
+				} catch {
+					// If we can't even access the UI controls, silently fail
+				}
 			}
 		}
 

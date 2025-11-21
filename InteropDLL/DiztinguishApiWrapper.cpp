@@ -127,4 +127,26 @@ extern "C" {
 			return bridge ? bridge->GetBandwidthKBps() : 0.0;
 		});
 	}
+
+	// Diagnostic functions for streaming health
+	DllExport uint32_t __stdcall DiztinguishApi_GetCurrentFrame() {
+		return WrapSnesDebuggerCall<uint32_t>([&](SnesDebugger* dbg) {
+			DiztinguishBridge* bridge = dbg->GetDiztinguishBridge();
+			return bridge ? bridge->GetCurrentFrame() : 0;
+		});
+	}
+
+	DllExport uint32_t __stdcall DiztinguishApi_GetTraceBufferSize() {
+		return WrapSnesDebuggerCall<uint32_t>([&](SnesDebugger* dbg) {
+			DiztinguishBridge* bridge = dbg->GetDiztinguishBridge();
+			return bridge ? bridge->GetTraceBufferSize() : 0;
+		});
+	}
+
+	DllExport bool __stdcall DiztinguishApi_IsConfigReceived() {
+		return WrapSnesDebuggerCall<bool>([&](SnesDebugger* dbg) {
+			DiztinguishBridge* bridge = dbg->GetDiztinguishBridge();
+			return bridge ? bridge->IsConfigReceived() : false;
+		});
+	}
 }

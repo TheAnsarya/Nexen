@@ -24,7 +24,6 @@ private:
 	SnesConsole* _console;
 	SnesDebugger* _snesDebugger;
 	Debugger* _debugger;
-	BaseCartridge* _cart;
 
 	// Server socket
 	unique_ptr<Socket> _serverSocket;
@@ -137,4 +136,9 @@ public:
 	uint64_t GetBytesReceived() const { return _bytesReceived; }
 	uint64_t GetConnectionDuration() const;
 	double GetBandwidthKBps() const;
+	
+	// Diagnostic methods for streaming health
+	uint32_t GetCurrentFrame() const { return _currentFrame; }
+	uint32_t GetTraceBufferSize() const { return static_cast<uint32_t>(_traceBuffer.size()); }
+	bool IsConfigReceived() const { return _configReceived; }
 };

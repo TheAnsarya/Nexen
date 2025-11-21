@@ -20,6 +20,11 @@ namespace Mesen.Interop
 		[DllImport(DllPath)] public static extern UInt64 DiztinguishApi_GetConnectionDuration();
 		[DllImport(DllPath)] public static extern double DiztinguishApi_GetBandwidthKBps();
 
+		// Diagnostic functions for streaming health
+		[DllImport(DllPath)] public static extern UInt32 DiztinguishApi_GetCurrentFrame();
+		[DllImport(DllPath)] public static extern UInt32 DiztinguishApi_GetTraceBufferSize();
+		[DllImport(DllPath)] public static extern bool DiztinguishApi_IsConfigReceived();
+
 		// Convenience wrapper methods
 		public static bool StartServer(ushort port = 9998)
 		{
@@ -74,6 +79,22 @@ namespace Mesen.Interop
 		public static double GetBandwidthKBps()
 		{
 			return DiztinguishApi_GetBandwidthKBps();
+		}
+
+		// Diagnostic functions
+		public static uint GetCurrentFrame()
+		{
+			return DiztinguishApi_GetCurrentFrame();
+		}
+
+		public static uint GetTraceBufferSize()
+		{
+			return DiztinguishApi_GetTraceBufferSize();
+		}
+
+		public static bool IsConfigReceived()
+		{
+			return DiztinguishApi_IsConfigReceived();
 		}
 	}
 }
