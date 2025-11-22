@@ -431,6 +431,7 @@ void DiztinguishBridge::OnFrameEnd()
 			memcpy(payload.data() + sizeof(batchHeader), _traceBuffer.data(), batchHeader.entryCount * sizeof(ExecTraceEntry));
 
 			SendMessage(MessageType::ExecTraceBatch, payload.data(), totalSize);
+			_debugger->Log("[DiztinGUIsh] Sent ExecTraceBatch: frame=" + std::to_string(_currentFrame) + ", entries=" + std::to_string(batchHeader.entryCount));
 
 			_traceBuffer.clear();
 			_lastTraceSentFrame = _currentFrame;
@@ -505,6 +506,7 @@ void DiztinguishBridge::HandleConfigStream(const ConfigStreamMessage& msg)
 {
 	_config = msg;
 	_configReceived = true;
+	_debugger->Log("[DiztinGUIsh] *** CONFIG RECEIVED - Trace streaming now enabled ***");
 
 	_debugger->Log("[DiztinGUIsh] Configuration received:");
 	_debugger->Log("  ExecTrace: " + std::string(_config.enableExecTrace ? "ON" : "OFF"));
