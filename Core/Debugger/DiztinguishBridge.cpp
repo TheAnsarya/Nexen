@@ -57,10 +57,7 @@ bool DiztinguishBridge::StartServer(uint16_t port)
 		return false;  // Already running
 	}
 
-	// CRITICAL: Enable the SNES debugger so ProcessInstruction() gets called!
-	// Without this, the CPU won't call OnCpuExec and no data will be streamed.
-	_debugger->GetSettings()->SetDebuggerFlag(DebuggerFlags::SnesDebuggerEnabled, true);
-	_debugger->Log("[DiztinGUIsh] Enabled SNES debugger for streaming");
+	// NOTE: SNES debugger must be enabled through UI for data streaming to work
 
 	_port = port;
 	_serverSocket = std::make_unique<Socket>();
@@ -146,51 +143,71 @@ void DiztinguishBridge::ServerThreadMain()
 					std::chrono::system_clock::now().time_since_epoch()
 				).count();
 
-				_debugger->Log("[DiztinGUIsh] Client connected successfully! Sending handshake...");
+				_debugger->Log("[DiztinGUIsh] *** CLIENT CONNECTED - Connection will stay open for entire session ***");
+				_debugger->Log("[DiztinGUIsh] Sending handshake...");
 
 				// Send handshake
 				SendHandshake();
 
 				_debugger->Log("[DiztinGUIsh] Handshake sent, starting receive thread...");
 				
-				// Start receive thread
+				// Start receive thread to listen for client messages
 				_receiveThread = std::make_unique<std::thread>(&DiztinguishBridge::ReceiveThreadMain, this);
 
-				_debugger->Log("[DiztinGUIsh] Receive thread started, waiting for it to complete...");
+				_debugger->Log("[DiztinGUIsh] *** RECEIVE THREAD STARTED - Connection is now active ***");
+				_debugger->Log("[DiztinGUIsh] Server thread will now wait for disconnection...");
 				
-				// Wait for disconnect
+				// Wait for disconnect - keep connection alive until receive thread exits
+				// This keeps the connection open for the entire session, not just for one message exchange
 				if(_receiveThread->joinable()) {
 					_receiveThread->join();
 				}
 
+				_debugger->Log("[DiztinGUIsh] Receive thread ended, cleaning up connection...");
+				
 				_clientConnected = false;
 				_configReceived = false;
 				_traceBuffer.clear();
 				_cdlDirty.clear();
 
-				_debugger->Log("[DiztinGUIsh] Client disconnected");
+				_debugger->Log("[DiztinGUIsh] Client disconnected, ready to accept new connection");
+			} else {
+				_debugger->Log("[DiztinGUIsh] Accept() failed or connection error");
 			}
 		}
 		catch(const std::exception& e) {
-		if(_serverRunning) {
-			_debugger->Log("[DiztinGUIsh] Error in server thread: " + std::string(e.what()));
+			if(_serverRunning) {
+				_debugger->Log("[DiztinGUIsh] Error in server thread: " + std::string(e.what()));
 			}
 		}
 	}
+	
+	_debugger->Log("[DiztinGUIsh] Server thread exiting");
 }
 
 void DiztinguishBridge::ReceiveThreadMain()
 {
 	char headerBuf[sizeof(MessageHeader)];
 
+	_debugger->Log("[DiztinGUIsh] *** RECEIVE THREAD STARTED - Waiting for messages ***");
+
 	while(_clientConnected && _serverRunning) {
 		try {
-			// Read message header (5 bytes)
-			int received = _clientSocket->Recv(headerBuf, sizeof(MessageHeader), 0);
+			// Read message header (5 bytes) - use blocking receive with 30 second timeout
+			int received = _clientSocket->BlockingRecv(headerBuf, sizeof(MessageHeader), 30);
 			if(received != sizeof(MessageHeader)) {
-				// Connection closed or error
+				// Connection closed, timeout, or error
+				if(received == 0) {
+					_debugger->Log("[DiztinGUIsh] Connection closed by client");
+				} else if(received < 0) {
+					_debugger->Log("[DiztinGUIsh] Receive error or timeout");
+				} else {
+					_debugger->Log("[DiztinGUIsh] Partial header received: " + std::to_string(received) + " bytes");
+				}
 				break;
 			}
+			
+			_debugger->Log("[DiztinGUIsh] Received message header");
 
 			MessageHeader header;
 			header.type = (MessageType)headerBuf[0];
@@ -206,14 +223,18 @@ void DiztinguishBridge::ReceiveThreadMain()
 			// Read payload
 			std::vector<uint8_t> payload(header.length);
 			if(header.length > 0) {
-				received = _clientSocket->Recv((char*)payload.data(), header.length, 0);
+				received = _clientSocket->BlockingRecv((char*)payload.data(), header.length, 30);
 				if(received != (int)header.length) {
+					_debugger->Log("[DiztinGUIsh] Failed to receive full payload: expected " + std::to_string(header.length) + ", got " + std::to_string(received));
 					break;
 				}
 			}
 
 			_messagesReceived++;
 			_bytesReceived += sizeof(MessageHeader) + header.length;
+
+			// Log received message
+			_debugger->Log("[DiztinGUIsh] Processing message type: " + std::to_string((int)header.type) + ", length: " + std::to_string(header.length));
 
 			// Process message
 			ProcessIncomingMessage(header.type, payload);
@@ -229,14 +250,18 @@ void DiztinguishBridge::ReceiveThreadMain()
 
 void DiztinguishBridge::ProcessIncomingMessage(MessageType type, const std::vector<uint8_t>& payload)
 {
+	_debugger->Log("[DiztinGUIsh] ProcessIncomingMessage called with type " + std::to_string((int)type));
+	
 	switch(type) {
 		case MessageType::HandshakeAck:
+			_debugger->Log("[DiztinGUIsh] Received HandshakeAck message");
 			if(payload.size() >= sizeof(HandshakeAckMessage)) {
 				HandleHandshakeAck(*(const HandshakeAckMessage*)payload.data());
 			}
 			break;
 
 		case MessageType::ConfigStream:
+			_debugger->Log("[DiztinGUIsh] Received ConfigStream message");
 			if(payload.size() >= sizeof(ConfigStreamMessage)) {
 				HandleConfigStream(*(const ConfigStreamMessage*)payload.data());
 			}
@@ -304,34 +329,57 @@ void DiztinguishBridge::ProcessIncomingMessage(MessageType type, const std::vect
 void DiztinguishBridge::SendHandshake()
 {
 	if(!_clientConnected) {
+		_debugger->Log("[DiztinGUIsh] SendHandshake called but not connected");
 		return;
 	}
 
+	_debugger->Log("[DiztinGUIsh] *** SendHandshake STARTING ***");
+
 	try {
-		// Create a minimal handshake message with no external dependencies
-		HandshakeMessage msg = {};
-		msg.protocolVersionMajor = 1;  // Hardcode to avoid any constant issues
-		msg.protocolVersionMinor = 0;
-		msg.romChecksum = 0;          // Always 0 for now
-		msg.romSize = 0;              // Always 0 for now
-		strcpy_s(msg.romName, sizeof(msg.romName), "Test ROM");  // Hardcode for testing
+		// Get ROM info from console
+		BaseCartridge* cart = _console->GetCartridge();
+		uint32_t romSize = 0;
+		uint32_t romChecksum = 0;
+		string romName = "Unknown";
 		
-		_debugger->Log("[DiztinGUIsh] SendHandshake: Creating message");
+		if(cart) {
+			romSize = cart->DebugGetPrgRomSize();
+			romChecksum = cart->GetCrc32();
+			SnesCartInformation cartInfo = cart->GetHeader();
+			// CartName is a char[21] array - extract as string
+			romName = std::string(cartInfo.CartName, strnlen(cartInfo.CartName, 21));
+			_debugger->Log("[DiztinGUIsh] ROM Info: Name='" + romName + "', Size=" + std::to_string(romSize) + ", CRC32=0x" + HexUtilities::ToHex(romChecksum));
+		} else {
+			_debugger->Log("[DiztinGUIsh] WARNING: No cartridge loaded, using default ROM info");
+		}
+		
+		// Create handshake message with real ROM data
+		HandshakeMessage msg = {};
+		msg.protocolVersionMajor = 1;
+		msg.protocolVersionMinor = 0;
+		msg.romChecksum = romChecksum;
+		msg.romSize = romSize;
+		
+		// Copy ROM name (truncate if needed)
+		strncpy_s(msg.romName, sizeof(msg.romName), romName.c_str(), _TRUNCATE);
+		
+		_debugger->Log("[DiztinGUIsh] Handshake message created, queueing for send...");
 
 		// Send via the standard message queue
 		SendMessage(MessageType::Handshake, &msg, sizeof(msg));
-		_debugger->Log("[DiztinGUIsh] SendHandshake: Message queued");
+		_debugger->Log("[DiztinGUIsh] Handshake message queued");
 		
 		// Flush immediately 
+		_debugger->Log("[DiztinGUIsh] Calling FlushOutgoingMessages...");
 		FlushOutgoingMessages();
-		_debugger->Log("[DiztinGUIsh] SendHandshake: Messages flushed");
+		_debugger->Log("[DiztinGUIsh] *** SendHandshake COMPLETE ***");
 		
 	}
 	catch(const std::exception& e) {
-		_debugger->Log("[DiztinGUIsh] Error in SendHandshake: " + std::string(e.what()));
+		_debugger->Log("[DiztinGUIsh] EXCEPTION in SendHandshake: " + std::string(e.what()));
 	}
 	catch(...) {
-		_debugger->Log("[DiztinGUIsh] Unknown error in SendHandshake");
+		_debugger->Log("[DiztinGUIsh] UNKNOWN EXCEPTION in SendHandshake");
 	}
 }
 
@@ -371,14 +419,14 @@ void DiztinguishBridge::FlushOutgoingMessages()
 		const auto& message = _outgoingMessages.front();
 
 		try {
-			_debugger->Log("[DiztinGUIsh] Sending message, size: " + std::to_string(message.size()));
+			_debugger->Log("[DiztinGUIsh] Sending message, size: " + std::to_string(message.size()) + " bytes");
 			_clientSocket->BufferedSend((char*)message.data(), (int)message.size());
 			_messagesSent++;
 			_bytesSent += message.size();
-			_debugger->Log("[DiztinGUIsh] Message sent successfully");
+			_debugger->Log("[DiztinGUIsh] Message buffered successfully");
 		}
 		catch(const std::exception& e) {
-			_debugger->Log("[DiztinGUIsh] Error sending message: " + std::string(e.what()));
+			_debugger->Log("[DiztinGUIsh] EXCEPTION in BufferedSend: " + std::string(e.what()));
 			_clientConnected = false;
 			break;
 		}
@@ -389,11 +437,18 @@ void DiztinguishBridge::FlushOutgoingMessages()
 	// Flush socket send buffer
 	if(_clientSocket) {
 		try {
+			_debugger->Log("[DiztinGUIsh] Calling socket SendBuffer() to actually transmit data...");
 			_clientSocket->SendBuffer();
-			_debugger->Log("[DiztinGUIsh] Socket buffer flushed");
+			
+			if(_clientSocket->ConnectionError()) {
+				_debugger->Log("[DiztinGUIsh] *** SOCKET ERROR DETECTED AFTER SendBuffer() ***");
+				_clientConnected = false;
+			} else {
+				_debugger->Log("[DiztinGUIsh] Socket SendBuffer() completed successfully");
+			}
 		}
 		catch(const std::exception& e) {
-			_debugger->Log("[DiztinGUIsh] Error flushing socket: " + std::string(e.what()));
+			_debugger->Log("[DiztinGUIsh] EXCEPTION in SendBuffer: " + std::string(e.what()));
 			_clientConnected = false;
 		}
 	}

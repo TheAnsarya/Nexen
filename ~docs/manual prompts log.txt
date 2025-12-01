@@ -236,9 +236,214 @@ continue
 
 open the folder for `The diagnostic logs`; the apps are both running and connected; diagnose the current connection and why data is not being sent/and-or/received;
 
+git commit all updated and new files in all projects with descriptions and broken into batches by intent or purpose; 
+
+I don't see any data being passed, or at least I don't see any data being saved in the Diz file; is all data sent being saved? is all data being sent?;
+They are both open and the diz file is not being updated, figure out why;
+no dat transfered now, 
+
+It is running right now, Diz is connected to Mesen, but I see nothing happening in Diz; is Diz receiving data and just not recording it? Or is Mesen saying that it is sending data but isn't?
+Track the lifetime of the TCP connection from Diz to Mesen and trace why it is closing/destructing. The connection has to be kept alive so the data can flow into the existing Diz data collection infrastructure.
+open the Diz logs so I can see them! Also there is nothing being done still, where does the connection close?
+
+open files to exactly where the tcp connection is created so I can review the code; the connection is closed too early make sure it stays in scope by creating a background process or setting it to a static property or something
+
+ also log to actual files, configure logging to use actual files and roll over and delete after 30 days, etc,; trap the tcp connection and keep it alive! return it and put into a static variable or a long-living class object or put it in a background task; ***** I want dat from Mesen to end up in DiztinGUIsh **** that is our entire purpose ;
+Logs are at `%LOCALAPPDATA%\DiztinGUIsh\Logs\` nothing is happening, fix it
+
+In Mesen2, I am starting the Diztinguish server from the Window menu items, `Tools->DiztinGUIsh Server` and starting it. does this not start the server? Does the lua script do someting differernt? Make sure the menu item and window gui actually start and hold the diztinguish server object reference so it does not go out of scope, and find a way to get Mesen to send the exactly correctly formatted data to DiztinG?UIsh so Diz will record it;
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=============================================================
+DiztinGUIsh Mesen2 Connection Logger Initialized
+Session started: 2025-11-23 15:56:45.803
+Log directory: C:\Users\me\AppData\Local\DiztinGUIsh\Logs
+=============================================================
+[2025-11-23 15:56:45.804] [CONTROLLER] *** ImportMesenTraceLive CALLED: localhost:9998 ***
+[2025-11-23 15:56:45.808] [CONNECTION_MANAGER] *** CREATING NEW IMPORTER (STATIC) FOR localhost:9998 ***
+[2025-11-23 15:56:45.811] [CONNECTION_MANAGER] Calling ConnectAsync(localhost, 9998)...
+[2025-11-23 15:56:45.817] [CLIENT]  ConnectAsync starting - Host: localhost, Port: 9998, Timeout: 3000ms
+[2025-11-23 15:56:45.821] [CLIENT]  TcpClient created, attempting connection...
+[2025-11-23 15:56:47.950] [CLIENT]  Connection successful! Getting network stream...
+[2025-11-23 15:56:47.951] [CLIENT]  Starting receive loop...
+[2025-11-23 15:56:47.952] [CLIENT]  *** RECEIVE LOOP STARTED ***
+[2025-11-23 15:56:47.954] [CLIENT]  *** READ FAILED: Expected 5 bytes, got 0 bytes, then 0 (connection closed by remote) ***
+[2025-11-23 15:56:47.954] [CLIENT]  *** CONNECTION CLOSED: ReadAsync returned 0 bytes (peer disconnected) ***
+[2025-11-23 15:56:47.954] [CLIENT]  *** RECEIVE LOOP ENDED ***
+[2025-11-23 15:56:47.955] [CLIENT]  *** CALLING DISCONNECT FROM RECEIVE LOOP ***
+[2025-11-23 15:56:47.955] [CLIENT]  *** DISCONNECT CALLED ***
+[2025-11-23 15:56:48.045] [CLIENT]  Stack trace:    at System.Environment.get_StackTrace()
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.Disconnect() in C:\Users\me\source\repos\DiztinGUIsh\Diz.Import\src\mesen\tracelog\MesenLiveTraceClient.cs:line 107
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.ReceiveLoopAsync(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.ReceiveLoopAsync(CancellationToken cancellationToken)
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.ConnectAsync(String host, Int32 port) in C:\Users\me\source\repos\DiztinGUIsh\Diz.Import\src\mesen\tracelog\MesenLiveTraceClient.cs:line 82
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+   at System.Runtime.CompilerServices.TaskAwaiter.<>c.<OutputWaitEtwEvents>b__12_0(Action innerContinuation, Task innerTask)
+   at System.Windows.Forms.Control.InvokeMarshaledCallbackHelper(Object obj)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Windows.Forms.Control.InvokeMarshaledCallbacks()
+   at System.Windows.Forms.Control.WndProc(Message& m)
+   at System.Windows.Forms.NativeWindow.Callback(HWND hWnd, MessageId msg, WPARAM wparam, LPARAM lparam)
+   at Windows.Win32.PInvoke.CallWindowProc( lpPrevWndFunc, HWND hWnd, UInt32 Msg, WPARAM wParam, LPARAM lParam)
+   at Windows.Win32.PInvoke.CallWindowProc( lpPrevWndFunc, HWND hWnd, UInt32 Msg, WPARAM wParam, LPARAM lParam)
+   at System.Windows.Forms.NativeWindow.DefWndProc(Message& m)
+   at System.Windows.Forms.Form.DefWndProc(Message& m)
+   at System.Windows.Forms.Control.WndProc(Message& m)
+   at System.Windows.Forms.ContainerControl.WndProc(Message& m)
+   at System.Windows.Forms.Form.WndProc(Message& m)
+   at System.Windows.Forms.NativeWindow.Callback(HWND hWnd, MessageId msg, WPARAM wparam, LPARAM lparam)
+   at Windows.Win32.PInvoke.CallWindowProc( lpPrevWndFunc, HWND hWnd, UInt32 Msg, WPARAM wParam, LPARAM lParam)
+   at Windows.Win32.PInvoke.CallWindowProc( lpPrevWndFunc, HWND hWnd, UInt32 Msg, WPARAM wParam, LPARAM lParam)
+   at System.Windows.Forms.NativeWindow.DefWndProc(Message& m)
+   at System.Windows.Forms.Form.DefWndProc(Message& m)
+   at System.Windows.Forms.Control.WndProc(Message& m)
+   at System.Windows.Forms.ContainerControl.WndProc(Message& m)
+   at System.Windows.Forms.Form.WndProc(Message& m)
+   at System.Windows.Forms.NativeWindow.Callback(HWND hWnd, MessageId msg, WPARAM wparam, LPARAM lparam)
+   at Windows.Win32.PInvoke.DispatchMessage(MSG* lpMsg)
+   at System.Windows.Forms.Application.LightThreadContext.FPushMessageLoop(msoloop uReason)
+   at System.Windows.Forms.Application.LightThreadContext.RunMessageLoop(msoloop reason, Boolean fullModal)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoopInner(msoloop reason, ApplicationContext context)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoop(msoloop reason, ApplicationContext context)
+   at Diz.Ui.Winforms.DizWinformsApp.Run(String initialProjectFileToOpen) in C:\Users\me\source\repos\DiztinGUIsh\Diz.Ui.Winforms\Diz.Ui.Winforms\DizWinformsApp.cs:line 20
+   at Diz.App.Common.DizAppCommon.StartApp(IServiceFactory serviceFactory, String[] args) in C:\Users\me\source\repos\DiztinGUIsh\Diz.App.Common\Main.cs:line 17
+   at Diz.App.Winforms.Program.Main(String[] args) in C:\Users\me\source\repos\DiztinGUIsh\Diz.App.Winforms\Program.cs:line 35
+[2025-11-23 15:56:48.047] [CLIENT]  ConnectAsync completed successfully!
+[2025-11-23 15:56:48.047] [CLIENT]  *** CONNECTION ESTABLISHED: localhost:9998 ***
+[2025-11-23 15:56:48.048] [CONNECTION_MANAGER] ConnectAsync returned: True
+[2025-11-23 15:56:48.048] [CONNECTION_MANAGER] Starting background monitoring task (STATIC)...
+[2025-11-23 15:56:48.049] [CONNECTION_MANAGER] *** CONNECTION ESTABLISHED AND STORED IN STATIC FIELD ***
+[2025-11-23 15:56:48.049] [CONTROLLER] *** ImportMesenTraceLive COMPLETE - Connection stored in STATIC manager ***
+[2025-11-23 15:56:48.049] [CONNECTION_MANAGER] *** BACKGROUND TASK STARTED (STATIC) ***
+[2025-11-23 15:56:48.050] [CONNECTION_MANAGER] *** BACKGROUND TASK EXITING: Cancelled=False, IsConnected=False ***
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Everything is closed now; The critical insight from the log you posted shows Mesen2 IS sending the Handshake - the connection establishes successfully (line 7: Connection successful!) but then immediately reads 0 bytes (line 10: got 0 bytes, then 0 (connection closed by remote)), which means Mesen2 sent a 0-length handshake message OR closed the connection immediately after accepting it.
+
+This is the smoking gun - we need to see what the handshake handler does when it receives that message.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Check the actual real code, and open up the file for probable problems so I can see it, when looking for why the connection closes in 4ms and isn't held in a long scope; and build and start diz and mesen if you want to test it and then open a rom and run a ps1 testing script if you want;
+[2025-11-23 16:18:11.073] [CLIENT] *** READ FAILED: Expected 5 bytes, got 0 bytes, then 0 (connection closed by remote) ***
+Fix what is sent by Mesen
+Still nothing; MesenS should send the exact packets that Diz needs, and DiztinGUIsh should update the `*.diz` file with the code and data it is told about
+"This is happening because Mesen2 is sending romSize=0," then Mesen should send the real size; fix it so Mesen sends the real size;
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=============================================================
+DiztinGUIsh Mesen2 Connection Logger Initialized
+Session started: 2025-11-23 16:40:54.972
+Log directory: C:\Users\me\AppData\Local\DiztinGUIsh\Logs
+=============================================================
+[2025-11-23 16:40:54.973] [CONTROLLER] *** ImportMesenTraceLive CALLED: localhost:9998 ***
+[2025-11-23 16:40:54.975] [CONNECTION_MANAGER] *** CREATING NEW IMPORTER (STATIC) FOR localhost:9998 ***
+[2025-11-23 16:40:54.976] [CONNECTION_MANAGER] Calling ConnectAsync(localhost, 9998)...
+[2025-11-23 16:40:54.978] [CLIENT]  ConnectAsync starting - Host: localhost, Port: 9998, Timeout: 3000ms
+[2025-11-23 16:40:54.980] [CLIENT]  TcpClient created, attempting connection...
+[2025-11-23 16:40:57.020] [CLIENT]  Connection successful! Getting network stream...
+[2025-11-23 16:40:57.021] [CLIENT]  Starting receive loop...
+[2025-11-23 16:40:57.022] [CLIENT]  *** RECEIVE LOOP STARTED ***
+[2025-11-23 16:40:57.025] [IMPORTER]  *** HANDSHAKE RECEIVED: Protocol=1.0, ROM='Test ROM', Size=0 ***
+[2025-11-23 16:40:57.025] [IMPORTER]  Handshake validation: Protocol compatible=True, ROM compatible=False
+[2025-11-23 16:40:57.026] [CLIENT]  *** READ FAILED: Expected 5 bytes, got 0 bytes, then 0 (connection closed by remote) ***
+[2025-11-23 16:40:57.026] [CLIENT]  *** CONNECTION CLOSED: ReadAsync returned 0 bytes (peer disconnected) ***
+[2025-11-23 16:40:57.026] [CLIENT]  *** RECEIVE LOOP ENDED ***
+[2025-11-23 16:40:57.026] [IMPORTER]  Sending HandshakeAck (accepted=False)...
+[2025-11-23 16:40:57.026] [CLIENT]  *** CALLING DISCONNECT FROM RECEIVE LOOP ***
+[2025-11-23 16:40:57.027] [CLIENT]  *** DISCONNECT CALLED ***
+[2025-11-23 16:40:57.027] [CLIENT]  Sending HandshakeAck: accepted=False, clientName='DiztinGUIsh v2.0'
+[2025-11-23 16:40:57.028] [CLIENT]  HandshakeAck sent successfully (74 bytes total)
+[2025-11-23 16:40:57.029] [IMPORTER]  !!! HANDSHAKE REJECTED - INCOMPATIBLE VERSION/ROM !!!
+[2025-11-23 16:40:57.045] [CLIENT]  Stack trace:    at System.Environment.get_StackTrace()
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.Disconnect() in C:\Users\me\source\repos\DiztinGUIsh\Diz.Import\src\mesen\tracelog\MesenLiveTraceClient.cs:line 107
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.ReceiveLoopAsync(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.ReceiveLoopAsync(CancellationToken cancellationToken)
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.ConnectAsync(String host, Int32 port) in C:\Users\me\source\repos\DiztinGUIsh\Diz.Import\src\mesen\tracelog\MesenLiveTraceClient.cs:line 82
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+   at System.Windows.Forms.Control.InvokeMarshaledCallbackHelper(Object obj)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Windows.Forms.Control.InvokeMarshaledCallbacks()
+   at System.Windows.Forms.Control.WndProc(Message& m)
+   at System.Windows.Forms.NativeWindow.Callback(HWND hWnd, MessageId msg, WPARAM wparam, LPARAM lparam)
+   at Windows.Win32.PInvoke.DispatchMessage(MSG* lpMsg)
+   at System.Windows.Forms.Application.LightThreadContext.FPushMessageLoop(msoloop uReason)
+   at System.Windows.Forms.Application.LightThreadContext.RunMessageLoop(msoloop reason, Boolean fullModal)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoopInner(msoloop reason, ApplicationContext context)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoop(msoloop reason, ApplicationContext context)
+   at Diz.Ui.Winforms.DizWinformsApp.Run(String initialProjectFileToOpen) in C:\Users\me\source\repos\DiztinGUIsh\Diz.Ui.Winforms\Diz.Ui.Winforms\DizWinformsApp.cs:line 20
+   at Diz.App.Common.DizAppCommon.StartApp(IServiceFactory serviceFactory, String[] args) in C:\Users\me\source\repos\DiztinGUIsh\Diz.App.Common\Main.cs:line 17
+   at Diz.App.Winforms.Program.Main(String[] args) in C:\Users\me\source\repos\DiztinGUIsh\Diz.App.Winforms\Program.cs:line 35
+[2025-11-23 16:40:57.046] [CLIENT]  ConnectAsync completed successfully!
+[2025-11-23 16:40:57.046] [CLIENT]  *** CONNECTION ESTABLISHED: localhost:9998 ***
+[2025-11-23 16:40:57.046] [CONNECTION_MANAGER] ConnectAsync returned: True
+[2025-11-23 16:40:57.046] [CONNECTION_MANAGER] Starting background monitoring task (STATIC)...
+[2025-11-23 16:40:57.047] [CONNECTION_MANAGER] *** CONNECTION ESTABLISHED AND STORED IN STATIC FIELD ***
+[2025-11-23 16:40:57.047] [CONTROLLER] *** ImportMesenTraceLive COMPLETE - Connection stored in STATIC manager ***
+[2025-11-23 16:40:57.047] [CONNECTION_MANAGER] *** BACKGROUND TASK STARTED (STATIC) ***
+[2025-11-23 16:40:57.048] [CONNECTION_MANAGER] *** BACKGROUND TASK EXITING: Cancelled=False, IsConnected=False ***
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ok
+They are loaded and running and the ROM is loaded and the sevrer is running and i've cfonnected vis Diz; make all this shit work and take as lobng as you can to make it work;
+
+analyze the code and track tracing from Mesen to Diz, step by step;
+There is still nothing being saved to the diz file
+keep attacking the problem, make sure the connection is kept alive on both sides, the Mesen connection has to stay open waiting to be connected to Diz, and then data has to flow; make it work, please oh dear god, make it work;
+Mesen has to open a socket, and then keep that socket open for a long time (several minutes?) until we can connect to it from Diz;
+use msbuild using the VS2026 version at `C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin`
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 

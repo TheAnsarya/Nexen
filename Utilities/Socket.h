@@ -53,6 +53,7 @@ public:
 	void BufferedSend(char *buf, int len);
 	void SendBuffer();
 	int Recv(char *buf, int len, int flags);
+	int BlockingRecv(char *buf, int len, int timeoutSeconds = 30);
 	
 	// Advanced Features
 	void SetBufferSize(size_t size) { _maxBufferSize = size; }

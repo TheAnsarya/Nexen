@@ -277,6 +277,64 @@ int Socket::Recv(char *buf, int len, int flags)
 	return returnVal;
 }
 
+int Socket::BlockingRecv(char *buf, int len, int timeoutSeconds)
+{
+	// For non-blocking sockets, use select() to wait for data
+	int totalReceived = 0;
+	
+	while(totalReceived < len) {
+		fd_set readSockets;
+		#ifdef _WIN32
+			readSockets.fd_count = 1;
+			readSockets.fd_array[0] = _socket;
+		#else
+			FD_ZERO(&readSockets);
+			FD_SET(_socket, &readSockets);
+		#endif
+		
+		TIMEVAL timeout;
+		timeout.tv_sec = timeoutSeconds;
+		timeout.tv_usec = 0;
+		
+		int ready = select((int)_socket + 1, &readSockets, nullptr, nullptr, &timeout);
+		
+		if(ready <= 0) {
+			// Timeout or error
+			if(ready == 0) {
+				std::cout << "BlockingRecv: Timeout waiting for data" << std::endl;
+			} else {
+				std::cout << "BlockingRecv: Select error" << std::endl;
+			}
+			return totalReceived > 0 ? totalReceived : -1;
+		}
+		
+		// Socket has data available
+		int received = recv(_socket, buf + totalReceived, len - totalReceived, 0);
+		
+		if(received > 0) {
+			totalReceived += received;
+			_bytesReceived += received;
+			_lastActivity = std::chrono::steady_clock::now();
+		} else if(received == 0) {
+			// Connection closed
+			std::cout << "BlockingRecv: Connection closed by peer" << std::endl;
+			Close();
+			return totalReceived > 0 ? totalReceived : 0;
+		} else {
+			// Error
+			int nError = WSAGetLastError();
+			if(!WouldBlock(nError)) {
+				std::cout << "BlockingRecv: Recv error " << nError << std::endl;
+				SetConnectionErrorFlag();
+				return totalReceived > 0 ? totalReceived : -1;
+			}
+			// WouldBlock shouldn't happen after select() says data is ready, but retry
+		}
+	}
+	
+	return totalReceived;
+}
+
 void Socket::BufferedSend(char *buf, int len)
 {
 	if(_connectionError || _socket == INVALID_SOCKET) {
@@ -285,13 +343,7 @@ void Socket::BufferedSend(char *buf, int len)
 
 	std::lock_guard<std::mutex> lock(_sendBufferMutex);
 	_sendBuffer.insert(_sendBuffer.end(), buf, buf + len);
-	_messagesReceived++; // Track buffered messages
-	
-	// Auto-flush if buffer is getting large or auto-flush is enabled
-	if(_autoFlush && ShouldFlush()) {
-		// Release lock temporarily for flush (avoid deadlock)
-		// Note: We'll implement a non-locking flush for this case
-	}
+	// Note: Statistics are updated in SendBuffer() when actually sent
 }
 
 void Socket::SendBuffer()
@@ -311,6 +363,28 @@ void Socket::SendBuffer()
 	
 	// Update activity timestamp
 	_lastActivity = std::chrono::steady_clock::now();
+	
+	// Wait for socket to be ready to send (non-blocking mode)
+	fd_set writeSockets;
+	#ifdef _WIN32
+		writeSockets.fd_count = 1;
+		writeSockets.fd_array[0] = _socket;
+	#else
+		FD_ZERO(&writeSockets);
+		FD_SET(_socket, &writeSockets);
+	#endif
+
+	timeval timeout;
+	timeout.tv_sec = 5;  // 5 second timeout
+	timeout.tv_usec = 0;
+
+	// Check if socket is ready to send
+	int ready = select((int)_socket + 1, nullptr, &writeSockets, nullptr, &timeout);
+	if(ready <= 0) {
+		// Timeout or error - don't set connection error, just skip this send
+		std::cout << "[DiztinGUIsh] Socket not ready to send (select returned " << ready << "), skipping flush" << std::endl;
+		return;
+	}
 	
 	while(totalSent < bufferSize) {
 		int sent = Send(_sendBuffer.data() + totalSent, bufferSize - totalSent, 0);
