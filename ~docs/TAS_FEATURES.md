@@ -2,38 +2,53 @@
 
 This document describes the TAS features implemented in Mesen2, including movie recording/playback, rerecording, and format conversion.
 
+> **Status:** TAS epic is ~90% complete. Core features implemented, some UI polish remaining.
+> 
+> **Last Updated:** December 1, 2025
+
 ## Overview
 
 Mesen2 now supports comprehensive TAS (Tool-Assisted Speedrun/Superplay) features:
 
-1. **Movie Recording & Playback** - Record and play back input sequences
-2. **Rerecording** - Load savestates during recording to branch off and create alternate input sequences
-3. **Rerecord Counter** - Track how many times you've rerecorded during a TAS session
-4. **Input Display** - Show controller inputs on screen
-5. **Movie Format Conversion** - Convert between Mesen, SMV, LSMV, FM2, and BK2 formats
+1. **Movie Recording & Playback** - Record and play back input sequences ✅
+2. **Rerecording** - Load savestates during recording to branch off and create alternate input sequences ✅
+3. **Rerecord Counter** - Track how many times you've rerecorded during a TAS session ✅
+4. **Input Display** - Show controller inputs on screen ✅ (pre-existing)
+5. **Movie Format Conversion** - Convert between Mesen, SMV, LSMV, FM2, and BK2 formats ✅
+6. **Read-Only Mode** - Toggle between read-only playback and read-write editing ✅
+7. **TAS Lua API** - Script access to TAS state information ✅
 
 ## TAS Settings
 
 ### Preferences (Options → Preferences → Display Settings)
 
-- **Show rerecord counter (TAS)** - Displays the current rerecord count on screen during movie recording/playback
+- **Show rerecord counter (TAS)** - Displays the current rerecord count on screen during movie recording/playback ✅
 
 ### Input Settings (Options → Input)
 
-- **Display ports** - Enable input display for controller ports 1-8
-- **Display position** - Choose where inputs are displayed (Top-Left, Top-Right, Bottom-Left, Bottom-Right)
-- **Display horizontally** - Stack input displays horizontally or vertically
+- **Display ports** - Enable input display for controller ports 1-8 ✅
+- **Display position** - Choose where inputs are displayed (Top-Left, Top-Right, Bottom-Left, Bottom-Right) ✅
+- **Display horizontally** - Stack input displays horizontally or vertically ✅
 
 ## Keyboard Shortcuts
 
 New TAS-specific shortcuts (configurable in Options → Preferences → Shortcuts):
 
-| Shortcut | Function |
-|----------|----------|
-| Toggle Rerecord Counter | Show/hide the rerecord counter on screen |
-| TAS Frame Advance | Advance one frame while paused |
-| TAS Previous Frame | Step back one frame (uses rewind) |
-| TAS Toggle Read-Only | Toggle between read-only and read-write mode |
+| Shortcut | Function | Status |
+|----------|----------|--------|
+| Toggle Rerecord Counter | Show/hide the rerecord counter on screen | ✅ |
+| TAS Frame Advance | Advance one frame while paused | ✅ |
+| TAS Previous Frame | Step back one frame (uses rewind) | ✅ |
+| TAS Toggle Read-Only | Toggle between read-only and read-write mode | ✅ |
+
+## Read-Only Mode
+
+TAS read-only mode allows safe playback of movies without accidental modification:
+
+- **Read-Only (R)** - Green badge, movie plays without accepting new inputs
+- **Read-Write (W)** - Red badge, inputs will overwrite movie data
+
+Toggle with the TAS Toggle Read-Only shortcut.
 
 ## Rerecording
 
@@ -100,18 +115,25 @@ The TAS state tracks:
 
 ## API for Lua Scripts
 
-### TAS Functions
+### TAS Functions ✅
 
 ```lua
--- Get TAS state
+-- Get full TAS state
 local state = emu.getTasState()
 print("Frame: " .. state.frameCount)
 print("Rerecords: " .. state.rerecordCount)
+print("Lag Frames: " .. state.lagFrameCount)
 print("Recording: " .. tostring(state.isRecording))
 print("Playing: " .. tostring(state.isPlaying))
+print("Paused: " .. tostring(state.isPaused))
+print("Read-Only: " .. tostring(state.isReadOnly))
 
--- Check if rerecording is available
-local canRerecord = emu.canRerecord()
+-- Check movie status
+local playing = emu.isMoviePlaying()
+local recording = emu.isMovieRecording()
+
+-- Get rerecord count directly
+local rerecords = emu.getRerecordCount()
 ```
 
 ### Input Functions (existing)
@@ -163,21 +185,55 @@ Where:
 
 ## Related GitHub Issues
 
-- #18 - MovieConverter Console App
-- #19 - TAS Rerecording Support
-- #20 - Input Display Overlay
-- #21 - Movie Format Import/Export
-- #22 - TAS Keyboard Shortcuts
-- #23 - TAS State API
-- #24 - Rerecord Counter HUD
-- #25 - TAS Documentation
+- #18 - [TAS] Full TAS Integration - Master Tracking Issue
+- #19 - MovieConverter Console App ✅ COMPLETE
+- #20 - Input Display Overlay ✅ PRE-EXISTING
+- #21 - Rerecording from Savestate ✅ COMPLETE
+- #22 - TAS HUD Overlay ✅ PARTIAL (rerecord counter done)
+- #23 - Movie Export to External Formats ⏳ Core done, UI needed
+- #24 - Frame Advance Controls ✅ PARTIAL (shortcuts done)
+- #25 - Lag Frame Detection ⏳ Detection exists, display needed
+
+## Implementation Details
+
+### Key Files Modified
+
+#### Core Layer
+- `Core/Shared/Movies/MovieTypes.h` - TasState struct
+- `Core/Shared/Movies/MovieManager.cpp/h` - TAS state tracking, read-only mode
+- `Core/Shared/Movies/MovieRecorder.cpp/h` - Rerecord counting, TruncateToFrame()
+- `Core/Shared/Video/SystemHud.cpp/h` - Rerecord counter display, R/W indicator
+- `Core/Debugger/LuaApi.cpp/h` - TAS Lua functions
+
+#### InteropDLL Layer
+- `InteropDLL/RecordApiWrapper.cpp` - TAS DLL exports
+
+#### UI Layer
+- `UI/Config/PreferencesConfig.cs` - ShowRerecordCounter setting
+- `UI/Config/Shortcuts/EmulatorShortcut.cs` - TAS shortcut definitions
+- `UI/Utilities/ShortcutHandler.cs` - TAS shortcut handlers
+- `UI/Interop/RecordApi.cs` - TAS API bindings
+
+#### MovieConverter Project
+- `MovieConverter/` - .NET 8 console app for format conversion
 
 ## Future Enhancements
 
 Planned features for future releases:
-- Loop playback for specific frame ranges
-- Slow motion playback
-- Input editor with GUI
-- Splice/merge movie files
-- TAS input prediction display
-- Memory watch during TAS
+
+### High Priority
+- [ ] MovieExportWindow UI dialog (#23)
+- [ ] Lag frame visual indicator (#25)
+- [ ] Full TAS HUD with frame counter (#22)
+
+### Medium Priority
+- [ ] Loop playback for specific frame ranges
+- [ ] Slow motion playback
+- [ ] Input editor with GUI
+- [ ] Goto Frame dialog
+
+### Low Priority
+- [ ] Splice/merge movie files
+- [ ] TAS input prediction display
+- [ ] Memory watch during TAS
+- [ ] Auto-fire configuration
