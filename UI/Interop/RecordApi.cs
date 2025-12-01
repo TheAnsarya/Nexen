@@ -31,6 +31,17 @@ namespace Mesen.Interop
 		[DllImport(DllPath)] public static extern void TasGetState(ref TasState state);
 		[DllImport(DllPath)] [return: MarshalAs(UnmanagedType.I1)] public static extern bool TasIsTasMode();
 		[DllImport(DllPath)] public static extern void TasSetTasMode([MarshalAs(UnmanagedType.I1)] bool enabled);
+		[DllImport(DllPath)] [return: MarshalAs(UnmanagedType.I1)] public static extern bool TasIsReadOnly();
+		[DllImport(DllPath)] public static extern void TasSetReadOnly([MarshalAs(UnmanagedType.I1)] bool readOnly);
+		[DllImport(DllPath)] public static extern void TasToggleReadOnly();
+		
+		// Helper to get TasState safely
+		public static TasState TasGetState()
+		{
+			TasState state = new TasState();
+			TasGetState(ref state);
+			return state;
+		}
 	}
 
 	public enum RecordMovieFrom
@@ -49,6 +60,7 @@ namespace Mesen.Interop
 		[MarshalAs(UnmanagedType.I1)] public bool IsRecording;
 		[MarshalAs(UnmanagedType.I1)] public bool IsPlaying;
 		[MarshalAs(UnmanagedType.I1)] public bool IsPaused;
+		[MarshalAs(UnmanagedType.I1)] public bool IsReadOnly;
 	}
 
 	public struct RecordMovieOptions

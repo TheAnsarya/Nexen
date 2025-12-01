@@ -32,9 +32,13 @@ void SystemHud::Draw(DebugHud* hud, uint32_t width, uint32_t height) const
 		} else if(showMovieIcons && _emu->GetMovieManager()->Playing()) {
 			DrawPlayIcon(hud);
 			xOffset += 12;
+			// Show R/W indicator for TAS mode
+			DrawTasReadWriteIndicator(hud, xOffset);
 		} else if(showMovieIcons && _emu->GetMovieManager()->Recording()) {
 			DrawRecordIcon(hud);
 			xOffset += 12;
+			// Show R/W indicator for TAS mode
+			DrawTasReadWriteIndicator(hud, xOffset);
 		}
 
 		bool showTurboRewindIcons = settings->GetPreferences().ShowTurboRewindIcons;
@@ -295,6 +299,25 @@ void SystemHud::DrawTurboRewindIcon(DebugHud* hud, bool forRewind, int xOffset) 
 
 		x += 6;
 	}
+}
+
+void SystemHud::DrawTasReadWriteIndicator(DebugHud* hud, int xOffset) const
+{
+	// Draw "R" for read-only or "W" for read-write mode
+	bool isReadOnly = _emu->GetMovieManager()->IsReadOnly();
+	int x = 12 + xOffset;
+	int y = 8;
+	int bgColor = isReadOnly ? 0x008000 : 0x800000; // Green for R, Red for W
+	int textColor = 0xFFFFFF;
+	int borderColor = 0x000000;
+	
+	// Draw background rectangle
+	hud->DrawRectangle(x - 1, y - 1, 10, 10, borderColor, false, 1);
+	hud->DrawRectangle(x, y, 8, 8, bgColor, true, 1);
+	
+	// Draw "R" or "W"
+	string indicator = isReadOnly ? "R" : "W";
+	hud->DrawString(x + 1, y, indicator, textColor, 0, 1, -1, 8, true);
 }
 
 void SystemHud::UpdateHud()

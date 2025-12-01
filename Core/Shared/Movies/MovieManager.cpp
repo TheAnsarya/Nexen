@@ -85,6 +85,7 @@ TasState MovieManager::GetTasState()
 	TasState state = {};
 	state.IsRecording = Recording();
 	state.IsPlaying = Playing();
+	state.IsReadOnly = _readOnlyMode;
 	
 	MovieRecorder* recorder = _recorder.get();
 	if(recorder) {

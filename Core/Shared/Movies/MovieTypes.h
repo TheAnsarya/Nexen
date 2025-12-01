@@ -26,6 +26,7 @@ struct TasState
 	bool IsRecording = false;
 	bool IsPlaying = false;
 	bool IsPaused = false;
+	bool IsReadOnly = true; // For TAS playback: read-only vs read-write mode
 };
 
 namespace MovieKeys

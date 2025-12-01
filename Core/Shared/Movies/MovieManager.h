@@ -25,6 +25,7 @@ private:
 	Emulator* _emu = nullptr;
 	safe_ptr<IMovie> _player;
 	safe_ptr<MovieRecorder> _recorder;
+	bool _readOnlyMode = true; // TAS read-only mode (default: read-only)
 
 public:
 	MovieManager(Emulator* emu);
@@ -44,4 +45,9 @@ public:
 	bool HandleRerecord(uint32_t frameNumber);
 	bool IsTasMode();
 	void SetTasMode(bool enabled);
+	
+	// Read-only mode (for playback)
+	bool IsReadOnly() { return _readOnlyMode; }
+	void SetReadOnly(bool readOnly) { _readOnlyMode = readOnly; }
+	void ToggleReadOnly() { _readOnlyMode = !_readOnlyMode; }
 };

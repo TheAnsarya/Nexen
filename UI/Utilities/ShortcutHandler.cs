@@ -533,17 +533,12 @@ namespace Mesen.Utilities
 		private void TasToggleReadOnly()
 		{
 			// Toggle between read-only playback and read-write (rerecording) mode
-			// This affects whether loading a state truncates the movie or just plays from that point
 			TasState state = RecordApi.TasGetState();
 			if(state.IsPlaying || state.IsRecording) {
-				// TODO: Implement read-only mode toggle in core
-				DisplayMessage("TAS", "Read-only mode toggle not yet implemented");
+				RecordApi.TasToggleReadOnly();
+				string mode = RecordApi.TasIsReadOnly() ? "Read-Only" : "Read-Write";
+				EmuApi.DisplayMessage("TAS", "Mode: " + mode);
 			}
-		}
-
-		private void DisplayMessage(string title, string message)
-		{
-			EmuApi.WriteLogEntry(title + ": " + message);
 		}
 
 		private void ToggleGameTimer()

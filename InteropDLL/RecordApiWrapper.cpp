@@ -28,4 +28,7 @@ extern "C"
 	DllExport void __stdcall TasGetState(TasState* state) { *state = _emu->GetMovieManager()->GetTasState(); }
 	DllExport bool __stdcall TasIsTasMode() { return _emu->GetMovieManager()->IsTasMode(); }
 	DllExport void __stdcall TasSetTasMode(bool enabled) { _emu->GetMovieManager()->SetTasMode(enabled); }
+	DllExport bool __stdcall TasIsReadOnly() { return _emu->GetMovieManager()->IsReadOnly(); }
+	DllExport void __stdcall TasSetReadOnly(bool readOnly) { _emu->GetMovieManager()->SetReadOnly(readOnly); }
+	DllExport void __stdcall TasToggleReadOnly() { _emu->GetMovieManager()->ToggleReadOnly(); }
 }
