@@ -1,6 +1,11 @@
-# Mesen Movie Converter
+# Mesen Movie Converter Library
 
-A standalone command-line tool for converting TAS (Tool-Assisted Speedrun) movie files between various emulator formats.
+A .NET 8 class library for converting TAS (Tool-Assisted Speedrun) movie files between various emulator formats. Used by Mesen2 for Import/Export functionality and also available as a standalone CLI tool.
+
+## Architecture
+
+- **MovieConverter** (this folder) - Class library containing all conversion logic
+- **MovieConverter.CLI** - Command-line tool that uses the library for scripted/external conversions
 
 ## Supported Formats
 
@@ -80,11 +85,36 @@ Each emulator has slightly different controller support:
 Requires .NET 8.0 SDK.
 
 ```bash
+# Build the library
 cd MovieConverter
+dotnet build
+
+# Build the CLI tool
+cd MovieConverter.CLI
 dotnet build
 ```
 
-The output will be placed in `bin/win-x64/Debug/MesenMovieConverter.exe`.
+The library will be output as `Mesen.MovieConverter.dll`.
+The CLI tool will be output as `MesenMovieConverter.exe`.
+
+## Using the Library
+
+```csharp
+using Mesen.MovieConverter;
+
+// Detect format from file extension
+var format = MovieConverterRegistry.DetectFormat("movie.smv");
+
+// Get converter for the format
+var converter = MovieConverterRegistry.GetConverter(format);
+
+// Read a movie
+var movieData = converter.Read("input.smv");
+
+// Write to another format
+var mesenConverter = MovieConverterRegistry.GetConverter(MovieFormat.Mesen);
+mesenConverter.Write(movieData, "output.mmo");
+```
 
 ## License
 

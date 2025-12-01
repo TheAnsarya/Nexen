@@ -1,10 +1,12 @@
-namespace Mesen.MovieConverter;
+using Mesen.MovieConverter;
+
+namespace Mesen.MovieConverter.CLI;
 
 /// <summary>
 /// MesenMovieConverter - TAS Movie Format Conversion Tool
 /// 
 /// Converts between various emulator movie formats:
-/// - Mesen (.mmm)
+/// - Mesen (.mmo)
 /// - Snes9x (.smv)
 /// - lsnes (.lsmv)
 /// - FCEUX (.fm2)
@@ -233,7 +235,7 @@ class Program
 
         Console.WriteLine();
         Console.WriteLine("Format Details:");
-        Console.WriteLine("  .mmm  - Mesen2 native format (ZIP archive with text input log)");
+        Console.WriteLine("  .mmo  - Mesen2 native format (ZIP archive with text input log)");
         Console.WriteLine("  .smv  - Snes9x movie (binary format, SNES)");
         Console.WriteLine("  .lsmv - lsnes movie (ZIP archive, SNES)");
         Console.WriteLine("  .fm2  - FCEUX movie (text format, NES)");
@@ -255,8 +257,8 @@ class Program
         Console.WriteLine("  --help               Show this help");
         Console.WriteLine();
         Console.WriteLine("Examples:");
-        Console.WriteLine("  MesenMovieConverter movie.smv movie.mmm");
-        Console.WriteLine("  MesenMovieConverter movie.mmm movie.lsmv --author \"MyName\"");
+        Console.WriteLine("  MesenMovieConverter movie.smv movie.mmo");
+        Console.WriteLine("  MesenMovieConverter movie.mmo movie.lsmv --author \"MyName\"");
         Console.WriteLine("  MesenMovieConverter --info movie.smv");
         Console.WriteLine();
         Console.WriteLine("Supported formats:");

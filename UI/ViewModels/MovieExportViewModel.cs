@@ -2,12 +2,12 @@ using Avalonia.Media;
 using Mesen.Config;
 using Mesen.Interop;
 using Mesen.Localization;
+using Mesen.MovieConverter;
 using Mesen.Utilities;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -93,47 +93,8 @@ namespace Mesen.ViewModels
 
 			try
 			{
-				// Get the path to the MovieConverter executable
-				string converterPath = GetConverterPath();
-				
-				if(!File.Exists(converterPath))
-				{
-					StatusMessage = ResourceHelper.GetMessage("MovieConverterNotFound");
-					StatusColor = Brushes.Red;
-					return false;
-				}
-
-				// Run the MovieConverter CLI
-				var startInfo = new ProcessStartInfo
-				{
-					FileName = converterPath,
-					Arguments = $"\"{SourcePath}\" \"{ExportPath}\"",
-					UseShellExecute = false,
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-					CreateNoWindow = true
-				};
-
-				using var process = new Process { StartInfo = startInfo };
-				process.Start();
-				
-				string output = await process.StandardOutput.ReadToEndAsync();
-				string error = await process.StandardError.ReadToEndAsync();
-				
-				await process.WaitForExitAsync();
-
-				if(process.ExitCode == 0)
-				{
-					StatusMessage = ResourceHelper.GetMessage("MovieExportSuccess");
-					StatusColor = Brushes.Green;
-					return true;
-				}
-				else
-				{
-					StatusMessage = string.IsNullOrEmpty(error) ? output : error;
-					StatusColor = Brushes.Red;
-					return false;
-				}
+				// Use the MovieConverter library directly
+				return await Task.Run(() => ConvertMovie(SourcePath, ExportPath));
 			}
 			catch(Exception ex)
 			{
@@ -143,31 +104,52 @@ namespace Mesen.ViewModels
 			}
 		}
 
-		private string GetConverterPath()
+		private bool ConvertMovie(string inputPath, string outputPath)
 		{
-			// Get the directory where the main executable is located
-			string exeDir = AppContext.BaseDirectory;
-			
-			// Try multiple possible paths for the converter
-			string[] possiblePaths = new[]
-			{
-				Path.Combine(exeDir, "MesenMovieConverter.exe"),
-				Path.Combine(exeDir, "MesenMovieConverter"),
-				Path.Combine(exeDir, "..", "MovieConverter", "MesenMovieConverter.exe"),
-				Path.Combine(exeDir, "..", "MovieConverter", "MesenMovieConverter"),
-			};
+			// Detect formats
+			var inputFormat = MovieConverterRegistry.DetectFormat(inputPath);
+			var outputFormat = MovieConverterRegistry.DetectFormat(outputPath);
 
-			foreach(string path in possiblePaths)
+			if(inputFormat == MovieFormat.Unknown)
 			{
-				string fullPath = Path.GetFullPath(path);
-				if(File.Exists(fullPath))
-				{
-					return fullPath;
-				}
+				StatusMessage = $"Unknown input format: {Path.GetExtension(inputPath)}";
+				StatusColor = Brushes.Red;
+				return false;
 			}
 
-			// Default to same directory as main app
-			return Path.Combine(exeDir, "MesenMovieConverter.exe");
+			if(outputFormat == MovieFormat.Unknown)
+			{
+				StatusMessage = $"Unknown output format: {Path.GetExtension(outputPath)}";
+				StatusColor = Brushes.Red;
+				return false;
+			}
+
+			var reader = MovieConverterRegistry.GetConverter(inputFormat);
+			var writer = MovieConverterRegistry.GetConverter(outputFormat);
+
+			if(reader == null || !reader.CanRead)
+			{
+				StatusMessage = $"Cannot read {inputFormat} format";
+				StatusColor = Brushes.Red;
+				return false;
+			}
+
+			if(writer == null || !writer.CanWrite)
+			{
+				StatusMessage = $"Cannot write {outputFormat} format";
+				StatusColor = Brushes.Red;
+				return false;
+			}
+
+			// Read input movie
+			var movie = reader.Read(inputPath);
+
+			// Write output movie
+			writer.Write(movie, outputPath);
+
+			StatusMessage = ResourceHelper.GetMessage("MovieExportSuccess");
+			StatusColor = Brushes.Green;
+			return true;
 		}
 	}
 }

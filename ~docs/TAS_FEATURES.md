@@ -107,7 +107,7 @@ MovieConverter --list-formats
   - Select source .mmo file and target format
   - Supports export to SMV, LSMV, FM2, BK2 formats
 
-**Note:** The MovieConverter CLI tool (MesenMovieConverter.exe) must be present in the same directory as Mesen for Import/Export to work.
+**Note:** Mesen uses the MovieConverter library directly for conversions. The CLI tool (MesenMovieConverter.exe) is available separately for external/scripted use.
 
 ## TAS State Information
 
@@ -223,7 +223,8 @@ Where:
 - `UI/Interop/RecordApi.cs` - TAS API bindings
 
 #### MovieConverter Project
-- `MovieConverter/` - .NET 8 console app for format conversion
+- `MovieConverter/` - .NET 8 class library for format conversion (used by Mesen UI)
+- `MovieConverter.CLI/` - Command-line tool for external/scripted conversions
 
 ## Future Enhancements
 
