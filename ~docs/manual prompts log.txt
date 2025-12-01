@@ -396,12 +396,18 @@ There is still nothing being saved to the diz file
 keep attacking the problem, make sure the connection is kept alive on both sides, the Mesen connection has to stay open waiting to be connected to Diz, and then data has to flow; make it work, please oh dear god, make it work;
 Mesen has to open a socket, and then keep that socket open for a long time (several minutes?) until we can connect to it from Diz;
 use msbuild using the VS2026 version at `C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin`
+_stream is null, fix it
 
+git comment everything and push;
 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+make a git branch off of the [git commit from when I forked this repos], named `mesen-record-and-play-gameplay` and then create todos and github-issues for adding the ability that other emulators have (search the internet and look) the `record/replay` functionality, sometimes they're called movies, so look at other emulators' code, and use standardized formats, for recording and replaying;
 
+add the movie conversion stuff, maybe make a secondary dll/console app to convert between all the movie record formats, and add TAS stuff;
 
-
+do github issues and todo-list stuff (create/update), add everything needed for full TAS integration (make issues and todolists for this work);
+***continue!***; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space;
 
 
 

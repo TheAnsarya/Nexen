@@ -25,6 +25,10 @@ namespace Mesen.Interop
 		[DllImport(DllPath)] public static extern void MovieStop();
 		[DllImport(DllPath)] [return: MarshalAs(UnmanagedType.I1)] public static extern bool MoviePlaying();
 		[DllImport(DllPath)] [return: MarshalAs(UnmanagedType.I1)] public static extern bool MovieRecording();
+		
+		// TAS features
+		[DllImport(DllPath)] public static extern void TasIncrementRerecord();
+		[DllImport(DllPath)] public static extern void TasGetState(ref TasState state);
 	}
 
 	public enum RecordMovieFrom
@@ -32,6 +36,17 @@ namespace Mesen.Interop
 		StartWithoutSaveData,
 		StartWithSaveData,
 		CurrentState
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct TasState
+	{
+		public UInt32 FrameCount;
+		public UInt32 RerecordCount;
+		public UInt32 LagFrameCount;
+		[MarshalAs(UnmanagedType.I1)] public bool IsRecording;
+		[MarshalAs(UnmanagedType.I1)] public bool IsPlaying;
+		[MarshalAs(UnmanagedType.I1)] public bool IsPaused;
 	}
 
 	public struct RecordMovieOptions

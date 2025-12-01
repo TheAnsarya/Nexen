@@ -71,3 +71,26 @@ bool MovieManager::Recording()
 {
 	return _recorder != nullptr;
 }
+
+void MovieManager::IncrementRerecordCount()
+{
+	MovieRecorder* recorder = _recorder.get();
+	if(recorder) {
+		recorder->IncrementRerecordCount();
+	}
+}
+
+TasState MovieManager::GetTasState()
+{
+	TasState state = {};
+	state.IsRecording = Recording();
+	state.IsPlaying = Playing();
+	
+	MovieRecorder* recorder = _recorder.get();
+	if(recorder) {
+		state.FrameCount = recorder->GetFrameCount();
+		state.RerecordCount = recorder->GetRerecordCount();
+	}
+	
+	return state;
+}

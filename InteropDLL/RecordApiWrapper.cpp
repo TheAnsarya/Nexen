@@ -3,6 +3,7 @@
 #include "Core/Shared/Video/VideoRenderer.h"
 #include "Core/Shared/Audio/SoundMixer.h"
 #include "Core/Shared/Movies/MovieManager.h"
+#include "Core/Shared/Movies/MovieTypes.h"
 
 extern unique_ptr<Emulator> _emu;
 
@@ -21,4 +22,8 @@ extern "C"
 	DllExport bool __stdcall MoviePlaying() { return _emu->GetMovieManager()->Playing(); }
 	DllExport bool __stdcall MovieRecording() { return _emu->GetMovieManager()->Recording(); }
 	DllExport void __stdcall MovieRecord(RecordMovieOptions options) { _emu->GetMovieManager()->Record(options); }
+	
+	// TAS features
+	DllExport void __stdcall TasIncrementRerecord() { _emu->GetMovieManager()->IncrementRerecordCount(); }
+	DllExport void __stdcall TasGetState(TasState* state) { *state = _emu->GetMovieManager()->GetTasState(); }
 }

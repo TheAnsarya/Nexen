@@ -34,4 +34,9 @@ public:
 	void Stop();
 	bool Playing();
 	bool Recording();
+	
+	// TAS features
+	void IncrementRerecordCount();
+	TasState GetTasState();
+	MovieRecorder* GetRecorder() { return _recorder.get(); }
 };

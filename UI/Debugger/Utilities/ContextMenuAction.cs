@@ -590,6 +590,8 @@ namespace Mesen.Debugger.Utilities
 		Record,
 		[IconFile("MediaStop")]
 		Stop,
+		[IconFile("Import")]
+		ImportMovie,
 		
 		[IconFile("Network")]
 		NetPlay,

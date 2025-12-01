@@ -3527,6 +3527,8 @@ E
 			<Value ID="Play">Play...</Value>
 			<Value ID="Record">Record...</Value>
 			<Value ID="Stop">Stop</Value>
+			<Value ID="ImportMovie">Import Movie...</Value>
+			<Value ID="ExportMovie">Export Movie...</Value>
 			<Value ID="SoundRecorder">Sound Recorder</Value>
 			<Value ID="VideoRecorder">Video Recorder</Value>
 			<Value ID="Cheats">Cheats</Value>

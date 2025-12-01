@@ -729,6 +729,26 @@ namespace Mesen.ViewModels
 						OnClick = () => {
 							RecordApi.MovieStop();
 						}
+					},
+					new ContextMenuSeparator(),
+					new MainMenuAction() {
+						ActionType = ActionType.ImportMovie,
+						IsEnabled = () => IsGameRunning && !RecordApi.MovieRecording() && !RecordApi.MoviePlaying(),
+						OnClick = async () => {
+							string? filename = await FileDialogHelper.OpenFile(ConfigManager.MovieFolder, wnd, FileDialogHelper.TasMovieExt);
+							if(filename != null) {
+								// Import external movie format and convert to Mesen format
+								// For now, just play it if it's a supported format
+								RecordApi.MoviePlay(filename);
+							}
+						}
+					},
+					new MainMenuAction() {
+						ActionType = ActionType.ExportMovie,
+						IsEnabled = () => false, // TODO: Enable when export is implemented
+						OnClick = async () => {
+							// TODO: Implement export dialog to select target format
+						}
 					}
 				}
 			};

@@ -39,6 +39,8 @@ bool MovieRecorder::Record(RecordMovieOptions options)
 	_inputData = stringstream();
 	_saveStateData = stringstream();
 	_hasSaveState = false;
+	_rerecordCount = 0;
+	_frameCount = 0;
 
 	if(!_writer->Initialize(_filename)) {
 		MessageManager::DisplayMessage("Movies", "CouldNotWriteToFile", FolderUtilities::GetFilename(_filename, true));
@@ -82,6 +84,7 @@ void MovieRecorder::GetGameSettings(stringstream &out)
 	EmuSettings* settings = _emu->GetSettings();
 	WriteString(out, MovieKeys::MesenVersion, settings->GetVersionString());
 	WriteInt(out, MovieKeys::MovieFormatVersion, MovieRecorder::MovieFormatVersion);
+	WriteInt(out, MovieKeys::RerecordCount, _rerecordCount);
 
 	VirtualFile romFile = _emu->GetRomInfo().RomFile;
 	WriteString(out, MovieKeys::GameFile, romFile.GetFileName());
@@ -174,6 +177,12 @@ void MovieRecorder::RecordInput(vector<shared_ptr<BaseControlDevice>> devices)
 		_inputData << ("|" + device->GetTextState());
 	}
 	_inputData << "\n";
+	_frameCount++;
+}
+
+void MovieRecorder::IncrementRerecordCount()
+{
+	_rerecordCount++;
 }
 
 void MovieRecorder::OnLoadBattery(string extension, vector<uint8_t> batteryData)

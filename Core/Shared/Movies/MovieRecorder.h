@@ -25,6 +25,10 @@ private:
 	stringstream _inputData;
 	bool _hasSaveState = false;
 	stringstream _saveStateData;
+	
+	// TAS features
+	uint32_t _rerecordCount = 0;
+	uint32_t _frameCount = 0;
 
 	void GetGameSettings(stringstream &out);
 	void WriteString(stringstream &out, string name, string value);
@@ -37,6 +41,12 @@ public:
 
 	bool Record(RecordMovieOptions options);
 	bool Stop();
+
+	// TAS features
+	void IncrementRerecordCount();
+	uint32_t GetRerecordCount() const { return _rerecordCount; }
+	uint32_t GetFrameCount() const { return _frameCount; }
+	void SetRerecordCount(uint32_t count) { _rerecordCount = count; }
 
 	// Inherited via IInputRecorder
 	void RecordInput(vector<shared_ptr<BaseControlDevice>> devices) override;

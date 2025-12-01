@@ -17,6 +17,7 @@ namespace Mesen.Utilities
 		public const string FirmwareExt = "[[FIRMWAREFILES]]";
 		public const string LabelFileExt = "[[LABELFILES]]";
 		public const string MesenMovieExt = "mmo";
+		public const string TasMovieExt = "[[TASMOVIEFILES]]";
 		public const string TblExt = "tbl";
 		public const string PaletteExt = "pal";
 		public const string TraceExt = "txt";
@@ -76,6 +77,15 @@ namespace Mesen.Utilities
 						filter.Add(new FilePickerFileType("All firmware files") { Patterns = new List<string>() { "*.sfc", "*.pce", "*.nes", "*.bin", "*.rom", "*.col", "*.sms", "*.gg", "*.gba" } });
 					} else if(ext == FileDialogHelper.LabelFileExt) {
 						filter.Add(new FilePickerFileType("All label files") { Patterns = new List<string>() { "*.mlb", "*.sym", "*.dbg", "*.fns", "*.elf", "*.cdb" } });
+					} else if(ext == FileDialogHelper.TasMovieExt) {
+						filter.Add(new FilePickerFileType("All TAS movie files") { Patterns = new List<string>() { 
+							"*.mmo", "*.smv", "*.lsmv", "*.fm2", "*.bk2"
+						} });
+						filter.Add(new FilePickerFileType("Mesen movie files") { Patterns = new List<string>() { "*.mmo" } });
+						filter.Add(new FilePickerFileType("Snes9x movie files") { Patterns = new List<string>() { "*.smv" } });
+						filter.Add(new FilePickerFileType("lsnes movie files") { Patterns = new List<string>() { "*.lsmv" } });
+						filter.Add(new FilePickerFileType("FCEUX movie files") { Patterns = new List<string>() { "*.fm2" } });
+						filter.Add(new FilePickerFileType("BizHawk movie files") { Patterns = new List<string>() { "*.bk2" } });
 					} else {
 						filter.Add(new FilePickerFileType(ext.ToUpper() + " files") { Patterns = new List<string>() { "*." + ext } });
 					}
