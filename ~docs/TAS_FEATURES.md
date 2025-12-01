@@ -2,9 +2,10 @@
 
 This document describes the TAS features implemented in Mesen2, including movie recording/playback, rerecording, and format conversion.
 
-> **Status:** TAS epic is ~95% complete. Core features implemented, Export UI complete.
-> 
-> **Last Updated:** December 1, 2025
+> **Status:** ✅ TAS EPIC COMPLETE  
+> **Issues:** #17-#25 ALL CLOSED  
+> **Last Updated:** December 1, 2025  
+> **Verification:** See [TAS_VERIFICATION_CHECKLIST.md](TAS_VERIFICATION_CHECKLIST.md)
 
 ## Overview
 
@@ -23,7 +24,10 @@ Mesen2 now supports comprehensive TAS (Tool-Assisted Speedrun/Superplay) feature
 
 ### Preferences (Options → Preferences → Display Settings)
 
+- **Show frame counter** - Displays the current frame count on screen ✅
+- **Show lag counter** - Displays the lag frame count on screen ✅
 - **Show rerecord counter (TAS)** - Displays the current rerecord count on screen during movie recording/playback ✅
+- **Flash screen on lag frames (TAS)** - Shows a red border around the screen when a lag frame occurs ✅
 
 ### Input Settings (Options → Input)
 
@@ -197,10 +201,10 @@ Where:
 - #19 - MovieConverter Console App ✅ COMPLETE
 - #20 - Input Display Overlay ✅ PRE-EXISTING
 - #21 - Rerecording from Savestate ✅ COMPLETE
-- #22 - TAS HUD Overlay ✅ PARTIAL (rerecord counter done)
-- #23 - Movie Export to External Formats ⏳ Core done, UI needed
-- #24 - Frame Advance Controls ✅ PARTIAL (shortcuts done)
-- #25 - Lag Frame Detection ⏳ Detection exists, display needed
+- #22 - TAS HUD Overlay ✅ COMPLETE (frame counter, lag counter, rerecord counter)
+- #23 - Movie Export to External Formats ✅ COMPLETE (MovieExportWindow UI, MovieConverter library)
+- #24 - Frame Advance Controls ✅ COMPLETE (shortcuts, step frame)
+- #25 - Lag Frame Detection ✅ COMPLETE (lag counter display, visual indicator)
 
 ## Implementation Details
 
@@ -231,9 +235,9 @@ Where:
 Planned features for future releases:
 
 ### High Priority
-- [ ] MovieExportWindow UI dialog (#23)
-- [ ] Lag frame visual indicator (#25)
-- [ ] Full TAS HUD with frame counter (#22)
+- [x] MovieExportWindow UI dialog (#23) ✅ DONE
+- [x] Lag frame visual indicator (#25) ✅ DONE
+- [x] Full TAS HUD with frame counter (#22) ✅ DONE
 
 ### Medium Priority
 - [ ] Loop playback for specific frame ranges

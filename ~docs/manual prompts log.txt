@@ -409,6 +409,39 @@ add the movie conversion stuff, maybe make a secondary dll/console app to conver
 do github issues and todo-list stuff (create/update), add everything needed for full TAS integration (make issues and todolists for this work);
 ***continue!***; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space;
 
+Is the TAS epic complete? If not, update the todo-lists and github issues, and continue work and documentation (make sure you're updating chat logs and session logs)
+
+work on the TAS epic issues and todolists
+
+The CLI tool `MesenMovieConverter.exe` should be a bonus for external tools to use, the actual conversion stuff should be in a dll (class library) that the cli-tool and Mesen both use for their conversion needs, don't call the exe from Mesen itself, use the class library;
+
+finish off the TAS epic as best you can
+
+use msbuild using the VS2026 version at `C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin`; and then continue
+
+Is this TAS epic over? clean up, finish any remaining work, and make sure all documentation is robust; make a manual verification task list and comprehensive instructions to make sure this epic is properly implemented and matches expectations; make all the docs and formatting and clean up so we can close the chapter on TAS implementation; make sure the code changes are commented as well;
+
+git comment everything in logical batches and push; make sure there is a direct conversion for the different TAS formats, so every format has a conversion method to every other TAS format, so we're not losing data just because the Mesen format doesn't have it;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
