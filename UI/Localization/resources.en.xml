@@ -748,6 +748,7 @@
 			<Control ID="chkShowGameTimer">Show game timer</Control>
 			<Control ID="chkShowLagCounter">Show lag counter</Control>
 			<Control ID="btnResetLagCounter">Reset lag counter</Control>
+			<Control ID="chkShowRerecordCounter">Show rerecord counter (TAS)</Control>
 			<Control ID="chkShowVsConfigOnLoad">Show game configuration dialog when loading VS System games</Control>
 
 			<Control ID="lblFontSettings">Font Settings</Control>
@@ -1757,6 +1758,7 @@
 		<Message ID="MovieExportEntireSegment">Export entire segment</Message>
 		<Message ID="MovieExportSpecificRange">Export specific range...</Message>
 		<Message ID="MovieSaveError">An error occurred while trying to save the movie file.</Message>
+		<Message ID="MovieRerecord">Rerecord #{0}</Message>
 		<Message ID="FileSaveError">An error occurred while trying to save the file.</Message>
 
 		<Message ID="SetKeyHint">Press any key on your keyboard to set a new binding.</Message>
@@ -1928,6 +1930,10 @@ E
 			<Value ID="ToggleFrameCounter">Toggle Frame Counter</Value>
 			<Value ID="ToggleLagCounter">Toggle Lag Counter</Value>
 			<Value ID="ResetLagCounter">Reset Lag Counter</Value>
+			<Value ID="ToggleRerecordCounter">Toggle Rerecord Counter (TAS)</Value>
+			<Value ID="TasFrameAdvance">TAS Frame Advance</Value>
+			<Value ID="TasPreviousFrame">TAS Previous Frame</Value>
+			<Value ID="TasToggleReadOnly">TAS Toggle Read-Only Mode</Value>
 			<Value ID="ToggleOsd">Show/Hide on-screen messages</Value>
 			<Value ID="ToggleAlwaysOnTop">Toggle Display on Top</Value>
 			<Value ID="ToggleKeyboardMode">Toggle Keyboard Mode</Value>

@@ -29,6 +29,8 @@ namespace Mesen.Interop
 		// TAS features
 		[DllImport(DllPath)] public static extern void TasIncrementRerecord();
 		[DllImport(DllPath)] public static extern void TasGetState(ref TasState state);
+		[DllImport(DllPath)] [return: MarshalAs(UnmanagedType.I1)] public static extern bool TasIsTasMode();
+		[DllImport(DllPath)] public static extern void TasSetTasMode([MarshalAs(UnmanagedType.I1)] bool enabled);
 	}
 
 	public enum RecordMovieFrom

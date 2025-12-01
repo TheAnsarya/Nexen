@@ -26,4 +26,6 @@ extern "C"
 	// TAS features
 	DllExport void __stdcall TasIncrementRerecord() { _emu->GetMovieManager()->IncrementRerecordCount(); }
 	DllExport void __stdcall TasGetState(TasState* state) { *state = _emu->GetMovieManager()->GetTasState(); }
+	DllExport bool __stdcall TasIsTasMode() { return _emu->GetMovieManager()->IsTasMode(); }
+	DllExport void __stdcall TasSetTasMode(bool enabled) { _emu->GetMovieManager()->SetTasMode(enabled); }
 }

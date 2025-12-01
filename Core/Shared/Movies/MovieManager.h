@@ -39,4 +39,9 @@ public:
 	void IncrementRerecordCount();
 	TasState GetTasState();
 	MovieRecorder* GetRecorder() { return _recorder.get(); }
+	
+	// Rerecording support
+	bool HandleRerecord(uint32_t frameNumber);
+	bool IsTasMode();
+	void SetTasMode(bool enabled);
 };

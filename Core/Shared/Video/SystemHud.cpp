@@ -122,6 +122,27 @@ void SystemHud::ShowLagCounter(DebugHud* hud, uint32_t screenWidth, int lineNumb
 	DrawString(hud, screenWidth, lagCounter, screenWidth - 8 - length, yPos);
 }
 
+void SystemHud::ShowRerecordCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const
+{
+	MovieManager* movieMgr = _emu->GetMovieManager();
+	if(!movieMgr->Recording() && !movieMgr->Playing()) {
+		return;
+	}
+	
+	int yPos = 10 + 10 * lineNumber;
+	TasState state = movieMgr->GetTasState();
+
+	string rerecordCounter = MessageManager::Localize("Rerecord") + ": " + std::to_string(state.RerecordCount);
+	uint32_t length = DrawStringCommand::MeasureString(rerecordCounter).X;
+	DrawString(hud, screenWidth, rerecordCounter, screenWidth - 8 - length, yPos);
+}
+
+void SystemHud::ShowInputDisplay(DebugHud* hud, uint32_t screenWidth, uint32_t screenHeight) const
+{
+	// TODO: Implement input display for TAS
+	// This will show current controller inputs on screen
+}
+
 void SystemHud::DrawCounters(DebugHud* hud, uint32_t screenWidth) const
 {
 	int lineNumber = 0;
@@ -139,6 +160,9 @@ void SystemHud::DrawCounters(DebugHud* hud, uint32_t screenWidth) const
 		}
 		if(cfg.ShowLagCounter) {
 			ShowLagCounter(hud, screenWidth, lineNumber++);
+		}
+		if(cfg.ShowRerecordCounter) {
+			ShowRerecordCounter(hud, screenWidth, lineNumber++);
 		}
 	}
 }

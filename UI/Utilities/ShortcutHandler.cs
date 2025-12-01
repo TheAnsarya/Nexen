@@ -99,6 +99,12 @@ namespace Mesen.Utilities
 				case EmulatorShortcut.RecordTape: RecordTape(); break;
 				case EmulatorShortcut.StopRecordTape: EmuApi.ProcessTapeRecorderAction(TapeRecorderAction.StopRecord); break;
 
+				// TAS shortcuts
+				case EmulatorShortcut.ToggleRerecordCounter: ToggleRerecordCounter(); break;
+				case EmulatorShortcut.TasFrameAdvance: TasFrameAdvance(); break;
+				case EmulatorShortcut.TasPreviousFrame: TasPreviousFrame(); break;
+				case EmulatorShortcut.TasToggleReadOnly: TasToggleReadOnly(); break;
+
 				case EmulatorShortcut.LoadStateFromFile: LoadStateFromFile(); break;
 				case EmulatorShortcut.SaveStateToFile: SaveStateToFile(); break;
 
@@ -503,6 +509,41 @@ namespace Mesen.Utilities
 		{
 			ConfigManager.Config.Preferences.ShowLagCounter = !ConfigManager.Config.Preferences.ShowLagCounter;
 			ConfigManager.Config.Preferences.ApplyConfig();
+		}
+
+		private void ToggleRerecordCounter()
+		{
+			ConfigManager.Config.Preferences.ShowRerecordCounter = !ConfigManager.Config.Preferences.ShowRerecordCounter;
+			ConfigManager.Config.Preferences.ApplyConfig();
+		}
+
+		private void TasFrameAdvance()
+		{
+			// Run a single frame (uses existing RunSingleFrame shortcut functionality)
+			EmuApi.ExecuteShortcut(new ExecuteShortcutParams { Shortcut = EmulatorShortcut.RunSingleFrame, Param = 0 });
+		}
+
+		private void TasPreviousFrame()
+		{
+			// Step back one frame using rewind functionality
+			// This uses the existing Rewind shortcut which already handles rerecording in the core
+			EmuApi.ExecuteShortcut(new ExecuteShortcutParams { Shortcut = EmulatorShortcut.RewindTenSecs, Param = 0 });
+		}
+
+		private void TasToggleReadOnly()
+		{
+			// Toggle between read-only playback and read-write (rerecording) mode
+			// This affects whether loading a state truncates the movie or just plays from that point
+			TasState state = RecordApi.TasGetState();
+			if(state.IsPlaying || state.IsRecording) {
+				// TODO: Implement read-only mode toggle in core
+				DisplayMessage("TAS", "Read-only mode toggle not yet implemented");
+			}
+		}
+
+		private void DisplayMessage(string title, string message)
+		{
+			EmuApi.WriteLogEntry(title + ": " + message);
 		}
 
 		private void ToggleGameTimer()

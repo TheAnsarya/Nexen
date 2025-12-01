@@ -41,6 +41,8 @@ bool MovieRecorder::Record(RecordMovieOptions options)
 	_hasSaveState = false;
 	_rerecordCount = 0;
 	_frameCount = 0;
+	_inputLines.clear();
+	_tasMode = true; // Enable TAS mode by default for new recordings
 
 	if(!_writer->Initialize(_filename)) {
 		MessageManager::DisplayMessage("Movies", "CouldNotWriteToFile", FolderUtilities::GetFilename(_filename, true));
@@ -173,16 +175,53 @@ bool MovieRecorder::Stop()
 
 void MovieRecorder::RecordInput(vector<shared_ptr<BaseControlDevice>> devices)
 {
+	string line;
 	for(shared_ptr<BaseControlDevice> &device : devices) {
-		_inputData << ("|" + device->GetTextState());
+		line += "|" + device->GetTextState();
 	}
-	_inputData << "\n";
+	line += "\n";
+	
+	_inputData << line;
+	_inputLines.push_back(line);
 	_frameCount++;
 }
 
 void MovieRecorder::IncrementRerecordCount()
 {
 	_rerecordCount++;
+}
+
+void MovieRecorder::TruncateInputToFrame(uint32_t frameNumber)
+{
+	if(frameNumber < _inputLines.size()) {
+		// Truncate the input lines vector
+		_inputLines.resize(frameNumber);
+		_frameCount = frameNumber;
+		
+		// Rebuild the input data stream from the remaining lines
+		_inputData = stringstream();
+		for(const string& line : _inputLines) {
+			_inputData << line;
+		}
+	}
+}
+
+bool MovieRecorder::HandleRerecord(uint32_t frameNumber)
+{
+	if(!_tasMode) {
+		return false;
+	}
+	
+	// Truncate input to the frame we're loading
+	TruncateInputToFrame(frameNumber);
+	
+	// Increment the rerecord counter
+	IncrementRerecordCount();
+	
+	MessageManager::DisplayMessage("Movies", "MovieRerecord", 
+		std::to_string(_rerecordCount) + " (frame " + std::to_string(frameNumber) + ")");
+	
+	return true;
 }
 
 void MovieRecorder::OnLoadBattery(string extension, vector<uint8_t> batteryData)

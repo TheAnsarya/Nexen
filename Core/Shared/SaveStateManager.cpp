@@ -10,6 +10,8 @@
 #include "Shared/Movies/MovieManager.h"
 #include "Shared/RenderedFrame.h"
 #include "Shared/EventType.h"
+#include "Shared/Interfaces/IConsole.h"
+#include "Shared/BaseControlManager.h"
 #include "Debugger/Debugger.h"
 #include "Netplay/GameClient.h"
 #include "Shared/Video/VideoDecoder.h"
@@ -202,9 +204,20 @@ bool SaveStateManager::LoadState(istream &stream)
 		DeserializeResult result = _emu->Deserialize(stream, fileFormatVersion, false, stateConsoleType);
 
 		if(result == DeserializeResult::Success) {
-			//Stop any movie that might have been playing/recording if a state is loaded
-			//(Note: Loading a state is disabled in the UI while a movie is playing/recording)
-			_emu->GetMovieManager()->Stop();
+			// Check if we should handle TAS rerecording instead of stopping the movie
+			MovieManager* movieManager = _emu->GetMovieManager();
+			if(movieManager->Recording() && movieManager->IsTasMode()) {
+				// Get current frame from control manager for rerecording
+				shared_ptr<IConsole> console = _emu->GetConsole();
+				if(console) {
+					uint32_t frameNumber = console->GetControlManager()->GetPollCounter();
+					movieManager->HandleRerecord(frameNumber);
+				}
+			} else {
+				// Stop any movie that might have been playing/recording if a state is loaded
+				// (Note: Loading a state is disabled in the UI while a movie is playing/recording)
+				movieManager->Stop();
+			}
 
 			if(_emu->IsPaused() && !_emu->GetVideoRenderer()->IsRecording()) {
 				//Only send the saved frame if the emulation is paused and no avi recording is in progress

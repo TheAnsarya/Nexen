@@ -42,6 +42,7 @@ std::unordered_map<string, string> MessageManager::_enResources = {
 	{ "KeyboardModeDisabled", u8"Keyboard mode disabled." },
 	{ "KeyboardModeEnabled", u8"Keyboard connected - shortcut keys disabled." },
 	{ "Lag", u8"Lag" },
+	{ "Rerecord", u8"Rerecord" },
 	{ "Mapper", u8"Mapper: %1, SubMapper: %2" },
 	{ "MovieEnded", u8"Movie ended." },
 	{ "MovieStopped", u8"Movie stopped." },

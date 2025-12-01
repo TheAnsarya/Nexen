@@ -40,6 +40,8 @@ private:
 	void ShowFrameCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
 	void ShowLagCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
 	void ShowGameTimer(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
+	void ShowRerecordCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
+	void ShowInputDisplay(DebugHud* hud, uint32_t screenWidth, uint32_t screenHeight) const;
 
 	void DrawCounters(DebugHud* hud, uint32_t screenWidth) const;
 

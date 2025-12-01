@@ -29,6 +29,8 @@ private:
 	// TAS features
 	uint32_t _rerecordCount = 0;
 	uint32_t _frameCount = 0;
+	vector<string> _inputLines;  // Store input lines for rerecording support
+	bool _tasMode = false;       // Enable TAS rerecording mode
 
 	void GetGameSettings(stringstream &out);
 	void WriteString(stringstream &out, string name, string value);
@@ -47,6 +49,12 @@ public:
 	uint32_t GetRerecordCount() const { return _rerecordCount; }
 	uint32_t GetFrameCount() const { return _frameCount; }
 	void SetRerecordCount(uint32_t count) { _rerecordCount = count; }
+	void SetTasMode(bool enabled) { _tasMode = enabled; }
+	bool IsTasMode() const { return _tasMode; }
+	
+	// Rerecording support - called when loading a savestate during recording
+	bool HandleRerecord(uint32_t frameNumber);
+	void TruncateInputToFrame(uint32_t frameNumber);
 
 	// Inherited via IInputRecorder
 	void RecordInput(vector<shared_ptr<BaseControlDevice>> devices) override;

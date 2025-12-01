@@ -168,6 +168,7 @@
 							<CheckBox Content="{l:Translate chkShowLagCounter}" IsChecked="{Binding Config.ShowLagCounter}" />
 							<c:ButtonWithIcon Icon="Assets/Refresh.png" Text="{l:Translate btnResetLagCounter}" Click="btnResetLagCounter_OnClick" Margin="10 -5 0 -5" />
 						</StackPanel>
+						<CheckBox Content="{l:Translate chkShowRerecordCounter}" IsChecked="{Binding Config.ShowRerecordCounter}" />
 						<CheckBox Content="{l:Translate chkShowDebugInformation}" IsChecked="{Binding Config.ShowDebugInfo}" />
 					</c:OptionSection>
 

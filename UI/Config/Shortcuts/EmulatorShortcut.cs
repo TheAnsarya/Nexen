@@ -141,6 +141,12 @@ namespace Mesen.Config.Shortcuts
 		StartRecordHdPack,
 		StopRecordHdPack,
 
+		// TAS shortcuts
+		ToggleRerecordCounter,
+		TasFrameAdvance,
+		TasPreviousFrame,
+		TasToggleReadOnly,
+
 		LastValidValue,
 		[Obsolete] LoadRandomGame,
 	}
