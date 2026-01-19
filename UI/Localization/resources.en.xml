@@ -1559,6 +1559,9 @@
 			<Control ID="chkAutoLoadMlbFiles">.MLB files (Mesen label file)</Control>
 			<Control ID="chkAutoLoadFnsFiles">.FNS files (NESASM)</Control>
 			<Control ID="chkAutoLoadCdlFiles">.CDL files (Code/data log)</Control>
+			
+			<Control ID="lblAutoExportSettings">Auto-export settings</Control>
+			<Control ID="chkAutoExportPansy">Automatically export .PANSY files (disassembly metadata)</Control>
 
 			<Control ID="lblImportFilters">Import filters</Control>
 			<Control ID="lblImportFiltersHint">Import the following types of labels:</Control>
@@ -3251,6 +3254,9 @@ E
 			<Value ID="RunToIrq">Run to IRQ</Value>
 			<Value ID="ImportLabels">Import labels</Value>
 			<Value ID="ExportLabels">Export labels</Value>
+			<Value ID="ExportPansy">Export Pansy metadata</Value>
+			<Value ID="ExportPansySuccess">Pansy metadata file exported successfully.</Value>
+			<Value ID="ExportPansyFailed">Failed to export Pansy metadata file.</Value>
 			<Value ID="ImportWatchEntries">Import watch entries</Value>
 			<Value ID="ExportWatchEntries">Export watch entries</Value>
 			<Value ID="ResetWorkspace">Reset workspace</Value>

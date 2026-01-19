@@ -18,6 +18,8 @@ namespace Mesen.Config
 		[Reactive] public bool AutoLoadCdbFiles { get; set; } = true;
 		[Reactive] public bool AutoLoadElfFiles { get; set; } = true;
 		[Reactive] public bool AutoLoadFnsFiles { get; set; } = true;
+		
+		[Reactive] public bool AutoExportPansy { get; set; } = true;
 
 		[Reactive] public bool ResetLabelsOnImport { get; set; } = true;
 

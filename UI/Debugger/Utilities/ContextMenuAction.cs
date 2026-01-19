@@ -767,6 +767,8 @@ namespace Mesen.Debugger.Utilities
 		ImportLabels,
 		[IconFile("Export")]
 		ExportLabels,
+		[IconFile("Export")]
+		ExportPansy,
 		
 		[IconFile("Import")]
 		ImportWatchEntries,

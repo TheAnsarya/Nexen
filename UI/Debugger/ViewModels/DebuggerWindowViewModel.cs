@@ -849,6 +849,22 @@ namespace Mesen.Debugger.ViewModels
 							}
 						}
 					},
+					new ContextMenuAction() {
+						ActionType = ActionType.ExportPansy,
+						OnClick = async () => {
+							string initFilename = EmuApi.GetRomInfo().GetRomName() + ".pansy";
+							string? filename = await FileDialogHelper.SaveFile(null, initFilename, wnd, "pansy");
+							if(filename != null) {
+								var romInfo = EmuApi.GetRomInfo();
+								var memoryType = CpuType.GetPrgRomMemoryType();
+								if(PansyExporter.Export(filename, romInfo, memoryType)) {
+									await MesenMsgBox.Show(wnd, "ExportPansySuccess", MessageBoxButtons.OK, MessageBoxIcon.Info);
+								} else {
+									await MesenMsgBox.Show(wnd, "ExportPansyFailed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+								}
+							}
+						}
+					},
 
 					new ContextMenuSeparator(),
 
