@@ -241,6 +241,11 @@ namespace Mesen.Debugger.Utilities
 		public static void Save(bool releaseWorkspace = false)
 		{
 			_workspace?.Save(_path, _romInfo.CpuTypes);
+			
+			// Auto-export Pansy file with CDL data when saving workspace
+			var memoryType = _romInfo.ConsoleType.GetMainCpuType().GetPrgRomMemoryType();
+			PansyExporter.AutoExport(_romInfo, memoryType);
+			
 			if(releaseWorkspace) {
 				_workspace = null;
 			}
