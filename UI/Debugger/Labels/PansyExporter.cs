@@ -32,9 +32,12 @@ namespace Mesen.Debugger.Labels
 		private const ushort SECTION_SYMBOLS = 0x0002;
 		private const ushort SECTION_COMMENTS = 0x0003;
 		private const ushort SECTION_MEMORY_REGIONS = 0x0004;
+		private const ushort SECTION_DATA_BLOCKS = 0x0005;
 		private const ushort SECTION_CROSS_REFS = 0x0006;
 		private const ushort SECTION_JUMP_TARGETS = 0x0007;
 		private const ushort SECTION_SUB_ENTRY_POINTS = 0x0008;
+		private const ushort SECTION_BOOKMARKS = 0x0009;
+		private const ushort SECTION_WATCH_ENTRIES = 0x000A;
 
 		// Platform IDs matching Pansy specification
 		private static readonly Dictionary<RomFormat, byte> PlatformIds = new() {
@@ -203,6 +206,36 @@ namespace Mesen.Debugger.Labels
 						UncompressedSize = (uint)subBytes.Length
 					});
 					sectionData.Add(subBytes);
+				}
+
+				// Section 6: MEMORY_REGIONS (Phase 3 - Enhanced Export)
+				var memRegions = BuildMemoryRegionsSection(labels, memoryType);
+				if (memRegions.Length > 4) { // More than just the count
+					sections.Add(new SectionInfo {
+						Type = SECTION_MEMORY_REGIONS,
+						UncompressedSize = (uint)memRegions.Length
+					});
+					sectionData.Add(memRegions);
+				}
+
+				// Section 7: DATA_BLOCKS (Phase 3 - Enhanced Export)
+				var dataBlocks = BuildDataBlocksSection(cdlData);
+				if (dataBlocks.Length > 4) { // More than just the count
+					sections.Add(new SectionInfo {
+						Type = SECTION_DATA_BLOCKS,
+						UncompressedSize = (uint)dataBlocks.Length
+					});
+					sectionData.Add(dataBlocks);
+				}
+
+				// Section 8: CROSS_REFS (Phase 3 - Enhanced Export)
+				var crossRefs = BuildCrossRefsSection(labels);
+				if (crossRefs.Length > 4) { // More than just the count
+					sections.Add(new SectionInfo {
+						Type = SECTION_CROSS_REFS,
+						UncompressedSize = (uint)crossRefs.Length
+					});
+					sectionData.Add(crossRefs);
 				}
 
 				// Calculate section offsets
@@ -443,6 +476,123 @@ namespace Mesen.Debugger.Labels
 			writer.Write((uint)addresses.Length);
 			foreach (var addr in addresses) {
 				writer.Write(addr);
+			}
+
+			return ms.ToArray();
+		}
+
+		/// <summary>
+		/// Build memory regions section from labels with length > 1.
+		/// Phase 3: Enhanced data export.
+		/// </summary>
+		private static byte[] BuildMemoryRegionsSection(List<CodeLabel> labels, MemoryType memType)
+		{
+			using var ms = new MemoryStream();
+			using var writer = new BinaryWriter(ms);
+
+			// Memory regions are labels with length > 1
+			var regions = labels.Where(l => l.Length > 1 && !string.IsNullOrEmpty(l.Label)).ToList();
+			writer.Write((uint)regions.Count);
+
+			foreach (var region in regions) {
+				// Start address (4 bytes)
+				writer.Write((uint)region.Address);
+
+				// End address (4 bytes) 
+				writer.Write((uint)(region.Address + region.Length - 1));
+
+				// Type (1 byte): 0=Unknown, 1=Code, 2=Data, 3=RAM, 4=IO
+				byte regionType = 2; // Default to Data
+				writer.Write(regionType);
+
+				// Memory type (1 byte)
+				writer.Write((byte)region.MemoryType);
+
+				// Flags (2 bytes)
+				writer.Write((ushort)0);
+
+				// Name length + name
+				byte[] nameBytes = Encoding.UTF8.GetBytes(region.Label);
+				writer.Write((ushort)nameBytes.Length);
+				writer.Write(nameBytes);
+			}
+
+			return ms.ToArray();
+		}
+
+		/// <summary>
+		/// Build data blocks section from CDL data.
+		/// Phase 3: Enhanced data export - identifies contiguous data regions.
+		/// </summary>
+		private static byte[] BuildDataBlocksSection(byte[]? cdlData)
+		{
+			using var ms = new MemoryStream();
+			using var writer = new BinaryWriter(ms);
+
+			if (cdlData == null || cdlData.Length == 0) {
+				writer.Write((uint)0);
+				return ms.ToArray();
+			}
+
+			// Find contiguous data blocks (CDL flag 0x02 = Data)
+			var blocks = new List<(uint Start, uint End)>();
+			int? blockStart = null;
+
+			for (int i = 0; i < cdlData.Length; i++) {
+				bool isData = (cdlData[i] & 0x02) != 0 && (cdlData[i] & 0x01) == 0; // Data flag, not code
+				
+				if (isData && blockStart == null) {
+					blockStart = i;
+				} else if (!isData && blockStart != null) {
+					blocks.Add(((uint)blockStart.Value, (uint)(i - 1)));
+					blockStart = null;
+				}
+			}
+			
+			// Handle final block
+			if (blockStart != null) {
+				blocks.Add(((uint)blockStart.Value, (uint)(cdlData.Length - 1)));
+			}
+
+			// Only write blocks larger than 4 bytes (filter noise)
+			var significantBlocks = blocks.Where(b => b.End - b.Start >= 4).ToList();
+			writer.Write((uint)significantBlocks.Count);
+
+			foreach (var block in significantBlocks) {
+				writer.Write(block.Start);  // Start address (4 bytes)
+				writer.Write(block.End);    // End address (4 bytes)
+				writer.Write((byte)2);      // Type: Data
+				writer.Write((byte)0);      // Flags
+				writer.Write((ushort)0);    // Reserved
+			}
+
+			return ms.ToArray();
+		}
+
+		/// <summary>
+		/// Build cross-references section from label data.
+		/// Phase 3: Enhanced data export - tracks who references whom.
+		/// </summary>
+		private static byte[] BuildCrossRefsSection(List<CodeLabel> labels)
+		{
+			using var ms = new MemoryStream();
+			using var writer = new BinaryWriter(ms);
+
+			// For now, create cross-refs for labeled subroutines
+			// Future: Could query actual disassembly for JSR/JMP/branch targets
+			var xrefs = new List<(uint From, uint To, byte Type)>();
+
+			// Placeholder - in a full implementation, we would scan the disassembly
+			// for instructions that reference labeled addresses
+			writer.Write((uint)xrefs.Count);
+
+			foreach (var xref in xrefs) {
+				writer.Write(xref.From);    // Source address (4 bytes)
+				writer.Write(xref.To);      // Target address (4 bytes)
+				writer.Write(xref.Type);    // Type: 1=Call, 2=Jump, 3=Read, 4=Write
+				writer.Write((byte)0);      // Memory type from
+				writer.Write((byte)0);      // Memory type to
+				writer.Write((byte)0);      // Flags
 			}
 
 			return ms.ToArray();
