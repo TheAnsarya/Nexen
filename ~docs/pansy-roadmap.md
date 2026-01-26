@@ -1,7 +1,7 @@
 # Mesen2 Pansy Integration Roadmap
 
 **Created:** 2026-01-19 18:45 UTC  
-**Last Updated:** 2026-01-19 18:45 UTC
+**Last Updated:** 2026-01-26 05:15 UTC
 
 ## Phase 1: Core Export ✅ COMPLETE
 
@@ -22,9 +22,29 @@
 - [x] Localization strings (English)
 - [x] File dialog with `.pansy` extension
 
+## Phase 1.5: Auto-Export & Integrity 🔄 IN PROGRESS
+
+**Target:** 2026-01-26  
+**Priority:** CRITICAL  
+**Plan:** [background-cdl-recording.md](plans/background-cdl-recording.md), [rom-hash-verification.md](plans/rom-hash-verification.md)
+
+### Background CDL Recording
+- [ ] Enable CDL recording without opening debugger
+- [ ] Auto-start recording on ROM load (if option enabled)
+- [ ] Periodic auto-save (configurable interval)
+- [ ] Save on ROM unload
+- [ ] Background timer for auto-save
+
+### ROM Hash Verification
+- [ ] Calculate actual ROM CRC32 (fix placeholder)
+- [ ] Store CRC32 in Pansy file header
+- [ ] Verify CRC before updating existing Pansy
+- [ ] Create separate files for different ROM versions
+- [ ] Configuration for CRC mismatch behavior
+
 ## Phase 2: Testing & Validation
 
-**Target:** 2026-01-20  
+**Target:** 2026-01-27  
 **Priority:** High
 
 ### Testing Tasks

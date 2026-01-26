@@ -13,6 +13,11 @@ using System.Text;
 namespace Mesen.Debugger.Labels
 {
 	/// <summary>
+	/// Pansy file header structure for reading existing files.
+	/// </summary>
+	public record PansyHeader(ushort Version, byte Platform, byte Flags, uint RomSize, uint RomCrc32, long Timestamp);
+
+	/// <summary>
 	/// Exports Mesen2 debugger data to Pansy metadata format.
 	/// Pansy is a universal disassembly metadata format for retro game analysis.
 	/// </summary>
@@ -48,14 +53,94 @@ namespace Mesen.Debugger.Labels
 			{ RomFormat.Ws, 0x0B },     // WonderSwan
 		};
 
+		// CRC32 lookup table (IEEE polynomial 0xEDB88320)
+		private static readonly uint[] Crc32Table = InitCrc32Table();
+
+		private static uint[] InitCrc32Table()
+		{
+			var table = new uint[256];
+			for (uint i = 0; i < 256; i++) {
+				uint crc = i;
+				for (int j = 0; j < 8; j++) {
+					crc = (crc & 1) != 0 ? (crc >> 1) ^ 0xEDB88320 : crc >> 1;
+				}
+				table[i] = crc;
+			}
+			return table;
+		}
+
+		private static uint ComputeCrc32(byte[] data)
+		{
+			uint crc = 0xFFFFFFFF;
+			foreach (byte b in data) {
+				crc = Crc32Table[(crc ^ b) & 0xFF] ^ (crc >> 8);
+			}
+			return ~crc;
+		}
+
+		/// <summary>
+		/// Calculate CRC32 of the ROM data for integrity verification.
+		/// </summary>
+		/// <param name="romInfo">ROM information containing console type</param>
+		/// <returns>CRC32 hash of the ROM data, or 0 if unavailable</returns>
+		public static uint CalculateRomCrc32(RomInfo romInfo)
+		{
+			try {
+				var cpuType = romInfo.ConsoleType.GetMainCpuType();
+				var memType = cpuType.GetPrgRomMemoryType();
+				byte[] romData = DebugApi.GetMemoryState(memType);
+				if (romData == null || romData.Length == 0)
+					return 0;
+				return ComputeCrc32(romData);
+			} catch (Exception ex) {
+				System.Diagnostics.Debug.WriteLine($"[PansyExporter] CRC32 calculation failed: {ex.Message}");
+				return 0;
+			}
+		}
+
+		/// <summary>
+		/// Read the header from an existing Pansy file to get stored CRC.
+		/// </summary>
+		/// <param name="path">Path to the pansy file</param>
+		/// <returns>PansyHeader if valid, null otherwise</returns>
+		public static PansyHeader? ReadHeader(string path)
+		{
+			try {
+				if (!File.Exists(path))
+					return null;
+
+				using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+				using var reader = new BinaryReader(stream);
+
+				// Check magic (8 bytes)
+				byte[] magic = reader.ReadBytes(8);
+				if (System.Text.Encoding.ASCII.GetString(magic).TrimEnd('\0') != "PANSY")
+					return null;
+
+				// Read header fields
+				ushort version = reader.ReadUInt16();
+				byte platform = reader.ReadByte();
+				byte flags = reader.ReadByte();
+				uint romSize = reader.ReadUInt32();
+				uint romCrc32 = reader.ReadUInt32();
+				long timestamp = reader.ReadInt64();
+
+				return new PansyHeader(version, platform, flags, romSize, romCrc32, timestamp);
+			} catch (Exception ex) {
+				System.Diagnostics.Debug.WriteLine($"[PansyExporter] Failed to read header: {ex.Message}");
+				return null;
+			}
+		}
+
 		/// <summary>
 		/// Export all debugger data to a Pansy file.
 		/// </summary>
 		/// <param name="path">Output file path</param>
 		/// <param name="romInfo">ROM information for CRC and platform</param>
 		/// <param name="memoryType">Memory type to export CDL data for</param>
+		/// <param name="romCrc32Override">Optional CRC32 value to use (if 0, will be calculated)</param>
 		/// <returns>True if export succeeded</returns>
-		public static bool Export(string path, RomInfo romInfo, MemoryType memoryType)
+		public static bool Export(string path, RomInfo romInfo, MemoryType memoryType, uint romCrc32Override = 0)
 		{
 			try {
 				using var stream = new FileStream(path, FileMode.Create, FileAccess.Write);
@@ -128,10 +213,10 @@ namespace Mesen.Debugger.Labels
 					currentOffset += sections[i].CompressedSize;
 				}
 
-				// Get ROM size and CRC from CDL statistics
+				// Get ROM size and CRC
 				var stats = DebugApi.GetCdlStatistics(memoryType);
 				uint romSize = stats.TotalBytes;
-				uint romCrc = 0; // CRC not available from Mesen API
+				uint romCrc = romCrc32Override != 0 ? romCrc32Override : CalculateRomCrc32(romInfo);
 
 				// Write header (32 bytes)
 				writer.Write(Encoding.ASCII.GetBytes(MAGIC)); // 8 bytes
@@ -187,10 +272,33 @@ namespace Mesen.Debugger.Labels
 				return;
 			}
 
-			string pansyPath = GetPansyFilePath(romInfo.GetRomName());
-			System.Diagnostics.Debug.WriteLine($"[Pansy] Exporting to: {pansyPath}");
-			bool success = Export(pansyPath, romInfo, memoryType);
-			System.Diagnostics.Debug.WriteLine($"[Pansy] Export result: {success}");
+			string romName = romInfo.GetRomName();
+			string pansyPath = GetPansyFilePath(romName);
+			System.Diagnostics.Debug.WriteLine($"[Pansy] Target path: {pansyPath}");
+
+			// Calculate current ROM CRC32
+			uint currentCrc = CalculateRomCrc32(romInfo);
+			System.Diagnostics.Debug.WriteLine($"[Pansy] Current ROM CRC32: {currentCrc:X8}");
+
+			// Check if existing pansy file has matching CRC
+			var existingHeader = ReadHeader(pansyPath);
+			if (existingHeader != null) {
+				System.Diagnostics.Debug.WriteLine($"[Pansy] Existing file CRC32: {existingHeader.RomCrc32:X8}");
+				
+				if (existingHeader.RomCrc32 != 0 && currentCrc != 0 && existingHeader.RomCrc32 != currentCrc) {
+					// CRC mismatch - this is likely a hacked/translated ROM
+					// Create a separate file with CRC suffix instead of overwriting
+					string altPath = GetPansyFilePathWithCrc(romName, currentCrc);
+					System.Diagnostics.Debug.WriteLine($"[Pansy] CRC MISMATCH! Creating separate file: {altPath}");
+					bool success = Export(altPath, romInfo, memoryType, currentCrc);
+					System.Diagnostics.Debug.WriteLine($"[Pansy] Export result: {success}");
+					return;
+				}
+			}
+
+			// Export normally (CRC matches or no existing file)
+			bool exported = Export(pansyPath, romInfo, memoryType, currentCrc);
+			System.Diagnostics.Debug.WriteLine($"[Pansy] Export result: {exported}");
 		}
 
 		/// <summary>
@@ -200,6 +308,15 @@ namespace Mesen.Debugger.Labels
 		{
 			string filename = Path.GetFileNameWithoutExtension(romName);
 			return Path.Combine(ConfigManager.DebuggerFolder, $"{filename}.pansy");
+		}
+
+		/// <summary>
+		/// Get Pansy file path with CRC suffix for mismatched ROMs.
+		/// </summary>
+		public static string GetPansyFilePathWithCrc(string romName, uint crc32)
+		{
+			string filename = Path.GetFileNameWithoutExtension(romName);
+			return Path.Combine(ConfigManager.DebuggerFolder, $"{filename}_{crc32:x8}.pansy");
 		}
 
 		private static byte GetPlatformId(RomFormat format)
