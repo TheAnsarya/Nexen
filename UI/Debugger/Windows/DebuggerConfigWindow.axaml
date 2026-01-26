@@ -240,6 +240,27 @@
 							IsChecked="{Binding Integration.AutoExportPansy}"
 							Content="{l:Translate chkAutoExportPansy}"
 						/>
+						<CheckBox
+							IsChecked="{Binding Integration.BackgroundCdlRecording}"
+							Content="{l:Translate chkBackgroundCdlRecording}"
+							Margin="0 5 0 0"
+						/>
+						<StackPanel Orientation="Horizontal" Margin="20 5 0 0" IsEnabled="{Binding Integration.BackgroundCdlRecording}">
+							<TextBlock Text="{l:Translate lblAutoSaveInterval}" VerticalAlignment="Center" />
+							<NumericUpDown
+								Value="{Binding Integration.AutoSaveIntervalMinutes}"
+								Minimum="1"
+								Maximum="60"
+								Width="80"
+								Margin="5 0"
+							/>
+							<TextBlock Text="{l:Translate lblMinutes}" VerticalAlignment="Center" />
+						</StackPanel>
+						<CheckBox
+							IsChecked="{Binding Integration.SavePansyOnRomUnload}"
+							Content="{l:Translate chkSavePansyOnRomUnload}"
+							Margin="0 5 0 0"
+						/>
 					</c:OptionSection>
 					<c:OptionSection Header="{l:Translate lblImportFilters}">
 						<TextBlock Text="{l:Translate lblImportFiltersHint}" TextWrapping="Wrap" Margin="0 5 0 0" />

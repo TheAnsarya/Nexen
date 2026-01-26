@@ -1,6 +1,7 @@
 # Pansy Export - GitHub Issues
 
 **Created:** 2026-01-19 18:48 UTC  
+**Last Updated:** 2026-01-26 09:30 UTC  
 **Repository:** TheAnsarya/Mesen2  
 **Branch:** pansy-export
 
@@ -42,6 +43,53 @@ Implement core Pansy binary format export functionality for Mesen2 debugger.
 5. SUB_ENTRY_POINTS (0x0008) - Function entry points
 
 **Testing:** Deferred to Issue #2 (Phase 2)
+
+---
+
+### Issue #1.5: 🔒 Background CDL Recording & ROM Hash Verification - Phase 1.5
+
+**Status:** ✅ COMPLETED  
+**Labels:** enhancement, reliability, phase-1.5, critical  
+**Milestone:** Pansy Integration v1.0  
+**Completed:** 2026-01-26 09:00 UTC  
+**Commits:** `38dfccf7`, `e95a7858`
+
+**Description:**
+Two critical reliability features for Pansy export:
+1. Background CDL recording without requiring debugger window
+2. ROM CRC32 verification to prevent Pansy file corruption
+
+**Background CDL Recording - Completed:**
+- [x] Enable CDL recording without opening debugger
+- [x] Auto-start recording on ROM load (if config enabled)
+- [x] Periodic auto-save (configurable interval, default 5 min)
+- [x] Save on ROM unload
+- [x] Background timer with thread-safe UI updates
+- [x] New file: `BackgroundPansyExporter.cs` (160 lines)
+- [x] Hook into MainWindow GameLoaded/EmulationStopped
+
+**ROM Hash Verification - Completed:**
+- [x] Calculate actual ROM CRC32 using IEEE polynomial
+- [x] Store CRC32 in Pansy file header (was placeholder 0)
+- [x] Verify CRC before updating existing Pansy file
+- [x] Create separate CRC-suffixed files for ROM mismatches
+- [x] Custom CRC32 implementation (System.IO.Hashing unavailable)
+- [x] PansyHeader record for parsing existing files
+
+**Configuration Options Added:**
+- `BackgroundCdlRecording` (bool, default: false)
+- `AutoSaveIntervalMinutes` (int, default: 5)
+- `SavePansyOnRomUnload` (bool, default: true)
+
+**Files Modified:**
+- `UI/Debugger/Labels/PansyExporter.cs` - Added CRC32 calculation (~90 lines)
+- `UI/Debugger/Labels/BackgroundPansyExporter.cs` - NEW (160 lines)
+- `UI/Config/IntegrationConfig.cs` - Added 3 config properties
+- `UI/MainWindow.axaml.cs` - Added hooks for ROM load/unload
+
+**Remaining (UI Polish):**
+- [ ] Add UI config checkboxes in DebuggerConfigWindow.axaml
+- [ ] Add localization strings for new options
 
 ---
 
@@ -343,16 +391,17 @@ Complete documentation and prepare for upstream PR.
 | Phase | Issues | Total Hours | Status |
 |-------|--------|-------------|--------|
 | Phase 1 | #1 | 12h | ✅ Complete |
+| Phase 1.5 | #1.5 | 4h | ✅ Complete |
 | Phase 2 | #2 | 8h | ⏳ TODO |
 | Phase 3 | #3, #4 | 10h | ⏳ TODO |
 | Phase 4 | #5 | 8h | ⏳ TODO |
 | Phase 5 | #6 | 6h | ⏳ TODO |
 | Phase 6 | #7, #8, #9 | 26h | ⏳ TODO |
 | Phase 7 | #10 | 8h | ⏳ TODO |
-| **Total** | **10** | **78h** | 15% |
+| **Total** | **11** | **82h** | 20% |
 
 ---
 
 **Document Created:** 2026-01-19 18:48 UTC  
-**Last Updated:** 2026-01-19 18:48 UTC  
+**Last Updated:** 2026-01-26 09:30 UTC  
 **Repository:** https://github.com/TheAnsarya/Mesen2

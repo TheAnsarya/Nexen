@@ -1,7 +1,7 @@
 # Mesen2 Pansy Integration Roadmap
 
 **Created:** 2026-01-19 18:45 UTC  
-**Last Updated:** 2026-01-26 05:15 UTC
+**Last Updated:** 2026-01-26 09:30 UTC
 
 ## Phase 1: Core Export ✅ COMPLETE
 
@@ -22,25 +22,30 @@
 - [x] Localization strings (English)
 - [x] File dialog with `.pansy` extension
 
-## Phase 1.5: Auto-Export & Integrity 🔄 IN PROGRESS
+## Phase 1.5: Auto-Export & Integrity ✅ COMPLETE
 
-**Target:** 2026-01-26  
-**Priority:** CRITICAL  
-**Plan:** [background-cdl-recording.md](plans/background-cdl-recording.md), [rom-hash-verification.md](plans/rom-hash-verification.md)
+**Completed:** 2026-01-26 09:00 UTC  
+**Commits:** `38dfccf7` (CRC32), `e95a7858` (Background CDL)  
+**Session Log:** [2026-01-26-phase-1.5-implementation.md](session-logs/2026-01-26-phase-1.5-implementation.md)
 
-### Background CDL Recording
-- [ ] Enable CDL recording without opening debugger
-- [ ] Auto-start recording on ROM load (if option enabled)
-- [ ] Periodic auto-save (configurable interval)
-- [ ] Save on ROM unload
-- [ ] Background timer for auto-save
+### Background CDL Recording ✅
+- [x] Enable CDL recording without opening debugger
+- [x] Auto-start recording on ROM load (if option enabled)
+- [x] Periodic auto-save (configurable interval, default 5 min)
+- [x] Save on ROM unload
+- [x] Background timer for auto-save
+- [x] New file: `BackgroundPansyExporter.cs`
 
-### ROM Hash Verification
-- [ ] Calculate actual ROM CRC32 (fix placeholder)
-- [ ] Store CRC32 in Pansy file header
-- [ ] Verify CRC before updating existing Pansy
-- [ ] Create separate files for different ROM versions
-- [ ] Configuration for CRC mismatch behavior
+### ROM Hash Verification ✅
+- [x] Calculate actual ROM CRC32 (IEEE polynomial)
+- [x] Store CRC32 in Pansy file header
+- [x] Verify CRC before updating existing Pansy
+- [x] Create separate files for different ROM versions (CRC suffix)
+- [x] Configuration: `BackgroundCdlRecording`, `AutoSaveIntervalMinutes`, `SavePansyOnRomUnload`
+
+### Phase 1.5 Remaining (UI Polish)
+- [ ] Add UI configuration in DebuggerConfigWindow.axaml
+- [ ] Add localization strings for new config options
 
 ## Phase 2: Testing & Validation
 

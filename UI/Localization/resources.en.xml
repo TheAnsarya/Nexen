@@ -1562,6 +1562,10 @@
 			
 			<Control ID="lblAutoExportSettings">Auto-export settings</Control>
 			<Control ID="chkAutoExportPansy">Automatically export .PANSY files (disassembly metadata)</Control>
+			<Control ID="chkBackgroundCdlRecording">Enable background CDL recording (record execution without debugger)</Control>
+			<Control ID="lblAutoSaveInterval">Auto-save interval:</Control>
+			<Control ID="lblMinutes">minutes</Control>
+			<Control ID="chkSavePansyOnRomUnload">Save .PANSY file when ROM is closed</Control>
 
 			<Control ID="lblImportFilters">Import filters</Control>
 			<Control ID="lblImportFiltersHint">Import the following types of labels:</Control>
