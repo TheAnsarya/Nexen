@@ -20,6 +20,11 @@ namespace Mesen.Config
 		[Reactive] public bool AutoLoadFnsFiles { get; set; } = true;
 		
 		[Reactive] public bool AutoExportPansy { get; set; } = true;
+		
+		// Background CDL recording settings
+		[Reactive] public bool BackgroundCdlRecording { get; set; } = false;
+		[Reactive] public int AutoSaveIntervalMinutes { get; set; } = 5;
+		[Reactive] public bool SavePansyOnRomUnload { get; set; } = true;
 
 		[Reactive] public bool ResetLabelsOnImport { get; set; } = true;
 

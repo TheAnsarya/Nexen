@@ -16,6 +16,7 @@ using Mesen.Interop;
 using Mesen.Views;
 using Avalonia.Layout;
 using Mesen.Debugger.Utilities;
+using Mesen.Debugger.Labels;
 using System.Threading;
 using Mesen.Debugger.Windows;
 using Avalonia.Input.Platform;
@@ -351,6 +352,11 @@ namespace Mesen.Windows
 						ApplicationHelper.GetExistingWindow<HdPackBuilderWindow>()?.Close();
 					});
 
+					// Start background CDL recording if enabled
+					Dispatcher.UIThread.Post(() => {
+						BackgroundPansyExporter.OnRomLoaded(romInfo);
+					});
+
 					LoadRomHelper.ResetReloadCounter();
 					break;
 
@@ -375,6 +381,9 @@ namespace Mesen.Windows
 					break;
 
 				case ConsoleNotificationType.EmulationStopped:
+					// Save final Pansy file before stopping
+					BackgroundPansyExporter.OnRomUnloaded();
+					
 					Dispatcher.UIThread.Post(() => {
 						_model.RomInfo = new RomInfo();
 						_model.RecentGames.Init(GameScreenMode.RecentGames);
