@@ -1,7 +1,7 @@
 # Mesen2 Pansy Integration Roadmap
 
 **Created:** 2026-01-19 18:45 UTC  
-**Last Updated:** 2026-01-26 09:30 UTC
+**Last Updated:** 2026-01-27 10:00 UTC
 
 ## Phase 1: Core Export ✅ COMPLETE
 
@@ -43,9 +43,13 @@
 - [x] Create separate files for different ROM versions (CRC suffix)
 - [x] Configuration: `BackgroundCdlRecording`, `AutoSaveIntervalMinutes`, `SavePansyOnRomUnload`
 
-### Phase 1.5 Remaining (UI Polish)
-- [ ] Add UI configuration in DebuggerConfigWindow.axaml
-- [ ] Add localization strings for new config options
+### Phase 1.5 UI Polish ✅
+- [x] Add UI configuration in DebuggerConfigWindow.axaml
+- [x] Add localization strings for new config options:
+  - `chkBackgroundCdlRecording` - Enable background CDL recording
+  - `lblAutoSaveInterval` - Auto-save interval label
+  - `lblMinutes` - Minutes label
+  - `chkSavePansyOnRomUnload` - Save .PANSY on ROM close
 
 ## Phase 2: Testing & Validation
 
