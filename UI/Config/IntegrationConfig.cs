@@ -40,6 +40,10 @@ namespace Mesen.Config {
 		[Reactive] public int MaxHistoryEntries { get; set; } = 10;
 		[Reactive] public string DebugFolderPath { get; set; } = "";
 
+		// Phase 7.5e: Sync manager options
+		[Reactive] public bool EnableFileWatching { get; set; } = false;
+		[Reactive] public bool AutoReloadOnExternalChange { get; set; } = true;
+
 		[Reactive] public bool ResetLabelsOnImport { get; set; } = true;
 
 		[Reactive] public bool ImportPrgRomLabels { get; set; } = true;

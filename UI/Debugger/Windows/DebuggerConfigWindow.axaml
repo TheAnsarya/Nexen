@@ -315,6 +315,18 @@
 									Margin="5 0"
 								/>
 							</StackPanel>
+							<CheckBox
+								IsChecked="{Binding Integration.EnableFileWatching}"
+								Content="{l:Translate chkEnableFileWatching}"
+								IsEnabled="{Binding Integration.UseFolderStorage}"
+								Margin="20 5 0 0"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.AutoReloadOnExternalChange}"
+								Content="{l:Translate chkAutoReloadOnExternalChange}"
+								IsEnabled="{Binding Integration.EnableFileWatching}"
+								Margin="40 0 0 0"
+							/>
 						</StackPanel>
 					</c:OptionSection>
 					<c:OptionSection Header="{l:Translate lblImportFilters}">

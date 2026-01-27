@@ -1577,6 +1577,8 @@
 			<Control ID="chkSyncCdlFiles">Sync CDL code/data log files</Control>
 			<Control ID="chkKeepVersionHistory">Keep version history</Control>
 			<Control ID="lblMaxHistoryEntries">Max history entries:</Control>
+			<Control ID="chkEnableFileWatching">Watch files for external changes</Control>
+			<Control ID="chkAutoReloadOnExternalChange">Auto-reload when files change externally</Control>
 
 			<Control ID="lblImportFilters">Import filters</Control>
 			<Control ID="lblImportFiltersHint">Import the following types of labels:</Control>
