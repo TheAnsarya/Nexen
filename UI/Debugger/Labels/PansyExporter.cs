@@ -377,6 +377,7 @@ namespace Mesen.Debugger.Labels {
 		/// <summary>
 		/// Auto-export Pansy file when CDL is saved.
 		/// Called from debugger shutdown or explicit save.
+		/// Uses folder-based storage if enabled (Phase 7.5).
 		/// </summary>
 		/// <param name="romInfo">Current ROM information</param>
 		/// <param name="memoryType">Memory type for CDL</param>
@@ -388,6 +389,17 @@ namespace Mesen.Debugger.Labels {
 				return;
 			}
 
+			var config = ConfigManager.Config.Debug.Integration;
+
+			// Phase 7.5: Use folder-based storage if enabled
+			if (config.UseFolderStorage) {
+				System.Diagnostics.Debug.WriteLine("[Pansy] Using folder-based storage");
+				bool success = DebugFolderManager.ExportAllFiles(romInfo, memoryType);
+				System.Diagnostics.Debug.WriteLine($"[Pansy] Folder export result: {success}");
+				return;
+			}
+
+			// Legacy single-file export
 			string romName = romInfo.GetRomName();
 			string pansyPath = GetPansyFilePath(romName);
 			System.Diagnostics.Debug.WriteLine($"[Pansy] Target path: {pansyPath}");
@@ -398,10 +410,10 @@ namespace Mesen.Debugger.Labels {
 
 			// Build export options from configuration
 			var options = new PansyExportOptions {
-				IncludeMemoryRegions = ConfigManager.Config.Debug.Integration.PansyIncludeMemoryRegions,
-				IncludeCrossReferences = ConfigManager.Config.Debug.Integration.PansyIncludeCrossReferences,
-				IncludeDataBlocks = ConfigManager.Config.Debug.Integration.PansyIncludeDataBlocks,
-				UseCompression = ConfigManager.Config.Debug.Integration.PansyUseCompression
+				IncludeMemoryRegions = config.PansyIncludeMemoryRegions,
+				IncludeCrossReferences = config.PansyIncludeCrossReferences,
+				IncludeDataBlocks = config.PansyIncludeDataBlocks,
+				UseCompression = config.PansyUseCompression
 			};
 
 			// Check if existing pansy file has matching CRC

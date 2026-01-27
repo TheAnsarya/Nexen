@@ -1571,6 +1571,12 @@
 			<Control ID="chkPansyIncludeCrossReferences">Include cross-references (may slow export)</Control>
 			<Control ID="chkPansyIncludeDataBlocks">Include data blocks</Control>
 			<Control ID="chkPansyUseCompression">Use GZip compression</Control>
+			<Control ID="lblPansySyncSettings">Pansy sync settings (Phase 7.5)</Control>
+			<Control ID="chkUseFolderStorage">Use folder-based storage (per-ROM debug folders)</Control>
+			<Control ID="chkSyncMlbFiles">Sync MLB label files</Control>
+			<Control ID="chkSyncCdlFiles">Sync CDL code/data log files</Control>
+			<Control ID="chkKeepVersionHistory">Keep version history</Control>
+			<Control ID="lblMaxHistoryEntries">Max history entries:</Control>
 
 			<Control ID="lblImportFilters">Import filters</Control>
 			<Control ID="lblImportFiltersHint">Import the following types of labels:</Control>

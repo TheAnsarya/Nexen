@@ -32,6 +32,14 @@ namespace Mesen.Config {
 		// Phase 4: Compression options
 		[Reactive] public bool PansyUseCompression { get; set; } = false;
 
+		// Phase 7.5: Folder-based storage options
+		[Reactive] public bool UseFolderStorage { get; set; } = true;
+		[Reactive] public bool SyncMlbFiles { get; set; } = true;
+		[Reactive] public bool SyncCdlFiles { get; set; } = true;
+		[Reactive] public bool KeepVersionHistory { get; set; } = false;
+		[Reactive] public int MaxHistoryEntries { get; set; } = 10;
+		[Reactive] public string DebugFolderPath { get; set; } = "";
+
 		[Reactive] public bool ResetLabelsOnImport { get; set; } = true;
 
 		[Reactive] public bool ImportPrgRomLabels { get; set; } = true;

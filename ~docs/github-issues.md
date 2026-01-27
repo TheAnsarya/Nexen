@@ -398,6 +398,160 @@ Complete documentation and prepare for upstream PR.
 
 ---
 
+### Issue #11: 📁 Folder-Based Debug Storage - Phase 7.5a
+
+**Status:** ⏳ TODO  
+**Labels:** enhancement, storage, phase-7.5  
+**Milestone:** Pansy Integration v2.0  
+**Estimate:** 6 hours  
+**Dependencies:** Issue #5 (Performance)
+
+**Description:**
+Implement folder-based storage for debug data. Each ROM gets a dedicated folder containing Pansy, MLB, and CDL files.
+
+**Folder Structure:**
+```
+[Mesen Data]/Debug/[RomName_CRC32]/
+├── metadata.pansy     # Universal format
+├── labels.mlb         # Native Mesen labels
+├── coverage.cdl       # Code Data Logger
+├── config.json        # Per-ROM config
+└── history/           # Version history (optional)
+```
+
+**Tasks:**
+- [ ] Create `DebugFolderManager` class
+- [ ] Implement folder naming convention (sanitize special chars)
+- [ ] Create folder on first save
+- [ ] Migrate existing auto-save to folder structure
+- [ ] Add config option for debug folder location
+- [ ] Support custom folder paths
+
+**Files:**
+- NEW: `UI/Debugger/Labels/DebugFolderManager.cs`
+- MOD: `UI/Config/IntegrationConfig.cs`
+- MOD: `UI/Debugger/Labels/BackgroundPansyExporter.cs`
+
+---
+
+### Issue #12: 🔄 MLB File Sync - Phase 7.5b
+
+**Status:** ⏳ TODO  
+**Labels:** enhancement, sync, phase-7.5  
+**Milestone:** Pansy Integration v2.0  
+**Estimate:** 4 hours  
+**Dependencies:** Issue #11
+
+**Description:**
+Keep MLB (Mesen Label) files in sync with Pansy files.
+
+**Tasks:**
+- [ ] Export MLB alongside Pansy file
+- [ ] Import MLB when loading ROM
+- [ ] Detect MLB changes and update Pansy
+- [ ] Round-trip test: Pansy → MLB → Pansy
+- [ ] Handle label format differences
+- [ ] Preserve multi-byte labels
+
+**Files:**
+- MOD: `UI/Debugger/Labels/MesenLabelFile.cs`
+- MOD: `UI/Debugger/Labels/PansyExporter.cs`
+- MOD: `UI/Debugger/Labels/DebugFolderManager.cs`
+
+---
+
+### Issue #13: 📊 CDL File Sync - Phase 7.5c
+
+**Status:** ⏳ TODO  
+**Labels:** enhancement, sync, phase-7.5  
+**Milestone:** Pansy Integration v2.0  
+**Estimate:** 4 hours  
+**Dependencies:** Issue #11
+
+**Description:**
+Keep CDL (Code Data Logger) files in sync with Pansy files.
+
+**CDL Flags:**
+```cpp
+0x01 = Code
+0x02 = Data
+0x04 = JumpTarget
+0x08 = SubEntryPoint
+```
+
+**Tasks:**
+- [ ] Export CDL alongside Pansy file
+- [ ] Auto-load CDL if config enabled
+- [ ] Sync CDL flags to/from Pansy CODE_DATA_MAP
+- [ ] Handle different ROM sizes
+- [ ] Verify flag mapping accuracy
+- [ ] Support platform-specific CDL formats
+
+**Files:**
+- NEW: `UI/Debugger/Labels/CdlFileManager.cs`
+- MOD: `UI/Debugger/Labels/PansyExporter.cs`
+- MOD: `UI/Debugger/Labels/DebugFolderManager.cs`
+
+---
+
+### Issue #14: 📝 DBG Integration - Phase 7.5d
+
+**Status:** ⏳ TODO  
+**Labels:** enhancement, import, phase-7.5  
+**Milestone:** Pansy Integration v2.0  
+**Estimate:** 6 hours  
+**Dependencies:** Issue #12, Issue #13
+
+**Description:**
+Import DBG files (ca65, cc65, WLA-DX) into Pansy format, preserving source references.
+
+**Tasks:**
+- [ ] Import DBG files to Pansy format
+- [ ] Preserve source file references
+- [ ] Import symbol definitions
+- [ ] Import scope information
+- [ ] Handle assembler-specific formats
+- [ ] Create DbgToPansyConverter utility
+
+**Supported Formats:**
+- ca65/cc65 DBG
+- WLA-DX symbols
+- RGBDS symbols
+- SDCC symbols
+
+**Files:**
+- MOD: `UI/Debugger/Integration/DbgImporter.cs`
+- NEW: `UI/Debugger/Integration/DbgToPansyConverter.cs`
+
+---
+
+### Issue #15: 🔗 Bidirectional Sync Manager - Phase 7.5e
+
+**Status:** ⏳ TODO  
+**Labels:** enhancement, sync, advanced, phase-7.5  
+**Milestone:** Pansy Integration v2.0  
+**Estimate:** 8 hours  
+**Dependencies:** Issue #12, Issue #13, Issue #14
+
+**Description:**
+Manage bidirectional sync between Pansy and native Mesen files.
+
+**Tasks:**
+- [ ] Detect file changes (FileSystemWatcher)
+- [ ] Conflict resolution UI dialog
+- [ ] Merge strategies (ours, theirs, merge)
+- [ ] Change notification system
+- [ ] Undo/redo support
+- [ ] Sync status indicator in UI
+- [ ] Lock files during sync to prevent corruption
+
+**Files:**
+- NEW: `UI/Debugger/Labels/SyncManager.cs`
+- NEW: `UI/Debugger/Windows/SyncConflictDialog.axaml`
+- NEW: `UI/Debugger/Windows/SyncConflictDialog.axaml.cs`
+
+---
+
 ## Issue Summary
 
 | Phase | Issues | Total Hours | Status |
@@ -405,15 +559,16 @@ Complete documentation and prepare for upstream PR.
 | Phase 1 | #1 | 12h | ✅ Complete |
 | Phase 1.5 | #1.5 | 4h | ✅ Complete |
 | Phase 2 | #2 | 8h | ⏳ TODO |
-| Phase 3 | #3, #4 | 10h | ⏳ TODO |
-| Phase 4 | #5 | 8h | ⏳ TODO |
+| Phase 3 | #3, #4 | 10h | ✅ Complete |
+| Phase 4 | #5 | 8h | ✅ Complete |
 | Phase 5 | #6 | 6h | ⏳ TODO |
 | Phase 6 | #7, #8, #9 | 26h | ⏳ TODO |
 | Phase 7 | #10 | 8h | ⏳ TODO |
-| **Total** | **11** | **82h** | 20% |
+| Phase 7.5 | #11, #12, #13, #14, #15 | 28h | ⏳ TODO |
+| **Total** | **16** | **110h** | 25% |
 
 ---
 
 **Document Created:** 2026-01-19 18:48 UTC  
-**Last Updated:** 2026-01-26 09:30 UTC  
+**Last Updated:** 2026-01-27 14:00 UTC  
 **Repository:** https://github.com/TheAnsarya/Mesen2

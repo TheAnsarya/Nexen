@@ -281,6 +281,41 @@
 								Margin="0 5 0 0"
 							/>
 						</StackPanel>
+						<TextBlock Text="{l:Translate lblPansySyncSettings}" FontWeight="SemiBold" Margin="0 10 0 5" />
+						<StackPanel Margin="10 0 0 0">
+							<CheckBox
+								IsChecked="{Binding Integration.UseFolderStorage}"
+								Content="{l:Translate chkUseFolderStorage}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.SyncMlbFiles}"
+								Content="{l:Translate chkSyncMlbFiles}"
+								IsEnabled="{Binding Integration.UseFolderStorage}"
+								Margin="20 0 0 0"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.SyncCdlFiles}"
+								Content="{l:Translate chkSyncCdlFiles}"
+								IsEnabled="{Binding Integration.UseFolderStorage}"
+								Margin="20 0 0 0"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.KeepVersionHistory}"
+								Content="{l:Translate chkKeepVersionHistory}"
+								IsEnabled="{Binding Integration.UseFolderStorage}"
+								Margin="20 0 0 0"
+							/>
+							<StackPanel Orientation="Horizontal" Margin="40 5 0 0" IsEnabled="{Binding Integration.KeepVersionHistory}">
+								<TextBlock Text="{l:Translate lblMaxHistoryEntries}" VerticalAlignment="Center" />
+								<NumericUpDown
+									Value="{Binding Integration.MaxHistoryEntries}"
+									Minimum="1"
+									Maximum="100"
+									Width="80"
+									Margin="5 0"
+								/>
+							</StackPanel>
+						</StackPanel>
 					</c:OptionSection>
 					<c:OptionSection Header="{l:Translate lblImportFilters}">
 						<TextBlock Text="{l:Translate lblImportFiltersHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
