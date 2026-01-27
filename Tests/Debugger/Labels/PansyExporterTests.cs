@@ -22,7 +22,7 @@ public class PansyExporterTests
 	public void Crc32_EmptyData_ReturnsZero()
 	{
 		// The CRC32 of empty data should return 0 (or handle gracefully)
-		byte[] emptyData = Array.Empty<byte>();
+		byte[] emptyData = [];
 		uint crc = ComputeCrc32(emptyData);
 		Assert.Equal(0u, crc);
 	}
@@ -39,7 +39,7 @@ public class PansyExporterTests
 	[Fact]
 	public void Crc32_SingleByte_ReturnsConsistentValue()
 	{
-		byte[] data = new byte[] { 0x00 };
+		byte[] data = [0x00];
 		uint crc1 = ComputeCrc32(data);
 		uint crc2 = ComputeCrc32(data);
 		Assert.Equal(crc1, crc2);
@@ -48,7 +48,7 @@ public class PansyExporterTests
 	[Fact]
 	public void Crc32_AllOnes_ReturnsExpectedValue()
 	{
-		byte[] data = new byte[] { 0xFF, 0xFF, 0xFF, 0xFF };
+		byte[] data = [0xFF, 0xFF, 0xFF, 0xFF];
 		uint crc = ComputeCrc32(data);
 		Assert.NotEqual(0u, crc); // Should return non-zero value
 	}
@@ -149,7 +149,7 @@ public class PansyExporterTests
 	[Fact]
 	public void BuildAddressListSection_WithAddresses_IncludesAll()
 	{
-		var addresses = new uint[] { 0x8000, 0x8100, 0x8200 };
+		uint[] addresses = [0x8000, 0x8100, 0x8200];
 		var bytes = BuildAddressListSection(addresses);
 		
 		Assert.Equal(16, bytes.Length); // count (4) + 3 addresses (12)
@@ -172,9 +172,9 @@ public class PansyExporterTests
 	[Fact]
 	public void BuildSymbolSection_WithLabel_IncludesNameAndAddress()
 	{
-		var labels = new List<TestLabel> {
+		List<TestLabel> labels = [
 			new TestLabel { Address = 0x8000, Label = "TestFunc" }
-		};
+		];
 		var bytes = BuildSymbolSection(labels);
 		
 		// Count(4) + Address(4) + Type(1) + Flags(1) + MemType(1) + Reserved(1) + NameLen(2) + Name(8)
@@ -185,7 +185,7 @@ public class PansyExporterTests
 	[Fact]
 	public void BuildCommentSection_EmptyComments_ReturnsCountOnly()
 	{
-		var labels = new List<TestLabel>();
+		List<TestLabel> labels = [];
 		var bytes = BuildCommentSection(labels);
 		
 		Assert.Equal(4, bytes.Length);
@@ -195,9 +195,9 @@ public class PansyExporterTests
 	[Fact]
 	public void BuildCommentSection_WithComment_IncludesTextAndAddress()
 	{
-		var labels = new List<TestLabel> {
+		List<TestLabel> labels = [
 			new TestLabel { Address = 0x8000, Comment = "Test comment" }
-		};
+		];
 		var bytes = BuildCommentSection(labels);
 		
 		Assert.True(bytes.Length > 4);
@@ -314,7 +314,7 @@ public class PansyExporterTests
 		return ms.ToArray();
 	}
 
-	private class TestLabel
+	private sealed class TestLabel
 	{
 		public uint Address { get; set; }
 		public string Label { get; set; } = "";
