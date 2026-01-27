@@ -64,12 +64,13 @@ public class SyncManagerTests
 	public void DebounceTimer_SpacedChanges_MultipleCallbacks()
 	{
 		int callbackCount = 0;
-		int debounceMs = 10; // Very short for testing
+		// Using a short debounce window of 10ms for testing purposes
+		int debounceWindowMs = 20;
 
-		// Simulate spaced changes
+		// Simulate spaced changes with intervals longer than debounce
 		for (int i = 0; i < 3; i++) {
 			callbackCount++;
-			Thread.Sleep(20); // Longer than debounce
+			Thread.Sleep(debounceWindowMs); // Longer than typical debounce
 		}
 
 		Assert.Equal(3, callbackCount);

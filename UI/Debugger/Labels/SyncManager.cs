@@ -69,8 +69,11 @@ public class SyncManager : IDisposable {
 
 	/// <summary>
 	/// Event fired when a conflict needs resolution.
+	/// Reserved for future interactive conflict resolution UI.
 	/// </summary>
+#pragma warning disable CS0067 // Event is never used - reserved for future conflict resolution feature
 	public event EventHandler<SyncConflictEventArgs>? ConflictDetected;
+#pragma warning restore CS0067
 
 	/// <summary>
 	/// Whether sync is currently enabled.
