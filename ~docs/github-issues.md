@@ -1,7 +1,7 @@
 # Pansy Export - GitHub Issues
 
 **Created:** 2026-01-19 18:48 UTC  
-**Last Updated:** 2026-01-26 09:30 UTC  
+**Last Updated:** 2026-01-27 10:00 UTC  
 **Repository:** TheAnsarya/Mesen2  
 **Branch:** pansy-export
 
@@ -87,9 +87,13 @@ Two critical reliability features for Pansy export:
 - `UI/Config/IntegrationConfig.cs` - Added 3 config properties
 - `UI/MainWindow.axaml.cs` - Added hooks for ROM load/unload
 
-**Remaining (UI Polish):**
-- [ ] Add UI config checkboxes in DebuggerConfigWindow.axaml
-- [ ] Add localization strings for new options
+**UI Polish (Completed 2026-01-27):**
+- [x] Add UI config checkboxes in DebuggerConfigWindow.axaml
+- [x] Add localization strings for new options:
+  - `chkBackgroundCdlRecording`
+  - `lblAutoSaveInterval`
+  - `lblMinutes`
+  - `chkSavePansyOnRomUnload`
 
 ---
 
