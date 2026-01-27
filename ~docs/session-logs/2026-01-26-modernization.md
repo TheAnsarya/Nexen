@@ -71,12 +71,58 @@ These are less critical and can be addressed in a future PR:
   - `eca19ecb` - Deprecation suppressions, ReadExactly fix
 
 ## Next Steps
-1. Commit modernization changes
-2. Address deprecation warnings in code
+1. ~~Commit modernization changes~~ ✅
+2. ~~Address deprecation warnings in code~~ ✅
 3. Create GitHub issues for remaining work
-4. Continue with remaining modernization tasks
+4. Continue with remaining modernization tasks (file-scoped namespaces across codebase)
+
+## Phase 6: Code Modernization (Continued Session)
+
+### Pattern Matching & Collection Expressions
+Applied modern C# idioms to the following files:
+
+#### UI/Debugger/Labels/
+- **PansyExporter.cs**
+  - Dictionary indexer syntax `[RomFormat.Sfc] = 0x02` instead of `{ RomFormat.Sfc, 0x02 }`
+  - Pattern matching: `romData is null or { Length: 0 }`
+  - Collection expressions: `List<SectionInfo> sections = []`
+  - Spread operator: `return [.. targets]`
+  - Sealed class: `private sealed class SectionInfo`
+
+- **BackgroundPansyExporter.cs**
+  - Pattern matching: `_currentRomInfo is not null`
+  - Pattern matching: `_autoSaveTimer is not null`
+  - Pattern matching: `_currentRomInfo is null`
+
+- **LabelManager.cs**
+  - Target-typed new: `new()` for dictionaries
+  - Collection expression: `HashSet<CodeLabel> _labels = []`
+  - Pattern matching: `label is not null`
+  - Spread operator: `[.._labels]`
+
+- **MesenLabelFile.cs**
+  - Target-typed new for List with capacity
+  - Pattern matching: `label is null`
+
+#### UI/Utilities/
+- **FolderHelper.cs**
+  - Collection expression for HashSet initialization
+
+- **JsonHelper.cs**
+  - Pattern matching: `clone is null`
+
+#### Tests/Debugger/Labels/
+- **PansyExporterTests.cs**
+  - Collection expressions for arrays: `byte[] data = [0x00]`
+  - Collection expressions for lists: `List<TestLabel> labels = []`
+  - Sealed class: `private sealed class TestLabel`
+
+### Git Commits
+- `8193b230` - refactor: apply C# modernization patterns to Labels and Utilities
+- `99590ef6` - refactor: modernize PansyExporterTests.cs
 
 ## Technical Notes
 - Avalonia nightly feed has newer versions but stable channel tops out at 11.3.9
 - System.IO.Hashing uses IEEE polynomial, same as our custom implementation
 - .NET 10 RC available, using SDK 10.0.101
+- File-scoped namespaces not applied to avoid large indentation changes (could be done with IDE refactoring tools)
