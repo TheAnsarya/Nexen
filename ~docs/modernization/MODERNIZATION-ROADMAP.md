@@ -4,6 +4,7 @@
 > **Baseline Tag:** `v2.0.0-pansy-phase3`
 > **Started:** January 26, 2026
 > **Last Updated:** January 27, 2026
+> **Status:** ✅ **ALL PHASES COMPLETE**
 
 ## 📋 Executive Summary
 
@@ -17,7 +18,7 @@ This modernization effort upgrades Mesen2 from .NET 8 to .NET 10, updates all de
 | Phase 2: Avalonia | ✅ **Complete** | Updated to 11.3.9 |
 | Phase 3: Built-in Libraries | ✅ **Complete** | System.IO.Hashing integrated |
 | Phase 4: Testing | ✅ **Complete** | 24 tests, PansyExporter coverage |
-| Phase 5: Lua Update | ⏳ Pending | Future work |
+| Phase 5: Lua Update | ✅ **Complete** | Lua 5.4.4 → 5.4.8 |
 | Phase 6: Code Modernization | ✅ **Complete** | K&R formatting, pattern matching |
 | Phase 7: Documentation | ✅ **Complete** | Updated all docs |
 
@@ -28,7 +29,7 @@ This modernization effort upgrades Mesen2 from .NET 8 to .NET 10, updates all de
 3. ✅ **Comprehensive Testing** - 24 tests for Pansy export functionality
 4. ✅ **Modern Libraries** - Using System.IO.Hashing for CRC32
 5. ✅ **Code Quality** - K&R formatting, tabs, pattern matching, modern C# patterns
-6. ⏳ **Lua Runtime** - Future work
+6. ✅ **Lua Runtime** - Updated to Lua 5.4.8
 
 ## 📊 Current State (Post-Modernization)
 
@@ -36,6 +37,7 @@ This modernization effort upgrades Mesen2 from .NET 8 to .NET 10, updates all de
 |-----------|----------|---------|
 | .NET | 8.0 | **10.0** ✅ |
 | Avalonia | 11.3.1 | **11.3.9** ✅ |
+| Lua | 5.4.4 | **5.4.8** ✅ |
 | Avalonia.AvaloniaEdit | 11.3.0 | **11.3.0** |
 | Dock.Avalonia | 11.3.0.2 | **11.3.0.2** |
 | ELFSharp | 2.17.3 | **2.17.3** |
@@ -95,11 +97,25 @@ var crc = Crc32.HashToUInt32(data);
 | BackgroundPansyExporter | ✅ Tested |
 | Label Management | ✅ Tested |
 
-### Phase 5: Lua Runtime Update ⏳ PENDING
+### Phase 5: Lua Runtime Update ✅ COMPLETE
 
-**Objective:** Update embedded Lua to latest version
+**Objective:** Update embedded Lua to latest stable version
 
-*This phase is planned for future work.*
+#### Tasks
+- [x] Analyze current Lua version (5.4.4, released 2022)
+- [x] Download Lua 5.4.8 (released June 2025)
+- [x] Update 42 core Lua source files
+- [x] Preserve luasocket extension and lbitlib.c
+- [x] Verify build succeeds
+- [x] Commit change: `28c5711f`
+
+```
+# Lua Version Update
+- Previous: Lua 5.4.4 (2022)
+- Current:  Lua 5.4.8 (June 2025)
+- Changes:  Bug fixes, security patches, performance improvements
+- API:      No breaking changes (same 5.4 series)
+```
 
 ### Phase 6: Code Modernization ✅ COMPLETE
 
@@ -152,13 +168,14 @@ csharp_style_prefer_pattern_matching = true:warning
 | Phase 2: Avalonia | Jan 26, 2026 | 11.3.9 update |
 | Phase 3: Built-in Libraries | Jan 26, 2026 | System.IO.Hashing |
 | Phase 4: Testing | Jan 26, 2026 | 24 tests added |
-| Phase 5: Lua Update | Pending | Future work |
+| Phase 5: Lua Update | Jan 27, 2026 | Lua 5.4.4 → 5.4.8 |
 | Phase 6: Code Modernization | Jan 27, 2026 | K&R, tabs, formatting |
 | Phase 7: Documentation | Jan 27, 2026 | Updated roadmap |
 
 ## 📝 Git History
 
 ### Key Commits
+- `28c5711f` - feat: update Lua runtime 5.4.4 → 5.4.8
 - `923e5eae` - style: apply K&R formatting with tabs, UTF-8, CRLF, final newlines
 - `8193b230` - refactor: apply C# modernization patterns to Labels and Utilities
 - `99590ef6` - refactor: modernize PansyExporterTests.cs

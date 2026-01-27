@@ -10,7 +10,7 @@ This document tracks the GitHub issues and epics for the Mesen2 modernization pr
 | Epic 2: Avalonia Update | ✅ **Complete** | Updated to 11.3.9 |
 | Epic 3: Built-in Libraries | ✅ **Complete** | System.IO.Hashing |
 | Epic 4: Comprehensive Testing | ✅ **Complete** | 24 tests |
-| Epic 5: Lua Runtime Update | ⏳ **Pending** | Future work |
+| Epic 5: Lua Runtime Update | ✅ **Complete** | Lua 5.4.4 → 5.4.8 |
 | Epic 6: Code Modernization | ✅ **Complete** | K&R, tabs, formatting |
 | Epic 7: Documentation | ✅ **Complete** | Updated all docs |
 
@@ -63,11 +63,17 @@ This document tracks the GitHub issues and epics for the Mesen2 modernization pr
 
 ---
 
-### Epic 5: Lua Runtime Update ⏳ PENDING
-**Status:** Pending
+### Epic 5: Lua Runtime Update ✅ COMPLETE
+**Status:** Complete
 **Priority:** MEDIUM
 
-*This epic is planned for future work.*
+**Completed:**
+- ✅ Analyzed current Lua version (5.4.4, released 2022)
+- ✅ Downloaded Lua 5.4.8 (released June 2025)
+- ✅ Updated 42 core Lua source files
+- ✅ Preserved luasocket extension and lbitlib.c
+- ✅ Verified build succeeds
+- ✅ Committed: `28c5711f`
 
 ---
 
@@ -116,6 +122,7 @@ This document tracks the GitHub issues and epics for the Mesen2 modernization pr
 |------|----------------|
 | Jan 26, 2026 | .NET 10 upgrade, Avalonia 11.3.9, System.IO.Hashing, 24 tests |
 | Jan 27, 2026 | K&R formatting, .editorconfig merge, 500+ files formatted, documentation |
+| Jan 27, 2026 | Lua runtime 5.4.4 → 5.4.8 |
 
 ---
 
