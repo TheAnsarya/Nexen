@@ -1,6 +1,7 @@
 using Xunit;
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.IO.Hashing;
 using System.Text;
 
@@ -14,7 +15,9 @@ public class PansyExporterTests
 {
 	// Pansy format constants for testing
 	private const string MAGIC = "PANSY\0\0\0";
-	private const ushort VERSION = 0x0100;
+	private const ushort VERSION_1_0 = 0x0100;
+	private const ushort VERSION_1_1 = 0x0101;
+	private const byte FLAG_COMPRESSED = 0x01;
 
 	#region CRC32 Tests
 
@@ -65,7 +68,7 @@ public class PansyExporterTests
 
 		// Write valid header
 		writer.Write(Encoding.ASCII.GetBytes(MAGIC));
-		writer.Write(VERSION);
+		writer.Write(VERSION_1_0);
 		writer.Write((byte)0x02); // SNES platform
 		writer.Write((byte)0x00); // Flags
 		writer.Write((uint)0x100000); // ROM size 1MB
@@ -77,10 +80,56 @@ public class PansyExporterTests
 		var header = ReadTestHeader(ms);
 
 		Assert.NotNull(header);
-		Assert.Equal(VERSION, header.Version);
+		Assert.Equal(VERSION_1_0, header.Version);
 		Assert.Equal(0x02, header.Platform);
 		Assert.Equal(0x100000u, header.RomSize);
 		Assert.Equal(0xDEADBEEFu, header.RomCrc32);
+	}
+
+	[Fact]
+	public void Header_Version11_ParsesCorrectly()
+	{
+		using var ms = new MemoryStream();
+		using var writer = new BinaryWriter(ms);
+
+		// Write v1.1 header
+		writer.Write(Encoding.ASCII.GetBytes(MAGIC));
+		writer.Write(VERSION_1_1);
+		writer.Write((byte)0x02); // SNES platform
+		writer.Write((byte)0x00); // Flags
+		writer.Write((uint)0x100000); // ROM size 1MB
+		writer.Write((uint)0xDEADBEEF); // ROM CRC
+		writer.Write((long)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+		writer.Write((uint)0); // Reserved
+
+		ms.Position = 0;
+		var header = ReadTestHeader(ms);
+
+		Assert.NotNull(header);
+		Assert.Equal(VERSION_1_1, header.Version);
+	}
+
+	[Fact]
+	public void Header_CompressedFlag_ParsesCorrectly()
+	{
+		using var ms = new MemoryStream();
+		using var writer = new BinaryWriter(ms);
+
+		// Write header with compression flag
+		writer.Write(Encoding.ASCII.GetBytes(MAGIC));
+		writer.Write(VERSION_1_1);
+		writer.Write((byte)0x02); // SNES platform
+		writer.Write(FLAG_COMPRESSED); // Compression flag set
+		writer.Write((uint)0x100000); // ROM size 1MB
+		writer.Write((uint)0xDEADBEEF); // ROM CRC
+		writer.Write((long)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+		writer.Write((uint)0); // Reserved
+
+		ms.Position = 0;
+		var header = ReadTestHeader(ms);
+
+		Assert.NotNull(header);
+		Assert.Equal(FLAG_COMPRESSED, header.Flags);
 	}
 
 	[Fact]
@@ -91,7 +140,7 @@ public class PansyExporterTests
 
 		// Write invalid magic
 		writer.Write(Encoding.ASCII.GetBytes("INVALID\0"));
-		writer.Write(VERSION);
+		writer.Write(VERSION_1_0);
 		
 		ms.Position = 0;
 		var header = ReadTestHeader(ms);
@@ -244,7 +293,7 @@ public class PansyExporterTests
 			using (var stream = new FileStream(tempPath, FileMode.Create))
 			using (var writer = new BinaryWriter(stream)) {
 				writer.Write(Encoding.ASCII.GetBytes(MAGIC));
-				writer.Write(VERSION);
+				writer.Write(VERSION_1_1);
 				writer.Write((byte)0x02); // SNES
 				writer.Write((byte)0x00); // Flags
 				writer.Write((uint)0x100000); // ROM size
@@ -320,6 +369,7 @@ public class PansyExporterTests
 		public string Label { get; set; } = "";
 		public string Comment { get; set; } = "";
 		public byte MemoryType { get; set; }
+		public uint Length { get; set; } = 1;
 	}
 
 	private static byte[] BuildSymbolSection(List<TestLabel> labels)
@@ -375,6 +425,216 @@ public class PansyExporterTests
 	{
 		string filename = Path.GetFileNameWithoutExtension(romName);
 		return Path.Combine(Path.GetTempPath(), $"{filename}_{crc32:x8}.pansy");
+	}
+
+	#endregion
+
+	#region Phase 3: Memory Regions Tests
+
+	[Fact]
+	public void BuildMemoryRegionsSection_EmptyLabels_ReturnsCountOnly()
+	{
+		var labels = new List<TestLabel>();
+		var bytes = BuildMemoryRegionsSection(labels);
+		
+		Assert.Equal(4, bytes.Length); // Just the count
+		Assert.Equal(0u, BitConverter.ToUInt32(bytes, 0));
+	}
+
+	[Fact]
+	public void BuildMemoryRegionsSection_WithRegion_IncludesAddressRange()
+	{
+		List<TestLabel> labels = [
+			new TestLabel { Address = 0x8000, Label = "DataTable", Length = 0x100 }
+		];
+		var bytes = BuildMemoryRegionsSection(labels);
+		
+		Assert.True(bytes.Length > 4);
+		Assert.Equal(1u, BitConverter.ToUInt32(bytes, 0)); // 1 region
+		Assert.Equal(0x8000u, BitConverter.ToUInt32(bytes, 4)); // Start
+		Assert.Equal(0x80FFu, BitConverter.ToUInt32(bytes, 8)); // End (Start + Length - 1)
+	}
+
+	private static byte[] BuildMemoryRegionsSection(List<TestLabel> labels)
+	{
+		using var ms = new MemoryStream();
+		using var writer = new BinaryWriter(ms);
+		
+		var regions = labels.Where(l => l.Length > 1 && !string.IsNullOrEmpty(l.Label)).ToList();
+		writer.Write((uint)regions.Count);
+
+		foreach (var region in regions) {
+			writer.Write(region.Address);                          // Start (4)
+			writer.Write(region.Address + region.Length - 1);      // End (4)
+			writer.Write((byte)2);                                  // Type (1) - Data
+			writer.Write(region.MemoryType);                        // MemType (1)
+			writer.Write((ushort)0);                                // Flags (2)
+			byte[] nameBytes = Encoding.UTF8.GetBytes(region.Label);
+			writer.Write((ushort)nameBytes.Length);
+			writer.Write(nameBytes);
+		}
+
+		return ms.ToArray();
+	}
+
+	#endregion
+
+	#region Phase 3: Cross-References Tests
+
+	[Fact]
+	public void BuildCrossRefsSection_EmptyData_ReturnsCountOnly()
+	{
+		var bytes = BuildCrossRefsSection([]);
+		
+		Assert.Equal(4, bytes.Length);
+		Assert.Equal(0u, BitConverter.ToUInt32(bytes, 0));
+	}
+
+	[Fact]
+	public void BuildCrossRefsSection_WithXref_IncludesSourceAndTarget()
+	{
+		(uint From, uint To, byte Type)[] xrefs = [(0x8000, 0x9000, 1)];
+		var bytes = BuildCrossRefsSection(xrefs);
+		
+		// Count(4) + From(4) + To(4) + Type(1) + MemTypeFrom(1) + MemTypeTo(1) + Flags(1) = 16
+		Assert.Equal(16, bytes.Length);
+		Assert.Equal(1u, BitConverter.ToUInt32(bytes, 0)); // 1 xref
+		Assert.Equal(0x8000u, BitConverter.ToUInt32(bytes, 4)); // From
+		Assert.Equal(0x9000u, BitConverter.ToUInt32(bytes, 8)); // To
+		Assert.Equal((byte)1, bytes[12]); // Type = Call
+	}
+
+	private static byte[] BuildCrossRefsSection((uint From, uint To, byte Type)[] xrefs)
+	{
+		using var ms = new MemoryStream();
+		using var writer = new BinaryWriter(ms);
+		
+		writer.Write((uint)xrefs.Length);
+		foreach (var xref in xrefs) {
+			writer.Write(xref.From);   // Source address (4)
+			writer.Write(xref.To);     // Target address (4)
+			writer.Write(xref.Type);   // Type (1)
+			writer.Write((byte)0);     // MemType from (1)
+			writer.Write((byte)0);     // MemType to (1)
+			writer.Write((byte)0);     // Flags (1)
+		}
+
+		return ms.ToArray();
+	}
+
+	#endregion
+
+	#region Phase 4: Compression Tests
+
+	[Fact]
+	public void CompressData_SmallData_ReturnsOriginal()
+	{
+		// Data smaller than 64 bytes should not be compressed
+		byte[] smallData = new byte[32];
+		Array.Fill(smallData, (byte)0xAB);
+		
+		var result = CompressData(smallData);
+		
+		Assert.Equal(smallData, result);
+	}
+
+	[Fact]
+	public void CompressData_LargeRepetitiveData_CompressesWell()
+	{
+		// Repetitive data should compress well
+		byte[] largeData = new byte[1024];
+		Array.Fill(largeData, (byte)0xAB);
+		
+		var compressed = CompressData(largeData);
+		
+		Assert.True(compressed.Length < largeData.Length, "Compressed size should be smaller for repetitive data");
+	}
+
+	[Fact]
+	public void CompressData_RandomData_MayNotCompress()
+	{
+		// Random data may not compress - verify it doesn't expand
+		var random = new Random(42); // Fixed seed for reproducibility
+		byte[] randomData = new byte[256];
+		random.NextBytes(randomData);
+		
+		var result = CompressData(randomData);
+		
+		// Should return original if compression doesn't help
+		Assert.True(result.Length <= randomData.Length + 50); // GZip header overhead
+	}
+
+	[Fact]
+	public void DecompressData_CompressedData_ReturnsOriginal()
+	{
+		// Compress and decompress, verify roundtrip
+		byte[] original = new byte[256];
+		Array.Fill(original, (byte)0xCD);
+		
+		var compressed = CompressDataForce(original);
+		var decompressed = DecompressData(compressed, original.Length);
+		
+		Assert.Equal(original, decompressed);
+	}
+
+	private static byte[] CompressData(byte[] data)
+	{
+		if (data.Length < 64)
+			return data;
+
+		using var output = new MemoryStream();
+		using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true)) {
+			gzip.Write(data, 0, data.Length);
+		}
+
+		var compressed = output.ToArray();
+		return compressed.Length < data.Length ? compressed : data;
+	}
+
+	private static byte[] CompressDataForce(byte[] data)
+	{
+		using var output = new MemoryStream();
+		using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true)) {
+			gzip.Write(data, 0, data.Length);
+		}
+		return output.ToArray();
+	}
+
+	private static byte[] DecompressData(byte[] compressedData, int uncompressedSize)
+	{
+		using var input = new MemoryStream(compressedData);
+		using var gzip = new GZipStream(input, CompressionMode.Decompress);
+		var output = new byte[uncompressedSize];
+		int totalRead = 0;
+		while (totalRead < uncompressedSize) {
+			int read = gzip.Read(output, totalRead, uncompressedSize - totalRead);
+			if (read == 0) break;
+			totalRead += read;
+		}
+		return output;
+	}
+
+	#endregion
+
+	#region Phase 4: Export Options Tests
+
+	[Fact]
+	public void ExportOptions_DefaultValues_AllEnabled()
+	{
+		var options = new TestExportOptions();
+		
+		Assert.True(options.IncludeMemoryRegions);
+		Assert.True(options.IncludeCrossReferences);
+		Assert.True(options.IncludeDataBlocks);
+		Assert.False(options.UseCompression);
+	}
+
+	private sealed class TestExportOptions
+	{
+		public bool IncludeMemoryRegions { get; set; } = true;
+		public bool IncludeCrossReferences { get; set; } = true;
+		public bool IncludeDataBlocks { get; set; } = true;
+		public bool UseCompression { get; set; } = false;
 	}
 
 	#endregion

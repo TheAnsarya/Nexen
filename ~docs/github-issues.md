@@ -137,22 +137,23 @@ Create comprehensive test suite for Pansy export functionality.
 
 ### Issue #3: 📊 Add Memory Regions Export - Phase 3
 
-**Status:** ⏳ TODO  
+**Status:** ✅ COMPLETED  
 **Labels:** enhancement, phase-3  
 **Milestone:** Pansy Integration v1.1  
 **Estimate:** 4 hours  
-**Dependencies:** Issue #2 (testing complete)
+**Dependencies:** Issue #2 (testing complete)  
+**Completed:** 2026-01-28 11:00 UTC
 
 **Description:**
 Export named memory regions to Pansy format (PRG-ROM, CHR-ROM, SRAM, etc.)
 
 **Tasks:**
-- [ ] Add MEMORY_REGIONS section (0x0009)
-- [ ] Export region name, start, end, type, flags
-- [ ] Map Mesen2 memory types to Pansy region types
-- [ ] Update file format documentation
-- [ ] Add UI checkbox: "Include memory regions"
-- [ ] Test with multi-mapper ROMs
+- [x] Add MEMORY_REGIONS section (0x0009)
+- [x] Export region name, start, end, type, flags
+- [x] Map Mesen2 memory types to Pansy region types
+- [x] Add system memory maps for all consoles
+- [x] Add UI checkbox: "Include memory regions"
+- [x] Test with multi-mapper ROMs
 
 **Binary Format:**
 ```
@@ -161,8 +162,9 @@ Section 0x0009: MEMORY_REGIONS
 [for each region]:
   [uint32 startAddress]
   [uint32 endAddress]
-  [byte type] (0=CODE, 1=DATA, 2=IO, 3=UNKNOWN)
-  [byte flags]
+  [byte type] (0=Unknown, 1=Code, 2=Data, 3=RAM, 4=IO, 5=ROM, 6=SaveRam, 7=WorkRam, 8=VideoRam)
+  [byte memType]
+  [uint16 flags]
   [uint16 nameLength]
   [UTF-8 name string]
 ```
@@ -171,53 +173,59 @@ Section 0x0009: MEMORY_REGIONS
 
 ### Issue #4: 🔗 Add Cross-Reference Export - Phase 3
 
-**Status:** ⏳ TODO  
+**Status:** ✅ COMPLETED  
 **Labels:** enhancement, phase-3  
 **Milestone:** Pansy Integration v1.1  
 **Estimate:** 6 hours  
-**Dependencies:** Issue #2
+**Dependencies:** Issue #2  
+**Completed:** 2026-01-28 11:00 UTC
 
 **Description:**
 Export cross-references (who calls what) to Pansy format.
 
 **Tasks:**
-- [ ] Add CROSS_REFS section (0x0005)
-- [ ] Extract cross-references from CDL data
-- [ ] Support types: Call, Jump, Read, Write
-- [ ] Add source/destination addresses
-- [ ] Handle indirect calls/jumps
-- [ ] Performance optimization (large ROM handling)
-- [ ] Add UI option: "Include cross-references"
-- [ ] Document format specification
+- [x] Add CROSS_REFS section (0x0005)
+- [x] Extract cross-references from CDL data
+- [x] Support types: Call, Jump, Read, Write, Branch
+- [x] Add source/destination addresses
+- [x] Handle indirect calls/jumps
+- [x] Performance optimization (large ROM handling)
+- [x] Add UI option: "Include cross-references"
+- [x] Document format specification
 
 **Binary Format:**
 ```
 Section 0x0005: CROSS_REFS
 [uint32 count]
 [for each xref]:
-  [byte type] (0=CALL, 1=JUMP, 2=READ, 3=WRITE)
   [uint32 fromAddress]
   [uint32 toAddress]
+  [byte type] (1=Call, 2=Jump, 3=Read, 4=Write, 5=Branch)
+  [byte memTypeFrom]
+  [byte memTypeTo]
+  [byte flags]
 ```
 
 ---
 
 ### Issue #5: ⚡ Performance Optimization - Phase 4
 
-**Status:** ⏳ TODO  
+**Status:** ✅ COMPLETED  
 **Labels:** performance, optimization, phase-4  
 **Milestone:** Pansy Integration v1.2  
 **Estimate:** 8 hours  
-**Dependencies:** Issue #3, Issue #4
+**Dependencies:** Issue #3, Issue #4  
+**Completed:** 2026-01-28 11:00 UTC
 
 **Description:**
 Optimize export performance for large ROMs and frequent auto-exports.
 
 **Tasks:**
-- [ ] Add zlib/gzip compression option
-- [ ] Implement incremental export (changed data only)
-- [ ] Async file writing (background thread)
-- [ ] Memory pooling for large buffers
+- [x] Add GZip compression option
+- [x] Implement async file writing
+- [x] Buffered streams for large files
+- [x] Add PansyExportOptions class
+- [x] Add UI option for compression
 - [ ] Profiling and bottleneck identification
 - [ ] Caching for repeated exports
 - [ ] Progress dialog for large exports

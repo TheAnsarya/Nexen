@@ -24,6 +24,14 @@ namespace Mesen.Config {
 		[Reactive] public int AutoSaveIntervalMinutes { get; set; } = 5;
 		[Reactive] public bool SavePansyOnRomUnload { get; set; } = true;
 
+		// Phase 3: Enhanced Pansy export options
+		[Reactive] public bool PansyIncludeMemoryRegions { get; set; } = true;
+		[Reactive] public bool PansyIncludeCrossReferences { get; set; } = true;
+		[Reactive] public bool PansyIncludeDataBlocks { get; set; } = true;
+
+		// Phase 4: Compression options
+		[Reactive] public bool PansyUseCompression { get; set; } = false;
+
 		[Reactive] public bool ResetLabelsOnImport { get; set; } = true;
 
 		[Reactive] public bool ImportPrgRomLabels { get; set; } = true;

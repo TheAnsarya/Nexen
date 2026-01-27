@@ -27,7 +27,7 @@
 				<Button MinWidth="70" HorizontalContentAlignment="Center" Click="Cancel_OnClick" Content="{l:Translate btnCancel}" />
 			</StackPanel>
 		</Panel>
-		
+
 		<TabControl TabStripPlacement="Left" Background="#20888888" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" Padding="0">
 			<TabItem>
 				<TabItem.Header>
@@ -48,14 +48,14 @@
 							Content="{l:Translate chkDisableDefaultLabels}"
 						/>
 					</c:OptionSection>
-					
+
 					<c:OptionSection Header="{l:Translate lblDisassemblySettings}">
 						<CheckBox
 							IsChecked="{Binding Debugger.KeepActiveStatementInCenter}"
 							Content="{l:Translate chkKeepActiveStatementInCenter}"
 						/>
 					</c:OptionSection>
-					
+
 					<c:OptionSection Header="{l:Translate lblCopyCodeSettings}">
 						<CheckBox
 							IsChecked="{Binding Debugger.CopyAddresses}"
@@ -99,7 +99,7 @@
 					<c:OptionSection Header="{l:Translate lblDisplaySettings}">
 						<CheckBox IsChecked="{Binding Script.ShowLineNumbers}" Content="{l:Translate chkShowLineNumbers}" />
 					</c:OptionSection>
-					
+
 					<c:OptionSection Header="{l:Translate lblRestrictions}">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="{l:Translate lblMaxExecutionTime}" />
@@ -126,7 +126,7 @@
 					<Rectangle Fill="{StaticResource MesenGrayBorderColor}" Height="1" />
 				</TabItem.Header>
 			</TabItem>
-			
+
 			<TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
@@ -146,7 +146,7 @@
 
 							<TextBlock Text="{l:Translate lblAssemblerFont}" Grid.Row="2" />
 							<v:FontOptionsView Grid.Column="1" Grid.Row="2" DataContext="{Binding Fonts.AssemblerFont}" />
-							
+
 							<TextBlock Text="{l:Translate lblScriptWindowFont}" Grid.Row="3" />
 							<v:FontOptionsView Grid.Column="1" Grid.Row="3" DataContext="{Binding Fonts.ScriptWindowFont}" />
 
@@ -261,6 +261,26 @@
 							Content="{l:Translate chkSavePansyOnRomUnload}"
 							Margin="0 5 0 0"
 						/>
+						<TextBlock Text="{l:Translate lblPansyExportOptions}" FontWeight="SemiBold" Margin="0 10 0 5" />
+						<StackPanel Margin="10 0 0 0">
+							<CheckBox
+								IsChecked="{Binding Integration.PansyIncludeMemoryRegions}"
+								Content="{l:Translate chkPansyIncludeMemoryRegions}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.PansyIncludeCrossReferences}"
+								Content="{l:Translate chkPansyIncludeCrossReferences}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.PansyIncludeDataBlocks}"
+								Content="{l:Translate chkPansyIncludeDataBlocks}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.PansyUseCompression}"
+								Content="{l:Translate chkPansyUseCompression}"
+								Margin="0 5 0 0"
+							/>
+						</StackPanel>
 					</c:OptionSection>
 					<c:OptionSection Header="{l:Translate lblImportFilters}">
 						<TextBlock Text="{l:Translate lblImportFiltersHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
