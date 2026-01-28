@@ -457,3 +457,17 @@ dotnet_style_prefer_compound_assignment = true:warning
 dotnet_style_prefer_simplified_interpolation = true:suggestion
 dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
 dotnet_style_namespace_match_folder = true:suggestion
+
+#######################################
+# Trimming warnings - suppress for non-AOT builds
+#######################################
+
+# IL2026: RequiresUnreferencedCode - we don't use trimming
+dotnet_diagnostic.IL2026.severity = none
+
+# IL2046: Interface implementation without RequiresUnreferencedCode - expected
+dotnet_diagnostic.IL2046.severity = none
+
+# IL2075: Reflection calls without DynamicallyAccessedMembers - we don't use trimming
+dotnet_diagnostic.IL2075.severity = none
+

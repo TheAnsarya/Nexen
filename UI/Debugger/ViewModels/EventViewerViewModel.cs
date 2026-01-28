@@ -386,6 +386,7 @@ namespace Mesen.Debugger.ViewModels {
 			}
 		}
 
+		[RequiresUnreferencedCode("Uses reflection to access properties dynamically")]
 		public void EnableAllEventTypes() {
 			foreach (PropertyInfo prop in ConsoleConfig.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)) {
 				if (prop.PropertyType == typeof(EventViewerCategoryCfg)) {
@@ -394,6 +395,7 @@ namespace Mesen.Debugger.ViewModels {
 			}
 		}
 
+		[RequiresUnreferencedCode("Uses reflection to access properties dynamically")]
 		public void DisableAllEventTypes() {
 			foreach (PropertyInfo prop in ConsoleConfig.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)) {
 				if (prop.PropertyType == typeof(EventViewerCategoryCfg)) {
