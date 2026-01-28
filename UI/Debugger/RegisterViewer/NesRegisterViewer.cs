@@ -222,12 +222,12 @@ public class NesRegisterViewer {
 			string addr = entry.GetAddress();
 			string name = entry.GetName();
 
-			if (value is ISpanFormattable) {
-				entries.Add(new RegEntry(addr, name, (ISpanFormattable)value, format));
-			} else if (value is bool) {
-				entries.Add(new RegEntry(addr, name, (bool)value));
-			} else if (value is string) {
-				entries.Add(new RegEntry(addr, name, (string)value, entry.RawValue != Int64.MinValue ? entry.RawValue : null));
+			if (value is ISpanFormattable spanFormattable) {
+				entries.Add(new RegEntry(addr, name, spanFormattable, format));
+			} else if (value is bool boolValue) {
+				entries.Add(new RegEntry(addr, name, boolValue));
+			} else if (value is string stringValue) {
+				entries.Add(new RegEntry(addr, name, stringValue, entry.RawValue != Int64.MinValue ? entry.RawValue : null));
 			} else {
 				entries.Add(new RegEntry(addr, name));
 			}

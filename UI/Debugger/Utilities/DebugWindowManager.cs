@@ -49,9 +49,9 @@ namespace Mesen.Debugger.Utilities {
 
 		public static T GetOrOpenDebugWindow<T>(Func<T> createWindow) where T : MesenWindow {
 			foreach (Window wnd in _openedWindows.Keys) {
-				if (wnd is T) {
+				if (wnd is T typedWnd) {
 					wnd.BringToFront();
-					return (T)wnd;
+					return typedWnd;
 				}
 			}
 
