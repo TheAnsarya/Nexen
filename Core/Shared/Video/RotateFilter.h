@@ -4,7 +4,7 @@
 
 class RotateFilter {
 private:
-	uint32_t* _outputBuffer = nullptr;
+	std::unique_ptr<uint32_t[]> _outputBuffer;
 	uint32_t _angle = 0;
 	uint32_t _width = 0;
 	uint32_t _height = 0;
@@ -13,7 +13,7 @@ private:
 
 public:
 	RotateFilter(uint32_t angle);
-	~RotateFilter();
+	~RotateFilter() = default;
 
 	uint32_t GetAngle();
 	uint32_t* ApplyFilter(uint32_t* inputArgbBuffer, uint32_t width, uint32_t height);

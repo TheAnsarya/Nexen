@@ -20,10 +20,6 @@ ScaleFilter::ScaleFilter(Emulator* emu, ScaleFilterType scaleFilterType, uint32_
 	}
 }
 
-ScaleFilter::~ScaleFilter() {
-	delete[] _outputBuffer;
-}
-
 uint32_t ScaleFilter::GetScale() {
 	return _filterScale;
 }
@@ -70,7 +66,7 @@ void ScaleFilter::ApplyLcdGridFilter(uint32_t* inputArgbBuffer) {
 }
 
 void ScaleFilter::ApplyPrescaleFilter(uint32_t* inputArgbBuffer) {
-	uint32_t* outputBuffer = _outputBuffer;
+	uint32_t* outputBuffer = _outputBuffer.get();
 
 	for (uint32_t y = 0; y < _height; y++) {
 		for (uint32_t x = 0; x < _width; x++) {
@@ -88,10 +84,9 @@ void ScaleFilter::ApplyPrescaleFilter(uint32_t* inputArgbBuffer) {
 
 void ScaleFilter::UpdateOutputBuffer(uint32_t width, uint32_t height) {
 	if (!_outputBuffer || width != _width || height != _height) {
-		delete[] _outputBuffer;
 		_width = width;
 		_height = height;
-		_outputBuffer = new uint32_t[_width * _height * _filterScale * _filterScale];
+		_outputBuffer = std::make_unique<uint32_t[]>(_width * _height * _filterScale * _filterScale);
 	}
 }
 
@@ -99,24 +94,24 @@ uint32_t* ScaleFilter::ApplyFilter(uint32_t* inputArgbBuffer, uint32_t width, ui
 	UpdateOutputBuffer(width, height);
 
 	if (_scaleFilterType == ScaleFilterType::xBRZ) {
-		xbrz::scale(_filterScale, inputArgbBuffer, _outputBuffer, width, height, xbrz::ColorFormat::ARGB);
+		xbrz::scale(_filterScale, inputArgbBuffer, _outputBuffer.get(), width, height, xbrz::ColorFormat::ARGB);
 	} else if (_scaleFilterType == ScaleFilterType::HQX) {
-		hqx(_filterScale, inputArgbBuffer, _outputBuffer, width, height);
+		hqx(_filterScale, inputArgbBuffer, _outputBuffer.get(), width, height);
 	} else if (_scaleFilterType == ScaleFilterType::Scale2x) {
-		scale(_filterScale, _outputBuffer, width * sizeof(uint32_t) * _filterScale, inputArgbBuffer, width * sizeof(uint32_t), 4, width, height);
+		scale(_filterScale, _outputBuffer.get(), width * sizeof(uint32_t) * _filterScale, inputArgbBuffer, width * sizeof(uint32_t), 4, width, height);
 	} else if (_scaleFilterType == ScaleFilterType::_2xSai) {
-		twoxsai_generic_xrgb8888(width, height, inputArgbBuffer, width, _outputBuffer, width * _filterScale);
+		twoxsai_generic_xrgb8888(width, height, inputArgbBuffer, width, _outputBuffer.get(), width * _filterScale);
 	} else if (_scaleFilterType == ScaleFilterType::Super2xSai) {
-		supertwoxsai_generic_xrgb8888(width, height, inputArgbBuffer, width, _outputBuffer, width * _filterScale);
+		supertwoxsai_generic_xrgb8888(width, height, inputArgbBuffer, width, _outputBuffer.get(), width * _filterScale);
 	} else if (_scaleFilterType == ScaleFilterType::SuperEagle) {
-		supereagle_generic_xrgb8888(width, height, inputArgbBuffer, width, _outputBuffer, width * _filterScale);
+		supereagle_generic_xrgb8888(width, height, inputArgbBuffer, width, _outputBuffer.get(), width * _filterScale);
 	} else if (_scaleFilterType == ScaleFilterType::Prescale) {
 		ApplyPrescaleFilter(inputArgbBuffer);
 	} else if (_scaleFilterType == ScaleFilterType::LcdGrid) {
 		ApplyLcdGridFilter(inputArgbBuffer);
 	}
 
-	return _outputBuffer;
+	return _outputBuffer.get();
 }
 
 unique_ptr<ScaleFilter> ScaleFilter::GetScaleFilter(Emulator* emu, VideoFilterType filter) {

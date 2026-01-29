@@ -5,21 +5,11 @@ RotateFilter::RotateFilter(uint32_t angle) {
 	_angle = angle;
 }
 
-RotateFilter::~RotateFilter() {
-	if (_outputBuffer) {
-		delete[] _outputBuffer;
-	}
-}
-
 void RotateFilter::UpdateOutputBuffer(uint32_t width, uint32_t height) {
 	if (!_outputBuffer || width != _width || height != _height) {
-		if (_outputBuffer) {
-			delete[] _outputBuffer;
-		}
-
 		_width = width;
 		_height = height;
-		_outputBuffer = new uint32_t[_width * _height];
+		_outputBuffer = std::make_unique<uint32_t[]>(_width * _height);
 	}
 }
 
@@ -54,7 +44,7 @@ uint32_t* RotateFilter::ApplyFilter(uint32_t* inputArgbBuffer, uint32_t width, u
 		}
 	}
 
-	return _outputBuffer;
+	return _outputBuffer.get();
 }
 
 FrameInfo RotateFilter::GetFrameInfo(FrameInfo baseFrameInfo) {

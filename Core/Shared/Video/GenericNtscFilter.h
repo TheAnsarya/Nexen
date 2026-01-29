@@ -12,19 +12,15 @@ private:
 
 	snes_ntsc_setup_t _ntscSetup = {};
 	snes_ntsc_t _ntscData = {};
-	uint16_t* _inputBuffer = nullptr;
+	std::unique_ptr<uint16_t[]> _inputBuffer;
 	uint32_t _width = 0;
 	uint32_t _height = 0;
 
 	void UpdateBufferSize(uint32_t width, uint32_t height) {
 		if (_width != width || _height != height) {
-			if (_inputBuffer) {
-				delete[] _inputBuffer;
-			}
-
 			_width = width;
 			_height = height;
-			_inputBuffer = new uint16_t[width * height];
+			_inputBuffer = std::make_unique<uint16_t[]>(width * height);
 		}
 	}
 
@@ -36,9 +32,7 @@ public:
 		snes_ntsc_init(&_ntscData, &_ntscSetup);
 	}
 
-	~GenericNtscFilter() {
-		delete[] _inputBuffer;
-	}
+	~GenericNtscFilter() = default;
 
 	template <typename T>
 	static bool NtscFilterOptionsChanged(T& ntscSetup, VideoConfig& cfg) {
@@ -94,6 +88,6 @@ public:
 			_inputBuffer[i] = ColorUtilities::Rgb888To555(inOut[i]);
 		}
 
-		snes_ntsc_blit(&_ntscData, _inputBuffer, inWidth, phase, inWidth, inHeight, inOut, outWidth * sizeof(uint32_t));
+		snes_ntsc_blit(&_ntscData, _inputBuffer.get(), inWidth, phase, inWidth, inHeight, inOut, outWidth * sizeof(uint32_t));
 	}
 };

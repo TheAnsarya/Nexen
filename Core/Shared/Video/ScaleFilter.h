@@ -13,7 +13,7 @@ private:
 
 	uint32_t _filterScale;
 	ScaleFilterType _scaleFilterType;
-	uint32_t* _outputBuffer = nullptr;
+	std::unique_ptr<uint32_t[]> _outputBuffer;
 	uint32_t _width = 0;
 	uint32_t _height = 0;
 
@@ -25,7 +25,7 @@ private:
 
 public:
 	ScaleFilter(Emulator* emu, ScaleFilterType scaleFilterType, uint32_t scale);
-	~ScaleFilter();
+	~ScaleFilter() = default;
 
 	uint32_t GetScale();
 	uint32_t* ApplyFilter(uint32_t* inputArgbBuffer, uint32_t width, uint32_t height);
