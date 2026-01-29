@@ -186,6 +186,9 @@ PGOHelper/PGOMesenHome
 
 packages/*
 
+# vcpkg binary cache (regenerated via vcpkg install)
+vcpkg_installed/
+
 !Libretro/hakchi/bin
 
 TestHelper/*
