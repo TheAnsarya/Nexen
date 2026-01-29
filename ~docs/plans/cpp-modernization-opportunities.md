@@ -41,7 +41,11 @@ This document tracks potential C++ modernization opportunities for Mesen2, with 
 
 ## 2. std::span (C++20)
 
-**Current State:** Many `(pointer, size)` parameter pairs identified
+**Current State:** ✅ **PARTIALLY IMPLEMENTED** (Issue #82 - CLOSED)
+- BatteryManager API converted to std::span (26 files updated)
+- `SaveBattery(extension, std::span<const uint8_t> data)`
+- `LoadBattery(extension, std::span<uint8_t> data)`
+- `#include <span>` added to pch.h
 
 **Analysis:**
 - std::span is a non-owning view over contiguous memory
@@ -167,7 +171,13 @@ auto console = std::make_unique<NesConsole>();
 
 ## 5. constexpr Improvements (C++20/23)
 
-**Current State:** Limited constexpr usage
+**Current State:** 🔄 **IN PROGRESS** (Issue #76)
+- 14 functions converted to constexpr:
+  - ColorUtilities.h (Bgr555ToArgb, argbR/G/B, blendColors)
+  - Dsp.h (Clamp16, Clamp8)
+  - ScanlineFilter.h (GetDimGray, GetDimRgb)
+  - GbMbc3Rtc.h (GetDateSeed)
+  - SnesNtscFilter.h, NesNtscFilter.h, PceNtscFilter.h, BisqwitNtscFilter.h
 
 **Analysis:**
 - C++20/23 greatly expanded what can be constexpr
@@ -196,7 +206,16 @@ constexpr uint8_t MirrorBits(uint8_t value) {
 
 ## 6. [[likely]] / [[unlikely]] Attributes (C++20)
 
-**Current State:** Not used
+**Current State:** ✅ **IMPLEMENTED** (Issue #75 - CLOSED)
+- 41 `[[unlikely]]` attributes added to error-throwing branches
+- Applied in 24 files across Core and Debugger
+- Focus on error paths, invalid switch cases, unsupported operations
+
+**Files Updated:**
+- Core/SNES: MemoryMappings.cpp, SnesPpu.cpp, AluMulDiv.cpp, NecDsp.cpp, etc.
+- Core/NES: NesMemoryManager.cpp, VRC2_4.h
+- Core/Shared: Emulator.cpp, CheatManager.cpp/.h, EmuSettings.cpp
+- Core/Debugger: Multiple files (BreakpointManager, DisassemblyInfo, etc.)
 
 **Analysis:**
 - Hints to compiler for branch prediction
@@ -224,15 +243,46 @@ if ([[unlikely]] error) {
 
 ---
 
+## 6.5 [[nodiscard]] Attribute (C++17/20)
+
+**Current State:** ✅ **IMPLEMENTED** (Issue #77 - In Progress)
+- ~179 [[nodiscard]] attributes added across all systems
+- Coverage includes all major platforms: NES, SNES, GB, GBA, SMS, PCE, WonderSwan
+
+**Implementation Summary:**
+| Category | Count | Files |
+|----------|-------|-------|
+| Utilities | 35+ | CRC32.h, BitUtilities.h, StringUtilities.h, etc. |
+| Core/Shared | 16 | RewindData.h, InputHud.h, Emulator.h, etc. |
+| CPU/Hardware | 19 | NesCpu.h, InternalRegisters.h, Dsp.h, etc. |
+| constexpr batch | 14 | ColorUtilities.h, ScanlineFilter.h, etc. |
+| Gameboy | 15 | GbxFooter.h, GbCpu.h, GameboyHeader.h, etc. |
+| GBA | 13 | GbaTimer.h, GbaPpu.h, GbaMemoryManager.h, etc. |
+| SMS | 5 | SmsCpu.h, SmsVdp.h |
+| PCE | 12 | PceVdc.h, PceVce.h, PceConsole.h, etc. |
+| WonderSwan | 50 | WsPpu.h, WsMemoryManager.h, WsCpu.h, WsConsole.h, etc. |
+
+**Analysis:**
+- Warns when return value is ignored
+- Zero runtime cost, compile-time only
+- Helps catch bugs where function results should be checked
+
+**Recommendation:** 🟢 **Safe - Apply to All Pure Getters**
+
+---
+
 ## 7. std::bit_cast (C++20)
 
-**Current State:** Uses reinterpret_cast and union type punning
+**Current State:** ⏸️ **LOW PRIORITY** (Issue #78 - Research Complete)
+- Analysis found minimal candidates in codebase
+- Most type punning uses unions which are well-defined for this use case
+- reinterpret_cast uses are primarily for pointer arithmetic, not type punning
 
 **Analysis:**
 - std::bit_cast is type-safe and constexpr-capable
 - Defined behavior (unlike some reinterpret_cast uses)
 
-**Recommendation:** 🟢 **Safe - Adopt Where Applicable**
+**Recommendation:** 🟢 **Safe - Adopt Where Applicable** (but few candidates exist)
 
 **Use Cases:**
 ```cpp
@@ -247,14 +297,36 @@ uint32_t asInt = std::bit_cast<uint32_t>(floatValue);
 
 ## 8. Testing Infrastructure
 
-**Current State:** No formal test framework identified in Core
+**Current State:** 📋 **PLANNED** (Epic #79 - C++ Unit Testing Infrastructure)
+- No formal C++ test framework in Core
+- Existing Tests/ directory has .NET xUnit tests
+- Benchmarks/ directory has BenchmarkDotNet for Pansy export
+
+**GitHub Issues Created:**
+- Epic #79: C++ Unit Testing Infrastructure
+- Epic #80: C++ Performance Benchmarking
+- Epic #81: Code Documentation and Comments
 
 **Opportunities:**
 - Unit tests for CPU instruction decoding
 - Property-based testing for assembler/disassembler roundtrip
 - Fuzzing for ROM loader security
+- Google Test or Catch2 integration
 
-**Recommendation:** ⏸️ **Deferred - Requires Architectural Discussion**
+**Recommendation:** 📋 **PLANNED - Infrastructure Needed**
+
+---
+
+## 9. Performance Benchmarking
+
+**Current State:** 📋 **PLANNED** (Epic #80)
+- No formal C++ benchmarking framework
+- Need to measure impact of modernization changes
+
+**Proposed Approach:**
+- Google Benchmark or custom timing harness
+- Key metrics: frame time, CPU cycles/second, memory throughput
+- Test ROMs: Battletoads (NES), Star Fox (SNES), Pokémon (GB)
 
 ---
 
@@ -265,20 +337,24 @@ uint32_t asInt = std::bit_cast<uint32_t>(floatValue);
 - [x] C++20 string methods (starts_with, ends_with, contains)
 - [x] Fix C4244 warnings (tolower/toupper)
 
-### Phase 2: Safe Modernization (Current)
-- [ ] [[likely]]/[[unlikely]] attributes in hot paths
-- [ ] constexpr expansion for lookup tables
-- [ ] std::bit_cast adoption
+### Phase 2: Safe Modernization ✅ (Completed - Session 6)
+- [x] [[likely]]/[[unlikely]] attributes in error paths (41 attributes, #75 CLOSED)
+- [x] [[nodiscard]] attributes (~179 attributes, #77 in progress)
+- [x] constexpr expansion (14 functions, #76 in progress)
+- [x] std::span for BatteryManager API (26 files, #82 CLOSED)
+- [ ] std::bit_cast adoption (LOW PRIORITY - few candidates, #78)
 - [ ] Smart pointer migration for cold paths
 
 ### Phase 3: Measured Modernization (Requires Profiling)
-- [ ] std::span for non-critical APIs
+- [ ] std::span for MemoryDumper, CodeDataLogger APIs
 - [ ] std::format for cold paths
 - [ ] Further std::ranges in cold code
 
 ### Phase 4: Future Consideration
 - [ ] std::views (need better compiler support)
-- [ ] Testing infrastructure
+- [ ] Testing infrastructure (Epic #79)
+- [ ] Performance benchmarking (Epic #80)
+- [ ] Code documentation (Epic #81)
 - [ ] Module support (C++20 modules)
 
 ---
