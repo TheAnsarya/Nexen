@@ -13,16 +13,13 @@ NesSoundMixer::NesSoundMixer(NesConsole* console) {
 	_clockRate = 0;
 	_console = console;
 	_mixer = console->GetEmulator()->GetSoundMixer();
-	_outputBuffer = new int16_t[NesSoundMixer::MaxSamplesPerFrame];
+	_outputBuffer = std::make_unique<int16_t[]>(NesSoundMixer::MaxSamplesPerFrame);
 	_blipBufLeft = blip_new(NesSoundMixer::MaxSamplesPerFrame);
 	_blipBufRight = blip_new(NesSoundMixer::MaxSamplesPerFrame);
 	_sampleRate = 96000;
 }
 
 NesSoundMixer::~NesSoundMixer() {
-	delete[] _outputBuffer;
-	_outputBuffer = nullptr;
-
 	blip_delete(_blipBufLeft);
 	blip_delete(_blipBufRight);
 }
@@ -64,7 +61,7 @@ void NesSoundMixer::Reset() {
 void NesSoundMixer::PlayAudioBuffer(uint32_t time) {
 	EndFrame(time);
 
-	int16_t* out = _outputBuffer + (_sampleCount * 2);
+	int16_t* out = _outputBuffer.get() + (_sampleCount * 2);
 	size_t sampleCount = blip_read_samples(_blipBufLeft, out, NesSoundMixer::MaxSamplesPerFrame, 1);
 
 	if (_hasPanning) {
@@ -92,17 +89,17 @@ void NesSoundMixer::PlayAudioBuffer(uint32_t time) {
 		case StereoFilterType::None:
 			break;
 		case StereoFilterType::Delay:
-			_stereoDelay.ApplyFilter(_outputBuffer, _sampleCount, _sampleRate, cfg.StereoDelay);
+			_stereoDelay.ApplyFilter(_outputBuffer.get(), _sampleCount, _sampleRate, cfg.StereoDelay);
 			break;
 		case StereoFilterType::Panning:
-			_stereoPanning.ApplyFilter(_outputBuffer, _sampleCount, cfg.StereoPanningAngle);
+			_stereoPanning.ApplyFilter(_outputBuffer.get(), _sampleCount, cfg.StereoPanningAngle);
 			break;
 		case StereoFilterType::CombFilter:
-			_stereoCombFilter.ApplyFilter(_outputBuffer, _sampleCount, _sampleRate, cfg.StereoCombFilterDelay, cfg.StereoCombFilterStrength);
+			_stereoCombFilter.ApplyFilter(_outputBuffer.get(), _sampleCount, _sampleRate, cfg.StereoCombFilterDelay, cfg.StereoCombFilterStrength);
 			break;
 	}
 
-	_mixer->PlayAudioBuffer(_outputBuffer, (uint32_t)_sampleCount, 96000);
+	_mixer->PlayAudioBuffer(_outputBuffer.get(), (uint32_t)_sampleCount, 96000);
 	_sampleCount = 0;
 
 	UpdateRates(false);
@@ -114,7 +111,7 @@ void NesSoundMixer::ProcessVsDualSystemAudio() {
 	// If this is a VS dualsystem game
 	if (cfg.VsDualAudioOutput == VsDualOutputOption::SubSystemOnly) {
 		// Mute the main system's sound
-		memset(_outputBuffer, 0, _sampleCount * sizeof(int16_t));
+		memset(_outputBuffer.get(), 0, _sampleCount * sizeof(int16_t));
 	}
 
 	NesSoundMixer* subMixer = _console->GetVsSubConsole()->GetSoundMixer();
@@ -127,7 +124,7 @@ void NesSoundMixer::ProcessVsDualSystemAudio() {
 
 		if (i < subMixer->_sampleCount) {
 			size_t samplesToCopy = subMixer->_sampleCount - i;
-			memmove(subMixer->_outputBuffer, subMixer->_outputBuffer + i * 2, samplesToCopy * 2 * sizeof(int16_t));
+			memmove(subMixer->_outputBuffer.get(), subMixer->_outputBuffer.get() + i * 2, samplesToCopy * 2 * sizeof(int16_t));
 			subMixer->_sampleCount = samplesToCopy;
 		}
 	} else {

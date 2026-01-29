@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "Utilities/ISerializable.h"
 #include "Utilities/Audio/blip_buf.h"
 #include "Utilities/Audio/StereoDelayFilter.h"
@@ -38,7 +39,7 @@ private:
 
 	blip_t* _blipBufLeft = nullptr;
 	blip_t* _blipBufRight = nullptr;
-	int16_t* _outputBuffer = nullptr;
+	std::unique_ptr<int16_t[]> _outputBuffer;
 	size_t _sampleCount = 0;
 	double _volumes[MaxChannelCount] = {};
 	double _panning[MaxChannelCount] = {};

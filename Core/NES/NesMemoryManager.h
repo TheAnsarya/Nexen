@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pch.h"
+#include <memory>
 
 #include "NES/INesMemoryHandler.h"
 #include "NES/OpenBusHandler.h"
@@ -24,13 +25,13 @@ private:
 	NesConsole* _console = nullptr;
 	BaseMapper* _mapper = nullptr;
 
-	uint8_t* _internalRam = nullptr;
+	std::unique_ptr<uint8_t[]> _internalRam;
 	uint32_t _internalRamSize = 0;
 
 	OpenBusHandler _openBusHandler = {};
 	unique_ptr<INesMemoryHandler> _internalRamHandler;
-	INesMemoryHandler** _ramReadHandlers = nullptr;
-	INesMemoryHandler** _ramWriteHandlers = nullptr;
+	std::unique_ptr<INesMemoryHandler*[]> _ramReadHandlers;
+	std::unique_ptr<INesMemoryHandler*[]> _ramWriteHandlers;
 
 	void InitializeMemoryHandlers(INesMemoryHandler** memoryHandlers, INesMemoryHandler* handler, vector<uint16_t>* addresses, bool allowOverride);
 

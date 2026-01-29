@@ -1,5 +1,7 @@
 #pragma once
 #include "pch.h"
+#include <memory>
+#include <array>
 #include "NES/INesMemoryHandler.h"
 #include "Utilities/ISerializable.h"
 #include "NES/NesTypes.h"
@@ -91,7 +93,7 @@ protected:
 
 	Emulator* _emu = nullptr;
 	EmuSettings* _settings = nullptr;
-	uint16_t* _outputBuffers[2] = {};
+	std::array<std::unique_ptr<uint16_t[]>, 2> _outputBuffers;
 
 	ConsoleRegion _region = {};
 	uint16_t _standardVblankEnd = 0;

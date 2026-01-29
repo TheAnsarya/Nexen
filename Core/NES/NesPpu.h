@@ -141,7 +141,4 @@ void NesPpu<T>::Run(uint64_t runTo) {
 }
 
 template <class T>
-NesPpu<T>::~NesPpu() {
-	delete[] _outputBuffers[0];
-	delete[] _outputBuffers[1];
-}
+NesPpu<T>::~NesPpu() = default;

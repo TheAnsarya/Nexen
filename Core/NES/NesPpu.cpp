@@ -36,12 +36,12 @@ NesPpu<T>::NesPpu(NesConsole* console) {
 	_masterClockDivider = 4;
 	_settings = _emu->GetSettings();
 
-	_outputBuffers[0] = new uint16_t[256 * 240];
-	_outputBuffers[1] = new uint16_t[256 * 240];
+	_outputBuffers[0] = std::make_unique<uint16_t[]>(256 * 240);
+	_outputBuffers[1] = std::make_unique<uint16_t[]>(256 * 240);
 
-	_currentOutputBuffer = _outputBuffers[0];
-	memset(_outputBuffers[0], 0, 256 * 240 * sizeof(uint16_t));
-	memset(_outputBuffers[1], 0, 256 * 240 * sizeof(uint16_t));
+	_currentOutputBuffer = _outputBuffers[0].get();
+	memset(_outputBuffers[0].get(), 0, 256 * 240 * sizeof(uint16_t));
+	memset(_outputBuffers[1].get(), 0, 256 * 240 * sizeof(uint16_t));
 
 	if (_emu->GetSettings()->GetNesConfig().RamPowerOnState == RamState::Random) {
 		_console->InitializeRam(_paletteRam, 0x20);
@@ -1185,7 +1185,7 @@ uint16_t* NesPpu<T>::GetScreenBuffer(bool previousBuffer, bool processGrayscaleE
 	if (!previousBuffer && processGrayscaleEmphasisBits) {
 		UpdateGrayscaleAndIntensifyBits();
 	}
-	return previousBuffer ? ((_currentOutputBuffer == _outputBuffers[0]) ? _outputBuffers[1] : _outputBuffers[0]) : _currentOutputBuffer;
+	return previousBuffer ? ((_currentOutputBuffer == _outputBuffers[0].get()) ? _outputBuffers[1].get() : _outputBuffers[0].get()) : _currentOutputBuffer;
 }
 
 template <class T>
@@ -1243,11 +1243,11 @@ void NesPpu<T>::SendFrameVsDualSystem() {
 		_emu->GetVideoDecoder()->UpdateFrame(frame, forRewind, forRewind);
 	} else if (cfg.VsDualVideoOutput == VsDualOutputOption::Both) {
 		if (_console->IsVsMainConsole()) {
-			uint16_t* mergedBuffer = new uint16_t[NesConstants::ScreenWidth * NesConstants::ScreenHeight * 2];
+			auto mergedBuffer = std::make_unique<uint16_t[]>(NesConstants::ScreenWidth * NesConstants::ScreenHeight * 2);
 
 			uint16_t* in1 = _currentOutputBuffer;
 			uint16_t* in2 = ((NesPpu<T>*)_console->GetVsSubConsole()->GetPpu())->_currentOutputBuffer;
-			uint16_t* out = mergedBuffer;
+			uint16_t* out = mergedBuffer.get();
 			for (int i = 0; i < NesConstants::ScreenHeight; i++) {
 				memcpy(out, in1, NesConstants::ScreenWidth * sizeof(uint16_t));
 				out += NesConstants::ScreenWidth;
@@ -1257,9 +1257,8 @@ void NesPpu<T>::SendFrameVsDualSystem() {
 				in2 += NesConstants::ScreenWidth;
 			}
 
-			RenderedFrame mergedFrame(mergedBuffer, NesConstants::ScreenWidth * 2, NesConstants::ScreenHeight, 1.0, _frameCount, _console->GetControlManager()->GetPortStates());
+			RenderedFrame mergedFrame(mergedBuffer.get(), NesConstants::ScreenWidth * 2, NesConstants::ScreenHeight, 1.0, _frameCount, _console->GetControlManager()->GetPortStates());
 			_emu->GetVideoDecoder()->UpdateFrame(mergedFrame, true, forRewind);
-			delete[] mergedBuffer;
 		}
 	}
 }
@@ -1417,7 +1416,7 @@ void NesPpu<T>::ProcessScanlineFirstCycle() {
 			_allowFullPpuAccess = true;
 
 			// Switch to alternate output buffer (VideoDecoder may still be decoding the last frame buffer)
-			_currentOutputBuffer = (_currentOutputBuffer == _outputBuffers[0]) ? _outputBuffers[1] : _outputBuffers[0];
+			_currentOutputBuffer = (_currentOutputBuffer == _outputBuffers[0].get()) ? _outputBuffers[1].get() : _outputBuffers[0].get();
 			_emu->AddDebugEvent<CpuType::Nes>(DebugEventType::BgColorChange);
 		} else if (_prevRenderingEnabled) {
 			if (_scanline > 0 || (!(_frameCount & 0x01) || _region != ConsoleRegion::Ntsc || GetPpuModel() != PpuModel::Ppu2C02)) {

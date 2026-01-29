@@ -15,20 +15,20 @@ NesMemoryManager::NesMemoryManager(NesConsole* console, BaseMapper* mapper) {
 	_mapper = mapper;
 
 	_internalRamSize = mapper->GetInternalRamSize();
-	_internalRam = new uint8_t[_internalRamSize];
-	_emu->RegisterMemory(MemoryType::NesInternalRam, _internalRam, _internalRamSize);
+	_internalRam = std::make_unique<uint8_t[]>(_internalRamSize);
+	_emu->RegisterMemory(MemoryType::NesInternalRam, _internalRam.get(), _internalRamSize);
 	if (_internalRamSize == NesMemoryManager::NesInternalRamSize) {
 		_internalRamHandler.reset(new InternalRamHandler<0x7FF>());
-		((InternalRamHandler<0x7FF>*)_internalRamHandler.get())->SetInternalRam(_internalRam);
+		((InternalRamHandler<0x7FF>*)_internalRamHandler.get())->SetInternalRam(_internalRam.get());
 	} else if (_internalRamSize == NesMemoryManager::FamicomBoxInternalRamSize) {
 		_internalRamHandler.reset(new InternalRamHandler<0x1FFF>());
-		((InternalRamHandler<0x1FFF>*)_internalRamHandler.get())->SetInternalRam(_internalRam);
+		((InternalRamHandler<0x1FFF>*)_internalRamHandler.get())->SetInternalRam(_internalRam.get());
 	} else [[unlikely]] {
 		throw std::runtime_error("unsupported memory size");
 	}
 
-	_ramReadHandlers = new INesMemoryHandler*[NesMemoryManager::CpuMemorySize];
-	_ramWriteHandlers = new INesMemoryHandler*[NesMemoryManager::CpuMemorySize];
+	_ramReadHandlers = std::make_unique<INesMemoryHandler*[]>(NesMemoryManager::CpuMemorySize);
+	_ramWriteHandlers = std::make_unique<INesMemoryHandler*[]>(NesMemoryManager::CpuMemorySize);
 
 	for (int i = 0; i < NesMemoryManager::CpuMemorySize; i++) {
 		_ramReadHandlers[i] = &_openBusHandler;
@@ -38,16 +38,11 @@ NesMemoryManager::NesMemoryManager(NesConsole* console, BaseMapper* mapper) {
 	RegisterIODevice(_internalRamHandler.get());
 }
 
-NesMemoryManager::~NesMemoryManager() {
-	delete[] _internalRam;
-
-	delete[] _ramReadHandlers;
-	delete[] _ramWriteHandlers;
-}
+NesMemoryManager::~NesMemoryManager() = default;
 
 void NesMemoryManager::Reset(bool softReset) {
 	if (!softReset) {
-		_console->InitializeRam(_internalRam, _internalRamSize);
+		_console->InitializeRam(_internalRam.get(), _internalRamSize);
 	}
 
 	_mapper->Reset(softReset);
@@ -66,8 +61,8 @@ void NesMemoryManager::RegisterIODevice(INesMemoryHandler* handler) {
 	MemoryRanges ranges;
 	handler->GetMemoryRanges(ranges);
 
-	InitializeMemoryHandlers(_ramReadHandlers, handler, ranges.GetRAMReadAddresses(), ranges.GetAllowOverride());
-	InitializeMemoryHandlers(_ramWriteHandlers, handler, ranges.GetRAMWriteAddresses(), ranges.GetAllowOverride());
+	InitializeMemoryHandlers(_ramReadHandlers.get(), handler, ranges.GetRAMReadAddresses(), ranges.GetAllowOverride());
+	InitializeMemoryHandlers(_ramWriteHandlers.get(), handler, ranges.GetRAMWriteAddresses(), ranges.GetAllowOverride());
 }
 
 void NesMemoryManager::RegisterWriteHandler(INesMemoryHandler* handler, uint32_t start, uint32_t end) {
@@ -96,7 +91,7 @@ void NesMemoryManager::UnregisterIODevice(INesMemoryHandler* handler) {
 }
 
 uint8_t* NesMemoryManager::GetInternalRam() {
-	return _internalRam;
+	return _internalRam.get();
 }
 
 uint8_t NesMemoryManager::DebugRead(uint16_t addr) {
@@ -149,7 +144,7 @@ void NesMemoryManager::DebugWrite(uint16_t addr, uint8_t value, bool disableSide
 }
 
 void NesMemoryManager::Serialize(Serializer& s) {
-	SVArray(_internalRam, _internalRamSize);
+	SVArray(_internalRam.get(), _internalRamSize);
 	SV(_openBusHandler);
 }
 

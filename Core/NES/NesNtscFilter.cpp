@@ -12,7 +12,7 @@ NesNtscFilter::NesNtscFilter(Emulator* emu) : BaseVideoFilter(emu) {
 	memset(&_ntscData, 0, sizeof(_ntscData));
 	_ntscSetup = {};
 	nes_ntsc_init(&_ntscData, &_ntscSetup);
-	_ntscBuffer = new uint32_t[NES_NTSC_OUT_WIDTH(256) * 240];
+	_ntscBuffer = std::make_unique<uint32_t[]>(NES_NTSC_OUT_WIDTH(256) * 240);
 }
 
 OverscanDimensions NesNtscFilter::GetOverscan() {
@@ -74,14 +74,12 @@ void NesNtscFilter::ApplyFilter(uint16_t* ppuOutputBuffer) {
 		NesDefaultVideoFilter::ApplyPalBorder(ppuOutputBuffer);
 	}
 
-	nes_ntsc_blit(&_ntscData, ppuOutputBuffer, _baseFrameInfo.Width, GetVideoPhase(), _baseFrameInfo.Width, _baseFrameInfo.Height, _ntscBuffer, NES_NTSC_OUT_WIDTH(_baseFrameInfo.Width) * 4);
+	nes_ntsc_blit(&_ntscData, ppuOutputBuffer, _baseFrameInfo.Width, GetVideoPhase(), _baseFrameInfo.Width, _baseFrameInfo.Height, _ntscBuffer.get(), NES_NTSC_OUT_WIDTH(_baseFrameInfo.Width) * 4);
 
 	for (uint32_t i = 0; i < frameInfo.Height; i += 2) {
-		memcpy(GetOutputBuffer() + i * frameInfo.Width, _ntscBuffer + yOffset + xOffset + (i / 2) * baseWidth, frameInfo.Width * sizeof(uint32_t));
-		memcpy(GetOutputBuffer() + (i + 1) * frameInfo.Width, _ntscBuffer + yOffset + xOffset + (i / 2) * baseWidth, frameInfo.Width * sizeof(uint32_t));
+		memcpy(GetOutputBuffer() + i * frameInfo.Width, _ntscBuffer.get() + yOffset + xOffset + (i / 2) * baseWidth, frameInfo.Width * sizeof(uint32_t));
+		memcpy(GetOutputBuffer() + (i + 1) * frameInfo.Width, _ntscBuffer.get() + yOffset + xOffset + (i / 2) * baseWidth, frameInfo.Width * sizeof(uint32_t));
 	}
 }
 
-NesNtscFilter::~NesNtscFilter() {
-	delete[] _ntscBuffer;
-}
+NesNtscFilter::~NesNtscFilter() = default;
