@@ -25,7 +25,7 @@ void BatteryManager::SetBatteryRecorder(shared_ptr<IBatteryRecorder> recorder) {
 	_recorder = recorder;
 }
 
-void BatteryManager::SaveBattery(string extension, uint8_t* data, uint32_t length) {
+void BatteryManager::SaveBattery(string extension, std::span<const uint8_t> data) {
 	if (_romName.empty()) {
 		// Battery saves are disabled (used by history viewer)
 		return;
@@ -34,7 +34,7 @@ void BatteryManager::SaveBattery(string extension, uint8_t* data, uint32_t lengt
 	_hasBattery = true;
 	ofstream out(GetBasePath(extension), ios::binary);
 	if (out) {
-		out.write((char*)data, length);
+		out.write(reinterpret_cast<const char*>(data.data()), data.size());
 	}
 }
 
@@ -69,9 +69,10 @@ vector<uint8_t> BatteryManager::LoadBattery(string extension) {
 	return batteryData;
 }
 
-void BatteryManager::LoadBattery(string extension, uint8_t* data, uint32_t length) {
+void BatteryManager::LoadBattery(string extension, std::span<uint8_t> data) {
 	vector<uint8_t> batteryData = LoadBattery(extension);
-	memcpy(data, batteryData.data(), std::min((uint32_t)batteryData.size(), length));
+	size_t copySize = std::min(batteryData.size(), data.size());
+	std::copy_n(batteryData.begin(), copySize, data.begin());
 }
 
 uint32_t BatteryManager::GetBatteryFileSize(string extension) {

@@ -357,7 +357,7 @@ protected:
 		if (HasBattery() && _saveRamSize > 0) {
 			// Load EXRAM and save ram from the same file
 			vector<uint8_t> data(_saveRamSize + _mapperRamSize);
-			_emu->GetBatteryManager()->LoadBattery(".sav", data.data(), _saveRamSize + _mapperRamSize);
+			_emu->GetBatteryManager()->LoadBattery(".sav", std::span<uint8_t>(data));
 			memcpy(_saveRam, data.data(), _saveRamSize);
 			memcpy(_mapperRam, data.data() + _saveRamSize, _mapperRamSize);
 		}
@@ -368,7 +368,7 @@ protected:
 			// Save EXRAM and save ram to the same file
 			vector<uint8_t> data(_saveRam, _saveRam + _saveRamSize);
 			data.insert(data.end(), _mapperRam, _mapperRam + _mapperRamSize);
-			_emu->GetBatteryManager()->SaveBattery(".sav", data.data(), (uint32_t)data.size());
+			_emu->GetBatteryManager()->SaveBattery(".sav", std::span<const uint8_t>(data));
 		}
 	}
 

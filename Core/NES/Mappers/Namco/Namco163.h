@@ -106,7 +106,7 @@ protected:
 
 		if (HasBattery()) {
 			vector<uint8_t> batteryContent(_saveRamSize + Namco163Audio::AudioRamSize, 0);
-			_emu->GetBatteryManager()->LoadBattery(".sav", batteryContent.data(), (uint32_t)batteryContent.size());
+			_emu->GetBatteryManager()->LoadBattery(".sav", std::span<uint8_t>(batteryContent));
 
 			memcpy(_saveRam, batteryContent.data(), _saveRamSize);
 			memcpy(_audio->GetInternalRam(), batteryContent.data() + _saveRamSize, Namco163Audio::AudioRamSize);
@@ -136,7 +136,7 @@ protected:
 			memcpy(batteryContent.data(), _saveRam, _saveRamSize);
 			memcpy(batteryContent.data() + _saveRamSize, _audio->GetInternalRam(), Namco163Audio::AudioRamSize);
 
-			_emu->GetBatteryManager()->SaveBattery(".sav", batteryContent.data(), (uint32_t)batteryContent.size());
+			_emu->GetBatteryManager()->SaveBattery(".sav", std::span<const uint8_t>(batteryContent));
 		}
 	}
 

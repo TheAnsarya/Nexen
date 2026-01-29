@@ -28,7 +28,7 @@ BsxMemoryPack::~BsxMemoryPack() {
 
 void BsxMemoryPack::SaveBattery() {
 	if (_persistFlash) {
-		_console->GetEmulator()->GetBatteryManager()->SaveBattery(".bs", _data, _dataSize);
+		_console->GetEmulator()->GetBatteryManager()->SaveBattery(".bs", std::span<const uint8_t>(_data, _dataSize));
 	}
 }
 

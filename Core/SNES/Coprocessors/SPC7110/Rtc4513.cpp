@@ -44,7 +44,7 @@ void Rtc4513::SaveBattery() {
 		time <<= 8;
 	}
 
-	_emu->GetBatteryManager()->SaveBattery(".rtc", rtcData.data(), (uint32_t)rtcData.size());
+	_emu->GetBatteryManager()->SaveBattery(".rtc", std::span<const uint8_t>(rtcData));
 }
 
 void Rtc4513::UpdateTime() {

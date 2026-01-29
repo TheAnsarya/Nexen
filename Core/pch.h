@@ -33,6 +33,7 @@
 #include <deque>
 #include <algorithm>
 #include <assert.h>
+#include <span>
 
 #include "Utilities/UTF8Util.h"
 

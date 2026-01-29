@@ -378,7 +378,7 @@ CartFlags::CartFlags BaseCartridge::GetCartFlags() {
 
 void BaseCartridge::LoadBattery() {
 	if (_saveRamSize > 0) {
-		_emu->GetBatteryManager()->LoadBattery(".srm", _saveRam, _saveRamSize);
+		_emu->GetBatteryManager()->LoadBattery(".srm", std::span<uint8_t>(_saveRam, _saveRamSize));
 	}
 
 	if (_coprocessor && _hasBattery) {
@@ -392,7 +392,7 @@ void BaseCartridge::LoadBattery() {
 
 void BaseCartridge::SaveBattery() {
 	if (_saveRamSize > 0) {
-		_emu->GetBatteryManager()->SaveBattery(".srm", _saveRam, _saveRamSize);
+		_emu->GetBatteryManager()->SaveBattery(".srm", std::span<const uint8_t>(_saveRam, _saveRamSize));
 	}
 
 	if (_coprocessor && _hasBattery) {

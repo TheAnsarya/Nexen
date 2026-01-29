@@ -45,7 +45,7 @@ PceCdRom::PceCdRom(Emulator* emu, PceConsole* console, DiscInfo& disc) : _disc(d
 	_saveRam[6] = 0x10;
 	_saveRam[7] = 0x80;
 
-	_emu->GetBatteryManager()->LoadBattery(".sav", _saveRam, _saveRamSize);
+	_emu->GetBatteryManager()->LoadBattery(".sav", std::span<uint8_t>(_saveRam, _saveRamSize));
 	memcpy(_orgSaveRam, _saveRam, _saveRamSize);
 
 	// Initialize cdrom work ram
@@ -66,7 +66,7 @@ PceCdRom::~PceCdRom() {
 
 void PceCdRom::SaveBattery() {
 	if (memcmp(_orgSaveRam, _saveRam, _saveRamSize) != 0) {
-		_emu->GetBatteryManager()->SaveBattery(".sav", _saveRam, _saveRamSize);
+		_emu->GetBatteryManager()->SaveBattery(".sav", std::span<const uint8_t>(_saveRam, _saveRamSize));
 	}
 }
 

@@ -375,7 +375,7 @@ void WsConsole::LoadBattery() {
 	}
 
 	if (_saveRam) {
-		_emu->GetBatteryManager()->LoadBattery(".sav", _saveRam, _saveRamSize);
+		_emu->GetBatteryManager()->LoadBattery(".sav", std::span<uint8_t>(_saveRam, _saveRamSize));
 	}
 }
 
@@ -386,7 +386,7 @@ void WsConsole::SaveBattery() {
 	}
 
 	if (_saveRam) {
-		_emu->GetBatteryManager()->SaveBattery(".sav", _saveRam, _saveRamSize);
+		_emu->GetBatteryManager()->SaveBattery(".sav", std::span<const uint8_t>(_saveRam, _saveRamSize));
 	}
 }
 

@@ -92,7 +92,7 @@ void Fds::SaveBattery() {
 			file.write((char*)newData.data(), newData.size());
 		} else {
 			vector<uint8_t> ipsData = IpsPatcher::CreatePatch(_fdsRawData, newData);
-			_emu->GetBatteryManager()->SaveBattery(".ips", ipsData.data(), (uint32_t)ipsData.size());
+			_emu->GetBatteryManager()->SaveBattery(".ips", std::span<const uint8_t>(ipsData));
 		}
 		_needSave = false;
 	}

@@ -84,7 +84,7 @@ public:
 				emu->RegisterMemory(MemoryType::SufamiTurboSecondCartRam, st->_cartRam, st->_cartRamSize);
 				memset(st->_cartRam, 0, st->_cartRamSize);
 
-				emu->GetBatteryManager()->LoadBattery(st->_cartName + ".srm", st->_cartRam, st->_cartRamSize);
+				emu->GetBatteryManager()->LoadBattery(st->_cartName + ".srm", std::span<uint8_t>(st->_cartRam, st->_cartRamSize));
 
 				for (uint32_t i = 0; i < st->_cartRamSize; i += 0x1000) {
 					st->_cartRamHandlers.push_back(unique_ptr<RamHandler>(new RamHandler(st->_cartRam, i, st->_cartRamSize, MemoryType::SufamiTurboSecondCartRam)));
@@ -129,7 +129,7 @@ public:
 
 	void SaveBattery() {
 		if (_cartRam) {
-			_emu->GetBatteryManager()->SaveBattery(_cartName + ".srm", _cartRam, _cartRamSize);
+			_emu->GetBatteryManager()->SaveBattery(_cartName + ".srm", std::span<const uint8_t>(_cartRam, _cartRamSize));
 		}
 	}
 

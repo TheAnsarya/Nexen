@@ -462,21 +462,21 @@ bool BaseMapper::HasBattery() {
 
 void BaseMapper::LoadBattery() {
 	if (HasBattery() && _saveRamSize > 0) {
-		_emu->GetBatteryManager()->LoadBattery(".sav", _saveRam, _saveRamSize);
+		_emu->GetBatteryManager()->LoadBattery(".sav", std::span<uint8_t>(_saveRam, _saveRamSize));
 	}
 
 	if (_hasChrBattery && _chrRamSize > 0) {
-		_emu->GetBatteryManager()->LoadBattery(".chr.sav", _chrRam, _chrRamSize);
+		_emu->GetBatteryManager()->LoadBattery(".chr.sav", std::span<uint8_t>(_chrRam, _chrRamSize));
 	}
 }
 
 void BaseMapper::SaveBattery() {
 	if (HasBattery() && _saveRamSize > 0) {
-		_emu->GetBatteryManager()->SaveBattery(".sav", _saveRam, _saveRamSize);
+		_emu->GetBatteryManager()->SaveBattery(".sav", std::span<const uint8_t>(_saveRam, _saveRamSize));
 	}
 
 	if (_hasChrBattery && _chrRamSize > 0) {
-		_emu->GetBatteryManager()->SaveBattery(".chr.sav", _chrRam, _chrRamSize);
+		_emu->GetBatteryManager()->SaveBattery(".chr.sav", std::span<const uint8_t>(_chrRam, _chrRamSize));
 	}
 }
 
@@ -1279,14 +1279,14 @@ void BaseMapper::SaveRom(vector<uint8_t>& orgPrgRom, vector<uint8_t>* orgChrRom)
 		vector<uint8_t> prgRom = vector<uint8_t>(_prgRom, _prgRom + _prgSize);
 		vector<uint8_t> ipsData = IpsPatcher::CreatePatch(orgPrgRom, prgRom);
 		if (ipsData.size() > 8) {
-			_emu->GetBatteryManager()->SaveBattery(".ips", ipsData.data(), (uint32_t)ipsData.size());
+			_emu->GetBatteryManager()->SaveBattery(".ips", std::span<const uint8_t>(ipsData));
 		}
 
 		if (_chrRomSize > 0 && orgChrRom) {
 			vector<uint8_t> chrRom = vector<uint8_t>(_chrRom, _chrRom + _chrRomSize);
 			ipsData = IpsPatcher::CreatePatch(*orgChrRom, chrRom);
 			if (ipsData.size() > 8) {
-				_emu->GetBatteryManager()->SaveBattery(".chr.ips", ipsData.data(), (uint32_t)ipsData.size());
+				_emu->GetBatteryManager()->SaveBattery(".chr.ips", std::span<const uint8_t>(ipsData));
 			}
 		}
 	}

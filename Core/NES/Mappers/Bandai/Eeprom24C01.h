@@ -27,11 +27,11 @@ public:
 	Eeprom24C01(NesConsole* console) {
 		console->InitializeRam(_romData, 128);
 		_emu = console->GetEmulator();
-		_emu->GetBatteryManager()->LoadBattery(".eeprom128", _romData, 128);
+		_emu->GetBatteryManager()->LoadBattery(".eeprom128", std::span<uint8_t>(_romData, 128));
 	}
 
 	void SaveBattery() override {
-		_emu->GetBatteryManager()->SaveBattery(".eeprom128", _romData, 128);
+		_emu->GetBatteryManager()->SaveBattery(".eeprom128", std::span<const uint8_t>(_romData, 128));
 	}
 
 	void Write(uint8_t scl, uint8_t sda) override {

@@ -156,13 +156,13 @@ void Gameboy::Run(uint64_t runUntilClock) {
 
 void Gameboy::LoadBattery() {
 	if (_hasBattery) {
-		_emu->GetBatteryManager()->LoadBattery(".srm", _cartRam, _cartRamSize);
+		_emu->GetBatteryManager()->LoadBattery(".srm", std::span<uint8_t>(_cartRam, _cartRamSize));
 	}
 }
 
 void Gameboy::SaveBattery() {
 	if (_hasBattery) {
-		_emu->GetBatteryManager()->SaveBattery(".srm", _cartRam, _cartRamSize);
+		_emu->GetBatteryManager()->SaveBattery(".srm", std::span<const uint8_t>(_cartRam, _cartRamSize));
 	}
 	_cart->SaveBattery();
 }

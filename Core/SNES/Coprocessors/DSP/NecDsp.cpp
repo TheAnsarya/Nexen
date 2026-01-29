@@ -134,13 +134,13 @@ void NecDsp::Reset() {
 
 void NecDsp::LoadBattery() {
 	if (_type == CoprocessorType::ST010 || _type == CoprocessorType::ST011) {
-		_emu->GetBatteryManager()->LoadBattery(".srm", (uint8_t*)_ram, _ramSize * sizeof(uint16_t));
+		_emu->GetBatteryManager()->LoadBattery(".srm", std::span<uint8_t>(reinterpret_cast<uint8_t*>(_ram), _ramSize * sizeof(uint16_t)));
 	}
 }
 
 void NecDsp::SaveBattery() {
 	if (_type == CoprocessorType::ST010 || _type == CoprocessorType::ST011) {
-		_emu->GetBatteryManager()->SaveBattery(".srm", (uint8_t*)_ram, _ramSize * sizeof(uint16_t));
+		_emu->GetBatteryManager()->SaveBattery(".srm", std::span<const uint8_t>(reinterpret_cast<const uint8_t*>(_ram), _ramSize * sizeof(uint16_t)));
 	}
 }
 

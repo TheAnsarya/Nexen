@@ -934,13 +934,13 @@ void Sa1::LoadBattery() {
 	if (_cpuBwRamHandlers.empty()) {
 		// When there is no actual save RAM and the battery flag is set, IRAM is backed up instead
 		// Used by Pachi-Slot Monogatari - PAL Kougyou Special
-		_emu->GetBatteryManager()->LoadBattery(".srm", _iRam, Sa1::InternalRamSize);
+		_emu->GetBatteryManager()->LoadBattery(".srm", std::span<uint8_t>(_iRam, Sa1::InternalRamSize));
 	}
 }
 
 void Sa1::SaveBattery() {
 	if (_cpuBwRamHandlers.empty()) {
-		_emu->GetBatteryManager()->SaveBattery(".srm", _iRam, Sa1::InternalRamSize);
+		_emu->GetBatteryManager()->SaveBattery(".srm", std::span<const uint8_t>(_iRam, Sa1::InternalRamSize));
 	}
 }
 
