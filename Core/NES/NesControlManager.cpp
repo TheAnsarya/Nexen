@@ -1,4 +1,6 @@
 #include "pch.h"
+#include <algorithm>
+#include <ranges>
 #include "NES/NesControlManager.h"
 #include "NES/BaseMapper.h"
 #include "NES/NesConsole.h"
@@ -170,7 +172,7 @@ shared_ptr<BaseControlDevice> NesControlManager::CreateControllerDevice(Controll
 			break;
 
 		case ControllerType::FourScore: {
-			std::copy(cfg.Port1SubPorts, cfg.Port1SubPorts + 4, controllers);
+			std::ranges::copy(cfg.Port1SubPorts, controllers);
 			// Use the p1/p2 bindings for the first 2 ports (the UI does this, too)
 			controllers[0].Keys = cfg.Port1.Keys;
 			controllers[1].Keys = cfg.Port2.Keys;
@@ -180,7 +182,7 @@ shared_ptr<BaseControlDevice> NesControlManager::CreateControllerDevice(Controll
 
 		case ControllerType::TwoPlayerAdapter:
 		case ControllerType::FourPlayerAdapter: {
-			std::copy(cfg.ExpPortSubPorts, cfg.ExpPortSubPorts + 4, controllers);
+			std::ranges::copy(cfg.ExpPortSubPorts, controllers);
 			controllers[0].Keys = cfg.ExpPort.Keys;
 			if (type == ControllerType::TwoPlayerAdapter) {
 				device.reset(new TwoPlayerAdapter(_emu, type, controllers));

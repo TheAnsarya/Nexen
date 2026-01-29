@@ -1,4 +1,6 @@
 #include "pch.h"
+#include <algorithm>
+#include <ranges>
 #include "SNES/SnesConsole.h"
 #include "SNES/SnesCpu.h"
 #include "SNES/SnesPpu.h"
@@ -158,8 +160,8 @@ bool SnesConsole::LoadSpcFile(VirtualFile& romFile) {
 		_spcPlaylist = FolderUtilities::GetFilesInFolder(romFile.GetFolderPath(), {".spc"}, false);
 	}
 
-	std::sort(_spcPlaylist.begin(), _spcPlaylist.end());
-	auto result = std::find(_spcPlaylist.begin(), _spcPlaylist.end(), (string)romFile);
+	std::ranges::sort(_spcPlaylist);
+	auto result = std::ranges::find(_spcPlaylist, (string)romFile);
 	if (result == _spcPlaylist.end()) {
 		_spcPlaylist.push_back((string)romFile);
 	}

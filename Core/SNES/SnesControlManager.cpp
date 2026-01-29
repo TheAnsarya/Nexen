@@ -1,4 +1,6 @@
 #include "pch.h"
+#include <algorithm>
+#include <ranges>
 #include "SNES/SnesControlManager.h"
 #include "SNES/SnesConsole.h"
 #include "SNES/SnesMemoryManager.h"
@@ -55,10 +57,10 @@ shared_ptr<BaseControlDevice> SnesControlManager::CreateControllerDevice(Control
 		case ControllerType::Multitap: {
 			ControllerConfig controllers[4];
 			if (port == 0) {
-				std::copy(cfg.Port1SubPorts, cfg.Port1SubPorts + 4, controllers);
+				std::ranges::copy(cfg.Port1SubPorts, controllers);
 				controllers[0].Keys = cfg.Port1.Keys;
 			} else {
-				std::copy(cfg.Port2SubPorts, cfg.Port2SubPorts + 4, controllers);
+				std::ranges::copy(cfg.Port2SubPorts, controllers);
 				controllers[0].Keys = cfg.Port2.Keys;
 			}
 			device.reset(new Multitap(_console, port, controllers));
