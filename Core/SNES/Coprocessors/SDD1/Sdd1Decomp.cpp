@@ -617,7 +617,7 @@ uint8_t SDD1_OL::decompressByte() {
 			return _regs[1];
 	}
 
-	throw std::runtime_error("SDD1_OL::decompressByte: Unexpected value");
+	[[unlikely]] throw std::runtime_error("SDD1_OL::decompressByte: Unexpected value");
 }
 
 void SDD1_OL::Serialize(Serializer& s) {

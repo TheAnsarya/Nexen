@@ -36,7 +36,7 @@ public:
 				return MemoryType::WsMemory;
 		}
 
-		throw std::runtime_error("Invalid CPU type");
+		[[unlikely]] throw std::runtime_error("Invalid CPU type");
 	}
 
 	static constexpr int GetProgramCounterSize(CpuType type) {
@@ -69,7 +69,7 @@ public:
 				return 5;
 		}
 
-		throw std::runtime_error("Invalid CPU type");
+		[[unlikely]] throw std::runtime_error("Invalid CPU type");
 	}
 
 	static constexpr CpuType ToCpuType(MemoryType type) {
@@ -190,7 +190,7 @@ public:
 			case MemoryType::WsPort:
 				return CpuType::Ws;
 
-			default:
+			[[unlikely]] default:
 				throw std::runtime_error("Invalid CPU type");
 		}
 	}

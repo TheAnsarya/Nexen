@@ -698,7 +698,7 @@ void NecDsp::Load(uint8_t dest, uint16_t value) {
 			WriteRam(_state.DP, value);
 			break;
 
-		default:
+		[[unlikely]] default:
 			throw std::runtime_error("DSP-1: invalid destination");
 	}
 }
@@ -741,7 +741,7 @@ uint16_t NecDsp::GetSourceValue(uint8_t source) {
 		case 0x0F:
 			return ReadRam(_state.DP);
 	}
-	throw std::runtime_error("DSP-1: invalid source");
+	[[unlikely]] throw std::runtime_error("DSP-1: invalid source");
 }
 
 uint8_t* NecDsp::DebugGetProgramRom() {

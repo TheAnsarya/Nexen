@@ -243,7 +243,7 @@ BreakpointManager* SpcDebugger::GetBreakpointManager() {
 }
 
 IAssembler* SpcDebugger::GetAssembler() {
-	throw std::runtime_error("Assembler not supported for SPC");
+	[[unlikely]] throw std::runtime_error("Assembler not supported for SPC");
 }
 
 BaseEventManager* SpcDebugger::GetEventManager() {

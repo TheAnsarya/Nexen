@@ -503,7 +503,7 @@ void PpuTools::GetSetTilePixel(AddressInfo tileAddress, TileFormat format, int32
 			break;
 		}
 
-		default:
+		[[unlikely]] default:
 			throw std::runtime_error("unsupported format");
 	}
 }

@@ -601,7 +601,7 @@ int64_t ExpressionEvaluator::Evaluate(ExpressionData& data, EvalResultType& resu
 				case EvalOperators::Braces:
 					token = _debugger->GetMemoryDumper()->GetMemoryValue16(_cpuMemory, (uint32_t)right);
 					break;
-				default:
+				[[unlikely]] default:
 					throw std::runtime_error("Invalid operator");
 			}
 		}

@@ -266,7 +266,7 @@ public:
 					A0 |= (addr >> 2) & 0x01;
 					A1 |= (addr >> 3) & 0x01;
 					break;
-				default:
+				[[unlikely]] default:
 					throw std::runtime_error("not supported");
 					break;
 			}
@@ -321,7 +321,7 @@ public:
 					A1 = (addr >> 3) & 0x01;
 					break;
 
-				default:
+				[[unlikely]] default:
 					throw std::runtime_error("not supported");
 					break;
 			}

@@ -295,7 +295,7 @@ uint32_t PpuTools::GetRgbPixelColor(const uint32_t* colors, uint8_t colorIndex, 
 		case TileFormat::SmsSgBpp1:
 			return colors[palette * 2 + colorIndex];
 
-		default:
+		[[unlikely]] default:
 			throw std::runtime_error("unsupported format");
 	}
 }
@@ -432,7 +432,7 @@ __forceinline uint8_t PpuTools::GetTilePixelColor(const uint8_t* ram, const uint
 			}
 		}
 
-		default:
+		[[unlikely]] default:
 			throw std::runtime_error("unsupported format");
 	}
 }

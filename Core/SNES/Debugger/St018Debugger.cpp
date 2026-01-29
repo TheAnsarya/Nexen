@@ -273,7 +273,7 @@ ITraceLogger* St018Debugger::GetTraceLogger() {
 }
 
 IAssembler* St018Debugger::GetAssembler() {
-	throw std::runtime_error("Assembler not supported for ST018");
+	[[unlikely]] throw std::runtime_error("Assembler not supported for ST018");
 }
 
 BaseEventManager* St018Debugger::GetEventManager() {

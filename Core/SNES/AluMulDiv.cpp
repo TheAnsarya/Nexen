@@ -72,7 +72,7 @@ uint8_t AluMulDiv::Peek(uint16_t addr) {
 			return (uint8_t)(_state.MultOrRemainderResult >> 8);
 	}
 
-	throw std::runtime_error("ALU: invalid address");
+	[[unlikely]] throw std::runtime_error("ALU: invalid address");
 }
 
 void AluMulDiv::Write(uint16_t addr, uint8_t value) {
@@ -117,7 +117,7 @@ void AluMulDiv::Write(uint16_t addr, uint8_t value) {
 			}
 			break;
 
-		default:
+		[[unlikely]] default:
 			throw std::runtime_error("ALU: invalid address");
 	}
 }

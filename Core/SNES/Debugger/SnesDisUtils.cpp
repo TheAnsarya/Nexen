@@ -124,7 +124,7 @@ void SnesDisUtils::GetDisassembly(DisassemblyInfo& info, string& out, uint32_t m
 			str.WriteAll('(', operand, ",S),Y");
 			break;
 
-		default:
+		[[unlikely]] default:
 			throw std::runtime_error("invalid address mode");
 	}
 
@@ -272,7 +272,7 @@ bool SnesDisUtils::HasEffectiveAddress(SnesAddrMode addrMode) {
 			return true;
 	}
 
-	throw std::runtime_error("Invalid mode");
+	[[unlikely]] throw std::runtime_error("Invalid mode");
 }
 
 uint8_t SnesDisUtils::GetOpSize(SnesAddrMode addrMode, uint8_t flags) {

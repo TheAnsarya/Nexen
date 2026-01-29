@@ -97,7 +97,7 @@ void DisassemblyInfo::GetDisassembly(string& out, uint32_t memoryAddr, LabelMana
 			WsDisUtils::GetDisassembly(*this, out, memoryAddr, labelManager, settings);
 			break;
 
-		default:
+		[[unlikely]] default:
 			throw std::runtime_error("GetDisassembly - Unsupported CPU type");
 	}
 }
@@ -141,7 +141,7 @@ EffectiveAddressInfo DisassemblyInfo::GetEffectiveAddress(Debugger* debugger, vo
 			return WsDisUtils::GetEffectiveAddress(*this, (WsConsole*)debugger->GetConsole(), *(WsCpuState*)cpuState);
 	}
 
-	throw std::runtime_error("GetEffectiveAddress - Unsupported CPU type");
+	[[unlikely]] throw std::runtime_error("GetEffectiveAddress - Unsupported CPU type");
 }
 
 CpuType DisassemblyInfo::GetCpuType() {
@@ -227,7 +227,7 @@ uint8_t DisassemblyInfo::GetOpSize(uint32_t opCode, uint8_t flags, CpuType type,
 			return WsDisUtils::GetOpSize(cpuAddress, memType, memoryDumper);
 	}
 
-	throw std::runtime_error("GetOpSize - Unsupported CPU type");
+	[[unlikely]] throw std::runtime_error("GetOpSize - Unsupported CPU type");
 }
 
 bool DisassemblyInfo::IsJumpToSub() {
@@ -260,7 +260,7 @@ bool DisassemblyInfo::IsJumpToSub() {
 			return WsDisUtils::IsJumpToSub(GetFullOpCode<CpuType::Ws>());
 	}
 
-	throw std::runtime_error("IsJumpToSub - Unsupported CPU type");
+	[[unlikely]] throw std::runtime_error("IsJumpToSub - Unsupported CPU type");
 }
 
 bool DisassemblyInfo::IsReturnInstruction() {
@@ -293,7 +293,7 @@ bool DisassemblyInfo::IsReturnInstruction() {
 			return WsDisUtils::IsReturnInstruction(GetFullOpCode<CpuType::Ws>());
 	}
 
-	throw std::runtime_error("IsReturnInstruction - Unsupported CPU type");
+	[[unlikely]] throw std::runtime_error("IsReturnInstruction - Unsupported CPU type");
 }
 
 bool DisassemblyInfo::CanDisassembleNextOp() {
@@ -345,7 +345,7 @@ bool DisassemblyInfo::IsUnconditionalJump() {
 			return WsDisUtils::IsUnconditionalJump(GetFullOpCode<CpuType::Ws>());
 	}
 
-	throw std::runtime_error("IsUnconditionalJump - Unsupported CPU type");
+	[[unlikely]] throw std::runtime_error("IsUnconditionalJump - Unsupported CPU type");
 }
 
 bool DisassemblyInfo::IsJump() {
@@ -383,7 +383,7 @@ bool DisassemblyInfo::IsJump() {
 			return WsDisUtils::IsConditionalJump(GetFullOpCode<CpuType::Ws>());
 	}
 
-	throw std::runtime_error("IsJump - Unsupported CPU type");
+	[[unlikely]] throw std::runtime_error("IsJump - Unsupported CPU type");
 }
 
 void DisassemblyInfo::UpdateCpuFlags(uint8_t& cpuFlags) {

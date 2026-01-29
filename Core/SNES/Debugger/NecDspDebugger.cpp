@@ -178,7 +178,7 @@ BreakpointManager* NecDspDebugger::GetBreakpointManager() {
 }
 
 IAssembler* NecDspDebugger::GetAssembler() {
-	throw std::runtime_error("Assembler not supported for NEC DSP");
+	[[unlikely]] throw std::runtime_error("Assembler not supported for NEC DSP");
 }
 
 BaseEventManager* NecDspDebugger::GetEventManager() {

@@ -206,7 +206,7 @@ CallstackManager* Cx4Debugger::GetCallstackManager() {
 }
 
 IAssembler* Cx4Debugger::GetAssembler() {
-	throw std::runtime_error("Assembler not supported for CX4");
+	[[unlikely]] throw std::runtime_error("Assembler not supported for CX4");
 }
 
 BaseEventManager* Cx4Debugger::GetEventManager() {

@@ -165,7 +165,7 @@ CallstackManager* GsuDebugger::GetCallstackManager() {
 }
 
 IAssembler* GsuDebugger::GetAssembler() {
-	throw std::runtime_error("Assembler not supported for GSU");
+	[[unlikely]] throw std::runtime_error("Assembler not supported for GSU");
 }
 
 BaseEventManager* GsuDebugger::GetEventManager() {
