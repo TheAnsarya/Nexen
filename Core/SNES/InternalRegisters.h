@@ -59,13 +59,13 @@ public:
 	uint8_t GetIoPortOutput();
 	void SetNmiFlag(bool nmiFlag);
 
-	bool IsVerticalIrqEnabled() { return _state.EnableVerticalIrq; }
-	bool IsHorizontalIrqEnabled() { return _state.EnableHorizontalIrq; }
-	bool IsNmiEnabled() { return _state.EnableNmi; }
-	bool IsAutoReadActive() { return _autoReadActive; }
-	bool IsFastRomEnabled() { return _state.EnableFastRom; }
-	uint16_t GetHorizontalTimer() { return _state.HorizontalTimer; }
-	uint16_t GetVerticalTimer() { return _state.VerticalTimer; }
+	[[nodiscard]] bool IsVerticalIrqEnabled() { return _state.EnableVerticalIrq; }
+	[[nodiscard]] bool IsHorizontalIrqEnabled() { return _state.EnableHorizontalIrq; }
+	[[nodiscard]] bool IsNmiEnabled() { return _state.EnableNmi; }
+	[[nodiscard]] bool IsAutoReadActive() { return _autoReadActive; }
+	[[nodiscard]] bool IsFastRomEnabled() { return _state.EnableFastRom; }
+	[[nodiscard]] uint16_t GetHorizontalTimer() { return _state.HorizontalTimer; }
+	[[nodiscard]] uint16_t GetVerticalTimer() { return _state.VerticalTimer; }
 
 	uint8_t Peek(uint16_t addr);
 	uint8_t Read(uint16_t addr);

@@ -148,8 +148,8 @@ public:
 	template <typename T>
 	T DebugReadPort(uint16_t port);
 
-	bool IsPowerOffRequested() { return _state.PowerOffRequested; }
-	bool IsColorEnabled() { return _state.ColorEnabled; }
+	[[nodiscard]] bool IsPowerOffRequested() { return _state.PowerOffRequested; }
+	[[nodiscard]] bool IsColorEnabled() { return _state.ColorEnabled; }
 
 	bool IsWordBus(uint32_t addr);
 	uint8_t GetWaitStates(uint32_t addr);

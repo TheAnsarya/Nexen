@@ -320,8 +320,8 @@ public:
 	WsCpu(Emulator* emu, WsConsole* console, WsMemoryManager* memoryManager);
 
 	WsCpuState& GetState() { return _state; }
-	uint64_t GetCycleCount() { return _state.CycleCount; }
-	bool IsPowerOff() { return _state.PowerOff; }
+	[[nodiscard]] uint64_t GetCycleCount() { return _state.CycleCount; }
+	[[nodiscard]] bool IsPowerOff() { return _state.PowerOff; }
 
 	void ProcessCpuCycle();
 

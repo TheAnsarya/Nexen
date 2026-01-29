@@ -40,9 +40,9 @@ public:
 	void Reset();
 
 	DspState& GetState() { return _state; }
-	bool IsMuted() { return false; }
+	[[nodiscard]] bool IsMuted() { return false; }
 
-	uint16_t GetSampleCount() { return _outSampleCount; }
+	[[nodiscard]] uint16_t GetSampleCount() { return _outSampleCount; }
 	int16_t* GetSamples() { return _dspOutput; }
 	void ResetOutput() { _outSampleCount = 0; }
 

@@ -767,21 +767,21 @@ public:
 	NesCpu(NesConsole* console);
 	virtual ~NesCpu() = default;
 
-	uint64_t GetCycleCount() { return _state.CycleCount; }
+	[[nodiscard]] uint64_t GetCycleCount() { return _state.CycleCount; }
 	void SetMasterClockDivider(ConsoleRegion region);
 	void SetNmiFlag() { _state.NmiFlag = true; }
 	void ClearNmiFlag() { _state.NmiFlag = false; }
 	void SetIrqMask(uint8_t mask) { _irqMask = mask; }
 	void SetIrqSource(IRQSource source) { _state.IrqFlag |= (int)source; }
-	bool HasIrqSource(IRQSource source) { return (_state.IrqFlag & (int)source) != 0; }
+	[[nodiscard]] bool HasIrqSource(IRQSource source) { return (_state.IrqFlag & (int)source) != 0; }
 	void ClearIrqSource(IRQSource source) { _state.IrqFlag &= ~(int)source; }
 
 	void RunDMATransfer(uint8_t offsetValue);
 	void StartDmcTransfer();
 	void StopDmcTransfer();
 
-	bool IsCpuWrite() { return _cpuWrite; }
-	bool IsDmcDma() { return _isDmcDmaRead; }
+	[[nodiscard]] bool IsCpuWrite() { return _cpuWrite; }
+	[[nodiscard]] bool IsDmcDma() { return _isDmcDmaRead; }
 
 	void Reset(bool softReset, ConsoleRegion region);
 	void Exec();
@@ -790,7 +790,7 @@ public:
 		return _state;
 	}
 
-	uint16_t GetPC() { return _state.PC; }
+	[[nodiscard]] uint16_t GetPC() { return _state.PC; }
 
 	void SetState(NesCpuState state) {
 		uint16_t originalPc = state.PC;

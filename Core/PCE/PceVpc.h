@@ -62,9 +62,9 @@ public:
 	void SetIrq(PceVdc* vdc);
 	void ClearIrq(PceVdc* vdc);
 
-	bool IsSkipRenderEnabled() { return _skipRender; }
+	[[nodiscard]] bool IsSkipRenderEnabled() { return _skipRender; }
 
-	PceVpcState GetState() { return _state; }
+	[[nodiscard]] PceVpcState GetState() { return _state; }
 
 	uint16_t* GetScreenBuffer() { return _currentOutBuffer; }
 	uint16_t* GetPreviousScreenBuffer() { return _currentOutBuffer == _outBuffer[0] ? _outBuffer[1] : _outBuffer[0]; }
