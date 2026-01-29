@@ -9,12 +9,40 @@
 class Emulator;
 class InputHud;
 
+/// <summary>
+/// Device button metadata for Lua API and input display.
+/// </summary>
 struct DeviceButtonName {
-	string Name;
-	int ButtonId = 0;
-	bool IsNumeric = false;
+	string Name;         ///< Human-readable button name ("A", "Start", "Fire1")
+	int ButtonId = 0;    ///< Unique button identifier (0-based bit index)
+	bool IsNumeric = false; ///< True if button ID is numeric (e.g., "Button 3")
 };
 
+/// <summary>
+/// Base class for all controller and input devices.
+/// Manages input state, key mappings, serialization, and hardware interaction.
+/// </summary>
+/// <remarks>
+/// Concrete controller types derive from this:
+/// - StandardController (NES/SNES gamepad)
+/// - Zapper (NES light gun)
+/// - PowerPad (NES dance mat)
+/// - Mouse (SNES Mouse, Arkanoid Paddle)
+/// - Keyboard (Famicom Keyboard)
+/// - ControllerHub (multitap adapter)
+/// 
+/// Responsibilities:
+/// - Input state management (button presses, coordinates, turbos)
+/// - Key mapping (keyboard/gamepad → emulated buttons)
+/// - Serialization (save states)
+/// - Hardware reads/writes (controller port I/O)
+/// - Input HUD rendering (on-screen button display)
+/// 
+/// Thread safety:
+/// - _stateLock protects concurrent state access
+/// - State updates from input thread
+/// - Hardware reads from emulation thread
+/// </remarks>
 class BaseControlDevice : public ISerializable {
 protected:
 	ControlDeviceState _state = {};
