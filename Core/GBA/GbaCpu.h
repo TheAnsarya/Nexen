@@ -196,7 +196,7 @@ public:
 	static GbaThumbOpCategory GetThumbOpCategory(uint16_t opCode);
 
 	GbaCpuState& GetState();
-	uint32_t GetProgramCounter() { return _state.R[15]; }
+	[[nodiscard]] uint32_t GetProgramCounter() { return _state.R[15]; }
 	void SetProgramCounter(uint32_t addr, bool thumb);
 
 	template <bool debuggerEnabled>
@@ -292,7 +292,7 @@ public:
 #endif
 	}
 
-	bool IsHalted() { return _state.Stopped; }
+	[[nodiscard]] bool IsHalted() { return _state.Stopped; }
 	void SetStopFlag(bool freeze = false) {
 		_state.Stopped = true;
 		_state.Frozen = freeze;

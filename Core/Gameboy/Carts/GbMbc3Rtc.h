@@ -16,11 +16,11 @@ private:
 	uint64_t _tickCounter = 0;
 
 public:
-	bool IsRunning() { return (_regs[4] & 0x40) == 0; }
-	uint8_t GetSeconds() { return _regs[0]; }
-	uint8_t GetMinutes() { return _regs[1]; }
-	uint8_t GetHours() { return _regs[2]; }
-	uint16_t GetDayCount() { return _regs[3] | ((_regs[4] & 0x01) << 8); }
+	[[nodiscard]] bool IsRunning() { return (_regs[4] & 0x40) == 0; }
+	[[nodiscard]] uint8_t GetSeconds() { return _regs[0]; }
+	[[nodiscard]] uint8_t GetMinutes() { return _regs[1]; }
+	[[nodiscard]] uint8_t GetHours() { return _regs[2]; }
+	[[nodiscard]] uint16_t GetDayCount() { return _regs[3] | ((_regs[4] & 0x01) << 8); }
 
 	GbMbc3Rtc(Emulator* emu) {
 		_emu = emu;

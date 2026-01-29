@@ -50,27 +50,27 @@ public:
 		return _metadata.IsValid();
 	}
 
-	string GetMapperId() {
+	[[nodiscard]] string GetMapperId() {
 		return StringUtilities::GetString(_cartridge.MapperId, 4);
 	}
 
-	uint32_t GetRomSize() {
+	[[nodiscard]] uint32_t GetRomSize() {
 		return ReadBigEndian(_cartridge.RomSize);
 	}
 
-	uint32_t GetRamSize() {
+	[[nodiscard]] uint32_t GetRamSize() {
 		return ReadBigEndian(_cartridge.RamSize);
 	}
 
-	bool HasBattery() {
+	[[nodiscard]] bool HasBattery() {
 		return (bool)_cartridge.HasBattery;
 	}
 
-	bool HasRtc() {
+	[[nodiscard]] bool HasRtc() {
 		return (bool)_cartridge.HasRtc;
 	}
 
-	bool HasRumble() {
+	[[nodiscard]] bool HasRumble() {
 		return (bool)_cartridge.HasRumble;
 	}
 };

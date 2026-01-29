@@ -101,7 +101,7 @@ public:
 	~GbaMemoryManager();
 
 	GbaMemoryManagerState& GetState() { return _state; }
-	uint64_t GetMasterClock() { return _masterClock; }
+	[[nodiscard]] uint64_t GetMasterClock() { return _masterClock; }
 
 	GbaWaitStates* GetWaitStates() { return &_waitStates; }
 
@@ -163,9 +163,9 @@ public:
 
 	void LockBus() { _state.BusLocked = true; }
 	void UnlockBus() { _state.BusLocked = false; }
-	bool IsBusLocked() { return _state.BusLocked; }
+	[[nodiscard]] bool IsBusLocked() { return _state.BusLocked; }
 
-	bool IsSystemStopped() { return _state.StopMode; }
+	[[nodiscard]] bool IsSystemStopped() { return _state.StopMode; }
 	bool UseInlineHalt();
 
 	void SetPendingUpdateFlag() { _hasPendingUpdates = true; }

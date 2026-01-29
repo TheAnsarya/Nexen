@@ -8,7 +8,7 @@ private:
 	uint16_t _volume = 0;
 
 public:
-	uint16_t GetDacVolume() {
+	[[nodiscard]] uint16_t GetDacVolume() {
 		return _volume;
 	}
 

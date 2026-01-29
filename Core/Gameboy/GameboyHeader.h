@@ -23,7 +23,7 @@ struct GameboyHeader {
 	uint8_t HeaderChecksum;
 	uint8_t GlobalChecksum[2];
 
-	uint32_t GetCartRamSize() {
+	[[nodiscard]] uint32_t GetCartRamSize() {
 		if (CartType == 5 || CartType == 6) {
 			// MBC2 has 512x4bits of cart ram
 			return 0x200;
@@ -51,7 +51,7 @@ struct GameboyHeader {
 		return 0;
 	}
 
-	bool HasBattery() {
+	[[nodiscard]] bool HasBattery() {
 		switch (CartType) {
 			case 0x03:
 			case 0x06:

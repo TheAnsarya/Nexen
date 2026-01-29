@@ -276,12 +276,12 @@ public:
 	uint16_t* GetPreviousScreenBuffer() { return _currentBuffer == _outputBuffers[0] ? _outputBuffers[1] : _outputBuffers[0]; }
 
 	GbaPpuState& GetState() { return _state; }
-	uint32_t GetFrameCount() { return _state.FrameCount; }
-	int32_t GetScanline() { return _state.Scanline; }
-	uint32_t GetScanlineCount() { return _lastScanline + 1; }
-	uint32_t GetCycle() { return _state.Cycle; }
-	bool IsBitmapMode() { return _state.BgMode >= 3; }
-	bool IsOverclockScanline() { return _inOverclock; }
+	[[nodiscard]] uint32_t GetFrameCount() { return _state.FrameCount; }
+	[[nodiscard]] int32_t GetScanline() { return _state.Scanline; }
+	[[nodiscard]] uint32_t GetScanlineCount() { return _lastScanline + 1; }
+	[[nodiscard]] uint32_t GetCycle() { return _state.Cycle; }
+	[[nodiscard]] bool IsBitmapMode() { return _state.BgMode >= 3; }
+	[[nodiscard]] bool IsOverclockScanline() { return _inOverclock; }
 
 	void Serialize(Serializer& s) override;
 };

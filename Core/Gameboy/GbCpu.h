@@ -168,7 +168,7 @@ public:
 	GbCpuState& GetState();
 	bool IsHalted();
 
-	uint64_t GetCycleCount() { return _state.CycleCount; }
+	[[nodiscard]] uint64_t GetCycleCount() { return _state.CycleCount; }
 
 	void Exec();
 	void PowerOn();
