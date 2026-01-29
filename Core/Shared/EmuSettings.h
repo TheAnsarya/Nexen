@@ -7,6 +7,34 @@
 
 class Emulator;
 
+/// <summary>
+/// Global emulator configuration manager.
+/// Centralizes all settings for video, audio, input, emulation, and platform-specific configs.
+/// </summary>
+/// <remarks>
+/// Architecture:
+/// - Settings organized into config structs (VideoConfig, AudioConfig, etc.)
+/// - Thread-safe access using atomic flags
+/// - Serialization support for save/load configuration files
+/// - Hot-reload support (changes applied immediately without restart)
+/// 
+/// Configuration categories:
+/// - Video: Resolution, filters, aspect ratio, overscan
+/// - Audio: Volume, sample rate, latency, audio device
+/// - Input: Controller mappings, keyboard shortcuts, turbo buttons
+/// - Emulation: Speed, rewind, cheats, power-on state randomization
+/// - Debug: Debugger options, trace logging, performance stats
+/// - Platform-specific: SNES, NES, GB, PCE, SMS, CV, GBA, WS configs
+/// 
+/// Settings persistence:
+/// - Global settings: Mesen.cfg in user data folder
+/// - Per-game overrides: Stored in save folder alongside save files
+/// 
+/// Thread safety:
+/// - Flag checks use atomic operations (lock-free)
+/// - Config updates use SimpleLock for mutual exclusion
+/// - Shortcut key updates use dedicated lock
+/// </remarks>
 class EmuSettings final : public ISerializable {
 private:
 	Emulator* _emu;
