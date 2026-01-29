@@ -4,8 +4,39 @@
 #include "Shared/MemoryType.h"
 #include "Utilities/HexUtilities.h"
 
+/// <summary>
+/// Static utility functions for debugger (CPU type conversion, memory classification).
+/// </summary>
+/// <remarks>
+/// Architecture:
+/// - Pure static class (no instantiation)
+/// - Compile-time constant functions (constexpr)
+/// - Platform-agnostic utilities
+/// 
+/// CPU type utilities:
+/// - GetCpuMemoryType(): MemoryType → CpuType
+/// - ToCpuType(): MemoryType → CpuType
+/// - GetProgramCounterSize(): CpuType → address width
+/// 
+/// Memory classification:
+/// - IsRelativeMemory(): Is CPU-addressable memory
+/// - IsPpuMemory(): Is PPU memory (VRAM/OAM/palette)
+/// - IsRom(): Is read-only memory
+/// - IsVolatileRam(): Is volatile (not battery-backed)
+/// 
+/// Address formatting:
+/// - AddressToHex(): Format address for CPU type (16/20/24/32-bit)
+/// 
+/// Platform support:
+/// - NES, SNES (+ SA-1/SPC/GSU/etc), GB, GBA, PCE, SMS, WS
+/// </remarks>
 class DebugUtilities {
 public:
+	/// <summary>
+	/// Get CPU memory type for CPU.
+	/// </summary>
+	/// <param name="type">CPU type</param>
+	/// <returns>Memory type (e.g., SnesMemory for CpuType::Snes)</returns>
 	[[nodiscard]] static constexpr MemoryType GetCpuMemoryType(CpuType type) {
 		switch (type) {
 			case CpuType::Snes:
@@ -39,6 +70,11 @@ public:
 		[[unlikely]] throw std::runtime_error("Invalid CPU type");
 	}
 
+	/// <summary>
+	/// Get program counter display size (hex digits) for CPU.
+	/// </summary>
+	/// <param name="type">CPU type</param>
+	/// <returns>Hex digit count (4=16-bit, 5=20-bit, 6=24-bit, 8=32-bit)</returns>
 	[[nodiscard]] static constexpr int GetProgramCounterSize(CpuType type) {
 		switch (type) {
 			case CpuType::Snes:
@@ -72,6 +108,11 @@ public:
 		[[unlikely]] throw std::runtime_error("Invalid CPU type");
 	}
 
+	/// <summary>
+	/// Convert memory type to CPU type.
+	/// </summary>
+	/// <param name="type">Memory type</param>
+	/// <returns>Owning CPU type</returns>
 	[[nodiscard]] static constexpr CpuType ToCpuType(MemoryType type) {
 		switch (type) {
 			case MemoryType::SnesMemory:
@@ -195,14 +236,23 @@ public:
 		}
 	}
 
+	/// <summary>
+	/// Check if memory type is CPU-relative (addressable by CPU).
+	/// </summary>
 	[[nodiscard]] static constexpr bool IsRelativeMemory(MemoryType memType) {
 		return memType <= GetLastCpuMemoryType();
 	}
 
+	/// <summary>
+	/// Get last CPU memory type enum value.
+	/// </summary>
 	[[nodiscard]] static constexpr MemoryType GetLastCpuMemoryType() {
 		return MemoryType::WsMemory;
 	}
 
+	/// <summary>
+	/// Check if memory type is PPU memory (VRAM/OAM/palette).
+	/// </summary>
 	[[nodiscard]] static constexpr bool IsPpuMemory(MemoryType memType) {
 		switch (memType) {
 			case MemoryType::SnesVideoRam:
@@ -241,6 +291,9 @@ public:
 		}
 	}
 
+	/// <summary>
+	/// Check if memory type is ROM (read-only).
+	/// </summary>
 	[[nodiscard]] static constexpr bool IsRom(MemoryType memType) {
 		switch (memType) {
 			case MemoryType::SnesPrgRom:
@@ -290,10 +343,19 @@ public:
 		}
 	}
 
+	/// <summary>
+	/// Get last CPU type enum value.
+	/// </summary>
 	[[nodiscard]] static constexpr CpuType GetLastCpuType() {
 		return CpuType::Ws;
 	}
 
+	/// <summary>
+	/// Format address as hexadecimal string for CPU type.
+	/// </summary>
+	/// <param name="cpuType">CPU type</param>
+	/// <param name="address">Address value</param>
+	/// <returns>Formatted hex string (e.g., "CAFE" for 16-bit, "12CAFE" for 24-bit)</returns>
 	[[nodiscard]] static string AddressToHex(CpuType cpuType, int32_t address) {
 		int size = GetProgramCounterSize(cpuType);
 		if (size == 4) {
@@ -309,6 +371,10 @@ public:
 		}
 	}
 
+	/// <summary>
+	/// Get total memory type count.
+	/// </summary>
+	/// <returns>Number of memory type enum values</returns>
 	[[nodiscard]] static constexpr int GetMemoryTypeCount() {
 		return (int)MemoryType::None + 1;
 	}
