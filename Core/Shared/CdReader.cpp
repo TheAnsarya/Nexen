@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <ranges>
 #include "Shared/CdReader.h"
 #include "Shared/MessageManager.h"
 #include "Utilities/StringUtilities.h"
@@ -37,7 +38,7 @@ bool CdReader::LoadCue(VirtualFile& cueFile, DiscInfo& disc) {
 	while (std::getline(ss, line)) {
 		line = StringUtilities::TrimLeft(StringUtilities::TrimRight(line));
 
-		if (line.substr(0, 4) == string("FILE")) {
+		if (line.starts_with("FILE")) {
 			size_t start = line.find_first_of('"');
 			size_t end = line.find_last_of('"');
 
@@ -68,7 +69,7 @@ bool CdReader::LoadCue(VirtualFile& cueFile, DiscInfo& disc) {
 				MessageManager::Log("[CUE] Invalid FILE entry");
 				return false;
 			}
-		} else if (line.substr(0, 5) == string("TRACK")) {
+		} else if (line.starts_with("TRACK")) {
 			if (files.size() == 0) {
 				MessageManager::Log("[CUE] Unexpected TRACK entry");
 				return false;
@@ -91,7 +92,7 @@ bool CdReader::LoadCue(VirtualFile& cueFile, DiscInfo& disc) {
 
 			trk.Format = entry[2];
 			files[files.size() - 1].Tracks.push_back(trk);
-		} else if (line.substr(0, 6) == string("PREGAP")) {
+		} else if (line.starts_with("PREGAP")) {
 			if (files.empty() || files[files.size() - 1].Tracks.empty()) {
 				MessageManager::Log("[CUE] Unexpected PREGAP entry");
 				return false;
@@ -118,7 +119,7 @@ bool CdReader::LoadCue(VirtualFile& cueFile, DiscInfo& disc) {
 			}
 
 			files[files.size() - 1].Tracks[files[files.size() - 1].Tracks.size() - 1].PreGap = gap;
-		} else if (line.substr(0, 5) == string("INDEX")) {
+		} else if (line.starts_with("INDEX")) {
 			if (files.empty() || files[files.size() - 1].Tracks.empty()) {
 				MessageManager::Log("[CUE] Unexpected INDEX entry");
 				return false;

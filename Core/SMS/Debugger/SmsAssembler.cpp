@@ -442,7 +442,7 @@ void SmsAssembler::RunPass(vector<int16_t>& output, string code, uint32_t addres
 		}
 
 		// Check if this is a .db statement
-		if (line.size() > 3 && line.substr(0, 3) == ".db") {
+		if (line.starts_with(".db")) {
 			line = line.substr(3);
 			for (string byte : StringUtilities::Split(line, ' ')) {
 				if (byte.empty()) {
