@@ -73,6 +73,49 @@ private:
 	bool _hasCheats[CpuTypeUtilities::GetCpuTypeCount()] = {};                   ///< Per-CPU cheat flags
 	bool _bankHasCheats[CpuTypeUtilities::GetCpuTypeCount()][0x100] = {};        ///< Per-bank cheat flags
 	vector<CheatCode> _cheats;               ///< Active external cheats
+
+	/// <summary>RAM cheats to refresh each frame (per CPU)</summary>
+	vector<InternalCheatCode> _ramRefreshCheats[CpuTypeUtilities::GetCpuTypeCount()];
+	
+	/// <summary>Address-indexed cheat lookup (per CPU)</summary>
+	unordered_map<uint32_t, InternalCheatCode> _cheatsByAddress[CpuTypeUtilities::GetCpuTypeCount()];
+
+	/// <summary>Try to convert external cheat code to internal format</summary>
+	optional<InternalCheatCode> TryConvertCode(CheatCode code);
+
+	/// <summary>Convert SNES Game Genie code</summary>
+	optional<InternalCheatCode> ConvertFromSnesGameGenie(string code);
+	
+	/// <summary>Convert SNES Pro Action Replay code</summary>
+	optional<InternalCheatCode> ConvertFromSnesProActionReplay(string code);
+
+	/// <summary>Convert Game Boy Game Genie code</summary>
+	optional<InternalCheatCode> ConvertFromGbGameGenie(string code);
+	
+	/// <summary>Convert Game Boy Game Shark code</summary>
+	optional<InternalCheatCode> ConvertFromGbGameShark(string code);
+
+	/// <summary>Convert PC Engine raw format code</summary>
+	optional<InternalCheatCode> ConvertFromPceRaw(string code);
+	
+	/// <summary>Convert PC Engine address format code</summary>
+	optional<InternalCheatCode> ConvertFromPceAddress(string code);
+
+	/// <summary>Convert NES Game Genie code (6 or 8 characters)</summary>
+	optional<InternalCheatCode> ConvertFromNesGameGenie(string code);
+	
+	/// <summary>Convert NES Pro Action Rocky code</summary>
+	optional<InternalCheatCode> ConvertFromNesProActionRocky(string code);
+	
+	/// <summary>Convert NES custom format (addr:val or addr?cmp:val)</summary>
+	optional<InternalCheatCode> ConvertFromNesCustomCode(string code);
+
+	/// <summary>Convert SMS Game Genie code</summary>
+	optional<InternalCheatCode> ConvertFromSmsGameGenie(string code);
+	
+	/// <summary>Convert SMS Pro Action Replay code</summary>
+	optional<InternalCheatCode> ConvertFromSmsProActionReplay(string code);
+
 	/// <summary>
 	/// Get bank shift amount for CPU address space.
 	/// </summary>
@@ -158,30 +201,7 @@ public:
 	/// Fast path: Checks bank flag first (cache optimization)
 	/// Slow path: Looks up cheat in address map, applies if found
 	/// Compare value checked if cheat has compare condition
-	/// </remarks>	}
-
-public:
-	CheatManager(Emulator* emu);
-
-	bool AddCheat(CheatCode code);
-	void InternalClearCheats();
-
-	void SetCheats(vector<CheatCode>& codes);
-	void SetCheats(CheatCode codes[], uint32_t length);
-	void ClearCheats(bool showMessage = true);
-
-	vector<CheatCode> GetCheats();
-
-	bool GetConvertedCheat(CheatCode input, InternalCheatCode& output);
-
-	vector<InternalCheatCode>& GetRamRefreshCheats(CpuType cpuType);
-	void RefreshRamCheats(CpuType cpuType);
-
-	template <CpuType cpuType>
-	__forceinline bool HasCheats() {
-		return _hasCheats[(int)cpuType];
-	}
-
+	/// </remarks>
 	template <CpuType cpuType>
 	__noinline void ApplyCheat(uint32_t addr, uint8_t& value);
 };

@@ -219,6 +219,12 @@ public:
 	void OnBeforePause(bool clearAudioBuffer);
 
 	/// <summary>
+	/// Called before sending a frame to the video renderer.
+	/// Handles frame-related events and notifications.
+	/// </summary>
+	void OnBeforeSendFrame();
+
+	/// <summary>
 	/// Load ROM file.
 	/// </summary>
 	/// <param name="romFile">ROM file to load</param>

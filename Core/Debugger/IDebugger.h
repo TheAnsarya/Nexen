@@ -142,15 +142,15 @@ public:
 	virtual void Init() {}
 	
 	/// <summary>
-	/// Process debugger configuration change.
+	/// Process debugger configuration change (settings update).
 	/// </summary>
 	virtual void ProcessConfigChange() {}
 
 	/// <summary>
-	/// Process CPU interrupt (IRQ/NMI).
+	/// Process CPU interrupt (IRQ/NMI) for callstack/profiler.
 	/// </summary>
-	/// <param name="originalPc">PC before interrupt</param>
-	/// <param name="currentPc">PC after interrupt (vector address)</param>
+	/// <param name="originalPc">PC before interrupt vector</param>
+	/// <param name="currentPc">PC after interrupt vector (handler address)</param>
 	/// <param name="forNmi">True if NMI, false if IRQ</param>
 	virtual void ProcessInterrupt(uint32_t originalPc, uint32_t currentPc, bool forNmi) {}
 	

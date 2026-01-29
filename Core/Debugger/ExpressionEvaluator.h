@@ -260,7 +260,7 @@ public:
 /// Compiled expression data (RPN + labels).
 /// </summary>
 struct ExpressionData {
-	deque<int64_t> RpnQueue;  ///< Reverse Polish Notation queue (operators and operands)
+	vector<int64_t> RpnQueue;  ///< Reverse Polish Notation queue (operators and operands)
 	vector<string> Labels;    ///< Referenced label names (for label → value lookup)
 };
 
