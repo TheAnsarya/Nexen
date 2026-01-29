@@ -151,22 +151,22 @@ public:
 	[[nodiscard]] bool IsPowerOffRequested() { return _state.PowerOffRequested; }
 	[[nodiscard]] bool IsColorEnabled() { return _state.ColorEnabled; }
 
-	bool IsWordBus(uint32_t addr);
-	uint8_t GetWaitStates(uint32_t addr);
+	[[nodiscard]] bool IsWordBus(uint32_t addr);
+	[[nodiscard]] uint8_t GetWaitStates(uint32_t addr);
 
 	void SetIrqSource(WsIrqSource src);
 	void ClearIrqSource(WsIrqSource src);
-	uint8_t GetActiveIrqs();
-	uint8_t GetIrqVector();
+	[[nodiscard]] uint8_t GetActiveIrqs();
+	[[nodiscard]] uint8_t GetIrqVector();
 
 	void OnBeforeBreak();
 
-	__forceinline bool HasPendingIrq() {
+	[[nodiscard]] __forceinline bool HasPendingIrq() {
 		return GetActiveIrqs() != 0;
 	}
 
-	AddressInfo GetAbsoluteAddress(uint32_t relAddr);
-	int GetRelativeAddress(AddressInfo& absAddress);
+	[[nodiscard]] AddressInfo GetAbsoluteAddress(uint32_t relAddr);
+	[[nodiscard]] int GetRelativeAddress(AddressInfo& absAddress);
 
 	void Serialize(Serializer& s) override;
 };

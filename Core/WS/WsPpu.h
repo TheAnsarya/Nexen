@@ -123,16 +123,16 @@ public:
 	uint8_t ReadLcdConfigPort(uint16_t port);
 	void WriteLcdConfigPort(uint16_t port, uint8_t value);
 
-	uint16_t GetCycle() { return _state.Cycle; }
-	uint16_t GetScanline() { return _state.Scanline; }
-	uint16_t GetScanlineCount() { return _state.LastScanline + 1; }
-	uint32_t GetFrameCount() { return _state.FrameCount; }
-	uint16_t GetScreenWidth() { return _showIcons ? _screenWidth : WsConstants::ScreenWidth; }
-	uint16_t GetScreenHeight() { return _showIcons ? _screenHeight : WsConstants::ScreenHeight; }
+	[[nodiscard]] uint16_t GetCycle() { return _state.Cycle; }
+	[[nodiscard]] uint16_t GetScanline() { return _state.Scanline; }
+	[[nodiscard]] uint16_t GetScanlineCount() { return _state.LastScanline + 1; }
+	[[nodiscard]] uint32_t GetFrameCount() { return _state.FrameCount; }
+	[[nodiscard]] uint16_t GetScreenWidth() { return _showIcons ? _screenWidth : WsConstants::ScreenWidth; }
+	[[nodiscard]] uint16_t GetScreenHeight() { return _showIcons ? _screenHeight : WsConstants::ScreenHeight; }
 	WsPpuState& GetState() { return _state; }
 
-	uint16_t GetVisibleScanlineCount();
-	uint16_t* GetScreenBuffer(bool prevFrame);
+	[[nodiscard]] uint16_t GetVisibleScanlineCount();
+	[[nodiscard]] uint16_t* GetScreenBuffer(bool prevFrame);
 
 	void DebugSendFrame();
 	void SetOutputToBgColor();

@@ -328,7 +328,7 @@ public:
 	__forceinline void IncCycleCount() { _state.CycleCount++; }
 	void ClearPrefetch();
 
-	uint32_t GetProgramCounter(bool adjustForRepLoop = false);
+	[[nodiscard]] uint32_t GetProgramCounter(bool adjustForRepLoop = false);
 
 	void Exec();
 	void ExecOpCode();
@@ -343,10 +343,10 @@ private:
 
 public:
 	void SetDummyState(WsCpuState& state);
-	uint32_t GetOperationCount();
+	[[nodiscard]] uint32_t GetOperationCount();
 	void LogMemoryOperation(uint32_t addr, uint16_t value, MemoryOperationType type, MemoryType memType, bool isWordAccess);
-	MemoryOperationInfo GetOperationInfo(uint32_t index);
-	bool IsWordAccess(uint32_t index);
+	[[nodiscard]] MemoryOperationInfo GetOperationInfo(uint32_t index);
+	[[nodiscard]] bool IsWordAccess(uint32_t index);
 #endif
 };
 

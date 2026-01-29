@@ -58,17 +58,17 @@ public:
 	WsConsole(Emulator* emu);
 	~WsConsole();
 
-	static vector<string> GetSupportedExtensions() { return {".ws", ".wsc"}; }
-	static vector<string> GetSupportedSignatures() { return {}; }
+	[[nodiscard]] static vector<string> GetSupportedExtensions() { return {".ws", ".wsc"}; }
+	[[nodiscard]] static vector<string> GetSupportedSignatures() { return {}; }
 
 	LoadRomResult LoadRom(VirtualFile& romFile) override;
 	void RunFrame() override;
 
 	void GetScreenRotationOverride(uint32_t& rotation) override;
-	bool IsColorMode();
-	bool IsPowerOff();
-	bool IsVerticalMode();
-	WsModel GetModel();
+	[[nodiscard]] bool IsColorMode();
+	[[nodiscard]] bool IsPowerOff();
+	[[nodiscard]] bool IsVerticalMode();
+	[[nodiscard]] WsModel GetModel();
 
 	void ProcessEndOfFrame();
 
@@ -76,29 +76,29 @@ public:
 	void LoadBattery();
 	void SaveBattery() override;
 
-	BaseControlManager* GetControlManager() override;
-	ConsoleRegion GetRegion() override;
-	ConsoleType GetConsoleType() override;
-	vector<CpuType> GetCpuTypes() override;
-	uint64_t GetMasterClock() override;
-	uint32_t GetMasterClockRate() override;
-	double GetFps() override;
-	BaseVideoFilter* GetVideoFilter(bool getDefaultFilter) override;
-	PpuFrameInfo GetPpuFrame() override;
-	RomFormat GetRomFormat() override;
-	AudioTrackInfo GetAudioTrackInfo() override;
+	[[nodiscard]] BaseControlManager* GetControlManager() override;
+	[[nodiscard]] ConsoleRegion GetRegion() override;
+	[[nodiscard]] ConsoleType GetConsoleType() override;
+	[[nodiscard]] vector<CpuType> GetCpuTypes() override;
+	[[nodiscard]] uint64_t GetMasterClock() override;
+	[[nodiscard]] uint32_t GetMasterClockRate() override;
+	[[nodiscard]] double GetFps() override;
+	[[nodiscard]] BaseVideoFilter* GetVideoFilter(bool getDefaultFilter) override;
+	[[nodiscard]] PpuFrameInfo GetPpuFrame() override;
+	[[nodiscard]] RomFormat GetRomFormat() override;
+	[[nodiscard]] AudioTrackInfo GetAudioTrackInfo() override;
 	void ProcessAudioPlayerAction(AudioPlayerActionParams p) override;
-	AddressInfo GetAbsoluteAddress(uint32_t relAddr);
-	AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) override;
-	AddressInfo GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) override;
+	[[nodiscard]] AddressInfo GetAbsoluteAddress(uint32_t relAddr);
+	[[nodiscard]] AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) override;
+	[[nodiscard]] AddressInfo GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) override;
 
-	WsState GetState();
+	[[nodiscard]] WsState GetState();
 	void GetConsoleState(BaseState& state, ConsoleType consoleType) override;
 
-	WsCpu* GetCpu() { return _cpu.get(); }
-	WsPpu* GetPpu() { return _ppu.get(); }
-	WsApu* GetApu() { return _apu.get(); }
-	WsMemoryManager* GetMemoryManager() { return _memoryManager.get(); }
+	[[nodiscard]] WsCpu* GetCpu() { return _cpu.get(); }
+	[[nodiscard]] WsPpu* GetPpu() { return _ppu.get(); }
+	[[nodiscard]] WsApu* GetApu() { return _apu.get(); }
+	[[nodiscard]] WsMemoryManager* GetMemoryManager() { return _memoryManager.get(); }
 
 	void Serialize(Serializer& s) override;
 };

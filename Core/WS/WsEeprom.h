@@ -25,13 +25,13 @@ private:
 	uint8_t* _data = nullptr;
 	bool _isInternal = false;
 
-	WsEepromCommand GetCommand();
-	WsEepromSize GetSize();
-	uint16_t GetCommandAddress();
+	[[nodiscard]] WsEepromCommand GetCommand();
+	[[nodiscard]] WsEepromSize GetSize();
+	[[nodiscard]] uint16_t GetCommandAddress();
 
 	void WriteValue(uint16_t addr, uint16_t value);
 
-	string ConvertToEepromString(string in);
+	[[nodiscard]] string ConvertToEepromString(string in);
 	void InitInternalEepromData();
 
 public:
@@ -40,7 +40,7 @@ public:
 	WsEepromState& GetState() { return _state; }
 
 	void WritePort(uint8_t port, uint8_t value);
-	uint8_t ReadPort(uint8_t port);
+	[[nodiscard]] uint8_t ReadPort(uint8_t port);
 
 	void Run();
 
