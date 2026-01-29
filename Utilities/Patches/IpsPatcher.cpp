@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <cstring>
 #include <sstream>
+#include <ranges>
 #include "IpsPatcher.h"
 
 class IpsRecord {
@@ -102,13 +103,13 @@ bool IpsPatcher::PatchBuffer(std::istream& ipsFile, vector<uint8_t>& input, vect
 	}
 
 	output.resize(maxOutputSize);
-	std::copy(input.begin(), input.end(), output.begin());
+	std::ranges::copy(input, output.begin());
 
 	for (IpsRecord record : records) {
 		if (record.Length == 0) {
 			std::fill(&output[record.Address], &output[record.Address] + record.RepeatCount, record.Value);
 		} else {
-			std::copy(record.Replacement.begin(), record.Replacement.end(), output.begin() + record.Address);
+			std::ranges::copy(record.Replacement, output.begin() + record.Address);
 		}
 	}
 

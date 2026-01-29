@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <algorithm>
 #include <iterator>
+#include <ranges>
 #include "VirtualFile.h"
 #include "Utilities/sha1.h"
 #include "Utilities/ArchiveReader.h"
@@ -113,7 +114,7 @@ bool VirtualFile::IsValid() {
 					return true;
 				}
 			} else {
-				return std::find(filelist.begin(), filelist.end(), _innerFile) != filelist.end();
+				return std::ranges::find(filelist, _innerFile) != filelist.end();
 			}
 		}
 	} else {

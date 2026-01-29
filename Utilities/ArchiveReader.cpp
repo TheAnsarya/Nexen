@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sstream>
 #include <algorithm>
+#include <ranges>
 #include "FolderUtilities.h"
 #include "ZipReader.h"
 #include "SZReader.h"
@@ -32,7 +33,7 @@ vector<string> ArchiveReader::GetFileList(std::initializer_list<string> extensio
 	vector<string> filenames;
 	for (string filename : InternalGetFileList()) {
 		string lcFilename = filename;
-		std::transform(lcFilename.begin(), lcFilename.end(), lcFilename.begin(), ::tolower);
+		std::ranges::transform(lcFilename, lcFilename.begin(), ::tolower);
 
 		string ext = FolderUtilities::GetExtension(lcFilename);
 		if (extMap.find(ext) != extMap.end()) {
@@ -45,7 +46,7 @@ vector<string> ArchiveReader::GetFileList(std::initializer_list<string> extensio
 
 bool ArchiveReader::CheckFile(string filename) {
 	vector<string> files = InternalGetFileList();
-	return std::find(files.begin(), files.end(), filename) != files.end();
+	return std::ranges::find(files, filename) != files.end();
 }
 
 bool ArchiveReader::LoadArchive(std::istream& in) {
