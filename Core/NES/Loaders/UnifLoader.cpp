@@ -77,7 +77,7 @@ bool UnifLoader::ReadChunk(uint8_t*& data, uint8_t* dataEnd, RomData& romData) {
 			romData.Error = true;
 			return false;
 		}
-	} else if (fourCC.substr(0, 3).compare("PRG") == 0) {
+	} else if (fourCC.starts_with("PRG")) {
 		uint32_t chunkNumber;
 		std::stringstream ss;
 		ss << std::hex << fourCC[3];
@@ -85,7 +85,7 @@ bool UnifLoader::ReadChunk(uint8_t*& data, uint8_t* dataEnd, RomData& romData) {
 
 		_prgChunks[chunkNumber].resize(length);
 		Read(data, _prgChunks[chunkNumber].data(), length);
-	} else if (fourCC.substr(0, 3).compare("CHR") == 0) {
+	} else if (fourCC.starts_with("CHR")) {
 		uint32_t chunkNumber;
 		std::stringstream ss;
 		ss << std::hex << fourCC[3];
@@ -135,8 +135,7 @@ bool UnifLoader::ReadChunk(uint8_t*& data, uint8_t* dataEnd, RomData& romData) {
 }
 
 int32_t UnifLoader::GetMapperID(string mapperName) {
-	string prefix = mapperName.substr(0, 4);
-	if (prefix.compare("NES-") == 0 || prefix.compare("UNL-") == 0 || prefix.compare("HVC-") == 0 || prefix.compare("BTL-") == 0 || prefix.compare("BMC-") == 0) {
+	if (mapperName.starts_with("NES-") || mapperName.starts_with("UNL-") || mapperName.starts_with("HVC-") || mapperName.starts_with("BTL-") || mapperName.starts_with("BMC-")) {
 		mapperName = mapperName.substr(4);
 	}
 

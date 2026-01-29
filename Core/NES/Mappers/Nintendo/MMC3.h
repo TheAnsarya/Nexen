@@ -193,7 +193,7 @@ protected:
 	void InitMapper() override {
 		// Force MMC3A irqs for boards that are known to use the A revision.
 		// Some MMC3B boards also have the A behavior, but currently no way to tell them apart.
-		_forceMmc3RevAIrqs = _romInfo.DatabaseInfo.Chip.substr(0, 5).compare("MMC3A") == 0;
+		_forceMmc3RevAIrqs = _romInfo.DatabaseInfo.Chip.starts_with("MMC3A");
 
 		ResetMmc3();
 		SetCpuMemoryMapping(0x6000, 0x7FFF, 0, HasBattery() ? PrgMemoryType::SaveRam : PrgMemoryType::WorkRam);

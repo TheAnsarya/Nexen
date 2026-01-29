@@ -157,7 +157,7 @@ RomTestResult RecordedRomTest::Run(string filename) {
 	vector<string> files = zipReader.GetFileList();
 	string romFile = "";
 	for (string& file : files) {
-		if (file.length() > 7 && file.substr(0, 7) == "TestRom") {
+		if (file.starts_with("TestRom")) {
 			romFile = file;
 		}
 	}
@@ -200,7 +200,7 @@ RomTestResult RecordedRomTest::Run(string filename) {
 		_currentCount = _repetitionCount.front();
 		_repetitionCount.pop_front();
 
-		if (testName.compare("demo_pal") == 0 || testName.substr(0, 4).compare("pal_") == 0) {
+		if (testName.compare("demo_pal") == 0 || testName.starts_with("pal_")) {
 			settings->GetNesConfig().Region = ConsoleRegion::Pal;
 		} else {
 			settings->GetNesConfig().Region = ConsoleRegion::Auto;

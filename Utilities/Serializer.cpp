@@ -41,7 +41,7 @@ void Serializer::RemoveKeyPrefix(string prefix) {
 	vector<string> keysToRemove;
 
 	for (auto& kvp : _values) {
-		if (kvp.first.size() > prefix.size() && kvp.first.substr(0, prefix.size()) == prefix) {
+		if (kvp.first.starts_with(prefix) && kvp.first.size() > prefix.size()) {
 			keys.push_back(kvp.first);
 		} else {
 			keysToRemove.push_back(kvp.first);
