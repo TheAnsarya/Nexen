@@ -11,6 +11,7 @@ namespace fs = std::experimental::filesystem;
 #include <unordered_set>
 #include <algorithm>
 #include "Utilities/FolderUtilities.h"
+#include "Utilities/PathUtil.h"
 #include "Utilities/UTF8Util.h"
 
 string FolderUtilities::_homeFolder = "";
@@ -135,24 +136,24 @@ string FolderUtilities::GetExtension(string filename) {
 
 void FolderUtilities::CreateFolder(string folder) {
 	std::error_code errorCode;
-	fs::create_directory(fs::u8path(folder), errorCode);
+	fs::create_directory(PathUtil::FromUtf8(folder), errorCode);
 }
 
 vector<string> FolderUtilities::GetFolders(string rootFolder) {
 	vector<string> folders;
 
 	std::error_code errorCode;
-	if (!fs::is_directory(fs::u8path(rootFolder), errorCode)) {
+	if (!fs::is_directory(PathUtil::FromUtf8(rootFolder), errorCode)) {
 		return folders;
 	}
 
-	for (fs::recursive_directory_iterator i(fs::u8path(rootFolder)), end; i != end; i++) {
+	for (fs::recursive_directory_iterator i(PathUtil::FromUtf8(rootFolder)), end; i != end; i++) {
 		if (i.depth() > 1) {
 			// Prevent excessive recursion
 			i.disable_recursion_pending();
 		} else {
 			if (fs::is_directory(i->path(), errorCode)) {
-				folders.push_back(i->path().u8string());
+				folders.push_back(PathUtil::ToUtf8(i->path()));
 			}
 		}
 	}
@@ -165,29 +166,29 @@ vector<string> FolderUtilities::GetFilesInFolder(string rootFolder, std::unorder
 	vector<string> folders = {{rootFolder}};
 
 	std::error_code errorCode;
-	if (!fs::is_directory(fs::u8path(rootFolder), errorCode)) {
+	if (!fs::is_directory(PathUtil::FromUtf8(rootFolder), errorCode)) {
 		return files;
 	}
 
 	if (recursive) {
-		for (fs::recursive_directory_iterator i(fs::u8path(rootFolder)), end; i != end; i++) {
+		for (fs::recursive_directory_iterator i(PathUtil::FromUtf8(rootFolder)), end; i != end; i++) {
 			if (i.depth() > 1) {
 				// Prevent excessive recursion
 				i.disable_recursion_pending();
 			} else {
-				string extension = i->path().extension().u8string();
+				string extension = PathUtil::ToUtf8(i->path().extension());
 				std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 				if (extensions.empty() || extensions.find(extension) != extensions.end()) {
-					files.push_back(i->path().u8string());
+					files.push_back(PathUtil::ToUtf8(i->path()));
 				}
 			}
 		}
 	} else {
-		for (fs::directory_iterator i(fs::u8path(rootFolder)), end; i != end; i++) {
-			string extension = i->path().extension().u8string();
+		for (fs::directory_iterator i(PathUtil::FromUtf8(rootFolder)), end; i != end; i++) {
+			string extension = PathUtil::ToUtf8(i->path().extension());
 			std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 			if (extensions.empty() || extensions.find(extension) != extensions.end()) {
-				files.push_back(i->path().u8string());
+				files.push_back(PathUtil::ToUtf8(i->path()));
 			}
 		}
 	}
@@ -196,15 +197,15 @@ vector<string> FolderUtilities::GetFilesInFolder(string rootFolder, std::unorder
 }
 
 string FolderUtilities::GetFilename(string filepath, bool includeExtension) {
-	fs::path filename = fs::u8path(filepath).filename();
+	fs::path filename = PathUtil::FromUtf8(filepath).filename();
 	if (!includeExtension) {
 		filename.replace_extension("");
 	}
-	return filename.u8string();
+	return PathUtil::ToUtf8(filename);
 }
 
 string FolderUtilities::GetFolderName(string filepath) {
-	return fs::u8path(filepath).remove_filename().u8string();
+	return PathUtil::ToUtf8(PathUtil::FromUtf8(filepath).remove_filename());
 }
 
 string FolderUtilities::CombinePath(string folder, string filename) {

@@ -47,7 +47,7 @@ bool _softwareRenderer = false;
 static void* _windowHandle = nullptr;
 static void* _viewerHandle = nullptr;
 
-static constexpr char* _buildDateTime = __DATE__ ", " __TIME__;
+static constexpr const char* _buildDateTime = __DATE__ ", " __TIME__;
 
 static InteropNotificationListeners _listeners;
 
@@ -69,7 +69,7 @@ DllExport bool __stdcall TestDll() {
 DllExport uint32_t __stdcall GetMesenVersion() {
 	return _emu->GetSettings()->GetVersion();
 }
-DllExport char* __stdcall GetMesenBuildDate() {
+DllExport const char* __stdcall GetMesenBuildDate() {
 	return _buildDateTime;
 }
 

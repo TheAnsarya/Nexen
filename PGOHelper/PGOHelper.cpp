@@ -13,6 +13,28 @@
 using std::string;
 using std::vector;
 
+// C++20 compatible path utilities
+namespace PathUtil {
+
+inline fs::path FromUtf8(const std::string& utf8str) {
+#if __cplusplus >= 202002L || _MSVC_LANG >= 202002L
+	return fs::path(reinterpret_cast<const char8_t*>(utf8str.c_str()));
+#else
+	return fs::u8path(utf8str);
+#endif
+}
+
+inline std::string ToUtf8(const fs::path& p) {
+#if __cplusplus >= 202002L || _MSVC_LANG >= 202002L
+	auto u8str = p.u8string();
+	return std::string(reinterpret_cast<const char*>(u8str.data()), u8str.size());
+#else
+	return p.u8string();
+#endif
+}
+
+} // namespace PathUtil
+
 extern "C" {
 	void __stdcall PgoRunTest(vector<string> testRoms, bool enableDebugger);
 }
@@ -23,16 +45,16 @@ vector<string> GetFilesInFolder(string rootFolder, std::unordered_set<string> ex
 	vector<string> folders = { { rootFolder } };
 
 	std::error_code errorCode;
-	if(!fs::is_directory(fs::u8path(rootFolder), errorCode)) {
+	if(!fs::is_directory(PathUtil::FromUtf8(rootFolder), errorCode)) {
 		return files;
 	}
 
 	for(string folder : folders) {
-		for(fs::directory_iterator i(fs::u8path(folder.c_str())), end; i != end; i++) {
-			string extension = i->path().extension().u8string();
+		for(fs::directory_iterator i(PathUtil::FromUtf8(folder)), end; i != end; i++) {
+			string extension = PathUtil::ToUtf8(i->path().extension());
 			std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 			if(extensions.find(extension) != extensions.end()) {
-				files.push_back(i->path().u8string());
+				files.push_back(PathUtil::ToUtf8(i->path()));
 			}
 		}
 	}
