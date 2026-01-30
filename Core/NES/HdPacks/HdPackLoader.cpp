@@ -16,8 +16,8 @@
 #include "Utilities/FastString.h"
 #include "Utilities/magic_enum.hpp"
 
-#define logError(y)                                                                     \
-	MessageManager::Log("[HDPack - Line " + std::to_string(_currentLine) + "] " + (y)); \
+#define logError(y)                                                              \
+	MessageManager::Log(std::format("[HDPack - Line {}] {}", _currentLine, (y))); \
 	_errorCount++;
 #define checkConstraint(x, y) \
 	if (!(x)) {               \
@@ -214,9 +214,9 @@ bool HdPackLoader::LoadPack() {
 
 		if (_errorCount > 0) {
 			if (_data->Version >= 109) {
-				MessageManager::DisplayMessage("HDPack", "Loaded with " + std::to_string(_errorCount) + " errors");
+				MessageManager::DisplayMessage("HDPack", std::format("Loaded with {} errors", _errorCount));
 			}
-			MessageManager::Log("[HDPack] Loaded with " + std::to_string(_errorCount) + " errors");
+			MessageManager::Log(std::format("[HDPack] Loaded with {} errors", _errorCount));
 		}
 
 		return true;
@@ -385,7 +385,7 @@ void HdPackLoader::ProcessTileTag(vector<string>& tokens, vector<HdPackCondition
 	}
 
 	checkConstraintEx(tokens.size() == index, "Tile tag contains too many parameters");
-	checkConstraint(tileInfo->BitmapIndex < _data->ImageFileData.size(), "Invalid bitmap index: " + std::to_string(tileInfo->BitmapIndex));
+	checkConstraint(tileInfo->BitmapIndex < _data->ImageFileData.size(), std::format("Invalid bitmap index: {}", tileInfo->BitmapIndex));
 
 	tileInfo->Bitmap = _data->ImageFileData[tileInfo->BitmapIndex].get();
 	tileInfo->Width = 8 * _data->Scale;

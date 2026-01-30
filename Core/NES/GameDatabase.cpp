@@ -55,7 +55,7 @@ void GameDatabase::LoadGameDb(vector<string> data) {
 	}
 
 	MessageManager::Log();
-	MessageManager::Log("[DB] Initialized - " + std::to_string(_gameDatabase.size()) + " games in DB");
+	MessageManager::Log(std::format("[DB] Initialized - {} games in DB", _gameDatabase.size()));
 }
 
 void GameDatabase::LoadGameDb(std::istream& db) {
@@ -282,16 +282,16 @@ void GameDatabase::SetGameInfo(uint32_t romCrc, RomData& romData, bool updateRom
 			}
 			MessageManager::Log(msg);
 		}
-		MessageManager::Log("[DB] PRG ROM: " + std::to_string(info.PrgRomSize / 1024) + " KB");
-		MessageManager::Log("[DB] CHR ROM: " + std::to_string(info.ChrRomSize / 1024) + " KB");
+		MessageManager::Log(std::format("[DB] PRG ROM: {} KB", info.PrgRomSize / 1024));
+		MessageManager::Log(std::format("[DB] CHR ROM: {} KB", info.ChrRomSize / 1024));
 		if (info.ChrRamSize > 0) {
-			MessageManager::Log("[DB] CHR RAM: " + std::to_string(info.ChrRamSize / 1024) + " KB");
+			MessageManager::Log(std::format("[DB] CHR RAM: {} KB", info.ChrRamSize / 1024));
 		}
 		if (info.WorkRamSize > 0) {
-			MessageManager::Log("[DB] Work RAM: " + std::to_string(info.WorkRamSize / 1024) + " KB");
+			MessageManager::Log(std::format("[DB] Work RAM: {} KB", info.WorkRamSize / 1024));
 		}
 		if (info.SaveRamSize > 0) {
-			MessageManager::Log("[DB] Save RAM: " + std::to_string(info.SaveRamSize / 1024) + " KB");
+			MessageManager::Log(std::format("[DB] Save RAM: {} KB", info.SaveRamSize / 1024));
 		}
 		MessageManager::Log("[DB] Battery: " + string(info.HasBattery ? "Yes" : "No"));
 
@@ -302,7 +302,7 @@ void GameDatabase::SetGameInfo(uint32_t romCrc, RomData& romData, bool updateRom
 		}
 
 #ifdef _DEBUG
-		MessageManager::DisplayMessage("DB", "Mapper: " + std::to_string(romData.Info.MapperID) + "  Sub: " + std::to_string(romData.Info.SubMapperID) + "  System: " + info.System);
+		MessageManager::DisplayMessage("DB", std::format("Mapper: {}  Sub: {}  System: {}", romData.Info.MapperID, romData.Info.SubMapperID, info.System));
 #endif
 	} else {
 		MessageManager::Log("[DB] Game not found in database");

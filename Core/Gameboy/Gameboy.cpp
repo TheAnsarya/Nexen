@@ -416,7 +416,7 @@ LoadRomResult Gameboy::LoadRom(VirtualFile& romFile) {
 		MessageManager::Log("-----------------------------");
 		MessageManager::Log("File: " + romFile.GetFileName());
 		MessageManager::Log("Game: " + header.GetCartName());
-		MessageManager::Log("Cart Type: " + std::to_string(header.CartType));
+		MessageManager::Log(std::format("Cart Type: {}", header.CartType));
 		switch ((CgbCompat)((int)header.CgbFlag & 0xC0)) {
 			case CgbCompat::Gameboy:
 				MessageManager::Log("Supports: Game Boy");
@@ -431,10 +431,10 @@ LoadRomResult Gameboy::LoadRom(VirtualFile& romFile) {
 		if (header.SgbFlag == 0x03) {
 			MessageManager::Log("Supports: Super Game Boy");
 		}
-		MessageManager::Log("File size: " + std::to_string(romData.size() / 1024) + " KB");
+		MessageManager::Log(std::format("File size: {} KB", romData.size() / 1024));
 
 		if (header.GetCartRamSize() > 0) {
-			string sizeString = header.GetCartRamSize() > 1024 ? std::to_string(header.GetCartRamSize() / 1024) + " KB" : std::to_string(header.GetCartRamSize()) + " bytes";
+			string sizeString = header.GetCartRamSize() > 1024 ? std::format("{} KB", header.GetCartRamSize() / 1024) : std::format("{} bytes", header.GetCartRamSize());
 			MessageManager::Log("Cart RAM size: " + sizeString + (header.HasBattery() ? " (with battery)" : ""));
 		}
 
@@ -450,7 +450,7 @@ LoadRomResult Gameboy::LoadRom(VirtualFile& romFile) {
 			}
 			return LoadRomResult::Success;
 		} else {
-			MessageManager::DisplayMessage("Error", "Unsupported cart type: " + (gbxFooter.IsValid() ? gbxFooter.GetMapperId() : std::to_string(header.CartType)));
+			MessageManager::DisplayMessage("Error", std::format("Unsupported cart type: {}", gbxFooter.IsValid() ? gbxFooter.GetMapperId() : std::to_string(header.CartType)));
 			return LoadRomResult::Failure;
 		}
 	}
