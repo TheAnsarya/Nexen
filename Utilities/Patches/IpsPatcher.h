@@ -12,13 +12,13 @@
 /// - Records: [offset:3][size:2][data:size] (repeating)
 /// - RLE records: [offset:3][0000][size:2][byte:1] (for repeated bytes)
 /// - Footer: "EOF" (3 bytes)
-/// 
+///
 /// Limitations:
 /// - Maximum file size: 16MB (24-bit addresses)
 /// - No CRC validation
 /// - No metadata support
 /// - Simple run-length encoding only
-/// 
+///
 /// Common use: ROM hacks, translations, bug fixes for retro games.
 /// Superseded by UPS/BPS formats (better validation, larger files).
 /// </remarks>
@@ -32,7 +32,7 @@ public:
 	/// <param name="output">Patched ROM data (output)</param>
 	/// <returns>True if patch applied successfully</returns>
 	static bool PatchBuffer(string ipsFilepath, vector<uint8_t>& input, vector<uint8_t>& output);
-	
+
 	/// <summary>
 	/// Apply IPS patch from memory buffer.
 	/// </summary>
@@ -41,7 +41,7 @@ public:
 	/// <param name="output">Patched ROM data (output)</param>
 	/// <returns>True if patch applied successfully</returns>
 	static bool PatchBuffer(vector<uint8_t>& ipsData, vector<uint8_t>& input, vector<uint8_t>& output);
-	
+
 	/// <summary>
 	/// Apply IPS patch from stream.
 	/// </summary>
@@ -50,7 +50,7 @@ public:
 	/// <param name="output">Patched ROM data (output)</param>
 	/// <returns>True if patch applied successfully</returns>
 	static bool PatchBuffer(std::istream& ipsFile, vector<uint8_t>& input, vector<uint8_t>& output);
-	
+
 	/// <summary>
 	/// Create IPS patch from original and modified data.
 	/// </summary>

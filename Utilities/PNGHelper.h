@@ -8,12 +8,12 @@
 /// <remarks>
 /// All methods are static - utility class for PNG operations.
 /// Uses LodePNG for PNG codec implementation.
-/// 
+///
 /// Common use cases:
 /// - Screenshot capture (WritePNG from framebuffer)
 /// - Texture loading (ReadPNG for sprite/tile data)
 /// - Debug visualization (write intermediate rendering states)
-/// 
+///
 /// Supported formats: 8/16/24/32 bits per pixel
 /// Color types: Grayscale, RGB, RGBA
 /// </remarks>
@@ -47,7 +47,7 @@ public:
 	/// Buffer size must be xSize * ySize * (bitsPerPixel/8) bytes.
 	/// </remarks>
 	static bool WritePNG(std::stringstream& stream, uint32_t* buffer, uint32_t xSize, uint32_t ySize, uint32_t bitsPerPixel = 24);
-	
+
 	/// <summary>
 	/// Write PNG image to file.
 	/// </summary>
@@ -58,7 +58,7 @@ public:
 	/// <param name="bitsPerPixel">Bits per pixel (24=RGB, 32=RGBA, default 24)</param>
 	/// <returns>True if write succeeded, false on error</returns>
 	static bool WritePNG(string filename, uint32_t* buffer, uint32_t xSize, uint32_t ySize, uint32_t bitsPerPixel = 24);
-	
+
 	/// <summary>
 	/// Read PNG file and decode to raw pixel data.
 	/// </summary>

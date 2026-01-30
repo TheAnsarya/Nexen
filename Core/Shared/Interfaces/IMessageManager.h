@@ -12,13 +12,13 @@
 /// - Linux UI: GTK dialog, notification daemon
 /// - macOS UI: NSAlert, notification center
 /// - SDL UI: Console output, SDL_ShowMessageBox
-/// 
+///
 /// Used for:
 /// - Error messages (missing files, unsupported formats)
 /// - Warnings (overclock detection, incompatible settings)
 /// - Information (netplay connection status, recording started)
 /// - Firmware/BIOS missing notifications
-/// 
+///
 /// Thread safety:
 /// - May be called from any thread
 /// - Implementation must dispatch to UI thread if needed

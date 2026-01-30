@@ -13,13 +13,13 @@
 /// - PC Engine PSG (6 channels wave)
 /// - External chips (VRC6, FDS, MMC5, N163, etc.)
 /// - CD-ROM audio (PCE CD, Sega CD)
-/// 
+///
 /// Audio mixing flow:
 /// 1. SoundMixer calls MixAudio() on each registered provider
 /// 2. Provider writes samples to output buffer (additive mixing)
 /// 3. SoundMixer applies effects (equalizer, reverb, crossfeed)
 /// 4. Final mix sent to audio device
-/// 
+///
 /// Thread safety:
 /// - Called from emulation thread (locked by EmulatorLock)
 /// - Must not block or perform I/O

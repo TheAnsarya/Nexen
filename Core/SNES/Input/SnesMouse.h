@@ -12,7 +12,7 @@ class SnesMouse : public BaseControlDevice {
 private:
 	static constexpr uint8_t _sensitivityLut[2][8] = {
 	    {0, 1, 2, 3, 8,  10, 12, 21},
-        {0, 1, 4, 9, 12, 20, 24, 28}
+	    {0, 1, 4, 9, 12, 20, 24, 28}
     };
 
 	uint32_t _stateBuffer = 0;

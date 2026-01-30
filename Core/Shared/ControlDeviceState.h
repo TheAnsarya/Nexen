@@ -13,7 +13,7 @@
 /// - Mouse: Position coordinates + button flags
 /// - Keyboard: Scancode matrix
 /// - Zapper: X/Y coordinates + trigger state
-/// 
+///
 /// State vector size varies by device type.
 /// Comparison uses memcmp for efficient byte-wise equality check.
 /// </remarks>
@@ -45,7 +45,7 @@ struct ControlDeviceState {
 /// - Type: Determines state format and behavior
 /// - State: Current button/axis values
 /// - Port: Which physical/virtual port this controller is connected to
-/// 
+///
 /// Common use cases:
 /// - Movie files (.mmo): Record/replay controller input sequences
 /// - Network play: Transmit controller state to remote emulator
@@ -54,10 +54,10 @@ struct ControlDeviceState {
 struct ControllerData {
 	/// <summary>Controller type (gamepad, mouse, zapper, etc.)</summary>
 	ControllerType Type;
-	
+
 	/// <summary>Current input state (device-specific encoding)</summary>
 	ControlDeviceState State;
-	
+
 	/// <summary>Port number (0-based, typically 0-3 for most systems)</summary>
 	uint8_t Port;
 };

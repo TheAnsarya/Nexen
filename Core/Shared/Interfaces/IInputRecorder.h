@@ -12,12 +12,12 @@ class BaseControlDevice;
 /// - MovieManager: Recording to movie files (.msm format)
 /// - GameServer: Broadcasting input to network clients
 /// - RecordedRomTest: Recording test runs for regression testing
-/// 
+///
 /// Recording flow:
 /// 1. BaseControlManager polls all connected controllers
 /// 2. Calls RecordInput() on registered recorders
 /// 3. Recorders serialize input state to storage/network
-/// 
+///
 /// Input format:
 /// - Each frame records all controller states
 /// - Includes button presses, analog axes, mouse coordinates

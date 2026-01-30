@@ -17,7 +17,7 @@ class Emulator;
 /// - Thread-safe access using atomic flags
 /// - Serialization support for save/load configuration files
 /// - Hot-reload support (changes applied immediately without restart)
-/// 
+///
 /// Configuration categories:
 /// - Video: Resolution, filters, aspect ratio, overscan
 /// - Audio: Volume, sample rate, latency, audio device
@@ -25,11 +25,11 @@ class Emulator;
 /// - Emulation: Speed, rewind, cheats, power-on state randomization
 /// - Debug: Debugger options, trace logging, performance stats
 /// - Platform-specific: SNES, NES, GB, PCE, SMS, CV, GBA, WS configs
-/// 
+///
 /// Settings persistence:
 /// - Global settings: Mesen.cfg in user data folder
 /// - Per-game overrides: Stored in save folder alongside save files
-/// 
+///
 /// Thread safety:
 /// - Flag checks use atomic operations (lock-free)
 /// - Config updates use SimpleLock for mutual exclusion

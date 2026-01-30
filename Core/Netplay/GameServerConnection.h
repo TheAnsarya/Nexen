@@ -20,7 +20,7 @@ class GameServer;
 /// - One GameServerConnection per connected client
 /// - GameServer owns collection of connections
 /// - Each connection runs on dedicated thread (managed by GameServer)
-/// 
+///
 /// Responsibilities:
 /// - Client authentication (password verification)
 /// - Controller port assignment/management
@@ -28,20 +28,20 @@ class GameServer;
 /// - Broadcasting movie data to client
 /// - Configuration change notifications
 /// - Disconnect handling (kick/ban)
-/// 
+///
 /// Input flow:
 /// 1. Client sends InputDataMessage every frame
 /// 2. PushState() stores input in _inputData
 /// 3. GameServer calls GetState() to collect input
 /// 4. Server broadcasts collected inputs via SendMovieData()
-/// 
+///
 /// Authentication:
 /// 1. Client connects, sends HandShakeMessage
 /// 2. ProcessHandshakeResponse() verifies password hash
 /// 3. SendServerInformation() sends ROM/settings/player list
 /// 4. SendGameInformation() sends current game state
 /// 5. Client selects controller port via SelectControllerMessage
-/// 
+///
 /// Thread model:
 /// - ProcessMessages() called from client thread (GameServer manages threads)
 /// - SendMovieData() called from emulation thread (GameServer::RecordInput)
@@ -49,24 +49,24 @@ class GameServer;
 /// </remarks>
 class GameServerConnection final : public GameConnection, public INotificationListener {
 private:
-	GameServer* _server = nullptr;  ///< Parent server instance
+	GameServer* _server = nullptr; ///< Parent server instance
 
-	SimpleLock _inputLock;                 ///< Input state synchronization
-	ControlDeviceState _inputData = {};    ///< Current frame input from client
+	SimpleLock _inputLock;              ///< Input state synchronization
+	ControlDeviceState _inputData = {}; ///< Current frame input from client
 
-	string _previousConfig = "";           ///< Last configuration hash (detect changes)
+	string _previousConfig = ""; ///< Last configuration hash (detect changes)
 
-	NetplayControllerInfo _controllerPort = {};  ///< Assigned controller port
-	string _connectionHash;                      ///< Client authentication hash
-	string _serverPassword;                      ///< Server password (hashed)
-	bool _handshakeCompleted = false;            ///< True after successful authentication
+	NetplayControllerInfo _controllerPort = {}; ///< Assigned controller port
+	string _connectionHash;                     ///< Client authentication hash
+	string _serverPassword;                     ///< Server password (hashed)
+	bool _handshakeCompleted = false;           ///< True after successful authentication
 
 	/// <summary>
 	/// Store input state from client.
 	/// </summary>
 	/// <param name="state">Controller state for current frame</param>
 	void PushState(ControlDeviceState state);
-	
+
 	/// <summary>
 	/// Send server metadata to client.
 	/// </summary>
@@ -77,7 +77,7 @@ private:
 	/// - Max player count
 	/// </remarks>
 	void SendServerInformation();
-	
+
 	/// <summary>
 	/// Send game ROM information to client.
 	/// </summary>
@@ -89,7 +89,7 @@ private:
 	/// - Emulator settings (for sync)
 	/// </remarks>
 	void SendGameInformation();
-	
+
 	/// <summary>
 	/// Assign controller port to client.
 	/// </summary>
@@ -162,7 +162,7 @@ public:
 	/// Thread-safe (protected by _inputLock).
 	/// </remarks>
 	ControlDeviceState GetState();
-	
+
 	/// <summary>
 	/// Send movie data frame to client.
 	/// </summary>

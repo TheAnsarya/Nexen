@@ -11,7 +11,7 @@ class Emulator;
 /// <remarks>
 /// The debugger can be deleted asynchronously (e.g., when loading a new game).
 /// This class uses shared_ptr to keep the debugger alive during the request.
-/// 
+///
 /// Usage pattern:
 /// <code>
 /// DebuggerRequest req(emulator);
@@ -21,13 +21,13 @@ class Emulator;
 /// }
 /// // Debugger automatically released on scope exit
 /// </code>
-/// 
+///
 /// Thread safety: Copying the request shares ownership of the debugger.
 /// </remarks>
 class DebuggerRequest {
 private:
-	shared_ptr<Debugger> _debugger;  ///< Shared debugger ownership (keeps alive)
-	Emulator* _emu = nullptr;        ///< Owning emulator instance
+	shared_ptr<Debugger> _debugger; ///< Shared debugger ownership (keeps alive)
+	Emulator* _emu = nullptr;       ///< Owning emulator instance
 
 public:
 	/// <summary>
@@ -39,10 +39,10 @@ public:
 	/// If no debugger, GetDebugger() will return nullptr.
 	/// </remarks>
 	DebuggerRequest(Emulator* emu);
-	
+
 	/// <summary>Copy constructor - shares debugger ownership</summary>
 	DebuggerRequest(const DebuggerRequest& copy);
-	
+
 	/// <summary>Destructor - releases debugger reference</summary>
 	~DebuggerRequest();
 

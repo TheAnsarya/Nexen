@@ -18,37 +18,37 @@ class BaseControlManager;
 /// - Mouse position indicator
 /// - Customizable position and appearance
 /// - Multi-controller support (up to 8 players)
-/// 
+///
 /// Rendering:
 /// - Draws via DebugHud overlay system
 /// - Transparent background with colored outlines
 /// - Button press indicators (filled when pressed)
 /// - Frame number display
-/// 
+///
 /// Usage:
 /// <code>
 /// InputHud hud(&emu, debugHud);
 /// hud.DrawControllers(frameSize, controllerStates);
 /// hud.DrawMousePosition(mousePos);
 /// </code>
-/// 
+///
 /// Positioning:
 /// - Auto-layout for multiple controllers
 /// - _xOffset, _yOffset track current drawing position
 /// - EndDrawController() advances to next slot
-/// 
+///
 /// Thread safety: Called from emulation thread only.
 /// </remarks>
 class InputHud {
 private:
-	Emulator* _emu = nullptr;     ///< Emulator instance
-	DebugHud* _hud = nullptr;     ///< Debug HUD for rendering
+	Emulator* _emu = nullptr; ///< Emulator instance
+	DebugHud* _hud = nullptr; ///< Debug HUD for rendering
 
-	int _xOffset = 0;             ///< Current X drawing position
-	int _yOffset = 0;             ///< Current Y drawing position
-	int _outlineWidth = 0;        ///< Controller outline width
-	int _outlineHeight = 0;       ///< Controller outline height
-	int _controllerIndex = 0;     ///< Current controller index (0-7)
+	int _xOffset = 0;         ///< Current X drawing position
+	int _yOffset = 0;         ///< Current Y drawing position
+	int _outlineWidth = 0;    ///< Controller outline width
+	int _outlineHeight = 0;   ///< Controller outline height
+	int _controllerIndex = 0; ///< Current controller index (0-7)
 
 	/// <summary>
 	/// Draw single controller with button states.
@@ -66,14 +66,14 @@ public:
 	/// </summary>
 	/// <param name="pos">Mouse position (screen coordinates)</param>
 	void DrawMousePosition(MousePosition pos);
-	
+
 	/// <summary>
 	/// Draw controller outline rectangle.
 	/// </summary>
 	/// <param name="width">Outline width</param>
 	/// <param name="height">Outline height</param>
 	void DrawOutline(int width, int height);
-	
+
 	/// <summary>
 	/// Draw single button indicator.
 	/// </summary>
@@ -83,7 +83,7 @@ public:
 	/// <param name="height">Button height</param>
 	/// <param name="pressed">Button pressed state (filled if true)</param>
 	void DrawButton(int x, int y, int width, int height, bool pressed);
-	
+
 	/// <summary>
 	/// Draw numeric value (for analog sticks, etc.).
 	/// </summary>
@@ -91,7 +91,7 @@ public:
 	/// <param name="x">X position</param>
 	/// <param name="y">Y position</param>
 	void DrawNumber(int number, int x, int y);
-	
+
 	/// <summary>Finish drawing current controller, advance to next slot</summary>
 	void EndDrawController();
 

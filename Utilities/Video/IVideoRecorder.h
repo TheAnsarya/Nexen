@@ -9,7 +9,7 @@
 /// Implementations:
 /// - AviRecorder: AVI video with multiple codec options
 /// - GifRecorder: Animated GIF format
-/// 
+///
 /// Common workflow:
 /// <code>
 /// recorder->Init("output.avi");
@@ -20,7 +20,7 @@
 /// // When done:
 /// recorder->StopRecording();
 /// </code>
-/// 
+///
 /// Thread safety: Implementations may use threading internally.
 /// </remarks>
 class IVideoRecorder {
@@ -45,7 +45,7 @@ public:
 	/// <param name="fps">Frames per second (60.0 for NTSC, 50.0 for PAL)</param>
 	/// <returns>True if recording started successfully</returns>
 	virtual bool StartRecording(uint32_t width, uint32_t height, uint32_t bpp, uint32_t audioSampleRate, double fps) = 0;
-	
+
 	/// <summary>Stop recording and finalize output file</summary>
 	virtual void StopRecording() = 0;
 
@@ -58,7 +58,7 @@ public:
 	/// <param name="fps">Current frame rate</param>
 	/// <returns>True if frame added successfully</returns>
 	virtual bool AddFrame(void* frameBuffer, uint32_t width, uint32_t height, double fps) = 0;
-	
+
 	/// <summary>
 	/// Add audio samples to recording.
 	/// </summary>
@@ -71,7 +71,7 @@ public:
 	/// <summary>Check if currently recording</summary>
 	/// <returns>True if recording in progress</returns>
 	virtual bool IsRecording() = 0;
-	
+
 	/// <summary>Get output file path</summary>
 	/// <returns>Path to output file</returns>
 	virtual string GetOutputFile() = 0;

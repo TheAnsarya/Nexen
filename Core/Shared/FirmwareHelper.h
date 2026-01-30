@@ -21,44 +21,44 @@
 /// - SMS/GG - Master System and Game Gear boot ROMs
 /// </remarks>
 enum class FirmwareType {
-	DSP1,           ///< SNES DSP-1 math coprocessor (Pilotwings, Super Mario Kart)
-	DSP1B,          ///< DSP-1B variant (different ROM mapping)
-	DSP2,           ///< DSP-2 bitmap/sprite scaler (Dungeon Master)
-	DSP3,           ///< DSP-3 decompression (SD Gundam GX)
-	DSP4,           ///< DSP-4 path finding/strategy AI (Top Gear 3000)
-	ST010,          ///< Seta ST010 coprocessor (F1 ROC II)
-	ST011,          ///< Seta ST011 coprocessor (Hayazashi Nidan Morita Shougi)
-	ST018,          ///< Seta ST018 coprocessor (Hayazashi Nidan Morita Shougi 2)
-	Satellaview,    ///< BS-X Satellaview base cartridge BIOS
-	SufamiTurbo,    ///< Sufami Turbo base cartridge BIOS
-	Gameboy,        ///< Game Boy boot ROM (256 bytes)
-	GameboyColor,   ///< Game Boy Color boot ROM (2304 bytes)
-	GameboyAdvance, ///< Game Boy Advance BIOS (16KB)
-	Sgb1GameboyCpu, ///< Super Game Boy 1 - Game Boy CPU firmware
-	Sgb2GameboyCpu, ///< Super Game Boy 2 - Game Boy CPU firmware
-	SGB1,           ///< Super Game Boy 1 SNES-side firmware
-	SGB2,           ///< Super Game Boy 2 SNES-side firmware
-	FDS,            ///< Famicom Disk System BIOS
-	StudyBox,       ///< Famicom StudyBox cassette tape system BIOS
-	PceSuperCd,     ///< PC Engine Super CD-ROM² system card
+	DSP1,            ///< SNES DSP-1 math coprocessor (Pilotwings, Super Mario Kart)
+	DSP1B,           ///< DSP-1B variant (different ROM mapping)
+	DSP2,            ///< DSP-2 bitmap/sprite scaler (Dungeon Master)
+	DSP3,            ///< DSP-3 decompression (SD Gundam GX)
+	DSP4,            ///< DSP-4 path finding/strategy AI (Top Gear 3000)
+	ST010,           ///< Seta ST010 coprocessor (F1 ROC II)
+	ST011,           ///< Seta ST011 coprocessor (Hayazashi Nidan Morita Shougi)
+	ST018,           ///< Seta ST018 coprocessor (Hayazashi Nidan Morita Shougi 2)
+	Satellaview,     ///< BS-X Satellaview base cartridge BIOS
+	SufamiTurbo,     ///< Sufami Turbo base cartridge BIOS
+	Gameboy,         ///< Game Boy boot ROM (256 bytes)
+	GameboyColor,    ///< Game Boy Color boot ROM (2304 bytes)
+	GameboyAdvance,  ///< Game Boy Advance BIOS (16KB)
+	Sgb1GameboyCpu,  ///< Super Game Boy 1 - Game Boy CPU firmware
+	Sgb2GameboyCpu,  ///< Super Game Boy 2 - Game Boy CPU firmware
+	SGB1,            ///< Super Game Boy 1 SNES-side firmware
+	SGB2,            ///< Super Game Boy 2 SNES-side firmware
+	FDS,             ///< Famicom Disk System BIOS
+	StudyBox,        ///< Famicom StudyBox cassette tape system BIOS
+	PceSuperCd,      ///< PC Engine Super CD-ROM² system card
 	PceGamesExpress, ///< PC Engine Games Express card
-	ColecoVision,   ///< ColecoVision system BIOS
-	WonderSwan,     ///< WonderSwan boot ROM
+	ColecoVision,    ///< ColecoVision system BIOS
+	WonderSwan,      ///< WonderSwan boot ROM
 	WonderSwanColor, ///< WonderSwan Color boot ROM
-	SwanCrystal,    ///< SwanCrystal boot ROM
-	Ymf288AdpcmRom, ///< Yamaha YMF288 ADPCM sample ROM (percussion sounds)
-	SmsBootRom,     ///< Sega Master System boot ROM
-	GgBootRom       ///< Sega Game Gear boot ROM
+	SwanCrystal,     ///< SwanCrystal boot ROM
+	Ymf288AdpcmRom,  ///< Yamaha YMF288 ADPCM sample ROM (percussion sounds)
+	SmsBootRom,      ///< Sega Master System boot ROM
+	GgBootRom        ///< Sega Game Gear boot ROM
 };
 
 /// <summary>
 /// Error message when required firmware file is missing.
 /// </summary>
 struct MissingFirmwareMessage {
-	const char* Filename = {};  ///< Expected filename
-	FirmwareType Firmware;      ///< Firmware type identifier
-	uint32_t Size = 0;          ///< Expected file size (bytes)
-	uint32_t AltSize = 0;       ///< Alternative valid size (0 if none)
+	const char* Filename = {}; ///< Expected filename
+	FirmwareType Firmware;     ///< Firmware type identifier
+	uint32_t Size = 0;         ///< Expected file size (bytes)
+	uint32_t AltSize = 0;      ///< Alternative valid size (0 if none)
 
 	MissingFirmwareMessage(const char* filename, FirmwareType type, uint32_t size, uint32_t altSize = 0) {
 		Filename = filename;

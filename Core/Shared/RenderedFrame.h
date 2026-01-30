@@ -15,39 +15,39 @@
 /// - FrameNumber: Monotonic counter for tracking
 /// - VideoPhase: Interlaced video field (0/1) or progressive (0)
 /// - InputData: Controller state for this frame (input display, movie recording)
-/// 
+///
 /// Frame buffer format: 32-bit ARGB (0xAARRGGBB)
 /// Width/Height: Native resolution * Scale (e.g., 256x240 → 512x480 at Scale=2.0)
 /// </remarks>
 struct RenderedFrame {
 	/// <summary>Pointer to ARGB pixel data (caller owns memory)</summary>
 	void* FrameBuffer = nullptr;
-	
+
 	/// <summary>Optional HD texture pack data (nullptr if not used)</summary>
 	/// <remarks>Used by HD Pack feature for high-resolution replacements</remarks>
 	void* Data = nullptr;
-	
+
 	/// <summary>Frame width in pixels (native resolution * scale)</summary>
 	uint32_t Width = 256;
-	
+
 	/// <summary>Frame height in pixels (native resolution * scale)</summary>
 	uint32_t Height = 240;
-	
+
 	/// <summary>Scaling factor applied to native resolution (1.0 = no scaling)</summary>
 	/// <remarks>Common values: 1.0 (256x240), 2.0 (512x480), 3.0 (768x720)</remarks>
 	double Scale = 1.0;
-	
+
 	/// <summary>Monotonic frame counter (increments every frame)</summary>
 	/// <remarks>Used for movie sync, frame skip detection, performance metrics</remarks>
 	uint32_t FrameNumber = 0;
-	
+
 	/// <summary>Video field indicator for interlaced systems (0=even, 1=odd, 0=progressive)</summary>
 	/// <remarks>
 	/// Most systems output progressive video (always 0).
 	/// SNES interlaced mode (512x448) alternates between 0 and 1.
 	/// </remarks>
 	uint32_t VideoPhase = 0;
-	
+
 	/// <summary>Controller input state for this frame</summary>
 	/// <remarks>
 	/// Used for:

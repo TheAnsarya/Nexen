@@ -16,10 +16,10 @@ enum class CpuType : uint8_t;
 /// Records address, value, operation type, memory type.
 /// </remarks>
 struct MemoryOperationInfo {
-	uint32_t Address;           ///< Memory address
-	int32_t Value;              ///< Value read/written
-	MemoryOperationType Type;   ///< Operation type (read/write/exec)
-	MemoryType MemType;         ///< Memory type (PRG ROM/RAM/etc)
+	uint32_t Address;         ///< Memory address
+	int32_t Value;            ///< Value read/written
+	MemoryOperationType Type; ///< Operation type (read/write/exec)
+	MemoryType MemType;       ///< Memory type (PRG ROM/RAM/etc)
 
 	/// <summary>
 	/// Default constructor.
@@ -46,21 +46,21 @@ struct MemoryOperationInfo {
 /// Breakpoint type flags (bitfield).
 /// </summary>
 enum class BreakpointTypeFlags {
-	None = 0,      ///< No breakpoint
-	Read = 1,      ///< Break on memory read
-	Write = 2,     ///< Break on memory write
-	Execute = 4,   ///< Break on code execution
-	Forbid = 8,    ///< Forbid breakpoint (prevents execution)
+	None = 0,    ///< No breakpoint
+	Read = 1,    ///< Break on memory read
+	Write = 2,   ///< Break on memory write
+	Execute = 4, ///< Break on code execution
+	Forbid = 8,  ///< Forbid breakpoint (prevents execution)
 };
 
 /// <summary>
 /// Breakpoint type (exclusive).
 /// </summary>
 enum class BreakpointType {
-	Execute = 0,  ///< Execute breakpoint
-	Read = 1,     ///< Read breakpoint
-	Write = 2,    ///< Write breakpoint
-	Forbid = 3,   ///< Forbid breakpoint (prevents execution)
+	Execute = 0, ///< Execute breakpoint
+	Read = 1,    ///< Read breakpoint
+	Write = 2,   ///< Write breakpoint
+	Forbid = 3,  ///< Forbid breakpoint (prevents execution)
 };
 
 /// <summary>
@@ -71,11 +71,11 @@ namespace CdlFlags {
 /// CDL flags for marking ROM bytes.
 /// </summary>
 enum CdlFlags : uint8_t {
-	None = 0x00,            ///< Unmarked
-	Code = 0x01,            ///< Executed as code
-	Data = 0x02,            ///< Accessed as data
-	JumpTarget = 0x04,      ///< Branch/jump target
-	SubEntryPoint = 0x08,   ///< Subroutine entry point
+	None = 0x00,          ///< Unmarked
+	Code = 0x01,          ///< Executed as code
+	Data = 0x02,          ///< Accessed as data
+	JumpTarget = 0x04,    ///< Branch/jump target
+	SubEntryPoint = 0x08, ///< Subroutine entry point
 };
 } // namespace CdlFlags
 
@@ -83,25 +83,25 @@ enum CdlFlags : uint8_t {
 /// CDL strip options for ROM stripping.
 /// </summary>
 enum class CdlStripOption {
-	StripNone = 0,    ///< No stripping
-	StripUnused,      ///< Strip unused bytes
-	StripUsed,        ///< Strip used bytes (keep only unused)
+	StripNone = 0, ///< No stripping
+	StripUnused,   ///< Strip unused bytes
+	StripUsed,     ///< Strip used bytes (keep only unused)
 };
 
 /// <summary>
 /// CDL statistics for ROM analysis.
 /// </summary>
 struct CdlStatistics {
-	uint32_t CodeBytes;       ///< Bytes executed as code
-	uint32_t DataBytes;       ///< Bytes accessed as data
-	uint32_t TotalBytes;      ///< Total ROM bytes
+	uint32_t CodeBytes;  ///< Bytes executed as code
+	uint32_t DataBytes;  ///< Bytes accessed as data
+	uint32_t TotalBytes; ///< Total ROM bytes
 
-	uint32_t JumpTargetCount;  ///< Number of jump targets
-	uint32_t FunctionCount;    ///< Number of subroutines
+	uint32_t JumpTargetCount; ///< Number of jump targets
+	uint32_t FunctionCount;   ///< Number of subroutines
 
 	// CHR ROM (NES-specific)
-	uint32_t DrawnChrBytes;    ///< CHR bytes drawn to screen
-	uint32_t TotalChrBytes;    ///< Total CHR ROM bytes
+	uint32_t DrawnChrBytes; ///< CHR bytes drawn to screen
+	uint32_t TotalChrBytes; ///< Total CHR ROM bytes
 };
 
 /// <summary>
@@ -112,10 +112,10 @@ struct CdlStatistics {
 /// Includes address info, flags, CPU address, comment line.
 /// </remarks>
 struct DisassemblyResult {
-	AddressInfo Address;    ///< Absolute address (PRG ROM/RAM)
-	int32_t CpuAddress;     ///< CPU address ($0000-$FFFF)
-	uint16_t Flags;         ///< LineFlags bitfield
-	int16_t CommentLine;    ///< Comment line number (or byte count)
+	AddressInfo Address; ///< Absolute address (PRG ROM/RAM)
+	int32_t CpuAddress;  ///< CPU address ($0000-$FFFF)
+	uint16_t Flags;      ///< LineFlags bitfield
+	int16_t CommentLine; ///< Comment line number (or byte count)
 
 	/// <summary>
 	/// Constructor with CPU address only.
@@ -161,21 +161,21 @@ namespace LineFlags {
 /// Line flags for disassembly display.
 /// </summary>
 enum LineFlags : uint16_t {
-	None = 0,              ///< No flags
-	PrgRom = 0x01,         ///< PRG ROM
-	WorkRam = 0x02,        ///< Work RAM
-	SaveRam = 0x04,        ///< Save RAM (battery-backed)
-	VerifiedData = 0x08,   ///< Verified as data (CDL)
-	VerifiedCode = 0x10,   ///< Verified as code (CDL)
-	BlockStart = 0x20,     ///< Block start marker
-	BlockEnd = 0x40,       ///< Block end marker
-	SubStart = 0x80,       ///< Subroutine start
-	Label = 0x100,         ///< Has label
-	Comment = 0x200,       ///< Has comment
-	ShowAsData = 0x400,    ///< Force display as data
+	None = 0,                ///< No flags
+	PrgRom = 0x01,           ///< PRG ROM
+	WorkRam = 0x02,          ///< Work RAM
+	SaveRam = 0x04,          ///< Save RAM (battery-backed)
+	VerifiedData = 0x08,     ///< Verified as data (CDL)
+	VerifiedCode = 0x10,     ///< Verified as code (CDL)
+	BlockStart = 0x20,       ///< Block start marker
+	BlockEnd = 0x40,         ///< Block end marker
+	SubStart = 0x80,         ///< Subroutine start
+	Label = 0x100,           ///< Has label
+	Comment = 0x200,         ///< Has comment
+	ShowAsData = 0x400,      ///< Force display as data
 	UnexecutedCode = 0x800,  ///< Code never executed (CDL)
 	UnmappedMemory = 0x1000, ///< Unmapped address
-	Empty = 0x2000         ///< Empty line
+	Empty = 0x2000           ///< Empty line
 };
 } // namespace LineFlags
 
@@ -187,27 +187,27 @@ enum LineFlags : uint16_t {
 /// Used for debugger disassembly window display.
 /// </remarks>
 struct CodeLineData {
-	int32_t Address;                  ///< CPU address
-	AddressInfo AbsoluteAddress;      ///< Absolute address (PRG ROM/RAM)
-	uint8_t OpSize;                   ///< Opcode size (bytes)
-	uint16_t Flags;                   ///< LineFlags bitfield
+	int32_t Address;             ///< CPU address
+	AddressInfo AbsoluteAddress; ///< Absolute address (PRG ROM/RAM)
+	uint8_t OpSize;              ///< Opcode size (bytes)
+	uint16_t Flags;              ///< LineFlags bitfield
 
-	EffectiveAddressInfo EffectiveAddress;  ///< Effective address (operand)
-	uint32_t Value;                   ///< Operand value
-	CpuType LineCpuType;              ///< CPU type for this line
+	EffectiveAddressInfo EffectiveAddress; ///< Effective address (operand)
+	uint32_t Value;                        ///< Operand value
+	CpuType LineCpuType;                   ///< CPU type for this line
 
-	uint8_t ByteCode[8];              ///< Opcode bytes
-	char Text[1000];                  ///< Disassembled text
-	char Comment[1000];               ///< Comment text
+	uint8_t ByteCode[8]; ///< Opcode bytes
+	char Text[1000];     ///< Disassembled text
+	char Comment[1000];  ///< Comment text
 };
 
 /// <summary>
 /// Tilemap display mode for tilemap viewer.
 /// </summary>
 enum class TilemapDisplayMode {
-	Default,       ///< Normal rendering
-	Grayscale,     ///< Grayscale display
-	AttributeView  ///< Show attribute data (palettes/flip)
+	Default,      ///< Normal rendering
+	Grayscale,    ///< Grayscale display
+	AttributeView ///< Show attribute data (palettes/flip)
 };
 
 struct AddressCounters;
@@ -216,57 +216,57 @@ struct AddressCounters;
 /// Tilemap highlight mode for access visualization.
 /// </summary>
 enum class TilemapHighlightMode {
-	None,     ///< No highlighting
-	Changes,  ///< Highlight changed tiles
-	Writes    ///< Highlight written tiles
+	None,    ///< No highlighting
+	Changes, ///< Highlight changed tiles
+	Writes   ///< Highlight written tiles
 };
 
 /// <summary>
 /// Tilemap viewer options.
 /// </summary>
 struct GetTilemapOptions {
-	uint8_t Layer;                 ///< Layer number (0-3)
-	uint8_t* CompareVram;          ///< VRAM snapshot for change detection
-	AddressCounters* AccessCounters;  ///< Access counters for highlighting
+	uint8_t Layer;                   ///< Layer number (0-3)
+	uint8_t* CompareVram;            ///< VRAM snapshot for change detection
+	AddressCounters* AccessCounters; ///< Access counters for highlighting
 
-	uint64_t MasterClock;          ///< Master clock for timing
+	uint64_t MasterClock;                        ///< Master clock for timing
 	TilemapHighlightMode TileHighlightMode;      ///< Tile highlight mode
 	TilemapHighlightMode AttributeHighlightMode; ///< Attribute highlight mode
 
-	TilemapDisplayMode DisplayMode;  ///< Display mode
+	TilemapDisplayMode DisplayMode; ///< Display mode
 };
 
 /// <summary>
 /// Tile format for tile viewer.
 /// </summary>
 enum class TileFormat {
-	Bpp2,               ///< 2bpp linear (NES, GB)
-	Bpp4,               ///< 4bpp linear
-	Bpp8,               ///< 8bpp linear
-	DirectColor,        ///< Direct color (SNES mode 3/4)
-	Mode7,              ///< SNES Mode 7
-	Mode7DirectColor,   ///< SNES Mode 7 direct color
-	Mode7ExtBg,         ///< SNES Mode 7 extended BG
-	NesBpp2,            ///< NES 2bpp (planar)
-	PceSpriteBpp4,      ///< PCE sprite 4bpp
-	PceSpriteBpp2Sp01,  ///< PCE sprite 2bpp (SP0/SP1)
-	PceSpriteBpp2Sp23,  ///< PCE sprite 2bpp (SP2/SP3)
-	PceBackgroundBpp2Cg0,  ///< PCE background 2bpp (CG0)
-	PceBackgroundBpp2Cg1,  ///< PCE background 2bpp (CG1)
-	SmsBpp4,            ///< SMS 4bpp
-	SmsSgBpp1,          ///< SMS SG-1000 1bpp
-	GbaBpp4,            ///< GBA 4bpp
-	GbaBpp8,            ///< GBA 8bpp
-	WsBpp4Packed        ///< WonderSwan 4bpp packed
+	Bpp2,                 ///< 2bpp linear (NES, GB)
+	Bpp4,                 ///< 4bpp linear
+	Bpp8,                 ///< 8bpp linear
+	DirectColor,          ///< Direct color (SNES mode 3/4)
+	Mode7,                ///< SNES Mode 7
+	Mode7DirectColor,     ///< SNES Mode 7 direct color
+	Mode7ExtBg,           ///< SNES Mode 7 extended BG
+	NesBpp2,              ///< NES 2bpp (planar)
+	PceSpriteBpp4,        ///< PCE sprite 4bpp
+	PceSpriteBpp2Sp01,    ///< PCE sprite 2bpp (SP0/SP1)
+	PceSpriteBpp2Sp23,    ///< PCE sprite 2bpp (SP2/SP3)
+	PceBackgroundBpp2Cg0, ///< PCE background 2bpp (CG0)
+	PceBackgroundBpp2Cg1, ///< PCE background 2bpp (CG1)
+	SmsBpp4,              ///< SMS 4bpp
+	SmsSgBpp1,            ///< SMS SG-1000 1bpp
+	GbaBpp4,              ///< GBA 4bpp
+	GbaBpp8,              ///< GBA 8bpp
+	WsBpp4Packed          ///< WonderSwan 4bpp packed
 };
 
 /// <summary>
 /// Tile layout for tile viewer.
 /// </summary>
 enum class TileLayout {
-	Normal,           ///< 8x8 tiles
-	SingleLine8x16,   ///< 8x16 tiles (single line)
-	SingleLine16x16   ///< 16x16 tiles (single line)
+	Normal,         ///< 8x8 tiles
+	SingleLine8x16, ///< 8x16 tiles (single line)
+	SingleLine16x16 ///< 16x16 tiles (single line)
 };
 
 /// <summary>
@@ -310,63 +310,63 @@ struct GetTileViewOptions {
 /// Sprite background color for sprite viewer.
 /// </summary>
 enum class SpriteBackground {
-	Gray,         ///< Gray background
-	Background,   ///< Use background layer
-	Transparent,  ///< Transparent
-	Black,        ///< Black
-	White,        ///< White
-	Magenta,      ///< Magenta
+	Gray,        ///< Gray background
+	Background,  ///< Use background layer
+	Transparent, ///< Transparent
+	Black,       ///< Black
+	White,       ///< White
+	Magenta,     ///< Magenta
 };
 
 /// <summary>
 /// Sprite preview options.
 /// </summary>
 struct GetSpritePreviewOptions {
-	SpriteBackground Background;  ///< Background color/mode
+	SpriteBackground Background; ///< Background color/mode
 };
 
 /// <summary>
 /// Palette viewer options.
 /// </summary>
 struct GetPaletteInfoOptions {
-	TileFormat Format;  ///< Tile format (affects palette size)
+	TileFormat Format; ///< Tile format (affects palette size)
 };
 
 /// <summary>
 /// Stack frame flags for interrupt context.
 /// </summary>
 enum class StackFrameFlags {
-	None = 0,  ///< Normal call
-	Nmi = 1,   ///< NMI handler
-	Irq = 2    ///< IRQ handler
+	None = 0, ///< Normal call
+	Nmi = 1,  ///< NMI handler
+	Irq = 2   ///< IRQ handler
 };
 
 /// <summary>
 /// Callstack stack frame information.
 /// </summary>
 struct StackFrameInfo {
-	uint32_t Source;           ///< Source address (caller)
-	AddressInfo AbsSource;     ///< Absolute source address
-	uint32_t Target;           ///< Target address (callee)
-	AddressInfo AbsTarget;     ///< Absolute target address
-	uint32_t Return;           ///< Return address
-	uint32_t ReturnStackPointer;  ///< Stack pointer at return
-	AddressInfo AbsReturn;     ///< Absolute return address
-	StackFrameFlags Flags;     ///< Interrupt flags
+	uint32_t Source;             ///< Source address (caller)
+	AddressInfo AbsSource;       ///< Absolute source address
+	uint32_t Target;             ///< Target address (callee)
+	AddressInfo AbsTarget;       ///< Absolute target address
+	uint32_t Return;             ///< Return address
+	uint32_t ReturnStackPointer; ///< Stack pointer at return
+	AddressInfo AbsReturn;       ///< Absolute return address
+	StackFrameFlags Flags;       ///< Interrupt flags
 };
 
 /// <summary>
 /// Debug event types for event viewer.
 /// </summary>
 enum class DebugEventType {
-	Register,        ///< Register write
-	Nmi,             ///< NMI interrupt
-	Irq,             ///< IRQ interrupt
-	Breakpoint,      ///< Breakpoint hit
-	BgColorChange,   ///< Background color change
-	SpriteZeroHit,   ///< Sprite 0 hit (NES)
-	DmcDmaRead,      ///< DMC DMA read (NES)
-	DmaRead          ///< DMA read
+	Register,      ///< Register write
+	Nmi,           ///< NMI interrupt
+	Irq,           ///< IRQ interrupt
+	Breakpoint,    ///< Breakpoint hit
+	BgColorChange, ///< Background color change
+	SpriteZeroHit, ///< Sprite 0 hit (NES)
+	DmcDmaRead,    ///< DMC DMA read (NES)
+	DmaRead        ///< DMA read
 };
 
 /// <summary>
@@ -377,66 +377,66 @@ enum class DebugEventType {
 /// Forbid breakpoints can block exceptions, but not user breaks.
 /// </remarks>
 enum class BreakSource {
-	Unspecified = -1,  ///< No break source
-	Breakpoint = 0,    ///< Breakpoint hit
-	Pause,             ///< User pause
-	CpuStep,           ///< CPU step
-	PpuStep,           ///< PPU step
+	Unspecified = -1, ///< No break source
+	Breakpoint = 0,   ///< Breakpoint hit
+	Pause,            ///< User pause
+	CpuStep,          ///< CPU step
+	PpuStep,          ///< PPU step
 
-	Irq,               ///< IRQ interrupt
-	Nmi,               ///< NMI interrupt
+	Irq, ///< IRQ interrupt
+	Nmi, ///< NMI interrupt
 
 	// Used by DebugBreakHelper, prevents debugger getting focus
 	InternalOperation,
 
 	// Everything after InternalOperation is treated as an "Exception"
 	// Forbid breakpoints can block these, but not the other types above
-	BreakOnBrk,        ///< BRK instruction (6502)
-	BreakOnCop,        ///< COP instruction (65816)
-	BreakOnWdm,        ///< WDM instruction (65816)
-	BreakOnStp,        ///< STP instruction (65816)
-	BreakOnUninitMemoryRead,  ///< Uninitialized memory read
+	BreakOnBrk,              ///< BRK instruction (6502)
+	BreakOnCop,              ///< COP instruction (65816)
+	BreakOnWdm,              ///< WDM instruction (65816)
+	BreakOnStp,              ///< STP instruction (65816)
+	BreakOnUninitMemoryRead, ///< Uninitialized memory read
 
-	GbInvalidOamAccess,       ///< Game Boy: Invalid OAM access
-	GbInvalidVramAccess,      ///< Game Boy: Invalid VRAM access
+	GbInvalidOamAccess,        ///< Game Boy: Invalid OAM access
+	GbInvalidVramAccess,       ///< Game Boy: Invalid VRAM access
 	GbDisableLcdOutsideVblank, ///< Game Boy: LCD disabled outside VBlank
-	GbInvalidOpCode,          ///< Game Boy: Invalid opcode
-	GbNopLoad,                ///< Game Boy: NOP load (ld b,b)
-	GbOamCorruption,          ///< Game Boy: OAM corruption
+	GbInvalidOpCode,           ///< Game Boy: Invalid opcode
+	GbNopLoad,                 ///< Game Boy: NOP load (ld b,b)
+	GbOamCorruption,           ///< Game Boy: OAM corruption
 
-	NesBreakOnDecayedOamRead,    ///< NES: Decayed OAM read
-	NesBreakOnPpuScrollGlitch,   ///< NES: PPU scroll glitch
-	BreakOnUnofficialOpCode,     ///< NES: Unofficial opcode
-	BreakOnUnstableOpCode,       ///< NES: Unstable opcode
-	NesBusConflict,              ///< NES: Bus conflict
-	NesBreakOnCpuCrash,          ///< NES: CPU crash
-	NesBreakOnExtOutputMode,     ///< NES: Extended output mode
-	NesInvalidVramAccess,        ///< NES: Invalid VRAM access
-	NesInvalidOamWrite,          ///< NES: Invalid OAM write
-	NesDmaInputRead,             ///< NES: DMA input read
+	NesBreakOnDecayedOamRead,  ///< NES: Decayed OAM read
+	NesBreakOnPpuScrollGlitch, ///< NES: PPU scroll glitch
+	BreakOnUnofficialOpCode,   ///< NES: Unofficial opcode
+	BreakOnUnstableOpCode,     ///< NES: Unstable opcode
+	NesBusConflict,            ///< NES: Bus conflict
+	NesBreakOnCpuCrash,        ///< NES: CPU crash
+	NesBreakOnExtOutputMode,   ///< NES: Extended output mode
+	NesInvalidVramAccess,      ///< NES: Invalid VRAM access
+	NesInvalidOamWrite,        ///< NES: Invalid OAM write
+	NesDmaInputRead,           ///< NES: DMA input read
 
 	PceBreakOnInvalidVramAddress, ///< PCE: Invalid VRAM address
 
-	SmsNopLoad,                  ///< SMS: NOP load
+	SmsNopLoad, ///< SMS: NOP load
 
-	GbaInvalidOpCode,            ///< GBA: Invalid opcode
-	GbaNopLoad,                  ///< GBA: NOP load
-	GbaUnalignedMemoryAccess,    ///< GBA: Unaligned memory access
+	GbaInvalidOpCode,         ///< GBA: Invalid opcode
+	GbaNopLoad,               ///< GBA: NOP load
+	GbaUnalignedMemoryAccess, ///< GBA: Unaligned memory access
 
-	SnesInvalidPpuAccess,        ///< SNES: Invalid PPU access
-	SnesReadDuringAutoJoy,       ///< SNES: Read during auto-joypad
+	SnesInvalidPpuAccess,  ///< SNES: Invalid PPU access
+	SnesReadDuringAutoJoy, ///< SNES: Read during auto-joypad
 
-	BreakOnUndefinedOpCode       ///< Undefined opcode
+	BreakOnUndefinedOpCode ///< Undefined opcode
 };
 
 /// <summary>
 /// Break event information.
 /// </summary>
 struct BreakEvent {
-	BreakSource Source;             ///< Break source
-	CpuType SourceCpu;              ///< CPU type
-	MemoryOperationInfo Operation;  ///< Memory operation (if applicable)
-	int32_t BreakpointId;           ///< Breakpoint ID (-1 if N/A)
+	BreakSource Source;            ///< Break source
+	CpuType SourceCpu;             ///< CPU type
+	MemoryOperationInfo Operation; ///< Memory operation (if applicable)
+	int32_t BreakpointId;          ///< Breakpoint ID (-1 if N/A)
 };
 
 /// <summary>
@@ -472,7 +472,7 @@ enum class BreakType {
 /// <remarks>
 /// This structure is checked EVERY instruction execution (hot path).
 /// Performance-critical: uses __forceinline methods, bitflags.
-/// 
+///
 /// Step tracking:
 /// - StepCount: Instruction step counter
 /// - PpuStepCount: PPU cycle step counter
@@ -480,31 +480,31 @@ enum class BreakType {
 /// - BreakAddress: Target address for step over/out
 /// - BreakStackPointer: Stack pointer for step out
 /// - BreakScanline: Target scanline for specific scanline step
-/// 
+///
 /// Break classification:
 /// - BreakType::User: User-initiated (breakpoint, pause, step)
 /// - BreakType::Exception: Exception (BRK, invalid opcode, etc)
 /// - Source: User break source
 /// - ExSource: Exception break source
-/// 
+///
 /// Forbid breakpoints:
 /// - Can block exceptions but not user breaks
 /// - InternalOperation threshold: values > InternalOperation are exceptions
 /// </remarks>
 struct StepRequest {
-	int64_t BreakAddress = -1;       ///< Target address for break
-	int64_t BreakStackPointer = -1;  ///< Stack pointer for step out
-	int32_t StepCount = -1;          ///< Instruction step counter
-	int32_t PpuStepCount = -1;       ///< PPU step counter
-	int32_t CpuCycleStepCount = -1;  ///< CPU cycle step counter
+	int64_t BreakAddress = -1;         ///< Target address for break
+	int64_t BreakStackPointer = -1;    ///< Stack pointer for step out
+	int32_t StepCount = -1;            ///< Instruction step counter
+	int32_t PpuStepCount = -1;         ///< PPU step counter
+	int32_t CpuCycleStepCount = -1;    ///< CPU cycle step counter
 	int32_t BreakScanline = INT32_MIN; ///< Target scanline
-	StepType Type = StepType::Step;  ///< Step type
+	StepType Type = StepType::Step;    ///< Step type
 
-	bool HasRequest = false;         ///< True if step request active
+	bool HasRequest = false; ///< True if step request active
 
-	BreakType BreakNeeded = BreakType::None;  ///< Break classification
-	BreakSource Source = BreakSource::Unspecified;    ///< User break source
-	BreakSource ExSource = BreakSource::Unspecified;  ///< Exception break source
+	BreakType BreakNeeded = BreakType::None;         ///< Break classification
+	BreakSource Source = BreakSource::Unspecified;   ///< User break source
+	BreakSource ExSource = BreakSource::Unspecified; ///< Exception break source
 
 	/// <summary>
 	/// Default constructor.
@@ -664,30 +664,30 @@ struct StepRequest {
 /// CPU instruction progress tracking (for instruction-level debugging).
 /// </summary>
 struct CpuInstructionProgress {
-	uint64_t StartCycle = 0;             ///< Cycle when instruction started
-	uint64_t CurrentCycle = 0;           ///< Current cycle within instruction
-	uint32_t LastOpCode = 0;             ///< Last opcode executed
-	MemoryOperationInfo LastMemOperation = {};  ///< Last memory operation
+	uint64_t StartCycle = 0;                   ///< Cycle when instruction started
+	uint64_t CurrentCycle = 0;                 ///< Current cycle within instruction
+	uint32_t LastOpCode = 0;                   ///< Last opcode executed
+	MemoryOperationInfo LastMemOperation = {}; ///< Last memory operation
 };
 
 /// <summary>
 /// Debug controller state (for input recording/playback).
 /// </summary>
 struct DebugControllerState {
-	bool A;       ///< A button
-	bool B;       ///< B button
-	bool X;       ///< X button (SNES/etc)
-	bool Y;       ///< Y button (SNES/etc)
-	bool L;       ///< L shoulder (SNES/etc)
-	bool R;       ///< R shoulder (SNES/etc)
-	bool U;       ///< U direction
-	bool D;       ///< D direction
-	bool Up;      ///< Up direction (D-pad)
-	bool Down;    ///< Down direction (D-pad)
-	bool Left;    ///< Left direction (D-pad)
-	bool Right;   ///< Right direction (D-pad)
-	bool Select;  ///< Select button
-	bool Start;   ///< Start button
+	bool A;      ///< A button
+	bool B;      ///< B button
+	bool X;      ///< X button (SNES/etc)
+	bool Y;      ///< Y button (SNES/etc)
+	bool L;      ///< L shoulder (SNES/etc)
+	bool R;      ///< R shoulder (SNES/etc)
+	bool U;      ///< U direction
+	bool D;      ///< D direction
+	bool Up;     ///< Up direction (D-pad)
+	bool Down;   ///< Down direction (D-pad)
+	bool Left;   ///< Left direction (D-pad)
+	bool Right;  ///< Right direction (D-pad)
+	bool Select; ///< Select button
+	bool Start;  ///< Start button
 
 	/// <summary>
 	/// Check if any button pressed.

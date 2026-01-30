@@ -28,10 +28,10 @@ public:
 	/// <summary>Construct lock handler and acquire lock</summary>
 	/// <param name="lock">SimpleLock to manage</param>
 	LockHandler(SimpleLock* lock);
-	
+
 	/// <summary>Manually release lock early (safe to call multiple times)</summary>
 	void Release();
-	
+
 	/// <summary>Destructor - releases lock if not already released</summary>
 	~LockHandler();
 };
@@ -46,7 +46,7 @@ public:
 /// - IsLockedByCurrentThread() for ownership checks
 /// - WaitForRelease() for spin-waiting until lock becomes free
 /// - TryAcquire() with timeout support
-/// 
+///
 /// Thread-local storage tracks current thread ID for ownership checks.
 /// Lock count tracks recursive acquisitions (must release same number of times).
 /// </remarks>
@@ -67,7 +67,7 @@ private:
 public:
 	/// <summary>Construct unlocked SimpleLock</summary>
 	SimpleLock();
-	
+
 	/// <summary>Destructor - should only be called when lock is free</summary>
 	~SimpleLock();
 
@@ -90,26 +90,26 @@ public:
 	/// Supports recursive locking from same thread.
 	/// </remarks>
 	void Acquire();
-	
+
 	/// <summary>
 	/// Try to acquire lock with timeout.
 	/// </summary>
 	/// <param name="msTimeout">Timeout in milliseconds (0 = try once and return)</param>
 	/// <returns>True if lock acquired, false if timeout elapsed</returns>
 	bool TryAcquire(uint32_t msTimeout);
-	
+
 	/// <summary>
 	/// Check if lock is currently free (not owned by any thread).
 	/// </summary>
 	/// <returns>True if lock is free, false if owned</returns>
 	bool IsFree();
-	
+
 	/// <summary>
 	/// Check if current thread owns the lock.
 	/// </summary>
 	/// <returns>True if current thread holds lock, false otherwise</returns>
 	bool IsLockedByCurrentThread();
-	
+
 	/// <summary>
 	/// Spin-wait until lock is released by owning thread.
 	/// </summary>
@@ -118,7 +118,7 @@ public:
 	/// Useful for synchronization patterns where you need to wait for lock release.
 	/// </remarks>
 	void WaitForRelease();
-	
+
 	/// <summary>
 	/// Release lock (decrement recursive count, free if count reaches 0).
 	/// </summary>

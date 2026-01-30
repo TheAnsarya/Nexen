@@ -22,7 +22,7 @@ class Emulator;
 /// - GameClient owns single GameClientConnection instance
 /// - Dedicated client thread for message processing
 /// - Implements IInputProvider to override local controller input
-/// 
+///
 /// Responsibilities:
 /// - Server connection and authentication
 /// - Controller port selection
@@ -31,7 +31,7 @@ class Emulator;
 /// - Input synchronization (buffer management)
 /// - ROM loading/matching with server
 /// - Late-join via save state
-/// 
+///
 /// Input synchronization:
 /// 1. Client reads local input (keyboard/gamepad)
 /// 2. SendInput() transmits to server every frame
@@ -39,7 +39,7 @@ class Emulator;
 /// 4. PushControllerState() buffers inputs in deque
 /// 5. SetInput() provides buffered input to emulation
 /// 6. Buffer size maintained at _minimumQueueSize frames (lag compensation)
-/// 
+///
 /// Connection lifecycle:
 /// 1. Construction: Connect to server, send handshake
 /// 2. Authentication: Receive server/game info, verify ROM
@@ -47,7 +47,7 @@ class Emulator;
 /// 4. Controller selection: Choose available port
 /// 5. Gameplay: Send/receive input every frame
 /// 6. Shutdown: Disconnect and cleanup
-/// 
+///
 /// Thread model:
 /// - ProcessMessages() called from client thread (GameClient manages thread)
 /// - SetInput() called from emulation thread (60 FPS)
@@ -56,23 +56,23 @@ class Emulator;
 /// </remarks>
 class GameClientConnection final : public GameConnection, public INotificationListener, public IInputProvider {
 private:
-	std::deque<ControlDeviceState> _inputData[BaseControlDevice::PortCount];  ///< Input buffer queues (40 ports)
-	atomic<uint32_t> _inputSize[BaseControlDevice::PortCount];                ///< Atomic queue sizes
-	AutoResetEvent _waitForInput[BaseControlDevice::PortCount];               ///< Wait for input availability
-	SimpleLock _writeLock;                                                    ///< Input queue write lock
-	atomic<bool> _shutdown;                                                   ///< Shutdown flag
-	atomic<bool> _enableControllers;                                          ///< Controllers enabled (not spectating)
-	atomic<uint32_t> _minimumQueueSize;                                       ///< Minimum buffer size (lag compensation)
+	std::deque<ControlDeviceState> _inputData[BaseControlDevice::PortCount]; ///< Input buffer queues (40 ports)
+	atomic<uint32_t> _inputSize[BaseControlDevice::PortCount];               ///< Atomic queue sizes
+	AutoResetEvent _waitForInput[BaseControlDevice::PortCount];              ///< Wait for input availability
+	SimpleLock _writeLock;                                                   ///< Input queue write lock
+	atomic<bool> _shutdown;                                                  ///< Shutdown flag
+	atomic<bool> _enableControllers;                                         ///< Controllers enabled (not spectating)
+	atomic<uint32_t> _minimumQueueSize;                                      ///< Minimum buffer size (lag compensation)
 
-	vector<PlayerInfo> _playerList;  ///< Connected player list from server
+	vector<PlayerInfo> _playerList; ///< Connected player list from server
 
-	shared_ptr<BaseControlDevice> _controlDevice;     ///< Local controller device
-	atomic<ControllerType> _controllerType;           ///< Current controller type
-	ControlDeviceState _lastInputSent = {};           ///< Last input sent to server (delta compression)
-	bool _gameLoaded = false;                         ///< True if ROM loaded and emulation running
-	NetplayControllerInfo _controllerPort = {GameConnection::SpectatorPort, 0};  ///< Assigned port
-	ClientConnectionData _connectionData = {};        ///< Connection parameters (host, port, password, name)
-	string _serverSalt;                               ///< Authentication salt from server
+	shared_ptr<BaseControlDevice> _controlDevice;                               ///< Local controller device
+	atomic<ControllerType> _controllerType;                                     ///< Current controller type
+	ControlDeviceState _lastInputSent = {};                                     ///< Last input sent to server (delta compression)
+	bool _gameLoaded = false;                                                   ///< True if ROM loaded and emulation running
+	NetplayControllerInfo _controllerPort = {GameConnection::SpectatorPort, 0}; ///< Assigned port
+	ClientConnectionData _connectionData = {};                                  ///< Connection parameters (host, port, password, name)
+	string _serverSalt;                                                         ///< Authentication salt from server
 
 private:
 	/// <summary>
@@ -86,13 +86,13 @@ private:
 	/// - Client capabilities
 	/// </remarks>
 	void SendHandshake();
-	
+
 	/// <summary>
 	/// Request controller port assignment from server.
 	/// </summary>
 	/// <param name="controller">Desired controller port</param>
 	void SendControllerSelection(NetplayControllerInfo controller);
-	
+
 	/// <summary>
 	/// Clear all input buffer queues.
 	/// </summary>
@@ -103,7 +103,7 @@ private:
 	/// - Disconnect/reconnect
 	/// </remarks>
 	void ClearInputData();
-	
+
 	/// <summary>
 	/// Add input state to buffer queue.
 	/// </summary>
@@ -114,12 +114,12 @@ private:
 	/// Adds to deque, signals _waitForInput event.
 	/// </remarks>
 	void PushControllerState(uint8_t port, ControlDeviceState state);
-	
+
 	/// <summary>
 	/// Disable controller input (switch to spectator mode).
 	/// </summary>
 	void DisableControllers();
-	
+
 	/// <summary>
 	/// Attempt to load ROM matching server.
 	/// </summary>
@@ -196,14 +196,14 @@ public:
 	/// - Called every frame from emulation thread
 	/// - Blocks if buffer empty (waits for MovieData from server)
 	/// - Maintains buffer at _minimumQueueSize (lag compensation)
-	/// 
+	///
 	/// Buffer management:
 	/// - Pop input from deque front
 	/// - Decrement _inputSize counter
 	/// - Return false if queue empty (block emulation)
 	/// </remarks>
 	bool SetInput(BaseControlDevice* device) override;
-	
+
 	/// <summary>
 	/// Initialize local controller device.
 	/// </summary>
@@ -212,7 +212,7 @@ public:
 	/// Creates BaseControlDevice for assigned port/type.
 	/// </remarks>
 	void InitControlDevice();
-	
+
 	/// <summary>
 	/// Send local input to server.
 	/// </summary>
@@ -235,7 +235,7 @@ public:
 	/// - Initialize local controller device
 	/// </remarks>
 	void SelectController(NetplayControllerInfo controller);
-	
+
 	/// <summary>
 	/// Get list of available controller ports.
 	/// </summary>
@@ -245,7 +245,7 @@ public:
 	/// Shows which ports are occupied and available.
 	/// </remarks>
 	vector<NetplayControllerUsageInfo> GetControllerList();
-	
+
 	/// <summary>
 	/// Get currently assigned controller port.
 	/// </summary>

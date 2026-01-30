@@ -11,7 +11,7 @@ class BaseControlDevice;
 /// <remarks>
 /// Controller hubs allow more than the standard number of controllers by multiplexing
 /// multiple devices through a single physical port on the console.
-/// 
+///
 /// Implementations handle:
 /// - Reading input from multiple connected controllers
 /// - Multiplexing controller data in hardware-accurate manner
@@ -36,13 +36,13 @@ public:
 	/// Hub implementations update internal registers to prepare for sequential reads.
 	/// </remarks>
 	virtual void RefreshHubState() = 0;
-	
+
 	/// <summary>
 	/// Get number of active controller ports on this hub.
 	/// </summary>
 	/// <returns>Number of sub-ports (typically 4 or 5)</returns>
 	virtual int GetHubPortCount() = 0;
-	
+
 	/// <summary>
 	/// Get controller device at specific hub port index.
 	/// </summary>

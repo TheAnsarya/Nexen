@@ -18,8 +18,8 @@ enum class CpuType : uint8_t;
 /// Cached disassembly data for a memory type.
 /// </summary>
 struct DisassemblerSource {
-	vector<DisassemblyInfo> Cache;  ///< Disassembly cache (one entry per byte in memory type)
-	uint32_t Size = 0;              ///< Cache size (matches memory type size)
+	vector<DisassemblyInfo> Cache; ///< Disassembly cache (one entry per byte in memory type)
+	uint32_t Size = 0;             ///< Cache size (matches memory type size)
 };
 
 /// <summary>
@@ -30,24 +30,24 @@ struct DisassemblerSource {
 /// - One disassembler shared across all CPUs
 /// - Separate cache per memory type (ROM, RAM, SRAM, etc.)
 /// - Cache stores DisassemblyInfo for each byte (opcode, operands, formatting)
-/// 
+///
 /// Cache organization:
 /// - _sources[]: One DisassemblerSource per memory type
 /// - Cache[address]: DisassemblyInfo at that address
 /// - Lazy initialization (built on first access)
 /// - Invalidation on code modification
-/// 
+///
 /// Disassembly output:
 /// - Formatted assembly text with labels
 /// - Byte code display
 /// - Effective addresses
 /// - CPU flags (M/X flags for 65816)
-/// 
+///
 /// Performance optimizations:
 /// - __forceinline GetDisassemblyInfo() for hot path
 /// - Cached disassembly (parse once, display many times)
 /// - Early exit for uninitialized addresses
-/// 
+///
 /// Use cases:
 /// - Debugger disassembly view
 /// - Trace logger output formatting
@@ -58,20 +58,20 @@ class Disassembler {
 private:
 	friend class DisassemblySearch;
 
-	IConsole* _console;           ///< Console instance
-	EmuSettings* _settings;       ///< Settings instance
-	Debugger* _debugger;          ///< Main debugger
-	LabelManager* _labelManager;  ///< Label manager for symbol lookup
-	MemoryDumper* _memoryDumper;  ///< Memory dumper for byte reads
+	IConsole* _console;          ///< Console instance
+	EmuSettings* _settings;      ///< Settings instance
+	Debugger* _debugger;         ///< Main debugger
+	LabelManager* _labelManager; ///< Label manager for symbol lookup
+	MemoryDumper* _memoryDumper; ///< Memory dumper for byte reads
 
-	DisassemblerSource _sources[DebugUtilities::GetMemoryTypeCount()] = {};  ///< Disassembly cache per memory type
+	DisassemblerSource _sources[DebugUtilities::GetMemoryTypeCount()] = {}; ///< Disassembly cache per memory type
 
 	/// <summary>
 	/// Initialize disassembly cache for memory type.
 	/// </summary>
 	/// <param name="type">Memory type to initialize</param>
 	void InitSource(MemoryType type);
-	
+
 	/// <summary>
 	/// Get disassembly cache for memory type.
 	/// </summary>
@@ -87,7 +87,7 @@ private:
 	/// <param name="memType">Memory type</param>
 	/// <param name="data">Output code line data</param>
 	void GetLineData(DisassemblyResult& result, CpuType type, MemoryType memType, CodeLineData& data);
-	
+
 	/// <summary>
 	/// Find row in disassembly results matching address.
 	/// </summary>
@@ -96,7 +96,7 @@ private:
 	/// <param name="returnFirstRow">True to return first row if no exact match</param>
 	/// <returns>Matching row index or -1 if not found</returns>
 	int32_t GetMatchingRow(vector<DisassemblyResult>& rows, uint32_t address, bool returnFirstRow);
-	
+
 	/// <summary>
 	/// Disassemble entire bank.
 	/// </summary>
@@ -104,7 +104,7 @@ private:
 	/// <param name="bank">Bank number</param>
 	/// <returns>Disassembly results for bank</returns>
 	vector<DisassemblyResult> Disassemble(CpuType cpuType, uint16_t bank);
-	
+
 	/// <summary>
 	/// Get maximum bank number for CPU type.
 	/// </summary>
@@ -128,12 +128,12 @@ public:
 	/// <param name="type">CPU type</param>
 	/// <returns>Cache size</returns>
 	uint32_t BuildCache(AddressInfo& addrInfo, uint8_t cpuFlags, CpuType type);
-	
+
 	/// <summary>
 	/// Reset program ROM cache.
 	/// </summary>
 	void ResetPrgCache();
-	
+
 	/// <summary>
 	/// Invalidate cache at address.
 	/// </summary>
@@ -174,7 +174,7 @@ public:
 	/// <param name="rowCount">Number of rows to generate</param>
 	/// <returns>Number of bytes covered</returns>
 	uint32_t GetDisassemblyOutput(CpuType type, uint32_t address, CodeLineData output[], uint32_t rowCount);
-	
+
 	/// <summary>
 	/// Get address at row offset from start address.
 	/// </summary>

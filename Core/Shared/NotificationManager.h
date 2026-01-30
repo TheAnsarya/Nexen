@@ -12,14 +12,14 @@
 /// - Listeners register via RegisterNotificationListener()
 /// - SendNotification() broadcasts to all listeners
 /// - Weak pointers prevent listener lifecycle issues
-/// 
+///
 /// Notification types (ConsoleNotificationType enum):
 /// - GameLoaded, GameStopped, GamePaused, GameResumed
 /// - StateLoaded, StateSaved
 /// - CodeBreak (debugger)
 /// - Cheats added/removed
 /// - Many more...
-/// 
+///
 /// Usage:
 /// <code>
 /// class MyListener : public INotificationListener {
@@ -30,18 +30,18 @@
 /// auto listener = make_shared<MyListener>();
 /// notificationMgr.RegisterNotificationListener(listener);
 /// </code>
-/// 
+///
 /// Cleanup:
 /// - Automatic cleanup of dead weak_ptr references
 /// - Safe to destroy listeners without unregistering
 /// - Thread-safe registration and broadcast
-/// 
+///
 /// Thread safety: All methods synchronized via SimpleLock.
 /// </remarks>
 class NotificationManager {
 private:
-	SimpleLock _lock;  ///< Thread synchronization lock
-	vector<weak_ptr<INotificationListener>> _listeners;  ///< Registered listeners (weak refs)
+	SimpleLock _lock;                                   ///< Thread synchronization lock
+	vector<weak_ptr<INotificationListener>> _listeners; ///< Registered listeners (weak refs)
 
 	/// <summary>Remove dead listener references (expired weak_ptr)</summary>
 	void CleanupNotificationListeners();
@@ -56,7 +56,7 @@ public:
 	/// Listener receives all future notifications via ProcessNotification().
 	/// </remarks>
 	void RegisterNotificationListener(shared_ptr<INotificationListener> notificationListener);
-	
+
 	/// <summary>
 	/// Broadcast notification to all registered listeners.
 	/// </summary>

@@ -10,12 +10,12 @@
 /// All methods are static - header-only utility class.
 /// Uses miniz.h for zlib-compatible compression (deflate algorithm).
 /// Compressed format: [original_size:4][compressed_size:4][compressed_data]
-/// 
+///
 /// Use cases:
 /// - Save state compression (reduce file size)
 /// - Network transfer compression
 /// - Memory snapshot compression
-/// 
+///
 /// Security: Decompress() limits output to 10MB to prevent decompression bombs.
 /// </remarks>
 class CompressionHelper {
@@ -31,13 +31,13 @@ public:
 	/// - Bytes 0-3: Original size (uint32_t)
 	/// - Bytes 4-7: Compressed size (uint32_t)
 	/// - Bytes 8+: Compressed data
-	/// 
+	///
 	/// Compression levels:
 	/// - 0: No compression (store only)
 	/// - 1: Fast compression (low CPU, larger output)
 	/// - 6: Default compression (balanced)
 	/// - 9: Best compression (high CPU, smallest output)
-	/// 
+	///
 	/// Uses compressBound() to allocate worst-case buffer size.
 	/// Allocates temporary buffer (deleted after compression).
 	/// </remarks>
@@ -65,12 +65,12 @@ public:
 	/// - Bytes 0-3: Original size (uint32_t)
 	/// - Bytes 4-7: Compressed size (uint32_t)
 	/// - Bytes 8+: Compressed data
-	/// 
+	///
 	/// Security: Rejects decompression if either size > 10MB (prevents decompression bombs).
 	/// Returns false if:
 	/// - Size headers indicate > 10MB data
 	/// - uncompress() fails (corrupted data, invalid format)
-	/// 
+	///
 	/// Output vector is resized to decompressed size before decompression.
 	/// </remarks>
 	static bool Decompress(vector<uint8_t>& input, vector<uint8_t>& output) {

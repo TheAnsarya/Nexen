@@ -51,8 +51,8 @@ enum class TapeRecorderAction;
 
 /// <summary>Memory region information for debugger access</summary>
 struct ConsoleMemoryInfo {
-	void* Memory;    ///< Pointer to memory region
-	uint32_t Size;   ///< Size in bytes
+	void* Memory;  ///< Pointer to memory region
+	uint32_t Size; ///< Size in bytes
 };
 
 /// <summary>
@@ -69,25 +69,25 @@ struct ConsoleMemoryInfo {
 /// - **MovieManager**: TAS recording/playback
 /// - **BatteryManager**: Save RAM persistence
 /// - **GameServer/Client**: Netplay
-/// 
+///
 /// Threading model:
 /// - Emulation thread (_emuThread): Runs console->RunFrame() in loop
 /// - UI thread: Calls methods via EmulatorLock (thread-safe)
 /// - Debugger: Can pause emulation thread for inspection
-/// 
+///
 /// Lifecycle:
 /// 1. Initialize() - Create subsystems
 /// 2. LoadRom() - Load game, create console
 /// 3. Run() - Start emulation thread
 /// 4. Stop() - Stop emulation, destroy console
 /// 5. Release() - Cleanup subsystems
-/// 
+///
 /// Key methods:
 /// - LoadRom: Detect console type, create IConsole, init subsystems
 /// - Run: Emulation loop (RunFrame, process audio/video, handle debugger)
 /// - Pause/Resume: Thread synchronization
 /// - AcquireLock: RAII lock for UI thread safety
-/// 
+///
 /// Performance:
 /// - ProcessMemoryRead/Write templates: Inline debugger hooks (zero cost when debugging disabled)
 /// - Run-ahead support: Speculative execution for input lag reduction
@@ -99,25 +99,25 @@ private:
 	friend class EmulatorLock;
 
 	// Subsystems (unique_ptr = owned, shared_ptr = shared, safe_ptr = thread-safe)
-	unique_ptr<thread> _emuThread;            ///< Emulation worker thread
-	unique_ptr<AudioPlayerHud> _audioPlayerHud;  ///< NSF/SPC player HUD
-	safe_ptr<IConsole> _console;              ///< Active console (NES/SNES/GB/etc.)
+	unique_ptr<thread> _emuThread;              ///< Emulation worker thread
+	unique_ptr<AudioPlayerHud> _audioPlayerHud; ///< NSF/SPC player HUD
+	safe_ptr<IConsole> _console;                ///< Active console (NES/SNES/GB/etc.)
 
-	shared_ptr<ShortcutKeyHandler> _shortcutKeyHandler;  ///< Keyboard shortcuts
-	safe_ptr<Debugger> _debugger;             ///< Debugger (optional, created on demand)
-	shared_ptr<SystemActionManager> _systemActionManager;  ///< System action queue
+	shared_ptr<ShortcutKeyHandler> _shortcutKeyHandler;   ///< Keyboard shortcuts
+	safe_ptr<Debugger> _debugger;                         ///< Debugger (optional, created on demand)
+	shared_ptr<SystemActionManager> _systemActionManager; ///< System action queue
 
-	const unique_ptr<EmuSettings> _settings;  ///< Global settings
-	const unique_ptr<DebugHud> _debugHud;     ///< Debug overlay (FPS, lag, etc.)
-	const unique_ptr<DebugHud> _scriptHud;    ///< Lua script overlay
-	const unique_ptr<NotificationManager> _notificationManager;  ///< Event broadcast
-	const unique_ptr<BatteryManager> _batteryManager;  ///< Save RAM persistence
-	const unique_ptr<SoundMixer> _soundMixer;  ///< Audio mixing/output
-	const unique_ptr<VideoRenderer> _videoRenderer;  ///< Video output/filters
-	const unique_ptr<VideoDecoder> _videoDecoder;  ///< Frame decoding
-	const unique_ptr<SaveStateManager> _saveStateManager;  ///< Save state management
-	const unique_ptr<CheatManager> _cheatManager;  ///< Cheat code support
-	const unique_ptr<MovieManager> _movieManager;  ///< TAS recording/playback
+	const unique_ptr<EmuSettings> _settings;                    ///< Global settings
+	const unique_ptr<DebugHud> _debugHud;                       ///< Debug overlay (FPS, lag, etc.)
+	const unique_ptr<DebugHud> _scriptHud;                      ///< Lua script overlay
+	const unique_ptr<NotificationManager> _notificationManager; ///< Event broadcast
+	const unique_ptr<BatteryManager> _batteryManager;           ///< Save RAM persistence
+	const unique_ptr<SoundMixer> _soundMixer;                   ///< Audio mixing/output
+	const unique_ptr<VideoRenderer> _videoRenderer;             ///< Video output/filters
+	const unique_ptr<VideoDecoder> _videoDecoder;               ///< Frame decoding
+	const unique_ptr<SaveStateManager> _saveStateManager;       ///< Save state management
+	const unique_ptr<CheatManager> _cheatManager;               ///< Cheat code support
+	const unique_ptr<MovieManager> _movieManager;               ///< TAS recording/playback
 	const unique_ptr<HistoryViewer> _historyViewer;
 
 	const shared_ptr<GameServer> _gameServer;
@@ -187,16 +187,15 @@ public:
 	void Run();
 	void Stop(bool sendNotification, bool preventRecentGameSave = false, bool saveBattery = true);
 
-	
 	/// <summary>Called at end of each emulated frame</summary>
 	void ProcessEndOfFrame();
 
 	/// <summary>Reset console (soft reset)</summary>
 	void Reset();
-	
+
 	/// <summary>Reload current ROM (for settings changes)</summary>
 	void ReloadRom(bool forPowerCycle);
-	
+
 	/// <summary>Power cycle console (hard reset)</summary>
 	void PowerCycle();
 
@@ -205,10 +204,10 @@ public:
 
 	/// <summary>Pause emulation</summary>
 	void Pause();
-	
+
 	/// <summary>Resume emulation</summary>
 	void Resume();
-	
+
 	/// <summary>Check if emulation paused</summary>
 	bool IsPaused();
 
@@ -233,37 +232,37 @@ public:
 	/// <param name="forPowerCycle">Loading for power cycle if true</param>
 	/// <returns>True if ROM loaded successfully</returns>
 	bool LoadRom(VirtualFile romFile, VirtualFile patchFile, bool stopRom = true, bool forPowerCycle = false);
-	
+
 	/// <summary>Get loaded ROM information</summary>
 	RomInfo& GetRomInfo() { return _rom; }
-	
+
 	/// <summary>Get ROM hash (SHA1 or SHA1 for cheat code lookup)</summary>
 	string GetHash(HashType type);
-	
+
 	/// <summary>Get ROM CRC32 checksum</summary>
 	uint32_t GetCrc32();
-	
+
 	/// <summary>Get current PPU frame info</summary>
 	PpuFrameInfo GetPpuFrame();
-	
+
 	/// <summary>Get console region (NTSC/PAL/Dendy)</summary>
 	ConsoleRegion GetRegion();
-	
+
 	/// <summary>Get active console (thread-safe shared_ptr)</summary>
 	shared_ptr<IConsole> GetConsole();
-	
+
 	/// <summary>Get active console (unsafe raw pointer - faster, use with EmulatorLock)</summary>
 	IConsole* GetConsoleUnsafe();
-	
+
 	/// <summary>Get active console type</summary>
 	ConsoleType GetConsoleType();
-	
+
 	/// <summary>Get list of CPU types for active console</summary>
 	vector<CpuType> GetCpuTypes();
-	
+
 	/// <summary>Get master clock cycle count</summary>
 	uint64_t GetMasterClock();
-	
+
 	/// <summary>Get master clock rate in Hz</summary>
 	uint32_t GetMasterClockRate();
 
@@ -273,19 +272,19 @@ public:
 	/// <param name="allowDebuggerLock">Allow debugger to break during lock if true</param>
 	/// <returns>EmulatorLock RAII object</returns>
 	EmulatorLock AcquireLock(bool allowDebuggerLock = true);
-	
+
 	/// <summary>Acquire emulator lock (use AcquireLock() for RAII instead)</summary>
 	void Lock();
-	
+
 	/// <summary>Release emulator lock (use AcquireLock() for RAII instead)</summary>
 	void Unlock();
-	
+
 	/// <summary>Check if emulation thread currently paused</summary>
 	bool IsThreadPaused();
 
 	/// <summary>Check if debugger requests blocked</summary>
 	[[nodiscard]] bool IsDebuggerBlocked() { return _blockDebuggerRequestCount > 0; }
-	
+
 	/// <summary>
 	/// Suspend debugger temporarily.
 	/// </summary>
@@ -299,7 +298,7 @@ public:
 	/// <param name="includeSettings">Include settings in save state if true</param>
 	/// <param name="compressionLevel">zlib compression level (0-9, 1=default)</param>
 	void Serialize(ostream& out, bool includeSettings, int compressionLevel = 1);
-	
+
 	/// <summary>
 	/// Deserialize emulator state from stream (load state).
 	/// </summary>
@@ -312,56 +311,56 @@ public:
 	DeserializeResult Deserialize(istream& in, uint32_t fileFormatVersion, bool includeSettings, optional<ConsoleType> consoleType = std::nullopt, bool sendNotification = true);
 
 	// Subsystem accessors (getters return raw pointers for performance)
-	
+
 	/// <summary>Get sound mixer</summary>
 	SoundMixer* GetSoundMixer() { return _soundMixer.get(); }
-	
+
 	/// <summary>Get video renderer</summary>
 	VideoRenderer* GetVideoRenderer() { return _videoRenderer.get(); }
-	
+
 	/// <summary>Get video decoder</summary>
 	VideoDecoder* GetVideoDecoder() { return _videoDecoder.get(); }
-	
+
 	/// <summary>Get shortcut key handler</summary>
 	ShortcutKeyHandler* GetShortcutKeyHandler() { return _shortcutKeyHandler.get(); }
-	
+
 	/// <summary>Get notification manager</summary>
 	NotificationManager* GetNotificationManager() { return _notificationManager.get(); }
-	
+
 	/// <summary>Get settings</summary>
 	EmuSettings* GetSettings() { return _settings.get(); }
-	
+
 	/// <summary>Get save state manager</summary>
 	SaveStateManager* GetSaveStateManager() { return _saveStateManager.get(); }
-	
+
 	/// <summary>Get rewind manager</summary>
 	RewindManager* GetRewindManager() { return _rewindManager.get(); }
-	
+
 	/// <summary>Get debug HUD overlay</summary>
 	DebugHud* GetDebugHud() { return _debugHud.get(); }
-	
+
 	/// <summary>Get Lua script HUD overlay</summary>
 	DebugHud* GetScriptHud() { return _scriptHud.get(); }
-	
+
 	/// <summary>Get battery manager</summary>
 	BatteryManager* GetBatteryManager() { return _batteryManager.get(); }
-	
+
 	/// <summary>Get cheat manager</summary>
 	/// <summary>Get cheat manager</summary>
 	CheatManager* GetCheatManager() { return _cheatManager.get(); }
-	
+
 	/// <summary>Get movie manager (TAS recording/playback)</summary>
 	MovieManager* GetMovieManager() { return _movieManager.get(); }
-	
+
 	/// <summary>Get history viewer</summary>
 	HistoryViewer* GetHistoryViewer() { return _historyViewer.get(); }
-	
+
 	/// <summary>Get netplay server</summary>
 	GameServer* GetGameServer() { return _gameServer.get(); }
-	
+
 	/// <summary>Get netplay client</summary>
 	GameClient* GetGameClient() { return _gameClient.get(); }
-	
+
 	/// <summary>Get system action manager</summary>
 	shared_ptr<SystemActionManager> GetSystemActionManager() { return _systemActionManager; }
 
@@ -370,13 +369,13 @@ public:
 	/// </summary>
 	/// <param name="getDefaultFilter">Get default filter if true, active filter if false</param>
 	BaseVideoFilter* GetVideoFilter(bool getDefaultFilter = false);
-	
+
 	/// <summary>Get screen rotation override (for Game Boy orientation)</summary>
 	void GetScreenRotationOverride(uint32_t& rotation);
 
 	/// <summary>Input barcode data (for Famicom Barcode Battler)</summary>
 	void InputBarcode(uint64_t barcode, uint32_t digitCount);
-	
+
 	/// <summary>Process tape recorder action (for 8-bit computers)</summary>
 	void ProcessTapeRecorderAction(TapeRecorderAction action, string filename);
 
@@ -385,37 +384,37 @@ public:
 	/// </summary>
 	/// <returns>Shortcut state (Enabled/Disabled/Hidden)</returns>
 	ShortcutState IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t shortcutParam);
-	
+
 	/// <summary>Check if keyboard connected to console (for on-screen keyboard)</summary>
 	bool IsKeyboardConnected();
 
 	/// <summary>Initialize debugger subsystem</summary>
 	void InitDebugger();
-	
+
 	/// <summary>Stop and destroy debugger</summary>
 	void StopDebugger();
-	
+
 	/// <summary>
 	/// Get debugger request (RAII lock for debugger access).
 	/// </summary>
 	/// <param name="autoInit">Auto-initialize debugger if not running</param>
 	DebuggerRequest GetDebugger(bool autoInit = false);
-	
+
 	/// <summary>Check if debugger active</summary>
 	[[nodiscard]] bool IsDebugging() { return !!_debugger; }
-	
+
 	/// <summary>Get debugger instance (unsafe - use GetDebugger() for RAII instead)</summary>
 	Debugger* InternalGetDebugger() { return _debugger.get(); }
 
 	/// <summary>Get emulation thread ID</summary>
 	thread::id GetEmulationThreadId() { return _emulationThreadId; }
-	
+
 	/// <summary>Check if current thread is emulation thread</summary>
 	bool IsEmulationThread();
 
 	/// <summary>Get emulator stop code (reason for stopping)</summary>
 	[[nodiscard]] int32_t GetStopCode() { return _stopCode; }
-	
+
 	/// <summary>Set emulator stop code</summary>
 	void SetStopCode(int32_t stopCode);
 
@@ -426,49 +425,49 @@ public:
 	/// <param name="memory">Pointer to memory region</param>
 	/// <param name="size">Size in bytes</param>
 	void RegisterMemory(MemoryType type, void* memory, uint32_t size);
-	
+
 	/// <summary>Get registered memory region</summary>
 	ConsoleMemoryInfo GetMemory(MemoryType type);
 
 	/// <summary>Get audio player track info (for NSF/SPC/etc.)</summary>
 	AudioTrackInfo GetAudioTrackInfo();
-	
+
 	/// <summary>Process audio player action (play/pause/next/prev track)</summary>
 	void ProcessAudioPlayerAction(AudioPlayerActionParams p);
-	
+
 	/// <summary>Get audio player HUD</summary>
 	AudioPlayerHud* GetAudioPlayerHud() { return _audioPlayerHud.get(); }
 
 	/// <summary>Check if emulator running (ROM loaded)</summary>
 	[[nodiscard]] bool IsRunning() { return _console != nullptr; }
-	
+
 	/// <summary>Check if currently executing run-ahead frame</summary>
 	[[nodiscard]] bool IsRunAheadFrame() { return _isRunAheadFrame; }
 
 	/// <summary>Get timing info for CPU type</summary>
 	TimingInfo GetTimingInfo(CpuType cpuType);
-	
+
 	/// <summary>Get current frame number</summary>
 	uint32_t GetFrameCount();
 
 	/// <summary>Get lag frame counter</summary>
 	uint32_t GetLagCounter();
-	
+
 	/// <summary>Reset lag frame counter</summary>
 	void ResetLagCounter();
-	
+
 	/// <summary>Check if controller type connected</summary>
 	bool HasControlDevice(ControllerType type);
-	
+
 	/// <summary>Register input recorder (for movies, netplay)</summary>
 	void RegisterInputRecorder(IInputRecorder* recorder);
-	
+
 	/// <summary>Unregister input recorder</summary>
 	void UnregisterInputRecorder(IInputRecorder* recorder);
-	
+
 	/// <summary>Register input provider (for movies, rewind)</summary>
 	void RegisterInputProvider(IInputProvider* provider);
-	
+
 	/// <summary>Unregister input provider</summary>
 	void UnregisterInputProvider(IInputProvider* provider);
 
@@ -600,13 +599,13 @@ public:
 	/// Process emulator event for debugger (frame end, reset, etc.).
 	/// </summary>
 	void ProcessEvent(EventType type, std::optional<CpuType> cpuType = std::nullopt);
-	
+
 	/// <summary>
 	/// Add debug event to event viewer.
 	/// </summary>
 	template <CpuType cpuType>
 	void AddDebugEvent(DebugEventType evtType);
-	
+
 	/// <summary>
 	/// Break into debugger if debugging active.
 	/// </summary>

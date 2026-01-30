@@ -10,33 +10,33 @@ class Serializer;
 
 /// <summary>Stream variable to serializer with automatic name stringification</summary>
 /// <remarks>Usage: SV(myVariable) expands to s.Stream(myVariable, "myVariable")</remarks>
-#define SV(var)             (s.Stream(var, #var))
+#define SV(var) (s.Stream(var, #var))
 
 /// <summary>Stream array to serializer with automatic name and count</summary>
 #define SVArray(arr, count) (s.StreamArray(arr, count, #arr))
 
 /// <summary>Stream indexed variable to serializer</summary>
-#define SVI(var)            (s.Stream(var, #var, i))
+#define SVI(var) (s.Stream(var, #var, i))
 
 /// <summary>Stream vector to serializer with automatic name</summary>
-#define SVVector(var)  (s.Stream(var, #var))
+#define SVVector(var) (s.Stream(var, #var))
 
 /// <summary>Stream indexed vector to serializer</summary>
 #define SVVectorI(var) (s.Stream(var, #var, i))
 
 /// <summary>Value type for map-based serialization (Lua API)</summary>
 enum class SerializeMapValueFormat {
-	Integer,  ///< 64-bit signed integer
-	Double,   ///< 64-bit floating point
-	Bool,     ///< Boolean value
-	String    ///< String value
+	Integer, ///< 64-bit signed integer
+	Double,  ///< 64-bit floating point
+	Bool,    ///< Boolean value
+	String   ///< String value
 };
 
 /// <summary>Union for storing numeric/boolean map values</summary>
 union MapValue {
-	int64_t Integer;  ///< Integer representation
-	double Double;    ///< Double representation
-	bool Bool;        ///< Boolean representation
+	int64_t Integer; ///< Integer representation
+	double Double;   ///< Double representation
+	bool Bool;       ///< Boolean representation
 
 	MapValue(bool b) { Bool = b; }
 	MapValue(double d) { Double = d; }
@@ -45,9 +45,9 @@ union MapValue {
 
 /// <summary>Tagged union for map-based serialization values</summary>
 struct SerializeMapValue {
-	SerializeMapValueFormat Format;  ///< Value type discriminator
-	MapValue Value;                  ///< Numeric/bool value
-	string StringValue;              ///< String value (if Format == String)
+	SerializeMapValueFormat Format; ///< Value type discriminator
+	MapValue Value;                 ///< Numeric/bool value
+	string StringValue;             ///< String value (if Format == String)
 
 	SerializeMapValue(SerializeMapValueFormat f, MapValue v) : Format(f), Value(v) {}
 	SerializeMapValue(string v) : Format(SerializeMapValueFormat::String), Value(false), StringValue(v) {}
@@ -55,8 +55,8 @@ struct SerializeMapValue {
 
 /// <summary>Pointer/size pair for serialized data values</summary>
 struct SerializeValue {
-	uint8_t* DataPtr;  ///< Pointer to serialized data
-	uint32_t Size;     ///< Size of data in bytes
+	uint8_t* DataPtr; ///< Pointer to serialized data
+	uint32_t Size;    ///< Size of data in bytes
 
 	SerializeValue() {
 		DataPtr = nullptr;
@@ -71,9 +71,9 @@ struct SerializeValue {
 
 /// <summary>Serialization output format</summary>
 enum class SerializeFormat {
-	Binary,  ///< Compact binary format (save states)
-	Text,    ///< Human-readable text format (debugging)
-	Map      ///< Key-value map format (Lua API)
+	Binary, ///< Compact binary format (save states)
+	Text,   ///< Human-readable text format (debugging)
+	Map     ///< Key-value map format (Lua API)
 };
 
 class Serializer {

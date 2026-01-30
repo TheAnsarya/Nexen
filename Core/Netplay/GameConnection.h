@@ -14,19 +14,19 @@ class Emulator;
 /// Architecture:
 /// - GameServerConnection: Server-side per-client connection
 /// - GameClientConnection: Client-side server connection
-/// 
+///
 /// Message framing protocol:
 /// 1. Read 4-byte message length prefix
 /// 2. Read N bytes of message data
 /// 3. Parse MessageType from first byte
 /// 4. Deserialize message body
 /// 5. Dispatch to ProcessMessage()
-/// 
+///
 /// Thread model:
 /// - ProcessMessages() called from connection thread (server/client threads)
 /// - SendNetMessage() may be called from emulation thread
 /// - Socket operations protected by _socketLock
-/// 
+///
 /// Error handling:
 /// - ConnectionError() detects socket failures
 /// - Disconnect() closes socket and cleans up
@@ -34,15 +34,15 @@ class Emulator;
 /// </remarks>
 class GameConnection {
 protected:
-	static constexpr int MaxMsgLength = 1500000;  ///< Max message size (1.5MB for save states)
+	static constexpr int MaxMsgLength = 1500000; ///< Max message size (1.5MB for save states)
 
-	unique_ptr<Socket> _socket;   ///< TCP socket for communication
-	Emulator* _emu;               ///< Emulator instance reference
+	unique_ptr<Socket> _socket; ///< TCP socket for communication
+	Emulator* _emu;             ///< Emulator instance reference
 
 	uint8_t _readBuffer[GameConnection::MaxMsgLength] = {};    ///< Socket read buffer
 	uint8_t _messageBuffer[GameConnection::MaxMsgLength] = {}; ///< Message assembly buffer
-	int _readPosition = 0;        ///< Current read position in buffer
-	SimpleLock _socketLock;       ///< Socket operation synchronization
+	int _readPosition = 0;                                     ///< Current read position in buffer
+	SimpleLock _socketLock;                                    ///< Socket operation synchronization
 
 private:
 	/// <summary>
@@ -69,7 +69,7 @@ private:
 	/// - Handles partial reads (incomplete messages)
 	/// </remarks>
 	bool ExtractMessage(void* buffer, uint32_t& messageLength);
-	
+
 	/// <summary>
 	/// Read and parse next message from buffer.
 	/// </summary>
@@ -95,8 +95,8 @@ protected:
 	void Disconnect();
 
 public:
-	static constexpr uint8_t SpectatorPort = 0xFF;  ///< Special port number for spectators
-	
+	static constexpr uint8_t SpectatorPort = 0xFF; ///< Special port number for spectators
+
 	/// <summary>
 	/// Constructor for connection.
 	/// </summary>
@@ -110,7 +110,7 @@ public:
 	/// </summary>
 	/// <returns>True if socket error detected</returns>
 	bool ConnectionError();
-	
+
 	/// <summary>
 	/// Process pending messages from socket.
 	/// </summary>
@@ -122,7 +122,7 @@ public:
 	/// - Repeats until no more complete messages
 	/// </remarks>
 	void ProcessMessages();
-	
+
 	/// <summary>
 	/// Send message over connection.
 	/// </summary>

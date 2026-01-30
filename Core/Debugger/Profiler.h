@@ -27,23 +27,23 @@ struct ProfiledFunction {
 /// - Tracks function entry (JSR, CALL, BL, interrupt) and exit (RTS, RET, BX, RTI)
 /// - Measures cycle count per function call
 /// - Calculates exclusive (function only) and inclusive (function + callees) time
-/// 
+///
 /// Call stack tracking:
 /// - _functionStack: Stack of active function addresses
 /// - _cycleCountStack: Stack of cycle counts at function entry
 /// - _stackFlags: Stack of flags (interrupt, NMI, IRQ)
 /// - _currentFunction: Top of stack (current function)
-/// 
+///
 /// Cycle measurement:
 /// - UpdateCycles(): Calculate delta from master clock
 /// - Exclusive cycles: Time in function minus time in callees
 /// - Inclusive cycles: Total time from entry to exit
-/// 
+///
 /// Profiling data:
 /// - CallCount: Number of times function called
 /// - MinCycles/MaxCycles: Range for single call
 /// - ExclusiveCycles/InclusiveCycles: Total time spent
-/// 
+///
 /// Use cases:
 /// - Identify performance hot spots
 /// - Measure function execution time
@@ -52,24 +52,24 @@ struct ProfiledFunction {
 /// </remarks>
 class Profiler {
 private:
-	Debugger* _debugger = nullptr;         ///< Main debugger
-	IDebugger* _cpuDebugger = nullptr;     ///< CPU-specific debugger
+	Debugger* _debugger = nullptr;     ///< Main debugger
+	IDebugger* _cpuDebugger = nullptr; ///< CPU-specific debugger
 
-	unordered_map<int32_t, ProfiledFunction> _functions;  ///< Function address → profiling data
+	unordered_map<int32_t, ProfiledFunction> _functions; ///< Function address → profiling data
 
-	deque<int32_t> _functionStack;        ///< Call stack (function addresses)
-	deque<StackFrameFlags> _stackFlags;   ///< Call stack flags (interrupt, NMI, etc.)
-	deque<uint64_t> _cycleCountStack;     ///< Cycle counts at function entry
+	deque<int32_t> _functionStack;      ///< Call stack (function addresses)
+	deque<StackFrameFlags> _stackFlags; ///< Call stack flags (interrupt, NMI, etc.)
+	deque<uint64_t> _cycleCountStack;   ///< Cycle counts at function entry
 
-	uint64_t _currentCycleCount = 0;      ///< Current cycle count
-	uint64_t _prevMasterClock = 0;        ///< Previous master clock value
-	int32_t _currentFunction = -1;        ///< Current function address
+	uint64_t _currentCycleCount = 0; ///< Current cycle count
+	uint64_t _prevMasterClock = 0;   ///< Previous master clock value
+	int32_t _currentFunction = -1;   ///< Current function address
 
 	/// <summary>
 	/// Internal profiler reset.
 	/// </summary>
 	void InternalReset();
-	
+
 	/// <summary>
 	/// Update cycle counts from master clock.
 	/// </summary>
@@ -82,7 +82,7 @@ public:
 	/// <param name="debugger">Main debugger</param>
 	/// <param name="cpuDebugger">CPU-specific debugger</param>
 	Profiler(Debugger* debugger, IDebugger* cpuDebugger);
-	
+
 	/// <summary>
 	/// Destructor.
 	/// </summary>
@@ -99,7 +99,7 @@ public:
 	/// - Interrupt entry (NMI, IRQ)
 	/// </remarks>
 	void StackFunction(AddressInfo& addr, StackFrameFlags stackFlag);
-	
+
 	/// <summary>
 	/// Pop function from call stack.
 	/// </summary>
@@ -107,7 +107,7 @@ public:
 	/// Called on:
 	/// - RTS, RET, BX (subroutine return)
 	/// - RTI (interrupt return)
-	/// 
+	///
 	/// Updates profiling data:
 	/// - Increment call count
 	/// - Add cycle delta to exclusive/inclusive cycles
@@ -119,12 +119,12 @@ public:
 	/// Reset all profiling data.
 	/// </summary>
 	void Reset();
-	
+
 	/// <summary>
 	/// Reset profiler state (clear call stack).
 	/// </summary>
 	void ResetState();
-	
+
 	/// <summary>
 	/// Get profiling data for all functions.
 	/// </summary>

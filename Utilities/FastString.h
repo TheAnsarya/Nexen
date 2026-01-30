@@ -18,8 +18,8 @@
 /// </remarks>
 class FastString {
 private:
-	char _buffer[1000];     ///< Fixed-size stack buffer (1000 bytes)
-	uint16_t _pos = 0;      ///< Current write position (0-999)
+	char _buffer[1000];      ///< Fixed-size stack buffer (1000 bytes)
+	uint16_t _pos = 0;       ///< Current write position (0-999)
 	bool _lowerCase = false; ///< Automatic lowercase conversion flag
 
 	/// <summary>
@@ -36,14 +36,14 @@ public:
 	/// </summary>
 	/// <param name="lowerCase">If true, all written text is converted to lowercase</param>
 	FastString(bool lowerCase = false) { _lowerCase = lowerCase; }
-	
+
 	/// <summary>
 	/// Construct FastString initialized with C-string data.
 	/// </summary>
 	/// <param name="str">Pointer to character data</param>
 	/// <param name="size">Number of characters to copy</param>
 	FastString(const char* str, int size) { Write(str, size); }
-	
+
 	/// <summary>
 	/// Construct FastString initialized with std::string data.
 	/// </summary>

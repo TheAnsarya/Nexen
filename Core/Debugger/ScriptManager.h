@@ -17,32 +17,32 @@ enum class MemoryOperationType;
 /// - Provide scripting API for automation
 /// - Hook into emulator events (frame, scanline, memory access)
 /// - Enable advanced debugging workflows
-/// 
+///
 /// Script capabilities:
 /// - Memory read/write hooks
 /// - Breakpoint control
 /// - Save state manipulation
 /// - Event callbacks (frame end, scanline, etc.)
 /// - Emulator control (pause, resume, reset)
-/// 
+///
 /// Script lifecycle:
 /// 1. LoadScript(): Create ScriptHost, compile Lua
 /// 2. Script runs in separate Lua state
 /// 3. Callbacks invoked on events (memory access, frame, etc.)
 /// 4. RemoveScript(): Clean up and unload
-/// 
+///
 /// Memory callbacks:
 /// - ProcessMemoryOperation(): Called on every memory access
 /// - _isCpuMemoryCallbackEnabled: Enable CPU memory hooks
 /// - _isPpuMemoryCallbackEnabled: Enable PPU memory hooks
 /// - Template for compile-time optimization (1/2/4 byte access)
-/// 
+///
 /// Performance:
 /// - __forceinline HasScript() for hot path checks
 /// - Template ProcessMemoryOperation<T>() for access width
 /// - Scripts only invoked if callbacks registered
 /// - Lock-protected script list (_scriptLock)
-/// 
+///
 /// Use cases:
 /// - Automated testing (script runs game, validates state)
 /// - TAS creation (record inputs based on game state)
@@ -52,13 +52,13 @@ enum class MemoryOperationType;
 /// </remarks>
 class ScriptManager {
 private:
-	Debugger* _debugger = nullptr;  ///< Main debugger instance
-	bool _hasScript = false;        ///< True if any scripts loaded
-	SimpleLock _scriptLock;         ///< Script list access lock
-	int _nextScriptId = 0;          ///< Next script ID counter
-	bool _isCpuMemoryCallbackEnabled = false;  ///< True if any script has CPU memory callbacks
-	bool _isPpuMemoryCallbackEnabled = false;  ///< True if any script has PPU memory callbacks
-	vector<unique_ptr<ScriptHost>> _scripts;   ///< Active script instances
+	Debugger* _debugger = nullptr;            ///< Main debugger instance
+	bool _hasScript = false;                  ///< True if any scripts loaded
+	SimpleLock _scriptLock;                   ///< Script list access lock
+	int _nextScriptId = 0;                    ///< Next script ID counter
+	bool _isCpuMemoryCallbackEnabled = false; ///< True if any script has CPU memory callbacks
+	bool _isPpuMemoryCallbackEnabled = false; ///< True if any script has PPU memory callbacks
+	vector<unique_ptr<ScriptHost>> _scripts;  ///< Active script instances
 
 	/// <summary>
 	/// Refresh memory callback flags based on loaded scripts.
@@ -71,7 +71,7 @@ public:
 	/// </summary>
 	/// <param name="debugger">Main debugger instance</param>
 	ScriptManager(Debugger* debugger);
-	
+
 	/// <summary>
 	/// Destructor - unload all scripts.
 	/// </summary>
@@ -85,7 +85,7 @@ public:
 	/// Inline for performance - called frequently to check if callbacks needed.
 	/// </remarks>
 	__forceinline bool HasScript() { return _hasScript; }
-	
+
 	/// <summary>
 	/// Load and execute Lua script.
 	/// </summary>
@@ -95,20 +95,20 @@ public:
 	/// <param name="scriptId">Script ID (0 for new script, >0 to replace)</param>
 	/// <returns>Script ID</returns>
 	int32_t LoadScript(string name, string path, string content, int32_t scriptId);
-	
+
 	/// <summary>
 	/// Remove and unload script.
 	/// </summary>
 	/// <param name="scriptId">Script ID to remove</param>
 	void RemoveScript(int32_t scriptId);
-	
+
 	/// <summary>
 	/// Get script output log.
 	/// </summary>
 	/// <param name="scriptId">Script ID</param>
 	/// <returns>Script log text</returns>
 	string GetScriptLog(int32_t scriptId);
-	
+
 	/// <summary>
 	/// Process emulator event for scripts.
 	/// </summary>
@@ -120,7 +120,7 @@ public:
 	/// Enable CPU memory callbacks.
 	/// </summary>
 	void EnableCpuMemoryCallbacks() { _isCpuMemoryCallbackEnabled = true; }
-	
+
 	/// <summary>
 	/// Check if CPU memory callbacks enabled.
 	/// </summary>
@@ -131,7 +131,7 @@ public:
 	/// Enable PPU memory callbacks.
 	/// </summary>
 	void EnablePpuMemoryCallbacks() { _isPpuMemoryCallbackEnabled = true; }
-	
+
 	/// <summary>
 	/// Check if PPU memory callbacks enabled.
 	/// </summary>

@@ -9,11 +9,11 @@ class Serializer;
 enum class DeserializeResult {
 	/// <summary>Deserialization succeeded - state loaded successfully</summary>
 	Success,
-	
+
 	/// <summary>Invalid file format - not a valid save state file</summary>
 	/// <remarks>Wrong magic number, corrupted header, or incompatible version</remarks>
 	InvalidFile,
-	
+
 	/// <summary>Specific error occurred during deserialization</summary>
 	/// <remarks>
 	/// File format is valid but specific component failed to deserialize.
@@ -30,7 +30,7 @@ enum class DeserializeResult {
 /// Save states use a binary serialization format with versioning support.
 /// Implementations must handle both serialization (save) and deserialization (load)
 /// in the same Serialize() method using Serializer direction flags.
-/// 
+///
 /// Design pattern: Single method for save/load reduces code duplication and ensures
 /// symmetric serialization (all saved data is loaded, all loaded data is saved).
 /// </remarks>
@@ -49,7 +49,7 @@ public:
 	///     s.Serialize(_memoryArray, MemorySize);
 	/// }
 	/// </code>
-	/// 
+	///
 	/// Same code handles both save and load - Serializer tracks direction internally.
 	/// Order of Serialize() calls must remain consistent across versions.
 	/// Use Serializer versioning support for backward compatibility.

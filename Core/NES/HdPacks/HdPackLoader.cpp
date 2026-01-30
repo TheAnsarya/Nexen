@@ -16,7 +16,7 @@
 #include "Utilities/FastString.h"
 #include "Utilities/magic_enum.hpp"
 
-#define logError(y)                                                              \
+#define logError(y)                                                               \
 	MessageManager::Log(std::format("[HDPack - Line {}] {}", _currentLine, (y))); \
 	_errorCount++;
 #define checkConstraint(x, y) \

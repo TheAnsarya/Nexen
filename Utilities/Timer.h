@@ -14,7 +14,7 @@ using namespace std::chrono;
 /// - Performance profiling (measure function execution time)
 /// - Timeout detection (check if operation exceeded time limit)
 /// - Animation timing
-/// 
+///
 /// Resolution depends on platform:
 /// - Windows: ~100ns (QueryPerformanceCounter)
 /// - Linux: ~1ns (CLOCK_MONOTONIC)
@@ -30,12 +30,12 @@ public:
 	/// Construct timer and start counting from current time.
 	/// </summary>
 	Timer();
-	
+
 	/// <summary>
 	/// Reset timer to current time (restart counting from now).
 	/// </summary>
 	void Reset();
-	
+
 	/// <summary>
 	/// Get elapsed time since construction or last Reset().
 	/// </summary>
@@ -45,7 +45,7 @@ public:
 	/// Example: 1.234ms, 16.667ms, 0.001ms
 	/// </remarks>
 	double GetElapsedMS() const;
-	
+
 	/// <summary>
 	/// Sleep until target elapsed time is reached.
 	/// </summary>

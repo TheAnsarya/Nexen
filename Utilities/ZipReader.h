@@ -12,26 +12,26 @@
 /// - List files in archive
 /// - Extract individual files
 /// - Check file existence
-/// 
+///
 /// Automatically detected by ArchiveReader::GetReader() via ZIP magic bytes.
 /// Uses miniz for deflate decompression.
 /// Thread safety: Not thread-safe - use separate reader per thread.
 /// </remarks>
 class ZipReader : public ArchiveReader {
 private:
-	mz_zip_archive _zipArchive;  ///< Miniz ZIP archive structure
+	mz_zip_archive _zipArchive; ///< Miniz ZIP archive structure
 
 protected:
 	/// <summary>Load and parse ZIP archive from memory buffer</summary>
 	bool InternalLoadArchive(void* buffer, size_t size);
-	
+
 	/// <summary>Get list of all files in ZIP archive</summary>
 	vector<string> InternalGetFileList();
 
 public:
 	/// <summary>Construct ZIP reader</summary>
 	ZipReader();
-	
+
 	/// <summary>Destructor - closes ZIP archive and frees resources</summary>
 	virtual ~ZipReader();
 

@@ -21,7 +21,7 @@ class IDebugger;
 /// - Logical: Equal, NotEqual, SmallerThan, SmallerOrEqual, GreaterThan, GreaterOrEqual, LogicalAnd, LogicalOr
 /// - Memory access: Bracket (read 8-bit), Braces (read 16-bit), ReadDword (read 32-bit)
 /// - Unary: Plus, Minus, BinaryNot, LogicalNot, AbsoluteAddress
-/// 
+///
 /// Enum values:
 /// - Start at 2000000000000 to avoid collision with EvalValues
 /// - Sequential numbering for fast precedence lookup
@@ -74,13 +74,13 @@ enum EvalOperators : int64_t {
 /// - Z80 alternate: Alt A-HL registers
 /// - ARM7TDMI (GBA): R0-R15, SrcReg, DstReg
 /// - Super FX (GSU): R0-R15, SFR, PBR, RomBR, RamBR
-/// 
+///
 /// Special values:
 /// - PPU state: PpuFrameCount, PpuCycle, PpuScanline, PpuVramAddress
 /// - Interrupts: Nmi, Irq
 /// - Memory operation: IsRead, IsWrite, IsDma, IsDummy, Value, Address
 /// - Platform-specific: Sprite0Hit, VerticalBlank, etc.
-/// 
+///
 /// Enum values:
 /// - Start at 3000000000000 to avoid collision with EvalOperators
 /// - Sequential numbering for fast token lookup
@@ -90,42 +90,42 @@ enum EvalValues : int64_t {
 	RegX,
 	RegY,
 
-	R0,   ///< ARM/GSU R0 register
-	R1,   ///< ARM/GSU R1 register
-	R2,   ///< ARM/GSU R2 register
-	R3,   ///< ARM/GSU R3 register
-	R4,   ///< ARM/GSU R4 register
-	R5,   ///< ARM/GSU R5 register
-	R6,   ///< ARM/GSU R6 register
-	R7,   ///< ARM/GSU R7 register
-	R8,   ///< ARM/GSU R8 register
-	R9,   ///< ARM/GSU R9 register
-	R10,  ///< ARM/GSU R10 register
-	R11,  ///< ARM/GSU R11 register
-	R12,  ///< ARM/GSU R12 register
-	R13,  ///< ARM/GSU R13 register (SP)
-	R14,  ///< ARM/GSU R14 register (LR)
-	R15,  ///< ARM/GSU R15 register (PC)
-	SrcReg,   ///< ARM source register
-	DstReg,   ///< ARM destination register
-	SFR,      ///< GSU status/flag register
-	PBR,      ///< GSU program bank register
-	RomBR,    ///< GSU ROM bank register
-	RamBR,    ///< GSU RAM bank register
+	R0,     ///< ARM/GSU R0 register
+	R1,     ///< ARM/GSU R1 register
+	R2,     ///< ARM/GSU R2 register
+	R3,     ///< ARM/GSU R3 register
+	R4,     ///< ARM/GSU R4 register
+	R5,     ///< ARM/GSU R5 register
+	R6,     ///< ARM/GSU R6 register
+	R7,     ///< ARM/GSU R7 register
+	R8,     ///< ARM/GSU R8 register
+	R9,     ///< ARM/GSU R9 register
+	R10,    ///< ARM/GSU R10 register
+	R11,    ///< ARM/GSU R11 register
+	R12,    ///< ARM/GSU R12 register
+	R13,    ///< ARM/GSU R13 register (SP)
+	R14,    ///< ARM/GSU R14 register (LR)
+	R15,    ///< ARM/GSU R15 register (PC)
+	SrcReg, ///< ARM source register
+	DstReg, ///< ARM destination register
+	SFR,    ///< GSU status/flag register
+	PBR,    ///< GSU program bank register
+	RomBR,  ///< GSU ROM bank register
+	RamBR,  ///< GSU RAM bank register
 
-	RegB,     ///< Z80 B register
-	RegC,     ///< Z80 C register
-	RegD,     ///< Z80 D register
-	RegE,     ///< Z80 E register
-	RegF,     ///< Z80 F (flags) register
-	RegH,     ///< Z80 H register
-	RegL,     ///< Z80 L register
-	RegAF,    ///< Z80 AF register pair
-	RegBC,    ///< Z80 BC register pair
-	RegDE,    ///< Z80 DE register pair
-	RegHL,    ///< Z80 HL register pair
-	RegIX,    ///< Z80 IX index register
-	RegIY,    ///< Z80 IY index register
+	RegB,  ///< Z80 B register
+	RegC,  ///< Z80 C register
+	RegD,  ///< Z80 D register
+	RegE,  ///< Z80 E register
+	RegF,  ///< Z80 F (flags) register
+	RegH,  ///< Z80 H register
+	RegL,  ///< Z80 L register
+	RegAF, ///< Z80 AF register pair
+	RegBC, ///< Z80 BC register pair
+	RegDE, ///< Z80 DE register pair
+	RegHL, ///< Z80 HL register pair
+	RegIX, ///< Z80 IX index register
+	RegIY, ///< Z80 IY index register
 
 	RegAltA,  ///< Z80 alternate A register
 	RegAltB,  ///< Z80 alternate B register
@@ -142,36 +142,36 @@ enum EvalValues : int64_t {
 	RegI,     ///< Z80 interrupt vector register
 	RegR,     ///< Z80 refresh register
 
-	RegTR,    ///< 65816 transfer register
-	RegTRB,   ///< 65816 test and reset bits
-	RegRP,    ///< 65816 register position
-	RegDP,    ///< 65816 direct page
-	RegDR,    ///< 65816 data register
-	RegSR,    ///< 65816 status register
-	RegK,     ///< 65816 program bank
-	RegM,     ///< 65816 memory mode flag
-	RegN,     ///< 65816 negative flag
+	RegTR,  ///< 65816 transfer register
+	RegTRB, ///< 65816 test and reset bits
+	RegRP,  ///< 65816 register position
+	RegDP,  ///< 65816 direct page
+	RegDR,  ///< 65816 data register
+	RegSR,  ///< 65816 status register
+	RegK,   ///< 65816 program bank
+	RegM,   ///< 65816 memory mode flag
+	RegN,   ///< 65816 negative flag
 
-	RegPB,    ///< 65816 program bank
-	RegP,     ///< 6502 processor status
-	RegMult,  ///< 65816 multiply result
+	RegPB,   ///< 65816 program bank
+	RegP,    ///< 6502 processor status
+	RegMult, ///< 65816 multiply result
 
-	RegMDR,   ///< Memory data register
-	RegMAR,   ///< Memory address register
-	RegDPR,   ///< Direct page register
+	RegMDR, ///< Memory data register
+	RegMAR, ///< Memory address register
+	RegDPR, ///< Direct page register
 
-	RegSP,    ///< Stack pointer (all platforms)
-	RegDB,    ///< 65816 data bank
-	RegPS,    ///< Processor status (all platforms)
+	RegSP, ///< Stack pointer (all platforms)
+	RegDB, ///< 65816 data bank
+	RegPS, ///< Processor status (all platforms)
 
-	RegPC,    ///< Program counter (all platforms)
-	PpuFrameCount,    ///< PPU frame counter
-	PpuCycle,         ///< PPU cycle in current scanline
-	PpuHClock,        ///< PPU horizontal clock
-	PpuScanline,      ///< PPU scanline number
+	RegPC,         ///< Program counter (all platforms)
+	PpuFrameCount, ///< PPU frame counter
+	PpuCycle,      ///< PPU cycle in current scanline
+	PpuHClock,     ///< PPU horizontal clock
+	PpuScanline,   ///< PPU scanline number
 
-	PpuVramAddress,       ///< PPU VRAM address
-	PpuTmpVramAddress,    ///< PPU temporary VRAM address
+	PpuVramAddress,    ///< PPU VRAM address
+	PpuTmpVramAddress, ///< PPU temporary VRAM address
 
 	Nmi,              ///< NMI interrupt flag
 	Irq,              ///< IRQ interrupt flag
@@ -184,7 +184,7 @@ enum EvalValues : int64_t {
 	IsDummy,          ///< Memory operation is dummy (no side effects)
 	OpProgramCounter, ///< Program counter at operation
 
-	RegPS_Carry,      ///< Processor status carry flag
+	RegPS_Carry, ///< Processor status carry flag
 	RegPS_Zero,
 	RegPS_Interrupt,
 	RegPS_Memory,
@@ -260,7 +260,7 @@ public:
 /// Compiled expression data (RPN + labels).
 /// </summary>
 struct ExpressionData {
-	vector<int64_t> RpnQueue;  ///< Reverse Polish Notation queue (operators and operands)
+	vector<int64_t> RpnQueue; ///< Reverse Polish Notation queue (operators and operands)
 	vector<string> Labels;    ///< Referenced label names (for label → value lookup)
 };
 
@@ -276,25 +276,25 @@ struct ExpressionData {
 /// - Labels: $labelName
 /// - Registers: A, X, Y, SP, PC, etc. (platform-specific)
 /// - Special values: scanline, cycle, frame, isread, iswrite
-/// 
+///
 /// Expression compilation:
 /// 1. Tokenize: Split expression into tokens (numbers, operators, labels, registers)
 /// 2. Parse: Convert infix to Reverse Polish Notation (RPN) using shunting-yard algorithm
 /// 3. Cache: Store compiled RPN in _cache (keyed by expression string)
 /// 4. Evaluate: Execute RPN queue with current CPU/PPU state
-/// 
+///
 /// RPN evaluation:
 /// - Stack-based execution (no recursion, fast)
 /// - Operators pop operands from stack, push result
 /// - Memory access resolves addresses at evaluation time
 /// - Label lookup via LabelManager
-/// 
+///
 /// Performance optimizations:
 /// - RPN cache (compile once, evaluate many times)
 /// - Inline operator precedence checks
 /// - Fast hash for expression cache (string length)
 /// - Lock-free evaluation (cache lock only during compilation)
-/// 
+///
 /// Use cases:
 /// - Conditional breakpoints: "[0x7E0000] > 100"
 /// - Watchpoints: "A != 0xFF && iswrite"
@@ -303,20 +303,20 @@ struct ExpressionData {
 /// </remarks>
 class ExpressionEvaluator {
 private:
-	static const vector<string> _binaryOperators;       ///< Binary operator strings ("+", "-", "*", etc.)
-	static const vector<int> _binaryPrecedence;         ///< Binary operator precedence (1-10)
-	static const vector<string> _unaryOperators;        ///< Unary operator strings ("-", "+", "~", "!")
-	static const vector<int> _unaryPrecedence;          ///< Unary operator precedence
-	static const unordered_set<string> _operators;      ///< All valid operator strings
+	static const vector<string> _binaryOperators;  ///< Binary operator strings ("+", "-", "*", etc.)
+	static const vector<int> _binaryPrecedence;    ///< Binary operator precedence (1-10)
+	static const vector<string> _unaryOperators;   ///< Unary operator strings ("-", "+", "~", "!")
+	static const vector<int> _unaryPrecedence;     ///< Unary operator precedence
+	static const unordered_set<string> _operators; ///< All valid operator strings
 
-	unordered_map<string, ExpressionData, StringHasher> _cache;  ///< RPN cache (expression → compiled data)
-	SimpleLock _cacheLock;  ///< Cache access lock
+	unordered_map<string, ExpressionData, StringHasher> _cache; ///< RPN cache (expression → compiled data)
+	SimpleLock _cacheLock;                                      ///< Cache access lock
 
-	Debugger* _debugger;           ///< Main debugger instance
-	IDebugger* _cpuDebugger;       ///< CPU-specific debugger
-	LabelManager* _labelManager;   ///< Label/symbol manager
-	CpuType _cpuType;              ///< Target CPU type
-	MemoryType _cpuMemory;         ///< Target CPU memory type
+	Debugger* _debugger;         ///< Main debugger instance
+	IDebugger* _cpuDebugger;     ///< CPU-specific debugger
+	LabelManager* _labelManager; ///< Label/symbol manager
+	CpuType _cpuType;            ///< Target CPU type
+	MemoryType _cpuMemory;       ///< Target CPU memory type
 
 	/// <summary>
 	/// Check if token is an operator.
@@ -326,7 +326,7 @@ private:
 	/// <param name="unaryOperator">True if unary operator</param>
 	/// <returns>True if token is operator</returns>
 	bool IsOperator(string token, int& precedence, bool unaryOperator);
-	
+
 	/// <summary>
 	/// Get operator enum from token.
 	/// </summary>
@@ -334,13 +334,13 @@ private:
 	/// <param name="unaryOperator">True if unary operator</param>
 	/// <returns>Operator enum</returns>
 	EvalOperators GetOperator(string token, bool unaryOperator);
-	
+
 	/// <summary>
 	/// Get available register/value tokens for current CPU.
 	/// </summary>
 	/// <returns>Map of token name → EvalValues enum</returns>
 	unordered_map<string, int64_t>* GetAvailableTokens();
-	
+
 	/// <summary>
 	/// Check for special tokens (labels, hex/binary literals).
 	/// </summary>
@@ -404,7 +404,7 @@ private:
 	/// <param name="previousTokenIsOp">True if previous token was operator</param>
 	/// <returns>Next token string</returns>
 	string GetNextToken(string expression, size_t& pos, ExpressionData& data, bool& success, bool previousTokenIsOp);
-	
+
 	/// <summary>
 	/// Process special operators (brackets, braces, memory reads).
 	/// </summary>
@@ -414,7 +414,7 @@ private:
 	/// <param name="outputQueue">RPN output queue</param>
 	/// <returns>True if operator processed</returns>
 	bool ProcessSpecialOperator(EvalOperators evalOp, std::stack<EvalOperators>& opStack, std::stack<int>& precedenceStack, vector<int64_t>& outputQueue);
-	
+
 	/// <summary>
 	/// Convert infix expression to Reverse Polish Notation.
 	/// </summary>
@@ -431,7 +431,7 @@ private:
 	/// 6. At end, pop all operators to output
 	/// </remarks>
 	bool ToRpn(string expression, ExpressionData& data);
-	
+
 	/// <summary>
 	/// Internal evaluation with caching.
 	/// </summary>
@@ -442,7 +442,7 @@ private:
 	/// <param name="success">Output success flag</param>
 	/// <returns>Evaluation result</returns>
 	int64_t PrivateEvaluate(string expression, EvalResultType& resultType, MemoryOperationInfo& operationInfo, AddressInfo& addressInfo, bool& success);
-	
+
 	/// <summary>
 	/// Get cached RPN or compile new.
 	/// </summary>
@@ -470,7 +470,7 @@ public:
 	/// <param name="addressInfo">Address context</param>
 	/// <returns>Evaluation result</returns>
 	int64_t Evaluate(ExpressionData& data, EvalResultType& resultType, MemoryOperationInfo& operationInfo, AddressInfo& addressInfo);
-	
+
 	/// <summary>
 	/// Evaluate expression string.
 	/// </summary>
@@ -480,7 +480,7 @@ public:
 	/// <param name="addressInfo">Address context</param>
 	/// <returns>Evaluation result</returns>
 	int64_t Evaluate(string expression, EvalResultType& resultType, MemoryOperationInfo& operationInfo, AddressInfo& addressInfo);
-	
+
 	/// <summary>
 	/// Get compiled RPN for expression.
 	/// </summary>

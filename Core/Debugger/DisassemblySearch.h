@@ -12,10 +12,10 @@ enum class CpuType : uint8_t;
 /// Disassembly search options.
 /// </summary>
 struct DisassemblySearchOptions {
-	bool MatchCase;        ///< True for case-sensitive search
-	bool MatchWholeWord;   ///< True to match whole words only
-	bool SearchBackwards;  ///< True to search backwards
-	bool SkipFirstLine;    ///< True to skip first line (continue search)
+	bool MatchCase;       ///< True for case-sensitive search
+	bool MatchWholeWord;  ///< True to match whole words only
+	bool SearchBackwards; ///< True to search backwards
+	bool SkipFirstLine;   ///< True to skip first line (continue search)
 };
 
 /// <summary>
@@ -26,18 +26,18 @@ struct DisassemblySearchOptions {
 /// - Searches disassembled text (instruction mnemonics, operands, labels, comments)
 /// - Uses Disassembler to generate disassembly on-the-fly
 /// - Template optimization for case-sensitive vs case-insensitive
-/// 
+///
 /// Search features:
 /// - Case-sensitive/insensitive matching
 /// - Whole word matching (word boundary detection)
 /// - Forward/backward search
 /// - Multi-result search (find all occurrences)
-/// 
+///
 /// Text matching:
 /// - Template <matchCase> for compile-time branch elimination
 /// - IsWordSeparator(): Detects word boundaries (space, comma, etc)
 /// - TextContains(): Substring matching with options
-/// 
+///
 /// Use cases:
 /// - Find all uses of instruction (e.g., all "STA $2000")
 /// - Find label references (e.g., all "JMP MyFunction")
@@ -46,8 +46,8 @@ struct DisassemblySearchOptions {
 /// </remarks>
 class DisassemblySearch {
 private:
-	Disassembler* _disassembler;   ///< Disassembler for generating disassembly
-	LabelManager* _labelManager;   ///< Label manager for label resolution
+	Disassembler* _disassembler; ///< Disassembler for generating disassembly
+	LabelManager* _labelManager; ///< Label manager for label resolution
 
 	/// <summary>
 	/// Search disassembly for string.
@@ -59,12 +59,12 @@ private:
 	/// </summary>
 	template <bool matchCase>
 	bool TextContains(string& needle, const char* hay, int size, DisassemblySearchOptions& options);
-	
+
 	/// <summary>
 	/// Check if text contains substring (runtime case matching).
 	/// </summary>
 	bool TextContains(string& needle, const char* hay, int size, DisassemblySearchOptions& options);
-	
+
 	/// <summary>
 	/// Check if character is word separator.
 	/// </summary>
@@ -85,7 +85,7 @@ public:
 	/// <param name="options">Search options</param>
 	/// <returns>Address of next occurrence, or -1 if not found</returns>
 	int32_t SearchDisassembly(CpuType cpuType, const char* searchString, int32_t startAddress, DisassemblySearchOptions options);
-	
+
 	/// <summary>
 	/// Find all occurrences of search string.
 	/// </summary>

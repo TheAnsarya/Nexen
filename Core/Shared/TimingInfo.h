@@ -11,7 +11,7 @@
 /// - Audio/video sample rate calculation
 /// - Cycle-accurate emulation timing
 /// - FPS display and performance metrics
-/// 
+///
 /// Platform examples:
 /// - NTSC NES: 60.1 Hz, ~21.477 MHz master clock, 262 scanlines
 /// - PAL NES: 50.0 Hz, ~26.602 MHz master clock, 312 scanlines
@@ -27,7 +27,7 @@ struct TimingInfo {
 	/// Used by frame limiter to maintain correct playback speed.
 	/// </remarks>
 	double Fps;
-	
+
 	/// <summary>Current master clock cycle count (64-bit for overflow prevention)</summary>
 	/// <remarks>
 	/// Monotonic counter incremented every master clock cycle.
@@ -35,7 +35,7 @@ struct TimingInfo {
 	/// 64-bit prevents overflow (would take centuries at typical clock rates).
 	/// </remarks>
 	uint64_t MasterClock;
-	
+
 	/// <summary>Master clock frequency in Hz (cycles per second)</summary>
 	/// <remarks>
 	/// Platform examples:
@@ -46,7 +46,7 @@ struct TimingInfo {
 	/// CPU clock is typically derived by dividing master clock.
 	/// </remarks>
 	uint32_t MasterClockRate;
-	
+
 	/// <summary>Total frames emulated since power-on (monotonic counter)</summary>
 	/// <remarks>
 	/// Increments by 1 at the end of each frame.
@@ -64,7 +64,7 @@ struct TimingInfo {
 	/// - Game Boy: 154 scanlines (144 visible + 10 VBlank)
 	/// </remarks>
 	uint32_t ScanlineCount;
-	
+
 	/// <summary>First visible scanline (typically 0, but platform-dependent)</summary>
 	/// <remarks>
 	/// Most platforms start at 0, but some have offset:
@@ -74,7 +74,7 @@ struct TimingInfo {
 	/// Used for accurate PPU timing and raster effects.
 	/// </remarks>
 	int32_t FirstScanline;
-	
+
 	/// <summary>Number of master clock cycles per scanline</summary>
 	/// <remarks>
 	/// Platform examples:

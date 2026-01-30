@@ -10,17 +10,17 @@
 /// 1. ProcessFrame() called after each emulated frame - advances target time
 /// 2. WaitForNextFrame() sleeps until target time reached
 /// 3. Automatically recovers from timing drift and emulation pauses
-/// 
+///
 /// Target delay calculation:
 /// - 60 FPS (NTSC):  16.667ms per frame
 /// - 50 FPS (PAL):   20.000ms per frame
 /// - 120 FPS (2x):    8.333ms per frame
-/// 
+///
 /// Auto-reset scenarios:
 /// - Target frame rate changed (speed multiplier changed)
 /// - Emulation paused/reset (debugger, power cycle)
 /// - Timing drift > 100ms (safety net for lag spikes)
-/// 
+///
 /// Usage:
 /// <code>
 /// FrameLimiter limiter(16.667); // 60 FPS
@@ -30,15 +30,15 @@
 ///     limiter.WaitForNextFrame();
 /// }
 /// </code>
-/// 
+///
 /// Thread safety: Not thread-safe - use from emulation thread only.
 /// </remarks>
 class FrameLimiter {
 private:
-	Timer _clockTimer;      ///< High-resolution timer for frame timing
-	double _targetTime;     ///< Next frame target time in milliseconds
-	double _delay;          ///< Delay per frame in milliseconds
-	bool _resetRunTimers;   ///< Flag to reset timers on next frame
+	Timer _clockTimer;    ///< High-resolution timer for frame timing
+	double _targetTime;   ///< Next frame target time in milliseconds
+	double _delay;        ///< Delay per frame in milliseconds
+	bool _resetRunTimers; ///< Flag to reset timers on next frame
 
 public:
 	/// <summary>

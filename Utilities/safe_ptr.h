@@ -9,22 +9,22 @@
 /// <typeparam name="T">Managed object type</typeparam>
 /// <remarks>
 /// Design pattern: Dual-pointer approach for performance vs safety tradeoff.
-/// 
+///
 /// _ptr: Fast but NOT thread-safe (use for operator->, get(), bool checks)
 /// _shared: Thread-safe via lock() method (use for cross-thread access)
-/// 
+///
 /// Common use case: Emulator core objects accessed from multiple threads.
 /// Main thread uses fast _ptr access, background threads use safe lock() access.
-/// 
+///
 /// WARNING: operator-> and get() are NOT thread-safe for performance.
 /// Use lock() to obtain thread-safe shared_ptr when crossing thread boundaries.
 /// </remarks>
 template <typename T>
 class safe_ptr {
 private:
-	T* _ptr = nullptr;          ///< Raw pointer for fast access (NOT thread-safe)
-	shared_ptr<T> _shared;      ///< Shared pointer for lifetime management
-	SimpleLock _lock;           ///< Lock protecting shared_ptr access
+	T* _ptr = nullptr;     ///< Raw pointer for fast access (NOT thread-safe)
+	shared_ptr<T> _shared; ///< Shared pointer for lifetime management
+	SimpleLock _lock;      ///< Lock protecting shared_ptr access
 
 public:
 	/// <summary>

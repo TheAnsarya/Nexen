@@ -110,8 +110,8 @@ BreakpointType BreakpointManager::GetBreakpointType(MemoryOperationType type) {
 		case MemoryOperationType::DummyWrite:
 			return BreakpointType::Write;
 
-		default: [[unlikely]]
-			throw std::runtime_error("Unsupported memory operation type");
+		default:
+			[[unlikely]] throw std::runtime_error("Unsupported memory operation type");
 	}
 }
 

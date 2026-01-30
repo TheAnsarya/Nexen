@@ -20,18 +20,18 @@ class Emulator;
 /// - Dedicated decode thread for parallel processing
 /// - Frame queue with AutoResetEvent synchronization
 /// - Filter pipeline: BaseVideoFilter → ScaleFilter → RotateFilter
-/// 
+///
 /// Supported filters:
 /// - NTSC composite video simulation (Generic/SNES/NES)
 /// - Scanlines (horizontal/vertical)
 /// - Scaling (2x/3x/4x/etc. with various algorithms)
 /// - Rotation (90/180/270 degrees)
-/// 
+///
 /// Thread safety:
 /// - _stopStartLock protects thread lifecycle
 /// - Atomic flags for frame change notifications
 /// - AutoResetEvent for efficient wait/notify
-/// 
+///
 /// Performance:
 /// - Asynchronous decoding doesn't block emulation thread
 /// - Filters can be swapped at runtime (hot-reload)

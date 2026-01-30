@@ -38,11 +38,11 @@ public:
 /// </remarks>
 class BatteryManager {
 private:
-	string _romName;            ///< ROM name for constructing save file paths
-	bool _hasBattery = false;   ///< Battery-backed save flag
+	string _romName;          ///< ROM name for constructing save file paths
+	bool _hasBattery = false; ///< Battery-backed save flag
 
-	std::weak_ptr<IBatteryProvider> _provider;  ///< Optional custom battery provider
-	std::weak_ptr<IBatteryRecorder> _recorder;  ///< Optional battery operation recorder
+	std::weak_ptr<IBatteryProvider> _provider; ///< Optional custom battery provider
+	std::weak_ptr<IBatteryRecorder> _recorder; ///< Optional battery operation recorder
 
 	/// <summary>
 	/// Construct base file path for battery file with extension.
@@ -76,7 +76,7 @@ public:
 	/// Uses weak_ptr internally to avoid circular references.
 	/// </remarks>
 	void SetBatteryProvider(shared_ptr<IBatteryProvider> provider);
-	
+
 	/// <summary>
 	/// Set battery recorder for tracking save/load operations.
 	/// </summary>
@@ -104,7 +104,7 @@ public:
 	/// <param name="extension">File extension to load</param>
 	/// <returns>Vector containing loaded battery data, or empty vector if file not found</returns>
 	vector<uint8_t> LoadBattery(string extension);
-	
+
 	/// <summary>
 	/// Load battery data directly into existing buffer using std::span.
 	/// </summary>
@@ -116,7 +116,7 @@ public:
 	/// More efficient than vector-returning variant when destination buffer pre-allocated.
 	/// </remarks>
 	void LoadBattery(string extension, std::span<uint8_t> data);
-	
+
 	/// <summary>
 	/// Get size of battery file without loading contents.
 	/// </summary>

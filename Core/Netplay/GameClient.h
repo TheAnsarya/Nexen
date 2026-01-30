@@ -18,19 +18,19 @@ class Emulator;
 /// - Dedicated client thread for network I/O
 /// - Local input sent to server every frame
 /// - Server broadcasts all inputs back to client
-/// 
+///
 /// Synchronization:
 /// - Client runs in lockstep with server
 /// - Server dictates frame advancement (client can't run ahead)
 /// - Input lag compensation handled by server
 /// - Save states synchronized for late joins
-/// 
+///
 /// Controller management:
 /// - Client selects one controller port on connection
 /// - Server assigns available port (first-come-first-served)
 /// - Client can change controller port (if available)
 /// - Server validates controller selections
-/// 
+///
 /// Connection lifecycle:
 /// 1. Connect() starts client thread
 /// 2. Thread connects to server socket
@@ -39,7 +39,7 @@ class Emulator;
 /// 5. Receives player list and game state
 /// 6. Sends input every frame
 /// 7. Disconnect() closes connection and stops thread
-/// 
+///
 /// Thread safety:
 /// - Atomic _connected flag for connection state
 /// - Atomic _stop flag for thread shutdown

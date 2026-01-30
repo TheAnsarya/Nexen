@@ -19,23 +19,23 @@ enum class MemoryOperationType;
 /// - One BreakpointManager per CPU type
 /// - Owned by CPU-specific IDebugger implementation
 /// - Shared expression evaluator for conditional breakpoints
-/// 
+///
 /// Breakpoint organization:
 /// - Breakpoints grouped by operation type (execute, read, write)
 /// - Per-type arrays for fast lookup (no search entire list)
 /// - RPN expression cache (reverse polish notation for evaluation)
-/// 
+///
 /// Breakpoint evaluation:
 /// 1. Fast path: Check if any breakpoints exist for operation type
 /// 2. Address match: Linear search through breakpoints for type
 /// 3. Condition eval: Evaluate RPN expression if breakpoint has condition
 /// 4. Result: Breakpoint ID if match, -1 if no match
-/// 
+///
 /// Forbidden breakpoints:
 /// - Special breakpoints that prevent other breakpoints from triggering
 /// - Used for "break on all except X" scenarios
 /// - Checked first before normal breakpoints
-/// 
+///
 /// Performance:
 /// - __forceinline hot path methods (called every instruction/memory access)
 /// - Early exit if no breakpoints for operation type
@@ -43,22 +43,22 @@ enum class MemoryOperationType;
 /// </remarks>
 class BreakpointManager {
 private:
-	static constexpr int BreakpointTypeCount = (int)MemoryOperationType::PpuRenderingRead + 1;  ///< Max operation types
+	static constexpr int BreakpointTypeCount = (int)MemoryOperationType::PpuRenderingRead + 1; ///< Max operation types
 
-	Debugger* _debugger;                  ///< Main debugger instance
-	IDebugger* _cpuDebugger;              ///< CPU-specific debugger
-	CpuType _cpuType;                     ///< CPU type for this manager
-	BaseEventManager* _eventManager;      ///< Event manager (for marked breakpoints)
+	Debugger* _debugger;             ///< Main debugger instance
+	IDebugger* _cpuDebugger;         ///< CPU-specific debugger
+	CpuType _cpuType;                ///< CPU type for this manager
+	BaseEventManager* _eventManager; ///< Event manager (for marked breakpoints)
 
-	vector<Breakpoint> _breakpoints[BreakpointTypeCount];      ///< Breakpoints by operation type
-	vector<ExpressionData> _rpnList[BreakpointTypeCount];      ///< RPN expression cache per type
-	bool _hasBreakpoint;                                       ///< True if any breakpoints exist
-	bool _hasBreakpointType[BreakpointTypeCount] = {};         ///< Per-type existence flags
+	vector<Breakpoint> _breakpoints[BreakpointTypeCount]; ///< Breakpoints by operation type
+	vector<ExpressionData> _rpnList[BreakpointTypeCount]; ///< RPN expression cache per type
+	bool _hasBreakpoint;                                  ///< True if any breakpoints exist
+	bool _hasBreakpointType[BreakpointTypeCount] = {};    ///< Per-type existence flags
 
-	vector<Breakpoint> _forbidBreakpoints;  ///< Forbidden breakpoint list
-	vector<ExpressionData> _forbidRpn;      ///< Forbidden RPN expressions
+	vector<Breakpoint> _forbidBreakpoints; ///< Forbidden breakpoint list
+	vector<ExpressionData> _forbidRpn;     ///< Forbidden RPN expressions
 
-	unique_ptr<ExpressionEvaluator> _bpExpEval;  ///< Expression evaluator (for conditions)
+	unique_ptr<ExpressionEvaluator> _bpExpEval; ///< Expression evaluator (for conditions)
 
 	/// <summary>
 	/// Convert memory operation type to breakpoint type.
@@ -66,7 +66,7 @@ private:
 	/// <param name="type">Memory operation type</param>
 	/// <returns>Corresponding breakpoint type</returns>
 	BreakpointType GetBreakpointType(MemoryOperationType type);
-	
+
 	/// <summary>
 	/// Internal breakpoint check implementation.
 	/// </summary>
@@ -122,7 +122,7 @@ public:
 	/// </summary>
 	/// <returns>True if at least one breakpoint enabled</returns>
 	__forceinline bool HasBreakpoints() { return _hasBreakpoint; }
-	
+
 	/// <summary>
 	/// Check if breakpoints exist for operation type.
 	/// </summary>
@@ -133,7 +133,7 @@ public:
 	/// Early exit optimization - avoid breakpoint check if none exist.
 	/// </remarks>
 	__forceinline bool HasBreakpointForType(MemoryOperationType opType);
-	
+
 	/// <summary>
 	/// Check if memory operation triggers breakpoint.
 	/// </summary>
@@ -147,7 +147,7 @@ public:
 	/// - accessWidth=1: Byte access (LDA, STA)
 	/// - accessWidth=2: Word access (16-bit mode, LDA word)
 	/// - accessWidth=4: DMA transfer, 32-bit ARM access
-	/// 
+	///
 	/// Inline for performance (hot path - every instruction).
 	/// </remarks>
 	template <uint8_t accessWidth = 1>
@@ -167,7 +167,7 @@ __forceinline bool BreakpointManager::HasBreakpointForType(MemoryOperationType o
 template <uint8_t accessWidth>
 __forceinline int BreakpointManager::CheckBreakpoint(MemoryOperationInfo operationInfo, AddressInfo& address, bool processMarkedBreakpoints) {
 	if (!_hasBreakpointType[(int)operationInfo.Type]) {
-		return -1;  // Fast path: No breakpoints for this operation type
+		return -1; // Fast path: No breakpoints for this operation type
 	}
 	return InternalCheckBreakpoint<accessWidth>(operationInfo, address, processMarkedBreakpoints);
 }

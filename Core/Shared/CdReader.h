@@ -5,9 +5,9 @@
 
 /// <summary>Track format types for CD-ROM/CD-DA discs</summary>
 enum class TrackFormat {
-	Audio,         ///< CD-DA audio (2352 bytes/sector, RAW)
-	Mode1_2352,    ///< CD-ROM Mode 1 (2352 bytes/sector, with header)
-	Mode1_2048     ///< CD-ROM Mode 1 (2048 bytes/sector, data only)
+	Audio,      ///< CD-DA audio (2352 bytes/sector, RAW)
+	Mode1_2352, ///< CD-ROM Mode 1 (2352 bytes/sector, with header)
+	Mode1_2048  ///< CD-ROM Mode 1 (2048 bytes/sector, data only)
 };
 
 /// <summary>
@@ -15,9 +15,9 @@ enum class TrackFormat {
 /// Standard CD-ROM addressing - 75 frames per second.
 /// </summary>
 struct DiscPosition {
-	uint32_t Minutes;  ///< Minutes (0-99)
-	uint32_t Seconds;  ///< Seconds (0-59)
-	uint32_t Frames;   ///< Frames (0-74, 75 frames/second)
+	uint32_t Minutes; ///< Minutes (0-99)
+	uint32_t Seconds; ///< Seconds (0-59)
+	uint32_t Frames;  ///< Frames (0-74, 75 frames/second)
 
 	/// <summary>Convert MSF to LBA (Logical Block Address)</summary>
 	uint32_t ToLba() {
@@ -47,17 +47,17 @@ private:
 
 /// <summary>CD-ROM track metadata</summary>
 struct TrackInfo {
-	uint32_t Size;         ///< Track size in bytes
-	uint32_t SectorCount;  ///< Number of sectors in track
+	uint32_t Size;        ///< Track size in bytes
+	uint32_t SectorCount; ///< Number of sectors in track
 
-	bool HasLeadIn;                ///< Lead-in pregap present
-	DiscPosition LeadInPosition;   ///< Lead-in start position (MSF)
-	DiscPosition StartPosition;    ///< Track start position (MSF)
-	DiscPosition EndPosition;      ///< Track end position (MSF)
+	bool HasLeadIn;              ///< Lead-in pregap present
+	DiscPosition LeadInPosition; ///< Lead-in start position (MSF)
+	DiscPosition StartPosition;  ///< Track start position (MSF)
+	DiscPosition EndPosition;    ///< Track end position (MSF)
 
-	TrackFormat Format;   ///< Track format (audio/data)
-	uint32_t FileIndex;   ///< Index into DiscInfo::Files array
-	uint32_t FileOffset;  ///< Byte offset within file
+	TrackFormat Format;  ///< Track format (audio/data)
+	uint32_t FileIndex;  ///< Index into DiscInfo::Files array
+	uint32_t FileOffset; ///< Byte offset within file
 
 	uint32_t FirstSector; ///< First LBA sector
 	uint32_t LastSector;  ///< Last LBA sector
@@ -81,7 +81,7 @@ struct TrackInfo {
 /// Supports multi-track audio + data discs.
 /// </summary>
 struct DiscInfo {
-	static constexpr int SectorSize = 2352;  ///< Standard CD-ROM sector size (RAW)
+	static constexpr int SectorSize = 2352; ///< Standard CD-ROM sector size (RAW)
 
 	vector<VirtualFile> Files;      ///< Track data files (BIN files)
 	vector<TrackInfo> Tracks;       ///< Track metadata

@@ -136,8 +136,8 @@ int LuaApi::GetLibrary(lua_State* lua) {
 	    {"read32",               LuaApi::ReadMemory32            },
 	    {"write32",              LuaApi::WriteMemory32           },
 
-	    {"readWord",             LuaApi::ReadMemory16            }, //  for backward compatibility
-	    {"writeWord",            LuaApi::WriteMemory16           }, //  for backward compatibility
+	    {"readWord",             LuaApi::ReadMemory16            }, //   for backward compatibility
+	    {"writeWord",            LuaApi::WriteMemory16           }, //   for backward compatibility
 
 	    {"convertAddress",       LuaApi::ConvertAddress          },
 	    {"getLabelAddress",      LuaApi::GetLabelAddress         },

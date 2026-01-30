@@ -9,16 +9,16 @@
 /// - Maintains set of frozen addresses
 /// - Prevents emulation from modifying frozen values
 /// - Range-based freeze/unfreeze operations
-/// 
+///
 /// Freezing mechanism:
 /// - Frozen addresses checked before write
 /// - Write blocked if address frozen
 /// - Original value maintained
-/// 
+///
 /// Performance:
 /// - Hash set for O(1) lookup
 /// - Size check before lookup (fast path if empty)
-/// 
+///
 /// Use cases:
 /// - Infinite health/lives (freeze HP/lives addresses)
 /// - Time freeze (freeze timer)
@@ -26,7 +26,7 @@
 /// </remarks>
 class FrozenAddressManager {
 protected:
-	unordered_set<uint32_t> _frozenAddresses;  ///< Set of frozen addresses
+	unordered_set<uint32_t> _frozenAddresses; ///< Set of frozen addresses
 
 public:
 	/// <summary>

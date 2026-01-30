@@ -11,86 +11,86 @@ class Debugger;
 /// Configuration for when to refresh PPU viewer.
 /// </summary>
 struct ViewerRefreshConfig {
-	uint16_t Scanline;  ///< Scanline to refresh on
-	uint16_t Cycle;     ///< Cycle to refresh on
+	uint16_t Scanline; ///< Scanline to refresh on
+	uint16_t Cycle;    ///< Cycle to refresh on
 };
 
 /// <summary>
 /// Sprite visibility status.
 /// </summary>
 enum class SpriteVisibility : uint8_t {
-	Visible = 0,     ///< Sprite visible on screen
-	Offscreen = 1,   ///< Sprite outside screen bounds
-	Disabled = 2     ///< Sprite disabled in OAM
+	Visible = 0,   ///< Sprite visible on screen
+	Offscreen = 1, ///< Sprite outside screen bounds
+	Disabled = 2   ///< Sprite disabled in OAM
 };
 
 /// <summary>
 /// Nullable boolean for platform-specific sprite properties.
 /// </summary>
 enum class NullableBoolean : int8_t {
-	Undefined = -1,  ///< Property not applicable
-	False = 0,       ///< Property false
-	True = 1         ///< Property true
+	Undefined = -1, ///< Property not applicable
+	False = 0,      ///< Property false
+	True = 1        ///< Property true
 };
 
 /// <summary>
 /// Sprite priority for layering.
 /// </summary>
 enum class DebugSpritePriority : int8_t {
-	Undefined = -1,  ///< Priority not applicable
-	Number0 = 0,     ///< Priority 0 (highest)
-	Number1 = 1,     ///< Priority 1
-	Number2 = 2,     ///< Priority 2
-	Number3 = 3,     ///< Priority 3 (lowest)
-	Foreground = 4,  ///< Foreground layer
-	Background = 5   ///< Background layer
+	Undefined = -1, ///< Priority not applicable
+	Number0 = 0,    ///< Priority 0 (highest)
+	Number1 = 1,    ///< Priority 1
+	Number2 = 2,    ///< Priority 2
+	Number3 = 3,    ///< Priority 3 (lowest)
+	Foreground = 4, ///< Foreground layer
+	Background = 5  ///< Background layer
 };
 
 /// <summary>
 /// Sprite rendering mode.
 /// </summary>
 enum class DebugSpriteMode : int8_t {
-	Undefined = -1,  ///< Mode not applicable
-	Normal = 0,      ///< Normal sprite
-	Blending,        ///< Alpha blending
-	Window,          ///< Window mask sprite
-	Stereoscopic     ///< 3D stereoscopic sprite
+	Undefined = -1, ///< Mode not applicable
+	Normal = 0,     ///< Normal sprite
+	Blending,       ///< Alpha blending
+	Window,         ///< Window mask sprite
+	Stereoscopic    ///< 3D stereoscopic sprite
 };
 
 /// <summary>
 /// Sprite information for debugger sprite viewer.
 /// </summary>
 struct DebugSpriteInfo {
-	int32_t TileIndex;        ///< Tile number in tileset
-	int32_t TileAddress;      ///< VRAM address of tile
-	int32_t PaletteAddress;   ///< Palette RAM address
-	TileFormat Format;        ///< Tile format (bpp, encoding)
+	int32_t TileIndex;      ///< Tile number in tileset
+	int32_t TileAddress;    ///< VRAM address of tile
+	int32_t PaletteAddress; ///< Palette RAM address
+	TileFormat Format;      ///< Tile format (bpp, encoding)
 
-	int16_t SpriteIndex;      ///< Sprite number in OAM
+	int16_t SpriteIndex; ///< Sprite number in OAM
 
-	int16_t X;                ///< Sprite X position (screen)
-	int16_t Y;                ///< Sprite Y position (screen)
-	int16_t RawX;             ///< Raw X from OAM
-	int16_t RawY;             ///< Raw Y from OAM
+	int16_t X;    ///< Sprite X position (screen)
+	int16_t Y;    ///< Sprite Y position (screen)
+	int16_t RawX; ///< Raw X from OAM
+	int16_t RawY; ///< Raw Y from OAM
 
-	int16_t Bpp;              ///< Bits per pixel (2, 4, 8)
-	int16_t Palette;          ///< Palette index
-	DebugSpritePriority Priority;  ///< Sprite priority
-	DebugSpriteMode Mode;     ///< Sprite mode
-	uint16_t Width;           ///< Sprite width (pixels)
-	uint16_t Height;          ///< Sprite height (pixels)
-	NullableBoolean HorizontalMirror;  ///< Horizontal flip
-	NullableBoolean VerticalMirror;    ///< Vertical flip
-	NullableBoolean MosaicEnabled;     ///< Mosaic effect enabled
-	NullableBoolean TransformEnabled;  ///< Affine transform enabled
-	NullableBoolean DoubleSize;        ///< Double size (GBA)
-	int8_t TransformParamIndex;        ///< Affine parameter index
-	SpriteVisibility Visibility;       ///< Visibility status
-	bool UseExtendedVram;              ///< Use extended VRAM (SNES)
-	NullableBoolean UseSecondTable;    ///< Use second tile table
+	int16_t Bpp;                      ///< Bits per pixel (2, 4, 8)
+	int16_t Palette;                  ///< Palette index
+	DebugSpritePriority Priority;     ///< Sprite priority
+	DebugSpriteMode Mode;             ///< Sprite mode
+	uint16_t Width;                   ///< Sprite width (pixels)
+	uint16_t Height;                  ///< Sprite height (pixels)
+	NullableBoolean HorizontalMirror; ///< Horizontal flip
+	NullableBoolean VerticalMirror;   ///< Vertical flip
+	NullableBoolean MosaicEnabled;    ///< Mosaic effect enabled
+	NullableBoolean TransformEnabled; ///< Affine transform enabled
+	NullableBoolean DoubleSize;       ///< Double size (GBA)
+	int8_t TransformParamIndex;       ///< Affine parameter index
+	SpriteVisibility Visibility;      ///< Visibility status
+	bool UseExtendedVram;             ///< Use extended VRAM (SNES)
+	NullableBoolean UseSecondTable;   ///< Use second tile table
 
-	uint32_t TileCount;           ///< Number of tiles in sprite
-	uint32_t TileAddresses[8 * 8];  ///< VRAM addresses of all tiles (max 8x8 tiles)
+	uint32_t TileCount;            ///< Number of tiles in sprite
+	uint32_t TileAddresses[8 * 8]; ///< VRAM addresses of all tiles (max 8x8 tiles)
 
 public:
 	/// <summary>
@@ -129,63 +129,63 @@ public:
 /// Nametable mirroring modes.
 /// </summary>
 enum class TilemapMirroring {
-	None,            ///< No mirroring
-	Horizontal,      ///< Horizontal mirroring (NES)
-	Vertical,        ///< Vertical mirroring (NES)
-	SingleScreenA,   ///< Single screen A (NES)
-	SingleScreenB,   ///< Single screen B (NES)
-	FourScreens,     ///< Four screens (NES)
+	None,          ///< No mirroring
+	Horizontal,    ///< Horizontal mirroring (NES)
+	Vertical,      ///< Vertical mirroring (NES)
+	SingleScreenA, ///< Single screen A (NES)
+	SingleScreenB, ///< Single screen B (NES)
+	FourScreens,   ///< Four screens (NES)
 };
 
 /// <summary>
 /// Tilemap layer information for debugger tilemap viewer.
 /// </summary>
 struct DebugTilemapInfo {
-	uint32_t Bpp;           ///< Bits per pixel (2, 4, 8)
-	TileFormat Format;      ///< Tile format
-	TilemapMirroring Mirroring;  ///< Nametable mirroring
+	uint32_t Bpp;               ///< Bits per pixel (2, 4, 8)
+	TileFormat Format;          ///< Tile format
+	TilemapMirroring Mirroring; ///< Nametable mirroring
 
-	uint32_t TileWidth;     ///< Tile width (pixels, usually 8)
-	uint32_t TileHeight;    ///< Tile height (pixels, usually 8)
+	uint32_t TileWidth;  ///< Tile width (pixels, usually 8)
+	uint32_t TileHeight; ///< Tile height (pixels, usually 8)
 
-	uint32_t ScrollX;       ///< Scroll X position
-	uint32_t ScrollWidth;   ///< Scroll width (for wraparound)
-	uint32_t ScrollY;       ///< Scroll Y position
-	uint32_t ScrollHeight;  ///< Scroll height (for wraparound)
+	uint32_t ScrollX;      ///< Scroll X position
+	uint32_t ScrollWidth;  ///< Scroll width (for wraparound)
+	uint32_t ScrollY;      ///< Scroll Y position
+	uint32_t ScrollHeight; ///< Scroll height (for wraparound)
 
-	uint32_t RowCount;      ///< Number of tile rows
-	uint32_t ColumnCount;   ///< Number of tile columns
-	uint32_t TilemapAddress;  ///< Nametable/tilemap address
-	uint32_t TilesetAddress;  ///< CHR/pattern table address
-	int8_t Priority = -1;     ///< Background layer priority
+	uint32_t RowCount;       ///< Number of tile rows
+	uint32_t ColumnCount;    ///< Number of tile columns
+	uint32_t TilemapAddress; ///< Nametable/tilemap address
+	uint32_t TilesetAddress; ///< CHR/pattern table address
+	int8_t Priority = -1;    ///< Background layer priority
 };
 
 /// <summary>
 /// Individual tile information for tilemap viewer.
 /// </summary>
 struct DebugTilemapTileInfo {
-	int32_t Row = -1;       ///< Tile row in tilemap
-	int32_t Column = -1;    ///< Tile column in tilemap
-	int32_t Width = -1;     ///< Tile width (pixels)
-	int32_t Height = -1;    ///< Tile height (pixels)
+	int32_t Row = -1;    ///< Tile row in tilemap
+	int32_t Column = -1; ///< Tile column in tilemap
+	int32_t Width = -1;  ///< Tile width (pixels)
+	int32_t Height = -1; ///< Tile height (pixels)
 
-	int32_t TileMapAddress = -1;  ///< Nametable entry address
+	int32_t TileMapAddress = -1; ///< Nametable entry address
 
 	int32_t TileIndex = -1;   ///< Tile number
 	int32_t TileAddress = -1; ///< CHR/pattern address
 
-	int32_t PixelData = -1;   ///< Pixel data value
+	int32_t PixelData = -1; ///< Pixel data value
 
-	int32_t PaletteIndex = -1;      ///< Palette number
-	int32_t PaletteAddress = -1;    ///< Palette RAM address
-	int32_t BasePaletteIndex = -1;  ///< Base palette index
+	int32_t PaletteIndex = -1;     ///< Palette number
+	int32_t PaletteAddress = -1;   ///< Palette RAM address
+	int32_t BasePaletteIndex = -1; ///< Base palette index
 
-	int32_t AttributeAddress = -1;  ///< Attribute table address
-	int16_t AttributeData = -1;     ///< Attribute byte value
+	int32_t AttributeAddress = -1; ///< Attribute table address
+	int16_t AttributeData = -1;    ///< Attribute byte value
 
-	NullableBoolean HorizontalMirroring = NullableBoolean::Undefined;  ///< H-flip
-	NullableBoolean VerticalMirroring = NullableBoolean::Undefined;    ///< V-flip
-	NullableBoolean HighPriority = NullableBoolean::Undefined;         ///< High priority
+	NullableBoolean HorizontalMirroring = NullableBoolean::Undefined; ///< H-flip
+	NullableBoolean VerticalMirroring = NullableBoolean::Undefined;   ///< V-flip
+	NullableBoolean HighPriority = NullableBoolean::Undefined;        ///< High priority
 };
 
 /// <summary>
@@ -203,36 +203,36 @@ struct DebugSpritePreviewInfo {
 	uint32_t VisibleWidth;  ///< Visible region width
 	uint32_t VisibleHeight; ///< Visible region height
 
-	bool WrapBottomToTop;  ///< Wrap Y coordinates (bottom wraps to top)
-	bool WrapRightToLeft;  ///< Wrap X coordinates (right wraps to left)
+	bool WrapBottomToTop; ///< Wrap Y coordinates (bottom wraps to top)
+	bool WrapRightToLeft; ///< Wrap X coordinates (right wraps to left)
 };
 
 /// <summary>
 /// Raw palette data format.
 /// </summary>
 enum class RawPaletteFormat {
-	Indexed,  ///< Indexed palette (color number references master palette)
-	Rgb555,   ///< 15-bit RGB (5 bits per channel)
-	Rgb333,   ///< 9-bit RGB (3 bits per channel)
-	Rgb222,   ///< 6-bit RGB (2 bits per channel)
-	Rgb444,   ///< 12-bit RGB (4 bits per channel)
-	Bgr444    ///< 12-bit BGR (4 bits per channel)
+	Indexed, ///< Indexed palette (color number references master palette)
+	Rgb555,  ///< 15-bit RGB (5 bits per channel)
+	Rgb333,  ///< 9-bit RGB (3 bits per channel)
+	Rgb222,  ///< 6-bit RGB (2 bits per channel)
+	Rgb444,  ///< 12-bit RGB (4 bits per channel)
+	Bgr444   ///< 12-bit BGR (4 bits per channel)
 };
 
 /// <summary>
 /// Palette information for debugger palette viewer.
 /// </summary>
 struct DebugPaletteInfo {
-	MemoryType PaletteMemType;  ///< Memory type of palette
-	uint32_t PaletteMemOffset;  ///< Offset in palette memory
-	bool HasMemType;            ///< True if memory type available
+	MemoryType PaletteMemType; ///< Memory type of palette
+	uint32_t PaletteMemOffset; ///< Offset in palette memory
+	bool HasMemType;           ///< True if memory type available
 
 	uint32_t ColorCount;          ///< Total color count
 	uint32_t BgColorCount;        ///< Background color count
 	uint32_t SpriteColorCount;    ///< Sprite color count
 	uint32_t SpritePaletteOffset; ///< Offset to sprite palette
 
-	uint32_t ColorsPerPalette;  ///< Colors per sub-palette
+	uint32_t ColorsPerPalette; ///< Colors per sub-palette
 
 	RawPaletteFormat RawFormat; ///< Raw palette format
 	uint32_t RawPalette[512];   ///< Raw palette data
@@ -247,28 +247,28 @@ struct DebugPaletteInfo {
 /// - Base class for platform-specific implementations (NesPpuTools, SnesPpuTools, etc.)
 /// - Provides shared tile/sprite/palette rendering logic
 /// - Platform-specific classes override GetTilemap, GetSpriteList, etc.
-/// 
+///
 /// Debugging tools:
 /// - Tile viewer: Display all tiles in CHR ROM/VRAM
 /// - Sprite viewer: Display all sprites with OAM data
 /// - Tilemap viewer: Display background layers (nametables)
 /// - Palette viewer: Display and edit palette colors
-/// 
+///
 /// Viewer refresh:
 /// - SetViewerUpdateTiming(): Register viewer to refresh at scanline/cycle
 /// - UpdateViewers(): Called at each scanline/cycle to refresh registered viewers
 /// - Viewers refresh at specific timing for accuracy (mid-scanline effects)
-/// 
+///
 /// Tile rendering:
 /// - Template GetRgbPixelColor<format>(): Convert palette index to RGB
 /// - Template GetTilePixelColor<format>(): Extract pixel from tile data
 /// - Template InternalGetTileView<format>(): Render tile view with templates
-/// 
+///
 /// Performance optimizations:
 /// - __forceinline template functions for tile rendering
 /// - Constexpr grayscale palettes for 1/2/4bpp
 /// - Platform-specific fast paths
-/// 
+///
 /// Use cases:
 /// - View CHR/VRAM contents (tile viewer)
 /// - Debug sprite positions/palettes (sprite viewer)
@@ -277,16 +277,16 @@ struct DebugPaletteInfo {
 /// </remarks>
 class PpuTools {
 protected:
-	static constexpr uint32_t _spritePreviewSize = 128 * 128;  ///< Sprite preview canvas size
-	static constexpr uint32_t _grayscaleColorsBpp1[2] = {0xFF000000, 0xFFFFFFFF};  ///< 1bpp grayscale palette
-	static constexpr uint32_t _grayscaleColorsBpp2[4] = {0xFF000000, 0xFF666666, 0xFFBBBBBB, 0xFFFFFFFF};  ///< 2bpp grayscale palette
-	static constexpr uint32_t _grayscaleColorsBpp4[16] = {  ///< 4bpp grayscale palette
+	static constexpr uint32_t _spritePreviewSize = 128 * 128;                                             ///< Sprite preview canvas size
+	static constexpr uint32_t _grayscaleColorsBpp1[2] = {0xFF000000, 0xFFFFFFFF};                         ///< 1bpp grayscale palette
+	static constexpr uint32_t _grayscaleColorsBpp2[4] = {0xFF000000, 0xFF666666, 0xFFBBBBBB, 0xFFFFFFFF}; ///< 2bpp grayscale palette
+	static constexpr uint32_t _grayscaleColorsBpp4[16] = {                                                ///< 4bpp grayscale palette
 	    0xFF000000, 0xFF303030, 0xFF404040, 0xFF505050, 0xFF606060, 0xFF707070, 0xFF808080, 0xFF909090,
 	    0xFF989898, 0xFFA0A0A0, 0xFFAAAAAA, 0xFFBBBBBB, 0xFFCCCCCC, 0xFFDDDDDD, 0xFFEEEEEE, 0xFFFFFFFF};
 
-	Emulator* _emu;         ///< Emulator instance
-	Debugger* _debugger;    ///< Debugger instance
-	unordered_map<uint32_t, ViewerRefreshConfig> _updateTimings;  ///< Viewer ID → refresh timing
+	Emulator* _emu;                                              ///< Emulator instance
+	Debugger* _debugger;                                         ///< Debugger instance
+	unordered_map<uint32_t, ViewerRefreshConfig> _updateTimings; ///< Viewer ID → refresh timing
 
 	/// <summary>
 	/// Blend two colors (alpha compositing).
@@ -305,7 +305,7 @@ protected:
 	/// <returns>ARGB color</returns>
 	template <TileFormat format>
 	__forceinline uint32_t GetRgbPixelColor(const uint32_t* colors, uint8_t colorIndex, uint8_t palette);
-	
+
 	/// <summary>
 	/// Get tile pixel color index (template for compile-time optimization).
 	/// </summary>
@@ -336,7 +336,7 @@ protected:
 	/// <param name="bpp">Bits per pixel</param>
 	/// <returns>ARGB background color</returns>
 	uint32_t GetBackgroundColor(TileBackground bgColor, const uint32_t* colors, uint8_t paletteIndex = 0, uint8_t bpp = 0);
-	
+
 	/// <summary>
 	/// Get background color for sprite viewer.
 	/// </summary>
@@ -399,7 +399,7 @@ public:
 	/// <param name="ppuToolsState">PPU tools state</param>
 	/// <returns>Tile info</returns>
 	virtual DebugTilemapTileInfo GetTilemapTileInfo(uint32_t x, uint32_t y, uint8_t* vram, GetTilemapOptions options, BaseState& baseState, BaseState& ppuToolsState) = 0;
-	
+
 	/// <summary>
 	/// Get tilemap size.
 	/// </summary>
@@ -407,7 +407,7 @@ public:
 	/// <param name="state">Emulator state</param>
 	/// <returns>Frame info with tilemap dimensions</returns>
 	virtual FrameInfo GetTilemapSize(GetTilemapOptions options, BaseState& state) = 0;
-	
+
 	/// <summary>
 	/// Render tilemap.
 	/// </summary>
@@ -428,7 +428,7 @@ public:
 	/// <param name="ppuToolsState">PPU tools state</param>
 	/// <returns>Sprite preview info</returns>
 	virtual DebugSpritePreviewInfo GetSpritePreviewInfo(GetSpritePreviewOptions options, BaseState& state, BaseState& ppuToolsState) = 0;
-	
+
 	/// <summary>
 	/// Get sprite list and render preview.
 	/// </summary>
@@ -452,7 +452,7 @@ public:
 	/// <param name="y">Pixel Y (0-7)</param>
 	/// <returns>Color index</returns>
 	int32_t GetTilePixel(AddressInfo tileAddress, TileFormat format, int32_t x, int32_t y);
-	
+
 	/// <summary>
 	/// Set tile pixel color.
 	/// </summary>
@@ -462,7 +462,7 @@ public:
 	/// <param name="y">Pixel Y (0-7)</param>
 	/// <param name="color">Color index</param>
 	void SetTilePixel(AddressInfo tileAddress, TileFormat format, int32_t x, int32_t y, int32_t color);
-	
+
 	/// <summary>
 	/// Set palette color.
 	/// </summary>
@@ -477,7 +477,7 @@ public:
 	/// <param name="scanline">Scanline to refresh on</param>
 	/// <param name="cycle">Cycle to refresh on</param>
 	virtual void SetViewerUpdateTiming(uint32_t viewerId, uint16_t scanline, uint16_t cycle);
-	
+
 	/// <summary>
 	/// Remove viewer.
 	/// </summary>
@@ -501,7 +501,7 @@ public:
 	__forceinline bool HasOpenedViewer() {
 		return _updateTimings.size() > 0;
 	}
-	
+
 	/// <summary>
 	/// Internal tile view renderer (template for compile-time optimization).
 	/// </summary>

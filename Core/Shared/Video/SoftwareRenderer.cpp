@@ -66,7 +66,7 @@ void SoftwareRenderer::Render(RenderSurfaceInfo& emuHud, RenderSurfaceInfo& scri
 	}
 
 	SoftwareRendererFrame frame = {
-	    {_textureBuffer[1].get(), _frameWidth,         _frameHeight,         true               },
+	    {_textureBuffer[1].get(), _frameWidth,     _frameHeight,     true             },
 	    {emuHud.Buffer.get(),     emuHud.Width,    emuHud.Height,    emuHud.IsDirty   },
 	    {scriptHud.Buffer.get(),  scriptHud.Width, scriptHud.Height, scriptHud.IsDirty}
     };

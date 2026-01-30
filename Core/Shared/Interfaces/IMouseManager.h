@@ -5,9 +5,9 @@
 /// Cursor image types for emulated mouse devices.
 /// </summary>
 enum class CursorImage {
-	Hidden,  ///< Hide cursor (fullscreen gaming)
-	Arrow,   ///< Standard arrow cursor
-	Cross    ///< Crosshair for light gun/mouse precision
+	Hidden, ///< Hide cursor (fullscreen gaming)
+	Arrow,  ///< Standard arrow cursor
+	Cross   ///< Crosshair for light gun/mouse precision
 };
 
 /// <summary>
@@ -22,13 +22,13 @@ enum class CursorImage {
 /// - Mouse emulation for keyboard/gamepad
 /// </remarks>
 struct SystemMouseState {
-	int32_t XPosition;    ///< X coordinate relative to window
-	int32_t YPosition;    ///< Y coordinate relative to window
-	bool LeftButton;      ///< Left button state
-	bool RightButton;     ///< Right button state
-	bool MiddleButton;    ///< Middle button state
-	bool Button4;         ///< Thumb button 1 (back)
-	bool Button5;         ///< Thumb button 2 (forward)
+	int32_t XPosition; ///< X coordinate relative to window
+	int32_t YPosition; ///< Y coordinate relative to window
+	bool LeftButton;   ///< Left button state
+	bool RightButton;  ///< Right button state
+	bool MiddleButton; ///< Middle button state
+	bool Button4;      ///< Thumb button 1 (back)
+	bool Button5;      ///< Thumb button 2 (forward)
 };
 
 /// <summary>
@@ -41,13 +41,13 @@ struct SystemMouseState {
 /// - Linux: X11/Wayland (XWarpPointer, pointer grabs)
 /// - macOS: Cocoa (CGWarpMouseCursorPosition, mouse tracking)
 /// - SDL: SDL_SetRelativeMouseMode, SDL_WarpMouseInWindow
-/// 
+///
 /// Mouse capture mode:
 /// - Used for relative mouse movement (FPS games, mouse emulation)
 /// - Confines cursor to window bounds
 /// - Hides cursor and provides raw input
 /// - Released when window loses focus
-/// 
+///
 /// Thread model:
 /// - All methods called from UI/render thread
 /// - GetSystemMouseState() polled every frame
@@ -69,7 +69,7 @@ public:
 	/// - May be negative or outside window bounds
 	/// </remarks>
 	virtual SystemMouseState GetSystemMouseState(void* rendererHandle) = 0;
-	
+
 	/// <summary>
 	/// Capture mouse input to specified rectangle.
 	/// </summary>
@@ -84,19 +84,19 @@ public:
 	/// - Confine cursor to rectangle bounds
 	/// - Hide system cursor (show custom cursor overlay)
 	/// - Provide raw mouse input (pixel-perfect tracking)
-	/// 
+	///
 	/// Used for:
 	/// - Light gun calibration (Zapper, Super Scope)
 	/// - Relative mouse mode (FPS camera control)
 	/// - Touch screen emulation
 	/// </remarks>
 	virtual bool CaptureMouse(int32_t x, int32_t y, int32_t width, int32_t height, void* rendererHandle) = 0;
-	
+
 	/// <summary>
 	/// Release mouse capture (restore normal cursor).
 	/// </summary>
 	virtual void ReleaseMouse() = 0;
-	
+
 	/// <summary>
 	/// Set system mouse cursor position.
 	/// </summary>
@@ -109,13 +109,13 @@ public:
 	/// - Touch screen position emulation
 	/// </remarks>
 	virtual void SetSystemMousePosition(int32_t x, int32_t y) = 0;
-	
+
 	/// <summary>
 	/// Set cursor image/style.
 	/// </summary>
 	/// <param name="cursor">Cursor type (hidden/arrow/crosshair)</param>
 	virtual void SetCursorImage(CursorImage cursor) = 0;
-	
+
 	/// <summary>
 	/// Get UI pixel scale factor (for HiDPI displays).
 	/// </summary>

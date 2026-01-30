@@ -14,12 +14,12 @@
 /// - Thread B calls Signal()
 /// - Thread A wakes up and continues
 /// - Event automatically resets to non-signaled state
-/// 
+///
 /// Use cases:
 /// - Producer-consumer queues
 /// - Thread wakeup notifications
 /// - Frame synchronization between emulation and rendering threads
-/// 
+///
 /// Implementation uses std::condition_variable + std::mutex.
 /// Automatically resets after waking one thread (unlike ManualResetEvent).
 /// </remarks>
@@ -34,7 +34,7 @@ public:
 	/// Construct AutoResetEvent in non-signaled state.
 	/// </summary>
 	AutoResetEvent();
-	
+
 	/// <summary>
 	/// Destructor - wakes all waiting threads.
 	/// </summary>
@@ -48,7 +48,7 @@ public:
 	/// Can be used to cancel pending signals before they're consumed.
 	/// </remarks>
 	void Reset();
-	
+
 	/// <summary>
 	/// Wait for event to be signaled with optional timeout.
 	/// </summary>
@@ -58,12 +58,12 @@ public:
 	/// Blocks calling thread until:
 	/// - Event is signaled by another thread (returns true)
 	/// - Timeout expires (returns false)
-	/// 
+	///
 	/// Event automatically resets to non-signaled after Wait() returns true.
 	/// If event is already signaled when Wait() called, returns immediately.
 	/// </remarks>
 	bool Wait(int timeoutDelay = 0);
-	
+
 	/// <summary>
 	/// Signal event and wake one waiting thread.
 	/// </summary>

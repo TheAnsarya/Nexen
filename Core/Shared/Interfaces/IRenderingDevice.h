@@ -14,16 +14,16 @@ struct RenderedFrame;
 /// - Emulator HUD (FPS counter, messages, warnings)
 /// - Script HUD (Lua drawings, debug visualizations)
 /// - Input display overlay (controller button indicators)
-/// 
+///
 /// Pixel format: 32-bit ARGB (0xAARRGGBB)
 /// Dirty flag optimizes rendering (skip unchanged surfaces)
 /// Automatic memory management in destructor
 /// </remarks>
 struct RenderSurfaceInfo {
-	std::unique_ptr<uint32_t[]> Buffer;  ///< ARGB pixel data (managed by unique_ptr)
-	uint32_t Width = 0;          ///< Surface width in pixels
-	uint32_t Height = 0;         ///< Surface height in pixels
-	bool IsDirty = true;         ///< True if surface changed since last render
+	std::unique_ptr<uint32_t[]> Buffer; ///< ARGB pixel data (managed by unique_ptr)
+	uint32_t Width = 0;                 ///< Surface width in pixels
+	uint32_t Height = 0;                ///< Surface height in pixels
+	bool IsDirty = true;                ///< True if surface changed since last render
 
 	/// <summary>
 	/// Resize surface if dimensions changed.
@@ -70,17 +70,17 @@ struct RenderSurfaceInfo {
 /// - Direct3D 11: Windows native, best performance on Windows
 /// - SDL Renderer: Software/hardware fallback
 /// - Vulkan: High-performance modern API (planned)
-/// 
+///
 /// Rendering pipeline:
 /// 1. UpdateFrame() receives filtered video frame from VideoDecoder
 /// 2. Render() composites frame + HUD layers + script overlays
 /// 3. Backend swaps buffers and presents to screen
-/// 
+///
 /// Thread model:
 /// - All methods called from render thread (VideoRenderer)
 /// - OnRendererThreadStarted() for thread-local initialization (OpenGL contexts)
 /// - UpdateFrame() may be called without subsequent Render() (frame skipping)
-/// 
+///
 /// HUD composition order:
 /// 1. Emulated video frame (base layer)
 /// 2. Emulator HUD (FPS, messages) - emuHud parameter
@@ -89,7 +89,7 @@ struct RenderSurfaceInfo {
 class IRenderingDevice {
 public:
 	virtual ~IRenderingDevice() {}
-	
+
 	/// <summary>
 	/// Update video frame buffer for next render.
 	/// </summary>
@@ -101,12 +101,12 @@ public:
 	/// - Called before every Render() or during frame skip
 	/// </remarks>
 	virtual void UpdateFrame(RenderedFrame& frame) = 0;
-	
+
 	/// <summary>
 	/// Clear frame buffer to black (used when paused/stopped).
 	/// </summary>
 	virtual void ClearFrame() = 0;
-	
+
 	/// <summary>
 	/// Composite and render frame with HUD overlays.
 	/// </summary>
@@ -120,12 +120,12 @@ public:
 	/// 4. Present to screen
 	/// </remarks>
 	virtual void Render(RenderSurfaceInfo& emuHud, RenderSurfaceInfo& scriptHud) = 0;
-	
+
 	/// <summary>
 	/// Reset renderer state (clear caches, reinitialize).
 	/// </summary>
 	virtual void Reset() = 0;
-	
+
 	/// <summary>
 	/// Callback when render thread starts (for thread-local initialization).
 	/// </summary>
@@ -134,7 +134,7 @@ public:
 	/// Optional - default implementation does nothing.
 	/// </remarks>
 	virtual void OnRendererThreadStarted() {}
-	
+
 	/// <summary>
 	/// Enter/exit exclusive fullscreen mode.
 	/// </summary>

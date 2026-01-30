@@ -9,12 +9,12 @@
 /// - Buffers trace log entries before writing to disk
 /// - Flushes buffer when full (32KB threshold)
 /// - Binary output mode for performance
-/// 
+///
 /// Buffering strategy:
 /// - Accumulates log entries in-memory
 /// - Writes to disk when buffer > 32KB
 /// - Reduces disk I/O overhead for high-frequency logging
-/// 
+///
 /// Use cases:
 /// - Instruction trace logging (CPU execution)
 /// - PPU trace logging (PPU cycles)
@@ -22,10 +22,10 @@
 /// </remarks>
 class TraceLogFileSaver {
 private:
-	bool _enabled = false;      ///< True if logging active
-	string _outputFilepath;     ///< Output file path
-	string _outputBuffer;       ///< In-memory buffer
-	ofstream _outputFile;       ///< Output file stream
+	bool _enabled = false;  ///< True if logging active
+	string _outputFilepath; ///< Output file path
+	string _outputBuffer;   ///< In-memory buffer
+	ofstream _outputFile;   ///< Output file stream
 
 public:
 	/// <summary>

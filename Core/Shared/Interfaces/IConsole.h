@@ -23,9 +23,9 @@ enum class HashType;
 /// Result codes for ROM loading operations.
 /// </summary>
 enum class LoadRomResult {
-	Success,        ///< ROM loaded successfully
-	Failure,        ///< ROM loading failed (corrupted, unsupported)
-	UnknownType     ///< ROM type detection failed
+	Success,    ///< ROM loaded successfully
+	Failure,    ///< ROM loading failed (corrupted, unsupported)
+	UnknownType ///< ROM type detection failed
 };
 
 /// <summary>
@@ -38,23 +38,23 @@ enum class LoadRomResult {
 /// - Overscan detection (first scanline)
 /// </remarks>
 struct PpuFrameInfo {
-	uint8_t* FrameBuffer;       ///< RGB24/ARGB32 pixel data (platform-specific format)
-	uint32_t Width;             ///< Frame width in pixels
-	uint32_t Height;            ///< Frame height in pixels
-	uint32_t FrameBufferSize;   ///< Buffer size in bytes
-	uint32_t FrameCount;        ///< Total frames emulated since power-on
-	uint32_t ScanlineCount;     ///< Scanlines in current frame (NTSC=262, PAL=312)
-	int32_t FirstScanline;      ///< First visible scanline (for overscan handling)
-	uint32_t CycleCount;        ///< CPU cycles in current frame
+	uint8_t* FrameBuffer;     ///< RGB24/ARGB32 pixel data (platform-specific format)
+	uint32_t Width;           ///< Frame width in pixels
+	uint32_t Height;          ///< Frame height in pixels
+	uint32_t FrameBufferSize; ///< Buffer size in bytes
+	uint32_t FrameCount;      ///< Total frames emulated since power-on
+	uint32_t ScanlineCount;   ///< Scanlines in current frame (NTSC=262, PAL=312)
+	int32_t FirstScanline;    ///< First visible scanline (for overscan handling)
+	uint32_t CycleCount;      ///< CPU cycles in current frame
 };
 
 /// <summary>
 /// Shortcut availability state for context-sensitive hotkey filtering.
 /// </summary>
 enum class ShortcutState {
-	Disabled = 0,  ///< Shortcut disabled in current context (e.g., no game loaded)
-	Enabled = 1,   ///< Shortcut explicitly enabled
-	Default = 2    ///< Use default behavior (check global settings)
+	Disabled = 0, ///< Shortcut disabled in current context (e.g., no game loaded)
+	Enabled = 1,  ///< Shortcut explicitly enabled
+	Default = 2   ///< Use default behavior (check global settings)
 };
 
 /// <summary>
@@ -66,7 +66,7 @@ enum class ShortcutState {
 /// - Emulator owns IConsole instance (polymorphic console selection)
 /// - Console owns CPU, PPU, APU, memory, cartridge components
 /// - ISerializable for save states, INotificationListener for event handling
-/// 
+///
 /// Lifecycle:
 /// 1. Construction (platform-specific: new NesConsole(), etc.)
 /// 2. LoadRom() - Initialize cartridge, memory, peripherals
@@ -74,12 +74,12 @@ enum class ShortcutState {
 /// 4. SaveBattery() - Persist battery-backed RAM
 /// 5. Reset() - Soft reset (clear RAM, reset CPU/PPU state)
 /// 6. Destruction - Save battery, release resources
-/// 
+///
 /// Thread model:
 /// - All methods called from emulation thread (Emulator)
 /// - No internal threading (single-threaded determinism)
 /// - Synchronization via frame callbacks (RunFrame returns after PPU frame done)
-/// 
+///
 /// Supported systems:
 /// - NES: 6502 CPU, 2A03 APU, 2C02 PPU
 /// - SNES: 65816 CPU, SPC700 APU, S-PPU
@@ -119,7 +119,7 @@ public:
 	/// 4. Load battery save if exists
 	/// 5. Initialize peripherals (controllers, expansion devices)
 	/// 6. Reset console to initial state
-	/// 
+	///
 	/// VirtualFile supports:
 	/// - Regular files (.nes, .sfc, etc.)
 	/// - Zip/7z archives (automatically extracts)
@@ -137,12 +137,12 @@ public:
 	/// 3. Update controller input
 	/// 4. Process DMA/HDMA transfers
 	/// 5. Return when frame buffer ready
-	/// 
+	///
 	/// Timing:
 	/// - NTSC: 60.0988 FPS, 89342 CPU cycles/frame (NES)
 	/// - PAL: 50.0070 FPS, 106392 CPU cycles/frame (NES)
 	/// - SNES: 60.0988/50.0070 FPS, variable cycles (SA-1, SDD-1, etc.)
-	/// 
+	///
 	/// Synchronization:
 	/// - Blocking call (returns after frame complete)
 	/// - FrameLimiter handles timing outside this method
@@ -158,7 +158,7 @@ public:
 	/// - Periodic auto-save (every N seconds)
 	/// - Game unload
 	/// - Emulator exit
-	/// 
+	///
 	/// Typical save locations:
 	/// - NES: 8KB SRAM (battery-backed PRG-RAM)
 	/// - SNES: 8KB-128KB SRAM (LoROM/HiROM, SA-1 BWRAM)
@@ -192,18 +192,18 @@ public:
 	/// </summary>
 	/// <returns>DIP switch info or empty struct if not applicable</returns>
 	virtual DipSwitchInfo GetDipSwitchInfo() { return {}; }
-	
+
 	/// <summary>
 	/// Get console region (NTSC, PAL, Dendy).
 	/// </summary>
 	/// <returns>Region enum (affects timing, color encoding)</returns>
 	virtual ConsoleRegion GetRegion() = 0;
-	
+
 	/// <summary>
 	/// Get console type (NES, SNES, GB, GBA, etc.).
 	/// </summary>
 	virtual ConsoleType GetConsoleType() = 0;
-	
+
 	/// <summary>
 	/// Get list of CPU types in this console.
 	/// </summary>
@@ -215,7 +215,7 @@ public:
 	/// </summary>
 	/// <returns>Cycle count since power-on</returns>
 	virtual uint64_t GetMasterClock() = 0;
-	
+
 	/// <summary>
 	/// Get master clock frequency in Hz.
 	/// </summary>
@@ -253,7 +253,7 @@ public:
 	/// <param name="getDefaultFilter">True to get default filter, false for custom</param>
 	/// <returns>Video filter instance (platform-specific)</returns>
 	virtual BaseVideoFilter* GetVideoFilter(bool getDefaultFilter) = 0;
-	
+
 	/// <summary>
 	/// Get screen rotation override for rotated displays.
 	/// </summary>
@@ -281,13 +281,13 @@ public:
 	/// </summary>
 	/// <returns>Format info (iNES, FDS, NSF, etc.)</returns>
 	virtual RomFormat GetRomFormat() = 0;
-	
+
 	/// <summary>
 	/// Get audio track info for multi-track formats (NSF, SPC, etc.).
 	/// </summary>
 	/// <returns>Track count, current track, duration</returns>
 	virtual AudioTrackInfo GetAudioTrackInfo() = 0;
-	
+
 	/// <summary>
 	/// Process audio player action (change track, fade, etc.).
 	/// </summary>
@@ -300,7 +300,7 @@ public:
 	/// <param name="relAddress">Relative address (CPU address space)</param>
 	/// <returns>Absolute address (ROM file offset, SRAM offset, etc.)</returns>
 	virtual AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) = 0;
-	
+
 	/// <summary>
 	/// Convert absolute address to relative address.
 	/// </summary>
@@ -308,7 +308,7 @@ public:
 	/// <param name="cpuType">Target CPU type</param>
 	/// <returns>Relative address (CPU address space)</returns>
 	virtual AddressInfo GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) = 0;
-	
+
 	/// <summary>
 	/// Get complete console state (for save states).
 	/// </summary>

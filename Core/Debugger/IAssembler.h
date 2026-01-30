@@ -10,13 +10,13 @@
 /// - Debugger code editing (edit and apply)
 /// - Patch creation (code modifications)
 /// - Runtime code injection (Lua scripts, cheats)
-/// 
+///
 /// Assembly process:
 /// 1. Parse assembly text line-by-line
 /// 2. Resolve labels and addresses
 /// 3. Encode instructions to machine code
 /// 4. Return assembled bytes or error code
-/// 
+///
 /// Error handling:
 /// - Positive return: Number of bytes assembled
 /// - Negative return: AssemblerSpecialCodes error
@@ -25,7 +25,7 @@
 class IAssembler {
 public:
 	virtual ~IAssembler() {}
-	
+
 	/// <summary>
 	/// Assemble code text to machine code.
 	/// </summary>
@@ -41,7 +41,7 @@ public:
 	/// - Binary values: %10101010
 	/// - Decimal values: 64
 	/// - Comments: ; This is a comment
-	/// 
+	///
 	/// Example:
 	/// ```asm
 	/// Start:

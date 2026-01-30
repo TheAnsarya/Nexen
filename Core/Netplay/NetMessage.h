@@ -17,12 +17,12 @@
 /// 4. Receiver: Reconstruct from buffer (NetMessage(buffer, length))
 /// 5. Initialize(): Deserialize fields from buffer
 /// 6. ProcessMessage(): Handle message in subclass
-/// 
+///
 /// Serialization format:
 /// - Uses Serializer class (same as save states)
 /// - Includes version number for compatibility
 /// - Binary format with variable-length encoding
-/// 
+///
 /// Derived message types:
 /// - HandShakeMessage: Client authentication
 /// - InputDataMessage: Controller input state
@@ -36,8 +36,8 @@
 /// </remarks>
 class NetMessage {
 protected:
-	MessageType _type;            ///< Message type identifier
-	stringstream _receivedData;   ///< Deserialization buffer
+	MessageType _type;          ///< Message type identifier
+	stringstream _receivedData; ///< Deserialization buffer
 
 	/// <summary>
 	/// Constructor for sending messages.
@@ -97,7 +97,7 @@ public:
 	/// - 4 bytes: uint32_t message length (including type byte)
 	/// - 1 byte: MessageType
 	/// - N bytes: Serialized message data
-	/// 
+	///
 	/// Blocking send:
 	/// - May block if socket send buffer is full
 	/// - Typically < 1ms for small messages (input data)

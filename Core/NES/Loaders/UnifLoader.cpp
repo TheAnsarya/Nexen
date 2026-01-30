@@ -217,7 +217,7 @@ std::unordered_map<string, int> UnifLoader::_boardMappings = std::unordered_map<
     {"13in1JY110",             UnifBoards::UnknownBoard     },
     {"190in1",                 300                          },
     {"22211",                  132                          },
-    {"255in1",                 UnifBoards::Unl255in1        }, //  Doesn't actually exist as a UNIF file (used to assign a mapper to the 255-in-1 rom)
+    {"255in1",                 UnifBoards::Unl255in1        }, //   Doesn't actually exist as a UNIF file (used to assign a mapper to the 255-in-1 rom)
     {"3D-BLOCK",               UnifBoards::UnknownBoard     },
     {"411120-C",               287                          },
     {"42in1ResetSwitch",       226                          },
@@ -295,7 +295,7 @@ std::unordered_map<string, int> UnifLoader::_boardMappings = std::unordered_map<
     {"NovelDiamond9999999in1", 201                          },
     {"OneBus",                 UnifBoards::UnknownBoard     },
     {"PEC-586",                UnifBoards::UnknownBoard     },
-    {"PUZZLE",                 UnifBoards::UnlPuzzle        }, //  Doesn't actually exist as a UNIF file (used to reassign a new mapper number to the Puzzle beta)
+    {"PUZZLE",                 UnifBoards::UnlPuzzle        }, //   Doesn't actually exist as a UNIF file (used to reassign a new mapper number to the Puzzle beta)
     {"RESET-TXROM",            313                          },
     {"RET-CUFROM",             29                           },
     {"RROM",                   0                            },
@@ -378,5 +378,5 @@ std::unordered_map<string, int> UnifLoader::_boardMappings = std::unordered_map<
     {"HP2018A",                260                          },
     {"DRIPGAME",               284                          },
     {"60311C",                 289                          },
-    {"CHINA_ER_SAN2",          19                           }, //  Appears to be a mapper 19 hack specific for VirtuaNES (which adds chinese text on top of the PPU's output), unknown if a board actually exists
+    {"CHINA_ER_SAN2",          19                           }, //   Appears to be a mapper 19 hack specific for VirtuaNES (which adds chinese text on top of the PPU's output), unknown if a board actually exists
 };

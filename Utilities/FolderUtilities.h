@@ -17,23 +17,23 @@
 /// - HD Pack folder: High-definition texture packs
 /// - Debugger folder: Debug symbols and labels
 /// - Recent games folder: Recently played games list
-/// 
+///
 /// All folders can be overridden via SetFolderOverrides().
 /// Game folders track known ROM locations for quick access.
 /// </remarks>
 class FolderUtilities {
 private:
-	static string _homeFolder;              ///< Root folder for all Mesen2 data
-	static string _saveFolderOverride;      ///< Custom save folder (empty = default)
-	static string _saveStateFolderOverride; ///< Custom save state folder
-	static string _firmwareFolderOverride;  ///< Custom firmware/BIOS folder
-	static string _screenshotFolderOverride;///< Custom screenshot folder
-	static vector<string> _gameFolders;     ///< List of known ROM directories
+	static string _homeFolder;               ///< Root folder for all Mesen2 data
+	static string _saveFolderOverride;       ///< Custom save folder (empty = default)
+	static string _saveStateFolderOverride;  ///< Custom save state folder
+	static string _firmwareFolderOverride;   ///< Custom firmware/BIOS folder
+	static string _screenshotFolderOverride; ///< Custom screenshot folder
+	static vector<string> _gameFolders;      ///< List of known ROM directories
 
 public:
 	/// <summary>Set Mesen2 home folder (root for all data)</summary>
 	static void SetHomeFolder(string homeFolder);
-	
+
 	/// <summary>Get current home folder path</summary>
 	[[nodiscard]] static string GetHomeFolder();
 
@@ -48,28 +48,28 @@ public:
 
 	/// <summary>Add folder to known game directory list</summary>
 	static void AddKnownGameFolder(string gameFolder);
-	
+
 	/// <summary>Get list of all known game directories</summary>
 	[[nodiscard]] static vector<string> GetKnownGameFolders();
 
 	/// <summary>Get battery save folder path</summary>
 	[[nodiscard]] static string GetSaveFolder();
-	
+
 	/// <summary>Get firmware/BIOS folder path</summary>
 	[[nodiscard]] static string GetFirmwareFolder();
-	
+
 	/// <summary>Get save state folder path</summary>
 	[[nodiscard]] static string GetSaveStateFolder();
-	
+
 	/// <summary>Get screenshot folder path</summary>
 	[[nodiscard]] static string GetScreenshotFolder();
-	
+
 	/// <summary>Get HD texture pack folder path</summary>
 	[[nodiscard]] static string GetHdPackFolder();
-	
+
 	/// <summary>Get debugger symbols/labels folder path</summary>
 	[[nodiscard]] static string GetDebuggerFolder();
-	
+
 	/// <summary>Get recent games list folder path</summary>
 	[[nodiscard]] static string GetRecentGamesFolder();
 
@@ -77,7 +77,7 @@ public:
 	/// <param name="rootFolder">Root folder to scan</param>
 	/// <returns>List of subdirectory paths</returns>
 	[[nodiscard]] static vector<string> GetFolders(string rootFolder);
-	
+
 	/// <summary>
 	/// Get list of files in folder matching extensions.
 	/// </summary>
@@ -92,10 +92,10 @@ public:
 	/// <param name="includeExtension">Include file extension in result</param>
 	/// <returns>Filename with or without extension</returns>
 	[[nodiscard]] static string GetFilename(string filepath, bool includeExtension);
-	
+
 	/// <summary>Get file extension from path</summary>
 	[[nodiscard]] static string GetExtension(string filename);
-	
+
 	/// <summary>Get folder name from full path (excluding filename)</summary>
 	[[nodiscard]] static string GetFolderName(string filepath);
 

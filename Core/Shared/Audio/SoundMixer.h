@@ -21,27 +21,27 @@ class ReverbFilter;
 /// - Multi-source mixing (combines NES/SNES/PCE/etc. audio channels)
 /// - Hermite resampling for pitch adjustment (turbo mode, speed changes)
 /// - Effect chain: Equalizer → CrossFeed → Reverb
-/// 
+///
 /// Audio sources (IAudioProvider):
 /// - APU (Audio Processing Unit) from each console
 /// - External audio chips (FDS, VRC6/7, N163, etc.)
 /// - CD-ROM audio (PCE, Sega CD)
 /// - Sample playback (PCM, ADPCM)
-/// 
+///
 /// Effects:
 /// - Equalizer: Per-band volume adjustment (bass/mid/treble)
 /// - CrossFeedFilter: Stereo separation reduction (simulates speaker bleed)
 /// - ReverbFilter: Artificial room reverb
-/// 
+///
 /// Resampling:
 /// - Source rate varies by console (NES: ~44100 Hz, SNES: 32040 Hz, etc.)
 /// - Target rate matches audio device (typically 48000 Hz)
 /// - Hermite interpolation for high-quality resampling
-/// 
+///
 /// Recording:
 /// - safe_ptr<WaveRecorder> for async WAV recording
 /// - Records post-mix, post-effects audio
-/// 
+///
 /// Thread safety:
 /// - safe_ptr guards recorder lifecycle
 /// - Providers register/unregister from different threads

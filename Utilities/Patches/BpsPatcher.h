@@ -13,12 +13,12 @@
 /// - Delta encoding (stores differences efficiently)
 /// - No file size limit
 /// - Metadata support
-/// 
+///
 /// Format structure:
 /// - Header: "BPS1" + source size + target size + metadata size + metadata
 /// - Actions: SourceRead, TargetRead, SourceCopy, TargetCopy (variable-length encoded)
 /// - Footer: source CRC32 + target CRC32 + patch CRC32
-/// 
+///
 /// Used by: ROM hackers, emulator developers, game modders.
 /// Reference: https://www.romhacking.net/documents/746/
 /// </remarks>
@@ -51,7 +51,7 @@ public:
 	/// Returns false if validation fails.
 	/// </remarks>
 	static bool PatchBuffer(std::istream& bpsFile, vector<uint8_t>& input, vector<uint8_t>& output);
-	
+
 	/// <summary>
 	/// Apply BPS patch from file to input buffer.
 	/// </summary>

@@ -13,15 +13,15 @@
 /// - XOR-based encoding (reversible patches)
 /// - No file size limit
 /// - Bidirectional patching support
-/// 
+///
 /// Format structure:
 /// - Header: "UPS1" + source size + target size
 /// - Changes: [offset delta][XOR data] (variable-length encoded)
 /// - Footer: source CRC32 + target CRC32 + patch CRC32
-/// 
+///
 /// Advantages over IPS: CRC validation, unlimited file size, reversible patches.
 /// Comparison to BPS: Similar features, different encoding (XOR vs delta).
-/// 
+///
 /// Used by: ROM hackers, emulator savestates, game modders.
 /// Reference: https://www.romhacking.net/documents/392/
 /// </remarks>
@@ -55,7 +55,7 @@ public:
 	/// XOR encoding allows bidirectional patching (can undo patch).
 	/// </remarks>
 	static bool PatchBuffer(std::istream& upsFile, vector<uint8_t>& input, vector<uint8_t>& output);
-	
+
 	/// <summary>
 	/// Apply UPS patch from file to input buffer.
 	/// </summary>

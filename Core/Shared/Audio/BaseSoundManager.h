@@ -11,17 +11,17 @@
 /// - Linux: ALSA, PulseAudio
 /// - macOS: CoreAudio
 /// - SDL: Cross-platform fallback
-/// 
+///
 /// Latency tracking:
 /// - Measures cursor gap (playback position vs write position)
 /// - Averages over 60-sample window
 /// - Reports buffer underruns (audio starvation)
-/// 
+///
 /// Statistics provided:
 /// - Average latency (milliseconds)
 /// - Buffer size
 /// - Underrun event count
-/// 
+///
 /// Derived classes implement:
 /// - PlayBuffer() - Submit samples to audio device
 /// - Stop() - Stop playback and clear buffers

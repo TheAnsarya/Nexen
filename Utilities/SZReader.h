@@ -14,34 +14,34 @@
 /// <remarks>
 /// Supports 7-Zip (.7z) archives with LZMA/LZMA2 compression.
 /// Automatically detected by ArchiveReader::GetReader() via 7z magic bytes ("7z\xBC\xAF\x27\x1C").
-/// 
+///
 /// Uses LZMA SDK components:
 /// - CSzArEx: 7z archive structure
 /// - CMemBufferInStream: Memory-based input stream
 /// - CLookToRead: Buffered stream reader
-/// 
+///
 /// Allocators: SzAlloc/SzFree for permanent data, SzAllocTemp/SzFreeTemp for temporary buffers.
 /// Thread safety: Not thread-safe - use separate reader per thread.
 /// </remarks>
 class SZReader : public ArchiveReader {
 private:
-	CMemBufferInStream _memBufferStream;  ///< Memory buffer stream for archive data
-	CLookToRead _lookStream;              ///< Buffered stream reader
-	CSzArEx _archive;                     ///< 7z archive structure
-	ISzAlloc _allocImp{SzAlloc, SzFree};  ///< Permanent allocator
+	CMemBufferInStream _memBufferStream;             ///< Memory buffer stream for archive data
+	CLookToRead _lookStream;                         ///< Buffered stream reader
+	CSzArEx _archive;                                ///< 7z archive structure
+	ISzAlloc _allocImp{SzAlloc, SzFree};             ///< Permanent allocator
 	ISzAlloc _allocTempImp{SzAllocTemp, SzFreeTemp}; ///< Temporary allocator
 
 protected:
 	/// <summary>Load and parse 7z archive from memory buffer</summary>
 	bool InternalLoadArchive(void* buffer, size_t size);
-	
+
 	/// <summary>Get list of all files in 7z archive</summary>
 	vector<string> InternalGetFileList();
 
 public:
 	/// <summary>Construct 7z reader</summary>
 	SZReader();
-	
+
 	/// <summary>Destructor - closes archive and frees LZMA resources</summary>
 	virtual ~SZReader();
 

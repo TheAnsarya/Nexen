@@ -10,7 +10,7 @@
 /// - RawCodec: Uncompressed RGB frames
 /// - CamstudioCodec: Lossless RLE compression
 /// - ZmbvCodec: ZMBV lossless compression (DosBox format)
-/// 
+///
 /// Codecs are identified by FourCC codes (e.g., "ZMBV", "DIB", "CSCD").
 /// Used by AviWriter to compress video frames before writing to file.
 /// </remarks>
@@ -24,7 +24,7 @@ public:
 	/// <param name="compressionLevel">Compression level (codec-specific, 0-100)</param>
 	/// <returns>True if setup succeeded</returns>
 	virtual bool SetupCompress(int width, int height, uint32_t compressionLevel) = 0;
-	
+
 	/// <summary>
 	/// Compress single video frame.
 	/// </summary>
@@ -37,7 +37,7 @@ public:
 	/// Keyframes are self-contained, delta frames reference previous frame.
 	/// </remarks>
 	virtual int CompressFrame(bool isKeyFrame, uint8_t* frameData, uint8_t** compressedData) = 0;
-	
+
 	/// <summary>
 	/// Get codec FourCC identifier.
 	/// </summary>

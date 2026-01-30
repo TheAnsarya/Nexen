@@ -21,36 +21,36 @@
 /// - NES Four Score (4 ports)
 /// - SNES Super Multitap (4 or 5 ports)
 /// - PCE Multitap (5 ports)
-/// 
+///
 /// Architecture:
 /// - Template parameter HubPortCount specifies number of sub-ports
 /// - Each sub-port can have different controller type
 /// - Hub aggregates input state from all connected controllers
 /// - State serialized as length-prefixed chunks
-/// 
+///
 /// Input flow:
 /// 1. InternalSetStateFromInput() - Poll all sub-port controllers
 /// 2. UpdateStateFromPorts() - Aggregate states into hub state
 /// 3. ReadRam/WriteRam - Multiplex hardware reads/writes
-/// 
+///
 /// State format:
 /// - [length:1][port0_data:length][length:1][port1_data:length]...
 /// - Length-prefixed for variable controller types
 /// - Text state: "port0:port1:port2:port3"
-/// 
+///
 /// Features:
 /// - Dynamic controller types per port
 /// - Save state support
 /// - Input HUD visualization
 /// - Text state import/export
 /// - RefreshHubState() for debugger controller changes
-/// 
+///
 /// Thread safety: Inherits lock from BaseControlDevice.
 /// </remarks>
 template <int HubPortCount>
 class ControllerHub : public BaseControlDevice, public IControllerHub {
 protected:
-	shared_ptr<BaseControlDevice> _ports[HubPortCount];  ///< Sub-port controller instances
+	shared_ptr<BaseControlDevice> _ports[HubPortCount]; ///< Sub-port controller instances
 
 	/// <summary>Poll input from all connected controllers</summary>
 	void InternalSetStateFromInput() override {

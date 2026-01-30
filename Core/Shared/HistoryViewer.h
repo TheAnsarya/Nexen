@@ -9,11 +9,11 @@ class BaseControlDevice;
 
 /// <summary>Current history viewer playback state</summary>
 struct HistoryViewerState {
-	uint32_t Position = 0;        ///< Current position in history (frames)
-	uint32_t Length = 0;          ///< Total history length (frames)
-	uint32_t Volume = 0;          ///< Audio volume (0-100)
-	double Fps = 60.0;            ///< Playback speed (FPS)
-	bool IsPaused = false;        ///< Playback paused flag
+	uint32_t Position = 0; ///< Current position in history (frames)
+	uint32_t Length = 0;   ///< Total history length (frames)
+	uint32_t Volume = 0;   ///< Audio volume (0-100)
+	double Fps = 60.0;     ///< Playback speed (FPS)
+	bool IsPaused = false; ///< Playback paused flag
 
 	uint32_t SegmentCount = 0;    ///< Number of savestate segments
 	uint32_t Segments[1000] = {}; ///< Segment frame numbers
@@ -21,10 +21,10 @@ struct HistoryViewerState {
 
 /// <summary>History viewer configuration</summary>
 struct HistoryViewerOptions {
-	bool IsPaused = false;  ///< Start paused if true
-	uint32_t Volume = 100;  ///< Audio volume (0-100)
-	uint32_t Width = 256;   ///< Display width
-	uint32_t Height = 240;  ///< Display height
+	bool IsPaused = false; ///< Start paused if true
+	uint32_t Volume = 100; ///< Audio volume (0-100)
+	uint32_t Width = 256;  ///< Display width
+	uint32_t Height = 240; ///< Display height
 };
 
 /// <summary>
@@ -37,43 +37,43 @@ struct HistoryViewerOptions {
 /// - Copies rewind history for non-destructive playback
 /// - IInputProvider interface provides recorded inputs
 /// - Can export to save states or movie files
-/// 
+///
 /// Use cases:
 /// 1. Review TAS movie frame-by-frame
 /// 2. Scrub timeline to find specific moments
 /// 3. Export segments to save states
 /// 4. Save edited movie files
 /// 5. Resume gameplay from any point
-/// 
+///
 /// Playback:
 /// - SeekTo(position) jumps to frame
 /// - ProcessEndOfFrame() advances playback
 /// - Pausing supported via SetOptions
-/// 
+///
 /// Export:
 /// - CreateSaveState(file, position) - Save state at frame
 /// - SaveMovie(file, start, end) - Export movie segment
 /// - ResumeGameplay(position) - Continue from frame in main emulator
-/// 
+///
 /// Performance:
 /// - Fast seeking via savestate snapshots (every 30 frames)
 /// - Reuses existing RewindData compression
 /// - Separate thread avoids blocking main emulator
-/// 
+///
 /// Thread safety: History viewer runs in separate emulation thread.
 /// </remarks>
 class HistoryViewer : public IInputProvider {
 private:
-	Emulator* _emu = nullptr;         ///< History viewer emulator instance
-	Emulator* _mainEmu = nullptr;     ///< Main emulator reference
-	deque<RewindData> _history;       ///< Copied rewind history
-	uint32_t _position = 0;           ///< Current playback position (frames)
-	uint32_t _pollCounter = 0;        ///< Input poll counter
+	Emulator* _emu = nullptr;     ///< History viewer emulator instance
+	Emulator* _mainEmu = nullptr; ///< Main emulator reference
+	deque<RewindData> _history;   ///< Copied rewind history
+	uint32_t _position = 0;       ///< Current playback position (frames)
+	uint32_t _pollCounter = 0;    ///< Input poll counter
 
 public:
 	/// <summary>Construct history viewer for emulator</summary>
 	HistoryViewer(Emulator* emu);
-	
+
 	/// <summary>Destructor - releases resources</summary>
 	virtual ~HistoryViewer();
 
@@ -86,7 +86,7 @@ public:
 
 	/// <summary>Set playback options (volume, pause, resolution)</summary>
 	void SetOptions(HistoryViewerOptions options);
-	
+
 	/// <summary>Get current playback state</summary>
 	HistoryViewerState GetState();
 
@@ -99,7 +99,7 @@ public:
 	/// Fast for positions near savestate boundaries (every 30 frames).
 	/// </remarks>
 	void SeekTo(uint32_t seekPosition);
-	
+
 	/// <summary>
 	/// Create save state file at specific position.
 	/// </summary>
@@ -107,7 +107,7 @@ public:
 	/// <param name="position">Frame position</param>
 	/// <returns>True if save state created successfully</returns>
 	bool CreateSaveState(string outputFile, uint32_t position);
-	
+
 	/// <summary>
 	/// Save movie file for frame range.
 	/// </summary>

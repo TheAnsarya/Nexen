@@ -14,12 +14,12 @@
 ///     array[i] = process(i);
 /// });
 /// </code>
-/// 
+///
 /// Benefits over runtime loop:
 /// - Complete loop unrolling (no branch overhead)
 /// - Index value known at compile-time (enables further optimizations)
 /// - Can be used with compile-time arrays and constexpr functions
-/// 
+///
 /// Uses if constexpr (C++17) for zero-cost compile-time branching.
 /// Recursive template instantiation terminates with specialized StaticFor<n, n> base case.
 /// </remarks>

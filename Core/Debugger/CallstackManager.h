@@ -15,35 +15,35 @@ class IDebugger;
 /// - Tracks subroutine call/return flow
 /// - Provides callstack for debugger UI
 /// - Integrates with profiler for performance analysis
-/// 
+///
 /// Call stack tracking:
 /// - Push on JSR/CALL (subroutine call)
 /// - Pop on RTS/RET (subroutine return)
 /// - Detects invalid returns (stack corruption)
 /// - Handles interrupts (IRQ/NMI) separately
-/// 
+///
 /// Stack frame information:
 /// - Source address (where JSR executed)
 /// - Destination address (subroutine entry point)
 /// - Return address (where RTS will return to)
 /// - Stack pointer at call time
 /// - Flags (interrupt, function call, etc.)
-/// 
+///
 /// Profiler integration:
 /// - Tracks time spent in each function
 /// - Inclusive vs exclusive time
 /// - Call count statistics
 /// - Hot spot detection
-/// 
+///
 /// Thread model:
 /// - All methods called from emulation thread
 /// - Inline IsReturnAddrMatch() for performance (every RTS)
 /// </remarks>
 class CallstackManager {
 private:
-	Debugger* _debugger;                   ///< Parent debugger instance
-	deque<StackFrameInfo> _callstack;      ///< Call stack (LIFO)
-	unique_ptr<Profiler> _profiler;        ///< Performance profiler
+	Debugger* _debugger;              ///< Parent debugger instance
+	deque<StackFrameInfo> _callstack; ///< Call stack (LIFO)
+	unique_ptr<Profiler> _profiler;   ///< Performance profiler
 
 public:
 	/// <summary>
@@ -71,13 +71,13 @@ public:
 	/// - CALL (Z80, Game Boy)
 	/// - BL (ARM)
 	/// - Interrupts (IRQ/NMI/etc.)
-	/// 
+	///
 	/// Profiler:
 	/// - Starts function timer
 	/// - Increments call count
 	/// </remarks>
 	void Push(AddressInfo& src, uint32_t srcAddr, AddressInfo& dest, uint32_t destAddr, AddressInfo& ret, uint32_t returnAddress, uint32_t returnStackPointer, StackFrameFlags flags);
-	
+
 	/// <summary>
 	/// Pop stack frame on subroutine return.
 	/// </summary>
@@ -90,11 +90,11 @@ public:
 	/// - RET (Z80, Game Boy)
 	/// - BX LR (ARM)
 	/// - RTI (interrupt return)
-	/// 
+	///
 	/// Validation:
 	/// - Checks if return address matches expected
 	/// - Warns on stack corruption (invalid return)
-	/// 
+	///
 	/// Profiler:
 	/// - Stops function timer
 	/// - Records execution time
@@ -111,7 +111,7 @@ public:
 	/// - "Step Out" debugger feature (step until return)
 	/// - Return address validation
 	/// - Callstack corruption detection
-	/// 
+	///
 	/// Inline for performance (called every RTS instruction).
 	/// </remarks>
 	__forceinline bool IsReturnAddrMatch(uint32_t destAddr) {
@@ -134,19 +134,19 @@ public:
 	/// <param name="callstackArray">Output stack frame array</param>
 	/// <param name="callstackSize">Input: max size, Output: actual size</param>
 	void GetCallstack(StackFrameInfo* callstackArray, uint32_t& callstackSize);
-	
+
 	/// <summary>
 	/// Get return address of topmost stack frame.
 	/// </summary>
 	/// <returns>Return address or -1 if callstack empty</returns>
 	int32_t GetReturnAddress();
-	
+
 	/// <summary>
 	/// Get return stack pointer of topmost frame.
 	/// </summary>
 	/// <returns>Stack pointer or -1 if callstack empty</returns>
 	int64_t GetReturnStackPointer();
-	
+
 	/// <summary>
 	/// Get profiler instance.
 	/// </summary>

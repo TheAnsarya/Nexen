@@ -30,7 +30,7 @@ public:
 	/// Uses slice-by-16 algorithm for high performance (processes 16 bytes per iteration).
 	/// </remarks>
 	[[nodiscard]] static uint32_t GetCRC(uint8_t* buffer, std::streamoff length);
-	
+
 	/// <summary>
 	/// Calculate CRC32 checksum for a byte vector.
 	/// </summary>
@@ -41,7 +41,7 @@ public:
 	/// Uses same slice-by-16 algorithm as buffer variant.
 	/// </remarks>
 	[[nodiscard]] static uint32_t GetCRC(vector<uint8_t>& data);
-	
+
 	/// <summary>
 	/// Calculate CRC32 checksum for an entire file.
 	/// </summary>

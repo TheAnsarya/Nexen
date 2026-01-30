@@ -12,21 +12,21 @@
 /// - Pure static class (no instantiation)
 /// - Compile-time constant functions (constexpr)
 /// - Platform-agnostic utilities
-/// 
+///
 /// CPU type utilities:
 /// - GetCpuMemoryType(): MemoryType → CpuType
 /// - ToCpuType(): MemoryType → CpuType
 /// - GetProgramCounterSize(): CpuType → address width
-/// 
+///
 /// Memory classification:
 /// - IsRelativeMemory(): Is CPU-addressable memory
 /// - IsPpuMemory(): Is PPU memory (VRAM/OAM/palette)
 /// - IsRom(): Is read-only memory
 /// - IsVolatileRam(): Is volatile (not battery-backed)
-/// 
+///
 /// Address formatting:
 /// - AddressToHex(): Format address for CPU type (16/20/24/32-bit)
-/// 
+///
 /// Platform support:
 /// - NES, SNES (+ SA-1/SPC/GSU/etc), GB, GBA, PCE, SMS, WS
 /// </remarks>

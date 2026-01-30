@@ -10,12 +10,12 @@
 /// - PCM 16-bit signed samples
 /// - Mono or stereo support
 /// - Sample rate configurable (typically 48000 Hz)
-/// 
+///
 /// File lifecycle:
 /// 1. Constructor creates file and writes initial header
 /// 2. WriteSamples() appends sample data
 /// 3. Destructor/CloseFile() updates header with final size
-/// 
+///
 /// Thread safety:
 /// - Not thread-safe, caller must synchronize
 /// - Used via safe_ptr in SoundMixer for protection

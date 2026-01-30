@@ -12,13 +12,13 @@ class BaseControlDevice;
 /// - HistoryViewer: TAS history scrubbing and frame-by-frame playback
 /// - GameClient: Network play client (receives input from server)
 /// - GameServer: Network play server (provides host input)
-/// 
+///
 /// Input flow:
 /// 1. Emulation core requests input for controller port
 /// 2. BaseControlManager checks if IInputProvider is registered
 /// 3. Provider calls SetInput() to update device state
 /// 4. Device state used for current frame
-/// 
+///
 /// Priority order:
 /// - Movie playback overrides user input
 /// - Network input overrides local input

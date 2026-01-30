@@ -223,7 +223,7 @@ enum BlendType {
 	BLEND_NONE = 0,
 	BLEND_NORMAL,   // a normal indication to blend
 	BLEND_DOMINANT, // a strong indication to blend
-	// attention: BlendType must fit into the value range of 2 bit!!!
+	                // attention: BlendType must fit into the value range of 2 bit!!!
 };
 
 struct BlendResult {
@@ -308,7 +308,8 @@ struct Kernel_3x3 {
 	}
 // we cannot and NEED NOT write "ker.##x" since ## concatenates preprocessor tokens but "." is not a token
 DEF_GETTER(a)
-DEF_GETTER(b) DEF_GETTER(c)
+DEF_GETTER(b)
+DEF_GETTER(c)
     DEF_GETTER(d) DEF_GETTER(e) DEF_GETTER(f)
         DEF_GETTER(g) DEF_GETTER(h) DEF_GETTER(i)
 #undef DEF_GETTER
@@ -721,8 +722,8 @@ struct Scaler3x : public ColorGradient {
 	static void blendCorner(uint32_t col, OutputMatrix& out) {
 		// model a round corner
 		alphaGrad<45, 100>(out.template ref<2, 2>(), col); // exact: 0.4545939598
-		// alphaGrad<7, 256>(out.template ref<2, 1>(), col); //0.02826017254 -> negligible + avoid conflicts with other rotations for this odd scale
-		// alphaGrad<7, 256>(out.template ref<1, 2>(), col); //0.02826017254
+		                                                   // alphaGrad<7, 256>(out.template ref<2, 1>(), col); //0.02826017254 -> negligible + avoid conflicts with other rotations for this odd scale
+		                                                   // alphaGrad<7, 256>(out.template ref<1, 2>(), col); //0.02826017254
 	}
 };
 
@@ -862,8 +863,8 @@ struct Scaler5x : public ColorGradient {
 		alphaGrad<86, 100>(out.template ref<4, 4>(), col); // exact: 0.8631434088
 		alphaGrad<23, 100>(out.template ref<4, 3>(), col); // 0.2306749731
 		alphaGrad<23, 100>(out.template ref<3, 4>(), col); // 0.2306749731
-		// alphaGrad<1, 64>(out.template ref<4, 2>(), col); //0.01676812367 -> negligible + avoid conflicts with other rotations for this odd scale
-		// alphaGrad<1, 64>(out.template ref<2, 4>(), col); //0.01676812367
+		                                                   // alphaGrad<1, 64>(out.template ref<4, 2>(), col); //0.01676812367 -> negligible + avoid conflicts with other rotations for this odd scale
+		                                                   // alphaGrad<1, 64>(out.template ref<2, 4>(), col); //0.01676812367
 	}
 };
 

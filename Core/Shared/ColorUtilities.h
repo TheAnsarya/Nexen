@@ -11,12 +11,12 @@
 /// - 4-bit per channel (Genesis/SMS: 4096 colors RGB444)
 /// - 5-bit per channel (SNES/GBA: 32768 colors RGB555)
 /// - 8-bit per channel (Modern: 16.7M colors RGB888/ARGB8888)
-/// 
+///
 /// Bit expansion preserves relative brightness:
 /// - 2-bit to 8-bit: 0→0, 1→85, 2→170, 3→255 (evenly spaced)
 /// - 4-bit to 8-bit: 0→0, 1→17, ... 15→255 (value * 17)
 /// - 5-bit to 8-bit: 0→0, 1→8, ... 31→255 (value * 8 + value / 4)
-/// 
+///
 /// All conversions marked [[nodiscard]] to prevent accidental discard.
 /// </remarks>
 class ColorUtilities {
@@ -59,7 +59,7 @@ public:
 	///   Bits 10-14: Blue (5 bits)
 	///   Bits 5-9:   Green (5 bits)
 	///   Bits 0-4:   Red (5 bits)
-	/// 
+	///
 	/// Used by SNES, GBA, and other 16-bit systems.
 	/// Alpha channel is always 0xFF (fully opaque).
 	/// This is a constexpr function that can be evaluated at compile time.

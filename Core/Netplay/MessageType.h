@@ -15,7 +15,7 @@
 ///    - Server → All Clients: MovieData (broadcast all inputs every frame)
 /// 6. Server → Client: GameInformation (on ROM change/reset)
 /// 7. Server → Client: ForceDisconnect (kick/ban player)
-/// 
+///
 /// Message format:
 /// - 4 bytes: Message length (uint32_t)
 /// - 1 byte: MessageType enum
