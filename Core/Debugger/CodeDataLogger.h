@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "Debugger/DebugTypes.h"
 
 class Disassembler;
@@ -42,7 +43,7 @@ class CodeDataLogger {
 protected:
 	constexpr static int HeaderSize = 9; ///< CDL file header size ("CDLv2" + 4-byte CRC32)
 
-	uint8_t* _cdlData = nullptr;  ///< CDL flags (one byte per ROM byte)
+	std::unique_ptr<uint8_t[]> _cdlData;  ///< CDL flags (one byte per ROM byte)
 	CpuType _cpuType = CpuType::Snes;  ///< CPU type
 	MemoryType _memType = {};     ///< Memory type being tracked
 	uint32_t _memSize = 0;        ///< Memory size

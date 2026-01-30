@@ -13,8 +13,8 @@ PcePsg::PcePsg(Emulator* emu, PceConsole* console) {
 	_console = console;
 	_soundMixer = emu->GetSoundMixer();
 
-	_soundBuffer = new int16_t[PcePsg::MaxSamples * 2];
-	memset(_soundBuffer, 0, PcePsg::MaxSamples * 2 * sizeof(int16_t));
+	_soundBuffer = std::make_unique<int16_t[]>(PcePsg::MaxSamples * 2);
+	memset(_soundBuffer.get(), 0, PcePsg::MaxSamples * 2 * sizeof(int16_t));
 
 	for (int i = 0; i < 6; i++) {
 		_channels[i].Init(i, this);
@@ -35,7 +35,6 @@ PcePsg::PcePsg(Emulator* emu, PceConsole* console) {
 PcePsg::~PcePsg() {
 	blip_delete(_leftChannel);
 	blip_delete(_rightChannel);
-	delete[] _soundBuffer;
 }
 
 bool PcePsg::IsLfoEnabled() {
@@ -157,9 +156,9 @@ void PcePsg::PlayQueuedAudio() {
 	blip_end_frame(_leftChannel, _clockCounter);
 	blip_end_frame(_rightChannel, _clockCounter);
 
-	uint32_t sampleCount = (uint32_t)blip_read_samples(_leftChannel, _soundBuffer, PcePsg::MaxSamples, 1);
-	blip_read_samples(_rightChannel, _soundBuffer + 1, PcePsg::MaxSamples, 1);
-	_soundMixer->PlayAudioBuffer(_soundBuffer, sampleCount, PcePsg::SampleRate);
+	uint32_t sampleCount = (uint32_t)blip_read_samples(_leftChannel, _soundBuffer.get(), PcePsg::MaxSamples, 1);
+	blip_read_samples(_rightChannel, _soundBuffer.get() + 1, PcePsg::MaxSamples, 1);
+	_soundMixer->PlayAudioBuffer(_soundBuffer.get(), sampleCount, PcePsg::SampleRate);
 	_clockCounter = 0;
 
 	UpdateSoundOffset();

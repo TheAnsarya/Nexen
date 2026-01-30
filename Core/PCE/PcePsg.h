@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "PCE/PceConstants.h"
 #include "PCE/PceTypes.h"
 #include "PCE/PcePsgChannel.h"
@@ -24,7 +25,7 @@ private:
 	PcePsgChannel _channels[6] = {};
 	uint64_t _lastClock = 0;
 
-	int16_t* _soundBuffer = nullptr;
+	std::unique_ptr<int16_t[]> _soundBuffer;
 	blip_t* _leftChannel = nullptr;
 	blip_t* _rightChannel = nullptr;
 	int16_t _prevLeftOutput = 0;

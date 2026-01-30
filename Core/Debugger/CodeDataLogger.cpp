@@ -14,22 +14,20 @@ CodeDataLogger::CodeDataLogger(Debugger* debugger, MemoryType memType, uint32_t 
 	_cpuType = cpuType;
 	_memSize = memSize;
 	_romCrc32 = romCrc32;
-	_cdlData = new uint8_t[memSize];
+	_cdlData = std::make_unique<uint8_t[]>(memSize);
 	Reset();
 
 	debugger->GetCdlManager()->RegisterCdl(memType, this);
 }
 
-CodeDataLogger::~CodeDataLogger() {
-	delete[] _cdlData;
-}
+CodeDataLogger::~CodeDataLogger() = default;
 
 void CodeDataLogger::Reset() {
-	memset(_cdlData, 0, _memSize);
+	memset(_cdlData.get(), 0, _memSize);
 }
 
 uint8_t* CodeDataLogger::GetRawData() {
-	return _cdlData;
+	return _cdlData.get();
 }
 
 uint32_t CodeDataLogger::GetSize() {
@@ -52,14 +50,14 @@ bool CodeDataLogger::LoadCdlFile(string cdlFilepath, bool autoResetCdl) {
 			if (memcmp(cdlData.data(), "CDLv2", 5) == 0) {
 				uint32_t savedCrc = cdlData[5] | (cdlData[6] << 8) | (cdlData[7] << 16) | (cdlData[8] << 24);
 				if ((!autoResetCdl || savedCrc == _romCrc32) && fileSize >= _memSize + CodeDataLogger::HeaderSize) {
-					memcpy(_cdlData, cdlData.data() + CodeDataLogger::HeaderSize, _memSize);
+					memcpy(_cdlData.get(), cdlData.data() + CodeDataLogger::HeaderSize, _memSize);
 					InternalLoadCdlFile(cdlData.data() + CodeDataLogger::HeaderSize, (uint32_t)cdlData.size() - CodeDataLogger::HeaderSize);
 				}
 			} else {
 				MessageManager::Log("[Warning] CDL file doesn't contain header/CRC and may be incompatible.");
 
 				// Older CRC-less CDL file, use as-is without checking CRC to avoid data loss
-				memcpy(_cdlData, cdlData.data(), _memSize);
+				memcpy(_cdlData.get(), cdlData.data(), _memSize);
 				InternalLoadCdlFile(cdlData.data(), (uint32_t)cdlData.size());
 			}
 
@@ -77,7 +75,7 @@ bool CodeDataLogger::SaveCdlFile(string cdlFilepath) {
 		cdlFile.put((_romCrc32 >> 8) & 0xFF);
 		cdlFile.put((_romCrc32 >> 16) & 0xFF);
 		cdlFile.put((_romCrc32 >> 24) & 0xFF);
-		cdlFile.write((char*)_cdlData, _memSize);
+		cdlFile.write((char*)_cdlData.get(), _memSize);
 		InternalSaveCdlFile(cdlFile);
 		cdlFile.close();
 		return true;
@@ -129,12 +127,12 @@ bool CodeDataLogger::IsData(uint32_t absoluteAddr) {
 
 void CodeDataLogger::SetCdlData(uint8_t* cdlData, uint32_t length) {
 	if (length <= _memSize) {
-		memcpy(_cdlData, cdlData, length);
+		memcpy(_cdlData.get(), cdlData, length);
 	}
 }
 
 void CodeDataLogger::GetCdlData(uint32_t offset, uint32_t length, uint8_t* cdlData) {
-	memcpy(cdlData, _cdlData + offset, length);
+	memcpy(cdlData, _cdlData.get() + offset, length);
 }
 
 uint8_t CodeDataLogger::GetFlags(uint32_t addr) {
