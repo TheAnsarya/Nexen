@@ -83,9 +83,9 @@ bool ZmbvCodec::SetupBuffers(zmbv_format_t _format, int blockwidth, int blockhei
 	};
 	bufsize = (height + 2 * MAX_VECTOR) * pitch * pixelsize + 2048;
 
-	buf1 = new unsigned char[bufsize];
-	buf2 = new unsigned char[bufsize];
-	work = new unsigned char[bufsize];
+	buf1 = std::make_unique<unsigned char[]>(bufsize);
+	buf2 = std::make_unique<unsigned char[]>(bufsize);
+	work = std::make_unique<unsigned char[]>(bufsize);
 
 	int xblocks = (width / blockwidth);
 	int xleft = width % blockwidth;
@@ -96,7 +96,7 @@ bool ZmbvCodec::SetupBuffers(zmbv_format_t _format, int blockwidth, int blockhei
 	if (yleft)
 		yblocks++;
 	blockcount = yblocks * xblocks;
-	blocks = new FrameBlock[blockcount];
+	blocks = std::make_unique<FrameBlock[]>(blockcount);
 
 	if (!buf1 || !buf2 || !work || !blocks) {
 		FreeBuffers();
@@ -122,15 +122,15 @@ bool ZmbvCodec::SetupBuffers(zmbv_format_t _format, int blockwidth, int blockhei
 		}
 	}
 
-	memset(buf1, 0, bufsize);
-	memset(buf2, 0, bufsize);
-	memset(work, 0, bufsize);
-	oldframe = buf1;
-	newframe = buf2;
+	memset(buf1.get(), 0, bufsize);
+	memset(buf2.get(), 0, bufsize);
+	memset(work.get(), 0, bufsize);
+	oldframe = buf1.get();
+	newframe = buf2.get();
 	format = _format;
 
 	_bufSize = NeededSize(width, height, format);
-	_buf = new uint8_t[_bufSize];
+	_buf = std::make_unique<uint8_t[]>(_bufSize);
 
 	return true;
 }
@@ -192,7 +192,7 @@ INLINE void ZmbvCodec::AddXorBlock(int vx, int vy, FrameBlock* block) {
 	P* pnew = ((P*)newframe) + block->start;
 	for (int y = 0; y < block->dy; y++) {
 		for (int x = 0; x < block->dx; x++) {
-			*((P*)&work[workUsed]) = pnew[x] ^ pold[x];
+			*((P*)(work.get() + workUsed)) = pnew[x] ^ pold[x];
 			workUsed += sizeof(P);
 		}
 		pold += pitch;
@@ -202,7 +202,7 @@ INLINE void ZmbvCodec::AddXorBlock(int vx, int vy, FrameBlock* block) {
 
 template <class P>
 void ZmbvCodec::AddXorFrame(void) {
-	signed char* vectors = (signed char*)&work[workUsed];
+	signed char* vectors = (signed char*)(work.get() + workUsed);
 	/* Align the following xor data on 4 byte boundary*/
 	workUsed = (workUsed + blockcount * 2 + 3) & ~3;
 	for (int b = 0; b < blockcount; b++) {
@@ -263,7 +263,7 @@ bool ZmbvCodec::PrepareCompressFrame(int flags, zmbv_format_t _format, char* pal
 	compressInfo.linesDone = 0;
 	compressInfo.writeSize = _bufSize;
 	compressInfo.writeDone = 1;
-	compressInfo.writeBuf = (unsigned char*)_buf;
+	compressInfo.writeBuf = (unsigned char*)_buf.get();
 	/* Set a pointer to the first byte which will contain info about this frame */
 	firstByte = compressInfo.writeBuf;
 	*firstByte = 0;
@@ -330,7 +330,7 @@ int ZmbvCodec::FinishCompressFrame(uint8_t** compressedData) {
 		/* Add the full frame data */
 		unsigned char* readFrame = newframe + pixelsize * (MAX_VECTOR + MAX_VECTOR * pitch);
 		for (i = 0; i < height; i++) {
-			memcpy(&work[workUsed], readFrame, width * pixelsize);
+			memcpy(work.get() + workUsed, readFrame, width * pixelsize);
 			readFrame += pitch * pixelsize;
 			workUsed += width * pixelsize;
 		}
@@ -352,7 +352,7 @@ int ZmbvCodec::FinishCompressFrame(uint8_t** compressedData) {
 		}
 	}
 	/* Create the actual frame with compression */
-	zstream.next_in = (Bytef*)work;
+	zstream.next_in = (Bytef*)work.get();
 	zstream.avail_in = workUsed;
 	zstream.total_in = 0;
 
@@ -362,30 +362,21 @@ int ZmbvCodec::FinishCompressFrame(uint8_t** compressedData) {
 
 	deflate(&zstream, Z_SYNC_FLUSH);
 
-	*compressedData = _buf;
+	*compressedData = _buf.get();
 
 	return compressInfo.writeDone + zstream.total_out;
 }
 
 void ZmbvCodec::FreeBuffers() {
-	delete[] blocks;
-	blocks = nullptr;
-	delete[] buf1;
-	buf1 = nullptr;
-	delete[] buf2;
-	buf2 = nullptr;
-	delete[] work;
-	work = nullptr;
-	delete[] _buf;
-	_buf = nullptr;
+	blocks.reset();
+	buf1.reset();
+	buf2.reset();
+	work.reset();
+	_buf.reset();
 }
 
 ZmbvCodec::ZmbvCodec() {
 	CreateVectorTable();
-	blocks = nullptr;
-	buf1 = nullptr;
-	buf2 = nullptr;
-	work = nullptr;
 	memset(&zstream, 0, sizeof(zstream));
 }
 

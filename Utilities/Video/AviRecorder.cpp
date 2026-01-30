@@ -5,7 +5,6 @@ AviRecorder::AviRecorder(VideoCodec codec, uint32_t compressionLevel) {
 	_recording = false;
 	_stopFlag = false;
 	_framePending = false;
-	_frameBuffer = nullptr;
 	_frameBufferLength = 0;
 	_sampleRate = 0;
 	_codec = codec;
@@ -17,10 +16,7 @@ AviRecorder::~AviRecorder() {
 		StopRecording();
 	}
 
-	if (_frameBuffer) {
-		delete[] _frameBuffer;
-		_frameBuffer = nullptr;
-	}
+	_frameBuffer.reset();
 }
 
 bool AviRecorder::Init(string filename) {
@@ -41,7 +37,7 @@ bool AviRecorder::StartRecording(uint32_t width, uint32_t height, uint32_t bpp, 
 		_height = height;
 		_fps = fps;
 		_frameBufferLength = height * width * bpp;
-		_frameBuffer = new uint8_t[_frameBufferLength];
+		_frameBuffer = std::make_unique<uint8_t[]>(_frameBufferLength);
 
 		_aviWriter.reset(new AviWriter());
 		if (!_aviWriter->StartWrite(_outputFile, _codec, width, height, bpp, (uint32_t)(_fps * 1000000), audioSampleRate, _compressionLevel)) {
@@ -49,7 +45,7 @@ bool AviRecorder::StartRecording(uint32_t width, uint32_t height, uint32_t bpp, 
 			return false;
 		}
 
-		_aviWriterThread = std::thread([=]() {
+		_aviWriterThread = std::thread([this]() {
 			while (!_stopFlag) {
 				_waitFrame.Wait();
 				if (_stopFlag) {
@@ -57,7 +53,7 @@ bool AviRecorder::StartRecording(uint32_t width, uint32_t height, uint32_t bpp, 
 				}
 
 				auto lock = _lock.AcquireSafe();
-				_aviWriter->AddFrame(_frameBuffer);
+				_aviWriter->AddFrame(_frameBuffer.get());
 				_framePending = false;
 			}
 		});
@@ -92,7 +88,7 @@ bool AviRecorder::AddFrame(void* frameBuffer, uint32_t width, uint32_t height, d
 
 			auto lock = _lock.AcquireSafe();
 			_framePending = true;
-			memcpy(_frameBuffer, frameBuffer, _frameBufferLength);
+			memcpy(_frameBuffer.get(), frameBuffer, _frameBufferLength);
 			_waitFrame.Signal();
 		}
 	}

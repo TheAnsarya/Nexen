@@ -27,7 +27,7 @@
 class ArchiveReader {
 protected:
 	bool _initialized = false;  ///< Archive successfully loaded flag
-	uint8_t* _buffer = nullptr; ///< Internal archive data buffer
+	std::unique_ptr<uint8_t[]> _buffer; ///< Internal archive data buffer
 	
 	/// <summary>Derived class implements format-specific archive loading</summary>
 	/// <param name="buffer">Archive data buffer</param>

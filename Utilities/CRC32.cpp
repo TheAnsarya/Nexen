@@ -52,14 +52,12 @@ uint32_t CRC32::GetCRC(string filename) {
 		file.seekg(0, std::ios::end);
 		std::streamoff fileSize = file.tellg();
 		file.seekg(0, std::ios::beg);
-		uint8_t* buffer = new uint8_t[(uint32_t)fileSize];
+		std::vector<uint8_t> buffer((uint32_t)fileSize);
 
-		file.read((char*)buffer, fileSize);
+		file.read((char*)buffer.data(), fileSize);
 		file.close();
 
-		crc = crc32_16bytes(buffer, fileSize, 0);
-
-		delete[] buffer;
+		crc = crc32_16bytes(buffer.data(), fileSize, 0);
 	}
 	return crc;
 }

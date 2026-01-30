@@ -10,7 +10,7 @@
 #include "SZReader.h"
 
 ArchiveReader::~ArchiveReader() {
-	delete[] _buffer;
+	_buffer.reset();
 }
 
 bool ArchiveReader::GetStream(string filename, std::stringstream& stream) {
@@ -55,11 +55,10 @@ bool ArchiveReader::LoadArchive(std::istream& in) {
 	std::streampos filesize = in.tellg();
 	in.seekg(0, std::ios::beg);
 
-	delete[] _buffer;
-	_buffer = new uint8_t[(uint32_t)filesize];
-	in.read((char*)_buffer, filesize);
+	_buffer = std::make_unique<uint8_t[]>((uint32_t)filesize);
+	in.read((char*)_buffer.get(), filesize);
 	in.seekg(0, std::ios::beg);
-	bool result = LoadArchive(_buffer, (size_t)filesize);
+	bool result = LoadArchive(_buffer.get(), (size_t)filesize);
 	return result;
 }
 

@@ -50,7 +50,7 @@ private:
 	atomic<bool> _framePending;     ///< Frame waiting for encoding
 
 	bool _recording;                ///< Recording active flag
-	uint8_t* _frameBuffer;          ///< Frame data buffer
+	std::unique_ptr<uint8_t[]> _frameBuffer;  ///< Frame data buffer
 	uint32_t _frameBufferLength;    ///< Frame buffer size in bytes
 	uint32_t _sampleRate;           ///< Audio sample rate
 

@@ -71,11 +71,11 @@ private:
 	int VectorCount = 0;
 
 	unsigned char *oldframe = nullptr, *newframe = nullptr;
-	unsigned char *buf1 = nullptr, *buf2 = nullptr, *work = nullptr;
+	std::unique_ptr<unsigned char[]> buf1, buf2, work;
 	int bufsize = 0;
 
 	int blockcount = 0;
-	FrameBlock* blocks = nullptr;
+	std::unique_ptr<FrameBlock[]> blocks;
 
 	int workUsed = 0, workPos = 0;
 
@@ -85,7 +85,7 @@ private:
 	zmbv_format_t format = zmbv_format_t::ZMBV_FORMAT_NONE;
 	int pixelsize = 0;
 
-	uint8_t* _buf = nullptr;
+	std::unique_ptr<uint8_t[]> _buf;
 	uint32_t _bufSize = 0;
 
 	z_stream zstream = {};

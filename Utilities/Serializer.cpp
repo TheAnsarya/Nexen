@@ -214,15 +214,14 @@ void Serializer::SaveTo(ostream& file, int compressionLevel) {
 
 		if (isCompressed) {
 			unsigned long compressedSize = compressBound((unsigned long)_data.size());
-			uint8_t* compressedData = new uint8_t[compressedSize];
-			compress2(compressedData, &compressedSize, (unsigned char*)_data.data(), (unsigned long)_data.size(), compressionLevel);
+			std::vector<uint8_t> compressedData(compressedSize);
+			compress2(compressedData.data(), &compressedSize, (unsigned char*)_data.data(), (unsigned long)_data.size(), compressionLevel);
 
 			uint32_t size = (uint32_t)compressedSize;
 			uint32_t originalSize = (uint32_t)_data.size();
 			file.write((char*)&originalSize, sizeof(uint32_t));
 			file.write((char*)&size, sizeof(uint32_t));
-			file.write((char*)compressedData, compressedSize);
-			delete[] compressedData;
+			file.write((char*)compressedData.data(), compressedSize);
 		} else {
 			file.write((char*)_data.data(), _data.size());
 		}

@@ -5,12 +5,12 @@
 
 class CamstudioCodec : public BaseCodec {
 private:
-	uint8_t* _prevFrame = nullptr;
-	uint8_t* _currentFrame = nullptr;
-	uint8_t* _buffer = nullptr;
+	std::unique_ptr<uint8_t[]> _prevFrame;
+	std::unique_ptr<uint8_t[]> _currentFrame;
+	std::unique_ptr<uint8_t[]> _buffer;
 
 	uint32_t _compressBufferLength = 0;
-	uint8_t* _compressBuffer = nullptr;
+	std::unique_ptr<uint8_t[]> _compressBuffer;
 	z_stream _compressor = {};
 	int _compressionLevel = 0;
 
