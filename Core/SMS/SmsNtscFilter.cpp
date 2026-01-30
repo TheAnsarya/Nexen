@@ -23,7 +23,7 @@ SmsNtscFilter::SmsNtscFilter(Emulator* emu, SmsConsole* console) : BaseVideoFilt
 	snes_ntsc_init(_snesNtscData.get(), _snesNtscSetup.get());
 
 	uint32_t max = std::max(SMS_NTSC_OUT_WIDTH(256), SNES_NTSC_OUT_WIDTH(256));
-	_ntscBuffer = new uint32_t[max * 240];
+	_ntscBuffer = std::make_unique<uint32_t[]>(max * 240);
 }
 
 OverscanDimensions SmsNtscFilter::GetOverscan() {
@@ -76,10 +76,10 @@ void SmsNtscFilter::ApplyFilter(uint16_t* ppuOutputBuffer) {
 	uint32_t baseWidth;
 	if (_console->GetModel() == SmsModel::GameGear) {
 		baseWidth = SNES_NTSC_OUT_WIDTH(_baseFrameInfo.Width);
-		snes_ntsc_blit(_snesNtscData.get(), ppuOutputBuffer, _baseFrameInfo.Width, 0, _baseFrameInfo.Width, _baseFrameInfo.Height, _ntscBuffer, SNES_NTSC_OUT_WIDTH(_baseFrameInfo.Width) * 4);
+		snes_ntsc_blit(_snesNtscData.get(), ppuOutputBuffer, _baseFrameInfo.Width, 0, _baseFrameInfo.Width, _baseFrameInfo.Height, _ntscBuffer.get(), SNES_NTSC_OUT_WIDTH(_baseFrameInfo.Width) * 4);
 	} else {
 		baseWidth = SMS_NTSC_OUT_WIDTH(_baseFrameInfo.Width);
-		sms_ntsc_blit(_ntscData.get(), ppuOutputBuffer, _baseFrameInfo.Width, _baseFrameInfo.Width, _baseFrameInfo.Height, _ntscBuffer, SMS_NTSC_OUT_WIDTH(_baseFrameInfo.Width) * 4);
+		sms_ntsc_blit(_ntscData.get(), ppuOutputBuffer, _baseFrameInfo.Width, _baseFrameInfo.Width, _baseFrameInfo.Height, _ntscBuffer.get(), SMS_NTSC_OUT_WIDTH(_baseFrameInfo.Width) * 4);
 	}
 
 	uint32_t linesToSkip;
@@ -102,13 +102,11 @@ void SmsNtscFilter::ApplyFilter(uint16_t* ppuOutputBuffer) {
 			memset(out + y * frame.Width, 0, frame.Width * sizeof(uint32_t));
 			memset(out + (y + 1) * frame.Width, 0, frame.Width * sizeof(uint32_t));
 		} else {
-			uint32_t* src = _ntscBuffer + xOffset + (y + overscan.Top - linesToSkip) / 2 * baseWidth;
+			uint32_t* src = _ntscBuffer.get() + xOffset + (y + overscan.Top - linesToSkip) / 2 * baseWidth;
 			memcpy(out + y * frame.Width, src, frame.Width * sizeof(uint32_t));
 			memcpy(out + (y + 1) * frame.Width, src, frame.Width * sizeof(uint32_t));
 		}
 	}
 }
 
-SmsNtscFilter::~SmsNtscFilter() {
-	delete[] _ntscBuffer;
-}
+SmsNtscFilter::~SmsNtscFilter() = default;

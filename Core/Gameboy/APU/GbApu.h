@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "Gameboy/APU/GbSquareChannel.h"
 #include "Gameboy/APU/GbWaveChannel.h"
 #include "Gameboy/APU/GbNoiseChannel.h"
@@ -29,7 +30,7 @@ private:
 	unique_ptr<GbWaveChannel> _wave;
 	unique_ptr<GbNoiseChannel> _noise;
 
-	int16_t* _soundBuffer = nullptr;
+	std::unique_ptr<int16_t[]> _soundBuffer;
 	blip_t* _leftChannel = nullptr;
 	blip_t* _rightChannel = nullptr;
 

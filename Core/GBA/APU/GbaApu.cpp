@@ -23,8 +23,8 @@
 //-when is wave ram access possible?
 
 void GbaApu::Init(Emulator* emu, GbaConsole* console, GbaDmaController* dmaController, GbaMemoryManager* memoryManager) {
-	_soundBuffer = new int16_t[GbaApu::MaxSamples];
-	memset(_soundBuffer, 0, GbaApu::MaxSamples * sizeof(int16_t));
+	_soundBuffer = std::make_unique<int16_t[]>(GbaApu::MaxSamples);
+	memset(_soundBuffer.get(), 0, GbaApu::MaxSamples * sizeof(int16_t));
 
 	_dmaController = dmaController;
 	_memoryManager = memoryManager;
@@ -59,9 +59,7 @@ void GbaApu::Init(Emulator* emu, GbaConsole* console, GbaDmaController* dmaContr
 GbaApu::GbaApu() {
 }
 
-GbaApu::~GbaApu() {
-	delete[] _soundBuffer;
-}
+GbaApu::~GbaApu() = default;
 
 template <bool sq1Enabled, bool sq2Enabled, bool waveEnabled, bool noiseEnabled>
 void GbaApu::InternalRun() {
@@ -186,7 +184,7 @@ void GbaApu::InternalRun() {
 }
 
 void GbaApu::PlayQueuedAudio() {
-	_soundMixer->PlayAudioBuffer(_soundBuffer, _sampleCount / 2, _sampleRate);
+	_soundMixer->PlayAudioBuffer(_soundBuffer.get(), _sampleCount / 2, _sampleRate);
 	_sampleCount = 0;
 }
 
@@ -516,7 +514,7 @@ void GbaApu::WriteRegister(GbaAccessModeVal mode, uint32_t addr, uint8_t value) 
 			_state.Bias = (_state.Bias & 0xFE) | ((value & 0x03) << 8);
 
 			if (_sampleCount) {
-				_soundMixer->PlayAudioBuffer(_soundBuffer, _sampleCount / 2, _sampleRate);
+				_soundMixer->PlayAudioBuffer(_soundBuffer.get(), _sampleCount / 2, _sampleRate);
 				_sampleCount = 0;
 			}
 

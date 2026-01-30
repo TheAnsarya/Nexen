@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "GBA/GbaTypes.h"
 #include "GBA/APU/GbaApuFifo.h"
 #include "Utilities/ISerializable.h"
@@ -40,7 +41,7 @@ private:
 	GbaApuState _state = {};
 	GbaApuFifo _fifo[2] = {};
 
-	int16_t* _soundBuffer = nullptr;
+	std::unique_ptr<int16_t[]> _soundBuffer;
 	uint32_t _sampleCount = 0;
 	int16_t _rightSample = 0;
 	int16_t _leftSample = 0;

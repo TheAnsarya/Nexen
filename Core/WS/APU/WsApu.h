@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "WS/WsTypes.h"
 #include "Utilities/ISerializable.h"
 #include "Utilities/Audio/OnePoleLowPassFilter.h"
@@ -38,7 +39,7 @@ private:
 	OnePoleLowPassFilter _filterL;
 	OnePoleLowPassFilter _filterR;
 
-	int16_t* _soundBuffer = nullptr;
+	std::unique_ptr<int16_t[]> _soundBuffer;
 
 	uint32_t _clockCounter = 0;
 	uint16_t _sampleCount = 0;

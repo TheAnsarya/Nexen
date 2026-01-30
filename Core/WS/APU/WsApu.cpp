@@ -31,16 +31,14 @@ WsApu::WsApu(Emulator* emu, WsConsole* console, WsMemoryManager* memoryManager, 
 	_ch4.reset(new WsApuCh4(this, _state.Ch4));
 	_hyperVoice.reset(new WsHyperVoice(_state.Voice));
 
-	_soundBuffer = new int16_t[WsApu::MaxSamples * 2];
-	memset(_soundBuffer, 0, WsApu::MaxSamples * 2 * sizeof(int16_t));
+	_soundBuffer = std::make_unique<int16_t[]>(WsApu::MaxSamples * 2);
+	memset(_soundBuffer.get(), 0, WsApu::MaxSamples * 2 * sizeof(int16_t));
 
 	_filterL.SetCutoffFrequency(16, WsApu::ApuFrequency);
 	_filterR.SetCutoffFrequency(16, WsApu::ApuFrequency);
 }
 
-WsApu::~WsApu() {
-	delete[] _soundBuffer;
-}
+WsApu::~WsApu() = default;
 
 void WsApu::ChangeMasterVolume() {
 	if (_emu->GetSettings()->GetWsConfig().AudioMode == WsAudioMode::Speakers) {
@@ -54,7 +52,7 @@ void WsApu::ChangeMasterVolume() {
 }
 
 void WsApu::PlayQueuedAudio() {
-	_soundMixer->PlayAudioBuffer(_soundBuffer, _sampleCount, WsApu::ApuFrequency);
+	_soundMixer->PlayAudioBuffer(_soundBuffer.get(), _sampleCount, WsApu::ApuFrequency);
 	_sampleCount = 0;
 	_clockCounter = 0;
 }

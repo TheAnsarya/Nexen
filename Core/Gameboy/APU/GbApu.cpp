@@ -8,8 +8,8 @@
 #include "Utilities/Serializer.h"
 
 GbApu::GbApu() {
-	_soundBuffer = new int16_t[GbApu::MaxSamples * 2];
-	memset(_soundBuffer, 0, GbApu::MaxSamples * 2 * sizeof(int16_t));
+	_soundBuffer = std::make_unique<int16_t[]>(GbApu::MaxSamples * 2);
+	memset(_soundBuffer.get(), 0, GbApu::MaxSamples * 2 * sizeof(int16_t));
 
 	_leftChannel = blip_new(GbApu::MaxSamples);
 	_rightChannel = blip_new(GbApu::MaxSamples);
@@ -42,7 +42,6 @@ void GbApu::Init(Emulator* emu, Gameboy* gameboy) {
 GbApu::~GbApu() {
 	blip_delete(_leftChannel);
 	blip_delete(_rightChannel);
-	delete[] _soundBuffer;
 }
 
 GbApuDebugState GbApu::GetState() {
@@ -135,9 +134,9 @@ void GbApu::PlayQueuedAudio() {
 	blip_end_frame(_leftChannel, _clockCounter);
 	blip_end_frame(_rightChannel, _clockCounter);
 
-	uint32_t sampleCount = (uint32_t)blip_read_samples(_leftChannel, _soundBuffer, GbApu::MaxSamples, 1);
-	blip_read_samples(_rightChannel, _soundBuffer + 1, GbApu::MaxSamples, 1);
-	_soundMixer->PlayAudioBuffer(_soundBuffer, sampleCount, GbApu::SampleRate);
+	uint32_t sampleCount = (uint32_t)blip_read_samples(_leftChannel, _soundBuffer.get(), GbApu::MaxSamples, 1);
+	blip_read_samples(_rightChannel, _soundBuffer.get() + 1, GbApu::MaxSamples, 1);
+	_soundMixer->PlayAudioBuffer(_soundBuffer.get(), sampleCount, GbApu::SampleRate);
 	_clockCounter = 0;
 }
 
@@ -146,9 +145,9 @@ void GbApu::GetSoundSamples(int16_t*& samples, uint32_t& sampleCount) {
 	blip_end_frame(_leftChannel, _clockCounter);
 	blip_end_frame(_rightChannel, _clockCounter);
 
-	sampleCount = (uint32_t)blip_read_samples(_leftChannel, _soundBuffer, GbApu::MaxSamples, 1);
-	blip_read_samples(_rightChannel, _soundBuffer + 1, GbApu::MaxSamples, 1);
-	samples = _soundBuffer;
+	sampleCount = (uint32_t)blip_read_samples(_leftChannel, _soundBuffer.get(), GbApu::MaxSamples, 1);
+	blip_read_samples(_rightChannel, _soundBuffer.get() + 1, GbApu::MaxSamples, 1);
+	samples = _soundBuffer.get();
 	_clockCounter = 0;
 }
 

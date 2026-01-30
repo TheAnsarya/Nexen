@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "Shared/Video/BaseVideoFilter.h"
 #include "Utilities/NTSC/sms_ntsc.h"
 #include "Utilities/NTSC/snes_ntsc.h"
@@ -15,7 +16,7 @@ private:
 	unique_ptr<snes_ntsc_setup_t> _snesNtscSetup;
 	unique_ptr<snes_ntsc_t> _snesNtscData;
 
-	uint32_t* _ntscBuffer = nullptr;
+	std::unique_ptr<uint32_t[]> _ntscBuffer;
 	SmsConsole* _console = nullptr;
 
 protected:
