@@ -21,13 +21,11 @@ NesEventManager::NesEventManager(Debugger* debugger, NesConsole* console) {
 
 	NesDefaultVideoFilter::GetFullPalette(_palette, console->GetNesConfig(), console->GetPpu()->GetPpuModel());
 
-	_ppuBuffer = new uint16_t[NesConstants::ScreenPixelCount];
-	memset(_ppuBuffer, 0, NesConstants::ScreenPixelCount * sizeof(uint16_t));
+	_ppuBuffer = std::make_unique<uint16_t[]>(NesConstants::ScreenPixelCount);
+	memset(_ppuBuffer.get(), 0, NesConstants::ScreenPixelCount * sizeof(uint16_t));
 }
 
-NesEventManager::~NesEventManager() {
-	delete[] _ppuBuffer;
-}
+NesEventManager::~NesEventManager() = default;
 
 void NesEventManager::AddEvent(DebugEventType type, MemoryOperationInfo& operation, int32_t breakpointId) {
 	BaseNesPpu* ppu = _console->GetPpu();
@@ -219,11 +217,11 @@ uint32_t NesEventManager::TakeEventSnapshot(bool forAutoRefresh) {
 	uint16_t scanline = ppu->GetCurrentScanline() + 1;
 
 	if (scanline >= 240 || (scanline == 0 && cycle == 0)) {
-		memcpy(_ppuBuffer, ppu->GetScreenBuffer(false, true), NesConstants::ScreenPixelCount * sizeof(uint16_t));
+		memcpy(_ppuBuffer.get(), ppu->GetScreenBuffer(false, true), NesConstants::ScreenPixelCount * sizeof(uint16_t));
 	} else {
 		uint32_t offset = (NesConstants::ScreenWidth * scanline);
-		memcpy(_ppuBuffer, ppu->GetScreenBuffer(false, true), offset * sizeof(uint16_t));
-		memcpy(_ppuBuffer + offset, ppu->GetScreenBuffer(true) + offset, (NesConstants::ScreenPixelCount - offset) * sizeof(uint16_t));
+		memcpy(_ppuBuffer.get(), ppu->GetScreenBuffer(false, true), offset * sizeof(uint16_t));
+		memcpy(_ppuBuffer.get() + offset, ppu->GetScreenBuffer(true) + offset, (NesConstants::ScreenPixelCount - offset) * sizeof(uint16_t));
 	}
 
 	_snapshotCurrentFrame = _debugEvents;
@@ -243,7 +241,7 @@ FrameInfo NesEventManager::GetDisplayBufferSize() {
 }
 
 void NesEventManager::DrawScreen(uint32_t* buffer) {
-	uint16_t* src = _ppuBuffer;
+	uint16_t* src = _ppuBuffer.get();
 	for (uint32_t y = 0, len = NesConstants::ScreenHeight * 2; y < len; y++) {
 		int rowOffset = (y + 2) * NesConstants::CyclesPerLine * 2;
 

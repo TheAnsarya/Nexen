@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "Debugger/DebugTypes.h"
 #include "Debugger/BaseEventManager.h"
 #include "Utilities/SimpleLock.h"
@@ -56,7 +57,7 @@ private:
 	uint32_t _palette[512] = {};
 
 	uint32_t _scanlineCount = 262;
-	uint16_t* _ppuBuffer = nullptr;
+	std::unique_ptr<uint16_t[]> _ppuBuffer;
 
 	void DrawNtscBorders(uint32_t* buffer);
 	void DrawPixel(uint32_t* buffer, int32_t x, uint32_t y, uint32_t color);

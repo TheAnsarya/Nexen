@@ -4,14 +4,11 @@
 
 OggReader::OggReader() {
 	_done = false;
-	_oggBuffer = new int16_t[10000];
-	_outputBuffer = new int16_t[2000];
+	_oggBuffer = std::make_unique<int16_t[]>(10000);
+	_outputBuffer = std::make_unique<int16_t[]>(2000);
 }
 
 OggReader::~OggReader() {
-	delete[] _oggBuffer;
-	delete[] _outputBuffer;
-
 	if (_vorbis) {
 		stb_vorbis_close(_vorbis);
 	}
@@ -60,17 +57,17 @@ void OggReader::ApplySamples(int16_t* buffer, size_t sampleCount, uint8_t volume
 	uint32_t samplesRead = 0;
 	if (samplesNeeded > 0) {
 		uint32_t samplesToLoad = samplesNeeded * _oggSampleRate / _sampleRate + 2;
-		uint32_t samplesLoaded = (uint32_t)stb_vorbis_get_samples_short_interleaved(_vorbis, 2, _oggBuffer, samplesToLoad * 2);
+		uint32_t samplesLoaded = (uint32_t)stb_vorbis_get_samples_short_interleaved(_vorbis, 2, _oggBuffer.get(), samplesToLoad * 2);
 		if (samplesLoaded < samplesToLoad) {
 			if (_loop) {
 				stb_vorbis_seek(_vorbis, _loopPosition);
-				samplesLoaded += stb_vorbis_get_samples_short_interleaved(_vorbis, 2, _oggBuffer + samplesLoaded * 2, (samplesToLoad - samplesLoaded) * 2);
+				samplesLoaded += stb_vorbis_get_samples_short_interleaved(_vorbis, 2, _oggBuffer.get() + samplesLoaded * 2, (samplesToLoad - samplesLoaded) * 2);
 			} else {
 				_done = true;
 			}
 		}
 		_resampler.SetSampleRates(_oggSampleRate, _sampleRate);
-		samplesRead = _resampler.Resample<false>(_oggBuffer, samplesLoaded, _outputBuffer, sampleCount);
+		samplesRead = _resampler.Resample<false>(_oggBuffer.get(), samplesLoaded, _outputBuffer.get(), sampleCount);
 	}
 
 	uint32_t samplesToProcess = (uint32_t)samplesRead * 2;

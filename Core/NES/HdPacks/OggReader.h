@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "Utilities/VirtualFile.h"
 #include "Utilities/Audio/HermiteResampler.h"
 
@@ -8,8 +9,8 @@ struct stb_vorbis;
 class OggReader {
 private:
 	stb_vorbis* _vorbis = nullptr;
-	int16_t* _outputBuffer = nullptr;
-	int16_t* _oggBuffer = nullptr;
+	std::unique_ptr<int16_t[]> _outputBuffer;
+	std::unique_ptr<int16_t[]> _oggBuffer;
 
 	HermiteResampler _resampler;
 

@@ -242,7 +242,7 @@ void HdPackBuilder::SaveHdPack() {
 	int tileDimension = 8 * _hdData.Scale;
 	int pngDimension = 16 * tileDimension;
 	int pngBufferSize = pngDimension * pngDimension;
-	uint32_t* pngBuffer = new uint32_t[pngBufferSize];
+	auto pngBuffer = std::make_unique<uint32_t[]>(pngBufferSize);
 
 	int maxPageNumber = 0x1000 / _options.ChrRamBankSize;
 	int pageNumber = 0;
@@ -268,7 +268,7 @@ void HdPackBuilder::SaveHdPack() {
 			pngRows = stringstream();
 
 			ss << "<img>" << pngName << std::endl;
-			PNGHelper::WritePNG(FolderUtilities::CombinePath(_saveFolder, pngName), pngBuffer, pngDimension, pngDimension, 32);
+			PNGHelper::WritePNG(FolderUtilities::CombinePath(_saveFolder, pngName), pngBuffer.get(), pngDimension, pngDimension, 32);
 			pngNumber++;
 			pngIndex++;
 
@@ -320,7 +320,7 @@ void HdPackBuilder::SaveHdPack() {
 			for (int i = 0; i < 256; i++) {
 				HdPackTileInfo* tileInfo = tileKvp.second[i];
 				if (tileInfo) {
-					DrawTile(tileInfo, i, pngBuffer, pageNumber, spritesOnly);
+					DrawTile(tileInfo, i, pngBuffer.get(), pageNumber, spritesOnly);
 
 					pngRows << tileInfo->ToString(pngIndex) << std::endl;
 
@@ -393,8 +393,6 @@ void HdPackBuilder::SaveHdPack() {
 	ofstream hiresFile(FolderUtilities::CombinePath(_saveFolder, "hires.txt"), ios::out);
 	hiresFile << ss.str();
 	hiresFile.close();
-
-	delete[] pngBuffer;
 }
 /*
 void HdPackBuilder::GetChrBankList(uint32_t *banks)
