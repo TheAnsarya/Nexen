@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "NES/NesConstants.h"
 #include "Shared/MessageManager.h"
 #include "Utilities/PNGHelper.h"
@@ -103,14 +104,14 @@ struct HdPpuPixelInfo {
 };
 
 struct HdScreenInfo {
-	HdPpuPixelInfo* ScreenTiles;
+	std::unique_ptr<HdPpuPixelInfo[]> ScreenTiles;
 	unordered_map<uint32_t, uint8_t> WatchedAddressValues;
 	uint32_t FrameNumber = 0;
 
 	HdScreenInfo(const HdScreenInfo& that) = delete;
 
 	HdScreenInfo(bool isChrRamGame) {
-		ScreenTiles = new HdPpuPixelInfo[NesConstants::ScreenPixelCount];
+		ScreenTiles = std::make_unique<HdPpuPixelInfo[]>(NesConstants::ScreenPixelCount);
 
 		for (int i = 0; i < NesConstants::ScreenPixelCount; i++) {
 			ScreenTiles[i].Tile.BackgroundPriority = false;
@@ -124,9 +125,7 @@ struct HdScreenInfo {
 		}
 	}
 
-	~HdScreenInfo() {
-		delete[] ScreenTiles;
-	}
+	~HdScreenInfo() = default;
 };
 
 enum class HdPackConditionType {

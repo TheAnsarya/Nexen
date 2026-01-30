@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "NES/BaseMapper.h"
 #include "NES/NesConsole.h"
 #include "NES/NesCpu.h"
@@ -13,8 +14,8 @@ private:
 	unique_ptr<Mmc5Audio> _audio;
 	unique_ptr<Mmc5MemoryHandler> _mmc5MemoryHandler;
 
-	uint8_t* _fillNametable = nullptr;
-	uint8_t* _emptyNametable = nullptr;
+	std::unique_ptr<uint8_t[]> _fillNametable;
+	std::unique_ptr<uint8_t[]> _emptyNametable;
 
 	uint8_t _prgRamProtect1 = 0;
 	uint8_t _prgRamProtect2 = 0;
@@ -237,10 +238,10 @@ private:
 				if (_extendedRamMode <= 1) {
 					SetPpuMemoryMapping(0x2000 + i * 0x400, 0x2000 + i * 0x400 + 0x3FF, ChrMemoryType::MapperRam, 0, MemoryAccessType::ReadWrite);
 				} else {
-					SetPpuMemoryMapping(0x2000 + i * 0x400, 0x2000 + i * 0x400 + 0x3FF, _emptyNametable, 0, BaseMapper::NametableSize, MemoryAccessType::Read);
+					SetPpuMemoryMapping(0x2000 + i * 0x400, 0x2000 + i * 0x400 + 0x3FF, _emptyNametable.get(), 0, BaseMapper::NametableSize, MemoryAccessType::Read);
 				}
 			} else {
-				SetPpuMemoryMapping(0x2000 + i * 0x400, 0x2000 + i * 0x400 + 0x3FF, _fillNametable, 0, BaseMapper::NametableSize, MemoryAccessType::Read);
+				SetPpuMemoryMapping(0x2000 + i * 0x400, 0x2000 + i * 0x400 + 0x3FF, _fillNametable.get(), 0, BaseMapper::NametableSize, MemoryAccessType::Read);
 			}
 		}
 	}
@@ -268,13 +269,13 @@ private:
 
 	void SetFillModeTile(uint8_t tile) {
 		_fillModeTile = tile;
-		memset(_fillNametable, tile, 32 * 30); // 32 tiles per row, 30 rows
+		memset(_fillNametable.get(), tile, 32 * 30); // 32 tiles per row, 30 rows
 	}
 
 	void SetFillModeColor(uint8_t color) {
 		_fillModeColor = color;
 		uint8_t attributeByte = color | color << 2 | color << 4 | color << 6;
-		memset(_fillNametable + 32 * 30, attributeByte, 64); // Attribute table is 64 bytes
+		memset(_fillNametable.get() + 32 * 30, attributeByte, 64); // Attribute table is 64 bytes
 	}
 
 protected:
@@ -327,11 +328,11 @@ protected:
 
 		_splitTileNumber = 0;
 
-		_emptyNametable = new uint8_t[BaseMapper::NametableSize];
-		memset(_emptyNametable, 0, BaseMapper::NametableSize);
+		_emptyNametable = std::make_unique<uint8_t[]>(BaseMapper::NametableSize);
+		memset(_emptyNametable.get(), 0, BaseMapper::NametableSize);
 
-		_fillNametable = new uint8_t[BaseMapper::NametableSize];
-		memset(_fillNametable, 0, BaseMapper::NametableSize);
+		_fillNametable = std::make_unique<uint8_t[]>(BaseMapper::NametableSize);
+		memset(_fillNametable.get(), 0, BaseMapper::NametableSize);
 
 		SetExtendedRamMode(0);
 
@@ -344,10 +345,7 @@ protected:
 		UpdateChrBanks(true);
 	}
 
-	virtual ~MMC5() {
-		delete[] _fillNametable;
-		delete[] _emptyNametable;
-	}
+	virtual ~MMC5() = default;
 
 	void Reset(bool softReset) override {
 		_console->GetMemoryManager()->RegisterWriteHandler(_mmc5MemoryHandler.get(), 0x2000, 0x2007);
