@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "Debugger/DebugTypes.h"
 #include "Debugger/BaseEventManager.h"
 #include "Utilities/SimpleLock.h"
@@ -51,7 +52,7 @@ private:
 
 	uint32_t _scanlineCount = 262;
 	uint32_t _visibleScanlineCount = 192;
-	uint16_t* _ppuBuffer = nullptr;
+	std::unique_ptr<uint16_t[]> _ppuBuffer;
 
 protected:
 	bool ShowPreviousFrameEvents() override;

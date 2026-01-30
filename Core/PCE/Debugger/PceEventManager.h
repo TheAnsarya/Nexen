@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "Debugger/DebugTypes.h"
 #include "Debugger/BaseEventManager.h"
 #include "PCE/PceConstants.h"
@@ -67,7 +68,7 @@ private:
 	Debugger* _debugger;
 
 	uint32_t _scanlineCount = 262;
-	uint16_t* _ppuBuffer = nullptr;
+	std::unique_ptr<uint16_t[]> _ppuBuffer;
 
 	uint16_t _rowClockDividers[PceConstants::ScreenHeight] = {};
 

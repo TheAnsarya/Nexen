@@ -24,13 +24,11 @@ PceEventManager::PceEventManager(Debugger* debugger, PceConsole* console) {
 	_vce = console->GetVce();
 	_memoryManager = console->GetMemoryManager();
 
-	_ppuBuffer = new uint16_t[PceConstants::MaxScreenWidth * PceConstants::ScreenHeight];
-	memset(_ppuBuffer, 0, PceConstants::MaxScreenWidth * PceConstants::ScreenHeight * sizeof(uint16_t));
+	_ppuBuffer = std::make_unique<uint16_t[]>(PceConstants::MaxScreenWidth * PceConstants::ScreenHeight);
+	memset(_ppuBuffer.get(), 0, PceConstants::MaxScreenWidth * PceConstants::ScreenHeight * sizeof(uint16_t));
 }
 
-PceEventManager::~PceEventManager() {
-	delete[] _ppuBuffer;
-}
+PceEventManager::~PceEventManager() = default;
 
 void PceEventManager::AddEvent(DebugEventType type, MemoryOperationInfo& operation, int32_t breakpointId) {
 	DebugEventInfo evt = {};
@@ -211,13 +209,13 @@ uint32_t PceEventManager::TakeEventSnapshot(bool forAutoRefresh) {
 
 	constexpr uint32_t size = PceConstants::MaxScreenWidth * PceConstants::ScreenHeight;
 	if (scanline < 14 || scanline >= 256) {
-		memcpy(_ppuBuffer, _vpc->GetScreenBuffer(), size * sizeof(uint16_t));
+		memcpy(_ppuBuffer.get(), _vpc->GetScreenBuffer(), size * sizeof(uint16_t));
 		memcpy(_rowClockDividers, _vpc->GetScreenBuffer() + size, PceConstants::ScreenHeight * sizeof(uint16_t));
 	} else {
 		uint32_t scanlineOffset = (scanline - 14);
 		uint32_t offset = PceConstants::MaxScreenWidth * scanlineOffset;
-		memcpy(_ppuBuffer, _vpc->GetScreenBuffer(), offset * sizeof(uint16_t));
-		memcpy(_ppuBuffer + offset, _vpc->GetPreviousScreenBuffer() + offset, (size - offset) * sizeof(uint16_t));
+		memcpy(_ppuBuffer.get(), _vpc->GetScreenBuffer(), offset * sizeof(uint16_t));
+		memcpy(_ppuBuffer.get() + offset, _vpc->GetPreviousScreenBuffer() + offset, (size - offset) * sizeof(uint16_t));
 
 		memcpy(_rowClockDividers, _vpc->GetScreenBuffer() + size, scanlineOffset * sizeof(uint16_t));
 		memcpy(_rowClockDividers + scanlineOffset, _vpc->GetPreviousScreenBuffer() + size + scanlineOffset, (PceConstants::ScreenHeight - scanlineOffset) * sizeof(uint16_t));
@@ -240,7 +238,7 @@ FrameInfo PceEventManager::GetDisplayBufferSize() {
 }
 
 void PceEventManager::DrawScreen(uint32_t* buffer) {
-	uint16_t* src = _ppuBuffer;
+	uint16_t* src = _ppuBuffer.get();
 	uint32_t* palette = _emu->GetSettings()->GetPcEngineConfig().Palette;
 
 	for (uint32_t y = 0, len = PceConstants::ScreenHeight * 2; y < len; y++) {

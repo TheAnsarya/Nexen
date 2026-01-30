@@ -15,13 +15,11 @@ WsEventManager::WsEventManager(Debugger* debugger, WsConsole* console, WsCpu* cp
 	_cpu = cpu;
 	_ppu = ppu;
 
-	_ppuBuffer = new uint16_t[WsConstants::MaxPixelCount];
-	memset(_ppuBuffer, 0, WsConstants::MaxPixelCount * sizeof(uint16_t));
+	_ppuBuffer = std::make_unique<uint16_t[]>(WsConstants::MaxPixelCount);
+	memset(_ppuBuffer.get(), 0, WsConstants::MaxPixelCount * sizeof(uint16_t));
 }
 
-WsEventManager::~WsEventManager() {
-	delete[] _ppuBuffer;
-}
+WsEventManager::~WsEventManager() = default;
 
 void WsEventManager::AddEvent(DebugEventType type, MemoryOperationInfo& operation, int32_t breakpointId) {
 	DebugEventInfo evt = {};
@@ -152,11 +150,11 @@ uint32_t WsEventManager::TakeEventSnapshot(bool forAutoRefresh) {
 	uint16_t scanline = _ppu->GetScanline();
 
 	if (scanline > _ppu->GetVisibleScanlineCount()) {
-		memcpy(_ppuBuffer, _ppu->GetScreenBuffer(false), WsConstants::MaxPixelCount * sizeof(uint16_t));
+		memcpy(_ppuBuffer.get(), _ppu->GetScreenBuffer(false), WsConstants::MaxPixelCount * sizeof(uint16_t));
 	} else {
 		uint32_t offset = _ppu->GetScreenWidth() * (std::max<int>(1, scanline) - 1);
-		memcpy(_ppuBuffer, _ppu->GetScreenBuffer(false), offset * sizeof(uint16_t));
-		memcpy(_ppuBuffer + offset, _ppu->GetScreenBuffer(true) + offset, (WsConstants::MaxPixelCount - offset) * sizeof(uint16_t));
+		memcpy(_ppuBuffer.get(), _ppu->GetScreenBuffer(false), offset * sizeof(uint16_t));
+		memcpy(_ppuBuffer.get() + offset, _ppu->GetScreenBuffer(true) + offset, (WsConstants::MaxPixelCount - offset) * sizeof(uint16_t));
 	}
 
 	_snapshotCurrentFrame = _debugEvents;
@@ -176,7 +174,7 @@ FrameInfo WsEventManager::GetDisplayBufferSize() {
 }
 
 void WsEventManager::DrawScreen(uint32_t* buffer) {
-	uint16_t* src = _ppuBuffer;
+	uint16_t* src = _ppuBuffer.get();
 	uint16_t screenWidth = _ppu->GetScreenWidth();
 	for (uint32_t y = 0, len = WsConstants::ScreenHeight * 2; y < len; y++) {
 		for (uint32_t x = 0; x < WsConstants::ScreenWidth * 2; x++) {

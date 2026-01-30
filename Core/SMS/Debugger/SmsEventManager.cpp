@@ -15,13 +15,11 @@ SmsEventManager::SmsEventManager(Debugger* debugger, SmsConsole* console, SmsCpu
 	_cpu = cpu;
 	_vdp = vdp;
 
-	_ppuBuffer = new uint16_t[256 * 240];
-	memset(_ppuBuffer, 0, 256 * 240 * sizeof(uint16_t));
+	_ppuBuffer = std::make_unique<uint16_t[]>(256 * 240);
+	memset(_ppuBuffer.get(), 0, 256 * 240 * sizeof(uint16_t));
 }
 
-SmsEventManager::~SmsEventManager() {
-	delete[] _ppuBuffer;
-}
+SmsEventManager::~SmsEventManager() = default;
 
 void SmsEventManager::AddEvent(DebugEventType type, MemoryOperationInfo& operation, int32_t breakpointId) {
 	DebugEventInfo evt = {};
@@ -179,11 +177,11 @@ uint32_t SmsEventManager::TakeEventSnapshot(bool forAutoRefresh) {
 	uint16_t scanline = _vdp->GetScanline();
 
 	if (scanline >= _vdp->GetState().VisibleScanlineCount || (forAutoRefresh && (scanline == 0 && cycle == 0))) {
-		memcpy(_ppuBuffer, _vdp->GetScreenBuffer(false), 256 * 240 * sizeof(uint16_t));
+		memcpy(_ppuBuffer.get(), _vdp->GetScreenBuffer(false), 256 * 240 * sizeof(uint16_t));
 	} else {
 		uint32_t offset = 256 * scanline;
-		memcpy(_ppuBuffer, _vdp->GetScreenBuffer(false), offset * sizeof(uint16_t));
-		memcpy(_ppuBuffer + offset, _vdp->GetScreenBuffer(true) + offset, (256 * 240 - offset) * sizeof(uint16_t));
+		memcpy(_ppuBuffer.get(), _vdp->GetScreenBuffer(false), offset * sizeof(uint16_t));
+		memcpy(_ppuBuffer.get() + offset, _vdp->GetScreenBuffer(true) + offset, (256 * 240 - offset) * sizeof(uint16_t));
 	}
 
 	_snapshotCurrentFrame = _debugEvents;
@@ -204,7 +202,7 @@ FrameInfo SmsEventManager::GetDisplayBufferSize() {
 }
 
 void SmsEventManager::DrawScreen(uint32_t* buffer) {
-	uint16_t* src = _ppuBuffer;
+	uint16_t* src = _ppuBuffer.get();
 	for (uint32_t y = 0, len = _visibleScanlineCount * 2; y < len; y++) {
 		for (uint32_t x = 0; x < 256 * 2; x++) {
 			int srcOffset = (y >> 1) * 256 + (x >> 1);
