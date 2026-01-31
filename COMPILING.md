@@ -13,6 +13,13 @@ This fork uses modern C++23 and .NET 10 for improved performance and code qualit
 
 ## Windows
 
+### Requirements
+- **Compiler:** MSVC (Microsoft Visual C++) from Visual Studio 2026
+- **IDE:** Visual Studio 2026 or later with C++ Desktop workload
+- **Platform Toolset:** v145
+
+### Building with Visual Studio
+
 1. Open `Mesen.sln` in Visual Studio 2026 (or later)
 2. Compile as `Release` / `x64`
 3. Set the startup project to `UI` and run
