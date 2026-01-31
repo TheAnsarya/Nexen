@@ -112,6 +112,12 @@
 		<ClCompile Include="SNES\SnesCpuTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="NES\NesCpuTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Gameboy\GbCpuTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Core.vcxproj">
