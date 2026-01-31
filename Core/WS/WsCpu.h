@@ -16,87 +16,137 @@ class WsConsole;
 class WsMemoryManager;
 
 /// <summary>
-/// WonderSwan CPU core (NEC V30MZ, x86-like). Implements instruction execution, memory, and I/O for the system.
+/// WonderSwan CPU emulator - NEC V30MZ (80186-compatible) implementation.
+/// 16-bit x86-compatible CPU with power-saving features.
 /// </summary>
+/// <remarks>
+/// The V30MZ is a CMOS implementation of Intel 80186 with NEC extensions:
+/// - 16-bit data bus, 20-bit address space (1MB)
+/// - 8 general registers: AX, BX, CX, DX, SP, BP, SI, DI
+/// - 4 segment registers: CS, DS, ES, SS (16-bit segments)
+/// - 16-bit instruction pointer (IP) and flags register
+/// - x86 segmented memory model (segment:offset → 20-bit address)
+///
+/// **Clock Speed:**
+/// - WonderSwan: 3.072 MHz
+/// - WonderSwan Color: 3.072 MHz (higher speed mode available)
+/// - SwanCrystal: Same as WSC
+///
+/// **Registers:**
+/// - AX (AH:AL): Accumulator
+/// - BX (BH:BL): Base register
+/// - CX (CH:CL): Count register
+/// - DX (DH:DL): Data register
+/// - SP: Stack pointer
+/// - BP: Base pointer
+/// - SI: Source index
+/// - DI: Destination index
+///
+/// **Segment Registers:**
+/// - CS: Code segment
+/// - DS: Data segment (default for data access)
+/// - ES: Extra segment (string destinations)
+/// - SS: Stack segment
+///
+/// **Flags:**
+/// - CF: Carry flag
+/// - PF: Parity flag (set if low byte has even parity)
+/// - AF: Auxiliary carry (BCD operations)
+/// - ZF: Zero flag
+/// - SF: Sign flag
+/// - TF: Trap flag (single-step debug)
+/// - IF: Interrupt flag
+/// - DF: Direction flag (string operations)
+/// - OF: Overflow flag
+///
+/// **Instruction Prefixes:**
+/// - REP/REPE/REPNE: Repeat string operations
+/// - Segment override: CS:, DS:, ES:, SS:
+/// - LOCK: Bus lock for atomic operations
+///
+/// **Interrupts:**
+/// - INT n: Software interrupt (n = vector number)
+/// - Hardware interrupts via interrupt controller
+/// - NMI: Non-maskable interrupt
+///
+/// **Power Features:**
+/// - HALT: Low-power wait for interrupt
+/// - Low-power CMOS design for battery operation
+/// </remarks>
 class WsCpu final : public ISerializable {
 private:
+	/// <summary>Decoded ModR/M byte state for addressing.</summary>
 	struct ModRmState {
-		uint16_t Segment;
-		uint16_t Offset;
-		uint8_t Mode;
-		uint8_t Register;
-		uint8_t Rm;
+		uint16_t Segment;   ///< Segment base for memory access
+		uint16_t Offset;    ///< Offset within segment
+		uint8_t Mode;       ///< Addressing mode (0-3)
+		uint8_t Register;   ///< Register operand field
+		uint8_t Rm;         ///< R/M field (register or memory)
 	};
 
-	/// <summary>
-	/// REP prefix mode for string instructions.
-	/// </summary>
+	/// <summary>REP prefix mode for string instructions.</summary>
 	enum class WsRepMode : uint8_t {
-		None,
-		Zero,
-		NotZero
+		None,      ///< No repeat prefix
+		Zero,      ///< REPE/REPZ - repeat while zero flag set
+		NotZero    ///< REPNE/REPNZ - repeat while zero flag clear
 	};
 
+	/// <summary>ALU operation type for Group 1 instructions.</summary>
 	enum class AluOp : uint8_t {
-		Add = 0,
-		Or,
-		Adc,
-		Sbb,
-		And,
-		Sub,
-		Xor,
-		Cmp
+		Add = 0,  ///< Addition
+		Or,       ///< Logical OR
+		Adc,      ///< Add with carry
+		Sbb,      ///< Subtract with borrow
+		And,      ///< Logical AND
+		Sub,      ///< Subtraction
+		Xor,      ///< Exclusive OR
+		Cmp       ///< Compare (subtract without storing)
 	};
 
-	/// <summary>
-	/// Group 2 operation mode (shifts/rotates).
-	/// </summary>
+	/// <summary>Shift/rotate count source mode.</summary>
 	enum class Grp2Mode {
-		One,
-		CL,
-		Immediate
+		One,       ///< Shift by 1
+		CL,        ///< Shift by CL register value
+		Immediate  ///< Shift by immediate byte
 	};
 
+	/// <summary>Instruction prefix state (segment override, REP, LOCK).</summary>
 	struct PrefixState {
-		uint16_t PrefixCount;
-		WsSegment Segment;
-		WsRepMode Rep;
-		bool Lock;
-		bool Preserve;
+		uint16_t PrefixCount;  ///< Number of prefixes decoded
+		WsSegment Segment;     ///< Segment override (if any)
+		WsRepMode Rep;         ///< REP prefix mode
+		bool Lock;             ///< LOCK prefix active
+		bool Preserve;         ///< Preserve prefixes across instruction
 	};
 
-	/// <summary>
-	/// State for instruction prefix decoding.
-	/// </summary>
-	static WsCpuParityTable _parity;
+	static WsCpuParityTable _parity;  ///< Parity flag lookup table
 
-	Emulator* _emu = nullptr;
-	WsMemoryManager* _memoryManager = nullptr;
-	WsConsole* _console = nullptr;
+	Emulator* _emu = nullptr;                ///< Emulator for debugger hooks
+	WsMemoryManager* _memoryManager = nullptr; ///< Memory/IO access
+	WsConsole* _console = nullptr;           ///< Parent console
 
-	WsCpuState _state = {};
-	ModRmState _modRm = {};
-	PrefixState _prefix = {};
+	WsCpuState _state = {};    ///< CPU register state
+	ModRmState _modRm = {};    ///< Current instruction's ModR/M decoding
+	PrefixState _prefix = {};  ///< Active instruction prefixes
 
-	uint64_t _suppressIrqClock = 0;
-	uint64_t _suppressTrapClock = 0;
+	uint64_t _suppressIrqClock = 0;   ///< IRQ suppression until this clock (MOV to SS)
+	uint64_t _suppressTrapClock = 0;  ///< Trap suppression until this clock
 
 #ifndef DUMMYCPU
-	WsCpuPrefetch _prefetch;
+	WsCpuPrefetch _prefetch;  ///< Instruction prefetch queue (4 bytes)
 #endif
 
-	uint16_t* _modRegLut8[4] = {&_state.AX, &_state.CX, &_state.DX, &_state.BX};
-	uint16_t* _modSegLut16[4] = {&_state.ES, &_state.CS, &_state.SS, &_state.DS};
-	uint16_t* _modRegLut16[8] = {
+	// Lookup tables for fast register decoding
+	uint16_t* _modRegLut8[4] = {&_state.AX, &_state.CX, &_state.DX, &_state.BX};  ///< 8-bit reg decode
+	uint16_t* _modSegLut16[4] = {&_state.ES, &_state.CS, &_state.SS, &_state.DS}; ///< Segment reg decode
+	uint16_t* _modRegLut16[8] = {  ///< 16-bit register decode lookup
 	    &_state.AX, &_state.CX, &_state.DX, &_state.BX,
 	    &_state.SP, &_state.BP, &_state.SI, &_state.DI};
 
-	// Lookup tables for register decoding
-	// Used to re-fill prefetch buffer with last opcode when REP prefix is used
-	uint8_t _opCode = 0;
+	uint8_t _opCode = 0;  ///< Current opcode (saved for REP refetch)
 
-	// Divisions/AAM set carry/overflow to the last carry/overflow produced by the previous MUL operation
-	bool _mulOverflow = false;
+	// MUL sets carry/overflow which divisions/AAM inherit
+	bool _mulOverflow = false;  ///< Last MUL overflow for division ops
 
 	template <typename T>
 	__forceinline T ReadPort(uint16_t port);
