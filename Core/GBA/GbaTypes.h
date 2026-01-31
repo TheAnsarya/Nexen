@@ -320,294 +320,363 @@ struct GbaRomPrefetchState {
 	bool HitBoundary;
 };
 
+/// <summary>
+/// Individual timer channel state.
+/// GBA has 4 hardware timers (TM0CNT-TM3CNT) that can cascade.
+/// </summary>
 struct GbaTimerState {
-	uint16_t ReloadValue;
-	uint16_t NewReloadValue;
-	uint16_t PrescaleMask;
-	uint16_t Timer;
-	uint8_t Control;
+	uint16_t ReloadValue;       ///< Value loaded on overflow/start
+	uint16_t NewReloadValue;    ///< Pending reload value
+	uint16_t PrescaleMask;      ///< Prescaler mask (0, 63, 255, 1023)
+	uint16_t Timer;             ///< Current counter value
+	uint8_t Control;            ///< TMxCNT_H raw value
 
-	uint8_t EnableDelay;
-	bool WritePending;
-	bool Mode;
-	bool IrqEnabled;
-	bool Enabled;
-	bool ProcessTimer;
+	uint8_t EnableDelay;        ///< Cycles until enable takes effect
+	bool WritePending;          ///< Reload value write pending
+	bool Mode;                  ///< Count-up mode (cascade from previous timer)
+	bool IrqEnabled;            ///< Timer overflow triggers IRQ
+	bool Enabled;               ///< Timer running
+	bool ProcessTimer;          ///< Timer needs processing this cycle
 };
 
+/// <summary>
+/// All four GBA timer channels.
+/// </summary>
 struct GbaTimersState {
-	GbaTimerState Timer[4];
+	GbaTimerState Timer[4];     ///< Timer 0-3 states
 };
 
+/// <summary>
+/// DMA trigger condition.
+/// Determines when DMA transfer starts.
+/// </summary>
 enum class GbaDmaTrigger : uint8_t {
-	Immediate = 0,
-	VBlank = 1,
-	HBlank = 2,
-	Special = 3
+	Immediate = 0,  ///< Start immediately when enabled
+	VBlank = 1,     ///< Start at VBlank
+	HBlank = 2,     ///< Start at HBlank (each scanline)
+	Special = 3     ///< Channel-specific (sound FIFO, video capture)
 };
 
+/// <summary>
+/// DMA address update mode after each transfer unit.
+/// </summary>
 enum class GbaDmaAddrMode : uint8_t {
-	Increment,
-	Decrement,
-	Fixed,
-	IncrementReload
+	Increment,       ///< Increment address after each unit
+	Decrement,       ///< Decrement address after each unit
+	Fixed,           ///< Address stays constant
+	IncrementReload  ///< Increment, but reload at repeat (dest only)
 };
 
+/// <summary>
+/// Individual DMA channel state.
+/// GBA has 4 DMA channels with different capabilities:
+/// - Ch0: Highest priority, no audio
+/// - Ch1/2: Audio FIFO support
+/// - Ch3: Video capture, general purpose
+/// </summary>
 struct GbaDmaChannel {
-	uint64_t StartClock;
-	uint32_t ReadValue;
+	uint64_t StartClock;       ///< Master clock when transfer started
+	uint32_t ReadValue;        ///< Last value read (for open bus)
 
-	uint32_t Destination;
-	uint32_t Source;
-	uint16_t Length;
+	uint32_t Destination;      ///< Destination address register
+	uint32_t Source;           ///< Source address register
+	uint16_t Length;           ///< Transfer length register
 
-	uint32_t DestLatch;
-	uint32_t SrcLatch;
-	uint16_t LenLatch;
+	uint32_t DestLatch;        ///< Latched destination address
+	uint32_t SrcLatch;         ///< Latched source address
+	uint16_t LenLatch;         ///< Latched transfer length
 
-	uint16_t Control;
+	uint16_t Control;          ///< DMAxCNT_H raw value
 
-	GbaDmaAddrMode DestMode;
-	GbaDmaAddrMode SrcMode;
+	GbaDmaAddrMode DestMode;   ///< Destination address control
+	GbaDmaAddrMode SrcMode;    ///< Source address control
 
-	bool Repeat;
-	bool WordTransfer;
-	bool DrqMode;
+	bool Repeat;               ///< Repeat transfer on each trigger
+	bool WordTransfer;         ///< True=32-bit, False=16-bit units
+	bool DrqMode;              ///< Game Pak DRQ mode (Ch3 only)
 
-	GbaDmaTrigger Trigger;
-	bool IrqEnabled;
-	bool Enabled;
-	bool Active;
+	GbaDmaTrigger Trigger;     ///< When to start transfer
+	bool IrqEnabled;           ///< IRQ on transfer complete
+	bool Enabled;              ///< Channel enabled
+	bool Active;               ///< Transfer currently in progress
 
-	bool Pending;
+	bool Pending;              ///< Transfer pending (waiting for trigger)
 };
 
+/// <summary>
+/// All four GBA DMA channels.
+/// </summary>
 struct GbaDmaControllerState {
-	GbaDmaChannel Ch[4];
+	GbaDmaChannel Ch[4];       ///< DMA channels 0-3
 };
 
+/// <summary>
+/// Square wave channel state for GBA APU (channels 1 and 2).
+/// Based on Game Boy sound hardware with minor differences.
+/// </summary>
 struct GbaSquareState {
-	uint16_t Frequency;
-	uint16_t Timer;
+	uint16_t Frequency;         ///< Frequency register (11-bit)
+	uint16_t Timer;             ///< Period counter
 
-	uint16_t SweepTimer;
-	uint16_t SweepFreq;
-	uint16_t SweepPeriod;
-	uint8_t SweepUpdateDelay;
-	bool SweepNegate;
-	uint8_t SweepShift;
+	uint16_t SweepTimer;        ///< Sweep unit timer
+	uint16_t SweepFreq;         ///< Shadow frequency for sweep
+	uint16_t SweepPeriod;       ///< Sweep period (0-7)
+	uint8_t SweepUpdateDelay;   ///< Delay before sweep update
+	bool SweepNegate;           ///< True=decrease frequency
+	uint8_t SweepShift;         ///< Frequency shift amount (0-7)
 
-	bool SweepEnabled;
-	bool SweepNegateCalcDone;
+	bool SweepEnabled;          ///< Sweep unit active
+	bool SweepNegateCalcDone;   ///< Negate calculation performed
 
-	uint8_t Volume;
-	uint8_t EnvVolume;
-	bool EnvRaiseVolume;
-	uint8_t EnvPeriod;
-	uint8_t EnvTimer;
-	bool EnvStopped;
+	uint8_t Volume;             ///< Current envelope volume (0-15)
+	uint8_t EnvVolume;          ///< Envelope starting volume
+	bool EnvRaiseVolume;        ///< True=increase, False=decrease
+	uint8_t EnvPeriod;          ///< Envelope period (0-7)
+	uint8_t EnvTimer;           ///< Envelope timer counter
+	bool EnvStopped;            ///< Envelope finished
 
-	uint8_t Duty;
+	uint8_t Duty;               ///< Duty cycle (0-3: 12.5%, 25%, 50%, 75%)
 
-	uint8_t Length;
-	bool LengthEnabled;
+	uint8_t Length;             ///< Length counter (0-63)
+	bool LengthEnabled;         ///< Stop when length expires
 
-	bool Enabled;
-	uint8_t DutyPos;
-	uint8_t Output;
+	bool Enabled;               ///< Channel enabled (producing output)
+	uint8_t DutyPos;            ///< Current position in duty cycle
+	uint8_t Output;             ///< Current output sample (0-15)
 };
 
+/// <summary>
+/// Noise channel state for GBA APU (channel 4).
+/// Uses LFSR for pseudo-random noise generation.
+/// </summary>
 struct GbaNoiseState {
-	uint8_t Volume;
-	uint8_t EnvVolume;
-	bool EnvRaiseVolume;
-	uint8_t EnvPeriod;
-	uint8_t EnvTimer;
-	bool EnvStopped;
+	uint8_t Volume;             ///< Current envelope volume (0-15)
+	uint8_t EnvVolume;          ///< Envelope starting volume
+	bool EnvRaiseVolume;        ///< True=increase, False=decrease
+	uint8_t EnvPeriod;          ///< Envelope period (0-7)
+	uint8_t EnvTimer;           ///< Envelope timer counter
+	bool EnvStopped;            ///< Envelope finished
 
-	uint8_t Length;
-	bool LengthEnabled;
+	uint8_t Length;             ///< Length counter (0-63)
+	bool LengthEnabled;         ///< Stop when length expires
 
-	uint16_t ShiftRegister;
+	uint16_t ShiftRegister;     ///< 15-bit LFSR state
 
-	uint8_t PeriodShift;
-	uint8_t Divisor;
-	bool ShortWidthMode;
+	uint8_t PeriodShift;        ///< Clock divider shift (0-13)
+	uint8_t Divisor;            ///< Base divisor (0-7)
+	bool ShortWidthMode;        ///< True=7-bit LFSR, False=15-bit
 
-	bool Enabled;
-	uint32_t Timer;
-	uint8_t Output;
+	bool Enabled;               ///< Channel enabled (producing output)
+	uint32_t Timer;             ///< Period counter
+	uint8_t Output;             ///< Current output sample (0-15)
 };
 
+/// <summary>
+/// Wave channel state for GBA APU (channel 3).
+/// Plays samples from 32-byte wave RAM with 2 banks.
+/// </summary>
 struct GbaWaveState {
-	bool DacEnabled;
-	bool DoubleLength;
-	uint8_t SelectedBank;
+	bool DacEnabled;            ///< DAC power (NR30 bit 7)
+	bool DoubleLength;          ///< Two 32-byte banks (GBA feature)
+	uint8_t SelectedBank;       ///< Current playback bank (0 or 1)
 
-	uint8_t SampleBuffer;
-	uint8_t Ram[0x20];
-	uint8_t Position;
+	uint8_t SampleBuffer;       ///< Current sample byte buffer
+	uint8_t Ram[0x20];          ///< Wave pattern RAM (32 bytes, 64 4-bit samples)
+	uint8_t Position;           ///< Current sample position (0-63)
 
-	uint8_t Volume;
-	bool OverrideVolume;
-	uint16_t Frequency;
+	uint8_t Volume;             ///< Volume code (0=mute, 1=100%, 2=50%, 3=25%)
+	bool OverrideVolume;        ///< Force 75% volume (GBA feature)
+	uint16_t Frequency;         ///< Frequency register (11-bit)
 
-	uint16_t Length;
-	bool LengthEnabled;
+	uint16_t Length;            ///< Length counter (0-255)
+	bool LengthEnabled;         ///< Stop when length expires
 
-	bool Enabled;
-	uint16_t Timer;
-	uint8_t Output;
+	bool Enabled;               ///< Channel enabled (producing output)
+	uint16_t Timer;             ///< Period counter
+	uint8_t Output;             ///< Current output sample (0-15)
 };
 
+/// <summary>
+/// GBA APU state including GB-compatible channels and direct sound.
+/// GBA extends Game Boy APU with two DMA sound channels (A and B).
+/// </summary>
 struct GbaApuState {
-	int8_t DmaSampleA;
-	int8_t DmaSampleB;
+	int8_t DmaSampleA;          ///< Current DMA sound A sample
+	int8_t DmaSampleB;          ///< Current DMA sound B sample
 
-	uint8_t VolumeControl;
-	uint8_t GbVolume;
-	uint8_t VolumeA;
-	uint8_t VolumeB;
+	uint8_t VolumeControl;      ///< SOUNDCNT_H ($4000082) low byte
+	uint8_t GbVolume;           ///< GB channel master volume (0-2)
+	uint8_t VolumeA;            ///< DMA sound A volume (0=50%, 1=100%)
+	uint8_t VolumeB;            ///< DMA sound B volume (0=50%, 1=100%)
 
-	uint8_t DmaSoundControl;
-	bool EnableRightA;
-	bool EnableLeftA;
-	uint8_t TimerA;
-	bool EnableRightB;
-	bool EnableLeftB;
-	uint8_t TimerB;
+	uint8_t DmaSoundControl;    ///< SOUNDCNT_H high byte
+	bool EnableRightA;          ///< Sound A to right speaker
+	bool EnableLeftA;           ///< Sound A to left speaker
+	uint8_t TimerA;             ///< Timer for sound A (0 or 1)
+	bool EnableRightB;          ///< Sound B to right speaker
+	bool EnableLeftB;           ///< Sound B to left speaker
+	uint8_t TimerB;             ///< Timer for sound B (0 or 1)
 
-	uint8_t EnabledGb;
-	uint8_t EnableLeftSq1;
-	uint8_t EnableLeftSq2;
-	uint8_t EnableLeftWave;
-	uint8_t EnableLeftNoise;
+	uint8_t EnabledGb;          ///< SOUNDCNT_L ($4000080) high byte
+	uint8_t EnableLeftSq1;      ///< Square 1 to left
+	uint8_t EnableLeftSq2;      ///< Square 2 to left
+	uint8_t EnableLeftWave;     ///< Wave to left
+	uint8_t EnableLeftNoise;    ///< Noise to left
 
-	uint8_t EnableRightSq1;
-	uint8_t EnableRightSq2;
-	uint8_t EnableRightWave;
-	uint8_t EnableRightNoise;
+	uint8_t EnableRightSq1;     ///< Square 1 to right
+	uint8_t EnableRightSq2;     ///< Square 2 to right
+	uint8_t EnableRightWave;    ///< Wave to right
+	uint8_t EnableRightNoise;   ///< Noise to right
 
-	uint8_t LeftVolume;
-	uint8_t RightVolume;
+	uint8_t LeftVolume;         ///< Left master volume (0-7)
+	uint8_t RightVolume;        ///< Right master volume (0-7)
 
-	uint8_t FrameSequenceStep;
+	uint8_t FrameSequenceStep;  ///< Frame sequencer position (0-7)
 
-	bool ApuEnabled;
+	bool ApuEnabled;            ///< Master APU enable (SOUNDCNT_X bit 7)
 
-	uint16_t Bias;
-	uint8_t SamplingRate;
+	uint16_t Bias;              ///< SOUNDBIAS ($4000088) value
+	uint8_t SamplingRate;       ///< Output sampling rate (0-3)
 };
 
+/// <summary>
+/// Serial communication port state.
+/// Supports multiplayer link, normal, UART, and JOY Bus modes.
+/// </summary>
 struct GbaSerialState {
-	uint64_t StartMasterClock;
-	uint64_t EndMasterClock;
-	uint64_t IrqMasterClock;
+	uint64_t StartMasterClock;   ///< Transfer start time
+	uint64_t EndMasterClock;     ///< Transfer end time
+	uint64_t IrqMasterClock;     ///< IRQ trigger time
 
-	uint16_t Data[4]; // 120-127
+	uint16_t Data[4];            ///< SIOMULTI0-3 ($4000120-$4000127)
 
-	uint16_t Control; // 128-129
-	bool InternalShiftClock;
-	bool InternalShiftClockSpeed2MHz;
-	bool Active;
-	bool TransferWord;
-	bool IrqEnabled;
+	uint16_t Control;            ///< SIOCNT ($4000128)
+	bool InternalShiftClock;     ///< Use internal clock (master mode)
+	bool InternalShiftClockSpeed2MHz;  ///< 2MHz clock (vs 256KHz)
+	bool Active;                 ///< Transfer in progress
+	bool TransferWord;           ///< 32-bit transfer mode
+	bool IrqEnabled;             ///< IRQ on transfer complete
 
-	uint16_t SendData;   // 12A-12B
-	uint16_t Mode;       // 134-135
-	uint16_t JoyControl; // 140-141
-	uint32_t JoyReceive; // 150-153
-	uint32_t JoySend;    // 154-157
-	uint8_t JoyStatus;   // 158
+	uint16_t SendData;           ///< SIODATA8/SIOMLT_SEND ($400012A)
+	uint16_t Mode;               ///< RCNT ($4000134) mode select
+	uint16_t JoyControl;         ///< JOYCNT ($4000140)
+	uint32_t JoyReceive;         ///< JOY_RECV ($4000150)
+	uint32_t JoySend;            ///< JOY_TRANS ($4000154)
+	uint8_t JoyStatus;           ///< JOYSTAT ($4000158)
 };
 
+/// <summary>
+/// Controller input state.
+/// </summary>
 struct GbaControlManagerState {
-	uint16_t KeyControl;
-	uint16_t ActiveKeys;
+	uint16_t KeyControl;         ///< KEYCNT ($4000132) interrupt control
+	uint16_t ActiveKeys;         ///< Currently pressed buttons
 };
 
+/// <summary>
+/// APU debug state combining all channels.
+/// </summary>
 struct GbaApuDebugState {
-	GbaApuState Common;
-	GbaSquareState Square1;
-	GbaSquareState Square2;
-	GbaWaveState Wave;
-	GbaNoiseState Noise;
+	GbaApuState Common;          ///< Global APU registers
+	GbaSquareState Square1;      ///< Square wave channel 1
+	GbaSquareState Square2;      ///< Square wave channel 2
+	GbaWaveState Wave;           ///< Wave channel
+	GbaNoiseState Noise;         ///< Noise channel
 };
 
+/// <summary>
+/// GPIO state for cartridge peripherals (RTC, solar sensor, etc).
+/// </summary>
 struct GbaGpioState {
-	uint8_t Data;
-	uint8_t WritablePins;
-	bool ReadWrite;
+	uint8_t Data;                ///< GPIO data register
+	uint8_t WritablePins;        ///< GPIO direction (1=output)
+	bool ReadWrite;              ///< Read/write enable
 };
 
+/// <summary>
+/// Cartridge state including GPIO peripherals.
+/// </summary>
 struct GbaCartState {
-	bool HasGpio;
-	GbaGpioState Gpio;
+	bool HasGpio;                ///< Cartridge has GPIO
+	GbaGpioState Gpio;           ///< GPIO state
 };
 
+/// <summary>
+/// Complete GBA emulation state for save states.
+/// </summary>
 struct GbaState {
-	GbaCpuState Cpu;
-	GbaPpuState Ppu;
-	GbaApuDebugState Apu;
-	GbaMemoryManagerState MemoryManager;
-	GbaDmaControllerState Dma;
-	GbaTimersState Timer;
-	GbaRomPrefetchState Prefetch;
-	GbaControlManagerState ControlManager;
-	GbaCartState Cart;
+	GbaCpuState Cpu;                     ///< ARM7TDMI CPU state
+	GbaPpuState Ppu;                     ///< PPU (graphics) state
+	GbaApuDebugState Apu;                ///< APU (audio) state
+	GbaMemoryManagerState MemoryManager; ///< Memory and IRQ state
+	GbaDmaControllerState Dma;           ///< DMA controller state
+	GbaTimersState Timer;                ///< Hardware timers
+	GbaRomPrefetchState Prefetch;        ///< ROM prefetch buffer
+	GbaControlManagerState ControlManager; ///< Controller input
+	GbaCartState Cart;                   ///< Cartridge peripherals
 };
 
+/// <summary>
+/// Thumb instruction categories for disassembly.
+/// 16-bit Thumb instruction set has distinct encoding groups.
+/// </summary>
 enum class GbaThumbOpCategory {
-	MoveShiftedRegister,
-	AddSubtract,
-	MoveCmpAddSub,
-	AluOperation,
-	HiRegBranchExch,
-	PcRelLoad,
-	LoadStoreRegOffset,
-	LoadStoreSignExtended,
-	LoadStoreImmOffset,
-	LoadStoreHalfWord,
-	SpRelLoadStore,
-	LoadAddress,
-	AddOffsetToSp,
-	PushPopReg,
-	MultipleLoadStore,
-	ConditionalBranch,
-	SoftwareInterrupt,
-	UnconditionalBranch,
-	LongBranchLink,
+	MoveShiftedRegister,   ///< LSL, LSR, ASR by immediate
+	AddSubtract,           ///< ADD/SUB with register/immediate
+	MoveCmpAddSub,         ///< MOV/CMP/ADD/SUB with 8-bit immediate
+	AluOperation,          ///< Data processing (AND, EOR, etc)
+	HiRegBranchExch,       ///< High register ops, BX, BLX
+	PcRelLoad,             ///< LDR Rd, [PC, #imm]
+	LoadStoreRegOffset,    ///< LDR/STR with register offset
+	LoadStoreSignExtended, ///< LDRSB, LDRSH, etc.
+	LoadStoreImmOffset,    ///< LDR/STR with immediate offset
+	LoadStoreHalfWord,     ///< LDRH/STRH
+	SpRelLoadStore,        ///< LDR/STR relative to SP
+	LoadAddress,           ///< ADR (load PC/SP relative address)
+	AddOffsetToSp,         ///< ADD SP, #imm / SUB SP, #imm
+	PushPopReg,            ///< PUSH/POP register list
+	MultipleLoadStore,     ///< LDMIA/STMIA
+	ConditionalBranch,     ///< B{cond} with 8-bit offset
+	SoftwareInterrupt,     ///< SWI
+	UnconditionalBranch,   ///< B with 11-bit offset
+	LongBranchLink,        ///< BL (two-instruction sequence)
 
-	InvalidOp,
+	InvalidOp,             ///< Invalid/undefined instruction
 };
 
+/// <summary>
+/// IRQ source flags for interrupt handling.
+/// </summary>
 enum class GbaIrqSource {
-	None = 0,
-	LcdVblank = 1 << 0,
-	LcdHblank = 1 << 1,
-	LcdScanlineMatch = 1 << 2,
+	None = 0,                   ///< No interrupt
+	LcdVblank = 1 << 0,         ///< VBlank start (scanline 160)
+	LcdHblank = 1 << 1,         ///< HBlank start (each scanline)
+	LcdScanlineMatch = 1 << 2,  ///< V-counter match (DISPSTAT LYC)
 
-	Timer0 = 1 << 3,
-	Timer1 = 1 << 4,
-	Timer2 = 1 << 5,
-	Timer3 = 1 << 6,
+	Timer0 = 1 << 3,            ///< Timer 0 overflow
+	Timer1 = 1 << 4,            ///< Timer 1 overflow
+	Timer2 = 1 << 5,            ///< Timer 2 overflow
+	Timer3 = 1 << 6,            ///< Timer 3 overflow
 
-	Serial = 1 << 7,
+	Serial = 1 << 7,            ///< Serial communication complete
 
-	DmaChannel0 = 1 << 8,
-	DmaChannel1 = 1 << 9,
-	DmaChannel2 = 1 << 10,
-	DmaChannel3 = 1 << 11,
+	DmaChannel0 = 1 << 8,       ///< DMA 0 complete
+	DmaChannel1 = 1 << 9,       ///< DMA 1 complete
+	DmaChannel2 = 1 << 10,      ///< DMA 2 complete
+	DmaChannel3 = 1 << 11,      ///< DMA 3 complete
 
-	Keypad = 1 << 12,
-	External = 1 << 13
+	Keypad = 1 << 12,           ///< Key combination interrupt
+	External = 1 << 13          ///< Game Pak IRQ (rare)
 };
 
+/// <summary>
+/// GBA display constants.
+/// </summary>
 class GbaConstants {
 public:
-	static constexpr uint32_t ScreenWidth = 240;
-	static constexpr uint32_t ScreenHeight = 160;
+	static constexpr uint32_t ScreenWidth = 240;   ///< Horizontal resolution
+	static constexpr uint32_t ScreenHeight = 160;  ///< Vertical resolution
 	static constexpr uint32_t PixelCount = GbaConstants::ScreenWidth * GbaConstants::ScreenHeight;
 
-	static constexpr uint32_t ScanlineCount = 228;
+	static constexpr uint32_t ScanlineCount = 228; ///< Total scanlines per frame (160 visible + 68 vblank)
 };
