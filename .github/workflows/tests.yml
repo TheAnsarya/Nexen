@@ -1,0 +1,136 @@
+name: C++ Tests
+
+on:
+  push:
+    branches: [ master, cpp-modernization, pansy-export ]
+    paths:
+      - 'Core/**'
+      - 'Core.Tests/**'
+      - 'Core.Benchmarks/**'
+      - 'Utilities/**'
+      - '.github/workflows/tests.yml'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'Core/**'
+      - 'Core.Tests/**'
+      - 'Core.Benchmarks/**'
+      - 'Utilities/**'
+
+env:
+  VCPKG_DEFAULT_TRIPLET: x64-windows
+
+jobs:
+  test-windows:
+    name: C++ Unit Tests (Windows)
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+      
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: '70992f64912b9ab0e60e915ab7421faa197524b7'
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+      
+      - name: Install vcpkg dependencies
+        working-directory: ${{ github.workspace }}
+        run: |
+          $env:VCPKG_ROOT = "${{ github.workspace }}/vcpkg"
+          vcpkg install gtest:x64-windows benchmark:x64-windows
+      
+      - name: Build Core.Tests
+        run: |
+          msbuild Core.Tests\Core.Tests.vcxproj /p:Configuration=Release /p:Platform=x64 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=false /m
+      
+      - name: Run Unit Tests
+        working-directory: ${{ github.workspace }}
+        run: |
+          $testExe = "bin\win-x64\Release\Core.Tests.exe"
+          if (Test-Path $testExe) {
+            & $testExe --gtest_output=xml:test-results.xml
+            $exitCode = $LASTEXITCODE
+            Write-Host "Tests completed with exit code: $exitCode"
+            if ($exitCode -ne 0) {
+              exit $exitCode
+            }
+          } else {
+            Write-Error "Test executable not found at: $testExe"
+            exit 1
+          }
+      
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-windows
+          path: test-results.xml
+          retention-days: 14
+      
+      - name: Test Summary
+        if: always()
+        run: |
+          if (Test-Path test-results.xml) {
+            [xml]$results = Get-Content test-results.xml
+            $testsuites = $results.testsuites
+            Write-Host "## Test Summary" 
+            Write-Host "- **Total Tests:** $($testsuites.tests)"
+            Write-Host "- **Failures:** $($testsuites.failures)"
+            Write-Host "- **Disabled:** $($testsuites.disabled)"
+            Write-Host "- **Time:** $($testsuites.time)s"
+          }
+
+  benchmark-windows:
+    name: C++ Benchmarks (Windows)
+    runs-on: windows-latest
+    # Don't run benchmarks on PRs - only on push to main branches
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+      
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: '70992f64912b9ab0e60e915ab7421faa197524b7'
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+      
+      - name: Install vcpkg dependencies
+        working-directory: ${{ github.workspace }}
+        run: |
+          $env:VCPKG_ROOT = "${{ github.workspace }}/vcpkg"
+          vcpkg install gtest:x64-windows benchmark:x64-windows
+      
+      - name: Build Core.Benchmarks
+        run: |
+          msbuild Core.Benchmarks\Core.Benchmarks.vcxproj /p:Configuration=Release /p:Platform=x64 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=false /m
+      
+      - name: Run Benchmarks (Quick)
+        working-directory: ${{ github.workspace }}
+        run: |
+          $benchExe = "bin\win-x64\Release\Core.Benchmarks.exe"
+          if (Test-Path $benchExe) {
+            # Run with minimal iterations just to verify benchmarks work
+            # Full benchmark runs should be done manually or in scheduled workflows
+            & $benchExe --benchmark_format=console --benchmark_min_time=0.01s --benchmark_filter="BM_.*" 2>&1 | Select-Object -First 200
+          } else {
+            Write-Error "Benchmark executable not found at: $benchExe"
+            exit 1
+          }
