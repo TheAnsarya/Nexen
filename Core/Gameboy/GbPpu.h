@@ -149,6 +149,9 @@ private:
 	bool _oamReadBlocked = false;
 
 	/// <summary>OAM writes blocked (Mode 2/3).</summary>
+	bool _oamWriteBlocked = false;
+
+	/// <summary>VRAM reads blocked (Mode 3).</summary>
 	bool _vramReadBlocked = false;
 	bool _vramWriteBlocked = false;
 

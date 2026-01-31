@@ -91,3 +91,5 @@ struct InternalRegisterState {
 	/// [2]: Controller 3 ($421C-$421D, multitap)
 	/// [3]: Controller 4 ($421E-$421F, multitap)
 	/// </summary>
+	uint16_t ControllerData[4] = {};
+};

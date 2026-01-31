@@ -149,3 +149,6 @@ public:
 
 	/// <summary>Serializes voice state for save states.</summary>
 	/// <param name="s">Serializer instance.</param>
+	void Serialize(Serializer& s) override;
+};
+

@@ -510,7 +510,7 @@ bool Renderer::CreateHudTexture(HudRenderInfo& hud, uint32_t newWidth, uint32_t 
 }
 
 void Renderer::DrawHud(HudRenderInfo& hud, RenderSurfaceInfo& hudSurface) {
-	uint32_t* hudBuffer = hudSurface.Buffer;
+	uint32_t* hudBuffer = hudSurface.Buffer.get();
 	uint32_t newWidth = hudSurface.Width;
 	uint32_t newHeight = hudSurface.Height;
 
