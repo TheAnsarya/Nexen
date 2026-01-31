@@ -69,7 +69,7 @@ namespace Mesen.Debugger.Utilities {
 								color: #599a3e;
 								font-weight: bold;
 							}}
-							
+
 							a:hover {{
 								color: #3f6d2c;
 							}}
@@ -131,7 +131,7 @@ namespace Mesen.Debugger.Utilities {
 							.pageLayout {{
 								height: 100%;
 							}}
-							
+
 							.menu {{
 								width: 200px;
 								position: fixed;
@@ -162,12 +162,12 @@ namespace Mesen.Debugger.Utilities {
 								font-size: 14px;
 							}}
 
-							.apilink > a {{ 
+							.apilink > a {{
 								color: #07D;
 								font-weight: normal;
 							}}
 
-							.apilink > a:hover {{ 
+							.apilink > a:hover {{
 								color: #04A;
 								font-weight: normal;
 							}}

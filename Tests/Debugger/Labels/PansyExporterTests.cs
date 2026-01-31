@@ -141,7 +141,7 @@ public class PansyExporterTests
 		// Write invalid magic
 		writer.Write(Encoding.ASCII.GetBytes("INVALID\0"));
 		writer.Write(VERSION_1_0);
-		
+
 		ms.Position = 0;
 		var header = ReadTestHeader(ms);
 
@@ -156,7 +156,7 @@ public class PansyExporterTests
 
 		// Write only magic
 		writer.Write(Encoding.ASCII.GetBytes(MAGIC));
-		
+
 		ms.Position = 0;
 		var header = ReadTestHeader(ms);
 
@@ -190,7 +190,7 @@ public class PansyExporterTests
 	{
 		var addresses = Array.Empty<uint>();
 		var bytes = BuildAddressListSection(addresses);
-		
+
 		Assert.Equal(4, bytes.Length); // Just the count (uint32)
 		Assert.Equal(0u, BitConverter.ToUInt32(bytes, 0));
 	}
@@ -200,7 +200,7 @@ public class PansyExporterTests
 	{
 		uint[] addresses = [0x8000, 0x8100, 0x8200];
 		var bytes = BuildAddressListSection(addresses);
-		
+
 		Assert.Equal(16, bytes.Length); // count (4) + 3 addresses (12)
 		Assert.Equal(3u, BitConverter.ToUInt32(bytes, 0));
 		Assert.Equal(0x8000u, BitConverter.ToUInt32(bytes, 4));
@@ -213,7 +213,7 @@ public class PansyExporterTests
 	{
 		var labels = new List<TestLabel>();
 		var bytes = BuildSymbolSection(labels);
-		
+
 		Assert.Equal(4, bytes.Length); // Just the count
 		Assert.Equal(0u, BitConverter.ToUInt32(bytes, 0));
 	}
@@ -225,7 +225,7 @@ public class PansyExporterTests
 			new TestLabel { Address = 0x8000, Label = "TestFunc" }
 		];
 		var bytes = BuildSymbolSection(labels);
-		
+
 		// Count(4) + Address(4) + Type(1) + Flags(1) + MemType(1) + Reserved(1) + NameLen(2) + Name(8)
 		Assert.True(bytes.Length > 4);
 		Assert.Equal(1u, BitConverter.ToUInt32(bytes, 0)); // 1 symbol
@@ -236,7 +236,7 @@ public class PansyExporterTests
 	{
 		List<TestLabel> labels = [];
 		var bytes = BuildCommentSection(labels);
-		
+
 		Assert.Equal(4, bytes.Length);
 		Assert.Equal(0u, BitConverter.ToUInt32(bytes, 0));
 	}
@@ -248,7 +248,7 @@ public class PansyExporterTests
 			new TestLabel { Address = 0x8000, Comment = "Test comment" }
 		];
 		var bytes = BuildCommentSection(labels);
-		
+
 		Assert.True(bytes.Length > 4);
 		Assert.Equal(1u, BitConverter.ToUInt32(bytes, 0)); // 1 comment
 	}
@@ -262,7 +262,7 @@ public class PansyExporterTests
 	{
 		string romName = "TestGame.sfc";
 		string path = GetPansyFilePath(romName);
-		
+
 		Assert.EndsWith(".pansy", path);
 		Assert.Contains("TestGame", path);
 	}
@@ -273,7 +273,7 @@ public class PansyExporterTests
 		string romName = "TestGame.sfc";
 		uint crc = 0xDEADBEEF;
 		string path = GetPansyFilePathWithCrc(romName, crc);
-		
+
 		Assert.Contains("deadbeef", path.ToLower());
 		Assert.EndsWith(".pansy", path);
 	}
@@ -287,7 +287,7 @@ public class PansyExporterTests
 	{
 		// This is a mock test - actual export requires Mesen runtime
 		string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.pansy");
-		
+
 		try {
 			// Create a minimal valid pansy file
 			using (var stream = new FileStream(tempPath, FileMode.Create))
@@ -305,7 +305,7 @@ public class PansyExporterTests
 				writer.Write((uint)0); // Footer CRC2
 				writer.Write((uint)0); // Footer CRC3
 			}
-			
+
 			// Asserts after streams are closed
 			Assert.True(File.Exists(tempPath));
 			Assert.True(new FileInfo(tempPath).Length >= 32);
@@ -334,7 +334,7 @@ public class PansyExporterTests
 	{
 		try {
 			using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
-			
+
 			byte[] magic = reader.ReadBytes(8);
 			if (Encoding.ASCII.GetString(magic).TrimEnd('\0') != "PANSY")
 				return null;
@@ -376,7 +376,7 @@ public class PansyExporterTests
 	{
 		using var ms = new MemoryStream();
 		using var writer = new BinaryWriter(ms);
-		
+
 		var symbolLabels = labels.Where(l => !string.IsNullOrEmpty(l.Label)).ToList();
 		writer.Write((uint)symbolLabels.Count);
 
@@ -398,7 +398,7 @@ public class PansyExporterTests
 	{
 		using var ms = new MemoryStream();
 		using var writer = new BinaryWriter(ms);
-		
+
 		var commentLabels = labels.Where(l => !string.IsNullOrEmpty(l.Comment)).ToList();
 		writer.Write((uint)commentLabels.Count);
 
@@ -436,7 +436,7 @@ public class PansyExporterTests
 	{
 		var labels = new List<TestLabel>();
 		var bytes = BuildMemoryRegionsSection(labels);
-		
+
 		Assert.Equal(4, bytes.Length); // Just the count
 		Assert.Equal(0u, BitConverter.ToUInt32(bytes, 0));
 	}
@@ -448,7 +448,7 @@ public class PansyExporterTests
 			new TestLabel { Address = 0x8000, Label = "DataTable", Length = 0x100 }
 		];
 		var bytes = BuildMemoryRegionsSection(labels);
-		
+
 		Assert.True(bytes.Length > 4);
 		Assert.Equal(1u, BitConverter.ToUInt32(bytes, 0)); // 1 region
 		Assert.Equal(0x8000u, BitConverter.ToUInt32(bytes, 4)); // Start
@@ -459,7 +459,7 @@ public class PansyExporterTests
 	{
 		using var ms = new MemoryStream();
 		using var writer = new BinaryWriter(ms);
-		
+
 		var regions = labels.Where(l => l.Length > 1 && !string.IsNullOrEmpty(l.Label)).ToList();
 		writer.Write((uint)regions.Count);
 
@@ -485,7 +485,7 @@ public class PansyExporterTests
 	public void BuildCrossRefsSection_EmptyData_ReturnsCountOnly()
 	{
 		var bytes = BuildCrossRefsSection([]);
-		
+
 		Assert.Equal(4, bytes.Length);
 		Assert.Equal(0u, BitConverter.ToUInt32(bytes, 0));
 	}
@@ -495,7 +495,7 @@ public class PansyExporterTests
 	{
 		(uint From, uint To, byte Type)[] xrefs = [(0x8000, 0x9000, 1)];
 		var bytes = BuildCrossRefsSection(xrefs);
-		
+
 		// Count(4) + From(4) + To(4) + Type(1) + MemTypeFrom(1) + MemTypeTo(1) + Flags(1) = 16
 		Assert.Equal(16, bytes.Length);
 		Assert.Equal(1u, BitConverter.ToUInt32(bytes, 0)); // 1 xref
@@ -508,7 +508,7 @@ public class PansyExporterTests
 	{
 		using var ms = new MemoryStream();
 		using var writer = new BinaryWriter(ms);
-		
+
 		writer.Write((uint)xrefs.Length);
 		foreach (var xref in xrefs) {
 			writer.Write(xref.From);   // Source address (4)
@@ -532,9 +532,9 @@ public class PansyExporterTests
 		// Data smaller than 64 bytes should not be compressed
 		byte[] smallData = new byte[32];
 		Array.Fill(smallData, (byte)0xAB);
-		
+
 		var result = CompressData(smallData);
-		
+
 		Assert.Equal(smallData, result);
 	}
 
@@ -544,9 +544,9 @@ public class PansyExporterTests
 		// Repetitive data should compress well
 		byte[] largeData = new byte[1024];
 		Array.Fill(largeData, (byte)0xAB);
-		
+
 		var compressed = CompressData(largeData);
-		
+
 		Assert.True(compressed.Length < largeData.Length, "Compressed size should be smaller for repetitive data");
 	}
 
@@ -557,9 +557,9 @@ public class PansyExporterTests
 		var random = new Random(42); // Fixed seed for reproducibility
 		byte[] randomData = new byte[256];
 		random.NextBytes(randomData);
-		
+
 		var result = CompressData(randomData);
-		
+
 		// Should return original if compression doesn't help
 		Assert.True(result.Length <= randomData.Length + 50); // GZip header overhead
 	}
@@ -570,10 +570,10 @@ public class PansyExporterTests
 		// Compress and decompress, verify roundtrip
 		byte[] original = new byte[256];
 		Array.Fill(original, (byte)0xCD);
-		
+
 		var compressed = CompressDataForce(original);
 		var decompressed = DecompressData(compressed, original.Length);
-		
+
 		Assert.Equal(original, decompressed);
 	}
 
@@ -622,7 +622,7 @@ public class PansyExporterTests
 	public void ExportOptions_DefaultValues_AllEnabled()
 	{
 		var options = new TestExportOptions();
-		
+
 		Assert.True(options.IncludeMemoryRegions);
 		Assert.True(options.IncludeCrossReferences);
 		Assert.True(options.IncludeDataBlocks);

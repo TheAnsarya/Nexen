@@ -365,7 +365,7 @@ namespace Mesen.Debugger.ViewModels {
 						line += lineData.Comment;
 					}
 
-					//Skip lines that contain a jump/sub "label" (these aren't 
+					//Skip lines that contain a jump/sub "label" (these aren't
 					bool skipLine = skipGeneratedJmpSubLabels && lineData.Flags.HasFlag(LineFlags.Label) && lineData.Text.StartsWith("$");
 
 					string result = line.TrimEnd();
