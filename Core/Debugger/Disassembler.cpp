@@ -360,7 +360,7 @@ void Disassembler::GetLineData(DisassemblyResult& row, CpuType type, MemoryType 
 				// Use address as the label
 				label = "$" + DebugUtilities::AddressToHex(type, row.CpuAddress);
 				if (_settings->GetDebugConfig().UseLowerCaseDisassembly) {
-					std::transform(label.begin(), label.end(), label.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+					std::ranges::transform(label, label.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 				}
 			}
 			label += ":";
