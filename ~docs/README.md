@@ -23,6 +23,15 @@ This folder contains development documentation for Mesen2 contributions and cust
 | [Debugger Subsystem](DEBUGGER.md) | Breakpoints, CDL, scripting |
 | [Utilities Library](UTILITIES-LIBRARY.md) | Common utilities reference |
 
+## 🎛️ Peripheral System Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Input Subsystem](INPUT-SUBSYSTEM.md) | Controllers, input handling |
+| [Audio Subsystem](AUDIO-SUBSYSTEM.md) | Audio mixing, effects, recording |
+| [Video Rendering](VIDEO-RENDERING.md) | Filters, HUD, recording |
+| [Movie/TAS System](MOVIE-TAS.md) | Movie recording, TAS features |
+
 ## 🌼 Pansy Export Feature
 
 The Pansy export feature enables exporting and importing debug metadata in a universal format.
@@ -68,12 +77,13 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 |--------|-------|
 | Unit Tests | 421 tests |
 | Benchmarks | 224 benchmarks |
-| Documentation Files | 8 core docs |
+| Documentation Files | 13 core docs |
 
 ### Completed Epics
 
 - ✅ [Epic 15] Unit Testing Infrastructure
 - ✅ [Epic 17] Code Documentation and Comments
+- ✅ [Epic 18] Additional System Documentation
 
 ### Branch: `pansy-export`
 
