@@ -24,30 +24,35 @@ SmsMemoryManager::~SmsMemoryManager() {
 	delete[] _originalCartRam;
 }
 
+// Initialize SMS/Game Gear/SG-1000/ColecoVision memory manager
 void SmsMemoryManager::Init(Emulator* emu, SmsConsole* console, vector<uint8_t>& romData, vector<uint8_t>& biosRom, SmsVdp* vdp, SmsControlManager* controlManager, SmsCart* cart, SmsPsg* psg, SmsFmAudio* fmAudio) {
 	_emu = emu;
 	_console = console;
 	_vdp = vdp;
-	_psg = psg;
+	_psg = psg;  // Programmable Sound Generator (SN76489)
 	_controlManager = controlManager;
 	_cart = cart;
-	_fmAudio = fmAudio;
+	_fmAudio = fmAudio;  // FM audio unit (Sega Master System Japanese, optional)
 
+	// Copy ROM data to internal buffer
 	_prgRom = new uint8_t[romData.size()];
 	_prgRomSize = (uint32_t)romData.size();
 	memcpy(_prgRom, romData.data(), _prgRomSize);
 	_emu->RegisterMemory(MemoryType::SmsPrgRom, _prgRom, _prgRomSize);
 
+	// Detect console model for memory map differences
 	_model = _console->GetModel();
 	bool isSg1000 = _model == SmsModel::Sg;
 	bool isCv = _model == SmsModel::ColecoVision;
 
+	// Work RAM size varies by model: SMS/GG = 8KB, CV = 1KB
 	_workRamSize = isCv ? SmsMemoryManager::CvWorkRamSize : SmsMemoryManager::SmsWorkRamSize;
 
 	_workRam = new uint8_t[_workRamSize];
 	console->InitializeRam(_workRam, _workRamSize);
 	_emu->RegisterMemory(MemoryType::SmsWorkRam, _workRam, _workRamSize);
 
+	// Initialize BIOS ROM if provided
 	if (biosRom.size() >= 0x400) {
 		_biosRom = new uint8_t[biosRom.size()];
 		_biosRomSize = (uint32_t)biosRom.size();
@@ -55,18 +60,19 @@ void SmsMemoryManager::Init(Emulator* emu, SmsConsole* console, vector<uint8_t>&
 		_state.BiosEnabled = true;
 		_emu->RegisterMemory(MemoryType::SmsBootRom, _biosRom, _biosRomSize);
 		if (!isCv) {
-			_biosMapper.reset(new SmsBiosMapper(this));
+			_biosMapper.reset(new SmsBiosMapper(this));  // SMS BIOS uses a mapper
 		}
 	} else {
+		// No BIOS - start with cartridge enabled
 		if (isSg1000) {
-			_state.CardEnabled = true;
+			_state.CardEnabled = true;  // SG-1000 uses card slot
 		} else {
 			_state.CartridgeEnabled = true;
 
-			// Setup work ram to match SMS' post-bios state
+			// Setup work RAM to match SMS' post-BIOS state
 			memset(_workRam, 0, _workRamSize);
 
-			// default value for $3E that some games expect after bios runs
+			// Default value for $3E that some games expect after BIOS runs
 			_workRam[0] = _model == SmsModel::GameGear ? 0xA8 : 0xAB;
 		}
 	}

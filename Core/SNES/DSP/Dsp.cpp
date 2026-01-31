@@ -8,17 +8,22 @@
 
 // Quoted comments are from anomie's DSP document (with modifications by jwdonal)
 
+// Initialize SNES DSP (Sony S-DSP) audio processor
 Dsp::Dsp(Emulator* emu, SnesConsole* console, Spc* spc) {
 	_emu = emu;
 	_spc = spc;
 
+	// Initialize DSP registers
 	memset(_state.Regs, 0, 0x80);
 	console->InitializeRam(_state.ExternalRegs, 0x80);
 	_emu->RegisterMemory(MemoryType::SpcDspRegisters, _state.ExternalRegs, 0x80);
 
+	// Initialize all 8 DSP voices
 	for (int i = 0; i < 8; i++) {
 		_voices[i].Init(i, spc, this, _state.Regs + (i * 0x10), &_emu->GetSettings()->GetSnesConfig());
 	}
+
+	// Initialize global DSP state from registers
 	_state.NewKeyOn = ReadReg(DspGlobalRegs::KeyOn);
 	_state.DirSampleTableAddress = ReadReg(DspGlobalRegs::DirSampleTableAddress);
 	_state.EchoRingBufferAddress = ReadReg(DspGlobalRegs::EchoRingBufferAddress);
@@ -36,19 +41,20 @@ void Dsp::LoadSpcFileRegs(uint8_t* regs) {
 	_state.EchoRingBufferAddress = ReadReg(DspGlobalRegs::EchoRingBufferAddress);
 }
 
+// Reset DSP state to power-on defaults
 void Dsp::Reset() {
-	//"FLG will always act as if set to 0xE0 after power on or reset, even if the value read back indicates otherwise"
+	// "FLG will always act as if set to 0xE0 after power on or reset, even if the value read back indicates otherwise"
 	_state.Regs[(int)DspGlobalRegs::Flags] = 0xE0;
 
-	_state.Counter = 0;
-	_state.EchoHistoryPos = 0;
-	_state.EchoOffset = 0;
-	_state.EveryOtherSample = 1;
+	_state.Counter = 0;          // Global counter for envelope/echo timing
+	_state.EchoHistoryPos = 0;   // Position in echo FIR history buffer
+	_state.EchoOffset = 0;       // Current offset in echo ring buffer
+	_state.EveryOtherSample = 1; // Alternates for certain timing behaviors
 
-	//"The noise generator operation is as follows: On reset, N = 0x4000."
-	_state.NoiseLfsr = 0x4000;
+	// "The noise generator operation is as follows: On reset, N = 0x4000."
+	_state.NoiseLfsr = 0x4000;   // Noise LFSR initial value
 
-	_state.Step = 0;
+	_state.Step = 0;             // Current step in DSP processing cycle
 }
 
 bool Dsp::CheckCounter(int32_t rate) {

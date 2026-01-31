@@ -13,67 +13,171 @@
 class Emulator;
 class PceMemoryManager;
 
+/// <summary>
+/// PC Engine CPU emulator - HuC6280 implementation.
+/// Modified 65C02 with integrated hardware features.
+/// </summary>
+/// <remarks>
+/// The HuC6280 is based on the WDC 65C02 with enhancements:
+/// - 7.16 MHz clock (switchable to 1.79 MHz)
+/// - 21-bit address space via MMU (8 x 8KB banks)
+/// - Integrated 6-channel PSG
+/// - Integrated timer
+/// - Block transfer instructions (TIA, TDD, TIN, TII, TAI)
+///
+/// **Memory Management:**
+/// - 8 MPR (Memory Page Register) mapped to $FFF8-$FFFF
+/// - Each MPR maps an 8KB bank to 21-bit physical address
+/// - Zero page and stack at $2000-$21FF (hardware fixed)
+///
+/// **Interrupt Vectors (logical addresses):**
+/// - RESET: $FFFE-$FFFF
+/// - NMI: $FFFC-$FFFD
+/// - Timer IRQ: $FFFA-$FFFB
+/// - IRQ1 (VDC): $FFF8-$FFF9
+/// - IRQ2 (BRK/external): $FFF6-$FFF7
+///
+/// **Speed Modes:**
+/// - High speed: 7.16 MHz (default)
+/// - Low speed: 1.79 MHz (for compatibility)
+///
+/// **Unique Instructions:**
+/// - CSH/CSL: Change speed high/low
+/// - SET: Set T flag for memory-to-memory operations
+/// - ST0/ST1/ST2: Store to VDC ports
+/// - TAM/TMA: Transfer accumulator to/from MPR
+/// - Block transfers: TIA, TDD, TIN, TII, TAI
+/// </remarks>
 class PceCpu final : public ISerializable {
 private:
+	/// <summary>Reset vector address ($FFFE).</summary>
 	static constexpr uint16_t ResetVector = 0xFFFE;
+
+	/// <summary>NMI vector address ($FFFC).</summary>
 	static constexpr uint16_t NmiVector = 0xFFFC;
+
+	/// <summary>Timer IRQ vector address ($FFFA).</summary>
 	static constexpr uint16_t TimerIrqVector = 0xFFFA;
+
+	/// <summary>IRQ1 (VDC) vector address ($FFF8).</summary>
 	static constexpr uint16_t Irq1Vector = 0xFFF8;
+
+	/// <summary>IRQ2 (BRK/external) vector address ($FFF6).</summary>
 	static constexpr uint16_t Irq2Vector = 0xFFF6;
 
+	/// <summary>Zero page base address (hardware fixed).</summary>
 	static constexpr uint16_t ZeroPage = 0x2000;
+
+	/// <summary>Stack page base address (hardware fixed).</summary>
 	static constexpr uint16_t StackPage = 0x2100;
 
+	/// <summary>Instruction handler function pointer type.</summary>
 	typedef void (PceCpu::*Func)();
 
+	/// <summary>Opcode dispatch table.</summary>
 	static Func const _opTable[256];
+
+	/// <summary>Addressing mode table for disassembly.</summary>
 	static PceAddrMode const _addrMode[256];
 
+	/// <summary>Emulator instance.</summary>
 	Emulator* _emu;
+
+	/// <summary>Memory manager for bus access.</summary>
 	PceMemoryManager* _memoryManager;
 
+	/// <summary>CPU register state (A, X, Y, SP, PC, P).</summary>
 	PceCpuState _state;
+
+	/// <summary>Current instruction operand.</summary>
 	uint16_t _operand;
+
+	/// <summary>Second operand (block transfers).</summary>
 	uint16_t _operand2;
+
+	/// <summary>Third operand (block transfers).</summary>
 	uint16_t _operand3;
+
+	/// <summary>Memory addressing mode flag.</summary>
 	bool _memoryFlag = false;
 
+	/// <summary>Pending IRQ flags.</summary>
 	uint8_t _pendingIrqs = 0;
+
+	/// <summary>Current instruction's addressing mode.</summary>
 	PceAddrMode _instAddrMode;
 
 private:
+	/// <summary>Writes value in memory addressing mode.</summary>
 	void WriteMemoryModeValue(uint8_t value);
+
+	/// <summary>AND instruction implementation.</summary>
 	void AND();
+
+	/// <summary>EOR (XOR) instruction implementation.</summary>
 	void EOR();
+
+	/// <summary>ORA instruction implementation.</summary>
 	void ORA();
 
+	/// <summary>Binary/decimal addition helper.</summary>
 	void ADD(uint8_t value);
+
+	/// <summary>Binary/decimal subtraction helper.</summary>
 	void SUB(uint8_t value);
 
+	/// <summary>ADC instruction implementation.</summary>
 	void ADC();
+
+	/// <summary>SBC instruction implementation.</summary>
 	void SBC();
 
+	/// <summary>Compare helper function.</summary>
 	void CMP(uint8_t reg, uint8_t value);
 
+	/// <summary>CMP A instruction.</summary>
 	void CPA();
+
+	/// <summary>CPX instruction.</summary>
 	void CPX();
+
+	/// <summary>CPY instruction.</summary>
 	void CPY();
 
+	/// <summary>INC instruction.</summary>
 	void INC();
+
+	/// <summary>DEC instruction.</summary>
 	void DEC();
 
+	/// <summary>ASL (Arithmetic Shift Left) operation.</summary>
 	uint8_t ASL(uint8_t value);
+
+	/// <summary>LSR (Logical Shift Right) operation.</summary>
 	uint8_t LSR(uint8_t value);
+
+	/// <summary>ROL (Rotate Left) operation.</summary>
 	uint8_t ROL(uint8_t value);
+
+	/// <summary>ROR (Rotate Right) operation.</summary>
 	uint8_t ROR(uint8_t value);
 
+	/// <summary>ASL on memory address.</summary>
 	void ASLAddr();
+
+	/// <summary>LSR on memory address.</summary>
 	void LSRAddr();
+
+	/// <summary>ROL on memory address.</summary>
 	void ROLAddr();
+
+	/// <summary>ROR on memory address.</summary>
 	void RORAddr();
 
+	/// <summary>Handles relative branch with condition.</summary>
 	void BranchRelative(bool branch);
 
+	/// <summary>BIT instruction implementation.</summary>
 	void BIT();
 
 	// OP Codes

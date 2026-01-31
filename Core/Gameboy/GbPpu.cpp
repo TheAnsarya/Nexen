@@ -25,49 +25,54 @@ void GbPpu::Init(Emulator* emu, Gameboy* gameboy, GbMemoryManager* memoryManager
 	_emu = emu;
 	_gameboy = gameboy;
 	_memoryManager = memoryManager;
-	_dmaController = dmaController;
-	_vram = vram;   // Video RAM pointer
-	_oam = oam;     // Object Attribute Memory pointer
+	_dmaController = dmaController;  // DMA controller for OAM DMA
+	_vram = vram;   // Video RAM pointer (8KB on DMG, 16KB bank-switched on CGB)
+	_oam = oam;     // Object Attribute Memory pointer (160 bytes, 40 sprites)
 
+	// Allocate double-buffered output (160x144 @ 15-bit color)
 	_outputBuffers[0] = std::make_unique<uint16_t[]>(GbConstants::PixelCount);
 	_outputBuffers[1] = std::make_unique<uint16_t[]>(GbConstants::PixelCount);
 	memset(_outputBuffers[0].get(), 0, GbConstants::PixelCount * sizeof(uint16_t));
 	memset(_outputBuffers[1].get(), 0, GbConstants::PixelCount * sizeof(uint16_t));
 	_currentBuffer = _outputBuffers[0].get();
 
+	// Allocate event viewer buffers (456 dots x 154 scanlines)
 	_eventViewerBuffers[0] = std::make_unique<uint16_t[]>(456 * 154);
 	_eventViewerBuffers[1] = std::make_unique<uint16_t[]>(456 * 154);
 	memset(_eventViewerBuffers[0].get(), 0, 456 * 154 * sizeof(uint16_t));
 	memset(_eventViewerBuffers[1].get(), 0, 456 * 154 * sizeof(uint16_t));
 	_currentEventViewerBuffer = _eventViewerBuffers[0].get();
 
+	// Initialize PPU state
 	_state = {};
-	_state.Mode = PpuMode::HBlank;
-	_state.CgbEnabled = _gameboy->IsCgb();
+	_state.Mode = PpuMode::HBlank;  // Start in HBlank mode
+	_state.CgbEnabled = _gameboy->IsCgb();  // CGB mode enables extra features
 	_lastFrameTime = 0;
 
-	_gameboy->InitializeRam(_state.CgbBgPalettes, 4 * 8 * sizeof(uint16_t));
-	_gameboy->InitializeRam(_state.CgbObjPalettes, 4 * 8 * sizeof(uint16_t));
+	// Initialize CGB palette RAM with random values
+	_gameboy->InitializeRam(_state.CgbBgPalettes, 4 * 8 * sizeof(uint16_t));   // 8 BG palettes x 4 colors
+	_gameboy->InitializeRam(_state.CgbObjPalettes, 4 * 8 * sizeof(uint16_t));  // 8 OBJ palettes x 4 colors
 
 	UpdatePalette();
 
-	Write(0xFF48, 0xFF);
-	Write(0xFF49, 0xFF);
+	// Set default OBJ palette registers (OBP0 and OBP1)
+	Write(0xFF48, 0xFF);  // OBP0 = all colors
+	Write(0xFF49, 0xFF);  // OBP1 = all colors
 
 	// Reset state to ensure powering off and then back on works properly for SGB
 	ResetRenderer();
-	_wyEnableFlag = false;
-	_wxEnableFlag = false;
-	_lcdDisabled = true;
+	_wyEnableFlag = false;     // Window Y enable flag
+	_wxEnableFlag = false;     // Window X enable flag
+	_lcdDisabled = true;       // LCD starts disabled
 	_stopOamBlocked = false;
 	_stopVramBlocked = false;
 	_stopPaletteBlocked = false;
-	_oamReadBlocked = false;
-	_oamWriteBlocked = false;
-	_vramReadBlocked = false;
-	_vramWriteBlocked = false;
-	_isFirstFrame = true;
-	_forceBlankFrame = true;
+	_oamReadBlocked = false;   // OAM read blocking (mode 2/3)
+	_oamWriteBlocked = false;  // OAM write blocking (mode 2/3)
+	_vramReadBlocked = false;  // VRAM read blocking (mode 3)
+	_vramWriteBlocked = false; // VRAM write blocking (mode 3)
+	_isFirstFrame = true;      // First frame after power-on
+	_forceBlankFrame = true;   // Force blank on first frame
 	_rendererIdle = false;
 }
 

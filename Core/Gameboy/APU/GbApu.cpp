@@ -7,19 +7,24 @@
 #include "Shared/Audio/SoundMixer.h"
 #include "Utilities/Serializer.h"
 
+// Initialize Game Boy APU (Audio Processing Unit) with blip_buf synthesis
 GbApu::GbApu() {
+	// Allocate sound buffer for stereo output
 	_soundBuffer = std::make_unique<int16_t[]>(GbApu::MaxSamples * 2);
 	memset(_soundBuffer.get(), 0, GbApu::MaxSamples * 2 * sizeof(int16_t));
 
+	// Create blip_buf instances for band-limited audio synthesis
 	_leftChannel = blip_new(GbApu::MaxSamples);
 	_rightChannel = blip_new(GbApu::MaxSamples);
 }
 
+// Initialize APU with hardware references and create sound channels
 void GbApu::Init(Emulator* emu, Gameboy* gameboy) {
-	_square1.reset(new GbSquareChannel(this));
-	_square2.reset(new GbSquareChannel(this));
-	_wave.reset(new GbWaveChannel(this, gameboy));
-	_noise.reset(new GbNoiseChannel(this));
+	// Create all 4 APU channels
+	_square1.reset(new GbSquareChannel(this));   // Channel 1: Square wave with sweep
+	_square2.reset(new GbSquareChannel(this));   // Channel 2: Square wave
+	_wave.reset(new GbWaveChannel(this, gameboy)); // Channel 3: Wave playback
+	_noise.reset(new GbNoiseChannel(this));      // Channel 4: Noise
 
 	_prevLeftOutput = 0;
 	_prevRightOutput = 0;
@@ -32,9 +37,11 @@ void GbApu::Init(Emulator* emu, Gameboy* gameboy) {
 	_gameboy = gameboy;
 	_state = {};
 
+	// Initialize blip_buf filters
 	blip_clear(_leftChannel);
 	blip_clear(_rightChannel);
 
+	// Set sample rate conversion (4.194304 MHz APU to 48000 Hz output)
 	blip_set_rates(_leftChannel, GbApu::ApuFrequency, GbApu::SampleRate);
 	blip_set_rates(_rightChannel, GbApu::ApuFrequency, GbApu::SampleRate);
 }

@@ -12,22 +12,28 @@
 #include "Shared/EmuSettings.h"
 #include "Utilities/Serializer.h"
 
+// Initialize PC Engine / TurboGrafx-16 memory manager
 PceMemoryManager::PceMemoryManager(Emulator* emu, PceConsole* console, PceVpc* vpc, PceVce* vce, PceControlManager* controlManager, PcePsg* psg, PceTimer* timer, IPceMapper* mapper, PceCdRom* cdrom, vector<uint8_t>& romData, uint32_t cardRamSize, bool cdromUnitEnabled) {
 	_emu = emu;
 	_cheatManager = _emu->GetCheatManager();
 	_console = console;
-	_vpc = vpc;
-	_vce = vce;
-	_psg = psg;
+	_vpc = vpc;   // Video Processing Controller (HuC6260)
+	_vce = vce;   // Video Color Encoder (HuC6260)
+	_psg = psg;   // Programmable Sound Generator (HuC6280 integrated)
 	_timer = timer;
-	_mapper = mapper;
-	_cdrom = cdrom;
+	_mapper = mapper;  // ROM banking/mapping
+	_cdrom = cdrom;    // CD-ROM unit (if present)
 	_controlManager = controlManager;
+
+	// Copy ROM data to internal buffer
 	_prgRomSize = (uint32_t)romData.size();
 	_prgRom = new uint8_t[_prgRomSize];
+
+	// SuperGrafx has 32KB work RAM, standard PCE has 8KB
 	_workRamSize = console->IsSuperGrafx() ? 0x8000 : 0x2000;
 	_workRam = new uint8_t[_workRamSize];
 
+	// Unmapped memory returns $FF
 	_unmappedBank = new uint8_t[0x2000];
 	memset(_unmappedBank, 0xFF, 0x2000);
 
@@ -37,13 +43,14 @@ PceMemoryManager::PceMemoryManager(Emulator* emu, PceConsole* console, PceVpc* v
 
 	_cdromUnitEnabled = cdromUnitEnabled;
 
+	// Initialize card RAM (for CD-ROM or Populous)
 	if (cardRamSize > 0) {
 		if (cardRamSize == 0x30000) {
-			// Super/Arcade CD-ROM
+			// Super/Arcade CD-ROM: 192KB RAM at banks $68-$7F
 			_cardRamStartBank = 0x68;
 			_cardRamEndBank = 0x7F;
 		} else if (cardRamSize == 0x8000) {
-			// Populous
+			// Populous: 32KB RAM at banks $40-$5F
 			_cardRamStartBank = 0x40;
 			_cardRamEndBank = 0x5F;
 		}

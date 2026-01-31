@@ -21,6 +21,7 @@
 #include "Utilities/BitUtilities.h"
 #include "Utilities/Serializer.h"
 
+// Initialize GBA memory manager with all hardware references and memory regions
 GbaMemoryManager::GbaMemoryManager(Emulator* emu, GbaConsole* console, GbaPpu* ppu, GbaDmaController* dmaController, GbaControlManager* controlManager, GbaTimer* timer, GbaApu* apu, GbaCart* cart, GbaSerial* serial, GbaRomPrefetch* prefetch) {
 	_emu = emu;
 	_console = console;
@@ -31,29 +32,32 @@ GbaMemoryManager::GbaMemoryManager(Emulator* emu, GbaConsole* console, GbaPpu* p
 	_apu = apu;
 	_cart = cart;
 	_serial = serial;
-	_prefetch = prefetch;
+	_prefetch = prefetch;  // ROM prefetch buffer for faster sequential reads
 
-	_mgbaLog.reset(new MgbaLogHandler());
+	_mgbaLog.reset(new MgbaLogHandler());  // mGBA debug log compatibility
 
+	// Get pointers to all memory regions
 	_prgRom = (uint8_t*)emu->GetMemory(MemoryType::GbaPrgRom).Memory;
 	_prgRomSize = emu->GetMemory(MemoryType::GbaPrgRom).Size;
 	_bootRom = (uint8_t*)emu->GetMemory(MemoryType::GbaBootRom).Memory;
-	_intWorkRam = (uint8_t*)emu->GetMemory(MemoryType::GbaIntWorkRam).Memory;
-	_extWorkRam = (uint8_t*)emu->GetMemory(MemoryType::GbaExtWorkRam).Memory;
-	_vram = (uint8_t*)emu->GetMemory(MemoryType::GbaVideoRam).Memory;
-	_oam = (uint8_t*)emu->GetMemory(MemoryType::GbaSpriteRam).Memory;
-	_palette = (uint8_t*)emu->GetMemory(MemoryType::GbaPaletteRam).Memory;
+	_intWorkRam = (uint8_t*)emu->GetMemory(MemoryType::GbaIntWorkRam).Memory;  // 32KB internal WRAM
+	_extWorkRam = (uint8_t*)emu->GetMemory(MemoryType::GbaExtWorkRam).Memory;  // 256KB external WRAM
+	_vram = (uint8_t*)emu->GetMemory(MemoryType::GbaVideoRam).Memory;          // 96KB VRAM
+	_oam = (uint8_t*)emu->GetMemory(MemoryType::GbaSpriteRam).Memory;          // 1KB OAM
+	_palette = (uint8_t*)emu->GetMemory(MemoryType::GbaPaletteRam).Memory;     // 1KB palette RAM
 	_saveRam = (uint8_t*)emu->GetMemory(MemoryType::GbaSaveRam).Memory;
 	_saveRamSize = emu->GetMemory(MemoryType::GbaSaveRam).Size;
 
+	// Generate wait state lookup tables based on default timings
 	_waitStates.GenerateWaitStateLut(_state);
 
 	// Used to get the correct timing for the timer prescaler, based on the "timer" test
 	_masterClock = -1;
 
+	// Handle skipping boot screen
 	if (_emu->GetSettings()->GetGbaConfig().SkipBootScreen) {
 		_biosLocked = true;
-		_state.BootRomOpenBus[1] = 0xF0;
+		_state.BootRomOpenBus[1] = 0xF0;  // Values left in open bus after BIOS execution
 		_state.BootRomOpenBus[2] = 0x29;
 		_state.BootRomOpenBus[3] = 0xE1;
 		_state.PostBootFlag = true;

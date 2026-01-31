@@ -22,17 +22,20 @@
 //-does the length counter extra clock glitch exist on gba?
 //-when is wave ram access possible?
 
+// Initialize GBA APU with sound channels and DMA audio support
 void GbaApu::Init(Emulator* emu, GbaConsole* console, GbaDmaController* dmaController, GbaMemoryManager* memoryManager) {
+	// Allocate sound buffer for mono output (stereo mixing done in output stage)
 	_soundBuffer = std::make_unique<int16_t[]>(GbaApu::MaxSamples);
 	memset(_soundBuffer.get(), 0, GbaApu::MaxSamples * sizeof(int16_t));
 
-	_dmaController = dmaController;
+	_dmaController = dmaController;  // For DMA audio (Direct Sound A/B)
 	_memoryManager = memoryManager;
 
-	_square1.reset(new GbaSquareChannel(this));
-	_square2.reset(new GbaSquareChannel(this));
-	_wave.reset(new GbaWaveChannel(this, console));
-	_noise.reset(new GbaNoiseChannel(this));
+	// Create all 4 PSG channels (Game Boy compatible)
+	_square1.reset(new GbaSquareChannel(this));   // Channel 1: Square wave with sweep
+	_square2.reset(new GbaSquareChannel(this));   // Channel 2: Square wave
+	_wave.reset(new GbaWaveChannel(this, console)); // Channel 3: Wave playback
+	_noise.reset(new GbaNoiseChannel(this));      // Channel 4: Noise
 
 	_sampleCount = 0;
 	_prevClockCount = 0;
@@ -44,13 +47,15 @@ void GbaApu::Init(Emulator* emu, GbaConsole* console, GbaDmaController* dmaContr
 	_settings = emu->GetSettings();
 	_soundMixer = emu->GetSoundMixer();
 
-	// Bias appears to be 0 on power on, and the boot rom sets it to 0x200
+	// Initialize APU state
+	// Bias appears to be 0 on power on, and the boot ROM sets it to 0x200
 	// Needed to pass the "timer_reset" test
 	_state = {};
 	if (_settings->GetGbaConfig().SkipBootScreen) {
-		_state.Bias = 0x200;
+		_state.Bias = 0x200;  // Set bias if skipping boot ROM
 	}
 
+	// Generate templated run functions for all channel enable combinations (16 variants)
 	StaticFor<0, 16>::Apply([=](auto i) {
 		_runFunc[i] = &GbaApu::InternalRun<(bool)(i & 0x01), (bool)(i & 0x02), (bool)(i & 0x04), (bool)(i & 0x08)>;
 	});

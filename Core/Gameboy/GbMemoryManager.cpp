@@ -21,6 +21,7 @@
 #include "Utilities/HexUtilities.h"
 #include "Shared/MemoryOperationType.h"
 
+// Initialize Game Boy memory manager with all hardware references
 void GbMemoryManager::Init(Emulator* emu, Gameboy* gameboy, GbCart* cart, GbPpu* ppu, GbApu* apu, GbTimer* timer, GbDmaController* dmaController) {
 	_highRam = gameboy->DebugGetMemory(MemoryType::GbHighRam);
 
@@ -35,16 +36,19 @@ void GbMemoryManager::Init(Emulator* emu, Gameboy* gameboy, GbCart* cart, GbPpu*
 	_controlManager = (GbControlManager*)gameboy->GetControlManager();
 	_settings = _emu->GetSettings();
 
+	// Clear memory mapping tables
 	memset(_reads, 0, sizeof(_reads));
 	memset(_writes, 0, sizeof(_writes));
 
 	_state = {};
-	_state.CgbWorkRamBank = 1;
+	_state.CgbWorkRamBank = 1;  // WRAM bank 1 selected by default
 	_state.DisableBootRom = false;
 
-	MapRegisters(0x8000, 0x9FFF, RegisterAccess::ReadWrite);
-	MapRegisters(0xFE00, 0xFFFF, RegisterAccess::ReadWrite);
+	// Map VRAM and I/O registers
+	MapRegisters(0x8000, 0x9FFF, RegisterAccess::ReadWrite);  // VRAM
+	MapRegisters(0xFE00, 0xFFFF, RegisterAccess::ReadWrite);  // OAM + I/O + HRAM
 
+	// Initialize cartridge mapper
 	_cart->InitCart();
 	RefreshMappings();
 }
@@ -56,19 +60,23 @@ GbMemoryManagerState& GbMemoryManager::GetState() {
 	return _state;
 }
 
+// Update memory mappings based on current state (WRAM bank, boot ROM, etc.)
 void GbMemoryManager::RefreshMappings() {
+	// Map work RAM (CGB has 8 banks, DMG has 2)
 	int wramBank = _ppu->IsCgbEnabled() ? std::max<int>(1, _state.CgbWorkRamBank) : 1;
-	Map(0xC000, 0xCFFF, GbMemoryType::WorkRam, 0, false);
-	Map(0xD000, 0xDFFF, GbMemoryType::WorkRam, wramBank * 0x1000, false);
-	Map(0xE000, 0xEFFF, GbMemoryType::WorkRam, 0, false);
-	Map(0xF000, 0xFFFF, GbMemoryType::WorkRam, wramBank * 0x1000, false);
+	Map(0xC000, 0xCFFF, GbMemoryType::WorkRam, 0, false);         // WRAM bank 0
+	Map(0xD000, 0xDFFF, GbMemoryType::WorkRam, wramBank * 0x1000, false);  // WRAM bank 1-7
+	Map(0xE000, 0xEFFF, GbMemoryType::WorkRam, 0, false);         // Echo RAM (mirror of C000-CFFF)
+	Map(0xF000, 0xFFFF, GbMemoryType::WorkRam, wramBank * 0x1000, false);  // Echo RAM (mirror of D000-DFFF)
 
+	// Let cartridge set up its ROM/RAM mappings
 	_cart->RefreshMappings();
 
+	// Map boot ROM if not disabled
 	if (!_state.DisableBootRom) {
-		Map(0x0000, 0x00FF, GbMemoryType::BootRom, 0, true);
+		Map(0x0000, 0x00FF, GbMemoryType::BootRom, 0, true);  // First 256 bytes
 		if (_gameboy->IsCgb()) {
-			Map(0x0200, 0x08FF, GbMemoryType::BootRom, 0x200, true);
+			Map(0x0200, 0x08FF, GbMemoryType::BootRom, 0x200, true);  // CGB extended boot ROM
 		}
 	}
 }

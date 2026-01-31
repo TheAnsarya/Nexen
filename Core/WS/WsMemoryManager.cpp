@@ -11,42 +11,51 @@
 #include "Shared/Emulator.h"
 #include "Utilities/Serializer.h"
 
+// Initialize WonderSwan/Color memory manager with all hardware references
 void WsMemoryManager::Init(Emulator* emu, WsConsole* console, WsCpu* cpu, WsPpu* ppu, WsControlManager* controlManager, WsCart* cart, WsTimer* timer, WsDmaController* dmaController, WsEeprom* eeprom, WsApu* apu, WsSerial* serial) {
 	_emu = emu;
 	_console = console;
-	_cpu = cpu;
+	_cpu = cpu;  // V30MZ (x86 compatible)
 	_cart = cart;
 	_ppu = ppu;
-	_apu = apu;
+	_apu = apu;  // 4-channel digital sound
 	_timer = timer;
-	_dmaController = dmaController;
+	_dmaController = dmaController;  // DMA for VRAM transfers
 	_controlManager = controlManager;
-	_eeprom = eeprom;
-	_serial = serial;
+	_eeprom = eeprom;  // Internal EEPROM for system settings
+	_serial = serial;  // Serial port for multiplayer
 
-	_workRamSize = _emu->GetMemory(MemoryType::WsWorkRam).Size;
+	// Get memory region sizes from emulator
+	_workRamSize = _emu->GetMemory(MemoryType::WsWorkRam).Size;  // 16KB (WS) or 64KB (WSC)
 
+	// Get pointers to all memory regions
 	_prgRom = (uint8_t*)_emu->GetMemory(MemoryType::WsPrgRom).Memory;
 	_prgRomSize = _emu->GetMemory(MemoryType::WsPrgRom).Size;
 
 	_saveRam = (uint8_t*)_emu->GetMemory(MemoryType::WsCartRam).Memory;
 	_saveRamSize = _emu->GetMemory(MemoryType::WsCartRam).Size;
 
-	_bootRom = (uint8_t*)_emu->GetMemory(MemoryType::WsBootRom).Memory;
+	_bootRom = (uint8_t*)_emu->GetMemory(MemoryType::WsBootRom).Memory;  // Boot ROM for splash screen
 	_bootRomSize = _emu->GetMemory(MemoryType::WsBootRom).Size;
 
+	// Set up initial memory mappings
 	RefreshMappings();
 }
 
+// Update memory mappings based on current state (Color mode, boot ROM)
 void WsMemoryManager::RefreshMappings() {
-	_cart->RefreshMappings();
+	_cart->RefreshMappings();  // Let cartridge set up ROM/RAM banks
+
+	// WonderSwan Color has 64KB work RAM (entire 64KB address space)
+	// Original WonderSwan has 16KB work RAM (0x0000-0x3FFF only)
 	if (_state.ColorEnabled) {
-		Map(0, 0xFFFF, MemoryType::WsWorkRam, 0, false);
+		Map(0, 0xFFFF, MemoryType::WsWorkRam, 0, false);  // Full 64KB
 	} else {
-		Unmap(0x4000, 0xFFFF);
-		Map(0, 0x3FFF, MemoryType::WsWorkRam, 0, false);
+		Unmap(0x4000, 0xFFFF);  // Unmap upper 48KB
+		Map(0, 0x3FFF, MemoryType::WsWorkRam, 0, false);  // Lower 16KB only
 	}
 
+	// Boot ROM is mapped at top of address space until disabled
 	if (!_state.BootRomDisabled) {
 		Map(0x100000 - _bootRomSize, 0xFFFFF, MemoryType::WsBootRom, 0, true);
 	}

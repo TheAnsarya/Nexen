@@ -5,22 +5,26 @@
 #include "Shared/MessageManager.h"
 #include "Utilities/Serializer.h"
 
+// Transfer byte count for each DMA mode (modes 0-7)
 static constexpr uint8_t _transferByteCount[8] = {1, 2, 2, 4, 4, 4, 2, 4};
+// Transfer offset patterns for each DMA mode (for multi-byte transfers to consecutive addresses)
 static constexpr uint8_t _transferOffset[8][4] = {
-    {0, 0, 0, 0},
-    {0, 1, 0, 1},
-    {0, 0, 0, 0},
-    {0, 0, 1, 1},
-    {0, 1, 2, 3},
-    {0, 1, 0, 1},
-    {0, 0, 0, 0},
-    {0, 0, 1, 1}
+    {0, 0, 0, 0},  // Mode 0: 1 byte  (P)
+    {0, 1, 0, 1},  // Mode 1: 2 bytes (P, P+1, P, P+1)
+    {0, 0, 0, 0},  // Mode 2: 2 bytes (P, P)
+    {0, 0, 1, 1},  // Mode 3: 4 bytes (P, P, P+1, P+1)
+    {0, 1, 2, 3},  // Mode 4: 4 bytes (P, P+1, P+2, P+3)
+    {0, 1, 0, 1},  // Mode 5: 4 bytes (P, P+1, P, P+1) (same as mode 1 but 4 bytes)
+    {0, 0, 0, 0},  // Mode 6: 2 bytes (P, P) (same as mode 2)
+    {0, 0, 1, 1}   // Mode 7: 4 bytes (P, P, P+1, P+1) (same as mode 3)
 };
 
+// Initialize SNES DMA controller with 8 channels
 SnesDmaController::SnesDmaController(SnesMemoryManager* memoryManager) {
 	_memoryManager = memoryManager;
 	Reset();
 
+	// Initialize all 8 DMA channels with default values
 	for (int j = 0; j < 8; j++) {
 		for (int i = 0; i <= 0x0B; i++) {
 			Write(0x4300 | i | (j << 4), 0xFF);
@@ -46,22 +50,25 @@ void SnesDmaController::Reset() {
 	}
 }
 
+// Copy a single byte via DMA between A-bus (CPU) and B-bus (PPU/APU)
 void SnesDmaController::CopyDmaByte(uint32_t addressBusA, uint16_t addressBusB, bool fromBtoA) {
 	if (fromBtoA) {
+		// B-bus to A-bus (PPU/APU to CPU memory)
 		if (addressBusB != 0x2180 || !_memoryManager->IsWorkRam(addressBusA)) {
 			uint8_t valToWrite = _memoryManager->ReadDma(addressBusB, false);
 			_memoryManager->WriteDma(addressBusA, valToWrite, true);
 		} else {
-			//$2180->WRAM do cause a write to occur (but no read), but the value written is invalid
+			// $2180->WRAM does cause a write to occur (but no read), but the value written is invalid
 			_memoryManager->IncMasterClock4();
 			_memoryManager->WriteDma(addressBusA, 0xFF, true);
 		}
 	} else {
+		// A-bus to B-bus (CPU memory to PPU/APU)
 		if (addressBusB != 0x2180 || !_memoryManager->IsWorkRam(addressBusA)) {
 			uint8_t valToWrite = _memoryManager->ReadDma(addressBusA, true);
 			_memoryManager->WriteDma(addressBusB, valToWrite, false);
 		} else {
-			// WRAM->$2180 does not cause a write to occur
+			// WRAM->$2180 does not cause a write to occur (open bus behavior)
 			_memoryManager->IncMasterClock8();
 		}
 	}

@@ -5,25 +5,32 @@
 #include "Utilities/Serializer.h"
 #include "Utilities/BitUtilities.h"
 
+// Initialize GBA hardware timers (4 cascadable 16-bit timers)
 void GbaTimer::Init(GbaMemoryManager* memoryManager, GbaApu* apu) {
 	_memoryManager = memoryManager;
-	_apu = apu;
+	_apu = apu;  // Timers 0/1 drive Direct Sound FIFO
 }
 
+// Clock a timer overflow - reload counter and cascade to next timer if enabled
 void GbaTimer::ClockTimer(int i) {
-	_state.Timer[i].Timer = _state.Timer[i].ReloadValue;
+	_state.Timer[i].Timer = _state.Timer[i].ReloadValue;  // Reload from TM_CNT_L
+
+	// Check for cascade to next timer (timers 0-2 can cascade to 1-3)
 	if (i < 3) {
 		if (_state.Timer[i + 1].Mode && _state.Timer[i + 1].Enabled) {
+			// Timer i+1 is in count-up mode, increment it
 			if (++_state.Timer[i + 1].Timer == 0) {
-				ClockTimer(i + 1);
+				ClockTimer(i + 1);  // Recursive cascade
 			}
 		}
 	}
 
+	// Fire IRQ if enabled
 	if (_state.Timer[i].IrqEnabled) {
 		_memoryManager->SetIrqSource((GbaIrqSource)((int)GbaIrqSource::Timer0 << i));
 	}
 
+	// Clock Direct Sound FIFO (timers 0/1 can drive audio DMA)
 	_apu->ClockFifo(i);
 }
 

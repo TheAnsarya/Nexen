@@ -28,29 +28,33 @@ void GbaPpu::Init(Emulator* emu, GbaConsole* console, GbaMemoryManager* memoryMa
 	_memoryManager = memoryManager;
 
 	_state = {};
-	_state.Scanline = 225;  // Initial scanline (VBlank)
-	_state.Cycle = 0;       // Cycle within scanline
+	_state.Scanline = 225;  // Initial scanline (in VBlank region)
+	_state.Cycle = 0;       // Current cycle within scanline (0-1231)
 
-	_paletteRam = (uint16_t*)_emu->GetMemory(MemoryType::GbaPaletteRam).Memory;
-	_vram = (uint8_t*)_emu->GetMemory(MemoryType::GbaVideoRam).Memory;
+	// Get pointers to video memory regions
+	_paletteRam = (uint16_t*)_emu->GetMemory(MemoryType::GbaPaletteRam).Memory;  // 1KB palette RAM
+	_vram = (uint8_t*)_emu->GetMemory(MemoryType::GbaVideoRam).Memory;           // 96KB VRAM
 	_vram16 = (uint16_t*)_emu->GetMemory(MemoryType::GbaVideoRam).Memory;
-	_oam = (uint32_t*)_emu->GetMemory(MemoryType::GbaSpriteRam).Memory;
+	_oam = (uint32_t*)_emu->GetMemory(MemoryType::GbaSpriteRam).Memory;          // 1KB OAM
 
+	// Allocate double-buffered output (240x160 @ 15-bit color)
 	_outputBuffers[0] = std::make_unique<uint16_t[]>(GbaConstants::PixelCount);
 	_outputBuffers[1] = std::make_unique<uint16_t[]>(GbaConstants::PixelCount);
 	memset(_outputBuffers[0].get(), 0, GbaConstants::PixelCount * sizeof(uint16_t));
 	memset(_outputBuffers[1].get(), 0, GbaConstants::PixelCount * sizeof(uint16_t));
 	_currentBuffer = _outputBuffers[0].get();
 
+	// Double-buffer for OAM processing
 	_oamReadOutput = _oamOutputBuffers[0];
 	_oamWriteOutput = _oamOutputBuffers[1];
 
+	// Handle skip boot screen - BIOS leaves PPU in this state
 	if (_emu->GetSettings()->GetGbaConfig().SkipBootScreen) {
-		// BIOS leaves PPU registers in this state, some games expect this
-		_state.Control = 0x80;
+		_state.Control = 0x80;       // Forced blank enabled
 		_state.ForcedBlank = true;
-		_state.Transform[0].Matrix[0] = 0x100;
-		_state.Transform[0].Matrix[3] = 0x100;
+		// Affine transform matrices default to identity
+		_state.Transform[0].Matrix[0] = 0x100;  // PA = 1.0 (fixed point 8.8)
+		_state.Transform[0].Matrix[3] = 0x100;  // PD = 1.0
 		_state.Transform[1].Matrix[0] = 0x100;
 		_state.Transform[1].Matrix[3] = 0x100;
 	}
@@ -60,6 +64,7 @@ void GbaPpu::Init(Emulator* emu, GbaConsole* console, GbaMemoryManager* memoryMa
 		_state.WindowActiveLayers[4][i] = true;
 	}
 
+	// Generate color math function pointer table for all blend mode combinations
 	StaticFor<0, 128>::Apply([=](auto i) {
 		_colorMathFunc[i] = &GbaPpu::ProcessColorMath<(GbaPpuBlendEffect)(i >> 5), (bool)(i & 0x01), (bool)(i & 0x02), (bool)(i & 0x04), (bool)(i & 0x08), (bool)(i & 0x10)>;
 	});

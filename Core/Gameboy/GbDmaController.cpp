@@ -6,27 +6,30 @@
 #include "Gameboy/GbCpu.h"
 #include "Utilities/Serializer.h"
 
+// Initialize Game Boy OAM DMA controller
 void GbDmaController::Init(Gameboy* gameboy, GbMemoryManager* memoryManager, GbPpu* ppu, GbCpu* cpu) {
 	_gameboy = gameboy;
 	_memoryManager = memoryManager;
-	_ppu = ppu;
-	_cpu = cpu;
+	_ppu = ppu;  // DMA writes to OAM
+	_cpu = cpu;  // DMA halts when CPU is halted
 	_state = {};
-	_state.OamDmaSource = 0xFF;
+	_state.OamDmaSource = 0xFF;  // Upper byte of source address ($XX00)
 }
 
 GbDmaControllerState GbDmaController::GetState() {
 	return _state;
 }
 
+// Execute one cycle of OAM DMA transfer
 void GbDmaController::Exec() {
+	// OAM DMA is halted while the CPU is in halt mode, and resumes when the CPU resumes
 	if (_cpu->IsHalted()) {
-		// OAM DMA is halted while the CPU is in halt mode, and resumes when the CPU resumes
 		return;
 	}
 
 	bool isRunning = _state.DmaCounter > 0;
 	if (isRunning) {
+		// Transfer one byte to OAM (160 bytes total, $FE00-$FE9F)
 		if (_state.DmaCounter <= 160) {
 			_memoryManager->WriteDma(0xFE00 + (160 - _state.DmaCounter), _state.DmaReadBuffer);
 		}
@@ -34,15 +37,17 @@ void GbDmaController::Exec() {
 		_state.DmaCounter--;
 		_state.OamDmaRunning = _state.DmaCounter > 0;
 
+		// Pre-fetch next byte for transfer
 		if (_state.OamDmaRunning) {
 			_state.DmaReadBuffer = _memoryManager->ReadDma(GetOamReadAddress());
 		}
 	}
 
+	// Handle DMA start delay (2 cycle delay after writing to $FF46)
 	if (_state.DmaStartDelay > 0) {
 		if (--_state.DmaStartDelay == 0) {
 			_state.InternalDest = _state.OamDmaSource;
-			_state.DmaCounter = 161;
+			_state.DmaCounter = 161;  // 160 bytes + 1 for startup
 			_state.OamDmaRunning = isRunning;
 		}
 	}

@@ -4,16 +4,17 @@
 #include "Gameboy/GbMemoryManager.h"
 #include "Gameboy/APU/GbApu.h"
 
+// Initialize Game Boy hardware timer (DIV, TIMA, TMA, TAC registers)
 void GbTimer::Init(GbMemoryManager* memoryManager, GbApu* apu) {
-	_apu = apu;
+	_apu = apu;  // Timer drives APU frame sequencer
 	_memoryManager = memoryManager;
 
 	_state = {};
-	_state.TimerDivider = 1024;
+	_state.TimerDivider = 1024;  // Default timer divider (1024 = slowest)
 
-	// Passes boot_div-dmgABCmgb
+	// Passes boot_div-dmgABCmgb test
 	// But that test depends on LCD power on timings, so may be wrong.
-	_state.Divider = 0x06;
+	_state.Divider = 0x06;  // Initial DIV value after power-on
 }
 
 GbTimer::~GbTimer() {
@@ -40,17 +41,20 @@ void GbTimer::ReloadCounter() {
 	_state.Reloaded = true;
 }
 
+// Update the 16-bit internal divider and check for timer/frame sequencer triggers
 void GbTimer::SetDivider(uint16_t newValue) {
+	// TIMA increments on falling edge of selected divider bit
 	if (_state.TimerEnabled && !(newValue & _state.TimerDivider) && (_state.Divider & _state.TimerDivider)) {
 		_state.Counter++;
 		if (_state.Counter == 0) {
-			_state.NeedReload = true;
+			_state.NeedReload = true;  // TIMA overflow, will reload from TMA
 		}
 	}
 
+	// Frame sequencer bit: 0x2000 in CGB double-speed, 0x1000 in normal speed
 	uint16_t frameSeqBit = _memoryManager->IsHighSpeed() ? 0x2000 : 0x1000;
 	if (!(newValue & frameSeqBit) && (_state.Divider & frameSeqBit)) {
-		_apu->ClockFrameSequencer();
+		_apu->ClockFrameSequencer();  // Clock APU frame sequencer on falling edge
 	}
 
 	_state.Divider = newValue;

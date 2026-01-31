@@ -8,10 +8,11 @@
 #include "Utilities/BitUtilities.h"
 #include "Utilities/Serializer.h"
 
+// Initialize GBA DMA controller (4 independent DMA channels)
 void GbaDmaController::Init(GbaCpu* cpu, GbaMemoryManager* memoryManager, GbaRomPrefetch* prefetcher) {
-	_cpu = cpu;
+	_cpu = cpu;  // CPU is halted during DMA transfers
 	_memoryManager = memoryManager;
-	_prefetcher = prefetcher;
+	_prefetcher = prefetcher;  // ROM prefetch is affected by DMA
 }
 
 GbaDmaControllerState& GbaDmaController::GetState() {
@@ -26,32 +27,35 @@ int8_t GbaDmaController::DebugGetActiveChannel() {
 	return _dmaActiveChannel;
 }
 
+// Trigger a specific DMA channel based on the trigger condition
 void GbaDmaController::TriggerDmaChannel(GbaDmaTrigger trigger, uint8_t channel, bool forceStop) {
 	GbaDmaChannel& ch = _state.Ch[channel];
 	if (ch.Enabled && ch.Trigger == trigger) {
 		if (forceStop) {
-			ch.Repeat = false;
+			ch.Repeat = false;  // Stop repeat mode
 		}
 
-		ch.Pending = true;
+		ch.Pending = true;  // Mark DMA as pending
 		_dmaPending = true;
 
-		uint8_t delay = 2;
+		// Different triggers have different startup delays
+		uint8_t delay = 2;  // Default immediate trigger delay
 		if (trigger == GbaDmaTrigger::Special) {
 			if (channel < 3) {
-				// Audio DMA triggers slightly later (4 passes fifo_dma_2 test rom)
+				// Audio DMA (channels 1-2) triggers slightly later (4 passes fifo_dma_2 test rom)
 				delay = 3;
 			} else {
-				// Video capture DMA
+				// Video capture DMA (channel 3 only)
 				delay = 5;
 			}
 		} else if (trigger == GbaDmaTrigger::HBlank) {
-			delay = 3;
+			delay = 3;  // HBlank DMA has slight delay
 		}
 
 		// CPU runs for a few more cycles before pausing for DMA
 		ch.StartClock = _memoryManager->GetMasterClock() + delay;
 
+		// Signal memory manager if no DMA is currently active
 		if (_dmaActiveChannel < 0) {
 			_memoryManager->SetPendingUpdateFlag();
 			_needStart = true;
@@ -75,25 +79,27 @@ int GbaDmaController::GetPendingDmaIndex() {
 	return -1;
 }
 
+// Execute pending DMA transfers when conditions are met
 void GbaDmaController::RunPendingDma(bool allowStartDma) {
+	// Prevent re-entry while DMA is already running
+	// This caused unexpected crashes in Sonic Advance 3 because
+	// the same DMA was incorrectly running two times in a row.
 	if (_dmaRunning) {
-		// Prevent re-entry while DMA is already running
-		// This caused unexpected crashes in Sonic Advance 3 because
-		// the same DMA was incorrectly running two times in a row.
 		return;
 	}
 
+	// DMA can only start between CPU read/write cycles
+	// and can't start if the bus is locked by the CPU (swap instruction)
 	if (!allowStartDma || _memoryManager->IsBusLocked()) {
-		// DMA can only start between cpu read/write cycles
-		// and can't start if the bus is locked by the cpu (swap instruction)
 		// Delay until DMA can start
 		return;
 	}
 
+	// Find highest-priority pending DMA channel (lower index = higher priority)
 	int chIndex = GetPendingDmaIndex();
 
 	if (chIndex < 0) {
-		// Too early to start DMA
+		// Too early to start DMA (startup delay not elapsed)
 		return;
 	}
 

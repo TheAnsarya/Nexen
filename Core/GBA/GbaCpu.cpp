@@ -6,29 +6,32 @@
 #include "Shared/EmuSettings.h"
 #include "Utilities/Serializer.h"
 
-// Initialize GBA CPU state and memory references
+// Initialize GBA CPU (ARM7TDMI) state and memory references
 void GbaCpu::Init(Emulator* emu, GbaMemoryManager* memoryManager, GbaRomPrefetch* prefetch) {
 	_emu = emu;
 	_memoryManager = memoryManager;
-	_prefetch = prefetch;
+	_prefetch = prefetch;  // ROM prefetch buffer for sequential access optimization
 
 	_state = {};
-	_state.Pipeline.ReloadRequested = true; // Start with pipeline reload
+	_state.Pipeline.ReloadRequested = true;  // Start with pipeline reload to fetch first instruction
 
+	// Handle skip boot screen - set up CPU state as if BIOS had run
 	if (_emu->GetSettings()->GetGbaConfig().SkipBootScreen) {
-		_state.R[13] = 0x3007F00;
-		_state.R[14] = 0x8000000;
-		_state.R[15] = 0x8000000;
-		_state.UserRegs[4] = 0x300FCA0;
-		_state.UserRegs[5] = 0x3007F00;
-		_state.UserRegs[6] = 0x00000C0;
-		_state.IrqRegs[0] = 0x3007FA0;
-		_state.SupervisorRegs[0] = 0x3007FE0;
-		_state.CPSR.Mode = GbaCpuMode::System;
+		// Stack pointers for different modes (set by BIOS)
+		_state.R[13] = 0x3007F00;          // System mode SP
+		_state.R[14] = 0x8000000;          // LR = ROM start
+		_state.R[15] = 0x8000000;          // PC = ROM start (game entry point)
+		_state.UserRegs[4] = 0x300FCA0;    // R12 shadow
+		_state.UserRegs[5] = 0x3007F00;    // R13 shadow
+		_state.UserRegs[6] = 0x00000C0;    // R14 shadow
+		_state.IrqRegs[0] = 0x3007FA0;     // IRQ mode SP
+		_state.SupervisorRegs[0] = 0x3007FE0; // Supervisor mode SP
+		_state.CPSR.Mode = GbaCpuMode::System; // Start in System mode
 	} else {
+		// Cold boot state - start in Supervisor mode with interrupts disabled
 		_state.CPSR.Mode = GbaCpuMode::Supervisor;
-		_state.CPSR.IrqDisable = true;
-		_state.CPSR.FiqDisable = true;
+		_state.CPSR.IrqDisable = true;  // IRQs disabled
+		_state.CPSR.FiqDisable = true;  // FIQs disabled
 	}
 }
 
