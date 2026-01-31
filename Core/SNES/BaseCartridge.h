@@ -25,6 +25,42 @@ class SufamiTurbo;
 enum class ConsoleRegion;
 enum class RamState;
 
+/// <summary>
+/// SNES cartridge base class - handles ROM loading, memory mapping, and coprocessors.
+/// Supports all SNES cartridge types including special chips and add-ons.
+/// </summary>
+/// <remarks>
+/// **Memory Layout:**
+/// - **PRG ROM**: Program ROM, up to 6MB (48Mbit)
+/// - **Save RAM**: Battery-backed SRAM, up to 512KB
+/// - **Coprocessor RAM**: Additional RAM for enhancement chips
+///
+/// **Mapping Modes:**
+/// - **LoROM**: Banks $00-$7D, $80-$FF with 32KB windows
+/// - **HiROM**: Banks $40-$7D, $C0-$FF with 64KB windows
+/// - **ExLoROM/ExHiROM**: Extended addressing for large ROMs
+/// - **Special mappings**: SA-1, Super FX, BS-X, etc.
+///
+/// **Supported Coprocessors:**
+/// - **DSP-1/2/3/4**: Math coprocessors (fixed-point, matrix ops)
+/// - **SA-1**: 10.74 MHz 65816 with bank switching and math
+/// - **Super FX (GSU)**: RISC processor for 3D graphics
+/// - **Cx4**: Wireframe 3D (Mega Man X2/X3)
+/// - **ST010/ST011**: AI processors (racing games)
+/// - **S-DD1**: Decompression chip (Star Ocean)
+/// - **SPC7110**: Decompression + RTC (Far East of Eden)
+/// - **OBC1**: Sprite management (Metal Combat)
+/// - **S-RTC**: Real-time clock
+///
+/// **Add-ons:**
+/// - **Super Game Boy**: Play Game Boy games
+/// - **Sufami Turbo**: Mini-cartridge adapter
+/// - **Satellaview (BS-X)**: Satellite download add-on
+///
+/// **Battery Management:**
+/// - Save RAM persisted to .srm files
+/// - RTC data saved for games with real-time clocks
+/// </remarks>
 class BaseCartridge : public ISerializable {
 private:
 	Emulator* _emu = nullptr;

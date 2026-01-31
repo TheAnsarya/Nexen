@@ -11,6 +11,39 @@ class SnesConsole;
 class SnesMemoryManager;
 class SnesControlManager;
 
+/// <summary>
+/// SNES internal registers ($4200-$421F, $4300-$437F).
+/// Handles CPU control, interrupts, multiplication/division, and joypad auto-read.
+/// </summary>
+/// <remarks>
+/// **Register Categories:**
+///
+/// **NMI/IRQ Control ($4200-$4211):**
+/// - $4200: NMITIMEN - NMI/IRQ/Joypad enable
+/// - $4201: WRIO - Programmable I/O port write
+/// - $4202-$4206: WRMPYA/WRMPYB/WRDIVL/WRDIVH/WRDIVB - Mul/Div operands
+/// - $4207-$420A: HTIMEL/H/VTIMEL/H - H/V timer target values
+/// - $420B-$420C: MDMAEN/HDMAEN - DMA/HDMA channel enable
+/// - $420D: MEMSEL - FastROM select
+/// - $4210: RDNMI - NMI flag read (clears NMI)
+/// - $4211: TIMEUP - IRQ flag read (clears IRQ)
+/// - $4212: HVBJOY - H/V blank and joypad status
+/// - $4214-$4217: RDDIVL/H/RDMPYL/H - Mul/Div results
+/// - $4218-$421F: JOY1/2/3/4 - Controller data
+///
+/// **Joypad Auto-Read:**
+/// - Triggered during V-blank
+/// - Reads all 4 controller ports automatically
+/// - Results available at $4218-$421F
+///
+/// **H/V Timer IRQ:**
+/// - Can trigger IRQ at specific H/V positions
+/// - Used for raster effects
+///
+/// **Multiplication/Division:**
+/// - 8×8 unsigned multiplication (16-bit result)
+/// - 16÷8 unsigned division (16-bit quotient, 16-bit remainder)
+/// </remarks>
 class InternalRegisters final : public ISerializable {
 private:
 	Emulator* _emu = nullptr;
