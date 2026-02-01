@@ -29,7 +29,7 @@ namespace Nexen.Utilities {
 		}
 
 		static DipSwitchDatabase() {
-			using StreamReader reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("Mesen.Utilities.DipSwitchDefinitions.xml")!);
+			using StreamReader reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("Nexen.Utilities.DipSwitchDefinitions.xml")!);
 			XmlDocument config = new XmlDocument();
 			config.Load(reader);
 

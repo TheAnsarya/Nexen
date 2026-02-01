@@ -28,7 +28,7 @@ namespace Nexen.Debugger.Windows {
 		private AssemblerWindowViewModel _model;
 
 		static AssemblerWindow() {
-			using XmlReader reader = XmlReader.Create(Assembly.GetExecutingAssembly().GetManifestResourceStream("Mesen.Debugger.HighlightAssembly.xshd")!);
+			using XmlReader reader = XmlReader.Create(Assembly.GetExecutingAssembly().GetManifestResourceStream("Nexen.Debugger.HighlightAssembly.xshd")!);
 			_syntaxDef = HighlightingLoader.LoadXshd(reader);
 		}
 

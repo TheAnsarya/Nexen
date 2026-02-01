@@ -58,7 +58,7 @@ namespace Nexen.Debugger.ViewModels {
 
 			switch (behavior ?? Config.ScriptStartupBehavior) {
 				case ScriptStartupBehavior.ShowBlankWindow: break;
-				case ScriptStartupBehavior.ShowTutorial: LoadScriptFromResource("Mesen.Debugger.Utilities.LuaScripts.Example.lua"); break;
+				case ScriptStartupBehavior.ShowTutorial: LoadScriptFromResource("Nexen.Debugger.Utilities.LuaScripts.Example.lua"); break;
 				case ScriptStartupBehavior.LoadLastScript:
 					if (Config.RecentScripts.Count > 0) {
 						LoadScript(Config.RecentScripts[0]);

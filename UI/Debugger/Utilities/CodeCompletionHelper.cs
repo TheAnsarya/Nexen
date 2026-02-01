@@ -16,7 +16,7 @@ namespace Nexen.Debugger.Utilities {
 		private static Regex _linkRegex = new Regex("emu[.](([a-zA-Z0-9]+)(\\([a-zA-Z0-9 ,]*\\)){0,1})", RegexOptions.Compiled);
 
 		static CodeCompletionHelper() {
-			using StreamReader reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("Mesen.Debugger.Documentation.LuaDocumentation.json")!);
+			using StreamReader reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("Nexen.Debugger.Documentation.LuaDocumentation.json")!);
 			DocEntryViewModel[] documentation = (DocEntryViewModel[]?)JsonSerializer.Deserialize(reader.ReadToEnd(), typeof(DocEntryViewModel[]), NexenCamelCaseSerializerContext.Default) ?? [];
 
 			_documentation = new Dictionary<string, DocEntryViewModel>();

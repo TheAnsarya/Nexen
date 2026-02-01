@@ -18,7 +18,7 @@ namespace Nexen.Localization {
 			try {
 				Assembly assembly = Assembly.GetExecutingAssembly();
 
-				using (StreamReader reader = new StreamReader(assembly.GetManifestResourceStream("Mesen.Localization.resources.en.xml")!)) {
+				using (StreamReader reader = new StreamReader(assembly.GetManifestResourceStream("Nexen.Localization.resources.en.xml")!)) {
 					_resources.LoadXml(reader.ReadToEnd());
 				}
 

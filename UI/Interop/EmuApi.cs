@@ -13,7 +13,7 @@ using Nexen.Utilities;
 
 namespace Nexen.Interop {
 	public class EmuApi {
-		public const string DllName = "MesenCore.dll";
+		public const string DllName = "NexenCore.dll";
 		private const string DllPath = EmuApi.DllName;
 
 		[DllImport(DllPath)][return: MarshalAs(UnmanagedType.I1)] public static extern bool TestDll();

@@ -38,7 +38,7 @@ namespace Nexen.Debugger.Windows {
 		public ScriptWindowViewModel Model { get; }
 
 		static ScriptWindow() {
-			using XmlReader reader = XmlReader.Create(Assembly.GetExecutingAssembly().GetManifestResourceStream("Mesen.Debugger.HighlightLua.xshd")!);
+			using XmlReader reader = XmlReader.Create(Assembly.GetExecutingAssembly().GetManifestResourceStream("Nexen.Debugger.HighlightLua.xshd")!);
 			_syntaxDef = HighlightingLoader.LoadXshd(reader);
 		}
 

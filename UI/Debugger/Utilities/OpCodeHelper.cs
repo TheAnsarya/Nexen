@@ -312,7 +312,7 @@ public static class OpCodeHelper {
 	}
 
 	private static DocFileFormat? ReadDocumentationFile(string filename) {
-		using StreamReader reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("Mesen.Debugger.Documentation." + filename)!);
+		using StreamReader reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("Nexen.Debugger.Documentation." + filename)!);
 		return (DocFileFormat?)JsonSerializer.Deserialize(reader.ReadToEnd(), typeof(DocFileFormat), NexenCamelCaseSerializerContext.Default);
 	}
 
