@@ -15,27 +15,62 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Debugger.ViewModels {
+	/// <summary>
+	/// ViewModel for the register viewer window.
+	/// Displays hardware register values for the emulated console, organized into tabs by subsystem.
+	/// </summary>
 	public class RegisterViewerWindowViewModel : DisposableViewModel, ICpuTypeModel {
+		/// <summary>
+		/// Gets or sets the list of register viewer tabs, one per hardware subsystem.
+		/// </summary>
 		[Reactive] public List<RegisterViewerTab> Tabs { get; set; } = new List<RegisterViewerTab>();
 
+		/// <summary>
+		/// Gets the configuration settings for the register viewer.
+		/// </summary>
 		public RegisterViewerConfig Config { get; }
+
+		/// <summary>
+		/// Gets the view model controlling refresh timing behavior.
+		/// </summary>
 		public RefreshTimingViewModel RefreshTiming { get; }
 
+		/// <summary>
+		/// Gets or sets the menu actions for the File menu.
+		/// </summary>
 		[Reactive] public List<object> FileMenuActions { get; private set; } = new();
+
+		/// <summary>
+		/// Gets or sets the menu actions for the View menu.
+		/// </summary>
 		[Reactive] public List<object> ViewMenuActions { get; private set; } = new();
 
+		/// <summary>Cached console state from the emulator core.</summary>
 		private BaseState? _state = null;
 
+		/// <summary>
+		/// Gets or sets the CPU type for this register viewer (derived from console type).
+		/// </summary>
 		public CpuType CpuType {
 			get => _romInfo.ConsoleType.GetMainCpuType();
 			set { }
 		}
 
+		/// <summary>Cached ROM information.</summary>
 		private RomInfo _romInfo = new RomInfo();
+
+		/// <summary>SNES interrupt flag register $4210 (NMI enable/flag).</summary>
 		private byte _snesReg4210;
+
+		/// <summary>SNES interrupt flag register $4211 (IRQ enable/flag).</summary>
 		private byte _snesReg4211;
+
+		/// <summary>SNES status register $4212 (V-blank, H-blank, joypad status).</summary>
 		private byte _snesReg4212;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RegisterViewerWindowViewModel"/> class.
+		/// </summary>
 		public RegisterViewerWindowViewModel() {
 			Config = ConfigManager.Config.Debug.RegisterViewer.Clone();
 			RefreshTiming = new RefreshTimingViewModel(Config.RefreshTiming, CpuType);
@@ -49,6 +84,10 @@ namespace Nexen.Debugger.ViewModels {
 			RefreshData();
 		}
 
+		/// <summary>
+		/// Initializes the File and View menu actions and registers keyboard shortcuts.
+		/// </summary>
+		/// <param name="wnd">The parent window for shortcut registration.</param>
 		public void InitMenu(Window wnd) {
 			FileMenuActions = AddDisposables(new List<object>() {
 				new ContextMenuAction() {
@@ -80,10 +119,17 @@ namespace Nexen.Debugger.ViewModels {
 			DebugShortcutManager.RegisterActions(wnd, ViewMenuActions);
 		}
 
+		/// <summary>
+		/// Updates the cached ROM information from the emulator.
+		/// </summary>
 		public void UpdateRomInfo() {
 			_romInfo = EmuApi.GetRomInfo();
 		}
 
+		/// <summary>
+		/// Refreshes register data from the emulator core.
+		/// Fetches console state appropriate for the loaded system type.
+		/// </summary>
 		public void RefreshData() {
 			if (_romInfo.ConsoleType == ConsoleType.Snes) {
 				_snesReg4210 = DebugApi.GetMemoryValue(MemoryType.SnesMemory, 0x4210);
@@ -107,6 +153,10 @@ namespace Nexen.Debugger.ViewModels {
 			Dispatcher.UIThread.Post(() => RefreshTabs());
 		}
 
+		/// <summary>
+		/// Updates the register viewer tabs with the latest data from the console state.
+		/// Creates or updates tabs using the appropriate platform-specific register viewer.
+		/// </summary>
 		public void RefreshTabs() {
 			if (_state == null) {
 				return;
@@ -145,24 +195,62 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Called when a game is loaded. Updates ROM info and refreshes register data.
+		/// </summary>
 		public void OnGameLoaded() {
 			UpdateRomInfo();
 			RefreshData();
 		}
 	}
 
+	/// <summary>
+	/// Represents a tab in the register viewer containing registers for a specific hardware subsystem.
+	/// </summary>
 	public class RegisterViewerTab : ReactiveObject {
+		/// <summary>Backing field for <see cref="TabName"/>.</summary>
 		private string _name;
+
+		/// <summary>Backing field for <see cref="Data"/>.</summary>
 		private List<RegEntry> _data;
 
+		/// <summary>
+		/// Gets or sets the display name for this tab.
+		/// </summary>
 		public string TabName { get => _name; set => this.RaiseAndSetIfChanged(ref _name, value); }
+
+		/// <summary>
+		/// Gets or sets the list of register entries displayed in this tab.
+		/// </summary>
 		public List<RegEntry> Data { get => _data; set => this.RaiseAndSetIfChanged(ref _data, value); }
+
+		/// <summary>
+		/// Gets or sets the selection model for the data grid.
+		/// </summary>
 		public SelectionModel<RegEntry?> Selection { get; set; } = new();
+
+		/// <summary>
+		/// Gets or sets the list of column widths for grid persistence.
+		/// </summary>
 		public List<int> ColumnWidths { get; set; } = new();
 
+		/// <summary>
+		/// Gets the CPU type associated with this tab's registers, if applicable.
+		/// </summary>
 		public CpuType? CpuType { get; }
+
+		/// <summary>
+		/// Gets the memory type associated with this tab's registers, if applicable.
+		/// </summary>
 		public MemoryType? MemoryType { get; }
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RegisterViewerTab"/> class.
+		/// </summary>
+		/// <param name="name">The display name for this tab.</param>
+		/// <param name="data">The list of register entries.</param>
+		/// <param name="cpuType">Optional CPU type for register context.</param>
+		/// <param name="memoryType">Optional memory type for viewing in memory editor.</param>
 		public RegisterViewerTab(string name, List<RegEntry> data, CpuType? cpuType = null, MemoryType? memoryType = null) {
 			_name = name;
 			_data = data;
@@ -170,6 +258,10 @@ namespace Nexen.Debugger.ViewModels {
 			MemoryType = memoryType;
 		}
 
+		/// <summary>
+		/// Updates the register data with new values, reusing existing entries when counts match.
+		/// </summary>
+		/// <param name="rows">The new register entry data.</param>
 		public void SetData(List<RegEntry> rows) {
 			if (Data.Count != rows.Count) {
 				Data = rows;
@@ -182,19 +274,48 @@ namespace Nexen.Debugger.ViewModels {
 		}
 	}
 
+	/// <summary>
+	/// Represents a single register entry in the register viewer.
+	/// Contains address, name, value, and hex value with support for headers and various value formats.
+	/// </summary>
 	public class RegEntry : INotifyPropertyChanged {
+		/// <summary>Background brush used for header rows.</summary>
 		private static ISolidColorBrush HeaderBgBrush = new SolidColorBrush(0x40B0B0B0);
 
+		/// <summary>
+		/// Gets the address or address range for this register (e.g., "$4200" or "$4200-$4203").
+		/// </summary>
 		public string Address { get; private set; }
+
+		/// <summary>
+		/// Gets the display name for this register.
+		/// </summary>
 		public string Name { get; private set; }
+
+		/// <summary>
+		/// Gets whether this entry is a data row (true) or a header row (false).
+		/// </summary>
 		public bool IsEnabled { get; private set; }
+
+		/// <summary>
+		/// Gets the background brush for this row (different for headers vs data rows).
+		/// </summary>
 		public IBrush Background { get; private set; }
 
+		/// <summary>Backing field for <see cref="Value"/>.</summary>
 		private string _value;
+
+		/// <summary>Backing field for <see cref="ValueHex"/>.</summary>
 		private string _valueHex;
 
+		/// <summary>
+		/// Event raised when a property value changes.
+		/// </summary>
 		public event PropertyChangedEventHandler? PropertyChanged;
 
+		/// <summary>
+		/// Gets or sets the formatted display value for this register.
+		/// </summary>
 		public string Value {
 			get => _value;
 			set {
@@ -205,6 +326,9 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets the hexadecimal representation of this register's value.
+		/// </summary>
 		public string ValueHex {
 			get => _valueHex;
 			set {
@@ -215,22 +339,53 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Initializes a new register entry with a formattable value.
+		/// </summary>
+		/// <param name="reg">The register address string.</param>
+		/// <param name="name">The register name.</param>
+		/// <param name="value">The register value.</param>
+		/// <param name="format">The hex format for display.</param>
 		public RegEntry(string reg, string name, ISpanFormattable? value, Format format = Format.None) {
 			Init(reg, name, value, format);
 		}
 
+		/// <summary>
+		/// Initializes a new register entry with a boolean value.
+		/// </summary>
+		/// <param name="reg">The register address string.</param>
+		/// <param name="name">The register name.</param>
+		/// <param name="value">The boolean value.</param>
 		public RegEntry(string reg, string name, bool value) {
 			Init(reg, name, value, Format.None);
 		}
 
+		/// <summary>
+		/// Initializes a new register entry with an enum value.
+		/// </summary>
+		/// <param name="reg">The register address string.</param>
+		/// <param name="name">The register name.</param>
+		/// <param name="value">The enum value.</param>
 		public RegEntry(string reg, string name, Enum value) {
 			Init(reg, name, value, Format.X8);
 		}
 
+		/// <summary>
+		/// Initializes a new header entry (no value).
+		/// </summary>
+		/// <param name="reg">The register address string.</param>
+		/// <param name="name">The header name.</param>
 		public RegEntry(string reg, string name) {
 			Init(reg, name, null, Format.None);
 		}
 
+		/// <summary>
+		/// Initializes a new register entry with a text value and optional raw value for hex display.
+		/// </summary>
+		/// <param name="reg">The register address string.</param>
+		/// <param name="name">The register name.</param>
+		/// <param name="textValue">The text representation of the value.</param>
+		/// <param name="rawValue">Optional raw value for hex display.</param>
 		public RegEntry(string reg, string name, string textValue, IConvertible? rawValue) {
 			Init(reg, name, textValue, Format.None);
 			if (rawValue != null) {
@@ -238,6 +393,13 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Initializes the register entry with the specified values.
+		/// </summary>
+		/// <param name="reg">The register address string.</param>
+		/// <param name="name">The register name.</param>
+		/// <param name="value">The register value (null for headers).</param>
+		/// <param name="format">The hex format for display.</param>
 		[MemberNotNull(nameof(Address), nameof(Name), nameof(Background), nameof(_value), nameof(_valueHex))]
 		private void Init(string reg, string name, object? value, Format format) {
 			if (format == Format.None && value is not bool) {
@@ -256,6 +418,11 @@ namespace Nexen.Debugger.ViewModels {
 			IsEnabled = value != null;
 		}
 
+		/// <summary>
+		/// Converts a value to its display string representation.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <returns>The formatted display string.</returns>
 		private string GetValue(object? value) {
 			if (value is string str) {
 				return str;
@@ -270,6 +437,12 @@ namespace Nexen.Debugger.ViewModels {
 			throw new Exception("Unsupported type");
 		}
 
+		/// <summary>
+		/// Converts a value to its hexadecimal string representation.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <param name="format">The hex format specifying width.</param>
+		/// <returns>The formatted hex string (e.g., "$FF" or "$FFFF").</returns>
 		private string GetHexValue(object? value, Format format) {
 			if (value is null or string) {
 				return "";
@@ -297,6 +470,9 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Gets the starting address parsed from the Address string.
+		/// </summary>
 		public int StartAddress {
 			get {
 				string addr = Address;
@@ -317,6 +493,9 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Gets the ending address parsed from the Address string (same as StartAddress for single registers).
+		/// </summary>
 		public int EndAddress {
 			get {
 				string addr = Address;
@@ -358,12 +537,21 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Specifies the hexadecimal format width for register value display.
+		/// </summary>
 		public enum Format {
+			/// <summary>No hex format (for text values).</summary>
 			None,
+			/// <summary>8-bit hex format (2 digits, e.g., "$FF").</summary>
 			X8,
+			/// <summary>16-bit hex format (4 digits, e.g., "$FFFF").</summary>
 			X16,
+			/// <summary>24-bit hex format (6 digits, e.g., "$FFFFFF").</summary>
 			X24,
+			/// <summary>28-bit hex format (7 digits).</summary>
 			X28,
+			/// <summary>32-bit hex format (8 digits, e.g., "$FFFFFFFF").</summary>
 			X32
 		}
 	}
