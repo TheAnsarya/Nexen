@@ -9,26 +9,26 @@ SNES Core Architecture
 ══════════════════════
 
 ┌────────────────────────────────────────────────────────────────┐
-│                        SnesConsole                             │
-│   (Main coordinator - owns all components, runs main loop)     │
+│						SnesConsole							 │
+│   (Main coordinator - owns all components, runs main loop)	 │
 └────────────────────────────────────────────────────────────────┘
-              │
-    ┌─────────┼─────────┬──────────────┬──────────────┐
-    │         │         │              │              │
-    ▼         ▼         ▼              ▼              ▼
+			  │
+	┌─────────┼─────────┬──────────────┬──────────────┐
+	│		 │		 │			  │			  │
+	▼		 ▼		 ▼			  ▼			  ▼
 ┌───────┐ ┌───────┐ ┌─────────┐ ┌───────────┐ ┌─────────────┐
-│SnesCpu│ │SnesPpu│ │  SPC700 │ │  DSP      │ │Coprocessors │
-│       │ │       │ │         │ │  (Audio)  │ │             │
-│ 65816 │ │ Video │ │ Sound   │ │  BRR      │ │ SA-1, GSU,  │
-│       │ │       │ │ CPU     │ │  Samples  │ │ DSP, etc.   │
+│SnesCpu│ │SnesPpu│ │  SPC700 │ │  DSP	  │ │Coprocessors │
+│	   │ │	   │ │		 │ │  (Audio)  │ │			 │
+│ 65816 │ │ Video │ │ Sound   │ │  BRR	  │ │ SA-1, GSU,  │
+│	   │ │	   │ │ CPU	 │ │  Samples  │ │ DSP, etc.   │
 └───────┘ └───────┘ └─────────┘ └───────────┘ └─────────────┘
-              │
-              ▼
-    ┌─────────────────┐
-    │  MemoryManager  │
-    │  LoROM/HiROM    │
-    │  Bank mapping   │
-    └─────────────────┘
+			  │
+			  ▼
+	┌─────────────────┐
+	│  MemoryManager  │
+	│  LoROM/HiROM	│
+	│  Bank mapping   │
+	└─────────────────┘
 ```
 
 ## Directory Structure
@@ -36,48 +36,48 @@ SNES Core Architecture
 ```
 Core/SNES/
 ├── Main Components
-│   ├── SnesConsole.h/cpp       - Console coordinator
-│   ├── SnesCpu.h/cpp           - 65816 CPU emulation
-│   ├── SnesPpu.h/cpp           - PPU (Picture Processing Unit)
+│   ├── SnesConsole.h/cpp	   - Console coordinator
+│   ├── SnesCpu.h/cpp		   - 65816 CPU emulation
+│   ├── SnesPpu.h/cpp		   - PPU (Picture Processing Unit)
 │   ├── SnesMemoryManager.h/cpp - Memory mapping & bus
 │   └── SnesDmaController.h/cpp - DMA/HDMA controller
 │
 ├── Audio
-│   ├── Spc.h/cpp               - SPC700 sound CPU
-│   ├── SpcTimer.h              - SPC700 timers
-│   └── DSP/                    - S-DSP audio processor
+│   ├── Spc.h/cpp			   - SPC700 sound CPU
+│   ├── SpcTimer.h			  - SPC700 timers
+│   └── DSP/					- S-DSP audio processor
 │
 ├── Coprocessors/
-│   ├── BaseCoprocessor.h       - Base class
-│   ├── SA1/                    - SA-1 (65816 coprocessor)
-│   ├── GSU/                    - Super FX (GSU)
-│   ├── DSP/                    - DSP-1/2/3/4 (math)
-│   ├── CX4/                    - Cx4 (wireframe 3D)
-│   ├── SDD1/                   - S-DD1 (decompression)
-│   ├── SPC7110/                - SPC7110 (decompression)
-│   ├── OBC1/                   - OBC-1 (sprite management)
-│   ├── ST018/                  - ST018 (AI processor)
-│   ├── BSX/                    - BS-X Satellaview
-│   ├── SGB/                    - Super Game Boy
-│   ├── MSU1/                   - MSU-1 (CD-quality audio)
-│   └── SufamiTurbo/            - Sufami Turbo adapter
+│   ├── BaseCoprocessor.h	   - Base class
+│   ├── SA1/					- SA-1 (65816 coprocessor)
+│   ├── GSU/					- Super FX (GSU)
+│   ├── DSP/					- DSP-1/2/3/4 (math)
+│   ├── CX4/					- Cx4 (wireframe 3D)
+│   ├── SDD1/				   - S-DD1 (decompression)
+│   ├── SPC7110/				- SPC7110 (decompression)
+│   ├── OBC1/				   - OBC-1 (sprite management)
+│   ├── ST018/				  - ST018 (AI processor)
+│   ├── BSX/					- BS-X Satellaview
+│   ├── SGB/					- Super Game Boy
+│   ├── MSU1/				   - MSU-1 (CD-quality audio)
+│   └── SufamiTurbo/			- Sufami Turbo adapter
 │
 ├── Input/
-│   └── Input handlers          - Controllers, multitap, etc.
+│   └── Input handlers		  - Controllers, multitap, etc.
 │
 ├── Video Filters
 │   ├── SnesDefaultVideoFilter  - Basic RGB output
-│   └── SnesNtscFilter          - NTSC composite simulation
+│   └── SnesNtscFilter		  - NTSC composite simulation
 │
 ├── Debugger/
-│   └── SNES-specific debug     - Breakpoints, trace, viewers
+│   └── SNES-specific debug	 - Breakpoints, trace, viewers
 │
 └── Support Files
-    ├── SnesCpuTypes.h          - CPU state structures
-    ├── SnesPpuTypes.h          - PPU state structures
-    ├── SpcTypes.h              - SPC700 state structures
-    ├── CartTypes.h             - Cartridge types
-    └── SnesState.h             - Combined system state
+	├── SnesCpuTypes.h		  - CPU state structures
+	├── SnesPpuTypes.h		  - PPU state structures
+	├── SpcTypes.h			  - SPC700 state structures
+	├── CartTypes.h			 - Cartridge types
+	└── SnesState.h			 - Combined system state
 ```
 
 ## Core Components
@@ -106,16 +106,16 @@ Emulates the Ricoh 5A22, a 65816 CPU with DMA controller.
 **CPU State:**
 ```cpp
 struct SnesCpuState {
-    uint16_t A;     // Accumulator (16-bit)
-    uint16_t X;     // X Index (16-bit)
-    uint16_t Y;     // Y Index (16-bit)
-    uint16_t SP;    // Stack Pointer (16-bit)
-    uint16_t D;     // Direct Page register
-    uint16_t PC;    // Program Counter
-    uint8_t K;      // Program Bank (PBR)
-    uint8_t DBR;    // Data Bank Register
-    uint8_t PS;     // Processor Status
-    bool EmulationMode;  // 6502 emulation mode
+	uint16_t A;	 // Accumulator (16-bit)
+	uint16_t X;	 // X Index (16-bit)
+	uint16_t Y;	 // Y Index (16-bit)
+	uint16_t SP;	// Stack Pointer (16-bit)
+	uint16_t D;	 // Direct Page register
+	uint16_t PC;	// Program Counter
+	uint8_t K;	  // Program Bank (PBR)
+	uint8_t DBR;	// Data Bank Register
+	uint8_t PS;	 // Processor Status
+	bool EmulationMode;  // 6502 emulation mode
 };
 ```
 
@@ -169,12 +169,12 @@ Emulates the Sony SPC700 8-bit audio processor.
 **SPC700 State:**
 ```cpp
 struct SpcState {
-    uint16_t PC;    // Program Counter
-    uint8_t A;      // Accumulator
-    uint8_t X;      // X Index
-    uint8_t Y;      // Y Index
-    uint8_t SP;     // Stack Pointer
-    uint8_t PS;     // Processor Status
+	uint16_t PC;	// Program Counter
+	uint8_t A;	  // Accumulator
+	uint8_t X;	  // X Index
+	uint8_t Y;	  // Y Index
+	uint8_t SP;	 // Stack Pointer
+	uint8_t PS;	 // Processor Status
 };
 ```
 
@@ -307,17 +307,17 @@ Modern enhancement chip for CD-quality audio/video.
 ### State Serialization:
 ```cpp
 void SnesCpu::Serialize(Serializer& s) {
-    SV(_state.A);
-    SV(_state.X);
-    SV(_state.Y);
-    SV(_state.SP);
-    SV(_state.D);
-    SV(_state.PC);
-    SV(_state.K);
-    SV(_state.DBR);
-    SV(_state.PS);
-    SV(_state.EmulationMode);
-    // ...
+	SV(_state.A);
+	SV(_state.X);
+	SV(_state.Y);
+	SV(_state.SP);
+	SV(_state.D);
+	SV(_state.PC);
+	SV(_state.K);
+	SV(_state.DBR);
+	SV(_state.PS);
+	SV(_state.EmulationMode);
+	// ...
 }
 ```
 

@@ -157,7 +157,7 @@ namespace Nexen.Debugger.ViewModels {
 					ActionType = ActionType.Delete,
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.WatchList_Delete),
 					IsEnabled = () => Selection.SelectedItems.Count > 0,
-					OnClick = () => DeleteWatch(Selection.SelectedItems.ToList())               },
+					OnClick = () => DeleteWatch(Selection.SelectedItems.ToList())			   },
 
 				new ContextMenuSeparator(),
 
@@ -166,14 +166,14 @@ namespace Nexen.Debugger.ViewModels {
 					RoutingStrategy = RoutingStrategies.Tunnel,
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.WatchList_MoveUp),
 					IsEnabled = () => Selection.SelectedItems.Count == 1 && Selection.SelectedIndex > 0,
-					OnClick = () => MoveUp(Selection.SelectedIndex)             },
+					OnClick = () => MoveUp(Selection.SelectedIndex)			 },
 
 				new ContextMenuAction() {
 					ActionType = ActionType.MoveDown,
 					RoutingStrategy = RoutingStrategies.Tunnel,
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.WatchList_MoveDown),
 					IsEnabled = () => Selection.SelectedItems.Count == 1 && Selection.SelectedIndex < WatchEntries.Count - 2,
-					OnClick = () => MoveDown(Selection.SelectedIndex)               },
+					OnClick = () => MoveDown(Selection.SelectedIndex)			   },
 
 				new ContextMenuSeparator(),
 

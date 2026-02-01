@@ -6,66 +6,66 @@ Nexen is a multi-system emulator supporting NES, SNES, Game Boy, GBA, SMS, PC En
 
 ```
 Nexen/
-├── Core/                   # C++ emulation cores (this document)
-│   ├── NES/                # Nintendo Entertainment System
-│   ├── SNES/               # Super Nintendo
-│   ├── Gameboy/            # Game Boy / Game Boy Color
-│   ├── GBA/                # Game Boy Advance
-│   ├── SMS/                # Sega Master System / Game Gear
-│   ├── PCE/                # PC Engine / TurboGrafx-16
-│   ├── WS/                 # WonderSwan / WonderSwan Color
-│   ├── Shared/             # Cross-platform shared code
-│   ├── Debugger/           # Unified debugger framework
-│   └── Netplay/            # Network play support
+├── Core/				   # C++ emulation cores (this document)
+│   ├── NES/				# Nintendo Entertainment System
+│   ├── SNES/			   # Super Nintendo
+│   ├── Gameboy/			# Game Boy / Game Boy Color
+│   ├── GBA/				# Game Boy Advance
+│   ├── SMS/				# Sega Master System / Game Gear
+│   ├── PCE/				# PC Engine / TurboGrafx-16
+│   ├── WS/				 # WonderSwan / WonderSwan Color
+│   ├── Shared/			 # Cross-platform shared code
+│   ├── Debugger/		   # Unified debugger framework
+│   └── Netplay/			# Network play support
 │
-├── Utilities/              # Shared utility library
-│   ├── Serializer          # State save/load
-│   ├── File I/O            # VirtualFile, archives
-│   ├── Graphics filters    # HQ2x, xBRZ, NTSC, etc.
+├── Utilities/			  # Shared utility library
+│   ├── Serializer		  # State save/load
+│   ├── File I/O			# VirtualFile, archives
+│   ├── Graphics filters	# HQ2x, xBRZ, NTSC, etc.
 │   └── Platform abstraction
 │
-├── Core.Tests/             # C++ unit tests (Google Test)
-├── Core.Benchmarks/        # Performance benchmarks (Google Benchmark)
+├── Core.Tests/			 # C++ unit tests (Google Test)
+├── Core.Benchmarks/		# Performance benchmarks (Google Benchmark)
 │
-├── InteropDLL/             # C++/C# interop layer
-│   └── EmuApiHandler       # Expose C++ API to .NET
+├── InteropDLL/			 # C++/C# interop layer
+│   └── EmuApiHandler	   # Expose C++ API to .NET
 │
-├── UI/                     # .NET UI application
-│   ├── Views/              # Avalonia XAML views
-│   ├── ViewModels/         # MVVM view models
-│   └── Debugger/           # Debugger windows
+├── UI/					 # .NET UI application
+│   ├── Views/			  # Avalonia XAML views
+│   ├── ViewModels/		 # MVVM view models
+│   └── Debugger/		   # Debugger windows
 │
-└── Linux/                  # Linux-specific code
+└── Linux/				  # Linux-specific code
 ```
 
 ## System Layers
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        UI Layer (C#/.NET)                        │
+│						UI Layer (C#/.NET)						│
 │  Avalonia cross-platform UI, debugger windows, settings, menus  │
 └─────────────────────────────────────────────────────────────────┘
-                                │
-                                │ InteropDLL (P/Invoke)
-                                │
+								│
+								│ InteropDLL (P/Invoke)
+								│
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Emulator (C++)                              │
-│  Main emulation controller - manages consoles, runs frames       │
+│					  Emulator (C++)							  │
+│  Main emulation controller - manages consoles, runs frames	   │
 └─────────────────────────────────────────────────────────────────┘
-                                │
-        ┌───────────┬───────────┼───────────┬───────────┐
-        │           │           │           │           │
-        ▼           ▼           ▼           ▼           ▼
+								│
+		┌───────────┬───────────┼───────────┬───────────┐
+		│		   │		   │		   │		   │
+		▼		   ▼		   ▼		   ▼		   ▼
    ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐
-   │   NES   │ │  SNES   │ │   GB    │ │   GBA   │ │  SMS/   │
+   │   NES   │ │  SNES   │ │   GB	│ │   GBA   │ │  SMS/   │
    │ Console │ │ Console │ │ Console │ │ Console │ │PCE/WS   │
    └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘
-        │           │           │           │           │
-        └───────────┴───────────┼───────────┴───────────┘
-                                │
+		│		   │		   │		   │		   │
+		└───────────┴───────────┼───────────┴───────────┘
+								│
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Shared Infrastructure                       │
-│  Serializer, Debugger, Settings, Video Output, Audio Mixing      │
+│					  Shared Infrastructure					   │
+│  Serializer, Debugger, Settings, Video Output, Audio Mixing	  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -75,20 +75,20 @@ Each emulated system follows a consistent pattern:
 
 ```cpp
 class [System]Console : public IConsole, public ISerializable {
-    // Owns all system components
-    unique_ptr<[System]Cpu> _cpu;
-    unique_ptr<[System]Ppu> _ppu;
-    unique_ptr<[System]MemoryManager> _memoryManager;
-    unique_ptr<BaseMapper> _mapper;  // Cartridge hardware
-    
-    // Main emulation loop
-    void Run(uint64_t runUntilMasterClock);
-    
-    // Frame timing
-    void RunFrame();
-    
-    // State management
-    void Serialize(Serializer& s) override;
+	// Owns all system components
+	unique_ptr<[System]Cpu> _cpu;
+	unique_ptr<[System]Ppu> _ppu;
+	unique_ptr<[System]MemoryManager> _memoryManager;
+	unique_ptr<BaseMapper> _mapper;  // Cartridge hardware
+	
+	// Main emulation loop
+	void Run(uint64_t runUntilMasterClock);
+	
+	// Frame timing
+	void RunFrame();
+	
+	// State management
+	void Serialize(Serializer& s) override;
 };
 ```
 
@@ -98,11 +98,11 @@ class [System]Console : public IConsole, public ISerializable {
 Base interface for all emulated systems:
 ```cpp
 class IConsole : public ISerializable {
-    virtual void Run(uint64_t masterClock) = 0;
-    virtual void Reset(bool softReset) = 0;
-    virtual ConsoleType GetConsoleType() = 0;
-    virtual double GetFps() = 0;
-    // ... video, audio, input interfaces
+	virtual void Run(uint64_t masterClock) = 0;
+	virtual void Reset(bool softReset) = 0;
+	virtual ConsoleType GetConsoleType() = 0;
+	virtual double GetFps() = 0;
+	// ... video, audio, input interfaces
 };
 ```
 
@@ -110,7 +110,7 @@ class IConsole : public ISerializable {
 All stateful objects implement serialization:
 ```cpp
 class ISerializable {
-    virtual void Serialize(Serializer& s) = 0;
+	virtual void Serialize(Serializer& s) = 0;
 };
 ```
 
@@ -118,10 +118,10 @@ class ISerializable {
 Cartridge hardware abstraction:
 ```cpp
 class BaseMapper : public ISerializable {
-    virtual uint8_t ReadRam(uint16_t addr) = 0;
-    virtual void WriteRam(uint16_t addr, uint8_t value) = 0;
-    virtual uint8_t ReadChr(uint16_t addr) = 0;
-    // ... banking, mirroring, IRQ
+	virtual uint8_t ReadRam(uint16_t addr) = 0;
+	virtual void WriteRam(uint16_t addr, uint8_t value) = 0;
+	virtual uint8_t ReadChr(uint16_t addr) = 0;
+	// ... banking, mirroring, IRQ
 };
 ```
 
@@ -131,10 +131,10 @@ Each system has a memory manager that routes reads/writes:
 
 ```
 CPU Read/Write Request
-         │
-         ▼
+		 │
+		 ▼
 ┌─────────────────────┐
-│   Memory Manager    │
+│   Memory Manager	│
 │  ┌───────────────┐  │
 │  │  Address Map  │  │
 │  │  $0000-$07FF → RAM
@@ -157,16 +157,16 @@ Nexen uses a master clock for precise timing:
 uint64_t _masterClock;  // Absolute timing reference
 
 void Console::Run(uint64_t targetClock) {
-    while (_masterClock < targetClock) {
-        // Step CPU
-        _cpu->Exec();
-        
-        // PPU runs proportionally
-        _ppu->Run(_masterClock);
-        
-        // APU runs at its rate
-        _apu->Run(_masterClock);
-    }
+	while (_masterClock < targetClock) {
+		// Step CPU
+		_cpu->Exec();
+		
+		// PPU runs proportionally
+		_ppu->Run(_masterClock);
+		
+		// APU runs at its rate
+		_apu->Run(_masterClock);
+	}
 }
 ```
 
@@ -176,18 +176,18 @@ The unified debugger supports all systems:
 
 ```
 ┌─────────────────────────────────────────────┐
-│              Debugger Framework             │
+│			  Debugger Framework			 │
 ├─────────────────────────────────────────────┤
 │ ┌─────────────┐  ┌─────────────────────────┐│
-│ │ Breakpoints │  │   Disassembler          ││
-│ │ - Read      │  │   - System-specific     ││
-│ │ - Write     │  │   - Symbol support      ││
-│ │ - Execute   │  │   - Code labels         ││
+│ │ Breakpoints │  │   Disassembler		  ││
+│ │ - Read	  │  │   - System-specific	 ││
+│ │ - Write	 │  │   - Symbol support	  ││
+│ │ - Execute   │  │   - Code labels		 ││
 │ └─────────────┘  └─────────────────────────┘│
 │ ┌─────────────┐  ┌─────────────────────────┐│
-│ │ Watch       │  │   Trace Logger          ││
+│ │ Watch	   │  │   Trace Logger		  ││
 │ │ - Registers │  │   - Per-instruction log ││
-│ │ - Memory    │  │   - Conditional logging ││
+│ │ - Memory	│  │   - Conditional logging ││
 │ └─────────────┘  └─────────────────────────┘│
 └─────────────────────────────────────────────┘
 ```
@@ -198,19 +198,19 @@ Save states use a bidirectional serializer:
 
 ```cpp
 void NesCpu::Serialize(Serializer& s) {
-    // Same code for save and load!
-    SV(_state.PC);
-    SV(_state.SP);
-    SV(_state.A);
-    SV(_state.X);
-    SV(_state.Y);
-    SV(_state.PS);
-    
-    // Arrays
-    SVArray(_ram, sizeof(_ram));
-    
-    // Nested objects
-    SV(_apu);  // Calls _apu->Serialize(s)
+	// Same code for save and load!
+	SV(_state.PC);
+	SV(_state.SP);
+	SV(_state.A);
+	SV(_state.X);
+	SV(_state.Y);
+	SV(_state.PS);
+	
+	// Arrays
+	SVArray(_ram, sizeof(_ram));
+	
+	// Nested objects
+	SV(_apu);  // Calls _apu->Serialize(s)
 }
 ```
 
@@ -218,7 +218,7 @@ void NesCpu::Serialize(Serializer& s) {
 
 ```
 PPU Frame Buffer ──► Video Filter ──► Display Output
-     (raw pixels)       (HQ2x/etc)       (SDL/UI)
+	 (raw pixels)	   (HQ2x/etc)	   (SDL/UI)
 ```
 
 **Filters:**
@@ -235,22 +235,22 @@ PPU Frame Buffer ──► Video Filter ──► Display Output
 ┌─────────┐   ┌─────────┐   ┌─────────┐
 │Channel 1│   │Channel 2│   │Channel N│
 └────┬────┘   └────┬────┘   └────┬────┘
-     │             │             │
-     └──────┬──────┴──────┬──────┘
-            │             │
-            ▼             ▼
-     ┌─────────────────────────┐
-     │     Sound Mixer         │
-     │  - Resampling           │
-     │  - Volume/Balance       │
-     │  - Low-pass filter      │
-     └───────────┬─────────────┘
-                 │
-                 ▼
-     ┌─────────────────────────┐
-     │    Audio Output         │
-     │  - SDL Audio / WASAPI   │
-     └─────────────────────────┘
+	 │			 │			 │
+	 └──────┬──────┴──────┬──────┘
+			│			 │
+			▼			 ▼
+	 ┌─────────────────────────┐
+	 │	 Sound Mixer		 │
+	 │  - Resampling		   │
+	 │  - Volume/Balance	   │
+	 │  - Low-pass filter	  │
+	 └───────────┬─────────────┘
+				 │
+				 ▼
+	 ┌─────────────────────────┐
+	 │	Audio Output		 │
+	 │  - SDL Audio / WASAPI   │
+	 └─────────────────────────┘
 ```
 
 ## Supported Systems

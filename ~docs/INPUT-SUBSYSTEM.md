@@ -11,30 +11,30 @@ Input Architecture
 ══════════════════
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                      KeyManager                                 │
-│   (Physical input → key codes, handles keyboard/gamepad)        │
+│					  KeyManager								 │
+│   (Physical input → key codes, handles keyboard/gamepad)		│
 └─────────────────────────────────────────────────────────────────┘
-              │
-              ▼
+			  │
+			  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   BaseControlManager                            │
-│   (Per-console manager, owns all controllers)                   │
+│				   BaseControlManager							│
+│   (Per-console manager, owns all controllers)				   │
 └─────────────────────────────────────────────────────────────────┘
-              │
-    ┌─────────┼─────────┬──────────────┬──────────────┐
-    │         │         │              │              │
-    ▼         ▼         ▼              ▼              ▼
+			  │
+	┌─────────┼─────────┬──────────────┬──────────────┐
+	│		 │		 │			  │			  │
+	▼		 ▼		 ▼			  ▼			  ▼
 ┌───────┐ ┌───────┐ ┌─────────┐ ┌───────────┐ ┌───────────┐
-│Port 1 │ │Port 2 │ │ Multitap│ │  System   │ │  Input    │
+│Port 1 │ │Port 2 │ │ Multitap│ │  System   │ │  Input	│
 │ Ctrl  │ │ Ctrl  │ │ Adapter │ │  Devices  │ │  Recorder │
 └───────┘ └───────┘ └─────────┘ └───────────┘ └───────────┘
-    │
-    └── BaseControlDevice
-        ├── StandardController
-        ├── Zapper (Light Gun)
-        ├── Mouse
-        ├── Keyboard
-        └── ControllerHub (Multitap)
+	│
+	└── BaseControlDevice
+		├── StandardController
+		├── Zapper (Light Gun)
+		├── Mouse
+		├── Keyboard
+		└── ControllerHub (Multitap)
 ```
 
 ## Directory Structure
@@ -43,27 +43,27 @@ Input Architecture
 Core/Shared/
 ├── Input Core
 │   ├── BaseControlManager.h/cpp   - Console input manager
-│   ├── BaseControlDevice.h/cpp    - Controller base class
-│   ├── ControlDeviceState.h       - Input state structure
-│   ├── ControllerHub.h            - Multitap adapter base
-│   └── IControllerHub.h           - Hub interface
+│   ├── BaseControlDevice.h/cpp	- Controller base class
+│   ├── ControlDeviceState.h	   - Input state structure
+│   ├── ControllerHub.h			- Multitap adapter base
+│   └── IControllerHub.h		   - Hub interface
 │
 ├── Key Management
-│   ├── KeyManager.h/cpp           - Physical input handling
-│   ├── KeyDefinitions.h           - Key code definitions
+│   ├── KeyManager.h/cpp		   - Physical input handling
+│   ├── KeyDefinitions.h		   - Key code definitions
 │   └── ShortcutKeyHandler.h/cpp   - Hotkey handling
 │
 ├── Input Display
-│   └── InputHud.h/cpp             - On-screen input display
+│   └── InputHud.h/cpp			 - On-screen input display
 │
 └── Platform-Specific (Core/{Platform}/Input/)
-    ├── NES/  - NES controllers
-    ├── SNES/ - SNES controllers
-    ├── GB/   - Game Boy input
-    ├── GBA/  - GBA input
-    ├── SMS/  - SMS/GG controllers
-    ├── PCE/  - PC Engine controllers
-    └── WS/   - WonderSwan input
+	├── NES/  - NES controllers
+	├── SNES/ - SNES controllers
+	├── GB/   - Game Boy input
+	├── GBA/  - GBA input
+	├── SMS/  - SMS/GG controllers
+	├── PCE/  - PC Engine controllers
+	└── WS/   - WonderSwan input
 ```
 
 ---
@@ -84,16 +84,16 @@ Abstract base class for console-specific input managers.
 ```cpp
 class BaseControlManager : public ISerializable {
 protected:
-    vector<shared_ptr<BaseControlDevice>> _controlDevices; // Controllers
-    vector<shared_ptr<BaseControlDevice>> _systemDevices;  // Power, reset
-    
-    // Input providers/recorders for movies and netplay
-    vector<IInputRecorder*> _inputRecorders;
-    vector<IInputProvider*> _inputProviders;
-    
-    uint32_t _pollCounter = 0;    // Total input polls
-    uint32_t _lagCounter = 0;     // Lag frame counter
-    bool _wasInputRead = false;   // Input polled this frame
+	vector<shared_ptr<BaseControlDevice>> _controlDevices; // Controllers
+	vector<shared_ptr<BaseControlDevice>> _systemDevices;  // Power, reset
+	
+	// Input providers/recorders for movies and netplay
+	vector<IInputRecorder*> _inputRecorders;
+	vector<IInputProvider*> _inputProviders;
+	
+	uint32_t _pollCounter = 0;	// Total input polls
+	uint32_t _lagCounter = 0;	 // Lag frame counter
+	bool _wasInputRead = false;   // Input polled this frame
 };
 ```
 
@@ -101,10 +101,10 @@ protected:
 ```cpp
 // A frame is "lag" if no input was polled
 void ProcessEndOfFrame() {
-    if (!_wasInputRead) {
-        _lagCounter++;
-    }
-    _wasInputRead = false;
+	if (!_wasInputRead) {
+		_lagCounter++;
+	}
+	_wasInputRead = false;
 }
 ```
 
@@ -130,8 +130,8 @@ Base class for all input devices.
 **State Structure:**
 ```cpp
 struct ControlDeviceState {
-    vector<uint8_t> State;      // Button state bits
-    MouseMovement Movement;      // Mouse delta (if applicable)
+	vector<uint8_t> State;	  // Button state bits
+	MouseMovement Movement;	  // Mouse delta (if applicable)
 };
 ```
 
@@ -192,15 +192,15 @@ Handles physical input devices.
 
 2. Controller Polling
    └── Game reads controller port
-       └── SetInputReadFlag() called
-           └── _wasInputRead = true
+	   └── SetInputReadFlag() called
+		   └── _wasInputRead = true
 
 3. Input Recording
    └── Input recorders capture state
 
 4. Frame End
    └── ProcessEndOfFrame()
-       └── Check if lag frame (_wasInputRead?)
+	   └── Check if lag frame (_wasInputRead?)
 ```
 
 ### Input Provider Interface
@@ -208,8 +208,8 @@ Handles physical input devices.
 ```cpp
 class IInputProvider {
 public:
-    // Called to set controller input for frame
-    virtual bool SetInput(BaseControlDevice* device) = 0;
+	// Called to set controller input for frame
+	virtual bool SetInput(BaseControlDevice* device) = 0;
 };
 ```
 
@@ -223,8 +223,8 @@ public:
 ```cpp
 class IInputRecorder {
 public:
-    // Called to record controller input
-    virtual void RecordInput(vector<shared_ptr<BaseControlDevice>>& devices) = 0;
+	// Called to record controller input
+	virtual void RecordInput(vector<shared_ptr<BaseControlDevice>>& devices) = 0;
 };
 ```
 
@@ -263,8 +263,8 @@ uint32_t TurboSpeed = 2;  // Toggle every N frames
 ```cpp
 // Check if pointing at bright pixel
 bool IsLightDetected(uint16_t x, uint16_t y) {
-    // Compare against current PPU output
-    return GetBrightness(x, y) > threshold;
+	// Compare against current PPU output
+	return GetBrightness(x, y) > threshold;
 }
 ```
 
@@ -307,9 +307,9 @@ Controllers save/load state for save states.
 
 ```cpp
 void Serialize(Serializer& s) override {
-    SV(_strobe);
-    SVArray(_state.State.data(), _state.State.size());
-    // Device-specific fields...
+	SV(_strobe);
+	SVArray(_state.State.data(), _state.State.size());
+	// Device-specific fields...
 }
 ```
 
@@ -339,14 +339,14 @@ void Serialize(Serializer& s) override {
 
 ```json
 {
-    "Port1": {
-        "Type": "SnesController",
-        "Mappings": {
-            "A": "Keyboard.Z",
-            "B": "Keyboard.X",
-            "Start": "Keyboard.Enter"
-        }
-    }
+	"Port1": {
+		"Type": "SnesController",
+		"Mappings": {
+			"A": "Keyboard.Z",
+			"B": "Keyboard.X",
+			"Start": "Keyboard.Enter"
+		}
+	}
 }
 ```
 

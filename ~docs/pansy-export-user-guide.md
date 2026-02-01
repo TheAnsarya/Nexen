@@ -66,26 +66,26 @@ Enable **Use folder-based storage** for advanced workflows:
 
 ```
 ┌─────────────────────────────────────────┐
-│ Header (32 bytes)                       │
-│  - Magic: "PANSY\0\0\0"                 │
-│  - Version: 1.0 or 1.1                  │
-│  - Platform: NES/SNES/GB/GBA/etc        │
-│  - Flags: compression, features         │
-│  - ROM Size + CRC32                     │
-│  - Timestamp                            │
+│ Header (32 bytes)					   │
+│  - Magic: "PANSY\0\0\0"				 │
+│  - Version: 1.0 or 1.1				  │
+│  - Platform: NES/SNES/GB/GBA/etc		│
+│  - Flags: compression, features		 │
+│  - ROM Size + CRC32					 │
+│  - Timestamp							│
 ├─────────────────────────────────────────┤
-│ Sections (variable)                     │
-│  - Symbols (labels)                     │
-│  - Comments                             │
-│  - Code offsets                         │
-│  - Data offsets                         │
-│  - Jump targets                         │
-│  - Subroutine entry points              │
-│  - Memory regions                       │
-│  - Cross-references                     │
+│ Sections (variable)					 │
+│  - Symbols (labels)					 │
+│  - Comments							 │
+│  - Code offsets						 │
+│  - Data offsets						 │
+│  - Jump targets						 │
+│  - Subroutine entry points			  │
+│  - Memory regions					   │
+│  - Cross-references					 │
 ├─────────────────────────────────────────┤
-│ Footer                                  │
-│  - Section CRC32                        │
+│ Footer								  │
+│  - Section CRC32						│
 └─────────────────────────────────────────┘
 ```
 
@@ -107,14 +107,14 @@ When using folder-based storage, Nexen creates a `GameName_debug/` folder next t
 
 ```
 MyGame_debug/
-├── manifest.json           # ROM info, settings
-├── deadbeef.mlb            # Labels (Nexen format)
-├── deadbeef.cdl            # Code/Data Log
-├── deadbeef.pansy          # Full Pansy export
-└── .history/               # Version history
-    ├── 20240115_120000.mlb
-    ├── 20240115_130000.mlb
-    └── ...
+├── manifest.json		   # ROM info, settings
+├── deadbeef.mlb			# Labels (Nexen format)
+├── deadbeef.cdl			# Code/Data Log
+├── deadbeef.pansy		  # Full Pansy export
+└── .history/			   # Version history
+	├── 20240115_120000.mlb
+	├── 20240115_130000.mlb
+	└── ...
 ```
 
 ## Converting from Other Formats

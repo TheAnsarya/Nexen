@@ -51,7 +51,7 @@ namespace Nexen.Debugger.Windows {
 			list.DoubleTapped += lstResults_DoubleTapped;
 			list.PointerReleased += List_PointerReleased;
 
-			Dispatcher.UIThread.Post(() =>              //Post this to run later, otherwise Linux seems to type the
+			Dispatcher.UIThread.Post(() =>			  //Post this to run later, otherwise Linux seems to type the
 														//comma (from the Ctrl+comma shortcut) inside the textbox
 				this.GetControl<TextBox>("txtSearch").FocusAndSelectAll());
 		}

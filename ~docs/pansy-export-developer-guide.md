@@ -6,40 +6,40 @@ This guide is for developers extending or maintaining the Pansy export functiona
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                      Pansy Export System                        │
+│					  Pansy Export System						│
 ├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────────┐     ┌─────────────────┐                    │
-│  │  PansyExporter  │────▶│  Pansy Binary   │                    │
-│  │                 │     │     Format      │                    │
-│  └────────┬────────┘     └─────────────────┘                    │
-│           │                       ▲                             │
-│           ▼                       │                             │
-│  ┌─────────────────┐     ┌───────┴─────────┐                    │
-│  │  LabelManager   │     │  PansyImporter  │                    │
-│  │  CdlManager     │     │                 │                    │
-│  │  DebugInfo      │     └─────────────────┘                    │
-│  └─────────────────┘                                            │
-│           │                                                     │
-│           ▼                                                     │
-│  ┌─────────────────────────────────────────┐                    │
-│  │         DebugFolderManager              │                    │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ │                    │
-│  │  │ MLB Sync │ │ CDL Sync │ │  Pansy   │ │                    │
-│  │  └──────────┘ └──────────┘ └──────────┘ │                    │
-│  └─────────────────────────────────────────┘                    │
-│           │                                                     │
-│           ▼                                                     │
-│  ┌─────────────────────────────────────────┐                    │
-│  │            SyncManager                   │                    │
-│  │     (FileSystemWatcher integration)      │                    │
-│  └─────────────────────────────────────────┘                    │
-│                                                                 │
-│  ┌─────────────────────────────────────────┐                    │
-│  │         DbgToPansyConverter             │                    │
-│  │   ca65 | WLA-DX | RGBDS | SDCC | ELF    │                    │
-│  └─────────────────────────────────────────┘                    │
-│                                                                 │
+│																 │
+│  ┌─────────────────┐	 ┌─────────────────┐					│
+│  │  PansyExporter  │────▶│  Pansy Binary   │					│
+│  │				 │	 │	 Format	  │					│
+│  └────────┬────────┘	 └─────────────────┘					│
+│		   │					   ▲							 │
+│		   ▼					   │							 │
+│  ┌─────────────────┐	 ┌───────┴─────────┐					│
+│  │  LabelManager   │	 │  PansyImporter  │					│
+│  │  CdlManager	 │	 │				 │					│
+│  │  DebugInfo	  │	 └─────────────────┘					│
+│  └─────────────────┘											│
+│		   │													 │
+│		   ▼													 │
+│  ┌─────────────────────────────────────────┐					│
+│  │		 DebugFolderManager			  │					│
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ │					│
+│  │  │ MLB Sync │ │ CDL Sync │ │  Pansy   │ │					│
+│  │  └──────────┘ └──────────┘ └──────────┘ │					│
+│  └─────────────────────────────────────────┘					│
+│		   │													 │
+│		   ▼													 │
+│  ┌─────────────────────────────────────────┐					│
+│  │			SyncManager				   │					│
+│  │	 (FileSystemWatcher integration)	  │					│
+│  └─────────────────────────────────────────┘					│
+│																 │
+│  ┌─────────────────────────────────────────┐					│
+│  │		 DbgToPansyConverter			 │					│
+│  │   ca65 | WLA-DX | RGBDS | SDCC | ELF	│					│
+│  └─────────────────────────────────────────┘					│
+│																 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -91,33 +91,33 @@ This guide is for developers extending or maintaining the Pansy export functiona
 ```csharp
 private static void WriteHeader(BinaryWriter writer, PansyHeader header)
 {
-    // Magic: "PANSY\0\0\0" (8 bytes)
-    writer.Write(Encoding.ASCII.GetBytes("PANSY\0\0\0"));
-    
-    // Version: Major.Minor as uint16
-    writer.Write((ushort)((header.VersionMajor << 8) | header.VersionMinor));
-    
-    // Platform ID (1 byte)
-    writer.Write((byte)header.Platform);
-    
-    // Flags (1 byte)
-    byte flags = 0;
-    if (header.Compressed) flags |= 0x01;
-    if (header.HasRegions) flags |= 0x02;
-    if (header.HasXrefs) flags |= 0x04;
-    writer.Write(flags);
-    
-    // ROM size (4 bytes)
-    writer.Write(header.RomSize);
-    
-    // ROM CRC32 (4 bytes)
-    writer.Write(header.RomCrc32);
-    
-    // Timestamp (8 bytes)
-    writer.Write(header.Timestamp);
-    
-    // Reserved (4 bytes)
-    writer.Write(0);
+	// Magic: "PANSY\0\0\0" (8 bytes)
+	writer.Write(Encoding.ASCII.GetBytes("PANSY\0\0\0"));
+	
+	// Version: Major.Minor as uint16
+	writer.Write((ushort)((header.VersionMajor << 8) | header.VersionMinor));
+	
+	// Platform ID (1 byte)
+	writer.Write((byte)header.Platform);
+	
+	// Flags (1 byte)
+	byte flags = 0;
+	if (header.Compressed) flags |= 0x01;
+	if (header.HasRegions) flags |= 0x02;
+	if (header.HasXrefs) flags |= 0x04;
+	writer.Write(flags);
+	
+	// ROM size (4 bytes)
+	writer.Write(header.RomSize);
+	
+	// ROM CRC32 (4 bytes)
+	writer.Write(header.RomCrc32);
+	
+	// Timestamp (8 bytes)
+	writer.Write(header.Timestamp);
+	
+	// Reserved (4 bytes)
+	writer.Write(0);
 }
 ```
 
@@ -126,20 +126,20 @@ private static void WriteHeader(BinaryWriter writer, PansyHeader header)
 ```csharp
 private static void WriteSymbolSection(BinaryWriter writer, List<CodeLabel> labels)
 {
-    writer.Write((byte)SectionType.Symbols);
-    writer.Write(labels.Count);
-    
-    foreach (var label in labels)
-    {
-        // Address as 4-byte value (memory type in high byte)
-        uint address = ((uint)label.MemoryType << 24) | (uint)label.Address;
-        writer.Write(address);
-        
-        // Name as length-prefixed UTF-8
-        byte[] nameBytes = Encoding.UTF8.GetBytes(label.Label);
-        writer.Write((byte)nameBytes.Length);
-        writer.Write(nameBytes);
-    }
+	writer.Write((byte)SectionType.Symbols);
+	writer.Write(labels.Count);
+	
+	foreach (var label in labels)
+	{
+		// Address as 4-byte value (memory type in high byte)
+		uint address = ((uint)label.MemoryType << 24) | (uint)label.Address;
+		writer.Write(address);
+		
+		// Name as length-prefixed UTF-8
+		byte[] nameBytes = Encoding.UTF8.GetBytes(label.Label);
+		writer.Write((byte)nameBytes.Length);
+		writer.Write(nameBytes);
+	}
 }
 ```
 
@@ -148,21 +148,21 @@ private static void WriteSymbolSection(BinaryWriter writer, List<CodeLabel> labe
 ```csharp
 private static byte[] CompressData(byte[] data)
 {
-    using var output = new MemoryStream();
-    using (var deflate = new DeflateStream(output, CompressionLevel.Optimal))
-    {
-        deflate.Write(data, 0, data.Length);
-    }
-    return output.ToArray();
+	using var output = new MemoryStream();
+	using (var deflate = new DeflateStream(output, CompressionLevel.Optimal))
+	{
+		deflate.Write(data, 0, data.Length);
+	}
+	return output.ToArray();
 }
 
 private static byte[] DecompressData(byte[] compressed, int uncompressedSize)
 {
-    using var input = new MemoryStream(compressed);
-    using var deflate = new DeflateStream(input, CompressionMode.Decompress);
-    byte[] output = new byte[uncompressedSize];
-    deflate.ReadExactly(output, 0, uncompressedSize);
-    return output;
+	using var input = new MemoryStream(compressed);
+	using var deflate = new DeflateStream(input, CompressionMode.Decompress);
+	byte[] output = new byte[uncompressedSize];
+	deflate.ReadExactly(output, 0, uncompressedSize);
+	return output;
 }
 ```
 
@@ -176,8 +176,8 @@ var labels = LabelManager.GetLabels();
 
 // Filter by memory type
 var prgLabels = labels.Where(l => 
-    l.MemoryType == MemoryType.NesPrgRom ||
-    l.MemoryType == MemoryType.SnesPrgRom);
+	l.MemoryType == MemoryType.NesPrgRom ||
+	l.MemoryType == MemoryType.SnesPrgRom);
 ```
 
 ### Getting CDL Data
@@ -185,9 +185,9 @@ var prgLabels = labels.Where(l =>
 ```csharp
 // Get Code/Data Log for analysis
 byte[] cdlData = DebugApi.GetCdlData(
-    0,  // Start offset
-    DebugApi.GetMemorySize(MemoryType.NesPrgRom),
-    MemoryType.NesPrgRom);
+	0,  // Start offset
+	DebugApi.GetMemorySize(MemoryType.NesPrgRom),
+	MemoryType.NesPrgRom);
 
 // Interpret CDL flags
 const byte CdlCode = 0x01;
@@ -218,10 +218,10 @@ LabelManager.SetLabels(labels, raiseEvents: true);
 
 // Single label
 LabelManager.SetLabel(
-    address: 0x8000,
-    memoryType: MemoryType.NesPrgRom,
-    label: "Reset",
-    comment: "Entry point"
+	address: 0x8000,
+	memoryType: MemoryType.NesPrgRom,
+	label: "Reset",
+	comment: "Entry point"
 );
 ```
 
@@ -238,12 +238,12 @@ private const byte SectionTypeNewFeature = 0x09;
 ```csharp
 private static void WriteNewFeatureSection(BinaryWriter writer, ...)
 {
-    writer.Write(SectionTypeNewFeature);
-    writer.Write(count);
-    foreach (var item in items)
-    {
-        // Write item data
-    }
+	writer.Write(SectionTypeNewFeature);
+	writer.Write(count);
+	foreach (var item in items)
+	{
+		// Write item data
+	}
 }
 ```
 
@@ -251,12 +251,12 @@ private static void WriteNewFeatureSection(BinaryWriter writer, ...)
 ```csharp
 private static void ReadNewFeatureSection(BinaryReader reader, ImportResult result)
 {
-    int count = reader.ReadInt32();
-    for (int i = 0; i < count; i++)
-    {
-        // Read item data
-        // Apply to Nexen
-    }
+	int count = reader.ReadInt32();
+	for (int i = 0; i < count; i++)
+	{
+		// Read item data
+		// Apply to Nexen
+	}
 }
 ```
 
@@ -264,7 +264,7 @@ private static void ReadNewFeatureSection(BinaryReader reader, ImportResult resu
 ```csharp
 public class PansyExportOptions
 {
-    public bool IncludeNewFeature { get; set; } = true;
+	public bool IncludeNewFeature { get; set; } = true;
 }
 ```
 
@@ -279,8 +279,8 @@ if (options.IncludeNewFeature) flags |= 0x08;
 ```csharp
 public enum DebugFormat
 {
-    // ... existing ...
-    NewFormat
+	// ... existing ...
+	NewFormat
 }
 ```
 
@@ -288,10 +288,10 @@ public enum DebugFormat
 ```csharp
 public static DebugFormat DetectFormat(string path)
 {
-    var content = File.ReadAllText(path);
-    if (content.StartsWith("NEWFORMAT"))
-        return DebugFormat.NewFormat;
-    // ... existing ...
+	var content = File.ReadAllText(path);
+	if (content.StartsWith("NEWFORMAT"))
+		return DebugFormat.NewFormat;
+	// ... existing ...
 }
 ```
 
@@ -299,16 +299,16 @@ public static DebugFormat DetectFormat(string path)
 ```csharp
 private static void ImportNewFormat(string path, List<CodeLabel> labels)
 {
-    // Parse format
-    // Convert to CodeLabel objects
+	// Parse format
+	// Convert to CodeLabel objects
 }
 ```
 
 4. **Wire Up in ConvertAndExport**:
 ```csharp
 case DebugFormat.NewFormat:
-    ImportNewFormat(inputPath, labels);
-    break;
+	ImportNewFormat(inputPath, labels);
+	break;
 ```
 
 ## Testing Guidelines
@@ -318,28 +318,28 @@ case DebugFormat.NewFormat:
 ```csharp
 public class PansyExporterTests
 {
-    [Fact]
-    public void Export_WithLabels_CreatesValidFile()
-    {
-        // Arrange
-        var labels = new List<CodeLabel> { /* test data */ };
-        var outputPath = Path.GetTempFileName();
-        
-        try
-        {
-            // Act
-            bool result = PansyExporter.Export(outputPath);
-            
-            // Assert
-            Assert.True(result);
-            Assert.True(File.Exists(outputPath));
-            // Verify file contents
-        }
-        finally
-        {
-            File.Delete(outputPath);
-        }
-    }
+	[Fact]
+	public void Export_WithLabels_CreatesValidFile()
+	{
+		// Arrange
+		var labels = new List<CodeLabel> { /* test data */ };
+		var outputPath = Path.GetTempFileName();
+		
+		try
+		{
+			// Act
+			bool result = PansyExporter.Export(outputPath);
+			
+			// Assert
+			Assert.True(result);
+			Assert.True(File.Exists(outputPath));
+			// Verify file contents
+		}
+		finally
+		{
+			File.Delete(outputPath);
+		}
+	}
 }
 ```
 
@@ -349,19 +349,19 @@ public class PansyExporterTests
 [Fact]
 public void ExportImport_RoundTrip_PreservesLabels()
 {
-    // Export
-    var exportPath = Path.GetTempFileName();
-    PansyExporter.Export(exportPath);
-    
-    // Clear labels
-    LabelManager.ClearLabels();
-    
-    // Import
-    var result = PansyImporter.Import(exportPath);
-    
-    // Verify labels restored
-    var labels = LabelManager.GetLabels();
-    Assert.Equal(expectedCount, labels.Count());
+	// Export
+	var exportPath = Path.GetTempFileName();
+	PansyExporter.Export(exportPath);
+	
+	// Clear labels
+	LabelManager.ClearLabels();
+	
+	// Import
+	var result = PansyImporter.Import(exportPath);
+	
+	// Verify labels restored
+	var labels = LabelManager.GetLabels();
+	Assert.Equal(expectedCount, labels.Count());
 }
 ```
 
@@ -371,16 +371,16 @@ public void ExportImport_RoundTrip_PreservesLabels()
 // For testing without full Nexen context
 public interface ILabelProvider
 {
-    IEnumerable<CodeLabel> GetLabels();
-    void SetLabels(IEnumerable<CodeLabel> labels);
+	IEnumerable<CodeLabel> GetLabels();
+	void SetLabels(IEnumerable<CodeLabel> labels);
 }
 
 // Mock implementation
 public class MockLabelProvider : ILabelProvider
 {
-    public List<CodeLabel> Labels { get; } = new();
-    public IEnumerable<CodeLabel> GetLabels() => Labels;
-    public void SetLabels(IEnumerable<CodeLabel> labels) => Labels.AddRange(labels);
+	public List<CodeLabel> Labels { get; } = new();
+	public IEnumerable<CodeLabel> GetLabels() => Labels;
+	public void SetLabels(IEnumerable<CodeLabel> labels) => Labels.AddRange(labels);
 }
 ```
 
@@ -391,21 +391,21 @@ public class MockLabelProvider : ILabelProvider
 ```csharp
 public static bool Export(string path, ...)
 {
-    try
-    {
-        // Export logic
-        return true;
-    }
-    catch (IOException ex)
-    {
-        Log.Error($"Failed to write Pansy file: {ex.Message}");
-        return false;
-    }
-    catch (Exception ex)
-    {
-        Log.Error($"Unexpected export error: {ex}");
-        return false;
-    }
+	try
+	{
+		// Export logic
+		return true;
+	}
+	catch (IOException ex)
+	{
+		Log.Error($"Failed to write Pansy file: {ex.Message}");
+		return false;
+	}
+	catch (Exception ex)
+	{
+		Log.Error($"Unexpected export error: {ex}");
+		return false;
+	}
 }
 ```
 
@@ -414,34 +414,34 @@ public static bool Export(string path, ...)
 ```csharp
 public static ImportResult Import(string path, ...)
 {
-    var result = new ImportResult();
-    
-    try
-    {
-        // Validate header
-        if (!ValidateHeader(reader))
-        {
-            result.ErrorMessage = "Invalid Pansy file format";
-            return result;
-        }
-        
-        // Check ROM compatibility
-        if (header.RomCrc32 != currentRomCrc)
-        {
-            result.Warnings.Add($"ROM CRC mismatch: expected {header.RomCrc32:X8}");
-        }
-        
-        // Import sections
-        // ...
-        
-        result.Success = true;
-    }
-    catch (Exception ex)
-    {
-        result.ErrorMessage = ex.Message;
-    }
-    
-    return result;
+	var result = new ImportResult();
+	
+	try
+	{
+		// Validate header
+		if (!ValidateHeader(reader))
+		{
+			result.ErrorMessage = "Invalid Pansy file format";
+			return result;
+		}
+		
+		// Check ROM compatibility
+		if (header.RomCrc32 != currentRomCrc)
+		{
+			result.Warnings.Add($"ROM CRC mismatch: expected {header.RomCrc32:X8}");
+		}
+		
+		// Import sections
+		// ...
+		
+		result.Success = true;
+	}
+	catch (Exception ex)
+	{
+		result.ErrorMessage = ex.Message;
+	}
+	
+	return result;
 }
 ```
 
@@ -452,7 +452,7 @@ public static ImportResult Import(string path, ...)
 ```csharp
 // Stream-based processing for large files
 using var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, 
-    FileShare.Read, bufferSize: 65536);
+	FileShare.Read, bufferSize: 65536);
 using var bufferedStream = new BufferedStream(fileStream);
 using var reader = new BinaryReader(bufferedStream);
 ```
@@ -466,12 +466,12 @@ var results = new ConcurrentBag<CrossReference>();
 
 Parallel.ForEach(chunks, chunk =>
 {
-    foreach (var label in chunk)
-    {
-        var xrefs = AnalyzeCrossReferences(label);
-        foreach (var xref in xrefs)
-            results.Add(xref);
-    }
+	foreach (var label in chunk)
+	{
+		var xrefs = AnalyzeCrossReferences(label);
+		foreach (var xref in xrefs)
+			results.Add(xref);
+	}
 });
 ```
 
@@ -483,15 +483,15 @@ private static readonly ArrayPool<byte> BufferPool = ArrayPool<byte>.Shared;
 
 public static void ProcessData(...)
 {
-    byte[] buffer = BufferPool.Rent(4096);
-    try
-    {
-        // Use buffer
-    }
-    finally
-    {
-        BufferPool.Return(buffer);
-    }
+	byte[] buffer = BufferPool.Rent(4096);
+	try
+	{
+		// Use buffer
+	}
+	finally
+	{
+		BufferPool.Return(buffer);
+	}
 }
 ```
 
@@ -502,8 +502,8 @@ public static void ProcessData(...)
 1. **Add to resources.en.xml**:
 ```xml
 <Form ID="MyNewWindow">
-    <Entry ID="Title">My New Window</Entry>
-    <Entry ID="Description">This is a description</Entry>
+	<Entry ID="Title">My New Window</Entry>
+	<Entry ID="Description">This is a description</Entry>
 </Form>
 ```
 
@@ -523,8 +523,8 @@ var title = ResourceHelper.GetMessage("MyNewWindow_Title");
 
 ```csharp
 #if DEBUG
-    Log.Debug($"Exporting {labels.Count} labels");
-    Log.Debug($"CDL data: {cdlData.Length} bytes");
+	Log.Debug($"Exporting {labels.Count} labels");
+	Log.Debug($"CDL data: {cdlData.Length} bytes");
 #endif
 ```
 
@@ -534,11 +534,11 @@ var title = ResourceHelper.GetMessage("MyNewWindow_Title");
 // Hex dump helper
 public static void DumpHex(byte[] data, int length = 64)
 {
-    for (int i = 0; i < Math.Min(data.Length, length); i += 16)
-    {
-        var hex = BitConverter.ToString(data, i, Math.Min(16, data.Length - i));
-        Debug.WriteLine($"{i:X4}: {hex}");
-    }
+	for (int i = 0; i < Math.Min(data.Length, length); i += 16)
+	{
+		var hex = BitConverter.ToString(data, i, Math.Min(16, data.Length - i));
+		Debug.WriteLine($"{i:X4}: {hex}");
+	}
 }
 ```
 

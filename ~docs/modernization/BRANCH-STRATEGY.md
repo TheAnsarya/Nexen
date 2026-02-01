@@ -14,8 +14,8 @@ This document describes the branch strategy used for Nexen development, specific
 main (sour's upstream)
  │
  └─► pansy-export (our fork's main integration branch)
-      │
-      └─► modernization (completed modernization work)
+	  │
+	  └─► modernization (completed modernization work)
 ```
 
 ## 📍 Branch Descriptions

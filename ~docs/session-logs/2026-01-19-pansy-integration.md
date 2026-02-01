@@ -186,14 +186,14 @@ Correctly implemented Platform ID mapping for:
 ## Files Changed
 
 ```
-M  UI/Config/IntegrationConfig.cs                    (+2 lines)
-A  UI/Debugger/Labels/PansyExporter.cs              (+369 lines)
-M  UI/Debugger/Utilities/ContextMenuAction.cs       (+2 lines)
+M  UI/Config/IntegrationConfig.cs					(+2 lines)
+A  UI/Debugger/Labels/PansyExporter.cs			  (+369 lines)
+M  UI/Debugger/Utilities/ContextMenuAction.cs	   (+2 lines)
 M  UI/Debugger/ViewModels/DebuggerWindowViewModel.cs (+16 lines)
 M  UI/Debugger/Windows/DebuggerConfigWindow.axaml   (+7 lines)
-M  UI/Localization/resources.en.xml                 (+5 lines)
-A  ~docs/pansy-integration.md                       (+216 lines)
-A  ~docs/pansy-roadmap.md                          (+292 lines)
+M  UI/Localization/resources.en.xml				 (+5 lines)
+A  ~docs/pansy-integration.md					   (+216 lines)
+A  ~docs/pansy-roadmap.md						  (+292 lines)
 ```
 
 **Total:** 8 files, 909 lines added, 0 deleted

@@ -92,19 +92,19 @@ namespace Nexen.Debugger.Labels {
 
 		// Platform IDs matching Pansy specification
 		private static readonly Dictionary<RomFormat, byte> PlatformIds = new() {
-			[RomFormat.Sfc] = 0x02,      // SNES
-			[RomFormat.Spc] = 0x0D,      // SPC700
-			[RomFormat.iNes] = 0x01,     // NES
-			[RomFormat.Fds] = 0x0E,      // FDS
-			[RomFormat.Nsf] = 0x01,      // NSF (uses NES)
-			[RomFormat.Gb] = 0x03,       // Game Boy
-			[RomFormat.Gbs] = 0x03,      // GBS
-			[RomFormat.Gba] = 0x04,      // GBA
-			[RomFormat.Pce] = 0x07,      // PC Engine
-			[RomFormat.Sms] = 0x06,      // SMS
+			[RomFormat.Sfc] = 0x02,	  // SNES
+			[RomFormat.Spc] = 0x0D,	  // SPC700
+			[RomFormat.iNes] = 0x01,	 // NES
+			[RomFormat.Fds] = 0x0E,	  // FDS
+			[RomFormat.Nsf] = 0x01,	  // NSF (uses NES)
+			[RomFormat.Gb] = 0x03,	   // Game Boy
+			[RomFormat.Gbs] = 0x03,	  // GBS
+			[RomFormat.Gba] = 0x04,	  // GBA
+			[RomFormat.Pce] = 0x07,	  // PC Engine
+			[RomFormat.Sms] = 0x06,	  // SMS
 			[RomFormat.GameGear] = 0x06, // Game Gear (SMS compatible)
-			[RomFormat.Sg] = 0x06,       // SG-1000
-			[RomFormat.Ws] = 0x0B,       // WonderSwan
+			[RomFormat.Sg] = 0x06,	   // SG-1000
+			[RomFormat.Ws] = 0x0B,	   // WonderSwan
 		};
 
 		/// <summary>
@@ -303,13 +303,13 @@ namespace Nexen.Debugger.Labels {
 				// Write header (32 bytes)
 				byte flags = options.UseCompression ? FLAG_COMPRESSED : (byte)0;
 				writer.Write(Encoding.ASCII.GetBytes(MAGIC)); // 8 bytes
-				writer.Write(VERSION);                         // 2 bytes
+				writer.Write(VERSION);						 // 2 bytes
 				writer.Write(GetPlatformId(romInfo.Format));   // 1 byte
-				writer.Write(flags);                           // Flags (compression) - 1 byte
-				writer.Write(romSize);                         // ROM size - 4 bytes
-				writer.Write(romCrc);                          // ROM CRC32 - 4 bytes
+				writer.Write(flags);						   // Flags (compression) - 1 byte
+				writer.Write(romSize);						 // ROM size - 4 bytes
+				writer.Write(romCrc);						  // ROM CRC32 - 4 bytes
 				writer.Write((ulong)DateTimeOffset.UtcNow.ToUnixTimeSeconds()); // Timestamp - 8 bytes
-				writer.Write((uint)0);                         // Reserved - 4 bytes
+				writer.Write((uint)0);						 // Reserved - 4 bytes
 
 				// Write section count
 				writer.Write((uint)sections.Count);
@@ -329,9 +329,9 @@ namespace Nexen.Debugger.Labels {
 				}
 
 				// Write footer (12 bytes - CRC values)
-				writer.Write(romCrc);                    // ROM CRC32
-				writer.Write((uint)0);                   // Metadata CRC32 (placeholder)
-				writer.Write((uint)0);                   // File CRC32 (placeholder)
+				writer.Write(romCrc);					// ROM CRC32
+				writer.Write((uint)0);				   // Metadata CRC32 (placeholder)
+				writer.Write((uint)0);				   // File CRC32 (placeholder)
 
 				return true;
 			} catch (Exception ex) {
@@ -709,11 +709,11 @@ namespace Nexen.Debugger.Labels {
 			writer.Write((uint)allRegions.Count);
 
 			foreach (var region in allRegions) {
-				writer.Write(region.Start);           // Start address (4 bytes)
-				writer.Write(region.End);             // End address (4 bytes)
-				writer.Write((byte)region.Type);      // Type (1 byte)
-				writer.Write(region.MemType);         // Memory type (1 byte)
-				writer.Write((ushort)0);              // Flags (2 bytes)
+				writer.Write(region.Start);		   // Start address (4 bytes)
+				writer.Write(region.End);			 // End address (4 bytes)
+				writer.Write((byte)region.Type);	  // Type (1 byte)
+				writer.Write(region.MemType);		 // Memory type (1 byte)
+				writer.Write((ushort)0);			  // Flags (2 bytes)
 
 				byte[] nameBytes = Encoding.UTF8.GetBytes(region.Name);
 				writer.Write((ushort)nameBytes.Length);
@@ -835,10 +835,10 @@ namespace Nexen.Debugger.Labels {
 
 			foreach (var (Start, End) in blocks) {
 				writer.Write(Start);  // Start address (4 bytes)
-				writer.Write(End);    // End address (4 bytes)
-				writer.Write((byte)2);      // Type: Data
-				writer.Write((byte)0);      // Flags
-				writer.Write((ushort)0);    // Reserved
+				writer.Write(End);	// End address (4 bytes)
+				writer.Write((byte)2);	  // Type: Data
+				writer.Write((byte)0);	  // Flags
+				writer.Write((ushort)0);	// Reserved
 			}
 
 			return ms.ToArray();
@@ -861,12 +861,12 @@ namespace Nexen.Debugger.Labels {
 			writer.Write((uint)xrefs.Count);
 
 			foreach (var xref in xrefs) {
-				writer.Write(xref.From);    // Source address (4 bytes)
-				writer.Write(xref.To);      // Target address (4 bytes)
-				writer.Write(xref.Type);    // Type: 1=Call, 2=Jump, 3=Read, 4=Write
-				writer.Write((byte)0);      // Memory type from
-				writer.Write((byte)0);      // Memory type to
-				writer.Write((byte)0);      // Flags
+				writer.Write(xref.From);	// Source address (4 bytes)
+				writer.Write(xref.To);	  // Target address (4 bytes)
+				writer.Write(xref.Type);	// Type: 1=Call, 2=Jump, 3=Read, 4=Write
+				writer.Write((byte)0);	  // Memory type from
+				writer.Write((byte)0);	  // Memory type to
+				writer.Write((byte)0);	  // Flags
 			}
 
 			return ms.ToArray();
@@ -951,12 +951,12 @@ namespace Nexen.Debugger.Labels {
 			writer.Write((uint)xrefs.Count);
 
 			foreach (var xref in xrefs) {
-				writer.Write(xref.From);                 // Source address (4 bytes)
-				writer.Write(xref.To);                   // Target address (4 bytes)
-				writer.Write((byte)xref.Type);           // Type (1 byte)
-				writer.Write(xref.MemTypeFrom);          // Memory type from (1 byte)
-				writer.Write(xref.MemTypeTo);            // Memory type to (1 byte)
-				writer.Write((byte)0);                   // Flags (1 byte)
+				writer.Write(xref.From);				 // Source address (4 bytes)
+				writer.Write(xref.To);				   // Target address (4 bytes)
+				writer.Write((byte)xref.Type);		   // Type (1 byte)
+				writer.Write(xref.MemTypeFrom);		  // Memory type from (1 byte)
+				writer.Write(xref.MemTypeTo);			// Memory type to (1 byte)
+				writer.Write((byte)0);				   // Flags (1 byte)
 			}
 
 			return ms.ToArray();

@@ -11,43 +11,43 @@ Video Rendering Pipeline
 ════════════════════════
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Per-Console PPU                              │
-│   (NES PPU, SNES PPU, GB PPU, etc.)                            │
+│					Per-Console PPU							  │
+│   (NES PPU, SNES PPU, GB PPU, etc.)							│
 └─────────────────────────────────────────────────────────────────┘
-              │
-              │ Raw framebuffer (native resolution)
-              ▼
+			  │
+			  │ Raw framebuffer (native resolution)
+			  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                     VideoDecoder                                │
-│   (Decode, color conversion, aspect ratio)                      │
+│					 VideoDecoder								│
+│   (Decode, color conversion, aspect ratio)					  │
 └─────────────────────────────────────────────────────────────────┘
-              │
-              │ Decoded frame
-              ▼
+			  │
+			  │ Decoded frame
+			  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   Video Filters                                 │
-│   (NTSC, Scale, HQ2x, Scanlines, Rotate)                       │
+│				   Video Filters								 │
+│   (NTSC, Scale, HQ2x, Scanlines, Rotate)					   │
 └─────────────────────────────────────────────────────────────────┘
-              │
-              │ Filtered frame
-              ▼
+			  │
+			  │ Filtered frame
+			  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    VideoRenderer                                │
-│   (HUD overlays, rendering coordination)                        │
+│					VideoRenderer								│
+│   (HUD overlays, rendering coordination)						│
 └─────────────────────────────────────────────────────────────────┘
-              │
-    ┌─────────┼─────────┬──────────────┐
-    │         │         │              │
-    ▼         ▼         ▼              ▼
+			  │
+	┌─────────┼─────────┬──────────────┐
+	│		 │		 │			  │
+	▼		 ▼		 ▼			  ▼
 ┌───────┐ ┌───────┐ ┌─────────┐ ┌───────────┐
-│DebugH │ │SystemH│ │ InputH  │ │  AVI      │
-│  UD   │ │  UD   │ │   UD    │ │ Recorder  │
+│DebugH │ │SystemH│ │ InputH  │ │  AVI	  │
+│  UD   │ │  UD   │ │   UD	│ │ Recorder  │
 └───────┘ └───────┘ └─────────┘ └───────────┘
-              │
-              ▼
+			  │
+			  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   IRenderingDevice                              │
-│   (OpenGL, Direct3D, SDL - platform display)                   │
+│				   IRenderingDevice							  │
+│   (OpenGL, Direct3D, SDL - platform display)				   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -55,29 +55,29 @@ Video Rendering Pipeline
 
 ```
 Core/Shared/Video/
-├── VideoRenderer.h/cpp      - Render coordinator, HUD management
-├── VideoDecoder.h/cpp       - Frame decoding, format conversion
+├── VideoRenderer.h/cpp	  - Render coordinator, HUD management
+├── VideoDecoder.h/cpp	   - Frame decoding, format conversion
 ├── SoftwareRenderer.h/cpp   - CPU-based rendering backend
 │
 ├── Filters
 │   ├── BaseVideoFilter.h/cpp   - Filter base class
-│   ├── ScaleFilter.h/cpp       - Integer scaling
-│   ├── RotateFilter.h/cpp      - Screen rotation
-│   ├── ScanlineFilter.h        - Scanline overlay
-│   └── GenericNtscFilter.h     - NTSC simulation
+│   ├── ScaleFilter.h/cpp	   - Integer scaling
+│   ├── RotateFilter.h/cpp	  - Screen rotation
+│   ├── ScanlineFilter.h		- Scanline overlay
+│   └── GenericNtscFilter.h	 - NTSC simulation
 │
 ├── HUD Components
-│   ├── DebugHud.h/cpp          - Debugger overlays
-│   ├── SystemHud.h/cpp         - FPS, messages
-│   └── DebugStats.h/cpp        - Performance stats
+│   ├── DebugHud.h/cpp		  - Debugger overlays
+│   ├── SystemHud.h/cpp		 - FPS, messages
+│   └── DebugStats.h/cpp		- Performance stats
 │
 └── Drawing
-    ├── DrawCommand.h           - Base draw command
-    ├── DrawPixelCommand.h      - Single pixel
-    ├── DrawLineCommand.h       - Lines
-    ├── DrawRectangleCommand.h  - Rectangles
-    ├── DrawStringCommand.h/cpp - Text rendering
-    └── DrawScreenBufferCommand.h - Buffer blits
+	├── DrawCommand.h		   - Base draw command
+	├── DrawPixelCommand.h	  - Single pixel
+	├── DrawLineCommand.h	   - Lines
+	├── DrawRectangleCommand.h  - Rectangles
+	├── DrawStringCommand.h/cpp - Text rendering
+	└── DrawScreenBufferCommand.h - Buffer blits
 ```
 
 ---
@@ -97,14 +97,14 @@ Central rendering coordinator.
 **Rendering Thread:**
 ```cpp
 void RenderThread() {
-    while (!_stopFlag) {
-        _waitForRender.Wait();
-        
-        // 1. Get filtered frame
-        // 2. Apply HUD overlays
-        // 3. Send to display device
-        // 4. Record if enabled
-    }
+	while (!_stopFlag) {
+		_waitForRender.Wait();
+		
+		// 1. Get filtered frame
+		// 2. Apply HUD overlays
+		// 3. Send to display device
+		// 4. Record if enabled
+	}
 }
 ```
 
@@ -121,10 +121,10 @@ Frame processing and filter application.
 **Processing Pipeline:**
 ```cpp
 void DecodeFrame(uint16_t* rawFrame, uint32_t width, uint32_t height) {
-    // 1. Convert palette (if needed)
-    // 2. Apply video filter
-    // 3. Handle overscan
-    // 4. Pass to renderer
+	// 1. Convert palette (if needed)
+	// 2. Apply video filter
+	// 3. Handle overscan
+	// 4. Pass to renderer
 }
 ```
 
@@ -162,12 +162,12 @@ Simulates NTSC composite video artifacts.
 **Configuration:**
 ```cpp
 struct NtscFilterSettings {
-    double Hue = 0.0;
-    double Saturation = 0.0;
-    double Contrast = 0.0;
-    double Brightness = 0.0;
-    double Sharpness = 0.0;
-    bool MergeFields = false;
+	double Hue = 0.0;
+	double Saturation = 0.0;
+	double Contrast = 0.0;
+	double Brightness = 0.0;
+	double Sharpness = 0.0;
+	bool MergeFields = false;
 };
 ```
 
@@ -187,8 +187,8 @@ Simulates CRT scanlines.
 **Configuration:**
 ```cpp
 struct ScanlineSettings {
-    uint8_t Intensity = 50;    // 0-100%
-    bool OddLines = true;      // Darken odd or even lines
+	uint8_t Intensity = 50;	// 0-100%
+	bool OddLines = true;	  // Darken odd or even lines
 };
 ```
 
@@ -219,10 +219,10 @@ On-screen display for system information.
 **Configuration:**
 ```cpp
 struct SystemHudSettings {
-    bool ShowFps = true;
-    bool ShowMessages = true;
-    Position FpsPosition = TopRight;
-    uint32_t MessageDuration = 3000; // ms
+	bool ShowFps = true;
+	bool ShowMessages = true;
+	Position FpsPosition = TopRight;
+	uint32_t MessageDuration = 3000; // ms
 };
 ```
 
@@ -261,10 +261,10 @@ Controller input visualization.
 
 ```cpp
 struct RecordAviOptions {
-    VideoCodec Codec;           // Raw, ZMBV, Camstudio
-    uint32_t CompressionLevel;  // 0-9
-    bool RecordSystemHud;       // Include FPS/messages
-    bool RecordInputHud;        // Include controller display
+	VideoCodec Codec;		   // Raw, ZMBV, Camstudio
+	uint32_t CompressionLevel;  // 0-9
+	bool RecordSystemHud;	   // Include FPS/messages
+	bool RecordInputHud;		// Include controller display
 };
 ```
 
@@ -330,12 +330,12 @@ void TakeScreenshot();  // Uses configured pattern
 
 ```cpp
 enum class AspectRatio {
-    NoStretching,    // Native pixels
-    Auto,            // System default
-    NTSC,            // 8:7 pixel aspect
-    PAL,             // Different aspect
-    Standard,        // 4:3
-    Widescreen       // 16:9
+	NoStretching,	// Native pixels
+	Auto,			// System default
+	NTSC,			// 8:7 pixel aspect
+	PAL,			 // Different aspect
+	Standard,		// 4:3
+	Widescreen	   // 16:9
 };
 ```
 
@@ -343,10 +343,10 @@ enum class AspectRatio {
 
 ```cpp
 struct OverscanSettings {
-    uint8_t Top = 8;      // Pixels to crop
-    uint8_t Bottom = 8;
-    uint8_t Left = 0;
-    uint8_t Right = 0;
+	uint8_t Top = 8;	  // Pixels to crop
+	uint8_t Bottom = 8;
+	uint8_t Left = 0;
+	uint8_t Right = 0;
 };
 ```
 
@@ -361,8 +361,8 @@ struct OverscanSettings {
 SimpleLock _frameLock;
 
 void UpdateFrame(RenderedFrame& frame) {
-    auto lock = _frameLock.AcquireSafe();
-    // Update frame buffer
+	auto lock = _frameLock.AcquireSafe();
+	// Update frame buffer
 }
 ```
 
@@ -373,8 +373,8 @@ void UpdateFrame(RenderedFrame& frame) {
 SimpleLock _hudLock;
 
 void DrawHudElement(/* ... */) {
-    auto lock = _hudLock.AcquireSafe();
-    // Update HUD
+	auto lock = _hudLock.AcquireSafe();
+	// Update HUD
 }
 ```
 
@@ -398,8 +398,8 @@ void DrawHudElement(/* ... */) {
 
 ```cpp
 struct FrameSkipSettings {
-    uint8_t FrameSkip = 0;      // Skip N frames
-    bool AutoFrameSkip = false;  // Dynamic skipping
+	uint8_t FrameSkip = 0;	  // Skip N frames
+	bool AutoFrameSkip = false;  // Dynamic skipping
 };
 ```
 

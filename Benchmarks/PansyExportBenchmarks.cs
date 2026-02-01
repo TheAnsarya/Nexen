@@ -16,9 +16,9 @@ namespace Nexen.Benchmarks;
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class PansyExportBenchmarks {
 	// Test data sizes
-	private byte[] _smallCdlData = null!;    // 32KB - typical small ROM
+	private byte[] _smallCdlData = null!;	// 32KB - typical small ROM
 	private byte[] _mediumCdlData = null!;   // 512KB - typical NES/SNES
-	private byte[] _largeCdlData = null!;    // 4MB - large SNES/GBA ROM
+	private byte[] _largeCdlData = null!;	// 4MB - large SNES/GBA ROM
 
 	private List<TestLabel> _smallLabels = null!;   // 100 labels
 	private List<TestLabel> _mediumLabels = null!;  // 1000 labels

@@ -11,24 +11,24 @@ Movie/TAS Architecture
 ══════════════════════
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                      MovieManager                               │
-│   (Central coordinator for recording and playback)              │
+│					  MovieManager							   │
+│   (Central coordinator for recording and playback)			  │
 └─────────────────────────────────────────────────────────────────┘
-              │
-    ┌─────────┴─────────┐
-    │                   │
-    ▼                   ▼
-┌───────────┐    ┌───────────────┐
-│MovieRecord│    │   IMovie      │
-│    er     │    │   Players     │
-└───────────┘    └───────────────┘
-                        │
-         ┌──────────────┼──────────────┐
-         │              │              │
-         ▼              ▼              ▼
+			  │
+	┌─────────┴─────────┐
+	│				   │
+	▼				   ▼
+┌───────────┐	┌───────────────┐
+│MovieRecord│	│   IMovie	  │
+│	er	 │	│   Players	 │
+└───────────┘	└───────────────┘
+						│
+		 ┌──────────────┼──────────────┐
+		 │			  │			  │
+		 ▼			  ▼			  ▼
    ┌──────────┐  ┌──────────┐  ┌──────────┐
-   │MesenMovie│  │ FM2/FM3  │  │  BK2/    │
-   │  (.msm)  │  │ (FCEUX)  │  │  LSMV    │
+   │MesenMovie│  │ FM2/FM3  │  │  BK2/	│
+   │  (.msm)  │  │ (FCEUX)  │  │  LSMV	│
    └──────────┘  └──────────┘  └──────────┘
 ```
 
@@ -36,11 +36,11 @@ Movie/TAS Architecture
 
 ```
 Core/Shared/Movies/
-├── MovieManager.h/cpp     - Central movie coordinator
-├── MovieRecorder.h/cpp    - Movie recording
-├── MesenMovie.h/cpp       - Nexen native format
-├── MovieTypes.h           - Type definitions
-└── (format parsers)       - Format-specific readers
+├── MovieManager.h/cpp	 - Central movie coordinator
+├── MovieRecorder.h/cpp	- Movie recording
+├── MesenMovie.h/cpp	   - Nexen native format
+├── MovieTypes.h		   - Type definitions
+└── (format parsers)	   - Format-specific readers
 ```
 
 ---
@@ -62,12 +62,12 @@ Central coordinator for movie operations.
 **Recording:**
 ```cpp
 struct RecordMovieOptions {
-    string Filename;        // Output file path
-    MovieFormat Format;     // Output format
-    string Author;          // TAS author name
-    string Description;     // Movie description
-    bool RecordFromPowerOn; // Start from power-on
-    bool RecordFromSaveState; // Start from save state
+	string Filename;		// Output file path
+	MovieFormat Format;	 // Output format
+	string Author;		  // TAS author name
+	string Description;	 // Movie description
+	bool RecordFromPowerOn; // Start from power-on
+	bool RecordFromSaveState; // Start from save state
 };
 
 void Record(RecordMovieOptions options);
@@ -110,12 +110,12 @@ Base interface for movie players.
 ```cpp
 class IMovie : public IInputProvider {
 public:
-    virtual bool Play(VirtualFile& file) = 0;
-    virtual void Stop() = 0;
-    virtual bool IsPlaying() = 0;
-    
-    // IInputProvider interface
-    virtual bool SetInput(BaseControlDevice* device) = 0;
+	virtual bool Play(VirtualFile& file) = 0;
+	virtual void Stop() = 0;
+	virtual bool IsPlaying() = 0;
+	
+	// IInputProvider interface
+	virtual bool SetInput(BaseControlDevice* device) = 0;
 };
 ```
 
@@ -142,10 +142,10 @@ Header:
 ├── Start State (compressed)
 │   └── Optional save state data
 └── Movie Info
-    ├── Author
-    ├── Description
-    ├── Rerecord Count
-    └── Frame Count
+	├── Author
+	├── Description
+	├── Rerecord Count
+	└── Frame Count
 
 Frame Data:
 ├── Controller 1 state (per-frame)
@@ -160,20 +160,20 @@ Frame Data:
 ```cpp
 // Per-frame input (NES example)
 struct NesInputFrame {
-    uint8_t Port1;  // Button bits: A B Sel St U D L R
-    uint8_t Port2;  // Same format
+	uint8_t Port1;  // Button bits: A B Sel St U D L R
+	uint8_t Port2;  // Same format
 };
 
 // Button bit positions
 enum NesButton {
-    A      = 0x01,
-    B      = 0x02,
-    Select = 0x04,
-    Start  = 0x08,
-    Up     = 0x10,
-    Down   = 0x20,
-    Left   = 0x40,
-    Right  = 0x80
+	A	  = 0x01,
+	B	  = 0x02,
+	Select = 0x04,
+	Start  = 0x08,
+	Up	 = 0x10,
+	Down   = 0x20,
+	Left   = 0x40,
+	Right  = 0x80
 };
 ```
 
@@ -196,7 +196,7 @@ Record over previous input from any point.
 uint32_t _rerecordCount = 0;
 
 void IncrementRerecordCount() {
-    _rerecordCount++;
+	_rerecordCount++;
 }
 ```
 
@@ -210,15 +210,15 @@ Frames where input wasn't polled.
 bool _wasInputRead = false;
 
 void SetInputReadFlag() {
-    _wasInputRead = true;
-    _pollCounter++;
+	_wasInputRead = true;
+	_pollCounter++;
 }
 
 void ProcessEndOfFrame() {
-    if (!_wasInputRead) {
-        _lagCounter++;  // Lag frame!
-    }
-    _wasInputRead = false;
+	if (!_wasInputRead) {
+		_lagCounter++;  // Lag frame!
+	}
+	_wasInputRead = false;
 }
 ```
 
@@ -275,7 +275,7 @@ Multi-system TAS format.
 **Contents:**
 ```
 movie.bk2/
-├── Header.txt     - Movie metadata
+├── Header.txt	 - Movie metadata
 ├── Input Log.txt  - Frame-by-frame input
 ├── SyncSettings.json
 └── (save state)   - Optional start state
@@ -300,13 +300,13 @@ Verify ROM matches recorded movie.
 
 ```cpp
 struct RomInfo {
-    string Name;
-    uint32_t Crc32;
-    string Sha1;
+	string Name;
+	uint32_t Crc32;
+	string Sha1;
 };
 
 bool VerifyRom(const RomInfo& movieRom, const RomInfo& currentRom) {
-    return movieRom.Sha1 == currentRom.Sha1;
+	return movieRom.Sha1 == currentRom.Sha1;
 }
 ```
 
@@ -347,10 +347,10 @@ Visual representation of controller input.
 ```cpp
 // Configure input display
 struct InputDisplayConfig {
-    bool ShowP1 = true;
-    bool ShowP2 = false;
-    Position Position = TopLeft;
-    uint8_t Opacity = 200;
+	bool ShowP1 = true;
+	bool ShowP2 = false;
+	Position Position = TopLeft;
+	uint8_t Opacity = 200;
 };
 ```
 
@@ -371,10 +371,10 @@ For perfect movie sync:
 ```cpp
 // Ensure consistent frame timing
 void RunFrame() {
-    // 1. Read input (from movie if playing)
-    // 2. Execute frame
-    // 3. Record input (if recording)
-    // 4. Update frame counter
+	// 1. Read input (from movie if playing)
+	// 2. Execute frame
+	// 3. Record input (if recording)
+	// 4. Update frame counter
 }
 ```
 
@@ -386,16 +386,16 @@ void RunFrame() {
 
 ```cpp
 struct MovieSettings {
-    // Format
-    MovieFormat DefaultFormat = MovieFormat::Nexen;
-    
-    // Recording
-    bool AutoRecord = false;
-    string OutputPath = "./movies/";
-    
-    // Playback
-    bool PauseOnEnd = true;
-    bool LoopPlayback = false;
+	// Format
+	MovieFormat DefaultFormat = MovieFormat::Nexen;
+	
+	// Recording
+	bool AutoRecord = false;
+	string OutputPath = "./movies/";
+	
+	// Playback
+	bool PauseOnEnd = true;
+	bool LoopPlayback = false;
 };
 ```
 
@@ -432,14 +432,14 @@ movieManager->Stop();
 // Play movie file
 VirtualFile movieFile("speedrun.msm");
 if (movieManager->Play(movieFile)) {
-    // Movie playing
+	// Movie playing
 } else {
-    // Failed to load
+	// Failed to load
 }
 
 // Check status
 if (movieManager->IsPlaying()) {
-    // Still playing
+	// Still playing
 }
 ```
 

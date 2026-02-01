@@ -142,7 +142,7 @@ namespace Nexen.Debugger.ViewModels {
 				new ContextMenuAction() {
 					ActionType = ActionType.NewScript,
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.ScriptWindow_NewScript),
-					OnClick = () => new ScriptWindow(new ScriptWindowViewModel(ScriptStartupBehavior.ShowBlankWindow)).Show()               },
+					OnClick = () => new ScriptWindow(new ScriptWindowViewModel(ScriptStartupBehavior.ShowBlankWindow)).Show()			   },
 				new ContextMenuAction() {
 					ActionType = ActionType.Open,
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.ScriptWindow_OpenScript),

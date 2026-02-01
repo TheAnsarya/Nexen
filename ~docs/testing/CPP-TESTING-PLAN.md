@@ -29,27 +29,27 @@ Establish comprehensive C++ unit testing for Nexen Core libraries using **Google
 
 ```
 Nexen/
-├── Core.Tests/                    # NEW - C++ test project
-│   ├── Core.Tests.vcxproj         # VS project file
-│   ├── pch.h                      # Precompiled header
+├── Core.Tests/					# NEW - C++ test project
+│   ├── Core.Tests.vcxproj		 # VS project file
+│   ├── pch.h					  # Precompiled header
 │   ├── pch.cpp
-│   ├── Shared/                    # Tests for Core/Shared
+│   ├── Shared/					# Tests for Core/Shared
 │   │   ├── ColorUtilitiesTests.cpp
 │   │   ├── CrcTests.cpp
 │   │   ├── CpuTypeTests.cpp
 │   │   └── ...
-│   ├── Utilities/                 # Tests for Utilities
+│   ├── Utilities/				 # Tests for Utilities
 │   │   ├── HexUtilitiesTests.cpp
 │   │   ├── StringUtilitiesTests.cpp
 │   │   └── ...
-│   ├── NES/                       # Tests for NES emulation
+│   ├── NES/					   # Tests for NES emulation
 │   │   ├── NesCpuTests.cpp
 │   │   ├── NesPpuTests.cpp
 │   │   └── ...
-│   └── main.cpp                   # gtest main entry point
-├── Utilities.Tests/               # FUTURE - Utilities library tests
-├── vcpkg.json                     # NEW - Package manifest
-└── vcpkg-configuration.json       # NEW - vcpkg config
+│   └── main.cpp				   # gtest main entry point
+├── Utilities.Tests/			   # FUTURE - Utilities library tests
+├── vcpkg.json					 # NEW - Package manifest
+└── vcpkg-configuration.json	   # NEW - vcpkg config
 ```
 
 ## Implementation Phases
@@ -258,17 +258,17 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup vcpkg
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git
-          .\vcpkg\bootstrap-vcpkg.bat
-      - name: Build
-        run: msbuild Mesen.sln /p:Configuration=Release
-      - name: Test
-        run: vstest.console.exe Core.Tests\bin\Release\Core.Tests.dll
+	runs-on: windows-latest
+	steps:
+	  - uses: actions/checkout@v3
+	  - name: Setup vcpkg
+		run: |
+		  git clone https://github.com/microsoft/vcpkg.git
+		  .\vcpkg\bootstrap-vcpkg.bat
+	  - name: Build
+		run: msbuild Mesen.sln /p:Configuration=Release
+	  - name: Test
+		run: vstest.console.exe Core.Tests\bin\Release\Core.Tests.dll
 ```
 
 ## Coverage Goals

@@ -11,18 +11,18 @@ Game Boy Architecture
 ═════════════════════
 
 ┌──────────────────────────────────────────────────────┐
-│                      Gameboy                         │
-│  (Main coordinator - DMG/CGB/SGB mode selection)     │
+│					  Gameboy						 │
+│  (Main coordinator - DMG/CGB/SGB mode selection)	 │
 └──────────────────────────────────────────────────────┘
-              │
-    ┌─────────┼─────────┬──────────────┐
-    │         │         │              │
-    ▼         ▼         ▼              ▼
+			  │
+	┌─────────┼─────────┬──────────────┐
+	│		 │		 │			  │
+	▼		 ▼		 ▼			  ▼
 ┌───────┐ ┌───────┐ ┌─────────┐ ┌───────────┐
 │ GbCpu │ │ GbPpu │ │  GbApu  │ │  Memory   │
-│       │ │       │ │         │ │  Manager  │
+│	   │ │	   │ │		 │ │  Manager  │
 │LR35902│ │ Video │ │  Audio  │ │  + Cart   │
-│(SM83) │ │160×144│ │4 channel│ │  (MBC)    │
+│(SM83) │ │160×144│ │4 channel│ │  (MBC)	│
 └───────┘ └───────┘ └─────────┘ └───────────┘
 ```
 
@@ -31,27 +31,27 @@ Game Boy Architecture
 ```
 Core/Gameboy/
 ├── Main Components
-│   ├── Gameboy.h/cpp           - Console coordinator
-│   ├── GbCpu.h/cpp             - LR35902 CPU (SM83)
-│   ├── GbPpu.h/cpp             - PPU (160×144 LCD)
+│   ├── Gameboy.h/cpp		   - Console coordinator
+│   ├── GbCpu.h/cpp			 - LR35902 CPU (SM83)
+│   ├── GbPpu.h/cpp			 - PPU (160×144 LCD)
 │   ├── GbMemoryManager.h/cpp   - Memory mapping
 │   ├── GbDmaController.h/cpp   - OAM DMA
-│   └── GbTimer.h/cpp           - Timer subsystem
+│   └── GbTimer.h/cpp		   - Timer subsystem
 │
 ├── Audio
-│   └── APU/                    - 4-channel audio
-│       ├── Square 1 (sweep)
-│       ├── Square 2
-│       ├── Wave
-│       └── Noise
+│   └── APU/					- 4-channel audio
+│	   ├── Square 1 (sweep)
+│	   ├── Square 2
+│	   ├── Wave
+│	   └── Noise
 │
 ├── Cartridges
-│   └── Carts/                  - Memory Bank Controllers
-│       ├── GbCart (base)
-│       ├── MBC1, MBC2, MBC3
-│       ├── MBC5, MBC6, MBC7
-│       ├── MMM01, HuC1, HuC3
-│       └── Camera, TAMA5
+│   └── Carts/				  - Memory Bank Controllers
+│	   ├── GbCart (base)
+│	   ├── MBC1, MBC2, MBC3
+│	   ├── MBC5, MBC6, MBC7
+│	   ├── MMM01, HuC1, HuC3
+│	   └── Camera, TAMA5
 │
 ├── Input/
 │   └── Controller handling
@@ -60,10 +60,10 @@ Core/Gameboy/
 │   └── GB-specific debug
 │
 └── Support Files
-    ├── GbTypes.h               - State structures
-    ├── GbConstants.h           - Hardware constants
-    ├── GbBootRom.h             - Boot ROM handling
-    └── GameboyHeader.h         - ROM header parsing
+	├── GbTypes.h			   - State structures
+	├── GbConstants.h		   - Hardware constants
+	├── GbBootRom.h			 - Boot ROM handling
+	└── GameboyHeader.h		 - ROM header parsing
 ```
 
 ### Core Components
@@ -81,15 +81,15 @@ Emulates the Sharp LR35902 (SM83), a modified Z80/8080 hybrid.
 **CPU State:**
 ```cpp
 struct GbCpuState {
-    uint16_t PC;    // Program Counter
-    uint16_t SP;    // Stack Pointer
-    uint8_t A;      // Accumulator
-    uint8_t Flags;  // F register (ZNHC----)
-    uint8_t B, C;   // BC register pair
-    uint8_t D, E;   // DE register pair
-    uint8_t H, L;   // HL register pair
-    bool IME;       // Interrupt Master Enable
-    bool Halted;    // HALT state
+	uint16_t PC;	// Program Counter
+	uint16_t SP;	// Stack Pointer
+	uint8_t A;	  // Accumulator
+	uint8_t Flags;  // F register (ZNHC----)
+	uint8_t B, C;   // BC register pair
+	uint8_t D, E;   // DE register pair
+	uint8_t H, L;   // HL register pair
+	bool IME;	   // Interrupt Master Enable
+	bool Halted;	// HALT state
 };
 ```
 
@@ -151,7 +151,7 @@ $FE00-$FE9F  OAM (Sprite Attribute Table)
 $FEA0-$FEFF  Unusable
 $FF00-$FF7F  I/O Registers
 $FF80-$FFFE  High RAM (HRAM)
-$FFFF        Interrupt Enable register
+$FFFF		Interrupt Enable register
 ```
 
 ### Memory Bank Controllers (MBCs)
@@ -175,18 +175,18 @@ GBA Architecture
 ════════════════
 
 ┌──────────────────────────────────────────────────────┐
-│                     GbaConsole                       │
-│   (Main coordinator - ARM7TDMI + GBA hardware)       │
+│					 GbaConsole					   │
+│   (Main coordinator - ARM7TDMI + GBA hardware)	   │
 └──────────────────────────────────────────────────────┘
-              │
-    ┌─────────┼─────────┬──────────────┐
-    │         │         │              │
-    ▼         ▼         ▼              ▼
+			  │
+	┌─────────┼─────────┬──────────────┐
+	│		 │		 │			  │
+	▼		 ▼		 ▼			  ▼
 ┌───────┐ ┌───────┐ ┌─────────┐ ┌───────────┐
 │GbaCpu │ │GbaPpu │ │  GbaApu │ │  Memory   │
-│       │ │       │ │         │ │  Manager  │
-│ARM7TDM│ │ Video │ │  Audio  │ │ + Cart    │
-│ I     │ │240×160│ │6 channel│ │ prefetch  │
+│	   │ │	   │ │		 │ │  Manager  │
+│ARM7TDM│ │ Video │ │  Audio  │ │ + Cart	│
+│ I	 │ │240×160│ │6 channel│ │ prefetch  │
 └───────┘ └───────┘ └─────────┘ └───────────┘
 ```
 
@@ -195,25 +195,25 @@ GBA Architecture
 ```
 Core/GBA/
 ├── Main Components
-│   ├── GbaConsole.h/cpp        - Console coordinator
-│   ├── GbaCpu.h/cpp            - ARM7TDMI CPU
-│   ├── GbaCpu.Arm.cpp          - ARM instruction set
-│   ├── GbaCpu.Thumb.cpp        - Thumb instruction set
-│   ├── GbaPpu.h/cpp            - PPU (240×160)
+│   ├── GbaConsole.h/cpp		- Console coordinator
+│   ├── GbaCpu.h/cpp			- ARM7TDMI CPU
+│   ├── GbaCpu.Arm.cpp		  - ARM instruction set
+│   ├── GbaCpu.Thumb.cpp		- Thumb instruction set
+│   ├── GbaPpu.h/cpp			- PPU (240×160)
 │   ├── GbaMemoryManager.h/cpp  - Memory & I/O
 │   ├── GbaDmaController.h/cpp  - 4-channel DMA
-│   └── GbaTimer.h/cpp          - 4 timers
+│   └── GbaTimer.h/cpp		  - 4 timers
 │
 ├── Audio
-│   └── APU/                    - 6-channel audio
-│       ├── GB-compatible channels (4)
-│       └── Direct Sound A/B (2)
+│   └── APU/					- 6-channel audio
+│	   ├── GB-compatible channels (4)
+│	   └── Direct Sound A/B (2)
 │
 ├── Cartridge
-│   └── Cart/                   - ROM handling
-│       ├── EEPROM save
-│       ├── Flash save
-│       └── SRAM save
+│   └── Cart/				   - ROM handling
+│	   ├── EEPROM save
+│	   ├── Flash save
+│	   └── SRAM save
 │
 ├── Input/
 │   └── Controller handling
@@ -222,9 +222,9 @@ Core/GBA/
 │   └── GBA-specific debug
 │
 └── Support Files
-    ├── GbaTypes.h              - State structures
-    ├── GbaWaitStates.h         - Memory timing
-    └── GbaRomPrefetch.h        - Prefetch buffer
+	├── GbaTypes.h			  - State structures
+	├── GbaWaitStates.h		 - Memory timing
+	└── GbaRomPrefetch.h		- Prefetch buffer
 ```
 
 ### Core Components
@@ -244,12 +244,12 @@ Emulates the ARM7TDMI processor (ARM + Thumb modes).
 **CPU State:**
 ```cpp
 struct GbaCpuState {
-    uint32_t R[16];     // R0-R15 (R15 = PC)
-    uint32_t CPSR;      // Current Program Status Register
-    uint32_t SPSR[6];   // Saved PSR for each mode
-    // Banked registers for FIQ, IRQ, SVC, ABT, UND modes
-    CpuMode Mode;       // Current CPU mode
-    bool ThumbMode;     // Thumb (16-bit) vs ARM (32-bit)
+	uint32_t R[16];	 // R0-R15 (R15 = PC)
+	uint32_t CPSR;	  // Current Program Status Register
+	uint32_t SPSR[6];   // Saved PSR for each mode
+	// Banked registers for FIQ, IRQ, SVC, ABT, UND modes
+	CpuMode Mode;	   // Current CPU mode
+	bool ThumbMode;	 // Thumb (16-bit) vs ARM (32-bit)
 };
 ```
 

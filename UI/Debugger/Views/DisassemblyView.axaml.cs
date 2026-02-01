@@ -222,7 +222,7 @@ namespace Nexen.Debugger.Views {
 					HintText = () => GetHint(ActionLocation),
 					IsVisible = () => !IsMarginClick,
 					IsEnabled = () => ActionLocation.RelAddress != null || ActionLocation.AbsAddress != null,
-					OnClick = () => Model.Debugger.RunToLocation(ActionLocation)                },
+					OnClick = () => Model.Debugger.RunToLocation(ActionLocation)				},
 				new ContextMenuSeparator() { IsVisible = () => !IsMarginClick },
 				new ContextMenuAction() {
 					ActionType = ActionType.GoToLocation,
@@ -243,13 +243,13 @@ namespace Nexen.Debugger.Views {
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.CodeWindow_NavigateBack),
 					IsVisible = () => !IsMarginClick,
 					IsEnabled = () => Model.History.CanGoBack(),
-					OnClick = () => Model.GoBack()              },
+					OnClick = () => Model.GoBack()			  },
 				new ContextMenuAction() {
 					ActionType = ActionType.NavigateForward,
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.CodeWindow_NavigateForward),
 					IsVisible = () => !IsMarginClick,
 					IsEnabled = () => Model.History.CanGoForward(),
-					OnClick = () => Model.GoForward()               },
+					OnClick = () => Model.GoForward()			   },
 			};
 
 			actions.AddRange(GetBreakpointContextMenu());

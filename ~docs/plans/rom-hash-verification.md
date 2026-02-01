@@ -225,8 +225,8 @@ Location: `UI/Config/IntegrationConfig.cs`
 public enum CrcMismatchBehavior
 {
 	CreateSeparateFile,  // Create {name}-{crc}.pansy
-	Overwrite,           // Overwrite anyway (dangerous!)
-	Skip                 // Don't save anything
+	Overwrite,		   // Overwrite anyway (dangerous!)
+	Skip				 // Don't save anything
 }
 ```
 

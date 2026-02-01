@@ -35,10 +35,10 @@ public class SyncChangeInfo {
 /// Conflict resolution strategy.
 /// </summary>
 public enum ConflictResolution {
-	KeepLocal,      // Keep local changes, discard external
+	KeepLocal,	  // Keep local changes, discard external
 	AcceptExternal, // Accept external changes, discard local
-	Merge,          // Attempt to merge both
-	Ask             // Prompt user for decision
+	Merge,		  // Attempt to merge both
+	Ask			 // Prompt user for decision
 }
 
 /// <summary>

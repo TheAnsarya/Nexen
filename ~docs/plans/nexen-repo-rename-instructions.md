@@ -97,7 +97,7 @@ If you have an upstream remote pointing to SourMesen/Mesen2, you may want to kee
 # This should remain unchanged - we still want to track upstream Mesen
 git remote -v
 # Should show:
-# origin    https://github.com/TheAnsarya/Nexen.git (fetch/push)
+# origin	https://github.com/TheAnsarya/Nexen.git (fetch/push)
 # upstream  https://github.com/SourMesen/Mesen2.git (fetch/push)
 ```
 

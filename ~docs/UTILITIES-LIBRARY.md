@@ -7,61 +7,61 @@ The Utilities library provides foundational infrastructure for Nexen, including 
 ```
 Utilities/
 ├── Core Utilities
-│   ├── Serializer.h/cpp      - State serialization (save states, rewind)
-│   ├── BitUtilities.h        - Bit manipulation (templated, zero-cost)
-│   ├── HexUtilities.h/cpp    - Hex string conversion
-│   ├── StringUtilities.h     - String manipulation helpers
-│   └── FastString.h          - Stack-allocated string builder
+│   ├── Serializer.h/cpp	  - State serialization (save states, rewind)
+│   ├── BitUtilities.h		- Bit manipulation (templated, zero-cost)
+│   ├── HexUtilities.h/cpp	- Hex string conversion
+│   ├── StringUtilities.h	 - String manipulation helpers
+│   └── FastString.h		  - Stack-allocated string builder
 │
 ├── File & Archive I/O
-│   ├── VirtualFile.h/cpp     - Unified file abstraction
+│   ├── VirtualFile.h/cpp	 - Unified file abstraction
 │   ├── FolderUtilities.h/cpp - Directory operations
 │   ├── ArchiveReader.h/cpp   - Archive extraction base
-│   ├── ZipReader.h/cpp       - ZIP file reading
-│   ├── ZipWriter.h/cpp       - ZIP file writing
-│   └── SZReader.h/cpp        - 7-Zip archive reading
+│   ├── ZipReader.h/cpp	   - ZIP file reading
+│   ├── ZipWriter.h/cpp	   - ZIP file writing
+│   └── SZReader.h/cpp		- 7-Zip archive reading
 │
 ├── Compression
 │   ├── CompressionHelper.h   - Compression API wrapper
-│   └── miniz.h/cpp           - DEFLATE implementation
+│   └── miniz.h/cpp		   - DEFLATE implementation
 │
 ├── Hashing & Validation
-│   ├── CRC32.h/cpp           - CRC32 checksum
-│   ├── md5.h/cpp             - MD5 hash
-│   └── sha1.h/cpp            - SHA-1 hash
+│   ├── CRC32.h/cpp		   - CRC32 checksum
+│   ├── md5.h/cpp			 - MD5 hash
+│   └── sha1.h/cpp			- SHA-1 hash
 │
 ├── Platform Abstraction
 │   ├── PlatformUtilities.h/cpp - OS-specific helpers
-│   ├── UTF8Util.h/cpp        - UTF-8 string encoding
-│   ├── PathUtil.h            - Path manipulation
-│   └── Socket.h/cpp          - Network socket wrapper
+│   ├── UTF8Util.h/cpp		- UTF-8 string encoding
+│   ├── PathUtil.h			- Path manipulation
+│   └── Socket.h/cpp		  - Network socket wrapper
 │
 ├── Threading & Synchronization
-│   ├── SimpleLock.h/cpp      - Mutex wrapper
+│   ├── SimpleLock.h/cpp	  - Mutex wrapper
 │   └── AutoResetEvent.h/cpp  - Event signaling
 │
 ├── Graphics Filters
-│   ├── HQX/                   - HQnX filter
-│   ├── KreedSaiEagle/        - Kreed/SAI/Eagle filters
-│   ├── Scale2x/              - Scale2x filter
-│   ├── xBRZ/                 - xBRZ filter
-│   ├── NTSC/                 - NTSC composite simulation
-│   └── Video/                - Video output helpers
+│   ├── HQX/				   - HQnX filter
+│   ├── KreedSaiEagle/		- Kreed/SAI/Eagle filters
+│   ├── Scale2x/			  - Scale2x filter
+│   ├── xBRZ/				 - xBRZ filter
+│   ├── NTSC/				 - NTSC composite simulation
+│   └── Video/				- Video output helpers
 │
 ├── Audio
-│   └── Audio/                - Audio processing
+│   └── Audio/				- Audio processing
 │
 ├── Images
-│   ├── PNGHelper.h/cpp       - PNG loading/saving
-│   └── spng.h/c              - Simple PNG library
+│   ├── PNGHelper.h/cpp	   - PNG loading/saving
+│   └── spng.h/c			  - Simple PNG library
 │
 ├── Patching
-│   └── Patches/              - IPS/BPS patch support
+│   └── Patches/			  - IPS/BPS patch support
 │
 └── Third-Party
-    ├── magic_enum.hpp        - Enum reflection
-    ├── kissfft.h             - FFT library (audio)
-    └── safe_ptr.h            - Thread-safe smart pointers
+	├── magic_enum.hpp		- Enum reflection
+	├── kissfft.h			 - FFT library (audio)
+	└── safe_ptr.h			- Thread-safe smart pointers
 ```
 
 ## Core Utilities
@@ -79,13 +79,13 @@ The Serializer class provides a key-value based serialization system used for sa
 **Usage Example:**
 ```cpp
 class MyState : public ISerializable {
-    uint32_t _value;
-    uint8_t _data[256];
-    
-    void Serialize(Serializer& s) override {
-        SV(_value);           // Stream variable with name
-        SVArray(_data, 256);  // Stream array with count
-    }
+	uint32_t _value;
+	uint8_t _data[256];
+	
+	void Serialize(Serializer& s) override {
+		SV(_value);		   // Stream variable with name
+		SVArray(_data, 256);  // Stream array with count
+	}
 };
 
 // Saving
@@ -129,11 +129,11 @@ Cached hex string conversion for performance.
 
 **Key Methods:**
 ```cpp
-string ToHex(uint8_t value);      // "AB"
-string ToHex(uint16_t value);     // "1234"
-string ToHex(uint32_t value);     // Variable length
-string ToHex24(int32_t value);    // "00FFFF" (24-bit addresses)
-int FromHex(string hex);          // Parse hex string
+string ToHex(uint8_t value);	  // "AB"
+string ToHex(uint16_t value);	 // "1234"
+string ToHex(uint32_t value);	 // Variable length
+string ToHex24(int32_t value);	// "00FFFF" (24-bit addresses)
+int FromHex(string hex);		  // Parse hex string
 ```
 
 ### FastString (FastString.h)
@@ -202,8 +202,8 @@ Cross-platform mutex wrapper with RAII pattern:
 SimpleLock lock;
 
 void ThreadSafeMethod() {
-    auto guard = lock.AcquireSafe();
-    // Protected code
+	auto guard = lock.AcquireSafe();
+	// Protected code
 } // Automatically released
 ```
 
@@ -213,7 +213,7 @@ Thread signaling for producer/consumer patterns:
 
 ```cpp
 AutoResetEvent event;
-event.Wait();    // Block until signaled
+event.Wait();	// Block until signaled
 event.Signal();  // Wake waiting thread
 ```
 

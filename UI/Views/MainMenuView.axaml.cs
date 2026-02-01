@@ -13,7 +13,7 @@ namespace Nexen.Views {
 			InitializeComponent();
 			MainMenu = this.GetControl<Menu>("ActionMenu");
 
-			MainMenu.Closed += (s, e) =>                //When an option is selected in the menu (e.g with enter or mouse click)
+			MainMenu.Closed += (s, e) =>				//When an option is selected in the menu (e.g with enter or mouse click)
 														//steal focus away from the menu to ensure pressing e.g left/right goes to the
 														//game only and doesn't re-activate the main menu
 				ApplicationHelper.GetMainWindow()?.Focus();

@@ -11,29 +11,29 @@ Audio Architecture
 ══════════════════
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                     Per-Console APU                             │
-│   (NES APU, SNES SPC700, GB APU, SMS PSG, etc.)                │
+│					 Per-Console APU							 │
+│   (NES APU, SNES SPC700, GB APU, SMS PSG, etc.)				│
 └─────────────────────────────────────────────────────────────────┘
-              │
-              │ Samples at console rate
-              ▼
+			  │
+			  │ Samples at console rate
+			  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      SoundMixer                                 │
-│   (Mixing, effects, resampling)                                 │
+│					  SoundMixer								 │
+│   (Mixing, effects, resampling)								 │
 └─────────────────────────────────────────────────────────────────┘
-              │
-    ┌─────────┼─────────┬──────────────┐
-    │         │         │              │
-    ▼         ▼         ▼              ▼
+			  │
+	┌─────────┼─────────┬──────────────┐
+	│		 │		 │			  │
+	▼		 ▼		 ▼			  ▼
 ┌───────┐ ┌───────┐ ┌─────────┐ ┌───────────┐
 │Equaliz│ │CrossFd│ │ Reverb  │ │ Resampler │
 │  er   │ │Filter │ │ Filter  │ │ Hermite   │
 └───────┘ └───────┘ └─────────┘ └───────────┘
-              │
-              ▼
+			  │
+			  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    IAudioDevice                                 │
-│   (Platform audio output - DirectSound, CoreAudio, ALSA)        │
+│					IAudioDevice								 │
+│   (Platform audio output - DirectSound, CoreAudio, ALSA)		│
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -41,19 +41,19 @@ Audio Architecture
 
 ```
 Core/Shared/Audio/
-├── SoundMixer.h/cpp           - Central audio coordinator
-├── SoundResampler.h/cpp       - Rate conversion
-├── BaseSoundManager.h/cpp     - Audio device abstraction
-├── WaveRecorder.h/cpp         - WAV file recording
-├── PcmReader.h/cpp            - PCM file playback
-├── AudioPlayerHud.h/cpp       - Audio player UI
-└── AudioPlayerTypes.h         - Player type definitions
+├── SoundMixer.h/cpp		   - Central audio coordinator
+├── SoundResampler.h/cpp	   - Rate conversion
+├── BaseSoundManager.h/cpp	 - Audio device abstraction
+├── WaveRecorder.h/cpp		 - WAV file recording
+├── PcmReader.h/cpp			- PCM file playback
+├── AudioPlayerHud.h/cpp	   - Audio player UI
+└── AudioPlayerTypes.h		 - Player type definitions
 
 Utilities/Audio/
-├── HermiteResampler.h         - High-quality resampling
-├── Equalizer.h/cpp            - Parametric EQ
-├── CrossFeedFilter.h/cpp      - Stereo separation
-└── ReverbFilter.h/cpp         - Room reverb
+├── HermiteResampler.h		 - High-quality resampling
+├── Equalizer.h/cpp			- Parametric EQ
+├── CrossFeedFilter.h/cpp	  - Stereo separation
+└── ReverbFilter.h/cpp		 - Room reverb
 ```
 
 ---
@@ -73,13 +73,13 @@ Central audio mixing and processing hub.
 **Audio Flow:**
 ```cpp
 void PlayAudioBuffer(int16_t* samples, uint32_t count, uint32_t sourceRate) {
-    // 1. Mix with other audio providers
-    // 2. Apply equalizer
-    // 3. Apply crossfeed
-    // 4. Apply reverb
-    // 5. Resample to target rate
-    // 6. Send to audio device
-    // 7. Record if enabled
+	// 1. Mix with other audio providers
+	// 2. Apply equalizer
+	// 3. Apply crossfeed
+	// 4. Apply reverb
+	// 5. Resample to target rate
+	// 6. Send to audio device
+	// 7. Record if enabled
 }
 ```
 
@@ -200,9 +200,9 @@ Parametric EQ for tone shaping.
 **Configuration:**
 ```cpp
 struct EqualizerSettings {
-    int8_t Bass = 0;     // -20 to +20 dB
-    int8_t Mid = 0;      // -20 to +20 dB
-    int8_t Treble = 0;   // -20 to +20 dB
+	int8_t Bass = 0;	 // -20 to +20 dB
+	int8_t Mid = 0;	  // -20 to +20 dB
+	int8_t Treble = 0;   // -20 to +20 dB
 };
 ```
 
@@ -218,8 +218,8 @@ Reduces stereo separation for headphone listening.
 **Configuration:**
 ```cpp
 struct CrossFeedSettings {
-    bool Enabled = false;
-    uint8_t Strength = 30;  // 0-100%
+	bool Enabled = false;
+	uint8_t Strength = 30;  // 0-100%
 };
 ```
 
@@ -319,8 +319,8 @@ safe_ptr<WaveRecorder> _waveRecorder;
 
 // Provider list protected by mutex
 void RegisterAudioProvider(IAudioProvider* provider) {
-    lock_guard<mutex> lock(_providerLock);
-    _audioProviders.push_back(provider);
+	lock_guard<mutex> lock(_providerLock);
+	_audioProviders.push_back(provider);
 }
 ```
 

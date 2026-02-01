@@ -73,13 +73,13 @@ Your Pansy file now contains:
 
 3. **Load a ROM**
    - A folder appears next to your ROM:
-     ```
-     MyGame.nes
-     MyGame_debug/
-     ├── manifest.json
-     ├── deadbeef.mlb
-     └── deadbeef.cdl
-     ```
+	 ```
+	 MyGame.nes
+	 MyGame_debug/
+	 ├── manifest.json
+	 ├── deadbeef.mlb
+	 └── deadbeef.cdl
+	 ```
 
 4. **Edit Externally**
    - Open the `.mlb` file in a text editor
@@ -255,13 +255,13 @@ Changes in Nexen also update the file:
 ```
 MyGameAnalysis/
 ├── roms/
-│   └── MyGame.nes           # Your ROM (gitignore!)
+│   └── MyGame.nes		   # Your ROM (gitignore!)
 ├── debug/
-│   └── MyGame_debug/        # Generated debug folder
-│       ├── manifest.json
-│       ├── *.mlb
-│       ├── *.cdl
-│       └── *.pansy
+│   └── MyGame_debug/		# Generated debug folder
+│	   ├── manifest.json
+│	   ├── *.mlb
+│	   ├── *.cdl
+│	   └── *.pansy
 ├── docs/
 │   ├── rom-map.md
 │   └── notes.md
@@ -400,13 +400,13 @@ For games with code differences:
 ```
 MyGame_Project/
 ├── shared/
-│   └── common_labels.mlb    # Shared labels
+│   └── common_labels.mlb	# Shared labels
 ├── us/
 │   └── us_specific.mlb
 ├── eu/
 │   └── eu_specific.mlb
 └── jp/
-    └── jp_specific.mlb
+	└── jp_specific.mlb
 ```
 
 Configure Nexen to load:
@@ -418,14 +418,14 @@ Configure Nexen to load:
 ```python
 # offset_converter.py
 def convert_offsets(input_mlb, output_mlb, offset_delta):
-    """Convert labels from one version to another."""
-    with open(input_mlb) as f:
-        for line in f:
-            if line.startswith('PRG:$'):
-                # Parse and adjust address
-                addr = int(line.split(':')[1][1:], 16)
-                new_addr = addr + offset_delta
-                # Write adjusted line
+	"""Convert labels from one version to another."""
+	with open(input_mlb) as f:
+		for line in f:
+			if line.startswith('PRG:$'):
+				# Parse and adjust address
+				addr = int(line.split(':')[1][1:], 16)
+				new_addr = addr + offset_delta
+				# Write adjusted line
 ```
 
 ---

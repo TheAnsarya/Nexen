@@ -369,7 +369,7 @@ namespace Nexen.Debugger.ViewModels {
 			switch (layout) {
 				case TileLayout.SingleLine8x16: {
 						//A0 B0 C0 D0 -> A0 A1 B0 B1
-						//A1 B1 C1 D1    C0 C1 D0 D1
+						//A1 B1 C1 D1	C0 C1 D0 D1
 						int displayColumn = (column * 2 % ColumnCount) + (row & 0x01);
 						int displayRow = (row & ~0x01) + ((column >= ColumnCount / 2) ? 1 : 0);
 						return new PixelPoint(displayColumn, displayRow);
@@ -377,9 +377,9 @@ namespace Nexen.Debugger.ViewModels {
 
 				case TileLayout.SingleLine16x16: {
 						//A0 A1 B0 B1 C0 C1 D0 D1 -> A0 A1 A2 A3 B0 B1 B2 B3
-						//A2 A3 B2 B3 C2 C3 D2 D3    C0 C1 C2 C3 D0 D1 D2 D3
+						//A2 A3 B2 B3 C2 C3 D2 D3	C0 C1 C2 C3 D0 D1 D2 D3
 						//E0 E1 F0 F1 G0 G1 H0 H1 -> E0 E1 E2 E3 F0 F1 F2 F3
-						//E2 E3 F2 F3 G2 G3 H2 H3    G0 G1 G2 G3 H0 H1 H2 H3
+						//E2 E3 F2 F3 G2 G3 H2 H3	G0 G1 G2 G3 H0 H1 H2 H3
 						int displayColumn = (((column & ~0x01) * 2) + ((row & 0x01) != 0 ? 2 : 0) + (column & 0x01)) % ColumnCount;
 						int displayRow = (row & ~0x01) + ((column >= ColumnCount / 2) ? 1 : 0);
 						return new PixelPoint(displayColumn, displayRow);

@@ -86,7 +86,7 @@ Use single-line or block comments for implementation details:
 // Good: Explains WHY, not WHAT
 // BCD mode is disabled on the NES 2A03 - skip decimal adjustment
 if (GetCpuType() != CpuType::Nes) {
-    ApplyDecimalAdjustment();
+	ApplyDecimalAdjustment();
 }
 
 // Good: Documents edge case
@@ -194,7 +194,7 @@ Avoid stating the obvious:
 ```cpp
 // Bad: Obvious from the code
 int x = 0;  // Initialize x to zero
-count++;    // Increment count
+count++;	// Increment count
 
 // Bad: Restating the method name
 /// <summary>Gets the program counter.</summary>
@@ -238,24 +238,24 @@ constexpr uint16_t addr = 0x2000;  // Uppercase not allowed
 /// NMI is serviced first but the IRQ will still be acknowledged.
 /// </remarks>
 void NesCpu::ProcessInterrupt(InterruptType type) {
-    // BRK sets B flag in pushed status; hardware interrupts don't
-    uint8_t statusToPush = _state.PS | ProcessorFlags::Reserved;
-    if (type == InterruptType::Brk) {
-        statusToPush |= ProcessorFlags::Break;
-    }
+	// BRK sets B flag in pushed status; hardware interrupts don't
+	uint8_t statusToPush = _state.PS | ProcessorFlags::Reserved;
+	if (type == InterruptType::Brk) {
+		statusToPush |= ProcessorFlags::Break;
+	}
 
-    // Push return address (current PC) to stack
-    // NOTE: BRK pushes PC+2, but interrupts push current PC
-    Push(static_cast<uint8_t>(_state.PC >> 8));
-    Push(static_cast<uint8_t>(_state.PC & 0xff));
-    Push(statusToPush);
+	// Push return address (current PC) to stack
+	// NOTE: BRK pushes PC+2, but interrupts push current PC
+	Push(static_cast<uint8_t>(_state.PC >> 8));
+	Push(static_cast<uint8_t>(_state.PC & 0xff));
+	Push(statusToPush);
 
-    // Set interrupt disable flag to prevent nested interrupts
-    _state.PS |= ProcessorFlags::Interrupt;
+	// Set interrupt disable flag to prevent nested interrupts
+	_state.PS |= ProcessorFlags::Interrupt;
 
-    // Fetch handler address from appropriate vector
-    uint16_t vector = GetInterruptVector(type);
-    _state.PC = Read(vector) | (Read(vector + 1) << 8);
+	// Fetch handler address from appropriate vector
+	uint16_t vector = GetInterruptVector(type);
+	_state.PC = Read(vector) | (Read(vector + 1) << 8);
 }
 ```
 

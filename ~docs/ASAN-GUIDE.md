@@ -58,9 +58,9 @@ When ASan detects an error, it prints a detailed report:
 ```
 ==12345==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x...
 READ of size 4 at 0x... thread T0
-    #0 0x... in function_name source.cpp:123
-    #1 0x... in main main.cpp:45
-    ...
+	#0 0x... in function_name source.cpp:123
+	#1 0x... in main main.cpp:45
+	...
 ```
 
 ### Example Test Run
@@ -98,11 +98,11 @@ The CI pipeline can optionally run ASan tests:
 ```yaml
 - name: Build with ASan
   run: |
-    msbuild Core.Tests\Core.Tests.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:EnableASAN=true /m:1
+	msbuild Core.Tests\Core.Tests.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:EnableASAN=true /m:1
 
 - name: Run ASan Tests
   run: |
-    bin\win-x64\Debug\Core.Tests.exe --gtest_output=xml:asan-results.xml
+	bin\win-x64\Debug\Core.Tests.exe --gtest_output=xml:asan-results.xml
 ```
 
 ## Memory Errors Caught

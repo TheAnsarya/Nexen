@@ -72,19 +72,19 @@ The menu structure also reflects these changes:
 
 ```
 File
-├── Quick Save          Shift+F1
-├── Browse Saves...     F1
-├── Save State          →
+├── Quick Save		  Shift+F1
+├── Browse Saves...	 F1
+├── Save State		  →
 │   ├── Slot 1
 │   ├── Slot 2
 │   ├── ...
 │   ├── Slot 10
 │   └── Save to File...
-└── Load State          →
-    ├── Slot 1
-    ├── Slot 2
-    ├── ...
-    ├── Slot 10
-    ├── Auto-save
-    └── Load from File...
+└── Load State		  →
+	├── Slot 1
+	├── Slot 2
+	├── ...
+	├── Slot 10
+	├── Auto-save
+	└── Load from File...
 ```

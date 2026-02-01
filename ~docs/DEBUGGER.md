@@ -11,24 +11,24 @@ Debugger Architecture
 ═════════════════════
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                         Debugger                                │
-│   (Central coordinator for all debugging features)              │
+│						 Debugger								│
+│   (Central coordinator for all debugging features)			  │
 └─────────────────────────────────────────────────────────────────┘
-              │
-    ┌─────────┴─────────┬────────────────┬────────────────┐
-    │                   │                │                │
-    ▼                   ▼                ▼                ▼
+			  │
+	┌─────────┴─────────┬────────────────┬────────────────┐
+	│				   │				│				│
+	▼				   ▼				▼				▼
 ┌──────────┐   ┌──────────────┐   ┌───────────┐   ┌────────────┐
 │ IDebugger│   │ Disassembler │   │ScriptMgr  │   │  CDL/Label │
-│ per-CPU  │   │ multi-CPU    │   │ Lua API   │   │  Managers  │
+│ per-CPU  │   │ multi-CPU	│   │ Lua API   │   │  Managers  │
 └──────────┘   └──────────────┘   └───────────┘   └────────────┘
-    │
-    ├── BreakpointManager
-    ├── CallstackManager
-    ├── ExpressionEvaluator
-    ├── TraceLogger
-    ├── StepBackManager
-    └── EventManager
+	│
+	├── BreakpointManager
+	├── CallstackManager
+	├── ExpressionEvaluator
+	├── TraceLogger
+	├── StepBackManager
+	└── EventManager
 ```
 
 ## Directory Structure
@@ -36,22 +36,22 @@ Debugger Architecture
 ```
 Core/Debugger/
 ├── Core Components
-│   ├── Debugger.h/cpp              - Main debugger class
-│   ├── IDebugger.h                 - Per-CPU debugger interface
-│   ├── DebugTypes.h                - Type definitions
-│   └── DebugUtilities.h            - Helper utilities
+│   ├── Debugger.h/cpp			  - Main debugger class
+│   ├── IDebugger.h				 - Per-CPU debugger interface
+│   ├── DebugTypes.h				- Type definitions
+│   └── DebugUtilities.h			- Helper utilities
 │
 ├── Breakpoints
-│   ├── Breakpoint.h/cpp            - Breakpoint definition
-│   ├── BreakpointManager.h/cpp     - Breakpoint management
-│   └── FrozenAddressManager.h      - Memory freeze support
+│   ├── Breakpoint.h/cpp			- Breakpoint definition
+│   ├── BreakpointManager.h/cpp	 - Breakpoint management
+│   └── FrozenAddressManager.h	  - Memory freeze support
 │
 ├── Disassembly
-│   ├── Disassembler.h/cpp          - Multi-CPU disassembler
-│   ├── DisassemblyInfo.h/cpp       - Disassembly metadata
-│   ├── DisassemblySearch.h/cpp     - Search functionality
-│   ├── Base6502Assembler.h/cpp     - 6502/65816 assembler
-│   └── IAssembler.h                - Assembler interface
+│   ├── Disassembler.h/cpp		  - Multi-CPU disassembler
+│   ├── DisassemblyInfo.h/cpp	   - Disassembly metadata
+│   ├── DisassemblySearch.h/cpp	 - Search functionality
+│   ├── Base6502Assembler.h/cpp	 - 6502/65816 assembler
+│   └── IAssembler.h				- Assembler interface
 │
 ├── Expression Evaluation
 │   ├── ExpressionEvaluator.h/cpp   - Core evaluator
@@ -68,35 +68,35 @@ Core/Debugger/
 │   └── ExpressionEvaluator.*.cpp   - Other CPUs
 │
 ├── Tracing & Logging
-│   ├── BaseTraceLogger.h           - Trace logger base
-│   ├── ITraceLogger.h              - Trace logger interface
-│   ├── TraceLogFileSaver.h         - File output
-│   └── CallstackManager.h/cpp      - Call stack tracking
+│   ├── BaseTraceLogger.h		   - Trace logger base
+│   ├── ITraceLogger.h			  - Trace logger interface
+│   ├── TraceLogFileSaver.h		 - File output
+│   └── CallstackManager.h/cpp	  - Call stack tracking
 │
 ├── Code/Data Logging
-│   ├── CodeDataLogger.h/cpp        - CDL core
-│   ├── CdlManager.h/cpp            - CDL file management
-│   └── AddressInfo.h               - Address mapping
+│   ├── CodeDataLogger.h/cpp		- CDL core
+│   ├── CdlManager.h/cpp			- CDL file management
+│   └── AddressInfo.h			   - Address mapping
 │
 ├── Memory Tools
-│   ├── MemoryDumper.h/cpp          - Memory access
+│   ├── MemoryDumper.h/cpp		  - Memory access
 │   ├── MemoryAccessCounter.h/cpp   - Access statistics
-│   └── Profiler.h/cpp              - Performance profiling
+│   └── Profiler.h/cpp			  - Performance profiling
 │
 ├── PPU Tools
-│   ├── PpuTools.h/cpp              - Graphics debugging
-│   └── BaseEventManager.h/cpp      - Event logging
+│   ├── PpuTools.h/cpp			  - Graphics debugging
+│   └── BaseEventManager.h/cpp	  - Event logging
 │
 ├── Scripting
-│   ├── ScriptManager.h/cpp         - Script management
-│   ├── ScriptHost.h/cpp            - Script execution
-│   ├── ScriptingContext.h/cpp      - Script context
-│   ├── LuaApi.h/cpp                - Lua bindings
-│   └── LuaCallHelper.h/cpp         - Lua utilities
+│   ├── ScriptManager.h/cpp		 - Script management
+│   ├── ScriptHost.h/cpp			- Script execution
+│   ├── ScriptingContext.h/cpp	  - Script context
+│   ├── LuaApi.h/cpp				- Lua bindings
+│   └── LuaCallHelper.h/cpp		 - Lua utilities
 │
 └── Step Execution
-    ├── StepBackManager.h/cpp       - Rewind debugging
-    └── DebugBreakHelper.h          - Break helpers
+	├── StepBackManager.h/cpp	   - Rewind debugging
+	└── DebugBreakHelper.h		  - Break helpers
 ```
 
 ---
@@ -117,8 +117,8 @@ Central coordinator managing all debugging features.
 ```cpp
 // CpuInfo holds per-CPU debugging state
 struct CpuInfo {
-    unique_ptr<IDebugger> Debugger;        // CPU-specific debugger
-    unique_ptr<ExpressionEvaluator> Evaluator; // Expression evaluation
+	unique_ptr<IDebugger> Debugger;		// CPU-specific debugger
+	unique_ptr<ExpressionEvaluator> Evaluator; // Expression evaluation
 };
 
 // Array indexed by CpuType enum
@@ -166,10 +166,10 @@ High-performance breakpoint evaluation.
 **Breakpoint Types:**
 ```cpp
 enum class BreakpointType {
-    Global,     // Always trigger
-    Execute,    // On instruction execution
-    Read,       // On memory read
-    Write       // On memory write
+	Global,	 // Always trigger
+	Execute,	// On instruction execution
+	Read,	   // On memory read
+	Write	   // On memory write
 };
 ```
 
@@ -194,10 +194,10 @@ Conditions use the ExpressionEvaluator:
 
 ```cpp
 // Example conditions
-"A == $50"           // Register equals value
-"[addr] & $80"       // Memory bit test
+"A == $50"		   // Register equals value
+"[addr] & $80"	   // Memory bit test
 "PpuScanline < 100"  // PPU state check
-"Value == $FF"       // Access value check
+"Value == $FF"	   // Access value check
 ```
 
 ---
@@ -238,7 +238,7 @@ Nmi, Irq
 
 // Memory operation context
 IsRead, IsWrite, IsDma, IsDummy
-Value    // Value being read/written
+Value	// Value being read/written
 Address  // Address being accessed
 
 // Platform-specific
@@ -264,15 +264,15 @@ Tracks which ROM bytes are code vs data.
 **CDL Flags:**
 ```cpp
 enum CdlFlags : uint8_t {
-    None          = 0x00,
-    Code          = 0x01,  // Executed as instruction
-    Data          = 0x02,  // Read as data
-    JumpTarget    = 0x04,  // Jump/branch destination
-    SubEntryPoint = 0x08,  // Subroutine entry
-    IndexData8    = 0x10,  // 8-bit indexed access
-    IndexData16   = 0x20,  // 16-bit indexed access
-    PcmData       = 0x40,  // Audio sample data
-    DrawingTile   = 0x80   // Graphics tile data
+	None		  = 0x00,
+	Code		  = 0x01,  // Executed as instruction
+	Data		  = 0x02,  // Read as data
+	JumpTarget	= 0x04,  // Jump/branch destination
+	SubEntryPoint = 0x08,  // Subroutine entry
+	IndexData8	= 0x10,  // 8-bit indexed access
+	IndexData16   = 0x20,  // 16-bit indexed access
+	PcmData	   = 0x40,  // Audio sample data
+	DrawingTile   = 0x80   // Graphics tile data
 };
 ```
 
@@ -281,9 +281,9 @@ enum CdlFlags : uint8_t {
 CDL File Format (CDLv2)
 ════════════════════════
 Offset  Size  Content
-0x00    5     "CDLv2" magic
-0x05    4     ROM CRC32
-0x09    N     Flag bytes (1 per ROM byte)
+0x00	5	 "CDLv2" magic
+0x05	4	 ROM CRC32
+0x09	N	 Flag bytes (1 per ROM byte)
 ```
 
 **Use Cases:**
@@ -328,11 +328,11 @@ Metadata for disassembled instructions.
 
 ```cpp
 struct DisassemblyInfo {
-    uint8_t  OpSize;       // Instruction size in bytes
-    uint8_t  Flags;        // Code/data flags
-    uint8_t  ByteCode[8];  // Raw bytes
-    uint32_t Address;      // CPU address
-    AddressInfo AbsAddress; // Absolute/ROM address
+	uint8_t  OpSize;	   // Instruction size in bytes
+	uint8_t  Flags;		// Code/data flags
+	uint8_t  ByteCode[8];  // Raw bytes
+	uint32_t Address;	  // CPU address
+	AddressInfo AbsAddress; // Absolute/ROM address
 };
 ```
 
@@ -356,7 +356,7 @@ Instruction-level execution logging.
 
 **Log Format:**
 ```
-PC     Op  Operand   A  X  Y  SP   Flags     Cycle
+PC	 Op  Operand   A  X  Y  SP   Flags	 Cycle
 $8000  LDA $0300,X  A:00 X:10 Y:00 SP:FD N-BdIZC  1234
 ```
 
@@ -532,10 +532,10 @@ breakpointManager->SetBreakpoints(&bp, 1);
 // Evaluate expression in current CPU context
 EvalResultType resultType;
 int64_t result = evaluator->Evaluate(
-    "A + X * 2",
-    cpuState,
-    resultType,
-    operationInfo
+	"A + X * 2",
+	cpuState,
+	resultType,
+	operationInfo
 );
 ```
 
@@ -544,8 +544,8 @@ int64_t result = evaluator->Evaluate(
 ```lua
 -- Log when specific address is written
 function onWrite()
-    local value = emu.read(0x0300, emu.memType.nesInternalRam)
-    emu.log("Address $0300 = " .. string.format("%02X", value))
+	local value = emu.read(0x0300, emu.memType.nesInternalRam)
+	emu.log("Address $0300 = " .. string.format("%02X", value))
 end
 
 emu.addEventCallback(onWrite, emu.eventType.write)

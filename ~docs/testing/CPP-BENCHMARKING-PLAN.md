@@ -35,27 +35,27 @@ Establish performance benchmarking infrastructure to measure the impact of C++ m
 
 ```
 Nexen/
-├── Core.Benchmarks/               # NEW - C++ benchmark project
-│   ├── Core.Benchmarks.vcxproj    # VS project file
-│   ├── pch.h                      # Precompiled header
+├── Core.Benchmarks/			   # NEW - C++ benchmark project
+│   ├── Core.Benchmarks.vcxproj	# VS project file
+│   ├── pch.h					  # Precompiled header
 │   ├── pch.cpp
-│   ├── Shared/                    # Benchmarks for Core/Shared
+│   ├── Shared/					# Benchmarks for Core/Shared
 │   │   ├── ColorUtilitiesBench.cpp
 │   │   ├── CrcBench.cpp
 │   │   └── ...
-│   ├── Utilities/                 # Benchmarks for Utilities
+│   ├── Utilities/				 # Benchmarks for Utilities
 │   │   ├── HexUtilitiesBench.cpp
 │   │   └── ...
-│   ├── Emulation/                 # Emulation core benchmarks
+│   ├── Emulation/				 # Emulation core benchmarks
 │   │   ├── NesCpuBench.cpp
 │   │   ├── SnesCpuBench.cpp
 │   │   └── ...
-│   ├── main.cpp                   # benchmark::Initialize() entry point
-│   └── baseline/                  # Baseline results (gitignored)
-│       ├── ColorUtilities_baseline.json
-│       └── ...
+│   ├── main.cpp				   # benchmark::Initialize() entry point
+│   └── baseline/				  # Baseline results (gitignored)
+│	   ├── ColorUtilities_baseline.json
+│	   └── ...
 └── ~docs/testing/
-    └── BENCHMARK-RESULTS.md       # Latest benchmark results
+	└── BENCHMARK-RESULTS.md	   # Latest benchmark results
 ```
 
 ## Benchmark Categories
@@ -291,11 +291,11 @@ python tools/compare.py baseline/baseline.json current.json
 
 ```
 Comparing baseline/baseline.json to current.json
-Benchmark                                  Time       CPU    Time Old    Time New
+Benchmark								  Time	   CPU	Time Old	Time New
 ---------------------------------------------------------------------------------------
-BM_ColorUtilities_Rgb555ToArgb           -15 ns    -15 ns         20         5
-BM_NesCpu_ExecuteInstruction              +2 ns     +2 ns        100       102  ⚠️ REGRESSION
-BM_BatteryManager_SaveBattery_Span        +0 ns     +0 ns       5000      5000  ✅ SAME
+BM_ColorUtilities_Rgb555ToArgb		   -15 ns	-15 ns		 20		 5
+BM_NesCpu_ExecuteInstruction			  +2 ns	 +2 ns		100	   102  ⚠️ REGRESSION
+BM_BatteryManager_SaveBattery_Span		+0 ns	 +0 ns	   5000	  5000  ✅ SAME
 ```
 
 ## CI Integration (Future)
@@ -307,46 +307,46 @@ name: Performance Benchmarks
 
 on:
   pull_request:
-    branches: [cpp-modernization, master]
+	branches: [cpp-modernization, master]
 
 jobs:
   benchmark:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Need history for baseline
-      
-      - name: Get baseline commit
-        run: |
-          git checkout main
-          git rev-parse HEAD > baseline_commit.txt
-      
-      - name: Build baseline
-        run: msbuild Mesen.sln /p:Configuration=Release /t:Core.Benchmarks
-      
-      - name: Run baseline benchmarks
-        run: |
-          .\Core.Benchmarks\bin\Release\Core.Benchmarks.exe --benchmark_out=baseline.json
-      
-      - name: Checkout PR
-        run: git checkout ${{ github.sha }}
-      
-      - name: Build PR
-        run: msbuild Mesen.sln /p:Configuration=Release /t:Core.Benchmarks
-      
-      - name: Run PR benchmarks
-        run: |
-          .\Core.Benchmarks\bin\Release\Core.Benchmarks.exe --benchmark_out=current.json
-      
-      - name: Compare results
-        run: python tools/benchmark_compare.py baseline.json current.json --threshold 5
-      
-      - name: Comment on PR
-        uses: actions/github-script@v6
-        with:
-          script: |
-            // Post comparison results as PR comment
+	runs-on: windows-latest
+	steps:
+	  - uses: actions/checkout@v3
+		with:
+		  fetch-depth: 0  # Need history for baseline
+	  
+	  - name: Get baseline commit
+		run: |
+		  git checkout main
+		  git rev-parse HEAD > baseline_commit.txt
+	  
+	  - name: Build baseline
+		run: msbuild Mesen.sln /p:Configuration=Release /t:Core.Benchmarks
+	  
+	  - name: Run baseline benchmarks
+		run: |
+		  .\Core.Benchmarks\bin\Release\Core.Benchmarks.exe --benchmark_out=baseline.json
+	  
+	  - name: Checkout PR
+		run: git checkout ${{ github.sha }}
+	  
+	  - name: Build PR
+		run: msbuild Mesen.sln /p:Configuration=Release /t:Core.Benchmarks
+	  
+	  - name: Run PR benchmarks
+		run: |
+		  .\Core.Benchmarks\bin\Release\Core.Benchmarks.exe --benchmark_out=current.json
+	  
+	  - name: Compare results
+		run: python tools/benchmark_compare.py baseline.json current.json --threshold 5
+	  
+	  - name: Comment on PR
+		uses: actions/github-script@v6
+		with:
+		  script: |
+			// Post comparison results as PR comment
 ```
 
 ## Test ROM Selection
@@ -391,10 +391,10 @@ CPU Caches:
   L2 Unified 256K (x8)
   L3 Unified 16384K (x1)
 -------------------------------------------------------------------------
-Benchmark                               Time             CPU   Iterations
+Benchmark							   Time			 CPU   Iterations
 -------------------------------------------------------------------------
-BM_ColorUtilities_Rgb555ToArgb       4.15 ns         4.14 ns    168872727
-BM_NesCpu_ExecuteInstruction          102 ns          102 ns      6862745
+BM_ColorUtilities_Rgb555ToArgb	   4.15 ns		 4.14 ns	168872727
+BM_NesCpu_ExecuteInstruction		  102 ns		  102 ns	  6862745
 ```
 
 ### JSON Output (For Regression Tracking)
@@ -402,20 +402,20 @@ BM_NesCpu_ExecuteInstruction          102 ns          102 ns      6862745
 ```json
 {
   "context": {
-    "date": "2026-01-29T12:34:56Z",
-    "host_name": "DESKTOP-ABC123",
-    "executable": "Core.Benchmarks.exe",
-    "num_cpus": 16,
-    "mhz_per_cpu": 3600
+	"date": "2026-01-29T12:34:56Z",
+	"host_name": "DESKTOP-ABC123",
+	"executable": "Core.Benchmarks.exe",
+	"num_cpus": 16,
+	"mhz_per_cpu": 3600
   },
   "benchmarks": [
-    {
-      "name": "BM_ColorUtilities_Rgb555ToArgb",
-      "iterations": 168872727,
-      "real_time": 4.15,
-      "cpu_time": 4.14,
-      "time_unit": "ns"
-    }
+	{
+	  "name": "BM_ColorUtilities_Rgb555ToArgb",
+	  "iterations": 168872727,
+	  "real_time": 4.15,
+	  "cpu_time": 4.14,
+	  "time_unit": "ns"
+	}
   ]
 }
 ```

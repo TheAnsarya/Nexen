@@ -263,21 +263,21 @@ Improve user experience for Pansy export feature.
 **UI Mockups:**
 ```
 ┌─────────────────────────────────────────┐
-│ Export Pansy Metadata                   │
+│ Export Pansy Metadata				   │
 ├─────────────────────────────────────────┤
-│ □ Symbols           (123 labels)        │
-│ □ Comments          (45 annotations)    │
-│ □ Code/Data Map     (256 KB)            │
-│ □ Jump Targets      (89 branches)       │
-│ □ Subroutines       (34 functions)      │
-│ ☑ Memory Regions    (5 regions)         │
-│ ☑ Cross-References  (456 xrefs)         │
-│                                         │
-│ Preset: [Full Export ▼]                │
-│                                         │
-│ Output: test.pansy          [Browse...]│
-│                                         │
-│           [Export]  [Cancel]            │
+│ □ Symbols		   (123 labels)		│
+│ □ Comments		  (45 annotations)	│
+│ □ Code/Data Map	 (256 KB)			│
+│ □ Jump Targets	  (89 branches)	   │
+│ □ Subroutines	   (34 functions)	  │
+│ ☑ Memory Regions	(5 regions)		 │
+│ ☑ Cross-References  (456 xrefs)		 │
+│										 │
+│ Preset: [Full Export ▼]				│
+│										 │
+│ Output: test.pansy		  [Browse...]│
+│										 │
+│		   [Export]  [Cancel]			│
 └─────────────────────────────────────────┘
 ```
 
@@ -414,11 +414,11 @@ Implement folder-based storage for debug data. Each ROM gets a dedicated folder 
 **Folder Structure:**
 ```
 [Nexen Data]/Debug/[RomName_CRC32]/
-├── metadata.pansy     # Universal format
-├── labels.mlb         # Native Nexen labels
-├── coverage.cdl       # Code Data Logger
-├── config.json        # Per-ROM config
-└── history/           # Version history (optional)
+├── metadata.pansy	 # Universal format
+├── labels.mlb		 # Native Nexen labels
+├── coverage.cdl	   # Code Data Logger
+├── config.json		# Per-ROM config
+└── history/		   # Version history (optional)
 ```
 
 **Tasks:**

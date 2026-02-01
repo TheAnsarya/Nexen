@@ -107,7 +107,7 @@ namespace Nexen.Debugger.ViewModels {
 					ActionType = ActionType.EditColor,
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.PaletteViewer_EditColor),
 					IsEnabled = () => SelectedPalette >= 0,
-					OnClick = () => Dispatcher.UIThread.Post(() => EditColor(wnd, SelectedPalette))                },
+					OnClick = () => Dispatcher.UIThread.Post(() => EditColor(wnd, SelectedPalette))				},
 				new ContextMenuSeparator() { IsVisible = () => _palette != null && _palette.Get().HasMemType },
 				new ContextMenuAction() {
 					ActionType = ActionType.ViewInMemoryViewer,

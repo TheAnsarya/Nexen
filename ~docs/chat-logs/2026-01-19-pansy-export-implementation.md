@@ -74,23 +74,23 @@ git checkout -b pansy-export
 
 ```csharp
 public static class PansyExporter {
-    // Platform ID mapping
-    static readonly Dictionary<RomFormat, byte> PlatformIds = new() {
-        [RomFormat.Nes] = 0x01,
-        [RomFormat.Snes] = 0x02,
-        // ... 13 total platforms
-    };
+	// Platform ID mapping
+	static readonly Dictionary<RomFormat, byte> PlatformIds = new() {
+		[RomFormat.Nes] = 0x01,
+		[RomFormat.Snes] = 0x02,
+		// ... 13 total platforms
+	};
 
-    // Main export function
-    public static void Export(path, romInfo, memoryType) { }
-    
-    // Auto-export on shutdown
-    public static void AutoExport(romInfo, memoryType) { }
-    
-    // Section builders
-    static byte[] BuildSymbolSection(labels) { }
-    static byte[] BuildCommentSection(labels) { }
-    static byte[] BuildAddressListSection(addresses) { }
+	// Main export function
+	public static void Export(path, romInfo, memoryType) { }
+	
+	// Auto-export on shutdown
+	public static void AutoExport(romInfo, memoryType) { }
+	
+	// Section builders
+	static byte[] BuildSymbolSection(labels) { }
+	static byte[] BuildCommentSection(labels) { }
+	static byte[] BuildAddressListSection(addresses) { }
 }
 ```
 
@@ -210,7 +210,7 @@ byte[] cdlData = DebugApi.GetCdlData(0, romSize, memoryType, CdlFlags.None);
 CdlFlags[] cdlFlags = DebugApi.GetCdlData(0, (int)romSize, memoryType);
 byte[] cdlData = new byte[cdlFlags.Length];
 for (int i = 0; i < cdlFlags.Length; i++) {
-    cdlData[i] = (byte)cdlFlags[i];
+	cdlData[i] = (byte)cdlFlags[i];
 }
 ```
 
@@ -247,8 +247,8 @@ dotnet build --nologo -v:q
 **System Output:**
 ```
 Build succeeded.
-    0 Warning(s)
-    0 Error(s)
+	0 Warning(s)
+	0 Error(s)
 
 Time Elapsed 00:00:21.79
 ```
@@ -324,7 +324,7 @@ git push -u origin pansy-export
 remote: Create a pull request for 'pansy-export' on GitHub by visiting:
 remote:   https://github.com/TheAnsarya/Nexen/pull/new/pansy-export
 To https://github.com/TheAnsarya/Nexen.git
- * [new branch]      pansy-export -> pansy-export
+ * [new branch]	  pansy-export -> pansy-export
 ```
 
 ✅ **Branch pushed successfully**

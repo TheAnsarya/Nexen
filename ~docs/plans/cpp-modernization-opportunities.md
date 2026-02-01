@@ -102,15 +102,15 @@ Before adopting, benchmark:
 ```cpp
 // This innocent-looking code:
 for (auto x : vec | std::views::filter(pred) | std::views::transform(fn)) {
-    // ...
+	// ...
 }
 
 // May generate worse code than:
 for (auto& x : vec) {
-    if (pred(x)) {
-        auto y = fn(x);
-        // ...
-    }
+	if (pred(x)) {
+		auto y = fn(x);
+		// ...
+	}
 }
 ```
 
@@ -124,7 +124,7 @@ for (auto& x : vec) {
 ```cpp
 // Filtering game folders (cold path)
 auto validFolders = folders | std::views::filter([](auto& f) {
-    return std::filesystem::exists(f);
+	return std::filesystem::exists(f);
 });
 
 // Processing cheats (user interaction, not per-frame)
@@ -198,7 +198,7 @@ constexpr std::array<uint8_t, 256> CpuCycleCounts = { /* ... */ };
 
 // constexpr bit manipulation
 constexpr uint8_t MirrorBits(uint8_t value) {
-    // Implementation
+	// Implementation
 }
 ```
 
@@ -227,17 +227,17 @@ constexpr uint8_t MirrorBits(uint8_t value) {
 ```cpp
 // CPU emulation - most memory accesses are not hardware registers
 if ([[likely]] address < 0x2000) {
-    return _ram[address & 0x7FF];
+	return _ram[address & 0x7FF];
 }
 
 // PPU rendering - most scanlines are visible
 if ([[unlikely]] scanline >= 240) {
-    // VBlank handling
+	// VBlank handling
 }
 
 // Error conditions
 if ([[unlikely]] error) {
-    HandleError();
+	HandleError();
 }
 ```
 

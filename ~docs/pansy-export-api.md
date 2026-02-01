@@ -22,10 +22,10 @@ Exports Nexen debug metadata to the Pansy binary format.
 /// <param name="cancellationToken">Optional cancellation token</param>
 /// <returns>True if export succeeded</returns>
 public static bool Export(
-    string outputPath,
-    PansyExportOptions? options = null,
-    IProgress<ExportProgress>? progress = null,
-    CancellationToken cancellationToken = default)
+	string outputPath,
+	PansyExportOptions? options = null,
+	IProgress<ExportProgress>? progress = null,
+	CancellationToken cancellationToken = default)
 ```
 
 #### PansyExportOptions
@@ -33,23 +33,23 @@ public static bool Export(
 ```csharp
 public class PansyExportOptions
 {
-    /// <summary>Include named memory regions in export.</summary>
-    public bool IncludeMemoryRegions { get; set; } = true;
-    
-    /// <summary>Include cross-reference data in export.</summary>
-    public bool IncludeCrossReferences { get; set; } = true;
-    
-    /// <summary>Include data type annotations.</summary>
-    public bool IncludeDataBlocks { get; set; } = true;
-    
-    /// <summary>Use DEFLATE compression for smaller files.</summary>
-    public bool UseCompression { get; set; } = true;
-    
-    /// <summary>Include watch expressions.</summary>
-    public bool IncludeWatches { get; set; } = false;
-    
-    /// <summary>Include breakpoint definitions.</summary>
-    public bool IncludeBreakpoints { get; set; } = false;
+	/// <summary>Include named memory regions in export.</summary>
+	public bool IncludeMemoryRegions { get; set; } = true;
+	
+	/// <summary>Include cross-reference data in export.</summary>
+	public bool IncludeCrossReferences { get; set; } = true;
+	
+	/// <summary>Include data type annotations.</summary>
+	public bool IncludeDataBlocks { get; set; } = true;
+	
+	/// <summary>Use DEFLATE compression for smaller files.</summary>
+	public bool UseCompression { get; set; } = true;
+	
+	/// <summary>Include watch expressions.</summary>
+	public bool IncludeWatches { get; set; } = false;
+	
+	/// <summary>Include breakpoint definitions.</summary>
+	public bool IncludeBreakpoints { get; set; } = false;
 }
 ```
 
@@ -58,17 +58,17 @@ public class PansyExportOptions
 ```csharp
 public class ExportProgress
 {
-    /// <summary>Current phase name (e.g., "Exporting symbols")</summary>
-    public string Phase { get; set; }
-    
-    /// <summary>Overall progress percentage (0-100)</summary>
-    public int OverallPercent { get; set; }
-    
-    /// <summary>Current phase progress percentage (0-100)</summary>
-    public int PhasePercent { get; set; }
-    
-    /// <summary>Detailed status message</summary>
-    public string Detail { get; set; }
+	/// <summary>Current phase name (e.g., "Exporting symbols")</summary>
+	public string Phase { get; set; }
+	
+	/// <summary>Overall progress percentage (0-100)</summary>
+	public int OverallPercent { get; set; }
+	
+	/// <summary>Current phase progress percentage (0-100)</summary>
+	public int PhasePercent { get; set; }
+	
+	/// <summary>Detailed status message</summary>
+	public string Detail { get; set; }
 }
 ```
 
@@ -111,15 +111,15 @@ public static ValidationResult Validate(string inputPath)
 ```csharp
 public class ImportResult
 {
-    public bool Success { get; set; }
-    public int LabelsImported { get; set; }
-    public int CommentsImported { get; set; }
-    public int CodeOffsetsImported { get; set; }
-    public int DataOffsetsImported { get; set; }
-    public int MemoryRegionsImported { get; set; }
-    public int CrossReferencesImported { get; set; }
-    public List<string> Warnings { get; set; }
-    public string? ErrorMessage { get; set; }
+	public bool Success { get; set; }
+	public int LabelsImported { get; set; }
+	public int CommentsImported { get; set; }
+	public int CodeOffsetsImported { get; set; }
+	public int DataOffsetsImported { get; set; }
+	public int MemoryRegionsImported { get; set; }
+	public int CrossReferencesImported { get; set; }
+	public List<string> Warnings { get; set; }
+	public string? ErrorMessage { get; set; }
 }
 ```
 
@@ -162,10 +162,10 @@ public static void SyncAll(string romPath)
 /// <param name="exportCdl">Export CDL file</param>
 /// <param name="exportPansy">Export Pansy file</param>
 public static void ExportToFolder(
-    string romPath,
-    bool exportMlb = true,
-    bool exportCdl = true,
-    bool exportPansy = true)
+	string romPath,
+	bool exportMlb = true,
+	bool exportCdl = true,
+	bool exportPansy = true)
 
 /// <summary>
 /// Import state from debug folder.
@@ -175,22 +175,22 @@ public static void ExportToFolder(
 /// <param name="importCdl">Import CDL file</param>
 /// <param name="importPansy">Import Pansy file</param>
 public static void ImportFromFolder(
-    string romPath,
-    bool importMlb = true,
-    bool importCdl = false,
-    bool importPansy = false)
+	string romPath,
+	bool importMlb = true,
+	bool importCdl = false,
+	bool importPansy = false)
 ```
 
 #### Folder Structure
 
 ```
 {RomName}_debug/
-├── manifest.json           # Metadata about ROM and settings
-├── {crc32}.mlb             # Nexen Label file
-├── {crc32}.cdl             # Code/Data Log
-├── {crc32}.pansy           # Full Pansy export
-└── .history/               # Version history (if enabled)
-    └── {timestamp}.mlb
+├── manifest.json		   # Metadata about ROM and settings
+├── {crc32}.mlb			 # Nexen Label file
+├── {crc32}.cdl			 # Code/Data Log
+├── {crc32}.pansy		   # Full Pansy export
+└── .history/			   # Version history (if enabled)
+	└── {timestamp}.mlb
 ```
 
 ---
@@ -244,11 +244,11 @@ public event EventHandler<ConflictEventArgs>? ConflictDetected;
 ```csharp
 public enum SyncState
 {
-    Idle,           // No activity
-    Watching,       // Monitoring for changes
-    Syncing,        // Currently syncing
-    Error,          // Error occurred
-    Conflict        // Conflicting changes detected
+	Idle,		   // No activity
+	Watching,	   // Monitoring for changes
+	Syncing,		// Currently syncing
+	Error,		  // Error occurred
+	Conflict		// Conflicting changes detected
 }
 ```
 
@@ -271,9 +271,9 @@ Converts various debug formats to Pansy.
 /// <param name="romInfo">ROM information for context</param>
 /// <returns>Conversion result</returns>
 public static ConversionResult ConvertAndExport(
-    string inputPath,
-    string outputPath,
-    RomInfo romInfo)
+	string inputPath,
+	string outputPath,
+	RomInfo romInfo)
 
 /// <summary>
 /// Detect the format of a debug file.
@@ -291,10 +291,10 @@ public static DebugFormat DetectFormat(string filePath)
 /// <param name="progress">Progress callback</param>
 /// <returns>List of conversion results</returns>
 public static List<ConversionResult> BatchConvert(
-    IEnumerable<string> inputPaths,
-    string outputFolder,
-    RomInfo romInfo,
-    IProgress<int>? progress = null)
+	IEnumerable<string> inputPaths,
+	string outputFolder,
+	RomInfo romInfo,
+	IProgress<int>? progress = null)
 ```
 
 #### DebugFormat Enum
@@ -302,13 +302,13 @@ public static List<ConversionResult> BatchConvert(
 ```csharp
 public enum DebugFormat
 {
-    Unknown,
-    MesenMlb,       // Nexen Label file
-    Ca65Dbg,        // cc65/ca65 debug info
-    WlaDxSym,       // WLA-DX symbol file
-    RgbdsSym,       // RGBDS symbol file
-    SdccSym,        // SDCC symbol file
-    ElfDwarf        // ELF with DWARF info
+	Unknown,
+	MesenMlb,	   // Nexen Label file
+	Ca65Dbg,		// cc65/ca65 debug info
+	WlaDxSym,	   // WLA-DX symbol file
+	RgbdsSym,	   // RGBDS symbol file
+	SdccSym,		// SDCC symbol file
+	ElfDwarf		// ELF with DWARF info
 }
 ```
 
@@ -323,27 +323,27 @@ Located in `UI/Config/IntegrationConfig.cs`:
 ```csharp
 public class IntegrationConfig
 {
-    // Auto-save settings
-    public bool AutoSavePansy { get; set; } = false;
-    public int AutoSaveIntervalMinutes { get; set; } = 5;
-    public bool SaveOnRomUnload { get; set; } = true;
-    
-    // Export options (default)
-    public bool IncludeMemoryRegions { get; set; } = true;
-    public bool IncludeCrossReferences { get; set; } = true;
-    public bool IncludeDataBlocks { get; set; } = true;
-    public bool UseCompression { get; set; } = true;
-    
-    // Folder storage
-    public bool UseFolderStorage { get; set; } = false;
-    public bool SyncMlbFiles { get; set; } = true;
-    public bool SyncCdlFiles { get; set; } = true;
-    public bool KeepVersionHistory { get; set; } = false;
-    public int MaxHistoryVersions { get; set; } = 10;
-    
-    // File watching
-    public bool EnableFileWatching { get; set; } = false;
-    public bool AutoReloadOnExternalChange { get; set; } = false;
+	// Auto-save settings
+	public bool AutoSavePansy { get; set; } = false;
+	public int AutoSaveIntervalMinutes { get; set; } = 5;
+	public bool SaveOnRomUnload { get; set; } = true;
+	
+	// Export options (default)
+	public bool IncludeMemoryRegions { get; set; } = true;
+	public bool IncludeCrossReferences { get; set; } = true;
+	public bool IncludeDataBlocks { get; set; } = true;
+	public bool UseCompression { get; set; } = true;
+	
+	// Folder storage
+	public bool UseFolderStorage { get; set; } = false;
+	public bool SyncMlbFiles { get; set; } = true;
+	public bool SyncCdlFiles { get; set; } = true;
+	public bool KeepVersionHistory { get; set; } = false;
+	public int MaxHistoryVersions { get; set; } = 10;
+	
+	// File watching
+	public bool EnableFileWatching { get; set; } = false;
+	public bool AutoReloadOnExternalChange { get; set; } = false;
 }
 ```
 
@@ -381,8 +381,8 @@ public class IntegrationConfig
 ├──────────────────┤
 │ Entry Count (4)  │
 ├──────────────────┤
-│ Entries...       │
-│ (variable)       │
+│ Entries...	   │
+│ (variable)	   │
 └──────────────────┘
 ```
 
@@ -412,8 +412,8 @@ PansyExporter.Export("MyGame.pansy");
 
 // Export with options
 var options = new PansyExportOptions {
-    UseCompression = true,
-    IncludeCrossReferences = true
+	UseCompression = true,
+	IncludeCrossReferences = true
 };
 PansyExporter.Export("MyGame.pansy", options);
 ```
@@ -422,15 +422,15 @@ PansyExporter.Export("MyGame.pansy", options);
 
 ```csharp
 var progress = new Progress<ExportProgress>(p => {
-    Console.WriteLine($"{p.Phase}: {p.OverallPercent}%");
+	Console.WriteLine($"{p.Phase}: {p.OverallPercent}%");
 });
 
 var cts = new CancellationTokenSource();
 bool success = PansyExporter.Export(
-    "MyGame.pansy",
-    options: null,
-    progress: progress,
-    cancellationToken: cts.Token);
+	"MyGame.pansy",
+	options: null,
+	progress: progress,
+	cancellationToken: cts.Token);
 ```
 
 ### Import Labels
@@ -439,7 +439,7 @@ bool success = PansyExporter.Export(
 // Import everything
 var result = PansyImporter.Import("MyGame.pansy");
 if (result.Success) {
-    Console.WriteLine($"Imported {result.LabelsImported} labels");
+	Console.WriteLine($"Imported {result.LabelsImported} labels");
 }
 
 // Import labels only (fast)
@@ -456,14 +456,14 @@ DebugFolderManager.InitializeFolder(romPath);
 
 // Export to folder
 DebugFolderManager.ExportToFolder(romPath,
-    exportMlb: true,
-    exportCdl: true,
-    exportPansy: true);
+	exportMlb: true,
+	exportCdl: true,
+	exportPansy: true);
 
 // Start watching for changes
 var sync = new SyncManager();
 sync.ChangeDetected += (s, e) => {
-    Console.WriteLine($"File changed: {e.FilePath}");
+	Console.WriteLine($"File changed: {e.FilePath}");
 };
 sync.StartWatching(DebugFolderManager.GetDebugFolderPath(romPath));
 ```
@@ -474,16 +474,16 @@ sync.StartWatching(DebugFolderManager.GetDebugFolderPath(romPath));
 // Convert ca65 debug file
 var format = DbgToPansyConverter.DetectFormat("game.dbg");
 if (format == DebugFormat.Ca65Dbg) {
-    var result = DbgToPansyConverter.ConvertAndExport(
-        "game.dbg",
-        "game.pansy",
-        romInfo);
+	var result = DbgToPansyConverter.ConvertAndExport(
+		"game.dbg",
+		"game.pansy",
+		romInfo);
 }
 
 // Batch convert
 var files = Directory.GetFiles("debug/", "*.dbg");
 var results = DbgToPansyConverter.BatchConvert(
-    files,
-    "pansy/",
-    romInfo);
+	files,
+	"pansy/",
+	romInfo);
 ```

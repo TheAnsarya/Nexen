@@ -13,18 +13,18 @@ SMS Architecture
 ════════════════
 
 ┌──────────────────────────────────────────────────────┐
-│                     SmsConsole                       │
-│   (SMS, Game Gear, SG-1000 mode selection)           │
+│					 SmsConsole					   │
+│   (SMS, Game Gear, SG-1000 mode selection)		   │
 └──────────────────────────────────────────────────────┘
-              │
-    ┌─────────┼─────────┬──────────────┐
-    │         │         │              │
-    ▼         ▼         ▼              ▼
+			  │
+	┌─────────┼─────────┬──────────────┐
+	│		 │		 │			  │
+	▼		 ▼		 ▼			  ▼
 ┌───────┐ ┌───────┐ ┌─────────┐ ┌───────────┐
 │SmsCpu │ │SmsVdp │ │  SmsPsg │ │  Memory   │
-│       │ │       │ │  + FM   │ │  Manager  │
+│	   │ │	   │ │  + FM   │ │  Manager  │
 │ Z80   │ │TMS9918│ │  Audio  │ │  + Cart   │
-│ 3.58M │ │variant│ │         │ │           │
+│ 3.58M │ │variant│ │		 │ │		   │
 └───────┘ └───────┘ └─────────┘ └───────────┘
 ```
 
@@ -33,24 +33,24 @@ SMS Architecture
 ```
 Core/SMS/
 ├── Main Components
-│   ├── SmsConsole.h/cpp        - Console coordinator
-│   ├── SmsCpu.h/cpp            - Z80 CPU
-│   ├── SmsVdp.h/cpp            - Video Display Processor
+│   ├── SmsConsole.h/cpp		- Console coordinator
+│   ├── SmsCpu.h/cpp			- Z80 CPU
+│   ├── SmsVdp.h/cpp			- Video Display Processor
 │   ├── SmsMemoryManager.h/cpp  - Memory mapping
-│   └── SmsBiosMapper.h/cpp     - BIOS ROM handling
+│   └── SmsBiosMapper.h/cpp	 - BIOS ROM handling
 │
 ├── Audio
-│   ├── SmsPsg.h/cpp            - SN76489 PSG (4 channels)
-│   └── SmsFmAudio.h/cpp        - YM2413 FM (optional)
+│   ├── SmsPsg.h/cpp			- SN76489 PSG (4 channels)
+│   └── SmsFmAudio.h/cpp		- YM2413 FM (optional)
 │
 ├── Cartridges
-│   └── Carts/                  - Mapper implementations
+│   └── Carts/				  - Mapper implementations
 │
 ├── Input/
 │   └── Controllers, Light Phaser
 │
 └── Support Files
-    └── SmsTypes.h              - State structures
+	└── SmsTypes.h			  - State structures
 ```
 
 ### Core Components
@@ -69,18 +69,18 @@ Emulates the Zilog Z80 CPU.
 **Z80 Registers:**
 ```cpp
 struct SmsCpuState {
-    // Main registers
-    uint16_t AF, BC, DE, HL;
-    // Alternate registers
-    uint16_t AF2, BC2, DE2, HL2;
-    // Index registers
-    uint16_t IX, IY;
-    // Special registers
-    uint16_t SP;    // Stack Pointer
-    uint16_t PC;    // Program Counter
-    uint8_t I;      // Interrupt Vector
-    uint8_t R;      // Memory Refresh
-    bool IFF1, IFF2; // Interrupt flip-flops
+	// Main registers
+	uint16_t AF, BC, DE, HL;
+	// Alternate registers
+	uint16_t AF2, BC2, DE2, HL2;
+	// Index registers
+	uint16_t IX, IY;
+	// Special registers
+	uint16_t SP;	// Stack Pointer
+	uint16_t PC;	// Program Counter
+	uint8_t I;	  // Interrupt Vector
+	uint8_t R;	  // Memory Refresh
+	bool IFF1, IFF2; // Interrupt flip-flops
 };
 ```
 
@@ -145,18 +145,18 @@ PC Engine Architecture
 ══════════════════════
 
 ┌──────────────────────────────────────────────────────┐
-│                     PceConsole                       │
-│   (HuCard, CD-ROM², Super CD-ROM² support)           │
+│					 PceConsole					   │
+│   (HuCard, CD-ROM², Super CD-ROM² support)		   │
 └──────────────────────────────────────────────────────┘
-              │
-    ┌─────────┼─────────┬──────────────┬──────────────┐
-    │         │         │              │              │
-    ▼         ▼         ▼              ▼              ▼
+			  │
+	┌─────────┼─────────┬──────────────┬──────────────┐
+	│		 │		 │			  │			  │
+	▼		 ▼		 ▼			  ▼			  ▼
 ┌───────┐ ┌───────┐ ┌─────────┐ ┌───────────┐ ┌───────┐
 │PceCpu │ │PceVdc │ │  PcePsg │ │  Memory   │ │CD-ROM │
-│       │ │ +Vce  │ │         │ │  Manager  │ │       │
+│	   │ │ +Vce  │ │		 │ │  Manager  │ │	   │
 │HuC6280│ │ +Vpc  │ │  6 chan │ │  + Cart   │ │ADPCM  │
-│ 7.16M │ │ Video │ │         │ │           │ │       │
+│ 7.16M │ │ Video │ │		 │ │		   │ │	   │
 └───────┘ └───────┘ └─────────┘ └───────────┘ └───────┘
 ```
 
@@ -165,30 +165,30 @@ PC Engine Architecture
 ```
 Core/PCE/
 ├── Main Components
-│   ├── PceConsole.h/cpp        - Console coordinator
-│   ├── PceCpu.h/cpp            - HuC6280 CPU
-│   ├── PceVdc.h/cpp            - Video Display Controller
-│   ├── PceVce.h/cpp            - Video Color Encoder
-│   ├── PceVpc.h/cpp            - Video Priority Controller
+│   ├── PceConsole.h/cpp		- Console coordinator
+│   ├── PceCpu.h/cpp			- HuC6280 CPU
+│   ├── PceVdc.h/cpp			- Video Display Controller
+│   ├── PceVce.h/cpp			- Video Color Encoder
+│   ├── PceVpc.h/cpp			- Video Priority Controller
 │   ├── PceMemoryManager.h/cpp  - Memory mapping
-│   └── PceTimer.h/cpp          - Timer subsystem
+│   └── PceTimer.h/cpp		  - Timer subsystem
 │
 ├── Audio
-│   ├── PcePsg.h/cpp            - 6-channel PSG
-│   └── PcePsgChannel.h/cpp     - Individual channel
+│   ├── PcePsg.h/cpp			- 6-channel PSG
+│   └── PcePsgChannel.h/cpp	 - Individual channel
 │
 ├── CD-ROM
-│   └── CdRom/                  - CD-ROM² support
-│       ├── ADPCM audio
-│       ├── CD-DA playback
-│       └── System Card BIOS
+│   └── CdRom/				  - CD-ROM² support
+│	   ├── ADPCM audio
+│	   ├── CD-DA playback
+│	   └── System Card BIOS
 │
 ├── Input/
 │   └── Controllers, multitap
 │
 └── Support Files
-    ├── PceTypes.h              - State structures
-    └── PceConstants.h          - Hardware constants
+	├── PceTypes.h			  - State structures
+	└── PceConstants.h		  - Hardware constants
 ```
 
 ### Core Components
@@ -216,7 +216,7 @@ Emulates the Hudson HuC6280, an enhanced 65C02.
 // 8 Memory Mapping Registers divide 64KB into 8KB pages
 // Each MPR selects one of 256 physical 8KB pages
 struct PceMprState {
-    uint8_t MPR[8];  // Each maps to physical page 0-255
+	uint8_t MPR[8];  // Each maps to physical page 0-255
 };
 ```
 
@@ -265,12 +265,12 @@ PC Engine Memory Map (via MPR)
 Physical pages:
 $00-$7F  HuCard ROM (up to 1MB)
 $80-$F7  Unused (some mappers use)
-$F8      RAM (8KB)
+$F8	  RAM (8KB)
 $F9-$FB  Unused
-$FC      Unused
-$FD      Unused
-$FE      Unused
-$FF      Hardware I/O page
+$FC	  Unused
+$FD	  Unused
+$FE	  Unused
+$FF	  Hardware I/O page
 
 I/O Page ($FF):
 $0000-$03FF  VDC
@@ -292,18 +292,18 @@ WonderSwan Architecture
 ═══════════════════════
 
 ┌──────────────────────────────────────────────────────┐
-│                     WsConsole                        │
-│   (WonderSwan, WonderSwan Color, SwanCrystal)        │
+│					 WsConsole						│
+│   (WonderSwan, WonderSwan Color, SwanCrystal)		│
 └──────────────────────────────────────────────────────┘
-              │
-    ┌─────────┼─────────┬──────────────┐
-    │         │         │              │
-    ▼         ▼         ▼              ▼
+			  │
+	┌─────────┼─────────┬──────────────┐
+	│		 │		 │			  │
+	▼		 ▼		 ▼			  ▼
 ┌───────┐ ┌───────┐ ┌─────────┐ ┌───────────┐
 │ WsCpu │ │ WsPpu │ │  WsApu  │ │  Memory   │
-│       │ │       │ │         │ │  Manager  │
+│	   │ │	   │ │		 │ │  Manager  │
 │ V30MZ │ │ Video │ │  4 chan │ │  + Cart   │
-│ 3.07M │ │224×144│ │ + Voice │ │           │
+│ 3.07M │ │224×144│ │ + Voice │ │		   │
 └───────┘ └───────┘ └─────────┘ └───────────┘
 ```
 
@@ -312,29 +312,29 @@ WonderSwan Architecture
 ```
 Core/WS/
 ├── Main Components
-│   ├── WsConsole.h/cpp         - Console coordinator
-│   ├── WsCpu.h/cpp             - NEC V30MZ CPU
-│   ├── WsCpuPrefetch.h/cpp     - Instruction prefetch
-│   ├── WsPpu.h/cpp             - PPU (224×144)
+│   ├── WsConsole.h/cpp		 - Console coordinator
+│   ├── WsCpu.h/cpp			 - NEC V30MZ CPU
+│   ├── WsCpuPrefetch.h/cpp	 - Instruction prefetch
+│   ├── WsPpu.h/cpp			 - PPU (224×144)
 │   ├── WsMemoryManager.h/cpp   - Memory mapping
 │   ├── WsDmaController.h/cpp   - DMA controller
-│   └── WsTimer.h/cpp           - Timers
+│   └── WsTimer.h/cpp		   - Timers
 │
 ├── Audio
-│   └── APU/                    - 4-channel + voice
+│   └── APU/					- 4-channel + voice
 │
 ├── Cartridges
-│   └── Carts/                  - ROM handling
+│   └── Carts/				  - ROM handling
 │
 ├── Peripherals
-│   ├── WsEeprom.h/cpp          - Save data
-│   └── WsSerial.h/cpp          - Link cable
+│   ├── WsEeprom.h/cpp		  - Save data
+│   └── WsSerial.h/cpp		  - Link cable
 │
 ├── Input/
 │   └── WsController.h
 │
 └── Support Files
-    └── WsTypes.h               - State structures
+	└── WsTypes.h			   - State structures
 ```
 
 ### Core Components
@@ -352,16 +352,16 @@ Emulates the NEC V30MZ, an 80186-compatible CPU.
 **CPU Registers:**
 ```cpp
 struct WsCpuState {
-    // General registers
-    uint16_t AX, BX, CX, DX;
-    // Index registers
-    uint16_t SI, DI, BP, SP;
-    // Segment registers
-    uint16_t CS, DS, ES, SS;
-    // Program counter
-    uint16_t IP;
-    // Flags
-    uint16_t Flags;
+	// General registers
+	uint16_t AX, BX, CX, DX;
+	// Index registers
+	uint16_t SI, DI, BP, SP;
+	// Segment registers
+	uint16_t CS, DS, ES, SS;
+	// Program counter
+	uint16_t IP;
+	// Flags
+	uint16_t Flags;
 };
 ```
 

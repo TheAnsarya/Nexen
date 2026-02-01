@@ -114,7 +114,7 @@ var crc = Crc32.HashToUInt32(data);
 - Previous: Lua 5.4.4 (2022)
 - Current:  Lua 5.4.8 (June 2025)
 - Changes:  Bug fixes, security patches, performance improvements
-- API:      No breaking changes (same 5.4 series)
+- API:	  No breaking changes (same 5.4 series)
 ```
 
 ### Phase 6: Code Modernization ✅ COMPLETE

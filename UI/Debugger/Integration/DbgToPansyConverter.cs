@@ -19,12 +19,12 @@ public static class DbgToPansyConverter {
 	/// </summary>
 	public enum DebugFormat {
 		Unknown,
-		Ca65Dbg,      // ca65/cc65 debug format
-		WlaDx,        // WLA-DX symbol file
-		Rgbds,        // RGBDS symbol file
-		Sdcc,         // SDCC symbol file
-		Elf,          // ELF with symbols
-		MesenMlb      // Mesen label file
+		Ca65Dbg,	  // ca65/cc65 debug format
+		WlaDx,		// WLA-DX symbol file
+		Rgbds,		// RGBDS symbol file
+		Sdcc,		 // SDCC symbol file
+		Elf,		  // ELF with symbols
+		MesenMlb	  // Mesen label file
 	}
 
 	/// <summary>

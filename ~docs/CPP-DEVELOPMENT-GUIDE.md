@@ -110,18 +110,18 @@ std::shared_ptr<IVideoDevice> _video;
 ```cpp
 // Instead of pointer + size
 void ProcessData(std::span<const uint8_t> data) {
-    for (auto byte : data) { /* ... */ }
+	for (auto byte : data) { /* ... */ }
 }
 ```
 
 #### std::optional for Optional Values
 ```cpp
 std::optional<uint32_t> FindAddress(const std::string& label) {
-    auto it = _symbols.find(label);
-    if (it != _symbols.end()) {
-        return it->second;
-    }
-    return std::nullopt;
+	auto it = _symbols.find(label);
+	if (it != _symbols.end()) {
+		return it->second;
+	}
+	return std::nullopt;
 }
 ```
 
@@ -135,7 +135,7 @@ std::string msg = std::format("Address: ${:04x}", address);
 ```cpp
 // Instead of raw loops
 auto count = std::ranges::count_if(sprites, [](auto& s) { 
-    return s.visible; 
+	return s.visible; 
 });
 ```
 

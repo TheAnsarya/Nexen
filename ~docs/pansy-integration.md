@@ -61,23 +61,23 @@ Pansy files are binary metadata files with the following structure:
 
 ```
 ┌──────────────────────────────────────┐
-│           Header (32 bytes)          │
+│		   Header (32 bytes)		  │
 ├──────────────────────────────────────┤
-│         Section Count (4 bytes)      │
+│		 Section Count (4 bytes)	  │
 ├──────────────────────────────────────┤
-│          Section Table               │
+│		  Section Table			   │
 ├──────────────────────────────────────┤
-│         Section Data                 │
-│  - CODE_DATA_MAP (CDL flags)         │
-│  - SYMBOLS (labels)                  │
-│  - COMMENTS                          │
-│  - JUMP_TARGETS                      │
-│  - SUB_ENTRY_POINTS                  │
+│		 Section Data				 │
+│  - CODE_DATA_MAP (CDL flags)		 │
+│  - SYMBOLS (labels)				  │
+│  - COMMENTS						  │
+│  - JUMP_TARGETS					  │
+│  - SUB_ENTRY_POINTS				  │
 ├──────────────────────────────────────┤
-│          Footer (12 bytes)           │
-│  - ROM CRC32     (placeholder)       │
-│  - Metadata CRC32 (placeholder)      │
-│  - File CRC32    (placeholder)       │
+│		  Footer (12 bytes)		   │
+│  - ROM CRC32	 (placeholder)	   │
+│  - Metadata CRC32 (placeholder)	  │
+│  - File CRC32	(placeholder)	   │
 └──────────────────────────────────────┘
 ```
 

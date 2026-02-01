@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <Nullable>enable</Nullable>
-    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-    <AssemblyName>Nexen</AssemblyName>
-    <RootNamespace>Nexen</RootNamespace>
-    <StartupObject>Nexen.Program</StartupObject>
-    <Version>2.2.0</Version>
-    <FileVersion>2.2.0</FileVersion>
-    <Copyright>(C) 2014-2026 Sour/TheAnsarya</Copyright>
+	<OutputType>WinExe</OutputType>
+	<TargetFramework>net10.0</TargetFramework>
+	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	<Nullable>enable</Nullable>
+	<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+	<AssemblyName>Nexen</AssemblyName>
+	<RootNamespace>Nexen</RootNamespace>
+	<StartupObject>Nexen.Program</StartupObject>
+	<Version>2.2.0</Version>
+	<FileVersion>2.2.0</FileVersion>
+	<Copyright>(C) 2014-2026 Sour/TheAnsarya</Copyright>
   </PropertyGroup>
 	<PropertyGroup>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -30,7 +30,7 @@
 		<SolutionDir>..</SolutionDir>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <OutputPath>$(SolutionDir)\bin\$(RuntimeIdentifier)\Debug\</OutputPath>
+	<OutputPath>$(SolutionDir)\bin\$(RuntimeIdentifier)\Debug\</OutputPath>
   </PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 	  <OutputPath>$(SolutionDir)\bin\$(RuntimeIdentifier)\Release\</OutputPath>
@@ -107,564 +107,564 @@
 		<TrimmerRootAssembly Include="Dock.Settings" />
 	</ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.11" />
-    <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.3.0" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
-    <PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.3.11" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.11" Condition="'$(OptimizeUi)'!='true'" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.9" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
-    <PackageReference Include="Dock.Avalonia" Version="11.3.9" />
-    <PackageReference Include="Dock.Avalonia.Themes.Fluent" Version="11.3.9" />
-    <PackageReference Include="Dock.Model.Mvvm" Version="11.3.9" />
-    <PackageReference Include="Dotnet.Bundle" Version="*" />
-    <PackageReference Include="ELFSharp" Version="2.17.3" />
-    <PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
-    <PackageReference Include="System.IO.Hashing" Version="10.0.2" />
+	<PackageReference Include="Avalonia" Version="11.3.11" />
+	<PackageReference Include="Avalonia.AvaloniaEdit" Version="11.3.0" />
+	<PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
+	<PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.3.11" />
+	<PackageReference Include="Avalonia.Diagnostics" Version="11.3.11" Condition="'$(OptimizeUi)'!='true'" />
+	<PackageReference Include="Avalonia.ReactiveUI" Version="11.3.9" />
+	<PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
+	<PackageReference Include="Dock.Avalonia" Version="11.3.9" />
+	<PackageReference Include="Dock.Avalonia.Themes.Fluent" Version="11.3.9" />
+	<PackageReference Include="Dock.Model.Mvvm" Version="11.3.9" />
+	<PackageReference Include="Dotnet.Bundle" Version="*" />
+	<PackageReference Include="ELFSharp" Version="2.17.3" />
+	<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
+	<PackageReference Include="System.IO.Hashing" Version="10.0.2" />
    </ItemGroup>
   <ItemGroup>
-    <Compile Update="Controls\ButtonWithIcon.axaml.cs">
-      <DependentUpon>ButtonWithIcon.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\EnumComboBox.axaml.cs">
-      <DependentUpon>EnumComboBox.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\ControllerButton.axaml.cs">
-      <DependentUpon>ControllerButton.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\FirmwareSelect.axaml.cs">
-      <SubType>Code</SubType>
-      <DependentUpon>FirmwareSelect.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\SoftwareRendererView.axaml.cs">
-      <DependentUpon>SoftwareRendererView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\PaletteConfig.axaml.cs">
-      <DependentUpon>PaletteConfig.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Controls\CodeScrollBar.axaml.cs">
-      <DependentUpon>CodeScrollBar.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\InputComboBox.axaml.cs">
-      <DependentUpon>InputComboBox.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\IconButton.axaml.cs">
-      <DependentUpon>IconButton.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\SystemSpecificSettings.axaml.cs">
-      <DependentUpon>SystemSpecificSettings.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\OverscanInput.axaml.cs">
-      <DependentUpon>OverscanInput.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\PathSelector.axaml.cs">
-      <DependentUpon>PathSelector.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\MultiKeyBindingButton.axaml.cs">
-      <DependentUpon>MultiKeyBindingButton.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\GroupBox.axaml.cs">
-      <DependentUpon>GroupBox.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\OptionSection.axaml.cs">
-      <DependentUpon>OptionSection.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\StatusViews\St018StatusView.axaml.cs">
-      <DependentUpon>St018StatusView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\StatusViews\GbaStatusView.axaml.cs">
-      <DependentUpon>GbaStatusView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\StatusViews\WsStatusView.axaml.cs">
-      <DependentUpon>WsStatusView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\StatusViews\SmsStatusView.axaml.cs">
-      <DependentUpon>SmsStatusView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\ControllerListView.axaml.cs">
-      <DependentUpon>ControllerListView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\ControllerInputView.axaml.cs">
-      <DependentUpon>ControllerInputView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Controls\NavButton.axaml.cs">
-      <DependentUpon>NavButton.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Controls\ScrollPictureViewer.axaml.cs">
-      <DependentUpon>ScrollPictureViewer.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Controls\HexInput.axaml.cs">
-      <DependentUpon>HexInput.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Controls\DynamicTooltip.axaml.cs">
-      <DependentUpon>DynamicTooltip.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Controls\ColorPickerField.axaml.cs">
-      <DependentUpon>ColorPickerField.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Controls\ColorCheckbox.axaml.cs">
-      <DependentUpon>ColorCheckbox.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Controls\EventViewerCategoryControl.axaml.cs">
-      <DependentUpon>EventViewerCategoryControl.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Controls\DebuggerShortcutKeyGrid.axaml.cs">
-      <DependentUpon>DebuggerShortcutKeyGrid.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Controls\DebuggerKeyBindingButton.cs">
-      <DependentUpon>DebuggerKeyBindingButton</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Controls\ActionToolbar.axaml.cs">
-      <DependentUpon>ActionToolbar.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Controls\SpritePreviewPanel.axaml.cs">
-      <DependentUpon>SpritePreviewPanel.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\StatusViews\Cx4StatusView.axaml.cs">
-      <DependentUpon>Cx4StatusView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\StatusViews\GsuStatusView.axaml.cs">
-      <DependentUpon>GsuStatusView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\StatusViews\NecDspStatusView.axaml.cs">
-      <DependentUpon>NecDspStatusView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\StatusViews\GbStatusView.axaml.cs">
-      <DependentUpon>GbStatusView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\StatusViews\PceStatusView.axaml.cs">
-      <DependentUpon>PceStatusView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\StatusViews\SpcStatusView.axaml.cs">
-      <DependentUpon>SpcStatusView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\FindResultListView.axaml.cs">
-      <DependentUpon>FindResultListView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\DebuggerLogView.axaml.cs">
-      <DependentUpon>DebuggerLogView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\FunctionListView.axaml.cs">
-      <DependentUpon>FunctionListView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\GbaEventViewerConfigView.axaml.cs">
-      <DependentUpon>GbaEventViewerConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\WsEventViewerConfigView.axaml.cs">
-      <DependentUpon>WsEventViewerConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\SmsEventViewerConfigView.axaml.cs">
-      <DependentUpon>SmsEventViewerConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\RegisterTabView.axaml.cs">
-      <DependentUpon>RegisterTabView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\PceEventViewerConfigView.axaml.cs">
-      <DependentUpon>PceEventViewerConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\QuickSearchView.axaml.cs">
-      <DependentUpon>QuickSearchView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\ScriptCodeCompletionView.axaml.cs">
-      <DependentUpon>ScriptCodeCompletionView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\SourceViewView.axaml.cs">
-      <DependentUpon>SourceViewView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\DebuggerOptionsView.axaml.cs">
-      <DependentUpon>DebuggerOptionsView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\RefreshTimingView.axaml.cs">
-      <DependentUpon>RefreshTimingView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\CommentEditWindow.axaml.cs">
-      <DependentUpon>CommentEditWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\WsControllerVerticalView.axaml.cs">
-      <DependentUpon>WsControllerVerticalView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\WsControllerView.axaml.cs">
-      <DependentUpon>WsControllerView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\WsConfigView.axaml.cs">
-      <DependentUpon>WsConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\VideoConfigOverrideView.axaml.cs">
-      <DependentUpon>VideoConfigOverrideView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\FontOptionsView.axaml.cs">
-      <DependentUpon>FontOptionsView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\MemoryToolsDisplayOptionsView.axaml.cs">
-      <DependentUpon>MemoryToolsDisplayOptionsView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\NesEventViewerConfigView.axaml.cs">
-      <DependentUpon>NesEventViewerConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\GbEventViewerConfigView.axaml.cs">
-      <DependentUpon>GbEventViewerConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\SnesEventViewerConfigView.axaml.cs">
-      <DependentUpon>SnesEventViewerConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\WatchListView.axaml.cs">
-      <DependentUpon>WatchListView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\CallStackView.axaml.cs">
-      <DependentUpon>CallStackView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\LabelListView.axaml.cs">
-      <DependentUpon>LabelListView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\DebuggerDock\ToolContainerView.axaml.cs">
-      <DependentUpon>ToolContainerView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\StatusViews\NesStatusView.axaml.cs">
-      <DependentUpon>NesStatusView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\NesHeaderEditWindow.axaml.cs">
-      <DependentUpon>NesHeaderEditWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\GoToAllWindow.axaml.cs">
-      <DependentUpon>GoToAllWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\ColorIndexPickerWindow.axaml.cs">
-      <DependentUpon>ColorIndexPickerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\FindAllOccurrencesWindow.axaml.cs">
-      <DependentUpon>FindAllOccurrencesWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\MemoryViewerFindWindow.axaml.cs">
-      <DependentUpon>MemoryViewerFindWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\BreakOnWindow.axaml.cs">
-      <DependentUpon>BreakOnWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\DebuggerConfigWindow.axaml.cs">
-      <DependentUpon>DebuggerConfigWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\BreakInWindow.axaml.cs">
-      <DependentUpon>BreakInWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\DebugLogWindow.axaml.cs">
-      <DependentUpon>DebugLogWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\MemorySearchWindow.axaml.cs">
-      <DependentUpon>MemorySearchWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\WatchWindow.axaml.cs">
-      <DependentUpon>WatchWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\RegisterViewerWindow.axaml.cs">
-      <DependentUpon>RegisterViewerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\SpriteViewerWindow.axaml.cs">
-      <DependentUpon>SpriteViewerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\TilemapViewerWindow.axaml.cs">
-      <DependentUpon>TilemapViewerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\PaletteViewerWindow.axaml.cs">
-      <DependentUpon>PaletteViewerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\TileEditorWindow.axaml.cs">
-      <DependentUpon>TileEditorWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\TraceLoggerWindow.axaml.cs">
-      <DependentUpon>TraceLoggerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\ProfilerWindow.axaml.cs">
-      <DependentUpon>ProfilerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\ScriptWindow.axaml.cs">
-      <DependentUpon>ScriptWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\AssemblerWindow.axaml.cs">
-      <DependentUpon>AssemblerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\BreakpointEditWindow.axaml.cs">
-      <DependentUpon>BreakpointEditWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\LabelEditWindow.axaml.cs">
-      <DependentUpon>LabelEditWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\EventViewerWindow.axaml.cs">
-      <DependentUpon>EventViewerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\TileViewerWindow.axaml.cs">
-      <DependentUpon>TileViewerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\MemoryToolsWindow.axaml.cs">
-      <DependentUpon>MemoryToolsWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\BandaiHypershotControllerView.axaml.cs">
-      <DependentUpon>BandaiHypershotControllerView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\GbaConfigView.axaml.cs">
-      <DependentUpon>GbaConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\GbaControllerView.axaml.cs">
-      <DependentUpon>GbaControllerView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\PceAvenuePad6View.axaml.cs">
-      <DependentUpon>PceAvenuePad6View.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\OtherConsolesConfigView.axaml.cs">
-      <DependentUpon>OtherConsolesConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\CvConfigView.axaml.cs">
-      <DependentUpon>CvConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\SmsInputConfigView.axaml.cs">
-      <DependentUpon>SmsInputConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\SmsControllerView.axaml.cs">
-      <DependentUpon>SmsControllerView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\SmsConfigView.axaml.cs">
-      <DependentUpon>SmsConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\PceControllerView.axaml.cs">
-      <DependentUpon>PceControllerView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\PceInputConfigView.axaml.cs">
-      <DependentUpon>PceInputConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\PceConfigView.axaml.cs">
-      <DependentUpon>PceConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\InputConfigView.axaml.cs">
-      <DependentUpon>InputConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\MainMenuView.axaml.cs">
-      <DependentUpon>MainMenuView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\AudioPlayerView.axaml.cs">
-      <DependentUpon>AudioPlayerView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\GameboyConfigView.axaml.cs">
-      <DependentUpon>GameboyConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\StateGridEntry.axaml.cs">
-      <DependentUpon>StateGridEntry.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\DefaultControllerView.axaml.cs">
-      <DependentUpon>DefaultControllerView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\SnesConfigView.axaml.cs">
-      <DependentUpon>SnesConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\ShortcutKeysTabView.axaml.cs">
-      <DependentUpon>ShortcutKeysTabView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\NesConfigView.axaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-    <Compile Update="Views\NesInputConfigView.axaml.cs">
-      <DependentUpon>NesInputConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\NesControllerView.axaml.cs">
-      <DependentUpon>NesControllerView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\StateGrid.axaml.cs">
-      <DependentUpon>StateGrid.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\CheatDatabaseWindow.axaml.cs">
-      <DependentUpon>CheatDatabaseWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\CommandLineHelpWindow.axaml.cs">
-      <DependentUpon>CommandLineHelpWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\AboutWindow.axaml.cs">
-      <DependentUpon>AboutWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\CheatEditWindow.axaml.cs">
-      <DependentUpon>CheatEditWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\HistoryViewerRangePickerWindow.axaml.cs">
-      <DependentUpon>HistoryViewerRangePickerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\HistoryViewerWindow.axaml.cs">
-      <DependentUpon>HistoryViewerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\GameConfigWindow.axaml.cs">
-      <DependentUpon>GameConfigWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\HdPackBuilderWindow.axaml.cs">
-      <DependentUpon>HdPackBuilderWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\UpdatePromptWindow.axaml.cs">
-      <DependentUpon>UpdatePromptWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\SelectStorageFolderWindow.axaml.cs">
-      <DependentUpon>SelectStorageFolderWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\InputBarcodeWindow.axaml.cs">
-      <DependentUpon>InputBarcodeWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\CheatListWindow.axaml.cs">
-      <DependentUpon>CheatListWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\SelectRomWindow.axaml.cs">
-      <DependentUpon>SelectRomWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\NetplayConnectWindow.axaml.cs">
-      <DependentUpon>NetplayConnectWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\NetplayStartServerWindow.axaml.cs">
-      <DependentUpon>NetplayStartServerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\MovieRecordWindow.axaml.cs">
-      <DependentUpon>MovieRecordWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\VideoRecordWindow.axaml.cs">
-      <DependentUpon>VideoRecordWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\ColorPickerWindow.axaml.cs">
-      <DependentUpon>ColorPickerWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\LogWindow.axaml.cs">
-      <DependentUpon>LogWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\ConfigWindow.axaml.cs">
-      <DependentUpon>ConfigWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\CheckBoxWarning.axaml.cs">
-      <DependentUpon>CheckBoxWarning.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\GetKeyWindow.axaml.cs">
-      <DependentUpon>GetKeyWindow.axaml</DependentUpon>
-    </Compile>
+	<Compile Update="Controls\ButtonWithIcon.axaml.cs">
+	  <DependentUpon>ButtonWithIcon.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\EnumComboBox.axaml.cs">
+	  <DependentUpon>EnumComboBox.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\ControllerButton.axaml.cs">
+	  <DependentUpon>ControllerButton.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\FirmwareSelect.axaml.cs">
+	  <SubType>Code</SubType>
+	  <DependentUpon>FirmwareSelect.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\SoftwareRendererView.axaml.cs">
+	  <DependentUpon>SoftwareRendererView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\PaletteConfig.axaml.cs">
+	  <DependentUpon>PaletteConfig.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Controls\CodeScrollBar.axaml.cs">
+	  <DependentUpon>CodeScrollBar.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\InputComboBox.axaml.cs">
+	  <DependentUpon>InputComboBox.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\IconButton.axaml.cs">
+	  <DependentUpon>IconButton.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\SystemSpecificSettings.axaml.cs">
+	  <DependentUpon>SystemSpecificSettings.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\OverscanInput.axaml.cs">
+	  <DependentUpon>OverscanInput.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\PathSelector.axaml.cs">
+	  <DependentUpon>PathSelector.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\MultiKeyBindingButton.axaml.cs">
+	  <DependentUpon>MultiKeyBindingButton.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\GroupBox.axaml.cs">
+	  <DependentUpon>GroupBox.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\OptionSection.axaml.cs">
+	  <DependentUpon>OptionSection.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\StatusViews\St018StatusView.axaml.cs">
+	  <DependentUpon>St018StatusView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\StatusViews\GbaStatusView.axaml.cs">
+	  <DependentUpon>GbaStatusView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\StatusViews\WsStatusView.axaml.cs">
+	  <DependentUpon>WsStatusView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\StatusViews\SmsStatusView.axaml.cs">
+	  <DependentUpon>SmsStatusView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\ControllerListView.axaml.cs">
+	  <DependentUpon>ControllerListView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\ControllerInputView.axaml.cs">
+	  <DependentUpon>ControllerInputView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Controls\NavButton.axaml.cs">
+	  <DependentUpon>NavButton.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Controls\ScrollPictureViewer.axaml.cs">
+	  <DependentUpon>ScrollPictureViewer.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Controls\HexInput.axaml.cs">
+	  <DependentUpon>HexInput.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Controls\DynamicTooltip.axaml.cs">
+	  <DependentUpon>DynamicTooltip.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Controls\ColorPickerField.axaml.cs">
+	  <DependentUpon>ColorPickerField.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Controls\ColorCheckbox.axaml.cs">
+	  <DependentUpon>ColorCheckbox.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Controls\EventViewerCategoryControl.axaml.cs">
+	  <DependentUpon>EventViewerCategoryControl.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Controls\DebuggerShortcutKeyGrid.axaml.cs">
+	  <DependentUpon>DebuggerShortcutKeyGrid.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Controls\DebuggerKeyBindingButton.cs">
+	  <DependentUpon>DebuggerKeyBindingButton</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Controls\ActionToolbar.axaml.cs">
+	  <DependentUpon>ActionToolbar.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Controls\SpritePreviewPanel.axaml.cs">
+	  <DependentUpon>SpritePreviewPanel.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\StatusViews\Cx4StatusView.axaml.cs">
+	  <DependentUpon>Cx4StatusView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\StatusViews\GsuStatusView.axaml.cs">
+	  <DependentUpon>GsuStatusView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\StatusViews\NecDspStatusView.axaml.cs">
+	  <DependentUpon>NecDspStatusView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\StatusViews\GbStatusView.axaml.cs">
+	  <DependentUpon>GbStatusView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\StatusViews\PceStatusView.axaml.cs">
+	  <DependentUpon>PceStatusView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\StatusViews\SpcStatusView.axaml.cs">
+	  <DependentUpon>SpcStatusView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\FindResultListView.axaml.cs">
+	  <DependentUpon>FindResultListView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\DebuggerLogView.axaml.cs">
+	  <DependentUpon>DebuggerLogView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\FunctionListView.axaml.cs">
+	  <DependentUpon>FunctionListView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\GbaEventViewerConfigView.axaml.cs">
+	  <DependentUpon>GbaEventViewerConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\WsEventViewerConfigView.axaml.cs">
+	  <DependentUpon>WsEventViewerConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\SmsEventViewerConfigView.axaml.cs">
+	  <DependentUpon>SmsEventViewerConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\RegisterTabView.axaml.cs">
+	  <DependentUpon>RegisterTabView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\PceEventViewerConfigView.axaml.cs">
+	  <DependentUpon>PceEventViewerConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\QuickSearchView.axaml.cs">
+	  <DependentUpon>QuickSearchView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\ScriptCodeCompletionView.axaml.cs">
+	  <DependentUpon>ScriptCodeCompletionView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\SourceViewView.axaml.cs">
+	  <DependentUpon>SourceViewView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\DebuggerOptionsView.axaml.cs">
+	  <DependentUpon>DebuggerOptionsView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\RefreshTimingView.axaml.cs">
+	  <DependentUpon>RefreshTimingView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\CommentEditWindow.axaml.cs">
+	  <DependentUpon>CommentEditWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\WsControllerVerticalView.axaml.cs">
+	  <DependentUpon>WsControllerVerticalView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\WsControllerView.axaml.cs">
+	  <DependentUpon>WsControllerView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\WsConfigView.axaml.cs">
+	  <DependentUpon>WsConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\VideoConfigOverrideView.axaml.cs">
+	  <DependentUpon>VideoConfigOverrideView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\FontOptionsView.axaml.cs">
+	  <DependentUpon>FontOptionsView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\MemoryToolsDisplayOptionsView.axaml.cs">
+	  <DependentUpon>MemoryToolsDisplayOptionsView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\NesEventViewerConfigView.axaml.cs">
+	  <DependentUpon>NesEventViewerConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\GbEventViewerConfigView.axaml.cs">
+	  <DependentUpon>GbEventViewerConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\SnesEventViewerConfigView.axaml.cs">
+	  <DependentUpon>SnesEventViewerConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\WatchListView.axaml.cs">
+	  <DependentUpon>WatchListView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\CallStackView.axaml.cs">
+	  <DependentUpon>CallStackView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\LabelListView.axaml.cs">
+	  <DependentUpon>LabelListView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\DebuggerDock\ToolContainerView.axaml.cs">
+	  <DependentUpon>ToolContainerView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\StatusViews\NesStatusView.axaml.cs">
+	  <DependentUpon>NesStatusView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\NesHeaderEditWindow.axaml.cs">
+	  <DependentUpon>NesHeaderEditWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\GoToAllWindow.axaml.cs">
+	  <DependentUpon>GoToAllWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\ColorIndexPickerWindow.axaml.cs">
+	  <DependentUpon>ColorIndexPickerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\FindAllOccurrencesWindow.axaml.cs">
+	  <DependentUpon>FindAllOccurrencesWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\MemoryViewerFindWindow.axaml.cs">
+	  <DependentUpon>MemoryViewerFindWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\BreakOnWindow.axaml.cs">
+	  <DependentUpon>BreakOnWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\DebuggerConfigWindow.axaml.cs">
+	  <DependentUpon>DebuggerConfigWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\BreakInWindow.axaml.cs">
+	  <DependentUpon>BreakInWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\DebugLogWindow.axaml.cs">
+	  <DependentUpon>DebugLogWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\MemorySearchWindow.axaml.cs">
+	  <DependentUpon>MemorySearchWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\WatchWindow.axaml.cs">
+	  <DependentUpon>WatchWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\RegisterViewerWindow.axaml.cs">
+	  <DependentUpon>RegisterViewerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\SpriteViewerWindow.axaml.cs">
+	  <DependentUpon>SpriteViewerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\TilemapViewerWindow.axaml.cs">
+	  <DependentUpon>TilemapViewerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\PaletteViewerWindow.axaml.cs">
+	  <DependentUpon>PaletteViewerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\TileEditorWindow.axaml.cs">
+	  <DependentUpon>TileEditorWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\TraceLoggerWindow.axaml.cs">
+	  <DependentUpon>TraceLoggerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\ProfilerWindow.axaml.cs">
+	  <DependentUpon>ProfilerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\ScriptWindow.axaml.cs">
+	  <DependentUpon>ScriptWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\AssemblerWindow.axaml.cs">
+	  <DependentUpon>AssemblerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\BreakpointEditWindow.axaml.cs">
+	  <DependentUpon>BreakpointEditWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\LabelEditWindow.axaml.cs">
+	  <DependentUpon>LabelEditWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\EventViewerWindow.axaml.cs">
+	  <DependentUpon>EventViewerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\TileViewerWindow.axaml.cs">
+	  <DependentUpon>TileViewerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\MemoryToolsWindow.axaml.cs">
+	  <DependentUpon>MemoryToolsWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\BandaiHypershotControllerView.axaml.cs">
+	  <DependentUpon>BandaiHypershotControllerView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\GbaConfigView.axaml.cs">
+	  <DependentUpon>GbaConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\GbaControllerView.axaml.cs">
+	  <DependentUpon>GbaControllerView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\PceAvenuePad6View.axaml.cs">
+	  <DependentUpon>PceAvenuePad6View.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\OtherConsolesConfigView.axaml.cs">
+	  <DependentUpon>OtherConsolesConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\CvConfigView.axaml.cs">
+	  <DependentUpon>CvConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\SmsInputConfigView.axaml.cs">
+	  <DependentUpon>SmsInputConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\SmsControllerView.axaml.cs">
+	  <DependentUpon>SmsControllerView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\SmsConfigView.axaml.cs">
+	  <DependentUpon>SmsConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\PceControllerView.axaml.cs">
+	  <DependentUpon>PceControllerView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\PceInputConfigView.axaml.cs">
+	  <DependentUpon>PceInputConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\PceConfigView.axaml.cs">
+	  <DependentUpon>PceConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\InputConfigView.axaml.cs">
+	  <DependentUpon>InputConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\MainMenuView.axaml.cs">
+	  <DependentUpon>MainMenuView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\AudioPlayerView.axaml.cs">
+	  <DependentUpon>AudioPlayerView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\GameboyConfigView.axaml.cs">
+	  <DependentUpon>GameboyConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\StateGridEntry.axaml.cs">
+	  <DependentUpon>StateGridEntry.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\DefaultControllerView.axaml.cs">
+	  <DependentUpon>DefaultControllerView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\SnesConfigView.axaml.cs">
+	  <DependentUpon>SnesConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\ShortcutKeysTabView.axaml.cs">
+	  <DependentUpon>ShortcutKeysTabView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\NesConfigView.axaml.cs">
+	  <DependentUpon>%(Filename)</DependentUpon>
+	</Compile>
+	<Compile Update="Views\NesInputConfigView.axaml.cs">
+	  <DependentUpon>NesInputConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\NesControllerView.axaml.cs">
+	  <DependentUpon>NesControllerView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\StateGrid.axaml.cs">
+	  <DependentUpon>StateGrid.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\CheatDatabaseWindow.axaml.cs">
+	  <DependentUpon>CheatDatabaseWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\CommandLineHelpWindow.axaml.cs">
+	  <DependentUpon>CommandLineHelpWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\AboutWindow.axaml.cs">
+	  <DependentUpon>AboutWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\CheatEditWindow.axaml.cs">
+	  <DependentUpon>CheatEditWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\HistoryViewerRangePickerWindow.axaml.cs">
+	  <DependentUpon>HistoryViewerRangePickerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\HistoryViewerWindow.axaml.cs">
+	  <DependentUpon>HistoryViewerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\GameConfigWindow.axaml.cs">
+	  <DependentUpon>GameConfigWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\HdPackBuilderWindow.axaml.cs">
+	  <DependentUpon>HdPackBuilderWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\UpdatePromptWindow.axaml.cs">
+	  <DependentUpon>UpdatePromptWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\SelectStorageFolderWindow.axaml.cs">
+	  <DependentUpon>SelectStorageFolderWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\InputBarcodeWindow.axaml.cs">
+	  <DependentUpon>InputBarcodeWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\CheatListWindow.axaml.cs">
+	  <DependentUpon>CheatListWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\SelectRomWindow.axaml.cs">
+	  <DependentUpon>SelectRomWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\NetplayConnectWindow.axaml.cs">
+	  <DependentUpon>NetplayConnectWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\NetplayStartServerWindow.axaml.cs">
+	  <DependentUpon>NetplayStartServerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\MovieRecordWindow.axaml.cs">
+	  <DependentUpon>MovieRecordWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\VideoRecordWindow.axaml.cs">
+	  <DependentUpon>VideoRecordWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\ColorPickerWindow.axaml.cs">
+	  <DependentUpon>ColorPickerWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\LogWindow.axaml.cs">
+	  <DependentUpon>LogWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\ConfigWindow.axaml.cs">
+	  <DependentUpon>ConfigWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Controls\CheckBoxWarning.axaml.cs">
+	  <DependentUpon>CheckBoxWarning.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\GetKeyWindow.axaml.cs">
+	  <DependentUpon>GetKeyWindow.axaml</DependentUpon>
+	</Compile>
 	 <Compile Update="Controls\KeyBindingButton.axaml.cs">
-      <DependentUpon>KeyBindingButton.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Windows\ControllerConfigWindow.axaml.cs">
-      <DependentUpon>ControllerConfigWindow.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\SnesControllerView.axaml.cs">
-      <DependentUpon>SnesControllerView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\SnesInputConfigView.axaml.cs">
-      <DependentUpon>SnesInputConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\EmulationConfigView.axaml.cs">
-      <DependentUpon>EmulationConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\PreferencesConfigView.axaml.cs">
-      <DependentUpon>PreferencesConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\VideoConfigView.axaml.cs">
-      <DependentUpon>VideoConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\BreakpointListView.axaml.cs">
-      <DependentUpon>BreakpointListView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\AudioConfigView.axaml.cs">
-      <DependentUpon>AudioConfigView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\StatusViews\SnesStatusView.axaml.cs">
-      <DependentUpon>SnesStatusView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Views\DisassemblyView.axaml.cs">
-      <DependentUpon>DisassemblyView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Debugger\Windows\DebuggerWindow.axaml.cs">
-      <DependentUpon>DebuggerWindow.axaml</DependentUpon>
-    </Compile>
+	  <DependentUpon>KeyBindingButton.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\ControllerConfigWindow.axaml.cs">
+	  <DependentUpon>ControllerConfigWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\SnesControllerView.axaml.cs">
+	  <DependentUpon>SnesControllerView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\SnesInputConfigView.axaml.cs">
+	  <DependentUpon>SnesInputConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\EmulationConfigView.axaml.cs">
+	  <DependentUpon>EmulationConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\PreferencesConfigView.axaml.cs">
+	  <DependentUpon>PreferencesConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\VideoConfigView.axaml.cs">
+	  <DependentUpon>VideoConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\BreakpointListView.axaml.cs">
+	  <DependentUpon>BreakpointListView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Views\AudioConfigView.axaml.cs">
+	  <DependentUpon>AudioConfigView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\StatusViews\SnesStatusView.axaml.cs">
+	  <DependentUpon>SnesStatusView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Views\DisassemblyView.axaml.cs">
+	  <DependentUpon>DisassemblyView.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Debugger\Windows\DebuggerWindow.axaml.cs">
+	  <DependentUpon>DebuggerWindow.axaml</DependentUpon>
+	</Compile>
   </ItemGroup>
   <ItemGroup>
 	  <AvaloniaResource Include="Assets\**" />
 	  <AvaloniaResource Include="Styles\AvaloniaEditStyles.xaml">
-	    <Generator>MSBuild:Compile</Generator>
+		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  
 	  <AvaloniaResource Include="Styles\DockStyles.xaml">
-	    <Generator>MSBuild:Compile</Generator>
+		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  <AvaloniaResource Include="Styles\AvaloniaScrollViewerStyles.xaml">
-	    <Generator>MSBuild:Compile</Generator>
+		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  <AvaloniaResource Include="Styles\AvaloniaNumericUpDownStyles.xaml">
-	    <Generator>MSBuild:Compile</Generator>
+		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  <AvaloniaResource Include="Styles\AvaloniaMenuItemStyles.xaml">
-	    <Generator>MSBuild:Compile</Generator>
+		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  <AvaloniaResource Include="Styles\AvaloniaContextMenuStyles.xaml">
-	    <Generator>MSBuild:Compile</Generator>
+		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  <AvaloniaResource Include="Styles\DebugStatusStyles.xaml">
-	    <Generator>MSBuild:Compile</Generator>
+		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  <AvaloniaResource Include="Styles\AvaloniaComboBoxStyles.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  <AvaloniaResource Include="Styles\DataBoxStyles.xaml">
-	    <Generator>MSBuild:Compile</Generator>
+		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  <AvaloniaResource Include="Styles\MesenStyles.Light.xaml">
-	    <Generator>MSBuild:Compile</Generator>
+		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  <AvaloniaResource Include="Styles\StartupStyles.xaml">
-	    <Generator>MSBuild:Compile</Generator>
+		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  <AvaloniaResource Include="Styles\MesenStyles.Dark.xaml">
-	    <Generator>MSBuild:Compile</Generator>
+		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  <AvaloniaResource Include="Styles\MesenStyles.xaml" />
-    <AvaloniaResource Include="ThirdParty\DataBox\Themes\Fluent.axaml" />
+	<AvaloniaResource Include="ThirdParty\DataBox\Themes\Fluent.axaml" />
   </ItemGroup>
   <ItemGroup>
-    <AvaloniaResource Include="Assets\NesIcon.png" />
+	<AvaloniaResource Include="Assets\NesIcon.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Debugger\Documentation\WsDocumentation.json" />
-    <EmbeddedResource Include="Debugger\Documentation\SmsDocumentation.json" />
-    <EmbeddedResource Include="Debugger\Documentation\GbaDocumentation.json" />
-    <EmbeddedResource Include="Debugger\Documentation\SpcDocumentation.json" />
-    <EmbeddedResource Include="Debugger\Documentation\PceDocumentation.json" />
-    <EmbeddedResource Include="Debugger\Documentation\GbDocumentation.json" />
-    <EmbeddedResource Include="Debugger\Documentation\SnesDocumentation.json" />
-    <EmbeddedResource Include="Debugger\Documentation\NesDocumentation.json" />
-    <EmbeddedResource Include="Debugger\HighlightLua.xshd" />
-    <EmbeddedResource Include="Debugger\HighlightAssembly.xshd" />
-    <EmbeddedResource Include="Debugger\Documentation\LuaDocumentation.json" />
-    <EmbeddedResource Include="Debugger\Utilities\LuaScripts\NesDmcCapture.lua" />
-    <EmbeddedResource Include="Debugger\Utilities\LuaScripts\DrawMode.lua" />
-    <EmbeddedResource Include="Debugger\Utilities\LuaScripts\Example.lua" />
-    <EmbeddedResource Include="Debugger\Utilities\LuaScripts\Grid.lua" />
-    <EmbeddedResource Include="Debugger\Utilities\LuaScripts\ModifyScreen.lua" />
-    <EmbeddedResource Include="Debugger\Utilities\LuaScripts\NesGameBoyMode.lua" />
-    <EmbeddedResource Include="Debugger\Utilities\LuaScripts\NesLogParallax.lua" />
-    <EmbeddedResource Include="Debugger\Utilities\LuaScripts\NesSpriteBox.lua" />
-    <EmbeddedResource Include="Debugger\Utilities\LuaScripts\DisplayState.lua" />
-    <EmbeddedResource Include="Debugger\Utilities\LuaScripts\NtscSafeArea.lua" />
-    <EmbeddedResource Include="Debugger\Utilities\LuaScripts\NesPianoRoll.lua" />
-    <EmbeddedResource Include="Debugger\Utilities\LuaScripts\ReverseMode.lua" />
-    <EmbeddedResource Include="Dependencies.zip" />
-    <EmbeddedResource Include="Localization\resources.en.xml" WithCulture="false" Type="Non-Resx" />
-    <EmbeddedResource Include="Utilities\DipSwitchDefinitions.xml" />
+	<EmbeddedResource Include="Debugger\Documentation\WsDocumentation.json" />
+	<EmbeddedResource Include="Debugger\Documentation\SmsDocumentation.json" />
+	<EmbeddedResource Include="Debugger\Documentation\GbaDocumentation.json" />
+	<EmbeddedResource Include="Debugger\Documentation\SpcDocumentation.json" />
+	<EmbeddedResource Include="Debugger\Documentation\PceDocumentation.json" />
+	<EmbeddedResource Include="Debugger\Documentation\GbDocumentation.json" />
+	<EmbeddedResource Include="Debugger\Documentation\SnesDocumentation.json" />
+	<EmbeddedResource Include="Debugger\Documentation\NesDocumentation.json" />
+	<EmbeddedResource Include="Debugger\HighlightLua.xshd" />
+	<EmbeddedResource Include="Debugger\HighlightAssembly.xshd" />
+	<EmbeddedResource Include="Debugger\Documentation\LuaDocumentation.json" />
+	<EmbeddedResource Include="Debugger\Utilities\LuaScripts\NesDmcCapture.lua" />
+	<EmbeddedResource Include="Debugger\Utilities\LuaScripts\DrawMode.lua" />
+	<EmbeddedResource Include="Debugger\Utilities\LuaScripts\Example.lua" />
+	<EmbeddedResource Include="Debugger\Utilities\LuaScripts\Grid.lua" />
+	<EmbeddedResource Include="Debugger\Utilities\LuaScripts\ModifyScreen.lua" />
+	<EmbeddedResource Include="Debugger\Utilities\LuaScripts\NesGameBoyMode.lua" />
+	<EmbeddedResource Include="Debugger\Utilities\LuaScripts\NesLogParallax.lua" />
+	<EmbeddedResource Include="Debugger\Utilities\LuaScripts\NesSpriteBox.lua" />
+	<EmbeddedResource Include="Debugger\Utilities\LuaScripts\DisplayState.lua" />
+	<EmbeddedResource Include="Debugger\Utilities\LuaScripts\NtscSafeArea.lua" />
+	<EmbeddedResource Include="Debugger\Utilities\LuaScripts\NesPianoRoll.lua" />
+	<EmbeddedResource Include="Debugger\Utilities\LuaScripts\ReverseMode.lua" />
+	<EmbeddedResource Include="Dependencies.zip" />
+	<EmbeddedResource Include="Localization\resources.en.xml" WithCulture="false" Type="Non-Resx" />
+	<EmbeddedResource Include="Utilities\DipSwitchDefinitions.xml" />
   </ItemGroup>
   <ItemGroup>
-    <AvaloniaXaml Update="Controls\FirmwareSelect.axaml">
-      <SubType>Designer</SubType>
-    </AvaloniaXaml>
+	<AvaloniaXaml Update="Controls\FirmwareSelect.axaml">
+	  <SubType>Designer</SubType>
+	</AvaloniaXaml>
   </ItemGroup>
 
   <!-- DISABLED: PreBuildWindows target - This dependency bundling is for release packaging only.
-       The MesenCore.dll and other native DLLs may not exist during normal build.
-       Use 'dotnet build -r win-x64' or build C++ projects first, then use a separate packaging step.
+	   The MesenCore.dll and other native DLLs may not exist during normal build.
+	   Use 'dotnet build -r win-x64' or build C++ projects first, then use a separate packaging step.
   <Target Name="PreBuildWindows" BeforeTargets="PreBuildEvent" Condition="'$(RuntimeIdentifier)'=='win-x64'">
-    <Exec Command="cd $(OutDir)&#xD;&#xA;rd Dependencies /s /q&#xD;&#xA;md Dependencies&#xD;&#xA;xcopy /s $(ProjectDir)Dependencies\* Dependencies&#xD;&#xA;copy libHarfBuzzSharp.dll Dependencies&#xD;&#xA;copy libSkiaSharp.dll Dependencies&#xD;&#xA;copy MesenCore.dll Dependencies&#xD;&#xA;cd Dependencies&#xD;&#xA;del ..\Dependencies.zip&#xD;&#xA;powershell Compress-Archive -Path * -DestinationPath '..\Dependencies.zip' -Force&#xD;&#xA;copy ..\Dependencies.zip $(ProjectDir)" />
+	<Exec Command="cd $(OutDir)&#xD;&#xA;rd Dependencies /s /q&#xD;&#xA;md Dependencies&#xD;&#xA;xcopy /s $(ProjectDir)Dependencies\* Dependencies&#xD;&#xA;copy libHarfBuzzSharp.dll Dependencies&#xD;&#xA;copy libSkiaSharp.dll Dependencies&#xD;&#xA;copy MesenCore.dll Dependencies&#xD;&#xA;cd Dependencies&#xD;&#xA;del ..\Dependencies.zip&#xD;&#xA;powershell Compress-Archive -Path * -DestinationPath '..\Dependencies.zip' -Force&#xD;&#xA;copy ..\Dependencies.zip $(ProjectDir)" />
   </Target>
   -->
 
 	<Target Name="PreBuildLinux" BeforeTargets="PreBuildEvent" Condition="'$(RuntimeIdentifier)'=='linux-x64' Or '$(RuntimeIdentifier)'=='linux-arm64'">
-    <Exec Command="cd $(OutDir)&#xD;&#xA;rm -rf Dependencies&#xD;&#xA;mkdir Dependencies&#xD;&#xA;cp -R $(ProjectDir)/Dependencies/* Dependencies&#xD;&#xA;cp libHarfBuzzSharp.so Dependencies&#xD;&#xA;cp libSkiaSharp.so Dependencies&#xD;&#xA;cp MesenCore.so Dependencies&#xD;&#xA;cd Dependencies&#xD;&#xA;rm ../Dependencies.zip&#xD;&#xA;zip -r ../Dependencies.zip *&#xD;&#xA;cp ../Dependencies.zip $(ProjectDir)" />
+	<Exec Command="cd $(OutDir)&#xD;&#xA;rm -rf Dependencies&#xD;&#xA;mkdir Dependencies&#xD;&#xA;cp -R $(ProjectDir)/Dependencies/* Dependencies&#xD;&#xA;cp libHarfBuzzSharp.so Dependencies&#xD;&#xA;cp libSkiaSharp.so Dependencies&#xD;&#xA;cp MesenCore.so Dependencies&#xD;&#xA;cd Dependencies&#xD;&#xA;rm ../Dependencies.zip&#xD;&#xA;zip -r ../Dependencies.zip *&#xD;&#xA;cp ../Dependencies.zip $(ProjectDir)" />
   </Target>
   
 	<Target Name="PreBuildOsx" BeforeTargets="PreBuildEvent" Condition="'$(RuntimeIdentifier)'=='osx-x64' Or '$(RuntimeIdentifier)'=='osx-arm64'">
-    <Exec Command="cp ./Assets/NexenIcon.icns $(OutDir)&#xD;&#xA;cd $(OutDir)&#xD;&#xA;rm -R Dependencies&#xD;&#xA;mkdir Dependencies&#xD;&#xA;cp -R $(ProjectDir)/Dependencies/* Dependencies&#xD;&#xA;cp libHarfBuzzSharp.dylib Dependencies&#xD;&#xA;cp libSkiaSharp.dylib Dependencies&#xD;&#xA;cp MesenCore.dylib Dependencies&#xD;&#xA;cd Dependencies&#xD;&#xA;rm ../Dependencies.zip&#xD;&#xA;zip -r ../Dependencies.zip *&#xD;&#xA;cp ../Dependencies.zip $(ProjectDir)" />
+	<Exec Command="cp ./Assets/NexenIcon.icns $(OutDir)&#xD;&#xA;cd $(OutDir)&#xD;&#xA;rm -R Dependencies&#xD;&#xA;mkdir Dependencies&#xD;&#xA;cp -R $(ProjectDir)/Dependencies/* Dependencies&#xD;&#xA;cp libHarfBuzzSharp.dylib Dependencies&#xD;&#xA;cp libSkiaSharp.dylib Dependencies&#xD;&#xA;cp MesenCore.dylib Dependencies&#xD;&#xA;cd Dependencies&#xD;&#xA;rm ../Dependencies.zip&#xD;&#xA;zip -r ../Dependencies.zip *&#xD;&#xA;cp ../Dependencies.zip $(ProjectDir)" />
   </Target>
 
 </Project>

@@ -34,8 +34,8 @@ Transform Nexen's save state system from a fixed 10-slot model to an infinite ti
 
 ```
 SaveStates/
-  └── {RomName}_1.mss    # Slot 1
-  └── {RomName}_2.mss    # Slot 2
+  └── {RomName}_1.mss	# Slot 1
+  └── {RomName}_2.mss	# Slot 2
   └── ...
   └── {RomName}_10.mss   # Slot 10
   └── {RomName}_11.mss   # Auto-save slot
@@ -75,10 +75,10 @@ SaveStates/
 ```
 SaveStates/
   └── {RomName}/
-      └── {RomName}_2025-01-28_14-30-45.mss
-      └── {RomName}_2025-01-28_15-42-12.mss
-      └── {RomName}_2025-01-28_16-00-00.mss
-      └── ...
+	  └── {RomName}_2025-01-28_14-30-45.mss
+	  └── {RomName}_2025-01-28_15-42-12.mss
+	  └── {RomName}_2025-01-28_16-00-00.mss
+	  └── ...
 ```
 
 ### Key Changes
@@ -132,10 +132,10 @@ SaveStates/
 2. **New `SaveStateInfo` struct** ✅
    ```cpp
    struct SaveStateInfo {
-       string filepath;
-       string romName;
-       time_t timestamp;
-       uint64_t fileSize;
+	   string filepath;
+	   string romName;
+	   time_t timestamp;
+	   uint64_t fileSize;
    };
    ```
 

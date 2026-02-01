@@ -1,17 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <TargetFrameworks>netstandard2.0;net461;net5.0;net6.0</TargetFrameworks>
-    <IsPackable>True</IsPackable>
-    <Nullable>enable</Nullable>
-    <Configurations>Debug;Release</Configurations>
-    <Platforms>AnyCPU;x64</Platforms>
+	<OutputType>Library</OutputType>
+	<TargetFrameworks>netstandard2.0;net461;net5.0;net6.0</TargetFrameworks>
+	<IsPackable>True</IsPackable>
+	<Nullable>enable</Nullable>
+	<Configurations>Debug;Release</Configurations>
+	<Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>DataBox</PackageId>
-    <Description>A DataGrid control based on ListBox control.</Description>
-    <PackageTags>datagrid;panel;control;xaml;axaml;avalonia;avaloniaui</PackageTags>
+	<PackageId>DataBox</PackageId>
+	<Description>A DataGrid control based on ListBox control.</Description>
+	<PackageTags>datagrid;panel;control;xaml;axaml;avalonia;avaloniaui</PackageTags>
   </PropertyGroup>
 
   <Import Project="..\..\build\Base.props" />

@@ -36,16 +36,16 @@ This roadmap outlines the comprehensive modernization of Nexen's C++ core emulat
 
 ```
 Core/
-├── Shared/         # Shared emulation infrastructure
-├── Debugger/       # Debugging support
-├── NES/            # NES emulation
-├── SNES/           # SNES emulation
-├── Gameboy/        # Game Boy emulation
-├── GBA/            # Game Boy Advance emulation
-├── SMS/            # Sega Master System emulation
-├── PCE/            # PC Engine emulation
-├── WS/             # WonderSwan emulation
-└── Netplay/        # Network play support
+├── Shared/		 # Shared emulation infrastructure
+├── Debugger/	   # Debugging support
+├── NES/			# NES emulation
+├── SNES/		   # SNES emulation
+├── Gameboy/		# Game Boy emulation
+├── GBA/			# Game Boy Advance emulation
+├── SMS/			# Sega Master System emulation
+├── PCE/			# PC Engine emulation
+├── WS/			 # WonderSwan emulation
+└── Netplay/		# Network play support
 ```
 
 ## 🗺️ Phases
@@ -164,7 +164,7 @@ void ProcessData(std::span<const uint8_t> data);
 ```cpp
 // Before
 for (int i = 0; i < count; i++) {
-    if (data[i] == target) return i;
+	if (data[i] == target) return i;
 }
 
 // After

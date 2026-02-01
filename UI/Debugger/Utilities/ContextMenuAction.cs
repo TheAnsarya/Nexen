@@ -198,7 +198,7 @@ namespace Nexen.Debugger.Utilities {
 
 				IsEnabled = () => EmuApi.IsShortcutAllowed(shortcut.Value, ShortcutParam);
 
-				OnClick = () =>                     //Run outside the UI thread to avoid deadlocks, etc.
+				OnClick = () =>					 //Run outside the UI thread to avoid deadlocks, etc.
 					Task.Run(() => EmuApi.ExecuteShortcut(new ExecuteShortcutParams() { Shortcut = shortcut.Value, Param = ShortcutParam }));
 			}
 		}

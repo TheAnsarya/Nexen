@@ -84,7 +84,7 @@ namespace Nexen.ViewModels {
 				},
 				new ContextMenuAction() {
 					ActionType = ActionType.ResumeGameplay,
-					OnClick = () => HistoryApi.HistoryViewerResumeGameplay(CurrentPosition)             },
+					OnClick = () => HistoryApi.HistoryViewerResumeGameplay(CurrentPosition)			 },
 				new ContextMenuSeparator(),
 				new ContextMenuAction() {
 					ActionType = ActionType.Exit,

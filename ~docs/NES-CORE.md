@@ -9,17 +9,17 @@ NES Core Architecture
 ═════════════════════
 
 ┌──────────────────────────────────────────────────────────────┐
-│                        NesConsole                            │
-│  (Main coordinator - owns all components, runs main loop)    │
+│						NesConsole							│
+│  (Main coordinator - owns all components, runs main loop)	│
 └──────────────────────────────────────────────────────────────┘
-              │
-    ┌─────────┼─────────┬─────────────┬─────────────┐
-    │         │         │             │             │
-    ▼         ▼         ▼             ▼             ▼
+			  │
+	┌─────────┼─────────┬─────────────┬─────────────┐
+	│		 │		 │			 │			 │
+	▼		 ▼		 ▼			 ▼			 ▼
 ┌───────┐ ┌───────┐ ┌─────────┐ ┌─────────┐ ┌───────────────┐
 │NesCpu │ │NesPpu │ │NesApu   │ │Mapper   │ │MemoryManager  │
-│       │ │       │ │         │ │(ROM)    │ │               │
-│ 2A03  │ │ 2C02  │ │ 2A03    │ │Various  │ │ Bus routing   │
+│	   │ │	   │ │		 │ │(ROM)	│ │			   │
+│ 2A03  │ │ 2C02  │ │ 2A03	│ │Various  │ │ Bus routing   │
 │ (6502)│ │(Video)│ │ (Audio) │ │ types   │ │ & mirroring   │
 └───────┘ └───────┘ └─────────┘ └─────────┘ └───────────────┘
 ```
@@ -29,55 +29,55 @@ NES Core Architecture
 ```
 Core/NES/
 ├── Main Components
-│   ├── NesConsole.h/cpp        - Console coordinator
-│   ├── NesCpu.h/cpp            - 6502 CPU emulation
-│   ├── NesPpu.h/cpp            - 2C02 PPU (Picture Processing Unit)
+│   ├── NesConsole.h/cpp		- Console coordinator
+│   ├── NesCpu.h/cpp			- 6502 CPU emulation
+│   ├── NesPpu.h/cpp			- 2C02 PPU (Picture Processing Unit)
 │   ├── NesMemoryManager.h/cpp  - Memory bus & I/O
-│   └── NesSoundMixer.h/cpp     - Audio mixing
+│   └── NesSoundMixer.h/cpp	 - Audio mixing
 │
 ├── APU (Audio Processing Unit)
-│   └── APU/                    - 2A03 audio channels
-│       ├── SquareChannel       - Square wave (2 channels)
-│       ├── TriangleChannel     - Triangle wave
-│       ├── NoiseChannel        - Noise generator
-│       ├── DeltaModChannel     - DPCM sample playback
-│       └── ApuFrameCounter     - Frame sequencer
+│   └── APU/					- 2A03 audio channels
+│	   ├── SquareChannel	   - Square wave (2 channels)
+│	   ├── TriangleChannel	 - Triangle wave
+│	   ├── NoiseChannel		- Noise generator
+│	   ├── DeltaModChannel	 - DPCM sample playback
+│	   └── ApuFrameCounter	 - Frame sequencer
 │
 ├── Mappers (Cartridge Hardware)
-│   ├── BaseMapper.h/cpp        - Mapper base class
-│   ├── MapperFactory.h/cpp     - Mapper instantiation
-│   └── Mappers/                - Mapper implementations
-│       ├── MMC1, MMC3, MMC5    - Nintendo mappers
-│       ├── VRC2/4/6/7          - Konami mappers
-│       ├── Sunsoft FME-7       - Sunsoft mapper
-│       └── 200+ other mappers  - Full compatibility
+│   ├── BaseMapper.h/cpp		- Mapper base class
+│   ├── MapperFactory.h/cpp	 - Mapper instantiation
+│   └── Mappers/				- Mapper implementations
+│	   ├── MMC1, MMC3, MMC5	- Nintendo mappers
+│	   ├── VRC2/4/6/7		  - Konami mappers
+│	   ├── Sunsoft FME-7	   - Sunsoft mapper
+│	   └── 200+ other mappers  - Full compatibility
 │
 ├── Input
-│   └── Input/                  - Controller handling
-│       ├── Standard controllers
-│       ├── Zapper light gun
-│       ├── Power Pad
-│       └── Various peripherals
+│   └── Input/				  - Controller handling
+│	   ├── Standard controllers
+│	   ├── Zapper light gun
+│	   ├── Power Pad
+│	   └── Various peripherals
 │
 ├── Video Filters
 │   ├── NesDefaultVideoFilter   - Basic RGB output
-│   ├── NesNtscFilter           - NTSC composite simulation
-│   └── BisqwitNtscFilter       - Advanced NTSC filter
+│   ├── NesNtscFilter		   - NTSC composite simulation
+│   └── BisqwitNtscFilter	   - Advanced NTSC filter
 │
 ├── HD Packs
-│   └── HdPacks/                - HD graphics replacement
+│   └── HdPacks/				- HD graphics replacement
 │
 ├── Debugger Integration
-│   └── Debugger/               - NES-specific debug features
+│   └── Debugger/			   - NES-specific debug features
 │
 ├── ROM Loading
-│   └── Loaders/                - iNES, NES 2.0, UNIF, FDS
+│   └── Loaders/				- iNES, NES 2.0, UNIF, FDS
 │
 └── Support Files
-    ├── NesTypes.h              - NES-specific types & enums
-    ├── NesConstants.h          - Hardware constants
-    ├── NesHeader.h/cpp         - ROM header parsing
-    └── GameDatabase.h/cpp      - Game-specific fixes
+	├── NesTypes.h			  - NES-specific types & enums
+	├── NesConstants.h		  - Hardware constants
+	├── NesHeader.h/cpp		 - ROM header parsing
+	└── GameDatabase.h/cpp	  - Game-specific fixes
 ```
 
 ## Core Components
@@ -95,8 +95,8 @@ The main coordinator that owns all NES components and manages the emulation loop
 **Key Methods:**
 ```cpp
 void Run(uint64_t runUntilMasterClock);  // Main emulation loop
-void Reset(bool softReset);               // Reset console
-void PowerCycle();                        // Full power cycle
+void Reset(bool softReset);			   // Reset console
+void PowerCycle();						// Full power cycle
 ```
 
 ### NesCpu (NesCpu.h)
@@ -117,15 +117,15 @@ Emulates the Ricoh 2A03 (NTSC) / 2A07 (PAL) CPU, a modified MOS 6502.
 **CPU State:**
 ```cpp
 struct NesCpuState {
-    uint16_t PC;        // Program Counter
-    uint8_t SP;         // Stack Pointer
-    uint8_t A;          // Accumulator
-    uint8_t X;          // X Index Register
-    uint8_t Y;          // Y Index Register
-    uint8_t PS;         // Processor Status (flags)
-    uint8_t IRQFlag;    // IRQ pending flags
-    bool NMIFlag;       // NMI pending
-    uint64_t CycleCount;// Total CPU cycles
+	uint16_t PC;		// Program Counter
+	uint8_t SP;		 // Stack Pointer
+	uint8_t A;		  // Accumulator
+	uint8_t X;		  // X Index Register
+	uint8_t Y;		  // Y Index Register
+	uint8_t PS;		 // Processor Status (flags)
+	uint8_t IRQFlag;	// IRQ pending flags
+	bool NMIFlag;	   // NMI pending
+	uint64_t CycleCount;// Total CPU cycles
 };
 ```
 
@@ -159,13 +159,13 @@ Emulates the 2C02 Picture Processing Unit.
 **PPU State:**
 ```cpp
 struct NesPpuState {
-    uint16_t Cycle;         // Current dot (0-340)
-    uint16_t Scanline;      // Current scanline (-1 to 260)
-    uint16_t VideoRamAddr;  // VRAM address (v)
-    uint16_t TmpVideoRamAddr; // Temp VRAM address (t)
-    uint8_t ScrollX;        // Fine X scroll (0-7)
-    uint8_t WriteToggle;    // First/second write toggle
-    // ... plus many internal latches
+	uint16_t Cycle;		 // Current dot (0-340)
+	uint16_t Scanline;	  // Current scanline (-1 to 260)
+	uint16_t VideoRamAddr;  // VRAM address (v)
+	uint16_t TmpVideoRamAddr; // Temp VRAM address (t)
+	uint8_t ScrollX;		// Fine X scroll (0-7)
+	uint8_t WriteToggle;	// First/second write toggle
+	// ... plus many internal latches
 };
 ```
 
