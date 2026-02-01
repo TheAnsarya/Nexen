@@ -219,11 +219,147 @@ extern "C" {
 		return _emu->IsPaused();
 	}
 
-	DllExport void __stdcall Release()
-	{
-		if(_emu) {
-			_emu->Stop(true);
-			_emu->Release();
+DllExport void __stdcall ClearCheats() {
+	_emu->GetCheatManager()->ClearCheats();
+}
+DllExport void __stdcall SetCheats(CheatCode codes[], uint32_t length) {
+	_emu->GetCheatManager()->SetCheats(codes, length);
+}
+DllExport bool __stdcall GetConvertedCheat(CheatCode input, InternalCheatCode& output) {
+	return _emu->GetCheatManager()->GetConvertedCheat(input, output);
+}
+
+DllExport void __stdcall GetRomHash(HashType hashType, char* outBuffer, uint32_t maxLength) {
+	StringUtilities::CopyToBuffer(_emu->GetHash(hashType), outBuffer, maxLength);
+}
+
+DllExport void __stdcall InputBarcode(uint64_t barcode, uint32_t digitCount) {
+	_emu->InputBarcode(barcode, digitCount);
+}
+DllExport void __stdcall ProcessTapeRecorderAction(TapeRecorderAction action, char* filename) {
+	_emu->ProcessTapeRecorderAction(action, filename);
+}
+
+DllExport void __stdcall ExecuteShortcut(ExecuteShortcutParams params) {
+	_emu->GetNotificationManager()->SendNotification(ConsoleNotificationType::ExecuteShortcut, &params);
+}
+DllExport bool __stdcall IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t shortcutParam) {
+	return _emu->GetShortcutKeyHandler()->IsShortcutAllowed(shortcut, shortcutParam);
+}
+
+DllExport void __stdcall WriteLogEntry(char* message) {
+	MessageManager::Log(message);
+}
+
+DllExport void __stdcall SaveState(uint32_t stateIndex) {
+	_emu->GetSaveStateManager()->SaveState(stateIndex);
+}
+DllExport void __stdcall LoadState(uint32_t stateIndex) {
+	_emu->GetSaveStateManager()->LoadState(stateIndex);
+}
+DllExport void __stdcall SaveStateFile(char* filepath) {
+	_emu->GetSaveStateManager()->SaveState(filepath);
+}
+DllExport void __stdcall LoadStateFile(char* filepath) {
+	_emu->GetSaveStateManager()->LoadState(filepath);
+}
+DllExport void __stdcall LoadRecentGame(char* filepath, bool resetGame) {
+	_emu->GetSaveStateManager()->LoadRecentGame(filepath, resetGame);
+}
+DllExport int32_t __stdcall GetSaveStatePreview(char* saveStatePath, uint8_t* pngData) {
+	return _emu->GetSaveStateManager()->GetSaveStatePreview(saveStatePath, pngData);
+}
+
+// ========== Timestamped Save State API ==========
+
+/// <summary>
+/// Interop struct for returning save state information to managed code.
+/// </summary>
+struct InteropSaveStateInfo {
+	char filepath[2000];    ///< Full path to save state file
+	char romName[256];      ///< ROM name
+	int64_t timestamp;      ///< Unix timestamp
+	uint32_t fileSize;      ///< File size in bytes
+};
+
+DllExport void __stdcall SaveTimestampedState(char* outFilepath, int32_t maxLength) {
+	string filepath = _emu->GetSaveStateManager()->SaveTimestampedState();
+	StringUtilities::CopyToBuffer(filepath, outFilepath, maxLength);
+}
+
+DllExport uint32_t __stdcall GetSaveStateList(InteropSaveStateInfo* outInfoArray, uint32_t maxCount) {
+	vector<SaveStateInfo> states = _emu->GetSaveStateManager()->GetSaveStateList();
+	uint32_t count = std::min<uint32_t>(static_cast<uint32_t>(states.size()), maxCount);
+
+	for (uint32_t i = 0; i < count; i++) {
+		memset(&outInfoArray[i], 0, sizeof(InteropSaveStateInfo));
+		StringUtilities::CopyToBuffer(states[i].filepath, outInfoArray[i].filepath, sizeof(outInfoArray[i].filepath));
+		StringUtilities::CopyToBuffer(states[i].romName, outInfoArray[i].romName, sizeof(outInfoArray[i].romName));
+		outInfoArray[i].timestamp = static_cast<int64_t>(states[i].timestamp);
+		outInfoArray[i].fileSize = states[i].fileSize;
+	}
+
+	return count;
+}
+
+DllExport uint32_t __stdcall GetSaveStateCount() {
+	return _emu->GetSaveStateManager()->GetSaveStateCount();
+}
+
+DllExport bool __stdcall DeleteSaveState(char* filepath) {
+	return _emu->GetSaveStateManager()->DeleteSaveState(filepath);
+}
+
+class PgoKeyManager : public IKeyManager {
+public:
+	void RefreshState() {}
+	void UpdateDevices() {}
+	bool IsMouseButtonPressed(MouseButton button) { return false; }
+	bool IsKeyPressed(uint16_t keyCode) { return keyCode == 10 && (_emu->GetFrameCount() % 7) <= 3; }
+
+	vector<uint16_t> GetPressedKeys() { return {}; }
+	string GetKeyName(uint16_t keyCode) { return ""; }
+	uint16_t GetKeyCode(string keyName) { return 0; }
+
+	bool SetKeyState(uint16_t scanCode, bool state) { return false; }
+	void ResetKeyState() {}
+	void SetDisabled(bool disabled) {}
+};
+
+DllExport void __stdcall PgoRunTest(vector<string> testRoms, bool enableDebugger) {
+	FolderUtilities::SetHomeFolder("../PGOMesenHome");
+	PgoKeyManager pgoKeyManager;
+	KeyManager::RegisterKeyManager(&pgoKeyManager);
+
+	for (size_t i = 0; i < testRoms.size(); i++) {
+		std::cout << "Running: " << testRoms[i] << std::endl;
+
+		KeyManager::SetSettings(_emu->GetSettings());
+		_emu->Initialize();
+
+		// Map key #10 to the start button for all consoles - this key is toggled on/off every 4 frames
+		NesConfig& nesCfg = _emu->GetSettings()->GetNesConfig();
+		nesCfg.Port1.Type = ControllerType::NesController;
+		nesCfg.Port1.Keys.Mapping1.Start = 10;
+
+		SnesConfig& snesCfg = _emu->GetSettings()->GetSnesConfig();
+		snesCfg.Port1.Type = ControllerType::SnesController;
+		snesCfg.Port1.Keys.Mapping1.Start = 10;
+
+		GameboyConfig& gbCfg = _emu->GetSettings()->GetGameboyConfig();
+		gbCfg.Model = GameboyModel::GameboyColor;
+		gbCfg.Controller.Keys.Mapping1.Start = 10;
+
+		PcEngineConfig& pceCfg = _emu->GetSettings()->GetPcEngineConfig();
+		pceCfg.Port1.Type = ControllerType::PceController;
+		pceCfg.Port1.Keys.Mapping1.Start = 10;
+
+		_emu->GetSettings()->SetFlag(EmulationFlags::MaximumSpeed);
+		_emu->LoadRom((VirtualFile)testRoms[i], VirtualFile());
+
+		if (enableDebugger) {
+			// turn on debugger to profile the debugger's code too
+			_emu->GetDebugger(true);
 		}
 
 		_renderer.reset();
