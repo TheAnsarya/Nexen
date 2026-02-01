@@ -26,35 +26,78 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.ViewModels {
+	/// <summary>
+	/// ViewModel for the main application menu.
+	/// Manages all menu items for File, Game, Options, Tools, Debug, and Help menus.
+	/// </summary>
 	public class MainMenuViewModel : ViewModelBase {
+		/// <summary>Gets or sets the parent main window ViewModel.</summary>
 		public MainWindowViewModel MainWindow { get; set; }
 
+		/// <summary>Gets or sets the File menu items.</summary>
 		[Reactive] public List<object> FileMenuItems { get; set; } = new();
+
+		/// <summary>Gets or sets the Game menu items.</summary>
 		[Reactive] public List<object> GameMenuItems { get; set; } = new();
+
+		/// <summary>Gets or sets the Options menu items.</summary>
 		[Reactive] public List<object> OptionsMenuItems { get; set; } = new();
+
+		/// <summary>Gets or sets the Tools menu items.</summary>
 		[Reactive] public List<object> ToolsMenuItems { get; set; } = new();
+
+		/// <summary>Gets or sets the Debug menu items.</summary>
 		[Reactive] public List<object> DebugMenuItems { get; set; } = new();
+
+		/// <summary>Gets or sets the Help menu items.</summary>
 		[Reactive] public List<object> HelpMenuItems { get; set; } = new();
 
+		/// <summary>NetPlay controller selection items.</summary>
 		[Reactive] private List<object> _netPlayControllers { get; set; } = new();
 
+		/// <summary>Gets the current ROM information.</summary>
 		private RomInfo RomInfo => MainWindow.RomInfo;
+
+		/// <summary>Gets whether a game is currently running.</summary>
 		private bool IsGameRunning => RomInfo.Format != RomFormat.Unknown;
+
+		/// <summary>Gets whether the current game is FDS format.</summary>
 		private bool IsFdsGame => RomInfo.Format == RomFormat.Fds;
+
+		/// <summary>Gets whether the current game is VS System.</summary>
 		private bool IsVsSystemGame => RomInfo.Format is RomFormat.VsSystem or RomFormat.VsDualSystem;
+
+		/// <summary>Gets whether the current game is VS Dual System.</summary>
 		private bool IsVsDualSystemGame => RomInfo.Format == RomFormat.VsDualSystem;
+
+		/// <summary>Gets the list of recent files.</summary>
 		private List<RecentItem> RecentItems => ConfigManager.Config.RecentFiles.Items;
 
+		/// <summary>Reference to the configuration window if open.</summary>
 		private ConfigWindow? _cfgWindow = null;
+
+		/// <summary>Action for controller selection menu.</summary>
 		private MainMenuAction _selectControllerAction = new();
 
+		/// <summary>
+		/// Designer-only constructor. Do not use in code.
+		/// </summary>
 		[Obsolete("For designer only")]
 		public MainMenuViewModel() : this(new MainWindowViewModel()) { }
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="MainMenuViewModel"/> class.
+		/// </summary>
+		/// <param name="windowModel">The parent main window ViewModel.</param>
 		public MainMenuViewModel(MainWindowViewModel windowModel) {
 			MainWindow = windowModel;
 		}
 
+		/// <summary>
+		/// Opens the configuration window to a specific tab.
+		/// </summary>
+		/// <param name="wnd">The main window.</param>
+		/// <param name="tab">The tab to open.</param>
 		private void OpenConfig(MainWindow wnd, ConfigWindowTab tab) {
 			if (_cfgWindow == null) {
 				_cfgWindow = new ConfigWindow(tab);
@@ -66,6 +109,9 @@ namespace Nexen.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Handles config window close event.
+		/// </summary>
 		private void cfgWindow_Closed(object? sender, EventArgs e) {
 			_cfgWindow = null;
 			if (ConfigManager.Config.Preferences.GameSelectionScreenMode == GameSelectionMode.Disabled && MainWindow.RecentGames.Visible) {
@@ -75,6 +121,10 @@ namespace Nexen.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Initializes all menus with the main window reference.
+		/// </summary>
+		/// <param name="wnd">The main window.</param>
 		public void Initialize(MainWindow wnd) {
 			InitFileMenu(wnd);
 			InitGameMenu(wnd);

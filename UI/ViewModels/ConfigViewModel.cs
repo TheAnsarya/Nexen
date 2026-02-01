@@ -6,28 +6,66 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.ViewModels {
+	/// <summary>
+	/// ViewModel for the configuration window.
+	/// Lazily loads child ViewModels for each configuration tab and manages save/revert operations.
+	/// </summary>
 	public class ConfigViewModel : DisposableViewModel {
+		/// <summary>Gets or sets the audio configuration ViewModel.</summary>
 		[Reactive] public AudioConfigViewModel? Audio { get; set; }
+
+		/// <summary>Gets or sets the input configuration ViewModel.</summary>
 		[Reactive] public InputConfigViewModel? Input { get; set; }
+
+		/// <summary>Gets or sets the video configuration ViewModel.</summary>
 		[Reactive] public VideoConfigViewModel? Video { get; set; }
+
+		/// <summary>Gets or sets the preferences configuration ViewModel.</summary>
 		[Reactive] public PreferencesConfigViewModel? Preferences { get; set; }
+
+		/// <summary>Gets or sets the emulation configuration ViewModel.</summary>
 		[Reactive] public EmulationConfigViewModel? Emulation { get; set; }
 
+		/// <summary>Gets or sets the SNES configuration ViewModel.</summary>
 		[Reactive] public SnesConfigViewModel? Snes { get; set; }
+
+		/// <summary>Gets or sets the NES configuration ViewModel.</summary>
 		[Reactive] public NesConfigViewModel? Nes { get; set; }
+
+		/// <summary>Gets or sets the Game Boy configuration ViewModel.</summary>
 		[Reactive] public GameboyConfigViewModel? Gameboy { get; set; }
+
+		/// <summary>Gets or sets the GBA configuration ViewModel.</summary>
 		[Reactive] public GbaConfigViewModel? Gba { get; set; }
+
+		/// <summary>Gets or sets the PC Engine configuration ViewModel.</summary>
 		[Reactive] public PceConfigViewModel? PcEngine { get; set; }
+
+		/// <summary>Gets or sets the Sega Master System configuration ViewModel.</summary>
 		[Reactive] public SmsConfigViewModel? Sms { get; set; }
+
+		/// <summary>Gets or sets the WonderSwan configuration ViewModel.</summary>
 		[Reactive] public WsConfigViewModel? Ws { get; set; }
+
+		/// <summary>Gets or sets the other consoles configuration ViewModel.</summary>
 		[Reactive] public OtherConsolesConfigViewModel? OtherConsoles { get; set; }
 
+		/// <summary>Gets or sets the currently selected tab index.</summary>
 		[Reactive] public ConfigWindowTab SelectedIndex { get; set; }
+
+		/// <summary>Gets whether the window should always be on top.</summary>
 		public bool AlwaysOnTop { get; }
 
+		/// <summary>
+		/// Designer-only constructor. Do not use in code.
+		/// </summary>
 		[Obsolete("For designer only")]
 		public ConfigViewModel() : this(ConfigWindowTab.Audio) { }
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ConfigViewModel"/> class.
+		/// </summary>
+		/// <param name="selectedTab">The initial tab to display.</param>
 		public ConfigViewModel(ConfigWindowTab selectedTab) {
 			AlwaysOnTop = ConfigManager.Config.Preferences.AlwaysOnTop;
 			SelectedIndex = selectedTab;
@@ -35,6 +73,10 @@ namespace Nexen.ViewModels {
 			AddDisposable(this.WhenAnyValue(x => x.SelectedIndex).Subscribe((tab) => this.SelectTab(tab)));
 		}
 
+		/// <summary>
+		/// Selects a configuration tab and lazily creates its ViewModel.
+		/// </summary>
+		/// <param name="tab">The tab to select.</param>
 		public void SelectTab(ConfigWindowTab tab) {
 			//Create each view model when the corresponding tab is clicked, for performance
 			switch (tab) {
@@ -63,12 +105,18 @@ namespace Nexen.ViewModels {
 			SelectedIndex = tab;
 		}
 
+		/// <summary>
+		/// Saves all configuration changes.
+		/// </summary>
 		public void SaveConfig() {
 			ConfigManager.Config.ApplyConfig();
 			ConfigManager.Config.Save();
 			ConfigManager.Config.Preferences.UpdateFileAssociations();
 		}
 
+		/// <summary>
+		/// Reverts all configuration changes to original values.
+		/// </summary>
 		public void RevertConfig() {
 			ConfigManager.Config.Audio = Audio?.OriginalConfig ?? ConfigManager.Config.Audio;
 			ConfigManager.Config.Input = Input?.OriginalConfig ?? ConfigManager.Config.Input;
@@ -86,6 +134,10 @@ namespace Nexen.ViewModels {
 			ConfigManager.Config.Save();
 		}
 
+		/// <summary>
+		/// Checks if any configuration has been modified.
+		/// </summary>
+		/// <returns>True if any configuration differs from original values.</returns>
 		public bool IsDirty() {
 			return
 				Audio?.OriginalConfig.IsIdentical(ConfigManager.Config.Audio) == false ||
@@ -105,21 +157,37 @@ namespace Nexen.ViewModels {
 		}
 	}
 
+	/// <summary>
+	/// Specifies the tabs in the configuration window.
+	/// </summary>
 	public enum ConfigWindowTab {
+		/// <summary>Audio settings tab.</summary>
 		Audio = 0,
+		/// <summary>Emulation settings tab.</summary>
 		Emulation = 1,
+		/// <summary>Input/controller settings tab.</summary>
 		Input = 2,
+		/// <summary>Video/display settings tab.</summary>
 		Video = 3,
 		//separator
+		/// <summary>NES-specific settings tab.</summary>
 		Nes = 5,
+		/// <summary>SNES-specific settings tab.</summary>
 		Snes = 6,
+		/// <summary>Game Boy-specific settings tab.</summary>
 		Gameboy = 7,
+		/// <summary>GBA-specific settings tab.</summary>
 		Gba = 8,
+		/// <summary>PC Engine-specific settings tab.</summary>
 		PcEngine = 9,
+		/// <summary>Sega Master System-specific settings tab.</summary>
 		Sms = 10,
+		/// <summary>WonderSwan-specific settings tab.</summary>
 		Ws = 11,
+		/// <summary>Other consoles settings tab.</summary>
 		OtherConsoles = 12,
 		//separator
+		/// <summary>General preferences tab.</summary>
 		Preferences = 14
 	}
 }
