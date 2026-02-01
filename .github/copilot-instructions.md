@@ -52,6 +52,17 @@ gh issue close <number> --repo TheAnsarya/Nexen --comment "Completed in commit a
 - **C++23** (`/std:c++latest`)
 - Platform toolset: **v145** (VS 2026)
 
+### C# Standard
+- **.NET 10** with latest C# features
+- File-scoped namespaces where applicable
+- Nullable reference types enabled
+
+### ⚠️ Comment Safety Rule
+**When adding or modifying comments, NEVER change the actual code.**
+- Changes to comments must not alter code logic, structure, or formatting
+- When adding XML documentation or inline comments, preserve all existing code exactly
+- Verify code integrity after adding documentation
+
 ## Performance Guidelines
 
 ### Hot Path Rules
