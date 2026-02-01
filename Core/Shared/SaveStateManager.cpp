@@ -15,6 +15,10 @@
 #include "Shared/Video/VideoDecoder.h"
 #include "Shared/Video/VideoRenderer.h"
 #include "Shared/Video/BaseVideoFilter.h"
+#include <filesystem>
+#include <iomanip>
+#include <sstream>
+#include <algorithm>
 
 SaveStateManager::SaveStateManager(Emulator* emu) {
 	_emu = emu;
@@ -26,6 +30,67 @@ string SaveStateManager::GetStateFilepath(int stateIndex) {
 	string folder = FolderUtilities::GetSaveStateFolder();
 	string filename = FolderUtilities::GetFilename(romFile, false) + "_" + std::to_string(stateIndex) + ".mss";
 	return FolderUtilities::CombinePath(folder, filename);
+}
+
+string SaveStateManager::GetRomSaveStateDirectory() {
+	string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
+	string folder = FolderUtilities::CombinePath(FolderUtilities::GetSaveStateFolder(), romName);
+	FolderUtilities::CreateFolder(folder);
+	return folder;
+}
+
+string SaveStateManager::GetTimestampedFilepath() {
+	string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
+	string folder = GetRomSaveStateDirectory();
+
+	// Generate timestamp: YYYY-MM-DD_HH-mm-ss
+	auto now = std::chrono::system_clock::now();
+	auto time = std::chrono::system_clock::to_time_t(now);
+	std::tm tm;
+#ifdef _WIN32
+	localtime_s(&tm, &time);
+#else
+	localtime_r(&time, &tm);
+#endif
+
+	std::ostringstream oss;
+	oss << romName << "_"
+		<< std::setfill('0') << std::setw(4) << (tm.tm_year + 1900) << "-"
+		<< std::setw(2) << (tm.tm_mon + 1) << "-"
+		<< std::setw(2) << tm.tm_mday << "_"
+		<< std::setw(2) << tm.tm_hour << "-"
+		<< std::setw(2) << tm.tm_min << "-"
+		<< std::setw(2) << tm.tm_sec << ".mss";
+
+	return FolderUtilities::CombinePath(folder, oss.str());
+}
+
+time_t SaveStateManager::ParseTimestampFromFilename(const string& filename) {
+	// Expected format: {RomName}_{YYYY}-{MM}-{DD}_{HH}-{mm}-{ss}.mss
+	// Find the date/time portion by looking for the pattern _YYYY-MM-DD_HH-mm-ss.mss
+
+	size_t extPos = filename.rfind(".mss");
+	if (extPos == string::npos || extPos < 20) {
+		return 0; // Not a valid timestamped filename
+	}
+
+	// Extract the timestamp portion (19 chars before .mss: _YYYY-MM-DD_HH-mm-ss)
+	size_t tsStart = extPos - 20;
+	if (filename[tsStart] != '_') {
+		return 0;
+	}
+
+	string tsStr = filename.substr(tsStart + 1, 19); // YYYY-MM-DD_HH-mm-ss
+
+	std::tm tm = {};
+	std::istringstream ss(tsStr);
+	ss >> std::get_time(&tm, "%Y-%m-%d_%H-%M-%S");
+
+	if (ss.fail()) {
+		return 0;
+	}
+
+	return std::mktime(&tm);
 }
 
 void SaveStateManager::SelectSaveSlot(int slotIndex) {
@@ -370,4 +435,107 @@ uint32_t SaveStateManager::ReadValue(istream& stream) {
 
 	uint32_t result = (uint8_t)a | ((uint8_t)b << 8) | ((uint8_t)c << 16) | ((uint8_t)d << 24);
 	return result;
+}
+
+// ========== Timestamped Save State Methods ==========
+
+string SaveStateManager::SaveTimestampedState() {
+	string filepath = GetTimestampedFilepath();
+
+	if (SaveState(filepath, false)) {
+		// Extract just the time portion for the message
+		auto now = std::chrono::system_clock::now();
+		auto time = std::chrono::system_clock::to_time_t(now);
+		std::tm tm;
+#ifdef _WIN32
+		localtime_s(&tm, &time);
+#else
+		localtime_r(&time, &tm);
+#endif
+
+		std::ostringstream oss;
+		oss << std::setfill('0') << std::setw(2) << tm.tm_hour << ":"
+			<< std::setw(2) << tm.tm_min << ":"
+			<< std::setw(2) << tm.tm_sec;
+
+		MessageManager::DisplayMessage("SaveStates", "SaveStateSavedTime", oss.str());
+		return filepath;
+	}
+
+	return "";
+}
+
+vector<SaveStateInfo> SaveStateManager::GetSaveStateList() {
+	vector<SaveStateInfo> states;
+
+	string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
+	string folder = GetRomSaveStateDirectory();
+
+	namespace fs = std::filesystem;
+
+	try {
+		if (!fs::exists(folder)) {
+			return states;
+		}
+
+		for (const auto& entry : fs::directory_iterator(folder)) {
+			if (!entry.is_regular_file()) {
+				continue;
+			}
+
+			string filename = entry.path().filename().string();
+
+			// Check if it's an .mss file
+			if (filename.size() < 4 || filename.substr(filename.size() - 4) != ".mss") {
+				continue;
+			}
+
+			// Check if it starts with the ROM name
+			if (filename.find(romName) != 0) {
+				continue;
+			}
+
+			SaveStateInfo info;
+			info.filepath = entry.path().string();
+			info.romName = romName;
+			info.timestamp = ParseTimestampFromFilename(filename);
+			info.fileSize = static_cast<uint32_t>(entry.file_size());
+
+			// If timestamp parsing failed, use file modification time
+			if (info.timestamp == 0) {
+				auto ftime = fs::last_write_time(entry);
+				auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+					ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
+				);
+				info.timestamp = std::chrono::system_clock::to_time_t(sctp);
+			}
+
+			states.push_back(info);
+		}
+	} catch (const std::exception&) {
+		// Ignore filesystem errors
+	}
+
+	// Sort by timestamp, newest first
+	std::sort(states.begin(), states.end(), [](const SaveStateInfo& a, const SaveStateInfo& b) {
+		return a.timestamp > b.timestamp;
+	});
+
+	return states;
+}
+
+bool SaveStateManager::DeleteSaveState(const string& filepath) {
+	try {
+		namespace fs = std::filesystem;
+		if (fs::exists(filepath) && fs::is_regular_file(filepath)) {
+			return fs::remove(filepath);
+		}
+	} catch (const std::exception&) {
+		// Ignore errors
+	}
+	return false;
+}
+
+uint32_t SaveStateManager::GetSaveStateCount() {
+	return static_cast<uint32_t>(GetSaveStateList().size());
 }

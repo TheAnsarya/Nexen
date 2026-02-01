@@ -68,6 +68,7 @@ std::unordered_map<string, string> MessageManager::_enResources = {
     {"SaveStateMissingRom",           "Missing ROM required (%1) to load save state."                                                         },
     {"SaveStateNewerVersion",         "Cannot load save states created by a more recent version of Mesen. Please download the latest version."},
     {"SaveStateSaved",                "State #%1 saved."                                                                                      },
+    {"SaveStateSavedTime",            "State saved at %1"                                                                                     },
     {"SaveStateSlotSelected",         "Slot #%1 selected."                                                                                    },
     {"ScanlineTimingWarning",         "PPU timing has been changed."                                                                          },
     {"ServerStarted",                 "Server started (Port: %1)"                                                                             },
