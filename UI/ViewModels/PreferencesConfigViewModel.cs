@@ -9,15 +9,28 @@ using Nexen.Utilities;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.ViewModels {
+	/// <summary>
+	/// ViewModel for the preferences configuration tab.
+	/// </summary>
 	public class PreferencesConfigViewModel : DisposableViewModel {
+		/// <summary>Gets or sets the current preferences configuration.</summary>
 		[Reactive] public PreferencesConfig Config { get; set; }
+
+		/// <summary>Gets or sets the original preferences configuration for revert.</summary>
 		[Reactive] public PreferencesConfig OriginalConfig { get; set; }
 
+		/// <summary>Gets the data storage location path.</summary>
 		public string DataStorageLocation { get; }
+
+		/// <summary>Gets whether the current platform is macOS.</summary>
 		public bool IsOsx { get; }
 
+		/// <summary>Gets or sets the list of shortcut key bindings.</summary>
 		public List<ShortcutKeyInfo> ShortcutKeys { get; set; }
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PreferencesConfigViewModel"/> class.
+		/// </summary>
 		public PreferencesConfigViewModel() {
 			Config = ConfigManager.Config.Preferences;
 			OriginalConfig = Config.Clone();

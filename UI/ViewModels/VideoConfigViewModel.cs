@@ -9,24 +9,55 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.ViewModels {
+	/// <summary>
+	/// ViewModel for the video configuration tab.
+	/// </summary>
 	public class VideoConfigViewModel : DisposableViewModel {
+		/// <summary>Gets whether to show custom aspect ratio options.</summary>
 		[ObservableAsProperty] public bool ShowCustomRatio { get; }
+
+		/// <summary>Gets whether to show NTSC Blargg filter settings.</summary>
 		[ObservableAsProperty] public bool ShowNtscBlarggSettings { get; }
+
+		/// <summary>Gets whether to show NTSC Bisqwit filter settings.</summary>
 		[ObservableAsProperty] public bool ShowNtscBisqwitSettings { get; }
+
+		/// <summary>Gets whether to show LCD grid filter settings.</summary>
 		[ObservableAsProperty] public bool ShowLcdGridSettings { get; }
+
+		/// <summary>Gets whether the current platform is Windows.</summary>
 		public bool IsWindows { get; }
+
+		/// <summary>Gets whether the current platform is macOS.</summary>
 		public bool IsMacOs { get; }
 
+		/// <summary>Gets the command to apply composite video preset.</summary>
 		public ReactiveCommand<Unit, Unit> PresetCompositeCommand { get; }
+
+		/// <summary>Gets the command to apply S-Video preset.</summary>
 		public ReactiveCommand<Unit, Unit> PresetSVideoCommand { get; }
+
+		/// <summary>Gets the command to apply RGB preset.</summary>
 		public ReactiveCommand<Unit, Unit> PresetRgbCommand { get; }
+
+		/// <summary>Gets the command to apply monochrome preset.</summary>
 		public ReactiveCommand<Unit, Unit> PresetMonochromeCommand { get; }
+
+		/// <summary>Gets the command to reset picture settings.</summary>
 		public ReactiveCommand<Unit, Unit> ResetPictureSettingsCommand { get; }
 
+		/// <summary>Gets or sets the current video configuration.</summary>
 		[Reactive] public VideoConfig Config { get; set; }
+
+		/// <summary>Gets or sets the original video configuration for revert.</summary>
 		[Reactive] public VideoConfig OriginalConfig { get; set; }
+
+		/// <summary>Gets the available refresh rates for selection.</summary>
 		public UInt32[] AvailableRefreshRates { get; } = new UInt32[] { 50, 60, 75, 100, 120, 144, 200, 240, 360 };
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="VideoConfigViewModel"/> class.
+		/// </summary>
 		public VideoConfigViewModel() {
 			Config = ConfigManager.Config.Video;
 			OriginalConfig = Config.Clone();
