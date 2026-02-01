@@ -21,41 +21,148 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Debugger.ViewModels {
+	/// <summary>
+	/// View model for the trace logger window that displays CPU execution history.
+	/// </summary>
+	/// <remarks>
+	/// The trace logger provides a scrollable view of recently executed instructions
+	/// with customizable formatting options per CPU type. It supports multiple CPUs
+	/// for systems with coprocessors (SNES SA-1, GSU, etc.) and can log to files.
+	/// Features include searching, selection, copying, and configurable display options.
+	/// </remarks>
 	public class TraceLoggerViewModel : DisposableViewModel, ISelectableModel {
+		/// <summary>
+		/// Gets the trace logger configuration settings.
+		/// </summary>
 		public TraceLoggerConfig Config { get; }
+
+		/// <summary>
+		/// Gets or sets the style provider for rendering trace log lines.
+		/// </summary>
 		[Reactive] public TraceLoggerStyleProvider StyleProvider { get; set; }
+
+		/// <summary>
+		/// Gets or sets the array of trace log lines to display.
+		/// </summary>
 		[Reactive] public CodeLineData[] TraceLogLines { get; set; } = [];
+
+		/// <summary>
+		/// Gets or sets the number of visible rows in the view.
+		/// </summary>
 		[Reactive] public int VisibleRowCount { get; set; } = 100;
+
+		/// <summary>
+		/// Gets or sets the current scroll position in the trace buffer.
+		/// </summary>
 		[Reactive] public int ScrollPosition { get; set; } = 0;
+
+		/// <summary>
+		/// Gets or sets the minimum scroll position (based on trace buffer size).
+		/// </summary>
 		[Reactive] public int MinScrollPosition { get; set; } = 0;
+
+		/// <summary>
+		/// Gets or sets the maximum scroll position (trace buffer size).
+		/// </summary>
 		[Reactive] public int MaxScrollPosition { get; set; } = DebugApi.TraceLogBufferSize;
+
+		/// <summary>
+		/// Gets or sets whether logging to a file is currently active.
+		/// </summary>
 		[Reactive] public bool IsLoggingToFile { get; set; } = false;
 
+		/// <summary>
+		/// Gets or sets the list of option tabs for each CPU type.
+		/// </summary>
 		[Reactive] public List<TraceLoggerOptionTab> Tabs { get; set; } = new();
+
+		/// <summary>
+		/// Gets or sets the currently selected CPU option tab.
+		/// </summary>
 		[Reactive] public TraceLoggerOptionTab SelectedTab { get; set; } = null!;
 
+		/// <summary>
+		/// Gets or sets the path to the trace log file.
+		/// </summary>
 		[Reactive] public string? TraceFile { get; set; } = null;
+
+		/// <summary>
+		/// Gets whether the user can open the trace file (not currently logging).
+		/// </summary>
 		[Reactive] public bool AllowOpenTraceFile { get; private set; } = false;
+
+		/// <summary>
+		/// Gets or sets whether the start logging button is enabled.
+		/// </summary>
 		[Reactive] public bool IsStartLoggingEnabled { get; set; }
 
+		/// <summary>
+		/// Gets whether byte code display is enabled for any CPU.
+		/// </summary>
 		[Reactive] public bool ShowByteCode { get; private set; }
 
+		/// <summary>
+		/// Gets or sets the start row of the current selection.
+		/// </summary>
 		[Reactive] public int SelectionStart { get; private set; }
+
+		/// <summary>
+		/// Gets or sets the end row of the current selection.
+		/// </summary>
 		[Reactive] public int SelectionEnd { get; private set; }
+
+		/// <summary>
+		/// Gets or sets the anchor point for extending selections.
+		/// </summary>
 		[Reactive] public int SelectionAnchor { get; private set; }
+
+		/// <summary>
+		/// Gets or sets the currently selected row number.
+		/// </summary>
 		[Reactive] public int SelectedRow { get; private set; }
 
+		/// <summary>
+		/// Gets or sets the toolbar context menu items.
+		/// </summary>
 		[Reactive] public List<ContextMenuAction> ToolbarItems { get; private set; } = new();
 
+		/// <summary>
+		/// Gets or sets the File menu items.
+		/// </summary>
 		[Reactive] public List<ContextMenuAction> FileMenuItems { get; private set; } = new();
+
+		/// <summary>
+		/// Gets or sets the Debug menu items.
+		/// </summary>
 		[Reactive] public List<ContextMenuAction> DebugMenuItems { get; private set; } = new();
+
+		/// <summary>
+		/// Gets or sets the Search menu items.
+		/// </summary>
 		[Reactive] public List<ContextMenuAction> SearchMenuItems { get; private set; } = new();
+
+		/// <summary>
+		/// Gets or sets the View menu items.
+		/// </summary>
 		[Reactive] public List<ContextMenuAction> ViewMenuItems { get; private set; } = new();
 
+		/// <summary>
+		/// Gets the quick search view model for finding text in the trace log.
+		/// </summary>
 		public QuickSearchViewModel QuickSearch { get; } = new();
 
+		/// <summary>
+		/// Reference to the disassembly viewer control for focus management.
+		/// </summary>
 		private DisassemblyViewer? _viewer = null;
 
+		/// <summary>
+		/// Initializes a new instance of the trace logger view model.
+		/// </summary>
+		/// <remarks>
+		/// Sets up reactive subscriptions for scroll position, selection, and logging state.
+		/// Creates CPU-specific option tabs based on the current ROM's CPU types.
+		/// </remarks>
 		public TraceLoggerViewModel() {
 			Config = ConfigManager.Config.Debug.TraceLogger;
 			StyleProvider = new TraceLoggerStyleProvider(this);
@@ -95,10 +202,18 @@ namespace Nexen.Debugger.ViewModels {
 			}));
 		}
 
+		/// <summary>
+		/// Sets the disassembly viewer reference for focus management.
+		/// </summary>
+		/// <param name="viewer">The disassembly viewer control.</param>
 		public void SetViewer(DisassemblyViewer viewer) {
 			_viewer = viewer;
 		}
 
+		/// <summary>
+		/// Handles quick search find requests by searching the trace log.
+		/// </summary>
+		/// <param name="e">The find event arguments containing search string and direction.</param>
 		private void QuickSearch_OnFind(OnFindEventArgs e) {
 			CodeLineData[] lines = GetCodeLines(0, DebugApi.TraceLogBufferSize);
 			string needle = e.SearchString.ToLowerInvariant();
@@ -134,6 +249,10 @@ namespace Nexen.Debugger.ViewModels {
 			e.Success = false;
 		}
 
+		/// <summary>
+		/// Initializes the window menus with actions and keyboard shortcuts.
+		/// </summary>
+		/// <param name="wnd">The window to register shortcuts with.</param>
 		public void InitializeMenu(Window wnd) {
 			FileMenuItems = AddDisposables(new List<ContextMenuAction>() {
 				new ContextMenuAction() {
@@ -194,10 +313,20 @@ namespace Nexen.Debugger.ViewModels {
 			DebugShortcutManager.RegisterActions(wnd, SearchMenuItems);
 		}
 
+		/// <summary>
+		/// Forces a visual refresh of the trace log display.
+		/// </summary>
 		public void InvalidateVisual() {
 			TraceLogLines = (CodeLineData[])TraceLogLines.Clone();
 		}
 
+		/// <summary>
+		/// Updates the available CPU tabs based on the current ROM.
+		/// </summary>
+		/// <remarks>
+		/// Creates one tab per CPU type supported by the current ROM.
+		/// Shows enable buttons when multiple CPUs are available.
+		/// </remarks>
 		public void UpdateAvailableTabs() {
 			foreach (TraceLoggerOptionTab tab in Tabs) {
 				tab.Dispose();
@@ -217,6 +346,13 @@ namespace Nexen.Debugger.ViewModels {
 			UpdateOptions();
 		}
 
+		/// <summary>
+		/// Updates logging options from the current tab configurations.
+		/// </summary>
+		/// <remarks>
+		/// Aggregates settings across all CPU tabs to determine global state
+		/// such as whether logging is enabled and byte code display.
+		/// </remarks>
 		public void UpdateOptions() {
 			bool forceEnable = Tabs.Count == 1;
 			bool isStartLoggingEnabled = forceEnable;
@@ -235,6 +371,9 @@ namespace Nexen.Debugger.ViewModels {
 			UpdateLog();
 		}
 
+		/// <summary>
+		/// Sends the trace logger options to the emulator core for each CPU type.
+		/// </summary>
 		public void UpdateCoreOptions() {
 			RomInfo romInfo = EmuApi.GetRomInfo();
 			foreach (CpuType cpuType in romInfo.CpuTypes) {
@@ -254,6 +393,10 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Refreshes the trace log display with current execution data.
+		/// </summary>
+		/// <param name="scrollToBottom">Whether to scroll to the most recent entries.</param>
 		public void UpdateLog(bool scrollToBottom = false) {
 			int traceSize = (int)DebugApi.GetExecutionTraceSize();
 			CodeLineData[] lines = GetCodeLines(ScrollPosition, VisibleRowCount);
@@ -268,6 +411,10 @@ namespace Nexen.Debugger.ViewModels {
 			});
 		}
 
+		/// <summary>
+		/// Sets the selected row and clears the selection range.
+		/// </summary>
+		/// <param name="rowNumber">The row number relative to the scroll position.</param>
 		public void SetSelectedRow(int rowNumber) {
 			rowNumber += ScrollPosition;
 			SelectionStart = rowNumber;
@@ -277,11 +424,21 @@ namespace Nexen.Debugger.ViewModels {
 			InvalidateVisual();
 		}
 
+		/// <summary>
+		/// Determines if a row is within the current selection range.
+		/// </summary>
+		/// <param name="rowNumber">The row number relative to the scroll position.</param>
+		/// <returns>True if the row is selected.</returns>
 		public bool IsSelected(int rowNumber) {
 			rowNumber += ScrollPosition;
 			return rowNumber >= SelectionStart && rowNumber <= SelectionEnd;
 		}
 
+		/// <summary>
+		/// Moves the cursor by a row offset, optionally extending selection.
+		/// </summary>
+		/// <param name="rowOffset">Number of rows to move (negative for up).</param>
+		/// <param name="extendSelection">Whether to extend the selection to the new position.</param>
 		public void MoveCursor(int rowOffset, bool extendSelection) {
 			int rowNumber = SelectedRow + rowOffset - ScrollPosition;
 			if (extendSelection) {
@@ -292,6 +449,10 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Extends or shrinks the selection to include the specified row.
+		/// </summary>
+		/// <param name="rowNumber">The row number relative to the scroll position.</param>
 		public void ResizeSelectionTo(int rowNumber) {
 			rowNumber += ScrollPosition;
 
@@ -323,10 +484,18 @@ namespace Nexen.Debugger.ViewModels {
 			InvalidateVisual();
 		}
 
+		/// <summary>
+		/// Scrolls the view by the specified offset.
+		/// </summary>
+		/// <param name="offset">Number of rows to scroll (positive = down).</param>
 		public void Scroll(int offset) {
 			ScrollPosition += offset;
 		}
 
+		/// <summary>
+		/// Scrolls to the top of the trace buffer.
+		/// </summary>
+		/// <param name="extendSelection">Whether to extend selection to the top.</param>
 		public void ScrollToTop(bool extendSelection) {
 			if (extendSelection) {
 				ResizeSelectionTo(-ScrollPosition);
@@ -336,6 +505,10 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Scrolls to the bottom of the trace buffer (most recent entries).
+		/// </summary>
+		/// <param name="extendSelection">Whether to extend selection to the bottom.</param>
 		public void ScrollToBottom(bool extendSelection) {
 			if (extendSelection) {
 				ResizeSelectionTo(DebugApi.TraceLogBufferSize - 1 - ScrollPosition);
@@ -345,12 +518,18 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Selects all rows in the trace buffer.
+		/// </summary>
 		public void SelectAll() {
 			SelectionStart = 0;
 			SelectionEnd = DebugApi.TraceLogBufferSize - 1;
 			InvalidateVisual();
 		}
 
+		/// <summary>
+		/// Copies the selected trace log lines to the clipboard.
+		/// </summary>
 		public void CopySelection() {
 			StringBuilder sb = new();
 
@@ -365,10 +544,20 @@ namespace Nexen.Debugger.ViewModels {
 			ApplicationHelper.GetMainWindow()?.Clipboard?.SetTextAsync(sb.ToString());
 		}
 
+		/// <summary>
+		/// Checks if a row is currently visible in the view.
+		/// </summary>
+		/// <param name="rowNumber">The absolute row number in the buffer.</param>
+		/// <returns>True if the row is visible.</returns>
 		private bool IsRowVisible(int rowNumber) {
 			return rowNumber > ScrollPosition && rowNumber < ScrollPosition + VisibleRowCount;
 		}
 
+		/// <summary>
+		/// Scrolls to make the specified row visible.
+		/// </summary>
+		/// <param name="rowNumber">The row number to scroll to.</param>
+		/// <param name="position">Where to position the row in the view.</param>
 		private void ScrollToRowNumber(int rowNumber, ScrollDisplayPosition position = ScrollDisplayPosition.Center) {
 			if (IsRowVisible(rowNumber)) {
 				//Row is already visible, don't scroll
@@ -382,6 +571,12 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Retrieves code line data from the execution trace buffer.
+		/// </summary>
+		/// <param name="startIndex">The starting index in the buffer.</param>
+		/// <param name="rowCount">The number of rows to retrieve.</param>
+		/// <returns>Array of code line data for display.</returns>
 		private CodeLineData[] GetCodeLines(int startIndex, int rowCount) {
 			TraceRow[] rows = DebugApi.GetExecutionTrace((uint)(DebugApi.TraceLogBufferSize - startIndex - rowCount), (uint)rowCount);
 
@@ -406,6 +601,10 @@ namespace Nexen.Debugger.ViewModels {
 			return lines.ToArray();
 		}
 
+		/// <summary>
+		/// Gets the address information for the currently selected row.
+		/// </summary>
+		/// <returns>Address info for the selected row, or null if invalid.</returns>
 		public AddressInfo? GetSelectedRowAddress() {
 			TraceRow[] rows = DebugApi.GetExecutionTrace(DebugApi.TraceLogBufferSize - (uint)SelectedRow - 1, 1);
 			if (rows.Length > 0) {
@@ -419,24 +618,81 @@ namespace Nexen.Debugger.ViewModels {
 		}
 	}
 
+	/// <summary>
+	/// View model for a CPU-specific tab in the trace logger options panel.
+	/// </summary>
+	/// <remarks>
+	/// Each tab controls the logging options for a specific CPU type,
+	/// including format customization, register display, and condition filters.
+	/// </remarks>
 	public class TraceLoggerOptionTab : DisposableViewModel {
+		/// <summary>
+		/// Gets or sets the display name for the tab.
+		/// </summary>
 		public string TabName { get; set; } = "";
+
+		/// <summary>
+		/// Gets the help tooltip for the condition expression editor.
+		/// </summary>
 		public Control HelpTooltip => ExpressionTooltipHelper.GetHelpTooltip(CpuType, false);
+
+		/// <summary>
+		/// Gets the tooltip explaining format tags and their usage.
+		/// </summary>
 		public Control FormatTooltip => GetFormatTooltip();
 
+		/// <summary>
+		/// Gets or sets the CPU type for this tab.
+		/// </summary>
 		public CpuType CpuType { get; set; } = CpuType.Snes;
 
+		/// <summary>
+		/// Gets the title for the log options group box.
+		/// </summary>
 		public string LogOptionsTitle { get; }
+
+		/// <summary>
+		/// Gets whether to show the enable/disable button for this CPU.
+		/// </summary>
 		public bool ShowEnableButton { get; }
+
+		/// <summary>
+		/// Gets whether to show status format options for this CPU.
+		/// </summary>
 		public bool ShowStatusFormat { get; }
+
+		/// <summary>
+		/// Gets whether to show the indent code option for this CPU.
+		/// </summary>
 		public bool ShowIndentCode { get; }
+
+		/// <summary>
+		/// Gets the configuration options for this CPU's trace logging.
+		/// </summary>
 		public TraceLoggerCpuConfig Options { get; }
 
+		/// <summary>
+		/// Gets or sets the current format string (auto-generated or custom).
+		/// </summary>
 		[Reactive] public string Format { get; set; } = "";
+
+		/// <summary>
+		/// Gets or sets whether the condition expression is valid.
+		/// </summary>
 		[Reactive] public bool IsConditionValid { get; set; } = true;
 
+		/// <summary>
+		/// Reference to the parent trace logger view model.
+		/// </summary>
 		private TraceLoggerViewModel _traceLogger;
 
+		/// <summary>
+		/// Creates a new trace logger option tab for a CPU type.
+		/// </summary>
+		/// <param name="traceLogger">The parent trace logger view model.</param>
+		/// <param name="cpuType">The CPU type for this tab.</param>
+		/// <param name="options">The configuration options for this CPU.</param>
+		/// <param name="showEnableButton">Whether to show the enable button.</param>
 		public TraceLoggerOptionTab(TraceLoggerViewModel traceLogger, CpuType cpuType, TraceLoggerCpuConfig options, bool showEnableButton) {
 			_traceLogger = traceLogger;
 			CpuType = cpuType;
@@ -458,6 +714,9 @@ namespace Nexen.Debugger.ViewModels {
 			LogOptionsTitle = string.Format(ResourceHelper.GetViewLabel(nameof(TraceLoggerWindow), "grpLogOptions"), ResourceHelper.GetEnumText(cpuType));
 		}
 
+		/// <summary>
+		/// Handles changes to the options and updates the trace logger accordingly.
+		/// </summary>
 		private void OnOptionsChanged(object? sender, PropertyChangedEventArgs e) {
 			UpdateFormat();
 
@@ -481,12 +740,25 @@ namespace Nexen.Debugger.ViewModels {
 			_traceLogger.UpdateOptions();
 		}
 
+		/// <summary>
+		/// Updates the format string from the auto-format generator.
+		/// </summary>
 		private void UpdateFormat() {
 			if (!Options.UseCustomFormat) {
 				Format = GetAutoFormat(Options, CpuType);
 			}
 		}
 
+		/// <summary>
+		/// Generates the auto-format string based on the current options and CPU type.
+		/// </summary>
+		/// <param name="cfg">The trace logger CPU configuration.</param>
+		/// <param name="cpuType">The CPU type to generate format for.</param>
+		/// <returns>A format string with placeholders for the requested fields.</returns>
+		/// <remarks>
+		/// Generates format strings with tags like [Disassembly], [A], [X], etc.
+		/// based on which options are enabled (registers, flags, counters).
+		/// </remarks>
 		public static string GetAutoFormat(TraceLoggerCpuConfig cfg, CpuType cpuType) {
 			string format = "";
 			int alignValue = cpuType switch {
@@ -600,6 +872,10 @@ namespace Nexen.Debugger.ViewModels {
 			return format.Trim();
 		}
 
+		/// <summary>
+		/// Creates a tooltip control explaining the available format tags.
+		/// </summary>
+		/// <returns>A panel containing format tag documentation.</returns>
 		private Control GetFormatTooltip() {
 			StackPanel panel = new();
 
@@ -674,24 +950,77 @@ namespace Nexen.Debugger.ViewModels {
 		}
 	}
 
+	/// <summary>
+	/// Provides styling information for trace log lines based on CPU type.
+	/// </summary>
+	/// <remarks>
+	/// Implements ILineStyleProvider to color-code trace log entries by CPU.
+	/// Main CPU uses default colors, secondary CPUs and coprocessors use
+	/// distinct colors for easy identification.
+	/// </remarks>
 	public class TraceLoggerStyleProvider : ILineStyleProvider {
+		/// <summary>
+		/// The console type for determining main CPU.
+		/// </summary>
 		private ConsoleType _consoleType = ConsoleType.Snes;
+
+		/// <summary>
+		/// Reference to the trace logger view model for selection state.
+		/// </summary>
 		private TraceLoggerViewModel _model;
 
+		/// <summary>
+		/// Creates a new style provider for the trace logger.
+		/// </summary>
+		/// <param name="model">The trace logger view model.</param>
 		public TraceLoggerStyleProvider(TraceLoggerViewModel model) {
 			_model = model;
 		}
 
+		/// <summary>
+		/// Gets the address size in hex characters for the current console.
+		/// </summary>
 		public int AddressSize { get; private set; } = 6;
+
+		/// <summary>
+		/// Gets the maximum byte code size for the current console.
+		/// </summary>
 		public int ByteCodeSize { get; private set; } = 4;
+
+		/// <summary>
+		/// Gets line properties for main CPU entries (default colors).
+		/// </summary>
 		private LineProperties GetMainCpuStyle() { return new LineProperties() { AddressColor = null, LineBgColor = null }; }
+
+		/// <summary>
+		/// Gets line properties for secondary CPU entries (green tint).
+		/// </summary>
 		private LineProperties GetSecondaryCpuStyle() { return new LineProperties() { AddressColor = Color.FromRgb(30, 145, 30), LineBgColor = Color.FromRgb(230, 245, 230) }; }
+
+		/// <summary>
+		/// Gets line properties for coprocessor entries (blue tint).
+		/// </summary>
 		private LineProperties GetCoprocessorStyle() { return new LineProperties() { AddressColor = Color.FromRgb(30, 30, 145), LineBgColor = Color.FromRgb(230, 230, 245) }; }
 
+		/// <summary>
+		/// Gets the syntax highlighting colors for a code line.
+		/// </summary>
+		/// <param name="lineData">The code line data to highlight.</param>
+		/// <param name="highlightCode">Whether to apply syntax highlighting.</param>
+		/// <param name="addressFormat">Format string for addresses.</param>
+		/// <param name="textColor">Optional text color override.</param>
+		/// <param name="showMemoryValues">Whether memory values are shown.</param>
+		/// <returns>List of color spans for the line.</returns>
 		public List<CodeColor> GetCodeColors(CodeLineData lineData, bool highlightCode, string addressFormat, Color? textColor, bool showMemoryValues) {
 			return CodeHighlighting.GetCpuHighlights(lineData, highlightCode, addressFormat, textColor, showMemoryValues);
 		}
 
+		/// <summary>
+		/// Gets the line style properties based on CPU type and selection state.
+		/// </summary>
+		/// <param name="lineData">The code line data.</param>
+		/// <param name="lineIndex">The line index in the visible area.</param>
+		/// <returns>Line properties with colors and selection state.</returns>
 		public LineProperties GetLineStyle(CodeLineData lineData, int lineIndex) {
 			LineProperties props = lineData.CpuType switch {
 				CpuType.Spc => GetSecondaryCpuStyle(),
@@ -709,6 +1038,10 @@ namespace Nexen.Debugger.ViewModels {
 			return props;
 		}
 
+		/// <summary>
+		/// Sets the console type and updates address/byte code sizes.
+		/// </summary>
+		/// <param name="consoleType">The console type.</param>
 		internal void SetConsoleType(ConsoleType consoleType) {
 			_consoleType = consoleType;
 			AddressSize = consoleType.GetMainCpuType().GetAddressSize();
