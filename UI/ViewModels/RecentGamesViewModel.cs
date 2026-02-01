@@ -21,6 +21,11 @@ namespace Mesen.ViewModels {
 		[Reactive] public GameScreenMode Mode { get; private set; }
 		[Reactive] public List<RecentGameInfo> GameEntries { get; private set; } = new List<RecentGameInfo>();
 
+		/// <summary>
+		/// Whether the current mode supports deleting entries (e.g., SaveStatePicker)
+		/// </summary>
+		public bool CanDeleteEntries => Mode == GameScreenMode.SaveStatePicker;
+
 		public RecentGamesViewModel() {
 			Visible = ConfigManager.Config.Preferences.GameSelectionScreenMode != GameSelectionMode.Disabled;
 		}
@@ -57,7 +62,37 @@ namespace Mesen.ViewModels {
 				for (int i = 0; i < files.Count && entries.Count < 72; i++) {
 					entries.Add(new RecentGameInfo() { FileName = files[i], Name = Path.GetFileNameWithoutExtension(files[i]) });
 				}
+			} else if (mode == GameScreenMode.SaveStatePicker) {
+				// New timestamped save state picker mode
+				if (!Visible) {
+					NeedResume = Pause();
+				}
+
+				Title = ResourceHelper.GetMessage("LoadStateDialog");
+
+				// Get all timestamped saves for current ROM from API
+				SaveStateInfo[] states = EmuApi.GetSaveStateList();
+				foreach (var state in states) {
+					entries.Add(new RecentGameInfo() {
+						FileName = state.Filepath,
+						Name = state.RomName,
+						SaveStateTimestamp = state.Timestamp,
+						FriendlyTimestamp = state.GetFriendlyTimestamp(),
+						IsTimestampedSave = true
+					});
+				}
+
+				// If no timestamped saves exist, show message
+				if (entries.Count == 0) {
+					// Just close the picker - nothing to show
+					Visible = false;
+					if (NeedResume) {
+						EmuApi.Resume();
+					}
+					return;
+				}
 			} else {
+				// Legacy slot-based save/load state modes
 				if (!Visible) {
 					NeedResume = Pause();
 				}
@@ -86,6 +121,33 @@ namespace Mesen.ViewModels {
 			GameEntries = entries;
 		}
 
+		/// <summary>
+		/// Delete a save state entry and refresh the list.
+		/// Only works in SaveStatePicker mode.
+		/// </summary>
+		public bool DeleteEntry(RecentGameInfo entry) {
+			if (Mode != GameScreenMode.SaveStatePicker || !entry.IsTimestampedSave) {
+				return false;
+			}
+
+			if (EmuApi.DeleteSaveState(entry.FileName)) {
+				// Refresh the list
+				var newEntries = GameEntries.Where(e => e.FileName != entry.FileName).ToList();
+				GameEntries = newEntries;
+
+				if (GameEntries.Count == 0) {
+					Visible = false;
+					if (NeedResume) {
+						EmuApi.Resume();
+					}
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
 		private bool Pause() {
 			if (!EmuApi.IsPaused()) {
 				EmuApi.Pause();
@@ -99,7 +161,8 @@ namespace Mesen.ViewModels {
 	public enum GameScreenMode {
 		RecentGames,
 		LoadState,
-		SaveState
+		SaveState,
+		SaveStatePicker  // New mode for browsing timestamped saves
 	}
 
 	public class RecentGameInfo {
@@ -108,12 +171,33 @@ namespace Mesen.ViewModels {
 		public string Name { get; set; } = "";
 		public bool SaveMode { get; set; } = false;
 
+		/// <summary>
+		/// True if this is a timestamped save state (not a slot-based save)
+		/// </summary>
+		public bool IsTimestampedSave { get; set; } = false;
+
+		/// <summary>
+		/// Timestamp for timestamped saves
+		/// </summary>
+		public DateTime SaveStateTimestamp { get; set; }
+
+		/// <summary>
+		/// Friendly formatted timestamp (e.g., "Today 2:30 PM")
+		/// </summary>
+		public string FriendlyTimestamp { get; set; } = "";
+
 		public bool IsEnabled() {
 			return SaveMode || File.Exists(FileName);
 		}
 
 		public void Load() {
-			if (StateIndex > 0) {
+			if (IsTimestampedSave) {
+				// Load timestamped save by filepath
+				Task.Run(() => {
+					EmuApi.LoadStateFile(FileName);
+					EmuApi.Resume();
+				});
+			} else if (StateIndex > 0) {
 				Task.Run(() => {
 					//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side
 					if (SaveMode) {

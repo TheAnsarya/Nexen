@@ -98,7 +98,10 @@ namespace Mesen.Controls {
 
 			bool fileExists = File.Exists(game.FileName);
 			if (fileExists) {
-				if (Path.GetExtension(game.FileName) == "." + FileDialogHelper.MesenSaveStateExt) {
+				if (game.IsTimestampedSave && !string.IsNullOrEmpty(game.FriendlyTimestamp)) {
+					// Use the friendly timestamp for timestamped saves (e.g., "Today 2:30 PM")
+					SubTitle = game.FriendlyTimestamp;
+				} else if (Path.GetExtension(game.FileName) == "." + FileDialogHelper.MesenSaveStateExt) {
 					SubTitle = new FileInfo(game.FileName).LastWriteTime.ToString();
 				} else {
 					DateTime writeTime = new FileInfo(game.FileName).LastWriteTime;

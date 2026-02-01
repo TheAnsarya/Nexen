@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -126,6 +127,43 @@ namespace Mesen.Controls {
 				}
 
 				model.Visible = false;
+			}
+		}
+
+		/// <summary>
+		/// Handle keyboard input for grid navigation and deletion.
+		/// Delete key removes the selected entry in SaveStatePicker mode.
+		/// </summary>
+		protected override void OnKeyDown(KeyEventArgs e) {
+			base.OnKeyDown(e);
+
+			if (e.Key == Key.Delete && DataContext is RecentGamesViewModel model && model.CanDeleteEntries) {
+				if (Entries != null && Entries.Count > 0 && SelectedIndex >= 0 && SelectedIndex < Entries.Count) {
+					RecentGameInfo entry = Entries[SelectedIndex];
+					if (entry.IsTimestampedSave) {
+						DeleteSelectedEntry(model, entry);
+						e.Handled = true;
+					}
+				}
+			} else if (e.Key == Key.Escape) {
+				OnCloseClick(this, new RoutedEventArgs());
+				e.Handled = true;
+			}
+		}
+
+		/// <summary>
+		/// Delete the currently selected save state entry.
+		/// </summary>
+		private void DeleteSelectedEntry(RecentGamesViewModel model, RecentGameInfo entry) {
+			// Delete the entry
+			if (model.DeleteEntry(entry)) {
+				// Adjust selected index if needed
+				if (SelectedIndex >= model.GameEntries.Count) {
+					SelectedIndex = Math.Max(0, model.GameEntries.Count - 1);
+				}
+
+				// Re-bind entries to trigger UI refresh
+				Entries = model.GameEntries;
 			}
 		}
 
