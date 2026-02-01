@@ -5,7 +5,7 @@ using System.IO.Compression;
 using System.IO.Hashing;
 using System.Text;
 
-namespace Mesen.Tests.Debugger.Labels;
+namespace Nexen.Tests.Debugger.Labels;
 
 /// <summary>
 /// Unit tests for PansyExporter functionality.

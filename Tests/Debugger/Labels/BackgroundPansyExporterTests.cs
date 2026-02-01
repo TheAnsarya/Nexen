@@ -1,7 +1,7 @@
 using Xunit;
 using System;
 
-namespace Mesen.Tests.Debugger.Labels;
+namespace Nexen.Tests.Debugger.Labels;
 
 /// <summary>
 /// Unit tests for BackgroundPansyExporter functionality.

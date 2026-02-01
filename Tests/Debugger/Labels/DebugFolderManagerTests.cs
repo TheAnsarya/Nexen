@@ -4,7 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Collections.Generic;
 
-namespace Mesen.Tests.Debugger.Labels;
+namespace Nexen.Tests.Debugger.Labels;
 
 /// <summary>
 /// Unit tests for DebugFolderManager functionality.
