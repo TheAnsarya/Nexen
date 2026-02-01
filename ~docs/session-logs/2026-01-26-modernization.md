@@ -3,7 +3,7 @@
 ## Date: January 26, 2026
 
 ## Summary
-Major modernization milestone achieved: Upgraded Mesen2 from .NET 8 to .NET 10, updated Avalonia to 11.3.9, and migrated to System.IO.Hashing for CRC32.
+Major modernization milestone achieved: Upgraded Nexen from .NET 8 to .NET 10, updated Avalonia to 11.3.9, and migrated to System.IO.Hashing for CRC32.
 
 ## Completed Work
 

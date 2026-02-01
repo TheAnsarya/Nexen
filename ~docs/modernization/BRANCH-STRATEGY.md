@@ -1,4 +1,4 @@
-# 🌿 Mesen2 Branch Strategy
+# 🌿 Nexen Branch Strategy
 
 > **Document Version:** 1.0.0
 > **Last Updated:** January 27, 2026
@@ -6,7 +6,7 @@
 
 ## 📋 Overview
 
-This document describes the branch strategy used for Mesen2 development, specifically for the pansy integration and modernization efforts.
+This document describes the branch strategy used for Nexen development, specifically for the pansy integration and modernization efforts.
 
 ## 🌳 Branch Hierarchy
 
@@ -21,7 +21,7 @@ main (sour's upstream)
 ## 📍 Branch Descriptions
 
 ### `main`
-- **Purpose:** Tracks upstream Mesen2 (sour's repository)
+- **Purpose:** Tracks upstream Nexen (sour's repository)
 - **Owner:** Upstream (sour)
 - **Merge Policy:** We pull from upstream, never push
 - **Status:** Read-only from our perspective

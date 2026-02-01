@@ -3,7 +3,7 @@
 ## Date: January 26, 2026
 
 ## Summary
-Continued development of Mesen2 Pansy export feature. Completed Phase 1.5 documentation, started Phase 2 (unit tests), and began Phase 3 (enhanced data export).
+Continued development of Nexen Pansy export feature. Completed Phase 1.5 documentation, started Phase 2 (unit tests), and began Phase 3 (enhanced data export).
 
 ## Completed Work
 

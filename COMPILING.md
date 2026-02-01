@@ -1,4 +1,4 @@
-# Compiling Mesen
+# Compiling Nexen
 
 This fork uses modern C++23 and .NET 10 for improved performance and code quality.
 
@@ -20,7 +20,7 @@ This fork uses modern C++23 and .NET 10 for improved performance and code qualit
 
 ### Building with Visual Studio
 
-1. Open `Mesen.sln` in Visual Studio 2026 (or later)
+1. Open `Nexen.sln` in Visual Studio 2026 (or later)
 2. Compile as `Release` / `x64`
 3. Set the startup project to `UI` and run
 
@@ -31,7 +31,7 @@ This fork uses modern C++23 and .NET 10 for improved performance and code qualit
 ```powershell
 # Using MSBuild
 & "C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin\MSBuild.exe" `
-    Mesen.sln /p:Configuration=Release /p:Platform=x64 /t:Build /m:1
+    Nexen.sln /p:Configuration=Release /p:Platform=x64 /t:Build /m:1
 
 # Run tests
 .\bin\win-x64\Release\Core.Tests.exe
@@ -56,7 +56,7 @@ Once SDL2 and the .NET 10 SDK are installed, run `make`.
 
 ## Fork-Specific Features
 
-This fork (TheAnsarya/Mesen2) includes:
+This fork (TheAnsarya/Nexen) includes:
 - C++23 modernization (smart pointers, std::format, ranges)
 - 🌼 Pansy metadata export for disassembly
 - Comprehensive unit tests (Google Test)

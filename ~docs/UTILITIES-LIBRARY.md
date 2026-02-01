@@ -1,6 +1,6 @@
 # Shared/Utilities Library Documentation
 
-The Utilities library provides foundational infrastructure for Mesen2, including serialization, file I/O, string handling, compression, and platform abstraction.
+The Utilities library provides foundational infrastructure for Nexen, including serialization, file I/O, string handling, compression, and platform abstraction.
 
 ## Overview
 

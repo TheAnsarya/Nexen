@@ -8,7 +8,7 @@
 
 Create a unified debug data storage system where each ROM has a dedicated folder containing:
 1. **Pansy file** (`.pansy`) - Universal metadata format
-2. **Mesen Label file** (`.mlb`) - Native Mesen labels
+2. **Nexen Label file** (`.mlb`) - Native Nexen labels
 3. **CDL file** (`.cdl`) - Code Data Logger data
 4. **Debug info** (`.dbg`) - Extended debug information
 
@@ -16,11 +16,11 @@ These files are kept in sync bidirectionally:
 - Changes to MLB/CDL update the Pansy file
 - Pansy file can be imported back to restore MLB/CDL data
 
-## Data Mapping: Pansy ↔ Mesen Formats
+## Data Mapping: Pansy ↔ Nexen Formats
 
 ### Pansy Format Capabilities
 
-| Pansy Section | Description | Mesen Equivalent |
+| Pansy Section | Description | Nexen Equivalent |
 |---------------|-------------|------------------|
 | CODE_DATA_MAP | Code/Data flags | CDL file (`.cdl`) |
 | SYMBOLS | Labels with addresses | MLB file (`.mlb`) |
@@ -33,9 +33,9 @@ These files are kept in sync bidirectionally:
 | BOOKMARKS | User bookmarks | Future: bookmark storage |
 | WATCH_ENTRIES | Watch expressions | Future: watch storage |
 
-### Mesen Format Details
+### Nexen Format Details
 
-#### MLB (Mesen Label File)
+#### MLB (Nexen Label File)
 ```
 Format: MemoryType:Address[-EndAddress]:Label[:Comment]
 Example: NesPrgRom:8000:Reset:Main entry point
@@ -64,16 +64,16 @@ Contains:
 - Subroutine entry points
 
 #### DBG (Debug Files from ca65, cc65, etc.)
-External debug info format - Mesen can import but doesn't export.
+External debug info format - Nexen can import but doesn't export.
 
 ## Folder Structure
 
 ```
-[Mesen Data Directory]/
+[Nexen Data Directory]/
 ├── Debug/
 │   ├── [RomName_CRC32]/           # Per-ROM folder
 │   │   ├── metadata.pansy         # Pansy universal format
-│   │   ├── labels.mlb             # Mesen native labels
+│   │   ├── labels.mlb             # Nexen native labels
 │   │   ├── coverage.cdl           # Code Data Logger
 │   │   ├── config.json            # Per-ROM config
 │   │   └── history/               # Optional: version history
@@ -91,7 +91,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 
 ## Sync Mechanism
 
-### Export Flow (Mesen → Pansy)
+### Export Flow (Nexen → Pansy)
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -119,7 +119,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 └────────────────────────────────────────────────────────────────┘
 ```
 
-### Import Flow (Pansy → Mesen)
+### Import Flow (Pansy → Nexen)
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -136,7 +136,7 @@ Folder name: `{RomBaseName}_{CRC32}`
                           │
                           ▼
 ┌────────────────────────────────────────────────────────────────┐
-│              Apply to Mesen State                              │
+│              Apply to Nexen State                              │
 │  - SYMBOLS → LabelManager.SetLabels()                          │
 │  - COMMENTS → CodeLabel.Comment                                │
 │  - CODE_DATA_MAP → DebugApi.SetCdlData()                       │
@@ -297,7 +297,7 @@ public class SyncManager : IDisposable {
 
 3. **Manual Tests:**
    - Load ROM → Add labels → Close → Reload → Verify
-   - External MLB edit → Sync → Verify in Mesen
+   - External MLB edit → Sync → Verify in Nexen
    - Conflict scenario testing
 
 ## Timeline
@@ -320,4 +320,4 @@ public class SyncManager : IDisposable {
 4. ✅ MLB/CDL files exported alongside Pansy
 5. ✅ Changes to any file sync to others
 6. ✅ No data loss in round-trip
-7. ✅ Works with all Mesen2-supported platforms
+7. ✅ Works with all Nexen-supported platforms

@@ -1,6 +1,6 @@
 # Input and Controller Subsystem Documentation
 
-This document covers Mesen's input handling and controller emulation subsystem.
+This document covers Nexen's input handling and controller emulation subsystem.
 
 ---
 

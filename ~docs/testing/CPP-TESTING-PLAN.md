@@ -2,11 +2,11 @@
 
 > **Created:** January 29, 2026  
 > **Status:** 📋 PLANNED  
-> **Epic:** [#79](https://github.com/TheAnsarya/Mesen2/issues/79)
+> **Epic:** [#79](https://github.com/TheAnsarya/Nexen/issues/79)
 
 ## Overview
 
-Establish comprehensive C++ unit testing for Mesen2 Core libraries using **Google Test (gtest)** framework.
+Establish comprehensive C++ unit testing for Nexen Core libraries using **Google Test (gtest)** framework.
 
 ## Framework Selection: Google Test
 
@@ -28,7 +28,7 @@ Establish comprehensive C++ unit testing for Mesen2 Core libraries using **Googl
 ## Project Structure
 
 ```
-Mesen2/
+Nexen/
 ├── Core.Tests/                    # NEW - C++ test project
 │   ├── Core.Tests.vcxproj         # VS project file
 │   ├── pch.h                      # Precompiled header
@@ -68,7 +68,7 @@ Mesen2/
 2. **Create vcpkg.json manifest**
 	```json
 	{
-		"name": "mesen2",
+		"name": "Nexen",
 		"version": "2.0.0",
 		"dependencies": [
 			"gtest"
@@ -299,7 +299,7 @@ jobs:
 
 ## Related Documents
 
-- [Epic #79: C++ Unit Testing Infrastructure](https://github.com/TheAnsarya/Mesen2/issues/79)
-- [Epic #80: C++ Performance Benchmarking](https://github.com/TheAnsarya/Mesen2/issues/80)
+- [Epic #79: C++ Unit Testing Infrastructure](https://github.com/TheAnsarya/Nexen/issues/79)
+- [Epic #80: C++ Performance Benchmarking](https://github.com/TheAnsarya/Nexen/issues/80)
 - [CPP-ISSUES-TRACKING.md](../modernization/CPP-ISSUES-TRACKING.md)
 - [cpp-modernization-opportunities.md](../modernization/cpp-modernization-opportunities.md)

@@ -1,11 +1,11 @@
-# Mesen2 Architecture Overview
+# Nexen Architecture Overview
 
-Mesen2 is a multi-system emulator supporting NES, SNES, Game Boy, GBA, SMS, PC Engine, and WonderSwan. This document provides a high-level overview of the codebase architecture.
+Nexen is a multi-system emulator supporting NES, SNES, Game Boy, GBA, SMS, PC Engine, and WonderSwan. This document provides a high-level overview of the codebase architecture.
 
 ## Project Structure
 
 ```
-Mesen2/
+Nexen/
 ├── Core/                   # C++ emulation cores (this document)
 │   ├── NES/                # Nintendo Entertainment System
 │   ├── SNES/               # Super Nintendo
@@ -147,7 +147,7 @@ CPU Read/Write Request
 
 ## Timing Model
 
-Mesen2 uses a master clock for precise timing:
+Nexen uses a master clock for precise timing:
 
 ```cpp
 // Each system has a master clock relationship

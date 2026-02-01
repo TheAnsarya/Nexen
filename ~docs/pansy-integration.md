@@ -1,4 +1,4 @@
-# Pansy Metadata Export - Mesen2 Integration
+# Pansy Metadata Export - Nexen Integration
 
 **Created:** 2026-01-19 18:44 UTC  
 **Branch:** `pansy-export`  
@@ -6,12 +6,12 @@
 
 ## Overview
 
-Mesen2 now supports automatic export of debugging metadata to the [Pansy format](https://github.com/TheAnsarya/pansy), a universal disassembly metadata format designed for retro game development.
+Nexen now supports automatic export of debugging metadata to the [Pansy format](https://github.com/TheAnsarya/pansy), a universal disassembly metadata format designed for retro game development.
 
 ## Features
 
 ### Automatic Export
-- **When enabled:** Mesen2 automatically exports a `.pansy` file whenever debugging data changes
+- **When enabled:** Nexen automatically exports a `.pansy` file whenever debugging data changes
 - **Location:** Same folder as ROM, with `.pansy` extension
 - **Default:** Enabled by default for seamless workflow
 
@@ -22,7 +22,7 @@ Mesen2 now supports automatic export of debugging metadata to the [Pansy format]
 
 ### Exported Data
 
-The following metadata is exported from Mesen2:
+The following metadata is exported from Nexen:
 
 | Category | Description |
 |----------|-------------|
@@ -44,7 +44,7 @@ The following metadata is exported from Mesen2:
 
 ### Supported Platforms
 
-Pansy export supports all Mesen2 platforms with correct Platform IDs:
+Pansy export supports all Nexen platforms with correct Platform IDs:
 
 - **NES** (iNes, FDS, NSF) → Platform ID 0x01
 - **SNES** (SFC, SPC) → Platform ID 0x02
@@ -98,7 +98,7 @@ Pansy files are binary metadata files with the following structure:
 
 ### Example 1: Export During Debugging Session
 
-1. Load a ROM in Mesen2
+1. Load a ROM in Nexen
 2. Add labels and comments in the debugger
 3. Code/Data Logger tracks execution
 4. `.pansy` file is automatically updated in ROM folder
@@ -208,7 +208,7 @@ Create test `.pansy` files for validation:
 
 - [Pansy GitHub Repository](https://github.com/TheAnsarya/pansy)
 - [Pansy File Format Specification](https://github.com/TheAnsarya/pansy/blob/main/docs/FILE-FORMAT.md)
-- [Mesen2 Debugger Documentation](https://www.mesen.ca/docs/debugging/)
+- [Nexen Debugger Documentation](https://www.mesen.ca/docs/debugging/)
 
 ## Change Log
 

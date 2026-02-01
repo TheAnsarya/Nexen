@@ -1,4 +1,4 @@
-# 🚀 Mesen2 Modernization Roadmap
+# 🚀 Nexen Modernization Roadmap
 
 > **Branch:** `modernization` (sub-branch of `pansy-export`)
 > **Baseline Tag:** `v2.0.0-pansy-phase3`
@@ -8,7 +8,7 @@
 
 ## 📋 Executive Summary
 
-This modernization effort upgrades Mesen2 from .NET 8 to .NET 10, updates all dependencies to their latest versions, implements comprehensive testing, and modernizes the codebase to use current best practices and built-in libraries.
+This modernization effort upgrades Nexen from .NET 8 to .NET 10, updates all dependencies to their latest versions, implements comprehensive testing, and modernizes the codebase to use current best practices and built-in libraries.
 
 ## ✅ Completion Status
 

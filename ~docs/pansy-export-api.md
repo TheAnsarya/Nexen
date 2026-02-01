@@ -8,7 +8,7 @@ This document describes the public API for the Pansy export/import functionality
 
 **Namespace:** `Mesen.Debugger.Integration`
 
-Exports Mesen debug metadata to the Pansy binary format.
+Exports Nexen debug metadata to the Pansy binary format.
 
 #### Static Methods
 
@@ -78,7 +78,7 @@ public class ExportProgress
 
 **Namespace:** `Mesen.Debugger.Integration`
 
-Imports Pansy format files into the Mesen debugger.
+Imports Pansy format files into the Nexen debugger.
 
 #### Static Methods
 
@@ -186,7 +186,7 @@ public static void ImportFromFolder(
 ```
 {RomName}_debug/
 ├── manifest.json           # Metadata about ROM and settings
-├── {crc32}.mlb             # Mesen Label file
+├── {crc32}.mlb             # Nexen Label file
 ├── {crc32}.cdl             # Code/Data Log
 ├── {crc32}.pansy           # Full Pansy export
 └── .history/               # Version history (if enabled)
@@ -303,7 +303,7 @@ public static List<ConversionResult> BatchConvert(
 public enum DebugFormat
 {
     Unknown,
-    MesenMlb,       // Mesen Label file
+    MesenMlb,       // Nexen Label file
     Ca65Dbg,        // cc65/ca65 debug info
     WlaDxSym,       // WLA-DX symbol file
     RgbdsSym,       // RGBDS symbol file

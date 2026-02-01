@@ -1,6 +1,6 @@
 # 🌼 Pansy Export - User Guide
 
-Mesen now supports exporting and importing debug metadata in the **Pansy** format, a universal disassembly metadata format designed for sharing and preserving your reverse engineering work.
+Nexen now supports exporting and importing debug metadata in the **Pansy** format, a universal disassembly metadata format designed for sharing and preserving your reverse engineering work.
 
 ## Overview
 
@@ -14,7 +14,7 @@ The Pansy export feature allows you to:
 
 ### Exporting a Pansy File
 
-1. Open a ROM in Mesen
+1. Open a ROM in Nexen
 2. Add labels and comments as you analyze
 3. Go to **Debug → Integration → Export Pansy File...**
 4. Choose a save location
@@ -54,7 +54,7 @@ Enable **Use folder-based storage** for advanced workflows:
 
 | Option | Description |
 |--------|-------------|
-| **Sync MLB files** | Auto-sync Mesen Label Files (human-readable) |
+| **Sync MLB files** | Auto-sync Nexen Label Files (human-readable) |
 | **Sync CDL files** | Auto-sync Code/Data Log files |
 | **Keep version history** | Maintain backups of previous exports |
 | **Watch for external changes** | Detect when files are modified externally |
@@ -103,12 +103,12 @@ Enable **Use folder-based storage** for advanced workflows:
 
 ## Folder Storage Layout
 
-When using folder-based storage, Mesen creates a `GameName_debug/` folder next to your ROM:
+When using folder-based storage, Nexen creates a `GameName_debug/` folder next to your ROM:
 
 ```
 MyGame_debug/
 ├── manifest.json           # ROM info, settings
-├── deadbeef.mlb            # Labels (Mesen format)
+├── deadbeef.mlb            # Labels (Nexen format)
 ├── deadbeef.cdl            # Code/Data Log
 ├── deadbeef.pansy          # Full Pansy export
 └── .history/               # Version history
@@ -128,7 +128,7 @@ MyGame_debug/
 | RGBDS | `.sym` | Game Boy assembler |
 | SDCC | `.sym` | Small Device C Compiler |
 | ELF | `.elf` | GCC/Clang output |
-| Mesen MLB | `.mlb` | Mesen native |
+| Nexen MLB | `.mlb` | Nexen native |
 
 ### Converting
 

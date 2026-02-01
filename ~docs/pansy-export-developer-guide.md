@@ -166,7 +166,7 @@ private static byte[] DecompressData(byte[] compressed, int uncompressedSize)
 }
 ```
 
-## Mesen Integration Points
+## Nexen Integration Points
 
 ### Getting Labels
 
@@ -255,7 +255,7 @@ private static void ReadNewFeatureSection(BinaryReader reader, ImportResult resu
     for (int i = 0; i < count; i++)
     {
         // Read item data
-        // Apply to Mesen
+        // Apply to Nexen
     }
 }
 ```
@@ -368,7 +368,7 @@ public void ExportImport_RoundTrip_PreservesLabels()
 ### Mock Patterns
 
 ```csharp
-// For testing without full Mesen context
+// For testing without full Nexen context
 public interface ILabelProvider
 {
     IEnumerable<CodeLabel> GetLabels();

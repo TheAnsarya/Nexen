@@ -1,4 +1,4 @@
-# Manual Testing Plan: Mesen2 Pansy Exporter Phase 1.5 Features
+# Manual Testing Plan: Nexen Pansy Exporter Phase 1.5 Features
 
 ## Background CDL Recording
 - [ ] Enable "Background CDL Recording" in DebuggerConfigWindow

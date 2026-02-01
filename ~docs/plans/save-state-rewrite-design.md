@@ -9,7 +9,7 @@
 
 ## 📋 Overview
 
-Transform Mesen2's save state system from a fixed 10-slot model to an infinite timestamped save state system with a visual picker UI.
+Transform Nexen's save state system from a fixed 10-slot model to an infinite timestamped save state system with a visual picker UI.
 
 ### Goals
 

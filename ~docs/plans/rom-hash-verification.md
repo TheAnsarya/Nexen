@@ -289,5 +289,5 @@ For existing .pansy files with CRC32 = 0:
 
 ## Related Issues
 
-- Mesen2 #2: ROM Hash Verification
+- Nexen #2: ROM Hash Verification
 - Pansy format already has RomCrc32 field (just unused)

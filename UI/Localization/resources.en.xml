@@ -839,7 +839,7 @@
 		</Form>
 		<Form ID="AboutWindow">
 			<Control ID="wndTitle">About - Mesen</Control>
-			<Control ID="lblName">Mesen</Control>
+			<Control ID="lblName">Nexen</Control>
 			<Control ID="lblWebsite">Website:</Control>
 			<Control ID="lblLink">www.mesen.ca</Control>
 			<Control ID="lblVersion">Version:</Control>
@@ -886,7 +886,7 @@
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
 		<Form ID="SetupWizardWindow">
-			<Control ID="wndTitle">Mesen</Control>
+			<Control ID="wndTitle">Nexen</Control>
 			<Control ID="lblMesen">Mesen - Emulator</Control>
 			<Control ID="lblConfigWizard">Configuration</Control>
 			<Control ID="lblInitialSetup">Please take a moment to perform Mesen's initial setup.</Control>

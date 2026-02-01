@@ -1,4 +1,4 @@
-# Mesen2 Pansy Integration Roadmap
+# Nexen Pansy Integration Roadmap
 
 **Created:** 2026-01-19 18:45 UTC  
 **Last Updated:** 2026-01-27 10:00 UTC
@@ -59,7 +59,7 @@
 ### Testing Tasks
 - [ ] Create test suite for PansyExporter
 - [ ] Unit tests for binary format writing
-- [ ] Integration tests with Mesen2 debugger
+- [ ] Integration tests with Nexen debugger
 - [ ] Validate roundtrip (export → Pansy viewer → verify)
 - [ ] Test all supported platforms (NES, SNES, GB, GBA, etc.)
 - [ ] Performance testing with large ROMs
@@ -165,7 +165,7 @@
   - Merge two analysis sessions
   - Conflict resolution UI
   
-- [ ] **Import** - Load Pansy files back into Mesen2
+- [ ] **Import** - Load Pansy files back into Nexen
   - Import symbols from `.pansy`
   - Import comments
   - Import memory regions
@@ -195,8 +195,8 @@
 - [ ] Blog post announcement
 
 ### Community
-- [ ] Submit pull request to upstream Mesen2
-- [ ] Announce on Mesen2 Discord
+- [ ] Submit pull request to upstream Nexen
+- [ ] Announce on Nexen Discord
 - [ ] Post on ROM hacking forums
 - [ ] Create example `.pansy` files
 - [ ] Integration with popular tools
@@ -270,10 +270,10 @@ See: [MODERNIZATION-ROADMAP.md](modernization/MODERNIZATION-ROADMAP.md)
 ### External Tools
 - **Pansy CLI** - For validation and testing
 - **Pansy UI** - For viewing exported files
-- **Upstream Mesen2** - For merge compatibility
+- **Upstream Nexen** - For merge compatibility
 
 ### Internal Systems
-- Mesen2 Debugger API
+- Nexen Debugger API
 - Label Manager
 - Code Data Logger (CDL)
 - Memory Manager
@@ -282,7 +282,7 @@ See: [MODERNIZATION-ROADMAP.md](modernization/MODERNIZATION-ROADMAP.md)
 
 | Risk | Impact | Probability | Mitigation |
 |------|--------|-------------|------------|
-| Upstream API changes | High | Medium | Pin to specific Mesen2 version |
+| Upstream API changes | High | Medium | Pin to specific Nexen version |
 | Pansy format changes | High | Low | Version negotiation |
 | Performance issues | Medium | Low | Profiling and optimization |
 | User adoption | Medium | Medium | Good documentation |
@@ -310,4 +310,4 @@ See: [MODERNIZATION-ROADMAP.md](modernization/MODERNIZATION-ROADMAP.md)
 ---
 
 **Maintained by:** TheAnsarya  
-**Contact:** Via GitHub issues on pansy or Mesen2 forks
+**Contact:** Via GitHub issues on pansy or Nexen forks

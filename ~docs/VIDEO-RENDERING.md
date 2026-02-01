@@ -1,6 +1,6 @@
 # Video Rendering Subsystem Documentation
 
-This document covers Mesen's video rendering, filtering, and recording subsystem.
+This document covers Nexen's video rendering, filtering, and recording subsystem.
 
 ---
 

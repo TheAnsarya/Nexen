@@ -2,7 +2,7 @@
 
 **Created:** 2026-01-19 18:48 UTC  
 **Last Updated:** 2026-01-27 10:00 UTC  
-**Repository:** TheAnsarya/Mesen2  
+**Repository:** TheAnsarya/Nexen  
 **Branch:** pansy-export
 
 ## Issues to Create
@@ -16,11 +16,11 @@
 **Closed:** 2026-01-19 18:43 UTC
 
 **Description:**
-Implement core Pansy binary format export functionality for Mesen2 debugger.
+Implement core Pansy binary format export functionality for Nexen debugger.
 
 **Requirements:**
 - [x] Binary format writer (Pansy v1.0 specification)
-- [x] Platform ID mapping for all Mesen2 systems
+- [x] Platform ID mapping for all Nexen systems
 - [x] Symbol export (CodeLabel → binary)
 - [x] Comment export (per-address annotations)
 - [x] Code/Data map export (CDL flags)
@@ -111,15 +111,15 @@ Create comprehensive test suite for Pansy export functionality.
 
 **Tasks:**
 - [ ] Create test ROM with known symbols/comments
-- [ ] Export .pansy file from Mesen2
+- [ ] Export .pansy file from Nexen
 - [ ] Verify with Pansy CLI: `pansy info test.pansy`
 - [ ] Validate all sections present and correct
 - [ ] Test all supported platforms (NES, SNES, GB, GBA, etc.)
-- [ ] Verify roundtrip: Mesen2 → Pansy → Mesen2 import (future)
+- [ ] Verify roundtrip: Nexen → Pansy → Nexen import (future)
 - [ ] Test edge cases: empty labels, Unicode, long comments
 - [ ] Performance testing with large ROMs (4MB+)
 - [ ] Memory leak testing (auto-export enabled)
-- [ ] Create unit tests (if feasible with Mesen2 architecture)
+- [ ] Create unit tests (if feasible with Nexen architecture)
 
 **Acceptance Criteria:**
 - All platforms export valid .pansy files
@@ -150,7 +150,7 @@ Export named memory regions to Pansy format (PRG-ROM, CHR-ROM, SRAM, etc.)
 **Tasks:**
 - [x] Add MEMORY_REGIONS section (0x0009)
 - [x] Export region name, start, end, type, flags
-- [x] Map Mesen2 memory types to Pansy region types
+- [x] Map Nexen memory types to Pansy region types
 - [x] Add system memory maps for all consoles
 - [x] Add UI checkbox: "Include memory regions"
 - [x] Test with multi-mapper ROMs
@@ -319,7 +319,7 @@ Add diff/merge capabilities for .pansy files.
 **Dependencies:** Issue #7
 
 **Description:**
-Import .pansy files back into Mesen2 debugger.
+Import .pansy files back into Nexen debugger.
 
 **Tasks:**
 - [ ] Parse Pansy binary format
@@ -361,7 +361,7 @@ Export multiple ROMs to Pansy format in batch mode.
 
 **Example Usage:**
 ```bash
-Mesen2.exe --batch-export --input "C:\ROMs\*.nes" --output "C:\Pansy"
+Nexen.exe --batch-export --input "C:\ROMs\*.nes" --output "C:\Pansy"
 ```
 
 ---
@@ -385,7 +385,7 @@ Complete documentation and prepare for upstream PR.
 - [ ] FAQ document
 - [ ] Troubleshooting guide
 - [ ] Release notes
-- [ ] Submit PR to SourMesen/Mesen2
+- [ ] Submit PR to SourMesen/Nexen
 - [ ] Community announcement (Reddit, Discord)
 - [ ] Example .pansy files repository
 
@@ -413,9 +413,9 @@ Implement folder-based storage for debug data. Each ROM gets a dedicated folder 
 
 **Folder Structure:**
 ```
-[Mesen Data]/Debug/[RomName_CRC32]/
+[Nexen Data]/Debug/[RomName_CRC32]/
 ├── metadata.pansy     # Universal format
-├── labels.mlb         # Native Mesen labels
+├── labels.mlb         # Native Nexen labels
 ├── coverage.cdl       # Code Data Logger
 ├── config.json        # Per-ROM config
 └── history/           # Version history (optional)
@@ -447,7 +447,7 @@ Implement folder-based storage for debug data. Each ROM gets a dedicated folder 
 **Commit:** `794d74c7`
 
 **Description:**
-Keep MLB (Mesen Label) files in sync with Pansy files.
+Keep MLB (Nexen Label) files in sync with Pansy files.
 
 **Tasks:**
 - [x] Export MLB alongside Pansy file
@@ -547,7 +547,7 @@ Import DBG files (ca65, cc65, WLA-DX) into Pansy format, preserving source refer
 **Dependencies:** Issue #12, Issue #13, Issue #14
 
 **Description:**
-Manage bidirectional sync between Pansy and native Mesen files.
+Manage bidirectional sync between Pansy and native Nexen files.
 
 **Tasks:**
 - [ ] Detect file changes (FileSystemWatcher)
@@ -585,4 +585,4 @@ Manage bidirectional sync between Pansy and native Mesen files.
 
 **Document Created:** 2026-01-19 18:48 UTC  
 **Last Updated:** 2026-01-27 14:30 UTC  
-**Repository:** https://github.com/TheAnsarya/Mesen2
+**Repository:** https://github.com/TheAnsarya/Nexen

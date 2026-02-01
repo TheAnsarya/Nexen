@@ -1,4 +1,4 @@
-# 🎫 Mesen2 C++ Modernization Issues
+# 🎫 Nexen C++ Modernization Issues
 
 > **Document Created:** January 28, 2026
 > **Last Updated:** January 29, 2026
@@ -6,31 +6,31 @@
 
 This document tracks the GitHub issues and epics for the C++ core modernization project.
 
-**GitHub Issues:** https://github.com/TheAnsarya/Mesen2/issues?q=label%3Acpp
+**GitHub Issues:** https://github.com/TheAnsarya/Nexen/issues?q=label%3Acpp
 
 ## 📊 Status Overview
 
 | Epic | GitHub | Status | Issues | Priority |
 |------|--------|--------|--------|----------|
-| Epic 8: Build System | [#40](https://github.com/TheAnsarya/Mesen2/issues/40) | ✅ Complete | 6/6 | HIGH |
-| Epic 9: Testing | [#41](https://github.com/TheAnsarya/Mesen2/issues/41) | 🔄 In Progress | 1/8 | HIGH |
-| Epic 10: Memory Safety | [#42](https://github.com/TheAnsarya/Mesen2/issues/42) | 📋 Planned | 0/6 | MEDIUM |
-| Epic 11: Standard Library | [#43](https://github.com/TheAnsarya/Mesen2/issues/43) | ✅ Complete | 4/4 | MEDIUM |
-| Epic 12: Performance | [#44](https://github.com/TheAnsarya/Mesen2/issues/44) | 🔄 In Progress | 0/2 | LOW |
-| Epic 13: Documentation | [#45](https://github.com/TheAnsarya/Mesen2/issues/45) | 📋 Planned | 0/2 | LOW |
-| Epic 14: Code Documentation | [#81](https://github.com/TheAnsarya/Mesen2/issues/81) | 🔄 In Progress | Partial | MEDIUM |
+| Epic 8: Build System | [#40](https://github.com/TheAnsarya/Nexen/issues/40) | ✅ Complete | 6/6 | HIGH |
+| Epic 9: Testing | [#41](https://github.com/TheAnsarya/Nexen/issues/41) | 🔄 In Progress | 1/8 | HIGH |
+| Epic 10: Memory Safety | [#42](https://github.com/TheAnsarya/Nexen/issues/42) | 📋 Planned | 0/6 | MEDIUM |
+| Epic 11: Standard Library | [#43](https://github.com/TheAnsarya/Nexen/issues/43) | ✅ Complete | 4/4 | MEDIUM |
+| Epic 12: Performance | [#44](https://github.com/TheAnsarya/Nexen/issues/44) | 🔄 In Progress | 0/2 | LOW |
+| Epic 13: Documentation | [#45](https://github.com/TheAnsarya/Nexen/issues/45) | 📋 Planned | 0/2 | LOW |
+| Epic 14: Code Documentation | [#81](https://github.com/TheAnsarya/Nexen/issues/81) | 🔄 In Progress | Partial | MEDIUM |
 
 ### 🚀 Recent Progress (January 29, 2026 - Sessions 6-8)
 
 | Issue | Title | Status | Details |
 |-------|-------|--------|---------|
-| [#52](https://github.com/TheAnsarya/Mesen2/issues/52) | Integrate Testing Framework | ✅ CLOSED | gtest 1.17.0, Core.Tests project |
-| [#75](https://github.com/TheAnsarya/Mesen2/issues/75) | [[likely]]/[[unlikely]] Branch Hints | ✅ CLOSED | 41 attributes in error paths |
-| [#76](https://github.com/TheAnsarya/Mesen2/issues/76) | Expand constexpr Usage | ✅ CLOSED | 14 functions (ColorUtilities, Dsp, etc.) |
-| [#77](https://github.com/TheAnsarya/Mesen2/issues/77) | Add [[nodiscard]] Attributes | ✅ CLOSED | ~179 attributes across all platforms |
-| [#78](https://github.com/TheAnsarya/Mesen2/issues/78) | Adopt std::bit_cast | ⏸️ LOW PRIORITY | Minimal candidates identified |
-| [#70](https://github.com/TheAnsarya/Mesen2/issues/70) | Create Performance Benchmarks | 🔄 In Progress | Infrastructure ready, benchmarks WIP |
-| [#81](https://github.com/TheAnsarya/Mesen2/issues/81) | Code Documentation & Comments | 🔄 In Progress | 32 classes/73+ files documented |
+| [#52](https://github.com/TheAnsarya/Nexen/issues/52) | Integrate Testing Framework | ✅ CLOSED | gtest 1.17.0, Core.Tests project |
+| [#75](https://github.com/TheAnsarya/Nexen/issues/75) | [[likely]]/[[unlikely]] Branch Hints | ✅ CLOSED | 41 attributes in error paths |
+| [#76](https://github.com/TheAnsarya/Nexen/issues/76) | Expand constexpr Usage | ✅ CLOSED | 14 functions (ColorUtilities, Dsp, etc.) |
+| [#77](https://github.com/TheAnsarya/Nexen/issues/77) | Add [[nodiscard]] Attributes | ✅ CLOSED | ~179 attributes across all platforms |
+| [#78](https://github.com/TheAnsarya/Nexen/issues/78) | Adopt std::bit_cast | ⏸️ LOW PRIORITY | Minimal candidates identified |
+| [#70](https://github.com/TheAnsarya/Nexen/issues/70) | Create Performance Benchmarks | 🔄 In Progress | Infrastructure ready, benchmarks WIP |
+| [#81](https://github.com/TheAnsarya/Nexen/issues/81) | Code Documentation & Comments | 🔄 In Progress | 32 classes/73+ files documented |
 
 **Session 8 Fixes:**
 - Fixed vcpkg manifest mode for Core.Tests and Core.Benchmarks
@@ -51,7 +51,7 @@ This document tracks the GitHub issues and epics for the C++ core modernization 
 
 ## Epic 8: C++ Build System Modernization
 
-**GitHub:** [#40](https://github.com/TheAnsarya/Mesen2/issues/40)
+**GitHub:** [#40](https://github.com/TheAnsarya/Nexen/issues/40)
 **Status:** 🔄 In Progress
 **Priority:** HIGH
 **Estimated Effort:** 1 week
@@ -63,7 +63,7 @@ Modernize the C++ build system to use VS2026 tooling, enable C++23, and integrat
 ### Issues
 
 #### Issue 8.1: Update Platform Toolset to v144 (VS2026)
-**GitHub:** [#46](https://github.com/TheAnsarya/Mesen2/issues/46) ✅ CLOSED
+**GitHub:** [#46](https://github.com/TheAnsarya/Nexen/issues/46) ✅ CLOSED
 **Priority:** HIGH
 **Labels:** `build`, `modernization`, `cpp`
 
@@ -87,7 +87,7 @@ Update all C++ project files to use the VS2026 platform toolset (v144).
 ---
 
 #### Issue 8.2: Enable C++23 Language Standard
-**GitHub:** [#47](https://github.com/TheAnsarya/Mesen2/issues/47) ✅ CLOSED
+**GitHub:** [#47](https://github.com/TheAnsarya/Nexen/issues/47) ✅ CLOSED
 **Priority:** HIGH
 **Labels:** `build`, `modernization`, `cpp`
 
@@ -410,7 +410,7 @@ Modernize memory management in SNES emulation core.
 ---
 
 #### Issue 10.6: Adopt std::span for Buffer Parameters
-**GitHub:** [#82](https://github.com/TheAnsarya/Mesen2/issues/82) ✅ CLOSED
+**GitHub:** [#82](https://github.com/TheAnsarya/Nexen/issues/82) ✅ CLOSED
 **Priority:** MEDIUM
 **Labels:** `modernization`, `cpp`
 
@@ -656,6 +656,6 @@ When creating issues in GitHub:
 1. **Title Format:** `[Epic X.Y] Brief Description`
 2. **Labels:** Apply all relevant labels
 3. **Milestone:** Assign to C++ Modernization milestone
-4. **Project:** Add to Mesen2 Modernization project board
+4. **Project:** Add to Nexen Modernization project board
 5. **Parent Epic:** Link to parent epic issue
 6. **Dependencies:** Note any blocking issues

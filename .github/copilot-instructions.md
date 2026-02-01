@@ -1,10 +1,10 @@
-# Mesen2 C++ Modernization - AI Copilot Directives
+# Nexen C++ Modernization - AI Copilot Directives
 
 ## Project Overview
 
-**Mesen2** is a multi-system emulator (NES, SNES, GB, GBA, SMS, PCE, WS) written in C++.
+**Nexen** is a multi-system emulator (NES, SNES, GB, GBA, SMS, PCE, WS) written in C++.
 
-This fork (`TheAnsarya/Mesen2`) focuses on:
+This fork (`TheAnsarya/Nexen`) focuses on:
 1. C++ modernization (C++20/23 features)
 2. 🌼 Pansy metadata integration
 3. Performance improvements
@@ -17,13 +17,13 @@ This fork (`TheAnsarya/Mesen2`) focuses on:
 
 ```powershell
 # Create an issue
-gh issue create --repo TheAnsarya/Mesen2 --title "[X.Y] Issue Title" --body "Description" --label "label1,label2"
+gh issue create --repo TheAnsarya/Nexen --title "[X.Y] Issue Title" --body "Description" --label "label1,label2"
 
 # Add labels
-gh issue edit <number> --repo TheAnsarya/Mesen2 --add-label "label"
+gh issue edit <number> --repo TheAnsarya/Nexen --add-label "label"
 
 # Close issue
-gh issue close <number> --repo TheAnsarya/Mesen2 --comment "Completed in commit abc123"
+gh issue close <number> --repo TheAnsarya/Nexen --comment "Completed in commit abc123"
 ```
 
 ### Issue Numbering Convention

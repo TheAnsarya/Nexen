@@ -1,6 +1,6 @@
 # Movie and TAS Subsystem Documentation
 
-This document covers Mesen's movie recording, playback, and TAS (Tool-Assisted Speedrun) features.
+This document covers Nexen's movie recording, playback, and TAS (Tool-Assisted Speedrun) features.
 
 ---
 
@@ -38,7 +38,7 @@ Movie/TAS Architecture
 Core/Shared/Movies/
 ├── MovieManager.h/cpp     - Central movie coordinator
 ├── MovieRecorder.h/cpp    - Movie recording
-├── MesenMovie.h/cpp       - Mesen native format
+├── MesenMovie.h/cpp       - Nexen native format
 ├── MovieTypes.h           - Type definitions
 └── (format parsers)       - Format-specific readers
 ```
@@ -54,7 +54,7 @@ Central coordinator for movie operations.
 **Supported Formats:**
 | Format | Extension | System | Notes |
 |--------|-----------|--------|-------|
-| Mesen | .msm | Multi | Native format |
+| Nexen | .msm | Multi | Native format |
 | FCEUX | .fm2, .fm3 | NES | FCEUX TAS format |
 | BizHawk | .bk2 | Multi | Multi-system TAS |
 | Lsnes | .lsmv | SNES | SNES TAS format |
@@ -121,7 +121,7 @@ public:
 
 ---
 
-## Mesen Movie Format (.msm)
+## Nexen Movie Format (.msm)
 
 Native movie format with full feature support.
 
@@ -261,7 +261,7 @@ NES movie format from FCEUX emulator.
 **Import Process:**
 1. Parse header (ROM hash, controller config)
 2. Load input frames
-3. Apply to Mesen NES core
+3. Apply to Nexen NES core
 
 ### BizHawk (.bk2)
 
@@ -387,7 +387,7 @@ void RunFrame() {
 ```cpp
 struct MovieSettings {
     // Format
-    MovieFormat DefaultFormat = MovieFormat::Mesen;
+    MovieFormat DefaultFormat = MovieFormat::Nexen;
     
     // Recording
     bool AutoRecord = false;

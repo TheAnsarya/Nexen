@@ -1,4 +1,4 @@
-# C++ Profiling Guide for Mesen2
+# C++ Profiling Guide for Nexen
 
 This guide covers profiling infrastructure and workflows for performance analysis of the C++ Core library.
 
@@ -6,7 +6,7 @@ This guide covers profiling infrastructure and workflows for performance analysi
 
 ### 1. Visual Studio 2026 Profiler (Recommended for Windows)
 
-Visual Studio's built-in profiler integrates seamlessly with the Mesen2 solution.
+Visual Studio's built-in profiler integrates seamlessly with the Nexen solution.
 
 **Pros:**
 - Zero configuration required
@@ -38,7 +38,7 @@ Professional-grade profiler with detailed microarchitecture analysis.
 Download from [Intel VTune Profiler](https://www.intel.com/content/www/us/en/developer/tools/oneapi/vtune-profiler.html)
 
 **Configuration:**
-1. Build Mesen with debug info: `Release|x64` configuration
+1. Build Nexen with debug info: `Release|x64` configuration
 2. Launch VTune and create new project
 3. Set application path to `bin\win-x64\Release\Mesen.exe`
 

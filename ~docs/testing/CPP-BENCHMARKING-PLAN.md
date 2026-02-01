@@ -2,7 +2,7 @@
 
 > **Created:** January 29, 2026  
 > **Status:** 📋 PLANNED  
-> **Epic:** [#80](https://github.com/TheAnsarya/Mesen2/issues/80)
+> **Epic:** [#80](https://github.com/TheAnsarya/Nexen/issues/80)
 
 ## Overview
 
@@ -34,7 +34,7 @@ Establish performance benchmarking infrastructure to measure the impact of C++ m
 ## Project Structure
 
 ```
-Mesen2/
+Nexen/
 ├── Core.Benchmarks/               # NEW - C++ benchmark project
 │   ├── Core.Benchmarks.vcxproj    # VS project file
 │   ├── pch.h                      # Precompiled header
@@ -457,7 +457,7 @@ BM_NesCpu_ExecuteInstruction          102 ns          102 ns      6862745
 
 ## Related Documents
 
-- [Epic #80: C++ Performance Benchmarking](https://github.com/TheAnsarya/Mesen2/issues/80)
-- [Epic #79: C++ Unit Testing Infrastructure](https://github.com/TheAnsarya/Mesen2/issues/79)
+- [Epic #80: C++ Performance Benchmarking](https://github.com/TheAnsarya/Nexen/issues/80)
+- [Epic #79: C++ Unit Testing Infrastructure](https://github.com/TheAnsarya/Nexen/issues/79)
 - [CPP-TESTING-PLAN.md](CPP-TESTING-PLAN.md)
 - [cpp-modernization-opportunities.md](../modernization/cpp-modernization-opportunities.md)

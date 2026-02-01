@@ -8,9 +8,9 @@
 
 ## [17:30 UTC] Session Start
 
-**User:** for the `Mesen2` repos, since I've made a bunch of changes for a bunch of efforts, let's reset, create a git branch and move all of the changes we've made on my fork of Mesen2 to that branch so the `main/master` branch is fresh and the same as the original repos's most modern update, don't destroy code, just move it all to the other branch` and then start a new branch from the clean `main` branch and add `pansy` file output (by default, do it without asking, but don't slow down emulation); make documentation, issues, todolists, and roadmaps and plans; continue;
+**User:** for the `Nexen` repos, since I've made a bunch of changes for a bunch of efforts, let's reset, create a git branch and move all of the changes we've made on my fork of Nexen to that branch so the `main/master` branch is fresh and the same as the original repos's most modern update, don't destroy code, just move it all to the other branch` and then start a new branch from the clean `main` branch and add `pansy` file output (by default, do it without asking, but don't slow down emulation); make documentation, issues, todolists, and roadmaps and plans; continue;
 
-**Copilot:** I'll help you reorganize your Mesen2 fork and add Pansy export. Here's the plan:
+**Copilot:** I'll help you reorganize your Nexen fork and add Pansy export. Here's the plan:
 
 1. Preserve all changes in a feature branch
 2. Reset master to upstream
@@ -31,9 +31,9 @@ git remote -v
 ```
 
 **System Output:**
-- Current branch: `mesen-record-and-play-tas-gameplay`
+- Current branch: `Nexen-record-and-play-tas-gameplay`
 - Commits ahead of upstream: ~50
-- Remotes: origin (fork), upstream (SourMesen/Mesen2)
+- Remotes: origin (fork), upstream (SourMesen/Nexen)
 
 **Copilot:** Creating preservation branch...
 
@@ -50,7 +50,7 @@ git reset --hard upstream/master
 git push --force origin master
 ```
 
-✅ **Success:** Master branch now mirrors SourMesen/Mesen2@fabc9a62
+✅ **Success:** Master branch now mirrors SourMesen/Nexen@fabc9a62
 
 ---
 
@@ -143,7 +143,7 @@ dotnet build --nologo
 
 ## [18:30 UTC] Error Investigation
 
-**Copilot:** Analyzing Mesen2 API surface...
+**Copilot:** Analyzing Nexen API surface...
 
 **Findings:**
 1. `RomFormat.WS` should be `RomFormat.Ws` (lowercase 's')
@@ -283,11 +283,11 @@ git commit -m "feat: Add Pansy metadata export support
 
 [2026-01-19 18:43 UTC]
 
-Implements Pansy v1.0 binary format export for Mesen2 debugger symbols,
+Implements Pansy v1.0 binary format export for Nexen debugger symbols,
 comments, and code/data maps. Includes UI integration and auto-export.
 
 - Add PansyExporter class (369 lines)
-- Platform ID mapping for all Mesen2 systems
+- Platform ID mapping for all Nexen systems
 - Export menu action in debugger
 - Auto-export on shutdown (configurable)
 - Binary format: PANSY v1.0 with section table
@@ -322,8 +322,8 @@ git push -u origin pansy-export
 **System Output:**
 ```
 remote: Create a pull request for 'pansy-export' on GitHub by visiting:
-remote:   https://github.com/TheAnsarya/Mesen2/pull/new/pansy-export
-To https://github.com/TheAnsarya/Mesen2.git
+remote:   https://github.com/TheAnsarya/Nexen/pull/new/pansy-export
+To https://github.com/TheAnsarya/Nexen.git
  * [new branch]      pansy-export -> pansy-export
 ```
 

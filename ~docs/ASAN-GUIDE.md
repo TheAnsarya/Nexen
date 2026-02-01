@@ -1,6 +1,6 @@
 # AddressSanitizer (ASan) Configuration Guide
 
-This guide explains how to use AddressSanitizer for detecting memory errors in Mesen2.
+This guide explains how to use AddressSanitizer for detecting memory errors in Nexen.
 
 ## Overview
 

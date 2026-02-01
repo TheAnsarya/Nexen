@@ -1,8 +1,8 @@
 # C++ Modernization Opportunities
 
-This document tracks potential C++ modernization opportunities for Mesen2, with careful consideration of performance implications.
+This document tracks potential C++ modernization opportunities for Nexen, with careful consideration of performance implications.
 
-> **CRITICAL**: Mesen2 is an emulator where performance is paramount. Any modernization that introduces runtime overhead in hot paths should be carefully evaluated or avoided entirely.
+> **CRITICAL**: Nexen is an emulator where performance is paramount. Any modernization that introduces runtime overhead in hot paths should be carefully evaluated or avoided entirely.
 
 ## Priority Legend
 - 🟢 **Safe** - No performance impact, pure readability/safety improvement

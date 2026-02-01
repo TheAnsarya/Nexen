@@ -1,6 +1,6 @@
 # 🌼 Pansy Export - Documentation Index
 
-Welcome to the Pansy export feature documentation for Mesen2. This feature enables exporting and importing debug metadata in the universal [Pansy format](https://github.com/TheAnsarya/pansy).
+Welcome to the Pansy export feature documentation for Nexen. This feature enables exporting and importing debug metadata in the universal [Pansy format](https://github.com/TheAnsarya/pansy).
 
 ## Documentation
 
@@ -51,7 +51,7 @@ Welcome to the Pansy export feature documentation for Mesen2. This feature enabl
 | Labels/Symbols | ✅ | Merged with existing |
 | Comments | ✅ | Merged with existing |
 | Code/Data Offsets | ✅ | Applied to CDL |
-| Memory Regions | ✅ | Created in Mesen |
+| Memory Regions | ✅ | Created in Nexen |
 | Cross-References | ✅ | Read-only display |
 | Validation | ✅ | CRC checking |
 
@@ -71,7 +71,7 @@ Welcome to the Pansy export feature documentation for Mesen2. This feature enabl
 
 | Source Format | Status | Notes |
 |---------------|--------|-------|
-| Mesen MLB | ✅ | Native format |
+| Nexen MLB | ✅ | Native format |
 | ca65 DBG | ✅ | cc65 toolchain |
 | WLA-DX SYM | ✅ | Game Boy assembler |
 | RGBDS SYM | 🔄 | Planned |
@@ -121,7 +121,7 @@ Welcome to the Pansy export feature documentation for Mesen2. This feature enabl
 
 - [Pansy Format Specification](https://github.com/TheAnsarya/pansy/blob/main/docs/format.md)
 - [Pansy Repository](https://github.com/TheAnsarya/pansy)
-- [Mesen2 Repository](https://github.com/SourMesen/Mesen2)
+- [Nexen Repository](https://github.com/SourMesen/Nexen)
 
 ## Getting Help
 
@@ -129,10 +129,10 @@ Welcome to the Pansy export feature documentation for Mesen2. This feature enabl
 
 Found a bug? Have a feature request?
 
-1. Check existing [GitHub Issues](https://github.com/SourMesen/Mesen2/issues)
+1. Check existing [GitHub Issues](https://github.com/SourMesen/Nexen/issues)
 2. Search this documentation
 3. Create a new issue with:
-   - Mesen version
+   - Nexen version
    - Steps to reproduce
    - Expected vs actual behavior
    - Pansy file (if relevant)

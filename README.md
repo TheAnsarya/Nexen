@@ -1,6 +1,6 @@
-# Mesen (TheAnsarya Fork)
+# Nexen
 
-Mesen is a multi-system emulator (NES, SNES, Game Boy, Game Boy Advance, PC Engine, SMS/Game Gear, WonderSwan) for Windows, Linux and macOS.
+Nexen is a multi-system emulator (NES, SNES, Game Boy, Game Boy Advance, PC Engine, SMS/Game Gear, WonderSwan) for Windows, Linux and macOS.
 
 **This is a modernization fork** focused on C++23, .NET 10, and 🌼 Pansy metadata integration.
 
@@ -45,16 +45,16 @@ This fork replaces the default F1/Shift+F1 behavior with an infinite timestamped
 
 ## Upstream
 
-Original Mesen by Sour: [SourMesen/Mesen2](https://github.com/SourMesen/Mesen2)
+Forked from Mesen by Sour: [SourMesen/Mesen2](https://github.com/SourMesen/Mesen2)
 
 ## Releases
 
-For stable releases, see the [upstream releases](https://github.com/SourMesen/Mesen2/releases).
-For this fork's development builds, see [Actions](https://github.com/TheAnsarya/Mesen2/actions).
+For stable releases, see the [upstream releases](https://github.com/SourMesen/Nexen/releases).
+For this fork's development builds, see [Actions](https://github.com/TheAnsarya/Nexen/actions).
 
 ## Development Builds
 
-[![Mesen](https://github.com/TheAnsarya/Mesen2/actions/workflows/build.yml/badge.svg)](https://github.com/TheAnsarya/Mesen2/actions/workflows/build.yml)
+[![Nexen](https://github.com/TheAnsarya/Nexen/actions/workflows/build.yml/badge.svg)](https://github.com/TheAnsarya/Nexen/actions/workflows/build.yml)
 
 ### Requirements
 

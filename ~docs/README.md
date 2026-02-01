@@ -1,6 +1,6 @@
-# Mesen2 Development Documentation
+# Nexen Development Documentation
 
-This folder contains development documentation for Mesen2 contributions and customizations.
+This folder contains development documentation for Nexen contributions and customizations.
 
 ## 📖 Core Documentation
 

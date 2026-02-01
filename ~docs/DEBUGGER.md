@@ -1,6 +1,6 @@
 # Debugger Subsystem Documentation
 
-This document covers Mesen's comprehensive debugging subsystem, which provides powerful tools for reverse engineering and development across all supported platforms.
+This document covers Nexen's comprehensive debugging subsystem, which provides powerful tools for reverse engineering and development across all supported platforms.
 
 ---
 

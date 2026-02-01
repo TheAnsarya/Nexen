@@ -9,7 +9,7 @@
 
 ### 1. .editorconfig Merge
 
-Merged comprehensive `.editorconfig` from pansy repository into Mesen2:
+Merged comprehensive `.editorconfig` from pansy repository into Nexen:
 
 **Key Settings:**
 - K&R brace style: `csharp_new_line_before_open_brace = none`

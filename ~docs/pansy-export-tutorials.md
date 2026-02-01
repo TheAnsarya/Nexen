@@ -7,7 +7,7 @@ Step-by-step tutorials for common Pansy export workflows.
 **Goal:** Export your first Pansy file with labels and comments.
 
 ### Prerequisites
-- Mesen installed
+- Nexen installed
 - A ROM file loaded
 - Some labels/comments added
 
@@ -87,7 +87,7 @@ Your Pansy file now contains:
    - Save the file
 
 5. **Watch It Sync**
-   - If "Auto-reload" is enabled, labels appear in Mesen
+   - If "Auto-reload" is enabled, labels appear in Nexen
    - Otherwise, Debug → Integration → Reload from Folder
 
 ### MLB File Format
@@ -163,7 +163,7 @@ Someone has shared their analysis of a game as a `.pansy` file. You want to use 
    - You'll have `game.dbg`
 
 2. **Open Matching ROM**
-   - Load `game.nes` in Mesen
+   - Load `game.nes` in Nexen
 
 3. **Convert Debug File**
    - Debug → Integration → Convert to Pansy...
@@ -198,7 +198,7 @@ Someone has shared their analysis of a game as a `.pansy` file. You want to use 
 
 ## Tutorial 5: Real-Time Sync Workflow
 
-**Goal:** Edit labels in VS Code while Mesen updates live.
+**Goal:** Edit labels in VS Code while Nexen updates live.
 
 ### Setup
 
@@ -221,7 +221,7 @@ Someone has shared their analysis of a game as a `.pansy` file. You want to use 
    - File → Open Folder → `MyGame_debug/`
 
 2. **Install MLB Extension (optional)**
-   - Search "Mesen Labels" in Extensions
+   - Search "Nexen Labels" in Extensions
    - Provides syntax highlighting
 
 3. **Edit Labels**
@@ -234,13 +234,13 @@ Someone has shared their analysis of a game as a `.pansy` file. You want to use 
 
 4. **Save and Watch**
    - Press Ctrl+S
-   - Mesen debugger updates within 1 second
+   - Nexen debugger updates within 1 second
    - New label appears in Label List
 
 ### Bidirectional Sync
 
-Changes in Mesen also update the file:
-1. Add a label in Mesen debugger
+Changes in Nexen also update the file:
+1. Add a label in Nexen debugger
 2. MLB file updates automatically
 3. VS Code shows the change
 
@@ -293,7 +293,7 @@ MyGameAnalysis/
    !debug/**/manifest.json
    ```
 
-3. **Configure Mesen**
+3. **Configure Nexen**
    - Set debug folder location to `debug/`
    - Enable folder storage
    - Enable version history
@@ -323,7 +323,7 @@ git push origin main
 Team members can:
 1. Clone the repo
 2. Add their own ROM file
-3. Mesen loads labels from `debug/`
+3. Nexen loads labels from `debug/`
 4. Make changes and push
 
 ---
@@ -391,7 +391,7 @@ For games where code is at same offsets:
 2. **Import to Other Versions**
    - Load EU ROM
    - Import master file
-   - Mesen adjusts for header differences
+   - Nexen adjusts for header differences
 
 ### Approach: Separate + Shared
 
@@ -409,7 +409,7 @@ MyGame_Project/
     └── jp_specific.mlb
 ```
 
-Configure Mesen to load:
+Configure Nexen to load:
 1. Shared labels first
 2. Region-specific labels second
 

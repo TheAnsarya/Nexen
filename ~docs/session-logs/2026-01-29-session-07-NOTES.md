@@ -8,7 +8,7 @@ The `cpp-modernization` branch has pre-existing build failures unrelated to the 
 
 ### Error Details
 ```
-C:\Users\me\source\repos\Mesen2\Core\pch.h(38,10): error C1083: Cannot open include file: 'Utilities/UTF8Util.h': No such file or directory
+C:\Users\me\source\repos\Nexen\Core\pch.h(38,10): error C1083: Cannot open include file: 'Utilities/UTF8Util.h': No such file or directory
 ```
 
 ### Verification

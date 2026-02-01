@@ -1,4 +1,4 @@
-# Mesen2 Pansy Integration - Session Log
+# Nexen Pansy Integration - Session Log
 
 **Date:** 2026-01-19  
 **Started:** 17:30 UTC  
@@ -7,20 +7,20 @@
 
 ## Objectives
 
-Primary goal: Add Pansy metadata export capability to Mesen2 emulator/debugger
+Primary goal: Add Pansy metadata export capability to Nexen emulator/debugger
 
 ## Session Overview
 
 ### Part 1: Repository Cleanup (17:30-17:45)
-**Goal:** Reset Mesen2 fork to clean state
+**Goal:** Reset Nexen fork to clean state
 
-1. **Stashed changes** on `mesen-record-and-play-tas-gameplay` branch
+1. **Stashed changes** on `Nexen-record-and-play-tas-gameplay` branch
 2. **Created preservation branch** `my-features-combined` with all previous work
    - DiztinGUIsh integration
    - TAS recording features
    - MovieConverter tools
-3. **Reset master to upstream** `SourMesen/Mesen2` master branch
-4. **Force pushed** clean master to `TheAnsarya/Mesen2`
+3. **Reset master to upstream** `SourMesen/Nexen` master branch
+4. **Force pushed** clean master to `TheAnsarya/Nexen`
 5. **Created new branch** `pansy-export` from clean master
 
 **Outcome:** ✅ Clean starting point for Pansy integration
@@ -41,7 +41,7 @@ Primary goal: Add Pansy metadata export capability to Mesen2 emulator/debugger
 #### 2.2 Binary Format Implementation
 - Pansy v1.0 specification
 - 32-byte header with magic "PANSY\0\0\0"
-- Platform ID mapping for all Mesen2 systems
+- Platform ID mapping for all Nexen systems
 - Section-based structure:
   - CODE_DATA_MAP (CDL flags)
   - SYMBOLS (labels)
@@ -75,7 +75,7 @@ Primary goal: Add Pansy metadata export capability to Mesen2 emulator/debugger
 
 #### Resolution Strategy
 Used `multi_replace_string_in_file` for efficient batch fixes:
-- Fixed API signatures to match Mesen2 interop
+- Fixed API signatures to match Nexen interop
 - Converted CDL flags array to byte array
 - Removed non-existent properties
 - Corrected enum cases
@@ -128,7 +128,7 @@ Correctly implemented Platform ID mapping for:
 ## Challenges & Solutions
 
 ### Challenge 1: API Mismatch
-**Problem:** Mesen2 interop API doesn't match expected signatures  
+**Problem:** Nexen interop API doesn't match expected signatures  
 **Solution:** Read existing code for correct API usage patterns  
 **Time Lost:** 13 minutes
 
@@ -167,7 +167,7 @@ Correctly implemented Platform ID mapping for:
 ### Long Term (This Month)
 - [ ] Complete Phase 3 (memory regions, cross-refs)
 - [ ] Performance optimization (Phase 4)
-- [ ] Submit PR to upstream Mesen2
+- [ ] Submit PR to upstream Nexen
 - [ ] Community announcement
 
 ## Statistics
@@ -202,8 +202,8 @@ A  ~docs/pansy-roadmap.md                          (+292 lines)
 
 - [Pansy Repository](https://github.com/TheAnsarya/pansy)
 - [Pansy File Format Spec](https://github.com/TheAnsarya/pansy/blob/main/docs/FILE-FORMAT.md)
-- [Mesen2 Upstream](https://github.com/SourMesen/Mesen2)
-- [Commit 6fd99def](https://github.com/TheAnsarya/Mesen2/commit/6fd99def)
+- [Nexen Upstream](https://github.com/SourMesen/Nexen)
+- [Commit 6fd99def](https://github.com/TheAnsarya/Nexen/commit/6fd99def)
 
 ---
 

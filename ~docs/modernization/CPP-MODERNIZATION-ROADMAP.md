@@ -1,4 +1,4 @@
-# 🔧 Mesen2 C++ Core Modernization Roadmap
+# 🔧 Nexen C++ Core Modernization Roadmap
 
 > **Branch:** `cpp-modernization` (to be created from `pansy-export`)
 > **Document Created:** January 28, 2026
@@ -7,7 +7,7 @@
 
 ## 📋 Executive Summary
 
-This roadmap outlines the comprehensive modernization of Mesen2's C++ core emulation components. The goal is to update to the latest C++ standards (C++23/26), modernize the codebase with best practices, implement testing, optimize performance, and improve documentation.
+This roadmap outlines the comprehensive modernization of Nexen's C++ core emulation components. The goal is to update to the latest C++ standards (C++23/26), modernize the codebase with best practices, implement testing, optimize performance, and improve documentation.
 
 ## 🎯 Goals
 

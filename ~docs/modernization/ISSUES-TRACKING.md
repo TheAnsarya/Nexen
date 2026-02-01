@@ -1,6 +1,6 @@
-# 🎫 Mesen2 Modernization Issues
+# 🎫 Nexen Modernization Issues
 
-This document tracks the GitHub issues and epics for the Mesen2 modernization project.
+This document tracks the GitHub issues and epics for the Nexen modernization project.
 
 ## ✅ Completion Status
 

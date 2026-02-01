@@ -1,6 +1,6 @@
 # C++ Code Documentation Style Guide
 
-This guide establishes consistent documentation standards for the Mesen2 C++ codebase.
+This guide establishes consistent documentation standards for the Nexen C++ codebase.
 
 ## Overview
 

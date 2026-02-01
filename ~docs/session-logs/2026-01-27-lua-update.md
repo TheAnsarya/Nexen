@@ -20,7 +20,7 @@ This session completed the Lua runtime update (Phase 5), updated all documentati
 3. Downloaded and extracted Lua 5.4.8 source archive
 4. Compared file lists to identify custom extensions (luasocket, lbitlib.c)
 5. Updated 42 core Lua source files
-6. Preserved Mesen-specific extensions:
+6. Preserved Nexen-specific extensions:
    - luasocket library (network support for scripts)
    - lbitlib.c (bit manipulation for older Lua compatibility)
 7. Verified build success with Release configuration
@@ -71,7 +71,7 @@ Created `BRANCH-STRATEGY.md` documenting:
 
 ### Preserved Extensions
 
-**luasocket:** Network library used by Mesen Lua scripts for:
+**luasocket:** Network library used by Nexen Lua scripts for:
 - Remote debugging
 - Script communication
 - Network-based automation

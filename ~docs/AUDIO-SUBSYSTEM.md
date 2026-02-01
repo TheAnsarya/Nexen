@@ -1,6 +1,6 @@
 # Audio Subsystem Documentation
 
-This document covers Mesen's audio emulation, mixing, and output subsystem.
+This document covers Nexen's audio emulation, mixing, and output subsystem.
 
 ---
 

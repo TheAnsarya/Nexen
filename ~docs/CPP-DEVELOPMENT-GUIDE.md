@@ -1,6 +1,6 @@
 # C++ Development Guide
 
-This document covers C++ development practices for Mesen2.
+This document covers C++ development practices for Nexen.
 
 ## Build System
 

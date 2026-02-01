@@ -27,7 +27,7 @@ Currently, Pansy export only captures CDL (Code/Data Logger) data when the debug
 2. CDL automatically starts recording (if option enabled)
 3. User plays game normally
 4. Pansy file auto-saves periodically (every N minutes)
-5. User closes Mesen2
+5. User closes Nexen
 6. Final Pansy export on shutdown
 
 ## Configuration Options
@@ -131,7 +131,7 @@ The CDL is normally controlled by the debugger. Need to:
 1. Call `DebugApi.SetDebuggerFlag()` to enable CDL logging
 2. May need to call `DebugApi.Step()` periodically or hook emulation
 
-Research needed on Mesen2's CDL API.
+Research needed on Nexen's CDL API.
 
 ### Step 5: UI Configuration
 
@@ -176,7 +176,7 @@ Location: `UI/Localization/resources.en.xml`
    - Enable background recording
    - Load ROM, DON'T open debugger
    - Play for 5+ minutes
-   - Close Mesen2
+   - Close Nexen
    - Verify .pansy file exists with CDL data
 
 2. **Auto-Save:**
@@ -210,5 +210,5 @@ Location: `UI/Localization/resources.en.xml`
 
 ## Related Issues
 
-- Mesen2 #1: Background CDL Recording
+- Nexen #1: Background CDL Recording
 - Pansy integration: Auto-export enhancements
