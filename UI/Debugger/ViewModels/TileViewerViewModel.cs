@@ -21,61 +21,217 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Debugger.ViewModels {
+	/// <summary>
+	/// View model for the tile viewer window that displays graphics tile data from various memory sources.
+	/// </summary>
+	/// <remarks>
+	/// The tile viewer provides a visual representation of graphics tiles stored in memory.
+	/// It supports multiple tile formats (2bpp, 4bpp, 8bpp, Mode7, etc.) based on CPU type,
+	/// palette selection, configurable grid layouts, and preset configurations.
+	/// Features include:
+	/// - Multiple memory sources (VRAM, CHR ROM, Work RAM, etc.)
+	/// - Various tile formats per console
+	/// - Palette selection and preview
+	/// - Grid layout customization (column/row counts)
+	/// - Preset configurations for common setups
+	/// - Tile editing via the tile editor
+	/// - Export to PNG
+	/// - CDL-based filtering
+	/// </remarks>
 	public class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IMouseOverViewerModel {
+		/// <summary>
+		/// Gets or sets the CPU type for this viewer.
+		/// </summary>
 		public CpuType CpuType { get; set; }
 
+		/// <summary>
+		/// Gets the tile viewer configuration settings.
+		/// </summary>
 		public TileViewerConfig Config { get; }
+
+		/// <summary>
+		/// Gets the refresh timing view model for auto-refresh settings.
+		/// </summary>
 		public RefreshTimingViewModel RefreshTiming { get; }
 
+		/// <summary>
+		/// Gets or sets the bitmap displaying the tile data.
+		/// </summary>
 		[Reactive] public DynamicBitmap ViewerBitmap { get; private set; }
 
+		/// <summary>
+		/// Gets or sets the preview panel for selected tiles.
+		/// </summary>
 		[Reactive] public DynamicTooltip? PreviewPanel { get; private set; }
 
+		/// <summary>
+		/// Gets or sets the tooltip displayed when hovering over the viewer.
+		/// </summary>
 		[Reactive] public DynamicTooltip? ViewerTooltip { get; set; }
+
+		/// <summary>
+		/// Gets or sets the current mouse position over the viewer.
+		/// </summary>
 		[Reactive] public PixelPoint? ViewerMousePos { get; set; }
 
+		/// <summary>
+		/// Gets or sets the processed palette colors for display.
+		/// </summary>
 		[Reactive] public UInt32[] PaletteColors { get; set; } = [];
+
+		/// <summary>
+		/// Gets or sets the raw palette data from memory.
+		/// </summary>
 		[Reactive] public UInt32[] RawPalette { get; set; } = [];
+
+		/// <summary>
+		/// Gets or sets the format of the raw palette data.
+		/// </summary>
 		[Reactive] public RawPaletteFormat RawFormat { get; set; }
+
+		/// <summary>
+		/// Gets or sets the palette selection mode based on bits per pixel.
+		/// </summary>
 		[Reactive] public PaletteSelectionMode PaletteSelectionMode { get; private set; }
+
+		/// <summary>
+		/// Gets or sets the number of columns in the palette display.
+		/// </summary>
 		[Reactive] public int PaletteColumnCount { get; private set; } = 16;
+
+		/// <summary>
+		/// Gets or sets the currently selected palette index.
+		/// </summary>
 		[Reactive] public int SelectedPalette { get; set; } = 0;
 
+		/// <summary>
+		/// Gets the address increment per page based on format and grid size.
+		/// </summary>
 		[Reactive] public int AddressIncrement { get; private set; }
+
+		/// <summary>
+		/// Gets or sets the maximum address for the current memory source.
+		/// </summary>
 		[Reactive] public int MaximumAddress { get; private set; } = int.MaxValue;
 
+		/// <summary>
+		/// Gets or sets the horizontal grid size in pixels.
+		/// </summary>
 		[Reactive] public int GridSizeX { get; set; } = 8;
+
+		/// <summary>
+		/// Gets or sets the vertical grid size in pixels.
+		/// </summary>
 		[Reactive] public int GridSizeY { get; set; } = 8;
 
+		/// <summary>
+		/// Gets or sets the current selection rectangle.
+		/// </summary>
 		[Reactive] public Rect SelectionRect { get; set; }
 
+		/// <summary>
+		/// Gets or sets the page delimiter lines for visual separation.
+		/// </summary>
 		[Reactive] public List<PictureViewerLine>? PageDelimiters { get; set; }
 
+		/// <summary>
+		/// Gets or sets the available memory types for the current console.
+		/// </summary>
 		[Reactive] public Enum[] AvailableMemoryTypes { get; set; } = [];
+
+		/// <summary>
+		/// Gets or sets the available tile formats for the current CPU type.
+		/// </summary>
 		[Reactive] public Enum[] AvailableFormats { get; set; } = [];
+
+		/// <summary>
+		/// Gets or sets whether to show the format dropdown (multiple formats available).
+		/// </summary>
 		[Reactive] public bool ShowFormatDropdown { get; set; }
+
+		/// <summary>
+		/// Gets or sets whether to show the CDL filter dropdown.
+		/// </summary>
 		[Reactive] public bool ShowFilterDropdown { get; set; }
 
+		/// <summary>
+		/// Gets or sets the preset configuration rows for the UI.
+		/// </summary>
 		[Reactive] public List<List<ConfigPreset>> ConfigPresetRows { get; set; } = new() { new(), new(), new() };
+
+		/// <summary>
+		/// Gets or sets the list of available configuration presets.
+		/// </summary>
 		[Reactive] public List<ConfigPreset> ConfigPresets { get; set; } = new List<ConfigPreset>();
 
+		/// <summary>
+		/// Gets the File menu actions.
+		/// </summary>
 		public List<object> FileMenuActions { get; } = new();
+
+		/// <summary>
+		/// Gets the View menu actions.
+		/// </summary>
 		public List<object> ViewMenuActions { get; } = new();
 
+		/// <summary>
+		/// Gets the column count clamped to valid range (4-256).
+		/// </summary>
 		public int ColumnCount => Math.Clamp(Config.ColumnCount, 4, 256);
+
+		/// <summary>
+		/// Gets the row count clamped to valid range (4-256).
+		/// </summary>
 		public int RowCount => Math.Clamp(Config.RowCount, 4, 256);
 
+		/// <summary>
+		/// Cached PPU state for rendering.
+		/// </summary>
 		private BaseState? _ppuState;
+
+		/// <summary>
+		/// Lock object for thread-safe updates.
+		/// </summary>
 		private object _updateLock = new();
+
+		/// <summary>
+		/// Source data from the emulator core.
+		/// </summary>
 		private byte[] _coreSourceData = [];
+
+		/// <summary>
+		/// Processed source data for rendering.
+		/// </summary>
 		private byte[] _sourceData = [];
+
+		/// <summary>
+		/// Flag indicating a refresh is pending.
+		/// </summary>
 		private bool _refreshPending;
+
+		/// <summary>
+		/// Flag indicating in game loaded handler.
+		/// </summary>
 		private bool _inGameLoaded;
+
+		/// <summary>
+		/// Flag to prevent preset loading during initialization.
+		/// </summary>
 		private bool _preventPresetLoad;
 
+		/// <summary>
+		/// Design-time constructor.
+		/// </summary>
 		[Obsolete("For designer only")]
 		public TileViewerViewModel() : this(CpuType.Snes, new(), new(), null) { }
 
+		/// <summary>
+		/// Creates a new tile viewer view model.
+		/// </summary>
+		/// <param name="cpuType">The CPU type for this viewer.</param>
+		/// <param name="picViewer">The picture viewer control.</param>
+		/// <param name="scrollViewer">The scroll picture viewer control.</param>
+		/// <param name="wnd">The parent window.</param>
 		public TileViewerViewModel(CpuType cpuType, PictureViewer picViewer, ScrollPictureViewer scrollViewer, Window? wnd) {
 			Config = ConfigManager.Config.Debug.TileViewer.Clone();
 			CpuType = cpuType;
