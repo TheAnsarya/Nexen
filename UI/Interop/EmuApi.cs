@@ -101,6 +101,46 @@ namespace Mesen.Interop {
 		[DllImport(DllPath)] public static extern void SaveStateFile([MarshalAs(UnmanagedType.LPUTF8Str)] string filepath);
 		[DllImport(DllPath)] public static extern void LoadStateFile([MarshalAs(UnmanagedType.LPUTF8Str)] string filepath);
 
+		// ========== Timestamped Save State API ==========
+
+		[DllImport(DllPath, EntryPoint = "SaveTimestampedState")]
+		private static extern void SaveTimestampedStateWrapper(IntPtr outFilepath, Int32 maxLength);
+
+		/// <summary>
+		/// Save a new timestamped save state.
+		/// Creates a save state with datetime-based filename in the ROM's subdirectory.
+		/// </summary>
+		/// <returns>Full path to the saved file, or empty string on failure</returns>
+		public static string SaveTimestampedState() {
+			return Utf8Utilities.CallStringApi(SaveTimestampedStateWrapper, 2048);
+		}
+
+		[DllImport(DllPath, EntryPoint = "GetSaveStateList")]
+		private static extern UInt32 GetSaveStateListWrapper([Out] InteropSaveStateInfo[] outInfoArray, UInt32 maxCount);
+
+		/// <summary>
+		/// Get list of all save states for the current ROM.
+		/// Returns saves sorted by timestamp (newest first).
+		/// </summary>
+		/// <param name="maxCount">Maximum number of saves to return</param>
+		/// <returns>Array of SaveStateInfo structs</returns>
+		public static SaveStateInfo[] GetSaveStateList(int maxCount = 1000) {
+			InteropSaveStateInfo[] interopArray = new InteropSaveStateInfo[maxCount];
+			UInt32 count = GetSaveStateListWrapper(interopArray, (UInt32)maxCount);
+
+			SaveStateInfo[] result = new SaveStateInfo[count];
+			for (int i = 0; i < count; i++) {
+				result[i] = new SaveStateInfo(interopArray[i]);
+			}
+			return result;
+		}
+
+		[DllImport(DllPath)] public static extern UInt32 GetSaveStateCount();
+
+		[DllImport(DllPath)]
+		[return: MarshalAs(UnmanagedType.I1)]
+		public static extern bool DeleteSaveState([MarshalAs(UnmanagedType.LPUTF8Str)] string filepath);
+
 		[DllImport(DllPath, EntryPoint = "GetSaveStatePreview")] private static extern Int32 GetSaveStatePreviewWrapper([MarshalAs(UnmanagedType.LPUTF8Str)] string saveStatePath, [Out] byte[] imgData);
 		public static Bitmap? GetSaveStatePreview(string saveStatePath) {
 			if (File.Exists(saveStatePath)) {
@@ -364,5 +404,69 @@ namespace Mesen.Interop {
 		public SoftwareRendererSurface Frame;
 		public SoftwareRendererSurface EmuHud;
 		public SoftwareRendererSurface ScriptHud;
+	}
+
+	// ========== Timestamped Save State Types ==========
+
+	/// <summary>
+	/// Interop struct for marshaling save state info from native code.
+	/// </summary>
+	[StructLayout(LayoutKind.Sequential)]
+	public struct InteropSaveStateInfo {
+		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2000)]
+		public byte[] Filepath;
+		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
+		public byte[] RomName;
+		public Int64 Timestamp;
+		public UInt32 FileSize;
+	}
+
+	/// <summary>
+	/// Managed save state information.
+	/// </summary>
+	public class SaveStateInfo {
+		/// <summary>Full path to save state file</summary>
+		public string Filepath { get; set; } = "";
+
+		/// <summary>ROM name this save is for</summary>
+		public string RomName { get; set; } = "";
+
+		/// <summary>DateTime when save was created</summary>
+		public DateTime Timestamp { get; set; }
+
+		/// <summary>File size in bytes</summary>
+		public uint FileSize { get; set; }
+
+		public SaveStateInfo() { }
+
+		public SaveStateInfo(InteropSaveStateInfo interop) {
+			Filepath = Utf8Utilities.GetStringFromArray(interop.Filepath);
+			RomName = Utf8Utilities.GetStringFromArray(interop.RomName);
+			Timestamp = DateTimeOffset.FromUnixTimeSeconds(interop.Timestamp).LocalDateTime;
+			FileSize = interop.FileSize;
+		}
+
+		/// <summary>
+		/// Get a friendly display string for the timestamp.
+		/// Examples: "Today 2:30 PM", "Yesterday 5:45 PM", "Jan 25 3:00 PM"
+		/// </summary>
+		public string GetFriendlyTimestamp() {
+			DateTime now = DateTime.Now;
+			DateTime date = Timestamp.Date;
+
+			string timeStr = Timestamp.ToString("h:mm tt");
+
+			if (date == now.Date) {
+				return $"Today {timeStr}";
+			} else if (date == now.Date.AddDays(-1)) {
+				return $"Yesterday {timeStr}";
+			} else if (date > now.Date.AddDays(-7)) {
+				return $"{Timestamp:ddd} {timeStr}";
+			} else if (date.Year == now.Year) {
+				return $"{Timestamp:MMM d} {timeStr}";
+			} else {
+				return $"{Timestamp:MMM d, yyyy} {timeStr}";
+			}
+		}
 	}
 }

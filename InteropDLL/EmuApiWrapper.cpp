@@ -315,6 +315,46 @@ DllExport int32_t __stdcall GetSaveStatePreview(char* saveStatePath, uint8_t* pn
 	return _emu->GetSaveStateManager()->GetSaveStatePreview(saveStatePath, pngData);
 }
 
+// ========== Timestamped Save State API ==========
+
+/// <summary>
+/// Interop struct for returning save state information to managed code.
+/// </summary>
+struct InteropSaveStateInfo {
+	char filepath[2000];    ///< Full path to save state file
+	char romName[256];      ///< ROM name
+	int64_t timestamp;      ///< Unix timestamp
+	uint32_t fileSize;      ///< File size in bytes
+};
+
+DllExport void __stdcall SaveTimestampedState(char* outFilepath, int32_t maxLength) {
+	string filepath = _emu->GetSaveStateManager()->SaveTimestampedState();
+	StringUtilities::CopyToBuffer(filepath, outFilepath, maxLength);
+}
+
+DllExport uint32_t __stdcall GetSaveStateList(InteropSaveStateInfo* outInfoArray, uint32_t maxCount) {
+	vector<SaveStateInfo> states = _emu->GetSaveStateManager()->GetSaveStateList();
+	uint32_t count = std::min<uint32_t>(static_cast<uint32_t>(states.size()), maxCount);
+
+	for (uint32_t i = 0; i < count; i++) {
+		memset(&outInfoArray[i], 0, sizeof(InteropSaveStateInfo));
+		StringUtilities::CopyToBuffer(states[i].filepath, outInfoArray[i].filepath, sizeof(outInfoArray[i].filepath));
+		StringUtilities::CopyToBuffer(states[i].romName, outInfoArray[i].romName, sizeof(outInfoArray[i].romName));
+		outInfoArray[i].timestamp = static_cast<int64_t>(states[i].timestamp);
+		outInfoArray[i].fileSize = states[i].fileSize;
+	}
+
+	return count;
+}
+
+DllExport uint32_t __stdcall GetSaveStateCount() {
+	return _emu->GetSaveStateManager()->GetSaveStateCount();
+}
+
+DllExport bool __stdcall DeleteSaveState(char* filepath) {
+	return _emu->GetSaveStateManager()->DeleteSaveState(filepath);
+}
+
 class PgoKeyManager : public IKeyManager {
 public:
 	void RefreshState() {}
