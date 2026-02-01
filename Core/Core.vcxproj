@@ -679,7 +679,7 @@
     <ClInclude Include="Shared\Movies\MovieTypes.h" />
     <ClInclude Include="SNES\Coprocessors\MSU1\Msu1.h" />
     <ClInclude Include="SNES\Input\Multitap.h" />
-    <ClInclude Include="Shared\Movies\MesenMovie.h" />
+    <ClInclude Include="Shared\Movies\NexenMovie.h" />
     <ClInclude Include="Shared\Movies\MovieManager.h" />
     <ClInclude Include="Shared\Movies\MovieRecorder.h" />
     <ClInclude Include="SNES\Coprocessors\DSP\NecDsp.h" />
@@ -1040,7 +1040,7 @@
     <ClCompile Include="Debugger\MemoryDumper.cpp" />
     <ClCompile Include="SNES\SnesMemoryManager.cpp" />
     <ClCompile Include="SNES\MemoryMappings.cpp" />
-    <ClCompile Include="Shared\Movies\MesenMovie.cpp" />
+    <ClCompile Include="Shared\Movies\NexenMovie.cpp" />
     <ClCompile Include="Shared\MessageManager.cpp" />
     <ClCompile Include="Shared\Movies\MovieManager.cpp" />
     <ClCompile Include="Shared\Movies\MovieRecorder.cpp" />
@@ -1274,7 +1274,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>MESENOPTIMIZE;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NexenOPTIMIZE;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
@@ -1306,7 +1306,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>MESENOPTIMIZE;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NEXENOPTIMIZE;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>

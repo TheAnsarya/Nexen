@@ -175,7 +175,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 - [ ] Handle label format differences
 
 **Files:**
-- MOD: `UI/Debugger/Labels/MesenLabelFile.cs`
+- MOD: `UI/Debugger/Labels/NexenLabelFile.cs`
 - MOD: `UI/Debugger/Labels/PansyExporter.cs`
 
 ### Issue #13: 📊 CDL Sync - Phase 7.5c
@@ -276,8 +276,8 @@ public class SyncManager : IDisposable {
 	public void StartWatching(string folderPath);
 	public void StopWatching();
 	
-	public SyncResult SyncToMesen(string pansyPath);
-	public SyncResult SyncFromMesen(string pansyPath);
+	public SyncResult SyncToNexen(string pansyPath);
+	public SyncResult SyncFromNexen(string pansyPath);
 	
 	public ConflictResolution ResolveConflict(Conflict conflict);
 }

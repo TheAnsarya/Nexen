@@ -1,10 +1,10 @@
 #!/usr/bin/gawk -f
 
 BEGIN {
-	cmd = "llvm-symbolizer --output-style GNU -Ce bin/linux-x64/Release/MesenCore.so" addr
+	cmd = "llvm-symbolizer --output-style GNU -Ce bin/linux-x64/Release/NexenCore.so" addr
 }
 
-$4 ~ /MesenCore\.so/ {
+$4 ~ /NexenCore\.so/ {
 	match($4, /0x[0-9A-Fa-f]+/)
 	ofs = substr($4, RSTART, RLENGTH)
 	print ofs |& cmd

@@ -87,9 +87,9 @@ namespace Nexen.Debugger.Utilities {
 			}
 
 			if (SymbolProvider == null && ConfigManager.Config.Debug.Integration.AutoLoadMlbFiles) {
-				string? mlbPath = GetMatchingFile(FileDialogHelper.MesenLabelExt);
+				string? mlbPath = GetMatchingFile(FileDialogHelper.NexenLabelExt);
 				if (mlbPath != null) {
-					LoadMesenLabelFile(mlbPath, false);
+					LoadNexenLabelFile(mlbPath, false);
 				}
 			}
 
@@ -182,8 +182,8 @@ namespace Nexen.Debugger.Utilities {
 			}
 		}
 
-		public static void LoadMesenLabelFile(string path, bool showResult) {
-			if (File.Exists(path) && Path.GetExtension(path).ToLower() == "." + FileDialogHelper.MesenLabelExt) {
+		public static void LoadNexenLabelFile(string path, bool showResult) {
+			if (File.Exists(path) && Path.GetExtension(path).ToLower() == "." + FileDialogHelper.NexenLabelExt) {
 				ResetLabels();
 				NexenLabelFile.Import(path, showResult);
 			}
@@ -211,7 +211,7 @@ namespace Nexen.Debugger.Utilities {
 				case FileDialogHelper.SymFileExt: LoadSymFile(filename, showResult); break;
 				case FileDialogHelper.CdbFileExt: LoadCdbFile(filename, showResult); break;
 				case FileDialogHelper.ElfFileExt: LoadElfFile(filename, showResult); break;
-				case FileDialogHelper.MesenLabelExt: LoadMesenLabelFile(filename, showResult); break;
+				case FileDialogHelper.NexenLabelExt: LoadNexenLabelFile(filename, showResult); break;
 				case FileDialogHelper.NesAsmLabelExt: LoadNesAsmLabelFile(filename, showResult); break;
 				case FileDialogHelper.CdlExt: LoadCdlFile(filename); SymbolProvider = symbolProvider; break;
 			}

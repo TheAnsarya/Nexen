@@ -23,8 +23,8 @@ namespace Nexen.Windows {
 		public List<AboutListEntry> AcknowledgeList { get; }
 
 		public AboutWindow() {
-			Version = EmuApi.GetMesenVersion().ToString();
-			BuildDate = EmuApi.GetMesenBuildDate();
+			Version = EmuApi.GetNexenVersion().ToString();
+			BuildDate = EmuApi.GetNexenBuildDate();
 			RuntimeVersion = ".NET " + Environment.Version;
 			RuntimeVersion += RuntimeFeature.IsDynamicCodeSupported ? " (JIT)" : " (AOT)";
 
@@ -101,11 +101,11 @@ namespace Nexen.Windows {
 		}
 
 		private void OnNexenLinkTapped(object? sender, TappedEventArgs e) {
-			ApplicationHelper.OpenBrowser("https://www.mesen.ca");
+			ApplicationHelper.OpenBrowser("https://www.Nexen.ca");
 		}
 
 		private void OnCommitLinkTapped(object? sender, TappedEventArgs e) {
-			ApplicationHelper.OpenBrowser("https://github.com/SourMesen/Mesen2/commit/" + BuildSha);
+			ApplicationHelper.OpenBrowser("https://github.com/SourNexen/Nexen/commit/" + BuildSha);
 		}
 	}
 

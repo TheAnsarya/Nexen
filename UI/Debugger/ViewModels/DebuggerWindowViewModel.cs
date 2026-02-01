@@ -816,8 +816,8 @@ namespace Nexen.Debugger.ViewModels {
 						ActionType = ActionType.ExportLabels,
 						Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.ExportLabels),
 						OnClick = async () => {
-							string initFilename = EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.MesenLabelExt;
-							string? filename = await FileDialogHelper.SaveFile(null, initFilename, wnd, FileDialogHelper.MesenLabelExt);
+							string initFilename = EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.NexenLabelExt;
+							string? filename = await FileDialogHelper.SaveFile(null, initFilename, wnd, FileDialogHelper.NexenLabelExt);
 							if(filename != null) {
 								NexenLabelFile.Export(filename);
 							}

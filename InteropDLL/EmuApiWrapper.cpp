@@ -66,10 +66,10 @@ DllExport bool __stdcall TestDll() {
 	return true;
 }
 
-DllExport uint32_t __stdcall GetMesenVersion() {
+DllExport uint32_t __stdcall GetNexenVersion() {
 	return _emu->GetSettings()->GetVersion();
 }
-DllExport const char* __stdcall GetMesenBuildDate() {
+DllExport const char* __stdcall GetNexenBuildDate() {
 	return _buildDateTime;
 }
 

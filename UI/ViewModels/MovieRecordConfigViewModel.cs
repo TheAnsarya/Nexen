@@ -15,7 +15,7 @@ namespace Nexen.ViewModels {
 		public MovieRecordConfigViewModel() {
 			Config = ConfigManager.Config.MovieRecord.Clone();
 
-			SavePath = Path.Join(ConfigManager.MovieFolder, EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.MesenMovieExt);
+			SavePath = Path.Join(ConfigManager.MovieFolder, EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.NexenMovieExt);
 		}
 
 		public void SaveConfig() {

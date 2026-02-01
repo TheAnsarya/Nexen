@@ -174,11 +174,11 @@ namespace Nexen.Config {
 
 		private void UpdateFonts() {
 			if (Application.Current != null) {
-				string NexenFont = Configuration.GetValidFontFamily(NexenFont.FontFamily, false);
+				string nexenFontFamily = Configuration.GetValidFontFamily(NexenFont.FontFamily, false);
 				string menuFont = Configuration.GetValidFontFamily(NexenMenuFont.FontFamily, false);
 
-				if (Application.Current.Resources["NexenFont"] is FontFamily curNexenFont && curNexenFont.Name != NexenFont) {
-					Application.Current.Resources["NexenFont"] = new FontFamily(NexenFont);
+				if (Application.Current.Resources["NexenFont"] is FontFamily curNexenFont && curNexenFont.Name != nexenFontFamily) {
+					Application.Current.Resources["NexenFont"] = new FontFamily(nexenFontFamily);
 				}
 
 				if (Application.Current.Resources["NexenMenuFont"] is FontFamily curNexenMenuFont && curNexenMenuFont.Name != menuFont) {

@@ -120,7 +120,7 @@ namespace Nexen.Config {
 			}
 
 			ConfigUpgrade = (int)ConfigUpgradeHint.NextValue - 1;
-			Version = EmuApi.GetMesenVersion().ToString(3);
+			Version = EmuApi.GetNexenVersion().ToString(3);
 		}
 
 		public void InitializeDefaults() {

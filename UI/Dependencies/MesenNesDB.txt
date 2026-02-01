@@ -1,14 +1,14 @@
 ###################################################################################
 #
-# Mesen Game Database
+# Nexen Game Database
 #
 # Automatically generated database based on Nestopia's DB and NesCartDB
 #
 # Generated on 2022-07-21 using:
 #     -NewRisingSun's NES 2.0 header database (2021-12-25)
 #     -NesCartDB (dated 2017-08-21)
-#     -Nestopia UE's latest DB (dated 2015-10-22) 
-# 
+#     -Nestopia UE's latest DB (dated 2015-10-22)
+#
 # Fields: CRC, System, Board, PCB, Chip, Mapper, PrgRomSize, ChrRomSize, ChrRamSize, WorkRamSize, SaveRamSize, Battery, Mirroring, Controller Type, Bus Conflicts, SubMapper, VsSystemType, PpuModel
 #
 ###################################################################################

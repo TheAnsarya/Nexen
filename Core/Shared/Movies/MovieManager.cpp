@@ -5,7 +5,7 @@
 #include "Utilities/ZipReader.h"
 #include "Shared/Emulator.h"
 #include "Shared/Movies/MovieManager.h"
-#include "Shared/Movies/MesenMovie.h"
+#include "Shared/Movies/NexenMovie.h"
 #include "Shared/Movies/MovieRecorder.h"
 
 MovieManager::MovieManager(Emulator* emu) {
@@ -27,13 +27,13 @@ void MovieManager::Play(VirtualFile file, bool forTest) {
 	if (file.IsValid() && file.ReadFile(fileData)) {
 		shared_ptr<IMovie> player;
 		if (memcmp(fileData.data(), "PK", 2) == 0) {
-			// Mesen movie
+			// Nexen movie
 			ZipReader reader;
 			reader.LoadArchive(fileData);
 
 			vector<string> files = reader.GetFileList();
 			if (std::find(files.begin(), files.end(), "GameSettings.txt") != files.end()) {
-				player.reset(new MesenMovie(_emu, forTest));
+				player.reset(new NexenMovie(_emu, forTest));
 			}
 		}
 

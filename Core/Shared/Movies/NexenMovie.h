@@ -11,7 +11,7 @@ class Emulator;
 class BaseControlManager;
 struct CheatCode;
 
-class MesenMovie final : public IMovie, public INotificationListener, public IBatteryProvider, public std::enable_shared_from_this<MesenMovie> {
+class NexenMovie final : public IMovie, public INotificationListener, public IBatteryProvider, public std::enable_shared_from_this<NexenMovie> {
 private:
 	Emulator* _emu = nullptr;
 
@@ -42,8 +42,8 @@ private:
 	bool LoadCheat(string cheatData, CheatCode& code);
 
 public:
-	MesenMovie(Emulator* emu, bool silent);
-	virtual ~MesenMovie();
+	NexenMovie(Emulator* emu, bool silent);
+	virtual ~NexenMovie();
 
 	bool Play(VirtualFile& file) override;
 	void Stop() override;

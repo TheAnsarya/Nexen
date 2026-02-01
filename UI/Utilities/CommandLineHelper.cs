@@ -71,8 +71,8 @@ public class CommandLineHelper {
 								moviePath = Path.Combine(Program.OriginalFolder, moviePath);
 							}
 
-							if (!moviePath.ToLower().EndsWith("." + FileDialogHelper.MesenMovieExt)) {
-								moviePath += "." + FileDialogHelper.MesenMovieExt;
+							if (!moviePath.ToLower().EndsWith("." + FileDialogHelper.NexenMovieExt)) {
+								moviePath += "." + FileDialogHelper.NexenMovieExt;
 							}
 
 							MovieToRecord = moviePath;

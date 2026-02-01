@@ -1,4 +1,4 @@
-# EditorConfig for Mesen2
+# EditorConfig for Nexen
 # https://editorconfig.org
 root = true
 
@@ -15,7 +15,7 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 max_line_length = 120
 
-# C++ files (Mesen2 Core)
+# C++ files (Nexen Core)
 [*.{c++,cc,cpp,cppm,cxx,h,h++,hh,hpp,hxx,inl,ipp,ixx,tlh,tli}]
 indent_style = tab
 indent_size = 4

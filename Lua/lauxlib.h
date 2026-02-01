@@ -13,9 +13,9 @@
 #include "luaconf.h"
 #include "lua.h"
 
-// ##### MESEN MODIFICATION #####
+// ##### NEXEN MODIFICATION #####
 extern int SANDBOX_ALLOW_LOADFILE;
-// ##### MESEN MODIFICATION #####
+// ##### NEXEN MODIFICATION #####
 
 /* global table */
 #define LUA_GNAME "_G"

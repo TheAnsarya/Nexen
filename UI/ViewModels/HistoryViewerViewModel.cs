@@ -162,7 +162,7 @@ namespace Nexen.ViewModels {
 
 		private async void ExportMovie(HistoryViewerWindow wnd, UInt32 segStart, UInt32 segEnd) {
 			string initialFile = MainWindowViewModel.Instance.RomInfo.GetRomName();
-			string? file = await FileDialogHelper.SaveFile(ConfigManager.MovieFolder, initialFile, wnd, FileDialogHelper.MesenMovieExt);
+			string? file = await FileDialogHelper.SaveFile(ConfigManager.MovieFolder, initialFile, wnd, FileDialogHelper.NexenMovieExt);
 			if (file != null) {
 				if (!HistoryApi.HistoryViewerSaveMovie(file, segStart, segEnd)) {
 					await NexenMsgBox.Show(wnd, "MovieSaveError", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -173,7 +173,7 @@ namespace Nexen.ViewModels {
 		private async void CreateSaveState(HistoryViewerWindow wnd) {
 			uint position = CurrentPosition;
 			string initialFile = MainWindowViewModel.Instance.RomInfo.GetRomName();
-			string? file = await FileDialogHelper.SaveFile(ConfigManager.SaveStateFolder, initialFile, wnd, FileDialogHelper.MesenSaveStateExt);
+			string? file = await FileDialogHelper.SaveFile(ConfigManager.SaveStateFolder, initialFile, wnd, FileDialogHelper.NexenSaveStateExt);
 			if (file != null) {
 				if (!HistoryApi.HistoryViewerCreateSaveState(file, position)) {
 					await NexenMsgBox.Show(wnd, "FileSaveError", MessageBoxButtons.OK, MessageBoxIcon.Error);

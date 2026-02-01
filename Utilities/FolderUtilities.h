@@ -4,12 +4,12 @@
 #include <unordered_set>
 
 /// <summary>
-/// Cross-platform folder and file path management for Mesen2.
+/// Cross-platform folder and file path management for NEXEN.
 /// Handles save folders, screenshots, firmware, HD packs, and game directories.
 /// </summary>
 /// <remarks>
 /// Folder hierarchy:
-/// - Home folder: Root directory for all Mesen2 data
+/// - Home folder: Root directory for all NEXEN data
 /// - Save folder: Battery saves (.sav files)
 /// - Save state folder: Save states (.mst files)
 /// - Screenshot folder: Screenshots (.png files)
@@ -23,7 +23,7 @@
 /// </remarks>
 class FolderUtilities {
 private:
-	static string _homeFolder;               ///< Root folder for all Mesen2 data
+	static string _homeFolder;               ///< Root folder for all NEXEN data
 	static string _saveFolderOverride;       ///< Custom save folder (empty = default)
 	static string _saveStateFolderOverride;  ///< Custom save state folder
 	static string _firmwareFolderOverride;   ///< Custom firmware/BIOS folder
@@ -31,7 +31,7 @@ private:
 	static vector<string> _gameFolders;      ///< List of known ROM directories
 
 public:
-	/// <summary>Set Mesen2 home folder (root for all data)</summary>
+	/// <summary>Set NEXEN home folder (root for all data)</summary>
 	static void SetHomeFolder(string homeFolder);
 
 	/// <summary>Get current home folder path</summary>

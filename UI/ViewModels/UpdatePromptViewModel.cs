@@ -28,7 +28,7 @@ namespace Nexen.ViewModels {
 		public UpdatePromptViewModel(UpdateInfo updateInfo, UpdateFileInfo? file) {
 			LatestVersion = updateInfo.LatestVersion;
 			Changelog = updateInfo.ReleaseNotes;
-			InstalledVersion = EmuApi.GetMesenVersion();
+			InstalledVersion = EmuApi.GetNexenVersion();
 
 			FileInfo = file;
 		}
@@ -37,13 +37,13 @@ namespace Nexen.ViewModels {
 			UpdateInfo? updateInfo = null;
 			try {
 				using (var client = new HttpClient()) {
-					string updateData = await client.GetStringAsync("https://www.mesen.ca/Services/v2/latestversion.json");
+					string updateData = await client.GetStringAsync("https://www.Nexen.ca/Services/v2/latestversion.json");
 					updateInfo = (UpdateInfo?)JsonSerializer.Deserialize(updateData, typeof(UpdateInfo), NexenSerializerContext.Default);
 
 					if (
 						updateInfo == null ||
 						updateInfo.Files == null ||
-						updateInfo.Files.Where(f => f.DownloadUrl == null || (!f.DownloadUrl.StartsWith("https://www.mesen.ca/") && !f.DownloadUrl.StartsWith("https://github.com/SourMesen/"))).Count() > 0
+						updateInfo.Files.Where(f => f.DownloadUrl == null || (!f.DownloadUrl.StartsWith("https://www.Nexen.ca/") && !f.DownloadUrl.StartsWith("https://github.com/SourNexen/"))).Count() > 0
 					) {
 						return null;
 					}

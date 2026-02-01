@@ -1131,7 +1131,7 @@ void luaV_finishOp(lua_State* L) {
 	}
 
 /* fetch an instruction and prepare its execution */
-// ##### MESEN MODIFICATION (watchdogtimer) #####
+// ##### NEXEN MODIFICATION (watchdogtimer) #####
 #define vmfetch()                                                            \
 	{                                                                        \
 		if (L->watchdogtimer && !--L->watchdogtimer) {                       \

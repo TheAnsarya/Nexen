@@ -27,7 +27,7 @@ Movie/TAS Architecture
 		 │			  │			  │
 		 ▼			  ▼			  ▼
    ┌──────────┐  ┌──────────┐  ┌──────────┐
-   │MesenMovie│  │ FM2/FM3  │  │  BK2/	│
+   │NexenMovie│  │ FM2/FM3  │  │  BK2/	│
    │  (.msm)  │  │ (FCEUX)  │  │  LSMV	│
    └──────────┘  └──────────┘  └──────────┘
 ```
@@ -38,7 +38,7 @@ Movie/TAS Architecture
 Core/Shared/Movies/
 ├── MovieManager.h/cpp	 - Central movie coordinator
 ├── MovieRecorder.h/cpp	- Movie recording
-├── MesenMovie.h/cpp	   - Nexen native format
+├── NexenMovie.h/cpp	   - Nexen native format
 ├── MovieTypes.h		   - Type definitions
 └── (format parsers)	   - Format-specific readers
 ```

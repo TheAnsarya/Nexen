@@ -134,7 +134,7 @@ namespace Nexen.Debugger.Labels {
 		}
 
 		private static bool GetLegacyMemoryType(string name, out MemoryType type) {
-			//For Mesen v1 & Mesen-S compatibility
+			//For Nexen v1 & Nexen-S compatibility
 			type = MemoryType.SnesMemory;
 			switch (name) {
 				case "REG": type = MemoryType.SnesRegister; break;

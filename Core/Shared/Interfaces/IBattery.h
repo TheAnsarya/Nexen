@@ -31,9 +31,9 @@ public:
 	/// </summary>
 	/// <remarks>
 	/// Save locations:
-	/// - Windows: %APPDATA%/Mesen2/Saves/{RomName}.sav
-	/// - Linux: ~/.config/mesen2/Saves/{RomName}.sav
-	/// - macOS: ~/Library/Application Support/Mesen2/Saves/{RomName}.sav
+	/// - Windows: %APPDATA%/Nexen/Saves/{RomName}.sav
+	/// - Linux: ~/.config/Nexen/Saves/{RomName}.sav
+	/// - macOS: ~/Library/Application Support/Nexen/Saves/{RomName}.sav
 	///
 	/// File formats:
 	/// - Raw binary dump of SRAM/EEPROM/flash

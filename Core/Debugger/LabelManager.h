@@ -43,7 +43,7 @@ struct LabelInfo {
 /// - Bidirectional lookup: address → label and label → address
 ///
 /// Label sources:
-/// - Imported from debug symbol files (.dbg, .mlb, Mesen labels)
+/// - Imported from debug symbol files (.dbg, .mlb, Nexen labels)
 /// - User-added labels in debugger UI
 /// - Auto-generated labels (subroutine_XXXX)
 /// - Register labels (special CPU registers)

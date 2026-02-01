@@ -1,6 +1,6 @@
-<# 
+<#
 .SYNOPSIS
-    Generates Doxygen API documentation for Mesen2.
+    Generates Doxygen API documentation for Nexen.
 
 .DESCRIPTION
     This script runs Doxygen to generate API documentation.
@@ -81,9 +81,9 @@ try {
     # Generate documentation
     Write-Host "`nGenerating documentation..." -ForegroundColor Green
     $startTime = Get-Date
-    
+
     & doxygen Doxyfile
-    
+
     $elapsed = (Get-Date) - $startTime
     Write-Host "`nDocumentation generated in $($elapsed.TotalSeconds.ToString('F1')) seconds" -ForegroundColor Green
 
@@ -101,7 +101,7 @@ try {
     if (Test-Path $htmlPath) {
         Write-Host "`nDocumentation available at:" -ForegroundColor Cyan
         Write-Host "  $htmlPath"
-        
+
         # Open in browser if requested
         if ($Open) {
             Write-Host "`nOpening in browser..." -ForegroundColor Cyan

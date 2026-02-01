@@ -1030,10 +1030,10 @@
     <ClInclude Include="Shared\Interfaces\IRenderingDevice.h">
       <Filter>Shared\Interfaces</Filter>
     </ClInclude>
-    <ClCompile Include="Shared\Movies\MesenMovie.cpp">
+    <ClCompile Include="Shared\Movies\NexenMovie.cpp">
       <Filter>Shared\Movies</Filter>
     </ClCompile>
-    <ClInclude Include="Shared\Movies\MesenMovie.h">
+    <ClInclude Include="Shared\Movies\NexenMovie.h">
       <Filter>Shared\Movies</Filter>
     </ClInclude>
     <ClCompile Include="Shared\Movies\MovieManager.cpp">

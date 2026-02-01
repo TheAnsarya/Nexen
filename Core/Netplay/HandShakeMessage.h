@@ -5,7 +5,7 @@
 
 class HandShakeMessage : public NetMessage {
 private:
-	static constexpr int CurrentVersion = 200; // Use 200+ to distinguish from original Mesen & Mesen-S
+	static constexpr int CurrentVersion = 200; // Use 200+ to distinguish from original Nexen & Nexen-S
 	uint32_t _emuVersion = 0;
 	uint32_t _protocolVersion = CurrentVersion;
 	string _hashedPassword;

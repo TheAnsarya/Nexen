@@ -37,7 +37,7 @@ public:
 /// </summary>
 /// <remarks>
 /// Supported formats:
-/// - Mesen (.msm) - Mesen2 native format
+/// - Nexen (.msm) - Nexen native format
 /// - FCEUX (.fm2, .fm3) - NES/Famicom movies
 /// - BizHawk (.bk2) - Multi-system TAS format
 /// - Lsnes (.lsmv) - SNES TAS format

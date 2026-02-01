@@ -180,7 +180,7 @@ PGOHelper/PGOGames/*
 Docs/docs/
 Docs/*.exe
 
-PGOHelper/PGOMesenHome
+PGOHelper/PGONexenHome
 *.profraw
 *.profdata
 

@@ -16,7 +16,7 @@ struct RecordMovieOptions {
 };
 
 namespace MovieKeys {
-constexpr const char* MesenVersion = "MesenVersion";
+constexpr const char* NexenVersion = "NexenVersion";
 constexpr const char* MovieFormatVersion = "MovieFormatVersion";
 constexpr const char* GameFile = "GameFile";
 constexpr const char* Sha1 = "SHA1";

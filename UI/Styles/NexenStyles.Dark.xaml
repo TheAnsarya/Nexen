@@ -74,7 +74,7 @@
 					<Color x:Key="MenuFlyoutSubItemChevron">#FFFFFF</Color>
 
 					<SolidColorBrush x:Key="TextBoxSelectionBrush" Color="#2A509F" />
-					
+
 					<!-- Custom colors -->
 					<Color x:Key="NexenMenuMarginStartColor">#FF202020</Color>
 					<Color x:Key="NexenMenuMarginEndColor">#FF202020</Color>
@@ -89,7 +89,7 @@
 					<SolidColorBrush x:Key="DockThemeForegroundBrush" Color="{DynamicResource ThemeForegroundColor}" />
 					<SolidColorBrush x:Key="DockThemeAccentBrush" Color="Black" />
 					<SolidColorBrush x:Key="DockApplicationAccentBrushMed" Color="White" />
-					<SolidColorBrush x:Key="MesenDockTabPointerOverBrush" Color="#40808080" />
+					<SolidColorBrush x:Key="NexenDockTabPointerOverBrush" Color="#40808080" />
 
 					<!-- DataBox colors -->
 					<SolidColorBrush x:Key="DataGridColumnHeaderForegroundBrush" Color="#FFDEDEDE" />

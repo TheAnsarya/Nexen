@@ -9,7 +9,7 @@
 PROJECT_NAME           = "Nexen"
 PROJECT_NUMBER         = "2.0"
 PROJECT_BRIEF          = "Multi-System Emulator (NES, SNES, GB, GBA, SMS, PCE, WS)"
-PROJECT_LOGO           = 
+PROJECT_LOGO           =
 
 # Output directory for generated documentation
 OUTPUT_DIRECTORY       = docs/api
@@ -53,10 +53,10 @@ INLINE_INHERITED_MEMB  = NO
 FULL_PATH_NAMES        = YES
 
 # Strip path prefix for cleaner display
-STRIP_FROM_PATH        = 
+STRIP_FROM_PATH        =
 
 # Strip include path prefix
-STRIP_FROM_INC_PATH    = 
+STRIP_FROM_INC_PATH    =
 
 # Short names for generated files
 SHORT_NAMES            = NO
@@ -205,7 +205,7 @@ GENERATE_BUGLIST       = YES
 GENERATE_DEPRECATEDLIST = YES
 
 # Enabled sections (for conditional documentation)
-ENABLED_SECTIONS       = 
+ENABLED_SECTIONS       =
 
 # Max initializer lines
 MAX_INITIALIZER_LINES  = 30
@@ -220,13 +220,13 @@ SHOW_FILES             = YES
 SHOW_NAMESPACES        = YES
 
 # File version filter
-FILE_VERSION_FILTER    = 
+FILE_VERSION_FILTER    =
 
 # Layout file (use default)
-LAYOUT_FILE            = 
+LAYOUT_FILE            =
 
 # Cite BibTeX file
-CITE_BIB_FILES         = 
+CITE_BIB_FILES         =
 
 #---------------------------------------------------------------------------
 # Configuration Options Related to Warning and Progress Messages
@@ -265,7 +265,7 @@ INPUT                  = Core \
 INPUT_ENCODING         = UTF-8
 
 # Input filter
-INPUT_FILTER           = 
+INPUT_FILTER           =
 
 # File patterns
 FILE_PATTERNS          = *.h \
@@ -298,10 +298,10 @@ EXCLUDE_PATTERNS       = *_ntsc* \
                          */bin/*
 
 # Exclude symbols
-EXCLUDE_SYMBOLS        = 
+EXCLUDE_SYMBOLS        =
 
 # Example path
-EXAMPLE_PATH           = 
+EXAMPLE_PATH           =
 
 # Example patterns
 EXAMPLE_PATTERNS       = *
@@ -310,19 +310,19 @@ EXAMPLE_PATTERNS       = *
 EXAMPLE_RECURSIVE      = NO
 
 # Image path
-IMAGE_PATH             = 
+IMAGE_PATH             =
 
 # Input filter
-INPUT_FILTER           = 
+INPUT_FILTER           =
 
 # Filter patterns
-FILTER_PATTERNS        = 
+FILTER_PATTERNS        =
 
 # Filter source files
 FILTER_SOURCE_FILES    = NO
 
 # Filter source patterns
-FILTER_SOURCE_PATTERNS = 
+FILTER_SOURCE_PATTERNS =
 
 # Use MDFILE as mainpage
 USE_MDFILE_AS_MAINPAGE = README.md
@@ -364,8 +364,8 @@ VERBATIM_HEADERS       = YES
 # Clang assisted parsing (optional, improves accuracy)
 CLANG_ASSISTED_PARSING = NO
 CLANG_ADD_INC_PATHS    = YES
-CLANG_OPTIONS          = 
-CLANG_DATABASE_PATH    = 
+CLANG_OPTIONS          =
+CLANG_DATABASE_PATH    =
 
 #---------------------------------------------------------------------------
 # Configuration Options Related to the Alphabetical Class Index
@@ -375,7 +375,7 @@ CLANG_DATABASE_PATH    =
 ALPHABETICAL_INDEX     = YES
 
 # Ignore prefix
-IGNORE_PREFIX          = 
+IGNORE_PREFIX          =
 
 #---------------------------------------------------------------------------
 # Configuration Options Related to the HTML Output
@@ -391,19 +391,19 @@ HTML_OUTPUT            = html
 HTML_FILE_EXTENSION    = .html
 
 # HTML header (use default)
-HTML_HEADER            = 
+HTML_HEADER            =
 
 # HTML footer (use default)
-HTML_FOOTER            = 
+HTML_FOOTER            =
 
 # HTML stylesheet (use default)
-HTML_STYLESHEET        = 
+HTML_STYLESHEET        =
 
 # Extra HTML stylesheets
-HTML_EXTRA_STYLESHEET  = 
+HTML_EXTRA_STYLESHEET  =
 
 # Extra HTML files
-HTML_EXTRA_FILES       = 
+HTML_EXTRA_FILES       =
 
 # HTML colorstyle
 HTML_COLORSTYLE        = AUTO_LIGHT
@@ -454,7 +454,7 @@ HTML_FORMULA_FORMAT    = png
 FORMULA_FONTSIZE       = 10
 
 # Formula transparent
-FORMULA_MACROFILE      = 
+FORMULA_MACROFILE      =
 
 # Use MathJax
 USE_MATHJAX            = NO
@@ -463,13 +463,13 @@ USE_MATHJAX            = NO
 MATHJAX_FORMAT         = HTML-CSS
 
 # MathJax relpath
-MATHJAX_RELPATH        = 
+MATHJAX_RELPATH        =
 
 # MathJax extensions
-MATHJAX_EXTENSIONS     = 
+MATHJAX_EXTENSIONS     =
 
 # MathJax codefile
-MATHJAX_CODEFILE       = 
+MATHJAX_CODEFILE       =
 
 # Searchengine
 SEARCHENGINE           = YES
@@ -481,16 +481,16 @@ SERVER_BASED_SEARCH    = NO
 EXTERNAL_SEARCH        = NO
 
 # Search engine URL
-SEARCHENGINE_URL       = 
+SEARCHENGINE_URL       =
 
 # Search data file
 SEARCHDATA_FILE        = searchdata.xml
 
 # External search ID
-EXTERNAL_SEARCH_ID     = 
+EXTERNAL_SEARCH_ID     =
 
 # Extra search mappings
-EXTRA_SEARCH_MAPPINGS  = 
+EXTRA_SEARCH_MAPPINGS  =
 
 #---------------------------------------------------------------------------
 # Configuration Options Related to the LaTeX Output
@@ -578,7 +578,7 @@ INCLUDE_PATH           = Core \
                          Utilities
 
 # Include file patterns
-INCLUDE_FILE_PATTERNS  = 
+INCLUDE_FILE_PATTERNS  =
 
 # Predefined macros
 PREDEFINED             = __forceinline=inline \
@@ -589,7 +589,7 @@ PREDEFINED             = __forceinline=inline \
                          __cplusplus=202302L
 
 # Expand as defined
-EXPAND_AS_DEFINED      = 
+EXPAND_AS_DEFINED      =
 
 # Skip function macros
 SKIP_FUNCTION_MACROS   = YES
@@ -599,10 +599,10 @@ SKIP_FUNCTION_MACROS   = YES
 #---------------------------------------------------------------------------
 
 # Tag files
-TAGFILES               = 
+TAGFILES               =
 
 # Generate tagfile
-GENERATE_TAGFILE       = docs/api/mesen2.tag
+GENERATE_TAGFILE       = docs/api/Nexen.tag
 
 # All externals
 ALLEXTERNALS           = NO
@@ -642,7 +642,7 @@ DOT_FONTNAME           = Helvetica
 DOT_FONTSIZE           = 10
 
 # Dot font path
-DOT_FONTPATH           = 
+DOT_FONTPATH           =
 
 # Class diagrams
 CLASS_DIAGRAMS         = YES
@@ -696,25 +696,25 @@ DOT_IMAGE_FORMAT       = png
 INTERACTIVE_SVG        = NO
 
 # Dot path
-DOT_PATH               = 
+DOT_PATH               =
 
 # Dot file dirs
-DOTFILE_DIRS           = 
+DOTFILE_DIRS           =
 
 # MSC file dirs
-MSCFILE_DIRS           = 
+MSCFILE_DIRS           =
 
 # Dia file dirs
-DIAFILE_DIRS           = 
+DIAFILE_DIRS           =
 
 # PlantUML jar path
-PLANTUML_JAR_PATH      = 
+PLANTUML_JAR_PATH      =
 
 # PlantUML config file
-PLANTUML_CFG_FILE      = 
+PLANTUML_CFG_FILE      =
 
 # PlantUML include path
-PLANTUML_INCLUDE_PATH  = 
+PLANTUML_INCLUDE_PATH  =
 
 # Dot graph max nodes
 DOT_GRAPH_MAX_NODES    = 50
@@ -732,7 +732,7 @@ GENERATE_LEGEND        = YES
 DOT_CLEANUP            = YES
 
 # MSC gen tool
-MSCGEN_TOOL            = 
+MSCGEN_TOOL            =
 
 # Dia path
-DIA_PATH               = 
+DIA_PATH               =

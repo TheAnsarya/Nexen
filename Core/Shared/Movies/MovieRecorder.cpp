@@ -76,7 +76,7 @@ bool MovieRecorder::Record(RecordMovieOptions options) {
 
 void MovieRecorder::GetGameSettings(stringstream& out) {
 	EmuSettings* settings = _emu->GetSettings();
-	WriteString(out, MovieKeys::MesenVersion, settings->GetVersionString());
+	WriteString(out, MovieKeys::NexenVersion, settings->GetVersionString());
 	WriteInt(out, MovieKeys::MovieFormatVersion, MovieRecorder::MovieFormatVersion);
 
 	VirtualFile romFile = _emu->GetRomInfo().RomFile;

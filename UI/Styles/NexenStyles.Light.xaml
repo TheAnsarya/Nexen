@@ -1,7 +1,7 @@
 <Styles
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:sys="clr-namespace:System;assembly=netstandard"	
+	xmlns:sys="clr-namespace:System;assembly=netstandard"
 	xmlns:c="using:Nexen.Controls"
 >
 
@@ -80,7 +80,7 @@
 
 					<SolidColorBrush x:Key="NexenNotRecommendedInactiveBrush">DarkGray</SolidColorBrush>
 
-					<SolidColorBrush x:Key="MesenDockTabPointerOverBrush" Color="#40808080" />
+					<SolidColorBrush x:Key="NexenDockTabPointerOverBrush" Color="#40808080" />
 
 					<SolidColorBrush x:Key="TextBoxSelectionBrush" Color="#70C0FF" />
 

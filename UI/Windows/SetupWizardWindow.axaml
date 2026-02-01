@@ -32,7 +32,7 @@
 					Width="32"
 				/>
 				<StackPanel>
-					<TextBlock Text="{l:Translate lblMesen}" FontSize="12" />
+					<TextBlock Text="{l:Translate lblNexen}" FontSize="12" />
 					<TextBlock Text="{l:Translate lblConfigWizard}" FontSize="18" />
 				</StackPanel>
 			</DockPanel>

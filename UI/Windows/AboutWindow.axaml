@@ -43,9 +43,9 @@
 				</DataTemplate>
 			</Setter>
 		</Style>
-		
+
 	</Window.Styles>
-	
+
 	<DockPanel>
 		<DockPanel DockPanel.Dock="Top">
 			<Image
@@ -76,11 +76,11 @@
 				<TextBlock Name="lblCopyright" Margin="3" />
 				<StackPanel Orientation="Horizontal" Margin="3">
 					<TextBlock Text="{l:Translate lblWebsite}" Margin="0 0 5 0" />
-					<TextBlock Text="{l:Translate lblLink}" Foreground="{DynamicResource SystemAccentColor}" TextDecorations="Underline" Cursor="Hand" Tapped="OnMesenLinkTapped" />
+					<TextBlock Text="{l:Translate lblLink}" Foreground="{DynamicResource SystemAccentColor}" TextDecorations="Underline" Cursor="Hand" Tapped="OnNexenLinkTapped" />
 				</StackPanel>
 			</StackPanel>
 		</DockPanel>
-		
+
 		<StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="5 3">
 			<Button
 				MinWidth="70"
@@ -114,6 +114,6 @@
 				</Border>
 			</DockPanel>
 		</c:GroupBox>
-		
+
 	</DockPanel>
 </Window>

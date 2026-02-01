@@ -1,10 +1,10 @@
 [Desktop Entry]
 Version=1.0
-Icon=Mesen
-Exec=Mesen %f
+Icon=Nexen
+Exec=Nexen %f
 Terminal=false
 Type=Application
 Categories=Game;Emulator;
-Name=Mesen
+Name=Nexen
 GenericName=Multi-system emulator
 Comment=Multi-system emulator (NES, SNES, GB, PCE)

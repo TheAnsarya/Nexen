@@ -27,7 +27,7 @@ class Emulator;
 /// - Platform-specific: SNES, NES, GB, PCE, SMS, CV, GBA, WS configs
 ///
 /// Settings persistence:
-/// - Global settings: Mesen.cfg in user data folder
+/// - Global settings: Nexen.cfg in user data folder
 /// - Per-game overrides: Stored in save folder alongside save files
 ///
 /// Thread safety:

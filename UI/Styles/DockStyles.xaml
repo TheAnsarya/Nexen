@@ -24,7 +24,7 @@
 		<Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
 	</Style>
 	<Style Selector="ToolControl /template/ ToolTabStrip#PART_TabStrip ToolTabStripItem:pointerover">
-		<Setter Property="Background" Value="{DynamicResource MesenDockTabPointerOverBrush}" />
+		<Setter Property="Background" Value="{DynamicResource NexenDockTabPointerOverBrush}" />
 	</Style>
 	<Style Selector="ToolControl /template/ ToolTabStrip#PART_TabStrip ToolTabStripItem:selected:pointerover">
 		<Setter Property="Background" Value="{DynamicResource DockThemeBackgroundBrush}" />

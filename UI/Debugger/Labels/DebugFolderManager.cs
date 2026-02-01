@@ -312,8 +312,8 @@ namespace Nexen.Debugger.Labels {
 					Platform = romInfo.Format.ToString(),
 					Version = "1.0"
 				};
-#pragma warning disable IL2026 // Using 'JsonSerializer.Serialize' may break functionality when trimming - Mesen does not use trimming
-#pragma warning disable IL3050 // Using 'JsonSerializer.Serialize' may break functionality when AOT compiling - Mesen does not use AOT
+#pragma warning disable IL2026 // Using 'JsonSerializer.Serialize' may break functionality when trimming - Nexen does not use trimming
+#pragma warning disable IL3050 // Using 'JsonSerializer.Serialize' may break functionality when AOT compiling - Nexen does not use AOT
 				string json = System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions {
 					WriteIndented = true
 				});

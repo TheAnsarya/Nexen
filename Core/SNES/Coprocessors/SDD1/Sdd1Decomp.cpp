@@ -1,4 +1,4 @@
-// Altered to integrate with Mesen's code
+// Altered to integrate with Nexen's code
 
 /************************************************************************
 

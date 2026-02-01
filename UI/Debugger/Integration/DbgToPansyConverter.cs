@@ -24,7 +24,7 @@ public static class DbgToPansyConverter {
 		Rgbds,		// RGBDS symbol file
 		Sdcc,		 // SDCC symbol file
 		Elf,		  // ELF with symbols
-		MesenMlb	  // Mesen label file
+		NexenMlb	  // Nexen label file
 	}
 
 	/// <summary>
@@ -108,7 +108,7 @@ public static class DbgToPansyConverter {
 				return DetectSymFormat(filePath);
 
 			case ".mlb":
-				return DebugFormat.MesenMlb;
+				return DebugFormat.NexenMlb;
 
 			case ".elf":
 				return DebugFormat.Elf;
@@ -169,8 +169,8 @@ public static class DbgToPansyConverter {
 				case DebugFormat.WlaDx:
 					return ImportWlaDx(filePath, romInfo, result);
 
-				case DebugFormat.MesenMlb:
-					return ImportMesenMlb(filePath, romInfo, result);
+				case DebugFormat.NexenMlb:
+					return ImportNexenMlb(filePath, romInfo, result);
 
 				case DebugFormat.Sdcc:
 					return ImportSdcc(filePath, romInfo, result);
@@ -244,9 +244,9 @@ public static class DbgToPansyConverter {
 	}
 
 	/// <summary>
-	/// Import Mesen MLB format.
+	/// Import Nexen MLB format.
 	/// </summary>
-	private static bool ImportMesenMlb(string filePath, RomInfo romInfo, ConversionResult result) {
+	private static bool ImportNexenMlb(string filePath, RomInfo romInfo, ConversionResult result) {
 		try {
 			var cpuType = romInfo.ConsoleType.GetMainCpuType();
 			int countBefore = LabelManager.GetLabels(cpuType).Count;

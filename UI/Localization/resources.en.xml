@@ -675,7 +675,7 @@
 			<Control ID="tabOtherConsoles">Other systems</Control>
 			<Control ID="tabPreferences">Preferences</Control>
 
-			<Control ID="btnOpenMesenFolder">Open Mesen folder</Control>
+			<Control ID="btnOpenNexenFolder">Open Nexen folder</Control>
 			<Control ID="btnResetSettings">Reset all settings</Control>
 
 			<Control ID="btnOK">OK</Control>
@@ -688,7 +688,7 @@
 			<Control ID="lblRequiresRestart">(requires restart)</Control>
 
 			<Control ID="lblDisplayLanguage">Display Language:</Control>
-			<Control ID="chkSingleInstance">Only allow one instance of Mesen at a time</Control>
+			<Control ID="chkSingleInstance">Only allow one instance of Nexen at a time</Control>
 			<Control ID="chkAutomaticallyCheckForUpdates">Automatically check for updates</Control>
 
 			<Control ID="chkDeveloperMode">Enable developer mode</Control>
@@ -786,7 +786,7 @@
 		</Form>
 		<Form ID="SelectStorageFolderWindow">
 			<Control ID="wndTitle">Select Data Storage Folder</Control>
-			<Control ID="lblStorageHint">Select where you want to store Mesen's data:</Control>
+			<Control ID="lblStorageHint">Select where you want to store Nexen's data:</Control>
 			<Control ID="radStorageDocuments">Store data in my user profile</Control>
 			<Control ID="radStoragePortable">Store data in the same folder as the application</Control>
 			<Control ID="lblFolder">Destination folder: </Control>
@@ -838,18 +838,18 @@
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
 		<Form ID="AboutWindow">
-			<Control ID="wndTitle">About - Mesen</Control>
+			<Control ID="wndTitle">About - Nexen</Control>
 			<Control ID="lblName">Nexen</Control>
 			<Control ID="lblWebsite">Website:</Control>
-			<Control ID="lblLink">www.mesen.ca</Control>
+			<Control ID="lblLink">www.Nexen.ca</Control>
 			<Control ID="lblVersion">Version:</Control>
 			<Control ID="lblBuildDate">Build Date:</Control>
 			<Control ID="lblCommitId">Commit ID:</Control>
 			<Control ID="lblRuntimeVersion">Runtime:</Control>
 
 			<Control ID="grpAcknowledgements">Acknowledgements</Control>
-			<Control ID="lblAcknowledgeList">Thank you to the following people/projects for their direct and indirect help in making Mesen possible:</Control>
-			<Control ID="lblUsedSoftware">Mesen uses the following open-source software:</Control>
+			<Control ID="lblAcknowledgeList">Thank you to the following people/projects for their direct and indirect help in making Nexen possible:</Control>
+			<Control ID="lblUsedSoftware">Nexen uses the following open-source software:</Control>
 			<Control ID="lblSpecialThanks">And thank you to everybody who has contributed in any way! (bug reports, testing, research, etc.)</Control>
 
 			<Control ID="btnOk">OK</Control>
@@ -877,21 +877,21 @@
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
 		<Form ID="UpdatePromptWindow">
-			<Control ID="wndTitle">Mesen Updater</Control>
+			<Control ID="wndTitle">Nexen Updater</Control>
 			<Control ID="lblLatestVersion">Latest version:</Control>
 			<Control ID="lblInstalledVersion">Installed version:</Control>
-			<Control ID="lblNewVersionAvailable">A new version of Mesen is available</Control>
+			<Control ID="lblNewVersionAvailable">A new version of Nexen is available</Control>
 			<Control ID="lblReleaseNotes">Release notes</Control>
 			<Control ID="btnUpdate">Update</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
 		<Form ID="SetupWizardWindow">
 			<Control ID="wndTitle">Nexen</Control>
-			<Control ID="lblMesen">Mesen - Emulator</Control>
+			<Control ID="lblNexen">Nexen - Emulator</Control>
 			<Control ID="lblConfigWizard">Configuration</Control>
-			<Control ID="lblInitialSetup">Please take a moment to perform Mesen's initial setup.</Control>
+			<Control ID="lblInitialSetup">Please take a moment to perform Nexen's initial setup.</Control>
 			<Control ID="lblStorageLocation">Data Storage Location</Control>
-			<Control ID="lblStorageHint">Select where you want to store Mesen's data:</Control>
+			<Control ID="lblStorageHint">Select where you want to store Nexen's data:</Control>
 			<Control ID="radStorageDocuments">Store the data in my user profile</Control>
 			<Control ID="radStoragePortable">Store the data in the same folder as the application</Control>
 			<Control ID="lblDataLocation">Folder:</Control>
@@ -1556,7 +1556,7 @@
 			<Control ID="chkAutoLoadSymFiles">.SYM files (PCEAS, RGBDS, WLA DX, bass)</Control>
 			<Control ID="chkAutoLoadCdbFiles">.CDB files (SDCC)</Control>
 			<Control ID="chkAutoLoadElfFiles">.ELF files (devkitARM - GBA)</Control>
-			<Control ID="chkAutoLoadMlbFiles">.MLB files (Mesen label file)</Control>
+			<Control ID="chkAutoLoadMlbFiles">.MLB files (Nexen label file)</Control>
 			<Control ID="chkAutoLoadFnsFiles">.FNS files (NESASM)</Control>
 			<Control ID="chkAutoLoadCdlFiles">.CDL files (Code/data log)</Control>
 
@@ -1809,7 +1809,7 @@ E
 		<Message ID="BandaiMicrophone">Bandai Microphone</Message>
 		<Message ID="DatachBarcodeReader">Datach Barcode Reader</Message>
 
-		<Message ID="HelpFullscreen">/fullscreen - Start Mesen in fullscreen mode</Message>
+		<Message ID="HelpFullscreen">/fullscreen - Start Nexen in fullscreen mode</Message>
 		<Message ID="HelpDoNotSaveSettings">/DoNotSaveSettings - Prevent settings from being saved to the disk (useful to prevent command line options from becoming the default settings)</Message>
 		<Message ID="HelpRecordMovie">/RecordMovie="filename.mmo" - Start recording a movie after the specified game is loaded.</Message>
 		<Message ID="HelpLoadLastSession">/LoadLastSession - Resumes the game in the state it was left in when it was last played.</Message>
@@ -1838,13 +1838,13 @@ E
 		<Message ID="ImportLabelsWithMissingFiles">Import completed: {0} labels imported.&#xA;&#xA;The following files could not be found:&#xA;{1}</Message>
 		<Message ID="ImportLabelsWithErrorsAndMissingFiles">Import completed: {0} labels imported (and {1} errors.)&#xA;&#xA;The following files could not be found:&#xA;{2}</Message>
 		<Message ID="PansyImportComplete">Pansy import complete.&#xA;&#xA;{0}</Message>
-		<Message ID="RandomGameNoGameFound">Mesen could not find any games to load.</Message>
+		<Message ID="RandomGameNoGameFound">Nexen could not find any games to load.</Message>
 
 		<Message ID="InvalidPaletteFile">Invalid palette file (too small or too large.)</Message>
 
 		<Message ID="CannotWriteToFolder">The selected folder cannot be written to - please select another folder and try again.&#xA;&#xA;Details:&#xA;{0}</Message>
 		<Message ID="InvalidPaths">The following path overrides are invalid:&#xA;&#xA;{0}&#xA;&#xA;Please use valid and writable folders and try again.</Message>
-		<Message ID="CopyMesenDataPrompt">All files will be copied from:&#xA;&#xA;{0}&#xA;to&#xA;{1}&#xA;&#xA;Once the copy is completed, Mesen will restart.&#xA;Continue?</Message>
+		<Message ID="CopyNexenDataPrompt">All files will be copied from:&#xA;&#xA;{0}&#xA;to&#xA;{1}&#xA;&#xA;Once the copy is completed, Nexen will restart.&#xA;Continue?</Message>
 
 		<Message ID="CheatsFound">{0} games in database</Message>
 		<Message ID="CheatsImported">{0} cheats imported for {1}.</Message>
@@ -1855,21 +1855,21 @@ E
 
 		<Message ID="CouldNotInstallRuntime">The Visual Studio Runtime could not be installed properly.</Message>
 		<Message ID="EmptyState">&lt;empty&gt;</Message>
-		<Message ID="AutoUpdateNotSupported">The version of Mesen you're using does not support automatic updates. Please visit the website and manually download the latest release.</Message>
+		<Message ID="AutoUpdateNotSupported">The version of Nexen you're using does not support automatic updates. Please visit the website and manually download the latest release.</Message>
 		<Message ID="ErrorWhileCheckingUpdates">An error has occurred while trying to check for updates. Check your internet connection and try again.&#xA;&#xA;Error details:&#xA;{0}</Message>
 		<Message ID="AutoUpdateInvalidFile">The downloaded file did not match the expected file.&#xA;&#xA;   Expected SHA256 signature: {0}&#xA;&#xA;   File SHA256 signature: {1}&#xA;&#xA;Please visit the website and manually download the latest release.</Message>
 		<Message ID="FileNotFound">File not found: {0}</Message>
 		<Message ID="InvalidArgument">Invalid argument: {0}</Message>
 
-		<Message ID="MesenUpToDate">You are running the latest version of Mesen.</Message>
+		<Message ID="NexenUpToDate">You are running the latest version of Nexen.</Message>
 		<Message ID="PatchAndReset">Patch and reset the current game?</Message>
 		<Message ID="SelectRomIps">Please select a ROM for this patch file.</Message>
 		<Message ID="UnableToDownload">Unable to download file. Check your internet connection and try again.&#xA;&#xA;Details:&#xA;{0}</Message>
-		<Message ID="UnableToStartMissingSdl">Mesen could not launch because SDL2 could not be found. Install SDL2 using your package manager and try again.&#xA;&#xA;Error details:&#xA;{0}</Message>
-		<Message ID="UnableToStartMissingDependencies">Mesen could not launch because of missing dependencies.&#xA;&#xA;Error details:&#xA;{0}</Message>
-		<Message ID="UnableToStartMissingFiles">Mesen was unable to start due to missing files.&#xA;&#xA;Error: MesenCore.dll is missing.</Message>
+		<Message ID="UnableToStartMissingSdl">Nexen could not launch because SDL2 could not be found. Install SDL2 using your package manager and try again.&#xA;&#xA;Error details:&#xA;{0}</Message>
+		<Message ID="UnableToStartMissingDependencies">Nexen could not launch because of missing dependencies.&#xA;&#xA;Error details:&#xA;{0}</Message>
+		<Message ID="UnableToStartMissingFiles">Nexen was unable to start due to missing files.&#xA;&#xA;Error: NexenCore.dll is missing.</Message>
 		<Message ID="UnexpectedError">An unexpected error has occurred.&#xA;&#xA;Error details:&#xA;{0}</Message>
-		<Message ID="UpdateDownloadFailed">Download failed - the file appears to be corrupted. Please visit the Mesen website to download the latest version manually.</Message>
+		<Message ID="UpdateDownloadFailed">Download failed - the file appears to be corrupted. Please visit the Nexen website to download the latest version manually.</Message>
 		<Message ID="UpgradeSuccess">Upgrade completed successfully.</Message>
 		<Message ID="UpdaterNotFound">The update process could not be started due to missing files.</Message>
 		<Message ID="Net45NotFound">The Microsoft .NET Framework 4.5 could not be found. Please download and install the latest version of the .NET Framework from Microsoft's website and try again.</Message>
@@ -2506,7 +2506,7 @@ E
 			<Value ID="BottomLeft">Bottom Left</Value>
 			<Value ID="BottomRight">Bottom Right</Value>
 		</Enum>
-		<Enum ID="MesenTheme">
+		<Enum ID="NexenTheme">
 			<Value ID="Light">Light</Value>
 			<Value ID="Dark">Dark</Value>
 		</Enum>

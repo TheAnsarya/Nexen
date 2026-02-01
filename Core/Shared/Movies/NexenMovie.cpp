@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include <ranges>
-#include "Shared/Movies/MesenMovie.h"
+#include "Shared/Movies/NexenMovie.h"
 #include "Shared/Movies/MovieTypes.h"
 #include "Shared/Movies/MovieManager.h"
 #include "Shared/MessageManager.h"
@@ -19,16 +19,16 @@
 #include "Utilities/magic_enum.hpp"
 #include "Utilities/Serializer.h"
 
-MesenMovie::MesenMovie(Emulator* emu, bool forTest) {
+NexenMovie::NexenMovie(Emulator* emu, bool forTest) {
 	_emu = emu;
 	_forTest = forTest;
 }
 
-MesenMovie::~MesenMovie() {
+NexenMovie::~NexenMovie() {
 	_emu->UnregisterInputProvider(this);
 }
 
-void MesenMovie::Stop() {
+void NexenMovie::Stop() {
 	if (_playing) {
 		bool isEndOfMovie = _lastPollCounter >= _inputData.size();
 
@@ -54,7 +54,7 @@ void MesenMovie::Stop() {
 	_controlManager = nullptr;
 }
 
-bool MesenMovie::SetInput(BaseControlDevice* device) {
+bool NexenMovie::SetInput(BaseControlDevice* device) {
 	uint32_t inputRowIndex = _controlManager->GetPollCounter();
 
 	if (_lastPollCounter != inputRowIndex) {
@@ -78,17 +78,17 @@ bool MesenMovie::SetInput(BaseControlDevice* device) {
 	return true;
 }
 
-bool MesenMovie::IsPlaying() {
+bool NexenMovie::IsPlaying() {
 	return _playing;
 }
 
-vector<uint8_t> MesenMovie::LoadBattery(string extension) {
+vector<uint8_t> NexenMovie::LoadBattery(string extension) {
 	vector<uint8_t> batteryData;
 	_reader->ExtractFile("Battery" + extension, batteryData);
 	return batteryData;
 }
 
-void MesenMovie::ProcessNotification(ConsoleNotificationType type, void* parameter) {
+void NexenMovie::ProcessNotification(ConsoleNotificationType type, void* parameter) {
 	if (type == ConsoleNotificationType::GameLoaded) {
 		_emu->RegisterInputProvider(this);
 		shared_ptr<IConsole> console = _emu->GetConsole();
@@ -98,7 +98,7 @@ void MesenMovie::ProcessNotification(ConsoleNotificationType type, void* paramet
 	}
 }
 
-bool MesenMovie::Play(VirtualFile& file) {
+bool NexenMovie::Play(VirtualFile& file) {
 	_movieFile = file;
 
 	std::stringstream ss;
@@ -129,9 +129,9 @@ bool MesenMovie::Play(VirtualFile& file) {
 
 	ParseSettings(settingsData);
 
-	string version = LoadString(_settings, MovieKeys::MesenVersion);
+	string version = LoadString(_settings, MovieKeys::NexenVersion);
 	if (version.size() < 2 || version.starts_with("0.") || version.starts_with("1.")) {
-		// Prevent loading movies from Mesen/Mesen-S version 0.x.x or 1.x.x
+		// Prevent loading movies from Nexen/Nexen-S version 0.x.x or 1.x.x
 		MessageManager::DisplayMessage("Movies", "MovieIncompatibleVersion");
 		return false;
 	}
@@ -185,7 +185,7 @@ T FromString(string name, const vector<string>& enumNames, T defaultValue) {
 	return defaultValue;
 }
 
-void MesenMovie::ParseSettings(stringstream& data) {
+void NexenMovie::ParseSettings(stringstream& data) {
 	while (!data.eof()) {
 		string line;
 		std::getline(data, line);
@@ -206,7 +206,7 @@ void MesenMovie::ParseSettings(stringstream& data) {
 	}
 }
 
-bool MesenMovie::ApplySettings(istream& settingsData) {
+bool NexenMovie::ApplySettings(istream& settingsData) {
 	EmuSettings* settings = _emu->GetSettings();
 
 	settingsData.clear();
@@ -232,7 +232,7 @@ bool MesenMovie::ApplySettings(istream& settingsData) {
 	return true;
 }
 
-uint32_t MesenMovie::LoadInt(std::unordered_map<string, string>& settings, string name, uint32_t defaultValue) {
+uint32_t NexenMovie::LoadInt(std::unordered_map<string, string>& settings, string name, uint32_t defaultValue) {
 	auto result = settings.find(name);
 	if (result != settings.end()) {
 		try {
@@ -246,7 +246,7 @@ uint32_t MesenMovie::LoadInt(std::unordered_map<string, string>& settings, strin
 	}
 }
 
-bool MesenMovie::LoadBool(std::unordered_map<string, string>& settings, string name) {
+bool NexenMovie::LoadBool(std::unordered_map<string, string>& settings, string name) {
 	auto result = settings.find(name);
 	if (result != settings.end()) {
 		if (result->second == "true") {
@@ -262,7 +262,7 @@ bool MesenMovie::LoadBool(std::unordered_map<string, string>& settings, string n
 	}
 }
 
-string MesenMovie::LoadString(std::unordered_map<string, string>& settings, string name) {
+string NexenMovie::LoadString(std::unordered_map<string, string>& settings, string name) {
 	auto result = settings.find(name);
 	if (result != settings.end()) {
 		return result->second;
@@ -271,7 +271,7 @@ string MesenMovie::LoadString(std::unordered_map<string, string>& settings, stri
 	}
 }
 
-void MesenMovie::LoadCheats() {
+void NexenMovie::LoadCheats() {
 	vector<CheatCode> cheats;
 	for (string cheatData : _cheats) {
 		CheatCode code;
@@ -282,7 +282,7 @@ void MesenMovie::LoadCheats() {
 	_emu->GetCheatManager()->SetCheats(cheats);
 }
 
-bool MesenMovie::LoadCheat(string cheatData, CheatCode& code) {
+bool NexenMovie::LoadCheat(string cheatData, CheatCode& code) {
 	vector<string> data = StringUtilities::Split(cheatData, ' ');
 
 	if (data.size() == 2) {

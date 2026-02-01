@@ -19,7 +19,7 @@
 #endif
 
 /// <summary>
-/// Global message and logging system for Mesen2.
+/// Global message and logging system for Nexen.
 /// Handles OSD messages, localization, and debug logging.
 /// </summary>
 /// <remarks>

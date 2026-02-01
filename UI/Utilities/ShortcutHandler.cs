@@ -157,14 +157,14 @@ namespace Nexen.Utilities {
 		}
 
 		private async void LoadStateFromFile() {
-			string? filename = await FileDialogHelper.OpenFile(ConfigManager.SaveStateFolder, _mainWindow, FileDialogHelper.MesenSaveStateExt);
+			string? filename = await FileDialogHelper.OpenFile(ConfigManager.SaveStateFolder, _mainWindow, FileDialogHelper.NexenSaveStateExt);
 			if (filename != null) {
 				EmuApi.LoadStateFile(filename);
 			}
 		}
 
 		private async void SaveStateToFile() {
-			string? filename = await FileDialogHelper.SaveFile(ConfigManager.SaveStateFolder, null, _mainWindow, FileDialogHelper.MesenSaveStateExt);
+			string? filename = await FileDialogHelper.SaveFile(ConfigManager.SaveStateFolder, null, _mainWindow, FileDialogHelper.NexenSaveStateExt);
 			if (filename != null && filename.Length > 0) {
 				EmuApi.SaveStateFile(filename);
 			}
@@ -211,7 +211,7 @@ namespace Nexen.Utilities {
 					RecordApi.MovieStop();
 				} else {
 					RecordMovieOptions options = new RecordMovieOptions(
-						GetOutputFilename(ConfigManager.MovieFolder, "." + FileDialogHelper.MesenMovieExt),
+						GetOutputFilename(ConfigManager.MovieFolder, "." + FileDialogHelper.NexenMovieExt),
 						ConfigManager.Config.MovieRecord.Author,
 						ConfigManager.Config.MovieRecord.Description,
 						ConfigManager.Config.MovieRecord.RecordFrom

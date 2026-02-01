@@ -72,7 +72,7 @@ struct MissingFirmwareMessage {
 /// Firmware and BIOS file loader for all supported systems.
 /// </summary>
 /// <remarks>
-/// Searches firmware folder (Documents/Mesen/Firmware) for required files.
+/// Searches firmware folder (Documents/Nexen/Firmware) for required files.
 /// Supports split DSP firmware files (separate program/data ROMs).
 /// Displays user-facing error messages when firmware is missing.
 /// </remarks>

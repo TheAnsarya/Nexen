@@ -18,7 +18,7 @@ namespace Nexen.Utilities {
 
 		public static bool LaunchUpdate(string srcFile) {
 			string destFile = Program.ExePath;
-			Version installedVersion = EmuApi.GetMesenVersion();
+			Version installedVersion = EmuApi.GetNexenVersion();
 			string? hash = GetCommitHash();
 			string shortHash = hash != null ? "." + hash.Substring(0, 7) : "";
 			string backupFilePath = Path.Combine(ConfigManager.BackupFolder, "Nexen." + installedVersion.ToString(3) + shortHash);
@@ -71,7 +71,7 @@ namespace Nexen.Utilities {
 			}
 
 			try {
-				//Backup current version 
+				//Backup current version
 				File.Copy(destFile, backupFile, true);
 
 				//Update with downloaded version

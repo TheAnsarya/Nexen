@@ -17,8 +17,8 @@ public class DbgToPansyConverterTests
 	[InlineData("test.sym", DebugFormat.WlaDx)]
 	[InlineData("symbols.sym", DebugFormat.WlaDx)]
 	[InlineData("debug.elf", DebugFormat.Elf)]
-	[InlineData("labels.mlb", DebugFormat.MesenMlb)]
-	[InlineData("game.MLB", DebugFormat.MesenMlb)]
+	[InlineData("labels.mlb", DebugFormat.NexenMlb)]
+	[InlineData("game.MLB", DebugFormat.NexenMlb)]
 	public void DetectFormat_ByExtension_ReturnsCorrectFormat(string filename, DebugFormat expected)
 	{
 		var detected = DetectFormatByExtension(filename);
@@ -36,8 +36,8 @@ public class DbgToPansyConverterTests
 	[InlineData("version\tmajor 2", DebugFormat.Ca65Dbg)]
 	[InlineData("; File created by wlalink", DebugFormat.WlaDx)]
 	[InlineData("SECTION \"", DebugFormat.Rgbds)]
-	[InlineData("G:0000 _start", DebugFormat.MesenMlb)]
-	[InlineData("P:8000 Reset", DebugFormat.MesenMlb)]
+	[InlineData("G:0000 _start", DebugFormat.NexenMlb)]
+	[InlineData("P:8000 Reset", DebugFormat.NexenMlb)]
 	public void DetectFormat_ByContent_ReturnsCorrectFormat(string content, DebugFormat expected)
 	{
 		var detected = DetectFormatByContent(content);
@@ -188,7 +188,7 @@ public class DbgToPansyConverterTests
 			".dbg" => DebugFormat.Ca65Dbg,
 			".sym" => DebugFormat.WlaDx,
 			".elf" => DebugFormat.Elf,
-			".mlb" => DebugFormat.MesenMlb,
+			".mlb" => DebugFormat.NexenMlb,
 			_ => DebugFormat.Unknown
 		};
 	}
@@ -202,7 +202,7 @@ public class DbgToPansyConverterTests
 		if (content.Contains("SECTION \""))
 			return DebugFormat.Rgbds;
 		if (content.Length > 0 && (content[0] == 'G' || content[0] == 'P' || content[0] == 'S' || content[0] == 'R') && content[1] == ':')
-			return DebugFormat.MesenMlb;
+			return DebugFormat.NexenMlb;
 		return DebugFormat.Unknown;
 	}
 
@@ -372,7 +372,7 @@ public class DbgToPansyConverterTests
 		Rgbds,
 		Sdcc,
 		Elf,
-		MesenMlb
+		NexenMlb
 	}
 
 	public enum PlatformId

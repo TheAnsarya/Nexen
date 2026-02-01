@@ -7,7 +7,7 @@
 // =============================================================================
 // Serialization/Deserialization Benchmarks
 // =============================================================================
-// Mesen uses a key-value serialization system for save states and rewind buffer.
+// Nexen uses a key-value serialization system for save states and rewind buffer.
 // Performance is critical as save states are created frequently during rewind.
 
 // -----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ public:
 	uint8_t statusFlags = 0;
 	bool interruptEnable = false;
 	int32_t cycleCount = 0;
-	
+
 	void Serialize(Serializer& s) override {
 		SVArray(registers, 16);
 		SV(programCounter);
@@ -46,7 +46,7 @@ public:
 	bool frameOdd = false;
 	bool nmiOccurred = false;
 	bool spriteOverflow = false;
-	
+
 	void Serialize(Serializer& s) override {
 		SVArray(vram.data(), (uint32_t)vram.size());
 		SVArray(oam.data(), (uint32_t)oam.size());
@@ -68,7 +68,7 @@ public:
 	std::array<uint8_t, 0x10000> ram = {};  // 64KB RAM
 	MockSerializableState cpu;
 	MockPpuState ppu;
-	
+
 	void Serialize(Serializer& s) override {
 		SVArray(ram.data(), (uint32_t)ram.size());
 		SV(cpu);
@@ -88,7 +88,7 @@ static void BM_Serializer_SaveSmallState(benchmark::State& state) {
 	cpuState.statusFlags = 0x24;
 	cpuState.interruptEnable = true;
 	cpuState.cycleCount = 12345;
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Binary);
 		cpuState.Serialize(s);
@@ -108,7 +108,7 @@ static void BM_Serializer_SavePpuState(benchmark::State& state) {
 	for (size_t i = 0; i < ppuState.oam.size(); i++) {
 		ppuState.oam[i] = static_cast<uint8_t>(i * 2);
 	}
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Binary);
 		ppuState.Serialize(s);
@@ -125,7 +125,7 @@ static void BM_Serializer_SaveLargeState(benchmark::State& state) {
 	for (size_t i = 0; i < consoleState.ram.size(); i++) {
 		consoleState.ram[i] = static_cast<uint8_t>(i ^ (i >> 8));
 	}
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Binary);
 		consoleState.Serialize(s);
@@ -145,7 +145,7 @@ static void BM_Serializer_SaveTextFormat(benchmark::State& state) {
 	for (int i = 0; i < 16; i++) cpuState.registers[i] = static_cast<uint32_t>(i * 0x1000);
 	cpuState.programCounter = 0x8000;
 	cpuState.statusFlags = 0x24;
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Text);
 		cpuState.Serialize(s);
@@ -165,7 +165,7 @@ static void BM_Serializer_SaveMapFormat(benchmark::State& state) {
 	for (int i = 0; i < 16; i++) cpuState.registers[i] = static_cast<uint32_t>(i * 0x1000);
 	cpuState.programCounter = 0x8000;
 	cpuState.statusFlags = 0x24;
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Map);
 		cpuState.Serialize(s);
@@ -182,7 +182,7 @@ BENCHMARK(BM_Serializer_SaveMapFormat);
 // Benchmark streaming individual uint8_t values
 static void BM_Serializer_StreamUint8(benchmark::State& state) {
 	uint8_t value = 0x42;
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Binary);
 		for (int i = 0; i < 100; i++) {
@@ -197,7 +197,7 @@ BENCHMARK(BM_Serializer_StreamUint8);
 // Benchmark streaming individual uint16_t values
 static void BM_Serializer_StreamUint16(benchmark::State& state) {
 	uint16_t value = 0x1234;
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Binary);
 		for (int i = 0; i < 100; i++) {
@@ -212,7 +212,7 @@ BENCHMARK(BM_Serializer_StreamUint16);
 // Benchmark streaming individual uint32_t values
 static void BM_Serializer_StreamUint32(benchmark::State& state) {
 	uint32_t value = 0x12345678;
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Binary);
 		for (int i = 0; i < 100; i++) {
@@ -227,7 +227,7 @@ BENCHMARK(BM_Serializer_StreamUint32);
 // Benchmark streaming boolean values
 static void BM_Serializer_StreamBool(benchmark::State& state) {
 	bool value = true;
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Binary);
 		for (int i = 0; i < 100; i++) {
@@ -248,7 +248,7 @@ BENCHMARK(BM_Serializer_StreamBool);
 static void BM_Serializer_StreamSmallArray(benchmark::State& state) {
 	uint32_t registers[16];
 	for (int i = 0; i < 16; i++) registers[i] = static_cast<uint32_t>(i * 0x1000);
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Binary);
 		s.StreamArray(registers, 16, "registers");
@@ -262,7 +262,7 @@ BENCHMARK(BM_Serializer_StreamSmallArray);
 static void BM_Serializer_StreamMediumArray(benchmark::State& state) {
 	std::array<uint8_t, 0x800> vram;
 	for (size_t i = 0; i < vram.size(); i++) vram[i] = static_cast<uint8_t>(i);
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Binary);
 		s.StreamArray(vram.data(), static_cast<uint32_t>(vram.size()), "vram");
@@ -276,7 +276,7 @@ BENCHMARK(BM_Serializer_StreamMediumArray);
 static void BM_Serializer_StreamLargeArray(benchmark::State& state) {
 	std::vector<uint8_t> ram(0x10000);  // 64KB
 	for (size_t i = 0; i < ram.size(); i++) ram[i] = static_cast<uint8_t>(i ^ (i >> 8));
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Binary);
 		s.StreamArray(ram.data(), static_cast<uint32_t>(ram.size()), "ram");
@@ -293,7 +293,7 @@ BENCHMARK(BM_Serializer_StreamLargeArray);
 // Benchmark key prefix push/pop (nested serialization)
 static void BM_Serializer_KeyPrefixManagement(benchmark::State& state) {
 	MockSerializableState innerState;
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Binary);
 		s.AddKeyPrefix("outer");
@@ -310,7 +310,7 @@ BENCHMARK(BM_Serializer_KeyPrefixManagement);
 // Benchmark deeply nested serialization
 static void BM_Serializer_DeepNesting(benchmark::State& state) {
 	uint32_t value = 0x12345678;
-	
+
 	for (auto _ : state) {
 		Serializer s(1, true, SerializeFormat::Binary);
 		s.AddKeyPrefix("level1");
@@ -339,7 +339,7 @@ static void BM_Serializer_CompareRawMemcpy(benchmark::State& state) {
 	std::vector<uint8_t> src(0x10000);  // 64KB
 	std::vector<uint8_t> dst(0x10000);
 	for (size_t i = 0; i < src.size(); i++) src[i] = static_cast<uint8_t>(i ^ (i >> 8));
-	
+
 	for (auto _ : state) {
 		std::memcpy(dst.data(), src.data(), src.size());
 		benchmark::DoNotOptimize(dst[0]);
@@ -354,7 +354,7 @@ static void BM_Serializer_CompareStdCopy(benchmark::State& state) {
 	std::vector<uint8_t> src(0x10000);  // 64KB
 	std::vector<uint8_t> dst(0x10000);
 	for (size_t i = 0; i < src.size(); i++) src[i] = static_cast<uint8_t>(i ^ (i >> 8));
-	
+
 	for (auto _ : state) {
 		std::copy(src.begin(), src.end(), dst.begin());
 		benchmark::DoNotOptimize(dst[0]);

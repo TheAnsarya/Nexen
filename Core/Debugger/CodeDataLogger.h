@@ -26,7 +26,7 @@ class Debugger;
 /// File format:
 /// - Header: "CDLv2" + 4-byte ROM CRC32
 /// - Data: One flag byte per ROM byte
-/// - Portable across emulators (Mesen, FCEUX, etc.)
+/// - Portable across emulators (Nexen, FCEUX, etc.)
 ///
 /// Performance optimizations:
 /// - Template SetCode<flags, accessWidth>() for compile-time optimization

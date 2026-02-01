@@ -235,7 +235,7 @@
 	"name": "getScriptDataFolder",
 	"category": "Miscellaneous",
 	"subcategory": "Others",
-	"description": "This function returns the path to a unique folder (based on the script's filename) where the script should store its data (if any data needs to be saved). The data will be saved in subfolders inside the LuaScriptData folder in Mesen's home folder.\n\nNote: This function will return an empty string if the \"Allow access to I/O and OS functions\" option is disabled.",
+	"description": "This function returns the path to a unique folder (based on the script's filename) where the script should store its data (if any data needs to be saved). The data will be saved in subfolders inside the LuaScriptData folder in Nexen's home folder.\n\nNote: This function will return an empty string if the \"Allow access to I/O and OS functions\" option is disabled.",
 	"returnValue": { "type": "String", "description": "The folder's path" }
 },
 {
@@ -387,7 +387,7 @@
 	"category": "Emulation",
 	"description": "Stops the emulation and returns the specified exit code (when used with the --testRunner command line option).",
 	"parameters": [
-		{ "name": "exitCode", "type": "Int", "description": "The exit code that the Mesen process will return." }
+		{ "name": "exitCode", "type": "Int", "description": "The exit code that the Nexen process will return." }
 	]
 },
 {

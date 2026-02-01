@@ -28,7 +28,7 @@ For more information, please refer to <https://unlicense.org>
 ## Scope
 
 This license applies to all modifications, additions, and new code
-created specifically for this fork (TheAnsarya/Mesen2), including but
+created specifically for this fork (TheAnsarya/Nexen), including but
 not limited to:
 
 - C++ modernization changes (smart pointers, std::format, ranges, etc.)
@@ -43,5 +43,5 @@ License v3. See the LICENSE file for GPL v3 details.
 ## Attribution
 
 While not required, attribution is appreciated:
-- Fork: TheAnsarya/Mesen2
+- Fork: TheAnsarya/Nexen
 - Original: SourMesen/Mesen2 by Sour

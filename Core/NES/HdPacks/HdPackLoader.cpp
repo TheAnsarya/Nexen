@@ -187,7 +187,7 @@ bool HdPackLoader::LoadPack() {
 			} else if (lineContent.starts_with("<ver>")) {
 				_data->Version = stoi(lineContent.substr(5));
 				if (_data->Version > BaseHdNesPack::CurrentVersion) {
-					logError("This HD Pack was built with a more recent version of Mesen - update Nexen to the latest version and try again.");
+					logError("This HD Pack was built with a more recent version of Nexen - update Nexen to the latest version and try again.");
 					return false;
 				}
 			} else if (lineContent.starts_with("<scale>")) {

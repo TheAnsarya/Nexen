@@ -187,7 +187,7 @@ namespace Nexen.ViewModels {
 			return new MainMenuAction(shortcut) {
 				ActionType = ActionType.Custom,
 				DynamicText = () => {
-					string statePath = Path.Combine(ConfigManager.SaveStateFolder, EmuApi.GetRomInfo().GetRomName() + "_" + slot + "." + FileDialogHelper.MesenSaveStateExt);
+					string statePath = Path.Combine(ConfigManager.SaveStateFolder, EmuApi.GetRomInfo().GetRomName() + "_" + slot + "." + FileDialogHelper.NexenSaveStateExt);
 					string slotName = isAutoSaveSlot ? "Auto" : slot.ToString();
 
 					string header;
@@ -696,7 +696,7 @@ namespace Nexen.ViewModels {
 						ActionType = ActionType.Play,
 						IsEnabled = () => IsGameRunning && !RecordApi.MovieRecording() && !RecordApi.MoviePlaying(),
 						OnClick = async () => {
-							string? filename = await FileDialogHelper.OpenFile(ConfigManager.MovieFolder, wnd, FileDialogHelper.MesenMovieExt);
+							string? filename = await FileDialogHelper.OpenFile(ConfigManager.MovieFolder, wnd, FileDialogHelper.NexenMovieExt);
 							if(filename != null) {
 								RecordApi.MoviePlay(filename);
 							}
@@ -1059,7 +1059,7 @@ namespace Nexen.ViewModels {
 				new MainMenuAction() {
 					ActionType = ActionType.OnlineHelp,
 					IsVisible = () => false,
-					OnClick = () => ApplicationHelper.OpenBrowser("https://www.mesen.ca/documentation/")
+					OnClick = () => ApplicationHelper.OpenBrowser("https://www.Nexen.ca/documentation/")
 				},
 				new MainMenuAction() {
 					ActionType = ActionType.CommandLineHelp,
@@ -1071,7 +1071,7 @@ namespace Nexen.ViewModels {
 				new MainMenuAction() {
 					ActionType = ActionType.ReportBug,
 					IsVisible = () => false,
-					OnClick = () => ApplicationHelper.OpenBrowser("https://www.mesen.ca/reportbug/")
+					OnClick = () => ApplicationHelper.OpenBrowser("https://www.Nexen.ca/reportbug/")
 				},
 				new ContextMenuSeparator(),
 				new MainMenuAction() {

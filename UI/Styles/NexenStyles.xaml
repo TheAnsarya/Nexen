@@ -6,8 +6,8 @@
 	xmlns:du="using:Nexen.Debugger.Utilities"
 	xmlns:dft="using:Dock.Avalonia.Themes.Fluent"
 >
-	<StyleInclude Source="/Styles/MesenStyles.Light.xaml" />
-	<StyleInclude Source="/Styles/MesenStyles.Dark.xaml" />
+	<StyleInclude Source="/Styles/NexenStyles.Light.xaml" />
+	<StyleInclude Source="/Styles/NexenStyles.Dark.xaml" />
 
 	<dft:DockFluentTheme />
 	<StyleInclude Source="/ThirdParty/DataBox/Themes/Fluent.axaml" />

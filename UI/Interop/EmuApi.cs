@@ -19,18 +19,18 @@ namespace Nexen.Interop {
 		[DllImport(DllPath)][return: MarshalAs(UnmanagedType.I1)] public static extern bool TestDll();
 		[DllImport(DllPath)] public static extern void InitDll();
 
-		[DllImport(DllPath, EntryPoint = "GetMesenVersion")] private static extern UInt32 GetMesenVersionWrapper();
-		public static Version GetMesenVersion() {
-			UInt32 version = GetMesenVersionWrapper();
+		[DllImport(DllPath, EntryPoint = "GetNexenVersion")] private static extern UInt32 GetNexenVersionWrapper();
+		public static Version GetNexenVersion() {
+			UInt32 version = GetNexenVersionWrapper();
 			UInt32 revision = version & 0xFF;
 			UInt32 minor = (version >> 8) & 0xFF;
 			UInt32 major = (version >> 16) & 0xFFFF;
 			return new Version((int)major, (int)minor, (int)revision);
 		}
 
-		[DllImport(DllPath, EntryPoint = "GetMesenBuildDate")] private static extern IntPtr GetMesenBuildDateWrapper();
-		public static string GetMesenBuildDate() {
-			return Utf8Utilities.PtrToStringUtf8(GetMesenBuildDateWrapper());
+		[DllImport(DllPath, EntryPoint = "GetNexenBuildDate")] private static extern IntPtr GetNexenBuildDateWrapper();
+		public static string GetNexenBuildDate() {
+			return Utf8Utilities.PtrToStringUtf8(GetNexenBuildDateWrapper());
 		}
 
 		[DllImport(DllPath)] public static extern IntPtr RegisterNotificationCallback(NotificationListener.NotificationCallback callback);

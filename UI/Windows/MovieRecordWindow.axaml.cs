@@ -24,7 +24,7 @@ namespace Nexen.Windows {
 		private async void OnBrowseClick(object sender, RoutedEventArgs e) {
 			MovieRecordConfigViewModel model = (MovieRecordConfigViewModel)DataContext!;
 
-			string? filename = await FileDialogHelper.SaveFile(ConfigManager.MovieFolder, EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.MesenMovieExt, VisualRoot, FileDialogHelper.MesenMovieExt);
+			string? filename = await FileDialogHelper.SaveFile(ConfigManager.MovieFolder, EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.NexenMovieExt, VisualRoot, FileDialogHelper.NexenMovieExt);
 			if (filename != null) {
 				model.SavePath = filename;
 			}
