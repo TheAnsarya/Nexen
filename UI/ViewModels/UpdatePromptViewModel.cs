@@ -16,15 +16,34 @@ using Nexen.Windows;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.ViewModels {
+	/// <summary>
+	/// ViewModel for the update prompt dialog.
+	/// Handles checking for updates, downloading, and installing new versions.
+	/// </summary>
 	public class UpdatePromptViewModel : ViewModelBase {
+		/// <summary>Gets the latest available version.</summary>
 		public Version LatestVersion { get; }
+
+		/// <summary>Gets the currently installed version.</summary>
 		public Version InstalledVersion { get; }
+
+		/// <summary>Gets the changelog/release notes for the update.</summary>
 		public string Changelog { get; }
 
+		/// <summary>Gets or sets whether an update is currently in progress.</summary>
 		[Reactive] public bool IsUpdating { get; internal set; }
+
+		/// <summary>Gets or sets the download progress percentage (0-100).</summary>
 		[Reactive] public int Progress { get; internal set; }
+
+		/// <summary>Gets the file information for the platform-specific update.</summary>
 		public UpdateFileInfo? FileInfo { get; }
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="UpdatePromptViewModel"/> class.
+		/// </summary>
+		/// <param name="updateInfo">The update information from the server.</param>
+		/// <param name="file">The platform-specific file to download.</param>
 		public UpdatePromptViewModel(UpdateInfo updateInfo, UpdateFileInfo? file) {
 			LatestVersion = updateInfo.LatestVersion;
 			Changelog = updateInfo.ReleaseNotes;
@@ -33,6 +52,11 @@ namespace Nexen.ViewModels {
 			FileInfo = file;
 		}
 
+		/// <summary>
+		/// Checks for available updates from the server.
+		/// </summary>
+		/// <param name="silent">If true, suppresses error dialogs.</param>
+		/// <returns>Update ViewModel if an update is available; otherwise null.</returns>
 		public static async Task<UpdatePromptViewModel?> GetUpdateInformation(bool silent) {
 			UpdateInfo? updateInfo = null;
 			try {
