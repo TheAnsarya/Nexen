@@ -49,7 +49,7 @@ Forked from Mesen by Sour: [SourMesen/Mesen2](https://github.com/SourMesen/Mesen
 
 ## Releases
 
-For stable releases, see the [upstream releases](https://github.com/SourMesen/Nexen/releases).
+For stable releases, see the [upstream releases](https://github.com/SourMesen/Mesen2/releases).
 For this fork's development builds, see [Actions](https://github.com/TheAnsarya/Nexen/actions).
 
 ## Development Builds
@@ -82,7 +82,7 @@ Copyright (C) 2014-2025 Sour
 
 ### Fork Modifications (The Unlicense)
 
-All modifications, additions, and new code in this fork (TheAnsarya/Mesen2) are released under **The Unlicense** (public domain).
+All modifications, additions, and new code in this fork (TheAnsarya/Nexen) are released under **The Unlicense** (public domain).
 See [LICENSE-UNLICENSE](LICENSE-UNLICENSE) for details.
 
 This includes:

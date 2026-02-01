@@ -91,19 +91,28 @@ gh issue close 115 --repo TheAnsarya/Nexen --comment "Completed: Repository rena
 
 ### 8. Update Upstream Remote
 
-If you have an upstream remote pointing to SourMesen/Mesen2, you may want to keep it for syncing:
+✅ **COMPLETED** - The upstream remote is correctly set to track the original Mesen2 repository:
 
 ```powershell
-# This should remain unchanged - we still want to track upstream Mesen
 git remote -v
-# Should show:
-# origin	https://github.com/TheAnsarya/Nexen.git (fetch/push)
-# upstream  https://github.com/SourMesen/Mesen2.git (fetch/push)
+# Shows:
+# origin     https://github.com/TheAnsarya/Nexen.git (fetch/push)
+# upstream   https://github.com/SourMesen/Mesen2.git (fetch/push)
 ```
 
-### 9. Update CI/CD (if applicable)
+This allows syncing with upstream Mesen2 developments while maintaining the fork.
 
-Check and update any GitHub Actions workflows that reference the old repository name.
+### 9. Update CI/CD & Documentation
+
+✅ **COMPLETED** - The following have been updated:
+
+1. **GitHub Actions Workflows** - Already use `TheAnsarya/Nexen` in all workflow references
+2. **README.md** - Updated:
+   - Fork attribution: `(TheAnsarya/Nexen)` ✅
+   - Upstream link: `github.com/SourMesen/Mesen2` ✅
+   - Fork link: `github.com/TheAnsarya/Nexen` ✅
+3. **Copilot Instructions** - Updated to reference `TheAnsarya/Nexen` ✅
+4. **Build Documentation** - Updated file paths and repository references ✅
 
 ## Verification
 
