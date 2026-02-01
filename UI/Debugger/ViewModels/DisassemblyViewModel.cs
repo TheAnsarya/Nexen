@@ -16,39 +16,101 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Debugger.ViewModels {
+	/// <summary>
+	/// ViewModel for the disassembly view in the debugger.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// Provides the data and logic for displaying disassembled code, including:
+	/// <list type="bullet">
+	/// <item>Scrollable view of disassembled instructions</item>
+	/// <item>Selection handling (single row and range)</item>
+	/// <item>Navigation history (back/forward)</item>
+	/// <item>Quick search functionality</item>
+	/// <item>Active address tracking for program counter</item>
+	/// <item>Copy to clipboard support</item>
+	/// </list>
+	/// </para>
+	/// <para>
+	/// Implements <see cref="ISelectableModel"/> for row selection support.
+	/// </para>
+	/// </remarks>
 	public class DisassemblyViewModel : DisposableViewModel, ISelectableModel {
+		/// <summary>Gets the code data provider for fetching disassembly lines.</summary>
 		public ICodeDataProvider DataProvider { get; }
+
+		/// <summary>Gets the CPU type being disassembled.</summary>
 		public CpuType CpuType { get; }
+
+		/// <summary>Gets the parent debugger window ViewModel.</summary>
 		public DebuggerWindowViewModel Debugger { get; }
+
+		/// <summary>Gets the style provider for syntax highlighting.</summary>
 		public DisassemblyViewStyleProvider StyleProvider { get; }
 
+		/// <summary>Gets or sets the current scroll position (0 to MaxScrollPosition).</summary>
 		[Reactive] public int ScrollPosition { get; set; } = 0;
+
+		/// <summary>Gets or sets the maximum scroll position.</summary>
 		[Reactive] public int MaxScrollPosition { get; private set; } = 1000000000;
+
+		/// <summary>Gets or sets the address at the top of the visible area.</summary>
 		[Reactive] public int TopAddress { get; private set; } = 0;
+
+		/// <summary>Gets or sets the currently visible disassembly lines.</summary>
 		[Reactive] public CodeLineData[] Lines { get; private set; } = [];
 
+		/// <summary>Gets or sets the active address (program counter), or null if not paused.</summary>
 		[Reactive] public int? ActiveAddress { get; set; }
+
+		/// <summary>Gets or sets the address of the currently selected row.</summary>
 		[Reactive] public int SelectedRowAddress { get; set; }
+
+		/// <summary>Gets or sets the anchor point for range selection.</summary>
 		[Reactive] public int SelectionAnchor { get; set; }
+
+		/// <summary>Gets or sets the start address of the current selection range.</summary>
 		[Reactive] public int SelectionStart { get; set; }
+
+		/// <summary>Gets or sets the end address of the current selection range.</summary>
 		[Reactive] public int SelectionEnd { get; set; }
 
+		/// <summary>Gets the quick search ViewModel for find functionality.</summary>
 		public QuickSearchViewModel QuickSearch { get; } = new QuickSearchViewModel();
+
+		/// <summary>Gets the navigation history for back/forward support.</summary>
 		public NavigationHistory<int> History { get; } = new();
 
+		/// <summary>Gets whether scroll bar markers should be shown (disabled for NEC DSP).</summary>
 		public bool ShowScrollBarMarkers => CpuType != CpuType.NecDsp;
 
+		/// <summary>Gets the debug configuration.</summary>
 		public DebugConfig Config { get; private set; }
+
+		/// <summary>Gets or sets the number of visible rows in the view.</summary>
 		public int VisibleRowCount { get; set; } = 100;
 
+		/// <summary>The disassembly viewer control reference.</summary>
 		private DisassemblyViewer? _viewer = null;
 
+		/// <summary>Counter to prevent recursive scroll updates.</summary>
 		private int _ignoreScrollUpdates = 0;
+
+		/// <summary>Callback to refresh the scrollbar after data changes.</summary>
 		private Action? _refreshScrollbar = null;
 
+		/// <summary>
+		/// Initializes a new instance for the designer.
+		/// </summary>
 		[Obsolete("For designer only")]
 		public DisassemblyViewModel() : this(new DebuggerWindowViewModel(), new DebugConfig(), CpuType.Snes) { }
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DisassemblyViewModel"/> class.
+		/// </summary>
+		/// <param name="debugger">The parent debugger window ViewModel.</param>
+		/// <param name="config">The debug configuration.</param>
+		/// <param name="cpuType">The CPU type to disassemble.</param>
 		public DisassemblyViewModel(DebuggerWindowViewModel debugger, DebugConfig config, CpuType cpuType) {
 			Config = config;
 			CpuType = cpuType;
@@ -94,6 +156,10 @@ namespace Nexen.Debugger.ViewModels {
 			}));
 		}
 
+		/// <summary>
+		/// Handles quick search find events.
+		/// </summary>
+		/// <param name="e">The find event arguments.</param>
 		private void QuickSearch_OnFind(OnFindEventArgs e) {
 			DisassemblySearchOptions options = new() { SearchBackwards = e.Direction == SearchDirection.Backward, SkipFirstLine = e.SkipCurrent };
 			int findAddress = DebugApi.SearchDisassembly(CpuType, e.SearchString.ToLowerInvariant(), SelectedRowAddress, options);
@@ -105,10 +171,18 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Sets the viewer control reference for focus management.
+		/// </summary>
+		/// <param name="viewer">The disassembly viewer control.</param>
 		public void SetViewer(DisassemblyViewer? viewer) {
 			_viewer = viewer;
 		}
 
+		/// <summary>
+		/// Scrolls the view by the specified number of lines.
+		/// </summary>
+		/// <param name="lineNumberOffset">Number of lines to scroll (positive = down, negative = up).</param>
 		public void Scroll(int lineNumberOffset) {
 			if (lineNumberOffset == 0) {
 				return;
@@ -117,6 +191,10 @@ namespace Nexen.Debugger.ViewModels {
 			SetTopAddress(DataProvider.GetRowAddress(TopAddress, lineNumberOffset));
 		}
 
+		/// <summary>
+		/// Scrolls to the top of the disassembly.
+		/// </summary>
+		/// <param name="extendSelection">Whether to extend the current selection.</param>
 		public void ScrollToTop(bool extendSelection) {
 			if (extendSelection) {
 				ResizeSelectionTo(0);
@@ -126,6 +204,10 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Scrolls to the bottom of the disassembly.
+		/// </summary>
+		/// <param name="extendSelection">Whether to extend the current selection.</param>
 		public void ScrollToBottom(bool extendSelection) {
 			if (extendSelection) {
 				ResizeSelectionTo(DataProvider.GetLineCount() - 1);
@@ -136,11 +218,17 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Forces the disassembly viewer to refresh by creating a new array reference.
+		/// </summary>
 		public void InvalidateVisual() {
 			//Force DisassemblyViewer to refresh
 			Lines = Lines.ToArray();
 		}
 
+		/// <summary>
+		/// Refreshes the visible disassembly lines from the data provider.
+		/// </summary>
 		public void Refresh() {
 			CodeLineData[] lines = DataProvider.GetCodeLines(TopAddress, VisibleRowCount);
 			Lines = lines;
@@ -156,6 +244,10 @@ namespace Nexen.Debugger.ViewModels {
 			_refreshScrollbar = refreshScrollbar;
 		}
 
+		/// <summary>
+		/// Sets the top address while updating scroll position proportionally.
+		/// </summary>
+		/// <param name="address">The address to set as the top visible row.</param>
 		private void SetTopAddress(int address) {
 			int lineCount = DataProvider.GetLineCount();
 			address = Math.Max(0, Math.Min(lineCount - 1, address));
@@ -166,6 +258,13 @@ namespace Nexen.Debugger.ViewModels {
 			_ignoreScrollUpdates--;
 		}
 
+		/// <summary>
+		/// Sets the active address (program counter) and scrolls to it.
+		/// </summary>
+		/// <param name="pc">The program counter address, or null to clear.</param>
+		/// <remarks>
+		/// Adds the navigation to history for back/forward support.
+		/// </remarks>
 		public void SetActiveAddress(int? pc) {
 			ActiveAddress = pc;
 			if (pc != null) {
@@ -182,10 +281,19 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Checks if an address is within the current selection range.
+		/// </summary>
+		/// <param name="address">The address to check.</param>
+		/// <returns>True if the address is selected.</returns>
 		public bool IsSelected(int address) {
 			return address >= SelectionStart && address <= SelectionEnd;
 		}
 
+		/// <summary>
+		/// Gets the currently selected row address as an AddressInfo.
+		/// </summary>
+		/// <returns>The address info for the selected row.</returns>
 		public AddressInfo? GetSelectedRowAddress() {
 			return new AddressInfo() {
 				Address = SelectedRowAddress,
@@ -193,18 +301,34 @@ namespace Nexen.Debugger.ViewModels {
 			};
 		}
 
+		/// <summary>
+		/// Navigates back in the history.
+		/// </summary>
 		public void GoBack() {
 			SetSelectedRow(History.GoBack(), true, false);
 		}
 
+		/// <summary>
+		/// Navigates forward in the history.
+		/// </summary>
 		public void GoForward() {
 			SetSelectedRow(History.GoForward(), true, false);
 		}
 
+		/// <summary>
+		/// Sets the selected row to the specified address.
+		/// </summary>
+		/// <param name="address">The address to select.</param>
 		public void SetSelectedRow(int address) {
 			SetSelectedRow(address, false);
 		}
 
+		/// <summary>
+		/// Sets the selected row with optional scrolling and history tracking.
+		/// </summary>
+		/// <param name="address">The address to select.</param>
+		/// <param name="scrollToRow">Whether to scroll the view to show the selected row.</param>
+		/// <param name="addToHistory">Whether to add this navigation to history.</param>
 		public void SetSelectedRow(int address, bool scrollToRow = false, bool addToHistory = false) {
 			int currentAddress = SelectedRowAddress;
 			SelectionStart = address;
@@ -227,6 +351,11 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Moves the cursor by the specified row offset.
+		/// </summary>
+		/// <param name="rowOffset">Number of rows to move (positive = down, negative = up).</param>
+		/// <param name="extendSelection">Whether to extend the selection rather than move it.</param>
 		public void MoveCursor(int rowOffset, bool extendSelection) {
 			int address = DataProvider.GetRowAddress(SelectedRowAddress, rowOffset);
 			if (extendSelection) {
@@ -237,6 +366,10 @@ namespace Nexen.Debugger.ViewModels {
 			}
 		}
 
+		/// <summary>
+		/// Extends the selection to include the specified address.
+		/// </summary>
+		/// <param name="address">The address to extend selection to.</param>
 		public void ResizeSelectionTo(int address) {
 			if (SelectedRowAddress == address) {
 				return;
@@ -266,6 +399,11 @@ namespace Nexen.Debugger.ViewModels {
 			InvalidateVisual();
 		}
 
+		/// <summary>
+		/// Checks if an address is currently visible in the view.
+		/// </summary>
+		/// <param name="address">The address to check.</param>
+		/// <returns>True if the address is visible (not in the first or last row).</returns>
 		private bool IsAddressVisible(int address) {
 			for (int i = 1; i < VisibleRowCount - 2 && i < Lines.Length; i++) {
 				if (Lines[i].Address == address) {
@@ -276,6 +414,13 @@ namespace Nexen.Debugger.ViewModels {
 			return false;
 		}
 
+		/// <summary>
+		/// Scrolls the view to show the specified address.
+		/// </summary>
+		/// <param name="pc">The address to scroll to.</param>
+		/// <param name="position">Where to position the address in the view.</param>
+		/// <param name="forceScroll">Whether to scroll even if the address is already visible.</param>
+		/// <returns>True if scrolling occurred.</returns>
 		private bool ScrollToAddress(uint pc, ScrollDisplayPosition position = ScrollDisplayPosition.Center, bool forceScroll = false) {
 			if (!forceScroll && IsAddressVisible((int)pc)) {
 				//Row is already visible, don't scroll
@@ -297,12 +442,25 @@ namespace Nexen.Debugger.ViewModels {
 			return true;
 		}
 
+		/// <summary>
+		/// Copies the current selection to the clipboard.
+		/// </summary>
 		public void CopySelection() {
 			DebuggerConfig cfg = Config.Debugger;
 			string code = GetSelection(cfg.CopyAddresses, cfg.CopyByteCode, cfg.CopyComments, cfg.CopyBlockHeaders, out _, false);
 			ApplicationHelper.GetMainWindow()?.Clipboard?.SetTextAsync(code);
 		}
 
+		/// <summary>
+		/// Gets the text content of the current selection.
+		/// </summary>
+		/// <param name="getAddresses">Whether to include addresses in the output.</param>
+		/// <param name="getByteCode">Whether to include byte code in the output.</param>
+		/// <param name="getComments">Whether to include comments in the output.</param>
+		/// <param name="getHeaders">Whether to include block headers in the output.</param>
+		/// <param name="byteCount">Output: the total number of bytes in the selection.</param>
+		/// <param name="skipGeneratedJmpSubLabels">Whether to skip auto-generated jump/sub labels.</param>
+		/// <returns>The formatted text of the selection.</returns>
 		public string GetSelection(bool getAddresses, bool getByteCode, bool getComments, bool getHeaders, out int byteCount, bool skipGeneratedJmpSubLabels) {
 			ICodeDataProvider dp = DataProvider;
 
@@ -384,9 +542,15 @@ namespace Nexen.Debugger.ViewModels {
 		}
 	}
 
+	/// <summary>
+	/// Specifies where to position an address when scrolling to it.
+	/// </summary>
 	public enum ScrollDisplayPosition {
+		/// <summary>Position the address at the top of the visible area.</summary>
 		Top,
+		/// <summary>Position the address in the center of the visible area.</summary>
 		Center,
+		/// <summary>Position the address at the bottom of the visible area.</summary>
 		Bottom
 	}
 }
