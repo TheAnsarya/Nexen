@@ -159,8 +159,12 @@ namespace Mesen.Config
 			AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.LoadStateSlotAuto, KeyCombination = new KeyCombination() { Key1 = InputApi.GetKeyCode("F8") } });
 			AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.LoadStateFromFile, KeyCombination = new KeyCombination() { Key1 = ctrl, Key2 = InputApi.GetKeyCode("L") } });
 
-			foreach(EmulatorShortcut value in Enum.GetValues<EmulatorShortcut>()) {
-				if(value < EmulatorShortcut.LastValidValue) {
+			// Timestamped save states (infinite saves)
+			AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.QuickSaveTimestamped, KeyCombination = new KeyCombination() { Key1 = ctrl, Key2 = shift, Key3 = InputApi.GetKeyCode("S") } });
+			AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.OpenSaveStatePicker, KeyCombination = new KeyCombination() { Key1 = ctrl, Key2 = shift, Key3 = InputApi.GetKeyCode("L") } });
+
+			foreach (EmulatorShortcut value in Enum.GetValues<EmulatorShortcut>()) {
+				if (value < EmulatorShortcut.LastValidValue) {
 					AddShortcut(new ShortcutKeyInfo { Shortcut = value });
 				}
 			}
