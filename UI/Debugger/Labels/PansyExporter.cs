@@ -61,7 +61,7 @@ namespace Nexen.Debugger.Labels {
 	}
 
 	/// <summary>
-	/// Exports Mesen2 debugger data to Pansy metadata format.
+	/// Exports Nexen debugger data to Pansy metadata format.
 	/// Pansy is a universal disassembly metadata format for retro game analysis.
 	/// Phase 3: Memory regions, cross-references, data blocks
 	/// Phase 4: GZip compression, async export, memory pooling

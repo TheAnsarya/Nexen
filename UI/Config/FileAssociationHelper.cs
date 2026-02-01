@@ -27,7 +27,7 @@ namespace Nexen.Config {
 					"\t\t<glob-deleteall/>" + Environment.NewLine +
 					"\t\t<glob pattern=\"*." + extension + "\"/>" + Environment.NewLine +
 					"\t\t<comment>" + description + "</comment>" + Environment.NewLine +
-					"\t\t<icon>MesenIcon</icon>" + Environment.NewLine +
+					"\t\t<icon>NexenIcon</icon>" + Environment.NewLine +
 					"\t</mime-type>" + Environment.NewLine +
 					"</mime-info>" + Environment.NewLine);
 
@@ -153,7 +153,7 @@ namespace Nexen.Config {
 				"Exec=" + mainModule.FileName + " %f" + Environment.NewLine +
 				"NoDisplay=false" + Environment.NewLine +
 				"StartupNotify=true" + Environment.NewLine +
-				"Icon=MesenIcon" + Environment.NewLine;
+				"Icon=NexenIcon" + Environment.NewLine;
 
 			if (mimeTypes != null) {
 				content += "MimeType=" + string.Join(";", mimeTypes.Select(type => "application/" + type)) + Environment.NewLine;

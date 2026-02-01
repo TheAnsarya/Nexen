@@ -285,7 +285,7 @@ public class PansyExporterTests
 	[Fact]
 	public void Export_ValidData_CreatesFile()
 	{
-		// This is a mock test - actual export requires Mesen runtime
+		// This is a mock test - actual export requires Nexen runtime
 		string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.pansy");
 
 		try {

@@ -16,7 +16,7 @@ namespace Nexen.Debugger.Labels {
 	/// Manages folder-based debug data storage for ROMs.
 	/// Each ROM gets a dedicated folder containing:
 	/// - metadata.pansy (universal format)
-	/// - labels.mlb (native Mesen labels)
+	/// - labels.mlb (native Nexen labels)
 	/// - coverage.cdl (Code Data Logger)
 	/// - config.json (per-ROM configuration)
 	/// </summary>
@@ -37,7 +37,7 @@ namespace Nexen.Debugger.Labels {
 		);
 
 		/// <summary>
-		/// Get the base debug folder path (inside Mesen data directory).
+		/// Get the base debug folder path (inside Nexen data directory).
 		/// </summary>
 		public static string GetDebugBasePath() {
 			var config = ConfigManager.Config.Debug.Integration;

@@ -12,7 +12,7 @@ using Nexen.Windows;
 namespace Nexen.Debugger.Integration;
 
 /// <summary>
-/// Imports Pansy metadata files into Mesen's debugger.
+/// Imports Pansy metadata files into Nexen's debugger.
 /// Supports loading symbols, comments, memory regions, and cross-references.
 /// </summary>
 public class PansyImporter {
@@ -187,7 +187,7 @@ public class PansyImporter {
 				ushort nameLen = reader.ReadUInt16();
 				string name = Encoding.UTF8.GetString(reader.ReadBytes(nameLen));
 
-				// Map Pansy memory type to Mesen
+				// Map Pansy memory type to Nexen
 				var memType = MapMemoryType(memTypeId, header.Platform);
 				if (memType == null)
 					continue;

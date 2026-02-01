@@ -47,7 +47,7 @@ namespace Nexen.Debugger.Utilities {
 			sb.AppendLine(@$"
 				<html>
 					<head>
-						<title>Mesen Lua API Reference</title>
+						<title>Nexen Lua API Reference</title>
 						<style>
 							* {{
 								margin: 0;
@@ -231,7 +231,7 @@ namespace Nexen.Debugger.Utilities {
 
 			sb.AppendLine("<h1 class=\"mainheader\">Nexen Lua API reference</h1>");
 			sb.AppendLine("<p><strong>Important: </strong>This API is similar but not completely compatible with the old Mesen 0.9.x (or Mesen-S) Lua APIs.</p>");
-			sb.AppendLine("<p>Generated on " + EmuApi.GetMesenBuildDate() + " for Mesen " + EmuApi.GetMesenVersion().ToString() + ".</p>");
+			sb.AppendLine("<p>Generated on " + EmuApi.GetMesenBuildDate() + " for Nexen " + EmuApi.GetMesenVersion().ToString() + ".</p>");
 
 			foreach (DocEntryViewModel entry in _documentation.Values.OrderBy(x => (int)x.Category).ThenBy(x => (int?)x.Subcategory)) {
 				if (entry.Category != category) {

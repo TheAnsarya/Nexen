@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
-using static Mesen.Debugger.ViewModels.RegEntry;
+using static Nexen.Debugger.ViewModels.RegEntry;
 
 namespace Nexen.Debugger.RegisterViewer;
 

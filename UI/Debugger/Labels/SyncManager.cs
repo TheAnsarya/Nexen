@@ -42,7 +42,7 @@ public enum ConflictResolution {
 }
 
 /// <summary>
-/// Manages bidirectional file synchronization between Pansy and Mesen native formats.
+/// Manages bidirectional file synchronization between Pansy and Nexen native formats.
 /// Uses FileSystemWatcher to detect external changes.
 /// </summary>
 public class SyncManager : IDisposable {

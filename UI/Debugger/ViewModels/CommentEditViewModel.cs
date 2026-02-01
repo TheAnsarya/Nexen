@@ -1,7 +1,7 @@
 using System;
 using Nexen.Debugger.Labels;
 using Nexen.ViewModels;
-using static Mesen.Debugger.ViewModels.LabelEditViewModel;
+using static Nexen.Debugger.ViewModels.LabelEditViewModel;
 
 namespace Nexen.Debugger.ViewModels {
 	public class CommentEditViewModel : ViewModelBase {

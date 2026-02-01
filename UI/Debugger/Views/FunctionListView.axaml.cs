@@ -7,7 +7,7 @@ using DataBoxControl;
 using Nexen.Debugger.Labels;
 using Nexen.Debugger.ViewModels;
 using Nexen.Debugger.Windows;
-using static Mesen.Debugger.ViewModels.FunctionListViewModel;
+using static Nexen.Debugger.ViewModels.FunctionListViewModel;
 
 namespace Nexen.Debugger.Views {
 	public class FunctionListView : UserControl {

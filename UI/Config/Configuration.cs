@@ -270,7 +270,7 @@ namespace Nexen.Config {
 					_fileData = cfgData;
 				}
 			} catch {
-				//This can sometime fail due to the file being used by another Mesen instance, etc.
+				//This can sometimes fail due to the file being used by another Nexen instance, etc.
 			}
 		}
 

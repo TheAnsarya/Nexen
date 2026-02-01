@@ -13,7 +13,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Debugger.Windows;
 using Nexen.Utilities;
 using Nexen.ViewModels;
-using static Mesen.Debugger.ViewModels.BreakpointListViewModel;
+using static Nexen.Debugger.ViewModels.BreakpointListViewModel;
 
 namespace Nexen.Debugger.Views {
 	public class BreakpointListView : UserControl {
