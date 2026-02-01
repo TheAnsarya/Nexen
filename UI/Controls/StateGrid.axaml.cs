@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -9,7 +10,9 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Mesen.Config;
 using Mesen.Interop;
+using Mesen.Utilities;
 using Mesen.ViewModels;
+using Mesen.Windows;
 using ReactiveUI;
 
 namespace Mesen.Controls {
@@ -132,16 +135,16 @@ namespace Mesen.Controls {
 
 		/// <summary>
 		/// Handle keyboard input for grid navigation and deletion.
-		/// Delete key removes the selected entry in SaveStatePicker mode.
+		/// Delete key removes the selected entry in SaveStatePicker mode (with confirmation).
 		/// </summary>
-		protected override void OnKeyDown(KeyEventArgs e) {
+		protected override async void OnKeyDown(KeyEventArgs e) {
 			base.OnKeyDown(e);
 
 			if (e.Key == Key.Delete && DataContext is RecentGamesViewModel model && model.CanDeleteEntries) {
 				if (Entries != null && Entries.Count > 0 && SelectedIndex >= 0 && SelectedIndex < Entries.Count) {
 					RecentGameInfo entry = Entries[SelectedIndex];
 					if (entry.IsTimestampedSave) {
-						DeleteSelectedEntry(model, entry);
+						await DeleteSelectedEntryWithConfirmation(model, entry);
 						e.Handled = true;
 					}
 				}
@@ -152,9 +155,22 @@ namespace Mesen.Controls {
 		}
 
 		/// <summary>
-		/// Delete the currently selected save state entry.
+		/// Delete the currently selected save state entry with confirmation dialog.
 		/// </summary>
-		private void DeleteSelectedEntry(RecentGamesViewModel model, RecentGameInfo entry) {
+		private async Task DeleteSelectedEntryWithConfirmation(RecentGamesViewModel model, RecentGameInfo entry) {
+			// Show confirmation dialog
+			DialogResult result = await MesenMsgBox.Show(
+				VisualRoot,
+				"ConfirmDeleteSaveState",
+				MessageBoxButtons.YesNo,
+				MessageBoxIcon.Question,
+				entry.FriendlyTimestamp
+			);
+
+			if (result != DialogResult.Yes) {
+				return;
+			}
+
 			// Delete the entry
 			if (model.DeleteEntry(entry)) {
 				// Adjust selected index if needed

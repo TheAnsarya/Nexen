@@ -8,8 +8,40 @@ Mesen is a multi-system emulator (NES, SNES, Game Boy, Game Boy Advance, PC Engi
 
 - **C++23 Modernization** - Smart pointers, std::format, ranges, [[likely]]/[[unlikely]]
 - **🌼 Pansy Export** - Export disassembly metadata for use with Peony/Poppy toolchain
+- **💾 Infinite Save States** - Timestamped saves with visual picker (see below)
 - **Unit Tests** - Comprehensive CPU instruction tests (Google Test)
 - **Documentation** - Doxygen API documentation
+
+## 💾 Infinite Save States
+
+This fork replaces the default F1/Shift+F1 behavior with an infinite timestamped save state system:
+
+### Quick Reference
+
+| Shortcut | Action |
+|----------|--------|
+| **Shift+F1** | Quick save (creates new timestamped save) |
+| **F1** | Open save state picker |
+| **DEL** (in picker) | Delete selected save (with confirmation) |
+| **ESC** (in picker) | Close picker |
+| **Arrow keys** (in picker) | Navigate saves |
+| **Enter** (in picker) | Load selected save |
+
+### Features
+
+- **Unlimited saves** - Each save creates a new timestamped file (`{ROM}_{YYYY-MM-DD}_{HH-mm-ss}.mss`)
+- **Per-ROM organization** - Saves stored in `SaveStates/{RomName}/` subdirectories
+- **Visual picker** - Grid view with screenshots and timestamps
+- **Full timestamps** - Always shows date and time (e.g., "Today 1/31/2026 2:30 PM")
+- **Delete confirmation** - Prevents accidental deletion
+- **Slot compatibility** - F2-F7 still work for slots 2-7 (legacy support)
+
+### Menu Access
+
+- **File → Quick Save (Timestamped)** - Save with timestamp
+- **File → Browse Save States...** - Open visual picker
+- **File → Save State → Slot N** - Legacy slot-based saves
+- **File → Load State → Slot N** - Legacy slot-based loads
 
 ## Upstream
 

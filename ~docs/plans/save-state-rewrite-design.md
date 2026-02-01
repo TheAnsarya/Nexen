@@ -1,8 +1,9 @@
 # 💾 Infinite Save States - Design Document
 
 **Feature Branch:** `save-state-rewrite`
-**Status:** Planning
+**Status:** ✅ Implemented
 **Created:** 2025-01-28
+**Completed:** 2026-01-31
 
 ---
 
@@ -12,11 +13,11 @@ Transform Mesen2's save state system from a fixed 10-slot model to an infinite t
 
 ### Goals
 
-1. **Infinite save states** - No limit on number of saves per ROM
-2. **Timestamped naming** - Saves named with ROM + datetime for organization
-3. **Visual picker** - Grid-based UI similar to ROM selector for browsing saves
-4. **Keyboard shortcuts** - Shift+F1 saves, F1 opens picker
-5. **No auto-deletion** - User manages their saves manually
+1. **Infinite save states** - No limit on number of saves per ROM ✅
+2. **Timestamped naming** - Saves named with ROM + datetime for organization ✅
+3. **Visual picker** - Grid-based UI similar to ROM selector for browsing saves ✅
+4. **Keyboard shortcuts** - Shift+F1 saves, F1 opens picker ✅
+5. **No auto-deletion** - User manages their saves manually ✅
 
 ### Non-Goals
 
@@ -104,83 +105,88 @@ SaveStates/
 
 #### 4. Picker UI Features
 
-- Grid layout matching ROM selector
+- Grid layout matching ROM selector ✅
 - Each entry shows:
-  - Screenshot thumbnail
-  - Date/time formatted nicely (e.g., "Today 2:30 PM", "Yesterday 5:45 PM", "Jan 25, 3:00 PM")
-  - ROM name as title
-- Sorted by most recent first
-- Keyboard navigation (arrows, Enter to load, Escape to close)
-- Delete option (DEL key or context menu)
+  - Screenshot thumbnail ✅
+  - Date/time formatted with full date and time (e.g., "Today 1/31/2026 2:30 PM", "Yesterday 1/30/2026 5:45 PM") ✅
+  - ROM name as title ✅
+- Sorted by most recent first ✅
+- Keyboard navigation (arrows, Enter to load, Escape to close) ✅
+- Delete option (DEL key with confirmation dialog) ✅
 
 ---
 
 ## 📁 Implementation Plan
 
-### Phase 1: Core Infrastructure (C++)
+### Phase 1: Core Infrastructure (C++) ✅
 
 1. **`SaveStateManager` Updates**
-   - Add method: `GetTimestampedFilepath()` → generates datetime-based path
-   - Add method: `GetRomSaveStateDirectory()` → ensures ROM subdirectory exists
-   - Add method: `EnumerateSaveStates()` → lists all saves for current ROM
-   - Modify: `SaveState()` → use timestamped naming
-   - Keep: Slot-based methods for backward compatibility
+   - Add method: `GetTimestampedFilepath()` → generates datetime-based path ✅
+   - Add method: `GetRomSaveStateDirectory()` → ensures ROM subdirectory exists ✅
+   - Add method: `GetSaveStateList()` → lists all saves for current ROM ✅
+   - Add method: `SaveTimestampedState()` → save with timestamp naming ✅
+   - Add method: `DeleteSaveState()` → remove a specific save ✅
+   - Add method: `GetSaveStateCount()` → count saves for current ROM ✅
+   - Keep: Slot-based methods for backward compatibility ✅
 
-2. **New `SaveStateInfo` struct**
+2. **New `SaveStateInfo` struct** ✅
    ```cpp
    struct SaveStateInfo {
        string filepath;
        string romName;
        time_t timestamp;
-       // Screenshot extracted on-demand
+       uint64_t fileSize;
    };
    ```
 
-### Phase 2: API Layer
+### Phase 2: API Layer ✅
 
 1. **New Interop Methods** (`EmuApi.cs`)
-   - `SaveTimestampedState()` → save with datetime name
-   - `GetSaveStateList()` → return list of saves for current ROM
-   - `DeleteSaveState(filepath)` → remove a specific save
+   - `SaveTimestampedState()` → save with datetime name ✅
+   - `GetSaveStateList()` → return list of saves for current ROM ✅
+   - `GetSaveStateCount()` → count saves for current ROM ✅
+   - `DeleteSaveState(filepath)` → remove a specific save ✅
 
-### Phase 3: UI Components
+### Phase 3: UI Components ✅
 
 1. **Update `StateGrid`/`StateGridEntry`**
-   - Support dynamic entry count (not fixed 10)
-   - Handle longer lists with pagination
-   - Improve date formatting for better readability
+   - Support dynamic entry count (not fixed 10) ✅
+   - Handle longer lists with pagination ✅
+   - Improve date formatting for better readability ✅
+   - Delete key with confirmation dialog ✅
 
 2. **Update `RecentGamesViewModel`**
-   - Add new mode: `SaveStatePicker`
-   - Load saves from ROM subdirectory
-   - Sort by timestamp descending
+   - Add new mode: `SaveStatePicker` ✅
+   - Load saves from ROM subdirectory ✅
+   - Sort by timestamp descending ✅
 
 3. **Add Delete Functionality**
-   - Context menu or DEL key
-   - Confirmation dialog
+   - DEL key handler ✅
+   - Confirmation dialog ✅
 
-### Phase 4: Shortcuts & Menu
+### Phase 4: Shortcuts & Menu ✅
 
 1. **Modify `EmulatorShortcut.cs`**
-   - Add: `QuickSaveTimestamped` (Shift+F1)
-   - Add: `OpenSaveStatePicker` (F1)
-   - Keep: Legacy slot shortcuts for power users
+   - Add: `QuickSaveTimestamped` ✅
+   - Add: `OpenSaveStatePicker` ✅
+   - Keep: Legacy slot shortcuts for power users ✅
 
 2. **Update `ShortcutHandler.cs`**
-   - Handle new shortcuts
-   - Call new API methods
+   - Handle new shortcuts ✅
+   - Call new API methods ✅
 
 3. **Update `MainMenuViewModel.cs`**
-   - Update File menu save state section
-   - Add "Quick Save" option
-   - Keep slot-based options in submenu for compatibility
+   - Update File menu save state section ✅
+   - Add "Quick Save (Timestamped)" option ✅
+   - Add "Browse Save States..." option ✅
+   - Keep slot-based options in submenu for compatibility ✅
 
-### Phase 5: Default Keybindings
+### Phase 5: Default Keybindings ✅
 
 1. **Update `PreferencesConfig.cs`**
-   - Set default: F1 → `OpenSaveStatePicker`
-   - Set default: Shift+F1 → `QuickSaveTimestamped`
-   - Keep legacy slots unbound by default
+   - Set default: F1 → `OpenSaveStatePicker` ✅
+   - Set default: Shift+F1 → `QuickSaveTimestamped` ✅
+   - Slot 1 keybindings removed, F2-F7 retained for slots 2-7 ✅
 
 ---
 
@@ -190,7 +196,7 @@ SaveStates/
 
 1. User presses Shift+F1
 2. System saves state with timestamp
-3. OSD shows "State saved: 2:30:45 PM"
+3. OSD shows "State saved at {time}"
 4. User continues playing
 
 ### Load State Flow (F1)
@@ -204,9 +210,10 @@ SaveStates/
 ### Delete State Flow
 
 1. In picker, user highlights a state
-2. Presses DEL or right-clicks → Delete
-3. Confirmation: "Delete save from Jan 28 2:30 PM?"
-4. State deleted, list refreshes
+2. Presses DEL
+3. Confirmation dialog: "Are you sure you want to delete this save state? [timestamp]"
+4. User confirms with Yes
+5. State deleted, list refreshes
 
 ---
 

@@ -448,24 +448,22 @@ namespace Mesen.Interop {
 
 		/// <summary>
 		/// Get a friendly display string for the timestamp.
-		/// Examples: "Today 2:30 PM", "Yesterday 5:45 PM", "Jan 25 3:00 PM"
+		/// Always includes both date and time.
+		/// Examples: "Today 1/31/2026 2:30 PM", "Yesterday 1/30/2026 5:45 PM", "1/25/2026 3:00 PM"
 		/// </summary>
 		public string GetFriendlyTimestamp() {
 			DateTime now = DateTime.Now;
 			DateTime date = Timestamp.Date;
 
+			string dateStr = Timestamp.ToString("M/d/yyyy");
 			string timeStr = Timestamp.ToString("h:mm tt");
 
 			if (date == now.Date) {
-				return $"Today {timeStr}";
+				return $"Today {dateStr} {timeStr}";
 			} else if (date == now.Date.AddDays(-1)) {
-				return $"Yesterday {timeStr}";
-			} else if (date > now.Date.AddDays(-7)) {
-				return $"{Timestamp:ddd} {timeStr}";
-			} else if (date.Year == now.Year) {
-				return $"{Timestamp:MMM d} {timeStr}";
+				return $"Yesterday {dateStr} {timeStr}";
 			} else {
-				return $"{Timestamp:MMM d, yyyy} {timeStr}";
+				return $"{dateStr} {timeStr}";
 			}
 		}
 	}
