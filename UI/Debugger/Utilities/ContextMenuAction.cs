@@ -711,6 +711,18 @@ namespace Mesen.Debugger.Utilities
 		RecentFiles,
 		LoadLastSession,
 
+		/// <summary>
+		/// Quick save to a timestamped save state file
+		/// </summary>
+		[IconFile("SaveFloppy")]
+		QuickSaveTimestamped,
+
+		/// <summary>
+		/// Open picker to browse all timestamped saves
+		/// </summary>
+		[IconFile("SplitView")]
+		OpenSaveStatePicker,
+
 		[IconFile("SaveFloppy")]
 		SaveRom,
 		SaveRomAs,

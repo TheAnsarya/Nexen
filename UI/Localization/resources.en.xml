@@ -1970,6 +1970,8 @@ E
 			<Value ID="LoadStateFromFile">Load State from File</Value>
 			<Value ID="LoadStateDialog">Open Load State Menu</Value>
 			<Value ID="LoadLastSession">Load Last Session</Value>
+			<Value ID="QuickSaveTimestamped">Quick Save (Timestamped)</Value>
+			<Value ID="OpenSaveStatePicker">Open Save State Picker</Value>
 
 			<Value ID="SelectSaveSlot1">Select Save Slot 1</Value>
 			<Value ID="SelectSaveSlot2">Select Save Slot 2</Value>
@@ -3585,6 +3587,9 @@ E
 			<Value ID="SaveState">Save State</Value>
 			<Value ID="LoadState">Load State</Value>
 			<Value ID="LoadLastSession">Load Last Session</Value>
+
+			<Value ID="QuickSaveTimestamped">Quick Save (Timestamped)</Value>
+			<Value ID="OpenSaveStatePicker">Browse Save States...</Value>
 
 			<Value ID="LoadStateDialog">Load State Menu</Value>
 			<Value ID="LoadStateFromFile">Load from file...</Value>

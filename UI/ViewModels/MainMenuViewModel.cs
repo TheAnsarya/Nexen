@@ -140,6 +140,16 @@ namespace Mesen.ViewModels
 				},
 
 				new ContextMenuSeparator(),
+
+				new MainMenuAction(EmulatorShortcut.QuickSaveTimestamped) {
+					ActionType = ActionType.QuickSaveTimestamped
+				},
+				new MainMenuAction(EmulatorShortcut.OpenSaveStatePicker) {
+					ActionType = ActionType.OpenSaveStatePicker,
+					IsEnabled = () => EmuApi.GetSaveStateCount() > 0
+				},
+
+				new ContextMenuSeparator(),
 				new MainMenuAction() {
 					ActionType = ActionType.RecentFiles,
 					IsEnabled = () => ConfigManager.Config.RecentFiles.Items.Count > 0,

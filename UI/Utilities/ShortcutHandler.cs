@@ -120,6 +120,20 @@ namespace Mesen.Utilities
 					}
 					MainWindowModel.RecentGames.Init(GameScreenMode.SaveState);
 					break;
+
+				case EmulatorShortcut.QuickSaveTimestamped:
+					// Save to a new timestamped save state file (infinite saves)
+					EmuApi.SaveTimestampedState();
+					break;
+
+				case EmulatorShortcut.OpenSaveStatePicker:
+					// Open the save state picker to browse all timestamped saves
+					if (isFullscreen) {
+						_mainWindow.ToggleFullscreen();
+					}
+
+					MainWindowModel.RecentGames.Init(GameScreenMode.SaveStatePicker);
+					break;
 			}
 		}
 

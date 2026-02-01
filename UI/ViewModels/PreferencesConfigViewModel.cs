@@ -132,6 +132,9 @@ namespace Mesen.ViewModels
 				EmulatorShortcut.LoadStateDialog,
 				EmulatorShortcut.LoadLastSession,
 
+				EmulatorShortcut.QuickSaveTimestamped,
+				EmulatorShortcut.OpenSaveStatePicker,
+
 				EmulatorShortcut.SelectSaveSlot1,
 				EmulatorShortcut.SelectSaveSlot2,
 				EmulatorShortcut.SelectSaveSlot3,
