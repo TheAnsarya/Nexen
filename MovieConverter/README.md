@@ -18,10 +18,10 @@ A .NET library for converting TAS (Tool-Assisted Speedrun) movie files between d
 | Format | Extension | Emulator | Read | Write |
 |--------|-----------|----------|------|-------|
 | Nexen | `.nexen-movie` | Nexen | ✅ | ✅ |
-| BK2 | `.bk2` | BizHawk | 🔲 | 🔲 |
-| LSMV | `.lsmv` | lsnes | 🔲 | 🔲 |
-| FM2 | `.fm2` | FCEUX | 🔲 | ❌ |
-| SMV | `.smv` | Snes9x | 🔲 | ❌ |
+| BK2 | `.bk2` | BizHawk | ✅ | ✅ |
+| LSMV | `.lsmv` | lsnes | ✅ | ✅ |
+| FM2 | `.fm2` | FCEUX | ✅ | ✅ |
+| SMV | `.smv` | Snes9x | ✅ | 🔲 |
 
 Legend: ✅ Implemented | 🔲 Planned | ❌ Not supported
 

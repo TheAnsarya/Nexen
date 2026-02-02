@@ -81,7 +81,7 @@ public abstract class MovieConverterBase : IMovieConverter {
 
 	/// <inheritdoc/>
 	public virtual MovieData Read(string filePath) {
-		using var stream = File.OpenRead(filePath);
+		using FileStream stream = File.OpenRead(filePath);
 		return Read(stream, Path.GetFileName(filePath));
 	}
 
@@ -91,12 +91,12 @@ public abstract class MovieConverterBase : IMovieConverter {
 	/// <inheritdoc/>
 	public virtual void Write(MovieData movie, string filePath) {
 		// Ensure directory exists
-		var dir = Path.GetDirectoryName(filePath);
+		string? dir = Path.GetDirectoryName(filePath);
 		if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) {
 			Directory.CreateDirectory(dir);
 		}
 
-		using var stream = File.Create(filePath);
+		using FileStream stream = File.Create(filePath);
 		Write(movie, stream);
 	}
 
@@ -115,6 +115,22 @@ public abstract class MovieConverterBase : IMovieConverter {
 
 		using var memStream = new MemoryStream();
 		stream.CopyTo(memStream);
+		return memStream.ToArray();
+	}
+
+	/// <summary>
+	/// Read all bytes from a stream asynchronously
+	/// </summary>
+	/// <param name="stream">Source stream</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Byte array with all stream contents</returns>
+	protected static async ValueTask<byte[]> ReadAllBytesAsync(Stream stream, CancellationToken cancellationToken = default) {
+		if (stream is MemoryStream ms) {
+			return ms.ToArray();
+		}
+
+		using var memStream = new MemoryStream();
+		await stream.CopyToAsync(memStream, cancellationToken).ConfigureAwait(false);
 		return memStream.ToArray();
 	}
 
@@ -143,22 +159,42 @@ public abstract class MovieConverterBase : IMovieConverter {
 
 		return [.. lines];
 	}
+
+	/// <summary>
+	/// Read all lines from a stream asynchronously
+	/// </summary>
+	/// <param name="stream">Source stream</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Array of lines</returns>
+	protected static async ValueTask<string[]> ReadAllLinesAsync(Stream stream, CancellationToken cancellationToken = default) {
+		var lines = new List<string>();
+		using var reader = new StreamReader(stream, leaveOpen: true);
+
+		while (await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line) {
+			lines.Add(line);
+		}
+
+		return [.. lines];
+	}
 }
 
 /// <summary>
 /// Exception thrown when a movie file is malformed or invalid
 /// </summary>
-public class MovieFormatException : Exception {
+public sealed class MovieFormatException : Exception {
 	/// <summary>The format that failed to parse</summary>
 	public MovieFormat Format { get; }
 
 	public MovieFormatException(MovieFormat format, string message)
-		: base(message) {
+		: base($"[{format}] {message}") {
 		Format = format;
 	}
 
 	public MovieFormatException(MovieFormat format, string message, Exception innerException)
-		: base(message, innerException) {
+		: base($"[{format}] {message}", innerException) {
 		Format = format;
+	}
+
+	public MovieFormatException() {
 	}
 }

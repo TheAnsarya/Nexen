@@ -1,3 +1,4 @@
+
 namespace Nexen.MovieConverter;
 
 /// <summary>
@@ -6,7 +7,7 @@ namespace Nexen.MovieConverter;
 /// </summary>
 public static class MovieConverterRegistry {
 	private static readonly List<IMovieConverter> _converters = [];
-	private static readonly object _lock = new();
+	private static readonly Lock _lock = new();
 	private static bool _initialized;
 
 	/// <summary>
@@ -57,6 +58,7 @@ public static class MovieConverterRegistry {
 		if (!extension.StartsWith('.')) {
 			extension = "." + extension;
 		}
+
 		extension = extension.ToLowerInvariant();
 
 		lock (_lock) {
@@ -71,8 +73,8 @@ public static class MovieConverterRegistry {
 	/// <param name="filePath">Path to movie file</param>
 	/// <returns>Detected format, or Unknown if not recognized</returns>
 	public static MovieFormat DetectFormat(string filePath) {
-		var ext = Path.GetExtension(filePath);
-		var converter = GetConverterByExtension(ext);
+		string ext = Path.GetExtension(filePath);
+		IMovieConverter? converter = GetConverterByExtension(ext);
 		return converter?.Format ?? MovieFormat.Unknown;
 	}
 
@@ -107,15 +109,15 @@ public static class MovieConverterRegistry {
 		var allExtensions = new List<string>();
 
 		lock (_lock) {
-			foreach (var converter in _converters.Where(c => c.CanRead)) {
-				var exts = string.Join(";", converter.Extensions.Select(e => "*" + e));
+			foreach (IMovieConverter? converter in _converters.Where(c => c.CanRead)) {
+				string exts = string.Join(";", converter.Extensions.Select(e => "*" + e));
 				filters.Add($"{converter.FormatName} ({exts})|{exts}");
 				allExtensions.AddRange(converter.Extensions.Select(e => "*" + e));
 			}
 		}
 
 		// Add "All Movie Files" option at the beginning
-		var allExts = string.Join(";", allExtensions);
+		string allExts = string.Join(";", allExtensions);
 		filters.Insert(0, $"All Movie Files ({allExts})|{allExts}");
 
 		return string.Join("|", filters);
@@ -130,8 +132,8 @@ public static class MovieConverterRegistry {
 		var filters = new List<string>();
 
 		lock (_lock) {
-			foreach (var converter in _converters.Where(c => c.CanWrite)) {
-				var exts = string.Join(";", converter.Extensions.Select(e => "*" + e));
+			foreach (IMovieConverter? converter in _converters.Where(c => c.CanWrite)) {
+				string exts = string.Join(";", converter.Extensions.Select(e => "*" + e));
 				filters.Add($"{converter.FormatName} ({exts})|{exts}");
 			}
 		}
@@ -146,7 +148,7 @@ public static class MovieConverterRegistry {
 	/// <returns>Parsed movie data</returns>
 	/// <exception cref="NotSupportedException">If format is not recognized</exception>
 	public static MovieData Read(string filePath) {
-		var converter = GetConverterByExtension(Path.GetExtension(filePath));
+		IMovieConverter? converter = GetConverterByExtension(Path.GetExtension(filePath));
 
 		if (converter == null || !converter.CanRead) {
 			throw new NotSupportedException($"Unsupported movie format: {Path.GetExtension(filePath)}");
@@ -163,14 +165,7 @@ public static class MovieConverterRegistry {
 	/// <param name="format">Target format (if not specified, detected from extension)</param>
 	/// <exception cref="NotSupportedException">If format cannot be written</exception>
 	public static void Write(MovieData movie, string filePath, MovieFormat? format = null) {
-		IMovieConverter? converter;
-
-		if (format.HasValue) {
-			converter = GetConverter(format.Value);
-		} else {
-			converter = GetConverterByExtension(Path.GetExtension(filePath));
-		}
-
+		IMovieConverter? converter = format.HasValue ? GetConverter(format.Value) : GetConverterByExtension(Path.GetExtension(filePath));
 		if (converter == null || !converter.CanWrite) {
 			throw new NotSupportedException($"Cannot write format: {format ?? MovieFormat.Unknown}");
 		}
@@ -186,7 +181,7 @@ public static class MovieConverterRegistry {
 	/// <param name="targetFormat">Target format (optional, auto-detected from extension)</param>
 	/// <returns>The converted movie data</returns>
 	public static MovieData Convert(string inputPath, string outputPath, MovieFormat? targetFormat = null) {
-		var movie = Read(inputPath);
+		MovieData movie = Read(inputPath);
 		Write(movie, outputPath, targetFormat);
 		return movie;
 	}
@@ -195,17 +190,23 @@ public static class MovieConverterRegistry {
 	/// Initialize with built-in converters
 	/// </summary>
 	private static void EnsureInitialized() {
-		if (_initialized) return;
+		if (_initialized) {
+			return;
+		}
 
 		lock (_lock) {
-			if (_initialized) return;
+			if (_initialized) {
+				return;
+			}
 
 			// Register built-in converters
 			_converters.Add(new Converters.NexenMovieConverter());
-			// _converters.Add(new Converters.Bk2MovieConverter());
-			// _converters.Add(new Converters.LsmvMovieConverter());
-			// _converters.Add(new Converters.Fm2MovieConverter());
-			// _converters.Add(new Converters.SmvMovieConverter());
+			_converters.Add(new Converters.Bk2MovieConverter());
+			_converters.Add(new Converters.Fm2MovieConverter());
+			_converters.Add(new Converters.SmvMovieConverter());
+			_converters.Add(new Converters.LsmvMovieConverter());
+			// _converters.Add(new Converters.VbmMovieConverter()); // VisualBoyAdvance - TODO
+			// _converters.Add(new Converters.GmvMovieConverter()); // Gens - TODO
 
 			_initialized = true;
 		}

@@ -1,0 +1,59 @@
+# EditorConfig for MovieConverter
+# https://editorconfig.org
+
+root = false
+
+[*.cs]
+# Tab indentation
+indent_style = tab
+indent_size = 4
+tab_width = 4
+
+# K&R brace style
+csharp_new_line_before_open_brace = none
+
+# Modern .NET conventions
+csharp_style_namespace_declarations = file_scoped:suggestion
+
+# Intentional design choices - suppress warnings
+
+# CA1002: Change List<T> to Collection<T> - Suppressed: List<T> is intentional for serialization compatibility
+dotnet_diagnostic.CA1002.severity = none
+
+# CA2227: Collection properties should be read-only - Suppressed: Setters needed for JSON serialization
+dotnet_diagnostic.CA2227.severity = none
+
+# CA1819: Properties should not return arrays - Suppressed: Arrays are intentional for binary data
+dotnet_diagnostic.CA1819.severity = none
+
+# CA1305: Specify IFormatProvider - Set to suggestion (culture-invariant is often fine)
+dotnet_diagnostic.CA1305.severity = suggestion
+
+# CA1307: Specify StringComparison - Set to suggestion
+dotnet_diagnostic.CA1307.severity = suggestion
+
+# CA1308: Normalize to uppercase - Set to suggestion (lowercase is acceptable)
+dotnet_diagnostic.CA1308.severity = suggestion
+
+# CA1310: Specify StringComparison for correctness - Set to suggestion
+dotnet_diagnostic.CA1310.severity = suggestion
+
+# CA1062: Validate arguments - Set to suggestion (null checks can be deferred)
+dotnet_diagnostic.CA1062.severity = suggestion
+
+# CA1032: Implement standard exception constructors - Set to suggestion
+dotnet_diagnostic.CA1032.severity = suggestion
+
+# CA1822: Mark members as static - Set to suggestion
+dotnet_diagnostic.CA1822.severity = suggestion
+
+# CA1834: Use StringBuilder.Append(char) - Set to suggestion
+dotnet_diagnostic.CA1834.severity = suggestion
+
+# CA1865: Use string.StartsWith(char) - Set to suggestion
+dotnet_diagnostic.CA1865.severity = suggestion
+
+# IDE warnings - set to suggestion instead of warning
+dotnet_diagnostic.IDE0045.severity = suggestion
+dotnet_diagnostic.IDE0078.severity = suggestion
+dotnet_diagnostic.IDE2003.severity = suggestion
