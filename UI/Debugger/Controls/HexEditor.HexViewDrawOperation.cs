@@ -28,12 +28,19 @@ public partial class HexEditor {
 		private IHexEditorDataProvider _dataProvider;
 		private Dictionary<Color, SKPaint> _skFillPaints = new Dictionary<Color, SKPaint>();
 		private Dictionary<Color, SKPaint> _skBorderPaints = new Dictionary<Color, SKPaint>();
+		private Dictionary<Color, SKPaint> _skForegroundPaints = new Dictionary<Color, SKPaint>();
 		private Color _selectedColorOther = ColorHelper.GetColor(Colors.LightBlue);
 		private Color _selectedColor = ColorHelper.GetColor(Colors.LightSkyBlue);
 		private bool _highDensityMode;
 
 		private SKFontEdging _skiaEdging;
 		private bool _skiaSubpixelSmoothing;
+
+		// Cached rendering resources (performance optimization)
+		private SKTypeface? _typeface;
+		private SKFont? _monoFont;
+		private SKFont? _altFont;
+		private SKPaint? _selectedPaint;
 
 		public HexViewDrawOperation(HexEditor he, List<ByteInfo> dataToDraw, HashSet<Color> fgColors, FontAntialiasing fontAntialiasing) {
 			_he = he;
@@ -68,6 +75,25 @@ public partial class HexEditor {
 					_skBorderPaints[byteInfo.BorderColor] = new SKPaint() { Style = SKPaintStyle.Stroke, Color = new SKColor(ColorHelper.GetColor(byteInfo.BorderColor).ToUInt32()) };
 				}
 			}
+
+			// Pre-cache foreground paints for all colors
+			foreach (Color color in fgColors) {
+				if (!_skForegroundPaints.ContainsKey(color)) {
+					_skForegroundPaints[color] = new SKPaint() { Color = new SKColor(ColorHelper.GetColor(color).ToUInt32()) };
+				}
+			}
+
+			// Cache typeface and fonts (expensive to create repeatedly)
+			_typeface = SKTypeface.FromFamilyName(_fontFamily);
+			_monoFont = new SKFont(_typeface, _fontSize);
+			SetFontProperties(_monoFont);
+
+			_altFont = new SKFont(SKFontManager.Default.MatchCharacter('あ'), _fontSize);
+			SetFontProperties(_altFont);
+
+			// Pre-create selected paint
+			var selColor = _inStringView ? _selectedColorOther : _selectedColor;
+			_selectedPaint = new SKPaint() { Color = new SKColor(selColor.R, selColor.G, selColor.B, 255) };
 		}
 
 		private void SetFontProperties(SKFont font) {
@@ -115,12 +141,9 @@ public partial class HexEditor {
 		}
 
 		private void DrawHexView(SKCanvas canvas, Color color) {
-			SKPaint paint = new SKPaint();
-			paint.Color = new SKColor(ColorHelper.GetColor(color).ToUInt32());
-
-			SKTypeface typeface = SKTypeface.FromFamilyName(_fontFamily);
-			SKFont font = new SKFont(typeface, _fontSize);
-			SetFontProperties(font);
+			// Use cached paint and font (avoids per-render allocations)
+			SKPaint paint = _skForegroundPaints[color];
+			SKFont font = _monoFont!;
 
 			using var builder = new SKTextBlobBuilder();
 
@@ -162,8 +185,8 @@ public partial class HexEditor {
 		}
 
 		private void PrepareStringView() {
-			SKFont altFont = new SKFont(SKFontManager.Default.MatchCharacter('あ'), _fontSize);
-			SetFontProperties(altFont);
+			// Use cached alt font (avoids per-render allocation)
+			SKFont altFont = _altFont!;
 
 			int pos = 0;
 
@@ -224,15 +247,10 @@ public partial class HexEditor {
 		}
 
 		private void DrawStringView(SKCanvas canvas, Color color) {
-			SKPaint paint = new SKPaint();
-			paint.Color = new SKColor(ColorHelper.GetColor(color).ToUInt32());
-
-			SKTypeface typeface = SKTypeface.FromFamilyName(_fontFamily);
-			SKFont monoFont = new SKFont(typeface, _fontSize);
-			SetFontProperties(monoFont);
-
-			SKFont altFont = new SKFont(SKFontManager.Default.MatchCharacter('あ'), _fontSize);
-			SetFontProperties(altFont);
+			// Use cached paint and fonts (avoids per-render allocations)
+			SKPaint paint = _skForegroundPaints[color];
+			SKFont monoFont = _monoFont!;
+			SKFont altFont = _altFont!;
 
 			using var builder = new SKTextBlobBuilder();
 
@@ -240,8 +258,9 @@ public partial class HexEditor {
 			int row = 0;
 			double drawOffsetY = _highDensityMode ? -_rowHeight * 0.1 : -_rowHeight * 0.2;
 
+			// Use cached selected paint for string view
 			Color selectedColor = _inStringView ? _selectedColor : _selectedColorOther;
-			SKPaint selectedPaint = new SKPaint() { Color = new SKColor(selectedColor.R, selectedColor.G, selectedColor.B, 255) };
+			SKPaint selectedPaint = _selectedPaint!;
 
 			SKRect GetRect(int i) => new SKRect(
 				(float)_he._startPositionByByte[i],
@@ -301,8 +320,8 @@ public partial class HexEditor {
 			int pos = 0;
 			int row = 0;
 
-			Color selectedColor = _inStringView ? _selectedColorOther : _selectedColor;
-			SKPaint selectedPaint = new SKPaint() { Color = new SKColor(selectedColor.R, selectedColor.G, selectedColor.B, 255) };
+			// Use cached selected paint (avoids per-render allocation)
+			SKPaint selectedPaint = _selectedPaint!;
 
 			SKRect GetRect(int start, int end) => new SKRect(
 				(float)(start * 3 * _letterSize.Width),
@@ -425,6 +444,11 @@ public partial class HexEditor {
 		private SKFontEdging _skiaEdging;
 		private bool _skiaSubpixelSmoothing;
 
+		// Cached rendering resources (performance optimization)
+		private SKTypeface? _typeface;
+		private SKFont? _font;
+		private SKPaint? _paint;
+
 		public HexViewDrawRowHeaderOperation(HexEditor he, FontAntialiasing fontAntialiasing) {
 			_he = he;
 			Bounds = _he.Bounds;
@@ -447,6 +471,17 @@ public partial class HexEditor {
 				FontAntialiasing.SubPixelAntialias or _ => SKFontEdging.SubpixelAntialias
 			};
 			_skiaSubpixelSmoothing = fontAntialiasing == FontAntialiasing.SubPixelAntialias;
+
+			// Cache typeface, font, and paint (expensive to create repeatedly)
+			_typeface = SKTypeface.FromFamilyName(_fontFamily);
+			_font = new SKFont(_typeface, _fontSize);
+			_font.Edging = _skiaEdging;
+			_font.Subpixel = _skiaSubpixelSmoothing;
+			_font.Hinting = SKFontHinting.Full;
+			_font.LinearMetrics = true;
+
+			_paint = new SKPaint();
+			_paint.Color = new SKColor(ColorHelper.GetColor(_headerForeground).ToUInt32());
 		}
 
 		public Rect Bounds { get; private set; }
@@ -468,17 +503,9 @@ public partial class HexEditor {
 
 				canvas.Translate(0, 0);
 
-				SKPaint paint = new SKPaint();
-				paint.Color = new SKColor(ColorHelper.GetColor(_headerForeground).ToUInt32());
-
-				SKTypeface typeface = SKTypeface.FromFamilyName(_fontFamily);
-				SKFont font = new SKFont(typeface, _fontSize);
-				font.Edging = _skiaEdging;
-				font.Subpixel = _skiaSubpixelSmoothing;
-
-				//Fixes layout issues (on Linux)
-				font.Hinting = SKFontHinting.Full;
-				font.LinearMetrics = true;
+				// Use cached paint and font (avoids per-render allocations)
+				SKPaint paint = _paint!;
+				SKFont font = _font!;
 
 				using var builder = new SKTextBlobBuilder();
 
