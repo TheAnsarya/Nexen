@@ -46,6 +46,23 @@ public interface IMovieConverter {
 	MovieData Read(Stream stream, string? fileName = null);
 
 	/// <summary>
+	/// Read a movie file asynchronously
+	/// </summary>
+	/// <param name="filePath">Path to the movie file</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Parsed movie data</returns>
+	ValueTask<MovieData> ReadAsync(string filePath, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Read a movie from a stream asynchronously
+	/// </summary>
+	/// <param name="stream">Stream containing movie data</param>
+	/// <param name="fileName">Optional filename for format hints</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Parsed movie data</returns>
+	ValueTask<MovieData> ReadAsync(Stream stream, string? fileName = null, CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Write MovieData to a file in this format
 	/// </summary>
 	/// <param name="movie">Movie data to write</param>
@@ -58,6 +75,22 @@ public interface IMovieConverter {
 	/// <param name="movie">Movie data to write</param>
 	/// <param name="stream">Destination stream</param>
 	void Write(MovieData movie, Stream stream);
+
+	/// <summary>
+	/// Write MovieData to a file asynchronously
+	/// </summary>
+	/// <param name="movie">Movie data to write</param>
+	/// <param name="filePath">Destination file path</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	ValueTask WriteAsync(MovieData movie, string filePath, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Write MovieData to a stream asynchronously
+	/// </summary>
+	/// <param name="movie">Movie data to write</param>
+	/// <param name="stream">Destination stream</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	ValueTask WriteAsync(MovieData movie, Stream stream, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -89,6 +122,22 @@ public abstract class MovieConverterBase : IMovieConverter {
 	public abstract MovieData Read(Stream stream, string? fileName = null);
 
 	/// <inheritdoc/>
+	public virtual async ValueTask<MovieData> ReadAsync(string filePath, CancellationToken cancellationToken = default) {
+		FileStream stream = new(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, useAsync: true);
+		await using (stream.ConfigureAwait(false)) {
+			return await ReadAsync(stream, Path.GetFileName(filePath), cancellationToken).ConfigureAwait(false);
+		}
+	}
+
+	/// <inheritdoc/>
+	public virtual ValueTask<MovieData> ReadAsync(Stream stream, string? fileName = null, CancellationToken cancellationToken = default) {
+		// Default implementation: wrap sync method
+		// Override in derived classes for true async I/O
+		cancellationToken.ThrowIfCancellationRequested();
+		return ValueTask.FromResult(Read(stream, fileName));
+	}
+
+	/// <inheritdoc/>
 	public virtual void Write(MovieData movie, string filePath) {
 		// Ensure directory exists
 		string? dir = Path.GetDirectoryName(filePath);
@@ -102,6 +151,29 @@ public abstract class MovieConverterBase : IMovieConverter {
 
 	/// <inheritdoc/>
 	public abstract void Write(MovieData movie, Stream stream);
+
+	/// <inheritdoc/>
+	public virtual async ValueTask WriteAsync(MovieData movie, string filePath, CancellationToken cancellationToken = default) {
+		// Ensure directory exists
+		string? dir = Path.GetDirectoryName(filePath);
+		if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) {
+			Directory.CreateDirectory(dir);
+		}
+
+		FileStream stream = new(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, useAsync: true);
+		await using (stream.ConfigureAwait(false)) {
+			await WriteAsync(movie, stream, cancellationToken).ConfigureAwait(false);
+		}
+	}
+
+	/// <inheritdoc/>
+	public virtual ValueTask WriteAsync(MovieData movie, Stream stream, CancellationToken cancellationToken = default) {
+		// Default implementation: wrap sync method
+		// Override in derived classes for true async I/O
+		cancellationToken.ThrowIfCancellationRequested();
+		Write(movie, stream);
+		return ValueTask.CompletedTask;
+	}
 
 	/// <summary>
 	/// Read all bytes from a stream into a byte array

@@ -114,7 +114,42 @@ MovieConverterRegistry.Write(movie, "output.nexen-movie");
 
 // Or get a specific converter
 var converter = MovieConverterRegistry.GetConverter(MovieFormat.Nexen);
-converter.Write(movie, "output.nexen-movie");
+converter?.Write(movie, "output.nexen-movie");
+```
+
+### Async API (.NET 10+)
+
+```csharp
+using Nexen.MovieConverter;
+
+// Async reading and writing for I/O-bound scenarios
+var movie = await MovieConverterRegistry.ReadAsync("input.bk2");
+
+// Async conversion with cancellation support
+using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+await MovieConverterRegistry.ConvertAsync("input.bk2", "output.nexen-movie", cancellationToken: cts.Token);
+
+// Individual converter async methods
+var converter = MovieConverterRegistry.GetConverter(MovieFormat.Nexen);
+if (converter is not null) {
+    var movie = await converter.ReadAsync(fileStream, "movie.nexen-movie");
+    await converter.WriteAsync(movie, outputStream);
+}
+```
+
+### Format Detection
+
+```csharp
+// Auto-detect format from extension
+var format = MovieConverterRegistry.DetectFormat("movie.bk2"); // Returns MovieFormat.Bk2
+
+// Get converter by format or extension
+var converter = MovieConverterRegistry.GetConverter(MovieFormat.Lsmv);
+var converter2 = MovieConverterRegistry.GetConverterByExtension(".fm2");
+
+// Get file dialog filters
+string openFilter = MovieConverterRegistry.GetOpenFileFilter();
+// "All Movie Files (*.nexen-movie;*.bk2;*.lsmv;...)|*.nexen-movie;*.bk2;*.lsmv;...|..."
 ```
 
 ### CLI

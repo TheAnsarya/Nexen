@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 
 namespace Nexen.MovieConverter;
 
@@ -9,6 +10,10 @@ public static class MovieConverterRegistry {
 	private static readonly List<IMovieConverter> _converters = [];
 	private static readonly Lock _lock = new();
 	private static bool _initialized;
+
+	// Frozen dictionaries for high-performance lookups (created after initialization)
+	private static FrozenDictionary<MovieFormat, IMovieConverter>? _formatLookup;
+	private static FrozenDictionary<string, IMovieConverter>? _extensionLookup;
 
 	/// <summary>
 	/// All registered converters
@@ -41,9 +46,7 @@ public static class MovieConverterRegistry {
 	/// <returns>Converter for format, or null if not found</returns>
 	public static IMovieConverter? GetConverter(MovieFormat format) {
 		EnsureInitialized();
-		lock (_lock) {
-			return _converters.FirstOrDefault(c => c.Format == format);
-		}
+		return _formatLookup?.GetValueOrDefault(format);
 	}
 
 	/// <summary>
@@ -59,12 +62,7 @@ public static class MovieConverterRegistry {
 			extension = "." + extension;
 		}
 
-		extension = extension.ToLowerInvariant();
-
-		lock (_lock) {
-			return _converters.FirstOrDefault(c =>
-				c.Extensions.Any(e => e.Equals(extension, StringComparison.OrdinalIgnoreCase)));
-		}
+		return _extensionLookup?.GetValueOrDefault(extension.ToLowerInvariant());
 	}
 
 	/// <summary>
@@ -148,13 +146,32 @@ public static class MovieConverterRegistry {
 	/// <returns>Parsed movie data</returns>
 	/// <exception cref="NotSupportedException">If format is not recognized</exception>
 	public static MovieData Read(string filePath) {
-		IMovieConverter? converter = GetConverterByExtension(Path.GetExtension(filePath));
+		IMovieConverter? converter = GetConverterByExtension(Path.GetExtension(filePath))
+			?? throw new NotSupportedException($"Unsupported movie format: {Path.GetExtension(filePath)}");
 
-		if (converter == null || !converter.CanRead) {
-			throw new NotSupportedException($"Unsupported movie format: {Path.GetExtension(filePath)}");
+		if (!converter.CanRead) {
+			throw new NotSupportedException($"Format {converter.FormatName} does not support reading");
 		}
 
 		return converter.Read(filePath);
+	}
+
+	/// <summary>
+	/// Read a movie file asynchronously, auto-detecting format
+	/// </summary>
+	/// <param name="filePath">Path to movie file</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>Parsed movie data</returns>
+	/// <exception cref="NotSupportedException">If format is not recognized</exception>
+	public static async ValueTask<MovieData> ReadAsync(string filePath, CancellationToken cancellationToken = default) {
+		IMovieConverter? converter = GetConverterByExtension(Path.GetExtension(filePath))
+			?? throw new NotSupportedException($"Unsupported movie format: {Path.GetExtension(filePath)}");
+
+		if (!converter.CanRead) {
+			throw new NotSupportedException($"Format {converter.FormatName} does not support reading");
+		}
+
+		return await converter.ReadAsync(filePath, cancellationToken).ConfigureAwait(false);
 	}
 
 	/// <summary>
@@ -165,12 +182,33 @@ public static class MovieConverterRegistry {
 	/// <param name="format">Target format (if not specified, detected from extension)</param>
 	/// <exception cref="NotSupportedException">If format cannot be written</exception>
 	public static void Write(MovieData movie, string filePath, MovieFormat? format = null) {
-		IMovieConverter? converter = format.HasValue ? GetConverter(format.Value) : GetConverterByExtension(Path.GetExtension(filePath));
-		if (converter == null || !converter.CanWrite) {
-			throw new NotSupportedException($"Cannot write format: {format ?? MovieFormat.Unknown}");
+		IMovieConverter converter = (format.HasValue ? GetConverter(format.Value) : GetConverterByExtension(Path.GetExtension(filePath)))
+			?? throw new NotSupportedException($"Cannot write format: {format ?? MovieFormat.Unknown}");
+
+		if (!converter.CanWrite) {
+			throw new NotSupportedException($"Format {converter.FormatName} does not support writing");
 		}
 
 		converter.Write(movie, filePath);
+	}
+
+	/// <summary>
+	/// Write a movie file asynchronously in the specified format
+	/// </summary>
+	/// <param name="movie">Movie data to write</param>
+	/// <param name="filePath">Destination path</param>
+	/// <param name="format">Target format (if not specified, detected from extension)</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <exception cref="NotSupportedException">If format cannot be written</exception>
+	public static async ValueTask WriteAsync(MovieData movie, string filePath, MovieFormat? format = null, CancellationToken cancellationToken = default) {
+		IMovieConverter converter = (format.HasValue ? GetConverter(format.Value) : GetConverterByExtension(Path.GetExtension(filePath)))
+			?? throw new NotSupportedException($"Cannot write format: {format ?? MovieFormat.Unknown}");
+
+		if (!converter.CanWrite) {
+			throw new NotSupportedException($"Format {converter.FormatName} does not support writing");
+		}
+
+		await converter.WriteAsync(movie, filePath, cancellationToken).ConfigureAwait(false);
 	}
 
 	/// <summary>
@@ -183,6 +221,20 @@ public static class MovieConverterRegistry {
 	public static MovieData Convert(string inputPath, string outputPath, MovieFormat? targetFormat = null) {
 		MovieData movie = Read(inputPath);
 		Write(movie, outputPath, targetFormat);
+		return movie;
+	}
+
+	/// <summary>
+	/// Convert a movie asynchronously from one format to another
+	/// </summary>
+	/// <param name="inputPath">Source file path</param>
+	/// <param name="outputPath">Destination file path</param>
+	/// <param name="targetFormat">Target format (optional, auto-detected from extension)</param>
+	/// <param name="cancellationToken">Cancellation token</param>
+	/// <returns>The converted movie data</returns>
+	public static async ValueTask<MovieData> ConvertAsync(string inputPath, string outputPath, MovieFormat? targetFormat = null, CancellationToken cancellationToken = default) {
+		MovieData movie = await ReadAsync(inputPath, cancellationToken).ConfigureAwait(false);
+		await WriteAsync(movie, outputPath, targetFormat, cancellationToken).ConfigureAwait(false);
 		return movie;
 	}
 
@@ -207,6 +259,12 @@ public static class MovieConverterRegistry {
 			_converters.Add(new Converters.LsmvMovieConverter());
 			// _converters.Add(new Converters.VbmMovieConverter()); // VisualBoyAdvance - TODO
 			// _converters.Add(new Converters.GmvMovieConverter()); // Gens - TODO
+
+			// Build frozen dictionaries for O(1) lookups
+			_formatLookup = _converters.ToFrozenDictionary(c => c.Format);
+			_extensionLookup = _converters
+				.SelectMany(c => c.Extensions.Select(ext => (Extension: ext.ToLowerInvariant(), Converter: c)))
+				.ToFrozenDictionary(x => x.Extension, x => x.Converter);
 
 			_initialized = true;
 		}
