@@ -30,16 +30,18 @@
 		<SolutionDir>..</SolutionDir>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-	<OutputPath>$(SolutionDir)\bin\$(RuntimeIdentifier)\Debug\</OutputPath>
-  </PropertyGroup>
+		<OutputPath>$(SolutionDir)\bin\$(RuntimeIdentifier)\Debug\</OutputPath>
+		<Optimize>false</Optimize>
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
-	  <OutputPath>$(SolutionDir)\bin\$(RuntimeIdentifier)\Release\</OutputPath>
-	  <Optimize>false</Optimize>
-	  <DefineConstants>DEBUG</DefineConstants>
+		<OutputPath>$(SolutionDir)\bin\$(RuntimeIdentifier)\Release\</OutputPath>
+		<Optimize>true</Optimize>
+		<DefineConstants>TRACE</DefineConstants>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(OptimizeUi)'=='true'">
 		<Optimize>true</Optimize>
-		<DefineConstants></DefineConstants>
+		<DefineConstants>TRACE</DefineConstants>
 	</PropertyGroup>
 	<PropertyGroup>
 		<CFBundleName>Nexen</CFBundleName> <!-- Also defines .app file name -->
@@ -577,7 +579,7 @@
 	  <AvaloniaResource Include="Styles\AvaloniaEditStyles.xaml">
 		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
-	  
+
 	  <AvaloniaResource Include="Styles\DockStyles.xaml">
 		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
@@ -662,7 +664,7 @@
 	<Target Name="PreBuildLinux" BeforeTargets="PreBuildEvent" Condition="'$(RuntimeIdentifier)'=='linux-x64' Or '$(RuntimeIdentifier)'=='linux-arm64'">
 	<Exec Command="cd $(OutDir)&#xD;&#xA;rm -rf Dependencies&#xD;&#xA;mkdir Dependencies&#xD;&#xA;cp -R $(ProjectDir)/Dependencies/* Dependencies&#xD;&#xA;cp libHarfBuzzSharp.so Dependencies&#xD;&#xA;cp libSkiaSharp.so Dependencies&#xD;&#xA;cp NexenCore.so Dependencies&#xD;&#xA;cd Dependencies&#xD;&#xA;rm ../Dependencies.zip&#xD;&#xA;zip -r ../Dependencies.zip *&#xD;&#xA;cp ../Dependencies.zip $(ProjectDir)" />
   </Target>
-  
+
 	<Target Name="PreBuildOsx" BeforeTargets="PreBuildEvent" Condition="'$(RuntimeIdentifier)'=='osx-x64' Or '$(RuntimeIdentifier)'=='osx-arm64'">
 	<Exec Command="cp ./Assets/NexenIcon.icns $(OutDir)&#xD;&#xA;cd $(OutDir)&#xD;&#xA;rm -R Dependencies&#xD;&#xA;mkdir Dependencies&#xD;&#xA;cp -R $(ProjectDir)/Dependencies/* Dependencies&#xD;&#xA;cp libHarfBuzzSharp.dylib Dependencies&#xD;&#xA;cp libSkiaSharp.dylib Dependencies&#xD;&#xA;cp NexenCore.dylib Dependencies&#xD;&#xA;cd Dependencies&#xD;&#xA;rm ../Dependencies.zip&#xD;&#xA;zip -r ../Dependencies.zip *&#xD;&#xA;cp ../Dependencies.zip $(ProjectDir)" />
   </Target>
