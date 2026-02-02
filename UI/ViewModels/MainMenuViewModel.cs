@@ -781,6 +781,11 @@ public class MainMenuViewModel : ViewModelBase {
 				IsEnabled = () => IsGameRunning && HistoryApi.HistoryViewerEnabled(),
 				OnClick = () => ApplicationHelper.GetOrCreateUniqueWindow(null, () => new HistoryViewerWindow())                },
 
+			new MainMenuAction() {
+				ActionType = ActionType.TasEditor,
+				IsEnabled = () => IsGameRunning,
+				OnClick = () => ApplicationHelper.GetOrCreateUniqueWindow(wnd, () => new TasEditorWindow())                },
+
 			GetMoviesMenu(wnd),
 			GetNetPlayMenu(wnd),
 

@@ -539,6 +539,8 @@ public enum ActionType {
 	Cheats,
 	[IconFile("HistoryViewer")]
 	HistoryViewer,
+	[IconFile("Edit")]
+	TasEditor,
 	[IconFile("Movie")]
 	Movies,
 	[IconFile("MediaPlay")]

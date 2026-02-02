@@ -124,6 +124,9 @@
 	<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
 	<PackageReference Include="System.IO.Hashing" Version="10.0.2" />
    </ItemGroup>
+   <ItemGroup>
+	<ProjectReference Include="..\MovieConverter\MovieConverter.csproj" />
+   </ItemGroup>
   <ItemGroup>
 	<Compile Update="Controls\ButtonWithIcon.axaml.cs">
 	  <DependentUpon>ButtonWithIcon.axaml</DependentUpon>
