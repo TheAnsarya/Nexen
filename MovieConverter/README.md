@@ -6,22 +6,27 @@ A .NET library for converting TAS (Tool-Assisted Speedrun) movie files between d
 
 - **Read/Write** Nexen native format (`.nexen-movie`)
 - **Import** from popular TAS formats:
-  - BizHawk (`.bk2`)
-  - lsnes (`.lsmv`)
+  - BizHawk (`.bk2`) - Multi-system
+  - lsnes (`.lsmv`) - SNES/GB
   - FCEUX (`.fm2`) - NES
   - Snes9x (`.smv`) - SNES
+  - VisualBoyAdvance (`.vbm`) - GBA/GB/GBC
+  - Gens (`.gmv`) - Genesis/Mega Drive
 - **Common data model** for format-independent movie manipulation
-- **CLI tool** for batch conversion
+- **Async API** for high-performance I/O
+- **FrozenDictionary** for O(1) format lookups
 
 ## Supported Formats
 
-| Format | Extension | Emulator | Read | Write |
-|--------|-----------|----------|------|-------|
-| Nexen | `.nexen-movie` | Nexen | ✅ | ✅ |
-| BK2 | `.bk2` | BizHawk | ✅ | ✅ |
-| LSMV | `.lsmv` | lsnes | ✅ | ✅ |
-| FM2 | `.fm2` | FCEUX | ✅ | ✅ |
-| SMV | `.smv` | Snes9x | ✅ | 🔲 |
+| Format | Extension | Emulator | Systems | Read | Write |
+|--------|-----------|----------|---------|------|-------|
+| Nexen | `.nexen-movie` | Nexen | Multi | ✅ | ✅ |
+| BK2 | `.bk2` | BizHawk | Multi | ✅ | ✅ |
+| LSMV | `.lsmv` | lsnes | SNES, GB | ✅ | ✅ |
+| FM2 | `.fm2` | FCEUX | NES | ✅ | ✅ |
+| SMV | `.smv` | Snes9x | SNES | ✅ | 🔲 |
+| VBM | `.vbm` | VisualBoyAdvance | GBA, GB, GBC | ✅ | 🔲 |
+| GMV | `.gmv` | Gens | Genesis | ✅ | 🔲 |
 
 Legend: ✅ Implemented | 🔲 Planned | ❌ Not supported
 

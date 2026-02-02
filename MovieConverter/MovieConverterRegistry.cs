@@ -257,8 +257,8 @@ public static class MovieConverterRegistry {
 			_converters.Add(new Converters.Fm2MovieConverter());
 			_converters.Add(new Converters.SmvMovieConverter());
 			_converters.Add(new Converters.LsmvMovieConverter());
-			// _converters.Add(new Converters.VbmMovieConverter()); // VisualBoyAdvance - TODO
-			// _converters.Add(new Converters.GmvMovieConverter()); // Gens - TODO
+			_converters.Add(new Converters.VbmMovieConverter());
+			_converters.Add(new Converters.GmvMovieConverter());
 
 			// Build frozen dictionaries for O(1) lookups
 			_formatLookup = _converters.ToFrozenDictionary(c => c.Format);
