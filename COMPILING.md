@@ -1,6 +1,6 @@
 # Compiling Nexen
 
-This fork uses modern C++23 and .NET 10 for improved performance and code quality.
+Nexen uses modern C++23 and .NET 10 for improved performance and code quality.
 
 ## Requirements
 
@@ -25,7 +25,7 @@ This fork uses modern C++23 and .NET 10 for improved performance and code qualit
 2. Compile as `Release` / `x64`
 3. Set the startup project to `UI` and run
 
-**Note:** This fork requires Visual Studio 2026 with platform toolset v145 for full C++23 support.
+**Note:** Nexen requires Visual Studio 2026 with platform toolset v145 for full C++23 support.
 
 ### Building from Command Line
 
@@ -55,12 +55,14 @@ To build on macOS, install SDL2 (i.e via Homebrew) and the [.NET 10 SDK](https:/
 
 Once SDL2 and the .NET 10 SDK are installed, run `make`.
 
-## Fork-Specific Features
+## Key Features
 
-This fork (TheAnsarya/Nexen) includes:
+Nexen includes:
 
 - C++23 modernization (smart pointers, std::format, ranges)
 - 🌼 Pansy metadata export for disassembly
+- TAS Editor with piano roll and greenzone
+- Infinite save states with visual picker
 - Comprehensive unit tests (Google Test)
 - Doxygen API documentation
 

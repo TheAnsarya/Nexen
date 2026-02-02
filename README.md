@@ -1,141 +1,219 @@
 # Nexen
 
-Nexen is a multi-system emulator (NES, SNES, Game Boy, Game Boy Advance, PC Engine, SMS/Game Gear, WonderSwan) for Windows, Linux and macOS.
+<p align="center">
+  <img src="UI/Resources/icon.png" alt="Nexen" width="128"/>
+</p>
 
-**This is a modernization fork** focused on C++23, .NET 10, and 🌼 Pansy metadata integration.
+<p align="center">
+  <strong>A powerful multi-system emulator for Windows, Linux, and macOS</strong>
+</p>
 
-## Fork Features
+<p align="center">
+  <a href="https://github.com/TheAnsarya/Nexen/actions/workflows/build.yml">
+    <img src="https://github.com/TheAnsarya/Nexen/actions/workflows/build.yml/badge.svg" alt="Build Status"/>
+  </a>
+  <a href="https://github.com/TheAnsarya/Nexen/releases">
+    <img src="https://img.shields.io/github/v/release/TheAnsarya/Nexen?include_prereleases" alt="Latest Release"/>
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-GPL--3.0-blue.svg" alt="License"/>
+  </a>
+</p>
 
-- **C++23 Modernization** - Smart pointers, std::format, ranges, [[likely]]/[[unlikely]]
-- **🌼 Pansy Export** - Export disassembly metadata for use with Peony/Poppy toolchain
-- **💾 Infinite Save States** - Timestamped saves with visual picker (see below)
-- **Unit Tests** - Comprehensive CPU instruction tests (Google Test)
-- **Documentation** - Doxygen API documentation
+---
 
-## 💾 Infinite Save States
+## 🎮 Supported Systems
 
-This fork replaces the default F1/Shift+F1 behavior with an infinite timestamped save state system:
+| System | CPU | Status |
+| -------- | ----- | -------- |
+| NES / Famicom | 6502 | ✅ Full |
+| SNES / Super Famicom | 65816 | ✅ Full |
+| Game Boy / Game Boy Color | LR35902 | ✅ Full |
+| Game Boy Advance | ARM7TDMI | ✅ Full |
+| Sega Master System / Game Gear | Z80 | ✅ Full |
+| PC Engine / TurboGrafx-16 | HuC6280 | ✅ Full |
+| WonderSwan / WonderSwan Color | V30MZ | ✅ Full |
 
-### Quick Reference
+## ✨ Key Features
+
+### 🕹️ Emulation
+
+- High-accuracy emulation across all supported systems
+- Cycle-accurate CPU and PPU emulation
+- Full coprocessor support (Super FX, SA-1, DSP, etc.)
+- Comprehensive mapper/chip support
+- Netplay multiplayer support
+
+### 💾 Save States
+
+- **Infinite Save States** - Unlimited timestamped saves per game
+- **Visual Picker** - Grid view with screenshots and timestamps
+- **Quick Save/Load** - Shift+F1 to save, F1 to browse
+- **Per-Game Organization** - Saves organized by ROM
+
+### 🎮 TAS Editor
+
+- **Piano Roll View** - Visual timeline for frame-by-frame editing
+- **Greenzone System** - Instant seeking with automatic savestates
+- **Input Recording** - Capture and edit gameplay
+- **Branches** - Compare alternate strategies
+- **Multi-Format Import/Export** - BK2, FM2, SMV, LSMV, VBM, GMV, NMV
+- **Lua Scripting** - Automate TAS workflows
+
+### 🔧 Debugging
+
+- **Disassembler** - Full CPU disassembly with labels
+- **Memory Viewer** - Hex editor with search
+- **Breakpoints** - Execution, read, and write breakpoints
+- **Trace Logger** - CPU execution logging
+- **Code/Data Logger (CDL)** - Track ROM usage
+- **🌼 Pansy Export** - Export metadata to universal format
+
+### 🎨 Video
+
+- Multiple shader/filter options
+- Integer scaling and aspect ratio correction
+- NTSC and PAL filters
+- HUD overlays for debugging
+
+### 🔊 Audio
+
+- High-quality audio resampling
+- Per-channel volume control
+- Audio recording (WAV)
+
+## 📥 Download
+
+### Latest Release
+
+Download the latest release for your platform:
+
+| Platform | Download |
+| ---------- | ---------- |
+| **Windows** | [Nexen-win-x64.zip](https://github.com/TheAnsarya/Nexen/releases/latest) |
+| **Linux (AppImage)** | [Nexen-x86_64.AppImage](https://github.com/TheAnsarya/Nexen/releases/latest) |
+| **Linux (ARM64)** | [Nexen-aarch64.AppImage](https://github.com/TheAnsarya/Nexen/releases/latest) |
+| **macOS (Intel)** | [Nexen-macos-x64.zip](https://github.com/TheAnsarya/Nexen/releases/latest) |
+| **macOS (Apple Silicon)** | [Nexen-macos-arm64.zip](https://github.com/TheAnsarya/Nexen/releases/latest) |
+
+### Development Builds
+
+Automated builds from the latest code are available via [GitHub Actions](https://github.com/TheAnsarya/Nexen/actions/workflows/build.yml).
+
+### System Requirements
+
+| Component | Requirement |
+| ----------- | ------------- |
+| OS | Windows 10+, Linux (glibc 2.31+), macOS 13+ |
+| CPU | x64 or ARM64 |
+| RAM | 4 GB minimum |
+| Graphics | OpenGL 3.3+ or Metal |
+
+## 🚀 Quick Start
+
+### Windows
+
+1. Download and extract the ZIP file
+2. Run `Nexen.exe`
+3. **File → Open** to load a ROM
+
+### Linux
+
+1. Download the AppImage
+2. Make it executable: `chmod +x Nexen.AppImage`
+3. Run: `./Nexen.AppImage`
+
+### macOS
+
+1. Download and extract the ZIP file
+2. Move `Nexen.app` to Applications
+3. Right-click → Open (first time, to bypass Gatekeeper)
+
+## 📖 Documentation
+
+| Document | Description |
+| ---------- | ------------- |
+| [Compiling](COMPILING.md) | Build from source |
+| [TAS Editor Manual](docs/TAS-Editor-Manual.md) | Complete TAS workflow guide |
+| [TAS Developer Guide](docs/TAS-Developer-Guide.md) | TAS system architecture |
+| [Movie Format](docs/NEXEN_MOVIE_FORMAT.md) | NMV file format specification |
+| [Release Guide](docs/RELEASE.md) | Creating releases |
+| [API Documentation](docs/README.md) | Generated API docs |
+
+### Developer Documentation
+
+| Document | Description |
+| ---------- | ------------- |
+| [Architecture Overview](~docs/ARCHITECTURE-OVERVIEW.md) | System design |
+| [C++ Development Guide](~docs/CPP-DEVELOPMENT-GUIDE.md) | Coding standards |
+| [Pansy Integration](~docs/pansy-export-index.md) | Metadata export system |
+| [Profiling Guide](~docs/PROFILING-GUIDE.md) | Performance profiling |
+
+## ⌨️ Keyboard Shortcuts
+
+### General
 
 | Shortcut | Action |
 | ---------- | -------- |
-| **Shift+F1** | Quick save (creates new timestamped save) |
-| **F1** | Open save state picker |
-| **DEL** (in picker) | Delete selected save (with confirmation) |
-| **ESC** (in picker) | Close picker |
-| **Arrow keys** (in picker) | Navigate saves |
-| **Enter** (in picker) | Load selected save |
+| F1 | Browse Save States |
+| Shift+F1 | Quick Save (Timestamped) |
+| F2-F7 | Save to Slot 2-7 |
+| Shift+F2-F7 | Load from Slot 2-7 |
+| Escape | Pause/Resume |
+| Alt+Enter | Toggle Fullscreen |
 
-### Features
+### TAS Editor
 
-- **Unlimited saves** - Each save creates a new timestamped file (`{ROM}_{YYYY-MM-DD}_{HH-mm-ss}.mss`)
-- **Per-ROM organization** - Saves stored in `SaveStates/{RomName}/` subdirectories
-- **Visual picker** - Grid view with screenshots and timestamps
-- **Full timestamps** - Always shows date and time (e.g., "Today 1/31/2026 2:30 PM")
-- **Delete confirmation** - Prevents accidental deletion
-- **Slot compatibility** - F2-F7 still work for slots 2-7 (legacy support)
+| Shortcut | Action |
+| ---------- | -------- |
+| Space | Play/Pause |
+| F | Frame Advance |
+| R | Frame Rewind |
+| Ctrl+R | Toggle Recording |
+| Insert | Insert Frame |
+| Delete | Delete Frame |
+| Ctrl+G | Go to Frame |
+| Ctrl+B | Create Branch |
 
-### Menu Access
+## 🔗 Related Projects
 
-- **File → Quick Save (Timestamped)** - Save with timestamp
-- **File → Browse Save States...** - Open visual picker
-- **File → Save State → Slot N** - Legacy slot-based saves
-- **File → Load State → Slot N** - Legacy slot-based loads
+| Project | Description |
+| --------- | ------------- |
+| [🌼 Pansy](https://github.com/TheAnsarya/pansy) | Universal disassembly metadata format |
+| [🌺 Peony](https://github.com/TheAnsarya/peony) | Multi-system disassembler |
+| [🌸 Poppy](https://github.com/TheAnsarya/poppy) | Multi-system assembler |
 
-## Upstream
-
-Forked from Mesen by Sour: [SourMesen/Mesen2](https://github.com/SourMesen/Mesen2)
-
-## Releases
-
-For stable releases, see the [upstream releases](https://github.com/SourMesen/Mesen2/releases).
-For this fork's development builds, see [Actions](https://github.com/TheAnsarya/Nexen/actions).
-
-## Development Builds
-
-[![Nexen](https://github.com/TheAnsarya/Nexen/actions/workflows/build.yml/badge.svg)](https://github.com/TheAnsarya/Nexen/actions/workflows/build.yml)
+## 🏗️ Building from Source
 
 ### Requirements
 
 | Component | Version |
 | ----------- | --------- |
-| C++ | C++23 (`/std:c++latest`) |
-| .NET | 10.0+ |
-| Visual Studio | 2026 (v145 toolset) |
+| C++ | C++23 |
+| .NET SDK | 10.0+ |
 | SDL2 | Latest (Linux/macOS) |
 
-## Compiling
+See [COMPILING.md](COMPILING.md) for detailed instructions.
 
-See [COMPILING.md](COMPILING.md)
+## 📜 License
 
-## License
+Nexen is dual-licensed:
 
-This project uses a **dual-license** structure:
+- **Base Code (GPL v3):** Original code from [Mesen](https://github.com/SourMesen/Mesen2) by Sour
+- **Nexen Additions (Unlicense):** All new features and modifications
 
-### Original Mesen Code (GPL v3)
+See [LICENSE](LICENSE) and [LICENSE-UNLICENSE](LICENSE-UNLICENSE) for details.
 
-All code from the original Mesen project by Sour is licensed under the GNU General Public License v3.
-See [LICENSE-GPL](LICENSE) for the full GPL v3 text.
+## 🙏 Acknowledgments
 
-Copyright (C) 2014-2025 Sour
+Nexen builds upon the excellent work of:
 
-### Fork Modifications (The Unlicense)
+- **[Mesen](https://github.com/SourMesen/Mesen2)** by Sour - The original emulator codebase
+- The emulation community for documentation and research
+- Contributors and testers
 
-All modifications, additions, and new code in this fork (TheAnsarya/Nexen) are released under **The Unlicense** (public domain).
-See [LICENSE-UNLICENSE](LICENSE-UNLICENSE) for details.
+---
 
-This includes:
-
-- C++ modernization changes
-- 🌼 Pansy metadata export feature
-- Unit tests
-- Documentation improvements
-
-You are free to use the fork-specific changes without any restrictions.
-
-## 🎮 TAS Editor
-
-This fork includes a powerful **TAS (Tool-Assisted Speedrun) Editor** for creating, editing, and perfecting frame-by-frame input movies.
-
-### Features
-
-| Feature | Description |
-| --------- | ------------- |
-| **Multi-Format Support** | Import/export BK2, FM2, SMV, LSMV, VBM, GMV, and native NMV |
-| **Piano Roll View** | Visual timeline for editing button presses across frames |
-| **Greenzone System** | Automatic savestates for instant seeking and efficient rerecording |
-| **Input Recording** | Record your gameplay and edit it frame-by-frame |
-| **Branches** | Save alternate movie versions to compare strategies |
-| **Rerecord Tracking** | Track optimization progress with rerecord counts |
-| **Lag Detection** | Auto-detect and highlight lag frames |
-
-### Quick Start
-
-1. **Tools** → **TAS Editor** to open the editor
-2. **File** → **Open** to load an existing movie, or start recording
-3. Use **Recording** → **Start Recording** to capture inputs while playing
-4. Edit frames in the frame list or piano roll
-5. Use **View** → **Go to Frame** to navigate
-6. **File** → **Save** to save your work
-
-### Keyboard Shortcuts (TAS Editor)
-
-| Shortcut | Action |
-| ---------- | -------- |
-| `Space` | Play/Pause |
-| `F` | Frame Advance |
-| `R` | Frame Rewind |
-| `Ctrl+R` | Toggle Recording |
-| `Insert` | Insert Frame |
-| `Delete` | Delete Frame |
-| `Ctrl+G` | Go to Frame |
-| `Ctrl+B` | Create Branch |
-
-📖 **[Full TAS Editor Manual](docs/TAS-Editor-Manual.md)** - Comprehensive guide with tips, workflows, and reference
-
-## Related Projects
-
-- [🌼 Pansy](https://github.com/TheAnsarya/pansy) - Disassembly metadata format
-- [🌺 Peony](https://github.com/TheAnsarya/peony) - Multi-system disassembler
-- [🌸 Poppy](https://github.com/TheAnsarya/poppy) - Multi-system assembler
+<p align="center">
+  Made with ❤️ for the retro gaming community
+</p>
