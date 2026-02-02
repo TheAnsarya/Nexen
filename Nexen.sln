@@ -61,6 +61,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovieConverter", "MovieConv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovieConverter.Tests", "MovieConverter.Tests\MovieConverter.Tests.csproj", "{10865568-B97E-4BDE-80BF-106A6E74CBE2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovieConverter.Benchmarks", "MovieConverter.Benchmarks\MovieConverter.Benchmarks.csproj", "{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -337,6 +339,30 @@ Global
 		{10865568-B97E-4BDE-80BF-106A6E74CBE2}.Release|x64.Build.0 = Release|Any CPU
 		{10865568-B97E-4BDE-80BF-106A6E74CBE2}.Release|x86.ActiveCfg = Release|Any CPU
 		{10865568-B97E-4BDE-80BF-106A6E74CBE2}.Release|x86.Build.0 = Release|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.Debug|x64.Build.0 = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.Debug|x86.Build.0 = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.PGO Optimize|Any CPU.ActiveCfg = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.PGO Optimize|Any CPU.Build.0 = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.PGO Optimize|x64.ActiveCfg = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.PGO Optimize|x64.Build.0 = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.PGO Optimize|x86.ActiveCfg = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.PGO Optimize|x86.Build.0 = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.PGO Profile|Any CPU.ActiveCfg = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.PGO Profile|Any CPU.Build.0 = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.PGO Profile|x64.ActiveCfg = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.PGO Profile|x64.Build.0 = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.PGO Profile|x86.ActiveCfg = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.PGO Profile|x86.Build.0 = Debug|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.Release|x64.ActiveCfg = Release|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.Release|x64.Build.0 = Release|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.Release|x86.ActiveCfg = Release|Any CPU
+		{68DA4B74-0205-4BC4-8B2D-D3EE6B423F24}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
