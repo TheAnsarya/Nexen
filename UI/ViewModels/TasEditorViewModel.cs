@@ -79,6 +79,16 @@ public class TasEditorViewModel : DisposableViewModel {
 	/// <summary>Gets or sets the playback speed (1.0 = normal).</summary>
 	[Reactive] public double PlaybackSpeed { get; set; } = 1.0;
 
+	/// <summary>Gets or sets the current controller layout.</summary>
+	[Reactive] public ControllerLayout CurrentLayout { get; set; } = ControllerLayout.Snes;
+
+	/// <summary>Gets the controller buttons for the current layout.</summary>
+	[Reactive] public List<ControllerButtonInfo> ControllerButtons { get; private set; } = new();
+
+	/// <summary>Gets the available controller layouts.</summary>
+	public static IReadOnlyList<ControllerLayout> AvailableLayouts { get; } =
+		Enum.GetValues<ControllerLayout>().ToList();
+
 	private readonly Stack<UndoableAction> _undoStack = new();
 	private readonly Stack<UndoableAction> _redoStack = new();
 	private List<InputFrame>? _clipboard;
@@ -87,8 +97,13 @@ public class TasEditorViewModel : DisposableViewModel {
 	private Windows.TasEditorWindow? _window;
 
 	public TasEditorViewModel() {
-		AddDisposable(this.WhenAnyValue(x => x.Movie).Subscribe(_ => UpdateFrames()));
+		AddDisposable(this.WhenAnyValue(x => x.Movie).Subscribe(_ => {
+			UpdateFrames();
+			DetectControllerLayout();
+		}));
 		AddDisposable(this.WhenAnyValue(x => x.FilePath, x => x.HasUnsavedChanges).Subscribe(_ => UpdateWindowTitle()));
+		AddDisposable(this.WhenAnyValue(x => x.CurrentLayout).Subscribe(_ => UpdateControllerButtons()));
+		UpdateControllerButtons();
 	}
 
 	/// <summary>
@@ -745,6 +760,157 @@ public class TasEditorViewModel : DisposableViewModel {
 
 	#endregion
 
+	#region Controller Layout
+
+	/// <summary>
+	/// Detects the controller layout from the loaded movie.
+	/// </summary>
+	private void DetectControllerLayout() {
+		if (Movie == null) {
+			CurrentLayout = ControllerLayout.Snes;
+			return;
+		}
+
+		// Detect from SystemType first (most reliable)
+		CurrentLayout = Movie.SystemType switch {
+			SystemType.Nes => ControllerLayout.Nes,
+			SystemType.Snes => ControllerLayout.Snes,
+			SystemType.Gb or SystemType.Gbc => ControllerLayout.GameBoy,
+			SystemType.Gba => ControllerLayout.Gba,
+			SystemType.Genesis => ControllerLayout.Genesis,
+			SystemType.Sms => ControllerLayout.MasterSystem,
+			SystemType.Pce => ControllerLayout.PcEngine,
+			SystemType.Ws => ControllerLayout.WonderSwan,
+			_ => Movie.SourceFormat switch {
+				// Fallback to source format hints
+				MovieFormat.Fm2 => ControllerLayout.Nes,
+				MovieFormat.Vbm => ControllerLayout.Gba,
+				MovieFormat.Gmv => ControllerLayout.Genesis,
+				MovieFormat.Smv or MovieFormat.Lsmv => ControllerLayout.Snes,
+				_ => ControllerLayout.Snes
+			}
+		};
+
+		StatusMessage = $"Detected controller layout: {CurrentLayout}";
+	}
+
+	/// <summary>
+	/// Updates the controller buttons for the current layout.
+	/// </summary>
+	private void UpdateControllerButtons() {
+		ControllerButtons = CurrentLayout switch {
+			ControllerLayout.Nes => GetNesButtons(),
+			ControllerLayout.Snes => GetSnesButtons(),
+			ControllerLayout.GameBoy => GetGameBoyButtons(),
+			ControllerLayout.Gba => GetGbaButtons(),
+			ControllerLayout.Genesis => GetGenesisButtons(),
+			ControllerLayout.MasterSystem => GetMasterSystemButtons(),
+			ControllerLayout.PcEngine => GetPcEngineButtons(),
+			ControllerLayout.WonderSwan => GetWonderSwanButtons(),
+			_ => GetSnesButtons()
+		};
+	}
+
+	private static List<ControllerButtonInfo> GetNesButtons() => new() {
+		new("A", "A", 0, 0),
+		new("B", "B", 1, 0),
+		new("SELECT", "SEL", 2, 0),
+		new("START", "STA", 3, 0),
+		new("UP", "↑", 0, 1),
+		new("DOWN", "↓", 1, 1),
+		new("LEFT", "←", 2, 1),
+		new("RIGHT", "→", 3, 1),
+	};
+
+	private static List<ControllerButtonInfo> GetSnesButtons() => new() {
+		new("A", "A", 0, 0),
+		new("B", "B", 1, 0),
+		new("X", "X", 2, 0),
+		new("Y", "Y", 3, 0),
+		new("L", "L", 0, 1),
+		new("R", "R", 1, 1),
+		new("SELECT", "SEL", 2, 1),
+		new("START", "STA", 3, 1),
+		new("UP", "↑", 0, 2),
+		new("DOWN", "↓", 1, 2),
+		new("LEFT", "←", 2, 2),
+		new("RIGHT", "→", 3, 2),
+	};
+
+	private static List<ControllerButtonInfo> GetGameBoyButtons() => new() {
+		new("A", "A", 0, 0),
+		new("B", "B", 1, 0),
+		new("SELECT", "SEL", 2, 0),
+		new("START", "STA", 3, 0),
+		new("UP", "↑", 0, 1),
+		new("DOWN", "↓", 1, 1),
+		new("LEFT", "←", 2, 1),
+		new("RIGHT", "→", 3, 1),
+	};
+
+	private static List<ControllerButtonInfo> GetGbaButtons() => new() {
+		new("A", "A", 0, 0),
+		new("B", "B", 1, 0),
+		new("L", "L", 2, 0),
+		new("R", "R", 3, 0),
+		new("SELECT", "SEL", 0, 1),
+		new("START", "STA", 1, 1),
+		new("UP", "↑", 0, 2),
+		new("DOWN", "↓", 1, 2),
+		new("LEFT", "←", 2, 2),
+		new("RIGHT", "→", 3, 2),
+	};
+
+	private static List<ControllerButtonInfo> GetGenesisButtons() => new() {
+		new("A", "A", 0, 0),
+		new("B", "B", 1, 0),
+		new("C", "C", 2, 0),
+		new("X", "X", 0, 1),
+		new("Y", "Y", 1, 1),
+		new("Z", "Z", 2, 1),
+		new("START", "STA", 3, 1),
+		new("UP", "↑", 0, 2),
+		new("DOWN", "↓", 1, 2),
+		new("LEFT", "←", 2, 2),
+		new("RIGHT", "→", 3, 2),
+	};
+
+	private static List<ControllerButtonInfo> GetMasterSystemButtons() => new() {
+		new("A", "1", 0, 0),
+		new("B", "2", 1, 0),
+		new("UP", "↑", 0, 1),
+		new("DOWN", "↓", 1, 1),
+		new("LEFT", "←", 2, 1),
+		new("RIGHT", "→", 3, 1),
+	};
+
+	private static List<ControllerButtonInfo> GetPcEngineButtons() => new() {
+		new("A", "I", 0, 0),
+		new("B", "II", 1, 0),
+		new("SELECT", "SEL", 2, 0),
+		new("START", "RUN", 3, 0),
+		new("UP", "↑", 0, 1),
+		new("DOWN", "↓", 1, 1),
+		new("LEFT", "←", 2, 1),
+		new("RIGHT", "→", 3, 1),
+	};
+
+	private static List<ControllerButtonInfo> GetWonderSwanButtons() => new() {
+		new("A", "A", 0, 0),
+		new("B", "B", 1, 0),
+		new("START", "STA", 2, 0),
+		new("X", "X1", 0, 1),
+		new("Y", "X2", 1, 1),
+		new("L", "X3", 2, 1),
+		new("R", "X4", 3, 1),
+		new("UP", "Y1", 0, 2),
+		new("DOWN", "Y2", 1, 2),
+		new("LEFT", "Y3", 2, 2),
+		new("RIGHT", "Y4", 3, 2),
+	};
+
+	#endregion
+
 	private void UpdateWindowTitle() {
 		string title = "TAS Editor";
 
@@ -917,6 +1083,63 @@ public class ModifyInputAction : UndoableAction {
 		Start = src.Start,
 		Select = src.Select
 	};
+}
+
+#endregion
+
+#region Controller Layout Types
+
+/// <summary>
+/// Supported controller layouts for different systems.
+/// </summary>
+public enum ControllerLayout {
+	/// <summary>NES - A, B, Select, Start, D-Pad</summary>
+	Nes,
+
+	/// <summary>SNES - A, B, X, Y, L, R, Select, Start, D-Pad</summary>
+	Snes,
+
+	/// <summary>Game Boy / Game Boy Color - A, B, Select, Start, D-Pad</summary>
+	GameBoy,
+
+	/// <summary>Game Boy Advance - A, B, L, R, Select, Start, D-Pad</summary>
+	Gba,
+
+	/// <summary>Sega Genesis/Mega Drive - A, B, C, X, Y, Z, Start, D-Pad</summary>
+	Genesis,
+
+	/// <summary>Sega Master System / Game Gear - 1, 2, D-Pad</summary>
+	MasterSystem,
+
+	/// <summary>PC Engine / TurboGrafx-16 - I, II, Select, Run, D-Pad</summary>
+	PcEngine,
+
+	/// <summary>WonderSwan - A, B, Start, X1-X4, Y1-Y4</summary>
+	WonderSwan
+}
+
+/// <summary>
+/// Information about a controller button for UI display.
+/// </summary>
+public class ControllerButtonInfo {
+	/// <summary>Gets the button identifier used in ControllerInput.</summary>
+	public string ButtonId { get; }
+
+	/// <summary>Gets the display label for the button.</summary>
+	public string Label { get; }
+
+	/// <summary>Gets the column position in the button grid.</summary>
+	public int Column { get; }
+
+	/// <summary>Gets the row position in the button grid.</summary>
+	public int Row { get; }
+
+	public ControllerButtonInfo(string buttonId, string label, int column, int row) {
+		ButtonId = buttonId;
+		Label = label;
+		Column = column;
+		Row = row;
+	}
 }
 
 #endregion

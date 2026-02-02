@@ -117,62 +117,59 @@
 							<CheckBox Grid.Row="1" Grid.Column="1" IsChecked="False" Margin="5 5 0 0" />
 						</Grid>
 
+						<!-- Controller Layout -->
+						<TextBlock Text="Controller Layout" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
+						<Rectangle Height="1" Fill="Gray" />
+
+						<ComboBox
+							ItemsSource="{Binding AvailableLayouts}"
+							SelectedItem="{Binding CurrentLayout}"
+							HorizontalAlignment="Stretch"
+						/>
+
 						<!-- Controller 1 -->
 						<TextBlock Text="Controller 1" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
 						<Rectangle Height="1" Fill="Gray" />
 
-						<WrapPanel>
-							<!-- D-Pad -->
-							<StackPanel Orientation="Vertical" Margin="0 0 20 0">
-								<Button Content="↑" Width="30" Height="30" HorizontalAlignment="Center" Tag="UP" Click="OnButtonClick" />
-								<StackPanel Orientation="Horizontal">
-									<Button Content="←" Width="30" Height="30" Tag="LEFT" Click="OnButtonClick" />
-									<Border Width="30" Height="30" />
-									<Button Content="→" Width="30" Height="30" Tag="RIGHT" Click="OnButtonClick" />
-								</StackPanel>
-								<Button Content="↓" Width="30" Height="30" HorizontalAlignment="Center" Tag="DOWN" Click="OnButtonClick" />
-							</StackPanel>
-
-							<!-- Face Buttons -->
-							<StackPanel Orientation="Vertical" Margin="10 0 20 0">
-								<Button Content="X" Width="30" Height="30" HorizontalAlignment="Center" Tag="X" Click="OnButtonClick" />
-								<StackPanel Orientation="Horizontal">
-									<Button Content="Y" Width="30" Height="30" Tag="Y" Click="OnButtonClick" />
-									<Border Width="30" Height="30" />
-									<Button Content="A" Width="30" Height="30" Tag="A" Click="OnButtonClick" />
-								</StackPanel>
-								<Button Content="B" Width="30" Height="30" HorizontalAlignment="Center" Tag="B" Click="OnButtonClick" />
-							</StackPanel>
-
-							<!-- Shoulder/Start/Select -->
-							<StackPanel Orientation="Vertical" Spacing="5">
-								<StackPanel Orientation="Horizontal" Spacing="5">
-									<Button Content="L" Width="40" Height="25" Tag="L" Click="OnButtonClick" />
-									<Button Content="R" Width="40" Height="25" Tag="R" Click="OnButtonClick" />
-								</StackPanel>
-								<StackPanel Orientation="Horizontal" Spacing="5">
-									<Button Content="SEL" Width="40" Height="25" Tag="SELECT" Click="OnButtonClick" />
-									<Button Content="STA" Width="40" Height="25" Tag="START" Click="OnButtonClick" />
-								</StackPanel>
-							</StackPanel>
-						</WrapPanel>
+						<ItemsControl ItemsSource="{Binding ControllerButtons}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<WrapPanel />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Button
+										Content="{Binding Label}"
+										Tag="{Binding ButtonId}"
+										Width="40"
+										Height="30"
+										Margin="2"
+										Click="OnButtonClick"
+									/>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
 
 						<!-- Movie Info -->
 						<TextBlock Text="Movie Info" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
 						<Rectangle Height="1" Fill="Gray" />
 
-						<Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*">
+						<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*">
 							<TextBlock Text="Format:" VerticalAlignment="Center" />
 							<TextBlock Grid.Column="1" Text="{Binding Movie.SourceFormat, FallbackValue=None}" Margin="5 0 0 0" VerticalAlignment="Center" />
 
-							<TextBlock Grid.Row="1" Text="Frames:" VerticalAlignment="Center" Margin="0 5 0 0" />
-							<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Movie.TotalFrames, FallbackValue=0}" Margin="5 5 0 0" VerticalAlignment="Center" />
+							<TextBlock Grid.Row="1" Text="Layout:" VerticalAlignment="Center" Margin="0 5 0 0" />
+							<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CurrentLayout}" Margin="5 5 0 0" VerticalAlignment="Center" />
 
-							<TextBlock Grid.Row="2" Text="Rerecords:" VerticalAlignment="Center" Margin="0 5 0 0" />
-							<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Movie.RerecordCount, FallbackValue=0}" Margin="5 5 0 0" VerticalAlignment="Center" />
+							<TextBlock Grid.Row="2" Text="Frames:" VerticalAlignment="Center" Margin="0 5 0 0" />
+							<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Movie.TotalFrames, FallbackValue=0}" Margin="5 5 0 0" VerticalAlignment="Center" />
 
-							<TextBlock Grid.Row="3" Text="Author:" VerticalAlignment="Center" Margin="0 5 0 0" />
-							<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Movie.Author, FallbackValue=Unknown}" Margin="5 5 0 0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+							<TextBlock Grid.Row="3" Text="Rerecords:" VerticalAlignment="Center" Margin="0 5 0 0" />
+							<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Movie.RerecordCount, FallbackValue=0}" Margin="5 5 0 0" VerticalAlignment="Center" />
+
+							<TextBlock Grid.Row="4" Text="Author:" VerticalAlignment="Center" Margin="0 5 0 0" />
+							<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Movie.Author, FallbackValue=Unknown}" Margin="5 5 0 0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
 						</Grid>
 					</StackPanel>
 				</ScrollViewer>
