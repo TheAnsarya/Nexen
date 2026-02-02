@@ -1,6 +1,15 @@
 # Nexen API Documentation
 
-This directory contains auto-generated API documentation for Nexen.
+This directory contains auto-generated API documentation for Nexen and user guides.
+
+## User Documentation
+
+| Document | Description |
+|----------|-------------|
+| [TAS Editor Manual](TAS-Editor-Manual.md) | Complete user guide for TAS movie editing |
+| [TAS Developer Guide](TAS-Developer-Guide.md) | Technical documentation for TAS system |
+| [TAS Architecture](TAS_ARCHITECTURE.md) | High-level architecture overview |
+| [Nexen Movie Format](NEXEN_MOVIE_FORMAT.md) | NMV file format specification |
 
 ## Generating Documentation
 

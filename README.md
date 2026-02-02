@@ -93,6 +93,46 @@ This includes:
 
 You are free to use the fork-specific changes without any restrictions.
 
+## 🎮 TAS Editor
+
+This fork includes a powerful **TAS (Tool-Assisted Speedrun) Editor** for creating, editing, and perfecting frame-by-frame input movies.
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Multi-Format Support** | Import/export BK2, FM2, SMV, LSMV, VBM, GMV, and native NMV |
+| **Piano Roll View** | Visual timeline for editing button presses across frames |
+| **Greenzone System** | Automatic savestates for instant seeking and efficient rerecording |
+| **Input Recording** | Record your gameplay and edit it frame-by-frame |
+| **Branches** | Save alternate movie versions to compare strategies |
+| **Rerecord Tracking** | Track optimization progress with rerecord counts |
+| **Lag Detection** | Auto-detect and highlight lag frames |
+
+### Quick Start
+
+1. **Tools** → **TAS Editor** to open the editor
+2. **File** → **Open** to load an existing movie, or start recording
+3. Use **Recording** → **Start Recording** to capture inputs while playing
+4. Edit frames in the frame list or piano roll
+5. Use **View** → **Go to Frame** to navigate
+6. **File** → **Save** to save your work
+
+### Keyboard Shortcuts (TAS Editor)
+
+| Shortcut | Action |
+|----------|--------|
+| `Space` | Play/Pause |
+| `F` | Frame Advance |
+| `R` | Frame Rewind |
+| `Ctrl+R` | Toggle Recording |
+| `Insert` | Insert Frame |
+| `Delete` | Delete Frame |
+| `Ctrl+G` | Go to Frame |
+| `Ctrl+B` | Create Branch |
+
+📖 **[Full TAS Editor Manual](docs/TAS-Editor-Manual.md)** - Comprehensive guide with tips, workflows, and reference
+
 ## Related Projects
 
 - [🌼 Pansy](https://github.com/TheAnsarya/pansy) - Disassembly metadata format

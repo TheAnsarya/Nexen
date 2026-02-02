@@ -9,8 +9,8 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
 	x:Class="Nexen.Windows.TasEditorWindow"
-	Width="900" Height="600"
-	MinWidth="600" MinHeight="400"
+	Width="1000" Height="700"
+	MinWidth="700" MinHeight="500"
 	x:DataType="vm:TasEditorViewModel"
 	Title="{Binding WindowTitle}"
 >
@@ -25,6 +25,7 @@
 			<MenuItem Header="Edit" ItemsSource="{Binding EditMenuItems}" />
 			<MenuItem Header="View" ItemsSource="{Binding ViewMenuItems}" />
 			<MenuItem Header="Playback" ItemsSource="{Binding PlaybackMenuItems}" />
+			<MenuItem Header="Recording" ItemsSource="{Binding RecordingMenuItems}" />
 		</c:NexenMenu>
 
 		<!-- Toolbar -->
@@ -43,16 +44,21 @@
 				<Button Content="⏯" ToolTip.Tip="Play/Pause (Space)" Width="30" />
 				<Button Content="⏭" ToolTip.Tip="Frame advance (F)" Width="30" />
 				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
+				<ToggleButton Content="●" ToolTip.Tip="Record" Width="30" Foreground="Red" IsChecked="{Binding IsRecording}" />
+				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
 				<TextBlock Text="Speed:" VerticalAlignment="Center" />
 				<TextBlock Text="{Binding PlaybackSpeed, StringFormat={}{0:F2}x}" VerticalAlignment="Center" Width="40" />
 				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
 				<ToggleButton Content="GZ" ToolTip.Tip="Toggle greenzone" IsChecked="{Binding IsGreenzoneEnabled}" />
+				<TextBlock Text="{Binding SavestateCount, StringFormat=({0})}" VerticalAlignment="Center" Margin="5 0 0 0" />
+				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
+				<TextBlock Text="{Binding GreenzoneMemoryMB, StringFormat={}{0:F1} MB}" VerticalAlignment="Center" />
 			</StackPanel>
 		</Border>
 
 		<!-- Status Bar -->
 		<Border DockPanel.Dock="Bottom" BorderBrush="Gray" BorderThickness="0 1 0 0" Padding="5">
-			<Grid ColumnDefinitions="*,Auto,Auto,Auto">
+			<Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto">
 				<TextBlock Grid.Column="0" Text="{Binding StatusMessage}" VerticalAlignment="Center" />
 				<TextBlock Grid.Column="1" Text="Frame: " VerticalAlignment="Center" Margin="10 0 0 0" />
 				<TextBlock Grid.Column="2" Text="{Binding SelectedFrameIndex}" VerticalAlignment="Center" />
@@ -63,11 +69,19 @@
 						</MultiBinding>
 					</TextBlock.Text>
 				</TextBlock>
+				<TextBlock Grid.Column="4" Text="Rerecords: " VerticalAlignment="Center" Margin="15 0 0 0" />
+				<TextBlock Grid.Column="5" Text="{Binding RerecordCount}" VerticalAlignment="Center" />
+				<TextBlock Grid.Column="6" Text="{Binding RecordMode, StringFormat=[{0}]}" VerticalAlignment="Center" Margin="10 0 0 0" Foreground="Gray" />
 			</Grid>
 		</Border>
 
 		<!-- Main Content -->
 		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="{Binding ShowPianoRoll, Converter={x:Static c:BoolToGridLengthConverter.Instance}}" />
+			</Grid.RowDefinitions>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="5" />
@@ -75,7 +89,7 @@
 			</Grid.ColumnDefinitions>
 
 			<!-- Frame List (ListBox) -->
-			<Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1">
+			<Border Grid.Row="0" Grid.Column="0" BorderBrush="Gray" BorderThickness="1">
 				<ListBox
 					Name="FrameList"
 					ItemsSource="{Binding Frames}"
@@ -171,8 +185,44 @@
 							<TextBlock Grid.Row="4" Text="Author:" VerticalAlignment="Center" Margin="0 5 0 0" />
 							<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Movie.Author, FallbackValue=Unknown}" Margin="5 5 0 0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
 						</Grid>
+
+						<!-- Branches -->
+						<TextBlock Text="Branches" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
+						<Rectangle Height="1" Fill="Gray" />
+
+						<ListBox
+							ItemsSource="{Binding Branches}"
+							MaxHeight="100"
+							SelectionMode="Single"
+						>
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<StackPanel Orientation="Horizontal">
+										<TextBlock Text="{Binding Name}" />
+										<TextBlock Text="{Binding FrameCount, StringFormat=' ({0} frames)'}" Foreground="Gray" />
+									</StackPanel>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
 					</StackPanel>
 				</ScrollViewer>
+			</Border>
+
+			<!-- Piano Roll Splitter -->
+			<GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+				Height="5" ResizeDirection="Rows" IsVisible="{Binding ShowPianoRoll}" />
+
+			<!-- Piano Roll Panel -->
+			<Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+				BorderBrush="Gray" BorderThickness="1" IsVisible="{Binding ShowPianoRoll}">
+				<c:PianoRollControl
+					Name="PianoRoll"
+					Frames="{Binding Movie.InputFrames}"
+					SelectedFrame="{Binding SelectedFrameIndex}"
+					PlaybackFrame="{Binding PlaybackFrame}"
+					GreenzoneStart="{Binding GreenzoneStart}"
+					Height="200"
+				/>
 			</Border>
 		</Grid>
 	</DockPanel>

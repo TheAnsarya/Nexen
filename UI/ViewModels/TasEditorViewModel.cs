@@ -12,6 +12,7 @@ using Nexen.Debugger.Utilities;
 using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.MovieConverter;
+using Nexen.TAS;
 using Nexen.Utilities;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -20,7 +21,8 @@ namespace Nexen.ViewModels;
 
 /// <summary>
 /// ViewModel for the TAS Editor window.
-/// Provides frame-by-frame editing of movie files.
+/// Provides frame-by-frame editing of movie files with greenzone support,
+/// input recording, and piano roll visualization.
 /// </summary>
 public class TasEditorViewModel : DisposableViewModel {
 	/// <summary>Gets the currently loaded movie data.</summary>
@@ -62,6 +64,9 @@ public class TasEditorViewModel : DisposableViewModel {
 	/// <summary>Gets the playback menu items.</summary>
 	[Reactive] public List<object> PlaybackMenuItems { get; private set; } = new();
 
+	/// <summary>Gets the recording menu items.</summary>
+	[Reactive] public List<object> RecordingMenuItems { get; private set; } = new();
+
 	/// <summary>Gets whether undo is available.</summary>
 	[Reactive] public bool CanUndo { get; private set; }
 
@@ -90,6 +95,27 @@ public class TasEditorViewModel : DisposableViewModel {
 	public static IReadOnlyList<ControllerLayout> AvailableLayouts { get; } =
 		Enum.GetValues<ControllerLayout>().ToList();
 
+	/// <summary>Gets or sets whether recording is active.</summary>
+	[Reactive] public bool IsRecording { get; set; }
+
+	/// <summary>Gets or sets the current recording mode.</summary>
+	[Reactive] public RecordingMode RecordMode { get; set; } = RecordingMode.Append;
+
+	/// <summary>Gets the greenzone savestate count.</summary>
+	[Reactive] public int SavestateCount { get; private set; }
+
+	/// <summary>Gets the greenzone memory usage in MB.</summary>
+	[Reactive] public double GreenzoneMemoryMB { get; private set; }
+
+	/// <summary>Gets or sets whether piano roll view is visible.</summary>
+	[Reactive] public bool ShowPianoRoll { get; set; }
+
+	/// <summary>Gets the rerecord count for the current movie.</summary>
+	[Reactive] public int RerecordCount { get; private set; }
+
+	/// <summary>Gets the list of saved branches.</summary>
+	public ObservableCollection<BranchData> Branches { get; } = new();
+
 	private readonly Stack<UndoableAction> _undoStack = new();
 	private readonly Stack<UndoableAction> _redoStack = new();
 	private List<InputFrame>? _clipboard;
@@ -97,10 +123,58 @@ public class TasEditorViewModel : DisposableViewModel {
 	private IMovieConverter? _currentConverter;
 	private Windows.TasEditorWindow? _window;
 
+	/// <summary>Gets the greenzone manager for savestate management.</summary>
+	public GreenzoneManager Greenzone { get; } = new();
+
+	/// <summary>Gets the input recorder for TAS recording.</summary>
+	public InputRecorder Recorder { get; }
+
 	public TasEditorViewModel() {
+		// Initialize recorder with greenzone
+		Recorder = new InputRecorder(Greenzone);
+
+		// Subscribe to greenzone events
+		Greenzone.SavestateCaptured += (_, e) => {
+			SavestateCount = Greenzone.SavestateCount;
+			GreenzoneMemoryMB = Greenzone.TotalMemoryUsage / (1024.0 * 1024.0);
+		};
+
+		Greenzone.SavestatesPruned += (_, e) => {
+			SavestateCount = Greenzone.SavestateCount;
+			GreenzoneMemoryMB = Greenzone.TotalMemoryUsage / (1024.0 * 1024.0);
+			StatusMessage = $"Pruned {e.PrunedCount} states, freed {e.FreedMemory / 1024.0:F1} KB";
+		};
+
+		// Subscribe to recorder events
+		Recorder.RecordingStarted += (_, e) => {
+			IsRecording = true;
+			StatusMessage = $"Recording started at frame {e.StartFrame} ({e.Mode} mode)";
+		};
+
+		Recorder.RecordingStopped += (_, e) => {
+			IsRecording = false;
+			StatusMessage = $"Recording stopped. {e.FramesRecorded} frames recorded.";
+			UpdateFrames();
+		};
+
+		Recorder.FrameRecorded += (_, e) => {
+			PlaybackFrame = e.FrameIndex;
+			// Update UI less frequently for performance
+			if (e.FrameIndex % 10 == 0) {
+				UpdateFrames();
+			}
+		};
+
+		Recorder.Rerecording += (_, e) => {
+			RerecordCount = e.RerecordCount;
+			StatusMessage = $"Rerecording from frame {e.Frame}. Total rerecords: {e.RerecordCount}";
+		};
+
 		AddDisposable(this.WhenAnyValue(x => x.Movie).Subscribe(_ => {
 			UpdateFrames();
 			DetectControllerLayout();
+			Recorder.Movie = Movie;
+			Greenzone.Clear();
 		}));
 		AddDisposable(this.WhenAnyValue(x => x.FilePath, x => x.HasUnsavedChanges).Subscribe(_ => UpdateWindowTitle()));
 		AddDisposable(this.WhenAnyValue(x => x.CurrentLayout).Subscribe(_ => UpdateControllerButtons()));
@@ -217,6 +291,17 @@ public class TasEditorViewModel : DisposableViewModel {
 				ActionType = ActionType.Custom,
 				CustomText = "Toggle Greenzone",
 				OnClick = () => IsGreenzoneEnabled = !IsGreenzoneEnabled
+			},
+			new ContextMenuSeparator(),
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Show Piano Roll",
+				OnClick = () => ShowPianoRoll = !ShowPianoRoll
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Greenzone Settings...",
+				OnClick = ShowGreenzoneSettings
 			}
 		};
 
@@ -249,6 +334,13 @@ public class TasEditorViewModel : DisposableViewModel {
 			new ContextMenuSeparator(),
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
+				CustomText = "Seek to Frame...",
+				OnClick = () => _ = SeekToFrameAsync(),
+				IsEnabled = () => Movie != null && Greenzone.SavestateCount > 0
+			},
+			new ContextMenuSeparator(),
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
 				CustomText = "Speed: 0.25x",
 				OnClick = () => PlaybackSpeed = 0.25
 			},
@@ -271,6 +363,57 @@ public class TasEditorViewModel : DisposableViewModel {
 				ActionType = ActionType.Custom,
 				CustomText = "Speed: 4.0x",
 				OnClick = () => PlaybackSpeed = 4.0
+			}
+		};
+
+		RecordingMenuItems = new List<object>() {
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Start Recording",
+				OnClick = StartRecording,
+				IsEnabled = () => Movie != null && !IsRecording
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Stop Recording",
+				OnClick = StopRecording,
+				IsEnabled = () => IsRecording
+			},
+			new ContextMenuSeparator(),
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Rerecord from Here",
+				OnClick = RerecordFromSelected,
+				IsEnabled = () => Movie != null && SelectedFrameIndex >= 0
+			},
+			new ContextMenuSeparator(),
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Record Mode: Append",
+				OnClick = () => RecordMode = RecordingMode.Append
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Record Mode: Insert",
+				OnClick = () => RecordMode = RecordingMode.Insert
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Record Mode: Overwrite",
+				OnClick = () => RecordMode = RecordingMode.Overwrite
+			},
+			new ContextMenuSeparator(),
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Create Branch",
+				OnClick = CreateBranch,
+				IsEnabled = () => Movie != null
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Manage Branches...",
+				OnClick = () => _ = ManageBranchesAsync(),
+				IsEnabled = () => Branches.Count > 0
 			}
 		};
 	}
@@ -774,6 +917,116 @@ public class TasEditorViewModel : DisposableViewModel {
 				});
 			}
 		}
+	}
+
+	/// <summary>
+	/// Seeks to a specific frame using the greenzone.
+	/// </summary>
+	public async System.Threading.Tasks.Task SeekToFrameAsync() {
+		if (Movie == null || Greenzone.SavestateCount == 0) {
+			return;
+		}
+
+		// TODO: Implement frame input dialog
+		int targetFrame = SelectedFrameIndex >= 0 ? SelectedFrameIndex : 0;
+
+		int actualFrame = await Greenzone.SeekToFrameAsync(targetFrame);
+
+		if (actualFrame >= 0) {
+			PlaybackFrame = actualFrame;
+			SelectedFrameIndex = actualFrame;
+			StatusMessage = $"Seeked to frame {actualFrame + 1}";
+		} else {
+			StatusMessage = "Failed to seek - no greenzone state available";
+		}
+	}
+
+	#endregion
+
+	#region Recording Controls
+
+	/// <summary>
+	/// Starts input recording.
+	/// </summary>
+	public void StartRecording() {
+		if (Movie == null || IsRecording) {
+			return;
+		}
+
+		Recorder.StartRecording(RecordMode, SelectedFrameIndex);
+	}
+
+	/// <summary>
+	/// Stops input recording.
+	/// </summary>
+	public void StopRecording() {
+		if (!IsRecording) {
+			return;
+		}
+
+		Recorder.StopRecording();
+		UpdateFrames();
+		HasUnsavedChanges = true;
+	}
+
+	/// <summary>
+	/// Starts rerecording from the selected frame.
+	/// </summary>
+	public void RerecordFromSelected() {
+		if (Movie == null || SelectedFrameIndex < 0) {
+			return;
+		}
+
+		if (Recorder.RerecordFrom(SelectedFrameIndex)) {
+			UpdateFrames();
+			HasUnsavedChanges = true;
+		} else {
+			StatusMessage = "Failed to rerecord - no greenzone state available for this frame";
+		}
+	}
+
+	/// <summary>
+	/// Creates a branch from the current movie state.
+	/// </summary>
+	public void CreateBranch() {
+		if (Movie == null) {
+			return;
+		}
+
+		var branch = Recorder.CreateBranch();
+		Branches.Add(branch);
+		StatusMessage = $"Created branch: {branch.Name}";
+	}
+
+	/// <summary>
+	/// Loads a saved branch.
+	/// </summary>
+	/// <param name="branch">The branch to load.</param>
+	public void LoadBranch(BranchData branch) {
+		if (Movie == null) {
+			return;
+		}
+
+		Recorder.LoadBranch(branch);
+		UpdateFrames();
+		HasUnsavedChanges = true;
+		StatusMessage = $"Loaded branch: {branch.Name}";
+	}
+
+	/// <summary>
+	/// Shows the branch management dialog.
+	/// </summary>
+	public async System.Threading.Tasks.Task ManageBranchesAsync() {
+		// TODO: Implement branch management dialog
+		await System.Threading.Tasks.Task.CompletedTask;
+	}
+
+	/// <summary>
+	/// Shows greenzone settings dialog.
+	/// </summary>
+	public void ShowGreenzoneSettings() {
+		// TODO: Implement greenzone settings dialog
+		StatusMessage = $"Greenzone: {SavestateCount} states, {GreenzoneMemoryMB:F1} MB";
 	}
 
 	#endregion
