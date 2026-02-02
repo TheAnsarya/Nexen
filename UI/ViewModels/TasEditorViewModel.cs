@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using Avalonia.Media;
 using Nexen.Config;
+using Nexen.Config.Shortcuts;
 using Nexen.Controls;
 using Nexen.Debugger.Utilities;
 using Nexen.Interop;
@@ -722,6 +723,11 @@ public class TasEditorViewModel : DisposableViewModel {
 	public void StopPlayback() {
 		IsPlaying = false;
 		StatusMessage = "Playback stopped";
+
+		// Pause emulation when stopping playback
+		if (EmuApi.IsRunning() && !EmuApi.IsPaused()) {
+			EmuApi.Pause();
+		}
 	}
 
 	/// <summary>
@@ -737,7 +743,12 @@ public class TasEditorViewModel : DisposableViewModel {
 			SelectedFrameIndex = PlaybackFrame;
 			StatusMessage = $"Frame {PlaybackFrame + 1} / {Movie.InputFrames.Count}";
 
-			// TODO: Connect to emulation core for frame advance
+			// Execute single frame in emulator if running
+			if (EmuApi.IsRunning()) {
+				EmuApi.ExecuteShortcut(new ExecuteShortcutParams {
+					Shortcut = EmulatorShortcut.RunSingleFrame
+				});
+			}
 		}
 	}
 
@@ -754,7 +765,14 @@ public class TasEditorViewModel : DisposableViewModel {
 			SelectedFrameIndex = PlaybackFrame;
 			StatusMessage = $"Frame {PlaybackFrame + 1} / {Movie.InputFrames.Count}";
 
-			// TODO: Connect to emulation core for frame rewind (requires savestates)
+			// Use rewind shortcut if available
+			if (EmuApi.IsRunning()) {
+				// Try to load a savestate for frame-accurate rewind
+				// For now, use the rewind feature
+				EmuApi.ExecuteShortcut(new ExecuteShortcutParams {
+					Shortcut = EmulatorShortcut.Rewind
+				});
+			}
 		}
 	}
 
