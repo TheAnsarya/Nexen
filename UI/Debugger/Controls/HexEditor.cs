@@ -138,6 +138,13 @@ public partial class HexEditor : Control {
 	private Point _pointerPressedPos;
 	private double _scrollAccumulator = 0.0;
 
+	// Reusable collections to avoid per-frame allocations
+	private readonly List<ByteInfo> _dataToDraw = new(512);
+	private readonly HashSet<Color> _fgColors = new(32);
+	private readonly StringBuilder _columnHeaderSb = new(64);
+	private string? _cachedColumnHeaderText = null;
+	private int _cachedBytesPerRow = -1;
+
 	static HexEditor() {
 		AffectsRender<HexEditor>(
 			DataProviderProperty, TopRowProperty, BytesPerRowProperty, SelectionStartProperty, SelectionLengthProperty,
@@ -671,8 +678,12 @@ public partial class HexEditor : Control {
 		}
 
 		int bytesToDraw = bytesPerRow * visibleRows;
-		List<ByteInfo> dataToDraw = new List<ByteInfo>(bytesToDraw);
-		HashSet<Color> fgColors = new HashSet<Color>();
+		// Reuse collections to avoid per-frame allocations
+		_dataToDraw.Clear();
+		if (_dataToDraw.Capacity < bytesToDraw) {
+			_dataToDraw.Capacity = bytesToDraw;
+		}
+		_fgColors.Clear();
 
 		for (int i = 0; i < bytesToDraw; i++) {
 			if (dataProvider.Length <= position) {
@@ -686,17 +697,17 @@ public partial class HexEditor : Control {
 				//About to draw the selected byte, draw anything that's pending, and then the current byte
 				byteInfo.ForeColor = Colors.DarkOrange;
 				byteInfo.Value = (byte)NewByteValue;
-				dataToDraw.Add(byteInfo);
+				_dataToDraw.Add(byteInfo);
 			} else {
-				dataToDraw.Add(byteInfo);
+				_dataToDraw.Add(byteInfo);
 			}
 
-			fgColors.Add(byteInfo.ForeColor);
+			_fgColors.Add(byteInfo.ForeColor);
 
 			position++;
 		}
 
-		context.Custom(new HexViewDrawOperation(this, dataToDraw, fgColors, _fontAntialiasing));
+		context.Custom(new HexViewDrawOperation(this, _dataToDraw, _fgColors, _fontAntialiasing));
 
 		if (selectedRow >= TopRow && selectedRow < TopRow + visibleRows) {
 			//Draw selected character/byte cursor + rectangle around correspond byte in other view
@@ -771,12 +782,18 @@ public partial class HexEditor : Control {
 		int selectedColumn = _cursorPosition % BytesPerRow;
 		context.DrawRectangle(ColorHelper.GetBrush(HeaderHighlight), null, new Rect(leftMargin + (selectedColumn * LetterSize.Width * 3) - (LetterSize.Width / 2), 0, LetterSize.Width * 3, ColumnHeaderHeight));
 
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0, len = BytesPerRow; i < len; i++) {
-			sb.Append(i.ToString(HexFormat) + " ");
+		// Cache the column header text since BytesPerRow rarely changes
+		if (_cachedColumnHeaderText == null || _cachedBytesPerRow != BytesPerRow) {
+			_columnHeaderSb.Clear();
+			for (int i = 0, len = BytesPerRow; i < len; i++) {
+				_columnHeaderSb.Append(i.ToString(HexFormat));
+				_columnHeaderSb.Append(' ');
+			}
+			_cachedColumnHeaderText = _columnHeaderSb.ToString();
+			_cachedBytesPerRow = BytesPerRow;
 		}
 
-		var text = new FormattedText(sb.ToString(), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Font, FontSize, ColorHelper.GetBrush(HeaderForeground));
+		var text = new FormattedText(_cachedColumnHeaderText, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Font, FontSize, ColorHelper.GetBrush(HeaderForeground));
 		context.DrawText(text, new Point(leftMargin, (this.ColumnHeaderHeight - this.LetterSize.Height) / 2));
 	}
 }
