@@ -4,7 +4,7 @@ This guide is for developers extending or maintaining the Pansy export functiona
 
 ## Architecture Overview
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │					  Pansy Export System						│
 ├─────────────────────────────────────────────────────────────────┤
@@ -48,7 +48,7 @@ This guide is for developers extending or maintaining the Pansy export functiona
 ### Core Export/Import
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `UI/Debugger/Integration/PansyExporter.cs` | Main export logic |
 | `UI/Debugger/Integration/PansyImporter.cs` | Main import logic |
 | `UI/Debugger/Integration/DbgToPansyConverter.cs` | Format conversion |
@@ -56,28 +56,28 @@ This guide is for developers extending or maintaining the Pansy export functiona
 ### Storage & Sync
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `UI/Debugger/Labels/DebugFolderManager.cs` | Folder-based storage |
 | `UI/Debugger/Labels/SyncManager.cs` | File watching |
 
 ### UI Components
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `UI/Debugger/Windows/PansyExportProgressWindow.axaml` | Progress dialog UI |
 | `UI/Debugger/Windows/PansyExportProgressWindow.axaml.cs` | Progress logic |
 
 ### Configuration
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `UI/Config/IntegrationConfig.cs` | Settings model |
 | `UI/Debugger/Windows/DebuggerConfigWindow.axaml` | Settings UI |
 
 ### Tests
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `Tests/Debugger/Labels/PansyExporterTests.cs` | Export tests |
 | `Tests/Debugger/Labels/PansyImporterTests.cs` | Import tests |
 | `Tests/Debugger/Labels/DebugFolderManagerTests.cs` | Folder tests |
@@ -230,11 +230,13 @@ LabelManager.SetLabel(
 ### Adding a New Section Type
 
 1. **Define Section ID** in constants:
+
 ```csharp
 private const byte SectionTypeNewFeature = 0x09;
 ```
 
-2. **Add Export Method**:
+1. **Add Export Method**:
+
 ```csharp
 private static void WriteNewFeatureSection(BinaryWriter writer, ...)
 {
@@ -247,7 +249,8 @@ private static void WriteNewFeatureSection(BinaryWriter writer, ...)
 }
 ```
 
-3. **Add Import Method**:
+1. **Add Import Method**:
+
 ```csharp
 private static void ReadNewFeatureSection(BinaryReader reader, ImportResult result)
 {
@@ -260,7 +263,8 @@ private static void ReadNewFeatureSection(BinaryReader reader, ImportResult resu
 }
 ```
 
-4. **Add to Export Options**:
+1. **Add to Export Options**:
+
 ```csharp
 public class PansyExportOptions
 {
@@ -268,7 +272,8 @@ public class PansyExportOptions
 }
 ```
 
-5. **Update Header Flags** (if needed):
+1. **Update Header Flags** (if needed):
+
 ```csharp
 if (options.IncludeNewFeature) flags |= 0x08;
 ```
@@ -276,6 +281,7 @@ if (options.IncludeNewFeature) flags |= 0x08;
 ### Adding a New Debug Format Converter
 
 1. **Add Format Enum**:
+
 ```csharp
 public enum DebugFormat
 {
@@ -284,7 +290,8 @@ public enum DebugFormat
 }
 ```
 
-2. **Add Detection Logic**:
+1. **Add Detection Logic**:
+
 ```csharp
 public static DebugFormat DetectFormat(string path)
 {
@@ -295,7 +302,8 @@ public static DebugFormat DetectFormat(string path)
 }
 ```
 
-3. **Add Import Method**:
+1. **Add Import Method**:
+
 ```csharp
 private static void ImportNewFormat(string path, List<CodeLabel> labels)
 {
@@ -304,7 +312,8 @@ private static void ImportNewFormat(string path, List<CodeLabel> labels)
 }
 ```
 
-4. **Wire Up in ConvertAndExport**:
+1. **Wire Up in ConvertAndExport**:
+
 ```csharp
 case DebugFormat.NewFormat:
 	ImportNewFormat(inputPath, labels);
@@ -500,6 +509,7 @@ public static void ProcessData(...)
 ### Adding New Strings
 
 1. **Add to resources.en.xml**:
+
 ```xml
 <Form ID="MyNewWindow">
 	<Entry ID="Title">My New Window</Entry>
@@ -507,12 +517,14 @@ public static void ProcessData(...)
 </Form>
 ```
 
-2. **Use in Code**:
+1. **Use in Code**:
+
 ```csharp
 var title = ResourceHelper.GetMessage("MyNewWindow_Title");
 ```
 
-3. **Use in AXAML**:
+1. **Use in AXAML**:
+
 ```xml
 <TextBlock Text="{l:Translate MyNewWindow_Description}" />
 ```
@@ -545,6 +557,7 @@ public static void DumpHex(byte[] data, int length = 64)
 ### Test with Known Files
 
 Keep test files in `~manual-testing/`:
+
 - `test_minimal.pansy` - Smallest valid file
 - `test_all_sections.pansy` - All section types
 - `test_compressed.pansy` - With compression
@@ -553,7 +566,7 @@ Keep test files in `~manual-testing/`:
 ## Version History
 
 | Version | Changes |
-|---------|---------|
+| --------- | --------- |
 | 1.0 | Initial release - symbols, comments, code/data |
 | 1.1 | Added memory regions, cross-references, compression |
 | 1.2 | (Future) Watches, breakpoints, trace data |

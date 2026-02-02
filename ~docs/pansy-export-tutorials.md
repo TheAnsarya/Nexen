@@ -7,6 +7,7 @@ Step-by-step tutorials for common Pansy export workflows.
 **Goal:** Export your first Pansy file with labels and comments.
 
 ### Prerequisites
+
 - Nexen installed
 - A ROM file loaded
 - Some labels/comments added
@@ -41,6 +42,7 @@ Step-by-step tutorials for common Pansy export workflows.
 ### What's in the File?
 
 Your Pansy file now contains:
+
 - ✅ All your labels with addresses
 - ✅ All your comments
 - ✅ Code/data markings from CDL (if any)
@@ -73,7 +75,8 @@ Your Pansy file now contains:
 
 3. **Load a ROM**
    - A folder appears next to your ROM:
-	 ```
+
+	 ```text
 	 MyGame.nes
 	 MyGame_debug/
 	 ├── manifest.json
@@ -92,7 +95,7 @@ Your Pansy file now contains:
 
 ### MLB File Format
 
-```
+```text
 ; Comments start with semicolon
 PRG:$8000:Reset:
 PRG:$8003:MainLoop:
@@ -138,7 +141,7 @@ Someone has shared their analysis of a game as a `.pansy` file. You want to use 
 ### Merge Strategies
 
 | Strategy | Behavior |
-|----------|----------|
+| ---------- | ---------- |
 | Keep Mine | Your labels take priority |
 | Keep Theirs | Imported labels take priority |
 | Merge All | Keep both (may have duplicates) |
@@ -171,7 +174,8 @@ Someone has shared their analysis of a game as a `.pansy` file. You want to use 
    - Format auto-detected as "ca65 Debug"
 
 4. **Review Conversion**
-   ```
+
+   ```text
    Converting game.dbg...
    Found: 1,247 symbols
    Found: 89 segments
@@ -187,7 +191,7 @@ Someone has shared their analysis of a game as a `.pansy` file. You want to use 
 ### What Gets Converted?
 
 | ca65 Feature | Pansy Equivalent |
-|--------------|------------------|
+| -------------- | ------------------ |
 | Symbols (.global) | Labels |
 | Local labels | Labels with scope prefix |
 | Segments | Memory regions |
@@ -225,7 +229,8 @@ Someone has shared their analysis of a game as a `.pansy` file. You want to use 
    - Provides syntax highlighting
 
 3. **Edit Labels**
-   ```
+
+   ```text
    ; Open deadbeef.mlb
    PRG:$8000:Reset:
    PRG:$8010:InitializeHardware:
@@ -240,6 +245,7 @@ Someone has shared their analysis of a game as a `.pansy` file. You want to use 
 ### Bidirectional Sync
 
 Changes in Nexen also update the file:
+
 1. Add a label in Nexen debugger
 2. MLB file updates automatically
 3. VS Code shows the change
@@ -252,7 +258,7 @@ Changes in Nexen also update the file:
 
 ### Project Structure
 
-```
+```text
 MyGameAnalysis/
 ├── roms/
 │   └── MyGame.nes		   # Your ROM (gitignore!)
@@ -272,6 +278,7 @@ MyGameAnalysis/
 ### Setup Steps
 
 1. **Create Project Folder**
+
    ```powershell
    mkdir MyGameAnalysis
    cd MyGameAnalysis
@@ -279,6 +286,7 @@ MyGameAnalysis/
    ```
 
 2. **Configure .gitignore**
+
    ```gitignore
    # ROMs (copyrighted)
    roms/*.nes
@@ -321,6 +329,7 @@ git push origin main
 ### Collaboration
 
 Team members can:
+
 1. Clone the repo
 2. Add their own ROM file
 3. Nexen loads labels from `debug/`
@@ -397,7 +406,7 @@ For games where code is at same offsets:
 
 For games with code differences:
 
-```
+```text
 MyGame_Project/
 ├── shared/
 │   └── common_labels.mlb	# Shared labels
@@ -410,6 +419,7 @@ MyGame_Project/
 ```
 
 Configure Nexen to load:
+
 1. Shared labels first
 2. Region-specific labels second
 

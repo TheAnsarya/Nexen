@@ -5,6 +5,7 @@ This guide explains how to use AddressSanitizer for detecting memory errors in N
 ## Overview
 
 AddressSanitizer (ASan) is a fast memory error detector that catches:
+
 - Buffer overflows (stack, heap, global)
 - Use-after-free
 - Use-after-return
@@ -32,6 +33,7 @@ msbuild Core\Core.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:EnableASAN=t
 3. C/C++ → General → Enable Address Sanitizer: **Yes (/fsanitize=address)**
 
 Or in the `.vcxproj`:
+
 ```xml
 <EnableASAN>true</EnableASAN>
 ```
@@ -41,6 +43,7 @@ Or in the `.vcxproj`:
 ### Runtime Library
 
 ASan requires the DLL runtime library:
+
 - Debug: `MultiThreadedDebugDLL` (/MDd)
 - Release: `MultiThreadedDLL` (/MD)
 
@@ -55,7 +58,7 @@ The test project is configured for this.
 
 When ASan detects an error, it prints a detailed report:
 
-```
+```text
 ==12345==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x...
 READ of size 4 at 0x... thread T0
 	#0 0x... in function_name source.cpp:123
@@ -78,12 +81,14 @@ bin\win-x64\Debug\Core.Tests.exe
 ### Crash on startup
 
 If the app crashes immediately with ASan:
+
 1. Ensure all dependencies are also built with ASan
 2. Check for static initialization order issues
 
 ### False positives
 
 Some patterns may trigger false positives:
+
 - Custom allocators (may need annotations)
 - Memory-mapped I/O regions
 
@@ -108,7 +113,7 @@ The CI pipeline can optionally run ASan tests:
 ## Memory Errors Caught
 
 | Error Type | Description |
-|------------|-------------|
+| ------------ | ------------- |
 | heap-buffer-overflow | Out-of-bounds heap access |
 | stack-buffer-overflow | Out-of-bounds stack access |
 | global-buffer-overflow | Out-of-bounds global access |

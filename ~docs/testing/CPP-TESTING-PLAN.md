@@ -13,7 +13,7 @@ Establish comprehensive C++ unit testing for Nexen Core libraries using **Google
 ### Why Google Test?
 
 | Criteria | Google Test | Catch2 |
-|----------|-------------|---------|
+| ---------- | ------------- | --------- |
 | Industry Standard | ✅ Most widely used | ⚠️ Growing adoption |
 | Visual Studio Integration | ✅ Excellent (Test Explorer) | ✅ Good |
 | Performance | ✅ Fast compilation | ⚠️ Slower (header-only) |
@@ -27,7 +27,7 @@ Establish comprehensive C++ unit testing for Nexen Core libraries using **Google
 
 ## Project Structure
 
-```
+```text
 Nexen/
 ├── Core.Tests/					# NEW - C++ test project
 │   ├── Core.Tests.vcxproj		 # VS project file
@@ -58,6 +58,7 @@ Nexen/
 **Estimated Time:** 2-3 hours
 
 1. **Install vcpkg (if not already available)**
+
 	```powershell
 	# Clone vcpkg repository
 	git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
@@ -66,6 +67,7 @@ Nexen/
 	```
 
 2. **Create vcpkg.json manifest**
+
 	```json
 	{
 		"name": "Nexen",
@@ -91,6 +93,7 @@ Nexen/
 **Priority:** HIGH - Zero-cost abstractions, utilities
 
 #### Utilities Tests (LOW RISK - No hot paths)
+
 - `HexUtilitiesTests.cpp` - hex parsing, formatting
 - `StringUtilitiesTests.cpp` - string manipulation
 - `FolderUtilitiesTests.cpp` - file operations
@@ -98,6 +101,7 @@ Nexen/
 - `TimerTests.cpp` - timing utilities
 
 #### Core/Shared Tests (MEDIUM RISK - Profile first)
+
 - `ColorUtilitiesTests.cpp` - constexpr color functions
 - `CrcTests.cpp` - CRC32 calculations
 - `Crc32Tests.cpp` - new C++20 CRC (verify accuracy)
@@ -109,12 +113,14 @@ Nexen/
 **Priority:** MEDIUM - Requires ROM test data
 
 #### NES Tests
+
 - `NesCpuTests.cpp` - CPU instruction accuracy
 - `NesPpuTests.cpp` - PPU rendering correctness
 - `NesApuTests.cpp` - Audio synthesis
 - `NesMapperTests.cpp` - Mapper implementations
 
 #### SNES Tests
+
 - `SnesCpuTests.cpp` - 65816 opcodes
 - `SnesPpuTests.cpp` - Mode 0-7 rendering
 - `SnesDspTests.cpp` - DSP chip emulation
@@ -241,6 +247,7 @@ TEST(NesEmulationTests, NesTest_Passes) {
 ## Continuous Integration
 
 ### Local Testing
+
 ```powershell
 # Build and run tests
 msbuild Nexen.sln /t:Core.Tests /p:Configuration=Release
@@ -251,6 +258,7 @@ vstest.console.exe Core.Tests\bin\Release\Core.Tests.dll
 ```
 
 ### GitHub Actions (Future)
+
 ```yaml
 name: C++ Tests
 
@@ -274,7 +282,7 @@ jobs:
 ## Coverage Goals
 
 | Component | Target Coverage | Priority |
-|-----------|----------------|----------|
+| ----------- | ---------------- | ---------- |
 | Utilities | 80% | HIGH |
 | Core/Shared | 60% | HIGH |
 | CPU Emulation | 40% | MEDIUM |

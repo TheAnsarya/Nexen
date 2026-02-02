@@ -6,7 +6,7 @@ This document covers Nexen's movie recording, playback, and TAS (Tool-Assisted S
 
 ## Architecture Overview
 
-```
+```text
 Movie/TAS Architecture
 ══════════════════════
 
@@ -34,7 +34,7 @@ Movie/TAS Architecture
 
 ## Directory Structure
 
-```
+```text
 Core/Shared/Movies/
 ├── MovieManager.h/cpp	 - Central movie coordinator
 ├── MovieRecorder.h/cpp	- Movie recording
@@ -52,14 +52,16 @@ Core/Shared/Movies/
 Central coordinator for movie operations.
 
 **Supported Formats:**
+
 | Format | Extension | System | Notes |
-|--------|-----------|--------|-------|
+| -------- | ----------- | -------- | ------- |
 | Nexen | .msm | Multi | Native format |
 | FCEUX | .fm2, .fm3 | NES | FCEUX TAS format |
 | BizHawk | .bk2 | Multi | Multi-system TAS |
 | Lsnes | .lsmv | SNES | SNES TAS format |
 
 **Recording:**
+
 ```cpp
 struct RecordMovieOptions {
 	string Filename;		// Output file path
@@ -74,6 +76,7 @@ void Record(RecordMovieOptions options);
 ```
 
 **Playback:**
+
 ```cpp
 // Play movie file (auto-detects format)
 bool Play(VirtualFile& file);
@@ -91,12 +94,14 @@ void Stop();
 Handles movie recording.
 
 **Recording Process:**
+
 1. Initialize with ROM info and start state
 2. Each frame: Capture controller input
 3. Store frame data incrementally
 4. On stop: Finalize and write file
 
 **Data Captured:**
+
 - Controller input (per-frame)
 - ROM hash (for verification)
 - Initial save state (if starting from state)
@@ -127,7 +132,7 @@ Native movie format with full feature support.
 
 ### File Structure
 
-```
+```text
 MSM File Format
 ═══════════════
 
@@ -186,6 +191,7 @@ enum NesButton {
 Record over previous input from any point.
 
 **Workflow:**
+
 1. Play movie to target frame
 2. Create save state
 3. Continue recording (overwriting remaining)
@@ -205,6 +211,7 @@ void IncrementRerecordCount() {
 Frames where input wasn't polled.
 
 **Detection:**
+
 ```cpp
 // In BaseControlManager
 bool _wasInputRead = false;
@@ -223,6 +230,7 @@ void ProcessEndOfFrame() {
 ```
 
 **Display:**
+
 - Frame counter shows current frame
 - Lag counter shows total lag frames
 - Lag frames highlighted in HUD
@@ -232,6 +240,7 @@ void ProcessEndOfFrame() {
 Step through execution frame-by-frame.
 
 **Controls:**
+
 - Frame Advance: Execute single frame
 - Hold Advance: Repeat advance while held
 - Run: Resume normal speed
@@ -241,6 +250,7 @@ Step through execution frame-by-frame.
 Movies can start from or include save states.
 
 **Start Options:**
+
 - **Power-On**: Clean start, most verifiable
 - **Save State**: Start from specific point
 - **Battery Save**: Include SRAM/save data
@@ -254,11 +264,13 @@ Movies can start from or include save states.
 NES movie format from FCEUX emulator.
 
 **Features:**
+
 - Text-based header
 - Binary input data
 - Subtitle support
 
 **Import Process:**
+
 1. Parse header (ROM hash, controller config)
 2. Load input frames
 3. Apply to Nexen NES core
@@ -268,12 +280,14 @@ NES movie format from FCEUX emulator.
 Multi-system TAS format.
 
 **Features:**
+
 - ZIP archive structure
 - Multiple system support
 - Subtitles and annotations
 
 **Contents:**
-```
+
+```text
 movie.bk2/
 ├── Header.txt	 - Movie metadata
 ├── Input Log.txt  - Frame-by-frame input
@@ -286,6 +300,7 @@ movie.bk2/
 SNES TAS format from lsnes emulator.
 
 **Features:**
+
 - Comprehensive SNES support
 - Subframe input
 - Full verification
@@ -315,12 +330,14 @@ bool VerifyRom(const RomInfo& movieRom, const RomInfo& currentRom) {
 Detect when movie desyncs from recording.
 
 **Causes:**
+
 - Wrong ROM version
 - Different emulator version
 - Random number inconsistency
 - Save data mismatch
 
 **Handling:**
+
 - Display warning on potential desync
 - Log frame of desync
 - Option to continue or stop
@@ -334,6 +351,7 @@ Detect when movie desyncs from recording.
 On-screen display during playback/recording.
 
 **Elements:**
+
 - Current frame number
 - Total frame count
 - Lag frame count
@@ -361,6 +379,7 @@ struct InputDisplayConfig {
 ### Determinism Requirements
 
 For perfect movie sync:
+
 - Same ROM (exact match)
 - Same emulator version
 - Same settings
@@ -402,6 +421,7 @@ struct MovieSettings {
 ### Controller Configuration
 
 Movie stores controller types:
+
 - Standard controller
 - Multitap configuration
 - Special controllers (Zapper, etc.)

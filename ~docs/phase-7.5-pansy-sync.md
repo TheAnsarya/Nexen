@@ -7,12 +7,14 @@
 ## Overview
 
 Create a unified debug data storage system where each ROM has a dedicated folder containing:
+
 1. **Pansy file** (`.pansy`) - Universal metadata format
 2. **Nexen Label file** (`.mlb`) - Native Nexen labels
 3. **CDL file** (`.cdl`) - Code Data Logger data
 4. **Debug info** (`.dbg`) - Extended debug information
 
 These files are kept in sync bidirectionally:
+
 - Changes to MLB/CDL update the Pansy file
 - Pansy file can be imported back to restore MLB/CDL data
 
@@ -21,7 +23,7 @@ These files are kept in sync bidirectionally:
 ### Pansy Format Capabilities
 
 | Pansy Section | Description | Nexen Equivalent |
-|---------------|-------------|------------------|
+| --------------- | ------------- | ------------------ |
 | CODE_DATA_MAP | Code/Data flags | CDL file (`.cdl`) |
 | SYMBOLS | Labels with addresses | MLB file (`.mlb`) |
 | COMMENTS | Per-address comments | MLB file comments |
@@ -36,20 +38,23 @@ These files are kept in sync bidirectionally:
 ### Nexen Format Details
 
 #### MLB (Nexen Label File)
-```
+
+```text
 Format: MemoryType:Address[-EndAddress]:Label[:Comment]
 Example: NesPrgRom:8000:Reset:Main entry point
 Example: NesInternalRam:0010-001F:PlayerData
 ```
 
 Contains:
+
 - Symbol names (labels)
 - Memory type/address
 - Optional comments
 - Multi-byte label ranges
 
 #### CDL (Code Data Logger)
-```
+
+```text
 Format: Raw byte array, one byte per ROM byte
 Flags:
   0x01 = Code
@@ -59,6 +64,7 @@ Flags:
 ```
 
 Contains:
+
 - Code/Data classification
 - Jump targets
 - Subroutine entry points
@@ -68,7 +74,7 @@ External debug info format - Nexen can import but doesn't export.
 
 ## Folder Structure
 
-```
+```text
 [Nexen Data Directory]/
 ├── Debug/
 │   ├── [RomName_CRC32]/		   # Per-ROM folder
@@ -86,6 +92,7 @@ External debug info format - Nexen can import but doesn't export.
 ### Naming Convention
 
 Folder name: `{RomBaseName}_{CRC32}`
+
 - `Super Mario Bros. (USA)_A2B3C4D5/`
 - `Zelda - A Link to the Past (USA)_12345678/`
 
@@ -93,7 +100,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 
 ### Export Flow (Nexen → Pansy)
 
-```
+```text
 ┌────────────────────────────────────────────────────────────────┐
 │					  Export Trigger							│
 │  (Manual export, Auto-save timer, ROM unload, Label change)   │
@@ -121,7 +128,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 
 ### Import Flow (Pansy → Nexen)
 
-```
+```text
 ┌────────────────────────────────────────────────────────────────┐
 │					  Import Trigger							│
 │  (Manual import, ROM load with AutoLoad, User request)		│
@@ -151,6 +158,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 **Estimate:** 6 hours
 
 **Tasks:**
+
 - [ ] Create `DebugFolderManager` class
 - [ ] Implement folder naming convention
 - [ ] Create folder on first save
@@ -159,6 +167,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 - [ ] Handle special characters in ROM names
 
 **Files:**
+
 - NEW: `UI/Debugger/Labels/DebugFolderManager.cs`
 - MOD: `UI/Config/IntegrationConfig.cs`
 - MOD: `UI/Debugger/Labels/BackgroundPansyExporter.cs`
@@ -168,6 +177,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 **Estimate:** 4 hours
 
 **Tasks:**
+
 - [ ] Export MLB alongside Pansy file
 - [ ] Import MLB when loading ROM (existing)
 - [ ] Detect MLB changes and update Pansy
@@ -175,6 +185,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 - [ ] Handle label format differences
 
 **Files:**
+
 - MOD: `UI/Debugger/Labels/NexenLabelFile.cs`
 - MOD: `UI/Debugger/Labels/PansyExporter.cs`
 
@@ -183,6 +194,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 **Estimate:** 4 hours
 
 **Tasks:**
+
 - [ ] Export CDL alongside Pansy file
 - [ ] Auto-load CDL if config enabled
 - [ ] Sync CDL flags to/from Pansy CODE_DATA_MAP
@@ -190,6 +202,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 - [ ] Verify flag mapping accuracy
 
 **Files:**
+
 - NEW: `UI/Debugger/Labels/CdlFileManager.cs`
 - MOD: `UI/Debugger/Labels/PansyExporter.cs`
 
@@ -198,6 +211,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 **Estimate:** 6 hours
 
 **Tasks:**
+
 - [ ] Import DBG files to Pansy format
 - [ ] Preserve source file references
 - [ ] Import symbol definitions
@@ -205,6 +219,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 - [ ] Handle assembler-specific formats (ca65, WLA-DX, etc.)
 
 **Files:**
+
 - MOD: `UI/Debugger/Integration/DbgImporter.cs`
 - NEW: `UI/Debugger/Integration/DbgToPansyConverter.cs`
 
@@ -213,6 +228,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 **Estimate:** 8 hours
 
 **Tasks:**
+
 - [ ] Detect file changes (FileSystemWatcher)
 - [ ] Conflict resolution UI
 - [ ] Merge strategies (ours, theirs, merge)
@@ -221,6 +237,7 @@ Folder name: `{RomBaseName}_{CRC32}`
 - [ ] Sync status indicator in UI
 
 **Files:**
+
 - NEW: `UI/Debugger/Labels/SyncManager.cs`
 - NEW: `UI/Debugger/Windows/SyncConflictDialog.axaml`
 
@@ -303,14 +320,14 @@ public class SyncManager : IDisposable {
 ## Timeline
 
 | Task | Estimate | Phase |
-|------|----------|-------|
+| ------ | ---------- | ------- |
 | Folder Storage | 6h | 7.5a |
 | MLB Sync | 4h | 7.5b |
 | CDL Sync | 4h | 7.5c |
 | DBG Integration | 6h | 7.5d |
 | Sync Manager | 8h | 7.5e |
 | Testing | 4h | 7.5f |
-| **Total** | **32h** | |
+| **Total** | **32h** |  |
 
 ## Success Criteria
 

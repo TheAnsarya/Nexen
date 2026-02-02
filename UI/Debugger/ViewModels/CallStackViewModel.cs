@@ -15,7 +15,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for displaying and managing the call stack in the debugger.
 /// Shows the chain of function calls leading to the current execution point.
@@ -26,7 +26,7 @@ namespace Nexen.Debugger.ViewModels;
 /// - Current PC address (relative to CPU memory map)
 /// - Absolute address with memory type
 /// - Visual indication (italic/gray) for unmapped addresses
-/// 
+///
 /// Supports navigation to any stack frame location and label editing.
 /// </remarks>
 public class CallStackViewModel : DisposableViewModel {

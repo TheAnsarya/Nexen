@@ -5,7 +5,7 @@ Welcome to the Pansy export feature documentation for Nexen. This feature enable
 ## Documentation
 
 | Document | Description | Audience |
-|----------|-------------|----------|
+| ---------- | ------------- | ---------- |
 | [User Guide](pansy-export-user-guide.md) | How to use Pansy export/import | End users |
 | [Tutorials](pansy-export-tutorials.md) | Step-by-step workflows | End users |
 | [API Documentation](pansy-export-api.md) | Class and method reference | Developers |
@@ -32,7 +32,7 @@ Welcome to the Pansy export feature documentation for Nexen. This feature enable
 ### Export Capabilities
 
 | Feature | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | Labels/Symbols | ✅ | All memory types supported |
 | Comments | ✅ | Per-address comments |
 | Code Offsets | ✅ | From CDL data |
@@ -47,7 +47,7 @@ Welcome to the Pansy export feature documentation for Nexen. This feature enable
 ### Import Capabilities
 
 | Feature | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | Labels/Symbols | ✅ | Merged with existing |
 | Comments | ✅ | Merged with existing |
 | Code/Data Offsets | ✅ | Applied to CDL |
@@ -58,7 +58,7 @@ Welcome to the Pansy export feature documentation for Nexen. This feature enable
 ### Storage & Sync
 
 | Feature | Status | Notes |
-|---------|--------|-------|
+| --------- | -------- | ------- |
 | File Export | ✅ | Single .pansy file |
 | Folder Storage | ✅ | MLB/CDL/Pansy sync |
 | Auto-Save | ✅ | Configurable interval |
@@ -70,7 +70,7 @@ Welcome to the Pansy export feature documentation for Nexen. This feature enable
 ### Format Conversion
 
 | Source Format | Status | Notes |
-|---------------|--------|-------|
+| --------------- | -------- | ------- |
 | Nexen MLB | ✅ | Native format |
 | ca65 DBG | ✅ | cc65 toolchain |
 | WLA-DX SYM | ✅ | Game Boy assembler |
@@ -83,7 +83,7 @@ Welcome to the Pansy export feature documentation for Nexen. This feature enable
 ### Completed Phases
 
 | Phase | Description | Commit |
-|-------|-------------|--------|
+| ------- | ------------- | -------- |
 | Phase 1 | Core Pansy export | ✅ |
 | Phase 1.5 | Background CDL & ROM verification | ✅ |
 | Phase 3 | Memory regions & cross-references | ✅ |
@@ -101,7 +101,7 @@ Welcome to the Pansy export feature documentation for Nexen. This feature enable
 ### Test Coverage
 
 | Test Suite | Tests | Status |
-|------------|-------|--------|
+| ------------ | ------- | -------- |
 | PansyExporterTests | 30 | ✅ |
 | PansyImporterTests | 50 | ✅ |
 | DebugFolderManagerTests | 21 | ✅ |
@@ -148,11 +148,11 @@ Want to contribute?
 ## Version History
 
 | Version | Date | Changes |
-|---------|------|---------|
+| --------- | ------ | --------- |
 | 1.0.0 | 2026-01 | Initial implementation |
-| | | - Core export/import |
-| | | - Folder storage |
-| | | - Sync manager |
-| | | - Format conversion |
-| | | - Comprehensive tests |
-| | | - Full documentation |
+|  |  | - Core export/import |
+|  |  | - Folder storage |
+|  |  | - Sync manager |
+|  |  | - Format conversion |
+|  |  | - Comprehensive tests |
+|  |  | - Full documentation |

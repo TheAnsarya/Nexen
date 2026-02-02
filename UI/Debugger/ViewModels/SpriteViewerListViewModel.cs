@@ -11,7 +11,7 @@ using Nexen.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for the sprite viewer list view panel.
 /// Displays sprites in a sortable data grid with selection synchronization to the main sprite viewer.

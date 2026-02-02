@@ -19,6 +19,7 @@
 Implement core Pansy binary format export functionality for Nexen debugger.
 
 **Requirements:**
+
 - [x] Binary format writer (Pansy v1.0 specification)
 - [x] Platform ID mapping for all Nexen systems
 - [x] Symbol export (CodeLabel → binary)
@@ -31,11 +32,13 @@ Implement core Pansy binary format export functionality for Nexen debugger.
 - [x] Localization strings
 
 **Implementation:**
+
 - File: `UI/Debugger/Labels/PansyExporter.cs` (369 lines)
 - Commit: 6fd99def
 - Branch: pansy-export
 
 **Sections Exported:**
+
 1. CODE_DATA_MAP (0x0001) - CDL flags as byte array
 2. SYMBOLS (0x0002) - Address → name mappings
 3. COMMENTS (0x0003) - Address → comment text
@@ -56,10 +59,12 @@ Implement core Pansy binary format export functionality for Nexen debugger.
 
 **Description:**
 Two critical reliability features for Pansy export:
+
 1. Background CDL recording without requiring debugger window
 2. ROM CRC32 verification to prevent Pansy file corruption
 
 **Background CDL Recording - Completed:**
+
 - [x] Enable CDL recording without opening debugger
 - [x] Auto-start recording on ROM load (if config enabled)
 - [x] Periodic auto-save (configurable interval, default 5 min)
@@ -69,6 +74,7 @@ Two critical reliability features for Pansy export:
 - [x] Hook into MainWindow GameLoaded/EmulationStopped
 
 **ROM Hash Verification - Completed:**
+
 - [x] Calculate actual ROM CRC32 using IEEE polynomial
 - [x] Store CRC32 in Pansy file header (was placeholder 0)
 - [x] Verify CRC before updating existing Pansy file
@@ -77,23 +83,26 @@ Two critical reliability features for Pansy export:
 - [x] PansyHeader record for parsing existing files
 
 **Configuration Options Added:**
+
 - `BackgroundCdlRecording` (bool, default: false)
 - `AutoSaveIntervalMinutes` (int, default: 5)
 - `SavePansyOnRomUnload` (bool, default: true)
 
 **Files Modified:**
+
 - `UI/Debugger/Labels/PansyExporter.cs` - Added CRC32 calculation (~90 lines)
 - `UI/Debugger/Labels/BackgroundPansyExporter.cs` - NEW (160 lines)
 - `UI/Config/IntegrationConfig.cs` - Added 3 config properties
 - `UI/MainWindow.axaml.cs` - Added hooks for ROM load/unload
 
 **UI Polish (Completed 2026-01-27):**
+
 - [x] Add UI config checkboxes in DebuggerConfigWindow.axaml
 - [x] Add localization strings for new options:
-  - `chkBackgroundCdlRecording`
-  - `lblAutoSaveInterval`
-  - `lblMinutes`
-  - `chkSavePansyOnRomUnload`
+	- `chkBackgroundCdlRecording`
+	- `lblAutoSaveInterval`
+	- `lblMinutes`
+	- `chkSavePansyOnRomUnload`
 
 ---
 
@@ -110,6 +119,7 @@ Two critical reliability features for Pansy export:
 Create comprehensive test suite for Pansy export functionality.
 
 **Tasks:**
+
 - [ ] Create test ROM with known symbols/comments
 - [ ] Export .pansy file from Nexen
 - [ ] Verify with Pansy CLI: `pansy info test.pansy`
@@ -122,6 +132,7 @@ Create comprehensive test suite for Pansy export functionality.
 - [ ] Create unit tests (if feasible with Nexen architecture)
 
 **Acceptance Criteria:**
+
 - All platforms export valid .pansy files
 - Pansy CLI successfully reads all exported files
 - No data loss or corruption
@@ -129,6 +140,7 @@ Create comprehensive test suite for Pansy export functionality.
 - Documentation updated with test results
 
 **Files to Create:**
+
 - `~manual-testing/pansy/test-roms/` - Test ROM collection
 - `~manual-testing/pansy/expected-outputs/` - Known-good .pansy files
 - `~docs/pansy-testing-guide.md` - Testing procedures
@@ -148,6 +160,7 @@ Create comprehensive test suite for Pansy export functionality.
 Export named memory regions to Pansy format (PRG-ROM, CHR-ROM, SRAM, etc.)
 
 **Tasks:**
+
 - [x] Add MEMORY_REGIONS section (0x0009)
 - [x] Export region name, start, end, type, flags
 - [x] Map Nexen memory types to Pansy region types
@@ -156,7 +169,8 @@ Export named memory regions to Pansy format (PRG-ROM, CHR-ROM, SRAM, etc.)
 - [x] Test with multi-mapper ROMs
 
 **Binary Format:**
-```
+
+```text
 Section 0x0009: MEMORY_REGIONS
 [uint32 count]
 [for each region]:
@@ -184,6 +198,7 @@ Section 0x0009: MEMORY_REGIONS
 Export cross-references (who calls what) to Pansy format.
 
 **Tasks:**
+
 - [x] Add CROSS_REFS section (0x0005)
 - [x] Extract cross-references from CDL data
 - [x] Support types: Call, Jump, Read, Write, Branch
@@ -194,7 +209,8 @@ Export cross-references (who calls what) to Pansy format.
 - [x] Document format specification
 
 **Binary Format:**
-```
+
+```text
 Section 0x0005: CROSS_REFS
 [uint32 count]
 [for each xref]:
@@ -221,6 +237,7 @@ Section 0x0005: CROSS_REFS
 Optimize export performance for large ROMs and frequent auto-exports.
 
 **Tasks:**
+
 - [x] Add GZip compression option
 - [x] Implement async file writing
 - [x] Buffered streams for large files
@@ -232,6 +249,7 @@ Optimize export performance for large ROMs and frequent auto-exports.
 - [ ] Benchmark suite (1KB, 1MB, 4MB ROMs)
 
 **Acceptance Criteria:**
+
 - Export time < 100ms for 1MB ROM
 - Export time < 500ms for 4MB ROM
 - No UI blocking during export
@@ -251,6 +269,7 @@ Optimize export performance for large ROMs and frequent auto-exports.
 Improve user experience for Pansy export feature.
 
 **Tasks:**
+
 - [ ] Add progress dialog with cancel button
 - [ ] Show export statistics (sections, size, time)
 - [ ] Recent exports list with quick re-export
@@ -261,7 +280,8 @@ Improve user experience for Pansy export feature.
 - [ ] Keyboard shortcuts (Ctrl+Shift+E)
 
 **UI Mockups:**
-```
+
+```text
 ┌─────────────────────────────────────────┐
 │ Export Pansy Metadata				   │
 ├─────────────────────────────────────────┤
@@ -295,6 +315,7 @@ Improve user experience for Pansy export feature.
 Add diff/merge capabilities for .pansy files.
 
 **Tasks:**
+
 - [ ] Compare two .pansy files and show differences
 - [ ] Merge non-conflicting changes
 - [ ] Conflict resolution UI
@@ -304,6 +325,7 @@ Add diff/merge capabilities for .pansy files.
 - [ ] Collaboration workflow documentation
 
 **Use Cases:**
+
 - Merge labels from multiple debugging sessions
 - Compare before/after ROM modifications
 - Team collaboration on disassembly projects
@@ -322,6 +344,7 @@ Add diff/merge capabilities for .pansy files.
 Import .pansy files back into Nexen debugger.
 
 **Tasks:**
+
 - [ ] Parse Pansy binary format
 - [ ] Convert symbols to CodeLabel objects
 - [ ] Import comments to label manager
@@ -333,6 +356,7 @@ Import .pansy files back into Nexen debugger.
 - [ ] Backup before import
 
 **Import Options:**
+
 - Replace all labels
 - Merge (keep existing + add new)
 - Selective import (choose sections)
@@ -351,6 +375,7 @@ Import .pansy files back into Nexen debugger.
 Export multiple ROMs to Pansy format in batch mode.
 
 **Tasks:**
+
 - [ ] Command-line interface for batch export
 - [ ] Folder scanning for ROM files
 - [ ] Automatic debugger startup/shutdown
@@ -360,6 +385,7 @@ Export multiple ROMs to Pansy format in batch mode.
 - [ ] Summary report (successes/failures)
 
 **Example Usage:**
+
 ```bash
 Nexen.exe --batch-export --input "C:\ROMs\*.nes" --output "C:\Pansy"
 ```
@@ -378,6 +404,7 @@ Nexen.exe --batch-export --input "C:\ROMs\*.nes" --output "C:\Pansy"
 Complete documentation and prepare for upstream PR.
 
 **Tasks:**
+
 - [ ] User guide with screenshots/videos
 - [ ] Developer API documentation
 - [ ] File format specification (formal spec)
@@ -390,6 +417,7 @@ Complete documentation and prepare for upstream PR.
 - [ ] Example .pansy files repository
 
 **Documentation Files:**
+
 - `docs/pansy-user-guide.md`
 - `docs/pansy-api-reference.md`
 - `docs/pansy-file-format.md`
@@ -412,7 +440,8 @@ Complete documentation and prepare for upstream PR.
 Implement folder-based storage for debug data. Each ROM gets a dedicated folder containing Pansy, MLB, and CDL files.
 
 **Folder Structure:**
-```
+
+```text
 [Nexen Data]/Debug/[RomName_CRC32]/
 ├── metadata.pansy	 # Universal format
 ├── labels.mlb		 # Native Nexen labels
@@ -422,6 +451,7 @@ Implement folder-based storage for debug data. Each ROM gets a dedicated folder 
 ```
 
 **Tasks:**
+
 - [x] Create `DebugFolderManager` class
 - [x] Implement folder naming convention (sanitize special chars)
 - [x] Create folder on first save
@@ -430,6 +460,7 @@ Implement folder-based storage for debug data. Each ROM gets a dedicated folder 
 - [x] Support custom folder paths
 
 **Files:**
+
 - NEW: `UI/Debugger/Labels/DebugFolderManager.cs` (414 lines)
 - MOD: `UI/Config/IntegrationConfig.cs`
 - MOD: `UI/Debugger/Labels/PansyExporter.cs`
@@ -450,6 +481,7 @@ Implement folder-based storage for debug data. Each ROM gets a dedicated folder 
 Keep MLB (Nexen Label) files in sync with Pansy files.
 
 **Tasks:**
+
 - [x] Export MLB alongside Pansy file
 - [x] Import MLB when loading ROM
 - [x] Detect MLB changes and update Pansy
@@ -458,6 +490,7 @@ Keep MLB (Nexen Label) files in sync with Pansy files.
 - [x] Preserve multi-byte labels
 
 **Files:**
+
 - MOD: `UI/Debugger/Labels/DebugFolderManager.cs`
 - MOD: `UI/Debugger/Labels/PansyExporter.cs`
 - [ ] Detect MLB changes and update Pansy
@@ -466,6 +499,7 @@ Keep MLB (Nexen Label) files in sync with Pansy files.
 - [ ] Preserve multi-byte labels
 
 **Files:**
+
 - MOD: `UI/Debugger/Labels/MesenLabelFile.cs`
 - MOD: `UI/Debugger/Labels/PansyExporter.cs`
 - MOD: `UI/Debugger/Labels/DebugFolderManager.cs`
@@ -486,6 +520,7 @@ Keep MLB (Nexen Label) files in sync with Pansy files.
 Keep CDL (Code Data Logger) files in sync with Pansy files.
 
 **CDL Flags:**
+
 ```cpp
 0x01 = Code
 0x02 = Data
@@ -494,6 +529,7 @@ Keep CDL (Code Data Logger) files in sync with Pansy files.
 ```
 
 **Tasks:**
+
 - [x] Export CDL alongside Pansy file
 - [x] Auto-load CDL if config enabled
 - [x] Sync CDL flags to/from Pansy CODE_DATA_MAP
@@ -502,6 +538,7 @@ Keep CDL (Code Data Logger) files in sync with Pansy files.
 - [x] Support platform-specific CDL formats
 
 **Files:**
+
 - MOD: `UI/Debugger/Labels/DebugFolderManager.cs`
 - MOD: `UI/Debugger/Labels/PansyExporter.cs`
 
@@ -519,6 +556,7 @@ Keep CDL (Code Data Logger) files in sync with Pansy files.
 Import DBG files (ca65, cc65, WLA-DX) into Pansy format, preserving source references.
 
 **Tasks:**
+
 - [ ] Import DBG files to Pansy format
 - [ ] Preserve source file references
 - [ ] Import symbol definitions
@@ -527,12 +565,14 @@ Import DBG files (ca65, cc65, WLA-DX) into Pansy format, preserving source refer
 - [ ] Create DbgToPansyConverter utility
 
 **Supported Formats:**
+
 - ca65/cc65 DBG
 - WLA-DX symbols
 - RGBDS symbols
 - SDCC symbols
 
 **Files:**
+
 - MOD: `UI/Debugger/Integration/DbgImporter.cs`
 - NEW: `UI/Debugger/Integration/DbgToPansyConverter.cs`
 
@@ -550,6 +590,7 @@ Import DBG files (ca65, cc65, WLA-DX) into Pansy format, preserving source refer
 Manage bidirectional sync between Pansy and native Nexen files.
 
 **Tasks:**
+
 - [ ] Detect file changes (FileSystemWatcher)
 - [ ] Conflict resolution UI dialog
 - [ ] Merge strategies (ours, theirs, merge)
@@ -559,6 +600,7 @@ Manage bidirectional sync between Pansy and native Nexen files.
 - [ ] Lock files during sync to prevent corruption
 
 **Files:**
+
 - NEW: `UI/Debugger/Labels/SyncManager.cs`
 - NEW: `UI/Debugger/Windows/SyncConflictDialog.axaml`
 - NEW: `UI/Debugger/Windows/SyncConflictDialog.axaml.cs`
@@ -568,7 +610,7 @@ Manage bidirectional sync between Pansy and native Nexen files.
 ## Issue Summary
 
 | Phase | Issues | Total Hours | Status |
-|-------|--------|-------------|--------|
+| ------- | -------- | ------------- | -------- |
 | Phase 1 | #1 | 12h | ✅ Complete |
 | Phase 1.5 | #1.5 | 4h | ✅ Complete |
 | Phase 2 | #2 | 8h | ⏳ TODO |
@@ -585,4 +627,4 @@ Manage bidirectional sync between Pansy and native Nexen files.
 
 **Document Created:** 2026-01-19 18:48 UTC  
 **Last Updated:** 2026-01-27 14:30 UTC  
-**Repository:** https://github.com/TheAnsarya/Nexen
+**Repository:** <https://github.com/TheAnsarya/Nexen>

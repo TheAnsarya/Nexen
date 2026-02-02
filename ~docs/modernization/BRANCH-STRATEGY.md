@@ -10,7 +10,7 @@ This document describes the branch strategy used for Nexen development, specific
 
 ## 🌳 Branch Hierarchy
 
-```
+```text
 main (sour's upstream)
  │
  └─► pansy-export (our fork's main integration branch)
@@ -21,31 +21,34 @@ main (sour's upstream)
 ## 📍 Branch Descriptions
 
 ### `main`
+
 - **Purpose:** Tracks upstream Nexen (sour's repository)
 - **Owner:** Upstream (sour)
 - **Merge Policy:** We pull from upstream, never push
 - **Status:** Read-only from our perspective
 
 ### `pansy-export`
+
 - **Purpose:** Main development branch for pansy integration
 - **Base:** `main`
 - **Features:**
-  - Pansy metadata export functionality
-  - Integration with Peony disassembler
-  - Background auto-save of debug labels
+	- Pansy metadata export functionality
+	- Integration with Peony disassembler
+	- Background auto-save of debug labels
 - **Tag:** `v2.0.0-pansy-phase3`
 - **Status:** Stable, production-ready
 
 ### `modernization`
+
 - **Purpose:** .NET 10 and dependency modernization
 - **Base:** `pansy-export`
 - **Features:**
-  - .NET 8.0 → .NET 10.0 migration
-  - Avalonia 11.3.1 → 11.3.9 update
-  - Lua 5.4.4 → 5.4.8 update
-  - System.IO.Hashing integration
-  - K&R code formatting
-  - 24 unit tests for PansyExporter
+	- .NET 8.0 → .NET 10.0 migration
+	- Avalonia 11.3.1 → 11.3.9 update
+	- Lua 5.4.4 → 5.4.8 update
+	- System.IO.Hashing integration
+	- K&R code formatting
+	- 24 unit tests for PansyExporter
 - **Status:** ✅ Complete, ready to merge
 
 ## 🔄 Workflow
@@ -53,12 +56,14 @@ main (sour's upstream)
 ### Feature Development
 
 1. **Create feature branch** from `pansy-export`:
+
    ```bash
    git checkout pansy-export
    git checkout -b feature/my-feature
    ```
 
 2. **Develop and commit** with conventional commits:
+
    ```bash
    git commit -m "feat: add new feature"
    git commit -m "fix: correct bug"
@@ -66,6 +71,7 @@ main (sour's upstream)
    ```
 
 3. **Merge back** to `pansy-export`:
+
    ```bash
    git checkout pansy-export
    git merge feature/my-feature
@@ -86,17 +92,20 @@ The modernization branch followed this workflow:
 ## 🏷️ Tagging Strategy
 
 ### Tag Format
-```
+
+```text
 v{major}.{minor}.{patch}-{feature}[-{phase}]
 ```
 
 ### Current Tags
+
 | Tag | Branch | Description |
-|-----|--------|-------------|
+| ----- | -------- | ------------- |
 | `v2.0.0-pansy-phase3` | pansy-export | Initial pansy integration complete |
 | `v2.0.0-modernization` | modernization | Modernization complete |
 
 ### When to Tag
+
 - After completing a major feature
 - Before merging a significant branch
 - At stable checkpoints for easy rollback
@@ -104,7 +113,8 @@ v{major}.{minor}.{patch}-{feature}[-{phase}]
 ## 📊 Commit Convention
 
 ### Format
-```
+
+```xml
 <type>: <description>
 
 [optional body]
@@ -113,8 +123,9 @@ v{major}.{minor}.{patch}-{feature}[-{phase}]
 ```
 
 ### Types
+
 | Type | Description |
-|------|-------------|
+| ------ | ------------- |
 | `feat` | New feature |
 | `fix` | Bug fix |
 | `docs` | Documentation only |
@@ -125,6 +136,7 @@ v{major}.{minor}.{patch}-{feature}[-{phase}]
 | `chore` | Build process, auxiliary tools |
 
 ### Examples
+
 ```bash
 feat: add pansy export menu option
 fix: correct CRC32 calculation for labels
@@ -149,6 +161,7 @@ Before merging a feature branch:
 ## 🚀 Merging Modernization
 
 ### Pre-Merge Steps
+
 1. ✅ Verify all phases complete
 2. ✅ Run full test suite
 3. ✅ Update all documentation
@@ -158,6 +171,7 @@ Before merging a feature branch:
 7. ⏳ Push all changes
 
 ### Merge Commands
+
 ```bash
 # Tag the modernization branch
 git checkout modernization
@@ -176,6 +190,7 @@ git push origin --tags
 ## 📝 Branch Cleanup
 
 After successful merge:
+
 - Keep `modernization` branch for reference
 - Feature branches can be deleted after merge
 - Never delete `main` or `pansy-export`
@@ -183,6 +198,7 @@ After successful merge:
 ## 🔮 Future Branches
 
 Potential future branches:
+
 - `feature/performance` - Performance optimizations
 - `feature/new-systems` - Additional console support
 - `feature/ui-improvements` - UI/UX enhancements

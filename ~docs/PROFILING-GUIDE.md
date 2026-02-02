@@ -9,12 +9,14 @@ This guide covers profiling infrastructure and workflows for performance analysi
 Visual Studio's built-in profiler integrates seamlessly with the Nexen solution.
 
 **Pros:**
+
 - Zero configuration required
 - Deep integration with VS debugger
 - CPU, memory, GPU profiling
 - Works with Release and Profile builds
 
 **How to Use:**
+
 1. Open `Nexen.sln` in Visual Studio 2026
 2. Build in **Release** or **PGO** configuration
 3. **Debug → Performance Profiler** (Alt+F2)
@@ -26,6 +28,7 @@ Visual Studio's built-in profiler integrates seamlessly with the Nexen solution.
 6. Stop profiling and analyze results
 
 **CPU Usage Analysis:**
+
 - Look for hot paths in CPU cores (`NesCpu::Exec`, `SnesCpu::Exec`, etc.)
 - Check PPU rendering functions
 - Identify memory access bottlenecks
@@ -38,11 +41,13 @@ Professional-grade profiler with detailed microarchitecture analysis.
 Download from [Intel VTune Profiler](https://www.intel.com/content/www/us/en/developer/tools/oneapi/vtune-profiler.html)
 
 **Configuration:**
+
 1. Build Nexen with debug info: `Release|x64` configuration
 2. Launch VTune and create new project
 3. Set application path to `bin\win-x64\Release\Nexen.exe`
 
 **Useful Analysis Types:**
+
 - **Hotspots** - Find time-consuming functions
 - **Microarchitecture Exploration** - CPU pipeline analysis
 - **Memory Access** - Cache efficiency
@@ -53,6 +58,7 @@ Download from [Intel VTune Profiler](https://www.intel.com/content/www/us/en/dev
 Lightweight, real-time profiler excellent for frame-by-frame analysis.
 
 **Integration (Future Work):**
+
 ```cpp
 // Add to pch.h when integrating Tracy
 // #include <tracy/Tracy.hpp>
@@ -63,6 +69,7 @@ Lightweight, real-time profiler excellent for frame-by-frame analysis.
 ```
 
 **Benefits:**
+
 - Real-time visualization
 - Frame-based analysis
 - Low overhead (~2%)
@@ -73,6 +80,7 @@ Lightweight, real-time profiler excellent for frame-by-frame analysis.
 Modern Windows profiler with excellent UX.
 
 **Features:**
+
 - Sub-microsecond resolution
 - Live profiling
 - Excellent call tree visualization
@@ -83,6 +91,7 @@ Modern Windows profiler with excellent UX.
 For accurate profiling, use these build settings:
 
 **Release with Debug Info:**
+
 ```xml
 <Optimization>Full</Optimization>
 <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -91,6 +100,7 @@ For accurate profiling, use these build settings:
 ```
 
 **Profile-Guided Optimization (PGO) Build:**
+
 ```bash
 # Windows (use buildPGO script when available)
 # 1. Instrument build
@@ -101,10 +111,12 @@ For accurate profiling, use these build settings:
 ## Profiling Workflow
 
 ### Step 1: Establish Baseline
+
 1. Run `Core.Benchmarks.exe` to get baseline metrics
 2. Save results to `~docs/benchmarks/baseline-YYYY-MM-DD.json`
 
 ### Step 2: Profile Specific Scenario
+
 1. Load ROM that exercises target code path
 2. Enable FPS counter (F11)
 3. Start profiler
@@ -112,12 +124,14 @@ For accurate profiling, use these build settings:
 5. Stop profiler
 
 ### Step 3: Analyze Results
+
 1. Sort by "Self CPU Time" or "Inclusive CPU Time"
 2. Look for unexpected hot spots
 3. Check cache miss rates
 4. Identify memory allocation patterns
 
 ### Step 4: Iterate
+
 1. Make targeted optimization
 2. Re-run benchmark
 3. Compare results
@@ -126,22 +140,26 @@ For accurate profiling, use these build settings:
 ## Key Performance Areas to Profile
 
 ### CPU Emulation
+
 - `NesCpu::Exec()` - NES CPU main loop
 - `SnesCpu::Exec()` - SNES CPU main loop
 - `GbCpu::Exec()` - Game Boy CPU
 - `GbaCpu::Exec()` - GBA ARM/Thumb
 
 ### PPU/Video
+
 - `NesPpu::Run()` - NES PPU rendering
 - `SnesPpu::Render*()` - SNES PPU layers
 - `GbPpu::Exec()` - GB PPU
 
 ### Memory
+
 - `NesMemoryManager::Read/Write()`
 - `SnesMemoryManager::Read/Write()`
 - Mapper implementations
 
 ### Audio
+
 - APU mixing loops
 - DSP processing (SNES SPC700)
 
@@ -166,7 +184,7 @@ compare.py results_before.json results_after.json
 ## Performance Targets
 
 | Component | Target | Notes |
-|-----------|--------|-------|
+| ----------- | -------- | ------- |
 | NES @ 60fps | <2ms/frame | 16.7ms budget |
 | SNES @ 60fps | <8ms/frame | 16.7ms budget |
 | GB @ 60fps | <4ms/frame | 16.7ms budget |

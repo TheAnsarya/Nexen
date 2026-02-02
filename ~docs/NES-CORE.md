@@ -4,7 +4,7 @@ The NES (Nintendo Entertainment System) emulation core provides cycle-accurate e
 
 ## Architecture Overview
 
-```
+```text
 NES Core Architecture
 ═════════════════════
 
@@ -26,7 +26,7 @@ NES Core Architecture
 
 ## Directory Structure
 
-```
+```text
 Core/NES/
 ├── Main Components
 │   ├── NesConsole.h/cpp		- Console coordinator
@@ -87,12 +87,14 @@ Core/NES/
 The main coordinator that owns all NES components and manages the emulation loop.
 
 **Responsibilities:**
+
 - Initialize and connect components
 - Run the main frame loop
 - Handle state serialization
 - Manage debugging features
 
 **Key Methods:**
+
 ```cpp
 void Run(uint64_t runUntilMasterClock);  // Main emulation loop
 void Reset(bool softReset);			   // Reset console
@@ -104,17 +106,20 @@ void PowerCycle();						// Full power cycle
 Emulates the Ricoh 2A03 (NTSC) / 2A07 (PAL) CPU, a modified MOS 6502.
 
 **Key Differences from 6502:**
+
 - No decimal mode (BCD operations do nothing)
 - Integrated audio APU
 - DMA controller for OAM transfers
 
 **Features:**
+
 - All 56 official opcodes
 - Unofficial/undocumented opcodes
 - Cycle-accurate execution
 - Interrupt handling (NMI, IRQ, RESET)
 
 **CPU State:**
+
 ```cpp
 struct NesCpuState {
 	uint16_t PC;		// Program Counter
@@ -130,6 +135,7 @@ struct NesCpuState {
 ```
 
 **Addressing Modes:**
+
 - Immediate, Zero Page, Zero Page X/Y
 - Absolute, Absolute X/Y
 - Indirect, Indexed Indirect (X), Indirect Indexed (Y)
@@ -139,14 +145,16 @@ struct NesCpuState {
 Emulates the 2C02 Picture Processing Unit.
 
 **Key Features:**
+
 - 256×240 pixel output (262 scanlines NTSC, 312 PAL)
 - 8×8 pixel tiles, 64 sprites max (8 per scanline)
 - 2KB internal VRAM + cartridge CHR ROM/RAM
 - 256-byte OAM (Object Attribute Memory)
 
 **PPU Registers ($2000-$2007):**
+
 | Address | Name | Description |
-|---------|------|-------------|
+| --------- | ------ | ------------- |
 | $2000 | PPUCTRL | Control register |
 | $2001 | PPUMASK | Mask register |
 | $2002 | PPUSTATUS | Status register |
@@ -157,6 +165,7 @@ Emulates the 2C02 Picture Processing Unit.
 | $2007 | PPUDATA | VRAM data |
 
 **PPU State:**
+
 ```cpp
 struct NesPpuState {
 	uint16_t Cycle;		 // Current dot (0-340)
@@ -174,19 +183,21 @@ struct NesPpuState {
 The Audio Processing Unit provides 5 audio channels:
 
 **Channels:**
+
 1. **Square 1/2** - Square wave with duty cycle, sweep, envelope
 2. **Triangle** - Triangle wave with linear counter
 3. **Noise** - Pseudo-random noise generator
 4. **DMC** - Delta Modulation Channel (sample playback)
 
 **Frame Counter:**
+
 - Clocks envelope and sweep units
 - 4-step or 5-step mode
 - Generates IRQ (4-step mode only)
 
 ### Memory Map
 
-```
+```text
 CPU Memory Map ($0000-$FFFF)
 ════════════════════════════
 $0000-$07FF  Internal RAM (2KB, mirrored 4x)
@@ -213,6 +224,7 @@ $3F20-$3FFF  Palette mirrors
 ### Mappers (Mappers/)
 
 Cartridge hardware abstraction. Mappers handle:
+
 - PRG-ROM/RAM banking
 - CHR-ROM/RAM banking
 - Nametable mirroring control
@@ -220,8 +232,9 @@ Cartridge hardware abstraction. Mappers handle:
 - Expansion audio
 
 **Common Mappers:**
+
 | # | Name | Games |
-|---|------|-------|
+| --- | ------ | ------- |
 | 0 | NROM | SMB, Donkey Kong |
 | 1 | MMC1 | Zelda, Metroid |
 | 2 | UxROM | Mega Man, Contra |
@@ -232,6 +245,7 @@ Cartridge hardware abstraction. Mappers handle:
 ### GameDatabase (GameDatabase.h)
 
 Contains game-specific fixes and information:
+
 - CRC-based game identification
 - System type detection (NTSC/PAL/Dendy)
 - Board type identification
@@ -240,23 +254,27 @@ Contains game-specific fixes and information:
 ## Timing
 
 **NTSC (2A03):**
+
 - CPU: 1.789773 MHz
 - PPU: 5.369318 MHz (3x CPU)
 - Frame: 60.0988 Hz (262 scanlines × 341 dots)
 
 **PAL (2A07):**
+
 - CPU: 1.662607 MHz
 - PPU: 5.320342 MHz (3.2x CPU)
 - Frame: 50.0070 Hz (312 scanlines × 341 dots)
 
 ## Integration Points
 
-### With Shared Infrastructure:
+### With Shared Infrastructure
+
 - Uses `Serializer` for save states
 - Uses `SimpleLock` for thread safety
 - Uses debugger interface for step/trace
 
-### With Emulator:
+### With Emulator
+
 - Reports timing via master clock
 - Provides video/audio buffers
 - Handles input polling
@@ -264,6 +282,7 @@ Contains game-specific fixes and information:
 ## Debugging Features
 
 Located in `Debugger/`:
+
 - CPU disassembly with symbol support
 - PPU viewer (nametables, CHR, sprites)
 - Memory viewer/editor
@@ -274,6 +293,7 @@ Located in `Debugger/`:
 ## HD Packs
 
 Located in `HdPacks/`:
+
 - Replace original graphics with high-resolution art
 - Condition-based rules for context-aware replacement
 - Background music replacement

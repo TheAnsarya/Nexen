@@ -4,7 +4,7 @@ The Utilities library provides foundational infrastructure for Nexen, including 
 
 ## Overview
 
-```
+```text
 Utilities/
 ├── Core Utilities
 │   ├── Serializer.h/cpp	  - State serialization (save states, rewind)
@@ -71,12 +71,14 @@ Utilities/
 The Serializer class provides a key-value based serialization system used for save states and rewind functionality.
 
 **Key Features:**
+
 - Bidirectional: Same code for saving and loading
 - Multiple formats: Binary (compact), Text (debug), Map (Lua API)
 - Versioning support for backwards compatibility
 - Nested object support via ISerializable interface
 
 **Usage Example:**
+
 ```cpp
 class MyState : public ISerializable {
 	uint32_t _value;
@@ -100,6 +102,7 @@ myState.Serialize(loader);
 ```
 
 **Macros:**
+
 - `SV(var)` - Stream variable with automatic name
 - `SVArray(arr, count)` - Stream array with count
 - `SVI(var)` - Stream indexed variable
@@ -110,6 +113,7 @@ myState.Serialize(loader);
 Template-based bit manipulation utilities with compile-time optimization.
 
 **Key Methods:**
+
 ```cpp
 // Set 8 bits at position 16 (bits 16-23)
 BitUtilities::SetBits<16>(dst, 0x42);
@@ -119,6 +123,7 @@ uint8_t value = BitUtilities::GetBits<8>(src);
 ```
 
 **Benefits:**
+
 - Zero runtime overhead (compile-time templates)
 - `__forceinline` ensures no function call overhead
 - Type-safe with templates
@@ -128,6 +133,7 @@ uint8_t value = BitUtilities::GetBits<8>(src);
 Cached hex string conversion for performance.
 
 **Key Methods:**
+
 ```cpp
 string ToHex(uint8_t value);	  // "AB"
 string ToHex(uint16_t value);	 // "1234"
@@ -141,6 +147,7 @@ int FromHex(string hex);		  // Parse hex string
 Stack-allocated string builder for high-performance string concatenation.
 
 **Features:**
+
 - No heap allocation for typical strings (< ~400 chars)
 - StringBuilder-like API
 - Automatic overflow to heap if needed
@@ -148,6 +155,7 @@ Stack-allocated string builder for high-performance string concatenation.
 ### StringUtilities (StringUtilities.h)
 
 Common string operations:
+
 - `Split(string, delimiter)` - Split string
 - `Trim(string)` - Remove whitespace
 - `ToLower(string)` / `ToUpper(string)`
@@ -158,12 +166,14 @@ Common string operations:
 ### VirtualFile (VirtualFile.h)
 
 Unified file abstraction supporting:
+
 - Regular filesystem files
 - Files inside ZIP archives
 - Files inside 7-Zip archives
 - Memory buffers
 
 **Usage:**
+
 ```cpp
 VirtualFile file("game.zip/rom.nes");
 vector<uint8_t> data;
@@ -220,6 +230,7 @@ event.Signal();  // Wake waiting thread
 ## Graphics Filters
 
 Supported upscaling filters:
+
 - **HQ2x/HQ3x/HQ4x** - High Quality Magnification
 - **Scale2x/Scale3x** - Edge-preserving scaling
 - **xBRZ** - xBR-based scaling
@@ -231,6 +242,7 @@ Supported upscaling filters:
 ### PlatformUtilities (PlatformUtilities.h)
 
 OS-specific functionality:
+
 - File dialogs
 - Clipboard access
 - System paths
@@ -243,6 +255,7 @@ UTF-8/UTF-16/UTF-32 conversion for cross-platform text handling.
 ## Dependencies
 
 **Third-Party Libraries:**
+
 - `miniz` - DEFLATE compression (embedded)
 - `spng` - Simple PNG (embedded)
 - `magic_enum` - Enum reflection (header-only)
@@ -251,6 +264,7 @@ UTF-8/UTF-16/UTF-32 conversion for cross-platform text handling.
 ## Thread Safety
 
 Most utilities are **not thread-safe** by default. Use `SimpleLock` for synchronization when needed. Key exceptions:
+
 - `CRC32::GetCRC` is thread-safe
 - `MD5`/`SHA1` hash functions are thread-safe
 

@@ -5,6 +5,7 @@ Nexen now supports exporting and importing debug metadata in the **Pansy** forma
 ## Overview
 
 The Pansy export feature allows you to:
+
 - **Export** all your labels, comments, and code/data markings to a portable file
 - **Import** Pansy files to restore or merge debug information
 - **Sync** automatically with folder-based storage for seamless workflow
@@ -34,7 +35,7 @@ Access via **Options → Debugger Options → Integration** tab.
 ### Auto-Save Settings
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | **Auto-save Pansy files** | Automatically export when ROM is loaded/unloaded |
 | **Auto-save interval** | How often to save in background (1-60 minutes) |
 | **Save on ROM unload** | Export when closing a ROM |
@@ -42,7 +43,7 @@ Access via **Options → Debugger Options → Integration** tab.
 ### Export Options
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | **Include memory regions** | Export named memory regions (RAM banks, etc.) |
 | **Include cross-references** | Export who-calls-who relationships |
 | **Include data blocks** | Export data type annotations |
@@ -53,7 +54,7 @@ Access via **Options → Debugger Options → Integration** tab.
 Enable **Use folder-based storage** for advanced workflows:
 
 | Option | Description |
-|--------|-------------|
+| -------- | ------------- |
 | **Sync MLB files** | Auto-sync Nexen Label Files (human-readable) |
 | **Sync CDL files** | Auto-sync Code/Data Log files |
 | **Keep version history** | Maintain backups of previous exports |
@@ -64,7 +65,7 @@ Enable **Use folder-based storage** for advanced workflows:
 
 ### Pansy File Structure
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │ Header (32 bytes)					   │
 │  - Magic: "PANSY\0\0\0"				 │
@@ -92,7 +93,7 @@ Enable **Use folder-based storage** for advanced workflows:
 ### Supported Platforms
 
 | Platform | ID | Notes |
-|----------|-----|-------|
+| ---------- | ----- | ------- |
 | NES | 0x01 | 6502 CPU |
 | SNES | 0x02 | 65816 CPU, SPC700, DSP |
 | Game Boy | 0x03 | LR35902 CPU |
@@ -105,7 +106,7 @@ Enable **Use folder-based storage** for advanced workflows:
 
 When using folder-based storage, Nexen creates a `GameName_debug/` folder next to your ROM:
 
-```
+```text
 MyGame_debug/
 ├── manifest.json		   # ROM info, settings
 ├── deadbeef.mlb			# Labels (Nexen format)
@@ -122,7 +123,7 @@ MyGame_debug/
 ### Supported Source Formats
 
 | Format | Extension | Tool |
-|--------|-----------|------|
+| -------- | ----------- | ------ |
 | ca65 Debug | `.dbg` | cc65/ca65 |
 | WLA-DX | `.sym` | WLA-DX assembler |
 | RGBDS | `.sym` | Game Boy assembler |
@@ -181,7 +182,7 @@ Batch conversion is supported for multiple files.
 ## Keyboard Shortcuts
 
 | Action | Default Shortcut |
-|--------|------------------|
+| -------- | ------------------ |
 | Quick Export Pansy | Ctrl+Shift+P |
 | Quick Import Pansy | Ctrl+Shift+I |
 | Force Sync | Ctrl+Shift+S |

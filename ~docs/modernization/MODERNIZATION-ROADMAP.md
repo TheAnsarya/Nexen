@@ -13,7 +13,7 @@ This modernization effort upgrades Nexen from .NET 8 to .NET 10, updates all dep
 ## ✅ Completion Status
 
 | Phase | Status | Notes |
-|-------|--------|-------|
+| ------- | -------- | ------- |
 | Phase 1: .NET 10 | ✅ **Complete** | Upgraded to .NET 10.0 |
 | Phase 2: Avalonia | ✅ **Complete** | Updated to 11.3.9 |
 | Phase 3: Built-in Libraries | ✅ **Complete** | System.IO.Hashing integrated |
@@ -34,7 +34,7 @@ This modernization effort upgrades Nexen from .NET 8 to .NET 10, updates all dep
 ## 📊 Current State (Post-Modernization)
 
 | Component | Previous | Current |
-|-----------|----------|---------|
+| ----------- | ---------- | --------- |
 | .NET | 8.0 | **10.0** ✅ |
 | Avalonia | 11.3.1 | **11.3.9** ✅ |
 | Lua | 5.4.4 | **5.4.8** ✅ |
@@ -51,6 +51,7 @@ This modernization effort upgrades Nexen from .NET 8 to .NET 10, updates all dep
 **Objective:** Update target framework from net8.0 to net10.0
 
 #### Tasks
+
 - [x] Update `UI.csproj` TargetFramework to net10.0
 - [x] Update `DataBox.csproj` TargetFramework to net10.0
 - [x] Update `Nexen.Tests.csproj` TargetFramework to net10.0
@@ -63,6 +64,7 @@ This modernization effort upgrades Nexen from .NET 8 to .NET 10, updates all dep
 **Objective:** Update to Avalonia 11.3.9 with all related packages
 
 #### Tasks
+
 - [x] Update Avalonia to 11.3.9
 - [x] Update Avalonia.Desktop to 11.3.9
 - [x] Update Avalonia.Controls.ColorPicker to 11.3.9
@@ -76,6 +78,7 @@ This modernization effort upgrades Nexen from .NET 8 to .NET 10, updates all dep
 **Objective:** Replace custom implementations with modern .NET built-in libraries
 
 #### CRC32 Migration
+
 - [x] Replace custom CRC32 with System.IO.Hashing.Crc32
 - [x] Update PansyExporter to use System.IO.Hashing
 - [x] Performance comparison and validation
@@ -91,8 +94,9 @@ var crc = Crc32.HashToUInt32(data);
 **Objective:** Achieve high test coverage for critical components
 
 #### Test Coverage
+
 | Component | Coverage |
-|-----------|----------|
+| ----------- | ---------- |
 | PansyExporter | ✅ 24 tests |
 | BackgroundPansyExporter | ✅ Tested |
 | Label Management | ✅ Tested |
@@ -102,6 +106,7 @@ var crc = Crc32.HashToUInt32(data);
 **Objective:** Update embedded Lua to latest stable version
 
 #### Tasks
+
 - [x] Analyze current Lua version (5.4.4, released 2022)
 - [x] Download Lua 5.4.8 (released June 2025)
 - [x] Update 42 core Lua source files
@@ -109,7 +114,7 @@ var crc = Crc32.HashToUInt32(data);
 - [x] Verify build succeeds
 - [x] Commit change: `28c5711f`
 
-```
+```text
 # Lua Version Update
 - Previous: Lua 5.4.4 (2022)
 - Current:  Lua 5.4.8 (June 2025)
@@ -122,6 +127,7 @@ var crc = Crc32.HashToUInt32(data);
 **Objective:** Apply modern C# patterns and practices
 
 #### Completed
+
 - [x] K&R brace style (opening braces at end of line)
 - [x] Tabs for indentation (4-space width)
 - [x] UTF-8 encoding with CRLF line endings
@@ -133,6 +139,7 @@ var crc = Crc32.HashToUInt32(data);
 - [x] Merged comprehensive .editorconfig from pansy repository
 
 #### .editorconfig Highlights
+
 ```ini
 # K&R style braces
 csharp_new_line_before_open_brace = none
@@ -156,6 +163,7 @@ csharp_style_prefer_pattern_matching = true:warning
 ### Phase 7: Documentation & CI/CD ✅ COMPLETE
 
 #### Documentation
+
 - [x] Update MODERNIZATION-ROADMAP.md
 - [x] Update session logs
 - [x] Document formatting standards
@@ -163,7 +171,7 @@ csharp_style_prefer_pattern_matching = true:warning
 ## 📅 Completion Summary
 
 | Phase | Completed | Key Changes |
-|-------|-----------|-------------|
+| ------- | ----------- | ------------- |
 | Phase 1: .NET 10 | Jan 26, 2026 | Framework upgrade |
 | Phase 2: Avalonia | Jan 26, 2026 | 11.3.9 update |
 | Phase 3: Built-in Libraries | Jan 26, 2026 | System.IO.Hashing |
@@ -175,6 +183,7 @@ csharp_style_prefer_pattern_matching = true:warning
 ## 📝 Git History
 
 ### Key Commits
+
 - `28c5711f` - feat: update Lua runtime 5.4.4 → 5.4.8
 - `923e5eae` - style: apply K&R formatting with tabs, UTF-8, CRLF, final newlines
 - `8193b230` - refactor: apply C# modernization patterns to Labels and Utilities

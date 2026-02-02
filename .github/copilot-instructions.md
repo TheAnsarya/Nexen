@@ -1,13 +1,16 @@
-# Nexen C++ Modernization - AI Copilot Directives
+# Nexen - AI Copilot Directives
 
 ## Project Overview
 
-**Nexen** is a multi-system emulator (NES, SNES, GB, GBA, SMS, PCE, WS) written in C++.
+**Nexen** is a multi-system emulator (NES, SNES, GB, GBA, SMS, PCE, WS) written in C++, based on Mesen2.
 
-This fork (`TheAnsarya/Nexen`) focuses on:
-1. C++ modernization (C++20/23 features)
-2. 🌼 Pansy metadata integration
-3. Performance improvements
+Key features and focus areas:
+
+1. **TAS Editor** - Full-featured movie recording, playback, and editing
+2. **Save State System** - Quick slots, thumbnail previews, compression
+3. **🌼 Pansy Metadata Export** - Integration with disassembly metadata format
+4. **C++ Modernization** - C++20/23 features
+5. **Performance Improvements** - Hot path optimization
 
 ## GitHub Issue Management
 
@@ -59,6 +62,7 @@ gh issue close <number> --repo TheAnsarya/Nexen --comment "Completed in commit a
 
 ### ⚠️ Comment Safety Rule
 **When adding or modifying comments, NEVER change the actual code.**
+
 - Changes to comments must not alter code logic, structure, or formatting
 - When adding XML documentation or inline comments, preserve all existing code exactly
 - Verify code integrity after adding documentation
@@ -67,6 +71,7 @@ gh issue close <number> --repo TheAnsarya/Nexen --comment "Completed in commit a
 
 ### Hot Path Rules
 **NEVER add overhead to:**
+
 - CPU emulation cores (`NesCpu`, `SnesCpu`, etc.)
 - Memory read/write functions
 - PPU rendering loops

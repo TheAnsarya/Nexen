@@ -5,13 +5,16 @@ This document covers C++ development practices for Nexen.
 ## Build System
 
 ### Platform Toolset
+
 - **Windows:** Visual Studio 2026 (v145)
 - **Linux:** GCC/Clang with C++23 support
 
 ### Language Standard
+
 - C++23 (`/std:c++23` on Windows, `-std=c++23` on Linux)
 
 ### Warning Level
+
 - Windows: `/W4` (Level 4)
 - Linux: `-Wall -Wextra -Wpedantic`
 
@@ -24,17 +27,20 @@ Static analysis tool for C++ code. Configuration in `.clang-tidy`.
 #### Running clang-tidy
 
 **Single file:**
+
 ```bash
 clang-tidy --config-file=.clang-tidy Core/MyFile.cpp
 ```
 
 **All files in a directory:**
+
 ```bash
 # Generate compile_commands.json first (CMake or Bear)
 clang-tidy -p build Core/*.cpp
 ```
 
 **Fix issues automatically:**
+
 ```bash
 clang-tidy --config-file=.clang-tidy --fix Core/MyFile.cpp
 ```
@@ -42,7 +48,7 @@ clang-tidy --config-file=.clang-tidy --fix Core/MyFile.cpp
 #### Enabled Checks
 
 | Category | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `modernize-*` | C++11/14/17/20/23 modernization |
 | `cppcoreguidelines-*` | C++ Core Guidelines |
 | `performance-*` | Performance improvements |
@@ -53,6 +59,7 @@ clang-tidy --config-file=.clang-tidy --fix Core/MyFile.cpp
 #### Suppressing Warnings
 
 **In code:**
+
 ```cpp
 // NOLINTNEXTLINE(modernize-use-nullptr)
 void* ptr = 0;
@@ -68,16 +75,19 @@ Add to disabled checks list (prefix with `-`).
 Code formatting tool. Configuration in `.clang-format`.
 
 **Format file:**
+
 ```bash
 clang-format -i Core/MyFile.cpp
 ```
 
 **Format all files:**
+
 ```bash
 find Core Utilities Windows -name "*.cpp" -o -name "*.h" | xargs clang-format -i
 ```
 
 **Check formatting (CI):**
+
 ```bash
 clang-format --dry-run --Werror Core/MyFile.cpp
 ```
@@ -87,7 +97,7 @@ clang-format --dry-run --Werror Core/MyFile.cpp
 ### Naming Conventions
 
 | Element | Style | Example |
-|---------|-------|---------|
+| --------- | ------- | --------- |
 | Class | PascalCase | `NesCpu` |
 | Function | PascalCase | `ExecuteInstruction` |
 | Variable | camelCase | `frameCount` |
@@ -98,6 +108,7 @@ clang-format --dry-run --Werror Core/MyFile.cpp
 ### Modern C++ Practices
 
 #### Smart Pointers
+
 ```cpp
 // Prefer unique_ptr for ownership
 std::unique_ptr<Console> _console = std::make_unique<Console>();
@@ -107,6 +118,7 @@ std::shared_ptr<IVideoDevice> _video;
 ```
 
 #### std::span for Buffers
+
 ```cpp
 // Instead of pointer + size
 void ProcessData(std::span<const uint8_t> data) {
@@ -115,6 +127,7 @@ void ProcessData(std::span<const uint8_t> data) {
 ```
 
 #### std::optional for Optional Values
+
 ```cpp
 std::optional<uint32_t> FindAddress(const std::string& label) {
 	auto it = _symbols.find(label);
@@ -126,12 +139,14 @@ std::optional<uint32_t> FindAddress(const std::string& label) {
 ```
 
 #### std::format for Formatting
+
 ```cpp
 // Instead of sprintf
 std::string msg = std::format("Address: ${:04x}", address);
 ```
 
 #### Range-based algorithms
+
 ```cpp
 // Instead of raw loops
 auto count = std::ranges::count_if(sprites, [](auto& s) { 
@@ -155,11 +170,13 @@ See [CPP-MODERNIZATION-ROADMAP.md](modernization/CPP-MODERNIZATION-ROADMAP.md) f
 Enable for debug builds to catch memory errors:
 
 **Windows (VS2022+):**
+
 ```xml
 <EnableASAN>true</EnableASAN>
 ```
 
 **Linux:**
+
 ```bash
 -fsanitize=address -fno-omit-frame-pointer
 ```

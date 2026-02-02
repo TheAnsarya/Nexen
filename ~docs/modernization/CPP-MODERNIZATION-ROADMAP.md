@@ -23,7 +23,7 @@ This roadmap outlines the comprehensive modernization of Nexen's C++ core emulat
 ### C++ Projects in Solution
 
 | Project | Purpose | Files | Priority |
-|---------|---------|-------|----------|
+| --------- | --------- | ------- | ---------- |
 | **Core** | Main emulation engines (NES, SNES, GB, GBA, SMS, PCE, WS) | ~500+ | High |
 | **Utilities** | Shared utility code | ~50 | Medium |
 | **Windows** | Windows-specific code | ~20 | Low |
@@ -34,7 +34,7 @@ This roadmap outlines the comprehensive modernization of Nexen's C++ core emulat
 
 ### Core Subdirectories
 
-```
+```text
 Core/
 ├── Shared/		 # Shared emulation infrastructure
 ├── Debugger/	   # Debugging support
@@ -55,6 +55,7 @@ Core/
 **Objective:** Analyze current codebase and create detailed modernization plan
 
 #### Tasks
+
 - [ ] Analyze current C++ standard usage across all projects
 - [ ] Identify deprecated patterns and APIs
 - [ ] Catalog compiler warnings (enable /W4 on MSVC, -Wall -Wextra on GCC/Clang)
@@ -63,6 +64,7 @@ Core/
 - [ ] Create detailed task breakdown for each module
 
 #### Deliverables
+
 - Code analysis report
 - Prioritized modernization backlog
 - Estimated effort per module
@@ -72,6 +74,7 @@ Core/
 **Objective:** Modernize build configuration and enable modern tooling
 
 #### Tasks
+
 - [ ] Update Visual Studio project files to VS2026 (v143 → v144 platform toolset)
 - [ ] Enable C++23 standard (`/std:c++23` or `/std:c++latest`)
 - [ ] Configure clang-tidy integration
@@ -81,6 +84,7 @@ Core/
 - [ ] Update CMake/makefile for Linux builds
 
 #### .vcxproj Updates
+
 ```xml
 <!-- Update platform toolset -->
 <PlatformToolset>v144</PlatformToolset>
@@ -98,18 +102,20 @@ Core/
 **Objective:** Establish unit testing infrastructure
 
 #### Tasks
+
 - [ ] Integrate Google Test (gtest) or Catch2 framework
 - [ ] Create test project structure
 - [ ] Write initial tests for critical components:
-  - [ ] CPU instruction tests (6502, 65816, Z80, ARM7)
-  - [ ] Memory mapping tests
-  - [ ] PPU timing tests
-  - [ ] APU tests
+	- [ ] CPU instruction tests (6502, 65816, Z80, ARM7)
+	- [ ] Memory mapping tests
+	- [ ] PPU timing tests
+	- [ ] APU tests
 - [ ] Set up CI integration for tests
 
 #### Test Categories
+
 | Category | Description | Priority |
-|----------|-------------|----------|
+| ---------- | ------------- | ---------- |
 | CPU Instructions | Verify each CPU opcode | High |
 | Memory Mapping | Bank switching, mirroring | High |
 | PPU Timing | Scanline timing accuracy | High |
@@ -122,6 +128,7 @@ Core/
 **Objective:** Replace raw pointers with smart pointers and modern containers
 
 #### Tasks
+
 - [ ] Replace `new`/`delete` with `std::make_unique`/`std::make_shared`
 - [ ] Convert raw arrays to `std::array`, `std::vector`, or `std::span`
 - [ ] Use `std::string_view` for non-owning string references
@@ -130,6 +137,7 @@ Core/
 - [ ] Use `constexpr` and `consteval` where possible
 
 #### Example Modernizations
+
 ```cpp
 // Before
 uint8_t* buffer = new uint8_t[size];
@@ -152,6 +160,7 @@ void ProcessData(std::span<const uint8_t> data);
 **Objective:** Leverage modern C++ standard library features
 
 #### Tasks
+
 - [ ] Replace manual loops with `<algorithm>` and `<ranges>`
 - [ ] Use `std::format` instead of sprintf/printf
 - [ ] Use `std::filesystem` for file operations
@@ -161,6 +170,7 @@ void ProcessData(std::span<const uint8_t> data);
 - [ ] Apply `[[likely]]` and `[[unlikely]]` attributes
 
 #### Example Modernizations
+
 ```cpp
 // Before
 for (int i = 0; i < count; i++) {
@@ -184,6 +194,7 @@ auto result = std::format("Value: {}", value);
 **Objective:** Profile and optimize critical emulation paths
 
 #### Tasks
+
 - [ ] Profile emulation hot paths using VTune, perf, or Tracy
 - [ ] Optimize memory access patterns for cache efficiency
 - [ ] Consider SIMD optimizations using `<simd>` or intrinsics
@@ -192,8 +203,9 @@ auto result = std::format("Value: {}", value);
 - [ ] Document performance characteristics
 
 #### Benchmark Targets
+
 | Component | Metric | Target |
-|-----------|--------|--------|
+| ----------- | -------- | -------- |
 | CPU Core | Instructions/sec | Baseline + 10% |
 | PPU Render | Frames/sec | Maintain 60 FPS |
 | Audio Mix | Latency | < 10ms |
@@ -204,6 +216,7 @@ auto result = std::format("Value: {}", value);
 **Objective:** Comprehensive documentation and consistent code style
 
 #### Tasks
+
 - [ ] Add Doxygen comments to all public APIs
 - [ ] Document emulation accuracy notes
 - [ ] Create architecture documentation
@@ -212,6 +225,7 @@ auto result = std::format("Value: {}", value);
 - [ ] Consolidate duplicate code
 
 #### Documentation Requirements
+
 - Every public class/function needs documentation
 - Complex algorithms need inline comments
 - Platform-specific quirks need documentation
@@ -258,6 +272,7 @@ auto result = std::format("Value: {}", value);
 ### NES CPU (Core/NES/)
 
 Current patterns to modernize:
+
 - Raw pointer memory access
 - Manual instruction dispatch tables
 - C-style type punning
@@ -265,6 +280,7 @@ Current patterns to modernize:
 ### SNES CPU (Core/SNES/)
 
 Current patterns to modernize:
+
 - Complex memory mapping with raw pointers
 - Bank switching logic
 - DMA handling
@@ -272,6 +288,7 @@ Current patterns to modernize:
 ### Shared Components (Core/Shared/)
 
 Current patterns to modernize:
+
 - Base emulator interface
 - Memory management
 - Timing infrastructure
@@ -279,7 +296,7 @@ Current patterns to modernize:
 ## 📈 Success Metrics
 
 | Metric | Target |
-|--------|--------|
+| -------- | -------- |
 | Compiler Warnings | 0 at /W4 |
 | Test Coverage | > 70% for core |
 | Memory Leaks | 0 (ASan clean) |
@@ -290,7 +307,7 @@ Current patterns to modernize:
 ## 🚨 Risks & Mitigations
 
 | Risk | Mitigation |
-|------|------------|
+| ------ | ------------ |
 | Performance regression | Continuous benchmarking, profile-guided optimization |
 | Breaking changes | Incremental changes with extensive testing |
 | Platform compatibility | Test on all platforms (Windows, Linux, macOS) |
@@ -299,7 +316,7 @@ Current patterns to modernize:
 ## 📅 Timeline Estimate
 
 | Phase | Duration | Dependencies |
-|-------|----------|--------------|
+| ------- | ---------- | -------------- |
 | Phase 1: Assessment | 1-2 weeks | None |
 | Phase 2: Build System | 1 week | Phase 1 |
 | Phase 3: Testing | 1-2 weeks | Phase 2 |

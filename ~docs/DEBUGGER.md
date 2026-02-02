@@ -6,7 +6,7 @@ This document covers Nexen's comprehensive debugging subsystem, which provides p
 
 ## Architecture Overview
 
-```
+```text
 Debugger Architecture
 ═════════════════════
 
@@ -33,7 +33,7 @@ Debugger Architecture
 
 ## Directory Structure
 
-```
+```text
 Core/Debugger/
 ├── Core Components
 │   ├── Debugger.h/cpp			  - Main debugger class
@@ -108,12 +108,14 @@ Core/Debugger/
 Central coordinator managing all debugging features.
 
 **Key Responsibilities:**
+
 - Coordinates per-CPU debuggers
 - Manages script execution
 - Controls execution flow (step, run, pause)
 - Provides unified memory access
 
 **CPU Debugger Management:**
+
 ```cpp
 // CpuInfo holds per-CPU debugging state
 struct CpuInfo {
@@ -126,6 +128,7 @@ CpuInfo _debuggers[(int)DebugUtilities::GetLastCpuType() + 1];
 ```
 
 **Shared Components:**
+
 - `ScriptManager` - Lua scripting
 - `MemoryDumper` - Memory read/write
 - `MemoryAccessCounter` - Access tracking
@@ -139,6 +142,7 @@ CpuInfo _debuggers[(int)DebugUtilities::GetLastCpuType() + 1];
 Per-CPU debugger interface implemented by each CPU.
 
 **Implementations:**
+
 - `NesDebugger` - 6502 (NES)
 - `SnesDebugger` - 65816 (SNES main CPU)
 - `SpcDebugger` - SPC700 (SNES audio)
@@ -159,11 +163,13 @@ Per-CPU debugger interface implemented by each CPU.
 High-performance breakpoint evaluation.
 
 **Design Goals:**
+
 - Minimal overhead when no breakpoints
 - Fast path for common cases
 - Support complex conditions
 
 **Breakpoint Types:**
+
 ```cpp
 enum class BreakpointType {
 	Global,	 // Always trigger
@@ -174,6 +180,7 @@ enum class BreakpointType {
 ```
 
 **Organization:**
+
 ```cpp
 // Breakpoints grouped by operation type for fast lookup
 vector<Breakpoint> _breakpoints[BreakpointTypeCount];
@@ -182,6 +189,7 @@ bool _hasBreakpointType[BreakpointTypeCount];
 ```
 
 **Evaluation Flow:**
+
 1. **Fast path check:** `if(!_hasBreakpoint) return -1;`
 2. **Type filter:** Check `_hasBreakpointType[opType]`
 3. **Address match:** Linear search breakpoints
@@ -209,6 +217,7 @@ Conditions use the ExpressionEvaluator:
 Evaluates expressions for breakpoint conditions and watch windows.
 
 **Operator Categories:**
+
 - **Arithmetic:** `+ - * / %`
 - **Bitwise:** `<< >> & | ^ ~`
 - **Logical:** `== != < <= > >= && ||`
@@ -218,7 +227,7 @@ Evaluates expressions for breakpoint conditions and watch windows.
 **Platform-Specific Registers:**
 
 | Platform | Registers |
-|----------|-----------|
+| ---------- | ----------- |
 | **6502/NES** | A, X, Y, SP, PC, PS, P.Carry, P.Zero, etc. |
 | **65816/SNES** | + DB, PB, DP, K, M, X flags |
 | **SPC700** | A, X, Y, SP, PC, YA, PSW |
@@ -229,6 +238,7 @@ Evaluates expressions for breakpoint conditions and watch windows.
 | **V30MZ/WS** | AX, BX, CX, DX, SI, DI, BP, SP, CS, DS, ES, SS, IP |
 
 **Special Values:**
+
 ```cpp
 // PPU state
 PpuFrameCount, PpuCycle, PpuScanline, PpuVramAddress
@@ -247,6 +257,7 @@ Sprite0Hit, VerticalBlank  // NES
 
 **RPN Compilation:**
 Expressions are compiled to Reverse Polish Notation for fast evaluation:
+
 ```cpp
 // "A == $50" compiles to:
 // [RegA] [0x50] [Equal]
@@ -262,6 +273,7 @@ vector<int64_t> _rpnList;  // Pre-compiled tokens
 Tracks which ROM bytes are code vs data.
 
 **CDL Flags:**
+
 ```cpp
 enum CdlFlags : uint8_t {
 	None		  = 0x00,
@@ -277,7 +289,8 @@ enum CdlFlags : uint8_t {
 ```
 
 **File Format:**
-```
+
+```text
 CDL File Format (CDLv2)
 ════════════════════════
 Offset  Size  Content
@@ -287,6 +300,7 @@ Offset  Size  Content
 ```
 
 **Use Cases:**
+
 - ROM hacking: Find unused space
 - Disassembly: Improve code detection
 - Coverage: Verify code paths executed
@@ -305,6 +319,7 @@ Manages CDL file operations and multi-memory CDL tracking.
 Multi-CPU disassembly engine.
 
 **Supported CPUs:**
+
 - 6502 (NES)
 - 65816 (SNES)
 - SPC700 (SNES audio)
@@ -317,6 +332,7 @@ Multi-CPU disassembly engine.
 - Cx4, NEC DSP, ST018
 
 **Features:**
+
 - Label integration
 - Comment support
 - CDL-guided code/data detection
@@ -341,6 +357,7 @@ struct DisassemblyInfo {
 Interactive assembler for 6502/65816 code.
 
 **Features:**
+
 - Real-time assembly in debugger
 - Label resolution
 - Address mode detection
@@ -355,12 +372,14 @@ Interactive assembler for 6502/65816 code.
 Instruction-level execution logging.
 
 **Log Format:**
-```
+
+```text
 PC	 Op  Operand   A  X  Y  SP   Flags	 Cycle
 $8000  LDA $0300,X  A:00 X:10 Y:00 SP:FD N-BdIZC  1234
 ```
 
 **Options:**
+
 - CPU registers
 - Memory values
 - PPU state
@@ -372,6 +391,7 @@ $8000  LDA $0300,X  A:00 X:10 Y:00 SP:FD N-BdIZC  1234
 Tracks subroutine calls and returns.
 
 **Features:**
+
 - JSR/RTS tracking
 - Interrupt context
 - Stack depth monitoring
@@ -386,6 +406,7 @@ Tracks subroutine calls and returns.
 Unified memory access interface.
 
 **Operations:**
+
 - Read/write any memory type
 - Address translation
 - Memory type enumeration
@@ -396,6 +417,7 @@ Unified memory access interface.
 Tracks memory access patterns.
 
 **Statistics:**
+
 - Read count per address
 - Write count per address
 - Execute count per address
@@ -406,6 +428,7 @@ Tracks memory access patterns.
 Performance profiling per function/address.
 
 **Metrics:**
+
 - Cycle counts
 - Call frequency
 - Inclusive/exclusive time
@@ -420,6 +443,7 @@ Performance profiling per function/address.
 Lua script management and execution.
 
 **Script Types:**
+
 - Startup scripts
 - Per-frame scripts
 - Event-triggered scripts
@@ -468,11 +492,13 @@ emu.setInput(port, state)
 Rewind/step-back debugging.
 
 **Features:**
+
 - Instruction-level rewind
 - Savestate ring buffer
 - Configurable history depth
 
 **Implementation:**
+
 ```cpp
 // Ring buffer of savestates for rewind
 vector<vector<uint8_t>> _history;
@@ -489,6 +515,7 @@ int _historySize = 1000;  // Configurable
 Graphics debugging utilities.
 
 **Features:**
+
 - Tile viewer
 - Sprite viewer
 - Palette viewer
@@ -501,6 +528,7 @@ Graphics debugging utilities.
 Debug event logging for analysis.
 
 **Event Types:**
+
 - Memory reads/writes
 - Register access
 - Interrupt triggers

@@ -5,7 +5,7 @@ using System.Linq;
 using Nexen.Debugger.Utilities;
 using Nexen.Interop;
 
-namespace Nexen.Debugger; 
+namespace Nexen.Debugger;
 /// <summary>
 /// Manages all breakpoints for the debugger, including user-defined and temporary breakpoints.
 /// </summary>

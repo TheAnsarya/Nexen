@@ -16,7 +16,7 @@ using Nexen.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for the watch expression window.
 /// Manages watch tabs for each CPU type to monitor expressions and variables during debugging.

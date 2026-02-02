@@ -6,7 +6,7 @@ This document covers Nexen's input handling and controller emulation subsystem.
 
 ## Architecture Overview
 
-```
+```text
 Input Architecture
 ══════════════════
 
@@ -39,7 +39,7 @@ Input Architecture
 
 ## Directory Structure
 
-```
+```text
 Core/Shared/
 ├── Input Core
 │   ├── BaseControlManager.h/cpp   - Console input manager
@@ -75,12 +75,14 @@ Core/Shared/
 Abstract base class for console-specific input managers.
 
 **Key Responsibilities:**
+
 - Owns and manages all connected controllers
 - Coordinates input polling
 - Handles input recording/playback
 - Detects lag frames
 
 **Controller Management:**
+
 ```cpp
 class BaseControlManager : public ISerializable {
 protected:
@@ -98,6 +100,7 @@ protected:
 ```
 
 **Lag Frame Detection:**
+
 ```cpp
 // A frame is "lag" if no input was polled
 void ProcessEndOfFrame() {
@@ -109,6 +112,7 @@ void ProcessEndOfFrame() {
 ```
 
 **Platform Implementations:**
+
 - `NesControlManager` - NES/Famicom
 - `SnesControlManager` - SNES/Super Famicom
 - `GameboyControlManager` - Game Boy family
@@ -122,12 +126,14 @@ void ProcessEndOfFrame() {
 Base class for all input devices.
 
 **Key Responsibilities:**
+
 - Input state management
 - Key mapping
 - Hardware I/O emulation
 - Serialization
 
 **State Structure:**
+
 ```cpp
 struct ControlDeviceState {
 	vector<uint8_t> State;	  // Button state bits
@@ -136,6 +142,7 @@ struct ControlDeviceState {
 ```
 
 **Features:**
+
 - Button state tracking (bit flags)
 - Turbo/autofire support
 - Coordinate input (light gun, mouse)
@@ -146,6 +153,7 @@ struct ControlDeviceState {
 Handles physical input devices.
 
 **Features:**
+
 - Keyboard input
 - Gamepad/joystick input
 - Key binding management
@@ -158,7 +166,7 @@ Handles physical input devices.
 ### Standard Controllers
 
 | Platform | Controller | Buttons |
-|----------|------------|---------|
+| ---------- | ------------ | --------- |
 | NES | NES Controller | A, B, Select, Start, D-Pad |
 | NES | Four Score | 4-player adapter |
 | SNES | SNES Controller | A, B, X, Y, L, R, Select, Start, D-Pad |
@@ -172,7 +180,7 @@ Handles physical input devices.
 ### Special Controllers
 
 | Type | Platform | Description |
-|------|----------|-------------|
+| ------ | ---------- | ------------- |
 | **Zapper** | NES | Light gun |
 | **Super Scope** | SNES | Light gun |
 | **SNES Mouse** | SNES | 2-button mouse |
@@ -186,7 +194,7 @@ Handles physical input devices.
 
 ### Frame Input Cycle
 
-```
+```text
 1. Frame Start
    └── Input providers set state (movies, netplay)
 
@@ -214,6 +222,7 @@ public:
 ```
 
 **Providers:**
+
 - `MovieManager` - Movie playback
 - `RewindManager` - Rewind input
 - `NetplayClient` - Network play
@@ -229,6 +238,7 @@ public:
 ```
 
 **Recorders:**
+
 - `MovieRecorder` - Movie recording
 - `NetplayServer` - Network broadcast
 
@@ -239,12 +249,14 @@ public:
 Turbo toggles button state at configurable rate.
 
 **Configuration:**
+
 ```cpp
 // In EmuSettings
 uint32_t TurboSpeed = 2;  // Toggle every N frames
 ```
 
 **Implementation:**
+
 - Button held + turbo enabled → auto-toggle
 - Per-button turbo settings
 - Configurable toggle rate
@@ -256,10 +268,12 @@ uint32_t TurboSpeed = 2;  // Toggle every N frames
 ### Zapper (NES)
 
 **Input:**
+
 - Trigger button
 - Screen coordinates (X, Y)
 
 **Detection:**
+
 ```cpp
 // Check if pointing at bright pixel
 bool IsLightDetected(uint16_t x, uint16_t y) {
@@ -271,6 +285,7 @@ bool IsLightDetected(uint16_t x, uint16_t y) {
 ### Super Scope (SNES)
 
 **Input:**
+
 - Fire, Cursor, Turbo, Pause buttons
 - Screen coordinates
 
@@ -283,12 +298,14 @@ bool IsLightDetected(uint16_t x, uint16_t y) {
 On-screen input display for TAS and streaming.
 
 **Features:**
+
 - Controller overlay
 - Button press visualization
 - Configurable position/size
 - Per-controller display
 
 **Usage:**
+
 ```cpp
 // Render input state to screen
 inputHud->Draw(frameBuffer, controlDevices);
@@ -301,6 +318,7 @@ inputHud->Draw(frameBuffer, controlDevices);
 Controllers save/load state for save states.
 
 **Serialized Data:**
+
 - Button state
 - Strobe state
 - Device-specific state (light gun position, etc.)

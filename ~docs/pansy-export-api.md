@@ -183,7 +183,7 @@ public static void ImportFromFolder(
 
 #### Folder Structure
 
-```
+```json
 {RomName}_debug/
 ├── manifest.json		   # Metadata about ROM and settings
 ├── {crc32}.mlb			 # Nexen Label file
@@ -354,7 +354,7 @@ public class IntegrationConfig
 ### Header (32 bytes)
 
 | Offset | Size | Field | Description |
-|--------|------|-------|-------------|
+| -------- | ------ | ------- | ------------- |
 | 0x00 | 8 | Magic | "PANSY\0\0\0" |
 | 0x08 | 2 | Version | Major.Minor (e.g., 0x0101) |
 | 0x0A | 1 | Platform | See PlatformId enum |
@@ -367,7 +367,7 @@ public class IntegrationConfig
 ### Flags Byte
 
 | Bit | Name | Description |
-|-----|------|-------------|
+| ----- | ------ | ------------- |
 | 0 | Compressed | Content is DEFLATE compressed |
 | 1 | HasRegions | Contains memory region data |
 | 2 | HasXrefs | Contains cross-reference data |
@@ -375,7 +375,7 @@ public class IntegrationConfig
 
 ### Section Format
 
-```
+```text
 ┌──────────────────┐
 │ Section Type (1) │
 ├──────────────────┤
@@ -389,7 +389,7 @@ public class IntegrationConfig
 ### Section Types
 
 | ID | Type | Entry Format |
-|----|------|--------------|
+| ---- | ------ | -------------- |
 | 0x01 | Symbols | Address(4) + Name(string) |
 | 0x02 | Comments | Address(4) + Text(string) |
 | 0x03 | CodeOffsets | Address(4) |

@@ -5,6 +5,7 @@ This guide establishes consistent documentation standards for the Nexen C++ code
 ## Overview
 
 Documentation is critical for:
+
 - **Maintenance**: Understanding code months/years later
 - **Onboarding**: Helping new contributors understand the codebase
 - **API usage**: Documenting public interfaces
@@ -175,13 +176,15 @@ void NesCpu::Write(uint16_t addr, uint8_t value) { ... }
 
 ## Inline Documentation vs External Docs
 
-### Inline (in code):
+### Inline (in code)
+
 - API contracts (parameters, return values)
 - Side effects and edge cases
 - Algorithm explanations
 - Platform-specific behavior
 
-### External (in ~docs/):
+### External (in ~docs/)
+
 - Architecture overviews
 - Design decisions and rationale
 - Cross-cutting concerns

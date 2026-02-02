@@ -6,12 +6,12 @@
 
 This document tracks the GitHub issues and epics for the C++ core modernization project.
 
-**GitHub Issues:** https://github.com/TheAnsarya/Nexen/issues?q=label%3Acpp
+**GitHub Issues:** <https://github.com/TheAnsarya/Nexen/issues?q=label%3Acpp>
 
 ## 📊 Status Overview
 
 | Epic | GitHub | Status | Issues | Priority |
-|------|--------|--------|--------|----------|
+| ------ | -------- | -------- | -------- | ---------- |
 | Epic 8: Build System | [#40](https://github.com/TheAnsarya/Nexen/issues/40) | ✅ Complete | 6/6 | HIGH |
 | Epic 9: Testing | [#41](https://github.com/TheAnsarya/Nexen/issues/41) | 🔄 In Progress | 1/8 | HIGH |
 | Epic 10: Memory Safety | [#42](https://github.com/TheAnsarya/Nexen/issues/42) | 📋 Planned | 0/6 | MEDIUM |
@@ -23,7 +23,7 @@ This document tracks the GitHub issues and epics for the C++ core modernization 
 ### 🚀 Recent Progress (January 29, 2026 - Sessions 6-8)
 
 | Issue | Title | Status | Details |
-|-------|-------|--------|---------|
+| ------- | ------- | -------- | --------- |
 | [#52](https://github.com/TheAnsarya/Nexen/issues/52) | Integrate Testing Framework | ✅ CLOSED | gtest 1.17.0, Core.Tests project |
 | [#75](https://github.com/TheAnsarya/Nexen/issues/75) | [[likely]]/[[unlikely]] Branch Hints | ✅ CLOSED | 41 attributes in error paths |
 | [#76](https://github.com/TheAnsarya/Nexen/issues/76) | Expand constexpr Usage | ✅ CLOSED | 14 functions (ColorUtilities, Dsp, etc.) |
@@ -33,11 +33,13 @@ This document tracks the GitHub issues and epics for the C++ core modernization 
 | [#81](https://github.com/TheAnsarya/Nexen/issues/81) | Code Documentation & Comments | 🔄 In Progress | 32 classes/73+ files documented |
 
 **Session 8 Fixes:**
+
 - Fixed vcpkg manifest mode for Core.Tests and Core.Benchmarks
 - Added missing `Rgb555ToRgb` function to ColorUtilities.h
 - Commented out UI pre-build script (packaging-only, not needed for dev builds)
 
 **Commits:**
+
 - `18e362e8` - fix: Enable vcpkg manifest mode for test projects
 - `f6a3360c` - feat: add Core.Tests and Core.Benchmarks projects
 - `2e9c5aaf`, `2b2e90a9` - [[unlikely]] implementation
@@ -71,6 +73,7 @@ Modernize the C++ build system to use VS2026 tooling, enable C++23, and integrat
 Update all C++ project files to use the VS2026 platform toolset (v144).
 
 **Tasks:**
+
 - [x] Update Core.vcxproj
 - [x] Update Utilities.vcxproj
 - [x] Update Windows.vcxproj
@@ -81,6 +84,7 @@ Update all C++ project files to use the VS2026 platform toolset (v144).
 - [x] Verify builds on Windows
 
 **Acceptance Criteria:**
+
 - All projects use PlatformToolset v144 ✅
 - All projects build without errors ✅
 
@@ -95,12 +99,14 @@ Update all C++ project files to use the VS2026 platform toolset (v144).
 Enable C++23 language standard across all C++ projects.
 
 **Tasks:**
+
 - [ ] Add `<LanguageStandard>stdcpp23</LanguageStandard>` to all vcxproj files
 - [ ] Update makefile for Linux builds
 - [ ] Fix any C++23 compatibility issues
 - [ ] Document any deferred C++26 features
 
 **Acceptance Criteria:**
+
 - All projects compile with C++23
 - No new warnings from standard change
 
@@ -114,11 +120,13 @@ Enable C++23 language standard across all C++ projects.
 Enable warning level 4 (/W4) and optionally treat warnings as errors.
 
 **Tasks:**
+
 - [ ] Enable /W4 warning level
 - [ ] Document and fix all warnings
 - [ ] Consider /WX (warnings as errors) for CI
 
 **Acceptance Criteria:**
+
 - Clean build at /W4
 - All warnings documented or fixed
 
@@ -132,12 +140,14 @@ Enable warning level 4 (/W4) and optionally treat warnings as errors.
 Set up clang-tidy for static analysis and automated code modernization suggestions.
 
 **Tasks:**
+
 - [ ] Create .clang-tidy configuration file
 - [ ] Configure recommended checks
 - [ ] Document usage instructions
 - [ ] Add to CI pipeline (optional)
 
 **Acceptance Criteria:**
+
 - .clang-tidy file with appropriate checks
 - No critical issues reported
 
@@ -151,11 +161,13 @@ Set up clang-tidy for static analysis and automated code modernization suggestio
 Enable AddressSanitizer (ASan) for debug builds to catch memory errors.
 
 **Tasks:**
+
 - [ ] Create debug configuration with ASan
 - [ ] Document how to run with ASan
 - [ ] Fix any issues found
 
 **Acceptance Criteria:**
+
 - Debug build runs cleanly with ASan
 - No memory errors detected
 
@@ -169,12 +181,14 @@ Enable AddressSanitizer (ASan) for debug builds to catch memory errors.
 Update makefile and CMake (if applicable) for Linux builds with C++23.
 
 **Tasks:**
+
 - [ ] Update makefile with -std=c++23
 - [ ] Enable -Wall -Wextra -Wpedantic
 - [ ] Test build on Linux
 - [ ] Update build documentation
 
 **Acceptance Criteria:**
+
 - Linux build succeeds with C++23
 - Clean build with all warnings
 
@@ -200,12 +214,14 @@ Establish comprehensive unit testing infrastructure for C++ core components usin
 Add Google Test (gtest) or Catch2 testing framework to the solution.
 
 **Tasks:**
+
 - [ ] Evaluate gtest vs Catch2
 - [ ] Add chosen framework via vcpkg or submodule
 - [ ] Create test project (Nexen.Core.Tests)
 - [ ] Configure test discovery in VS
 
 **Acceptance Criteria:**
+
 - Test project builds
 - Sample test runs successfully
 
@@ -219,6 +235,7 @@ Add Google Test (gtest) or Catch2 testing framework to the solution.
 Create comprehensive tests for all 6502 CPU instructions.
 
 **Tasks:**
+
 - [ ] Test all official opcodes
 - [ ] Test unofficial/undocumented opcodes
 - [ ] Test flags behavior
@@ -226,6 +243,7 @@ Create comprehensive tests for all 6502 CPU instructions.
 - [ ] Compare with nestest.nes results
 
 **Acceptance Criteria:**
+
 - All 256 opcodes tested
 - Flags verified for each instruction
 
@@ -239,12 +257,14 @@ Create comprehensive tests for all 6502 CPU instructions.
 Create comprehensive tests for 65816 CPU instructions.
 
 **Tasks:**
+
 - [ ] Test all official opcodes
 - [ ] Test 8-bit vs 16-bit modes
 - [ ] Test bank switching
 - [ ] Test interrupt handling
 
 **Acceptance Criteria:**
+
 - All opcodes tested
 - Mode switching verified
 
@@ -258,12 +278,14 @@ Create comprehensive tests for 65816 CPU instructions.
 Create tests for Sharp LR35902 CPU instructions.
 
 **Tasks:**
+
 - [ ] Test all opcodes
 - [ ] Test CB-prefixed instructions
 - [ ] Test interrupt handling
 - [ ] Compare with known test ROMs
 
 **Acceptance Criteria:**
+
 - All opcodes tested
 - Blargg's tests pass
 
@@ -277,12 +299,14 @@ Create tests for Sharp LR35902 CPU instructions.
 Create tests for memory mapping across all platforms.
 
 **Tasks:**
+
 - [ ] Test NES memory mapping
 - [ ] Test SNES bank switching
 - [ ] Test Game Boy memory banking
 - [ ] Test mirroring behavior
 
 **Acceptance Criteria:**
+
 - All memory regions tested
 - Bank switching verified
 
@@ -296,12 +320,14 @@ Create tests for memory mapping across all platforms.
 Create tests for PPU timing accuracy.
 
 **Tasks:**
+
 - [ ] Test scanline timing
 - [ ] Test VBlank timing
 - [ ] Test sprite evaluation timing
 - [ ] Compare with known timing test ROMs
 
 **Acceptance Criteria:**
+
 - Timing tests pass
 - Known test ROMs verified
 
@@ -315,12 +341,14 @@ Create tests for PPU timing accuracy.
 Create tests for save state integrity.
 
 **Tasks:**
+
 - [ ] Test save/restore cycle
 - [ ] Test state across resets
 - [ ] Test compression handling
 - [ ] Verify no data loss
 
 **Acceptance Criteria:**
+
 - States save and restore correctly
 - No corruption after multiple cycles
 
@@ -334,11 +362,13 @@ Create tests for save state integrity.
 Configure continuous integration to run C++ tests.
 
 **Tasks:**
+
 - [ ] Add test step to GitHub Actions
 - [ ] Configure test result reporting
 - [ ] Add test coverage reporting
 
 **Acceptance Criteria:**
+
 - Tests run on every PR
 - Results visible in GitHub
 
@@ -364,11 +394,13 @@ Replace raw pointers with smart pointers and modern containers for improved memo
 Replace raw pointer allocations in Core/Shared with smart pointers.
 
 **Tasks:**
+
 - [ ] Identify all raw new/delete in Core/Shared
 - [ ] Replace with std::unique_ptr or std::shared_ptr
 - [ ] Update ownership semantics documentation
 
 **Acceptance Criteria:**
+
 - No raw new/delete in Core/Shared
 - Tests pass
 
@@ -382,6 +414,7 @@ Replace raw pointer allocations in Core/Shared with smart pointers.
 Modernize memory management in NES emulation core.
 
 **Tasks:**
+
 - [ ] Audit NES memory allocations
 - [ ] Replace with smart pointers
 - [ ] Verify emulation accuracy
@@ -418,16 +451,19 @@ Modernize memory management in SNES emulation core.
 Replace raw pointer + size pairs with std::span.
 
 **Tasks:**
+
 - [x] Identify functions with ptr+size patterns
 - [x] Replace with std::span<T> or std::span<const T>
 - [x] Update call sites
 
 **Implementation (January 29, 2026):**
+
 - BatteryManager::SaveBattery: `std::span<const uint8_t>`
 - BatteryManager::LoadBattery: `std::span<uint8_t>`
 - Updated 26 files across all platforms (NES, SNES, GB, GBA, SMS, PCE, WS)
 
 **Acceptance Criteria:**
+
 - Consistent use of std::span ✅
 - No buffer overflows possible ✅
 
@@ -450,6 +486,7 @@ Replace C-style arrays with std::array where size is known at compile time.
 Replace C-style casts with appropriate C++ casts.
 
 **Tasks:**
+
 - [ ] Replace with static_cast where appropriate
 - [ ] Replace with reinterpret_cast for type punning
 - [ ] Replace with const_cast where needed

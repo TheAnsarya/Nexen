@@ -1,0 +1,46 @@
+{
+	"$schema": "https://raw.githubusercontent.com/DavidAnson/markdownlint/main/schema/markdownlint-config-schema.json",
+	"default": true,
+	"MD003": {
+		"style": "atx"
+	},
+	"MD004": {
+		"style": "dash"
+	},
+	"MD007": false,
+	"MD009": {
+		"br_spaces": 2,
+		"strict": false
+	},
+	"MD010": false,
+	"MD012": {
+		"maximum": 2
+	},
+	"MD013": false,
+	"MD022": false,
+	"MD024": {
+		"siblings_only": true
+	},
+	"MD025": {
+		"front_matter_title": ""
+	},
+	"MD026": {
+		"punctuation": ".,;:!"
+	},
+	"MD029": {
+		"style": "ordered"
+	},
+	"MD033": false,
+	"MD060": false,
+	"MD035": {
+		"style": "---"
+	},
+	"MD036": false,
+	"MD041": false,
+	"MD046": {
+		"style": "fenced"
+	},
+	"MD048": {
+		"style": "backtick"
+	}
+}

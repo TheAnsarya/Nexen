@@ -12,6 +12,7 @@
 Merged comprehensive `.editorconfig` from pansy repository into Nexen:
 
 **Key Settings:**
+
 - K&R brace style: `csharp_new_line_before_open_brace = none`
 - `} else {` on same line: `csharp_new_line_before_else = false`
 - Tabs for indentation: `indent_style = tab`, `indent_size = 4`
@@ -52,7 +53,7 @@ if ((parent ?? ApplicationHelper.GetMainWindow()) is not Window wnd)
 
 ## Git Commits
 
-```
+```text
 923e5eae - style: apply K&R formatting with tabs, UTF-8, CRLF, final newlines
 ```
 

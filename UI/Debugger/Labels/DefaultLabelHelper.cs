@@ -3,8 +3,30 @@ using System.Collections.Generic;
 using Nexen.Config;
 using Nexen.Interop;
 
-namespace Nexen.Debugger.Labels; 
+namespace Nexen.Debugger.Labels;
+
+/// <summary>
+/// Provides default hardware register labels for all supported platforms.
+/// These labels are automatically applied when loading a ROM unless disabled
+/// in the debugger configuration.
+/// </summary>
+/// <remarks>
+/// <para>Labels include documented register names and descriptions for:</para>
+/// <list type="bullet">
+/// <item>SNES: PPU, APU, DMA, and hardware registers</item>
+/// <item>NES: PPU, APU, and controller registers</item>
+/// <item>Game Boy: LCD, audio, and system registers</item>
+/// <item>GBA: Display, sound, DMA, and timer registers</item>
+/// <item>PC Engine: VDC, VCE, and PSG registers</item>
+/// <item>Master System: VDP and PSG registers</item>
+/// <item>WonderSwan: Display and sound registers</item>
+/// </list>
+/// </remarks>
 public class DefaultLabelHelper {
+	/// <summary>
+	/// Sets default hardware register labels for the currently loaded ROM.
+	/// Automatically detects the platform and applies appropriate labels.
+	/// </summary>
 	public static void SetDefaultLabels() {
 		if (ConfigManager.Config.Debug.Debugger.DisableDefaultLabels) {
 			return;

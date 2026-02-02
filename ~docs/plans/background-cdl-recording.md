@@ -116,11 +116,13 @@ public static class BackgroundPansyExporter
 Location: `UI/Windows/MainWindow.axaml.cs` or `UI/Utilities/LoadRomHelper.cs`
 
 Find ROM load handlers and add:
+
 ```csharp
 BackgroundPansyExporter.OnRomLoaded(romInfo);
 ```
 
 Find ROM unload handlers and add:
+
 ```csharp
 BackgroundPansyExporter.OnRomUnloaded();
 ```
@@ -128,6 +130,7 @@ BackgroundPansyExporter.OnRomUnloaded();
 ### Step 4: Enable CDL Recording Without Debugger
 
 The CDL is normally controlled by the debugger. Need to:
+
 1. Call `DebugApi.SetDebuggerFlag()` to enable CDL logging
 2. May need to call `DebugApi.Step()` periodically or hook emulation
 
@@ -138,6 +141,7 @@ Research needed on Nexen's CDL API.
 Location: `UI/Debugger/Windows/DebuggerConfigWindow.axaml`
 
 Add new section:
+
 ```xml
 <c:OptionSection Header="{l:Translate lblBackgroundRecording}">
 	<CheckBox

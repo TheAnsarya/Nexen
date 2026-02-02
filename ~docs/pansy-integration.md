@@ -11,11 +11,13 @@ Nexen now supports automatic export of debugging metadata to the [Pansy format](
 ## Features
 
 ### Automatic Export
+
 - **When enabled:** Nexen automatically exports a `.pansy` file whenever debugging data changes
 - **Location:** Same folder as ROM, with `.pansy` extension
 - **Default:** Enabled by default for seamless workflow
 
 ### Manual Export
+
 - **Menu Location:** Debug → Export Pansy metadata
 - **Keyboard Shortcut:** None (can be configured)
 - **File Dialog:** Choose custom location and filename
@@ -25,7 +27,7 @@ Nexen now supports automatic export of debugging metadata to the [Pansy format](
 The following metadata is exported from Nexen:
 
 | Category | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | **Symbols** | All labels and their addresses |
 | **Comments** | Per-address comments |
 | **Code/Data Map** | CDL flags (code, data, jump targets, subroutines) |
@@ -59,7 +61,7 @@ Pansy export supports all Nexen platforms with correct Platform IDs:
 
 Pansy files are binary metadata files with the following structure:
 
-```
+```text
 ┌──────────────────────────────────────┐
 │		   Header (32 bytes)		  │
 ├──────────────────────────────────────┤
@@ -84,7 +86,7 @@ Pansy files are binary metadata files with the following structure:
 ### Header Details
 
 | Offset | Size | Type | Description |
-|--------|------|------|-------------|
+| -------- | ------ | ------ | ------------- |
 | 0x00 | 8 | char[8] | Magic: "PANSY\0\0\0" |
 | 0x08 | 2 | uint16 | Version: 0x0100 |
 | 0x0A | 1 | uint8 | Platform ID |
@@ -135,9 +137,9 @@ peony disassemble game.bin --metadata game.pansy
 - **File:** `UI/Debugger/Labels/PansyExporter.cs`
 - **Class:** `PansyExporter` (static utility class)
 - **Methods:**
-  - `Export(path, romInfo, memoryType)` - Manual export
-  - `AutoExport(romInfo, memoryType)` - Called on debugger shutdown
-  - `GetPansyFilePath(romName)` - Get default file path
+	- `Export(path, romInfo, memoryType)` - Manual export
+	- `AutoExport(romInfo, memoryType)` - Called on debugger shutdown
+	- `GetPansyFilePath(romName)` - Get default file path
 
 ### Integration Points
 
@@ -178,6 +180,7 @@ Planned improvements for future releases:
 ### Test Files
 
 Create test `.pansy` files for validation:
+
 - Small NES ROM with ~10 labels
 - SNES ROM with comments and CDL
 - Game Boy ROM with subroutines marked
@@ -213,6 +216,7 @@ Create test `.pansy` files for validation:
 ## Change Log
 
 ### 2026-01-19 - Initial Implementation
+
 - Created PansyExporter class
 - Added menu integration
 - Added config option

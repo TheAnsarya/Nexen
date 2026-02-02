@@ -6,7 +6,7 @@ This document covers Nexen's video rendering, filtering, and recording subsystem
 
 ## Architecture Overview
 
-```
+```text
 Video Rendering Pipeline
 ════════════════════════
 
@@ -53,7 +53,7 @@ Video Rendering Pipeline
 
 ## Directory Structure
 
-```
+```text
 Core/Shared/Video/
 ├── VideoRenderer.h/cpp	  - Render coordinator, HUD management
 ├── VideoDecoder.h/cpp	   - Frame decoding, format conversion
@@ -89,12 +89,14 @@ Core/Shared/Video/
 Central rendering coordinator.
 
 **Key Responsibilities:**
+
 - Dedicated render thread
 - HUD overlay management
 - Video recording coordination
 - Frame rate limiting
 
 **Rendering Thread:**
+
 ```cpp
 void RenderThread() {
 	while (!_stopFlag) {
@@ -109,6 +111,7 @@ void RenderThread() {
 ```
 
 **HUD Layers (render order):**
+
 1. **DebugHud** - Debugger information
 2. **SystemHud** - FPS, messages, warnings
 3. **InputHud** - Controller display
@@ -119,6 +122,7 @@ void RenderThread() {
 Frame processing and filter application.
 
 **Processing Pipeline:**
+
 ```cpp
 void DecodeFrame(uint16_t* rawFrame, uint32_t width, uint32_t height) {
 	// 1. Convert palette (if needed)
@@ -129,6 +133,7 @@ void DecodeFrame(uint16_t* rawFrame, uint32_t width, uint32_t height) {
 ```
 
 **Features:**
+
 - Palette conversion (NES/GB specific)
 - Overscan cropping
 - Aspect ratio correction
@@ -140,7 +145,7 @@ void DecodeFrame(uint16_t* rawFrame, uint32_t width, uint32_t height) {
 ### Available Filters
 
 | Filter | Type | Description |
-|--------|------|-------------|
+| -------- | ------ | ------------- |
 | **None** | Passthrough | No filtering |
 | **NTSC** | Color | Authentic CRT simulation |
 | **Scale2x-4x** | Integer | Sharp pixel scaling |
@@ -154,12 +159,14 @@ void DecodeFrame(uint16_t* rawFrame, uint32_t width, uint32_t height) {
 Simulates NTSC composite video artifacts.
 
 **Effects:**
+
 - Color fringing
 - Dot crawl
 - Signal blurring
 - Chroma/luma separation
 
 **Configuration:**
+
 ```cpp
 struct NtscFilterSettings {
 	double Hue = 0.0;
@@ -176,6 +183,7 @@ struct NtscFilterSettings {
 Integer scaling algorithms.
 
 **Algorithms:**
+
 - **Scale2x/3x/4x**: Pattern-based edge detection
 - **HQ2x/3x/4x**: Sophisticated color blending
 - **xBRZ**: Modern high-quality scaler
@@ -185,6 +193,7 @@ Integer scaling algorithms.
 Simulates CRT scanlines.
 
 **Configuration:**
+
 ```cpp
 struct ScanlineSettings {
 	uint8_t Intensity = 50;	// 0-100%
@@ -197,6 +206,7 @@ struct ScanlineSettings {
 Screen rotation for vertical games.
 
 **Options:**
+
 - 0° (normal)
 - 90° (clockwise)
 - 180° (upside down)
@@ -211,12 +221,14 @@ Screen rotation for vertical games.
 On-screen display for system information.
 
 **Components:**
+
 - FPS counter
 - OSD messages (game load, state save, etc.)
 - Warning indicators
 - Turbo mode indicator
 
 **Configuration:**
+
 ```cpp
 struct SystemHudSettings {
 	bool ShowFps = true;
@@ -231,6 +243,7 @@ struct SystemHudSettings {
 Debugger visualization overlays.
 
 **Features:**
+
 - Memory viewer overlay
 - CPU state display
 - Breakpoint indicators
@@ -241,6 +254,7 @@ Debugger visualization overlays.
 Controller input visualization.
 
 **Features:**
+
 - Button press display
 - Per-controller overlays
 - Configurable position/opacity
@@ -253,7 +267,7 @@ Controller input visualization.
 ### Supported Formats
 
 | Format | Extension | Codec | Notes |
-|--------|-----------|-------|-------|
+| -------- | ----------- | ------- | ------- |
 | **AVI** | .avi | Raw/ZMBV | Lossless, large files |
 | **GIF** | .gif | LZW | Animated, limited colors |
 
@@ -271,7 +285,7 @@ struct RecordAviOptions {
 ### Codecs
 
 | Codec | Description | Size | Speed |
-|-------|-------------|------|-------|
+| ------- | ------------- | ------ | ------- |
 | **Raw** | Uncompressed | Huge | Fast |
 | **ZMBV** | Zip Motion Block | Small | Medium |
 | **Camstudio** | LZSS compression | Medium | Fast |
@@ -317,7 +331,7 @@ void TakeScreenshot();  // Uses configured pattern
 ### Native Resolutions
 
 | System | Resolution | Aspect Ratio |
-|--------|------------|--------------|
+| -------- | ------------ | -------------- |
 | NES | 256×240 | 4:3 (with overscan) |
 | SNES | 256×224 / 512×448 | 4:3 (with overscan) |
 | Game Boy | 160×144 | ~10:9 |
@@ -385,11 +399,13 @@ void DrawHudElement(/* ... */) {
 ### V-Sync
 
 **Enabled:**
+
 - Smooth display
 - No tearing
 - Adds latency (~16ms)
 
 **Disabled:**
+
 - Lower latency
 - May cause tearing
 - Higher CPU usage
@@ -406,7 +422,7 @@ struct FrameSkipSettings {
 ### Rendering Backend
 
 | Backend | Platform | Features |
-|---------|----------|----------|
+| --------- | ---------- | ---------- |
 | OpenGL | Cross-platform | Shaders, hardware scaling |
 | Direct3D | Windows | Low latency, Windows native |
 | SDL | Cross-platform | Simple, portable |
@@ -420,11 +436,13 @@ struct FrameSkipSettings {
 GLSL shaders for post-processing effects.
 
 **Built-in Shaders:**
+
 - CRT simulation
 - LCD simulation
 - Retro effects
 
 **Shader API:**
+
 ```cpp
 void LoadShader(string filename);
 void SetShaderParameter(string name, float value);

@@ -3562,6 +3562,7 @@ E
 
 			<Value ID="Tools">Tools</Value>
 			<Value ID="HistoryViewer">History Viewer</Value>
+			<Value ID="TasEditor">TAS Editor</Value>
 			<Value ID="NetPlay">Net Play</Value>
 			<Value ID="StartServer">Start server...</Value>
 			<Value ID="StopServer">Stop server</Value>

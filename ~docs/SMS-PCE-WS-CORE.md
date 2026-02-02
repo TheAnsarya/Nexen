@@ -8,7 +8,7 @@ This document covers the Sega Master System, PC Engine/TurboGrafx-16, and Wonder
 
 ### Architecture Overview
 
-```
+```text
 SMS Architecture
 ════════════════
 
@@ -30,7 +30,7 @@ SMS Architecture
 
 ### Directory Structure
 
-```
+```text
 Core/SMS/
 ├── Main Components
 │   ├── SmsConsole.h/cpp		- Console coordinator
@@ -60,6 +60,7 @@ Core/SMS/
 Emulates the Zilog Z80 CPU.
 
 **Key Features:**
+
 - 8-bit CPU at 3.579545 MHz (NTSC)
 - 16-bit address bus (64KB)
 - Extensive instruction set (700+ opcodes)
@@ -67,6 +68,7 @@ Emulates the Zilog Z80 CPU.
 - Alternate register set (shadow registers)
 
 **Z80 Registers:**
+
 ```cpp
 struct SmsCpuState {
 	// Main registers
@@ -89,16 +91,19 @@ struct SmsCpuState {
 Video Display Processor based on TMS9918 with enhancements.
 
 **Display Specifications:**
+
 - SMS: 256×192 or 256×224 pixels
 - Game Gear: 160×144 (centered window)
 - 32 colors on screen from 64 (SMS) or 4096 (GG)
 - 64 sprites, 8 per scanline
 
 **VDP Modes:**
+
 - Mode 4: Standard SMS mode (tile-based)
 - Legacy modes: TMS9918 compatibility (SG-1000)
 
 **Memory:**
+
 - 16KB VRAM
 - 32-byte palette RAM (CRAM)
 
@@ -107,6 +112,7 @@ Video Display Processor based on TMS9918 with enhancements.
 SN76489 Programmable Sound Generator.
 
 **Channels:**
+
 1. **Tone 1** - Square wave
 2. **Tone 2** - Square wave
 3. **Tone 3** - Square wave (or noise clock)
@@ -117,13 +123,14 @@ SN76489 Programmable Sound Generator.
 Optional YM2413 FM audio (Japanese SMS, some games).
 
 **Features:**
+
 - 9 FM channels (or 6 FM + 5 rhythm)
 - 15 preset instruments + 1 custom
 - Used in: Phantasy Star, Ys, Space Harrier
 
 ### Memory Map
 
-```
+```text
 SMS Memory Map
 ══════════════
 $0000-$03FF  ROM (BIOS) or Cartridge
@@ -140,7 +147,7 @@ $E000-$FFFF  RAM mirror
 
 ### Architecture Overview
 
-```
+```text
 PC Engine Architecture
 ══════════════════════
 
@@ -162,7 +169,7 @@ PC Engine Architecture
 
 ### Directory Structure
 
-```
+```text
 Core/PCE/
 ├── Main Components
 │   ├── PceConsole.h/cpp		- Console coordinator
@@ -198,6 +205,7 @@ Core/PCE/
 Emulates the Hudson HuC6280, an enhanced 65C02.
 
 **Key Features:**
+
 - 8-bit CPU at 7.16 MHz (or 1.79 MHz)
 - 65C02 base with extensions
 - 8KB zero-page (MPR-based banking)
@@ -206,12 +214,14 @@ Emulates the Hudson HuC6280, an enhanced 65C02.
 - Built-in PSG controller
 
 **CPU Enhancements over 65C02:**
+
 - Memory Mapping Registers (MPR0-7)
 - Block transfer: TAI, TIA, TIN, TDD, TII
 - Swap instructions: SXY, SAX, SAY
 - Test/set/reset memory bits
 
 **Memory Mapping:**
+
 ```cpp
 // 8 Memory Mapping Registers divide 64KB into 8KB pages
 // Each MPR selects one of 256 physical 8KB pages
@@ -225,18 +235,21 @@ struct PceMprState {
 Video Display Controller (HuC6270).
 
 **Display Specifications:**
+
 - Resolution: 256-512 × 224-242 pixels
 - 512 colors on screen from 512 total
 - 2 scrolling background layers (with VPC)
 - 64 sprites, 16 per scanline
 
 **Video Memory:**
+
 - 64KB VRAM (HuCard) or 128KB (SuperGrafx)
 - Tile and sprite data
 
 #### PceVce (PceVce.h)
 
 Video Color Encoder (HuC6260).
+
 - Manages color palette
 - 512 colors (9-bit RGB)
 - Outputs composite/S-Video/RGB
@@ -244,6 +257,7 @@ Video Color Encoder (HuC6260).
 #### PceVpc (PceVpc.h)
 
 Video Priority Controller (SuperGrafx only).
+
 - Combines output of two VDCs
 - Priority and window control
 
@@ -252,6 +266,7 @@ Video Priority Controller (SuperGrafx only).
 6-channel wavetable PSG.
 
 **Channels:**
+
 - 6 identical channels
 - 32-sample 5-bit waveforms
 - Volume and noise control
@@ -259,7 +274,7 @@ Video Priority Controller (SuperGrafx only).
 
 ### Memory Map
 
-```
+```text
 PC Engine Memory Map (via MPR)
 ══════════════════════════════
 Physical pages:
@@ -287,7 +302,7 @@ $1400-$17FF  IRQ control
 
 ### Architecture Overview
 
-```
+```text
 WonderSwan Architecture
 ═══════════════════════
 
@@ -309,7 +324,7 @@ WonderSwan Architecture
 
 ### Directory Structure
 
-```
+```text
 Core/WS/
 ├── Main Components
 │   ├── WsConsole.h/cpp		 - Console coordinator
@@ -344,12 +359,14 @@ Core/WS/
 Emulates the NEC V30MZ, an 80186-compatible CPU.
 
 **Key Features:**
+
 - 16-bit CPU at 3.072 MHz
 - x86-compatible (80186 subset)
 - 1MB address space (20-bit)
 - Segmented memory model
 
 **CPU Registers:**
+
 ```cpp
 struct WsCpuState {
 	// General registers
@@ -366,6 +383,7 @@ struct WsCpuState {
 ```
 
 **Addressing:**
+
 - Physical = (Segment << 4) + Offset
 - Up to 1MB addressable (20-bit)
 
@@ -374,6 +392,7 @@ struct WsCpuState {
 Custom PPU for handheld display.
 
 **Display Specifications:**
+
 - Resolution: 224×144 pixels
 - WS: 8 shades of gray
 - WSC: 241 colors on screen from 4096
@@ -381,11 +400,13 @@ Custom PPU for handheld display.
 - 128 sprites, 32 per scanline
 
 **Unique Features:**
+
 - Vertical or horizontal orientation
 - Hardware sprite windows
 - Color mapped mode (WSC)
 
 **Memory:**
+
 - 16KB VRAM (WS) / 64KB (WSC)
 - 512 sprites in OAM
 
@@ -394,19 +415,21 @@ Custom PPU for handheld display.
 4-channel audio + voice synthesis.
 
 **Channels:**
+
 1. **Wave 1** - Wavetable
 2. **Wave 2** - Wavetable (or voice input)
 3. **Wave 3** - Wavetable (or sweep)
 4. **Wave 4** - Wavetable (or noise)
 
 **Features:**
+
 - Headphone stereo output
 - Voice input/output (microphone)
 - Per-channel volume
 
 ### Memory Map
 
-```
+```text
 WonderSwan Memory Map
 ═════════════════════
 $00000-$0FFFF  Internal RAM (64KB, WSC)
@@ -427,7 +450,7 @@ $C0-$FF  Reserved
 ## Comparison Table
 
 | System | CPU | Clock | Resolution | Colors | Audio |
-|--------|-----|-------|------------|--------|-------|
+| -------- | ----- | ------- | ------------ | -------- | ------- |
 | **SMS** | Z80 | 3.58 MHz | 256×192 | 32/64 | 4ch PSG |
 | **Game Gear** | Z80 | 3.58 MHz | 160×144 | 32/4096 | 4ch PSG |
 | **PC Engine** | HuC6280 | 7.16 MHz | 256-512×224 | 512 | 6ch PSG |

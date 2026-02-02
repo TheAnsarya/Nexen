@@ -31,17 +31,19 @@ Currently, Pansy files are named based on the ROM filename. This creates a probl
 
 ### Option A: Hash in Filename
 
-```
+```json
 {RomName}-{CRC32}.pansy
 Example: Dragon Warrior IV-A1B2C3D4.pansy
 ```
 
 **Pros:**
+
 - Easy to identify at a glance
 - No format changes needed
 - Multiple versions visible in folder
 
 **Cons:**
+
 - Long filenames
 - Need to migrate existing files
 
@@ -49,7 +51,7 @@ Example: Dragon Warrior IV-A1B2C3D4.pansy
 
 The Pansy format already has a `RomCrc32` field in the header! Currently it's a placeholder.
 
-```
+```text
 Header Layout (16 bytes):
 - Magic: 8 bytes "PANSY\0\0\0"
 - Version: 2 bytes (0x0100)
@@ -60,17 +62,20 @@ Header Layout (16 bytes):
 ```
 
 **Implementation:**
+
 1. Calculate actual ROM CRC32 on load
 2. Store in Pansy header
 3. Before updating existing Pansy, check if CRC matches
 4. If mismatch: create new file or warn user
 
 **Pros:**
+
 - No filename changes
 - Format already supports it
 - Clean user experience
 
 **Cons:**
+
 - Need to read existing Pansy to check hash
 - User may not realize they have wrong hash
 
@@ -246,23 +251,27 @@ Location: `UI/Debugger/Windows/DebuggerConfigWindow.axaml`
 ## Testing Plan
 
 ### Test Case 1: Clean Start
+
 1. Delete all .pansy files
 2. Load original ROM
 3. Play and close
 4. Verify .pansy created with correct CRC in header
 
 ### Test Case 2: Same ROM Reload
+
 1. Load same ROM again
 2. Play more
 3. Verify same .pansy file updated (CRC matches)
 
 ### Test Case 3: Hacked ROM
+
 1. Load hacked/translated version (different CRC)
 2. Play and close
 3. Verify NEW .pansy file created with `-{CRC}.pansy` suffix
 4. Verify ORIGINAL .pansy file unchanged
 
 ### Test Case 4: Legacy Files
+
 1. Use old .pansy file with CRC32 = 0 (placeholder)
 2. Load any ROM
 3. Verify file gets CRC populated (migration)
@@ -270,6 +279,7 @@ Location: `UI/Debugger/Windows/DebuggerConfigWindow.axaml`
 ## Migration Plan
 
 For existing .pansy files with CRC32 = 0:
+
 1. When loading, treat CRC32=0 as "unknown/unverified"
 2. First update will populate the correct CRC
 3. Log warning if CRC would change from non-zero

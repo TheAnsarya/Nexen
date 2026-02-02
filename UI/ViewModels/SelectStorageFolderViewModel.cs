@@ -9,7 +9,7 @@ using Nexen.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.ViewModels; 
+namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the storage folder selection dialog.
 /// Handles migrating configuration between portable and user profile storage.

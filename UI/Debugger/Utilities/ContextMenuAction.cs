@@ -17,7 +17,7 @@ using Nexen.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.Utilities; 
+namespace Nexen.Debugger.Utilities;
 public abstract class BaseMenuAction : ViewModelBase, IDisposable {
 	private static Dictionary<ActionType, string?> _iconCache = new();
 
@@ -539,6 +539,8 @@ public enum ActionType {
 	Cheats,
 	[IconFile("HistoryViewer")]
 	HistoryViewer,
+	[IconFile("Edit")]
+	TasEditor,
 	[IconFile("Movie")]
 	Movies,
 	[IconFile("MediaPlay")]

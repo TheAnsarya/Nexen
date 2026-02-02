@@ -10,6 +10,7 @@ This plan covers adding comprehensive XML documentation comments and inline code
 ## ⚠️ Critical Rule
 
 **When adding or modifying comments, NEVER change the actual code.**
+
 - Changes to comments must not alter code logic, structure, or formatting
 - When adding XML documentation or inline comments, preserve all existing code exactly
 - Verify code integrity after adding documentation
@@ -20,7 +21,7 @@ This plan covers adding comprehensive XML documentation comments and inline code
 Files that are foundational to the codebase:
 
 | File | Status | Description |
-|------|--------|-------------|
+| ------ | -------- | ------------- |
 | `UI/Config/ConfigManager.cs` | 🔴 | Central configuration management |
 | `UI/Config/Configuration.cs` | 🔴 | Main configuration class |
 | `UI/Config/BaseConfig.cs` | 🔴 | Configuration base class |
@@ -32,7 +33,7 @@ Files that are foundational to the codebase:
 Our custom Pansy metadata format integration:
 
 | File | Status | Description |
-|------|--------|-------------|
+| ------ | -------- | ------------- |
 | `UI/Debugger/Labels/PansyExporter.cs` | 🟡 | Pansy file export (partial docs) |
 | `UI/Debugger/Labels/BackgroundPansyExporter.cs` | 🟢 | Background CDL recording |
 | `UI/Debugger/Labels/PansyImporter.cs` | 🔴 | Pansy file import |
@@ -45,7 +46,7 @@ Our custom Pansy metadata format integration:
 Core debugger label functionality:
 
 | File | Status | Description |
-|------|--------|-------------|
+| ------ | -------- | ------------- |
 | `UI/Debugger/Labels/CodeLabel.cs` | 🔴 | Code label data model |
 | `UI/Debugger/Labels/LabelManager.cs` | 🔴 | Label storage and lookup |
 | `UI/Debugger/Labels/DefaultLabelHelper.cs` | 🔴 | Default label generation |
@@ -54,7 +55,7 @@ Core debugger label functionality:
 Helper classes for debugger features:
 
 | File | Status | Description |
-|------|--------|-------------|
+| ------ | -------- | ------------- |
 | `UI/Debugger/Utilities/DebugWorkspaceManager.cs` | 🔴 | Workspace state management |
 | `UI/Debugger/Utilities/DebugWindowManager.cs` | 🔴 | Debugger window management |
 | `UI/Debugger/Utilities/DebugShortcutManager.cs` | 🔴 | Keyboard shortcuts |
@@ -66,7 +67,7 @@ Helper classes for debugger features:
 C++/C# interop definitions:
 
 | File | Status | Description |
-|------|--------|-------------|
+| ------ | -------- | ------------- |
 | `UI/Interop/DebugApi.cs` | 🔴 | Debug API P/Invoke |
 | `UI/Interop/EmuApi.cs` | 🔴 | Emulation API P/Invoke |
 | `UI/Interop/ConfigApi.cs` | 🔴 | Config API P/Invoke |
@@ -76,7 +77,7 @@ C++/C# interop definitions:
 MVVM view models:
 
 | File | Status | Description |
-|------|--------|-------------|
+| ------ | -------- | ------------- |
 | `UI/ViewModels/MainWindowViewModel.cs` | 🔴 | Main window VM |
 | `UI/ViewModels/ViewModelBase.cs` | 🔴 | ViewModel base class |
 | `UI/Debugger/ViewModels/DebuggerWindowViewModel.cs` | 🔴 | Debugger VM |
@@ -86,7 +87,7 @@ MVVM view models:
 Helper classes for UI:
 
 | File | Status | Description |
-|------|--------|-------------|
+| ------ | -------- | ------------- |
 | `UI/Utilities/JsonHelper.cs` | 🔴 | JSON serialization |
 | `UI/Utilities/FileHelper.cs` | 🔴 | File operations |
 | `UI/Utilities/FolderHelper.cs` | 🔴 | Folder management |
@@ -116,7 +117,7 @@ public ReturnType MethodName(ParamType paramName) { ... }
 
 ### Inline Comment Guidelines
 
-- Use `// ` for single-line comments
+- Use `//` for single-line comments
 - Explain "why", not "what" (the code shows what)
 - Comment complex algorithms and business logic
 - Mark performance-critical code with `// Performance:`

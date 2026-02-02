@@ -25,7 +25,7 @@ using Nexen.Windows;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.ViewModels; 
+namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the main application menu.
 /// Manages all menu items for File, Game, Options, Tools, Debug, and Help menus.
@@ -780,6 +780,11 @@ public class MainMenuViewModel : ViewModelBase {
 				ActionType = ActionType.HistoryViewer,
 				IsEnabled = () => IsGameRunning && HistoryApi.HistoryViewerEnabled(),
 				OnClick = () => ApplicationHelper.GetOrCreateUniqueWindow(null, () => new HistoryViewerWindow())                },
+
+			new MainMenuAction() {
+				ActionType = ActionType.TasEditor,
+				IsEnabled = () => IsGameRunning,
+				OnClick = () => ApplicationHelper.GetOrCreateUniqueWindow(wnd, () => new TasEditorWindow())                },
 
 			GetMoviesMenu(wnd),
 			GetNetPlayMenu(wnd),

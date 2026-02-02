@@ -4,7 +4,7 @@ The SNES (Super Nintendo Entertainment System) emulation core provides cycle-acc
 
 ## Architecture Overview
 
-```
+```text
 SNES Core Architecture
 ══════════════════════
 
@@ -33,7 +33,7 @@ SNES Core Architecture
 
 ## Directory Structure
 
-```
+```text
 Core/SNES/
 ├── Main Components
 │   ├── SnesConsole.h/cpp	   - Console coordinator
@@ -87,6 +87,7 @@ Core/SNES/
 The main coordinator that owns all SNES components.
 
 **Responsibilities:**
+
 - Initialize and connect components
 - Run the main frame loop with cycle-accurate timing
 - Handle state serialization
@@ -97,6 +98,7 @@ The main coordinator that owns all SNES components.
 Emulates the Ricoh 5A22, a 65816 CPU with DMA controller.
 
 **Key Features:**
+
 - Full 65816 instruction set (all 256 opcodes)
 - 24-bit addressing (16MB address space)
 - 8/16-bit accumulator and index registers (M/X flags)
@@ -104,6 +106,7 @@ Emulates the Ricoh 5A22, a 65816 CPU with DMA controller.
 - Cycle-accurate execution with FastROM support
 
 **CPU State:**
+
 ```cpp
 struct SnesCpuState {
 	uint16_t A;	 // Accumulator (16-bit)
@@ -120,6 +123,7 @@ struct SnesCpuState {
 ```
 
 **Addressing Modes (24 total):**
+
 - Direct Page (dp), Direct Page Indexed (dp,X / dp,Y)
 - Absolute, Absolute Indexed (a,X / a,Y)
 - Long (al), Long Indexed (al,X)
@@ -131,6 +135,7 @@ struct SnesCpuState {
 Emulates the S-PPU (Picture Processing Unit) with two chips (PPU1/PPU2).
 
 **Key Features:**
+
 - Multiple resolutions: 256×224, 256×239, 512×224, 512×448
 - 8 graphics modes (Mode 0-7)
 - 4 background layers (BG1-BG4)
@@ -140,8 +145,9 @@ Emulates the S-PPU (Picture Processing Unit) with two chips (PPU1/PPU2).
 - Mode 7: Affine transformation (rotation/scaling)
 
 **Graphics Modes:**
+
 | Mode | BG1 | BG2 | BG3 | BG4 | Notes |
-|------|-----|-----|-----|-----|-------|
+| ------ | ----- | ----- | ----- | ----- | ------- |
 | 0 | 2bpp | 2bpp | 2bpp | 2bpp | 4 layers, 4 colors each |
 | 1 | 4bpp | 4bpp | 2bpp | - | Most common mode |
 | 2 | 4bpp | 4bpp | OPT | - | Offset-per-tile |
@@ -152,6 +158,7 @@ Emulates the S-PPU (Picture Processing Unit) with two chips (PPU1/PPU2).
 | 7 | 8bpp | EXTBG | - | - | Rotation/scaling |
 
 **PPU Memory:**
+
 - 64KB VRAM (Video RAM)
 - 544 bytes OAM (sprite attributes)
 - 512 bytes CGRAM (color palette)
@@ -161,12 +168,14 @@ Emulates the S-PPU (Picture Processing Unit) with two chips (PPU1/PPU2).
 Emulates the Sony SPC700 8-bit audio processor.
 
 **Key Features:**
+
 - 8-bit CPU at ~1.024 MHz
 - 64KB dedicated audio RAM
 - Independent from main CPU
 - Communicates via 4 I/O ports
 
 **SPC700 State:**
+
 ```cpp
 struct SpcState {
 	uint16_t PC;	// Program Counter
@@ -183,6 +192,7 @@ struct SpcState {
 The S-DSP generates the final audio output using BRR-encoded samples.
 
 **Key Features:**
+
 - 8 voices (channels)
 - 32kHz sample rate output
 - BRR compression (16:9 ratio)
@@ -192,6 +202,7 @@ The S-DSP generates the final audio output using BRR-encoded samples.
 - Pitch modulation
 
 **Voice Registers (per channel):**
+
 - VOL (L/R): Volume
 - PITCH: Sample rate
 - SRCN: Sample source number
@@ -204,19 +215,21 @@ The S-DSP generates the final audio output using BRR-encoded samples.
 Handles both regular DMA and HDMA (Horizontal DMA).
 
 **DMA Features:**
+
 - 8 DMA channels
 - Block transfer modes
 - Fixed/increment/decrement addressing
 - CPU halt during DMA
 
 **HDMA Features:**
+
 - Per-scanline register writes
 - Used for gradient effects, window changes
 - Table-driven with repeat counts
 
 ## Memory Map
 
-```
+```text
 SNES Memory Map (LoROM example)
 ═══════════════════════════════
 Bank $00-$3F (System Area):
@@ -244,67 +257,80 @@ Bank $80-$FF:
 
 ### SA-1 (SA1/)
 A second 65816 CPU running at 10.74 MHz.
+
 - Used in: Kirby Super Star, Super Mario RPG
 - Features: Memory mapping, BCD math, bit manipulation
 
 ### Super FX / GSU (GSU/)
 RISC processor for 3D graphics.
+
 - Used in: Star Fox, Yoshi's Island, Doom
 - Features: Plot/draw commands, cache, variable clock
 
 ### DSP-1/2/3/4 (DSP/)
 Math coprocessors for 3D calculations.
+
 - Used in: Pilotwings, Super Mario Kart
 - Features: Trigonometry, matrix math, projection
 
 ### Cx4 (CX4/)
 Wireframe 3D graphics processor.
+
 - Used in: Mega Man X2, Mega Man X3
 - Features: Line drawing, polygon rendering
 
 ### S-DD1 (SDD1/)
 Data decompression coprocessor.
+
 - Used in: Star Ocean, Street Fighter Alpha 2
 - Features: Real-time decompression
 
 ### SPC7110 (SPC7110/)
 Enhanced decompression and memory mapping.
+
 - Used in: Far East of Eden Zero, Momotaro Dentetsu Happy
 
 ### Super Game Boy (SGB/)
 Runs original Game Boy games with SNES enhancements.
+
 - Features: Custom borders, color palettes, multiplayer
 
 ### MSU-1 (MSU1/)
 Modern enhancement chip for CD-quality audio/video.
+
 - Features: 4GB data access, streaming audio
 - Used in: ROM hacks and homebrew
 
 ## Timing
 
 **Main CPU (5A22):**
+
 - Master clock: 21.477 MHz
 - FastROM: 3.58 MHz (6 cycles/access)
 - SlowROM: 2.68 MHz (8 cycles/access)
 - Variable speed based on memory region
 
 **SPC700:**
+
 - ~1.024 MHz (1024000 Hz)
 - Independent timing from main CPU
 
 **PPU:**
+
 - 262 scanlines (NTSC) / 312 (PAL)
 - 340 dots per scanline
 - ~60.098 Hz (NTSC) / ~50.007 Hz (PAL)
 
 ## Integration Points
 
-### With Shared Infrastructure:
+### With Shared Infrastructure
+
 - Uses `Serializer` for save states
 - Uses `SimpleLock` for thread safety
 - Debugger interface for step/trace
 
-### State Serialization:
+### State Serialization
+
 ```cpp
 void SnesCpu::Serialize(Serializer& s) {
 	SV(_state.A);

@@ -1,7 +1,7 @@
 using Avalonia.Media;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.ViewModels; 
+namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the color picker dialog.
 /// </summary>

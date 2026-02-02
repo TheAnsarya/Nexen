@@ -20,7 +20,7 @@ Establish performance benchmarking infrastructure to measure the impact of C++ m
 ### Why Google Benchmark?
 
 | Criteria | Google Benchmark | Custom Timing | nanobench |
-|----------|------------------|---------------|-----------|
+| ---------- | ------------------ | --------------- | ----------- |
 | Industry Standard | ✅ Widely used | ❌ Reinventing wheel | ⚠️ Less known |
 | Statistical Analysis | ✅ Mean, median, stddev | ❌ Manual | ✅ Yes |
 | Visual Studio Integration | ✅ Good | ⚠️ None | ⚠️ Limited |
@@ -33,7 +33,7 @@ Establish performance benchmarking infrastructure to measure the impact of C++ m
 
 ## Project Structure
 
-```
+```text
 Nexen/
 ├── Core.Benchmarks/			   # NEW - C++ benchmark project
 │   ├── Core.Benchmarks.vcxproj	# VS project file
@@ -91,6 +91,7 @@ BENCHMARK(BM_ColorUtilities_Rgb555ToArgb_Loop);
 ```
 
 **Expected Results:**
+
 - **Before constexpr:** ~5-10 ns/op
 - **After constexpr:** ~2-5 ns/op (or compile-time if used with literals)
 
@@ -120,6 +121,7 @@ BENCHMARK(BM_BatteryManager_SaveBattery_Span)->Range(1024, 1<<20);
 ```
 
 **Expected Results:**
+
 - **Release build:** Identical performance (zero-cost abstraction)
 - **Debug build:** std::span may be slower (acceptable per user directive)
 
@@ -148,6 +150,7 @@ BENCHMARK(BM_NES_RenderFrame)->Unit(benchmark::kMillisecond);
 ```
 
 **Expected Results:**
+
 - **Target:** > 1000 FPS (1ms per frame) for NES on modern CPU
 - **Regression threshold:** < 5% variance
 
@@ -211,6 +214,7 @@ BENCHMARK(BM_MemoryRead_WithHints);
 ```
 
 **Expected Results:**
+
 - **With [[unlikely]]:** 5-15% faster for typical case (RAM reads)
 - **Without hints:** More branch mispredictions
 
@@ -219,7 +223,7 @@ BENCHMARK(BM_MemoryRead_WithHints);
 ### High Priority (Hot Paths)
 
 | Component | Function | Iterations/Frame | Priority |
-|-----------|----------|------------------|----------|
+| ----------- | ---------- | ------------------ | ---------- |
 | NesCpu | ExecuteInstruction | ~30,000 | 🔴 CRITICAL |
 | NesPpu | RenderPixel | ~61,440 | 🔴 CRITICAL |
 | SnesCpu | ExecuteOp | ~89,341 | 🔴 CRITICAL |
@@ -229,7 +233,7 @@ BENCHMARK(BM_MemoryRead_WithHints);
 ### Medium Priority (Warm Paths)
 
 | Component | Function | Frequency | Priority |
-|-----------|----------|-----------|----------|
+| ----------- | ---------- | ----------- | ---------- |
 | BatteryManager | SaveBattery | Per save | 🟢 MEDIUM |
 | Crc32 | CalculateCRC | Per ROM load | 🟢 MEDIUM |
 | HexUtilities | ToHex | Debug only | 🟢 MEDIUM |
@@ -237,7 +241,7 @@ BENCHMARK(BM_MemoryRead_WithHints);
 ### Low Priority (Cold Paths)
 
 | Component | Function | Frequency | Priority |
-|-----------|----------|-----------|----------|
+| ----------- | ---------- | ----------- | ---------- |
 | StringUtilities | Format | UI updates | 🔵 LOW |
 | FolderUtilities | CreateFolder | Setup only | 🔵 LOW |
 
@@ -289,7 +293,7 @@ python tools/compare.py baseline/baseline.json current.json
 
 ### Example Compare Output
 
-```
+```text
 Comparing baseline/baseline.json to current.json
 Benchmark								  Time	   CPU	Time Old	Time New
 ---------------------------------------------------------------------------------------
@@ -368,7 +372,7 @@ jobs:
 
 ## Benchmark Naming Convention
 
-```
+```text
 BM_<Component>_<Function>_<Variant>
 
 Examples:
@@ -383,7 +387,7 @@ Examples:
 
 ### Console Output (Default)
 
-```
+```text
 Run on (16 X 3600 MHz CPU s)
 CPU Caches:
   L1 Data 32K (x8)
@@ -431,6 +435,7 @@ BM_NesCpu_ExecuteInstruction		  102 ns		  102 ns	  6862745
 ## Implementation Checklist
 
 ### Phase 1: Infrastructure
+
 - [ ] Install Google Benchmark via vcpkg
 - [ ] Create Core.Benchmarks project
 - [ ] Configure Release-only builds
@@ -438,18 +443,21 @@ BM_NesCpu_ExecuteInstruction		  102 ns		  102 ns	  6862745
 - [ ] Verify benchmark discovery in VS
 
 ### Phase 2: Initial Benchmarks
+
 - [ ] ColorUtilities benchmarks
 - [ ] CRC32 benchmarks
 - [ ] BatteryManager std::span comparison
 - [ ] Establish baselines (pre-modernization)
 
 ### Phase 3: Modernization Validation
+
 - [ ] [[unlikely]] branch hint comparisons
 - [ ] constexpr function comparisons
 - [ ] [[nodiscard]] (should be zero cost)
 - [ ] std::span vs raw pointer comparisons
 
 ### Phase 4: Emulation Benchmarks
+
 - [ ] NES CPU instruction benchmarks
 - [ ] NES PPU frame rendering
 - [ ] SNES CPU benchmarks

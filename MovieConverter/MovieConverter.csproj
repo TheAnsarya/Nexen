@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>preview</LangVersion>
+		<RootNamespace>Nexen.MovieConverter</RootNamespace>
+		<AssemblyName>Nexen.MovieConverter</AssemblyName>
+		<Version>1.0.0</Version>
+		<Authors>TheAnsarya</Authors>
+		<Description>TAS movie format conversion library for Nexen emulator</Description>
+		<PackageTags>TAS;movie;emulator;conversion;BK2;LSMV;FM2;SMV</PackageTags>
+
+		<!-- Modern .NET 10 features -->
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<IsAotCompatible>true</IsAotCompatible>
+		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+
+		<!-- Performance and analysis -->
+		<AnalysisLevel>latest-all</AnalysisLevel>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- Modern JSON source generation for AOT compatibility -->
+		<PackageReference Include="System.IO.Hashing" Version="9.0.1" />
+	</ItemGroup>
+
+</Project>

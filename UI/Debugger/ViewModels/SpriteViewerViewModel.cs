@@ -21,7 +21,7 @@ using Nexen.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for the sprite viewer window.
 /// Displays all sprites currently in OAM (Object Attribute Memory) with selection,

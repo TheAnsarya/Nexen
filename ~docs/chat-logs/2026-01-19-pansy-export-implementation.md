@@ -31,6 +31,7 @@ git remote -v
 ```
 
 **System Output:**
+
 - Current branch: `Nexen-record-and-play-tas-gameplay`
 - Commits ahead of upstream: ~50
 - Remotes: origin (fork), upstream (SourMesen/Nexen)
@@ -95,6 +96,7 @@ public static class PansyExporter {
 ```
 
 **Copilot:** The binary format matches the Pansy specification:
+
 - Header: 32 bytes (magic, version, platform, flags, section count)
 - Section Table: N × 12 bytes (ID, offset, size)
 - Section Data: Variable length binary chunks
@@ -107,6 +109,7 @@ public static class PansyExporter {
 **Copilot:** Adding menu action to debugger...
 
 **Modified Files:**
+
 1. `ContextMenuAction.cs` - Added `ExportPansy` enum value
 2. `DebuggerWindowViewModel.cs` - Added menu handler with file dialog
 3. `DebuggerConfigWindow.axaml` - Added auto-export checkbox
@@ -126,6 +129,7 @@ dotnet build --nologo
 **System Output:** 10 errors detected
 
 **Error List:**
+
 1. CS0117: 'RomFormat' does not contain a definition for 'WS'
 2. CS1612: Cannot modify return value of 'List<SectionInfo>.this[int]'
 3. CS0117: 'RomInfo' does not contain a definition for 'RomSize'
@@ -146,6 +150,7 @@ dotnet build --nologo
 **Copilot:** Analyzing Nexen API surface...
 
 **Findings:**
+
 1. `RomFormat.WS` should be `RomFormat.Ws` (lowercase 's')
 2. `SectionInfo` needs to be a class, not struct (for mutability)
 3. ROM size available via `CdlStatistics.TotalBytes`, not `RomInfo.RomSize`
@@ -162,6 +167,7 @@ dotnet build --nologo
 **Copilot:** Applying 8 fixes using `multi_replace_string_in_file`...
 
 **Fix 1:** Enum case correction
+
 ```csharp
 // Before
 [RomFormat.WS] = 0x24,
@@ -173,6 +179,7 @@ dotnet build --nologo
 ```
 
 **Fix 2:** Struct to class
+
 ```csharp
 // Before
 private struct SectionInfo { ... }
@@ -182,6 +189,7 @@ private class SectionInfo { ... }
 ```
 
 **Fix 3-4:** ROM info properties
+
 ```csharp
 // Before
 uint romSize = romInfo.RomSize;
@@ -193,6 +201,7 @@ uint romCrc = 0; // TODO: Calculate from ROM data
 ```
 
 **Fix 5:** Folder utilities
+
 ```csharp
 // Before
 string folder = FolderUtilities.GetDebuggerFolder();
@@ -202,6 +211,7 @@ string folder = ConfigManager.DebuggerFolder;
 ```
 
 **Fix 6:** CDL data API
+
 ```csharp
 // Before
 byte[] cdlData = DebugApi.GetCdlData(0, romSize, memoryType, CdlFlags.None);
@@ -215,6 +225,7 @@ for (int i = 0; i < cdlFlags.Length; i++) {
 ```
 
 **Fix 7:** Functions API
+
 ```csharp
 // Before
 uint[] functions = DebugApi.GetCdlFunctions(0, romSize, memoryType);
@@ -224,6 +235,7 @@ uint[] functions = DebugApi.GetCdlFunctions(memoryType);
 ```
 
 **Fix 8:** Memory type
+
 ```csharp
 // Before
 MemoryType memoryType = DebugApi.GetMemoryType(romInfo);
@@ -245,7 +257,8 @@ dotnet build --nologo -v:q
 ```
 
 **System Output:**
-```
+
+```text
 Build succeeded.
 	0 Warning(s)
 	0 Error(s)
@@ -267,7 +280,8 @@ git status --short
 ```
 
 **System Output:**
-```
+
+```text
 M  UI/Config/IntegrationConfig.cs
 A  UI/Debugger/Labels/PansyExporter.cs
 M  UI/Debugger/Utilities/ContextMenuAction.cs
@@ -303,7 +317,8 @@ Resolves future Issue #XX (Pansy integration)"
 ```
 
 **System Output:**
-```
+
+```text
 [pansy-export 6fd99def] feat: Add Pansy metadata export support
  6 files changed, 369 insertions(+)
  create mode 100644 UI/Debugger/Labels/PansyExporter.cs
@@ -320,7 +335,8 @@ git push -u origin pansy-export
 ```
 
 **System Output:**
-```
+
+```text
 remote: Create a pull request for 'pansy-export' on GitHub by visiting:
 remote:   https://github.com/TheAnsarya/Nexen/pull/new/pansy-export
 To https://github.com/TheAnsarya/Nexen.git
@@ -338,6 +354,7 @@ To https://github.com/TheAnsarya/Nexen.git
 **Copilot:** Creating comprehensive documentation with timestamps...
 
 **Created Files:**
+
 1. `~docs/pansy-integration.md` (216 lines)
    - Timestamp: Created 2026-01-19 18:44 UTC
    - Sections: Overview, Features, Configuration, File Format, Usage, Testing
@@ -359,7 +376,7 @@ To https://github.com/TheAnsarya/Nexen.git
 ## Session Statistics
 
 | Metric | Value |
-|--------|-------|
+| -------- | ------- |
 | Duration | 1h 16m |
 | Code Written | 369 lines |
 | Documentation | 508 lines |

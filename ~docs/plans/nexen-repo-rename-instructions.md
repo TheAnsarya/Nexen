@@ -7,6 +7,7 @@ This document provides step-by-step instructions to complete the Mesen2 → Nexe
 ## Prerequisites
 
 ✅ All code changes committed to `nexen-rename` branch:
+
 - Solution/project files renamed
 - C# namespaces updated (580 files)
 - Documentation updated
@@ -31,7 +32,7 @@ git push origin master
 
 ### 3. Rename GitHub Repository
 
-1. Go to: https://github.com/TheAnsarya/Mesen2/settings
+1. Go to: <https://github.com/TheAnsarya/Mesen2/settings>
 2. Scroll to "Repository name"
 3. Change from `Mesen2` to `Nexen`
 4. Click "Rename"
@@ -64,6 +65,7 @@ Rename-Item "Mesen2" "Nexen"
 Edit the workspace file (e.g., `GameInfo.code-workspace`) to update the folder path:
 
 **Before:**
+
 ```json
 {
 	"path": "../Mesen2"
@@ -71,6 +73,7 @@ Edit the workspace file (e.g., `GameInfo.code-workspace`) to update the folder p
 ```
 
 **After:**
+
 ```json
 {
 	"path": "../Nexen"

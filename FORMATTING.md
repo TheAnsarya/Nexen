@@ -9,7 +9,7 @@ The formatting rules are defined in [.clang-format](.clang-format).
 ### Key Settings
 
 | Setting | Value | Description |
-|---------|-------|-------------|
+| --------- | ------- | ------------- |
 | **IndentWidth** | 4 | Use 4-space equivalent indentation |
 | **UseTab** | ForIndentation | Tabs for indentation, spaces for alignment |
 | **TabWidth** | 4 | Tab width is 4 spaces |

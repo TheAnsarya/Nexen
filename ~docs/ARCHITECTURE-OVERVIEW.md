@@ -4,7 +4,7 @@ Nexen is a multi-system emulator supporting NES, SNES, Game Boy, GBA, SMS, PC En
 
 ## Project Structure
 
-```
+```text
 Nexen/
 ├── Core/				   # C++ emulation cores (this document)
 │   ├── NES/				# Nintendo Entertainment System
@@ -40,7 +40,7 @@ Nexen/
 
 ## System Layers
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │						UI Layer (C#/.NET)						│
 │  Avalonia cross-platform UI, debugger windows, settings, menus  │
@@ -96,6 +96,7 @@ class [System]Console : public IConsole, public ISerializable {
 
 ### IConsole
 Base interface for all emulated systems:
+
 ```cpp
 class IConsole : public ISerializable {
 	virtual void Run(uint64_t masterClock) = 0;
@@ -108,6 +109,7 @@ class IConsole : public ISerializable {
 
 ### ISerializable
 All stateful objects implement serialization:
+
 ```cpp
 class ISerializable {
 	virtual void Serialize(Serializer& s) = 0;
@@ -116,6 +118,7 @@ class ISerializable {
 
 ### BaseMapper
 Cartridge hardware abstraction:
+
 ```cpp
 class BaseMapper : public ISerializable {
 	virtual uint8_t ReadRam(uint16_t addr) = 0;
@@ -129,7 +132,7 @@ class BaseMapper : public ISerializable {
 
 Each system has a memory manager that routes reads/writes:
 
-```
+```text
 CPU Read/Write Request
 		 │
 		 ▼
@@ -174,7 +177,7 @@ void Console::Run(uint64_t targetClock) {
 
 The unified debugger supports all systems:
 
-```
+```text
 ┌─────────────────────────────────────────────┐
 │			  Debugger Framework			 │
 ├─────────────────────────────────────────────┤
@@ -216,12 +219,13 @@ void NesCpu::Serialize(Serializer& s) {
 
 ## Video Pipeline
 
-```
+```text
 PPU Frame Buffer ──► Video Filter ──► Display Output
 	 (raw pixels)	   (HQ2x/etc)	   (SDL/UI)
 ```
 
 **Filters:**
+
 - Raw/None
 - NTSC composite simulation
 - HQ2x/3x/4x
@@ -231,7 +235,7 @@ PPU Frame Buffer ──► Video Filter ──► Display Output
 
 ## Audio Pipeline
 
-```
+```text
 ┌─────────┐   ┌─────────┐   ┌─────────┐
 │Channel 1│   │Channel 2│   │Channel N│
 └────┬────┘   └────┬────┘   └────┬────┘
@@ -256,7 +260,7 @@ PPU Frame Buffer ──► Video Filter ──► Display Output
 ## Supported Systems
 
 | System | CPU | Resolution | Audio |
-|--------|-----|------------|-------|
+| -------- | ----- | ------------ | ------- |
 | **NES** | 6502 (2A03) | 256×240 | 5 channels |
 | **SNES** | 65816 | 256-512×224-478 | 8 channels (SPC700) |
 | **Game Boy** | LR35902 | 160×144 | 4 channels |
@@ -268,16 +272,19 @@ PPU Frame Buffer ──► Video Filter ──► Display Output
 ## Build System
 
 **Windows:**
+
 - Visual Studio solution (Nexen.sln)
 - MSBuild for C++ projects
 - .NET SDK for UI
 
 **Linux:**
+
 - Makefile-based build
 - GCC or Clang
 - .NET SDK for UI
 
 **Dependencies:**
+
 - vcpkg for C++ dependencies (Google Test, Google Benchmark)
 - NuGet for .NET dependencies
 
@@ -290,7 +297,7 @@ PPU Frame Buffer ──► Video Filter ──► Display Output
 ## Key Source Files
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `Shared/Emulator.cpp` | Main emulator controller |
 | `Shared/BaseConsole.h` | Console base class |
 | `Utilities/Serializer.cpp` | State serialization |

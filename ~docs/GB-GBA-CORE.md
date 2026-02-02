@@ -6,7 +6,7 @@ This document covers both the Game Boy/Game Boy Color and Game Boy Advance emula
 
 ### Architecture Overview
 
-```
+```text
 Game Boy Architecture
 ═════════════════════
 
@@ -28,7 +28,7 @@ Game Boy Architecture
 
 ### Directory Structure
 
-```
+```text
 Core/Gameboy/
 ├── Main Components
 │   ├── Gameboy.h/cpp		   - Console coordinator
@@ -73,12 +73,14 @@ Core/Gameboy/
 Emulates the Sharp LR35902 (SM83), a modified Z80/8080 hybrid.
 
 **Key Differences from Z80:**
+
 - No IX/IY index registers
 - No alternate register set
 - Unique STOP and HALT behavior
 - Different flag behavior on some operations
 
 **CPU State:**
+
 ```cpp
 struct GbCpuState {
 	uint16_t PC;	// Program Counter
@@ -94,6 +96,7 @@ struct GbCpuState {
 ```
 
 **Flags:**
+
 - Z (Zero): Result is zero
 - N (Subtract): Last op was subtraction
 - H (Half-carry): Carry from bit 3 to 4
@@ -104,20 +107,23 @@ struct GbCpuState {
 Emulates the Game Boy PPU with LCD output.
 
 **Display Specifications:**
+
 - Resolution: 160×144 pixels
 - Colors: 4 shades (DMG) or 32,768 (CGB)
 - Tile-based: 8×8 pixel tiles
 - 40 sprites (OAM), 10 per scanline
 
 **PPU Modes:**
+
 | Mode | Duration | Description |
-|------|----------|-------------|
+| ------ | ---------- | ------------- |
 | 0 | ~204 dots | H-Blank |
 | 1 | 4560 dots | V-Blank (10 lines) |
 | 2 | ~80 dots | OAM Search |
 | 3 | ~172 dots | Drawing |
 
 **CGB Enhancements:**
+
 - 8 background palettes (4 colors each)
 - 8 sprite palettes
 - Tile attributes (flip, priority, palette, bank)
@@ -137,7 +143,7 @@ Emulates the Game Boy PPU with LCD output.
 
 ### Memory Map
 
-```
+```text
 Game Boy Memory Map
 ═══════════════════
 $0000-$3FFF  ROM Bank 0 (16KB, fixed)
@@ -157,7 +163,7 @@ $FFFF		Interrupt Enable register
 ### Memory Bank Controllers (MBCs)
 
 | MBC | Features | Max ROM | Max RAM |
-|-----|----------|---------|---------|
+| ----- | ---------- | --------- | --------- |
 | None | No banking | 32KB | - |
 | MBC1 | Banking | 2MB | 32KB |
 | MBC2 | Built-in RAM | 256KB | 512×4bit |
@@ -170,7 +176,7 @@ $FFFF		Interrupt Enable register
 
 ### Architecture Overview
 
-```
+```text
 GBA Architecture
 ════════════════
 
@@ -192,7 +198,7 @@ GBA Architecture
 
 ### Directory Structure
 
-```
+```text
 Core/GBA/
 ├── Main Components
 │   ├── GbaConsole.h/cpp		- Console coordinator
@@ -234,6 +240,7 @@ Core/GBA/
 Emulates the ARM7TDMI processor (ARM + Thumb modes).
 
 **Key Features:**
+
 - 32-bit RISC architecture
 - 16.78 MHz clock
 - ARM mode: 32-bit instructions
@@ -242,6 +249,7 @@ Emulates the ARM7TDMI processor (ARM + Thumb modes).
 - CPSR (Current Program Status Register)
 
 **CPU State:**
+
 ```cpp
 struct GbaCpuState {
 	uint32_t R[16];	 // R0-R15 (R15 = PC)
@@ -254,6 +262,7 @@ struct GbaCpuState {
 ```
 
 **CPU Modes:**
+
 - User/System (normal execution)
 - FIQ (fast interrupt)
 - IRQ (normal interrupt)
@@ -262,6 +271,7 @@ struct GbaCpuState {
 - Undefined (illegal instruction)
 
 **Instruction Sets:**
+
 - **ARM:** Full 32-bit, conditional execution on all instructions
 - **Thumb:** 16-bit compressed, higher code density
 
@@ -270,14 +280,16 @@ struct GbaCpuState {
 Advanced PPU with multiple rendering modes.
 
 **Display Specifications:**
+
 - Resolution: 240×160 pixels
 - Colors: 32,768 (15-bit)
 - 4 background layers
 - 128 sprites (OAM)
 
 **Background Modes:**
+
 | Mode | BG0 | BG1 | BG2 | BG3 | Features |
-|------|-----|-----|-----|-----|----------|
+| ------ | ----- | ----- | ----- | ----- | ---------- |
 | 0 | Tile | Tile | Tile | Tile | 4 text BGs |
 | 1 | Tile | Tile | Affine | - | 2 text + 1 affine |
 | 2 | - | - | Affine | Affine | 2 affine BGs |
@@ -286,10 +298,12 @@ Advanced PPU with multiple rendering modes.
 | 5 | - | - | Bitmap | - | 160×128 @ 15bpp, 2 frames |
 
 **Affine Backgrounds:**
+
 - Rotation and scaling
 - Used for Mode 7-style effects
 
 **Sprite Features:**
+
 - Up to 128 sprites
 - Sizes: 8×8 to 64×64
 - Affine transformation support
@@ -303,6 +317,7 @@ Advanced PPU with multiple rendering modes.
 5-6. **Direct Sound A/B** - DMA-fed 8-bit PCM
 
 **Direct Sound Features:**
+
 - 8-bit signed PCM samples
 - Timer-driven playback
 - FIFO buffers (32 bytes each)
@@ -310,7 +325,7 @@ Advanced PPU with multiple rendering modes.
 
 ### Memory Map
 
-```
+```text
 GBA Memory Map
 ══════════════
 $00000000-$00003FFF  BIOS (16KB)
@@ -329,11 +344,13 @@ $0E000000-$0E00FFFF  SRAM (64KB max)
 ### DMA Controller
 
 4 DMA channels with different priorities:
+
 - **DMA0:** Highest priority (sound)
 - **DMA1/2:** Sound FIFO
 - **DMA3:** Lowest priority (general use)
 
 **DMA Features:**
+
 - 16/32-bit transfers
 - Increment/decrement/fixed addressing
 - Immediate or H-Blank/V-Blank triggered
@@ -341,11 +358,13 @@ $0E000000-$0E00FFFF  SRAM (64KB max)
 ### Wait States & Prefetch
 
 GBA ROM access has configurable wait states:
+
 - Wait State 0: Fastest (3-8 cycles)
 - Wait State 1: Medium
 - Wait State 2: Slowest
 
 **Prefetch Buffer:**
+
 - 8-halfword buffer for sequential ROM reads
 - Hides ROM latency for linear code
 
@@ -354,12 +373,14 @@ GBA ROM access has configurable wait states:
 ## Timing
 
 **Game Boy:**
+
 - DMG: 4.194304 MHz (1 cycle = 238.4 ns)
 - CGB: 4.194304 MHz (normal) / 8.388608 MHz (double speed)
 - 154 scanlines (144 visible + 10 VBlank)
 - ~59.73 Hz frame rate
 
 **GBA:**
+
 - 16.78 MHz (16777216 Hz)
 - 228 scanlines (160 visible + 68 VBlank)
 - 308 dots per scanline

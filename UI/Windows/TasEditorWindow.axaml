@@ -1,0 +1,233 @@
+<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+	x:Class="Nexen.Windows.TasEditorWindow"
+	Width="1000" Height="700"
+	MinWidth="700" MinHeight="500"
+	x:DataType="vm:TasEditorViewModel"
+	Title="{Binding WindowTitle}"
+>
+	<Design.DataContext>
+		<vm:TasEditorViewModel />
+	</Design.DataContext>
+
+	<DockPanel>
+		<!-- Menu Bar -->
+		<c:NexenMenu DockPanel.Dock="Top" Name="MainMenu">
+			<MenuItem Header="File" ItemsSource="{Binding FileMenuItems}" />
+			<MenuItem Header="Edit" ItemsSource="{Binding EditMenuItems}" />
+			<MenuItem Header="View" ItemsSource="{Binding ViewMenuItems}" />
+			<MenuItem Header="Playback" ItemsSource="{Binding PlaybackMenuItems}" />
+			<MenuItem Header="Recording" ItemsSource="{Binding RecordingMenuItems}" />
+			<MenuItem Header="Script" ItemsSource="{Binding ScriptMenuItems}" />
+		</c:NexenMenu>
+
+		<!-- Toolbar -->
+		<Border DockPanel.Dock="Top" BorderBrush="Gray" BorderThickness="0 0 0 1" Padding="5">
+			<StackPanel Orientation="Horizontal" Spacing="5">
+				<Button Content="Open" ToolTip.Tip="Open movie file" />
+				<Button Content="Save" ToolTip.Tip="Save movie file" IsEnabled="{Binding HasUnsavedChanges}" />
+				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
+				<Button Content="↶" ToolTip.Tip="Undo (Ctrl+Z)" Width="30" IsEnabled="{Binding CanUndo}" />
+				<Button Content="↷" ToolTip.Tip="Redo (Ctrl+Y)" Width="30" IsEnabled="{Binding CanRedo}" />
+				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
+				<Button Content="+" ToolTip.Tip="Insert frame (Insert)" Width="30" />
+				<Button Content="-" ToolTip.Tip="Delete frame (Delete)" Width="30" />
+				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
+				<Button Content="⏮" ToolTip.Tip="Frame rewind (R)" Width="30" />
+				<Button Content="⏯" ToolTip.Tip="Play/Pause (Space)" Width="30" />
+				<Button Content="⏭" ToolTip.Tip="Frame advance (F)" Width="30" />
+				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
+				<ToggleButton Content="●" ToolTip.Tip="Record" Width="30" Foreground="Red" IsChecked="{Binding IsRecording}" />
+				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
+				<TextBlock Text="Speed:" VerticalAlignment="Center" />
+				<TextBlock Text="{Binding PlaybackSpeed, StringFormat={}{0:F2}x}" VerticalAlignment="Center" Width="40" />
+				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
+				<ToggleButton Content="GZ" ToolTip.Tip="Toggle greenzone" IsChecked="{Binding IsGreenzoneEnabled}" />
+				<TextBlock Text="{Binding SavestateCount, StringFormat=({0})}" VerticalAlignment="Center" Margin="5 0 0 0" />
+				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
+				<TextBlock Text="{Binding GreenzoneMemoryMB, StringFormat={}{0:F1} MB}" VerticalAlignment="Center" />
+				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
+				<TextBlock Text="📜" ToolTip.Tip="Script running" VerticalAlignment="Center" IsVisible="{Binding IsScriptRunning}" Foreground="Green" />
+				<TextBlock Text="{Binding CurrentScriptPath}" ToolTip.Tip="Current script" VerticalAlignment="Center" Margin="5 0 0 0" IsVisible="{Binding IsScriptRunning}" MaxWidth="150" TextTrimming="CharacterEllipsis" />
+			</StackPanel>
+		</Border>
+
+		<!-- Status Bar -->
+		<Border DockPanel.Dock="Bottom" BorderBrush="Gray" BorderThickness="0 1 0 0" Padding="5">
+			<Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto">
+				<TextBlock Grid.Column="0" Text="{Binding StatusMessage}" VerticalAlignment="Center" />
+				<TextBlock Grid.Column="1" Text="Frame: " VerticalAlignment="Center" Margin="10 0 0 0" />
+				<TextBlock Grid.Column="2" Text="{Binding SelectedFrameIndex}" VerticalAlignment="Center" />
+				<TextBlock Grid.Column="3" VerticalAlignment="Center" Margin="10 0 0 0">
+					<TextBlock.Text>
+						<MultiBinding StringFormat="/ {0}">
+							<Binding Path="Movie.InputFrames.Count" FallbackValue="0" />
+						</MultiBinding>
+					</TextBlock.Text>
+				</TextBlock>
+				<TextBlock Grid.Column="4" Text="Rerecords: " VerticalAlignment="Center" Margin="15 0 0 0" />
+				<TextBlock Grid.Column="5" Text="{Binding RerecordCount}" VerticalAlignment="Center" />
+				<TextBlock Grid.Column="6" Text="{Binding RecordMode, StringFormat=[{0}]}" VerticalAlignment="Center" Margin="10 0 0 0" Foreground="Gray" />
+			</Grid>
+		</Border>
+
+		<!-- Main Content -->
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="{Binding ShowPianoRoll, Converter={x:Static c:BoolToGridLengthConverter.Instance}}" />
+			</Grid.RowDefinitions>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="5" />
+				<ColumnDefinition Width="250" />
+			</Grid.ColumnDefinitions>
+
+			<!-- Frame List (ListBox) -->
+			<Border Grid.Row="0" Grid.Column="0" BorderBrush="Gray" BorderThickness="1">
+				<ListBox
+					Name="FrameList"
+					ItemsSource="{Binding Frames}"
+					SelectedIndex="{Binding SelectedFrameIndex}"
+					SelectionMode="Single"
+					FontFamily="Consolas"
+					FontSize="12"
+				>
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid ColumnDefinitions="60,120,120,40,*" Background="{Binding Background}">
+								<TextBlock Grid.Column="0" Text="{Binding FrameNumber}" />
+								<TextBlock Grid.Column="1" Text="{Binding P1Input}" />
+								<TextBlock Grid.Column="2" Text="{Binding P2Input}" />
+								<TextBlock Grid.Column="3" Text="{Binding IsLagFrame}" />
+								<TextBlock Grid.Column="4" Text="{Binding CommentText}" />
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Border>
+
+			<!-- Splitter -->
+			<GridSplitter Grid.Column="1" Width="5" ResizeDirection="Columns" />
+
+			<!-- Properties Panel -->
+			<Border Grid.Column="2" BorderBrush="Gray" BorderThickness="1">
+				<ScrollViewer>
+					<StackPanel Margin="10" Spacing="10">
+						<!-- Frame Info -->
+						<TextBlock Text="Frame Properties" FontWeight="Bold" FontSize="14" />
+						<Rectangle Height="1" Fill="Gray" />
+
+						<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*">
+							<TextBlock Text="Frame #:" VerticalAlignment="Center" />
+							<TextBlock Grid.Column="1" Text="{Binding SelectedFrameIndex}" Margin="5 0 0 0" VerticalAlignment="Center" />
+
+							<TextBlock Grid.Row="1" Text="Lag Frame:" VerticalAlignment="Center" Margin="0 5 0 0" />
+							<CheckBox Grid.Row="1" Grid.Column="1" IsChecked="False" Margin="5 5 0 0" />
+						</Grid>
+
+						<!-- Controller Layout -->
+						<TextBlock Text="Controller Layout" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
+						<Rectangle Height="1" Fill="Gray" />
+
+						<ComboBox
+							ItemsSource="{Binding AvailableLayouts}"
+							SelectedItem="{Binding CurrentLayout}"
+							HorizontalAlignment="Stretch"
+						/>
+
+						<!-- Controller 1 -->
+						<TextBlock Text="Controller 1" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
+						<Rectangle Height="1" Fill="Gray" />
+
+						<ItemsControl ItemsSource="{Binding ControllerButtons}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<WrapPanel />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Button
+										Content="{Binding Label}"
+										Tag="{Binding ButtonId}"
+										Width="40"
+										Height="30"
+										Margin="2"
+										Click="OnButtonClick"
+									/>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+
+						<!-- Movie Info -->
+						<TextBlock Text="Movie Info" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
+						<Rectangle Height="1" Fill="Gray" />
+
+						<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*">
+							<TextBlock Text="Format:" VerticalAlignment="Center" />
+							<TextBlock Grid.Column="1" Text="{Binding Movie.SourceFormat, FallbackValue=None}" Margin="5 0 0 0" VerticalAlignment="Center" />
+
+							<TextBlock Grid.Row="1" Text="Layout:" VerticalAlignment="Center" Margin="0 5 0 0" />
+							<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CurrentLayout}" Margin="5 5 0 0" VerticalAlignment="Center" />
+
+							<TextBlock Grid.Row="2" Text="Frames:" VerticalAlignment="Center" Margin="0 5 0 0" />
+							<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Movie.TotalFrames, FallbackValue=0}" Margin="5 5 0 0" VerticalAlignment="Center" />
+
+							<TextBlock Grid.Row="3" Text="Rerecords:" VerticalAlignment="Center" Margin="0 5 0 0" />
+							<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Movie.RerecordCount, FallbackValue=0}" Margin="5 5 0 0" VerticalAlignment="Center" />
+
+							<TextBlock Grid.Row="4" Text="Author:" VerticalAlignment="Center" Margin="0 5 0 0" />
+							<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Movie.Author, FallbackValue=Unknown}" Margin="5 5 0 0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+						</Grid>
+
+						<!-- Branches -->
+						<TextBlock Text="Branches" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
+						<Rectangle Height="1" Fill="Gray" />
+
+						<ListBox
+							ItemsSource="{Binding Branches}"
+							MaxHeight="100"
+							SelectionMode="Single"
+						>
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<StackPanel Orientation="Horizontal">
+										<TextBlock Text="{Binding Name}" />
+										<TextBlock Text="{Binding FrameCount, StringFormat=' ({0} frames)'}" Foreground="Gray" />
+									</StackPanel>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+					</StackPanel>
+				</ScrollViewer>
+			</Border>
+
+			<!-- Piano Roll Splitter -->
+			<GridSplitter Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+				Height="5" ResizeDirection="Rows" IsVisible="{Binding ShowPianoRoll}" />
+
+			<!-- Piano Roll Panel -->
+			<Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
+				BorderBrush="Gray" BorderThickness="1" IsVisible="{Binding ShowPianoRoll}">
+				<c:PianoRollControl
+					Name="PianoRoll"
+					Frames="{Binding Movie.InputFrames}"
+					SelectedFrame="{Binding SelectedFrameIndex}"
+					PlaybackFrame="{Binding PlaybackFrame}"
+					GreenzoneStart="{Binding GreenzoneStart}"
+					Height="200"
+				/>
+			</Border>
+		</Grid>
+	</DockPanel>
+</Window>

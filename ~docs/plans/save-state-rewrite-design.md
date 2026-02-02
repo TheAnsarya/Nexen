@@ -32,7 +32,7 @@ Transform Nexen's save state system from a fixed 10-slot model to an infinite ti
 
 ### File Structure
 
-```
+```text
 SaveStates/
   └── {RomName}_1.mss	# Slot 1
   └── {RomName}_2.mss	# Slot 2
@@ -44,7 +44,7 @@ SaveStates/
 ### Key Components
 
 | File | Purpose |
-|------|---------|
+| ------ | --------- |
 | `Core/Shared/SaveStateManager.h` | Core save state logic |
 | `Core/Shared/SaveStateManager.cpp` | Save/load implementation |
 | `UI/Config/Shortcuts/EmulatorShortcut.cs` | Shortcut definitions |
@@ -72,7 +72,7 @@ SaveStates/
 
 ### File Structure
 
-```
+```text
 SaveStates/
   └── {RomName}/
 	  └── {RomName}_2025-01-28_14-30-45.mss
@@ -97,7 +97,7 @@ SaveStates/
 #### 3. Shortcut Behavior
 
 | Shortcut | Old Behavior | New Behavior |
-|----------|--------------|--------------|
+| ---------- | -------------- | -------------- |
 | `F1` | Load from current slot | Open save state picker |
 | `Shift+F1` | (unused or slot select) | Save new timestamped state |
 | `SaveState` | Save to slot N | Save new timestamped state |
@@ -107,9 +107,9 @@ SaveStates/
 
 - Grid layout matching ROM selector ✅
 - Each entry shows:
-  - Screenshot thumbnail ✅
-  - Date/time formatted with full date and time (e.g., "Today 1/31/2026 2:30 PM", "Yesterday 1/30/2026 5:45 PM") ✅
-  - ROM name as title ✅
+	- Screenshot thumbnail ✅
+	- Date/time formatted with full date and time (e.g., "Today 1/31/2026 2:30 PM", "Yesterday 1/30/2026 5:45 PM") ✅
+	- ROM name as title ✅
 - Sorted by most recent first ✅
 - Keyboard navigation (arrows, Enter to load, Escape to close) ✅
 - Delete option (DEL key with confirmation dialog) ✅
@@ -130,6 +130,7 @@ SaveStates/
    - Keep: Slot-based methods for backward compatibility ✅
 
 2. **New `SaveStateInfo` struct** ✅
+
    ```cpp
    struct SaveStateInfo {
 	   string filepath;
@@ -261,14 +262,14 @@ SaveStates/
 ## 📊 Estimated Effort
 
 | Phase | Complexity | Estimate |
-|-------|------------|----------|
+| ------- | ------------ | ---------- |
 | Phase 1: Core Infrastructure | Medium | 3-4 hours |
 | Phase 2: API Layer | Low | 1-2 hours |
 | Phase 3: UI Components | High | 4-6 hours |
 | Phase 4: Shortcuts & Menu | Medium | 2-3 hours |
 | Phase 5: Default Keybindings | Low | 1 hour |
 | Testing & Polish | Medium | 3-4 hours |
-| **Total** | | **14-20 hours** |
+| **Total** |  | **14-20 hours** |
 
 ---
 

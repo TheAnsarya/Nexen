@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>BenchmarkRun-joined-2026-02-01-20-22-57</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.14.0, Windows 10 (10.0.19045.6466/22H2/2022Update)
+Intel Core i7-8700K CPU 3.70GHz (Coffee Lake), 1 CPU, 12 logical and 6 physical cores
+.NET SDK 10.0.102
+  [Host]   : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+  ShortRun : .NET 10.0.2 (10.0.225.61305), X64 RyuJIT AVX2
+</code></pre>
+<pre><code>Job=ShortRun  IterationCount=3  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                  </th><th>Mean </th><th>Error </th><th>StdDev</th><th>Gen0</th><th>Gen1</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>AllocateListEveryFrame</td><td>727.6 ns</td><td>173.76 ns</td><td>9.52 ns</td><td>0.3347</td><td>0.0019</td><td>2104 B</td>
+</tr><tr><td>ReuseListAcrossFrames</td><td>885.9 ns</td><td>64.42 ns</td><td>3.53 ns</td><td>-</td><td>-</td><td>-</td>
+</tr><tr><td>AllocateHashSetEveryFrame</td><td>1,628.3 ns</td><td>987.63 ns</td><td>54.14 ns</td><td>0.1125</td><td>-</td><td>712 B</td>
+</tr><tr><td>ReuseHashSetAcrossFrames</td><td>1,628.8 ns</td><td>496.30 ns</td><td>27.20 ns</td><td>-</td><td>-</td><td>-</td>
+</tr><tr><td>ReuseDictionaryWithPooledLists</td><td>1,968.0 ns</td><td>396.49 ns</td><td>21.73 ns</td><td>-</td><td>-</td><td>-</td>
+</tr><tr><td>GetBrushCached</td><td>2,351.4 ns</td><td>1,263.00 ns</td><td>69.23 ns</td><td>0.3281</td><td>-</td><td>2072 B</td>
+</tr><tr><td>AllocateDictionaryWithLists</td><td>4,999.1 ns</td><td>5,006.24 ns</td><td>274.41 ns</td><td>1.5564</td><td>0.0534</td><td>9800 B</td>
+</tr><tr><td>GetBrushCachedRepeated</td><td>7,692.0 ns</td><td>1,678.69 ns</td><td>92.01 ns</td><td>1.2665</td><td>-</td><td>8024 B</td>
+</tr><tr><td>GetBrushUncached</td><td>34,436.2 ns</td><td>20,089.89 ns</td><td>1,101.19 ns</td><td>25.0854</td><td>7.9346</td><td>157720 B</td>
+</tr></tbody></table>
+</body>
+</html>
