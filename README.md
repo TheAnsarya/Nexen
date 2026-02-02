@@ -22,6 +22,20 @@
 
 ---
 
+## 📥 Downloads
+
+| Platform | Architecture | Download |
+|----------|--------------|----------|
+| **Windows** | x64 | [Nexen-Windows-x64.zip](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Windows-x64.zip) |
+| **Linux** | x64 AppImage | [Nexen-Linux-x64.AppImage](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Linux-x64.AppImage) |
+| **Linux** | ARM64 AppImage | [Nexen-Linux-ARM64.AppImage](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Linux-ARM64.AppImage) |
+| **macOS** | Intel (x64) | [Nexen-macOS-x64.zip](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-macOS-x64.zip) |
+| **macOS** | Apple Silicon | [Nexen-macOS-ARM64.zip](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-macOS-ARM64.zip) |
+
+> **Note:** See [Releases](https://github.com/TheAnsarya/Nexen/releases) for all versions and build artifacts.
+
+---
+
 ## 🎮 Supported Systems
 
 | System | CPU | Status |
