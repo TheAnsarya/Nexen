@@ -5,7 +5,9 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-02-02
+
+Initial public release of Nexen.
 
 ### Added
 
@@ -37,21 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Unit Tests** - 421+ tests using Google Test framework
 - **Benchmarks** - Performance benchmarks with Google Benchmark
 - **Doxygen Documentation** - Generated API documentation
-
-### Changed
-
-- Updated to .NET 10 and C++23
-- Improved memory management with smart pointers
-- Enhanced code documentation with XML comments
-
-### Fixed
-
-- Various memory leaks identified via AddressSanitizer
-- Performance improvements in hot paths
-
-## [1.0.0] - TBD
-
-Initial public release of Nexen.
 
 ### Platforms
 
