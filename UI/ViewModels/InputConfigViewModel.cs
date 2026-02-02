@@ -3,7 +3,7 @@ using Nexen.Config;
 using Nexen.Utilities;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.ViewModels; 
+namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the input configuration tab.
 /// </summary>

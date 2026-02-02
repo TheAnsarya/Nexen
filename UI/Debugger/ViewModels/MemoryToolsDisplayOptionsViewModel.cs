@@ -15,7 +15,7 @@ using Nexen.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for the memory tools display options panel.
 /// Controls display preferences for the hex editor including column widths and platform-specific visualization options.

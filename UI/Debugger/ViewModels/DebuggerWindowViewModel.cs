@@ -27,7 +27,7 @@ using Nexen.Windows;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// View model for the main debugger window that provides CPU debugging capabilities.
 /// </summary>
@@ -42,7 +42,7 @@ namespace Nexen.Debugger.ViewModels;
 /// - Label and function lists
 /// - Memory mappings (for supported CPUs)
 /// - Find/search functionality
-/// 
+///
 /// Supports multiple CPU types including main CPUs and coprocessors.
 /// Uses a dockable panel layout that can be customized and saved.
 /// </remarks>

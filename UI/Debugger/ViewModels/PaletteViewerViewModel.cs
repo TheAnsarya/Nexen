@@ -16,7 +16,7 @@ using Nexen.Windows;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for the palette viewer window.
 /// Displays and allows editing of color palettes used by the emulated system's PPU.

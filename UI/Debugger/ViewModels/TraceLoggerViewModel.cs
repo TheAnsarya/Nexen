@@ -20,7 +20,7 @@ using Nexen.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// View model for the trace logger window that displays CPU execution history.
 /// </summary>

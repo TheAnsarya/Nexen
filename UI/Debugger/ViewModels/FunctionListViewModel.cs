@@ -19,7 +19,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for displaying and managing discovered functions from CDL data.
 /// Shows functions identified during code/data logging analysis.

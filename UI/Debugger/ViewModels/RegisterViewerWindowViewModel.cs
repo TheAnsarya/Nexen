@@ -14,7 +14,7 @@ using Nexen.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for the register viewer window.
 /// Displays hardware register values for the emulated console, organized into tabs by subsystem.

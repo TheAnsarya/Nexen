@@ -18,7 +18,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for managing and displaying watch expressions in the debugger.
 /// Provides evaluation, formatting, and manipulation of watch entries.
@@ -28,7 +28,7 @@ namespace Nexen.Debugger.ViewModels;
 /// - Memory addresses: [address] or {address} syntax
 /// - Labels: references to named memory locations
 /// - Complex expressions: evaluated by the debugger
-/// 
+///
 /// Supports multiple display formats (hex, decimal, binary, signed/unsigned)
 /// with configurable byte lengths (8, 16, 24, 32 bits).
 /// </remarks>

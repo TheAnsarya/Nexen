@@ -18,7 +18,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for managing and displaying a list of code labels in the debugger.
 /// Provides sorting, filtering, and CRUD operations for labels.

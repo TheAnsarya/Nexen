@@ -5,7 +5,7 @@ using Nexen.Utilities;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.ViewModels; 
+namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the configuration window.
 /// Lazily loads child ViewModels for each configuration tab and manages save/revert operations.

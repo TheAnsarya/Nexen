@@ -17,7 +17,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for managing and displaying a list of breakpoints in the debugger UI.
 /// Provides sorting, selection management, and context menu actions for breakpoint operations.

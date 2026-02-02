@@ -3,7 +3,7 @@ using Dock.Model.Mvvm.Controls;
 using Nexen.Debugger.Utilities;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels.DebuggerDock; 
+namespace Nexen.Debugger.ViewModels.DebuggerDock;
 /// <summary>
 /// Base class for tool container ViewModels in the debugger dock.
 /// Provides help tooltip support and selection notification.

@@ -181,4 +181,7 @@ dotnet test
 
 ## License
 
-Same as Nexen (GPL-3.0)
+The MovieConverter library code is released under **The Unlicense** (public domain).
+
+Note: The base Nexen/Mesen2 emulator is GPL-3.0 licensed, but all code in MovieConverter/
+written by TheAnsarya is dedicated to the public domain.

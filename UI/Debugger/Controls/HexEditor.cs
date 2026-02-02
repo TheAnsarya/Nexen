@@ -11,7 +11,7 @@ using Nexen.Config;
 using Nexen.Debugger.Utilities;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Controls; 
+namespace Nexen.Debugger.Controls;
 public partial class HexEditor : Control {
 	public static readonly StyledProperty<IHexEditorDataProvider> DataProviderProperty = AvaloniaProperty.Register<HexEditor, IHexEditorDataProvider>(nameof(DataProvider));
 	public static readonly StyledProperty<int> TopRowProperty = AvaloniaProperty.Register<HexEditor, int>(nameof(TopRow), 0, false, Avalonia.Data.BindingMode.TwoWay);

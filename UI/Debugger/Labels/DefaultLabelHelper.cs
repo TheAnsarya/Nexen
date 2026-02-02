@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Nexen.Config;
 using Nexen.Interop;
 
-namespace Nexen.Debugger.Labels; 
+namespace Nexen.Debugger.Labels;
 public class DefaultLabelHelper {
 	public static void SetDefaultLabels() {
 		if (ConfigManager.Config.Debug.Debugger.DisableDefaultLabels) {

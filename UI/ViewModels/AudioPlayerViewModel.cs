@@ -9,7 +9,7 @@ using Nexen.Interop;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.ViewModels; 
+namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the audio player control displayed when playing audio files (NSF, SPC, GBS, HES).
 /// </summary>
