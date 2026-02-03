@@ -258,10 +258,10 @@ void SdlRenderer::Render(RenderSurfaceInfo& emuHud, RenderSurfaceInfo& scriptHud
 	SDL_UnlockTexture(_sdlTexture);
 
 	if(needUpdate || emuHud.IsDirty) {
-		UpdateHudTexture(_emuHud, emuHud.Buffer);
+		UpdateHudTexture(_emuHud, emuHud.Buffer.get());
 	}
 	if(needUpdate || scriptHud.IsDirty) {
-		UpdateHudTexture(_scriptHud, scriptHud.Buffer);
+		UpdateHudTexture(_scriptHud, scriptHud.Buffer.get());
 	}
 
 	SDL_Rect source = {0, 0, (int)_frameWidth, (int)_frameHeight };
