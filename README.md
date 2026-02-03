@@ -24,21 +24,21 @@
 
 ## 📥 Downloads
 
-### Latest Release
+### Latest Release (v1.0.0)
 
 Download pre-built binaries from the [Releases page](https://github.com/TheAnsarya/Nexen/releases/latest).
 
-| Platform | Architecture | Download |
-|----------|--------------|----------|
-| **Windows** | x64 | [Nexen-Windows-x64.exe](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Windows-x64.exe) |
-| **Linux** | x64 | [Nexen-Linux-x64](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Linux-x64) |
-| **Linux** | x64 AppImage | [Nexen-Linux-x64.AppImage](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Linux-x64.AppImage) |
-| **Linux** | ARM64 | [Nexen-Linux-ARM64](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Linux-ARM64) |
-| **Linux** | ARM64 AppImage | [Nexen-Linux-ARM64.AppImage](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Linux-ARM64.AppImage) |
-| **macOS** | Intel (x64) | [Nexen-macOS-x64.zip](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-macOS-x64.zip) |
-| **macOS** | Apple Silicon | [Nexen-macOS-ARM64.zip](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-macOS-ARM64.zip) |
+| Platform | Architecture | Status | Download |
+|----------|--------------|--------|----------|
+| **Windows** | x64 | ✅ | [Nexen-v1.0.0-Windows-x64.zip](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-v1.0.0-Windows-x64.zip) |
+| **Linux** | x64 | ❌ | *Coming soon* |
+| **Linux** | x64 AppImage | ❌ | *Coming soon* |
+| **Linux** | ARM64 | ❌ | *Coming soon* |
+| **Linux** | ARM64 AppImage | ❌ | *Coming soon* |
+| **macOS** | Intel (x64) | ❌ | *Coming soon* |
+| **macOS** | Apple Silicon | ❌ | *Coming soon* |
 
-> ⚠️ **Note:** If the release links don't work, the v1.0.0 release may still be building. Check [GitHub Actions](https://github.com/TheAnsarya/Nexen/actions/workflows/build.yml) for CI build artifacts.
+> ℹ️ **Note:** Currently only Windows x64 is available. Linux and macOS builds are in progress.
 
 ### Development Builds
 
