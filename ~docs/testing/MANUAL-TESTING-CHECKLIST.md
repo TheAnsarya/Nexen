@@ -3,7 +3,57 @@
 > **Purpose:** Comprehensive testing checklist for all Nexen features implemented since forking from Mesen2.
 > **Date Created:** 2026-02-02
 > **Target Version:** v1.0.0
-> **How to Use:** Work through each section sequentially. Check the box when a test passes. If a test fails, note the failure in the "Issues Found" section at the bottom.
+
+---
+
+## How to Use This Checklist
+
+### Marking Tests
+
+Work through each section sequentially. Mark tests using one of these methods:
+
+| Status | Markdown Syntax | Rendered | When to Use |
+|--------|-----------------|----------|-------------|
+| Not tested | `- [ ]` | - [ ] | Default state |
+| **Passed** | `- [x]` | - [x] | Test passed |
+| **Failed** | `- [!]` or note | - [!] | Test failed - add details below |
+| **Skipped** | `- [-]` or `- [~]` | - [-] | Intentionally skipped |
+
+### Examples
+
+**Unchecked (not yet tested):**
+```markdown
+- [ ] ROM loads without error
+- [ ] Graphics display correctly
+```
+
+**Checked (test passed):**
+```markdown
+- [x] ROM loads without error
+- [x] Graphics display correctly
+```
+
+**Mixed results:**
+```markdown
+- [x] ROM loads without error
+- [!] Graphics display correctly - FAILED: sprite flicker on frame 1200
+- [-] PAL mode test - SKIPPED: no PAL ROM available
+```
+
+### Recording Failures
+
+When a test fails:
+1. Mark it with `[!]` or leave `[ ]` and add a note
+2. Add details inline: `- [!] Test name - FAILED: brief description`
+3. Also record in the "Issues Found" section at the bottom with full reproduction steps
+
+### Fill-in Fields
+
+Some tests have blank fields like `______`. Fill these in during testing:
+```markdown
+Before: - Note current frame: ______
+After:  - Note current frame: **1523**
+```
 
 ---
 
@@ -1469,379 +1519,6 @@ For each system:
 
 ---
 
-*Document version: 1.1.0*
+*Document version: 1.2.0*
 *Last updated: 2026-02-02*
-*Major revision: Added detailed step-by-step instructions; corrected savestate shortcuts documentation*
-- [ ] **Verify inputs** - Playback matches original
-- [ ] **Export SMV** - File → Export Movie
-- [ ] **Roundtrip** - Import → Export → Import unchanged
-
-#### 4.1.3 BK2 (BizHawk)
-
-- [ ] **Import BK2** - File → Import Movie
-- [ ] **Verify inputs** - Playback matches original
-- [ ] **Export BK2** - File → Export Movie
-- [ ] **Roundtrip** - Import → Export → Import unchanged
-
-#### 4.1.4 LSMV (lsnes)
-
-- [ ] **Import LSMV** - File → Import Movie
-- [ ] **Verify inputs** - Playback matches original
-- [ ] **Export LSMV** - File → Export Movie
-- [ ] **Roundtrip** - Import → Export → Import unchanged
-
-#### 4.1.5 VBM (VisualBoyAdvance)
-
-- [ ] **Import VBM** - File → Import Movie
-- [ ] **Verify inputs** - Playback matches original
-- [ ] **Export VBM** - File → Export Movie
-
-#### 4.1.6 GMV (Gens)
-
-- [ ] **Import GMV** - File → Import Movie
-- [ ] **Verify inputs** - Playback matches original
-- [ ] **Export GMV** - File → Export Movie
-
-#### 4.1.7 Nexen Movie Format (.nmv)
-
-- [ ] **Save as NMV** - File → Save
-- [ ] **Load NMV** - File → Open
-- [ ] **All metadata preserved** - Author, comments, rerecord count
-
-### 4.2 Metadata Handling
-
-- [ ] **Author preserved** - Import/export keeps author name
-- [ ] **Comments preserved** - Import/export keeps comments
-- [ ] **Rerecord count** - Count is preserved or converted
-- [ ] **System type** - Correct system detected
-- [ ] **ROM hash** - Hash matches or warns
-
-### 4.3 Error Handling
-
-- [ ] **Invalid file** - Error message for corrupt files
-- [ ] **Wrong system** - Error for wrong system movie
-- [ ] **Missing ROM** - Warning if ROM not loaded
-
----
-
-## 5. Pansy Export Testing
-
-### 5.1 Basic Export
-
-- [ ] **Export menu item** - Debug → Export Pansy Metadata
-- [ ] **File dialog appears** - Can choose save location
-- [ ] **File saves** - .pansy file created
-- [ ] **No crash** - Export completes successfully
-
-### 5.2 Exported Data
-
-#### 5.2.1 Symbols
-
-- [ ] **Labels exported** - Named addresses in file
-- [ ] **Label names correct** - Match debugger labels
-- [ ] **Address values correct** - Addresses are accurate
-
-#### 5.2.2 Comments
-
-- [ ] **Comments exported** - Inline comments in file
-- [ ] **Comment text correct** - Matches debugger comments
-
-#### 5.2.3 Code/Data Markers
-
-- [ ] **Code regions** - Marked as code
-- [ ] **Data regions** - Marked as data
-- [ ] **CDL integration** - Uses Code/Data Logger info
-
-#### 5.2.4 Cross-References
-
-- [ ] **Jump targets** - Branch destinations marked
-- [ ] **Call targets** - Subroutine entries marked
-- [ ] **Data references** - Memory access targets
-
-### 5.3 Platform-Specific Export
-
-- [ ] **NES export** - Correct 6502 format
-- [ ] **SNES export** - Correct 65816 format
-- [ ] **Game Boy export** - Correct LR35902 format
-- [ ] **GBA export** - Correct ARM7 format
-
-### 5.4 Large Project Export
-
-- [ ] **Many labels** - 1000+ labels exports correctly
-- [ ] **Performance** - Export completes in reasonable time
-- [ ] **File size** - Output is reasonable size
-
----
-
-## 6. Keyboard Shortcuts Testing
-
-### 6.1 Global Shortcuts
-
-- [ ] **F5** - Run/Pause emulation
-- [ ] **F6** - Reset game
-- [ ] **Esc** - Pause emulation
-- [ ] **F12** - Screenshot
-
-### 6.2 Save State Shortcuts
-
-- [ ] **Shift+F1-F10** - Save to slot 1-10
-- [ ] **F1-F10** - Load from slot 1-10
-- [ ] **Ctrl+S** - Save state (browser)
-- [ ] **Ctrl+L** - Load state (browser)
-
-### 6.3 TAS Editor Shortcuts
-
-- [ ] **Ctrl+N** - New movie
-- [ ] **Ctrl+O** - Open movie
-- [ ] **Ctrl+S** - Save movie
-- [ ] **Ctrl+Z** - Undo
-- [ ] **Ctrl+Y** - Redo
-- [ ] **Ctrl+C** - Copy frames
-- [ ] **Ctrl+V** - Paste frames
-- [ ] **Ctrl+X** - Cut frames
-- [ ] **Del** - Delete frames
-- [ ] **Space** - Play/Pause
-- [ ] **F** - Frame advance
-- [ ] **Shift+F** - Frame rewind
-
-### 6.4 Debugger Shortcuts
-
-- [ ] **F9** - Toggle breakpoint
-- [ ] **F10** - Step over
-- [ ] **F11** - Step into
-- [ ] **Shift+F11** - Step out
-
-### 6.5 Shortcut Conflicts
-
-- [ ] **No conflicts** - Each shortcut has one function
-- [ ] **Context-aware** - Shortcuts work in correct context
-
----
-
-## 7. UI/UX Testing
-
-### 7.1 Window Management
-
-- [ ] **Resize main window** - Smooth resizing
-- [ ] **Minimize/restore** - Works correctly
-- [ ] **Maximize** - Fills screen properly
-- [ ] **Multiple monitors** - Works on different displays
-
-### 7.2 Menu System
-
-- [ ] **File menu** - All items functional
-- [ ] **Edit menu** - All items functional
-- [ ] **View menu** - All items functional
-- [ ] **Tools menu** - All items functional
-- [ ] **Debug menu** - All items functional
-- [ ] **Help menu** - About dialog works
-
-### 7.3 Toolbar
-
-- [ ] **All buttons visible** - Icons display correctly
-- [ ] **Tooltips** - Hover shows description
-- [ ] **Button states** - Enabled/disabled correctly
-
-### 7.4 Status Bar
-
-- [ ] **Frame counter** - Shows current frame
-- [ ] **FPS display** - Shows framerate
-- [ ] **System info** - Shows loaded ROM/system
-
-### 7.5 Dialogs
-
-- [ ] **Settings dialog** - Opens and saves correctly
-- [ ] **File dialogs** - Open/Save work properly
-- [ ] **Confirmation dialogs** - Appear when needed
-- [ ] **Error dialogs** - Show useful messages
-
-### 7.6 Themes/Appearance
-
-- [ ] **Default theme** - Looks correct
-- [ ] **High contrast** - Text is readable
-- [ ] **Font scaling** - Text scales with system settings
-
----
-
-## 8. Multi-System Testing
-
-### 8.1 NES Testing
-
-- [ ] **ROM loads** - Game starts correctly
-- [ ] **Graphics** - No visual glitches
-- [ ] **Audio** - Sound plays correctly
-- [ ] **Input** - Controls respond
-- [ ] **Save states** - Save/load works
-- [ ] **TAS Editor** - Recording works
-
-### 8.2 SNES Testing
-
-- [ ] **ROM loads** - Game starts correctly
-- [ ] **Graphics** - No visual glitches
-- [ ] **Audio** - Sound plays correctly
-- [ ] **Input** - Controls respond
-- [ ] **Save states** - Save/load works
-- [ ] **TAS Editor** - Recording works
-- [ ] **Enhancement chips** - Super FX, SA-1, DSP work
-
-### 8.3 Game Boy Testing
-
-- [ ] **ROM loads** - Game starts correctly
-- [ ] **Graphics** - No visual glitches
-- [ ] **Audio** - Sound plays correctly
-- [ ] **Input** - Controls respond
-- [ ] **Save states** - Save/load works
-- [ ] **TAS Editor** - Recording works
-
-### 8.4 Game Boy Color Testing
-
-- [ ] **ROM loads** - Game starts correctly
-- [ ] **Colors** - Palette displays correctly
-- [ ] **GBC-only games** - Work properly
-- [ ] **Dual-mode games** - Can choose mode
-
-### 8.5 Game Boy Advance Testing
-
-- [ ] **ROM loads** - Game starts correctly
-- [ ] **Graphics** - No visual glitches
-- [ ] **Audio** - Sound plays correctly
-- [ ] **Input** - All buttons work (L/R triggers)
-- [ ] **Save states** - Save/load works
-- [ ] **TAS Editor** - Recording works
-
-### 8.6 Master System Testing
-
-- [ ] **ROM loads** - Game starts correctly
-- [ ] **Graphics** - No visual glitches
-- [ ] **Audio** - Sound plays correctly
-- [ ] **Input** - Controls respond
-- [ ] **Save states** - Save/load works
-
-### 8.7 PC Engine Testing
-
-- [ ] **ROM loads** - Game starts correctly
-- [ ] **Graphics** - No visual glitches
-- [ ] **Audio** - Sound plays correctly
-- [ ] **Input** - Controls respond
-- [ ] **Save states** - Save/load works
-
-### 8.8 WonderSwan Testing
-
-- [ ] **ROM loads** - Game starts correctly
-- [ ] **Graphics** - No visual glitches
-- [ ] **Audio** - Sound plays correctly
-- [ ] **Input** - Controls respond (vertical/horizontal modes)
-- [ ] **Save states** - Save/load works
-
----
-
-## 9. Performance Testing
-
-### 9.1 Frame Rate
-
-- [ ] **60 FPS maintained** - NTSC games run at 60 FPS
-- [ ] **50 FPS maintained** - PAL games run at 50 FPS
-- [ ] **No frame drops** - Smooth gameplay
-- [ ] **Fast forward** - High speeds achievable
-
-### 9.2 Memory Usage
-
-- [ ] **Base memory** - Reasonable idle memory
-- [ ] **Greenzone memory** - Stays within limit
-- [ ] **No memory leaks** - Memory stable over time
-- [ ] **Large movies** - Handle 100,000+ frames
-
-### 9.3 CPU Usage
-
-- [ ] **Idle usage** - Low CPU when paused
-- [ ] **Active usage** - Reasonable during emulation
-- [ ] **Debugger impact** - Minimal slowdown with debugger
-
-### 9.4 Startup Time
-
-- [ ] **Application launch** - Starts within 3 seconds
-- [ ] **ROM load time** - Games load quickly
-- [ ] **TAS Editor open** - Opens promptly
-
----
-
-## 10. Build & Platform Testing
-
-### 10.1 Windows x64
-
-- [ ] **Download** - Can download from release
-- [ ] **Extract/Run** - Executable runs
-- [ ] **Features** - All features work
-- [ ] **Windows 10** - Works on Win10
-- [ ] **Windows 11** - Works on Win11
-
-### 10.2 Linux x64
-
-- [ ] **Download** - Can download from release
-- [ ] **AppImage runs** - chmod +x and execute
-- [ ] **Features** - All features work
-- [ ] **Dependencies** - No missing libraries
-
-### 10.3 Linux ARM64
-
-- [ ] **Download** - Can download from release
-- [ ] **AppImage runs** - chmod +x and execute
-- [ ] **Features** - All features work
-- [ ] **Raspberry Pi** - Works on Pi 4/5 (if applicable)
-
-### 10.4 macOS Intel (x64)
-
-- [ ] **Download** - Can download from release
-- [ ] **Unzip and run** - App launches
-- [ ] **Gatekeeper** - Handles security prompt
-- [ ] **Features** - All features work
-
-### 10.5 macOS Apple Silicon (ARM64)
-
-- [ ] **Download** - Can download from release
-- [ ] **Unzip and run** - App launches natively
-- [ ] **Features** - All features work
-- [ ] **Performance** - Good performance on M1/M2/M3
-
----
-
-## Test Results Summary
-
-### Overall Status
-
-| Section | Pass | Fail | Not Tested |
-|---------|------|------|------------|
-| TAS Editor | | | |
-| Save States | | | |
-| Movie Converter | | | |
-| Pansy Export | | | |
-| Keyboard Shortcuts | | | |
-| UI/UX | | | |
-| Multi-System | | | |
-| Performance | | | |
-| Build/Platform | | | |
-
-### Critical Issues Found
-
-1. (List any critical bugs here)
-
-### Non-Critical Issues Found
-
-1. (List any minor bugs here)
-
-### Notes and Observations
-
-(Add any testing notes here)
-
----
-
-## Test Sign-Off
-
-| Tester | Date | Sections Tested | Result |
-|--------|------|-----------------|--------|
-| | | | |
-
----
-
-*Document version: 1.0.0*
-*Last updated: 2026-02-02*
+*Major revision: Added checkbox usage instructions; corrected savestate shortcuts; removed duplicate sections*
