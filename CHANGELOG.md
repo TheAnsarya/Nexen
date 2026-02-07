@@ -5,6 +5,22 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-02-07
+
+### Fixed
+
+- **Critical: Release build startup failure** - Fixed missing NexenCore.dll in Dependencies.zip
+  - The embedded Dependencies.zip was not including NexenCore.dll, causing "Dll was not found" error on startup
+  - Added [scripts/package-dependencies.ps1](scripts/package-dependencies.ps1) helper script for reliable release builds
+  - Disabled problematic PreBuildWindows MSBuild target that was failing with dotnet CLI
+
+### Build System
+
+- Improved release build workflow documentation
+- Added package-dependencies.ps1 script for Windows release packaging
+
+---
+
 ## [1.0.0] - 2026-02-02
 
 Initial public release of Nexen.

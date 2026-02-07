@@ -8,8 +8,8 @@
 	<AssemblyName>Nexen</AssemblyName>
 	<RootNamespace>Nexen</RootNamespace>
 	<StartupObject>Nexen.Program</StartupObject>
-	<Version>1.0.0</Version>
-	<FileVersion>1.0.0</FileVersion>
+	<Version>1.0.1</Version>
+	<FileVersion>1.0.1</FileVersion>
 	<Copyright>(C) 2014-2026 Sour/TheAnsarya</Copyright>
   </PropertyGroup>
 	<PropertyGroup>
@@ -47,8 +47,8 @@
 		<CFBundleName>Nexen</CFBundleName> <!-- Also defines .app file name -->
 		<CFBundleDisplayName>Nexen</CFBundleDisplayName>
 		<CFBundleIdentifier>com.nexen</CFBundleIdentifier>
-		<CFBundleVersion>1.0.0</CFBundleVersion>
-		<CFBundleShortVersionString>1.0</CFBundleShortVersionString>
+		<CFBundleVersion>1.0.1</CFBundleVersion>
+		<CFBundleShortVersionString>1.0.1</CFBundleShortVersionString>
 		<CFBundlePackageType>APPL</CFBundlePackageType>
 		<CFBundleSignature>????</CFBundleSignature>
 		<CFBundleExecutable>Nexen</CFBundleExecutable>
@@ -656,9 +656,10 @@
 	</AvaloniaXaml>
   </ItemGroup>
 
-  <!-- DISABLED: PreBuildWindows target - This dependency bundling is for release packaging only.
-	   The NexenCore.dll and other native DLLs may not exist during normal build.
-	   Use 'dotnet build -r win-x64' or build C++ projects first, then use a separate packaging step.
+  <!-- PreBuildWindows: Packages NexenCore.dll into Dependencies.zip for release.
+       Run manually with: scripts/package-dependencies.ps1 before publishing.
+       Auto-packaging disabled due to build order issues with dotnet CLI. -->
+  <!--
   <Target Name="PreBuildWindows" BeforeTargets="PreBuildEvent" Condition="'$(RuntimeIdentifier)'=='win-x64'">
 	<Exec Command="cd $(OutDir)&#xD;&#xA;rd Dependencies /s /q&#xD;&#xA;md Dependencies&#xD;&#xA;xcopy /s $(ProjectDir)Dependencies\* Dependencies&#xD;&#xA;copy libHarfBuzzSharp.dll Dependencies&#xD;&#xA;copy libSkiaSharp.dll Dependencies&#xD;&#xA;copy NexenCore.dll Dependencies&#xD;&#xA;cd Dependencies&#xD;&#xA;del ..\Dependencies.zip&#xD;&#xA;powershell Compress-Archive -Path * -DestinationPath '..\Dependencies.zip' -Force&#xD;&#xA;copy ..\Dependencies.zip $(ProjectDir)" />
   </Target>
