@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Nexen.Interop;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Config; 
+namespace Nexen.Config;
 public class IntegrationConfig : BaseConfig<IntegrationConfig> {
 	[Reactive] public bool AutoLoadDbgFiles { get; set; } = true;
 	[Reactive] public bool AutoLoadMlbFiles { get; set; } = true;
@@ -20,7 +20,7 @@ public class IntegrationConfig : BaseConfig<IntegrationConfig> {
 	[Reactive] public bool AutoExportPansy { get; set; } = true;
 
 	// Background CDL recording settings
-	[Reactive] public bool BackgroundCdlRecording { get; set; } = false;
+	[Reactive] public bool BackgroundCdlRecording { get; set; } = true;
 	[Reactive] public int AutoSaveIntervalMinutes { get; set; } = 5;
 	[Reactive] public bool SavePansyOnRomUnload { get; set; } = true;
 
