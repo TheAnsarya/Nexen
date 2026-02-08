@@ -20,6 +20,8 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Debugger.Windows;
 using Nexen.Interop;
 using Nexen.Localization;
+using Nexen.Menus;
+using Nexen.Services;
 using Nexen.Utilities;
 using Nexen.Windows;
 using ReactiveUI;
@@ -144,10 +146,16 @@ public class MainMenuViewModel : ViewModelBase {
 
 	/// <summary>
 	/// Recursively updates all menu items to set their initial Enabled/Visible state.
+	/// Supports both old BaseMenuAction and new IMenuAction classes.
 	/// </summary>
 	private static void UpdateAllMenuItems(IEnumerable<object> items) {
 		foreach (object item in items) {
-			if (item is BaseMenuAction action) {
+			if (item is Menus.IMenuAction newAction) {
+				newAction.Update();
+				if (newAction.SubActions != null) {
+					UpdateAllMenuItems(newAction.SubActions);
+				}
+			} else if (item is BaseMenuAction action) {
 				action.Update();
 				if (action.SubActions != null) {
 					UpdateAllMenuItems(action.SubActions);
@@ -157,87 +165,117 @@ public class MainMenuViewModel : ViewModelBase {
 	}
 
 	private void InitFileMenu(MainWindow wnd) {
-		FileMenuItems = new List<object>() {
-			new MainMenuAction(EmulatorShortcut.OpenFile) { ActionType = ActionType.Open },
-			new ContextMenuSeparator(),
-			new MainMenuAction() {
-				ActionType = ActionType.SaveState,
-				SubActions = new List<object> {
-					GetSaveStateMenuItem(1, true),
-					GetSaveStateMenuItem(2, true),
-					GetSaveStateMenuItem(3, true),
-					GetSaveStateMenuItem(4, true),
-					GetSaveStateMenuItem(5, true),
-					GetSaveStateMenuItem(6, true),
-					GetSaveStateMenuItem(7, true),
-					GetSaveStateMenuItem(8, true),
-					GetSaveStateMenuItem(9, true),
-					GetSaveStateMenuItem(10, true),
-					new ContextMenuSeparator(),
-					new MainMenuAction(EmulatorShortcut.SaveStateDialog) { ActionType = ActionType.SaveStateDialog },
-					new MainMenuAction(EmulatorShortcut.SaveStateToFile) { ActionType = ActionType.SaveStateToFile },
-				}
-			},
-			new MainMenuAction() {
-				ActionType = ActionType.LoadState,
-				SubActions = new List<object> {
-					GetSaveStateMenuItem(1, false),
-					GetSaveStateMenuItem(2, false),
-					GetSaveStateMenuItem(3, false),
-					GetSaveStateMenuItem(4, false),
-					GetSaveStateMenuItem(5, false),
-					GetSaveStateMenuItem(6, false),
-					GetSaveStateMenuItem(7, false),
-					GetSaveStateMenuItem(8, false),
-					GetSaveStateMenuItem(9, false),
-					GetSaveStateMenuItem(10, false),
-					new ContextMenuSeparator(),
-					GetSaveStateMenuItem(11, false),
-					new ContextMenuSeparator(),
-					new MainMenuAction(EmulatorShortcut.LoadStateDialog) { ActionType = ActionType.LoadStateDialog },
-					new MainMenuAction(EmulatorShortcut.LoadStateFromFile) { ActionType = ActionType.LoadStateFromFile },
-				}
+		FileMenuItems = [
+			// Open - always enabled
+			new ShortcutMenuAction(EmulatorShortcut.OpenFile, EnableCategory.AlwaysEnabled) {
+				ActionType = ActionType.Open
 			},
 
-			new MainMenuAction(EmulatorShortcut.LoadLastSession) {
+			new MenuSeparator(),
+
+			// Save State submenu - requires ROM
+			new SimpleMenuAction(ActionType.SaveState) {
+				IsEnabled = () => EmulatorState.Instance.IsRomLoaded,
+				SubActions = [
+					CreateSaveStateMenuItem(1, true),
+					CreateSaveStateMenuItem(2, true),
+					CreateSaveStateMenuItem(3, true),
+					CreateSaveStateMenuItem(4, true),
+					CreateSaveStateMenuItem(5, true),
+					CreateSaveStateMenuItem(6, true),
+					CreateSaveStateMenuItem(7, true),
+					CreateSaveStateMenuItem(8, true),
+					CreateSaveStateMenuItem(9, true),
+					CreateSaveStateMenuItem(10, true),
+					new MenuSeparator(),
+					new ShortcutMenuAction(EmulatorShortcut.SaveStateDialog, EnableCategory.RequiresRom) {
+						ActionType = ActionType.SaveStateDialog
+					},
+					new ShortcutMenuAction(EmulatorShortcut.SaveStateToFile, EnableCategory.RequiresRom) {
+						ActionType = ActionType.SaveStateToFile
+					},
+				]
+			},
+
+			// Load State submenu - requires ROM
+			new SimpleMenuAction(ActionType.LoadState) {
+				IsEnabled = () => EmulatorState.Instance.IsRomLoaded,
+				SubActions = [
+					CreateSaveStateMenuItem(1, false),
+					CreateSaveStateMenuItem(2, false),
+					CreateSaveStateMenuItem(3, false),
+					CreateSaveStateMenuItem(4, false),
+					CreateSaveStateMenuItem(5, false),
+					CreateSaveStateMenuItem(6, false),
+					CreateSaveStateMenuItem(7, false),
+					CreateSaveStateMenuItem(8, false),
+					CreateSaveStateMenuItem(9, false),
+					CreateSaveStateMenuItem(10, false),
+					new MenuSeparator(),
+					CreateSaveStateMenuItem(11, false), // Auto-save slot
+					new MenuSeparator(),
+					new ShortcutMenuAction(EmulatorShortcut.LoadStateDialog, EnableCategory.RequiresRom) {
+						ActionType = ActionType.LoadStateDialog
+					},
+					new ShortcutMenuAction(EmulatorShortcut.LoadStateFromFile, EnableCategory.RequiresRom) {
+						ActionType = ActionType.LoadStateFromFile
+					},
+				]
+			},
+
+			// Load Last Session - requires ROM and session file
+			new ShortcutMenuAction(EmulatorShortcut.LoadLastSession) {
 				ActionType = ActionType.LoadLastSession,
-				IsEnabled = () => File.Exists(Path.Combine(ConfigManager.RecentGamesFolder, MainWindow.RomInfo.GetRomName() + ".rgd"))
+				IsEnabled = () => EmulatorState.Instance.IsRomLoaded &&
+					File.Exists(Path.Combine(ConfigManager.RecentGamesFolder, MainWindow.RomInfo.GetRomName() + ".rgd"))
 			},
 
-			new ContextMenuSeparator(),
+			new MenuSeparator(),
 
-			new MainMenuAction(EmulatorShortcut.QuickSaveTimestamped) {
+			// Quick Save Timestamped - requires ROM
+			new ShortcutMenuAction(EmulatorShortcut.QuickSaveTimestamped, EnableCategory.RequiresRom) {
 				ActionType = ActionType.QuickSaveTimestamped
 			},
-			new MainMenuAction(EmulatorShortcut.OpenSaveStatePicker) {
+
+			// Open Save State Picker - requires ROM and existing saves
+			new ShortcutMenuAction(EmulatorShortcut.OpenSaveStatePicker) {
 				ActionType = ActionType.OpenSaveStatePicker,
-				IsEnabled = () => EmuApi.GetSaveStateCount() > 0
+				IsEnabled = () => EmulatorState.Instance.IsRomLoaded && EmuApi.GetSaveStateCount() > 0
 			},
 
-			new ContextMenuSeparator(),
-			new MainMenuAction() {
-				ActionType = ActionType.RecentFiles,
+			new MenuSeparator(),
+
+			// Recent Files submenu - always visible, enabled when there are recent files
+			new SimpleMenuAction(ActionType.RecentFiles) {
 				IsEnabled = () => ConfigManager.Config.RecentFiles.Items.Count > 0,
-				SubActions = new List<object>() {
-					GetRecentMenuItem(0),
-					GetRecentMenuItem(1),
-					GetRecentMenuItem(2),
-					GetRecentMenuItem(3),
-					GetRecentMenuItem(4),
-					GetRecentMenuItem(5),
-					GetRecentMenuItem(6),
-					GetRecentMenuItem(7),
-					GetRecentMenuItem(8),
-					GetRecentMenuItem(9)
-				}
+				SubActions = [
+					CreateRecentMenuItem(0),
+					CreateRecentMenuItem(1),
+					CreateRecentMenuItem(2),
+					CreateRecentMenuItem(3),
+					CreateRecentMenuItem(4),
+					CreateRecentMenuItem(5),
+					CreateRecentMenuItem(6),
+					CreateRecentMenuItem(7),
+					CreateRecentMenuItem(8),
+					CreateRecentMenuItem(9)
+				]
 			},
-			new ContextMenuSeparator(),
-			new MainMenuAction(EmulatorShortcut.Exit) { ActionType = ActionType.Exit },
-		};
+
+			new MenuSeparator(),
+
+			// Exit - always enabled
+			new ShortcutMenuAction(EmulatorShortcut.Exit, EnableCategory.AlwaysEnabled) {
+				ActionType = ActionType.Exit
+			},
+		];
 	}
 
-	private MainMenuAction GetRecentMenuItem(int index) {
-		return new MainMenuAction() {
+	/// <summary>
+	/// Creates a menu item for a recent file entry.
+	/// </summary>
+	private SimpleMenuAction CreateRecentMenuItem(int index) {
+		return new SimpleMenuAction {
 			ActionType = ActionType.Custom,
 			DynamicText = () => index < RecentItems.Count ? RecentItems[index].DisplayText : "",
 			CustomShortcutText = () => index < RecentItems.Count ? RecentItems[index].ShortenedFolder : "",
@@ -250,13 +288,16 @@ public class MainMenuViewModel : ViewModelBase {
 		};
 	}
 
-	private MainMenuAction GetSaveStateMenuItem(int slot, bool forSave) {
+	/// <summary>
+	/// Creates a menu item for a save state slot.
+	/// </summary>
+	private ShortcutMenuAction CreateSaveStateMenuItem(int slot, bool forSave) {
 		EmulatorShortcut shortcut = forSave
 			? (EmulatorShortcut)((int)EmulatorShortcut.SaveStateSlot1 + slot - 1)
 			: (EmulatorShortcut)((int)EmulatorShortcut.LoadStateSlot1 + slot - 1);
 		bool isAutoSaveSlot = slot == 11;
 
-		return new MainMenuAction(shortcut) {
+		return new ShortcutMenuAction(shortcut, EnableCategory.RequiresRom) {
 			ActionType = ActionType.Custom,
 			DynamicText = () => {
 				// Check for Nexen native format first, then legacy Mesen format
@@ -286,80 +327,119 @@ public class MainMenuViewModel : ViewModelBase {
 	}
 
 	private void InitGameMenu(MainWindow wnd) {
-		GameMenuItems = new List<object>() {
-			new MainMenuAction(EmulatorShortcut.Pause) { ActionType = ActionType.Pause, IsVisible = () => !EmuApi.IsPaused() && (!ConfigManager.Config.Preferences.PauseWhenInMenusAndConfig || !EmuApi.IsRunning()) },
-			new MainMenuAction(EmulatorShortcut.Pause) { ActionType = ActionType.Resume, IsVisible = () => EmuApi.IsPaused() || (ConfigManager.Config.Preferences.PauseWhenInMenusAndConfig && EmuApi.IsRunning()) },
-			new ContextMenuSeparator(),
-			new MainMenuAction(EmulatorShortcut.Reset) { ActionType = ActionType.Reset },
-			new MainMenuAction(EmulatorShortcut.PowerCycle) { ActionType = ActionType.PowerCycle },
-			new MainMenuAction(EmulatorShortcut.ReloadRom) { ActionType = ActionType.ReloadRom },
-			new ContextMenuSeparator(),
-			new MainMenuAction(EmulatorShortcut.PowerOff) { ActionType = ActionType.PowerOff },
-
-			new ContextMenuSeparator() { IsVisible = () => IsGameRunning && RomInfo.ConsoleType != ConsoleType.Gameboy && RomInfo.Format != RomFormat.GameGear && RomInfo.ConsoleType != ConsoleType.Gba },
-			new MainMenuAction() {
-				ActionType = ActionType.GameConfig,
-				IsVisible = () => IsGameRunning && RomInfo.ConsoleType != ConsoleType.Gameboy && RomInfo.Format != RomFormat.GameGear && RomInfo.ConsoleType != ConsoleType.Gba,
-				IsEnabled = () => IsGameRunning,
-				OnClick = () => new GameConfigWindow().ShowCenteredDialog((Control)wnd)          },
-
-			new ContextMenuSeparator() { IsVisible = () => IsFdsGame },
-
-			new MainMenuAction() {
-				ActionType = ActionType.SelectDisk,
-				IsVisible = () => IsFdsGame,
-				SubActions = new List<object>() {
-					GetFdsInsertDiskItem(0),
-					GetFdsInsertDiskItem(1),
-					GetFdsInsertDiskItem(2),
-					GetFdsInsertDiskItem(3),
-					GetFdsInsertDiskItem(4),
-					GetFdsInsertDiskItem(5),
-					GetFdsInsertDiskItem(6),
-					GetFdsInsertDiskItem(7),
-				}
+		GameMenuItems = [
+			// Pause (shown when running)
+			new ShortcutMenuAction(EmulatorShortcut.Pause, EnableCategory.RequiresRom) {
+				ActionType = ActionType.Pause,
+				IsVisible = () => !EmuApi.IsPaused() && (!ConfigManager.Config.Preferences.PauseWhenInMenusAndConfig || !EmuApi.IsRunning())
+			},
+			// Resume (shown when paused)
+			new ShortcutMenuAction(EmulatorShortcut.Pause, EnableCategory.RequiresRom) {
+				ActionType = ActionType.Resume,
+				IsVisible = () => EmuApi.IsPaused() || (ConfigManager.Config.Preferences.PauseWhenInMenusAndConfig && EmuApi.IsRunning())
 			},
 
-			new MainMenuAction(EmulatorShortcut.FdsEjectDisk) {
+			new MenuSeparator(),
+
+			new ShortcutMenuAction(EmulatorShortcut.Reset, EnableCategory.RequiresRom) {
+				ActionType = ActionType.Reset
+			},
+			new ShortcutMenuAction(EmulatorShortcut.PowerCycle, EnableCategory.RequiresRom) {
+				ActionType = ActionType.PowerCycle
+			},
+			new ShortcutMenuAction(EmulatorShortcut.ReloadRom, EnableCategory.RequiresRom) {
+				ActionType = ActionType.ReloadRom
+			},
+
+			new MenuSeparator(),
+
+			new ShortcutMenuAction(EmulatorShortcut.PowerOff, EnableCategory.RequiresRom) {
+				ActionType = ActionType.PowerOff
+			},
+
+			// Game Config - shown for consoles that support it
+			new MenuSeparator {
+				IsVisible = () => IsGameRunning && RomInfo.ConsoleType != ConsoleType.Gameboy && RomInfo.Format != RomFormat.GameGear && RomInfo.ConsoleType != ConsoleType.Gba
+			},
+			new SimpleMenuAction(ActionType.GameConfig) {
+				IsVisible = () => IsGameRunning && RomInfo.ConsoleType != ConsoleType.Gameboy && RomInfo.Format != RomFormat.GameGear && RomInfo.ConsoleType != ConsoleType.Gba,
+				IsEnabled = () => IsGameRunning,
+				OnClick = () => new GameConfigWindow().ShowCenteredDialog((Control)wnd)
+			},
+
+			// FDS disk selection
+			new MenuSeparator { IsVisible = () => IsFdsGame },
+			new SimpleMenuAction(ActionType.SelectDisk) {
+				IsVisible = () => IsFdsGame,
+				SubActions = [
+					CreateFdsInsertDiskItem(0),
+					CreateFdsInsertDiskItem(1),
+					CreateFdsInsertDiskItem(2),
+					CreateFdsInsertDiskItem(3),
+					CreateFdsInsertDiskItem(4),
+					CreateFdsInsertDiskItem(5),
+					CreateFdsInsertDiskItem(6),
+					CreateFdsInsertDiskItem(7),
+				]
+			},
+			new ShortcutMenuAction(EmulatorShortcut.FdsEjectDisk) {
 				ActionType = ActionType.EjectDisk,
 				IsVisible = () => IsFdsGame,
 			},
 
-			new ContextMenuSeparator() { IsVisible = () => IsVsSystemGame },
+			// VS System coin insertion
+			new MenuSeparator { IsVisible = () => IsVsSystemGame },
+			new ShortcutMenuAction(EmulatorShortcut.VsInsertCoin1) {
+				ActionType = ActionType.InsertCoin1,
+				IsVisible = () => IsVsSystemGame
+			},
+			new ShortcutMenuAction(EmulatorShortcut.VsInsertCoin2) {
+				ActionType = ActionType.InsertCoin2,
+				IsVisible = () => IsVsSystemGame
+			},
+			new ShortcutMenuAction(EmulatorShortcut.VsInsertCoin3) {
+				ActionType = ActionType.InsertCoin3,
+				IsVisible = () => IsVsDualSystemGame
+			},
+			new ShortcutMenuAction(EmulatorShortcut.VsInsertCoin4) {
+				ActionType = ActionType.InsertCoin4,
+				IsVisible = () => IsVsDualSystemGame
+			},
 
-			new MainMenuAction(EmulatorShortcut.VsInsertCoin1) { ActionType = ActionType.InsertCoin1, IsVisible = () => IsVsSystemGame },
-			new MainMenuAction(EmulatorShortcut.VsInsertCoin2) { ActionType = ActionType.InsertCoin2, IsVisible = () => IsVsSystemGame },
-			new MainMenuAction(EmulatorShortcut.VsInsertCoin3) { ActionType = ActionType.InsertCoin3, IsVisible = () => IsVsDualSystemGame },
-			new MainMenuAction(EmulatorShortcut.VsInsertCoin4) { ActionType = ActionType.InsertCoin4, IsVisible = () => IsVsDualSystemGame },
-
-			new ContextMenuSeparator() { IsVisible = () => EmuApi.IsShortcutAllowed(EmulatorShortcut.InputBarcode) || EmuApi.IsShortcutAllowed(EmulatorShortcut.RecordTape) || EmuApi.IsShortcutAllowed(EmulatorShortcut.StopRecordTape) },
-
-			new MainMenuAction(EmulatorShortcut.InputBarcode) {
+			// Barcode input and tape recorder
+			new MenuSeparator {
+				IsVisible = () => EmuApi.IsShortcutAllowed(EmulatorShortcut.InputBarcode) ||
+				                  EmuApi.IsShortcutAllowed(EmulatorShortcut.RecordTape) ||
+				                  EmuApi.IsShortcutAllowed(EmulatorShortcut.StopRecordTape)
+			},
+			new ShortcutMenuAction(EmulatorShortcut.InputBarcode) {
 				ActionType = ActionType.InputBarcode,
 				IsVisible = () => EmuApi.IsShortcutAllowed(EmulatorShortcut.InputBarcode)
 			},
-
-			new MainMenuAction() {
-				ActionType = ActionType.TapeRecorder,
-				IsVisible = () => EmuApi.IsShortcutAllowed(EmulatorShortcut.RecordTape) || EmuApi.IsShortcutAllowed(EmulatorShortcut.StopRecordTape),
-				SubActions = new() {
-					new MainMenuAction(EmulatorShortcut.LoadTape) {
+			new SimpleMenuAction(ActionType.TapeRecorder) {
+				IsVisible = () => EmuApi.IsShortcutAllowed(EmulatorShortcut.RecordTape) ||
+				                  EmuApi.IsShortcutAllowed(EmulatorShortcut.StopRecordTape),
+				SubActions = [
+					new ShortcutMenuAction(EmulatorShortcut.LoadTape) {
 						ActionType = ActionType.Play,
 					},
-					new ContextMenuSeparator(),
-					new MainMenuAction(EmulatorShortcut.RecordTape) {
+					new MenuSeparator(),
+					new ShortcutMenuAction(EmulatorShortcut.RecordTape) {
 						ActionType = ActionType.Record,
 					},
-					new MainMenuAction(EmulatorShortcut.StopRecordTape) {
+					new ShortcutMenuAction(EmulatorShortcut.StopRecordTape) {
 						ActionType = ActionType.Stop,
 					},
-				}
+				]
 			},
-		};
+		];
 	}
 
-	private MainMenuAction GetFdsInsertDiskItem(int diskSide) {
-		return new MainMenuAction(EmulatorShortcut.FdsInsertDiskNumber) {
+	/// <summary>
+	/// Creates a menu item for FDS disk side selection.
+	/// </summary>
+	private ShortcutMenuAction CreateFdsInsertDiskItem(int diskSide) {
+		return new ShortcutMenuAction(EmulatorShortcut.FdsInsertDiskNumber) {
 			ActionType = ActionType.Custom,
 			CustomText = "Disk " + ((diskSide / 2) + 1) + " Side " + ((diskSide % 2 == 0) ? "A" : "B"),
 			ShortcutParam = (uint)diskSide,

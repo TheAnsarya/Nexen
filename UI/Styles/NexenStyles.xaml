@@ -161,7 +161,13 @@
 		<Setter Property="KeyboardNavigation.TabNavigation" Value="Continue" />
 	</Style>
 
-	<!-- Style for old menu action classes (BaseMenuAction from Nexen.Debugger.Utilities) -->
+	<!-- 
+		Style for menu action classes.
+		Both BaseMenuAction (Nexen.Debugger.Utilities) and MenuActionBase (Nexen.Menus)
+		have the same property names: ActionName, ActionIcon, Visible, Enabled, ShortcutText,
+		SubActions, ClickCommand. Using BaseMenuAction as DataType, but bindings work for
+		any object with these properties.
+	-->
 	<Style Selector="Menu#ActionMenu MenuItem MenuItem, ContextMenu#ActionMenu MenuItem">
 		<Setter Property="Header" Value="{Binding ActionName, DataType={x:Type du:BaseMenuAction}}" />
 		<Setter Property="Icon" Value="{Binding ActionIcon, DataType={x:Type du:BaseMenuAction}}" />

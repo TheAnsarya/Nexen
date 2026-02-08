@@ -86,6 +86,9 @@ public class ShortcutMenuAction : MenuActionBase {
 /// Use for items like Open, Exit, Preferences, Help.
 /// </summary>
 public class SimpleMenuAction : MenuActionBase {
+	/// <summary>Custom shortcut text function.</summary>
+	public Func<string>? CustomShortcutText { get; init; }
+
 	/// <summary>
 	/// Creates a new simple menu action.
 	/// </summary>
@@ -102,7 +105,9 @@ public class SimpleMenuAction : MenuActionBase {
 	}
 
 	/// <inheritdoc/>
-	protected override string ComputeShortcutText() => "";
+	protected override string ComputeShortcutText() {
+		return CustomShortcutText?.Invoke() ?? "";
+	}
 }
 
 /// <summary>
