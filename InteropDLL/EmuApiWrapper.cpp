@@ -289,7 +289,12 @@ DllExport void __stdcall ExecuteShortcut(ExecuteShortcutParams params) {
 	_emu->GetNotificationManager()->SendNotification(ConsoleNotificationType::ExecuteShortcut, &params);
 }
 DllExport bool __stdcall IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t shortcutParam) {
-	return _emu->GetShortcutKeyHandler()->IsShortcutAllowed(shortcut, shortcutParam);
+	ShortcutKeyHandler* handler = _emu->GetShortcutKeyHandler();
+	if (!handler) {
+		// Shortcut handler not initialized - allow basic shortcuts like OpenFile
+		return shortcut < EmulatorShortcut::InputBarcode;
+	}
+	return handler->IsShortcutAllowed(shortcut, shortcutParam);
 }
 
 DllExport void __stdcall WriteLogEntry(char* message) {

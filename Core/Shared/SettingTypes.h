@@ -962,6 +962,9 @@ enum class EmulatorShortcut {
 	LoadStateDialog,
 	LoadLastSession,
 
+	QuickSaveTimestamped,
+	OpenSaveStatePicker,
+
 	OpenFile,
 
 	InputBarcode,
