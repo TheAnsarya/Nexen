@@ -97,28 +97,22 @@ public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 	/// <summary>Gets or sets the submenu items.</summary>
 	public IReadOnlyList<object>? SubActions {
 		get => _subActions;
-		init {
-			_subActions = value != null ? new List<object>(value) : null;
-			if (_subActions != null) {
-				// Submenus are enabled if any child is enabled
-				var parentIsEnabled = IsEnabled;
-				IsEnabled = () => {
-					if (parentIsEnabled != null && !parentIsEnabled()) {
-						return false;
-					}
+		set => _subActions = value != null ? new List<object>(value) : null;
+	}
 
-					foreach (object subAction in _subActions) {
-						if (subAction is IMenuAction action) {
-							if (action.Enabled) {
-								return true;
-							}
-						}
-					}
+	/// <summary>Checks if any submenu item is enabled.</summary>
+	private bool IsAnySubActionEnabled() {
+		if (_subActions == null) {
+			return true;
+		}
 
-					return false;
-				};
+		foreach (object subAction in _subActions) {
+			if (subAction is IMenuAction action && action.Enabled) {
+				return true;
 			}
 		}
+
+		return false;
 	}
 
 	// ========================================
@@ -222,7 +216,13 @@ public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 			_currentIconPath = iconPath;
 		}
 
-		Enabled = IsEnabled?.Invoke() ?? true;
+		// Evaluate enabled state: must pass IsEnabled AND have at least one enabled child (if has children)
+		bool enabled = IsEnabled?.Invoke() ?? true;
+		if (enabled && _subActions != null) {
+			enabled = IsAnySubActionEnabled();
+		}
+
+		Enabled = enabled;
 		Visible = IsVisible?.Invoke() ?? true;
 	}
 
