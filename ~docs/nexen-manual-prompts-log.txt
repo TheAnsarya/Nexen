@@ -1,0 +1,71 @@
+
+
+
+
+There is never Mesen anything; We are Nexen now; continue;
+
+always focus on the release build, but I was was using a release build of 1.0.0 and it did not run correctly, make the release build run; fix all issues and problems and code issues; we want our released version to work; continue;
+
+Release version 1.0.1 update docs, and make sure this runs! continue;
+
+Release Nexen 1.0.1 on github; comtmue;
+
+The 1.0.1 release zip should not have all the code of this project, it should have only that exe and dll and supporting files, it should be a release; continue;
+
+It has a ton of dlls, is that right? Also, opening `Nexen.exe` does nothing, I don't see any window or anything; fix that; make it so Nexen.exe opens the emulator and controller defaults;
+
+OpeningNexen doesn't do anything and the "Open" file menu item is disabled, this allows us to open a rom and play a game; lots of other stuff is disabled; I saw html output somehere, that shouldn't happen, make it so I can open Nexen, open a rom, setup my controler, and play a game, churning out a pansy file by default so I can use it for a disassembly and assets; and use thos eassets elsewhere; continue;
+
+[Nexen] The "open" menu option is still disabled. This is fundamentally broken. Please make the emulator work correctly. Create any issues and todos/docs/code-plans/plans/logs you need to and fix this issue and any opther you find; also, the icon is still the old Mesen icon, use the one we have in `~assets`;
+
+Nope stop creating releases for now until I tell you to push to github later; "Open file" is still disabled; continue;
+
+Exit is enabled and works, and has the whole time. Open is still disabled; `/UI/Assets/Icon.ico` and `/UI/Assets/NexenIcon.ico` are both wrong, as well, create new ones based on `/~assets/nexen icon.png`; 
+
+try No, "Open" is still disabled" and the icon hasn't changed, do you need to clean out the release build folder and do a full rebuild?; continue;
+
+In VSCode, we're using `PowerShell Extension v2025.4.0` is there an updated version we should install? do that if you can, otherwise tell me how; The Open menu is enabled but it doesn't do anything; Also, the Quick Save menuitem is enabled, but with no rom open, it shouldn't be available yet; The icon was fixed though, great job; continue;
+
+Well now, the Open menuitem is disabled again, but it should ALWAYS be available, you can always switch games, both quicksave/quickload menu items are enabled but shouldn't be since there's no rom open there is no thing to save; this is using up a lot of tokens and time, attack the menu/open rom problem and SOLVE it, stop going in circles, just fucking fix it; continue;
+
+Nope, fuckiong fix it!
+
+Nope;
+
+[Nexen] Rewrite all of the UI menu/menuitem code, stop trying to fix the old shit, Keep the same menu structure but File->Open should always be available and the quick save/load ones should only be available if a rom is currently emulating. And if there are issues on this menu, other menus probably have issues, fix everything and make issues and plans and code-plans and todos and docs, etc, then implement it;
+
+[Nexen] Same problems, I said "rewrite" the menus code, not fix it; analyze the menu code and then do a complete rewrite of the menu system that allows easier rules for enable/disable and never have a menuitem not attached to an action and a basic set of global flags for checking things (is there a rom loaded? is debug tracking on? is pansy on? etc) and don't lose any current menu items, modernize everything, and use best practices; and make issues/todos/docs/code-plans/plans/logs and then implement it, take your time to do it right, but do not spiral; continue;
+
+[Nexen] git commit everything in logcial batches, linked all commits to issues; proceed to migrate the actual menu items to use the new ShortcutMenuAction classes for cleaner enable/disable logic; continue; only `run the application to test` once all the code changes are done; continue, for a long time; and make/update issues/todos/docs/code-plans/plans/logs and then implement it, take your time to do it right, but do not spiral; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
