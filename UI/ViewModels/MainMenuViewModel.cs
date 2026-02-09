@@ -75,6 +75,18 @@ public class MainMenuViewModel : ViewModelBase {
 	/// <summary>Gets the list of recent files.</summary>
 	private List<RecentItem> RecentItems => ConfigManager.Config.RecentFiles.Items;
 
+	/// <summary>Checks if there are any Recent Play saves (5-min auto-saves).</summary>
+	private bool HasRecentPlaySaves() {
+		var states = EmuApi.GetSaveStateList();
+		return states.Any(s => s.Origin == SaveStateOrigin.Recent);
+	}
+
+	/// <summary>Checks if there are any Auto Saves (20-min interval).</summary>
+	private bool HasAutoSaves() {
+		var states = EmuApi.GetSaveStateList();
+		return states.Any(s => s.Origin == SaveStateOrigin.Auto);
+	}
+
 	/// <summary>Reference to the configuration window if open.</summary>
 	private ConfigWindow? _cfgWindow = null;
 
@@ -233,10 +245,22 @@ public class MainMenuViewModel : ViewModelBase {
 
 			new MenuSeparator(),
 
-			// Auto Save submenu - shows auto saves (5-min intervals, max 12)
-			new SimpleMenuAction(ActionType.AutoSave) {
-				IsEnabled = () => EmulatorState.Instance.IsRomLoaded,
-				// Auto saves are loaded via the Save State Picker (filtered)
+			// Browse Recent Play Saves (5-min auto-saves, max 12)
+			new SimpleMenuAction(ActionType.BrowseRecentPlay) {
+				IsEnabled = () => EmulatorState.Instance.IsRomLoaded && HasRecentPlaySaves(),
+				OnClick = () => {
+					Log.Info("[MainMenu] BrowseRecentPlay clicked - opening picker");
+					MainWindow.RecentGames.Init(GameScreenMode.RecentPlayPicker);
+				}
+			},
+
+			// Browse Auto Saves (20-min interval saves)
+			new SimpleMenuAction(ActionType.BrowseAutoSaves) {
+				IsEnabled = () => EmulatorState.Instance.IsRomLoaded && HasAutoSaves(),
+				OnClick = () => {
+					Log.Info("[MainMenu] BrowseAutoSaves clicked - opening picker");
+					MainWindow.RecentGames.Init(GameScreenMode.AutoSavePicker);
+				}
 			},
 
 			// Load Last Session - requires ROM and session file

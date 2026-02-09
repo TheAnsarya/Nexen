@@ -82,27 +82,41 @@ public class RecentGamesViewModel : ViewModelBase {
 			for (int i = 0; i < files.Count && entries.Count < 72; i++) {
 				entries.Add(new RecentGameInfo() { FileName = files[i], Name = Path.GetFileNameWithoutExtension(files[i]) });
 			}
-		} else if (mode == GameScreenMode.SaveStatePicker) {
-			// New timestamped save state picker mode
-			Log.Info("[RecentGames] SaveStatePicker mode - pausing emulation");
+		} else if (mode == GameScreenMode.SaveStatePicker || mode == GameScreenMode.RecentPlayPicker || mode == GameScreenMode.AutoSavePicker) {
+			// Timestamped save state picker modes (with optional filtering)
+			Log.Info($"[RecentGames] {mode} mode - pausing emulation");
 			if (!Visible) {
 				NeedResume = Pause();
 			}
 
-			Title = ResourceHelper.GetMessage("LoadStateDialog");
+			// Set title based on mode
+			Title = mode switch {
+				GameScreenMode.RecentPlayPicker => ResourceHelper.GetMessage("RecentPlaySaves"),
+				GameScreenMode.AutoSavePicker => ResourceHelper.GetMessage("AutoSaves"),
+				_ => ResourceHelper.GetMessage("LoadStateDialog")
+			};
 
 			// Get all timestamped saves for current ROM from API
 			Log.Info("[RecentGames] Calling EmuApi.GetSaveStateList()");
 			SaveStateInfo[] states = EmuApi.GetSaveStateList();
 			Log.Info($"[RecentGames] Got {states.Length} save states from API");
-			foreach (var state in states) {
-				Log.Info($"[RecentGames]   - {state.RomName} @ {state.Filepath}");
+
+			// Filter by origin if needed
+			var filteredStates = mode switch {
+				GameScreenMode.RecentPlayPicker => states.Where(s => s.Origin == SaveStateOrigin.Recent),
+				GameScreenMode.AutoSavePicker => states.Where(s => s.Origin == SaveStateOrigin.Auto),
+				_ => states.AsEnumerable()
+			};
+
+			foreach (var state in filteredStates) {
+				Log.Info($"[RecentGames]   - {state.RomName} @ {state.Filepath} (Origin: {state.Origin})");
 				entries.Add(new RecentGameInfo() {
 					FileName = state.Filepath,
 					Name = state.RomName,
 					SaveStateTimestamp = state.Timestamp,
 					FriendlyTimestamp = state.GetFriendlyTimestamp(),
-					IsTimestampedSave = true
+					IsTimestampedSave = true,
+					Origin = state.Origin
 				});
 			}
 
@@ -204,8 +218,12 @@ public enum GameScreenMode {
 	LoadState,
 	/// <summary>Shows save state slots for saving.</summary>
 	SaveState,
-	/// <summary>Shows timestamped saves for browsing.</summary>
-	SaveStatePicker
+	/// <summary>Shows all timestamped saves for browsing.</summary>
+	SaveStatePicker,
+	/// <summary>Shows only Recent Play saves (5-min auto-saves, max 12).</summary>
+	RecentPlayPicker,
+	/// <summary>Shows only Auto Saves (20-min interval saves).</summary>
+	AutoSavePicker
 }
 
 /// <summary>
@@ -238,6 +256,11 @@ public class RecentGameInfo {
 	/// Friendly formatted timestamp (e.g., "Today 2:30 PM")
 	/// </summary>
 	public string FriendlyTimestamp { get; set; } = "";
+
+	/// <summary>
+	/// Origin category for save states (Auto/Save/Recent/Lua)
+	/// </summary>
+	public SaveStateOrigin Origin { get; set; } = SaveStateOrigin.Save;
 
 	/// <summary>
 	/// Checks if the entry is enabled (file exists for loading, or save mode).

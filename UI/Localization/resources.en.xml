@@ -1770,6 +1770,8 @@
 		<Message ID="SlotNumber">Slot #{0}</Message>
 		<Message ID="LoadStateDialog">Load State Menu</Message>
 		<Message ID="SaveStateDialog">Save State Menu</Message>
+		<Message ID="RecentPlaySaves">Recent Play Saves</Message>
+		<Message ID="AutoSaves">Auto Saves</Message>
 
 		<Message ID="LoadFromFile">Load from file...</Message>
 		<Message ID="SaveToFile">Save to file...</Message>
@@ -3638,6 +3640,8 @@ E
 
 			<Value ID="QuickSaveTimestamped">Quick Save (Timestamped)</Value>
 			<Value ID="OpenSaveStatePicker">Browse Save States...</Value>
+			<Value ID="BrowseRecentPlay">Browse Recent Play Saves...</Value>
+			<Value ID="BrowseAutoSaves">Browse Auto Saves...</Value>
 
 			<Value ID="LoadStateDialog">Load State Menu</Value>
 			<Value ID="LoadStateFromFile">Load from file...</Value>

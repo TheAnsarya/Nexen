@@ -694,6 +694,18 @@ public enum ActionType {
 	[IconFile("SplitView")]
 	OpenSaveStatePicker,
 
+	/// <summary>
+	/// Browse Recent Play saves (5-min auto-saves)
+	/// </summary>
+	[IconFile("SplitView")]
+	BrowseRecentPlay,
+
+	/// <summary>
+	/// Browse Auto Saves (20-min interval)
+	/// </summary>
+	[IconFile("SplitView")]
+	BrowseAutoSaves,
+
 	[IconFile("SaveFloppy")]
 	SaveRom,
 	SaveRomAs,
