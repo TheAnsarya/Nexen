@@ -109,52 +109,14 @@ public class PreferencesConfigViewModel : DisposableViewModel {
 			EmulatorShortcut.RecordTape,
 			EmulatorShortcut.StopRecordTape,
 
-			EmulatorShortcut.MoveToPreviousStateSlot,
-			EmulatorShortcut.MoveToNextStateSlot,
-			EmulatorShortcut.SaveState,
-			EmulatorShortcut.LoadState,
-
-			EmulatorShortcut.SaveStateSlot1,
-			EmulatorShortcut.SaveStateSlot2,
-			EmulatorShortcut.SaveStateSlot3,
-			EmulatorShortcut.SaveStateSlot4,
-			EmulatorShortcut.SaveStateSlot5,
-			EmulatorShortcut.SaveStateSlot6,
-			EmulatorShortcut.SaveStateSlot7,
-			EmulatorShortcut.SaveStateSlot8,
-			EmulatorShortcut.SaveStateSlot9,
-			EmulatorShortcut.SaveStateSlot10,
-			EmulatorShortcut.SaveStateToFile,
-			EmulatorShortcut.SaveStateDialog,
-
-			EmulatorShortcut.LoadStateSlot1,
-			EmulatorShortcut.LoadStateSlot2,
-			EmulatorShortcut.LoadStateSlot3,
-			EmulatorShortcut.LoadStateSlot4,
-			EmulatorShortcut.LoadStateSlot5,
-			EmulatorShortcut.LoadStateSlot6,
-			EmulatorShortcut.LoadStateSlot7,
-			EmulatorShortcut.LoadStateSlot8,
-			EmulatorShortcut.LoadStateSlot9,
-			EmulatorShortcut.LoadStateSlot10,
-			EmulatorShortcut.LoadStateSlotAuto,
-			EmulatorShortcut.LoadStateFromFile,
-			EmulatorShortcut.LoadStateDialog,
-			EmulatorShortcut.LoadLastSession,
-
+			// Infinite save state system (replaces slot-based system)
 			EmulatorShortcut.QuickSaveTimestamped,
 			EmulatorShortcut.OpenSaveStatePicker,
-
-			EmulatorShortcut.SelectSaveSlot1,
-			EmulatorShortcut.SelectSaveSlot2,
-			EmulatorShortcut.SelectSaveSlot3,
-			EmulatorShortcut.SelectSaveSlot4,
-			EmulatorShortcut.SelectSaveSlot5,
-			EmulatorShortcut.SelectSaveSlot6,
-			EmulatorShortcut.SelectSaveSlot7,
-			EmulatorShortcut.SelectSaveSlot8,
-			EmulatorShortcut.SelectSaveSlot9,
-			EmulatorShortcut.SelectSaveSlot10
+			EmulatorShortcut.SaveStateToFile,
+			EmulatorShortcut.SaveStateDialog,
+			EmulatorShortcut.LoadStateFromFile,
+			EmulatorShortcut.LoadStateDialog,
+			EmulatorShortcut.LoadLastSession
 		};
 
 		Dictionary<EmulatorShortcut, ShortcutKeyInfo> shortcuts = new Dictionary<EmulatorShortcut, ShortcutKeyInfo>();

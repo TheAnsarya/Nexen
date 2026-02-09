@@ -151,6 +151,7 @@ bool ShortcutKeyHandler::IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t s
 		case EmulatorShortcut::ToggleCheats:
 			return !isNetplayClient && !isMovieActive;
 
+		// Slot-based shortcuts are deprecated - kept for enum compatibility but do nothing
 		case EmulatorShortcut::SelectSaveSlot1:
 		case EmulatorShortcut::SelectSaveSlot2:
 		case EmulatorShortcut::SelectSaveSlot3:
@@ -173,15 +174,7 @@ bool ShortcutKeyHandler::IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t s
 		case EmulatorShortcut::SaveStateSlot10:
 		case EmulatorShortcut::MoveToNextStateSlot:
 		case EmulatorShortcut::MoveToPreviousStateSlot:
-		case EmulatorShortcut::SaveStateDialog:
-		case EmulatorShortcut::SaveStateToFile:
 		case EmulatorShortcut::SaveState:
-		case EmulatorShortcut::QuickSaveTimestamped:
-			return isRunning;
-
-		case EmulatorShortcut::OpenSaveStatePicker:
-			return isRunning && !isNetplayClient && !isMovieActive;
-
 		case EmulatorShortcut::LoadStateSlot1:
 		case EmulatorShortcut::LoadStateSlot2:
 		case EmulatorShortcut::LoadStateSlot3:
@@ -193,9 +186,19 @@ bool ShortcutKeyHandler::IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t s
 		case EmulatorShortcut::LoadStateSlot9:
 		case EmulatorShortcut::LoadStateSlot10:
 		case EmulatorShortcut::LoadStateSlotAuto:
+		case EmulatorShortcut::LoadState:
+			return false; // Deprecated - use QuickSaveTimestamped/OpenSaveStatePicker
+
+		case EmulatorShortcut::SaveStateDialog:
+		case EmulatorShortcut::SaveStateToFile:
+		case EmulatorShortcut::QuickSaveTimestamped:
+			return isRunning;
+
+		case EmulatorShortcut::OpenSaveStatePicker:
+			return isRunning && !isNetplayClient && !isMovieActive;
+
 		case EmulatorShortcut::LoadStateDialog:
 		case EmulatorShortcut::LoadStateFromFile:
-		case EmulatorShortcut::LoadState:
 		case EmulatorShortcut::LoadLastSession:
 			return isRunning && !isNetplayClient && !isMovieActive;
 
@@ -278,6 +281,8 @@ void ShortcutKeyHandler::ProcessShortcutPressed(EmulatorShortcut shortcut, uint3
 			}
 			break;
 
+		// Slot-based shortcuts are deprecated - they silently do nothing
+		// Use QuickSaveTimestamped/OpenSaveStatePicker instead
 		case EmulatorShortcut::SelectSaveSlot1:
 		case EmulatorShortcut::SelectSaveSlot2:
 		case EmulatorShortcut::SelectSaveSlot3:
@@ -288,9 +293,6 @@ void ShortcutKeyHandler::ProcessShortcutPressed(EmulatorShortcut shortcut, uint3
 		case EmulatorShortcut::SelectSaveSlot8:
 		case EmulatorShortcut::SelectSaveSlot9:
 		case EmulatorShortcut::SelectSaveSlot10:
-			_emu->GetSaveStateManager()->SelectSaveSlot((int)shortcut - (int)EmulatorShortcut::SelectSaveSlot1 + 1);
-			break;
-
 		case EmulatorShortcut::SaveStateSlot1:
 		case EmulatorShortcut::SaveStateSlot2:
 		case EmulatorShortcut::SaveStateSlot3:
@@ -301,9 +303,6 @@ void ShortcutKeyHandler::ProcessShortcutPressed(EmulatorShortcut shortcut, uint3
 		case EmulatorShortcut::SaveStateSlot8:
 		case EmulatorShortcut::SaveStateSlot9:
 		case EmulatorShortcut::SaveStateSlot10:
-			_emu->GetSaveStateManager()->SaveState((int)shortcut - (int)EmulatorShortcut::SaveStateSlot1 + 1);
-			break;
-
 		case EmulatorShortcut::LoadStateSlot1:
 		case EmulatorShortcut::LoadStateSlot2:
 		case EmulatorShortcut::LoadStateSlot3:
@@ -315,20 +314,11 @@ void ShortcutKeyHandler::ProcessShortcutPressed(EmulatorShortcut shortcut, uint3
 		case EmulatorShortcut::LoadStateSlot9:
 		case EmulatorShortcut::LoadStateSlot10:
 		case EmulatorShortcut::LoadStateSlotAuto:
-			_emu->GetSaveStateManager()->LoadState((int)shortcut - (int)EmulatorShortcut::LoadStateSlot1 + 1);
-			break;
-
 		case EmulatorShortcut::MoveToNextStateSlot:
-			_emu->GetSaveStateManager()->MoveToNextSlot();
-			break;
 		case EmulatorShortcut::MoveToPreviousStateSlot:
-			_emu->GetSaveStateManager()->MoveToPreviousSlot();
-			break;
 		case EmulatorShortcut::SaveState:
-			_emu->GetSaveStateManager()->SaveState();
-			break;
 		case EmulatorShortcut::LoadState:
-			_emu->GetSaveStateManager()->LoadState();
+			// Deprecated - do nothing
 			break;
 
 		case EmulatorShortcut::RunSingleFrame:

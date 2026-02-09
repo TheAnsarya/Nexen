@@ -207,54 +207,36 @@ public class MainMenuViewModel : ViewModelBase {
 
 			new MenuSeparator(),
 
-			// Save State submenu - requires ROM
-			new SimpleMenuAction(ActionType.SaveState) {
-				IsEnabled = () => EmulatorState.Instance.IsRomLoaded,
-				SubActions = [
-					CreateSaveStateMenuItem(1, true),
-					CreateSaveStateMenuItem(2, true),
-					CreateSaveStateMenuItem(3, true),
-					CreateSaveStateMenuItem(4, true),
-					CreateSaveStateMenuItem(5, true),
-					CreateSaveStateMenuItem(6, true),
-					CreateSaveStateMenuItem(7, true),
-					CreateSaveStateMenuItem(8, true),
-					CreateSaveStateMenuItem(9, true),
-					CreateSaveStateMenuItem(10, true),
-					new MenuSeparator(),
-					new ShortcutMenuAction(EmulatorShortcut.SaveStateDialog, EnableCategory.RequiresRom) {
-						ActionType = ActionType.SaveStateDialog
-					},
-					new ShortcutMenuAction(EmulatorShortcut.SaveStateToFile, EnableCategory.RequiresRom) {
-						ActionType = ActionType.SaveStateToFile
-					},
-				]
+			// Quick Save (Timestamped) - F1/Shift+F1/Ctrl+S creates infinite saves
+			new ShortcutMenuAction(EmulatorShortcut.QuickSaveTimestamped, EnableCategory.RequiresRom) {
+				ActionType = ActionType.QuickSaveTimestamped
 			},
 
-			// Load State submenu - requires ROM
-			new SimpleMenuAction(ActionType.LoadState) {
+			// Browse Save States - F1 opens the picker to view/load all saves
+			new SimpleMenuAction(ActionType.OpenSaveStatePicker) {
+				IsEnabled = () => EmulatorState.Instance.IsRomLoaded && EmuApi.GetSaveStateCount() > 0,
+				OnClick = () => {
+					Log.Info("[MainMenu] OpenSaveStatePicker clicked - opening picker");
+					MainWindow.RecentGames.Init(GameScreenMode.SaveStatePicker);
+				}
+			},
+
+			new MenuSeparator(),
+
+			// Save/Load to/from arbitrary file
+			new ShortcutMenuAction(EmulatorShortcut.SaveStateToFile, EnableCategory.RequiresRom) {
+				ActionType = ActionType.SaveStateToFile
+			},
+			new ShortcutMenuAction(EmulatorShortcut.LoadStateFromFile, EnableCategory.RequiresRom) {
+				ActionType = ActionType.LoadStateFromFile
+			},
+
+			new MenuSeparator(),
+
+			// Auto Save submenu - shows auto saves (5-min intervals, max 12)
+			new SimpleMenuAction(ActionType.AutoSave) {
 				IsEnabled = () => EmulatorState.Instance.IsRomLoaded,
-				SubActions = [
-					CreateSaveStateMenuItem(1, false),
-					CreateSaveStateMenuItem(2, false),
-					CreateSaveStateMenuItem(3, false),
-					CreateSaveStateMenuItem(4, false),
-					CreateSaveStateMenuItem(5, false),
-					CreateSaveStateMenuItem(6, false),
-					CreateSaveStateMenuItem(7, false),
-					CreateSaveStateMenuItem(8, false),
-					CreateSaveStateMenuItem(9, false),
-					CreateSaveStateMenuItem(10, false),
-					new MenuSeparator(),
-					CreateSaveStateMenuItem(11, false), // Auto-save slot
-					new MenuSeparator(),
-					new ShortcutMenuAction(EmulatorShortcut.LoadStateDialog, EnableCategory.RequiresRom) {
-						ActionType = ActionType.LoadStateDialog
-					},
-					new ShortcutMenuAction(EmulatorShortcut.LoadStateFromFile, EnableCategory.RequiresRom) {
-						ActionType = ActionType.LoadStateFromFile
-					},
-				]
+				// Auto saves are loaded via the Save State Picker (filtered)
 			},
 
 			// Load Last Session - requires ROM and session file
@@ -262,23 +244,6 @@ public class MainMenuViewModel : ViewModelBase {
 				ActionType = ActionType.LoadLastSession,
 				IsEnabled = () => EmulatorState.Instance.IsRomLoaded &&
 					File.Exists(Path.Combine(ConfigManager.RecentGamesFolder, MainWindow.RomInfo.GetRomName() + ".rgd"))
-			},
-
-			new MenuSeparator(),
-
-			// Quick Save Timestamped - requires ROM
-			new ShortcutMenuAction(EmulatorShortcut.QuickSaveTimestamped, EnableCategory.RequiresRom) {
-				ActionType = ActionType.QuickSaveTimestamped
-			},
-
-			// Open Save State Picker - requires ROM and existing saves
-			// Note: Uses direct OnClick instead of shortcut because this is a UI-only action
-			new SimpleMenuAction(ActionType.OpenSaveStatePicker) {
-				IsEnabled = () => EmulatorState.Instance.IsRomLoaded && EmuApi.GetSaveStateCount() > 0,
-				OnClick = () => {
-					Log.Info("[MainMenu] OpenSaveStatePicker clicked - opening picker");
-					MainWindow.RecentGames.Init(GameScreenMode.SaveStatePicker);
-				}
 			},
 
 			new MenuSeparator(),
@@ -321,44 +286,6 @@ public class MainMenuViewModel : ViewModelBase {
 			OnClick = () => {
 				if (index < RecentItems.Count) {
 					LoadRomHelper.LoadRom(RecentItems[index].RomFile, RecentItems[index].PatchFile);
-				}
-			}
-		};
-	}
-
-	/// <summary>
-	/// Creates a menu item for a save state slot.
-	/// </summary>
-	private ShortcutMenuAction CreateSaveStateMenuItem(int slot, bool forSave) {
-		EmulatorShortcut shortcut = forSave
-			? (EmulatorShortcut)((int)EmulatorShortcut.SaveStateSlot1 + slot - 1)
-			: (EmulatorShortcut)((int)EmulatorShortcut.LoadStateSlot1 + slot - 1);
-		bool isAutoSaveSlot = slot == 11;
-
-		return new ShortcutMenuAction(shortcut, EnableCategory.RequiresRom) {
-			ActionType = ActionType.Custom,
-			DynamicText = () => {
-				// Check for Nexen native format first, then legacy Mesen format
-				string statePathNexen = Path.Combine(ConfigManager.SaveStateFolder, EmuApi.GetRomInfo().GetRomName() + "_" + slot + "." + FileDialogHelper.NexenSaveStateExt);
-				string statePathMesen = Path.Combine(ConfigManager.SaveStateFolder, EmuApi.GetRomInfo().GetRomName() + "_" + slot + "." + FileDialogHelper.MesenSaveStateExt);
-				string statePath = File.Exists(statePathNexen) ? statePathNexen : (File.Exists(statePathMesen) ? statePathMesen : statePathNexen);
-				string slotName = isAutoSaveSlot ? "Auto" : slot.ToString();
-
-				string header;
-				if (!File.Exists(statePath)) {
-					header = slotName + ". " + ResourceHelper.GetMessage("EmptyState");
-				} else {
-					DateTime dateTime = new FileInfo(statePath).LastWriteTime;
-					header = slotName + ". " + dateTime.ToShortDateString() + " " + dateTime.ToShortTimeString();
-				}
-
-				return header;
-			},
-			OnClick = () => {
-				if (forSave) {
-					EmuApi.SaveState((uint)slot);
-				} else {
-					EmuApi.LoadState((uint)slot);
 				}
 			}
 		};
