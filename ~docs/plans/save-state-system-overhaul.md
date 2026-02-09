@@ -108,12 +108,30 @@ Offset | Size | Field
 
 ## Keyboard Shortcuts (New)
 
+### Save State Shortcuts (Reserved)
+
 | Shortcut | Action |
 |----------|--------|
+| F1 | Load Quick Save (most recent) |
+| Shift+F1 | Quick Save (timestamped) |
 | F4 | Load Designated Save |
-| Shift+F4 | Save to Designated Slot |
-| Ctrl+S | Quick Save (timestamped) |
-| F1-F3, F5-F12 | **Available for other uses** |
+| Shift+F4 | Set Designated Save |
+| Ctrl+S | Quick Save (timestamped, same as Shift+F1) |
+
+### Freed Shortcuts (Available for TAS/Other)
+
+| Shortcut | Previously | Now Available For |
+|----------|------------|-------------------|
+| F2 | Save Slot 2 | TAS: Record Movie |
+| F3 | Save Slot 3 | TAS: Play Movie |
+| F5 | Save Slot 5 | TAS: Stop Movie |
+| F6 | Save Slot 6 | TAS: Toggle Read-Only |
+| F7 | Save Slot 7 | TAS: Insert Frame |
+| F8 | Save Slot 8 | TAS: Delete Frame |
+| F9 | Save Slot 9 | Debug: Step Into |
+| F10 | Save Slot 10 | Debug: Step Over |
+| F11 | (unused) | Debug: Step Out |
+| F12 | Screenshot | Screenshot (unchanged) |
 
 ---
 

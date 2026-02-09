@@ -11,7 +11,7 @@ using Nexen.Config.Shortcuts;
 using Nexen.Localization;
 using Nexen.Utilities;
 
-namespace Nexen.Interop; 
+namespace Nexen.Interop;
 public class EmuApi {
 	public const string DllName = "NexenCore.dll";
 	private const string DllPath = EmuApi.DllName;
