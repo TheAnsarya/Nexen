@@ -7,11 +7,13 @@
 	xmlns:c="using:Nexen.Controls"
 	xmlns:cfg="using:Nexen.Config"
 	xmlns:cs="using:Nexen.Config.Shortcuts"
+	xmlns:v="using:Nexen.Views"
 	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
 	VerticalAlignment="Top"
 	HorizontalAlignment="Stretch"
 	x:Name="root"
+	x:DataType="v:ShortcutKeysTabView"
 	x:Class="Nexen.Views.ShortcutKeysTabView"
 >
 	<UserControl.Resources>

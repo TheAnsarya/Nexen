@@ -6,8 +6,10 @@
 	xmlns:l="using:Nexen.Localization"
 	xmlns:u="using:Nexen.Utilities"
 	xmlns:cp="using:Avalonia.Markup.Xaml.Converters"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="50"
 	x:Name="root"
+	x:DataType="dc:ColorPickerField"
 	HorizontalAlignment="Stretch"
 	x:Class="Nexen.Debugger.Controls.ColorPickerField"
 >

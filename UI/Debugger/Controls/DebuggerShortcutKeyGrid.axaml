@@ -13,6 +13,7 @@
 	HorizontalAlignment="Stretch"
 	x:Class="Nexen.Debugger.Controls.DebuggerShortcutKeyGrid"
 	x:Name="root"
+	x:DataType="dc:DebuggerShortcutKeyGrid"
 >
 	<UserControl.Resources>
 		<l:EnumConverter x:Key="EnumConverter" />

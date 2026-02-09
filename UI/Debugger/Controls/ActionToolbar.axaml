@@ -5,9 +5,11 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:l="using:Nexen.Localization"
 	xmlns:du="using:Nexen.Debugger.Utilities"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	mc:Ignorable="d" d:DesignWidth="280" d:DesignHeight="200"
 	x:Class="Nexen.Debugger.Controls.ActionToolbar"
 	x:Name="root"
+	x:DataType="dc:ActionToolbar"
 >
 	<UserControl.Resources>
 		<Color x:Key="ButtonBackground">Transparent</Color>

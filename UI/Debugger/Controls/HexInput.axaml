@@ -6,9 +6,11 @@
 	xmlns:l="using:Nexen.Localization"
 	xmlns:c="using:Nexen.Controls"
 	xmlns:u="using:Nexen.Utilities"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	mc:Ignorable="d"
 	MinWidth="120"
 	x:Name="root"
+	x:DataType="dc:HexInput"
 	HorizontalAlignment="Stretch"
 	x:Class="Nexen.Debugger.Controls.HexInput"
 >

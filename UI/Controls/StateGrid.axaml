@@ -12,6 +12,7 @@
 	HorizontalAlignment="Stretch"
   Background="Transparent"
 	Name="root"
+	x:DataType="c:StateGrid"
 	x:Class="Nexen.Controls.StateGrid"
 >
 	<UserControl.Resources>

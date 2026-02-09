@@ -7,6 +7,7 @@
 	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="50"
 	x:Name="root"
+	x:DataType="c:FirmwareSelect"
 	x:Class="Nexen.Controls.FirmwareSelect"
 >
 	<Grid DataContext="{Binding ElementName=root}" ColumnDefinitions="*,Auto,Auto,Auto" RowDefinitions="Auto">

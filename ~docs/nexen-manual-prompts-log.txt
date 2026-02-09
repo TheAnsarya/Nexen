@@ -99,6 +99,12 @@ you deleted the code from the designated slot, recreate it and continue;
 
 
 
+[Nexen] Make a document (and open it) with a listing and description of what it does and how we're using it, of all the packages that Nexen uses or inherited from Mesen and create plans and issues and docs for how we can replace these little packages with just standard microsoft dotnet libraries and are they big/robust and have to be kept or can we easily relace them; make isssues!; continue; work on current issues!; continue;
+
+
+
+
+
 
 
 
