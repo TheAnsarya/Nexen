@@ -1,0 +1,56 @@
+<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	x:Class="Nexen.Windows.SplashWindow"
+	Width="420" Height="340"
+	CanResize="False"
+	SystemDecorations="None"
+	WindowStartupLocation="CenterScreen"
+	Background="Transparent"
+	TransparencyLevelHint="Transparent"
+	Topmost="True"
+>
+	<Border
+		CornerRadius="12"
+		Background="#1a1a2e"
+		BorderBrush="#3a3a5e"
+		BorderThickness="1"
+		Padding="24"
+	>
+		<Grid RowDefinitions="*,Auto">
+			<!-- Nexen Logo (cropped from big-logo.png) -->
+			<Image
+				Grid.Row="0"
+				Source="/Assets/SplashLogo.png"
+				MaxWidth="240"
+				MaxHeight="240"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Center"
+				Stretch="Uniform"
+			/>
+
+			<!-- Loading indicator -->
+			<StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0 12 0 4">
+				<TextBlock
+					Name="StatusText"
+					Text="Loading..."
+					FontSize="11"
+					Foreground="#6666aa"
+					HorizontalAlignment="Center"
+				/>
+				<ProgressBar
+					Name="LoadingBar"
+					IsIndeterminate="True"
+					Width="200"
+					Height="3"
+					Margin="0 8 0 0"
+					Foreground="#6666cc"
+					Background="#2a2a4e"
+				/>
+			</StackPanel>
+		</Grid>
+	</Border>
+</Window>
