@@ -72,6 +72,7 @@ public class AboutWindow : NexenWindow {
 		LibraryList.Sort((a, b) => a.Name.CompareTo(b.Name));
 
 		AcknowledgeList = new List<AboutListEntry>() {
+			new("Mesen2 (Sour)", "Sour", "Original emulator", "https://github.com/SourMesen/Mesen2"),
 			new("ares (Near)", "Near", "ISC", "https://github.com/ares-emulator/ares"),
 			new("NesDev Wiki/Forums Contributors", "", "", "https://www.nesdev.org/"),
 			new("SameBoy (LIJI32)", "LIJI32", "MIT", "https://github.com/LIJI32/SameBoy"),
@@ -83,7 +84,8 @@ public class AboutWindow : NexenWindow {
 
 		InitializeComponent();
 
-		this.GetControl<TextBlock>("lblCopyright").Text = $"Copyright 2014-{DateTime.Now.Year} Sour";
+		// Credit both original Mesen author and Nexen fork
+		this.GetControl<TextBlock>("lblCopyright").Text = $"© 2024-{DateTime.Now.Year} Ansarya (Mesen2 © 2014-2024 Sour)";
 	}
 
 	private void InitializeComponent() {
@@ -101,11 +103,11 @@ public class AboutWindow : NexenWindow {
 	}
 
 	private void OnNexenLinkTapped(object? sender, TappedEventArgs e) {
-		ApplicationHelper.OpenBrowser("https://www.Nexen.ca");
+		ApplicationHelper.OpenBrowser("https://github.com/TheAnsarya/Nexen");
 	}
 
 	private void OnCommitLinkTapped(object? sender, TappedEventArgs e) {
-		ApplicationHelper.OpenBrowser("https://github.com/SourNexen/Nexen/commit/" + BuildSha);
+		ApplicationHelper.OpenBrowser("https://github.com/TheAnsarya/Nexen/commit/" + BuildSha);
 	}
 }
 
