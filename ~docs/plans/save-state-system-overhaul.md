@@ -2,18 +2,63 @@
 
 ## Overview
 
-This document outlines the comprehensive overhaul of the Nexen save state system to provide better organization, visual identification, and automatic backup capabilities.
+Complete overhaul of the Nexen save state system - **removing the legacy numbered slot system** and replacing it with a modern file-based approach with clear categories.
 
 **Epic Issue**: #172
-**Related Issues**: #173, #174, #175, #176, #177
+**Related Issues**: #173, #174, #175, #176, #177, #178
+
+## ⚠️ MAJOR CHANGE: Removing Slot System
+
+The numbered save slot system (slots 1-10 with F1-F10) is being **completely removed**. This frees up F1-F10 keyboard shortcuts for other uses and simplifies the save state architecture.
 
 ## Goals
 
-1. **Origin Tracking** - Know where each save came from
-2. **Recent Play Queue** - 5-minute interval rotating saves (1 hour retention)
-3. **Quick Save Auto-Save** - 20-30 minute auto-save to quick save slots
-4. **Visual Badges** - Bootstrap-style colored badges for save origins
-5. **Better UI** - Dedicated menu items and picker for recent saves
+1. **REMOVE** numbered save slot system
+2. **Implement** single Designated Save (F4/Shift+F4)
+3. **Keep** Quick Save system (Ctrl+S timestamped)
+4. **Implement** Recent Play rotating queue (5-min intervals)
+5. **Add** SaveStateOrigin tracking with visual badges
+6. **Free up** F1-F10 shortcuts for other uses
+
+---
+
+## New Save State Architecture
+
+### 1. Designated Save (Single Slot)
+
+The primary "quick load" mechanism:
+
+- **F4** = Load the designated save file
+- **Shift+F4** = Save to designated slot
+- User can set which file is designated via picker
+- Origin: `Save` (green badge)
+
+### 2. Quick Save (Timestamped Files)
+
+For creating named save points:
+
+- **Ctrl+S** = Create timestamped save
+- Saves to: `{rom}-{timestamp}.mss`
+- Browse via File → Browse Save States
+- Origin: `Save` (green badge)
+
+### 3. Recent Play Queue (Auto, Rotating)
+
+Automatic gameplay capture:
+
+- Every 5 minutes (configurable)
+- 12 saves = 1 hour retention
+- FIFO rotation (oldest replaced)
+- Origin: `Recent` (red badge)
+- Browse via File → Recent Play
+
+### 4. Auto Save (System)
+
+Long-term recovery:
+
+- Every 20-30 minutes (configurable)
+- Single auto-save file per ROM
+- Origin: `Auto` (blue badge)
 
 ---
 
@@ -22,9 +67,9 @@ This document outlines the comprehensive overhaul of the Nexen save state system
 ```csharp
 public enum SaveStateOrigin : byte
 {
-	Auto = 0,   // Blue badge - System auto-saves (20-30 min)
+	Auto = 0,   // Blue badge - System auto-saves
 	Save = 1,   // Green badge - User-initiated saves
-	Recent = 2, // Red badge - Recent play queue (5 min)
+	Recent = 2, // Red badge - Recent play queue
 	Lua = 3     // Yellow badge - Lua script saves
 }
 ```
@@ -37,49 +82,6 @@ public enum SaveStateOrigin : byte
 | Save   | Green | #198754  | White      |
 | Recent | Red   | #dc3545  | White      |
 | Lua    | Yellow| #ffc107  | Black      |
-
----
-
-## Save State Categories
-
-### 1. Quick Saves (Slots 1-10)
-
-**Existing functionality** with enhancements:
-
-- User-initiated via Shift+F1-F10
-- Origin: `Save` (green badge)
-- **NEW**: Auto-saved every 20-30 minutes
-  - Origin: `Auto` (blue badge)
-  - Cycles through slots
-  - Avoids overwriting recent user saves
-
-### 2. Recent Play Queue (Slots 12-23)
-
-**New feature** - rotating queue:
-
-- Automatic every 5 minutes
-- 12 saves = 1 hour retention
-- Origin: `Recent` (red badge)
-- FIFO rotation (oldest replaced)
-- Separate from quick saves
-- Accessible via:
-  - File → Recent Play submenu
-  - Dedicated keyboard shortcuts
-
-### 3. Auto Save (Slot 11)
-
-**Existing** - system auto-save slot:
-
-- Configurable interval (default: 20 minutes)
-- Origin: `Auto` (blue badge)
-- Used for last-session recovery
-
-### 4. Lua Saves
-
-**Existing** - script-created saves:
-
-- Origin: `Lua` (yellow badge)
-- No automatic creation
 
 ---
 
@@ -104,16 +106,14 @@ Offset | Size | Field
 
 ---
 
-## Slot Allocation
+## Keyboard Shortcuts (New)
 
-```
-Slot  | Purpose        | Origin
-------|----------------|--------
-1-10  | Quick Saves    | Save/Auto
-11    | Auto Save      | Auto
-12-23 | Recent Play    | Recent
-24+   | Reserved       | -
-```
+| Shortcut | Action |
+|----------|--------|
+| F4 | Load Designated Save |
+| Shift+F4 | Save to Designated Slot |
+| Ctrl+S | Quick Save (timestamped) |
+| F1-F3, F5-F12 | **Available for other uses** |
 
 ---
 
@@ -122,9 +122,12 @@ Slot  | Purpose        | Origin
 ### PreferencesConfig
 
 ```csharp
-// Quick Save Auto-Save (20-30 min)
-public bool EnableQuickSaveAutoSave { get; set; } = true;
-public uint QuickSaveAutoSaveInterval { get; set; } = 20; // minutes
+// Designated Save
+public string DesignatedSavePath { get; set; } = "";
+
+// Auto Save (20-30 min)
+public bool EnableAutoSave { get; set; } = true;
+public uint AutoSaveInterval { get; set; } = 20; // minutes
 
 // Recent Play Queue (5 min)
 public bool EnableRecentPlaySaves { get; set; } = true;
@@ -141,14 +144,12 @@ public uint RecentPlayRetentionCount { get; set; } = 12; // saves
 ```
 File
 ├── ...
-├── Save State
-│   ├── Quick Save (Shift+F1)
-│   ├── Quick Save Slot... (submenu)
-│   └── Browse Save States... (F1)
-├── Load State
-│   ├── Quick Load (Shift+F5)
-│   ├── Quick Load Slot... (submenu)
-│   └── Browse Save States... (F5)
+├── Designated Save
+│   ├── Load (F4)
+│   ├── Save (Shift+F4)
+│   └── Set Designated Save...
+├── Quick Save (Ctrl+S)
+├── Browse Save States...
 ├── Recent Play
 │   ├── Load Most Recent
 │   ├── ────────────────
@@ -165,8 +166,7 @@ File
 Settings
 ├── ...
 ├── Auto Save
-│   ├── ✓ Auto Save States
-│   ├── ✓ Auto Save to Quick Slots (20 min)
+│   ├── ✓ Auto Save (20 min)
 │   ├── ✓ Recent Play Saves (5 min)
 │   ├── ────────────────
 │   ├── ✓ Auto Save Pansy Data
@@ -214,9 +214,10 @@ Settings
 
 1. **Phase 1**: SaveStateOrigin enum and file format (#173)
 2. **Phase 2**: Recent Play queue infrastructure (#174)
-3. **Phase 3**: Quick Save auto-save (#175)
+3. **Phase 3**: Designated Save system (#175)
 4. **Phase 4**: Recent Play UI (#176)
 5. **Phase 5**: Origin badges (#177)
+6. **Phase 6**: Remove legacy slot system (#178)
 
 ---
 
@@ -234,23 +235,44 @@ enum class SaveStateOrigin : uint8_t {
 
 class SaveStateManager {
 public:
-	// Existing
-	static constexpr uint32_t AutoSaveStateIndex = 11;
+	// File-based saves (no numbered slots)
+	void SaveToFile(const string& path, SaveStateOrigin origin);
+	void LoadFromFile(const string& path);
 	
-	// New
-	static constexpr uint32_t RecentPlayStartIndex = 12;
-	static constexpr uint32_t RecentPlayEndIndex = 23;
+	// Designated save
+	void SaveDesignated();
+	void LoadDesignated();
+	void SetDesignatedPath(const string& path);
+	
+	// Quick save (timestamped)
+	void QuickSave(); // Creates {rom}-{timestamp}.mss
+	
+	// Recent play queue
+	void ProcessRecentPlaySave();
 	static constexpr uint32_t RecentPlayCount = 12;
 	
-	void SaveState(uint32_t slot, bool displayMessage, SaveStateOrigin origin);
-	SaveStateOrigin GetStateOrigin(uint32_t slot);
+	// Auto save
+	void ProcessAutoSave();
 	
-private:
-	void ProcessRecentPlaySave();
-	void ProcessQuickSaveAutoSave();
-	uint32_t _recentPlayNextSlot = RecentPlayStartIndex;
+	SaveStateOrigin GetStateOrigin(const string& path);
 };
 ```
+
+---
+
+## Files to Remove/Modify
+
+### Remove Slot-Based Code
+- Remove F1-F10 save/load shortcuts
+- Remove slot selection menus
+- Remove numbered slot UI
+- Remove `SaveState(uint32_t slot, ...)` overloads
+
+### Modify
+- `SaveStateManager` - File-based only
+- `MainMenuViewModel` - New menu structure
+- `ShortcutHandler` - F4/Shift+F4 shortcuts
+- `PreferencesConfig` - Designated save path
 
 ---
 
@@ -258,26 +280,27 @@ private:
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
-| File format change breaks existing saves | High | Version check, defaults |
-| Performance impact from frequent saves | Medium | Async I/O, compression |
-| Disk space usage | Low | Configurable retention |
+| Removing slots breaks user workflows | High | Clear migration docs |
+| File format change breaks saves | High | Version check, defaults |
+| Performance from frequent saves | Medium | Async I/O, compression |
 
 ---
 
 ## Timeline
 
-- **Week 1**: #173 (enum/format), #174 (recent play core)
-- **Week 2**: #175 (quick save auto), #176 (UI)
-- **Week 3**: #177 (badges), testing, polish
+- **Week 1**: #173 (enum/format), #178 (remove slots)
+- **Week 2**: #174 (recent play), #175 (designated)
+- **Week 3**: #176 (UI), #177 (badges)
 
 ---
 
 ## Testing Checklist
 
+- [ ] F4/Shift+F4 work correctly
+- [ ] Ctrl+S creates timestamped saves
+- [ ] Recent play queue rotates correctly
 - [ ] Origin tracking persists across save/load
 - [ ] Backwards compatibility with old saves
-- [ ] Recent play queue rotates correctly
-- [ ] Quick save auto-save respects user saves
 - [ ] Badges display correctly in all themes
-- [ ] Performance acceptable with frequent saves
-- [ ] Memory usage within limits
+- [ ] F1-F10 shortcuts are freed up
+- [ ] Old slot-based code is removed
