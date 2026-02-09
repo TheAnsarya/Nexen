@@ -19,19 +19,23 @@
 	</Design.DataContext>
 
 	<Border BorderBrush="{StaticResource NexenGrayBorderColor}" BorderThickness="1">
-		<DataBox
+		<DataGrid
 			Name="lstRegisterTab"
-			Items="{Binding Data}"
-			Selection="{Binding Selection}"
+			ItemsSource="{Binding Data}"
+			SelectedItem="{Binding SelectedItem}"
 			GridLinesVisibility="All"
-			ColumnWidths="{Binding ColumnWidths}"
+			IsReadOnly="True"
+			CanUserSortColumns="False"
+			CanUserReorderColumns="False"
+			HeadersVisibility="Column"
+			SelectionMode="Single"
 		>
-			<DataBox.Columns>
-				<DataBoxTextColumn Header="{l:Translate colAddress}" Binding="{Binding Address, DataType={x:Type vm:RegEntry}}" CanUserResize="True" InitialWidth="92" />
-				<DataBoxTextColumn Header="{l:Translate colName}" Binding="{Binding Name, DataType={x:Type vm:RegEntry}}" CanUserResize="True" InitialWidth="173" />
-				<DataBoxTextColumn Header="{l:Translate colValue}" Binding="{Binding Value, DataType={x:Type vm:RegEntry}}" CanUserResize="True" InitialWidth="63" />
-				<DataBoxTextColumn Header="{l:Translate colValueHex}" Binding="{Binding ValueHex, DataType={x:Type vm:RegEntry}}" CanUserResize="True" InitialWidth="67" />
-			</DataBox.Columns>
-		</DataBox>
+			<DataGrid.Columns>
+				<DataGridTextColumn Header="{l:Translate colAddress}" Binding="{Binding Address}" Width="92" CanUserResize="True" IsReadOnly="True" />
+				<DataGridTextColumn Header="{l:Translate colName}" Binding="{Binding Name}" Width="173" CanUserResize="True" IsReadOnly="True" />
+				<DataGridTextColumn Header="{l:Translate colValue}" Binding="{Binding Value}" Width="63" CanUserResize="True" IsReadOnly="True" />
+				<DataGridTextColumn Header="{l:Translate colValueHex}" Binding="{Binding ValueHex}" Width="67" CanUserResize="True" IsReadOnly="True" />
+			</DataGrid.Columns>
+		</DataGrid>
 	</Border>
 </UserControl>

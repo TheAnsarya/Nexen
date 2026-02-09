@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
-using Avalonia.Controls.Selection;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Nexen.Config;
@@ -182,7 +181,7 @@ public class RegisterViewerWindowViewModel : DisposableViewModel, ICpuTypeModel 
 		}
 
 		foreach (RegisterViewerTab tab in tabs) {
-			tab.ColumnWidths = Config.ColumnWidths;
+			// Column widths are now managed directly by the DataGrid control
 		}
 
 		if (Tabs.Count != tabs.Count) {
@@ -224,15 +223,13 @@ public class RegisterViewerTab : ReactiveObject {
 	/// </summary>
 	public List<RegEntry> Data { get => _data; set => this.RaiseAndSetIfChanged(ref _data, value); }
 
-	/// <summary>
-	/// Gets or sets the selection model for the data grid.
-	/// </summary>
-	public SelectionModel<RegEntry?> Selection { get; set; } = new();
+	/// <summary>Backing field for <see cref="SelectedItem"/>.</summary>
+	private RegEntry? _selectedItem;
 
 	/// <summary>
-	/// Gets or sets the list of column widths for grid persistence.
+	/// Gets or sets the currently selected register entry in the data grid.
 	/// </summary>
-	public List<int> ColumnWidths { get; set; } = new();
+	public RegEntry? SelectedItem { get => _selectedItem; set => this.RaiseAndSetIfChanged(ref _selectedItem, value); }
 
 	/// <summary>
 	/// Gets the CPU type associated with this tab's registers, if applicable.

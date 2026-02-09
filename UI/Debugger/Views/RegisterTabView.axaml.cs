@@ -5,7 +5,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using AvaloniaEdit.Editing;
-using DataBoxControl;
 using Nexen.Config;
 using Nexen.Debugger.Labels;
 using Nexen.Debugger.Utilities;
@@ -22,14 +21,22 @@ public class RegisterTabView : NexenUserControl {
 	public RegisterTabView() {
 		InitializeComponent();
 
-		DataBox dataBox = this.GetControl<DataBox>("lstRegisterTab");
-		AddDisposables(DebugShortcutManager.CreateContextMenu(dataBox, new List<ContextMenuAction>() {
+		DataGrid dataGrid = this.GetControl<DataGrid>("lstRegisterTab");
+
+		// Apply row background styling for header rows
+		dataGrid.LoadingRow += (_, e) => {
+			if (e.Row.DataContext is RegEntry entry) {
+				e.Row.Background = entry.Background;
+			}
+		};
+
+		AddDisposables(DebugShortcutManager.CreateContextMenu(dataGrid, new List<ContextMenuAction>() {
 			new ContextMenuAction() {
 				ActionType = ActionType.EditBreakpoint,
-				IsEnabled = () => Model.CpuType.HasValue && Model.MemoryType.HasValue && Model.Selection.SelectedItem is RegEntry entry && entry.StartAddress >= 0,
+				IsEnabled = () => Model.CpuType.HasValue && Model.MemoryType.HasValue && Model.SelectedItem is RegEntry entry && entry.StartAddress >= 0,
 				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.RegisterViewer_EditBreakpoint),
 				HintText = () => {
-					if(Model.CpuType.HasValue && Model.MemoryType.HasValue && Model.Selection.SelectedItem is RegEntry entry && entry.StartAddress >= 0) {
+					if(Model.CpuType.HasValue && Model.MemoryType.HasValue && Model.SelectedItem is RegEntry entry && entry.StartAddress >= 0) {
 						string hint = $"${entry.StartAddress:X4}";
 						if(entry.EndAddress > entry.StartAddress) {
 							hint += $" - ${entry.EndAddress:X4}";
@@ -41,7 +48,7 @@ public class RegisterTabView : NexenUserControl {
 					return "";
 				},
 				OnClick = async () => {
-					if(Model.CpuType.HasValue && Model.MemoryType.HasValue && Model.Selection.SelectedItem is RegEntry entry) {
+					if(Model.CpuType.HasValue && Model.MemoryType.HasValue && Model.SelectedItem is RegEntry entry) {
 						uint startAddress = (uint)entry.StartAddress;
 						uint endAddress = (uint)entry.EndAddress;
 

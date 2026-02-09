@@ -25,9 +25,7 @@
 	</Design.DataContext>
 
 	<Window.Styles>
-		<Style Selector="DataBoxRow > Grid Rectangle#BackgroundRectangle">
-			<Setter Property="Fill" Value="{Binding Path=Background, DataType={x:Type vm:RegEntry}}"/>
-		</Style>
+		<!-- Row background styling is now handled via DataGrid.LoadingRow event in RegisterTabView.axaml.cs -->
 	</Window.Styles>
 
 	<DockPanel>
