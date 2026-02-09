@@ -176,7 +176,11 @@ bool ShortcutKeyHandler::IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t s
 		case EmulatorShortcut::SaveStateDialog:
 		case EmulatorShortcut::SaveStateToFile:
 		case EmulatorShortcut::SaveState:
+		case EmulatorShortcut::QuickSaveTimestamped:
 			return isRunning;
+
+		case EmulatorShortcut::OpenSaveStatePicker:
+			return isRunning && !isNetplayClient && !isMovieActive;
 
 		case EmulatorShortcut::LoadStateSlot1:
 		case EmulatorShortcut::LoadStateSlot2:
