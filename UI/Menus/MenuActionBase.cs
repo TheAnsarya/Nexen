@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -49,7 +50,7 @@ public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 	public Func<string>? DynamicIcon { get; init; }
 
 	/// <summary>Function to determine if the item is enabled.</summary>
-	public Func<bool>? IsEnabled { get; init; }
+	public Func<bool>? IsEnabled { get; set; }
 
 	/// <summary>Function to determine if the item is visible.</summary>
 	public Func<bool>? IsVisible { get; init; }
@@ -124,9 +125,22 @@ public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 	/// <summary>Gets or sets the action to execute when clicked.</summary>
 	public Action OnClick {
 		get => _onClick;
-		init {
+		set {
 			_onClick = CreateSafeClickHandler(value);
 			ClickCommand = new SimpleCommand(_onClick);
+		}
+	}
+
+	/// <summary>Gets or sets an async action to execute when clicked.</summary>
+	/// <remarks>
+	/// Use this for actions that need to await async operations like file dialogs.
+	/// The async void pattern is acceptable here as this is a UI event handler.
+	/// </remarks>
+	public Func<Task>? AsyncOnClick {
+		set {
+			if (value != null) {
+				OnClick = async () => await value();
+			}
 		}
 	}
 

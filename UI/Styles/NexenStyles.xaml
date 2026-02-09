@@ -161,21 +161,26 @@
 		<Setter Property="KeyboardNavigation.TabNavigation" Value="Continue" />
 	</Style>
 
-	<!-- 
-		Style for menu action classes.
-		Both BaseMenuAction (Nexen.Debugger.Utilities) and MenuActionBase (Nexen.Menus)
-		have the same property names: ActionName, ActionIcon, Visible, Enabled, ShortcutText,
-		SubActions, ClickCommand. Using BaseMenuAction as DataType, but bindings work for
-		any object with these properties.
+	<!--
+		Style for menu action classes (both BaseMenuAction and MenuActionBase).
+		These share the same property names: ActionName, ActionIcon, Visible, Enabled,
+		ShortcutText, SubActions, ClickCommand.
+
+		When MenuItem.ItemsSource is bound to a collection of menu action objects,
+		Avalonia creates MenuItem containers and sets each action object as the DataContext.
+		These bindings connect MenuItem properties to the action's properties.
+
+		Using ReflectionBinding since compiled bindings require a specific DataType
+		and we support multiple menu action classes.
 	-->
 	<Style Selector="Menu#ActionMenu MenuItem MenuItem, ContextMenu#ActionMenu MenuItem">
-		<Setter Property="Header" Value="{Binding ActionName, DataType={x:Type du:BaseMenuAction}}" />
-		<Setter Property="Icon" Value="{Binding ActionIcon, DataType={x:Type du:BaseMenuAction}}" />
-		<Setter Property="IsVisible" Value="{Binding Visible, DataType={x:Type du:BaseMenuAction}}" />
-		<Setter Property="IsEnabled" Value="{Binding Enabled, DataType={x:Type du:BaseMenuAction}}" />
-		<Setter Property="Tag" Value="{Binding ShortcutText, DataType={x:Type du:BaseMenuAction}}" />
-		<Setter Property="ItemsSource" Value="{Binding SubActions, DataType={x:Type du:BaseMenuAction}}" />
-		<Setter Property="Command" Value="{Binding ClickCommand, DataType={x:Type du:BaseMenuAction}}" />
+		<Setter Property="Header" Value="{ReflectionBinding ActionName}" />
+		<Setter Property="Icon" Value="{ReflectionBinding ActionIcon}" />
+		<Setter Property="IsVisible" Value="{ReflectionBinding Visible}" />
+		<Setter Property="IsEnabled" Value="{ReflectionBinding Enabled}" />
+		<Setter Property="Tag" Value="{ReflectionBinding ShortcutText}" />
+		<Setter Property="ItemsSource" Value="{ReflectionBinding SubActions}" />
+		<Setter Property="Command" Value="{ReflectionBinding ClickCommand}" />
 	</Style>
 
 	<Style Selector="Button:pressed, RepeatButton:pressed, ToggleButton:pressed">
