@@ -15,7 +15,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using Nexen.Windows;
 
-namespace Nexen; 
+namespace Nexen;
 public class App : Application {
 	public static bool ShowConfigWindow { get; set; }
 
