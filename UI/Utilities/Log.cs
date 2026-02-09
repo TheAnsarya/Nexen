@@ -1,18 +1,20 @@
 using System;
 using System.IO;
+using Microsoft.Extensions.Logging;
 using Nexen.Config;
-using Serilog;
-using Serilog.Events;
 
 namespace Nexen.Utilities;
 
 /// <summary>
-/// Simple logging wrapper using Serilog for file-based logging.
+/// Simple logging wrapper using Microsoft.Extensions.Logging for file and console output.
 /// Logs are written to the Nexen home folder as nexen-log.txt.
 /// </summary>
 public static class Log {
 	private static bool _initialized = false;
 	private static readonly object _lock = new();
+	private static ILoggerFactory? _loggerFactory;
+	private static ILogger? _logger;
+	private static StreamWriter? _fileWriter;
 
 	/// <summary>
 	/// Gets the path to the log file.
@@ -40,20 +42,21 @@ public static class Log {
 					Directory.CreateDirectory(dir);
 				}
 
-				Serilog.Log.Logger = new LoggerConfiguration()
-					.MinimumLevel.Debug()
-					.WriteTo.File(
-						logPath,
-						rollingInterval: RollingInterval.Day,
-						retainedFileCountLimit: 7,
-						outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
-						flushToDiskInterval: TimeSpan.FromSeconds(1)
-					)
-					.WriteTo.Console(
-						outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
-					)
-					.CreateLogger();
+				// Open log file for append
+				_fileWriter = new StreamWriter(logPath, append: true) {
+					AutoFlush = true
+				};
 
+				_loggerFactory = LoggerFactory.Create(builder => {
+					builder
+						.SetMinimumLevel(LogLevel.Debug)
+						.AddConsole(options => {
+							options.FormatterName = "simple";
+						})
+						.AddProvider(new FileLoggerProvider(_fileWriter));
+				});
+
+				_logger = _loggerFactory.CreateLogger("Nexen");
 				_initialized = true;
 				Info("=== Nexen logging initialized ===");
 				Info($"Log file: {logPath}");
@@ -78,7 +81,7 @@ public static class Log {
 	/// </summary>
 	public static void Debug(string message) {
 		EnsureInitialized();
-		Serilog.Log.Debug(message);
+		_logger?.LogDebug("{Message}", message);
 	}
 
 	/// <summary>
@@ -86,7 +89,7 @@ public static class Log {
 	/// </summary>
 	public static void Info(string message) {
 		EnsureInitialized();
-		Serilog.Log.Information(message);
+		_logger?.LogInformation("{Message}", message);
 	}
 
 	/// <summary>
@@ -94,7 +97,7 @@ public static class Log {
 	/// </summary>
 	public static void Warn(string message) {
 		EnsureInitialized();
-		Serilog.Log.Warning(message);
+		_logger?.LogWarning("{Message}", message);
 	}
 
 	/// <summary>
@@ -102,7 +105,7 @@ public static class Log {
 	/// </summary>
 	public static void Error(string message) {
 		EnsureInitialized();
-		Serilog.Log.Error(message);
+		_logger?.LogError("{Message}", message);
 	}
 
 	/// <summary>
@@ -110,7 +113,7 @@ public static class Log {
 	/// </summary>
 	public static void Error(Exception ex, string message) {
 		EnsureInitialized();
-		Serilog.Log.Error(ex, message);
+		_logger?.LogError(ex, "{Message}", message);
 	}
 
 	/// <summary>
@@ -118,7 +121,7 @@ public static class Log {
 	/// </summary>
 	public static void Fatal(string message) {
 		EnsureInitialized();
-		Serilog.Log.Fatal(message);
+		_logger?.LogCritical("{Message}", message);
 	}
 
 	/// <summary>
@@ -126,7 +129,7 @@ public static class Log {
 	/// </summary>
 	public static void Fatal(Exception ex, string message) {
 		EnsureInitialized();
-		Serilog.Log.Fatal(ex, message);
+		_logger?.LogCritical(ex, "{Message}", message);
 	}
 
 	/// <summary>
@@ -134,6 +137,71 @@ public static class Log {
 	/// Call this before application exit.
 	/// </summary>
 	public static void CloseAndFlush() {
-		Serilog.Log.CloseAndFlush();
+		_loggerFactory?.Dispose();
+		_fileWriter?.Flush();
+		_fileWriter?.Dispose();
+		_fileWriter = null;
+		_loggerFactory = null;
+		_logger = null;
+		_initialized = false;
+	}
+}
+
+/// <summary>
+/// Simple file logging provider for Microsoft.Extensions.Logging.
+/// Writes formatted log entries to a StreamWriter.
+/// </summary>
+internal sealed class FileLoggerProvider : ILoggerProvider {
+	private readonly StreamWriter _writer;
+
+	public FileLoggerProvider(StreamWriter writer) {
+		_writer = writer;
+	}
+
+	public ILogger CreateLogger(string categoryName) => new FileLogger(_writer, categoryName);
+
+	public void Dispose() { }
+}
+
+/// <summary>
+/// Simple file logger that writes formatted entries to a stream.
+/// </summary>
+internal sealed class FileLogger : ILogger {
+	private readonly StreamWriter _writer;
+	private readonly string _category;
+
+	public FileLogger(StreamWriter writer, string category) {
+		_writer = writer;
+		_category = category;
+	}
+
+	public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+	public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Debug;
+
+	public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
+		if (!IsEnabled(logLevel)) return;
+
+		string level = logLevel switch {
+			LogLevel.Trace => "TRC",
+			LogLevel.Debug => "DBG",
+			LogLevel.Information => "INF",
+			LogLevel.Warning => "WRN",
+			LogLevel.Error => "ERR",
+			LogLevel.Critical => "CRT",
+			_ => "???"
+		};
+
+		string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+		string message = formatter(state, exception);
+
+		try {
+			_writer.WriteLine($"{timestamp} [{level}] {message}");
+			if (exception != null) {
+				_writer.WriteLine(exception.ToString());
+			}
+		} catch {
+			// Silently ignore write failures
+		}
 	}
 }
