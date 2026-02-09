@@ -86,7 +86,12 @@ After I select a rom, it crashes, I can't get to the Log window, you're supposed
 
 [Nexen] the `auto save` menu folder item is still disabled, did you clean the build folder and give us a fresh build? fix it, it should ALWAYS be enabled, this can't be that hard in the axml files or whatever; continue; You said `F1-F10 shortcuts are freed up for other uses once #178 is complete.` but i hope you meant some of them are frred up by the removal of the save slot system but F1/Shift-F1 is still tied to the Quick save system and F4/Shift-F4 is now tied to the designated slot and the other other functions keys that where used for save slots are now available. maybe we can tie the TAS stuff into some of those function keys; continue;
 
-[Nexen] the keyboard `F1` doesn't show the Quick saves anymore? please check what was changed and fix it. the save slot infrastructure is still there, remove it; continue working issues; continue;
+[Nexen] the keyboard `F1` doesn't show the Quick saves anymore? please check what was changed and fix it. the save slot infrastructure is still there, remove it; continue working issues; continue;why are there only 10 quick saves? we want an infinite amount of quicksaves, we're not doing th 10 slot savestate system, we are having a 12 states for the 5 minute auto-save, but for everything else we are having infinite save files; continue; work on issues for a long time; continue;
+
+[Nexen] `F4` and `Shift-F4` are for the single designated slot, make sure that still works; work on issues for a long time; continue; 
+
+you deleted the code from the designated slot, recreate it and continue;
+
 
 
 

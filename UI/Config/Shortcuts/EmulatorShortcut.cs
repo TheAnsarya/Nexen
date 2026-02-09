@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Nexen.Config.Shortcuts; 
+namespace Nexen.Config.Shortcuts;
 public enum EmulatorShortcut {
 	FastForward,
 	Rewind,
@@ -132,6 +132,16 @@ public enum EmulatorShortcut {
 	/// Open the save state picker to browse all timestamped saves
 	/// </summary>
 	OpenSaveStatePicker,
+
+	/// <summary>
+	/// Save to the single designated slot (F4 quick access)
+	/// </summary>
+	SaveDesignatedSlot,
+
+	/// <summary>
+	/// Load from the single designated slot (Shift-F4 quick access)
+	/// </summary>
+	LoadDesignatedSlot,
 
 	OpenFile,
 

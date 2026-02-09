@@ -144,6 +144,10 @@ public class PreferencesConfig : BaseConfig<PreferencesConfig> {
 		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.SaveStateToFile, KeyCombination = new KeyCombination() { Key1 = ctrl, Key2 = shift, Key3 = InputApi.GetKeyCode("S") } });
 		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.LoadStateFromFile, KeyCombination = new KeyCombination() { Key1 = ctrl, Key2 = InputApi.GetKeyCode("L") } });
 
+		// Designated slot - single slot for quick F4/Shift-F4 access
+		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.LoadDesignatedSlot, KeyCombination = new KeyCombination() { Key1 = InputApi.GetKeyCode("F4") } });
+		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.SaveDesignatedSlot, KeyCombination = new KeyCombination() { Key1 = shift, Key2 = InputApi.GetKeyCode("F4") } });
+
 		foreach (EmulatorShortcut value in Enum.GetValues<EmulatorShortcut>()) {
 			if (value < EmulatorShortcut.LastValidValue) {
 				AddShortcut(new ShortcutKeyInfo { Shortcut = value });

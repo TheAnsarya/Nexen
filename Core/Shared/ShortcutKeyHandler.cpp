@@ -192,6 +192,7 @@ bool ShortcutKeyHandler::IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t s
 		case EmulatorShortcut::SaveStateDialog:
 		case EmulatorShortcut::SaveStateToFile:
 		case EmulatorShortcut::QuickSaveTimestamped:
+		case EmulatorShortcut::SaveDesignatedSlot:
 			return isRunning;
 
 		case EmulatorShortcut::OpenSaveStatePicker:
@@ -200,6 +201,7 @@ bool ShortcutKeyHandler::IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t s
 		case EmulatorShortcut::LoadStateDialog:
 		case EmulatorShortcut::LoadStateFromFile:
 		case EmulatorShortcut::LoadLastSession:
+		case EmulatorShortcut::LoadDesignatedSlot:
 			return isRunning && !isNetplayClient && !isMovieActive;
 
 		case EmulatorShortcut::InputBarcode:
@@ -319,6 +321,15 @@ void ShortcutKeyHandler::ProcessShortcutPressed(EmulatorShortcut shortcut, uint3
 		case EmulatorShortcut::SaveState:
 		case EmulatorShortcut::LoadState:
 			// Deprecated - do nothing
+			break;
+
+		// Designated slot - single slot for quick access
+		case EmulatorShortcut::SaveDesignatedSlot:
+			_emu->GetSaveStateManager()->SaveState(0);
+			break;
+
+		case EmulatorShortcut::LoadDesignatedSlot:
+			_emu->GetSaveStateManager()->LoadState(0);
 			break;
 
 		case EmulatorShortcut::RunSingleFrame:

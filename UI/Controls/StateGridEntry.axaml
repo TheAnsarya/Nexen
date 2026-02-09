@@ -30,7 +30,7 @@
 			<Setter Property="Background" Value="#FF3A3A3A" />
 		</Style>
 	</UserControl.Styles>
-	
+
 	<DockPanel Margin="2 2 2 7">
 		<TextBlock
 			DockPanel.Dock="Bottom"
