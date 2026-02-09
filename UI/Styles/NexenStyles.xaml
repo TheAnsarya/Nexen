@@ -445,7 +445,7 @@
 
 	<Style Selector="StackPanel.Toolbar Line">
 		<Setter Property="StrokeThickness" Value="1" />
-		<Setter Property="Stroke" Value="#BBB" />
+		<Setter Property="Stroke" Value="{DynamicResource NexenGrayBorderColor}" />
 		<Setter Property="StartPoint" Value="0.5,0" />
 		<Setter Property="EndPoint" Value="0.5,20" />
 		<Setter Property="Margin" Value="2 3 3 3" />
@@ -542,14 +542,14 @@
 						  HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
 						  VerticalAlignment="{TemplateBinding VerticalAlignment}">
 					<DockPanel>
-						<Panel Background="#10888888" DockPanel.Dock="{TemplateBinding TabStripPlacement}">
+						<Panel Background="{DynamicResource NexenMenuBackgroundHighlight}" DockPanel.Dock="{TemplateBinding TabStripPlacement}">
 							<ItemsPresenter Name="PART_ItemsPresenter"
 												 ItemsPanel="{TemplateBinding ItemsPanel}" />
 						</Panel>
 
 						<Rectangle
 							DockPanel.Dock="{TemplateBinding TabStripPlacement}"
-							Fill="LightGray"
+							Fill="{DynamicResource NexenGrayBorderColor}"
 							Height="1"
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Stretch"

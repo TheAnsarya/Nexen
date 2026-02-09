@@ -1,7 +1,6 @@
 <Styles
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:sys="clr-namespace:System;assembly=netstandard"	
 	xmlns:c="using:Nexen.Controls"
 >
 	<Styles.Resources>
@@ -33,7 +32,7 @@
 		<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
 	</Style>
 	<Style Selector="DataBoxRow:selected TextBlock">
-		<Setter Property="Foreground" Value="White" />
+		<Setter Property="Foreground" Value="{DynamicResource DataGridRowSelectedForegroundBrush}" />
 	</Style>
 	<Style Selector="DataBoxCell">
 		<Setter Property="MinHeight" Value="16" />
@@ -53,11 +52,11 @@
 		<Setter Property="MaxHeight" Value="16" />
 	</Style>
 	<Style Selector="DataBoxRow:selected CheckBox Border">
-		<Setter Property="BorderBrush" Value="White" />
+		<Setter Property="BorderBrush" Value="{DynamicResource DataGridRowSelectedForegroundBrush}" />
 	</Style>
 	<Style Selector="DataBoxRow:selected CheckBox Path">
-		<Setter Property="Stroke" Value="White" />
-		<Setter Property="Fill" Value="White" />
+		<Setter Property="Stroke" Value="{DynamicResource DataGridRowSelectedForegroundBrush}" />
+		<Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedForegroundBrush}" />
 	</Style>
 	<Style Selector="DataBoxColumnHeader Path">
 		<Setter Property="Margin" Value="0 0 -10 0" />

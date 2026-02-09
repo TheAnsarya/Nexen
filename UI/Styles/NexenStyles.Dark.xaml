@@ -1,6 +1,5 @@
 <Style xmlns="https://github.com/avaloniaui"
-	   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	   xmlns:sys="using:System;assembly=mscorlib">
+	   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 	<Design.PreviewWith>
 		<Window Width="440" Height="620" Padding="5">
 			<StackPanel>
@@ -94,6 +93,7 @@
 					<!-- DataBox colors -->
 					<SolidColorBrush x:Key="DataGridColumnHeaderForegroundBrush" Color="#FFDEDEDE" />
 					<SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush" Color="#FF303030" />
+					<SolidColorBrush x:Key="DataGridRowSelectedForegroundBrush" Color="White" />
 
 					<!-- Avalonia colors -->
 					<Color x:Key="MenuFlyoutItemForeground">#D0FFFFFF</Color>

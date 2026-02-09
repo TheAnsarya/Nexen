@@ -1,7 +1,6 @@
 <Styles
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:sys="clr-namespace:System;assembly=netstandard"
 	xmlns:c="using:Nexen.Controls"
 >
 
@@ -98,6 +97,7 @@
 					<!-- DataBox colors -->
 					<SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush" Color="{StaticResource DataGridColumnHeaderBackgroundColor}" />
 					<SolidColorBrush x:Key="DataGridColumnHeaderForegroundBrush" Color="{StaticResource SystemBaseMediumColor}" />
+					<SolidColorBrush x:Key="DataGridRowSelectedForegroundBrush" Color="White" />
 
 					<!-- Fluent color overrides -->
 					<Color x:Key="MenuFlyoutPresenterBackground">#FDFDFD</Color>

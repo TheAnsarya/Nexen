@@ -1,19 +1,18 @@
 <Styles
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:sys="clr-namespace:System;assembly=netstandard"	
 	xmlns:cc="using:AvaloniaEdit.CodeCompletion"
 	xmlns:search="using:AvaloniaEdit.Search"
 	xmlns:ae="using:AvaloniaEdit"
 	xmlns:aee="using:AvaloniaEdit.Editing"  
 >
 	<Style Selector="ae|TextEditor aee|TextArea">
-		<Setter Property="SelectionBrush" Value="#600078D7" />
+		<Setter Property="SelectionBrush" Value="{DynamicResource TextBoxSelectionBrush}" />
 		<Setter Property="SelectionCornerRadius" Value="0" />
 	</Style>
 	
 	<Style Selector="search|SearchPanel">
-		<Setter Property="BorderBrush" Value="{StaticResource NexenGrayBorderColor}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource NexenGrayBorderColor}" />
 		<Setter Property="Margin" Value="0 0 5 0" />
 		<Setter Property="BorderThickness" Value="1 0 1 1" />
 		<Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
@@ -53,7 +52,7 @@
 	<Style Selector="cc|CompletionList">
 		<Setter Property="Template">
 			<ControlTemplate>
-				<Border BorderBrush="Gray" BorderThickness="1">
+				<Border BorderBrush="{DynamicResource NexenGrayBorderColor}" BorderThickness="1">
 					<cc:CompletionListBox Name="PART_ListBox" FontSize="11">
 						<cc:CompletionListBox.ItemsPanel>
 							<ItemsPanelTemplate>
