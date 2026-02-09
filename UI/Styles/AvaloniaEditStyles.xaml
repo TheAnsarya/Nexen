@@ -4,13 +4,13 @@
 	xmlns:cc="using:AvaloniaEdit.CodeCompletion"
 	xmlns:search="using:AvaloniaEdit.Search"
 	xmlns:ae="using:AvaloniaEdit"
-	xmlns:aee="using:AvaloniaEdit.Editing"  
+	xmlns:aee="using:AvaloniaEdit.Editing"
 >
 	<Style Selector="ae|TextEditor aee|TextArea">
 		<Setter Property="SelectionBrush" Value="{DynamicResource TextBoxSelectionBrush}" />
 		<Setter Property="SelectionCornerRadius" Value="0" />
 	</Style>
-	
+
 	<Style Selector="search|SearchPanel">
 		<Setter Property="BorderBrush" Value="{DynamicResource NexenGrayBorderColor}" />
 		<Setter Property="Margin" Value="0 0 5 0" />
@@ -22,20 +22,20 @@
 		<Setter Property="Fill" Value="{DynamicResource ThemeForegroundBrush}" />
 		<Setter Property="Stroke" Value="{DynamicResource ThemeForegroundBrush}" />
 	</Style>
-	
+
 	<Style Selector="search|SearchPanel Button">
 		<Setter Property="Height" Value="21" />
 		<Setter Property="BorderThickness" Value="1" />
 	</Style>
-	
+
 	<Style Selector="search|SearchPanel Button Path">
 		<Setter Property="MaxWidth" Value="12" />
 	</Style>
-	
+
 	<Style Selector="ContentPresenter#PART_MessageContent TextBlock">
 		<Setter Property="IsVisible" Value="False" />
 	</Style>
-	
+
 	<Style Selector="search|SearchPanel ToggleButton.ExpanderToggle">
 		<Setter Property="Template">
 			<ControlTemplate>
@@ -48,7 +48,7 @@
 			</ControlTemplate>
 		</Setter>
 	</Style>
-	
+
 	<Style Selector="cc|CompletionList">
 		<Setter Property="Template">
 			<ControlTemplate>

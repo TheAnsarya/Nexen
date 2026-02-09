@@ -1,4 +1,4 @@
-<UserControl 
+<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -15,7 +15,7 @@
 		<Color x:Key="ButtonBackground">Transparent</Color>
 		<Color x:Key="ButtonBorderBrush">Transparent</Color>
 	</UserControl.Resources>
-	
+
 	<UserControl.Styles>
 		<Style Selector="Button">
 			<Setter Property="BorderBrush" Value="Transparent" />
@@ -36,7 +36,7 @@
 			<Setter Property="Stretch" Value="None" />
 		</Style>
 	</UserControl.Styles>
-	
+
 	<ItemsControl DataContext="{Binding ElementName=root}" ItemsSource="{Binding Items}">
 		<ItemsControl.ItemsPanel>
 			<ItemsPanelTemplate>
@@ -54,7 +54,7 @@
 					/>
 				</StackPanel>
 			</DataTemplate>
-			
+
 			<DataTemplate DataType="{x:Type du:ContextMenuAction}">
 				<Button
 					ToolTip.Tip="{Binding TooltipText}"

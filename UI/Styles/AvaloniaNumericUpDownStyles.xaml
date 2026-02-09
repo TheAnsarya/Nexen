@@ -12,7 +12,7 @@
 			</StackPanel>
 		</Window>
 	</Design.PreviewWith>
-	
+
 	<!-- NumericUpDown -->
 	<Style Selector="NumericUpDown ButtonSpinner">
 		<Setter Property="Template">

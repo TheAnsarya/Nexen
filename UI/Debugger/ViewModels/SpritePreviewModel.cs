@@ -7,7 +7,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// Model for displaying sprite preview information in the sprite viewer.
 /// </summary>

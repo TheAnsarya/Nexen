@@ -9,7 +9,7 @@
 			</ComboBox>
 		</StackPanel>
 	</Design.PreviewWith>
-	
+
 	<Style Selector="ComboBox">
 		<Setter Property="Template">
 			<ControlTemplate>

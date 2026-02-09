@@ -16,7 +16,7 @@
 
 		<Thickness x:Key="DataGridTextColumnCellTextBlockMargin">4,2,4,0</Thickness>
 	</Styles.Resources>
-	
+
 	<!-- Data box -->
 	<Style Selector="DataBoxColumnHeader">
 		<Setter Property="MinHeight" Value="16" />

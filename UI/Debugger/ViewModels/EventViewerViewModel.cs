@@ -22,7 +22,7 @@ using Nexen.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for the event viewer window that displays debug events graphically.
 /// </summary>

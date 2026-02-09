@@ -13,7 +13,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Controls; 
+namespace Nexen.Controls;
 public class SoftwareRendererView : UserControl {
 	private SimpleImageViewer _frame;
 	private SimpleImageViewer _emuHud;

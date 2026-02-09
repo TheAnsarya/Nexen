@@ -8,7 +8,7 @@
 		<!-- Custom colors -->
 		<Color x:Key="NexenMenuBackground">#F1F1F1</Color>
 	</Styles.Resources>
-	
+
 	<Style Selector="Window">
 		<Setter Property="Background" Value="#181818"/>
 		<Setter Property="Icon" Value="/Assets/Icon.ico" />
@@ -119,7 +119,7 @@
 		<Setter Property="FontSize" Value="12" />
 		<Setter Property="FontFamily" Value="Segoe UI" />
 	</Style>
-	
+
 	<Style Selector="MenuItem">
 		<Setter Property="Height" Value="22" />
 		<Setter Property="Margin" Value="1" />

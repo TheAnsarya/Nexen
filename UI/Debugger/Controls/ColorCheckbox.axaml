@@ -1,4 +1,4 @@
-<UserControl 
+<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -16,7 +16,7 @@
 	<UserControl.Resources>
 		<cp:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
 	</UserControl.Resources>
-	
+
 	<StackPanel Orientation="Horizontal" DataContext="{Binding ElementName=root}">
 		<Button
 			MinWidth="0"

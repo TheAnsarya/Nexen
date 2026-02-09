@@ -1,4 +1,4 @@
-<UserControl 
+<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -11,7 +11,7 @@
 	x:Class="Nexen.Controls.PathSelector"
 >
 	<Panel DataContext="{Binding ElementName=root}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-		<TextBox 
+		<TextBox
 			IsVisible="{Binding !Editable}"
 			IsReadOnly="True"
 			Focusable="False"

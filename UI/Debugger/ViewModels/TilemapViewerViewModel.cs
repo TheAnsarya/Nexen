@@ -18,7 +18,7 @@ using Nexen.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for the tilemap viewer window.
 /// Displays background layer tilemaps from VRAM with support for multiple layers,

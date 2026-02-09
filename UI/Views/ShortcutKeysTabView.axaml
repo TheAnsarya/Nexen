@@ -28,7 +28,7 @@
 				<TextBlock Grid.Column="2" Text="{l:Translate colBinding2}" HorizontalAlignment="Center" />
 			</Grid>
 		</Border>
-		
+
 		<ScrollViewer AllowAutoHide="False">
 			<ItemsControl ItemsSource="{Binding ShortcutKeys, ElementName=root}">
 				<ItemsControl.ItemTemplate>
