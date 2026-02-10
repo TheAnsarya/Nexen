@@ -239,7 +239,7 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 
 		InitBitmap();
 
-		if (Design.IsDesignMode || wnd == null) {
+		if (Design.IsDesignMode || wnd is null) {
 			return;
 		}
 
@@ -552,7 +552,7 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 	private void UpdatePreviewPanel() {
 		PreviewPanel = SelectionRect == default ? null : GetPreviewPanel(PixelPoint.FromPoint(SelectionRect.TopLeft, 1), PreviewPanel);
 
-		if (ViewerTooltip != null && ViewerMousePos != null) {
+		if (ViewerTooltip is not null && ViewerMousePos is not null) {
 			GetPreviewPanel(ViewerMousePos.Value, ViewerTooltip);
 		}
 	}
@@ -682,7 +682,7 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 
 		entries.EndUpdate();
 
-		if (tooltipToUpdate != null) {
+		if (tooltipToUpdate is not null) {
 			return tooltipToUpdate;
 		} else {
 			return new DynamicTooltip() { Items = entries };
@@ -782,7 +782,7 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 	private void InitBitmap() {
 		int width = ColumnCount * 8;
 		int height = RowCount * 8;
-		if (ViewerBitmap == null || ViewerBitmap.PixelSize.Width != width || ViewerBitmap.PixelSize.Height != height) {
+		if (ViewerBitmap is null || ViewerBitmap.PixelSize.Width != width || ViewerBitmap.PixelSize.Height != height) {
 			ViewerBitmap?.Dispose();
 			ViewerBitmap = new DynamicBitmap(new PixelSize(width, height), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul);
 		}
@@ -814,9 +814,9 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 	private void LoadSelectedPreset(bool keepUserConfig) {
 		if (Config.SelectedPreset != "") {
 			ConfigPreset? preset = ConfigPresets.Find(x => x.Name == Config.SelectedPreset);
-			if (preset != null) {
+			if (preset is not null) {
 				PresetValues? values = preset.GetPresetValues();
-				if (values != null) {
+				if (values is not null) {
 					ApplyPresetValues(values, keepUserConfig);
 					Config.SelectedPreset = preset.Name;
 					preset.Selected = true;
@@ -830,7 +830,7 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 	private void ClearPresetSelection() {
 		if (Config.SelectedPreset != "") {
 			ConfigPreset? preset = ConfigPresets.Find(x => x.Name == Config.SelectedPreset);
-			if (preset != null) {
+			if (preset is not null) {
 				preset.Selected = false;
 			}
 
@@ -841,7 +841,7 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 	private ConfigPreset CreatePreset(int row, string name, Func<PresetValues?> getPresetValues) {
 		ConfigPreset preset = new ConfigPreset(name, getPresetValues, () => {
 			PresetValues? preset = getPresetValues();
-			if (preset == null) {
+			if (preset is null) {
 				return;
 			}
 
@@ -850,7 +850,7 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 			if (Config.SelectedPreset != name) {
 				ClearPresetSelection();
 				ConfigPreset? cfgPeset = ConfigPresets.Find(x => x.Name == name);
-				if (cfgPeset != null) {
+				if (cfgPeset is not null) {
 					Config.SelectedPreset = name;
 					cfgPeset.Selected = true;
 				}
@@ -954,7 +954,7 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 
 	private PresetValues? ApplyPrgPreset() {
 		BaseState? state = _ppuState;
-		if (state == null) {
+		if (state is null) {
 			return null;
 		}
 
@@ -988,7 +988,7 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 
 	private PresetValues? ApplyPpuPreset() {
 		BaseState? state = _ppuState;
-		if (state == null) {
+		if (state is null) {
 			return null;
 		}
 
@@ -1067,7 +1067,7 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 
 	private PresetValues? ApplyBgPreset(int layer) {
 		BaseState? state = _ppuState;
-		if (state == null) {
+		if (state is null) {
 			return null;
 		}
 
@@ -1183,7 +1183,7 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 
 	private PresetValues? ApplySpritePreset(int layer) {
 		BaseState? state = _ppuState;
-		if (state == null) {
+		if (state is null) {
 			return null;
 		}
 

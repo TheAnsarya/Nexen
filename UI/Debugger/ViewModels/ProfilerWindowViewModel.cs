@@ -65,7 +65,7 @@ public sealed class ProfilerWindowViewModel : DisposableViewModel {
 		UpdateAvailableTabs();
 
 		AddDisposable(this.WhenAnyValue(x => x.SelectedTab).Subscribe(x => {
-			if (SelectedTab != null && EmuApi.IsPaused()) {
+			if (SelectedTab is not null && EmuApi.IsPaused()) {
 				RefreshData();
 			}
 		}));
@@ -106,7 +106,7 @@ public sealed class ProfilerWindowViewModel : DisposableViewModel {
 			}
 		});
 
-		if (Design.IsDesignMode || wnd == null) {
+		if (Design.IsDesignMode || wnd is null) {
 			return;
 		}
 
@@ -332,7 +332,7 @@ public static class ProfiledFunctionExtensions {
 
 			int hexCount = cpuType.GetAddressSize();
 			functionName = func.Address.Type.GetShortName() + ": $" + func.Address.Address.ToString("X" + hexCount.ToString());
-			if (label != null) {
+			if (label is not null) {
 				functionName = label.Label + " (" + functionName + ")";
 			}
 		}

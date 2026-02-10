@@ -89,7 +89,7 @@ public sealed class RgbdsSymbolFile {
 			if (!GetBankAddressLabel(row, out address, out bank, out labelName)) {
 				errorCount++;
 				continue;
-			} else if (labelName == null) {
+			} else if (labelName is null) {
 				//Empty line/comment
 				continue;
 			} else if (address > 0xFFFF) {

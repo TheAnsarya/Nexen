@@ -233,14 +233,14 @@ public sealed class PictureViewer : Control {
 	public async void ExportToPng() {
 		if (Source is Bitmap bitmap) {
 			string? filename = await FileDialogHelper.SaveFile(null, null, this.VisualRoot, FileDialogHelper.PngExt);
-			if (filename != null) {
+			if (filename is not null) {
 				bitmap.Save(filename);
 			}
 		}
 	}
 
 	private void UpdateSize() {
-		if (Source == null) {
+		if (Source is null) {
 			MinWidth = 0;
 			MinHeight = 0;
 		} else {
@@ -276,7 +276,7 @@ public sealed class PictureViewer : Control {
 	protected override void OnPointerMoved(PointerEventArgs e) {
 		base.OnPointerMoved(e);
 		PixelPoint? p = GetGridPointFromMousePoint(e.GetCurrentPoint(this).Position);
-		if (p == null) {
+		if (p is null) {
 			e.Handled = true;
 			MouseOverRect = null;
 			return;
@@ -300,7 +300,7 @@ public sealed class PictureViewer : Control {
 
 	protected override void OnPointerPressed(PointerPressedEventArgs e) {
 		PixelPoint? p = GetGridPointFromMousePoint(e.GetCurrentPoint(this).Position);
-		if (p == null) {
+		if (p is null) {
 			e.Handled = true;
 			return;
 		}
@@ -383,7 +383,7 @@ public sealed class PictureViewer : Control {
 	}
 
 	public override void Render(DrawingContext context) {
-		if (Source == null) {
+		if (Source is null) {
 			return;
 		}
 
@@ -408,7 +408,7 @@ public sealed class PictureViewer : Control {
 
 		DrawGrid(context, ShowGrid, new GridDefinition() { SizeX = GridSizeX, SizeY = GridSizeY, Color = Color.FromArgb(192, Colors.LightBlue.R, Colors.LightBlue.G, Colors.LightBlue.B) });
 
-		if (CustomGrids != null) {
+		if (CustomGrids is not null) {
 			foreach (GridDefinition gridDef in CustomGrids) {
 				DrawGrid(context, true, gridDef);
 			}
@@ -448,7 +448,7 @@ public sealed class PictureViewer : Control {
 			}
 		}
 
-		if (MouseOverRect != null && MouseOverRect.Value != default) {
+		if (MouseOverRect is not null && MouseOverRect.Value != default) {
 			Rect rect = ToDrawRect(MouseOverRect.Value);
 			DashStyle dashes = new DashStyle(DashStyle.Dash.Dashes, 0);
 			context.DrawRectangle(new Pen(Brushes.DimGray, 2), rect.Inflate(0.5));
@@ -463,7 +463,7 @@ public sealed class PictureViewer : Control {
 			context.DrawRectangle(new Pen(Brushes.White, 2, dashes), rect.Inflate(0.5));
 		}
 
-		if (GridHighlight != null) {
+		if (GridHighlight is not null) {
 			GridRowColumn point = GridHighlight;
 			PixelPoint p = new PixelPoint((int)(point.X * Zoom), (int)(point.Y * Zoom));
 
@@ -550,7 +550,7 @@ class PictureViewerDrawOperation : ICustomDrawOperation {
 
 	public void Render(ImmediateDrawingContext context) {
 		var leaseFeature = context.PlatformImpl.GetFeature<ISkiaSharpApiLeaseFeature>();
-		if (leaseFeature != null) {
+		if (leaseFeature is not null) {
 			using var lease = leaseFeature.Lease();
 			var canvas = lease.SkCanvas;
 			canvas.Save();

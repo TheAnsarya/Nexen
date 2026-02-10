@@ -38,7 +38,7 @@ public abstract class SdccSymbolImporter : ISymbolProvider {
 			_ => null
 		};
 
-		if (importer == null) {
+		if (importer is null) {
 			EmuApi.WriteLogEntry("[Debugger] Error: Attempted to load .cdb file for an unsupported file format: " + romFormat);
 		}
 
@@ -128,13 +128,13 @@ public abstract class SdccSymbolImporter : ISymbolProvider {
 		while (!File.Exists(sourceFile)) {
 			//Go back up folder structure to attempt to find the file
 			result = FindInFolder(searchPath, "src", filename) ?? FindInFolder(searchPath, "include", filename);
-			if (result != null) {
+			if (result is not null) {
 				return true;
 			}
 
 			string oldPath = searchPath;
 			searchPath = Path.GetDirectoryName(searchPath);
-			if (searchPath == null || searchPath == oldPath) {
+			if (searchPath is null || searchPath == oldPath) {
 				return false;
 			}
 
@@ -249,7 +249,7 @@ public abstract class SdccSymbolImporter : ISymbolProvider {
 		string[] lines = File.ReadAllLines(path);
 
 		HashSet<MemAddress> existingLabels = labels.Values.Select(l => new MemAddress((int)l.Address, l.MemoryType)).ToHashSet();
-		HashSet<MemAddress> existingSymbols = _symbols.Values.Where(l => l.Address != null).Select(l => new MemAddress(l.Address!.Value.Address, l.Address.Value.Type)).ToHashSet();
+		HashSet<MemAddress> existingSymbols = _symbols.Values.Where(l => l.Address is not null).Select(l => new MemAddress(l.Address!.Value.Address, l.Address.Value.Type)).ToHashSet();
 
 		for (int i = 0; i < lines.Length; i++) {
 			string str = lines[i].Trim();

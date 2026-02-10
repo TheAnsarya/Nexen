@@ -28,7 +28,7 @@ public sealed class SortState {
 	/// <summary>Removes a specific column from the sort order.</summary>
 	public void Remove(string column) {
 		Tuple<string, ListSortDirection>? columnInfo = SortOrder.Find(x => x.Item1 == column);
-		if (columnInfo != null) {
+		if (columnInfo is not null) {
 			SortOrder.Remove(columnInfo);
 		}
 	}
@@ -144,7 +144,7 @@ public static class DataGridSortBehavior {
 
 		SortState state = GetSortState(grid);
 		ICommand? command = GetSortCommand(grid);
-		if (state == null || command == null) return;
+		if (state is null || command is null) return;
 
 		// Get the column name — use SortMemberPath or Header as fallback
 		string columnName = e.Column.SortMemberPath
@@ -194,7 +194,7 @@ public static class DataGridSortBehavior {
 				"HeaderCell", BindingFlags.NonPublic | BindingFlags.Instance);
 
 			var headerCell = _headerCellProperty?.GetValue(column);
-			if (headerCell == null) return;
+			if (headerCell is null) return;
 
 			_sortingStateProperty ??= headerCell.GetType().GetProperty(
 				"CurrentSortingState", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public);

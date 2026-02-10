@@ -50,7 +50,7 @@ public sealed class CodeLineData {
 		if (ShowEffectiveAddress && EffectiveAddress >= 0) {
 			AddressInfo relAddress = new() { Address = (Int32)EffectiveAddress, Type = EffectiveAddressType };
 			CodeLabel? label = LabelManager.GetLabel(relAddress);
-			if (label != null && !string.IsNullOrWhiteSpace(label.Label)) {
+			if (label is not null && !string.IsNullOrWhiteSpace(label.Label)) {
 				segmentType = CodeSegmentType.Label;
 				if (label.Length > 1) {
 					int gap = DebugApi.GetAbsoluteAddress(relAddress).Address - label.GetAbsoluteAddress().Address;

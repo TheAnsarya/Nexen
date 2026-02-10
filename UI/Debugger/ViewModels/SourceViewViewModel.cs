@@ -168,7 +168,7 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 
 		int lastValue = ScrollPosition;
 		AddDisposable(this.WhenAnyValue(x => x.ScrollPosition).Subscribe(x => {
-			if (_viewer == null && x == 0) {
+			if (_viewer is null && x == 0) {
 				ScrollPosition = lastValue;
 				return;
 			}
@@ -195,10 +195,10 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 		int lineAddr = -1;
 		bool showLineAddress = true;
 		AddressInfo? address = SymbolProvider.GetLineAddress(file, lineNumber);
-		if (address == null) {
+		if (address is null) {
 			showLineAddress = false;
 			int prevLine = lineNumber - 1;
-			while (address == null && prevLine >= 0) {
+			while (address is null && prevLine >= 0) {
 				address = SymbolProvider.GetLineAddress(file, prevLine);
 				prevLine--;
 			}
@@ -206,14 +206,14 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 
 		AddressInfo? endAddress = SymbolProvider.GetLineEndAddress(file, lineNumber);
 		int opSize = 0;
-		if (endAddress == null) {
+		if (endAddress is null) {
 			int nextLine = lineNumber + 1;
-			while (endAddress == null && nextLine < file.Data.Length) {
+			while (endAddress is null && nextLine < file.Data.Length) {
 				endAddress = SymbolProvider.GetLineAddress(file, nextLine);
 				nextLine++;
 			}
 
-			if (endAddress != null && endAddress.Value.Address >= 1) {
+			if (endAddress is not null && endAddress.Value.Address >= 1) {
 				//Set the end of the current row to the byte before the start of the next row
 				endAddress = new() { Address = endAddress.Value.Address - 1, Type = endAddress.Value.Type };
 			}
@@ -224,8 +224,8 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 		}
 
 		byte[]? byteCode = null;
-		if (showLineAddress && address != null) {
-			byteCode = endAddress != null && endAddress.Value.Type == address.Value.Type && endAddress.Value.Address >= address.Value.Address
+		if (showLineAddress && address is not null) {
+			byteCode = endAddress is not null && endAddress.Value.Type == address.Value.Type && endAddress.Value.Address >= address.Value.Address
 				? DebugApi.GetMemoryValues(address.Value.Type, (uint)address.Value.Address, (uint)endAddress.Value.Address)
 				: (new byte[1] { DebugApi.GetMemoryValue(address.Value.Type, (uint)address.Value.Address) });
 			lineAddr = DebugApi.GetRelativeAddress(address.Value, CpuType).Address;
@@ -256,7 +256,7 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 
 	private void QuickSearch_OnFind(OnFindEventArgs e) {
 		SourceFileInfo? file = SelectedFile;
-		if (file == null) {
+		if (file is null) {
 			return;
 		}
 
@@ -288,7 +288,7 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 	}
 
 	public void CopySelection() {
-		if (SelectedFile != null) {
+		if (SelectedFile is not null) {
 			StringBuilder sb = new();
 			for (int i = SelectionStart; i <= SelectionEnd; i++) {
 				sb.AppendLine(SelectedFile.Data[i]);
@@ -319,7 +319,7 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 	public bool GoToRelativeAddress(int address, bool addToHistory = false) {
 		AddressInfo absAddress = DebugApi.GetAbsoluteAddress(new AddressInfo() { Address = address, Type = CpuType.ToMemoryType() });
 		SourceCodeLocation? location = SymbolProvider.GetSourceCodeLineInfo(absAddress);
-		if (location != null) {
+		if (location is not null) {
 			ScrollToLocation(location.Value, addToHistory);
 			return true;
 		}
@@ -328,13 +328,13 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 	}
 
 	public void ScrollToLocation(SourceCodeLocation loc, bool addToHistory = false) {
-		SourceCodeLocation? prevLoc = SelectedFile != null ? new SourceCodeLocation(SelectedFile, SelectedRow) : null;
+		SourceCodeLocation? prevLoc = SelectedFile is not null ? new SourceCodeLocation(SelectedFile, SelectedRow) : null;
 		SelectedFile = loc.File;
 		SetSelectedRow(loc.LineNumber);
 		ScrollToRowNumber(loc.LineNumber, ScrollDisplayPosition.Center, Config.Debugger.KeepActiveStatementInCenter);
 
 		if (addToHistory) {
-			if (prevLoc != null) {
+			if (prevLoc is not null) {
 				History.AddHistory(prevLoc.Value);
 			}
 
@@ -412,7 +412,7 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 	public void ScrollToTop(bool extendSelection) {
 		if (extendSelection) {
 			ResizeSelectionTo(0);
-		} else if (SelectedFile != null) {
+		} else if (SelectedFile is not null) {
 			ScrollToLocation(new SourceCodeLocation(SelectedFile, 0), true);
 		}
 	}
@@ -420,7 +420,7 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 	public void ScrollToBottom(bool extendSelection) {
 		if (extendSelection) {
 			ResizeSelectionTo(MaxScrollPosition);
-		} else if (SelectedFile != null) {
+		} else if (SelectedFile is not null) {
 			ScrollToLocation(new SourceCodeLocation(SelectedFile, SelectedFile.Data.Length - 1), true);
 		}
 	}
@@ -449,7 +449,7 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 	}
 
 	public AddressInfo? GetSelectedRowAddress() {
-		if (SelectedFile == null) {
+		if (SelectedFile is null) {
 			return null;
 		}
 
@@ -461,7 +461,7 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 	}
 
 	public int? GetActiveLineIndex() {
-		if (SelectedFile == null || ActiveAddress == null) {
+		if (SelectedFile is null || ActiveAddress is null) {
 			return null;
 		}
 
@@ -481,7 +481,7 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 	}
 
 	public Breakpoint? GetBreakpoint(int lineNumber) {
-		if (SelectedFile == null) {
+		if (SelectedFile is null) {
 			return null;
 		}
 

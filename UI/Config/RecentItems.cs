@@ -18,7 +18,7 @@ public sealed class RecentItems {
 		}
 
 		RecentItem? existingItem = Items.Where((item) => item.RomFile == romFile && item.PatchFile == patchFile).FirstOrDefault();
-		if (existingItem != null) {
+		if (existingItem is not null) {
 			Items.Remove(existingItem);
 		}
 

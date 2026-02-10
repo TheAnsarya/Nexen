@@ -36,7 +36,7 @@ public static class ReactiveHelper {
 			handler(s, e);
 
 			//Reset change handlers if an object is replaced with another object
-			if (e.PropertyName != null && observableObjects.TryGetValue(e.PropertyName, out ReactiveObject? obj)) {
+			if (e.PropertyName is not null && observableObjects.TryGetValue(e.PropertyName, out ReactiveObject? obj)) {
 				//Remove handlers on the old object
 				UnregisterRecursiveObserver(obj, handler);
 

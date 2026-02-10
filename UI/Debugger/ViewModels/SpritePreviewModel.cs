@@ -170,7 +170,7 @@ public sealed class SpritePreviewModel : ViewModelBase {
 
 		TileCount = sprite.TileCount;
 		fixed (UInt32* p = sprite.TileAddresses) {
-			if (TileAddresses == null || TileAddresses.Length != TileCount) {
+			if (TileAddresses is null || TileAddresses.Length != TileCount) {
 				TileAddresses = new UInt32[TileCount];
 			}
 
@@ -184,7 +184,7 @@ public sealed class SpritePreviewModel : ViewModelBase {
 
 			UInt32* spritePreview = p + (sprite.SpriteIndex * 128 * 128);
 
-			if (SpritePreview == null || SpritePreview.PixelSize.Width != sprite.Width || SpritePreview.PixelSize.Height != sprite.Height) {
+			if (SpritePreview is null || SpritePreview.PixelSize.Width != sprite.Width || SpritePreview.PixelSize.Height != sprite.Height) {
 				SpritePreview?.Dispose();
 				SpritePreview = new DynamicBitmap(new PixelSize(Width, Height), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul);
 				needUpdate = true;

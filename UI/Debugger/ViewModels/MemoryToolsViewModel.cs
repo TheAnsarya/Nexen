@@ -84,7 +84,7 @@ public sealed class MemoryToolsViewModel : DisposableViewModel {
 			}
 
 			CodeLabel? label = LabelManager.GetLabel(new AddressInfo() { Address = o.start, Type = Config.MemoryType });
-			if (label != null && (o.length <= 1 || o.length == label.Length)) {
+			if (label is not null && (o.length <= 1 || o.length == label.Length)) {
 				location += $" ({label.Label})";
 			}
 
@@ -205,7 +205,7 @@ public sealed class MemoryToolsViewModel : DisposableViewModel {
 
 	public bool Find(SearchDirection direction) {
 		SearchData? data = Search.GetSearchData();
-		if (data == null) {
+		if (data is null) {
 			return false;
 		}
 
@@ -247,7 +247,7 @@ public sealed class MemoryToolsViewModel : DisposableViewModel {
 			int j = 0;
 			while (j < searchLen && i + j < memSize) {
 				byte val = mem[i + j];
-				if (data.Data[j] >= 0 && data.Data[j] != val && (data.DataAlt == null || data.DataAlt[j] != val)) {
+				if (data.Data[j] >= 0 && data.Data[j] != val && (data.DataAlt is null || data.DataAlt[j] != val)) {
 					break;
 				} else if (j == searchLen - 1) {
 					//Match

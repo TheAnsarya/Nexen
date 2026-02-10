@@ -248,7 +248,7 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 			},
 		});
 
-		if (Design.IsDesignMode || wnd == null) {
+		if (Design.IsDesignMode || wnd is null) {
 			return;
 		}
 
@@ -278,7 +278,7 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 
 		AddDisposable(this.WhenAnyValue(x => x.SelectedSprite).Subscribe(x => {
 			UpdateSelectionPreview();
-			if (x != null) {
+			if (x is not null) {
 				ListView.SelectSprite(x.SpriteIndex);
 			}
 		}));
@@ -304,7 +304,7 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 			IsEnabled = () => GetSelectedSprite() != null,
 			OnClick = () => {
 				SpritePreviewModel? sprite = GetSelectedSprite();
-				if (sprite?.TileAddress >= 0 && _data.Palette != null) {
+				if (sprite?.TileAddress >= 0 && _data.Palette is not null) {
 					PixelSize size = sprite.Format.GetTileSize();
 					DebugPaletteInfo pal = _data.Palette.Value;
 					int paletteOffset = (int)(pal.SpritePaletteOffset / pal.ColorsPerPalette);
@@ -343,7 +343,7 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 			Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.SpriteViewer_ViewInTileViewer),
 			OnClick = () => {
 				SpritePreviewModel? sprite = GetSelectedSprite();
-				if (sprite?.TileAddress >= 0 && _data.Palette != null) {
+				if (sprite?.TileAddress >= 0 && _data.Palette is not null) {
 					DebugPaletteInfo pal = _data.Palette.Value;
 					int paletteOffset = (int)(pal.SpritePaletteOffset / pal.ColorsPerPalette);
 					TileViewerWindow.OpenAtTile(CpuType, CpuType.GetVramMemoryType(sprite.UseExtendedVram), sprite.TileAddress, sprite.Format, TileLayout.Normal, sprite.Palette + paletteOffset);
@@ -362,11 +362,11 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 			IsVisible = () => CpuType == CpuType.Nes,
 			IsEnabled = () => {
 				SpritePreviewModel? sprite = GetSelectedSprite();
-				return sprite != null && HdPackCopyHelper.IsActionAllowed(CpuType.GetVramMemoryType(sprite.UseExtendedVram));
+				return sprite is not null && HdPackCopyHelper.IsActionAllowed(CpuType.GetVramMemoryType(sprite.UseExtendedVram));
 			},
 			OnClick = () => {
 				SpritePreviewModel? sprite = GetSelectedSprite();
-				if (sprite != null && sprite.TileAddress >= 0 && _data.Palette != null) {
+				if (sprite is not null && sprite.TileAddress >= 0 && _data.Palette is not null) {
 					HdPackCopyHelper.CopyToHdPackFormat(sprite.TileAddress, CpuType.GetVramMemoryType(sprite.UseExtendedVram), _data.Palette.Value.GetRawPalette(), sprite.Palette, true, sprite.Height > 8);
 				}
 			}
@@ -383,17 +383,17 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 
 	public DynamicTooltip? GetPreviewPanel(PixelPoint p, DynamicTooltip? tooltipToUpdate) {
 		SpritePreviewModel? sprite = GetMatchingSprite(p, out _);
-		return sprite == null ? null : GetPreviewPanel(sprite, tooltipToUpdate);
+		return sprite is null ? null : GetPreviewPanel(sprite, tooltipToUpdate);
 	}
 
 	public DynamicTooltip? GetPreviewPanel(SpritePreviewModel sprite, DynamicTooltip? existingTooltip) {
-		if (_data.Palette == null) {
+		if (_data.Palette is null) {
 			return null;
 		}
 
 		TooltipEntries entries = existingTooltip?.Items ?? new();
 		entries.StartUpdate();
-		if (sprite.SpritePreview != null) {
+		if (sprite.SpritePreview is not null) {
 			entries.AddPicture("Sprite", sprite.SpritePreview, 48.0 / sprite.Width);
 		}
 
@@ -459,7 +459,7 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 
 		entries.EndUpdate();
 
-		if (existingTooltip != null) {
+		if (existingTooltip is not null) {
 			return existingTooltip;
 		} else {
 			return new DynamicTooltip() { Items = entries };
@@ -476,7 +476,7 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 
 	[MemberNotNull(nameof(ViewerBitmap))]
 	private void InitBitmap(int width, int height) {
-		if (ViewerBitmap == null || ViewerBitmap.PixelSize.Width != width || ViewerBitmap.PixelSize.Height != height) {
+		if (ViewerBitmap is null || ViewerBitmap.PixelSize.Width != width || ViewerBitmap.PixelSize.Height != height) {
 			ViewerBitmap?.Dispose();
 			ViewerBitmap = new DynamicBitmap(new PixelSize(width, height), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul);
 		}
@@ -644,7 +644,7 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 			_coreData.CopyTo(_data);
 		}
 
-		if (_data.PpuState == null || _data.Palette == null || _data.PpuToolsState == null) {
+		if (_data.PpuState is null || _data.Palette is null || _data.PpuToolsState is null) {
 			return;
 		}
 
@@ -710,30 +710,30 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 	}
 
 	private void UpdateSelectionPreview() {
-		SelectedPreviewPanel = SelectedSprite != null ? GetPreviewPanel(SelectedSprite, SelectedPreviewPanel) : null;
+		SelectedPreviewPanel = SelectedSprite is not null ? GetPreviewPanel(SelectedSprite, SelectedPreviewPanel) : null;
 	}
 
 	private void UpdateMouseOverRect() {
-		MouseOverRect = PreviewPanelSprite != null
+		MouseOverRect = PreviewPanelSprite is not null
 			? PreviewPanelSprite.GetPreviewRect().Item1
-			: (Rect?)(ViewerMousePos != null && GetMatchingSprite(ViewerMousePos.Value, out Rect matchingRect) is SpritePreviewModel sprite
+			: (Rect?)(ViewerMousePos is not null && GetMatchingSprite(ViewerMousePos.Value, out Rect matchingRect) is SpritePreviewModel sprite
 				? matchingRect
 				: null);
 	}
 
 	private void UpdateTooltips() {
-		if (PreviewPanelSprite != null && PreviewPanelTooltip != null) {
+		if (PreviewPanelSprite is not null && PreviewPanelTooltip is not null) {
 			GetPreviewPanel(PreviewPanelSprite, PreviewPanelTooltip);
-		} else if (ViewerMousePos != null && ViewerTooltip != null) {
+		} else if (ViewerMousePos is not null && ViewerTooltip is not null) {
 			SpritePreviewModel? sprite = GetMatchingSprite(ViewerMousePos.Value, out _);
-			if (sprite != null) {
+			if (sprite is not null) {
 				GetPreviewPanel(sprite, ViewerTooltip);
 			}
 		}
 	}
 
 	public void UpdateSelection(SpritePreviewModel? sprite) {
-		SelectionRect = sprite != null ? sprite.GetPreviewRect().Item1 : default;
+		SelectionRect = sprite is not null ? sprite.GetPreviewRect().Item1 : default;
 	}
 
 	public SpritePreviewModel? GetMatchingSprite(PixelPoint p, out Rect matchingRect) {

@@ -70,7 +70,7 @@ internal sealed class SaveRomActionHelper {
 		romName = Path.ChangeExtension(romName, ext);
 
 		string? filename = await FileDialogHelper.SaveFile(null, romName, wnd, ext);
-		if (filename != null) {
+		if (filename is not null) {
 			if (!DebugApi.SaveRomToDisk(filename, saveAsIps, cdlOption)) {
 				await NexenMsgBox.Show(wnd, "FileSaveError", Nexen.Windows.MessageBoxButtons.OK, Nexen.Windows.MessageBoxIcon.Error);
 			}

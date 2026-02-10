@@ -12,7 +12,7 @@ namespace Nexen.Utilities;
 class DependencyHelper {
 	public static void ExtractNativeDependencies(string dest) {
 		using (Stream? depStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Nexen.Dependencies.zip")) {
-			if (depStream == null) {
+			if (depStream is null) {
 				throw new Exception("Missing dependencies.zip");
 			}
 
@@ -37,7 +37,7 @@ class DependencyHelper {
 						}
 					} else {
 						string? folderName = Path.GetDirectoryName(path);
-						if (folderName != null && !Directory.Exists(folderName)) {
+						if (folderName is not null && !Directory.Exists(folderName)) {
 							//Create any missing directory (e.g Satellaview)
 							Directory.CreateDirectory(folderName);
 						}
@@ -53,7 +53,7 @@ class DependencyHelper {
 
 	public static string? GetFileContent(string filename) {
 		using Stream? depStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Nexen.Dependencies.zip");
-		if (depStream != null) {
+		if (depStream is not null) {
 			using ZipArchive zip = new(depStream);
 			foreach (ZipArchiveEntry entry in zip.Entries) {
 				if (entry.Name == filename) {

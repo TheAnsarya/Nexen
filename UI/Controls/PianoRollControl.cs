@@ -261,7 +261,7 @@ public sealed class PianoRollControl : Control {
 	private void DrawGrid(DrawingContext context, Rect bounds, IReadOnlyList<string> buttons, int cellWidth, int cellHeight) {
 		var frames = Frames;
 
-		if (frames == null) {
+		if (frames is null) {
 			return;
 		}
 
@@ -293,7 +293,7 @@ public sealed class PianoRollControl : Control {
 					bgBrush = greenzoneBrush;
 				}
 
-				if (bgBrush != null) {
+				if (bgBrush is not null) {
 					context.FillRectangle(bgBrush, rect);
 				}
 
@@ -351,7 +351,7 @@ public sealed class PianoRollControl : Control {
 	private void DrawMarkers(DrawingContext context, Rect bounds, int cellWidth) {
 		var frames = Frames;
 
-		if (frames == null) {
+		if (frames is null) {
 			return;
 		}
 
@@ -509,7 +509,7 @@ public sealed class PianoRollControl : Control {
 				break;
 
 			case Key.End:
-				if (Frames != null) {
+				if (Frames is not null) {
 					ScrollOffset = Math.Max(0, Frames.Count - 10);
 				}
 
@@ -554,7 +554,7 @@ public sealed class PianoRollControl : Control {
 	private bool GetCurrentButtonState(int frame, int button) {
 		var frames = Frames;
 
-		if (frames == null || frame < 0 || frame >= frames.Count) {
+		if (frames is null || frame < 0 || frame >= frames.Count) {
 			return false;
 		}
 

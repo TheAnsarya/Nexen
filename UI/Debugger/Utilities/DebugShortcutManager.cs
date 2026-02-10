@@ -53,12 +53,12 @@ internal static class DebugShortcutManager {
 		WeakReference<IInputElement> weakFocusParent = new(focusParent);
 		WeakReference<DebugMenuAction> weakAction = new(action);
 
-		if (action.SubActions != null) {
+		if (action.SubActions is not null) {
 			RegisterActions(focusParent, action.SubActions);
 		}
 
 		// Only register if this action has a shortcut
-		if (action.Shortcut == null && !action.DebugShortcut.HasValue) {
+		if (action.Shortcut is null && !action.DebugShortcut.HasValue) {
 			return;
 		}
 
@@ -90,7 +90,7 @@ internal static class DebugShortcutManager {
 		WeakReference<IInputElement> weakFocusParent = new WeakReference<IInputElement>(focusParent);
 		WeakReference<ContextMenuAction> weakAction = new WeakReference<ContextMenuAction>(action);
 
-		if (action.SubActions != null) {
+		if (action.SubActions is not null) {
 			RegisterActions(focusParent, action.SubActions);
 		}
 
@@ -98,14 +98,14 @@ internal static class DebugShortcutManager {
 		handler = (s, e) => {
 			if (weakFocusParent.TryGetTarget(out IInputElement? elem)) {
 				if (weakAction.TryGetTarget(out ContextMenuAction? act)) {
-					if (act.Shortcut != null) {
+					if (act.Shortcut is not null) {
 						DbgShortKeys keys = act.Shortcut();
 						if (e.Key != Key.None && e.Key == keys.ShortcutKey && e.KeyModifiers == keys.Modifiers) {
 							if (action.RoutingStrategy == RoutingStrategies.Bubble && e.Source is Control ctrl && ctrl.Classes.Contains("PreventShortcuts")) {
 								return;
 							}
 
-							if (act.IsEnabled == null || act.IsEnabled()) {
+							if (act.IsEnabled is null || act.IsEnabled()) {
 								act.OnClick();
 								e.Handled = true;
 							}

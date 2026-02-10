@@ -276,7 +276,7 @@ public sealed class ScriptWindowViewModel : ViewModelBase {
 		Assembly assembly = Assembly.GetExecutingAssembly();
 		string scriptName = resName.Substring(resName.LastIndexOf('.', resName.Length - 5) + 1);
 		using Stream? stream = assembly.GetManifestResourceStream(resName);
-		if (stream != null) {
+		if (stream is not null) {
 			using StreamReader sr = new StreamReader(stream);
 			LoadScriptFromString(sr.ReadToEnd());
 			ScriptName = scriptName;
@@ -373,7 +373,7 @@ public sealed class ScriptWindowViewModel : ViewModelBase {
 		}
 
 		string? filename = await FileDialogHelper.OpenFile(InitialFolder, _wnd, FileDialogHelper.LuaExt);
-		if (filename != null) {
+		if (filename is not null) {
 			LoadScript(filename);
 		}
 	}
@@ -406,7 +406,7 @@ public sealed class ScriptWindowViewModel : ViewModelBase {
 	public void LoadScript(string filename) {
 		if (File.Exists(filename)) {
 			string? code = FileHelper.ReadAllText(filename);
-			if (code != null) {
+			if (code is not null) {
 				AddRecentScript(filename);
 				SetFilePath(filename);
 				LoadScriptFromString(code);
@@ -478,7 +478,7 @@ public sealed class ScriptWindowViewModel : ViewModelBase {
 	/// <returns><c>true</c> if save succeeded, <c>false</c> if cancelled or failed.</returns>
 	private async Task<bool> SaveAs(string newName) {
 		string? filename = await FileDialogHelper.SaveFile(InitialFolder, newName, _wnd, FileDialogHelper.LuaExt);
-		if (filename != null) {
+		if (filename is not null) {
 			if (FileHelper.WriteAllText(filename, Code, Encoding.UTF8)) {
 				AddRecentScript(filename);
 				SetFilePath(filename);

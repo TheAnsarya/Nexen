@@ -24,7 +24,7 @@ public static class FirmwareHelper {
 		if (await NexenMsgBox.Show(wnd, "FirmwareNotFound", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, ResourceHelper.GetEnumText(msg.Firmware), filename, msg.Size.ToString()) == DialogResult.OK) {
 			while (true) {
 				string? selectedFile = await FileDialogHelper.OpenFile(null, wnd, FileDialogHelper.FirmwareExt);
-				if (selectedFile != null) {
+				if (selectedFile is not null) {
 					try {
 						if (await SelectFirmwareFile(msg.Firmware, selectedFile, ApplicationHelper.GetMainWindow())) {
 							break;

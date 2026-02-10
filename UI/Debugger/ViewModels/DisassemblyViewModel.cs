@@ -134,7 +134,7 @@ public sealed class DisassemblyViewModel : DisposableViewModel, ISelectableModel
 
 		int lastValue = ScrollPosition;
 		AddDisposable(this.WhenAnyValue(x => x.ScrollPosition).Subscribe(scrollPos => {
-			if (_viewer == null) {
+			if (_viewer is null) {
 				ScrollPosition = lastValue;
 				return;
 			}
@@ -267,7 +267,7 @@ public sealed class DisassemblyViewModel : DisposableViewModel, ISelectableModel
 	/// </remarks>
 	public void SetActiveAddress(int? pc) {
 		ActiveAddress = pc;
-		if (pc != null) {
+		if (pc is not null) {
 			int currentAddress = SelectedRowAddress;
 			SetSelectedRow((int)pc);
 			bool scrolled = ScrollToAddress((uint)pc, ScrollDisplayPosition.Center, Config.Debugger.KeepActiveStatementInCenter);

@@ -76,7 +76,7 @@ class ResourceHelper {
 		XmlNode? node = _resources.SelectSingleNode("/Resources/Enums/Enum[@ID='" + t.Name + "']");
 		if (node?.Attributes!["ID"]!.Value == t.Name) {
 			foreach (XmlNode enumNode in node.ChildNodes) {
-				if (Enum.TryParse(t, enumNode.Attributes!["ID"]!.Value, out object? value) && value != null) {
+				if (Enum.TryParse(t, enumNode.Attributes!["ID"]!.Value, out object? value) && value is not null) {
 					values.Add((Enum)value);
 				}
 			}

@@ -91,7 +91,7 @@ public sealed class FileDialogHelper {
 			filter.Add(new FilePickerFileType("All files") { Patterns = new List<string>() { "*" } });
 
 			IReadOnlyList<IStorageFile> files = await wnd.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions() {
-				SuggestedStartLocation = initialFolder != null ? await wnd.StorageProvider.TryGetFolderFromPathAsync(initialFolder) : null,
+				SuggestedStartLocation = initialFolder is not null ? await wnd.StorageProvider.TryGetFolderFromPathAsync(initialFolder) : null,
 				AllowMultiple = false,
 				FileTypeFilter = filter
 			});
@@ -119,7 +119,7 @@ public sealed class FileDialogHelper {
 
 			filter.Add(new FilePickerFileType("All files") { Patterns = new List<string>() { "*" } });
 
-			IStorageFolder? startLocation = initialFolder != null ? await wnd.StorageProvider.TryGetFolderFromPathAsync(initialFolder) : null;
+			IStorageFolder? startLocation = initialFolder is not null ? await wnd.StorageProvider.TryGetFolderFromPathAsync(initialFolder) : null;
 			if (OperatingSystem.IsLinux()) {
 				//TODOv2 - setting a start location appears to cause crashes on Linux (dbus crash), force it to null for now
 				startLocation = null;
@@ -133,7 +133,7 @@ public sealed class FileDialogHelper {
 				FileTypeChoices = filter
 			});
 
-			if (file != null) {
+			if (file is not null) {
 				return file.Path.LocalPath;
 			}
 		} catch (Exception ex) {

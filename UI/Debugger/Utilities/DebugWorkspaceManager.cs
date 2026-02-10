@@ -87,7 +87,7 @@ public static class DebugWorkspaceManager {
 	/// </remarks>
 	public static DebugWorkspace Workspace {
 		get {
-			if (_workspace == null) {
+			if (_workspace is null) {
 				Load();
 			}
 
@@ -149,7 +149,7 @@ public static class DebugWorkspaceManager {
 	/// </remarks>
 	[MemberNotNull(nameof(DebugWorkspaceManager._workspace))]
 	public static void Load() {
-		if (_workspace != null) {
+		if (_workspace is not null) {
 			Save();
 		}
 
@@ -162,51 +162,51 @@ public static class DebugWorkspaceManager {
 		SymbolProvider = null;
 		if (ConfigManager.Config.Debug.Integration.AutoLoadDbgFiles) {
 			string? dbgPath = GetMatchingFile(FileDialogHelper.DbgFileExt);
-			if (dbgPath != null) {
+			if (dbgPath is not null) {
 				LoadDbgSymbolFile(dbgPath, false);
 			}
 		}
 
-		if (SymbolProvider == null && ConfigManager.Config.Debug.Integration.AutoLoadSymFiles) {
+		if (SymbolProvider is null && ConfigManager.Config.Debug.Integration.AutoLoadSymFiles) {
 			string? symPath = GetMatchingFile(FileDialogHelper.SymFileExt);
-			if (symPath != null) {
+			if (symPath is not null) {
 				LoadSymFile(symPath, false);
 			}
 		}
 
-		if (SymbolProvider == null && ConfigManager.Config.Debug.Integration.AutoLoadCdbFiles) {
+		if (SymbolProvider is null && ConfigManager.Config.Debug.Integration.AutoLoadCdbFiles) {
 			string? symPath = GetMatchingFile(FileDialogHelper.CdbFileExt);
-			if (symPath != null) {
+			if (symPath is not null) {
 				LoadCdbFile(symPath, false);
 			}
 		}
 
-		if (SymbolProvider == null && ConfigManager.Config.Debug.Integration.AutoLoadElfFiles) {
+		if (SymbolProvider is null && ConfigManager.Config.Debug.Integration.AutoLoadElfFiles) {
 			string? symPath = GetMatchingFile(FileDialogHelper.ElfFileExt);
-			if (symPath != null) {
+			if (symPath is not null) {
 				LoadElfFile(symPath, false);
 			}
 		}
 
-		if (SymbolProvider == null && ConfigManager.Config.Debug.Integration.AutoLoadMlbFiles) {
+		if (SymbolProvider is null && ConfigManager.Config.Debug.Integration.AutoLoadMlbFiles) {
 			// Try Nexen native format first, then legacy Mesen format
 			string? labelsPath = GetMatchingFile(FileDialogHelper.NexenLabelExt);
 			labelsPath ??= GetMatchingFile(FileDialogHelper.MesenLabelExt);
-			if (labelsPath != null) {
+			if (labelsPath is not null) {
 				LoadNexenLabelFile(labelsPath, false);
 			}
 		}
 
-		if (SymbolProvider == null && ConfigManager.Config.Debug.Integration.AutoLoadFnsFiles) {
+		if (SymbolProvider is null && ConfigManager.Config.Debug.Integration.AutoLoadFnsFiles) {
 			string? fnsPath = GetMatchingFile(FileDialogHelper.NesAsmLabelExt);
-			if (fnsPath != null) {
+			if (fnsPath is not null) {
 				LoadNesAsmLabelFile(fnsPath, false);
 			}
 		}
 
 		if (ConfigManager.Config.Debug.Integration.AutoLoadCdlFiles) {
 			string? cdlPath = GetMatchingFile(FileDialogHelper.CdlExt);
-			if (cdlPath != null) {
+			if (cdlPath is not null) {
 				LoadCdlFile(cdlPath);
 			}
 		}
@@ -311,7 +311,7 @@ public static class DebugWorkspaceManager {
 					case ConsoleType.Sms: importer = new SmsWlaDxImporter(); break;
 				}
 
-				if (importer != null) {
+				if (importer is not null) {
 					ResetLabels();
 					importer.Import(path, showResult);
 					SymbolProvider = importer;

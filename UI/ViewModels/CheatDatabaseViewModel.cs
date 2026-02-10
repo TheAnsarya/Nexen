@@ -30,7 +30,7 @@ public sealed class CheatDatabaseViewModel : DisposableViewModel {
 		CheatDatabase cheatDb = new();
 		try {
 			string? dbContent = DependencyHelper.GetFileContent("CheatDb." + consoleType.ToString() + ".json");
-			if (dbContent != null) {
+			if (dbContent is not null) {
 				cheatDb = (CheatDatabase?)JsonSerializer.Deserialize(dbContent, typeof(CheatDatabase), NexenCamelCaseSerializerContext.Default) ?? new CheatDatabase();
 			}
 		} catch { }

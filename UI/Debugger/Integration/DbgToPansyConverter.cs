@@ -198,7 +198,7 @@ public static class DbgToPansyConverter {
 				showResult: false
 			);
 
-			if (provider != null) {
+			if (provider is not null) {
 				var symbols = provider.GetSymbols();
 				result.SymbolsConverted = symbols.Count;
 				result.SourceFilesFound = provider.SourceFiles.Count;
@@ -227,7 +227,7 @@ public static class DbgToPansyConverter {
 				_ => null
 			};
 
-			if (provider != null) {
+			if (provider is not null) {
 				provider.Import(filePath, showResult: false);
 				var symbols = provider.GetSymbols();
 				result.SymbolsConverted = symbols.Count;
@@ -267,7 +267,7 @@ public static class DbgToPansyConverter {
 		try {
 			var provider = SdccSymbolImporter.Import(romInfo.Format, filePath, showResult: false);
 
-			if (provider != null) {
+			if (provider is not null) {
 				var symbols = provider.GetSymbols();
 				result.SymbolsConverted = symbols.Count;
 				return symbols.Count > 0;

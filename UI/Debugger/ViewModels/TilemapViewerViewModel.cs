@@ -231,7 +231,7 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 			},
 		});
 
-		if (Design.IsDesignMode || wnd == null) {
+		if (Design.IsDesignMode || wnd is null) {
 			return;
 		}
 
@@ -245,7 +245,7 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.TilemapViewer_ViewInMemoryViewer),
 				OnClick = () => {
 					DebugTilemapTileInfo? tile = GetSelectedTileInfo();
-					if(tile != null && tile.Value.TileMapAddress >= 0) {
+					if(tile is not null && tile.Value.TileMapAddress >= 0) {
 						MemoryToolsWindow.ShowInMemoryTools(GetVramMemoryType(), tile.Value.TileMapAddress);
 					}
 				}
@@ -255,7 +255,7 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.TilemapViewer_ViewInTileViewer),
 				OnClick = () => {
 					DebugTilemapTileInfo? tile = GetSelectedTileInfo();
-					if(tile != null && tile.Value.TileAddress >= 0) {
+					if(tile is not null && tile.Value.TileAddress >= 0) {
 						TileViewerWindow.OpenAtTile(CpuType, GetVramMemoryType(), tile.Value.TileAddress, _data.TilemapInfo.Format, TileLayout.Normal, tile.Value.PaletteIndex);
 					}
 				}
@@ -286,7 +286,7 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.TilemapViewer_EditTilemapBreakpoint),
 				OnClick = () => {
 					DebugTilemapTileInfo? tile = GetSelectedTileInfo();
-					if(tile != null && tile.Value.TileMapAddress >= 0) {
+					if(tile is not null && tile.Value.TileMapAddress >= 0) {
 						EditBreakpoint(wnd, tile.Value.TileMapAddress);
 					}
 				}
@@ -301,7 +301,7 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.TilemapViewer_EditAttributeBreakpoint),
 				OnClick = () => {
 					DebugTilemapTileInfo? tile = GetSelectedTileInfo();
-					if(tile != null && tile.Value.AttributeAddress >= 0) {
+					if(tile is not null && tile.Value.AttributeAddress >= 0) {
 						EditBreakpoint(wnd, tile.Value.AttributeAddress);
 					}
 				}
@@ -313,7 +313,7 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 				IsEnabled = () => HdPackCopyHelper.IsActionAllowed(GetVramMemoryType()),
 				OnClick = () => {
 					DebugTilemapTileInfo? tile = GetSelectedTileInfo();
-					if(tile != null && tile?.TileAddress >= 0) {
+					if(tile is not null && tile?.TileAddress >= 0) {
 						HdPackCopyHelper.CopyToHdPackFormat(tile.Value.TileAddress, GetVramMemoryType(), _data.RawPalette, tile.Value.PaletteIndex, false);
 					}
 				}
@@ -479,7 +479,7 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 	}
 
 	private DebugTilemapTileInfo? GetSelectedTileInfo() {
-		if (_data.PpuState == null || _data.PpuToolsState == null || _data.Vram == null) {
+		if (_data.PpuState is null || _data.PpuToolsState is null || _data.Vram is null) {
 			return null;
 		} else {
 			PixelPoint p;
@@ -500,7 +500,7 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 	private void UpdatePreviewPanel() {
 		PreviewPanel = SelectionRect == default ? null : GetPreviewPanel(PixelPoint.FromPoint(SelectionRect.TopLeft, 1), PreviewPanel);
 
-		if (ViewerTooltip != null && ViewerMousePos != null) {
+		if (ViewerTooltip is not null && ViewerMousePos is not null) {
 			GetPreviewPanel(ViewerMousePos.Value, ViewerTooltip);
 		}
 	}
@@ -513,7 +513,7 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 
 	[MemberNotNull(nameof(ViewerBitmap))]
 	private void InitBitmap(int width, int height) {
-		if (ViewerBitmap == null || ViewerBitmap.PixelSize.Width != width || ViewerBitmap.PixelSize.Height != height) {
+		if (ViewerBitmap is null || ViewerBitmap.PixelSize.Width != width || ViewerBitmap.PixelSize.Height != height) {
 			ViewerBitmap?.Dispose();
 			ViewerBitmap = new DynamicBitmap(new PixelSize(width, height), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul);
 		}
@@ -575,7 +575,7 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 			_coreData.CopyTo(_data);
 		}
 
-		if (_data.PpuState == null || _data.PpuToolsState == null || _data.RgbPalette.Length == 0) {
+		if (_data.PpuState is null || _data.PpuToolsState is null || _data.RgbPalette.Length == 0) {
 			_refreshPending = false;
 			return;
 		}
@@ -665,12 +665,12 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 	}
 
 	public DynamicTooltip? GetPreviewPanel(PixelPoint p, DynamicTooltip? tooltipToUpdate) {
-		if (_data.PpuState == null || _data.PpuToolsState == null) {
+		if (_data.PpuState is null || _data.PpuToolsState is null) {
 			return null;
 		}
 
 		DebugTilemapTileInfo? result = DebugApi.GetTilemapTileInfo((uint)p.X, (uint)p.Y, CpuType, GetOptions(SelectedTab), _data.Vram, _data.PpuState, _data.PpuToolsState);
-		if (result == null) {
+		if (result is null) {
 			return null;
 		}
 
@@ -760,7 +760,7 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 
 		entries.EndUpdate();
 
-		if (tooltipToUpdate != null) {
+		if (tooltipToUpdate is not null) {
 			return tooltipToUpdate;
 		} else {
 			return new DynamicTooltip() { Items = entries };
@@ -784,7 +784,7 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 	}
 
 	private void EditTileGrid(int columnCount, int rowCount, Window wnd) {
-		if (_data.PpuState == null || _data.PpuToolsState == null) {
+		if (_data.PpuState is null || _data.PpuToolsState is null) {
 			return;
 		}
 
@@ -795,7 +795,7 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 		for (int row = 0; row < rowCount; row++) {
 			for (int col = 0; col < columnCount; col++) {
 				DebugTilemapTileInfo? tile = DebugApi.GetTilemapTileInfo((uint)(p.X + (GridSizeX * col)), (uint)(p.Y + (GridSizeY * row)), CpuType, GetOptions(SelectedTab), _data.Vram, _data.PpuState, _data.PpuToolsState);
-				if (tile == null) {
+				if (tile is null) {
 					if (col == 0) {
 						rowCount = row;
 						break;

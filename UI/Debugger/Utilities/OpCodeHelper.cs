@@ -34,13 +34,13 @@ public static class OpCodeHelper {
 
 		OpCodeDesc? desc = null;
 		string opname = seg.Text.ToLower();
-		if (doc.OpDescGetter != null) {
+		if (doc.OpDescGetter is not null) {
 			desc = doc.OpDescGetter(doc.OpDesc, opname, seg);
 		} else {
 			doc.OpDesc.TryGetValue(opname, out desc);
 		}
 
-		if (desc == null) {
+		if (desc is null) {
 			return null;
 		}
 
@@ -60,15 +60,15 @@ public static class OpCodeHelper {
 			items.AddEntry("Byte Code", seg.Data.ByteCodeStr);
 		}
 
-		if (doc.OpMode != null) {
+		if (doc.OpMode is not null) {
 			items.AddEntry("Mode", doc.OpMode[opcode]);
 		}
 
-		if (doc.OpCycleCount != null) {
+		if (doc.OpCycleCount is not null) {
 			items.AddEntry("Cycle Count", doc.OpCycleCount[opcode]);
 		}
 
-		if (desc.Flags != null) {
+		if (desc.Flags is not null) {
 			items.AddEntry("Affected Flags", string.Join(", ", desc.Flags));
 		}
 
@@ -76,7 +76,7 @@ public static class OpCodeHelper {
 	}
 
 	private static void InitDocumentation(CpuType cpuType, DocFileFormat? doc, Dictionary<string, OpCodeDesc>? baseDesc = null) {
-		if (doc == null) {
+		if (doc is null) {
 			return;
 		}
 
@@ -88,11 +88,11 @@ public static class OpCodeHelper {
 		Dictionary<int, string> mode = new();
 		Dictionary<int, string> cycleCount = new();
 		for (int i = 0; i < 256; i++) {
-			if (doc.AddressingModes != null) {
+			if (doc.AddressingModes is not null) {
 				mode[i] = ResourceHelper.GetEnumText(doc.AddressingModes[i]);
 			}
 
-			if (doc.MinCycles != null) {
+			if (doc.MinCycles is not null) {
 				string cycles = doc.MinCycles[i].ToString();
 				if (doc.MinCycles[i] < doc.MaxCycles?[i]) {
 					cycles += "-" + doc.MaxCycles[i];
@@ -102,7 +102,7 @@ public static class OpCodeHelper {
 			}
 		}
 
-		_data[cpuType] = new CpuDocumentationData(desc, doc.AddressingModes != null ? mode : null, doc.MinCycles != null ? cycleCount : null);
+		_data[cpuType] = new CpuDocumentationData(desc, doc.AddressingModes is not null ? mode : null, doc.MinCycles is not null ? cycleCount : null);
 	}
 
 	private static void InitNesDocumentation() {
@@ -159,7 +159,7 @@ public static class OpCodeHelper {
 
 			Func<bool> tryParseOp = () => {
 				dict.TryGetValue(opName, out desc);
-				if (desc != null) {
+				if (desc is not null) {
 					desc = desc.Clone();
 
 					if (byteSize) {
@@ -270,7 +270,7 @@ public static class OpCodeHelper {
 
 			string[] conditions = { "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc", "hi", "ls", "ge", "lt", "gt", "le", "al" };
 			string? condition = conditions.FirstOrDefault(opName.EndsWith);
-			if (condition != null) {
+			if (condition is not null) {
 				condHint = condition switch {
 					"eq" => "Equal (Zero Set)",
 					"ne" => "Not Equal (Zero Clear)",

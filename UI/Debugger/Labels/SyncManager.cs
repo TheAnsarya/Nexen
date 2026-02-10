@@ -252,7 +252,7 @@ public sealed class SyncManager : IDisposable {
 	/// Start processing pending changes.
 	/// </summary>
 	private void StartProcessingChanges() {
-		if (_processingCts != null) return;
+		if (_processingCts is not null) return;
 
 		_processingCts = new CancellationTokenSource();
 		_ = ProcessChangesAsync(_processingCts.Token);
@@ -288,7 +288,7 @@ public sealed class SyncManager : IDisposable {
 	/// Process a single change.
 	/// </summary>
 	private async Task ProcessChangeAsync(SyncChangeInfo change, CancellationToken cancellationToken) {
-		if (_currentRom == null) return;
+		if (_currentRom is null) return;
 
 		try {
 			string ext = Path.GetExtension(change.FilePath).ToLowerInvariant();
@@ -317,7 +317,7 @@ public sealed class SyncManager : IDisposable {
 	/// Handle a file modification.
 	/// </summary>
 	private async Task HandleFileModified(SyncChangeInfo change, string ext, CancellationToken cancellationToken) {
-		if (_currentRom == null) return;
+		if (_currentRom is null) return;
 
 		var config = ConfigManager.Config.Debug.Integration;
 
@@ -351,7 +351,7 @@ public sealed class SyncManager : IDisposable {
 	/// Import CDL data from a file.
 	/// </summary>
 	private void ImportCdlFile(string path) {
-		if (_currentRom == null) return;
+		if (_currentRom is null) return;
 
 		try {
 			var cpuType = _currentRom.ConsoleType.GetMainCpuType();
@@ -388,7 +388,7 @@ public sealed class SyncManager : IDisposable {
 	/// Force a sync of all files in the debug folder.
 	/// </summary>
 	public async Task ForceSyncAsync() {
-		if (_currentRom == null || !IsEnabled) return;
+		if (_currentRom is null || !IsEnabled) return;
 
 		string debugFolder = DebugFolderManager.GetRomDebugFolder(_currentRom);
 		if (!Directory.Exists(debugFolder)) return;
@@ -418,7 +418,7 @@ public sealed class SyncManager : IDisposable {
 	/// Export all current data to the debug folder.
 	/// </summary>
 	public void ExportAll() {
-		if (_currentRom == null) return;
+		if (_currentRom is null) return;
 
 		var cpuType = _currentRom.ConsoleType.GetMainCpuType();
 		var memType = cpuType.GetPrgRomMemoryType();

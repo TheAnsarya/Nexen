@@ -27,7 +27,7 @@ public static class DataGridClipboardExtensions {
 	/// Converts all DataGrid content to CSV-formatted text.
 	/// </summary>
 	public static string ConvertToText(DataGrid grid) {
-		if (grid.ItemsSource == null) return string.Empty;
+		if (grid.ItemsSource is null) return string.Empty;
 
 		StringBuilder sb = new();
 

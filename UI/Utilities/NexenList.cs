@@ -147,7 +147,7 @@ public partial class NexenList<T> : IAvaloniaList<T>, IList {
 			if (!EqualityComparer<T>.Default.Equals(old, value)) {
 				_inner[index] = value;
 
-				if (_collectionChanged != null) {
+				if (_collectionChanged is not null) {
 					var e = new NotifyCollectionChangedEventArgs(
 						 NotifyCollectionChangedAction.Replace,
 						 value,
@@ -199,7 +199,7 @@ public partial class NexenList<T> : IAvaloniaList<T>, IList {
 	/// </summary>
 	public virtual void Clear() {
 		if (Count > 0) {
-			if (_collectionChanged != null) {
+			if (_collectionChanged is not null) {
 				var e = ResetBehavior == ResetBehavior.Reset ?
 					 EventArgsCache.ResetCollectionChanged :
 					 new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, _inner.ToArray(), 0);
@@ -287,10 +287,10 @@ public partial class NexenList<T> : IAvaloniaList<T>, IList {
 	/// <param name="index">The index.</param>
 	/// <param name="items">The items.</param>
 	public virtual void InsertRange(int index, IEnumerable<T> items) {
-		_ = items ?? throw new ArgumentNullException(nameof(items));
+		ArgumentNullException.ThrowIfNull(items);
 
-		bool willRaiseCollectionChanged = _collectionChanged != null;
-		bool hasValidation = Validate != null;
+		bool willRaiseCollectionChanged = _collectionChanged is not null;
+		bool hasValidation = Validate is not null;
 
 		if (items is IList list) {
 			if (list.Count > 0) {
@@ -366,7 +366,7 @@ public partial class NexenList<T> : IAvaloniaList<T>, IList {
 		_inner.RemoveAt(oldIndex);
 		_inner.Insert(newIndex, item);
 
-		if (_collectionChanged != null) {
+		if (_collectionChanged is not null) {
 			var e = new NotifyCollectionChangedEventArgs(
 				 NotifyCollectionChangedAction.Move,
 				 item,
@@ -393,7 +393,7 @@ public partial class NexenList<T> : IAvaloniaList<T>, IList {
 
 		_inner.InsertRange(modifiedNewIndex, items);
 
-		if (_collectionChanged != null) {
+		if (_collectionChanged is not null) {
 			var e = new NotifyCollectionChangedEventArgs(
 				 NotifyCollectionChangedAction.Move,
 				 items,
@@ -444,7 +444,7 @@ public partial class NexenList<T> : IAvaloniaList<T>, IList {
 	/// </summary>
 	/// <param name="items">The items.</param>
 	public virtual void RemoveAll(IEnumerable<T> items) {
-		_ = items ?? throw new ArgumentNullException(nameof(items));
+		ArgumentNullException.ThrowIfNull(items);
 
 		var hItems = new HashSet<T>(items);
 
@@ -524,9 +524,7 @@ public partial class NexenList<T> : IAvaloniaList<T>, IList {
 
 	/// <inheritdoc/>
 	void ICollection.CopyTo(Array array, int index) {
-		if (array == null) {
-			throw new ArgumentNullException(nameof(array));
-		}
+		ArgumentNullException.ThrowIfNull(array);
 
 		if (array.Rank != 1) {
 			throw new ArgumentException("Multi-dimensional arrays are not supported.");
@@ -584,7 +582,7 @@ public partial class NexenList<T> : IAvaloniaList<T>, IList {
 	/// <param name="t">The items that were added.</param>
 	/// <param name="index">The starting index.</param>
 	private void NotifyAdd(IList t, int index) {
-		if (_collectionChanged != null) {
+		if (_collectionChanged is not null) {
 			var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, t, index);
 			_collectionChanged(this, e);
 		}
@@ -598,7 +596,7 @@ public partial class NexenList<T> : IAvaloniaList<T>, IList {
 	/// <param name="item">The item that was added.</param>
 	/// <param name="index">The starting index.</param>
 	private void NotifyAdd(T item, int index) {
-		if (_collectionChanged != null) {
+		if (_collectionChanged is not null) {
 			var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new[] { item }, index);
 			_collectionChanged(this, e);
 		}
@@ -620,7 +618,7 @@ public partial class NexenList<T> : IAvaloniaList<T>, IList {
 	/// <param name="t">The items that were removed.</param>
 	/// <param name="index">The starting index.</param>
 	private void NotifyRemove(IList t, int index) {
-		if (_collectionChanged != null) {
+		if (_collectionChanged is not null) {
 			var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, t, index);
 			_collectionChanged(this, e);
 		}
@@ -634,7 +632,7 @@ public partial class NexenList<T> : IAvaloniaList<T>, IList {
 	/// <param name="item">The item that was removed.</param>
 	/// <param name="index">The starting index.</param>
 	private void NotifyRemove(T item, int index) {
-		if (_collectionChanged != null) {
+		if (_collectionChanged is not null) {
 			var e = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, new[] { item }, index);
 			_collectionChanged(this, e);
 		}

@@ -176,14 +176,14 @@ public sealed class PaletteViewerViewModel : DisposableViewModel, ICpuTypeModel 
 				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.PaletteViewer_EditColor),
 				IsEnabled = () => SelectedPalette >= 0,
 				OnClick = () => Dispatcher.UIThread.Post(() => EditColor(wnd, SelectedPalette))             },
-			new ContextMenuSeparator() { IsVisible = () => _palette != null && _palette.Get().HasMemType },
+			new ContextMenuSeparator() { IsVisible = () => _palette is not null && _palette.Get().HasMemType },
 			new ContextMenuAction() {
 				ActionType = ActionType.ViewInMemoryViewer,
 				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.PaletteViewer_ViewInMemoryViewer),
-				IsVisible = () => _palette != null && _palette.Get().HasMemType,
+				IsVisible = () => _palette is not null && _palette.Get().HasMemType,
 				IsEnabled = () => SelectedPalette >= 0,
 				OnClick = () => {
-					if(_palette != null) {
+					if(_palette is not null) {
 						DebugPaletteInfo pal = _palette.Get();
 						int memSize = DebugApi.GetMemorySize(pal.PaletteMemType) - (int)pal.PaletteMemOffset;
 						if(memSize > 0) {
@@ -206,7 +206,7 @@ public sealed class PaletteViewerViewModel : DisposableViewModel, ICpuTypeModel 
 	/// For indexed formats, shows a color index picker with the platform's color palette.
 	/// </remarks>
 	private async void EditColor(Window wnd, int selectedPalette) {
-		if (_palette == null) {
+		if (_palette is null) {
 			return;
 		}
 
@@ -273,7 +273,7 @@ public sealed class PaletteViewerViewModel : DisposableViewModel, ICpuTypeModel 
 	private void UpdatePreviewPanel() {
 		PreviewPanel = GetPreviewPanel(SelectedPalette, PreviewPanel);
 
-		if (ViewerTooltip != null && ViewerMouseOverPalette >= 0) {
+		if (ViewerTooltip is not null && ViewerMouseOverPalette >= 0) {
 			GetPreviewPanel(ViewerMouseOverPalette, ViewerTooltip);
 		}
 	}
@@ -285,7 +285,7 @@ public sealed class PaletteViewerViewModel : DisposableViewModel, ICpuTypeModel 
 	/// <param name="tooltipToUpdate">An existing tooltip to update, or null to create a new one.</param>
 	/// <returns>The updated or newly created tooltip, or null if palette data is unavailable.</returns>
 	public DynamicTooltip? GetPreviewPanel(int index, DynamicTooltip? tooltipToUpdate) {
-		if (_palette == null) {
+		if (_palette is null) {
 			return null;
 		}
 

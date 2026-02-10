@@ -429,7 +429,7 @@ public static class PansyExporter {
 
 		// Check if existing pansy file has matching CRC
 		var existingHeader = ReadHeader(pansyPath);
-		if (existingHeader != null) {
+		if (existingHeader is not null) {
 			Log.Info($"[Pansy] Existing file CRC32: {existingHeader.RomCrc32:X8}");
 
 			if (existingHeader.RomCrc32 != 0 && currentCrc != 0 && existingHeader.RomCrc32 != currentCrc) {
@@ -810,9 +810,9 @@ public static class PansyExporter {
 		for (int i = 0; i < cdlData.Length; i++) {
 			bool isData = (cdlData[i] & 0x02) != 0 && (cdlData[i] & 0x01) == 0; // Data flag, not code
 
-			if (isData && blockStart == null) {
+			if (isData && blockStart is null) {
 				blockStart = i;
-			} else if (!isData && blockStart != null) {
+			} else if (!isData && blockStart is not null) {
 				// Optimized: Inline filter - only add blocks >= 4 bytes
 				if (i - 1 - blockStart.Value >= 4) {
 					blocks.Add(((uint)blockStart.Value, (uint)(i - 1)));
@@ -823,7 +823,7 @@ public static class PansyExporter {
 		}
 
 		// Handle final block with inline filter
-		if (blockStart != null && cdlData.Length - 1 - blockStart.Value >= 4) {
+		if (blockStart is not null && cdlData.Length - 1 - blockStart.Value >= 4) {
 			blocks.Add(((uint)blockStart.Value, (uint)(cdlData.Length - 1)));
 		}
 

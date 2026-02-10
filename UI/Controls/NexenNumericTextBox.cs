@@ -105,7 +105,7 @@ public sealed class NexenNumericTextBox : TextBox {
 	}
 
 	private long? GetConvertedMinMaxValue(string? valStr) {
-		if (valStr != null) {
+		if (valStr is not null) {
 			NumberStyles styles = NumberStyles.Integer;
 			if (valStr.StartsWith("0x")) {
 				valStr = valStr.Substring(2);
@@ -121,13 +121,13 @@ public sealed class NexenNumericTextBox : TextBox {
 	}
 
 	protected override void OnTextInput(TextInputEventArgs e) {
-		if (e.Text == null) {
+		if (e.Text is null) {
 			e.Handled = true;
 			return;
 		}
 
 		long? min = GetMin();
-		bool allowNegative = min != null && min.Value < 0;
+		bool allowNegative = min is not null && min.Value < 0;
 
 		if (Hex) {
 			foreach (char c in e.Text.ToLowerInvariant()) {
@@ -158,7 +158,7 @@ public sealed class NexenNumericTextBox : TextBox {
 	private void UpdateValueFromText() {
 		if (string.IsNullOrWhiteSpace(Text)) {
 			long? min = GetMin();
-			if (min != null && min.Value > 0) {
+			if (min is not null && min.Value > 0) {
 				SetNewValue(ConvertToSameType(min.Value, Value));
 			} else {
 				SetNewValue(ConvertToSameType(0, Value));
@@ -181,7 +181,7 @@ public sealed class NexenNumericTextBox : TextBox {
 			}
 		}
 
-		if (val != null) {
+		if (val is not null) {
 			SetNewValue(val);
 		}
 	}
@@ -189,7 +189,7 @@ public sealed class NexenNumericTextBox : TextBox {
 	private int GetMaxLength() {
 		IFormattable max;
 		long? maxProp = GetMax();
-		max = maxProp != null
+		max = maxProp is not null
 			? maxProp.Value
 			: Value switch {
 				byte => byte.MaxValue,
@@ -205,23 +205,23 @@ public sealed class NexenNumericTextBox : TextBox {
 
 		//Increase max length by 1 if minus signs are allowed
 		long? min = GetMin();
-		bool allowNegative = !Hex && min != null && min.Value < 0;
+		bool allowNegative = !Hex && min is not null && min.Value < 0;
 		return max.ToString(Hex ? "X" : null, null).Length + (allowNegative ? 1 : 0);
 	}
 
 	private void SetNewValue(IComparable val) {
-		if (val == null) {
+		if (val is null) {
 			return;
 		}
 
 		long? max = GetMax();
 		long? min = GetMin();
 
-		if (max != null && val.CompareTo(ConvertToSameType(max.Value, val)) > 0) {
+		if (max is not null && val.CompareTo(ConvertToSameType(max.Value, val)) > 0) {
 			val = ConvertToSameType(max.Value, val);
-		} else if (min != null && val.CompareTo(ConvertToSameType(min.Value, val)) < 0) {
+		} else if (min is not null && val.CompareTo(ConvertToSameType(min.Value, val)) < 0) {
 			val = ConvertToSameType(min.Value, val);
-		} else if (min == null && val.CompareTo(ConvertToSameType(0, val)) < 0) {
+		} else if (min is null && val.CompareTo(ConvertToSameType(0, val)) < 0) {
 			val = ConvertToSameType(0, val);
 		}
 
@@ -249,7 +249,7 @@ public sealed class NexenNumericTextBox : TextBox {
 	}
 
 	private void UpdateText(bool force = false) {
-		if (Value == null || _preventTextUpdate) {
+		if (Value is null || _preventTextUpdate) {
 			return;
 		}
 

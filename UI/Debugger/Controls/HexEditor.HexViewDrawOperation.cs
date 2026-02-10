@@ -117,7 +117,7 @@ public partial class HexEditor {
 			var leaseFeature = context.PlatformImpl.GetFeature<ISkiaSharpApiLeaseFeature>();
 			using var lease = leaseFeature?.Lease();
 			var canvas = lease?.SkCanvas;
-			if (canvas == null) {
+			if (canvas is null) {
 				//context.DrawText(Brushes.Black, new Point(), _noSkia.PlatformImpl);
 			} else {
 				canvas.Save();
@@ -179,7 +179,7 @@ public partial class HexEditor {
 			}
 
 			SKTextBlob? textToDraw = builder.Build();
-			if (textToDraw != null) {
+			if (textToDraw is not null) {
 				canvas.DrawText(textToDraw, 0, (float)_rowHeight, paint);
 			}
 		}
@@ -311,7 +311,7 @@ public partial class HexEditor {
 			}
 
 			SKTextBlob? textToDraw = builder.Build();
-			if (textToDraw != null) {
+			if (textToDraw is not null) {
 				canvas.DrawText(textToDraw, 0, (float)_rowHeight, paint);
 			}
 		}
@@ -496,7 +496,7 @@ public partial class HexEditor {
 			var leaseFeature = context.PlatformImpl.GetFeature<ISkiaSharpApiLeaseFeature>();
 			using var lease = leaseFeature?.Lease();
 			var canvas = lease?.SkCanvas;
-			if (canvas == null) {
+			if (canvas is null) {
 				//context.DrawText(Brushes.Black, new Point(), _noSkia.PlatformImpl);
 			} else {
 				canvas.Save();
@@ -533,7 +533,7 @@ public partial class HexEditor {
 				}
 
 				SKTextBlob? textToDraw = builder.Build();
-				if (textToDraw != null) {
+				if (textToDraw is not null) {
 					canvas.DrawText(textToDraw, 0, (float)_rowHeight, paint);
 				}
 

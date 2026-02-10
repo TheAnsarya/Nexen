@@ -41,7 +41,7 @@ public sealed class PansyImporter {
 
 			// Read and validate header
 			var header = ReadHeader(reader);
-			if (header == null) {
+			if (header is null) {
 				result.Error = "Invalid Pansy file header";
 				return result;
 			}
@@ -189,7 +189,7 @@ public sealed class PansyImporter {
 
 				// Map Pansy memory type to Nexen
 				var memType = MapMemoryType(memTypeId, header.Platform);
-				if (memType == null)
+				if (memType is null)
 					continue;
 
 				// Filter based on config
@@ -235,7 +235,7 @@ public sealed class PansyImporter {
 				string comment = Encoding.UTF8.GetString(reader.ReadBytes(commentLen));
 
 				var memType = MapMemoryType(memTypeId, header.Platform);
-				if (memType == null)
+				if (memType is null)
 					continue;
 
 				if (!ShouldImportLabel(memType.Value))
@@ -243,7 +243,7 @@ public sealed class PansyImporter {
 
 				// Try to update existing label with comment
 				var existingLabel = LabelManager.GetLabel(address, memType.Value);
-				if (existingLabel != null) {
+				if (existingLabel is not null) {
 					existingLabel.Comment = comment;
 					count++;
 				}

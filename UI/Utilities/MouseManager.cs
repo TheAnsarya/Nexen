@@ -64,7 +64,7 @@ public sealed class MouseManager : IDisposable {
 			if (_closeMenuPending && !mouseState.LeftButton) {
 				//Close menu when renderer is clicked, after the mouse button is released (while not in the menu)
 				_mainMenu.MainMenu.Close();
-				if (MainWindowViewModel.Instance.AudioPlayer == null) {
+				if (MainWindowViewModel.Instance.AudioPlayer is null) {
 					//Only give renderer focus when the audio player isn't active
 					//Otherwise clicking on the audio player's buttons does nothing
 					_renderer.Focus();

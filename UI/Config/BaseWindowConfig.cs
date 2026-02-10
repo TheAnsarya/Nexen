@@ -38,7 +38,7 @@ public class BaseWindowConfig<T> : BaseConfig<T> where T : class {
 			PixelRect wndRect = new PixelRect(WindowLocation, WindowSize);
 
 			Screen? screen = wnd.Screens.ScreenFromBounds(wndRect);
-			if (screen == null) {
+			if (screen is null) {
 				//Window is not on any screen, move it to the top left of the first screen
 				WindowLocation = wnd.Screens.All[0].WorkingArea.TopLeft;
 			} else {
@@ -99,7 +99,7 @@ public class BaseWindowConfig<T> : BaseConfig<T> where T : class {
 			}
 		}
 
-		if (wnd.WindowState == WindowState.Normal && (wnd.Position.X > 0 || wnd.Position.Y > 0) && wnd.PlatformImpl != null && wnd.Width != wnd.Screens.ScreenFromWindow(wnd)?.Bounds.Width) {
+		if (wnd.WindowState == WindowState.Normal && (wnd.Position.X > 0 || wnd.Position.Y > 0) && wnd.PlatformImpl is not null && wnd.Width != wnd.Screens.ScreenFromWindow(wnd)?.Bounds.Width) {
 			//If window is not maximized/minimized, save current position+size
 			_restoreBounds = new PixelRect(wnd.Position.X, wnd.Position.Y, (int)wnd.Width, (int)wnd.Height);
 		}

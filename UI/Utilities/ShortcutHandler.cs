@@ -140,35 +140,35 @@ public sealed class ShortcutHandler {
 
 	private async void InputBarcode() {
 		string? barcode = await new InputBarcodeWindow().ShowCenteredDialog<string?>(_mainWindow);
-		if (barcode != null && UInt64.TryParse(barcode, out UInt64 value)) {
+		if (barcode is not null && UInt64.TryParse(barcode, out UInt64 value)) {
 			EmuApi.InputBarcode(value, (UInt32)(barcode.Length > 8 ? 13 : 8));
 		}
 	}
 
 	private async void LoadTape() {
 		string? filename = await FileDialogHelper.OpenFile(null, _mainWindow, FileDialogHelper.BinExt);
-		if (filename != null) {
+		if (filename is not null) {
 			EmuApi.ProcessTapeRecorderAction(TapeRecorderAction.Play, filename);
 		}
 	}
 
 	private async void RecordTape() {
 		string? filename = await FileDialogHelper.SaveFile(null, null, _mainWindow, FileDialogHelper.BinExt);
-		if (filename != null && filename.Length > 0) {
+		if (filename is not null && filename.Length > 0) {
 			EmuApi.ProcessTapeRecorderAction(TapeRecorderAction.StartRecord, filename);
 		}
 	}
 
 	private async void LoadStateFromFile() {
 		string? filename = await FileDialogHelper.OpenFile(ConfigManager.SaveStateFolder, _mainWindow, FileDialogHelper.NexenSaveStateExt, FileDialogHelper.MesenSaveStateExt);
-		if (filename != null) {
+		if (filename is not null) {
 			EmuApi.LoadStateFile(filename);
 		}
 	}
 
 	private async void SaveStateToFile() {
 		string? filename = await FileDialogHelper.SaveFile(ConfigManager.SaveStateFolder, null, _mainWindow, FileDialogHelper.NexenSaveStateExt);
-		if (filename != null && filename.Length > 0) {
+		if (filename is not null && filename.Length > 0) {
 			EmuApi.SaveStateFile(filename);
 		}
 	}
@@ -241,7 +241,7 @@ public sealed class ShortcutHandler {
 			? ConfigManager.Config.Preferences.GameFolder
 			: ConfigManager.Config.RecentFiles.Items.Count > 0 ? ConfigManager.Config.RecentFiles.Items[0].RomFile.Folder : null;
 		string? filename = await FileDialogHelper.OpenFile(initialFolder, _mainWindow, FileDialogHelper.RomExt);
-		if (filename != null) {
+		if (filename is not null) {
 			LoadRomHelper.LoadFile(filename);
 		}
 	}
@@ -339,7 +339,7 @@ public sealed class ShortcutHandler {
 		}
 
 		(Func<bool>? get, Action<bool>? set) = GetFlagSetterGetter(layer);
-		if (get != null && set != null) {
+		if (get is not null && set is not null) {
 			set(!get());
 			DisplayMessageHelper.DisplayMessage("Debug", ResourceHelper.GetMessage(get() ? "VideoLayerDisabled" : "VideoLayerEnabled", ResourceHelper.GetEnumText(layer)));
 			UpdateAllCoreConfig();
@@ -453,7 +453,7 @@ public sealed class ShortcutHandler {
 	}
 
 	private void IncreaseVolume() {
-		if (MainWindowModel.AudioPlayer == null) {
+		if (MainWindowModel.AudioPlayer is null) {
 			ConfigManager.Config.Audio.MasterVolume = (uint)Math.Min(100, (int)ConfigManager.Config.Audio.MasterVolume + 5);
 			ConfigManager.Config.Audio.ApplyConfig();
 		} else {
@@ -463,7 +463,7 @@ public sealed class ShortcutHandler {
 	}
 
 	private void DecreaseVolume() {
-		if (MainWindowModel.AudioPlayer == null) {
+		if (MainWindowModel.AudioPlayer is null) {
 			ConfigManager.Config.Audio.MasterVolume = (uint)Math.Max(0, (int)ConfigManager.Config.Audio.MasterVolume - 5);
 			ConfigManager.Config.Audio.ApplyConfig();
 		} else {
@@ -473,13 +473,13 @@ public sealed class ShortcutHandler {
 	}
 
 	private void GoToPreviousTrack() {
-		if (MainWindowModel.AudioPlayer != null) {
+		if (MainWindowModel.AudioPlayer is not null) {
 			EmuApi.ProcessAudioPlayerAction(new AudioPlayerActionParams() { Action = AudioPlayerAction.PrevTrack });
 		}
 	}
 
 	private void GoToNextTrack() {
-		if (MainWindowModel.AudioPlayer != null) {
+		if (MainWindowModel.AudioPlayer is not null) {
 			EmuApi.ProcessAudioPlayerAction(new AudioPlayerActionParams() { Action = AudioPlayerAction.NextTrack });
 		}
 	}

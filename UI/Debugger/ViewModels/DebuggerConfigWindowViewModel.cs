@@ -61,7 +61,7 @@ public sealed class DebuggerConfigWindowViewModel : DisposableViewModel {
 	}
 
 	private void Config_PropertyChanged(object? sender, PropertyChangedEventArgs e) {
-		if (sender == null || e.PropertyName == null) {
+		if (sender is null || e.PropertyName is null) {
 			return;
 		}
 
@@ -102,7 +102,7 @@ public sealed class DebuggerConfigWindowViewModel : DisposableViewModel {
 		if (_changes.TryGetValue(current, out HashSet<string>? changes)) {
 			foreach (string propertyName in changes) {
 				PropertyInfo? prop = typeof(T).GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
-				if (prop != null) {
+				if (prop is not null) {
 					prop.SetValue(current, prop.GetValue(original));
 				}
 			}

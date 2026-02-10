@@ -41,9 +41,9 @@ internal sealed class MenuHelper {
 			return true;
 		}
 
-		if (menu.Items != null) {
+		if (menu.Items is not null) {
 			foreach (MenuItem? item in menu.Items) {
-				if (item != null && IsPointerInItem(item)) {
+				if (item is not null && IsPointerInItem(item)) {
 					return true;
 				}
 			}
@@ -82,9 +82,9 @@ internal sealed class MenuHelper {
 			return true;
 		}
 
-		if (menu.Items != null) {
+		if (menu.Items is not null) {
 			foreach (MenuItem? item in menu.Items) {
-				if (item != null && IsFocusInItem(item)) {
+				if (item is not null && IsFocusInItem(item)) {
 					return true;
 				}
 			}

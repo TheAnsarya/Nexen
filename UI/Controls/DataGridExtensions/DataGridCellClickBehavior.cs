@@ -110,7 +110,7 @@ public static class DataGridCellClickBehavior {
 
 		grid.SetValue(PressedCellProperty, null);
 
-		if (pressedCell != null && pressedCell == releasedCell) {
+		if (pressedCell is not null && pressedCell == releasedCell) {
 			var args = CreateEventArgs(grid, pressedCell);
 			Dispatcher.UIThread.Post(() => grid.RaiseEvent(
 				new DataGridCellClickRoutedEventArgs(CellClickEvent) {
@@ -125,7 +125,7 @@ public static class DataGridCellClickBehavior {
 	private static void OnDoubleTapped(object? sender, TappedEventArgs e) {
 		if (sender is not DataGrid grid) return;
 		var cell = FindCellFromVisual(e.Source as Visual);
-		if (cell == null) return;
+		if (cell is null) return;
 
 		var args = CreateEventArgs(grid, cell);
 		Dispatcher.UIThread.Post(() => grid.RaiseEvent(
@@ -141,7 +141,7 @@ public static class DataGridCellClickBehavior {
 	/// Walks up the visual tree to find the containing DataGridCell.
 	/// </summary>
 	private static DataGridCell? FindCellFromVisual(Visual? visual) {
-		while (visual != null) {
+		while (visual is not null) {
 			if (visual is DataGridCell cell) return cell;
 			visual = visual.GetVisualParent() as Visual;
 		}

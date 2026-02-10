@@ -71,7 +71,7 @@ public sealed class BreakpointBar : Control {
 					}
 				}
 			}
-		} else if (DataContext is SourceViewViewModel srcModel && srcModel.SelectedFile != null) {
+		} else if (DataContext is SourceViewViewModel srcModel && srcModel.SelectedFile is not null) {
 			int? activeLine = srcModel.GetActiveLineIndex();
 			if (activeLine >= 0) {
 				int position = (int)((double)activeLine.Value / srcModel.SelectedFile.Data.Length * height) - 2;
@@ -83,7 +83,7 @@ public sealed class BreakpointBar : Control {
 
 			for (int i = 0, len = srcModel.SelectedFile.Data.Length; i < len; i++) {
 				Breakpoint? bp = srcModel.GetBreakpoint(i);
-				if (bp != null) {
+				if (bp is not null) {
 					int position = (int)((double)i / len * height) - 2;
 					if (bp.Enabled) {
 						SolidColorBrush brush = new SolidColorBrush(bp.GetColor());

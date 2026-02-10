@@ -19,7 +19,7 @@ public sealed class NexenMenu : Menu {
 	private void SubmenuOpened(object? sender, RoutedEventArgs e) {
 		MenuItem menuItem = (MenuItem)sender!;
 		IEnumerable? source = menuItem.ItemsSource ?? menuItem.Items;
-		if (source != null) {
+		if (source is not null) {
 			foreach (object subItemAction in source) {
 				// Subscribe to nested submenu events
 				if (menuItem.ContainerFromItem(subItemAction) is MenuItem subMenuItem) {
@@ -41,7 +41,7 @@ public sealed class NexenMenu : Menu {
 	protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) {
 		base.OnAttachedToVisualTree(e);
 		var items = ItemsSource ?? Items;
-		if (items != null) {
+		if (items is not null) {
 			foreach (object item in items) {
 				if (item is MenuItem menuItem) {
 					menuItem.SubmenuOpened += SubmenuOpened;
@@ -53,7 +53,7 @@ public sealed class NexenMenu : Menu {
 	protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) {
 		base.OnDetachedFromVisualTree(e);
 		var items = ItemsSource ?? Items;
-		if (items != null) {
+		if (items is not null) {
 			foreach (object item in items) {
 				if (item is MenuItem menuItem) {
 					menuItem.SubmenuOpened -= SubmenuOpened;

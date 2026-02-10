@@ -72,7 +72,7 @@ public static class DataGridColumnWidthBehavior {
 
 	private static void SyncWidthsBack(DataGrid grid) {
 		var widths = GetColumnWidths(grid);
-		if (widths == null) return;
+		if (widths is null) return;
 
 		bool changed = false;
 		for (int i = 0; i < grid.Columns.Count && i < widths.Count; i++) {

@@ -130,7 +130,7 @@ public sealed class CallStackViewModel : DisposableViewModel {
 	/// <param name="stackFrame">The stack frame, or null for bottom of stack.</param>
 	/// <returns>Formatted entry point string.</returns>
 	private string GetEntryPoint(StackFrameInfo? stackFrame) {
-		if (stackFrame == null) {
+		if (stackFrame is null) {
 			return "[bottom of stack]";
 		}
 
@@ -138,7 +138,7 @@ public sealed class CallStackViewModel : DisposableViewModel {
 
 		string format = "X" + CpuType.GetAddressSize();
 		CodeLabel? label = entry.AbsTarget.Address >= 0 ? LabelManager.GetLabel(entry.AbsTarget) : null;
-		if (label != null) {
+		if (label is not null) {
 			return label.Label + " ($" + entry.Target.ToString(format) + ")";
 		} else if (entry.Flags == StackFrameFlags.Nmi) {
 			return "[nmi] $" + entry.Target.ToString(format);
@@ -178,9 +178,9 @@ public sealed class CallStackViewModel : DisposableViewModel {
 			new ContextMenuAction() {
 				ActionType = ActionType.EditLabel,
 				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.CallStack_EditLabel),
-				IsEnabled = () => Selection.SelectedItem is StackInfo entry && entry.EntryPointAddr != null,
+				IsEnabled = () => Selection.SelectedItem is StackInfo entry && entry.EntryPointAddr is not null,
 				OnClick = () => {
-					if(Selection.SelectedItem is StackInfo entry && entry.EntryPointAddr != null) {
+					if(Selection.SelectedItem is StackInfo entry && entry.EntryPointAddr is not null) {
 						AddressInfo addr = entry.EntryPointAddr.Value;
 						CodeLabel? label = LabelManager.GetLabel((uint)addr.Address, addr.Type);
 						label ??= new CodeLabel() {

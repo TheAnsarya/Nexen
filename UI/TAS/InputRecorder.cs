@@ -79,7 +79,7 @@ public sealed class InputRecorder : IDisposable {
 	/// <param name="mode">The recording mode.</param>
 	/// <param name="insertPosition">For Insert mode, the position to insert at.</param>
 	public void StartRecording(RecordingMode mode = RecordingMode.Append, int insertPosition = -1) {
-		if (_movie == null) {
+		if (_movie is null) {
 			throw new InvalidOperationException("No movie loaded.");
 		}
 
@@ -126,7 +126,7 @@ public sealed class InputRecorder : IDisposable {
 	/// <param name="input">The controller input for this frame.</param>
 	/// <param name="isLagFrame">Whether this is a lag frame.</param>
 	public void RecordFrame(ControllerInput[] input, bool isLagFrame = false) {
-		if (!_isRecording || _movie == null) {
+		if (!_isRecording || _movie is null) {
 			return;
 		}
 
@@ -189,7 +189,7 @@ public sealed class InputRecorder : IDisposable {
 	/// <param name="truncate">If true, removes all frames after this point.</param>
 	/// <returns>True if rerecording was successfully started.</returns>
 	public bool RerecordFrom(int frame, bool truncate = true) {
-		if (_movie == null) {
+		if (_movie is null) {
 			return false;
 		}
 
@@ -239,7 +239,7 @@ public sealed class InputRecorder : IDisposable {
 	/// <param name="name">Optional name for the branch.</param>
 	/// <returns>The branch data.</returns>
 	public BranchData CreateBranch(string? name = null) {
-		if (_movie == null) {
+		if (_movie is null) {
 			throw new InvalidOperationException("No movie loaded.");
 		}
 
@@ -259,7 +259,7 @@ public sealed class InputRecorder : IDisposable {
 	/// </summary>
 	/// <param name="branch">The branch to load.</param>
 	public void LoadBranch(BranchData branch) {
-		if (_movie == null) {
+		if (_movie is null) {
 			throw new InvalidOperationException("No movie loaded.");
 		}
 

@@ -152,7 +152,7 @@ public sealed class QuickSearchViewModel : ViewModelBase {
 
 			// Update UI on dispatcher thread
 			Dispatcher.UIThread.Post(() => {
-				if (lastArgs != null) {
+				if (lastArgs is not null) {
 					if (lastArgs.Success) {
 						IsErrorVisible = false;
 						_noMatchSearch = "";

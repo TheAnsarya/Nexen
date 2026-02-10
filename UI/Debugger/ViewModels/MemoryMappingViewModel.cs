@@ -185,7 +185,7 @@ public sealed class MemoryMappingViewModel : ViewModelBase {
 				memoryType = state.PrgMemoryType[i];
 				accessType = state.PrgMemoryAccess[i];
 			} else {
-				if (memoryType != null) {
+				if (memoryType is not null) {
 					addBlock(i);
 				}
 
@@ -279,7 +279,7 @@ public sealed class MemoryMappingViewModel : ViewModelBase {
 				memoryType = state.ChrMemoryType[i];
 				accessType = state.ChrMemoryAccess[i];
 			} else {
-				if (memoryType != null) {
+				if (memoryType is not null) {
 					addBlock(i);
 				}
 

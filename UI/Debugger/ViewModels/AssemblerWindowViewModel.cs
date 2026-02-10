@@ -308,7 +308,7 @@ public sealed class AssemblerWindowViewModel : DisposableViewModel {
 		}
 
 		DebuggerWindow? wnd = DebugWindowManager.GetDebugWindow<DebuggerWindow>(wnd => wnd.CpuType == CpuType);
-		if (wnd != null) {
+		if (wnd is not null) {
 			wnd.RefreshDisassembly();
 		}
 

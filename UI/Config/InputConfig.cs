@@ -104,11 +104,11 @@ public class KeyMapping : ReactiveObject {
 		};
 
 		UInt16[]? customKeys = GetCustomButtons(type);
-		if (customKeys == null && mappingIndex == 0) {
+		if (customKeys is null && mappingIndex == 0) {
 			customKeys = GetDefaultCustomKeys(type, null);
 		}
 
-		if (customKeys != null) {
+		if (customKeys is not null) {
 			mappings.CustomKeys = new UInt16[100];
 			for (int i = 0; i < customKeys.Length; i++) {
 				mappings.CustomKeys[i] = customKeys[i];

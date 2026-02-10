@@ -102,7 +102,7 @@ public class SingleInstance : IDisposable {
 
 	protected virtual void Dispose(bool disposing) {
 		if (!_disposed) {
-			if (_mutex != null) {
+			if (_mutex is not null) {
 				if (_firstInstance) {
 					_mutex.ReleaseMutex();
 				}

@@ -61,7 +61,7 @@ public static class DataGridTypeAheadBehavior {
 	}
 
 	private static void OnTextInput(object? sender, TextInputEventArgs e) {
-		if (sender is not DataGrid grid || e.Text == null) return;
+		if (sender is not DataGrid grid || e.Text is null) return;
 		ProcessKeyPress(grid, e.Text);
 	}
 
@@ -80,10 +80,10 @@ public static class DataGridTypeAheadBehavior {
 	}
 
 	private static void ProcessKeyPress(DataGrid grid, string keyText) {
-		if (grid.ItemsSource == null) return;
+		if (grid.ItemsSource is null) return;
 
 		var timer = grid.GetValue(ResetTimerProperty);
-		if (timer == null) return;
+		if (timer is null) return;
 
 		// Reset search string after 1 second of inactivity
 		if (timer.ElapsedMilliseconds > 1000) {
@@ -104,7 +104,7 @@ public static class DataGridTypeAheadBehavior {
 			foreach (var sort in sortState.SortOrder) {
 				var col = grid.Columns.FirstOrDefault(c =>
 					(c.SortMemberPath ?? c.Header?.ToString() ?? "") == sort.Item1);
-				if (col != null && SearchColumn(grid, col, searchString, searchStringHex)) {
+				if (col is not null && SearchColumn(grid, col, searchString, searchStringHex)) {
 					return;
 				}
 			}
@@ -123,7 +123,7 @@ public static class DataGridTypeAheadBehavior {
 	/// Returns true if a match was found and selection was updated.
 	/// </summary>
 	private static bool SearchColumn(DataGrid grid, DataGridColumn column, string searchString, string searchStringHex) {
-		if (grid.ItemsSource == null) return false;
+		if (grid.ItemsSource is null) return false;
 
 		// Get the binding path for this column
 		string? path = null;

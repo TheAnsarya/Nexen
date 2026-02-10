@@ -51,7 +51,7 @@ public partial class MemoryMappingViewer : Control {
 	}
 
 	protected override Size MeasureOverride(Size availableSize) {
-		if (Mappings == null) {
+		if (Mappings is null) {
 			return new Size();
 		}
 
@@ -86,7 +86,7 @@ public partial class MemoryMappingViewer : Control {
 
 		_prevTooltipMapping = hoveredMapping;
 
-		if (hoveredMapping != null) {
+		if (hoveredMapping is not null) {
 			TooltipEntries entries = new TooltipEntries();
 			DynamicTooltip dynTooltip = new DynamicTooltip();
 			entries.AddEntry("Entry", GetBlockText(hoveredMapping));
@@ -128,7 +128,7 @@ public partial class MemoryMappingViewer : Control {
 	}
 
 	public override void Render(DrawingContext context) {
-		if (Mappings == null) {
+		if (Mappings is null) {
 			return;
 		}
 
@@ -173,7 +173,7 @@ public partial class MemoryMappingViewer : Control {
 				context.DrawText(text, new Point(x + ((blockWidth + margin - text.Width) / 2), (BlockHeight - text.Height) / 2));
 			}
 
-			if (addressText != null && addressText.Height < blockWidth - 4) {
+			if (addressText is not null && addressText.Height < blockWidth - 4) {
 				using var rotate = context.PushTransform(Matrix.CreateRotation(-Math.PI / 2));
 				context.DrawText(addressText, new Point(-BlockHeight + ((BlockHeight - addressText.Width) / 2), x));
 			}

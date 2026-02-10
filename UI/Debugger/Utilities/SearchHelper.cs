@@ -73,7 +73,7 @@ public static class SearchHelper {
 		List<SearchResultInfo> results = [];
 		bool isEmptySearch = string.IsNullOrWhiteSpace(searchString);
 		if (!isEmptySearch) {
-			if (symbolProvider != null) {
+			if (symbolProvider is not null) {
 				if (showFilesAndConstants) {
 					foreach (SourceFileInfo file in symbolProvider.SourceFiles) {
 						if (IsMatch(file.Name, searchTerms)) {
@@ -96,12 +96,12 @@ public static class SearchHelper {
 						AddressInfo? absAddr = symbolProvider.GetSymbolAddressInfo(symbol);
 						int value = 0;
 						AddressInfo? relAddr = null;
-						bool isConstant = absAddr == null;
+						bool isConstant = absAddr is null;
 						if (!showFilesAndConstants && isConstant) {
 							continue;
 						}
 
-						if (absAddr != null) {
+						if (absAddr is not null) {
 							value = DebugApi.GetMemoryValue(absAddr.Value.Type, (uint)absAddr.Value.Address);
 							relAddr = DebugApi.GetRelativeAddress(absAddr.Value, cpuType);
 						} else {
@@ -112,7 +112,7 @@ public static class SearchHelper {
 						SearchResultType resultType = SearchResultType.Data;
 						if (isConstant) {
 							resultType = SearchResultType.Constant;
-						} else if (cdlData != null && prgMemType != null && absAddr?.Type == prgMemType && absAddr.Value.Address < cdlData.Length) {
+						} else if (cdlData is not null && prgMemType is not null && absAddr?.Type == prgMemType && absAddr.Value.Address < cdlData.Length) {
 							CdlFlags flags = cdlData[absAddr.Value.Address];
 							if (flags.HasFlag(CdlFlags.SubEntryPoint)) {
 								resultType = SearchResultType.Function;
@@ -139,7 +139,7 @@ public static class SearchHelper {
 					if (IsMatch(label.Label, searchTerms)) {
 						SearchResultType resultType = SearchResultType.Data;
 						AddressInfo absAddr = label.GetAbsoluteAddress();
-						if (cdlData != null && absAddr.Type == prgMemType && absAddr.Address < cdlData.Length) {
+						if (cdlData is not null && absAddr.Type == prgMemType && absAddr.Address < cdlData.Length) {
 							CdlFlags flags = cdlData[absAddr.Address];
 							if (flags.HasFlag(CdlFlags.SubEntryPoint)) {
 								resultType = SearchResultType.Function;
@@ -251,7 +251,7 @@ public record SearchResultInfo {
 				img = "Assets/Enum.png";
 			}
 
-			return img != null ? ImageUtilities.BitmapFromAsset(img) : null;
+			return img is not null ? ImageUtilities.BitmapFromAsset(img) : null;
 		}
 	}
 

@@ -68,7 +68,7 @@ public sealed class UpdatePromptViewModel : ViewModelBase {
 			string releaseData = await client.GetStringAsync("https://api.github.com/repos/TheAnsarya/Nexen/releases/latest");
 			var release = (GitHubRelease?)JsonSerializer.Deserialize(releaseData, typeof(GitHubRelease), NexenSerializerContext.Default);
 
-			if (release == null || string.IsNullOrEmpty(release.TagName)) {
+			if (release is null || string.IsNullOrEmpty(release.TagName)) {
 				return null;
 			}
 
@@ -96,7 +96,7 @@ public sealed class UpdatePromptViewModel : ViewModelBase {
 					.ToArray() ?? []
 			};
 
-			UpdateFileInfo? file = asset != null
+			UpdateFileInfo? file = asset is not null
 				? new UpdateFileInfo {
 					Platform = [asset.Name ?? ""],
 					DownloadUrl = asset.BrowserDownloadUrl ?? "",
@@ -133,7 +133,7 @@ public sealed class UpdatePromptViewModel : ViewModelBase {
 	}
 
 	public async Task<bool> UpdateNexen(UpdatePromptWindow wnd) {
-		if (FileInfo == null) {
+		if (FileInfo is null) {
 			return false;
 		}
 

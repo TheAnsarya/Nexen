@@ -227,9 +227,9 @@ public sealed class NesHeaderEditViewModel : DisposableViewModel {
 	/// <returns>True if save was successful, false otherwise.</returns>
 	public async Task<bool> Save(Window wnd) {
 		string? filepath = await FileDialogHelper.SaveFile(Path.GetDirectoryName(_romInfo.RomPath), Path.GetFileName(_romInfo.RomPath), wnd, FileDialogHelper.NesExt);
-		if (filepath != null) {
+		if (filepath is not null) {
 			byte[]? data = FileHelper.ReadAllBytes(_romInfo.RomPath);
-			if (data != null) {
+			if (data is not null) {
 				byte[] header = Header.ToBytes();
 				for (int i = 0; i < 16; i++) {
 					data[i] = header[i];

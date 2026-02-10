@@ -34,7 +34,7 @@ public sealed class SnesKeyMapping : KeyMapping {
 
 	public override List<CustomKeyMapping> ToCustomKeys(ControllerType type, int mappingIndex) {
 		UInt16[]? buttonMappings = GetCustomButtons(type);
-		if (buttonMappings == null) {
+		if (buttonMappings is null) {
 			if (GetDefaultCustomKeys(type, null) != null) {
 				if (mappingIndex == 0) {
 					SetDefaultKeys(type, null);
@@ -44,7 +44,7 @@ public sealed class SnesKeyMapping : KeyMapping {
 			}
 
 			buttonMappings = GetCustomButtons(type);
-			if (buttonMappings == null) {
+			if (buttonMappings is null) {
 				return [];
 			}
 		}

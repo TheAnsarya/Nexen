@@ -89,9 +89,9 @@ public sealed class MouseViewerModelEvents {
 			_model.ViewerMousePos = point;
 
 			// Get or update tooltip for this position
-			_model.ViewerTooltip = point == null ? null : _model.GetPreviewPanel(point.Value, _model.ViewerTooltip);
+			_model.ViewerTooltip = point is null ? null : _model.GetPreviewPanel(point.Value, _model.ViewerTooltip);
 
-			if (_model.ViewerTooltip != null) {
+			if (_model.ViewerTooltip is not null) {
 				TooltipHelper.ShowTooltip(viewer, _model.ViewerTooltip, 15);
 			} else {
 				_model.ViewerTooltip = null;

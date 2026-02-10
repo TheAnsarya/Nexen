@@ -177,9 +177,9 @@ public sealed class DisassemblyViewer : Control {
 				if (_prevPointerOverSegment != codeSegment) {
 					List<TextFragment>? fragments = null;
 					TextFragment? fragment = null;
-					if (lineData != null) {
+					if (lineData is not null) {
 						_textFragments.TryGetValue(lineData, out fragments);
-						if (fragments != null) {
+						if (fragments is not null) {
 							fragment = fragments.Where(frag => p.X >= frag.XPosition && p.X < frag.XPosition + frag.Width).FirstOrDefault();
 						}
 					}
@@ -298,7 +298,7 @@ public sealed class DisassemblyViewer : Control {
 
 			string addrFormat = baseFormat + line.CpuType.GetAddressSize();
 			LineProperties lineStyle = styleProvider.GetLineStyle(line, i);
-			List<CodeColor> lineParts = styleProvider.GetCodeColors(line, true, addrFormat, lineStyle.TextBgColor != null ? ColorHelper.GetContrastTextColor(lineStyle.TextBgColor.Value) : null, true);
+			List<CodeColor> lineParts = styleProvider.GetCodeColors(line, true, addrFormat, lineStyle.TextBgColor is not null ? ColorHelper.GetContrastTextColor(lineStyle.TextBgColor.Value) : null, true);
 
 			double x = 0;
 
@@ -364,11 +364,11 @@ public sealed class DisassemblyViewer : Control {
 
 							Brush? b = lineStyle.TextBgColor.HasValue ? new SolidColorBrush(lineStyle.TextBgColor.Value.ToUInt32()) : null;
 							Pen? p = lineStyle.OutlineColor.HasValue ? new Pen(lineStyle.OutlineColor.Value.ToUInt32()) : null;
-							if (b != null) {
+							if (b is not null) {
 								context.DrawRectangle(b, null, new Rect(Math.Round(x + codeIndent + leftMargin) + 0.5, Math.Round(y) - 0.5, Math.Round(text.WidthIncludingTrailingWhitespace) + 1, Math.Round(LetterSize.Height)));
 							}
 
-							if (p != null) {
+							if (p is not null) {
 								context.DrawRectangle(p, new Rect(Math.Round(x + codeIndent + leftMargin) + 0.5, Math.Round(y) - 0.5, Math.Round(text.WidthIncludingTrailingWhitespace) + 1, Math.Round(LetterSize.Height)));
 							}
 						}
@@ -401,7 +401,7 @@ public sealed class DisassemblyViewer : Control {
 					}
 				}
 
-				if (lineStyle.Progress != null) {
+				if (lineStyle.Progress is not null) {
 					string progressText = lineStyle.Progress.Current + " " + lineStyle.Progress.Text;
 					smallText = FormatText(progressText, ColorHelper.GetBrush(Colors.Black), -2);
 					Point textPos = new Point(

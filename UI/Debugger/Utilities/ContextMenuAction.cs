@@ -34,10 +34,10 @@ public abstract class BaseMenuAction : ViewModelBase, IDisposable {
 
 	public virtual string Name {
 		get {
-			string label = DynamicText != null
+			string label = DynamicText is not null
 				? DynamicText()
 				: ActionType == ActionType.Custom ? CustomText ?? "" : ResourceHelper.GetEnumText(ActionType);
-			if (HintText != null) {
+			if (HintText is not null) {
 				string hint = HintText();
 				if (!string.IsNullOrWhiteSpace(hint)) {
 					label += " (" + hint + ")";
@@ -60,7 +60,7 @@ public abstract class BaseMenuAction : ViewModelBase, IDisposable {
 		string? actionIcon = _iconCache[ActionType];
 		if (!string.IsNullOrEmpty(actionIcon)) {
 			return actionIcon;
-		} else if (DynamicIcon != null) {
+		} else if (DynamicIcon is not null) {
 			return "Assets/" + DynamicIcon() + ".png";
 		} else if (IsSelected?.Invoke() == true) {
 			return ConfigManager.ActiveTheme == NexenTheme.Light ? "Assets/MenuItemChecked.png" : "Assets/MenuItemCheckedDark.png";
@@ -74,17 +74,17 @@ public abstract class BaseMenuAction : ViewModelBase, IDisposable {
 		set {
 			field = value;
 
-			if (field != null) {
+			if (field is not null) {
 				Func<bool>? isEnabled = IsEnabled;
 
 				IsEnabled = () => {
-					if (isEnabled != null && !isEnabled()) {
+					if (isEnabled is not null && !isEnabled()) {
 						return false;
 					}
 
 					foreach (object subAction in field) {
 						if (subAction is BaseMenuAction act) {
-							if (act.IsEnabled == null || act.IsEnabled()) {
+							if (act.IsEnabled is null || act.IsEnabled()) {
 								return true;
 							}
 						}
@@ -133,7 +133,7 @@ public abstract class BaseMenuAction : ViewModelBase, IDisposable {
 		get => _onClick;
 		set {
 			_onClick = () => {
-				if ((IsVisible == null || AllowedWhenHidden || IsVisible()) && (IsEnabled == null || IsEnabled())) {
+				if ((IsVisible is null || AllowedWhenHidden || IsVisible()) && (IsEnabled is null || IsEnabled())) {
 					if (ActionType == ActionType.Exit) {
 						//When using exit, the command is disposed while the command is running, which causes a crash
 						//Run the code in a posted action to prevent the crash
@@ -159,7 +159,7 @@ public abstract class BaseMenuAction : ViewModelBase, IDisposable {
 
 		string? iconFile = GetIconFile();
 		if (_currentIcon != iconFile) {
-			ActionIcon = iconFile != null ? ImageUtilities.FromAsset(iconFile) : null;
+			ActionIcon = iconFile is not null ? ImageUtilities.FromAsset(iconFile) : null;
 			_currentIcon = iconFile;
 		}
 
@@ -173,7 +173,7 @@ public abstract class BaseMenuAction : ViewModelBase, IDisposable {
 		IsSelected = null;
 		IsEnabled = null;
 		IsVisible = null;
-		if (SubActions != null) {
+		if (SubActions is not null) {
 			foreach (object subAction in SubActions) {
 				if (subAction is BaseMenuAction action) {
 					action.Dispose();
@@ -217,7 +217,7 @@ public sealed class MainMenuAction : BaseMenuAction {
 
 	protected override string InternalShortcutText {
 		get {
-			if (CustomShortcutText != null) {
+			if (CustomShortcutText is not null) {
 				return CustomShortcutText();
 			} else {
 				return Shortcut.HasValue ? Shortcut.Value.GetShortcutKeys()?.ToString() ?? "" : "";

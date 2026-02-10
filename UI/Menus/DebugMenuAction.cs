@@ -47,7 +47,7 @@ public class DebugMenuAction : MenuActionBase {
 	/// </summary>
 	/// <returns>The configured DbgShortKeys, or default if not configured.</returns>
 	public DbgShortKeys GetShortcutKeys() {
-		if (Shortcut != null) {
+		if (Shortcut is not null) {
 			return Shortcut();
 		}
 

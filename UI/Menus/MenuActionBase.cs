@@ -98,12 +98,12 @@ public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 	/// <summary>Gets or sets the submenu items.</summary>
 	public IReadOnlyList<object>? SubActions {
 		get => _subActions;
-		set => _subActions = value != null ? new List<object>(value) : null;
+		set => _subActions = value is not null ? new List<object>(value) : null;
 	}
 
 	/// <summary>Checks if any submenu item is enabled.</summary>
 	private bool IsAnySubActionEnabled() {
-		if (_subActions == null) {
+		if (_subActions is null) {
 			return true;
 		}
 
@@ -138,7 +138,7 @@ public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 	/// </remarks>
 	public Func<Task>? AsyncOnClick {
 		set {
-			if (value != null) {
+			if (value is not null) {
 				OnClick = async () => await value();
 			}
 		}
@@ -149,8 +149,8 @@ public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 		return () => {
 			Utilities.Log.Debug($"[MenuActionBase] Click handler invoked for {ActionType}");
 
-			bool visibleOk = IsVisible == null || AllowedWhenHidden || IsVisible();
-			bool enabledOk = IsEnabled == null || IsEnabled();
+			bool visibleOk = IsVisible is null || AllowedWhenHidden || IsVisible();
+			bool enabledOk = IsEnabled is null || IsEnabled();
 
 			Utilities.Log.Debug($"[MenuActionBase] IsVisible check: {visibleOk}, IsEnabled check: {enabledOk}");
 
@@ -181,13 +181,13 @@ public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 
 	/// <summary>Gets the computed display name.</summary>
 	protected virtual string ComputeName() {
-		string label = DynamicText != null
+		string label = DynamicText is not null
 			? DynamicText()
 			: ActionType == ActionType.Custom
 				? CustomText ?? ""
 				: ResourceHelper.GetEnumText(ActionType);
 
-		if (HintText != null) {
+		if (HintText is not null) {
 			string hint = HintText();
 			if (!string.IsNullOrWhiteSpace(hint)) {
 				label += " (" + hint + ")";
@@ -212,7 +212,7 @@ public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 			return actionIcon;
 		}
 
-		if (DynamicIcon != null) {
+		if (DynamicIcon is not null) {
 			return "Assets/" + DynamicIcon() + ".png";
 		}
 
@@ -236,13 +236,13 @@ public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 
 		string? iconPath = ComputeIconPath();
 		if (_currentIconPath != iconPath) {
-			ActionIcon = iconPath != null ? ImageUtilities.FromAsset(iconPath) : null;
+			ActionIcon = iconPath is not null ? ImageUtilities.FromAsset(iconPath) : null;
 			_currentIconPath = iconPath;
 		}
 
 		// Evaluate enabled state: must pass IsEnabled AND have at least one enabled child (if has children)
 		bool enabled = IsEnabled?.Invoke() ?? true;
-		if (enabled && _subActions != null) {
+		if (enabled && _subActions is not null) {
 			enabled = IsAnySubActionEnabled();
 		}
 
@@ -266,7 +266,7 @@ public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 	public virtual void Dispose() {
 		_onClick = () => { };
 		ClickCommand = null;
-		if (_subActions != null) {
+		if (_subActions is not null) {
 			foreach (object subAction in _subActions) {
 				if (subAction is IDisposable disposable) {
 					disposable.Dispose();

@@ -137,7 +137,7 @@ public sealed class HexEditorDataProvider : IHexEditorDataProvider {
 		}
 
 		_byteInfo.BackColor = Colors.Transparent;
-		if (_cdlData != null) {
+		if (_cdlData is not null) {
 			if (_memoryType.IsPpuMemory()) {
 				if (_cpuType == CpuType.Nes && _cdlData[index].HasFlag(CdlFlags.NesChrDrawn) && _cfg.NesDrawnChrRomHighlight.Highlight) {
 					_byteInfo.BackColor = _cfg.NesDrawnChrRomHighlight.Color;
@@ -162,7 +162,7 @@ public sealed class HexEditorDataProvider : IHexEditorDataProvider {
 		}
 
 		_byteInfo.BorderColor = Colors.Transparent;
-		if (_breakpointTypes != null) {
+		if (_breakpointTypes is not null) {
 			switch (_breakpointTypes[index]) {
 				case BreakpointTypeFlags.Execute:
 					_byteInfo.BorderColor = Color.FromUInt32(ConfigManager.Config.Debug.Debugger.CodeExecBreakpointColor);
@@ -185,7 +185,7 @@ public sealed class HexEditorDataProvider : IHexEditorDataProvider {
 				? DarkerColor(alpha, _cfg.ReadHighlight.Color, (framesToFade - framesSinceRead) / framesToFade)
 				: Color.FromArgb(alpha, 0, 0, 0);
 
-		if (_frozenAddresses != null && _frozenAddresses[index] != 0) {
+		if (_frozenAddresses is not null && _frozenAddresses[index] != 0) {
 			_byteInfo.ForeColor = _cfg.FrozenHighlight.Color;
 		}
 
@@ -207,7 +207,7 @@ public sealed class HexEditorDataProvider : IHexEditorDataProvider {
 	}
 
 	public string ConvertValueToString(UInt64 val, out int keyLength) {
-		if (_tblConverter != null) {
+		if (_tblConverter is not null) {
 			return _tblConverter.ToChar(val, out keyLength);
 		}
 
@@ -222,7 +222,7 @@ public sealed class HexEditorDataProvider : IHexEditorDataProvider {
 	}
 
 	public byte ConvertCharToByte(char c) {
-		if (_tblConverter != null) {
+		if (_tblConverter is not null) {
 			return _tblConverter.GetBytes(c.ToString())[0];
 		}
 

@@ -34,7 +34,7 @@ public sealed class SimpleImageViewer : Control {
 	}
 
 	public override void Render(DrawingContext context) {
-		if (Source == null) {
+		if (Source is null) {
 			return;
 		}
 
@@ -73,7 +73,7 @@ public sealed class SimpleImageViewer : Control {
 
 		public void Render(ImmediateDrawingContext context) {
 			var leaseFeature = context.PlatformImpl.GetFeature<ISkiaSharpApiLeaseFeature>();
-			if (leaseFeature != null) {
+			if (leaseFeature is not null) {
 				using var lease = leaseFeature.Lease();
 				var canvas = lease.SkCanvas;
 

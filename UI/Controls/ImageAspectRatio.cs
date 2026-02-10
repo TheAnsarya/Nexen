@@ -18,7 +18,7 @@ public sealed class ImageAspectRatio : Image {
 
 	protected override Size ArrangeOverride(Size finalSize) {
 		finalSize = base.ArrangeOverride(finalSize);
-		if (Source == null) {
+		if (Source is null) {
 			return finalSize;
 		}
 

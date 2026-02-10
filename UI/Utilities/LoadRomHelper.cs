@@ -22,7 +22,7 @@ public static class LoadRomHelper {
 		if (FolderHelper.IsArchiveFile(romPath)) {
 			Log.Info($"[LoadRomHelper] File is archive, showing SelectRomWindow");
 			ResourcePath? selectedRom = await SelectRomWindow.Show(romPath);
-			if (selectedRom == null) {
+			if (selectedRom is null) {
 				Log.Info($"[LoadRomHelper] No ROM selected from archive, aborting");
 				return;
 			}
@@ -31,7 +31,7 @@ public static class LoadRomHelper {
 			Log.Info($"[LoadRomHelper] Selected ROM from archive: {romPath}");
 		}
 
-		if (patchPath == null && ConfigManager.Config.Preferences.AutoLoadPatches) {
+		if (patchPath is null && ConfigManager.Config.Preferences.AutoLoadPatches) {
 			string[] extensions = new string[3] { ".ips", ".ups", ".bps" };
 			foreach (string ext in extensions) {
 				string file = Path.Combine(romPath.Folder, Path.GetFileNameWithoutExtension(romPath.FileName)) + ext;
@@ -101,7 +101,7 @@ public static class LoadRomHelper {
 
 	public static async void LoadPatchFile(string patchFile) {
 		string? patchFolder = Path.GetDirectoryName(patchFile);
-		if (patchFolder == null) {
+		if (patchFolder is null) {
 			return;
 		}
 
@@ -121,7 +121,7 @@ public static class LoadRomHelper {
 				//Prompt the user for a rom to load
 				if (await NexenMsgBox.Show(wnd, "SelectRomIps", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK) {
 					string? filename = await FileDialogHelper.OpenFile(null, wnd, FileDialogHelper.RomExt);
-					if (filename != null) {
+					if (filename is not null) {
 						LoadRom(filename, patchFile);
 					}
 				}
@@ -134,7 +134,7 @@ public static class LoadRomHelper {
 
 	private static bool IsPatchFile(string filename) {
 		using (FileStream? stream = FileHelper.OpenRead(filename)) {
-			if (stream != null) {
+			if (stream is not null) {
 				byte[] header = new byte[5];
 				stream.ReadExactly(header, 0, 5);
 				if (header[0] == 'P' && header[1] == 'A' && header[2] == 'T' && header[3] == 'C' && header[4] == 'H') {

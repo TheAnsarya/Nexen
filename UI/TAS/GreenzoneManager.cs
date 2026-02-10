@@ -274,7 +274,7 @@ public sealed class GreenzoneManager : IDisposable {
 	}
 
 	private bool LoadSavestateData(SavestateData state) {
-		if (state.Data == null) {
+		if (state.Data is null) {
 			return false;
 		}
 
@@ -328,7 +328,7 @@ public sealed class GreenzoneManager : IDisposable {
 				.ToList();
 
 			foreach (var kv in toCompress) {
-				if (kv.Value.Data != null && !kv.Value.IsCompressed) {
+				if (kv.Value.Data is not null && !kv.Value.IsCompressed) {
 					var compressed = CompressData(kv.Value.Data);
 
 					// Only use compressed if it's actually smaller

@@ -611,7 +611,7 @@ public sealed class MemoryAddressViewModel : INotifyPropertyChanged {
 	/// </remarks>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Update() {
-		if (PropertyChanged != null) {
+		if (PropertyChanged is not null) {
 			PropertyChanged(this, _args[0]);
 			PropertyChanged(this, _args[1]);
 			PropertyChanged(this, _args[2]);

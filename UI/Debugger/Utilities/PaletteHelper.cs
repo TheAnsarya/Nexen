@@ -62,7 +62,7 @@ public sealed class PaletteHelper {
 		);
 
 		entries.EndUpdate();
-		if (tooltipToUpdate != null) {
+		if (tooltipToUpdate is not null) {
 			return tooltipToUpdate;
 		} else {
 			return new DynamicTooltip() { Items = entries };

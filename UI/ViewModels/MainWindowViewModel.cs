@@ -82,13 +82,13 @@ public sealed class MainWindowViewModel : ViewModelBase {
 		RecentGames.Init(GameScreenMode.RecentGames);
 
 		this.WhenAnyValue(x => x.RecentGames.Visible, x => x.SoftwareRenderer.FrameSurface).Subscribe(x => {
-			IsNativeRendererVisible = !RecentGames.Visible && SoftwareRenderer.FrameSurface == null;
-			IsSoftwareRendererVisible = !RecentGames.Visible && SoftwareRenderer.FrameSurface != null;
+			IsNativeRendererVisible = !RecentGames.Visible && SoftwareRenderer.FrameSurface is null;
+			IsSoftwareRendererVisible = !RecentGames.Visible && SoftwareRenderer.FrameSurface is not null;
 		});
 
 		this.WhenAnyValue(x => x.RomInfo).Subscribe(x => {
 			bool showAudioPlayer = x.Format is RomFormat.Nsf or RomFormat.Spc or RomFormat.Gbs or RomFormat.PceHes;
-			if (AudioPlayer == null && showAudioPlayer) {
+			if (AudioPlayer is null && showAudioPlayer) {
 				AudioPlayer = new AudioPlayerViewModel();
 			} else if (!showAudioPlayer) {
 				AudioPlayer = null;

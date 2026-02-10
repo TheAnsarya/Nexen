@@ -46,7 +46,7 @@ public sealed class DebuggerDockFactory : Factory {
 		}
 
 		public override IRootDock CreateLayout() {
-			if (_savedRootDef != null) {
+			if (_savedRootDef is not null) {
 				//Restore previous layout
 				try {
 					if (FromDockDefinition(_savedRootDef) is IRootDock savedRootLayout) {
@@ -156,7 +156,7 @@ public sealed class DebuggerDockFactory : Factory {
 				entry.Name = dock.Title;
 				entry.Proportion = double.IsNaN(dock.Proportion) ? 0 : dock.Proportion;
 				entry.Children = new();
-				if (dock.VisibleDockables != null) {
+				if (dock.VisibleDockables is not null) {
 					if (dock is IProportionalDock propDock && dock.VisibleDockables.Count == 1) {
 						//Remove empty proportional docks (these seem to get created when moving things around)
 						DockEntryDefinition innerEntry = ToDockDefinition(dock.VisibleDockables[0]);
@@ -166,7 +166,7 @@ public sealed class DebuggerDockFactory : Factory {
 						return innerEntry;
 					}
 
-					if (dock.ActiveDockable != null) {
+					if (dock.ActiveDockable is not null) {
 						int index = dock.VisibleDockables.IndexOf(dock.ActiveDockable);
 						if (index >= 0) {
 							entry.SelectedIndex = index;
@@ -218,15 +218,15 @@ public sealed class DebuggerDockFactory : Factory {
 			}
 
 			IDock? dock = dockable as IDock;
-			if (dock != null && def.Proportion != 0) {
+			if (dock is not null && def.Proportion != 0) {
 				dock.Proportion = def.Proportion;
 			}
 
-			if (dock != null && def.Children != null) {
+			if (dock is not null && def.Children is not null) {
 				dock.VisibleDockables = CreateList<IDockable>();
 				foreach (DockEntryDefinition childDef in def.Children) {
 					IDockable? child = FromDockDefinition(childDef);
-					if (child != null) {
+					if (child is not null) {
 						dock.VisibleDockables.Add(child);
 					}
 				}

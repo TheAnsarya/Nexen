@@ -127,7 +127,7 @@ public partial class PaletteSelector : Control {
 	}
 
 	protected override Size MeasureOverride(Size availableSize) {
-		if (PaletteColors != null && ColumnCount > 0) {
+		if (PaletteColors is not null && ColumnCount > 0) {
 			return new Size(ColumnCount * BlockSize, PaletteColors.Length / ColumnCount * BlockSize);
 		} else {
 			return new Size(0, 0);
@@ -189,7 +189,7 @@ public partial class PaletteSelector : Control {
 	public override void Render(DrawingContext context) {
 		UInt32[] paletteColors = PaletteColors;
 
-		if (paletteColors == null || ColumnCount == 0) {
+		if (paletteColors is null || ColumnCount == 0) {
 			return;
 		}
 
@@ -272,7 +272,7 @@ public partial class PaletteSelector : Control {
 	protected override void OnPointerMoved(PointerEventArgs e) {
 		base.OnPointerMoved(e);
 
-		if (RawPalette == null) {
+		if (RawPalette is null) {
 			return;
 		}
 
@@ -285,7 +285,7 @@ public partial class PaletteSelector : Control {
 		_tooltip = PaletteHelper.GetPreviewPanel(PaletteColors, RawPalette, RawFormat, paletteIndex, _tooltip);
 		_tooltipPos = pos;
 
-		if (_tooltip != null) {
+		if (_tooltip is not null) {
 			TooltipHelper.ShowTooltip(this, _tooltip, 15);
 		} else {
 			TooltipHelper.HideTooltip(this);

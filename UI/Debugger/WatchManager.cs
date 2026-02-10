@@ -302,7 +302,7 @@ public sealed class WatchManager {
 		} else if (match.Groups[4].Value.Length > 0) {
 			string token = match.Groups[4].Value.Trim();
 			CodeLabel? label = LabelManager.GetLabel(token);
-			if (label == null) {
+			if (label is null) {
 				Int64 value = DebugApi.EvaluateExpression(token, _cpuType, out EvalResultType result, true);
 				if (result == EvalResultType.Numeric) {
 					address = value;

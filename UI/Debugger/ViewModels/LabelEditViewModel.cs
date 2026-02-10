@@ -87,7 +87,7 @@ public sealed class LabelEditViewModel : DisposableViewModel {
 		_originalLabel = originalLabel;
 
 		Label = new ReactiveCodeLabel(label);
-		AllowDelete = originalLabel != null;
+		AllowDelete = originalLabel is not null;
 
 		if (Design.IsDesignMode) {
 			return;
@@ -118,8 +118,8 @@ public sealed class LabelEditViewModel : DisposableViewModel {
 			// Check for address conflicts with existing labels
 			for (UInt32 i = 0; i < length; i++) {
 				CodeLabel? sameAddress = LabelManager.GetLabel(address + i, memoryType);
-				if (sameAddress != null) {
-					if (originalLabel == null || (sameAddress.Label != originalLabel.Label && !sameAddress.Label.StartsWith(originalLabel.Label + "+"))) {
+				if (sameAddress is not null) {
+					if (originalLabel is null || (sameAddress.Label != originalLabel.Label && !sameAddress.Label.StartsWith(originalLabel.Label + "+"))) {
 						//A label already exists, we're trying to edit an existing label, but the existing label
 						//and the label we're editing aren't the same label.  Can't override an existing label with a different one.
 						ErrorMessage = ResourceHelper.GetMessage("AddressHasOtherLabel", sameAddress.Label.Length > 0 ? sameAddress.Label : sameAddress.Comment);
@@ -147,7 +147,7 @@ public sealed class LabelEditViewModel : DisposableViewModel {
 			}
 
 			// Check for label name conflicts
-			if (sameLabel != null && sameLabel != originalLabel) {
+			if (sameLabel is not null && sameLabel != originalLabel) {
 				ErrorMessage = ResourceHelper.GetMessage("LabelNameInUse");
 				return false;
 			}
@@ -169,7 +169,7 @@ public sealed class LabelEditViewModel : DisposableViewModel {
 	/// Only callable when editing an existing label (AllowDelete is true).
 	/// </remarks>
 	public void DeleteLabel() {
-		if (_originalLabel != null) {
+		if (_originalLabel is not null) {
 			LabelManager.DeleteLabel(_originalLabel, true);
 		}
 	}

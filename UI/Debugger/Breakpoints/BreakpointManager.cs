@@ -271,7 +271,7 @@ public static class BreakpointManager {
 	private static Breakpoint? GetMatchingBreakpoint(AddressInfo info, CpuType cpuType, Func<Breakpoint, bool> predicate) {
 		Breakpoint? bp = Breakpoints.Where((bp) => predicate(bp) && bp.Matches((UInt32)info.Address, info.Type, cpuType)).FirstOrDefault();
 
-		if (bp == null) {
+		if (bp is null) {
 			AddressInfo altAddr = info.Type.IsRelativeMemory() ? DebugApi.GetAbsoluteAddress(info) : DebugApi.GetRelativeAddress(info, cpuType);
 			if (altAddr.Address >= 0) {
 				bp = Breakpoints.Where((bp) => predicate(bp) && bp.Matches((UInt32)altAddr.Address, altAddr.Type, cpuType)).FirstOrDefault();
@@ -328,7 +328,7 @@ public static class BreakpointManager {
 	/// </returns>
 	public static bool EnableDisableBreakpoint(AddressInfo info, CpuType cpuType) {
 		Breakpoint? breakpoint = BreakpointManager.GetMatchingBreakpoint(info, cpuType);
-		if (breakpoint != null) {
+		if (breakpoint is not null) {
 			breakpoint.Enabled = !breakpoint.Enabled;
 			DebugWorkspaceManager.AutoSave();
 			RefreshBreakpoints();
@@ -359,7 +359,7 @@ public static class BreakpointManager {
 		}
 
 		Breakpoint? breakpoint = BreakpointManager.GetMatchingForbidBreakpoint(info, cpuType) ?? BreakpointManager.GetMatchingBreakpoint(info, cpuType, true);
-		if (breakpoint != null) {
+		if (breakpoint is not null) {
 			BreakpointManager.RemoveBreakpoint(breakpoint);
 		} else {
 			bool execBreakpoint = true;
@@ -404,7 +404,7 @@ public static class BreakpointManager {
 		}
 
 		Breakpoint? breakpoint = GetMatchingForbidBreakpoint(addr, cpuType);
-		if (breakpoint != null) {
+		if (breakpoint is not null) {
 			BreakpointManager.RemoveBreakpoint(breakpoint);
 		} else {
 			breakpoint = new Breakpoint() {

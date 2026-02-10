@@ -217,13 +217,13 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 				ActionType = ActionType.Custom,
 				CustomText = "Save",
 				OnClick = () => _ = SaveFileAsync(),
-				IsEnabled = () => Movie != null && _currentConverter?.CanWrite == true
+				IsEnabled = () => Movie is not null && _currentConverter?.CanWrite == true
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
 				CustomText = "Save As...",
 				OnClick = () => _ = SaveAsFileAsync(),
-				IsEnabled = () => Movie != null
+				IsEnabled = () => Movie is not null
 			},
 			new ContextMenuSeparator(),
 			new ContextMenuAction() {
@@ -235,7 +235,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 				ActionType = ActionType.Custom,
 				CustomText = "Export...",
 				OnClick = () => _ = ExportMovieAsync(),
-				IsEnabled = () => Movie != null
+				IsEnabled = () => Movie is not null
 			},
 			new ContextMenuSeparator(),
 			new ContextMenuAction() {
@@ -261,30 +261,30 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 				ActionType = ActionType.Custom,
 				CustomText = "Cut",
 				OnClick = Cut,
-				IsEnabled = () => Movie != null && SelectedFrameIndex >= 0
+				IsEnabled = () => Movie is not null && SelectedFrameIndex >= 0
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.Copy,
 				OnClick = Copy,
-				IsEnabled = () => Movie != null && SelectedFrameIndex >= 0
+				IsEnabled = () => Movie is not null && SelectedFrameIndex >= 0
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.Paste,
 				OnClick = Paste,
-				IsEnabled = () => HasClipboard && Movie != null
+				IsEnabled = () => HasClipboard && Movie is not null
 			},
 			new ContextMenuSeparator(),
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
 				CustomText = "Insert Frame(s)",
 				OnClick = InsertFrames,
-				IsEnabled = () => Movie != null
+				IsEnabled = () => Movie is not null
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
 				CustomText = "Delete Frame(s)",
 				OnClick = DeleteFrames,
-				IsEnabled = () => Movie != null && SelectedFrameIndex >= 0
+				IsEnabled = () => Movie is not null && SelectedFrameIndex >= 0
 			},
 			new ContextMenuSeparator(),
 			new ContextMenuAction() {
@@ -330,7 +330,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 				ActionType = ActionType.Custom,
 				CustomText = "Play/Pause",
 				OnClick = TogglePlayback,
-				IsEnabled = () => Movie != null
+				IsEnabled = () => Movie is not null
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
@@ -343,20 +343,20 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 				ActionType = ActionType.Custom,
 				CustomText = "Frame Advance",
 				OnClick = FrameAdvance,
-				IsEnabled = () => Movie != null
+				IsEnabled = () => Movie is not null
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
 				CustomText = "Frame Rewind",
 				OnClick = FrameRewind,
-				IsEnabled = () => Movie != null && PlaybackFrame > 0
+				IsEnabled = () => Movie is not null && PlaybackFrame > 0
 			},
 			new ContextMenuSeparator(),
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
 				CustomText = "Seek to Frame...",
 				OnClick = () => _ = SeekToFrameAsync(),
-				IsEnabled = () => Movie != null && Greenzone.SavestateCount > 0
+				IsEnabled = () => Movie is not null && Greenzone.SavestateCount > 0
 			},
 			new ContextMenuSeparator(),
 			new ContextMenuAction() {
@@ -391,7 +391,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 				ActionType = ActionType.Custom,
 				CustomText = "Start Recording",
 				OnClick = StartRecording,
-				IsEnabled = () => Movie != null && !IsRecording
+				IsEnabled = () => Movie is not null && !IsRecording
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
@@ -404,7 +404,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 				ActionType = ActionType.Custom,
 				CustomText = "Rerecord from Here",
 				OnClick = RerecordFromSelected,
-				IsEnabled = () => Movie != null && SelectedFrameIndex >= 0
+				IsEnabled = () => Movie is not null && SelectedFrameIndex >= 0
 			},
 			new ContextMenuSeparator(),
 			new ContextMenuAction() {
@@ -427,7 +427,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 				ActionType = ActionType.Custom,
 				CustomText = "Create Branch",
 				OnClick = CreateBranch,
-				IsEnabled = () => Movie != null
+				IsEnabled = () => Movie is not null
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
@@ -442,7 +442,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 				ActionType = ActionType.Custom,
 				CustomText = "Run Script...",
 				OnClick = () => _ = RunScriptAsync(),
-				IsEnabled = () => Movie != null
+				IsEnabled = () => Movie is not null
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
@@ -499,7 +499,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			var format = MovieConverterRegistry.DetectFormat(path);
 			var converter = MovieConverterRegistry.GetConverter(format);
 
-			if (converter == null) {
+			if (converter is null) {
 				StatusMessage = $"Unsupported format: {format}";
 				return;
 			}
@@ -519,7 +519,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Saves the current movie to the existing file.
 	/// </summary>
 	public async System.Threading.Tasks.Task SaveFileAsync() {
-		if (Movie == null || _currentConverter == null || !_currentConverter.CanWrite) {
+		if (Movie is null || _currentConverter is null || !_currentConverter.CanWrite) {
 			return;
 		}
 
@@ -542,7 +542,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Saves the current movie to a new file.
 	/// </summary>
 	public async System.Threading.Tasks.Task SaveAsFileAsync() {
-		if (Movie == null) {
+		if (Movie is null) {
 			return;
 		}
 
@@ -556,7 +556,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			var format = MovieConverterRegistry.DetectFormat(path);
 			var converter = MovieConverterRegistry.GetConverter(format);
 
-			if (converter == null || !converter.CanWrite) {
+			if (converter is null || !converter.CanWrite) {
 				StatusMessage = $"Cannot write to format: {format}";
 				return;
 			}
@@ -593,7 +593,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Exports the movie to another format.
 	/// </summary>
 	public async System.Threading.Tasks.Task ExportMovieAsync() {
-		if (Movie == null) {
+		if (Movie is null) {
 			return;
 		}
 
@@ -607,7 +607,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			var format = MovieConverterRegistry.DetectFormat(path);
 			var converter = MovieConverterRegistry.GetConverter(format);
 
-			if (converter == null || !converter.CanWrite) {
+			if (converter is null || !converter.CanWrite) {
 				StatusMessage = $"Cannot export to format: {format}";
 				return;
 			}
@@ -626,7 +626,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Inserts new frames at the current position.
 	/// </summary>
 	public void InsertFrames() {
-		if (Movie == null) {
+		if (Movie is null) {
 			return;
 		}
 
@@ -641,7 +641,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Deletes the selected frames.
 	/// </summary>
 	public void DeleteFrames() {
-		if (Movie == null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
+		if (Movie is null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
 			return;
 		}
 
@@ -661,7 +661,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Clears the input on the selected frame.
 	/// </summary>
 	public void ClearSelectedInput() {
-		if (Movie == null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
+		if (Movie is null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
 			return;
 		}
 
@@ -679,7 +679,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Sets a comment on the selected frame.
 	/// </summary>
 	public void SetComment() {
-		if (Movie == null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
+		if (Movie is null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
 			return;
 		}
 
@@ -692,7 +692,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 		UpdateFrames();
 		HasUnsavedChanges = true;
-		StatusMessage = frame.Comment != null ? $"Set comment on frame {SelectedFrameIndex}" : $"Removed comment from frame {SelectedFrameIndex}";
+		StatusMessage = frame.Comment is not null ? $"Set comment on frame {SelectedFrameIndex}" : $"Removed comment from frame {SelectedFrameIndex}";
 	}
 
 	/// <summary>
@@ -701,7 +701,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	public async System.Threading.Tasks.Task GoToFrameAsync() {
 		// TODO: Implement frame input dialog
 		// For now, just go to first frame
-		if (Movie != null && Movie.InputFrames.Count > 0) {
+		if (Movie is not null && Movie.InputFrames.Count > 0) {
 			SelectedFrameIndex = 0;
 		}
 
@@ -712,7 +712,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Toggles a button on the selected frame.
 	/// </summary>
 	public void ToggleButton(int port, string button) {
-		if (Movie == null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
+		if (Movie is null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
 			return;
 		}
 
@@ -744,7 +744,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	private void UpdateFrames() {
 		Frames.Clear();
 
-		if (Movie == null) {
+		if (Movie is null) {
 			return;
 		}
 
@@ -816,7 +816,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Cuts the selected frame(s) to clipboard.
 	/// </summary>
 	public void Cut() {
-		if (Movie == null || SelectedFrameIndex < 0) {
+		if (Movie is null || SelectedFrameIndex < 0) {
 			return;
 		}
 
@@ -828,7 +828,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Copies the selected frame(s) to clipboard.
 	/// </summary>
 	public void Copy() {
-		if (Movie == null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
+		if (Movie is null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
 			return;
 		}
 
@@ -845,7 +845,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Pastes clipboard content at the current position.
 	/// </summary>
 	public void Paste() {
-		if (Movie == null || _clipboard == null || _clipboard.Count == 0) {
+		if (Movie is null || _clipboard is null || _clipboard.Count == 0) {
 			return;
 		}
 
@@ -905,7 +905,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Starts playback from the current frame.
 	/// </summary>
 	public void StartPlayback() {
-		if (Movie == null) {
+		if (Movie is null) {
 			return;
 		}
 
@@ -934,7 +934,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Advances playback by one frame.
 	/// </summary>
 	public void FrameAdvance() {
-		if (Movie == null) {
+		if (Movie is null) {
 			return;
 		}
 
@@ -956,7 +956,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Rewinds playback by one frame.
 	/// </summary>
 	public void FrameRewind() {
-		if (Movie == null) {
+		if (Movie is null) {
 			return;
 		}
 
@@ -980,7 +980,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Seeks to a specific frame using the greenzone.
 	/// </summary>
 	public async System.Threading.Tasks.Task SeekToFrameAsync() {
-		if (Movie == null || Greenzone.SavestateCount == 0) {
+		if (Movie is null || Greenzone.SavestateCount == 0) {
 			return;
 		}
 
@@ -1006,7 +1006,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Starts input recording.
 	/// </summary>
 	public void StartRecording() {
-		if (Movie == null || IsRecording) {
+		if (Movie is null || IsRecording) {
 			return;
 		}
 
@@ -1030,7 +1030,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Starts rerecording from the selected frame.
 	/// </summary>
 	public void RerecordFromSelected() {
-		if (Movie == null || SelectedFrameIndex < 0) {
+		if (Movie is null || SelectedFrameIndex < 0) {
 			return;
 		}
 
@@ -1046,7 +1046,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Creates a branch from the current movie state.
 	/// </summary>
 	public void CreateBranch() {
-		if (Movie == null) {
+		if (Movie is null) {
 			return;
 		}
 
@@ -1060,7 +1060,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// </summary>
 	/// <param name="branch">The branch to load.</param>
 	public void LoadBranch(BranchData branch) {
-		if (Movie == null) {
+		if (Movie is null) {
 			return;
 		}
 
@@ -1495,7 +1495,7 @@ tas.finishSearch(true) -- Load best result</pre>
 	/// Detects the controller layout from the loaded movie.
 	/// </summary>
 	private void DetectControllerLayout() {
-		if (Movie == null) {
+		if (Movie is null) {
 			CurrentLayout = ControllerLayout.Snes;
 			return;
 		}

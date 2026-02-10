@@ -157,7 +157,7 @@ public sealed class RegisterViewerWindowViewModel : DisposableViewModel, ICpuTyp
 	/// Creates or updates tabs using the appropriate platform-specific register viewer.
 	/// </summary>
 	public void RefreshTabs() {
-		if (_state == null) {
+		if (_state is null) {
 			return;
 		}
 
@@ -385,7 +385,7 @@ public sealed class RegEntry : INotifyPropertyChanged {
 	/// <param name="rawValue">Optional raw value for hex display.</param>
 	public RegEntry(string reg, string name, string textValue, IConvertible? rawValue) {
 		Init(reg, name, textValue, Format.None);
-		if (rawValue != null) {
+		if (rawValue is not null) {
 			_valueHex = GetHexValue(rawValue, Format.X8);
 		}
 	}
@@ -411,8 +411,8 @@ public sealed class RegEntry : INotifyPropertyChanged {
 
 		_valueHex = value is Enum ? GetHexValue(Convert.ToInt64(value), Format.X8) : GetHexValue(value, format);
 
-		Background = value == null ? RegEntry.HeaderBgBrush : Brushes.Transparent;
-		IsEnabled = value != null;
+		Background = value is null ? RegEntry.HeaderBgBrush : Brushes.Transparent;
+		IsEnabled = value is not null;
 	}
 
 	/// <summary>
@@ -427,7 +427,7 @@ public sealed class RegEntry : INotifyPropertyChanged {
 			return boolValue ? "☑ true" : "☐ false";
 		} else if (value is IFormattable formattable) {
 			return formattable.ToString() ?? "";
-		} else if (value == null) {
+		} else if (value is null) {
 			return "";
 		}
 

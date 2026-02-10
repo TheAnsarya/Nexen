@@ -41,7 +41,7 @@ static class WindowExtensions {
 	}
 
 	private static PixelPoint FitToScreenBounds(Screen? screen, int childWidth, int childHeight, PixelPoint startPosition) {
-		if (screen != null) {
+		if (screen is not null) {
 			PixelPoint bottomRight = startPosition + new PixelVector(childWidth, childHeight);
 
 			//Try to reposition window to ensure it appears on the parent's screen
@@ -66,7 +66,7 @@ static class WindowExtensions {
 	}
 
 	public static void ShowCentered(this Window child, Visual? parent) {
-		if (parent != null) {
+		if (parent is not null) {
 			CenterWindow(child, parent);
 		}
 
@@ -83,7 +83,7 @@ static class WindowExtensions {
 	}
 
 	public static Task<TResult> ShowCenteredDialog<TResult>(this Window child, Visual? parent) {
-		if (parent != null) {
+		if (parent is not null) {
 			CenterWindow(child, parent);
 		}
 
@@ -96,7 +96,7 @@ static class WindowExtensions {
 
 		EventHandler? handler = null;
 		handler = (s, e) => {
-			if (parent?.GetVisualRoot() is WindowBase parentWnd && parent != null) {
+			if (parent?.GetVisualRoot() is WindowBase parentWnd && parent is not null) {
 				Screen? screen = parentWnd.Screens.ScreenFromVisual(parent);
 				double scale = LayoutHelper.GetLayoutScale(parentWnd);
 

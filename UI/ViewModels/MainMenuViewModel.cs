@@ -113,7 +113,7 @@ public sealed class MainMenuViewModel : ViewModelBase {
 	/// <param name="wnd">The main window.</param>
 	/// <param name="tab">The tab to open.</param>
 	private void OpenConfig(MainWindow wnd, ConfigWindowTab tab) {
-		if (_cfgWindow == null) {
+		if (_cfgWindow is null) {
 			_cfgWindow = new ConfigWindow(tab);
 			_cfgWindow.Closed += cfgWindow_Closed;
 			_cfgWindow.ShowCentered((Control)wnd);
@@ -155,7 +155,7 @@ public sealed class MainMenuViewModel : ViewModelBase {
 
 			Utilities.Log.Info($"[MainMenuViewModel] File dialog returned: {filename ?? "null (cancelled)"}");
 
-			if (filename != null) {
+			if (filename is not null) {
 				Utilities.Log.Info($"[MainMenuViewModel] Calling LoadRomHelper.LoadFile with: {filename}");
 				LoadRomHelper.LoadFile(filename);
 			}
@@ -194,12 +194,12 @@ public sealed class MainMenuViewModel : ViewModelBase {
 		foreach (object item in items) {
 			if (item is Menus.IMenuAction newAction) {
 				newAction.Update();
-				if (newAction.SubActions != null) {
+				if (newAction.SubActions is not null) {
 					UpdateAllMenuItems(newAction.SubActions);
 				}
 			} else if (item is BaseMenuAction action) {
 				action.Update();
-				if (action.SubActions != null) {
+				if (action.SubActions is not null) {
 					UpdateAllMenuItems(action.SubActions);
 				}
 			}
@@ -847,7 +847,7 @@ public sealed class MainMenuViewModel : ViewModelBase {
 	}
 
 	private MenuActionBase GetSpeedMenuItem(ActionType action, int speed, EmulatorShortcut? shortcut = null) {
-		if (shortcut != null) {
+		if (shortcut is not null) {
 			return new ShortcutMenuAction(shortcut.Value) {
 				ActionType = action,
 				IsSelected = () => ConfigManager.Config.Emulation.EmulationSpeed == speed,
@@ -873,7 +873,7 @@ public sealed class MainMenuViewModel : ViewModelBase {
 					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && !RecordApi.MovieRecording() && !RecordApi.MoviePlaying(),
 					OnClick = async () => {
 						string? filename = await FileDialogHelper.OpenFile(ConfigManager.MovieFolder, wnd, FileDialogHelper.NexenMovieExt, FileDialogHelper.MesenMovieExt);
-						if(filename != null) {
+						if(filename is not null) {
 							RecordApi.MoviePlay(filename);
 						}
 					}
@@ -974,7 +974,7 @@ public sealed class MainMenuViewModel : ViewModelBase {
 					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && !RecordApi.WaveIsRecording(),
 					OnClick = async () => {
 						string? filename = await FileDialogHelper.SaveFile(ConfigManager.WaveFolder, EmuApi.GetRomInfo().GetRomName() + ".wav", wnd, FileDialogHelper.WaveExt);
-						if(filename != null) {
+						if(filename is not null) {
 							RecordApi.WaveRecord(filename);
 						}
 					}
@@ -1264,7 +1264,7 @@ public sealed class MainMenuViewModel : ViewModelBase {
 	public void CheckForUpdate(Window mainWindow, bool silent) {
 		Task.Run(async () => {
 			UpdatePromptViewModel? updateInfo = await UpdatePromptViewModel.GetUpdateInformation(silent);
-			if (updateInfo == null) {
+			if (updateInfo is null) {
 				if (!silent) {
 					Dispatcher.UIThread.Post(() => NexenMsgBox.Show(null, "UpdateDownloadFailed", MessageBoxButtons.OK, MessageBoxIcon.Info));
 				}
@@ -1287,13 +1287,13 @@ public sealed class MainMenuViewModel : ViewModelBase {
 
 	private async void InstallHdPack(Window wnd) {
 		string? filename = await FileDialogHelper.OpenFile(null, wnd, FileDialogHelper.ZipExt);
-		if (filename == null) {
+		if (filename is null) {
 			return;
 		}
 
 		try {
 			using (FileStream? stream = FileHelper.OpenRead(filename)) {
-				if (stream == null) {
+				if (stream is null) {
 					return;
 				}
 
@@ -1308,7 +1308,7 @@ public sealed class MainMenuViewModel : ViewModelBase {
 					if (entry.Name == "hires.txt") {
 						string? folder = Path.GetDirectoryName(entry.FullName);
 						int depth = 0;
-						if (folder != null) {
+						if (folder is not null) {
 							do {
 								depth++;
 							} while ((folder = Path.GetDirectoryName(folder)) != null);
@@ -1324,7 +1324,7 @@ public sealed class MainMenuViewModel : ViewModelBase {
 					}
 				}
 
-				if (hiresEntry == null) {
+				if (hiresEntry is null) {
 					await NexenMsgBox.Show(wnd, "InstallHdPackInvalidPack", MessageBoxButtons.OK, MessageBoxIcon.Error);
 					return;
 				}
@@ -1362,7 +1362,7 @@ public sealed class MainMenuViewModel : ViewModelBase {
 						if (!string.IsNullOrWhiteSpace(entry.Name) && entry.Length > 0 && entry.FullName.StartsWith(hiresFileFolder)) {
 							string filePath = Path.Combine(targetFolder, entry.FullName.Substring(hiresFileFolder.Length));
 							string? fileFolder = Path.GetDirectoryName(filePath);
-							if (fileFolder != null) {
+							if (fileFolder is not null) {
 								Directory.CreateDirectory(fileFolder);
 							}
 

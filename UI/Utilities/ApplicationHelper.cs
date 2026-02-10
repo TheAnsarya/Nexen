@@ -47,7 +47,7 @@ public static class ApplicationHelper {
 		if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
 			if (desktop.Windows.Where(w => w is T).FirstOrDefault() is not T wnd) {
 				wnd = createWindow();
-				if (centerParent != null) {
+				if (centerParent is not null) {
 					wnd.ShowCentered((Control)centerParent);
 				} else {
 					wnd.Show();

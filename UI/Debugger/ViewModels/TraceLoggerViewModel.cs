@@ -192,7 +192,7 @@ public sealed class TraceLoggerViewModel : DisposableViewModel, ISelectableModel
 
 		AddDisposable(this.WhenAnyValue(x => x.MaxScrollPosition).Subscribe(x => ScrollPosition = Math.Max(MinScrollPosition, Math.Min(x, MaxScrollPosition))));
 
-		AddDisposable(this.WhenAnyValue(x => x.IsLoggingToFile).Subscribe(x => AllowOpenTraceFile = !IsLoggingToFile && TraceFile != null));
+		AddDisposable(this.WhenAnyValue(x => x.IsLoggingToFile).Subscribe(x => AllowOpenTraceFile = !IsLoggingToFile && TraceFile is not null));
 
 		AddDisposable(this.WhenAnyValue(x => x.SelectionStart, x => x.SelectionEnd, x => x.SelectedRow, x => x.SelectionAnchor).Subscribe(x => {
 			SelectionStart = Math.Max(MinScrollPosition, Math.Min(DebugApi.TraceLogBufferSize - 1, SelectionStart));
@@ -1029,7 +1029,7 @@ public sealed class TraceLoggerStyleProvider : ILineStyleProvider {
 			_ => GetMainCpuStyle(),
 		};
 
-		if (_model != null && lineData.HasAddress) {
+		if (_model is not null && lineData.HasAddress) {
 			int lineNumber = _model.ScrollPosition + lineIndex;
 			props.IsSelectedRow = lineNumber >= _model.SelectionStart && lineNumber <= _model.SelectionEnd;
 			props.IsActiveRow = _model.SelectedRow == lineNumber;

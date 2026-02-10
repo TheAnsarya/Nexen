@@ -189,11 +189,11 @@ public sealed class CodeCompletionHelper {
 		sb.AppendLine("<div class=\"menu\">");
 		foreach (DocEntryViewModel entry in _documentation.Values.OrderBy(x => (int)x.Category).ThenBy(x => (int?)x.Subcategory)) {
 			if (entry.Category != category) {
-				if (category != null) {
+				if (category is not null) {
 					sb.AppendLine("</div>");
 				}
 
-				if (subcategory != null) {
+				if (subcategory is not null) {
 					sb.AppendLine("</div>");
 				}
 
@@ -202,8 +202,8 @@ public sealed class CodeCompletionHelper {
 				category = entry.Category;
 			}
 
-			if (entry.Subcategory != subcategory && entry.Subcategory != null) {
-				if (subcategory != null) {
+			if (entry.Subcategory != subcategory && entry.Subcategory is not null) {
+				if (subcategory is not null) {
 					sb.AppendLine("</div>");
 				}
 
@@ -214,11 +214,11 @@ public sealed class CodeCompletionHelper {
 			sb.AppendLine($"<div class=\"apilink\"><a href=\"#{entry.Name}\">{entry.Name}</a></div>");
 		}
 
-		if (category != null) {
+		if (category is not null) {
 			sb.AppendLine("</div>");
 		}
 
-		if (subcategory != null) {
+		if (subcategory is not null) {
 			sb.AppendLine("</div>");
 		}
 
@@ -256,7 +256,7 @@ public sealed class CodeCompletionHelper {
 				}
 			}
 
-			if (entry.Subcategory != subcategory && entry.Subcategory != null) {
+			if (entry.Subcategory != subcategory && entry.Subcategory is not null) {
 				sb.AppendLine($"<h2 id=\"{entry.Category}_{entry.Subcategory}\">{ResourceHelper.GetEnumText(entry.Subcategory)}</h2>");
 				subcategory = entry.Subcategory;
 			}

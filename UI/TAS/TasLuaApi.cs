@@ -68,7 +68,7 @@ public sealed class TasLuaApi {
 	/// </summary>
 	public Dictionary<string, object> GetMovieInfo() {
 		var movie = _viewModel.Movie;
-		if (movie == null) {
+		if (movie is null) {
 			return new Dictionary<string, object>();
 		}
 
@@ -138,7 +138,7 @@ public sealed class TasLuaApi {
 	/// </summary>
 	public Dictionary<string, bool>? GetFrameInput(int frame, int controller = 0) {
 		var movie = _viewModel.Movie;
-		if (movie == null || frame < 0 || frame >= movie.InputFrames.Count) {
+		if (movie is null || frame < 0 || frame >= movie.InputFrames.Count) {
 			return null;
 		}
 
@@ -169,7 +169,7 @@ public sealed class TasLuaApi {
 	/// </summary>
 	public bool SetFrameInput(int frame, Dictionary<string, bool> input, int controller = 0) {
 		var movie = _viewModel.Movie;
-		if (movie == null || frame < 0 || frame >= movie.InputFrames.Count) {
+		if (movie is null || frame < 0 || frame >= movie.InputFrames.Count) {
 			return false;
 		}
 
@@ -204,7 +204,7 @@ public sealed class TasLuaApi {
 	/// </summary>
 	public bool ClearFrameInput(int frame, int controller = 0) {
 		var movie = _viewModel.Movie;
-		if (movie == null || frame < 0 || frame >= movie.InputFrames.Count) {
+		if (movie is null || frame < 0 || frame >= movie.InputFrames.Count) {
 			return false;
 		}
 

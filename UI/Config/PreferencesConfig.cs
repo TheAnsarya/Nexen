@@ -164,7 +164,7 @@ public sealed class PreferencesConfig : BaseConfig<PreferencesConfig> {
 	}
 
 	private void UpdateFonts() {
-		if (Application.Current != null) {
+		if (Application.Current is not null) {
 			string nexenFontFamily = Configuration.GetValidFontFamily(NexenFont.FontFamily, false);
 			string menuFont = Configuration.GetValidFontFamily(NexenMenuFont.FontFamily, false);
 
@@ -193,7 +193,7 @@ public sealed class PreferencesConfig : BaseConfig<PreferencesConfig> {
 	}
 
 	public static void UpdateTheme() {
-		if (Application.Current != null) {
+		if (Application.Current is not null) {
 			ThemeVariant newTheme = ConfigManager.Config.Preferences.Theme == NexenTheme.Dark ? ThemeVariant.Dark : ThemeVariant.Light;
 			if (Application.Current.RequestedThemeVariant != newTheme) {
 				ConfigManager.ActiveTheme = ConfigManager.Config.Preferences.Theme;

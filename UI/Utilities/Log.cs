@@ -38,7 +38,7 @@ public static class Log {
 
 				// Ensure directory exists
 				string? dir = Path.GetDirectoryName(logPath);
-				if (dir != null) {
+				if (dir is not null) {
 					Directory.CreateDirectory(dir);
 				}
 
@@ -197,7 +197,7 @@ internal sealed class FileLogger : ILogger {
 
 		try {
 			_writer.WriteLine($"{timestamp} [{level}] {message}");
-			if (exception != null) {
+			if (exception is not null) {
 				_writer.WriteLine(exception.ToString());
 			}
 		} catch {

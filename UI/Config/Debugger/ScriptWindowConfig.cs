@@ -33,7 +33,7 @@ public sealed class ScriptWindowConfig : BaseWindowConfig<ScriptWindowConfig> {
 
 	public void AddRecentScript(string scriptFile) {
 		string? existingItem = RecentScripts.Where((file) => file == scriptFile).FirstOrDefault();
-		if (existingItem != null) {
+		if (existingItem is not null) {
 			RecentScripts.Remove(existingItem);
 		}
 

@@ -44,7 +44,7 @@ public sealed class HdPackBuilderViewModel : DisposableViewModel {
 		IsBankSizeVisible = EmuApi.GetGameMemorySize(MemoryType.NesChrRam) > 0;
 
 		AddDisposable(this.WhenAnyValue(x => x.SelectedFilter).Subscribe(x => {
-			if (x != null) {
+			if (x is not null) {
 				Config.FilterType = x.FilterType;
 				Config.Scale = x.Scale;
 			}

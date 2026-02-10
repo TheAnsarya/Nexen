@@ -26,7 +26,7 @@ public sealed class NexenTextEditor : TextEditor {
 	public double VerticalScrollBarValue {
 		get => ScrollViewer?.Offset.Y ?? 0;
 		set {
-			if (ScrollViewer != null) {
+			if (ScrollViewer is not null) {
 				ScrollViewer.Offset = ScrollViewer.Offset.WithY(value);
 			}
 		}

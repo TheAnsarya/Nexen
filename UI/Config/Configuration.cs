@@ -169,7 +169,7 @@ public partial class Configuration : ReactiveObject {
 	}
 
 	public static List<string> GetSortedFontList() {
-		if (_sortedFonts == null) {
+		if (_sortedFonts is null) {
 			InitInstalledFonts();
 		}
 
@@ -177,7 +177,7 @@ public partial class Configuration : ReactiveObject {
 	}
 
 	private static string FindMatchingFont(string defaultFont, params string[] fontNames) {
-		if (_installedFonts == null) {
+		if (_installedFonts is null) {
 			InitInstalledFonts();
 		}
 
@@ -191,7 +191,7 @@ public partial class Configuration : ReactiveObject {
 	}
 
 	public static string GetValidFontFamily(string requestedFont, bool preferMonoFont) {
-		if (_installedFonts == null) {
+		if (_installedFonts is null) {
 			InitInstalledFonts();
 		}
 
@@ -262,7 +262,7 @@ public partial class Configuration : ReactiveObject {
 	public static void BackupSettings(string configFile) {
 		//File exists but couldn't be loaded, make a backup of the old settings before we overwrite them
 		string? folder = Path.GetDirectoryName(configFile);
-		if (folder != null) {
+		if (folder is not null) {
 			File.Copy(configFile, Path.Combine(folder, "settings." + DateTime.Now.ToString("yyyy-M-dd_HH-mm-ss") + ".bak"), true);
 		}
 	}

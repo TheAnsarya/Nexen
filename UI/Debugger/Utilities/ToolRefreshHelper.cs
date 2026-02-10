@@ -71,7 +71,7 @@ public static class ToolRefreshHelper {
 
 		Task.Run(async () => {
 			await Task.Delay(300);
-			if (listener != null) {
+			if (listener is not null) {
 				lock (callback) {
 					if (!done) {
 						//Give up after 300ms and call the callback

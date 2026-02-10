@@ -286,7 +286,7 @@ public class DbgToPansyConverterTests
 					addr = value.StartsWith("$") ? Convert.ToUInt32(value[1..], 16) : uint.Parse(value);
 			}
 
-			if (name == null) return null;
+			if (name is null) return null;
 			return new SymbolParseResult { Address = addr, Name = name };
 		}
 		catch {

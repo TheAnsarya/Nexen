@@ -58,7 +58,7 @@ public static class CodeTooltipHelper {
 
 			int lineAbsAddress = seg.Data.AbsoluteAddress.Address;
 			SourceSymbol? symbol = lineAbsAddress >= 0 ? DebugWorkspaceManager.SymbolProvider?.GetSymbol(labelText, lineAbsAddress, lineAbsAddress + seg.Data.OpSize) : null;
-			if (symbol != null) {
+			if (symbol is not null) {
 				AddressInfo absAddr = DebugWorkspaceManager.SymbolProvider?.GetSymbolAddressInfo(symbol.Value) ?? new AddressInfo() { Address = -1 };
 				AddressInfo? relAddr = null;
 				CodeLabel? label = null;
@@ -77,7 +77,7 @@ public static class CodeTooltipHelper {
 				};
 			} else {
 				CodeLabel? label = LabelManager.GetLabel(labelText);
-				if (label != null) {
+				if (label is not null) {
 					AddressInfo absAddr = label.GetAbsoluteAddress();
 					absAddr.Address += addressOffset;
 					//absAddr can be cpu memory for register labels (e.g on nes/pce/gb)
@@ -152,7 +152,7 @@ public static class CodeTooltipHelper {
 		} else {
 			if (seg.Type is CodeSegmentType.Address or CodeSegmentType.EffectiveAddress or CodeSegmentType.Label or CodeSegmentType.LabelDefinition) {
 				LocationInfo? codeLoc = GetLocation(cpuType, seg);
-				if (codeLoc != null && (codeLoc.RelAddress?.Address >= 0 || codeLoc.AbsAddress?.Address >= 0 || codeLoc.Label != null || codeLoc.Symbol != null)) {
+				if (codeLoc is not null && (codeLoc.RelAddress?.Address >= 0 || codeLoc.AbsAddress?.Address >= 0 || codeLoc.Label is not null || codeLoc.Symbol is not null)) {
 					return GetCodeAddressTooltip(cpuType, codeLoc, !codeLoc.RelAddress.HasValue || codeLoc.RelAddress?.Address < 0);
 				}
 			}
@@ -209,10 +209,10 @@ public static class CodeTooltipHelper {
 		MemoryType cpuMemType = cpuType.ToMemoryType();
 		TooltipEntries items = new();
 
-		if (codeLoc.Symbol != null) {
-			items.AddEntry("Symbol", codeLoc.Symbol.Value.Name + (codeLoc.LabelAddressOffset != null ? ("+" + codeLoc.LabelAddressOffset) : ""));
-		} else if (codeLoc.Label != null) {
-			items.AddEntry("Label", codeLoc.Label.Label + (codeLoc.LabelAddressOffset != null ? ("+" + codeLoc.LabelAddressOffset) : ""));
+		if (codeLoc.Symbol is not null) {
+			items.AddEntry("Symbol", codeLoc.Symbol.Value.Name + (codeLoc.LabelAddressOffset is not null ? ("+" + codeLoc.LabelAddressOffset) : ""));
+		} else if (codeLoc.Label is not null) {
+			items.AddEntry("Label", codeLoc.Label.Label + (codeLoc.LabelAddressOffset is not null ? ("+" + codeLoc.LabelAddressOffset) : ""));
 		}
 
 		bool showPreview = false;
@@ -230,7 +230,7 @@ public static class CodeTooltipHelper {
 			int byteValue = DebugApi.GetMemoryValue(valueMemType, valueAddress);
 			int wordValue;
 			int dwordValue;
-			if (useAbsAddress && absAddress != null) {
+			if (useAbsAddress && absAddress is not null) {
 				wordValue = (DebugApi.GetMemoryValue(absAddress.Value.Type, (uint)absAddress.Value.Address + 1) << 8) | byteValue;
 				dwordValue =
 					(DebugApi.GetMemoryValue(absAddress.Value.Type, (uint)absAddress.Value.Address + 3) << 24) |
@@ -269,9 +269,9 @@ public static class CodeTooltipHelper {
 
 				items.AddEntry("Stats", accessData);
 			}
-		} else if (codeLoc.Symbol?.Address != null) {
+		} else if (codeLoc.Symbol?.Address is not null) {
 			AddressInfo? symbolAddr = DebugWorkspaceManager.SymbolProvider?.GetSymbolAddressInfo(codeLoc.Symbol.Value);
-			if (symbolAddr == null) {
+			if (symbolAddr is null) {
 				items.AddEntry("Constant", "$" + codeLoc.Symbol.Value.Address.Value.ToString("X" + cpuType.GetAddressSize()));
 			} else {
 				int byteValue = DebugApi.GetMemoryValue(symbolAddr.Value.Type, (uint)symbolAddr.Value.Address);
@@ -308,7 +308,7 @@ public static class CodeTooltipHelper {
 	}
 
 	private static DynamicTooltip? GetInstructionProgressTooltip(CpuType cpuType, CodeSegmentInfo seg) {
-		if (seg.Progress == null) {
+		if (seg.Progress is null) {
 			return null;
 		}
 

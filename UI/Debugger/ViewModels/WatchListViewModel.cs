@@ -228,7 +228,7 @@ public sealed class WatchListViewModel : DisposableViewModel, IToolHelpTooltip {
 			} else {
 				//Label
 				CodeLabel? label = LabelManager.GetLabel(address);
-				if (label != null) {
+				if (label is not null) {
 					if (label.Matches(CpuType)) {
 						return new LocationInfo() { Label = label, RelAddress = label.GetRelativeAddress(CpuType) };
 					}
@@ -367,7 +367,7 @@ public sealed class WatchListViewModel : DisposableViewModel, IToolHelpTooltip {
 				HintText = GetLocationHint,
 				OnClick = () => {
 					LocationInfo? location = GetLocation();
-					if(location != null && location.RelAddress != null) {
+					if(location is not null && location.RelAddress is not null) {
 						MemoryToolsWindow.ShowInMemoryTools(CpuType.ToMemoryType(), location.RelAddress.Value.Address);
 					}
 				}
@@ -379,7 +379,7 @@ public sealed class WatchListViewModel : DisposableViewModel, IToolHelpTooltip {
 				HintText = GetLocationHint,
 				OnClick = () => {
 					LocationInfo? location = GetLocation();
-					if(location != null && location.RelAddress != null) {
+					if(location is not null && location.RelAddress is not null) {
 						DebuggerWindow.OpenWindowAtAddress(CpuType, location.RelAddress.Value.Address);
 					}
 				}
@@ -394,9 +394,9 @@ public sealed class WatchListViewModel : DisposableViewModel, IToolHelpTooltip {
 	/// <returns>Label name, hex address, or empty string if no valid location.</returns>
 	private string GetLocationHint() {
 		LocationInfo? location = GetLocation();
-		if (location?.Label != null) {
+		if (location?.Label is not null) {
 			return location.Label.Label;
-		} else if (location?.RelAddress != null) {
+		} else if (location?.RelAddress is not null) {
 			return "$" + location.RelAddress.Value.Address.ToString("X" + CpuType.GetAddressSize());
 		}
 

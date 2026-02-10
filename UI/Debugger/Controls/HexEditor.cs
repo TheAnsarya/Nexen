@@ -158,7 +158,7 @@ public partial class HexEditor : Control {
 		FontSizeProperty.Changed.AddClassHandler<HexEditor>((x, e) => x.InitFontAndLetterSize());
 
 		DataProviderProperty.Changed.AddClassHandler<HexEditor>((x, e) => {
-			if (x.DataProvider != null) {
+			if (x.DataProvider is not null) {
 				x.TopRow = Math.Min((x.DataProvider.Length / x.BytesPerRow) - 1, Math.Max(0, x.TopRow));
 			}
 		});
@@ -205,7 +205,7 @@ public partial class HexEditor : Control {
 	}
 
 	public void SetCursorPosition(int pos, bool keepNibble = false, bool scrollToTop = false) {
-		if (this.DataProvider == null) {
+		if (this.DataProvider is null) {
 			return;
 		}
 
@@ -318,7 +318,7 @@ public partial class HexEditor : Control {
 	}
 
 	protected override void OnTextInput(TextInputEventArgs e) {
-		if (e.Text != null) {
+		if (e.Text is not null) {
 			char c = e.Text[0];
 
 			if (_inStringView) {
@@ -382,11 +382,11 @@ public partial class HexEditor : Control {
 
 	public async void PasteSelection() {
 		var clipboard = ApplicationHelper.GetMainWindow()?.Clipboard;
-		if (clipboard != null) {
+		if (clipboard is not null) {
 #pragma warning disable CS0618 // Type or member is obsolete
 			string? text = await clipboard.GetTextAsync();
 #pragma warning restore CS0618
-			if (text != null) {
+			if (text is not null) {
 				text = text.Replace("\n", "").Replace("\r", "");
 				if (Regex.IsMatch(text, "^[ a-f0-9]+$", RegexOptions.IgnoreCase)) {
 					byte[] pastedData = HexUtilities.HexToArray(text);
@@ -533,7 +533,7 @@ public partial class HexEditor : Control {
 		_pointerPressedPos = p;
 		GridPoint? gridPos = GetGridPosition(p);
 
-		if (gridPos == null) {
+		if (gridPos is null) {
 			return;
 		}
 
@@ -563,7 +563,7 @@ public partial class HexEditor : Control {
 
 	public int GetByteOffset(Point pos) {
 		GridPoint? gridPoint = GetGridPosition(pos);
-		return gridPoint != null ? GetByteOffset(gridPoint.Value) : -1;
+		return gridPoint is not null ? GetByteOffset(gridPoint.Value) : -1;
 	}
 
 	private void MoveSelectionWithMouse(GridPoint gridPos) {
@@ -607,7 +607,7 @@ public partial class HexEditor : Control {
 		GridPoint? gridPos = GetGridPosition(p, isMargin, _inStringView);
 		LastNibble = false;
 
-		if (gridPos != null) {
+		if (gridPos is not null) {
 			if (gridPos.Value.InStringView != _inStringView) {
 				return;
 			}
@@ -629,7 +629,7 @@ public partial class HexEditor : Control {
 		base.Render(context);
 
 		IHexEditorDataProvider dataProvider = this.DataProvider;
-		if (dataProvider == null) {
+		if (dataProvider is null) {
 			return;
 		}
 
@@ -783,7 +783,7 @@ public partial class HexEditor : Control {
 		context.DrawRectangle(ColorHelper.GetBrush(HeaderHighlight), null, new Rect(leftMargin + (selectedColumn * LetterSize.Width * 3) - (LetterSize.Width / 2), 0, LetterSize.Width * 3, ColumnHeaderHeight));
 
 		// Cache the column header text since BytesPerRow rarely changes
-		if (_cachedColumnHeaderText == null || _cachedBytesPerRow != BytesPerRow) {
+		if (_cachedColumnHeaderText is null || _cachedBytesPerRow != BytesPerRow) {
 			_columnHeaderSb.Clear();
 			for (int i = 0, len = BytesPerRow; i < len; i++) {
 				_columnHeaderSb.Append(i.ToString(HexFormat));

@@ -127,7 +127,7 @@ public sealed class CommandLineHelper {
 		if (LuaScriptsToLoad.Count > 0) {
 			foreach (string luaScript in LuaScriptsToLoad) {
 				ScriptWindow? existingWnd = DebugWindowManager.GetDebugWindow<ScriptWindow>(wnd => !string.IsNullOrWhiteSpace(wnd.Model.FilePath) && Path.GetFullPath(wnd.Model.FilePath) == Path.GetFullPath(luaScript));
-				if (existingWnd != null) {
+				if (existingWnd is not null) {
 					//Script is already opened, skip it
 					continue;
 				}
@@ -141,7 +141,7 @@ public sealed class CommandLineHelper {
 			wnd.BringToFront();
 		}
 
-		if (MovieToRecord != null) {
+		if (MovieToRecord is not null) {
 			if (RecordApi.MovieRecording()) {
 				RecordApi.MovieStop();
 			}

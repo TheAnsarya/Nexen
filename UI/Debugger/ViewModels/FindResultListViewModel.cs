@@ -118,7 +118,7 @@ public sealed class FindResultListViewModel : DisposableViewModel {
 	public void GoToResult(FindResultViewModel result) {
 		if (result.Location.RelAddress?.Address >= 0) {
 			Debugger.ScrollToAddress(result.Location.RelAddress.Value.Address);
-		} else if (result.Location.SourceLocation != null) {
+		} else if (result.Location.SourceLocation is not null) {
 			Debugger.SourceView?.ScrollToLocation(result.Location.SourceLocation.Value);
 		}
 	}

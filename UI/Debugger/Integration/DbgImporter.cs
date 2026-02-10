@@ -126,7 +126,7 @@ public abstract class DbgImporter : ISymbolProvider {
 				if (_linesByPrgAddress.TryGetValue(prgRomAddress, out SourceCodeLocation line)) {
 					string output = "";
 					SourceFileInfo file = line.File;
-					if (file.Data == null) {
+					if (file.Data is null) {
 						return string.Empty;
 					}
 
@@ -142,7 +142,7 @@ public abstract class DbgImporter : ISymbolProvider {
 	private SourceCodeLocation? GetReferenceInfo(int referenceId) {
 		if (_lines.TryGetValue(referenceId, out LineInfo line)) {
 			string lineContent = "";
-			if (_files.TryGetValue(line.FileID, out FileInfo? file) && file.Data != null && file.Data.Length > line.LineNumber) {
+			if (_files.TryGetValue(line.FileID, out FileInfo? file) && file.Data is not null && file.Data.Length > line.LineNumber) {
 				lineContent = file.Data[line.LineNumber];
 			}
 
@@ -156,7 +156,7 @@ public abstract class DbgImporter : ISymbolProvider {
 		if (symbol.InternalSymbol is SymbolInfo dbgSymbol) {
 			foreach (int definition in dbgSymbol.Definitions) {
 				SourceCodeLocation? refInfo = GetReferenceInfo(definition);
-				if (refInfo != null) {
+				if (refInfo is not null) {
 					return refInfo;
 				}
 			}
@@ -169,7 +169,7 @@ public abstract class DbgImporter : ISymbolProvider {
 		List<SourceCodeLocation?> references = new();
 		foreach (int reference in symbol.References) {
 			SourceCodeLocation? refInfo = GetReferenceInfo(reference);
-			if (refInfo != null) {
+			if (refInfo is not null) {
 				references.Add(refInfo);
 			}
 		}
@@ -189,7 +189,7 @@ public abstract class DbgImporter : ISymbolProvider {
 						line = _linesByFile[file.ID][lineNumber];
 					}
 
-					if (line != null && definitionLine.SpanIDs.Length > 0) {
+					if (line is not null && definitionLine.SpanIDs.Length > 0) {
 						if (_spans.TryGetValue(definitionLine.SpanIDs[0], out SpanInfo span)) {
 							return span;
 						}
@@ -203,7 +203,7 @@ public abstract class DbgImporter : ISymbolProvider {
 
 	private SymbolInfo? GetMatchingSymbol(SymbolInfo symbol, int rangeStart, int rangeEnd) {
 		AddressInfo? symbolAddress = GetSymbolAddressInfo(symbol);
-		if (symbolAddress != null && symbolAddress.Value.Type == _prgMemType && symbolAddress.Value.Address >= rangeStart && symbolAddress.Value.Address <= rangeEnd) {
+		if (symbolAddress is not null && symbolAddress.Value.Type == _prgMemType && symbolAddress.Value.Address >= rangeStart && symbolAddress.Value.Address <= rangeEnd) {
 			//If the range start/end matches the symbol's definition, return it
 			return symbol;
 		}
@@ -218,7 +218,7 @@ public abstract class DbgImporter : ISymbolProvider {
 				if (!seg.IsRam) {
 					int spanPrgOffset = seg.FileOffset - _headerSize + span.Offset;
 					if (rangeStart < spanPrgOffset + span.Size && rangeEnd >= spanPrgOffset) {
-						if (symbol.ExportSymbolID != null && symbol.Address == null) {
+						if (symbol.ExportSymbolID is not null && symbol.Address is null) {
 							return _symbols[symbol.ExportSymbolID.Value];
 						} else {
 							return symbol;
@@ -240,7 +240,7 @@ public abstract class DbgImporter : ISymbolProvider {
 			foreach (CSymbolInfo symbol in _cSymbols.Values) {
 				if (symbol.Name == word && symbol.SymbolID.HasValue) {
 					SymbolInfo? matchingSymbol = GetMatchingSymbol(_symbols[symbol.SymbolID.Value], scopeStart, scopeEnd);
-					if (matchingSymbol != null) {
+					if (matchingSymbol is not null) {
 						return matchingSymbol.Value.SourceSymbol;
 					}
 				}
@@ -249,7 +249,7 @@ public abstract class DbgImporter : ISymbolProvider {
 			foreach (SymbolInfo symbol in _symbols.Values) {
 				if (symbol.Name == word) {
 					SymbolInfo? matchingSymbol = GetMatchingSymbol(symbol, scopeStart, scopeEnd);
-					if (matchingSymbol != null) {
+					if (matchingSymbol is not null) {
 						return matchingSymbol.Value.SourceSymbol;
 					}
 				}
@@ -268,13 +268,13 @@ public abstract class DbgImporter : ISymbolProvider {
 	}
 
 	private AddressInfo? GetSymbolAddressInfo(SymbolInfo symbol) {
-		if (symbol.SegmentID == null || symbol.Address == null) {
+		if (symbol.SegmentID is null || symbol.Address is null) {
 			return null;
 		}
 
 		SegmentInfo segment = _segments[symbol.SegmentID.Value];
 		if (segment.IsRam) {
-			if (segment.MemType != null) {
+			if (segment.MemType is not null) {
 				return new AddressInfo() { Address = symbol.Address.Value, Type = segment.MemType.Value };
 			} else {
 				int labelAddress;
@@ -366,7 +366,7 @@ public abstract class DbgImporter : ISymbolProvider {
 			}
 		});
 
-		if (id != null && fileID != null && lineNumber != null) {
+		if (id is not null && fileID is not null && lineNumber is not null) {
 			LineInfo line = new LineInfo(id.Value, fileID.Value, lineNumber.Value, type, _files[fileID.Value].SourceFile, spanIds);
 			_usedFileIds.Add(line.FileID);
 			_lines.Add(line.ID, line);
@@ -399,7 +399,7 @@ public abstract class DbgImporter : ISymbolProvider {
 			}
 		});
 
-		if (id != null && segmentID != null && offset != null && size != null) {
+		if (id is not null && segmentID is not null && offset is not null && size is not null) {
 			SpanInfo span = new SpanInfo(id.Value, segmentID.Value, offset.Value, size.Value, isData);
 			_spans.Add(span.ID, span);
 			return true;
@@ -487,9 +487,9 @@ public abstract class DbgImporter : ISymbolProvider {
 			}
 		});
 
-		if (id != null && symbolName != null) {
+		if (id is not null && symbolName is not null) {
 			//Ignore negative addresses (e.g 0xFFFF8000)
-			if ((address == null || address >= 0) && (size == null || size >= 0)) {
+			if ((address is null || address >= 0) && (size is null || size >= 0)) {
 				SymbolInfo symbol = new SymbolInfo(id.Value, symbolName, address, segmentId, exportSymbolId, size, definitions, references, type);
 				_symbols.Add(symbol.ID, symbol);
 			}
@@ -511,7 +511,7 @@ public abstract class DbgImporter : ISymbolProvider {
 	}
 
 	private int GetSymbolSize(SymbolInfo symbol) {
-		if (symbol.SegmentID != null && _segments.ContainsKey(symbol.SegmentID.Value)) {
+		if (symbol.SegmentID is not null && _segments.ContainsKey(symbol.SegmentID.Value)) {
 			SegmentInfo segment = _segments[symbol.SegmentID.Value];
 			SpanInfo? defSpan = null;
 			if (!segment.IsRam) {
@@ -522,7 +522,7 @@ public abstract class DbgImporter : ISymbolProvider {
 				//This symbol actually denotes the start of a scope (.scope or .proc) and isn't actually data, return a size of 1
 				return 1;
 			} else {
-				return (defSpan == null || defSpan.Value.IsData) ? (symbol.Size ?? 1) : 1;
+				return (defSpan is null || defSpan.Value.IsData) ? (symbol.Size ?? 1) : 1;
 			}
 		}
 
@@ -560,7 +560,7 @@ public abstract class DbgImporter : ISymbolProvider {
 		foreach (KeyValuePair<int, SymbolInfo> kvp in _symbols) {
 			try {
 				SymbolInfo symbol = kvp.Value;
-				if (symbol.SegmentID == null) {
+				if (symbol.SegmentID is null) {
 					continue;
 				}
 
@@ -582,7 +582,7 @@ public abstract class DbgImporter : ISymbolProvider {
 					}
 
 					AddressInfo? addressInfo = GetSymbolAddressInfo(symbol);
-					if (addressInfo != null && (symbol.Type == "lab" || symbol.Size != null)) {
+					if (addressInfo is not null && (symbol.Type == "lab" || symbol.Size is not null)) {
 						CodeLabel label = this.CreateLabel(addressInfo.Value.Address, addressInfo.Value.Type, (uint)GetSymbolSize(symbol));
 						label.Label = newName;
 						label.Length = (uint)GetSymbolSize(symbol);
@@ -618,9 +618,9 @@ public abstract class DbgImporter : ISymbolProvider {
 		foreach (KeyValuePair<int, SymbolInfo> kvp in _symbols) {
 			try {
 				SymbolInfo symbol = kvp.Value;
-				if (symbol.Type != "lab" || symbol.Size == null) {
+				if (symbol.Type != "lab" || symbol.Size is null) {
 					AddressInfo? addr = GetSymbolAddressInfo(symbol);
-					if (addr != null) {
+					if (addr is not null) {
 						if (!labelAliases.TryGetValue(addr.Value.Type, out Dictionary<int, List<string>>? aliases)) {
 							aliases = new();
 							labelAliases[addr.Value.Type] = aliases;
@@ -689,7 +689,7 @@ public abstract class DbgImporter : ISymbolProvider {
 					int address = -1;
 					MemoryType? memoryType;
 					if (segment.IsRam) {
-						if (segment.MemType != null) {
+						if (segment.MemType is not null) {
 							address = span.Offset + segment.Start;
 							memoryType = segment.MemType.Value;
 						} else {
@@ -700,9 +700,9 @@ public abstract class DbgImporter : ISymbolProvider {
 						memoryType = _prgMemType;
 					}
 
-					if (address >= 0 && memoryType != null) {
+					if (address >= 0 && memoryType is not null) {
 						CodeLabel label = this.CreateLabel(address, memoryType.Value, 1);
-						if (label != null) {
+						if (label is not null) {
 							label.Comment = ParseAsserts(constants, comment);
 						}
 					}
@@ -780,7 +780,7 @@ public abstract class DbgImporter : ISymbolProvider {
 						//Go back up folder structure to attempt to find the file
 						string oldPath = basePath;
 						basePath = Path.GetDirectoryName(basePath);
-						if (basePath == null || basePath == oldPath) {
+						if (basePath is null || basePath == oldPath) {
 							break;
 						}
 
@@ -857,7 +857,7 @@ public abstract class DbgImporter : ISymbolProvider {
 							if (IsBranchInstruction(opCode)) {
 								//This symbol is used with a JSR/jump instruction, so it's either a function or jump target
 								SpanInfo? definitionSpan = GetSymbolDefinitionSpan(symbol);
-								if (definitionSpan != null) {
+								if (definitionSpan is not null) {
 									int definitionPrgAddr = GetPrgAddress(definitionSpan.Value);
 									if (definitionPrgAddr >= 0 && definitionPrgAddr < prgRomContent.Length) {
 										bool isJsr = IsJumpToSubroutine(opCode);
@@ -887,7 +887,7 @@ public abstract class DbgImporter : ISymbolProvider {
 			_ => null
 		};
 
-		if (importer == null) {
+		if (importer is null) {
 			EmuApi.WriteLogEntry("[Debugger] Error: Attempted to load .dbg file for an unsupported file format: " + romFormat);
 		}
 
@@ -1023,10 +1023,10 @@ public abstract class DbgImporter : ISymbolProvider {
 		private string? _sourceFile = null;
 		public string[] Data {
 			get {
-				if (field != null) {
+				if (field is not null) {
 					return field;
 				} else {
-					field = _sourceFile == null || !File.Exists(_sourceFile) ? [] : File.ReadAllLines(_sourceFile);
+					field = _sourceFile is null || !File.Exists(_sourceFile) ? [] : File.ReadAllLines(_sourceFile);
 				}
 
 				return field;

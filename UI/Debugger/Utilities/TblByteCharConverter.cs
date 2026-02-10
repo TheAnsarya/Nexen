@@ -45,7 +45,7 @@ public sealed class TblByteCharConverter {
 			byteCount--;
 		}
 
-		if (result != null) {
+		if (result is not null) {
 			keyLength = byteCount;
 			return result;
 		} else {

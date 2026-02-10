@@ -25,7 +25,7 @@ public sealed class KeyCombination {
 	}
 
 	public KeyCombination(List<UInt16>? keyCodes = null) {
-		if (keyCodes != null) {
+		if (keyCodes is not null) {
 			if (keyCodes.Any(code => code > 0xFFFF)) {
 				//If both keyboard & gamepad buttons/keys exist, only use the gamepad buttons
 				//This fixes an issue with Steam where Steam can remap gamepad buttons to send keyboard keys

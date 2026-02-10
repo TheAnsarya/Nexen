@@ -88,7 +88,7 @@ public sealed class CheatListWindowViewModel : DisposableViewModel {
 			OnClick = async () => {
 				ConsoleType consoleType = MainWindowViewModel.Instance.RomInfo.ConsoleType;
 				CheatDbGameEntry? dbEntry = await CheatDatabaseWindow.Show(consoleType, parent);
-				if (dbEntry != null && consoleType == MainWindowViewModel.Instance.RomInfo.ConsoleType) {
+				if (dbEntry is not null && consoleType == MainWindowViewModel.Instance.RomInfo.ConsoleType) {
 					List<CheatCode> newCheats = new();
 					HashSet<string> existingCheats = new();
 					foreach (CheatCode cheatCode in Cheats) {

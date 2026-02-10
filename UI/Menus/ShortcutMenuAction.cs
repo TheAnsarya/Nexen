@@ -71,7 +71,7 @@ public sealed class ShortcutMenuAction : MenuActionBase {
 
 	/// <inheritdoc/>
 	protected override string ComputeShortcutText() {
-		if (CustomShortcutText != null) {
+		if (CustomShortcutText is not null) {
 			return CustomShortcutText();
 		}
 

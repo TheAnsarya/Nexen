@@ -112,9 +112,9 @@ public static partial class ConfigManager {
 	/// In Avalonia design mode, always creates a default configuration.
 	/// </remarks>
 	public static void LoadConfig() {
-		if (_config == null) {
+		if (_config is null) {
 			lock (_initLock) {
-				if (_config == null) {
+				if (_config is null) {
 					_config = File.Exists(ConfigFile) && !Design.IsDesignMode ? Configuration.Deserialize(ConfigFile) : Configuration.CreateConfig();
 					ActiveTheme = _config.Preferences.Theme;
 				}
@@ -224,14 +224,14 @@ public static partial class ConfigManager {
 			PropertyInfo? property;
 			for (int i = 0; i < switchPath.Length; i++) {
 				property = cfg.GetType().GetProperty(switchPath[i], BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-				if (property == null) {
+				if (property is null) {
 					//Invalid switch name
 					return false;
 				}
 
 				if (i < switchPath.Length - 1) {
 					cfg = property.GetValue(cfg);
-					if (cfg == null) {
+					if (cfg is null) {
 						//Invalid
 						return false;
 					}
@@ -262,7 +262,7 @@ public static partial class ConfigManager {
 	/// </remarks>
 	public static string HomeFolder {
 		get {
-			if (field == null) {
+			if (field is null) {
 				string portableFolder = DefaultPortableFolder;
 				string documentsFolder = DefaultDocumentsFolder;
 
@@ -286,7 +286,7 @@ public static partial class ConfigManager {
 	/// <param name="useOverride">Whether to use the override folder if specified.</param>
 	/// <returns>The resolved folder path (guaranteed to exist or fall back to default).</returns>
 	public static string GetFolder(string defaultFolderName, string? overrideFolder, bool useOverride) {
-		string folder = useOverride && overrideFolder != null ? overrideFolder : defaultFolderName;
+		string folder = useOverride && overrideFolder is not null ? overrideFolder : defaultFolderName;
 		try {
 			if (!Directory.Exists(folder)) {
 				Directory.CreateDirectory(folder);
@@ -402,7 +402,7 @@ public static partial class ConfigManager {
 	/// </remarks>
 	public static void RestartNexen() {
 		ProcessModule? mainModule = Process.GetCurrentProcess().MainModule;
-		if (mainModule?.FileName == null) {
+		if (mainModule?.FileName is null) {
 			return;
 		}
 

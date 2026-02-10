@@ -16,14 +16,14 @@ public sealed class NexenMsgBox {
 
 	public static Task<DialogResult> Show(IRenderRoot? parent, string text, MessageBoxButtons buttons, MessageBoxIcon icon, params string[] args) {
 		Window? wnd = parent as Window;
-		if (parent != null && wnd == null) {
+		if (parent is not null && wnd is null) {
 			throw new Exception("Invalid parent window");
 		}
 
 		string resourceText = ResourceHelper.GetMessage(text, args);
 
 		if (resourceText.StartsWith("[[")) {
-			if (args != null && args.Length > 0) {
+			if (args is not null && args.Length > 0) {
 				return MessageBox.Show(wnd, $"Critical error ({text}) {args}", "Nexen", buttons, icon);
 			} else {
 				return MessageBox.Show(wnd, $"Critical error ({text})", "Nexen", buttons, icon);

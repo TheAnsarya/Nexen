@@ -57,7 +57,7 @@ public sealed class HistoryViewerViewModel : DisposableViewModel {
 			}
 		}));
 
-		AddDisposable(this.WhenAnyValue(x => x.SoftwareRenderer.FrameSurface).Subscribe(x => IsSoftwareRendererVisible = SoftwareRenderer.FrameSurface != null));
+		AddDisposable(this.WhenAnyValue(x => x.SoftwareRenderer.FrameSurface).Subscribe(x => IsSoftwareRendererVisible = SoftwareRenderer.FrameSurface is not null));
 
 		_blockCoreUpdates = false;
 	}
@@ -163,7 +163,7 @@ public sealed class HistoryViewerViewModel : DisposableViewModel {
 	private async void ExportMovie(HistoryViewerWindow wnd, UInt32 segStart, UInt32 segEnd) {
 		string initialFile = MainWindowViewModel.Instance.RomInfo.GetRomName();
 		string? file = await FileDialogHelper.SaveFile(ConfigManager.MovieFolder, initialFile, wnd, FileDialogHelper.NexenMovieExt);
-		if (file != null) {
+		if (file is not null) {
 			if (!HistoryApi.HistoryViewerSaveMovie(file, segStart, segEnd)) {
 				await NexenMsgBox.Show(wnd, "MovieSaveError", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
@@ -174,7 +174,7 @@ public sealed class HistoryViewerViewModel : DisposableViewModel {
 		uint position = CurrentPosition;
 		string initialFile = MainWindowViewModel.Instance.RomInfo.GetRomName();
 		string? file = await FileDialogHelper.SaveFile(ConfigManager.SaveStateFolder, initialFile, wnd, FileDialogHelper.NexenSaveStateExt);
-		if (file != null) {
+		if (file is not null) {
 			if (!HistoryApi.HistoryViewerCreateSaveState(file, position)) {
 				await NexenMsgBox.Show(wnd, "FileSaveError", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}

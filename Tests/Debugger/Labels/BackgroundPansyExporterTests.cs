@@ -117,7 +117,7 @@ public class BackgroundPansyExporterTests
 		bool exportCalled = false;
 
 		// Simulate unload with save
-		if (currentRom != null && savePansyOnUnload) {
+		if (currentRom is not null && savePansyOnUnload) {
 			exportCalled = true;
 		}
 
@@ -132,7 +132,7 @@ public class BackgroundPansyExporterTests
 		bool exportCalled = false;
 
 		// Simulate unload without save
-		if (currentRom != null && savePansyOnUnload) {
+		if (currentRom is not null && savePansyOnUnload) {
 			exportCalled = true;
 		}
 
@@ -196,7 +196,7 @@ public class BackgroundPansyExporterTests
 		bool exportTriggered = false;
 
 		// Simulate timer tick
-		if (currentRom != null) {
+		if (currentRom is not null) {
 			exportTriggered = true;
 		}
 
@@ -210,7 +210,7 @@ public class BackgroundPansyExporterTests
 		bool exportTriggered = false;
 
 		// Simulate timer tick with no ROM
-		if (currentRom != null) {
+		if (currentRom is not null) {
 			exportTriggered = true;
 		}
 
@@ -224,7 +224,7 @@ public class BackgroundPansyExporterTests
 		bool exportTriggered = false;
 
 		// Simulate force export
-		if (currentRom != null) {
+		if (currentRom is not null) {
 			exportTriggered = true;
 		}
 

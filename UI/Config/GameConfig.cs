@@ -32,10 +32,10 @@ public sealed class GameConfig : BaseConfig<GameConfig> {
 		GameConfig? cfg;
 		if (File.Exists(path)) {
 			string? fileData = FileHelper.ReadAllText(path);
-			if (fileData != null) {
+			if (fileData is not null) {
 				try {
 					cfg = (GameConfig?)JsonSerializer.Deserialize(fileData, typeof(GameConfig), NexenSerializerContext.Default);
-					if (cfg != null) {
+					if (cfg is not null) {
 						return cfg;
 					}
 				} catch { }

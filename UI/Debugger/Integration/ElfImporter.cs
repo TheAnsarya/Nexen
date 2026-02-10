@@ -38,7 +38,7 @@ public abstract class ElfImporter {
 			if (elf.TryGetSection(".symtab", out ISection section)) {
 				if (section is ISymbolTable symbols) {
 					foreach (SymbolEntry<uint> symbol in symbols.Entries) {
-						if (!string.IsNullOrWhiteSpace(symbol.Name) && symbol.Type != SymbolType.File && symbol.Type != SymbolType.Section && symbol.PointedSection != null) {
+						if (!string.IsNullOrWhiteSpace(symbol.Name) && symbol.Type != SymbolType.File && symbol.Type != SymbolType.Section && symbol.PointedSection is not null) {
 							if (!TryGetSymbolInfo(symbol, romSize, out ElfSymbolInfo? symbolInfo)) {
 								continue;
 							}

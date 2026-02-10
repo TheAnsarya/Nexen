@@ -183,7 +183,7 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 			},
 		});
 
-		if (Design.IsDesignMode || wnd == null) {
+		if (Design.IsDesignMode || wnd is null) {
 			return;
 		}
 
@@ -235,20 +235,20 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 		return new List<ContextMenuAction> {
 			new ContextMenuAction() {
 				ActionType = ActionType.ViewInDebugger,
-				IsEnabled = () => SelectedEvent != null,
-				HintText = () => SelectedEvent != null ? $"PC -${SelectedEvent.Value.ProgramCounter:X4}" : "",
+				IsEnabled = () => SelectedEvent is not null,
+				HintText = () => SelectedEvent is not null ? $"PC -${SelectedEvent.Value.ProgramCounter:X4}" : "",
 				OnClick = () => {
-					if(SelectedEvent != null) {
+					if(SelectedEvent is not null) {
 						DebuggerWindow.OpenWindowAtAddress(CpuType, (int)SelectedEvent.Value.ProgramCounter);
 					}
 				}
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.ToggleBreakpoint,
-				IsEnabled = () => SelectedEvent != null,
-				HintText = () => SelectedEvent != null ? $"PC - ${SelectedEvent.Value.ProgramCounter:X4}" : "",
+				IsEnabled = () => SelectedEvent is not null,
+				HintText = () => SelectedEvent is not null ? $"PC - ${SelectedEvent.Value.ProgramCounter:X4}" : "",
 				OnClick = () => {
-					if(SelectedEvent != null) {
+					if(SelectedEvent is not null) {
 						int addr = (int)SelectedEvent.Value.ProgramCounter;
 						BreakpointManager.ToggleBreakpoint(new AddressInfo() { Address = addr, Type = CpuType.ToMemoryType() }, CpuType);
 					}
@@ -286,7 +286,7 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 	/// </summary>
 	/// <param name="evt">The debug event to select, or null to clear selection.</param>
 	public void UpdateSelectedEvent(DebugEventInfo? evt) {
-		if (evt != null) {
+		if (evt is not null) {
 			PixelPoint p = GetEventLocation(evt.Value);
 			SelectedEvent = evt;
 			SelectionRect = new Rect(p.X - 2, p.Y - 2, 6, 6);
@@ -326,7 +326,7 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 	/// <param name="size">The frame dimensions for the bitmap.</param>
 	[MemberNotNull(nameof(ViewerBitmap))]
 	private void InitBitmap(FrameInfo size) {
-		if (ViewerBitmap == null || ViewerBitmap.Size.Width != size.Width || ViewerBitmap.Size.Height != size.Height) {
+		if (ViewerBitmap is null || ViewerBitmap.Size.Width != size.Width || ViewerBitmap.Size.Height != size.Height) {
 			ViewerBitmap?.Dispose();
 			ViewerBitmap = new DynamicBitmap(new PixelSize((int)size.Width, (int)size.Height), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul);
 		}
@@ -416,7 +416,7 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 	/// <param name="p">The pixel position of the mouse.</param>
 	/// <param name="eventInfo">Optional event to snap the highlight to.</param>
 	public void UpdateHighlightPoint(PixelPoint p, DebugEventInfo? eventInfo) {
-		if (eventInfo != null) {
+		if (eventInfo is not null) {
 			//Snap the row/column highlight to the selected event
 			p = GetEventLocation(eventInfo.Value);
 		}
@@ -573,7 +573,7 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 
 		if (evt.Type == DebugEventType.Breakpoint && evt.BreakpointId >= 0) {
 			Breakpoint? bp = BreakpointManager.GetBreakpointById(evt.BreakpointId);
-			if (bp != null) {
+			if (bp is not null) {
 				string bpInfo = "Breakpoint - ";
 				bpInfo += "CPU: " + ResourceHelper.GetEnumText(bp.CpuType);
 				bpInfo += singleLine ? " - " : Environment.NewLine;
@@ -767,7 +767,7 @@ public sealed class DebugEventViewModel : INotifyPropertyChanged {
 			address += "$" + evt.Operation.Address.ToString("X4");
 
 			CodeLabel? label = LabelManager.GetLabel(new AddressInfo() { Address = (int)evt.Operation.Address, Type = evt.Operation.MemType });
-			if (label != null) {
+			if (label is not null) {
 				address = label.Label + " (" + address + ")";
 			}
 

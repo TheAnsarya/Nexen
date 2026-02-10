@@ -100,27 +100,27 @@ public sealed class CodeViewerSelectionHandler : IDisposable {
 			MouseOverSegment = e.CodeSegment;
 		}
 
-		if (e.CodeSegment != null && e.Data != null) {
+		if (e.CodeSegment is not null && e.Data is not null) {
 			_mouseOverCodeLocation = CodeTooltipHelper.GetLocation(e.Data.CpuType, e.CodeSegment);
 			tooltip = CodeTooltipHelper.GetTooltip(e.Data.CpuType, e.CodeSegment);
-			if (tooltip == null && e.Fragment != null && !string.IsNullOrWhiteSpace(e.Fragment.Text)) {
+			if (tooltip is null && e.Fragment is not null && !string.IsNullOrWhiteSpace(e.Fragment.Text)) {
 				//No tooltip was found, try again using the word under the mouse cursor
 				//This is only useful for source view, since the syntax doesn't always
 				//match the format expected by the color highlighting logic, etc.
 				LocationInfo? codeLoc = CodeTooltipHelper.GetLocation(e.Data.CpuType, new CodeSegmentInfo(e.Fragment.Text, CodeSegmentType.Label, default, e.Data));
-				if (codeLoc != null && (codeLoc.RelAddress?.Address >= 0 || codeLoc.AbsAddress?.Address >= 0 || codeLoc.Label != null || codeLoc.Symbol != null)) {
+				if (codeLoc is not null && (codeLoc.RelAddress?.Address >= 0 || codeLoc.AbsAddress?.Address >= 0 || codeLoc.Label is not null || codeLoc.Symbol is not null)) {
 					tooltip = CodeTooltipHelper.GetCodeAddressTooltip(e.Data.CpuType, codeLoc, !codeLoc.RelAddress.HasValue || codeLoc.RelAddress?.Address < 0);
 				}
 			}
 
-			if (tooltip != null) {
+			if (tooltip is not null) {
 				TooltipHelper.ShowTooltip(_viewer, tooltip, 15);
 			}
 		} else {
 			_mouseOverCodeLocation = null;
 		}
 
-		if (tooltip == null) {
+		if (tooltip is null) {
 			TooltipHelper.HideTooltip(_viewer);
 		}
 
@@ -152,9 +152,9 @@ public sealed class CodeViewerSelectionHandler : IDisposable {
 		get {
 			if (IsMarginClick && _allowMarginClick) {
 				return GetSelectedRowLocation();
-			} else if (_viewer.ContextMenu?.IsOpen == true && _contextMenuLocation != null) {
+			} else if (_viewer.ContextMenu?.IsOpen == true && _contextMenuLocation is not null) {
 				return _contextMenuLocation;
-			} else if (_mouseOverCodeLocation != null) {
+			} else if (_mouseOverCodeLocation is not null) {
 				return _mouseOverCodeLocation;
 			}
 
@@ -168,7 +168,7 @@ public sealed class CodeViewerSelectionHandler : IDisposable {
 		AddressInfo? relAddress = null;
 		AddressInfo? absAddress = null;
 
-		if (rowAddress != null && rowAddress?.Address >= 0) {
+		if (rowAddress is not null && rowAddress?.Address >= 0) {
 			if (rowAddress.Value.Type.IsRelativeMemory()) {
 				relAddress = rowAddress;
 				absAddress = DebugApi.GetAbsoluteAddress(relAddress.Value);

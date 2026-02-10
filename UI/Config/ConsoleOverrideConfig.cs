@@ -18,7 +18,7 @@ public sealed class ConsoleOverrideConfig : BaseConfig<GameConfig> {
 	[Reactive][MinMax(0.1, 5.0)] public double CustomAspectRatio { get; set; } = 1.0;
 
 	public static ConsoleOverrideConfig? GetActiveOverride() {
-		if (MainWindowViewModel.Instance == null) {
+		if (MainWindowViewModel.Instance is null) {
 			return null;
 		}
 

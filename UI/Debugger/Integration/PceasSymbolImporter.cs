@@ -283,7 +283,7 @@ public sealed class PceasSymbolImporter : ISymbolProvider {
 										//Go back up folder structure to attempt to find the file
 										string oldPath = srcBasePath;
 										srcBasePath = Path.GetDirectoryName(srcBasePath);
-										if (srcBasePath == null || srcBasePath == oldPath) {
+										if (srcBasePath is null || srcBasePath == oldPath) {
 											break;
 										}
 

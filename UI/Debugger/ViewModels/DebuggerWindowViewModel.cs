@@ -228,7 +228,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 		} else {
 			RomInfo romInfo = EmuApi.GetRomInfo();
 			consoleType = romInfo.ConsoleType;
-			if (cpuType != null) {
+			if (cpuType is not null) {
 				CpuType = cpuType.Value;
 				if (consoleType.GetMainCpuType() != CpuType) {
 					Title = ResourceHelper.GetEnumText(CpuType) + " Debugger";
@@ -313,7 +313,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 	private void InitDock() {
 		DockFactory.InitLayout(DockLayout);
 
-		if (FunctionList == null) {
+		if (FunctionList is null) {
 			DockFactory.CloseDockable(DockFactory.FunctionListTool);
 		}
 
@@ -380,7 +380,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 	/// </summary>
 	private void UpdateSourceViewState() {
 		ISymbolProvider? provider = DebugWorkspaceManager.SymbolProvider;
-		if (provider != null) {
+		if (provider is not null) {
 			SourceView = new SourceViewViewModel(this, provider, CpuType);
 			DockFactory.SourceViewTool.Model = SourceView;
 			SourceView.SetActiveAddress(Disassembly.ActiveAddress);
@@ -498,7 +498,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 
 		UpdateCdlStats();
 
-		if (evt != null) {
+		if (evt is not null) {
 			string breakReason = "";
 			BreakEvent brkEvent = evt.Value;
 			if (brkEvent.Source != BreakSource.Unspecified) {
@@ -557,7 +557,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 			int activeAddress = (int)DebugApi.GetProgramCounter(CpuType, true);
 			Disassembly.SetActiveAddress(activeAddress);
 
-			if (SourceView != null) {
+			if (SourceView is not null) {
 				bool sourceMappingFound = SourceView.SetActiveAddress(activeAddress);
 				if (!sourceMappingFound) {
 					//If location is not found in source mappings, swap to disassembly view
@@ -596,14 +596,14 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 	/// </summary>
 	/// <param name="wnd">The window for focus management.</param>
 	public void ProcessResumeEvent(Window wnd) {
-		if (ConsoleStatus != null) {
+		if (ConsoleStatus is not null) {
 			//Disable status fields in 50ms (if the debugger isn't paused by then)
 			//This improves performance when stepping through code, etc.
 			Task.Run(() => {
 				System.Threading.Thread.Sleep(50);
 				Dispatcher.UIThread.Post(() => {
 					BaseConsoleStatusViewModel status = ConsoleStatus;
-					if (status != null && status.EditAllowed && !EmuApi.IsPaused()) {
+					if (status is not null && status.EditAllowed && !EmuApi.IsPaused()) {
 						status.EditAllowed = false;
 
 						if (DockFactory.StatusTool.Owner is IDock parent && parent.IsActive && parent.ActiveDockable == DockFactory.StatusTool) {
@@ -633,14 +633,14 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 			return toolDock;
 		}
 
-		if (dock.VisibleDockables == null) {
+		if (dock.VisibleDockables is null) {
 			return null;
 		}
 
 		foreach (IDockable dockable in dock.VisibleDockables) {
 			if (dockable is IDock childDock) {
 				ToolDock? result = FindToolDock(childDock);
-				if (result != null) {
+				if (result is not null) {
 					return result;
 				}
 			}
@@ -660,7 +660,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 	/// Checks if a dock is visible in the layout hierarchy.
 	/// </summary>
 	private bool IsDockVisible(IDock? dock) {
-		return dock is RootDock || (dock != null && (dock.Owner as IDock)?.VisibleDockables?.Contains(dock) == true && (dock.Owner == null || dock.Owner is not IDock || IsDockVisible(dock.Owner as IDock)));
+		return dock is RootDock || (dock is not null && (dock.Owner as IDock)?.VisibleDockables?.Contains(dock) == true && (dock.Owner is null || dock.Owner is not IDock || IsDockVisible(dock.Owner as IDock)));
 	}
 
 	/// <summary>
@@ -719,7 +719,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 				OnClick = async () => {
 					MemoryType memType = CpuType.ToMemoryType();
 					int? address = await new GoToWindow(CpuType, memType, DebugApi.GetMemorySize(memType) - 1).ShowCenteredDialog<int?>(wnd);
-					if(address != null) {
+					if(address is not null) {
 						ScrollToAddress(address.Value);
 					}
 				}
@@ -728,7 +728,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 				ActionType = ActionType.GoToProgramCounter,
 				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.GoToProgramCounter),
 				OnClick = () => {
-					if(Disassembly.ActiveAddress != null) {
+					if(Disassembly.ActiveAddress is not null) {
 						ScrollToAddress(Disassembly.ActiveAddress.Value);
 					}
 				}
@@ -776,7 +776,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.ShowMemoryMappings,
-				IsVisible = () => MemoryMappings != null,
+				IsVisible = () => MemoryMappings is not null,
 				IsSelected = () => cfg.ShowMemoryMappings,
 				OnClick = () => cfg.ShowMemoryMappings = !cfg.ShowMemoryMappings
 			},
@@ -798,13 +798,13 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.ShowControllers,
-				IsVisible = () => FunctionList != null,
+				IsVisible = () => FunctionList is not null,
 				IsSelected = () => IsToolVisible(DockFactory.ControllerListTool),
 				OnClick = () => ToggleTool(DockFactory.ControllerListTool)
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.ShowFunctionList,
-				IsVisible = () => FunctionList != null,
+				IsVisible = () => FunctionList is not null,
 				IsSelected = () => IsToolVisible(DockFactory.FunctionListTool),
 				OnClick = () => ToggleTool(DockFactory.FunctionListTool)
 			},
@@ -836,11 +836,11 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.GoToAll),
 				OnClick = async () => {
 					GoToDestination? dest = await GoToAllWindow.Open(wnd, CpuType, GoToAllOptions.ShowFilesAndConstants, DebugWorkspaceManager.SymbolProvider);
-					if(dest != null) {
+					if(dest is not null) {
 						if(GetActiveCodeTool() != DockFactory.SourceViewTool && dest.RelativeAddress?.Type == CpuType.ToMemoryType()) {
 							//Try to stay in disassembly view if it was the last view used
 							ScrollToAddress(dest.RelativeAddress.Value.Address);
-						} else if(dest.SourceLocation != null) {
+						} else if(dest.SourceLocation is not null) {
 							OpenTool(DockFactory.SourceViewTool);
 							SourceView?.ScrollToLocation(dest.SourceLocation.Value);
 						} else if(dest.RelativeAddress?.Type == CpuType.ToMemoryType()) {
@@ -872,7 +872,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 				OnClick = async () => {
 					FindAllOccurrencesWindow searchWnd = new();
 					string? search = await searchWnd.ShowCenteredDialog<string?>(wnd);
-					if(search!= null) {
+					if(search is not null) {
 						DisassemblySearchOptions options = new() { MatchWholeWord = searchWnd.MatchWholeWord, MatchCase = searchWnd.MatchCase };
 						FindAllOccurrences(search, options);
 					}
@@ -1007,7 +1007,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.LoadCdl),
 					OnClick = async () => {
 						string? filename = await FileDialogHelper.OpenFile(ConfigManager.DebuggerFolder, wnd, FileDialogHelper.CdlExt);
-						if(filename != null) {
+						if(filename is not null) {
 							DebugApi.LoadCdlFile(CpuType.GetPrgRomMemoryType(), filename);
 							Disassembly.Refresh();
 							UpdateCdlStats();
@@ -1019,7 +1019,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.SaveCdl),
 					OnClick = async () => {
 						string? filename = await FileDialogHelper.SaveFile(ConfigManager.DebuggerFolder, EmuApi.GetRomInfo().GetRomName() + ".cdl", wnd, FileDialogHelper.CdlExt);
-						if(filename != null) {
+						if(filename is not null) {
 							DebugApi.SaveCdlFile(CpuType.GetPrgRomMemoryType(), filename);
 						}
 					}
@@ -1056,7 +1056,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.ImportLabels),
 					OnClick = async () => {
 						string? filename = await FileDialogHelper.OpenFile(null, wnd, FileDialogHelper.LabelFileExt);
-						if(filename != null) {
+						if(filename is not null) {
 							DebugWorkspaceManager.LoadSupportedFile(filename, true);
 						}
 					}
@@ -1067,7 +1067,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 					OnClick = async () => {
 						string initFilename = EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.NexenLabelExt;
 						string? filename = await FileDialogHelper.SaveFile(null, initFilename, wnd, FileDialogHelper.NexenLabelExt);
-						if(filename != null) {
+						if(filename is not null) {
 							NexenLabelFile.Export(filename);
 						}
 					}
@@ -1077,7 +1077,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 					OnClick = async () => {
 						string initFilename = EmuApi.GetRomInfo().GetRomName() + ".pansy";
 						string? filename = await FileDialogHelper.SaveFile(null, initFilename, wnd, "pansy");
-						if(filename != null) {
+						if(filename is not null) {
 							var romInfo = EmuApi.GetRomInfo();
 							var memoryType = CpuType.GetPrgRomMemoryType();
 							if(PansyExporter.Export(filename, romInfo, memoryType)) {
@@ -1096,7 +1096,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.ImportWatchEntries),
 					OnClick = async () => {
 						string? filename = await FileDialogHelper.OpenFile(null, wnd, FileDialogHelper.WatchFileExt);
-						if(filename != null) {
+						if(filename is not null) {
 							WatchManager.GetWatchManager(CpuType).Import(filename);
 						}
 					}
@@ -1106,7 +1106,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.ExportWatchEntries),
 					OnClick = async () => {
 						string? filename = await FileDialogHelper.SaveFile(null, null, wnd, FileDialogHelper.WatchFileExt);
-						if(filename != null) {
+						if(filename is not null) {
 							WatchManager.GetWatchManager(CpuType).Export(filename);
 						}
 					}
@@ -1194,7 +1194,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 			search = search.ToLower();
 		}
 
-		if (SourceView != null && GetActiveCodeTool() == DockFactory.SourceViewTool) {
+		if (SourceView is not null && GetActiveCodeTool() == DockFactory.SourceViewTool) {
 			FindResultList.SetResults(SourceView.FindAllOccurrences(search, options));
 		} else {
 			CodeLineData[] results = DebugApi.FindOccurrences(CpuType, search.Trim(), options);
@@ -1211,7 +1211,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 	/// </remarks>
 	public void RunToLocation(LocationInfo actionLocation) {
 		AddressInfo? addr = actionLocation.AbsAddress ?? actionLocation.RelAddress;
-		if (addr == null) {
+		if (addr is null) {
 			return;
 		}
 

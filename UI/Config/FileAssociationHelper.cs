@@ -119,7 +119,7 @@ class FileAssociationHelper {
 	private static void UpdateLinuxShortcutFileMimeTypes(string desktopFile, List<string> mimeTypes) {
 		string? content = FileHelper.ReadAllText(desktopFile);
 
-		if (content != null) {
+		if (content is not null) {
 			List<string> lines = new List<string>(content.Split(Environment.NewLine));
 			bool replaced = false;
 			for (int i = 0; i < lines.Count; i++) {
@@ -139,7 +139,7 @@ class FileAssociationHelper {
 
 	static public void CreateLinuxShortcutFile(string filename, List<string>? mimeTypes = null) {
 		ProcessModule? mainModule = Process.GetCurrentProcess().MainModule;
-		if (mainModule == null) {
+		if (mainModule is null) {
 			return;
 		}
 
@@ -155,7 +155,7 @@ class FileAssociationHelper {
 			"StartupNotify=true" + Environment.NewLine +
 			"Icon=NexenIcon" + Environment.NewLine;
 
-		if (mimeTypes != null) {
+		if (mimeTypes is not null) {
 			content += "MimeType=" + string.Join(";", mimeTypes.Select(type => "application/" + type)) + Environment.NewLine;
 		}
 
@@ -221,13 +221,13 @@ class FileAssociationHelper {
 		string key = @"HKEY_CURRENT_USER\Software\Classes\." + extension;
 		if (associate) {
 			ProcessModule? mainModule = Process.GetCurrentProcess().MainModule;
-			if (mainModule != null) {
+			if (mainModule is not null) {
 				Registry.SetValue(@"HKEY_CURRENT_USER\Software\Classes\Nexen\shell\open\command", null, mainModule.FileName + " \"%1\"");
 				Registry.SetValue(key, null, "Nexen");
 			}
 		} else {
 			object? regKey = Registry.GetValue(key, null, "");
-			if (regKey != null && regKey.Equals("Nexen")) {
+			if (regKey is not null && regKey.Equals("Nexen")) {
 				Registry.SetValue(key, null, "");
 			}
 		}

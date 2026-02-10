@@ -142,7 +142,7 @@ public sealed class MemoryViewerFindViewModel : DisposableViewModel {
 
 		AddDisposable(this.WhenAnyValue(x => x.DataType, x => x.IntType, x => x.SearchString).Subscribe(x => {
 			SearchData? searchData = GetSearchData();
-			IsValid = searchData != null && searchData.Data.Length > 0;
+			IsValid = searchData is not null && searchData.Data.Length > 0;
 		}));
 	}
 
@@ -168,7 +168,7 @@ public sealed class MemoryViewerFindViewModel : DisposableViewModel {
 				break;
 
 			case SearchDataType.String:
-				if (UseTblMappings && _memToolsModel.TblConverter != null) {
+				if (UseTblMappings && _memToolsModel.TblConverter is not null) {
 					if (CaseSensitive) {
 						return new SearchData(_memToolsModel.TblConverter.GetBytes(SearchString));
 					} else {
@@ -290,7 +290,7 @@ public sealed class SearchData {
 	public SearchData(byte[] data, byte[]? dataAlt = null) {
 		Data = new short[data.Length];
 		Array.Copy(data, 0, Data, 0, data.Length);
-		if (dataAlt != null) {
+		if (dataAlt is not null) {
 			DataAlt = new short[dataAlt.Length];
 			Array.Copy(dataAlt, 0, DataAlt, 0, dataAlt.Length);
 		}

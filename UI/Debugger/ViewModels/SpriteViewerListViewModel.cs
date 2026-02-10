@@ -85,7 +85,7 @@ public sealed class SpriteViewerListViewModel : DisposableViewModel {
 		SortCommand = ReactiveCommand.Create<string?>(sortMemberPath => RefreshList(true));
 
 		AddDisposable(this.WhenAnyValue(x => x.Selection.SelectedItem).Subscribe(x => {
-			if (x != null) {
+			if (x is not null) {
 				SpriteViewer.SelectSprite(x.SpriteIndex);
 			}
 		}));
@@ -142,7 +142,7 @@ public sealed class SpriteViewerListViewModel : DisposableViewModel {
 			return;
 		}
 
-		if (SpritePreviews == null || SpritePreviews.Count != SpriteViewer.SpritePreviews.Count) {
+		if (SpritePreviews is null || SpritePreviews.Count != SpriteViewer.SpritePreviews.Count) {
 			SpritePreviews = SpriteViewer.SpritePreviews.Select(x => x.Clone()).ToList();
 		}
 
@@ -155,7 +155,7 @@ public sealed class SpriteViewerListViewModel : DisposableViewModel {
 			newList[i].CopyTo(SpritePreviews[i]);
 		}
 
-		if (selectedIndex != null && Selection.SelectedItem?.SpriteIndex != selectedIndex) {
+		if (selectedIndex is not null && Selection.SelectedItem?.SpriteIndex != selectedIndex) {
 			Selection.SelectedItem = null;
 		}
 	}
