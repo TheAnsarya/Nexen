@@ -3,7 +3,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.IO.Hashing;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -109,22 +108,23 @@ public static class PansyExporter {
 
 	/// <summary>
 	/// Calculate CRC32 of the ROM data for integrity verification.
-	/// Uses System.IO.Hashing.Crc32 for standard IEEE polynomial.
+	/// Delegates to <see cref="RomHashService"/> which computes all basic hashes in a single pass.
 	/// </summary>
 	/// <param name="romInfo">ROM information containing console type</param>
 	/// <returns>CRC32 hash of the ROM data, or 0 if unavailable</returns>
 	public static uint CalculateRomCrc32(RomInfo romInfo) {
-		try {
-			var cpuType = romInfo.ConsoleType.GetMainCpuType();
-			var memType = cpuType.GetPrgRomMemoryType();
-			byte[] romData = DebugApi.GetMemoryState(memType);
-			if (romData is null or { Length: 0 })
-				return 0;
-			return Crc32.HashToUInt32(romData);
-		} catch (Exception ex) {
-			System.Diagnostics.Debug.WriteLine($"[PansyExporter] CRC32 calculation failed: {ex.Message}");
-			return 0;
-		}
+		var hashes = RomHashService.ComputeRomHashes(romInfo);
+		return hashes.IsValid ? hashes.Crc32Value : 0;
+	}
+
+	/// <summary>
+	/// Get all four basic hashes (CRC32, MD5, SHA-1, SHA-256) for the ROM.
+	/// Uses StreamHash's batch streaming API for single-pass computation.
+	/// </summary>
+	/// <param name="romInfo">ROM information containing console type</param>
+	/// <returns>All four hash values, or empty if unavailable</returns>
+	public static RomHashInfo GetRomHashes(RomInfo romInfo) {
+		return RomHashService.ComputeRomHashes(romInfo);
 	}
 
 	/// <summary>

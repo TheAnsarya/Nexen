@@ -12,7 +12,7 @@ using Avalonia.Threading;
 using Nexen.Interop;
 using Nexen.Utilities;
 
-namespace Nexen.Windows; 
+namespace Nexen.Windows;
 public class AboutWindow : NexenWindow {
 	public string Version { get; }
 	public string BuildDate { get; }
@@ -38,6 +38,7 @@ public class AboutWindow : NexenWindow {
 			new("ColorPicker", "", "MIT", "https://github.com/wieslawsoltes/ThemeEditor/tree/master/src/ThemeEditor.Controls.ColorPicker"),
 			new("Dock.Avalonia", "", "MIT", "https://github.com/wieslawsoltes/Dock"),
 			new("ReactiveUI", "", "MIT", "https://github.com/reactiveui/ReactiveUI"),
+			new("StreamHash", "", "Unlicense", "https://github.com/TheAnsarya/StreamHash"),
 			new("SkiaSharp", "", "MIT", "https://github.com/mono/SkiaSharp"),
 			new("Skia", "", "BSD", "https://github.com/google/skia"),
 			new("DynamicData", "", "MIT", "https://github.com/reactivemarbles/DynamicData"),

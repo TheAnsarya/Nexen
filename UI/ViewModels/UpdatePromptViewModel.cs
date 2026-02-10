@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
+using StreamHash.Core;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -161,9 +161,14 @@ public class UpdatePromptViewModel : ViewModelBase {
 				}
 			}
 
-			using SHA256 sha256 = SHA256.Create();
+			using var sha256Hasher = HashFacade.CreateStreaming(HashAlgorithm.Sha256);
 			memoryStream.Position = 0;
-			string hash = BitConverter.ToString(sha256.ComputeHash(memoryStream)).Replace("-", "");
+			byte[] hashBuffer = new byte[8192];
+			int hashBytesRead;
+			while ((hashBytesRead = memoryStream.Read(hashBuffer, 0, hashBuffer.Length)) > 0) {
+				sha256Hasher.Update(hashBuffer.AsSpan(0, hashBytesRead));
+			}
+			string hash = sha256Hasher.FinalizeHex().ToUpperInvariant();
 			// If hash is provided, verify it; otherwise skip hash check (GitHub releases don't include SHA256)
 			if (!string.IsNullOrEmpty(FileInfo.Hash) && hash != FileInfo.Hash) {
 				File.Delete(downloadPath);

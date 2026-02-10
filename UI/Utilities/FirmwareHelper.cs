@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Rendering;
@@ -15,23 +13,8 @@ using Nexen.Windows;
 namespace Nexen.Utilities; 
 public static class FirmwareHelper {
 	public static string GetFileHash(string filename) {
-		using (SHA256 sha256Hash = SHA256.Create()) {
-			// ComputeHash - returns byte array  
-			byte[]? fileData = FileHelper.ReadAllBytes(filename);
-			if (fileData == null) {
-				return "";
-			}
-
-			byte[] bytes = sha256Hash.ComputeHash(fileData);
-
-			// Convert byte array to a string   
-			StringBuilder builder = new StringBuilder();
-			for (int i = 0; i < bytes.Length; i++) {
-				builder.Append(bytes[i].ToString("X2"));
-			}
-
-			return builder.ToString();
-		}
+		var hashes = RomHashService.ComputeFileHashes(filename);
+		return hashes.Sha256;
 	}
 
 	public static async Task RequestFirmwareFile(MissingFirmwareMessage msg) {
