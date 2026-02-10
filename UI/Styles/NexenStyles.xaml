@@ -10,7 +10,6 @@
 	<StyleInclude Source="/Styles/NexenStyles.Dark.xaml" />
 
 	<dft:DockFluentTheme />
-	<StyleInclude Source="/ThirdParty/DataBox/Themes/Fluent.axaml" />
 	<StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
 	<StyleInclude Source="/Styles/DockStyles.xaml" />
 
@@ -507,7 +506,7 @@
 		</Setter>
 	</Style>
 
-	<StyleInclude Source="/Styles/DataBoxStyles.xaml" />
+	<StyleInclude Source="/Styles/DataGridStyles.xaml" />
 	<StyleInclude Source="/Styles/AvaloniaEditStyles.xaml" />
 
 	<!-- Make dock title and tabs smaller -->

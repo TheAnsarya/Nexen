@@ -94,7 +94,7 @@
 					<Color x:Key="NexenMenuMarginStartColor">#fcfcfc</Color>
 					<Color x:Key="NexenMenuMarginEndColor">#f1f1f1</Color>
 
-					<!-- DataBox colors -->
+					<!-- DataGrid colors -->
 					<SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush" Color="{StaticResource DataGridColumnHeaderBackgroundColor}" />
 					<SolidColorBrush x:Key="DataGridColumnHeaderForegroundBrush" Color="{StaticResource SystemBaseMediumColor}" />
 					<SolidColorBrush x:Key="DataGridRowSelectedForegroundBrush" Color="White" />

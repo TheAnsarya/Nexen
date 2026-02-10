@@ -37,7 +37,6 @@ public class AboutWindow : NexenWindow {
 			new("AvaloniaEdit", "", "MIT", "https://github.com/AvaloniaUI/AvaloniaEdit"),
 			new("ColorPicker", "", "MIT", "https://github.com/wieslawsoltes/ThemeEditor/tree/master/src/ThemeEditor.Controls.ColorPicker"),
 			new("Dock.Avalonia", "", "MIT", "https://github.com/wieslawsoltes/Dock"),
-			new("DataBox", "", "MIT", "https://github.com/wieslawsoltes/DataBox"),
 			new("ReactiveUI", "", "MIT", "https://github.com/reactiveui/ReactiveUI"),
 			new("SkiaSharp", "", "MIT", "https://github.com/mono/SkiaSharp"),
 			new("Skia", "", "BSD", "https://github.com/google/skia"),

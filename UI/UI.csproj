@@ -88,7 +88,7 @@
 	  <None Remove="Styles\AvaloniaMenuItemStyles.xaml" />
 	  <None Remove="Styles\AvaloniaNumericUpDownStyles.xaml" />
 	  <None Remove="Styles\AvaloniaScrollViewerStyles.xaml" />
-	  <None Remove="Styles\DataBoxStyles.xaml" />
+	  <None Remove="Styles\DataGridStyles.xaml" />
 	  <None Remove="Styles\DebugStatusStyles.xaml" />
 	  <None Remove="Styles\DockStyles.xaml" />
 	  <None Remove="Styles\NexenStyles.Light.xaml" />
@@ -607,7 +607,7 @@
 	  <AvaloniaResource Include="Styles\AvaloniaComboBoxStyles.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
-	  <AvaloniaResource Include="Styles\DataBoxStyles.xaml">
+	  <AvaloniaResource Include="Styles\DataGridStyles.xaml">
 		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  <AvaloniaResource Include="Styles\NexenStyles.Light.xaml">
@@ -620,7 +620,6 @@
 		<Generator>MSBuild:Compile</Generator>
 	  </AvaloniaResource>
 	  <AvaloniaResource Include="Styles\NexenStyles.xaml" />
-	<AvaloniaResource Include="ThirdParty\DataBox\Themes\Fluent.axaml" />
   </ItemGroup>
   <ItemGroup>
 	<AvaloniaResource Include="Assets\NesIcon.png" />

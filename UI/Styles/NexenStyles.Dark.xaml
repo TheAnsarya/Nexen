@@ -90,7 +90,7 @@
 					<SolidColorBrush x:Key="DockApplicationAccentBrushMed" Color="White" />
 					<SolidColorBrush x:Key="NexenDockTabPointerOverBrush" Color="#40808080" />
 
-					<!-- DataBox colors -->
+					<!-- DataGrid colors -->
 					<SolidColorBrush x:Key="DataGridColumnHeaderForegroundBrush" Color="#FFDEDEDE" />
 					<SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush" Color="#FF303030" />
 					<SolidColorBrush x:Key="DataGridRowSelectedForegroundBrush" Color="White" />

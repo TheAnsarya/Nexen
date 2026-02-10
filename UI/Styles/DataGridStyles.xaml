@@ -4,7 +4,7 @@
 	xmlns:c="using:Nexen.Controls"
 >
 	<Styles.Resources>
-		<!-- used by DataBox -->
+		<!-- DataGrid selection colors -->
 		<Color x:Key="DataGridRowSelectedUnfocusedBackgroundColor">#0078D7</Color>
 		<Color x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundColor">#0078D7</Color>
 		<Color x:Key="DataGridRowSelectedBackgroundColor">#0078D7</Color>
@@ -17,71 +17,47 @@
 		<Thickness x:Key="DataGridTextColumnCellTextBlockMargin">4,2,4,0</Thickness>
 	</Styles.Resources>
 
-	<!-- Data box -->
-	<Style Selector="DataBoxColumnHeader">
+	<!-- DataGrid compact styling -->
+	<Style Selector="DataGridColumnHeader">
 		<Setter Property="MinHeight" Value="16" />
 		<Setter Property="Padding" Value="3 0 0 0" />
 	</Style>
-	<Style Selector="DataBoxRow">
+	<Style Selector="DataGridRow">
 		<Setter Property="FocusAdorner">
 			<FocusAdornerTemplate>
 			</FocusAdornerTemplate>
 		</Setter>
 	</Style>
-	<Style Selector="DataBoxRow TextBlock">
+	<Style Selector="DataGridRow TextBlock">
 		<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
 	</Style>
-	<Style Selector="DataBoxRow:selected TextBlock">
+	<Style Selector="DataGridRow:selected TextBlock">
 		<Setter Property="Foreground" Value="{DynamicResource DataGridRowSelectedForegroundBrush}" />
 	</Style>
-	<Style Selector="DataBoxCell">
+	<Style Selector="DataGridCell">
 		<Setter Property="MinHeight" Value="16" />
-		<Setter Property="Height" Value="16" />
 	</Style>
-	<Style Selector="DataBoxCell CheckBox">
+	<Style Selector="DataGridCell CheckBox">
 		<Setter Property="MinHeight" Value="16" />
 		<Setter Property="MinWidth" Value="16" />
 		<Setter Property="Padding" Value="2 0 0 0" />
 	</Style>
-	<Style Selector="DataBoxCell CheckBox /template/ Grid">
+	<Style Selector="DataGridCell CheckBox /template/ Grid">
 		<Setter Property="Height" Value="16" />
 		<Setter Property="MaxHeight" Value="16" />
 	</Style>
-	<Style Selector="DataBoxCell CheckBox /template/ Grid > Grid">
+	<Style Selector="DataGridCell CheckBox /template/ Grid > Grid">
 		<Setter Property="Height" Value="16" />
 		<Setter Property="MaxHeight" Value="16" />
 	</Style>
-	<Style Selector="DataBoxRow:selected CheckBox Border">
+	<Style Selector="DataGridRow:selected CheckBox Border">
 		<Setter Property="BorderBrush" Value="{DynamicResource DataGridRowSelectedForegroundBrush}" />
 	</Style>
-	<Style Selector="DataBoxRow:selected CheckBox Path">
+	<Style Selector="DataGridRow:selected CheckBox Path">
 		<Setter Property="Stroke" Value="{DynamicResource DataGridRowSelectedForegroundBrush}" />
 		<Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedForegroundBrush}" />
 	</Style>
-	<Style Selector="DataBoxColumnHeader Path">
+	<Style Selector="DataGridColumnHeader Path">
 		<Setter Property="Margin" Value="0 0 -10 0" />
-	</Style>
-	<Style Selector="DataBoxRowsPresenter">
-		<Setter Property="ScrollViewer.AllowAutoHide" Value="False" />
-
-		<!-- Temporary - Fixes crash with AllowAutoHide after upgrading to the nightly Avalonia build -->
-		<Setter Property="Template">
-			<ControlTemplate>
-				<Border Name="border"
-						  Background="{TemplateBinding Background}"
-						  BorderBrush="{TemplateBinding BorderBrush}"
-						  BorderThickness="{TemplateBinding BorderThickness}"
-						  CornerRadius="{TemplateBinding CornerRadius}">
-					<ScrollViewer Name="PART_ScrollViewer"
-									  HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
-									  VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
-									  AllowAutoHide="False">
-						<ItemsPresenter Name="PART_ItemsPresenter"
-											 ItemsPanel="{TemplateBinding ItemsPanel}"
-											 Margin="{TemplateBinding Padding}"/>
-					</ScrollViewer>
-				</Border>
-			</ControlTemplate>
-		</Setter>
 	</Style>
 </Styles>
