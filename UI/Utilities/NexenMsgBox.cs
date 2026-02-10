@@ -24,9 +24,9 @@ public class NexenMsgBox {
 
 		if (resourceText.StartsWith("[[")) {
 			if (args != null && args.Length > 0) {
-				return MessageBox.Show(wnd, string.Format("Critical error (" + text + ") {0}", args), "Nexen", buttons, icon);
+				return MessageBox.Show(wnd, $"Critical error ({text}) {args}", "Nexen", buttons, icon);
 			} else {
-				return MessageBox.Show(wnd, string.Format("Critical error (" + text + ")"), "Nexen", buttons, icon);
+				return MessageBox.Show(wnd, $"Critical error ({text})", "Nexen", buttons, icon);
 			}
 		} else {
 			return MessageBox.Show(wnd, ResourceHelper.GetMessage(text, args), "Nexen", buttons, icon);

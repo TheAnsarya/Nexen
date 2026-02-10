@@ -29,7 +29,7 @@ public static class UpdateHelper {
 		try {
 			//Use the downloaded .exe as an updater
 			if (File.Exists(srcFile) && new FileInfo(srcFile).Length > 0) {
-				Process.Start(srcFile, string.Format("--update \"{0}\" \"{1}\" \"{2}\"", srcFile, destFile, backupFilePath));
+				Process.Start(srcFile, $"--update \"{srcFile}\" \"{destFile}\" \"{backupFilePath}\"");
 				return true;
 			} else {
 				//Download failed, mismatching hashes
@@ -86,7 +86,7 @@ public static class UpdateHelper {
 					ProcessStartInfo proc = new ProcessStartInfo();
 					proc.WindowStyle = ProcessWindowStyle.Normal;
 					proc.FileName = Program.ExePath;
-					proc.Arguments = string.Format("--update \"{0}\" \"{1}\" \"{2}\" admin", srcFile, destFile, backupFile);
+					proc.Arguments = $"--update \"{srcFile}\" \"{destFile}\" \"{backupFile}\" admin";
 					proc.UseShellExecute = true;
 					proc.Verb = "runas";
 					Process.Start(proc);

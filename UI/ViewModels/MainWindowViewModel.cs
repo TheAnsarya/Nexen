@@ -117,11 +117,7 @@ public class MainWindowViewModel : ViewModelBase {
 			if (ConfigManager.Config.Preferences.ShowTitleBarInfo) {
 				FrameInfo baseSize = EmuApi.GetBaseScreenSize();
 				double scale = (double)RendererSize.Height / baseSize.Height;
-				title += string.Format(" - {0}x{1} ({2:0.###}x, {3})",
-					Math.Round(RendererSize.Width),
-					Math.Round(RendererSize.Height),
-					scale,
-					ResourceHelper.GetEnumText(ConfigManager.Config.Video.VideoFilter));
+				title += $" - {Math.Round(RendererSize.Width)}x{Math.Round(RendererSize.Height)} ({scale:0.###}x, {ResourceHelper.GetEnumText(ConfigManager.Config.Video.VideoFilter)})";
 			}
 		}
 

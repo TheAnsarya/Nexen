@@ -11,8 +11,9 @@ using Nexen.Debugger.StatusViews;
 using Nexen.Debugger.ViewModels;
 using Nexen.Debugger.ViewModels.DebuggerDock;
 
-namespace Nexen.Debugger {
-	public class DebuggerDockFactory : Factory {
+namespace Nexen.Debugger;
+
+public class DebuggerDockFactory : Factory {
 		public ToolContainerViewModel<DisassemblyViewModel> DisassemblyTool { get; private set; }
 		public ToolContainerViewModel<SourceViewViewModel> SourceViewTool { get; private set; }
 		public ToolContainerViewModel<BaseConsoleStatusViewModel> StatusTool { get; private set; }
@@ -255,14 +256,3 @@ namespace Nexen.Debugger {
 		public int SelectedIndex { get; set; } = 0;
 		public List<DockEntryDefinition>? Children { get; set; }
 	}
-}
-
-public class NexenProportionalDockSplitter : DockBase, IProportionalDockSplitter {
-	//The regular ProportionalDockSplitter in Dock.Model.Mvvm.Controls inherits from DockableBase, which causes an exception when styles are applied
-
-	/// <inheritdoc/>
-	public bool CanResize { get; set; } = true;
-
-	/// <inheritdoc/>
-	public bool ResizePreview { get; set; } = false;
-}
