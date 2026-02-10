@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using Nexen.Config;
 using Nexen.Debugger.Utilities;
@@ -19,16 +18,25 @@ namespace Nexen.Debugger.Labels;
 /// - coverage.cdl (Code Data Logger)
 /// - config.json (per-ROM configuration)
 /// </summary>
+/// <remarks>
+/// Path resolution order:
+/// <list type="number">
+///   <item>User-configured custom DebugFolderPath (if set)</item>
+///   <item>New GameDataManager path: GameData/{System}/{RomName}_{CRC32}/Debug/</item>
+///   <item>Legacy path (read-only fallback): Debug/{RomName}_{CRC32}/</item>
+/// </list>
+/// </remarks>
 public static class DebugFolderManager {
-	private const string DEBUG_FOLDER_NAME = "Debug";
-	private const string PANSY_FILENAME = "metadata.pansy";
-	private const string MLB_FILENAME = "labels.mlb";
-	private const string CDL_FILENAME = "coverage.cdl";
-	private const string CONFIG_FILENAME = "config.json";
-	private const string HISTORY_FOLDER = "history";
+	private const string LegacyDebugFolderName = "Debug";
+	private const string PansyFilename = "metadata.pansy";
+	private const string MlbFilename = "labels.mlb";
+	private const string CdlFilename = "coverage.cdl";
+	private const string ConfigFilename = "config.json";
+	private const string HistoryFolderName = "history";
 
 	/// <summary>
 	/// Regex to match characters invalid in folder names.
+	/// Used only for legacy folder name generation.
 	/// </summary>
 	private static readonly Regex InvalidCharsRegex = new(
 		$"[{Regex.Escape(new string(Path.GetInvalidFileNameChars()))}]",
@@ -36,50 +44,93 @@ public static class DebugFolderManager {
 	);
 
 	/// <summary>
-	/// Get the base debug folder path (inside Nexen data directory).
+	/// Checks if the user has configured a custom debug folder path override.
 	/// </summary>
-	public static string GetDebugBasePath() {
+	private static bool HasCustomDebugPath {
+		get {
+			var config = ConfigManager.Config.Debug.Integration;
+			return !string.IsNullOrWhiteSpace(config.DebugFolderPath)
+				&& Directory.Exists(config.DebugFolderPath);
+		}
+	}
+
+	/// <summary>
+	/// Get the legacy debug base path (pre-GameDataManager).
+	/// Used for backwards-compatible reads and custom override paths.
+	/// </summary>
+	public static string GetLegacyDebugBasePath() {
 		var config = ConfigManager.Config.Debug.Integration;
-		if (!string.IsNullOrWhiteSpace(config.DebugFolderPath) && Directory.Exists(config.DebugFolderPath)) {
-			return config.DebugFolderPath;
+		if (HasCustomDebugPath) {
+			return config.DebugFolderPath!;
 		}
 
-		return Path.Combine(ConfigManager.HomeFolder, DEBUG_FOLDER_NAME);
+		return Path.Combine(ConfigManager.HomeFolder, LegacyDebugFolderName);
 	}
 
 	/// <summary>
 	/// Generate a safe folder name from the ROM name and CRC32.
+	/// Delegates to <see cref="GameDataManager.SanitizeRomName"/> for consistency.
 	/// </summary>
 	/// <param name="romInfo">ROM information</param>
 	/// <returns>Sanitized folder name in format "RomName_CRC32"</returns>
 	public static string GetRomFolderName(RomInfo romInfo) {
-		// Get base name without extension
-		string baseName = Path.GetFileNameWithoutExtension(romInfo.RomPath);
+		string sanitizedName = GameDataManager.SanitizeRomName(romInfo.GetRomName());
+		uint crc32 = RomHashService.ComputeRomHashes(romInfo).Crc32Value;
+		return GameDataManager.FormatGameFolderName(sanitizedName, crc32);
+	}
 
-		// Sanitize the name (replace invalid chars with underscore)
-		baseName = InvalidCharsRegex.Replace(baseName, "_");
-
-		// Trim to reasonable length (max 100 chars)
-		if (baseName.Length > 100) {
-			baseName = baseName.Substring(0, 100);
-		}
-
-		// Calculate or get CRC32
-		uint crc32 = PansyExporter.CalculateRomCrc32(romInfo);
-
-		// Format: RomName_XXXXXXXX (8 hex digits)
-		return $"{baseName}_{crc32:x8}";
+	/// <summary>
+	/// Get the legacy debug folder path for a ROM (pre-GameDataManager layout).
+	/// Path format: {LegacyDebugBase}/{RomName}_{CRC32}/
+	/// </summary>
+	private static string GetLegacyRomDebugFolder(RomInfo romInfo) {
+		string basePath = GetLegacyDebugBasePath();
+		string folderName = GetRomFolderName(romInfo);
+		return Path.Combine(basePath, folderName);
 	}
 
 	/// <summary>
 	/// Get the full path to the debug folder for a specific ROM.
+	/// Uses GameDataManager path for default storage, custom path if configured.
 	/// </summary>
 	/// <param name="romInfo">ROM information</param>
 	/// <returns>Full path to the ROM's debug folder</returns>
 	public static string GetRomDebugFolder(RomInfo romInfo) {
-		string basePath = GetDebugBasePath();
-		string folderName = GetRomFolderName(romInfo);
-		return Path.Combine(basePath, folderName);
+		// If user has a custom debug path, use the legacy structure under it
+		if (HasCustomDebugPath) {
+			return GetLegacyRomDebugFolder(romInfo);
+		}
+
+		// Use new GameDataManager path: GameData/{System}/{RomName}_{CRC32}/Debug/
+		return GameDataManager.GetDebugFolder(romInfo);
+	}
+
+	/// <summary>
+	/// Resolve a debug file path, checking the new GameDataManager location first,
+	/// then falling back to the legacy location for backwards compatibility.
+	/// </summary>
+	/// <param name="romInfo">ROM information</param>
+	/// <param name="filename">The filename to resolve (e.g., "metadata.pansy")</param>
+	/// <returns>Path in the new location (for writes), or legacy path if file exists there</returns>
+	private static string ResolveDebugFilePath(RomInfo romInfo, string filename) {
+		// Primary path (GameDataManager or custom)
+		string primaryPath = Path.Combine(GetRomDebugFolder(romInfo), filename);
+
+		// If file exists at primary location, use it
+		if (File.Exists(primaryPath)) {
+			return primaryPath;
+		}
+
+		// Check legacy location (only if not using custom path)
+		if (!HasCustomDebugPath) {
+			string legacyPath = Path.Combine(GetLegacyRomDebugFolder(romInfo), filename);
+			if (File.Exists(legacyPath)) {
+				return legacyPath;
+			}
+		}
+
+		// Default to primary path (for new writes)
+		return primaryPath;
 	}
 
 	/// <summary>
@@ -103,35 +154,35 @@ public static class DebugFolderManager {
 	/// Get the path to the Pansy metadata file for a ROM.
 	/// </summary>
 	public static string GetPansyPath(RomInfo romInfo) {
-		return Path.Combine(GetRomDebugFolder(romInfo), PANSY_FILENAME);
+		return Path.Combine(GetRomDebugFolder(romInfo), PansyFilename);
 	}
 
 	/// <summary>
 	/// Get the path to the MLB labels file for a ROM.
 	/// </summary>
 	public static string GetMlbPath(RomInfo romInfo) {
-		return Path.Combine(GetRomDebugFolder(romInfo), MLB_FILENAME);
+		return Path.Combine(GetRomDebugFolder(romInfo), MlbFilename);
 	}
 
 	/// <summary>
 	/// Get the path to the CDL file for a ROM.
 	/// </summary>
 	public static string GetCdlPath(RomInfo romInfo) {
-		return Path.Combine(GetRomDebugFolder(romInfo), CDL_FILENAME);
+		return Path.Combine(GetRomDebugFolder(romInfo), CdlFilename);
 	}
 
 	/// <summary>
 	/// Get the path to the per-ROM config file.
 	/// </summary>
 	public static string GetConfigPath(RomInfo romInfo) {
-		return Path.Combine(GetRomDebugFolder(romInfo), CONFIG_FILENAME);
+		return Path.Combine(GetRomDebugFolder(romInfo), ConfigFilename);
 	}
 
 	/// <summary>
 	/// Get the history folder path for version backups.
 	/// </summary>
 	public static string GetHistoryFolder(RomInfo romInfo) {
-		return Path.Combine(GetRomDebugFolder(romInfo), HISTORY_FOLDER);
+		return Path.Combine(GetRomDebugFolder(romInfo), HistoryFolderName);
 	}
 
 	/// <summary>
@@ -337,9 +388,14 @@ public static class DebugFolderManager {
 	/// <returns>True if any files were imported</returns>
 	public static bool ImportFromFolder(RomInfo romInfo) {
 		var config = ConfigManager.Config.Debug.Integration;
-		string folder = GetRomDebugFolder(romInfo);
 
-		if (!Directory.Exists(folder)) {
+		// Check if any debug folder exists (primary or legacy)
+		string primaryFolder = GetRomDebugFolder(romInfo);
+		string legacyFolder = HasCustomDebugPath ? "" : GetLegacyRomDebugFolder(romInfo);
+		bool hasPrimary = Directory.Exists(primaryFolder);
+		bool hasLegacy = !string.IsNullOrEmpty(legacyFolder) && Directory.Exists(legacyFolder);
+
+		if (!hasPrimary && !hasLegacy) {
 			return false;
 		}
 
@@ -347,7 +403,7 @@ public static class DebugFolderManager {
 
 		// 1. Import MLB file if exists and enabled
 		if (config.AutoLoadMlbFiles && config.SyncMlbFiles) {
-			string mlbPath = GetMlbPath(romInfo);
+			string mlbPath = ResolveDebugFilePath(romInfo, MlbFilename);
 			if (File.Exists(mlbPath)) {
 				NexenLabelFile.Import(mlbPath, showResult: false);
 				imported = true;
@@ -356,7 +412,7 @@ public static class DebugFolderManager {
 
 		// 2. Import CDL file if exists and enabled
 		if (config.AutoLoadCdlFiles && config.SyncCdlFiles) {
-			string cdlPath = GetCdlPath(romInfo);
+			string cdlPath = ResolveDebugFilePath(romInfo, CdlFilename);
 			if (File.Exists(cdlPath)) {
 				ImportCdlFile(cdlPath, romInfo);
 				imported = true;
@@ -388,22 +444,47 @@ public static class DebugFolderManager {
 	}
 
 	/// <summary>
-	/// Check if a debug folder exists for the given ROM.
+	/// Check if a debug folder exists for the given ROM (in either new or legacy location).
 	/// </summary>
 	public static bool DebugFolderExists(RomInfo romInfo) {
-		return Directory.Exists(GetRomDebugFolder(romInfo));
+		if (Directory.Exists(GetRomDebugFolder(romInfo))) {
+			return true;
+		}
+
+		// Also check legacy location
+		if (!HasCustomDebugPath && Directory.Exists(GetLegacyRomDebugFolder(romInfo))) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/// <summary>
 	/// Get a list of all ROMs with debug folders.
 	/// </summary>
 	public static List<string> GetAllDebugFolders() {
-		string basePath = GetDebugBasePath();
-		if (!Directory.Exists(basePath)) {
-			return [];
+		var folders = new List<string>();
+
+		// Scan legacy debug folder
+		string legacyPath = GetLegacyDebugBasePath();
+		if (Directory.Exists(legacyPath)) {
+			folders.AddRange(Directory.GetDirectories(legacyPath));
 		}
 
-		return Directory.GetDirectories(basePath).ToList();
+		// Scan GameData system folders for Debug subdirectories
+		string gameDataRoot = GameDataManager.GameDataBasePath;
+		if (Directory.Exists(gameDataRoot)) {
+			foreach (string systemDir in Directory.GetDirectories(gameDataRoot)) {
+				foreach (string romDir in Directory.GetDirectories(systemDir)) {
+					string debugDir = Path.Combine(romDir, "Debug");
+					if (Directory.Exists(debugDir)) {
+						folders.Add(debugDir);
+					}
+				}
+			}
+		}
+
+		return folders;
 	}
 
 	/// <summary>
