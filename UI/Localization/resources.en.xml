@@ -742,6 +742,10 @@
 			<Control ID="chkSaveStatesOverride">Save States:</Control>
 			<Control ID="chkMoviesOverride">Movies:</Control>
 
+			<Control ID="grpDataMigration">Data Migration</Control>
+			<Control ID="lblMigrationDescription">Game data (save states, battery saves) is automatically migrated to per-game folders when a ROM is loaded. Use the button below to remove old copies of files that have already been migrated.</Control>
+			<Control ID="btnCleanupLegacyData">Clean up migrated legacy files...</Control>
+
 			<Control ID="tpgAdvanced">Advanced</Control>
 			<Control ID="chkShowFullPathInRecents">Show full file path in recent file list</Control>
 			<Control ID="chkShowFrameCounter">Show frame counter</Control>
@@ -1833,6 +1837,10 @@ E
 		<Message ID="RomsFound">{0} roms found</Message>
 
 		<Message ID="ResetSettingsConfirmation">Warning: This will reset ALL settings and cannot be undone!&#xA;&#xA;Continue?</Message>
+
+		<Message ID="NoLegacyFilesToCleanup">No legacy files found to clean up. Game data is already migrated.</Message>
+		<Message ID="ConfirmCleanupLegacyData">This will delete {0} legacy file(s) from {1} game(s) that have already been migrated to per-game folders.&#xA;&#xA;The new copies in the GameData folder will not be affected.&#xA;&#xA;Continue?</Message>
+		<Message ID="CleanupComplete">Cleaned up {0} legacy file(s).</Message>
 
 		<Message ID="ResetWorkspaceConfirmation">Warning: This operation will empty the watch window, remove all breakpoints and reset labels to their default state.&#xA;&#xA;This resets the workspace of all CPUs for the current ROM.&#xA;&#xA;Are you sure?</Message>
 		<Message ID="ImportLabels">Import completed: {0} labels imported.</Message>

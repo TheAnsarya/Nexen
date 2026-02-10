@@ -341,4 +341,179 @@ public static class GameDataManager {
 			return 0;
 		}
 	}
+
+	/// <summary>
+	/// Gets the count of legacy files that have already been migrated to per-game folders
+	/// and can be cleaned up. Scans all system folders in GameData/ and checks for
+	/// corresponding legacy files.
+	/// </summary>
+	/// <returns>A tuple of (cleanable legacy file count, total migrated game count).</returns>
+	public static (int LegacyFileCount, int GameCount) GetCleanupStatus() {
+		try {
+			string gameDataBase = GameDataBasePath;
+			if (!Directory.Exists(gameDataBase))
+				return (0, 0);
+
+			int legacyFiles = 0;
+			int gameCount = 0;
+
+			// Iterate all system folders (NES, SNES, GB, etc.)
+			foreach (string systemDir in Directory.GetDirectories(gameDataBase)) {
+				// Iterate all per-game folders ({RomName}_{crc32})
+				foreach (string gameDir in Directory.GetDirectories(systemDir)) {
+					string gameFolderName = Path.GetFileName(gameDir);
+
+					// Extract ROM name from folder name (everything before last _xxxxxxxx)
+					int lastUnderscore = gameFolderName.LastIndexOf('_');
+					if (lastUnderscore < 0)
+						continue;
+
+					string romName = gameFolderName[..lastUnderscore];
+					bool hasLegacyFiles = false;
+
+					// Check legacy SaveStates folder
+					string legacySaveStates = Path.Combine(ConfigManager.HomeFolder, "SaveStates", romName);
+					if (Directory.Exists(legacySaveStates)) {
+						string newSaveStates = Path.Combine(gameDir, SaveStatesFolderName);
+						if (Directory.Exists(newSaveStates)) {
+							foreach (string file in Directory.GetFiles(legacySaveStates)) {
+								string ext = Path.GetExtension(file).ToLowerInvariant();
+								if (ext is ".nexen-save" or ".mss") {
+									string destFile = Path.Combine(newSaveStates, Path.GetFileName(file));
+									if (File.Exists(destFile)) {
+										legacyFiles++;
+										hasLegacyFiles = true;
+									}
+								}
+							}
+						}
+					}
+
+					// Check legacy Saves folder for battery files
+					string legacySaves = Path.Combine(ConfigManager.HomeFolder, "Saves");
+					if (Directory.Exists(legacySaves)) {
+						HashSet<string> batteryExtensions = [".sav", ".srm", ".rtc", ".eeprom", ".ieeprom", ".bs"];
+						string newSaves = Path.Combine(gameDir, SavesFolderName);
+						if (Directory.Exists(newSaves)) {
+							foreach (string file in Directory.GetFiles(legacySaves)) {
+								string fileName = Path.GetFileName(file);
+								if (fileName.StartsWith(romName, StringComparison.OrdinalIgnoreCase)) {
+									string ext = fileName[romName.Length..].ToLowerInvariant();
+									if (batteryExtensions.Contains(ext) || ext == ".chr.sav") {
+										string destFile = Path.Combine(newSaves, fileName);
+										if (File.Exists(destFile)) {
+											legacyFiles++;
+											hasLegacyFiles = true;
+										}
+									}
+								}
+							}
+						}
+					}
+
+					if (hasLegacyFiles)
+						gameCount++;
+				}
+			}
+
+			return (legacyFiles, gameCount);
+		} catch (Exception ex) {
+			Log.Warn($"[GameDataManager] Failed to get cleanup status: {ex.Message}");
+			return (0, 0);
+		}
+	}
+
+	/// <summary>
+	/// Removes legacy files that have already been successfully migrated to per-game folders.
+	/// Only deletes legacy copies where the new per-game version exists.
+	/// </summary>
+	/// <returns>Number of legacy files removed.</returns>
+	public static int CleanupMigratedLegacyFiles() {
+		try {
+			string gameDataBase = GameDataBasePath;
+			if (!Directory.Exists(gameDataBase))
+				return 0;
+
+			int cleaned = 0;
+
+			foreach (string systemDir in Directory.GetDirectories(gameDataBase)) {
+				foreach (string gameDir in Directory.GetDirectories(systemDir)) {
+					string gameFolderName = Path.GetFileName(gameDir);
+					int lastUnderscore = gameFolderName.LastIndexOf('_');
+					if (lastUnderscore < 0)
+						continue;
+
+					string romName = gameFolderName[..lastUnderscore];
+
+					// Clean up legacy save states
+					string legacySaveStates = Path.Combine(ConfigManager.HomeFolder, "SaveStates", romName);
+					if (Directory.Exists(legacySaveStates)) {
+						string newSaveStates = Path.Combine(gameDir, SaveStatesFolderName);
+						if (Directory.Exists(newSaveStates)) {
+							foreach (string file in Directory.GetFiles(legacySaveStates)) {
+								string ext = Path.GetExtension(file).ToLowerInvariant();
+								if (ext is not ".nexen-save" and not ".mss")
+									continue;
+
+								string destFile = Path.Combine(newSaveStates, Path.GetFileName(file));
+								if (File.Exists(destFile)) {
+									try {
+										File.Delete(file);
+										cleaned++;
+									} catch (Exception ex) {
+										Log.Warn($"[GameDataManager] Failed to clean up '{file}': {ex.Message}");
+									}
+								}
+							}
+
+							// Remove the legacy folder if it's now empty
+							try {
+								if (Directory.GetFiles(legacySaveStates).Length == 0 &&
+									Directory.GetDirectories(legacySaveStates).Length == 0) {
+									Directory.Delete(legacySaveStates);
+								}
+							} catch { /* ignore */ }
+						}
+					}
+
+					// Clean up legacy battery saves
+					string legacySaves = Path.Combine(ConfigManager.HomeFolder, "Saves");
+					if (Directory.Exists(legacySaves)) {
+						HashSet<string> batteryExtensions = [".sav", ".srm", ".rtc", ".eeprom", ".ieeprom", ".bs"];
+						string newSaves = Path.Combine(gameDir, SavesFolderName);
+						if (Directory.Exists(newSaves)) {
+							foreach (string file in Directory.GetFiles(legacySaves)) {
+								string fileName = Path.GetFileName(file);
+								if (!fileName.StartsWith(romName, StringComparison.OrdinalIgnoreCase))
+									continue;
+
+								string ext = fileName[romName.Length..].ToLowerInvariant();
+								if (!batteryExtensions.Contains(ext) && ext != ".chr.sav")
+									continue;
+
+								string destFile = Path.Combine(newSaves, fileName);
+								if (File.Exists(destFile)) {
+									try {
+										File.Delete(file);
+										cleaned++;
+									} catch (Exception ex) {
+										Log.Warn($"[GameDataManager] Failed to clean up '{file}': {ex.Message}");
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if (cleaned > 0) {
+				Log.Info($"[GameDataManager] Cleaned up {cleaned} legacy file(s)");
+			}
+
+			return cleaned;
+		} catch (Exception ex) {
+			Log.Warn($"[GameDataManager] Legacy cleanup failed: {ex.Message}");
+			return 0;
+		}
+	}
 }

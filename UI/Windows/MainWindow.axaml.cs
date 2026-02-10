@@ -302,10 +302,16 @@ public class MainWindow : NexenWindow {
 				EmuApi.SetPerRomSaveDirectory(savesPath);
 
 				// Migrate any legacy save states to the new per-game folder
-				GameDataManager.MigrateSaveStates(romInfo);
+				int migratedStates = GameDataManager.MigrateSaveStates(romInfo);
 
 				// Migrate any legacy battery saves to the new per-game folder
-				GameDataManager.MigrateBatterySaves(romInfo);
+				int migratedSaves = GameDataManager.MigrateBatterySaves(romInfo);
+
+				// Show OSD notification if files were migrated
+				int totalMigrated = migratedStates + migratedSaves;
+				if (totalMigrated > 0) {
+					DisplayMessageHelper.DisplayMessage("Migration", $"Migrated {totalMigrated} file(s) to per-game folder");
+				}
 
 				// Update global emulator state for menu enable/disable
 				Dispatcher.UIThread.Post(() => Services.EmulatorState.Instance.OnRomChanged(romInfo));

@@ -147,6 +147,14 @@
 							/>
 						</Grid>
 					</c:OptionSection>
+
+					<c:OptionSection Header="{l:Translate grpDataMigration}">
+						<TextBlock Text="{l:Translate lblMigrationDescription}" TextWrapping="Wrap" Margin="0 0 0 5" Opacity="0.7" />
+						<StackPanel Orientation="Horizontal" Spacing="10">
+							<c:ButtonWithIcon Click="btnCleanupLegacyData_OnClick" Icon="Assets/Folder.png" Text="{l:Translate btnCleanupLegacyData}" />
+						</StackPanel>
+						<TextBlock x:Name="lblMigrationStatus" Text="" Margin="0 5 0 0" FontSize="11" Opacity="0.6" />
+					</c:OptionSection>
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
