@@ -762,6 +762,10 @@ public enum ActionType {
 	ImportLabels,
 	[IconFile("Export")]
 	ExportLabels,
+	[IconFile("Import")]
+	ImportLegacyMlb,
+	[IconFile("Export")]
+	ExportLegacyMlb,
 	[IconFile("Export")]
 	ExportPansy,
 

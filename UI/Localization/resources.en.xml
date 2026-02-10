@@ -3295,6 +3295,8 @@ E
 			<Value ID="RunToIrq">Run to IRQ</Value>
 			<Value ID="ImportLabels">Import labels</Value>
 			<Value ID="ExportLabels">Export labels</Value>
+			<Value ID="ImportLegacyMlb">Import legacy MLB file</Value>
+			<Value ID="ExportLegacyMlb">Export as legacy MLB</Value>
 			<Value ID="ExportPansy">Export Pansy metadata</Value>
 			<Value ID="ExportPansySuccess">Pansy metadata file exported successfully.</Value>
 			<Value ID="ExportPansyFailed">Failed to export Pansy metadata file.</Value>
@@ -3681,6 +3683,8 @@ E
 			<Value ID="ResetWorkspace">Reset workspace</Value>
 			<Value ID="ImportLabels">Import labels...</Value>
 			<Value ID="ExportLabels">Export labels...</Value>
+			<Value ID="ImportLegacyMlb">Import legacy MLB file...</Value>
+			<Value ID="ExportLegacyMlb">Export as legacy MLB...</Value>
 			<Value ID="ExportPansy">Export Pansy metadata...</Value>
 			<Value ID="ImportWatchEntries">Import watch entries...</Value>
 			<Value ID="ExportWatchEntries">Export watch entries...</Value>

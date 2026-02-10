@@ -1072,6 +1072,27 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 						}
 					}
 				},
+				new ContextMenuSeparator(),
+				new ContextMenuAction() {
+					ActionType = ActionType.ImportLegacyMlb,
+					OnClick = async () => {
+						string? filename = await FileDialogHelper.OpenFile(null, wnd, FileDialogHelper.MesenLabelExt);
+						if (filename is not null) {
+							NexenLabelFile.ImportLegacyMlb(filename, true);
+						}
+					}
+				},
+				new ContextMenuAction() {
+					ActionType = ActionType.ExportLegacyMlb,
+					OnClick = async () => {
+						string initFilename = EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.MesenLabelExt;
+						string? filename = await FileDialogHelper.SaveFile(null, initFilename, wnd, FileDialogHelper.MesenLabelExt);
+						if (filename is not null) {
+							NexenLabelFile.ExportLegacyMlb(filename);
+						}
+					}
+				},
+				new ContextMenuSeparator(),
 				new ContextMenuAction() {
 					ActionType = ActionType.ExportPansy,
 					OnClick = async () => {
