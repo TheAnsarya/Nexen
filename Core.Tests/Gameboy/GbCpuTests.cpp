@@ -1063,3 +1063,90 @@ TEST_F(GbCpuInterruptTest, Vectors_CorrectAddresses) {
 	EXPECT_EQ(GetInterruptVector(0x08), 0x0058);  // Serial
 	EXPECT_EQ(GetInterruptVector(0x10), 0x0060);  // Joypad
 }
+
+//=============================================================================
+// SetFlagState Branchless Comparison Tests
+//=============================================================================
+// Exhaustive comparison between old branching SetFlagState and new branchless
+// to verify identical behavior for every possible input combination.
+
+class GbCpuSetFlagStateComparisonTest : public ::testing::Test {
+protected:
+	// Old branching implementation (original code)
+	static uint8_t SetFlagState_Branching(uint8_t flags, uint8_t flag, bool state) {
+		if (state) {
+			flags |= flag;
+		} else {
+			flags &= ~flag;
+		}
+		return flags;
+	}
+
+	// New branchless implementation (matches GbCpu.cpp)
+	static uint8_t SetFlagState_Branchless(uint8_t flags, uint8_t flag, bool state) {
+		return (flags & ~flag) | (-static_cast<uint8_t>(state) & flag);
+	}
+};
+
+TEST_F(GbCpuSetFlagStateComparisonTest, Exhaustive_AllFlags_AllInputs) {
+	// Test all 4 GB CPU flags
+	constexpr uint8_t flags[] = {
+		GbCpuFlags::Zero,      // 0x80
+		GbCpuFlags::AddSub,    // 0x40
+		GbCpuFlags::HalfCarry, // 0x20
+		GbCpuFlags::Carry      // 0x10
+	};
+
+	// Test every possible initial Flags register value (256) x each flag x set/clear
+	for (uint8_t flag : flags) {
+		for (int initial = 0; initial < 256; initial++) {
+			uint8_t initFlags = static_cast<uint8_t>(initial);
+
+			// Test setting the flag (state = true)
+			uint8_t branching_set = SetFlagState_Branching(initFlags, flag, true);
+			uint8_t branchless_set = SetFlagState_Branchless(initFlags, flag, true);
+			ASSERT_EQ(branching_set, branchless_set)
+				<< "Mismatch setting flag 0x" << std::hex << (int)flag
+				<< " with initial Flags=0x" << (int)initFlags;
+
+			// Test clearing the flag (state = false)
+			uint8_t branching_clear = SetFlagState_Branching(initFlags, flag, false);
+			uint8_t branchless_clear = SetFlagState_Branchless(initFlags, flag, false);
+			ASSERT_EQ(branching_clear, branchless_clear)
+				<< "Mismatch clearing flag 0x" << std::hex << (int)flag
+				<< " with initial Flags=0x" << (int)initFlags;
+		}
+	}
+}
+
+TEST_F(GbCpuSetFlagStateComparisonTest, MultiFlag_ALU_Pattern) {
+	// Test the typical ALU pattern: setting Zero, HalfCarry, Carry in sequence
+	// This mimics how ADD, SUB, CP etc. call SetFlagState multiple times
+	for (int initial = 0; initial < 256; initial++) {
+		for (int value = 0; value < 256; value++) {
+			uint8_t initFlags = static_cast<uint8_t>(initial);
+			uint8_t val = static_cast<uint8_t>(value);
+
+			// Simulate ADD-like flag computation
+			bool zeroResult = (val == 0);
+			bool halfCarry = ((val & 0x0F) > 0x09);
+			bool carry = (val > 0x7F);
+
+			// Apply branching version
+			uint8_t branching = initFlags;
+			branching = SetFlagState_Branching(branching, GbCpuFlags::Zero, zeroResult);
+			branching = SetFlagState_Branching(branching, GbCpuFlags::HalfCarry, halfCarry);
+			branching = SetFlagState_Branching(branching, GbCpuFlags::Carry, carry);
+
+			// Apply branchless version
+			uint8_t branchless = initFlags;
+			branchless = SetFlagState_Branchless(branchless, GbCpuFlags::Zero, zeroResult);
+			branchless = SetFlagState_Branchless(branchless, GbCpuFlags::HalfCarry, halfCarry);
+			branchless = SetFlagState_Branchless(branchless, GbCpuFlags::Carry, carry);
+
+			ASSERT_EQ(branching, branchless)
+				<< "Multi-flag mismatch: initial=0x" << std::hex << (int)initFlags
+				<< " value=0x" << (int)val;
+		}
+	}
+}

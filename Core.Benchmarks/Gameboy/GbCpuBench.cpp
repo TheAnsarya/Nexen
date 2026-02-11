@@ -94,6 +94,56 @@ static void BM_GbCpu_HalfCarryCalculation_Branchless(benchmark::State& state) {
 }
 BENCHMARK(BM_GbCpu_HalfCarryCalculation_Branchless);
 
+// Benchmark SetFlagState - branching version (original)
+static void BM_GbCpu_SetFlagState_Branching(benchmark::State& state) {
+	GbCpuState cpuState = {};
+	uint8_t value = 0;
+
+	for (auto _ : state) {
+		// Simulate typical ALU pattern: set Zero, HalfCarry, Carry flags
+		uint8_t flags = cpuState.Flags;
+		bool zeroResult = (value == 0);
+		bool halfCarry = ((value & 0x0F) == 0x0F);
+		bool carry = (value > 0x7F);
+
+		// Branching SetFlagState
+		if (zeroResult) { flags |= GbCpuFlags::Zero; } else { flags &= ~GbCpuFlags::Zero; }
+		if (halfCarry) { flags |= GbCpuFlags::HalfCarry; } else { flags &= ~GbCpuFlags::HalfCarry; }
+		if (carry) { flags |= GbCpuFlags::Carry; } else { flags &= ~GbCpuFlags::Carry; }
+
+		cpuState.Flags = flags;
+		benchmark::DoNotOptimize(cpuState.Flags);
+		value++;
+	}
+	state.SetItemsProcessed(state.iterations() * 3);
+}
+BENCHMARK(BM_GbCpu_SetFlagState_Branching);
+
+// Benchmark SetFlagState - branchless version (new)
+static void BM_GbCpu_SetFlagState_Branchless(benchmark::State& state) {
+	GbCpuState cpuState = {};
+	uint8_t value = 0;
+
+	for (auto _ : state) {
+		// Same ALU pattern as branching version
+		uint8_t flags = cpuState.Flags;
+		bool zeroResult = (value == 0);
+		bool halfCarry = ((value & 0x0F) == 0x0F);
+		bool carry = (value > 0x7F);
+
+		// Branchless SetFlagState
+		flags = (flags & ~GbCpuFlags::Zero) | (-static_cast<uint8_t>(zeroResult) & GbCpuFlags::Zero);
+		flags = (flags & ~GbCpuFlags::HalfCarry) | (-static_cast<uint8_t>(halfCarry) & GbCpuFlags::HalfCarry);
+		flags = (flags & ~GbCpuFlags::Carry) | (-static_cast<uint8_t>(carry) & GbCpuFlags::Carry);
+
+		cpuState.Flags = flags;
+		benchmark::DoNotOptimize(cpuState.Flags);
+		value++;
+	}
+	state.SetItemsProcessed(state.iterations() * 3);
+}
+BENCHMARK(BM_GbCpu_SetFlagState_Branchless);
+
 // -----------------------------------------------------------------------------
 // Register Pair Operations
 // -----------------------------------------------------------------------------

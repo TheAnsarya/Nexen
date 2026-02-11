@@ -1051,11 +1051,9 @@ void GbCpu::ClearFlag(uint8_t flag) {
 }
 
 void GbCpu::SetFlagState(uint8_t flag, bool state) {
-	if (state) {
-		SetFlag(flag);
-	} else {
-		ClearFlag(flag);
-	}
+	// Branchless: clear the flag, then conditionally OR it back
+	// -static_cast<uint8_t>(state) produces 0xFF when true, 0x00 when false
+	_state.Flags = (_state.Flags & ~flag) | (-static_cast<uint8_t>(state) & flag);
 }
 
 void GbCpu::PushByte(uint8_t value) {
