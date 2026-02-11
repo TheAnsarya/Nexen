@@ -47,8 +47,78 @@ gh issue close <number> --repo TheAnsarya/Nexen --comment "Completed in commit a
 - NEVER use spaces for indentation - only tabs
 - Inside code blocks in markdown, use spaces for alignment of ASCII art/diagrams
 
-### Brace Style
-- **K&R style** - Opening braces on same line
+### Brace Style — K&R (One True Brace)
+- **Opening braces on the SAME LINE** as the statement — ALWAYS
+- This applies to ALL constructs: `if`, `else`, `for`, `while`, `switch`, `try`, `catch`, functions, methods, classes, structs, namespaces, lambdas, properties, enum declarations, etc.
+- `else` and `else if` go on the same line as the closing brace: `} else {`
+- `catch` goes on the same line as the closing brace: `} catch (...) {`
+- **NEVER use Allman style** (brace on its own line)
+- **NEVER put an opening brace on a new line** — not even for long parameter lists
+
+#### C++ Examples
+```cpp
+// ✅ CORRECT — K&R style
+if (condition) {
+	DoSomething();
+} else if (other) {
+	DoOther();
+} else {
+	DoFallback();
+}
+
+for (int i = 0; i < count; i++) {
+	Process(i);
+}
+
+void MyClass::Execute(int param) {
+	// body
+}
+
+class MyClass : public Base {
+public:
+	void Method() {
+		// body
+	}
+};
+
+// ❌ WRONG — Allman style (DO NOT USE)
+if (condition)
+{
+	DoSomething();
+}
+else
+{
+	DoFallback();
+}
+```
+
+#### C# Examples
+```csharp
+// ✅ CORRECT — K&R style
+if (condition) {
+	DoSomething();
+} else {
+	DoFallback();
+}
+
+public void Execute(int param) {
+	// body
+}
+
+public class MyClass : Base {
+	public string Name { get; set; }
+
+	public void Method() {
+		// body
+	}
+}
+
+// ❌ WRONG — Allman style (DO NOT USE)
+if (condition)
+{
+	DoSomething();
+}
+```
 
 ### Hexadecimal Values
 - **Always lowercase**: `0xff00`, not `0xFF00`

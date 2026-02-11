@@ -27,25 +27,26 @@ public sealed class ColorHelper {
 
 	/// <summary>
 	/// Converts an RGB color to HSL color space.
+	/// Uses float precision (sufficient for 8-bit color channels).
 	/// </summary>
 	public static HslColor RgbToHsl(Color rgbColor) {
-		double r = rgbColor.R / 255.0;
-		double g = rgbColor.G / 255.0;
-		double b = rgbColor.B / 255.0;
+		float r = rgbColor.R / 255f;
+		float g = rgbColor.G / 255f;
+		float b = rgbColor.B / 255f;
 
-		double max = Math.Max(r, Math.Max(g, b));
-		double min = Math.Min(r, Math.Min(g, b));
+		float max = MathF.Max(r, MathF.Max(g, b));
+		float min = MathF.Min(r, MathF.Min(g, b));
 
-		double c = max - min; //Chroma
+		float c = max - min; //Chroma
 
 		HslColor hsl;
-		hsl.L = (max + min) / 2;
+		hsl.L = (max + min) / 2f;
 
-		if (Math.Abs(c) < 0.00001) {
+		if (MathF.Abs(c) < 0.00001f) {
 			hsl.S = 0;
 			hsl.H = 0;
 		} else {
-			hsl.S = hsl.L is < 0.0001 or > 0.9999 ? 0 : (max - hsl.L) / Math.Min(hsl.L, 1 - hsl.L);
+			hsl.S = hsl.L is < 0.0001f or > 0.9999f ? 0 : (max - hsl.L) / MathF.Min(hsl.L, 1f - hsl.L);
 
 			hsl.H = r == max ? 0 + ((g - b) / c) : g == max ? 2 + ((b - r) / c) : 4 + ((r - g) / c);
 
@@ -59,13 +60,13 @@ public sealed class ColorHelper {
 	}
 
 	public static Color HslToRgb(HslColor hsl) {
-		double c = (1 - Math.Abs((2 * hsl.L) - 1)) * hsl.S;
-		double hp = hsl.H / 60.0;
-		double x = c * (1 - Math.Abs((hp % 2) - 1));
+		float c = (1f - MathF.Abs((2f * hsl.L) - 1f)) * hsl.S;
+		float hp = hsl.H / 60f;
+		float x = c * (1f - MathF.Abs((hp % 2f) - 1f));
 
-		double r = 0;
-		double g = 0;
-		double b = 0;
+		float r = 0;
+		float g = 0;
+		float b = 0;
 
 		if (hp <= 1) {
 			r = c; g = x; b = 0;
@@ -81,27 +82,27 @@ public sealed class ColorHelper {
 			r = c; g = 0; b = x;
 		}
 
-		double m = hsl.L - (c * 0.5);
+		float m = hsl.L - (c * 0.5f);
 		return Color.FromRgb(
-			(byte)Math.Round(255 * (r + m)),
-			(byte)Math.Round(255 * (g + m)),
-			(byte)Math.Round(255 * (b + m))
+			(byte)MathF.Round(255f * (r + m)),
+			(byte)MathF.Round(255f * (g + m)),
+			(byte)MathF.Round(255f * (b + m))
 		);
 	}
 
 	public static Color InvertBrightness(Color color) {
 		HslColor hsl = RgbToHsl(color);
 
-		if (hsl.L is >= 0.3 and < 0.6) {
-			hsl.L -= 0.2;
+		if (hsl.L is >= 0.3f and < 0.6f) {
+			hsl.L -= 0.2f;
 		}
 
-		hsl.L = 1 - hsl.L;
+		hsl.L = 1f - hsl.L;
 
-		if (hsl.L < 0.1) {
-			hsl.L += 0.05;
-		} else if (hsl.L > 0.9) {
-			hsl.L -= 0.05;
+		if (hsl.L < 0.1f) {
+			hsl.L += 0.05f;
+		} else if (hsl.L > 0.9f) {
+			hsl.L -= 0.05f;
 		}
 
 		return HslToRgb(hsl);
@@ -248,7 +249,7 @@ public sealed class ColorHelper {
 }
 
 public struct HslColor {
-	public double H;
-	public double S;
-	public double L;
+	public float H;
+	public float S;
+	public float L;
 }

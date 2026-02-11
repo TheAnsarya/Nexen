@@ -143,11 +143,9 @@ private:
 	}
 
 	void SetZeroNegativeFlags(uint8_t value) {
-		if (value == 0) {
-			SetFlags(PSFlags::Zero);
-		} else if (value & 0x80) {
-			SetFlags(PSFlags::Negative);
-		}
+		// Branchless: PSFlags::Negative = 0x80 maps directly to bit 7 of value
+		_state.PS |= (value == 0) ? PSFlags::Zero : 0;
+		_state.PS |= (value & 0x80); // Negative flag
 	}
 
 	bool CheckPageCrossed(uint16_t valA, int8_t valB) {

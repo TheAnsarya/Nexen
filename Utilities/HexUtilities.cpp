@@ -81,7 +81,11 @@ const char* HexUtilities::ToHexChar(uint8_t value) {
 }
 
 string HexUtilities::ToHex(uint16_t value) {
-	return _hexCache[value >> 8] + _hexCache[value & 0xFF];
+	// Direct buffer construction avoids intermediate string temporaries
+	const char* hi = _hexCharCache[value >> 8];
+	const char* lo = _hexCharCache[value & 0xFF];
+	char buf[4] = { hi[0], hi[1], lo[0], lo[1] };
+	return string(buf, 4);
 }
 
 string HexUtilities::ToHex(int32_t value, bool fullSize) {
@@ -89,39 +93,49 @@ string HexUtilities::ToHex(int32_t value, bool fullSize) {
 }
 
 string HexUtilities::ToHex20(uint32_t value) {
-	return _hexCache[(value >> 12) & 0xFF] + _hexCache[(value >> 4) & 0xFF] + _hexSingleChar[value & 0xF];
+	const char* hi = _hexCharCache[(value >> 12) & 0xFF];
+	const char* mid = _hexCharCache[(value >> 4) & 0xFF];
+	char buf[5] = { hi[0], hi[1], mid[0], mid[1], _hexSingleChar[value & 0xF][0] };
+	return string(buf, 5);
 }
 
 string HexUtilities::ToHex24(int32_t value) {
-	return _hexCache[(value >> 16) & 0xFF] + _hexCache[(value >> 8) & 0xFF] + _hexCache[value & 0xFF];
+	const char* b2 = _hexCharCache[(value >> 16) & 0xFF];
+	const char* b1 = _hexCharCache[(value >> 8) & 0xFF];
+	const char* b0 = _hexCharCache[value & 0xFF];
+	char buf[6] = { b2[0], b2[1], b1[0], b1[1], b0[0], b0[1] };
+	return string(buf, 6);
 }
 
 string HexUtilities::ToHex32(uint32_t value) {
-	return _hexCache[value >> 24] + _hexCache[(value >> 16) & 0xFF] + _hexCache[(value >> 8) & 0xFF] + _hexCache[value & 0xFF];
+	const char* b3 = _hexCharCache[value >> 24];
+	const char* b2 = _hexCharCache[(value >> 16) & 0xFF];
+	const char* b1 = _hexCharCache[(value >> 8) & 0xFF];
+	const char* b0 = _hexCharCache[value & 0xFF];
+	char buf[8] = { b3[0], b3[1], b2[0], b2[1], b1[0], b1[1], b0[0], b0[1] };
+	return string(buf, 8);
 }
 
 string HexUtilities::ToHex(uint32_t value, bool fullSize) {
 	if (fullSize || value > 0xFFFFFF) {
-		return _hexCache[value >> 24] + _hexCache[(value >> 16) & 0xFF] + _hexCache[(value >> 8) & 0xFF] + _hexCache[value & 0xFF];
+		return ToHex32(value);
 	} else if (value <= 0xFF) {
 		return ToHex((uint8_t)value);
 	} else if (value <= 0xFFFF) {
 		return ToHex((uint16_t)value);
 	} else {
-		return _hexCache[(value >> 16) & 0xFF] + _hexCache[(value >> 8) & 0xFF] + _hexCache[value & 0xFF];
+		return ToHex24((int32_t)value);
 	}
 }
 
 string HexUtilities::ToHex(uint64_t value) {
-	return (
-	    _hexCache[(value >> 56) & 0xFF] +
-	    _hexCache[(value >> 48) & 0xFF] +
-	    _hexCache[(value >> 40) & 0xFF] +
-	    _hexCache[(value >> 32) & 0xFF] +
-	    _hexCache[(value >> 24) & 0xFF] +
-	    _hexCache[(value >> 16) & 0xFF] +
-	    _hexCache[(value >> 8) & 0xFF] +
-	    _hexCache[value & 0xFF]);
+	char buf[16];
+	for (int i = 0; i < 8; i++) {
+		const char* pair = _hexCharCache[(value >> (56 - i * 8)) & 0xFF];
+		buf[i * 2] = pair[0];
+		buf[i * 2 + 1] = pair[1];
+	}
+	return string(buf, 16);
 }
 
 string HexUtilities::ToHex(vector<uint8_t>& data, char delimiter) {

@@ -102,7 +102,7 @@ public class ColorHelperTests
 	[Fact]
 	public void HslToRgb_RedHsl_ReturnsPureRed()
 	{
-		var hsl = new HslColor { H = 0, S = 1.0, L = 0.5 };
+		var hsl = new HslColor { H = 0, S = 1.0f, L = 0.5f };
 		var color = ColorHelper.HslToRgb(hsl);
 
 		Assert.Equal(255, color.R);
@@ -113,7 +113,7 @@ public class ColorHelperTests
 	[Fact]
 	public void HslToRgb_ZeroSaturation_ReturnsGray()
 	{
-		var hsl = new HslColor { H = 180, S = 0, L = 0.5 };
+		var hsl = new HslColor { H = 180, S = 0, L = 0.5f };
 		var color = ColorHelper.HslToRgb(hsl);
 
 		// With 0 saturation, should be equal R=G=B
@@ -128,9 +128,9 @@ public class ColorHelperTests
 	[InlineData(180)]
 	[InlineData(240)]
 	[InlineData(300)]
-	public void HslToRgb_FullSaturation_HasAtLeastOneMaxComponent(double hue)
+	public void HslToRgb_FullSaturation_HasAtLeastOneMaxComponent(float hue)
 	{
-		var hsl = new HslColor { H = hue, S = 1.0, L = 0.5 };
+		var hsl = new HslColor { H = hue, S = 1.0f, L = 0.5f };
 		var color = ColorHelper.HslToRgb(hsl);
 
 		// At full saturation/half lightness, at least one component is 255

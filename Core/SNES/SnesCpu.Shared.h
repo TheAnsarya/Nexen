@@ -1300,20 +1300,16 @@ void SnesCpu::SetRegister(uint16_t& reg, uint16_t value, bool eightBitMode) {
 
 void SnesCpu::SetZeroNegativeFlags(uint16_t value) {
 	ClearFlags(ProcFlags::Zero | ProcFlags::Negative);
-	if (value == 0) {
-		SetFlags(ProcFlags::Zero);
-	} else if (value & 0x8000) {
-		SetFlags(ProcFlags::Negative);
-	}
+	// Branchless: shift bit 15 down to bit 7 (Negative flag position)
+	_state.PS |= (value == 0) ? ProcFlags::Zero : 0;
+	_state.PS |= (value >> 8) & 0x80; // Negative flag
 }
 
 void SnesCpu::SetZeroNegativeFlags(uint8_t value) {
 	ClearFlags(ProcFlags::Zero | ProcFlags::Negative);
-	if (value == 0) {
-		SetFlags(ProcFlags::Zero);
-	} else if (value & 0x80) {
-		SetFlags(ProcFlags::Negative);
-	}
+	// Branchless: ProcFlags::Negative = 0x80 maps directly to bit 7 of value
+	_state.PS |= (value == 0) ? ProcFlags::Zero : 0;
+	_state.PS |= (value & 0x80); // Negative flag
 }
 
 void SnesCpu::ClearFlags(uint8_t flags) {
