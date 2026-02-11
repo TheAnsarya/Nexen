@@ -862,3 +862,261 @@ TEST_F(NesCpuBranchlessComparisonTest, Exhaustive_All256Values_AllPSStates) {
 		}
 	}
 }
+
+//=============================================================================
+// Before/After Comparison: Branchless CMP Flags
+//=============================================================================
+
+class NesCpuCmpComparisonTest : public ::testing::Test {
+protected:
+	// Old branching CMP
+	static uint8_t CMP_Branching(uint8_t ps, uint8_t reg, uint8_t value) {
+		ps &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		auto result = reg - value;
+		if (reg >= value) ps |= PSFlags::Carry;
+		if (reg == value) ps |= PSFlags::Zero;
+		if ((result & 0x80) == 0x80) ps |= PSFlags::Negative;
+		return ps;
+	}
+
+	// New branchless CMP (matches NesCpu.h)
+	static uint8_t CMP_Branchless(uint8_t ps, uint8_t reg, uint8_t value) {
+		ps &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		auto result = reg - value;
+		ps |= (reg >= value) ? PSFlags::Carry : 0;
+		ps |= ((uint8_t)result == 0) ? PSFlags::Zero : 0;
+		ps |= (result & 0x80);
+		return ps;
+	}
+};
+
+TEST_F(NesCpuCmpComparisonTest, Exhaustive_All256x256) {
+	for (int r = 0; r < 256; r++) {
+		for (int v = 0; v < 256; v++) {
+			uint8_t reg = static_cast<uint8_t>(r);
+			uint8_t val = static_cast<uint8_t>(v);
+			uint8_t oldPS = CMP_Branching(0x24, reg, val);
+			uint8_t newPS = CMP_Branchless(0x24, reg, val);
+			ASSERT_EQ(oldPS, newPS)
+				<< "CMP mismatch: reg=0x" << std::hex << (int)reg
+				<< " value=0x" << (int)val;
+		}
+	}
+}
+
+//=============================================================================
+// Before/After Comparison: Branchless ADD (ADC/SBC) Flags
+//=============================================================================
+
+class NesCpuAddComparisonTest : public ::testing::Test {
+protected:
+	// Old branching ADD
+	static void ADD_Branching(uint8_t& ps, uint8_t& a, uint8_t value, bool carryIn) {
+		uint16_t result = (uint16_t)a + (uint16_t)value + (carryIn ? 1 : 0);
+		ps &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Overflow | PSFlags::Zero);
+		// SetZeroNegativeFlags
+		ps |= ((uint8_t)result == 0) ? PSFlags::Zero : 0;
+		ps |= ((uint8_t)result & 0x80);
+		// Branching Overflow
+		if (~(a ^ value) & (a ^ result) & 0x80) ps |= PSFlags::Overflow;
+		// Branching Carry
+		if (result > 0xFF) ps |= PSFlags::Carry;
+		a = (uint8_t)result;
+	}
+
+	// New branchless ADD (matches NesCpu.h)
+	static void ADD_Branchless(uint8_t& ps, uint8_t& a, uint8_t value, bool carryIn) {
+		uint16_t result = (uint16_t)a + (uint16_t)value + (carryIn ? 1 : 0);
+		ps &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Overflow | PSFlags::Zero);
+		ps |= ((uint8_t)result == 0) ? PSFlags::Zero : 0;
+		ps |= ((uint8_t)result & 0x80);
+		ps |= (~(a ^ value) & (a ^ result) & 0x80) ? PSFlags::Overflow : 0;
+		ps |= (result > 0xFF) ? PSFlags::Carry : 0;
+		a = (uint8_t)result;
+	}
+};
+
+TEST_F(NesCpuAddComparisonTest, Exhaustive_All256x256x2Carry) {
+	for (int carryIn = 0; carryIn <= 1; carryIn++) {
+		for (int ai = 0; ai < 256; ai++) {
+			for (int vi = 0; vi < 256; vi++) {
+				uint8_t ps1 = 0x24, ps2 = 0x24;
+				uint8_t a1 = (uint8_t)ai, a2 = (uint8_t)ai;
+				ADD_Branching(ps1, a1, (uint8_t)vi, carryIn != 0);
+				ADD_Branchless(ps2, a2, (uint8_t)vi, carryIn != 0);
+				ASSERT_EQ(ps1, ps2)
+					<< "ADD PS mismatch: A=0x" << std::hex << ai
+					<< " val=0x" << vi << " carry=" << carryIn;
+				ASSERT_EQ(a1, a2);
+			}
+		}
+	}
+}
+
+//=============================================================================
+// Before/After Comparison: Branchless BIT Flags
+//=============================================================================
+
+class NesCpuBitComparisonTest : public ::testing::Test {
+protected:
+	// Old branching BIT
+	static uint8_t BIT_Branching(uint8_t ps, uint8_t a, uint8_t value) {
+		ps &= ~(PSFlags::Zero | PSFlags::Overflow | PSFlags::Negative);
+		if ((a & value) == 0) ps |= PSFlags::Zero;
+		if (value & 0x40) ps |= PSFlags::Overflow;
+		if (value & 0x80) ps |= PSFlags::Negative;
+		return ps;
+	}
+
+	// New branchless BIT (matches NesCpu.h)
+	static uint8_t BIT_Branchless(uint8_t ps, uint8_t a, uint8_t value) {
+		ps &= ~(PSFlags::Zero | PSFlags::Overflow | PSFlags::Negative);
+		ps |= ((a & value) == 0) ? PSFlags::Zero : 0;
+		ps |= (value & 0x40);
+		ps |= (value & 0x80);
+		return ps;
+	}
+};
+
+TEST_F(NesCpuBitComparisonTest, Exhaustive_All256x256) {
+	for (int a = 0; a < 256; a++) {
+		for (int v = 0; v < 256; v++) {
+			uint8_t oldPS = BIT_Branching(0x24, (uint8_t)a, (uint8_t)v);
+			uint8_t newPS = BIT_Branchless(0x24, (uint8_t)a, (uint8_t)v);
+			ASSERT_EQ(oldPS, newPS)
+				<< "BIT mismatch: A=0x" << std::hex << a
+				<< " value=0x" << v;
+		}
+	}
+}
+
+//=============================================================================
+// Before/After Comparison: Branchless Shift/Rotate Carry
+//=============================================================================
+
+class NesCpuShiftComparisonTest : public ::testing::Test {
+protected:
+	// Old branching ASL
+	static uint8_t ASL_Branching(uint8_t ps, uint8_t value, uint8_t& result) {
+		ps &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		if (value & 0x80) ps |= PSFlags::Carry;
+		result = value << 1;
+		ps |= (result == 0) ? PSFlags::Zero : 0;
+		ps |= (result & 0x80);
+		return ps;
+	}
+
+	// New branchless ASL (matches NesCpu.h)
+	static uint8_t ASL_Branchless(uint8_t ps, uint8_t value, uint8_t& result) {
+		ps &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		ps |= (value >> 7); // Carry=0x01
+		result = value << 1;
+		ps |= (result == 0) ? PSFlags::Zero : 0;
+		ps |= (result & 0x80);
+		return ps;
+	}
+
+	// Old branching LSR
+	static uint8_t LSR_Branching(uint8_t ps, uint8_t value, uint8_t& result) {
+		ps &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		if (value & 0x01) ps |= PSFlags::Carry;
+		result = value >> 1;
+		ps |= (result == 0) ? PSFlags::Zero : 0;
+		ps |= (result & 0x80);
+		return ps;
+	}
+
+	// New branchless LSR (matches NesCpu.h)
+	static uint8_t LSR_Branchless(uint8_t ps, uint8_t value, uint8_t& result) {
+		ps &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		ps |= (value & 0x01);
+		result = value >> 1;
+		ps |= (result == 0) ? PSFlags::Zero : 0;
+		ps |= (result & 0x80);
+		return ps;
+	}
+
+	// Old branching ROL
+	static uint8_t ROL_Branching(uint8_t ps, uint8_t value, bool carryIn, uint8_t& result) {
+		ps &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		if (value & 0x80) ps |= PSFlags::Carry;
+		result = (value << 1) | (carryIn ? 0x01 : 0x00);
+		ps |= (result == 0) ? PSFlags::Zero : 0;
+		ps |= (result & 0x80);
+		return ps;
+	}
+
+	// New branchless ROL (matches NesCpu.h)
+	static uint8_t ROL_Branchless(uint8_t ps, uint8_t value, bool carryIn, uint8_t& result) {
+		ps &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		ps |= (value >> 7);
+		result = (value << 1) | (carryIn ? 0x01 : 0x00);
+		ps |= (result == 0) ? PSFlags::Zero : 0;
+		ps |= (result & 0x80);
+		return ps;
+	}
+
+	// Old branching ROR
+	static uint8_t ROR_Branching(uint8_t ps, uint8_t value, bool carryIn, uint8_t& result) {
+		ps &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		if (value & 0x01) ps |= PSFlags::Carry;
+		result = (value >> 1) | (carryIn ? 0x80 : 0x00);
+		ps |= (result == 0) ? PSFlags::Zero : 0;
+		ps |= (result & 0x80);
+		return ps;
+	}
+
+	// New branchless ROR (matches NesCpu.h)
+	static uint8_t ROR_Branchless(uint8_t ps, uint8_t value, bool carryIn, uint8_t& result) {
+		ps &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		ps |= (value & 0x01);
+		result = (value >> 1) | (carryIn ? 0x80 : 0x00);
+		ps |= (result == 0) ? PSFlags::Zero : 0;
+		ps |= (result & 0x80);
+		return ps;
+	}
+};
+
+TEST_F(NesCpuShiftComparisonTest, ASL_Exhaustive_All256) {
+	for (int v = 0; v < 256; v++) {
+		uint8_t r1, r2;
+		uint8_t ps1 = ASL_Branching(0x24, (uint8_t)v, r1);
+		uint8_t ps2 = ASL_Branchless(0x24, (uint8_t)v, r2);
+		ASSERT_EQ(ps1, ps2) << "ASL PS mismatch: value=0x" << std::hex << v;
+		ASSERT_EQ(r1, r2);
+	}
+}
+
+TEST_F(NesCpuShiftComparisonTest, LSR_Exhaustive_All256) {
+	for (int v = 0; v < 256; v++) {
+		uint8_t r1, r2;
+		uint8_t ps1 = LSR_Branching(0x24, (uint8_t)v, r1);
+		uint8_t ps2 = LSR_Branchless(0x24, (uint8_t)v, r2);
+		ASSERT_EQ(ps1, ps2) << "LSR PS mismatch: value=0x" << std::hex << v;
+		ASSERT_EQ(r1, r2);
+	}
+}
+
+TEST_F(NesCpuShiftComparisonTest, ROL_Exhaustive_All256x2Carry) {
+	for (int carry = 0; carry <= 1; carry++) {
+		for (int v = 0; v < 256; v++) {
+			uint8_t r1, r2;
+			uint8_t ps1 = ROL_Branching(0x24, (uint8_t)v, carry != 0, r1);
+			uint8_t ps2 = ROL_Branchless(0x24, (uint8_t)v, carry != 0, r2);
+			ASSERT_EQ(ps1, ps2) << "ROL PS mismatch: value=0x" << std::hex << v << " carry=" << carry;
+			ASSERT_EQ(r1, r2);
+		}
+	}
+}
+
+TEST_F(NesCpuShiftComparisonTest, ROR_Exhaustive_All256x2Carry) {
+	for (int carry = 0; carry <= 1; carry++) {
+		for (int v = 0; v < 256; v++) {
+			uint8_t r1, r2;
+			uint8_t ps1 = ROR_Branching(0x24, (uint8_t)v, carry != 0, r1);
+			uint8_t ps2 = ROR_Branchless(0x24, (uint8_t)v, carry != 0, r2);
+			ASSERT_EQ(ps1, ps2) << "ROR PS mismatch: value=0x" << std::hex << v << " carry=" << carry;
+			ASSERT_EQ(r1, r2);
+		}
+	}
+}

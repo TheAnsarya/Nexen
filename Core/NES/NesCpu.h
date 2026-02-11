@@ -315,12 +315,9 @@ private:
 
 		ClearFlags(PSFlags::Carry | PSFlags::Negative | PSFlags::Overflow | PSFlags::Zero);
 		SetZeroNegativeFlags((uint8_t)result);
-		if (~(A() ^ value) & (A() ^ result) & 0x80) {
-			SetFlags(PSFlags::Overflow);
-		}
-		if (result > 0xFF) {
-			SetFlags(PSFlags::Carry);
-		}
+		// Branchless Overflow and Carry
+		_state.PS |= (~(A() ^ value) & (A() ^ result) & 0x80) ? PSFlags::Overflow : 0;
+		_state.PS |= (result > 0xFF) ? PSFlags::Carry : 0;
 		SetA((uint8_t)result);
 	}
 
@@ -332,15 +329,10 @@ private:
 
 		auto result = reg - value;
 
-		if (reg >= value) {
-			SetFlags(PSFlags::Carry);
-		}
-		if (reg == value) {
-			SetFlags(PSFlags::Zero);
-		}
-		if ((result & 0x80) == 0x80) {
-			SetFlags(PSFlags::Negative);
-		}
+		// Branchless flag setting
+		_state.PS |= (reg >= value) ? PSFlags::Carry : 0;
+		_state.PS |= ((uint8_t)result == 0) ? PSFlags::Zero : 0;
+		_state.PS |= (result & 0x80); // Negative=0x80 maps directly to bit 7
 	}
 
 	void CPA() { CMP(A(), GetOperandValue()); }
@@ -372,9 +364,8 @@ private:
 
 	uint8_t ASL(uint8_t value) {
 		ClearFlags(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
-		if (value & 0x80) {
-			SetFlags(PSFlags::Carry);
-		}
+		// Branchless: bit 7 shifted to Carry position (Carry=0x01)
+		_state.PS |= (value >> 7); // PSFlags::Carry = 0x01
 
 		uint8_t result = value << 1;
 		SetZeroNegativeFlags(result);
@@ -383,9 +374,8 @@ private:
 
 	uint8_t LSR(uint8_t value) {
 		ClearFlags(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
-		if (value & 0x01) {
-			SetFlags(PSFlags::Carry);
-		}
+		// Branchless: bit 0 maps directly to Carry (Carry=0x01)
+		_state.PS |= (value & 0x01);
 
 		uint8_t result = value >> 1;
 		SetZeroNegativeFlags(result);
@@ -396,9 +386,8 @@ private:
 		bool carryFlag = CheckFlag(PSFlags::Carry);
 		ClearFlags(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
 
-		if (value & 0x80) {
-			SetFlags(PSFlags::Carry);
-		}
+		// Branchless: bit 7 shifted to Carry position (Carry=0x01)
+		_state.PS |= (value >> 7);
 
 		uint8_t result = (value << 1 | (carryFlag ? 0x01 : 0x00));
 		SetZeroNegativeFlags(result);
@@ -408,9 +397,8 @@ private:
 	uint8_t ROR(uint8_t value) {
 		bool carryFlag = CheckFlag(PSFlags::Carry);
 		ClearFlags(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
-		if (value & 0x01) {
-			SetFlags(PSFlags::Carry);
-		}
+		// Branchless: bit 0 maps directly to Carry (Carry=0x01)
+		_state.PS |= (value & 0x01);
 
 		uint8_t result = (value >> 1 | (carryFlag ? 0x80 : 0x00));
 		SetZeroNegativeFlags(result);
@@ -470,15 +458,10 @@ private:
 	void BIT() {
 		uint8_t value = GetOperandValue();
 		ClearFlags(PSFlags::Zero | PSFlags::Overflow | PSFlags::Negative);
-		if ((A() & value) == 0) {
-			SetFlags(PSFlags::Zero);
-		}
-		if (value & 0x40) {
-			SetFlags(PSFlags::Overflow);
-		}
-		if (value & 0x80) {
-			SetFlags(PSFlags::Negative);
-		}
+		// Branchless: Overflow=0x40 and Negative=0x80 map directly to bits 6 and 7
+		_state.PS |= ((A() & value) == 0) ? PSFlags::Zero : 0;
+		_state.PS |= (value & 0x40); // Overflow=0x40 maps directly
+		_state.PS |= (value & 0x80); // Negative=0x80 maps directly
 	}
 
 	// OP Codes

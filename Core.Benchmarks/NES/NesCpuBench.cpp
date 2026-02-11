@@ -227,3 +227,265 @@ static void BM_NesCpu_Instruction_RMW_Pattern(benchmark::State& state) {
 }
 BENCHMARK(BM_NesCpu_Instruction_RMW_Pattern);
 
+// =============================================================================
+// Phase 2: Branchless vs Branching Comparisons
+// =============================================================================
+
+// --- CMP ---
+
+static void BM_NesCpu_CMP_Branching(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	uint8_t reg = 0, value = 0;
+	for (auto _ : state) {
+		cpuState.PS &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		auto result = reg - value;
+		if (reg >= value) cpuState.PS |= PSFlags::Carry;
+		if (reg == value) cpuState.PS |= PSFlags::Zero;
+		if ((result & 0x80) == 0x80) cpuState.PS |= PSFlags::Negative;
+		benchmark::DoNotOptimize(cpuState.PS);
+		reg += 7; value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_CMP_Branching);
+
+static void BM_NesCpu_CMP_Branchless(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	uint8_t reg = 0, value = 0;
+	for (auto _ : state) {
+		cpuState.PS &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		auto result = reg - value;
+		cpuState.PS |= (reg >= value) ? PSFlags::Carry : 0;
+		cpuState.PS |= ((uint8_t)result == 0) ? PSFlags::Zero : 0;
+		cpuState.PS |= (result & 0x80);
+		benchmark::DoNotOptimize(cpuState.PS);
+		reg += 7; value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_CMP_Branchless);
+
+// --- ADD (ADC) ---
+
+static void BM_NesCpu_ADD_Branching(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	cpuState.A = 0;
+	uint8_t value = 0;
+	for (auto _ : state) {
+		uint16_t result = (uint16_t)cpuState.A + (uint16_t)value + (cpuState.PS & PSFlags::Carry);
+		cpuState.PS &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Overflow | PSFlags::Zero);
+		cpuState.PS |= ((uint8_t)result == 0) ? PSFlags::Zero : 0;
+		cpuState.PS |= ((uint8_t)result & 0x80);
+		if (~(cpuState.A ^ value) & (cpuState.A ^ result) & 0x80) cpuState.PS |= PSFlags::Overflow;
+		if (result > 0xFF) cpuState.PS |= PSFlags::Carry;
+		cpuState.A = (uint8_t)result;
+		benchmark::DoNotOptimize(cpuState.PS);
+		benchmark::DoNotOptimize(cpuState.A);
+		value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_ADD_Branching);
+
+static void BM_NesCpu_ADD_Branchless(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	cpuState.A = 0;
+	uint8_t value = 0;
+	for (auto _ : state) {
+		uint16_t result = (uint16_t)cpuState.A + (uint16_t)value + (cpuState.PS & PSFlags::Carry);
+		cpuState.PS &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Overflow | PSFlags::Zero);
+		cpuState.PS |= ((uint8_t)result == 0) ? PSFlags::Zero : 0;
+		cpuState.PS |= ((uint8_t)result & 0x80);
+		cpuState.PS |= (~(cpuState.A ^ value) & (cpuState.A ^ result) & 0x80) ? PSFlags::Overflow : 0;
+		cpuState.PS |= (result > 0xFF) ? PSFlags::Carry : 0;
+		cpuState.A = (uint8_t)result;
+		benchmark::DoNotOptimize(cpuState.PS);
+		benchmark::DoNotOptimize(cpuState.A);
+		value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_ADD_Branchless);
+
+// --- BIT ---
+
+static void BM_NesCpu_BIT_Branching(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	cpuState.A = 0;
+	uint8_t value = 0;
+	for (auto _ : state) {
+		cpuState.PS &= ~(PSFlags::Zero | PSFlags::Overflow | PSFlags::Negative);
+		if ((cpuState.A & value) == 0) cpuState.PS |= PSFlags::Zero;
+		if (value & 0x40) cpuState.PS |= PSFlags::Overflow;
+		if (value & 0x80) cpuState.PS |= PSFlags::Negative;
+		benchmark::DoNotOptimize(cpuState.PS);
+		cpuState.A += 7; value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_BIT_Branching);
+
+static void BM_NesCpu_BIT_Branchless(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	cpuState.A = 0;
+	uint8_t value = 0;
+	for (auto _ : state) {
+		cpuState.PS &= ~(PSFlags::Zero | PSFlags::Overflow | PSFlags::Negative);
+		cpuState.PS |= ((cpuState.A & value) == 0) ? PSFlags::Zero : 0;
+		cpuState.PS |= (value & 0x40);
+		cpuState.PS |= (value & 0x80);
+		benchmark::DoNotOptimize(cpuState.PS);
+		cpuState.A += 7; value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_BIT_Branchless);
+
+// --- ASL ---
+
+static void BM_NesCpu_ASL_Branching(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	uint8_t value = 0;
+	for (auto _ : state) {
+		cpuState.PS &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		if (value & 0x80) cpuState.PS |= PSFlags::Carry;
+		uint8_t result = value << 1;
+		cpuState.PS |= (result == 0) ? PSFlags::Zero : 0;
+		cpuState.PS |= (result & 0x80);
+		benchmark::DoNotOptimize(cpuState.PS);
+		benchmark::DoNotOptimize(result);
+		value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_ASL_Branching);
+
+static void BM_NesCpu_ASL_Branchless(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	uint8_t value = 0;
+	for (auto _ : state) {
+		cpuState.PS &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		cpuState.PS |= (value >> 7);
+		uint8_t result = value << 1;
+		cpuState.PS |= (result == 0) ? PSFlags::Zero : 0;
+		cpuState.PS |= (result & 0x80);
+		benchmark::DoNotOptimize(cpuState.PS);
+		benchmark::DoNotOptimize(result);
+		value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_ASL_Branchless);
+
+// --- LSR ---
+
+static void BM_NesCpu_LSR_Branching(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	uint8_t value = 0;
+	for (auto _ : state) {
+		cpuState.PS &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		if (value & 0x01) cpuState.PS |= PSFlags::Carry;
+		uint8_t result = value >> 1;
+		cpuState.PS |= (result == 0) ? PSFlags::Zero : 0;
+		cpuState.PS |= (result & 0x80);
+		benchmark::DoNotOptimize(cpuState.PS);
+		benchmark::DoNotOptimize(result);
+		value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_LSR_Branching);
+
+static void BM_NesCpu_LSR_Branchless(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	uint8_t value = 0;
+	for (auto _ : state) {
+		cpuState.PS &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		cpuState.PS |= (value & 0x01);
+		uint8_t result = value >> 1;
+		cpuState.PS |= (result == 0) ? PSFlags::Zero : 0;
+		cpuState.PS |= (result & 0x80);
+		benchmark::DoNotOptimize(cpuState.PS);
+		benchmark::DoNotOptimize(result);
+		value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_LSR_Branchless);
+
+// --- ROL ---
+
+static void BM_NesCpu_ROL_Branching(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	uint8_t value = 0;
+	for (auto _ : state) {
+		bool carryIn = cpuState.PS & PSFlags::Carry;
+		cpuState.PS &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		if (value & 0x80) cpuState.PS |= PSFlags::Carry;
+		uint8_t result = (value << 1) | (carryIn ? 0x01 : 0x00);
+		cpuState.PS |= (result == 0) ? PSFlags::Zero : 0;
+		cpuState.PS |= (result & 0x80);
+		benchmark::DoNotOptimize(cpuState.PS);
+		benchmark::DoNotOptimize(result);
+		value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_ROL_Branching);
+
+static void BM_NesCpu_ROL_Branchless(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	uint8_t value = 0;
+	for (auto _ : state) {
+		bool carryIn = cpuState.PS & PSFlags::Carry;
+		cpuState.PS &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		cpuState.PS |= (value >> 7);
+		uint8_t result = (value << 1) | (carryIn ? 0x01 : 0x00);
+		cpuState.PS |= (result == 0) ? PSFlags::Zero : 0;
+		cpuState.PS |= (result & 0x80);
+		benchmark::DoNotOptimize(cpuState.PS);
+		benchmark::DoNotOptimize(result);
+		value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_ROL_Branchless);
+
+// --- ROR ---
+
+static void BM_NesCpu_ROR_Branching(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	uint8_t value = 0;
+	for (auto _ : state) {
+		bool carryIn = cpuState.PS & PSFlags::Carry;
+		cpuState.PS &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		if (value & 0x01) cpuState.PS |= PSFlags::Carry;
+		uint8_t result = (value >> 1) | (carryIn ? 0x80 : 0x00);
+		cpuState.PS |= (result == 0) ? PSFlags::Zero : 0;
+		cpuState.PS |= (result & 0x80);
+		benchmark::DoNotOptimize(cpuState.PS);
+		benchmark::DoNotOptimize(result);
+		value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_ROR_Branching);
+
+static void BM_NesCpu_ROR_Branchless(benchmark::State& state) {
+	NesCpuState cpuState = {};
+	uint8_t value = 0;
+	for (auto _ : state) {
+		bool carryIn = cpuState.PS & PSFlags::Carry;
+		cpuState.PS &= ~(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
+		cpuState.PS |= (value & 0x01);
+		uint8_t result = (value >> 1) | (carryIn ? 0x80 : 0x00);
+		cpuState.PS |= (result == 0) ? PSFlags::Zero : 0;
+		cpuState.PS |= (result & 0x80);
+		benchmark::DoNotOptimize(cpuState.PS);
+		benchmark::DoNotOptimize(result);
+		value += 13;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesCpu_ROR_Branchless);
+
