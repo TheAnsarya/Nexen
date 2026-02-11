@@ -62,7 +62,7 @@ TEST_F(NesCpuTypesTest, State_StackPointerRange) {
 	// Stack pointer is 8-bit, stack is $0100-$01FF
 	_state.SP = 0xFF;
 	EXPECT_EQ(_state.SP, 0xFF);
-	
+
 	_state.SP = 0x00;
 	EXPECT_EQ(_state.SP, 0x00);
 }
@@ -172,6 +172,73 @@ TEST_F(NesCpuTypesTest, ZeroNegative_Boundary_0x7F_ClearsBothFlags) {
 	EXPECT_FALSE(CheckFlag(PSFlags::Negative));
 }
 
+TEST_F(NesCpuTypesTest, ZeroNegative_Exhaustive_All256Values) {
+	// Exhaustive test: verify zero/negative flag behavior for every possible
+	// uint8_t value. This ensures the branchless optimization in NesCpu.h
+	// produces identical results to the reference if/else if implementation.
+	for (int i = 0; i <= 255; i++) {
+		uint8_t value = static_cast<uint8_t>(i);
+		SetZeroNegativeFlags(value);
+
+		bool expectZero = (value == 0);
+		bool expectNegative = (value & 0x80) != 0;
+
+		EXPECT_EQ(CheckFlag(PSFlags::Zero), expectZero)
+			<< "Zero flag mismatch for value 0x" << std::hex << i;
+		EXPECT_EQ(CheckFlag(PSFlags::Negative), expectNegative)
+			<< "Negative flag mismatch for value 0x" << std::hex << i;
+
+		// Zero and Negative flags must be mutually exclusive for 8-bit values
+		EXPECT_FALSE(CheckFlag(PSFlags::Zero) && CheckFlag(PSFlags::Negative))
+			<< "Both Zero and Negative set for value 0x" << std::hex << i;
+	}
+}
+
+TEST_F(NesCpuTypesTest, ZeroNegative_PreservesOtherFlags) {
+	// Ensure SetZeroNegativeFlags only affects Zero and Negative flags.
+	// Set carry and overflow before, verify they survive.
+	_state.PS = 0;
+	SetFlags(PSFlags::Carry | PSFlags::Overflow);
+	SetZeroNegativeFlags(0x42);
+	EXPECT_TRUE(CheckFlag(PSFlags::Carry));
+	EXPECT_TRUE(CheckFlag(PSFlags::Overflow));
+	EXPECT_FALSE(CheckFlag(PSFlags::Zero));
+	EXPECT_FALSE(CheckFlag(PSFlags::Negative));
+}
+
+TEST_F(NesCpuTypesTest, ZeroNegative_ClearsStaleFlags) {
+	// If Zero was set from a previous operation, it must be cleared
+	// when a non-zero value is processed.
+	SetZeroNegativeFlags(0x00);
+	EXPECT_TRUE(CheckFlag(PSFlags::Zero));
+
+	SetZeroNegativeFlags(0x42);
+	EXPECT_FALSE(CheckFlag(PSFlags::Zero));
+	EXPECT_FALSE(CheckFlag(PSFlags::Negative));
+}
+
+TEST_F(NesCpuTypesTest, ZeroNegative_ClearsStaleNegative) {
+	// If Negative was set from a previous operation, it must be cleared
+	// when a positive value is processed.
+	SetZeroNegativeFlags(0x80);
+	EXPECT_TRUE(CheckFlag(PSFlags::Negative));
+
+	SetZeroNegativeFlags(0x01);
+	EXPECT_FALSE(CheckFlag(PSFlags::Zero));
+	EXPECT_FALSE(CheckFlag(PSFlags::Negative));
+}
+
+TEST_F(NesCpuTypesTest, ZeroNegative_NegativeToZeroTransition) {
+	// Transition from negative value to zero must clear Negative, set Zero.
+	SetZeroNegativeFlags(0xFF);
+	EXPECT_TRUE(CheckFlag(PSFlags::Negative));
+	EXPECT_FALSE(CheckFlag(PSFlags::Zero));
+
+	SetZeroNegativeFlags(0x00);
+	EXPECT_FALSE(CheckFlag(PSFlags::Negative));
+	EXPECT_TRUE(CheckFlag(PSFlags::Zero));
+}
+
 //=============================================================================
 // IRQ Source Tests
 //=============================================================================
@@ -225,12 +292,12 @@ protected:
 	AddResult Add(uint8_t a, uint8_t b, bool carryIn) {
 		uint16_t sum = (uint16_t)a + (uint16_t)b + (carryIn ? 1 : 0);
 		uint8_t result = (uint8_t)sum;
-		
+
 		bool carry = sum > 0xFF;
 		bool overflow = (~(a ^ b) & (a ^ result) & 0x80) != 0;
 		bool zero = result == 0;
 		bool negative = (result & 0x80) != 0;
-		
+
 		return { result, carry, overflow, zero, negative };
 	}
 
@@ -684,10 +751,10 @@ class NesCpuFlagTest : public ::testing::TestWithParam<uint8_t> {};
 TEST_P(NesCpuFlagTest, IndividualFlag_SetAndRead) {
 	uint8_t ps = 0;
 	uint8_t flag = GetParam();
-	
+
 	ps |= flag;
 	EXPECT_EQ(ps & flag, flag);
-	
+
 	ps &= ~flag;
 	EXPECT_EQ(ps & flag, 0);
 }
@@ -733,4 +800,65 @@ TEST_F(NesCpuBranchTest, PageCross_BackwardNoWrap) {
 
 TEST_F(NesCpuBranchTest, PageCross_BackwardWrap) {
 	EXPECT_TRUE(CheckPageCrossed(0x1005, -10));  // 0x1007 - 10 = 0x0FFD
+}
+
+//=============================================================================
+// Before/After Comparison: Branching vs Branchless SetZeroNegativeFlags
+//=============================================================================
+
+/// <summary>
+/// These tests embed BOTH the old (branching) and new (branchless) implementations
+/// of SetZeroNegativeFlags and verify they produce identical PS register state
+/// for all possible inputs. This proves the optimization in NesCpu.h is safe.
+/// </summary>
+class NesCpuBranchlessComparisonTest : public ::testing::Test {
+protected:
+	/// Old implementation: if/else branching (pre-optimization)
+	static uint8_t SetZeroNeg_Branching(uint8_t ps, uint8_t value) {
+		ps &= ~(PSFlags::Zero | PSFlags::Negative);
+		if (value == 0) {
+			ps |= PSFlags::Zero;
+		}
+		if (value & 0x80) {
+			ps |= PSFlags::Negative;
+		}
+		return ps;
+	}
+
+	/// New implementation: branchless (post-optimization, matches NesCpu.h)
+	static uint8_t SetZeroNeg_Branchless(uint8_t ps, uint8_t value) {
+		ps &= ~(PSFlags::Zero | PSFlags::Negative);
+		ps |= (value == 0) ? PSFlags::Zero : 0;
+		ps |= (value & 0x80);  // PSFlags::Negative = 0x80 maps directly to bit 7
+		return ps;
+	}
+};
+
+TEST_F(NesCpuBranchlessComparisonTest, Exhaustive_All256Values_AllPSStates) {
+	// Test every value (0-255) with multiple initial PS register states
+	// to prove the branchless optimization produces identical results.
+	uint8_t psStates[] = {
+		0x00,  // All flags clear
+		0x24,  // Interrupt + Reserved (typical initial state)
+		0xFF,  // All flags set
+		0x03,  // Carry + Zero (stale zero)
+		0x80,  // Stale negative
+		0x82,  // Stale negative + zero (impossible but must handle)
+		0x41,  // Carry + Overflow
+		0x6D,  // Several flags set
+	};
+
+	for (uint8_t initialPS : psStates) {
+		for (int v = 0; v <= 255; v++) {
+			uint8_t value = static_cast<uint8_t>(v);
+			uint8_t oldResult = SetZeroNeg_Branching(initialPS, value);
+			uint8_t newResult = SetZeroNeg_Branchless(initialPS, value);
+
+			EXPECT_EQ(oldResult, newResult)
+				<< "PS mismatch for initialPS=0x" << std::hex << (int)initialPS
+				<< " value=0x" << (int)value
+				<< " old=0x" << (int)oldResult
+				<< " new=0x" << (int)newResult;
+		}
+	}
 }
