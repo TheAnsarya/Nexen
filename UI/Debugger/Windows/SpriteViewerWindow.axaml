@@ -33,7 +33,7 @@
 		<du:HexConverter x:Key="Hex" />
 		<l:EnumConverter x:Key="Enum" />
 	</Window.Resources>
-	
+
 	<DockPanel>
 		<Panel DockPanel.Dock="Top">
 			<c:NexenMenu DockPanel.Dock="Top" Name="ActionMenu">
@@ -68,7 +68,7 @@
 							SelectedItem="{Binding Config.Background}"
 						/>
 					</Grid>
-					
+
 					<c:OptionSection Header="{l:Translate lblDataSource}">
 						<Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto">
 							<TextBlock Text="{l:Translate lblSource}" />
@@ -87,7 +87,7 @@
 							/>
 						</Grid>
 					</c:OptionSection>
-					
+
 					<c:GroupBox
 						Header="{l:Translate lblSelectedSprite}"
 						Margin="0 5 0 0"
@@ -109,7 +109,7 @@
 					Height="{Binding ListView.ListViewHeight, Mode=TwoWay, Converter={StaticResource GridLengthConverter}}"
 				/>
 			</Grid.RowDefinitions>
-			
+
 			<ScrollViewer AllowAutoHide="False">
 				<Grid
 					Name="spriteGrid"
@@ -119,7 +119,7 @@
 					Margin="1"
 				/>
 			</ScrollViewer>
-			
+
 			<dc:ScrollPictureViewer
 				Grid.Column="1"
 				Margin="1"
@@ -177,7 +177,7 @@
 							<Setter Property="Margin" Value="0" />
 						</Style>
 					</DataGrid.Styles>
-						
+
 					<DataGrid.Columns>
 						<DataGridTextColumn SortMemberPath="SpriteIndex" Header="{l:Translate colSpriteIndex}" Width="50" Binding="{Binding SpriteIndex, DataType={x:Type dvm:SpritePreviewModel}}" IsReadOnly="True" />
 						<DataGridTemplateColumn SortMemberPath="X" Header="{l:Translate colX}" Width="82">

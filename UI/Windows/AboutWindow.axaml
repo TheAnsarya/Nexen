@@ -50,7 +50,7 @@
 		<DockPanel DockPanel.Dock="Top">
 			<Image
 				DockPanel.Dock="Left"
-				Source="/Assets/Icon.ico"
+				Source="/Assets/NexenIcon.ico"
 				Height="64"
 				Width="64"
 				Margin="10"

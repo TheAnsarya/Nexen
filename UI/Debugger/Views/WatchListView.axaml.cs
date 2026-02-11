@@ -13,7 +13,7 @@ using Avalonia.VisualTree;
 using Nexen.Debugger.ViewModels;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Views; 
+namespace Nexen.Debugger.Views;
 public class WatchListView : UserControl {
 	public WatchListViewModel Model => (WatchListViewModel)DataContext!;
 

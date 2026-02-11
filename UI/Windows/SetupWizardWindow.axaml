@@ -27,7 +27,7 @@
 			<DockPanel DockPanel.Dock="Top">
 				<Image
 					DockPanel.Dock="Right"
-					Source="/Assets/Icon.ico"
+					Source="/Assets/NexenIcon.ico"
 					Height="32"
 					Width="32"
 				/>

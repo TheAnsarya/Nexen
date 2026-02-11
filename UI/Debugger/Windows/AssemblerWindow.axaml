@@ -17,7 +17,7 @@
 	mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
 	x:Class="Nexen.Debugger.Windows.AssemblerWindow"
 	Icon="/Assets/Chip.png"
-	Width="700" Height="500"	
+	Width="700" Height="500"
 	x:DataType="vm:AssemblerWindowViewModel"
 	Title="{l:Translate wndTitle}"
 >
@@ -38,7 +38,7 @@
 			<MenuItem Header="{l:Translate mnuFile}" ItemsSource="{Binding FileMenuActions}" />
 			<MenuItem Header="{l:Translate mnuOptions}" ItemsSource="{Binding OptionsMenuActions}" />
 		</c:NexenMenu>
-		
+
 		<Grid Classes="main" ColumnDefinitions="1*, 300" RowDefinitions="3*,100" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 			<Border Grid.Column="0">
 				<dc:NexenTextEditor
@@ -49,7 +49,7 @@
 					FontSize="{DynamicResource NexenAssemblerFontSize}"
 				/>
 			</Border>
-		
+
 			<Border Grid.Column="1">
 				<dc:NexenTextEditor
 					Name="HexView"

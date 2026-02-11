@@ -12,7 +12,7 @@ using Nexen.Debugger.Utilities;
 using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 
-namespace Nexen.Debugger.Windows; 
+namespace Nexen.Debugger.Windows;
 public class ProfilerWindow : NexenWindow, INotificationHandler {
 	private ProfilerWindowViewModel _model;
 

@@ -19,7 +19,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Windows; 
+namespace Nexen.Debugger.Windows;
 public class AssemblerWindow : NexenWindow, INotificationHandler {
 	private static XshdSyntaxDefinition _syntaxDef;
 	private IHighlightingDefinition _highlighting;

@@ -17,7 +17,7 @@ using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Windows; 
+namespace Nexen.Debugger.Windows;
 public class EventViewerWindow : NexenWindow, INotificationHandler {
 	private EventViewerViewModel _model;
 	private PixelPoint? _prevMousePos = null;

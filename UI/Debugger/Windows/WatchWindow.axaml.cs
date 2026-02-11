@@ -11,7 +11,7 @@ using Nexen.Debugger.Utilities;
 using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 
-namespace Nexen.Debugger.Windows; 
+namespace Nexen.Debugger.Windows;
 public class WatchWindow : NexenWindow, INotificationHandler {
 	private WatchWindowViewModel _model;
 

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nexen Icon Catalog — Issue #169</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #1e1e2e; color: #cdd6f4; padding: 24px; }
+h1 { font-size: 28px; margin-bottom: 8px; color: #89b4fa; }
+.subtitle { font-size: 14px; color: #6c7086; margin-bottom: 32px; }
+h2 { font-size: 20px; margin: 32px 0 8px; color: #f5c2e7; border-bottom: 1px solid #313244; padding-bottom: 8px; }
+.category-desc { font-size: 13px; color: #a6adc8; margin-bottom: 16px; }
+.grid { display: flex; flex-wrap: wrap; gap: 12px; }
+.icon-card {
+  background: #313244; border-radius: 8px; padding: 12px; width: 140px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  border: 2px solid transparent; transition: border-color 0.15s;
+}
+.icon-card:hover { border-color: #89b4fa; }
+.icon-card.dead { opacity: 0.4; border: 2px dashed #f38ba8; }
+.icon-card.branded { border: 2px solid #a6e3a1; }
+.icon-preview {
+  width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;
+  background: #45475a; border-radius: 4px; image-rendering: pixelated;
+}
+.icon-preview.light-bg { background: #cdd6f4; }
+.icon-preview img { max-width: 64px; max-height: 64px; image-rendering: pixelated; }
+.icon-preview.large img { max-width: 96px; max-height: 96px; }
+.icon-name { font-size: 11px; text-align: center; word-break: break-all; color: #bac2de; }
+.icon-size { font-size: 10px; color: #6c7086; }
+.badge { font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: 600; }
+.badge-branded { background: #a6e3a1; color: #1e1e2e; }
+.badge-dead { background: #f38ba8; color: #1e1e2e; }
+.badge-unused { background: #fab387; color: #1e1e2e; }
+.badge-generic { background: #585b70; color: #cdd6f4; }
+.legend { display: flex; gap: 16px; margin: 16px 0; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.legend-swatch { width: 16px; height: 16px; border-radius: 4px; }
+.stats { background: #313244; border-radius: 8px; padding: 16px; margin: 16px 0; display: flex; gap: 24px; flex-wrap: wrap; }
+.stat { text-align: center; }
+.stat-num { font-size: 28px; font-weight: 700; color: #89b4fa; }
+.stat-label { font-size: 12px; color: #6c7086; }
+.theme-toggle { display: flex; gap: 8px; align-items: center; font-size: 13px; margin-bottom: 16px; }
+.theme-toggle button { background: #45475a; border: none; color: #cdd6f4; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+.theme-toggle button.active { background: #89b4fa; color: #1e1e2e; }
+.bg-toggle { display: flex; gap: 8px; align-items: center; font-size: 13px; margin-bottom: 16px; }
+.bg-toggle button { background: #45475a; border: none; color: #cdd6f4; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+.bg-toggle button.active { background: #89b4fa; color: #1e1e2e; }
+</style>
+</head>
+<body>
+
+<h1>Nexen Icon Catalog</h1>
+<p class="subtitle">Issue #169 — Replace Mesen Icons with New Nexen Graphics &bull; 163 PNGs + 2 ICOs</p>
+
+<div class="stats">
+  <div class="stat"><div class="stat-num">163</div><div class="stat-label">Total PNGs</div></div>
+  <div class="stat"><div class="stat-num">3</div><div class="stat-label">Already Nexen-branded</div></div>
+  <div class="stat"><div class="stat-num">~145</div><div class="stat-label">Active &amp; Referenced</div></div>
+  <div class="stat"><div class="stat-num">11</div><div class="stat-label">Dead / Unreferenced</div></div>
+  <div class="stat"><div class="stat-num">0</div><div class="stat-label">Contain Mesen Text</div></div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:#a6e3a1"></div> Already Nexen-branded</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#585b70"></div> Generic UI (no branding)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#f38ba8; border: 2px dashed #f38ba8"></div> Dead / Unreferenced</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#fab387"></div> Exists but unused mapping</div>
+</div>
+
+<div class="bg-toggle">
+  Preview background:
+  <button class="active" onclick="setBg('dark')">Dark</button>
+  <button onclick="setBg('light')">Light</button>
+  <button onclick="setBg('checker')">Checkerboard</button>
+</div>
+
+<!-- CATEGORY 1: APP BRANDING -->
+<h2>1. App Branding (3 icons) — Already Nexen-branded ✅</h2>
+<p class="category-desc">These are already replaced with Nexen-specific graphics. No action needed.</p>
+<div class="grid">
+  <div class="icon-card branded">
+    <div class="icon-preview large"><img src="assets/NexenIcon.png" alt="NexenIcon"></div>
+    <div class="icon-name">NexenIcon.png</div>
+    <div class="icon-size">477×424</div>
+    <span class="badge badge-branded">NEXEN</span>
+  </div>
+  <div class="icon-card branded">
+    <div class="icon-preview large"><img src="assets/SplashLogo.png" alt="SplashLogo"></div>
+    <div class="icon-name">SplashLogo.png</div>
+    <div class="icon-size">652×606</div>
+    <span class="badge badge-branded">NEXEN</span>
+  </div>
+  <div class="icon-card branded">
+    <div class="icon-preview"><img src="assets/NexenIcon.ico" alt="NexenIcon.ico"></div>
+    <div class="icon-name">NexenIcon.ico</div>
+    <div class="icon-size">ICO (multi)</div>
+    <span class="badge badge-branded">NEXEN</span>
+  </div>
+</div>
+
+<!-- CATEGORY 2: CONSOLE SYSTEM ICONS -->
+<h2>2. Console System Icons (7 icons)</h2>
+<p class="category-desc">Used in settings sidebar, emulation config, and system-specific menus. These are small pixel-art console representations — generic, not Mesen-branded.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/NesIcon.png"></div><div class="icon-name">NesIcon.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">5 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/SnesIcon.png"></div><div class="icon-name">SnesIcon.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">4 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/GameboyIcon.png"></div><div class="icon-name">GameboyIcon.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">4 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/GbaIcon.png"></div><div class="icon-name">GbaIcon.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">4 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/PceIcon.png"></div><div class="icon-name">PceIcon.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">4 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/SmsIcon.png"></div><div class="icon-name">SmsIcon.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">4 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/WsIcon.png"></div><div class="icon-name">WsIcon.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">4 refs</span></div>
+</div>
+
+<!-- CATEGORY 3: DEBUGGER TOOL ICONS -->
+<h2>3. Debugger Tool Icons (8 icons)</h2>
+<p class="category-desc">Window title icons for each CPU's debugger. Loaded dynamically from CpuType name.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Debugger.png"></div><div class="icon-name">Debugger.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">22 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/SpcDebugger.png"></div><div class="icon-name">SpcDebugger.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">1 ref</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Cx4Debugger.png"></div><div class="icon-name">Cx4Debugger.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">1 ref</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/NecDspDebugger.png"></div><div class="icon-name">NecDspDebugger.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">1 ref</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/GsuDebugger.png"></div><div class="icon-name">GsuDebugger.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">1 ref</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Sa1Debugger.png"></div><div class="icon-name">Sa1Debugger.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">1 ref</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/St018Debugger.png"></div><div class="icon-name">St018Debugger.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">1 ref</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/GameboyDebugger.png"></div><div class="icon-name">GameboyDebugger.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">1 ref</span></div>
+</div>
+
+<!-- CATEGORY 4: DEBUGGER EXECUTION CONTROLS -->
+<h2>4. Debugger Execution Controls (14 icons)</h2>
+<p class="category-desc">Step/run controls for debugger toolbar. All generic debugging symbols.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/StepInto.png"></div><div class="icon-name">StepInto.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/StepOver.png"></div><div class="icon-name">StepOver.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/StepOut.png"></div><div class="icon-name">StepOut.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/StepBack.png"></div><div class="icon-name">StepBack.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/StepBackFrame.png"></div><div class="icon-name">StepBackFrame.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/StepBackScanline.png"></div><div class="icon-name">StepBackScanline.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/RunCpuCycle.png"></div><div class="icon-name">RunCpuCycle.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/RunPpuCycle.png"></div><div class="icon-name">RunPpuCycle.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/RunPpuFrame.png"></div><div class="icon-name">RunPpuFrame.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/RunPpuScanline.png"></div><div class="icon-name">RunPpuScanline.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/StepNmi.png"></div><div class="icon-name">StepNmi.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/StepIrq.png"></div><div class="icon-name">StepIrq.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/GoToScanline.png"></div><div class="icon-name">GoToScanline.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Speed.png"></div><div class="icon-name">Speed.png</div><div class="icon-size">16×16</div></div>
+</div>
+
+<!-- CATEGORY 5: MEDIA/PLAYBACK CONTROLS -->
+<h2>5. Media / Playback Controls (7 icons)</h2>
+<p class="category-desc">Standard media symbols used in toolbar, audio player, history viewer.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/MediaPlay.png"></div><div class="icon-name">MediaPlay.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">10 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/MediaPause.png"></div><div class="icon-name">MediaPause.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">4 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/MediaStop.png"></div><div class="icon-name">MediaStop.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">6 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/MediaEject.png"></div><div class="icon-name">MediaEject.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Record.png"></div><div class="icon-name">Record.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">7 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/PrevTrack.png"></div><div class="icon-name">PrevTrack.png</div><div class="icon-size">23×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/NextTrack.png"></div><div class="icon-name">NextTrack.png</div><div class="icon-size">23×16</div></div>
+</div>
+
+<!-- CATEGORY 6: NAVIGATION / CODE ANALYSIS -->
+<h2>6. Navigation / Code Analysis (14 icons)</h2>
+<p class="category-desc">Memory/disassembly navigation buttons. Loaded dynamically via NavButton control.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/NextCode.png"></div><div class="icon-name">NextCode.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/PrevCode.png"></div><div class="icon-name">PrevCode.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/NextData.png"></div><div class="icon-name">NextData.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/PrevData.png"></div><div class="icon-name">PrevData.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/NextExec.png"></div><div class="icon-name">NextExec.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/PrevExec.png"></div><div class="icon-name">PrevExec.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/NextRead.png"></div><div class="icon-name">NextRead.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/PrevRead.png"></div><div class="icon-name">PrevRead.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/NextWrite.png"></div><div class="icon-name">NextWrite.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/PrevWrite.png"></div><div class="icon-name">PrevWrite.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/NextUnknown.png"></div><div class="icon-name">NextUnknown.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/PrevUnknown.png"></div><div class="icon-name">PrevUnknown.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/NextArrow.png"></div><div class="icon-name">NextArrow.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/PreviousArrow.png"></div><div class="icon-name">PreviousArrow.png</div><div class="icon-size">16×16</div></div>
+</div>
+
+<!-- CATEGORY 7: FILE OPERATIONS -->
+<h2>7. File Operations (8 icons)</h2>
+<p class="category-desc">Standard file management icons — folder, save, import/export, clipboard, exit.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Folder.png"></div><div class="icon-name">Folder.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">7 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/SaveFloppy.png"></div><div class="icon-name">SaveFloppy.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">9 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Import.png"></div><div class="icon-name">Import.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">5 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Export.png"></div><div class="icon-name">Export.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">8 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Copy.png"></div><div class="icon-name">Copy.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Paste.png"></div><div class="icon-name">Paste.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Exit.png"></div><div class="icon-name">Exit.png</div><div class="icon-size">16×16</div></div>
+</div>
+
+<!-- CATEGORY 8: EDIT OPERATIONS -->
+<h2>8. Edit Operations (8 icons)</h2>
+<p class="category-desc">Standard edit icons — edit, add, delete/close, undo, find, select all.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Edit.png"></div><div class="icon-name">Edit.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">15 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/EditLabel.png"></div><div class="icon-name">EditLabel.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Add.png"></div><div class="icon-name">Add.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Close.png"></div><div class="icon-name">Close.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">9 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/CloseWhite.png"></div><div class="icon-name">CloseWhite.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Undo.png"></div><div class="icon-name">Undo.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Find.png"></div><div class="icon-name">Find.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">9 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/SelectAll.png"></div><div class="icon-name">SelectAll.png</div><div class="icon-size">16×16</div></div>
+</div>
+
+<!-- CATEGORY 9: VIEW CONTROLS -->
+<h2>9. View Controls (7 icons)</h2>
+<p class="category-desc">Layout and view management icons.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Expand.png"></div><div class="icon-name">Expand.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/SplitView.png"></div><div class="icon-name">SplitView.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">5 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/SwitchView.png"></div><div class="icon-name">SwitchView.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/VerticalLayout.png"></div><div class="icon-name">VerticalLayout.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Fullscreen.png"></div><div class="icon-name">Fullscreen.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/AspectRatio.png"></div><div class="icon-name">AspectRatio.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/TabContent.png"></div><div class="icon-name">TabContent.png</div><div class="icon-size">16×16</div></div>
+</div>
+
+<!-- CATEGORY 10: TRANSFORM / IMAGE -->
+<h2>10. Transform / Image (8 icons)</h2>
+<p class="category-desc">Tile editor transform operations — flip, rotate, translate.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/FlipHorizontal.png"></div><div class="icon-name">FlipHorizontal.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/FlipVertical.png"></div><div class="icon-name">FlipVertical.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/RotateLeft.png"></div><div class="icon-name">RotateLeft.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/RotateRight.png"></div><div class="icon-name">RotateRight.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/TranslateLeft.png"></div><div class="icon-name">TranslateLeft.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/TranslateRight.png"></div><div class="icon-name">TranslateRight.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/TranslateUp.png"></div><div class="icon-name">TranslateUp.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/TranslateDown.png"></div><div class="icon-name">TranslateDown.png</div><div class="icon-size">16×16</div></div>
+</div>
+
+<!-- CATEGORY 11: UI CHROME -->
+<h2>11. UI Chrome (13 icons)</h2>
+<p class="category-desc">Framework elements: checkmarks, message box icons, dropdown arrows. Several are UNREFERENCED dead assets.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/MenuItemChecked.png"></div><div class="icon-name">MenuItemChecked.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">2 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/MenuItemCheckedDark.png"></div><div class="icon-name">MenuItemCheckedDark.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">2 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/MsgBoxError.png"></div><div class="icon-name">MsgBoxError.png</div><div class="icon-size">32×32</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/MsgBoxInfo.png"></div><div class="icon-name">MsgBoxInfo.png</div><div class="icon-size">32×32</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/MsgBoxQuestion.png"></div><div class="icon-name">MsgBoxQuestion.png</div><div class="icon-size">32×32</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/MsgBoxWarning.png"></div><div class="icon-name">MsgBoxWarning.png</div><div class="icon-size">32×32</div></div>
+
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/DownArrow.png"></div><div class="icon-name">DownArrow.png</div><div class="icon-size">7×6</div><span class="badge badge-dead">DEAD</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/DownArrowDarkTheme.png"></div><div class="icon-name">DownArrowDarkTheme.png</div><div class="icon-size">7×6</div><span class="badge badge-dead">DEAD</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/DownArrowWin10.png"></div><div class="icon-name">DownArrowWin10.png</div><div class="icon-size">12×12</div><span class="badge badge-dead">DEAD</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/NudUpArrow.png"></div><div class="icon-name">NudUpArrow.png</div><div class="icon-size">5×3</div><span class="badge badge-dead">DEAD</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/NudUpArrowDarkTheme.png"></div><div class="icon-name">NudUpArrowDarkTheme.png</div><div class="icon-size">5×3</div><span class="badge badge-dead">DEAD</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/NudDownArrow.png"></div><div class="icon-name">NudDownArrow.png</div><div class="icon-size">5×3</div><span class="badge badge-dead">DEAD</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/NudDownArrowDarkTheme.png"></div><div class="icon-name">NudDownArrowDarkTheme.png</div><div class="icon-size">5×3</div><span class="badge badge-dead">DEAD</span></div>
+</div>
+
+<!-- CATEGORY 12: SETTINGS / CONFIG -->
+<h2>12. Settings / Config (7 icons)</h2>
+<p class="category-desc">Settings window tabs, controller configuration, key mapping presets.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Settings.png"></div><div class="icon-name">Settings.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">15 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/HammerScrewdriver.png"></div><div class="icon-name">HammerScrewdriver.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/ResetSettings.png"></div><div class="icon-name">ResetSettings.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">6 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Controller.png"></div><div class="icon-name">Controller.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Keyboard.png"></div><div class="icon-name">Keyboard.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/ArrowKeys.png"></div><div class="icon-name">ArrowKeys.png</div><div class="icon-size">64×64</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/WasdKeys.png"></div><div class="icon-name">WasdKeys.png</div><div class="icon-size">64×64</div></div>
+</div>
+
+<!-- CATEGORY 13: FEATURE-SPECIFIC -->
+<h2>13. Feature-Specific (22 icons)</h2>
+<p class="category-desc">Icons for distinct emulator features — cheats, movies, scripts, HD packs, video, audio, networking, etc.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/CheatCode.png"></div><div class="icon-name">CheatCode.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">10 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Movie.png"></div><div class="icon-name">Movie.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Script.png"></div><div class="icon-name">Script.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">5 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/LogWindow.png"></div><div class="icon-name">LogWindow.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">8 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/PerfTracker.png"></div><div class="icon-name">PerfTracker.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/EventViewer.png"></div><div class="icon-name">EventViewer.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/HistoryViewer.png"></div><div class="icon-name">HistoryViewer.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Camera.png"></div><div class="icon-name">Camera.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/VideoFilter.png"></div><div class="icon-name">VideoFilter.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/VideoOptions.png"></div><div class="icon-name">VideoOptions.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/VideoRecorder.png"></div><div class="icon-name">VideoRecorder.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Barcode.png"></div><div class="icon-name">Barcode.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Tape.png"></div><div class="icon-name">Tape.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/HdPack.png"></div><div class="icon-name">HdPack.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Drive.png"></div><div class="icon-name">Drive.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Network.png"></div><div class="icon-name">Network.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Microphone.png"></div><div class="icon-name">Microphone.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Coins.png"></div><div class="icon-name">Coins.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Audio.png"></div><div class="icon-name">Audio.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/CommandLine.png"></div><div class="icon-name">CommandLine.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/WebBrowser.png"></div><div class="icon-name">WebBrowser.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/RegisterIcon.png"></div><div class="icon-name">RegisterIcon.png</div><div class="icon-size">16×16</div></div>
+</div>
+
+<!-- CATEGORY 14: STATUS / INFO -->
+<h2>14. Status / Info (6 icons)</h2>
+<p class="category-desc">Warning, error, help, and acceptance indicators used throughout the UI.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Warning.png"></div><div class="icon-name">Warning.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">10 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Error.png"></div><div class="icon-name">Error.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Exclamation.png"></div><div class="icon-name">Exclamation.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Help.png"></div><div class="icon-name">Help.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">21 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Accept.png"></div><div class="icon-name">Accept.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Comment.png"></div><div class="icon-name">Comment.png</div><div class="icon-size">16×16</div></div>
+</div>
+
+<!-- CATEGORY 15: BREAKPOINTS -->
+<h2>15. Breakpoints (7 icons)</h2>
+<p class="category-desc">Debugger breakpoint markers and controls.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Breakpoint.png"></div><div class="icon-name">Breakpoint.png</div><div class="icon-size">16×16</div><span class="badge badge-generic">15 refs</span></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/BreakpointDisabled.png"></div><div class="icon-name">BreakpointDisabled.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/BreakpointEnableDisable.png"></div><div class="icon-name">BreakpointEnableDisable.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/ForbidBreakpoint.png"></div><div class="icon-name">ForbidBreakpoint.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/MoveUp.png"></div><div class="icon-name">MoveUp.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/MoveDown.png"></div><div class="icon-name">MoveDown.png</div><div class="icon-size">16×16</div></div>
+</div>
+
+<!-- CATEGORY 16: CONTROLLER PRESETS -->
+<h2>16. Controller Presets (2 icons)</h2>
+<p class="category-desc">Setup wizard controller layout presets — PlayStation and Xbox button mapping icons (64×64).</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/PsIcon.png"></div><div class="icon-name">PsIcon.png</div><div class="icon-size">64×64</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/XbIcon.png"></div><div class="icon-name">XbIcon.png</div><div class="icon-size">64×64</div></div>
+</div>
+
+<!-- CATEGORY 17: MISC ACTIVE -->
+<h2>17. Miscellaneous Active (14 icons)</h2>
+<p class="category-desc">Everything else that's actively referenced.</p>
+<div class="grid">
+  <div class="icon-card"><div class="icon-preview"><img src="assets/PowerCycle.png"></div><div class="icon-name">PowerCycle.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Reload.png"></div><div class="icon-name">Reload.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Refresh.png"></div><div class="icon-name">Refresh.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Update.png"></div><div class="icon-name">Update.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Chip.png"></div><div class="icon-name">Chip.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Enum.png"></div><div class="icon-name">Enum.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Function.png"></div><div class="icon-name">Function.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/JumpTarget.png"></div><div class="icon-name">JumpTarget.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Font.png"></div><div class="icon-name">Font.png</div><div class="icon-size">16×16</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Repeat.png"></div><div class="icon-name">Repeat.png</div><div class="icon-size">24×24</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/RepeatEnabled.png"></div><div class="icon-name">RepeatEnabled.png</div><div class="icon-size">24×24</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/Shuffle.png"></div><div class="icon-name">Shuffle.png</div><div class="icon-size">24×24</div></div>
+  <div class="icon-card"><div class="icon-preview"><img src="assets/ShuffleEnabled.png"></div><div class="icon-name">ShuffleEnabled.png</div><div class="icon-size">24×24</div></div>
+</div>
+
+<!-- CATEGORY 18: DEAD / UNREFERENCED -->
+<h2>18. Dead / Unreferenced (18 icons) ⚠️</h2>
+<p class="category-desc">Icons with 0 code references — candidates for deletion. Includes legacy UI chrome and orphaned mapping dupes.</p>
+<div class="grid">
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/Pencil.png"></div><div class="icon-name">Pencil.png</div><div class="icon-size">32×32</div><span class="badge badge-dead">DEAD</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/Pipette.png"></div><div class="icon-name">Pipette.png</div><div class="icon-size">32×32</div><span class="badge badge-dead">DEAD</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/PipetteSmall.png"></div><div class="icon-name">PipetteSmall.png</div><div class="icon-size">16×16</div><span class="badge badge-dead">DEAD</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/Zoom2x.png"></div><div class="icon-name">Zoom2x.png</div><div class="icon-size">16×16</div><span class="badge badge-dead">DEAD</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/NavigateBack.png"></div><div class="icon-name">NavigateBack.png</div><div class="icon-size">16×16</div><span class="badge badge-unused">ORPHAN</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/NavigateForward.png"></div><div class="icon-name">NavigateForward.png</div><div class="icon-size">16×16</div><span class="badge badge-unused">ORPHAN</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/Collapse.png"></div><div class="icon-name">Collapse.png</div><div class="icon-size">16×16</div><span class="badge badge-unused">ORPHAN</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/Cut.png"></div><div class="icon-name">Cut.png</div><div class="icon-size">16×16</div><span class="badge badge-unused">ORPHAN</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/Dice.png"></div><div class="icon-name">Dice.png</div><div class="icon-size">16×16</div><span class="badge badge-unused">ORPHAN</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/DipSwitches.png"></div><div class="icon-name">DipSwitches.png</div><div class="icon-size">16×16</div><span class="badge badge-unused">ORPHAN</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/UnidentifiedData.png"></div><div class="icon-name">UnidentifiedData.png</div><div class="icon-size">16×16</div><span class="badge badge-unused">ORPHAN</span></div>
+  <div class="icon-card dead"><div class="icon-preview"><img src="assets/VerifiedData.png"></div><div class="icon-name">VerifiedData.png</div><div class="icon-size">16×16</div><span class="badge badge-unused">ORPHAN</span></div>
+</div>
+
+<h2 style="margin-top: 48px; color: #89b4fa;">Assessment</h2>
+<div style="background: #313244; border-radius: 8px; padding: 24px; margin-top: 12px; line-height: 1.8; font-size: 14px;">
+  <p><strong style="color: #a6e3a1;">Key Finding:</strong> None of the 163 PNG icons contain visible "Mesen" text or branding.
+  All are generic UI metaphors (arrows, gears, play/pause, etc.) or abstract pixel art (console icons, debugger chips).</p>
+  <br>
+  <p><strong style="color: #f5c2e7;">Already Done:</strong></p>
+  <ul style="margin-left: 24px;">
+    <li>NexenIcon.png (477×424) — <span style="color:#a6e3a1">✅ Nexen branded</span></li>
+    <li>NexenIcon.ico — <span style="color:#a6e3a1">✅ Nexen branded</span></li>
+    <li>SplashLogo.png (652×606) — <span style="color:#a6e3a1">✅ Nexen branded</span></li>
+  </ul>
+  <br>
+  <p><strong style="color: #fab387;">Recommended Actions:</strong></p>
+  <ol style="margin-left: 24px;">
+    <li><strong>Delete 18 dead icons</strong> — Zero references. Safe cleanup.</li>
+    <li><strong>Keep ~145 generic icons as-is</strong> — They're standard UI metaphors with no Mesen branding. Replacing them would be purely cosmetic with significant design effort.</li>
+    <li><strong>Optionally restyle</strong> console system icons (Cat 2) and debugger icons (Cat 3) if you want a more distinct Nexen visual identity.</li>
+    <li><strong>Remove Icon.ico</strong> (old Mesen icon) if it's no longer referenced separately from NexenIcon.ico.</li>
+  </ol>
+</div>
+
+<script>
+function setBg(mode) {
+  document.querySelectorAll('.bg-toggle button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.icon-preview').forEach(el => {
+    el.classList.remove('light-bg');
+    if (mode === 'dark') { el.style.background = '#45475a'; el.style.backgroundImage = ''; }
+    else if (mode === 'light') { el.style.background = '#cdd6f4'; el.style.backgroundImage = ''; el.classList.add('light-bg'); }
+    else {
+      el.style.backgroundImage = 'repeating-conic-gradient(#808080 0% 25%, #c0c0c0 0% 50%)';
+      el.style.backgroundSize = '16px 16px';
+    }
+  });
+}
+</script>
+
+</body>
+</html>

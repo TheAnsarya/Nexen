@@ -15,7 +15,7 @@
 	<PropertyGroup>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-		<ApplicationIcon>Assets\Icon.ico</ApplicationIcon>
+		<ApplicationIcon>Assets\NexenIcon.ico</ApplicationIcon>
 		<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
@@ -125,6 +125,7 @@
 	<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
 	<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
 	<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.2" />
+	<PackageReference Include="Avalonia.Svg.Skia" Version="11.3.0" />
 	<PackageReference Include="StreamHash" Version="1.10.0" />
    </ItemGroup>
    <ItemGroup>

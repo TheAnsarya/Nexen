@@ -31,7 +31,7 @@
 		<du:GridLengthConverter x:Key="GridLengthConverter" />
 		<u:ArgbColorToBrushConverter x:Key="ArgbColorToBrushConverter"/>
 	</Window.Resources>
-	
+
 	<Window.DataTemplates>
 		<DataTemplate DataType="{x:Type cfg:SnesEventViewerConfig}">
 			<v:SnesEventViewerConfigView />
@@ -53,9 +53,9 @@
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type cfg:WsEventViewerConfig}">
 			<v:WsEventViewerConfigView />
-		</DataTemplate>	
+		</DataTemplate>
 	</Window.DataTemplates>
-	
+
 	<DockPanel>
 		<Panel DockPanel.Dock="Top">
 			<c:NexenMenu DockPanel.Dock="Top" Name="ActionMenu">
@@ -88,7 +88,7 @@
 				</StackPanel>
 			</ScrollViewer>
 		</Panel>
-		
+
 		<Grid ColumnDefinitions="*">
 			<Grid.RowDefinitions>
 				<RowDefinition MinHeight="200" Height="*" />
@@ -115,7 +115,7 @@
 				HorizontalAlignment="Stretch"
 				IsVisible="{Binding Config.ShowListView}"
 			/>
-			
+
 			<Border BorderBrush="Gray" BorderThickness="1" Grid.Row="2">
 				<DataGrid
 					Name="lstEvents"

@@ -43,7 +43,7 @@
 					<TextBlock Text="{Binding TabName}" />
 				</DataTemplate>
 			</TabControl.ItemTemplate>
-		
+
 			<TabControl.ContentTemplate>
 				<DataTemplate DataType="vm:ProfilerTab">
 					<Border BorderBrush="Gray" BorderThickness="1">
