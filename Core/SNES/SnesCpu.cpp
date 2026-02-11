@@ -116,7 +116,7 @@ void SnesCpu::IdleTakeBranch() {
 
 void SnesCpu::ProcessCpuCycle() {
 	_state.CycleCount++;
-	if (_dmaController->HasPendingTransfer()) {
+	if (_dmaController->HasPendingTransfer()) [[unlikely]] {
 		_state.IrqLock = _dmaController->ProcessPendingTransfers();
 	} else {
 		_state.IrqLock = false;

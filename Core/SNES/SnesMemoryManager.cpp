@@ -229,7 +229,7 @@ void SnesMemoryManager::Exec() {
 	_masterClock += 2;
 	_hClock += 2;
 
-	if (_hClock == _nextEventClock) {
+	if (_hClock == _nextEventClock) [[unlikely]] {
 		ProcessEvent();
 	}
 
@@ -301,7 +301,7 @@ uint8_t SnesMemoryManager::Read(uint32_t addr, MemoryOperationType type) {
 		value = _openBus;
 		LogDebug("[Debug] Read - missing handler: $" + HexUtilities::ToHex(addr));
 	}
-	if (_cheatManager->HasCheats<CpuType::Snes>()) {
+	if (_cheatManager->HasCheats<CpuType::Snes>()) [[unlikely]] {
 		_cheatManager->ApplyCheat<CpuType::Snes>(addr, value);
 	}
 	IncMasterClock4();

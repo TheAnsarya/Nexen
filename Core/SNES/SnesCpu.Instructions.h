@@ -3,7 +3,7 @@ Add/subtract operations
 *************************/
 void SnesCpu::Add8(uint8_t value) {
 	uint32_t result;
-	if (CheckFlag(ProcFlags::Decimal)) {
+	if (CheckFlag(ProcFlags::Decimal)) [[unlikely]] {
 		result = (_state.A & 0x0F) + (value & 0x0F) + (_state.PS & ProcFlags::Carry);
 		if (result > 0x09)
 			result += 0x06;
@@ -18,7 +18,7 @@ void SnesCpu::Add8(uint8_t value) {
 		ClearFlags(ProcFlags::Overflow);
 	}
 
-	if (CheckFlag(ProcFlags::Decimal) && result > 0x9F) {
+	if (CheckFlag(ProcFlags::Decimal) && result > 0x9F) [[unlikely]] {
 		result += 0x60;
 	}
 
@@ -34,7 +34,7 @@ void SnesCpu::Add8(uint8_t value) {
 
 void SnesCpu::Add16(uint16_t value) {
 	uint32_t result;
-	if (CheckFlag(ProcFlags::Decimal)) {
+	if (CheckFlag(ProcFlags::Decimal)) [[unlikely]] {
 		result = (_state.A & 0x0F) + (value & 0x0F) + (_state.PS & ProcFlags::Carry);
 
 		if (result > 0x09)
@@ -58,7 +58,7 @@ void SnesCpu::Add16(uint16_t value) {
 		ClearFlags(ProcFlags::Overflow);
 	}
 
-	if (CheckFlag(ProcFlags::Decimal) && result > 0x9FFF) {
+	if (CheckFlag(ProcFlags::Decimal) && result > 0x9FFF) [[unlikely]] {
 		result += 0x6000;
 	}
 
@@ -82,7 +82,7 @@ void SnesCpu::ADC() {
 
 void SnesCpu::Sub8(uint8_t value) {
 	int32_t result;
-	if (CheckFlag(ProcFlags::Decimal)) {
+	if (CheckFlag(ProcFlags::Decimal)) [[unlikely]] {
 		result = (_state.A & 0x0F) + (value & 0x0F) + (_state.PS & ProcFlags::Carry);
 		if (result <= 0x0F)
 			result -= 0x06;
@@ -97,7 +97,7 @@ void SnesCpu::Sub8(uint8_t value) {
 		ClearFlags(ProcFlags::Overflow);
 	}
 
-	if (CheckFlag(ProcFlags::Decimal) && result <= 0xFF) {
+	if (CheckFlag(ProcFlags::Decimal) && result <= 0xFF) [[unlikely]] {
 		result -= 0x60;
 	}
 
@@ -113,7 +113,7 @@ void SnesCpu::Sub8(uint8_t value) {
 
 void SnesCpu::Sub16(uint16_t value) {
 	int32_t result;
-	if (CheckFlag(ProcFlags::Decimal)) {
+	if (CheckFlag(ProcFlags::Decimal)) [[unlikely]] {
 		result = (_state.A & 0x0F) + (value & 0x0F) + (_state.PS & ProcFlags::Carry);
 
 		if (result <= 0x0F)
@@ -137,7 +137,7 @@ void SnesCpu::Sub16(uint16_t value) {
 		ClearFlags(ProcFlags::Overflow);
 	}
 
-	if (CheckFlag(ProcFlags::Decimal) && result <= 0xFFFF) {
+	if (CheckFlag(ProcFlags::Decimal) && result <= 0xFFFF) [[unlikely]] {
 		result -= 0x6000;
 	}
 

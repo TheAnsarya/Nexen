@@ -321,7 +321,7 @@ void NesCpu::EndCpuCycle(bool forRead) {
 	//"This edge detector polls the status of the NMI line during φ2 of each CPU cycle (i.e., during the
 	// second half of each cycle) and raises an internal signal if the input goes from being high during
 	// one cycle to being low during the next"
-	if (!_prevNmiFlag && _state.NmiFlag) {
+	if (!_prevNmiFlag && _state.NmiFlag) [[unlikely]] {
 		_needNmi = true;
 	}
 	_prevNmiFlag = _state.NmiFlag;

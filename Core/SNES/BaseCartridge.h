@@ -177,7 +177,7 @@ public:
 	void RunCoprocessors();
 
 	__forceinline void SyncCoprocessors() {
-		if (_needCoprocSync) {
+		if (_needCoprocSync) [[unlikely]] {
 			_coprocessor->Run();
 		}
 	}

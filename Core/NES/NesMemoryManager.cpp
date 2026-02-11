@@ -117,7 +117,7 @@ uint16_t NesMemoryManager::DebugReadWord(uint16_t addr) {
 
 uint8_t NesMemoryManager::Read(uint16_t addr, MemoryOperationType operationType) {
 	uint8_t value = _ramReadHandlers[addr]->ReadRam(addr);
-	if (_cheatManager->HasCheats<CpuType::Nes>()) {
+	if (_cheatManager->HasCheats<CpuType::Nes>()) [[unlikely]] {
 		_cheatManager->ApplyCheat<CpuType::Nes>(addr, value);
 	}
 	_emu->ProcessMemoryRead<CpuType::Nes>(addr, value, operationType);

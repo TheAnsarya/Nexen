@@ -126,7 +126,30 @@ move all the new svgs to a subfolder called `/Drafts/`; Then begin working on mo
 
 [Nexen] update the chat logs and session logs, git commit everything; Make sure all of the changes you made for performance are 100% covered by tests so that we did not change the ***outcome*** of any of those methods/code and just improved the speed and memory usage; make sure issues have been created for all of this work (and todos, and docs, and plans, etc, track everything and document everything and update docs to reflect the current usage); also make sure comments for all the code changes have been updated and update them in the future; continue; is there any other code sections on the hotpath that are easy performance improvements? (test the hell out of them, we can't afford to reduce emulator accuracy in any way, hit the corner cases! full coverage!); continue; update the readme to show the current state, and clean up any misinformation; combine the license files, so that the description of our changes being `the unlicence` but we're based on Mesen which is `GPL` and then at the end put the necessary text blocks in sections for `The  Unlicense` and then at thery bottom the `GPL` license text we're required to have; continue;
 
+[Nexen] Go back to the performance improvements you were working on before I stopped you `research more hot path optimization opportunities. Let me look at the GB CPU, memory read/write functions, and PPU rendering loops:`; continue;
 
+don't implement right away, create documentation of the work to be done, and make issues for this work and todos; continue working;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Nexen] update the chat logs and session logs, git commit everything; Make sure all of the changes you made for performance are 100% covered by tests so that we did not change the ***outcome*** of any of those methods/code and just improved the speed and memory usage; make sure issues have been created for all of this work (and todos, and docs, and plans, etc, track everything and document everything and update docs to reflect the current usage); also make sure comments for all the code changes have been updated and update them in the future; continue; is there any other code sections on the hotpath that are easy performance improvements? (test the hell out of them, we can't afford to reduce emulator accuracy in any way, hit the corner cases! full coverage!); continue; update the readme to show the current state, and clean up any misinformation; combine the license files, so that the description of our changes being `the unlicence` but we're based on Mesen which is `GPL` and then at the end put the necessary text blocks in sections for `The  Unlicense` and then at thery bottom the `GPL` license text we're required to have; continue; Go back to the performance improvements; continue;
 
 
 
