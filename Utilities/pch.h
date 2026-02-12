@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <stdint.h>
 #include <stdio.h>
 #include <iostream>
@@ -21,6 +22,7 @@ using utf8::ofstream;
 using std::ostream;
 using std::istream;
 using std::string;
+using std::string_view;
 using std::vector;
 using std::atomic;
 using std::atomic_flag;

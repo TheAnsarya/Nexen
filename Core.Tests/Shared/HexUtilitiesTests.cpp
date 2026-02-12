@@ -462,3 +462,50 @@ TEST_F(HexUtilitiesComparisonTest, ToHex20_VsManualConstruction) {
 			<< "ToHex20 mismatch for 0x" << std::hex << val;
 	}
 }
+
+// ===== FromHex LUT Correctness Tests =====
+// Verify the constexpr nibble LUT produces identical results for all input chars
+
+TEST_F(HexUtilitiesTest, FromHex_LUT_AllValidHexDigits) {
+	// Every valid hex digit should parse correctly
+	for (char c = '0'; c <= '9'; c++) {
+		std::string s(1, c);
+		EXPECT_EQ(HexUtilities::FromHex(s), c - '0')
+			<< "Failed for digit '" << c << "'";
+	}
+	for (char c = 'A'; c <= 'F'; c++) {
+		std::string s(1, c);
+		EXPECT_EQ(HexUtilities::FromHex(s), 10 + c - 'A')
+			<< "Failed for char '" << c << "'";
+	}
+	for (char c = 'a'; c <= 'f'; c++) {
+		std::string s(1, c);
+		EXPECT_EQ(HexUtilities::FromHex(s), 10 + c - 'a')
+			<< "Failed for char '" << c << "'";
+	}
+}
+
+TEST_F(HexUtilitiesTest, FromHex_LUT_Exhaustive_AllTwoDigitValues) {
+	// Verify all 256 possible two-digit hex values parse correctly
+	const char hexDigits[] = "0123456789ABCDEF";
+	for (int hi = 0; hi < 16; hi++) {
+		for (int lo = 0; lo < 16; lo++) {
+			char buf[3] = {hexDigits[hi], hexDigits[lo], '\0'};
+			int expected = (hi << 4) | lo;
+			EXPECT_EQ(HexUtilities::FromHex(buf), expected)
+				<< "Failed for " << buf;
+		}
+	}
+}
+
+TEST_F(HexUtilitiesTest, FromHex_LUT_Exhaustive_AllTwoDigitValues_Lowercase) {
+	const char hexDigits[] = "0123456789abcdef";
+	for (int hi = 0; hi < 16; hi++) {
+		for (int lo = 0; lo < 16; lo++) {
+			char buf[3] = {hexDigits[hi], hexDigits[lo], '\0'};
+			int expected = (hi << 4) | lo;
+			EXPECT_EQ(HexUtilities::FromHex(buf), expected)
+				<< "Failed for " << buf;
+		}
+	}
+}

@@ -545,9 +545,10 @@ uint8_t SmsVdp::ReverseBitOrder(uint8_t val) {
 }
 
 void SmsVdp::DrawPixel() {
-	_currentOutputBuffer[_state.Scanline * 256 + GetVisiblePixelIndex()] = GetPixelColor();
+	int offset = _state.Scanline * 256 + GetVisiblePixelIndex();
+	_currentOutputBuffer[offset] = GetPixelColor();
 	if (_needCramDot) {
-		_currentOutputBuffer[_state.Scanline * 256 + GetVisiblePixelIndex()] = _cramDotColor;
+		_currentOutputBuffer[offset] = _cramDotColor;
 	}
 	_bgShifters[0] <<= 1;
 	_bgShifters[1] <<= 1;

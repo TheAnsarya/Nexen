@@ -10,7 +10,7 @@ using Nexen.Config;
 using Nexen.Utilities;
 using SkiaSharp;
 
-namespace Nexen.Debugger.Controls; 
+namespace Nexen.Debugger.Controls;
 public partial class HexEditor {
 	class HexViewDrawOperation : ICustomDrawOperation {
 		private HexEditor _he;
@@ -41,6 +41,22 @@ public partial class HexEditor {
 		private SKFont? _monoFont;
 		private SKFont? _altFont;
 		private SKPaint? _selectedPaint;
+
+		/// <summary>
+		/// Precomputed hex strings for all 256 byte values in both uppercase ("X2") and
+		/// lowercase ("x2") formats. Eliminates per-byte ToString(_hexFormat) allocation
+		/// in the DrawHexView hot loop.
+		/// </summary>
+		private static readonly string[] HexStringsUpper = InitHexStrings("X2");
+		private static readonly string[] HexStringsLower = InitHexStrings("x2");
+
+		private static string[] InitHexStrings(string format) {
+			var table = new string[256];
+			for (int i = 0; i < 256; i++) {
+				table[i] = i.ToString(format);
+			}
+			return table;
+		}
 
 		public HexViewDrawOperation(HexEditor he, List<ByteInfo> dataToDraw, HashSet<Color> fgColors, FontAntialiasing fontAntialiasing) {
 			_he = he;
@@ -150,6 +166,9 @@ public partial class HexEditor {
 			int pos = 0;
 			double drawOffsetY = _highDensityMode ? -_rowHeight * 0.1 : -_rowHeight * 0.2;
 
+			// Select the pre-computed hex string table matching the current format
+			string[] hexTable = _hexFormat == "X2" ? HexStringsUpper : HexStringsLower;
+
 			StringBuilder sb = new StringBuilder();
 			int row = 0;
 			while (pos < _dataToDraw.Count) {
@@ -160,7 +179,7 @@ public partial class HexEditor {
 
 					ByteInfo byteInfo = _dataToDraw[pos + i];
 					if (byteInfo.ForeColor == color) {
-						sb.Append(byteInfo.Value.ToString(_hexFormat));
+						sb.Append(hexTable[byteInfo.Value]);
 					} else {
 						sb.Append("  ");
 					}

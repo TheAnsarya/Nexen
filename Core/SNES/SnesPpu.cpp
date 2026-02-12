@@ -1011,15 +1011,16 @@ void SnesPpu::RenderScanline() {
 
 void SnesPpu::RenderBgColor() {
 	uint8_t pixelFlags = (_state.ColorMathEnabled & 0x20) ? PixelFlags::AllowColorMath : 0;
+	uint16_t bgColor = _cgram[0];
 	for (int x = _drawStartX; x <= _drawEndX; x++) {
 		if ((_mainScreenFlags[x] & 0x0F) == 0) {
 			_state.InternalCgramAddress = 0;
-			_mainScreenBuffer[x] = _cgram[0];
+			_mainScreenBuffer[x] = bgColor;
 			_mainScreenFlags[x] = pixelFlags;
 		}
 		if (_subScreenPriority[x] == 0) {
 			_state.InternalCgramAddress = 0;
-			_subScreenBuffer[x] = _cgram[0];
+			_subScreenBuffer[x] = bgColor;
 		}
 	}
 }
@@ -1458,14 +1459,29 @@ void SnesPpu::ApplyColorMathToPixel(uint16_t& pixelA, uint16_t pixelB, int x, bo
 	}
 }
 
+/// Precomputed brightness LUT: _brightnessLut[brightness][component] = component * brightness / 15
+/// 512 bytes total (16 brightness levels x 32 component values), fits in a single cache line per row
+static constexpr auto MakeBrightnessLut() {
+	std::array<std::array<uint8_t, 32>, 16> lut{};
+	for (int b = 0; b < 16; b++) {
+		for (int c = 0; c < 32; c++) {
+			lut[b][c] = static_cast<uint8_t>(c * b / 15);
+		}
+	}
+	return lut;
+}
+
+static constexpr auto _brightnessLut = MakeBrightnessLut();
+
 template <bool forMainScreen>
 void SnesPpu::ApplyBrightness() {
 	if (_state.ScreenBrightness != 15) {
+		const auto& lut = _brightnessLut[_state.ScreenBrightness];
 		for (int x = _drawStartX; x <= _drawEndX; x++) {
 			uint16_t& pixel = (forMainScreen ? _mainScreenBuffer : _subScreenBuffer)[x];
-			uint16_t r = (pixel & 0x1F) * _state.ScreenBrightness / 15;
-			uint16_t g = ((pixel >> 5) & 0x1F) * _state.ScreenBrightness / 15;
-			uint16_t b = ((pixel >> 10) & 0x1F) * _state.ScreenBrightness / 15;
+			uint16_t r = lut[pixel & 0x1F];
+			uint16_t g = lut[(pixel >> 5) & 0x1F];
+			uint16_t b = lut[(pixel >> 10) & 0x1F];
 			pixel = r | (g << 5) | (b << 10);
 		}
 	}

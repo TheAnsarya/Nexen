@@ -52,5 +52,5 @@ public:
 	/// Returns 0 on file read errors (no exception thrown).
 	/// Common use: ROM file verification against known-good checksums.
 	/// </remarks>
-	[[nodiscard]] static uint32_t GetCRC(string filename);
+	[[nodiscard]] static uint32_t GetCRC(const string& filename);
 };

@@ -116,6 +116,9 @@
 		<ClCompile Include="SNES\SnesCpuTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="SNES\SnesPpuTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="NES\NesCpuTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
@@ -135,6 +138,9 @@
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
 		<ClCompile Include="Shared\FastStringTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Shared\StringUtilitiesTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
 		<ClCompile Include="Shared\Base64Tests.cpp">

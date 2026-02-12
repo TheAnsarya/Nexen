@@ -149,6 +149,27 @@ public sealed class PianoRollControl : Control {
 
 	#endregion
 
+	#region Cached Rendering Resources
+
+	// Cached brushes — avoids per-frame SolidColorBrush allocations (Render runs at 60fps)
+	private static readonly SolidColorBrush HeaderBrush = new(Color.FromRgb(240, 240, 240));
+	private static readonly SolidColorBrush GreenzoneBrush = new(Color.FromRgb(200, 255, 200));
+	private static readonly SolidColorBrush LagBrush = new(Color.FromRgb(255, 200, 200));
+	private static readonly SolidColorBrush PressedBrush = new(Color.FromRgb(100, 150, 255));
+	private static readonly SolidColorBrush SelectionFillBrush = new(Color.FromArgb(50, 0, 100, 255));
+
+	// Cached pens — avoids per-frame Pen allocations
+	private static readonly Pen GrayBorderPen = new(Brushes.Gray, 1);
+	private static readonly Pen GridPen = new(Brushes.LightGray, 0.5);
+	private static readonly Pen SelectionBorderPen = new(Brushes.Blue, 2);
+	private static readonly Pen PlaybackPen = new(Brushes.Red, 2);
+
+	// Cached typefaces — avoids per-frame Typeface allocations
+	private static readonly Typeface BoldTypeface = new("Segoe UI", FontStyle.Normal, FontWeight.Bold);
+	private static readonly Typeface NormalTypeface = new("Segoe UI");
+
+	#endregion
+
 	static PianoRollControl() {
 		AffectsRender<PianoRollControl>(
 			FramesProperty,
@@ -201,20 +222,18 @@ public sealed class PianoRollControl : Control {
 	}
 
 	private void DrawLaneHeaders(DrawingContext context, IReadOnlyList<string> buttons, int cellHeight) {
-		var headerBrush = new SolidColorBrush(Color.FromRgb(240, 240, 240));
 		var textBrush = Brushes.Black;
-		var typeface = new Typeface("Segoe UI", FontStyle.Normal, FontWeight.Bold);
 
 		for (int i = 0; i < buttons.Count; i++) {
 			var rect = new Rect(0, HeaderHeight + i * cellHeight, LaneHeaderWidth, cellHeight);
-			context.FillRectangle(headerBrush, rect);
-			context.DrawRectangle(new Pen(Brushes.Gray, 1), rect);
+			context.FillRectangle(HeaderBrush, rect);
+			context.DrawRectangle(GrayBorderPen, rect);
 
 			var text = new FormattedText(
 				buttons[i],
 				System.Globalization.CultureInfo.CurrentCulture,
 				FlowDirection.LeftToRight,
-				typeface,
+				BoldTypeface,
 				10 * ZoomLevel,
 				textBrush
 			);
@@ -226,10 +245,7 @@ public sealed class PianoRollControl : Control {
 	}
 
 	private void DrawFrameHeaders(DrawingContext context, Rect bounds, int cellWidth) {
-		var headerBrush = new SolidColorBrush(Color.FromRgb(240, 240, 240));
 		var textBrush = Brushes.Black;
-		var greenzoneBrush = new SolidColorBrush(Color.FromRgb(200, 255, 200));
-		var typeface = new Typeface("Segoe UI");
 
 		int visibleFrames = (int)((bounds.Width - LaneHeaderWidth) / cellWidth) + 1;
 
@@ -237,9 +253,9 @@ public sealed class PianoRollControl : Control {
 			int frame = ScrollOffset + i;
 			var rect = new Rect(LaneHeaderWidth + i * cellWidth, 0, cellWidth, HeaderHeight);
 
-			var bgBrush = frame >= GreenzoneStart ? greenzoneBrush : headerBrush;
+			var bgBrush = frame >= GreenzoneStart ? GreenzoneBrush : HeaderBrush;
 			context.FillRectangle(bgBrush, rect);
-			context.DrawRectangle(new Pen(Brushes.Gray, 1), rect);
+			context.DrawRectangle(GrayBorderPen, rect);
 
 			// Only show frame numbers at intervals
 			if (frame % 10 == 0 || ZoomLevel >= 2.0) {
@@ -247,7 +263,7 @@ public sealed class PianoRollControl : Control {
 					frame.ToString(),
 					System.Globalization.CultureInfo.CurrentCulture,
 					FlowDirection.LeftToRight,
-					typeface,
+					NormalTypeface,
 					8 * ZoomLevel,
 					textBrush
 				);
@@ -266,10 +282,6 @@ public sealed class PianoRollControl : Control {
 		}
 
 		int visibleFrames = (int)((bounds.Width - LaneHeaderWidth) / cellWidth) + 1;
-		var greenzoneBrush = new SolidColorBrush(Color.FromRgb(200, 255, 200));
-		var lagBrush = new SolidColorBrush(Color.FromRgb(255, 200, 200));
-		var pressedBrush = new SolidColorBrush(Color.FromRgb(100, 150, 255));
-		var gridPen = new Pen(Brushes.LightGray, 0.5);
 
 		for (int i = 0; i < visibleFrames; i++) {
 			int frameIndex = ScrollOffset + i;
@@ -288,9 +300,9 @@ public sealed class PianoRollControl : Control {
 				IBrush? bgBrush = null;
 
 				if (frame.IsLagFrame) {
-					bgBrush = lagBrush;
+					bgBrush = LagBrush;
 				} else if (isGreenzone) {
-					bgBrush = greenzoneBrush;
+					bgBrush = GreenzoneBrush;
 				}
 
 				if (bgBrush is not null) {
@@ -303,12 +315,12 @@ public sealed class PianoRollControl : Control {
 
 					if (isPressed) {
 						var innerRect = rect.Deflate(2);
-						context.FillRectangle(pressedBrush, innerRect);
+						context.FillRectangle(PressedBrush, innerRect);
 					}
 				}
 
 				// Grid lines
-				context.DrawRectangle(gridPen, rect);
+				context.DrawRectangle(GridPen, rect);
 			}
 		}
 	}
@@ -325,12 +337,9 @@ public sealed class PianoRollControl : Control {
 		int endX = LaneHeaderWidth + (end - ScrollOffset + 1) * cellWidth;
 		int height = buttonCount * cellHeight;
 
-		var selectionBrush = new SolidColorBrush(Color.FromArgb(50, 0, 100, 255));
-		var selectionPen = new Pen(Brushes.Blue, 2);
-
 		var rect = new Rect(startX, HeaderHeight, endX - startX, height);
-		context.FillRectangle(selectionBrush, rect);
-		context.DrawRectangle(selectionPen, rect);
+		context.FillRectangle(SelectionFillBrush, rect);
+		context.DrawRectangle(SelectionBorderPen, rect);
 	}
 
 	private void DrawPlaybackPosition(DrawingContext context, Rect bounds, int cellWidth) {
@@ -344,8 +353,7 @@ public sealed class PianoRollControl : Control {
 			return;
 		}
 
-		var pen = new Pen(Brushes.Red, 2);
-		context.DrawLine(pen, new Point(x, 0), new Point(x, bounds.Height));
+		context.DrawLine(PlaybackPen, new Point(x, 0), new Point(x, bounds.Height));
 	}
 
 	private void DrawMarkers(DrawingContext context, Rect bounds, int cellWidth) {

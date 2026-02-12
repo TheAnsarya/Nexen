@@ -121,3 +121,27 @@ static void BM_HexUtilities_ToHex24_Address(benchmark::State& state) {
 	state.SetItemsProcessed(state.iterations());
 }
 BENCHMARK(BM_HexUtilities_ToHex24_Address);
+
+// ===== FromHex LUT Benchmark =====
+// Benchmarks the constexpr LUT-based FromHex parsing (eliminates 3 branches per nibble)
+
+static void BM_HexUtilities_FromHex_Batch(benchmark::State& state) {
+	// Simulate typical debugger usage: parse many hex addresses
+	const char* addresses[] = {"0000", "00FF", "1234", "ABCD", "FFFF", "7E2000", "DEADBEEF"};
+	for (auto _ : state) {
+		for (const char* addr : addresses) {
+			benchmark::DoNotOptimize(HexUtilities::FromHex(addr));
+		}
+	}
+	state.SetItemsProcessed(state.iterations() * 7);
+}
+BENCHMARK(BM_HexUtilities_FromHex_Batch);
+
+static void BM_HexUtilities_FromHex_MixedCase(benchmark::State& state) {
+	// LUT handles all cases uniformly — no branch per character
+	for (auto _ : state) {
+		benchmark::DoNotOptimize(HexUtilities::FromHex("aAbBcCdD"));
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_HexUtilities_FromHex_MixedCase);

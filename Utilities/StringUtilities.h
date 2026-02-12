@@ -20,16 +20,16 @@ public:
 	/// <remarks>
 	/// Example: Split("a,b,c", ',') returns {"a", "b", "c"}
 	/// </remarks>
-	[[nodiscard]] static vector<string> Split(string input, char delimiter) {
+	[[nodiscard]] static vector<string> Split(string_view input, char delimiter) {
 		vector<string> result;
 		size_t index = 0;
 		size_t lastIndex = 0;
-		while ((index = input.find(delimiter, index)) != string::npos) {
-			result.push_back(input.substr(lastIndex, index - lastIndex));
+		while ((index = input.find(delimiter, index)) != string_view::npos) {
+			result.push_back(string(input.substr(lastIndex, index - lastIndex)));
 			index++;
 			lastIndex = index;
 		}
-		result.push_back(input.substr(lastIndex));
+		result.push_back(string(input.substr(lastIndex)));
 		return result;
 	}
 
@@ -38,7 +38,7 @@ public:
 	/// </summary>
 	/// <param name="str">String to trim</param>
 	/// <returns>String with leading whitespace removed</returns>
-	[[nodiscard]] static string TrimLeft(string str) {
+	[[nodiscard]] static string TrimLeft(const string& str) {
 		size_t startIndex = str.find_first_not_of("\t ");
 		if (startIndex == string::npos) {
 			return "";
@@ -53,7 +53,7 @@ public:
 	/// </summary>
 	/// <param name="str">String to trim</param>
 	/// <returns>String with trailing whitespace removed</returns>
-	[[nodiscard]] static string TrimRight(string str) {
+	[[nodiscard]] static string TrimRight(const string& str) {
 		size_t endIndex = str.find_last_not_of("\t\r\n ");
 		if (endIndex == string::npos) {
 			return "";
@@ -68,7 +68,7 @@ public:
 	/// </summary>
 	/// <param name="str">String to trim</param>
 	/// <returns>String with leading and trailing whitespace removed</returns>
-	[[nodiscard]] static string Trim(string str) {
+	[[nodiscard]] static string Trim(const string& str) {
 		return TrimLeft(TrimRight(str));
 	}
 
@@ -104,7 +104,7 @@ public:
 	/// Does not null-terminate. Copies min(str.size(), maxSize) bytes.
 	/// Caller is responsible for ensuring buffer is large enough.
 	/// </remarks>
-	static void CopyToBuffer(string str, char* outBuffer, uint32_t maxSize) {
+	static void CopyToBuffer(const string& str, char* outBuffer, uint32_t maxSize) {
 		memcpy(outBuffer, str.c_str(), std::min<uint32_t>((uint32_t)str.size(), maxSize));
 	}
 

@@ -8,7 +8,7 @@ using Nexen.Debugger.Labels;
 using Nexen.Debugger.Utilities;
 using Nexen.Interop;
 
-namespace Nexen.Debugger; 
+namespace Nexen.Debugger;
 public sealed class HexEditorDataProvider : IHexEditorDataProvider {
 	public int Length { get; private set; }
 
@@ -25,6 +25,20 @@ public sealed class HexEditorDataProvider : IHexEditorDataProvider {
 	private long _firstByteIndex = 0;
 	private TblByteCharConverter? _tblConverter = null;
 	private byte[]? _frozenAddresses = null;
+
+	/// <summary>
+	/// Cached single-char strings for printable ASCII values (32..126).
+	/// Eliminates per-byte ((char)val).ToString() allocation in ConvertValueToString.
+	/// </summary>
+	private static readonly string[] PrintableAsciiStrings = InitPrintableAsciiStrings();
+
+	private static string[] InitPrintableAsciiStrings() {
+		var cache = new string[128];
+		for (int i = 32; i < 127; i++) {
+			cache[i] = ((char)i).ToString();
+		}
+		return cache;
+	}
 
 	public HexEditorDataProvider(MemoryType memoryType, HexEditorConfig cfg, TblByteCharConverter? tblConverter) {
 		_memoryType = memoryType;
@@ -218,7 +232,7 @@ public sealed class HexEditorDataProvider : IHexEditorDataProvider {
 			return ".";
 		}
 
-		return ((char)val).ToString();
+		return PrintableAsciiStrings[val];
 	}
 
 	public byte ConvertCharToByte(char c) {

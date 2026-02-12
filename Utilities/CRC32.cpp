@@ -43,7 +43,7 @@ uint32_t CRC32::GetCRC(vector<uint8_t>& data) {
 	return crc32_16bytes(data.data(), (std::streamoff)data.size(), 0);
 }
 
-uint32_t CRC32::GetCRC(string filename) {
+uint32_t CRC32::GetCRC(const string& filename) {
 	uint32_t crc = 0;
 
 	ifstream file(filename, std::ios::in | std::ios::binary);
