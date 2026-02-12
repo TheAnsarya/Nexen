@@ -13,7 +13,7 @@ using Nexen.Config;
 using Nexen.Debugger;
 using Nexen.Utilities;
 
-namespace Nexen.Interop; 
+namespace Nexen.Interop;
 public sealed class DebugApi {
 	private const string DllPath = EmuApi.DllName;
 	[DllImport(DllPath)] public static extern void InitializeDebugger();

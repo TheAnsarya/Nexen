@@ -18,7 +18,7 @@ using Avalonia.Threading;
 using Nexen.Utilities;
 using SkiaSharp;
 
-namespace Nexen.Debugger.Controls; 
+namespace Nexen.Debugger.Controls;
 public sealed class PictureViewer : Control {
 	public static readonly StyledProperty<IImage> SourceProperty = AvaloniaProperty.Register<PictureViewer, IImage>(nameof(Source));
 	public static readonly StyledProperty<double> ZoomProperty = AvaloniaProperty.Register<PictureViewer, double>(nameof(Zoom), 1, defaultBindingMode: BindingMode.TwoWay);
