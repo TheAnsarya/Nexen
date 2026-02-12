@@ -45,6 +45,10 @@ jobs:
       - name: Build C++ core (InteropDLL)
         run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v143 -t:InteropDLL Nexen.sln
 
+      - name: Build UI (restore native libs)
+        run: dotnet build -c Release -r win-x64 --no-restore UI/UI.csproj
+        continue-on-error: true
+
       - name: Package Dependencies.zip
         run: ./scripts/package-dependencies.ps1 -Configuration Release
         shell: pwsh
@@ -244,10 +248,10 @@ jobs:
           export PATH="$(brew --prefix llvm)/bin:$PATH"
           export CC="$(brew --prefix llvm)/bin/clang"
           export CXX="$(brew --prefix llvm)/bin/clang++"
-          export LDFLAGS="-L$(brew --prefix llvm)/lib/c++ -Wl,-rpath,$(brew --prefix llvm)/lib/c++ -stdlib=libc++"
-          export CPPFLAGS="-I$(brew --prefix llvm)/include"
-          export CXXFLAGS="-stdlib=libc++"
-          make CC="$CC" CXX="$CXX" NEXENFLAGS="-stdlib=libc++" ${{ matrix.make_flags }} -j$(sysctl -n hw.logicalcpu)
+          export LDFLAGS="-L$(brew --prefix llvm)/lib -L$(brew --prefix llvm)/lib/c++ -Wl,-rpath,$(brew --prefix llvm)/lib/c++ -lc++ -lc++abi"
+          export CPPFLAGS="-I$(brew --prefix llvm)/include -I$(brew --prefix llvm)/include/c++/v1"
+          export CXXFLAGS="-stdlib=libc++ -nostdinc++"
+          make CC="$CC" CXX="$CXX" NEXENFLAGS="-stdlib=libc++ -nostdinc++ -I$(brew --prefix llvm)/include/c++/v1" ${{ matrix.make_flags }} -j$(sysctl -n hw.logicalcpu)
 
       - name: Sign binary
         env:

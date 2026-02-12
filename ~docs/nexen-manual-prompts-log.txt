@@ -142,12 +142,33 @@ don't implement right away, create documentation of the work to be done, and mak
 
 [Nexen] Find more performance improvements in both the cpp and c# code files (test all of them!) and make issues, test before and after to make sure the code has the same results and sideeffects, ***Never risk reducing accuracy of the emulation***, and add before/after performance benchmarks to find the best code you can focusing on both speed and memory usage/allocation ; continue;
 
+[Nexen] Find more performance improvements in both the cpp and c# code files (test all of them!) and make issues, test before and after to make sure the code has the same results and sideeffects, ***Never risk reducing accuracy of the emulation*** (although if you can show emulator hotpaths still work correctly, then it is ok to update for performance, just test everything!), and add before/after performance benchmarks to find the best code you can focusing on both speed and memory usage/allocation ; continue;
+
+[Nexen] Issue #169 is future development, so side-line it for now. Look at the other issues and work on their efforts making performance and memory gains, and increase tesing, update the issues/todos/docs/etc, then release a new version (minor version update) and try to use the Actions to create releases for windows, macos, and linux; wait for those releases, did they work? if not fix the actions so those builds are created;
+
+[Nexen] The releases are not building why not? create a reasearch issue for why the releases aren't building; You can build the windows release lcoally and then upload it, but we can't build macos or linux on our own (can we? fix it!) and  document and implement the changes, make our release CI/CD work for all platforms, why doesn't it work? can we fix those problems or are they built into the platform? go!; continue;
 
 
 
 
 
 
+
+
+
+
+
+
+
+[Nexen] for the work epic: research and determine if we should Create an MCP server for Nexen? Does it help our development efforts to have an api interation with the emulator?; if so Make plans and issues, with multiple epics, and sub-issues of those epics to accomplish this; maybe institute a window screenshot api so we can get illustrations for the documentation;
+
+
+
+
+
+[Nexen] Make the `README.md` 100% correct, describe the emulator at the top, show main features, especially those we've added since the Mesen fork (like infinite savestates, "TAS movies", pansy output, better per-rom organization of files, massive performance and testing improvements), link to the real releases, make sure every documentation (`*.md) file is linked in the documentation tree starting at the main readme, every documentation should be reachable, make sub pages with descriptions and such;
+
+[Nexen] create epics, issues, plans, docs, etc: analyze all the documentation, and create a docs plan, to make all the documents updated to the current code state, and make everything accurately described and documented; and explain all the menus and dialogs and create a full 
 
 
 
