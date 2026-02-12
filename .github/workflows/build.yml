@@ -43,7 +43,7 @@ jobs:
         uses: ./.github/actions/build-sha1-action
 
       - name: Build Nexen
-        run: dotnet msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -t:Clean,UI Nexen.sln
+        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -t:Clean,UI Nexen.sln
 
       - name: Publish Nexen
         run: dotnet publish --no-restore -c Release -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained="${{ matrix.platform.aot }}" -p:PublishSingleFile="${{ matrix.platform.singleFile }}" -p:OptimizeUi="true" -r win-x64 UI/UI.csproj
@@ -194,7 +194,7 @@ jobs:
       matrix:
         compiler: [clang, clang_aot]
         platform: [
-          {os: macos-15-large, arch: x64},
+          {os: macos-13, arch: x64},
           {os: macos-14, arch: arm64}
         ]
         include:
@@ -324,9 +324,9 @@ jobs:
           chmod +x "release-assets/Nexen-Linux-ARM64.AppImage" || true
 
           # macOS builds
-          cp "artifacts/Nexen (macOS - macos-15-large - clang)/Nexen.app.zip" "release-assets/Nexen-macOS-x64.zip" || true
+          cp "artifacts/Nexen (macOS - macos-13 - clang)/Nexen.app.zip" "release-assets/Nexen-macOS-x64.zip" || true
           cp "artifacts/Nexen (macOS - macos-14 - clang)/Nexen.app.zip" "release-assets/Nexen-macOS-ARM64.zip" || true
-          cp "artifacts/Nexen (macOS - macos-15-large - clang_aot)/Nexen.app.zip" "release-assets/Nexen-macOS-x64-AoT.zip" || true
+          cp "artifacts/Nexen (macOS - macos-13 - clang_aot)/Nexen.app.zip" "release-assets/Nexen-macOS-x64-AoT.zip" || true
           cp "artifacts/Nexen (macOS - macos-14 - clang_aot)/Nexen.app.zip" "release-assets/Nexen-macOS-ARM64-AoT.zip" || true
 
           ls -la release-assets/
