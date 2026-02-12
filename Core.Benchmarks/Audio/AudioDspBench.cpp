@@ -751,3 +751,29 @@ static void BM_Audio_SoftClip(benchmark::State& state) {
 	state.SetBytesProcessed(state.iterations() * count * sizeof(int32_t));
 }
 BENCHMARK(BM_Audio_SoftClip)->Arg(kSmallBufferSize)->Arg(kMediumBufferSize)->Arg(kLargeBufferSize);
+
+// ===== Equalizer Band Gains: vector vs std::array =====
+
+// Reference: vector<double> construction (heap allocation per call)
+static void BM_Audio_EqGains_Vector(benchmark::State& state) {
+	for (auto _ : state) {
+		std::vector<double> bandGains = {
+			0.0, 1.0, 2.0, -1.0, 0.5, -0.5, 1.5, -1.5, 0.0, 0.0,
+			0.0, 1.0, 2.0, -1.0, 0.5, -0.5, 1.5, -1.5, 0.0, 0.0
+		};
+		benchmark::DoNotOptimize(bandGains.data());
+	}
+}
+BENCHMARK(BM_Audio_EqGains_Vector);
+
+// Optimized: std::array<double, 20> (stack allocation, no heap)
+static void BM_Audio_EqGains_Array(benchmark::State& state) {
+	for (auto _ : state) {
+		std::array<double, 20> bandGains = {
+			0.0, 1.0, 2.0, -1.0, 0.5, -0.5, 1.5, -1.5, 0.0, 0.0,
+			0.0, 1.0, 2.0, -1.0, 0.5, -0.5, 1.5, -1.5, 0.0, 0.0
+		};
+		benchmark::DoNotOptimize(bandGains.data());
+	}
+}
+BENCHMARK(BM_Audio_EqGains_Array);

@@ -173,12 +173,11 @@ public sealed class DebugApi {
 	[DllImport(DllPath)] public static extern void RemoveScript(Int32 scriptId);
 
 	[DllImport(DllPath, EntryPoint = "GetScriptLog")] private static extern void GetScriptLogWrapper(Int32 scriptId, IntPtr outScriptLog, Int32 maxLength);
-	public unsafe static string GetScriptLog(Int32 scriptId) {
-		byte[] outScriptLog = new byte[100000];
-		fixed (byte* ptr = outScriptLog) {
-			DebugApi.GetScriptLogWrapper(scriptId, (IntPtr)ptr, outScriptLog.Length);
-			return Utf8Utilities.PtrToStringUtf8((IntPtr)ptr);
-		}
+	/// <summary>
+	/// Gets the script log using a pooled buffer instead of allocating 100KB per call.
+	/// </summary>
+	public static string GetScriptLog(Int32 scriptId) {
+		return Utf8Utilities.CallStringApi((ptr, len) => GetScriptLogWrapper(scriptId, ptr, len), 100000);
 	}
 
 	[DllImport(DllPath)] public static extern Int64 EvaluateExpression([MarshalAs(UnmanagedType.LPUTF8Str)] string expression, CpuType cpuType, out EvalResultType resultType, [MarshalAs(UnmanagedType.I1)] bool useCache);

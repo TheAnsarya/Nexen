@@ -85,10 +85,9 @@ void GbaDefaultVideoFilter::OnBeforeApplyFilter() {
 void GbaDefaultVideoFilter::ApplyFilter(uint16_t* ppuOutputBuffer) {
 	uint32_t* out = GetOutputBuffer();
 
-	for (uint32_t i = 0; i < GbaConstants::ScreenHeight; i++) {
-		for (uint32_t j = 0; j < GbaConstants::ScreenWidth; j++) {
-			out[i * GbaConstants::ScreenWidth + j] = GetPixel(ppuOutputBuffer, i * GbaConstants::ScreenWidth + j);
-		}
+	// Flat loop eliminates per-pixel multiply (was i * ScreenWidth + j)
+	for (uint32_t idx = 0; idx < GbaConstants::PixelCount; idx++) {
+		out[idx] = GetPixel(ppuOutputBuffer, idx);
 	}
 
 	if (_blendFrames) {

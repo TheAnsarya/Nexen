@@ -343,8 +343,12 @@ public sealed class GreenzoneManager : IDisposable {
 		}
 	}
 
+	/// <summary>
+	/// Compresses data using GZip with a pre-sized output stream to avoid MemoryStream.ToArray() copy.
+	/// </summary>
 	private static byte[] CompressData(byte[] data) {
-		using var output = new MemoryStream();
+		// Pre-size to ~75% of input (typical GZip compression ratio for save states)
+		using var output = new MemoryStream(data.Length * 3 / 4);
 		using (var gzip = new GZipStream(output, CompressionLevel.Fastest)) {
 			gzip.Write(data, 0, data.Length);
 		}
@@ -352,10 +356,14 @@ public sealed class GreenzoneManager : IDisposable {
 		return output.ToArray();
 	}
 
+	/// <summary>
+	/// Decompresses GZip data with a pre-sized output stream to reduce reallocations.
+	/// </summary>
 	private static byte[] DecompressData(byte[] compressedData) {
 		using var input = new MemoryStream(compressedData);
 		using var gzip = new GZipStream(input, CompressionMode.Decompress);
-		using var output = new MemoryStream();
+		// Pre-size to 4x compressed size (typical decompression ratio)
+		using var output = new MemoryStream(compressedData.Length * 4);
 		gzip.CopyTo(output);
 		return output.ToArray();
 	}

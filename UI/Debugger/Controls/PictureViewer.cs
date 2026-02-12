@@ -56,6 +56,13 @@ public sealed class PictureViewer : Control {
 	private Stopwatch _stopWatch = Stopwatch.StartNew();
 	private DispatcherTimer _timer = new DispatcherTimer();
 
+	// Cached rendering resources to avoid per-frame allocations
+	private static readonly SolidColorBrush OverlayGrayBrush = new(Colors.Gray, 0.4);
+	private static readonly Pen WhitePen2 = new(Brushes.White, 2);
+	private static readonly Pen BlackPen2 = new(Brushes.Black, 2);
+	private static readonly Pen DimGrayPen2 = new(Brushes.DimGray, 2);
+	private static readonly Typeface DefaultTypeface = new(FontFamily.Default);
+
 	public IImage Source {
 		get { return GetValue(SourceProperty); }
 		set { SetValue(SourceProperty, value); }
@@ -416,27 +423,25 @@ public sealed class PictureViewer : Control {
 
 		if (OverlayRect != default) {
 			Rect rect = ToDrawRect(OverlayRect);
-			Brush brush = new SolidColorBrush(Colors.Gray, 0.4);
-			Pen pen = new Pen(Brushes.White, 2);
 
-			context.FillRectangle(brush, rect);
-			context.DrawRectangle(pen, rect.Inflate(0.5));
+			context.FillRectangle(OverlayGrayBrush, rect);
+			context.DrawRectangle(WhitePen2, rect.Inflate(0.5));
 
 			if ((rect.Top + rect.Height) > height) {
 				Rect offsetRect = rect.Translate(new Vector(0, -height));
-				context.FillRectangle(brush, offsetRect);
-				context.DrawRectangle(pen, offsetRect.Inflate(0.5));
+				context.FillRectangle(OverlayGrayBrush, offsetRect);
+				context.DrawRectangle(WhitePen2, offsetRect.Inflate(0.5));
 			}
 
 			if ((rect.Left + rect.Width) > width) {
 				Rect offsetRect = rect.Translate(new Vector(-width, 0));
-				context.FillRectangle(brush, offsetRect);
-				context.DrawRectangle(pen, offsetRect.Inflate(0.5));
+				context.FillRectangle(OverlayGrayBrush, offsetRect);
+				context.DrawRectangle(WhitePen2, offsetRect.Inflate(0.5));
 
 				if ((rect.Top + rect.Height) > height) {
 					offsetRect = rect.Translate(new Vector(-width, -height));
-					context.FillRectangle(brush, offsetRect);
-					context.DrawRectangle(pen, offsetRect.Inflate(0.5));
+					context.FillRectangle(OverlayGrayBrush, offsetRect);
+					context.DrawRectangle(WhitePen2, offsetRect.Inflate(0.5));
 				}
 			}
 		}
@@ -451,7 +456,7 @@ public sealed class PictureViewer : Control {
 		if (MouseOverRect is not null && MouseOverRect.Value != default) {
 			Rect rect = ToDrawRect(MouseOverRect.Value);
 			DashStyle dashes = new DashStyle(DashStyle.Dash.Dashes, 0);
-			context.DrawRectangle(new Pen(Brushes.DimGray, 2), rect.Inflate(0.5));
+			context.DrawRectangle(DimGrayPen2, rect.Inflate(0.5));
 			context.DrawRectangle(new Pen(Brushes.LightYellow, 2, dashes), rect.Inflate(0.5));
 		}
 
@@ -459,7 +464,7 @@ public sealed class PictureViewer : Control {
 			Rect rect = ToDrawRect(SelectionRect);
 
 			DashStyle dashes = new DashStyle(DashStyle.Dash.Dashes, _stopWatch.ElapsedMilliseconds / 250.0);
-			context.DrawRectangle(new Pen(Brushes.Black, 2), rect.Inflate(0.5));
+			context.DrawRectangle(BlackPen2, rect.Inflate(0.5));
 			context.DrawRectangle(new Pen(Brushes.White, 2, dashes), rect.Inflate(0.5));
 		}
 
@@ -470,7 +475,7 @@ public sealed class PictureViewer : Control {
 			Pen pen = new Pen(0x80FFFFFF, Math.Max(1, Zoom - 1));
 			DrawHighlightLines(context, point, p, pen);
 
-			FormattedText text = new FormattedText(point.DisplayValue, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface(FontFamily.Default), 14 + (Zoom * 2), Brushes.Black);
+			FormattedText text = new FormattedText(point.DisplayValue, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, DefaultTypeface, 14 + (Zoom * 2), Brushes.Black);
 
 			Point textPos = new Point(p.X + (point.Width * Zoom) + (pen.Thickness * 2) + 5, p.Y - 5 - text.Height - (pen.Thickness * 2));
 			if (text.Width + textPos.X >= width) {

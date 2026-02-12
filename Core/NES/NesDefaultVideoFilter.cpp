@@ -181,10 +181,11 @@ void NesDefaultVideoFilter::DecodePpuBuffer(uint16_t* ppuOutputBuffer, uint32_t*
 		NesDefaultVideoFilter::ApplyPalBorder(ppuOutputBuffer);
 	}
 
+	// Hoist row pointer computation outside inner loop to eliminate per-pixel multiply
 	for (uint32_t i = 0; i < frame.Height; i++) {
+		const uint16_t* srcRow = ppuOutputBuffer + (i + overscan.Top) * _baseFrameInfo.Width + overscan.Left;
 		for (uint32_t j = 0; j < frame.Width; j++) {
-			*out = _calculatedPalette[ppuOutputBuffer[(i + overscan.Top) * _baseFrameInfo.Width + j + overscan.Left]];
-			out++;
+			*out++ = _calculatedPalette[srcRow[j]];
 		}
 	}
 }

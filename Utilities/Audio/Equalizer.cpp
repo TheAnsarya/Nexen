@@ -16,11 +16,16 @@ void Equalizer::ApplyEqualizer(uint32_t sampleCount, int16_t* samples) {
 	}
 }
 
-void Equalizer::UpdateEqualizers(vector<double> bandGains, uint32_t sampleRate) {
-	if (_prevSampleRate != sampleRate || memcmp(bandGains.data(), _prevEqualizerGains.data(), bandGains.size() * sizeof(double)) != 0) {
-		vector<double> bands = {40, 56, 80, 113, 160, 225, 320, 450, 600, 750, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 10000, 12500, 13000};
-		bands.insert(bands.begin(), bands[0] - (bands[1] - bands[0]));
-		bands.insert(bands.end(), bands[bands.size() - 1] + (bands[bands.size() - 1] - bands[bands.size() - 2]));
+void Equalizer::UpdateEqualizers(std::span<const double, 20> bandGains, uint32_t sampleRate) {
+	if (_prevSampleRate != sampleRate || !std::equal(bandGains.begin(), bandGains.end(), _prevEqualizerGains.begin())) {
+		// Pre-computed band frequencies with boundary values included
+		// Original: {40, 56, 80, 113, 160, 225, 320, 450, 600, 750, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 10000, 12500, 13000}
+		// Boundary[0] = 40 - (56 - 40) = 24
+		// Boundary[21] = 13000 + (13000 - 12500) = 13500
+		static constexpr std::array<double, 22> bands = {
+			24, 40, 56, 80, 113, 160, 225, 320, 450, 600, 750, 1000,
+			2000, 3000, 4000, 5000, 6000, 7000, 10000, 12500, 13000, 13500
+		};
 
 		_eqFrequencyGrid.reset(new orfanidis_eq::freq_grid());
 		for (size_t i = 1; i < bands.size() - 1; i++) {
@@ -38,6 +43,6 @@ void Equalizer::UpdateEqualizers(vector<double> bandGains, uint32_t sampleRate) 
 		}
 
 		_prevSampleRate = sampleRate;
-		_prevEqualizerGains = bandGains;
+		std::copy(bandGains.begin(), bandGains.end(), _prevEqualizerGains.begin());
 	}
 }

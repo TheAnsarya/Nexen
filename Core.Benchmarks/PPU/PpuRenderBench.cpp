@@ -475,3 +475,135 @@ static void BM_SnesPpu_ApplyBrightness_LUT(benchmark::State& state) {
 }
 BENCHMARK(BM_SnesPpu_ApplyBrightness_LUT);
 
+// ===== Video Filter Loop Benchmarks =====
+
+// Reference: Nested loop with per-pixel multiply (old GB/GBA filter pattern)
+static void BM_VideoFilter_NestedLoop(benchmark::State& state) {
+	constexpr uint32_t Width = 160;
+	constexpr uint32_t Height = 144;
+	constexpr uint32_t PixelCount = Width * Height;
+	std::array<uint32_t, PixelCount> out{};
+	std::array<uint16_t, PixelCount> input{};
+	for (uint32_t i = 0; i < PixelCount; i++) input[i] = static_cast<uint16_t>(i & 0x7FFF);
+
+	for (auto _ : state) {
+		for (uint32_t i = 0; i < Height; i++) {
+			for (uint32_t j = 0; j < Width; j++) {
+				out[i * Width + j] = 0xFF000000 | input[i * Width + j];
+			}
+		}
+		benchmark::DoNotOptimize(out);
+	}
+	state.SetItemsProcessed(state.iterations() * PixelCount);
+}
+BENCHMARK(BM_VideoFilter_NestedLoop);
+
+// Optimized: Flat loop (eliminates per-pixel multiply)
+static void BM_VideoFilter_FlatLoop(benchmark::State& state) {
+	constexpr uint32_t Width = 160;
+	constexpr uint32_t Height = 144;
+	constexpr uint32_t PixelCount = Width * Height;
+	std::array<uint32_t, PixelCount> out{};
+	std::array<uint16_t, PixelCount> input{};
+	for (uint32_t i = 0; i < PixelCount; i++) input[i] = static_cast<uint16_t>(i & 0x7FFF);
+
+	for (auto _ : state) {
+		for (uint32_t idx = 0; idx < PixelCount; idx++) {
+			out[idx] = 0xFF000000 | input[idx];
+		}
+		benchmark::DoNotOptimize(out);
+	}
+	state.SetItemsProcessed(state.iterations() * PixelCount);
+}
+BENCHMARK(BM_VideoFilter_FlatLoop);
+
+// ===== NES DecodePpuBuffer Benchmarks =====
+
+// Reference: Per-pixel source index calculation
+static void BM_NesPpu_DecodePpu_PerPixelCalc(benchmark::State& state) {
+	constexpr uint32_t BaseWidth = 256;
+	constexpr uint32_t FrameWidth = 240;
+	constexpr uint32_t FrameHeight = 224;
+	constexpr uint32_t OverscanTop = 8;
+	constexpr uint32_t OverscanLeft = 8;
+	std::array<uint16_t, BaseWidth * 240> ppuBuffer{};
+	std::array<uint32_t, 0x8000> palette{};
+	std::array<uint32_t, FrameWidth * FrameHeight> output{};
+	for (auto& p : palette) p = 0xFF000000;
+	for (auto& p : ppuBuffer) p = 0;
+
+	for (auto _ : state) {
+		uint32_t* out = output.data();
+		for (uint32_t i = 0; i < FrameHeight; i++) {
+			for (uint32_t j = 0; j < FrameWidth; j++) {
+				*out = palette[ppuBuffer[(i + OverscanTop) * BaseWidth + j + OverscanLeft]];
+				out++;
+			}
+		}
+		benchmark::DoNotOptimize(output);
+	}
+	state.SetItemsProcessed(state.iterations() * FrameWidth * FrameHeight);
+}
+BENCHMARK(BM_NesPpu_DecodePpu_PerPixelCalc);
+
+// Optimized: Row pointer hoisted outside inner loop
+static void BM_NesPpu_DecodePpu_RowPointer(benchmark::State& state) {
+	constexpr uint32_t BaseWidth = 256;
+	constexpr uint32_t FrameWidth = 240;
+	constexpr uint32_t FrameHeight = 224;
+	constexpr uint32_t OverscanTop = 8;
+	constexpr uint32_t OverscanLeft = 8;
+	std::array<uint16_t, BaseWidth * 240> ppuBuffer{};
+	std::array<uint32_t, 0x8000> palette{};
+	std::array<uint32_t, FrameWidth * FrameHeight> output{};
+	for (auto& p : palette) p = 0xFF000000;
+	for (auto& p : ppuBuffer) p = 0;
+
+	for (auto _ : state) {
+		uint32_t* out = output.data();
+		for (uint32_t i = 0; i < FrameHeight; i++) {
+			const uint16_t* srcRow = ppuBuffer.data() + (i + OverscanTop) * BaseWidth + OverscanLeft;
+			for (uint32_t j = 0; j < FrameWidth; j++) {
+				*out++ = palette[srcRow[j]];
+			}
+		}
+		benchmark::DoNotOptimize(output);
+	}
+	state.SetItemsProcessed(state.iterations() * FrameWidth * FrameHeight);
+}
+BENCHMARK(BM_NesPpu_DecodePpu_RowPointer);
+
+// ===== GB PPU Pixel Write Benchmarks =====
+
+// Reference: Per-pixel multiply (scanline * width + drawnPixels)
+static void BM_GbPpu_WritePixel_Multiply(benchmark::State& state) {
+	std::array<uint16_t, 160 * 144> buffer{};
+	uint16_t scanline = 72;
+
+	for (auto _ : state) {
+		for (int16_t pixel = 0; pixel < 160; pixel++) {
+			uint16_t outOffset = scanline * 160 + pixel;
+			buffer[outOffset] = 0x7FFF;
+		}
+		benchmark::DoNotOptimize(buffer);
+	}
+	state.SetItemsProcessed(state.iterations() * 160);
+}
+BENCHMARK(BM_GbPpu_WritePixel_Multiply);
+
+// Optimized: Cached scanline offset (add only)
+static void BM_GbPpu_WritePixel_CachedOffset(benchmark::State& state) {
+	std::array<uint16_t, 160 * 144> buffer{};
+	uint16_t scanline = 72;
+	uint16_t scanlineOffset = scanline * 160;
+
+	for (auto _ : state) {
+		for (int16_t pixel = 0; pixel < 160; pixel++) {
+			uint16_t outOffset = scanlineOffset + pixel;
+			buffer[outOffset] = 0x7FFF;
+		}
+		benchmark::DoNotOptimize(buffer);
+	}
+	state.SetItemsProcessed(state.iterations() * 160);
+}
+BENCHMARK(BM_GbPpu_WritePixel_CachedOffset);

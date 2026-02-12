@@ -432,7 +432,10 @@ public sealed class MemorySearchViewModel : DisposableViewModel {
 	/// </remarks>
 	public void ResetSearch() {
 		_lastSearchSnapshot = DebugApi.GetMemoryState(MemoryType);
-		AddressLookup = Enumerable.Range(0, _lastSearchSnapshot.Length).ToArray();
+		// Build identity array directly instead of Enumerable.Range().ToArray()
+		int[] lookup = new int[_lastSearchSnapshot.Length];
+		for (int i = 0; i < lookup.Length; i++) lookup[i] = i;
+		AddressLookup = lookup;
 		MaxAddress = Math.Max(0, _lastSearchSnapshot.Length - 1);
 		_hiddenAddresses.Clear();
 		_undoHistory.Clear();

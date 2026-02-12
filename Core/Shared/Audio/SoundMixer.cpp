@@ -159,7 +159,8 @@ void SoundMixer::ProcessEqualizer(int16_t* samples, uint32_t sampleCount, uint32
 	if (!_equalizer) {
 		_equalizer.reset(new Equalizer());
 	}
-	vector<double> bandGains = {
+	// Use std::array instead of vector to avoid heap allocation per audio frame
+	std::array<double, 20> bandGains = {
 	    cfg.Band1Gain, cfg.Band2Gain, cfg.Band3Gain, cfg.Band4Gain, cfg.Band5Gain,
 	    cfg.Band6Gain, cfg.Band7Gain, cfg.Band8Gain, cfg.Band9Gain, cfg.Band10Gain,
 	    cfg.Band11Gain, cfg.Band12Gain, cfg.Band13Gain, cfg.Band14Gain, cfg.Band15Gain,

@@ -97,6 +97,9 @@ private:
 	/// <summary>Number of pixels drawn this scanline.</summary>
 	int16_t _drawnPixels = 0;
 
+	/// <summary>Cached scanline buffer offset (scanline * ScreenWidth), set once per scanline.</summary>
+	uint16_t _scanlineBufferOffset = 0;
+
 	/// <summary>Current tile column being fetched.</summary>
 	uint8_t _fetchColumn = 0;
 

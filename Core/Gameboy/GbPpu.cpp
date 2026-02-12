@@ -472,7 +472,7 @@ void GbPpu::RunDrawCycle() {
 }
 
 void GbPpu::WriteBgPixel(uint8_t colorIndex) {
-	uint16_t outOffset = _state.Scanline * GbConstants::ScreenWidth + _drawnPixels;
+	uint16_t outOffset = _scanlineBufferOffset + _drawnPixels;
 	_currentBuffer[outOffset] = LcdReadBgPalette(colorIndex) & 0x7FFF;
 	if (_gameboy->IsSgb()) {
 		_gameboy->GetSgb()->WriteLcdColor(_state.Scanline, (uint8_t)_drawnPixels, colorIndex & 0x03);
@@ -480,7 +480,7 @@ void GbPpu::WriteBgPixel(uint8_t colorIndex) {
 }
 
 void GbPpu::WriteObjPixel(uint8_t colorIndex) {
-	uint16_t outOffset = _state.Scanline * GbConstants::ScreenWidth + _drawnPixels;
+	uint16_t outOffset = _scanlineBufferOffset + _drawnPixels;
 	_currentBuffer[outOffset] = LcdReadObjPalette(colorIndex) & 0x7FFF;
 	if (_gameboy->IsSgb()) {
 		_gameboy->GetSgb()->WriteLcdColor(_state.Scanline, (uint8_t)_drawnPixels, colorIndex & 0x03);
@@ -535,6 +535,9 @@ void GbPpu::ResetRenderer() {
 	_fetchColumn = 0;
 
 	_insertGlitchBgPixel = false;
+
+	// Cache scanline buffer offset to avoid per-pixel multiply in WriteBgPixel/WriteObjPixel
+	_scanlineBufferOffset = _state.Scanline * GbConstants::ScreenWidth;
 }
 
 void GbPpu::ClockSpriteFetcher() {

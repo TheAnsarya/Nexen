@@ -9,7 +9,8 @@
 #include "Utilities/PNGHelper.h"
 #include "Utilities/FolderUtilities.h"
 
-const static double PI = 3.14159265358979323846;
+#include <numbers>
+static constexpr double PI = std::numbers::pi;
 
 BaseVideoFilter::BaseVideoFilter(Emulator* emu) {
 	_emu = emu;
@@ -99,13 +100,14 @@ void BaseVideoFilter::InitConversionMatrix(double hueShift, double saturationShi
 	double hue = hueShift * PI;
 	double sat = saturationShift + 1;
 
-	double baseValues[6] = {0.956f, 0.621f, -0.272f, -0.647f, -1.105f, 1.702f};
+	// Use double literals to avoid float→double widening conversion
+	constexpr double baseValues[6] = {0.956, 0.621, -0.272, -0.647, -1.105, 1.702};
 
 	double s = sin(hue) * sat;
 	double c = cos(hue) * sat;
 
 	double* output = _yiqToRgbMatrix;
-	double* input = baseValues;
+	const double* input = baseValues;
 	for (int n = 0; n < 3; n++) {
 		double i = *input++;
 		double q = *input++;

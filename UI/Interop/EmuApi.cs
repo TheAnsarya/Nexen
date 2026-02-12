@@ -228,15 +228,20 @@ public sealed class EmuApi {
 	public static extern void SetPerRomSaveDirectory([MarshalAs(UnmanagedType.LPUTF8Str)] string path);
 
 	[DllImport(DllPath, EntryPoint = "GetSaveStatePreview")] private static extern Int32 GetSaveStatePreviewWrapper([MarshalAs(UnmanagedType.LPUTF8Str)] string saveStatePath, [Out] byte[] imgData);
+	/// <summary>
+	/// Gets save state preview bitmap using ArrayPool to avoid ~1MB allocation per call.
+	/// </summary>
 	public static Bitmap? GetSaveStatePreview(string saveStatePath) {
 		if (File.Exists(saveStatePath)) {
-			byte[] buffer = new byte[512 * 478 * 4];
-			Int32 size = EmuApi.GetSaveStatePreviewWrapper(saveStatePath, buffer);
-			if (size > 0) {
-				Array.Resize(ref buffer, size);
-				using (MemoryStream stream = new MemoryStream(buffer)) {
+			byte[] buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(512 * 478 * 4);
+			try {
+				Int32 size = EmuApi.GetSaveStatePreviewWrapper(saveStatePath, buffer);
+				if (size > 0) {
+					using MemoryStream stream = new MemoryStream(buffer, 0, size);
 					return new Bitmap(stream);
 				}
+			} finally {
+				System.Buffers.ArrayPool<byte>.Shared.Return(buffer);
 			}
 		}
 
