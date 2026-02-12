@@ -17,7 +17,7 @@ using Nexen.Debugger.Utilities;
 using Nexen.Interop;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Controls; 
+namespace Nexen.Debugger.Controls;
 public partial class PaletteSelector : Control {
 	public static readonly StyledProperty<int> SelectedPaletteProperty = AvaloniaProperty.Register<PaletteSelector, int>(
 		nameof(SelectedPalette),

@@ -5,6 +5,71 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-02-12
+
+### Performance
+
+Major performance optimization pass across all CPU emulation cores and UI rendering.
+
+#### C++ Emulator Core
+
+- **Branchless CPU Flag Operations** - Replaced branching conditionals with branchless equivalents
+  - NES: CMP, ADD, BIT, ASL/LSR, ROL/ROR (7 operations)
+  - SNES: CMP, Add8/16, Sub8/16, shifts, TestBits (10 operations)
+  - GB: SetFlagState branchless implementation
+  - PCE: CMP, ASL/LSR, ROL/ROR, BIT, TSB/TRB/TST (10 operations)
+  - SMS: Merged ClearFlag in UpdateLogicalOpFlags (3 calls → 1 AND mask)
+
+- **[[likely]]/[[unlikely]] Annotations** - Branch prediction hints on hot-path conditionals
+  - All CPU Exec() IRQ/NMI/halt/stopped checks annotated
+
+- **PPU Rendering Optimizations**
+  - SNES ApplyBrightness: constexpr 512-byte LUT (33% faster)
+  - SNES ConvertToHiRes: cached pixel read (38% faster)
+  - SNES RenderBgColor: hoisted _cgram[0] out of per-pixel loop
+  - SNES DefaultVideoFilter: row pointer hoisting in all 3 loops
+  - GB/GBA video filter: flat loop (7% faster)
+  - GB PPU: cached GameboyConfig (160x reduction in config access)
+  - SMS VDP DrawPixel: cached buffer offset
+
+- **Utility Library**
+  - HexUtilities: constexpr nibble LUT for FromHex, eliminated 256-entry vector<string>
+  - StringUtilities: string_view for Split, const ref for Trim/CopyToBuffer
+  - Equalizer: vector→std::array+span (10.1x faster)
+
+#### C# UI Allocation Reduction
+
+Eliminated thousands of per-frame GC allocations in debugger UI:
+
+- BreakpointBar: 6 brush/pen → ColorHelper cached lookups
+- DisassemblyViewer: static ForbidDashStyle + BlackPen1 (−150 allocs/frame)
+- CodeLineData ByteCodeStr: string.Create with hex LUT (−400 allocs/refresh)
+- PaletteSelector: ColorHelper brush caching (−256 allocs/frame)
+- PianoRollControl: 17 per-frame brush/pen/typeface → static readonly
+- HexEditor: pre-allocated string[256] hex lookup table
+- HexEditorDataProvider: static string[128] printable ASCII cache
+- Utf8Utilities: Marshal.PtrToStringUTF8 + ArrayPool<byte>
+- GetScriptLog: pooled buffer
+- GetSaveStatePreview: ArrayPool
+- PictureViewer: cached Pen/Brush/Typeface
+- GreenzoneManager: pre-sized MemoryStream
+- MemorySearch: direct loop
+
+### Testing
+
+- **659 tests** (up from 421 in v1.0.0)
+  - Exhaustive 256×256 comparison tests for CPU flag operations
+  - Branching vs branchless equivalence tests
+  - Video filter correctness tests
+  - Hex formatting tests
+
+### Documentation
+
+- Updated session logs documenting optimization work
+- Phase 2-6 optimization plans in `~docs/plans/`
+
+---
+
 ## [1.0.1] - 2026-02-07
 
 ### Fixed

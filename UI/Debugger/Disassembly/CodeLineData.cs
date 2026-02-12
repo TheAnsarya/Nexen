@@ -9,7 +9,7 @@ using Nexen.Debugger.Controls;
 using Nexen.Debugger.Labels;
 using Nexen.Interop;
 
-namespace Nexen.Debugger; 
+namespace Nexen.Debugger;
 public sealed class CodeLineData {
 	public CpuType CpuType { get; private set; }
 
