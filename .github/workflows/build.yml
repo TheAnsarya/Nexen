@@ -90,7 +90,7 @@ jobs:
         with:
           name: Nexen (Windows${{ matrix.platform.aotString }})
           path: |
-            build/TmpReleaseBuild/Nexen.exe
+            bin/win-x64/Release/win-x64/publish/Nexen.exe
 
 
   linux:

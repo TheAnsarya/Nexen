@@ -5,6 +5,16 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2026-02-13
+
+### Fixed
+
+- **CI/CD**: Fixed Windows artifact upload paths
+	- Corrected path from `build/TmpReleaseBuild/Nexen.exe` to actual publish output
+	- Windows x64 and Windows AOT builds now upload artifacts correctly
+
+---
+
 ## [1.1.2] - 2026-02-13
 
 ### Fixed

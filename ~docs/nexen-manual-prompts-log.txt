@@ -148,6 +148,21 @@ don't implement right away, create documentation of the work to be done, and mak
 
 [Nexen] The releases are not building why not? create a reasearch issue for why the releases aren't building; You can build the windows release lcoally and then upload it, but we can't build macos or linux on our own (can we? fix it!) and  document and implement the changes, make our release CI/CD work for all platforms, why doesn't it work? can we fix those problems or are they built into the platform? go!; continue;
 
+Linux AppImages are broken (only 0.1 MB - needs investigation); macOS can't be built locally on Windows (requires actual Mac)
+
+why are MacOS release builds not being created and pusblished?
+
+make a MacOS SecKeychainItemImport signing certificate, so we can build without problems, make linux and window builds too in CI, look at the errors and fix them one by one; until everything builds and releases, then update the links in `README.md`; continue;
+
+Nexen v1.1.0 does not open, make the Windows release work; so we can play a game;
+
+[Nexen] Make sure the current release opens and plays games, make a new windows release `1.1.1` if necessary, I need to open the mulator, then add a joypad and test everything and create a comprehensive pansy file and test if it is making a correct file and then use it; continue; 
+
+[Nexen] work on issue #238 `[Research] CI/CD Build Failures for v1.1.0 Release`, and prepare a document with the findings of what our blocks and errors are so we can plan more specifically as you've spent a lot of time on this issue without producing linux or macos versions and only one windows version for the releases, and none of the `README.md` links work; continue;
+
+[Nexen] OK, fix the release problems: change the `build.yml` to remove macos aot temporarily, generate a new release `1.1.2` and insure afterwards that the readme release links work (update the macos aot release table row with an indication that it is broken, and an explaination of why), update issue #238; format all the markdown documents (markdownlinter) and ensure TABS NOT SPACES, and fix all the minor formatting warnings like MD031 (but ignore MD029 as some lists need to be split across sections); update chat/session logs, update docs and todolists and plans and git commit; continue;
+
+
 
 
 
