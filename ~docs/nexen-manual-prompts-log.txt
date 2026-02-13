@@ -164,6 +164,34 @@ Nexen v1.1.0 does not open, make the Windows release work; so we can play a game
 
 [Nexen] update the `build.yml` so our CI build/release includes a version number at the end of the filename for each build release file, like `Nexen-Windows-x64.exe` becomes `Nexen-Windows-x64-v1.1.4.exe`; re-release 1.1.4 with version numbers on the releases (or just rename the release asset files and fix all references); fix the `README.md` "releases" section to point to the files with version numbers and update copilot instructions to always update those links whenever a new release is published; continue;
 
+[Nexen] update the `build.yml` because our Linux releases don't have extensions, aren't they zips or tarballs or something? fix the CI action for releases, rename those files for the 1.1.4 release (reupload assets), and update references and links, update the `readme.md` file "releases" section with the corrected names; continue; ;; github says 14.3% of our codebase is in `C` (not c++, not c#) but we shouldn't be using C directly, what parts of this project are in C, is it libraries or our code?; continue;
+
+it looks like `Nexen-Windows-x64-v1.1.4.exe` is there, I just downloaded it, is it not? if so fix it
+
+[Nexen] update chat/session logs, git commit the prompts file; make issues/todos/docs/plans for this work effort: can we replace the Lua `C` code with a library or nuget package or something? or do we need to keep it because of our customizations? does interacting with our emulation core require us to have all of this code or can we have a smaller project and just use a library? what have we added to the base code that makes us have to compile it ourselves?; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
