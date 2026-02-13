@@ -229,15 +229,15 @@ jobs:
   macos:
     strategy:
       matrix:
-        compiler: [clang, clang_aot]
+        # NOTE: clang_aot temporarily disabled - .NET 10 ILC crashes on macOS ARM64
+        # See issue #238 for details. Re-enable when .NET fixes ILC segfault.
+        compiler: [clang]
         platform: [
           {os: macos-14, arch: arm64}
         ]
         include:
           - compiler: clang
             make_flags: ""
-          - compiler: clang_aot
-            make_flags: "USE_AOT=true"
       fail-fast: false
     runs-on: ${{ matrix.platform.os }}
 
@@ -369,7 +369,8 @@ jobs:
 
           # macOS builds (ARM64 only - Intel x64 deprecated on GitHub Actions)
           cp "artifacts/Nexen (macOS - macos-14 - clang)/Nexen.app.zip" "release-assets/Nexen-macOS-ARM64.zip" || true
-          cp "artifacts/Nexen (macOS - macos-14 - clang_aot)/Nexen.app.zip" "release-assets/Nexen-macOS-ARM64-AoT.zip" || true
+          # NOTE: macOS AOT disabled - .NET 10 ILC crashes. Re-enable when fixed.
+          # cp "artifacts/Nexen (macOS - macos-14 - clang_aot)/Nexen.app.zip" "release-assets/Nexen-macOS-ARM64-AoT.zip" || true
 
           ls -la release-assets/
 

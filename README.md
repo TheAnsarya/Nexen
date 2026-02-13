@@ -44,12 +44,14 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 | Build | Download | Notes |
 |-------|----------|-------|
 | **Standard** | [Nexen-macOS-ARM64.zip](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-macOS-ARM64.zip) | App bundle |
-| **Native AOT** | [Nexen-macOS-ARM64-AoT.zip](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-macOS-ARM64-AoT.zip) | Faster startup |
+| ~~Native AOT~~ | *Temporarily unavailable* | .NET 10 ILC compiler bug |
 
-> ℹ️ **Notes:**  
-> - Linux requires SDL2 (`sudo apt install libsdl2-2.0-0`)  
-> - macOS: Right-click → Open on first launch to bypass Gatekeeper  
+> ℹ️ **Notes:**
+>
+> - Linux requires SDL2 (`sudo apt install libsdl2-2.0-0`)
+> - macOS: Right-click → Open on first launch to bypass Gatekeeper
 > - macOS Intel (x64) builds are no longer provided
+> - macOS Native AOT is disabled due to a [.NET 10 ILC compiler crash](https://github.com/TheAnsarya/Nexen/issues/238)
 
 ---
 
@@ -115,7 +117,7 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 - Per-channel volume control
 - Audio recording (WAV)
 
-##  Quick Start
+## Quick Start
 
 ### Windows
 
