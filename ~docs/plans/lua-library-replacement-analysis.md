@@ -115,6 +115,27 @@ These are standard C functions registered via `luaL_newlib()` — **no modificat
 
 ## Recommendation
 
+### Benchmark Results (February 2026)
+
+We prototyped replacing the custom watchdog with standard `lua_sethook()` and ran benchmarks comparing performance:
+
+| Benchmark | Time (ns) | Relative to No-Hook |
+|-----------|-----------|---------------------|
+| No Hook (Baseline) | 781,074 | 1.0x |
+| Custom Watchdog | 870,315 | 1.11x |
+| Standard `lua_sethook` | 1,950,104 | 2.50x |
+
+**Key Finding:** The standard `lua_sethook(LUA_MASKCOUNT)` is **~2.2x slower** than the custom watchdog.
+
+**Why the Difference:**
+- Custom watchdog: Simple `if (--timer == 0) hook();` in `vmfetch()` macro
+- Standard hook: Full `luaG_traceexec()` function call with trap flag checking, line number tracking, and debug info handling
+
+**Implications:**
+- **Functional equivalence:** ✅ Standard hook provides identical timeout functionality
+- **Performance trade-off:** ❌ Scripts run ~50% slower with standard hook
+- **Decision:** Keep custom watchdog for performance, or accept slowdown for standard Lua library
+
 ### Phase 1: Investigate Standard Hook Migration
 
 Before replacing Lua, test whether `lua_sethook(L, hook, LUA_MASKCOUNT, 1000)` provides equivalent functionality to our custom watchdog:
@@ -153,12 +174,34 @@ The `SANDBOX_ALLOW_LOADFILE` flag can likely be replaced by:
 
 ## Conclusion
 
-The Lua vendored code **can potentially be replaced** with a standard library, but requires:
+The Lua vendored code **cannot be easily replaced** without performance trade-offs:
 
-1. Confirming `lua_sethook()` provides equivalent watchdog functionality
-2. Handling the sandbox mode differently (not registering certain functions)
-3. Either bundling LuaSocket separately or using a vcpkg port
+1. ✅ Standard `lua_sethook()` provides equivalent watchdog functionality
+2. ❌ Standard hook is **2.2x slower** than custom watchdog
+3. For scripts that run every frame, this could impact emulation performance
 
-The current vendored approach works and is low-risk. Migration would reduce C code in the repo but adds external dependency management complexity.
+**Updated Recommendation:** 
 
-**Recommendation:** Create research issue to prototype `lua_sethook()` approach before committing to full migration.
+**Keep the vendored Lua with custom watchdog** for performance reasons. Instead focus on:
+
+1. **Clean up sandbox flag:** Replace `SANDBOX_ALLOW_LOADFILE` global with selective function registration
+2. **Document modifications:** Add clear comments explaining why vendored Lua is necessary
+3. **Upstream investigation:** Check if Lua 5.5 or LuaJIT have more efficient hook mechanisms
+
+### Alternative: Conditional Migration
+
+If Lua scripting performance is not critical (scripts run infrequently):
+1. Accept the ~2.2x slowdown
+2. Migrate to vcpkg Lua
+3. Remove ~74 C files from repo
+
+This trade-off should be measured with real-world Lua scripts before deciding.
+
+### Prototype Code Location
+
+The `lua_sethook()` prototype was tested in:
+- `Core/Debugger/ScriptingContext.cpp` — Changed to use `lua_sethook(L, hook, LUA_MASKCOUNT, 1000)`
+- `Core/Debugger/ScriptingContext.h` — Hook signature changed to `void(lua_State*, lua_Debug*)`
+- `Core.Benchmarks/Lua/LuaHookBench.cpp` — Benchmark comparing both approaches
+
+Note: The prototype changes should be reverted if keeping the vendored Lua approach.

@@ -97,6 +97,9 @@
 		<ClCompile Include="Serialization\SerializerBench.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="Lua\LuaHookBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Audio\AudioDspBench.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
@@ -122,6 +125,9 @@
 		</ProjectReference>
 		<ProjectReference Include="..\Utilities\Utilities.vcxproj">
 			<Project>{4e9f1043-2995-4ffa-86f6-52c1f8316f66}</Project>
+		</ProjectReference>
+		<ProjectReference Include="..\Lua\Lua.vcxproj">
+			<Project>{b609e0a0-5050-4871-91d6-e760633bcdd1}</Project>
 		</ProjectReference>
 	</ItemGroup>
 	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
