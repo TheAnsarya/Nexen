@@ -5,11 +5,21 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2026-02-13
+
+### Fixed
+
+- **CI/CD**: Fixed Windows artifact upload with explicit output directory
+	- Added `-o build/publish` to dotnet publish command
+	- SolutionDir issue caused output to go outside repo root on CI runners
+
+---
+
 ## [1.1.3] - 2026-02-13
 
 ### Fixed
 
-- **CI/CD**: Fixed Windows artifact upload paths
+- **CI/CD**: Fixed Windows artifact upload paths (unsuccessful)
 	- Corrected path from `build/TmpReleaseBuild/Nexen.exe` to actual publish output
 	- Windows x64 and Windows AOT builds now upload artifacts correctly
 

@@ -83,14 +83,14 @@ jobs:
         run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v143 -t:UI Nexen.sln
 
       - name: Publish Nexen
-        run: dotnet publish --no-restore -c Release -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained="${{ matrix.platform.aot }}" -p:PublishSingleFile="${{ matrix.platform.singleFile }}" -p:OptimizeUi="true" -r win-x64 UI/UI.csproj
+        run: dotnet publish --no-restore -c Release -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained="${{ matrix.platform.aot }}" -p:PublishSingleFile="${{ matrix.platform.singleFile }}" -p:OptimizeUi="true" -r win-x64 -o build/publish UI/UI.csproj
 
       - name: Upload Nexen
         uses: actions/upload-artifact@v4
         with:
           name: Nexen (Windows${{ matrix.platform.aotString }})
           path: |
-            bin/win-x64/Release/win-x64/publish/Nexen.exe
+            build/publish/Nexen.exe
 
 
   linux:
