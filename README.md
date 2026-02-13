@@ -23,16 +23,33 @@
 
 Download pre-built binaries from the [Releases page](https://github.com/TheAnsarya/Nexen/releases/latest).
 
-| Platform | Architecture | Download | Notes |
-|----------|--------------|----------|-------|
-| **Windows** | x64 | [Nexen-Windows-x64.exe](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Windows-x64.exe) | Single-file |
-| **Windows** | x64 (AoT) | [Nexen-Windows-x64-AoT.exe](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Windows-x64-AoT.exe) | Native compiled |
-| **Linux** | x64 | [Nexen-Linux-x64.AppImage](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Linux-x64.AppImage) | AppImage (recommended) |
-| **Linux** | ARM64 | [Nexen-Linux-ARM64.AppImage](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Linux-ARM64.AppImage) | AppImage (recommended) |
-| **macOS** | Intel (x64) | [Nexen-macOS-x64.zip](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-macOS-x64.zip) | Signed app bundle |
-| **macOS** | Apple Silicon | [Nexen-macOS-ARM64.zip](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-macOS-ARM64.zip) | Signed app bundle |
+### Windows
 
-> ℹ️ **Requirements:** Linux requires SDL2. macOS users: right-click → Open on first launch to bypass Gatekeeper.
+| Build | Download | Notes |
+|-------|----------|-------|
+| **Standard** | [Nexen-Windows-x64.exe](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Windows-x64.exe) | Single-file, recommended |
+| **Native AOT** | [Nexen-Windows-x64-AoT.exe](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Windows-x64-AoT.exe) | Faster startup |
+
+### Linux
+
+| Build | Download | Notes |
+|-------|----------|-------|
+| **AppImage x64** | [Nexen-Linux-x64.AppImage](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Linux-x64.AppImage) | Recommended |
+| **AppImage ARM64** | [Nexen-Linux-ARM64.AppImage](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Linux-ARM64.AppImage) | Raspberry Pi, etc. |
+| Binary x64 | [Nexen-Linux-x64](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Linux-x64) | Requires SDL2 |
+| Binary ARM64 | [Nexen-Linux-ARM64](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-Linux-ARM64) | Requires SDL2 |
+
+### macOS (Apple Silicon)
+
+| Build | Download | Notes |
+|-------|----------|-------|
+| **Standard** | [Nexen-macOS-ARM64.zip](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-macOS-ARM64.zip) | App bundle |
+| **Native AOT** | [Nexen-macOS-ARM64-AoT.zip](https://github.com/TheAnsarya/Nexen/releases/latest/download/Nexen-macOS-ARM64-AoT.zip) | Faster startup |
+
+> ℹ️ **Notes:**  
+> - Linux requires SDL2 (`sudo apt install libsdl2-2.0-0`)  
+> - macOS: Right-click → Open on first launch to bypass Gatekeeper  
+> - macOS Intel (x64) builds are no longer provided
 
 ---
 
@@ -102,21 +119,23 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 
 ### Windows
 
-1. Download and extract the ZIP file
-2. Run `Nexen.exe`
+1. Download `Nexen-Windows-x64.exe` from [Releases](https://github.com/TheAnsarya/Nexen/releases/latest)
+2. Run the executable (no installation needed)
 3. **File → Open** to load a ROM
 
 ### Linux
 
-1. Download the AppImage
-2. Make it executable: `chmod +x Nexen.AppImage`
-3. Run: `./Nexen.AppImage`
+1. Download `Nexen-Linux-x64.AppImage`
+2. Make executable: `chmod +x Nexen-Linux-x64.AppImage`
+3. Run: `./Nexen-Linux-x64.AppImage`
+
+> For non-AppImage builds, install SDL2 first: `sudo apt install libsdl2-2.0-0`
 
 ### macOS
 
-1. Download and extract the ZIP file
-2. Move `Nexen.app` to Applications
-3. Right-click → Open (first time, to bypass Gatekeeper)
+1. Download `Nexen-macOS-ARM64.zip`
+2. Extract and move `Nexen.app` to Applications
+3. Right-click → Open (first launch only, to bypass Gatekeeper)
 
 ## 📖 Documentation
 
@@ -152,18 +171,22 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 | Ctrl+Shift+S | Save State to File |
 | Ctrl+L | Load State from File |
 | Escape | Pause/Resume |
+| Tab | Fast Forward |
+| Backspace | Rewind |
 | F11 | Toggle Fullscreen |
+| F12 | Screenshot |
 
 ### TAS Editor
 
 | Shortcut | Action |
 | ---------- | -------- |
-| Space | Play/Pause |
-| F | Frame Advance |
-| R | Frame Rewind |
-| Ctrl+R | Toggle Recording |
+| Escape | Pause/Resume Playback |
+| \` (backtick) | Frame Advance |
+| Backspace | Frame Rewind |
 | Insert | Insert Frame |
 | Delete | Delete Frame |
+| Ctrl+Z | Undo |
+| Ctrl+Y | Redo |
 | Ctrl+G | Go to Frame |
 | Ctrl+B | Create Branch |
 
@@ -179,11 +202,27 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 
 ### Requirements
 
-| Component | Version |
-| ----------- | --------- |
-| C++ | C++23 |
-| .NET SDK | 10.0+ |
-| SDL2 | Latest (Linux/macOS) |
+| Component | Version | Notes |
+|-----------|---------|-------|
+| **C++ Compiler** | C++23 (MSVC 19.40+, Clang 18+, GCC 13+) | `stdcpplatest` |
+| **.NET SDK** | 10.0+ | [Download](https://dotnet.microsoft.com/download) |
+| **SDL2** | 2.0+ | Linux/macOS only |
+
+### Windows
+
+1. Install Visual Studio 2026 with "Desktop development with C++" workload
+2. Install .NET 10 SDK
+3. Open `Nexen.sln` and build Release x64
+
+### Linux
+
+```bash
+# Install dependencies (Ubuntu/Debian)
+sudo apt install build-essential clang-18 libc++-18-dev libsdl2-dev
+# Build
+make -j$(nproc)
+dotnet publish -c Release UI/UI.csproj
+```
 
 See [COMPILING.md](COMPILING.md) for detailed instructions.
 
