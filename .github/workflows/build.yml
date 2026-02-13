@@ -340,6 +340,7 @@ jobs:
       - name: Prepare release assets
         run: |
           mkdir -p release-assets
+          mkdir -p tarball-staging
 
           # Extract version from tag (e.g., v1.1.4)
           VERSION="${GITHUB_REF_NAME}"
@@ -348,23 +349,33 @@ jobs:
           cp "artifacts/Nexen (Windows)/Nexen.exe" "release-assets/Nexen-Windows-x64-${VERSION}.exe" || true
           cp "artifacts/Nexen (Windows - AoT)/Nexen.exe" "release-assets/Nexen-Windows-x64-AoT-${VERSION}.exe" || true
 
-          # Linux builds (gcc)
-          cp "artifacts/Nexen (Linux - ubuntu-22.04 - gcc)/Nexen" "release-assets/Nexen-Linux-x64-gcc-${VERSION}" || true
-          chmod +x "release-assets/Nexen-Linux-x64-gcc-${VERSION}" || true
-          cp "artifacts/Nexen (Linux - ubuntu-22.04-arm - gcc)/Nexen" "release-assets/Nexen-Linux-ARM64-gcc-${VERSION}" || true
-          chmod +x "release-assets/Nexen-Linux-ARM64-gcc-${VERSION}" || true
+          # Helper function to create Linux tarball
+          create_linux_tarball() {
+            local artifact_path="$1"
+            local tarball_name="$2"
+            if [ -f "$artifact_path" ]; then
+              local staging_dir="tarball-staging/${tarball_name%.tar.gz}"
+              mkdir -p "$staging_dir"
+              cp "$artifact_path" "$staging_dir/Nexen"
+              chmod +x "$staging_dir/Nexen"
+              cp LICENSE "$staging_dir/" || true
+              tar -czvf "release-assets/${tarball_name}" -C tarball-staging "$(basename "$staging_dir")"
+              rm -rf "$staging_dir"
+            fi
+          }
 
-          # Linux builds (clang)
-          cp "artifacts/Nexen (Linux - ubuntu-22.04 - clang)/Nexen" "release-assets/Nexen-Linux-x64-${VERSION}" || true
-          chmod +x "release-assets/Nexen-Linux-x64-${VERSION}" || true
-          cp "artifacts/Nexen (Linux - ubuntu-22.04-arm - clang)/Nexen" "release-assets/Nexen-Linux-ARM64-${VERSION}" || true
-          chmod +x "release-assets/Nexen-Linux-ARM64-${VERSION}" || true
+          # Linux builds (gcc) - as tarballs
+          create_linux_tarball "artifacts/Nexen (Linux - ubuntu-22.04 - gcc)/Nexen" "Nexen-Linux-x64-gcc-${VERSION}.tar.gz"
+          create_linux_tarball "artifacts/Nexen (Linux - ubuntu-22.04-arm - gcc)/Nexen" "Nexen-Linux-ARM64-gcc-${VERSION}.tar.gz"
 
-          # Linux AOT builds
-          cp "artifacts/Nexen (Linux - ubuntu-22.04 - clang_aot)/Nexen" "release-assets/Nexen-Linux-x64-AoT-${VERSION}" || true
-          chmod +x "release-assets/Nexen-Linux-x64-AoT-${VERSION}" || true
+          # Linux builds (clang) - as tarballs
+          create_linux_tarball "artifacts/Nexen (Linux - ubuntu-22.04 - clang)/Nexen" "Nexen-Linux-x64-${VERSION}.tar.gz"
+          create_linux_tarball "artifacts/Nexen (Linux - ubuntu-22.04-arm - clang)/Nexen" "Nexen-Linux-ARM64-${VERSION}.tar.gz"
 
-          # Linux AppImage builds
+          # Linux AOT builds - as tarballs
+          create_linux_tarball "artifacts/Nexen (Linux - ubuntu-22.04 - clang_aot)/Nexen" "Nexen-Linux-x64-AoT-${VERSION}.tar.gz"
+
+          # Linux AppImage builds (self-contained, no tarball needed)
           cp "artifacts/Nexen (Linux x64 - AppImage)/Nexen.AppImage" "release-assets/Nexen-Linux-x64-${VERSION}.AppImage" || true
           chmod +x "release-assets/Nexen-Linux-x64-${VERSION}.AppImage" || true
           cp "artifacts/Nexen (Linux ARM64 - AppImage)/Nexen.AppImage" "release-assets/Nexen-Linux-ARM64-${VERSION}.AppImage" || true
@@ -374,6 +385,9 @@ jobs:
           cp "artifacts/Nexen (macOS - macos-14 - clang)/Nexen.app.zip" "release-assets/Nexen-macOS-ARM64-${VERSION}.zip" || true
           # NOTE: macOS AOT disabled - .NET 10 ILC crashes. Re-enable when fixed.
           # cp "artifacts/Nexen (macOS - macos-14 - clang_aot)/Nexen.app.zip" "release-assets/Nexen-macOS-ARM64-AoT-${VERSION}.zip" || true
+
+          # Cleanup
+          rm -rf tarball-staging
 
           ls -la release-assets/
 

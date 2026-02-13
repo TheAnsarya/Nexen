@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CI/CD**: Release asset filenames now include version numbers
 	- e.g., `Nexen-Windows-x64-v1.1.4.exe` instead of `Nexen-Windows-x64.exe`
 	- Makes it clear which version a downloaded file is
+- **CI/CD**: Linux binary releases now distributed as `.tar.gz` tarballs
+	- Includes LICENSE file in each tarball
+	- AppImages remain as standalone `.AppImage` files
 - **README**: Updated download links to use versioned filenames
 - **Copilot Instructions**: Added release process documentation with mandatory README update steps
 

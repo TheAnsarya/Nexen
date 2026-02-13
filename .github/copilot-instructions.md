@@ -222,9 +222,11 @@ Release assets include version numbers in filenames:
 | Windows AOT | `Nexen-Windows-x64-AoT-vX.Y.Z.exe` |
 | Linux AppImage | `Nexen-Linux-x64-vX.Y.Z.AppImage` |
 | Linux ARM64 AppImage | `Nexen-Linux-ARM64-vX.Y.Z.AppImage` |
-| Linux Binary | `Nexen-Linux-x64-vX.Y.Z` |
-| Linux ARM64 Binary | `Nexen-Linux-ARM64-vX.Y.Z` |
-| Linux AOT | `Nexen-Linux-x64-AoT-vX.Y.Z` |
+| Linux Binary (clang) | `Nexen-Linux-x64-vX.Y.Z.tar.gz` |
+| Linux Binary (gcc) | `Nexen-Linux-x64-gcc-vX.Y.Z.tar.gz` |
+| Linux ARM64 Binary (clang) | `Nexen-Linux-ARM64-vX.Y.Z.tar.gz` |
+| Linux ARM64 Binary (gcc) | `Nexen-Linux-ARM64-gcc-vX.Y.Z.tar.gz` |
+| Linux AOT | `Nexen-Linux-x64-AoT-vX.Y.Z.tar.gz` |
 | macOS | `Nexen-macOS-ARM64-vX.Y.Z.zip` |
 
 ## Documentation

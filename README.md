@@ -36,8 +36,8 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 |-------|----------|-------|
 | **AppImage x64** | [Nexen-Linux-x64-v1.1.4.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.1.4/Nexen-Linux-x64-v1.1.4.AppImage) | Recommended |
 | **AppImage ARM64** | [Nexen-Linux-ARM64-v1.1.4.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.1.4/Nexen-Linux-ARM64-v1.1.4.AppImage) | Raspberry Pi, etc. |
-| Binary x64 | [Nexen-Linux-x64-v1.1.4](https://github.com/TheAnsarya/Nexen/releases/download/v1.1.4/Nexen-Linux-x64-v1.1.4) | Requires SDL2 |
-| Binary ARM64 | [Nexen-Linux-ARM64-v1.1.4](https://github.com/TheAnsarya/Nexen/releases/download/v1.1.4/Nexen-Linux-ARM64-v1.1.4) | Requires SDL2 |
+| Binary x64 | [Nexen-Linux-x64-v1.1.4.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.1.4/Nexen-Linux-x64-v1.1.4.tar.gz) | Tarball, requires SDL2 |
+| Binary ARM64 | [Nexen-Linux-ARM64-v1.1.4.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.1.4/Nexen-Linux-ARM64-v1.1.4.tar.gz) | Tarball, requires SDL2 |
 
 ### macOS (Apple Silicon)
 
