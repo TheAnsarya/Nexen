@@ -568,7 +568,7 @@ Repeat for each button:
 
 > **Goal:** Verify the infinite savestate browser system and all save state functionality.
 >
-> ⚠️ **Important:** Nexen uses an **infinite savestate browser** system, NOT numbered slots like traditional emulators. The F1/Shift+F1 shortcuts open the savestate browser rather than saving/loading to numbered slots.
+> ⚠️ **Important:** Nexen uses an **infinite savestate browser** system, NOT numbered slots like traditional emulators. **F1** creates a quick save (timestamped), while **Shift+F1** opens the savestate browser.
 
 ### 3.1 Infinite Savestate Browser
 
@@ -580,19 +580,18 @@ Repeat for each button:
 
 1. **Load a game** (any NES or SNES ROM)
 2. **Play for about 10-15 seconds** until you reach a memorable point
-3. **Press Shift+F1** to create a savestate
+3. **Press F1** to create a quick save (timestamped savestate)
 
-**Expected Result:** A savestate is created and added to the browser. You may see:
-- A brief on-screen confirmation message
-- The savestate browser opens showing your new state
+**Expected Result:** A savestate is created with a timestamp in the filename.
+- A brief on-screen confirmation message appears
 - A thumbnail preview is captured
 
-- [ ] Shift+F1 creates a new savestate
+- [ ] F1 creates a new timestamped savestate
 - [ ] Confirmation message or visual feedback appears
 - [ ] No crash or error occurs
 
 4. **Continue playing** for another 10 seconds
-5. **Press Shift+F1 again** to create a second savestate
+5. **Press F1 again** to create a second savestate
 
 - [ ] Second savestate is created separately (not overwriting first)
 - [ ] Both savestates exist independently
@@ -601,11 +600,11 @@ Repeat for each button:
 
 **Instructions:** Open the savestate browser to view your savestates.
 
-1. **Press F1** to open the savestate browser
+1. **Press Shift+F1** to open the savestate browser
 
 **Expected Result:** A browser window or panel opens showing your savestates.
 
-- [ ] F1 opens the savestate browser (NOT instant-load)
+- [ ] Shift+F1 opens the savestate browser
 - [ ] Browser window displays list of savestates
 - [ ] Your previously created savestates are visible
 
@@ -642,7 +641,7 @@ Repeat for each button:
 
 **Instructions:** Delete a savestate from the browser.
 
-1. **Open the browser** (F1)
+1. **Open the browser** (Shift+F1)
 2. **Select one of your test savestates** (click once to select)
 3. **Press Delete key** or use the delete button/menu option
 4. **Confirm deletion** if prompted
@@ -655,7 +654,7 @@ Repeat for each button:
 
 **Instructions:** Give a savestate a custom name.
 
-1. **Open the browser** (F1)
+1. **Open the browser** (Shift+F1)
 2. **Right-click a savestate** (or use context menu)
 3. **Select "Rename"** or similar option
 4. **Enter a name:** "Test State - Boss Fight"
@@ -677,9 +676,9 @@ Repeat for each button:
    - Specific number of lives: ______
    - Specific position in level
    - A power-up (mushroom/fire flower)
-3. **Create a savestate** (Shift+F1)
+3. **Create a savestate** (F1)
 4. **Continue playing:** Get hit, lose a life, get more points
-5. **Load the savestate** (F1 → select → load)
+5. **Load the savestate** (Shift+F1 → select → load)
 6. **Verify:**
    - Score matches noted value
    - Lives match noted value
@@ -718,8 +717,8 @@ Repeat for each button:
 
 1. **Load a game** with distinct visual scenes
 2. **Navigate to a recognizable screen** (title screen, specific level, boss)
-3. **Create a savestate** (Shift+F1)
-4. **Open the browser** (F1)
+3. **Create a savestate** (F1)
+4. **Open the browser** (Shift+F1)
 5. **Look at the thumbnail** for your new state
 
 - [ ] Thumbnail shows correct screen content
@@ -730,7 +729,7 @@ Repeat for each button:
 
 **Instructions:** Check that thumbnail generation doesn't lag.
 
-1. **During active gameplay**, create a savestate (Shift+F1)
+1. **During active gameplay**, create a savestate (F1)
 2. **Note any hesitation or freeze** in the game
 3. **Repeat 5 times** in quick succession
 
@@ -743,18 +742,18 @@ Repeat for each button:
 **Instructions:** Verify savestates are organized per-game.
 
 1. **Load Game A** (e.g., Super Mario Bros.)
-2. **Create a savestate** (Shift+F1)
+2. **Create a savestate** (F1)
 3. **Close Game A**
 4. **Load Game B** (e.g., Mega Man 2)
-5. **Create a savestate** (Shift+F1)
-6. **Open the browser** (F1)
+5. **Create a savestate** (F1)
+6. **Open the browser** (Shift+F1)
 
 - [ ] Only Game B's savestates are shown
 - [ ] Game A's savestates are NOT mixed in
 
 7. **Close Game B**
 8. **Reload Game A**
-9. **Open the browser** (F1)
+9. **Open the browser** (Shift+F1)
 
 - [ ] Game A's savestates are available again
 - [ ] Game B's savestates are NOT shown
@@ -765,8 +764,8 @@ Repeat for each button:
 
 **Instructions:** Test behavior with many savestates.
 
-1. **Create 20 savestates** in rapid succession (press Shift+F1 every few seconds)
-2. **Open the browser** (F1)
+1. **Create 20 savestates** in rapid succession (press F1 every few seconds)
+2. **Open the browser** (Shift+F1)
 
 - [ ] Browser handles 20+ savestates
 - [ ] Scrolling/navigation works
@@ -1024,22 +1023,22 @@ For each system:
 
 | Shortcut | Action | How to Test | ✓ |
 |----------|--------|-------------|---|
-| Shift+F1 | Create Savestate | Press → new savestate created, added to browser | [ ] |
-| F1 | Open Savestate Browser | Press → browser window opens showing all savestates | [ ] |
-
-**Detailed Test for Shift+F1:**
-1. **Load a game** and play for 10 seconds
-2. **Press Shift+F1**
-3. **Expected:** A new savestate is created
-4. **Press F1** to open browser
-5. **Verify:** New savestate appears in the list
-
-- [ ] Shift+F1 creates new savestate (not overwriting)
-- [ ] Savestate appears in browser with thumbnail
-- [ ] Each Shift+F1 press creates a NEW savestate
+| F1 | Quick Save (Timestamped) | Press → new savestate created with timestamp | [ ] |
+| Shift+F1 | Open Savestate Browser | Press → browser window opens showing all savestates | [ ] |
 
 **Detailed Test for F1:**
-1. **Press F1** with a game running
+1. **Load a game** and play for 10 seconds
+2. **Press F1**
+3. **Expected:** A new timestamped savestate is created
+4. **Press Shift+F1** to open browser
+5. **Verify:** New savestate appears in the list
+
+- [ ] F1 creates new timestamped savestate (not overwriting)
+- [ ] Savestate appears in browser with thumbnail
+- [ ] Each F1 press creates a NEW savestate
+
+**Detailed Test for Shift+F1:**
+1. **Press Shift+F1** with a game running
 2. **Expected:** Savestate browser window/panel opens
 3. **The browser shows:**
    - List of all savestates for current game
@@ -1047,8 +1046,8 @@ For each system:
    - Timestamps
 4. **Select a savestate** and load it
 
-- [ ] F1 opens the savestate browser
-- [ ] F1 does NOT instant-load a "slot 1" state
+- [ ] Shift+F1 opens the savestate browser
+- [ ] Shift+F1 does NOT instant-load a "slot 1" state
 - [ ] Can browse and select from multiple savestates
 
 ### 6.3 TAS Editor Shortcuts
@@ -1251,7 +1250,7 @@ For each system:
 - [ ] Audio plays correctly (music, SFX)
 - [ ] No crashes during gameplay
 
-4. **Create a savestate** (Shift+F1) then load it (F1 → select)
+4. **Create a savestate** (F1) then load it (Shift+F1 → select)
 - [ ] Savestate works
 
 5. **Open TAS Editor** and record a few inputs

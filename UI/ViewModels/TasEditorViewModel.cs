@@ -1094,7 +1094,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// <summary>
 	/// Handles the user's choice from the interrupt dialog.
 	/// </summary>
-	private async System.Threading.Tasks.Task HandleInterruptActionAsync(PlaybackInterruptAction action, int frame) {
+	internal async System.Threading.Tasks.Task HandleInterruptActionAsync(PlaybackInterruptAction action, int frame) {
 		switch (action) {
 			case PlaybackInterruptAction.Fork:
 				// Create a branch from current state and start recording

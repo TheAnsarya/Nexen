@@ -174,11 +174,70 @@ it looks like `Nexen-Windows-x64-v1.1.4.exe` is there, I just downloaded it, is 
 
 [Nexen] Do NOT accept the 2.5x slowdown in performance for the Lua hook, instead check if new versions of Lua handle this better, so what version of Lua is our code based on? What's the current modern Lua version? are there performance improvements on hooks or a better different approach? document/issues/etc; And then also implement the other performance improvements you found in Lua with the sandbox flag, and update documents/issues/etc and chat/session logs and git commit the changes, all linked to an issue; continue;
 
+how many tests and benchmarks do we have? do we have before/after benchmark numbers I can use to impress?
+
+no, how many C# and c++ tests do we have for the whole Nexen project? And how many performance benchmarks (c++ and c#) do we have for the whole project?
+
+[Nexen] What? keyboard shortcuts got reversed again after changes or something, did you revert code? `F1` should make an infinite savestate (Quick Save), and `Shift-F1` should open the browse savestates graphical dialog; Also, `Browse Recent Play Saves` and `Browse Auto Saves` menu options are never made available and those files are never being saved; The Autosave folder under Settings is never available, but it should be always available; did something happen to this work? whatever happened, create docs/plans/issues/etc and make these features work again; continue;
+
+[Nexen] Did you finish that savestate work and update all the dcos? Work on this issue until everything is done, and create sub-issues with additional work if you need to; continue;
+
+[Nexen] In the `Browse Save States` menu dialog component UI it should show the "type-of-save" badge on/over the top-left corner of the screenshot, not as an entire line of the save description; make sure the various types of saves are marking themselves as the right type; make sure all those different save types work and are propely saving and displaying and loading; continue; make issues, work them, and update them; continue;
+
+[Nexen] The Entire TAS/movie UI is garbage, did you reverse code here too? Make all the menu show actual descriptions instead of just object class names;  create docs/plans/issues/etc and make these features work again; continue; work for a long time to fix up the tas UI and make sure the piano roll works, but also the rest of the windows and menus and actions; continue;
+
+[Nexen] review the TAS/movie code and UI (especially piano roll) and make sure everything works and is modern (code/packages/standards/practices) and make sure everything is comprehensively tested and performance benchmarked and documented and make any plans and issues and todos for updates and performance improvements and bug fixes after testing; make sure to test all the movie conversion library, with `*.nexen-movie` as our primary format we should already be converting to/from (Auto-conversion from/to several TAS/movie file formats like BizHawk `.bk2`, lsnes `.lsmv`, FCEUX `.fm2`, Snes9x `.smv`, VisualBoyAdvance `.vbm`, Gens `.gmv`) so test it! thoroughly! (if you need files for testing converting one kind of file to another, look at `C:\Users\me\source\repos\GameInfo\~tas-files\` and subfolders, and look at code `C:\Users\me\source\repos\GameInfo\src\GameInfoTools.TasConvert*`) ; and add an interupt, or I guess check if this exists first, when you're playing a `nexen-movie` file when not in recording mode, but you press a button on the joypad, it pauses the playback and shows you the piano roll and asks if you want to fork the playback or edit the playback or continue playback (big ass buttons, like cards or something); issues/plans/todos/code-logs/session-logs/code-plans; and test and benchmark the rest of TAS/movies code/ui and find performance improvements in the hot paths, probably amoung recording or playback; make docs and issues and implement them; (git commit as you go, make issues before implementation); make copilot instructions to always create github issues ***BEFORE*** you do the work and then always update the issues during and after the work; continue;
+
+[Nexen] Add to copilot instructions: If you create a github issue from an AI prompt, then make the first comment to that issue `Prompt for work:\r\n{prompt}` to track where this effort came from ; if you can add the prompt to the last few issues that would be great; continue; make TAS/movie improvements; issues / plans / todos / "session/prompt/chat-logs" / session-logs / code-plans; make `nexen-movie` files play, record, edit, and everything back end library files, benchmarked and tested, make sure everything works, analyze and perfect the movie/tas experience; continue;
+
+Nexen] continue working on the TAS/movie issues, look for problems and fix them;
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------- Discord post
+Hey guys, I shouldn't discuss it quite yet, since it's not fully tested yet, but am so excited and could use other testers (also if I get hit by a bus today, I'd like someone to know it's there) and I am hoping to do a real public release in a couple weeks after finishing my giant todolist of manual testing, plus some others so:
+Since @Sour has stopped updating `Mesen2` or communicating at all and I had several ideas, and I've been working on a new assembler `Poppy` and an auto-disassembler `Peony` and a CDL/DiztinGUIsh replacement `Pansy`, I have forked `Mesen2` and made a bunch of updates. 
+The "new" emulator is called Nexen (https://github.com/TheAnsarya/Nexen):
+* This is all pre-release and big updates are made often!
+  * Like I haven't tested and updated the TAS stuff much because I was focused on making sure emulator core performance updates didn't mess up emulation
+* Windows, Linux, and MacOS versions in the project releases
+* Updated to all the newest stuff
+  * C++ updated to C++23
+  * C# updated to C#14 and dotnet 10.0
+  * nuget packages and c++ libraries, all modernized
+  * modern coding standards and practices and c#14 pattern constructs/etc.
+* Comprehensive C# and C++ testing (664 tests) and C#/C++ benchmarking (391 performance benchmarks)
+  * Performance improvements (with testing to show it didn't change function) across the entire codebase
+    * focused on both hotpaths in the emulator core (for every system) and also UI and render code, whole system
+  * Large memory/allocation and code speed improvements
+* Savestate overhaul
+  * Instead of 10 save slots which are annoying and never enough, we have switched to an infinite save-state solution
+    * So every time you hit `F1` it saves a timestamped new savestate (organized into folders by system/RomName_CRC32/)
+    * When you hit `Shift-F1` it opens a graphical UI for you to select the 
+* `Pansy` format auto export (https://github.com/TheAnsarya/pansy)
+  * Again, these are are all still beta/alpha and being cleaned up
+  * Every five minutes it auto exports a file for full debugging information that is more than CDL, more than DiztinGUIsh (which is where I got this idea, but after getting the Mesen<->DiztinGUIsh streaming socket working, it had the same problems Diz has now with with `bsnesplus` so I removed all that, made a new format, and embeded the fromat into the emulator)
+* TAS/Movie format (`*.nexen-movie`) for the recording and replaying of movies
+  * Auto-conversion from/to several TAS/movie file formats like BizHawk `.bk2`, lsnes `.lsmv`, FCEUX `.fm2`, Snes9x `.smv`, VisualBoyAdvance `.vbm`, Gens `.gmv`
+  * All of the movie record/replay code is working and testing well, but the UI is totally, f'ed up, we'll fix that in the next couple days
+  * But basically movie files and TAS editing is close and will be completed before the public release  
+This thing is not ready for release but 
 
 
 

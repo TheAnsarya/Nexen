@@ -115,6 +115,13 @@ private:
 	string GetRecentPlayFilepath(uint32_t slotIndex);
 
 	/// <summary>
+	/// Generate filepath for the Auto Save state.
+	/// Format: {SaveStateFolder}/{RomName}/{RomName}_auto.nexen-save
+	/// </summary>
+	/// <returns>Full path for the Auto Save state</returns>
+	string GetAutoSaveFilepath();
+
+	/// <summary>
 	/// Parse timestamp from a timestamped save state filename.
 	/// </summary>
 	/// <param name="filename">Filename (without path) to parse</param>

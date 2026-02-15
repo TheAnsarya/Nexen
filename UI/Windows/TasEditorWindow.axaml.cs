@@ -20,6 +20,7 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 	private PianoRollControl _pianoRoll = null!;
 	private NotificationListener? _notificationListener;
 	private bool _disposed;
+	private bool _showingInterruptDialog;
 
 	public TasEditorWindow() {
 		InitializeComponent();
@@ -131,6 +132,18 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 			return;
 		}
 
+		// Check for user input interrupt (if enabled and not already showing dialog)
+		if (vm.InterruptOnInput && !_showingInterruptDialog && !vm.Recorder.IsRecording) {
+			var pressedKeys = InputApi.GetPressedKeys();
+			if (pressedKeys.Count > 0) {
+				_showingInterruptDialog = true;
+				Dispatcher.UIThread.Post(async () => {
+					await ShowInputInterruptDialog(vm, frame, movie.InputFrames.Count);
+				});
+				return; // Don't process this frame until user decides
+			}
+		}
+
 		// Feed input to emulator for each controller
 		var inputFrame = movie.InputFrames[frame];
 		for (int i = 0; i < inputFrame.Controllers.Length && i < 4; i++) {
@@ -151,6 +164,24 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 				}
 			}
 		});
+	}
+
+	/// <summary>
+	/// Shows the playback interrupt dialog when user presses input during playback.
+	/// </summary>
+	private async System.Threading.Tasks.Task ShowInputInterruptDialog(TasEditorViewModel vm, int currentFrame, int totalFrames) {
+		try {
+			// Pause emulation while showing dialog
+			EmuApi.Pause();
+			vm.IsPlaying = false;
+
+			var result = await PlaybackInterruptDialog.ShowDialog(this, currentFrame, totalFrames);
+
+			// Let ViewModel handle the action (Fork/Edit/Continue)
+			await vm.HandleInterruptActionAsync(result, currentFrame);
+		} finally {
+			_showingInterruptDialog = false;
+		}
 	}
 
 	/// <summary>

@@ -6,8 +6,8 @@ This document describes the keyboard shortcut changes for the Infinite Save Stat
 
 | Key | Action | Description |
 | ----- | -------- | ------------- |
-| **F1** | Open Save State Picker | Opens a visual grid showing all save states for the current ROM |
-| **Shift+F1** | Quick Save | Creates a new save state with timestamp naming |
+| **F1** | Quick Save | Creates a new save state with timestamp naming |
+| **Shift+F1** | Open Save State Picker | Opens a visual grid showing all save states for the current ROM |
 
 ## Old vs New Behavior
 
@@ -16,14 +16,14 @@ This document describes the keyboard shortcut changes for the Infinite Save Stat
 | Version | Behavior |
 | --------- | ---------- |
 | **Before** | Load save state from slot 1 |
-| **After** | Open save state picker overlay |
+| **After** | Quick save with timestamp |
 
 ### Shift+F1 Key
 
 | Version | Behavior |
 | --------- | ---------- |
 | **Before** | Varies (select slot or unused) |
-| **After** | Save new timestamped state |
+| **After** | Open save state picker overlay |
 
 ## Picker UI Shortcuts
 
@@ -73,8 +73,8 @@ The menu structure also reflects these changes:
 
 ```text
 File
-├── Quick Save		  Shift+F1
-├── Browse Saves...	 F1
+├── Quick Save		  F1
+├── Browse Saves...	 Shift+F1
 ├── Save State		  →
 │   ├── Slot 1
 │   ├── Slot 2

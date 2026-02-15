@@ -170,7 +170,14 @@ bool SaveStateManager::SaveState(string filepath, bool showSuccessMessage) {
 }
 
 void SaveStateManager::SaveState(int stateIndex, bool displayMessage) {
-	string filepath = SaveStateManager::GetStateFilepath(stateIndex);
+	// Use correct filepath based on slot type
+	string filepath;
+	if (stateIndex == AutoSaveStateIndex) {
+		filepath = GetAutoSaveFilepath();
+	} else {
+		filepath = GetStateFilepath(stateIndex);
+	}
+
 	if (SaveState(filepath, false)) {
 		if (displayMessage) {
 			MessageManager::DisplayMessage("SaveStates", "SaveStateSaved", std::to_string(stateIndex));
@@ -580,6 +587,13 @@ string SaveStateManager::GetRecentPlayFilepath(uint32_t slotIndex) {
 	oss << romName << "_recent_" << std::setfill('0') << std::setw(2) << (slotIndex + 1) << ".nexen-save";
 
 	return FolderUtilities::CombinePath(folder, oss.str());
+}
+
+string SaveStateManager::GetAutoSaveFilepath() {
+	string folder = GetRomSaveStateDirectory();
+	string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
+
+	return FolderUtilities::CombinePath(folder, romName + "_auto.nexen-save");
 }
 
 string SaveStateManager::SaveRecentPlayState() {
