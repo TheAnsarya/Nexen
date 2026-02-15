@@ -22,6 +22,10 @@ public class TasHotPathBenchmarks {
 	private ControllerInput[] _testInputs = null!;
 	private InputFrame _testFrame = null!;
 
+	// Controller state interop test data
+	private Nexen.Interop.ControllerStateInterop _snesState;
+	private Nexen.Interop.ControllerStateInterop _nesState;
+
 	[GlobalSetup]
 	public void Setup() {
 		var random = new Random(42); // Deterministic seed
@@ -39,6 +43,24 @@ public class TasHotPathBenchmarks {
 		for (int i = 0; i < _testFrame.Controllers.Length; i++) {
 			_testFrame.Controllers[i] = GenerateRandomInput(random);
 		}
+
+		// Initialize controller state tests
+		_snesState = new Nexen.Interop.ControllerStateInterop {
+			Type = Nexen.Config.ControllerType.SnesController,
+			Port = 0,
+			StateSize = 2,
+			StateBytes = new byte[32]
+		};
+		_snesState.StateBytes[0] = 0xAB; // Some buttons pressed
+		_snesState.StateBytes[1] = 0x0F; // D-pad pressed
+
+		_nesState = new Nexen.Interop.ControllerStateInterop {
+			Type = Nexen.Config.ControllerType.NesController,
+			Port = 0,
+			StateSize = 1,
+			StateBytes = new byte[32]
+		};
+		_nesState.StateBytes[0] = 0xC3; // A, B, Up, Down pressed
 	}
 
 	private static MovieData GenerateMovie(int frameCount, Random random) {
@@ -118,6 +140,38 @@ public class TasHotPathBenchmarks {
 			}
 		}
 		return mismatch;
+	}
+
+	/// <summary>
+	/// Benchmark SNES controller state decoding - per-frame hot path
+	/// </summary>
+	[Benchmark(Description = "Decode SNES controller state")]
+	[BenchmarkCategory("Input")]
+	public ControllerInput DecodeSnesState() {
+		return Nexen.Interop.InputApi.DecodeControllerState(_snesState);
+	}
+
+	/// <summary>
+	/// Benchmark NES controller state decoding - per-frame hot path
+	/// </summary>
+	[Benchmark(Description = "Decode NES controller state")]
+	[BenchmarkCategory("Input")]
+	public ControllerInput DecodeNesState() {
+		return Nexen.Interop.InputApi.DecodeControllerState(_nesState);
+	}
+
+	/// <summary>
+	/// Benchmark decoding 4 controller states (typical per-frame)
+	/// </summary>
+	[Benchmark(Description = "Decode 4 controller states")]
+	[BenchmarkCategory("Input")]
+	public ControllerInput[] Decode4Controllers() {
+		var result = new ControllerInput[4];
+		result[0] = Nexen.Interop.InputApi.DecodeControllerState(_snesState);
+		result[1] = Nexen.Interop.InputApi.DecodeControllerState(_snesState);
+		result[2] = Nexen.Interop.InputApi.DecodeControllerState(_snesState);
+		result[3] = Nexen.Interop.InputApi.DecodeControllerState(_snesState);
+		return result;
 	}
 
 	#endregion

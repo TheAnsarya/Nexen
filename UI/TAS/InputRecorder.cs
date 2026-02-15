@@ -282,9 +282,7 @@ public sealed class InputRecorder : IDisposable {
 	/// </summary>
 	/// <returns>Array of controller inputs.</returns>
 	public static ControllerInput[] GetCurrentInput() {
-		// TODO: Hook into InputApi to get actual controller state
-		// For now, return empty inputs
-		return new ControllerInput[4];
+		return InputApi.GetControllerStates();
 	}
 
 	private static ControllerInput CloneInput(ControllerInput src) => new() {

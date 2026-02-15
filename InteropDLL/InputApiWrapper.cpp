@@ -1,8 +1,10 @@
 #include "Common.h"
 #include "Core/Shared/Emulator.h"
 #include "Core/Shared/BaseControlManager.h"
+#include "Core/Shared/ControlDeviceState.h"
 #include "Core/Shared/KeyManager.h"
 #include "Core/Shared/ShortcutKeyHandler.h"
+#include "Core/Shared/Interfaces/IConsole.h"
 #include "Utilities/StringUtilities.h"
 #include "Core/Shared/Interfaces/IMouseManager.h"
 
@@ -110,5 +112,53 @@ DllExport double __stdcall GetPixelScale() {
 		return _mouseManager->GetPixelScale();
 	}
 	return 1.0;
+}
+
+/// <summary>
+/// Controller state data for P/Invoke marshalling.
+/// Fixed-size structure suitable for safe C# interop.
+/// </summary>
+struct ControllerStateInterop {
+	ControllerType Type;  ///< Controller type enum
+	uint8_t Port;         ///< Port number (0-based)
+	uint8_t StateSize;    ///< Actual bytes used in StateBytes
+	uint8_t StateBytes[32]; ///< Raw controller state (button bits, axes, etc.)
+};
+
+/// <summary>
+/// Gets the current controller states for all connected ports.
+/// </summary>
+/// <param name="buffer">Output buffer for controller states (caller must allocate at least 8 elements)</param>
+/// <param name="count">Output: number of controllers written to buffer</param>
+DllExport void __stdcall GetControllerStates(ControllerStateInterop* buffer, uint32_t* count) {
+	if (!buffer || !count || !_emu) {
+		if (count) *count = 0;
+		return;
+	}
+
+	IConsole* console = _emu->GetConsoleUnsafe();
+	if (!console) {
+		*count = 0;
+		return;
+	}
+
+	BaseControlManager* controlManager = console->GetControlManager();
+	if (!controlManager) {
+		*count = 0;
+		return;
+	}
+
+	vector<ControllerData> states = controlManager->GetPortStates();
+	*count = (uint32_t)std::min(states.size(), (size_t)8);
+
+	for (size_t i = 0; i < *count; i++) {
+		buffer[i].Type = states[i].Type;
+		buffer[i].Port = states[i].Port;
+
+		const auto& stateBytes = states[i].State.State;
+		buffer[i].StateSize = (uint8_t)std::min(stateBytes.size(), sizeof(buffer[i].StateBytes));
+		memset(buffer[i].StateBytes, 0, sizeof(buffer[i].StateBytes));
+		memcpy(buffer[i].StateBytes, stateBytes.data(), buffer[i].StateSize);
+	}
 }
 }
