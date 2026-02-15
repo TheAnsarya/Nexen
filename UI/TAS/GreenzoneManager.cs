@@ -71,7 +71,7 @@ public sealed class GreenzoneManager : IDisposable {
 		// Check if we should capture based on interval
 		if (!forceCapture && frame % CaptureInterval != 0) {
 			// Still add to ring buffer for recent frames
-			AddToRingBuffer(frame, data);
+			AddToRingBuffer(frame);
 			return;
 		}
 
@@ -83,7 +83,7 @@ public sealed class GreenzoneManager : IDisposable {
 		};
 
 		_savestates[frame] = savestate;
-		AddToRingBuffer(frame, data);
+		AddToRingBuffer(frame);
 
 		// Prune if we're over the limit
 		if (_savestates.Count > MaxSavestates) {
@@ -257,7 +257,7 @@ public sealed class GreenzoneManager : IDisposable {
 	/// <returns>True if a savestate exists.</returns>
 	public bool HasState(int frame) => _savestates.ContainsKey(frame);
 
-	private void AddToRingBuffer(int frame, byte[] data) {
+	private void AddToRingBuffer(int frame) {
 		lock (_ringBufferLock) {
 			// Add to ring buffer if within recent range
 			if (_ringBuffer.Count >= RingBufferSize) {

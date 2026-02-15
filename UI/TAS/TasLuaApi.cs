@@ -232,8 +232,40 @@ public sealed class TasLuaApi {
 			return false;
 		}
 
-		// TODO: Implement when InsertFrameAt is available
-		return false;
+		var movie = _viewModel.Movie;
+		if (movie is null) {
+			return false;
+		}
+
+		// Clamp position to valid range
+		position = Math.Min(position, movie.InputFrames.Count);
+
+		// Create empty frames with default controller configuration
+		var controllerCount = movie.InputFrames.Count > 0
+			? movie.InputFrames[0].Controllers.Length
+			: 1;
+
+		for (int i = 0; i < count; i++) {
+			var frame = new InputFrame {
+				FrameNumber = position + i,
+				Controllers = new ControllerInput[controllerCount]
+			};
+			for (int c = 0; c < controllerCount; c++) {
+				frame.Controllers[c] = new ControllerInput();
+			}
+			movie.InputFrames.Insert(position + i, frame);
+		}
+
+		// Renumber frames after insertion
+		for (int i = position + count; i < movie.InputFrames.Count; i++) {
+			movie.InputFrames[i].FrameNumber = i;
+		}
+
+		_viewModel.HasUnsavedChanges = true;
+		_greenzone.InvalidateFrom(position);
+		_viewModel.RefreshFrames();
+
+		return true;
 	}
 
 	/// <summary>
@@ -244,8 +276,26 @@ public sealed class TasLuaApi {
 			return false;
 		}
 
-		// TODO: Implement when DeleteFrameAt is available
-		return false;
+		var movie = _viewModel.Movie;
+		if (movie is null || position >= movie.InputFrames.Count) {
+			return false;
+		}
+
+		// Clamp count to available frames
+		count = Math.Min(count, movie.InputFrames.Count - position);
+
+		movie.InputFrames.RemoveRange(position, count);
+
+		// Renumber remaining frames
+		for (int i = position; i < movie.InputFrames.Count; i++) {
+			movie.InputFrames[i].FrameNumber = i;
+		}
+
+		_viewModel.HasUnsavedChanges = true;
+		_greenzone.InvalidateFrom(position);
+		_viewModel.RefreshFrames();
+
+		return true;
 	}
 
 	#endregion
