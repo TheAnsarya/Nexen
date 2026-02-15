@@ -35,8 +35,8 @@ public sealed class GmvMovieConverter : MovieConverterBase {
 
 	// GMV header constants
 	private const int GmvHeaderSize = 64;
-	private const int GmvSignatureLength = 16;
-	private static readonly byte[] GmvSignature = "Gens Movie "u8.ToArray();
+	private const int GmvSignaturePrefixLength = 11; // "Gens Movie " prefix
+	private static readonly byte[] GmvSignaturePrefix = "Gens Movie "u8.ToArray();
 
 	// Flags
 	private const byte FlagSavestate = 0x80;
@@ -57,8 +57,8 @@ public sealed class GmvMovieConverter : MovieConverterBase {
 		Span<byte> header = stackalloc byte[GmvHeaderSize];
 		stream.ReadExactly(header);
 
-		// Verify signature
-		if (!header[..GmvSignatureLength].SequenceEqual(GmvSignature)) {
+		// Verify signature (check "Gens Movie " prefix - supports both standard and TEST versions)
+		if (!header[..GmvSignaturePrefixLength].SequenceEqual(GmvSignaturePrefix)) {
 			throw new MovieFormatException(Format, "Invalid GMV signature");
 		}
 

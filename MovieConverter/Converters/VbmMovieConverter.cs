@@ -189,8 +189,13 @@ public sealed class VbmMovieConverter : MovieConverterBase {
 		}
 
 		// Seek to controller data
-		if (controllerDataOffset > 0) {
+		// For older VBM versions, controllerDataOffset may be invalid (larger than file)
+		// In that case, input data starts at offset 0x40 (after 64-byte header)
+		if (controllerDataOffset > 0 && controllerDataOffset < (uint)stream.Length) {
 			stream.Position = controllerDataOffset;
+		} else {
+			// Fall back to reading immediately after header
+			stream.Position = VbmHeaderSize;
 		}
 
 		// Read input frames

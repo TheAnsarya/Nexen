@@ -572,8 +572,8 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 		ZipArchiveEntry inputEntry = archive.CreateEntry("Input Log.txt", CompressionLevel.Optimal);
 		using (Stream inputStream = inputEntry.Open())
 		using (var writer = new StreamWriter(inputStream, Encoding.UTF8)) {
-			// Write header line with button layout
-			writer.WriteLine(GetBk2LogHeader(movie.SystemType, movie.ControllerCount));
+			// Write log header marker (required for reading back)
+			writer.WriteLine("[Input]");
 
 			// Write frames
 			foreach (InputFrame frame in movie.InputFrames) {

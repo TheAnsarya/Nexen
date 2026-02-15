@@ -21,7 +21,7 @@ public sealed class SmvMovieConverter : MovieConverterBase {
 	public override MovieFormat Format => MovieFormat.Smv;
 
 	// SMV header constants
-	private const uint SmvSignature = 0x564D532D; // "SMV-" in little endian
+	private const uint SmvSignature = 0x1a564d53; // "SMV\x1A" in little endian
 	private const int SmvHeaderSize = 32;
 
 	/// <inheritdoc/>
