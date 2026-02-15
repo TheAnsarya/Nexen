@@ -187,10 +187,8 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 		Recorder.FrameRecorded += (_, e) => {
 			PlaybackFrame = e.FrameIndex;
-			// Update UI less frequently for performance
-			if (e.FrameIndex % 10 == 0) {
-				UpdateFrames();
-			}
+			// Only append new frames instead of full rebuild - O(1) per frame vs O(n)
+			SyncNewFrames();
 		};
 
 		Recorder.Rerecording += (_, e) => {
@@ -641,7 +639,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 		int insertAt = Math.Max(0, SelectedFrameIndex);
 		Movie.InputFrames.Insert(insertAt, new InputFrame(insertAt));
-		UpdateFrames();
+		InsertFrameViewModel(insertAt);
 		HasUnsavedChanges = true;
 		StatusMessage = $"Inserted frame at {insertAt}";
 	}
@@ -656,7 +654,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 		int deleteAt = SelectedFrameIndex;
 		Movie.InputFrames.RemoveAt(deleteAt);
-		UpdateFrames();
+		RemoveFrameViewModel(deleteAt);
 		HasUnsavedChanges = true;
 		StatusMessage = $"Deleted frame {deleteAt}";
 
@@ -679,7 +677,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			frame.Controllers[i] = new ControllerInput();
 		}
 
-		UpdateFrames();
+		RefreshFrameAt(SelectedFrameIndex);
 		HasUnsavedChanges = true;
 		StatusMessage = $"Cleared input on frame {SelectedFrameIndex}";
 	}
@@ -699,7 +697,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			frame.Comment = null;
 		}
 
-		UpdateFrames();
+		RefreshFrameAt(SelectedFrameIndex);
 		HasUnsavedChanges = true;
 		StatusMessage = frame.Comment is not null ? $"Set comment on frame {SelectedFrameIndex}" : $"Removed comment from frame {SelectedFrameIndex}";
 	}
@@ -746,7 +744,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			case "SELECT": controller.Select = !controller.Select; break;
 		}
 
-		UpdateFrames();
+		RefreshFrameAt(SelectedFrameIndex);
 		HasUnsavedChanges = true;
 	}
 
@@ -755,7 +753,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// </summary>
 	public void ToggleButtonAtFrame(int frameIndex, int port, string button, bool newState) {
 		SetButtonAtFrame(frameIndex, port, button, newState);
-		UpdateFrames();
+		RefreshFrameAt(frameIndex);
 	}
 
 	/// <summary>
@@ -805,6 +803,65 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		for (int i = 0; i < Movie.InputFrames.Count; i++) {
+			Frames.Add(new TasFrameViewModel(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart));
+		}
+	}
+
+	/// <summary>
+	/// Refreshes a single frame's display without full rebuild. O(1) instead of O(n).
+	/// </summary>
+	private void RefreshFrameAt(int index) {
+		if (index >= 0 && index < Frames.Count) {
+			Frames[index].RefreshFromFrame();
+		}
+	}
+
+	/// <summary>
+	/// Inserts a frame ViewModel at the specified index and updates subsequent frame numbers. O(n) for renumbering but avoids full collection rebuild.
+	/// </summary>
+	private void InsertFrameViewModel(int index) {
+		if (Movie is null || index < 0 || index > Movie.InputFrames.Count) {
+			return;
+		}
+
+		// Insert the new ViewModel
+		var vm = new TasFrameViewModel(Movie.InputFrames[index], index, IsGreenzoneEnabled && index >= GreenzoneStart);
+		Frames.Insert(index, vm);
+
+		// Update frame numbers for subsequent items (they shifted by 1)
+		for (int i = index + 1; i < Frames.Count; i++) {
+			Frames[i].FrameNumber = i + 1;
+		}
+	}
+
+	/// <summary>
+	/// Removes a frame ViewModel at the specified index and updates subsequent frame numbers. O(n) for renumbering but avoids full collection rebuild.
+	/// </summary>
+	private void RemoveFrameViewModel(int index) {
+		if (index < 0 || index >= Frames.Count) {
+			return;
+		}
+
+		Frames.RemoveAt(index);
+
+		// Update frame numbers for subsequent items (they shifted by -1)
+		for (int i = index; i < Frames.Count; i++) {
+			Frames[i].FrameNumber = i + 1;
+		}
+	}
+
+	/// <summary>
+	/// Syncs the Frames collection to append any new frames from the movie. O(k) where k = new frames, instead of O(n) full rebuild.
+	/// Used during recording to efficiently update the UI as frames are appended.
+	/// </summary>
+	private void SyncNewFrames() {
+		if (Movie is null) {
+			return;
+		}
+
+		// Append any frames that exist in Movie but not in Frames
+		while (Frames.Count < Movie.InputFrames.Count) {
+			int i = Frames.Count;
 			Frames.Add(new TasFrameViewModel(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart));
 		}
 	}
@@ -1830,14 +1887,29 @@ tas.finishSearch(true) -- Load best result</pre>
 /// ViewModel representing a single frame in the TAS editor.
 /// </summary>
 public sealed class TasFrameViewModel : ViewModelBase {
+	private int _frameNumber;
+	private bool _isGreenzone;
+
 	/// <summary>Gets the underlying frame.</summary>
 	public InputFrame Frame { get; }
 
-	/// <summary>Gets the frame number (1-based for display).</summary>
-	public int FrameNumber { get; }
+	/// <summary>Gets or sets the frame number (1-based for display).</summary>
+	public int FrameNumber {
+		get => _frameNumber;
+		set => this.RaiseAndSetIfChanged(ref _frameNumber, value);
+	}
 
-	/// <summary>Gets whether this frame is in the greenzone.</summary>
-	public bool IsGreenzone { get; }
+	/// <summary>Gets or sets whether this frame is in the greenzone.</summary>
+	public bool IsGreenzone {
+		get => _isGreenzone;
+		set {
+			if (_isGreenzone != value) {
+				_isGreenzone = value;
+				this.RaisePropertyChanged();
+				this.RaisePropertyChanged(nameof(Background));
+			}
+		}
+	}
 
 	/// <summary>Gets the background color based on frame state.</summary>
 	public IBrush Background => IsGreenzone ? Brushes.LightGreen
@@ -1864,8 +1936,22 @@ public sealed class TasFrameViewModel : ViewModelBase {
 
 	public TasFrameViewModel(InputFrame frame, int index, bool isGreenzone) {
 		Frame = frame;
-		FrameNumber = index + 1; // 1-based display
-		IsGreenzone = isGreenzone;
+		_frameNumber = index + 1; // 1-based display
+		_isGreenzone = isGreenzone;
+	}
+
+	/// <summary>
+	/// Raises property changed for all computed properties that depend on the underlying frame data.
+	/// Call this after modifying the underlying InputFrame.
+	/// </summary>
+	public void RefreshFromFrame() {
+		this.RaisePropertyChanged(nameof(P1Input));
+		this.RaisePropertyChanged(nameof(P2Input));
+		this.RaisePropertyChanged(nameof(MarkerText));
+		this.RaisePropertyChanged(nameof(CommentText));
+		this.RaisePropertyChanged(nameof(IsLagFrame));
+		this.RaisePropertyChanged(nameof(HasMarker));
+		this.RaisePropertyChanged(nameof(Background));
 	}
 }
 

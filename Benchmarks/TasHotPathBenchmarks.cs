@@ -344,4 +344,231 @@ public class TasHotPathBenchmarks {
 	// Intentionally NOT including RemoveAt loop for large movie - it would take minutes
 
 	#endregion
+
+	#region ViewModel Update Benchmarks
+
+	// Simulated ViewModel objects for benchmarking
+	private List<SimulatedFrameViewModel> _smallVmList = null!;
+	private List<SimulatedFrameViewModel> _mediumVmList = null!;
+	private List<SimulatedFrameViewModel> _largeVmList = null!;
+
+	[GlobalSetup(Target = nameof(FullRebuild_Small))]
+	public void SetupViewModelBenchmarks_Small() => _smallVmList = CreateViewModelList(1_000);
+
+	[GlobalSetup(Target = nameof(FullRebuild_Medium))]
+	public void SetupViewModelBenchmarks_Medium() => _mediumVmList = CreateViewModelList(60_000);
+
+	[GlobalSetup(Target = nameof(FullRebuild_Large))]
+	public void SetupViewModelBenchmarks_Large() => _largeVmList = CreateViewModelList(300_000);
+
+	[GlobalSetup(Targets = [nameof(SingleFrameRefresh_Small), nameof(IncrementalInsert_Small), nameof(IncrementalDelete_Small)])]
+	public void SetupSingleFrame_Small() => _smallVmList = CreateViewModelList(1_000);
+
+	[GlobalSetup(Targets = [nameof(SingleFrameRefresh_Medium), nameof(IncrementalInsert_Medium), nameof(IncrementalDelete_Medium)])]
+	public void SetupSingleFrame_Medium() => _mediumVmList = CreateViewModelList(60_000);
+
+	[GlobalSetup(Targets = [nameof(SingleFrameRefresh_Large), nameof(IncrementalInsert_Large), nameof(IncrementalDelete_Large)])]
+	public void SetupSingleFrame_Large() => _largeVmList = CreateViewModelList(300_000);
+
+	private List<SimulatedFrameViewModel> CreateViewModelList(int count) {
+		var list = new List<SimulatedFrameViewModel>(count);
+		for (int i = 0; i < count; i++) {
+			list.Add(new SimulatedFrameViewModel(i));
+		}
+		return list;
+	}
+
+	/// <summary>
+	/// Benchmark full rebuild of ViewModel collection - O(n) - OLD APPROACH
+	/// </summary>
+	[Benchmark(Description = "Full rebuild 1K VMs - Clear+Add (OLD)")]
+	[BenchmarkCategory("ViewModelUpdate")]
+	public int FullRebuild_Small() {
+		_smallVmList.Clear();
+		for (int i = 0; i < 1_000; i++) {
+			_smallVmList.Add(new SimulatedFrameViewModel(i));
+		}
+		return _smallVmList.Count;
+	}
+
+	/// <summary>
+	/// Benchmark single frame refresh - O(1) - NEW APPROACH
+	/// </summary>
+	[Benchmark(Description = "Single frame refresh (1K movie)")]
+	[BenchmarkCategory("ViewModelUpdate")]
+	public int SingleFrameRefresh_Small() {
+		// Simulate RefreshFrameAt(500) - just trigger property changes on one item
+		_smallVmList[500].RefreshFromFrame();
+		return 1;
+	}
+
+	/// <summary>
+	/// Benchmark full rebuild of ViewModel collection - O(n) - OLD APPROACH
+	/// </summary>
+	[Benchmark(Description = "Full rebuild 60K VMs - Clear+Add (OLD)")]
+	[BenchmarkCategory("ViewModelUpdate")]
+	public int FullRebuild_Medium() {
+		_mediumVmList.Clear();
+		for (int i = 0; i < 60_000; i++) {
+			_mediumVmList.Add(new SimulatedFrameViewModel(i));
+		}
+		return _mediumVmList.Count;
+	}
+
+	/// <summary>
+	/// Benchmark single frame refresh - O(1) - NEW APPROACH
+	/// </summary>
+	[Benchmark(Description = "Single frame refresh (60K movie)")]
+	[BenchmarkCategory("ViewModelUpdate")]
+	public int SingleFrameRefresh_Medium() {
+		_mediumVmList[30_000].RefreshFromFrame();
+		return 1;
+	}
+
+	/// <summary>
+	/// Benchmark full rebuild of ViewModel collection - O(n) - OLD APPROACH
+	/// </summary>
+	[Benchmark(Description = "Full rebuild 300K VMs - Clear+Add (OLD)")]
+	[BenchmarkCategory("ViewModelUpdate")]
+	public int FullRebuild_Large() {
+		_largeVmList.Clear();
+		for (int i = 0; i < 300_000; i++) {
+			_largeVmList.Add(new SimulatedFrameViewModel(i));
+		}
+		return _largeVmList.Count;
+	}
+
+	/// <summary>
+	/// Benchmark single frame refresh - O(1) - NEW APPROACH
+	/// </summary>
+	[Benchmark(Description = "Single frame refresh (300K movie)")]
+	[BenchmarkCategory("ViewModelUpdate")]
+	public int SingleFrameRefresh_Large() {
+		_largeVmList[150_000].RefreshFromFrame();
+		return 1;
+	}
+
+	/// <summary>
+	/// Benchmark incremental insert - O(n) for renumber but avoids allocation - NEW APPROACH
+	/// </summary>
+	[Benchmark(Description = "Incremental insert (1K movie)")]
+	[BenchmarkCategory("ViewModelUpdate")]
+	public int IncrementalInsert_Small() {
+		int index = 500;
+		var vm = new SimulatedFrameViewModel(index);
+		_smallVmList.Insert(index, vm);
+		for (int i = index + 1; i < _smallVmList.Count; i++) {
+			_smallVmList[i].FrameNumber = i + 1;
+		}
+		// Cleanup for next iteration
+		_smallVmList.RemoveAt(index);
+		return _smallVmList.Count;
+	}
+
+	/// <summary>
+	/// Benchmark incremental insert - O(n) for renumber but avoids allocation - NEW APPROACH
+	/// </summary>
+	[Benchmark(Description = "Incremental insert (60K movie)")]
+	[BenchmarkCategory("ViewModelUpdate")]
+	public int IncrementalInsert_Medium() {
+		int index = 30_000;
+		var vm = new SimulatedFrameViewModel(index);
+		_mediumVmList.Insert(index, vm);
+		for (int i = index + 1; i < _mediumVmList.Count; i++) {
+			_mediumVmList[i].FrameNumber = i + 1;
+		}
+		_mediumVmList.RemoveAt(index);
+		return _mediumVmList.Count;
+	}
+
+	/// <summary>
+	/// Benchmark incremental insert - O(n) for renumber but avoids allocation - NEW APPROACH
+	/// </summary>
+	[Benchmark(Description = "Incremental insert (300K movie)")]
+	[BenchmarkCategory("ViewModelUpdate")]
+	public int IncrementalInsert_Large() {
+		int index = 150_000;
+		var vm = new SimulatedFrameViewModel(index);
+		_largeVmList.Insert(index, vm);
+		for (int i = index + 1; i < _largeVmList.Count; i++) {
+			_largeVmList[i].FrameNumber = i + 1;
+		}
+		_largeVmList.RemoveAt(index);
+		return _largeVmList.Count;
+	}
+
+	/// <summary>
+	/// Benchmark incremental delete - O(n) for renumber but avoids allocation - NEW APPROACH
+	/// </summary>
+	[Benchmark(Description = "Incremental delete (1K movie)")]
+	[BenchmarkCategory("ViewModelUpdate")]
+	public int IncrementalDelete_Small() {
+		int index = 500;
+		var removed = _smallVmList[index];
+		_smallVmList.RemoveAt(index);
+		for (int i = index; i < _smallVmList.Count; i++) {
+			_smallVmList[i].FrameNumber = i + 1;
+		}
+		// Restore for next iteration
+		_smallVmList.Insert(index, removed);
+		return _smallVmList.Count;
+	}
+
+	/// <summary>
+	/// Benchmark incremental delete - O(n) for renumber but avoids allocation - NEW APPROACH
+	/// </summary>
+	[Benchmark(Description = "Incremental delete (60K movie)")]
+	[BenchmarkCategory("ViewModelUpdate")]
+	public int IncrementalDelete_Medium() {
+		int index = 30_000;
+		var removed = _mediumVmList[index];
+		_mediumVmList.RemoveAt(index);
+		for (int i = index; i < _mediumVmList.Count; i++) {
+			_mediumVmList[i].FrameNumber = i + 1;
+		}
+		_mediumVmList.Insert(index, removed);
+		return _mediumVmList.Count;
+	}
+
+	/// <summary>
+	/// Benchmark incremental delete - O(n) for renumber but avoids allocation - NEW APPROACH
+	/// </summary>
+	[Benchmark(Description = "Incremental delete (300K movie)")]
+	[BenchmarkCategory("ViewModelUpdate")]
+	public int IncrementalDelete_Large() {
+		int index = 150_000;
+		var removed = _largeVmList[index];
+		_largeVmList.RemoveAt(index);
+		for (int i = index; i < _largeVmList.Count; i++) {
+			_largeVmList[i].FrameNumber = i + 1;
+		}
+		_largeVmList.Insert(index, removed);
+		return _largeVmList.Count;
+	}
+
+	#endregion
+}
+
+/// <summary>
+/// Simulated FrameViewModel for benchmarking without UI dependencies.
+/// </summary>
+public sealed class SimulatedFrameViewModel {
+	public int FrameNumber { get; set; }
+	public bool IsGreenzone { get; set; }
+	public string P1Input { get; set; } = "";
+	public string P2Input { get; set; } = "";
+	public string CommentText { get; set; } = "";
+
+	public SimulatedFrameViewModel(int index) {
+		FrameNumber = index + 1;
+	}
+
+	public void RefreshFromFrame() {
+		// Simulate property change notifications (just touching the properties)
+		_ = FrameNumber;
+		_ = IsGreenzone;
+		_ = P1Input;
+		_ = P2Input;
+		_ = CommentText;
+	}
 }
