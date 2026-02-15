@@ -65,6 +65,8 @@ public:
 				return MemoryType::GbaMemory;
 			case CpuType::Ws:
 				return MemoryType::WsMemory;
+			case CpuType::Lynx:
+				return MemoryType::LynxMemory;
 		}
 
 		[[unlikely]] throw std::runtime_error("Invalid CPU type");
@@ -103,6 +105,8 @@ public:
 				return 8;
 			case CpuType::Ws:
 				return 5;
+			case CpuType::Lynx:
+				return 4;
 		}
 
 		[[unlikely]] throw std::runtime_error("Invalid CPU type");
@@ -231,6 +235,13 @@ public:
 			case MemoryType::WsPort:
 				return CpuType::Ws;
 
+			case MemoryType::LynxMemory:
+			case MemoryType::LynxPrgRom:
+			case MemoryType::LynxWorkRam:
+			case MemoryType::LynxBootRom:
+			case MemoryType::LynxSaveRam:
+				return CpuType::Lynx;
+
 			[[unlikely]] default:
 				throw std::runtime_error("Invalid CPU type");
 		}
@@ -247,7 +258,7 @@ public:
 	/// Get last CPU memory type enum value.
 	/// </summary>
 	[[nodiscard]] static constexpr MemoryType GetLastCpuMemoryType() {
-		return MemoryType::WsMemory;
+		return MemoryType::LynxMemory;
 	}
 
 	/// <summary>
@@ -314,6 +325,8 @@ public:
 			case MemoryType::GbaPrgRom:
 			case MemoryType::GbaBootRom:
 			case MemoryType::WsPrgRom:
+			case MemoryType::LynxPrgRom:
+			case MemoryType::LynxBootRom:
 				return true;
 
 			default:
@@ -336,6 +349,7 @@ public:
 			case MemoryType::SmsCartRam:
 			case MemoryType::GbaSaveRam:
 			case MemoryType::WsCartRam:
+			case MemoryType::LynxSaveRam:
 				return false;
 
 			default:
@@ -347,7 +361,7 @@ public:
 	/// Get last CPU type enum value.
 	/// </summary>
 	[[nodiscard]] static constexpr CpuType GetLastCpuType() {
-		return CpuType::Ws;
+		return CpuType::Lynx;
 	}
 
 	/// <summary>

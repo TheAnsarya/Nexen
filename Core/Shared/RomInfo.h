@@ -31,6 +31,8 @@ enum class RomFormat {
 	Gba,
 
 	Ws,
+
+	Lynx,
 };
 
 struct DipSwitchInfo {

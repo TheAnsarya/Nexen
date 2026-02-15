@@ -37,6 +37,7 @@ enum class MemoryType {
 	SmsMemory,     ///< Sega Master System Z80 address space (16-bit, 64KB)
 	GbaMemory,     ///< Game Boy Advance ARM7 address space (32-bit, 4GB)
 	WsMemory,      ///< WonderSwan address space
+	LynxMemory,    ///< Atari Lynx 65C02 address space (16-bit, 64KB)
 
 	// ===== SNES memory regions =====
 	SnesPrgRom,               ///< SNES program ROM (cartridge code/data)
@@ -127,6 +128,12 @@ enum class MemoryType {
 	WsBootRom,        ///< WonderSwan boot ROM
 	WsInternalEeprom, ///< WonderSwan internal EEPROM
 	WsPort,           ///< WonderSwan I/O ports
+
+	// ===== Atari Lynx memory regions =====
+	LynxPrgRom,       ///< Lynx cartridge ROM
+	LynxWorkRam,      ///< Lynx work RAM (64KB)
+	LynxBootRom,      ///< Lynx boot ROM (512 bytes)
+	LynxSaveRam,      ///< Lynx EEPROM save data
 
 	/// <summary>Sentinel value for invalid/unspecified memory type</summary>
 	None

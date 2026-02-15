@@ -23,7 +23,8 @@ enum class CpuType : uint8_t {
 	Pce,     ///< PC Engine HuC6280 CPU (65C02-based with enhancements)
 	Sms,     ///< Sega Master System Z80 CPU (8-bit, 16-bit addressing)
 	Gba,     ///< Game Boy Advance ARM7TDMI CPU (32-bit RISC)
-	Ws       ///< WonderSwan NEC V30MZ CPU (80186-compatible)
+	Ws,      ///< WonderSwan NEC V30MZ CPU (80186-compatible)
+	Lynx     ///< Atari Lynx 65C02 CPU (8-bit, 16-bit addressing)
 };
 
 /// <summary>
@@ -42,6 +43,6 @@ public:
 	/// [[nodiscard]] prevents accidentally discarding the count value.
 	/// </remarks>
 	[[nodiscard]] static constexpr int GetCpuTypeCount() {
-		return (int)CpuType::Ws + 1;
+		return (int)CpuType::Lynx + 1;
 	}
 };

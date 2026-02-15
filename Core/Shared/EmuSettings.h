@@ -58,6 +58,7 @@ private:
 	CvConfig _cv;
 	GbaConfig _gba;
 	WsConfig _ws;
+	LynxConfig _lynx;
 
 	atomic<uint32_t> _flags;
 	atomic<uint64_t> _debuggerFlags;
@@ -122,6 +123,9 @@ public:
 
 	void SetWsConfig(WsConfig& config);
 	WsConfig& GetWsConfig();
+
+	void SetLynxConfig(LynxConfig& config);
+	LynxConfig& GetLynxConfig();
 
 	void SetGameConfig(GameConfig& config);
 	GameConfig& GetGameConfig();

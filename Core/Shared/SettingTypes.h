@@ -230,7 +230,10 @@ enum class ControllerType {
 
 	// WS
 	WsController,
-	WsControllerVertical
+	WsControllerVertical,
+
+	// Lynx
+	LynxController
 };
 
 struct KeyMapping {
@@ -344,7 +347,8 @@ enum class ConsoleType {
 	PcEngine = 3,
 	Sms = 4,
 	Gba = 5,
-	Ws = 6
+	Ws = 6,
+	Lynx = 7
 };
 
 enum class GameboyModel {
@@ -730,6 +734,21 @@ struct WsConfig {
 	uint32_t Channel5Vol = 100;
 };
 
+struct LynxConfig {
+	ControllerConfig Controller;
+
+	bool UseBootRom = false;
+	bool AutoRotate = true;
+	bool BlendFrames = false;
+
+	bool DisableSprites = false;
+
+	uint32_t Channel1Vol = 100;
+	uint32_t Channel2Vol = 100;
+	uint32_t Channel3Vol = 100;
+	uint32_t Channel4Vol = 100;
+};
+
 struct AudioPlayerConfig {
 	uint32_t Volume = 100;
 	bool Repeat = false;
@@ -1048,4 +1067,5 @@ enum class DebuggerFlags {
 	SmsDebuggerEnabled = (1 << 10),
 	GbaDebuggerEnabled = (1 << 11),
 	WsDebuggerEnabled = (1 << 12),
+	LynxDebuggerEnabled = (1 << 13),
 };
