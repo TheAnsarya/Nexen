@@ -77,17 +77,34 @@ gh issue close <number> --repo TheAnsarya/Nexen --comment "Completed in <commit-
 
 ### ⚠️ MANDATORY: Prompt Tracking for AI-Created Issues
 
-When creating GitHub issues from AI prompts, **ALWAYS** add the original user prompt as the first comment:
+When creating GitHub issues from AI prompts, **IMMEDIATELY** add the original user prompt as the **FIRST comment** right after creating the issue - before doing any implementation work:
+
+```powershell
+# Create issue
+$issueUrl = gh issue create --repo TheAnsarya/Nexen --title "Description" --body "Details" --label "label"
+$issueNum = ($issueUrl -split '/')[-1]
+
+# IMMEDIATELY add prompt as first comment (before any other work)
+gh issue comment $issueNum --repo TheAnsarya/Nexen --body "Prompt for work:
+<original user prompt that triggered this work>"
+```
+
+**For sub-issues created during analysis/audit:**
+When creating sub-issues that stem from a parent issue or broader prompt, reference both:
 
 ```powershell
 gh issue comment <number> --repo TheAnsarya/Nexen --body "Prompt for work:
-<original user prompt that triggered this work>"
+Parent: #<parent-issue-number>
+Original prompt: <the original user prompt that started the work>
+
+Created during: <description of analysis/audit work>"
 ```
 
 This provides:
 - **Traceability** - Know where each issue originated
 - **Context** - Understand the user's original intent
 - **History** - Track AI-assisted development workflow
+- **Lineage** - Track parent/child relationships for sub-issues
 
 ## Coding Standards
 
