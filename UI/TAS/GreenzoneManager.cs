@@ -184,17 +184,25 @@ public sealed class GreenzoneManager : IDisposable {
 			return -1;
 		}
 
-		// If we need to advance, do so
+		// If we need to advance, do so efficiently
 		int framesToAdvance = targetFrame - nearestFrame;
 
-		for (int i = 0; i < framesToAdvance; i++) {
-			// Execute a single frame
-			EmuApi.ExecuteShortcut(new ExecuteShortcutParams {
-				Shortcut = Config.Shortcuts.EmulatorShortcut.RunSingleFrame
-			});
+		if (framesToAdvance > 0) {
+			// Batch frame advances for better performance
+			// Only yield periodically to keep UI responsive
+			const int yieldInterval = 20;
 
-			// Small delay to allow frame to complete
-			await Task.Delay(1);
+			for (int i = 0; i < framesToAdvance; i++) {
+				// Execute a single frame (synchronous)
+				EmuApi.ExecuteShortcut(new ExecuteShortcutParams {
+					Shortcut = Config.Shortcuts.EmulatorShortcut.RunSingleFrame
+				});
+
+				// Yield periodically to keep UI responsive
+				if (i % yieldInterval == 0) {
+					await Task.Yield();
+				}
+			}
 		}
 
 		SavestateLoaded?.Invoke(this, new GreenzoneEventArgs(targetFrame, 0));

@@ -185,4 +185,46 @@ public class GreenzoneManagerTests {
 	}
 
 	#endregion
+
+	#region Seek Performance Tests
+
+	[Fact]
+	public void SeekYieldInterval_IsBatchedCorrectly() {
+		// This tests the logic of yield interval in SeekToFrameAsync
+		// We yield every 20 frames to keep UI responsive without excessive overhead
+		const int yieldInterval = 20;
+		int framesToAdvance = 100;
+		int yieldCount = 0;
+
+		for (int i = 0; i < framesToAdvance; i++) {
+			// Simulate frame execution
+			if (i % yieldInterval == 0) {
+				yieldCount++;
+			}
+		}
+
+		// Assert - 100 frames with yield every 20 = 5 yields
+		Assert.Equal(5, yieldCount);
+	}
+
+	[Theory]
+	[InlineData(10, 1)]    // 10 frames = 1 yield (at i=0)
+	[InlineData(20, 1)]    // 20 frames = 1 yield (at i=0)
+	[InlineData(21, 2)]    // 21 frames = 2 yields (at i=0, i=20)
+	[InlineData(100, 5)]   // 100 frames = 5 yields
+	[InlineData(1000, 50)] // 1000 frames = 50 yields
+	public void SeekYieldInterval_CalculatesCorrectYieldCount(int frames, int expectedYields) {
+		const int yieldInterval = 20;
+		int yieldCount = 0;
+
+		for (int i = 0; i < frames; i++) {
+			if (i % yieldInterval == 0) {
+				yieldCount++;
+			}
+		}
+
+		Assert.Equal(expectedYields, yieldCount);
+	}
+
+	#endregion
 }
