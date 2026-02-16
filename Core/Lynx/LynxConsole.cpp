@@ -9,6 +9,8 @@
 #include "Lynx/LynxControlManager.h"
 #include "Lynx/LynxApu.h"
 #include "Lynx/LynxEeprom.h"
+#include "Lynx/LynxGameDatabase.h"
+#include "Utilities/CRC32.h"
 #include "Shared/Emulator.h"
 #include "Shared/EmuSettings.h"
 #include "Shared/MessageManager.h"
@@ -17,41 +19,7 @@
 #include "Utilities/Serializer.h"
 #include "Utilities/VirtualFile.h"
 
-// ============================================================================
-// EEPROM CRC32 Fallback Database
-// ============================================================================
-// For headerless ROMs (.o/.lyx format) that lack byte 60 EEPROM type info,
-// we use a CRC32 lookup on the PRG ROM data. All known EEPROM-using games
-// are homebrew titles — no commercial Lynx game uses EEPROM.
-//
-// PRG CRC32 values are computed over the raw ROM data (excluding LNX header).
-// ============================================================================
-
-struct LynxEepromDbEntry {
-	uint32_t prgCrc32;
-	LynxEepromType type;
-	const char* name;
-};
-
-static constexpr LynxEepromDbEntry LynxEepromDatabase[] = {
-	// Growing Ties (2019, Dr. Ludos) — header byte 60 = 0x41 (SD flag + 93C46)
-	{ 0xb0e94717, LynxEepromType::Eeprom93c46, "Growing Ties" },
-	// Leaf and the Forgotten Temple - Ynxa Version (2020, Fadest)
-	{ 0xdc8713ee, LynxEepromType::Eeprom93c46, "Ynxa" },
-	// Raid on TriCity - First Impact v1.01 (2021, Fadest)
-	{ 0x0fa40782, LynxEepromType::Eeprom93c46, "Raid on Tricity" },
-	// Starblader v0.4 (2021, Retroguru)
-	{ 0x4f2fa617, LynxEepromType::Eeprom93c46, "Star Blader" },
-};
-
-static LynxEepromType GetEepromTypeFromCrc32(uint32_t crc32) {
-	for (const auto& entry : LynxEepromDatabase) {
-		if (entry.prgCrc32 == crc32) {
-			return entry.type;
-		}
-	}
-	return LynxEepromType::None;
-}
+// EEPROM CRC32 lookup now handled by LynxGameDatabase
 
 LynxConsole::LynxConsole(Emulator* emu) {
 	_emu = emu;
@@ -160,6 +128,14 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 	_saveRam = nullptr;
 
 	MessageManager::Log(std::format("Work RAM: {} KB", _workRamSize / 1024));
+
+	// Look up game in ROM database for auto-detection
+	uint32_t prgCrc32 = CRC32::GetCRC(_prgRom, _prgRomSize);
+	const LynxGameDatabase::Entry* dbEntry = LynxGameDatabase::Lookup(prgCrc32);
+	if (dbEntry) {
+		MessageManager::Log(std::format("ROM Database: {} (CRC32: {:08x})", dbEntry->Name, prgCrc32));
+	}
+
 	MessageManager::Log("------------------------------");
 
 	// Create components
@@ -209,6 +185,20 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 		cartInfo.RomSize = _prgRomSize;
 		cartInfo.HasEeprom = false;
 		cartInfo.EepromType = LynxEepromType::None;
+
+		// For headerless ROMs, apply database overrides for rotation and EEPROM
+		if (dbEntry) {
+			_rotation = dbEntry->Rotation;
+			cartInfo.Rotation = dbEntry->Rotation;
+			if (dbEntry->EepromType != LynxEepromType::None) {
+				cartInfo.HasEeprom = true;
+				cartInfo.EepromType = dbEntry->EepromType;
+				MessageManager::Log(std::format("  EEPROM auto-detected from database: 93C46"));
+			}
+			// Copy game title from database
+			strncpy(cartInfo.Name, dbEntry->Name, 32);
+			cartInfo.Name[32] = 0;
+		}
 	}
 	_cart->Init(_emu, this, cartInfo);
 
@@ -242,14 +232,10 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 	_eeprom = std::make_unique<LynxEeprom>(_emu, this);
 	if (cartInfo.HasEeprom) {
 		_eeprom->Init(cartInfo.EepromType);
-	} else {
-		// No EEPROM indicated in header — check CRC32 fallback for headerless ROMs
-		LynxEepromType fallbackType = GetEepromTypeFromCrc32(_emu->GetCrc32());
-		if (fallbackType != LynxEepromType::None) {
-			_eeprom->Init(fallbackType);
-			MessageManager::Log(std::format("  EEPROM detected via CRC32 fallback"));
-		}
-		// else: no EEPROM, _eeprom stays uninitialized (Init not called)
+	} else if (dbEntry && dbEntry->EepromType != LynxEepromType::None) {
+		// Database override for EEPROM (covers headerless ROMs not caught above)
+		_eeprom->Init(dbEntry->EepromType);
+		MessageManager::Log("  EEPROM detected via game database");
 	}
 
 	// Wire EEPROM to Mikey for IODAT register access

@@ -808,6 +808,7 @@
     <ClInclude Include="Lynx\LynxControlManager.h" />
     <ClInclude Include="Lynx\LynxCpu.h" />
     <ClInclude Include="Lynx\LynxEeprom.h" />
+    <ClInclude Include="Lynx\LynxGameDatabase.h" />
     <ClInclude Include="Lynx\LynxApu.h" />
     <ClInclude Include="Lynx\LynxDefaultVideoFilter.h" />
     <ClInclude Include="Lynx\LynxMemoryManager.h" />
@@ -1123,6 +1124,7 @@
     <ClCompile Include="Lynx\LynxControlManager.cpp" />
     <ClCompile Include="Lynx\LynxCpu.cpp" />
     <ClCompile Include="Lynx\LynxEeprom.cpp" />
+    <ClCompile Include="Lynx\LynxGameDatabase.cpp" />
     <ClCompile Include="Lynx\LynxApu.cpp" />
     <ClCompile Include="Lynx\LynxDefaultVideoFilter.cpp" />
     <ClCompile Include="Lynx\LynxMemoryManager.cpp" />
