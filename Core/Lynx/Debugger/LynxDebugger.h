@@ -17,6 +17,7 @@ class Emulator;
 class LynxConsole;
 class LynxCpu;
 class LynxMemoryManager;
+class LynxPpuTools;
 
 enum class MemoryOperationType;
 
@@ -43,6 +44,8 @@ class LynxDebugger final : public IDebugger {
 	unique_ptr<CallstackManager> _callstackManager;
 	unique_ptr<BreakpointManager> _breakpointManager;
 	unique_ptr<LynxTraceLogger> _traceLogger;
+	unique_ptr<IAssembler> _assembler;
+	unique_ptr<LynxPpuTools> _ppuTools;
 
 	uint8_t _prevOpCode = 0x01;
 	uint32_t _prevProgramCounter = 0;

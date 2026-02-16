@@ -816,6 +816,8 @@
     <ClInclude Include="Lynx\LynxTypes.h" />
     <ClInclude Include="Lynx\Debugger\LynxDisUtils.h" />
     <ClInclude Include="Lynx\Debugger\LynxDebugger.h" />
+    <ClInclude Include="Lynx\Debugger\LynxAssembler.h" />
+    <ClInclude Include="Lynx\Debugger\LynxPpuTools.h" />
     <ClInclude Include="Lynx\Debugger\LynxTraceLogger.h" />
     <ClInclude Include="Lynx\Debugger\LynxEventManager.h" />
   </ItemGroup>
@@ -1127,6 +1129,8 @@
     <ClCompile Include="Lynx\LynxSuzy.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxDisUtils.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxDebugger.cpp" />
+    <ClCompile Include="Lynx\Debugger\LynxAssembler.cpp" />
+    <ClCompile Include="Lynx\Debugger\LynxPpuTools.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxTraceLogger.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxEventManager.cpp" />
     <ClCompile Include="WS\WsConsole.cpp" />

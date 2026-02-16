@@ -18,6 +18,8 @@
 #include "Lynx/Debugger/LynxDisUtils.h"
 #include "Lynx/Debugger/LynxTraceLogger.h"
 #include "Lynx/Debugger/LynxEventManager.h"
+#include "Lynx/Debugger/LynxAssembler.h"
+#include "Lynx/Debugger/LynxPpuTools.h"
 #include "Utilities/HexUtilities.h"
 #include "Utilities/FolderUtilities.h"
 #include "Utilities/Patches/IpsPatcher.h"
@@ -51,6 +53,8 @@ LynxDebugger::LynxDebugger(Debugger* debugger) : IDebugger(debugger->GetEmulator
 	_callstackManager.reset(new CallstackManager(debugger, this));
 	_breakpointManager.reset(new BreakpointManager(debugger, this, CpuType::Lynx, _eventManager.get()));
 	_traceLogger.reset(new LynxTraceLogger(debugger, this, console->GetMikey()));
+	_assembler.reset(new LynxAssembler(debugger->GetLabelManager()));
+	_ppuTools.reset(new LynxPpuTools(debugger, _emu, console));
 	_step.reset(new StepRequest());
 }
 
@@ -328,8 +332,7 @@ BreakpointManager* LynxDebugger::GetBreakpointManager() {
 }
 
 IAssembler* LynxDebugger::GetAssembler() {
-	// TODO: Implement LynxAssembler (65C02 assembler)
-	return nullptr;
+	return _assembler.get();
 }
 
 BaseEventManager* LynxDebugger::GetEventManager() {
@@ -354,8 +357,7 @@ ITraceLogger* LynxDebugger::GetTraceLogger() {
 }
 
 PpuTools* LynxDebugger::GetPpuTools() {
-	// TODO: Implement LynxPpuTools
-	return nullptr;
+	return _ppuTools.get();
 }
 
 bool LynxDebugger::SaveRomToDisk(string filename, bool saveAsIps, CdlStripOption stripOption) {
