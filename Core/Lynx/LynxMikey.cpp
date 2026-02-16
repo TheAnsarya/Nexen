@@ -78,6 +78,16 @@ void LynxMikey::TickTimer(int index, uint64_t currentCycle) {
 		return;
 	}
 
+	// HW Bug 13.6: Timer does not count while the Timer Done flag is set.
+	// The Timer Done bit must be cleared (by writing to CTLB) before the
+	// timer will resume counting. This is a hardware bug — the done flag
+	// blocks the borrow output that drives the count enable.
+	if (timer.TimerDone) {
+		// Still advance LastTick so we don't accumulate a huge delta
+		timer.LastTick = currentCycle;
+		return;
+	}
+
 	// Check if timer is linked (clock source = 7)
 	uint8_t clockSource = timer.ControlA & 0x07;
 	if (clockSource == 7) {
@@ -120,6 +130,9 @@ void LynxMikey::TickTimer(int index, uint64_t currentCycle) {
 					_state.CurrentScanline = 0;
 				}
 			}
+
+			// HW Bug 13.6: Stop counting now that Done is set
+			break;
 		}
 	}
 }
@@ -136,6 +149,11 @@ void LynxMikey::CascadeTimer(int sourceIndex) {
 	bool enabled = (timer.ControlA & 0x08) != 0;
 	uint8_t clockSource = timer.ControlA & 0x07;
 	if (!enabled || clockSource != 7) {
+		return;
+	}
+
+	// HW Bug 13.6: Timer does not count while Timer Done flag is set
+	if (timer.TimerDone) {
 		return;
 	}
 

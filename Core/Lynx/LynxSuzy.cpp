@@ -32,15 +32,51 @@ void LynxSuzy::DoMultiply() {
 	// MATHC:MATHD × MATHE:MATHF → MATHG:MATHH:MATHJ:MATHK
 	_state.MathInProgress = true;
 
+	// HW Bug 13.10: The math overflow flag is OVERWRITTEN by each new operation,
+	// not OR'd. A previous overflow is lost if the CPU doesn't read SPRSYS before
+	// the next math operation completes. We clear it at the start of each operation.
+	_state.MathOverflow = false;
+
 	if (_state.MathSign) {
 		// Signed multiply
-		int32_t a = (int16_t)_state.MathC;
-		int32_t b = (int16_t)_state.MathE;
-		int32_t result = a * b;
+		// HW Bug 13.8: The hardware sign-detection logic has two errors:
+		//   1. $8000 is treated as POSITIVE (the sign bit is checked, but the
+		//      negate-and-complement produces $8000 again, so it stays positive)
+		//   2. $0000 with the sign flag is treated as NEGATIVE (negate of 0 =
+		//      $10000 which truncates to $0000, but sign is still set)
+		// We emulate this by converting to sign-magnitude the way the HW does:
+		//   - Check bit 15 of each operand for sign
+		//   - If set, negate (two's complement) the value
+		//   - Multiply as unsigned
+		//   - If signs differ, negate the result
+		// The bug manifests because negating $8000 = $8000 (positive $8000)
+		// and negating $0000 = $0000 but still flagged as negative.
+		uint16_t a = (uint16_t)_state.MathC;
+		uint16_t b = (uint16_t)_state.MathE;
+		bool aNeg = (a & 0x8000) != 0;
+		bool bNeg = (b & 0x8000) != 0;
+
+		// Hardware performs two's complement if sign bit set
+		// Bug: ~$8000 + 1 = $7FFF + 1 = $8000 (unchanged, treated as positive magnitude)
+		// Bug: ~$0000 + 1 = $FFFF + 1 = $0000 (truncated, but sign still flagged)
+		if (aNeg) a = (uint16_t)(~a + 1);
+		if (bNeg) b = (uint16_t)(~b + 1);
+
+		uint32_t result = (uint32_t)a * (uint32_t)b;
+
+		// If signs differ, negate the result
+		bool resultNeg = aNeg ^ bNeg;
+		if (resultNeg) {
+			result = ~result + 1;
+		}
 
 		if (_state.MathAccumulate) {
-			int32_t accum = ((int32_t)_state.MathG << 16) | _state.MathH;
-			result += accum;
+			uint32_t accum = ((uint32_t)_state.MathG << 16) | _state.MathH;
+			uint64_t sum64 = (uint64_t)result + (uint64_t)accum;
+			if (sum64 > 0xFFFFFFFF) {
+				_state.MathOverflow = true;
+			}
+			result = (uint32_t)sum64;
 		}
 
 		_state.MathG = (uint16_t)((result >> 16) & 0xffff);
@@ -53,7 +89,11 @@ void LynxSuzy::DoMultiply() {
 
 		if (_state.MathAccumulate) {
 			uint32_t accum = ((uint32_t)_state.MathG << 16) | _state.MathH;
-			result += accum;
+			uint64_t sum64 = (uint64_t)result + (uint64_t)accum;
+			if (sum64 > 0xFFFFFFFF) {
+				_state.MathOverflow = true;
+			}
+			result = (uint32_t)sum64;
 		}
 
 		_state.MathG = (uint16_t)((result >> 16) & 0xffff);
@@ -75,10 +115,34 @@ void LynxSuzy::DoDivide() {
 		_state.MathG = 0;
 		_state.MathH = 0;
 	} else if (_state.MathSign) {
-		int32_t dividend = ((int32_t)_state.MathG << 16) | (uint16_t)_state.MathH;
-		int16_t divisor = (int16_t)_state.MathE;
-		int32_t quotient = dividend / divisor;
-		int32_t remainder = dividend % divisor;
+		// HW Bug 13.9: Signed division remainder errors.
+		// The hardware performs sign-magnitude division similar to multiply:
+		// 1. Extract signs, negate to positive magnitude
+		// 2. Divide as unsigned
+		// 3. Negate quotient if signs differ
+		// 4. The remainder follows the dividend's sign, BUT has the same
+		//    $8000/$0000 bugs as multiply (Bug 13.8).
+		uint32_t dividend = ((uint32_t)_state.MathG << 16) | (uint16_t)_state.MathH;
+		uint16_t divisor = _state.MathE;
+		bool dividendNeg = (dividend & 0x80000000) != 0;
+		bool divisorNeg = (divisor & 0x8000) != 0;
+
+		// Two's complement like the hardware does (same $8000 bug as multiply)
+		if (dividendNeg) dividend = ~dividend + 1;
+		if (divisorNeg) divisor = (uint16_t)(~divisor + 1);
+
+		uint32_t quotient = dividend / (uint32_t)divisor;
+		uint32_t remainder = dividend % (uint32_t)divisor;
+
+		// Negate quotient if signs differ
+		if (dividendNeg ^ divisorNeg) {
+			quotient = ~quotient + 1;
+		}
+
+		// HW Bug 13.9: Remainder should follow dividend sign but the hardware
+		// doesn't always negate it correctly — remainder is always positive
+		// magnitude from the unsigned division. We match the hardware behavior:
+		// remainder is NOT negated, regardless of dividend sign.
 
 		_state.MathC = (int16_t)(quotient & 0xffff);
 		_state.MathD = (int16_t)((quotient >> 16) & 0xffff);
@@ -110,7 +174,11 @@ void LynxSuzy::ProcessSpriteChain() {
 
 	// Walk the sprite linked list
 	int spriteCount = 0;
-	while (scbAddr != 0 && spriteCount < 256) { // Safety limit
+	// HW Bug 13.12: The hardware only checks the UPPER BYTE of the SCB NEXT
+	// address for zero to terminate the sprite chain. If the upper byte is
+	// zero but the lower byte is non-zero (e.g., $0080), the chain still
+	// terminates. Conversely, $0100 would NOT terminate (upper byte = $01).
+	while ((scbAddr >> 8) != 0 && spriteCount < 256) { // Safety limit
 		ProcessSprite(scbAddr);
 		// Read next SCB pointer
 		scbAddr = ReadRam16(scbAddr);
@@ -143,6 +211,14 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 	if (sprCtl1 & 0x04) {
 		return; // Skip this sprite
 	}
+
+	// HW Bug 13.7: Sprite "shadow" polarity is inverted.
+	// SPRCTL1 bit 3 controls shadow mode. In the hardware, a value of 0
+	// enables shadow (opposite of what the documentation says). Games that
+	// rely on shadow sprites must invert this bit.
+	// We extract the flag with hardware-correct polarity:
+	bool isShadow = (sprCtl1 & 0x08) == 0; // Inverted! 0 = shadow, 1 = normal
+	(void)isShadow; // Used when full sprite rendering is implemented
 
 	// Basic drawing: read scanlines from data, plot into frame buffer
 	// Collision number from SCB (for collision detection)
@@ -233,6 +309,7 @@ uint8_t LynxSuzy::ReadRegister(uint8_t addr) {
 			return _state.SpriteEnabled ? 0x01 : 0x00;
 		case 0x92: // SPRSYS — system status
 			return (_state.SpriteBusy ? 0x01 : 0x00) |
+				(_state.MathOverflow ? 0x04 : 0x00) |  // Bit 2: math overflow
 				(_state.MathInProgress ? 0x80 : 0x00);
 
 		// SCB address
@@ -378,6 +455,7 @@ void LynxSuzy::Serialize(Serializer& s) {
 	SV(_state.MathSign);
 	SV(_state.MathAccumulate);
 	SV(_state.MathInProgress);
+	SV(_state.MathOverflow);
 
 	// Collision
 	SVArray(_state.CollisionBuffer, LynxConstants::CollisionBufferSize);

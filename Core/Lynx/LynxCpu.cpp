@@ -243,11 +243,18 @@ void LynxCpu::BRK() {
 
 void LynxCpu::WAI() {
 	// Wait for interrupt — CPU halts until IRQ
+	// HW Bug 13.1: On real hardware, the CPU can only be woken from sleep
+	// if Suzy holds the bus (SUZY_BUSEN asserted). Without Suzy bus request,
+	// a STP/WAI is permanent and requires a hardware reset. Most games avoid
+	// this by ensuring sprites are being processed or by using WAI (which
+	// automatically wakes on any IRQ regardless of bus state in our emulation).
 	_state.StopState = LynxCpuStopState::WaitingForIrq;
 }
 
 void LynxCpu::STP() {
 	// Stop — CPU halts until reset
+	// HW Bug 13.1: On real hardware, STP is only recoverable from if Suzy
+	// is holding the bus. We emulate this as a permanent halt (requires reset).
 	_state.StopState = LynxCpuStopState::Stopped;
 }
 

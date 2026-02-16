@@ -407,6 +407,11 @@ struct LynxSuzyState {
 	/// <summary>Whether a math operation is in progress</summary>
 	bool MathInProgress;
 
+	/// <summary>Math overflow/carry flag — set when multiply or accumulate overflows 32 bits.
+	/// HW Bug 13.10: This flag can be lost if a second multiply overwrites the
+	/// overflow status before the CPU reads SPRSYS.</summary>
+	bool MathOverflow;
+
 	// --- Collision ---
 	/// <summary>16-slot collision depository</summary>
 	uint8_t CollisionBuffer[LynxConstants::CollisionBufferSize];

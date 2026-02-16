@@ -138,6 +138,7 @@ public struct LynxSuzyState : BaseState {
 	[MarshalAs(UnmanagedType.I1)] public bool MathSign;
 	[MarshalAs(UnmanagedType.I1)] public bool MathAccumulate;
 	[MarshalAs(UnmanagedType.I1)] public bool MathInProgress;
+	[MarshalAs(UnmanagedType.I1)] public bool MathOverflow;
 
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
 	public byte[] CollisionBuffer;

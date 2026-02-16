@@ -101,6 +101,7 @@ public sealed class LynxRegisterViewer {
 			new RegEntry("", "  Sign", suzy.MathSign),
 			new RegEntry("", "  Accumulate", suzy.MathAccumulate),
 			new RegEntry("", "  In Progress", suzy.MathInProgress),
+			new RegEntry("", "  Overflow", suzy.MathOverflow),
 			new RegEntry("", ""),
 			new RegEntry("", "Joystick", suzy.Joystick, Format.X8),
 			new RegEntry("", "Switches", suzy.Switches, Format.X8),
