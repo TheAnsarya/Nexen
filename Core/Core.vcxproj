@@ -802,6 +802,7 @@
     <ClInclude Include="WS\WsSerial.h" />
     <ClInclude Include="WS\WsTimer.h" />
     <ClInclude Include="WS\WsTypes.h" />
+    <ClInclude Include="Lynx\LynxTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Debugger\Base6502Assembler.cpp" />
