@@ -803,6 +803,7 @@
     <ClInclude Include="WS\WsTimer.h" />
     <ClInclude Include="WS\WsTypes.h" />
     <ClInclude Include="Lynx\LynxConsole.h" />
+    <ClInclude Include="Lynx\LynxMemoryManager.h" />
     <ClInclude Include="Lynx\LynxTypes.h" />
   </ItemGroup>
   <ItemGroup>
@@ -1102,6 +1103,7 @@
     <ClCompile Include="WS\Debugger\WsPpuTools.cpp" />
     <ClCompile Include="WS\Debugger\WsTraceLogger.cpp" />
     <ClCompile Include="Lynx\LynxConsole.cpp" />
+    <ClCompile Include="Lynx\LynxMemoryManager.cpp" />
     <ClCompile Include="WS\WsConsole.cpp" />
     <ClCompile Include="WS\WsControlManager.cpp" />
     <ClCompile Include="WS\WsCpu.cpp" />
