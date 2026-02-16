@@ -44,6 +44,7 @@
 #include "GBA/GbaTypes.h"
 #include "WS/Debugger/WsDebugger.h"
 #include "WS/WsTypes.h"
+#include "Lynx/LynxTypes.h"
 #include "Shared/BaseControlManager.h"
 #include "Shared/EmuSettings.h"
 #include "Shared/Audio/SoundMixer.h"
@@ -128,6 +129,9 @@ Debugger::Debugger(Emulator* emu, IConsole* console) {
 				break;
 			case CpuType::Ws:
 				debugger.reset(new WsDebugger(this));
+				break;
+			case CpuType::Lynx:
+				// TODO: debugger.reset(new LynxDebugger(this));
 				break;
 			default:
 				[[unlikely]] throw std::runtime_error("Unsupported CPU type");
@@ -225,6 +229,9 @@ uint64_t Debugger::GetCpuCycleCount() {
 			return GetDebugger<type, GbaDebugger>()->GetCpuCycleCount();
 		case CpuType::Ws:
 			return GetDebugger<type, WsDebugger>()->GetCpuCycleCount();
+		case CpuType::Lynx:
+			// TODO: return GetDebugger<type, LynxDebugger>()->GetCpuCycleCount();
+			return 0;
 		default:
 			return 0;
 			break;
@@ -363,6 +370,9 @@ void Debugger::ProcessMemoryRead(uint32_t addr, T& value, MemoryOperationType op
 				GetDebugger<CpuType::Ws, WsDebugger>()->ProcessRead<accessWidth>(addr, value, opType);
 			}
 			break;
+		case CpuType::Lynx:
+			// TODO: GetDebugger<CpuType::Lynx, LynxDebugger>()->ProcessRead(addr, value, opType);
+			break;
 	}
 
 	if (_scriptManager->HasCpuMemoryCallbacks()) {
@@ -418,6 +428,9 @@ bool Debugger::ProcessMemoryWrite(uint32_t addr, T& value, MemoryOperationType o
 			if constexpr (accessWidth <= 2) {
 				GetDebugger<CpuType::Ws, WsDebugger>()->ProcessWrite<accessWidth>(addr, value, opType);
 			}
+			break;
+		case CpuType::Lynx:
+			// TODO: GetDebugger<CpuType::Lynx, LynxDebugger>()->ProcessWrite(addr, value, opType);
 			break;
 	}
 
@@ -610,6 +623,9 @@ void Debugger::ProcessPpuCycle() {
 			break;
 		case CpuType::Ws:
 			GetDebugger<type, WsDebugger>()->ProcessPpuCycle();
+			break;
+		case CpuType::Lynx:
+			// TODO: GetDebugger<type, LynxDebugger>()->ProcessPpuCycle();
 			break;
 		default:
 			[[unlikely]] throw std::runtime_error("Invalid cpu type");
@@ -854,6 +870,9 @@ void Debugger::PauseOnNextFrame() {
 		case CpuType::Ws:
 			Step(CpuType::Ws, 145, StepType::SpecificScanline, BreakSource::PpuStep);
 			break;
+		case CpuType::Lynx:
+			Step(CpuType::Lynx, 102, StepType::SpecificScanline, BreakSource::PpuStep);
+			break;
 	}
 }
 
@@ -948,6 +967,8 @@ bool Debugger::IsDebugWindowOpened(CpuType cpuType) {
 			return _settings->CheckDebuggerFlag(DebuggerFlags::GbaDebuggerEnabled);
 		case CpuType::Ws:
 			return _settings->CheckDebuggerFlag(DebuggerFlags::WsDebuggerEnabled);
+		case CpuType::Lynx:
+			return _settings->CheckDebuggerFlag(DebuggerFlags::LynxDebuggerEnabled);
 	}
 
 	return false;
@@ -1044,6 +1065,9 @@ void Debugger::GetCpuState(BaseState& dstState, CpuType cpuType) {
 		case CpuType::Ws:
 			memcpy(&dstState, &srcState, sizeof(WsCpuState));
 			break;
+		case CpuType::Lynx:
+			memcpy(&dstState, &srcState, sizeof(LynxCpuState));
+			break;
 	}
 }
 
@@ -1089,6 +1113,9 @@ void Debugger::SetCpuState(BaseState& srcState, CpuType cpuType) {
 			break;
 		case CpuType::Ws:
 			memcpy(&dstState, &srcState, sizeof(WsCpuState));
+			break;
+		case CpuType::Lynx:
+			memcpy(&dstState, &srcState, sizeof(LynxCpuState));
 			break;
 	}
 }
@@ -1139,6 +1166,9 @@ void Debugger::GetPpuState(BaseState& state, CpuType cpuType) {
 			GetDebugger<CpuType::Ws, WsDebugger>()->GetPpuState(state);
 			break;
 		}
+		case CpuType::Lynx:
+			// TODO: GetDebugger<CpuType::Lynx, LynxDebugger>()->GetPpuState(state);
+			break;
 	}
 }
 
@@ -1185,6 +1215,9 @@ void Debugger::SetPpuState(BaseState& state, CpuType cpuType) {
 			GetDebugger<CpuType::Ws, WsDebugger>()->SetPpuState(state);
 			break;
 		}
+		case CpuType::Lynx:
+			// TODO: GetDebugger<CpuType::Lynx, LynxDebugger>()->SetPpuState(state);
+			break;
 	}
 }
 
@@ -1292,6 +1325,9 @@ bool Debugger::SaveRomToDisk(string filename, bool saveAsIps, CdlStripOption str
 			return GetDebugger<CpuType::Gba, GbaDebugger>()->SaveRomToDisk(filename, saveAsIps, stripOption);
 		case CpuType::Ws:
 			return GetDebugger<CpuType::Ws, WsDebugger>()->SaveRomToDisk(filename, saveAsIps, stripOption);
+		case CpuType::Lynx:
+			// TODO: return GetDebugger<CpuType::Lynx, LynxDebugger>()->SaveRomToDisk(filename, saveAsIps, stripOption);
+			return false;
 	}
 
 	return false;
@@ -1473,6 +1509,7 @@ template void Debugger::ProcessHaltedCpu<CpuType::Gameboy>();
 template void Debugger::ProcessHaltedCpu<CpuType::Sms>();
 template void Debugger::ProcessHaltedCpu<CpuType::Gba>();
 template void Debugger::ProcessHaltedCpu<CpuType::Ws>();
+template void Debugger::ProcessHaltedCpu<CpuType::Lynx>();
 
 template void Debugger::ProcessInterrupt<CpuType::Snes>(uint32_t originalPc, uint32_t currentPc, bool forNmi);
 template void Debugger::ProcessInterrupt<CpuType::Sa1>(uint32_t originalPc, uint32_t currentPc, bool forNmi);
@@ -1482,6 +1519,7 @@ template void Debugger::ProcessInterrupt<CpuType::Pce>(uint32_t originalPc, uint
 template void Debugger::ProcessInterrupt<CpuType::Sms>(uint32_t originalPc, uint32_t currentPc, bool forNmi);
 template void Debugger::ProcessInterrupt<CpuType::Gba>(uint32_t originalPc, uint32_t currentPc, bool forNmi);
 template void Debugger::ProcessInterrupt<CpuType::Ws>(uint32_t originalPc, uint32_t currentPc, bool forNmi);
+template void Debugger::ProcessInterrupt<CpuType::Lynx>(uint32_t originalPc, uint32_t currentPc, bool forNmi);
 
 template void Debugger::ProcessPpuRead<CpuType::Snes>(uint16_t addr, uint8_t& value, MemoryType memoryType, MemoryOperationType opType);
 template void Debugger::ProcessPpuRead<CpuType::Gameboy>(uint16_t addr, uint8_t& value, MemoryType memoryType, MemoryOperationType opType);
@@ -1504,6 +1542,7 @@ template void Debugger::ProcessPpuCycle<CpuType::Pce>();
 template void Debugger::ProcessPpuCycle<CpuType::Sms>();
 template void Debugger::ProcessPpuCycle<CpuType::Gba>();
 template void Debugger::ProcessPpuCycle<CpuType::Ws>();
+template void Debugger::ProcessPpuCycle<CpuType::Lynx>();
 
 template void Debugger::ProcessBreakConditions<1>(CpuType sourceCpu, StepRequest& step, BreakpointManager* bpManager, MemoryOperationInfo& operation, AddressInfo& addressInfo);
 template void Debugger::ProcessBreakConditions<2>(CpuType sourceCpu, StepRequest& step, BreakpointManager* bpManager, MemoryOperationInfo& operation, AddressInfo& addressInfo);

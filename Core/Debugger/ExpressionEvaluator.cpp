@@ -93,6 +93,9 @@ unordered_map<string, int64_t>* ExpressionEvaluator::GetAvailableTokens() {
 			return &GetGbaTokens();
 		case CpuType::Ws:
 			return &GetWsTokens();
+		case CpuType::Lynx:
+			// Lynx uses 65C02, reuse NES/PCE token set for registers
+			return &GetNesTokens();
 	}
 
 	return nullptr;
@@ -484,6 +487,10 @@ int64_t ExpressionEvaluator::Evaluate(ExpressionData& data, EvalResultType& resu
 									break;
 								case CpuType::Ws:
 									token = GetWsTokenValue(token, resultType);
+									break;
+								case CpuType::Lynx:
+									// Lynx uses 65C02, reuse NES token value getter
+									token = GetNesTokenValue(token, resultType);
 									break;
 							}
 						}
