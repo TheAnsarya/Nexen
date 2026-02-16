@@ -1711,6 +1711,7 @@ tas.finishSearch(true) -- Load best result</pre>
 			SystemType.Sms => ControllerLayout.MasterSystem,
 			SystemType.Pce => ControllerLayout.PcEngine,
 			SystemType.Ws => ControllerLayout.WonderSwan,
+			SystemType.Lynx => ControllerLayout.Lynx,
 			_ => Movie.SourceFormat switch {
 				// Fallback to source format hints
 				MovieFormat.Fm2 => ControllerLayout.Nes,
@@ -1737,6 +1738,7 @@ tas.finishSearch(true) -- Load best result</pre>
 			ControllerLayout.MasterSystem => GetMasterSystemButtons(),
 			ControllerLayout.PcEngine => GetPcEngineButtons(),
 			ControllerLayout.WonderSwan => GetWonderSwanButtons(),
+			ControllerLayout.Lynx => GetLynxButtons(),
 			_ => GetSnesButtons()
 		};
 	}
@@ -1837,6 +1839,18 @@ tas.finishSearch(true) -- Load best result</pre>
 		new("DOWN", "Y2", 1, 2),
 		new("LEFT", "Y3", 2, 2),
 		new("RIGHT", "Y4", 3, 2),
+	};
+
+	private static List<ControllerButtonInfo> GetLynxButtons() => new() {
+		new("A", "A", 0, 0),
+		new("B", "B", 1, 0),
+		new("L", "O1", 2, 0),
+		new("R", "O2", 3, 0),
+		new("START", "Pau", 4, 0),
+		new("UP", "↑", 0, 1),
+		new("DOWN", "↓", 1, 1),
+		new("LEFT", "←", 2, 1),
+		new("RIGHT", "→", 3, 1),
 	};
 
 	#endregion
@@ -2066,7 +2080,10 @@ public enum ControllerLayout {
 	PcEngine,
 
 	/// <summary>WonderSwan - A, B, Start, X1-X4, Y1-Y4</summary>
-	WonderSwan
+	WonderSwan,
+
+	/// <summary>Lynx - A, B, Option1, Option2, Pause, D-Pad</summary>
+	Lynx
 }
 
 /// <summary>
