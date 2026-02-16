@@ -164,6 +164,13 @@
 						</Grid>
 					</c:OptionSection>
 
+					<c:OptionSection Header="Lynx" Icon="Assets/Drive.png" >
+						<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,*">
+							<TextBlock Text="Boot ROM" />
+							<c:FirmwareSelect FirmwareType="LynxBootRom" Grid.Column="1" />
+						</Grid>
+					</c:OptionSection>
+
 					<c:OptionSection Header="{l:Translate lblOtherConsoles}" Icon="Assets/Drive.png" >
 						<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,*">
 							<TextBlock Text="ColecoVision - Boot ROM" />

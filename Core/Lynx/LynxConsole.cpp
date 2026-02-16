@@ -13,6 +13,7 @@
 #include "Shared/EmuSettings.h"
 #include "Shared/MessageManager.h"
 #include "Shared/BatteryManager.h"
+#include "Shared/FirmwareHelper.h"
 #include "Utilities/Serializer.h"
 #include "Utilities/VirtualFile.h"
 
@@ -102,10 +103,21 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 	_emu->RegisterMemory(MemoryType::LynxWorkRam, _workRam, _workRamSize);
 
 	// Boot ROM — optional, loaded from firmware
-	// TODO: Load boot ROM via FirmwareHelper when implemented
-	// For now, no boot ROM
-	_bootRomSize = 0;
-	_bootRom = nullptr;
+	vector<uint8_t> bootRomData;
+	if (FirmwareHelper::LoadLynxBootRom(_emu, bootRomData)) {
+		_bootRomSize = (uint32_t)bootRomData.size();
+		_bootRom = new uint8_t[_bootRomSize];
+		memcpy(_bootRom, bootRomData.data(), _bootRomSize);
+		_emu->RegisterMemory(MemoryType::LynxBootRom, _bootRom, _bootRomSize);
+		MessageManager::Log("Boot ROM loaded successfully.");
+	} else {
+		// No boot ROM — use HLE (High-Level Emulation) fallback.
+		// Skip the boot animation and set up the post-boot hardware state
+		// so games can run without the real boot ROM.
+		_bootRomSize = 0;
+		_bootRom = nullptr;
+		MessageManager::Log("No boot ROM found — using HLE fallback.");
+	}
 
 	// Save RAM (EEPROM) — size determined by ROM database or header
 	// TODO: Determine EEPROM size from cart info
@@ -151,6 +163,18 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 
 	// Initialize CPU — needs memory manager
 	_cpu.reset(new LynxCpu(_emu, this, _memoryManager.get()));
+
+	// HLE fallback: When no boot ROM is present, the reset vector at $FFFC-$FFFD
+	// reads from RAM (which is all zeros), so PC = $0000. We need to set up the
+	// post-boot state that the boot ROM would have configured:
+	//  - Stack pointer initialized
+	//  - Display timing configured (Mikey timers 0 and 2)
+	//  - Display address set
+	//  - MAPCTL configured to show ROM/Mikey/Suzy
+	//  - Jump to cart entry point
+	if (!_bootRom) {
+		ApplyHleBootState();
+	}
 
 	// Initialize Mikey (timers, display, IRQs) — needs CPU reference for IRQ line
 	_mikey->Init(_emu, this, _cpu.get(), _memoryManager.get());
@@ -223,6 +247,72 @@ void LynxConsole::LoadBattery() {
 	if (_saveRam && _saveRamSize > 0) {
 		_emu->GetBatteryManager()->LoadBattery(".sav", std::span<uint8_t>(_saveRam, _saveRamSize));
 	}
+}
+
+void LynxConsole::ApplyHleBootState() {
+	// High-Level Emulation of the Lynx boot ROM.
+	// When no boot ROM file is provided, we simulate the post-boot hardware
+	// state so the cart can execute immediately.
+	//
+	// The real boot ROM ($FE00-$FFFF, 512 bytes) does:
+	// 1. Initializes hardware registers (MAPCTL, timers, display)
+	// 2. Reads the cart header to find the entry point
+	// 3. Copies a small loader stub into RAM
+	// 4. Jumps to the loader, which copies cart code to RAM and executes it
+	//
+	// Our HLE sets up the same final state without running boot ROM code.
+
+	// --- CPU state ---
+	// Boot ROM leaves SP at $FF, interrupts disabled
+	auto& cpuState = _cpu->GetState();
+	cpuState.SP = 0xff;
+	cpuState.PS = 0x04 | LynxPSFlags::Reserved; // Interrupt flag set (IRQs disabled), Reserved always set
+
+	// --- Memory map: disable ROM/vector overlays so RAM is visible ---
+	// MAPCTL = $00: Suzy, Mikey, ROM all enabled; vectors from ROM
+	// After boot, the typical MAPCTL is $00 or $08 depending on game
+	_memoryManager->Write(0xfff9, 0x00, MemoryOperationType::Write);
+
+	// --- Display: Configure Mikey for 160×102 display ---
+	// Timer 0 (HCount): horizontal timing
+	// Clock source 2 (1μs period), backup value for 160 pixels
+	_mikey->WriteRegister(0x00, 0x9e); // Timer 0 BACKUP = 158 (period of 160 pixels)
+	_mikey->WriteRegister(0x01, 0x18); // Timer 0 CTLA = $18 (enable, clock source 2 = 1μs)
+
+	// Timer 2 (VCount): vertical timing — counts scanlines
+	_mikey->WriteRegister(0x08, 0x68); // Timer 2 BACKUP = 104 (105 scanlines including VBlank)
+	_mikey->WriteRegister(0x09, 0x1f); // Timer 2 CTLA = $1F (enable, linked to Timer 0)
+
+	// Display control: enable DMA
+	_mikey->WriteRegister(0x92, 0x09); // DISPCTL = $09 (DMA enabled, color mode)
+
+	// Display address: default frame buffer at $C000 (common location)
+	_mikey->WriteRegister(0x94, 0x00); // DISPADR low
+	_mikey->WriteRegister(0x95, 0xc0); // DISPADR high = $C000
+
+	// --- IRQ: Enable Timer 0 (HBlank) and Timer 2 (VBlank) ---
+	_mikey->WriteRegister(0x80, 0x00); // Clear pending IRQs
+	// Don't enable any IRQs by default — let the game set them up
+
+	// --- Set PC to cart entry point ---
+	// The standard Lynx cart header (after the 64-byte LNX header) has the 
+	// entry point at the start of the ROM data. The boot ROM loads the first
+	// page of the cart and jumps to the entry address.
+	// Most games expect to start at $0200 (loaded into RAM by the boot ROM)
+	// or the reset vector. Without boot ROM, we read the reset vector from
+	// the cart. If the cart has proper vectors in its ROM data, those will
+	// be mapped at $FFFC. Otherwise, we fall back to $0200.
+	uint16_t resetVector = _memoryManager->Read(0xfffc, MemoryOperationType::Read) |
+		((uint16_t)_memoryManager->Read(0xfffd, MemoryOperationType::Read) << 8);
+
+	if (resetVector == 0x0000 || resetVector == 0xffff) {
+		// Invalid reset vector — the cart doesn't have proper vectors
+		// Fall back to $0200, the standard Lynx loader address
+		resetVector = 0x0200;
+	}
+	cpuState.PC = resetVector;
+
+	MessageManager::Log(std::format("HLE boot: PC=${:04X}, SP=$FF", resetVector));
 }
 
 BaseControlManager* LynxConsole::GetControlManager() {

@@ -85,6 +85,7 @@ public:
 	[[nodiscard]] LynxModel GetModel() { return _model; }
 	[[nodiscard]] LynxRotation GetRotation() { return _rotation; }
 	void LoadBattery();
+	void ApplyHleBootState();
 
 	// Component accessors
 	[[nodiscard]] LynxCpu* GetCpu() { return _cpu.get(); }

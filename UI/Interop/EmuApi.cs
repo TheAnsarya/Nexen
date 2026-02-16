@@ -408,7 +408,8 @@ public enum FirmwareType {
 	SwanCrystal,
 	Ymf288AdpcmRom,
 	SmsBootRom,
-	GgBootRom
+	GgBootRom,
+	LynxBootRom
 }
 
 public struct MissingFirmwareMessage {

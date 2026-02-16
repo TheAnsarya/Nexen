@@ -72,6 +72,7 @@ public static class FirmwareTypeExtensions {
 				};
 
 			case FirmwareType.GgBootRom: return new("bios.gg") { new(0x400, "8C8A21335038285CFA03DC076100C1F0BFADF3E4FF70796F11F3DFAAAB60EEE2") };
+			case FirmwareType.LynxBootRom: return new("lynxboot.img") { new(0x200, "FCD403DB69F54290B51035D82F835E7B78056B511AD51D5B4DBBAE3A835CDC78") };
 			case FirmwareType.WonderSwan: return new("bootrom.ws") { new(0x1000, "BF4480DBEA1C47C8B54CE7BE9382BC1006148F431FBE4277E136351FA74F635E") };
 			case FirmwareType.WonderSwanColor: return new("bootrom.wsc") { new(0x2000, "F5A5C044D84CE1681F94E9EF74287CB989784497BE5BD5108DF17908DFA55DB2") };
 			case FirmwareType.SwanCrystal: return new("bootrom_sc.wsc") { new(0x2000, "82E96ADDF5AB1CE09A84B6EEDAA904E4CA432756851F7E0CC0649006C183834D") };

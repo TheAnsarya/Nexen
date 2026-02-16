@@ -48,7 +48,8 @@ enum class FirmwareType {
 	SwanCrystal,     ///< SwanCrystal boot ROM
 	Ymf288AdpcmRom,  ///< Yamaha YMF288 ADPCM sample ROM (percussion sounds)
 	SmsBootRom,      ///< Sega Master System boot ROM
-	GgBootRom        ///< Sega Game Gear boot ROM
+	GgBootRom,       ///< Sega Game Gear boot ROM
+	LynxBootRom      ///< Atari Lynx boot ROM (512 bytes)
 };
 
 /// <summary>
@@ -431,6 +432,24 @@ public:
 		}
 
 		MessageManager::DisplayMessage("Error", "Could not find boot rom for the WonderSwan, skipping boot screen.");
+		return false;
+	}
+
+	static bool LoadLynxBootRom(Emulator* emu, vector<uint8_t>& bootRom) {
+		string filename = "lynxboot.img";
+		uint32_t size = 0x200; // 512 bytes
+		if (AttemptLoadFirmware(bootRom, filename, size)) {
+			return true;
+		}
+
+		MissingFirmwareMessage msg(filename.c_str(), FirmwareType::LynxBootRom, size);
+		emu->GetNotificationManager()->SendNotification(ConsoleNotificationType::MissingFirmware, &msg);
+
+		if (AttemptLoadFirmware(bootRom, filename, size)) {
+			return true;
+		}
+
+		MessageManager::DisplayMessage("Error", "Could not find boot ROM for the Atari Lynx, skipping boot sequence.");
 		return false;
 	}
 
