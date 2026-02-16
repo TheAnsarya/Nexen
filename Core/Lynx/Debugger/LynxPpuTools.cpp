@@ -2,6 +2,7 @@
 #include "Lynx/Debugger/LynxPpuTools.h"
 #include "Lynx/LynxConsole.h"
 #include "Lynx/LynxMikey.h"
+#include "Lynx/LynxSuzy.h"
 #include "Lynx/LynxTypes.h"
 #include "Debugger/Debugger.h"
 #include "Debugger/MemoryDumper.h"
@@ -153,15 +154,260 @@ DebugSpritePreviewInfo LynxPpuTools::GetSpritePreviewInfo(GetSpritePreviewOption
 	info.WrapBottomToTop = false;
 	info.WrapRightToLeft = false;
 
-	// TODO: Walk SCB linked list to count sprites
-	info.SpriteCount = 0;
+	// Walk SCB chain to count sprites
+	uint8_t* ram = _console->GetWorkRam();
+	uint16_t scbAddr = _console->GetSuzy()->GetState().SCBAddress;
+	uint32_t count = 0;
 
+	while ((scbAddr >> 8) != 0 && count < 256) {
+		count++;
+		scbAddr = ram[scbAddr & 0xFFFF] | (ram[(scbAddr + 1) & 0xFFFF] << 8);
+	}
+
+	info.SpriteCount = count;
 	return info;
 }
 
 void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& baseState, BaseState& ppuToolsState, uint8_t* vram, uint8_t* oamRam, uint32_t* palette, DebugSpriteInfo outBuffer[], uint32_t* spritePreviews, uint32_t* screenPreview) {
-	// TODO: Walk the Suzy SCB (Sprite Control Block) linked list and populate sprite info.
-	// Each SCB contains: control bytes, collision number, pointer to next SCB,
-	// tile data pointer, X/Y position, stretch/tilt parameters.
-	// For now, this is a no-op stub (SpriteCount = 0 in GetSpritePreviewInfo).
+	LynxSuzyState& suzyState = _console->GetSuzy()->GetState();
+	uint16_t scbAddr = suzyState.SCBAddress;
+
+	// Persistent values across sprites (reused when reload flags skip loading)
+	int16_t persistHpos = 0;
+	int16_t persistVpos = 0;
+	uint16_t persistHsize = 0x0100; // 1.0 in 8.8 fixed-point
+	uint16_t persistVsize = 0x0100;
+	int16_t persistStretch = 0;
+	int16_t persistTilt = 0;
+	uint8_t penIndex[16];
+	for (int i = 0; i < 16; i++) {
+		penIndex[i] = (uint8_t)i; // Identity mapping
+	}
+
+	int spriteIndex = 0;
+
+	while ((scbAddr >> 8) != 0 && spriteIndex < 256) {
+		DebugSpriteInfo& sprite = outBuffer[spriteIndex];
+		sprite.Init();
+		uint32_t* spritePreview = spritePreviews + (spriteIndex * _spritePreviewSize);
+
+		// Read SCB header: SPRCTL0, SPRCTL1
+		uint8_t sprCtl0 = vram[(scbAddr + 2) & 0xFFFF];
+		uint8_t sprCtl1 = vram[(scbAddr + 3) & 0xFFFF];
+
+		// BPP from SPRCTL0 bits 7:6 (0=1bpp, 1=2bpp, 2=3bpp, 3=4bpp)
+		int bpp = ((sprCtl0 >> 6) & 0x03) + 1;
+
+		// Sprite type from SPRCTL0 bits 2:0
+		LynxSpriteType spriteType = static_cast<LynxSpriteType>(sprCtl0 & 0x07);
+
+		// Flip flags from SPRCTL0 bits 5:4
+		bool hFlip = (sprCtl0 & 0x20) != 0;
+		bool vFlip = (sprCtl0 & 0x10) != 0;
+
+		// Skip flag (SPRCTL1 bit 2: skip this sprite entirely)
+		bool skipSprite = (sprCtl1 & 0x04) != 0;
+
+		// Reload flags (SPRCTL1 bits 7:4) — 1 = skip reload, reuse previous
+		bool skipReloadHVST = (sprCtl1 & 0x10) != 0;
+		bool skipReloadHVS = (sprCtl1 & 0x20) != 0;
+		bool skipReloadHV = (sprCtl1 & 0x40) != 0;
+		bool skipReloadPalette = (sprCtl1 & 0x80) != 0;
+
+		// Data pointer (always loaded from SCB)
+		uint16_t dataAddr = vram[(scbAddr + 4) & 0xFFFF] | (vram[(scbAddr + 5) & 0xFFFF] << 8);
+
+		// Conditionally load position, size, stretch/tilt, palette from SCB
+		// Fields are at fixed offsets (matching ProcessSprite implementation)
+		if (!skipReloadHV && !skipReloadHVS && !skipReloadHVST) {
+			persistHpos = (int16_t)(vram[(scbAddr + 6) & 0xFFFF] | (vram[(scbAddr + 7) & 0xFFFF] << 8));
+			persistVpos = (int16_t)(vram[(scbAddr + 8) & 0xFFFF] | (vram[(scbAddr + 9) & 0xFFFF] << 8));
+		}
+		if (!skipReloadHVS && !skipReloadHVST) {
+			persistHsize = vram[(scbAddr + 10) & 0xFFFF] | (vram[(scbAddr + 11) & 0xFFFF] << 8);
+			persistVsize = vram[(scbAddr + 12) & 0xFFFF] | (vram[(scbAddr + 13) & 0xFFFF] << 8);
+		}
+		if (!skipReloadHVST) {
+			persistStretch = (int16_t)(vram[(scbAddr + 14) & 0xFFFF] | (vram[(scbAddr + 15) & 0xFFFF] << 8));
+			persistTilt = (int16_t)(vram[(scbAddr + 16) & 0xFFFF] | (vram[(scbAddr + 17) & 0xFFFF] << 8));
+		}
+		if (!skipReloadPalette) {
+			for (int i = 0; i < 8; i++) {
+				uint8_t byte = vram[(scbAddr + 18 + i) & 0xFFFF];
+				penIndex[i * 2] = byte >> 4;
+				penIndex[i * 2 + 1] = byte & 0x0f;
+			}
+		}
+
+		// Populate sprite metadata
+		sprite.SpriteIndex = (int16_t)spriteIndex;
+		sprite.X = persistHpos;
+		sprite.Y = persistVpos;
+		sprite.RawX = persistHpos;
+		sprite.RawY = persistVpos;
+		sprite.Bpp = (int16_t)bpp;
+		sprite.TileAddress = dataAddr;
+		sprite.TileIndex = dataAddr;
+		sprite.PaletteAddress = -1;
+		sprite.Palette = 0;
+		sprite.HorizontalMirror = hFlip ? NullableBoolean::True : NullableBoolean::False;
+		sprite.VerticalMirror = vFlip ? NullableBoolean::True : NullableBoolean::False;
+		sprite.Format = TileFormat::Bpp4;
+		sprite.TileCount = 1;
+		sprite.TileAddresses[0] = dataAddr;
+
+		// Map sprite type to priority/mode
+		switch (spriteType) {
+			case LynxSpriteType::Background:
+				sprite.Priority = DebugSpritePriority::Background;
+				sprite.Mode = DebugSpriteMode::Normal;
+				break;
+			case LynxSpriteType::Shadow:
+			case LynxSpriteType::NormalShadow:
+			case LynxSpriteType::BoundaryShadow:
+			case LynxSpriteType::XorShadow:
+				sprite.Priority = DebugSpritePriority::Foreground;
+				sprite.Mode = DebugSpriteMode::Blending;
+				break;
+			default:
+				sprite.Priority = DebugSpritePriority::Foreground;
+				sprite.Mode = DebugSpriteMode::Normal;
+				break;
+		}
+
+		// Clear sprite preview buffer
+		std::fill(spritePreview, spritePreview + _spritePreviewSize, (uint32_t)0);
+
+		if (skipSprite) {
+			sprite.Visibility = SpriteVisibility::Disabled;
+			sprite.Width = 0;
+			sprite.Height = 0;
+		} else {
+			// Pass 1: Walk sprite data lines to determine dimensions
+			// Each line starts with a length byte (0 = end of sprite)
+			uint16_t scanAddr = dataAddr;
+			int maxWidth = 0;
+			int lineCount = 0;
+
+			for (int line = 0; line < 256; line++) {
+				uint8_t lineHeader = vram[scanAddr & 0xFFFF];
+				scanAddr++;
+				if (lineHeader == 0) {
+					break;
+				}
+				int dataBytes = lineHeader - 1;
+				if (dataBytes > 0) {
+					int pixelCount = (dataBytes * 8) / bpp;
+					if (pixelCount > maxWidth) {
+						maxWidth = pixelCount;
+					}
+				}
+				scanAddr += dataBytes;
+				lineCount++;
+			}
+
+			// Clamp to 128×128 preview area
+			int previewWidth = std::min(maxWidth, 128);
+			int previewHeight = std::min(lineCount, 128);
+			sprite.Width = (uint16_t)previewWidth;
+			sprite.Height = (uint16_t)previewHeight;
+
+			// Pass 2: Decode sprite pixel data and render into preview buffer
+			if (previewWidth > 0 && previewHeight > 0) {
+				uint16_t currentDataAddr = dataAddr;
+				uint8_t bppMask = (1 << bpp) - 1;
+
+				for (int line = 0; line < lineCount; line++) {
+					uint8_t lineHeader = vram[currentDataAddr & 0xFFFF];
+					currentDataAddr++;
+					int dataBytes = lineHeader - 1;
+
+					if (line < 128 && dataBytes > 0) {
+						// Decode packed pixel data for this line
+						uint8_t pixelBuf[512];
+						int pixelCount = 0;
+						int bitBuffer = 0;
+						int bitsRemaining = 0;
+						uint16_t readAddr = currentDataAddr;
+						uint16_t lineEnd = currentDataAddr + dataBytes;
+
+						while (readAddr < lineEnd && pixelCount < 512) {
+							bitBuffer = (bitBuffer << 8) | vram[readAddr & 0xFFFF];
+							readAddr++;
+							bitsRemaining += 8;
+							while (bitsRemaining >= bpp && pixelCount < 512) {
+								bitsRemaining -= bpp;
+								pixelBuf[pixelCount++] = (bitBuffer >> bitsRemaining) & bppMask;
+							}
+						}
+
+						// Render decoded pixels into preview buffer (stride = previewWidth)
+						int renderWidth = std::min(pixelCount, 128);
+						for (int px = 0; px < renderWidth; px++) {
+							uint8_t penRaw = pixelBuf[px];
+							if (penRaw != 0) {
+								uint8_t penMapped = penIndex[penRaw & 0x0f];
+								spritePreview[line * previewWidth + px] = palette[penMapped];
+							}
+						}
+					}
+
+					currentDataAddr += dataBytes;
+				}
+			}
+
+			// Determine visibility based on screen bounds
+			bool onScreen = (persistHpos + previewWidth > 0) &&
+				(persistHpos < (int16_t)LynxConstants::ScreenWidth) &&
+				(persistVpos + previewHeight > 0) &&
+				(persistVpos < (int16_t)LynxConstants::ScreenHeight);
+			sprite.Visibility = onScreen ? SpriteVisibility::Visible : SpriteVisibility::Offscreen;
+		}
+
+		spriteIndex++;
+		scbAddr = vram[scbAddr & 0xFFFF] | (vram[(scbAddr + 1) & 0xFFFF] << 8);
+	}
+
+	// Composite all sprites onto the screen preview
+	GetSpritePreview(options, baseState, outBuffer, spriteIndex, spritePreviews, palette, screenPreview);
+}
+
+void LynxPpuTools::GetSpritePreview(GetSpritePreviewOptions options, BaseState& state,
+	DebugSpriteInfo* sprites, uint32_t spriteCount,
+	uint32_t* spritePreviews, uint32_t* palette, uint32_t* outBuffer) {
+
+	uint32_t width = LynxConstants::ScreenWidth;
+	uint32_t height = LynxConstants::ScreenHeight;
+	uint32_t bgColor = GetSpriteBackgroundColor(options.Background, palette, false);
+
+	std::fill(outBuffer, outBuffer + width * height, bgColor);
+
+	// Draw sprites in reverse order (back-to-front).
+	// Lynx renders front-to-back (first sprite = highest priority), so to
+	// reproduce the visual with standard "paint on top" blitting, draw the
+	// last sprite first and the first sprite last (on top).
+	for (int i = (int)spriteCount - 1; i >= 0; i--) {
+		DebugSpriteInfo& sprite = sprites[i];
+		if (sprite.Visibility == SpriteVisibility::Disabled || sprite.Width == 0 || sprite.Height == 0) {
+			continue;
+		}
+
+		uint32_t* spritePreview = spritePreviews + i * _spritePreviewSize;
+		bool hFlip = sprite.HorizontalMirror == NullableBoolean::True;
+		bool vFlip = sprite.VerticalMirror == NullableBoolean::True;
+
+		for (int y = 0; y < sprite.Height; y++) {
+			for (int x = 0; x < sprite.Width; x++) {
+				uint32_t color = spritePreview[y * sprite.Width + x];
+				if (color != 0) {
+					int screenX = sprite.X + (hFlip ? -x : x);
+					int screenY = sprite.Y + (vFlip ? -y : y);
+					if (screenX >= 0 && screenX < (int)width &&
+						screenY >= 0 && screenY < (int)height) {
+						outBuffer[screenY * width + screenX] = color;
+					}
+				}
+			}
+		}
+	}
 }

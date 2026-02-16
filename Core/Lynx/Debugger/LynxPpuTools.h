@@ -13,14 +13,21 @@ class LynxConsole;
 /// while Suzy handles the sprite engine. The display is a 160x102 linear
 /// framebuffer in work RAM with 4bpp packed pixels.
 ///
+/// Sprite viewer walks the SCB (Sprite Control Block) linked list from
+/// Suzy's SCBAddress register. Each SCB entry contains control bytes,
+/// position, size, stretch/tilt, palette remap, and collision data.
+/// Persistent fields carry forward across sprites via reload-skip flags.
+///
 /// TODO items for full implementation:
-/// - Sprite list: Walk the SCB linked list and display each sprite's properties
 /// - Tile viewer: Decode sprite pixel data from cart ROM as tiles
-/// - Tilemap: The Lynx has no tilemap hardware; could show the framebuffer contents
 /// </summary>
 class LynxPpuTools final : public PpuTools {
 private:
 	LynxConsole* _console = nullptr;
+
+	void GetSpritePreview(GetSpritePreviewOptions options, BaseState& state,
+		DebugSpriteInfo* sprites, uint32_t spriteCount,
+		uint32_t* spritePreviews, uint32_t* palette, uint32_t* outBuffer);
 
 public:
 	LynxPpuTools(Debugger* debugger, Emulator* emu, LynxConsole* console);
