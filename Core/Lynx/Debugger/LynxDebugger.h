@@ -12,6 +12,7 @@ class EmuSettings;
 class BreakpointManager;
 class IAssembler;
 class BaseEventManager;
+class LynxTraceLogger;
 class Emulator;
 class LynxConsole;
 class LynxCpu;
@@ -41,6 +42,7 @@ class LynxDebugger final : public IDebugger {
 	unique_ptr<BaseEventManager> _eventManager;
 	unique_ptr<CallstackManager> _callstackManager;
 	unique_ptr<BreakpointManager> _breakpointManager;
+	unique_ptr<LynxTraceLogger> _traceLogger;
 
 	uint8_t _prevOpCode = 0x01;
 	uint32_t _prevProgramCounter = 0;

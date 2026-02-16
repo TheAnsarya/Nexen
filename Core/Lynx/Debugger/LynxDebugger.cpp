@@ -12,9 +12,11 @@
 #include "Debugger/StepBackManager.h"
 #include "Lynx/LynxConsole.h"
 #include "Lynx/LynxCpu.h"
+#include "Lynx/LynxMikey.h"
 #include "Lynx/LynxMemoryManager.h"
 #include "Lynx/Debugger/LynxDebugger.h"
 #include "Lynx/Debugger/LynxDisUtils.h"
+#include "Lynx/Debugger/LynxTraceLogger.h"
 #include "Utilities/HexUtilities.h"
 #include "Utilities/FolderUtilities.h"
 #include "Utilities/Patches/IpsPatcher.h"
@@ -47,6 +49,7 @@ LynxDebugger::LynxDebugger(Debugger* debugger) : IDebugger(debugger->GetEmulator
 	// TODO: _eventManager.reset(new LynxEventManager(debugger, console));
 	_callstackManager.reset(new CallstackManager(debugger, this));
 	_breakpointManager.reset(new BreakpointManager(debugger, this, CpuType::Lynx, _eventManager.get()));
+	_traceLogger.reset(new LynxTraceLogger(debugger, this, console->GetMikey()));
 	_step.reset(new StepRequest());
 }
 
@@ -80,7 +83,7 @@ void LynxDebugger::ProcessInstruction() {
 	InstructionProgress.LastMemOperation = operation;
 	InstructionProgress.StartCycle = _cpu->GetCycleCount();
 
-	bool needDisassemble = _settings->CheckDebuggerFlag(DebuggerFlags::LynxDebuggerEnabled);
+	bool needDisassemble = _traceLogger->IsEnabled() || _settings->CheckDebuggerFlag(DebuggerFlags::LynxDebuggerEnabled);
 	if (addressInfo.Address >= 0) {
 		if (addressInfo.Type == MemoryType::LynxPrgRom) {
 			_codeDataLogger->SetCode(addressInfo.Address, LynxDisUtils::GetOpFlags(_prevOpCode, pc, _prevProgramCounter));
@@ -117,7 +120,20 @@ void LynxDebugger::ProcessRead(uint32_t addr, uint8_t value, MemoryOperationType
 		_codeDataLogger->SetData(addressInfo.Address);
 	}
 
-	_memoryAccessCounter->ProcessMemoryRead(addressInfo, _cpu->GetCycleCount());
+	if (type == MemoryOperationType::ExecOpCode) {
+		if (_traceLogger->IsEnabled()) {
+			LynxCpuState& state = _cpu->GetState();
+			DisassemblyInfo disInfo = _disassembler->GetDisassemblyInfo(addressInfo, addr, state.PS, CpuType::Lynx);
+			_traceLogger->Log(state, disInfo, operation, addressInfo);
+		}
+		_memoryAccessCounter->ProcessMemoryExec(addressInfo, _cpu->GetCycleCount());
+	} else {
+		if (_traceLogger->IsEnabled()) {
+			_traceLogger->LogNonExec(operation, addressInfo);
+		}
+		_memoryAccessCounter->ProcessMemoryRead(addressInfo, _cpu->GetCycleCount());
+	}
+
 	_step->ProcessCpuCycle();
 
 	if (_settings->CheckDebuggerFlag(DebuggerFlags::LynxDebuggerEnabled)) {
@@ -134,6 +150,10 @@ void LynxDebugger::ProcessWrite(uint32_t addr, uint8_t value, MemoryOperationTyp
 
 	if (addressInfo.Address >= 0 && (addressInfo.Type == MemoryType::LynxWorkRam)) {
 		_disassembler->InvalidateCache(addressInfo, CpuType::Lynx);
+	}
+
+	if (_traceLogger->IsEnabled()) {
+		_traceLogger->LogNonExec(operation, addressInfo);
 	}
 
 	_memoryAccessCounter->ProcessMemoryWrite(addressInfo, _cpu->GetCycleCount());
@@ -316,8 +336,7 @@ void LynxDebugger::SetPpuState(BaseState& state) {
 }
 
 ITraceLogger* LynxDebugger::GetTraceLogger() {
-	// TODO: Implement LynxTraceLogger
-	return nullptr;
+	return _traceLogger.get();
 }
 
 PpuTools* LynxDebugger::GetPpuTools() {
