@@ -104,6 +104,7 @@ public static class PansyExporter {
 		[RomFormat.GameGear] = 0x06, // Game Gear (SMS compatible)
 		[RomFormat.Sg] = 0x06,     // SG-1000
 		[RomFormat.Ws] = 0x0B,     // WonderSwan
+		[RomFormat.Lynx] = 0x0C,   // Atari Lynx
 	};
 
 	/// <summary>
@@ -784,6 +785,15 @@ public static class PansyExporter {
 				regions.Add((0xC000, 0xDFFF, "RAM", MemoryRegionType.Ram, (byte)MemoryType.SmsWorkRam));
 				break;
 
+			case ConsoleType.Lynx:
+				// Atari Lynx Memory Map
+				regions.Add((0x0000, 0xFBFF, "RAM", MemoryRegionType.WorkRam, (byte)MemoryType.LynxWorkRam));
+				regions.Add((0xFC00, 0xFCFF, "Suzy_Registers", MemoryRegionType.Io, (byte)MemoryType.LynxMemory));
+				regions.Add((0xFD00, 0xFDFF, "Mikey_Registers", MemoryRegionType.Io, (byte)MemoryType.LynxMemory));
+				regions.Add((0xFE00, 0xFFF7, "Boot_ROM", MemoryRegionType.Rom, (byte)MemoryType.LynxBootRom));
+				regions.Add((0xFFFA, 0xFFFF, "Vectors", MemoryRegionType.Rom, (byte)MemoryType.LynxMemory));
+				break;
+
 			// Add more console types as needed
 			default:
 				break;
@@ -971,8 +981,8 @@ public static class PansyExporter {
 		byte opcode = byteCode[0];
 
 		return cpuType switch {
-			// 6502/65816: BCC, BCS, BEQ, BMI, BNE, BPL, BVC, BVS, BRA, BRL
-			CpuType.Nes or CpuType.Snes => opcode is 0x10 or 0x30 or 0x50 or 0x70 or 0x90 or 0xB0 or 0xD0 or 0xF0 or 0x80 or 0x82,
+			// 6502/65816/65SC02: BCC, BCS, BEQ, BMI, BNE, BPL, BVC, BVS, BRA, BRL
+			CpuType.Nes or CpuType.Snes or CpuType.Lynx => opcode is 0x10 or 0x30 or 0x50 or 0x70 or 0x90 or 0xB0 or 0xD0 or 0xF0 or 0x80 or 0x82,
 
 			// Game Boy (Z80-like): JR cc, nn
 			CpuType.Gameboy => opcode is 0x18 or 0x20 or 0x28 or 0x30 or 0x38,
@@ -991,8 +1001,8 @@ public static class PansyExporter {
 		byte opcode = byteCode[0];
 
 		return cpuType switch {
-			// 6502/65816: STA, STX, STY, STZ
-			CpuType.Nes or CpuType.Snes => opcode is
+			// 6502/65816/65SC02: STA, STX, STY, STZ
+			CpuType.Nes or CpuType.Snes or CpuType.Lynx => opcode is
 				0x85 or 0x95 or 0x8D or 0x9D or 0x99 or 0x81 or 0x91 or // STA
 				0x86 or 0x96 or 0x8E or // STX
 				0x84 or 0x94 or 0x8C or // STY
