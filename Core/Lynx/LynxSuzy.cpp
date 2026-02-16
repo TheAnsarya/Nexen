@@ -195,118 +195,145 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 	uint8_t sprCtl0 = ReadRam(scbAddr + 2);
 	uint8_t sprCtl1 = ReadRam(scbAddr + 3);
 
-	// Extract BPP from SPRCTL0 bits 7:6
-	int bpp = ((sprCtl0 >> 6) & 0x03) + 1; // 1, 2, 3, or 4 bpp
+	// Extract BPP from SPRCTL0 bits 7:6 (0=1bpp, 1=2bpp, 2=3bpp, 3=4bpp)
+	int bpp = ((sprCtl0 >> 6) & 0x03) + 1;
+
+	// Extract sprite type from SPRCTL0 bits 2:0
+	// (background, normal, boundary, shadow, etc.)
+	LynxSpriteType spriteType = static_cast<LynxSpriteType>(sprCtl0 & 0x07);
+
+	// Extract draw direction from SPRCTL0 bits 5:4
+	// Bit 5: H-flip (0=left-to-right, 1=right-to-left)
+	// Bit 4: V-flip (0=top-to-bottom, 1=bottom-to-top)
+	bool hFlip = (sprCtl0 & 0x20) != 0;
+	bool vFlip = (sprCtl0 & 0x10) != 0;
 
 	// Read sprite data pointer
 	uint16_t dataAddr = ReadRam16(scbAddr + 4);
 
-	// Read position
+	// Read position (signed 16-bit)
 	int16_t hpos = (int16_t)ReadRam16(scbAddr + 6);
 	int16_t vpos = (int16_t)ReadRam16(scbAddr + 8);
 
-	// Read size (8.8 fixed-point)
+	// Read size (8.8 fixed-point) for stretch support
 	uint16_t hsizeRaw = ReadRam16(scbAddr + 10);
 	uint16_t vsizeRaw = ReadRam16(scbAddr + 12);
 
+	// Stretch and tilt (8.8 fixed-point) — only used for scaled sprites
+	// uint16_t stretch = ReadRam16(scbAddr + 14);
+	// uint16_t tilt = ReadRam16(scbAddr + 16);
+
 	// Check for skip flag (SPRCTL1 bit 2)
 	if (sprCtl1 & 0x04) {
-		return; // Skip this sprite
+		return;
 	}
 
-	// HW Bug 13.7: Sprite "shadow" polarity is inverted.
-	// SPRCTL1 bit 3 controls shadow mode. In the hardware, a value of 0
-	// enables shadow (opposite of what the documentation says). Games that
-	// rely on shadow sprites must invert this bit.
-	// We extract the flag with hardware-correct polarity:
-	bool isShadow = (sprCtl1 & 0x08) == 0; // Inverted! 0 = shadow, 1 = normal
-	(void)isShadow; // Used when full sprite rendering is implemented
-
-	// Basic drawing: read scanlines from data, plot into frame buffer
-	// Collision number from SCB (for collision detection)
+	// Collision number from collision depository index
 	uint8_t collNum = ReadRam(scbAddr + 14) & 0x0f;
 
-	// Process each scanline of the sprite
-	uint8_t* workRam = _console->GetWorkRam();
-	uint32_t* frameBuffer = _console->GetFrameBuffer();
+	// Process each scanline of sprite data
 	uint16_t currentDataAddr = dataAddr;
+	int hDir = hFlip ? -1 : 1;
+	int vDir = vFlip ? -1 : 1;
 
-	for (int line = 0; line < 256; line++) { // Max sprite height safety
-		// Read line header
+	for (int line = 0; line < 256; line++) {
+		// Read the line header — contains the byte count for this line
 		uint8_t lineHeader = ReadRam(currentDataAddr);
 		currentDataAddr++;
 
 		if (lineHeader == 0) {
-			break; // End of sprite data
+			break; // End of sprite data (0-length line terminates)
 		}
 
-		int lineY = vpos + line;
+		int lineY = vpos + (vFlip ? -line : line);
+
+		// lineHeader is the total byte count for this line including the header
+		// Data bytes = lineHeader - 1
+		int dataBytes = lineHeader - 1;
+		uint16_t lineEnd = currentDataAddr + dataBytes;
+
 		if (lineY < 0 || lineY >= (int)LynxConstants::ScreenHeight) {
-			// Offscreen — skip data but still advance
-			currentDataAddr += (lineHeader - 1);
+			// Off-screen — skip data but advance pointer
+			currentDataAddr = lineEnd;
 			continue;
 		}
 
-		// Decode pixel data for this line (simplified — full RLE in future)
-		int pixelIndex = 0;
-		uint16_t lineEnd = currentDataAddr + (lineHeader - 1);
+		// Decode pixels from the packed data for this line
+		// Pixels are packed MSB-first within each byte
+		int pixelX = 0;
+		int bitBuffer = 0;
+		int bitsRemaining = 0;
 
-		while (currentDataAddr < lineEnd && pixelIndex < (int)LynxConstants::ScreenWidth) {
+		while (currentDataAddr < lineEnd) {
 			uint8_t dataByte = ReadRam(currentDataAddr);
 			currentDataAddr++;
 
-			// Simple 4bpp decode: each byte = 2 pixels
-			if (bpp == 4) {
-				uint8_t pix0 = (dataByte >> 4) & 0x0f;
-				uint8_t pix1 = dataByte & 0x0f;
+			// Add 8 bits to our buffer
+			bitBuffer = (bitBuffer << 8) | dataByte;
+			bitsRemaining += 8;
 
-				int x0 = hpos + pixelIndex;
-				int x1 = hpos + pixelIndex + 1;
+			// Extract as many pixels as we can from the bit buffer
+			while (bitsRemaining >= bpp) {
+				bitsRemaining -= bpp;
+				uint8_t penIndex = (bitBuffer >> bitsRemaining) & ((1 << bpp) - 1);
 
-				// Get palette from Mikey for color lookup
-				uint32_t* palette = _console->GetMikey()->GetState().Palette;
+				int drawX = hpos + (hFlip ? -pixelX : pixelX);
 
-				if (pix0 != 0 && x0 >= 0 && x0 < (int)LynxConstants::ScreenWidth) {
-					frameBuffer[lineY * LynxConstants::ScreenWidth + x0] = palette[pix0];
-					// Collision detection
-					if (collNum > 0) {
-						uint8_t existing = _state.CollisionBuffer[pix0];
-						if (existing != 0) {
-							_state.CollisionBuffer[collNum] |= existing;
-							_state.CollisionBuffer[existing] |= collNum;
-						}
-						_state.CollisionBuffer[pix0] = collNum;
-					}
-				}
-				if (pix1 != 0 && x1 >= 0 && x1 < (int)LynxConstants::ScreenWidth) {
-					frameBuffer[lineY * LynxConstants::ScreenWidth + x1] = palette[pix1];
-					// Collision detection for second pixel
-					if (collNum > 0) {
-						uint8_t existing = _state.CollisionBuffer[pix1];
-						if (existing != 0) {
-							_state.CollisionBuffer[collNum] |= existing;
-							_state.CollisionBuffer[existing] |= collNum;
-						}
-						_state.CollisionBuffer[pix1] = collNum;
-					}
-				}
-				pixelIndex += 2;
-			} else {
-				// For other BPP modes, skip for now
-				pixelIndex++;
+				// Write the pixel to the frame buffer in work RAM
+				WriteSpritePixel(drawX, lineY, penIndex, collNum);
+
+				pixelX++;
 			}
 		}
 
-		// Ensure we're at the end of line data
+		// Ensure we consumed exactly the right number of bytes
 		currentDataAddr = lineEnd;
 	}
 }
 
-void LynxSuzy::DecodeSpriteLineRLE(uint8_t bpp, uint16_t dataAddr, int width) {
-	// TODO: Full RLE decoding for sprite scanlines
-	// Each line: alternating literal and repeat packets
-	// Packet header: upper nibble = type, lower = count
-	memset(_lineBuffer, 0, sizeof(_lineBuffer));
+__forceinline void LynxSuzy::WriteRam(uint16_t addr, uint8_t value) const {
+	_console->GetWorkRam()[addr & 0xFFFF] = value;
+}
+
+void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum) {
+	// Bounds check
+	if (x < 0 || x >= (int)LynxConstants::ScreenWidth ||
+		y < 0 || y >= (int)LynxConstants::ScreenHeight) {
+		return;
+	}
+
+	// Transparent pixel (index 0) is never drawn
+	if (penIndex == 0) {
+		return;
+	}
+
+	// Write pixel as 4bpp nibble into work RAM frame buffer
+	// The frame buffer is at DisplayAddress in RAM, organized as
+	// 80 bytes per scanline (160 pixels at 4bpp, 2 pixels per byte)
+	// High nibble = even pixel, low nibble = odd pixel
+	uint16_t dispAddr = _console->GetMikey()->GetState().DisplayAddress;
+	uint16_t byteAddr = dispAddr + y * LynxConstants::BytesPerScanline + (x >> 1);
+	uint8_t byte = ReadRam(byteAddr);
+
+	if (x & 1) {
+		// Odd pixel → low nibble
+		byte = (byte & 0xF0) | (penIndex & 0x0F);
+	} else {
+		// Even pixel → high nibble
+		byte = (byte & 0x0F) | ((penIndex & 0x0F) << 4);
+	}
+	WriteRam(byteAddr, byte);
+
+	// Collision detection
+	if (collNum > 0 && collNum < LynxConstants::CollisionBufferSize) {
+		uint8_t existing = _state.CollisionBuffer[collNum];
+		if (penIndex < LynxConstants::CollisionBufferSize) {
+			uint8_t depository = _state.CollisionBuffer[penIndex];
+			if (depository > existing) {
+				_state.CollisionBuffer[collNum] = depository;
+			}
+		}
+	}
 }
 
 uint8_t LynxSuzy::ReadRegister(uint8_t addr) {

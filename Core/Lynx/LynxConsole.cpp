@@ -188,6 +188,9 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 	_eeprom = std::make_unique<LynxEeprom>(_emu, this);
 	_eeprom->Init(LynxEepromType::Eeprom93c46); // Default to 93C46, TODO: detect from ROM database
 
+	// Wire EEPROM to Mikey for IODAT register access
+	_mikey->SetEeprom(_eeprom.get());
+
 	// Wire memory manager to Mikey and Suzy for dispatching
 	_memoryManager->SetMikey(_mikey.get());
 	_memoryManager->SetSuzy(_suzy.get());

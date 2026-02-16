@@ -26,34 +26,89 @@ void LynxApu::Init() {
 void LynxApu::Tick() {
 	_clockAccumulator++;
 
+	// Clock each audio channel's own timer at its prescaler rate
+	// Audio channel timers work like system timers: each has a prescaler
+	// selection (bits 0-2 of Control), or can be linked to the previous
+	// audio channel (clock source 7)
+	for (int ch = 0; ch < 4; ch++) {
+		TickChannelTimer(ch);
+	}
+
 	// Generate one audio sample every ClocksPerSample master clocks
 	if (_clockAccumulator >= ClocksPerSample) {
 		_clockAccumulator -= ClocksPerSample;
-
-		// Clock each channel's timer
-		for (int ch = 0; ch < 4; ch++) {
-			ClockChannel(ch);
-		}
-
 		MixOutput();
+	}
+}
+
+void LynxApu::TickChannelTimer(int ch) {
+	LynxAudioChannelState& channel = _state.Channels[ch];
+
+	if (!channel.Enabled || channel.TimerDone) {
+		return;
+	}
+
+	// Check clock source — bits 0-2 of Control register
+	uint8_t clockSource = channel.Control & 0x07;
+	if (clockSource == 7) {
+		// Linked timer — clocked by cascade from previous channel, not master clock
+		return;
+	}
+
+	uint32_t period = _prescalerPeriods[clockSource];
+	if (period == 0) {
+		return;
+	}
+
+	uint64_t currentCycle = _clockAccumulator; // Use accumulator as cycle counter
+	// Actually, we need a global cycle counter. Use a simple per-tick approach:
+	// Since Tick() is called every master clock, just track per-channel accumulators
+	channel.LastTick++;
+
+	if (channel.LastTick >= period) {
+		channel.LastTick = 0;
+
+		// Decrement counter
+		channel.Counter--;
+
+		if (channel.Counter == 0xff) { // Underflow (wrapped from 0 to 0xFF)
+			channel.TimerDone = true;
+			channel.Counter = channel.BackupValue;
+
+			// Clock the LFSR (actual audio generation)
+			ClockChannel(ch);
+
+			// Cascade to next linked audio channel
+			CascadeAudioChannel(ch);
+		}
+	}
+}
+
+void LynxApu::CascadeAudioChannel(int sourceChannel) {
+	int target = sourceChannel + 1;
+	if (target >= 4) {
+		return;
+	}
+
+	LynxAudioChannelState& channel = _state.Channels[target];
+
+	// Only cascade if target is linked (clock source 7) and enabled
+	if (!channel.Enabled || (channel.Control & 0x07) != 7 || channel.TimerDone) {
+		return;
+	}
+
+	channel.Counter--;
+	if (channel.Counter == 0xff) { // Underflow
+		channel.TimerDone = true;
+		channel.Counter = channel.BackupValue;
+
+		ClockChannel(target);
+		CascadeAudioChannel(target);
 	}
 }
 
 void LynxApu::ClockChannel(int ch) {
 	LynxAudioChannelState& channel = _state.Channels[ch];
-
-	if (!channel.Enabled) {
-		return;
-	}
-
-	// Decrement counter
-	if (channel.Counter > 0) {
-		channel.Counter--;
-		return;
-	}
-
-	// Counter underflow — reload and clock LFSR
-	channel.Counter = channel.BackupValue;
 
 	// Clock the 12-bit LFSR (linear feedback shift register)
 	// Feedback taps are selected by FeedbackEnable register
@@ -196,8 +251,13 @@ void LynxApu::WriteRegister(uint8_t addr, uint8_t value) {
 			case 5: channel.BackupValue = value; break;
 			case 6:
 				channel.Control = value;
-				channel.Enabled = (value & 0x80) != 0;
-				channel.Integrate = (value & 0x20) != 0;
+				channel.Enabled = (value & 0x08) != 0; // Bit 3: enable count
+				channel.Integrate = (value & 0x20) != 0; // Bit 5: integration mode
+				// Bit 6: reset timer done — self-clearing
+				if (value & 0x40) {
+					channel.TimerDone = false;
+					channel.Counter = channel.BackupValue;
+				}
 				break;
 			case 7: channel.Counter = value; break;
 		}
@@ -235,6 +295,8 @@ void LynxApu::Serialize(Serializer& s) {
 		SVI(_state.Channels[i].RightAtten);
 		SVI(_state.Channels[i].Integrate);
 		SVI(_state.Channels[i].Enabled);
+		SVI(_state.Channels[i].TimerDone);
+		SVI(_state.Channels[i].LastTick);
 	}
 	SV(_state.MasterVolume);
 	SV(_state.StereoEnabled);

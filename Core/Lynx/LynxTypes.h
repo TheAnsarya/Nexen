@@ -249,6 +249,12 @@ struct LynxAudioChannelState {
 
 	/// <summary>Whether this channel is enabled</summary>
 	bool Enabled;
+
+	/// <summary>Timer done flag — blocks counting until cleared (HW Bug 13.6)</summary>
+	bool TimerDone;
+
+	/// <summary>Last master clock cycle this channel's timer was updated</summary>
+	uint64_t LastTick;
 };
 
 /// <summary>Combined audio state for all 4 channels</summary>

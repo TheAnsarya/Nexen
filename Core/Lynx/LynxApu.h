@@ -47,8 +47,18 @@ private:
 	uint32_t _sampleCount = 0;
 	uint32_t _clockAccumulator = 0;
 
-	/// <summary>Clock a single audio channel's LFSR timer</summary>
+	/// <summary>Audio channel prescaler periods (CPU cycles per tick).</summary>
+	/// <summary>Same prescaler values as system timers: {4,8,16,32,64,128,256,0}</summary>
+	static constexpr uint32_t _prescalerPeriods[8] = { 4, 8, 16, 32, 64, 128, 256, 0 };
+
+	/// <summary>Clock a single audio channel's LFSR (called on timer underflow)</summary>
 	void ClockChannel(int ch);
+
+	/// <summary>Tick a channel's timer based on its prescaler</summary>
+	void TickChannelTimer(int ch);
+
+	/// <summary>Cascade audio channel underflow to next linked channel</summary>
+	void CascadeAudioChannel(int sourceChannel);
 
 	/// <summary>Mix all channel outputs and write one sample to buffer</summary>
 	void MixOutput();

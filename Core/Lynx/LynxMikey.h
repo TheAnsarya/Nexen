@@ -9,6 +9,7 @@ class LynxCpu;
 class LynxMemoryManager;
 class LynxCart;
 class LynxApu;
+class LynxEeprom;
 
 class LynxMikey final : public ISerializable {
 private:
@@ -18,8 +19,13 @@ private:
 	LynxMemoryManager* _memoryManager = nullptr;
 	LynxCart* _cart = nullptr;
 	LynxApu* _apu = nullptr;
+	LynxEeprom* _eeprom = nullptr;
 
 	LynxMikeyState _state = {};
+
+	// I/O direction and data registers for EEPROM/misc I/O
+	uint8_t _ioDir = 0;   // IODIR ($FD88) — direction (1=output, 0=input)
+	uint8_t _ioData = 0;  // IODAT ($FD89) — data
 
 	// Frame buffer output (160x102 pixels, 32-bit ARGB)
 	uint32_t _frameBuffer[LynxConstants::ScreenWidth * LynxConstants::ScreenHeight] = {};
@@ -56,6 +62,7 @@ public:
 	void Init(Emulator* emu, LynxConsole* console, LynxCpu* cpu, LynxMemoryManager* memoryManager);
 
 	void SetApu(LynxApu* apu) { _apu = apu; }
+	void SetEeprom(LynxEeprom* eeprom) { _eeprom = eeprom; }
 
 	uint8_t ReadRegister(uint8_t addr);
 	void WriteRegister(uint8_t addr, uint8_t value);

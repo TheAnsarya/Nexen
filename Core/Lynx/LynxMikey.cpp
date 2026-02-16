@@ -7,6 +7,8 @@
 #include "Shared/Emulator.h"
 #include "Utilities/Serializer.h"
 
+#include "Lynx/LynxEeprom.h"
+
 void LynxMikey::Init(Emulator* emu, LynxConsole* console, LynxCpu* cpu, LynxMemoryManager* memoryManager) {
 	_emu = emu;
 	_console = console;
@@ -323,14 +325,29 @@ uint8_t LynxMikey::ReadRegister(uint8_t addr) {
 			return status;
 		}
 
-		// Hardware revision
-		case 0x88: // IODIR (stub)
-			return 0;
-		case 0x89: // IODAT (stub)
-			return 0;
+		// I/O registers — EEPROM is wired through these
+		case 0x88: // IODIR ($FD88) — I/O direction register
+			return _ioDir;
+		case 0x89: // IODAT ($FD89) — I/O data register
+		{
+			// Bits configured as input (ioDir=0) read from external hardware
+			// Bit 1: EEPROM data out (directly wired to EEPROM DO pin)
+			// Other bits: directly wired pins (active high/low varies)
+			uint8_t result = _ioData & _ioDir; // Output bits retain written value
+			// Input bits — read from EEPROM
+			if (_eeprom && !(_ioDir & 0x02)) {
+				// Bit 1 is input: read EEPROM data out
+				if (_eeprom->GetDataOut()) {
+					result |= 0x02;
+				} else {
+					result &= ~0x02;
+				}
+			}
+			return result;
+		}
 
-		// SYSCTL1
-		case 0x8b:
+		// SYSCTL1 ($FD87)
+		case 0x87:
 			return 0; // stub
 
 		// MIKEYHREV
@@ -447,8 +464,33 @@ void LynxMikey::WriteRegister(uint8_t addr, uint8_t value) {
 			_state.SerialControl = value;
 			return;
 
-		// SYSCTL1
-		case 0x8b:
+		// I/O registers — EEPROM wiring
+		case 0x88: // IODIR ($FD88) — I/O direction register
+			_ioDir = value;
+			return;
+
+		case 0x89: // IODAT ($FD89) — I/O data register
+		{
+			uint8_t prev = _ioData;
+			_ioData = value;
+			if (_eeprom) {
+				// Bit 0: EEPROM chip select (directly wired)
+				_eeprom->SetChipSelect((value & 0x01) != 0);
+
+				// Bit 1: EEPROM data in (directly wired)
+				// Data is latched on clock edges, handled by ClockData below
+
+				// Bit 2: EEPROM serial clock — trigger on rising edge
+				if ((value & 0x04) && !(prev & 0x04)) {
+					// Rising edge on clock line: latch data-in bit (bit 1)
+					_eeprom->ClockData((value & 0x02) != 0);
+				}
+			}
+			return;
+		}
+
+		// SYSCTL1 ($FD87)
+		case 0x87:
 			// TODO: system control (power off, cart power, etc.)
 			return;
 
@@ -487,6 +529,10 @@ void LynxMikey::Serialize(Serializer& s) {
 	SV(_state.SerialData);
 	SV(_state.SerialControl);
 	SV(_state.HardwareRevision);
+
+	// I/O registers (EEPROM wiring)
+	SV(_ioDir);
+	SV(_ioData);
 
 	// Frame buffer
 	SVArray(_frameBuffer, LynxConstants::ScreenWidth * LynxConstants::ScreenHeight);

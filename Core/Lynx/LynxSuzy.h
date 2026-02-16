@@ -27,10 +27,11 @@ private:
 	// Sprite engine internals
 	void ProcessSpriteChain();
 	void ProcessSprite(uint16_t scbAddr);
-	void DecodeSpriteLineRLE(uint8_t bpp, uint16_t dataAddr, int width);
+	void WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum);
 
 	__forceinline uint8_t ReadRam(uint16_t addr) const;
 	__forceinline uint16_t ReadRam16(uint16_t addr) const;
+	__forceinline void WriteRam(uint16_t addr, uint8_t value) const;
 
 public:
 	void Init(Emulator* emu, LynxConsole* console, LynxMemoryManager* memoryManager, LynxCart* cart);
