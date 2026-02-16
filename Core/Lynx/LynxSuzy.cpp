@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Lynx/LynxSuzy.h"
 #include "Lynx/LynxConsole.h"
+#include "Lynx/LynxCpu.h"
 #include "Lynx/LynxMemoryManager.h"
 #include "Lynx/LynxCart.h"
 #include "Shared/Emulator.h"
@@ -19,11 +20,12 @@ void LynxSuzy::Init(Emulator* emu, LynxConsole* console, LynxMemoryManager* memo
 	_state.Switches = 0xff;
 }
 
-__forceinline uint8_t LynxSuzy::ReadRam(uint16_t addr) const {
+__forceinline uint8_t LynxSuzy::ReadRam(uint16_t addr) {
+	if (_spriteProcessingActive) _spriteBusCycles++;
 	return _console->GetWorkRam()[addr & 0xFFFF];
 }
 
-__forceinline uint16_t LynxSuzy::ReadRam16(uint16_t addr) const {
+__forceinline uint16_t LynxSuzy::ReadRam16(uint16_t addr) {
 	uint8_t lo = ReadRam(addr);
 	uint8_t hi = ReadRam(addr + 1);
 	return (uint16_t)(hi << 8) | lo;
@@ -38,6 +40,7 @@ void LynxSuzy::DoMultiply() {
 	// not OR'd. A previous overflow is lost if the CPU doesn't read SPRSYS before
 	// the next math operation completes. We clear it at the start of each operation.
 	_state.MathOverflow = false;
+	_state.LastCarry = false;
 
 	if (_state.MathSign) {
 		// Signed multiply
@@ -77,6 +80,7 @@ void LynxSuzy::DoMultiply() {
 			uint64_t sum64 = (uint64_t)result + (uint64_t)accum;
 			if (sum64 > 0xFFFFFFFF) {
 				_state.MathOverflow = true;
+				_state.LastCarry = true;
 			}
 			result = (uint32_t)sum64;
 		}
@@ -94,6 +98,7 @@ void LynxSuzy::DoMultiply() {
 			uint64_t sum64 = (uint64_t)result + (uint64_t)accum;
 			if (sum64 > 0xFFFFFFFF) {
 				_state.MathOverflow = true;
+				_state.LastCarry = true;
 			}
 			result = (uint32_t)sum64;
 		}
@@ -172,6 +177,8 @@ void LynxSuzy::ProcessSpriteChain() {
 	}
 
 	_state.SpriteBusy = true;
+	_spriteBusCycles = 0;
+	_spriteProcessingActive = true;
 	uint16_t scbAddr = _state.SCBAddress;
 
 	// Walk the sprite linked list
@@ -187,7 +194,15 @@ void LynxSuzy::ProcessSpriteChain() {
 		spriteCount++;
 	}
 
+	_spriteProcessingActive = false;
 	_state.SpriteBusy = false;
+
+	// Apply bus contention -- stall CPU for cycles consumed by sprite processing.
+	// On real hardware, the CPU is halted while Suzy owns the bus.
+	// Each byte-wide bus access costs ~1 CPU cycle (5 master clocks / 4).
+	if (_spriteBusCycles > 0) {
+		_console->GetCpu()->AddCycles(_spriteBusCycles);
+	}
 }
 
 void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
@@ -403,7 +418,8 @@ int LynxSuzy::DecodeSpriteLinePixels(uint16_t& dataAddr, uint16_t lineEnd, int b
 	return pixelCount;
 }
 
-__forceinline void LynxSuzy::WriteRam(uint16_t addr, uint8_t value) const {
+__forceinline void LynxSuzy::WriteRam(uint16_t addr, uint8_t value) {
+	if (_spriteProcessingActive) _spriteBusCycles++;
 	_console->GetWorkRam()[addr & 0xFFFF] = value;
 }
 
@@ -472,6 +488,8 @@ void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum,
 		// Use the pen index of the existing pixel as the collider ID
 		if (existingPixel > 0 && existingPixel > existing) {
 			_state.CollisionBuffer[collNum] = existingPixel;
+			// Set sticky sprite-to-sprite collision flag
+			_state.SpriteToSpriteCollision = true;
 		}
 
 		// Also update the colliding sprite's entry
@@ -479,6 +497,7 @@ void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum,
 			uint8_t otherExisting = _state.CollisionBuffer[existingPixel];
 			if (collNum > otherExisting) {
 				_state.CollisionBuffer[existingPixel] = (uint8_t)collNum;
+				_state.SpriteToSpriteCollision = true;
 			}
 		}
 	}
@@ -499,10 +518,13 @@ uint8_t LynxSuzy::ReadRegister(uint8_t addr) {
 			return _state.SpriteBusy ? 0x01 : 0x00;
 		case 0x91: // SPRGO
 			return _state.SpriteEnabled ? 0x01 : 0x00;
-		case 0x92: // SPRSYS — system status
-			return (_state.SpriteBusy ? 0x01 : 0x00) |
-				(_state.MathOverflow ? 0x04 : 0x00) |  // Bit 2: math overflow
-				(_state.MathInProgress ? 0x80 : 0x00);
+		case 0x92: // SPRSYS — system status (read)
+			return (_state.MathInProgress ? 0x01 : 0x00) |     // Bit 0: math in progress
+				(_state.SpriteBusy ? 0x02 : 0x00) |              // Bit 1: sprite busy
+				(_state.LastCarry ? 0x04 : 0x00) |               // Bit 2: last carry
+				(_state.UnsafeAccess ? 0x08 : 0x00) |            // Bit 3: unsafe access
+				(_state.SpriteToSpriteCollision ? 0x10 : 0x00) | // Bit 4: sprite-to-sprite collision
+				(_state.MathOverflow ? 0x20 : 0x00);             // Bit 5: math overflow
 
 		// SCB address
 		case 0x10: return (uint8_t)(_state.SCBAddress & 0xff);
@@ -526,11 +548,9 @@ uint8_t LynxSuzy::ReadRegister(uint8_t addr) {
 		case 0x72: return (uint8_t)(_state.MathK & 0xff);
 		case 0x73: return (uint8_t)((_state.MathK >> 8) & 0xff);
 
-		// Collision buffer
-		case 0x80: case 0x81: case 0x82: case 0x83:
-		case 0x84: case 0x85: case 0x86: case 0x87:
-			return _state.CollisionBuffer[addr - 0x80];
-		// Collision slots 8-15
+		// Collision depository: 16 slots at Suzy offsets 0x00-0x0F
+		case 0x00: case 0x01: case 0x02: case 0x03:
+		case 0x04: case 0x05: case 0x06: case 0x07:
 		case 0x08: case 0x09: case 0x0a: case 0x0b:
 		case 0x0c: case 0x0d: case 0x0e: case 0x0f:
 			return _state.CollisionBuffer[addr];
@@ -580,9 +600,13 @@ void LynxSuzy::WriteRegister(uint8_t addr, uint8_t value) {
 				ProcessSpriteChain();
 			}
 			break;
-		case 0x92: // SPRSYS — write various control bits
-			_state.MathSign = (value & 0x80) != 0;
-			_state.MathAccumulate = (value & 0x40) != 0;
+		case 0x92: // SPRSYS — write control bits
+			_state.MathSign = (value & 0x01) != 0;       // Bit 0: signed math
+			_state.MathAccumulate = (value & 0x02) != 0;  // Bit 1: accumulate mode
+			_state.VStretch = (value & 0x10) != 0;        // Bit 4: vertical stretch
+			_state.LeftHand = (value & 0x20) != 0;        // Bit 5: left-handed controller
+			if (value & 0x40) _state.UnsafeAccess = false;            // Bit 6: clear unsafe access
+			if (value & 0x80) _state.SpriteToSpriteCollision = false; // Bit 7: clear collision flag
 			break;
 
 		// SCB address
@@ -621,11 +645,9 @@ void LynxSuzy::WriteRegister(uint8_t addr, uint8_t value) {
 		case 0x70: _state.MathJ = (_state.MathJ & 0xff00) | value; break;
 		case 0x71: _state.MathJ = (_state.MathJ & 0x00ff) | ((uint16_t)value << 8); break;
 
-		// Collision buffer writes
-		case 0x80: case 0x81: case 0x82: case 0x83:
-		case 0x84: case 0x85: case 0x86: case 0x87:
-			_state.CollisionBuffer[addr - 0x80] = value;
-			break;
+		// Collision depository writes: 16 slots at Suzy offsets 0x00-0x0F
+		case 0x00: case 0x01: case 0x02: case 0x03:
+		case 0x04: case 0x05: case 0x06: case 0x07:
 		case 0x08: case 0x09: case 0x0a: case 0x0b:
 		case 0x0c: case 0x0d: case 0x0e: case 0x0f:
 			_state.CollisionBuffer[addr] = value;
@@ -688,6 +710,11 @@ void LynxSuzy::Serialize(Serializer& s) {
 	SV(_state.MathAccumulate);
 	SV(_state.MathInProgress);
 	SV(_state.MathOverflow);
+	SV(_state.LastCarry);
+	SV(_state.UnsafeAccess);
+	SV(_state.SpriteToSpriteCollision);
+	SV(_state.VStretch);
+	SV(_state.LeftHand);
 
 	// Collision
 	SVArray(_state.CollisionBuffer, LynxConstants::CollisionBufferSize);

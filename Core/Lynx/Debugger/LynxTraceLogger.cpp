@@ -60,9 +60,9 @@ void LynxTraceLogger::GetTraceRow(string& output, LynxCpuState& cpuState, TraceL
 void LynxTraceLogger::LogPpuState() {
 	LynxMikeyState& mikey = _mikey->GetState();
 	_ppuState[_currentPos] = {
-		0,                       // hClock (Lynx doesn't have a traditional h-counter)
-		0,                       // hClockAlternate
-		mikey.CurrentScanline,   // scanline
-		0                        // frameCount (TODO: add frame counter to Mikey)
+		0,                          // hClock (Lynx doesn't have a traditional h-counter)
+		0,                          // hClockAlternate
+		mikey.CurrentScanline,      // scanline
+		_mikey->GetFrameCount()     // frameCount
 	};
 }

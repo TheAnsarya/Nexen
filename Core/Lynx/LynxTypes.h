@@ -418,6 +418,25 @@ struct LynxSuzyState {
 	/// overflow status before the CPU reads SPRSYS.</summary>
 	bool MathOverflow;
 
+	/// <summary>Last carry bit from multiply — SPRSYS read bit 2</summary>
+	bool LastCarry;
+
+	/// <summary>Unsafe access detected — CPU tried to access Suzy during sprite
+	/// processing. SPRSYS read bit 3. Cleared by writing bit 6 to SPRSYS.</summary>
+	bool UnsafeAccess;
+
+	/// <summary>Sprite-to-sprite collision occurred (sticky flag).
+	/// SPRSYS read bit 4. Cleared by writing bit 7 to SPRSYS.</summary>
+	bool SpriteToSpriteCollision;
+
+	/// <summary>VStretch enable — SPRSYS write bit 4. When set, vsize is applied
+	/// as a stretch factor instead of absolute size.</summary>
+	bool VStretch;
+
+	/// <summary>LeftHand enable — SPRSYS write bit 5. Flips the coordinate system
+	/// for left-handed Lynx orientation.</summary>
+	bool LeftHand;
+
 	// --- Collision ---
 	/// <summary>16-slot collision depository</summary>
 	uint8_t CollisionBuffer[LynxConstants::CollisionBufferSize];

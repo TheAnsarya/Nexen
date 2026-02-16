@@ -32,6 +32,12 @@ private:
 	int16_t _persistStretch = 0;
 	int16_t _persistTilt = 0;
 
+	// Sprite bus contention — tracks CPU cycles consumed during sprite processing.
+	// On real hardware, the CPU is stalled while Suzy accesses the bus for sprite
+	// rendering. Each bus access (read/write of work RAM) costs 1 CPU cycle.
+	uint32_t _spriteBusCycles = 0;
+	bool _spriteProcessingActive = false;
+
 	// Hardware math helpers
 	void DoMultiply();
 	void DoDivide();
@@ -42,9 +48,9 @@ private:
 	void WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum, LynxSpriteType spriteType);
 	int DecodeSpriteLinePixels(uint16_t& dataAddr, uint16_t lineEnd, int bpp, uint8_t* pixelBuf, int maxPixels);
 
-	__forceinline uint8_t ReadRam(uint16_t addr) const;
-	__forceinline uint16_t ReadRam16(uint16_t addr) const;
-	__forceinline void WriteRam(uint16_t addr, uint8_t value) const;
+	__forceinline uint8_t ReadRam(uint16_t addr);
+	__forceinline uint16_t ReadRam16(uint16_t addr);
+	__forceinline void WriteRam(uint16_t addr, uint8_t value);
 
 public:
 	void Init(Emulator* emu, LynxConsole* console, LynxMemoryManager* memoryManager, LynxCart* cart);

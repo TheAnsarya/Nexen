@@ -1,6 +1,6 @@
 # Atari Lynx Emulation Audit Report
 
-**Date:** 2025-07-15
+**Date:** 2025-07-15 (Updated: 2025-07-16)
 **Branch:** `features-atari-lynx`
 **Issue:** #346
 **Audit Scope:** All 30 Lynx source files (22 Core + 8 Debugger + 7 UI)
@@ -9,7 +9,18 @@
 
 ## Summary
 
-Comprehensive audit of the Atari Lynx emulation core found **5 showstoppers**, **5 major functionality gaps**, and **4 bugs**. All showstoppers and bugs have been fixed in commit `07688d20`.
+Comprehensive audit of the Atari Lynx emulation core found **5 showstoppers**, **5 major functionality gaps**, and **4 bugs**. All showstoppers and bugs have been fixed. All major functionality gaps have been resolved across multiple commits.
+
+## Fix History
+
+| Commit | Date | Changes |
+|--------|------|---------|
+| `07688d20` | 2025-07-15 | 11 critical bug fixes (IRQ, timers, MAPCTL, video, etc.) |
+| `2bb5224a` | 2025-07-15 | 84 unit tests + audit document |
+| `d310ae65` | 2025-07-15 | 67 performance benchmarks |
+| `381d787b` | 2025-07-16 | Sprite engine rewrite, EEPROM wiring, timer-driven audio |
+| `f57e9f4a` | 2025-07-16 | Stretch/tilt, pen remap, SCB reload, collision types |
+| *(current)* | 2025-07-16 | SPRSYS bits, collision addresses, trace logger, bus contention |
 
 ## Files Inventory
 
@@ -21,7 +32,7 @@ Comprehensive audit of the Atari Lynx emulation core found **5 showstoppers**, *
 | LynxConsole.h/.cpp | Top-level console: ROM loading, frame loop, HLE boot | ✅ Fixed |
 | LynxCpu.h/.cpp | 65C02 CPU core | ✅ Fixed |
 | LynxMikey.h/.cpp | Mikey chip: 8 timers, display DMA, palette, IRQ, serial | ✅ Fixed |
-| LynxSuzy.h/.cpp | Suzy chip: sprite engine, math, collision, input | ✅ Fixed (partial) |
+| LynxSuzy.h/.cpp | Suzy chip: sprite engine, math, collision, input | ✅ Fixed |
 | LynxApu.h/.cpp | 4-channel LFSR audio | ✅ Fixed |
 | LynxMemoryManager.h/.cpp | Memory map with MAPCTL overlays | ✅ Fixed |
 | LynxCart.h/.cpp | Cartridge ROM + bank switching | ✅ Fixed |
@@ -36,7 +47,7 @@ Comprehensive audit of the Atari Lynx emulation core found **5 showstoppers**, *
 |------|---------|--------|
 | LynxDebugger.h/.cpp | Debugger: breakpoints, stepping, callstack | ✅ Complete |
 | LynxDisUtils.h/.cpp | Disassembler with full 65C02 tables | ✅ Complete |
-| LynxTraceLogger.h/.cpp | CPU trace logging | ⚠️ Frame count always 0 |
+| LynxTraceLogger.h/.cpp | CPU trace logging | ✅ Fixed |
 | LynxEventManager.h/.cpp | Debug event viewer | ✅ Complete |
 
 ---
@@ -64,29 +75,29 @@ Comprehensive audit of the Atari Lynx emulation core found **5 showstoppers**, *
 | 10 | **Sprite pix1 never written** — only first pixel of byte pair rendered | Added pix1 write with palette lookup and collision |
 | 11 | **Frame counter always 0** — `PpuFrameInfo.FrameCount` not tracked | Added `_frameCount` to console, increment per frame |
 
-### Major Functionality Gaps — REMAINING ⚠️
+### Major Functionality Gaps — FIXED ✅
 
-| # | Issue | Status | Notes |
-|---|-------|--------|-------|
-| 1 | **Sprite engine stub** | ⬜ Open | No RLE decode, no flip, no stretch/tilt, no BPP modes besides 4 |
-| 2 | **Audio not timer-driven** | ⬜ Open | Channels use independent clock, not Mikey timers 0-3 |
-| 3 | **EEPROM not wired to Suzy** | ⬜ Open | No register path from Mikey IODAT to EEPROM |
-| 4 | **Display DMA model simplified** | ⬜ Open | Flat framebuffer instead of per-line address table |
-| 5 | **Sprite CPU bus contention** | ⬜ Open | Sprites execute instantly, should steal CPU cycles |
+| # | Issue | Fix Commit | Notes |
+|---|-------|-----------|-------|
+| 1 | **Sprite engine stub** | `381d787b` + `f57e9f4a` | All BPP modes, H/V flip, stretch/tilt, pen remap, SCB reload flags, collision types |
+| 2 | **Audio not timer-driven** | `381d787b` | Per-channel prescaler timing, cascade, TimerDone flag |
+| 3 | **EEPROM not wired to Suzy** | `381d787b` | IODIR/IODAT wired at $FD88/$FD89, SYSCTL1 at $FD87, CS/clock/data signals |
+| 4 | **Display DMA model simplified** | N/A (by design) | Linear framebuffer is correct for Lynx — no per-line address table in hardware |
+| 5 | **Sprite CPU bus contention** | *(current)* | Bus access cycles tracked during sprite processing and added to CPU stall |
 
-### Minor Issues — REMAINING
+### Minor Issues
 
-| # | Issue | Location | Notes |
-|---|-------|----------|-------|
-| 1 | IODIR/IODAT stubs (return 0) | LynxMikey.cpp | Needed for EEPROM and button queries |
-| 2 | SYSCTL1 stub | LynxMikey.cpp | Power, cart control |
-| 3 | MIKEYHREV at offset 0x84 | LynxMikey.cpp | Should verify correct register address |
-| 4 | No assembler in debugger | LynxDebugger.cpp | `GetAssembler()` → nullptr |
-| 5 | No PPU tools in debugger | LynxDebugger.cpp | `GetPpuTools()` → nullptr |
-| 6 | Trace logger frame count 0 | LynxTraceLogger.cpp | Needs console frame count access |
-| 7 | SPRSYS missing status bits | LynxSuzy.cpp | No pens-used, ever-collide, sprite-to-sprite |
-| 8 | Collision buffer addresses | LynxSuzy.cpp | $08-$0F / $80-$87 split may be incorrect |
-| 9 | EEPROM type hardcoded 93C46 | LynxConsole.cpp | TODO: detect from ROM database |
+| # | Issue | Location | Status |
+|---|-------|----------|--------|
+| 1 | IODIR/IODAT stubs | LynxMikey.cpp | ✅ Fixed in `381d787b` — read/write handlers at $FD88/$FD89 |
+| 2 | SYSCTL1 stub | LynxMikey.cpp | ✅ Present at $FD87 |
+| 3 | MIKEYHREV at offset 0x84 | LynxMikey.cpp | ✅ Verified correct |
+| 4 | No assembler in debugger | LynxDebugger.cpp | ⬜ `GetAssembler()` → nullptr (low priority) |
+| 5 | No PPU tools in debugger | LynxDebugger.cpp | ⬜ `GetPpuTools()` → nullptr (low priority) |
+| 6 | Trace logger frame count 0 | LynxTraceLogger.cpp | ✅ Fixed *(current)* — uses `_mikey->GetFrameCount()` |
+| 7 | SPRSYS missing status bits | LynxSuzy.cpp | ✅ Fixed *(current)* — all 6 read bits + 6 write bits correct |
+| 8 | Collision buffer addresses | LynxSuzy.cpp | ✅ Fixed *(current)* — all 16 slots at $FC00-$FC0F (offsets $00-$0F) |
+| 9 | EEPROM type hardcoded 93C46 | LynxConsole.cpp | ⬜ Low priority — needs ROM database for per-game type |
 
 ---
 
@@ -140,4 +151,4 @@ Comprehensive audit of the Atari Lynx emulation core found **5 showstoppers**, *
 | Timer tick | ✅ Acceptable | 8 timers per CPU instruction |
 | Allocations in hot path | ✅ None | No per-instruction allocations |
 | Audio generation | ✅ Efficient | Clock accumulator approach |
-| Video filter | ⚠️ New allocation | `GetVideoFilter()` uses `new` per call |
+| Video filter | ✅ By design | `GetVideoFilter()` uses `new` per call — matches NES/SNES pattern; caller manages lifetime |

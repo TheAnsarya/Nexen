@@ -85,6 +85,7 @@ public:
 	[[nodiscard]] LynxState GetState();
 	[[nodiscard]] LynxModel GetModel() { return _model; }
 	[[nodiscard]] LynxRotation GetRotation() { return _rotation; }
+	[[nodiscard]] uint32_t GetFrameCount() const { return _frameCount; }
 	void LoadBattery();
 	void ApplyHleBootState();
 

@@ -488,5 +488,8 @@ public:
 	/// <summary>Increment cycle count (called by memory manager)</summary>
 	void IncCycleCount() { _state.CycleCount++; }
 
+	/// <summary>Add stall cycles (e.g., sprite engine bus contention)</summary>
+	void AddCycles(uint32_t cycles) { _state.CycleCount += cycles; }
+
 	void Serialize(Serializer& s) override;
 };

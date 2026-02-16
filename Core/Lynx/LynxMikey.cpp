@@ -499,6 +499,10 @@ void LynxMikey::WriteRegister(uint8_t addr, uint8_t value) {
 	}
 }
 
+uint32_t LynxMikey::GetFrameCount() const {
+	return _console ? _console->GetFrameCount() : 0;
+}
+
 void LynxMikey::Serialize(Serializer& s) {
 	// Timer state
 	for (int i = 0; i < 8; i++) {

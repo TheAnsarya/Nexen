@@ -75,6 +75,7 @@ public:
 
 	uint32_t* GetFrameBuffer() { return _frameBuffer; }
 	LynxMikeyState& GetState() { return _state; }
+	uint32_t GetFrameCount() const;
 
 	void Serialize(Serializer& s) override;
 };
