@@ -294,11 +294,29 @@ uint8_t LynxMikey::ReadRegister(uint8_t addr) {
 		case 0xbc: case 0xbd: case 0xbe: case 0xbf:
 			return _state.PaletteBR[addr - 0xb0];
 
-		// Serial port
-		case 0x8c: // SERDAT
+		// Serial port (ComLynx stub — no cable connected)
+		case 0x8c: // SERDAT — receive data register
+			// No cable connected = no data received, return last written value
 			return _state.SerialData;
-		case 0x8d: // SERCTL
-			return _state.SerialControl;
+		case 0x8d: { // SERCTL — serial control / status register (read)
+			// ComLynx stub: Always report TX complete, TX buffer empty, no RX data.
+			// Bit layout on read:
+			//   7: TxRdy      — transmitter buffer empty (1 = ready for next byte)
+			//   6: RxRdy      — receiver has data (0 = no data available)
+			//   5: TxEmpty    — transmitter completely empty (1 = idle)
+			//   4: Parerr     — parity error (0 = no error)
+			//   3: Overrun    — receiver overrun (0 = no overrun)
+			//   2: Framerr    — framing error (0 = no error)
+			//   1: Rxbrk      — break received (0 = no break)
+			//   0: Parbit     — 9th bit / parity (0)
+			// HW Bug 13.2: UART interrupt is level-sensitive (not edge-triggered).
+			// This means if interrupts are enabled and the condition persists,
+			// the IRQ will fire continuously until the cause is cleared.
+			// HW Bug 13.3: TXD starts high at power-up, which looks like a break
+			// signal to a connected Lynx. Games must handle this.
+			uint8_t status = 0xa0; // TxRdy (bit 7) + TxEmpty (bit 5) = $A0
+			return status;
+		}
 
 		// Hardware revision
 		case 0x88: // IODIR (stub)
@@ -400,11 +418,27 @@ void LynxMikey::WriteRegister(uint8_t addr, uint8_t value) {
 			UpdatePalette(addr - 0xb0);
 			return;
 
-		// Serial port
-		case 0x8c: // SERDAT
+		// Serial port (ComLynx stub)
+		case 0x8c: // SERDAT — transmit data register
+			// Accept data but don't actually transmit (no cable connected).
+			// The data is silently discarded. TX complete status is always
+			// reported on the next SERCTL read so the game doesn't hang
+			// waiting for transmission to finish.
 			_state.SerialData = value;
 			return;
-		case 0x8d: // SERCTL
+		case 0x8d: // SERCTL — serial control register (write)
+			// Bit layout on write:
+			//   7: TxIntEn    — transmit interrupt enable
+			//   6: RxIntEn    — receive interrupt enable
+			//   5: Paren      — parity enable
+			//   4: ResetErr   — reset error flags (self-clearing)
+			//   3: TxOpen     — open collector mode for TX
+			//   2: TxBreak    — send break signal
+			//   1: ParEven    — even parity (0 = odd)
+			//   0: Unused
+			// HW Bug 13.2: Interrupt is level-sensitive. If TxIntEn is set and
+			// TX is empty (which it always is in our stub), the IRQ will fire
+			// continuously. Games must clear the interrupt enable to stop it.
 			_state.SerialControl = value;
 			return;
 
