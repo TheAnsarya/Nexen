@@ -2,14 +2,14 @@
 #include "pch.h"
 #include "Shared/Interfaces/IConsole.h"
 #include "Lynx/LynxTypes.h"
+#include "Lynx/LynxCpu.h"
+#include "Lynx/LynxMikey.h"
+#include "Lynx/LynxSuzy.h"
+#include "Lynx/LynxMemoryManager.h"
+#include "Lynx/LynxCart.h"
+#include "Lynx/LynxControlManager.h"
 
 class Emulator;
-class LynxCpu;
-class LynxMikey;
-class LynxSuzy;
-class LynxMemoryManager;
-class LynxCart;
-class LynxControlManager;
 
 /// <summary>
 /// Atari Lynx portable console emulator.
@@ -25,13 +25,12 @@ class LynxControlManager;
 class LynxConsole final : public IConsole {
 private:
 	Emulator* _emu = nullptr;
-	// Components — uncomment as each is implemented
-	// unique_ptr<LynxCpu> _cpu;
-	// unique_ptr<LynxMikey> _mikey;
-	// unique_ptr<LynxSuzy> _suzy;
-	// unique_ptr<LynxMemoryManager> _memoryManager;
-	// unique_ptr<LynxCart> _cart;
-	// unique_ptr<LynxControlManager> _controlManager;
+	unique_ptr<LynxCpu> _cpu;
+	unique_ptr<LynxMikey> _mikey;
+	unique_ptr<LynxSuzy> _suzy;
+	unique_ptr<LynxMemoryManager> _memoryManager;
+	unique_ptr<LynxCart> _cart;
+	unique_ptr<LynxControlManager> _controlManager;
 
 	uint8_t* _workRam = nullptr;
 	uint32_t _workRamSize = 0;
@@ -82,12 +81,12 @@ public:
 	[[nodiscard]] LynxRotation GetRotation() { return _rotation; }
 	void LoadBattery();
 
-	// Component accessors — return nullptr until implemented
-	[[nodiscard]] LynxCpu* GetCpu() { return nullptr; }
-	[[nodiscard]] LynxMikey* GetMikey() { return nullptr; }
-	[[nodiscard]] LynxSuzy* GetSuzy() { return nullptr; }
-	[[nodiscard]] LynxMemoryManager* GetMemoryManager() { return nullptr; }
-	[[nodiscard]] LynxCart* GetCart() { return nullptr; }
+	// Component accessors
+	[[nodiscard]] LynxCpu* GetCpu() { return _cpu.get(); }
+	[[nodiscard]] LynxMikey* GetMikey() { return _mikey.get(); }
+	[[nodiscard]] LynxSuzy* GetSuzy() { return _suzy.get(); }
+	[[nodiscard]] LynxMemoryManager* GetMemoryManager() { return _memoryManager.get(); }
+	[[nodiscard]] LynxCart* GetCart() { return _cart.get(); }
 
 	// Memory accessors for components
 	[[nodiscard]] uint8_t* GetWorkRam() { return _workRam; }

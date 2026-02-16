@@ -5,21 +5,18 @@
 #include "Shared/MessageManager.h"
 #include "Utilities/Serializer.h"
 
-// Stub includes — uncomment as components are implemented
-// #include "Lynx/LynxMikey.h"
-// #include "Lynx/LynxSuzy.h"
+// Component includes
+#include "Lynx/LynxMikey.h"
+#include "Lynx/LynxSuzy.h"
 
-void LynxMemoryManager::Init(Emulator* emu, LynxConsole* console, LynxMikey* mikey, LynxSuzy* suzy) {
+void LynxMemoryManager::Init(Emulator* emu, LynxConsole* console, uint8_t* workRam, uint8_t* bootRom, uint32_t bootRomSize) {
 	_emu = emu;
 	_console = console;
-	_mikey = mikey;
-	_suzy = suzy;
 
-	_workRam = console->GetWorkRam();
-	_workRamSize = console->GetWorkRamSize();
-
-	// Boot ROM pointer — may be null if no boot ROM loaded
-	// TODO: Wire boot ROM pointer from console when boot ROM loading is implemented
+	_workRam = workRam;
+	_workRamSize = LynxConstants::WorkRamSize;
+	_bootRom = bootRom;
+	_bootRomSize = bootRomSize;
 
 	// Initial MAPCTL state: all overlays visible (bits 0-3 = 0)
 	UpdateMapctl(0x00);
@@ -44,14 +41,10 @@ uint8_t LynxMemoryManager::Read(uint16_t addr, MemoryOperationType opType) {
 			value = _state.Mapctl;
 		} else if (_state.SuzySpaceVisible && addr >= LynxConstants::SuzyBase && addr <= LynxConstants::SuzyEnd) {
 			// Suzy register read
-			// TODO: Dispatch to Suzy when implemented
-			// value = _suzy->ReadRegister(addr & 0xff);
-			value = 0;
+			value = _suzy ? _suzy->ReadRegister(addr & 0xff) : 0;
 		} else if (_state.MikeySpaceVisible && addr >= LynxConstants::MikeyBase && addr <= LynxConstants::MikeyEnd) {
 			// Mikey register read
-			// TODO: Dispatch to Mikey when implemented
-			// value = _mikey->ReadRegister(addr & 0xff);
-			value = 0;
+			value = _mikey ? _mikey->ReadRegister(addr & 0xff) : 0;
 		} else if (_state.VectorSpaceVisible && addr >= 0xfffa) {
 			// Vector space — read from boot ROM
 			if (_bootRom && _bootRomSize > 0) {
@@ -102,15 +95,13 @@ void LynxMemoryManager::Write(uint16_t addr, uint8_t value, MemoryOperationType 
 
 		if (_state.SuzySpaceVisible && addr >= LynxConstants::SuzyBase && addr <= LynxConstants::SuzyEnd) {
 			// Suzy register write
-			// TODO: Dispatch to Suzy when implemented
-			// _suzy->WriteRegister(addr & 0xff, value);
+			if (_suzy) _suzy->WriteRegister(addr & 0xff, value);
 			return;
 		}
 
 		if (_state.MikeySpaceVisible && addr >= LynxConstants::MikeyBase && addr <= LynxConstants::MikeyEnd) {
 			// Mikey register write
-			// TODO: Dispatch to Mikey when implemented
-			// _mikey->WriteRegister(addr & 0xff, value);
+			if (_mikey) _mikey->WriteRegister(addr & 0xff, value);
 			return;
 		}
 
@@ -131,13 +122,11 @@ uint8_t LynxMemoryManager::DebugRead(uint16_t addr) {
 		}
 
 		if (_state.SuzySpaceVisible && addr >= LynxConstants::SuzyBase && addr <= LynxConstants::SuzyEnd) {
-			// TODO: Return Suzy register value for debugger
-			return 0;
+			return _suzy ? _suzy->ReadRegister(addr & 0xff) : 0;
 		}
 
 		if (_state.MikeySpaceVisible && addr >= LynxConstants::MikeyBase && addr <= LynxConstants::MikeyEnd) {
-			// TODO: Return Mikey register value for debugger
-			return 0;
+			return _mikey ? _mikey->ReadRegister(addr & 0xff) : 0;
 		}
 
 		if (_state.VectorSpaceVisible && addr >= 0xfffa) {

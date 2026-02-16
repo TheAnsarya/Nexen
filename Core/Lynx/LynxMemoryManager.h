@@ -52,7 +52,10 @@ private:
 public:
 	LynxMemoryManager() {}
 
-	void Init(Emulator* emu, LynxConsole* console, LynxMikey* mikey, LynxSuzy* suzy);
+	void Init(Emulator* emu, LynxConsole* console, uint8_t* workRam, uint8_t* bootRom, uint32_t bootRomSize);
+
+	void SetMikey(LynxMikey* mikey) { _mikey = mikey; }
+	void SetSuzy(LynxSuzy* suzy) { _suzy = suzy; }
 
 	[[nodiscard]] LynxMemoryManagerState& GetState() { return _state; }
 

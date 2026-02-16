@@ -1,20 +1,18 @@
 #include "pch.h"
 #include "Lynx/LynxConsole.h"
 #include "Lynx/LynxTypes.h"
+#include "Lynx/LynxCpu.h"
+#include "Lynx/LynxMikey.h"
+#include "Lynx/LynxSuzy.h"
+#include "Lynx/LynxMemoryManager.h"
+#include "Lynx/LynxCart.h"
+#include "Lynx/LynxControlManager.h"
 #include "Shared/Emulator.h"
 #include "Shared/EmuSettings.h"
 #include "Shared/MessageManager.h"
 #include "Shared/BatteryManager.h"
 #include "Utilities/Serializer.h"
 #include "Utilities/VirtualFile.h"
-
-// Component stubs — will be replaced as each component is implemented
-// #include "Lynx/LynxCpu.h"
-// #include "Lynx/LynxMikey.h"
-// #include "Lynx/LynxSuzy.h"
-// #include "Lynx/LynxMemoryManager.h"
-// #include "Lynx/LynxCart.h"
-// #include "Lynx/LynxControlManager.h"
 
 LynxConsole::LynxConsole(Emulator* emu) {
 	_emu = emu;
@@ -115,15 +113,52 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 	MessageManager::Log(std::format("Work RAM: {} KB", _workRamSize / 1024));
 	MessageManager::Log("------------------------------");
 
-	// TODO: Create components once they are implemented
-	// _controlManager.reset(new LynxControlManager(_emu, this));
-	// _memoryManager.reset(new LynxMemoryManager());
-	// _cart.reset(new LynxCart());
-	// _mikey.reset(new LynxMikey(_emu, this));
-	// _suzy.reset(new LynxSuzy(_emu, this));
-	// _cpu.reset(new LynxCpu(_emu, this, _memoryManager.get()));
-	// Wire components together via Init() calls
-	// LoadBattery();
+	// Create components
+	_controlManager.reset(new LynxControlManager(_emu, this));
+	_memoryManager.reset(new LynxMemoryManager());
+	_cart.reset(new LynxCart());
+	_mikey.reset(new LynxMikey());
+	_suzy.reset(new LynxSuzy());
+
+	// Initialize memory manager first (it needs RAM, boot ROM)
+	_memoryManager->Init(_emu, this, _workRam, _bootRom, _bootRomSize);
+
+	// Initialize cart
+	LynxCartInfo cartInfo = {};
+	if (hasLnxHeader) {
+		uint16_t bank0Pages = romData[4] | (romData[5] << 8);
+		uint16_t bank1Pages = romData[6] | (romData[7] << 8);
+		cartInfo.PageSizeBank0 = bank0Pages;
+		cartInfo.PageSizeBank1 = bank1Pages;
+		cartInfo.RomSize = _prgRomSize;
+		// Copy name/manufacturer from header
+		memcpy(cartInfo.Name, &romData[10], 32);
+		cartInfo.Name[32] = 0;
+		memcpy(cartInfo.Manufacturer, &romData[42], 16);
+		cartInfo.Manufacturer[16] = 0;
+		cartInfo.Rotation = static_cast<LynxRotation>(romData[58]);
+	} else {
+		cartInfo.PageSizeBank0 = (uint16_t)(_prgRomSize / 256);
+		cartInfo.PageSizeBank1 = 0;
+		cartInfo.RomSize = _prgRomSize;
+	}
+	_cart->Init(_emu, this, cartInfo);
+
+	// Initialize Suzy (sprite engine, math, joystick)
+	_suzy->Init(_emu, this, _memoryManager.get());
+
+	// Initialize CPU — needs memory manager
+	_cpu.reset(new LynxCpu(_emu, this, _memoryManager.get()));
+
+	// Initialize Mikey (timers, display, IRQs) — needs CPU reference for IRQ line
+	_mikey->Init(_emu, this, _cpu.get(), _memoryManager.get());
+
+	// Wire memory manager to Mikey and Suzy for dispatching
+	_memoryManager->SetMikey(_mikey.get());
+	_memoryManager->SetSuzy(_suzy.get());
+
+	// Load battery save if applicable
+	LoadBattery();
 
 	// Initialize frame buffer to black
 	memset(_frameBuffer, 0, sizeof(_frameBuffer));
@@ -132,11 +167,23 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 }
 
 void LynxConsole::RunFrame() {
-	// TODO: Implement when LynxCpu and LynxMikey are available
-	// uint32_t frameCount = _mikey->GetFrameCount();
-	// while (frameCount == _mikey->GetFrameCount()) {
-	//     _cpu->Exec();
-	// }
+	// Run CPU instructions for one frame's worth of cycles
+	uint32_t targetCycles = LynxConstants::CpuCyclesPerFrame;
+	uint64_t startCycle = _cpu->GetCycleCount();
+
+	while (_cpu->GetCycleCount() - startCycle < targetCycles) {
+		_cpu->Exec();
+		// Tick Mikey timers based on CPU cycle count
+		_mikey->Tick(_cpu->GetCycleCount());
+	}
+
+	// Copy Mikey's frame buffer to output
+	memcpy(_frameBuffer, _mikey->GetFrameBuffer(), sizeof(_frameBuffer));
+
+	// Update input state
+	_controlManager->UpdateInputState();
+	_suzy->SetJoystick(_controlManager->ReadJoystick());
+	_suzy->SetSwitches(_controlManager->ReadSwitches());
 }
 
 void LynxConsole::Reset() {
@@ -157,8 +204,7 @@ void LynxConsole::LoadBattery() {
 }
 
 BaseControlManager* LynxConsole::GetControlManager() {
-	// TODO: Return _controlManager.get() when LynxControlManager is implemented
-	return nullptr;
+	return _controlManager.get();
 }
 
 ConsoleRegion LynxConsole::GetRegion() {
@@ -174,8 +220,7 @@ vector<CpuType> LynxConsole::GetCpuTypes() {
 }
 
 uint64_t LynxConsole::GetMasterClock() {
-	// TODO: Return actual CPU cycle count when LynxCpu is implemented
-	return 0;
+	return _cpu ? _cpu->GetCycleCount() : 0;
 }
 
 uint32_t LynxConsole::GetMasterClockRate() {
@@ -217,12 +262,19 @@ void LynxConsole::ProcessAudioPlayerAction(AudioPlayerActionParams p) {
 }
 
 AddressInfo LynxConsole::GetAbsoluteAddress(AddressInfo& relAddress) {
-	// TODO: Delegate to LynxMemoryManager when implemented
+	if (_memoryManager) {
+		return _memoryManager->GetAbsoluteAddress(relAddress.Address);
+	}
 	return { -1, MemoryType::None };
 }
 
 AddressInfo LynxConsole::GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) {
-	// TODO: Delegate to LynxMemoryManager when implemented
+	if (_memoryManager) {
+		int32_t relAddr = _memoryManager->GetRelativeAddress(absAddress);
+		if (relAddr >= 0) {
+			return { relAddr, MemoryType::LynxWorkRam };
+		}
+	}
 	return { -1, MemoryType::None };
 }
 
@@ -233,15 +285,11 @@ void LynxConsole::GetConsoleState(BaseState& state, ConsoleType consoleType) {
 LynxState LynxConsole::GetState() {
 	LynxState state = {};
 	state.Model = _model;
-	// TODO: Fill sub-states from components when implemented
-	// state.Cpu = _cpu->GetState();
-	// state.Mikey = _mikey->GetState();
-	// state.Ppu = _mikey->GetPpuState();
-	// state.Apu = _mikey->GetApuState();
-	// state.Suzy = _suzy->GetState();
-	// state.MemoryManager = _memoryManager->GetState();
-	// state.Cart = _cart->GetCartState();
-	// state.ControlManager = _controlManager->GetState();
+	if (_cpu) state.Cpu = _cpu->GetState();
+	if (_mikey) state.Mikey = _mikey->GetState();
+	if (_suzy) state.Suzy = _suzy->GetState();
+	if (_memoryManager) state.MemoryManager = _memoryManager->GetState();
+	if (_controlManager) state.ControlManager = _controlManager->GetState();
 	return state;
 }
 
@@ -249,13 +297,12 @@ void LynxConsole::Serialize(Serializer& s) {
 	SV(_model);
 	SV(_rotation);
 
-	// TODO: Serialize components when implemented
-	// SV(_cpu);
-	// SV(_mikey);
-	// SV(_suzy);
-	// SV(_cart);
-	// SV(_memoryManager);
-	// SV(_controlManager);
+	if (_cpu) _cpu->Serialize(s);
+	if (_mikey) _mikey->Serialize(s);
+	if (_suzy) _suzy->Serialize(s);
+	if (_cart) _cart->Serialize(s);
+	if (_memoryManager) _memoryManager->Serialize(s);
+	if (_controlManager) _controlManager->Serialize(s);
 
 	SVArray(_workRam, _workRamSize);
 	if (_saveRam && _saveRamSize > 0) {
