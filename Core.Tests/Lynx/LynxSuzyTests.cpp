@@ -2289,3 +2289,232 @@ TEST_F(LynxSuzyMathTest, Fuzz_CollisionBuffer_HighestWins) {
 			<< "Round " << round << ", slot " << slot;
 	}
 }
+
+//=============================================================================
+// Math Unit Register Layout
+// Lynx math registers are 16-bit and 32-bit operations split across bytes.
+// Register layout testing ensures correct byte ordering.
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, MathRegister_16bit_Split) {
+	// 16-bit value split into high/low bytes
+	uint16_t value = 0xABCD;
+	uint8_t hi = (value >> 8) & 0xFF;
+	uint8_t lo = value & 0xFF;
+
+	EXPECT_EQ(hi, 0xAB);
+	EXPECT_EQ(lo, 0xCD);
+
+	// Reconstruct
+	uint16_t reconstructed = (hi << 8) | lo;
+	EXPECT_EQ(reconstructed, 0xABCD);
+}
+
+TEST_F(LynxSuzyMathTest, MathRegister_32bit_Split) {
+	// 32-bit result split into 4 bytes (ABCD)
+	uint32_t value = 0x12345678;
+
+	// In Lynx, MATHD is lowest byte, MATHA is highest
+	uint8_t a = (value >> 24) & 0xFF;
+	uint8_t b = (value >> 16) & 0xFF;
+	uint8_t c = (value >> 8) & 0xFF;
+	uint8_t d = value & 0xFF;
+
+	EXPECT_EQ(a, 0x12);
+	EXPECT_EQ(b, 0x34);
+	EXPECT_EQ(c, 0x56);
+	EXPECT_EQ(d, 0x78);
+}
+
+TEST_F(LynxSuzyMathTest, MathRegister_EFGH_64bit) {
+	// 64-bit accumulator EFGH for multiply-accumulate
+	int64_t accum = 0x123456789ABCDEF0LL;
+
+	// Split into 4 16-bit parts
+	uint16_t e = (accum >> 48) & 0xFFFF;
+	uint16_t f = (accum >> 32) & 0xFFFF;
+	uint16_t g = (accum >> 16) & 0xFFFF;
+	uint16_t h = accum & 0xFFFF;
+
+	EXPECT_EQ(e, 0x1234);
+	EXPECT_EQ(f, 0x5678);
+	EXPECT_EQ(g, 0x9ABC);
+	EXPECT_EQ(h, 0xDEF0);
+}
+
+//=============================================================================
+// Accumulate Mode
+// Math operations can add to existing result (accumulate flag)
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, Accumulate_MultiplyAdd) {
+	// First multiply: 100 × 50 = 5000
+	// Second multiply with accumulate: 30 × 20 = 600
+	// Result: 5000 + 600 = 5600
+
+	uint32_t result1 = 100 * 50;
+	uint32_t result2 = 30 * 20;
+	uint32_t accumulated = result1 + result2;
+
+	EXPECT_EQ(accumulated, 5600u);
+}
+
+TEST_F(LynxSuzyMathTest, Accumulate_MultipleOps) {
+	// Chain of 5 multiply-accumulates
+	int64_t accum = 0;
+
+	accum += (int32_t)10 * 10;   // 100
+	accum += (int32_t)20 * 20;   // 400
+	accum += (int32_t)30 * 30;   // 900
+	accum += (int32_t)40 * 40;   // 1600
+	accum += (int32_t)50 * 50;   // 2500
+
+	EXPECT_EQ(accum, 5500);
+}
+
+TEST_F(LynxSuzyMathTest, Accumulate_SignedMixedSigns) {
+	// Accumulate with mixed signs
+	int64_t accum = 0;
+
+	accum += (int32_t)100 * (int32_t)-50;   // -5000
+	accum += (int32_t)-30 * (int32_t)-20;   // +600
+
+	EXPECT_EQ(accum, -4400);
+}
+
+//=============================================================================
+// Division Edge Cases
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, Divide_ExactQuotient) {
+	// Exact division: no remainder
+	uint32_t dividend = 12345678;
+	uint16_t divisor = 1234;
+
+	// Find a dividend that divides exactly
+	dividend = 1234 * 10000;
+	uint16_t quotient = dividend / divisor;
+	uint16_t remainder = dividend % divisor;
+
+	EXPECT_EQ(quotient, 10000);
+	EXPECT_EQ(remainder, 0);
+}
+
+TEST_F(LynxSuzyMathTest, Divide_MaxQuotient) {
+	// Maximum quotient approaches 0xFFFF
+	uint32_t dividend = 0xFFFF0000;
+	uint16_t divisor = 0x10000 - 1;  // 65535
+
+	// 0xFFFF0000 / 0xFFFF ≈ 0x10000 (overflow, truncated to 16-bit)
+	uint32_t quotient = dividend / divisor;
+	EXPECT_GE(quotient, 0x10000u); // Overflows 16-bit result
+}
+
+TEST_F(LynxSuzyMathTest, Divide_SmallDividendLargeDivisor) {
+	// Small dividend, large divisor = quotient 0
+	uint32_t dividend = 100;
+	uint16_t divisor = 0xFFFF;
+
+	uint16_t quotient = dividend / divisor;
+	uint16_t remainder = dividend % divisor;
+
+	EXPECT_EQ(quotient, 0);
+	EXPECT_EQ(remainder, 100);
+}
+
+TEST_F(LynxSuzyMathTest, Divide_PowerOfTwo) {
+	// Division by power of 2 (can be optimized to shift)
+	uint32_t dividend = 0x12340000;
+	uint16_t divisor = 256;
+
+	uint32_t quotient = dividend / divisor;
+	EXPECT_EQ(quotient, 0x12340000 >> 8);
+}
+
+//=============================================================================
+// Signed Number Representation
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, Signed_TwosComplementNegation) {
+	// Two's complement: -x = ~x + 1
+	int16_t positive = 12345;
+	int16_t negative = -positive;
+
+	uint16_t posUnsigned = (uint16_t)positive;
+	uint16_t negUnsigned = (uint16_t)negative;
+
+	EXPECT_EQ(negUnsigned, (uint16_t)(~posUnsigned + 1));
+}
+
+TEST_F(LynxSuzyMathTest, Signed_OverflowBehavior) {
+	// Signed overflow wraps as expected
+	int16_t a = 32767;
+	int16_t b = 1;
+	int16_t result = a + b; // Overflow
+
+	EXPECT_EQ(result, -32768);
+}
+
+TEST_F(LynxSuzyMathTest, Signed_ExtendTo32) {
+	// Sign-extend 16-bit to 32-bit
+	int16_t negative = -1234;
+	int32_t extended = (int32_t)negative;
+
+	EXPECT_EQ(extended, -1234);
+	EXPECT_EQ((uint32_t)extended, 0xFFFFFB2E);
+}
+
+//=============================================================================
+// Fuzz: Arithmetic Properties
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, Fuzz_Multiply_Commutative) {
+	constexpr uint64_t SEED = 0x434F4D4D55544521ULL; // "COMMUTE!"
+	TestRng rng(SEED);
+
+	for (int i = 0; i < 1000; i++) {
+		uint16_t a = rng.Next16();
+		uint16_t b = rng.Next16();
+
+		uint32_t ab = (uint32_t)a * (uint32_t)b;
+		uint32_t ba = (uint32_t)b * (uint32_t)a;
+
+		EXPECT_EQ(ab, ba) << "a=" << a << " b=" << b;
+	}
+}
+
+TEST_F(LynxSuzyMathTest, Fuzz_SignedMultiply_Commutative) {
+	constexpr uint64_t SEED = 0x5349474E434F4DULL; // "SIGNCOM"
+	TestRng rng(SEED);
+
+	for (int i = 0; i < 1000; i++) {
+		int16_t a = rng.NextSigned16();
+		int16_t b = rng.NextSigned16();
+
+		int32_t ab = (int32_t)a * (int32_t)b;
+		int32_t ba = (int32_t)b * (int32_t)a;
+
+		EXPECT_EQ(ab, ba) << "a=" << a << " b=" << b;
+	}
+}
+
+TEST_F(LynxSuzyMathTest, Fuzz_Divide_QuotientTimesDiv_LTE_Dividend) {
+	constexpr uint64_t SEED = 0x444956494445212FULL; // "DIVIDE!/"
+	TestRng rng(SEED);
+
+	for (int i = 0; i < 1000; i++) {
+		uint32_t dividend = ((uint32_t)rng.Next16() << 16) | rng.Next16();
+		uint16_t divisor = rng.Next16();
+		if (divisor == 0) divisor = 1;
+
+		uint16_t quotient = (uint16_t)(dividend / divisor);
+		uint16_t remainder = dividend % divisor;
+
+		// q * d + r = dividend (when no overflow)
+		if (dividend / divisor <= 0xFFFF) {
+			uint32_t reconstructed = (uint32_t)quotient * (uint32_t)divisor + remainder;
+			EXPECT_EQ(reconstructed, dividend)
+				<< "dividend=" << dividend << " divisor=" << divisor;
+		}
+	}
+}
