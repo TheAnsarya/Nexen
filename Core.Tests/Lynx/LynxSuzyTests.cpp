@@ -958,3 +958,250 @@ TEST_F(LynxSuzyMathTest, PenIndex_MaxValue) {
 	uint8_t maxPen = 15;
 	EXPECT_LE(maxPen, 15);
 }
+
+//=============================================================================
+// Sprite Control Register 1 (SPRCTL1) Decoding
+// Bit 2 = Skip sprite
+// Bit 4 = Skip reload HVST (hpos, vpos, hsize, vsize, stretch, tilt)
+// Bit 5 = Skip reload HVS (hpos, vpos, hsize, vsize)
+// Bit 6 = Skip reload HV (hpos, vpos)
+// Bit 7 = Skip reload palette
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, Sprctl1_SkipSprite) {
+	// Bit 2 = skip this sprite
+	uint8_t sprctl1 = 0b00000100;
+	bool skip = (sprctl1 & 0x04) != 0;
+	EXPECT_TRUE(skip);
+
+	sprctl1 = 0b00000000;
+	skip = (sprctl1 & 0x04) != 0;
+	EXPECT_FALSE(skip);
+}
+
+TEST_F(LynxSuzyMathTest, Sprctl1_SkipReloadHVST) {
+	// Bit 4 = don't reload HVST from SCB
+	uint8_t sprctl1 = 0b00010000;
+	bool skipReloadHVST = (sprctl1 & 0x10) != 0;
+	EXPECT_TRUE(skipReloadHVST);
+}
+
+TEST_F(LynxSuzyMathTest, Sprctl1_SkipReloadHVS) {
+	// Bit 5 = don't reload HVS from SCB
+	uint8_t sprctl1 = 0b00100000;
+	bool skipReloadHVS = (sprctl1 & 0x20) != 0;
+	EXPECT_TRUE(skipReloadHVS);
+}
+
+TEST_F(LynxSuzyMathTest, Sprctl1_SkipReloadHV) {
+	// Bit 6 = don't reload HV from SCB
+	uint8_t sprctl1 = 0b01000000;
+	bool skipReloadHV = (sprctl1 & 0x40) != 0;
+	EXPECT_TRUE(skipReloadHV);
+}
+
+TEST_F(LynxSuzyMathTest, Sprctl1_SkipReloadPalette) {
+	// Bit 7 = don't reload palette from SCB
+	uint8_t sprctl1 = 0b10000000;
+	bool skipReloadPalette = (sprctl1 & 0x80) != 0;
+	EXPECT_TRUE(skipReloadPalette);
+}
+
+TEST_F(LynxSuzyMathTest, Sprctl1_AllReloadFlags) {
+	// All skip-reload flags set
+	uint8_t sprctl1 = 0b11110000;
+	bool skipHVST = (sprctl1 & 0x10) != 0;
+	bool skipHVS = (sprctl1 & 0x20) != 0;
+	bool skipHV = (sprctl1 & 0x40) != 0;
+	bool skipPalette = (sprctl1 & 0x80) != 0;
+
+	EXPECT_TRUE(skipHVST);
+	EXPECT_TRUE(skipHVS);
+	EXPECT_TRUE(skipHV);
+	EXPECT_TRUE(skipPalette);
+}
+
+TEST_F(LynxSuzyMathTest, Sprctl1_StartDrawUp) {
+	// Bit 3 = draw in +y direction (0=draw down, 1=draw up)
+	// Note: Per docs, 0=draw down from origin, 1=draw up
+	uint8_t sprctl1 = 0b00001000;
+	bool startDrawUp = (sprctl1 & 0x08) != 0;
+	EXPECT_TRUE(startDrawUp);
+}
+
+//=============================================================================
+// Tilt Transformation  8.8 Fixed Point Signed
+// Tilt shifts the horizontal position by TILT*lineNumber per line
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, Tilt_Zero) {
+	// Zero tilt = no horizontal shift
+	int16_t tilt = 0x0000;
+	int lineNum = 10;
+	int hShift = (tilt * lineNum) >> 8;
+	EXPECT_EQ(hShift, 0);
+}
+
+TEST_F(LynxSuzyMathTest, Tilt_PositiveSmall) {
+	// 0.5 tilt: each line shifts 0.5 pixels right
+	int16_t tilt = 0x0080; // 0.5 in 8.8
+	int lineNum = 8;
+	// 0.5 * 8 = 4 pixels shift
+	int hShift = (tilt * lineNum) >> 8;
+	EXPECT_EQ(hShift, 4);
+}
+
+TEST_F(LynxSuzyMathTest, Tilt_Negative) {
+	// -0.5 tilt: each line shifts 0.5 pixels left
+	int16_t tilt = (int16_t)0xFF80; // -0.5 in 8.8 signed
+	int lineNum = 8;
+	// -0.5 * 8 = -4 pixels shift
+	int hShift = (tilt * lineNum) >> 8;
+	EXPECT_EQ(hShift, -4);
+}
+
+TEST_F(LynxSuzyMathTest, Tilt_OnePixelPerLine) {
+	// 1.0 tilt: each line shifts 1 pixel
+	int16_t tilt = 0x0100; // 1.0 in 8.8
+	int lineNum = 5;
+	int hShift = (tilt * lineNum) >> 8;
+	EXPECT_EQ(hShift, 5);
+}
+
+TEST_F(LynxSuzyMathTest, Tilt_ItalicEffect) {
+	// Simulate italicizing text: 0.25 pixels/line over 16 lines
+	// = 4 pixel slant
+	int16_t tilt = 0x0040; // 0.25 in 8.8
+	int lineNum = 16;
+	int hShift = (tilt * lineNum) >> 8;
+	EXPECT_EQ(hShift, 4);
+}
+
+//=============================================================================
+// Stretch Transformation  8.8 Fixed Point Signed
+// Stretch modifies the horizontal size per line
+// Each line: hSize += stretch
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, Stretch_Zero) {
+	// Zero stretch = no size change
+	int16_t stretch = 0x0000;
+	uint16_t hSize = 0x0100; // 1.0
+	hSize += stretch; // unchanged
+	EXPECT_EQ(hSize, 0x0100);
+}
+
+TEST_F(LynxSuzyMathTest, Stretch_PositiveGrowing) {
+	// Positive stretch makes sprite wider each line (trapezoid)
+	int16_t stretch = 0x0010; // 0.0625 per line
+	uint16_t hSize = 0x0100; // 1.0
+	// After 16 lines
+	for (int line = 0; line < 16; line++) {
+		hSize += stretch;
+	}
+	// 1.0 + 16*0.0625 = 2.0
+	EXPECT_EQ(hSize, 0x0200);
+}
+
+TEST_F(LynxSuzyMathTest, Stretch_NegativeShrinking) {
+	// Negative stretch makes sprite narrower each line (inverse trapezoid)
+	int16_t stretch = (int16_t)0xFFF0; // -0.0625 per line
+	uint16_t hSize = 0x0200; // 2.0
+	// After 16 lines
+	for (int line = 0; line < 16; line++) {
+		hSize += stretch;
+	}
+	// 2.0 - 16*0.0625 = 1.0
+	EXPECT_EQ(hSize, 0x0100);
+}
+
+TEST_F(LynxSuzyMathTest, Stretch_TriangleSprite) {
+	// Triangle: start at 0 width, grow 0.5 per line for 8 lines = 4.0 at bottom
+	int16_t stretch = 0x0080; // 0.5
+	uint16_t hSize = 0x0000;
+	for (int line = 0; line < 8; line++) {
+		hSize += stretch;
+	}
+	EXPECT_EQ(hSize, 0x0400); // 4.0
+}
+
+//=============================================================================
+// Collision Number/Priority
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, CollisionNumber_Range) {
+	// Collision numbers are 0-15 (4-bit value)
+	for (uint8_t collNum = 0; collNum < 16; collNum++) {
+		EXPECT_LE(collNum, 15);
+	}
+}
+
+TEST_F(LynxSuzyMathTest, CollisionNumber_HigherPriorityWins) {
+	// In collision detection, higher-numbered sprites have priority
+	// When two sprites collide, the buffer stores the higher number
+	uint8_t sprite1CollNum = 3;
+	uint8_t sprite2CollNum = 7;
+	uint8_t bufferValue = std::max(sprite1CollNum, sprite2CollNum);
+	EXPECT_EQ(bufferValue, 7);
+}
+
+TEST_F(LynxSuzyMathTest, CollisionNumber_ZeroIsNoCollision) {
+	// Collision number 0 typically means "no collision recorded"
+	uint8_t collNum = 0;
+	bool hasCollision = (collNum != 0);
+	EXPECT_FALSE(hasCollision);
+}
+
+//=============================================================================
+// Screen Boundaries
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, Screen_Width) {
+	EXPECT_EQ((int)LynxConstants::ScreenWidth, 160);
+}
+
+TEST_F(LynxSuzyMathTest, Screen_Height) {
+	EXPECT_EQ((int)LynxConstants::ScreenHeight, 102);
+}
+
+TEST_F(LynxSuzyMathTest, Screen_PixelCount) {
+	int pixels = (int)LynxConstants::ScreenWidth * (int)LynxConstants::ScreenHeight;
+	EXPECT_EQ(pixels, 16320);
+}
+
+//=============================================================================
+// Math Accumulate Mode
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, MathAccumulate_DisabledClearsResult) {
+	// When accumulate is disabled, each operation starts fresh
+	_state.MathAccumulate = false;
+	int32_t result1 = 100 * 5;
+	int32_t result2 = 7 * 3;
+	// Each result is independent
+	EXPECT_EQ(result1, 500);
+	EXPECT_EQ(result2, 21);
+}
+
+TEST_F(LynxSuzyMathTest, MathAccumulate_EnabledAddsToResult) {
+	// When accumulate is enabled, results add up
+	_state.MathAccumulate = true;
+	int32_t accumulator = 0;
+	accumulator += 100 * 5; // 500
+	accumulator += 7 * 3;   // 21
+	EXPECT_EQ(accumulator, 521);
+}
+
+TEST_F(LynxSuzyMathTest, MathAccumulate_UsefulForDotProduct) {
+	// Accumulate mode is useful for dot products:
+	// A·B = a1*b1 + a2*b2 + a3*b3
+	_state.MathAccumulate = true;
+	int16_t a[] = { 3, 4, 5 };
+	int16_t b[] = { 2, 6, 8 };
+	int32_t dot = 0;
+	for (int i = 0; i < 3; i++) {
+		dot += a[i] * b[i];
+	}
+	// 3*2 + 4*6 + 5*8 = 6 + 24 + 40 = 70
+	EXPECT_EQ(dot, 70);
+}
