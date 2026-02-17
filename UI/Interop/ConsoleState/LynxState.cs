@@ -101,8 +101,21 @@ public struct LynxMikeyState : BaseState {
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
 	public byte[] PaletteBR;
 
-	public byte SerialData;
 	public byte SerialControl;
+
+	public UInt32 UartTxCountdown;
+	public UInt32 UartRxCountdown;
+	public UInt16 UartTxData;
+	public UInt16 UartRxData;
+	[MarshalAs(UnmanagedType.I1)] public bool UartRxReady;
+	[MarshalAs(UnmanagedType.I1)] public bool UartTxIrqEnable;
+	[MarshalAs(UnmanagedType.I1)] public bool UartRxIrqEnable;
+	[MarshalAs(UnmanagedType.I1)] public bool UartParityEnable;
+	[MarshalAs(UnmanagedType.I1)] public bool UartParityEven;
+	[MarshalAs(UnmanagedType.I1)] public bool UartSendBreak;
+	[MarshalAs(UnmanagedType.I1)] public bool UartRxOverrunError;
+	[MarshalAs(UnmanagedType.I1)] public bool UartRxFramingError;
+
 	public byte HardwareRevision;
 }
 

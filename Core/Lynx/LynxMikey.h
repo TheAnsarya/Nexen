@@ -30,6 +30,21 @@ private:
 	// Frame buffer output (160x102 pixels, 32-bit ARGB)
 	uint32_t _frameBuffer[LynxConstants::ScreenWidth * LynxConstants::ScreenHeight] = {};
 
+	// UART / ComLynx constants and state
+	static constexpr uint32_t UartTxInactive = 0x80000000;
+	static constexpr uint32_t UartRxInactive = 0x80000000;
+	static constexpr uint16_t UartBreakCode = 0x8000;
+	static constexpr int UartMaxRxQueue = 32;
+	static constexpr uint32_t UartTxTimePeriod = 11;  // 11 bit times per serial frame
+	static constexpr uint32_t UartRxTimePeriod = 11;
+	static constexpr uint32_t UartRxNextDelay = 44;   // Inter-byte gap (4x frame period)
+
+	// UART receive queue
+	uint16_t _uartRxQueue[UartMaxRxQueue] = {};
+	uint32_t _uartRxInputPtr = 0;
+	uint32_t _uartRxOutputPtr = 0;
+	uint32_t _uartRxWaiting = 0;
+
 	// Timer linking chains:
 	// Chain 1: Timer 0 (H) → Timer 2 (V) → Timer 4
 	// Chain 2: Timer 1 → Timer 3 → Timer 5 → Timer 7
@@ -57,6 +72,9 @@ private:
 	void UpdatePalette(int index);
 	void UpdateIrqLine();
 	void RenderScanline();
+	void TickUart();
+	void UpdateUartIrq();
+	void ComLynxTxLoopback(uint16_t data);
 
 public:
 	void Init(Emulator* emu, LynxConsole* console, LynxCpu* cpu, LynxMemoryManager* memoryManager);
@@ -76,6 +94,9 @@ public:
 	uint32_t* GetFrameBuffer() { return _frameBuffer; }
 	LynxMikeyState& GetState() { return _state; }
 	uint32_t GetFrameCount() const;
+
+	/// <summary>Inject received data into the UART RX queue (for ComLynx networking)</summary>
+	void ComLynxRxData(uint16_t data);
 
 	void Serialize(Serializer& s) override;
 };

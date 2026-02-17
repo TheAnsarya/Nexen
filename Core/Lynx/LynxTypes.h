@@ -361,12 +361,45 @@ struct LynxMikeyState {
 	/// <summary>Raw blue/red palette register values (16 entries, packed: [7:4]=blue, [3:0]=red)</summary>
 	uint8_t PaletteBR[LynxConstants::PaletteSize];
 
-	// --- UART ---
-	/// <summary>Serial data register</summary>
-	uint8_t SerialData;
-
-	/// <summary>Serial control register</summary>
+	// --- UART / ComLynx ---
+	/// <summary>Serial control register (raw write value)</summary>
 	uint8_t SerialControl;
+
+	/// <summary>TX countdown — Timer 4 ticks remaining (0x80000000 = inactive)</summary>
+	uint32_t UartTxCountdown;
+
+	/// <summary>RX countdown — Timer 4 ticks remaining (0x80000000 = inactive)</summary>
+	uint32_t UartRxCountdown;
+
+	/// <summary>Transmit data register (bit 8 = parity/9th bit)</summary>
+	uint16_t UartTxData;
+
+	/// <summary>Received data (bit 8 = parity, bit 15 = break flag)</summary>
+	uint16_t UartRxData;
+
+	/// <summary>RX data available to read</summary>
+	bool UartRxReady;
+
+	/// <summary>TX interrupt enable (level-sensitive — HW Bug 13.2)</summary>
+	bool UartTxIrqEnable;
+
+	/// <summary>RX interrupt enable</summary>
+	bool UartRxIrqEnable;
+
+	/// <summary>Parity generation/checking enabled</summary>
+	bool UartParityEnable;
+
+	/// <summary>Even parity (or 9th bit value when parity disabled)</summary>
+	bool UartParityEven;
+
+	/// <summary>Continuously send break signal</summary>
+	bool UartSendBreak;
+
+	/// <summary>RX overrun error (new data before previous read)</summary>
+	bool UartRxOverrunError;
+
+	/// <summary>RX framing error</summary>
+	bool UartRxFramingError;
 
 	// --- Misc ---
 	/// <summary>Mikey hardware revision register ($FD88)</summary>
