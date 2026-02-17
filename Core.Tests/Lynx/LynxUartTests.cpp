@@ -70,7 +70,7 @@ struct TestUartState {
 
 /// <summary>Replicate TickUart() logic</summary>
 static void TickUart(TestUartState& s) {
-	// --- Receive ---
+	// --- Receive --- (§7.3)
 	if (s.UartRxCountdown == 0) {
 		if (s.RxWaiting > 0) {
 			if (s.UartRxReady) {
@@ -81,7 +81,11 @@ static void TickUart(TestUartState& s) {
 			s.RxWaiting--;
 			s.UartRxReady = true;
 			if (s.RxWaiting > 0) {
-				s.UartRxCountdown = UartRxNextDelay;
+				// §7.3: Inter-byte delay = RX_TIME_PERIOD + RX_NEXT_DELAY = 55
+				s.UartRxCountdown = UartRxTimePeriod + UartRxNextDelay;
+			} else {
+				// §7.3: Queue empty after delivery — go inactive
+				s.UartRxCountdown = UartRxInactive;
 			}
 		}
 	} else if (!(s.UartRxCountdown & UartRxInactive)) {
@@ -130,9 +134,17 @@ static void ComLynxRxData(TestUartState& s, uint16_t data) {
 	}
 }
 
-/// <summary>Replicate ComLynxTxLoopback()</summary>
+/// <summary>Replicate ComLynxTxLoopback() — front-inserts into queue (§7.2)</summary>
 static void ComLynxTxLoopback(TestUartState& s, uint16_t data) {
-	ComLynxRxData(s, data);
+	if (s.RxWaiting < (uint32_t)UartMaxRxQueue) {
+		if (s.RxWaiting == 0) {
+			s.UartRxCountdown = UartRxTimePeriod;
+		}
+		// Front-insert: decrement output pointer (§7.2)
+		s.RxOutputPtr = (s.RxOutputPtr - 1) & (UartMaxRxQueue - 1);
+		s.RxQueue[s.RxOutputPtr] = data;
+		s.RxWaiting++;
+	}
 }
 
 /// <summary>Replicate SERCTL write logic</summary>
@@ -249,9 +261,9 @@ TEST_F(LynxUartTest, SerctlWrite_SendBreak) {
 	EXPECT_TRUE(_s.UartSendBreak);
 	// Break activates TX countdown
 	EXPECT_EQ(_s.UartTxCountdown, UartTxTimePeriod);
-	// Break loopback puts data in RX queue
+	// Break loopback front-inserts data in RX queue (§7.2)
 	EXPECT_EQ(_s.RxWaiting, 1u);
-	EXPECT_EQ(_s.RxQueue[0], UartBreakCode);
+	EXPECT_EQ(_s.RxQueue[_s.RxOutputPtr], UartBreakCode);
 }
 
 TEST_F(LynxUartTest, SerctlWrite_AllBits) {
@@ -349,9 +361,9 @@ TEST_F(LynxUartTest, SerdatWrite_StartsTxCountdown) {
 
 TEST_F(LynxUartTest, SerdatWrite_SelfLoopback) {
 	WriteSerdat(_s, 0xAB);
-	// Self-loopback enqueues the data in RX queue
+	// Self-loopback front-inserts data in RX queue (§7.2)
 	EXPECT_EQ(_s.RxWaiting, 1u);
-	EXPECT_EQ(_s.RxQueue[0] & 0xff, 0xAB);
+	EXPECT_EQ(_s.RxQueue[_s.RxOutputPtr] & 0xff, 0xAB);
 }
 
 TEST_F(LynxUartTest, SerdatWrite_ParityDisabled_9thBit) {
@@ -484,15 +496,15 @@ TEST_F(LynxUartTest, RxQueue_MultipleBytes_InterByteDelay) {
 	EXPECT_TRUE(_s.UartRxReady);
 	EXPECT_EQ(_s.UartRxData & 0xff, 0x01);
 	EXPECT_EQ(_s.RxWaiting, 1u);
-	// Inter-byte delay should be set
-	EXPECT_EQ(_s.UartRxCountdown, UartRxNextDelay);
+	// §7.3: Inter-byte delay = RX_TIME_PERIOD + RX_NEXT_DELAY = 55
+	EXPECT_EQ(_s.UartRxCountdown, UartRxTimePeriod + UartRxNextDelay);
 
 	// Read first byte to clear RxReady
 	ReadSerdat(_s);
 	EXPECT_FALSE(_s.UartRxReady);
 
-	// Inter-byte delay: 44 ticks countdown→0, +1 tick to deliver = 45
-	TickN(45);
+	// Inter-byte delay: 55 ticks countdown→0, +1 tick to deliver = 56
+	TickN(56);
 	// Second byte delivered
 	EXPECT_TRUE(_s.UartRxReady);
 	EXPECT_EQ(_s.UartRxData & 0xff, 0x02);
@@ -581,8 +593,8 @@ TEST_F(LynxUartTest, Break_StopsWhenDisabled) {
 
 TEST_F(LynxUartTest, Break_LoopbackContainsBreakCode) {
 	WriteSerctl(_s, 0x02);
-	// Break was looped back during WriteSerctl
-	EXPECT_EQ(_s.RxQueue[0], UartBreakCode);
+	// Break was front-inserted via ComLynxTxLoopback (§7.2)
+	EXPECT_EQ(_s.RxQueue[_s.RxOutputPtr], UartBreakCode);
 }
 
 // =============================================================================
@@ -599,8 +611,8 @@ TEST_F(LynxUartTest, Overrun_DetectedWhenRxNotRead) {
 	EXPECT_TRUE(_s.UartRxReady);
 
 	// Don't read first byte — second byte delivery triggers overrun
-	// Inter-byte delay: 44 ticks countdown→0, +1 deliver = 45
-	TickN(45);
+	// §7.3: Inter-byte delay: 55 ticks countdown→0, +1 deliver = 56
+	TickN(56);
 	EXPECT_TRUE(_s.UartRxOverrunError);
 }
 
@@ -610,7 +622,8 @@ TEST_F(LynxUartTest, Overrun_NoErrorWhenReadBeforeNextByte) {
 	TickN(12); // Deliver first byte (12 ticks)
 	ReadSerdat(_s); // Read first byte, clears RxReady
 
-	TickN(45); // Inter-byte delay (44→0) + deliver = 45
+	// §7.3: Inter-byte delay (55→0) + deliver = 56
+	TickN(56);
 	EXPECT_FALSE(_s.UartRxOverrunError);
 	EXPECT_TRUE(_s.UartRxReady);
 	EXPECT_EQ(_s.UartRxData & 0xff, 0x02);
@@ -792,17 +805,18 @@ TEST_F(LynxUartTest, RxDelay_ExactlyElevenTicks) {
 	EXPECT_TRUE(_s.UartRxReady);
 }
 
-TEST_F(LynxUartTest, InterByteDelay_Exactly44Ticks) {
+TEST_F(LynxUartTest, InterByteDelay_Exactly55Ticks) {
 	ComLynxRxData(_s, 0x01);
 	ComLynxRxData(_s, 0x02);
 	// Deliver first byte: 12 ticks
 	TickN(12);
 	ReadSerdat(_s); // Clear RxReady
 
-	// Inter-byte delay countdown = 44
-	EXPECT_EQ(_s.UartRxCountdown, UartRxNextDelay);
-	// 44 ticks to decrement countdown→0
-	for (uint32_t i = UartRxNextDelay; i > 0; i--) {
+	// §7.3: Inter-byte delay countdown = RX_TIME_PERIOD + RX_NEXT_DELAY = 55
+	uint32_t interByteDelay = UartRxTimePeriod + UartRxNextDelay;
+	EXPECT_EQ(_s.UartRxCountdown, interByteDelay);
+	// 55 ticks to decrement countdown→0
+	for (uint32_t i = interByteDelay; i > 0; i--) {
 		EXPECT_FALSE(_s.UartRxReady);
 		TickUart(_s);
 	}
@@ -961,5 +975,107 @@ TEST_F(LynxUartTest, EdgeCase_RxCountdownZeroNoData) {
 	_s.RxWaiting = 0;
 	TickUart(_s);
 	EXPECT_FALSE(_s.UartRxReady); // Nothing delivered
-	EXPECT_EQ(_s.UartRxCountdown, 0u); // Stays at 0
+	// Countdown stays at 0 (no data to trigger inactive transition)
+	EXPECT_EQ(_s.UartRxCountdown, 0u);
+}
+
+// =============================================================================
+// 16. Front-Insertion Priority (§7.2 — ComLynxTxLoopback)
+// =============================================================================
+
+TEST_F(LynxUartTest, FrontInsert_LoopbackBeforeExternal) {
+	// §7.2: Loopback data should be received BEFORE externally-queued data.
+	// This is critical for collision detection on the ComLynx bus.
+	ComLynxRxData(_s, 0xEE); // External data arrives first (back-insert)
+	ComLynxTxLoopback(_s, 0xAA); // Loopback arrives second (front-insert)
+
+	// Both are in queue
+	EXPECT_EQ(_s.RxWaiting, 2u);
+
+	// Deliver first byte: should be the loopback (0xAA) at front
+	TickN(12);
+	EXPECT_TRUE(_s.UartRxReady);
+	EXPECT_EQ(_s.UartRxData & 0xff, 0xAA);
+
+	// Deliver second byte: should be external (0xEE)
+	ReadSerdat(_s);
+	TickN(56); // §7.3: inter-byte = 55 countdown + 1 deliver
+	EXPECT_TRUE(_s.UartRxReady);
+	EXPECT_EQ(_s.UartRxData & 0xff, 0xEE);
+}
+
+TEST_F(LynxUartTest, FrontInsert_MultipleLoopbacks) {
+	// Multiple front-inserts maintain LIFO order at front
+	ComLynxTxLoopback(_s, 0x01);
+	ComLynxTxLoopback(_s, 0x02); // This goes to front of 0x01
+	ComLynxTxLoopback(_s, 0x03); // This goes to front of 0x02
+
+	EXPECT_EQ(_s.RxWaiting, 3u);
+
+	// Deliver: should come out 0x03, 0x02, 0x01 (LIFO at front)
+	TickN(12);
+	EXPECT_EQ(_s.UartRxData & 0xff, 0x03);
+	ReadSerdat(_s);
+	TickN(56);
+	EXPECT_EQ(_s.UartRxData & 0xff, 0x02);
+	ReadSerdat(_s);
+	TickN(56);
+	EXPECT_EQ(_s.UartRxData & 0xff, 0x01);
+}
+
+TEST_F(LynxUartTest, FrontInsert_InterleaveWithExternal) {
+	// External, then loopback, then external — loopback jumps to front
+	ComLynxRxData(_s, 0xE1); // back
+	ComLynxRxData(_s, 0xE2); // back
+	ComLynxTxLoopback(_s, 0xA1); // front (before E1, E2)
+
+	EXPECT_EQ(_s.RxWaiting, 3u);
+
+	// Delivery order: A1 (loopback, front), E1 (external), E2 (external)
+	TickN(12);
+	EXPECT_EQ(_s.UartRxData & 0xff, 0xA1);
+	ReadSerdat(_s);
+	TickN(56);
+	EXPECT_EQ(_s.UartRxData & 0xff, 0xE1);
+	ReadSerdat(_s);
+	TickN(56);
+	EXPECT_EQ(_s.UartRxData & 0xff, 0xE2);
+}
+
+// =============================================================================
+// 17. RX Inactive After Delivery (§7.3)
+// =============================================================================
+
+TEST_F(LynxUartTest, RxInactive_AfterSingleByteDelivery) {
+	// §7.3: After delivering the last byte from queue, RX goes inactive
+	ComLynxRxData(_s, 0x42);
+	TickN(12); // Deliver
+	EXPECT_TRUE(_s.UartRxReady);
+	// Queue is now empty — countdown should be INACTIVE
+	EXPECT_TRUE(_s.UartRxCountdown & UartRxInactive);
+	EXPECT_EQ(_s.RxWaiting, 0u);
+}
+
+TEST_F(LynxUartTest, RxInactive_NotSetWhenMoreBytesWaiting) {
+	// §7.3: When more bytes are waiting, countdown is set to inter-byte delay
+	ComLynxRxData(_s, 0x01);
+	ComLynxRxData(_s, 0x02);
+	TickN(12); // Deliver first byte
+	EXPECT_TRUE(_s.UartRxReady);
+	EXPECT_EQ(_s.RxWaiting, 1u);
+	// Should NOT be inactive — inter-byte delay set instead
+	EXPECT_FALSE(_s.UartRxCountdown & UartRxInactive);
+	EXPECT_EQ(_s.UartRxCountdown, UartRxTimePeriod + UartRxNextDelay);
+}
+
+TEST_F(LynxUartTest, RxInactive_NewDataRestartsCountdown) {
+	// After going inactive, new data arrival restarts countdown
+	ComLynxRxData(_s, 0x42);
+	TickN(12);
+	EXPECT_TRUE(_s.UartRxCountdown & UartRxInactive);
+
+	// New data arrives
+	ComLynxRxData(_s, 0x99);
+	EXPECT_EQ(_s.UartRxCountdown, UartRxTimePeriod); // Restarted to 11
+	EXPECT_EQ(_s.RxWaiting, 1u);
 }

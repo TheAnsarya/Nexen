@@ -6,7 +6,13 @@ using static Nexen.Debugger.ViewModels.RegEntry;
 
 namespace Nexen.Debugger.RegisterViewer;
 
+/// <summary>
+/// Register viewer for the Atari Lynx debugger.
+/// Displays CPU (65SC02), Mikey (timers, display, UART/ComLynx), and Suzy (sprites, math) state.
+/// UART registers reference §2 (SERCTL write), §3 (SERCTL read), §4 (SERDAT).
+/// </summary>
 public sealed class LynxRegisterViewer {
+	/// <summary>Build all register viewer tabs for the Lynx debugger.</summary>
 	public static List<RegisterViewerTab> GetTabs(ref LynxState state) {
 		List<RegisterViewerTab> tabs = new() {
 			GetCpuTab(ref state),

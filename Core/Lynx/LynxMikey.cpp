@@ -45,10 +45,10 @@ void LynxMikey::Init(Emulator* emu, LynxConsole* console, LynxCpu* cpu, LynxMemo
 	_state.DisplayAddress = 0;
 	_state.DisplayControl = 0;
 
-	// Initialize UART to idle
+	// §13: Initialize UART to idle (power-on reset state)
 	_state.SerialControl = 0;
-	_state.UartTxCountdown = UartTxInactive;
-	_state.UartRxCountdown = UartRxInactive;
+	_state.UartTxCountdown = UartTxInactive;  // §6.3: TX idle sentinel
+	_state.UartRxCountdown = UartRxInactive;  // §7.4: RX idle sentinel
 	_state.UartTxData = 0;
 	_state.UartRxData = 0;
 	_state.UartRxReady = false;
@@ -131,12 +131,13 @@ void LynxMikey::TickTimer(int index, uint64_t currentCycle) {
 
 		if (timer.Count == 0xff) { // Underflow (wrapped from 0 to 0xFF)
 			if (index == 4) {
-				// Timer 4 = UART baud rate generator.
-				// Does not set TimerDone, does not fire normal IRQ.
-				// Each underflow drives one UART clock tick (1 bit time).
+				// §5: Timer 4 = UART baud rate generator.
+				// Does not set TimerDone, does not fire normal timer IRQ (§10).
+				// Each underflow drives one UART clock tick (1 bit-time).
+				// See §5 — Timer 4 update path.
 				timer.Count = timer.BackupValue;
 				TickUart();
-				// Timer 4 keeps counting (no HW Bug 13.6 stop)
+				// Timer 4 keeps counting (not subject to HW Bug 13.6 stop)
 				continue;
 			}
 
@@ -186,7 +187,7 @@ void LynxMikey::CascadeTimer(int sourceIndex) {
 		return;
 	}
 
-	// HW Bug 13.6: Timer does not count while Timer Done flag is set
+	// HW Bug 13.6: Timer does not count while Timer Done fla (§5)g is set
 	// Exception: Timer 4 (UART baud generator) always counts
 	if (timer.TimerDone && target != 4) {
 		return;
@@ -194,7 +195,7 @@ void LynxMikey::CascadeTimer(int sourceIndex) {
 
 	timer.Count--;
 	if (timer.Count == 0xff) { // Underflow
-		if (target == 4) {
+		if (§5: Timer 4 = UART baud generator — no TimerDone, calls TickUart()
 			// Timer 4 = UART baud generator
 			timer.Count = timer.BackupValue;
 			TickUart();
@@ -341,43 +342,52 @@ uint8_t LynxMikey::ReadRegister(uint8_t addr) {
 		case 0xbc: case 0xbd: case 0xbe: case 0xbf:
 			return _state.PaletteBR[addr - 0xb0];
 
-		// Serial port (ComLynx)
+		// Serial port (ComLynx) — see ~docs/plans/lynx-uart-comlynx-hardware-reference.md
 		case 0x8c: { // SERCTL ($FD8C) — serial status register (read)
-			// Read returns status (different bit meanings from write):
-			//   7: TxRdy   — transmitter buffer empty (ready for data)
-			//   6: RxRdy   — receiver has data available
-			//   5: TxEmpty — transmitter shift register idle
-			//   4: Parerr  — parity error (not implemented)
-			//   3: Overrun — receiver overrun
-			//   2: Framerr — framing error
-			//   1: Rxbrk   — break received
-			//   0: Parbit  — 9th bit / parity
+			// §3: Read returns status (different bit meanings from write §2):
+			//   B7: TXRDY   — transmitter buffer empty (ready for data)
+			//   B6: RXRDY   — receiver has data available
+			//   B5: TXEMPTY — transmitter shift register idle
+			//   B4: PARERR  — parity error (unimplemented — §9)
+			//   B3: OVERRUN — receiver overrun (§7.3)
+			//   B2: FRAMERR — framing error (never set — §9)
+			//   B1: RXBRK   — break received (UART_BREAK_CODE bit 15)
+			//   B0: PARBIT  — 9th bit / parity bit (data bit 8)
 			uint8_t status = 0;
-			// TxRdy (bit 7) + TxEmpty (bit 5) when not actively transmitting
+			// §3: TXRDY (B7) + TXEMPTY (B5) when not actively transmitting.
+			// In our simplified model (no separate shift register), both are
+			// always the same — set together as 0xA0 when TX is inactive.
 			if (_state.UartTxCountdown & UartTxInactive) {
 				status |= 0xa0;
 			}
+			// §3 B6: RXRDY — received byte available for reading
 			if (_state.UartRxReady) {
 				status |= 0x40;
 			}
+			// §3 B3: OVERRUN — new byte delivered before previous was read
+			// NOTE: Handy/Mednafen have swapped comments on bits 3/2 (§3)
 			if (_state.UartRxOverrunError) {
 				status |= 0x08;
 			}
+			// §3 B2: FRAMERR — framing error (never generated in emulation)
 			if (_state.UartRxFramingError) {
 				status |= 0x04;
 			}
+			// §3 B1: RXBRK — break condition detected (bit 15 of RX data)
 			if (_state.UartRxData & UartBreakCode) {
 				status |= 0x02;
 			}
+			// §3 B0: PARBIT — 9th bit / parity bit (bit 8 of RX data)
 			if (_state.UartRxData & 0x0100) {
 				status |= 0x01;
 			}
 			return status;
 		}
-		case 0x8d: // SERDAT ($FD8D) — serial receive data register
-			// Reading clears RxReady and returns the received byte
+		case 0x8d: // SERDAT ($FD8D) — serial receive data register (§4)
+			// §4: Reading clears RXRDY and returns the received byte (low 8 bits).
+			// The 9th bit (parity/mark) is available via SERCTL read B0 (PARBIT).
 			_state.UartRxReady = false;
-			UpdateUartIrq();
+			UpdateUartIrq(); // §9.1: RX IRQ condition may change
 			return (uint8_t)(_state.UartRxData & 0xff);
 
 		// I/O registers — EEPROM is wired through these
@@ -495,18 +505,18 @@ void LynxMikey::WriteRegister(uint8_t addr, uint8_t value) {
 			UpdatePalette(addr - 0xb0);
 			return;
 
-		// Serial port (ComLynx)
+		// Serial port (ComLynx) — see ~docs/plans/lynx-uart-comlynx-hardware-reference.md
 		case 0x8c: // SERCTL ($FD8C) — serial control register (write)
-			// Write configures UART (different bit meanings from read):
-			//   7: TxIntEn  — transmit interrupt enable
-			//   6: RxIntEn  — receive interrupt enable
-			//   5: (unused)
-			//   4: Paren    — parity enable
-			//   3: ResetErr — clear error flags (self-clearing)
-			//   2: TxOpen   — open collector mode (not emulated)
-			//   1: TxBreak  — send break signal
-			//   0: ParEven  — even parity (or 9th bit when parity disabled)
-			// HW Bug 13.2: Serial interrupt is level-sensitive. If TxIntEn is
+			// §2: Write configures UART (different bit meanings from read §3):
+			//   B7: TXINTEN  — transmit interrupt enable
+			//   B6: RXINTEN  — receive interrupt enable
+			//   B5: (reserved — write 0 for future compat)
+			//   B4: PAREN    — parity enable
+			//   B3: RESETERR — clear error flags (self-clearing)
+			//   B2: TXOPEN   — open collector mode (not emulated, §9)
+			//   B1: TXBRK    — send break signal (§6.2)
+			//   B0: PAREVEN  — even parity (or 9th bit when parity disabled)
+			// §9.1: Serial interrupt is level-sensitive. If TXINTEN is
 			// set while TX is idle, IRQ fires continuously until cleared.
 			_state.SerialControl = value;
 			_state.UartTxIrqEnable = (value & 0x80) != 0;
@@ -514,35 +524,36 @@ void LynxMikey::WriteRegister(uint8_t addr, uint8_t value) {
 			_state.UartParityEnable = (value & 0x10) != 0;
 			_state.UartParityEven = (value & 0x01) != 0;
 
-			// Bit 3: reset error flags
+			// §2 B3: RESETERR — clear overrun and framing error flags
 			if (value & 0x08) {
 				_state.UartRxOverrunError = false;
 				_state.UartRxFramingError = false;
 			}
 
-			// Bit 1: send break
+			// §2 B1: TXBRK — send break (§6.2: auto-repeats every 11 ticks)
 			_state.UartSendBreak = (value & 0x02) != 0;
 			if (_state.UartSendBreak) {
 				_state.UartTxCountdown = UartTxTimePeriod;
-				ComLynxTxLoopback(UartBreakCode);
+				ComLynxTxLoopback(UartBreakCode); // §7.2: front-insert loopback
 			}
 
 			UpdateUartIrq();
 			return;
-		case 0x8d: // SERDAT ($FD8D) — serial transmit data register
+		case 0x8d: // SERDAT ($FD8D) — serial transmit data register (§4)
 		{
-			// Write starts transmission. Data loopbacks to RX (ComLynx bus).
+			// §4: Write starts transmission. Data loopbacks to RX (ComLynx bus §11).
 			_state.UartTxData = value;
 
-			// Handle parity / 9th bit
+			// §4: Handle parity / 9th bit — when parity disabled, PAREVEN is the 9th bit
+			// Note: Parity calculation is unimplemented (§9 — "Leave at zero!!")
 			if (!_state.UartParityEnable && _state.UartParityEven) {
-				_state.UartTxData |= 0x0100; // Set 9th bit
+				_state.UartTxData |= 0x0100; // Set 9th bit (mark mode)
 			}
 
-			// Start TX countdown (11 Timer 4 ticks = 11 bit times)
+			// §6.1: Start TX countdown (11 Timer 4 ticks = 11 bit-times)
 			_state.UartTxCountdown = UartTxTimePeriod;
 
-			// ComLynx self-loopback: TX output feeds back to RX
+			// §6.1, §7.2: ComLynx self-loopback — TX output front-inserts to RX
 			ComLynxTxLoopback(_state.UartTxData);
 			return;
 		}
@@ -652,10 +663,11 @@ void LynxMikey::TickUart() {
 	// 11 ticks = one serial frame (1 start + 8 data + 1 parity + 1 stop).
 
 	// --- Receive ---
+	// See §7.3 — Timer 4 driven reception
 	if (_state.UartRxCountdown == 0) [[unlikely]] {
 		// RX period complete: pull byte from input queue
 		if (_uartRxWaiting > 0) {
-			// Overrun check: previous data not yet read
+			// Overrun check: previous data not yet read (§3 — OVERRUN bit 3)
 			if (_state.UartRxReady) {
 				_state.UartRxOverrunError = true;
 			}
@@ -665,32 +677,36 @@ void LynxMikey::TickUart() {
 			_uartRxWaiting--;
 			_state.UartRxReady = true;
 
-			// If more data waiting, start inter-byte delay
+			// §7.3: If more data waiting, set inter-byte delay
+			// Handy uses RX_TIME_PERIOD + RX_NEXT_DELAY = 11 + 44 = 55
 			if (_uartRxWaiting > 0) {
-				_state.UartRxCountdown = UartRxNextDelay;
+				_state.UartRxCountdown = UartRxTimePeriod + UartRxNextDelay;
+			} else {
+				// §7.3: Queue empty after delivery — go inactive
+				_state.UartRxCountdown = UartRxInactive;
 			}
 		}
 	} else if (!(_state.UartRxCountdown & UartRxInactive)) [[unlikely]] {
 		_state.UartRxCountdown--;
 	}
 
-	// --- Transmit ---
+	// --- Transmit --- (§6)
 	if (_state.UartTxCountdown == 0) [[unlikely]] {
-		// TX period complete
+		// §6.1: TX period complete
 		if (_state.UartSendBreak) {
-			// Break mode: continuously retransmit break signal
+			// §6.2: Break mode — continuously retransmit break signal
 			_state.UartTxData = UartBreakCode;
 			_state.UartTxCountdown = UartTxTimePeriod;
-			ComLynxTxLoopback(_state.UartTxData);
+			ComLynxTxLoopback(_state.UartTxData); // §7.2: front-insert loopback
 		} else {
-			// Normal completion: go idle
+			// §6.1: Normal completion — go idle (sentinel bit 31)
 			_state.UartTxCountdown = UartTxInactive;
 		}
 	} else if (!(_state.UartTxCountdown & UartTxInactive)) [[unlikely]] {
 		_state.UartTxCountdown--;
 	}
 
-	// Update serial IRQ (level-sensitive — HW Bug 13.2)
+	// §9.1, §10: Update serial IRQ (level-sensitive hardware bug)
 	// Skip when neither IRQ is enabled (common case: no serial activity)
 	if (_state.UartTxIrqEnable || _state.UartRxIrqEnable) [[unlikely]] {
 		UpdateUartIrq();
@@ -698,28 +714,30 @@ void LynxMikey::TickUart() {
 }
 
 void LynxMikey::UpdateUartIrq() {
-	// Serial IRQ uses Timer 4 IRQ line (bit 4).
-	// Level-sensitive: asserts as long as condition persists.
+	// §9.1, §10: Serial IRQ uses Timer 4 IRQ line (bit 4 = $10).
+	// Level-sensitive (hardware bug §9.1): asserts as long as condition persists.
 	// Re-asserts on each check even if software cleared the pending bit.
+	// This matches Handy's "Emulate the UART bug where UART IRQ is level sensitive"
 	bool irq = false;
 
-	// TX IRQ: transmitter idle (countdown == 0 or inactive) and TX IRQ enabled
+	// §9.1: TX IRQ — transmitter idle (countdown == 0 or inactive) and TX IRQ enabled
 	bool txIdle = (_state.UartTxCountdown == 0) ||
 	              ((_state.UartTxCountdown & UartTxInactive) != 0);
 	if (txIdle && _state.UartTxIrqEnable) {
 		irq = true;
 	}
 
-	// RX IRQ: receive data ready and RX IRQ enabled
+	// §9.1: RX IRQ — receive data ready and RX IRQ enabled
 	if (_state.UartRxReady && _state.UartRxIrqEnable) {
 		irq = true;
 	}
 
 	if (irq) {
+		// §10: Serial interrupt is bit 4 ($10) in INTSET/INTRST
 		_state.IrqPending |= (uint8_t)LynxIrqSource::Timer4;
 	}
-	// Don't clear bit 4 here — let software clear via INTRST write.
-	// Level-sensitivity is achieved by re-asserting each tick.
+	// Don't clear bit 4 here — let software clear via INTRST write ($FD81).
+	// Level-sensitivity is achieved by re-asserting each tick (§9.1).
 
 	UpdateIrqLine();
 }
@@ -727,21 +745,37 @@ void LynxMikey::UpdateUartIrq() {
 void LynxMikey::ComLynxTxLoopback(uint16_t data) {
 	// ComLynx is a shared open-collector bus: transmitted data is received
 	// by all connected units including the sender (mandatory self-loopback).
-	ComLynxRxData(data);
-}
-
-void LynxMikey::ComLynxRxData(uint16_t data) {
+	// See §7.2 — Loopback inserts at FRONT of RX queue (not back) so the
+	// sender always sees its own data before any externally-received bytes.
+	// This is critical for collision detection on the ComLynx bus.
 	if (_uartRxWaiting < (uint32_t)UartMaxRxQueue) {
-		// If queue was empty, start the RX countdown
+		// If queue was empty, start the RX countdown (§7.1)
 		if (_uartRxWaiting == 0) {
 			_state.UartRxCountdown = UartRxTimePeriod;
 		}
 
-		// Enqueue the byte
+		// Front-insert: decrement output pointer and place data there (§7.2)
+		_uartRxOutputPtr = (_uartRxOutputPtr - 1) & (UartMaxRxQueue - 1);
+		_uartRxQueue[_uartRxOutputPtr] = data;
+		_uartRxWaiting++;
+	}
+	// If queue is full, data is silently lost (same as ComLynxRxData).
+}
+
+void LynxMikey::ComLynxRxData(uint16_t data) {
+	// §7.1: External data arrival — back-insert into RX queue.
+	// Used by remote Lynx units to deliver ComLynx data (§11).
+	if (_uartRxWaiting < (uint32_t)UartMaxRxQueue) {
+		// §7.1: Trigger receive countdown only if queue was previously empty
+		if (_uartRxWaiting == 0) {
+			_state.UartRxCountdown = UartRxTimePeriod;
+		}
+
+		// §7.1: Append to back of queue
 		_uartRxQueue[_uartRxInputPtr] = data;
 		_uartRxInputPtr = (_uartRxInputPtr + 1) & (UartMaxRxQueue - 1);
 		_uartRxWaiting++;
 	}
-	// If queue is full, data is silently lost.
-	// Overrun error is detected when the next byte is delivered from queue.
+	// If queue is full, data is silently lost (§7.1).
+	// Overrun error is detected when the next byte is delivered from queue (§7.3).
 }

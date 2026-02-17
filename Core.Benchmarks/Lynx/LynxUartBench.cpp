@@ -57,7 +57,9 @@ static void BenchTickUart(BenchUartState& s) {
 			s.RxWaiting--;
 			s.UartRxReady = true;
 			if (s.RxWaiting > 0) {
-				s.UartRxCountdown = UartRxNextDelay;
+				s.UartRxCountdown = UartRxTimePeriod + UartRxNextDelay;
+			} else {
+				s.UartRxCountdown = UartRxInactive;
 			}
 		}
 	} else if (!(s.UartRxCountdown & UartRxInactive)) {
