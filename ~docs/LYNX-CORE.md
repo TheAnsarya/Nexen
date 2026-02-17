@@ -204,20 +204,21 @@ struct LynxApuChannelState {
 Sprites are defined by **Sprite Control Blocks (SCBs)** stored in RAM, linked in a chain:
 
 ```text
-SCB Layout (fixed 27-byte format in emulator):
+SCB Layout (variable-length, hardware format per Handy reference):
 Offset  Field        Size    Description
-0x00    NEXT         2       Pointer to next SCB (chain terminates when high byte = 0)
-0x02    SPRCTL0      1       Sprite type, BPP, flip
-0x03    SPRCTL1      1       Reload flags, start/draw quadrant
-0x04    DATA         2       Packed pixel data address
-0x06    HPOS         2       Horizontal position (signed)
-0x08    VPOS         2       Vertical position (signed)
-0x0A    HSIZE        2       Horizontal size (8.8 fixed point)
-0x0C    VSIZE        2       Vertical size (8.8 fixed point)
-0x0E    STRETCH      2       Horizontal stretch per scanline
-0x10    TILT         2       Horizontal tilt per scanline
-0x12    PALETTE[8]   8       Pen index remap table
-0x1A    COLLNUM      1       Collision number
+0x00    SPRCTL0      1       Sprite type, BPP, flip
+0x01    SPRCTL1      1       Reload depth, sizing, literal, quadrant
+0x02    SPRCOLL      1       Collision number and flags
+0x03    SCBNEXT      2       Pointer to next SCB (little-endian, 0=end)
+0x05    SPRDLINE     2       Sprite data pointer
+0x07    HPOS         2       Horizontal position (signed)
+0x09    VPOS         2       Vertical position (signed)
+--- Fields below loaded conditionally based on SPRCTL1 ReloadDepth ---
+0x0B    HSIZE        2       Horizontal size (8.8 fixed point)  [depth <= 1]
+0x0D    VSIZE        2       Vertical size (8.8 fixed point)    [depth <= 1]
+0x0F    STRETCH      2       Horizontal stretch per scanline    [depth == 0]
+0x11    TILT         2       Horizontal tilt per scanline       [depth == 0]
+0x13    PALETTE[8]   8       Pen index remap table              [palette reload]
 ```
 
 **SPRCTL0 fields:**
@@ -226,8 +227,16 @@ Offset  Field        Size    Description
 - Bit 4 — Vertical flip
 - Bits 2:0 — Sprite type (background, normal, boundary, shadow, XOR shadow, non-collidable)
 
-**SPRCTL1 reload flags (bits 4-7):**
-When a reload flag is cleared, the corresponding SCB fields are NOT loaded from memory and instead persist from the previous sprite. This is an optimization for sprite chains sharing common properties.
+**SPRCTL1 fields (hardware bit layout per Handy):**
+- Bit 0 — StartLeft: start drawing leftward
+- Bit 1 — StartUp: start drawing upward
+- Bit 2 — SkipSprite: skip this sprite in chain
+- Bit 3 — ReloadPalette: 0=reload palette from SCB, 1=skip
+- Bits 5:4 — ReloadDepth: 0=all fields, 1=HVS, 2=HV, 3=SPRDLINE only
+- Bit 6 — Sizing: enable stretch/tilt
+- Bit 7 — Literal: raw pixel data (no packed/RLE encoding)
+
+The ReloadDepth controls how many SCB fields are loaded from memory. Higher values mean fewer fields loaded, with remaining fields persisting from the previous sprite in the chain.
 
 **Sprite types:**
 1. Background draw — non-zero pixels replace

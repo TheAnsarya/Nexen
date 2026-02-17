@@ -65,7 +65,7 @@ This document defines the methodology for verifying and measuring the accuracy o
 | Pen index remapping | Palette remap table | Colors mapped correctly |
 | Sprite types | All 7 types | Background/normal/XOR etc. |
 | Stretch/tilt | Scaling sprites | Correct geometry |
-| Reload flags | SPRCTL1 bits 4-7 | Field persistence correct |
+| Reload depth | SPRCTL1 bits 5:4 (ReloadDepth 0-3) | Field persistence correct |
 | Bus contention | CPU-Suzy timing | Frame timing unaffected |
 
 ### 5. Audio Accuracy

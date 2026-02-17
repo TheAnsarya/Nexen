@@ -489,13 +489,21 @@ An SCB is a variable-length structure in RAM. The core fields, loaded sequential
 
 | Bit | Name | Function |
 |---|---|---|
-| 7 | LITERAL | 1 = all data is literal (no packed runs) |
-| 6–5 | SIZING | Sizing algorithm: 00=none, 01–10=algo, 11=**broken (algo3)** |
-| 4 | RELOAD_VSIZE_HSIZE | Reload SPRVSIZ and SPRHSIZ from SCB |
-| 3 | RELOAD_VPOS_HPOS | Reload position from SCB |
-| 2 | RELOAD_VOFF_HOFF | Reload offsets from SCB |
-| 1 | RELOAD_PALETTE | Reload palette (reuse pen indices with different palette) |
-| 0 | SKIP_SPRITE | Skip this sprite in chain |
+| 7 | LITERAL | 1 = raw pixel data (no packed/RLE runs) |
+| 6 | SIZING | Enable stretch/tilt sizing |
+| 5:4 | RELOAD_DEPTH | Reload depth: 0=HVST+palette, 1=HVS, 2=HV, 3=just SPRDLINE |
+| 3 | RELOAD_PALETTE | 0 = reload palette from SCB, 1 = skip palette reload |
+| 2 | SKIP_SPRITE | Skip this sprite in chain |
+| 1 | START_UP | Start drawing upward (1=up, 0=down) |
+| 0 | START_LEFT | Start drawing left (1=left, 0=right) |
+
+**RELOAD_DEPTH values (bits 5:4):**
+| Value | Fields loaded from SCB |
+|---|---|
+| 0 | SPRDLINE, HPOS, VPOS, HSIZE, VSIZE, STRETCH, TILT, palette |
+| 1 | SPRDLINE, HPOS, VPOS, HSIZE, VSIZE |
+| 2 | SPRDLINE, HPOS, VPOS |
+| 3 | SPRDLINE only |
 
 #### SPRCOLL ($FC82) — Sprite Collision:
 
