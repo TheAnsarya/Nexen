@@ -99,10 +99,11 @@ private:
 	/// <param name="dataAddr">Current address in sprite data (updated).</param>
 	/// <param name="lineEnd">End address for this line's data.</param>
 	/// <param name="bpp">Bits per pixel (1, 2, 3, or 4).</param>
+	/// <param name="literalMode">True for raw pixel data, false for packed/RLE format.</param>
 	/// <param name="pixelBuf">Output buffer for decoded pixels.</param>
 	/// <param name="maxPixels">Maximum pixels to decode.</param>
 	/// <returns>Number of pixels decoded.</returns>
-	int DecodeSpriteLinePixels(uint16_t& dataAddr, uint16_t lineEnd, int bpp, uint8_t* pixelBuf, int maxPixels);
+	int DecodeSpriteLinePixels(uint16_t& dataAddr, uint16_t lineEnd, int bpp, bool literalMode, uint8_t* pixelBuf, int maxPixels);
 
 	__forceinline uint8_t ReadRam(uint16_t addr);
 	__forceinline uint16_t ReadRam16(uint16_t addr);

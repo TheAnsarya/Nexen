@@ -189,8 +189,8 @@ void LynxSuzy::ProcessSpriteChain() {
 	// terminates. Conversely, $0100 would NOT terminate (upper byte = $01).
 	while ((scbAddr >> 8) != 0 && spriteCount < 256) { // Safety limit
 		ProcessSprite(scbAddr);
-		// Read next SCB pointer
-		scbAddr = ReadRam16(scbAddr);
+		// Read next SCB pointer from SCB offset 3-4 (after CTL0, CTL1, COLL)
+		scbAddr = ReadRam16(scbAddr + 3);
 		spriteCount++;
 	}
 
@@ -206,83 +206,96 @@ void LynxSuzy::ProcessSpriteChain() {
 }
 
 void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
-	// Read SCB header: SPRCTL0, SPRCTL1
-	uint8_t sprCtl0 = ReadRam(scbAddr + 2);
-	uint8_t sprCtl1 = ReadRam(scbAddr + 3);
+	// SCB Layout (matching Handy/hardware):
+	// Offset 0:    SPRCTL0 — sprite type, BPP, H/V flip
+	// Offset 1:    SPRCTL1 — skip, reload, sizing, literal
+	// Offset 2:    SPRCOLL — collision number and flags
+	// Offset 3-4:  SCBNEXT — link to next SCB (read in ProcessSpriteChain)
+	// Offset 5-6:  SPRDLINE — sprite data pointer (always loaded)
+	// Offset 7-8:  HPOSSTRT — horizontal position (always loaded)
+	// Offset 9-10: VPOSSTRT — vertical position (always loaded)
+	// Offset 11+:  Variable-length optional fields:
+	//   If ReloadDepth >= 1: SPRHSIZ(2), SPRVSIZ(2)
+	//   If ReloadDepth >= 2: STRETCH(2)
+	//   If ReloadDepth >= 3: TILT(2)
+	//   If ReloadPalette:    PALETTE(8)
+
+	uint8_t sprCtl0 = ReadRam(scbAddr);       // Offset 0: SPRCTL0
+	uint8_t sprCtl1 = ReadRam(scbAddr + 1);   // Offset 1: SPRCTL1
+	uint8_t sprColl = ReadRam(scbAddr + 2);   // Offset 2: SPRCOLL
 
 	// Check for skip flag (SPRCTL1 bit 2: "skip this sprite")
 	if (sprCtl1 & 0x04) {
 		return;
 	}
 
-	// Extract BPP from SPRCTL0 bits 7:6 (0=1bpp, 1=2bpp, 2=3bpp, 3=4bpp)
+	// SPRCTL0 decoding:
+	// Bits 7:6 = BPP (0=1bpp, 1=2bpp, 2=3bpp, 3=4bpp)
+	// Bit 5 = H-flip (0 = left-to-right, 1 = right-to-left)
+	// Bit 4 = V-flip (0 = top-to-bottom, 1 = bottom-to-top)
+	// Bits 2:0 = Sprite type (0-7)
 	int bpp = ((sprCtl0 >> 6) & 0x03) + 1;
-
-	// Extract sprite type from SPRCTL0 bits 2:0
 	LynxSpriteType spriteType = static_cast<LynxSpriteType>(sprCtl0 & 0x07);
-
-	// Extract draw direction from SPRCTL0 bits 5:4
-	// Bit 5: H-flip (0 = left-to-right, 1 = right-to-left)
-	// Bit 4: V-flip (0 = top-to-bottom, 1 = bottom-to-top)
 	bool hFlip = (sprCtl0 & 0x20) != 0;
 	bool vFlip = (sprCtl0 & 0x10) != 0;
 
-	// SPRCTL1 reload flags (bits 7:4) control which SCB fields reload
-	// from memory vs. reuse the previous sprite's values.
-	// 0 = reload from SCB, 1 = don't reload (reuse persistent value)
-	bool skipReloadHVST  = (sprCtl1 & 0x10) != 0; // Bit 4: skip reload HVST (hpos, vpos, hsize, vsize, stretch, tilt)
-	bool skipReloadHVS   = (sprCtl1 & 0x20) != 0; // Bit 5: skip reload HVS (hpos, vpos, hsize, vsize)
-	bool skipReloadHV    = (sprCtl1 & 0x40) != 0; // Bit 6: skip reload HV (hpos, vpos)
-	bool skipReloadPalette = (sprCtl1 & 0x80) != 0; // Bit 7: skip reload palette
+	// SPRCTL1 decoding (Handy/hardware bit layout):
+	// Bit 0: StartLeft — start drawing quadrant (left side)
+	// Bit 1: StartUp — start drawing quadrant (upper side)
+	// Bit 2: SkipSprite — handled above
+	// Bit 3: ReloadPalette — 0 = reload from SCB, 1 = reuse previous
+	// Bits 5:4: ReloadDepth — 0=none, 1=size, 2=size+stretch, 3=size+stretch+tilt
+	// Bit 6: Sizing enable
+	// Bit 7: Literal mode — 1 = raw pixel data (no RLE packets)
+	bool reloadPalette = (sprCtl1 & 0x08) == 0;   // Bit 3: 0 means reload
+	int reloadDepth    = (sprCtl1 >> 4) & 0x03;    // Bits 5:4
+	bool literalMode   = (sprCtl1 & 0x80) != 0;    // Bit 7
 
-	// Read sprite data pointer (always loaded)
-	uint16_t dataAddr = ReadRam16(scbAddr + 4);
+	// SPRCOLL decoding:
+	// Bits 3:0 = Collision number (0-15)
+	// Bit 5 = Don't collide flag
+	uint8_t collNum = sprColl & 0x0f;
 
-	// SCB field layout after the fixed header (next, ctl0, ctl1, data_ptr):
-	// Offset 6:  HPOS (16-bit signed)
-	// Offset 8:  VPOS (16-bit signed)
-	// Offset 10: HSIZE (16-bit, 8.8 fixed-point)
-	// Offset 12: VSIZE (16-bit, 8.8 fixed-point)
-	// Offset 14: STRETCH (16-bit signed, 8.8 fixed-point)
-	// Offset 16: TILT (16-bit signed, 8.8 fixed-point)
-	// Offset 18: PALETTE REMAP (8 bytes for pen index remap)
-	// Offset 26: COLLNUM (next collision depository number)
+	// Read always-present fields from SCB (after fixed 5-byte header):
+	// Data pointer at offset 5-6
+	uint16_t dataAddr = ReadRam16(scbAddr + 5);
+	// Position at offset 7-8, 9-10 (always loaded)
+	_persistHpos = (int16_t)ReadRam16(scbAddr + 7);
+	_persistVpos = (int16_t)ReadRam16(scbAddr + 9);
 
-	int scbOffset = 6;
+	// Variable-length fields start at offset 11.
+	// Which fields are present depends on ReloadDepth and ReloadPalette.
+	// The walking pointer advances only for fields actually present in the SCB.
+	int scbOffset = 11;
 
-	// Load position
-	if (!skipReloadHV && !skipReloadHVS && !skipReloadHVST) {
-		_persistHpos = (int16_t)ReadRam16(scbAddr + scbOffset);
-		_persistVpos = (int16_t)ReadRam16(scbAddr + scbOffset + 2);
-	}
-	scbOffset += 4; // 10
-
-	// Load size
-	if (!skipReloadHVS && !skipReloadHVST) {
+	// Load size if ReloadDepth >= 1
+	if (reloadDepth >= 1) {
 		_persistHsize = ReadRam16(scbAddr + scbOffset);
 		_persistVsize = ReadRam16(scbAddr + scbOffset + 2);
+		scbOffset += 4;
 	}
-	scbOffset += 4; // 14
 
-	// Load stretch/tilt
-	if (!skipReloadHVST) {
+	// Load stretch if ReloadDepth >= 2
+	if (reloadDepth >= 2) {
 		_persistStretch = (int16_t)ReadRam16(scbAddr + scbOffset);
-		_persistTilt = (int16_t)ReadRam16(scbAddr + scbOffset + 2);
+		scbOffset += 2;
 	}
-	scbOffset += 4; // 18
+
+	// Load tilt if ReloadDepth >= 3
+	if (reloadDepth >= 3) {
+		_persistTilt = (int16_t)ReadRam16(scbAddr + scbOffset);
+		scbOffset += 2;
+	}
 
 	// Load palette remap (8 bytes = 16 nibble entries for pen index remap)
-	if (!skipReloadPalette) {
+	// Only present in SCB when ReloadPalette is true (SPRCTL1 bit 3 = 0)
+	if (reloadPalette) {
 		for (int i = 0; i < 8; i++) {
 			uint8_t byte = ReadRam(scbAddr + scbOffset + i);
 			_penIndex[i * 2] = byte >> 4;
 			_penIndex[i * 2 + 1] = byte & 0x0f;
 		}
 	}
-	scbOffset += 8; // 26
-
-	// Collision number
-	uint8_t collNum = ReadRam(scbAddr + scbOffset) & 0x0f;
 
 	int16_t hpos = _persistHpos;
 	int16_t vpos = _persistVpos;
@@ -334,7 +347,7 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 
 		// Decode pixel data for this line
 		uint8_t pixelBuf[512]; // Max decoded pixels for one line
-		int pixelCount = DecodeSpriteLinePixels(currentDataAddr, lineEnd, bpp, pixelBuf, 512);
+		int pixelCount = DecodeSpriteLinePixels(currentDataAddr, lineEnd, bpp, literalMode, pixelBuf, 512);
 		currentDataAddr = lineEnd;
 
 		// Calculate effective hpos for this line (with tilt)
@@ -385,41 +398,100 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 }
 
 /// <summary>
-/// Decode one line of sprite pixel data from the packed format.
-/// Lynx sprites use a bit-packed format where each pixel is bpp bits wide.
-/// The offset byte (first data byte) contains the number of leading
-/// transparent pixels followed by literal pixel data.
+/// Decode one line of sprite pixel data.
+///
+/// The Lynx sprite engine supports two data formats (controlled by SPRCTL1 bit 7):
+///
+/// **Literal mode** (bit 7 = 1): All pixel data is raw linear bpp-wide values.
+/// Each pixel is simply the next `bpp` bits from the data stream. No packet
+/// structure, no run-length encoding.
+///
+/// **Packed mode** (bit 7 = 0): Uses a packetized format with RLE compression.
+/// Each packet starts with a 1-bit flag:
+///   - 1 = literal packet: 4-bit count, then count+1 literal pixel values (each bpp bits)
+///   - 0 = packed (repeat) packet: 4-bit count, then one bpp-wide pixel repeated count+1 times
+///     If count = 0 in a packed packet, it signals end-of-line.
+///
+/// In both modes, the line offset byte (already consumed by caller) gives the
+/// total byte length of this line's data, limiting how many bits can be read.
 /// </summary>
-int LynxSuzy::DecodeSpriteLinePixels(uint16_t& dataAddr, uint16_t lineEnd, int bpp, uint8_t* pixelBuf, int maxPixels) {
+int LynxSuzy::DecodeSpriteLinePixels(uint16_t& dataAddr, uint16_t lineEnd, int bpp, bool literalMode, uint8_t* pixelBuf, int maxPixels) {
 	int pixelCount = 0;
-	int bitBuffer = 0;
-	int bitsRemaining = 0;
 	uint8_t bppMask = (1 << bpp) - 1;
 
-	// Decode packed pixel data
-	while (dataAddr < lineEnd && pixelCount < maxPixels) {
-		// Read next packet header
-		uint8_t packetByte = ReadRam(dataAddr);
-		dataAddr++;
+	// Bit-level reading state
+	uint32_t shiftReg = 0;
+	int shiftRegCount = 0;
+	int totalBitsLeft = (int)(lineEnd - dataAddr) * 8;
 
-		if (bitsRemaining == 0 && dataAddr <= lineEnd) {
-			// First byte after header or continuation — just raw pixel bits
-			bitBuffer = packetByte;
-			bitsRemaining = 8;
-		} else {
-			// Add to existing bit buffer
-			bitBuffer = (bitBuffer << 8) | packetByte;
-			bitsRemaining += 8;
+	// Lambda to read N bits from the data stream
+	auto getBits = [&](int bits) -> uint8_t {
+		if (totalBitsLeft <= bits) {
+			return 0; // No more data (matches Handy's <= check for demo006 fix)
 		}
 
-		// Extract as many pixels as we can
-		while (bitsRemaining >= bpp && pixelCount < maxPixels) {
-			bitsRemaining -= bpp;
-			uint8_t penIndex = (bitBuffer >> bitsRemaining) & bppMask;
-			pixelBuf[pixelCount++] = penIndex;
+		// Refill shift register if needed
+		while (shiftRegCount < bits && dataAddr < lineEnd) {
+			shiftReg = (shiftReg << 8) | ReadRam(dataAddr);
+			dataAddr++;
+			shiftRegCount += 8;
+		}
+
+		if (shiftRegCount < bits) return 0;
+
+		shiftRegCount -= bits;
+		totalBitsLeft -= bits;
+		return (uint8_t)((shiftReg >> shiftRegCount) & ((1 << bits) - 1));
+	};
+
+	if (literalMode) {
+		// Literal mode: all pixels are raw bpp-wide values, no packet structure.
+		// Total pixel count is (total data bits) / bpp.
+		int totalPixels = totalBitsLeft / bpp;
+		for (int i = 0; i < totalPixels && pixelCount < maxPixels; i++) {
+			uint8_t pixel = getBits(bpp);
+			pixelBuf[pixelCount++] = pixel;
+			// In literal mode, a zero pixel as the very last pixel signals end of data
+			// (matching Handy's line_abs_literal handling)
+			if (pixelCount == totalPixels && pixel == 0) {
+				pixelCount--; // Don't include trailing zero
+				break;
+			}
+		}
+	} else {
+		// Packed mode: packetized data with literal and repeat packets
+		while (totalBitsLeft > 0 && pixelCount < maxPixels) {
+			// Read 1-bit literal flag
+			uint8_t isLiteral = getBits(1);
+			if (totalBitsLeft <= 0) break;
+
+			// Read 4-bit count
+			uint8_t count = getBits(4);
+
+			if (!isLiteral && count == 0) {
+				// Packed packet with count=0 = end of line
+				break;
+			}
+
+			count++; // Actual count is stored count + 1
+
+			if (isLiteral) {
+				// Literal packet: read 'count' individual pixel values
+				for (int i = 0; i < count && pixelCount < maxPixels; i++) {
+					pixelBuf[pixelCount++] = getBits(bpp);
+				}
+			} else {
+				// Packed (repeat) packet: read one pixel value, repeat 'count' times
+				uint8_t pixel = getBits(bpp);
+				for (int i = 0; i < count && pixelCount < maxPixels; i++) {
+					pixelBuf[pixelCount++] = pixel;
+				}
+			}
 		}
 	}
 
+	// Ensure dataAddr advances to lineEnd even if we stopped early
+	dataAddr = lineEnd;
 	return pixelCount;
 }
 

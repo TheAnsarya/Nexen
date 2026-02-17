@@ -161,7 +161,8 @@ DebugSpritePreviewInfo LynxPpuTools::GetSpritePreviewInfo(GetSpritePreviewOption
 
 	while ((scbAddr >> 8) != 0 && count < 256) {
 		count++;
-		scbAddr = ram[scbAddr & 0xFFFF] | (ram[(scbAddr + 1) & 0xFFFF] << 8);
+		// SCBNEXT is at SCB offset 3-4 (after CTL0, CTL1, COLL)
+		scbAddr = ram[(scbAddr + 3) & 0xFFFF] | (ram[(scbAddr + 4) & 0xFFFF] << 8);
 	}
 
 	info.SpriteCount = count;
@@ -191,9 +192,13 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 		sprite.Init();
 		uint32_t* spritePreview = spritePreviews + (spriteIndex * _spritePreviewSize);
 
-		// Read SCB header: SPRCTL0, SPRCTL1
-		uint8_t sprCtl0 = vram[(scbAddr + 2) & 0xFFFF];
-		uint8_t sprCtl1 = vram[(scbAddr + 3) & 0xFFFF];
+		// SCB Layout (matching Handy/hardware):
+		// Offset 0: SPRCTL0, Offset 1: SPRCTL1, Offset 2: SPRCOLL
+		// Offset 3-4: SCBNEXT, Offset 5-6: SPRDLINE
+		// Offset 7-8: HPOS, Offset 9-10: VPOS
+		// Offset 11+: Variable (SIZE, STRETCH, TILT, PALETTE based on reload flags)
+		uint8_t sprCtl0 = vram[scbAddr & 0xFFFF];             // Offset 0
+		uint8_t sprCtl1 = vram[(scbAddr + 1) & 0xFFFF];       // Offset 1
 
 		// BPP from SPRCTL0 bits 7:6 (0=1bpp, 1=2bpp, 2=3bpp, 3=4bpp)
 		int bpp = ((sprCtl0 >> 6) & 0x03) + 1;
@@ -205,35 +210,46 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 		bool hFlip = (sprCtl0 & 0x20) != 0;
 		bool vFlip = (sprCtl0 & 0x10) != 0;
 
-		// Skip flag (SPRCTL1 bit 2: skip this sprite entirely)
+		// SPRCTL1 decoding (Handy/hardware bit layout):
+		// Bit 2: skip this sprite
+		// Bit 3: ReloadPalette (0 = reload from SCB)
+		// Bits 5:4: ReloadDepth (0-3)
+		// Bit 7: Literal mode
 		bool skipSprite = (sprCtl1 & 0x04) != 0;
+		bool reloadPalette = (sprCtl1 & 0x08) == 0;   // Bit 3: 0 means reload
+		int reloadDepth    = (sprCtl1 >> 4) & 0x03;    // Bits 5:4
+		bool literalMode   = (sprCtl1 & 0x80) != 0;    // Bit 7
 
-		// Reload flags (SPRCTL1 bits 7:4) — 1 = skip reload, reuse previous
-		bool skipReloadHVST = (sprCtl1 & 0x10) != 0;
-		bool skipReloadHVS = (sprCtl1 & 0x20) != 0;
-		bool skipReloadHV = (sprCtl1 & 0x40) != 0;
-		bool skipReloadPalette = (sprCtl1 & 0x80) != 0;
+		// Data pointer at SCB offset 5-6 (always loaded)
+		uint16_t dataAddr = vram[(scbAddr + 5) & 0xFFFF] | (vram[(scbAddr + 6) & 0xFFFF] << 8);
 
-		// Data pointer (always loaded from SCB)
-		uint16_t dataAddr = vram[(scbAddr + 4) & 0xFFFF] | (vram[(scbAddr + 5) & 0xFFFF] << 8);
+		// Position at offset 7-8, 9-10 (always loaded)
+		persistHpos = (int16_t)(vram[(scbAddr + 7) & 0xFFFF] | (vram[(scbAddr + 8) & 0xFFFF] << 8));
+		persistVpos = (int16_t)(vram[(scbAddr + 9) & 0xFFFF] | (vram[(scbAddr + 10) & 0xFFFF] << 8));
 
-		// Conditionally load position, size, stretch/tilt, palette from SCB
-		// Fields are at fixed offsets (matching ProcessSprite implementation)
-		if (!skipReloadHV && !skipReloadHVS && !skipReloadHVST) {
-			persistHpos = (int16_t)(vram[(scbAddr + 6) & 0xFFFF] | (vram[(scbAddr + 7) & 0xFFFF] << 8));
-			persistVpos = (int16_t)(vram[(scbAddr + 8) & 0xFFFF] | (vram[(scbAddr + 9) & 0xFFFF] << 8));
+		// Variable-length fields start at offset 11
+		int scbOffset = 11;
+
+		// Load size if ReloadDepth >= 1
+		if (reloadDepth >= 1) {
+			persistHsize = vram[(scbAddr + scbOffset) & 0xFFFF] | (vram[(scbAddr + scbOffset + 1) & 0xFFFF] << 8);
+			persistVsize = vram[(scbAddr + scbOffset + 2) & 0xFFFF] | (vram[(scbAddr + scbOffset + 3) & 0xFFFF] << 8);
+			scbOffset += 4;
 		}
-		if (!skipReloadHVS && !skipReloadHVST) {
-			persistHsize = vram[(scbAddr + 10) & 0xFFFF] | (vram[(scbAddr + 11) & 0xFFFF] << 8);
-			persistVsize = vram[(scbAddr + 12) & 0xFFFF] | (vram[(scbAddr + 13) & 0xFFFF] << 8);
+		// Load stretch if ReloadDepth >= 2
+		if (reloadDepth >= 2) {
+			persistStretch = (int16_t)(vram[(scbAddr + scbOffset) & 0xFFFF] | (vram[(scbAddr + scbOffset + 1) & 0xFFFF] << 8));
+			scbOffset += 2;
 		}
-		if (!skipReloadHVST) {
-			persistStretch = (int16_t)(vram[(scbAddr + 14) & 0xFFFF] | (vram[(scbAddr + 15) & 0xFFFF] << 8));
-			persistTilt = (int16_t)(vram[(scbAddr + 16) & 0xFFFF] | (vram[(scbAddr + 17) & 0xFFFF] << 8));
+		// Load tilt if ReloadDepth >= 3
+		if (reloadDepth >= 3) {
+			persistTilt = (int16_t)(vram[(scbAddr + scbOffset) & 0xFFFF] | (vram[(scbAddr + scbOffset + 1) & 0xFFFF] << 8));
+			scbOffset += 2;
 		}
-		if (!skipReloadPalette) {
+		// Load palette remap if ReloadPalette (bit 3 = 0)
+		if (reloadPalette) {
 			for (int i = 0; i < 8; i++) {
-				uint8_t byte = vram[(scbAddr + 18 + i) & 0xFFFF];
+				uint8_t byte = vram[(scbAddr + scbOffset + i) & 0xFFFF];
 				penIndex[i * 2] = byte >> 4;
 				penIndex[i * 2 + 1] = byte & 0x0f;
 			}
@@ -365,7 +381,8 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 		}
 
 		spriteIndex++;
-		scbAddr = vram[scbAddr & 0xFFFF] | (vram[(scbAddr + 1) & 0xFFFF] << 8);
+		// SCBNEXT at SCB offset 3-4
+		scbAddr = vram[(scbAddr + 3) & 0xFFFF] | (vram[(scbAddr + 4) & 0xFFFF] << 8);
 	}
 
 	// Composite all sprites onto the screen preview

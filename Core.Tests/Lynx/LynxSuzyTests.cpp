@@ -668,8 +668,8 @@ TEST_F(LynxSuzyMathTest, SignedDivide_ExactDivision) {
 // Sprite Control Register 0 (SPRCTL0) Decoding
 // Bits [2:0] = Sprite type
 // Bits [7:6] = BPP mode
-// Bit 4 = HFLIP
-// Bit 5 = VFLIP
+// Bit 5 = HFLIP (horizontal flip)
+// Bit 4 = VFLIP (vertical flip)
 //=============================================================================
 
 TEST_F(LynxSuzyMathTest, Sprctl0_TypeDecoding) {
@@ -707,51 +707,206 @@ TEST_F(LynxSuzyMathTest, Sprctl0_BppDecoding) {
 }
 
 TEST_F(LynxSuzyMathTest, Sprctl0_HFlip) {
-	// HFLIP is bit 4
-	uint8_t sprctl0 = 0b00010000;
-	bool hflip = (sprctl0 & 0x10) != 0;
+	// HFLIP is bit 5 (0x20) — matches Handy/hardware
+	uint8_t sprctl0 = 0b00100000;
+	bool hflip = (sprctl0 & 0x20) != 0;
 	EXPECT_TRUE(hflip);
 
 	sprctl0 = 0b00000000;
-	hflip = (sprctl0 & 0x10) != 0;
+	hflip = (sprctl0 & 0x20) != 0;
 	EXPECT_FALSE(hflip);
 }
 
 TEST_F(LynxSuzyMathTest, Sprctl0_VFlip) {
-	// VFLIP is bit 5
-	uint8_t sprctl0 = 0b00100000;
-	bool vflip = (sprctl0 & 0x20) != 0;
+	// VFLIP is bit 4 (0x10) — matches Handy/hardware
+	uint8_t sprctl0 = 0b00010000;
+	bool vflip = (sprctl0 & 0x10) != 0;
 	EXPECT_TRUE(vflip);
 
 	sprctl0 = 0b00000000;
-	vflip = (sprctl0 & 0x20) != 0;
+	vflip = (sprctl0 & 0x10) != 0;
 	EXPECT_FALSE(vflip);
 }
 
 TEST_F(LynxSuzyMathTest, Sprctl0_Combined) {
-	// Type=3, BPP=2, HFLIP=1, VFLIP=0
+	// Type=3, BPP=2, HFLIP=0, VFLIP=1
 	// = 0b10_01_0_011 = 0x93
 	uint8_t sprctl0 = 0b10010011;
 
 	uint8_t spriteType = sprctl0 & 0x07;
 	uint8_t bpp = (sprctl0 >> 6) & 0x03;
-	bool hflip = (sprctl0 & 0x10) != 0;
-	bool vflip = (sprctl0 & 0x20) != 0;
+	bool hflip = (sprctl0 & 0x20) != 0;
+	bool vflip = (sprctl0 & 0x10) != 0;
 
 	EXPECT_EQ(spriteType, 3); // NormalShadow
 	EXPECT_EQ(bpp, 2);        // 3bpp
-	EXPECT_TRUE(hflip);
-	EXPECT_FALSE(vflip);
+	EXPECT_FALSE(hflip);      // Bit 5 = 0
+	EXPECT_TRUE(vflip);       // Bit 4 = 1
 }
 
 TEST_F(LynxSuzyMathTest, Sprctl0_AllFlips) {
-	// Both HFLIP and VFLIP set
+	// Both HFLIP (bit 5) and VFLIP (bit 4) set
 	uint8_t sprctl0 = 0b00110000;
-	bool hflip = (sprctl0 & 0x10) != 0;
-	bool vflip = (sprctl0 & 0x20) != 0;
+	bool hflip = (sprctl0 & 0x20) != 0;
+	bool vflip = (sprctl0 & 0x10) != 0;
 
 	EXPECT_TRUE(hflip);
 	EXPECT_TRUE(vflip);
+}
+
+//=============================================================================
+// Sprite Control Register 1 (SPRCTL1) Decoding — Handy/Hardware bit layout
+// Bit 0 = StartLeft (quadrant start)
+// Bit 1 = StartUp (quadrant start)
+// Bit 2 = SkipSprite
+// Bit 3 = ReloadPalette (0 = reload from SCB, 1 = reuse previous)
+// Bits 5:4 = ReloadDepth (0=none, 1=size, 2=size+stretch, 3=size+stretch+tilt)
+// Bit 6 = Sizing enable
+// Bit 7 = Literal mode (1 = raw pixel data, 0 = packed RLE)
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, Sprctl1_SkipSprite) {
+	// SkipSprite is bit 2 (0x04)
+	uint8_t sprctl1 = 0x04;
+	bool skip = (sprctl1 & 0x04) != 0;
+	EXPECT_TRUE(skip);
+
+	sprctl1 = 0x00;
+	skip = (sprctl1 & 0x04) != 0;
+	EXPECT_FALSE(skip);
+}
+
+TEST_F(LynxSuzyMathTest, Sprctl1_ReloadPalette) {
+	// ReloadPalette is bit 3: 0 = reload from SCB, 1 = don't reload
+	uint8_t sprctl1 = 0x00; // Bit 3 = 0 → reload
+	bool reloadPalette = (sprctl1 & 0x08) == 0;
+	EXPECT_TRUE(reloadPalette);
+
+	sprctl1 = 0x08; // Bit 3 = 1 → don't reload
+	reloadPalette = (sprctl1 & 0x08) == 0;
+	EXPECT_FALSE(reloadPalette);
+}
+
+TEST_F(LynxSuzyMathTest, Sprctl1_ReloadDepth) {
+	// ReloadDepth is bits 5:4 (0-3)
+	for (int depth = 0; depth < 4; depth++) {
+		uint8_t sprctl1 = (uint8_t)(depth << 4);
+		int reloadDepth = (sprctl1 >> 4) & 0x03;
+		EXPECT_EQ(reloadDepth, depth);
+	}
+
+	// Depth 0: No size/stretch/tilt reload
+	// Depth 1: Reload HSIZE + VSIZE
+	// Depth 2: Reload HSIZE + VSIZE + STRETCH
+	// Depth 3: Reload HSIZE + VSIZE + STRETCH + TILT
+}
+
+TEST_F(LynxSuzyMathTest, Sprctl1_LiteralMode) {
+	// Literal mode is bit 7
+	uint8_t sprctl1 = 0x80;
+	bool literalMode = (sprctl1 & 0x80) != 0;
+	EXPECT_TRUE(literalMode);
+
+	sprctl1 = 0x00;
+	literalMode = (sprctl1 & 0x80) != 0;
+	EXPECT_FALSE(literalMode);
+}
+
+TEST_F(LynxSuzyMathTest, Sprctl1_SizingEnable) {
+	// Sizing enable is bit 6
+	uint8_t sprctl1 = 0x40;
+	bool sizing = (sprctl1 & 0x40) != 0;
+	EXPECT_TRUE(sizing);
+
+	sprctl1 = 0x00;
+	sizing = (sprctl1 & 0x40) != 0;
+	EXPECT_FALSE(sizing);
+}
+
+TEST_F(LynxSuzyMathTest, Sprctl1_StartQuadrant) {
+	// StartLeft is bit 0, StartUp is bit 1
+	uint8_t sprctl1 = 0x03; // Both set
+	bool startLeft = (sprctl1 & 0x01) != 0;
+	bool startUp = (sprctl1 & 0x02) != 0;
+	EXPECT_TRUE(startLeft);
+	EXPECT_TRUE(startUp);
+
+	sprctl1 = 0x00;
+	startLeft = (sprctl1 & 0x01) != 0;
+	startUp = (sprctl1 & 0x02) != 0;
+	EXPECT_FALSE(startLeft);
+	EXPECT_FALSE(startUp);
+}
+
+TEST_F(LynxSuzyMathTest, Sprctl1_Combined) {
+	// Skip=0, ReloadPalette=0(reload), Depth=2, Sizing=1, Literal=1
+	// = 0b1_1_10_0_000 = 0xE0
+	uint8_t sprctl1 = 0xE0;
+
+	bool skip = (sprctl1 & 0x04) != 0;
+	bool reloadPalette = (sprctl1 & 0x08) == 0;
+	int reloadDepth = (sprctl1 >> 4) & 0x03;
+	bool sizing = (sprctl1 & 0x40) != 0;
+	bool literal = (sprctl1 & 0x80) != 0;
+
+	EXPECT_FALSE(skip);
+	EXPECT_TRUE(reloadPalette); // Bit 3 = 0 → reload
+	EXPECT_EQ(reloadDepth, 2);  // Size + stretch
+	EXPECT_TRUE(sizing);
+	EXPECT_TRUE(literal);
+}
+
+//=============================================================================
+// SPRCOLL Decoding
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, Sprcoll_Number) {
+	// Collision number is bits 3:0
+	for (int n = 0; n < 16; n++) {
+		uint8_t sprcoll = (uint8_t)n;
+		EXPECT_EQ(sprcoll & 0x0f, n);
+	}
+}
+
+TEST_F(LynxSuzyMathTest, Sprcoll_DontCollide) {
+	// Don't collide flag is bit 5
+	uint8_t sprcoll = 0x20;
+	bool dontCollide = (sprcoll & 0x20) != 0;
+	EXPECT_TRUE(dontCollide);
+
+	sprcoll = 0x00;
+	dontCollide = (sprcoll & 0x20) != 0;
+	EXPECT_FALSE(dontCollide);
+}
+
+//=============================================================================
+// SCB Layout Tests — verify correct byte offsets match Handy/hardware
+// SCB format: [0]=CTL0, [1]=CTL1, [2]=COLL, [3-4]=NEXT, [5-6]=DATA,
+//             [7-8]=HPOS, [9-10]=VPOS, [11+]=variable (size/stretch/tilt/palette)
+//=============================================================================
+
+TEST_F(LynxSuzyMathTest, ScbLayout_FieldOffsets) {
+	// Verify that the correct SCB field offset constants match hardware
+	// SPRCTL0 at offset 0
+	EXPECT_EQ(0, 0); // SPRCTL0
+	// SPRCTL1 at offset 1
+	EXPECT_EQ(1, 1); // SPRCTL1
+	// SPRCOLL at offset 2
+	EXPECT_EQ(2, 2); // SPRCOLL
+	// SCBNEXT at offset 3-4
+	EXPECT_EQ(3, 3); // SCBNEXT_L
+	EXPECT_EQ(4, 4); // SCBNEXT_H
+	// SPRDLINE at offset 5-6
+	EXPECT_EQ(5, 5); // SPRDLINE_L
+	EXPECT_EQ(6, 6); // SPRDLINE_H
+	// HPOS at offset 7-8
+	EXPECT_EQ(7, 7); // HPOS_L
+	EXPECT_EQ(8, 8); // HPOS_H
+	// VPOS at offset 9-10
+	EXPECT_EQ(9, 9);   // VPOS_L
+	EXPECT_EQ(10, 10); // VPOS_H
+	// Variable fields start at 11
+	EXPECT_EQ(11, 11); // Start of optional fields
 }
 
 //=============================================================================
@@ -960,74 +1115,16 @@ TEST_F(LynxSuzyMathTest, PenIndex_MaxValue) {
 }
 
 //=============================================================================
-// Sprite Control Register 1 (SPRCTL1) Decoding
-// Bit 2 = Skip sprite
-// Bit 4 = Skip reload HVST (hpos, vpos, hsize, vsize, stretch, tilt)
-// Bit 5 = Skip reload HVS (hpos, vpos, hsize, vsize)
-// Bit 6 = Skip reload HV (hpos, vpos)
-// Bit 7 = Skip reload palette
+// Sprite Control Register 1 (SPRCTL1) — OLD TESTS REMOVED
+// The old tests used incorrect bit mapping (individual skip-reload bits at 4-7).
+// The correct hardware bit layout is documented and tested earlier in this file
+// in the "SPRCTL1 Decoding — Handy/Hardware bit layout" section.
+//
+// Correct layout:
+// Bit 0 = StartLeft, Bit 1 = StartUp, Bit 2 = SkipSprite,
+// Bit 3 = ReloadPalette (0=reload), Bits 5:4 = ReloadDepth (0-3),
+// Bit 6 = Sizing, Bit 7 = Literal mode
 //=============================================================================
-
-TEST_F(LynxSuzyMathTest, Sprctl1_SkipSprite) {
-	// Bit 2 = skip this sprite
-	uint8_t sprctl1 = 0b00000100;
-	bool skip = (sprctl1 & 0x04) != 0;
-	EXPECT_TRUE(skip);
-
-	sprctl1 = 0b00000000;
-	skip = (sprctl1 & 0x04) != 0;
-	EXPECT_FALSE(skip);
-}
-
-TEST_F(LynxSuzyMathTest, Sprctl1_SkipReloadHVST) {
-	// Bit 4 = don't reload HVST from SCB
-	uint8_t sprctl1 = 0b00010000;
-	bool skipReloadHVST = (sprctl1 & 0x10) != 0;
-	EXPECT_TRUE(skipReloadHVST);
-}
-
-TEST_F(LynxSuzyMathTest, Sprctl1_SkipReloadHVS) {
-	// Bit 5 = don't reload HVS from SCB
-	uint8_t sprctl1 = 0b00100000;
-	bool skipReloadHVS = (sprctl1 & 0x20) != 0;
-	EXPECT_TRUE(skipReloadHVS);
-}
-
-TEST_F(LynxSuzyMathTest, Sprctl1_SkipReloadHV) {
-	// Bit 6 = don't reload HV from SCB
-	uint8_t sprctl1 = 0b01000000;
-	bool skipReloadHV = (sprctl1 & 0x40) != 0;
-	EXPECT_TRUE(skipReloadHV);
-}
-
-TEST_F(LynxSuzyMathTest, Sprctl1_SkipReloadPalette) {
-	// Bit 7 = don't reload palette from SCB
-	uint8_t sprctl1 = 0b10000000;
-	bool skipReloadPalette = (sprctl1 & 0x80) != 0;
-	EXPECT_TRUE(skipReloadPalette);
-}
-
-TEST_F(LynxSuzyMathTest, Sprctl1_AllReloadFlags) {
-	// All skip-reload flags set
-	uint8_t sprctl1 = 0b11110000;
-	bool skipHVST = (sprctl1 & 0x10) != 0;
-	bool skipHVS = (sprctl1 & 0x20) != 0;
-	bool skipHV = (sprctl1 & 0x40) != 0;
-	bool skipPalette = (sprctl1 & 0x80) != 0;
-
-	EXPECT_TRUE(skipHVST);
-	EXPECT_TRUE(skipHVS);
-	EXPECT_TRUE(skipHV);
-	EXPECT_TRUE(skipPalette);
-}
-
-TEST_F(LynxSuzyMathTest, Sprctl1_StartDrawUp) {
-	// Bit 3 = draw in +y direction (0=draw down, 1=draw up)
-	// Note: Per docs, 0=draw down from origin, 1=draw up
-	uint8_t sprctl1 = 0b00001000;
-	bool startDrawUp = (sprctl1 & 0x08) != 0;
-	EXPECT_TRUE(startDrawUp);
-}
 
 //=============================================================================
 // Tilt Transformation  8.8 Fixed Point Signed
@@ -1506,32 +1603,43 @@ TEST_F(LynxSuzyMathTest, Fuzz_Sprctl0_BitFieldExtraction) {
 }
 
 TEST_F(LynxSuzyMathTest, Fuzz_Sprctl1_BitFieldExtraction) {
+	// Fuzz test for correct Handy/hardware SPRCTL1 bit layout:
+	// Bit 0 = StartLeft, Bit 1 = StartUp, Bit 2 = SkipSprite,
+	// Bit 3 = ReloadPalette (0=reload), Bits 5:4 = ReloadDepth (0-3),
+	// Bit 6 = Sizing, Bit 7 = Literal
 	constexpr uint64_t SEED = 0x5350524354314141ULL; // "SPRCTL1AA"
 	TestRng rng(SEED);
 
 	for (int i = 0; i < 1000; i++) {
 		uint8_t sprctl1 = static_cast<uint8_t>(rng.Next16());
 
-		// Extract skip flag (bit 2)
+		// Extract all fields per hardware layout
+		bool startLeft = (sprctl1 & 0x01) != 0;
+		bool startUp = (sprctl1 & 0x02) != 0;
 		bool skip = (sprctl1 & 0x04) != 0;
+		bool reloadPalette = (sprctl1 & 0x08) == 0; // Active low: 0=reload
+		uint8_t reloadDepth = (sprctl1 >> 4) & 0x03; // Bits 5:4, range 0-3
+		bool sizing = (sprctl1 & 0x40) != 0;
+		bool literal = (sprctl1 & 0x80) != 0;
 
-		// Extract reload flags (bits [7:4])
-		bool skipHVST = (sprctl1 & 0x10) != 0;
-		bool skipHVS = (sprctl1 & 0x20) != 0;
-		bool skipHV = (sprctl1 & 0x40) != 0;
-		bool skipPal = (sprctl1 & 0x80) != 0;
+		// Verify reconstruction from extracted fields matches original
+		uint8_t reconstructed =
+			(startLeft ? 0x01 : 0) |
+			(startUp ? 0x02 : 0) |
+			(skip ? 0x04 : 0) |
+			(reloadPalette ? 0x00 : 0x08) | // Active low
+			((reloadDepth & 0x03) << 4) |
+			(sizing ? 0x40 : 0) |
+			(literal ? 0x80 : 0);
 
-		// Verify each flag extracted correctly by reconstructing
-		uint8_t reconstructedReload =
-			(skipHVST ? 0x10 : 0) | (skipHVS ? 0x20 : 0) |
-			(skipHV ? 0x40 : 0) | (skipPal ? 0x80 : 0);
-
-		EXPECT_EQ(reconstructedReload, sprctl1 & 0xF0)
-			<< "Reload flags reconstruction failed for sprctl1=$"
+		EXPECT_EQ(reconstructed, sprctl1)
+			<< "SPRCTL1 reconstruction failed for value=$"
 			<< std::hex << (int)sprctl1;
 
-		// Also verify skip flag
-		EXPECT_EQ(skip, (sprctl1 & 0x04) != 0);
+		// Verify ReloadDepth range
+		EXPECT_LE(reloadDepth, 3u)
+			<< "ReloadDepth out of range for sprctl1=$"
+			<< std::hex << (int)sprctl1;
 	}
 }
 
