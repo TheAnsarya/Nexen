@@ -11,6 +11,34 @@ class LynxCart;
 class LynxApu;
 class LynxEeprom;
 
+/// <summary>
+/// Mikey chip — timers, audio, display DMA, interrupts, and UART/ComLynx.
+///
+/// UART / ComLynx serial port:
+///   The Lynx UART is a simple 11-bit serial transceiver (1 start + 8 data +
+///   1 parity/mark + 1 stop) clocked by Timer 4 underflows. Each Timer 4
+///   underflow advances internal TX/RX countdown counters by one bit-time.
+///   After 11 ticks, a complete serial frame has been transmitted or received.
+///
+///   ComLynx is a shared open-collector bus — all transmitted data is received
+///   by the sender (mandatory self-loopback) and any connected remote units.
+///   Without a physical cable, the self-loopback still occurs, so games that
+///   poll the serial port will see their own transmitted data echoed back.
+///
+///   Key behaviors:
+///   - SERCTL ($FD8C) has DIFFERENT bit meanings on read vs write
+///   - TX idle check uses bit 31 sentinel (UartTxInactive = 0x80000000)
+///   - RX uses a 32-entry circular queue with overrun detection
+///   - IRQ is level-sensitive (HW Bug 13.2): re-asserts every TickUart()
+///   - Timer 4 does NOT set TimerDone / fire normal timer IRQ
+///   - Break signal auto-retransmits as long as TXBRK bit is set
+///   - Inter-byte RX gap of 44 ticks (4x frame period) between queued bytes
+///
+/// Performance notes:
+///   TickUart() is called on every Timer 4 underflow (hot path when Timer 4
+///   is running). The method is kept branchless-friendly: the common case
+///   (TX inactive, RX inactive) hits two fast bit-test early-exits.
+/// </summary>
 class LynxMikey final : public ISerializable {
 private:
 	Emulator* _emu = nullptr;
@@ -30,14 +58,35 @@ private:
 	// Frame buffer output (160x102 pixels, 32-bit ARGB)
 	uint32_t _frameBuffer[LynxConstants::ScreenWidth * LynxConstants::ScreenHeight] = {};
 
-	// UART / ComLynx constants and state
+	// ======================================================================
+	// UART / ComLynx constants
+	// ======================================================================
+
+	/// <summary>Sentinel value for TX/RX countdown: bit 31 set = transmitter/receiver idle.
+	/// Using bit 31 as a flag allows a single bit-test to distinguish active vs idle,
+	/// which is faster than comparing against a magic value in the hot path.</summary>
 	static constexpr uint32_t UartTxInactive = 0x80000000;
 	static constexpr uint32_t UartRxInactive = 0x80000000;
+
+	/// <summary>Break code: bit 15 set in RX data indicates a break was received
+	/// (sustained low on the serial line for an entire frame).</summary>
 	static constexpr uint16_t UartBreakCode = 0x8000;
+
+	/// <summary>Maximum RX queue depth. Sized to handle burst scenarios where
+	/// multiple bytes arrive before the game processes them. 32 is generous —
+	/// real ComLynx traffic rarely exceeds a few bytes/frame.</summary>
 	static constexpr int UartMaxRxQueue = 32;
-	static constexpr uint32_t UartTxTimePeriod = 11;  // 11 bit times per serial frame
+
+	/// <summary>Timer 4 ticks per serial frame: 1 start + 8 data + 1 parity + 1 stop = 11.</summary>
+	static constexpr uint32_t UartTxTimePeriod = 11;
 	static constexpr uint32_t UartRxTimePeriod = 11;
-	static constexpr uint32_t UartRxNextDelay = 44;   // Inter-byte gap (4x frame period)
+
+	/// <summary>Inter-byte delay for queued RX data (44 = 4× frame period).
+	/// After one byte is delivered from the RX queue, this delay simulates
+	/// the physical wire delay before the next byte becomes available.
+	/// Without this, a game could read the entire queue in one burst,
+	/// which wouldn't match real hardware timing.</summary>
+	static constexpr uint32_t UartRxNextDelay = 44;
 
 	// UART receive queue
 	uint16_t _uartRxQueue[UartMaxRxQueue] = {};
@@ -72,8 +121,22 @@ private:
 	void UpdatePalette(int index);
 	void UpdateIrqLine();
 	void RenderScanline();
+	/// <summary>Advance UART TX/RX state by one Timer 4 tick (one bit-time).
+	/// Called from TickTimer/CascadeTimer when Timer 4 underflows.
+	/// Hot path: ~62,500 calls/sec at default 9600 baud.
+	/// The idle check (bit 31 test) ensures minimal overhead when no serial
+	/// activity is occurring.</summary>
 	void TickUart();
+
+	/// <summary>Update Timer 4 IRQ line based on UART status.
+	/// Level-sensitive (HW Bug 13.2): re-asserts IRQ every tick while
+	/// condition persists, even if software already cleared the pending bit.</summary>
 	void UpdateUartIrq();
+
+	/// <summary>Self-loopback: routes TX output to this unit's own RX queue.
+	/// On real hardware, ComLynx is open-collector so the transmitter always
+	/// sees its own output. Separation from ComLynxRxData() allows future
+	/// multi-unit networking to call ComLynxRxData() on remote instances.</summary>
 	void ComLynxTxLoopback(uint16_t data);
 
 public:

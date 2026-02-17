@@ -652,7 +652,7 @@ void LynxMikey::TickUart() {
 	// 11 ticks = one serial frame (1 start + 8 data + 1 parity + 1 stop).
 
 	// --- Receive ---
-	if (_state.UartRxCountdown == 0) {
+	if (_state.UartRxCountdown == 0) [[unlikely]] {
 		// RX period complete: pull byte from input queue
 		if (_uartRxWaiting > 0) {
 			// Overrun check: previous data not yet read
@@ -661,7 +661,7 @@ void LynxMikey::TickUart() {
 			}
 
 			_state.UartRxData = _uartRxQueue[_uartRxOutputPtr];
-			_uartRxOutputPtr = (_uartRxOutputPtr + 1) % UartMaxRxQueue;
+			_uartRxOutputPtr = (_uartRxOutputPtr + 1) & (UartMaxRxQueue - 1);
 			_uartRxWaiting--;
 			_state.UartRxReady = true;
 
@@ -670,12 +670,12 @@ void LynxMikey::TickUart() {
 				_state.UartRxCountdown = UartRxNextDelay;
 			}
 		}
-	} else if (!(_state.UartRxCountdown & UartRxInactive)) {
+	} else if (!(_state.UartRxCountdown & UartRxInactive)) [[unlikely]] {
 		_state.UartRxCountdown--;
 	}
 
 	// --- Transmit ---
-	if (_state.UartTxCountdown == 0) {
+	if (_state.UartTxCountdown == 0) [[unlikely]] {
 		// TX period complete
 		if (_state.UartSendBreak) {
 			// Break mode: continuously retransmit break signal
@@ -686,12 +686,15 @@ void LynxMikey::TickUart() {
 			// Normal completion: go idle
 			_state.UartTxCountdown = UartTxInactive;
 		}
-	} else if (!(_state.UartTxCountdown & UartTxInactive)) {
+	} else if (!(_state.UartTxCountdown & UartTxInactive)) [[unlikely]] {
 		_state.UartTxCountdown--;
 	}
 
 	// Update serial IRQ (level-sensitive — HW Bug 13.2)
-	UpdateUartIrq();
+	// Skip when neither IRQ is enabled (common case: no serial activity)
+	if (_state.UartTxIrqEnable || _state.UartRxIrqEnable) [[unlikely]] {
+		UpdateUartIrq();
+	}
 }
 
 void LynxMikey::UpdateUartIrq() {
@@ -736,7 +739,7 @@ void LynxMikey::ComLynxRxData(uint16_t data) {
 
 		// Enqueue the byte
 		_uartRxQueue[_uartRxInputPtr] = data;
-		_uartRxInputPtr = (_uartRxInputPtr + 1) % UartMaxRxQueue;
+		_uartRxInputPtr = (_uartRxInputPtr + 1) & (UartMaxRxQueue - 1);
 		_uartRxWaiting++;
 	}
 	// If queue is full, data is silently lost.
