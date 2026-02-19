@@ -51,7 +51,7 @@
 	- [14. Cartridge Port Handling](#14-cartridge-port-handling)
 	- [15. Sizing Algorithm](#15-sizing-algorithm)
 	- [16. Nexen Implementation Choices](#16-nexen-implementation-choices)
-		- [What Nexen follows from Handy/Mednafen (over tech docs):](#what-nexen-follows-from-handymednafen-over-tech-docs)
+		- [Where Nexen deviates from tech docs (with justification):](#where-nexen-deviates-from-tech-docs-with-justification)
 		- [Where Nexen follows Mednafen's improvements over Handy:](#where-nexen-follows-mednafens-improvements-over-handy)
 		- [Nexen-specific design choices:](#nexen-specific-design-choices)
 		- [Known gaps vs Mednafen (future work):](#known-gaps-vs-mednafen-future-work)
@@ -67,9 +67,9 @@ Handy and Mednafen/Beetle-Lynx are fundamentally the **same implementation** —
 2. **Savestate quadrant offsets** — Saves `hquadoff`/`vquadoff` in state (prevents desync)
 3. **Cycle-based sprite status** — Uses timestamps instead of global sleep flag
 
-The technical documentation (original Epyx spec) agrees with both emulators on register addresses, SCB layout, and math behavior. Where the tech docs are ambiguous or incomplete, the emulator source code serves as the definitive reference since Handy was written by the original hardware designers.
+The technical documentation (original Epyx spec) agrees with both emulators on register addresses, SCB layout, and math behavior. Where the tech docs are ambiguous or incomplete, the emulator source code is a useful secondary reference — Handy was written by K. Wilkins through reverse-engineering the hardware (not by the original Epyx designers).
 
-**Nexen policy:** Follow Handy/Mednafen emulator behavior over the tech docs when they conflict, because the emulators encode empirical hardware behavior (including undocumented bugs). Incorporate Mednafen's improvements where applicable.
+**Nexen policy:** Treat the official Epyx technical documentation as the **primary authority**. Handy/Mednafen are valuable implementation references, but should not be blindly followed when they conflict with the docs. When a disagreement exists, investigate: if the emulator behavior is **empirically proven correct** (e.g., games require it, or hardware testing confirms it), follow the emulator behavior and document why. Otherwise, follow the tech docs. Incorporate Mednafen's improvements where applicable.
 
 ---
 
@@ -112,7 +112,7 @@ The technical documentation (original Epyx spec) agrees with both emulators on r
 | Timing (signed+accum) | 54 ticks | Identical | 54 ticks (~3.375 µs) | All agree |
 | Init value | `0xFFFFFFFF` | Identical | Not specified | Stun Runner compatibility |
 
-**Tech doc ambiguity:** The docs say "write A/B to start multiply" which could be read as "write both A and B" or "write A or B". Both emulators only trigger on writing **A** (the high byte, `$FC55`).
+**Tech doc ambiguity:** The docs say "write A/B to start multiply" which could be read as "write both A and B" or "write A or B". Both emulators only trigger on writing **A** (the high byte, `$FC55`). This is a reasonable interpretation and matches the pattern of triggering on the final byte loaded.
 
 ### 3.2 Divide
 
@@ -125,7 +125,7 @@ The technical documentation (original Epyx spec) agrees with both emulators on r
 | Signed mode | Never signed | Identical | "Unsigned only" | All agree |
 | Timing | 176 + 14×N ticks | Identical | Same formula | All agree |
 
-**Critical disagreement — Divide trigger:** The tech docs say "write N/P to start divide". Both emulators trigger the divide when writing **MATHE** (`$FC63`), not N/P. The emulators are correct — the tech docs have this backwards. MATHE is the high byte of the dividend; loading it last and triggering the divide makes logical sense (all operands are ready).
+**Disagreement — Divide trigger:** The tech docs say "write N/P to start divide". Both emulators trigger the divide when writing **MATHE** (`$FC63`), not N/P. The emulator behavior is logically consistent (MATHE is the high byte of the dividend; loading it last ensures all operands are ready before triggering), and no known games rely on N/P-triggered division. Nexen follows the emulator behavior here, but this should ideally be verified against real hardware.
 
 ---
 
@@ -435,13 +435,15 @@ Both emulators effectively skip sizing algorithm 3 because no games use it (the 
 
 ## 16. Nexen Implementation Choices
 
-### What Nexen follows from Handy/Mednafen (over tech docs):
+### Where Nexen deviates from tech docs (with justification):
 
-1. **Divide trigger on MATHE** — Tech docs say "write N/P", both emulators trigger on MATHE write
-2. **Cascading clears** — Not documented in tech docs, but implemented in both emulators
-3. **HW Bug 13.8 exact algorithm** — `(value-1) & 0x8000` check from emulator source
-4. **Stun Runner math init to 0xFFFFFFFF** — Not in tech docs, required by game
-5. **SCBNEXT termination by high byte only** — Matches Bug 13.12
+In these cases, the tech docs are ambiguous, incomplete, or demonstrably wrong. Each deviation is documented with its rationale:
+
+1. **Divide trigger on MATHE** — Tech docs say "write N/P", emulators trigger on MATHE write. *Rationale:* Logically consistent (trigger after final operand loaded); no games rely on N/P trigger. Ideally needs hardware verification.
+2. **Cascading clears** — Not documented in tech docs, but implemented in both emulators. *Rationale:* Required for correct game behavior; tech docs are incomplete here.
+3. **HW Bug 13.8 exact algorithm** — `(value-1) & 0x8000` check from emulator source. *Rationale:* Tech docs describe the bug's existence but not the exact algorithm; emulator provides the only known implementation.
+4. **Stun Runner math init to 0xFFFFFFFF** — Not in tech docs, required by game. *Rationale:* Game compatibility; tech docs don't specify init values.
+5. **SCBNEXT termination by high byte only** — Matches documented Bug 13.12. *Rationale:* Actually consistent with tech docs (both agree).
 
 ### Where Nexen follows Mednafen's improvements over Handy:
 
