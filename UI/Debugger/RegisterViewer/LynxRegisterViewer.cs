@@ -131,6 +131,7 @@ public sealed class LynxRegisterViewer {
 			new RegEntry("", "SPRSYS Flags"),
 			new RegEntry("", "  Unsafe Access", suzy.UnsafeAccess),
 			new RegEntry("", "  Sprite Collision", suzy.SpriteToSpriteCollision),
+			new RegEntry("", "  Stop On Current", suzy.StopOnCurrent),
 			new RegEntry("", "  VStretch", suzy.VStretch),
 			new RegEntry("", "  LeftHand", suzy.LeftHand),
 			new RegEntry("", ""),

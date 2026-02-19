@@ -547,23 +547,28 @@ struct LynxSuzyState {
 	/// overflow status before the CPU reads SPRSYS.</summary>
 	bool MathOverflow;
 
-	/// <summary>Last carry bit from multiply — SPRSYS read bit 2</summary>
+	/// <summary>Last carry bit from multiply — SPRSYS read bit 5 (0x20)</summary>
 	bool LastCarry;
 
 	/// <summary>Unsafe access detected — CPU tried to access Suzy during sprite
-	/// processing. SPRSYS read bit 3. Cleared by writing bit 6 to SPRSYS.</summary>
+	/// processing. SPRSYS read bit 2 (0x04). Cleared by writing bit 2 to SPRSYS.</summary>
 	bool UnsafeAccess;
 
 	/// <summary>Sprite-to-sprite collision occurred (sticky flag).
-	/// SPRSYS read bit 4. Cleared by writing bit 7 to SPRSYS.</summary>
+	/// Internal tracking only — not directly exposed via SPRSYS register.
+	/// Set when collision buffer entries are updated during sprite rendering.</summary>
 	bool SpriteToSpriteCollision;
 
-	/// <summary>VStretch enable — SPRSYS write bit 4. When set, vsize is applied
-	/// as a stretch factor instead of absolute size.</summary>
+	/// <summary>Stop-on-current flag — SPRSYS write/read bit 1 (0x02).
+	/// When set, requests the sprite engine stop after the current sprite.</summary>
+	bool StopOnCurrent;
+
+	/// <summary>VStretch enable — SPRSYS write/read bit 4 (0x10). When set, vsize
+	/// is applied as a stretch factor instead of absolute size.</summary>
 	bool VStretch;
 
-	/// <summary>LeftHand enable — SPRSYS write bit 5. Flips the coordinate system
-	/// for left-handed Lynx orientation.</summary>
+	/// <summary>LeftHand enable — SPRSYS write/read bit 3 (0x08). Flips the
+	/// coordinate system for left-handed Lynx orientation.</summary>
 	bool LeftHand;
 
 	// --- Collision ---

@@ -699,7 +699,7 @@ uint8_t LynxSuzy::ReadRegister(uint8_t addr) {
 			// bit3=LeftHand, bit4=VStretch, bit5=LastCarry, bit6=MathOverflow,
 			// bit7=MathInProgress
 			return (_state.SpriteBusy ? 0x01 : 0x00) |              // Bit 0: sprite working
-				(0) |                                                  // Bit 1: stop on current (TODO)
+				(_state.StopOnCurrent ? 0x02 : 0x00) |                 // Bit 1: stop on current
 				(_state.UnsafeAccess ? 0x04 : 0x00) |                 // Bit 2: unsafe access
 				(_state.LeftHand ? 0x08 : 0x00) |                     // Bit 3: left-handed
 				(_state.VStretch ? 0x10 : 0x00) |                     // Bit 4: VStretch
@@ -804,7 +804,7 @@ void LynxSuzy::WriteRegister(uint8_t addr, uint8_t value) {
 			_state.VStretch = (value & 0x10) != 0;        // Bit 4: vertical stretch
 			_state.LeftHand = (value & 0x08) != 0;        // Bit 3: left-handed
 			if (value & 0x04) _state.UnsafeAccess = false;            // Bit 2: clear unsafe access
-			if (value & 0x02) _state.SpriteToSpriteCollision = false; // Bit 1: clear collision flag (spritestop)
+			_state.StopOnCurrent = (value & 0x02) != 0;              // Bit 1: stop on current (direct store)
 			break;
 
 		// Sprite rendering registers (FC04-FC2B)
@@ -967,6 +967,7 @@ void LynxSuzy::Serialize(Serializer& s) {
 	SV(_state.LastCarry);
 	SV(_state.UnsafeAccess);
 	SV(_state.SpriteToSpriteCollision);
+	SV(_state.StopOnCurrent);
 	SV(_state.VStretch);
 	SV(_state.LeftHand);
 

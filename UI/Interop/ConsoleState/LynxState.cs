@@ -285,15 +285,17 @@ public struct LynxSuzyState : BaseState {
 	/// <summary>Math overflow occurred.</summary>
 	[MarshalAs(UnmanagedType.I1)] public bool MathOverflow;
 
-	/// <summary>Last carry bit from multiply — SPRSYS read bit 2.</summary>
+	/// <summary>Last carry bit from multiply — SPRSYS read bit 5 (0x20).</summary>
 	[MarshalAs(UnmanagedType.I1)] public bool LastCarry;
-	/// <summary>Unsafe access detected — CPU tried to access Suzy during sprite processing. SPRSYS read bit 3.</summary>
+	/// <summary>Unsafe access detected — CPU tried to access Suzy during sprite processing. SPRSYS read bit 2 (0x04).</summary>
 	[MarshalAs(UnmanagedType.I1)] public bool UnsafeAccess;
-	/// <summary>Sprite-to-sprite collision occurred (sticky flag). SPRSYS read bit 4.</summary>
+	/// <summary>Sprite-to-sprite collision occurred (sticky flag). Internal tracking, not directly exposed via SPRSYS.</summary>
 	[MarshalAs(UnmanagedType.I1)] public bool SpriteToSpriteCollision;
-	/// <summary>VStretch enable — SPRSYS write bit 4. When set, vsize is applied as stretch factor.</summary>
+	/// <summary>Stop-on-current — SPRSYS write/read bit 1 (0x02). Requests sprite engine stop after current sprite.</summary>
+	[MarshalAs(UnmanagedType.I1)] public bool StopOnCurrent;
+	/// <summary>VStretch enable — SPRSYS write/read bit 4 (0x10). When set, vsize is applied as stretch factor.</summary>
 	[MarshalAs(UnmanagedType.I1)] public bool VStretch;
-	/// <summary>LeftHand enable — SPRSYS write bit 5. Flips coordinate system for left-handed orientation.</summary>
+	/// <summary>LeftHand enable — SPRSYS write/read bit 3 (0x08). Flips coordinate system for left-handed orientation.</summary>
 	[MarshalAs(UnmanagedType.I1)] public bool LeftHand;
 
 	/// <summary>Collision depository (16 entries, one per pen color).</summary>

@@ -929,6 +929,14 @@ TEST_F(LynxSuzyMathTest, Sprsys_SpriteToSpriteCollision) {
 	EXPECT_TRUE(_state.SpriteToSpriteCollision);
 }
 
+TEST_F(LynxSuzyMathTest, Sprsys_StopOnCurrent) {
+	_state.StopOnCurrent = false;
+	EXPECT_FALSE(_state.StopOnCurrent);
+
+	_state.StopOnCurrent = true;
+	EXPECT_TRUE(_state.StopOnCurrent);
+}
+
 TEST_F(LynxSuzyMathTest, Sprsys_VStretch) {
 	_state.VStretch = false;
 	EXPECT_FALSE(_state.VStretch);
