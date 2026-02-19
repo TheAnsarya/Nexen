@@ -232,9 +232,13 @@ TEST_F(LynxSuzyMathTest, CollisionBuffer_MutualUpdate) {
 //=============================================================================
 
 TEST_F(LynxSuzyMathTest, SpriteType_Values) {
-	EXPECT_EQ((uint8_t)LynxSpriteType::Background, 0);
-	EXPECT_EQ((uint8_t)LynxSpriteType::Normal, 1);
-	EXPECT_EQ((uint8_t)LynxSpriteType::Boundary, 2);
+	EXPECT_EQ((uint8_t)LynxSpriteType::BackgroundShadow, 0);
+	EXPECT_EQ((uint8_t)LynxSpriteType::BackgroundNonCollide, 1);
+	EXPECT_EQ((uint8_t)LynxSpriteType::BoundaryShadow, 2);
+	EXPECT_EQ((uint8_t)LynxSpriteType::Boundary, 3);
+	EXPECT_EQ((uint8_t)LynxSpriteType::Normal, 4);
+	EXPECT_EQ((uint8_t)LynxSpriteType::NonCollidable, 5);
+	EXPECT_EQ((uint8_t)LynxSpriteType::XorShadow, 6);
 	EXPECT_EQ((uint8_t)LynxSpriteType::Shadow, 7);
 }
 
@@ -532,9 +536,10 @@ TEST_F(LynxSuzyMathTest, Collision_AllSlots) {
 //=============================================================================
 
 TEST_F(LynxSuzyMathTest, SpriteType_BackgroundType_NoCollision) {
-	// Background sprites (type 0) don't participate in collision
-	EXPECT_EQ((uint8_t)LynxSpriteType::Background, 0);
-	// Collision logic checks sprite type before updating buffer
+	// BackgroundShadow (type 0) writes collision buffer but doesn't read/compare
+	EXPECT_EQ((uint8_t)LynxSpriteType::BackgroundShadow, 0);
+	// BackgroundNonCollide (type 1) has no collision at all
+	EXPECT_EQ((uint8_t)LynxSpriteType::BackgroundNonCollide, 1);
 }
 
 TEST_F(LynxSuzyMathTest, SpriteType_NonCollidableType) {
@@ -543,8 +548,8 @@ TEST_F(LynxSuzyMathTest, SpriteType_NonCollidableType) {
 }
 
 TEST_F(LynxSuzyMathTest, SpriteType_NormalType_Collides) {
-	// Normal sprites (type 1) participate in collision
-	EXPECT_EQ((uint8_t)LynxSpriteType::Normal, 1);
+	// Normal sprites (type 4) participate in collision
+	EXPECT_EQ((uint8_t)LynxSpriteType::Normal, 4);
 }
 
 //=============================================================================
@@ -674,13 +679,13 @@ TEST_F(LynxSuzyMathTest, SignedDivide_ExactDivision) {
 
 TEST_F(LynxSuzyMathTest, Sprctl0_TypeDecoding) {
 	// Type is bits [2:0]
-	uint8_t sprctl0 = 0b00000001; // Type = 1 (Normal)
+	uint8_t sprctl0 = 0b00000100; // Type = 4 (Normal)
 	uint8_t spriteType = sprctl0 & 0x07;
 	EXPECT_EQ(spriteType, (uint8_t)LynxSpriteType::Normal);
 
-	sprctl0 = 0b00000010; // Type = 2 (Boundary)
+	sprctl0 = 0b00000010; // Type = 2 (BoundaryShadow)
 	spriteType = sprctl0 & 0x07;
-	EXPECT_EQ(spriteType, (uint8_t)LynxSpriteType::Boundary);
+	EXPECT_EQ(spriteType, (uint8_t)LynxSpriteType::BoundaryShadow);
 
 	sprctl0 = 0b00000111; // Type = 7 (Shadow)
 	spriteType = sprctl0 & 0x07;
@@ -1918,39 +1923,26 @@ TEST_F(LynxSuzyMathTest, Nibble_ByteAddressCalculation) {
 // Each sprite type has specific drawing and collision rules.
 //=============================================================================
 
-TEST_F(LynxSuzyMathTest, SpriteType_ShadowEnumValues) {
-	// All shadow types should enable XOR rendering
-	LynxSpriteType shadowTypes[] = {
-		LynxSpriteType::NormalShadow,
+TEST_F(LynxSuzyMathTest, SpriteType_XorShadowType) {
+	// Only XorShadow (type 6) uses XOR rendering
+	EXPECT_EQ((uint8_t)LynxSpriteType::XorShadow, 6);
+}
+
+TEST_F(LynxSuzyMathTest, SpriteType_NonXorTypes) {
+	// All other types draw pixels normally (no XOR)
+	LynxSpriteType nonXorTypes[] = {
+		LynxSpriteType::BackgroundShadow,
+		LynxSpriteType::BackgroundNonCollide,
 		LynxSpriteType::BoundaryShadow,
-		LynxSpriteType::XorShadow,
+		LynxSpriteType::Boundary,
+		LynxSpriteType::Normal,
+		LynxSpriteType::NonCollidable,
 		LynxSpriteType::Shadow
 	};
 
-	for (auto type : shadowTypes) {
-		bool isShadow = (type == LynxSpriteType::NormalShadow ||
-						 type == LynxSpriteType::BoundaryShadow ||
-						 type == LynxSpriteType::XorShadow ||
-						 type == LynxSpriteType::Shadow);
-		EXPECT_TRUE(isShadow) << "Type " << (int)type << " should be shadow";
-	}
-}
-
-TEST_F(LynxSuzyMathTest, SpriteType_NonShadowTypes) {
-	// Non-shadow types should not enable XOR
-	LynxSpriteType nonShadowTypes[] = {
-		LynxSpriteType::Background,
-		LynxSpriteType::Normal,
-		LynxSpriteType::NonCollidable,
-		LynxSpriteType::Boundary
-	};
-
-	for (auto type : nonShadowTypes) {
-		bool isShadow = (type == LynxSpriteType::NormalShadow ||
-						 type == LynxSpriteType::BoundaryShadow ||
-						 type == LynxSpriteType::XorShadow ||
-						 type == LynxSpriteType::Shadow);
-		EXPECT_FALSE(isShadow) << "Type " << (int)type << " should not be shadow";
+	for (auto type : nonXorTypes) {
+		EXPECT_NE(type, LynxSpriteType::XorShadow)
+			<< "Type " << (int)type << " should not be XorShadow";
 	}
 }
 

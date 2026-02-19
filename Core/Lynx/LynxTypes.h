@@ -172,16 +172,17 @@ enum class LynxEepromState : uint8_t {
 	SendingData
 };
 
-/// <summary>Sprite rendering type (from SPRCTL0 bits 2-0)</summary>
+/// <summary>Sprite rendering type (from SPRCTL0 bits 2-0).
+/// Names and values match Handy's susie.h enum.</summary>
 enum class LynxSpriteType : uint8_t {
-	Background = 0,
-	Normal = 1,
-	Boundary = 2,
-	NormalShadow = 3,
-	BoundaryShadow = 4,
-	NonCollidable = 5,
-	XorShadow = 6,
-	Shadow = 7
+	BackgroundShadow = 0,      // Draws all pixels (incl pen 0), collision buffer write only
+	BackgroundNonCollide = 1,  // Draws all pixels (incl pen 0), no collision
+	BoundaryShadow = 2,        // Skip pen 0/0x0E/0x0F, collision
+	Boundary = 3,              // Skip pen 0/0x0F, collision (skip 0x0E for collision)
+	Normal = 4,                // Skip pen 0, collision
+	NonCollidable = 5,         // Skip pen 0, no collision
+	XorShadow = 6,             // Skip pen 0, XOR with existing, collision (skip 0x0E for collision)
+	Shadow = 7                 // Skip pen 0, collision (skip 0x0E for collision)
 };
 
 /// <summary>Sprite bits per pixel (from SPRCTL0 bits 7-6)</summary>

@@ -458,13 +458,26 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 		quadrant = (quadrant + 1) & 0x03;
 	}
 
-	// Write collision depositary (per Handy: stored in RAM at SCBAddr + COLLOFF)
-	// TODO: Implement proper per-pixel collision tracking via COLLBAS buffer
+	// Write collision depositary (per Handy: only for collidable types)
+	// Writes the max collision number encountered during this sprite's rendering
+	// to SCBAddr + COLLOFF in RAM. Only types that participate in collision write this.
 	if (!dontCollide && !_state.NoCollide) {
-		uint16_t collDep = (scbAddr + _state.CollOffset) & 0xFFFF;
-		// Collision depositary: currently a placeholder, needs proper pixel-level
-		// collision tracking against the collision buffer at COLLBAS
-		WriteRam(collDep, 0);
+		switch (spriteType) {
+			case LynxSpriteType::XorShadow:
+			case LynxSpriteType::Boundary:
+			case LynxSpriteType::Normal:
+			case LynxSpriteType::BoundaryShadow:
+			case LynxSpriteType::Shadow: {
+				uint16_t collDep = (scbAddr + _state.CollOffset) & 0xFFFF;
+				// TODO: mCollision should track max collision from COLLBAS reads.
+				// Currently writes 0 since per-pixel collision uses internal buffer.
+				// See issue #373 for RAM-based collision buffer architecture.
+				WriteRam(collDep, 0);
+				break;
+			}
+			default:
+				break;
+		}
 	}
 
 	// EVERON tracking: set high bit of collision byte if sprite was never on-screen
@@ -590,85 +603,119 @@ void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum,
 		return;
 	}
 
-	// Transparent pixel (index 0) is never drawn
-	if (penIndex == 0) {
-		return;
-	}
-
-	// Non-collidable sprites draw pixels but don't update collision
-	bool doCollision = (spriteType != LynxSpriteType::NonCollidable);
-
-	// Background sprites only draw where the pixel is currently 0 (transparent)
-	// and don't participate in collision
-	if (spriteType == LynxSpriteType::Background) {
-		doCollision = false;
-	}
-
-	// Shadow sprites: XOR the pixel value with the existing value
-	bool isShadow = (spriteType == LynxSpriteType::NormalShadow ||
-					 spriteType == LynxSpriteType::BoundaryShadow ||
-					 spriteType == LynxSpriteType::XorShadow ||
-					 spriteType == LynxSpriteType::Shadow);
-
-	// Write pixel as 4bpp nibble into work RAM frame buffer
-	// Use Suzy's VIDBAS register for sprite rendering target;
-	// fall back to Mikey's display address for backward compatibility
+	// Calculate video RAM address for this pixel (4bpp packed nibbles)
 	uint16_t dispAddr = _state.VideoBase ? _state.VideoBase
 	                    : _console->GetMikey()->GetState().DisplayAddress;
 	uint16_t byteAddr = dispAddr + y * LynxConstants::BytesPerScanline + (x >> 1);
 	uint8_t byte = ReadRam(byteAddr);
 
 	uint8_t existingPixel;
-	uint8_t writePixel = penIndex & 0x0f;
-
 	if (x & 1) {
 		existingPixel = byte & 0x0f;
 	} else {
 		existingPixel = (byte >> 4) & 0x0f;
 	}
 
-	// Background sprite: only draw if existing pixel is transparent
-	if (spriteType == LynxSpriteType::Background && existingPixel != 0) {
-		return;
+	// Per-type pixel processing — matches Handy's ProcessPixel() switch
+	// Each type defines: which pixels are drawn, whether XOR is applied,
+	// and whether collision detection is performed.
+	uint8_t writePixel = penIndex & 0x0f;
+	bool doWrite = false;
+	bool doCollision = false;
+
+	switch (spriteType) {
+		case LynxSpriteType::BackgroundShadow:
+			// Type 0: Draw ALL pixels (including pen 0). No collision detect,
+			// but does write collision buffer unconditionally.
+			doWrite = true;
+			// Collision buffer write (no read/compare) for pen != 0x0E
+			if (!_state.NoCollide && writePixel != 0x0e) {
+				doCollision = true;
+			}
+			break;
+
+		case LynxSpriteType::BackgroundNonCollide:
+			// Type 1: Draw ALL pixels (including pen 0). No collision at all.
+			doWrite = true;
+			break;
+
+		case LynxSpriteType::BoundaryShadow:
+			// Type 2: Skip pen 0, 0x0E, 0x0F. Collision on pen != 0 && pen != 0x0E.
+			if (writePixel != 0x00 && writePixel != 0x0e && writePixel != 0x0f) {
+				doWrite = true;
+			}
+			if (writePixel != 0x00 && writePixel != 0x0e) {
+				doCollision = !_state.NoCollide;
+			}
+			break;
+
+		case LynxSpriteType::Boundary:
+			// Type 3: Skip pen 0, 0x0F. Collision on pen != 0 && pen != 0x0E.
+			if (writePixel != 0x00 && writePixel != 0x0f) {
+				doWrite = true;
+			}
+			if (writePixel != 0x00 && writePixel != 0x0e) {
+				doCollision = !_state.NoCollide;
+			}
+			break;
+
+		case LynxSpriteType::Normal:
+			// Type 4: Skip pen 0. Collision on pen != 0 && pen != 0x0E.
+			if (writePixel != 0x00) {
+				doWrite = true;
+			}
+			if (writePixel != 0x00 && writePixel != 0x0e) {
+				doCollision = !_state.NoCollide;
+			}
+			break;
+
+		case LynxSpriteType::NonCollidable:
+			// Type 5: Skip pen 0. No collision.
+			if (writePixel != 0x00) {
+				doWrite = true;
+			}
+			break;
+
+		case LynxSpriteType::XorShadow:
+			// Type 6: Skip pen 0. XOR with existing pixel. Collision on pen != 0 && pen != 0x0E.
+			if (writePixel != 0x00) {
+				writePixel = existingPixel ^ writePixel;
+				doWrite = true;
+			}
+			if ((penIndex & 0x0f) != 0x00 && (penIndex & 0x0f) != 0x0e) {
+				doCollision = !_state.NoCollide;
+			}
+			break;
+
+		case LynxSpriteType::Shadow:
+			// Type 7: Skip pen 0. Normal write. Collision on pen != 0 && pen != 0x0E.
+			if (writePixel != 0x00) {
+				doWrite = true;
+			}
+			if (writePixel != 0x00 && writePixel != 0x0e) {
+				doCollision = !_state.NoCollide;
+			}
+			break;
 	}
 
-	// Shadow/XOR sprites: XOR with existing pixel
-	if (isShadow) {
-		writePixel = existingPixel ^ writePixel;
+	// Write pixel to video RAM
+	if (doWrite) {
+		if (x & 1) {
+			byte = (byte & 0xF0) | writePixel;
+		} else {
+			byte = (byte & 0x0F) | (writePixel << 4);
+		}
+		WriteRam(byteAddr, byte);
 	}
 
-	if (x & 1) {
-		byte = (byte & 0xF0) | writePixel;
-	} else {
-		byte = (byte & 0x0F) | (writePixel << 4);
-	}
-	WriteRam(byteAddr, byte);
-
-	// Collision detection — mutual update algorithm
-	// The collision buffer has 16 slots (indices 0-15).
-	// When sprite A (collNum) draws over sprite B (existingPixel):
-	//   1. Buffer[A] = max(Buffer[A], B) — A records that B collided with it
-	//   2. Buffer[B] = max(Buffer[B], A) — B records that A collided with it
-	// This ensures both sprites' entries reflect the highest-numbered collider.
-	// The game reads Buffer[spriteN] to see what collided with sprite N.
+	// Collision detection — track max collision number for this sprite.
+	// TODO: This should use the RAM-based collision buffer at COLLBAS,
+	// not an internal 16-slot array. See issue #373 for architecture fix.
 	if (doCollision && collNum > 0 && collNum < LynxConstants::CollisionBufferSize) {
-		// Read existing collision value for this sprite's collision number
 		uint8_t existing = _state.CollisionBuffer[collNum];
-		// Use the pen index of the existing pixel as the collider ID
-		// Higher-numbered sprites have priority; only update if existingPixel > current value
 		if (existingPixel > 0 && existingPixel > existing) {
 			_state.CollisionBuffer[collNum] = existingPixel;
-			// Set sticky sprite-to-sprite collision flag (cleared only by explicit write)
 			_state.SpriteToSpriteCollision = true;
-		}
-
-		// Also update the colliding sprite's entry (mutual)
-		if (existingPixel > 0 && existingPixel < LynxConstants::CollisionBufferSize) {
-			uint8_t otherExisting = _state.CollisionBuffer[existingPixel];
-			if (collNum > otherExisting) {
-				_state.CollisionBuffer[existingPixel] = (uint8_t)collNum;
-				_state.SpriteToSpriteCollision = true;
-			}
 		}
 	}
 }

@@ -274,13 +274,11 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 
 		// Map sprite type to priority/mode
 		switch (spriteType) {
-			case LynxSpriteType::Background:
+			case LynxSpriteType::BackgroundShadow:
+			case LynxSpriteType::BackgroundNonCollide:
 				sprite.Priority = DebugSpritePriority::Background;
 				sprite.Mode = DebugSpriteMode::Normal;
 				break;
-			case LynxSpriteType::Shadow:
-			case LynxSpriteType::NormalShadow:
-			case LynxSpriteType::BoundaryShadow:
 			case LynxSpriteType::XorShadow:
 				sprite.Priority = DebugSpritePriority::Foreground;
 				sprite.Mode = DebugSpriteMode::Blending;
