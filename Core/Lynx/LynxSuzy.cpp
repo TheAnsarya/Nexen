@@ -274,6 +274,12 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 	// Current sprite data pointer (advances through quadrants)
 	uint16_t currentDataAddr = sprDataLine;
 
+	// Quad offset signs: persist across all 4 quadrants within a sprite.
+	// Saves quad 0's sign; subsequent quads drawing in the opposite direction
+	// get offset by 1 pixel to prevent the squashed look on multi-quad sprites.
+	int vquadoff_sign = 0;
+	int hquadoff_sign = 0;
+
 	// Loop over 4 quadrants
 	for (int loop = 0; loop < 4; loop++) {
 		// Calculate direction signs for this quadrant
@@ -329,10 +335,10 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 			uint16_t vsizAccum = (vsign == 1) ? _state.VSizeOff : 0;
 			uint16_t hsizAccum;
 
-			// Quad offset fix: sprites drawn in a direction opposite to quad 0's
-			// direction get offset by 1 pixel to prevent the squashed look
-			int vquadoff = (loop == 0) ? vsign : ((vsign != ((quadrant == 0 || quadrant == 3) ? 1 : -1)) ? vsign : 0);
-			int hquadoff_sign = 0; // Will be set on first quad
+			// Quad offset fix: save quad 0's vertical sign; offset subsequent quads
+			// that draw in the opposite direction by 1 pixel (matches Handy behavior)
+			if (loop == 0) vquadoff_sign = vsign;
+			if (vsign != vquadoff_sign) voff += vsign;
 
 			// Working copies for this quadrant
 			uint16_t hsize = _persistHsize;

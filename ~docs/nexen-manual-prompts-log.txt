@@ -292,6 +292,15 @@ Continue working on these tests and issues; continue;
 
 Continue working on these tests and issues; continue;
 
+[Nexen] (Lynx) Keep finding problems with your implementation of Atari Lynx emulation and fixing bugs and issues and documentation, tests and benchmarks and in-line code comments and validate our code and system and make sure all c# code is working, that we have have good debugger snd input configuration and sprite viewer, etc, make sure all that infrastructure is there (present) and correct and working and accurate, completely integrated into the current UI; continue;
+
+[Nexen] (Lynx) Keep finding problems with your implementation of Atari Lynx emulation and fixing bugs and issues and documentation, tests and benchmarks and in-line code comments and validate our code and system and make sure all c# code is working, snd that we have full integration with ever UI toll, especially debugging, vlike VRAM viewing, tile maps, etc, everything, make sure all that infrastructure is there (present) and correct and working and accurate, completely integrated into the current UI; continue;
+
+[Nexen] (Lynx) contue working through the issues; updatre everything as you go;
+
+[Nexen] (Lynx) Keep finding problems with your implementation of Atari Lynx emulation and fixing bugs and issues and documentation, make sure all recent and future code is covered with lots of tests to prove the code and benchmarks to make sure it's efficient; and always add in-line code comments and xmldoc class/method/field.etc comments and validate our code and system; keep working through the issues and make new issues and work them too; continue;
+
+[Nexen] (Lynx) It looks like you are using `Handy` as a source-of-truth when it conflicts with technical docs on the Lynx, please document in a `Handy` versus `Mednafen` versus `Techinical Docs` code/algorithm/label/datastructure differences documentation; continue;
 
 
 
