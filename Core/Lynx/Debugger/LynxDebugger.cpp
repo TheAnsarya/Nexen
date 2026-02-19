@@ -131,7 +131,7 @@ void LynxDebugger::ProcessInstruction() {
 }
 
 void LynxDebugger::ProcessRead(uint32_t addr, uint8_t value, MemoryOperationType type) {
-	AddressInfo addressInfo = _memoryManager->GetAbsoluteAddress((uint16_t)addr);
+	AddressInfo addressInfo = _memoryManager->GetAbsoluteAddress(static_cast<uint16_t>(addr));
 	MemoryOperationInfo operation(addr, value, type, MemoryType::LynxMemory);
 	InstructionProgress.LastMemOperation = operation;
 
@@ -167,7 +167,7 @@ void LynxDebugger::ProcessRead(uint32_t addr, uint8_t value, MemoryOperationType
 }
 
 void LynxDebugger::ProcessWrite(uint32_t addr, uint8_t value, MemoryOperationType type) {
-	AddressInfo addressInfo = _memoryManager->GetAbsoluteAddress((uint16_t)addr);
+	AddressInfo addressInfo = _memoryManager->GetAbsoluteAddress(static_cast<uint16_t>(addr));
 	MemoryOperationInfo operation(addr, value, type, MemoryType::LynxMemory);
 	InstructionProgress.LastMemOperation = operation;
 
@@ -210,7 +210,7 @@ void LynxDebugger::ProcessCallStackUpdates(AddressInfo& destAddr, uint16_t destP
 		// RTS, RTI
 		_callstackManager->Pop(destAddr, destPc, sp);
 
-		if (_step->BreakAddress == (int32_t)destPc && _step->BreakStackPointer == sp) {
+		if (_step->BreakAddress == static_cast<int32_t>(destPc) && _step->BreakStackPointer == sp) {
 			_step->Break(BreakSource::CpuStep);
 		}
 	}
@@ -326,10 +326,10 @@ DebuggerFeatures LynxDebugger::GetSupportedFeatures() {
 
 void LynxDebugger::SetProgramCounter(uint32_t addr, bool updateDebuggerOnly) {
 	if (!updateDebuggerOnly) {
-		_cpu->GetState().PC = (uint16_t)addr;
+		_cpu->GetState().PC = static_cast<uint16_t>(addr);
 	}
 	_prevOpCode = _memoryManager->DebugRead(addr);
-	_prevProgramCounter = (uint16_t)addr;
+	_prevProgramCounter = static_cast<uint16_t>(addr);
 	_prevStackPointer = _cpu->GetState().SP;
 }
 

@@ -38,14 +38,15 @@ enum class LynxAddrMode : uint8_t {
 /// </summary>
 namespace LynxPSFlags {
 	enum LynxPSFlags : uint8_t {
-		Carry     = 0x01,
-		Zero      = 0x02,
-		Interrupt = 0x04,
-		Decimal   = 0x08,
-		Break     = 0x10,
-		Reserved  = 0x20,
-		Overflow  = 0x40,
-		Negative  = 0x80
+		Carry      = 0x01,
+		Zero       = 0x02,
+		Interrupt  = 0x04,
+		IrqDisable = 0x04, // Alias: when set, IRQs are disabled
+		Decimal    = 0x08,
+		Break      = 0x10,
+		Reserved   = 0x20,
+		Overflow   = 0x40,
+		Negative   = 0x80
 	};
 }
 
@@ -83,7 +84,7 @@ public:
 	static constexpr double Fps = 75.0;
 
 	/// <summary>CPU cycles per scanline</summary>
-	static constexpr uint32_t CpuCyclesPerScanline = CpuClockRate / (uint32_t)(Fps * ScanlineCount);
+	static constexpr uint32_t CpuCyclesPerScanline = CpuClockRate / static_cast<uint32_t>(Fps * ScanlineCount);
 
 	/// <summary>CPU cycles per frame</summary>
 	static constexpr uint32_t CpuCyclesPerFrame = CpuCyclesPerScanline * ScanlineCount;
@@ -210,20 +211,6 @@ namespace LynxIrqSource {
 // ============================================================================
 // 65C02 CPU State
 // ============================================================================
-
-/// <summary>65C02 processor status flags</summary>
-namespace LynxCpuFlags {
-	enum LynxCpuFlags : uint8_t {
-		Carry = 0x01,
-		Zero = 0x02,
-		IrqDisable = 0x04,
-		Decimal = 0x08,
-		Break = 0x10,
-		Reserved = 0x20,
-		Overflow = 0x40,
-		Negative = 0x80
-	};
-}
 
 /// <summary>65C02 CPU register state</summary>
 struct LynxCpuState : BaseState {

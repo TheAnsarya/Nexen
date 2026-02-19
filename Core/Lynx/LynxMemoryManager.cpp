@@ -183,14 +183,14 @@ AddressInfo LynxMemoryManager::GetAbsoluteAddress(uint16_t relAddr) {
 		if (_state.VectorSpaceVisible && relAddr >= 0xfffa) {
 			if (_bootRom && _bootRomSize > 0) {
 				uint16_t romOffset = relAddr - LynxConstants::BootRomBase;
-				return { (int32_t)romOffset, MemoryType::LynxBootRom };
+				return { static_cast<int32_t>(romOffset), MemoryType::LynxBootRom };
 			}
 		}
 
 		if (_state.RomSpaceVisible && relAddr >= LynxConstants::BootRomBase && relAddr <= 0xfff7) {
 			if (_bootRom && _bootRomSize > 0) {
 				uint16_t romOffset = relAddr - LynxConstants::BootRomBase;
-				return { (int32_t)romOffset, MemoryType::LynxBootRom };
+				return { static_cast<int32_t>(romOffset), MemoryType::LynxBootRom };
 			}
 		}
 	}

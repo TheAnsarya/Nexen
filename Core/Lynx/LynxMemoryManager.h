@@ -60,7 +60,7 @@ public:
 	[[nodiscard]] LynxMemoryManagerState& GetState() { return _state; }
 
 	/// <summary>CPU read — dispatches through MAPCTL overlays</summary>
-	uint8_t Read(uint16_t addr, MemoryOperationType opType = MemoryOperationType::Read);
+	[[nodiscard]] uint8_t Read(uint16_t addr, MemoryOperationType opType = MemoryOperationType::Read);
 
 	/// <summary>CPU write — dispatches through MAPCTL overlays</summary>
 	void Write(uint16_t addr, uint8_t value, MemoryOperationType opType = MemoryOperationType::Write);

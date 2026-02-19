@@ -133,12 +133,12 @@ void LynxApu::ClockChannel(int ch) {
 	// Output value depends on the low bit of the shift register
 	// In integration mode, the output accumulates
 	if (channel.Integrate) {
-		channel.Output += (sr & 1) ? channel.Volume : (int8_t)(-channel.Volume);
+		channel.Output += (sr & 1) ? channel.Volume : static_cast<int8_t>(-channel.Volume);
 		// Clamp to signed 8-bit range
 		if (channel.Output > 127) channel.Output = 127;
 		if (channel.Output < -128) channel.Output = -128;
 	} else {
-		channel.Output = (sr & 1) ? channel.Volume : (int8_t)(-channel.Volume);
+		channel.Output = (sr & 1) ? channel.Volume : static_cast<int8_t>(-channel.Volume);
 	}
 }
 
@@ -175,11 +175,11 @@ void LynxApu::MixOutput() {
 	}
 
 	// Scale to 16-bit range
-	leftSum = std::clamp(leftSum * 64, (int32_t)INT16_MIN, (int32_t)INT16_MAX);
-	rightSum = std::clamp(rightSum * 64, (int32_t)INT16_MIN, (int32_t)INT16_MAX);
+	leftSum = std::clamp(leftSum * 64, static_cast<int32_t>(INT16_MIN), static_cast<int32_t>(INT16_MAX));
+	rightSum = std::clamp(rightSum * 64, static_cast<int32_t>(INT16_MIN), static_cast<int32_t>(INT16_MAX));
 
-	_soundBuffer[_sampleCount * 2] = (int16_t)leftSum;
-	_soundBuffer[_sampleCount * 2 + 1] = (int16_t)rightSum;
+	_soundBuffer[_sampleCount * 2] = static_cast<int16_t>(leftSum);
+	_soundBuffer[_sampleCount * 2 + 1] = static_cast<int16_t>(rightSum);
 	_sampleCount++;
 
 	if (_sampleCount >= MaxSamples) {
@@ -208,9 +208,9 @@ uint8_t LynxApu::ReadRegister(uint8_t addr) {
 		switch (reg) {
 			case 0: return channel.Volume;
 			case 1: return channel.FeedbackEnable;
-			case 2: return (uint8_t)channel.Output;
-			case 3: return (uint8_t)(channel.ShiftRegister & 0xff);
-			case 4: return (uint8_t)(channel.ShiftRegister >> 8);
+			case 2: return static_cast<uint8_t>(channel.Output);
+			case 3: return static_cast<uint8_t>(channel.ShiftRegister & 0xff);
+			case 4: return static_cast<uint8_t>(channel.ShiftRegister >> 8);
 			case 5: return channel.BackupValue;
 			case 6: return channel.Control;
 			case 7: return channel.Counter;
@@ -245,7 +245,7 @@ void LynxApu::WriteRegister(uint8_t addr, uint8_t value) {
 		switch (reg) {
 			case 0: channel.Volume = value; break; // Full 8-bit volume (7-bit magnitude)
 			case 1: channel.FeedbackEnable = value; break;
-			case 2: channel.Output = (int8_t)value; break;
+			case 2: channel.Output = static_cast<int8_t>(value); break;
 			case 3: channel.ShiftRegister = (channel.ShiftRegister & 0xf00) | value; break;
 			case 4: channel.ShiftRegister = (channel.ShiftRegister & 0x0ff) | ((value & 0x0f) << 8); break;
 			case 5: channel.BackupValue = value; break;

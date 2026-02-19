@@ -38,8 +38,8 @@ void LynxEeprom::Init(LynxEepromType type) {
 			return;
 	}
 
-	_data = new uint8_t[_dataSize];
-	memset(_data, 0xff, _dataSize); // EEPROM erased state = all 1s
+	_data = std::make_unique<uint8_t[]>(_dataSize);
+	std::fill_n(_data.get(), _dataSize, uint8_t{0xff}); // EEPROM erased state = all 1s
 }
 
 uint8_t LynxEeprom::GetAddressBits() const {
@@ -54,7 +54,7 @@ uint8_t LynxEeprom::GetAddressBits() const {
 }
 
 uint16_t LynxEeprom::GetWordCount() const {
-	return (uint16_t)(_dataSize / 2);
+	return static_cast<uint16_t>(_dataSize / 2);
 }
 
 uint16_t LynxEeprom::ReadWord(uint16_t wordAddr) const {
@@ -70,8 +70,8 @@ void LynxEeprom::WriteWord(uint16_t wordAddr, uint16_t value) {
 		return;
 	}
 	uint32_t byteAddr = wordAddr * 2;
-	_data[byteAddr] = (uint8_t)value;
-	_data[byteAddr + 1] = (uint8_t)(value >> 8);
+	_data[byteAddr] = static_cast<uint8_t>(value);
+	_data[byteAddr + 1] = static_cast<uint8_t>(value >> 8);
 }
 
 void LynxEeprom::SetChipSelect(bool active) {
@@ -133,7 +133,7 @@ bool LynxEeprom::ClockData(bool dataIn) {
 			_state.BitCount++;
 
 			if (_state.BitCount >= 16) {
-				uint8_t opcode = (uint8_t)_state.Opcode;
+				uint8_t opcode = static_cast<uint8_t>(_state.Opcode);
 				if (opcode == 0x01) {
 					// WRITE: write word at address
 					WriteWord(_state.Address, _state.DataBuffer);
@@ -170,7 +170,7 @@ bool LynxEeprom::ClockData(bool dataIn) {
 }
 
 void LynxEeprom::ExecuteCommand() {
-	uint8_t opcode = (uint8_t)_state.Opcode;
+	uint8_t opcode = static_cast<uint8_t>(_state.Opcode);
 	uint8_t addrBits = GetAddressBits();
 	uint16_t addrMask = (1 << addrBits) - 1;
 	uint16_t addr = _state.Address & addrMask;
@@ -245,13 +245,13 @@ void LynxEeprom::ExecuteCommand() {
 
 void LynxEeprom::LoadBattery() {
 	if (_data && _dataSize > 0) {
-		_emu->GetBatteryManager()->LoadBattery(".eeprom", std::span<uint8_t>(_data, _dataSize));
+		_emu->GetBatteryManager()->LoadBattery(".eeprom", std::span<uint8_t>(_data.get(), _dataSize));
 	}
 }
 
 void LynxEeprom::SaveBattery() {
 	if (_data && _dataSize > 0) {
-		_emu->GetBatteryManager()->SaveBattery(".eeprom", std::span<const uint8_t>(_data, _dataSize));
+		_emu->GetBatteryManager()->SaveBattery(".eeprom", std::span<const uint8_t>(_data.get(), _dataSize));
 	}
 }
 
@@ -268,6 +268,6 @@ void LynxEeprom::Serialize(Serializer& s) {
 	SV(_state.DataOut);
 
 	if (_data && _dataSize > 0) {
-		SVArray(_data, _dataSize);
+		SVArray(_data.get(), _dataSize);
 	}
 }

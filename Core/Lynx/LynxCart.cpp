@@ -15,8 +15,8 @@ void LynxCart::Init(Emulator* emu, LynxConsole* console, const LynxCartInfo& inf
 
 	// Calculate bank sizes from page counts
 	// LNX header stores page sizes in 256-byte pages
-	_bank0Size = (uint32_t)info.PageSizeBank0 * 256;
-	_bank1Size = (uint32_t)info.PageSizeBank1 * 256;
+	_bank0Size = static_cast<uint32_t>(info.PageSizeBank0) * 256;
+	_bank1Size = static_cast<uint32_t>(info.PageSizeBank1) * 256;
 
 	// Bank 0 is at the start of ROM, bank 1 follows
 	_bank0Offset = 0;
@@ -64,7 +64,7 @@ void LynxCart::SetAddressLow(uint8_t value) {
 }
 
 void LynxCart::SetAddressHigh(uint8_t value) {
-	_state.AddressCounter = (_state.AddressCounter & 0x00ff) | ((uint32_t)value << 8);
+	_state.AddressCounter = (_state.AddressCounter & 0x00ff) | (static_cast<uint32_t>(value) << 8);
 }
 
 void LynxCart::WriteShiftRegister(uint8_t value) {
@@ -75,12 +75,12 @@ void LynxCart::SetBank0Page(uint8_t page) {
 	_state.CurrentBank = 0;
 	// Page counter selects which 256-byte page within bank 0
 	// This effectively sets the upper bits of the address within the bank
-	_state.AddressCounter = (_state.AddressCounter & 0x00ff) | ((uint32_t)page << 8);
+	_state.AddressCounter = (_state.AddressCounter & 0x00ff) | (static_cast<uint32_t>(page) << 8);
 }
 
 void LynxCart::SetBank1Page(uint8_t page) {
 	_state.CurrentBank = 1;
-	_state.AddressCounter = (_state.AddressCounter & 0x00ff) | ((uint32_t)page << 8);
+	_state.AddressCounter = (_state.AddressCounter & 0x00ff) | (static_cast<uint32_t>(page) << 8);
 }
 
 void LynxCart::SelectBank(uint8_t bank) {

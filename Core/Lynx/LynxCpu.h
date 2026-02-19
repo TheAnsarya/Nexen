@@ -80,8 +80,8 @@ private:
 	}
 
 	__forceinline void PushWord(uint16_t value) {
-		Push((uint8_t)(value >> 8));
-		Push((uint8_t)value);
+		Push(static_cast<uint8_t>(value >> 8));
+		Push(static_cast<uint8_t>(value));
 	}
 
 	__forceinline uint8_t Pop() {
@@ -140,7 +140,7 @@ private:
 		if (_instAddrMode >= LynxAddrMode::Zpg) {
 			return MemoryRead(GetOperand());
 		} else {
-			return (uint8_t)GetOperand();
+			return static_cast<uint8_t>(GetOperand());
 		}
 	}
 
@@ -150,8 +150,8 @@ private:
 
 	uint16_t GetImmediate() { return ReadByte(); }
 	uint16_t GetZpgAddr() { return ReadByte(); }
-	uint16_t GetZpgXAddr() { uint8_t addr = ReadByte(); DummyRead(); return (uint8_t)(addr + X()); }
-	uint16_t GetZpgYAddr() { uint8_t addr = ReadByte(); DummyRead(); return (uint8_t)(addr + Y()); }
+	uint16_t GetZpgXAddr() { uint8_t addr = ReadByte(); DummyRead(); return static_cast<uint8_t>(addr + X()); }
+	uint16_t GetZpgYAddr() { uint8_t addr = ReadByte(); DummyRead(); return static_cast<uint8_t>(addr + Y()); }
 	uint16_t GetAbsAddr() { uint8_t lo = ReadByte(); return lo | (ReadByte() << 8); }
 
 	uint16_t GetAbsXAddr(bool forWrite) {
@@ -179,14 +179,14 @@ private:
 		DummyRead(); // Add X cycle
 		zpAddr += X();
 		uint8_t lo = MemoryRead(zpAddr);
-		uint8_t hi = MemoryRead((uint8_t)(zpAddr + 1));
+		uint8_t hi = MemoryRead(static_cast<uint8_t>(zpAddr + 1));
 		return lo | (hi << 8);
 	}
 
 	uint16_t GetIndYAddr(bool forWrite) {
 		uint8_t zpAddr = ReadByte();
 		uint8_t lo = MemoryRead(zpAddr);
-		uint8_t hi = MemoryRead((uint8_t)(zpAddr + 1));
+		uint8_t hi = MemoryRead(static_cast<uint8_t>(zpAddr + 1));
 		uint16_t addr = (lo | (hi << 8)) + Y();
 		if (forWrite || (lo + Y()) > 0xff) {
 			DummyRead();
@@ -198,7 +198,7 @@ private:
 	uint16_t GetZpgIndAddr() {
 		uint8_t zpAddr = ReadByte();
 		uint8_t lo = MemoryRead(zpAddr);
-		uint8_t hi = MemoryRead((uint8_t)(zpAddr + 1));
+		uint8_t hi = MemoryRead(static_cast<uint8_t>(zpAddr + 1));
 		return lo | (hi << 8);
 	}
 
@@ -273,7 +273,7 @@ private:
 	__forceinline void CmpRegister(uint8_t reg, uint8_t value) {
 		uint16_t result = reg - value;
 		SetFlagValue(LynxPSFlags::Carry, reg >= value);
-		SetZeroNeg((uint8_t)result);
+		SetZeroNeg(static_cast<uint8_t>(result));
 	}
 
 	void INC_A() { SetA(A() + 1); }  // 65C02 INC A

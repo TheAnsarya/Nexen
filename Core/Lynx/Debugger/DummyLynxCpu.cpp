@@ -36,7 +36,7 @@ uint32_t DummyLynxCpu::GetOperationCount() {
 
 void DummyLynxCpu::LogMemoryOperation(uint32_t addr, uint8_t value, MemoryOperationType type) {
 	if (_memOpCounter >= 10) { return; }
-	_memOperations[_memOpCounter] = { addr, (int32_t)value, type, MemoryType::LynxMemory };
+	_memOperations[_memOpCounter] = { addr, static_cast<int32_t>(value), type, MemoryType::LynxMemory };
 	_memOpCounter++;
 }
 

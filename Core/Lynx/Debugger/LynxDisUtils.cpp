@@ -192,7 +192,7 @@ void LynxDisUtils::GetDisassembly(DisassemblyInfo& info, string& out, uint32_t m
 		if (!label.empty()) {
 			str.Write(label, true);
 		} else if (zp) {
-			str.WriteAll('$', HexUtilities::ToHex((uint8_t)addr));
+			str.WriteAll('$', HexUtilities::ToHex(static_cast<uint8_t>(addr)));
 		} else {
 			str.WriteAll('$', HexUtilities::ToHex(addr));
 		}
@@ -208,8 +208,8 @@ void LynxDisUtils::GetDisassembly(DisassemblyInfo& info, string& out, uint32_t m
 			break;
 
 		case LynxAddrMode::Rel: {
-			int8_t offset = (int8_t)byteCode[1];
-			uint16_t target = (uint16_t)(memoryAddr + 2 + offset);
+			int8_t offset = static_cast<int8_t>(byteCode[1]);
+			uint16_t target = static_cast<uint16_t>(memoryAddr + 2 + offset);
 			writeLabelOrAddr(target, false);
 			break;
 		}
@@ -289,7 +289,7 @@ EffectiveAddressInfo LynxDisUtils::GetEffectiveAddress(DisassemblyInfo& info, Ly
 }
 
 uint8_t LynxDisUtils::GetOpSize(LynxAddrMode addrMode) {
-	return _opSize[(int)addrMode];
+	return _opSize[static_cast<int>(addrMode)];
 }
 
 uint8_t LynxDisUtils::GetOpSize(uint8_t opCode) {

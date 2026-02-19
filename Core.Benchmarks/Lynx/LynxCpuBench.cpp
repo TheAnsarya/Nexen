@@ -15,13 +15,13 @@
 // Benchmark processor status flag manipulation (most common CPU operation)
 static void BM_LynxCpu_FlagManipulation(benchmark::State& state) {
 	LynxCpuState cpu = {};
-	cpu.PS = LynxCpuFlags::Reserved | LynxCpuFlags::IrqDisable; // 0x24
+	cpu.PS = LynxPSFlags::Reserved | LynxPSFlags::IrqDisable; // 0x24
 
 	for (auto _ : state) {
-		cpu.PS |= LynxCpuFlags::Carry;
-		cpu.PS &= ~LynxCpuFlags::Zero;
-		cpu.PS |= LynxCpuFlags::Negative;
-		cpu.PS &= ~LynxCpuFlags::Overflow;
+		cpu.PS |= LynxPSFlags::Carry;
+		cpu.PS &= ~LynxPSFlags::Zero;
+		cpu.PS |= LynxPSFlags::Negative;
+		cpu.PS &= ~LynxPSFlags::Overflow;
 		benchmark::DoNotOptimize(cpu.PS);
 	}
 	state.SetItemsProcessed(state.iterations() * 4);
@@ -34,9 +34,9 @@ static void BM_LynxCpu_SetZeroNeg(benchmark::State& state) {
 	uint8_t value = 0;
 
 	for (auto _ : state) {
-		cpu.PS &= ~(LynxCpuFlags::Zero | LynxCpuFlags::Negative);
-		if (value == 0) cpu.PS |= LynxCpuFlags::Zero;
-		if (value & 0x80) cpu.PS |= LynxCpuFlags::Negative;
+		cpu.PS &= ~(LynxPSFlags::Zero | LynxPSFlags::Negative);
+		if (value == 0) cpu.PS |= LynxPSFlags::Zero;
+		if (value & 0x80) cpu.PS |= LynxPSFlags::Negative;
 		benchmark::DoNotOptimize(cpu.PS);
 		value++;
 	}
@@ -50,8 +50,8 @@ static void BM_LynxCpu_SetZeroNeg_Branchless(benchmark::State& state) {
 	uint8_t value = 0;
 
 	for (auto _ : state) {
-		cpu.PS &= ~(LynxCpuFlags::Zero | LynxCpuFlags::Negative);
-		cpu.PS |= (value == 0) ? LynxCpuFlags::Zero : 0;
+		cpu.PS &= ~(LynxPSFlags::Zero | LynxPSFlags::Negative);
+		cpu.PS |= (value == 0) ? LynxPSFlags::Zero : 0;
 		cpu.PS |= (value & 0x80); // Negative is bit 7, same position
 		benchmark::DoNotOptimize(cpu.PS);
 		value++;
@@ -71,7 +71,7 @@ static void BM_LynxCpu_IrqPsMask(benchmark::State& state) {
 
 	for (auto _ : state) {
 		// Correct: clear Break, set Reserved when pushing during IRQ
-		uint8_t pushed = (cpu.PS & ~LynxCpuFlags::Break) | LynxCpuFlags::Reserved;
+		uint8_t pushed = (cpu.PS & ~LynxPSFlags::Break) | LynxPSFlags::Reserved;
 		benchmark::DoNotOptimize(pushed);
 		cpu.PS ^= 0x01; // varying input
 	}
@@ -82,11 +82,11 @@ BENCHMARK(BM_LynxCpu_IrqPsMask);
 // Benchmark IRQ pending check (hot path — checked every instruction)
 static void BM_LynxCpu_IrqPendingCheck(benchmark::State& state) {
 	LynxCpuState cpu = {};
-	cpu.PS = LynxCpuFlags::Reserved; // I flag clear => IRQs enabled
+	cpu.PS = LynxPSFlags::Reserved; // I flag clear => IRQs enabled
 	uint8_t irqPending = 0;
 
 	for (auto _ : state) {
-		bool shouldIrq = (irqPending != 0) && !(cpu.PS & LynxCpuFlags::IrqDisable);
+		bool shouldIrq = (irqPending != 0) && !(cpu.PS & LynxPSFlags::IrqDisable);
 		benchmark::DoNotOptimize(shouldIrq);
 		irqPending ^= LynxIrqSource::Timer0; // toggle
 	}
@@ -226,16 +226,16 @@ BENCHMARK(BM_LynxCpu_AddrMode_ZeroPageIndirect);
 static void BM_LynxCpu_ADC_Binary(benchmark::State& state) {
 	LynxCpuState cpu = {};
 	cpu.A = 0x50;
-	cpu.PS = LynxCpuFlags::Reserved;
+	cpu.PS = LynxPSFlags::Reserved;
 	uint8_t value = 0;
 
 	for (auto _ : state) {
-		uint16_t sum = cpu.A + value + (cpu.PS & LynxCpuFlags::Carry ? 1 : 0);
-		cpu.PS &= ~(LynxCpuFlags::Carry | LynxCpuFlags::Zero | LynxCpuFlags::Overflow | LynxCpuFlags::Negative);
-		if (sum > 0xFF) cpu.PS |= LynxCpuFlags::Carry;
-		if ((sum & 0xFF) == 0) cpu.PS |= LynxCpuFlags::Zero;
-		if (((cpu.A ^ sum) & (value ^ sum) & 0x80) != 0) cpu.PS |= LynxCpuFlags::Overflow;
-		if (sum & 0x80) cpu.PS |= LynxCpuFlags::Negative;
+		uint16_t sum = cpu.A + value + (cpu.PS & LynxPSFlags::Carry ? 1 : 0);
+		cpu.PS &= ~(LynxPSFlags::Carry | LynxPSFlags::Zero | LynxPSFlags::Overflow | LynxPSFlags::Negative);
+		if (sum > 0xFF) cpu.PS |= LynxPSFlags::Carry;
+		if ((sum & 0xFF) == 0) cpu.PS |= LynxPSFlags::Zero;
+		if (((cpu.A ^ sum) & (value ^ sum) & 0x80) != 0) cpu.PS |= LynxPSFlags::Overflow;
+		if (sum & 0x80) cpu.PS |= LynxPSFlags::Negative;
 		cpu.A = static_cast<uint8_t>(sum);
 		benchmark::DoNotOptimize(cpu.A);
 		benchmark::DoNotOptimize(cpu.PS);
@@ -249,20 +249,20 @@ BENCHMARK(BM_LynxCpu_ADC_Binary);
 static void BM_LynxCpu_ADC_Decimal(benchmark::State& state) {
 	LynxCpuState cpu = {};
 	cpu.A = 0x25; // BCD 25
-	cpu.PS = LynxCpuFlags::Reserved | LynxCpuFlags::Decimal;
+	cpu.PS = LynxPSFlags::Reserved | LynxPSFlags::Decimal;
 	uint8_t value = 0x19; // BCD 19
 
 	for (auto _ : state) {
-		uint8_t carry = (cpu.PS & LynxCpuFlags::Carry) ? 1 : 0;
+		uint8_t carry = (cpu.PS & LynxPSFlags::Carry) ? 1 : 0;
 		uint8_t lo = (cpu.A & 0x0F) + (value & 0x0F) + carry;
 		if (lo > 9) lo += 6;
 		uint8_t hi = (cpu.A >> 4) + (value >> 4) + (lo > 0x0F ? 1 : 0);
 		lo &= 0x0F;
 		if (hi > 9) hi += 6;
-		cpu.PS &= ~(LynxCpuFlags::Carry | LynxCpuFlags::Zero);
-		if (hi > 0x0F) cpu.PS |= LynxCpuFlags::Carry;
+		cpu.PS &= ~(LynxPSFlags::Carry | LynxPSFlags::Zero);
+		if (hi > 0x0F) cpu.PS |= LynxPSFlags::Carry;
 		cpu.A = (hi << 4) | lo;
-		if (cpu.A == 0) cpu.PS |= LynxCpuFlags::Zero;
+		if (cpu.A == 0) cpu.PS |= LynxPSFlags::Zero;
 		benchmark::DoNotOptimize(cpu.A);
 		benchmark::DoNotOptimize(cpu.PS);
 		value = static_cast<uint8_t>((value + 1) & 0x99);
@@ -279,10 +279,10 @@ static void BM_LynxCpu_CmpRegister(benchmark::State& state) {
 
 	for (auto _ : state) {
 		uint16_t result = cpu.A - value;
-		cpu.PS &= ~(LynxCpuFlags::Carry | LynxCpuFlags::Zero | LynxCpuFlags::Negative);
-		if (cpu.A >= value) cpu.PS |= LynxCpuFlags::Carry;
-		if ((result & 0xFF) == 0) cpu.PS |= LynxCpuFlags::Zero;
-		if (result & 0x80) cpu.PS |= LynxCpuFlags::Negative;
+		cpu.PS &= ~(LynxPSFlags::Carry | LynxPSFlags::Zero | LynxPSFlags::Negative);
+		if (cpu.A >= value) cpu.PS |= LynxPSFlags::Carry;
+		if ((result & 0xFF) == 0) cpu.PS |= LynxPSFlags::Zero;
+		if (result & 0x80) cpu.PS |= LynxPSFlags::Negative;
 		benchmark::DoNotOptimize(cpu.PS);
 		value++;
 	}
@@ -298,8 +298,8 @@ static void BM_LynxCpu_BitTest(benchmark::State& state) {
 
 	for (auto _ : state) {
 		uint8_t result = cpu.A & value;
-		cpu.PS &= ~(LynxCpuFlags::Zero | LynxCpuFlags::Overflow | LynxCpuFlags::Negative);
-		if (result == 0) cpu.PS |= LynxCpuFlags::Zero;
+		cpu.PS &= ~(LynxPSFlags::Zero | LynxPSFlags::Overflow | LynxPSFlags::Negative);
+		if (result == 0) cpu.PS |= LynxPSFlags::Zero;
 		cpu.PS |= (value & 0xC0); // V and N from memory operand
 		benchmark::DoNotOptimize(cpu.PS);
 		value++;

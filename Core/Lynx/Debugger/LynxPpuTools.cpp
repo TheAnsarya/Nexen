@@ -182,7 +182,7 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 	int16_t persistTilt = 0;
 	uint8_t penIndex[16];
 	for (int i = 0; i < 16; i++) {
-		penIndex[i] = (uint8_t)i; // Identity mapping
+		penIndex[i] = static_cast<uint8_t>(i); // Identity mapping
 	}
 
 	int spriteIndex = 0;
@@ -224,8 +224,8 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 		uint16_t dataAddr = vram[(scbAddr + 5) & 0xFFFF] | (vram[(scbAddr + 6) & 0xFFFF] << 8);
 
 		// Position at offset 7-8, 9-10 (always loaded)
-		persistHpos = (int16_t)(vram[(scbAddr + 7) & 0xFFFF] | (vram[(scbAddr + 8) & 0xFFFF] << 8));
-		persistVpos = (int16_t)(vram[(scbAddr + 9) & 0xFFFF] | (vram[(scbAddr + 10) & 0xFFFF] << 8));
+		persistHpos = static_cast<int16_t>(vram[(scbAddr + 7) & 0xFFFF] | (vram[(scbAddr + 8) & 0xFFFF] << 8));
+		persistVpos = static_cast<int16_t>(vram[(scbAddr + 9) & 0xFFFF] | (vram[(scbAddr + 10) & 0xFFFF] << 8));
 
 		// Variable-length fields start at offset 11
 		int scbOffset = 11;
@@ -238,12 +238,12 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 		}
 		// Load stretch if ReloadDepth >= 2
 		if (reloadDepth >= 2) {
-			persistStretch = (int16_t)(vram[(scbAddr + scbOffset) & 0xFFFF] | (vram[(scbAddr + scbOffset + 1) & 0xFFFF] << 8));
+			persistStretch = static_cast<int16_t>(vram[(scbAddr + scbOffset) & 0xFFFF] | (vram[(scbAddr + scbOffset + 1) & 0xFFFF] << 8));
 			scbOffset += 2;
 		}
 		// Load tilt if ReloadDepth >= 3
 		if (reloadDepth >= 3) {
-			persistTilt = (int16_t)(vram[(scbAddr + scbOffset) & 0xFFFF] | (vram[(scbAddr + scbOffset + 1) & 0xFFFF] << 8));
+			persistTilt = static_cast<int16_t>(vram[(scbAddr + scbOffset) & 0xFFFF] | (vram[(scbAddr + scbOffset + 1) & 0xFFFF] << 8));
 			scbOffset += 2;
 		}
 		// Load palette remap if ReloadPalette (bit 3 = 0)
@@ -256,12 +256,12 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 		}
 
 		// Populate sprite metadata
-		sprite.SpriteIndex = (int16_t)spriteIndex;
+		sprite.SpriteIndex = static_cast<int16_t>(spriteIndex);
 		sprite.X = persistHpos;
 		sprite.Y = persistVpos;
 		sprite.RawX = persistHpos;
 		sprite.RawY = persistVpos;
-		sprite.Bpp = (int16_t)bpp;
+		sprite.Bpp = static_cast<int16_t>(bpp);
 		sprite.TileAddress = dataAddr;
 		sprite.TileIndex = dataAddr;
 		sprite.PaletteAddress = -1;
@@ -290,7 +290,7 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 		}
 
 		// Clear sprite preview buffer
-		std::fill(spritePreview, spritePreview + _spritePreviewSize, (uint32_t)0);
+		std::fill(spritePreview, spritePreview + _spritePreviewSize, static_cast<uint32_t>(0));
 
 		if (skipSprite) {
 			sprite.Visibility = SpriteVisibility::Disabled;
@@ -323,8 +323,8 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 			// Clamp to 128×128 preview area
 			int previewWidth = std::min(maxWidth, 128);
 			int previewHeight = std::min(lineCount, 128);
-			sprite.Width = (uint16_t)previewWidth;
-			sprite.Height = (uint16_t)previewHeight;
+			sprite.Width = static_cast<uint16_t>(previewWidth);
+			sprite.Height = static_cast<uint16_t>(previewHeight);
 
 			// Pass 2: Decode sprite pixel data and render into preview buffer
 			if (previewWidth > 0 && previewHeight > 0) {
@@ -372,9 +372,9 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 
 			// Determine visibility based on screen bounds
 			bool onScreen = (persistHpos + previewWidth > 0) &&
-				(persistHpos < (int16_t)LynxConstants::ScreenWidth) &&
+				(persistHpos < static_cast<int16_t>(LynxConstants::ScreenWidth)) &&
 				(persistVpos + previewHeight > 0) &&
-				(persistVpos < (int16_t)LynxConstants::ScreenHeight);
+				(persistVpos < static_cast<int16_t>(LynxConstants::ScreenHeight));
 			sprite.Visibility = onScreen ? SpriteVisibility::Visible : SpriteVisibility::Offscreen;
 		}
 
@@ -401,7 +401,7 @@ void LynxPpuTools::GetSpritePreview(GetSpritePreviewOptions options, BaseState& 
 	// Lynx renders front-to-back (first sprite = highest priority), so to
 	// reproduce the visual with standard "paint on top" blitting, draw the
 	// last sprite first and the first sprite last (on top).
-	for (int i = (int)spriteCount - 1; i >= 0; i--) {
+	for (int i = static_cast<int>(spriteCount) - 1; i >= 0; i--) {
 		DebugSpriteInfo& sprite = sprites[i];
 		if (sprite.Visibility == SpriteVisibility::Disabled || sprite.Width == 0 || sprite.Height == 0) {
 			continue;
@@ -417,8 +417,8 @@ void LynxPpuTools::GetSpritePreview(GetSpritePreviewOptions options, BaseState& 
 				if (color != 0) {
 					int screenX = sprite.X + (hFlip ? -x : x);
 					int screenY = sprite.Y + (vFlip ? -y : y);
-					if (screenX >= 0 && screenX < (int)width &&
-						screenY >= 0 && screenY < (int)height) {
+					if (screenX >= 0 && screenX < static_cast<int>(width) &&
+						screenY >= 0 && screenY < static_cast<int>(height)) {
 						outBuffer[screenY * width + screenX] = color;
 					}
 				}

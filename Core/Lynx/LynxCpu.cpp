@@ -117,7 +117,7 @@ uint16_t LynxCpu::FetchOperand() {
 // =============================================================================
 
 void LynxCpu::BranchRelative(bool branch) {
-	int8_t offset = (int8_t)GetOperand();
+	int8_t offset = static_cast<int8_t>(GetOperand());
 	if (branch) {
 		DummyRead();
 		if (CheckPageCrossed(_state.PC, offset)) {
@@ -143,8 +143,8 @@ void LynxCpu::ADC() {
 		al &= 0x0f;
 
 		// Overflow uses binary arithmetic result
-		uint16_t binResult = (uint16_t)A() + operand + carry;
-		SetFlagValue(LynxPSFlags::Overflow, (~(A() ^ operand) & (A() ^ (uint8_t)binResult) & 0x80) != 0);
+		uint16_t binResult = static_cast<uint16_t>(A()) + operand + carry;
+		SetFlagValue(LynxPSFlags::Overflow, (~(A() ^ operand) & (A() ^ static_cast<uint8_t>(binResult)) & 0x80) != 0);
 
 		if (ah > 9) ah += 6;
 		SetFlagValue(LynxPSFlags::Carry, ah > 15);
@@ -156,10 +156,10 @@ void LynxCpu::ADC() {
 
 		DummyRead(); // 65C02: decimal mode extra cycle
 	} else {
-		uint16_t result = (uint16_t)A() + operand + carry;
+		uint16_t result = static_cast<uint16_t>(A()) + operand + carry;
 		SetFlagValue(LynxPSFlags::Carry, result > 0xff);
-		SetFlagValue(LynxPSFlags::Overflow, (~(A() ^ operand) & (A() ^ (uint8_t)result) & 0x80) != 0);
-		SetA((uint8_t)result);
+		SetFlagValue(LynxPSFlags::Overflow, (~(A() ^ operand) & (A() ^ static_cast<uint8_t>(result)) & 0x80) != 0);
+		SetA(static_cast<uint8_t>(result));
 	}
 }
 
@@ -174,9 +174,9 @@ void LynxCpu::SBC() {
 		int16_t ah = (A() >> 4) - (operand >> 4) + (al < 0 ? -1 : 0);
 		al &= 0x0f;
 
-		uint16_t binResult = (uint16_t)A() - operand - carry;
+		uint16_t binResult = static_cast<uint16_t>(A()) - operand - carry;
 		SetFlagValue(LynxPSFlags::Carry, binResult < 0x100);
-		SetFlagValue(LynxPSFlags::Overflow, ((A() ^ operand) & (A() ^ (uint8_t)binResult) & 0x80) != 0);
+		SetFlagValue(LynxPSFlags::Overflow, ((A() ^ operand) & (A() ^ static_cast<uint8_t>(binResult)) & 0x80) != 0);
 
 		if (ah < 0) ah -= 6;
 
@@ -186,10 +186,10 @@ void LynxCpu::SBC() {
 
 		DummyRead(); // 65C02: decimal mode extra cycle
 	} else {
-		uint16_t result = (uint16_t)A() - operand - carry;
+		uint16_t result = static_cast<uint16_t>(A()) - operand - carry;
 		SetFlagValue(LynxPSFlags::Carry, result < 0x100);
-		SetFlagValue(LynxPSFlags::Overflow, ((A() ^ operand) & (A() ^ (uint8_t)result) & 0x80) != 0);
-		SetA((uint8_t)result);
+		SetFlagValue(LynxPSFlags::Overflow, ((A() ^ operand) & (A() ^ static_cast<uint8_t>(result)) & 0x80) != 0);
+		SetA(static_cast<uint8_t>(result));
 	}
 }
 

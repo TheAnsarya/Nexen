@@ -101,7 +101,7 @@ AssemblerSpecialCodes LynxAssembler::ResolveOpMode(AssemblerLineData& op, uint32
 				op.AddrMode = LynxAddrMode::Rel;
 
 				// Convert absolute address to relative offset
-				int16_t addressGap = (int16_t)(operand.Value - (instructionAddress + 2));
+				int16_t addressGap = static_cast<int16_t>(operand.Value - (instructionAddress + 2));
 				if (addressGap > 127 || addressGap < -128) {
 					if (!firstPass) {
 						return AssemblerSpecialCodes::OutOfRangeJump;
@@ -109,7 +109,7 @@ AssemblerSpecialCodes LynxAssembler::ResolveOpMode(AssemblerLineData& op, uint32
 				}
 
 				operand.ByteCount = 1;
-				operand.Value = (uint8_t)addressGap;
+				operand.Value = static_cast<uint8_t>(addressGap);
 			} else if (operand.ByteCount == 2) {
 				op.AddrMode = LynxAddrMode::Abs;
 				operand.ByteCount = 2;

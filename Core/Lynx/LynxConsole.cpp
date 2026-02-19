@@ -26,10 +26,6 @@ LynxConsole::LynxConsole(Emulator* emu) {
 }
 
 LynxConsole::~LynxConsole() {
-	delete[] _workRam;
-	delete[] _prgRom;
-	delete[] _bootRom;
-	delete[] _saveRam;
 }
 
 LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
@@ -89,48 +85,48 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 	}
 
 	// Extract ROM data
-	_prgRomSize = (uint32_t)(romData.size() - romOffset);
+	_prgRomSize = static_cast<uint32_t>(romData.size() - romOffset);
 	if (_prgRomSize == 0) {
 		return LoadRomResult::Failure;
 	}
 
-	_prgRom = new uint8_t[_prgRomSize];
-	memcpy(_prgRom, romData.data() + romOffset, _prgRomSize);
-	_emu->RegisterMemory(MemoryType::LynxPrgRom, _prgRom, _prgRomSize);
+	_prgRom = std::make_unique<uint8_t[]>(_prgRomSize);
+	memcpy(_prgRom.get(), romData.data() + romOffset, _prgRomSize);
+	_emu->RegisterMemory(MemoryType::LynxPrgRom, _prgRom.get(), _prgRomSize);
 
 	MessageManager::Log(std::format("ROM Size: {} KB", _prgRomSize / 1024));
 
 	// Allocate work RAM (64 KB)
 	_workRamSize = LynxConstants::WorkRamSize;
-	_workRam = new uint8_t[_workRamSize];
-	memset(_workRam, 0, _workRamSize);
-	_emu->RegisterMemory(MemoryType::LynxWorkRam, _workRam, _workRamSize);
+	_workRam = std::make_unique<uint8_t[]>(_workRamSize);
+	std::fill_n(_workRam.get(), _workRamSize, uint8_t{0});
+	_emu->RegisterMemory(MemoryType::LynxWorkRam, _workRam.get(), _workRamSize);
 
 	// Boot ROM — optional, loaded from firmware
 	vector<uint8_t> bootRomData;
 	if (FirmwareHelper::LoadLynxBootRom(_emu, bootRomData)) {
-		_bootRomSize = (uint32_t)bootRomData.size();
-		_bootRom = new uint8_t[_bootRomSize];
-		memcpy(_bootRom, bootRomData.data(), _bootRomSize);
-		_emu->RegisterMemory(MemoryType::LynxBootRom, _bootRom, _bootRomSize);
+		_bootRomSize = static_cast<uint32_t>(bootRomData.size());
+		_bootRom = std::make_unique<uint8_t[]>(_bootRomSize);
+		memcpy(_bootRom.get(), bootRomData.data(), _bootRomSize);
+		_emu->RegisterMemory(MemoryType::LynxBootRom, _bootRom.get(), _bootRomSize);
 		MessageManager::Log("Boot ROM loaded successfully.");
 	} else {
 		// No boot ROM — use HLE (High-Level Emulation) fallback.
 		// Skip the boot animation and set up the post-boot hardware state
 		// so games can run without the real boot ROM.
 		_bootRomSize = 0;
-		_bootRom = nullptr;
+		_bootRom.reset();
 		MessageManager::Log("No boot ROM found — using HLE fallback.");
 	}
 
 	// Save RAM (EEPROM) — managed by LynxEeprom, not through _saveRam
 	_saveRamSize = 0;
-	_saveRam = nullptr;
+	_saveRam.reset();
 
 	MessageManager::Log(std::format("Work RAM: {} KB", _workRamSize / 1024));
 
 	// Look up game in ROM database for auto-detection
-	uint32_t prgCrc32 = CRC32::GetCRC(_prgRom, _prgRomSize);
+	uint32_t prgCrc32 = CRC32::GetCRC(_prgRom.get(), _prgRomSize);
 	const LynxGameDatabase::Entry* dbEntry = LynxGameDatabase::Lookup(prgCrc32);
 	if (dbEntry) {
 		MessageManager::Log(std::format("ROM Database: {} (CRC32: {:08x})", dbEntry->Name, prgCrc32));
@@ -146,7 +142,7 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 	_suzy.reset(new LynxSuzy());
 
 	// Initialize memory manager first (it needs RAM, boot ROM)
-	_memoryManager->Init(_emu, this, _workRam, _bootRom, _bootRomSize);
+	_memoryManager->Init(_emu, this, _workRam.get(), _bootRom.get(), _bootRomSize);
 
 	// Initialize cart
 	LynxCartInfo cartInfo = {};
@@ -180,7 +176,7 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 			cartInfo.EepromType = LynxEepromType::None;
 		}
 	} else {
-		cartInfo.PageSizeBank0 = (uint16_t)(_prgRomSize / 256);
+		cartInfo.PageSizeBank0 = static_cast<uint16_t>(_prgRomSize / 256);
 		cartInfo.PageSizeBank1 = 0;
 		cartInfo.RomSize = _prgRomSize;
 		cartInfo.HasEeprom = false;
@@ -249,7 +245,7 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 	LoadBattery();
 
 	// Initialize frame buffer to black
-	memset(_frameBuffer, 0, sizeof(_frameBuffer));
+	std::fill_n(_frameBuffer, LynxConstants::PixelCount, 0u);
 
 	return LoadRomResult::Success;
 }
@@ -287,7 +283,7 @@ void LynxConsole::Reset() {
 
 void LynxConsole::SaveBattery() {
 	if (_saveRam && _saveRamSize > 0) {
-		_emu->GetBatteryManager()->SaveBattery(".sav", std::span<const uint8_t>(_saveRam, _saveRamSize));
+		_emu->GetBatteryManager()->SaveBattery(".sav", std::span<const uint8_t>(_saveRam.get(), _saveRamSize));
 	}
 	if (_eeprom) {
 		_eeprom->SaveBattery();
@@ -299,7 +295,7 @@ void LynxConsole::LoadBattery() {
 		_eeprom->LoadBattery();
 	}
 	if (_saveRam && _saveRamSize > 0) {
-		_emu->GetBatteryManager()->LoadBattery(".sav", std::span<uint8_t>(_saveRam, _saveRamSize));
+		_emu->GetBatteryManager()->LoadBattery(".sav", std::span<uint8_t>(_saveRam.get(), _saveRamSize));
 	}
 }
 
@@ -357,7 +353,7 @@ void LynxConsole::ApplyHleBootState() {
 	// the cart. If the cart has proper vectors in its ROM data, those will
 	// be mapped at $FFFC. Otherwise, we fall back to $0200.
 	uint16_t resetVector = _memoryManager->Read(0xfffc, MemoryOperationType::Read) |
-		((uint16_t)_memoryManager->Read(0xfffd, MemoryOperationType::Read) << 8);
+		(static_cast<uint16_t>(_memoryManager->Read(0xfffd, MemoryOperationType::Read)) << 8);
 
 	if (resetVector == 0x0000 || resetVector == 0xffff) {
 		// Invalid reset vector — the cart doesn't have proper vectors
@@ -444,7 +440,7 @@ AddressInfo LynxConsole::GetRelativeAddress(AddressInfo& absAddress, CpuType cpu
 }
 
 void LynxConsole::GetConsoleState(BaseState& state, ConsoleType consoleType) {
-	(LynxState&)state = GetState();
+	reinterpret_cast<LynxState&>(state) = GetState();
 }
 
 LynxState LynxConsole::GetState() {
@@ -472,8 +468,8 @@ void LynxConsole::Serialize(Serializer& s) {
 	if (_memoryManager) _memoryManager->Serialize(s);
 	if (_controlManager) _controlManager->Serialize(s);
 
-	SVArray(_workRam, _workRamSize);
+	SVArray(_workRam.get(), _workRamSize);
 	if (_saveRam && _saveRamSize > 0) {
-		SVArray(_saveRam, _saveRamSize);
+		SVArray(_saveRam.get(), _saveRamSize);
 	}
 }

@@ -15,8 +15,8 @@ void LynxMikey::Init(Emulator* emu, LynxConsole* console, LynxCpu* cpu, LynxMemo
 	_cpu = cpu;
 	_memoryManager = memoryManager;
 
-	memset(&_state, 0, sizeof(_state));
-	memset(_frameBuffer, 0, sizeof(_frameBuffer));
+	_state = {};
+	std::fill_n(_frameBuffer, std::size(_frameBuffer), 0u);
 
 	// Initialize hardware revision (Lynx II = 0x04)
 	_state.HardwareRevision = 0x04;
@@ -60,7 +60,7 @@ void LynxMikey::Init(Emulator* emu, LynxConsole* console, LynxCpu* cpu, LynxMemo
 	_state.UartRxOverrunError = false;
 	_state.UartRxFramingError = false;
 
-	memset(_uartRxQueue, 0, sizeof(_uartRxQueue));
+	std::fill_n(_uartRxQueue, UartMaxRxQueue, uint16_t{0});
 	_uartRxInputPtr = 0;
 	_uartRxOutputPtr = 0;
 	_uartRxWaiting = 0;
@@ -268,12 +268,12 @@ void LynxMikey::RenderScanline() {
 }
 
 void LynxMikey::SetIrqSource(LynxIrqSource::LynxIrqSource source) {
-	_state.IrqPending |= (uint8_t)source;
+	_state.IrqPending |= static_cast<uint8_t>(source);
 	UpdateIrqLine();
 }
 
 void LynxMikey::ClearIrqSource(LynxIrqSource::LynxIrqSource source) {
-	_state.IrqPending &= ~(uint8_t)source;
+	_state.IrqPending &= ~static_cast<uint8_t>(source);
 	UpdateIrqLine();
 }
 
@@ -323,10 +323,10 @@ uint8_t LynxMikey::ReadRegister(uint8_t addr) {
 			return _state.DisplayControl;
 
 		case 0x94: // DISPADR low
-			return (uint8_t)(_state.DisplayAddress & 0xff);
+			return static_cast<uint8_t>(_state.DisplayAddress & 0xff);
 
 		case 0x95: // DISPADR high
-			return (uint8_t)((_state.DisplayAddress >> 8) & 0xff);
+			return static_cast<uint8_t>((_state.DisplayAddress >> 8) & 0xff);
 
 		// Palette GREEN registers $FDA0-$FDAF
 		case 0xa0: case 0xa1: case 0xa2: case 0xa3:
@@ -388,7 +388,7 @@ uint8_t LynxMikey::ReadRegister(uint8_t addr) {
 			// The 9th bit (parity/mark) is available via SERCTL read B0 (PARBIT).
 			_state.UartRxReady = false;
 			UpdateUartIrq(); // §9.1: RX IRQ condition may change
-			return (uint8_t)(_state.UartRxData & 0xff);
+			return static_cast<uint8_t>(_state.UartRxData & 0xff);
 
 		// I/O registers — EEPROM is wired through these
 		case 0x88: // IODIR ($FD88) — I/O direction register
@@ -427,7 +427,7 @@ uint8_t LynxMikey::ReadRegister(uint8_t addr) {
 uint8_t LynxMikey::PeekRegister(uint8_t addr) const {
 	switch (addr) {
 		case 0x8d: // SERDAT — return RX data without clearing RXRDY or updating IRQ
-			return (uint8_t)(_state.UartRxData & 0xff);
+			return static_cast<uint8_t>(_state.UartRxData & 0xff);
 		default:
 			// All other registers are safe to read without side effects
 			return const_cast<LynxMikey*>(this)->ReadRegister(addr);
@@ -494,7 +494,7 @@ void LynxMikey::WriteRegister(uint8_t addr, uint8_t value) {
 			return;
 
 		case 0x95: // DISPADR high
-			_state.DisplayAddress = (_state.DisplayAddress & 0x00ff) | ((uint16_t)value << 8);
+			_state.DisplayAddress = (_state.DisplayAddress & 0x00ff) | (static_cast<uint16_t>(value) << 8);
 			return;
 
 		// Palette GREEN registers $FDA0-$FDAF
@@ -744,7 +744,7 @@ void LynxMikey::UpdateUartIrq() {
 
 	if (irq) {
 		// §10: Serial interrupt is bit 4 ($10) in INTSET/INTRST
-		_state.IrqPending |= (uint8_t)LynxIrqSource::Timer4;
+		_state.IrqPending |= static_cast<uint8_t>(LynxIrqSource::Timer4);
 	}
 	// Don't clear bit 4 here — let software clear via INTRST write ($FD81).
 	// Level-sensitivity is achieved by re-asserting each tick (§9.1).
@@ -758,7 +758,7 @@ void LynxMikey::ComLynxTxLoopback(uint16_t data) {
 	// See §7.2 — Loopback inserts at FRONT of RX queue (not back) so the
 	// sender always sees its own data before any externally-received bytes.
 	// This is critical for collision detection on the ComLynx bus.
-	if (_uartRxWaiting < (uint32_t)UartMaxRxQueue) {
+	if (_uartRxWaiting < static_cast<uint32_t>(UartMaxRxQueue)) {
 		// If queue was empty, start the RX countdown (§7.1)
 		if (_uartRxWaiting == 0) {
 			_state.UartRxCountdown = UartRxTimePeriod;
@@ -775,7 +775,7 @@ void LynxMikey::ComLynxTxLoopback(uint16_t data) {
 void LynxMikey::ComLynxRxData(uint16_t data) {
 	// §7.1: External data arrival — back-insert into RX queue.
 	// Used by remote Lynx units to deliver ComLynx data (§11).
-	if (_uartRxWaiting < (uint32_t)UartMaxRxQueue) {
+	if (_uartRxWaiting < static_cast<uint32_t>(UartMaxRxQueue)) {
 		// §7.1: Trigger receive countdown only if queue was previously empty
 		if (_uartRxWaiting == 0) {
 			_state.UartRxCountdown = UartRxTimePeriod;

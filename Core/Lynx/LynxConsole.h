@@ -37,13 +37,13 @@ private:
 	unique_ptr<LynxApu> _apu;
 	unique_ptr<LynxEeprom> _eeprom;
 
-	uint8_t* _workRam = nullptr;
+	std::unique_ptr<uint8_t[]> _workRam;
 	uint32_t _workRamSize = 0;
-	uint8_t* _prgRom = nullptr;
+	std::unique_ptr<uint8_t[]> _prgRom;
 	uint32_t _prgRomSize = 0;
-	uint8_t* _bootRom = nullptr;
+	std::unique_ptr<uint8_t[]> _bootRom;
 	uint32_t _bootRomSize = 0;
-	uint8_t* _saveRam = nullptr;
+	std::unique_ptr<uint8_t[]> _saveRam;
 	uint32_t _saveRamSize = 0;
 
 	LynxModel _model = LynxModel::LynxII;
@@ -99,9 +99,9 @@ public:
 	[[nodiscard]] LynxEeprom* GetEeprom() { return _eeprom.get(); }
 
 	// Memory accessors for components
-	[[nodiscard]] uint8_t* GetWorkRam() { return _workRam; }
+	[[nodiscard]] uint8_t* GetWorkRam() { return _workRam.get(); }
 	[[nodiscard]] uint32_t GetWorkRamSize() { return _workRamSize; }
-	[[nodiscard]] uint8_t* GetPrgRom() { return _prgRom; }
+	[[nodiscard]] uint8_t* GetPrgRom() { return _prgRom.get(); }
 	[[nodiscard]] uint32_t GetPrgRomSize() { return _prgRomSize; }
 	[[nodiscard]] uint32_t* GetFrameBuffer() { return _frameBuffer; }
 };

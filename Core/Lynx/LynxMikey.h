@@ -189,11 +189,11 @@ public:
 	/// Handles timers ($FD00–$FD1F), audio ($FD20–$FD4F), interrupts ($FD80–$FD81),
 	/// display ($FD92–$FD95), palette ($FDA0–$FDBF), serial ($FD8C–$FD8D),
 	/// I/O ($FD88–$FD89), and hardware revision ($FD84).</summary>
-	uint8_t ReadRegister(uint8_t addr);
+	[[nodiscard]] uint8_t ReadRegister(uint8_t addr);
 
 	/// <summary>Read a Mikey register without side effects (for debugger).
 	/// Avoids clearing UART RX ready flag on SERDAT reads.</summary>
-	uint8_t PeekRegister(uint8_t addr) const;
+	[[nodiscard]] uint8_t PeekRegister(uint8_t addr) const;
 
 	/// <summary>Write a Mikey register. Same address ranges as ReadRegister.
 	/// Note: SERCTL ($FD8C) has different bit meanings on write (§2) vs read (§3).</summary>
@@ -211,16 +211,16 @@ public:
 	void ClearIrqSource(LynxIrqSource::LynxIrqSource source);
 
 	/// <summary>Check if any IRQ sources are pending.</summary>
-	bool HasPendingIrq() const;
+	[[nodiscard]] bool HasPendingIrq() const;
 
 	/// <summary>Get the 160×102 ARGB frame buffer for display output.</summary>
-	uint32_t* GetFrameBuffer() { return _frameBuffer; }
+	[[nodiscard]] uint32_t* GetFrameBuffer() { return _frameBuffer; }
 
 	/// <summary>Get mutable reference to Mikey state (for debugger/serialization).</summary>
-	LynxMikeyState& GetState() { return _state; }
+	[[nodiscard]] LynxMikeyState& GetState() { return _state; }
 
 	/// <summary>Get current frame count from the console.</summary>
-	uint32_t GetFrameCount() const;
+	[[nodiscard]] uint32_t GetFrameCount() const;
 
 	/// <summary>Inject received data into the UART RX queue (§7.1) for ComLynx networking.
 	/// Back-inserts at the tail of the circular queue. Used by external/remote

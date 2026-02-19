@@ -13,8 +13,8 @@ void LynxSuzy::Init(Emulator* emu, LynxConsole* console, LynxMemoryManager* memo
 	_memoryManager = memoryManager;
 	_cart = cart;
 
-	memset(&_state, 0, sizeof(_state));
-	memset(_lineBuffer, 0, sizeof(_lineBuffer));
+	_state = {};
+	std::fill_n(_lineBuffer, LynxConstants::ScreenWidth, uint8_t{0});
 
 	_state.Joystick = 0xff; // All buttons released (active-low)
 	_state.Switches = 0xff;
@@ -42,7 +42,7 @@ __forceinline uint8_t LynxSuzy::ReadRam(uint16_t addr) {
 __forceinline uint16_t LynxSuzy::ReadRam16(uint16_t addr) {
 	uint8_t lo = ReadRam(addr);
 	uint8_t hi = ReadRam(addr + 1);
-	return (uint16_t)(hi << 8) | lo;
+	return static_cast<uint16_t>(hi << 8) | lo;
 }
 
 void LynxSuzy::DoMultiply() {
@@ -54,9 +54,9 @@ void LynxSuzy::DoMultiply() {
 	_state.LastCarry = false;
 
 	// Basic multiply is ALWAYS unsigned
-	uint16_t ab = (uint16_t)((_state.MathABCD >> 16) & 0xffff);
-	uint16_t cd = (uint16_t)(_state.MathABCD & 0xffff);
-	uint32_t result = (uint32_t)ab * (uint32_t)cd;
+	uint16_t ab = static_cast<uint16_t>((_state.MathABCD >> 16) & 0xffff);
+	uint16_t cd = static_cast<uint16_t>(_state.MathABCD & 0xffff);
+	uint32_t result = static_cast<uint32_t>(ab) * static_cast<uint32_t>(cd);
 	_state.MathEFGH = result;
 
 	if (_state.MathSign) {
@@ -90,8 +90,8 @@ void LynxSuzy::DoDivide() {
 	_state.LastCarry = false;
 
 	if (_state.MathNP) {
-		_state.MathABCD = _state.MathEFGH / (uint32_t)_state.MathNP;
-		_state.MathJKLM = _state.MathEFGH % (uint32_t)_state.MathNP;
+		_state.MathABCD = _state.MathEFGH / static_cast<uint32_t>(_state.MathNP);
+		_state.MathJKLM = _state.MathEFGH % static_cast<uint32_t>(_state.MathNP);
 	} else {
 		// Division by zero
 		_state.MathABCD = 0xffffffff;
@@ -189,8 +189,8 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 
 	// Read always-present fields from SCB:
 	uint16_t sprDataLine = ReadRam16(scbAddr + 5);   // Sprite data pointer
-	_persistHpos = (int16_t)ReadRam16(scbAddr + 7);  // Horizontal start position
-	_persistVpos = (int16_t)ReadRam16(scbAddr + 9);  // Vertical start position
+	_persistHpos = static_cast<int16_t>(ReadRam16(scbAddr + 7));  // Horizontal start position
+	_persistVpos = static_cast<int16_t>(ReadRam16(scbAddr + 9));  // Vertical start position
 
 	// Variable-length fields start at offset 11
 	int scbOffset = 11;
@@ -207,11 +207,11 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 			_persistVsize = ReadRam16(scbAddr + scbOffset + 2);
 			scbOffset += 4;
 			if (reloadDepth >= 2) {
-				_persistStretch = (int16_t)ReadRam16(scbAddr + scbOffset);
+				_persistStretch = static_cast<int16_t>(ReadRam16(scbAddr + scbOffset));
 				scbOffset += 2;
 			}
 			if (reloadDepth >= 3) {
-				_persistTilt = (int16_t)ReadRam16(scbAddr + scbOffset);
+				_persistTilt = static_cast<int16_t>(ReadRam16(scbAddr + scbOffset));
 				scbOffset += 2;
 			}
 			break;
@@ -245,13 +245,13 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 	// H/V flip invert the signs.
 
 	// Screen boundaries for clipping
-	int screenHStart = (int)_state.HOffset;
-	int screenHEnd   = (int)_state.HOffset + (int)LynxConstants::ScreenWidth;
-	int screenVStart = (int)_state.VOffset;
-	int screenVEnd   = (int)_state.VOffset + (int)LynxConstants::ScreenHeight;
+	int screenHStart = static_cast<int>(_state.HOffset);
+	int screenHEnd   = static_cast<int>(_state.HOffset) + static_cast<int>(LynxConstants::ScreenWidth);
+	int screenVStart = static_cast<int>(_state.VOffset);
+	int screenVEnd   = static_cast<int>(_state.VOffset) + static_cast<int>(LynxConstants::ScreenHeight);
 
-	int worldHMid = screenHStart + (int)LynxConstants::ScreenWidth / 2;
-	int worldVMid = screenVStart + (int)LynxConstants::ScreenHeight / 2;
+	int worldHMid = screenHStart + static_cast<int>(LynxConstants::ScreenWidth) / 2;
+	int worldVMid = screenVStart + static_cast<int>(LynxConstants::ScreenHeight) / 2;
 
 	// Determine starting quadrant from SPRCTL1 bits 0-1
 	int quadrant;
@@ -297,8 +297,8 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 			// Superclipping: only render if the screen overlaps this quadrant
 			// relative to the sprite origin. Must account for h/v flip.
 			int modquad = quadrant;
-			static const int vquadflip[4] = { 1, 0, 3, 2 };
-			static const int hquadflip[4] = { 3, 2, 1, 0 };
+			static constexpr int vquadflip[4] = { 1, 0, 3, 2 };
+			static constexpr int hquadflip[4] = { 3, 2, 1, 0 };
 			if (vFlip) modquad = vquadflip[modquad];
 			if (hFlip) modquad = hquadflip[modquad];
 
@@ -326,7 +326,7 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 
 		if (render) {
 			// Initialize vertical offset from sprite origin to screen
-			int voff = (int)_persistVpos - screenVStart;
+			int voff = static_cast<int>(_persistVpos) - screenVStart;
 
 			// Reset tilt accumulator for each quadrant
 			int32_t tiltAccum = 0;
@@ -380,12 +380,12 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 				// Render this source line for pixelHeight destination lines
 				for (int vloop = 0; vloop < pixelHeight; vloop++) {
 					// Early bailout if off-screen in the render direction
-					if (vsign == 1 && voff >= (int)LynxConstants::ScreenHeight) break;
+					if (vsign == 1 && voff >= static_cast<int>(LynxConstants::ScreenHeight)) break;
 					if (vsign == -1 && voff < 0) break;
 
-					if (voff >= 0 && voff < (int)LynxConstants::ScreenHeight) {
+					if (voff >= 0 && voff < static_cast<int>(LynxConstants::ScreenHeight)) {
 						// Calculate horizontal start with tilt offset
-						int hoff = (int)qHpos + (int)(tiltAccum >> 8) - screenHStart;
+						int hoff = static_cast<int>(qHpos) + static_cast<int>(tiltAccum >> 8) - screenHStart;
 
 						// Initialize horizontal size accumulator
 						hsizAccum = _state.HSizeOff;
@@ -408,7 +408,7 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 							uint8_t penMapped = _penIndex[pixel & 0x0f];
 
 							for (int hloop = 0; hloop < pixelWidth; hloop++) {
-								if (hoff >= 0 && hoff < (int)LynxConstants::ScreenWidth) {
+								if (hoff >= 0 && hoff < static_cast<int>(LynxConstants::ScreenWidth)) {
 									if (pixel != 0) {
 										WriteSpritePixel(hoff, voff, penMapped, collNum, spriteType);
 									}
@@ -426,10 +426,10 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 
 					// Apply stretch and tilt per destination line (matching Handy)
 					if (enableStretch) {
-						hsize = (uint16_t)((int32_t)hsize + qStretch);
+						hsize = static_cast<uint16_t>(static_cast<int32_t>(hsize) + qStretch);
 						// VStretch: also apply stretch to vsize per dest line
 						if (_state.VStretch) {
-							vsize = (uint16_t)((int32_t)vsize + qStretch);
+							vsize = static_cast<uint16_t>(static_cast<int32_t>(vsize) + qStretch);
 						}
 					}
 					if (enableTilt) {
@@ -518,7 +518,7 @@ int LynxSuzy::DecodeSpriteLinePixels(uint16_t& dataAddr, uint16_t lineEnd, int b
 	// Bit-level reading state
 	uint32_t shiftReg = 0;
 	int shiftRegCount = 0;
-	int totalBitsLeft = (int)(lineEnd - dataAddr) * 8;
+	int totalBitsLeft = static_cast<int>(lineEnd - dataAddr) * 8;
 
 	// Lambda to read N bits from the data stream
 	auto getBits = [&](int bits) -> uint8_t {
@@ -537,7 +537,7 @@ int LynxSuzy::DecodeSpriteLinePixels(uint16_t& dataAddr, uint16_t lineEnd, int b
 
 		shiftRegCount -= bits;
 		totalBitsLeft -= bits;
-		return (uint8_t)((shiftReg >> shiftRegCount) & ((1 << bits) - 1));
+		return static_cast<uint8_t>((shiftReg >> shiftRegCount) & ((1 << bits) - 1));
 	};
 
 	if (literalMode) {
@@ -598,8 +598,8 @@ __forceinline void LynxSuzy::WriteRam(uint16_t addr, uint8_t value) {
 
 void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum, LynxSpriteType spriteType) {
 	// Bounds check
-	if (x < 0 || x >= (int)LynxConstants::ScreenWidth ||
-		y < 0 || y >= (int)LynxConstants::ScreenHeight) {
+	if (x < 0 || x >= static_cast<int>(LynxConstants::ScreenWidth) ||
+		y < 0 || y >= static_cast<int>(LynxConstants::ScreenHeight)) {
 		return;
 	}
 
@@ -755,40 +755,40 @@ uint8_t LynxSuzy::ReadRegister(uint8_t addr) {
 				(_state.MathInProgress ? 0x80 : 0x00);                // Bit 7: math in progress
 
 		// SCB address
-		case 0x10: return (uint8_t)(_state.SCBAddress & 0xff);
-		case 0x11: return (uint8_t)((_state.SCBAddress >> 8) & 0xff);
+		case 0x10: return static_cast<uint8_t>(_state.SCBAddress & 0xff);
+		case 0x11: return static_cast<uint8_t>((_state.SCBAddress >> 8) & 0xff);
 
 		// Math registers — ABCD group (0x52-0x55): multiply operands
-		case 0x52: return (uint8_t)(_state.MathABCD & 0xff);         // MATHD
-		case 0x53: return (uint8_t)((_state.MathABCD >> 8) & 0xff);  // MATHC
-		case 0x54: return (uint8_t)((_state.MathABCD >> 16) & 0xff); // MATHB
-		case 0x55: return (uint8_t)((_state.MathABCD >> 24) & 0xff); // MATHA
+		case 0x52: return static_cast<uint8_t>(_state.MathABCD & 0xff);         // MATHD
+		case 0x53: return static_cast<uint8_t>((_state.MathABCD >> 8) & 0xff);  // MATHC
+		case 0x54: return static_cast<uint8_t>((_state.MathABCD >> 16) & 0xff); // MATHB
+		case 0x55: return static_cast<uint8_t>((_state.MathABCD >> 24) & 0xff); // MATHA
 
 		// Math registers — NP group (0x56-0x57): divide divisor
-		case 0x56: return (uint8_t)(_state.MathNP & 0xff);        // MATHP
-		case 0x57: return (uint8_t)((_state.MathNP >> 8) & 0xff); // MATHN
+		case 0x56: return static_cast<uint8_t>(_state.MathNP & 0xff);        // MATHP
+		case 0x57: return static_cast<uint8_t>((_state.MathNP >> 8) & 0xff); // MATHN
 
 		// Math registers — EFGH group (0x60-0x63): result / dividend
-		case 0x60: return (uint8_t)(_state.MathEFGH & 0xff);         // MATHH
-		case 0x61: return (uint8_t)((_state.MathEFGH >> 8) & 0xff);  // MATHG
-		case 0x62: return (uint8_t)((_state.MathEFGH >> 16) & 0xff); // MATHF
-		case 0x63: return (uint8_t)((_state.MathEFGH >> 24) & 0xff); // MATHE
+		case 0x60: return static_cast<uint8_t>(_state.MathEFGH & 0xff);         // MATHH
+		case 0x61: return static_cast<uint8_t>((_state.MathEFGH >> 8) & 0xff);  // MATHG
+		case 0x62: return static_cast<uint8_t>((_state.MathEFGH >> 16) & 0xff); // MATHF
+		case 0x63: return static_cast<uint8_t>((_state.MathEFGH >> 24) & 0xff); // MATHE
 
 		// Math registers — JKLM group (0x6C-0x6F): accumulator / remainder
-		case 0x6c: return (uint8_t)(_state.MathJKLM & 0xff);         // MATHM
-		case 0x6d: return (uint8_t)((_state.MathJKLM >> 8) & 0xff);  // MATHL
-		case 0x6e: return (uint8_t)((_state.MathJKLM >> 16) & 0xff); // MATHK
-		case 0x6f: return (uint8_t)((_state.MathJKLM >> 24) & 0xff); // MATHJ
+		case 0x6c: return static_cast<uint8_t>(_state.MathJKLM & 0xff);         // MATHM
+		case 0x6d: return static_cast<uint8_t>((_state.MathJKLM >> 8) & 0xff);  // MATHL
+		case 0x6e: return static_cast<uint8_t>((_state.MathJKLM >> 16) & 0xff); // MATHK
+		case 0x6f: return static_cast<uint8_t>((_state.MathJKLM >> 24) & 0xff); // MATHJ
 
 		// Sprite rendering register reads
-		case 0x04: return (uint8_t)(_state.HOffset & 0xff);
-		case 0x05: return (uint8_t)((_state.HOffset >> 8) & 0xff);
-		case 0x06: return (uint8_t)(_state.VOffset & 0xff);
-		case 0x07: return (uint8_t)((_state.VOffset >> 8) & 0xff);
-		case 0x08: return (uint8_t)(_state.VideoBase & 0xff);
-		case 0x09: return (uint8_t)((_state.VideoBase >> 8) & 0xff);
-		case 0x0a: return (uint8_t)(_state.CollisionBase & 0xff);
-		case 0x0b: return (uint8_t)((_state.CollisionBase >> 8) & 0xff);
+		case 0x04: return static_cast<uint8_t>(_state.HOffset & 0xff);
+		case 0x05: return static_cast<uint8_t>((_state.HOffset >> 8) & 0xff);
+		case 0x06: return static_cast<uint8_t>(_state.VOffset & 0xff);
+		case 0x07: return static_cast<uint8_t>((_state.VOffset >> 8) & 0xff);
+		case 0x08: return static_cast<uint8_t>(_state.VideoBase & 0xff);
+		case 0x09: return static_cast<uint8_t>((_state.VideoBase >> 8) & 0xff);
+		case 0x0a: return static_cast<uint8_t>(_state.CollisionBase & 0xff);
+		case 0x0b: return static_cast<uint8_t>((_state.CollisionBase >> 8) & 0xff);
 
 		// Collision depository: slots 0-3, 12-15
 		case 0x00: case 0x01: case 0x02: case 0x03:
@@ -866,30 +866,30 @@ void LynxSuzy::WriteRegister(uint8_t addr, uint8_t value) {
 			break;
 
 		// Sprite rendering registers (FC04-FC2B)
-		case 0x04: _state.HOffset = (_state.HOffset & (int16_t)0xff00) | value; break;
-		case 0x05: _state.HOffset = (int16_t)((_state.HOffset & 0x00ff) | ((int16_t)value << 8)); break;
-		case 0x06: _state.VOffset = (_state.VOffset & (int16_t)0xff00) | value; break;
-		case 0x07: _state.VOffset = (int16_t)((_state.VOffset & 0x00ff) | ((int16_t)value << 8)); break;
+		case 0x04: _state.HOffset = (_state.HOffset & static_cast<int16_t>(0xff00)) | value; break;
+		case 0x05: _state.HOffset = static_cast<int16_t>((_state.HOffset & 0x00ff) | (static_cast<int16_t>(value) << 8)); break;
+		case 0x06: _state.VOffset = (_state.VOffset & static_cast<int16_t>(0xff00)) | value; break;
+		case 0x07: _state.VOffset = static_cast<int16_t>((_state.VOffset & 0x00ff) | (static_cast<int16_t>(value) << 8)); break;
 		case 0x08: _state.VideoBase = (_state.VideoBase & 0xff00) | value; break;
-		case 0x09: _state.VideoBase = (_state.VideoBase & 0x00ff) | ((uint16_t)value << 8); break;
+		case 0x09: _state.VideoBase = (_state.VideoBase & 0x00ff) | (static_cast<uint16_t>(value) << 8); break;
 		case 0x0a: _state.CollisionBase = (_state.CollisionBase & 0xff00) | value; break;
-		case 0x0b: _state.CollisionBase = (_state.CollisionBase & 0x00ff) | ((uint16_t)value << 8); break;
+		case 0x0b: _state.CollisionBase = (_state.CollisionBase & 0x00ff) | (static_cast<uint16_t>(value) << 8); break;
 
 		// SCB address (FC10-FC11)
 		case 0x10:
 			_state.SCBAddress = (_state.SCBAddress & 0xff00) | value;
 			break;
 		case 0x11:
-			_state.SCBAddress = (_state.SCBAddress & 0x00ff) | ((uint16_t)value << 8);
+			_state.SCBAddress = (_state.SCBAddress & 0x00ff) | (static_cast<uint16_t>(value) << 8);
 			break;
 
 		// Collision offset and size offset registers
 		case 0x24: _state.CollOffset = (_state.CollOffset & 0xff00) | value; break;
-		case 0x25: _state.CollOffset = (_state.CollOffset & 0x00ff) | ((uint16_t)value << 8); break;
+		case 0x25: _state.CollOffset = (_state.CollOffset & 0x00ff) | (static_cast<uint16_t>(value) << 8); break;
 		case 0x28: _state.HSizeOff = (_state.HSizeOff & 0xff00) | value; break;
-		case 0x29: _state.HSizeOff = (_state.HSizeOff & 0x00ff) | ((uint16_t)value << 8); break;
+		case 0x29: _state.HSizeOff = (_state.HSizeOff & 0x00ff) | (static_cast<uint16_t>(value) << 8); break;
 		case 0x2a: _state.VSizeOff = (_state.VSizeOff & 0xff00) | value; break;
-		case 0x2b: _state.VSizeOff = (_state.VSizeOff & 0x00ff) | ((uint16_t)value << 8); break;
+		case 0x2b: _state.VSizeOff = (_state.VSizeOff & 0x00ff) | (static_cast<uint16_t>(value) << 8); break;
 
 		// Math registers — ABCD group (0x52-0x55): multiply operands
 		// Matching Handy: cascading clears + sign conversion at write time
@@ -899,13 +899,13 @@ void LynxSuzy::WriteRegister(uint8_t addr, uint8_t value) {
 			_state.MathABCD &= 0xffff00ff;
 			break;
 		case 0x53: { // MATHC — set byte 1, do sign conversion on CD if signed
-			_state.MathABCD = (_state.MathABCD & 0xffff00ff) | ((uint32_t)value << 8);
+			_state.MathABCD = (_state.MathABCD & 0xffff00ff) | (static_cast<uint32_t>(value) << 8);
 			// Sign conversion at write time (matching Handy)
 			if (_state.MathSign) {
-				uint16_t cd = (uint16_t)(_state.MathABCD & 0xffff);
+				uint16_t cd = static_cast<uint16_t>(_state.MathABCD & 0xffff);
 				// HW Bug 13.8: (value-1)&0x8000 check — $8000 is +ve, $0000 is -ve
-				if ((uint16_t)(cd - 1) & 0x8000) {
-					uint16_t conv = (uint16_t)(cd ^ 0xffff);
+				if (static_cast<uint16_t>(cd - 1) & 0x8000) {
+					uint16_t conv = static_cast<uint16_t>(cd ^ 0xffff);
 					conv++;
 					_state.MathCD_sign = -1;
 					_state.MathABCD = (_state.MathABCD & 0xffff0000) | conv;
@@ -916,20 +916,20 @@ void LynxSuzy::WriteRegister(uint8_t addr, uint8_t value) {
 			break;
 		}
 		case 0x54: // MATHB — set byte 2, clear A
-			_state.MathABCD = (_state.MathABCD & 0xff00ffff) | ((uint32_t)value << 16);
+			_state.MathABCD = (_state.MathABCD & 0xff00ffff) | (static_cast<uint32_t>(value) << 16);
 			_state.MathABCD &= 0x00ffffff; // Clear A
 			break;
 		case 0x55: { // MATHA — set byte 3, do sign conversion on AB, trigger multiply
-			_state.MathABCD = (_state.MathABCD & 0x00ffffff) | ((uint32_t)value << 24);
+			_state.MathABCD = (_state.MathABCD & 0x00ffffff) | (static_cast<uint32_t>(value) << 24);
 			// Sign conversion at write time (matching Handy)
 			if (_state.MathSign) {
-				uint16_t ab = (uint16_t)((_state.MathABCD >> 16) & 0xffff);
+				uint16_t ab = static_cast<uint16_t>((_state.MathABCD >> 16) & 0xffff);
 				// HW Bug 13.8: same (value-1)&0x8000 check
-				if ((uint16_t)(ab - 1) & 0x8000) {
-					uint16_t conv = (uint16_t)(ab ^ 0xffff);
+				if (static_cast<uint16_t>(ab - 1) & 0x8000) {
+					uint16_t conv = static_cast<uint16_t>(ab ^ 0xffff);
 					conv++;
 					_state.MathAB_sign = -1;
-					_state.MathABCD = (_state.MathABCD & 0x0000ffff) | ((uint32_t)conv << 16);
+					_state.MathABCD = (_state.MathABCD & 0x0000ffff) | (static_cast<uint32_t>(conv) << 16);
 				} else {
 					_state.MathAB_sign = 1;
 				}
@@ -943,7 +943,7 @@ void LynxSuzy::WriteRegister(uint8_t addr, uint8_t value) {
 			_state.MathNP = value;
 			break;
 		case 0x57: // MATHN — set high byte
-			_state.MathNP = (_state.MathNP & 0x00ff) | ((uint16_t)value << 8);
+			_state.MathNP = (_state.MathNP & 0x00ff) | (static_cast<uint16_t>(value) << 8);
 			break;
 
 		// Math registers — EFGH group (0x60-0x63): result / divide dividend
@@ -952,14 +952,14 @@ void LynxSuzy::WriteRegister(uint8_t addr, uint8_t value) {
 			_state.MathEFGH &= 0xffff00ff; // Clear G
 			break;
 		case 0x61: // MATHG — set byte 1
-			_state.MathEFGH = (_state.MathEFGH & 0xffff00ff) | ((uint32_t)value << 8);
+			_state.MathEFGH = (_state.MathEFGH & 0xffff00ff) | (static_cast<uint32_t>(value) << 8);
 			break;
 		case 0x62: // MATHF — set byte 2, clear E
-			_state.MathEFGH = (_state.MathEFGH & 0xff00ffff) | ((uint32_t)value << 16);
+			_state.MathEFGH = (_state.MathEFGH & 0xff00ffff) | (static_cast<uint32_t>(value) << 16);
 			_state.MathEFGH &= 0x00ffffff; // Clear E
 			break;
 		case 0x63: // MATHE — set byte 3, trigger divide
-			_state.MathEFGH = (_state.MathEFGH & 0x00ffffff) | ((uint32_t)value << 24);
+			_state.MathEFGH = (_state.MathEFGH & 0x00ffffff) | (static_cast<uint32_t>(value) << 24);
 			DoDivide(); // Writing MATHE triggers divide
 			break;
 
@@ -970,14 +970,14 @@ void LynxSuzy::WriteRegister(uint8_t addr, uint8_t value) {
 			_state.MathOverflow = false;
 			break;
 		case 0x6d: // MATHL — set byte 1
-			_state.MathJKLM = (_state.MathJKLM & 0xffff00ff) | ((uint32_t)value << 8);
+			_state.MathJKLM = (_state.MathJKLM & 0xffff00ff) | (static_cast<uint32_t>(value) << 8);
 			break;
 		case 0x6e: // MATHK — set byte 2, clear J
-			_state.MathJKLM = (_state.MathJKLM & 0xff00ffff) | ((uint32_t)value << 16);
+			_state.MathJKLM = (_state.MathJKLM & 0xff00ffff) | (static_cast<uint32_t>(value) << 16);
 			_state.MathJKLM &= 0x00ffffff; // Clear J
 			break;
 		case 0x6f: // MATHJ — set byte 3
-			_state.MathJKLM = (_state.MathJKLM & 0x00ffffff) | ((uint32_t)value << 24);
+			_state.MathJKLM = (_state.MathJKLM & 0x00ffffff) | (static_cast<uint32_t>(value) << 24);
 			break;
 
 		// Collision depository writes: slots 0-3, 12-15 via registers

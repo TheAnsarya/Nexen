@@ -15,14 +15,14 @@ private:
 public:
 	LynxControlManager(Emulator* emu, LynxConsole* console);
 
-	LynxControlManagerState& GetState() { return _state; }
+	[[nodiscard]] LynxControlManagerState& GetState() { return _state; }
 
 	shared_ptr<BaseControlDevice> CreateControllerDevice(ControllerType type, uint8_t port) override;
 	void UpdateControlDevices() override;
 	void UpdateInputState() override;
 
-	uint8_t ReadJoystick();
-	uint8_t ReadSwitches();
+	[[nodiscard]] uint8_t ReadJoystick();
+	[[nodiscard]] uint8_t ReadSwitches();
 
 	void Serialize(Serializer& s) override;
 };

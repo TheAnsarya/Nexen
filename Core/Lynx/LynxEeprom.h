@@ -40,7 +40,7 @@ private:
 
 	LynxEepromSerialState _state = {};
 
-	uint8_t* _data = nullptr;    // 16-bit word array stored as bytes (LE)
+	std::unique_ptr<uint8_t[]> _data; // 16-bit word array stored as bytes (LE)
 	uint32_t _dataSize = 0;      // Size in bytes
 
 	/// <summary>Get the number of address bits for the current chip type</summary>
@@ -60,7 +60,7 @@ private:
 
 public:
 	LynxEeprom(Emulator* emu, LynxConsole* console);
-	~LynxEeprom() { delete[] _data; _data = nullptr; }
+	~LynxEeprom() = default;
 
 	void Init(LynxEepromType type);
 

@@ -25,10 +25,10 @@ LynxEventManager::~LynxEventManager() = default;
 void LynxEventManager::AddEvent(DebugEventType type, MemoryOperationInfo& operation, int32_t breakpointId) {
 	DebugEventInfo evt = {};
 	evt.Type = type;
-	evt.Flags = (uint32_t)EventFlags::ReadWriteOp;
+	evt.Flags = static_cast<uint32_t>(EventFlags::ReadWriteOp);
 	evt.Operation = operation;
 	evt.Scanline = _mikey->GetState().CurrentScanline;
-	evt.Cycle = (uint16_t)(_cpu->GetCycleCount() % LynxConstants::CpuCyclesPerScanline);
+	evt.Cycle = static_cast<uint16_t>(_cpu->GetCycleCount() % LynxConstants::CpuCyclesPerScanline);
 	evt.BreakpointId = breakpointId;
 	evt.DmaChannel = -1;
 	evt.ProgramCounter = _debugger->GetProgramCounter(CpuType::Lynx, true);
@@ -39,7 +39,7 @@ void LynxEventManager::AddEvent(DebugEventType type) {
 	DebugEventInfo evt = {};
 	evt.Type = type;
 	evt.Scanline = _mikey->GetState().CurrentScanline;
-	evt.Cycle = (uint16_t)(_cpu->GetCycleCount() % LynxConstants::CpuCyclesPerScanline);
+	evt.Cycle = static_cast<uint16_t>(_cpu->GetCycleCount() % LynxConstants::CpuCyclesPerScanline);
 	evt.BreakpointId = -1;
 	evt.DmaChannel = -1;
 	evt.ProgramCounter = _cpu->GetState().PC;
@@ -58,9 +58,9 @@ DebugEventInfo LynxEventManager::GetEvent(uint16_t y, uint16_t x) {
 		}
 	}
 
-	for (int i = (int)_sentEvents.size() - 1; i >= 0; i--) {
+	for (int i = static_cast<int>(_sentEvents.size()) - 1; i >= 0; i--) {
 		DebugEventInfo& evt = _sentEvents[i];
-		if (std::abs((int)evt.Cycle - (int)cycle) <= 1 && std::abs((int)evt.Scanline - (int)scanline) <= 1) {
+		if (std::abs(static_cast<int>(evt.Cycle) - static_cast<int>(cycle)) <= 1 && std::abs(static_cast<int>(evt.Scanline) - static_cast<int>(scanline)) <= 1) {
 			return evt;
 		}
 	}
@@ -88,7 +88,7 @@ EventViewerCategoryCfg LynxEventManager::GetEventConfig(DebugEventInfo& evt) {
 			return _config.Irq;
 		case DebugEventType::Register: {
 			bool isWrite = evt.Operation.Type == MemoryOperationType::Write;
-			uint16_t addr = (uint16_t)evt.Operation.Address;
+			uint16_t addr = static_cast<uint16_t>(evt.Operation.Address);
 
 			// Mikey registers: $FD00-$FDFF
 			if (addr >= LynxConstants::MikeyBase && addr <= LynxConstants::MikeyEnd) {
@@ -140,7 +140,7 @@ uint32_t LynxEventManager::TakeEventSnapshot(bool forAutoRefresh) {
 	_snapshotCurrentFrame = _debugEvents;
 	_snapshotPrevFrame = _prevDebugEvents;
 	_snapshotScanline = scanline;
-	_snapshotCycle = (uint16_t)(_cpu->GetCycleCount() % LynxConstants::CpuCyclesPerScanline);
+	_snapshotCycle = static_cast<uint16_t>(_cpu->GetCycleCount() % LynxConstants::CpuCyclesPerScanline);
 	_forAutoRefresh = forAutoRefresh;
 	_scanlineCount = LynxConstants::ScanlineCount;
 	return _scanlineCount;

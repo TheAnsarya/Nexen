@@ -11,5 +11,5 @@ const LynxGameDatabase::Entry* LynxGameDatabase::Lookup(uint32_t prgCrc32) {
 }
 
 uint32_t LynxGameDatabase::GetEntryCount() {
-	return (uint32_t)(sizeof(_database) / sizeof(_database[0]));
+	return static_cast<uint32_t>(sizeof(_database) / sizeof(_database[0]));
 }
