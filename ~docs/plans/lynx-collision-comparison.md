@@ -1,5 +1,9 @@
 # Lynx Collision System: Nexen vs Handy Comparison
 
+> **Status**: All 10 bugs identified below have been **FIXED** as of commits
+> 56e199dc (#378), 63efb717 (#379), a61bb3a7 (#380), 53f9647e (#379/#381).
+> This document is retained as a reference for the architecture.
+
 ## 1. Summary of Handy's Collision Implementation (Reference)
 
 ### Architecture

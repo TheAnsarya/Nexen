@@ -547,12 +547,6 @@ int LynxSuzy::DecodeSpriteLinePixels(uint16_t& dataAddr, uint16_t lineEnd, int b
 		for (int i = 0; i < totalPixels && pixelCount < maxPixels; i++) {
 			uint8_t pixel = getBits(bpp);
 			pixelBuf[pixelCount++] = pixel;
-			// In literal mode, a zero pixel as the very last pixel signals end of data
-			// (matching Handy's line_abs_literal handling)
-			if (pixelCount == totalPixels && pixel == 0) {
-				pixelCount--; // Don't include trailing zero
-				break;
-			}
 		}
 	} else {
 		// Packed mode: packetized data with literal and repeat packets
@@ -627,9 +621,10 @@ void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum,
 		case LynxSpriteType::BackgroundShadow:
 			// Type 0: Draw ALL pixels (including pen 0). No collision detect,
 			// but does write collision buffer unconditionally.
+			// Per Handy: dontCollide flag is NOT checked for type 0.
 			doWrite = true;
 			// Collision buffer write (no read/compare) for pen != 0x0E
-			if (!_state.NoCollide && !dontCollide && writePixel != 0x0e) {
+			if (!_state.NoCollide && writePixel != 0x0e) {
 				doCollision = true;
 			}
 			break;

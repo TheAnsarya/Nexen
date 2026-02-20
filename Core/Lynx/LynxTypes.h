@@ -415,7 +415,7 @@ struct LynxMikeyState {
 	bool UartRxFramingError;
 
 	// --- Misc ---
-	/// <summary>Mikey hardware revision register ($FD88)</summary>
+	/// <summary>Mikey hardware revision register ($FD84)</summary>
 	uint8_t HardwareRevision;
 };
 
