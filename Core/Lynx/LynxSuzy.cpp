@@ -813,10 +813,15 @@ uint8_t LynxSuzy::ReadRegister(uint8_t addr) {
 		case 0x0a: return static_cast<uint8_t>(_state.CollisionBase & 0xff);
 		case 0x0b: return static_cast<uint8_t>((_state.CollisionBase >> 8) & 0xff);
 
-		// Collision depository: slots 0-3, 12-15
-		case 0x00: case 0x01: case 0x02: case 0x03:
-		case 0x0c: case 0x0d: case 0x0e: case 0x0f:
-			return _state.CollisionBuffer[addr];
+		// Sprite engine working registers
+		case 0x00: return static_cast<uint8_t>(_state.TempAddress & 0xff);       // TMPADRL
+		case 0x01: return static_cast<uint8_t>((_state.TempAddress >> 8) & 0xff); // TMPADRH
+		case 0x02: return static_cast<uint8_t>(_state.TiltAccum & 0xff);        // TILTACUML
+		case 0x03: return static_cast<uint8_t>((_state.TiltAccum >> 8) & 0xff);  // TILTACUMH
+		case 0x0c: return static_cast<uint8_t>(_state.VideoAddress & 0xff);      // VIDADRL (read-only)
+		case 0x0d: return static_cast<uint8_t>((_state.VideoAddress >> 8) & 0xff); // VIDADRH (read-only)
+		case 0x0e: return static_cast<uint8_t>(_state.CollisionAddress & 0xff);  // COLLADRL (read-only)
+		case 0x0f: return static_cast<uint8_t>((_state.CollisionAddress >> 8) & 0xff); // COLLADRH (read-only)
 
 		// Joystick / switches
 		case 0xb0: // JOYSTICK
@@ -1003,14 +1008,13 @@ void LynxSuzy::WriteRegister(uint8_t addr, uint8_t value) {
 			_state.MathJKLM = (_state.MathJKLM & 0x00ffffff) | (static_cast<uint32_t>(value) << 24);
 			break;
 
-		// Collision depository writes: slots 0-3, 12-15 via registers
-		// Note: offsets 0x04-0x0B are sprite rendering registers (HOFF, VOFF, VIDBAS, COLLBAS)
-		// On real hardware, collision data is stored in RAM at SCBAddr+COLLOFF, not
-		// in the register space. This is a simplification for now.
-		case 0x00: case 0x01: case 0x02: case 0x03:
-		case 0x0c: case 0x0d: case 0x0e: case 0x0f:
-			_state.CollisionBuffer[addr] = value;
-			break;
+		// Sprite engine working registers (FC00-FC03 R/W, FC0C-FC0F read-only)
+		case 0x00: _state.TempAddress = (_state.TempAddress & 0xff00) | value; break;       // TMPADRL
+		case 0x01: _state.TempAddress = (_state.TempAddress & 0x00ff) | (static_cast<uint16_t>(value) << 8); break; // TMPADRH
+		case 0x02: _state.TiltAccum = (_state.TiltAccum & 0xff00) | value; break;          // TILTACUML
+		case 0x03: _state.TiltAccum = (_state.TiltAccum & 0x00ff) | (static_cast<uint16_t>(value) << 8); break;   // TILTACUMH
+		// FC0C-FC0F: VIDADR/COLLADR are read-only — writes ignored
+		case 0x0c: case 0x0d: case 0x0e: case 0x0f: break;
 
 		// Cart access registers (FCB2-FCB3)
 		// RCART0/RCART1 are read-only on hardware. Writes here are a no-op.
@@ -1053,8 +1057,11 @@ void LynxSuzy::Serialize(Serializer& s) {
 	SV(_state.VStretch);
 	SV(_state.LeftHand);
 
-	// Collision
-	SVArray(_state.CollisionBuffer, LynxConstants::CollisionBufferSize);
+	// Sprite engine working registers
+	SV(_state.TempAddress);
+	SV(_state.TiltAccum);
+	SV(_state.VideoAddress);
+	SV(_state.CollisionAddress);
 	SV(_spriteCollision);
 
 	// Sprite rendering registers

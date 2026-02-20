@@ -564,9 +564,18 @@ struct LynxSuzyState {
 	/// coordinate system for left-handed Lynx orientation.</summary>
 	bool LeftHand;
 
-	// --- Collision ---
-	/// <summary>16-slot collision depository</summary>
-	uint8_t CollisionBuffer[LynxConstants::CollisionBufferSize];
+	// --- Sprite engine working registers (FC00-FC03, FC0C-FC0F) ---
+	/// <summary>TMPADR (FC00-FC01): temporary address used internally by sprite engine.</summary>
+	uint16_t TempAddress;
+
+	/// <summary>TILTACUM (FC02-FC03): tilt accumulator for sprite stretching/rotation.</summary>
+	uint16_t TiltAccum;
+
+	/// <summary>VIDADR (FC0C-FC0D): current video buffer DMA address (read-only, updated during sprite rendering).</summary>
+	uint16_t VideoAddress;
+
+	/// <summary>COLLADR (FC0E-FC0F): current collision buffer DMA address (read-only, updated during sprite rendering).</summary>
+	uint16_t CollisionAddress;
 
 	// --- Sprite rendering registers ---
 	/// <summary>Horizontal screen offset (FC04-FC05). Scroll offset for sprite rendering.

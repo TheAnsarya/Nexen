@@ -300,9 +300,14 @@ public struct LynxSuzyState : BaseState {
 	/// <summary>LeftHand enable — SPRSYS write/read bit 3 (0x08). Flips coordinate system for left-handed orientation.</summary>
 	[MarshalAs(UnmanagedType.I1)] public bool LeftHand;
 
-	/// <summary>Collision depository (16 entries, one per pen color).</summary>
-	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
-	public byte[] CollisionBuffer;
+	/// <summary>TMPADR (FC00-FC01): sprite engine temporary address.</summary>
+	public UInt16 TempAddress;
+	/// <summary>TILTACUM (FC02-FC03): tilt accumulator for sprite stretching/rotation.</summary>
+	public UInt16 TiltAccum;
+	/// <summary>VIDADR (FC0C-FC0D): current video buffer DMA address (read-only).</summary>
+	public UInt16 VideoAddress;
+	/// <summary>COLLADR (FC0E-FC0F): current collision buffer DMA address (read-only).</summary>
+	public UInt16 CollisionAddress;
 
 	/// <summary>Horizontal screen offset (FC04-FC05). Scroll offset for sprite rendering.</summary>
 	public Int16 HOffset;

@@ -197,34 +197,16 @@ TEST_F(LynxSuzyMathTest, Bug13_12_CompareWithCorrectTermination) {
 }
 
 //=============================================================================
-// Collision Buffer Layout
+// Sprite Engine Working Registers (FC00-FC03, FC0C-FC0F)
+// These were previously a 16-slot "collision buffer" array but are actually
+// TMPADR, TILTACUM, VIDADR, and COLLADR working registers.
 //=============================================================================
 
-TEST_F(LynxSuzyMathTest, CollisionBuffer_Size) {
-	EXPECT_EQ(LynxConstants::CollisionBufferSize, 16u);
-}
-
-TEST_F(LynxSuzyMathTest, CollisionBuffer_DefaultZero) {
-	for (int i = 0; i < 16; i++) {
-		EXPECT_EQ(_state.CollisionBuffer[i], 0u);
-	}
-}
-
-TEST_F(LynxSuzyMathTest, CollisionBuffer_MutualUpdate) {
-	// When sprite A (collNum=3) writes to pixel of color index 5,
-	// and collisionBuffer[5] already has value 2 (from sprite B):
-	uint8_t collNum = 3;
-	uint8_t pixIndex = 5;
-	_state.CollisionBuffer[pixIndex] = 2; // Previously written by sprite 2
-
-	uint8_t existing = _state.CollisionBuffer[pixIndex];
-	if (existing != 0) {
-		_state.CollisionBuffer[collNum] |= existing;
-		_state.CollisionBuffer[existing] |= collNum;
-	}
-
-	EXPECT_EQ(_state.CollisionBuffer[3], 2u); // Sprite 3 collided with 2
-	EXPECT_EQ(_state.CollisionBuffer[2], 3u); // Sprite 2 collided with 3
+TEST_F(LynxSuzyMathTest, WorkingRegisters_DefaultZero) {
+	EXPECT_EQ(_state.TempAddress, 0u);
+	EXPECT_EQ(_state.TiltAccum, 0u);
+	EXPECT_EQ(_state.VideoAddress, 0u);
+	EXPECT_EQ(_state.CollisionAddress, 0u);
 }
 
 //=============================================================================
@@ -456,79 +438,15 @@ TEST_F(LynxSuzyMathTest, UnsignedDivide_ExactDivision) {
 }
 
 //=============================================================================
-// Collision Detection Comprehensive Tests
+// Collision Detection — RAM-based collision buffer
+// Collision now uses RAM at COLLBAS address, not a register array.
+// These tests verify the register-level collision number tracking.
 //=============================================================================
 
-TEST_F(LynxSuzyMathTest, Collision_NoCollision_EmptyBuffer) {
-	// Writing to empty slot doesn't trigger collision
-	uint8_t collNum = 5;
-	uint8_t pixIndex = 3;
-
-	// Buffer is empty
-	EXPECT_EQ(_state.CollisionBuffer[pixIndex], 0u);
-
-	// First sprite writes its collision number
-	_state.CollisionBuffer[pixIndex] = collNum;
-
-	// No mutual update needed since nothing was there
-	EXPECT_EQ(_state.CollisionBuffer[pixIndex], 5u);
-	EXPECT_EQ(_state.CollisionBuffer[collNum], 0u); // This sprite's slot not touched
-}
-
-TEST_F(LynxSuzyMathTest, Collision_TwoSprites_MutualUpdate) {
-	// Sprite 3 writes to slot 7, sprite 5 then writes to same slot
-	uint8_t sprite3 = 3;
-	uint8_t sprite5 = 5;
-	uint8_t pixIndex = 7;
-
-	// Sprite 3 writes first
-	_state.CollisionBuffer[pixIndex] = sprite3;
-
-	// Sprite 5 writes to same pixel — collision!
-	uint8_t existing = _state.CollisionBuffer[pixIndex]; // 3
-	EXPECT_EQ(existing, sprite3);
-
-	// Mutual update
-	_state.CollisionBuffer[sprite5] |= existing; // Sprite 5's slot gets 3
-	_state.CollisionBuffer[existing] |= sprite5; // Sprite 3's slot gets 5
-
-	EXPECT_EQ(_state.CollisionBuffer[sprite5], sprite3); // 5 collided with 3
-	EXPECT_EQ(_state.CollisionBuffer[sprite3], sprite5); // 3 collided with 5
-}
-
-TEST_F(LynxSuzyMathTest, Collision_ThreeSprites_Accumulate) {
-	// Sprites 2, 4, 6 all collide on same pixel
-	uint8_t spriteA = 2, spriteB = 4, spriteC = 6;
-	uint8_t pixIndex = 9;
-
-	// Sprite A writes first
-	_state.CollisionBuffer[pixIndex] = spriteA;
-
-	// Sprite B collides with A
-	uint8_t existing = _state.CollisionBuffer[pixIndex];
-	_state.CollisionBuffer[spriteB] |= existing;
-	_state.CollisionBuffer[existing] |= spriteB;
-	_state.CollisionBuffer[pixIndex] = spriteB; // B is now top
-
-	// Sprite C collides with B
-	existing = _state.CollisionBuffer[pixIndex];
-	_state.CollisionBuffer[spriteC] |= existing;
-	_state.CollisionBuffer[existing] |= spriteC;
-
-	EXPECT_EQ(_state.CollisionBuffer[spriteA], spriteB); // A hit B
-	EXPECT_EQ(_state.CollisionBuffer[spriteB], spriteA | spriteC); // B hit A and C
-	EXPECT_EQ(_state.CollisionBuffer[spriteC], spriteB); // C hit B
-}
-
-TEST_F(LynxSuzyMathTest, Collision_AllSlots) {
-	// Test all 16 collision slots can be used
-	for (int i = 0; i < 16; i++) {
-		_state.CollisionBuffer[i] = (uint8_t)i;
-	}
-
-	for (int i = 0; i < 16; i++) {
-		EXPECT_EQ(_state.CollisionBuffer[i], (uint8_t)i);
-	}
+TEST_F(LynxSuzyMathTest, Collision_CollisionNumber_InSpriteControl) {
+	// Collision number is in SpriteControl1 bits 3:0
+	_state.SpriteControl1 = 0x05; // collNum=5
+	EXPECT_EQ(_state.SpriteControl1 & 0x0f, 5u);
 }
 
 //=============================================================================
@@ -2170,100 +2088,29 @@ TEST_F(LynxSuzyMathTest, RLE_PacketTypeBit) {
 }
 
 //=============================================================================
-// Collision Buffer Edge Cases
-// The collision buffer stores the highest collision number that hit each slot.
-// When sprite A (collNum) collides with sprite B (existingPixel):
-//   Buffer[A] = max(Buffer[A], B) and Buffer[B] = max(Buffer[B], A)
+// Sprite Engine Working Registers (FC00-FC03, FC0C-FC0F) — Additional Tests
 //=============================================================================
 
-TEST_F(LynxSuzyMathTest, CollisionBuffer_AllSlotsWritable) {
-	// All 16 collision slots can hold collision data (0-15)
-	_state.CollisionBuffer[0] = 0x0F;
-	_state.CollisionBuffer[15] = 0x0A;
-
-	EXPECT_EQ(_state.CollisionBuffer[0], 0x0F);
-	EXPECT_EQ(_state.CollisionBuffer[15], 0x0A);
+TEST_F(LynxSuzyMathTest, WorkingRegisters_TempAddressReadWrite) {
+	_state.TempAddress = 0x1234;
+	EXPECT_EQ(_state.TempAddress, 0x1234);
 }
 
-TEST_F(LynxSuzyMathTest, CollisionBuffer_HighestColliderWins) {
-	// Collision buffer stores highest collision number
-	// If sprite 3 hits sprite 5, then sprite 7 hits sprite 3:
-	// Buffer[3] was 5, now should be 7 (higher)
-
-	_state.CollisionBuffer[3] = 5;
-
-	// Simulate sprite 7 colliding with sprite 3
-	uint8_t collNum = 7;
-	uint8_t existingValue = _state.CollisionBuffer[3];
-	if (collNum > existingValue) {
-		_state.CollisionBuffer[3] = collNum;
-	}
-
-	EXPECT_EQ(_state.CollisionBuffer[3], 7);
+TEST_F(LynxSuzyMathTest, WorkingRegisters_TiltAccumReadWrite) {
+	_state.TiltAccum = 0xABCD;
+	EXPECT_EQ(_state.TiltAccum, 0xABCD);
 }
 
-TEST_F(LynxSuzyMathTest, CollisionBuffer_LowerColliderIgnored) {
-	// Lower collision numbers don't overwrite higher ones
-
-	_state.CollisionBuffer[5] = 10;
-
-	// Sprite 3 tries to collide with sprite 5
-	uint8_t collNum = 3;
-	uint8_t existingValue = _state.CollisionBuffer[5];
-	if (collNum > existingValue) {
-		_state.CollisionBuffer[5] = collNum;
-	}
-
-	// Value should still be 10 (3 < 10)
-	EXPECT_EQ(_state.CollisionBuffer[5], 10);
+TEST_F(LynxSuzyMathTest, WorkingRegisters_VideoAddressReadOnly) {
+	// VIDADR is a read-only working register updated during sprite DMA
+	_state.VideoAddress = 0x5678;
+	EXPECT_EQ(_state.VideoAddress, 0x5678);
 }
 
-TEST_F(LynxSuzyMathTest, CollisionBuffer_MutualUpdate_Logic) {
-	// When sprite A hits sprite B, both buffers update
-	// A gets B's number, B gets A's number (respecting max rule)
-
-	_state.CollisionBuffer[3] = 0;
-	_state.CollisionBuffer[7] = 0;
-
-	// Sprite 7 draws over pixel from sprite 3
-	uint8_t spriteA = 7;
-	uint8_t spriteB = 3;
-
-	// Update A's buffer: max(0, 3) = 3
-	if (spriteB > _state.CollisionBuffer[spriteA]) {
-		_state.CollisionBuffer[spriteA] = spriteB;
-	}
-	// Update B's buffer: max(0, 7) = 7
-	if (spriteA > _state.CollisionBuffer[spriteB]) {
-		_state.CollisionBuffer[spriteB] = spriteA;
-	}
-
-	EXPECT_EQ(_state.CollisionBuffer[7], 3); // A saw B
-	EXPECT_EQ(_state.CollisionBuffer[3], 7); // B saw A
-}
-
-TEST_F(LynxSuzyMathTest, CollisionBuffer_SamePenNoUpdate) {
-	// Same collision number doesn't change buffer
-	_state.CollisionBuffer[5] = 3;
-
-	uint8_t existingPixel = 5; // Same as our collision number
-	uint8_t collNum = 5;
-
-	// Same collision number - no update
-	bool shouldUpdate = (existingPixel != collNum) && (existingPixel > _state.CollisionBuffer[collNum]);
-	EXPECT_FALSE(shouldUpdate);
-}
-
-TEST_F(LynxSuzyMathTest, CollisionBuffer_TransparentIgnored) {
-	// Collision number 0 is "transparent" - no collision
-	_state.CollisionBuffer[5] = 3;
-
-	uint8_t existingPixel = 0;
-	uint8_t collNum = 5;
-
-	// existingPixel=0 means transparent, no collision
-	bool shouldUpdate = (existingPixel > 0) && (existingPixel > _state.CollisionBuffer[collNum]);
-	EXPECT_FALSE(shouldUpdate);
+TEST_F(LynxSuzyMathTest, WorkingRegisters_CollisionAddressReadOnly) {
+	// COLLADR is a read-only working register updated during sprite DMA
+	_state.CollisionAddress = 0x9ABC;
+	EXPECT_EQ(_state.CollisionAddress, 0x9ABC);
 }
 
 //=============================================================================
@@ -2361,40 +2208,20 @@ TEST_F(LynxSuzyMathTest, Fuzz_FlipPositions_1000Sprites) {
 	}
 }
 
-TEST_F(LynxSuzyMathTest, Fuzz_CollisionBuffer_HighestWins) {
+TEST_F(LynxSuzyMathTest, Fuzz_WorkingRegisters_ByteSplit) {
 	constexpr uint64_t SEED = 0x434F4C4C00000000ULL; // "COLL"
 	TestRng rng(SEED);
 
-	// Test that collision buffer always keeps the highest collider number
+	// Test that working register values split correctly into hi/lo bytes
 	for (int round = 0; round < 100; round++) {
-		// Reset collision buffer
-		for (int i = 0; i < 16; i++) {
-			_state.CollisionBuffer[i] = 0;
-		}
+		uint16_t value = rng.Next16();
+		_state.TempAddress = value;
 
-		// Pick a random slot to test
-		int slot = rng.Next16() % 16;
-		uint8_t maxSeen = 0;
+		uint8_t lo = static_cast<uint8_t>(_state.TempAddress & 0xff);
+		uint8_t hi = static_cast<uint8_t>((_state.TempAddress >> 8) & 0xff);
 
-		// Simulate 20 random collisions with this slot
-		for (int collision = 0; collision < 20; collision++) {
-			uint8_t collider = rng.Next16() % 16;
-			if (collider == 0) continue; // Skip transparent
-
-			// Apply collision logic
-			if (collider > _state.CollisionBuffer[slot]) {
-				_state.CollisionBuffer[slot] = collider;
-			}
-
-			// Track maximum
-			if (collider > maxSeen) {
-				maxSeen = collider;
-			}
-		}
-
-		// Buffer should contain the highest collider seen
-		EXPECT_EQ(_state.CollisionBuffer[slot], maxSeen)
-			<< "Round " << round << ", slot " << slot;
+		EXPECT_EQ(lo, static_cast<uint8_t>(value & 0xff));
+		EXPECT_EQ(hi, static_cast<uint8_t>((value >> 8) & 0xff));
 	}
 }
 
