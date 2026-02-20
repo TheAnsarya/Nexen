@@ -44,6 +44,12 @@ private:
 	/// <summary>Per-scanline buffer for sprite pixel writes.</summary>
 	uint8_t _lineBuffer[LynxConstants::ScreenWidth] = {};
 
+	/// <summary>Max collision number encountered during current sprite rendering.
+	/// Reset to 0 at start of each sprite; written to depositary (SCBAddr + CollOffset)
+	/// after sprite completes. Per Handy: tracks the highest collision number read
+	/// from the RAM-based collision buffer at COLLBAS during this sprite's pixels.</summary>
+	uint8_t _spriteCollision = 0;
+
 	/// <summary>Pen index remap table (16 entries → palette indices).</summary>
 	/// <remarks>
 	/// Games can reroute decoded sprite pixels to different palette entries.
@@ -91,9 +97,10 @@ private:
 	/// <param name="x">Screen X coordinate.</param>
 	/// <param name="y">Screen Y coordinate.</param>
 	/// <param name="penIndex">Remapped palette index (0-15).</param>
-	/// <param name="collNum">Collision number for this sprite.</param>
+	/// <param name="collNum">Collision number for this sprite (SPRCOLL bits 3:0).</param>
+	/// <param name="dontCollide">Per-sprite "don't collide" flag (SPRCOLL bit 5).</param>
 	/// <param name="spriteType">Controls visibility and collision behavior.</param>
-	void WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum, LynxSpriteType spriteType);
+	void WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum, bool dontCollide, LynxSpriteType spriteType);
 
 	/// <summary>Decode packed sprite line data into pixel buffer.</summary>
 	/// <param name="dataAddr">Current address in sprite data (updated).</param>

@@ -270,6 +270,7 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 
 	// Track collision for this sprite
 	bool everOnScreen = false;
+	_spriteCollision = 0; // Reset max collision for this sprite
 
 	// Current sprite data pointer (advances through quadrants)
 	uint16_t currentDataAddr = sprDataLine;
@@ -409,8 +410,12 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 
 							for (int hloop = 0; hloop < pixelWidth; hloop++) {
 								if (hoff >= 0 && hoff < static_cast<int>(LynxConstants::ScreenWidth)) {
-									if (pixel != 0) {
-										WriteSpritePixel(hoff, voff, penMapped, collNum, spriteType);
+									// Background types (0, 1) draw ALL pixels including pen 0.
+									// All other types skip pen 0.
+									if (pixel != 0 ||
+										spriteType == LynxSpriteType::BackgroundShadow ||
+										spriteType == LynxSpriteType::BackgroundNonCollide) {
+										WriteSpritePixel(hoff, voff, penMapped, collNum, dontCollide, spriteType);
 									}
 									onscreen = true;
 									everOnScreen = true;
@@ -469,10 +474,7 @@ void LynxSuzy::ProcessSprite(uint16_t scbAddr) {
 			case LynxSpriteType::BoundaryShadow:
 			case LynxSpriteType::Shadow: {
 				uint16_t collDep = (scbAddr + _state.CollOffset) & 0xFFFF;
-				// TODO: mCollision should track max collision from COLLBAS reads.
-				// Currently writes 0 since per-pixel collision uses internal buffer.
-				// See issue #373 for RAM-based collision buffer architecture.
-				WriteRam(collDep, 0);
+				WriteRam(collDep, _spriteCollision);
 				break;
 			}
 			default:
@@ -596,7 +598,7 @@ __forceinline void LynxSuzy::WriteRam(uint16_t addr, uint8_t value) {
 	_console->GetWorkRam()[addr & 0xFFFF] = value;
 }
 
-void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum, LynxSpriteType spriteType) {
+void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum, bool dontCollide, LynxSpriteType spriteType) {
 	// Bounds check
 	if (x < 0 || x >= static_cast<int>(LynxConstants::ScreenWidth) ||
 		y < 0 || y >= static_cast<int>(LynxConstants::ScreenHeight)) {
@@ -629,7 +631,7 @@ void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum,
 			// but does write collision buffer unconditionally.
 			doWrite = true;
 			// Collision buffer write (no read/compare) for pen != 0x0E
-			if (!_state.NoCollide && writePixel != 0x0e) {
+			if (!_state.NoCollide && !dontCollide && writePixel != 0x0e) {
 				doCollision = true;
 			}
 			break;
@@ -645,7 +647,7 @@ void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum,
 				doWrite = true;
 			}
 			if (writePixel != 0x00 && writePixel != 0x0e) {
-				doCollision = !_state.NoCollide;
+				doCollision = !_state.NoCollide && !dontCollide;
 			}
 			break;
 
@@ -655,7 +657,7 @@ void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum,
 				doWrite = true;
 			}
 			if (writePixel != 0x00 && writePixel != 0x0e) {
-				doCollision = !_state.NoCollide;
+				doCollision = !_state.NoCollide && !dontCollide && !dontCollide;
 			}
 			break;
 
@@ -665,7 +667,7 @@ void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum,
 				doWrite = true;
 			}
 			if (writePixel != 0x00 && writePixel != 0x0e) {
-				doCollision = !_state.NoCollide;
+				doCollision = !_state.NoCollide && !dontCollide && !dontCollide;
 			}
 			break;
 
@@ -683,7 +685,7 @@ void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum,
 				doWrite = true;
 			}
 			if ((penIndex & 0x0f) != 0x00 && (penIndex & 0x0f) != 0x0e) {
-				doCollision = !_state.NoCollide;
+				doCollision = !_state.NoCollide && !dontCollide;
 			}
 			break;
 
@@ -693,7 +695,7 @@ void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum,
 				doWrite = true;
 			}
 			if (writePixel != 0x00 && writePixel != 0x0e) {
-				doCollision = !_state.NoCollide;
+				doCollision = !_state.NoCollide && !dontCollide;
 			}
 			break;
 	}
@@ -708,15 +710,37 @@ void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum,
 		WriteRam(byteAddr, byte);
 	}
 
-	// Collision detection — track max collision number for this sprite.
-	// TODO: This should use the RAM-based collision buffer at COLLBAS,
-	// not an internal 16-slot array. See issue #373 for architecture fix.
-	if (doCollision && collNum > 0 && collNum < LynxConstants::CollisionBufferSize) {
-		uint8_t existing = _state.CollisionBuffer[collNum];
-		if (existingPixel > 0 && existingPixel > existing) {
-			_state.CollisionBuffer[collNum] = existingPixel;
-			_state.SpriteToSpriteCollision = true;
+	// Collision detection — RAM-based collision buffer at COLLBAS.
+	// Per Handy: each pixel position has a nibble in the collision buffer (same
+	// layout as video buffer). ReadCollision reads from COLLBAS + y*stride + x/2,
+	// WriteCollision writes the sprite's collision number to the same position.
+	// mCollision tracks the max collision number read during this sprite.
+	if (doCollision && collNum > 0) {
+		uint16_t collAddr = _state.CollisionBase + y * LynxConstants::BytesPerScanline + (x >> 1);
+		uint8_t collByte = ReadRam(collAddr);
+		uint8_t existingColl;
+		if (x & 1) {
+			existingColl = collByte & 0x0f;
+		} else {
+			existingColl = (collByte >> 4) & 0x0f;
 		}
+
+		// BackgroundShadow (type 0) only writes collision buffer, no read/compare.
+		// All other collidable types read existing collision and track max.
+		if (spriteType != LynxSpriteType::BackgroundShadow) {
+			if (existingColl > 0 && existingColl > _spriteCollision) {
+				_spriteCollision = existingColl;
+				_state.SpriteToSpriteCollision = true;
+			}
+		}
+
+		// Write this sprite's collision number to the collision buffer
+		if (x & 1) {
+			collByte = (collByte & 0xf0) | collNum;
+		} else {
+			collByte = (collByte & 0x0f) | (collNum << 4);
+		}
+		WriteRam(collAddr, collByte);
 	}
 }
 
@@ -1031,6 +1055,7 @@ void LynxSuzy::Serialize(Serializer& s) {
 
 	// Collision
 	SVArray(_state.CollisionBuffer, LynxConstants::CollisionBufferSize);
+	SV(_spriteCollision);
 
 	// Sprite rendering registers
 	SV(_state.HOffset);
