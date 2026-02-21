@@ -86,8 +86,9 @@ public:
 	/// <summary>CPU cycles per scanline</summary>
 	static constexpr uint32_t CpuCyclesPerScanline = CpuClockRate / static_cast<uint32_t>(Fps * ScanlineCount);
 
-	/// <summary>CPU cycles per frame</summary>
-	static constexpr uint32_t CpuCyclesPerFrame = CpuCyclesPerScanline * ScanlineCount;
+	/// <summary>CPU cycles per frame — computed directly from clock/fps to avoid
+	/// per-scanline truncation error (4000000 / 75.0 = 53333, not 507 × 105 = 53235)</summary>
+	static constexpr uint32_t CpuCyclesPerFrame = static_cast<uint32_t>(CpuClockRate / Fps);
 
 	/// <summary>Work RAM size (64 KB)</summary>
 	static constexpr uint32_t WorkRamSize = 0x10000;
@@ -761,7 +762,8 @@ struct LynxState {
 	LynxPpuState Ppu;
 	LynxMikeyState Mikey;
 	LynxSuzyState Suzy;
-	LynxApuState Apu;
+	// NOTE: APU state lives inside Mikey.Apu (not at top level)
+	// to match hardware reality — audio channels are part of Mikey.
 	LynxMemoryManagerState MemoryManager;
 	LynxControlManagerState ControlManager;
 	LynxCartState Cart;

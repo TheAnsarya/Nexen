@@ -217,11 +217,9 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 	_eeprom = std::make_unique<LynxEeprom>(_emu, this);
 	if (cartInfo.HasEeprom) {
 		_eeprom->Init(cartInfo.EepromType);
-	} else if (dbEntry && dbEntry->EepromType != LynxEepromType::None) {
-		// Database override for EEPROM (covers headerless ROMs not caught above)
-		_eeprom->Init(dbEntry->EepromType);
-		MessageManager::Log("  EEPROM detected via game database");
 	}
+	// Note: Database EEPROM detection for headerless ROMs is already handled
+	// above in the headerless ROM loading path (sets cartInfo.HasEeprom = true).
 
 	// Wire EEPROM to Mikey for IODAT register access
 	_mikey->SetEeprom(_eeprom.get());
@@ -396,7 +394,9 @@ double LynxConsole::GetFps() {
 	return LynxConstants::Fps;
 }
 
-BaseVideoFilter* LynxConsole::GetVideoFilter(bool getDefaultFilter) {
+BaseVideoFilter* LynxConsole::GetVideoFilter([[maybe_unused]] bool getDefaultFilter) {
+	// Lynx only supports the default video filter (no NTSC, bisqwit, etc.),
+	// so the getDefaultFilter parameter is intentionally unused.
 	return new LynxDefaultVideoFilter(_emu, this);
 }
 
@@ -454,7 +454,7 @@ LynxState LynxConsole::GetState() {
 	if (_suzy) state.Suzy = _suzy->GetState();
 	if (_memoryManager) state.MemoryManager = _memoryManager->GetState();
 	if (_controlManager) state.ControlManager = _controlManager->GetState();
-	if (_apu) state.Apu = _apu->GetState();
+	// APU state is inside Mikey.Apu (populated by _mikey->GetState() above)
 	if (_cart) state.Cart = _cart->GetState();
 	if (_eeprom) state.Eeprom = _eeprom->GetState();
 

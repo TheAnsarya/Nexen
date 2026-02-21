@@ -250,7 +250,9 @@ void LynxMikey::RenderScanline() {
 	}
 
 	// Read 80 bytes from RAM (160 pixels at 4bpp = 80 bytes per line)
-	// Base address from DISPADR, offset by scanline * 80
+	// Base address from DISPADR, offset by scanline * 80.
+	// The & 0xFFFF mask below guarantees safe access — workRam is exactly
+	// 64KB (WorkRamSize = 0x10000), so any DisplayAddress value is valid.
 	uint16_t lineAddr = _state.DisplayAddress + (scanline * LynxConstants::BytesPerScanline);
 	uint32_t* destLine = &_frameBuffer[scanline * LynxConstants::ScreenWidth];
 	uint8_t* workRam = _console->GetWorkRam();
@@ -395,9 +397,15 @@ uint8_t LynxMikey::ReadRegister(uint8_t addr) {
 			return _ioDir;
 		case 0x89: // IODAT ($FD89) — I/O data register
 		{
-			// Bits configured as input (ioDir=0) read from external hardware
-			// Bit 1: EEPROM data out (directly wired to EEPROM DO pin)
-			// Other bits: directly wired pins (active high/low varies)
+			// Lynx I/O pin assignments (directly wired):
+			//   Bit 0: EEPROM chip select (CS) — typically output
+			//   Bit 1: EEPROM data (DI/DO) — input reads EEPROM DO pin
+			//   Bit 2: EEPROM serial clock (CLK) — typically output
+			//   Bit 3: AUDIN — audio comparator input (active low, active high on Lynx II)
+			//   Bits 4-7: directly wired I/O pins (active high/low varies per cart)
+			//
+			// Output bits (ioDir=1) return the last written value.
+			// Input bits (ioDir=0) read from external hardware.
 			uint8_t result = _ioData & _ioDir; // Output bits retain written value
 			// Input bits — read from EEPROM
 			if (_eeprom && !(_ioDir & 0x02)) {
@@ -408,6 +416,8 @@ uint8_t LynxMikey::ReadRegister(uint8_t addr) {
 					result &= ~0x02;
 				}
 			}
+			// Bit 3 (AUDIN): audio comparator — not connected in emulation,
+			// reads as 0 when configured as input (no external audio source)
 			return result;
 		}
 
@@ -425,12 +435,80 @@ uint8_t LynxMikey::ReadRegister(uint8_t addr) {
 }
 
 uint8_t LynxMikey::PeekRegister(uint8_t addr) const {
+	// Side-effect-free register peek — no const_cast needed.
+	// Duplicates ReadRegister logic but avoids mutating state.
+
+	// Timer registers: $FD00-$FD1F
+	if (addr < 0x20) {
+		int timerIdx = GetTimerIndex(addr);
+		int regOff = GetTimerRegOffset(addr);
+		if (timerIdx >= 0 && timerIdx < 8) {
+			const LynxTimerState& timer = _state.Timers[timerIdx];
+			switch (regOff) {
+				case 0: return timer.BackupValue;
+				case 1: return timer.ControlA;
+				case 2: return timer.Count;
+				case 3: return timer.ControlB;
+			}
+		}
+		return 0xff;
+	}
+
+	// Audio registers: $FD20-$FD50 — ReadRegister is side-effect-free
+	if (addr >= 0x20 && addr <= 0x50) {
+		return _apu ? _apu->ReadRegister(addr - 0x20) : 0xff;
+	}
+
 	switch (addr) {
-		case 0x8d: // SERDAT — return RX data without clearing RXRDY or updating IRQ
+		case 0x80: return _state.IrqPending;         // INTSET
+		case 0x81: return 0xff;                        // INTRST (not readable)
+		case 0x84: return _state.HardwareRevision;    // MIKEYHREV
+		case 0x87: return 0;                           // SYSCTL1 (stub)
+		case 0x88: return _ioDir;                      // IODIR
+		case 0x89: {                                   // IODAT (side-effect-free)
+			// See ReadRegister 0x89 for bit layout documentation
+			uint8_t result = _ioData & _ioDir;
+			if (_eeprom && !(_ioDir & 0x02)) {
+				if (_eeprom->GetDataOut()) {
+					result |= 0x02;
+				} else {
+					result &= ~0x02;
+				}
+			}
+			return result;
+		}
+		case 0x8c: {                                   // SERCTL status
+			uint8_t status = 0;
+			if (_state.UartTxCountdown & UartTxInactive) status |= 0xa0;
+			if (_state.UartRxReady) status |= 0x40;
+			if (_state.UartRxOverrunError) status |= 0x08;
+			if (_state.UartRxFramingError) status |= 0x04;
+			if (_state.UartRxData & UartBreakCode) status |= 0x02;
+			if (_state.UartRxData & 0x0100) status |= 0x01;
+			return status;
+		}
+		case 0x8d:                                     // SERDAT — peek without clearing RXRDY
 			return static_cast<uint8_t>(_state.UartRxData & 0xff);
+		case 0x92: return _state.DisplayControl;       // DISPCTL
+		case 0x94: return static_cast<uint8_t>(_state.DisplayAddress & 0xff);        // DISPADR low
+		case 0x95: return static_cast<uint8_t>((_state.DisplayAddress >> 8) & 0xff); // DISPADR high
+
+		// Palette GREEN registers
+		case 0xa0: case 0xa1: case 0xa2: case 0xa3:
+		case 0xa4: case 0xa5: case 0xa6: case 0xa7:
+		case 0xa8: case 0xa9: case 0xaa: case 0xab:
+		case 0xac: case 0xad: case 0xae: case 0xaf:
+			return _state.PaletteGreen[addr - 0xa0];
+
+		// Palette BLUERED registers
+		case 0xb0: case 0xb1: case 0xb2: case 0xb3:
+		case 0xb4: case 0xb5: case 0xb6: case 0xb7:
+		case 0xb8: case 0xb9: case 0xba: case 0xbb:
+		case 0xbc: case 0xbd: case 0xbe: case 0xbf:
+			return _state.PaletteBR[addr - 0xb0];
+
 		default:
-			// All other registers are safe to read without side effects
-			return const_cast<LynxMikey*>(this)->ReadRegister(addr);
+			return 0xff;
 	}
 }
 
@@ -452,6 +530,12 @@ void LynxMikey::WriteRegister(uint8_t addr, uint8_t value) {
 					// If bit 6 set, reset count to backup on next clock
 					if (value & 0x40) {
 						timer.Count = timer.BackupValue;
+					}
+					// Update IrqEnabled bitmask from CTLA bit 7 (interrupt enable)
+					if (value & 0x80) {
+						_state.IrqEnabled |= (1 << timerIdx);
+					} else {
+						_state.IrqEnabled &= ~(1 << timerIdx);
 					}
 					break;
 				case 2: // COUNT

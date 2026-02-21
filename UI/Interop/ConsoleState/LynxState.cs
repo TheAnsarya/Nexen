@@ -366,8 +366,8 @@ public struct LynxState : BaseState {
 	public LynxMikeyState Mikey;
 	/// <summary>Suzy chip state (sprites, math, collision).</summary>
 	public LynxSuzyState Suzy;
-	/// <summary>Audio subsystem state.</summary>
-	public LynxApuState Apu;
+	// NOTE: APU state lives inside Mikey.Apu — not duplicated at top level.
+	// This matches hardware reality where audio channels are part of Mikey.
 	/// <summary>Memory manager state.</summary>
 	public LynxMemoryManagerState MemoryManager;
 	/// <summary>Controller/input state.</summary>

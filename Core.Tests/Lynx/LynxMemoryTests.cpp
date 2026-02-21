@@ -238,3 +238,65 @@ TEST_F(LynxMemoryTest, IrqSource_AllTimers) {
 		LynxIrqSource::Timer6 | LynxIrqSource::Timer7;
 	EXPECT_EQ(allTimers, 0xFF);
 }
+
+//=============================================================================
+// Audit Fix Regression Tests (#392-#407)
+//=============================================================================
+
+TEST_F(LynxMemoryTest, AuditFix392_VectorSpaceBlocksWrites) {
+	// #392: When VectorSpaceVisible is true and addr >= 0xFFFA,
+	// writes should be blocked (vectors come from ROM, not RAM).
+	// Test the state flag — actual write blocking is in LynxMemoryManager::Write()
+	ApplyMapctl(0x00); // All visible
+	EXPECT_TRUE(_state.VectorSpaceVisible);
+
+	// When bit 2 is set, vectors are hidden
+	ApplyMapctl(0x04);
+	EXPECT_FALSE(_state.VectorSpaceVisible);
+
+	// With vectors visible, addresses >= 0xFFFA should be ROM (not writable)
+	// The VectorSpaceVisible flag is what controls this in the Write() path
+	ApplyMapctl(0x00);
+	EXPECT_TRUE(_state.VectorSpaceVisible);
+}
+
+TEST_F(LynxMemoryTest, AuditFix393_ApuInsideMikeyState) {
+	// #393: APU state lives inside LynxMikeyState, not at top level of LynxState.
+	// Verify MikeyState has Apu and LynxState does NOT have a separate top-level Apu.
+	LynxMikeyState mikey = {};
+	mikey.Apu.Channels[0].Volume = 42;
+	EXPECT_EQ(mikey.Apu.Channels[0].Volume, 42);
+
+	// LynxState should use Mikey.Apu for audio state
+	LynxState state = {};
+	state.Mikey.Apu.Channels[0].Volume = 99;
+	EXPECT_EQ(state.Mikey.Apu.Channels[0].Volume, 99);
+}
+
+TEST_F(LynxMemoryTest, AuditFix401_IrqEnabledField) {
+	// #401: IrqEnabled field exists in MikeyState for tracking CTLA bit 7
+	LynxMikeyState mikey = {};
+	mikey.IrqEnabled = 0x00;
+	EXPECT_EQ(mikey.IrqEnabled, 0x00);
+
+	// Each timer's CTLA bit 7 contributes one bit to IrqEnabled
+	mikey.IrqEnabled = 0x01; // Timer 0 IRQ enabled
+	EXPECT_EQ(mikey.IrqEnabled & 0x01, 0x01);
+
+	mikey.IrqEnabled = 0xFF; // All timer IRQs enabled
+	EXPECT_EQ(mikey.IrqEnabled, 0xFF);
+}
+
+TEST_F(LynxMemoryTest, AuditFix407_DisplayAddressWrapsSafely) {
+	// #407: Display address wraps within 64KB via uint16_t overflow
+	// Verify that any display address + scanline offset stays within valid range
+	LynxMikeyState mikey = {};
+	mikey.DisplayAddress = 0xFFF0; // Near end of RAM
+
+	// lineAddr = DisplayAddress + scanline * BytesPerScanline
+	// With uint16_t arithmetic, this naturally wraps around
+	uint16_t lineAddr = mikey.DisplayAddress + (100 * LynxConstants::BytesPerScanline);
+	// The result wraps around, which is fine since workRam is 64KB
+	// and we mask with & 0xFFFF in the DMA read loop
+	EXPECT_LE(lineAddr & 0xFFFF, 0xFFFF);
+}

@@ -849,13 +849,77 @@ uint8_t LynxSuzy::ReadRegister(uint8_t addr) {
 }
 
 uint8_t LynxSuzy::PeekRegister(uint8_t addr) const {
+	// Side-effect-free register peek — no const_cast needed.
+	// Only RCART0/RCART1 (0xB2/0xB3) have side effects in ReadRegister
+	// (cart address auto-increment), so we handle those specially.
 	switch (addr) {
 		case 0xb2: // RCART0 — peek without cart address auto-increment
 		case 0xb3: // RCART1
 			return _cart ? _cart->PeekData() : 0xff;
+
+		// All other registers are purely stateless reads.
+		// Duplicate the switch from ReadRegister to stay const-correct.
+
+		// Sprite engine status
+		case 0x90: return _state.SpriteBusy ? 0x01 : 0x00;  // SUZYBUSEN
+		case 0x91: return _state.SpriteEnabled ? 0x01 : 0x00; // SPRGO
+		case 0x92:                                             // SPRSYS
+			return (_state.SpriteBusy ? 0x01 : 0x00) |
+				(_state.StopOnCurrent ? 0x02 : 0x00) |
+				(_state.UnsafeAccess ? 0x04 : 0x00) |
+				(_state.LeftHand ? 0x08 : 0x00) |
+				(_state.VStretch ? 0x10 : 0x00) |
+				(_state.LastCarry ? 0x20 : 0x00) |
+				(_state.MathOverflow ? 0x40 : 0x00) |
+				(_state.MathInProgress ? 0x80 : 0x00);
+
+		// SCB address
+		case 0x10: return static_cast<uint8_t>(_state.SCBAddress & 0xff);
+		case 0x11: return static_cast<uint8_t>((_state.SCBAddress >> 8) & 0xff);
+
+		// Math registers
+		case 0x52: return static_cast<uint8_t>(_state.MathABCD & 0xff);
+		case 0x53: return static_cast<uint8_t>((_state.MathABCD >> 8) & 0xff);
+		case 0x54: return static_cast<uint8_t>((_state.MathABCD >> 16) & 0xff);
+		case 0x55: return static_cast<uint8_t>((_state.MathABCD >> 24) & 0xff);
+		case 0x56: return static_cast<uint8_t>(_state.MathNP & 0xff);
+		case 0x57: return static_cast<uint8_t>((_state.MathNP >> 8) & 0xff);
+		case 0x60: return static_cast<uint8_t>(_state.MathEFGH & 0xff);
+		case 0x61: return static_cast<uint8_t>((_state.MathEFGH >> 8) & 0xff);
+		case 0x62: return static_cast<uint8_t>((_state.MathEFGH >> 16) & 0xff);
+		case 0x63: return static_cast<uint8_t>((_state.MathEFGH >> 24) & 0xff);
+		case 0x6c: return static_cast<uint8_t>(_state.MathJKLM & 0xff);
+		case 0x6d: return static_cast<uint8_t>((_state.MathJKLM >> 8) & 0xff);
+		case 0x6e: return static_cast<uint8_t>((_state.MathJKLM >> 16) & 0xff);
+		case 0x6f: return static_cast<uint8_t>((_state.MathJKLM >> 24) & 0xff);
+
+		// Sprite rendering registers
+		case 0x04: return static_cast<uint8_t>(_state.HOffset & 0xff);
+		case 0x05: return static_cast<uint8_t>((_state.HOffset >> 8) & 0xff);
+		case 0x06: return static_cast<uint8_t>(_state.VOffset & 0xff);
+		case 0x07: return static_cast<uint8_t>((_state.VOffset >> 8) & 0xff);
+		case 0x08: return static_cast<uint8_t>(_state.VideoBase & 0xff);
+		case 0x09: return static_cast<uint8_t>((_state.VideoBase >> 8) & 0xff);
+		case 0x0a: return static_cast<uint8_t>(_state.CollisionBase & 0xff);
+		case 0x0b: return static_cast<uint8_t>((_state.CollisionBase >> 8) & 0xff);
+		case 0x00: return static_cast<uint8_t>(_state.TempAddress & 0xff);
+		case 0x01: return static_cast<uint8_t>((_state.TempAddress >> 8) & 0xff);
+		case 0x02: return static_cast<uint8_t>(_state.TiltAccum & 0xff);
+		case 0x03: return static_cast<uint8_t>((_state.TiltAccum >> 8) & 0xff);
+		case 0x0c: return static_cast<uint8_t>(_state.VideoAddress & 0xff);
+		case 0x0d: return static_cast<uint8_t>((_state.VideoAddress >> 8) & 0xff);
+		case 0x0e: return static_cast<uint8_t>(_state.CollisionAddress & 0xff);
+		case 0x0f: return static_cast<uint8_t>((_state.CollisionAddress >> 8) & 0xff);
+
+		// Joystick / switches
+		case 0xb0: return _state.Joystick;
+		case 0xb1: return _state.Switches;
+
+		// Hardware revision
+		case 0x88: return 0x01;
+
 		default:
-			// All other registers are safe to read without side effects
-			return const_cast<LynxSuzy*>(this)->ReadRegister(addr);
+			return 0xff;
 	}
 }
 

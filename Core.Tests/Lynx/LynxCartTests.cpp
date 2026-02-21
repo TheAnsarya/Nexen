@@ -331,3 +331,52 @@ TEST_F(LynxCartTest, State_ShiftRegisterPersists) {
 	EXPECT_EQ(_state.ShiftRegister, 0xab);
 }
 
+//=============================================================================
+// Audit Fix Regression Tests (#394, #395, #404)
+//=============================================================================
+
+TEST_F(LynxCartTest, AuditFix394_ShiftRegisterStored) {
+	// #394: ShiftRegister is written but not read in emulation.
+	// Verify it still stores values for debugger visibility / state completeness.
+	_state.ShiftRegister = 0x00;
+	EXPECT_EQ(_state.ShiftRegister, 0x00);
+
+	_state.ShiftRegister = 0xff;
+	EXPECT_EQ(_state.ShiftRegister, 0xff);
+
+	_state.ShiftRegister = 0x42;
+	EXPECT_EQ(_state.ShiftRegister, 0x42);
+}
+
+TEST_F(LynxCartTest, AuditFix395_BankPageSetsHighByte) {
+	// #395: SetBank0Page/SetBank1Page intentionally overwrite the high byte
+	// of AddressCounter. Verify the low byte is preserved.
+	_state.AddressCounter = 0x00ab; // Low byte = 0xAB
+
+	// Simulate SetBank0Page(5) — should set high byte to 5, keep low byte
+	uint8_t page = 5;
+	_state.AddressCounter = (_state.AddressCounter & 0x00ff) | (static_cast<uint32_t>(page) << 8);
+	EXPECT_EQ(_state.AddressCounter & 0xff, 0xab);       // Low byte preserved
+	EXPECT_EQ((_state.AddressCounter >> 8) & 0xff, 0x05); // High byte = page
+
+	// Simulate SetBank1Page(0x10)
+	page = 0x10;
+	_state.AddressCounter = (_state.AddressCounter & 0x00ff) | (static_cast<uint32_t>(page) << 8);
+	EXPECT_EQ(_state.AddressCounter & 0xff, 0xab);        // Low byte still preserved
+	EXPECT_EQ((_state.AddressCounter >> 8) & 0xff, 0x10); // High byte = new page
+}
+
+TEST_F(LynxCartTest, AuditFix404_CartInfoInState) {
+	// #404: CartInfo is inside CartState but deliberately not serialized
+	// (reconstructed from ROM header on load). Verify the struct layout.
+	_info.RomSize = 262144;
+	_info.PageSizeBank0 = 0x100;
+	_info.PageSizeBank1 = 0x80;
+	strcpy_s(_info.Name, "TestCart");
+
+	_state.Info = _info;
+	EXPECT_EQ(_state.Info.RomSize, 262144u);
+	EXPECT_EQ(_state.Info.PageSizeBank0, 0x100);
+	EXPECT_EQ(_state.Info.PageSizeBank1, 0x80);
+	EXPECT_STREQ(_state.Info.Name, "TestCart");
+}

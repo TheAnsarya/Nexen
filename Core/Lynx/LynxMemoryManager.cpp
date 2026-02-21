@@ -86,10 +86,8 @@ void LynxMemoryManager::Write(uint16_t addr, uint8_t value, MemoryOperationType 
 
 	if (addr >= 0xfc00) {
 		if (addr == 0xfff9) {
-			// MAPCTL register write
+			// MAPCTL register write — hardware register only, not backed by RAM
 			UpdateMapctl(value);
-			// Also write to RAM (MAPCTL is in RAM too)
-			_workRam[addr] = value;
 			return;
 		}
 
@@ -102,6 +100,12 @@ void LynxMemoryManager::Write(uint16_t addr, uint8_t value, MemoryOperationType 
 		if (_state.MikeySpaceVisible && addr >= LynxConstants::MikeyBase && addr <= LynxConstants::MikeyEnd) {
 			// Mikey register write
 			if (_mikey) _mikey->WriteRegister(addr & 0xff, value);
+			return;
+		}
+
+		// Vector space ($FFFA-$FFFF) — writes blocked when overlay is active
+		if (_state.VectorSpaceVisible && addr >= 0xfffa) {
+			// Read-only ROM vectors — ignore writes
 			return;
 		}
 

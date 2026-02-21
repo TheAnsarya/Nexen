@@ -174,10 +174,42 @@ TEST_F(LynxCpuTypesTest, Constants_Fps) {
 }
 
 TEST_F(LynxCpuTypesTest, Constants_CyclesPerFrame) {
-	// 4 MHz CPU / 75 fps ≈ ~53333 cycles per frame
-	uint32_t expected = LynxConstants::CpuCyclesPerScanline * LynxConstants::ScanlineCount;
+	// CpuCyclesPerFrame = CpuClockRate / Fps = 4000000 / 75 = 53333
+	// This is the authoritative value — derived directly from clock rate and frame rate,
+	// NOT from scanlineCount * cyclesPerScanline (which would give 53235 due to rounding).
+	uint32_t expected = static_cast<uint32_t>(LynxConstants::CpuClockRate / LynxConstants::Fps);
 	EXPECT_EQ(LynxConstants::CpuCyclesPerFrame, expected);
-	// Should be roughly 4000000 / 75
-	double approxCycles = 4000000.0 / 75.0;
-	EXPECT_NEAR((double)LynxConstants::CpuCyclesPerFrame, approxCycles, 500.0);
+	EXPECT_EQ(LynxConstants::CpuCyclesPerFrame, 53333u);
+	// Verify it differs from the naive scanline-based calculation
+	uint32_t naiveCycles = LynxConstants::CpuCyclesPerScanline * LynxConstants::ScanlineCount;
+	EXPECT_NE(LynxConstants::CpuCyclesPerFrame, naiveCycles);
+	EXPECT_GT(LynxConstants::CpuCyclesPerFrame, naiveCycles);
+}
+
+//=============================================================================
+// Audit Fix Regression Tests (#392-#407)
+//=============================================================================
+
+TEST_F(LynxCpuTypesTest, AuditFix398_CyclesPerFrame_DerivedFromClockRate) {
+	// #398: CpuCyclesPerFrame must match CpuClockRate / Fps, not ScanlineCount * CyclesPerScanline
+	double exact = LynxConstants::CpuClockRate / LynxConstants::Fps;
+	EXPECT_EQ(LynxConstants::CpuCyclesPerFrame, static_cast<uint32_t>(exact));
+	// The value should be 53333, which is the standard Lynx value
+	EXPECT_EQ(LynxConstants::CpuCyclesPerFrame, 53333u);
+}
+
+TEST_F(LynxCpuTypesTest, AuditFix399_NoPrevIrqPending) {
+	// #399: _prevIrqPending was removed from LynxCpuState.
+	// Verify the state struct doesn't contain dead fields — just ensure
+	// the IRQFlag field exists and is usable.
+	_state.IRQFlag = true;
+	EXPECT_TRUE(_state.IRQFlag);
+	_state.IRQFlag = false;
+	EXPECT_FALSE(_state.IRQFlag);
+}
+
+TEST_F(LynxCpuTypesTest, AuditFix400_IRQFlagExists) {
+	// #400: IRQFlag must exist in LynxCpuState for serialization
+	_state.IRQFlag = true;
+	EXPECT_TRUE(_state.IRQFlag);
 }

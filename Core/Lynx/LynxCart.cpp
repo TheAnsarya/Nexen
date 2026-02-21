@@ -68,18 +68,27 @@ void LynxCart::SetAddressHigh(uint8_t value) {
 }
 
 void LynxCart::WriteShiftRegister(uint8_t value) {
+	// The shift register is written by Suzy but its value is not directly
+	// read back in emulation. On real hardware, this register participates
+	// in the AUDIN/cart address decode logic, but the simplified emulation
+	// model uses explicit SetBank0Page/SetBank1Page instead.
+	// We store it for state completeness and debugger visibility.
 	_state.ShiftRegister = value;
 }
 
 void LynxCart::SetBank0Page(uint8_t page) {
 	_state.CurrentBank = 0;
-	// Page counter selects which 256-byte page within bank 0
-	// This effectively sets the upper bits of the address within the bank
+	// Page counter selects which 256-byte page within bank 0.
+	// This intentionally overwrites the high byte of AddressCounter —
+	// on real hardware, Suzy writes the page register and then sets
+	// CART0/CART1 to start sequential reads, so any previous address
+	// state is irrelevant once a new page is selected.
 	_state.AddressCounter = (_state.AddressCounter & 0x00ff) | (static_cast<uint32_t>(page) << 8);
 }
 
 void LynxCart::SetBank1Page(uint8_t page) {
 	_state.CurrentBank = 1;
+	// Same page-select logic as SetBank0Page — see comment above.
 	_state.AddressCounter = (_state.AddressCounter & 0x00ff) | (static_cast<uint32_t>(page) << 8);
 }
 
@@ -101,6 +110,9 @@ uint32_t LynxCart::GetCurrentRomAddress() const {
 }
 
 void LynxCart::Serialize(Serializer& s) {
+	// CartInfo (name, sizes, EEPROM type) is derived from the LNX header
+	// and set once in Init() — no need to serialize it since it's
+	// reconstructed from the ROM on load.
 	SV(_state.CurrentBank);
 	SV(_state.ShiftRegister);
 	SV(_state.AddressCounter);

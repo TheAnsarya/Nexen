@@ -300,7 +300,8 @@ void LynxCpu::Serialize(Serializer& s) {
 	SV(_state.CycleCount);
 	SV(_state.StopState);
 	SV(_irqPending);
-	SV(_prevIrqPending);
+	SV(_state.IRQFlag);
+	// NmiFlag not serialized — Lynx has no NMI line
 }
 #endif
 
@@ -616,8 +617,11 @@ void LynxCpu::InitOpTable() {
 	}
 
 	// 3-byte NOPs (read and discard absolute address) — $5C, $DC, $FC
-	// These consume 2 operand bytes but do nothing
+	// WDC 65C02 specific cycle counts: $5C = 8 cycles, $DC/$FC = 4 cycles
+	_opTable[0x5c] = &LynxCpu::NOP_5C;
 	_addrMode[0x5c] = LynxAddrMode::Abs;
+	_opTable[0xdc] = &LynxCpu::NOP_DC;
 	_addrMode[0xdc] = LynxAddrMode::Abs;
+	_opTable[0xfc] = &LynxCpu::NOP_DC;
 	_addrMode[0xfc] = LynxAddrMode::Abs;
 }
