@@ -49,9 +49,16 @@ void LynxCpu::Exec() {
 	if (_state.StopState != LynxCpuStopState::Running) [[unlikely]] {
 		if (_state.StopState == LynxCpuStopState::WaitingForIrq) {
 			_state.CycleCount++;
-			if (_irqPending && !CheckFlag(LynxPSFlags::Interrupt)) {
+			if (_irqPending) {
+				// WDC 65C02 WAI behavior: wake on ANY IRQ assertion
+				// - If I=0: wake and vector to IRQ handler (normal flow below)
+				// - If I=1: wake and continue at next instruction (skip vectoring)
 				_state.StopState = LynxCpuStopState::Running;
-				// Fall through to execute next instruction
+				if (CheckFlag(LynxPSFlags::Interrupt)) {
+					// I=1: IRQs masked, just continue execution without vectoring
+					return;
+				}
+				// I=0: fall through to execute next instruction (IRQ will be handled)
 			} else {
 				return;
 			}

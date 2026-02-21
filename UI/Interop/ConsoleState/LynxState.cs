@@ -45,10 +45,14 @@ public enum LynxEepromType : byte {
 	None = 0,
 	/// <summary>93C46: 128 bytes (64 × 16-bit words, 6 address bits).</summary>
 	Eeprom93c46 = 1,
+	/// <summary>93C56: 256 bytes (128 × 16-bit words, 7 address bits).</summary>
+	Eeprom93c56 = 2,
 	/// <summary>93C66: 512 bytes (256 × 16-bit words, 8 address bits).</summary>
-	Eeprom93c66 = 2,
+	Eeprom93c66 = 3,
+	/// <summary>93C76: 1024 bytes (512 × 16-bit words, 9 address bits).</summary>
+	Eeprom93c76 = 4,
 	/// <summary>93C86: 2048 bytes (1024 × 16-bit words, 10 address bits).</summary>
-	Eeprom93c86 = 3
+	Eeprom93c86 = 5
 }
 
 /// <summary>EEPROM serial protocol state machine phase.</summary>
@@ -112,8 +116,8 @@ public struct LynxTimerState {
 /// <summary>Audio channel state (LFSR-based synthesis).</summary>
 /// <remarks>Matches memory layout of LynxAudioChannelState in Core/Lynx/LynxTypes.h.</remarks>
 public struct LynxAudioChannelState {
-	/// <summary>Output volume (4-bit, 0-15).</summary>
-	public byte Volume;
+	/// <summary>Output volume (signed 8-bit — Lynx hardware uses signed magnitude).</summary>
+	public sbyte Volume;
 	/// <summary>Feedback tap enable mask for LFSR.</summary>
 	public byte FeedbackEnable;
 	/// <summary>Current output sample (signed 8-bit).</summary>

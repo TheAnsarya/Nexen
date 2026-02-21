@@ -446,7 +446,8 @@ void LynxMikey::WriteRegister(uint8_t addr, uint8_t value) {
 					timer.BackupValue = value;
 					break;
 				case 1: // CTLA
-					timer.ControlA = value;
+					// Bit 6 is a self-clearing "reset timer" strobe — do not store it
+					timer.ControlA = value & ~0x40;
 					timer.Linked = (value & 0x07) == 7;
 					// If bit 6 set, reset count to backup on next clock
 					if (value & 0x40) {
@@ -457,9 +458,11 @@ void LynxMikey::WriteRegister(uint8_t addr, uint8_t value) {
 					timer.Count = value;
 					break;
 				case 3: // CTLB
-					// Writing clears the timer-done flag
-					timer.ControlB = 0;
+					// Writing CTLB only clears the timer-done flag (bit 3).
+					// Other CTLB bits (last-clock, borrow-in, borrow-out) are
+					// read-only hardware status and must not be zeroed.
 					timer.TimerDone = false;
+					timer.ControlB &= ~0x08; // Clear timer-done bit
 					break;
 			}
 		}

@@ -68,11 +68,22 @@ void LynxDefaultVideoFilter::ApplyFilter(uint16_t* ppuOutputBuffer) {
 	uint32_t srcW = LynxConstants::ScreenWidth;   // 160
 	uint32_t srcH = LynxConstants::ScreenHeight;   // 102
 
+	// Helper lambda to apply color adjustments when enabled
+	auto adjustPixel = [this](uint32_t pixel) -> uint32_t {
+		if (!_useAdjustedPalette) return pixel;
+		// Extract 4-bit RGB components from the 32-bit ARGB pixel
+		uint8_t r4 = ((pixel >> 16) & 0xFF) >> 4;
+		uint8_t g4 = ((pixel >> 8) & 0xFF) >> 4;
+		uint8_t b4 = (pixel & 0xFF) >> 4;
+		uint16_t rgb444 = (r4 << 8) | (g4 << 4) | b4;
+		return _adjustedPalette[rgb444];
+	};
+
 	switch (rotation) {
 		case LynxRotation::None:
 			// Direct copy — no rotation
 			for (uint32_t i = 0; i < srcW * srcH; i++) {
-				out[i] = srcBuffer[i];
+				out[i] = adjustPixel(srcBuffer[i]);
 			}
 			break;
 
@@ -83,7 +94,7 @@ void LynxDefaultVideoFilter::ApplyFilter(uint16_t* ppuOutputBuffer) {
 				for (uint32_t x = 0; x < srcW; x++) {
 					uint32_t dstX = y;
 					uint32_t dstY = srcW - 1 - x;
-					out[dstY * srcH + dstX] = srcBuffer[y * srcW + x];
+					out[dstY * srcH + dstX] = adjustPixel(srcBuffer[y * srcW + x]);
 				}
 			}
 			break;
@@ -95,7 +106,7 @@ void LynxDefaultVideoFilter::ApplyFilter(uint16_t* ppuOutputBuffer) {
 				for (uint32_t x = 0; x < srcW; x++) {
 					uint32_t dstX = srcH - 1 - y;
 					uint32_t dstY = x;
-					out[dstY * srcH + dstX] = srcBuffer[y * srcW + x];
+					out[dstY * srcH + dstX] = adjustPixel(srcBuffer[y * srcW + x]);
 				}
 			}
 			break;

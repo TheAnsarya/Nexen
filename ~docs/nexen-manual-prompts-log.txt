@@ -304,6 +304,7 @@ Continue working on these tests and issues; continue;
 
 [Nexen] (Lynx) continue working through the issues; update everything as you go; continue;
 
+[Nexen] (Lynx) Check the Lynx code for problems, testing coverage, performance benchmarks, etc, and fix the problems; Make/update Atari Lynx manual testing documentation so we check if it works; continue;
 
 
 

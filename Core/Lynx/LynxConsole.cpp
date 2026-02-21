@@ -204,19 +204,8 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 	// Initialize CPU — needs memory manager
 	_cpu.reset(new LynxCpu(_emu, this, _memoryManager.get()));
 
-	// HLE fallback: When no boot ROM is present, the reset vector at $FFFC-$FFFD
-	// reads from RAM (which is all zeros), so PC = $0000. We need to set up the
-	// post-boot state that the boot ROM would have configured:
-	//  - Stack pointer initialized
-	//  - Display timing configured (Mikey timers 0 and 2)
-	//  - Display address set
-	//  - MAPCTL configured to show ROM/Mikey/Suzy
-	//  - Jump to cart entry point
-	if (!_bootRom) {
-		ApplyHleBootState();
-	}
-
 	// Initialize Mikey (timers, display, IRQs) — needs CPU reference for IRQ line
+	// MUST be called before HLE boot state, as Init() zeroes all Mikey state
 	_mikey->Init(_emu, this, _cpu.get(), _memoryManager.get());
 
 	// Initialize APU (audio channels, integrated into Mikey)
@@ -243,6 +232,20 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 
 	// Load battery save if applicable
 	LoadBattery();
+
+	// HLE fallback: When no boot ROM is present, the reset vector at $FFFC-$FFFD
+	// reads from RAM (which is all zeros), so PC = $0000. We need to set up the
+	// post-boot state that the boot ROM would have configured:
+	//  - Stack pointer initialized
+	//  - Display timing configured (Mikey timers 0 and 2)
+	//  - Display address set
+	//  - MAPCTL configured to show ROM/Mikey/Suzy
+	//  - Jump to cart entry point
+	// NOTE: This must be called AFTER Mikey::Init() (which zeroes all state)
+	// and after all subsystems are wired up.
+	if (!_bootRom) {
+		ApplyHleBootState();
+	}
 
 	// Initialize frame buffer to black
 	std::fill_n(_frameBuffer, LynxConstants::PixelCount, 0u);
@@ -451,6 +454,18 @@ LynxState LynxConsole::GetState() {
 	if (_suzy) state.Suzy = _suzy->GetState();
 	if (_memoryManager) state.MemoryManager = _memoryManager->GetState();
 	if (_controlManager) state.ControlManager = _controlManager->GetState();
+	if (_apu) state.Apu = _apu->GetState();
+	if (_cart) state.Cart = _cart->GetState();
+	if (_eeprom) state.Eeprom = _eeprom->GetState();
+
+	// PPU state is synthesized from Mikey display registers and console frame count
+	state.Ppu.FrameCount = _frameCount;
+	if (_mikey) {
+		state.Ppu.Scanline = _mikey->GetState().CurrentScanline;
+		state.Ppu.DisplayAddress = _mikey->GetState().DisplayAddress;
+		state.Ppu.DisplayControl = _mikey->GetState().DisplayControl;
+		state.Ppu.LcdEnabled = (_mikey->GetState().DisplayControl & 0x01) != 0;
+	}
 	return state;
 }
 

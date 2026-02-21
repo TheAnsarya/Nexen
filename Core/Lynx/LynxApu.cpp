@@ -214,7 +214,7 @@ uint8_t LynxApu::ReadRegister(uint8_t addr) {
 		LynxAudioChannelState& channel = _state.Channels[ch];
 
 		switch (reg) {
-			case 0: return channel.Volume;
+			case 0: return static_cast<uint8_t>(channel.Volume);
 			case 1: return channel.FeedbackEnable;
 			case 2: return static_cast<uint8_t>(channel.Output);
 			case 3: return static_cast<uint8_t>(channel.ShiftRegister & 0xff);
@@ -251,7 +251,7 @@ void LynxApu::WriteRegister(uint8_t addr, uint8_t value) {
 		LynxAudioChannelState& channel = _state.Channels[ch];
 
 		switch (reg) {
-			case 0: channel.Volume = value; break; // Full 8-bit volume (7-bit magnitude)
+			case 0: channel.Volume = static_cast<int8_t>(value); break; // Full 8-bit signed volume
 			case 1: channel.FeedbackEnable = value; break;
 			case 2: channel.Output = static_cast<int8_t>(value); break;
 			case 3: channel.ShiftRegister = (channel.ShiftRegister & 0xf00) | value; break;

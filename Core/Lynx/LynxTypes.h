@@ -260,8 +260,8 @@ struct LynxTimerState {
 
 /// <summary>State for a single Lynx audio channel (LFSR-based)</summary>
 struct LynxAudioChannelState {
-	/// <summary>Channel output volume (4-bit)</summary>
-	uint8_t Volume;
+	/// <summary>Channel output volume (signed 8-bit — Lynx hardware uses signed magnitude)</summary>
+	int8_t Volume;
 
 	/// <summary>Feedback tap select for LFSR</summary>
 	uint8_t FeedbackEnable;

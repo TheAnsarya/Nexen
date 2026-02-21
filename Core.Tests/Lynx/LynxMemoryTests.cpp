@@ -181,13 +181,16 @@ TEST_F(LynxMemoryTest, CartBanking_BankAddressWrapping) {
 //=============================================================================
 
 TEST_F(LynxMemoryTest, AudioChannel_VolumeFullRange) {
-	// After fix: volume is full 8-bit, not truncated to 4 bits
+	// Volume is signed 8-bit — Lynx hardware uses signed magnitude
 	LynxAudioChannelState ch = {};
-	ch.Volume = 0xFF;
-	EXPECT_EQ(ch.Volume, 0xFF); // Full range preserved
+	ch.Volume = static_cast<int8_t>(0xFF); // -1 in signed
+	EXPECT_EQ(ch.Volume, -1); // Full range preserved as signed
 
-	ch.Volume = 0x7F; // 7-bit magnitude
+	ch.Volume = 0x7F; // Max positive
 	EXPECT_EQ(ch.Volume, 0x7F);
+
+	ch.Volume = -128; // Min negative
+	EXPECT_EQ(ch.Volume, -128);
 }
 
 TEST_F(LynxMemoryTest, AudioChannel_LFSR_12Bit) {
