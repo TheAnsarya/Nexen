@@ -67,6 +67,7 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 | Sega Master System / Game Gear | Z80 | ✅ Full |
 | PC Engine / TurboGrafx-16 | HuC6280 | ✅ Full |
 | WonderSwan / WonderSwan Color | V30MZ | ✅ Full |
+| Atari Lynx | 65SC02 | ✅ Full |
 
 ## ✨ Key Features
 
@@ -150,6 +151,15 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 | [Movie Format](docs/NEXEN_MOVIE_FORMAT.md) | NMV file format specification |
 | [Release Guide](docs/RELEASE.md) | Creating releases |
 | [API Documentation](docs/README.md) | Generated API docs |
+
+### Atari Lynx Documentation
+
+| Document | Description |
+| ---------- | ------------- |
+| [Lynx Emulation](docs/LYNX-EMULATION.md) | Hardware overview, architecture, TAS support |
+| [Lynx Accuracy Status](docs/LYNX-ACCURACY.md) | Per-subsystem accuracy tracking |
+| [Lynx Testing Guide](docs/LYNX-TESTING.md) | Running tests and benchmarks |
+| [Lynx Hardware Bugs](docs/LYNX-HARDWARE-BUGS.md) | Documented hardware bugs and quirks |
 
 ### Developer Documentation
 
