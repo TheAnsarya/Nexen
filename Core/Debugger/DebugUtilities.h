@@ -255,6 +255,44 @@ public:
 	}
 
 	/// <summary>
+	/// Get the PRG ROM memory type for a given CPU type.
+	/// Used by LightweightCdlRecorder to determine which resolved addresses are ROM.
+	/// </summary>
+	/// <param name="cpuType">CPU type</param>
+	/// <returns>PRG ROM memory type (e.g., NesPrgRom for NES, SnesPrgRom for SNES)</returns>
+	[[nodiscard]] static constexpr MemoryType GetPrgRomMemoryType(CpuType cpuType) {
+		switch (cpuType) {
+			case CpuType::Snes:
+			case CpuType::Sa1:
+			case CpuType::Gsu:
+			case CpuType::Cx4:
+				return MemoryType::SnesPrgRom;
+			case CpuType::Spc:
+				return MemoryType::SpcRom;
+			case CpuType::NecDsp:
+				return MemoryType::DspProgramRom;
+			case CpuType::St018:
+				return MemoryType::St018PrgRom;
+			case CpuType::Gameboy:
+				return MemoryType::GbPrgRom;
+			case CpuType::Nes:
+				return MemoryType::NesPrgRom;
+			case CpuType::Pce:
+				return MemoryType::PcePrgRom;
+			case CpuType::Sms:
+				return MemoryType::SmsPrgRom;
+			case CpuType::Gba:
+				return MemoryType::GbaPrgRom;
+			case CpuType::Ws:
+				return MemoryType::WsPrgRom;
+			case CpuType::Lynx:
+				return MemoryType::LynxPrgRom;
+		}
+
+		[[unlikely]] return MemoryType::None;
+	}
+
+	/// <summary>
 	/// Get last CPU memory type enum value.
 	/// </summary>
 	[[nodiscard]] static constexpr MemoryType GetLastCpuMemoryType() {

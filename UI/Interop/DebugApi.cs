@@ -19,6 +19,11 @@ public sealed class DebugApi {
 	[DllImport(DllPath)] public static extern void InitializeDebugger();
 	[DllImport(DllPath)] public static extern void ReleaseDebugger();
 
+	// Lightweight CDL recording (no debugger overhead, ~15ns vs ~200-700ns per instruction)
+	[DllImport(DllPath)] public static extern void StartLightweightCdl();
+	[DllImport(DllPath)] public static extern void StopLightweightCdl();
+	[DllImport(DllPath)] [return: MarshalAs(UnmanagedType.I1)] public static extern bool IsLightweightCdlActive();
+
 	[DllImport(DllPath)] public static extern void ResumeExecution();
 	[DllImport(DllPath)] public static extern void Step(CpuType cpuType, Int32 instructionCount, StepType type = StepType.Step);
 

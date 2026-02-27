@@ -445,6 +445,12 @@ AddressInfo SnesConsole::GetAbsoluteAddress(AddressInfo& relAddress) {
 	}
 }
 
+AddressInfo SnesConsole::GetPcAbsoluteAddress() {
+	SnesCpuState& state = _cpu->GetState();
+	uint32_t pc = ((uint32_t)state.K << 16) | state.PC;
+	return _memoryManager->GetMemoryMappings()->GetAbsoluteAddress(pc);
+}
+
 AddressInfo SnesConsole::GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) {
 	static AddressInfo unmapped = {-1, MemoryType::None};
 

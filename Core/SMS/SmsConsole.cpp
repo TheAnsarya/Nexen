@@ -311,6 +311,10 @@ AddressInfo SmsConsole::GetAbsoluteAddress(AddressInfo& relAddress) {
 	return GetAbsoluteAddress(relAddress.Address);
 }
 
+AddressInfo SmsConsole::GetPcAbsoluteAddress() {
+	return _memoryManager->GetAbsoluteAddress(_cpu->GetState().PC);
+}
+
 AddressInfo SmsConsole::GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) {
 	return {_memoryManager->GetRelativeAddress(absAddress), MemoryType::SmsMemory};
 }

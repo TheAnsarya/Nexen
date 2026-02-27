@@ -77,6 +77,7 @@ public:
 	AudioTrackInfo GetAudioTrackInfo() override;
 	void ProcessAudioPlayerAction(AudioPlayerActionParams p) override;
 	AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) override;
+	AddressInfo GetPcAbsoluteAddress() override;
 	AddressInfo GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) override;
 	void GetConsoleState(BaseState& state, ConsoleType consoleType) override;
 	void Serialize(Serializer& s) override;

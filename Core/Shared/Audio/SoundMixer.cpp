@@ -134,19 +134,27 @@ void SoundMixer::PlayAudioBuffer(int16_t* samples, uint32_t sampleCount, uint32_
 		if (!_emu->IsPaused() && _audioDevice) {
 			if (cfg.EnableAudio) {
 				uint32_t emulationSpeed = _emu->GetSettings()->GetEmulationSpeed();
-				if (emulationSpeed > 0 && emulationSpeed < 100) {
-					// Slow down playback when playing at less than 100% speed
-					_pitchAdjust.SetSampleRates(targetRate, targetRate * 100.0 / emulationSpeed);
-					count = _pitchAdjust.Resample<false>(_sampleBuffer.get(), count, _pitchAdjustBuffer.get(), 0x8000 / 2);
-					if (count >= 0x4000) {
-						// Mute sound when playing so slowly that the 64k buffer is not large enough to hold everything
-						memset(_pitchAdjustBuffer.get(), 0, 0x8000 * sizeof(int16_t));
+				if (emulationSpeed == 0) {
+					// Unlimited speed: skip audio output to prevent buffer overflow
+					// Recording/rewind already captured the audio above
+					_audioDevice->ProcessEndOfFrame();
+				} else {
+					if (emulationSpeed != 100) {
+						// Adjust audio rate to match emulation speed
+						// < 100%: stretch samples (slow motion), > 100%: compress samples (fast forward)
+						// This prevents buffer overflow at turbo speed and underflow at slow speed
+						_pitchAdjust.SetSampleRates(targetRate, targetRate * 100.0 / emulationSpeed);
+						count = _pitchAdjust.Resample<false>(_sampleBuffer.get(), count, _pitchAdjustBuffer.get(), 0x8000 / 2);
+						if (count >= 0x4000) {
+							// Mute when buffer overflow from extreme speed differential
+							memset(_pitchAdjustBuffer.get(), 0, 0x8000 * sizeof(int16_t));
+						}
+						out = _pitchAdjustBuffer.get();
 					}
-					out = _pitchAdjustBuffer.get();
-				}
 
-				_audioDevice->PlayBuffer(out, count, cfg.SampleRate, true);
-				_audioDevice->ProcessEndOfFrame();
+					_audioDevice->PlayBuffer(out, count, cfg.SampleRate, true);
+					_audioDevice->ProcessEndOfFrame();
+				}
 			} else {
 				_audioDevice->Stop();
 			}

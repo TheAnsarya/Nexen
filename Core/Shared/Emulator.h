@@ -5,6 +5,7 @@
 #include "Core/Debugger/DebugUtilities.h"
 #include "Core/Shared/EmulatorLock.h"
 #include "Core/Shared/Interfaces/IConsole.h"
+#include "Core/Shared/LightweightCdlRecorder.h"
 #include "Core/Shared/Audio/AudioPlayerTypes.h"
 #include "Utilities/Timer.h"
 #include "Utilities/safe_ptr.h"
@@ -105,6 +106,7 @@ private:
 
 	shared_ptr<ShortcutKeyHandler> _shortcutKeyHandler;   ///< Keyboard shortcuts
 	safe_ptr<Debugger> _debugger;                         ///< Debugger (optional, created on demand)
+	unique_ptr<LightweightCdlRecorder> _cdlRecorder;      ///< Lightweight CDL recorder (no debugger overhead)
 	shared_ptr<SystemActionManager> _systemActionManager; ///< System action queue
 
 	const unique_ptr<EmuSettings> _settings;                    ///< Global settings
@@ -406,6 +408,20 @@ public:
 	/// <summary>Get debugger instance (unsafe - use GetDebugger() for RAII instead)</summary>
 	Debugger* InternalGetDebugger() { return _debugger.get(); }
 
+	// Lightweight CDL recording (zero-overhead alternative to full debugger for CDL)
+
+	/// <summary>Start lightweight CDL recording without creating the full debugger.</summary>
+	void StartLightweightCdl();
+
+	/// <summary>Stop lightweight CDL recording.</summary>
+	void StopLightweightCdl();
+
+	/// <summary>Check if lightweight CDL recording is active.</summary>
+	[[nodiscard]] bool IsLightweightCdlActive() { return !!_cdlRecorder; }
+
+	/// <summary>Get the lightweight CDL recorder (may be null).</summary>
+	LightweightCdlRecorder* GetCdlRecorder() { return _cdlRecorder.get(); }
+
 	/// <summary>Get emulation thread ID</summary>
 	thread::id GetEmulationThreadId() { return _emulationThreadId; }
 
@@ -488,11 +504,14 @@ public:
 	__forceinline void ProcessInstruction() {
 		if (_debugger) {
 			_debugger->ProcessInstruction<type>();
+		} else if (_cdlRecorder) {
+			_cdlRecorder->RecordInstruction();
 		}
 	}
 
 	/// <summary>
 	/// Process memory read for debugger (watchpoints, read breakpoints).
+	/// When only lightweight CDL is active, records code/data marking without debugger overhead.
 	/// </summary>
 	/// <typeparam name="type">CPU type</typeparam>
 	/// <typeparam name="accessWidth">Access width in bytes (1/2/4)</typeparam>
@@ -501,6 +520,8 @@ public:
 	__forceinline void ProcessMemoryRead(uint32_t addr, T& value, MemoryOperationType opType) {
 		if (_debugger) {
 			_debugger->ProcessMemoryRead<type, accessWidth, flags>(addr, value, opType);
+		} else if (_cdlRecorder) {
+			_cdlRecorder->RecordRead(addr, DebugUtilities::GetCpuMemoryType(type), opType);
 		}
 	}
 

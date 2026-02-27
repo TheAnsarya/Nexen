@@ -14,7 +14,6 @@ namespace Nexen.Debugger.Labels;
 public static class BackgroundPansyExporter {
 	private static Timer? _autoSaveTimer;
 	private static RomInfo? _currentRomInfo;
-	private static bool _debuggerInitialized;
 	private static bool _cdlEnabled;
 
 	/// <summary>
@@ -49,44 +48,34 @@ public static class BackgroundPansyExporter {
 	}
 
 	/// <summary>
-	/// Initialize the debugger and enable CDL logging for the main CPU.
+	/// Start lightweight CDL recording without the full debugger.
+	/// Uses LightweightCdlRecorder (~15ns per instruction) instead of
+	/// InitializeDebugger() (~200-700ns per instruction with 30-50% overhead).
 	/// </summary>
 	private static void StartCdlRecording() {
 		if (_currentRomInfo is null) return;
 
 		try {
-			// Initialize debugger if not already done
-			if (!_debuggerInitialized) {
-				Log.Info("[BackgroundPansy] Initializing debugger");
-				DebugApi.InitializeDebugger();
-				_debuggerInitialized = true;
-			}
-
-			// Enable CDL logging for the main CPU type
-			var cpuType = _currentRomInfo.ConsoleType.GetMainCpuType();
-			var debuggerFlag = cpuType.GetDebuggerFlag();
-			Log.Info($"[BackgroundPansy] Enabling CDL for {cpuType} (flag: {debuggerFlag})");
-			ConfigApi.SetDebuggerFlag(debuggerFlag, true);
+			Log.Info("[BackgroundPansy] Starting lightweight CDL recording");
+			DebugApi.StartLightweightCdl();
 			_cdlEnabled = true;
 		} catch (Exception ex) {
-			Log.Error(ex, "[BackgroundPansy] Failed to start CDL recording");
+			Log.Error(ex, "[BackgroundPansy] Failed to start lightweight CDL recording");
 		}
 	}
 
 	/// <summary>
-	/// Disable CDL logging when done.
+	/// Stop lightweight CDL recording.
 	/// </summary>
 	private static void StopCdlRecording() {
-		if (!_cdlEnabled || _currentRomInfo is null) return;
+		if (!_cdlEnabled) return;
 
 		try {
-			var cpuType = _currentRomInfo.ConsoleType.GetMainCpuType();
-			var debuggerFlag = cpuType.GetDebuggerFlag();
-			Log.Info($"[BackgroundPansy] Disabling CDL for {cpuType}");
-			ConfigApi.SetDebuggerFlag(debuggerFlag, false);
+			Log.Info("[BackgroundPansy] Stopping lightweight CDL recording");
+			DebugApi.StopLightweightCdl();
 			_cdlEnabled = false;
 		} catch (Exception ex) {
-			Log.Error(ex, "[BackgroundPansy] Failed to stop CDL recording");
+			Log.Error(ex, "[BackgroundPansy] Failed to stop lightweight CDL recording");
 		}
 	}
 

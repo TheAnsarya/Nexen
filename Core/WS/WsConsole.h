@@ -124,6 +124,7 @@ public:
 	void ProcessAudioPlayerAction(AudioPlayerActionParams p) override;
 	[[nodiscard]] AddressInfo GetAbsoluteAddress(uint32_t relAddr);
 	[[nodiscard]] AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) override;
+	[[nodiscard]] AddressInfo GetPcAbsoluteAddress() override;
 	[[nodiscard]] AddressInfo GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) override;
 
 	[[nodiscard]] WsState GetState();

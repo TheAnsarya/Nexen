@@ -122,6 +122,7 @@ public:
 	vector<CpuType> GetCpuTypes() override;
 
 	AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) override;
+	AddressInfo GetPcAbsoluteAddress() override;
 	AddressInfo GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) override;
 	void GetConsoleState(BaseState& state, ConsoleType consoleType) override;
 

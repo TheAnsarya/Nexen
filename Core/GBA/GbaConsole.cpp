@@ -373,6 +373,10 @@ AddressInfo GbaConsole::GetAbsoluteAddress(AddressInfo& relAddress) {
 	return _memoryManager->GetAbsoluteAddress(relAddress.Address);
 }
 
+AddressInfo GbaConsole::GetPcAbsoluteAddress() {
+	return _memoryManager->GetAbsoluteAddress(_cpu->GetState().Pipeline.Execute.Address);
+}
+
 AddressInfo GbaConsole::GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) {
 	int64_t addr = _memoryManager->GetRelativeAddress(absAddress);
 	if (addr >= 0) {

@@ -596,6 +596,10 @@ AddressInfo Gameboy::GetAbsoluteAddress(AddressInfo& relAddress) {
 	return GetAbsoluteAddress(relAddress.Address);
 }
 
+AddressInfo Gameboy::GetPcAbsoluteAddress() {
+	return GetAbsoluteAddress(_cpu->GetState().PC);
+}
+
 AddressInfo Gameboy::GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) {
 	return {GetRelativeAddress(absAddress), MemoryType::GameboyMemory};
 }

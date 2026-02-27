@@ -172,11 +172,18 @@ void VideoDecoder::UpdateFrame(RenderedFrame frame, bool sync, bool forRewind) {
 	}
 
 	if (_frameChanged) {
-		// Last frame isn't done decoding yet - sometimes Signal() introduces a 25-30ms delay
-		while (_frameChanged) {
-			// Spin until decode is done
+		// Decoder still processing last frame
+		uint32_t speed = _emu->GetSettings()->GetEmulationSpeed();
+		if (speed == 0 || speed > 100) {
+			// During turbo/unlimited speed, skip frame instead of blocking emulation
+			// This prevents the pure busy-spin from capping emulation speed
+			_frameCount++;
+			return;
 		}
-		// At this point, we are sure that the decode thread is no longer busy
+		// At normal or slow speed, wait with yield instead of pure busy-spin
+		while (_frameChanged) {
+			std::this_thread::yield();
+		}
 	}
 
 	_emu->OnBeforeSendFrame();

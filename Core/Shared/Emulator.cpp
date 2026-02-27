@@ -267,6 +267,11 @@ void Emulator::Stop(bool sendNotification, bool preventRecentGameSave, bool save
 
 	_notificationManager->SendNotification(ConsoleNotificationType::BeforeGameUnload);
 
+	// Stop lightweight CDL recording before destroying console
+	if (_cdlRecorder) {
+		StopLightweightCdl();
+	}
+
 	ResetDebugger();
 
 	if (_emuThread) {
@@ -1001,6 +1006,11 @@ void Emulator::ResetDebugger(bool startDebugger) {
 
 void Emulator::InitDebugger() {
 	if (!_debugger) {
+		// Stop lightweight CDL if active — full debugger handles CDL
+		if (_cdlRecorder) {
+			StopLightweightCdl();
+		}
+
 		// Lock to make sure we don't try to start debuggers in 2 separate threads at once
 		auto lock = _debuggerLock.AcquireSafe();
 		if (!_debugger) {
@@ -1030,6 +1040,60 @@ void Emulator::StopDebugger() {
 
 bool Emulator::IsEmulationThread() {
 	return _emulationThreadId == _currentThreadId;
+}
+
+void Emulator::StartLightweightCdl() {
+	if (_cdlRecorder || !_console) {
+		return; // Already active or no console loaded
+	}
+
+	// Don't start lightweight CDL if full debugger is active (debugger handles CDL)
+	if (_debugger) {
+		return;
+	}
+
+	// Determine the main CPU type and PRG ROM type for this console
+	vector<CpuType> cpuTypes = _console->GetCpuTypes();
+	if (cpuTypes.empty()) {
+		return;
+	}
+
+	CpuType mainCpu = cpuTypes[0];
+	MemoryType prgRomType = DebugUtilities::GetPrgRomMemoryType(mainCpu);
+	ConsoleMemoryInfo memInfo = GetMemory(prgRomType);
+
+	if (memInfo.Size == 0) {
+		return; // No PRG ROM registered
+	}
+
+	_cdlRecorder = std::make_unique<LightweightCdlRecorder>(
+		_console.get(), prgRomType, memInfo.Size, mainCpu, GetCrc32()
+	);
+
+	// Try to load existing CDL file
+	string cdlFilePath = FolderUtilities::CombinePath(
+		FolderUtilities::GetDebuggerFolder(),
+		FolderUtilities::GetFilename(_rom.RomFile.GetFileName(), false) + ".cdl"
+	);
+	_cdlRecorder->LoadCdlFile(cdlFilePath);
+
+	MessageManager::Log("[LightweightCDL] Started recording for " + _rom.RomFile.GetFileName());
+}
+
+void Emulator::StopLightweightCdl() {
+	if (!_cdlRecorder) {
+		return;
+	}
+
+	// Save CDL data before stopping
+	string cdlFilePath = FolderUtilities::CombinePath(
+		FolderUtilities::GetDebuggerFolder(),
+		FolderUtilities::GetFilename(_rom.RomFile.GetFileName(), false) + ".cdl"
+	);
+	_cdlRecorder->SaveCdlFile(cdlFilePath);
+
+	MessageManager::Log("[LightweightCDL] Stopped recording, CDL saved.");
+	_cdlRecorder.reset();
 }
 
 void Emulator::SetStopCode(int32_t stopCode) {

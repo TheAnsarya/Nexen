@@ -59,6 +59,19 @@ DllExport void __stdcall ReleaseDebugger() {
 	_emu->StopDebugger();
 }
 
+// Lightweight CDL recording (no debugger overhead)
+DllExport void __stdcall StartLightweightCdl() {
+	_emu->StartLightweightCdl();
+}
+
+DllExport void __stdcall StopLightweightCdl() {
+	_emu->StopLightweightCdl();
+}
+
+DllExport bool __stdcall IsLightweightCdlActive() {
+	return _emu->IsLightweightCdlActive();
+}
+
 DllExport bool __stdcall IsDebuggerRunning() {
 	return _emu->GetDebugger().GetDebugger() != nullptr;
 }

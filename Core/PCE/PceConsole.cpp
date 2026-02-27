@@ -319,6 +319,10 @@ AddressInfo PceConsole::GetAbsoluteAddress(AddressInfo& relAddress) {
 	return {-1, MemoryType::None};
 }
 
+AddressInfo PceConsole::GetPcAbsoluteAddress() {
+	return _memoryManager->GetAbsoluteAddress(_cpu->GetState().PC);
+}
+
 AddressInfo PceConsole::GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) {
 	return _memoryManager->GetRelativeAddress(absAddress, _cpu->GetState().PC);
 }

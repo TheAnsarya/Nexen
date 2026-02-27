@@ -434,6 +434,13 @@ AddressInfo LynxConsole::GetAbsoluteAddress(AddressInfo& relAddress) {
 	return { -1, MemoryType::None };
 }
 
+AddressInfo LynxConsole::GetPcAbsoluteAddress() {
+	if (_memoryManager) {
+		return _memoryManager->GetAbsoluteAddress(_cpu->GetState().PC);
+	}
+	return { -1, MemoryType::None };
+}
+
 AddressInfo LynxConsole::GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) {
 	if (_memoryManager) {
 		int32_t relAddr = _memoryManager->GetRelativeAddress(absAddress);

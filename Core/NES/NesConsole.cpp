@@ -350,6 +350,10 @@ AddressInfo NesConsole::GetAbsoluteAddress(AddressInfo& relAddress) {
 	}
 }
 
+AddressInfo NesConsole::GetPcAbsoluteAddress() {
+	return _mapper->GetAbsoluteAddress(_cpu->GetState().PC);
+}
+
 AddressInfo NesConsole::GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) {
 	return _mapper->GetRelativeAddress(absAddress);
 }

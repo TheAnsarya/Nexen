@@ -109,6 +109,7 @@ public:
 
 	AddressInfo GetAbsoluteAddress(uint32_t relAddress);
 	AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) override;
+	AddressInfo GetPcAbsoluteAddress() override;
 	AddressInfo GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) override;
 
 	SmsState GetState();

@@ -302,6 +302,17 @@ public:
 	virtual AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) = 0;
 
 	/// <summary>
+	/// Get the absolute address of the current program counter.
+	/// Used by LightweightCdlRecorder for zero-overhead CDL recording.
+	/// </summary>
+	/// <returns>Absolute address of current PC (or {-1, None} if unavailable)</returns>
+	/// <remarks>
+	/// Each console overrides this with direct access to its CPU state and mapper,
+	/// avoiding the full debugger infrastructure (~10ns vs ~200-700ns).
+	/// </remarks>
+	virtual AddressInfo GetPcAbsoluteAddress() { return { -1, MemoryType::None }; }
+
+	/// <summary>
 	/// Convert absolute address to relative address.
 	/// </summary>
 	/// <param name="absAddress">Absolute address (ROM offset)</param>

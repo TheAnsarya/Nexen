@@ -470,6 +470,10 @@ AddressInfo WsConsole::GetAbsoluteAddress(AddressInfo& relAddress) {
 	return GetAbsoluteAddress(relAddress.Address);
 }
 
+AddressInfo WsConsole::GetPcAbsoluteAddress() {
+	return _memoryManager->GetAbsoluteAddress(_cpu->GetProgramCounter());
+}
+
 AddressInfo WsConsole::GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) {
 	return {_memoryManager->GetRelativeAddress(absAddress), MemoryType::WsMemory};
 }
