@@ -7,6 +7,8 @@
 
 CallstackManager::CallstackManager(Debugger* debugger, IDebugger* cpuDebugger) {
 	_debugger = debugger;
+	_callstackHead = 0;
+	_callstackSize = 0;
 	_profiler.reset(new Profiler(debugger, cpuDebugger));
 }
 
@@ -14,12 +16,13 @@ CallstackManager::~CallstackManager() {
 }
 
 void CallstackManager::Push(AddressInfo& src, uint32_t srcAddr, AddressInfo& dest, uint32_t destAddr, AddressInfo& ret, uint32_t returnAddress, uint32_t returnStackPointer, StackFrameFlags flags) {
-	if (_callstack.size() >= 511) {
-		// Ensure callstack stays below 512 entries - games can use various tricks that could keep making the callstack grow
-		_callstack.pop_front();
+	if (_callstackSize >= MaxCallstackSize - 1) {
+		// Ring buffer is full — oldest entry is silently overwritten by advancing head
+		// (the entry at _callstackHead is the oldest, and we write over it)
+		_callstackSize = MaxCallstackSize - 1;
 	}
 
-	StackFrameInfo stackFrame;
+	StackFrameInfo& stackFrame = _callstackArray[_callstackHead];
 	stackFrame.Source = srcAddr;
 	stackFrame.AbsSource = src;
 	stackFrame.Target = destAddr;
@@ -27,33 +30,43 @@ void CallstackManager::Push(AddressInfo& src, uint32_t srcAddr, AddressInfo& des
 	stackFrame.Return = returnAddress;
 	stackFrame.ReturnStackPointer = returnStackPointer;
 	stackFrame.AbsReturn = ret;
-
 	stackFrame.Flags = flags;
 
-	_callstack.push_back(stackFrame);
+	_callstackHead = (_callstackHead + 1) % MaxCallstackSize;
+	_callstackSize++;
+	if (_callstackSize > MaxCallstackSize) {
+		_callstackSize = MaxCallstackSize;
+	}
+
 	_profiler->StackFunction(dest, flags);
 }
 
 void CallstackManager::Pop(AddressInfo& dest, uint32_t destAddress, uint32_t stackPointer) {
-	if (_callstack.empty()) {
+	if (_callstackSize == 0) {
 		return;
 	}
 
-	StackFrameInfo prevFrame = _callstack.back();
-	_callstack.pop_back();
+	// Get and remove the top frame (back of the ring buffer)
+	uint32_t topIdx = (_callstackHead - 1 + MaxCallstackSize) % MaxCallstackSize;
+	StackFrameInfo prevFrame = _callstackArray[topIdx];
+	_callstackHead = topIdx;
+	_callstackSize--;
 	_profiler->UnstackFunction();
 
 	uint32_t returnAddr = prevFrame.Return;
 
-	if (!_callstack.empty() && destAddress != returnAddr) {
+	if (_callstackSize > 0 && destAddress != returnAddr) {
 		// Mismatch, try to find a matching address higher in the stack
 		bool foundMatch = false;
-		for (int i = (int)_callstack.size() - 1; i >= 0; i--) {
-			if (destAddress == _callstack[i].Return) {
+		for (int i = (int)_callstackSize - 1; i >= 0; i--) {
+			uint32_t idx = (_callstackHead - 1 - ((_callstackSize - 1) - i) + MaxCallstackSize) % MaxCallstackSize;
+			if (destAddress == _callstackArray[idx].Return) {
 				// Found a matching stack frame, unstack until that point
 				foundMatch = true;
-				for (int j = (int)_callstack.size() - i - 1; j >= 0; j--) {
-					_callstack.pop_back();
+				int framesToPop = (int)_callstackSize - 1 - i;
+				for (int j = framesToPop; j >= 0; j--) {
+					_callstackHead = (_callstackHead - 1 + MaxCallstackSize) % MaxCallstackSize;
+					_callstackSize--;
 					_profiler->UnstackFunction();
 				}
 				break;
@@ -64,10 +77,8 @@ void CallstackManager::Pop(AddressInfo& dest, uint32_t destAddress, uint32_t sta
 			// Couldn't find a matching frame
 			// If the new stack pointer doesn't match the last frame, push a new frame for it
 			// Otherwise, presume that the code has returned to the last function on the stack
-			// This can happen in some patterns, e.g if putting call parameters after the JSR
-			// call, and manipulating the stack upon return to return to the code after the
-			// parameters.
-			if (_callstack.back().ReturnStackPointer != stackPointer) {
+			uint32_t backIdx = (_callstackHead - 1 + MaxCallstackSize) % MaxCallstackSize;
+			if (_callstackArray[backIdx].ReturnStackPointer != stackPointer) {
 				Push(prevFrame.AbsReturn, returnAddr, dest, destAddress, prevFrame.AbsReturn, returnAddr, stackPointer, StackFrameFlags::None);
 			}
 		}
@@ -76,28 +87,30 @@ void CallstackManager::Pop(AddressInfo& dest, uint32_t destAddress, uint32_t sta
 
 void CallstackManager::GetCallstack(StackFrameInfo* callstackArray, uint32_t& callstackSize) {
 	DebugBreakHelper helper(_debugger);
-	int i = 0;
-	for (StackFrameInfo& info : _callstack) {
-		callstackArray[i] = info;
-		i++;
+	// Copy from ring buffer to linear array, oldest to newest
+	for (uint32_t i = 0; i < _callstackSize; i++) {
+		uint32_t idx = (_callstackHead - _callstackSize + i + MaxCallstackSize) % MaxCallstackSize;
+		callstackArray[i] = _callstackArray[idx];
 	}
-	callstackSize = i;
+	callstackSize = _callstackSize;
 }
 
 int32_t CallstackManager::GetReturnAddress() {
 	DebugBreakHelper helper(_debugger);
-	if (_callstack.empty()) {
+	if (_callstackSize == 0) {
 		return -1;
 	}
-	return _callstack.back().Return;
+	uint32_t topIdx = (_callstackHead - 1 + MaxCallstackSize) % MaxCallstackSize;
+	return _callstackArray[topIdx].Return;
 }
 
 int64_t CallstackManager::GetReturnStackPointer() {
 	DebugBreakHelper helper(_debugger);
-	if (_callstack.empty()) {
+	if (_callstackSize == 0) {
 		return -1;
 	}
-	return _callstack.back().ReturnStackPointer;
+	uint32_t topIdx = (_callstackHead - 1 + MaxCallstackSize) % MaxCallstackSize;
+	return _callstackArray[topIdx].ReturnStackPointer;
 }
 
 Profiler* CallstackManager::GetProfiler() {
@@ -105,6 +118,7 @@ Profiler* CallstackManager::GetProfiler() {
 }
 
 void CallstackManager::Clear() {
-	_callstack.clear();
+	_callstackHead = 0;
+	_callstackSize = 0;
 	_profiler->ResetState();
 }
