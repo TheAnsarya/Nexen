@@ -32,7 +32,7 @@ private:
 	void DrawRecordIcon(DebugHud* hud) const;
 	void DrawTurboRewindIcon(DebugHud* hud, bool forRewind, int xOffset) const;
 	void DrawMessage(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight, int& lastHeight) const;
-	void DrawString(DebugHud* hud, uint32_t screenWidth, string msg, int x, int y, uint8_t opacity = 255) const;
+	void DrawString(DebugHud* hud, uint32_t screenWidth, const string& msg, int x, int y, uint8_t opacity = 255) const;
 	void DisplayMessage(string title, string message) override;
 
 	void ShowFpsCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
@@ -69,11 +69,11 @@ public:
 		_endTime = _startTime + displayDuration;
 	}
 
-	[[nodiscard]] string GetTitle() {
+	[[nodiscard]] const string& GetTitle() const {
 		return _title;
 	}
 
-	[[nodiscard]] string GetMessage() {
+	[[nodiscard]] const string& GetMessage() const {
 		return _message;
 	}
 

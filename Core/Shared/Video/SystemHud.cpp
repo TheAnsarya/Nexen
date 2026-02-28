@@ -58,7 +58,7 @@ void SystemHud::DrawMessage(DebugHud* hud, MessageInfo& msg, uint32_t screenWidt
 	DrawString(hud, screenWidth, text, textLeftMargin, screenHeight - lastHeight, opacity);
 }
 
-void SystemHud::DrawString(DebugHud* hud, uint32_t screenWidth, string text, int x, int y, uint8_t opacity) const {
+void SystemHud::DrawString(DebugHud* hud, uint32_t screenWidth, const string& text, int x, int y, uint8_t opacity) const {
 	int maxWidth = screenWidth - x;
 	opacity = 255 - opacity;
 	for (int i = -1; i <= 1; i++) {
@@ -92,7 +92,7 @@ void SystemHud::ShowGameTimer(DebugHud* hud, uint32_t screenWidth, int lineNumbe
 
 	string text = ss.str();
 	uint32_t length = DrawStringCommand::MeasureString(text).X;
-	DrawString(hud, screenWidth, ss.str(), screenWidth - 8 - length, yPos);
+	DrawString(hud, screenWidth, text, screenWidth - 8 - length, yPos);
 }
 
 void SystemHud::ShowFrameCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const {
@@ -115,7 +115,7 @@ void SystemHud::ShowLagCounter(DebugHud* hud, uint32_t screenWidth, int lineNumb
 
 void SystemHud::DrawCounters(DebugHud* hud, uint32_t screenWidth) const {
 	int lineNumber = 0;
-	PreferencesConfig cfg = _emu->GetSettings()->GetPreferences();
+	const auto& cfg = _emu->GetSettings()->GetPreferences();
 
 	if (_emu->IsRunning()) {
 		if (cfg.ShowFps) {
