@@ -12,6 +12,7 @@ Serializer::Serializer(uint32_t version, bool forSave, SerializeFormat format) {
 	if (forSave) {
 		switch (format) {
 			case SerializeFormat::Binary:
+			case SerializeFormat::FastBinary:
 				_data.reserve(0x50000);
 				break;
 			case SerializeFormat::Map:
@@ -22,6 +23,25 @@ Serializer::Serializer(uint32_t version, bool forSave, SerializeFormat format) {
 				break;
 		}
 	}
+}
+
+Serializer::Serializer() {
+	_version = 0;
+	_saving = true;
+	_format = SerializeFormat::FastBinary;
+	_data.reserve(0x50000);
+}
+
+void Serializer::ResetForFastSave(uint32_t version) {
+	_version = version;
+	_saving = true;
+	_data.clear(); // Retains capacity — no reallocation
+	_readPos = 0;
+}
+
+void Serializer::ResetForFastLoad() {
+	_saving = false;
+	_readPos = 0;
 }
 
 void Serializer::AddKeyPrefix(string prefix) {
@@ -265,11 +285,13 @@ string Serializer::NormalizeName(const char* name, int index) {
 }
 
 void Serializer::PushNamePrefix(const char* name, int index) {
+	if (_format == SerializeFormat::FastBinary) return;
 	_prefixes.push_back(NormalizeName(name, index));
 	UpdatePrefix();
 }
 
 void Serializer::PopNamePrefix() {
+	if (_format == SerializeFormat::FastBinary) return;
 	_prefixes.pop_back();
 	UpdatePrefix();
 }

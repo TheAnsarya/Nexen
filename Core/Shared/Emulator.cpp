@@ -196,15 +196,14 @@ bool Emulator::ProcessSystemActions() {
 }
 
 void Emulator::RunFrameWithRunAhead() {
-	// Reuse persistent stream (avoids ~300KB alloc/free per frame)
-	_runAheadStream.str("");
-	_runAheadStream.clear();
+	// FastBinary serializer: positional read/write, no string keys, persistent buffer
+	_runAheadSerializer.ResetForFastSave(SaveStateManager::FileFormatVersion);
 	uint32_t frameCount = _settings->GetEmulationConfig().RunAheadFrames;
 
 	// Run a single frame and save the state (no audio/video)
 	_isRunAheadFrame = true;
 	_console->RunFrame();
-	Serialize(_runAheadStream, false, 0);
+	_runAheadSerializer.Stream(_console, "");
 
 	while (frameCount > 1) {
 		// Run extra frames if the requested run ahead frame count is higher than 1
@@ -222,7 +221,8 @@ void Emulator::RunFrameWithRunAhead() {
 	if (!wasReset) {
 		// Load the state we saved earlier
 		_isRunAheadFrame = true;
-		Deserialize(_runAheadStream, SaveStateManager::FileFormatVersion, false);
+		_runAheadSerializer.ResetForFastLoad();
+		_runAheadSerializer.Stream(_console, "");
 		_isRunAheadFrame = false;
 	}
 }

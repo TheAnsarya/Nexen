@@ -71,9 +71,10 @@ struct SerializeValue {
 
 /// <summary>Serialization output format</summary>
 enum class SerializeFormat {
-	Binary, ///< Compact binary format (save states)
-	Text,   ///< Human-readable text format (debugging)
-	Map     ///< Key-value map format (Lua API)
+	Binary,     ///< Compact binary format with string keys (save states)
+	Text,       ///< Human-readable text format (debugging)
+	Map,        ///< Key-value map format (Lua API)
+	FastBinary  ///< Positional binary format — no keys, no hash maps (run-ahead hot path)
 };
 
 class Serializer {
@@ -92,6 +93,9 @@ private:
 	bool _saving = false;
 	SerializeFormat _format = SerializeFormat::Binary;
 	bool _hasError = false;
+
+	/// <summary>Read position for FastBinary deserialization</summary>
+	uint32_t _readPos = 0;
 
 private:
 	bool LoadFromTextFormat(istream& file);
@@ -214,6 +218,15 @@ private:
 public:
 	Serializer(uint32_t version, bool forSave, SerializeFormat format = SerializeFormat::Binary);
 
+	/// <summary>Default constructor for persistent FastBinary serializer (run-ahead)</summary>
+	Serializer();
+
+	/// <summary>Reset for FastBinary save — clears data buffer (retains capacity), resets position</summary>
+	void ResetForFastSave(uint32_t version);
+
+	/// <summary>Reset for FastBinary load — rewinds read position to start of buffer</summary>
+	void ResetForFastLoad();
+
 	uint32_t GetVersion() { return _version; }
 	bool IsSaving() { return _saving; }
 
@@ -248,6 +261,19 @@ public:
 		if constexpr (std::is_base_of<ISerializable, T>::value) {
 			Stream((ISerializable&)value, name, index);
 		} else {
+			// FastBinary: positional read/write — no keys, no hash maps
+			if (_format == SerializeFormat::FastBinary) {
+				if (_saving) {
+					WriteValue(value);
+				} else {
+					if (_readPos + sizeof(T) <= _data.size()) {
+						ReadValue(value, &_data[_readPos]);
+						_readPos += sizeof(T);
+					}
+				}
+				return;
+			}
+
 			string key = GetKey(name, index);
 
 			CheckDuplicateKey(key);
@@ -350,6 +376,20 @@ public:
 
 	template <typename T>
 	void StreamArray(T* arrayValues, uint32_t elementCount, const char* name) {
+		// FastBinary: raw memcpy — no keys, no size prefix
+		if (_format == SerializeFormat::FastBinary) {
+			uint32_t bytes = elementCount * sizeof(T);
+			if (_saving) {
+				_data.insert(_data.end(), (uint8_t*)arrayValues, (uint8_t*)arrayValues + bytes);
+			} else {
+				if (_readPos + bytes <= _data.size()) {
+					memcpy(arrayValues, &_data[_readPos], bytes);
+					_readPos += bytes;
+				}
+			}
+			return;
+		}
+
 		string key = GetKey(name, -1);
 
 		CheckDuplicateKey(key);
@@ -410,6 +450,30 @@ public:
 
 	template <typename T>
 	void Stream(vector<T>& values, const char* name, int index = -1) {
+		// FastBinary: write count + raw data
+		if (_format == SerializeFormat::FastBinary) {
+			if (_saving) {
+				uint32_t count = (uint32_t)values.size();
+				WriteValue(count);
+				if (count > 0) {
+					_data.insert(_data.end(), (uint8_t*)values.data(), (uint8_t*)(values.data() + count));
+				}
+			} else {
+				if (_readPos + sizeof(uint32_t) <= _data.size()) {
+					uint32_t count;
+					ReadValue(count, &_data[_readPos]);
+					_readPos += sizeof(uint32_t);
+					uint32_t bytes = count * sizeof(T);
+					if (_readPos + bytes <= _data.size()) {
+						values.resize(count);
+						memcpy(values.data(), &_data[_readPos], bytes);
+						_readPos += bytes;
+					}
+				}
+			}
+			return;
+		}
+
 		if (_format == SerializeFormat::Map) {
 			return;
 		}
@@ -463,6 +527,26 @@ public:
 
 template <>
 inline void Serializer::Stream(string& value, const char* name, int index) {
+	// FastBinary: write length + raw chars
+	if (_format == SerializeFormat::FastBinary) {
+		if (_saving) {
+			uint32_t len = (uint32_t)value.size();
+			WriteValue(len);
+			_data.insert(_data.end(), value.begin(), value.end());
+		} else {
+			if (_readPos + sizeof(uint32_t) <= _data.size()) {
+				uint32_t len;
+				ReadValue(len, &_data[_readPos]);
+				_readPos += sizeof(uint32_t);
+				if (_readPos + len <= _data.size()) {
+					value = string((char*)&_data[_readPos], len);
+					_readPos += len;
+				}
+			}
+		}
+		return;
+	}
+
 	string key = GetKey(name, index);
 
 	CheckDuplicateKey(key);

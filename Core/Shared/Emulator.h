@@ -11,6 +11,7 @@
 #include "Utilities/safe_ptr.h"
 #include "Utilities/SimpleLock.h"
 #include "Utilities/VirtualFile.h"
+#include "Utilities/Serializer.h"
 
 class Debugger;
 class DebugHud;
@@ -145,8 +146,8 @@ private:
 	atomic<bool> _isRunAheadFrame;
 	bool _frameRunning = false;
 
-	/// <summary>Persistent run-ahead state buffer (avoids ~300KB alloc/free per frame)</summary>
-	stringstream _runAheadStream;
+	/// <summary>Persistent FastBinary serializer for run-ahead (eliminates all string key overhead + buffer reuse)</summary>
+	Serializer _runAheadSerializer;
 
 	RomInfo _rom;
 	ConsoleType _consoleType = {};
