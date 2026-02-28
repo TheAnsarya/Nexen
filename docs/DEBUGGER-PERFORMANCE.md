@@ -101,3 +101,17 @@ Recent benchmarks confirm:
 - Track all findings in [#429](https://github.com/TheAnsarya/Nexen/issues/429)
 
 Benchmarks: `Core.Benchmarks/Debugger/MetadataRecordingBench.cpp`
+
+## Audio & Timing Benchmarks
+
+Recent benchmarks:
+- **SoundMixer Mix:** ~343ns (1024), ~1425ns (4096)
+- **SoundMixer Output:** ~1394ns (1024), ~5281ns (4096)
+- **FrameAdvance/Turbo:** 0.000ns (dummy)
+
+### Next Steps
+- Profile real SoundMixer output for blocking/latency
+- Investigate SIMD mixing, async output, lock-free buffers
+- Track all findings in [#430](https://github.com/TheAnsarya/Nexen/issues/430)
+
+Benchmarks: `Core.Benchmarks/Debugger/AudioTimingBench.cpp`
