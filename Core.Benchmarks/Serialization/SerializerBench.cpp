@@ -2,6 +2,7 @@
 #include <array>
 #include <vector>
 #include <cstring>
+#include <sstream>
 #include "Utilities/Serializer.h"
 
 // =============================================================================
@@ -333,6 +334,203 @@ BENCHMARK(BM_Serializer_DeepNesting);
 // -----------------------------------------------------------------------------
 // Comparison Benchmarks
 // -----------------------------------------------------------------------------
+
+// =============================================================================
+// FastBinary Format Serialization (Run-Ahead Hot Path)
+// =============================================================================
+// FastBinary eliminates all string key overhead: no key generation, no hash map
+// lookups, no key prefix management. Data is read/written positionally.
+// This is critical for run-ahead which saves+loads state every frame.
+
+// Benchmark FastBinary save of small CPU state (compare with BM_Serializer_SaveSmallState)
+static void BM_Serializer_SaveSmallState_FastBinary(benchmark::State& state) {
+	MockSerializableState cpuState;
+	for (int i = 0; i < 16; i++) cpuState.registers[i] = static_cast<uint32_t>(i * 0x1000);
+	cpuState.programCounter = 0x8000;
+	cpuState.statusFlags = 0x24;
+	cpuState.interruptEnable = true;
+	cpuState.cycleCount = 12345;
+
+	Serializer s;  // Persistent FastBinary serializer
+
+	for (auto _ : state) {
+		s.ResetForFastSave(1);
+		cpuState.Serialize(s);
+		benchmark::DoNotOptimize(s);
+	}
+	state.SetBytesProcessed(state.iterations() * sizeof(MockSerializableState));
+}
+BENCHMARK(BM_Serializer_SaveSmallState_FastBinary);
+
+// Benchmark FastBinary save of PPU state (compare with BM_Serializer_SavePpuState)
+static void BM_Serializer_SavePpuState_FastBinary(benchmark::State& state) {
+	MockPpuState ppuState;
+	for (size_t i = 0; i < ppuState.vram.size(); i++) {
+		ppuState.vram[i] = static_cast<uint8_t>(i);
+	}
+	for (size_t i = 0; i < ppuState.oam.size(); i++) {
+		ppuState.oam[i] = static_cast<uint8_t>(i * 2);
+	}
+
+	Serializer s;  // Persistent FastBinary serializer
+
+	for (auto _ : state) {
+		s.ResetForFastSave(1);
+		ppuState.Serialize(s);
+		benchmark::DoNotOptimize(s);
+	}
+	state.SetBytesProcessed(state.iterations() * sizeof(MockPpuState));
+}
+BENCHMARK(BM_Serializer_SavePpuState_FastBinary);
+
+// Benchmark FastBinary save of large console state (compare with BM_Serializer_SaveLargeState)
+static void BM_Serializer_SaveLargeState_FastBinary(benchmark::State& state) {
+	MockConsoleState consoleState;
+	for (size_t i = 0; i < consoleState.ram.size(); i++) {
+		consoleState.ram[i] = static_cast<uint8_t>(i ^ (i >> 8));
+	}
+
+	Serializer s;  // Persistent FastBinary serializer
+
+	for (auto _ : state) {
+		s.ResetForFastSave(1);
+		consoleState.Serialize(s);
+		benchmark::DoNotOptimize(s);
+	}
+	state.SetBytesProcessed(state.iterations() * sizeof(MockConsoleState));
+}
+BENCHMARK(BM_Serializer_SaveLargeState_FastBinary);
+
+// Benchmark FastBinary round-trip (save + load) — the run-ahead pattern
+static void BM_Serializer_RoundTrip_FastBinary(benchmark::State& state) {
+	MockConsoleState consoleState;
+	MockConsoleState loadTarget;
+	for (size_t i = 0; i < consoleState.ram.size(); i++) {
+		consoleState.ram[i] = static_cast<uint8_t>(i ^ (i >> 8));
+	}
+
+	Serializer s;  // Persistent FastBinary serializer
+
+	for (auto _ : state) {
+		// Save
+		s.ResetForFastSave(1);
+		consoleState.Serialize(s);
+
+		// Load
+		s.ResetForFastLoad();
+		loadTarget.Serialize(s);
+		benchmark::DoNotOptimize(loadTarget);
+	}
+	state.SetBytesProcessed(state.iterations() * sizeof(MockConsoleState) * 2);
+}
+BENCHMARK(BM_Serializer_RoundTrip_FastBinary);
+
+// Benchmark Binary round-trip (save + load) — the old run-ahead pattern
+static void BM_Serializer_RoundTrip_Binary(benchmark::State& state) {
+	MockConsoleState consoleState;
+	MockConsoleState loadTarget;
+	for (size_t i = 0; i < consoleState.ram.size(); i++) {
+		consoleState.ram[i] = static_cast<uint8_t>(i ^ (i >> 8));
+	}
+
+	for (auto _ : state) {
+		// Save (creates new serializer with string keys)
+		Serializer save(1, true, SerializeFormat::Binary);
+		consoleState.Serialize(save);
+
+		// Write to stream then load back (emulates save state round-trip)
+		std::stringstream ss(std::ios::binary | std::ios::in | std::ios::out);
+		save.SaveTo(ss, 0);  // No compression for fair comparison
+		ss.seekg(0);
+
+		Serializer load(1, false, SerializeFormat::Binary);
+		load.LoadFrom(ss);
+		loadTarget.Serialize(load);
+		benchmark::DoNotOptimize(loadTarget);
+	}
+	state.SetBytesProcessed(state.iterations() * sizeof(MockConsoleState) * 2);
+}
+BENCHMARK(BM_Serializer_RoundTrip_Binary);
+
+// Benchmark FastBinary array streaming (compare with BM_Serializer_StreamLargeArray)
+static void BM_Serializer_StreamLargeArray_FastBinary(benchmark::State& state) {
+	std::vector<uint8_t> ram(0x10000);  // 64KB
+	for (size_t i = 0; i < ram.size(); i++) ram[i] = static_cast<uint8_t>(i ^ (i >> 8));
+
+	Serializer s;  // Persistent FastBinary serializer
+
+	for (auto _ : state) {
+		s.ResetForFastSave(1);
+		s.StreamArray(ram.data(), static_cast<uint32_t>(ram.size()), "ram");
+		benchmark::DoNotOptimize(s);
+	}
+	state.SetBytesProcessed(state.iterations() * ram.size());
+}
+BENCHMARK(BM_Serializer_StreamLargeArray_FastBinary);
+
+// Benchmark key prefix management cost (FastBinary skips this entirely)
+static void BM_Serializer_KeyPrefixManagement_FastBinary(benchmark::State& state) {
+	MockSerializableState innerState;
+	Serializer s;  // Persistent FastBinary serializer
+
+	for (auto _ : state) {
+		s.ResetForFastSave(1);
+		s.AddKeyPrefix("outer");
+		s.AddKeyPrefix("inner");
+		innerState.Serialize(s);
+		s.RemoveKeyPrefix("inner");
+		s.RemoveKeyPrefix("outer");
+		benchmark::DoNotOptimize(s);
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_Serializer_KeyPrefixManagement_FastBinary);
+
+// Benchmark deep nesting with FastBinary (prefix management is no-op)
+static void BM_Serializer_DeepNesting_FastBinary(benchmark::State& state) {
+	uint32_t value = 0x12345678;
+	Serializer s;  // Persistent FastBinary serializer
+
+	for (auto _ : state) {
+		s.ResetForFastSave(1);
+		s.AddKeyPrefix("level1");
+		s.AddKeyPrefix("level2");
+		s.AddKeyPrefix("level3");
+		s.AddKeyPrefix("level4");
+		s.AddKeyPrefix("level5");
+		s.Stream(value, "value");
+		s.RemoveKeyPrefix("level5");
+		s.RemoveKeyPrefix("level4");
+		s.RemoveKeyPrefix("level3");
+		s.RemoveKeyPrefix("level2");
+		s.RemoveKeyPrefix("level1");
+		benchmark::DoNotOptimize(s);
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_Serializer_DeepNesting_FastBinary);
+
+// Benchmark persistent FastBinary (no allocation after warmup) vs fresh Binary (allocs every iter)
+static void BM_Serializer_SaveLargeState_FreshBinary(benchmark::State& state) {
+	MockConsoleState consoleState;
+	for (size_t i = 0; i < consoleState.ram.size(); i++) {
+		consoleState.ram[i] = static_cast<uint8_t>(i ^ (i >> 8));
+	}
+
+	for (auto _ : state) {
+		// Fresh allocation every iteration (old run-ahead pattern)
+		Serializer s(1, true, SerializeFormat::Binary);
+		consoleState.Serialize(s);
+		benchmark::DoNotOptimize(s);
+		benchmark::ClobberMemory();
+	}
+	state.SetBytesProcessed(state.iterations() * sizeof(MockConsoleState));
+}
+BENCHMARK(BM_Serializer_SaveLargeState_FreshBinary);
+
+// =============================================================================
+// Comparison Benchmarks
+// =============================================================================
 
 // Benchmark comparison: raw memcpy vs serialization for array
 static void BM_Serializer_CompareRawMemcpy(benchmark::State& state) {
