@@ -150,6 +150,16 @@ User reports while playing Dragon Warrior 4 (NES):
 | #466 | Breakpoint::Matches header inline | ✅ Done | Cross-TU inlining for per-access template |
 | #467 | MessageManager/DebugLog const ref + emplace_back | ✅ Done | 11 files, 16 emplace_back conversions |
 
+### Phase 11: Fifth Audit Sweep — Buffer Reuse & Copy Elimination — COMPLETE
+| Issue | Description | Status | Impact |
+|-------|-------------|--------|--------|
+| #468 | GetPortStates buffer reuse (all consoles) | ✅ Done | Eliminates per-frame vector alloc |
+| #469 | GBA pendingIrqs swap-and-pop | ✅ Done | O(1) removal vs O(n) erase |
+| #470 | ClearFrameEvents swap vs copy | ✅ Done | **2.18x** faster (1265ns→581ns) |
+| #471 | ExpressionEvaluator const ref (9 methods) | ✅ Done | **9.1x** faster per call (70ns→7.7ns) |
+| #472 | TraceLogger persistent buffers + ScriptingContext const ref | ✅ Done | Eliminates per-instruction allocs |
+| #473 | NesSoundMixer timestamps reserve(512) | ✅ Done | Prevents early-frame reallocs |
+
 ## Benchmark Results Summary
 
 ### FastBinary Serializer (run-ahead hot path)
@@ -170,6 +180,8 @@ User reports while playing Dragon Warrior 4 (NES):
 | Persistent buffer (SaveVideoData) | 15978ns | 8041ns | **2.0x** |
 | CDL disabled overhead | N/A | 0ns | **zero cost** |
 | CDL enabled (hot/idempotent) | N/A | 3.6us/10K | negligible |
+| ClearFrameEvents copy→swap | 1265ns | 581ns | **2.18x** |
+| ExprEval string by-value→const ref | 69.8ns | 7.67ns | **9.1x** |
 
 ## Pansy/CDL Tracking Audit (#449)
 
@@ -219,3 +231,14 @@ thoroughly. The system is **already idempotent at every level**:
 | `UI/ViewModels/MainMenuViewModel.cs` | Export Game Package menu items |
 | `UI/Debugger/Utilities/ContextMenuAction.cs` | ExportGamePackage, OpenGamePacksFolder actions |
 | `UI/Localization/resources.en.xml` | Localization for new menu items and messages |
+| `Core/Shared/BaseControlManager.h/cpp` | GetPortStates buffer reuse (const ref return) |
+| `Core/Shared/RenderedFrame.h` | Constructor takes const vector<ControllerData>& |
+| `InteropDLL/InputApiWrapper.cpp` | const ref for GetPortStates result |
+| `Core/GBA/GbaMemoryManager.cpp` | pendingIrqs swap-and-pop O(1) removal |
+| `Core/Debugger/BaseEventManager.cpp` | ClearFrameEvents swap instead of copy |
+| `Core/Debugger/ExpressionEvaluator.h/cpp` | 9 methods const string& |
+| `Core/Debugger/Debugger.h/cpp` | EvaluateExpression const string& |
+| `Core/Debugger/BaseTraceLogger.h` | Persistent _rowBuffer/_byteCodeBuffer, WriteStringValue const ref |
+| `Core/Debugger/ScriptingContext.h/cpp` | Log() const string& |
+| `Core/NES/NesSoundMixer.cpp` | _timestamps.reserve(512) |
+| `Core.Benchmarks/Debugger/DebuggerPipelineBench.cpp` | ClearFrameEvents + ExprEval benchmarks |
