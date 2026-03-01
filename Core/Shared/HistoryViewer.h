@@ -67,6 +67,7 @@ private:
 	Emulator* _emu = nullptr;     ///< History viewer emulator instance
 	Emulator* _mainEmu = nullptr; ///< Main emulator reference
 	deque<RewindData> _history;   ///< Copied rewind history
+	vector<uint32_t> _segmentFrames; ///< Cached segment boundary frame numbers (built once at init)
 	uint32_t _position = 0;       ///< Current playback position (frames)
 	uint32_t _pollCounter = 0;    ///< Input poll counter
 

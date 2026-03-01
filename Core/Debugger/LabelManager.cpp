@@ -14,7 +14,7 @@ void LabelManager::ClearLabels() {
 	_codeLabelReverseLookup.clear();
 }
 
-void LabelManager::SetLabel(uint32_t address, MemoryType memType, string label, string comment) {
+void LabelManager::SetLabel(uint32_t address, MemoryType memType, const string& label, const string& comment) {
 	DebugBreakHelper helper(_debugger);
 	uint64_t key = GetLabelKey(address, memType);
 
@@ -25,17 +25,17 @@ void LabelManager::SetLabel(uint32_t address, MemoryType memType, string label, 
 
 	_codeLabels.erase(key);
 	if (!label.empty() || !comment.empty()) {
+		LabelInfo labelInfo;
 		if (label.size() > 400) {
 			// Restrict labels to 400 bytes
-			label = label.substr(0, 400);
+			labelInfo.Label = label.substr(0, 400);
+		} else {
+			labelInfo.Label = label;
 		}
-
-		LabelInfo labelInfo;
-		labelInfo.Label = label;
 		labelInfo.Comment = comment;
 
 		_codeLabels.emplace(key, labelInfo);
-		_codeLabelReverseLookup.emplace(label, key);
+		_codeLabelReverseLookup.emplace(labelInfo.Label, key);
 	}
 }
 
@@ -76,7 +76,8 @@ bool LabelManager::InternalGetLabel(AddressInfo address, string& label) {
 	return false;
 }
 
-string LabelManager::GetComment(AddressInfo absAddress) {
+const string& LabelManager::GetComment(AddressInfo absAddress) {
+	static const string empty;
 	uint64_t key = GetLabelKey(absAddress.Address, absAddress.Type);
 
 	if (key >= 0) {
@@ -86,7 +87,7 @@ string LabelManager::GetComment(AddressInfo absAddress) {
 		}
 	}
 
-	return "";
+	return empty;
 }
 
 bool LabelManager::GetLabelAndComment(AddressInfo address, LabelInfo& labelInfo) {

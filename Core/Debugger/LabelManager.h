@@ -124,7 +124,7 @@ public:
 	/// - _codeLabels hash map (address → label)
 	/// - _codeLabelReverseLookup (label → address)
 	/// </remarks>
-	void SetLabel(uint32_t address, MemoryType memType, string label, string comment);
+	void SetLabel(uint32_t address, MemoryType memType, const string& label, const string& comment);
 
 	/// <summary>
 	/// Clear all labels and comments.
@@ -164,7 +164,7 @@ public:
 	/// </summary>
 	/// <param name="absAddress">Absolute address info</param>
 	/// <returns>Comment string or empty if no comment</returns>
-	string GetComment(AddressInfo absAddress);
+	const string& GetComment(AddressInfo absAddress);
 
 	/// <summary>
 	/// Get both label and comment for address.

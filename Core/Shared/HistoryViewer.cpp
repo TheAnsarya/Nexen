@@ -43,6 +43,14 @@ bool HistoryViewer::Initialize(Emulator* mainEmu) {
 
 	_history = mainEmu->GetRewindManager()->GetHistory();
 
+	// Cache segment boundaries (immutable after init)
+	_segmentFrames.clear();
+	for (size_t i = 0; i < _history.size(); i++) {
+		if (_history[i].EndOfSegment || i == _history.size() - 1) {
+			_segmentFrames.push_back((uint32_t)i * RewindManager::BufferSize);
+		}
+	}
+
 	_emu->UnregisterInputProvider(this);
 	_emu->RegisterInputProvider(this);
 
@@ -70,19 +78,10 @@ HistoryViewerState HistoryViewer::GetState() {
 	state.Length = (uint32_t)(_history.size() * RewindManager::BufferSize);
 	state.Fps = _emu->GetTimingInfo(_emu->GetCpuTypes()[0]).Fps;
 
-	uint32_t segmentCount = 0;
-	for (size_t i = 0; i < _history.size(); i++) {
-		if (_history[i].EndOfSegment || i == _history.size() - 1) {
-			state.Segments[segmentCount] = (uint32_t)i * RewindManager::BufferSize;
-			segmentCount++;
-
-			if (segmentCount == 1000) {
-				// Reached max count, can't return any more values
-				break;
-			}
-		}
+	uint32_t segmentCount = std::min((uint32_t)_segmentFrames.size(), (uint32_t)1000);
+	for (uint32_t i = 0; i < segmentCount; i++) {
+		state.Segments[i] = _segmentFrames[i];
 	}
-
 	state.SegmentCount = segmentCount;
 
 	return state;
