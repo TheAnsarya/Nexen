@@ -5,6 +5,101 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-03-01
+
+### Added
+
+- **Atari Lynx Emulation** — Complete new emulation core (not a Handy fork)
+	- 65C02 CPU core with full instruction set and hardware bug emulation
+	- Mikey: timer system, interrupts, display DMA, palette, audio
+	- Suzy: sprite engine with all BPP modes, quadrant rendering, stretch/tilt, hardware math, collision
+	- 4-channel LFSR audio with stereo panning and timer-driven sample generation
+	- UART/ComLynx serial port with full register set
+	- EEPROM support (93C46/66/86) with auto-detection from LNX header
+	- RSA bootloader decryption
+	- Boot ROM support with HLE fallback
+	- Cart banking with LNX format support
+	- MAPCTL memory overlays (ROM, vectors, Mikey, Suzy)
+	- Debugger: disassembler, trace logger, event manager, effective address, sprite viewer
+	- UI: config panel, input mapping, piano roll layout, movie converter
+	- Pansy metadata export for Lynx platform
+	- ROM database with ~80 No-Intro entries
+	- 67 performance benchmarks, 84+ unit tests, TAS integration tests
+
+- **Upstream Mesen2 Fixes** — 8 bug fixes from open Mesen2 PRs
+	- PR #87: SNES DMA uint8_t overflow (could miscalculate cycle overhead)
+	- PR #82: NES GetInternalOpenBus returning wrong bus value
+	- PR #86: SNES CX4 cache/timing (bus delay, preload, IRQ flag, cycle compare)
+	- PR #80: SNES hi-res blend pixel pairing (was blurring entire screen)
+	- PR #31: NES NTSC filter dot crawl phase, Bisqwit RGB-YIQ matrix, RGB PPU emphasis
+	- PR #74: SNES ExLoRom mapping + S-DD1 map mode fix
+	- PR #76: Lua crash fix for non-string error objects
+	- PR #85: Linux FontConfig typeface caching for Memory View performance
+
+- **Game Package Export** — Export ROM + metadata as `.nexen-pack.zip`
+- **Memory-based SaveState API** — Greenzone uses in-memory states (no temp files)
+- **TAS Improvements**
+	- Joypad interrupt detection for movie playback
+	- InsertFrames/DeleteFrames Lua API
+	- SortedSet greenzone lookups, bulk operations
+	- O(1) single-frame UpdateFrames optimization
+	- FormattedText caching in piano roll
+	- SeekToFrameAsync batching (replaced Task.Delay with Task.Yield)
+- **Movie Converter Fixes** — BK2/FM2/SMV/LSMV import correctness
+
+### Performance
+
+192 commits of optimization work across 13 phases:
+
+- **Phase 7-9: Core Pipeline**
+	- FastBinary positional serializer for run-ahead (eliminates string key overhead)
+	- Rewind system: audio ring buffer, O(1) memory tracking, compression direct-write
+	- Audio pipeline: ReverbFilter ring buffer, SDL atomics
+	- Profiler: cached pointers (6-9x), callstack ring buffer (2x)
+	- Lightweight CDL, VideoDecoder frame skip, SoundMixer turbo audio
+	- DebugHud: flat buffer pixel tracking (replaces unordered_map)
+	- Pansy auto-save off UI thread, ROM CRC32 caching
+
+- **Phase 10-13: Hot Path Audit**
+	- Move semantics for RenderedFrame/VideoDecoder
+	- HUD string copy elimination, DrawStringCommand move
+	- ExpressionEvaluator const ref (9x string copy elimination)
+	- ClearFrameEvents swap, GBA pendingIrqs swap-and-pop O(1)
+	- GetPortStates buffer reuse (per-frame alloc elimination)
+	- TraceLogger persistent buffers, ScriptingContext const ref
+	- NesSoundMixer timestamps reserve, selective zeroing
+	- SystemHud snprintf, DebugStats stringstream reuse
+	- ShortcutKeyHandler move pressedKeys
+	- MovieRecorder/NexenMovie const ref, StepBack emplace_back
+
+- **Lynx-Specific Performance**
+	- NZ flag lookup table, LFSR branchless popcount
+	- Timer mask optimization, video filter branch elimination
+	- Branchless flags, branch hints, unsigned bounds checks
+	- Cached GetCycleCount, removed redundant null checks
+
+### Fixed
+
+- **43 compiler warnings** across C++ and C# codebase
+- **Lynx emulation** — 100+ bug fixes from comprehensive audit:
+	- IRQ firing, timer prescaler units, MAPCTL bit assignments
+	- Sprite engine: collision buffer, quadrant rendering, pixel format
+	- Math engine: register addresses, signed multiply
+	- Audio: tick rate, volume, timer cascade, TimerDone blocking
+	- Cart: banking, RCART registers, page parameter
+	- UART: 3 bug fixes for serial communication
+	- DISPCTL flip mode, PBKUP register, 2-byte NOP opcodes
+
+### Testing
+
+- **1495 tests** across 100 test suites (up from 659 in v1.1.0)
+	- 65C02 CPU exhaustive instruction logic tests
+	- Lynx: hardware reference correctness tests (63), math unit (16), sprite (50+), fuzz (17)
+	- TAS: integration tests, movie converter tests, truncation benchmarks
+	- Upstream fix verification tests
+
+---
+
 ## [1.1.4] - 2026-02-13
 
 ### Fixed
