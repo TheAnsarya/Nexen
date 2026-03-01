@@ -342,7 +342,11 @@ don't spiral or circle, exit early and documentat it for later work, continue;
 
 continue working issues and make new ones; go!; continue;
 
-[Nexen] I want to remphasize (and make sure it's in the copilot instructions) that we can never ever sacrifice ***emulator accuracy*** these performance boosts are awesome and necessary but make sure we are testing everything as well as benchmarking so that our changes make things better but don't mess up emulation; continue working issues and make new ones; go!; continue;
+[Nexen] I want to remphasize (and make sure it's in the copilot instructions) that we can never ever sacrifice ***emulator accuracy***, these performance boosts are awesome and necessary but make sure we are testing everything as well as benchmarking so that our changes make things better but don't mess up emulation; continue working issues and make new ones; go!; continue;
+
+[Nexen] Fix this one test: `.NET tests pass with only the pre-existing Lynx PAL failure`, and make sure the Atari Lynx implementation is good; continue; also work performance improvements; continue;
+
+[Nexen] make sure the Atari Lynx implementation is good; continue working issues and make new ones; also work performance improvements; continue;
 
 
 
