@@ -253,19 +253,44 @@ void LynxMikey::RenderScanline() {
 	// Base address from DISPADR, offset by scanline * 80.
 	// The & 0xFFFF mask below guarantees safe access — workRam is exactly
 	// 64KB (WorkRamSize = 0x10000), so any DisplayAddress value is valid.
-	uint16_t lineAddr = _state.DisplayAddress + (scanline * LynxConstants::BytesPerScanline);
 	uint32_t* destLine = &_frameBuffer[scanline * LynxConstants::ScreenWidth];
 	uint8_t* workRam = _console->GetWorkRam();
 
-	for (int x = 0; x < LynxConstants::BytesPerScanline; x++) {
-		uint8_t byte = workRam[(lineAddr + x) & 0xFFFF];
+	// DISPCTL bit 1: Flip mode — reverses read direction and nibble order
+	// (matching Handy's mDISPCTL_Flip behavior)
+	bool flip = (_state.DisplayControl & 0x02) != 0;
 
-		// High nibble = first pixel, low nibble = second pixel
-		uint8_t pix0 = (byte >> 4) & 0x0f;
-		uint8_t pix1 = byte & 0x0f;
+	if (flip) {
+		// Flip mode: start from end of scanline data, read backwards.
+		// Handy starts at (DisplayAddress & 0xFFFC) + 3, then decrements
+		// per byte. For scanline-based rendering we need the line offset
+		// and read bytes right-to-left, swapping nibble order.
+		uint16_t lineAddr = _state.DisplayAddress + (scanline * LynxConstants::BytesPerScanline);
+		// Start from last byte of the line and work backwards
+		lineAddr += (LynxConstants::BytesPerScanline - 1);
+		for (int x = 0; x < LynxConstants::BytesPerScanline; x++) {
+			uint8_t byte = workRam[(lineAddr - x) & 0xFFFF];
 
-		destLine[x * 2] = _state.Palette[pix0];
-		destLine[x * 2 + 1] = _state.Palette[pix1];
+			// Flipped: low nibble = first pixel, high nibble = second pixel
+			uint8_t pix0 = byte & 0x0f;
+			uint8_t pix1 = (byte >> 4) & 0x0f;
+
+			destLine[x * 2] = _state.Palette[pix0];
+			destLine[x * 2 + 1] = _state.Palette[pix1];
+		}
+	} else {
+		// Normal mode: read forward, high nibble first
+		uint16_t lineAddr = _state.DisplayAddress + (scanline * LynxConstants::BytesPerScanline);
+		for (int x = 0; x < LynxConstants::BytesPerScanline; x++) {
+			uint8_t byte = workRam[(lineAddr + x) & 0xFFFF];
+
+			// High nibble = first pixel, low nibble = second pixel
+			uint8_t pix0 = (byte >> 4) & 0x0f;
+			uint8_t pix1 = byte & 0x0f;
+
+			destLine[x * 2] = _state.Palette[pix0];
+			destLine[x * 2 + 1] = _state.Palette[pix1];
+		}
 	}
 }
 
