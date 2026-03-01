@@ -23,6 +23,7 @@ PceAdpcm::PceAdpcm(PceConsole* console, Emulator* emu, PceCdRom* cdrom, PceScsiB
 	_ram = new uint8_t[0x10000];
 	console->InitializeRam(_ram, 0x10000);
 	emu->RegisterMemory(MemoryType::PceAdpcmRam, _ram, 0x10000);
+	_samplesToPlay.reserve(2048);
 }
 
 PceAdpcm::~PceAdpcm() {
@@ -343,8 +344,8 @@ void PceAdpcm::PlaySample() {
 	}
 
 	int16_t out = (_currentOutput - 2048) * 10;
-	_samplesToPlay.push_back(out);
-	_samplesToPlay.push_back(out);
+	_samplesToPlay.emplace_back(out);
+	_samplesToPlay.emplace_back(out);
 }
 
 void PceAdpcm::MixAudio(int16_t* out, uint32_t sampleCount, uint32_t sampleRate) {

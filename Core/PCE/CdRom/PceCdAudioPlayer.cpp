@@ -13,6 +13,7 @@ PceCdAudioPlayer::PceCdAudioPlayer(Emulator* emu, PceCdRom* cdrom, DiscInfo& dis
 	_cdrom = cdrom;
 	_disc = &disc;
 	_state.Status = CdAudioStatus::Inactive;
+	_samplesToPlay.reserve(1200); // 588 stereo samples per sector
 }
 
 void PceCdAudioPlayer::Play(uint32_t startSector, bool pause) {

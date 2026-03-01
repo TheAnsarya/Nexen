@@ -16,6 +16,7 @@ SmsFmAudio::SmsFmAudio(Emulator* emu, SmsConsole* console) {
 	OPLL_setChipType(_opll, 0);
 	OPLL_resetPatch(_opll, 0);
 	OPLL_reset(_opll);
+	_samplesToPlay.reserve(2048);
 	_emu->GetSoundMixer()->RegisterAudioProvider(this);
 }
 
