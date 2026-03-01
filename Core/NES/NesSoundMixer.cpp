@@ -47,6 +47,7 @@ void NesSoundMixer::Reset() {
 	blip_clear(_blipBufRight);
 
 	_timestamps.clear();
+	_timestamps.reserve(512); // Pre-allocate typical frame capacity to avoid early-frame reallocs
 
 	for (uint32_t i = 0; i < MaxChannelCount; i++) {
 		_volumes[i] = 1.0;
