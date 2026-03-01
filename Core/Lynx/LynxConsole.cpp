@@ -265,14 +265,16 @@ void LynxConsole::RunFrame() {
 
 	while (_cpu->GetCycleCount() - startCycle < targetCycles) {
 		_cpu->Exec();
+		// Cache cycle count to avoid redundant pointer-chasing per iteration
+		uint64_t cycle = _cpu->GetCycleCount();
 		// Tick Mikey timers based on CPU cycle count
-		_mikey->Tick(_cpu->GetCycleCount());
-		// Tick audio
-		if (_apu) _apu->Tick(_cpu->GetCycleCount());
+		_mikey->Tick(cycle);
+		// Tick audio — _apu is always initialized after LoadRom()
+		_apu->Tick(cycle);
 	}
 
 	// Flush remaining audio samples
-	if (_apu) _apu->EndFrame();
+	_apu->EndFrame();
 
 	// Copy Mikey's frame buffer to output
 	memcpy(_frameBuffer, _mikey->GetFrameBuffer(), sizeof(_frameBuffer));
