@@ -44,7 +44,7 @@ void LynxApu::Tick(uint64_t currentCycle) {
 void LynxApu::TickChannelTimer(int ch, uint64_t currentCycle) {
 	LynxAudioChannelState& channel = _state.Channels[ch];
 
-	if (!channel.Enabled || channel.TimerDone) {
+	if (!channel.Enabled) {
 		// Advance LastTick so we don't accumulate a huge delta
 		channel.LastTick = currentCycle;
 		return;
@@ -70,7 +70,6 @@ void LynxApu::TickChannelTimer(int ch, uint64_t currentCycle) {
 		channel.Counter--;
 
 		if (channel.Counter == 0xff) { // Underflow (wrapped from 0 to 0xFF)
-			channel.TimerDone = true;
 			channel.Counter = channel.BackupValue;
 
 			// Clock the LFSR (actual audio generation)
@@ -79,8 +78,9 @@ void LynxApu::TickChannelTimer(int ch, uint64_t currentCycle) {
 			// Cascade to next linked audio channel
 			CascadeAudioChannel(ch);
 
-			// Stop counting while done flag is set (matching Mikey HW Bug 13.6)
-			break;
+			// Audio channels do NOT stop on underflow — HW Bug 13.6
+			// (TimerDone blocks counting) only applies to Mikey system
+			// timers 0-7, not the audio timer section.
 		}
 	}
 }
@@ -94,7 +94,7 @@ void LynxApu::CascadeAudioChannel(int sourceChannel) {
 	LynxAudioChannelState& channel = _state.Channels[target];
 
 	// Only cascade if target is linked (clock source 7) and enabled
-	if (!channel.Enabled || (channel.Control & 0x07) != 7 || channel.TimerDone) {
+	if (!channel.Enabled || (channel.Control & 0x07) != 7) {
 		return;
 	}
 
