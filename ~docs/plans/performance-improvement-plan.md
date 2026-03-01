@@ -131,6 +131,24 @@ User reports while playing Dragon Warrior 4 (NES):
 |-------|-------------|----------|
 | #422 | Async save states | Medium |
 | #423 | Rewind at turbo speed | Medium |
+| #452 | BaseControlDevice lock coarsening | Low |
+| #462 | MemoryAccessCounter per-read branch elimination | High |
+| #463 | NotificationManager RCU pattern | Medium |
+
+### Phase 10: Deep Hot Path Audit & Mechanical Cleanup — COMPLETE
+| Issue | Description | Status | Impact |
+|-------|-------------|--------|--------|
+| #456 | SaveStateManager buffer reuse (memcpy vs move) | ✅ Done | 15% faster, 50× more stable variance |
+| #457 | CheatManager sorted vector (binary search) | ✅ Done | 5.7% faster misses, cache-friendly |
+| #458 | VideoRenderer persistent AVI HUDs | ✅ Done | Eliminates per-frame DebugHud/InputHud allocation |
+| #459 | Debugger::Log deque + const ref + '\n' | ✅ Done | O(1) push vs O(n) list, no stdout flush |
+| #460 | RecordInput pass by const ref | ✅ Done | Eliminates vector<shared_ptr> copy per frame |
+| #461 | NesDebugger DebugRead research | ✅ Closed | Not redundant — architecturally required pre-fetch |
+| #462 | MemoryAccessCounter audit | ✅ Closed | Already optimal — flat arrays, compile-time unroll |
+| #464 | HistoryViewer cached segments | ✅ Done | O(1) GetState() vs O(n) scan |
+| #465 | LabelManager const ref + GetComment no-copy | ✅ Done | Zero-copy comment return, const ref params |
+| #466 | Breakpoint::Matches header inline | ✅ Done | Cross-TU inlining for per-access template |
+| #467 | MessageManager/DebugLog const ref + emplace_back | ✅ Done | 11 files, 16 emplace_back conversions |
 
 ## Benchmark Results Summary
 
