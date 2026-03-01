@@ -434,7 +434,7 @@ void ShortcutKeyHandler::ProcessKeys() {
 			_prevKeysDown[i] = _keysDown[i];
 		}
 
-		_lastPressedKeys = _pressedKeys;
+		_lastPressedKeys = std::move(_pressedKeys);
 	}
 
 	if (_needRepeat) {
