@@ -945,3 +945,220 @@ static void BM_CDLOnly_Pipeline(benchmark::State& state) {
 	state.SetLabel("CDL flags only (floor)");
 }
 BENCHMARK(BM_CDLOnly_Pipeline);
+
+// =============================================================================
+// 9. ClearFrameEvents: copy vs swap
+// =============================================================================
+
+// Old approach: O(n) copy + clear
+static void BM_ClearFrameEvents_Copy(benchmark::State& state) {
+	std::vector<BenchEventInfo> debugEvents(500);
+	std::vector<BenchEventInfo> prevDebugEvents;
+
+	for (auto _ : state) {
+		debugEvents.resize(500);
+		prevDebugEvents = debugEvents;  // O(n) copy
+		debugEvents.clear();
+		benchmark::DoNotOptimize(prevDebugEvents.data());
+	}
+}
+BENCHMARK(BM_ClearFrameEvents_Copy);
+
+// New approach: O(1) swap + clear
+static void BM_ClearFrameEvents_Swap(benchmark::State& state) {
+	std::vector<BenchEventInfo> debugEvents(500);
+	std::vector<BenchEventInfo> prevDebugEvents;
+
+	for (auto _ : state) {
+		debugEvents.resize(500);
+		std::swap(prevDebugEvents, debugEvents);  // O(1) swap
+		debugEvents.clear();
+		benchmark::DoNotOptimize(prevDebugEvents.data());
+	}
+}
+BENCHMARK(BM_ClearFrameEvents_Swap);
+
+// =============================================================================
+// 10. ExpressionEvaluator: string by value vs const ref (cache-hit path)
+// =============================================================================
+
+// Old approach: string by value — copies on each call
+static void BM_ExprEval_StringByValue(benchmark::State& state) {
+	std::unordered_map<std::string, int> cache;
+	std::string expr = "a + b * (c - d) / e + f > 100";
+	cache[expr] = 42;
+
+	for (auto _ : state) {
+		std::string copy = expr;  // Simulate pass-by-value copy
+		auto it = cache.find(copy);
+		benchmark::DoNotOptimize(it->second);
+	}
+}
+BENCHMARK(BM_ExprEval_StringByValue);
+
+// New approach: const string& — no copy on cache-hit
+static void BM_ExprEval_StringByConstRef(benchmark::State& state) {
+	std::unordered_map<std::string, int> cache;
+	std::string expr = "a + b * (c - d) / e + f > 100";
+	cache[expr] = 42;
+
+	for (auto _ : state) {
+		const std::string& ref = expr;  // No copy
+		auto it = cache.find(ref);
+		benchmark::DoNotOptimize(it->second);
+	}
+}
+BENCHMARK(BM_ExprEval_StringByConstRef);
+BENCHMARK(BM_CDLOnly_Pipeline);
+
+// =============================================================================
+// 9. ClearFrameEvents: copy vs swap
+// =============================================================================
+
+// Old approach: O(n) copy + clear
+static void BM_ClearFrameEvents_Copy(benchmark::State& state) {
+	std::vector<BenchEventInfo> debugEvents(500);
+	std::vector<BenchEventInfo> prevDebugEvents;
+
+	for (auto _ : state) {
+		// Simulate a frame's worth of events
+		debugEvents.resize(500);
+		prevDebugEvents = debugEvents;  // O(n) copy
+		debugEvents.clear();
+		benchmark::DoNotOptimize(prevDebugEvents.data());
+	}
+}
+BENCHMARK(BM_ClearFrameEvents_Copy);
+
+// New approach: O(1) swap + clear
+static void BM_ClearFrameEvents_Swap(benchmark::State& state) {
+	std::vector<BenchEventInfo> debugEvents(500);
+	std::vector<BenchEventInfo> prevDebugEvents;
+
+	for (auto _ : state) {
+		// Simulate a frame's worth of events
+		debugEvents.resize(500);
+		std::swap(prevDebugEvents, debugEvents);  // O(1) swap
+		debugEvents.clear();
+		benchmark::DoNotOptimize(prevDebugEvents.data());
+	}
+}
+BENCHMARK(BM_ClearFrameEvents_Swap);
+
+// =============================================================================
+// 10. ExpressionEvaluator: string by value vs const ref (cache-hit path)
+// =============================================================================
+
+// Old approach: string by value — copies on each call
+static void BM_ExprEval_StringByValue(benchmark::State& state) {
+	std::unordered_map<std::string, int> cache;
+	std::string expr = "a + b * (c - d) / e + f > 100";
+	cache[expr] = 42;
+
+	for (auto _ : state) {
+		std::string copy = expr;  // Simulate pass-by-value copy
+		auto it = cache.find(copy);
+		benchmark::DoNotOptimize(it->second);
+	}
+}
+BENCHMARK(BM_ExprEval_StringByValue);
+
+// New approach: const string& — no copy on cache-hit
+static void BM_ExprEval_StringByConstRef(benchmark::State& state) {
+	std::unordered_map<std::string, int> cache;
+	std::string expr = "a + b * (c - d) / e + f > 100";
+	cache[expr] = 42;
+
+	for (auto _ : state) {
+		const std::string& ref = expr;  // No copy
+		auto it = cache.find(ref);
+		benchmark::DoNotOptimize(it->second);
+	}
+}
+BENCHMARK(BM_ExprEval_StringByConstRef);
+
+// ============================================================================
+// ClearFrameEvents: copy vs swap benchmark (#470)
+// ============================================================================
+
+static void BM_ClearFrameEvents_Copy(benchmark::State& state) {
+	const size_t eventCount = 5000;
+	std::vector<uint64_t> debugEvents(eventCount);
+	std::vector<uint64_t> prevDebugEvents(eventCount);
+	for (size_t i = 0; i < eventCount; i++) {
+		debugEvents[i] = i * 7 + 13;
+	}
+
+	for (auto _ : state) {
+		prevDebugEvents = debugEvents;
+		debugEvents.clear();
+		// Refill to keep iterations consistent
+		debugEvents.resize(eventCount);
+		benchmark::DoNotOptimize(prevDebugEvents.data());
+	}
+	state.SetItemsProcessed(state.iterations());
+	state.SetLabel("vector copy assignment");
+}
+BENCHMARK(BM_ClearFrameEvents_Copy);
+
+static void BM_ClearFrameEvents_Swap(benchmark::State& state) {
+	const size_t eventCount = 5000;
+	std::vector<uint64_t> debugEvents(eventCount);
+	std::vector<uint64_t> prevDebugEvents(eventCount);
+	for (size_t i = 0; i < eventCount; i++) {
+		debugEvents[i] = i * 7 + 13;
+	}
+
+	for (auto _ : state) {
+		std::swap(prevDebugEvents, debugEvents);
+		debugEvents.clear();
+		// Refill to keep iterations consistent
+		debugEvents.resize(eventCount);
+		benchmark::DoNotOptimize(prevDebugEvents.data());
+	}
+	state.SetItemsProcessed(state.iterations());
+	state.SetLabel("swap + clear (O(1) swap)");
+}
+BENCHMARK(BM_ClearFrameEvents_Swap);
+
+// ============================================================================
+// ExpressionEvaluator: string by value vs const ref (#471)
+// ============================================================================
+
+static std::string MakeTestExpression() {
+	return std::string("A == 0xFF && iswrite && [0x2000] > 100");
+}
+
+static int64_t EvalByValue(std::string expr) {
+	benchmark::DoNotOptimize(expr.data());
+	return static_cast<int64_t>(expr.size());
+}
+
+static int64_t EvalByConstRef(const std::string& expr) {
+	benchmark::DoNotOptimize(expr.data());
+	return static_cast<int64_t>(expr.size());
+}
+
+static void BM_ExprEval_StringByValue(benchmark::State& state) {
+	std::string expr = MakeTestExpression();
+
+	for (auto _ : state) {
+		int64_t result = EvalByValue(expr);
+		benchmark::DoNotOptimize(result);
+	}
+	state.SetItemsProcessed(state.iterations());
+	state.SetLabel("string by value (copy per call)");
+}
+BENCHMARK(BM_ExprEval_StringByValue);
+
+static void BM_ExprEval_StringByConstRef(benchmark::State& state) {
+	std::string expr = MakeTestExpression();
+
+	for (auto _ : state) {
+		int64_t result = EvalByConstRef(expr);
+		benchmark::DoNotOptimize(result);
+	}
+	state.SetItemsProcessed(state.iterations());
+	state.SetLabel("const string& (zero-copy)");
+}
+BENCHMARK(BM_ExprEval_StringByConstRef);
