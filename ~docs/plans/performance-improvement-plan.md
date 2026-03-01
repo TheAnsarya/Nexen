@@ -119,6 +119,13 @@ User reports while playing Dragon Warrior 4 (NES):
 | #448 | Performance regression benchmarks | ✅ Done | 30+ benchmarks added |
 | #449 | Pansy/CDL tracking audit | ✅ Done | Already idempotent, no changes needed |
 
+### Phase 9: DebugHud, Pansy Pipeline, Game Package Export
+| Issue | Description | Status | Impact |
+|-------|-------------|--------|--------|
+| #453 | DebugHud flat buffer pixel tracking | ✅ Done | O(1) indexed vs hash lookup per pixel |
+| #454 | Game Package Export (.nexen-pack.zip) | ✅ Done | New feature — Tools menu |
+| #455 | Pansy auto-save off UI thread + CRC cache | ✅ Done | Eliminates UI thread file I/O blocking |
+
 ### Remaining Open Work
 | Issue | Description | Priority |
 |-------|-------------|----------|
@@ -185,3 +192,12 @@ thoroughly. The system is **already idempotent at every level**:
 | `Core.Benchmarks/Serialization/SerializerBench.cpp` | 9 FastBinary benchmarks |
 | `Core.Benchmarks/Debugger/MetadataRecordingBench.cpp` | CDL/CrossFeed/Notification/Message benchmarks |
 | `Core.Benchmarks/Shared/MoveSemanticsBench.cpp` | Move semantics benchmarks |
+| `Core/Shared/Video/DebugHud.h` | Flat vector<uint32_t> + dirty indices replace unordered_map |
+| `Core/Shared/Video/DebugHud.cpp` | Flat buffer diff, sparse clear, O(1) pixel tracking |
+| `Core/Shared/Video/DrawCommand.h` | Flat buffer pointer + bounds check in InternalDrawPixel |
+| `UI/Utilities/GamePackageExporter.cs` | New — .nexen-pack.zip export with async background thread |
+| `UI/Debugger/Labels/BackgroundPansyExporter.cs` | Threadpool export, cached CRC32 |
+| `UI/Debugger/Labels/PansyExporter.cs` | Cached CRC param, FileOptions.SequentialScan |
+| `UI/ViewModels/MainMenuViewModel.cs` | Export Game Package menu items |
+| `UI/Debugger/Utilities/ContextMenuAction.cs` | ExportGamePackage, OpenGamePacksFolder actions |
+| `UI/Localization/resources.en.xml` | Localization for new menu items and messages |
