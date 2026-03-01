@@ -84,7 +84,7 @@ void RewindData::SaveState(Emulator* emu, deque<RewindData>& prevStates, int32_t
 		}
 
 		// Keep uncompressed data for the next 30 states - this avoids having to decompress the state 30 times
-		_uncompressedData = vector<uint8_t>(data.begin(), data.end());
+		_uncompressedData.assign(reinterpret_cast<const uint8_t*>(data.data()), reinterpret_cast<const uint8_t*>(data.data() + data.size()));
 	}
 
 	CompressionHelper::Compress(data, 1, _saveStateData);
