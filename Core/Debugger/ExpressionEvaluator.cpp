@@ -690,8 +690,8 @@ ExpressionData* ExpressionEvaluator::PrivateGetRpnList(const string& expression,
 		success = ToRpn(fixedExp, data);
 		if (success) {
 			LockHandler lock = _cacheLock.AcquireSafe();
-			_cache[expression] = data;
-			cachedData = &_cache[expression];
+			auto [it, _] = _cache.emplace(expression, std::move(data));
+			cachedData = &it->second;
 		}
 	} else {
 		success = true;
