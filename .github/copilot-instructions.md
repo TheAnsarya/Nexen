@@ -208,6 +208,38 @@ if (condition)
 
 ## Performance Guidelines
 
+### ⚠️ ABSOLUTE RULE: Emulator Accuracy is Sacred
+
+**NEVER sacrifice emulator accuracy for performance.** This is the #1 non-negotiable rule.
+
+- **Every performance optimization MUST be correctness-preserving** — if a change could alter emulation behavior in any way, it is rejected
+- **Run ALL tests after every change** — 1495+ C++ tests (Core.Tests.exe) and .NET tests must pass before any commit
+- **Benchmark BEFORE and AFTER** — prove the improvement with data, not just theory
+- **When in doubt, don't optimize** — a slower correct emulator is infinitely better than a faster broken one
+
+#### Verification Checklist (for EVERY performance change):
+1. ✅ All C++ tests pass (`Core.Tests.exe --gtest_brief=1`)
+2. ✅ All .NET tests pass (`dotnet test --no-build -c Release`)
+3. ✅ Benchmark shows measurable improvement (Google Benchmark with `--benchmark_repetitions=3`)
+4. ✅ Change is semantics-preserving (same observable behavior)
+5. ✅ No new warnings in build output
+6. ✅ Hot path changes reviewed for correctness (CPU cores, PPU, memory handlers)
+
+#### Types of Safe Performance Changes:
+- **Data structure swaps** (e.g., `unordered_map` → sorted `vector`) — same semantics, different performance
+- **Avoiding copies** (e.g., `const string&` instead of `string`) — identical behavior
+- **Eliminating allocations** (e.g., `emplace_back` vs `push_back` of temporary) — identical behavior
+- **Inlining** (e.g., moving small templates to headers) — identical behavior
+- **Caching** (e.g., precomputing immutable data at init) — identical results
+
+#### Types of DANGEROUS Changes (require extra scrutiny):
+- Anything touching CPU instruction execution
+- Memory mapping or bank switching logic
+- PPU timing or rendering order
+- Audio sample generation or mixing
+- Interrupt handling or cycle counting
+- Lock removal or reordering (thread safety)
+
 ### Hot Path Rules
 **NEVER add overhead to:**
 
