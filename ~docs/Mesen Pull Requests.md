@@ -342,4 +342,4 @@
 | 2026-03-01 | #74 | Applied ExLoRom mapping support | b193f0c5 |
 | 2026-03-01 | #85 | Applied typeface caching | b193f0c5 |
 | 2026-03-01 | #76 | Applied Lua crash fix | b193f0c5 |
-| 2026-03-02 | #31 | Applied NES NTSC filter + PPU palette fixes | TBD |
+| 2026-03-02 | #31 | Applied NES NTSC filter + PPU palette fixes | 4de511a5 |
