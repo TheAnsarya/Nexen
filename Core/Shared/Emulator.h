@@ -506,9 +506,9 @@ public:
 	/// </remarks>
 	template <CpuType type>
 	__forceinline void ProcessInstruction() {
-		if (_debugger) {
+		if (_debugger) [[unlikely]] {
 			_debugger->ProcessInstruction<type>();
-		} else if (_cdlRecorder) {
+		} else if (_cdlRecorder) [[unlikely]] {
 			_cdlRecorder->RecordInstruction();
 		}
 	}
@@ -522,9 +522,9 @@ public:
 	/// <typeparam name="flags">Memory access flags</typeparam>
 	template <CpuType type, uint8_t accessWidth = 1, MemoryAccessFlags flags = MemoryAccessFlags::None, typename T>
 	__forceinline void ProcessMemoryRead(uint32_t addr, T& value, MemoryOperationType opType) {
-		if (_debugger) {
+		if (_debugger) [[unlikely]] {
 			_debugger->ProcessMemoryRead<type, accessWidth, flags>(addr, value, opType);
-		} else if (_cdlRecorder) {
+		} else if (_cdlRecorder) [[unlikely]] {
 			_cdlRecorder->RecordRead(addr, DebugUtilities::GetCpuMemoryType(type), opType);
 		}
 	}
@@ -535,7 +535,7 @@ public:
 	/// <returns>True if write allowed, false if frozen by debugger</returns>
 	template <CpuType type, uint8_t accessWidth = 1, MemoryAccessFlags flags = MemoryAccessFlags::None, typename T>
 	__forceinline bool ProcessMemoryWrite(uint32_t addr, T& value, MemoryOperationType opType) {
-		if (_debugger) {
+		if (_debugger) [[unlikely]] {
 			return _debugger->ProcessMemoryWrite<type, accessWidth, flags>(addr, value, opType);
 		}
 		return true;
@@ -546,7 +546,7 @@ public:
 	/// </summary>
 	template <CpuType cpuType, MemoryType memType, MemoryOperationType opType, typename T>
 	__forceinline void ProcessMemoryAccess(uint32_t addr, T value) {
-		if (_debugger) {
+		if (_debugger) [[unlikely]] {
 			_debugger->ProcessMemoryAccess<cpuType, memType, opType, T>(addr, value);
 		}
 	}
@@ -556,7 +556,7 @@ public:
 	/// </summary>
 	template <CpuType type>
 	__forceinline void ProcessIdleCycle() {
-		if (_debugger) {
+		if (_debugger) [[unlikely]] {
 			_debugger->ProcessIdleCycle<type>();
 		}
 	}
@@ -566,7 +566,7 @@ public:
 	/// </summary>
 	template <CpuType type>
 	__forceinline void ProcessHaltedCpu() {
-		if (_debugger) {
+		if (_debugger) [[unlikely]] {
 			_debugger->ProcessHaltedCpu<type>();
 		}
 	}
@@ -576,7 +576,7 @@ public:
 	/// </summary>
 	template <CpuType type, typename T>
 	__forceinline void ProcessPpuRead(uint32_t addr, T& value, MemoryType memoryType, MemoryOperationType opType = MemoryOperationType::Read) {
-		if (_debugger) {
+		if (_debugger) [[unlikely]] {
 			_debugger->ProcessPpuRead<type>(addr, value, memoryType, opType);
 		}
 	}
@@ -586,7 +586,7 @@ public:
 	/// </summary>
 	template <CpuType type, typename T>
 	__forceinline void ProcessPpuWrite(uint32_t addr, T& value, MemoryType memoryType) {
-		if (_debugger) {
+		if (_debugger) [[unlikely]] {
 			_debugger->ProcessPpuWrite<type>(addr, value, memoryType);
 		}
 	}
@@ -596,7 +596,7 @@ public:
 	/// </summary>
 	template <CpuType type>
 	__forceinline void ProcessPpuCycle() {
-		if (_debugger) {
+		if (_debugger) [[unlikely]] {
 			_debugger->ProcessPpuCycle<type>();
 		}
 	}
@@ -606,7 +606,7 @@ public:
 	/// </summary>
 	template <CpuType type>
 	void ProcessInterrupt(uint32_t originalPc, uint32_t currentPc, bool forNmi) {
-		if (_debugger) {
+		if (_debugger) [[unlikely]] {
 			_debugger->ProcessInterrupt<type>(originalPc, currentPc, forNmi);
 		}
 	}
