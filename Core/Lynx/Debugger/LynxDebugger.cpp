@@ -361,7 +361,7 @@ BaseState& LynxDebugger::GetState() {
 
 void LynxDebugger::GetPpuState(BaseState& state) {
 	// Lynx has no separate PPU state — Mikey state is accessed via console state
-	(LynxMikeyState&)state = _console->GetMikey()->GetState();
+	reinterpret_cast<LynxMikeyState&>(state) = _console->GetMikey()->GetState();
 }
 
 void LynxDebugger::SetPpuState(BaseState& state) {

@@ -442,7 +442,7 @@ private:
 
 	// --- NOP (various sizes for undefined opcodes) ---
 	void NOP() {}
-	void NOP_Imm() { GetOperandValue(); }  // 2-byte NOP
+	void NOP_Imm() { (void)GetOperandValue(); }  // 2-byte NOP
 
 	// WDC 65C02 undefined 3-byte NOPs with extra cycles
 	void NOP_5C() { DummyRead(); DummyRead(); DummyRead(); DummyRead(); DummyRead(); } // $5C: 8 cycles total (3 addr + 5 dummy)

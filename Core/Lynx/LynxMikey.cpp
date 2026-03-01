@@ -748,7 +748,7 @@ void LynxMikey::WriteRegister(uint8_t addr, uint8_t value) {
 				// Bit 2: EEPROM serial clock — trigger on rising edge
 				if ((value & 0x04) && !(prev & 0x04)) {
 					// Rising edge on clock line: latch data-in bit (bit 1)
-					_eeprom->ClockData((value & 0x02) != 0);
+					(void)_eeprom->ClockData((value & 0x02) != 0);
 				}
 			}
 			return;

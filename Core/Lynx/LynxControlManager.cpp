@@ -33,6 +33,8 @@ void LynxControlManager::UpdateControlDevices() {
 		return;
 	}
 
+	_prevConfig = cfg;
+
 	auto lock = _deviceLock.AcquireSafe();
 
 	ClearDevices();
@@ -54,10 +56,8 @@ void LynxControlManager::UpdateInputState() {
 uint8_t LynxControlManager::ReadJoystick() {
 	for (shared_ptr<BaseControlDevice>& controller : _controlDevices) {
 		if (controller->GetPort() == 0 && controller->GetControllerType() == ControllerType::LynxController) {
-			LynxController* lynxCtrl = dynamic_cast<LynxController*>(controller.get());
-			if (lynxCtrl) {
-				return lynxCtrl->GetJoystickState();
-			}
+			auto* lynxCtrl = static_cast<LynxController*>(controller.get());
+			return lynxCtrl->GetJoystickState();
 		}
 	}
 	return 0xff; // All released
@@ -66,10 +66,8 @@ uint8_t LynxControlManager::ReadJoystick() {
 uint8_t LynxControlManager::ReadSwitches() {
 	for (shared_ptr<BaseControlDevice>& controller : _controlDevices) {
 		if (controller->GetPort() == 0 && controller->GetControllerType() == ControllerType::LynxController) {
-			LynxController* lynxCtrl = dynamic_cast<LynxController*>(controller.get());
-			if (lynxCtrl) {
-				return lynxCtrl->GetSwitchesState();
-			}
+			auto* lynxCtrl = static_cast<LynxController*>(controller.get());
+			return lynxCtrl->GetSwitchesState();
 		}
 	}
 	return 0xff;

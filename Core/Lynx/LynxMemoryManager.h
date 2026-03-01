@@ -82,24 +82,4 @@ public:
 private:
 	/// <summary>Update derived MAPCTL state from raw register value</summary>
 	void UpdateMapctl(uint8_t value);
-
-	/// <summary>Check if address falls in Suzy register space and overlay is active</summary>
-	[[nodiscard]] __forceinline bool IsSuzyAddress(uint16_t addr) const {
-		return !_state.SuzySpaceVisible ? false : (addr >= LynxConstants::SuzyBase && addr <= LynxConstants::SuzyEnd);
-	}
-
-	/// <summary>Check if address falls in Mikey register space and overlay is active</summary>
-	[[nodiscard]] __forceinline bool IsMikeyAddress(uint16_t addr) const {
-		return !_state.MikeySpaceVisible ? false : (addr >= LynxConstants::MikeyBase && addr <= LynxConstants::MikeyEnd);
-	}
-
-	/// <summary>Check if address falls in ROM space and overlay is active</summary>
-	[[nodiscard]] __forceinline bool IsRomAddress(uint16_t addr) const {
-		return !_state.RomSpaceVisible ? false : (addr >= LynxConstants::BootRomBase && addr <= 0xfff7);
-	}
-
-	/// <summary>Check if address falls in vector space and overlay is active</summary>
-	[[nodiscard]] __forceinline bool IsVectorAddress(uint16_t addr) const {
-		return !_state.VectorSpaceVisible ? false : (addr >= 0xfffa);
-	}
 };

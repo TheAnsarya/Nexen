@@ -174,7 +174,7 @@ constexpr LynxAddrMode _opMode[256] = {
 	LynxAddrMode::Abs,   LynxAddrMode::Abs,   LynxAddrMode::Abs,   LynxAddrMode::Imp,
 	// 0xF0-0xFF
 	LynxAddrMode::Rel,   LynxAddrMode::IndY,  LynxAddrMode::ZpgInd, LynxAddrMode::Imp,
-	LynxAddrMode::Imp,   LynxAddrMode::ZpgX,  LynxAddrMode::ZpgX,  LynxAddrMode::Imp,
+	LynxAddrMode::Zpg,   LynxAddrMode::ZpgX,  LynxAddrMode::ZpgX,  LynxAddrMode::Imp,  // $F4=2-byte NOP
 	LynxAddrMode::Imp,   LynxAddrMode::AbsY,  LynxAddrMode::Imp,   LynxAddrMode::Imp,
 	LynxAddrMode::Abs,   LynxAddrMode::AbsX,  LynxAddrMode::AbsX,  LynxAddrMode::Imp,
 };
