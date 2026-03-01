@@ -72,8 +72,18 @@ void Cx4TraceLogger::GetTraceRow(string& output, Cx4State& cpuState, TraceLogPpu
 	for (RowPart& rowPart : _rowParts) {
 		switch (rowPart.DataType) {
 			case RowDataType::PS: {
-				string status = string(cpuState.Carry ? "C" : "c") + (cpuState.Zero ? "Z" : "z") + (cpuState.Overflow ? "V" : "v") + (cpuState.Negative ? "N" : "n");
-				WriteStringValue(output, status, rowPart);
+				// Stack-allocated buffer — avoids 4 string allocations from + operator chain
+				char status[5] = {
+					cpuState.Carry ? 'C' : 'c',
+					cpuState.Zero ? 'Z' : 'z',
+					cpuState.Overflow ? 'V' : 'v',
+					cpuState.Negative ? 'N' : 'n',
+					'\0'
+				};
+				output.append(status, 4);
+				if (rowPart.MinWidth > 4) {
+					output.append(rowPart.MinWidth - 4, ' ');
+				}
 				break;
 			}
 

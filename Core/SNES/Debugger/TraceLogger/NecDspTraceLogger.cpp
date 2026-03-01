@@ -48,8 +48,20 @@ RowDataType NecDspTraceLogger::GetFormatTagType(string& tag) {
 }
 
 void NecDspTraceLogger::WriteAccFlagsValue(string& output, NecDspAccFlags flags, RowPart& rowPart) {
-	string status = string(flags.Carry ? "C" : "c") + (flags.Zero ? "Z" : "z") + (flags.Overflow0 ? "V" : "v") + (flags.Overflow1 ? "V" : "v") + (flags.Sign0 ? "N" : "n") + (flags.Sign1 ? "N" : "n");
-	WriteStringValue(output, status, rowPart);
+	// Stack-allocated buffer — avoids 6 string allocations from + operator chain
+	char status[7] = {
+		flags.Carry ? 'C' : 'c',
+		flags.Zero ? 'Z' : 'z',
+		flags.Overflow0 ? 'V' : 'v',
+		flags.Overflow1 ? 'V' : 'v',
+		flags.Sign0 ? 'N' : 'n',
+		flags.Sign1 ? 'N' : 'n',
+		'\0'
+	};
+	output.append(status, 6);
+	if (rowPart.MinWidth > 6) {
+		output.append(rowPart.MinWidth - 6, ' ');
+	}
 }
 
 void NecDspTraceLogger::GetTraceRow(string& output, NecDspState& cpuState, TraceLogPpuState& ppuState, DisassemblyInfo& disassemblyInfo) {
