@@ -170,6 +170,16 @@ User reports while playing Dragon Warrior 4 (NES):
 | #478 | StepBack emplace_back + MovieRecorder/NexenMovie const ref | ✅ Done | Eliminates temp + avoids string copies |
 | #479 | SystemHud snprintf + DebugStats stringstream reuse | ✅ Done | Eliminates stringstream allocs per frame |
 
+### Phase 13: Seventh Audit Sweep — Audio, Rewind, and Debugger Hot Paths — COMPLETE
+| Issue | Description | Status | Impact |
+|-------|-------------|--------|--------|
+| #483 | NesSoundMixer EndFrame — selective zeroing + dedup-at-insert | ✅ Done | 1.76x memset + 1.52x timestamps = ~3600ns/frame saved |
+| #484 | CompressionHelper::Compress const string& | ✅ Done | Eliminates 100KB+ heap copy per rewind snapshot |
+| #485 | RewindData::SaveState assign via pointer cast | ✅ Done | Eliminates char-by-char ~100KB copy |
+| #486 | BaseControlDevice::GetTextState cache GetKeyNames() | ✅ Done | One alloc per device lifetime vs per-frame |
+| #487 | StringUtilities::GetNthSegment for Disassembler | ✅ Done | 377ns → 22.5ns = **16.8x faster** |
+| #488 | MovieRecorder::CreateMovie const RewindData& | ✅ Done | Eliminates 100KB+ deep copy per rewind entry |
+
 ## Benchmark Results Summary
 
 ### FastBinary Serializer (run-ahead hot path)
@@ -192,6 +202,13 @@ User reports while playing Dragon Warrior 4 (NES):
 | CDL enabled (hot/idempotent) | N/A | 3.6us/10K | negligible |
 | ClearFrameEvents copy→swap | 1265ns | 581ns | **2.18x** |
 | ExprEval string by-value→const ref | 69.8ns | 7.67ns | **9.1x** |
+
+### Phase 13 Measurements
+| Benchmark | Old | New | Speedup |
+|-----------|-----|-----|---------|
+| EndFrame full memset (220KB) | 4150ns | 2352ns (selective) | **1.76x** |
+| Timestamps push+sort+unique | 5197ns | 3418ns (dedup+sort) | **1.52x** |
+| Split()[n] comment extraction | 377ns | 22.5ns (GetNthSegment) | **16.8x** |
 
 ## Pansy/CDL Tracking Audit (#449)
 
@@ -263,3 +280,13 @@ thoroughly. The system is **already idempotent at every level**:
 | `Core/Shared/Movies/NexenMovie.h/cpp` | LoadInt/LoadBool/LoadString const string& |
 | `Core/Shared/Video/SystemHud.cpp` | snprintf replaces stringstream in ShowGameTimer |
 | `Core/Shared/Video/DebugStats.cpp` | stringstream buffer reuse (ss.str(""); ss.clear()) |
+| `Core/NES/NesSoundMixer.h` | _usedTimestamp dedup array for EndFrame optimization |
+| `Core/NES/NesSoundMixer.cpp` | Selective zeroing + dedup-at-insert + memset in Reset only |
+| `Utilities/CompressionHelper.h` | Compress() takes const string& |
+| `Core/Shared/RewindData.cpp` | assign() via reinterpret_cast replaces char-by-char copy |
+| `Core/Shared/BaseControlDevice.h` | _cachedKeyNames + _keyNamesCached members |
+| `Core/Shared/BaseControlDevice.cpp` | Lazy-cached GetKeyNames() in GetTextState |
+| `Utilities/StringUtilities.h` | GetNthSegment() — extract Nth delimited segment without full Split |
+| `Core/Debugger/Disassembler.cpp` | GetNthSegment replaces Split()[n] for comment lines |
+| `Core/Shared/Movies/MovieRecorder.cpp` | const RewindData& in CreateMovie loop |
+| `Core.Benchmarks/NES/NesSoundMixerBench.cpp` | EndFrame + timestamp + GetNthSegment benchmarks |
