@@ -19,6 +19,8 @@
 #include "Lynx/Debugger/LynxTraceLogger.h"
 #include "Lynx/Debugger/LynxEventManager.h"
 #include "Lynx/Debugger/LynxAssembler.h"
+#include "Lynx/LynxController.h"
+#include "Shared/BaseControlManager.h"
 #include "Lynx/Debugger/LynxPpuTools.h"
 #include "Lynx/Debugger/DummyLynxCpu.h"
 #include "Utilities/HexUtilities.h"
@@ -402,5 +404,20 @@ bool LynxDebugger::SaveRomToDisk(string filename, bool saveAsIps, CdlStripOption
 }
 
 void LynxDebugger::ProcessInputOverrides(DebugControllerState inputOverrides[8]) {
-	// TODO: Implement input override for Lynx controller
+	BaseControlManager* controlManager = _console->GetControlManager();
+	for (int i = 0; i < 8; i++) {
+		shared_ptr<LynxController> controller = std::dynamic_pointer_cast<LynxController>(controlManager->GetControlDeviceByIndex(i));
+		if (controller && inputOverrides[i].HasPressedButton()) {
+			controller->SetBitValue(LynxController::Buttons::A, inputOverrides[i].A);
+			controller->SetBitValue(LynxController::Buttons::B, inputOverrides[i].B);
+			controller->SetBitValue(LynxController::Buttons::Option1, inputOverrides[i].L);
+			controller->SetBitValue(LynxController::Buttons::Option2, inputOverrides[i].R);
+			controller->SetBitValue(LynxController::Buttons::Pause, inputOverrides[i].Start);
+			controller->SetBitValue(LynxController::Buttons::Up, inputOverrides[i].Up);
+			controller->SetBitValue(LynxController::Buttons::Down, inputOverrides[i].Down);
+			controller->SetBitValue(LynxController::Buttons::Left, inputOverrides[i].Left);
+			controller->SetBitValue(LynxController::Buttons::Right, inputOverrides[i].Right);
+		}
+	}
+	controlManager->RefreshHubState();
 }
