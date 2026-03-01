@@ -591,6 +591,15 @@ __forceinline void LynxSuzy::WriteRam(uint16_t addr, uint8_t value) {
 }
 
 void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum, bool dontCollide, LynxSpriteType spriteType) {
+	// LeftHand mode: mirror X coordinate for left-handed play.
+	// On real hardware, the sprite engine flips the horizontal addressing so
+	// the display appears mirrored. This allows players to hold the Lynx
+	// upside-down (rotated 180°) for left-handed use.
+	// Fix for #415: LeftHand flag was read but never applied to coordinates.
+	if (_state.LeftHand) {
+		x = static_cast<int>(LynxConstants::ScreenWidth) - 1 - x;
+	}
+
 	// Bounds check
 	if (x < 0 || x >= static_cast<int>(LynxConstants::ScreenWidth) ||
 		y < 0 || y >= static_cast<int>(LynxConstants::ScreenHeight)) {
@@ -823,6 +832,15 @@ uint8_t LynxSuzy::ReadRegister(uint8_t addr) {
 		case 0x0e: return static_cast<uint8_t>(_state.CollisionAddress & 0xff);  // COLLADRL (read-only)
 		case 0x0f: return static_cast<uint8_t>((_state.CollisionAddress >> 8) & 0xff); // COLLADRH (read-only)
 
+		// Sprite engine configuration registers — readback support.
+		// CollOff, HSizeOff, VSizeOff are also writable (see WriteRegister).
+		case 0x24: return static_cast<uint8_t>(_state.CollOffset & 0xff);         // COLLOFFL
+		case 0x25: return static_cast<uint8_t>((_state.CollOffset >> 8) & 0xff);  // COLLOFFH
+		case 0x28: return static_cast<uint8_t>(_state.HSizeOff & 0xff);           // HSIZOFFL
+		case 0x29: return static_cast<uint8_t>((_state.HSizeOff >> 8) & 0xff);    // HSIZOFFH
+		case 0x2a: return static_cast<uint8_t>(_state.VSizeOff & 0xff);           // VSIZOFFL
+		case 0x2b: return static_cast<uint8_t>((_state.VSizeOff >> 8) & 0xff);    // VSIZOFFH
+
 		// Joystick / switches
 		case 0xb0: // JOYSTICK
 			return _state.Joystick;
@@ -910,6 +928,14 @@ uint8_t LynxSuzy::PeekRegister(uint8_t addr) const {
 		case 0x0d: return static_cast<uint8_t>((_state.VideoAddress >> 8) & 0xff);
 		case 0x0e: return static_cast<uint8_t>(_state.CollisionAddress & 0xff);
 		case 0x0f: return static_cast<uint8_t>((_state.CollisionAddress >> 8) & 0xff);
+
+		// Sprite engine configuration register readbacks
+		case 0x24: return static_cast<uint8_t>(_state.CollOffset & 0xff);
+		case 0x25: return static_cast<uint8_t>((_state.CollOffset >> 8) & 0xff);
+		case 0x28: return static_cast<uint8_t>(_state.HSizeOff & 0xff);
+		case 0x29: return static_cast<uint8_t>((_state.HSizeOff >> 8) & 0xff);
+		case 0x2a: return static_cast<uint8_t>(_state.VSizeOff & 0xff);
+		case 0x2b: return static_cast<uint8_t>((_state.VSizeOff >> 8) & 0xff);
 
 		// Joystick / switches
 		case 0xb0: return _state.Joystick;
