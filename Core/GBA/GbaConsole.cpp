@@ -58,7 +58,9 @@ GbaConsole::~GbaConsole() {
 
 LoadRomResult GbaConsole::LoadRom(VirtualFile& romFile) {
 	vector<uint8_t> romData;
-	romFile.ReadFile(romData);
+	if (!romFile.ReadFile(romData)) {
+		return LoadRomResult::Failure;
+	}
 
 	if (romData.size() < 0xC0) {
 		return LoadRomResult::Failure;

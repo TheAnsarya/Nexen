@@ -395,7 +395,7 @@ void HdPackLoader::ProcessTileTag(vector<string>& tokens, vector<HdPackCondition
 }
 
 void HdPackLoader::ProcessOptionTag(vector<string>& tokens) {
-	for (string token : tokens) {
+	for (const string& token : tokens) {
 		if (token == "disableSpriteLimit") {
 			_data->OptionFlags |= (int)HdPackOptions::NoSpriteLimit;
 		} else if (token == "alternateRegisterRange") {

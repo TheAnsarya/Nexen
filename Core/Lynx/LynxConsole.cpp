@@ -30,9 +30,7 @@ LynxConsole::~LynxConsole() {
 
 LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 	vector<uint8_t> romData;
-	romFile.ReadFile(romData);
-
-	if (romData.size() < 64) {
+	if (!romFile.ReadFile(romData) || romData.size() < 64) {
 		return LoadRomResult::Failure;
 	}
 

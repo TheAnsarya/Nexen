@@ -28,7 +28,7 @@ public:
 
 		VirtualFile chrData(FolderUtilities::CombinePath(FolderUtilities::GetFirmwareFolder(), "lh5323m1.bin"));
 		if (chrData.IsValid()) {
-			chrData.ReadFile(_kanjiRomData);
+			(void)chrData.ReadFile(_kanjiRomData);
 		} else {
 			_kanjiRomData.resize(256 * 1024);
 		}

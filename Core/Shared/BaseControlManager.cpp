@@ -133,7 +133,7 @@ void BaseControlManager::RegisterControlDevice(shared_ptr<BaseControlDevice> con
 void BaseControlManager::ClearDevices() {
 	_controlDevices.clear();
 
-	for (shared_ptr<BaseControlDevice> device : _systemDevices) {
+	for (const shared_ptr<BaseControlDevice>& device : _systemDevices) {
 		RegisterControlDevice(device);
 	}
 }

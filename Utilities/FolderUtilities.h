@@ -76,7 +76,7 @@ public:
 	/// <summary>Get list of all subdirectories in folder</summary>
 	/// <param name="rootFolder">Root folder to scan</param>
 	/// <returns>List of subdirectory paths</returns>
-	[[nodiscard]] static vector<string> GetFolders(string rootFolder);
+	[[nodiscard]] static vector<string> GetFolders(const string& rootFolder);
 
 	/// <summary>
 	/// Get list of files in folder matching extensions.
@@ -85,22 +85,22 @@ public:
 	/// <param name="extensions">Set of file extensions to match (e.g., {".nes", ".sfc"})</param>
 	/// <param name="recursive">Recursively scan subdirectories if true</param>
 	/// <returns>List of matching file paths</returns>
-	[[nodiscard]] static vector<string> GetFilesInFolder(string rootFolder, std::unordered_set<string> extensions, bool recursive);
+	[[nodiscard]] static vector<string> GetFilesInFolder(const string& rootFolder, std::unordered_set<string> extensions, bool recursive);
 
 	/// <summary>Extract filename from full path</summary>
 	/// <param name="filepath">Full file path</param>
 	/// <param name="includeExtension">Include file extension in result</param>
 	/// <returns>Filename with or without extension</returns>
-	[[nodiscard]] static string GetFilename(string filepath, bool includeExtension);
+	[[nodiscard]] static string GetFilename(const string& filepath, bool includeExtension);
 
 	/// <summary>Get file extension from path</summary>
-	[[nodiscard]] static string GetExtension(string filename);
+	[[nodiscard]] static string GetExtension(const string& filename);
 
 	/// <summary>Get folder name from full path (excluding filename)</summary>
-	[[nodiscard]] static string GetFolderName(string filepath);
+	[[nodiscard]] static string GetFolderName(const string& filepath);
 
 	/// <summary>Create directory (and parent directories if needed)</summary>
-	static void CreateFolder(string folder);
+	static void CreateFolder(const string& folder);
 
-	[[nodiscard]] static string CombinePath(string folder, string filename);
+	[[nodiscard]] static string CombinePath(const string& folder, const string& filename);
 };

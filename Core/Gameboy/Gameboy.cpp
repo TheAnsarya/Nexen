@@ -379,7 +379,7 @@ void Gameboy::Reset() {
 
 LoadRomResult Gameboy::LoadRom(VirtualFile& romFile) {
 	vector<uint8_t> romData;
-	romFile.ReadFile(romData);
+	(void)romFile.ReadFile(romData);
 
 	if (romData.size() < Gameboy::HeaderOffset + sizeof(GameboyHeader)) {
 		return LoadRomResult::Failure;

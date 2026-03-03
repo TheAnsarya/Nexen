@@ -190,7 +190,7 @@ void MessageManager::ClearLog() {
 string MessageManager::GetLog() {
 	auto lock = _logLock.AcquireSafe();
 	stringstream ss;
-	for (string& msg : _log) {
+	for (const string& msg : _log) {
 		ss << msg << "\n";
 	}
 	return ss.str();

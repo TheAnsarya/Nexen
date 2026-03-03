@@ -105,7 +105,7 @@ public:
 			VirtualFile file = slot2File;
 			if (file.IsValid()) {
 				vector<uint8_t> cart;
-				file.ReadFile(cart);
+				(void)file.ReadFile(cart);
 
 				st->_cartName = FolderUtilities::GetFilename(file.GetFileName(), false);
 				if (st->_nameSlotA == st->_cartName) {

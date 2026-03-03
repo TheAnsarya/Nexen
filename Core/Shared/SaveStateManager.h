@@ -147,7 +147,7 @@ private:
 	/// <param name="frame">Frame info (width, height)</param>
 	/// <param name="stream">Input stream</param>
 	/// <returns>True if screenshot loaded successfully</returns>
-	bool GetVideoData(vector<uint8_t>& out, RenderedFrame& frame, istream& stream);
+	[[nodiscard]] bool GetVideoData(vector<uint8_t>& out, RenderedFrame& frame, istream& stream);
 
 	/// <summary>Write 32-bit value to stream (little-endian)</summary>
 	void WriteValue(ostream& stream, uint32_t value);
@@ -167,7 +167,7 @@ public:
 	void SaveState();
 
 	/// <summary>Load state from last used slot</summary>
-	bool LoadState();
+	[[nodiscard]] bool LoadState();
 
 	/// <summary>Write save state header to stream (without state data)</summary>
 	void GetSaveStateHeader(ostream& stream);
@@ -183,7 +183,7 @@ public:
 	/// </summary>
 	/// <param name="filepath">Output file path</param>
 	/// <param name="showSuccessMessage">Display success message if true</param>
-	bool SaveState(string filepath, bool showSuccessMessage = true);
+	[[nodiscard]] bool SaveState(string filepath, bool showSuccessMessage = true);
 
 	/// <summary>
 	/// Save state to numbered slot.
@@ -196,20 +196,20 @@ public:
 	/// Load state from stream.
 	/// </summary>
 	/// <param name="stream">Input stream</param>
-	bool LoadState(istream& stream);
+	[[nodiscard]] bool LoadState(istream& stream);
 
 	/// <summary>
 	/// Load state from file.
 	/// </summary>
 	/// <param name="filepath">Input file path</param>
 	/// <param name="showSuccessMessage">Display success message if true</param>
-	bool LoadState(string filepath, bool showSuccessMessage = true);
+	[[nodiscard]] bool LoadState(string filepath, bool showSuccessMessage = true);
 
 	/// <summary>
 	/// Load state from numbered slot.
 	/// </summary>
 	/// <param name="stateIndex">Slot index (0-11)</param>
-	bool LoadState(int stateIndex);
+	[[nodiscard]] bool LoadState(int stateIndex);
 
 	/// <summary>
 	/// Save recent game info for quick resume.
@@ -267,7 +267,7 @@ public:
 	/// </summary>
 	/// <param name="filepath">Full path to the save state file to delete</param>
 	/// <returns>True if deletion succeeded</returns>
-	bool DeleteSaveState(const string& filepath);
+	[[nodiscard]] bool DeleteSaveState(const string& filepath);
 
 	/// <summary>
 	/// Get the number of save states for the current ROM.
@@ -321,13 +321,13 @@ public:
 	/// Load the designated save state (F4 action).
 	/// </summary>
 	/// <returns>True if load succeeded</returns>
-	bool LoadDesignatedState();
+	[[nodiscard]] bool LoadDesignatedState();
 
 	/// <summary>
 	/// Check if a designated save is set and valid.
 	/// </summary>
 	/// <returns>True if designated save exists and file is valid</returns>
-	bool HasDesignatedSave() const;
+	[[nodiscard]] bool HasDesignatedSave() const;
 
 	/// <summary>
 	/// Clear the designated save (unset).

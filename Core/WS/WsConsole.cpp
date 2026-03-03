@@ -33,7 +33,7 @@ WsConsole::~WsConsole() {
 
 LoadRomResult WsConsole::LoadRom(VirtualFile& romFile) {
 	vector<uint8_t> romData;
-	romFile.ReadFile(romData);
+	(void)romFile.ReadFile(romData);
 
 	if (romData.size() < 0x10000) {
 		return LoadRomResult::Failure;

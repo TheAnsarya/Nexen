@@ -180,7 +180,7 @@ DllExport void __stdcall GetArchiveRomList(char* filename, char* outBuffer, uint
 	std::ostringstream out;
 	unique_ptr<ArchiveReader> reader = ArchiveReader::GetReader(filename);
 	if (reader) {
-		for (string romName : reader->GetFileList(VirtualFile::RomExtensions)) {
+		for (const string& romName : reader->GetFileList(VirtualFile::RomExtensions)) {
 			out << romName << "[!|!]";
 		}
 	}

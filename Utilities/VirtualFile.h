@@ -72,31 +72,31 @@ public:
 	operator std::string() const;
 
 	/// <summary>Check if file successfully loaded/valid</summary>
-	bool IsValid();
+	[[nodiscard]] bool IsValid();
 
 	/// <summary>Check if source is archive (ZIP/7z)</summary>
-	bool IsArchive();
+	[[nodiscard]] bool IsArchive();
 
 	/// <summary>Get full file path (including archive notation if applicable)</summary>
-	string GetFilePath();
+	[[nodiscard]] string GetFilePath();
 
 	/// <summary>Get folder path containing file/archive</summary>
-	string GetFolderPath();
+	[[nodiscard]] string GetFolderPath();
 
 	/// <summary>Get filename without path</summary>
-	string GetFileName();
+	[[nodiscard]] string GetFileName();
 
 	/// <summary>Get file extension (.nes, .sfc, etc.)</summary>
-	string GetFileExtension();
+	[[nodiscard]] string GetFileExtension();
 
 	/// <summary>Calculate SHA1 hash of file data</summary>
-	string GetSha1Hash();
+	[[nodiscard]] string GetSha1Hash();
 
 	/// <summary>Calculate CRC32 checksum of file data</summary>
-	uint32_t GetCrc32();
+	[[nodiscard]] uint32_t GetCrc32();
 
 	/// <summary>Get file size in bytes</summary>
-	size_t GetSize();
+	[[nodiscard]] size_t GetSize();
 
 	/// <summary>
 	/// Check if file matches any of given signatures (magic bytes).
@@ -104,7 +104,7 @@ public:
 	/// <param name="signatures">List of signature strings to check</param>
 	/// <param name="loadArchives">If true, load archive contents before checking</param>
 	/// <returns>True if file starts with any signature</returns>
-	bool CheckFileSignature(vector<string> signatures, bool loadArchives = false);
+	[[nodiscard]] bool CheckFileSignature(vector<string> signatures, bool loadArchives = false);
 
 	/// <summary>Enable chunked reading mode for large files (>256KB)</summary>
 	void InitChunks();
@@ -114,15 +114,15 @@ public:
 	vector<uint8_t>& GetData();
 
 	/// <summary>Read file data into vector</summary>
-	bool ReadFile(vector<uint8_t>& out);
+	[[nodiscard]] bool ReadFile(vector<uint8_t>& out);
 
 	/// <summary>Read file data into stringstream</summary>
-	bool ReadFile(std::stringstream& out);
+	[[nodiscard]] bool ReadFile(std::stringstream& out);
 
 	/// <summary>Read file data into preallocated buffer with size validation</summary>
 	/// <param name="out">Output buffer (must be expectedSize bytes)</param>
 	/// <param name="expectedSize">Expected file size (returns false if mismatch)</param>
-	bool ReadFile(uint8_t* out, uint32_t expectedSize);
+	[[nodiscard]] bool ReadFile(uint8_t* out, uint32_t expectedSize);
 
 	/// <summary>Read single byte at offset (chunked mode compatible)</summary>
 	uint8_t ReadByte(uint32_t offset);
@@ -130,7 +130,7 @@ public:
 	/// <summary>Apply IPS/BPS patch to this file</summary>
 	/// <param name="patch">VirtualFile containing patch data</param>
 	/// <returns>True if patch applied successfully</returns>
-	bool ApplyPatch(VirtualFile& patch);
+	[[nodiscard]] bool ApplyPatch(VirtualFile& patch);
 
 	template <typename T>
 	bool ReadChunk(T& container, int start, int length) {

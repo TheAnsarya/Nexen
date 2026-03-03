@@ -33,7 +33,7 @@ SmsConsole::~SmsConsole() {
 // Load ROM file and initialize all SMS/GG/SG/CV hardware components
 LoadRomResult SmsConsole::LoadRom(VirtualFile& romFile) {
 	vector<uint8_t> romData;
-	romFile.ReadFile(romData);
+	(void)romFile.ReadFile(romData);
 
 	if (romData.size() >= 0x100) {
 		if ((romData.size() % 0x400) == 0x200) {

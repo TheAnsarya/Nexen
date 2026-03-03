@@ -64,7 +64,7 @@ LoadRomResult PceConsole::LoadRom(VirtualFile& romFile) {
 		_romFormat = RomFormat::PceCdRom;
 		cdromUnitEnabled = true;
 	} else {
-		romFile.ReadFile(romData);
+		(void)romFile.ReadFile(romData);
 		crc32 = CRC32::GetCRC(romData);
 		if ((romData.size() % 0x2000) == 512) {
 			// File probably has header, discard it

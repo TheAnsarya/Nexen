@@ -47,7 +47,7 @@ unique_ptr<BaseCartridge> BaseCartridge::CreateCartridge(SnesConsole* console, V
 		unique_ptr<BaseCartridge> cart(new BaseCartridge());
 
 		vector<uint8_t> romData;
-		romFile.ReadFile(romData);
+		(void)romFile.ReadFile(romData);
 
 		if (romData.size() < 0x4000) {
 			return nullptr;  // ROM too small to be valid
@@ -667,7 +667,7 @@ bool BaseCartridge::LoadSufamiTurbo(VirtualFile& romFile) {
 	}
 
 	vector<uint8_t> romData;
-	romFile.ReadFile(romData);
+	(void)romFile.ReadFile(romData);
 
 	_prgRomSize = (uint32_t)romData.size();
 	_prgRom = new uint8_t[_prgRomSize];

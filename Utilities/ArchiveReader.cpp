@@ -32,7 +32,7 @@ vector<string> ArchiveReader::GetFileList(std::initializer_list<string> extensio
 	std::unordered_set<string> extMap(extensions);
 
 	vector<string> filenames;
-	for (string filename : InternalGetFileList()) {
+	for (const string& filename : InternalGetFileList()) {
 		string lcFilename = filename;
 		std::ranges::transform(lcFilename, lcFilename.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 

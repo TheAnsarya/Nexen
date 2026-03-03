@@ -1160,7 +1160,7 @@ void BaseMapper::GetRomFileData(vector<uint8_t>& out, bool asIpsFile, uint8_t* h
 	if (header) {
 		// Get original rom with edited header
 		vector<uint8_t> originalFile;
-		_emu->GetRomInfo().RomFile.ReadFile(originalFile);
+		(void)_emu->GetRomInfo().RomFile.ReadFile(originalFile);
 
 		out.insert(out.end(), header, header + sizeof(NesHeader));
 		if (_romInfo.IsHeaderlessRom) {
@@ -1179,7 +1179,7 @@ void BaseMapper::GetRomFileData(vector<uint8_t>& out, bool asIpsFile, uint8_t* h
 		// Get edited rom
 		if (asIpsFile) {
 			vector<uint8_t> originalFile;
-			_emu->GetRomInfo().RomFile.ReadFile(originalFile);
+			(void)_emu->GetRomInfo().RomFile.ReadFile(originalFile);
 
 			vector<uint8_t> patchData = IpsPatcher::CreatePatch(originalFile, newFile);
 			out.insert(out.end(), patchData.begin(), patchData.end());

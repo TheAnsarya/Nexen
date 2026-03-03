@@ -40,9 +40,10 @@ void FolderUtilities::AddKnownGameFolder(string gameFolder) {
 	string lowerCaseFolder = gameFolder;
 	std::ranges::transform(lowerCaseFolder, lowerCaseFolder.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-	for (string folder : _gameFolders) {
-		std::ranges::transform(folder, folder.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-		if (folder.compare(lowerCaseFolder) == 0) {
+	for (const string& folder : _gameFolders) {
+		string lowerFolder = folder;
+		std::ranges::transform(lowerFolder, lowerFolder.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+		if (lowerFolder.compare(lowerCaseFolder) == 0) {
 			alreadyExists = true;
 			break;
 		}
@@ -126,7 +127,7 @@ string FolderUtilities::GetRecentGamesFolder() {
 	return folder;
 }
 
-string FolderUtilities::GetExtension(string filename) {
+string FolderUtilities::GetExtension(const string& filename) {
 	size_t position = filename.find_last_of('.');
 	if (position != string::npos) {
 		string ext = filename.substr(position, filename.size() - position);
@@ -136,12 +137,12 @@ string FolderUtilities::GetExtension(string filename) {
 	return "";
 }
 
-void FolderUtilities::CreateFolder(string folder) {
+void FolderUtilities::CreateFolder(const string& folder) {
 	std::error_code errorCode;
 	fs::create_directory(PathUtil::FromUtf8(folder), errorCode);
 }
 
-vector<string> FolderUtilities::GetFolders(string rootFolder) {
+vector<string> FolderUtilities::GetFolders(const string& rootFolder) {
 	vector<string> folders;
 
 	std::error_code errorCode;
@@ -163,7 +164,7 @@ vector<string> FolderUtilities::GetFolders(string rootFolder) {
 	return folders;
 }
 
-vector<string> FolderUtilities::GetFilesInFolder(string rootFolder, std::unordered_set<string> extensions, bool recursive) {
+vector<string> FolderUtilities::GetFilesInFolder(const string& rootFolder, std::unordered_set<string> extensions, bool recursive) {
 	vector<string> files;
 	vector<string> folders = {{rootFolder}};
 
@@ -198,7 +199,7 @@ vector<string> FolderUtilities::GetFilesInFolder(string rootFolder, std::unorder
 	return files;
 }
 
-string FolderUtilities::GetFilename(string filepath, bool includeExtension) {
+string FolderUtilities::GetFilename(const string& filepath, bool includeExtension) {
 	fs::path filename = PathUtil::FromUtf8(filepath).filename();
 	if (!includeExtension) {
 		filename.replace_extension("");
@@ -206,11 +207,11 @@ string FolderUtilities::GetFilename(string filepath, bool includeExtension) {
 	return PathUtil::ToUtf8(filename);
 }
 
-string FolderUtilities::GetFolderName(string filepath) {
+string FolderUtilities::GetFolderName(const string& filepath) {
 	return PathUtil::ToUtf8(PathUtil::FromUtf8(filepath).remove_filename());
 }
 
-string FolderUtilities::CombinePath(string folder, string filename) {
+string FolderUtilities::CombinePath(const string& folder, const string& filename) {
 	// Windows supports forward slashes for paths, too.  And fs::u8path is abnormally slow.
 	if (folder[folder.length() - 1] != '/') {
 		return folder + "/" + filename;

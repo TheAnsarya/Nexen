@@ -161,7 +161,7 @@ public:
 	/// <param name="str">String to search in</param>
 	/// <param name="content">Substring to look for</param>
 	/// <returns>True if str contains content</returns>
-	[[nodiscard]] static bool Contains(string& str, const char* content) {
+	[[nodiscard]] static bool Contains(const string& str, const char* content) {
 		return str.contains(content);
 	}
 

@@ -83,7 +83,7 @@ private:
 		VirtualFile combinedFirmware(FolderUtilities::CombinePath(FolderUtilities::GetFirmwareFolder(), combinedFilename));
 		if (combinedFirmware.GetSize() == programSize + dataSize) {
 			vector<uint8_t> firmwareData;
-			combinedFirmware.ReadFile(firmwareData);
+			(void)combinedFirmware.ReadFile(firmwareData);
 			programRom.insert(programRom.end(), firmwareData.begin(), firmwareData.begin() + programSize);
 			dataRom.insert(dataRom.end(), firmwareData.begin() + programSize, firmwareData.end());
 			return true;
@@ -92,8 +92,8 @@ private:
 			VirtualFile splitFirmwareData(FolderUtilities::CombinePath(FolderUtilities::GetFirmwareFolder(), splitFilenameData));
 
 			if (splitFirmwareProg.GetSize() == programSize && splitFirmwareData.GetSize() == dataSize) {
-				splitFirmwareProg.ReadFile(programRom);
-				splitFirmwareData.ReadFile(dataRom);
+				(void)splitFirmwareProg.ReadFile(programRom);
+				(void)splitFirmwareData.ReadFile(dataRom);
 				return true;
 			}
 		}
@@ -105,7 +105,7 @@ private:
 		if (firmware.IsValid() && firmware.GetSize() >= 0x8000) {
 			*prgRom = new uint8_t[firmware.GetSize()];
 			prgSize = (uint32_t)firmware.GetSize();
-			firmware.ReadFile(*prgRom, (uint32_t)firmware.GetSize());
+			(void)firmware.ReadFile(*prgRom, (uint32_t)firmware.GetSize());
 			return true;
 		}
 
@@ -122,7 +122,7 @@ private:
 
 		if (firmware.IsValid() && firmware.GetSize() == size) {
 			*out = new uint8_t[firmware.GetSize()];
-			firmware.ReadFile(*out, (uint32_t)firmware.GetSize());
+			(void)firmware.ReadFile(*out, (uint32_t)firmware.GetSize());
 			return true;
 		}
 
@@ -138,7 +138,7 @@ private:
 		}
 
 		if (firmware.IsValid() && firmware.GetSize() == size) {
-			firmware.ReadFile(out);
+			(void)firmware.ReadFile(out);
 			return true;
 		}
 
@@ -376,7 +376,7 @@ public:
 		string path = FolderUtilities::CombinePath(FolderUtilities::GetFirmwareFolder(), filename);
 		VirtualFile firmware(path);
 		if (firmware.IsValid()) {
-			firmware.ReadFile(biosRom);
+			(void)firmware.ReadFile(biosRom);
 			return true;
 		}
 		return false;

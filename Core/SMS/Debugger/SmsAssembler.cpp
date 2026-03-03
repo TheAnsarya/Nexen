@@ -445,7 +445,7 @@ void SmsAssembler::RunPass(vector<int16_t>& output, const string& code, uint32_t
 		// Check if this is a .db statement
 		if (line.starts_with(".db")) {
 			line = line.substr(3);
-			for (string byte : StringUtilities::Split(line, ' ')) {
+			for (const string& byte : StringUtilities::Split(line, ' ')) {
 				if (byte.empty()) {
 					continue;
 				}
@@ -494,7 +494,7 @@ void SmsAssembler::RunPass(vector<int16_t>& output, const string& code, uint32_t
 					operandList = StringUtilities::Split(operands, ',');
 
 					bool invalid = operandList.size() > 3;
-					for (string operand : operandList) {
+					for (const string& operand : operandList) {
 						if (operand.empty()) {
 							invalid = true;
 							break;

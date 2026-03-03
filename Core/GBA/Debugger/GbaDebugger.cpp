@@ -424,7 +424,9 @@ bool GbaDebugger::SaveRomToDisk(string filename, bool saveAsIps, CdlStripOption 
 
 	if (saveAsIps) {
 		vector<uint8_t> originalRom;
-		_emu->GetRomInfo().RomFile.ReadFile(originalRom);
+		if (!_emu->GetRomInfo().RomFile.ReadFile(originalRom)) {
+			return false;
+		}
 
 		output = IpsPatcher::CreatePatch(originalRom, rom);
 	} else {
