@@ -19,33 +19,36 @@ using Nexen.Windows;
 namespace Nexen.Debugger.Labels;
 /// <summary>
 /// Pansy file header structure for reading existing files.
+/// Matches Pansy spec v1.0 layout: Magic(8) + Version(2) + Flags(2) + Platform(1) + Reserved(3) + RomSize(4) + RomCrc32(4) + SectionCount(4) + Reserved(4) = 32 bytes.
 /// </summary>
-public record PansyHeader(ushort Version, byte Platform, byte Flags, uint RomSize, uint RomCrc32, long Timestamp);
+public record PansyHeader(ushort Version, ushort Flags, byte Platform, uint RomSize, uint RomCrc32, uint SectionCount);
 
 /// <summary>
 /// Cross-reference types for disassembly analysis.
+/// Matches Pansy spec: Jsr=1, Jmp=2, Branch=3, Read=4, Write=5.
 /// </summary>
 public enum CrossRefType : byte {
 	Call = 1,
 	Jump = 2,
-	Read = 3,
-	Write = 4,
-	Branch = 5
+	Branch = 3,
+	Read = 4,
+	Write = 5
 }
 
 /// <summary>
 /// Memory region types for export.
+/// Matches Pansy spec: ROM=1, RAM=2, VRAM=3, IO=4, SRAM=5, WRAM=6.
 /// </summary>
 public enum MemoryRegionType : byte {
 	Unknown = 0,
-	Code = 1,
-	Data = 2,
-	Ram = 3,
+	Rom = 1,
+	Ram = 2,
+	VideoRam = 3,
 	Io = 4,
-	Rom = 5,
-	SaveRam = 6,
-	WorkRam = 7,
-	VideoRam = 8
+	SaveRam = 5,
+	WorkRam = 6,
+	OpenBus = 7,
+	Mirror = 8
 }
 
 /// <summary>
@@ -66,45 +69,43 @@ public sealed class PansyExportOptions {
 /// Phase 4: GZip compression, async export, memory pooling
 /// </summary>
 public static class PansyExporter {
-	// Pansy file format constants
+	// Pansy file format constants - aligned with Pansy spec v1.0
 	private const string MAGIC = "PANSY\0\0\0";
-	private const ushort VERSION = 0x0101; // v1.1 - Phase 3/4 enhancements
+	private const ushort VERSION = 0x0100; // v1.0 - matches Pansy spec
 
-	// Compression flag in header
-	private const byte FLAG_COMPRESSED = 0x01;
+	// Compression flag in header (PansyFlags.Compressed)
+	private const ushort FLAG_COMPRESSED = 0x0001;
 
 	// Performance: Reusable ArrayPool for CDL conversion (avoids GC pressure)
 	// Benchmark showed 23x speedup and zero allocations vs naive loop
 	private static readonly ArrayPool<byte> CdlPool = ArrayPool<byte>.Shared;
 
-	// Section types
-	private const ushort SECTION_CODE_DATA_MAP = 0x0001;
-	private const ushort SECTION_SYMBOLS = 0x0002;
-	private const ushort SECTION_COMMENTS = 0x0003;
-	private const ushort SECTION_MEMORY_REGIONS = 0x0004;
-	private const ushort SECTION_DATA_BLOCKS = 0x0005;
-	private const ushort SECTION_CROSS_REFS = 0x0006;
-	private const ushort SECTION_JUMP_TARGETS = 0x0007;
-	private const ushort SECTION_SUB_ENTRY_POINTS = 0x0008;
-	private const ushort SECTION_BOOKMARKS = 0x0009;
-	private const ushort SECTION_WATCH_ENTRIES = 0x000A;
+	// Section types - matches Pansy spec exactly
+	private const uint SECTION_CODE_DATA_MAP = 0x0001;
+	private const uint SECTION_SYMBOLS = 0x0002;
+	private const uint SECTION_COMMENTS = 0x0003;
+	private const uint SECTION_MEMORY_REGIONS = 0x0004;
+	private const uint SECTION_DATA_TYPES = 0x0005;    // Reserved in spec
+	private const uint SECTION_CROSS_REFS = 0x0006;
+	private const uint SECTION_SOURCE_MAP = 0x0007;    // Reserved in spec
+	private const uint SECTION_METADATA = 0x0008;
 
-	// Platform IDs matching Pansy specification
+	// Platform IDs matching Pansy specification (PansyLoader constants)
 	private static readonly Dictionary<RomFormat, byte> PlatformIds = new() {
-		[RomFormat.Sfc] = 0x02,   // SNES
-		[RomFormat.Spc] = 0x0D,   // SPC700
 		[RomFormat.iNes] = 0x01,     // NES
-		[RomFormat.Fds] = 0x0E,   // FDS
-		[RomFormat.Nsf] = 0x01,   // NSF (uses NES)
-		[RomFormat.Gb] = 0x03,     // Game Boy
-		[RomFormat.Gbs] = 0x03,   // GBS
-		[RomFormat.Gba] = 0x04,   // GBA
-		[RomFormat.Pce] = 0x07,   // PC Engine
-		[RomFormat.Sms] = 0x06,   // SMS
-		[RomFormat.GameGear] = 0x06, // Game Gear (SMS compatible)
-		[RomFormat.Sg] = 0x06,     // SG-1000
-		[RomFormat.Ws] = 0x0B,     // WonderSwan
-		[RomFormat.Lynx] = 0x0C,   // Atari Lynx
+		[RomFormat.Fds] = 0x01,      // FDS (uses NES platform)
+		[RomFormat.Nsf] = 0x01,      // NSF (uses NES)
+		[RomFormat.Sfc] = 0x02,      // SNES
+		[RomFormat.Spc] = 0x0c,      // SPC700
+		[RomFormat.Gb] = 0x03,       // Game Boy
+		[RomFormat.Gbs] = 0x03,      // GBS
+		[RomFormat.Gba] = 0x04,      // GBA
+		[RomFormat.Sms] = 0x06,      // SMS
+		[RomFormat.GameGear] = 0x16,  // Game Gear (separate from SMS in spec)
+		[RomFormat.Sg] = 0x06,       // SG-1000 (SMS compatible)
+		[RomFormat.Pce] = 0x07,      // PC Engine
+		[RomFormat.Ws] = 0x0a,       // WonderSwan
+		[RomFormat.Lynx] = 0x09,     // Atari Lynx
 	};
 
 	/// <summary>
@@ -130,6 +131,7 @@ public static class PansyExporter {
 
 	/// <summary>
 	/// Read the header from an existing Pansy file to get stored CRC.
+	/// Matches Pansy spec v1.0 header layout (32 bytes).
 	/// </summary>
 	/// <param name="path">Path to the pansy file</param>
 	/// <returns>PansyHeader if valid, null otherwise</returns>
@@ -141,20 +143,37 @@ public static class PansyExporter {
 			using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
 			using var reader = new BinaryReader(stream);
 
-			// Check magic (8 bytes)
+			// Check magic (8 bytes, offset 0)
 			byte[] magic = reader.ReadBytes(8);
 			if (System.Text.Encoding.ASCII.GetString(magic).TrimEnd('\0') != "PANSY")
 				return null;
 
-			// Read header fields
+			// Version (2 bytes, offset 8)
 			ushort version = reader.ReadUInt16();
-			byte platform = reader.ReadByte();
-			byte flags = reader.ReadByte();
-			uint romSize = reader.ReadUInt32();
-			uint romCrc32 = reader.ReadUInt32();
-			long timestamp = reader.ReadInt64();
 
-			return new PansyHeader(version, platform, flags, romSize, romCrc32, timestamp);
+			// Flags (2 bytes, offset 10) - PansyFlags as uint16
+			ushort flags = reader.ReadUInt16();
+
+			// Platform (1 byte, offset 12)
+			byte platform = reader.ReadByte();
+
+			// Reserved (3 bytes, offset 13-15)
+			reader.ReadByte();
+			reader.ReadUInt16();
+
+			// ROM size (4 bytes, offset 16)
+			uint romSize = reader.ReadUInt32();
+
+			// ROM CRC32 (4 bytes, offset 20)
+			uint romCrc32 = reader.ReadUInt32();
+
+			// Section count (4 bytes, offset 24)
+			uint sectionCount = reader.ReadUInt32();
+
+			// Reserved (4 bytes, offset 28)
+			reader.ReadUInt32();
+
+			return new PansyHeader(version, flags, platform, romSize, romCrc32, sectionCount);
 		} catch (Exception ex) {
 			System.Diagnostics.Debug.WriteLine($"[PansyExporter] Failed to read header: {ex.Message}");
 			return null;
@@ -188,155 +207,127 @@ public static class PansyExporter {
 			List<SectionInfo> sections = [];
 			List<byte[]> sectionData = [];
 
-			// Section 1: CODE_DATA_MAP (CDL data)
-			if (cdlData is { Length: > 0 }) {
-				var data = options.UseCompression ? CompressData(cdlData) : cdlData;
+		// Section 1: CODE_DATA_MAP (CDL data with Pansy flag mapping)
+		if (cdlData is { Length: > 0 }) {
+			// Map CDL flags to Pansy spec flags and incorporate jump targets/functions
+			var pansyCdl = MapCdlToPansyFlags(cdlData, jumpTargets, functions);
+			var data = options.UseCompression ? CompressData(pansyCdl) : pansyCdl;
+			sections.Add(new SectionInfo {
+				Type = SECTION_CODE_DATA_MAP,
+				CompressedSize = (uint)data.Length,
+				UncompressedSize = (uint)pansyCdl.Length
+			});
+			sectionData.Add(data);
+		}
+
+		// Section 2: SYMBOLS (with typed symbol detection)
+		var symbolBytes = BuildSymbolSection(labels, functions);
+		if (symbolBytes.Length > 0) {
+			var data = options.UseCompression ? CompressData(symbolBytes) : symbolBytes;
+			sections.Add(new SectionInfo {
+				Type = SECTION_SYMBOLS,
+				CompressedSize = (uint)data.Length,
+				UncompressedSize = (uint)symbolBytes.Length
+			});
+			sectionData.Add(data);
+		}
+
+		// Section 3: COMMENTS (with type detection)
+		var commentBytes = BuildCommentSection(labels);
+		if (commentBytes.Length > 0) {
+			var data = options.UseCompression ? CompressData(commentBytes) : commentBytes;
+			sections.Add(new SectionInfo {
+				Type = SECTION_COMMENTS,
+				CompressedSize = (uint)data.Length,
+				UncompressedSize = (uint)commentBytes.Length
+			});
+			sectionData.Add(data);
+		}
+
+		// Section 4: MEMORY_REGIONS
+		if (options.IncludeMemoryRegions) {
+			var memRegions = BuildEnhancedMemoryRegionsSection(labels, memoryType, romInfo);
+			if (memRegions.Length > 4) { // More than just the count
+				var data = options.UseCompression ? CompressData(memRegions) : memRegions;
 				sections.Add(new SectionInfo {
-					Type = SECTION_CODE_DATA_MAP,
+					Type = SECTION_MEMORY_REGIONS,
 					CompressedSize = (uint)data.Length,
-					UncompressedSize = (uint)cdlData.Length
+					UncompressedSize = (uint)memRegions.Length
 				});
 				sectionData.Add(data);
 			}
+		}
 
-			// Section 2: SYMBOLS
-			var symbolBytes = BuildSymbolSection(labels);
-			if (symbolBytes.Length > 0) {
-				var data = options.UseCompression ? CompressData(symbolBytes) : symbolBytes;
+		// Section 6: CROSS_REFS
+		if (options.IncludeCrossReferences) {
+			var crossRefs = BuildEnhancedCrossRefsSection(labels, cdlData, functions, jumpTargets, cpuType, memoryType);
+			if (crossRefs.Length > 4) { // More than just the count
+				var data = options.UseCompression ? CompressData(crossRefs) : crossRefs;
 				sections.Add(new SectionInfo {
-					Type = SECTION_SYMBOLS,
+					Type = SECTION_CROSS_REFS,
 					CompressedSize = (uint)data.Length,
-					UncompressedSize = (uint)symbolBytes.Length
+					UncompressedSize = (uint)crossRefs.Length
 				});
 				sectionData.Add(data);
 			}
+		}
 
-			// Section 3: COMMENTS
-			var commentBytes = BuildCommentSection(labels);
-			if (commentBytes.Length > 0) {
-				var data = options.UseCompression ? CompressData(commentBytes) : commentBytes;
-				sections.Add(new SectionInfo {
-					Type = SECTION_COMMENTS,
-					CompressedSize = (uint)data.Length,
-					UncompressedSize = (uint)commentBytes.Length
-				});
-				sectionData.Add(data);
-			}
+		// Section 8: METADATA
+		var metadataBytes = BuildMetadataSection(romInfo);
+		if (metadataBytes.Length > 0) {
+			var data = options.UseCompression ? CompressData(metadataBytes) : metadataBytes;
+			sections.Add(new SectionInfo {
+				Type = SECTION_METADATA,
+				CompressedSize = (uint)data.Length,
+				UncompressedSize = (uint)metadataBytes.Length
+			});
+			sectionData.Add(data);
+		}
 
-			// Section 4: JUMP_TARGETS
-			if (jumpTargets.Length > 0) {
-				var jtBytes = BuildAddressListSection(jumpTargets);
-				var data = options.UseCompression ? CompressData(jtBytes) : jtBytes;
-				sections.Add(new SectionInfo {
-					Type = SECTION_JUMP_TARGETS,
-					CompressedSize = (uint)data.Length,
-					UncompressedSize = (uint)jtBytes.Length
-				});
-				sectionData.Add(data);
-			}
+		// Calculate section offsets
+		// Header = 32 bytes, section table = sectionCount * 16 bytes
+		uint currentOffset = 32 + (uint)(sections.Count * 16);
+		for (int i = 0; i < sections.Count; i++) {
+			sections[i].Offset = currentOffset;
+			currentOffset += sections[i].CompressedSize;
+		}
 
-			// Section 5: SUB_ENTRY_POINTS
-			if (functions.Length > 0) {
-				var subBytes = BuildAddressListSection(functions);
-				var data = options.UseCompression ? CompressData(subBytes) : subBytes;
-				sections.Add(new SectionInfo {
-					Type = SECTION_SUB_ENTRY_POINTS,
-					CompressedSize = (uint)data.Length,
-					UncompressedSize = (uint)subBytes.Length
-				});
-				sectionData.Add(data);
-			}
+		// Get ROM size and CRC
+		var stats = DebugApi.GetCdlStatistics(memoryType);
+		uint romSize = stats.TotalBytes;
+		uint romCrc = romCrc32Override != 0 ? romCrc32Override : CalculateRomCrc32(romInfo);
 
-			// Section 6: MEMORY_REGIONS (Phase 3 - Enhanced Export)
-			if (options.IncludeMemoryRegions) {
-				var memRegions = BuildEnhancedMemoryRegionsSection(labels, memoryType, romInfo);
-				if (memRegions.Length > 4) { // More than just the count
-					var data = options.UseCompression ? CompressData(memRegions) : memRegions;
-					sections.Add(new SectionInfo {
-						Type = SECTION_MEMORY_REGIONS,
-						CompressedSize = (uint)data.Length,
-						UncompressedSize = (uint)memRegions.Length
-					});
-					sectionData.Add(data);
-				}
-			}
+		// Write header (32 bytes) - matches Pansy spec v1.0 layout exactly
+		ushort flags = options.UseCompression ? FLAG_COMPRESSED : (ushort)0;
+		writer.Write(Encoding.ASCII.GetBytes(MAGIC)); // 8 bytes (offset 0)
+		writer.Write(VERSION);                         // 2 bytes (offset 8)
+		writer.Write(flags);                           // 2 bytes (offset 10) - PansyFlags as uint16
+		writer.Write(GetPlatformId(romInfo.Format));   // 1 byte (offset 12)
+		writer.Write((byte)0);                         // 1 byte reserved (offset 13)
+		writer.Write((ushort)0);                       // 2 bytes reserved (offset 14)
+		writer.Write(romSize);                         // 4 bytes (offset 16)
+		writer.Write(romCrc);                          // 4 bytes (offset 20)
+		writer.Write((uint)sections.Count);            // 4 bytes (offset 24) - Section count
+		writer.Write((uint)0);                         // 4 bytes (offset 28) - Reserved
 
-			// Section 7: DATA_BLOCKS (Phase 3 - Enhanced Export)
-			if (options.IncludeDataBlocks) {
-				var dataBlocks = BuildDataBlocksSection(cdlData);
-				if (dataBlocks.Length > 4) { // More than just the count
-					var data = options.UseCompression ? CompressData(dataBlocks) : dataBlocks;
-					sections.Add(new SectionInfo {
-						Type = SECTION_DATA_BLOCKS,
-						CompressedSize = (uint)data.Length,
-						UncompressedSize = (uint)dataBlocks.Length
-					});
-					sectionData.Add(data);
-				}
-			}
+		// Write section table - Pansy spec: Type(u32) + Offset(u32) + CompSize(u32) + UncompSize(u32)
+		foreach (var section in sections) {
+			writer.Write(section.Type);                // 4 bytes - section type (uint32)
+			writer.Write(section.Offset);              // 4 bytes - offset from file start
+			writer.Write(section.CompressedSize);      // 4 bytes - compressed size
+			writer.Write(section.UncompressedSize);    // 4 bytes - uncompressed size
+		}
 
-			// Section 8: CROSS_REFS (Phase 3 - Enhanced Export)
-			if (options.IncludeCrossReferences) {
-				var crossRefs = BuildEnhancedCrossRefsSection(labels, cdlData, functions, jumpTargets, cpuType, memoryType);
-				if (crossRefs.Length > 4) { // More than just the count
-					var data = options.UseCompression ? CompressData(crossRefs) : crossRefs;
-					sections.Add(new SectionInfo {
-						Type = SECTION_CROSS_REFS,
-						CompressedSize = (uint)data.Length,
-						UncompressedSize = (uint)crossRefs.Length
-					});
-					sectionData.Add(data);
-				}
-			}
+		// Write section data
+		foreach (var d in sectionData) {
+			writer.Write(d);
+		}
 
-			// Calculate section offsets
-			uint currentOffset = 32 + 4 + (uint)(sections.Count * 16); // Header + section count + section table
-			for (int i = 0; i < sections.Count; i++) {
-				sections[i].Offset = currentOffset;
-				currentOffset += sections[i].CompressedSize;
-			}
+		// No footer - Pansy spec: "integrity checks at application level"
 
-			// Get ROM size and CRC
-			var stats = DebugApi.GetCdlStatistics(memoryType);
-			uint romSize = stats.TotalBytes;
-			uint romCrc = romCrc32Override != 0 ? romCrc32Override : CalculateRomCrc32(romInfo);
-
-			// Write header (32 bytes)
-			byte flags = options.UseCompression ? FLAG_COMPRESSED : (byte)0;
-			writer.Write(Encoding.ASCII.GetBytes(MAGIC)); // 8 bytes
-			writer.Write(VERSION);                       // 2 bytes
-			writer.Write(GetPlatformId(romInfo.Format));   // 1 byte
-			writer.Write(flags);                           // Flags (compression) - 1 byte
-			writer.Write(romSize);                       // ROM size - 4 bytes
-			writer.Write(romCrc);                         // ROM CRC32 - 4 bytes
-			writer.Write((ulong)DateTimeOffset.UtcNow.ToUnixTimeSeconds()); // Timestamp - 8 bytes
-			writer.Write((uint)0);                       // Reserved - 4 bytes
-
-			// Write section count
-			writer.Write((uint)sections.Count);
-
-			// Write section table
-			foreach (var section in sections) {
-				writer.Write(section.Type);
-				writer.Write((ushort)0); // Reserved
-				writer.Write(section.Offset);
-				writer.Write(section.CompressedSize);
-				writer.Write(section.UncompressedSize);
-			}
-
-			// Write section data
-			foreach (var data in sectionData) {
-				writer.Write(data);
-			}
-
-			// Write footer (12 bytes - CRC values)
-			writer.Write(romCrc);                   // ROM CRC32
-			writer.Write((uint)0);                 // Metadata CRC32 (placeholder)
-			writer.Write((uint)0);                 // File CRC32 (placeholder)
-
-			return true;
-		} catch (Exception ex) {
-			System.Diagnostics.Debug.WriteLine($"Pansy export failed: {ex.Message}");
+		return true;
+	} catch (Exception ex) {
+		System.Diagnostics.Debug.WriteLine($"Pansy export failed: {ex.Message}");
 			return false;
 		}
 	}
@@ -349,9 +340,8 @@ public static class PansyExporter {
 	}
 
 	/// <summary>
-	/// Compress data using GZip (Phase 4).
+	/// Compress data using DEFLATE (matches Pansy spec).
 	/// Optimized: Uses CompressionLevel.Fastest (6.6x faster than Optimal).
-	/// Benchmark: 5.5ms → 0.8ms for 512KB data.
 	/// </summary>
 	private static byte[] CompressData(byte[] data) {
 		if (data.Length < 64) // Don't compress small data - overhead not worth it
@@ -359,9 +349,9 @@ public static class PansyExporter {
 
 		// Pre-size output stream to estimated compressed size (typical ~50% for CDL data)
 		using var output = new MemoryStream(data.Length / 2);
-		using (var gzip = new GZipStream(output, CompressionLevel.Fastest, leaveOpen: true)) {
+		using (var deflate = new DeflateStream(output, CompressionLevel.Fastest, leaveOpen: true)) {
 			// Write using span for efficiency
-			gzip.Write(data.AsSpan());
+			deflate.Write(data.AsSpan());
 		}
 
 		var compressed = output.ToArray();
@@ -370,15 +360,15 @@ public static class PansyExporter {
 	}
 
 	/// <summary>
-	/// Decompress GZip data (Phase 4).
+	/// Decompress DEFLATE data (matches Pansy spec).
 	/// </summary>
 	public static byte[] DecompressData(byte[] compressedData, int uncompressedSize) {
 		using var input = new MemoryStream(compressedData);
-		using var gzip = new GZipStream(input, CompressionMode.Decompress);
+		using var deflate = new DeflateStream(input, CompressionMode.Decompress);
 		var output = new byte[uncompressedSize];
 		int totalRead = 0;
 		while (totalRead < uncompressedSize) {
-			int read = gzip.Read(output, totalRead, uncompressedSize - totalRead);
+			int read = deflate.Read(output, totalRead, uncompressedSize - totalRead);
 			if (read == 0) break;
 			totalRead += read;
 		}
@@ -540,12 +530,62 @@ public static class PansyExporter {
 		}
 	}
 
-	private static byte[] BuildSymbolSection(List<CodeLabel> labels) {
+	/// <summary>
+	/// Map Nexen CDL flags to Pansy spec code/data map flags.
+	/// Pansy flags: CODE(0x01), DATA(0x02), JUMP_TARGET(0x04), SUB_ENTRY(0x08),
+	///              OPCODE(0x10), DRAWN(0x20), READ(0x40), INDIRECT(0x80).
+	/// Nexen CDL: Code(0x01), Data(0x02), JumpTarget(0x04), SubEntryPoint(0x08).
+	/// SNES has IndexMode8(0x10)/MemoryMode8(0x20) in bits 4-5 which must be masked.
+	/// </summary>
+	private static byte[] MapCdlToPansyFlags(byte[] cdlData, uint[] jumpTargets, uint[] functions) {
+		var result = new byte[cdlData.Length];
+		var functionSet = new HashSet<uint>(functions);
+
+		for (int i = 0; i < cdlData.Length; i++) {
+			byte cdl = cdlData[i];
+
+			// Map basic flags (bits 0-3 match between CDL and Pansy spec)
+			byte pansyFlags = (byte)(cdl & 0x0f); // CODE, DATA, JUMP_TARGET, SUB_ENTRY
+
+			// Bit 4 (OPCODE, 0x10): Set for the first byte of each instruction
+			// In CDL, Code flag means "executed as code" - the first byte is the opcode
+			// Note: We mask off SNES IndexMode8 (0x10) since it collides with OPCODE
+			// For now, we don't have per-byte opcode tracking, so OPCODE stays unset
+
+			// Bit 5 (DRAWN, 0x20): For NES CHR data drawn by PPU
+			// CDL uses a separate CHR CDL with NesChrDrawn flag
+			// Mask off SNES MemoryMode8 (0x20) to avoid collision
+
+			// Bit 6 (READ, 0x40): Data read by CPU - set when DATA flag is present
+			if ((cdl & 0x02) != 0) { // DATA flag
+				pansyFlags |= 0x40; // READ
+			}
+
+			// Bit 7 (INDIRECT, 0x80): Indirect addressing access
+			// Not currently tracked in Nexen CDL
+
+			result[i] = pansyFlags;
+		}
+
+		return result;
+	}
+
+	private static byte[] BuildSymbolSection(List<CodeLabel> labels, uint[] functions) {
 		// Optimized: Count first to pre-size the MemoryStream
 		int count = 0;
 		foreach (var label in labels) {
 			if (!string.IsNullOrEmpty(label.Label)) count++;
 		}
+
+		// Build function set for type detection
+		var functionSet = new HashSet<uint>(functions);
+
+		// NES/SNES/65xx interrupt vector addresses
+		var interruptVectors = new HashSet<uint> {
+			0xfffa, 0xfffb, // NMI vector
+			0xfffc, 0xfffd, // RESET vector
+			0xfffe, 0xffff, // IRQ/BRK vector
+		};
 
 		// Estimate ~20 bytes per symbol (4+1+1+1+1+2+avg10 name)
 		using var ms = new MemoryStream((count * 20) + 4);
@@ -557,12 +597,13 @@ public static class PansyExporter {
 		foreach (var label in labels) {
 			if (string.IsNullOrEmpty(label.Label)) continue;
 
-			// Address (4 bytes): 24-bit address + 8-bit flags
+			// Address (4 bytes)
 			uint addressWithFlags = (uint)label.Address;
 			writer.Write(addressWithFlags);
 
-			// Type (1 byte): 1 = label
-			writer.Write((byte)1);
+			// Type (1 byte): Detect symbol type from context
+			byte symbolType = DetectSymbolType(label, functionSet, interruptVectors);
+			writer.Write(symbolType);
 
 			// Flags (1 byte)
 			writer.Write((byte)0);
@@ -602,8 +643,9 @@ public static class PansyExporter {
 			// Address (4 bytes)
 			writer.Write((uint)label.Address);
 
-			// Type (1 byte): 1 = inline
-			writer.Write((byte)1);
+			// Type (1 byte): Detect comment type
+			byte commentType = DetectCommentType(label.Comment);
+			writer.Write(commentType);
 
 			// Memory type (1 byte)
 			writer.Write((byte)label.MemoryType);
@@ -657,8 +699,8 @@ public static class PansyExporter {
 			// End address (4 bytes)
 			writer.Write((uint)(region.Address + region.Length - 1));
 
-			// Type (1 byte): 0=Unknown, 1=Code, 2=Data, 3=RAM, 4=IO
-			byte regionType = 2; // Default to Data
+			// Type (1 byte): Pansy spec MemoryRegionType
+			byte regionType = region.MemoryType.IsRomMemory() ? (byte)MemoryRegionType.Rom : (byte)MemoryRegionType.Ram;
 			writer.Write(regionType);
 
 			// Memory type (1 byte)
@@ -694,7 +736,7 @@ public static class PansyExporter {
 					(uint)label.Address,
 					(uint)(label.Address + label.Length - 1),
 					label.Label,
-					MemoryRegionType.Data,
+					label.MemoryType.IsRomMemory() ? MemoryRegionType.Rom : MemoryRegionType.Ram,
 					(byte)label.MemoryType
 				));
 			}
@@ -732,7 +774,7 @@ public static class PansyExporter {
 			case ConsoleType.Nes:
 				// NES Memory Map
 				regions.Add((0x0000, 0x07FF, "RAM", MemoryRegionType.Ram, (byte)MemoryType.NesInternalRam));
-				regions.Add((0x0800, 0x1FFF, "RAM_Mirrors", MemoryRegionType.Ram, (byte)MemoryType.NesInternalRam));
+				regions.Add((0x0800, 0x1FFF, "RAM_Mirrors", MemoryRegionType.Mirror, (byte)MemoryType.NesInternalRam));
 				regions.Add((0x2000, 0x2007, "PPU_Registers", MemoryRegionType.Io, (byte)MemoryType.NesMemory));
 				regions.Add((0x4000, 0x4017, "APU_IO_Registers", MemoryRegionType.Io, (byte)MemoryType.NesMemory));
 				regions.Add((0x4020, 0x5FFF, "Expansion_ROM", MemoryRegionType.Rom, (byte)MemoryType.NesMemory));
@@ -973,6 +1015,88 @@ public static class PansyExporter {
 	}
 
 	/// <summary>
+	/// Detect the Pansy symbol type from a CodeLabel.
+	/// Label=1, Constant=2, Enum=3, Struct=4, Macro=5, Local=6, Anonymous=7, InterruptVector=8, Function=9.
+	/// </summary>
+	private static byte DetectSymbolType(CodeLabel label, HashSet<uint> functionSet, HashSet<uint> interruptVectors) {
+		uint addr = (uint)label.Address;
+
+		// Check interrupt vectors (NMI, RESET, IRQ addresses)
+		if (interruptVectors.Contains(addr))
+			return 8; // InterruptVector
+
+		// Check if address is a known function/subroutine entry point
+		if (functionSet.Contains(addr))
+			return 9; // Function
+
+		// Check label name patterns for local labels (start with . or @)
+		if (label.Label.StartsWith('.') || label.Label.StartsWith('@'))
+			return 6; // Local
+
+		// Check label name patterns for constants (ALL_CAPS convention)
+		if (label.Label.Length > 2 && label.Label == label.Label.ToUpperInvariant() && !label.Label.Any(char.IsLower))
+			return 2; // Constant
+
+		// Default to Label
+		return 1; // Label
+	}
+
+	/// <summary>
+	/// Detect comment type from comment text.
+	/// Inline=1, Block=2, Todo=3.
+	/// </summary>
+	private static byte DetectCommentType(string comment) {
+		// Check for TODO/FIXME/HACK/NOTE markers
+		if (comment.Contains("TODO", StringComparison.OrdinalIgnoreCase) ||
+			comment.Contains("FIXME", StringComparison.OrdinalIgnoreCase) ||
+			comment.Contains("HACK", StringComparison.OrdinalIgnoreCase))
+			return 3; // Todo
+
+		// Check for multi-line comments (block)
+		if (comment.Contains('\n') || comment.Contains('\r'))
+			return 2; // Block
+
+		// Default to inline
+		return 1; // Inline
+	}
+
+	/// <summary>
+	/// Build metadata section (0x0008) with project info and timestamps.
+	/// Matches Pansy spec: ProjectName, Author, Version, CreatedTimestamp, ModifiedTimestamp.
+	/// </summary>
+	private static byte[] BuildMetadataSection(RomInfo romInfo) {
+		using var ms = new MemoryStream(256);
+		using var writer = new BinaryWriter(ms);
+
+		string projectName = romInfo.GetRomName();
+		string author = ""; // Could be populated from config
+		string version = "1.0";
+
+		// Project name
+		var nameBytes = Encoding.UTF8.GetBytes(projectName);
+		writer.Write((ushort)nameBytes.Length);
+		writer.Write(nameBytes);
+
+		// Author
+		var authorBytes = Encoding.UTF8.GetBytes(author);
+		writer.Write((ushort)authorBytes.Length);
+		writer.Write(authorBytes);
+
+		// Version
+		var versionBytes = Encoding.UTF8.GetBytes(version);
+		writer.Write((ushort)versionBytes.Length);
+		writer.Write(versionBytes);
+
+		// Created timestamp (Unix seconds, int64)
+		writer.Write(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+
+		// Modified timestamp (Unix seconds, int64)
+		writer.Write(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+
+		return ms.ToArray();
+	}
+
+	/// <summary>
 	/// Check if the bytecode represents a branch instruction (conditional jump).
 	/// </summary>
 	private static bool IsBranchInstruction(byte[] byteCode, CpuType cpuType) {
@@ -1016,7 +1140,7 @@ public static class PansyExporter {
 	}
 
 	private sealed class SectionInfo {
-		public ushort Type;
+		public uint Type;
 		public uint Offset;
 		public uint CompressedSize;
 		public uint UncompressedSize;

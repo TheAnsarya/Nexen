@@ -676,8 +676,8 @@ public class PansyExportBenchmarks {
 
 	private static byte[] CompressOriginal(byte[] data) {
 		using var output = new MemoryStream();
-		using (var gzip = new GZipStream(output, CompressionLevel.Optimal)) {
-			gzip.Write(data, 0, data.Length);
+		using (var deflate = new DeflateStream(output, CompressionLevel.Optimal)) {
+			deflate.Write(data, 0, data.Length);
 		}
 
 		return output.ToArray();
@@ -685,8 +685,8 @@ public class PansyExportBenchmarks {
 
 	private static byte[] CompressFastest(ReadOnlySpan<byte> data) {
 		using var output = new MemoryStream();
-		using (var gzip = new GZipStream(output, CompressionLevel.Fastest)) {
-			gzip.Write(data);
+		using (var deflate = new DeflateStream(output, CompressionLevel.Fastest)) {
+			deflate.Write(data);
 		}
 
 		return output.ToArray();

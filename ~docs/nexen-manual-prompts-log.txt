@@ -376,6 +376,9 @@ only do the open PRS, old closed prs don't matter; continue working;
 
 [Nexen] git commit everything, and then release another version of Nexen to github, updating the minor version number; Make an announcement `discord` post ***with formatting*** for this Nexen release, with all the differences since we forked from Mesen and why we did and save it in an `md` dicumentation file and show me this file; find issues with the pansy implementation and make sure I am recording all relevant information in the pansy file (update the format if we need extra information, evaluate the `pansy` project [pansy] and make sure it's fully tested and benchmarked and also contains all the good info); make tests and benchmarks for pansy usage; update issues, and benchmarks and tests and docs; research pansy format and what should be tracked for disassembly and add thast or tweak that; continue;
 
+[pansy] make sure it's fully tested and benchmarked and also contains all the good info); make tests and benchmarks for pansy usage; update issues, and benchmarks and tests and docs; research pansy format and what should be tracked for disassembly purposes and add that; continue;
+
+[pansy] update the copilot instructions to match Nexen's, always format, always tabs not spaces, K&R braces, always do before/after performance benchmarks, always do before/after testing suite & correcteness tests, always update issues and git commit and tie commits to issues, format (and lint) before every commit, and make and update issues for all work efforts, make documentation and plans and issues and code-plans before you implement, ***add all of this to the copilot instructions, and then also use these instructions for this and all fututure work***; and work through all the issues and other planned changes (document, make issues, test and benchmark before/after all code changes and find the most efficient data structures); continue;
 
 
 
@@ -390,6 +393,20 @@ only do the open PRS, old closed prs don't matter; continue working;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Nexen] git commit everything, and then release another version of Nexen to github, updating the patch version number; Make an announcement `discord` post ***with formatting*** for this Nexen release, with all the differences since we forked from Mesen and why we did and save it in an `md` dicumentation file and show me this file;  continue;
 
 
 

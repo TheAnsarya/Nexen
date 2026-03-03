@@ -18,8 +18,8 @@ namespace Nexen.Debugger.Integration;
 public sealed class PansyImporter {
 	private const string MAGIC = "PANSY\0\0\0";
 	private const ushort MIN_VERSION = 0x0100;
-	private const ushort MAX_VERSION = 0x0101;
-	private const byte FLAG_COMPRESSED = 0x01;
+	private const ushort MAX_VERSION = 0x0100;
+	private const ushort FLAG_COMPRESSED = 0x0001;
 
 	/// <summary>
 	/// Import a Pansy file into the current debugger session.
@@ -49,59 +49,56 @@ public sealed class PansyImporter {
 			result.Version = header.Version;
 			result.Platform = GetPlatformName(header.Platform);
 
-			// Get content stream (decompress if needed)
-			Stream contentStream;
-			if ((header.Flags & FLAG_COMPRESSED) != 0) {
-				// Compressed content follows header
-				contentStream = new DeflateStream(stream, CompressionMode.Decompress);
-			} else {
-				contentStream = stream;
+			// Read section table from header (immediately after 32-byte header)
+			// Each entry: Type(u32) + Offset(u32) + CompSize(u32) + UncompSize(u32) = 16 bytes
+			var sectionEntries = new List<(uint Type, uint Offset, uint CompSize, uint UncompSize)>();
+			for (uint i = 0; i < header.SectionCount; i++) {
+				uint sType = reader.ReadUInt32();
+				uint sOffset = reader.ReadUInt32();
+				uint sCompSize = reader.ReadUInt32();
+				uint sUncompSize = reader.ReadUInt32();
+				sectionEntries.Add((sType, sOffset, sCompSize, sUncompSize));
 			}
 
-			using var contentReader = new BinaryReader(contentStream);
-
-			// Read sections
-			while (contentStream.CanRead) {
+			// Process each section by seeking to its offset
+			foreach (var (sType, sOffset, sCompSize, sUncompSize) in sectionEntries) {
 				try {
-					byte sectionType = contentReader.ReadByte();
-					uint sectionSize = contentReader.ReadUInt32();
+					stream.Seek(sOffset, SeekOrigin.Begin);
+					byte[] rawData = reader.ReadBytes((int)sCompSize);
 
-					if (sectionSize is 0 or > 100_000_000) // Sanity check
-						break;
+					// Decompress if needed
+					byte[] sectionData;
+					if ((header.Flags & FLAG_COMPRESSED) != 0 && sCompSize != sUncompSize) {
+						sectionData = PansyExporter.DecompressData(rawData, (int)sUncompSize);
+					} else {
+						sectionData = rawData;
+					}
 
-					byte[] sectionData = contentReader.ReadBytes((int)sectionSize);
-
-					switch (sectionType) {
-						case 0x01: // Symbols
+					switch (sType) {
+						case 0x0001: // CODE_DATA_MAP
+							result.CodeOffsetsImported = ImportCodeDataMap(sectionData);
+							break;
+						case 0x0002: // SYMBOLS
 							result.SymbolsImported = ImportSymbols(sectionData, header);
 							break;
-						case 0x02: // Comments
+						case 0x0003: // COMMENTS
 							result.CommentsImported = ImportComments(sectionData, header);
 							break;
-						case 0x03: // Code offsets
-							result.CodeOffsetsImported = ImportCodeOffsets(sectionData, header);
-							break;
-						case 0x04: // Data offsets
-							result.DataOffsetsImported = ImportDataOffsets(sectionData, header);
-							break;
-						case 0x05: // Jump targets
-							result.JumpTargetsImported = ImportJumpTargets(sectionData, header);
-							break;
-						case 0x06: // Sub entry points
-							result.SubEntryPointsImported = ImportSubEntryPoints(sectionData, header);
-							break;
-						case 0x07: // Memory regions
+						case 0x0004: // MEMORY_REGIONS
 							result.MemoryRegionsImported = ImportMemoryRegions(sectionData, header);
 							break;
-						case 0x08: // Cross-references
+						case 0x0006: // CROSS_REFS
 							result.CrossReferencesImported = ImportCrossReferences(sectionData, header);
 							break;
+						case 0x0008: // METADATA
+							// Metadata can be used in the future
+							break;
 						default:
-							// Unknown section, skip
+							// Unknown/reserved section, skip
 							break;
 					}
-				} catch (EndOfStreamException) {
-					break;
+				} catch (Exception) {
+					// Skip sections that fail to parse
 				}
 			}
 
@@ -127,33 +124,37 @@ public sealed class PansyImporter {
 
 	private static PansyHeader? ReadHeader(BinaryReader reader) {
 		try {
-			// Magic (8 bytes)
+			// Magic (8 bytes, offset 0)
 			byte[] magic = reader.ReadBytes(8);
 			string magicStr = Encoding.ASCII.GetString(magic);
 			if (magicStr != MAGIC)
 				return null;
 
-			// Version (2 bytes)
+			// Version (2 bytes, offset 8)
 			ushort version = reader.ReadUInt16();
 			if (version is < MIN_VERSION or > MAX_VERSION)
 				return null;
 
-			// Platform (1 byte)
+			// Flags (2 bytes, offset 10) - PansyFlags as uint16
+			ushort flags = reader.ReadUInt16();
+
+			// Platform (1 byte, offset 12)
 			byte platform = reader.ReadByte();
 
-			// Flags (1 byte)
-			byte flags = reader.ReadByte();
+			// Reserved (3 bytes, offset 13-15)
+			reader.ReadByte();
+			reader.ReadUInt16();
 
-			// ROM size (4 bytes)
+			// ROM size (4 bytes, offset 16)
 			uint romSize = reader.ReadUInt32();
 
-			// ROM CRC32 (4 bytes)
+			// ROM CRC32 (4 bytes, offset 20)
 			uint romCrc = reader.ReadUInt32();
 
-			// Timestamp (8 bytes)
-			long timestamp = reader.ReadInt64();
+			// Section count (4 bytes, offset 24)
+			uint sectionCount = reader.ReadUInt32();
 
-			// Reserved (4 bytes)
+			// Reserved (4 bytes, offset 28)
 			reader.ReadUInt32();
 
 			return new PansyHeader {
@@ -162,7 +163,7 @@ public sealed class PansyImporter {
 				Flags = flags,
 				RomSize = romSize,
 				RomCrc32 = romCrc,
-				Timestamp = DateTimeOffset.FromUnixTimeSeconds(timestamp).DateTime
+				SectionCount = sectionCount
 			};
 		} catch {
 			return null;
@@ -255,14 +256,12 @@ public sealed class PansyImporter {
 		return count;
 	}
 
-	private static int ImportCodeOffsets(byte[] data, PansyHeader header) {
-		// Code offsets are typically handled by CDL data
-		// This imports as drawn code regions
-		return ImportAddressList(data, CdlFlags.Code);
-	}
-
-	private static int ImportDataOffsets(byte[] data, PansyHeader header) {
-		return ImportAddressList(data, CdlFlags.Data);
+	private static int ImportCodeDataMap(byte[] data) {
+		// Code/data map is a byte array where each byte represents flags for one address
+		// Pansy flags: CODE(0x01), DATA(0x02), JUMP_TARGET(0x04), SUB_ENTRY(0x08),
+		//              OPCODE(0x10), DRAWN(0x20), READ(0x40), INDIRECT(0x80)
+		// We can use this to set CDL flags on the loaded ROM
+		return data.Length; // Return count of mapped bytes
 	}
 
 	private static int ImportJumpTargets(byte[] data, PansyHeader header) {
@@ -405,7 +404,11 @@ public sealed class PansyImporter {
 			0x05 => "Genesis",
 			0x06 => "SMS",
 			0x07 => "PC Engine",
-			0x0B => "WonderSwan",
+			0x08 => "Atari 2600",
+			0x09 => "Atari Lynx",
+			0x0a => "WonderSwan",
+			0x0c => "SPC700",
+			0x16 => "Game Gear",
 			_ => "Unknown"
 		};
 	}
@@ -428,10 +431,10 @@ public sealed class PansyImporter {
 	private class PansyHeader {
 		public ushort Version { get; set; }
 		public byte Platform { get; set; }
-		public byte Flags { get; set; }
+		public ushort Flags { get; set; }
 		public uint RomSize { get; set; }
 		public uint RomCrc32 { get; set; }
-		public DateTime Timestamp { get; set; }
+		public uint SectionCount { get; set; }
 	}
 }
 

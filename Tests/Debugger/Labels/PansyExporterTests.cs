@@ -16,8 +16,7 @@ public class PansyExporterTests
 	// Pansy format constants for testing
 	private const string MAGIC = "PANSY\0\0\0";
 	private const ushort VERSION_1_0 = 0x0100;
-	private const ushort VERSION_1_1 = 0x0101;
-	private const byte FLAG_COMPRESSED = 0x01;
+	private const ushort FLAG_COMPRESSED = 0x0001;
 
 	#region CRC32 Tests
 
@@ -66,15 +65,17 @@ public class PansyExporterTests
 		using var ms = new MemoryStream();
 		using var writer = new BinaryWriter(ms);
 
-		// Write valid header
-		writer.Write(Encoding.ASCII.GetBytes(MAGIC));
-		writer.Write(VERSION_1_0);
-		writer.Write((byte)0x02); // SNES platform
-		writer.Write((byte)0x00); // Flags
-		writer.Write((uint)0x100000); // ROM size 1MB
-		writer.Write((uint)0xDEADBEEF); // ROM CRC
-		writer.Write((long)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-		writer.Write((uint)0); // Reserved
+		// Write valid header matching Pansy spec v1.0
+		writer.Write(Encoding.ASCII.GetBytes(MAGIC)); // 8 bytes
+		writer.Write(VERSION_1_0);                     // 2 bytes
+		writer.Write((ushort)0);                        // Flags 2 bytes
+		writer.Write((byte)0x02);                        // Platform: SNES
+		writer.Write((byte)0);                           // Reserved
+		writer.Write((ushort)0);                         // Reserved
+		writer.Write((uint)0x100000);                    // ROM size 1MB
+		writer.Write((uint)0xDEADBEEF);                  // ROM CRC
+		writer.Write((uint)3);                           // Section count
+		writer.Write((uint)0);                           // Reserved
 
 		ms.Position = 0;
 		var header = ReadTestHeader(ms);
@@ -84,29 +85,33 @@ public class PansyExporterTests
 		Assert.Equal(0x02, header.Platform);
 		Assert.Equal(0x100000u, header.RomSize);
 		Assert.Equal(0xDEADBEEFu, header.RomCrc32);
+		Assert.Equal(3u, header.SectionCount);
 	}
 
 	[Fact]
-	public void Header_Version11_ParsesCorrectly()
+	public void Header_SectionCount_ParsesCorrectly()
 	{
 		using var ms = new MemoryStream();
 		using var writer = new BinaryWriter(ms);
 
-		// Write v1.1 header
+		// Write v1.0 header with 5 sections
 		writer.Write(Encoding.ASCII.GetBytes(MAGIC));
-		writer.Write(VERSION_1_1);
-		writer.Write((byte)0x02); // SNES platform
-		writer.Write((byte)0x00); // Flags
-		writer.Write((uint)0x100000); // ROM size 1MB
-		writer.Write((uint)0xDEADBEEF); // ROM CRC
-		writer.Write((long)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-		writer.Write((uint)0); // Reserved
+		writer.Write(VERSION_1_0);
+		writer.Write((ushort)0);            // Flags
+		writer.Write((byte)0x02);            // Platform: SNES
+		writer.Write((byte)0);               // Reserved
+		writer.Write((ushort)0);             // Reserved
+		writer.Write((uint)0x100000);        // ROM size
+		writer.Write((uint)0xDEADBEEF);      // ROM CRC
+		writer.Write((uint)5);               // Section count
+		writer.Write((uint)0);               // Reserved
 
 		ms.Position = 0;
 		var header = ReadTestHeader(ms);
 
 		Assert.NotNull(header);
-		Assert.Equal(VERSION_1_1, header.Version);
+		Assert.Equal(VERSION_1_0, header.Version);
+		Assert.Equal(5u, header.SectionCount);
 	}
 
 	[Fact]
@@ -117,13 +122,15 @@ public class PansyExporterTests
 
 		// Write header with compression flag
 		writer.Write(Encoding.ASCII.GetBytes(MAGIC));
-		writer.Write(VERSION_1_1);
-		writer.Write((byte)0x02); // SNES platform
-		writer.Write(FLAG_COMPRESSED); // Compression flag set
-		writer.Write((uint)0x100000); // ROM size 1MB
-		writer.Write((uint)0xDEADBEEF); // ROM CRC
-		writer.Write((long)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-		writer.Write((uint)0); // Reserved
+		writer.Write(VERSION_1_0);
+		writer.Write(FLAG_COMPRESSED);       // Flags as uint16
+		writer.Write((byte)0x02);            // Platform: SNES
+		writer.Write((byte)0);               // Reserved
+		writer.Write((ushort)0);             // Reserved
+		writer.Write((uint)0x100000);        // ROM size
+		writer.Write((uint)0xDEADBEEF);      // ROM CRC
+		writer.Write((uint)0);               // Section count
+		writer.Write((uint)0);               // Reserved
 
 		ms.Position = 0;
 		var header = ReadTestHeader(ms);
@@ -289,21 +296,19 @@ public class PansyExporterTests
 		string tempPath = Path.Combine(Path.GetTempPath(), $"test_{Guid.NewGuid()}.pansy");
 
 		try {
-			// Create a minimal valid pansy file
+			// Create a minimal valid pansy file (spec v1.0 header = 32 bytes)
 			using (var stream = new FileStream(tempPath, FileMode.Create))
 			using (var writer = new BinaryWriter(stream)) {
-				writer.Write(Encoding.ASCII.GetBytes(MAGIC));
-				writer.Write(VERSION_1_1);
-				writer.Write((byte)0x02); // SNES
-				writer.Write((byte)0x00); // Flags
-				writer.Write((uint)0x100000); // ROM size
-				writer.Write((uint)0x12345678); // ROM CRC
-				writer.Write((long)DateTimeOffset.UtcNow.ToUnixTimeSeconds());
-				writer.Write((uint)0); // Reserved
-				writer.Write((uint)0); // Section count
-				writer.Write((uint)0); // Footer CRC1
-				writer.Write((uint)0); // Footer CRC2
-				writer.Write((uint)0); // Footer CRC3
+				writer.Write(Encoding.ASCII.GetBytes(MAGIC)); // 8 bytes
+				writer.Write(VERSION_1_0);                     // 2 bytes
+				writer.Write((ushort)0);                        // Flags 2 bytes
+				writer.Write((byte)0x02);                        // Platform: SNES
+				writer.Write((byte)0);                           // Reserved
+				writer.Write((ushort)0);                         // Reserved
+				writer.Write((uint)0x100000);                    // ROM size
+				writer.Write((uint)0x12345678);                  // ROM CRC
+				writer.Write((uint)0);                           // Section count
+				writer.Write((uint)0);                           // Reserved
 			}
 
 			// Asserts after streams are closed
@@ -328,7 +333,7 @@ public class PansyExporterTests
 		return RomHashService.ComputeBasicHashes(data).Crc32Value;
 	}
 
-	private record TestHeader(ushort Version, byte Platform, byte Flags, uint RomSize, uint RomCrc32, long Timestamp);
+	private record TestHeader(ushort Version, ushort Flags, byte Platform, uint RomSize, uint RomCrc32, uint SectionCount);
 
 	private static TestHeader? ReadTestHeader(Stream stream)
 	{
@@ -339,14 +344,17 @@ public class PansyExporterTests
 			if (Encoding.ASCII.GetString(magic).TrimEnd('\0') != "PANSY")
 				return null;
 
-			ushort version = reader.ReadUInt16();
-			byte platform = reader.ReadByte();
-			byte flags = reader.ReadByte();
-			uint romSize = reader.ReadUInt32();
-			uint romCrc32 = reader.ReadUInt32();
-			long timestamp = reader.ReadInt64();
+			ushort version = reader.ReadUInt16();       // offset 8
+			ushort flags = reader.ReadUInt16();          // offset 10 (PansyFlags as uint16)
+			byte platform = reader.ReadByte();           // offset 12
+			reader.ReadByte();                           // offset 13 reserved
+			reader.ReadUInt16();                         // offset 14 reserved
+			uint romSize = reader.ReadUInt32();          // offset 16
+			uint romCrc32 = reader.ReadUInt32();         // offset 20
+			uint sectionCount = reader.ReadUInt32();     // offset 24
+			reader.ReadUInt32();                         // offset 28 reserved
 
-			return new TestHeader(version, platform, flags, romSize, romCrc32, timestamp);
+			return new TestHeader(version, flags, platform, romSize, romCrc32, sectionCount);
 		} catch {
 			return null;
 		}
@@ -583,8 +591,8 @@ public class PansyExporterTests
 			return data;
 
 		using var output = new MemoryStream();
-		using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true)) {
-			gzip.Write(data, 0, data.Length);
+		using (var deflate = new DeflateStream(output, CompressionLevel.Optimal, leaveOpen: true)) {
+			deflate.Write(data, 0, data.Length);
 		}
 
 		var compressed = output.ToArray();
@@ -594,8 +602,8 @@ public class PansyExporterTests
 	private static byte[] CompressDataForce(byte[] data)
 	{
 		using var output = new MemoryStream();
-		using (var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true)) {
-			gzip.Write(data, 0, data.Length);
+		using (var deflate = new DeflateStream(output, CompressionLevel.Optimal, leaveOpen: true)) {
+			deflate.Write(data, 0, data.Length);
 		}
 		return output.ToArray();
 	}
@@ -603,11 +611,11 @@ public class PansyExporterTests
 	private static byte[] DecompressData(byte[] compressedData, int uncompressedSize)
 	{
 		using var input = new MemoryStream(compressedData);
-		using var gzip = new GZipStream(input, CompressionMode.Decompress);
+		using var deflate = new DeflateStream(input, CompressionMode.Decompress);
 		var output = new byte[uncompressedSize];
 		int totalRead = 0;
 		while (totalRead < uncompressedSize) {
-			int read = gzip.Read(output, totalRead, uncompressedSize - totalRead);
+			int read = deflate.Read(output, totalRead, uncompressedSize - totalRead);
 			if (read == 0) break;
 			totalRead += read;
 		}
