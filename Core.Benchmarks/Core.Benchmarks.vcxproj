@@ -159,6 +159,12 @@
 		<ClCompile Include="Shared\SaveStateBufferBench.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="Debugger\TraceLoggerBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Shared\AllocOptBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Core.vcxproj">
