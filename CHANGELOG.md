@@ -5,6 +5,39 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-03-04
+
+### Fixed
+
+- **Game Boy crash on ROM load** — Fixed null pointer dereference in `DebuggerRequest` copy constructor (#552)
+	- Root cause: `std::make_unique` materializes a temporary and calls the copy constructor, unlike `reset(new T(...))` which benefits from C++17 mandatory copy elision
+	- Copy constructor accessed `_emu->_debugger` without null-checking `_emu`
+	- Affected all ROM loads (NES, SNES, GB, GBA, etc.) when debugger block count > 0
+- **Cross-platform CI build failures** — Fixed `strncpy_s` and incomplete type with `unique_ptr` (#550)
+	- `strncpy_s` → `strncpy` for Linux/macOS compatibility
+	- Added explicit destructors for classes using `unique_ptr` with forward-declared types
+
+### Changed
+
+- **Pansy export/import spec alignment** — Full binary compatibility with Pansy v1.0 spec (#539–#546)
+	- Fixed header format, section IDs, platform IDs, cross-ref types, memory region types
+	- Fixed compression to use DEFLATE instead of GZip
+	- Added DRAWN/READ/INDIRECT CDL flags and fixed SNES CDL collision
+	- Added symbol/comment types and metadata section support
+	- Fixed importer to match exporter format
+	- Optimized cross-ref builder performance
+- **Defensive startup** — Added try-catch in MainWindow `ApplyConfig` to prevent startup crashes
+- **Internal version bump**: 2.2.0 → 2.2.1
+
+### Performance
+
+- **SNES PPU window mask precomputation** — Precompute window masks once per scanline render call instead of per-pixel (#523)
+	- Added `PrecomputeWindowMasks()` called from `RenderScanline()` after `_drawEndX` is set
+	- Replaces per-pixel `ProcessMaskWindow` template switch with `bool[6][256]` array lookups
+	- Eliminates redundant window count calculation at each call site (sprites, tilemap, mode7, color math)
+
+---
+
 ## [1.3.0] - 2026-07-23
 
 ### Performance
