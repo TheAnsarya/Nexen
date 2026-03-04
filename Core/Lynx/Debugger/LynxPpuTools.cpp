@@ -13,6 +13,78 @@ LynxPpuTools::LynxPpuTools(Debugger* debugger, Emulator* emu, LynxConsole* conso
 	_console = console;
 }
 
+/// <summary>
+/// Decode one line of sprite pixel data from VRAM.
+/// Mirrors LynxSuzy::DecodeSpriteLinePixels but reads from vram[] directly
+/// (no bus cycle counting) for use in the debug sprite viewer.
+///
+/// Literal mode: raw bpp-wide values, no packet structure.
+/// Packed mode: 1-bit literal flag + 4-bit count per packet, with RLE.
+/// </summary>
+static int DecodeSpriteLine(uint8_t* vram, uint16_t dataAddr, uint16_t lineEnd, int bpp, bool literalMode, uint8_t* pixelBuf, int maxPixels) {
+	int pixelCount = 0;
+
+	// Bit-level reading state
+	uint32_t shiftReg = 0;
+	int shiftRegCount = 0;
+	int totalBitsLeft = static_cast<int>(lineEnd - dataAddr) * 8;
+
+	// Lambda to read N bits from the data stream
+	auto getBits = [&](int bits) -> uint8_t {
+		if (totalBitsLeft <= bits) {
+			return 0; // No more data (matches Handy's <= check for demo006 fix)
+		}
+
+		// Refill shift register if needed
+		while (shiftRegCount < bits && dataAddr < lineEnd) {
+			shiftReg = (shiftReg << 8) | vram[dataAddr & 0xFFFF];
+			dataAddr++;
+			shiftRegCount += 8;
+		}
+
+		if (shiftRegCount < bits) return 0;
+
+		shiftRegCount -= bits;
+		totalBitsLeft -= bits;
+		return static_cast<uint8_t>((shiftReg >> shiftRegCount) & ((1 << bits) - 1));
+	};
+
+	if (literalMode) {
+		// Literal mode: all pixels are raw bpp-wide values, no packet structure.
+		int totalPixels = totalBitsLeft / bpp;
+		for (int i = 0; i < totalPixels && pixelCount < maxPixels; i++) {
+			pixelBuf[pixelCount++] = getBits(bpp);
+		}
+	} else {
+		// Packed mode: packetized data with literal and repeat packets
+		while (totalBitsLeft > 0 && pixelCount < maxPixels) {
+			uint8_t isLiteral = getBits(1);
+			if (totalBitsLeft <= 0) break;
+
+			uint8_t count = getBits(4);
+
+			if (!isLiteral && count == 0) {
+				break; // End of line
+			}
+
+			count++; // Actual count is stored count + 1
+
+			if (isLiteral) {
+				for (int i = 0; i < count && pixelCount < maxPixels; i++) {
+					pixelBuf[pixelCount++] = getBits(bpp);
+				}
+			} else {
+				uint8_t pixel = getBits(bpp);
+				for (int i = 0; i < count && pixelCount < maxPixels; i++) {
+					pixelBuf[pixelCount++] = pixel;
+				}
+			}
+		}
+	}
+
+	return pixelCount;
+}
+
 DebugPaletteInfo LynxPpuTools::GetPaletteInfo(GetPaletteInfoOptions options) {
 	DebugPaletteInfo info = {};
 
@@ -86,23 +158,37 @@ DebugTilemapInfo LynxPpuTools::GetTilemap(GetTilemapOptions options, BaseState& 
 	info.TilesetAddress = -1;
 
 	// Render the framebuffer: 4bpp packed pixels, 2 pixels per byte
-	// Each scanline is 80 bytes (160 pixels / 2), with padding bytes
+	// Each scanline is 80 bytes (160 pixels / 2).
+	// The Lynx video DMA reads from a contiguous buffer at DisplayAddress —
+	// there are no per-scanline DMA control blocks for video (unlike sprite SCBs).
 	uint32_t width = LynxConstants::ScreenWidth;
 	uint32_t height = LynxConstants::ScreenHeight;
 
-	// The display buffer address points to the start of the first scanline control block.
-	// Each scanline has: [video DMA start addr (2 bytes)] [80 bytes pixel data] [1 byte end]
-	// For simplicity in the stub, we just show what's in the framebuffer region.
+	// DISPCTL bit 1: Flip mode reverses read direction and nibble order
+	bool flip = (mikeyState.DisplayControl & 0x02) != 0;
 
-	// TODO: Parse actual scanline DMA control blocks for accurate rendering
 	for (uint32_t y = 0; y < height; y++) {
-		for (uint32_t x = 0; x < width; x++) {
-			// Each byte holds 2 pixels: high nibble = left pixel, low nibble = right pixel
-			uint32_t byteOffset = displayAddr + (y * (width / 2)) + (x / 2);
-			uint8_t pixelByte = vram[byteOffset & 0xffff];
-			uint8_t colorIndex = (x & 1) ? (pixelByte & 0x0f) : ((pixelByte >> 4) & 0x0f);
+		uint16_t lineAddr = displayAddr + static_cast<uint16_t>(y * LynxConstants::BytesPerScanline);
 
-			outBuffer[y * width + x] = palette[colorIndex];
+		if (flip) {
+			// Flip mode: read bytes backwards, low nibble first
+			lineAddr += (LynxConstants::BytesPerScanline - 1);
+			for (uint32_t byteIdx = 0; byteIdx < LynxConstants::BytesPerScanline; byteIdx++) {
+				uint8_t pixelByte = vram[(lineAddr - byteIdx) & 0xffff];
+				uint8_t pix0 = pixelByte & 0x0f;
+				uint8_t pix1 = (pixelByte >> 4) & 0x0f;
+				outBuffer[y * width + byteIdx * 2] = palette[pix0];
+				outBuffer[y * width + byteIdx * 2 + 1] = palette[pix1];
+			}
+		} else {
+			// Normal mode: read forward, high nibble first
+			for (uint32_t byteIdx = 0; byteIdx < LynxConstants::BytesPerScanline; byteIdx++) {
+				uint8_t pixelByte = vram[(lineAddr + byteIdx) & 0xffff];
+				uint8_t pix0 = (pixelByte >> 4) & 0x0f;
+				uint8_t pix1 = pixelByte & 0x0f;
+				outBuffer[y * width + byteIdx * 2] = palette[pix0];
+				outBuffer[y * width + byteIdx * 2 + 1] = palette[pix1];
+			}
 		}
 	}
 
@@ -121,17 +207,31 @@ DebugTilemapTileInfo LynxPpuTools::GetTilemapTileInfo(uint32_t x, uint32_t y, ui
 
 	if (x < LynxConstants::ScreenWidth && y < LynxConstants::ScreenHeight) {
 		uint16_t displayAddr = mikeyState.DisplayAddress;
-		uint32_t byteOffset = displayAddr + (y * (LynxConstants::ScreenWidth / 2)) + (x / 2);
+		bool flip = (mikeyState.DisplayControl & 0x02) != 0;
+
+		uint16_t lineAddr = displayAddr + static_cast<uint16_t>(y * LynxConstants::BytesPerScanline);
+		uint32_t byteIdx = x / 2;
+		uint32_t byteOffset;
+		uint8_t colorIndex;
+
+		if (flip) {
+			byteOffset = (lineAddr + (LynxConstants::BytesPerScanline - 1) - byteIdx) & 0xffff;
+			uint8_t pixelByte = vram[byteOffset];
+			// Flipped: low nibble = first pixel in pair, high nibble = second
+			colorIndex = (x & 1) ? ((pixelByte >> 4) & 0x0f) : (pixelByte & 0x0f);
+		} else {
+			byteOffset = (lineAddr + byteIdx) & 0xffff;
+			uint8_t pixelByte = vram[byteOffset];
+			// Normal: high nibble = first pixel in pair, low nibble = second
+			colorIndex = (x & 1) ? (pixelByte & 0x0f) : ((pixelByte >> 4) & 0x0f);
+		}
 
 		info.Row = y;
 		info.Column = x;
 		info.Width = 1;
 		info.Height = 1;
-		info.TileMapAddress = byteOffset & 0xffff;
-		info.TileAddress = byteOffset & 0xffff;
-
-		uint8_t pixelByte = vram[byteOffset & 0xffff];
-		uint8_t colorIndex = (x & 1) ? (pixelByte & 0x0f) : ((pixelByte >> 4) & 0x0f);
+		info.TileMapAddress = byteOffset;
+		info.TileAddress = byteOffset;
 		info.PaletteIndex = colorIndex;
 		info.PixelData = colorIndex;
 	}
@@ -218,7 +318,7 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 		bool skipSprite = (sprCtl1 & 0x04) != 0;
 		bool reloadPalette = (sprCtl1 & 0x08) == 0;   // Bit 3: 0 means reload
 		int reloadDepth    = (sprCtl1 >> 4) & 0x03;    // Bits 5:4
-		[[maybe_unused]] bool literalMode = (sprCtl1 & 0x80) != 0; // Bit 7
+		bool literalMode = (sprCtl1 & 0x80) != 0; // Bit 7
 
 		// Data pointer at SCB offset 5-6 (always loaded)
 		uint16_t dataAddr = vram[(scbAddr + 5) & 0xFFFF] | (vram[(scbAddr + 6) & 0xFFFF] << 8);
@@ -297,26 +397,37 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 			sprite.Width = 0;
 			sprite.Height = 0;
 		} else {
-			// Pass 1: Walk sprite data lines to determine dimensions
-			// Each line starts with a length byte (0 = end of sprite)
-			uint16_t scanAddr = dataAddr;
+			// Single-pass: walk sprite data lines, decode pixel data, and render
+			// into the preview buffer. Each line starts with a length byte (0 = end).
+			uint16_t currentDataAddr = dataAddr;
 			int maxWidth = 0;
 			int lineCount = 0;
 
-			for (int line = 0; line < 256; line++) {
-				uint8_t lineHeader = vram[scanAddr & 0xFFFF];
-				scanAddr++;
+			// Temporary storage for decoded lines (up to 128 lines × 512 pixels)
+			uint8_t linePixels[128][512];
+			int lineWidths[128];
+
+			for (int line = 0; line < 128; line++) {
+				uint8_t lineHeader = vram[currentDataAddr & 0xFFFF];
+				currentDataAddr++;
 				if (lineHeader == 0) {
 					break;
 				}
 				int dataBytes = lineHeader - 1;
+
 				if (dataBytes > 0) {
-					int pixelCount = (dataBytes * 8) / bpp;
+					uint16_t lineEnd = currentDataAddr + dataBytes;
+					uint16_t decodeAddr = currentDataAddr;
+					int pixelCount = DecodeSpriteLine(vram, decodeAddr, lineEnd, bpp, literalMode, linePixels[lineCount], 512);
+					lineWidths[lineCount] = pixelCount;
 					if (pixelCount > maxWidth) {
 						maxWidth = pixelCount;
 					}
+				} else {
+					lineWidths[lineCount] = 0;
 				}
-				scanAddr += dataBytes;
+
+				currentDataAddr += dataBytes;
 				lineCount++;
 			}
 
@@ -326,47 +437,17 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 			sprite.Width = static_cast<uint16_t>(previewWidth);
 			sprite.Height = static_cast<uint16_t>(previewHeight);
 
-			// Pass 2: Decode sprite pixel data and render into preview buffer
+			// Render decoded pixels into preview buffer
 			if (previewWidth > 0 && previewHeight > 0) {
-				uint16_t currentDataAddr = dataAddr;
-				uint8_t bppMask = (1 << bpp) - 1;
-
-				for (int line = 0; line < lineCount; line++) {
-					uint8_t lineHeader = vram[currentDataAddr & 0xFFFF];
-					currentDataAddr++;
-					int dataBytes = lineHeader - 1;
-
-					if (line < 128 && dataBytes > 0) {
-						// Decode packed pixel data for this line
-						uint8_t pixelBuf[512];
-						int pixelCount = 0;
-						int bitBuffer = 0;
-						int bitsRemaining = 0;
-						uint16_t readAddr = currentDataAddr;
-						uint16_t lineEnd = currentDataAddr + dataBytes;
-
-						while (readAddr < lineEnd && pixelCount < 512) {
-							bitBuffer = (bitBuffer << 8) | vram[readAddr & 0xFFFF];
-							readAddr++;
-							bitsRemaining += 8;
-							while (bitsRemaining >= bpp && pixelCount < 512) {
-								bitsRemaining -= bpp;
-								pixelBuf[pixelCount++] = (bitBuffer >> bitsRemaining) & bppMask;
-							}
-						}
-
-						// Render decoded pixels into preview buffer (stride = previewWidth)
-						int renderWidth = std::min(pixelCount, 128);
-						for (int px = 0; px < renderWidth; px++) {
-							uint8_t penRaw = pixelBuf[px];
-							if (penRaw != 0) {
-								uint8_t penMapped = penIndex[penRaw & 0x0f];
-								spritePreview[line * previewWidth + px] = palette[penMapped];
-							}
+				for (int line = 0; line < previewHeight; line++) {
+					int renderWidth = std::min(lineWidths[line], 128);
+					for (int px = 0; px < renderWidth; px++) {
+						uint8_t penRaw = linePixels[line][px];
+						if (penRaw != 0) {
+							uint8_t penMapped = penIndex[penRaw & 0x0f];
+							spritePreview[line * previewWidth + px] = palette[penMapped];
 						}
 					}
-
-					currentDataAddr += dataBytes;
 				}
 			}
 
