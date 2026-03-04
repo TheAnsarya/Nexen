@@ -957,6 +957,8 @@ void SnesPpu::RenderScanline() {
 	if (!_skipRender && _drawStartX <= 255 && hPos > 22 && _scanline > 0) {
 		_drawEndX = std::min(hPos - 22, 255);
 
+		PrecomputeWindowMasks();
+
 		if (_state.ForcedBlank) {
 			// Forced blank, output black
 			memset(_mainScreenBuffer + _drawStartX, 0, (_drawEndX - _drawStartX + 1) * 2);
@@ -1033,25 +1035,16 @@ void SnesPpu::RenderSprites(const uint8_t priority[4]) {
 	bool drawMain = (bool)(((_state.MainScreenLayers & _configVisibleLayers) >> SnesPpu::SpriteLayerIndex) & 0x01);
 	bool drawSub = (bool)(((_state.SubScreenLayers & _configVisibleLayers) >> SnesPpu::SpriteLayerIndex) & 0x01);
 
-	uint8_t mainWindowCount = 0;
-	uint8_t subWindowCount = 0;
-	if (_state.WindowMaskMain[SnesPpu::SpriteLayerIndex]) {
-		mainWindowCount = (uint8_t)_state.Window[0].ActiveLayers[SnesPpu::SpriteLayerIndex] + (uint8_t)_state.Window[1].ActiveLayers[SnesPpu::SpriteLayerIndex];
-	}
-	if (_state.WindowMaskSub[SnesPpu::SpriteLayerIndex]) {
-		subWindowCount = (uint8_t)_state.Window[0].ActiveLayers[SnesPpu::SpriteLayerIndex] + (uint8_t)_state.Window[1].ActiveLayers[SnesPpu::SpriteLayerIndex];
-	}
-
 	for (int x = _drawStartX; x <= _drawEndX; x++) {
 		if (_spritePriority[x] <= 3) {
 			uint8_t spritePrio = priority[_spritePriority[x]];
-			if (drawMain && ((_mainScreenFlags[x] & 0x0F) < spritePrio) && !ProcessMaskWindow<SnesPpu::SpriteLayerIndex>(mainWindowCount, x)) {
+			if (drawMain && ((_mainScreenFlags[x] & 0x0F) < spritePrio) && !(_mainWindowCount[SnesPpu::SpriteLayerIndex] && _windowMask[SnesPpu::SpriteLayerIndex][x])) {
 				uint16_t paletteRamOffset = 128 + (_spritePalette[x] << 4) + _spriteColors[x];
 				_mainScreenBuffer[x] = _cgram[paletteRamOffset];
 				_mainScreenFlags[x] = spritePrio | (((_state.ColorMathEnabled & 0x10) && _spritePalette[x] > 3) ? PixelFlags::AllowColorMath : 0);
 			}
 
-			if (drawSub && (_subScreenPriority[x] < spritePrio) && !ProcessMaskWindow<SnesPpu::SpriteLayerIndex>(subWindowCount, x)) {
+			if (drawSub && (_subScreenPriority[x] < spritePrio) && !(_subWindowCount[SnesPpu::SpriteLayerIndex] && _windowMask[SnesPpu::SpriteLayerIndex][x])) {
 				uint16_t paletteRamOffset = 128 + (_spritePalette[x] << 4) + _spriteColors[x];
 				_subScreenBuffer[x] = _cgram[paletteRamOffset];
 				_subScreenPriority[x] = spritePrio;
@@ -1064,9 +1057,6 @@ template <uint8_t layerIndex, uint8_t bpp, uint8_t normalPriority, uint8_t highP
 void SnesPpu::RenderTilemap() {
 	bool drawMain = (bool)(((_state.MainScreenLayers & _configVisibleLayers) >> layerIndex) & 0x01);
 	bool drawSub = (bool)(((_state.SubScreenLayers & _configVisibleLayers) >> layerIndex) & 0x01);
-
-	uint8_t mainWindowCount = _state.WindowMaskMain[layerIndex] ? (uint8_t)_state.Window[0].ActiveLayers[layerIndex] + (uint8_t)_state.Window[1].ActiveLayers[layerIndex] : 0;
-	uint8_t subWindowCount = _state.WindowMaskSub[layerIndex] ? (uint8_t)_state.Window[0].ActiveLayers[layerIndex] + (uint8_t)_state.Window[1].ActiveLayers[layerIndex] : 0;
 
 	uint16_t hScrollOriginal = _state.Layers[layerIndex].HScroll;
 	uint16_t hScroll = hiResMode ? (hScrollOriginal << 1) : hScrollOriginal;
@@ -1134,18 +1124,18 @@ void SnesPpu::RenderTilemap() {
 
 		if (color > 0) {
 			uint16_t rgbColor = GetRgbColor<bpp, directColorMode, basePaletteOffset>(paletteIndex, color);
-			if (drawMain && (_mainScreenFlags[x] & 0x0F) < priority && !ProcessMaskWindow<layerIndex>(mainWindowCount, x)) {
+			if (drawMain && (_mainScreenFlags[x] & 0x0F) < priority && !(_mainWindowCount[layerIndex] && _windowMask[layerIndex][x])) {
 				DrawMainPixel(x, rgbColor, priority | pixelFlags);
 			}
 			if constexpr (!hiResMode) {
-				if (drawSub && _subScreenPriority[x] < priority && !ProcessMaskWindow<layerIndex>(subWindowCount, x)) {
+				if (drawSub && _subScreenPriority[x] < priority && !(_subWindowCount[layerIndex] && _windowMask[layerIndex][x])) {
 					DrawSubPixel(x, rgbColor, priority);
 				}
 			}
 		}
 
 		if constexpr (hiResMode) {
-			if (hiresSubColor > 0 && drawSub && _subScreenPriority[x] < priority && !ProcessMaskWindow<layerIndex>(subWindowCount, x)) {
+			if (hiresSubColor > 0 && drawSub && _subScreenPriority[x] < priority && !(_subWindowCount[layerIndex] && _windowMask[layerIndex][x])) {
 				uint16_t hiresSubRgbColor = GetRgbColor<bpp, directColorMode, basePaletteOffset>(paletteIndex, hiresSubColor);
 				DrawSubPixel(x, hiresSubRgbColor, priority);
 			}
@@ -1209,9 +1199,6 @@ uint8_t SnesPpu::GetTilePixelColor(const uint16_t chrData[4], const uint8_t shif
 
 template <uint8_t layerIndex, uint8_t normalPriority, uint8_t highPriority, bool applyMosaic, bool directColorMode>
 void SnesPpu::RenderTilemapMode7() {
-	uint8_t mainWindowCount = _state.WindowMaskMain[layerIndex] ? (uint8_t)_state.Window[0].ActiveLayers[layerIndex] + (uint8_t)_state.Window[1].ActiveLayers[layerIndex] : 0;
-	uint8_t subWindowCount = _state.WindowMaskSub[layerIndex] ? (uint8_t)_state.Window[0].ActiveLayers[layerIndex] + (uint8_t)_state.Window[1].ActiveLayers[layerIndex] : 0;
-
 	bool drawMain = (bool)(((_state.MainScreenLayers & _configVisibleLayers) >> layerIndex) & 0x01);
 	bool drawSub = (bool)(((_state.SubScreenLayers & _configVisibleLayers) >> layerIndex) & 0x01);
 
@@ -1325,11 +1312,11 @@ void SnesPpu::RenderTilemapMode7() {
 				paletteColor = _cgram[colorIndex];
 			}
 
-			if (drawMain && (_mainScreenFlags[x] & 0x0F) < priority && !ProcessMaskWindow<layerIndex>(mainWindowCount, x)) {
+			if (drawMain && (_mainScreenFlags[x] & 0x0F) < priority && !(_mainWindowCount[layerIndex] && _windowMask[layerIndex][x])) {
 				DrawMainPixel(x, paletteColor, priority | pixelFlags);
 			}
 
-			if (drawSub && _subScreenPriority[x] < priority && !ProcessMaskWindow<layerIndex>(subWindowCount, x)) {
+			if (drawSub && _subScreenPriority[x] < priority && !(_subWindowCount[layerIndex] && _windowMask[layerIndex][x])) {
 				DrawSubPixel(x, paletteColor, priority);
 			}
 		}
@@ -1351,12 +1338,11 @@ void SnesPpu::ApplyColorMath() {
 		DebugProcessMainSubScreenViews();
 	}
 
-	uint8_t activeWindowCount = (uint8_t)_state.Window[0].ActiveLayers[SnesPpu::ColorWindowIndex] + (uint8_t)_state.Window[1].ActiveLayers[SnesPpu::ColorWindowIndex];
 	bool hiResMode = _state.HiResMode || _state.BgMode == 5 || _state.BgMode == 6;
 
 	if (hiResMode) {
 		for (int x = _drawStartX; x <= _drawEndX; x++) {
-			bool isInsideWindow = ProcessMaskWindow<SnesPpu::ColorWindowIndex>(activeWindowCount, x);
+			bool isInsideWindow = _windowMask[SnesPpu::ColorWindowIndex][x];
 
 			// Keep original subscreen color, which is used to apply color math to the main screen after
 			uint16_t subPixel = _subScreenBuffer[x];
@@ -1369,7 +1355,7 @@ void SnesPpu::ApplyColorMath() {
 		}
 	} else {
 		for (int x = _drawStartX; x <= _drawEndX; x++) {
-			bool isInsideWindow = ProcessMaskWindow<SnesPpu::ColorWindowIndex>(activeWindowCount, x);
+			bool isInsideWindow = _windowMask[SnesPpu::ColorWindowIndex][x];
 			ApplyColorMathToPixel(_mainScreenBuffer[x], _subScreenBuffer[x], x, isInsideWindow);
 		}
 	}
@@ -1582,6 +1568,54 @@ bool SnesPpu::ProcessMaskWindow(uint8_t activeWindowCount, int x) {
 			}
 	}
 	return false;
+}
+
+void SnesPpu::PrecomputeWindowMasks() {
+	for (uint8_t layer = 0; layer < 6; layer++) {
+		uint8_t activeCount = (uint8_t)_state.Window[0].ActiveLayers[layer] + (uint8_t)_state.Window[1].ActiveLayers[layer];
+
+		// Store window counts for main/sub screen checks
+		_mainWindowCount[layer] = _state.WindowMaskMain[layer] ? activeCount : 0;
+		_subWindowCount[layer] = _state.WindowMaskSub[layer] ? activeCount : 0;
+
+		// Precompute mask for the full 256-pixel range
+		// Only compute if any window is active for this layer
+		if (activeCount == 0) {
+			memset(_windowMask[layer], 0, 256);
+		} else if (activeCount == 1) {
+			// Single window active
+			if (_state.Window[0].ActiveLayers[layer]) {
+				for (int x = _drawStartX; x <= _drawEndX; x++) {
+					_windowMask[layer][x] = _state.Window[0].PixelNeedsMasking(layer, x);
+				}
+			} else {
+				for (int x = _drawStartX; x <= _drawEndX; x++) {
+					_windowMask[layer][x] = _state.Window[1].PixelNeedsMasking(layer, x);
+				}
+			}
+		} else {
+			// Both windows active — apply mask logic
+			for (int x = _drawStartX; x <= _drawEndX; x++) {
+				bool w0 = _state.Window[0].PixelNeedsMasking(layer, x);
+				bool w1 = _state.Window[1].PixelNeedsMasking(layer, x);
+				switch (_state.MaskLogic[layer]) {
+					default:
+					case WindowMaskLogic::Or:
+						_windowMask[layer][x] = w0 | w1;
+						break;
+					case WindowMaskLogic::And:
+						_windowMask[layer][x] = w0 & w1;
+						break;
+					case WindowMaskLogic::Xor:
+						_windowMask[layer][x] = w0 ^ w1;
+						break;
+					case WindowMaskLogic::Xnor:
+						_windowMask[layer][x] = !(w0 ^ w1);
+						break;
+				}
+			}
+		}
+	}
 }
 
 void SnesPpu::ProcessWindowMaskSettings(uint8_t value, uint8_t offset) {

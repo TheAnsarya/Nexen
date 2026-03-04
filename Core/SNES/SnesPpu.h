@@ -132,6 +132,16 @@ private:
 	uint32_t _mosaicPriority[4] = {};      ///< Mosaic priority per layer
 	uint16_t _mosaicScanlineCounter = 0;
 
+	/// <summary>
+	/// Precomputed window mask arrays per layer (6 layers x 256 pixels).
+	/// Computed once per RenderScanline() call for the current _drawStartX.._drawEndX range.
+	/// Replaces per-pixel ProcessMaskWindow() switch evaluation with simple array lookups.
+	/// </summary>
+	bool _windowMask[6][256] = {};
+	/// <summary>Number of active windows per layer (0, 1, or 2). Used to skip mask lookup entirely.</summary>
+	uint8_t _mainWindowCount[6] = {};
+	uint8_t _subWindowCount[6] = {};
+
 	uint8_t _oamWriteBuffer = 0;  ///< OAM write latch
 
 	bool _timeOver = false;   ///< Too many sprite tiles (>34 per scanline)
@@ -268,6 +278,12 @@ private:
 	/// <summary>Processes window mask logic for a layer at position x.</summary>
 	template <uint8_t layerIndex>
 	bool ProcessMaskWindow(uint8_t activeWindowCount, int x);
+
+	/// <summary>
+	/// Precomputes window mask arrays for all 6 layers across the current draw range.
+	/// Called once per RenderScanline() invocation, replacing per-pixel ProcessMaskWindow() calls.
+	/// </summary>
+	void PrecomputeWindowMasks();
 
 	void ProcessWindowMaskSettings(uint8_t value, uint8_t offset);
 

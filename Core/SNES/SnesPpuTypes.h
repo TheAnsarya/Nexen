@@ -236,6 +236,17 @@ struct WindowConfig {
 			}
 		}
 	}
+
+	/// <summary>
+	/// Non-template version for runtime layer index.
+	/// </summary>
+	bool PixelNeedsMasking(uint8_t layerIndex, int x) {
+		if (InvertedLayers[layerIndex]) {
+			return (Left > Right) ? true : (x < Left || x > Right);
+		} else {
+			return (Left > Right) ? false : (x >= Left && x <= Right);
+		}
+	}
 };
 
 /// <summary>
