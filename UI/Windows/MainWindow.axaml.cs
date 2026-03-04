@@ -246,7 +246,13 @@ public class MainWindow : NexenWindow {
 			_listener.OnNotification += OnNotification;
 
 			// Apply config and add known folders (can be done on background thread)
-			ConfigManager.Config.ApplyConfig();
+			// Wrap in try-catch so a missing native export (e.g. stale NexenCore.dll)
+			// doesn't prevent menu initialization from running.
+			try {
+				ConfigManager.Config.ApplyConfig();
+			} catch (Exception ex) {
+				Utilities.Log.Error(ex, "[MainWindow] ApplyConfig failed during startup (stale NexenCore.dll?) — continuing initialization");
+			}
 
 			if (ConfigManager.Config.Preferences.OverrideGameFolder && Directory.Exists(ConfigManager.Config.Preferences.GameFolder)) {
 				EmuApi.AddKnownGameFolder(ConfigManager.Config.Preferences.GameFolder);
