@@ -262,32 +262,16 @@ struct WindowConfig {
 /// - Mode 7 affine transformation
 /// </remarks>
 struct SnesPpuState : public BaseState {
-	/// <summary>Current cycle within the scanline (0-340).</summary>
-	uint16_t Cycle = 0;
-
-	/// <summary>Current scanline number (0-261/311).</summary>
-	uint16_t Scanline = 0;
-
-	/// <summary>Horizontal dot clock position.</summary>
-	uint16_t HClock = 0;
-
-	/// <summary>Total frames rendered since power-on.</summary>
-	uint32_t FrameCount = 0;
-
-	/// <summary>True when display is disabled (screen is black).</summary>
-	bool ForcedBlank = false;
-
-	/// <summary>Master brightness level (0-15, 0=black, 15=full).</summary>
-	uint8_t ScreenBrightness = 0;
-
-	/// <summary>Mode 7 transformation settings.</summary>
-	Mode7Config Mode7 = {};
+	// =========================================================================
+	// Cache Line 1: Hottest rendering fields (~64 bytes)
+	// These fields are accessed in 3+ rendering functions per scanline.
+	// =========================================================================
 
 	/// <summary>Current background mode (0-7).</summary>
 	uint8_t BgMode = 0;
 
-	/// <summary>Mode 1 BG3 priority flag (gives BG3 highest priority).</summary>
-	bool Mode1Bg3Priority = false;
+	/// <summary>True when display is disabled (screen is black).</summary>
+	bool ForcedBlank = false;
 
 	/// <summary>Layers enabled on main screen (bit flags).</summary>
 	uint8_t MainScreenLayers = 0;
@@ -295,8 +279,77 @@ struct SnesPpuState : public BaseState {
 	/// <summary>Layers enabled on sub screen (bit flags).</summary>
 	uint8_t SubScreenLayers = 0;
 
+	/// <summary>Master brightness level (0-15, 0=black, 15=full).</summary>
+	uint8_t ScreenBrightness = 0;
+
+	/// <summary>Color math enable flags per layer (bit flags).</summary>
+	uint8_t ColorMathEnabled = 0;
+
+	/// <summary>Mosaic block size (1-16 pixels).</summary>
+	uint8_t MosaicSize = 0;
+
+	/// <summary>Mosaic enable flags per BG layer (bit flags).</summary>
+	uint8_t MosaicEnabled = 0;
+
+	/// <summary>True for pseudo-hi-res mode (512px wide).</summary>
+	bool HiResMode = false;
+
+	/// <summary>True for interlaced display (480i).</summary>
+	bool ScreenInterlace = false;
+
+	/// <summary>True for interlaced OBJ rendering.</summary>
+	bool ObjInterlace = false;
+
+	/// <summary>Mode 1 BG3 priority flag (gives BG3 highest priority).</summary>
+	bool Mode1Bg3Priority = false;
+
+	/// <summary>True when EXTBG mode is enabled (Mode 7 external BG).</summary>
+	bool ExtBgEnabled = false;
+
+	/// <summary>True for 239-line mode (PAL-like), false for 224-line.</summary>
+	bool OverscanMode = false;
+
+	/// <summary>True to enable direct color mode (256-color palettes).</summary>
+	bool DirectColorMode = false;
+
+	/// <summary>OBJ size mode (0-7, determines small/large sprite sizes).</summary>
+	uint8_t OamMode = 0;
+
+	/// <summary>Color math window clipping mode.</summary>
+	ColorWindowMode ColorMathClipMode = ColorWindowMode::Never;
+
+	/// <summary>Color math window prevention mode.</summary>
+	ColorWindowMode ColorMathPreventMode = ColorWindowMode::Never;
+
+	/// <summary>True to use sub screen for color math (false = fixed color).</summary>
+	bool ColorMathAddSubscreen = false;
+
+	/// <summary>True for subtraction, false for addition.</summary>
+	bool ColorMathSubtractMode = false;
+
+	/// <summary>True to halve the color math result.</summary>
+	bool ColorMathHalveResult = false;
+
+	// 1 byte padding here (alignment for uint16_t)
+
+	/// <summary>Fixed color for color math (15-bit BGR).</summary>
+	uint16_t FixedColor = 0;
+
+	// =========================================================================
+	// Cache Lines 2-3: Layer config + Mode 7 (~72 bytes)
+	// Accessed during tilemap rendering and Mode 7.
+	// =========================================================================
+
 	/// <summary>Configuration for BG layers 1-4.</summary>
 	LayerConfig Layers[4] = {};
+
+	/// <summary>Mode 7 transformation settings.</summary>
+	Mode7Config Mode7 = {};
+
+	// =========================================================================
+	// Cache Lines 3-4: Window config (~76 bytes)
+	// Accessed during PrecomputeWindowMasks (per scanline).
+	// =========================================================================
 
 	/// <summary>Window 1 and Window 2 configuration.</summary>
 	WindowConfig Window[2] = {};
@@ -309,6 +362,26 @@ struct SnesPpuState : public BaseState {
 
 	/// <summary>Sub screen window masking enable per layer.</summary>
 	bool WindowMaskSub[5] = {};
+
+	// =========================================================================
+	// Cold fields: OAM, VRAM, CGRAM registers, timing
+	// Only accessed during register I/O, not in rendering loops.
+	// =========================================================================
+
+	/// <summary>Base VRAM address for OBJ character data.</summary>
+	uint16_t OamBaseAddress = 0;
+
+	/// <summary>VRAM address offset for second OBJ name table.</summary>
+	uint16_t OamAddressOffset = 0;
+
+	/// <summary>OAM word address for CPU access.</summary>
+	uint16_t OamRamAddress = 0;
+
+	/// <summary>Internal OAM address (may differ during rendering).</summary>
+	uint16_t InternalOamAddress = 0;
+
+	/// <summary>True to enable OBJ priority rotation.</summary>
+	bool EnableOamPriority = false;
 
 	/// <summary>Current VRAM word address for reads/writes.</summary>
 	uint16_t VramAddress = 0;
@@ -343,68 +416,17 @@ struct SnesPpuState : public BaseState {
 	/// <summary>Low/high byte latch for CGRAM access.</summary>
 	bool CgramAddressLatch = false;
 
-	/// <summary>Mosaic block size (1-16 pixels).</summary>
-	uint8_t MosaicSize = 0;
+	/// <summary>Current cycle within the scanline (0-340).</summary>
+	uint16_t Cycle = 0;
 
-	/// <summary>Mosaic enable flags per BG layer (bit flags).</summary>
-	uint8_t MosaicEnabled = 0;
+	/// <summary>Current scanline number (0-261/311).</summary>
+	uint16_t Scanline = 0;
 
-	/// <summary>OAM word address for CPU access.</summary>
-	uint16_t OamRamAddress = 0;
+	/// <summary>Horizontal dot clock position.</summary>
+	uint16_t HClock = 0;
 
-	/// <summary>Internal OAM address (may differ during rendering).</summary>
-	uint16_t InternalOamAddress = 0;
-
-	/// <summary>OBJ size mode (0-7, determines small/large sprite sizes).</summary>
-	uint8_t OamMode = 0;
-
-	/// <summary>Base VRAM address for OBJ character data.</summary>
-	uint16_t OamBaseAddress = 0;
-
-	/// <summary>VRAM address offset for second OBJ name table.</summary>
-	uint16_t OamAddressOffset = 0;
-
-	/// <summary>True to enable OBJ priority rotation.</summary>
-	bool EnableOamPriority = false;
-
-	/// <summary>True when EXTBG mode is enabled (Mode 7 external BG).</summary>
-	bool ExtBgEnabled = false;
-
-	/// <summary>True for pseudo-hi-res mode (512px wide).</summary>
-	bool HiResMode = false;
-
-	/// <summary>True for interlaced display (480i).</summary>
-	bool ScreenInterlace = false;
-
-	/// <summary>True for interlaced OBJ rendering.</summary>
-	bool ObjInterlace = false;
-
-	/// <summary>True for 239-line mode (PAL-like), false for 224-line.</summary>
-	bool OverscanMode = false;
-
-	/// <summary>True to enable direct color mode (256-color palettes).</summary>
-	bool DirectColorMode = false;
-
-	/// <summary>Color math window clipping mode.</summary>
-	ColorWindowMode ColorMathClipMode = ColorWindowMode::Never;
-
-	/// <summary>Color math window prevention mode.</summary>
-	ColorWindowMode ColorMathPreventMode = ColorWindowMode::Never;
-
-	/// <summary>True to use sub screen for color math (false = fixed color).</summary>
-	bool ColorMathAddSubscreen = false;
-
-	/// <summary>Color math enable flags per layer (bit flags).</summary>
-	uint8_t ColorMathEnabled = 0;
-
-	/// <summary>True for subtraction, false for addition.</summary>
-	bool ColorMathSubtractMode = false;
-
-	/// <summary>True to halve the color math result.</summary>
-	bool ColorMathHalveResult = false;
-
-	/// <summary>Fixed color for color math (15-bit BGR).</summary>
-	uint16_t FixedColor = 0;
+	/// <summary>Total frames rendered since power-on.</summary>
+	uint32_t FrameCount = 0;
 };
 
 /// <summary>
