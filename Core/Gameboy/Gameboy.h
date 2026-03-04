@@ -142,13 +142,13 @@ public:
 	AddressInfo GetAbsoluteAddress(uint16_t addr);
 	int32_t GetRelativeAddress(AddressInfo& absAddress);
 
-	bool IsCpuStopped();
-	bool IsCgb();
-	bool IsSgb();
+	[[nodiscard]] bool IsCpuStopped();
+	[[nodiscard]] bool IsCgb();
+	[[nodiscard]] bool IsSgb();
 	SuperGameboy* GetSgb();
 
-	uint64_t GetCycleCount();
-	uint64_t GetApuCycleCount();
+	[[nodiscard]] uint64_t GetCycleCount();
+	[[nodiscard]] uint64_t GetApuCycleCount();
 
 	void ProcessEndOfFrame();
 

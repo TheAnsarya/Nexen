@@ -85,8 +85,8 @@ public:
 
 	void Serialize(Serializer& s) override;
 
-	uint32_t GetVersion();
-	string GetVersionString();
+	[[nodiscard]] uint32_t GetVersion();
+	[[nodiscard]] string GetVersionString();
 
 	void SetVideoConfig(VideoConfig& config);
 	VideoConfig& GetVideoConfig();
@@ -144,7 +144,7 @@ public:
 	vector<KeyCombination> GetShortcutSupersets(EmulatorShortcut shortcut, int keySetIndex);
 
 	OverscanDimensions GetOverscan();
-	uint32_t GetEmulationSpeed();
+	[[nodiscard]] uint32_t GetEmulationSpeed();
 	double GetAspectRatio(ConsoleRegion region, FrameInfo baseFrameSize);
 
 	void SetFlag(EmulationFlags flag);

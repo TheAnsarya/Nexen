@@ -181,10 +181,10 @@ public:
 	void StopRewinding(bool forDebugger = false, bool deleteFutureData = false);
 
 	/// <summary>Check if currently rewinding</summary>
-	bool IsRewinding();
+	[[nodiscard]] bool IsRewinding();
 
 	/// <summary>Check if in debugger step-back mode</summary>
-	bool IsStepBack();
+	[[nodiscard]] bool IsStepBack();
 
 	/// <summary>
 	/// Rewind specified number of seconds.
@@ -193,7 +193,7 @@ public:
 	void RewindSeconds(uint32_t seconds);
 
 	/// <summary>Check if any history data available</summary>
-	bool HasHistory();
+	[[nodiscard]] bool HasHistory();
 
 	/// <summary>Get copy of history deque (for UI/debugging)</summary>
 	deque<RewindData> GetHistory();

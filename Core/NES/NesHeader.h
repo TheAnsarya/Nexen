@@ -67,62 +67,62 @@ struct NesHeader {
 	uint8_t Byte15;     ///< Reserved (should be zero)
 
 	/// <summary>Gets full mapper ID (0-255 for iNES, 0-4095 for NES 2.0).</summary>
-	uint16_t GetMapperID();
+	[[nodiscard]] uint16_t GetMapperID();
 
 	/// <summary>Checks if ROM has battery-backed save RAM.</summary>
-	bool HasBattery();
+	[[nodiscard]] bool HasBattery();
 
 	/// <summary>Checks if ROM has 512-byte trainer at $7000.</summary>
-	bool HasTrainer();
+	[[nodiscard]] bool HasTrainer();
 
 	/// <summary>Gets NES-specific game system (NTSC/PAL/Multi).</summary>
-	GameSystem GetNesGameSystem();
+	[[nodiscard]] GameSystem GetNesGameSystem();
 
 	/// <summary>Gets full game system including Vs., Famicom, etc.</summary>
-	GameSystem GetGameSystem();
+	[[nodiscard]] GameSystem GetGameSystem();
 
 	/// <summary>Checks if ROM uses EPSM audio expansion.</summary>
-	bool HasEpsm();
+	[[nodiscard]] bool HasEpsm();
 
 	/// <summary>Detects header format version (iNES, NES 2.0, Archaic).</summary>
-	RomHeaderVersion GetRomHeaderVersion();
+	[[nodiscard]] RomHeaderVersion GetRomHeaderVersion();
 
 	/// <summary>Calculates size from NES 2.0 exponent/multiplier encoding.</summary>
 	/// <param name="exponent">Size exponent value.</param>
 	/// <param name="multiplier">Size multiplier value.</param>
 	/// <returns>Calculated size in bytes.</returns>
-	uint32_t GetSizeValue(uint32_t exponent, uint32_t multiplier);
+	[[nodiscard]] uint32_t GetSizeValue(uint32_t exponent, uint32_t multiplier);
 
 	/// <summary>Gets PRG-ROM size in bytes.</summary>
-	uint32_t GetPrgSize();
+	[[nodiscard]] uint32_t GetPrgSize();
 
 	/// <summary>Gets CHR-ROM size in bytes (0 if CHR-RAM).</summary>
-	uint32_t GetChrSize();
+	[[nodiscard]] uint32_t GetChrSize();
 
 	/// <summary>Gets work RAM size (-1 for default).</summary>
-	int32_t GetWorkRamSize();
+	[[nodiscard]] int32_t GetWorkRamSize();
 
 	/// <summary>Gets battery-backed save RAM size (-1 for default).</summary>
-	int32_t GetSaveRamSize();
+	[[nodiscard]] int32_t GetSaveRamSize();
 
 	/// <summary>Gets CHR-RAM size (-1 for default).</summary>
-	int32_t GetChrRamSize();
+	[[nodiscard]] int32_t GetChrRamSize();
 
 	/// <summary>Gets battery-backed CHR-RAM size (-1 for default).</summary>
-	int32_t GetSaveChrRamSize();
+	[[nodiscard]] int32_t GetSaveChrRamSize();
 
 	/// <summary>Gets submapper ID (NES 2.0 only, 0-15).</summary>
-	uint8_t GetSubMapper();
+	[[nodiscard]] uint8_t GetSubMapper();
 
 	/// <summary>Gets nametable mirroring type from header.</summary>
-	MirroringType GetMirroringType();
+	[[nodiscard]] MirroringType GetMirroringType();
 
 	/// <summary>Gets input device type (NES 2.0 extension).</summary>
-	GameInputType GetInputType();
+	[[nodiscard]] GameInputType GetInputType();
 
 	/// <summary>Gets Vs. System type (Unisystem, Dualsystem, etc.).</summary>
-	VsSystemType GetVsSystemType();
+	[[nodiscard]] VsSystemType GetVsSystemType();
 
 	/// <summary>Gets Vs. System PPU model variant.</summary>
-	PpuModel GetVsSystemPpuModel();
+	[[nodiscard]] PpuModel GetVsSystemPpuModel();
 };

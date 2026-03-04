@@ -94,17 +94,17 @@ public:
 
 	virtual void Init() {}
 
-	uint8_t GetPort();
+	[[nodiscard]] uint8_t GetPort();
 	ControllerType GetControllerType();
 
-	bool IsPressed(uint8_t bit);
+	[[nodiscard]] bool IsPressed(uint8_t bit);
 
 	MousePosition GetCoordinates();
 	void SetCoordinates(MousePosition pos);
 
 	void Connect();
 	void Disconnect();
-	bool IsConnected();
+	[[nodiscard]] bool IsConnected();
 
 	void ClearState();
 	void SetBit(uint8_t bit);

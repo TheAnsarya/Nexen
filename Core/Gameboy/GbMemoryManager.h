@@ -57,7 +57,7 @@ public:
 	template <MemoryOperationType type, GbOamCorruptionType oamCorruptionType = GbOamCorruptionType::Read>
 	uint8_t Read(uint16_t addr);
 
-	bool IsOamDmaRunning();
+	[[nodiscard]] bool IsOamDmaRunning();
 	void WriteDma(uint16_t addr, uint8_t value);
 	uint8_t ReadDma(uint16_t addr);
 
@@ -77,10 +77,10 @@ public:
 	void ProcessHaltEnd();
 
 	void ToggleSpeed();
-	bool IsHighSpeed();
-	bool IsBootRomDisabled();
+	[[nodiscard]] bool IsHighSpeed();
+	[[nodiscard]] bool IsBootRomDisabled();
 
-	uint64_t GetApuCycleCount();
+	[[nodiscard]] uint64_t GetApuCycleCount();
 
 	uint8_t DebugRead(uint16_t addr);
 	void DebugWrite(uint16_t addr, uint8_t value);

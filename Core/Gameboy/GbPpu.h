@@ -238,14 +238,14 @@ public:
 
 	void SetTileFetchGlitchState();
 
-	bool IsVramReadAllowed();
-	bool IsVramWriteAllowed();
+	[[nodiscard]] bool IsVramReadAllowed();
+	[[nodiscard]] bool IsVramWriteAllowed();
 	uint8_t ReadVram(uint16_t addr);
 	uint8_t PeekVram(uint16_t addr);
 	void WriteVram(uint16_t addr, uint8_t value);
 
-	bool IsOamReadAllowed();
-	bool IsOamWriteAllowed();
+	[[nodiscard]] bool IsOamReadAllowed();
+	[[nodiscard]] bool IsOamWriteAllowed();
 	uint8_t ReadOam(uint8_t addr);
 	uint8_t PeekOam(uint8_t addr);
 	void WriteOam(uint8_t addr, uint8_t value, bool forDma);
