@@ -52,7 +52,7 @@ private:
 	/// <param name="a">First pixel ARGB</param>
 	/// <param name="b">Second pixel ARGB</param>
 	/// <returns>Blended pixel ARGB</returns>
-	__forceinline static uint32_t BlendPixels(uint32_t a, uint32_t b);
+	__forceinline static constexpr uint32_t BlendPixels(uint32_t a, uint32_t b);
 
 	/// <summary>Get pixel with optional hi-res blending.</summary>
 	/// <param name="ppuFrame">PPU output buffer</param>

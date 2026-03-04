@@ -55,7 +55,7 @@ public:
 	/// </summary>
 	/// <param name="region">Console region (NTSC/PAL/Dendy).</param>
 	/// <returns>Clock rate in Hz.</returns>
-	static uint32_t GetClockRate(ConsoleRegion region) {
+	static constexpr uint32_t GetClockRate(ConsoleRegion region) {
 		switch (region) {
 			default:
 			case ConsoleRegion::Ntsc:

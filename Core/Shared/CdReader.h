@@ -243,7 +243,7 @@ public:
 	/// Used for CD-ROM timecodes in subchannel data.
 	/// Each nibble represents a decimal digit.
 	/// </remarks>
-	static uint8_t ToBcd(uint8_t value) {
+	static constexpr uint8_t ToBcd(uint8_t value) {
 		uint8_t div = value / 10;
 		uint8_t rem = value % 10;
 		return (div << 4) | rem;
@@ -254,7 +254,7 @@ public:
 	/// </summary>
 	/// <param name="value">BCD value (e.g., 0x42)</param>
 	/// <returns>Binary representation (e.g., 0x42 → 42)</returns>
-	static uint8_t FromBcd(uint8_t value) {
+	static constexpr uint8_t FromBcd(uint8_t value) {
 		return ((value >> 4) & 0x0F) * 10 + (value & 0x0F);
 	}
 };

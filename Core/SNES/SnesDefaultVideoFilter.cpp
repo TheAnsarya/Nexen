@@ -124,6 +124,6 @@ uint32_t SnesDefaultVideoFilter::GetPixel(uint16_t* ppuFrame, uint32_t offset) {
 	return _calculatedPalette[ppuFrame[offset]];
 }
 
-uint32_t SnesDefaultVideoFilter::BlendPixels(uint32_t a, uint32_t b) {
+constexpr uint32_t SnesDefaultVideoFilter::BlendPixels(uint32_t a, uint32_t b) {
 	return ((((a) ^ (b)) & 0xfffefefeL) >> 1) + ((a) & (b));
 }
