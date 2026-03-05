@@ -76,6 +76,12 @@ public:
 	/// <summary>Called with current CPU cycle count — ticks audio timers and generates samples</summary>
 	void Tick(uint64_t currentCycle);
 
+	/// <summary>Cascade from system Timer 7 into Audio Channel 0.
+	/// On real Lynx hardware, the cascade chain is:
+	///   Timer 1 → 3 → 5 → 7 → Audio 0 → Audio 1 → Audio 2 → Audio 3
+	/// This is called by LynxMikey::CascadeTimer when Timer 7 underflows.</summary>
+	void CascadeFromSystemTimer();
+
 	/// <summary>Read an audio register ($FD20-$FD4F range, relative offset)</summary>
 	[[nodiscard]] uint8_t ReadRegister(uint8_t addr);
 

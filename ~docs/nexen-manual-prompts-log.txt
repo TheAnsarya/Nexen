@@ -428,7 +428,9 @@ open the {HomeFolder}/GamePacks/ folder
 
 [[Nexen/Poppy/Pansy/Peony] Work through issues; continue; [Peony] Create (multiple sessions if needed) a giant `*.md` markdown documentation with multiple subfiles if needed, for: Describe how the the Peony dissaembler works and how it uses cdl and pansy files and the architecture used and the flow and describe/document everything, we need to know how the app disassembles the game so we can correct and improve it; we also need plans and instructions with issues that are epics and sub-issues and documents on how to add everything we need to disassemble roms, also make a way to try to disassemble the rom (creating a project and working on it) from a `Nexen` `*.nexen-pack.zip` file (look at that zip file in the Nexen repos); make a bunch of issues and implement them, also do plan the (poppy) repos issues for implementing and documenting building from a `Nexen` `*.nexen-pack.zip` file; continue; also, build and open Nexen so I can test something; continue;
 
+Does issue Poppy #125 actually represent something that pansy show be doing? We don't want to extend the cdl format, we have pansy for that, make sure poppy outputs a pansy file during compilation (even we use one for reference, and compare them); continue;
 
+[Nexen/Poppy/Pansy/Peony] Work through github issues, and research, update plans/issues/docs/(chat/session logs)/git-commits/todos/code-plans/readmes/docs/etc; make tests and benchmarks and issues for all work and changes; If the work effort seems too large to do in one session, so you need several to complete the issue, then make plans and subissues and code-plans, and tons of documents, and benchmarks and tests, and even more docs; continue for a long time; implement; continue;
 
 
 

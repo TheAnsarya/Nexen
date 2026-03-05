@@ -175,6 +175,11 @@ void LynxMikey::TickTimer(int index, uint64_t currentCycle) {
 void LynxMikey::CascadeTimer(int sourceIndex) {
 	int target = _timerLinkTarget[sourceIndex];
 	if (target < 0) {
+		// Timer 7 → Audio Channel 0 cascade (Lynx hardware cascade chain:
+		// Timer 1 → 3 → 5 → 7 → Audio 0 → 1 → 2 → 3)
+		if (sourceIndex == 7 && _apu) {
+			_apu->CascadeFromSystemTimer();
+		}
 		return;
 	}
 

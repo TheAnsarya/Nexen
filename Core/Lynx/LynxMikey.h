@@ -128,10 +128,11 @@ private:
 	/// <summary>Number of bytes waiting in RX queue for delivery.</summary>
 	uint32_t _uartRxWaiting = 0;
 
-	// Timer linking chains:
-	// Chain 1: Timer 0 (H) → Timer 2 (V) → Timer 4
-	// Chain 2: Timer 1 → Timer 3 → Timer 5 → Timer 7
+	// Timer linking chains (Lynx hardware cascade):
+	// Chain 1: Timer 0 (H) → Timer 2 (V) → Timer 4 (UART)
+	// Chain 2: Timer 1 → Timer 3 → Timer 5 → Timer 7 → Audio 0 → 1 → 2 → 3
 	// Timer 6: standalone (audio sample rate)
+	// Note: Timer 7 → Audio 0 is handled explicitly in CascadeTimer()
 	static constexpr int _timerLinkTarget[8] = { 2, 3, 4, 5, -1, 7, -1, -1 };
 
 	// Clock source prescaler periods (in master clock cycles)

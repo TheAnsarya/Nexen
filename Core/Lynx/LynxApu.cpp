@@ -108,6 +108,27 @@ void LynxApu::CascadeAudioChannel(int sourceChannel) {
 	}
 }
 
+void LynxApu::CascadeFromSystemTimer() {
+	// Timer 7 → Audio Channel 0 cascade.
+	// On real Lynx hardware, the full cascade chain is:
+	//   Timer 1 → 3 → 5 → 7 → Audio 0 → 1 → 2 → 3
+	// Audio Channel 0 only accepts cascaded ticks when in linked mode
+	// (clock source 7 = cascaded from previous timer in the chain).
+	LynxAudioChannelState& channel = _state.Channels[0];
+
+	if (!channel.Enabled || (channel.Control & 0x07) != 7) [[likely]] {
+		return;
+	}
+
+	channel.Counter--;
+	if (channel.Counter == 0xff) [[unlikely]] { // Underflow
+		channel.Counter = channel.BackupValue;
+
+		ClockChannel(0);
+		CascadeAudioChannel(0); // Continue cascade: Audio 0 → 1 → 2 → 3
+	}
+}
+
 void LynxApu::ClockChannel(int ch) {
 	LynxAudioChannelState& channel = _state.Channels[ch];
 
