@@ -25,6 +25,19 @@ SaveStateManager::SaveStateManager(Emulator* emu) {
 	_lastIndex = 1;
 	_recentPlaySlot = 0;
 	_lastRecentPlayTime = 0;
+	_shutdownRequested = false;
+	_writeThread = std::jthread([this](std::stop_token) { BackgroundWriteLoop(); });
+}
+
+SaveStateManager::~SaveStateManager() {
+	{
+		std::lock_guard<std::mutex> lock(_writeMutex);
+		_shutdownRequested = true;
+	}
+	_writeCv.notify_one();
+	if (_writeThread.joinable()) {
+		_writeThread.join();
+	}
 }
 
 string SaveStateManager::GetStateFilepath(int stateIndex) {
@@ -146,22 +159,46 @@ void SaveStateManager::SaveState(ostream& stream) {
 }
 
 bool SaveStateManager::SaveState(const string& filepath, bool showSuccessMessage) {
-	ofstream file(filepath, ios::out | ios::binary);
+	SaveStateSnapshot snapshot;
 
-	if (file) {
-		{
-			auto lock = _emu->AcquireLock();
-			SaveState(file);
-			_emu->ProcessEvent(EventType::StateSaved);
-		}
-		file.close();
+	{
+		auto lock = _emu->AcquireLock();
 
-		if (showSuccessMessage) {
-			MessageManager::DisplayMessage("SaveStates", "SaveStateSavedFile", filepath);
+		// Capture state data under lock (fast: memcpy-like, no compression)
+		snapshot.stateData = _emu->SerializeToBuffer();
+
+		// Capture frame data under lock
+		PpuFrameInfo frame = _emu->GetPpuFrame();
+		snapshot.frameBufferSize = frame.FrameBufferSize;
+		snapshot.frameWidth = frame.Width;
+		snapshot.frameHeight = frame.Height;
+		snapshot.frameScale100 = (uint32_t)(_emu->GetVideoDecoder()->GetLastFrameScale() * 100);
+		if (frame.FrameBuffer && frame.FrameBufferSize > 0) {
+			snapshot.frameBuffer.assign(
+				(uint8_t*)frame.FrameBuffer,
+				(uint8_t*)frame.FrameBuffer + frame.FrameBufferSize);
 		}
-		return true;
+
+		// Capture metadata under lock
+		snapshot.emuVersion = _emu->GetSettings()->GetVersion();
+		snapshot.consoleType = (uint32_t)_emu->GetConsoleType();
+		RomInfo romInfo = _emu->GetRomInfo();
+		snapshot.romName = FolderUtilities::GetFilename(romInfo.RomFile.GetFileName(), true);
+
+		_emu->ProcessEvent(EventType::StateSaved);
 	}
-	return false;
+
+	snapshot.filepath = filepath;
+	snapshot.showSuccessMessage = showSuccessMessage;
+
+	// Enqueue for background compression + write (no lock held)
+	{
+		std::lock_guard<std::mutex> lock(_writeMutex);
+		_writeQueue.push(std::move(snapshot));
+	}
+	_writeCv.notify_one();
+
+	return true;
 }
 
 void SaveStateManager::SaveState(int stateIndex, bool displayMessage) {
@@ -687,5 +724,87 @@ void SaveStateManager::SetPerRomSaveStateDirectory(const string& path) {
 	_perRomSaveStateDir = path;
 	if (!path.empty()) {
 		FolderUtilities::CreateFolder(path);
+	}
+}
+
+void SaveStateManager::BackgroundWriteLoop() {
+	while (true) {
+		SaveStateSnapshot snapshot;
+		{
+			std::unique_lock<std::mutex> lock(_writeMutex);
+			_writeCv.wait(lock, [this] { return _shutdownRequested || !_writeQueue.empty(); });
+
+			if (_shutdownRequested && _writeQueue.empty()) {
+				return;
+			}
+
+			snapshot = std::move(_writeQueue.front());
+			_writeQueue.pop();
+		}
+
+		WriteSnapshotToDisk(snapshot);
+	}
+}
+
+void SaveStateManager::WriteSnapshotToDisk(SaveStateSnapshot& snapshot) {
+	ofstream file(snapshot.filepath, ios::out | ios::binary);
+	if (!file) {
+		return;
+	}
+
+	// Write header: "MSS" + emu version + format version + console type
+	file.write("MSS", 3);
+	WriteValue(file, snapshot.emuVersion);
+	WriteValue(file, SaveStateManager::FileFormatVersion);
+	WriteValue(file, snapshot.consoleType);
+
+	// Write video data (compress framebuffer)
+	WriteValue(file, snapshot.frameBufferSize);
+	WriteValue(file, snapshot.frameWidth);
+	WriteValue(file, snapshot.frameHeight);
+	WriteValue(file, snapshot.frameScale100);
+
+	unsigned long compressedSize = compressBound(snapshot.frameBufferSize);
+	vector<uint8_t> compressedFrame(compressedSize);
+	compress2(compressedFrame.data(), &compressedSize, snapshot.frameBuffer.data(), snapshot.frameBufferSize, MZ_BEST_SPEED);
+
+	WriteValue(file, (uint32_t)compressedSize);
+	file.write((char*)compressedFrame.data(), (uint32_t)compressedSize);
+
+	// Write ROM name
+	WriteValue(file, (uint32_t)snapshot.romName.size());
+	file.write(snapshot.romName.c_str(), snapshot.romName.size());
+
+	// Write compressed state data
+	bool isCompressed = true;
+	file.put((char)isCompressed);
+
+	unsigned long stateCompSize = compressBound((unsigned long)snapshot.stateData.size());
+	vector<uint8_t> compressedState(stateCompSize);
+	compress2(compressedState.data(), &stateCompSize, snapshot.stateData.data(), (unsigned long)snapshot.stateData.size(), 1);
+
+	uint32_t originalSize = (uint32_t)snapshot.stateData.size();
+	uint32_t compSize = (uint32_t)stateCompSize;
+	file.write((char*)&originalSize, sizeof(uint32_t));
+	file.write((char*)&compSize, sizeof(uint32_t));
+	file.write((char*)compressedState.data(), compSize);
+
+	file.close();
+
+	if (snapshot.showSuccessMessage) {
+		MessageManager::DisplayMessage("SaveStates", "SaveStateSavedFile", snapshot.filepath);
+	}
+}
+
+void SaveStateManager::FlushPendingWrites() {
+	// Spin until write queue is empty
+	while (true) {
+		{
+			std::lock_guard<std::mutex> lock(_writeMutex);
+			if (_writeQueue.empty()) {
+				return;
+			}
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 }

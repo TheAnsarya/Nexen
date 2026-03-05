@@ -233,6 +233,9 @@ public:
 	SerializeFormat GetFormat() { return _format; }
 	unordered_map<string, SerializeMapValue>& GetMapValues() { return _mapValues; }
 
+	/// <summary>Move the serialized data buffer out for async writing</summary>
+	[[nodiscard]] vector<uint8_t> GetData() { return std::move(_data); }
+
 	void SetErrorFlag() { _hasError = true; }
 	bool HasError() { return _hasError; }
 

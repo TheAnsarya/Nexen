@@ -876,6 +876,12 @@ void Emulator::Serialize(ostream& out, bool includeSettings, int compressionLeve
 	s.SaveTo(out, compressionLevel);
 }
 
+vector<uint8_t> Emulator::SerializeToBuffer() {
+	Serializer s(SaveStateManager::FileFormatVersion, true);
+	s.Stream(_console, "");
+	return s.GetData();
+}
+
 DeserializeResult Emulator::Deserialize(istream& in, uint32_t fileFormatVersion, bool includeSettings, optional<ConsoleType> srcConsoleType, bool sendNotification) {
 	Serializer s(fileFormatVersion, false);
 	if (!s.LoadFrom(in)) {

@@ -1,6 +1,10 @@
 #pragma once
 #include "pch.h"
 #include <ctime>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <queue>
 
 class Emulator;
 struct RenderedFrame;
@@ -39,6 +43,24 @@ struct SaveStateInfo {
 	time_t timestamp;       ///< Unix timestamp when save was created (from filename)
 	uint32_t fileSize;      ///< File size in bytes
 	SaveStateOrigin origin; ///< Origin category (Auto/Save/Recent/Lua)
+};
+
+/// <summary>
+/// Captured state snapshot for background writing.
+/// Contains all data needed to write a save state file without holding the emulator lock.
+/// </summary>
+struct SaveStateSnapshot {
+	vector<uint8_t> stateData;    ///< Serialized emulator state (uncompressed)
+	vector<uint8_t> frameBuffer;  ///< Raw framebuffer copy for screenshot
+	uint32_t frameBufferSize = 0; ///< Frame buffer size in bytes
+	uint32_t frameWidth = 0;      ///< Frame width in pixels
+	uint32_t frameHeight = 0;     ///< Frame height in pixels
+	uint32_t frameScale100 = 0;   ///< Frame scale * 100 (e.g., 200 = 2.0x)
+	uint32_t emuVersion = 0;      ///< Emulator version at time of capture
+	uint32_t consoleType = 0;     ///< Console type (cast from ConsoleType)
+	string romName;               ///< ROM filename without path
+	string filepath;              ///< Target save state file path
+	bool showSuccessMessage = false; ///< Display success message after write
 };
 
 /// <summary>
@@ -94,6 +116,19 @@ private:
 
 	/// <summary>Persistent buffer for reading compressed video data (avoids ~150KB alloc per load/rewind)</summary>
 	vector<uint8_t> _compressedReadBuffer;
+
+	// ========== Async Write Infrastructure ==========
+	std::jthread _writeThread;
+	std::queue<SaveStateSnapshot> _writeQueue;
+	std::mutex _writeMutex;
+	std::condition_variable _writeCv;
+	bool _shutdownRequested = false;
+
+	/// <summary>Background thread loop — dequeues snapshots, compresses, writes to disk</summary>
+	void BackgroundWriteLoop();
+
+	/// <summary>Write a single snapshot to disk (compression + file I/O)</summary>
+	void WriteSnapshotToDisk(SaveStateSnapshot& snapshot);
 
 	/// <summary>
 	/// Get filesystem path for save state slot (legacy mode).
@@ -343,4 +378,10 @@ public:
 	/// </summary>
 	/// <param name="path">Full path to per-ROM save state directory, or empty to use default</param>
 	void SetPerRomSaveStateDirectory(const string& path);
+
+	/// <summary>Block until all pending background writes are complete</summary>
+	void FlushPendingWrites();
+
+	/// <summary>Shut down the background writer thread (called on destruction)</summary>
+	~SaveStateManager();
 };

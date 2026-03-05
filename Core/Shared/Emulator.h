@@ -305,6 +305,9 @@ public:
 	/// <param name="compressionLevel">zlib compression level (0-9, 1=default)</param>
 	void Serialize(ostream& out, bool includeSettings, int compressionLevel = 1);
 
+	/// <summary>Serialize state to in-memory buffer (no compression, no file I/O)</summary>
+	[[nodiscard]] vector<uint8_t> SerializeToBuffer();
+
 	/// <summary>
 	/// Deserialize emulator state from stream (load state).
 	/// </summary>
