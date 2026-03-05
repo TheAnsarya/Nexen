@@ -77,6 +77,9 @@ public:
 	/// <summary>Get relative address for debugger</summary>
 	[[nodiscard]] int32_t GetRelativeAddress(AddressInfo& absAddress);
 
+	// Diagnostic accessor
+	[[nodiscard]] uint8_t GetMapctl() const { return _state.Mapctl; }
+
 	void Serialize(Serializer& s) override;
 
 private:

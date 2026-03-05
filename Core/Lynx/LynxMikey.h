@@ -229,6 +229,13 @@ public:
 	/// <summary>Get the 160×102 ARGB frame buffer for display output.</summary>
 	[[nodiscard]] uint32_t* GetFrameBuffer() { return _frameBuffer; }
 
+	// Diagnostic accessors
+	[[nodiscard]] uint8_t GetDisplayControl() const { return _state.DisplayControl; }
+	[[nodiscard]] uint16_t GetDisplayAddress() const { return _state.DisplayAddress; }
+	[[nodiscard]] uint16_t GetCurrentScanline() const { return _state.CurrentScanline; }
+	[[nodiscard]] uint32_t GetPaletteColor(int index) const { return _state.Palette[index]; }
+	[[nodiscard]] const LynxTimerState& GetTimerState(int index) const { return _state.Timers[index]; }
+
 	/// <summary>Get mutable reference to Mikey state (for debugger/serialization).</summary>
 	[[nodiscard]] LynxMikeyState& GetState() { return _state; }
 

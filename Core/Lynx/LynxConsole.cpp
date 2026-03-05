@@ -18,6 +18,7 @@
 #include "Shared/FirmwareHelper.h"
 #include "Utilities/Serializer.h"
 #include "Utilities/VirtualFile.h"
+#include <fstream>
 
 // EEPROM CRC32 lookup now handled by LynxGameDatabase
 
@@ -29,6 +30,15 @@ LynxConsole::~LynxConsole() {
 }
 
 LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
+	// Diagnostic: write to file at the very start of LoadRom
+	{
+		auto diagFile = std::ofstream("C:\\Users\\me\\lynx_diag.log", std::ios::trunc);
+		if (diagFile.is_open()) {
+			diagFile << "LoadRom called\n";
+			diagFile.close();
+		}
+	}
+
 	vector<uint8_t> romData;
 	if (!romFile.ReadFile(romData) || romData.size() < 64) {
 		return LoadRomResult::Failure;
@@ -253,6 +263,49 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 }
 
 void LynxConsole::RunFrame() {
+	// Diagnostic: log key state for first 5 frames to debug black screen
+	if (_frameCount < 5) {
+		auto& cpuState = _cpu->GetState();
+		auto diagFile = std::ofstream("C:\\Users\\me\\lynx_diag.log", std::ios::app);
+		if (diagFile.is_open()) {
+			diagFile << std::format("=== Frame {} ===\n", _frameCount);
+			diagFile << std::format("  CPU: PC=${:04X} SP=${:02X} A=${:02X} X=${:02X} Y=${:02X} PS=${:02X} Cycles={}\n",
+				cpuState.PC, cpuState.SP, cpuState.A, cpuState.X, cpuState.Y, cpuState.PS, cpuState.CycleCount);
+			diagFile << std::format("  MAPCTL=${:02X} BootRom={}\n", _memoryManager->GetMapctl(), _bootRom ? "yes" : "no");
+			diagFile << std::format("  Display: DISPCTL=${:02X} DISPADR=${:04X} Scanline={}\n",
+				_mikey->GetDisplayControl(), _mikey->GetDisplayAddress(), _mikey->GetCurrentScanline());
+			bool anyNonBlack = false;
+			for (int i = 0; i < 16; i++) {
+				if (_mikey->GetPaletteColor(i) != 0xFF000000) {
+					anyNonBlack = true;
+					break;
+				}
+			}
+			diagFile << std::format("  Palette: {}\n", anyNonBlack ? "has colors" : "ALL BLACK");
+			bool anyPixels = false;
+			for (int i = 0; i < LynxConstants::PixelCount; i++) {
+				if (_frameBuffer[i] != 0 && _frameBuffer[i] != 0xFF000000) {
+					anyPixels = true;
+					break;
+				}
+			}
+			diagFile << std::format("  FrameBuffer: {}\n", anyPixels ? "has content" : "empty/black");
+			auto& t0 = _mikey->GetTimerState(0);
+			auto& t2 = _mikey->GetTimerState(2);
+			diagFile << std::format("  Timer0: CTLA=${:02X} CTLB=${:02X} Count=${:02X} Backup=${:02X} Done={}\n",
+				t0.ControlA, t0.ControlB, t0.Count, t0.BackupValue, t0.TimerDone);
+			diagFile << std::format("  Timer2: CTLA=${:02X} CTLB=${:02X} Count=${:02X} Backup=${:02X} Done={}\n",
+				t2.ControlA, t2.ControlB, t2.Count, t2.BackupValue, t2.TimerDone);
+			// Check first few bytes of RAM at key locations
+			uint8_t* ram = _workRam.get();
+			diagFile << std::format("  RAM[$0200]: {:02X} {:02X} {:02X} {:02X} {:02X} {:02X} {:02X} {:02X}\n",
+				ram[0x200], ram[0x201], ram[0x202], ram[0x203], ram[0x204], ram[0x205], ram[0x206], ram[0x207]);
+			diagFile << std::format("  RAM[$FFFE]: {:02X} {:02X} (IRQ vector in RAM)\n", ram[0xFFFE], ram[0xFFFF]);
+			diagFile << std::format("  RAM[$FFFC]: {:02X} {:02X} (Reset vector in RAM)\n", ram[0xFFFC], ram[0xFFFD]);
+			diagFile.close();
+		}
+	}
+
 	// Update input state BEFORE frame execution to avoid 1-frame input lag.
 	// On real hardware, Suzy latches joystick state when the CPU reads $FCB0/$FCB1
 	// mid-frame, so input must be current before execution begins.
