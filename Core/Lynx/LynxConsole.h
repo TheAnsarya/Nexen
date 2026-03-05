@@ -56,8 +56,8 @@ public:
 	LynxConsole(Emulator* emu);
 	~LynxConsole();
 
-	[[nodiscard]] static vector<string> GetSupportedExtensions() { return { ".lnx", ".o" }; }
-	[[nodiscard]] static vector<string> GetSupportedSignatures() { return { "LYNX" }; }
+	[[nodiscard]] static vector<string> GetSupportedExtensions() { return { ".lnx", ".lyx", ".o", ".atari-lynx" }; }
+	[[nodiscard]] static vector<string> GetSupportedSignatures() { return { "LYNX", "LYNXROM" }; }
 
 	// IConsole overrides
 	LoadRomResult LoadRom(VirtualFile& romFile) override;

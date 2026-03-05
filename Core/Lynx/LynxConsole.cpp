@@ -77,8 +77,8 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 
 		romOffset = 64; // Skip header
 	} else {
-		// Headerless .o format — raw ROM data
-		MessageManager::Log("Headerless ROM (raw .o format)");
+		// Headerless .lyx/.o format — raw ROM data
+		MessageManager::Log("Headerless ROM (raw .lyx/.o format)");
 		_rotation = LynxRotation::None;
 	}
 

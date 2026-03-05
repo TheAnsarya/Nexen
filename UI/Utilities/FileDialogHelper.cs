@@ -64,6 +64,7 @@ public sealed class FileDialogHelper {
 						"*.pce", "*.sgx", "*.cue", "*.hes",
 						"*.sms", "*.gg", "*.sg", "*.col",
 						"*.gba",
+						"*.lnx", "*.lyx", "*.o", "*.atari-lynx",
 						"*.ws", "*.wsc",
 						"*.zip", "*.7z",
 						"*.ips", "*.bps"
@@ -77,6 +78,7 @@ public sealed class FileDialogHelper {
 					filter.Add(new FilePickerFileType("SMS / GG ROM files") { Patterns = new List<string>() { "*.sms", "*.gg" } });
 					filter.Add(new FilePickerFileType("SG-1000 ROM files") { Patterns = new List<string>() { "*.sg" } });
 					filter.Add(new FilePickerFileType("ColecoVision ROM files") { Patterns = new List<string>() { "*.col" } });
+					filter.Add(new FilePickerFileType("Lynx ROM files") { Patterns = new List<string>() { "*.lnx", "*.lyx", "*.o", "*.atari-lynx" } });
 					filter.Add(new FilePickerFileType("WonderSwan ROM files") { Patterns = new List<string>() { "*.ws", "*.wsc" } });
 					filter.Add(new FilePickerFileType("Patch files (IPS/BPS)") { Patterns = new List<string>() { "*.ips", "*.bps" } });
 				} else if (ext == FileDialogHelper.FirmwareExt) {
