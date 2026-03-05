@@ -429,6 +429,12 @@ struct LynxMikeyState {
 	// --- Misc ---
 	/// <summary>Mikey hardware revision register ($FD84)</summary>
 	uint8_t HardwareRevision;
+
+	/// <summary>SYSCTL1 register ($FD87) — last written value.
+	/// Tracked for edge detection on the cart address strobe (bit 1).
+	/// Bit 0 = cart address data, Bit 1 = cart address strobe,
+	/// Bit 2 = cart power.</summary>
+	uint8_t Sysctl1;
 };
 
 // ============================================================================
@@ -701,11 +707,21 @@ struct LynxCartState {
 	/// <summary>Currently selected ROM bank / page counter</summary>
 	uint16_t CurrentBank;
 
-	/// <summary>Cart shift register for bank switching</summary>
+	/// <summary>Cart shift register for bank switching (legacy, unused)</summary>
 	uint8_t ShiftRegister;
 
-	/// <summary>Cart address counter</summary>
+	/// <summary>Cart address counter — current read position within the active bank</summary>
 	uint32_t AddressCounter;
+
+	/// <summary>Accumulated address bits shifted in via SYSCTL1 bit-bang protocol.
+	/// Each falling edge of the strobe line (SYSCTL1 bit 1) shifts one data bit
+	/// (SYSCTL1 bit 0) into this register, MSB first.</summary>
+	uint32_t AddressShift;
+
+	/// <summary>Number of address bits shifted in so far (0 to AddrBitCount).
+	/// When this reaches AddrBitCount, the shift is complete and AddressShift
+	/// becomes the new AddressCounter.</summary>
+	uint8_t ShiftCount;
 };
 
 // ============================================================================

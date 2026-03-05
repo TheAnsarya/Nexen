@@ -38,6 +38,12 @@ private:
 	uint32_t _bank0Offset = 0; // Offset into ROM where bank 0 data starts
 	uint32_t _bank1Offset = 0; // Offset into ROM where bank 1 data starts
 
+	/// <summary>Number of address bits for the shift register protocol.
+	/// Computed from ROM size: ceil(log2(romSize)). After this many bits
+	/// have been shifted in via SYSCTL1, the accumulated value becomes
+	/// the new AddressCounter.</summary>
+	uint8_t _addrBitCount = 0;
+
 public:
 	LynxCart() = default;
 
@@ -57,6 +63,11 @@ public:
 
 	/// <summary>Peek at current cart data byte without advancing counter</summary>
 	[[nodiscard]] uint8_t PeekData() const;
+
+	/// <summary>Shift one address bit into the cart via the SYSCTL1 bit-bang protocol.
+	/// Called by Mikey on falling edge of SYSCTL1 strobe (bit 1).
+	/// After _addrBitCount bits, the accumulated value becomes the new AddressCounter.</summary>
+	void CartAddressWrite(bool data);
 
 	/// <summary>Set cart address counter low byte</summary>
 	void SetAddressLow(uint8_t value);

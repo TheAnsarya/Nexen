@@ -40,9 +40,28 @@ void LynxCart::Init(Emulator* emu, LynxConsole* console, const LynxCartInfo& inf
 	_state.CurrentBank = 0;
 	_state.ShiftRegister = 0;
 	_state.AddressCounter = 0;
+	_state.AddressShift = 0;
+	_state.ShiftCount = 0;
 
-	MessageManager::Log(std::format("Cart: Bank 0 = {} KB, Bank 1 = {} KB",
-		_bank0Size / 1024, _bank1Size / 1024));
+	// Compute address bit count for the shift register protocol.
+	// The boot ROM shifts in this many bits via SYSCTL1 to set the cart page.
+	// Each bit is clocked on a falling edge of the strobe line.
+	// addrBitCount = ceil(log2(bankSize)) — enough bits to address every byte.
+	uint32_t maxSize = std::max(_bank0Size, _bank1Size);
+	_addrBitCount = 0;
+	if (maxSize > 0) {
+		uint32_t tmp = maxSize - 1;
+		while (tmp > 0) {
+			_addrBitCount++;
+			tmp >>= 1;
+		}
+	}
+	if (_addrBitCount < 8) {
+		_addrBitCount = 8; // Minimum 8 bits (256-byte page)
+	}
+
+	MessageManager::Log(std::format("Cart: Bank 0 = {} KB, Bank 1 = {} KB, AddrBits = {}",
+		_bank0Size / 1024, _bank1Size / 1024, _addrBitCount));
 }
 
 uint8_t LynxCart::ReadData() {
@@ -84,12 +103,25 @@ void LynxCart::SetAddressHigh(uint8_t value) {
 }
 
 void LynxCart::WriteShiftRegister(uint8_t value) {
-	// The shift register is written by Suzy but its value is not directly
-	// read back in emulation. On real hardware, this register participates
-	// in the AUDIN/cart address decode logic, but the simplified emulation
-	// model uses explicit SetBank0Page/SetBank1Page instead.
-	// We store it for state completeness and debugger visibility.
+	// Legacy method — kept for test compatibility.
 	_state.ShiftRegister = value;
+}
+
+void LynxCart::CartAddressWrite(bool data) {
+	// Shift in one address bit (MSB first) from the SYSCTL1 bit-bang protocol.
+	// Called by Mikey on each falling edge of SYSCTL1 strobe (bit 1).
+	// After _addrBitCount bits, the accumulated value replaces AddressCounter.
+	_state.ShiftCount++;
+	_state.AddressShift <<= 1;
+	if (data) {
+		_state.AddressShift |= 1;
+	}
+
+	if (_state.ShiftCount >= _addrBitCount) {
+		_state.AddressCounter = _state.AddressShift;
+		_state.ShiftCount = 0;
+		_state.AddressShift = 0;
+	}
 }
 
 void LynxCart::SetBank0Page(uint8_t page) {
@@ -132,4 +164,6 @@ void LynxCart::Serialize(Serializer& s) {
 	SV(_state.CurrentBank);
 	SV(_state.ShiftRegister);
 	SV(_state.AddressCounter);
+	SV(_state.AddressShift);
+	SV(_state.ShiftCount);
 }

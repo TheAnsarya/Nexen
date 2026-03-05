@@ -18,7 +18,6 @@
 #include "Shared/FirmwareHelper.h"
 #include "Utilities/Serializer.h"
 #include "Utilities/VirtualFile.h"
-#include <fstream>
 
 // EEPROM CRC32 lookup now handled by LynxGameDatabase
 
@@ -30,14 +29,6 @@ LynxConsole::~LynxConsole() {
 }
 
 LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
-	// Diagnostic: write to file at the very start of LoadRom
-	{
-		auto diagFile = std::ofstream("C:\\Users\\me\\lynx_diag.log", std::ios::trunc);
-		if (diagFile.is_open()) {
-			diagFile << "LoadRom called\n";
-			diagFile.close();
-		}
-	}
 
 	vector<uint8_t> romData;
 	if (!romFile.ReadFile(romData) || romData.size() < 64) {
@@ -263,47 +254,18 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 }
 
 void LynxConsole::RunFrame() {
-	// Diagnostic: log key state for first 5 frames to debug black screen
-	if (_frameCount < 5) {
+	// Log key emulation state for first 3 frames to help debug display issues
+	if (_frameCount < 3) {
 		auto& cpuState = _cpu->GetState();
-		auto diagFile = std::ofstream("C:\\Users\\me\\lynx_diag.log", std::ios::app);
-		if (diagFile.is_open()) {
-			diagFile << std::format("=== Frame {} ===\n", _frameCount);
-			diagFile << std::format("  CPU: PC=${:04X} SP=${:02X} A=${:02X} X=${:02X} Y=${:02X} PS=${:02X} Cycles={}\n",
-				cpuState.PC, cpuState.SP, cpuState.A, cpuState.X, cpuState.Y, cpuState.PS, cpuState.CycleCount);
-			diagFile << std::format("  MAPCTL=${:02X} BootRom={}\n", _memoryManager->GetMapctl(), _bootRom ? "yes" : "no");
-			diagFile << std::format("  Display: DISPCTL=${:02X} DISPADR=${:04X} Scanline={}\n",
-				_mikey->GetDisplayControl(), _mikey->GetDisplayAddress(), _mikey->GetCurrentScanline());
-			bool anyNonBlack = false;
-			for (int i = 0; i < 16; i++) {
-				if (_mikey->GetPaletteColor(i) != 0xFF000000) {
-					anyNonBlack = true;
-					break;
-				}
-			}
-			diagFile << std::format("  Palette: {}\n", anyNonBlack ? "has colors" : "ALL BLACK");
-			bool anyPixels = false;
-			for (int i = 0; i < LynxConstants::PixelCount; i++) {
-				if (_frameBuffer[i] != 0 && _frameBuffer[i] != 0xFF000000) {
-					anyPixels = true;
-					break;
-				}
-			}
-			diagFile << std::format("  FrameBuffer: {}\n", anyPixels ? "has content" : "empty/black");
-			auto& t0 = _mikey->GetTimerState(0);
-			auto& t2 = _mikey->GetTimerState(2);
-			diagFile << std::format("  Timer0: CTLA=${:02X} CTLB=${:02X} Count=${:02X} Backup=${:02X} Done={}\n",
-				t0.ControlA, t0.ControlB, t0.Count, t0.BackupValue, t0.TimerDone);
-			diagFile << std::format("  Timer2: CTLA=${:02X} CTLB=${:02X} Count=${:02X} Backup=${:02X} Done={}\n",
-				t2.ControlA, t2.ControlB, t2.Count, t2.BackupValue, t2.TimerDone);
-			// Check first few bytes of RAM at key locations
-			uint8_t* ram = _workRam.get();
-			diagFile << std::format("  RAM[$0200]: {:02X} {:02X} {:02X} {:02X} {:02X} {:02X} {:02X} {:02X}\n",
-				ram[0x200], ram[0x201], ram[0x202], ram[0x203], ram[0x204], ram[0x205], ram[0x206], ram[0x207]);
-			diagFile << std::format("  RAM[$FFFE]: {:02X} {:02X} (IRQ vector in RAM)\n", ram[0xFFFE], ram[0xFFFF]);
-			diagFile << std::format("  RAM[$FFFC]: {:02X} {:02X} (Reset vector in RAM)\n", ram[0xFFFC], ram[0xFFFD]);
-			diagFile.close();
-		}
+		auto& t0 = _mikey->GetTimerState(0);
+		auto& t2 = _mikey->GetTimerState(2);
+		MessageManager::Log(std::format("Frame {}: PC=${:04x} SP=${:02x} A=${:02x} PS=${:02x} MAPCTL=${:02x}",
+			_frameCount, cpuState.PC, cpuState.SP, cpuState.A, cpuState.PS, _memoryManager->GetMapctl()));
+		MessageManager::Log(std::format("  T0: CTLA=${:02x} Count=${:02x} Backup=${:02x} Done={}  T2: CTLA=${:02x} Count=${:02x} Done={}",
+			t0.ControlA, t0.Count, t0.BackupValue, t0.TimerDone,
+			t2.ControlA, t2.Count, t2.TimerDone));
+		MessageManager::Log(std::format("  DISPCTL=${:02x} DISPADR=${:04x} Scanline={}",
+			_mikey->GetDisplayControl(), _mikey->GetDisplayAddress(), _mikey->GetCurrentScanline()));
 	}
 
 	// Update input state BEFORE frame execution to avoid 1-frame input lag.
@@ -365,63 +327,82 @@ void LynxConsole::ApplyHleBootState() {
 	//
 	// The real boot ROM ($FE00-$FFFF, 512 bytes) does:
 	// 1. Initializes hardware registers (MAPCTL, timers, display)
-	// 2. Reads the cart header to find the entry point
-	// 3. Copies a small loader stub into RAM
-	// 4. Jumps to the loader, which copies cart code to RAM and executes it
+	// 2. Reads the first 256 bytes from cart and decrypts with RSA
+	// 3. The decrypted block contains: dest address, size, entry point
+	// 4. Reads 'size' more bytes from cart into RAM at dest address
+	// 5. Jumps to the entry point
 	//
-	// Our HLE sets up the same final state without running boot ROM code.
+	// Without the RSA key, we can't decrypt commercial game headers.
+	// We support two HLE modes:
+	// A) BLL (Bastard Lynx Loader) format: first byte $80, unencrypted header
+	// B) Fallback: copy ROM data to $0200 and start there
 
 	// --- CPU state ---
-	// Boot ROM leaves SP at $FF, interrupts disabled
 	auto& cpuState = _cpu->GetState();
 	cpuState.SP = 0xff;
-	cpuState.PS = 0x04 | LynxPSFlags::Reserved; // Interrupt flag set (IRQs disabled), Reserved always set
+	cpuState.PS = 0x04 | LynxPSFlags::Reserved; // IRQs disabled, Reserved always set
 
-	// --- Memory map: disable ROM/vector overlays so RAM is visible ---
-	// MAPCTL = $00: Suzy, Mikey, ROM all enabled; vectors from ROM
-	// After boot, the typical MAPCTL is $00 or $08 depending on game
+	// --- Memory map: all overlays enabled ---
 	_memoryManager->Write(0xfff9, 0x00, MemoryOperationType::Write);
 
 	// --- Display: Configure Mikey for 160×102 display ---
-	// Timer 0 (HCount): horizontal timing
-	// Clock source 2 (1μs period), backup value for 160 pixels
-	_mikey->WriteRegister(0x00, 0x9e); // Timer 0 BACKUP = 158 (period of 160 pixels)
-	_mikey->WriteRegister(0x01, 0x18); // Timer 0 CTLA = $18 (enable, clock source 2 = 1μs)
-
-	// Timer 2 (VCount): vertical timing — counts scanlines
-	_mikey->WriteRegister(0x08, 0x68); // Timer 2 BACKUP = 104 (105 scanlines including VBlank)
-	_mikey->WriteRegister(0x09, 0x1f); // Timer 2 CTLA = $1F (enable, linked to Timer 0)
-
-	// Display control: enable DMA
-	_mikey->WriteRegister(0x92, 0x09); // DISPCTL = $09 (DMA enabled, color mode)
-
-	// Display address: default frame buffer at $C000 (common location)
+	_mikey->WriteRegister(0x00, 0x9e); // Timer 0 BACKUP = 158
+	_mikey->WriteRegister(0x01, 0x18); // Timer 0 CTLA = $18 (enable, prescaler 0)
+	_mikey->WriteRegister(0x08, 0x68); // Timer 2 BACKUP = 104
+	_mikey->WriteRegister(0x09, 0x1f); // Timer 2 CTLA = $1F (enable, linked)
+	_mikey->WriteRegister(0x92, 0x09); // DISPCTL = $09 (DMA enabled, color)
 	_mikey->WriteRegister(0x94, 0x00); // DISPADR low
 	_mikey->WriteRegister(0x95, 0xc0); // DISPADR high = $C000
 
-	// --- IRQ: Enable Timer 0 (HBlank) and Timer 2 (VBlank) ---
 	_mikey->WriteRegister(0x80, 0x00); // Clear pending IRQs
-	// Don't enable any IRQs by default — let the game set them up
 
-	// --- Set PC to cart entry point ---
-	// The standard Lynx cart header (after the 64-byte LNX header) has the
-	// entry point at the start of the ROM data. The boot ROM loads the first
-	// page of the cart and jumps to the entry address.
-	// Most games expect to start at $0200 (loaded into RAM by the boot ROM)
-	// or the reset vector. Without boot ROM, we read the reset vector from
-	// the cart. If the cart has proper vectors in its ROM data, those will
-	// be mapped at $FFFC. Otherwise, we fall back to $0200.
-	uint16_t resetVector = _memoryManager->Read(0xfffc, MemoryOperationType::Read) |
-		(static_cast<uint16_t>(_memoryManager->Read(0xfffd, MemoryOperationType::Read)) << 8);
+	// --- Load cart data into RAM ---
+	// The boot ROM reads cart data into RAM so the game can execute.
+	// Without this step, RAM is all zeros and the CPU just hits BRK.
+	uint16_t entryPoint = 0x0200; // Default Lynx loader address
+	uint8_t* rom = _prgRom.get();
+	uint32_t romSize = _prgRomSize;
 
-	if (resetVector == 0x0000 || resetVector == 0xffff) {
-		// Invalid reset vector — the cart doesn't have proper vectors
-		// Fall back to $0200, the standard Lynx loader address
-		resetVector = 0x0200;
+	if (romSize >= 10 && rom[0] == 0x80) {
+		// BLL (Bastard Lynx Loader) format — unencrypted header
+		// Byte 0: $80 (magic)
+		// Bytes 1-2: Destination address in RAM (little-endian)
+		// Bytes 3-4: Number of bytes to load (little-endian)
+		// Bytes 5-6: Entry point (little-endian, 0 = use dest address)
+		uint16_t destAddr = rom[1] | (static_cast<uint16_t>(rom[2]) << 8);
+		uint16_t loadSize = rom[3] | (static_cast<uint16_t>(rom[4]) << 8);
+		uint16_t entryAddr = rom[5] | (static_cast<uint16_t>(rom[6]) << 8);
+
+		if (entryAddr == 0) {
+			entryAddr = destAddr;
+		}
+
+		// Copy ROM data (after 10-byte BLL header) into RAM at destAddr
+		uint32_t srcOffset = 10;
+		uint32_t bytesToCopy = std::min(static_cast<uint32_t>(loadSize), romSize - srcOffset);
+		bytesToCopy = std::min(bytesToCopy, static_cast<uint32_t>(0x10000 - destAddr));
+
+		for (uint32_t i = 0; i < bytesToCopy; i++) {
+			_workRam[(destAddr + i) & 0xffff] = rom[srcOffset + i];
+		}
+
+		entryPoint = entryAddr;
+		MessageManager::Log(std::format("HLE boot: BLL header — load {} bytes to ${:04x}, entry ${:04x}",
+			bytesToCopy, destAddr, entryPoint));
+	} else {
+		// No BLL header — commercial game with encrypted loader.
+		// Without the boot ROM's RSA key, we can't decrypt the first block.
+		// Best-effort: copy ROM data to $0200 (standard loader address).
+		uint32_t bytesToCopy = std::min(romSize, static_cast<uint32_t>(0xfbff - 0x0200));
+		for (uint32_t i = 0; i < bytesToCopy; i++) {
+			_workRam[0x0200 + i] = rom[i];
+		}
+		entryPoint = 0x0200;
+		MessageManager::Log("HLE boot: No BLL header — copying ROM to $0200 (may not work without boot ROM)");
 	}
-	cpuState.PC = resetVector;
 
-	MessageManager::Log(std::format("HLE boot: PC=${:04X}, SP=$FF", resetVector));
+	cpuState.PC = entryPoint;
+	MessageManager::Log(std::format("HLE boot: PC=${:04x}, SP=$FF", entryPoint));
 }
 
 BaseControlManager* LynxConsole::GetControlManager() {
