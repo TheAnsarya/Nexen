@@ -434,16 +434,18 @@ Does issue Poppy #125 actually represent something that pansy show be doing? We 
 
 We are not to the point of you wasting all of my tokens on some abstract pattern matching nonsense instead of using the pansy file and labels and cdl, etc, and real data, so stop spinning on code that does not provide good results, you're using statistics while we still have hard data; make a bunch of documents and plans and issues and future work, but don't implement it, because I've got another prompt coming to you;
 
-
-
-
-
-
-
-
-
-
 Break this into multiple sessions: (make a plan document, then start working it) [Nexen] (Atari Lynx) The `Open File` menu option that opens a rom, does not include the Lynx file extensions in the selection box, add them: `*.lnx`, `*.lyx`, `*.o`; since `*,o` is a common file name for programming, and there are only a handful of `lyx` and `o` roms, create a new file format for atai lynx roms called `*.atari-lynx` that includes a header with fields with version `0.1.0` and for which firmware to use, and left-hand/right hand mode and vertical/horizontal orientation and if it has two player serial support, and country code (always us?) and langauage, etc, and all that jazz; create conversion libraries for Lynx roms in the `*.lnx`/`*.lyx`/`*.o` formats from-to `*.atari-lynx`; (you can find examples of those files in the subfolders of `D:\Roms\TOSEC\Atari\Lynx\` so copy the examlpes you use for testing into a testing data folder for Nexen in the repos; make tests and benchmarks and issues for all work and changes; If the work effort seems too large to do in one session, so you need several to complete the issue, then make plans and subissues and code-plans, and tons of documents, and benchmarks and tests, and even more docs; continue for a long time; implement; continue; also update Nexen to load-and-convert lyx/lnx/o to atari-lynx upon load and add the ability to load and save and update atari-lynx files; loading an Atari Lynx file results in a black screen and not a game, so add issues and then implment it to make Lynx games and emulation work; find warnings and fix them if it's quick; continue;
+
+[Nexen] continue working through all the newly added work;
+
+[Nexen] Check if Atari Lynx now runs correctly; continue;
+
+[Nexen/Poppy/Pansy/Peony] Work through github issues, and research, update plans/issues/docs/(chat/session logs)/git-commits/todos/code-plans/readmes/docs/etc; make tests and benchmarks and issues for all work and changes; If the work effort seems too large to do in one session, so you need several to complete the issue, then make plans and subissues and code-plans, and tons of documents, and benchmarks and tests, and even more docs; continue for a long time; implement; continue;
+
+Are you doing pattern matching bullshit? I told you DO NOT WORK ON THIS unless I tell you to explicitly; `entropy analysis` should not be in your planning list without permission, it has produced NO (NONE) good results so stop pushing it. continue; [Nexen/Poppy/Pansy/Peony] fix all of the markdownlinter warnings like `MD032`
+
+[Peony] don't use percentages to figure out code, use static analysis and the cdl and label and pansy files and the rom and knowlege of the assembly instructions and poppy, etc, and the vscode extension that is code formatting/coloring/intellisense/etc; figure out how to connect to the Nexen emulator so you can review VRAM, etc; [Nexen/Poppy/Pansy/Peony] Work through github issues, and research, update plans/issues/docs/(chat/session logs)/git-commits/todos/code-plans/readmes/docs/etc; make tests and benchmarks and issues for all work and changes; If the work effort seems too large to do in one session, so you need several to complete the issue, then make plans and subissues and code-plans, and tons of documents, and benchmarks and tests, and even more docs; continue for a long time; implement; continue;
+
 
 
 

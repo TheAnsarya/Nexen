@@ -80,15 +80,18 @@ Used for ROM identification, patch validation, mapper selection, debugger CDL in
 **Phase 1: No dead includes found** (subagent report was incorrect — all includes have matching usages)
 
 **Phase 2: Evaluate BCrypt on Windows** (low risk, deferred)
+
 - SHA1 only, behind `#ifdef _WIN32`
 - Keep vendored sha1.cpp as fallback for Linux/Mac
 - Profile to confirm no regression in ROM load time
 
 **Phase 3: Decide on MD5** (deferred)
+
 - Only 2 call sites, both in test code
 - Low priority — can stay as vendored forever
 
 ### Effort Estimate
+
 - Phase 2 (if pursued): 2-3 hours (including cross-platform testing)
 - Phase 3: Optional, 1-2 hours if pursued
 
@@ -97,6 +100,7 @@ Used for ROM identification, patch validation, mapper selection, debugger CDL in
 ## Decision
 
 Given that:
+
 1. All implementations are public domain / zlib licensed
 2. Total active code is ~650 lines (excluding CRC32 tables)
 3. All call sites are cold-path (except test-only MD5)

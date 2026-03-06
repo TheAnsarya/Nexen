@@ -9,7 +9,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Rendering;
 
-namespace Nexen.Utilities; 
+namespace Nexen.Utilities;
 public sealed class FileDialogHelper {
 	public const string RomExt = "[[ROMFILES]]";
 	public const string FirmwareExt = "[[FIRMWAREFILES]]";

@@ -31,7 +31,7 @@ This document is the master plan for adding **first-class Atari Lynx emulation**
 
 ### 2.1 Atari Lynx Hardware Architecture
 
-```
+```text
                     ┌──────────────────┐
                     │   16 MHz Crystal │
                     └────────┬─────────┘
@@ -245,6 +245,7 @@ Based on the architecture audit (see `~docs/plans/nexen-architecture-audit.md`):
 
 ### Epic: Lynx CPU — 65C02 Core (#271)
 Sub-issues:
+
 - #279 [270.1] 65C02 opcode implementation (all 256 opcodes)
 - #280 [270.2] Addressing modes (16 modes)
 - #281 [270.3] Cycle-accurate timing
@@ -256,6 +257,7 @@ Sub-issues:
 
 ### Epic: Lynx Mikey Chip (#272)
 Sub-issues:
+
 - #287 [270.9] Timer system (8 timers, linking chains)
 - #288 [270.10] Interrupt controller (INTRST/INTSET)
 - #289 [270.11] Video DMA (display buffer → LCD)
@@ -268,6 +270,7 @@ Sub-issues:
 
 ### Epic: Lynx Suzy Chip (#273)
 Sub-issues:
+
 - #296 [270.18] Sprite engine (SCB chain walking)
 - #297 [270.19] 8 sprite types (normal, boundary, shadow, XOR, etc.)
 - #298 [270.20] Sprite collision detection
@@ -278,6 +281,7 @@ Sub-issues:
 
 ### Epic: Lynx Nexen Integration (#274)
 Sub-issues:
+
 - #303 [270.25] Enum registration (ConsoleType, CpuType, MemoryType, etc.)
 - #304 [270.26] Console skeleton (IConsole implementation)
 - #305 [270.27] Memory manager with MAPCTL overlay
@@ -289,6 +293,7 @@ Sub-issues:
 
 ### Epic: Lynx UI & Configuration (#275)
 Sub-issues:
+
 - #311 [270.33] LynxConfig + ConfigView (AXAML)
 - #312 [270.34] Controller/input configuration
 - #313 [270.35] File associations and ROM loading
@@ -299,6 +304,7 @@ Sub-issues:
 
 ### Epic: Lynx Debugger (#276)
 Sub-issues:
+
 - #318 [270.40] LynxDebugger (IDebugger implementation)
 - #319 [270.41] 65C02 disassembler
 - #320 [270.42] Trace logger
@@ -314,6 +320,7 @@ Sub-issues:
 
 ### Epic: Lynx Movie/TAS Support (#277)
 Sub-issues:
+
 - #331 [270.52] Lynx input format in MovieConverter
 - #332 [270.53] Piano roll with Lynx button layout
 - #333 [270.54] Greenzone save state integration
@@ -322,6 +329,7 @@ Sub-issues:
 
 ### Epic: Lynx Pansy & Documentation (#278)
 Sub-issues:
+
 - #336 [270.57] Pansy metadata export for Lynx platform
 - #337 [270.58] Debug workspace / label support
 - #338 [270.59] Comprehensive test suite
@@ -338,6 +346,7 @@ Sub-issues:
 **Decision: Write a fresh 65C02 core.**
 
 Rationale:
+
 - The NES uses an NMOS 6502 with known bugs that the 65C02 specifically FIXES
 - Maintaining backward compatibility with NES 6502 while adding 65C02 features would be messy
 - The 65C02 has ~25 new instructions + new addressing modes + different interrupt handling
@@ -349,6 +358,7 @@ Rationale:
 **Decision: Separate classes for Mikey and Suzy.**
 
 Rationale:
+
 - They are physically separate chips with different address ranges
 - Different complexity (Mikey is more complex with timers+audio+video)
 - Separate classes enable separate register viewer tabs in debugger
@@ -359,6 +369,7 @@ Rationale:
 **Decision: Frame buffer model (matches hardware).**
 
 Rationale:
+
 - The Lynx display hardware reads a pre-rendered frame buffer via DMA
 - Games render sprites to a frame buffer, then swap buffers
 - This is fundamentally different from NES/SNES scanline rendering
@@ -370,6 +381,7 @@ Rationale:
 **Decision: Cycle-accurate with documented hardware bugs.**
 
 Rationale:
+
 - Section 13 of the technical report lists 13 known hardware bugs
 - Several are significant (CPU sleep bug, UART level sensitivity, math sign extension)
 - We will emulate ALL documented bugs for accuracy
@@ -380,6 +392,7 @@ Rationale:
 **Decision: Support both real boot ROM and HLE (High-Level Emulation).**
 
 Rationale:
+
 - Boot ROM is 512 bytes, copyrighted
 - Many users won't have it
 - HLE can skip the boot sequence (like Handy does)
@@ -405,18 +418,21 @@ Rationale:
 ## 7. Reference Materials
 
 ### Primary Sources (for implementation)
+
 1. **Epyx Developer Kit Manual** (monlynx.de) — Authoritative hardware reference
 2. **~docs/plans/atari-lynx-technical-report.md** — Our synthesized technical report
 3. **~docs/plans/lynx-emulation-research.md** — Emulator landscape analysis
 
 ### Secondary Sources (for verification)
-4. **Handy source code** (zlib license) — Reference implementation for behavior verification
-5. **Beetle-Lynx ROM database** — Game rotation and compatibility data
-6. **42Bastian's cycle_check** — Real-hardware timing verification programs
+
+1. **Handy source code** (zlib license) — Reference implementation for behavior verification
+2. **Beetle-Lynx ROM database** — Game rotation and compatibility data
+3. **42Bastian's cycle_check** — Real-hardware timing verification programs
 
 ### Nexen Architecture
-7. **nexen-architecture-audit.md** — Complete registration/integration checklist
-8. **Core/WS/** — Reference console implementation (most similar in complexity)
+
+1. **nexen-architecture-audit.md** — Complete registration/integration checklist
+2. **Core/WS/** — Reference console implementation (most similar in complexity)
 
 ---
 
@@ -458,7 +474,7 @@ Rationale:
 
 ### Core/Lynx/ (~35 files)
 
-```
+```text
 Core/Lynx/
 ├── LynxConsole.h            # IConsole implementation - main console class
 ├── LynxConsole.cpp
@@ -506,7 +522,7 @@ Core/Lynx/
 
 ### UI Files (~15 files)
 
-```
+```text
 UI/Config/
 ├── LynxConfig.cs               # Lynx-specific settings
 
@@ -541,26 +557,31 @@ See `~docs/plans/nexen-architecture-audit.md` for the complete list.
 ## 11. Dependencies and Prerequisites
 
 ### Before Starting Phase 1
+
 - [ ] All research documents complete (this session)
 - [ ] GitHub epics and issues created
 - [ ] Code-plans for CPU and console skeleton written
 
 ### Before Starting Phase 2
+
 - [ ] CPU core passes basic instruction tests
 - [ ] Memory manager handles MAPCTL correctly
 - [ ] Cart loading works for .lnx files
 
 ### Before Starting Phase 3
+
 - [ ] Timer system fires HBL/VBL interrupts correctly
 - [ ] Display DMA reads frame buffer and produces output
 - [ ] At least 3 games reach their title screen
 
 ### Before Starting Phase 5 (UI)
+
 - [ ] Core emulation runs games end-to-end
 - [ ] Save states work (serialization)
 - [ ] Input captured correctly
 
 ### Before Starting Phase 6 (Debugger)
+
 - [ ] Core emulation stable
 - [ ] All state structs defined (LynxTypes.h)
 - [ ] C# state interop structs match C++
@@ -570,6 +591,7 @@ See `~docs/plans/nexen-architecture-audit.md` for the complete list.
 ## Appendix A: Lynx Game Compatibility Targets
 
 ### Tier 1 — Must Work (Phase 3 milestone)
+
 - California Games (rotation: left)
 - Chip's Challenge
 - Gates of Zendocon
@@ -577,6 +599,7 @@ See `~docs/plans/nexen-architecture-audit.md` for the complete list.
 - Blue Lightning
 
 ### Tier 2 — Should Work (Phase 4 milestone)
+
 - Batman Returns
 - Ninja Gaiden III
 - Rampart
@@ -584,6 +607,7 @@ See `~docs/plans/nexen-architecture-audit.md` for the complete list.
 - Warbirds
 
 ### Tier 3 — Stretch Goals
+
 - Lemmings
 - Rygar
 - Scrapyard Dog

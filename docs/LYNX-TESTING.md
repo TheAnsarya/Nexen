@@ -5,6 +5,7 @@ This document describes how to run and write tests for the Nexen Lynx emulator.
 ## Running Tests
 
 ### All Lynx Tests
+
 ```powershell
 # Build first
 & "C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin\MSBuild.exe" `
@@ -18,6 +19,7 @@ This document describes how to run and write tests for the Nexen Lynx emulator.
 ```
 
 ### Specific Test Suites
+
 ```powershell
 # Hardware reference tests
 .\bin\win-x64\Release\Core.Tests.exe --gtest_filter="LynxHardwareRef*"
@@ -45,6 +47,7 @@ This document describes how to run and write tests for the Nexen Lynx emulator.
 ```
 
 ### Individual Tests
+
 ```powershell
 # Run a single test
 .\bin\win-x64\Release\Core.Tests.exe --gtest_filter="LynxHardwareRef.MasterClockIs16MHz"
@@ -56,6 +59,7 @@ This document describes how to run and write tests for the Nexen Lynx emulator.
 ## Running Benchmarks
 
 ### All Lynx Benchmarks
+
 ```powershell
 # List all Lynx benchmarks
 .\bin\win-x64\Release\Core.Benchmarks.exe --benchmark_filter="Lynx" --benchmark_list_tests
@@ -68,6 +72,7 @@ This document describes how to run and write tests for the Nexen Lynx emulator.
 ```
 
 ### Specific Benchmark Suites
+
 ```powershell
 # Memory/allocation benchmarks
 .\bin\win-x64\Release\Core.Benchmarks.exe --benchmark_filter="BM_LynxAlloc"
@@ -106,6 +111,7 @@ This document describes how to run and write tests for the Nexen Lynx emulator.
 ### 2. Math Coprocessor Tests (`LynxSuzyTests.cpp`)
 
 Validates Suzy math operations:
+
 - Unsigned/signed multiplication
 - Division with remainder
 - Accumulate mode
@@ -131,6 +137,7 @@ Validates Suzy math operations:
 ## Writing New Tests
 
 ### Test Template
+
 ```cpp
 #include <gtest/gtest.h>
 #include "Core/Lynx/LynxTypes.h"
@@ -148,22 +155,27 @@ TEST(LynxMyFeature, DescriptiveTestName) {
 ```
 
 ### Conventions
+
 - Test fixture name starts with `Lynx` prefix
 - Test names describe WHAT is being verified
 - Include hardware reference in comments:
+
   ```cpp
   // Per Epyx Developer's Guide, Section 13.8:
   // $8000 is treated as positive in sign-magnitude
   ```
+
 - Use `EXPECT_*` (continue on failure) rather than `ASSERT_*` (abort on failure) unless subsequent tests depend on the check
 
 ### Adding to Build
 Add new `.cpp` files to `Core.Tests/Core.Tests.vcxproj`:
+
 ```xml
 <ClCompile Include="Lynx\YourNewTestFile.cpp" />
 ```
 
 ### Benchmark Template
+
 ```cpp
 #include <benchmark/benchmark.h>
 #include "Core/Lynx/LynxTypes.h"

@@ -7,18 +7,21 @@ The current About dialog is inherited from Mesen2 and needs complete modernizati
 ## Current Issues
 
 ### Branding Issues
+
 - Copyright says "Sour" → Should be "2026 Ansarya"
 - Homepage URL references Mesen → Should be `ansarya.com/Nexen/` or GitHub repo
 - Build date is wrong/stale
 - Title still references Mesen branding
 
 ### Content Issues
+
 - References libraries and projects that are being removed
 - Lists dependencies that may no longer be accurate
 - Thanks section mentions wrong contributors
 - Version information format may need updating
 
 ### Technical Issues
+
 - Likely uses old Avalonia patterns
 - May not follow modern MVVM properly
 - Possibly uses reflection bindings where compiled bindings would be better
@@ -61,22 +64,26 @@ The current About dialog is inherited from Mesen2 and needs complete modernizati
 ## Implementation Phases
 
 ### Phase 1: Data Collection
+
 - Audit current dependencies in use
 - Identify correct version/build info sources
 - Determine final branding decisions
 
 ### Phase 2: ViewModel
+
 - Create `AboutViewModel` with proper reactive properties
 - Implement version/build date retrieval
 - Create structured data for dependencies and credits
 
 ### Phase 3: View
+
 - Design modern Avalonia UI layout
 - Use compiled bindings
 - Implement proper theming support
 - Add clickable links with proper handlers
 
 ### Phase 4: Integration
+
 - Replace old AboutWindow
 - Update menu action
 - Test across all supported themes
@@ -91,6 +98,7 @@ The current About dialog is inherited from Mesen2 and needs complete modernizati
 ## Dependencies to Document
 
 Current active dependencies (verify each):
+
 - Avalonia 11.3.x
 - ReactiveUI
 - AvaloniaEdit

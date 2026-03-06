@@ -18,7 +18,7 @@ Complete rewrite of the Nexen menu system to fix fundamental issues with enable/
 
 ### Current Class Hierarchy
 
-```
+```text
 BaseMenuAction (abstract)
 ├── MainMenuAction (for main menu items, uses EmulatorShortcut)
 ├── ContextMenuAction (for context menus, uses DbgShortKeys)
@@ -37,7 +37,7 @@ BaseMenuAction (abstract)
 
 ### New Class Hierarchy
 
-```
+```text
 IMenuAction (interface)
 ├── MenuActionBase (abstract base)
 │   ├── SimpleMenuAction (always enabled, custom action)
@@ -208,6 +208,7 @@ public interface IMenuAction : INotifyPropertyChanged {
 7. Update context menus in debugger (separate task)
 
 ## Testing Checklist
+
 - [ ] Open menu enabled with no ROM loaded
 - [ ] Exit menu enabled with no ROM loaded
 - [ ] Save State disabled with no ROM loaded

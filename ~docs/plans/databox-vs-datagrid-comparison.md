@@ -42,7 +42,8 @@ Avalonia 11's built-in DataGrid covers **~80% of our DataBox usage** natively. T
 
 **DataBox:** Custom `SortState` class with list of `(column, direction)` tuples. Manages pseudo-classes on headers.
 
-**DataGrid strategy:** 
+**DataGrid strategy:**
+
 - Handle the `Sorting` event on DataGrid
 - Maintain our own `SortState` with multiple sort descriptions
 - Apply via `DataGridCollectionView.SortDescriptions`
@@ -65,6 +66,7 @@ public static class MultiSortBehavior {
 **DataBox:** Custom routed events with `DataBoxCellClickEventArgs` (column index, row item).
 
 **DataGrid strategy:**
+
 - DataGrid has `CellPointerPressed` event (Avalonia 11.2+)
 - Check `e.PointerPressedEventArgs.ClickCount` for single vs double
 - Extract column from `e.Column` and row item from `e.Row.DataContext`
@@ -86,6 +88,7 @@ public static class CellClickBehavior {
 **DataBox:** `ColumnWidthId` string property on each column, `ColumnWidths` dictionary on DataBox.
 
 **DataGrid strategy:**
+
 - Attached property `ColumnWidthId` on `DataGridColumn`
 - Attached property `ColumnWidths` on `DataGrid` (bound to ViewModel)
 - On `DataGrid.LoadingRow` or init: restore widths from dictionary
@@ -96,6 +99,7 @@ public static class CellClickBehavior {
 **DataBox:** Built-in keyboard search. Typing characters searches visible column text. `$` prefix triggers hex search.
 
 **DataGrid strategy:**
+
 - Attached `KeyDown` behavior on DataGrid
 - Buffer keystrokes with timeout (500ms)
 - Search first visible text column for matching rows
@@ -106,6 +110,7 @@ public static class CellClickBehavior {
 **DataBox:** Views use styles targeting `DataBoxRow` and `DataBoxCell` with bindings to ViewModel properties like `RowBrush`, `RowStyle`.
 
 **DataGrid strategy:**
+
 - `LoadingRow` event — set row properties based on DataContext
 - Or use `DataGrid.RowTheme`/`CellTheme` with custom themes
 - DataGridRow supports pseudo-classes and style bindings

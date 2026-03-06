@@ -5,6 +5,7 @@
 ## Overview
 
 Comprehensive overhaul of Atari Lynx ROM handling in Nexen:
+
 1. Add missing file extensions to Open File dialog
 2. Create new `.atari-lynx` container format with rich metadata
 3. Build conversion libraries for `.lnx`/`.lyx`/`.o` ↔ `.atari-lynx`
@@ -14,24 +15,28 @@ Comprehensive overhaul of Atari Lynx ROM handling in Nexen:
 ## Problem Statement
 
 ### File Extension Issues
+
 - **Open File dialog** is completely missing Lynx file extensions
 - `.lnx`, `.lyx`, `.o` are not listed as loadable formats
 - `.o` is a common extension in programming — ambiguous
 - `.lyx` is undocumented in TOSEC but used by newer homebrew
 
 ### Format Limitations
+
 - **LNX format** (64-byte header): Has basic metadata (bank sizes, rotation, EEPROM)
   but lacks firmware info, orientation details, multiplayer support, country/language
 - **LYX format**: Raw ROM data, no header at all — metadata is lost
 - **`.o` format**: cc65 linker output, raw ROM data, no header
 
 ### Emulation Issues
+
 - Loading a Lynx ROM currently results in a **black screen**
 - Need to investigate: boot ROM requirement, HLE fallback, initialization
 
 ## Research Findings
 
 ### Current File Extension Distribution (TOSEC Collection)
+
 | Extension | Count | Format |
 |-----------|-------|--------|
 | `.lnx`   | 596   | LNX header (64 bytes) + ROM data |
@@ -40,6 +45,7 @@ Comprehensive overhaul of Atari Lynx ROM handling in Nexen:
 | `.bin`   | 4     | BIOS firmware files |
 
 ### LNX Header Format (64 bytes)
+
 | Offset | Size | Field |
 |--------|------|-------|
 | 0-3    | 4    | Magic: "LYNX" |
@@ -54,11 +60,13 @@ Comprehensive overhaul of Atari Lynx ROM handling in Nexen:
 | 61-63  | 3    | Reserved |
 
 ### LYX/O: Raw ROM Data
+
 - No header, first bytes are game code/data
 - No way to store metadata (bank sizes, rotation, EEPROM type)
 - Emulators must guess bank configuration from ROM size
 
 ### Existing Nexen Lynx Code
+
 - `LynxConsole::GetSupportedExtensions()`: `{ ".lnx", ".o" }` — missing `.lyx`
 - `FileDialogHelper.cs`: No Lynx entry at all in the filter list
 - `LynxConsole::LoadRom()`: Handles LNX header and raw headerless ROMs
@@ -67,6 +75,7 @@ Comprehensive overhaul of Atari Lynx ROM handling in Nexen:
 ## Session Breakdown
 
 ### Session 1 (Current): Planning + Quick Fixes
+
 1. ✅ Research and analyze all formats
 2. Create this master plan document
 3. Create GitHub epic and all sub-issues
@@ -76,6 +85,7 @@ Comprehensive overhaul of Atari Lynx ROM handling in Nexen:
 7. Investigate black screen issue
 
 ### Session 2: `.atari-lynx` Format Design & Implementation
+
 1. Design the `.atari-lynx` binary format specification
 2. Implement `AtariLynxFormat.h/cpp` — reader/writer in C++ core
 3. Implement C# conversion library (for UI tools)
@@ -83,6 +93,7 @@ Comprehensive overhaul of Atari Lynx ROM handling in Nexen:
 5. Round-trip tests (lnx → atari-lynx → lnx)
 
 ### Session 3: Conversion & Integration
+
 1. Implement LNX → atari-lynx converter
 2. Implement LYX/O → atari-lynx converter (with metadata inference)
 3. Implement atari-lynx → LNX converter (for compatibility)
@@ -91,6 +102,7 @@ Comprehensive overhaul of Atari Lynx ROM handling in Nexen:
 6. Integration tests with real ROMs
 
 ### Session 4: Lynx Emulation Fixes
+
 1. Diagnose black screen issue
 2. Fix boot ROM / HLE initialization
 3. Verify ROM loading pipeline end-to-end
@@ -98,6 +110,7 @@ Comprehensive overhaul of Atari Lynx ROM handling in Nexen:
 5. Fix any warnings found
 
 ### Session 5: Polish & Documentation
+
 1. Comprehensive test suite
 2. Benchmarks for conversion
 3. Update documentation
@@ -108,7 +121,7 @@ Comprehensive overhaul of Atari Lynx ROM handling in Nexen:
 
 ### Magic & Header
 
-```
+```text
 Offset  Size  Field
 ------  ----  -----
 0x00    8     Magic: "LYNXROM\0"
@@ -127,7 +140,7 @@ Total:  32 bytes (fixed header)
 
 ### Metadata Section (variable length, at MetadataSectionOffset)
 
-```
+```text
 Offset  Size  Field
 ------  ----  -----
 0x00    4     Section magic: "META"
@@ -155,11 +168,13 @@ Offset  Size  Field
 ```
 
 ### ROM Data
+
 - Immediately after the 32-byte header
 - Raw ROM data (same as LYX/O format — no LNX header)
 - Size specified in header field
 
 ### Design Decisions
+
 1. **UTF-8 strings** with explicit lengths (not null-terminated) — supports Unicode
 2. **Version triplet** for future-proofing
 3. **CRC32 of raw ROM** for integrity verification
@@ -172,11 +187,13 @@ Offset  Size  Field
 ### Epic: Atari Lynx ROM Format Overhaul
 
 **Phase 1 — File Extensions (Session 1):**
+
 - [ ] Add `.lnx`/`.lyx`/`.o` to Open File dialog filter
 - [ ] Add `.lyx` to `LynxConsole::GetSupportedExtensions()`
 - [ ] Add Lynx entry in C# `FileDialogHelper.cs`
 
 **Phase 2 — `.atari-lynx` Format (Session 2):**
+
 - [ ] Write format specification document
 - [ ] Implement C++ reader/writer (`AtariLynxFormat.h/cpp`)
 - [ ] Implement C# reader/writer (for UI/tools)
@@ -184,6 +201,7 @@ Offset  Size  Field
 - [ ] Round-trip tests
 
 **Phase 3 — Conversion Libraries (Session 3):**
+
 - [ ] LNX → atari-lynx converter
 - [ ] LYX/O → atari-lynx converter
 - [ ] atari-lynx → LNX converter
@@ -192,12 +210,14 @@ Offset  Size  Field
 - [ ] Integration tests with real ROMs
 
 **Phase 4 — Emulation Fixes (Session 4):**
+
 - [ ] Diagnose black screen on Lynx ROM load
 - [ ] Fix boot ROM / HLE initialization
 - [ ] Fix any warnings
 - [ ] End-to-end testing
 
 **Phase 5 — Polish (Session 5):**
+
 - [ ] Comprehensive test suite
 - [ ] Conversion benchmarks
 - [ ] Documentation updates
@@ -209,14 +229,17 @@ Offset  Size  Field
 From `D:\Roms\TOSEC\Atari\Lynx\`:
 
 **LNX format (with header):**
+
 - `Atari Lynx II Production Test v0.02 (1989)(Atari).lnx` — 262,208 bytes
 - `256 Color Demo (199x)(PD).lnx` — ~12 KB (small)
 
 **LYX format (headerless):**
+
 - `Banana Ghost v0.1 (2021-12-11)(Bjorn).lyx` — 23,005 bytes
 - `Black Pit (2021-12-12)(Fadest).lyx` — 35,668 bytes
 
 **O format (headerless cc65):**
+
 - `Banana Ghost v0.1 (2021-12-11)(Bjorn).o` — 22,804 bytes
 
 **Destination:** `Core.Tests/TestData/Lynx/` (gitignored, not committed)

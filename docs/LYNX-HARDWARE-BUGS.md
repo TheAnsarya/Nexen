@@ -25,6 +25,7 @@ The Atari Lynx has several documented hardware bugs in the Suzy math coprocessor
 **Description:** When performing signed division, the quotient has the correct sign, but the remainder is always returned as a positive value regardless of the dividend's sign.
 
 **Example:**
+
 - `-17 / 5` → Quotient: `-3`, Remainder: `+2` (not `-2`)
 - `-100 / 7` → Quotient: `-14`, Remainder: `+2`
 
@@ -73,6 +74,7 @@ The Atari Lynx has several documented hardware bugs in the Suzy math coprocessor
 **Description:** The Lynx math coprocessor uses sign-magnitude representation, not two's complement. This is a design choice, not a bug, but it catches many developers off guard.
 
 **Key differences:**
+
 - Sign bit (bit 15 for 16-bit) is separate from magnitude
 - Two representations of zero: `+0` (`$0000`) and `-0` (`$8000`)
 - Maximum negative value is `-32767` (`$FFFF`), NOT `-32768`

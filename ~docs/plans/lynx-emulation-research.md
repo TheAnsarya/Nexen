@@ -81,7 +81,7 @@ Controls which hardware is mapped into the upper address space. Games typically 
 
 The original Handy uses a clean object-oriented C++ design with one class per hardware component, all owned by a central `CSystem` class:
 
-```
+```text
 CSystem (system.h/cpp)
 ├── C65C02  (c65c02.h, c6502mak.h) — CPU
 ├── CMikie  (mikie.h/cpp)          — Mikey chip
@@ -93,6 +93,7 @@ CSystem (system.h/cpp)
 ```
 
 All components inherit from `CLynxBase` (lynxbase.h), which provides a virtual interface:
+
 - `Peek(addr)` — Read byte
 - `Poke(addr, data)` — Write byte
 - `Reset()` — Hardware reset
@@ -172,6 +173,7 @@ Same core component classes (CSystem, C65C02, CMikie, CSusie, CCart, CRam, CRom,
 #### ROM Database
 
 Contains ~85 entries mapping CRC32 to game metadata:
+
 ```cpp
 struct LYNX_DB {
     uint32 crc32;
@@ -183,6 +185,7 @@ struct LYNX_DB {
 ```
 
 Notable entries with rotation:
+
 - `Centipede` — CART_ROTATE_LEFT
 - `Gauntlet - The Third Encounter` — CART_ROTATE_LEFT
 - `Klax` — CART_ROTATE_LEFT
@@ -213,6 +216,7 @@ All in `mednafen/lynx/`:
 | `machine.h` | Build macros |
 
 Top-level:
+
 | File | Description |
 |------|-------------|
 | `libretro.cpp` | Libretro API implementation |
@@ -281,6 +285,7 @@ struct LYNX_HEADER {
 #### Source Structure
 
 All Lynx source in `lynx/` directory — same file layout as Handy plus:
+
 - `eeprom.h/cpp` — CEEPROM class
 - Additional HLE BIOS routines in system code
 
@@ -307,6 +312,7 @@ All Lynx source in `lynx/` directory — same file layout as Handy plus:
 | $FDB0–$FDBF | Palette blue/red values |
 
 **Key Behaviors**:
+
 - 8 timers with configurable prescalers and chain linking
 - Timer expiry triggers interrupt (if enabled) and optional linked timer tick
 - Display DMA: Mikey reads pixel data from RAM and shifts it to LCD
@@ -332,6 +338,7 @@ All Lynx source in `lynx/` directory — same file layout as Handy plus:
 | $FCB0–$FCB3 | Suzy control / SPRGO |
 
 **Sprite Engine**:
+
 - Hardware sprite rendering with collision detection
 - 8 sprite types: background_shadow, background_noncollide, boundary_shadow, boundary, normal, noncollide, xor_shadow, shadow
 - Line-packed sprite data (RLE-like) with literal and packed modes
@@ -340,18 +347,21 @@ All Lynx source in `lynx/` directory — same file layout as Handy plus:
 - `WriteCollision()`, `ReadCollision()` — Collision buffer operations
 
 **Hardware Math Unit**:
+
 - 16×16 → 32 multiply (signed/unsigned)
 - 32/16 → 16 divide with remainder
 - Results in MATHABCD, MATHEFGH, MATHJKLM, MATHNP registers
 - Known hardware bug emulated: off-by-one in `LineGetBits` (`<=` instead of `<`)
 
 **Input**:
+
 - Joystick at $FCB0: Up, Down, Left, Right
 - Buttons: A, B, Option 1, Option 2, Pause
 
 ### 3.3 Cartridge (CCart)
 
 **Features**:
+
 - Shift-register based address counter (mimics actual hardware)
 - Bank 0 and Bank 1 support
 - Sizes: 64K, 128K, 256K, 512K, 1024K
@@ -365,6 +375,7 @@ All Lynx source in `lynx/` directory — same file layout as Handy plus:
 The `CSystem` class maintains a 65536-entry array of `CLynxBase*` pointers, one per byte address. Most point to `CRam`, but the upper region ($FC00–$FFFF) can be switched between RAM and hardware registers via the MAPCTL register.
 
 **CPU Access Pattern**:
+
 ```cpp
 // Fast path (hot)
 #define CPU_PEEK(addr) (addr < 0xFC00 ? mRamPointer[addr] : mSystem.Peek_CPU(addr))
@@ -419,6 +430,7 @@ The beetle-lynx `cart.cpp` contains a built-in database of ~85 commercial Lynx t
 - Reserved field
 
 This is the most comprehensive Lynx ROM database in any open-source emulator. The CRC32 is used for:
+
 1. Auto-detecting screen rotation
 2. Setting correct ROM size for headerless dumps
 3. Game identification
@@ -447,6 +459,7 @@ The `cycle_check` programs from 42Bastian's lynx_hacking repo are specifically d
 ### No Formal Test Suite Exists
 
 Unlike NES (nestest), GB (Blargg's tests), or SNES (various test ROMs), there is **no comprehensive Lynx test suite** for:
+
 - CPU instruction correctness
 - Timer edge cases
 - Sprite rendering accuracy
@@ -512,12 +525,14 @@ The most authoritative source is the **Epyx Developer Kit reference manual** —
 ### CPU Reuse Potential
 
 Nexen already has a 6502 core for NES (`NesCpu`). The Lynx uses a **65C02** (WDC variant) which adds:
+
 - New instructions: PHX, PHY, PLX, PLY, STZ, TRB, TSB, BRA, BBR, BBS, RMB, SMB
 - New addressing modes: (zp) — zero-page indirect without index
 - Decimal mode fixes (BCD works correctly unlike NMOS 6502)
 - No "undocumented" opcodes
 
 Options:
+
 1. **Extend existing 6502**: Add 65C02 instruction support (recommended)
 2. **Separate CPU class**: Clean separation but code duplication
 
@@ -558,6 +573,7 @@ Options:
 This presents an opportunity: if Nexen implements Lynx emulation from scratch (using Handy as reference but rewriting), it could potentially become the first independently-verified Lynx emulator, discovering bugs that have been inherited across all Handy derivatives.
 
 Key areas for accuracy improvement:
+
 - Cycle-accurate CPU stepping (current implementations use next-event scheduling)
 - Hardware math unit timing (currently instantaneous in emulation)
 - Sprite DMA cycle stealing (affects CPU timing during sprite rendering)
@@ -578,6 +594,7 @@ Key areas for accuracy improvement:
 ### Notable Homebrew
 
 The homebrew scene is small but active, producing games that can serve as additional compatibility tests:
+
 - Shaken (not stirred)
 - Tiny Lynx Adventure
 - Various 248-byte demos (fit in boot sector)
@@ -587,7 +604,7 @@ The homebrew scene is small but active, producing games that can serve as additi
 
 ## Appendix A: Complete File Listing (Beetle-Lynx Core)
 
-```
+```text
 mednafen/lynx/
 ├── c6502mak.h      — CPU instruction macros
 ├── c65c02.cpp      — CPU implementation

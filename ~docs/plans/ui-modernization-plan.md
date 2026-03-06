@@ -37,6 +37,7 @@
 ### 1.3 Current Architecture Patterns
 
 #### MVVM Implementation
+
 - **Base Classes:**
   - `ViewModelBase` : `ReactiveObject` (basic reactive support)
   - `DisposableViewModel` : `ViewModelBase`, `IDisposable` (resource tracking)
@@ -47,16 +48,19 @@
 - **Disposal:** Manual `AddDisposable()` pattern with HashSet
 
 #### View-ViewModel Binding
+
 - Compiled bindings enabled (`AvaloniaUseCompiledBindingsByDefault`)
 - `x:DataType` used in AXAML files
 - Mix of code-behind and pure XAML approaches
 
 #### Menu System
+
 - Recently modernized `ShortcutMenuAction` and `DebugMenuAction` classes
 - `MenuActionBase` abstract base for all menu items
 - Custom context menu action system
 
 #### Control Architecture
+
 - Custom controls: `NexenUserControl`, `NexenWindow`, `NexenMenu`
 - Custom numeric controls: `NexenNumericUpDown`, `NexenNumericTextBox`
 - Specialized renderers: `NativeRenderer`, `SoftwareRendererView`
@@ -68,6 +72,7 @@
 ### 2.1 Package Updates (Low Risk)
 
 **Immediate Updates:**
+
 ```xml
 <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.11" />
 <PackageReference Include="Dock.Avalonia" Version="11.3.11.6" />
@@ -78,12 +83,14 @@
 ### 2.2 ReactiveUI Modernization (Medium Risk)
 
 **Current State:**
+
 - Using `ReactiveUI.Fody` 19.5.41 (based on ReactiveUI 22.3.1)
 - Manual disposal tracking with `AddDisposable()`
 
 **Modernization Options:**
 
 1. **Adopt `CompositeDisposable` from System.Reactive:**
+
    ```csharp
    // Instead of custom HashSet disposal
    private readonly CompositeDisposable _disposables = new();
@@ -99,6 +106,7 @@
    - No IL weaving required
 
 3. **Standardize `ObservableAsPropertyHelper<T>`:**
+
    ```csharp
    private readonly ObservableAsPropertyHelper<bool> _isLoading;
    public bool IsLoading => _isLoading.Value;
@@ -123,6 +131,7 @@
 ### 2.4 AOT/Trimming Readiness (Medium Risk)
 
 **Current State:**
+
 - `IsAotCompatible` = true
 - `JsonSerializerIsReflectionEnabledByDefault` = false
 - Trimmer root assemblies defined
@@ -130,7 +139,7 @@
 **Opportunities:**
 
 1. **Eliminate Reflection Usage:**
-   - Audit `ReactiveHelper.RegisterRecursiveObserver()` 
+   - Audit `ReactiveHelper.RegisterRecursiveObserver()`
    - Check `EnumComboBox` and similar controls
 
 2. **Source Generator Migration:**
@@ -158,31 +167,37 @@
 ## 3. Proposed Implementation Phases
 
 ### Phase 1: Package Updates (1-2 days)
+
 - Update all packages to latest stable versions
 - Test thoroughly for regressions
 - Low risk, immediate benefits
 
 ### Phase 2: Disposal Pattern Standardization (3-5 days)
-- Introduce `CompositeDisposable` 
+
+- Introduce `CompositeDisposable`
 - Standardize disposal across ViewModels
 - Update `DisposableViewModel` base class
 
 ### Phase 3: Compiled Bindings Audit (2-3 days)
+
 - Audit all 156+ AXAML files
 - Add missing `x:DataType` declarations
 - Remove any reflection-based bindings
 
 ### Phase 4: Style Modernization (3-5 days)
+
 - Review all 13 style files
 - Update to Avalonia 11.x best practices
 - Consolidate duplicate styles
 
 ### Phase 5: Control Modernization (5-7 days)
+
 - Audit custom controls
 - Update styled property patterns
 - Improve accessibility
 
 ### Phase 6: Performance Optimization (3-5 days)
+
 - Virtualization audit
 - Memory usage profiling
 - Lazy loading implementation
@@ -249,7 +264,8 @@
 ## 8. Appendix: File Inventory
 
 ### ViewModels (38 files)
-```
+
+```text
 UI/ViewModels/
 ├── AudioConfigViewModel.cs
 ├── AudioPlayerViewModel.cs
@@ -264,7 +280,8 @@ UI/ViewModels/
 ```
 
 ### Controls (48 files)
-```
+
+```text
 UI/Controls/
 ├── BoolToGridLengthConverter.cs
 ├── ButtonWithIcon.axaml[.cs]
@@ -273,10 +290,12 @@ UI/Controls/
 ```
 
 ### Views (156+ AXAML files)
+
 - Distributed across Views/, Debugger/Views/, Windows/
 
 ### Styles (13 files)
-```
+
+```text
 UI/Styles/
 ├── AvaloniaComboBoxStyles.xaml
 ├── AvaloniaContextMenuStyles.xaml

@@ -53,6 +53,7 @@ The DataGrid provides three column types plus an abstract base:
 | `DataGridBoundColumn` (abstract) | `DataGridColumn` | — | — | `Binding`, `ClipboardContentBinding` (auto-falls-back to `Binding`) |
 
 **Common column properties** (on `DataGridColumn` base):
+
 - `Header` / `HeaderTemplate`
 - `IsReadOnly` / `IsVisible` / `IsFrozen`
 - `Width` / `MinWidth` / `MaxWidth` (supports `DataGridLength`: Auto, Pixel, Star)
@@ -66,6 +67,7 @@ The DataGrid provides three column types plus an abstract base:
 ### 2. Sorting
 
 **Built-in capabilities:**
+
 - `CanUserSortColumns` on DataGrid (default: `true`)
 - `CanUserSort` per column (default: `true`)
 - `SortMemberPath` — property path for sorting (required on `DataGridTemplateColumn`)
@@ -73,6 +75,7 @@ The DataGrid provides three column types plus an abstract base:
 - `Sorting` event — fires when user clicks column header, can be canceled/customized
 
 **Advanced sorting via `DataGridCollectionView`:**
+
 ```csharp
 var view = new DataGridCollectionView(items);
 view.SortDescriptions.Add(DataGridSortDescription.FromPath("Name"));
@@ -81,6 +84,7 @@ dataGrid.ItemsSource = view;
 ```
 
 **Multi-column sort:** Not automatic from UI clicks, but achievable by:
+
 1. Handling the `Sorting` event
 2. Manually managing `DataGridCollectionView.SortDescriptions`
 3. This is exactly what the existing DataBox `SortState` system does
@@ -133,6 +137,7 @@ public enum DataGridGridLinesVisibility
 ```
 
 **Additional properties:**
+
 - `HorizontalGridLinesBrush` — brush for horizontal lines
 - `VerticalGridLinesBrush` — brush for vertical lines
 
@@ -153,18 +158,21 @@ The DataGrid uses its own **custom row-based virtualization** via `DataGridRowsP
 ### 7. Cell Click / Double-Click Events
 
 **Built-in event:**
+
 ```csharp
 // Fires on any pointer press on a cell
 public event EventHandler<DataGridCellPointerPressedEventArgs> CellPointerPressed;
 ```
 
 **`DataGridCellPointerPressedEventArgs` provides:**
+
 - `Cell` — the `DataGridCell`
 - `Row` — the `DataGridRow`
 - `Column` — the `DataGridColumn`
 - `PointerPressedEventArgs` — full pointer info including `ClickCount`
 
 **Double-click detection:**
+
 ```csharp
 dataGrid.CellPointerPressed += (s, e) =>
 {
@@ -188,6 +196,7 @@ dataGrid.CellPointerPressed += (s, e) =>
 | `ClipboardContentBinding` | Per column | What value to copy (defaults to `Binding` on bound columns) |
 
 **Built-in behavior:**
+
 - Ctrl+C copies selected rows as tab-delimited text
 - Each column's `ClipboardContentBinding` determines cell text
 - `CopyingRowClipboardContent` event allows modifying/filtering clipboard content
@@ -210,10 +219,12 @@ dataGrid.CellPointerPressed += (s, e) =>
 | `AlternatingRowBackground` | Built-in alternating row color |
 
 **Row details:**
+
 - `RowDetailsTemplate` — expandable detail section per row
 - `RowDetailsVisibilityMode` — `Collapsed`, `Visible`, `VisibleWhenSelected`
 
 **Headers:**
+
 - `HeadersVisibility` — `None`, `Column`, `Row`, `All`
 - `RowHeaderWidth` / `ColumnHeaderHeight`
 
@@ -241,6 +252,7 @@ dataGrid.CellPointerPressed += (s, e) =>
 ```
 
 **Key points:**
+
 - `CellTemplate` — display mode (required)
 - `CellEditingTemplate` — edit mode (optional; column is read-only without it)
 - `SortMemberPath` — must be explicitly set (no `Binding` property like bound columns)
@@ -277,6 +289,7 @@ The DataGrid has comprehensive built-in keyboard handling:
 ### 12. Extensibility
 
 **Creating custom columns:** Subclass `DataGridColumn` or `DataGridBoundColumn`:
+
 - Override `GenerateElement()` — create display element
 - Override `GenerateEditingElement()` — create editing element
 - Override `PrepareCellForEdit()` — setup on entering edit mode
@@ -313,6 +326,7 @@ public static readonly StyledProperty<bool> IsVisibleProperty =
 ```
 
 This means it's **fully bindable** in XAML:
+
 ```xml
 <DataGridTextColumn Header="Details" IsVisible="{Binding ShowDetails}" />
 ```
@@ -398,6 +412,7 @@ The Avalonia DataGrid covers **all core features** needed by Nexen's 13 DataBox 
 4. **CellDoubleClick convenience** — Trivial wrapper around `CellPointerPressed`
 
 The migration is **strongly recommended** because:
+
 - The DataGrid is significantly more feature-rich (editing, validation, row details, accessibility)
 - It's maintained by the Avalonia community (vs. vendored frozen code)
 - Row virtualization is purpose-built and likely more efficient

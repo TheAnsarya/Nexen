@@ -119,15 +119,18 @@ public async Task<PlaybackAction> HandleInterrupt(int frame)
 ## Technical Considerations
 
 ### Thread Safety
+
 - Emulation runs on a different thread than UI
 - Must pause emulation before showing dialog
 - Use dispatcher to show dialog on UI thread
 
 ### Performance
+
 - Only check input when movie is playing (not recording)
 - Minimal overhead for the comparison
 
 ### Savestate Integration
+
 - Fork action needs to save current state
 - Greenzone should have state for current frame
 

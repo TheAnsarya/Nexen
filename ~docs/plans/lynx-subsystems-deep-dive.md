@@ -10,6 +10,7 @@
 Nexen uses `ISerializable` + `Serializer` with `SV()` / `SVArray()` macros. Every component (CPU, Mikey, Suzy, memory, controllers, cart) must implement `Serialize(Serializer& s)`. The same method handles both save and load — `Serializer` tracks direction via `IsSaving()`.
 
 ### LynxConsole::Serialize Pattern
+
 ```cpp
 void LynxConsole::Serialize(Serializer& s) {
 	// Model validation (prevent cross-model state loads)
@@ -44,6 +45,7 @@ void LynxConsole::Serialize(Serializer& s) {
 Each component streams its internal registers:
 
 **LynxCpu::Serialize:**
+
 ```cpp
 void LynxCpu::Serialize(Serializer& s) {
 	SV(_state.A); SV(_state.X); SV(_state.Y);
@@ -55,6 +57,7 @@ void LynxCpu::Serialize(Serializer& s) {
 ```
 
 **LynxMikey::Serialize:**
+
 ```cpp
 void LynxMikey::Serialize(Serializer& s) {
 	// 8 timers
@@ -89,6 +92,7 @@ void LynxMikey::Serialize(Serializer& s) {
 ```
 
 **LynxSuzy::Serialize:**
+
 ```cpp
 void LynxSuzy::Serialize(Serializer& s) {
 	// Sprite engine state
@@ -128,20 +132,23 @@ Use `SaveStateManager::FileFormatVersion` (currently 4). If LynxState changes sh
 ## 2. SRAM / EEPROM Save System
 
 ### Lynx Save Data Types
+
 | Type | Chip | Size | Games |
 |------|------|------|-------|
 | No save | — | 0 | Most games |
-| 93C46 EEPROM | 128 bytes | Many RPGs, tournament modes |
-| 93C66 EEPROM | 512 bytes | Few games |
-| 93C86 EEPROM | 2048 bytes | Rare |
+| 93C46 EEPROM | — | 128 bytes | Many RPGs, tournament modes |
+| 93C66 EEPROM | — | 512 bytes | Few games |
+| 93C86 EEPROM | — | 2048 bytes | Rare |
 
 ### EEPROM Hardware Interface
+
 - Accessed through Suzy registers at `$FD40-$FD43`
 - Serial protocol: CS (chip select), CLK (clock), DI (data in), DO (data out)
 - Three operations: READ, WRITE, ERASE (plus EWEN/EWDS for write enable/disable)
 - Bit-banged by game software — emulator must simulate the serial protocol
 
 ### LynxEeprom Class Design
+
 ```cpp
 class LynxEeprom : public ISerializable {
 private:
@@ -169,6 +176,7 @@ public:
 ```
 
 ### Battery Manager Integration
+
 ```cpp
 void LynxConsole::SaveBattery() {
 	if (_eeprom) {
@@ -203,12 +211,14 @@ From LNX header byte at offset 58 (`audin` field) or from ROM database. Some gam
 
 ### Movie Format
 Nexen movies are ZIP files (`.nexen-movie`) containing:
+
 - `Input.txt` — Frame-by-frame input: `|UDLRAB12P\n` per frame
 - `GameSettings.txt` — ROM hash, emulator version
 - `SaveState.nexen-save` — Optional initial state
 - `Battery.sav` — Optional battery data
 
 ### LynxController Design
+
 ```cpp
 class LynxController : public BaseControlDevice {
 public:
@@ -269,6 +279,7 @@ public:
 ```
 
 ### LynxControlManager Design
+
 ```cpp
 class LynxControlManager : public BaseControlManager {
 public:
@@ -296,6 +307,7 @@ public:
 ```
 
 ### TAS-Specific Considerations
+
 1. **Screen rotation** — Lynx games can be played in 3 orientations. TAS must record rotation state.
 2. **Pause button** — Goes through Mikey interrupt, not Suzy joystick register. Must be recorded separately.
 3. **ComLynx** — Multiplayer via serial. Not needed for initial TAS support.
@@ -307,7 +319,8 @@ public:
 ## 4. Metadata / Hashes
 
 ### ROM Format: LNX
-```
+
+```text
 Offset  Size  Field
 0       4     Magic: "LYNX"
 4       2     Page size bank 0 (256-byte pages)
@@ -318,10 +331,12 @@ Offset  Size  Field
 44      1     Rotation (0=none, 1=left, 2=right)
 45-63   19    Reserved / flags
 ```
+
 Total header: 64 bytes. ROM data follows immediately.
 
 ### Hash Calculation
 Override `GetHash()` to hash only the ROM payload (excluding 64-byte LNX header):
+
 ```cpp
 string LynxConsole::GetHash(HashType type) {
 	// Skip 64-byte LNX header for hashing
@@ -335,12 +350,14 @@ string LynxConsole::GetHash(HashType type) {
 ```
 
 ### ROM Database
+
 - No official Lynx game database exists in Mesen2/Nexen
 - Create `LynxGameDatabase.h` with ~85 entries from No-Intro DAT
 - Fields: CRC32, name, EEPROM type, rotation, player count
 - Used for: auto-detecting rotation, EEPROM support, game-specific fixes
 
 ### CRC32 for ROM Identification
+
 ```cpp
 uint32_t LynxConsole::GetCrc32() {
 	if (_prgRomSize > 64) {
@@ -355,6 +372,7 @@ uint32_t LynxConsole::GetCrc32() {
 ## 5. Input Button Mapping
 
 ### Lynx Hardware Buttons
+
 | Button | Hardware | Register | Bit |
 |--------|----------|----------|-----|
 | Up | D-pad | JOYSTICK ($FCB0) | Bit 7 |
@@ -371,11 +389,13 @@ uint32_t LynxConsole::GetCrc32() {
 
 ### Rotation Handling
 When the screen is rotated, the D-pad physical orientation changes but the electrical connections don't. The game software handles this. However, the emulator must:
+
 1. Read rotation from LNX header (or ROM database)
 2. Present correct button layout in InputHud
 3. Optionally auto-remap D-pad for rotated games in the UI
 
 ### UI Config (C#)
+
 ```csharp
 public class LynxConfig : BaseConfig<LynxConfig> {
 	[Reactive] public ControllerConfig Controller { get; set; } = new();
@@ -403,6 +423,7 @@ Unlike SNES (which has separate CPU types for SPC700, SA-1, etc.), the Lynx has 
 
 ### Debugger Register Views
 The register viewer should have tabs/sections:
+
 1. **CPU** — A, X, Y, SP, PC, P (flags), cycle count
 2. **Mikey Timers** — All 8 timers: backup, count, controlA, controlB
 3. **Mikey Audio** — 4 channels: volume, feedback, output, control
@@ -415,6 +436,7 @@ The register viewer should have tabs/sections:
 
 ### Event Manager (Timeline)
 Track events on a per-scanline basis:
+
 - CPU reads/writes to Mikey registers
 - CPU reads/writes to Suzy registers
 - Timer fire events (all 8)
@@ -424,6 +446,7 @@ Track events on a per-scanline basis:
 - Audio output samples
 
 ### Breakpoint Types
+
 - Standard CPU breakpoints (address, value, read/write)
 - Mikey register access breakpoints (e.g., break on palette write)
 - Suzy register access breakpoints (e.g., break on sprite engine start)
@@ -432,6 +455,7 @@ Track events on a per-scanline basis:
 - Scanline breakpoints
 
 ### Memory Views
+
 | Memory Type | Address Range | Size | Purpose |
 |-------------|---------------|------|---------|
 | LynxWorkRam | $0000-$FFFF | 64KB | Main RAM |
@@ -443,6 +467,7 @@ Track events on a per-scanline basis:
 
 ### PPU Tools (Tile/Sprite Viewer)
 Lynx doesn't have traditional tiles — it uses sprite-based rendering exclusively. PPU tools should show:
+
 1. **Frame buffer** — Current display buffer (pointed to by DISPADR)
 2. **Palette** — 16 colors with RGB values from Green/BlueRed registers
 3. **Active sprites** — Parse SCB chain and show each sprite's properties
@@ -454,13 +479,15 @@ Lynx doesn't have traditional tiles — it uses sprite-based rendering exclusive
 
 ### Timer System (Critical for Everything)
 Mikey has 8 timers that form two chains:
-```
+
+```text
 Chain 1: Timer 0 → Timer 2 → Timer 4 (→ used by programmers)
 Chain 2: Timer 1 → Timer 3 → Timer 5 → Timer 7
          Timer 6 ← Audio sample rate (standalone)
 ```
 
 Timer assignments:
+
 | Timer | Default Use | Linked From | Linked To |
 |-------|-------------|-------------|-----------|
 | 0 | Horizontal line | Clock source | Timer 2 |
@@ -473,12 +500,14 @@ Timer assignments:
 | 7 | Audio Ch 3 reload | Timer 5 | — |
 
 **Each timer has:**
+
 - `BACKUP` — Reload value
 - `CTLA` — Control register A (clock source, enable, linking, reset-on-done, magic-tap-enable)
 - `COUNT` — Current countdown value
 - `CTLB` — Status (timer done, last clock, borrow-in, borrow-out)
 
 **Timer Tick Algorithm:**
+
 ```cpp
 void LynxMikey::TickTimer(int timerIndex) {
 	LynxTimer& t = _timers[timerIndex];
@@ -509,12 +538,14 @@ void LynxMikey::TickTimer(int timerIndex) {
 ```
 
 ### Display DMA
+
 - Timer 0 fires at end of each horizontal line (~15.625 kHz)
 - Timer 2 fires at end of each frame (~75 Hz, counts 105 Timer 0 fires: 102 visible + 3 VBlank)
 - Display DMA reads frame buffer from RAM at address in DISPADR ($FD94) on each line
 - Each line: 80 bytes (160 pixels × 4bpp = 80 bytes), read MSN first
 
 ### Audio System
+
 - 4 channels, each with 12-bit LFSR (Linear Feedback Shift Register) waveform
 - Timer 6 generates the sample rate (~15.9 kHz default)
 - Each channel `OUTPUT` register provides signed 8-bit audio
@@ -522,6 +553,7 @@ void LynxMikey::TickTimer(int timerIndex) {
 - `ATTEN` registers provide L/R stereo panning
 
 ### Interrupt Controller
+
 - 8 IRQ sources (one per timer)
 - Two registers: `INTSET` (set/read pending), `INTRST` (clear pending)
 - `MIKEYHREV` at $FD88 — read for Mikey revision, write to enable IRQs
@@ -536,7 +568,8 @@ void LynxMikey::TickTimer(int timerIndex) {
 The sprite engine processes a linked list of Sprite Control Blocks (SCBs) in RAM:
 
 **SCB Format (variable length, 8-18 bytes minimum):**
-```
+
+```text
 Byte 0: SPRCTL0 — Sprite type, depth, flip H/V
 Byte 1: SPRCTL1 — Start drawing action, reload mode
 Byte 2: COLLOFF — Collision depository number
@@ -551,6 +584,7 @@ Byte 17-18: VSIZOFF — V stretch accumulator
 ```
 
 **8 Sprite Types:**
+
 | Type | Encoding | Description |
 |------|----------|-------------|
 | 0 | Background (no data) | Fill with SPRCOL |
@@ -563,32 +597,38 @@ Byte 17-18: VSIZOFF — V stretch accumulator
 | 7 | Shadow | Shadow rendering |
 
 **Sprite Data Encoding:**
+
 - Run-length encoded with literal and repeat packets
 - 1/2/3/4 bits per pixel (set by SPRCTL0)
 - Bit-packed with offset and repeat information
 - Each scan line has a header byte (line length or 0 for end)
 
 ### Hardware Math
-```
+
+```text
 MATHC:MATHD × MATHE:MATHF → MATHG:MATHH:MATHJ:MATHK (32-bit result)
 MATHG:MATHH:MATHJ:MATHK ÷ MATHE:MATHF → MATHC:MATHD remainder MATHG:MATHH (quotient)
 ```
+
 - 16×16 → 32 multiply takes ~54 CPU cycles
 - 32÷16 → 16r16 divide takes ~176 CPU cycles
 - Optional signed mode and accumulate mode
 - **Hardware bug:** Unsigned multiply of values ≥$8000 produces wrong results
 
 ### Collision Detection
+
 - 16-slot collision depository (`$FC80-$FC8F`)
 - During sprite rendering, if pixel overlaps existing collision number, both sprite's and existing collision slot get updated
 - Games use this for hit detection without per-pixel CPU checks
 
 ### Joystick
+
 - JOYSTICK register at `$FCB0` — directly connected to buttons
 - Active-low: bit=0 means pressed
 - Bits: [7:Up] [6:Down] [5:Left] [4:Right] [3:Opt1] [2:Opt2] [1:B_Inside] [0:A_Outside]
 
 ### SWITCHES register at `$FCB1`
+
 - Bit 0: Cart 0 / Cart 1 (cartridge bank select)
 - Bit 1: Unused
 - Bit 2: Pause (active-low)
@@ -599,12 +639,14 @@ MATHG:MATHH:MATHJ:MATHK ÷ MATHE:MATHF → MATHC:MATHD remainder MATHG:MATHH (qu
 ## 9. Pansy Export Integration
 
 ### What's Needed
+
 1. Add `RomFormat.Lynx` to `PlatformIds` dictionary with a Pansy platform ID
 2. Add `ConsoleType.Lynx → CpuType.Lynx` in `ConsoleTypeExtensions.GetMainCpuType()`
 3. Register Lynx `MemoryType` entries in `MemoryTypeExtensions` for region naming
 4. Everything else works automatically through the debugger infrastructure (CDL, labels, memory regions)
 
 ### Memory Regions for Pansy
+
 ```csharp
 case ConsoleType.Lynx:
 	regions.Add(new PansyMemoryRegion("RAM", 0x0000, 0xFBFF, MemoryType.LynxWorkRam));
@@ -620,6 +662,7 @@ case ConsoleType.Lynx:
 ## 10. Complete File Modification Map
 
 ### New Files (~20)
+
 | File | Purpose |
 |------|---------|
 | Core/Lynx/LynxConsole.h/.cpp | Main console class |
@@ -650,6 +693,7 @@ See lynx-code-plans.md and the architecture audit for the complete list.
 ## 11. Implementation Priority Order
 
 ### Phase 1: Foundation (Sessions 1-2)
+
 1. Enums (ConsoleType, CpuType, MemoryType, RomFormat) — C++ and C#
 2. LynxTypes.h — All state structs
 3. LynxConsole skeleton — Stub IConsole
@@ -659,6 +703,7 @@ See lynx-code-plans.md and the architecture audit for the complete list.
 7. Build system — vcxproj entries
 
 ### Phase 2: Mikey Core (Sessions 3-4)
+
 1. Timer system (all 8 timers with linking)
 2. Interrupt controller
 3. Display DMA — frame buffer reading
@@ -667,6 +712,7 @@ See lynx-code-plans.md and the architecture audit for the complete list.
 6. LynxDefaultVideoFilter
 
 ### Phase 3: Suzy Core (Sessions 5-6)
+
 1. Sprite engine — SCB parsing, basic rendering
 2. Hardware math — multiply and divide
 3. Collision detection — 16-slot depository
@@ -674,6 +720,7 @@ See lynx-code-plans.md and the architecture audit for the complete list.
 5. EEPROM serial protocol
 
 ### Phase 4: Integration (Sessions 7-8)
+
 1. UI registration — All C# switch statements
 2. Config system — LynxConfig, settings
 3. Input mapping — Controller UI
@@ -681,6 +728,7 @@ See lynx-code-plans.md and the architecture audit for the complete list.
 5. Battery/EEPROM saves
 
 ### Phase 5: Debugger (Sessions 9-10)
+
 1. LynxDebugger — Core IDebugger
 2. LynxDisUtils — 65C02 disassembly
 3. Breakpoints, watches, memory views
@@ -689,6 +737,7 @@ See lynx-code-plans.md and the architecture audit for the complete list.
 6. PPU tools (sprite/palette viewer)
 
 ### Phase 6: Polish (Sessions 11-12)
+
 1. Movie/TAS support
 2. Pansy export
 3. ROM database

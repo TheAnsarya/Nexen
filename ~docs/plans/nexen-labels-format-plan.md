@@ -22,7 +22,7 @@ Replace the legacy MLB (Mesen Label Binary) text format with a new binary `.nexe
 
 ### File Structure
 
-```
+```text
 ┌─────────────────────────────────────────────┐
 │ Header (32 bytes, fixed)                    │
 ├─────────────────────────────────────────────┤

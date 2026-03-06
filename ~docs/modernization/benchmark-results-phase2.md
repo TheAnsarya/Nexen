@@ -50,6 +50,7 @@ No regressions detected across 5-repetition benchmark runs.
 ## Test Coverage
 
 576 tests passing, including:
+
 - **NES:** 7 exhaustive branchless comparison tests + 7 multi-PS-state corner cases
 - **SNES:** 10 exhaustive 8-bit + 4 exhaustive 16-bit + 4 multi-PS + 2 expanded boundary tests
 - **GB:** 2 exhaustive SetFlagState comparison tests

@@ -6,7 +6,8 @@
 ## Current Architecture
 
 ### Save Pipeline (all under emulator lock)
-```
+
+```text
 AcquireLock()
   → GetSaveStateHeader(stream)
     → SaveVideoData(stream)        // zlib compress framebuffer (~150KB) at MZ_BEST_SPEED
@@ -18,6 +19,7 @@ ReleaseLock()
 ```
 
 ### Key Files
+
 - `Core/Shared/SaveStateManager.cpp:148-165` — `SaveState(filepath)`: acquires lock, serializes, writes file
 - `Core/Shared/SaveStateManager.cpp:143-145` — `SaveState(ostream&)`: header + serialize
 - `Core/Shared/SaveStateManager.cpp:183-201` — `SaveVideoData`: zlib compress framebuffer
@@ -26,12 +28,14 @@ ReleaseLock()
 - `Core/Shared/Emulator.cpp:167-180` — `ProcessAutoSaveState`: called every frame
 
 ### Callers
+
 1. **Auto-save** (every 20-30 min): `ProcessAutoSaveState()` → `SaveState(AutoSaveStateIndex)`
 2. **Quick save** (user F1/Ctrl+S): `SaveState(slotIndex)` or `QuickSave()` → `SaveState(filepath)`
 3. **Recent play** (every 5 min): UI timer calls `RecordRecentPlayState()`
 4. **SaveRecentGame** (on ROM unload): Full ZIP creation
 
 ### Timing Analysis
+
 - Serializer reserves 320KB (`0x50000`), actual state size varies by console
 - SaveVideoData: compress ~150KB framebuffer at MZ_BEST_SPEED (~0.5-1ms)
 - Serializer: serialize state (~1-3ms) + compress (~1-2ms)
@@ -45,10 +49,12 @@ ReleaseLock()
 The key insight is that `Serializer::Stream()` already serializes to an in-memory buffer (`_data`). We can split the pipeline:
 
 **Under lock (fast, ~1-3ms):**
+
 1. Serialize state to in-memory buffer (Serializer::Stream + capture _data)
 2. Copy framebuffer for screenshot
 
 **Off lock (background thread):**
+
 1. Compress framebuffer (zlib)
 2. Compress serialized state (zlib)
 3. Write header + compressed data to file
@@ -57,6 +63,7 @@ The key insight is that `Serializer::Stream()` already serializes to an in-memor
 ### Implementation Steps
 
 #### Step 1: Add `SerializeToBuffer()` to Emulator
+
 ```cpp
 // Returns a buffer containing the serialized (uncompressed) state
 vector<uint8_t> Emulator::SerializeToBuffer() {
@@ -67,6 +74,7 @@ vector<uint8_t> Emulator::SerializeToBuffer() {
 ```
 
 #### Step 2: Add `GetData()` to Serializer
+
 ```cpp
 // Move the serialized data out (for async writing)
 vector<uint8_t> Serializer::GetData() {
@@ -75,6 +83,7 @@ vector<uint8_t> Serializer::GetData() {
 ```
 
 #### Step 3: Capture framebuffer snapshot
+
 ```cpp
 struct SaveStateSnapshot {
     vector<uint8_t> stateData;     // Serialized (uncompressed) state
@@ -91,6 +100,7 @@ struct SaveStateSnapshot {
 ```
 
 #### Step 4: Background writer thread
+
 ```cpp
 class SaveStateManager {
     // ... existing ...
@@ -105,6 +115,7 @@ class SaveStateManager {
 ```
 
 #### Step 5: Update SaveState(filepath) → snapshot + enqueue
+
 ```cpp
 bool SaveStateManager::SaveState(const string& filepath, bool showSuccessMessage) {
     SaveStateSnapshot snapshot;
@@ -139,20 +150,24 @@ Rewind saves are frequent (every 30 frames) and use a different path (RewindMana
 ## Risk Assessment
 
 ### Safe
+
 - File-based saves (auto, quick, recent) — no one reads these back immediately
 - Background thread only does compression + file I/O (no shared state mutation)
 - Emulator lock duration reduced from ~5-10ms to ~1-3ms
 
 ### Risky
+
 - `SaveRecentGame` (on ROM unload) — need to ensure background writes complete before process exit
 - Rewind — needs immediate access to saved state, can't be fully async
 
 ### Mitigations
+
 - Add `FlushPendingWrites()` method called during ROM unload / shutdown
 - Keep rewind path synchronous for now (separate issue)
 - Guard _writeQueue with mutex, use condition_variable for signaling
 
 ## Testing Plan
+
 1. Verify all existing save state tests pass
 2. Manual: Quick save during gameplay → verify file created and loadable
 3. Manual: Auto-save triggers → verify save state valid
@@ -160,6 +175,7 @@ Rewind saves are frequent (every 30 frames) and use a different path (RewindMana
 5. Benchmark: Measure lock hold time before/after (expect ~3-5ms reduction)
 
 ## Acceptance Criteria
+
 - [ ] SaveState(filepath) holds lock only during state snapshot (~1-3ms)
 - [ ] Compression + file write happens on background thread
 - [ ] FlushPendingWrites() called on ROM unload and shutdown

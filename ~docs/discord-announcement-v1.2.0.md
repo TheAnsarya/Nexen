@@ -6,7 +6,7 @@
 
 ## Announcement Post
 
-```
+```text
 # 🎮 Nexen v1.2.0 Released!
 
 **The biggest Nexen release yet** — 192 commits, 352 files changed, 1,495 tests passing.

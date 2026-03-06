@@ -5,6 +5,7 @@
 ## Executive Summary
 
 The full debugger pipeline adds **160-350ns per instruction** (no trace/breakpoints) and **200-700+ns** with trace/breakpoints active. For NES at 1.79MHz (~511K instructions/sec), this means:
+
 - **82-179ms/sec** overhead at minimum → **~8-18%** of frame budget
 - **102-358ms/sec** with trace → **~10-36%** of frame budget
 
@@ -66,24 +67,29 @@ Machine: 12× 3696 MHz, L1d 32KB×6, L2 256KB×6, L3 12MB.
 ### Key Findings
 
 **⭐⭐⭐ #1 Priority: Profiler UpdateCycles (5.7-9.6× faster with cached pointers)**
+
 - `UpdateCycles()` iterates the entire function stack doing hash lookups per level
 - With cached `ProfiledFunction*` pointers, this drops from O(n × hash) to O(n × deref)
 - At typical call depth of 5-10, saves **38-69ns per call/return**
 
 **⭐ #2 Priority: Profiler Flat Array (1.3-3.3× faster lookup)**
+
 - At 10K functions (large game), flat array is 3.3× faster than hash map
 - At 100-1000 functions (typical), 1.3-1.5× faster
 
 **⭐ #3 Priority: Callstack Ring Buffer IsReturnMatch (1.7-2.1× faster)**
+
 - Contiguous memory enables better prefetching during reverse scan
 - Push/Pop unchanged since deque already uses contiguous blocks for small sizes
 
 **❌ Not Implementing: MemoryAccessCounter SoA**
+
 - SoA layout shows mixed results: reads faster, writes/exec slower
 - Full instruction composite is barely different (20.9ns vs 22.1ns)
 - The 36-byte AoS struct fits within cache lines reasonably well
 
 **❌ Not Implementing: Breakpoint Bitmap or FrozenAddr Bitset**
+
 - Current fast paths (bool array, empty hashset) are already 2.9ns and 3.5ns
 - Proposed alternatives are actually slower in the common case
 
@@ -140,6 +146,7 @@ addresses, so the empty fast path is the common case. Not implementing.
 ### 2.6 Conditional Component Activation (Future)
 
 Add per-component enable flags to skip entire subsystems when not needed:
+
 - `_memoryAccessCounterEnabled` — false when Memory viewer not open
 - `_profilerEnabled` — false when Profiler window not open
 - `_eventManagerEnabled` — false when Event viewer not open
@@ -182,6 +189,7 @@ delivers **1.5-2.2× speedup** for IsReturnAddrMatch.
 8 tests, all passing:
 
 **CallstackRingBufferTest (6 tests):**
+
 1. `Empty_ReturnsDefaults` — Ring buffer initializes correctly, push/pop/scan work
 2. `WrapAround_MaintainsOrder` — Overflow overwrites oldest, preserves newest
 3. `Linearize_OldestToNewest` — GetCallstack ordering matches expectation
@@ -219,11 +227,13 @@ Full test suite: **1495 tests passing**, zero regressions.
 ## Phase 6 — Metadata Recording Benchmarks (CDL & Pansy)
 
 Benchmarks show:
+
 - **Disabled:** 0.000ns (no cost)
 - **Enabled:** CDL ~0.26ns/call, Pansy ~0.25ns/call, combined ~0.75ns/call
 - All hooks are properly conditional; no unconditional cost in hot path.
 
 ### Future Work
+
 - Profile metadata recording in large games
 - Investigate lock-free ring buffers, flat arrays, intrusive lists for future scalability
 - Track in [#429](https://github.com/TheAnsarya/Nexen/issues/429)
@@ -233,11 +243,13 @@ Benchmarks: `Core.Benchmarks/Debugger/MetadataRecordingBench.cpp`
 ## Phase 7 — Audio & Timing Benchmarks
 
 Benchmarks show:
+
 - **SoundMixer Mix:** ~343ns (1024), ~1425ns (4096)
 - **SoundMixer Output:** ~1394ns (1024), ~5281ns (4096)
 - **FrameAdvance/Turbo:** 0.000ns (dummy)
 
 ### Future Work
+
 - Profile real SoundMixer output for blocking/latency
 - Investigate SIMD mixing, async output, lock-free buffers
 - Track in [#430](https://github.com/TheAnsarya/Nexen/issues/430)

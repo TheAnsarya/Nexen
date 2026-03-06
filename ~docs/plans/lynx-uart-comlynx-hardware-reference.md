@@ -45,7 +45,7 @@ Lynx units via 3.5 mm stereo jacks.
 Writing to `$FD8C` configures the UART. This is a **write-only** view; reading the same
 address returns the status register (§3).
 
-```
+```text
 Bit 7   Bit 6   Bit 5   Bit 4   Bit 3     Bit 2    Bit 1   Bit 0
 TXINTEN RXINTEN (rsvd)  PAREN   RESETERR  TXOPEN   TXBRK   PAREVEN
 ```
@@ -73,7 +73,7 @@ use in their Poke handlers and matches the Epyx hardware documentation as shown 
 
 Reading `$FD8C` returns a completely different set of status bits:
 
-```
+```text
 Bit 7   Bit 6   Bit 5    Bit 4   Bit 3    Bit 2    Bit 1   Bit 0
 TXRDY   RXRDY   TXEMPTY  PARERR  OVERRUN  FRAMERR  RXBRK   PARBIT
 ```
@@ -92,10 +92,12 @@ TXRDY   RXRDY   TXEMPTY  PARERR  OVERRUN  FRAMERR  RXBRK   PARBIT
 ### ⚠ Known comment bug in Handy/Mednafen
 
 Both emulators' source code has **swapped comments** on bits 3 and 2:
+
 ```cpp
 retval|=(mUART_Rx_overun_error)?0x08:0x0;  // Comment says "Framing error" — WRONG
 retval|=(mUART_Rx_framing_error)?0x04:0x00; // Comment says "Rx overrun"  — WRONG
 ```
+
 The **variable mapping is correct** (overrun → bit 3, framing → bit 2), matching the
 hardware documentation. Only the inline comments are swapped.
 
@@ -149,11 +151,12 @@ the serial interrupt line (INTSET bit 4):
 
 ### Clock division formula
 
-```
+```text
 divide = 4 + 3 + TIM4_LINKING
 ```
 
 Where:
+
 - **4** = master clock 16 MHz → ÷16 = 1 MHz base (the minimum timer prescale)
 - **3** = additional ÷8 for "8 clocks per bit transmit" (oversampling)
 - **TIM4_LINKING** = bits [2:0] of TIM4CTLA (the clock source selector)
@@ -173,7 +176,7 @@ The effective prescaler from the master clock is `2^(4+3+linking) = 2^(7+linking
 
 ### Baud rate calculation
 
-```
+```text
 baud_rate = master_clock / (2^(7 + linking) × (backup_value + 1) × 11)
 ```
 
@@ -194,6 +197,7 @@ When a countdown reaches 0, the corresponding transfer is complete.
 ### Common baud rate: 62500
 
 The default ComLynx baud rate used by most games is **62,500 baud**:
+
 - TIM4CTLA clock source = 0 (1 µs / 1 MHz)
 - TIM4BKUP = 0 (divide by 1)
 - Effective: 1,000,000 Hz ÷ (8 × (0+1)) = 125,000 half-bits/s → 1 bit per 8 clocks
@@ -336,7 +340,7 @@ else if (!(mUART_RX_COUNTDOWN & UART_RX_INACTIVE)) {
 
 Each UART frame on the wire is 11 bits:
 
-```
+```text
 [Start][D0][D1][D2][D3][D4][D5][D6][D7][Parity/Mark][Stop]
   0     LSB ← — — — — — — — → MSB       P/M          1
 ```
@@ -367,6 +371,7 @@ The UART interrupt is **level-sensitive**, not edge-triggered. This means:
   flood of IRQs
 
 From the emulator source:
+
 ```cpp
 // Emulate the UART bug where UART IRQ is level sensitive
 // in that it will continue to generate interrupts as long
@@ -403,6 +408,7 @@ or ignore this spurious initial "break".
 | UARTturbo (Mtest0 bit 4) | **UNIMPLEMENTED** — test mode for 1 Mbit/s |
 
 These gaps haven't caused practical problems because:
+
 - Most games don't use parity (they disable it and use PAREVEN as a mark bit)
 - No game relies on parity error detection
 - Framing errors don't occur in emulation (perfect bit timing)
@@ -415,7 +421,7 @@ These gaps haven't caused practical problems because:
 
 The UART interrupt is multiplexed onto the **Timer 4** interrupt line (bit 4 = `$10`):
 
-```
+```text
 INTSET ($FD81) / INTRST ($FD80):
    Bit 7 = Timer 7
    Bit 6 = Timer 6
@@ -460,9 +466,11 @@ from another emulated Lynx arrives via `ComLynxRxData()` which appends to the **
 of the same queue.
 
 For multi-unit emulation, the external callback mechanism is:
+
 ```cpp
 void ComLynxTxCallback(void (*function)(int data, uint32 objref), uint32 objref);
 ```
+
 When a byte transmission completes, this callback fires with the data and a user-provided
 reference object, allowing a networking layer to forward the byte to other emulated units.
 
@@ -538,7 +546,7 @@ Timer 4 also resets to 0 (backup=0, count=0, all controls cleared).
 The current Nexen code at `LynxMikey.cpp` has incorrect bit assignments in the SERCTL
 write handler comment. The correct mapping is:
 
-```
+```text
 B7=TXINTEN, B6=RXINTEN, B5=reserved, B4=PAREN,
 B3=RESETERR, B2=TXOPEN, B1=TXBRK, B0=PAREVEN
 ```
@@ -558,6 +566,7 @@ For games that just check the serial port and move on (most single-player games)
 ### 14.3 Full implementation (for multiplayer/ComLynx)
 
 Required additions:
+
 1. UART state variables as listed in §12
 2. Timer 4 integration: hook Timer 4 borrow into UART TX/RX countdown decrements
 3. Self-loopback: TX writes immediately queue into RX (front-insertion)
@@ -567,6 +576,7 @@ Required additions:
 ### 14.4 Games known to use ComLynx
 
 Almost all multiplayer Lynx games use ComLynx, including:
+
 - Todd's Adventures in Slime World (up to 8 players)
 - Checkered Flag (2 players)
 - Warbirds (2–4 players)

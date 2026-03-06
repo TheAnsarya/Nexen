@@ -5,6 +5,7 @@
 > **Purpose:** Document differences between the three primary reference sources used for Lynx emulation in Nexen. When sources conflict, this document explains which source was followed and why.
 >
 > **Sources:**
+>
 > - **Handy** — K. Wilkins' original Lynx emulator (1997), [`libretro/libretro-handy`](https://github.com/libretro/libretro-handy), zlib license
 > - **Mednafen/Beetle-Lynx** — Fork of Handy with modernizations, [`libretro/beetle-lynx-libretro`](https://github.com/libretro/beetle-lynx-libretro)
 > - **Technical Docs** — Original Epyx "Handy" hardware spec (via monlynx.de), synthesized in [`atari-lynx-technical-report.md`](atari-lynx-technical-report.md)
@@ -247,7 +248,7 @@ Both emulators implement: writing MATHD triggers `Poke(MATHC, 0)` — an automat
 
 ### Quadrant Map
 
-```
+```text
          NW (2) │ NE (1)
         ────────┼────────
          SW (3) │ SE (0)
@@ -435,7 +436,7 @@ Both emulators effectively skip sizing algorithm 3 because no games use it (the 
 
 ## 16. Nexen Implementation Choices
 
-### Where Nexen deviates from tech docs (with justification):
+### Where Nexen deviates from tech docs (with justification)
 
 In these cases, the tech docs are ambiguous, incomplete, or demonstrably wrong. Each deviation is documented with its rationale:
 
@@ -445,19 +446,19 @@ In these cases, the tech docs are ambiguous, incomplete, or demonstrably wrong. 
 4. **Stun Runner math init to 0xFFFFFFFF** — Not in tech docs, required by game. *Rationale:* Game compatibility; tech docs don't specify init values.
 5. **SCBNEXT termination by high byte only** — Matches documented Bug 13.12. *Rationale:* Actually consistent with tech docs (both agree).
 
-### Where Nexen follows Mednafen's improvements over Handy:
+### Where Nexen follows Mednafen's improvements over Handy
 
 1. **RAM address masking** — 16-bit mask on all RAM access
 2. **C++ standard types** — `uint32_t` over `ULONG`
 
-### Nexen-specific design choices:
+### Nexen-specific design choices
 
 1. **Grouped math registers** — `MathABCD` (uint32_t) instead of 4 separate uint16_t union members
 2. **Shift/mask access** — No unions, portable across endianness
 3. **State-based sprite status** — Simple boolean instead of timestamp or global
 4. **Integrated sign tracking** — `MathAB_sign`, `MathCD_sign`, `MathEFGH_sign` as int32_t
 
-### Known gaps vs Mednafen (future work):
+### Known gaps vs Mednafen (future work)
 
 1. ~~**Savestate hquadoff/vquadoff** — Not yet serialized (low impact, affects mid-sprite savestate)~~ **FIXED** — Promoted to outer scope and applied correctly (issue #370)
 2. **Cycle-accurate sprite timing** — Uses frame-level rather than tick-level timing

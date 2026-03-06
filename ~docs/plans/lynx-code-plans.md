@@ -613,7 +613,8 @@ constexpr uint32_t LynxBootRomSize = 512;       // 512 bytes
 ## 7. Key Algorithms
 
 ### 7.1 Timer Tick (Mikey)
-```
+
+```text
 for each active timer T:
     if T is linked to previous timer:
         if previous timer borrowOut:
@@ -635,7 +636,8 @@ for each active timer T:
 ```
 
 ### 7.2 Sprite Processing (Suzy)
-```
+
+```text
 addr = SCBNEXT register
 while addr != 0:
     scb = ParseSCB(addr)
@@ -656,7 +658,8 @@ resume CPU
 ```
 
 ### 7.3 Memory Read (MAPCTL)
-```
+
+```text
 if addr >= 0xFC00 && addr <= 0xFCFF && suzyEnabled:
     return suzy.Read(addr)
 if addr >= 0xFD00 && addr <= 0xFDFF && mikeyEnabled:
@@ -671,7 +674,8 @@ return ram[addr]
 ```
 
 ### 7.4 Hardware Multiply (Suzy)
-```
+
+```text
 // Triggered on write to MATHD (or MATHA depending on mode)
 uint32_t result = (uint16_t)(mathB << 8 | mathA) * (uint16_t)(mathD << 8 | mathC)
 mathA = result & 0xFF
@@ -746,6 +750,7 @@ public:
 ## 9. Implementation Priority Order
 
 ### Session 2 (First Implementation Session)
+
 1. Create `LynxTypes.h` with all structs and constants
 2. Add enum values to all files (#303)
 3. Create `LynxConsole` skeleton (#304)
@@ -755,18 +760,21 @@ public:
 7. Create build integration (#310)
 
 ### Session 3
+
 1. Complete CPU (cycle timing #281, BCD #282, IRQ #283)
 2. Cart loading (#306)
 3. Boot ROM (#307)
 4. Basic timer skeleton (#287)
 
 ### Session 4
+
 1. Full timer system (#287, #288)
 2. Video DMA (#289)
 3. Palette (#295)
 4. Get first screens displaying
 
 ### Sessions 5-6
+
 1. Suzy sprite engine (#296, #297, #298)
 2. Math coprocessor (#299)
 3. Input (#300, #312)

@@ -4,7 +4,7 @@
 
 ---
 
-# 🎮 Nexen v1.3.0 Released!
+## 🎮 Nexen v1.3.0 Released
 
 **Nexen** is a multi-system emulator for **NES, SNES, Game Boy, GBA, SMS, PC Engine, WonderSwan, and Atari Lynx** — forked from Mesen2 and taken in a new direction.
 
@@ -44,12 +44,14 @@ This release focuses on **performance optimization** — 20 commits of benchmark
 Nexen was forked from [Mesen2](https://github.com/SourMesen/Mesen2) because development had stalled, leaving unmerged bug fixes and no path forward for the features we wanted. **616 commits** and **+154,000 lines** later, Nexen is its own project.
 
 ### 🆕 New Systems
+
 - **Atari Lynx** — Complete from-scratch emulation core (not a Handy fork)
 	- 65C02 CPU, Mikey/Suzy hardware, sprite engine, 4-channel stereo audio
 	- EEPROM, RSA bootloader, ComLynx serial, MAPCTL overlays
 	- Full debugger integration + 84 unit tests + 67 benchmarks
 
 ### 🎬 TAS Editor
+
 - **Piano Roll** — visual frame-by-frame input editing
 - **Greenzone** — automatic savestates for instant seeking
 - **Movie Branches** — save/compare alternate routes
@@ -57,12 +59,14 @@ Nexen was forked from [Mesen2](https://github.com/SourMesen/Mesen2) because deve
 - **Lua scripting API** — InsertFrames, DeleteFrames, automation
 
 ### 💾 Save State System
+
 - **Infinite saves** — no more 10-slot limit
 - **Visual Picker** (Shift+F1) — grid view with screenshots + timestamps
 - **Quick Save** (F1) + Designated Slot (F4/Shift+F4)
 - **Auto-save** — configurable periodic saves (5-minute recent + 20-minute archive)
 
 ### 🌼 Pansy Metadata Export
+
 - Universal disassembly metadata format integration
 - Background CDL recording without debugger
 - Auto-export every 5 minutes + ROM CRC32 verification
@@ -70,11 +74,13 @@ Nexen was forked from [Mesen2](https://github.com/SourMesen/Mesen2) because deve
 
 ### 🐛 8 Upstream Mesen2 Bug Fixes
 Fixes from unmerged Mesen2 PRs that Nexen integrates:
+
 - SNES DMA overflow, CX4 cache/timing, hi-res blend, ExLoRom mapping
 - NES open bus, NTSC dot crawl, Lua crash fix
 - Linux FontConfig typeface caching
 
 ### 🚀 Performance — 192+ Optimization Commits
+
 - **Branchless CPU flags** across NES, SNES, GB, PCE, SMS
 - **constexpr LUTs** for brightness, hex, Base64, flag lookups
 - **Move semantics** for frame data, HUD strings, expression evaluator
@@ -85,6 +91,7 @@ Fixes from unmerged Mesen2 PRs that Nexen integrates:
 - **GB PPU**: cached config (160x allocation reduction)
 
 ### 🔧 Modernization
+
 - **C++23** with `/std:c++latest` and VS 2026 toolset
 - **.NET 10** + latest Avalonia UI
 - **`[[nodiscard]]`, `constexpr`, `string_view`, `emplace_back`** throughout
@@ -92,12 +99,14 @@ Fixes from unmerged Mesen2 PRs that Nexen integrates:
 - **StreamHash** for unified ROM hashing (CRC32/MD5/SHA-1/SHA-256)
 
 ### 🧪 Testing
+
 - **1,495 C++ tests** + **152 .NET tests** (up from 421 at v1.0.0)
 - Exhaustive 256×256 CPU flag comparison tests
 - Lynx hardware reference tests, fuzz tests, sprite tests
 - Google Benchmark suite with statistical validation
 
 ### 📦 CI/CD
+
 - GitHub Actions builds for **Windows, Linux (x64/ARM64), macOS (ARM64)**
 - AppImage packaging, Native AOT builds, versioned release assets
 

@@ -28,7 +28,7 @@ common programming extensions like `.o`.
 
 ## Format Layout
 
-```
+```text
 +---------------------------+
 | Fixed Header (32 bytes)   |
 +---------------------------+
@@ -168,7 +168,7 @@ When converting from headerless formats:
 
 A 256 KB ROM (California Games) with metadata:
 
-```
+```text
 Header (32 bytes):
   4C 59 4E 58 52 4F 4D 00   ; "LYNXROM\0"
   00 01 00                   ; version 0.1.0

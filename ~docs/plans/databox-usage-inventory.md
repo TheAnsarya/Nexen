@@ -53,6 +53,7 @@ Located in `UI/ThirdParty/DataBox/`:
 ### Tier 1: Simple (migration candidates first)
 
 #### 1. RegisterTabView
+
 - **File:** `UI/Debugger/Views/RegisterTabView.axaml`
 - **Columns:** 4 (Address, Name, Value, ValueHex) — all `DataBoxTextColumn`
 - **Features:** Items, Selection, GridLines, ColumnWidths
@@ -61,6 +62,7 @@ Located in `UI/ThirdParty/DataBox/`:
 - **Complexity:** ⭐ (lowest)
 
 #### 2. AssemblerWindow
+
 - **File:** `UI/Debugger/Windows/AssemblerWindow.axaml`
 - **Columns:** 2 (Line, Error) — all `DataBoxTextColumn`
 - **Features:** Items, Selection, GridLines
@@ -69,6 +71,7 @@ Located in `UI/ThirdParty/DataBox/`:
 - **Complexity:** ⭐
 
 #### 3. FindResultListView
+
 - **File:** `UI/Debugger/Views/FindResultListView.axaml`
 - **Columns:** 2 (Address, Result) — all `DataBoxTextColumn`
 - **Features:** Items, Selection, GridLines, ColumnWidths, SortState
@@ -77,6 +80,7 @@ Located in `UI/ThirdParty/DataBox/`:
 - **Complexity:** ⭐⭐
 
 #### 4. CallStackView
+
 - **File:** `UI/Debugger/Views/CallStackView.axaml`
 - **Columns:** 3 (Function, PcAddress, RomAddress) — all `DataBoxTextColumn`
 - **Features:** Items, GridLines, ColumnWidths
@@ -86,6 +90,7 @@ Located in `UI/ThirdParty/DataBox/`:
 - **Complexity:** ⭐⭐
 
 #### 5. CheatListWindow
+
 - **File:** `UI/Windows/CheatListWindow.axaml`
 - **Columns:** 3 (Enabled as CheckBox, Description, Codes) — mixed column types
 - **Features:** Items, Selection, GridLines, ColumnWidths, SortState
@@ -96,6 +101,7 @@ Located in `UI/ThirdParty/DataBox/`:
 ### Tier 2: Moderate
 
 #### 6. BreakpointListView
+
 - **File:** `UI/Debugger/Views/BreakpointListView.axaml`
 - **Columns:** 5 (Enabled CheckBox, Marked CheckBox, Type, Address, Condition) — mixed types
 - **Features:** Items, Selection, GridLines, ColumnWidths, SortState
@@ -104,6 +110,7 @@ Located in `UI/ThirdParty/DataBox/`:
 - **Complexity:** ⭐⭐⭐
 
 #### 7. LabelListView
+
 - **File:** `UI/Debugger/Views/LabelListView.axaml`
 - **Columns:** 4 (Label, RelAddr, AbsAddr, Comment as Template) — mixed types
 - **Features:** Items, Selection, GridLines, ColumnWidths, SortState
@@ -113,6 +120,7 @@ Located in `UI/ThirdParty/DataBox/`:
 - **Complexity:** ⭐⭐⭐
 
 #### 8. FunctionListView
+
 - **File:** `UI/Debugger/Views/FunctionListView.axaml`
 - **Columns:** 3 (Function, RelAddr, AbsAddr) — all `DataBoxTextColumn`
 - **Features:** Items, Selection, GridLines, ColumnWidths, SortState
@@ -124,6 +132,7 @@ Located in `UI/ThirdParty/DataBox/`:
 ### Tier 3: Complex
 
 #### 9. MemorySearchWindow
+
 - **File:** `UI/Debugger/Windows/MemorySearchWindow.axaml`
 - **Columns:** 10 (Address, Value, PrevValue, ReadCount, LastRead, WriteCount, LastWrite, ExecCount, LastExec, Match CheckBox)
 - **Features:** Items, Selection, GridLines, ColumnWidths, SortState
@@ -131,6 +140,7 @@ Located in `UI/ThirdParty/DataBox/`:
 - **Complexity:** ⭐⭐⭐
 
 #### 10. ProfilerWindow
+
 - **File:** `UI/Debugger/Windows/ProfilerWindow.axaml`
 - **Columns:** 9 (FunctionName, CallCount, InclusiveTime, InclusiveTimePercent, ExclusiveTime, ExclusiveTimePercent, AvgCycles, MinCycles, MaxCycles)
 - **Features:** Items, Selection, GridLines, ColumnWidths, SortState, CopyToClipboard
@@ -139,6 +149,7 @@ Located in `UI/ThirdParty/DataBox/`:
 - **Complexity:** ⭐⭐⭐
 
 #### 11. EventViewerWindow
+
 - **File:** `UI/Debugger/Windows/EventViewerWindow.axaml`
 - **Columns:** 8 (Color as Template with colored border, Scanline, Cycle, ProgramCounter, Type, Address, Value, Details as Template)
 - **Features:** Items, Selection, GridLines, ColumnWidths, SortState
@@ -149,6 +160,7 @@ Located in `UI/ThirdParty/DataBox/`:
 ### Tier 4: Most Complex
 
 #### 12. SpriteViewerWindow
+
 - **File:** `UI/Debugger/Windows/SpriteViewerWindow.axaml`
 - **Columns:** 9 (SpriteIndex, X hex+decimal template, Y hex+decimal template, Size WxH template, TileIndex hex template, Palette, Priority enum, Flags, Visible inverted binding)
 - **Features:** Items, Selection, GridLines, ColumnWidths, SortState, CanUserResizeColumns=False
@@ -157,6 +169,7 @@ Located in `UI/ThirdParty/DataBox/`:
 - **Complexity:** ⭐⭐⭐⭐
 
 #### 13. WatchListView
+
 - **File:** `UI/Debugger/Views/WatchListView.axaml`
 - **Columns:** 2 (Name editable TextBox, Value with .changed class) — both `DataBoxTemplateColumn`
 - **Features:** Items, Selection, GridLines, ColumnWidths, DisableTypeAhead=True

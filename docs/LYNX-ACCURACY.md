@@ -3,6 +3,7 @@
 This document tracks the accuracy status of each Lynx hardware subsystem.
 
 **Legend:**
+
 - ✅ Fully implemented and tested
 - ⚠️ Partially implemented or minor gaps
 - ❌ Missing or not implemented

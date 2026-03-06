@@ -43,20 +43,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Performance
 
 #### Phase 16.6 — Temp String & Table Elimination
+
 - Eliminated temporary string allocations in TraceLogger, DebugStats, AudioPlayerHud
 - Converted runtime-initialized arrays to `constexpr` lookup tables
 - Added `reserve()` calls for known-size containers
 
 #### Phase 16.7 — Branch Prediction Hints
+
 - Applied `[[likely]]`/`[[unlikely]]` attributes across 9 CPU/PPU/memory hot-path files
 - NES/SNES/GB/GBA/SMS/PCE/WS CPU cores, PPU renderers, memory handlers
 
 #### Phase 16.8 — Constexpr LUT + Copy Elimination
+
 - Base64 decode table: `constexpr` namespace-scope LUT (8.8x faster CheckSignature)
 - NTSC filter, FDS audio, VS System: `static constexpr` member arrays
 - VirtualFile, FolderUtilities: pass-by-const-ref, `string_view` params (66.3x faster extension set lookup)
 
 #### Phase 16.9 — String Allocation Elimination
+
 - Serializer::UpdatePrefix: in-place append instead of repeated concatenation
 - FolderUtilities::CombinePath: `reserve()` + `append()` (eliminates intermediate allocations)
 - PcmReader::LoadSamples: pre-reserve sample vector
@@ -64,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Finding**: MSVC `std::format` is 3.4x slower than `operator+` for short strings — only use to replace `stringstream`
 
 #### Phase 16.10 — Stringstream Elimination
+
 - MD5/SHA1: hex digest via `std::format` (replaces `stringstream` + `setfill`/`setw`)
 - RomLoader, NsfLoader: CRC/address formatting via `std::format`
 - SaveStateManager: timestamp formatting (×3 sites)
@@ -71,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AudioPlayerHud: `reserve()` for output string
 
 ### Changed
+
 - Internal version bump: 2.1.1 → 2.2.0
 - Missing trailing newlines added to header files
 

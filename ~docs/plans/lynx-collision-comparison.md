@@ -17,7 +17,8 @@ Handy implements the collision system using **three components**:
 
 ### Per-Pixel Algorithm (in `ProcessPixel()`)
 For each visible pixel of a collidable sprite:
-```
+
+```text
 1. collision = ReadCollision(hoff)   // Read existing value from collision buffer
 2. if (collision > mCollision)       // Track max collision seen
       mCollision = collision
@@ -25,11 +26,13 @@ For each visible pixel of a collidable sprite:
 ```
 
 ### Collision Buffer Read/Write
+
 - `WriteCollision(hoff, pixel)`: Writes 4-bit value to `COLLBAS + voff*80 + hoff/2`
 - `ReadCollision(hoff)`: Reads 4-bit value from same address
 - Nibble layout matches video buffer (upper nibble for even x, lower for odd x)
 
 ### Sprite Type Collision Rules
+
 | Type | Value | Draws pixel | Collision detect | Collision buffer write | Notes |
 |------|-------|------------|-----------------|----------------------|-------|
 | background_shadow | 0 | ALL (even 0) | No detect | Write if pixel≠0xE | No ReadCollision |
@@ -46,6 +49,7 @@ Only for types: `boundary`, `normal`, `boundary_shadow`, `shadow`, `xor_shadow`.
 Not written for: `background_shadow`, `background_noncollide`, `noncollide`.
 
 ### Key Flags
+
 - `mSPRCOLL_Collide` (SPRCOLL bit 5): Per-sprite "don't collide" — checked at **every pixel**
 - `mSPRSYS_NoCollide` (SPRSYS bit 5): Global collision disable — checked at **every pixel**
 - `mSPRCOLL_Number` (SPRCOLL bits 3:0): 4-bit collision number written to buffer
@@ -64,7 +68,8 @@ Nexen uses a fundamentally different approach:
 3. **Video pixel as collision ID**: `WriteSpritePixel()` reads the **existing video pixel color** from the framebuffer and uses it as a collision identifier, which is conceptually wrong.
 
 ### Per-Pixel Algorithm (in `WriteSpritePixel()`)
-```
+
+```text
 1. existingPixel = read from VIDEO framebuffer (not collision buffer!)
 2. if (existingPixel > 0 && existingPixel > _state.CollisionBuffer[collNum])
       _state.CollisionBuffer[collNum] = existingPixel     // WRONG: uses color, not collision#
@@ -75,17 +80,20 @@ Nexen uses a fundamentally different approach:
 
 ### Collision Depositary Write
 Always writes **0** to the depositary regardless of actual collision results:
+
 ```cpp
 WriteRam(collDep, 0);  // Placeholder — always 0
 ```
 
 ### Sprite Type Handling
 All sprite types go through a single `WriteSpritePixel()` with simplified logic:
+
 - Pixel 0 filtered out before entry (`if (pixel != 0)` in ProcessSprite)
 - `doCollision` based on `spriteType != NonCollidable`
 - No per-type collision rules matching Handy
 
 ### Sprite Type Enum vs Hardware
+
 | Hardware Value | Handy Name | Nexen Name | Behavior Match? |
 |------|------------|------------|:---:|
 | 0 | background_shadow | Background | ❌ WRONG |
@@ -116,12 +124,14 @@ All sprite types go through a single `WriteSpritePixel()` with simplified logic:
 **Severity: 🔴 CRITICAL**
 
 **Handy**: After rendering a sprite, writes `mCollision` (the max collision number encountered across all pixels) to RAM at `SCBAddr + COLLOFF`:
+
 ```cpp
 UWORD coldep = mSCBADR.Word + mCOLLOFF.Word;
 RAM_POKE(coldep, (UBYTE)mCollision);
 ```
 
 **Nexen**: Always writes 0:
+
 ```cpp
 WriteRam(collDep, 0);  // "currently a placeholder"
 ```
@@ -173,6 +183,7 @@ The hardware defines 8 sprite types (SPRCTL0 bits 2:0). The values 0-7 are loade
 **Severity: 🟠 HIGH**
 
 **Handy**: Different sprite types have specific rules for pixels 0x0E and 0x0F:
+
 - Boundary (3): pixel 0x0F is NOT drawn but IS collidable
 - Boundary_shadow (2): pixels 0x0E and 0x0F are NOT drawn; 0x0E also excludes collision
 - Shadow (7), XOR_shadow (6): pixel 0x0E excludes collision
@@ -209,6 +220,7 @@ The hardware defines 8 sprite types (SPRCTL0 bits 2:0). The values 0-7 are loade
 **Severity: 🟡 MEDIUM** (would need to be removed if collision is reimplemented)
 
 **Nexen** performs a mutual collision update:
+
 ```cpp
 _state.CollisionBuffer[existingPixel] = collNum;  // Also update other sprite's entry
 ```
@@ -247,6 +259,7 @@ _state.CollisionBuffer[existingPixel] = collNum;  // Also update other sprite's 
 
 ### Root Cause Analysis
 The fundamental issue is that Nexen's collision system was never fully implemented. The code has an explicit TODO: "*Implement proper per-pixel collision tracking via COLLBAS buffer*". The current implementation is a placeholder that:
+
 1. Has no per-pixel collision buffer (should be in RAM at COLLBAS)
 2. Misuses the video framebuffer as a collision source
 3. Uses an invented 16-slot internal array instead of the RAM buffer
@@ -255,6 +268,7 @@ The fundamental issue is that Nexen's collision system was never fully implement
 Additionally, the sprite type enum is misnamed and the `WriteSpritePixel()` function conflates all 8 sprite types into a simplified draw model that doesn't match the hardware's per-type behavior at all.
 
 ### Recommended Fix Priority
+
 1. **Phase 1**: Fix sprite type enum names and per-type draw/collision behavior (BUG 4, 5, 6)
 2. **Phase 2**: Implement RAM-based per-pixel collision buffer using COLLBAS (BUG 1, 3)
 3. **Phase 3**: Implement correct collision depositary writes (BUG 2, 7, 8)

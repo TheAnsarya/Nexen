@@ -11,7 +11,7 @@
 
 ## Pre-Flight
 
-```
+```text
 Before starting, verify: git branch --show-current
 Expected: features-atari-lynx
 If not: git checkout features-atari-lynx
@@ -21,7 +21,7 @@ If not: git checkout features-atari-lynx
 
 ## PROMPT 1: Core Enum Registration (C++ Side)
 
-```
+```text
 [Nexen] On the features-atari-lynx branch, add Atari Lynx to all C++ core enums. This is the FOUNDATION that everything else depends on. Make these exact changes:
 
 1. Core/Shared/SettingTypes.h:
@@ -61,7 +61,7 @@ Build and verify: no errors. Commit: "feat(lynx): Register Lynx in all C++ core 
 
 ## PROMPT 2: C# UI Enum Mirrors
 
-```
+```text
 [Nexen] On features-atari-lynx, mirror all C++ enum changes to the C# UI side. The C++ enums were already added in the previous prompt. Now add matching C# entries:
 
 1. UI/Interop/EmuApi.cs:
@@ -101,7 +101,7 @@ Build both C++ and C# projects. Commit: "feat(lynx): Mirror Lynx enums to C# UI 
 
 ## PROMPT 3: LynxTypes.h — State Structs and Constants
 
-```
+```text
 [Nexen] On features-atari-lynx, create Core/Lynx/LynxTypes.h with ALL the state structures and constants needed for the Lynx emulator. Reference the lynx-code-plans.md and lynx-subsystems-deep-dive.md files in ~docs/plans/ for the exact designs.
 
 Create Core/Lynx/LynxTypes.h containing:
@@ -133,7 +133,7 @@ Also add Core/Lynx/LynxTypes.h to Core.vcxproj. Commit: "feat(lynx): Add LynxTyp
 
 ## PROMPT 4: LynxConsole Skeleton
 
-```
+```text
 [Nexen] On features-atari-lynx, create the LynxConsole class — the main console implementation. This should be a COMPILABLE SKELETON that stubs all IConsole methods. Reference Core/WS/WsConsole.h/.cpp as the pattern.
 
 Create Core/Lynx/LynxConsole.h and Core/Lynx/LynxConsole.cpp:
@@ -171,7 +171,7 @@ Build and verify. Commit: "feat(lynx): Add LynxConsole skeleton - #304"
 
 ## PROMPT 5: LynxMemoryManager — MAPCTL and Memory Map
 
-```
+```text
 [Nexen] On features-atari-lynx, create the LynxMemoryManager class. This handles the Lynx's unique MAPCTL-based memory overlay system. Reference the lynx-subsystems-deep-dive.md for details.
 
 Create Core/Lynx/LynxMemoryManager.h and Core/Lynx/LynxMemoryManager.cpp:
@@ -206,7 +206,7 @@ Build and verify. Commit: "feat(lynx): Add LynxMemoryManager with MAPCTL overlay
 
 ## PROMPT 6: LynxCpu — 65C02 Core (Opcodes + Addressing)
 
-```
+```text
 [Nexen] On features-atari-lynx, create the LynxCpu class — a full 65C02 (WDC) CPU core. This is NOT the same as the NES 6502 (NMOS) — the 65C02 fixes bugs and adds instructions. Do NOT reuse the NES CPU. Reference the Lynx technical report in ~docs/plans/.
 
 Create Core/Lynx/LynxCpu.h and Core/Lynx/LynxCpu.cpp:
@@ -245,7 +245,7 @@ This is a large file (~2000+ lines). Build and verify. Commit: "feat(lynx): Add 
 
 ## PROMPT 7: LynxCart — ROM Loading and LNX Header Parsing
 
-```
+```text
 [Nexen] On features-atari-lynx, create the LynxCart class for cartridge emulation and LNX ROM format parsing.
 
 Create Core/Lynx/LynxCart.h and Core/Lynx/LynxCart.cpp:
@@ -282,7 +282,7 @@ Build and verify. Commit: "feat(lynx): Add LynxCart with LNX header parsing - #3
 
 ## PROMPT 8: Mikey Timers and Interrupts
 
-```
+```text
 [Nexen] On features-atari-lynx, implement the Mikey timer system and interrupt controller. This is the HEART of the Lynx — everything depends on timers.
 
 Create Core/Lynx/LynxMikey.h and Core/Lynx/LynxMikey.cpp:
@@ -326,7 +326,7 @@ Build and verify. Commit: "feat(lynx): Add Mikey timer system and interrupt cont
 
 ## PROMPT 9: Mikey Display and Palette
 
-```
+```text
 [Nexen] On features-atari-lynx, implement Mikey's display DMA and palette system.
 
 In Core/Lynx/LynxMikey.h/.cpp, add:
@@ -365,7 +365,7 @@ Build and verify. If possible, test with a simple ROM that writes to palette reg
 
 ## PROMPT 10: Suzy Sprite Engine
 
-```
+```text
 [Nexen] On features-atari-lynx, implement Suzy's sprite engine. This is the most complex part of the Lynx hardware.
 
 Create Core/Lynx/LynxSuzy.h and Core/Lynx/LynxSuzy.cpp:
@@ -422,7 +422,7 @@ Build and verify. Commit: "feat(lynx): Add Suzy sprite engine - #296, #297, #298
 
 ## PROMPT 11: Input and Controller
 
-```
+```text
 [Nexen] On features-atari-lynx, implement the Lynx controller and input system.
 
 1. **Add ControllerType::LynxController** to SettingTypes.h ControllerType enum
@@ -453,7 +453,7 @@ Build and verify. Commit: "feat(lynx): Add LynxController and input system - #31
 
 ## PROMPT 12: EEPROM Save Data
 
-```
+```text
 [Nexen] On features-atari-lynx, implement EEPROM emulation for battery-backed save data.
 
 Create Core/Lynx/LynxEeprom.h and Core/Lynx/LynxEeprom.cpp:
@@ -484,7 +484,7 @@ Build and verify. Commit: "feat(lynx): Add EEPROM emulation - #308"
 
 ## PROMPT 13: Audio System
 
-```
+```text
 [Nexen] On features-atari-lynx, implement the Lynx audio system in Mikey.
 
 In Core/Lynx/LynxMikey.h/.cpp (or create separate LynxApu.h/.cpp):
@@ -530,7 +530,7 @@ Build and verify. Commit: "feat(lynx): Add 4-channel audio system - #290, #291"
 
 ## PROMPT 14: Wire Everything Together — First Boot
 
-```
+```text
 [Nexen] On features-atari-lynx, wire all Lynx components together and attempt first boot. This is the integration prompt.
 
 1. **LynxConsole::LoadRom()** — fully implement:
@@ -569,7 +569,7 @@ Build and verify. Commit: "feat(lynx): Wire all components — first boot attemp
 
 ## PROMPT 15: Debugger Foundation
 
-```
+```text
 [Nexen] On features-atari-lynx, implement the Lynx debugger infrastructure.
 
 1. Create Core/Lynx/Debugger/LynxDebugger.h and .cpp:
@@ -606,7 +606,7 @@ Build and verify. Commit: "feat(lynx): Add debugger infrastructure - #318, #319,
 
 ## PROMPT 16: UI Integration — Menus, Config, Views
 
-```
+```text
 [Nexen] On features-atari-lynx, integrate Lynx into the UI. Add Lynx cases to ALL remaining C# switch statements.
 
 1. UI/ViewModels/MainMenuViewModel.cs:
@@ -648,7 +648,7 @@ Build both C++ and C# projects. Commit: "feat(lynx): Full UI integration - #311,
 
 ## PROMPT 17: PPU Tools and Sprite Viewer
 
-```
+```text
 [Nexen] On features-atari-lynx, implement Lynx-specific PPU debugging tools.
 
 1. Create Core/Lynx/Debugger/LynxPpuTools.h and .cpp:
@@ -676,7 +676,7 @@ Build and verify. Commit: "feat(lynx): Add PPU tools, sprite viewer, register vi
 
 ## PROMPT 18: Movie/TAS Support
 
-```
+```text
 [Nexen] On features-atari-lynx, verify and configure Movie/TAS recording and playback for Lynx.
 
 1. Verify LynxController::GetTextState() and SetTextState() work correctly for movie serialization (inherited from BaseControlDevice, should work if GetKeyNames() returns correct string)
@@ -705,7 +705,7 @@ Build and verify. Commit: "feat(lynx): Verify and configure Movie/TAS support - 
 
 ## PROMPT 19: ROM Database and Game Compatibility
 
-```
+```text
 [Nexen] On features-atari-lynx, create a ROM database for Lynx games and improve compatibility.
 
 1. Create Core/Lynx/LynxGameDatabase.h:
@@ -735,7 +735,7 @@ Build and verify. Commit: "feat(lynx): Add ROM database for game identification 
 
 ## PROMPT 20: Final Polish and Testing
 
-```
+```text
 [Nexen] On features-atari-lynx, do final polish, fix remaining build warnings, and test game compatibility.
 
 1. Fix all compiler warnings in Core/Lynx/ directory
@@ -771,7 +771,7 @@ Build and verify. Create a summary of test results. Commit: "feat(lynx): Final p
 
 ## PROMPT 21: Assembler and Expression Evaluator
 
-```
+```text
 [Nexen] On features-atari-lynx, implement the Lynx assembler and expression evaluator for the debugger.
 
 1. Create Core/Lynx/Debugger/LynxAssembler.h and .cpp:
@@ -792,7 +792,7 @@ Build and verify. Commit: "feat(lynx): Add assembler and expression evaluator - 
 
 ## PROMPT 22: Hardware Bug Emulation
 
-```
+```text
 [Nexen] On features-atari-lynx, implement known Lynx hardware bugs for accuracy.
 
 Reference the 13 documented bugs from the Lynx technical report in ~docs/plans/atari-lynx-technical-report.md:
@@ -815,7 +815,7 @@ Build and verify. Commit: "feat(lynx): Implement hardware bug emulation for accu
 
 ## PROMPT 23: Boot ROM and HLE
 
-```
+```text
 [Nexen] On features-atari-lynx, implement boot ROM support and HLE (High-Level Emulation) fallback.
 
 1. **Real Boot ROM path:**
@@ -846,7 +846,7 @@ Build and verify. Commit: "feat(lynx): Add boot ROM support and HLE fallback - #
 
 ## PROMPT 24: ComLynx (Serial/UART) — Future
 
-```
+```text
 [Nexen] On features-atari-lynx, add stub ComLynx (UART/serial) support. Full multiplayer is deferred, but the registers must be implemented to prevent games from hanging.
 
 1. In LynxMikey, implement UART registers:
@@ -871,7 +871,7 @@ Build and verify. Commit: "feat(lynx): Stub ComLynx serial registers - #294"
 
 After all prompts are complete:
 
-```
+```text
 1. Review all 24 prompts completed
 2. Run full build: MSBuild Nexen.sln /p:Configuration=Release /p:Platform=x64
 3. Run all tests

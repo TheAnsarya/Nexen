@@ -4,7 +4,7 @@
 
 ## Architecture Overview
 
-```
+```text
 Current:                          Target:
 ┌──────────────────┐             ┌──────────────────────────┐
 │  DataBox (vendor) │             │  Avalonia DataGrid        │
@@ -79,7 +79,8 @@ public static class DataGridTypeAheadBehavior
 
 ## AXAML Migration Pattern
 
-### Before (DataBox):
+### Before (DataBox)
+
 ```xml
 <DataBox Items="{Binding Items}"
          Selection="{Binding Selection}"
@@ -96,7 +97,8 @@ public static class DataGridTypeAheadBehavior
 </DataBox>
 ```
 
-### After (DataGrid + Extensions):
+### After (DataGrid + Extensions)
+
 ```xml
 <DataGrid ItemsSource="{Binding Items}"
           SelectedItem="{Binding SelectedItem}"

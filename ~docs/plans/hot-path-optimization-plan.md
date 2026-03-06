@@ -54,6 +54,7 @@ void GbCpu::SetFlagState(uint8_t flag, bool state) {
 ```
 
 **Branchless replacement:**
+
 ```cpp
 void GbCpu::SetFlagState(uint8_t flag, bool state) {
     _state.Flags = (_state.Flags & ~flag) | (state ? flag : 0);
@@ -88,6 +89,7 @@ void CMP(uint8_t reg, uint8_t value) {
 ```
 
 **Branchless replacement:**
+
 ```cpp
 void CMP(uint8_t reg, uint8_t value) {
     ClearFlags(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
@@ -114,6 +116,7 @@ if (result > 0xFF) SetFlags(PSFlags::Carry);
 ```
 
 **Branchless:**
+
 ```cpp
 _state.PS |= ((~(A() ^ value) & (A() ^ result) & 0x80) != 0) ? PSFlags::Overflow : 0;
 _state.PS |= (result > 0xFF) ? PSFlags::Carry : 0;
@@ -129,6 +132,7 @@ if (value & 0x80) SetFlags(PSFlags::Negative);
 ```
 
 **Branchless:**
+
 ```cpp
 _state.PS |= ((A() & value) == 0) ? PSFlags::Zero : 0;
 _state.PS |= (value & 0x40);   // Overflow = 0x40, maps directly
@@ -140,6 +144,7 @@ _state.PS |= (value & 0x80);   // Negative = 0x80, maps directly
 Each has `if (value & bit) SetFlags(PSFlags::Carry)` — one branch per call.
 
 **Branchless (ASL example):**
+
 ```cpp
 uint8_t ASL(uint8_t value) {
     ClearFlags(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
@@ -164,6 +169,7 @@ else ClearFlags(ProcFlags::Carry);
 ```
 
 **Branchless replacement:**
+
 ```cpp
 // ProcFlags::Carry = 0x01, so we can use setge directly
 _state.PS = (_state.PS & ~ProcFlags::Carry) | ((uint8_t)reg >= value);
@@ -180,6 +186,7 @@ else ClearFlags(ProcFlags::Overflow);
 ```
 
 **Branchless:**
+
 ```cpp
 uint8_t overflow = ((~(_state.A ^ value) & (_state.A ^ result) & 0x80) != 0) ? ProcFlags::Overflow : 0;
 _state.PS = (_state.PS & ~ProcFlags::Overflow) | overflow;
@@ -212,11 +219,13 @@ This is called **every pixel** (23,040 visible pixels/frame + discarded pixels).
 ## Benchmarking Requirements
 
 ### Existing Benchmarks (extend)
+
 - `Core.Benchmarks/Gameboy/GbCpuBench.cpp` — Add `SetFlagState` branching vs branchless comparison
 - `Core.Benchmarks/NES/NesCpuBench.cpp` — Add `CMP` with 3 branches vs branchless, `BIT` comparison
 - `Core.Benchmarks/SNES/SnesCpuBench.cpp` — Add `Compare` Carry branching vs branchless
 
 ### New Benchmarks Needed
+
 - `Core.Benchmarks/PPU/SnesPpuRenderBench.cpp` — Tile pixel extraction, window masking, color math (SNES PPU has no benchmarks yet)
 - GB PPU config caching before/after
 

@@ -7,11 +7,13 @@ This document defines the methodology for verifying and measuring the accuracy o
 ## Reference Sources
 
 ### Primary References
+
 1. **Real hardware** — Atari Lynx I/II behavior (gold standard)
 2. **Handy** — Reference open-source Lynx emulator by K. Wilkins (most mature)
 3. **Mednafen** — Highly accurate multi-system emulator with Lynx support
 
 ### Test ROM Sources
+
 1. **42Bastian's test ROMs** — cycle_check, timer_test, sprite_test (timing verification)
 2. **Retro homebrew scene** — Various hardware test ROMs
 3. **Custom test ROMs** — Purpose-built for edge case verification
@@ -150,7 +152,7 @@ Document any cases where Nexen intentionally deviates from hardware:
 
 ### For Each Test ROM
 
-```
+```text
 1. Run test ROM in Nexen
 2. Run same ROM in Handy/Mednafen
 3. Compare output (visual, audio, timing)
@@ -161,7 +163,7 @@ Document any cases where Nexen intentionally deviates from hardware:
 
 ### For Regression Testing
 
-```
+```text
 1. Maintain list of known-working games
 2. After each core change, verify subset still works
 3. Automated: capture screenshots at key frames, compare hashes

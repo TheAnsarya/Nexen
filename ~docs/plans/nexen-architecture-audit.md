@@ -107,7 +107,7 @@ public:
 
 The WonderSwan console is the closest reference for complexity level:
 
-```
+```text
 Core/WS/
 ├── WsConsole.h/.cpp         # Main console (IConsole)
 ├── WsCpu.h/.cpp             # V30MZ CPU
@@ -222,6 +222,7 @@ Core/WS/
 
 ### Memory Overlay (MAPCTL)
 The Lynx has a unique memory overlay system controlled by the MAPCTL register ($FFF9):
+
 - Bit 0: FE00-FFFF — Vector space (ROM or RAM)
 - Bit 1: Mikey I/O page ($FD00-$FDFF)
 - Bit 2: Suzy I/O page ($FC00-$FCFF)
@@ -232,6 +233,7 @@ This requires careful memory manager implementation — the same address can map
 
 ### Bus Contention
 The Lynx has only one data bus shared by 4 bus masters:
+
 1. CPU (lowest priority)
 2. Refresh
 3. Mikey (video DMA)
@@ -241,18 +243,21 @@ When Suzy is doing sprites, the CPU is halted. This affects timing.
 
 ### No NMI
 Unlike the NES/SNES/GB, the Lynx does NOT use NMI for frame timing. Instead:
+
 - Timer interrupts (IRQ) drive everything
 - VBL is signaled by Timer 0 or Timer 2 depending on configuration
 - HBL is signaled by Timer 0
 
 ### Screen Rotation
 Some games are designed to be played with the Lynx rotated 90° or 180°:
+
 - Hardware supports screen flipping via DISPCTL register
 - Emulator needs to handle button remapping for rotated modes
 - ROM database includes rotation hints per game
 
 ### Save Data
 Not all games have save data. Those that do use EEPROM:
+
 - 93C46 (128×8 or 64×16) — most common
 - 93C66 (256×16) — some games
 - 93C86 (1024×16) — rare

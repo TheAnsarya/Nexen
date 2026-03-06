@@ -43,7 +43,7 @@ The **Atari Lynx** (1989) was the first color handheld game console. It featured
 
 ### Memory Map
 
-```
+```text
 $0000-$FBFF  Work RAM (64 KB, always accessible)
 $FC00-$FCFF  Suzy registers (sprite, math, input)
 $FD00-$FDFF  Mikey registers (timer, audio, display, UART)
@@ -52,6 +52,7 @@ $FFF8-$FFFF  CPU vectors (NMI, RESET, IRQ)
 ```
 
 The **MAPCTL** register (`$FFF9`) controls hardware overlays:
+
 - Bit 0: Disable Suzy space
 - Bit 1: Disable Mikey space
 - Bit 2: Disable vector space
@@ -75,6 +76,7 @@ When disabled, reads/writes go to underlying RAM.
 | 7 | Linked | Cascaded |
 
 **Special timer assignments:**
+
 - Timer 0: HBlank
 - Timer 2: VBlank (display refresh)
 - Timers 4-7: Audio channels 0-3
@@ -82,6 +84,7 @@ When disabled, reads/writes go to underlying RAM.
 ### Sprite Engine
 
 Suzy processes sprites as **linked lists of Sprite Control Blocks (SCBs)** in RAM. Each SCB contains:
+
 - Control registers (type, BPP, flip, collision)
 - Position (X, Y) and size (H, V)
 - Scaling and tilt parameters
@@ -106,12 +109,14 @@ Suzy processes sprites as **linked lists of Sprite Control Blocks (SCBs)** in RA
 ### Math Coprocessor
 
 Hardware multiply/divide unit:
+
 - **Multiply:** 16x16 -> 32 bit (signed or unsigned)
 - **Divide:** 32 / 16 -> 16 quotient + 16 remainder
 - **Accumulate mode:** Products add to accumulator (dot product)
 - **Sign handling:** Sign-magnitude (NOT two's complement!)
 
 **Known hardware bugs emulated:**
+
 - Bug 13.8: `$8000` is treated as positive (sign-magnitude zero)
 - Bug 13.9: Division remainder is always positive
 - Bug 13.10: Math overflow flag is overwritten (not OR'd) per operation
@@ -120,6 +125,7 @@ Hardware multiply/divide unit:
 ### Audio System
 
 4 channels using 12-bit LFSR (Linear Feedback Shift Register) synthesis:
+
 - Feedback taps at shift register bits {0, 1, 2, 3, 4, 5, 7, 10}
 - Per-channel volume (7-bit) and stereo attenuation (4-bit L/R)
 - Integration mode for waveform accumulation
@@ -130,12 +136,14 @@ Hardware multiply/divide unit:
 Nexen provides full TAS support for the Lynx:
 
 ### Input Recording
+
 - **9 buttons** recorded per frame: Up, Down, Left, Right, A, B, Option 1, Option 2, Pause
 - Movie key string: `"UDLRabOoP"` (9 characters per frame)
 - Input polled at start of each frame (before CPU execution)
 
 ### Piano Roll
 All 9 buttons appear in the piano roll editor with labels:
+
 - Arrow keys: directional buttons
 - A, B: face buttons
 - O1, O2: option buttons
@@ -143,10 +151,12 @@ All 9 buttons appear in the piano roll editor with labels:
 
 ### BK2 Import/Export
 Full BK2 (BizHawk) movie format compatibility:
+
 - Import: Maps BK2 controller buttons to Lynx layout
 - Export: Generates valid BK2 files with Lynx button mapping
 
 ### Frame Rate
+
 - NTSC: 75 Hz (the Lynx has no PAL variant)
 - PAL override: Also 75 Hz (Lynx-specific, not 50 Hz)
 
@@ -185,18 +195,21 @@ Full BK2 (BizHawk) movie format compatibility:
 ### Documented Issues (GitHub Epic #409)
 
 **Core accuracy items to investigate:**
+
 - MAPCTL bits 4-5 (Mikey/Suzy enable) read but not gated (#414)
 - LeftHand mode flag read but not applied to sprite rendering (#415)
 - Timer clock source change may cause spurious ticks (#417)
 - Pen index register routing (#416)
 
 **Low-priority items:**
+
 - Display DMA not scanline-accurate (renders full frame at once)
 - Sprite engine processes SCB chain synchronously
 - Some Mikey registers are stubs ($FD82-$FD93)
 - Audio DAC mode on channel 3 not explicitly differentiated
 
 ### What Works Well
+
 - CPU: Full 65SC02 instruction set with all CMOS extensions
 - Timers: Prescaler, linking, IRQ integration
 - Math: Unsigned/signed multiply/divide with all hardware bugs

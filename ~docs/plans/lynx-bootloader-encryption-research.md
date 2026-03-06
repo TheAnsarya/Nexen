@@ -52,21 +52,25 @@ From `libretro-handy/lynx/system.cpp`:
 ### Mathematical Foundation
 
 Standard RSA:
+
 - Encryption: `C = M^e mod n` (with private key `e`)
 - Decryption: `M = C^d mod n` (with public key `d`)
 
 Lynx uses:
+
 - **Public exponent (d)**: 3 (hardcoded, not stored)
 - **Public modulus (n)**: 51-byte value stored in boot ROM
 
 The formula is:
-```
+
+```text
 PLAINTEXT = ENCRYPTED³ mod PUBLIC_KEY
 ```
 
 ### Why Exponent 3?
 
 An exponent of 3 was chosen for performance:
+
 - Requires only 2 Montgomery multiplications: `B² = B × B`, then `B³ = B × B²`
 - Minimizes boot time on the 4 MHz 65C02
 - Sufficient security for a game console (not banking-grade)
@@ -90,7 +94,8 @@ const unsigned char lynx_public_mod[51] = {
 ```
 
 As a 408-bit integer (big-endian):
-```
+
+```text
 0x35B5A39428​06D8A22695​D771B23CFD​561C4A19B6​A3B0260036​5A306E3C4D​
 63381BD41C​13648936​4CF2BA2A58​F4FEE1FDAC​7E79
 ```
@@ -105,12 +110,13 @@ This key is embedded in the Mikey chip's internal ROM and is the same for all Ly
 
 The encrypted data at the start of a Lynx cartridge:
 
-```
+```text
 Offset 0:    Block count byte (N = 0x100 - value gives number of 51-byte blocks)
 Offset 1+:   N × 51 bytes of encrypted data
 ```
 
 For standard 410-byte loader:
+
 - Block count byte: `0xF8` → N = `0x100 - 0xF8` = 8 blocks
 - Encrypted data: 8 × 51 = 408 bytes (plus 1 block count byte = 409 bytes)
 - Decrypted output: 8 × 50 = 400 bytes (one byte per block is overhead)
@@ -268,6 +274,7 @@ Despite the original security measures, the private exponent **was recovered**. 
 Source: [42Bastian/lynx-encryption-tools](https://github.com/42Bastian/lynx-encryption-tools/blob/master/keys.h) (David Huseby, zlib license)
 
 The private exponent (51 bytes / 408 bits):
+
 ```cpp
 const uint8_t lynx_private_exp[51] = {
     0x23, 0xCE, 0x6D, 0x0D, 0x70, 0x04, 0x90, 0x6C,
@@ -283,7 +290,8 @@ const uint8_t lynx_private_exp[51] = {
 ### Encryption Formula
 
 With the private exponent known, encryption is:
-```
+
+```text
 ENCRYPTED = PLAINTEXT^d mod PUBLIC_KEY
 ```
 
@@ -292,6 +300,7 @@ Where `d` is the 408-bit private exponent above.
 ### Legacy Workaround (Still Useful)
 
 Harry Dodgson's pre-encrypted bootloaders (410 bytes) remain useful for:
+
 - Quick homebrew development (no encryption step needed)
 - Compatibility testing
 - Three variants exist for different cart sizes (512B/1KB/2KB sectors)
@@ -380,22 +389,22 @@ Harry Dodgson's 410-byte encrypted loader (available in new_bll SDK) can serve a
 ### Primary Sources
 
 1. **libretro-handy `lynxdec.cpp`** — Complete decryption implementation
-   - Source: https://github.com/libretro/libretro-handy/blob/master/lynx/lynxdec.cpp
+   - Source: <https://github.com/libretro/libretro-handy/blob/master/lynx/lynxdec.cpp>
    - License: zlib
 
 2. **AtariAge "Lynx Encryption?" Thread** — Technical discussions with karri
-   - URL: https://forums.atariage.com/topic/129030-lynx-encryption
+   - URL: <https://forums.atariage.com/topic/129030-lynx-encryption>
    - Key contributors: karri, Wookie, Harry Dodgson
 
 3. **Epyx Hardware Reference** — Boot ROM section
-   - URL: https://www.monlynx.de/lynx/lynx4.html
+   - URL: <https://www.monlynx.de/lynx/lynx4.html>
 
 ### Secondary Sources
 
-4. **new_bll SDK** — Contains pre-encrypted bootloaders
-   - URL: https://github.com/42Bastian/new_bll
+1. **new_bll SDK** — Contains pre-encrypted bootloaders
+   - URL: <https://github.com/42Bastian/new_bll>
 
-5. **cgexpo.com lnxcrypt.zip** — Original Amiga encryption tools (archived)
+2. **cgexpo.com lnxcrypt.zip** — Original Amiga encryption tools (archived)
 
 ---
 
@@ -539,6 +548,7 @@ For homebrew development, the **BS93 format** bypasses encryption entirely:
 - Only works with emulators in "homebrew mode" or HLE BIOS
 
 Nexen already supports BS93 detection via:
+
 ```cpp
 if (!strcmp(&clip[6], "BS93"))
     fileType = HANDY_FILETYPE_HOMEBREW;

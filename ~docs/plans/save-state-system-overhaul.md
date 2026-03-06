@@ -91,7 +91,7 @@ public enum SaveStateOrigin : byte
 
 Add origin byte after existing header fields:
 
-```
+```text
 Offset | Size | Field
 -------|------|-------
 ...    | ...  | (existing fields)
@@ -159,7 +159,7 @@ public uint RecentPlayRetentionCount { get; set; } = 12; // saves
 
 ### File Menu
 
-```
+```text
 File
 ├── ...
 ├── Designated Save
@@ -180,7 +180,7 @@ File
 
 ### Settings Menu
 
-```
+```text
 Settings
 ├── ...
 ├── Auto Save
@@ -281,12 +281,14 @@ public:
 ## Files to Remove/Modify
 
 ### Remove Slot-Based Code
+
 - Remove F1-F10 save/load shortcuts
 - Remove slot selection menus
 - Remove numbered slot UI
 - Remove `SaveState(uint32_t slot, ...)` overloads
 
 ### Modify
+
 - `SaveStateManager` - File-based only
 - `MainMenuViewModel` - New menu structure
 - `ShortcutHandler` - F4/Shift+F4 shortcuts

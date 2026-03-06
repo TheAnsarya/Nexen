@@ -23,18 +23,21 @@ Work through each section sequentially. Mark tests using one of these methods:
 ### Examples
 
 **Unchecked (not yet tested):**
+
 ```markdown
 - [ ] ROM loads without error
 - [ ] Graphics display correctly
 ```
 
 **Checked (test passed):**
+
 ```markdown
 - [x] ROM loads without error
 - [x] Graphics display correctly
 ```
 
 **Mixed results:**
+
 ```markdown
 - [x] ROM loads without error
 - [!] Graphics display correctly - FAILED: sprite flicker on frame 1200
@@ -44,6 +47,7 @@ Work through each section sequentially. Mark tests using one of these methods:
 ### Recording Failures
 
 When a test fails:
+
 1. Mark it with `[!]` or leave `[ ]` and add a note
 2. Add details inline: `- [!] Test name - FAILED: brief description`
 3. Also record in the "Issues Found" section at the bottom with full reproduction steps
@@ -51,6 +55,7 @@ When a test fails:
 ### Fill-in Fields
 
 Some tests have blank fields like `______`. Fill these in during testing:
+
 ```markdown
 Before: - Note current frame: ______
 After:  - Note current frame: **1523**
@@ -226,8 +231,8 @@ Repeat for each button:
 
 **Test edge cases:**
 
-7. **Select frame 0** and insert - Should insert at beginning
-8. **Select last frame** and insert - Should insert at end
+1. **Select frame 0** and insert - Should insert at beginning
+2. **Select last frame** and insert - Should insert at end
 
 - [ ] Insert at frame 0 works
 - [ ] Insert at last frame works
@@ -249,9 +254,9 @@ Repeat for each button:
 
 **Test multiple deletion:**
 
-7. **Select frames 60-70** (click 60, Shift+click 70)
-8. **Press Delete**
-9. **Verify** 11 frames were removed
+1. **Select frames 60-70** (click 60, Shift+click 70)
+2. **Press Delete**
+3. **Verify** 11 frames were removed
 
 - [ ] Multiple frame deletion works
 - [ ] Correct number of frames removed
@@ -273,12 +278,12 @@ Repeat for each button:
 
 **Test Cut:**
 
-7. **Select frame 20**
-8. **Ctrl+X** (Cut)
-9. **Verify** frame 20 is removed
-10. **Select frame 50**
-11. **Ctrl+V** (Paste)
-12. **Verify** inputs appear at frame 50
+1. **Select frame 20**
+2. **Ctrl+X** (Cut)
+3. **Verify** frame 20 is removed
+4. **Select frame 50**
+5. **Ctrl+V** (Paste)
+6. **Verify** inputs appear at frame 50
 
 - [ ] Cut (Ctrl+X) removes the frame
 - [ ] Paste after cut works correctly
@@ -307,6 +312,7 @@ Repeat for each button:
 **Instructions:** Test movie playback functionality.
 
 **Setup:** Create a simple test movie first:
+
 1. Set frame 0: Start=ON
 2. Set frames 10-20: Right=ON
 3. Set frame 30: A=ON
@@ -348,10 +354,10 @@ Repeat for each button:
 - [ ] Each press advances exactly one frame
 - [ ] Game state updates on each advance
 
-6. **Press Frame Rewind** (Shift+F or button)
-7. **Verify** frame counter shows 55
-8. **Press Frame Rewind 5 more times**
-9. **Verify** frame counter shows 50
+1. **Press Frame Rewind** (Shift+F or button)
+2. **Verify** frame counter shows 55
+3. **Press Frame Rewind 5 more times**
+4. **Verify** frame counter shows 50
 
 - [ ] Frame Rewind moves backward one frame
 - [ ] Each press rewinds exactly one frame
@@ -367,16 +373,20 @@ Repeat for each button:
 
 - [ ] 0.25x speed works (noticeably slow)
 
-4. **Set speed to 0.5x**
+1. **Set speed to 0.5x**
+
 - [ ] 0.5x speed works (half speed)
 
-5. **Set speed to 1x**
+1. **Set speed to 1x**
+
 - [ ] 1x speed works (normal)
 
-6. **Set speed to 2x**
+1. **Set speed to 2x**
+
 - [ ] 2x speed works (fast)
 
-7. **Set speed to 4x**
+1. **Set speed to 4x**
+
 - [ ] 4x speed works (very fast)
 
 ### 2.12 Seeking with Greenzone
@@ -392,8 +402,8 @@ Repeat for each button:
 - [ ] Seeking to frame 200 completes (doesn't hang)
 - [ ] Seek time is reasonable (under 5 seconds with greenzone)
 
-6. **Seek back to frame 100**
-7. **Verify** game state at frame 100 is correct
+1. **Seek back to frame 100**
+2. **Verify** game state at frame 100 is correct
 
 - [ ] Backward seeking works
 - [ ] Game state is accurate after seek
@@ -407,7 +417,7 @@ Repeat for each button:
 
 - [ ] Piano roll view opens
 
-3. **Look at the display:**
+1. **Look at the display:**
    - Rows = frames (time)
    - Columns = buttons (lanes)
    - Filled cells = button pressed
@@ -415,22 +425,28 @@ Repeat for each button:
 - [ ] Visual timeline displays correctly
 - [ ] Button lanes are labeled
 
-4. **Click a cell** in the piano roll to toggle input
+1. **Click a cell** in the piano roll to toggle input
+
 - [ ] Cell click toggles button ON
 
-5. **Click and drag** across multiple cells
+1. **Click and drag** across multiple cells
+
 - [ ] Drag painting works (multiple cells toggled)
 
-6. **Try zoom in** (Ctrl+Mousewheel or zoom button)
+1. **Try zoom in** (Ctrl+Mousewheel or zoom button)
+
 - [ ] Zoom in makes cells larger
 
-7. **Try zoom out**
+1. **Try zoom out**
+
 - [ ] Zoom out makes cells smaller
 
-8. **Look for the playback cursor** (vertical line at current frame)
+1. **Look for the playback cursor** (vertical line at current frame)
+
 - [ ] Playback cursor is visible
 
-9. **Look for greenzone indication** (frames with savestates)
+1. **Look for greenzone indication** (frames with savestates)
+
 - [ ] Greenzone frames are visually marked
 
 ### 2.14 Recording Mode
@@ -442,22 +458,25 @@ Repeat for each button:
 
 - [ ] Recording indicator appears in status bar
 
-3. **Start playback** and press buttons on your controller/keyboard
-4. **Stop recording** after about 3 seconds
-5. **Review the frames** - Your inputs should be recorded
+1. **Start playback** and press buttons on your controller/keyboard
+2. **Stop recording** after about 3 seconds
+3. **Review the frames** - Your inputs should be recorded
 
 - [ ] Controller inputs are captured during recording
 - [ ] Inputs appear in the frame list
 
 **Test Recording Modes:**
 
-6. **Select "Append" mode** - New inputs add after current frame
+1. **Select "Append" mode** - New inputs add after current frame
+
 - [ ] Append mode adds frames at end
 
-7. **Select "Overwrite" mode** - New inputs replace existing frames
+1. **Select "Overwrite" mode** - New inputs replace existing frames
+
 - [ ] Overwrite mode replaces existing inputs
 
-8. **Select "Insert" mode** - New inputs insert at current position
+1. **Select "Insert" mode** - New inputs insert at current position
+
 - [ ] Insert mode inserts new frames
 
 ### 2.15 Rerecording
@@ -485,14 +504,15 @@ Repeat for each button:
 - [ ] Create Branch adds new branch
 - [ ] Branch is named correctly
 
-4. **Make some input changes** to this branch
-5. **Recording → Create Branch** again ("Test Branch 2")
-6. **Switch to "Test Branch 1"** by double-clicking it
+1. **Make some input changes** to this branch
+2. **Recording → Create Branch** again ("Test Branch 2")
+3. **Switch to "Test Branch 1"** by double-clicking it
 
 - [ ] Can switch between branches
 - [ ] Each branch has its own inputs
 
-7. **Delete "Test Branch 2"**
+1. **Delete "Test Branch 2"**
+
 - [ ] Branch deletion works
 
 ### 2.17 Greenzone System Details
@@ -506,13 +526,13 @@ Repeat for each button:
 - [ ] Greenzone savestate count displayed
 - [ ] Memory usage displayed
 
-2. **Play the movie for 60 seconds** to generate many states
-3. **Check greenzone count again:** ______
+1. **Play the movie for 60 seconds** to generate many states
+2. **Check greenzone count again:** ______
 
 - [ ] Savestates are captured automatically during playback
 
-4. **Seek backward 1000 frames**
-5. **Time the seek:** ______ seconds
+1. **Seek backward 1000 frames**
+2. **Time the seek:** ______ seconds
 
 - [ ] Greenzone enables fast backward seeking
 
@@ -525,11 +545,13 @@ Repeat for each button:
 
 - [ ] Player 2 columns visible (if game supports)
 
-3. **Edit P2 inputs** at frame 50
+1. **Edit P2 inputs** at frame 50
+
 - [ ] P2 input editing works
 
-4. **Change controller layout** (if option exists)
+1. **Change controller layout** (if option exists)
    - Try NES, then SNES layout
+
 - [ ] Layout changes button columns appropriately
 
 ### 2.19 File Operations
@@ -542,26 +564,27 @@ Repeat for each button:
 - [ ] New Movie creates empty movie
 - [ ] Prompts to save if unsaved changes exist
 
-3. **Add some inputs** (at least 10 frames)
-4. **File → Save** (or Ctrl+S)
-5. **Choose a location** and name: `test_movie.nmv`
+1. **Add some inputs** (at least 10 frames)
+2. **File → Save** (or Ctrl+S)
+3. **Choose a location** and name: `test_movie.nmv`
 
 - [ ] Save dialog appears
 - [ ] Movie saves without error
 - [ ] File created on disk
 
-6. **File → New Movie** (discard current)
-7. **File → Open Movie** and select `test_movie.nmv`
+1. **File → New Movie** (discard current)
+2. **File → Open Movie** and select `test_movie.nmv`
 
 - [ ] Open dialog appears
 - [ ] Movie loads correctly
 - [ ] Inputs are preserved
 
-8. **File → Save As** and save as `test_movie_copy.nmv`
+1. **File → Save As** and save as `test_movie_copy.nmv`
+
 - [ ] Save As creates a copy
 
-9. **Close TAS Editor** window
-10. **If prompted to save** - Click "Don't Save"
+1. **Close TAS Editor** window
+2. **If prompted to save** - Click "Don't Save"
 
 - [ ] Close prompts for unsaved changes
 
@@ -586,6 +609,7 @@ Repeat for each button:
 3. **Press Shift+F1** to create a savestate
 
 **Expected Result:** A savestate is created and added to the browser. You may see:
+
 - A brief on-screen confirmation message
 - The savestate browser opens showing your new state
 - A thumbnail preview is captured
@@ -594,8 +618,8 @@ Repeat for each button:
 - [ ] Confirmation message or visual feedback appears
 - [ ] No crash or error occurs
 
-4. **Continue playing** for another 10 seconds
-5. **Press Shift+F1 again** to create a second savestate
+1. **Continue playing** for another 10 seconds
+2. **Press Shift+F1 again** to create a second savestate
 
 - [ ] Second savestate is created separately (not overwriting first)
 - [ ] Both savestates exist independently
@@ -612,7 +636,7 @@ Repeat for each button:
 - [ ] Browser window displays list of savestates
 - [ ] Your previously created savestates are visible
 
-2. **Look at the browser interface:**
+1. **Look at the browser interface:**
    - List or grid of savestates
    - Thumbnail images
    - Timestamps or creation dates
@@ -637,7 +661,7 @@ Repeat for each button:
 - [ ] Video displays correctly (no corruption)
 - [ ] Audio continues correctly (no glitches)
 
-3. **Close the browser** (Escape key or close button)
+1. **Close the browser** (Escape key or close button)
 
 - [ ] Browser closes without issue
 
@@ -755,9 +779,9 @@ Repeat for each button:
 - [ ] Only Game B's savestates are shown
 - [ ] Game A's savestates are NOT mixed in
 
-7. **Close Game B**
-8. **Reload Game A**
-9. **Open the browser** (F1)
+1. **Close Game B**
+2. **Reload Game A**
+3. **Open the browser** (F1)
 
 - [ ] Game A's savestates are available again
 - [ ] Game B's savestates are NOT shown
@@ -808,21 +832,22 @@ Repeat for each button:
 - [ ] Import completes without error
 - [ ] Frame count matches original: ______ frames
 
-6. **Play the imported movie**
-7. **Watch for 30 seconds** or until completion
+1. **Play the imported movie**
+2. **Watch for 30 seconds** or until completion
 
 - [ ] Inputs sync correctly with game
 - [ ] No desync (game follows expected path)
 
 **Export Test:**
 
-8. **File → Export Movie → FM2 format**
-9. **Save as test_export.fm2**
+1. **File → Export Movie → FM2 format**
+2. **Save as test_export.fm2**
 
 - [ ] Export dialog appears
 - [ ] File is created
 
-10. **Re-import the exported file**
+1. **Re-import the exported file**
+
 - [ ] Roundtrip: Original → Export → Import matches
 
 ### 4.2 SMV Format (Snes9x Movies)
@@ -838,7 +863,8 @@ Repeat for each button:
 
 **Export Test:**
 
-4. **File → Export Movie → SMV format**
+1. **File → Export Movie → SMV format**
+
 - [ ] Export creates valid SMV file
 
 ### 4.3 BK2 Format (BizHawk Movies)
@@ -876,9 +902,9 @@ Repeat for each button:
 
 - [ ] NMV file is created
 
-5. **Close TAS Editor**
-6. **Reopen TAS Editor**
-7. **File → Open → test_native.nmv**
+1. **Close TAS Editor**
+2. **Reopen TAS Editor**
+3. **File → Open → test_native.nmv**
 
 - [ ] Movie loads correctly
 - [ ] All inputs preserved
@@ -964,6 +990,7 @@ Repeat for each button:
 | GBA | Any | | ARM7 addresses | [ ] |
 
 For each system:
+
 1. Load a ROM for that system
 2. Add at least one label
 3. Export Pansy metadata
@@ -1004,20 +1031,26 @@ For each system:
 | F12 | Screenshot | Press → screenshot saved (check screenshots folder) | [ ] |
 
 **Detailed Test for F5:**
+
 1. **Load a game** and let it run
 2. **Press F5** - Game should freeze (pause)
 3. **Press F5 again** - Game should resume
+
 - [ ] F5 toggles pause correctly
 
 **Detailed Test for F6:**
+
 1. **Play a game** past the title screen
 2. **Press F6** - Game should reset
+
 - [ ] F6 resets to beginning
 
 **Detailed Test for F12:**
+
 1. **Navigate to a recognizable screen**
 2. **Press F12** - Screenshot should be captured
 3. **Check the screenshots folder** (usually in Nexen's data directory)
+
 - [ ] F12 saves screenshot
 - [ ] Screenshot file exists
 
@@ -1031,6 +1064,7 @@ For each system:
 | F1 | Open Savestate Browser | Press → browser window opens showing all savestates | [ ] |
 
 **Detailed Test for Shift+F1:**
+
 1. **Load a game** and play for 10 seconds
 2. **Press Shift+F1**
 3. **Expected:** A new savestate is created
@@ -1042,6 +1076,7 @@ For each system:
 - [ ] Each Shift+F1 press creates a NEW savestate
 
 **Detailed Test for F1:**
+
 1. **Press F1** with a game running
 2. **Expected:** Savestate browser window/panel opens
 3. **The browser shows:**
@@ -1077,22 +1112,28 @@ For each system:
 **Detailed Tests:**
 
 **Ctrl+Z / Ctrl+Y Test:**
+
 1. **Select frame 10**, toggle A button ON
 2. **Press Ctrl+Z** - A button should toggle OFF (undone)
 3. **Press Ctrl+Y** - A button should toggle ON (redone)
+
 - [ ] Undo/Redo work correctly
 
 **Space Bar Test:**
+
 1. **Go to frame 0**
 2. **Press Space** - Playback starts
 3. **Press Space** - Playback pauses
+
 - [ ] Space toggles play/pause
 
 **Frame Advance Test (F key):**
+
 1. **Note current frame number:** ______
 2. **Press F** - Frame advances by 1
 3. **Press F five more times**
 4. **Verify frame is now:** original + 6
+
 - [ ] F advances one frame each press
 
 ### 6.4 Debugger Shortcuts
@@ -1107,10 +1148,12 @@ For each system:
 | Shift+F11 | Step out | [ ] |
 
 **Detailed Test for F9:**
+
 1. **Open Debugger** (Debug → Debugger)
 2. **Click on an instruction line**
 3. **Press F9** - Breakpoint marker should appear
 4. **Press F9 again** - Breakpoint should be removed
+
 - [ ] F9 toggles breakpoints
 
 ### 6.5 Shortcut Conflicts
@@ -1135,6 +1178,7 @@ For each system:
 **Instructions:** Test main window behavior.
 
 **Resizing:**
+
 1. **Drag a corner** of the window to resize
 2. **Make it very small** (300x200 pixels)
 3. **Make it very large** (fullscreen)
@@ -1145,6 +1189,7 @@ For each system:
 - [ ] No UI elements cut off or overlapping
 
 **Minimize/Maximize:**
+
 1. **Click minimize** button
 2. **Click taskbar** to restore
 3. **Click maximize** button
@@ -1205,6 +1250,7 @@ For each system:
 **Instructions:** Test common dialogs.
 
 **Open File Dialog:**
+
 1. **File → Open ROM**
 2. **Navigate folders**
 3. **Select a file**
@@ -1216,6 +1262,7 @@ For each system:
 - [ ] File opens correctly
 
 **Settings Dialog:**
+
 1. **Edit → Preferences** (or Tools → Settings)
 2. **Browse through tabs/sections**
 3. **Change a setting** (e.g., video scale)
@@ -1243,7 +1290,7 @@ For each system:
 - [ ] ROM loads without error
 - [ ] Title screen displays
 
-3. **Play for 60 seconds:**
+1. **Play for 60 seconds:**
    - Press Start to begin
    - Use D-pad to move
    - Press A/B buttons
@@ -1254,10 +1301,12 @@ For each system:
 - [ ] Audio plays correctly (music, SFX)
 - [ ] No crashes during gameplay
 
-4. **Create a savestate** (Shift+F1) then load it (F1 → select)
+1. **Create a savestate** (Shift+F1) then load it (F1 → select)
+
 - [ ] Savestate works
 
-5. **Open TAS Editor** and record a few inputs
+1. **Open TAS Editor** and record a few inputs
+
 - [ ] TAS Editor works with NES
 
 ### 8.2 SNES Testing
@@ -1272,7 +1321,7 @@ For each system:
 - [ ] All controller buttons work (A, B, X, Y, L, R, Start, Select)
 - [ ] Audio correct (SPC700 music)
 
-3. **Test enhancement chips** (if you have games with them):
+1. **Test enhancement chips** (if you have games with them):
    - Super FX (Star Fox, Yoshi's Island)
    - SA-1 (Super Mario RPG)
    - DSP (Mario Kart)
@@ -1354,10 +1403,11 @@ For each system:
 - [ ] No frame drops during normal gameplay
 - [ ] FPS counter visible
 
-4. **Load a PAL game** if available (50 FPS target)
+1. **Load a PAL game** if available (50 FPS target)
+
 - [ ] Maintains 50 FPS (PAL)
 
-5. **Test fast forward:**
+1. **Test fast forward:**
    - Hold the fast forward key
    - Note the maximum speed achieved: ______ FPS
 
@@ -1421,6 +1471,7 @@ For each system:
 - [ ] All features work
 
 **Windows Version Testing:**
+
 - [ ] Windows 10: Works
 - [ ] Windows 11: Works
 
@@ -1522,6 +1573,6 @@ For each system:
 
 ---
 
-*Document version: 1.2.0*
-*Last updated: 2026-02-02*
-*Major revision: Added checkbox usage instructions; corrected savestate shortcuts; removed duplicate sections*
+_Document version: 1.2.0_
+_Last updated: 2026-02-02_
+_Major revision: Added checkbox usage instructions; corrected savestate shortcuts; removed duplicate sections_

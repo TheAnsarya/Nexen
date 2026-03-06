@@ -8,6 +8,7 @@
 ## Problem Statement
 
 User reports while playing Dragon Warrior 4 (NES):
+
 1. Audio stuttering (periodic glitches)
 2. Periodic slowdowns (frame drops)
 3. Cannot sustain 2x/3x fast-forward speed
@@ -15,6 +16,7 @@ User reports while playing Dragon Warrior 4 (NES):
 ## Root Cause Analysis Summary
 
 ### Finding 1 (CRITICAL — Nexen-specific): BackgroundCdlRecording activates full debugger
+
 - `BackgroundCdlRecording = true` by default → `BackgroundPansyExporter` calls `InitializeDebugger()` on every ROM load
 - Full C++ Debugger instantiated (all subsystems: breakpoints, trace logger, disassembler, CDL, memory counters)
 - **Every CPU instruction** goes through `ProcessInstruction()` — address resolution, CDL marking, call stack, breakpoint checks
@@ -23,6 +25,7 @@ User reports while playing Dragon Warrior 4 (NES):
 - **Status: FIXED** — Default changed to `false`, config upgrade now sets `false` instead of `true`
 
 ### Finding 2 (HIGH — Mesen2): Audio buffer overflow at turbo speed
+
 - `SoundMixer::PlayAudioBuffer` has no handling for speed > 100%
 - Pitch adjustment only handles speed < 100% (slow-motion)
 - At 2x/3x, audio buffer fills 2-3x faster than hardware drains, causing overflow → stutter
@@ -30,39 +33,46 @@ User reports while playing Dragon Warrior 4 (NES):
 - Buffer health monitoring disabled when speed > 100%
 
 ### Finding 3 (HIGH — Mesen2): VideoDecoder spin-wait caps emulation speed
+
 - `VideoDecoder::UpdateFrame()` busy-spins `while (_frameChanged) {}` with NO sleep/yield
 - If video decode thread is slow, emulation thread burns CPU waiting
 - At turbo speed, this creates a hard speed cap equal to video decode throughput
 - Video filters (NTSC, scale2x) make decode slower
 
 ### Finding 4 (MEDIUM — Both): Synchronous save state operations
+
 - All save operations (auto-save, recent-play, quick-save) block emulation thread
 - Pipeline: AcquireLock → framebuffer zlib compression → state serialization → disk I/O → ReleaseLock
 - Each save can take 5-15ms (NES frame = 16.7ms)
 - **Partial fix applied:** SaveVideoData compression level reduced from 6 to 1
 
 ### Finding 5 (MEDIUM — Mesen2): Rewind buffer overhead at turbo
+
 - Records full savestate every 30 frames (always active if buffer > 0)
 - At 3x speed, fires 3x more often in real-time
 
 ### Finding 6 (LOW — Mesen2): Audio effects chain runs at turbo speed
+
 - Full effects pipeline (resampling, EQ, reverb, crossfeed) runs for every audio frame
 - At 3x speed, this is 3x the effects processing per real-time second
 
 ## Immediate Fixes Applied (This Session)
 
 ### Fix 1: BackgroundCdlRecording default → false (#419)
+
 - `IntegrationConfig.cs`: Changed default from `true` to `false`
 - `Configuration.cs`: Config upgrade now sets `false` (was `true`)
 - Impact: Eliminates 30-50% overhead for all users who haven't manually enabled it
 
 ### Fix 2: SaveVideoData compression level 6 → 1 (#424)
+
 - `SaveStateManager.cpp`: `MZ_DEFAULT_LEVEL` → `MZ_BEST_SPEED`
 - Impact: 2-4x faster framebuffer compression on every save state
 
 ## Future Work (Issues Created)
 
 ### Phase 1: Quick Wins — COMPLETE
+
 | Issue | Description | Status | Impact |
 |-------|-------------|--------|--------|
 | #419 | BackgroundCdlRecording default to false | ✅ Done | 30-50% speed recovery |
@@ -70,18 +80,21 @@ User reports while playing Dragon Warrior 4 (NES):
 | #425 | Lightweight CDL recorder | ✅ Done | ~0.1% overhead vs 30-50% |
 
 ### Phase 2: Audio & Video — COMPLETE
+
 | Issue | Description | Status | Impact |
 |-------|-------------|--------|--------|
 | #420 | Audio frame skipping at turbo speed | ✅ Done | Removes audio speed bottleneck |
 | #421 | VideoDecoder condition variable | ✅ Done | Removes spin-wait speed cap |
 
 ### Phase 3: Debugger Pipeline — COMPLETE
+
 | Issue | Description | Status | Impact |
 |-------|-------------|--------|--------|
 | #426 | Profiler cached pointers | ✅ Done | 6-9.4x profiler speedup |
 | #427 | CallstackManager ring buffer | ✅ Done | 1.5-2.2x callstack speedup |
 
 ### Phase 4: Audio Pipeline — COMPLETE
+
 | Issue | Description | Status | Impact |
 |-------|-------------|--------|--------|
 | #431 | ReverbFilter ring buffer | ✅ Done | Eliminates buffer rotation |
@@ -89,6 +102,7 @@ User reports while playing Dragon Warrior 4 (NES):
 | #433 | AudioConfig const ref | ✅ Done | Eliminates per-sample copy |
 
 ### Phase 5: Rewind System — COMPLETE
+
 | Issue | Description | Status | Impact |
 |-------|-------------|--------|--------|
 | #434 | Audio ring buffer for rewind | ✅ Done | O(1) audio rewind |
@@ -97,6 +111,7 @@ User reports while playing Dragon Warrior 4 (NES):
 | #437 | Video frame reuse | ✅ Done | Reuses framebuffer allocation |
 
 ### Phase 6: Run-Ahead & Allocations — COMPLETE
+
 | Issue | Description | Status | Impact |
 |-------|-------------|--------|--------|
 | #439 | RunAhead persistent stream | ✅ Done | Eliminates stringstream allocs |
@@ -106,6 +121,7 @@ User reports while playing Dragon Warrior 4 (NES):
 | #443 | FastBinary positional serializer | ✅ Done | **8.2x round-trip speedup** |
 
 ### Phase 7: Move Semantics & HUD — COMPLETE
+
 | Issue | Description | Status | Impact |
 |-------|-------------|--------|--------|
 | #444 | RenderedFrame/VideoDecoder move | ✅ Done | Eliminates frame copy |
@@ -114,12 +130,14 @@ User reports while playing Dragon Warrior 4 (NES):
 | #447 | HUD string copy elimination | ✅ Done | Move semantics for DrawStringCommand |
 
 ### Phase 8: Benchmarks & Validation — COMPLETE
+
 | Issue | Description | Status | Impact |
 |-------|-------------|--------|--------|
 | #448 | Performance regression benchmarks | ✅ Done | 30+ benchmarks added |
 | #449 | Pansy/CDL tracking audit | ✅ Done | Already idempotent, no changes needed |
 
 ### Phase 9: DebugHud, Pansy Pipeline, Game Package Export
+
 | Issue | Description | Status | Impact |
 |-------|-------------|--------|--------|
 | #453 | DebugHud flat buffer pixel tracking | ✅ Done | O(1) indexed vs hash lookup per pixel |
@@ -127,6 +145,7 @@ User reports while playing Dragon Warrior 4 (NES):
 | #455 | Pansy auto-save off UI thread + CRC cache | ✅ Done | Eliminates UI thread file I/O blocking |
 
 ### Remaining Open Work
+
 | Issue | Description | Priority |
 |-------|-------------|----------|
 | #422 | Async save states | Medium |
@@ -136,6 +155,7 @@ User reports while playing Dragon Warrior 4 (NES):
 | #463 | NotificationManager RCU pattern | Medium |
 
 ### Phase 10: Deep Hot Path Audit & Mechanical Cleanup — COMPLETE
+
 | Issue | Description | Status | Impact |
 |-------|-------------|--------|--------|
 | #456 | SaveStateManager buffer reuse (memcpy vs move) | ✅ Done | 15% faster, 50× more stable variance |
@@ -151,6 +171,7 @@ User reports while playing Dragon Warrior 4 (NES):
 | #467 | MessageManager/DebugLog const ref + emplace_back | ✅ Done | 11 files, 16 emplace_back conversions |
 
 ### Phase 11: Fifth Audit Sweep — Buffer Reuse & Copy Elimination — COMPLETE
+
 | Issue | Description | Status | Impact |
 |-------|-------------|--------|--------|
 | #468 | GetPortStates buffer reuse (all consoles) | ✅ Done | Eliminates per-frame vector alloc |
@@ -161,6 +182,7 @@ User reports while playing Dragon Warrior 4 (NES):
 | #473 | NesSoundMixer timestamps reserve(512) | ✅ Done | Prevents early-frame reallocs |
 
 ### Phase 12: Sixth Audit Sweep — Micro-optimizations & Cleanup — COMPLETE
+
 | Issue | Description | Status | Impact |
 |-------|-------------|--------|--------|
 | #474 | Audio providers reserve _samplesToPlay | ✅ Done | Eliminates early reallocs (SmsFm/PceCd/PceAdpcm) |
@@ -171,6 +193,7 @@ User reports while playing Dragon Warrior 4 (NES):
 | #479 | SystemHud snprintf + DebugStats stringstream reuse | ✅ Done | Eliminates stringstream allocs per frame |
 
 ### Phase 13: Seventh Audit Sweep — Audio, Rewind, and Debugger Hot Paths — COMPLETE
+
 | Issue | Description | Status | Impact |
 |-------|-------------|--------|--------|
 | #483 | NesSoundMixer EndFrame — selective zeroing + dedup-at-insert | ✅ Done | 1.76x memset + 1.52x timestamps = ~3600ns/frame saved |
@@ -183,6 +206,7 @@ User reports while playing Dragon Warrior 4 (NES):
 ## Benchmark Results Summary
 
 ### FastBinary Serializer (run-ahead hot path)
+
 | Benchmark | Binary | FastBinary | Speedup |
 |-----------|--------|------------|---------|
 | SaveSmallState | 914ns | 32ns | **29x** |
@@ -193,6 +217,7 @@ User reports while playing Dragon Warrior 4 (NES):
 | DeepNesting | 684ns | 69ns | **9.9x** |
 
 ### Other Optimizations
+
 | Benchmark | Old | New | Speedup |
 |-----------|-----|-----|---------|
 | NotificationManager dispatch | 2166ns | 961ns | **2.3x** |
@@ -204,6 +229,7 @@ User reports while playing Dragon Warrior 4 (NES):
 | ExprEval string by-value→const ref | 69.8ns | 7.67ns | **9.1x** |
 
 ### Phase 13 Measurements
+
 | Benchmark | Old | New | Speedup |
 |-----------|-----|-----|---------|
 | EndFrame full memset (220KB) | 4150ns | 2352ns (selective) | **1.76x** |
@@ -284,7 +310,7 @@ thoroughly. The system is **already idempotent at every level**:
 | `Core/NES/NesSoundMixer.cpp` | Selective zeroing + dedup-at-insert + memset in Reset only |
 | `Utilities/CompressionHelper.h` | Compress() takes const string& |
 | `Core/Shared/RewindData.cpp` | assign() via reinterpret_cast replaces char-by-char copy |
-| `Core/Shared/BaseControlDevice.h` | _cachedKeyNames + _keyNamesCached members |
+| `Core/Shared/BaseControlDevice.h` | _cachedKeyNames +_keyNamesCached members |
 | `Core/Shared/BaseControlDevice.cpp` | Lazy-cached GetKeyNames() in GetTextState |
 | `Utilities/StringUtilities.h` | GetNthSegment() — extract Nth delimited segment without full Split |
 | `Core/Debugger/Disassembler.cpp` | GetNthSegment replaces Split()[n] for comment lines |

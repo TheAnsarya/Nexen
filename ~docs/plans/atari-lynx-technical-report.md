@@ -186,6 +186,7 @@ Average CPU speed is approximately **3.6 MHz** due to video and refresh DMA stea
 ## 3. Mikey Custom Chip
 
 Mikey is an 8-bit custom VLSI CMOS chip running at 16 MHz. It contains:
+
 - CPU core (65SC02/65C02)
 - Sound engine (4 channels)
 - Video DMA driver (LCD shift-out)
@@ -212,7 +213,7 @@ I/O space: **$FD00–$FDFF**
 | Timer 6 | $FD18 | General purpose |
 | Timer 7 | $FD1C | General purpose |
 
-#### Timer Register Layout (per timer, 4 bytes at base+N*4):
+#### Timer Register Layout (per timer, 4 bytes at base+N*4)
 
 | Offset | Register | Description |
 |---|---|---|
@@ -221,7 +222,7 @@ I/O space: **$FD00–$FDFF**
 | +2 | Count | Current count value (8-bit, write sets timer) |
 | +3 | Control B | Dynamic control bits (read-only) |
 
-#### Control A Bits:
+#### Control A Bits
 
 | Bit | Name | Function |
 |---|---|---|
@@ -232,7 +233,7 @@ I/O space: **$FD00–$FDFF**
 | 3 | ENABLE_COUNT | Enable counting |
 | 2–0 | CLOCK_SELECT | Clock source selector |
 
-#### Clock Source Select:
+#### Clock Source Select
 
 | Value | Source | Period |
 |---|---|---|
@@ -245,7 +246,7 @@ I/O space: **$FD00–$FDFF**
 | 6 | 64 µs | 1024 ticks |
 | 7 | Linking | Borrow from linked timer |
 
-#### Control B (Dynamic / Read-only):
+#### Control B (Dynamic / Read-only)
 
 | Bit | Name | Function |
 |---|---|---|
@@ -254,9 +255,9 @@ I/O space: **$FD00–$FDFF**
 | 1 | BORROW_IN | Borrow signal received |
 | 0 | BORROW_OUT | Borrow signal generated |
 
-#### Timer Linking Chain:
+#### Timer Linking Chain
 
-```
+```text
 Group A: Timer0 → Timer2 → Timer4
 Group B: Timer1 → Timer3 → Timer5 → Timer7 → Audio0 → Audio1 → Audio2 → Audio3 → Timer1
 ```
@@ -270,7 +271,7 @@ Timer range: 1 µs to 16,384 µs (cascading for longer periods).
 | INTRST | $FD80 | R/W | Read: poll interrupts; Write: reset (clear) matched bits |
 | INTSET | $FD81 | R/W | Read: poll interrupts; Write: set (force) matched bits |
 
-#### Interrupt Bits:
+#### Interrupt Bits
 
 | Bit | Source | Description |
 |---|---|---|
@@ -295,7 +296,7 @@ The video system uses DMA to shift pixel data from RAM to the LCD controller. It
 | PBKUP | $FD93 | LCD timing parameter (magic P count) |
 | DISPADR | $FD94–$FD95 | Display buffer start address (little-endian, bottom 2 bits ignored) |
 
-#### DISPCTL ($FD92) Bits:
+#### DISPCTL ($FD92) Bits
 
 | Bit | Name | Function |
 |---|---|---|
@@ -314,6 +315,7 @@ The video system uses DMA to shift pixel data from RAM to the LCD controller. It
 | $FDB0–$FDBF | Blue (high nibble) + Red (low nibble) per entry, 16 entries |
 
 Palette entry N:
+
 - Green: `$FDA0 + N` (low nibble = green value)
 - Blue: `$FDB0 + N` (high nibble = blue value)
 - Red: `$FDB0 + N` (low nibble = red value)
@@ -327,7 +329,7 @@ Total color space: 4096 colors (12-bit), 16 simultaneous.
 | SERCTL | $FD8C | Serial control (write) / status (read) |
 | SERDAT | $FD8D | Serial data (read/write) |
 
-#### SERCTL Write Bits:
+#### SERCTL Write Bits
 
 | Bit | Name | Function |
 |---|---|---|
@@ -340,7 +342,7 @@ Total color space: 4096 colors (12-bit), 16 simultaneous.
 | 1 | TXBRK | Force TX break |
 | 0 | PAREVEN | 0 = odd parity, 1 = even parity |
 
-#### SERCTL Read Bits:
+#### SERCTL Read Bits
 
 | Bit | Name | Function |
 |---|---|---|
@@ -381,7 +383,7 @@ Baud rate = `CLOCK4 / (TIMER4_backup + 1) / 8`
 | MSTEREO | $FD50 | Stereo panning control |
 | MAPCTL | $FFF9 | Memory map control |
 
-#### IODAT ($FD8B) Bits:
+#### IODAT ($FD8B) Bits
 
 | Bit | Name | Direction | Function |
 |---|---|---|---|
@@ -391,7 +393,7 @@ Baud rate = `CLOCK4 / (TIMER4_backup + 1) / 8`
 | 1 | CART_ADDR_DATA | Output | Cart address data line |
 | 0 | EXTPOWER | Input | External power sense (active low) |
 
-#### MAPCTL ($FFF9) — Memory Map Control:
+#### MAPCTL ($FFF9) — Memory Map Control
 
 | Bit | Name | Function |
 |---|---|---|
@@ -408,6 +410,7 @@ When a bit is **set**, the corresponding hardware space is hidden and RAM is vis
 ## 4. Suzy (Susie) Custom Chip
 
 Suzy is a 16-bit custom VLSI CMOS chip running at 16 MHz. It contains:
+
 - Hardware sprite engine (blitter)
 - Math coprocessor (16×16 multiply, 32÷16 divide)
 - Joystick & switch readers
@@ -419,7 +422,7 @@ I/O space: **$FC00–$FCFF**
 
 The Lynx sprite engine is hardware-driven, processing linked lists of Sprite Control Blocks (SCBs) from RAM. It operates as a bus master, reading SCBs and sprite data, then writing processed pixels to the display and collision buffers.
 
-#### Sprite Control Block (SCB) Structure:
+#### Sprite Control Block (SCB) Structure
 
 An SCB is a variable-length structure in RAM. The core fields, loaded sequentially:
 
@@ -434,7 +437,7 @@ An SCB is a variable-length structure in RAM. The core fields, loaded sequential
 | 8–9 | VPOSSTRT | 2 bytes | Vertical start position (signed) |
 | — | (optional) | varies | SPRHSIZ, SPRVSIZ, STRETCH, TILT (if reload bits set) |
 
-#### Suzy Hardware Registers (Sprite-Related):
+#### Suzy Hardware Registers (Sprite-Related)
 
 | Register | Address | Description |
 |---|---|---|
@@ -463,7 +466,7 @@ An SCB is a variable-length structure in RAM. The core fields, loaded sequential
 | SCBADR | $FC2C–$FC2D | Current SCB address |
 | PROCADR | $FC2E–$FC2F | Process address |
 
-#### SPRCTL0 ($FC80) — Sprite Control 0:
+#### SPRCTL0 ($FC80) — Sprite Control 0
 
 | Bits | Name | Function |
 |---|---|---|
@@ -472,7 +475,7 @@ An SCB is a variable-length structure in RAM. The core fields, loaded sequential
 | 4 | VFLIP | Vertical flip |
 | 3–0 | SPRITE_TYPE | Sprite type (see below) |
 
-#### Sprite Types (SPRCTL0 bits 3–0):
+#### Sprite Types (SPRCTL0 bits 3–0)
 
 | Value | Type | Description |
 |---|---|---|
@@ -485,7 +488,7 @@ An SCB is a variable-length structure in RAM. The core fields, loaded sequential
 | 6 | XOR shadow | XOR pixel with existing value |
 | 7 | Shadow | Only updates collision buffer |
 
-#### SPRCTL1 ($FC81) — Sprite Control 1:
+#### SPRCTL1 ($FC81) — Sprite Control 1
 
 | Bit | Name | Function |
 |---|---|---|
@@ -498,6 +501,7 @@ An SCB is a variable-length structure in RAM. The core fields, loaded sequential
 | 0 | START_LEFT | Start drawing left (1=left, 0=right) |
 
 **RELOAD_DEPTH values (bits 5:4):**
+
 | Value | Fields loaded from SCB |
 |---|---|
 | 0 | SPRDLINE, HPOS, VPOS, HSIZE, VSIZE, STRETCH, TILT, palette |
@@ -505,14 +509,14 @@ An SCB is a variable-length structure in RAM. The core fields, loaded sequential
 | 2 | SPRDLINE, HPOS, VPOS |
 | 3 | SPRDLINE only |
 
-#### SPRCOLL ($FC82) — Sprite Collision:
+#### SPRCOLL ($FC82) — Sprite Collision
 
 | Bit | Name | Function |
 |---|---|---|
 | 5 | DONT_COLLIDE | Disable collision for this sprite |
 | 3–0 | COLL_NUMBER | Collision number (0–15) |
 
-#### Key Sprite Control Registers:
+#### Key Sprite Control Registers
 
 | Register | Address | Description |
 |---|---|---|
@@ -523,9 +527,10 @@ An SCB is a variable-length structure in RAM. The core fields, loaded sequential
 | SUZYHREV | $FC88 | Hardware revision = $01 |
 | SPRINIT | $FC83 | Must be set to $F3 after 100ms power-up delay |
 
-#### Sprite Data Compression:
+#### Sprite Data Compression
 
 Sprite data uses a custom packetized compression format:
+
 - Each horizontal line begins with a line offset byte
 - Pixel data is packed in configurable bits-per-pixel (1/2/3/4 bpp)
 - Data can be **literal** (1:1 pixel data) or **packed** with run-length encoding:
@@ -538,7 +543,7 @@ Sprite data uses a custom packetized compression format:
 
 All math operations occur in Suzy's 16-bit register space.
 
-#### 16×16 → 32 Multiply:
+#### 16×16 → 32 Multiply
 
 | Register | Address | Function |
 |---|---|---|
@@ -560,7 +565,7 @@ All math operations occur in Suzy's 16-bit register space.
 - `SPRSYS.signmath` controls signed mode
 - `SPRSYS.accumulate` adds to existing result in E-H instead of replacing
 
-#### 32÷16 → 32 Divide:
+#### 32÷16 → 32 Divide
 
 | Input | Registers | Description |
 |---|---|---|
@@ -599,7 +604,7 @@ All math operations occur in Suzy's 16-bit register space.
 
 ### 5.1 Memory Map
 
-```
+```text
 $0000–$FBFF  RAM (63.75 KB)
 $FC00–$FCFF  Suzy hardware registers (or RAM if MAPCTL.0 set)
 $FD00–$FDFF  Mikey hardware registers (or RAM if MAPCTL.1 set)
@@ -635,6 +640,7 @@ Default (all bits 0): All hardware overlays active.
 ### 5.4 Display Buffer Layout
 
 At 4bpp, 160×102:
+
 - Bytes per line: 160 pixels × 4 bits / 8 = **80 bytes**
 - Total display buffer: 80 × 102 = **8,160 bytes**
 - Collision buffer: same size = **8,160 bytes**
@@ -706,6 +712,7 @@ This means the frame buffer is a simple linear bitmap in RAM. There are no tiles
 ### 6.5 Double Buffering
 
 Games typically use double buffering:
+
 - Frame N renders sprites to buffer A
 - Video DMA displays buffer B
 - On VBlank: swap buffers
@@ -715,6 +722,7 @@ Memory usage: 2 display buffers + 1 collision buffer ≈ 24 KB of 64 KB RAM.
 ### 6.6 Flip Mode (DISPCTL bit 1)
 
 When flip is enabled:
+
 - Display data is read from the bottom of the buffer upward
 - Effectively rotates the display 180°
 - Joystick directions are also swapped (hardware via SPRSYS.lefthand)
@@ -745,7 +753,7 @@ Each channel occupies 8 bytes. Channels are at:
 | Audio 2 | $FD30 |
 | Audio 3 | $FD38 |
 
-#### Per-Channel Register Layout:
+#### Per-Channel Register Layout
 
 | Offset | Register | Description |
 |---|---|---|
@@ -761,12 +769,14 @@ Each channel occupies 8 bytes. Channels are at:
 ### 7.3 Sound Generation
 
 Each channel contains:
+
 - An **8-bit timer/counter** (clocked same as Mikey timers)
 - A **12-bit linear-feedback shift register (LFSR)** for waveform generation
 - A **feedback tap selector** that picks which bits of the LFSR are XORed to produce feedback
 - An **8-bit signed volume** register
 
 **Waveform generation process:**
+
 1. Timer counts down at the selected clock rate
 2. On each timer underflow, the LFSR shifts one bit
 3. The new bit is computed by XORing selected taps
@@ -797,9 +807,10 @@ Multiple taps can be selected simultaneously.
 | **Noise** | Multiple taps | Pseudo-random noise |
 | **Integration (triangle)** | Integration mode enabled | Volume added/subtracted from running total |
 
-#### Integration Mode:
+#### Integration Mode
 
 When enabled, instead of directly outputting volume × LFSR_bit:
+
 - The volume is **added to** (if LFSR bit = 1) or **subtracted from** (if LFSR bit = 0) a running accumulator
 - The accumulator clips at min/max bounds
 - This produces approximately **triangular waves** or more complex integrated waveforms
@@ -830,9 +841,11 @@ Default $00 = all channels to both speakers (mono compatible).
 ### 7.6 Audio Linking
 
 Audio channels participate in the timer linking chain:
-```
+
+```text
 Timer7 → Audio0 → Audio1 → Audio2 → Audio3 → Timer1
 ```
+
 This allows using timer linking for precise audio frequency control.
 
 ### 7.7 Direct DAC Mode
@@ -886,11 +899,13 @@ Left-hand mode is controlled by `SPRSYS.lefthand` and physically swaps D-pad dir
 ### 9.1 Cart Address Generator
 
 The cartridge uses an address generator built from:
+
 - An **8-bit shift register** (serial address input via CartAddressData line)
 - An **11-bit counter** (auto-incrementing for sequential reads)
 - Combined: 8 + 11 = **19 address bits** = 512 KB per strobe
 
 Two chip-select strobes (active-low):
+
 - **CART0/** → first 512 KB bank (RCART0 at $FCB2)
 - **CART1/** → second 512 KB bank (RCART1 at $FCB3)
 
@@ -915,6 +930,7 @@ Total addressable: **1 MB**.
 ### 9.4 Cart Power Control
 
 Cart power is managed via the CartAddressData signal:
+
 - **Low** = power on
 - Controlled via IODAT bit 1
 
@@ -945,7 +961,7 @@ Some cartridges include EEPROM for save game data. Access is through the cart in
 | **Retail price** | $179.95 launch → $99 | $99 |
 | **Weight** | Heavier (~740g w/ batteries) | Lighter (~370g w/ batteries) |
 
-### Emulation Implications:
+### Emulation Implications
 
 - **Lynx I games** may rely on undefined 65SC02 behavior for opcodes $x7/$xF (treat as NOP)
 - **Lynx II games** may use the Rockwell/WDC bit manipulation instructions
@@ -1021,12 +1037,14 @@ The system bus has four possible masters, prioritized:
 ### 12.5 DMA Cycle Stealing
 
 Video DMA and DRAM refresh continually steal cycles from the CPU:
+
 - This reduces effective CPU speed from 4 MHz to approximately **3.6 MHz**
 - The cycle stealing is deterministic and can be emulated precisely using timer-based scheduling
 
 ### 12.6 Timing Precision Requirements
 
 For accurate emulation:
+
 - Timer resolution: **1 µs** minimum (16 ticks)
 - Horizontal line timing: **~159 µs** per line
 - Vertical frame: **~16.7 ms** (60 Hz)
@@ -1127,6 +1145,7 @@ The `.lnx` file format is the standard ROM image format for Atari Lynx cartridge
 ### 14.2 Data Layout
 
 After the 64-byte header:
+
 - **Bank 0 data**: `bank0_pages × 256` bytes
 - **Bank 1 data**: `bank1_pages × 256` bytes (if present)
 
@@ -1167,6 +1186,7 @@ Given Nexen's existing multi-system emulator architecture:
 ### 15.2 Timing Model
 
 The Lynx requires **cycle-accurate** emulation for:
+
 - Timer cascade chains (especially Timer 0 → Timer 2 for display timing)
 - Suzy bus arbitration vs CPU execution
 - DMA cycle stealing
@@ -1176,6 +1196,7 @@ Recommended approach: **tick-based scheduler** with 16 MHz resolution (62.5 ns t
 ### 15.3 Sprite Engine Emulation
 
 The Suzy sprite engine is the most complex component:
+
 1. Parse SCB linked list from RAM
 2. For each SCB:
    - Decode sprite control bytes
@@ -1199,6 +1220,7 @@ These behaviors **must** be emulated for game compatibility:
 ### 15.5 Save State Considerations
 
 Lynx save states must capture:
+
 - 64 KB RAM (full, including areas under overlays)
 - All Mikey registers (timers, audio channels, palette, UART, interrupts, MAPCTL)
 - All Suzy registers (sprite, math, input)
@@ -1211,6 +1233,7 @@ Lynx save states must capture:
 ### 15.6 Existing Nexen Code to Leverage
 
 Nexen already emulates the PC Engine which uses a **HuC6280** (65C02 derivative at 7.16 MHz). The PCE CPU core likely already implements most 65C02 instructions and could serve as a starting point for the Lynx CPU, needing primarily:
+
 - Clock speed adjustment (4 MHz vs 7.16 MHz)
 - Lynx-specific timing (variable tick counts for different access types)
 - 65SC02 mode (disable Rockwell/WDC extensions for Lynx I)
@@ -1310,28 +1333,28 @@ Nexen already emulates the PC Engine which uses a **HuC6280** (65C02 derivative 
 ## Appendix B: References
 
 1. **Original Epyx "Handy" Hardware Specification** — HTML version at monlynx.de/lynx/
-   - Main document: http://monlynx.de/lynx/lynx.html
-   - Hardware overview: http://monlynx.de/lynx/lynx0.html
-   - CPU/ROM: http://monlynx.de/lynx/lynx1.html
-   - Hardware addresses: http://monlynx.de/lynx/lynx2.html
-   - Display: http://monlynx.de/lynx/lynx3.html
-   - Audio: http://monlynx.de/lynx/lynx4.html
-   - Sprites & collision: http://monlynx.de/lynx/lynx5.html
-   - Timers & interrupts: http://monlynx.de/lynx/lynx8.html
-   - UART: http://monlynx.de/lynx/lynx8a.html
-   - System reset: http://monlynx.de/lynx/lynx10.html
-   - Bus interplay: http://monlynx.de/lynx/lynx11.html
-   - Interrupts/CPU sleep: http://monlynx.de/lynx/irq.html
-   - Sprite engine appendix: http://monlynx.de/lynx/sprite.html
+   - Main document: <http://monlynx.de/lynx/lynx.html>
+   - Hardware overview: <http://monlynx.de/lynx/lynx0.html>
+   - CPU/ROM: <http://monlynx.de/lynx/lynx1.html>
+   - Hardware addresses: <http://monlynx.de/lynx/lynx2.html>
+   - Display: <http://monlynx.de/lynx/lynx3.html>
+   - Audio: <http://monlynx.de/lynx/lynx4.html>
+   - Sprites & collision: <http://monlynx.de/lynx/lynx5.html>
+   - Timers & interrupts: <http://monlynx.de/lynx/lynx8.html>
+   - UART: <http://monlynx.de/lynx/lynx8a.html>
+   - System reset: <http://monlynx.de/lynx/lynx10.html>
+   - Bus interplay: <http://monlynx.de/lynx/lynx11.html>
+   - Interrupts/CPU sleep: <http://monlynx.de/lynx/irq.html>
+   - Sprite engine appendix: <http://monlynx.de/lynx/sprite.html>
 
-2. **Wikipedia: Atari Lynx** — https://en.wikipedia.org/wiki/Atari_Lynx
+2. **Wikipedia: Atari Lynx** — <https://en.wikipedia.org/wiki/Atari_Lynx>
 
-3. **Wikipedia: WDC 65C02** — https://en.wikipedia.org/wiki/WDC_65C02
+3. **Wikipedia: WDC 65C02** — <https://en.wikipedia.org/wiki/WDC_65C02>
    - 65SC02 section: variant without WAI, STP, and bit instructions
 
-4. **Atari Lynx Developer Wiki** — https://atarilynxdev.net/wiki/
+4. **Atari Lynx Developer Wiki** — <https://atarilynxdev.net/wiki/>
 
-5. **6502/65C02 Opcode Reference** — http://www.oxyron.de/html/opcodes02.html
+5. **6502/65C02 Opcode Reference** — <http://www.oxyron.de/html/opcodes02.html>
 
 ---
 

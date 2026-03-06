@@ -6,7 +6,7 @@
 
 Game data is scattered across multiple sibling folders in the Nexen home directory:
 
-```
+```text
 Documents/Nexen/
 ├── SaveStates/       ← Save states ({romName}_{slot}.nexen-save)
 ├── Saves/            ← Battery saves (.sav) — managed by C++ Core
@@ -38,7 +38,7 @@ Documents/Nexen/
 
 ## Proposed Structure
 
-```
+```text
 Documents/Nexen/
 ├── GameData/
 │   └── {System}/
@@ -69,6 +69,7 @@ Documents/Nexen/
 ## Impact Analysis
 
 ### High Impact (Core path changes)
+
 1. **ConfigManager.cs** — All folder property getters need GameData-aware paths
 2. **SaveStateManager.cs** — Save/load state path construction
 3. **DebugFolderManager.cs** — Already uses `{romName}_{crc32}` pattern (closest to target)
@@ -76,45 +77,53 @@ Documents/Nexen/
 5. **C++ Core (InteropDLL)** — Battery save paths passed from C# to C++
 
 ### Medium Impact (Path consumers)
-6. **PansyExporter.cs** — Pansy file paths
-7. **MovieRecordInfo.cs** — Movie file paths
-8. **SaveStateViewer** — Thumbnail/browse paths
-9. **CheatList** — Cheat file paths
-10. **HistoryViewer** — Export paths
+
+1. **PansyExporter.cs** — Pansy file paths
+2. **MovieRecordInfo.cs** — Movie file paths
+3. **SaveStateViewer** — Thumbnail/browse paths
+4. **CheatList** — Cheat file paths
+5. **HistoryViewer** — Export paths
 
 ### Low Impact (Already organized or shared)
-11. **Screenshots** — Just redirect to per-game folder
-12. **Wave/AVI** — Recording paths
-13. **Firmware/HdPacks/Lua** — Stay as shared folders
+
+1. **Screenshots** — Just redirect to per-game folder
+2. **Wave/AVI** — Recording paths
+3. **Firmware/HdPacks/Lua** — Stay as shared folders
 
 ### C++ Core Interface
 The C++ Core receives folder paths from C# via:
+
 - `EmuApi.InitDll()` — passes ConfigManager paths
 - `ConfigApiWrapper` — sends folder config to Core
 - Core constructs `.sav` paths internally from the base `SaveFolder`
 
 **This means we need to either:**
+
 - a) Change how Core resolcts save paths (requires C++ changes)
 - b) Set SaveFolder per-ROM before load (simpler, set dynamically)
 
 ## Migration Strategy
 
 ### Phase 1: Infrastructure
+
 - Create `GameDataManager` service that resolves per-game folder paths
 - Takes ROM info (name, CRC32, system) and returns the game data root
 - All path helpers delegate to this service
 
 ### Phase 2: New Files Use New Paths
+
 - New save states go to `GameData/{System}/{RomName}_{CRC32}/save-states/`
 - New debug files go to `GameData/{System}/{RomName}_{CRC32}/debug/`
 - Backwards-compatible: check old paths if new path doesn't exist
 
 ### Phase 3: Migration
+
 - On ROM load, if old-style files exist, offer to migrate
 - Background migration: copy files from old folders to new structure
 - Keep old files as backup initially
 
 ### Phase 4: Cleanup
+
 - Remove old scattered folders after user confirmation
 - Update user-facing folder picker dialogs
 

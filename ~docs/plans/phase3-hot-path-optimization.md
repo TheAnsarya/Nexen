@@ -23,9 +23,11 @@ and adds `[[likely]]/[[unlikely]]` annotations to GBA memory access paths.
 **File:** `Core/PCE/PceCpu.cpp` line 287
 
 PCE flags match NES layout exactly:
+
 - Carry=0x01, Zero=0x02, Negative=0x80
 
 Current branching:
+
 ```cpp
 void PceCpu::SetZeroNegativeFlags(uint8_t value) {
 	if (value == 0) {
@@ -37,6 +39,7 @@ void PceCpu::SetZeroNegativeFlags(uint8_t value) {
 ```
 
 Branchless replacement:
+
 ```cpp
 void PceCpu::SetZeroNegativeFlags(uint8_t value) {
 	_state.PS |= (value == 0) ? PceCpuFlags::Zero : 0;
@@ -53,6 +56,7 @@ void PceCpu::SetZeroNegativeFlags(uint8_t value) {
 SMS flags: Carry=0x01, Zero=0x40, Sign=0x80
 
 Current branching:
+
 ```cpp
 void SmsCpu::SetFlagState(uint8_t flag, bool state) {
 	if (state) {
@@ -64,6 +68,7 @@ void SmsCpu::SetFlagState(uint8_t flag, bool state) {
 ```
 
 Branchless replacement (matches GB pattern):
+
 ```cpp
 void SmsCpu::SetFlagState(uint8_t flag, bool state) {
 	_state.Flags = (_state.Flags & ~flag) | (-static_cast<uint8_t>(state) & flag);

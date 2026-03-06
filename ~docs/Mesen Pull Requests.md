@@ -32,6 +32,7 @@
 ## 🔴 HIGH Priority — Emulation Accuracy
 
 ### PR #87 — SNES: Fix integer overflow for calculating DMA overhead
+
 - **Mesen2 PR:** [#87](https://github.com/SourMesen/Mesen2/pull/87)
 - **Author:** denniskempin
 - **Nexen Issue:** #509
@@ -48,6 +49,7 @@
 ---
 
 ### PR #82 — NES: Fixed GetInternalOpenBus returning external bus value by mistake
+
 - **Mesen2 PR:** [#82](https://github.com/SourMesen/Mesen2/pull/82)
 - **Author:** zdg-kinlon
 - **Nexen Issue:** #510
@@ -64,6 +66,7 @@
 ---
 
 ### PR #86 — SNES: CX4 cache and timing improvements
+
 - **Mesen2 PR:** [#86](https://github.com/SourMesen/Mesen2/pull/86)
 - **Author:** AkiteruSDA
 - **Nexen Issue:** #511
@@ -72,6 +75,7 @@
 - **Risk:** Low — affects only CX4 games (Mega Man X2/X3)
 
 **Problem:** Multiple CX4 timing inaccuracies:
+
 1. Bus access adds an extra cycle (should be 1+WS, not 1+1+WS)
 2. Cache preloading via `$7F48` write doesn't work correctly
 3. Program bank not set correctly for MMX2/3's CX4 setup subroutine
@@ -86,6 +90,7 @@
 ---
 
 ### PR #80 — SNES: Fixed high resolution blending
+
 - **Mesen2 PR:** [#80](https://github.com/SourMesen/Mesen2/pull/80)
 - **Author:** Stovehead
 - **Nexen Issue:** #512
@@ -102,6 +107,7 @@
 ---
 
 ### PR #31 — Fix various bugs in NES NTSC filter and PPU palettes
+
 - **Mesen2 PR:** [#31](https://github.com/SourMesen/Mesen2/pull/31)
 - **Author:** Gumball2415 (Persune)
 - **Nexen Issue:** #513
@@ -110,6 +116,7 @@
 - **Risk:** Medium — touches multiple video subsystems
 
 **Problem:** Three distinct issues:
+
 1. **Dot crawl phase offset** — Incorrect calculation causes wrong NTSC color rendering per-frame
 2. **Bisqwit NTSC matrix** — Non-standard RGB-YIQ coefficients
 3. **RGB PPU emphasis** — Default palette emphasis behavior incorrect
@@ -117,6 +124,7 @@
 **Mesen2 Fix:** 10 files changed. Adds `_masterClockFrameStart` tracking, replaces hardcoded phase offsets with `GetVideoPhaseOffset()`, updates Bisqwit NTSC matrix to standard RGB-YIQ values, fixes RGB PPU emphasis.
 
 **Nexen Implementation:** Re-implemented all three fixes across 10 files:
+
 1. Added `_masterClockFrameStart` to `BaseNesPpu.h`, captured at scanline 0 cycle 1 in `NesPpu.cpp`, used for phase calculation (`(_masterClockFrameStart % 6) * 2`)
 2. Renamed `VideoPhase` → `VideoPhaseOffset` through entire chain (`RenderedFrame.h`, `BaseVideoFilter.h/.cpp`, `VideoDecoder.cpp`)
 3. Updated `NesNtscFilter.cpp` and `BisqwitNtscFilter.cpp` to use new `GetVideoPhaseOffset()` with correct phase math
@@ -126,6 +134,7 @@
 ---
 
 ### PR #74 — SNES: Add support for ExLoRom mapping
+
 - **Mesen2 PR:** [#74](https://github.com/SourMesen/Mesen2/pull/74)
 - **Author:** yuriks (Yuri Kunde Schlesner)
 - **Nexen Issue:** #514
@@ -144,6 +153,7 @@
 ## 🟡 MEDIUM Priority — Features & Stability
 
 ### PR #85 — UI: Improve Memory View performance on Linux
+
 - **Mesen2 PR:** [#85](https://github.com/SourMesen/Mesen2/pull/85)
 - **Author:** Vrabbers
 - **Nexen Issue:** #515
@@ -160,6 +170,7 @@
 ---
 
 ### PR #76 — Debugger: Lua - Fix CTD if callback raises non-string error
+
 - **Mesen2 PR:** [#76](https://github.com/SourMesen/Mesen2/pull/76)
 - **Author:** HertzDevil (Quinton Miller)
 - **Nexen Issue:** #516
@@ -176,6 +187,7 @@
 ---
 
 ### PR #75 — Debugger: Lua - Add `emu.readRegister` and `emu.writeRegister`
+
 - **Mesen2 PR:** [#75](https://github.com/SourMesen/Mesen2/pull/75)
 - **Author:** HertzDevil (Quinton Miller)
 - **Nexen Issue:** #517
@@ -192,6 +204,7 @@
 ---
 
 ### PR #58 — MSU-1: Add support for .ogg files, and the .msu1 zip-file format
+
 - **Mesen2 PR:** [#58](https://github.com/SourMesen/Mesen2/pull/58)
 - **Author:** Gutawer
 - **Nexen Issue:** #518
@@ -208,6 +221,7 @@
 ---
 
 ### PR #81 — 128KB VRAM SNES core
+
 - **Mesen2 PR:** [#81](https://github.com/SourMesen/Mesen2/pull/81)
 - **Author:** slidelljohn
 - **Nexen Issue:** #519
@@ -226,6 +240,7 @@
 ## 🟢 LOW Priority — Build System, Minor UI, Stale
 
 ### PR #79 — Fix Linux + Mac Builds
+
 - **Mesen2 PR:** [#79](https://github.com/SourMesen/Mesen2/pull/79)
 - **Author:** culix-7
 - **Nexen Issue:** #520
@@ -234,6 +249,7 @@
 - **Reason:** Nexen has its own CI/build system. Not applicable.
 
 ### PR #78 — Add C++ Test Project
+
 - **Mesen2 PR:** [#78](https://github.com/SourMesen/Mesen2/pull/78)
 - **Author:** culix-7
 - **Nexen Issue:** #520
@@ -242,6 +258,7 @@
 - **Reason:** Nexen already has `Core.Tests` with 1495+ Google Test tests. MS Test approach not needed.
 
 ### PR #77 — Windows Build Fix
+
 - **Mesen2 PR:** [#77](https://github.com/SourMesen/Mesen2/pull/77)
 - **Author:** culix-7
 - **Nexen Issue:** #520
@@ -250,6 +267,7 @@
 - **Reason:** Nexen has its own Windows build setup.
 
 ### PR #83 — Linux Compilation and AppImage Fixes
+
 - **Mesen2 PR:** [#83](https://github.com/SourMesen/Mesen2/pull/83)
 - **Author:** DocJr90
 - **Nexen Issue:** #520
@@ -258,6 +276,7 @@
 - **Reason:** Nexen has its own Linux build and AppImage setup.
 
 ### PR #72 — Combine macOS Releases into Universal Binary
+
 - **Mesen2 PR:** [#72](https://github.com/SourMesen/Mesen2/pull/72)
 - **Author:** jroweboy
 - **Nexen Issue:** #520
@@ -266,6 +285,7 @@
 - **Reason:** macOS CI approach may differ. Can reference later if needed.
 
 ### PR #84 — Add Galaxian to Cheats
+
 - **Mesen2 PR:** [#84](https://github.com/SourMesen/Mesen2/pull/84)
 - **Author:** BdR76
 - **Nexen Issue:** #520
@@ -274,6 +294,7 @@
 - **Reason:** Minor cheat DB addition. Note: PR has a JSON syntax error that needs fixing.
 
 ### PR #56 — Debugger: Tilemap Viewer - Display Attribute Bits (NES)
+
 - **Mesen2 PR:** [#56](https://github.com/SourMesen/Mesen2/pull/56)
 - **Author:** gzip
 - **Nexen Issue:** #520
@@ -282,6 +303,7 @@
 - **Reason:** Minor 3-line debugger display enhancement. Can add later.
 
 ### PR #57 — Debugger: Tile Viewer - Navigate by Tile Button
+
 - **Mesen2 PR:** [#57](https://github.com/SourMesen/Mesen2/pull/57)
 - **Author:** gzip
 - **Nexen Issue:** #520
@@ -290,6 +312,7 @@
 - **Reason:** Minor UX improvement. Can add later.
 
 ### PR #49 — Debugger: Tile Viewer - Copy/Paste Tile Memory
+
 - **Mesen2 PR:** [#49](https://github.com/SourMesen/Mesen2/pull/49)
 - **Author:** gzip
 - **Nexen Issue:** #520
@@ -298,6 +321,7 @@
 - **Reason:** Useful for ROM hacking workflow. Can add in a debugger enhancement sprint.
 
 ### PR #48 — Debugger: Tilemap Viewer - 8x8 Edit + Attribute Memory View
+
 - **Mesen2 PR:** [#48](https://github.com/SourMesen/Mesen2/pull/48)
 - **Author:** gzip
 - **Nexen Issue:** #520
@@ -306,6 +330,7 @@
 - **Reason:** Debugger enhancement. Can add later.
 
 ### PR #61 — UI: Trace Logger Localization Strings
+
 - **Mesen2 PR:** [#61](https://github.com/SourMesen/Mesen2/pull/61)
 - **Author:** icefairy64
 - **Nexen Issue:** #520
@@ -314,6 +339,7 @@
 - **Reason:** Minor localization improvement. Low priority.
 
 ### PR #32 — UI: Respect Data Storage Location Setting
+
 - **Mesen2 PR:** [#32](https://github.com/SourMesen/Mesen2/pull/32)
 - **Author:** Qxe5
 - **Nexen Issue:** #520
@@ -322,6 +348,7 @@
 - **Reason:** Minor config cleanup. Low priority.
 
 ### PR #18 — Add Lua LSP Integration Support
+
 - **Mesen2 PR:** [#18](https://github.com/SourMesen/Mesen2/pull/18)
 - **Author:** SalHe
 - **Nexen Issue:** #520

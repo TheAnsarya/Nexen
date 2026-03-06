@@ -3,6 +3,7 @@
 The Atari Lynx is a handheld game console (1989) built around a WDC 65C02 CPU and two custom ASICs: **Mikey** (timers, video, audio, I/O) and **Suzy** (sprite engine, math coprocessor, input). Uniquely, the Lynx has no traditional PPU — Suzy renders sprites directly into work RAM and Mikey outputs scanlines from a framebuffer.
 
 **Key specifications:**
+
 - **CPU:** WDC 65C02 @ 4 MHz (no NMI line)
 - **RAM:** 64 KB flat address space
 - **Display:** 160 × 102, 4 bpp (16 of 4096 colors), ~75 Hz
@@ -75,6 +76,7 @@ Core/Lynx/
 ### LynxConsole (LynxConsole.h)
 
 **Responsibilities:**
+
 - Owns all Lynx hardware components and orchestrates the frame loop
 - Loads ROMs (LNX format with 64-byte header, or headerless)
 - CRC32-based game database lookup for auto-detection of rotation, EEPROM type, and title
@@ -92,6 +94,7 @@ struct LynxCartInfo {
 ```
 
 **Key Methods:**
+
 ```cpp
 void LoadRom(VirtualFile& romFile);       // Parse LNX header, load ROM
 void RunFrame();                          // Execute one full frame
@@ -104,6 +107,7 @@ uint8_t* GetWorkRam();
 ### LynxCpu (LynxCpu.h)
 
 The Lynx uses a **WDC 65C02** (not the MOS 6502). Key differences from NMOS 6502:
+
 - `(zp)` indirect addressing mode (no index)
 - New instructions: `STZ`, `TRB`, `TSB`, `BRA`, `PHX/PLX`, `PHY/PLY`, `INC A`, `DEC A`
 - `WAI` (Wait for Interrupt) and `STP` (Stop)
@@ -113,6 +117,7 @@ The Lynx uses a **WDC 65C02** (not the MOS 6502). Key differences from NMOS 6502
 - Undefined opcodes are NOPs (not illegal instructions)
 
 **CPU State:**
+
 ```cpp
 struct LynxCpuState {
     uint8_t A, X, Y;          // Registers
@@ -125,11 +130,13 @@ struct LynxCpuState {
 ```
 
 **Opcode Table:**
+
 - 256-entry function pointer table `_opTable[256]`
 - Addressing mode table `_addrMode[256]`
 - All undefined opcodes map to NOP
 
 **Hardware Bugs Emulated:**
+
 - **HW Bug 13.1 (WAI/STP recovery):** On real hardware, WAI/STP can only recover if Suzy holds the bus. Emulated as unconditional halt.
 - **IRQ Break flag:** IRQ pushes PS with Break=0, Reserved=1. The original code had an operator precedence bug that was fixed.
 
@@ -138,6 +145,7 @@ struct LynxCpuState {
 **Mikey** is the larger of the two custom ASICs, handling timing, video output, audio, and I/O.
 
 **Key Features:**
+
 - 8 hardware timers with cascading (linked chains)
 - Scanline-based video output from framebuffer in RAM
 - 4 LFSR audio channels with stereo attenuation
@@ -190,6 +198,7 @@ struct LynxApuChannelState {
 ```
 
 **Features:**
+
 - Per-channel stereo attenuation registers (`ATTEN_A` through `ATTEN_D`)
 - Channel 3 supports 8-bit DAC mode for PCM playback
 - LFSR feedback polynomial is user-configurable via `FeedbackEnable` register
@@ -222,12 +231,14 @@ Offset  Field        Size    Description
 ```
 
 **SPRCTL0 fields:**
+
 - Bits 7:6 — BPP (1, 2, 3, or 4 bits per pixel)
 - Bit 5 — Horizontal flip
 - Bit 4 — Vertical flip
 - Bits 2:0 — Sprite type (background, normal, boundary, shadow, XOR shadow, non-collidable)
 
 **SPRCTL1 fields (hardware bit layout per Handy):**
+
 - Bit 0 — StartLeft: start drawing leftward
 - Bit 1 — StartUp: start drawing upward
 - Bit 2 — SkipSprite: skip this sprite in chain
@@ -239,6 +250,7 @@ Offset  Field        Size    Description
 The ReloadDepth controls how many SCB fields are loaded from memory. Higher values mean fewer fields loaded, with remaining fields persisting from the previous sprite in the chain.
 
 **Sprite types:**
+
 1. Background draw — non-zero pixels replace
 2. Background no-collide — same but no collision
 3. Boundary — writes to collision buffer boundary
@@ -279,6 +291,7 @@ The Lynx uses a flat 64 KB address space with configurable overlays controlled b
 ```
 
 **MAPCTL register ($FFF9) bits:**
+
 | Bit | Function |
 |-----|----------|
 | 0 | Suzy space enable ($FC00-$FCFF) |
@@ -291,12 +304,14 @@ When a space is disabled, reads/writes go to underlying RAM.
 ### LynxCart (LynxCart.h)
 
 **Dual-bank cartridge system:**
+
 - Bank 0 and Bank 1 have independent page counters and page sizes
 - Sequential access: CPU reads the RCART register to get the next byte and advance the counter
 - Page sizes: 256, 512, 1024, 2048 bytes (set in LNX header)
 - Games switch banks by writing the IODAT register
 
 **LNX Header Format (64 bytes):**
+
 ```text
 Offset  Size  Field
 0x00    4     Magic ("LYNX")
@@ -341,6 +356,7 @@ struct Entry {
 ```
 
 Used for:
+
 - Auto-detecting screen rotation for headerless ROMs
 - Identifying EEPROM type for save game support
 - Displaying game title in the UI

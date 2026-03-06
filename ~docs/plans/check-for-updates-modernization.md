@@ -7,16 +7,19 @@ The "Check for Updates" feature needs modernization to work with Nexen's distrib
 ## Current Issues
 
 ### Endpoint Issues
+
 - Currently points to Mesen update servers (no longer valid)
 - Needs to use GitHub Releases API
 - May have hardcoded URLs
 
 ### Functionality Issues
+
 - Update checking logic may be outdated
 - Version comparison may need updating
 - Download/install flow needs review
 
 ### UI Issues
+
 - Dialog may use old Avalonia patterns
 - May not show proper release notes
 - User experience could be improved
@@ -24,11 +27,13 @@ The "Check for Updates" feature needs modernization to work with Nexen's distrib
 ## Requirements
 
 ### Update Source
+
 - Use GitHub Releases API: `https://api.github.com/repos/TheAnsarya/Nexen/releases/latest`
 - Parse release information from GitHub response
 - Support pre-release vs stable release options
 
 ### Version Comparison
+
 - Compare semantic versions properly
 - Handle build numbers/date stamps
 - Support "ignore this version" option
@@ -36,16 +41,19 @@ The "Check for Updates" feature needs modernization to work with Nexen's distrib
 ### Update Flow Options
 
 #### Option A: Direct Download
+
 1. Check GitHub for latest release
 2. Show release notes and download link
 3. User manually downloads and installs
 
 #### Option B: In-App Update
+
 1. Check GitHub for latest release
 2. Download release asset directly
 3. Extract/install (platform-specific)
 
 ### User Preferences
+
 - Enable/disable automatic update checks on startup
 - Check frequency setting
 - Pre-release channel option
@@ -53,24 +61,28 @@ The "Check for Updates" feature needs modernization to work with Nexen's distrib
 ## Implementation Phases
 
 ### Phase 1: Service Layer
+
 - Create `IUpdateService` interface
 - Implement `GitHubUpdateService`
 - Parse GitHub Releases API response
 - Version comparison logic
 
 ### Phase 2: ViewModel
+
 - Create `UpdateCheckViewModel`
 - Implement async update checking
 - Handle network errors gracefully
 - Reactive properties for UI binding
 
 ### Phase 3: View
+
 - Modern update available dialog
 - Release notes display (markdown support?)
 - Download progress indication
 - Settings integration
 
 ### Phase 4: Integration
+
 - Hook into application startup (optional check)
 - Menu action implementation
 - Settings for update preferences
@@ -85,6 +97,7 @@ Accept: application/vnd.github.v3+json
 ```
 
 Response contains:
+
 - `tag_name` - Version tag
 - `name` - Release name
 - `body` - Release notes (markdown)
@@ -94,6 +107,7 @@ Response contains:
 ### Version Parsing
 
 Current version from:
+
 - Assembly version attribute
 - Build-time generated version file
 - Embedded resource
@@ -109,6 +123,7 @@ Current version from:
 ## Files to Modify/Create
 
 ### New Files
+
 - `UI/Services/IUpdateService.cs` - Interface
 - `UI/Services/GitHubUpdateService.cs` - Implementation
 - `UI/ViewModels/UpdateCheckViewModel.cs` - ViewModel
@@ -116,6 +131,7 @@ Current version from:
 - `UI/Windows/UpdateAvailableWindow.axaml.cs` - Code-behind
 
 ### Modified Files
+
 - `UI/Config/PreferencesConfig.cs` - Update settings
 - `UI/ViewModels/MainMenuViewModel.cs` - Menu action
 - `App.axaml.cs` - Startup check hook

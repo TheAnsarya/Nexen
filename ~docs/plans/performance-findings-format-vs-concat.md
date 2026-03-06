@@ -1,6 +1,7 @@
 # Performance Findings: std::format vs Alternatives on MSVC
 
 ## Benchmark Environment
+
 - **Compiler**: MSVC v145 (VS 2026 Insiders), C++23 (`/std:c++latest`)
 - **Configuration**: Release x64, full optimizations
 - **CPU**: 12-core, 3696 MHz, 12MB L3
@@ -30,18 +31,21 @@ For fixed-width numeric formatting (`%02u:%02u:%02u`), `std::format` and `snprin
 
 ## Guidelines
 
-### DO use std::format for:
+### DO use std::format for
+
 - Replacing `std::stringstream` / `std::ostringstream` (3.8x win)
 - Fixed-width padding/formatting (`{:04X}`, `{:02d}`)
 - Replacing `snprintf` + `string(buf)` patterns (cleaner + similar speed)
 - Multi-field formatting where stringstream would normally be used
 
-### DO NOT use std::format for:
+### DO NOT use std::format for
+
 - Replacing simple `"prefix" + std::to_string(n)` (2–3x regression!)
 - Replacing `"[" + title + "] " + msg` (1.8x regression!)
 - Any pattern that's currently just `operator+` with 1–3 string operands
 
-### Preferred patterns (fastest to slowest):
+### Preferred patterns (fastest to slowest)
+
 1. **`reserve() + append()`** — Best for known-size concat (2.6x over operator+)
 2. **`operator+`** — Good for simple 1–3 operand short strings (~90 ns)
 3. **`std::format`** — Only for replacing stringstream or complex formatting

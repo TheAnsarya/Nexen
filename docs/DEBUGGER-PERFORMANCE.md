@@ -98,11 +98,13 @@ These benchmarks remain in the suite for future reference if cache patterns chan
 ## Metadata Recording Benchmarks (CDL & Pansy)
 
 Recent benchmarks confirm:
+
 - **Disabled:** 0.000ns (no cost)
 - **Enabled:** CDL ~0.26ns/call, Pansy ~0.25ns/call, combined ~0.75ns/call
 - All hooks are properly conditional; no unconditional cost in hot path.
 
 ### Next Steps
+
 - Profile real-world metadata recording in large games
 - Investigate lock-free ring buffers, flat arrays, and intrusive lists for future scalability
 - Track all findings in [#429](https://github.com/TheAnsarya/Nexen/issues/429)
@@ -112,11 +114,13 @@ Benchmarks: `Core.Benchmarks/Debugger/MetadataRecordingBench.cpp`
 ## Audio & Timing Benchmarks
 
 Recent benchmarks:
+
 - **SoundMixer Mix:** ~343ns (1024), ~1425ns (4096)
 - **SoundMixer Output:** ~1394ns (1024), ~5281ns (4096)
 - **FrameAdvance/Turbo:** 0.000ns (dummy)
 
 ### Next Steps
+
 - Profile real SoundMixer output for blocking/latency
 - Investigate SIMD mixing, async output, lock-free buffers
 - Track all findings in [#430](https://github.com/TheAnsarya/Nexen/issues/430)
