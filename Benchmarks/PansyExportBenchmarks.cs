@@ -22,6 +22,13 @@ public class PansyExportBenchmarks {
 	private byte[] _mediumCdlData = null!;   // 512KB - typical NES/SNES
 	private byte[] _largeCdlData = null!;   // 4MB - large SNES/GBA ROM
 
+	// SNES CDL data with IndexMode8/MemoryMode8 flags in upper nibble
+	private byte[] _snesMediumCdlData = null!;  // 512KB - SNES with mode flags
+	private byte[] _snesLargeCdlData = null!;   // 4MB - large SNES ROM
+
+	// GBA CDL data with Thumb flag in upper nibble
+	private byte[] _gbaMediumCdlData = null!;   // 512KB - GBA with THUMB flags
+
 	private List<TestLabel> _smallLabels = null!;   // 100 labels
 	private List<TestLabel> _mediumLabels = null!;  // 1000 labels
 	private List<TestLabel> _largeLabels = null!;   // 10000 labels
@@ -37,6 +44,13 @@ public class PansyExportBenchmarks {
 		_smallCdlData = GenerateCdlData(32 * 1024, random);
 		_mediumCdlData = GenerateCdlData(512 * 1024, random);
 		_largeCdlData = GenerateCdlData(4 * 1024 * 1024, random);
+
+		// Generate SNES CDL data with platform-specific upper nibble flags
+		_snesMediumCdlData = GenerateSnesCdlData(512 * 1024, random);
+		_snesLargeCdlData = GenerateSnesCdlData(4 * 1024 * 1024, random);
+
+		// Generate GBA CDL data with Thumb flag
+		_gbaMediumCdlData = GenerateGbaCdlData(512 * 1024, random);
 
 		// Generate test labels
 		_smallLabels = GenerateLabels(100, random);
@@ -92,6 +106,69 @@ public class PansyExportBenchmarks {
 		}
 
 		return labels;
+	}
+
+	/// <summary>
+	/// Generates SNES CDL data with IndexMode8 (0x10) and MemoryMode8 (0x20) flags.
+	/// ~40% of code bytes have mode flags set (realistic for 65816 instructions).
+	/// </summary>
+	private static byte[] GenerateSnesCdlData(int size, Random random) {
+		var data = new byte[size];
+		int i = 0;
+		while (i < size) {
+			if (random.NextDouble() < 0.6) {
+				int codeLength = random.Next(4, 128);
+				for (int j = 0; j < codeLength && i + j < size; j++) {
+					data[i + j] = 0x01; // Code flag
+					// ~40% of code bytes have SNES mode flags
+					if (random.NextDouble() < 0.25) data[i + j] |= 0x10; // IndexMode8
+					if (random.NextDouble() < 0.25) data[i + j] |= 0x20; // MemoryMode8
+					if (random.NextDouble() < 0.1) data[i + j] |= 0x04;  // Jump target
+				}
+
+				i += codeLength;
+			} else {
+				int dataLength = random.Next(8, 256);
+				for (int j = 0; j < dataLength && i + j < size; j++) {
+					data[i + j] = 0x02; // Data flag
+				}
+
+				i += dataLength;
+			}
+		}
+
+		return data;
+	}
+
+	/// <summary>
+	/// Generates GBA CDL data with Thumb (0x20) flag.
+	/// ~60% of code bytes are in THUMB mode (realistic for mixed ARM/THUMB code).
+	/// </summary>
+	private static byte[] GenerateGbaCdlData(int size, Random random) {
+		var data = new byte[size];
+		int i = 0;
+		while (i < size) {
+			if (random.NextDouble() < 0.6) {
+				int codeLength = random.Next(4, 128);
+				bool isThumbRegion = random.NextDouble() < 0.6; // 60% THUMB
+				for (int j = 0; j < codeLength && i + j < size; j++) {
+					data[i + j] = 0x01; // Code flag
+					if (isThumbRegion) data[i + j] |= 0x20; // THUMB
+					if (random.NextDouble() < 0.1) data[i + j] |= 0x04; // Jump target
+				}
+
+				i += codeLength;
+			} else {
+				int dataLength = random.Next(8, 256);
+				for (int j = 0; j < dataLength && i + j < size; j++) {
+					data[i + j] = 0x02; // Data flag
+				}
+
+				i += dataLength;
+			}
+		}
+
+		return data;
 	}
 
 	#region CDL Data Conversion Benchmarks
@@ -550,6 +627,217 @@ public class PansyExportBenchmarks {
 		}
 
 		return blocks;
+	}
+
+	#endregion
+
+	#region CPU State Section Benchmarks
+
+	/// <summary>
+	/// Baseline: Two-pass scan (count then build) with BinaryWriter — matches PansyExporter.BuildCpuStateSection.
+	/// Tests SNES CDL (512KB) where code bytes have IndexMode8/MemoryMode8 flags.
+	/// </summary>
+	[Benchmark(Baseline = true)]
+	[BenchmarkCategory("CpuState")]
+	public byte[] CpuState_TwoPass_SnesMedium() {
+		return BuildCpuStateTwoPass(_snesMediumCdlData, isSnes: true);
+	}
+
+	/// <summary>
+	/// Single-pass: Write entries directly without pre-counting.
+	/// Trades initial MemoryStream capacity guess for removal of redundant scan.
+	/// </summary>
+	[Benchmark]
+	[BenchmarkCategory("CpuState")]
+	public byte[] CpuState_SinglePass_SnesMedium() {
+		return BuildCpuStateSinglePass(_snesMediumCdlData, isSnes: true);
+	}
+
+	/// <summary>
+	/// Span-based: Use Span + MemoryMarshal for writing entries.
+	/// Avoids BinaryWriter overhead on each Write call.
+	/// </summary>
+	[Benchmark]
+	[BenchmarkCategory("CpuState")]
+	public byte[] CpuState_SpanWrite_SnesMedium() {
+		return BuildCpuStateSpanWrite(_snesMediumCdlData, isSnes: true);
+	}
+
+	/// <summary>
+	/// Two-pass baseline on large SNES ROM (4MB).
+	/// </summary>
+	[Benchmark(Baseline = true)]
+	[BenchmarkCategory("CpuStateLarge")]
+	public byte[] CpuState_TwoPass_SnesLarge() {
+		return BuildCpuStateTwoPass(_snesLargeCdlData, isSnes: true);
+	}
+
+	/// <summary>
+	/// Span-based on large SNES ROM (4MB).
+	/// </summary>
+	[Benchmark]
+	[BenchmarkCategory("CpuStateLarge")]
+	public byte[] CpuState_SpanWrite_SnesLarge() {
+		return BuildCpuStateSpanWrite(_snesLargeCdlData, isSnes: true);
+	}
+
+	/// <summary>
+	/// Two-pass baseline on GBA ROM (512KB) with Thumb flag.
+	/// </summary>
+	[Benchmark(Baseline = true)]
+	[BenchmarkCategory("CpuStateGba")]
+	public byte[] CpuState_TwoPass_GbaMedium() {
+		return BuildCpuStateTwoPass(_gbaMediumCdlData, isSnes: false);
+	}
+
+	/// <summary>
+	/// Span-based on GBA ROM (512KB) with Thumb flag.
+	/// </summary>
+	[Benchmark]
+	[BenchmarkCategory("CpuStateGba")]
+	public byte[] CpuState_SpanWrite_GbaMedium() {
+		return BuildCpuStateSpanWrite(_gbaMediumCdlData, isSnes: false);
+	}
+
+	// --- CPU State implementation variants ---
+
+	private const byte CDL_CODE = 0x01;
+	private const byte CDL_SNES_INDEX_8 = 0x10;
+	private const byte CDL_SNES_MEMORY_8 = 0x20;
+	private const byte CDL_GBA_THUMB = 0x20;
+
+	/// <summary>
+	/// Two-pass: Count entries first, then build (matches production code).
+	/// </summary>
+	private static byte[] BuildCpuStateTwoPass(byte[] cdlData, bool isSnes) {
+		int count = 0;
+		for (int i = 0; i < cdlData.Length; i++) {
+			byte cdl = cdlData[i];
+			if ((cdl & CDL_CODE) == 0) continue;
+			if (isSnes && (cdl & (CDL_SNES_INDEX_8 | CDL_SNES_MEMORY_8)) != 0) count++;
+			else if (!isSnes && (cdl & CDL_GBA_THUMB) != 0) count++;
+		}
+
+		if (count == 0) return [];
+
+		using var ms = new MemoryStream(count * 9);
+		using var writer = new BinaryWriter(ms);
+		for (int i = 0; i < cdlData.Length; i++) {
+			byte cdl = cdlData[i];
+			if ((cdl & CDL_CODE) == 0) continue;
+
+			if (isSnes) {
+				bool x8 = (cdl & CDL_SNES_INDEX_8) != 0;
+				bool m8 = (cdl & CDL_SNES_MEMORY_8) != 0;
+				if (!x8 && !m8) continue;
+				writer.Write((uint)i);
+				byte flags = 0;
+				if (x8) flags |= 0x01;
+				if (m8) flags |= 0x02;
+				writer.Write(flags);
+				writer.Write((byte)0);
+				writer.Write((ushort)0);
+				writer.Write((byte)0);
+			} else {
+				if ((cdl & CDL_GBA_THUMB) == 0) continue;
+				writer.Write((uint)i);
+				writer.Write((byte)0);
+				writer.Write((byte)0);
+				writer.Write((ushort)0);
+				writer.Write((byte)3);
+			}
+		}
+
+		return ms.ToArray();
+	}
+
+	/// <summary>
+	/// Single-pass: Skip pre-count, use estimated capacity.
+	/// </summary>
+	private static byte[] BuildCpuStateSinglePass(byte[] cdlData, bool isSnes) {
+		// Estimate ~20% of code bytes have mode flags
+		using var ms = new MemoryStream(cdlData.Length / 5 * 9);
+		using var writer = new BinaryWriter(ms);
+
+		for (int i = 0; i < cdlData.Length; i++) {
+			byte cdl = cdlData[i];
+			if ((cdl & CDL_CODE) == 0) continue;
+
+			if (isSnes) {
+				bool x8 = (cdl & CDL_SNES_INDEX_8) != 0;
+				bool m8 = (cdl & CDL_SNES_MEMORY_8) != 0;
+				if (!x8 && !m8) continue;
+				writer.Write((uint)i);
+				byte flags = 0;
+				if (x8) flags |= 0x01;
+				if (m8) flags |= 0x02;
+				writer.Write(flags);
+				writer.Write((byte)0);
+				writer.Write((ushort)0);
+				writer.Write((byte)0);
+			} else {
+				if ((cdl & CDL_GBA_THUMB) == 0) continue;
+				writer.Write((uint)i);
+				writer.Write((byte)0);
+				writer.Write((byte)0);
+				writer.Write((ushort)0);
+				writer.Write((byte)3);
+			}
+		}
+
+		return ms.ToArray();
+	}
+
+	/// <summary>
+	/// Span-based: Write 9-byte entries directly using MemoryMarshal.
+	/// Avoids per-field BinaryWriter overhead.
+	/// </summary>
+	private static byte[] BuildCpuStateSpanWrite(byte[] cdlData, bool isSnes) {
+		// Count first (fast scan)
+		int count = 0;
+		for (int i = 0; i < cdlData.Length; i++) {
+			byte cdl = cdlData[i];
+			if ((cdl & CDL_CODE) == 0) continue;
+			if (isSnes && (cdl & (CDL_SNES_INDEX_8 | CDL_SNES_MEMORY_8)) != 0) count++;
+			else if (!isSnes && (cdl & CDL_GBA_THUMB) != 0) count++;
+		}
+
+		if (count == 0) return [];
+
+		var result = new byte[count * 9];
+		int offset = 0;
+
+		for (int i = 0; i < cdlData.Length; i++) {
+			byte cdl = cdlData[i];
+			if ((cdl & CDL_CODE) == 0) continue;
+
+			if (isSnes) {
+				bool x8 = (cdl & CDL_SNES_INDEX_8) != 0;
+				bool m8 = (cdl & CDL_SNES_MEMORY_8) != 0;
+				if (!x8 && !m8) continue;
+				BitConverter.TryWriteBytes(result.AsSpan(offset), (uint)i);
+				byte flags = 0;
+				if (x8) flags |= 0x01;
+				if (m8) flags |= 0x02;
+				result[offset + 4] = flags;
+				result[offset + 5] = 0; // DataBank
+				result[offset + 6] = 0; // DirectPage low
+				result[offset + 7] = 0; // DirectPage high
+				result[offset + 8] = 0; // CpuMode: Native65816
+			} else {
+				if ((cdl & CDL_GBA_THUMB) == 0) continue;
+				BitConverter.TryWriteBytes(result.AsSpan(offset), (uint)i);
+				result[offset + 4] = 0; // Flags
+				result[offset + 5] = 0; // DataBank
+				result[offset + 6] = 0; // DirectPage low
+				result[offset + 7] = 0; // DirectPage high
+				result[offset + 8] = 3; // CpuMode: THUMB
+			}
+
+			offset += 9;
+		}
+
+		return result;
 	}
 
 	#endregion
