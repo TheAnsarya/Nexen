@@ -203,6 +203,20 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 | Ctrl+G | Go to Frame |
 | Ctrl+B | Create Branch |
 
+## 🌷 Integrated Pipeline
+
+Nexen is the **play & debug** stage of the **Flower Toolchain** — an integrated pipeline for playing, debugging, disassembling, editing, and rebuilding retro games:
+
+| Stage | Tool | Nexen Role |
+|-------|------|------------|
+| 1. Play & Debug | **Nexen** | Run games, export CDL + symbols + CPU state via Pansy |
+| 2. Disassemble | [Peony](https://github.com/TheAnsarya/peony) | — |
+| 3. Edit & Document | Editor + [Pansy](https://github.com/TheAnsarya/pansy) UI | — |
+| 4. Build | [Poppy](https://github.com/TheAnsarya/poppy) | — |
+| 5. Verify | [Game Garden](https://github.com/TheAnsarya/game-garden) | Roundtrip byte-identical rebuild |
+
+See the [Integrated Pipeline Master Plan](https://github.com/TheAnsarya/pansy/blob/main/~Plans/integrated-pipeline-master-plan.md) for architecture details.
+
 ## 🔗 Related Projects
 
 | Project | Description |
@@ -210,6 +224,7 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 | [🌼 Pansy](https://github.com/TheAnsarya/pansy) | Universal disassembly metadata format |
 | [🌺 Peony](https://github.com/TheAnsarya/peony) | Multi-system disassembler |
 | [🌸 Poppy](https://github.com/TheAnsarya/poppy) | Multi-system assembler |
+| [🌱 Game Garden](https://github.com/TheAnsarya/game-garden) | Games disassembly & recompilation |
 
 ## 🏗️ Building from Source
 
