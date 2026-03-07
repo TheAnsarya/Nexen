@@ -907,6 +907,40 @@ public class PansyExportBenchmarks {
 		}
 	}
 
+	/// <summary>
+	/// Simulates full export with CPU State section added (SNES).
+	/// Shows the overhead of adding CPU State to the export pipeline.
+	/// </summary>
+	[Benchmark]
+	[BenchmarkCategory("FullExport")]
+	public byte[] FullExport_WithCpuState_Medium() {
+		var symbols = BuildSymbolSectionOptimized(_mediumLabels);
+		var cdl = ArrayPool<byte>.Shared.Rent(_snesMediumCdlData.Length);
+		try {
+			_snesMediumCdlData.AsSpan().CopyTo(cdl);
+			var jumpTargets = ExtractJumpTargetsOptimized(_snesMediumCdlData);
+			var cpuState = BuildCpuStateSpanWrite(_snesMediumCdlData, isSnes: true);
+
+			var compressedSymbols = CompressFastest(symbols);
+			var compressedCdl = CompressFastest(cdl.AsSpan(0, _snesMediumCdlData.Length));
+
+			using var ms = new MemoryStream(compressedSymbols.Length + compressedCdl.Length + cpuState.Length + 1024);
+			using var writer = new BinaryWriter(ms);
+
+			writer.Write(System.Text.Encoding.ASCII.GetBytes("PNSY"));
+			writer.Write((ushort)1);
+			writer.Write(compressedSymbols);
+			writer.Write(compressedCdl);
+			writer.Write(jumpTargets.Length);
+			foreach (var target in jumpTargets) writer.Write(target);
+			writer.Write(cpuState);
+
+			return ms.ToArray();
+		} finally {
+			ArrayPool<byte>.Shared.Return(cdl);
+		}
+	}
+
 	private static byte[] BuildSymbolSectionOriginal(List<TestLabel> labels) {
 		var filtered = labels.Where(l => !string.IsNullOrEmpty(l.Label)).ToList();
 		using var ms = new MemoryStream();

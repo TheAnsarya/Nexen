@@ -24,6 +24,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\UI\UI.csproj" />
+		<ProjectReference Include="..\..\pansy\src\Pansy.Core\Pansy.Core.csproj" />
 	</ItemGroup>
 
 </Project>

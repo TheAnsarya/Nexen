@@ -646,4 +646,385 @@ public class PansyExporterTests
 	}
 
 	#endregion
+
+	#region CPU State Section Tests
+
+	// CDL flag constants (must match PansyExporter)
+	private const byte CDL_CODE = 0x01;
+	private const byte CDL_DATA = 0x02;
+	private const byte CDL_SNES_INDEX_MODE_8 = 0x10;
+	private const byte CDL_SNES_MEMORY_MODE_8 = 0x20;
+	private const byte CDL_GBA_THUMB = 0x20;
+	private const int CPU_STATE_ENTRY_SIZE = 9;
+
+	[Fact]
+	public void CpuState_NullCdl_ReturnsEmpty() {
+		var result = BuildCpuStateSectionTest(null, isSnes: true, isGba: false);
+		Assert.Empty(result);
+	}
+
+	[Fact]
+	public void CpuState_EmptyCdl_ReturnsEmpty() {
+		var result = BuildCpuStateSectionTest([], isSnes: true, isGba: false);
+		Assert.Empty(result);
+	}
+
+	[Fact]
+	public void CpuState_NesRom_ReturnsEmpty() {
+		// NES doesn't have X/M mode flags — should produce no CPU state entries
+		byte[] cdl = [CDL_CODE | CDL_SNES_INDEX_MODE_8, CDL_CODE, CDL_DATA];
+		var result = BuildCpuStateSectionTest(cdl, isSnes: false, isGba: false);
+		Assert.Empty(result);
+	}
+
+	[Fact]
+	public void CpuState_SnesIndexMode8_CreatesEntry() {
+		byte[] cdl = [CDL_CODE | CDL_SNES_INDEX_MODE_8];
+		var result = BuildCpuStateSectionTest(cdl, isSnes: true, isGba: false);
+
+		Assert.Equal(CPU_STATE_ENTRY_SIZE, result.Length);
+		Assert.Equal(0u, BitConverter.ToUInt32(result, 0));  // Address 0
+		Assert.Equal(0x01, result[4]);                        // Flags: XFlag set
+		Assert.Equal(0, result[5]);                           // DataBank
+		Assert.Equal((ushort)0, BitConverter.ToUInt16(result, 6)); // DirectPage
+		Assert.Equal(0, result[8]);                           // CpuMode: Native65816
+	}
+
+	[Fact]
+	public void CpuState_SnesMemoryMode8_CreatesEntry() {
+		byte[] cdl = [CDL_CODE | CDL_SNES_MEMORY_MODE_8];
+		var result = BuildCpuStateSectionTest(cdl, isSnes: true, isGba: false);
+
+		Assert.Equal(CPU_STATE_ENTRY_SIZE, result.Length);
+		Assert.Equal(0u, BitConverter.ToUInt32(result, 0));
+		Assert.Equal(0x02, result[4]);  // Flags: MFlag set
+	}
+
+	[Fact]
+	public void CpuState_SnesBothFlags_CreatesEntry() {
+		byte[] cdl = [CDL_CODE | CDL_SNES_INDEX_MODE_8 | CDL_SNES_MEMORY_MODE_8];
+		var result = BuildCpuStateSectionTest(cdl, isSnes: true, isGba: false);
+
+		Assert.Equal(CPU_STATE_ENTRY_SIZE, result.Length);
+		Assert.Equal(0x03, result[4]);  // Flags: both XFlag and MFlag
+	}
+
+	[Fact]
+	public void CpuState_SnesCodeWithoutModeFlags_NoEntry() {
+		// Code byte with no mode flags → no CPU state entry
+		byte[] cdl = [CDL_CODE];
+		var result = BuildCpuStateSectionTest(cdl, isSnes: true, isGba: false);
+		Assert.Empty(result);
+	}
+
+	[Fact]
+	public void CpuState_SnesDataByte_NoEntry() {
+		// Data byte with mode flags should NOT create an entry
+		byte[] cdl = [CDL_DATA | CDL_SNES_INDEX_MODE_8];
+		var result = BuildCpuStateSectionTest(cdl, isSnes: true, isGba: false);
+		Assert.Empty(result);
+	}
+
+	[Fact]
+	public void CpuState_SnesMultipleEntries_CorrectAddresses() {
+		byte[] cdl = new byte[100];
+		cdl[10] = CDL_CODE | CDL_SNES_INDEX_MODE_8;
+		cdl[50] = CDL_CODE | CDL_SNES_MEMORY_MODE_8;
+		cdl[99] = CDL_CODE | CDL_SNES_INDEX_MODE_8 | CDL_SNES_MEMORY_MODE_8;
+
+		var result = BuildCpuStateSectionTest(cdl, isSnes: true, isGba: false);
+
+		Assert.Equal(3 * CPU_STATE_ENTRY_SIZE, result.Length);
+
+		// Entry 0: address 10, X flag
+		Assert.Equal(10u, BitConverter.ToUInt32(result, 0));
+		Assert.Equal(0x01, result[4]);
+
+		// Entry 1: address 50, M flag
+		Assert.Equal(50u, BitConverter.ToUInt32(result, 9));
+		Assert.Equal(0x02, result[13]);
+
+		// Entry 2: address 99, both flags
+		Assert.Equal(99u, BitConverter.ToUInt32(result, 18));
+		Assert.Equal(0x03, result[22]);
+	}
+
+	[Fact]
+	public void CpuState_GbaThumb_CreatesEntry() {
+		byte[] cdl = [CDL_CODE | CDL_GBA_THUMB];
+		var result = BuildCpuStateSectionTest(cdl, isSnes: false, isGba: true);
+
+		Assert.Equal(CPU_STATE_ENTRY_SIZE, result.Length);
+		Assert.Equal(0u, BitConverter.ToUInt32(result, 0));
+		Assert.Equal(0, result[4]);    // Flags: none for GBA
+		Assert.Equal(3, result[8]);    // CpuMode: THUMB (3)
+	}
+
+	[Fact]
+	public void CpuState_GbaArmCode_NoEntry() {
+		// ARM code (no THUMB flag) → no CPU state entry
+		byte[] cdl = [CDL_CODE];
+		var result = BuildCpuStateSectionTest(cdl, isSnes: false, isGba: true);
+		Assert.Empty(result);
+	}
+
+	[Fact]
+	public void CpuState_GbaDataWithThumb_NoEntry() {
+		// Data byte with thumb flag should NOT create an entry
+		byte[] cdl = [CDL_DATA | CDL_GBA_THUMB];
+		var result = BuildCpuStateSectionTest(cdl, isSnes: false, isGba: true);
+		Assert.Empty(result);
+	}
+
+	[Fact]
+	public void CpuState_GbaMultipleThumb_CorrectCount() {
+		byte[] cdl = new byte[50];
+		cdl[0] = CDL_CODE | CDL_GBA_THUMB;
+		cdl[2] = CDL_CODE | CDL_GBA_THUMB;
+		cdl[4] = CDL_CODE;  // ARM, no entry
+		cdl[10] = CDL_CODE | CDL_GBA_THUMB;
+
+		var result = BuildCpuStateSectionTest(cdl, isSnes: false, isGba: true);
+		Assert.Equal(3 * CPU_STATE_ENTRY_SIZE, result.Length);
+
+		Assert.Equal(0u, BitConverter.ToUInt32(result, 0));
+		Assert.Equal(2u, BitConverter.ToUInt32(result, 9));
+		Assert.Equal(10u, BitConverter.ToUInt32(result, 18));
+	}
+
+	[Fact]
+	public void CpuState_LargeSnesCdl_HandlesAllEntries() {
+		// Simulate 512KB SNES ROM with ~30% code having mode flags
+		var random = new Random(42);
+		byte[] cdl = new byte[512 * 1024];
+		int expectedCount = 0;
+
+		for (int i = 0; i < cdl.Length; i++) {
+			if (random.NextDouble() < 0.6) {
+				cdl[i] = CDL_CODE;
+				if (random.NextDouble() < 0.3) {
+					cdl[i] |= CDL_SNES_INDEX_MODE_8;
+					expectedCount++;
+				}
+			}
+		}
+
+		var result = BuildCpuStateSectionTest(cdl, isSnes: true, isGba: false);
+		Assert.Equal(expectedCount * CPU_STATE_ENTRY_SIZE, result.Length);
+	}
+
+	[Fact]
+	public void CpuState_AllCodeHasModeFlags_MaxEntries() {
+		// Every byte is code with both mode flags
+		byte[] cdl = new byte[100];
+		for (int i = 0; i < cdl.Length; i++) {
+			cdl[i] = CDL_CODE | CDL_SNES_INDEX_MODE_8 | CDL_SNES_MEMORY_MODE_8;
+		}
+
+		var result = BuildCpuStateSectionTest(cdl, isSnes: true, isGba: false);
+		Assert.Equal(100 * CPU_STATE_ENTRY_SIZE, result.Length);
+
+		// Verify all addresses are sequential
+		for (int i = 0; i < 100; i++) {
+			Assert.Equal((uint)i, BitConverter.ToUInt32(result, i * CPU_STATE_ENTRY_SIZE));
+		}
+	}
+
+	[Fact]
+	public void CpuState_AllDataBytes_NoEntries() {
+		byte[] cdl = new byte[1000];
+		for (int i = 0; i < cdl.Length; i++) {
+			cdl[i] = CDL_DATA;  // All data, no code
+		}
+
+		var result = BuildCpuStateSectionTest(cdl, isSnes: true, isGba: false);
+		Assert.Empty(result);
+	}
+
+	[Fact]
+	public void CpuState_RoundtripWithPansyLoader() {
+		// Build CPU State section, wrap in Pansy file, load with PansyLoader
+		byte[] cdl = new byte[20];
+		cdl[5] = CDL_CODE | CDL_SNES_INDEX_MODE_8;
+		cdl[10] = CDL_CODE | CDL_SNES_MEMORY_MODE_8;
+		cdl[15] = CDL_CODE | CDL_SNES_INDEX_MODE_8 | CDL_SNES_MEMORY_MODE_8;
+
+		var cpuStateBytes = BuildCpuStateSectionTest(cdl, isSnes: true, isGba: false);
+		Assert.Equal(3 * CPU_STATE_ENTRY_SIZE, cpuStateBytes.Length);
+
+		// Build minimal Pansy file with CPU State section
+		var pansyFile = BuildMinimalPansyFile(cpuStateBytes, sectionType: 0x0009, platform: 0x02);
+
+		// Load with PansyLoader
+		var tempPath = Path.Combine(Path.GetTempPath(), $"test_cpustate_{Guid.NewGuid():N}.pansy");
+		try {
+			File.WriteAllBytes(tempPath, pansyFile);
+			var loader = Pansy.Core.PansyLoader.Load(tempPath);
+
+			Assert.Equal(3, loader.CpuStateEntries.Count);
+
+			Assert.Equal(5u, loader.CpuStateEntries[0].Address);
+			Assert.Equal(0x01, loader.CpuStateEntries[0].Flags);  // XFlag
+			Assert.Equal(Pansy.Core.CpuMode.Native65816, loader.CpuStateEntries[0].Mode);
+
+			Assert.Equal(10u, loader.CpuStateEntries[1].Address);
+			Assert.Equal(0x02, loader.CpuStateEntries[1].Flags);  // MFlag
+
+			Assert.Equal(15u, loader.CpuStateEntries[2].Address);
+			Assert.Equal(0x03, loader.CpuStateEntries[2].Flags);  // Both
+		} finally {
+			if (File.Exists(tempPath)) File.Delete(tempPath);
+		}
+	}
+
+	[Fact]
+	public void CpuState_GbaRoundtripWithPansyLoader() {
+		byte[] cdl = new byte[10];
+		cdl[0] = CDL_CODE | CDL_GBA_THUMB;
+		cdl[5] = CDL_CODE | CDL_GBA_THUMB;
+
+		var cpuStateBytes = BuildCpuStateSectionTest(cdl, isSnes: false, isGba: true);
+		var pansyFile = BuildMinimalPansyFile(cpuStateBytes, sectionType: 0x0009, platform: 0x04);
+
+		var tempPath = Path.Combine(Path.GetTempPath(), $"test_cpustate_gba_{Guid.NewGuid():N}.pansy");
+		try {
+			File.WriteAllBytes(tempPath, pansyFile);
+			var loader = Pansy.Core.PansyLoader.Load(tempPath);
+
+			Assert.Equal(2, loader.CpuStateEntries.Count);
+
+			Assert.Equal(0u, loader.CpuStateEntries[0].Address);
+			Assert.Equal(Pansy.Core.CpuMode.THUMB, loader.CpuStateEntries[0].Mode);
+
+			Assert.Equal(5u, loader.CpuStateEntries[1].Address);
+			Assert.Equal(Pansy.Core.CpuMode.THUMB, loader.CpuStateEntries[1].Mode);
+		} finally {
+			if (File.Exists(tempPath)) File.Delete(tempPath);
+		}
+	}
+
+	[Fact]
+	public void CpuState_HeaderFlag_SetWhenEntriesExist() {
+		byte[] cdl = [CDL_CODE | CDL_SNES_INDEX_MODE_8];
+		var cpuStateBytes = BuildCpuStateSectionTest(cdl, isSnes: true, isGba: false);
+		var pansyFile = BuildMinimalPansyFile(cpuStateBytes, sectionType: 0x0009, platform: 0x02, hasCpuState: true);
+
+		using var ms = new MemoryStream(pansyFile);
+		var header = ReadTestHeader(ms);
+		Assert.NotNull(header);
+		Assert.True((header.Flags & 0x0010) != 0, "HAS_CPU_STATE flag should be set");
+	}
+
+	[Fact]
+	public void CpuState_HeaderFlag_NotSetWhenEmpty() {
+		var pansyFile = BuildMinimalPansyFile([], sectionType: 0x0009, platform: 0x02, hasCpuState: false);
+
+		using var ms = new MemoryStream(pansyFile);
+		var header = ReadTestHeader(ms);
+		Assert.NotNull(header);
+		Assert.True((header.Flags & 0x0010) == 0, "HAS_CPU_STATE flag should NOT be set");
+	}
+
+	[Fact]
+	public void CpuState_EntrySize_IsExactly9Bytes() {
+		// Each entry: Address(4) + Flags(1) + DataBank(1) + DirectPage(2) + CpuMode(1) = 9
+		byte[] cdl = [CDL_CODE | CDL_SNES_INDEX_MODE_8];
+		var result = BuildCpuStateSectionTest(cdl, isSnes: true, isGba: false);
+		Assert.Equal(9, result.Length);
+		Assert.Equal(CPU_STATE_ENTRY_SIZE, result.Length);
+	}
+
+	/// <summary>
+	/// Mirror of PansyExporter.BuildCpuStateSection using same Span-based optimization.
+	/// </summary>
+	private static byte[] BuildCpuStateSectionTest(byte[]? cdlData, bool isSnes, bool isGba) {
+		if (cdlData is null or { Length: 0 })
+			return [];
+
+		if (!isSnes && !isGba)
+			return [];
+
+		int count = 0;
+		for (int i = 0; i < cdlData.Length; i++) {
+			byte cdl = cdlData[i];
+			if ((cdl & CDL_CODE) == 0) continue;
+			if (isSnes && (cdl & (CDL_SNES_INDEX_MODE_8 | CDL_SNES_MEMORY_MODE_8)) != 0) count++;
+			else if (isGba && (cdl & CDL_GBA_THUMB) != 0) count++;
+		}
+
+		if (count == 0) return [];
+
+		var result = new byte[count * CPU_STATE_ENTRY_SIZE];
+		int offset = 0;
+
+		for (int i = 0; i < cdlData.Length; i++) {
+			byte cdl = cdlData[i];
+			if ((cdl & CDL_CODE) == 0) continue;
+
+			if (isSnes) {
+				bool x8 = (cdl & CDL_SNES_INDEX_MODE_8) != 0;
+				bool m8 = (cdl & CDL_SNES_MEMORY_MODE_8) != 0;
+				if (!x8 && !m8) continue;
+				BitConverter.TryWriteBytes(result.AsSpan(offset), (uint)i);
+				byte flags = 0;
+				if (x8) flags |= 0x01;
+				if (m8) flags |= 0x02;
+				result[offset + 4] = flags;
+				result[offset + 5] = 0;
+				result[offset + 6] = 0;
+				result[offset + 7] = 0;
+				result[offset + 8] = 0; // Native65816
+			} else if (isGba) {
+				if ((cdl & CDL_GBA_THUMB) == 0) continue;
+				BitConverter.TryWriteBytes(result.AsSpan(offset), (uint)i);
+				result[offset + 4] = 0;
+				result[offset + 5] = 0;
+				result[offset + 6] = 0;
+				result[offset + 7] = 0;
+				result[offset + 8] = 3; // THUMB
+			}
+
+			offset += CPU_STATE_ENTRY_SIZE;
+		}
+
+		return result;
+	}
+
+	/// <summary>
+	/// Build a minimal valid Pansy file with one section.
+	/// </summary>
+	private static byte[] BuildMinimalPansyFile(byte[] sectionData, ushort sectionType, byte platform, bool hasCpuState = true) {
+		using var ms = new MemoryStream();
+		using var writer = new BinaryWriter(ms);
+
+		int sectionCount = sectionData.Length > 0 ? 1 : 0;
+		ushort flags = (ushort)(hasCpuState && sectionData.Length > 0 ? 0x0010 : 0);
+
+		// Header (32 bytes)
+		writer.Write(Encoding.ASCII.GetBytes("PANSY\0\0\0")); // 8 bytes
+		writer.Write((ushort)0x0100);                          // Version
+		writer.Write(flags);                                   // Flags
+		writer.Write(platform);                                // Platform
+		writer.Write((byte)0);                                 // Reserved
+		writer.Write((ushort)0);                               // Reserved
+		writer.Write((uint)0x100000);                          // ROM size
+		writer.Write((uint)0xDEADBEEF);                        // CRC32
+		writer.Write((uint)sectionCount);                      // Section count
+		writer.Write((uint)0);                                 // Reserved
+
+		if (sectionCount > 0) {
+			// Section table entry (12 bytes)
+			writer.Write(sectionType);                          // Type (2 bytes)
+			writer.Write((ushort)0);                            // Flags
+			writer.Write((uint)(32 + 12));                      // Offset (after header + section table)
+			writer.Write((uint)sectionData.Length);             // Size
+
+			// Section data
+			writer.Write(sectionData);
+		}
+
+		return ms.ToArray();
+	}
+
+	#endregion
 }
