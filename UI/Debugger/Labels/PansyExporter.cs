@@ -89,6 +89,12 @@ public static class PansyExporter {
 	private const uint SECTION_CROSS_REFS = 0x0006;
 	private const uint SECTION_SOURCE_MAP = 0x0007;    // Reserved in spec
 	private const uint SECTION_METADATA = 0x0008;
+	private const uint SECTION_CPU_STATE = 0x0009;
+
+	// CDL flag bits for SNES-specific CPU state
+	private const byte CDL_INDEX_MODE_8 = 0x10;  // SNES: X flag set (8-bit index)
+	private const byte CDL_MEMORY_MODE_8 = 0x20; // SNES: M flag set (8-bit accumulator)
+	private const byte CDL_GBA_THUMB = 0x20;     // GBA: THUMB mode
 
 	// Platform IDs matching Pansy specification (PansyLoader constants)
 	private static readonly Dictionary<RomFormat, byte> PlatformIds = new() {
@@ -284,6 +290,18 @@ public static class PansyExporter {
 			sectionData.Add(data);
 		}
 
+		// Section 9: CPU_STATE (per-address CPU mode for SNES and GBA)
+		var cpuStateBytes = BuildCpuStateSection(cdlData, romInfo);
+		if (cpuStateBytes.Length > 0) {
+			var data = options.UseCompression ? CompressData(cpuStateBytes) : cpuStateBytes;
+			sections.Add(new SectionInfo {
+				Type = SECTION_CPU_STATE,
+				CompressedSize = (uint)data.Length,
+				UncompressedSize = (uint)cpuStateBytes.Length
+			});
+			sectionData.Add(data);
+		}
+
 		// Calculate section offsets
 		// Header = 32 bytes, section table = sectionCount * 16 bytes
 		uint currentOffset = 32 + (uint)(sections.Count * 16);
@@ -299,6 +317,10 @@ public static class PansyExporter {
 
 		// Write header (32 bytes) - matches Pansy spec v1.0 layout exactly
 		ushort flags = options.UseCompression ? FLAG_COMPRESSED : (ushort)0;
+		// Set HAS_CPU_STATE (bit 4) if CPU state section is present
+		if (cpuStateBytes.Length > 0) {
+			flags |= 0x0010; // HAS_CPU_STATE
+		}
 		writer.Write(Encoding.ASCII.GetBytes(MAGIC)); // 8 bytes (offset 0)
 		writer.Write(VERSION);                         // 2 bytes (offset 8)
 		writer.Write(flags);                           // 2 bytes (offset 10) - PansyFlags as uint16
@@ -1063,6 +1085,73 @@ public static class PansyExporter {
 
 		// Modified timestamp (Unix seconds, int64)
 		writer.Write(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+
+		return ms.ToArray();
+	}
+
+	/// <summary>
+	/// Build CPU State section (0x0009) from CDL data.
+	/// For SNES: Extracts IndexMode8 (X flag) and MemoryMode8 (M flag) per code byte.
+	/// For GBA: Extracts THUMB mode flag per code byte.
+	/// Only emits entries where CPU state is known (code bytes with platform-specific flags).
+	/// Format: Address(u32) + Flags(u8) + DataBank(u8) + DirectPage(u16) + CpuMode(u8) = 9 bytes each.
+	/// </summary>
+	private static byte[] BuildCpuStateSection(byte[]? cdlData, RomInfo romInfo) {
+		if (cdlData is null or { Length: 0 })
+			return [];
+
+		bool isSnes = romInfo.Format is RomFormat.Sfc or RomFormat.Spc;
+		bool isGba = romInfo.Format is RomFormat.Gba;
+
+		if (!isSnes && !isGba)
+			return [];
+
+		// Pre-scan to count entries (only code bytes with mode flags)
+		int count = 0;
+		for (int i = 0; i < cdlData.Length; i++) {
+			byte cdl = cdlData[i];
+			if ((cdl & 0x01) == 0) continue; // Not code
+
+			if (isSnes && (cdl & (CDL_INDEX_MODE_8 | CDL_MEMORY_MODE_8)) != 0)
+				count++;
+			else if (isGba && (cdl & CDL_GBA_THUMB) != 0)
+				count++;
+		}
+
+		if (count == 0)
+			return [];
+
+		// Build entries: 9 bytes each
+		using var ms = new MemoryStream(count * 9);
+		using var writer = new BinaryWriter(ms);
+
+		for (int i = 0; i < cdlData.Length; i++) {
+			byte cdl = cdlData[i];
+			if ((cdl & 0x01) == 0) continue; // Not code
+
+			if (isSnes) {
+				bool indexMode8 = (cdl & CDL_INDEX_MODE_8) != 0;
+				bool memoryMode8 = (cdl & CDL_MEMORY_MODE_8) != 0;
+				if (!indexMode8 && !memoryMode8) continue;
+
+				writer.Write((uint)i);               // Address (ROM offset)
+				byte flags = 0;
+				if (indexMode8) flags |= 0x01;        // Bit 0: XFlag
+				if (memoryMode8) flags |= 0x02;       // Bit 1: MFlag
+				writer.Write(flags);                  // Flags
+				writer.Write((byte)0);                // DataBank (not available from CDL)
+				writer.Write((ushort)0);              // DirectPage (not available from CDL)
+				writer.Write((byte)0);                // CpuMode: Native65816
+			} else if (isGba) {
+				if ((cdl & CDL_GBA_THUMB) == 0) continue;
+
+				writer.Write((uint)i);               // Address (ROM offset)
+				writer.Write((byte)0);               // Flags (no M/X for GBA)
+				writer.Write((byte)0);               // DataBank (N/A for GBA)
+				writer.Write((ushort)0);             // DirectPage (N/A for GBA)
+				writer.Write((byte)3);               // CpuMode: THUMB
+			}
+		}
 
 		return ms.ToArray();
 	}
