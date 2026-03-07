@@ -130,6 +130,7 @@
    </ItemGroup>
    <ItemGroup>
 	<ProjectReference Include="..\MovieConverter\MovieConverter.csproj" />
+	<ProjectReference Include="..\..\pansy\src\Pansy.Core\Pansy.Core.csproj" />
    </ItemGroup>
   <ItemGroup>
 	<Compile Update="Controls\ButtonWithIcon.axaml.cs">

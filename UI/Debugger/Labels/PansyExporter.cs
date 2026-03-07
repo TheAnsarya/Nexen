@@ -15,6 +15,9 @@ using Nexen.Debugger.Utilities;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.Windows;
+using Pansy.Core;
+using PansyCrossRefType = Pansy.Core.CrossRefType;
+using PansyMemoryRegionType = Pansy.Core.MemoryRegionType;
 
 namespace Nexen.Debugger.Labels;
 /// <summary>
@@ -22,34 +25,6 @@ namespace Nexen.Debugger.Labels;
 /// Matches Pansy spec v1.0 layout: Magic(8) + Version(2) + Flags(2) + Platform(1) + Reserved(3) + RomSize(4) + RomCrc32(4) + SectionCount(4) + Reserved(4) = 32 bytes.
 /// </summary>
 public record PansyHeader(ushort Version, ushort Flags, byte Platform, uint RomSize, uint RomCrc32, uint SectionCount);
-
-/// <summary>
-/// Cross-reference types for disassembly analysis.
-/// Matches Pansy spec: Jsr=1, Jmp=2, Branch=3, Read=4, Write=5.
-/// </summary>
-public enum CrossRefType : byte {
-	Call = 1,
-	Jump = 2,
-	Branch = 3,
-	Read = 4,
-	Write = 5
-}
-
-/// <summary>
-/// Memory region types for export.
-/// Matches Pansy spec: ROM=1, RAM=2, VRAM=3, IO=4, SRAM=5, WRAM=6.
-/// </summary>
-public enum MemoryRegionType : byte {
-	Unknown = 0,
-	Rom = 1,
-	Ram = 2,
-	VideoRam = 3,
-	Io = 4,
-	SaveRam = 5,
-	WorkRam = 6,
-	OpenBus = 7,
-	Mirror = 8
-}
 
 /// <summary>
 /// Export options for Pansy file generation.
@@ -226,8 +201,9 @@ public static class PansyExporter {
 			sectionData.Add(data);
 		}
 
-		// Section 2: SYMBOLS (with typed symbol detection)
-		var symbolBytes = BuildSymbolSection(labels, functions);
+		// Section 2: SYMBOLS (with typed symbol detection + hardware register labels)
+		byte platformId = GetPlatformId(romInfo.Format);
+		var symbolBytes = BuildSymbolSection(labels, functions, platformId);
 		if (symbolBytes.Length > 0) {
 			var data = options.UseCompression ? CompressData(symbolBytes) : symbolBytes;
 			sections.Add(new SectionInfo {
@@ -606,13 +582,7 @@ public static class PansyExporter {
 		return result;
 	}
 
-	private static byte[] BuildSymbolSection(List<CodeLabel> labels, uint[] functions) {
-		// Optimized: Count first to pre-size the MemoryStream
-		int count = 0;
-		foreach (var label in labels) {
-			if (!string.IsNullOrEmpty(label.Label)) count++;
-		}
-
+	private static byte[] BuildSymbolSection(List<CodeLabel> labels, uint[] functions, byte platformId) {
 		// Build function set for type detection
 		var functionSet = new HashSet<uint>(functions);
 
@@ -623,26 +593,43 @@ public static class PansyExporter {
 			0xfffe, 0xffff, // IRQ/BRK vector
 		};
 
-		// Pansy spec: No count prefix. Per entry: Address(4)+Type(1)+Flags(1)+NameLen(2)+Name+ValueLen(2)
-		using var ms = new MemoryStream(count * 18);
-		using var writer = new BinaryWriter(ms);
+		// Use LabelMergeEngine to merge user labels with hardware register labels
+		var mergeEngine = new LabelMergeEngine();
 
-		// Optimized: Direct iteration instead of LINQ Where().ToList()
+		// Add user labels
 		foreach (var label in labels) {
 			if (string.IsNullOrEmpty(label.Label)) continue;
-
-			// Address (4 bytes)
-			writer.Write((uint)label.Address);
-
-			// Type (1 byte): Detect symbol type from context
 			byte symbolType = DetectSymbolType(label, functionSet, interruptVectors);
-			writer.Write(symbolType);
+			mergeEngine.Add(new MergedLabel(
+				(uint)label.Address,
+				label.Label,
+				(Pansy.Core.SymbolType)symbolType,
+				LabelSource.User
+			));
+		}
+
+		// Add hardware register labels from PlatformDefaults
+		mergeEngine.AddHardwareRegisters(platformId);
+
+		// Get merged symbols (user labels take priority over hardware register defaults)
+		var mergedSymbols = mergeEngine.GetMergedSymbols().ToList();
+
+		// Pansy spec: No count prefix. Per entry: Address(4)+Type(1)+Flags(1)+NameLen(2)+Name+ValueLen(2)
+		using var ms = new MemoryStream(mergedSymbols.Count * 18);
+		using var writer = new BinaryWriter(ms);
+
+		foreach (var symbol in mergedSymbols) {
+			// Address (4 bytes)
+			writer.Write(symbol.Address);
+
+			// Type (1 byte)
+			writer.Write((byte)symbol.Type);
 
 			// Flags (1 byte)
 			writer.Write((byte)0);
 
 			// Name length + name
-			byte[] nameBytes = Encoding.UTF8.GetBytes(label.Label);
+			byte[] nameBytes = Encoding.UTF8.GetBytes(symbol.Name);
 			writer.Write((ushort)nameBytes.Length);
 			writer.Write(nameBytes);
 
@@ -722,7 +709,7 @@ public static class PansyExporter {
 			writer.Write((uint)(region.Address + region.Length - 1));
 
 			// Type (1 byte): Pansy spec MemoryRegionType
-			byte regionType = region.MemoryType.IsRomMemory() ? (byte)MemoryRegionType.Rom : (byte)MemoryRegionType.Ram;
+			byte regionType = region.MemoryType.IsRomMemory() ? (byte)PansyMemoryRegionType.ROM : (byte)PansyMemoryRegionType.RAM;
 			writer.Write(regionType);
 
 			// Bank (1 byte)
@@ -745,7 +732,7 @@ public static class PansyExporter {
 	/// Phase 3: Includes ROM, RAM, VRAM, I/O regions with proper naming.
 	/// </summary>
 	private static byte[] BuildEnhancedMemoryRegionsSection(List<CodeLabel> labels, MemoryType memType, RomInfo romInfo) {
-		List<(uint Start, uint End, string Name, MemoryRegionType Type, byte MemType)> allRegions = new(64);
+		List<(uint Start, uint End, string Name, PansyMemoryRegionType Type, byte MemType)> allRegions = new(64);
 
 		// Add system memory map based on console type
 		AddSystemMemoryRegions(allRegions, romInfo);
@@ -758,7 +745,7 @@ public static class PansyExporter {
 					(uint)label.Address,
 					(uint)(label.Address + label.Length - 1),
 					label.Label,
-					label.MemoryType.IsRomMemory() ? MemoryRegionType.Rom : MemoryRegionType.Ram,
+					label.MemoryType.IsRomMemory() ? PansyMemoryRegionType.ROM : PansyMemoryRegionType.RAM,
 					(byte)label.MemoryType
 				));
 			}
@@ -790,71 +777,71 @@ public static class PansyExporter {
 	/// <summary>
 	/// Add system memory regions based on console type.
 	/// </summary>
-	private static void AddSystemMemoryRegions(List<(uint Start, uint End, string Name, MemoryRegionType Type, byte MemType)> regions, RomInfo romInfo) {
+	private static void AddSystemMemoryRegions(List<(uint Start, uint End, string Name, PansyMemoryRegionType Type, byte MemType)> regions, RomInfo romInfo) {
 		switch (romInfo.ConsoleType) {
 			case ConsoleType.Nes:
 				// NES Memory Map
-				regions.Add((0x0000, 0x07FF, "RAM", MemoryRegionType.Ram, (byte)MemoryType.NesInternalRam));
-				regions.Add((0x0800, 0x1FFF, "RAM_Mirrors", MemoryRegionType.Mirror, (byte)MemoryType.NesInternalRam));
-				regions.Add((0x2000, 0x2007, "PPU_Registers", MemoryRegionType.Io, (byte)MemoryType.NesMemory));
-				regions.Add((0x4000, 0x4017, "APU_IO_Registers", MemoryRegionType.Io, (byte)MemoryType.NesMemory));
-				regions.Add((0x4020, 0x5FFF, "Expansion_ROM", MemoryRegionType.Rom, (byte)MemoryType.NesMemory));
-				regions.Add((0x6000, 0x7FFF, "SRAM", MemoryRegionType.SaveRam, (byte)MemoryType.NesSaveRam));
-				regions.Add((0x8000, 0xFFFF, "PRG_ROM", MemoryRegionType.Rom, (byte)MemoryType.NesPrgRom));
+				regions.Add((0x0000, 0x07FF, "RAM", PansyMemoryRegionType.RAM, (byte)MemoryType.NesInternalRam));
+				regions.Add((0x0800, 0x1FFF, "RAM_Mirrors", PansyMemoryRegionType.Mirror, (byte)MemoryType.NesInternalRam));
+				regions.Add((0x2000, 0x2007, "PPU_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.NesMemory));
+				regions.Add((0x4000, 0x4017, "APU_IO_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.NesMemory));
+				regions.Add((0x4020, 0x5FFF, "Expansion_ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.NesMemory));
+				regions.Add((0x6000, 0x7FFF, "SRAM", PansyMemoryRegionType.SRAM, (byte)MemoryType.NesSaveRam));
+				regions.Add((0x8000, 0xFFFF, "PRG_ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.NesPrgRom));
 				break;
 
 			case ConsoleType.Snes:
 				// SNES Memory Map (LoROM mode as default)
-				regions.Add((0x0000, 0x1FFF, "LowRAM", MemoryRegionType.Ram, (byte)MemoryType.SnesMemory));
-				regions.Add((0x2100, 0x21FF, "PPU_Registers", MemoryRegionType.Io, (byte)MemoryType.SnesMemory));
-				regions.Add((0x4200, 0x43FF, "CPU_Registers", MemoryRegionType.Io, (byte)MemoryType.SnesMemory));
-				regions.Add((0x7E0000, 0x7FFFFF, "WRAM", MemoryRegionType.WorkRam, (byte)MemoryType.SnesWorkRam));
+				regions.Add((0x0000, 0x1FFF, "LowRAM", PansyMemoryRegionType.RAM, (byte)MemoryType.SnesMemory));
+				regions.Add((0x2100, 0x21FF, "PPU_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.SnesMemory));
+				regions.Add((0x4200, 0x43FF, "CPU_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.SnesMemory));
+				regions.Add((0x7E0000, 0x7FFFFF, "WRAM", PansyMemoryRegionType.WRAM, (byte)MemoryType.SnesWorkRam));
 				break;
 
 			case ConsoleType.Gameboy:
 				// Game Boy Memory Map
-				regions.Add((0x0000, 0x3FFF, "ROM_Bank_0", MemoryRegionType.Rom, (byte)MemoryType.GbPrgRom));
-				regions.Add((0x4000, 0x7FFF, "ROM_Bank_N", MemoryRegionType.Rom, (byte)MemoryType.GbPrgRom));
-				regions.Add((0x8000, 0x9FFF, "VRAM", MemoryRegionType.VideoRam, (byte)MemoryType.GbVideoRam));
-				regions.Add((0xA000, 0xBFFF, "External_RAM", MemoryRegionType.SaveRam, (byte)MemoryType.GbCartRam));
-				regions.Add((0xC000, 0xDFFF, "WRAM", MemoryRegionType.WorkRam, (byte)MemoryType.GbWorkRam));
-				regions.Add((0xFE00, 0xFE9F, "OAM", MemoryRegionType.Ram, (byte)MemoryType.GbSpriteRam));
-				regions.Add((0xFF00, 0xFF7F, "IO_Registers", MemoryRegionType.Io, (byte)MemoryType.GameboyMemory));
-				regions.Add((0xFF80, 0xFFFE, "HRAM", MemoryRegionType.Ram, (byte)MemoryType.GbHighRam));
+				regions.Add((0x0000, 0x3FFF, "ROM_Bank_0", PansyMemoryRegionType.ROM, (byte)MemoryType.GbPrgRom));
+				regions.Add((0x4000, 0x7FFF, "ROM_Bank_N", PansyMemoryRegionType.ROM, (byte)MemoryType.GbPrgRom));
+				regions.Add((0x8000, 0x9FFF, "VRAM", PansyMemoryRegionType.VRAM, (byte)MemoryType.GbVideoRam));
+				regions.Add((0xA000, 0xBFFF, "External_RAM", PansyMemoryRegionType.SRAM, (byte)MemoryType.GbCartRam));
+				regions.Add((0xC000, 0xDFFF, "WRAM", PansyMemoryRegionType.WRAM, (byte)MemoryType.GbWorkRam));
+				regions.Add((0xFE00, 0xFE9F, "OAM", PansyMemoryRegionType.RAM, (byte)MemoryType.GbSpriteRam));
+				regions.Add((0xFF00, 0xFF7F, "IO_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.GameboyMemory));
+				regions.Add((0xFF80, 0xFFFE, "HRAM", PansyMemoryRegionType.RAM, (byte)MemoryType.GbHighRam));
 				break;
 
 			case ConsoleType.Gba:
 				// GBA Memory Map
-				regions.Add((0x00000000, 0x00003FFF, "BIOS", MemoryRegionType.Rom, (byte)MemoryType.GbaMemory));
-				regions.Add((0x02000000, 0x0203FFFF, "EWRAM", MemoryRegionType.WorkRam, (byte)MemoryType.GbaMemory));
-				regions.Add((0x03000000, 0x03007FFF, "IWRAM", MemoryRegionType.WorkRam, (byte)MemoryType.GbaIntWorkRam));
-				regions.Add((0x04000000, 0x040003FF, "IO_Registers", MemoryRegionType.Io, (byte)MemoryType.GbaMemory));
-				regions.Add((0x05000000, 0x050003FF, "Palette_RAM", MemoryRegionType.Ram, (byte)MemoryType.GbaPaletteRam));
-				regions.Add((0x06000000, 0x06017FFF, "VRAM", MemoryRegionType.VideoRam, (byte)MemoryType.GbaVideoRam));
-				regions.Add((0x07000000, 0x070003FF, "OAM", MemoryRegionType.Ram, (byte)MemoryType.GbaSpriteRam));
-				regions.Add((0x08000000, 0x09FFFFFF, "ROM", MemoryRegionType.Rom, (byte)MemoryType.GbaPrgRom));
-				regions.Add((0x0E000000, 0x0E00FFFF, "SRAM", MemoryRegionType.SaveRam, (byte)MemoryType.GbaSaveRam));
+				regions.Add((0x00000000, 0x00003FFF, "BIOS", PansyMemoryRegionType.ROM, (byte)MemoryType.GbaMemory));
+				regions.Add((0x02000000, 0x0203FFFF, "EWRAM", PansyMemoryRegionType.WRAM, (byte)MemoryType.GbaMemory));
+				regions.Add((0x03000000, 0x03007FFF, "IWRAM", PansyMemoryRegionType.WRAM, (byte)MemoryType.GbaIntWorkRam));
+				regions.Add((0x04000000, 0x040003FF, "IO_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.GbaMemory));
+				regions.Add((0x05000000, 0x050003FF, "Palette_RAM", PansyMemoryRegionType.RAM, (byte)MemoryType.GbaPaletteRam));
+				regions.Add((0x06000000, 0x06017FFF, "VRAM", PansyMemoryRegionType.VRAM, (byte)MemoryType.GbaVideoRam));
+				regions.Add((0x07000000, 0x070003FF, "OAM", PansyMemoryRegionType.RAM, (byte)MemoryType.GbaSpriteRam));
+				regions.Add((0x08000000, 0x09FFFFFF, "ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.GbaPrgRom));
+				regions.Add((0x0E000000, 0x0E00FFFF, "SRAM", PansyMemoryRegionType.SRAM, (byte)MemoryType.GbaSaveRam));
 				break;
 
 			case ConsoleType.PcEngine:
 				// PC Engine Memory Map
-				regions.Add((0x0000, 0x1FFF, "RAM", MemoryRegionType.Ram, (byte)MemoryType.PceMemory));
-				regions.Add((0x1FE000, 0x1FFFFF, "Hardware_Registers", MemoryRegionType.Io, (byte)MemoryType.PceMemory));
+				regions.Add((0x0000, 0x1FFF, "RAM", PansyMemoryRegionType.RAM, (byte)MemoryType.PceMemory));
+				regions.Add((0x1FE000, 0x1FFFFF, "Hardware_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.PceMemory));
 				break;
 
 			case ConsoleType.Sms:
 				// Sega Master System Memory Map
-				regions.Add((0x0000, 0xBFFF, "ROM", MemoryRegionType.Rom, (byte)MemoryType.SmsPrgRom));
-				regions.Add((0xC000, 0xDFFF, "RAM", MemoryRegionType.Ram, (byte)MemoryType.SmsWorkRam));
+				regions.Add((0x0000, 0xBFFF, "ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.SmsPrgRom));
+				regions.Add((0xC000, 0xDFFF, "RAM", PansyMemoryRegionType.RAM, (byte)MemoryType.SmsWorkRam));
 				break;
 
 			case ConsoleType.Lynx:
 				// Atari Lynx Memory Map
-				regions.Add((0x0000, 0xFBFF, "RAM", MemoryRegionType.WorkRam, (byte)MemoryType.LynxWorkRam));
-				regions.Add((0xFC00, 0xFCFF, "Suzy_Registers", MemoryRegionType.Io, (byte)MemoryType.LynxMemory));
-				regions.Add((0xFD00, 0xFDFF, "Mikey_Registers", MemoryRegionType.Io, (byte)MemoryType.LynxMemory));
-				regions.Add((0xFE00, 0xFFF7, "Boot_ROM", MemoryRegionType.Rom, (byte)MemoryType.LynxBootRom));
-				regions.Add((0xFFFA, 0xFFFF, "Vectors", MemoryRegionType.Rom, (byte)MemoryType.LynxMemory));
+				regions.Add((0x0000, 0xFBFF, "RAM", PansyMemoryRegionType.WRAM, (byte)MemoryType.LynxWorkRam));
+				regions.Add((0xFC00, 0xFCFF, "Suzy_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.LynxMemory));
+				regions.Add((0xFD00, 0xFDFF, "Mikey_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.LynxMemory));
+				regions.Add((0xFE00, 0xFFF7, "Boot_ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.LynxBootRom));
+				regions.Add((0xFFFA, 0xFFFF, "Vectors", PansyMemoryRegionType.ROM, (byte)MemoryType.LynxMemory));
 				break;
 
 			// Add more console types as needed
@@ -1044,7 +1031,7 @@ public static class PansyExporter {
 
 		// Optimized: Use HashSet for O(1) deduplication during collection
 		var seenXrefs = new HashSet<(uint From, uint To)>(256);
-		var xrefs = new List<(uint From, uint To, CrossRefType Type, byte MemTypeFrom, byte MemTypeTo)>(256);
+		var xrefs = new List<(uint From, uint To, PansyCrossRefType Type, byte MemTypeFrom, byte MemTypeTo)>(256);
 
 		// Build sets for quick target classification
 		var functionSet = new HashSet<uint>(functions);
@@ -1071,17 +1058,17 @@ public static class PansyExporter {
 							uint targetAddr = (uint)line.EffectiveAddress;
 
 							// Determine xref type based on instruction and target
-							CrossRefType xrefType;
+							PansyCrossRefType xrefType;
 							if (functionSet.Contains(targetAddr)) {
-								xrefType = CrossRefType.Call;
+								xrefType = PansyCrossRefType.Jsr;
 							} else if (jumpTargetSet.Contains(targetAddr)) {
 								// Check if it's a branch (short jump) or full jump
-								xrefType = IsBranchInstruction(line.ByteCode, cpuType) ? CrossRefType.Branch : CrossRefType.Jump;
+								xrefType = IsBranchInstruction(line.ByteCode, cpuType) ? PansyCrossRefType.Branch : PansyCrossRefType.Jmp;
 							} else if (cdlSpan.Length > targetAddr && (cdlSpan[(int)targetAddr] & 0x02) != 0) {
 								// Target is data - this is a read/write
-								xrefType = IsWriteInstruction(line.ByteCode, cpuType) ? CrossRefType.Write : CrossRefType.Read;
+								xrefType = IsWriteInstruction(line.ByteCode, cpuType) ? PansyCrossRefType.Write : PansyCrossRefType.Read;
 							} else {
-								xrefType = CrossRefType.Jump; // Default
+								xrefType = PansyCrossRefType.Jmp; // Default
 							}
 
 							// Optimized: Inline deduplication using HashSet

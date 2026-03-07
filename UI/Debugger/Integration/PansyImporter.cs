@@ -1,26 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
-using System.Text;
 using Nexen.Config;
 using Nexen.Debugger.Labels;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.Windows;
+using Pansy.Core;
 
 namespace Nexen.Debugger.Integration;
 
 /// <summary>
 /// Imports Pansy metadata files into Nexen's debugger.
-/// Supports loading symbols, comments, memory regions, and cross-references.
+/// Uses Pansy.Core.PansyLoader for canonical binary format reading.
 /// </summary>
 public sealed class PansyImporter {
-	private const string MAGIC = "PANSY\0\0\0";
-	private const ushort MIN_VERSION = 0x0100;
-	private const ushort MAX_VERSION = 0x0100;
-	private const ushort FLAG_COMPRESSED = 0x0001;
-
 	/// <summary>
 	/// Import a Pansy file into the current debugger session.
 	/// </summary>
@@ -36,70 +30,38 @@ public sealed class PansyImporter {
 				return result;
 			}
 
-			using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
-			using var reader = new BinaryReader(stream);
+			// Use PansyLoader for canonical binary format reading
+			var loader = PansyLoader.Load(path);
 
-			// Read and validate header
-			var header = ReadHeader(reader);
-			if (header is null) {
-				result.Error = "Invalid Pansy file header";
-				return result;
+			result.Version = loader.Version;
+			result.Platform = GetPlatformName(loader.Platform);
+
+			// Import symbols
+			var symbolEntries = loader.SymbolEntries;
+			if (symbolEntries.Count > 0) {
+				result.SymbolsImported = ImportSymbols(symbolEntries, loader.Platform);
 			}
 
-			result.Version = header.Version;
-			result.Platform = GetPlatformName(header.Platform);
-
-			// Read section table from header (immediately after 32-byte header)
-			// Each entry: Type(u32) + Offset(u32) + CompSize(u32) + UncompSize(u32) = 16 bytes
-			var sectionEntries = new List<(uint Type, uint Offset, uint CompSize, uint UncompSize)>();
-			for (uint i = 0; i < header.SectionCount; i++) {
-				uint sType = reader.ReadUInt32();
-				uint sOffset = reader.ReadUInt32();
-				uint sCompSize = reader.ReadUInt32();
-				uint sUncompSize = reader.ReadUInt32();
-				sectionEntries.Add((sType, sOffset, sCompSize, sUncompSize));
+			// Import comments
+			var commentEntries = loader.CommentEntries;
+			if (commentEntries.Count > 0) {
+				result.CommentsImported = ImportComments(commentEntries, loader.Platform);
 			}
 
-			// Process each section by seeking to its offset
-			foreach (var (sType, sOffset, sCompSize, sUncompSize) in sectionEntries) {
-				try {
-					stream.Seek(sOffset, SeekOrigin.Begin);
-					byte[] rawData = reader.ReadBytes((int)sCompSize);
+			// Import code/data map
+			var codeDataMap = loader.CodeDataMapBytes;
+			if (codeDataMap is not null && codeDataMap.Length > 0) {
+				result.CodeOffsetsImported = codeDataMap.Length;
+			}
 
-					// Decompress if needed
-					byte[] sectionData;
-					if ((header.Flags & FLAG_COMPRESSED) != 0 && sCompSize != sUncompSize) {
-						sectionData = PansyExporter.DecompressData(rawData, (int)sUncompSize);
-					} else {
-						sectionData = rawData;
-					}
+			// Import memory regions
+			if (loader.MemoryRegions.Count > 0) {
+				result.MemoryRegionsImported = loader.MemoryRegions.Count;
+			}
 
-					switch (sType) {
-						case 0x0001: // CODE_DATA_MAP
-							result.CodeOffsetsImported = ImportCodeDataMap(sectionData);
-							break;
-						case 0x0002: // SYMBOLS
-							result.SymbolsImported = ImportSymbols(sectionData, header);
-							break;
-						case 0x0003: // COMMENTS
-							result.CommentsImported = ImportComments(sectionData, header);
-							break;
-						case 0x0004: // MEMORY_REGIONS
-							result.MemoryRegionsImported = ImportMemoryRegions(sectionData, header);
-							break;
-						case 0x0006: // CROSS_REFS
-							result.CrossReferencesImported = ImportCrossReferences(sectionData, header);
-							break;
-						case 0x0008: // METADATA
-							// Metadata can be used in the future
-							break;
-						default:
-							// Unknown/reserved section, skip
-							break;
-					}
-				} catch (Exception) {
-					// Skip sections that fail to parse
-				}
+			// Import cross-references
+			if (loader.CrossReferences.Count > 0) {
+				result.CrossReferencesImported = loader.CrossReferences.Count;
 			}
 
 			result.Success = true;
@@ -122,90 +84,25 @@ public sealed class PansyImporter {
 		return result.Success ? result.SymbolsImported : 0;
 	}
 
-	private static PansyHeader? ReadHeader(BinaryReader reader) {
-		try {
-			// Magic (8 bytes, offset 0)
-			byte[] magic = reader.ReadBytes(8);
-			string magicStr = Encoding.ASCII.GetString(magic);
-			if (magicStr != MAGIC)
-				return null;
-
-			// Version (2 bytes, offset 8)
-			ushort version = reader.ReadUInt16();
-			if (version is < MIN_VERSION or > MAX_VERSION)
-				return null;
-
-			// Flags (2 bytes, offset 10) - PansyFlags as uint16
-			ushort flags = reader.ReadUInt16();
-
-			// Platform (1 byte, offset 12)
-			byte platform = reader.ReadByte();
-
-			// Reserved (3 bytes, offset 13-15)
-			reader.ReadByte();
-			reader.ReadUInt16();
-
-			// ROM size (4 bytes, offset 16)
-			uint romSize = reader.ReadUInt32();
-
-			// ROM CRC32 (4 bytes, offset 20)
-			uint romCrc = reader.ReadUInt32();
-
-			// Section count (4 bytes, offset 24)
-			uint sectionCount = reader.ReadUInt32();
-
-			// Reserved (4 bytes, offset 28)
-			reader.ReadUInt32();
-
-			return new PansyHeader {
-				Version = version,
-				Platform = platform,
-				Flags = flags,
-				RomSize = romSize,
-				RomCrc32 = romCrc,
-				SectionCount = sectionCount
-			};
-		} catch {
-			return null;
-		}
-	}
-
-	private static int ImportSymbols(byte[] data, PansyHeader header) {
+	private static int ImportSymbols(IReadOnlyDictionary<int, SymbolEntry> symbolEntries, byte platform) {
 		var labels = new List<CodeLabel>();
 
-		using var ms = new MemoryStream(data);
-		using var reader = new BinaryReader(ms);
+		foreach (var (address, symbol) in symbolEntries) {
+			// Map platform to default ROM memory type
+			var memType = GetPrgRomType(platform);
+			if (memType is null)
+				continue;
 
-		uint count = reader.ReadUInt32();
-		for (uint i = 0; i < count; i++) {
-			try {
-				uint address = reader.ReadUInt32();
-				byte symbolType = reader.ReadByte();
-				byte symbolFlags = reader.ReadByte();
-				byte memTypeId = reader.ReadByte();
-				reader.ReadByte(); // Reserved
+			// Filter based on config
+			if (!ShouldImportLabel(memType.Value))
+				continue;
 
-				ushort nameLen = reader.ReadUInt16();
-				string name = Encoding.UTF8.GetString(reader.ReadBytes(nameLen));
-
-				// Map Pansy memory type to Nexen
-				var memType = MapMemoryType(memTypeId, header.Platform);
-				if (memType is null)
-					continue;
-
-				// Filter based on config
-				if (!ShouldImportLabel(memType.Value))
-					continue;
-
-				labels.Add(new CodeLabel {
-					Address = address,
-					MemoryType = memType.Value,
-					Label = name,
-					Comment = "" // Comments are in separate section
-				});
-			} catch {
-				break;
-			}
+			labels.Add(new CodeLabel {
+				Address = (uint)address,
+				MemoryType = memType.Value,
+				Label = symbol.Name,
+				Comment = ""
+			});
 		}
 
 		if (labels.Count > 0) {
@@ -215,91 +112,31 @@ public sealed class PansyImporter {
 		return labels.Count;
 	}
 
-	private static int ImportComments(byte[] data, PansyHeader header) {
-		int count = 0;
+	private static int ImportComments(IReadOnlyDictionary<int, CommentEntry> commentEntries, byte platform) {
 		var config = ConfigManager.Config.Debug.Integration;
 
 		if (!config.ImportComments)
 			return 0;
 
-		using var ms = new MemoryStream(data);
-		using var reader = new BinaryReader(ms);
+		int count = 0;
 
-		uint commentCount = reader.ReadUInt32();
-		for (uint i = 0; i < commentCount; i++) {
-			try {
-				uint address = reader.ReadUInt32();
-				byte memTypeId = reader.ReadByte();
-				reader.ReadBytes(3); // Reserved
+		foreach (var (address, comment) in commentEntries) {
+			var memType = GetPrgRomType(platform);
+			if (memType is null)
+				continue;
 
-				ushort commentLen = reader.ReadUInt16();
-				string comment = Encoding.UTF8.GetString(reader.ReadBytes(commentLen));
+			if (!ShouldImportLabel(memType.Value))
+				continue;
 
-				var memType = MapMemoryType(memTypeId, header.Platform);
-				if (memType is null)
-					continue;
-
-				if (!ShouldImportLabel(memType.Value))
-					continue;
-
-				// Try to update existing label with comment
-				var existingLabel = LabelManager.GetLabel(address, memType.Value);
-				if (existingLabel is not null) {
-					existingLabel.Comment = comment;
-					count++;
-				}
-			} catch {
-				break;
+			// Try to update existing label with comment
+			var existingLabel = LabelManager.GetLabel((uint)address, memType.Value);
+			if (existingLabel is not null) {
+				existingLabel.Comment = comment.Text;
+				count++;
 			}
 		}
 
 		return count;
-	}
-
-	private static int ImportCodeDataMap(byte[] data) {
-		// Code/data map is a byte array where each byte represents flags for one address
-		// Pansy flags: CODE(0x01), DATA(0x02), JUMP_TARGET(0x04), SUB_ENTRY(0x08),
-		//              OPCODE(0x10), DRAWN(0x20), READ(0x40), INDIRECT(0x80)
-		// We can use this to set CDL flags on the loaded ROM
-		return data.Length; // Return count of mapped bytes
-	}
-
-	private static int ImportJumpTargets(byte[] data, PansyHeader header) {
-		return ImportAddressList(data, CdlFlags.JumpTarget);
-	}
-
-	private static int ImportSubEntryPoints(byte[] data, PansyHeader header) {
-		return ImportAddressList(data, CdlFlags.SubEntryPoint);
-	}
-
-	private static int ImportAddressList(byte[] data, CdlFlags flag) {
-		using var ms = new MemoryStream(data);
-		using var reader = new BinaryReader(ms);
-
-		uint count = reader.ReadUInt32();
-		// Address lists would need CDL integration to set flags
-		// For now, just count them
-		return (int)count;
-	}
-
-	private static int ImportMemoryRegions(byte[] data, PansyHeader header) {
-		// Memory regions can be imported as label ranges
-		// This is a placeholder for extended functionality
-		using var ms = new MemoryStream(data);
-		using var reader = new BinaryReader(ms);
-
-		uint count = reader.ReadUInt32();
-		return (int)count;
-	}
-
-	private static int ImportCrossReferences(byte[] data, PansyHeader header) {
-		// Cross-references could be used for navigation
-		// This is a placeholder for extended functionality
-		using var ms = new MemoryStream(data);
-		using var reader = new BinaryReader(ms);
-
-		uint count = reader.ReadUInt32();
-		return (int)count;
 	}
 
 	private static MemoryType? MapMemoryType(byte pansyMemType, byte platform) {
@@ -428,14 +265,6 @@ public sealed class PansyImporter {
 		NexenMsgBox.Show(null, "PansyImportComplete", MessageBoxButtons.OK, MessageBoxIcon.Info, stats);
 	}
 
-	private class PansyHeader {
-		public ushort Version { get; set; }
-		public byte Platform { get; set; }
-		public ushort Flags { get; set; }
-		public uint RomSize { get; set; }
-		public uint RomCrc32 { get; set; }
-		public uint SectionCount { get; set; }
-	}
 }
 
 /// <summary>
