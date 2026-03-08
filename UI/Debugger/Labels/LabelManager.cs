@@ -131,7 +131,7 @@ public sealed class LabelManager {
 	/// <param name="label">The label name to search for.</param>
 	/// <returns>The label if found; otherwise, <c>null</c>.</returns>
 	public static CodeLabel? GetLabel(string label) {
-		return _reverseLookup.ContainsKey(label) ? _reverseLookup[label] : null;
+		return _reverseLookup.TryGetValue(label, out var result) ? result : null;
 	}
 
 	/// <summary>
@@ -231,9 +231,9 @@ public sealed class LabelManager {
 	/// </para>
 	/// </remarks>
 	public static bool SetLabel(CodeLabel label, bool raiseEvent) {
-		if (_reverseLookup.ContainsKey(label.Label)) {
+		if (_reverseLookup.TryGetValue(label.Label, out var existingByName)) {
 			//Another identical label exists, we need to remove it
-			DeleteLabel(_reverseLookup[label.Label], false);
+			DeleteLabel(existingByName, false);
 		}
 
 		string comment = label.Comment;
@@ -280,8 +280,8 @@ public sealed class LabelManager {
 		_labels.Remove(label);
 		for (UInt32 i = label.Address; i < label.Address + label.Length; i++) {
 			UInt64 key = GetKey(i, label.MemoryType);
-			if (_labelsByKey.ContainsKey(key)) {
-				_reverseLookup.Remove(_labelsByKey[key].Label);
+			if (_labelsByKey.TryGetValue(key, out var existingLabel)) {
+				_reverseLookup.Remove(existingLabel.Label);
 			}
 
 			if (_labelsByKey.Remove(key)) {
