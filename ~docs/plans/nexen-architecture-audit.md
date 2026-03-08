@@ -221,6 +221,7 @@ Core/WS/
 ## 5. Lynx-Specific Architectural Considerations
 
 ### Memory Overlay (MAPCTL)
+
 The Lynx has a unique memory overlay system controlled by the MAPCTL register ($FFF9):
 
 - Bit 0: FE00-FFFF — Vector space (ROM or RAM)
@@ -232,6 +233,7 @@ The Lynx has a unique memory overlay system controlled by the MAPCTL register ($
 This requires careful memory manager implementation — the same address can map to different things.
 
 ### Bus Contention
+
 The Lynx has only one data bus shared by 4 bus masters:
 
 1. CPU (lowest priority)
@@ -242,6 +244,7 @@ The Lynx has only one data bus shared by 4 bus masters:
 When Suzy is doing sprites, the CPU is halted. This affects timing.
 
 ### No NMI
+
 Unlike the NES/SNES/GB, the Lynx does NOT use NMI for frame timing. Instead:
 
 - Timer interrupts (IRQ) drive everything
@@ -249,6 +252,7 @@ Unlike the NES/SNES/GB, the Lynx does NOT use NMI for frame timing. Instead:
 - HBL is signaled by Timer 0
 
 ### Screen Rotation
+
 Some games are designed to be played with the Lynx rotated 90° or 180°:
 
 - Hardware supports screen flipping via DISPCTL register
@@ -256,6 +260,7 @@ Some games are designed to be played with the Lynx rotated 90° or 180°:
 - ROM database includes rotation hints per game
 
 ### Save Data
+
 Not all games have save data. Those that do use EEPROM:
 
 - 93C46 (128×8 or 64×16) — most common

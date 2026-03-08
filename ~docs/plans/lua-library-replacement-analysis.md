@@ -195,6 +195,7 @@ This removes the vendored Lua modification (`SANDBOX_ALLOW_LOADFILE` global in `
 - No performance improvements to `lua_sethook()` or hook mechanism found
 
 ### Lua 5.5.0 Changes
+
 Main features (none improve hook performance):
 
 - Declarations for global variables

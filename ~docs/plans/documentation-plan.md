@@ -18,6 +18,7 @@ This plan covers adding comprehensive XML documentation comments and inline code
 ## File Categories
 
 ### Priority 1: Core Infrastructure (High Impact)
+
 Files that are foundational to the codebase:
 
 | File | Status | Description |
@@ -30,6 +31,7 @@ Files that are foundational to the codebase:
 | `UI/NexenWindow.cs` | 🔴 | Base window class |
 
 ### Priority 2: Pansy Integration (Project-Specific)
+
 Our custom Pansy metadata format integration:
 
 | File | Status | Description |
@@ -43,6 +45,7 @@ Our custom Pansy metadata format integration:
 | `UI/Debugger/Integration/DbgToPansyConverter.cs` | 🔴 | DBG to Pansy conversion |
 
 ### Priority 3: Label & Symbol Management
+
 Core debugger label functionality:
 
 | File | Status | Description |
@@ -52,6 +55,7 @@ Core debugger label functionality:
 | `UI/Debugger/Labels/DefaultLabelHelper.cs` | 🔴 | Default label generation |
 
 ### Priority 4: Debugger Utilities
+
 Helper classes for debugger features:
 
 | File | Status | Description |
@@ -64,6 +68,7 @@ Helper classes for debugger features:
 | `UI/Debugger/Utilities/NavigationHistory.cs` | 🔴 | Back/forward navigation |
 
 ### Priority 5: Interop Layer
+
 C++/C# interop definitions:
 
 | File | Status | Description |
@@ -74,6 +79,7 @@ C++/C# interop definitions:
 | `UI/Interop/BaseState.cs` | 🔴 | Console state structures |
 
 ### Priority 6: ViewModels
+
 MVVM view models:
 
 | File | Status | Description |
@@ -84,6 +90,7 @@ MVVM view models:
 | `UI/Debugger/ViewModels/LabelListViewModel.cs` | 🔴 | Label list VM |
 
 ### Priority 7: UI Utilities
+
 Helper classes for UI:
 
 | File | Status | Description |

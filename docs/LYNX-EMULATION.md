@@ -142,6 +142,7 @@ Nexen provides full TAS support for the Lynx:
 - Input polled at start of each frame (before CPU execution)
 
 ### Piano Roll
+
 All 9 buttons appear in the piano roll editor with labels:
 
 - Arrow keys: directional buttons
@@ -150,6 +151,7 @@ All 9 buttons appear in the piano roll editor with labels:
 - Pau: pause button
 
 ### BK2 Import/Export
+
 Full BK2 (BizHawk) movie format compatibility:
 
 - Import: Maps BK2 controller buttons to Lynx layout

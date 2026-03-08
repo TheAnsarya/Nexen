@@ -73,6 +73,7 @@ Nexen was forked from [Mesen2](https://github.com/SourMesen/Mesen2) because deve
 - Bidirectional sync with external label files
 
 ### 🐛 8 Upstream Mesen2 Bug Fixes
+
 Fixes from unmerged Mesen2 PRs that Nexen integrates:
 
 - SNES DMA overflow, CX4 cache/timing, hi-res blend, ExLoRom mapping

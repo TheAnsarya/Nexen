@@ -60,11 +60,13 @@ This document tracks the GitHub issues and epics for the C++ core modernization 
 **Depends On:** None
 
 ### Description
+
 Modernize the C++ build system to use VS2026 tooling, enable C++23, and integrate modern analysis tools.
 
 ### Issues
 
 #### Issue 8.1: Update Platform Toolset to v144 (VS2026)
+
 **GitHub:** [#46](https://github.com/TheAnsarya/Nexen/issues/46) ✅ CLOSED
 **Priority:** HIGH
 **Labels:** `build`, `modernization`, `cpp`
@@ -91,6 +93,7 @@ Update all C++ project files to use the VS2026 platform toolset (v144).
 ---
 
 #### Issue 8.2: Enable C++23 Language Standard
+
 **GitHub:** [#47](https://github.com/TheAnsarya/Nexen/issues/47) ✅ CLOSED
 **Priority:** HIGH
 **Labels:** `build`, `modernization`, `cpp`
@@ -113,6 +116,7 @@ Enable C++23 language standard across all C++ projects.
 ---
 
 #### Issue 8.3: Enable Maximum Warning Level
+
 **Priority:** MEDIUM
 **Labels:** `build`, `code-quality`, `cpp`
 
@@ -133,6 +137,7 @@ Enable warning level 4 (/W4) and optionally treat warnings as errors.
 ---
 
 #### Issue 8.4: Integrate Clang-Tidy
+
 **Priority:** MEDIUM
 **Labels:** `tooling`, `code-quality`, `cpp`
 
@@ -154,6 +159,7 @@ Set up clang-tidy for static analysis and automated code modernization suggestio
 ---
 
 #### Issue 8.5: Configure AddressSanitizer for Debug Builds
+
 **Priority:** LOW
 **Labels:** `tooling`, `testing`, `cpp`
 
@@ -174,6 +180,7 @@ Enable AddressSanitizer (ASan) for debug builds to catch memory errors.
 ---
 
 #### Issue 8.6: Update Linux Build Configuration
+
 **Priority:** MEDIUM
 **Labels:** `build`, `linux`, `cpp`
 
@@ -202,11 +209,13 @@ Update makefile and CMake (if applicable) for Linux builds with C++23.
 **Depends On:** Epic 8
 
 ### Description
+
 Establish comprehensive unit testing infrastructure for C++ core components using Google Test or Catch2.
 
 ### Issues
 
 #### Issue 9.1: Integrate Testing Framework
+
 **Priority:** HIGH
 **Labels:** `testing`, `infrastructure`, `cpp`
 
@@ -228,6 +237,7 @@ Add Google Test (gtest) or Catch2 testing framework to the solution.
 ---
 
 #### Issue 9.2: Create NES CPU Instruction Tests
+
 **Priority:** HIGH
 **Labels:** `testing`, `nes`, `cpu`, `cpp`
 
@@ -250,6 +260,7 @@ Create comprehensive tests for all 6502 CPU instructions.
 ---
 
 #### Issue 9.3: Create SNES CPU Instruction Tests
+
 **Priority:** HIGH
 **Labels:** `testing`, `snes`, `cpu`, `cpp`
 
@@ -271,6 +282,7 @@ Create comprehensive tests for 65816 CPU instructions.
 ---
 
 #### Issue 9.4: Create Game Boy CPU Tests
+
 **Priority:** MEDIUM
 **Labels:** `testing`, `gameboy`, `cpu`, `cpp`
 
@@ -292,6 +304,7 @@ Create tests for Sharp LR35902 CPU instructions.
 ---
 
 #### Issue 9.5: Create Memory Mapping Tests
+
 **Priority:** HIGH
 **Labels:** `testing`, `memory`, `cpp`
 
@@ -313,6 +326,7 @@ Create tests for memory mapping across all platforms.
 ---
 
 #### Issue 9.6: Create PPU Timing Tests
+
 **Priority:** MEDIUM
 **Labels:** `testing`, `ppu`, `cpp`
 
@@ -334,6 +348,7 @@ Create tests for PPU timing accuracy.
 ---
 
 #### Issue 9.7: Create Save State Tests
+
 **Priority:** MEDIUM
 **Labels:** `testing`, `savestate`, `cpp`
 
@@ -355,6 +370,7 @@ Create tests for save state integrity.
 ---
 
 #### Issue 9.8: Configure CI Test Execution
+
 **Priority:** LOW
 **Labels:** `testing`, `ci`, `cpp`
 
@@ -382,11 +398,13 @@ Configure continuous integration to run C++ tests.
 **Depends On:** Epic 9
 
 ### Description
+
 Replace raw pointers with smart pointers and modern containers for improved memory safety.
 
 ### Issues
 
 #### Issue 10.1: Migrate Core/Shared to Smart Pointers
+
 **Priority:** HIGH
 **Labels:** `modernization`, `memory`, `cpp`
 
@@ -407,6 +425,7 @@ Replace raw pointer allocations in Core/Shared with smart pointers.
 ---
 
 #### Issue 10.2: Migrate NES Core to Smart Pointers
+
 **Priority:** MEDIUM
 **Labels:** `modernization`, `memory`, `nes`, `cpp`
 
@@ -422,6 +441,7 @@ Modernize memory management in NES emulation core.
 ---
 
 #### Issue 10.3: Migrate SNES Core to Smart Pointers
+
 **Priority:** MEDIUM
 **Labels:** `modernization`, `memory`, `snes`, `cpp`
 
@@ -431,18 +451,21 @@ Modernize memory management in SNES emulation core.
 ---
 
 #### Issue 10.4: Migrate Game Boy Core to Smart Pointers
+
 **Priority:** MEDIUM
 **Labels:** `modernization`, `memory`, `gameboy`, `cpp`
 
 ---
 
 #### Issue 10.5: Migrate GBA Core to Smart Pointers
+
 **Priority:** LOW
 **Labels:** `modernization`, `memory`, `gba`, `cpp`
 
 ---
 
 #### Issue 10.6: Adopt std::span for Buffer Parameters
+
 **GitHub:** [#82](https://github.com/TheAnsarya/Nexen/issues/82) ✅ CLOSED
 **Priority:** MEDIUM
 **Labels:** `modernization`, `cpp`
@@ -470,6 +493,7 @@ Replace raw pointer + size pairs with std::span.
 ---
 
 #### Issue 10.7: Adopt std::array for Fixed-Size Arrays
+
 **Priority:** LOW
 **Labels:** `modernization`, `cpp`
 
@@ -479,6 +503,7 @@ Replace C-style arrays with std::array where size is known at compile time.
 ---
 
 #### Issue 10.8: Replace C-Style Casts
+
 **Priority:** LOW
 **Labels:** `modernization`, `code-quality`, `cpp`
 
@@ -495,6 +520,7 @@ Replace C-style casts with appropriate C++ casts.
 ---
 
 #### Issue 10.9: Add [[nodiscard]] Attributes
+
 **Priority:** LOW
 **Labels:** `modernization`, `code-quality`, `cpp`
 
@@ -504,6 +530,7 @@ Add [[nodiscard]] to functions where return value should not be ignored.
 ---
 
 #### Issue 10.10: Expand constexpr Usage
+
 **Priority:** LOW
 **Labels:** `modernization`, `performance`, `cpp`
 
@@ -520,11 +547,13 @@ Mark functions and variables as constexpr where possible.
 **Depends On:** Epic 10
 
 ### Description
+
 Leverage modern C++ standard library features for cleaner, safer code.
 
 ### Issues
 
 #### Issue 11.1: Adopt std::ranges Algorithms
+
 **Priority:** MEDIUM
 **Labels:** `modernization`, `cpp`
 
@@ -534,6 +563,7 @@ Replace manual loops with std::ranges algorithms.
 ---
 
 #### Issue 11.2: Migrate to std::format
+
 **Priority:** MEDIUM
 **Labels:** `modernization`, `cpp`
 
@@ -543,6 +573,7 @@ Replace sprintf/snprintf with std::format.
 ---
 
 #### Issue 11.3: Adopt std::filesystem
+
 **Priority:** LOW
 **Labels:** `modernization`, `cpp`
 
@@ -552,6 +583,7 @@ Use std::filesystem for file operations where not already used.
 ---
 
 #### Issue 11.4: Use std::optional for Optional Values
+
 **Priority:** MEDIUM
 **Labels:** `modernization`, `cpp`
 
@@ -561,18 +593,21 @@ Replace null pointers for optional values with std::optional.
 ---
 
 #### Issue 11.5: Use std::variant for Type-Safe Unions
+
 **Priority:** LOW
 **Labels:** `modernization`, `cpp`
 
 ---
 
 #### Issue 11.6: Apply Structured Bindings
+
 **Priority:** LOW
 **Labels:** `modernization`, `cpp`
 
 ---
 
 #### Issue 11.7: Apply [[likely]]/[[unlikely]] Attributes
+
 **Priority:** LOW
 **Labels:** `performance`, `cpp`
 
@@ -582,6 +617,7 @@ Add branch prediction hints to hot paths.
 ---
 
 #### Issue 11.8: Use std::string_view for Non-Owning Strings
+
 **Priority:** LOW
 **Labels:** `modernization`, `cpp`
 
@@ -595,11 +631,13 @@ Add branch prediction hints to hot paths.
 **Depends On:** Epic 11
 
 ### Description
+
 Profile and optimize critical emulation paths.
 
 ### Issues
 
 #### Issue 12.1: Set Up Profiling Infrastructure
+
 **Priority:** MEDIUM
 **Labels:** `performance`, `tooling`, `cpp`
 
@@ -609,6 +647,7 @@ Configure profiling tools (VTune, Tracy, or perf).
 ---
 
 #### Issue 12.2: Create Performance Benchmarks
+
 **Priority:** MEDIUM
 **Labels:** `performance`, `testing`, `cpp`
 
@@ -618,24 +657,28 @@ Create benchmarks for critical components.
 ---
 
 #### Issue 12.3: Optimize CPU Hot Paths
+
 **Priority:** MEDIUM
 **Labels:** `performance`, `cpu`, `cpp`
 
 ---
 
 #### Issue 12.4: Optimize Memory Access Patterns
+
 **Priority:** LOW
 **Labels:** `performance`, `memory`, `cpp`
 
 ---
 
 #### Issue 12.5: Evaluate SIMD Opportunities
+
 **Priority:** LOW
 **Labels:** `performance`, `simd`, `cpp`
 
 ---
 
 #### Issue 12.6: Document Performance Characteristics
+
 **Priority:** LOW
 **Labels:** `documentation`, `performance`, `cpp`
 
@@ -649,35 +692,41 @@ Create benchmarks for critical components.
 **Depends On:** All other epics
 
 ### Description
+
 Comprehensive documentation for C++ codebase.
 
 ### Issues
 
 #### Issue 13.1: Set Up Doxygen
+
 **Priority:** LOW
 **Labels:** `documentation`, `tooling`, `cpp`
 
 ---
 
 #### Issue 13.2: Document Core/Shared APIs
+
 **Priority:** LOW
 **Labels:** `documentation`, `cpp`
 
 ---
 
 #### Issue 13.3: Document Emulation Architecture
+
 **Priority:** LOW
 **Labels:** `documentation`, `cpp`
 
 ---
 
 #### Issue 13.4: Document Emulation Accuracy Notes
+
 **Priority:** LOW
 **Labels:** `documentation`, `cpp`
 
 ---
 
 #### Issue 13.5: Apply clang-format
+
 **Priority:** LOW
 **Labels:** `code-quality`, `cpp`
 

@@ -145,6 +145,7 @@ bool SaveStateManager::SaveState(const string& filepath, bool showSuccessMessage
 ```
 
 ### Phase 2: Optimize Rewind (Future)
+
 Rewind saves are frequent (every 30 frames) and use a different path (RewindManager). This phase would apply similar async patterns to rewind but is significantly more complex due to the need for immediate load-back capability.
 
 ## Risk Assessment

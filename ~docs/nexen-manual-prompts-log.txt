@@ -473,11 +473,41 @@ you mentioned "Cross-Project Gaps" use `game-garden` repos for cross project scr
 
 [Nexen/Poppy/Pansy/Peony/game-garden] continue working issues, and make new issues for work we find, and update all the supporting docs; update the pansy nuget package and update it and use it in the other repos; continue;
 
-continue;
+[pansy/Nexen] Labels! Make plans/issues/epics/sub-issues/docs/code-plans/chat-session-logs/plans/etc; Find a way to analyze the data to create label names, also a way to use AI and search the internet for data (like datacrystal) to determine label names so the pansy file is better and the peony disassembly is better, and poppy building is better, and the nexen debug is better; continue;
 
 continue;
 
 continue;
+
+[Nexen/Poppy/Pansy/Peony/game-garden] continue working issues, and make new issues for work we find, and update all the supporting docs; update the pansy nuget package and update it and use it in the other repos; make Nexen record everything in the pansy file format (so we can use it on games and advance towards the peony and pansy and poppy and nexen pipeline) and run a ton of performance benchmarks and tests (for correctness) and don't mess up emulation but make it faster and speed up and make pipeline and emulation works and make Nexen output everything; continue; After making sure there are no errors, and no warnings, fix all of them, then make a release and update readme's and documents for the release of a new version; continue;
+
+Work or close if done Nexen issue #48; continue;
+
+peony#75, #73, #3 — Deep integration, VS Code extension, Atari 2600, pansy#44 — UI Analysis Panel, poppy#44 — GameInfo Repository Integration
+
+[peony] continue making issues and working then for continuing improvements and progress for the disassembly process and it's pipeline integration and benchmarks and tests of the code and make performance and memory gains and document and update chat/session logs and git commit and push, etc.; continue;
+
+Update the `readme.md` and linked documentation to be comprehensive and accurate and make sure every doc can be found through the link-tree starting in the main readme file; make a documentation update issue in github and plan the work before implementing it; make sure we have have good instructions for using peony, not just CLI flags or whatever, but a full ecosystem approach and and also how to get the best results and what it's doing with the data you give it and the general pipeline; continue;
+
+[all repos] git commit everything, add to copilot instructions that we always fix markdownlinter warnings like MD022, MD032, etc and fix them in all `*.md` files now and generate markdown files with the appropriate extra newlines in the future; continue working and making issues for all work, find improvements and performance issues and implement fixes; add to copilot instructions: every markdown file or documentation should be accessible from the main readme file through the link-tree; continue; 
+
+
+
+
+
+
+https://github.com/TheAnsarya/Nexen/releases
+
+
+
+
+
+
+
+
+
+
+
 
 
 

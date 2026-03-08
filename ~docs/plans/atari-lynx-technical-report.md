@@ -1058,67 +1058,80 @@ For accurate emulation:
 These bugs must be accurately emulated for compatibility:
 
 ### 13.1 CPU Sleep Bug
+
 **Location**: Mikey (CPUSLEEP at $FD91)
 **Bug**: The CPU will not remain asleep unless Suzy currently holds the bus. If Suzy isn't active, the CPU immediately wakes.
 **Impact**: Games must start Suzy sprite processing BEFORE sleeping the CPU.
 
 ### 13.2 UART Interrupt Level Sensitivity
+
 **Location**: Mikey serial controller
 **Bug**: TX and RX interrupts are **level-sensitive** instead of edge-sensitive. The interrupt fires continuously as long as the condition is true, not just on the transition.
 **Impact**: ComLynx-linked games may hang if interrupt handler doesn't properly manage this.
 
 ### 13.3 UART TXD Power-Up State
+
 **Location**: Mikey serial controller
 **Bug**: TXD pin powers up as TTL HIGH instead of open-collector state.
 **Impact**: Other Lynx units on the ComLynx network will see garbage data at power-on.
 
 ### 13.4 Audio Lower Nibble
+
 **Location**: Mikey audio engine
 **Bug**: The lower nibble of audio output is processed through a missing inverter in the DAC. The signed-to-unsigned conversion has a discontinuity at the value 8→9 transition.
 **Impact**: Audio output has a slight glitch; faithfully reproducing this creates more accurate sound.
 
 ### 13.5 Timer Done Bit Not a Pulse
+
 **Location**: Mikey timers
 **Bug**: The Timer Done bit in Control B is not automatically cleared (it's not a pulse). It must be manually reset via RESET_DONE in Control A.
 **Impact**: Software must explicitly clear the done flag; polling loops must account for this.
 
 ### 13.6 Timer Done Requires Clearing to Count
+
 **Location**: Mikey timers
 **Bug**: A timer will not continue counting if the Timer Done flag is set. The flag must be cleared before the timer can count again.
 **Impact**: Interrupt handlers must always clear Timer Done.
 
 ### 13.7 Sprite Shadow Polarity
+
 **Location**: Suzy sprite engine
 **Bug**: Shadow sprite polarity is inverted from the documentation. Shadow writes where it shouldn't, and doesn't where it should.
 **Impact**: Shadow sprite type behavior must be inverted in the emulator.
 
 ### 13.8 Signed Multiply Bugs
+
 **Location**: Suzy math unit
 **Bug 1**: $8000 is treated as **positive** (should be the most negative 16-bit signed value).
 **Bug 2**: 0 is treated as **negative**.
 **Impact**: Signed multiply results are wrong for edge cases. Emulate these exact erroneous behaviors.
 
 ### 13.9 Divide Remainder Errors
+
 **Location**: Suzy math unit
 **Bug**: The remainder value after division contains errors.
 **Impact**: Games shouldn't rely on remainder, but emulate the buggy behavior anyway.
 
 ### 13.10 Math Overflow Bit
+
 **Location**: Suzy math unit
 **Bug**: The overflow/carry bit from math operations is not permanently saved — it can be lost.
 **Impact**: Reading SPRSYS.mathcarry may give incorrect results if not read promptly.
 
 ### 13.11 Sizing Algorithm 3 (Broken)
+
 **Location**: Suzy sprite engine
 **Bug**: SPRCTL1 sizing algorithm 3 (shift-based sizing) is completely broken in hardware.
 **Impact**: All games use algorithm 4 (adder-based). Emulator should emulate the broken behavior or simply treat algo 3 as algo 4.
 
 ### 13.12 SCB NEXT Zero-Check Bug
+
 **Location**: Suzy sprite engine
 **Bug**: The end-of-chain check only examines the **upper byte** of SCBNEXT. If the upper byte is $00, Suzy stops processing regardless of the lower byte.
 **Impact**: SCBs cannot be placed in zero page ($0000–$00FF). SCBNEXT = $00xx always terminates the chain.
 
 ### 13.13 Sprite End-of-Data Packet Bug
+
 **Location**: Suzy sprite engine
 **Bug**: The 5-bit `00000` end-of-data marker in sprite data has edge-case bugs.
 **Impact**: Sprite data must be carefully formatted. Emulate the exact parsing behavior.

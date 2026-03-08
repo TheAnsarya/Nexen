@@ -46,6 +46,7 @@ Comparing compression algorithms and levels:
 ## Optimizations Applied
 
 ### 1. Compression Level Change
+
 **File:** `PansyExporter.cs:CompressData()`
 
 ```csharp
@@ -60,6 +61,7 @@ new GZipStream(compressedStream, CompressionLevel.Fastest);
 **Status:** ✅ Applied
 
 ### 2. MemoryMarshal CDL Conversion (Zero-Copy)
+
 **File:** `PansyExporter.cs:GetCdlData()`
 
 ```csharp
@@ -79,6 +81,7 @@ sourceBytes.CopyTo(result);
 **Status:** ✅ Applied
 
 ### 3. Pre-sized MemoryStream
+
 **Files:** Multiple `Build*Section()` methods
 
 ```csharp
@@ -94,6 +97,7 @@ using var ms = new MemoryStream(estimatedSize);
 **Status:** ✅ Applied
 
 ### 4. LINQ Removal in Hot Paths
+
 **Files:** `BuildSymbolSection()`, `BuildCommentSection()`, `BuildDataBlocksSection()`
 
 ```csharp
@@ -113,6 +117,7 @@ foreach (var item in source)
 **Status:** ✅ Applied
 
 ### 5. List.Sort() Instead of LINQ OrderBy
+
 **File:** `BuildEnhancedMemoryRegionsSection()`
 
 ```csharp
@@ -128,6 +133,7 @@ sorted.Sort((a, b) => a.Start.CompareTo(b.Start));
 **Status:** ✅ Applied
 
 ### 6. Pre-count for Jump Targets
+
 **File:** `GetJumpTargets()`
 
 ```csharp
@@ -150,6 +156,7 @@ uint[] targets = new uint[count];
 **Status:** ✅ Applied
 
 ### 7. Bulk Write for Address Lists
+
 **File:** `BuildAddressListSection()`
 
 ```csharp
@@ -166,6 +173,7 @@ writer.Write(addressBytes);
 **Status:** ✅ Applied
 
 ### 8. Inline Deduplication for Cross-References
+
 **File:** `BuildEnhancedCrossRefsSection()`
 
 ```csharp

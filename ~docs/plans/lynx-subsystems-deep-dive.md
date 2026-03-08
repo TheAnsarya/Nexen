@@ -7,6 +7,7 @@
 ## 1. Save State System
 
 ### Architecture
+
 Nexen uses `ISerializable` + `Serializer` with `SV()` / `SVArray()` macros. Every component (CPU, Mikey, Suzy, memory, controllers, cart) must implement `Serialize(Serializer& s)`. The same method handles both save and load — `Serializer` tracks direction via `IsSaving()`.
 
 ### LynxConsole::Serialize Pattern
@@ -42,6 +43,7 @@ void LynxConsole::Serialize(Serializer& s) {
 ```
 
 ### Per-Component Serialize
+
 Each component streams its internal registers:
 
 **LynxCpu::Serialize:**
@@ -122,9 +124,11 @@ void LynxSuzy::Serialize(Serializer& s) {
 ```
 
 ### Thumbnails
+
 `GetPpuFrame()` returns the 160×102 frame buffer → SaveStateManager captures it automatically. No extra work needed.
 
 ### Versioning
+
 Use `SaveStateManager::FileFormatVersion` (currently 4). If LynxState changes shape later, use `s.GetVersion()` for backward compat.
 
 ---
@@ -203,6 +207,7 @@ void LynxEeprom::LoadBattery() {
 ```
 
 ### EEPROM Detection
+
 From LNX header byte at offset 58 (`audin` field) or from ROM database. Some games don't declare EEPROM in the header — need a fallback database.
 
 ---
@@ -210,6 +215,7 @@ From LNX header byte at offset 58 (`audin` field) or from ROM database. Some gam
 ## 3. Movie / TAS System
 
 ### Movie Format
+
 Nexen movies are ZIP files (`.nexen-movie`) containing:
 
 - `Input.txt` — Frame-by-frame input: `|UDLRAB12P\n` per frame
@@ -335,6 +341,7 @@ Offset  Size  Field
 Total header: 64 bytes. ROM data follows immediately.
 
 ### Hash Calculation
+
 Override `GetHash()` to hash only the ROM payload (excluding 64-byte LNX header):
 
 ```cpp
@@ -388,6 +395,7 @@ uint32_t LynxConsole::GetCrc32() {
 **Note:** All buttons are active-LOW (0 = pressed, 1 = released) — emulator inverts.
 
 ### Rotation Handling
+
 When the screen is rotated, the D-pad physical orientation changes but the electrical connections don't. The game software handles this. However, the emulator must:
 
 1. Read rotation from LNX header (or ROM database)
@@ -417,11 +425,13 @@ public struct InteropLynxConfig {
 ## 6. Dual-Chip Debugging (Mikey + Suzy)
 
 ### Architecture
+
 Unlike SNES (which has separate CPU types for SPC700, SA-1, etc.), the Lynx has a single CPU that accesses both Mikey and Suzy through memory-mapped I/O. There is NO separate CPU in either chip — they are peripherals.
 
 **This means:** Only ONE `CpuType::Lynx` is needed. The debugger shows Mikey and Suzy state as register views, not as separate CPU debuggers.
 
 ### Debugger Register Views
+
 The register viewer should have tabs/sections:
 
 1. **CPU** — A, X, Y, SP, PC, P (flags), cycle count
@@ -435,6 +445,7 @@ The register viewer should have tabs/sections:
 9. **Memory Manager** — MAPCTL state, overlay state
 
 ### Event Manager (Timeline)
+
 Track events on a per-scanline basis:
 
 - CPU reads/writes to Mikey registers
@@ -466,6 +477,7 @@ Track events on a per-scanline basis:
 | LynxVideoRam | From _displayAddress | Variable | Frame buffer |
 
 ### PPU Tools (Tile/Sprite Viewer)
+
 Lynx doesn't have traditional tiles — it uses sprite-based rendering exclusively. PPU tools should show:
 
 1. **Frame buffer** — Current display buffer (pointed to by DISPADR)
@@ -478,6 +490,7 @@ Lynx doesn't have traditional tiles — it uses sprite-based rendering exclusive
 ## 7. Mikey Implementation Details
 
 ### Timer System (Critical for Everything)
+
 Mikey has 8 timers that form two chains:
 
 ```text
@@ -565,6 +578,7 @@ void LynxMikey::TickTimer(int timerIndex) {
 ## 8. Suzy Implementation Details
 
 ### Sprite Engine
+
 The sprite engine processes a linked list of Sprite Control Blocks (SCBs) in RAM:
 
 **SCB Format (variable length, 8-18 bytes minimum):**
@@ -686,6 +700,7 @@ case ConsoleType.Lynx:
 | UI/Debugger/StatusViews/LynxStatusViewModel.cs | CPU status |
 
 ### Existing Files to Modify (~33)
+
 See lynx-code-plans.md and the architecture audit for the complete list.
 
 ---

@@ -24,6 +24,7 @@
 ## Issue #496: Audio Timer Dedup (Architectural)
 
 ### Problem
+
 On real Lynx hardware, audio channels 0–3 ARE Mikey timers 0–3. They share the same
 timer registers at `$FD00–$FD0F`. The current implementation has a separate `LynxApu`
 class with its own independent timer system (`TickChannelTimer` with separate prescaler
@@ -70,6 +71,7 @@ LynxMikey::Tick() → TickTimer(0..3) for timers 0-3
 ## Issue #499: EEPROM Save — Cart Write Path
 
 ### Problem
+
 The Suzy RCART0/RCART1 write path (`$FCB2`/`$FCB3`) is stubbed — writes are ignored.
 On real hardware, writes go through the cart interface to the EEPROM chip using the
 Microwire serial protocol (93C46/93C66/93C86).
@@ -82,6 +84,7 @@ Microwire serial protocol (93C46/93C66/93C86).
 - The only missing piece: Suzy `$FCB2`/`$FCB3` write path doesn't forward to cart
 
 ### Assessment
+
 The EEPROM actually works through the Mikey I/O port (IODAT/$FD89), NOT through the
 cart write path. The Suzy RCART0/RCART1 write path is for games that write to cartridge
 RAM (some homebrew carts have writable SRAM). This is a LOW priority issue because:
@@ -103,6 +106,7 @@ RAM (some homebrew carts have writable SRAM). This is a LOW priority issue becau
 ## Other Minor Improvements Found
 
 ### SYSCTL1 ($FD87) — System Control Register
+
 **Currently:** `// TODO: system control (power off, cart power, etc.)` — writes ignored
 **On hardware:**
 
@@ -118,6 +122,7 @@ The cart address strobe is the only emulation-relevant bit.
 needed for power off/cart power (those are physical actions).
 
 ### LynxPpuTools TODO — Tile Viewer Sprite Data
+
 The tile viewer TODO says "Decode sprite pixel data from cart ROM as tiles". This would
 allow viewing sprite graphics stored in ROM without having them rendered. Low priority
 as the sprite viewer already works.

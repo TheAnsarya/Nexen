@@ -186,6 +186,7 @@ Everything else — Avalonia, ReactiveUI, Dock, AvaloniaEdit, all C++ emulation 
 ## 5. Icon & Graphics Assets (Issue #169)
 
 ### Current State
+
 There are **166 PNG/ICO image assets** in `UI/Assets/`. These were inherited from Mesen2 and include:
 
 - System icons (NES, SNES, GB, GBA, SMS, PCE, WS)
@@ -194,5 +195,6 @@ There are **166 PNG/ICO image assets** in `UI/Assets/`. These were inherited fro
 - Message box icons (error, warning, info, question)
 
 ### Approval Gate for #169
+
 **All icon replacements must be approved before being applied.**
 A visual catalog showing old vs. proposed new icons will be prepared for review before any changes are committed.

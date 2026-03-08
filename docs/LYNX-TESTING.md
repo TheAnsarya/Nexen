@@ -168,6 +168,7 @@ TEST(LynxMyFeature, DescriptiveTestName) {
 - Use `EXPECT_*` (continue on failure) rather than `ASSERT_*` (abort on failure) unless subsequent tests depend on the check
 
 ### Adding to Build
+
 Add new `.cpp` files to `Core.Tests/Core.Tests.vcxproj`:
 
 ```xml

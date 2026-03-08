@@ -16,6 +16,7 @@
 Total: ~5,016 lines (4,100+ are CRC32 lookup tables).
 
 ### vcpkg Dependencies
+
 Currently: `gtest`, `benchmark` only. **No crypto library.**
 
 ---

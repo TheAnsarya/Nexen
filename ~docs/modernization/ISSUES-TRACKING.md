@@ -32,6 +32,7 @@ This document tracks the GitHub issues and epics for the Nexen modernization pro
 ## 📋 Epics
 
 ### Epic 1: .NET 10 Migration ✅ COMPLETE
+
 **Status:** Complete
 **Priority:** HIGH
 
@@ -44,6 +45,7 @@ This document tracks the GitHub issues and epics for the Nexen modernization pro
 ---
 
 ### Epic 2: Avalonia Update ✅ COMPLETE
+
 **Status:** Complete
 **Priority:** HIGH
 
@@ -59,6 +61,7 @@ This document tracks the GitHub issues and epics for the Nexen modernization pro
 ---
 
 ### Epic 3: Built-in Libraries Migration ✅ COMPLETE
+
 **Status:** Complete
 **Priority:** MEDIUM
 
@@ -71,6 +74,7 @@ This document tracks the GitHub issues and epics for the Nexen modernization pro
 ---
 
 ### Epic 4: Comprehensive Testing ✅ COMPLETE
+
 **Status:** Complete
 **Priority:** HIGH
 
@@ -83,6 +87,7 @@ This document tracks the GitHub issues and epics for the Nexen modernization pro
 ---
 
 ### Epic 5: Lua Runtime Update ✅ COMPLETE
+
 **Status:** Complete
 **Priority:** MEDIUM
 
@@ -98,6 +103,7 @@ This document tracks the GitHub issues and epics for the Nexen modernization pro
 ---
 
 ### Epic 6: Code Modernization ✅ COMPLETE
+
 **Status:** Complete
 **Priority:** MEDIUM
 
@@ -115,6 +121,7 @@ This document tracks the GitHub issues and epics for the Nexen modernization pro
 ---
 
 ### Epic 7: Documentation & CI/CD ✅ COMPLETE
+
 **Status:** Complete
 **Priority:** LOW
 

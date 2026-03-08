@@ -256,46 +256,54 @@ Bank $80-$FF:
 ## Coprocessors
 
 ### SA-1 (SA1/)
+
 A second 65816 CPU running at 10.74 MHz.
 
 - Used in: Kirby Super Star, Super Mario RPG
 - Features: Memory mapping, BCD math, bit manipulation
 
 ### Super FX / GSU (GSU/)
+
 RISC processor for 3D graphics.
 
 - Used in: Star Fox, Yoshi's Island, Doom
 - Features: Plot/draw commands, cache, variable clock
 
 ### DSP-1/2/3/4 (DSP/)
+
 Math coprocessors for 3D calculations.
 
 - Used in: Pilotwings, Super Mario Kart
 - Features: Trigonometry, matrix math, projection
 
 ### Cx4 (CX4/)
+
 Wireframe 3D graphics processor.
 
 - Used in: Mega Man X2, Mega Man X3
 - Features: Line drawing, polygon rendering
 
 ### S-DD1 (SDD1/)
+
 Data decompression coprocessor.
 
 - Used in: Star Ocean, Street Fighter Alpha 2
 - Features: Real-time decompression
 
 ### SPC7110 (SPC7110/)
+
 Enhanced decompression and memory mapping.
 
 - Used in: Far East of Eden Zero, Momotaro Dentetsu Happy
 
 ### Super Game Boy (SGB/)
+
 Runs original Game Boy games with SNES enhancements.
 
 - Features: Custom borders, color palettes, multiplayer
 
 ### MSU-1 (MSU1/)
+
 Modern enhancement chip for CD-quality audio/video.
 
 - Features: 4GB data access, streaming audio

@@ -91,6 +91,7 @@ Documents/Nexen/
 3. **Firmware/HdPacks/Lua** — Stay as shared folders
 
 ### C++ Core Interface
+
 The C++ Core receives folder paths from C# via:
 
 - `EmuApi.InitDll()` — passes ConfigManager paths

@@ -106,6 +106,7 @@ Based on the architecture audit (see `~docs/plans/nexen-architecture-audit.md`):
 ## 3. Implementation Phases
 
 ### Phase 1: Foundation & CPU (Sessions 1–2)
+
 **Goal:** Boot ROM executes, CPU passes instruction tests
 
 | Task | Description | Files |
@@ -123,6 +124,7 @@ Based on the architecture audit (see `~docs/plans/nexen-architecture-audit.md`):
 **Milestone:** Load a Lynx ROM, CPU starts executing, can step through instructions in debugger.
 
 ### Phase 2: Mikey — Timers, Interrupts, Display (Sessions 3–4)
+
 **Goal:** Screen displays something, timers fire correctly
 
 | Task | Description | Files |
@@ -139,6 +141,7 @@ Based on the architecture audit (see `~docs/plans/nexen-architecture-audit.md`):
 **Milestone:** Games boot and show title screens, HBL/VBL interrupts firing.
 
 ### Phase 3: Suzy — Sprites, Math, Collision (Sessions 5–6)
+
 **Goal:** Games are playable, sprites render correctly
 
 | Task | Description | Files |
@@ -156,6 +159,7 @@ Based on the architecture audit (see `~docs/plans/nexen-architecture-audit.md`):
 **Milestone:** Multiple games fully playable with graphics and input working.
 
 ### Phase 4: Audio — Mikey Sound Engine (Session 7)
+
 **Goal:** Game audio works correctly
 
 | Task | Description | Files |
@@ -170,6 +174,7 @@ Based on the architecture audit (see `~docs/plans/nexen-architecture-audit.md`):
 **Milestone:** Games have correct audio output.
 
 ### Phase 5: UI Integration (Session 8)
+
 **Goal:** Full UI support for Lynx in Nexen
 
 | Task | Description | Files |
@@ -186,6 +191,7 @@ Based on the architecture audit (see `~docs/plans/nexen-architecture-audit.md`):
 **Milestone:** Lynx games can be opened, configured, and played from the UI.
 
 ### Phase 6: Debugger (Sessions 9–10)
+
 **Goal:** Full debugging support including Mikey/Suzy register inspection
 
 | Task | Description | Files |
@@ -207,6 +213,7 @@ Based on the architecture audit (see `~docs/plans/nexen-architecture-audit.md`):
 **Milestone:** Full debugging with stepping, breakpoints, register inspection, sprite viewer, timer visualization.
 
 ### Phase 7: Movie/TAS Support (Session 11)
+
 **Goal:** Full TAS editor support for Lynx
 
 | Task | Description | Files |
@@ -221,6 +228,7 @@ Based on the architecture audit (see `~docs/plans/nexen-architecture-audit.md`):
 **Milestone:** Record, play back, and edit TAS movies for Lynx games.
 
 ### Phase 8: Pansy & Polish (Session 12)
+
 **Goal:** Complete integration, documentation, testing
 
 | Task | Description | Files |
@@ -241,9 +249,11 @@ Based on the architecture audit (see `~docs/plans/nexen-architecture-audit.md`):
 ## 4. Epic Structure
 
 ### Master Epic: Atari Lynx Emulation (#270)
+
 **The master epic containing all Lynx work.**
 
 ### Epic: Lynx CPU — 65C02 Core (#271)
+
 Sub-issues:
 
 - #279 [270.1] 65C02 opcode implementation (all 256 opcodes)
@@ -256,6 +266,7 @@ Sub-issues:
 - #286 [270.8] DummyCpu for breakpoint prediction
 
 ### Epic: Lynx Mikey Chip (#272)
+
 Sub-issues:
 
 - #287 [270.9] Timer system (8 timers, linking chains)
@@ -269,6 +280,7 @@ Sub-issues:
 - #294 [270.17] Mikey register viewer (debugger UI)
 
 ### Epic: Lynx Suzy Chip (#273)
+
 Sub-issues:
 
 - #296 [270.18] Sprite engine (SCB chain walking)
@@ -280,6 +292,7 @@ Sub-issues:
 - #302 [270.24] Suzy register viewer (debugger UI)
 
 ### Epic: Lynx Nexen Integration (#274)
+
 Sub-issues:
 
 - #303 [270.25] Enum registration (ConsoleType, CpuType, MemoryType, etc.)
@@ -292,6 +305,7 @@ Sub-issues:
 - #310 [270.32] Build system integration (vcxproj, makefile)
 
 ### Epic: Lynx UI & Configuration (#275)
+
 Sub-issues:
 
 - #311 [270.33] LynxConfig + ConfigView (AXAML)
@@ -303,6 +317,7 @@ Sub-issues:
 - #317 [270.39] EEPROM save support
 
 ### Epic: Lynx Debugger (#276)
+
 Sub-issues:
 
 - #318 [270.40] LynxDebugger (IDebugger implementation)
@@ -319,6 +334,7 @@ Sub-issues:
 - #329 [270.51] C# state interop structs
 
 ### Epic: Lynx Movie/TAS Support (#277)
+
 Sub-issues:
 
 - #331 [270.52] Lynx input format in MovieConverter
@@ -328,6 +344,7 @@ Sub-issues:
 - #335 [270.56] TAS tests and benchmarks
 
 ### Epic: Lynx Pansy & Documentation (#278)
+
 Sub-issues:
 
 - #336 [270.57] Pansy metadata export for Lynx platform

@@ -55,6 +55,7 @@ Nexen/
 ## Implementation Phases
 
 ### Phase 1: Infrastructure Setup (Epic #79)
+
 **Estimated Time:** 2-3 hours
 
 1. **Install vcpkg (if not already available)**
@@ -90,6 +91,7 @@ Nexen/
 	- Configure test discovery settings
 
 ### Phase 2: Initial Test Coverage (Week 1)
+
 **Priority:** HIGH - Zero-cost abstractions, utilities
 
 #### Utilities Tests (LOW RISK - No hot paths)
@@ -110,6 +112,7 @@ Nexen/
 - `BatteryManagerTests.cpp` - std::span API
 
 ### Phase 3: Emulation Core Tests (Week 2)
+
 **Priority:** MEDIUM - Requires ROM test data
 
 #### NES Tests
@@ -126,6 +129,7 @@ Nexen/
 - `SnesDspTests.cpp` - DSP chip emulation
 
 ### Phase 4: Regression Tests (Ongoing)
+
 **Priority:** HIGH - Prevent regressions
 
 - Known bug fixes → regression tests
@@ -135,6 +139,7 @@ Nexen/
 ## Test Categories
 
 ### Unit Tests
+
 Test individual functions/classes in isolation.
 
 ```cpp
@@ -151,6 +156,7 @@ TEST(ColorUtilitiesTests, Constexpr_CompileTime) {
 ```
 
 ### Integration Tests
+
 Test multiple components working together.
 
 ```cpp
@@ -167,6 +173,7 @@ TEST(BatteryManagerTests, SaveAndLoad_RoundTrip_DataMatches) {
 ```
 
 ### Parameterized Tests
+
 Test same logic with multiple inputs.
 
 ```cpp
@@ -189,6 +196,7 @@ INSTANTIATE_TEST_SUITE_P(
 ```
 
 ### Death Tests
+
 Test that code crashes/asserts as expected.
 
 ```cpp
@@ -223,6 +231,7 @@ TEST(ColorUtilitiesPerf, Rgb555ToArgb_1Million) {
 ## Test Data Management
 
 ### Small Test Data
+
 Embed directly in test code:
 
 ```cpp
@@ -234,6 +243,7 @@ const uint8_t kNesTestRom[] = {
 ```
 
 ### Large Test ROMs
+
 Store in `Core.Tests/TestData/` (gitignored):
 
 ```cpp

@@ -379,6 +379,8 @@ Key rules to enforce:
 - **MD047** — Files must end with a single newline character
 - **MD010** — Disabled (hard tabs are REQUIRED per our indentation rules)
 
+Always generate new markdown content with proper blank lines around headings, lists, and code fences so MD022/MD031/MD032 are satisfied on first write.
+
 When generating new markdown content, **always include proper blank line spacing** around headings, lists, and code blocks.
 
 ### ⚠️ MANDATORY: Documentation Link-Tree

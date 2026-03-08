@@ -1,6 +1,7 @@
 # File Open Menu Investigation
 
 ## Problem Statement
+
 The File → Open menu item crashes Nexen when a file is selected. This has been attempted multiple times with different approaches, all failing.
 
 ## What We Know Works
@@ -19,12 +20,15 @@ The File → Open menu item crashes Nexen when a file is selected. This has been
 ### 1. How do working ROM load paths work?
 
 #### Recent Games (RecentGamesViewModel)
+
 Need to check how clicking a recent game triggers ROM loading.
 
 #### Drag and Drop (MainWindow)
+
 Need to check how drag-drop triggers ROM loading.
 
 #### Command Line
+
 Need to check how command line args trigger ROM loading.
 
 ### 2. What's unique about the File Open path?

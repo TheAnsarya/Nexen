@@ -95,6 +95,7 @@ class [System]Console : public IConsole, public ISerializable {
 ## Key Interfaces
 
 ### IConsole
+
 Base interface for all emulated systems:
 
 ```cpp
@@ -108,6 +109,7 @@ class IConsole : public ISerializable {
 ```
 
 ### ISerializable
+
 All stateful objects implement serialization:
 
 ```cpp
@@ -117,6 +119,7 @@ class ISerializable {
 ```
 
 ### BaseMapper
+
 Cartridge hardware abstraction:
 
 ```cpp

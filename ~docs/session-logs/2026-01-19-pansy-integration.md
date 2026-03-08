@@ -12,6 +12,7 @@ Primary goal: Add Pansy metadata export capability to Nexen emulator/debugger
 ## Session Overview
 
 ### Part 1: Repository Cleanup (17:30-17:45)
+
 **Goal:** Reset Nexen fork to clean state
 
 1. **Stashed changes** on `Nexen-record-and-play-tas-gameplay` branch
@@ -79,6 +80,7 @@ Primary goal: Add Pansy metadata export capability to Nexen emulator/debugger
 8. ❌ `DebugApi.GetMemoryType()` doesn't exist → `CpuType.GetPrgRomMemoryType()`
 
 #### Resolution Strategy
+
 Used `multi_replace_string_in_file` for efficient batch fixes:
 
 - Fixed API signatures to match Nexen interop
@@ -125,6 +127,7 @@ Used `multi_replace_string_in_file` for efficient batch fixes:
 - **Force Pushes:** 1 (master reset)
 
 ### Platform Support
+
 Correctly implemented Platform ID mapping for:
 
 - NES (6 formats)
@@ -138,17 +141,20 @@ Correctly implemented Platform ID mapping for:
 ## Challenges & Solutions
 
 ### Challenge 1: API Mismatch
+
 **Problem:** Nexen interop API doesn't match expected signatures  
 **Solution:** Read existing code for correct API usage patterns  
 **Time Lost:** 13 minutes
 
 ### Challenge 2: RomInfo Missing Properties
+
 **Problem:** RomInfo struct doesn't expose ROM size or CRC  
 **Solution:** Use CdlStatistics for size, placeholder for CRC  
 **Impact:** CRC validation deferred to Phase 2  
 **Time Lost:** 5 minutes
 
 ### Challenge 3: Struct Immutability
+
 **Problem:** Cannot modify List<SectionInfo> elements (struct)  
 **Solution:** Change SectionInfo from struct to class  
 **Time Lost:** 2 minutes

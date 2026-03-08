@@ -70,6 +70,7 @@ Use this checklist to track implementation progress.
 - [x] `UI/Debugger/StatusViews/*.axaml` - all have x:DataType
 
 ### Note on Remaining Files
+
 Files without x:DataType are either:
 
 - Style/theme files (no bindings)
