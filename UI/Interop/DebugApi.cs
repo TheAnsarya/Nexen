@@ -1616,12 +1616,12 @@ public unsafe struct TraceRow {
 	public unsafe string GetByteCodeStr() {
 		fixed (byte* output = ByteCode) {
 			StringBuilder sb = new StringBuilder();
-			int i;
-			for (i = 0; i < ByteCodeSize && i < 8; i++) {
-				sb.Append(ByteCode[i].ToString("X2") + " ");
+			for (int i = 0; i < ByteCodeSize && i < 8; i++) {
+				if (i > 0) sb.Append(' ');
+				sb.Append(ByteCode[i].ToString("X2"));
 			}
 
-			return sb.ToString().Trim();
+			return sb.ToString();
 		}
 	}
 }

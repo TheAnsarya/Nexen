@@ -180,7 +180,7 @@ public sealed class AssemblerWindowViewModel : DisposableViewModel {
 			short s = byteCode[i];
 			if (s >= 0) {
 				convertedByteCode.Add((byte)s);
-				sb.Append(s.ToString("X2") + " ");
+				sb.Append(s.ToString("X2")).Append(' ');
 			} else if (s == (int)AssemblerSpecialCodes.EndOfLine) {
 				line++;
 				if (line <= codeLines.Length) {

@@ -156,10 +156,11 @@ public sealed class NesHeaderEditViewModel : DisposableViewModel {
 		byte[] headerBytes = Header.ToBytes();
 		StringBuilder sb = new();
 		for (int i = 0; i < 16; i++) {
-			sb.Append(headerBytes[i].ToString("X2") + " ");
+			if (i > 0) sb.Append(' ');
+			sb.Append(headerBytes[i].ToString("X2"));
 		}
 
-		HeaderBytes = sb.ToString().Trim();
+		HeaderBytes = sb.ToString();
 	}
 
 	/// <summary>

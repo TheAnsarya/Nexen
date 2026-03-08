@@ -46,9 +46,8 @@ public sealed class DebuggerShortcutsConfig : BaseConfig<DebuggerShortcutsConfig
 	}
 
 	private void Add(DebuggerShortcutInfo info) {
-		if (!_lookup.ContainsKey(info.Shortcut)) {
+		if (_lookup.TryAdd(info.Shortcut, info)) {
 			Shortcuts.Add(info);
-			_lookup[info.Shortcut] = info;
 		}
 	}
 
