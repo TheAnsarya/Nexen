@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -26,12 +27,14 @@ namespace Nexen.Menus;
 /// - Has clear categories for enable logic (AlwaysEnabled, RequiresRom, Custom)
 /// </remarks>
 public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
-	private static readonly Dictionary<ActionType, string?> IconCache = new();
+	private static readonly FrozenDictionary<ActionType, string?> IconCache;
 
 	static MenuActionBase() {
+		var iconDict = new Dictionary<ActionType, string?>();
 		foreach (ActionType value in Enum.GetValues<ActionType>()) {
-			IconCache[value] = value.GetAttribute<IconFileAttribute>()?.Icon;
+			iconDict[value] = value.GetAttribute<IconFileAttribute>()?.Icon;
 		}
+		IconCache = iconDict.ToFrozenDictionary();
 	}
 
 	/// <summary>The action type for localization and icon lookup.</summary>

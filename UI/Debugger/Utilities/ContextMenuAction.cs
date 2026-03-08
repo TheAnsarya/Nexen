@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -187,10 +188,10 @@ public sealed class MainMenuAction : BaseMenuAction {
 	/// <summary>
 	/// Shortcuts that should always be enabled regardless of emulator state.
 	/// </summary>
-	private static readonly HashSet<EmulatorShortcut> AlwaysEnabledShortcuts = new() {
+	private static readonly FrozenSet<EmulatorShortcut> AlwaysEnabledShortcuts = new HashSet<EmulatorShortcut>() {
 		EmulatorShortcut.OpenFile,
 		EmulatorShortcut.Exit,
-	};
+	}.ToFrozenSet();
 
 	public EmulatorShortcut? Shortcut { get; set; }
 	public uint ShortcutParam { get; set; }

@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -74,7 +75,7 @@ public static class PansyExporter {
 	private const byte CDL_GBA_THUMB = 0x20;     // GBA: THUMB mode
 
 	// Platform IDs matching Pansy specification (PansyLoader constants)
-	private static readonly Dictionary<RomFormat, byte> PlatformIds = new() {
+	private static readonly FrozenDictionary<RomFormat, byte> PlatformIds = new Dictionary<RomFormat, byte>() {
 		[RomFormat.iNes] = 0x01,     // NES
 		[RomFormat.Fds] = 0x01,      // FDS (uses NES platform)
 		[RomFormat.Nsf] = 0x01,      // NSF (uses NES)
@@ -89,7 +90,7 @@ public static class PansyExporter {
 		[RomFormat.Pce] = 0x07,      // PC Engine
 		[RomFormat.Ws] = 0x0a,       // WonderSwan
 		[RomFormat.Lynx] = 0x09,     // Atari Lynx
-	};
+	}.ToFrozenDictionary();
 
 	/// <summary>
 	/// Calculate CRC32 of the ROM data for integrity verification.
