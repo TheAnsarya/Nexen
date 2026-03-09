@@ -851,6 +851,41 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	}
 
 	/// <summary>
+	/// Inserts multiple frame ViewModels at the specified index. Renumbers once at the end.
+	/// O(count + tail) — much cheaper than full rebuild for large movies.
+	/// </summary>
+	private void InsertFrameViewModels(int startIndex, int count) {
+		if (Movie is null || count <= 0 || startIndex < 0 || startIndex > Movie.InputFrames.Count) {
+			return;
+		}
+
+		for (int j = 0; j < count; j++) {
+			int idx = startIndex + j;
+			var vm = new TasFrameViewModel(Movie.InputFrames[idx], idx, IsGreenzoneEnabled && idx >= GreenzoneStart);
+			Frames.Insert(idx, vm);
+		}
+
+		// Renumber everything after the inserted block
+		for (int i = startIndex + count; i < Frames.Count; i++) {
+			Frames[i].FrameNumber = i + 1;
+		}
+	}
+
+	/// <summary>
+	/// Removes frame ViewModels from startIndex to the end. O(count) removals, no renumbering needed.
+	/// </summary>
+	private void TruncateFrameViewModels(int startIndex) {
+		if (startIndex < 0 || startIndex >= Frames.Count) {
+			return;
+		}
+
+		// Remove from end to avoid shifting (each RemoveAt at last index is O(1))
+		for (int i = Frames.Count - 1; i >= startIndex; i--) {
+			Frames.RemoveAt(i);
+		}
+	}
+
+	/// <summary>
 	/// Syncs the Frames collection to append any new frames from the movie. O(k) where k = new frames, instead of O(n) full rebuild.
 	/// Used during recording to efficiently update the UI as frames are appended.
 	/// </summary>
@@ -969,7 +1004,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		ExecuteAction(new InsertFramesAction(Movie, insertAt, clonedFrames));
-		UpdateFrames();
+		InsertFrameViewModels(insertAt, clonedFrames.Count);
 		SelectedFrameIndex = insertAt;
 
 		StatusMessage = $"Pasted {clonedFrames.Count} frame(s) at {insertAt + 1}";
@@ -1143,7 +1178,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 						Movie.InputFrames.RemoveRange(frame, Movie.InputFrames.Count - frame);
 					}
 
-					UpdateFrames();
+					TruncateFrameViewModels(frame);
 					HasUnsavedChanges = true;
 				}
 
