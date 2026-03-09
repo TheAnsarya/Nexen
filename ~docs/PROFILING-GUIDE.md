@@ -211,9 +211,79 @@ Use this focused loop for NotificationManager lock/contention changes:
 5. **Check memory bandwidth** - Often the bottleneck in emulation
 6. **Watch for branch mispredictions** - Common in interpreter loops
 
+## .NET Profiling (TAS Editor & MovieConverter)
+
+### BenchmarkDotNet (.NET Benchmarks)
+
+The solution includes BenchmarkDotNet projects for .NET performance analysis:
+
+```powershell
+# Run all MovieConverter benchmarks
+dotnet run --project MovieConverter.Benchmarks -c Release
+
+# Run TAS operation benchmarks specifically
+dotnet run --project MovieConverter.Benchmarks -c Release -- --filter "*TasOperation*"
+
+# Dry run (quick validation, no statistical rigor)
+dotnet run --project MovieConverter.Benchmarks -c Release -- --filter "*TasOperation*" --job dry
+
+# Export results
+dotnet run --project MovieConverter.Benchmarks -c Release -- --filter "*" --exporters json
+```
+
+**Key TAS Benchmarks:**
+
+| Benchmark | What It Measures |
+| --------- | ---------------- |
+| `FullRebuild` | Baseline: clearing and recreating all frame ViewModels |
+| `IncrementalInsert_10` | Inserting 10 frames at midpoint with renumbering |
+| `IncrementalRemove_10` | Removing 10 frames at midpoint with renumbering |
+| `SingleFrameRefresh` | O(1) indexed frame refresh (modify undo path) |
+| `SyncNewFrames_100` | Syncing 100 newly-recorded frames to end |
+| `TruncateHalf` | Truncating collection to half its size |
+
+### dotnet-counters (Live Monitoring)
+
+```powershell
+# Install if not present
+dotnet tool install --global dotnet-counters
+
+# Monitor while running Nexen
+dotnet-counters monitor --process-id <pid> --counters System.Runtime
+
+# Key counters for TAS work:
+# - Gen 0/1/2 GC Counts (should stay low during editing)
+# - Allocation Rate (should be near-zero for incremental ops)
+# - Working Set (should be stable during long editing sessions)
+```
+
+### JetBrains dotMemory / dotTrace
+
+For deep .NET allocation profiling:
+
+1. Attach dotMemory to Nexen process
+2. Take snapshot before and after TAS operation
+3. Compare: look for unexpected allocations in:
+	- `TasEditorViewModel.ApplyIncrementalUpdate`
+	- `ObservableCollection<T>.Insert/RemoveAt`
+	- `PianoRollControl.Render`
+4. Target: zero allocations per incremental frame operation
+
+### TAS-Specific Profiling Targets
+
+| Operation | Expected Time | Expected Allocs |
+| --------- | ------------- | --------------- |
+| Single frame modify (undo) | <10 ns | 0 B |
+| Insert 10 frames | <50 µs | <2 KB |
+| Remove 10 frames | <50 µs | <2 KB |
+| Full rebuild (10K frames) | <300 µs | ~1 MB |
+| PianoRoll render | <2 ms | 0 B (cached) |
+
 ## Related Documentation
 
 - [COMPILING.md](../COMPILING.md) - Build instructions
-- [Core.Benchmarks](../Core.Benchmarks/) - Microbenchmark suite
+- [Core.Benchmarks](../Core.Benchmarks/) - C++ microbenchmark suite
+- [MovieConverter.Benchmarks](../MovieConverter.Benchmarks/) - .NET TAS benchmarks
 - [buildPGO.sh](../buildPGO.sh) - PGO build script (Linux)
+- [TAS Algorithms](algorithms/tas-algorithms.md) - Algorithm documentation
 

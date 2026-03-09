@@ -443,3 +443,109 @@ Replaced with a reusable `_evictionKeys` field (`List<int>`) that is `.Clear()`e
 ### Files
 
 - [UI/Controls/PianoRollControl.cs](../../UI/Controls/PianoRollControl.cs) — `_evictionKeys` field and manual eviction loop
+
+---
+
+## 14. Undo System Wiring (All TAS Operations)
+
+### Problem
+
+Several TAS operations bypassed the undo system entirely:
+
+- `ToggleButton()` — directly mutated controller input, not undoable
+- `ToggleButtonAtFrame()` — delegated to `SetButtonAtFrame` raw setter
+- `DeleteFrames()` — called `Movie.InputFrames.RemoveAt()` directly
+- `ClearSelectedInput()` — cleared controller states directly
+
+Users could not undo/redo button toggles, frame deletions, or input clears — a critical TAS workflow deficiency.
+
+### Solution
+
+All operations now route through `ExecuteAction()` with proper undo/redo action objects:
+
+- `ToggleButton()` → creates `ModifyInputAction` + `ExecuteAction()`
+- `ToggleButtonAtFrame()` → creates `ModifyInputAction` + `ExecuteAction()`
+- `DeleteFrames()` → creates `DeleteFramesAction` + `ExecuteAction()`
+- `ClearSelectedInput()` → creates `ClearInputAction` + `ExecuteAction()`
+
+New `ClearInputAction` class captures all controller states before clearing, enabling full undo restoration.
+
+### Files
+
+- [UI/ViewModels/TasEditorViewModel.cs](../../UI/ViewModels/TasEditorViewModel.cs) — `ToggleButton`, `ToggleButtonAtFrame`, `DeleteFrames`, `ClearSelectedInput`, `ClearInputAction`
+
+---
+
+## 15. ModifyInputAction O(1) Indexed Dispatch
+
+### Problem
+
+When `ApplyIncrementalUpdate` dispatched a `ModifyInputAction`, it used a linear O(n) search:
+
+```csharp
+for (int i = 0; i < FrameViewModels.Count; i++) {
+	if (ReferenceEquals(FrameViewModels[i].Frame, modify.Frame)) {
+		RefreshFrameAt(i);
+		break;
+	}
+}
+```
+
+For a 10K-frame movie, this scans up to 10,000 entries to refresh a single frame.
+
+### Solution
+
+Added `FrameIndex` property to `ModifyInputAction`. The caller already knows which frame index is being modified, so the index is stored at creation time and used directly:
+
+```csharp
+case ModifyInputAction modify:
+	RefreshFrameAt(modify.FrameIndex);
+	break;
+```
+
+### Complexity
+
+- **Before:** O(n) — linear scan of all frame ViewModels
+- **After:** O(1) — direct index lookup
+
+### Benchmark Impact
+
+`SingleFrameRefresh`: 2.9 ns with 0 B allocations (92,700x faster than full rebuild)
+
+### Files
+
+- [UI/ViewModels/TasEditorViewModel.cs](../../UI/ViewModels/TasEditorViewModel.cs) — `ModifyInputAction.FrameIndex`, `ApplyIncrementalUpdate` dispatch
+
+---
+
+## 16. C++ Single-Pass Movie Parsing
+
+### Problem
+
+`NexenMovie::Play()` used a double-pass approach to parse input frames:
+
+1. **Pass 1:** Read all lines with `getline` to count frames
+2. Seek back to beginning of input section
+3. **Pass 2:** Read all lines again with `getline` to parse
+
+This resulted in 2N `getline` calls for N frames, plus a seek operation.
+
+### Solution
+
+Single-pass approach:
+
+1. Get raw string from stringstream (`.str()`)
+2. Count newlines with `std::ranges::count(rawInput, '\n')` — fast character scan
+3. Reserve vector with known count
+4. Single `getline` pass to parse frames
+5. Use `string_view(line).substr(1)` instead of `line.substr(1)` to avoid temporary string allocation per frame
+
+### Complexity
+
+- **Before:** O(2N * avg_line_len) — two full passes through the data
+- **After:** O(N * avg_line_len) — single pass + fast character count
+- **Allocation saving:** N temporary `string` objects eliminated from `substr`
+
+### Files
+
+- [Core/Shared/Movies/NexenMovie.cpp](../../Core/Shared/Movies/NexenMovie.cpp) — `Play()` input parsing
