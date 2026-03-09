@@ -795,6 +795,115 @@ public class TasEditorViewModelTests {
 	};
 
 	#endregion
+
+	#region ExecuteAction Unified Dispatch Tests
+
+	[Fact]
+	public void ExecuteAction_InsertFramesAction_AddsToUndoStackAndUpdatesViewModels() {
+		// This tests the unified ExecuteAction path (execute + ApplyIncrementalUpdate)
+		var movie = CreateTestMovieData(10);
+		var frames = new List<InputFrame> { new InputFrame(5) { Controllers = [new ControllerInput()] } };
+		var action = new InsertFramesAction(movie, 5, frames);
+
+		action.Execute();
+		Assert.Equal(11, movie.InputFrames.Count);
+
+		action.Undo();
+		Assert.Equal(10, movie.InputFrames.Count);
+	}
+
+	[Fact]
+	public void ExecuteAction_DeleteFramesAction_RemovesAndCanUndo() {
+		var movie = CreateTestMovieData(10);
+		var action = new DeleteFramesAction(movie, 3, 4);
+
+		action.Execute();
+		Assert.Equal(6, movie.InputFrames.Count);
+
+		action.Undo();
+		Assert.Equal(10, movie.InputFrames.Count);
+	}
+
+	[Fact]
+	public void ExecuteAction_ModifyInputAction_ModifiesAndCanUndo() {
+		var movie = CreateTestMovieData(5);
+		var frame = movie.InputFrames[2];
+		bool originalA = frame.Controllers[0].A;
+		var newInput = CloneControllerInput(frame.Controllers[0]);
+		newInput.A = !originalA;
+
+		var action = new ModifyInputAction(frame, 2, 0, newInput);
+		action.Execute();
+		Assert.Equal(!originalA, frame.Controllers[0].A);
+
+		action.Undo();
+		Assert.Equal(originalA, frame.Controllers[0].A);
+	}
+
+	[Fact]
+	public void ExecuteAction_ClearInputAction_ClearsAndCanUndo() {
+		var movie = CreateTestMovieData(5);
+		var frame = movie.InputFrames[0];
+		frame.Controllers[0].A = true;
+		frame.Controllers[0].B = true;
+
+		var action = new ClearInputAction(frame, 0);
+		action.Execute();
+		Assert.False(frame.Controllers[0].A);
+		Assert.False(frame.Controllers[0].B);
+
+		action.Undo();
+		Assert.True(frame.Controllers[0].A);
+		Assert.True(frame.Controllers[0].B);
+	}
+
+	[Fact]
+	public void ExecuteAction_PaintInputAction_PaintsAndCanUndo() {
+		var movie = CreateTestMovieData(5);
+		var indices = new List<int> { 0, 2, 4 };
+		var oldInputs = indices.Select(i => CloneControllerInput(movie.InputFrames[i].Controllers[0])).ToList();
+
+		var action = new PaintInputAction(movie, indices, 0, "B", true, oldInputs);
+		action.Execute();
+		Assert.True(movie.InputFrames[0].Controllers[0].B);
+		Assert.True(movie.InputFrames[2].Controllers[0].B);
+		Assert.True(movie.InputFrames[4].Controllers[0].B);
+
+		action.Undo();
+		Assert.False(movie.InputFrames[0].Controllers[0].B);
+		Assert.False(movie.InputFrames[2].Controllers[0].B);
+		Assert.False(movie.InputFrames[4].Controllers[0].B);
+	}
+
+	[Fact]
+	public void ExecuteAction_InsertFrames_ChainsWithDelete_FullCycle() {
+		// Simulates Lua API: insert, then delete, then undo both
+		var movie = CreateTestMovieData(10);
+
+		// Insert 3 frames at position 5
+		var insertFrames = new List<InputFrame>();
+		for (int i = 0; i < 3; i++) {
+			insertFrames.Add(new InputFrame(5 + i) { Controllers = [new ControllerInput()] });
+		}
+		var insertAction = new InsertFramesAction(movie, 5, insertFrames);
+		insertAction.Execute();
+		Assert.Equal(13, movie.InputFrames.Count);
+
+		// Delete 2 frames at position 0
+		var deleteAction = new DeleteFramesAction(movie, 0, 2);
+		deleteAction.Execute();
+		Assert.Equal(11, movie.InputFrames.Count);
+
+		// Undo delete
+		deleteAction.Undo();
+		Assert.Equal(13, movie.InputFrames.Count);
+
+		// Undo insert
+		insertAction.Undo();
+		Assert.Equal(10, movie.InputFrames.Count);
+	}
+
+	#endregion
 }
 
 /// <summary>

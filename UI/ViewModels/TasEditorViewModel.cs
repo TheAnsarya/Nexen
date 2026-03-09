@@ -638,9 +638,8 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		int insertAt = Math.Max(0, SelectedFrameIndex);
-		Movie.InputFrames.Insert(insertAt, new InputFrame(insertAt));
-		InsertFrameViewModel(insertAt);
-		HasUnsavedChanges = true;
+		var frames = new List<InputFrame> { new InputFrame(insertAt) };
+		ExecuteAction(new InsertFramesAction(Movie, insertAt, frames));
 		StatusMessage = $"Inserted frame at {insertAt}";
 	}
 
@@ -654,7 +653,6 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 		int deleteAt = SelectedFrameIndex;
 		ExecuteAction(new DeleteFramesAction(Movie, deleteAt, 1));
-		RemoveFrameViewModel(deleteAt);
 		StatusMessage = $"Deleted frame {deleteAt}";
 
 		// Adjust selection
@@ -673,7 +671,6 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 		var frame = Movie.InputFrames[SelectedFrameIndex];
 		ExecuteAction(new ClearInputAction(frame, SelectedFrameIndex));
-		RefreshFrameAt(SelectedFrameIndex);
 		StatusMessage = $"Cleared input on frame {SelectedFrameIndex}";
 	}
 
@@ -740,7 +737,6 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		ExecuteAction(new ModifyInputAction(frame, SelectedFrameIndex, port, newInput));
-		RefreshFrameAt(SelectedFrameIndex);
 	}
 
 	/// <summary>
@@ -773,7 +769,6 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		ExecuteAction(new ModifyInputAction(frame, frameIndex, port, newInput));
-		RefreshFrameAt(frameIndex);
 	}
 
 	/// <summary>
@@ -806,10 +801,6 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		ExecuteAction(new PaintInputAction(Movie, validFrames, port, button, state, oldInputs));
-
-		foreach (int idx in validFrames) {
-			RefreshFrameAt(idx);
-		}
 	}
 
 	/// <summary>
@@ -840,7 +831,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 	}
 
-	private static ControllerInput CloneControllerInput(ControllerInput src) => new() {
+	internal static ControllerInput CloneControllerInput(ControllerInput src) => new() {
 		A = src.A, B = src.B, X = src.X, Y = src.Y,
 		L = src.L, R = src.R,
 		Up = src.Up, Down = src.Down, Left = src.Left, Right = src.Right,
@@ -1035,13 +1026,14 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	}
 
 	/// <summary>
-	/// Executes an action and adds it to the undo stack.
+	/// Executes an action, adds it to the undo stack, and applies incremental view model updates.
 	/// </summary>
-	private void ExecuteAction(UndoableAction action) {
+	internal void ExecuteAction(UndoableAction action) {
 		action.Execute();
 		_undoStack.Push(action);
 		_redoStack.Clear(); // Clear redo stack on new action
 
+		ApplyIncrementalUpdate(action, isUndo: false);
 		UpdateUndoRedoState();
 		HasUnsavedChanges = true;
 	}
@@ -1099,7 +1091,6 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		ExecuteAction(new InsertFramesAction(Movie, insertAt, clonedFrames));
-		InsertFrameViewModels(insertAt, clonedFrames.Count);
 		SelectedFrameIndex = insertAt;
 
 		StatusMessage = $"Pasted {clonedFrames.Count} frame(s) at {insertAt + 1}";
@@ -1268,13 +1259,11 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 				// Truncate movie to current frame and start recording
 				if (Movie != null && frame < Movie.InputFrames.Count) {
-					// Remove frames after current position
-					if (frame < Movie.InputFrames.Count) {
-						Movie.InputFrames.RemoveRange(frame, Movie.InputFrames.Count - frame);
+					// Remove frames after current position via undo system
+					int removeCount = Movie.InputFrames.Count - frame;
+					if (removeCount > 0) {
+						ExecuteAction(new DeleteFramesAction(Movie, frame, removeCount));
 					}
-
-					TruncateFrameViewModels(frame);
-					HasUnsavedChanges = true;
 				}
 
 				// Start recording in overwrite mode from this frame

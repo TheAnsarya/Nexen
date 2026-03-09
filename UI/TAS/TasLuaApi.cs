@@ -172,7 +172,7 @@ public sealed class TasLuaApi {
 	}
 
 	/// <summary>
-	/// Sets input for a specific frame.
+	/// Sets input for a specific frame. Undoable.
 	/// </summary>
 	public bool SetFrameInput(int frame, Dictionary<string, bool> input, int controller = 0) {
 		var movie = _viewModel.Movie;
@@ -185,29 +185,29 @@ public sealed class TasLuaApi {
 			return false;
 		}
 
-		var controllerInput = frameData.Controllers[controller];
+		var newInput = TasEditorViewModel.CloneControllerInput(frameData.Controllers[controller]);
 
-		if (input.TryGetValue("a", out bool a)) controllerInput.A = a;
-		if (input.TryGetValue("b", out bool b)) controllerInput.B = b;
-		if (input.TryGetValue("x", out bool x)) controllerInput.X = x;
-		if (input.TryGetValue("y", out bool y)) controllerInput.Y = y;
-		if (input.TryGetValue("l", out bool l)) controllerInput.L = l;
-		if (input.TryGetValue("r", out bool r)) controllerInput.R = r;
-		if (input.TryGetValue("select", out bool select)) controllerInput.Select = select;
-		if (input.TryGetValue("start", out bool start)) controllerInput.Start = start;
-		if (input.TryGetValue("up", out bool up)) controllerInput.Up = up;
-		if (input.TryGetValue("down", out bool down)) controllerInput.Down = down;
-		if (input.TryGetValue("left", out bool left)) controllerInput.Left = left;
-		if (input.TryGetValue("right", out bool right)) controllerInput.Right = right;
+		if (input.TryGetValue("a", out bool a)) newInput.A = a;
+		if (input.TryGetValue("b", out bool b)) newInput.B = b;
+		if (input.TryGetValue("x", out bool x)) newInput.X = x;
+		if (input.TryGetValue("y", out bool y)) newInput.Y = y;
+		if (input.TryGetValue("l", out bool l)) newInput.L = l;
+		if (input.TryGetValue("r", out bool r)) newInput.R = r;
+		if (input.TryGetValue("select", out bool select)) newInput.Select = select;
+		if (input.TryGetValue("start", out bool start)) newInput.Start = start;
+		if (input.TryGetValue("up", out bool up)) newInput.Up = up;
+		if (input.TryGetValue("down", out bool down)) newInput.Down = down;
+		if (input.TryGetValue("left", out bool left)) newInput.Left = left;
+		if (input.TryGetValue("right", out bool right)) newInput.Right = right;
 
-		_viewModel.HasUnsavedChanges = true;
+		_viewModel.ExecuteAction(new ModifyInputAction(frameData, frame, controller, newInput));
 		_greenzone.InvalidateFrom(frame);
 
 		return true;
 	}
 
 	/// <summary>
-	/// Clears all input for a frame.
+	/// Clears all input for a frame. Undoable.
 	/// </summary>
 	public bool ClearFrameInput(int frame, int controller = 0) {
 		var movie = _viewModel.Movie;
@@ -220,19 +220,14 @@ public sealed class TasLuaApi {
 			return false;
 		}
 
-		var input = frameData.Controllers[controller];
-		input.A = input.B = input.X = input.Y = false;
-		input.L = input.R = input.Select = input.Start = false;
-		input.Up = input.Down = input.Left = input.Right = false;
-
-		_viewModel.HasUnsavedChanges = true;
+		_viewModel.ExecuteAction(new ClearInputAction(frameData, frame));
 		_greenzone.InvalidateFrom(frame);
 
 		return true;
 	}
 
 	/// <summary>
-	/// Inserts empty frames at a position.
+	/// Inserts empty frames at a position. Undoable.
 	/// </summary>
 	public bool InsertFrames(int position, int count) {
 		if (count <= 0 || position < 0) {
@@ -252,6 +247,7 @@ public sealed class TasLuaApi {
 			? movie.InputFrames[0].Controllers.Length
 			: 1;
 
+		var frames = new List<InputFrame>(count);
 		for (int i = 0; i < count; i++) {
 			var frame = new InputFrame {
 				FrameNumber = position + i,
@@ -260,23 +256,17 @@ public sealed class TasLuaApi {
 			for (int c = 0; c < controllerCount; c++) {
 				frame.Controllers[c] = new ControllerInput();
 			}
-			movie.InputFrames.Insert(position + i, frame);
+			frames.Add(frame);
 		}
 
-		// Renumber frames after insertion
-		for (int i = position + count; i < movie.InputFrames.Count; i++) {
-			movie.InputFrames[i].FrameNumber = i;
-		}
-
-		_viewModel.HasUnsavedChanges = true;
+		_viewModel.ExecuteAction(new InsertFramesAction(movie, position, frames));
 		_greenzone.InvalidateFrom(position);
-		_viewModel.RefreshFrames();
 
 		return true;
 	}
 
 	/// <summary>
-	/// Deletes frames from a position.
+	/// Deletes frames from a position. Undoable.
 	/// </summary>
 	public bool DeleteFrames(int position, int count) {
 		if (count <= 0 || position < 0) {
@@ -291,16 +281,8 @@ public sealed class TasLuaApi {
 		// Clamp count to available frames
 		count = Math.Min(count, movie.InputFrames.Count - position);
 
-		movie.InputFrames.RemoveRange(position, count);
-
-		// Renumber remaining frames
-		for (int i = position; i < movie.InputFrames.Count; i++) {
-			movie.InputFrames[i].FrameNumber = i;
-		}
-
-		_viewModel.HasUnsavedChanges = true;
+		_viewModel.ExecuteAction(new DeleteFramesAction(movie, position, count));
 		_greenzone.InvalidateFrom(position);
-		_viewModel.RefreshFrames();
 
 		return true;
 	}
