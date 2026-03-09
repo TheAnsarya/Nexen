@@ -587,3 +587,54 @@ New `PaintButton()` method on TasEditorViewModel:
 
 - [UI/ViewModels/TasEditorViewModel.cs](../../UI/ViewModels/TasEditorViewModel.cs) — `PaintButton`, `PaintInputAction`, `ApplyIncrementalUpdate`
 - [UI/Windows/TasEditorWindow.axaml.cs](../../UI/Windows/TasEditorWindow.axaml.cs) — Updated `OnPianoRollCellsPainted` handler
+
+---
+
+## 18. Unified ExecuteAction + Automatic Incremental Dispatch
+
+### Problem
+
+`ExecuteAction()` and `ApplyIncrementalUpdate()` were called separately. Every operation had to manually call both:
+
+```csharp
+// Before: every caller had to do this
+ExecuteAction(new ModifyInputAction(...));
+RefreshFrameAt(frameIndex); // manual, easy to forget
+```
+
+This led to bugs where callers (especially Lua API) forgot the view model update or bypassed undo entirely.
+
+### Solution
+
+`ExecuteAction()` now automatically calls `ApplyIncrementalUpdate()`:
+
+```csharp
+internal void ExecuteAction(UndoableAction action) {
+	action.Execute();
+	_undoStack.Push(action);
+	_redoStack.Clear();
+	ApplyIncrementalUpdate(action, isUndo: false); // automatic
+	UpdateUndoRedoState();
+	HasUnsavedChanges = true;
+}
+```
+
+All callers simplified to a single line:
+
+```csharp
+// After: just one call
+ExecuteAction(new ModifyInputAction(...));
+```
+
+### Impact
+
+- **Lua API** — `SetFrameInput`, `ClearFrameInput`, `InsertFrames`, `DeleteFrames` all now call `ExecuteAction()` with proper action types
+- **UI InsertFrames** — Uses `InsertFramesAction` instead of direct `Insert()`
+- **Fork truncate** — Uses `DeleteFramesAction` instead of direct `RemoveRange()`
+- **Undo/redo** — Unchanged (already called `ApplyIncrementalUpdate`)
+- **Eliminated** all manual post-execute `RefreshFrameAt()`/`InsertFrameViewModels()`/`RemoveFrameViewModel()` calls
+
+### Files
+
+- [UI/ViewModels/TasEditorViewModel.cs](../../UI/ViewModels/TasEditorViewModel.cs) — `ExecuteAction` (now `internal`, auto-dispatches)
+- [UI/TAS/TasLuaApi.cs](../../UI/TAS/TasLuaApi.cs) — All 4 mutation methods now use undo actions

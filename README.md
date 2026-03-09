@@ -90,12 +90,14 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 
 ### 🎮 TAS Editor
 
-- **Piano Roll View** - Visual timeline for frame-by-frame editing
+- **Piano Roll View** - Visual timeline for frame-by-frame editing with batch paint
+- **Full Undo/Redo** - Every operation (toggle, paint, insert, delete, clear, fork) is undoable
 - **Greenzone System** - Instant seeking with automatic savestates
-- **Input Recording** - Capture and edit gameplay
-- **Branches** - Compare alternate strategies
+- **O(1) Incremental Updates** - Single-frame refresh instead of full rebuild
+- **Input Recording** - Capture, insert, and overwrite modes with branch support
+- **Branches** - Fork, compare, and load alternate strategies
 - **Multi-Format Import/Export** - BK2, FM2, SMV, LSMV, VBM, GMV, NMV
-- **Lua Scripting** - Automate TAS workflows
+- **Lua Scripting** - Automate TAS workflows with full undo integration
 
 ### 🔧 Debugging
 
@@ -169,6 +171,7 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 | [C++ Development Guide](~docs/CPP-DEVELOPMENT-GUIDE.md) | Coding standards |
 | [Pansy Integration](~docs/pansy-export-index.md) | Metadata export system |
 | [Profiling Guide](~docs/PROFILING-GUIDE.md) | Performance profiling |
+| [TAS Algorithm Reference](~docs/algorithms/tas-algorithms.md) | TAS data structure and undo system design |
 
 ## ⌨️ Keyboard Shortcuts
 
