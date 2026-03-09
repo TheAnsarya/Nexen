@@ -5,11 +5,17 @@
 void NotificationManager::RegisterNotificationListener(shared_ptr<INotificationListener> notificationListener) {
 	auto lock = _lock.AcquireSafe();
 
-	// Cleanup expired listeners on registration (rare) instead of every SendNotification (per-frame)
-	CleanupNotificationListeners();
+	// Cleanup expired listeners while lock is held to avoid lock re-entry in hot registration paths.
+	_listeners.erase(
+		std::remove_if(
+			_listeners.begin(),
+			_listeners.end(),
+			[](const weak_ptr<INotificationListener>& ptr) { return ptr.expired(); }),
+		_listeners.end());
 
 	for (const weak_ptr<INotificationListener>& listener : _listeners) {
-		if (listener.lock() == notificationListener) {
+		shared_ptr<INotificationListener> existing = listener.lock();
+		if (existing && existing == notificationListener) {
 			// This listener is already registered, do nothing
 			return;
 		}
@@ -26,7 +32,7 @@ void NotificationManager::CleanupNotificationListeners() {
 	    std::remove_if(
 	        _listeners.begin(),
 	        _listeners.end(),
-	        [](weak_ptr<INotificationListener> ptr) { return ptr.expired(); }),
+	        [](const weak_ptr<INotificationListener>& ptr) { return ptr.expired(); }),
 	    _listeners.end());
 }
 
