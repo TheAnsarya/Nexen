@@ -413,10 +413,7 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		var buttonLabels = _pianoRoll.ButtonLabels ?? GetDefaultButtonLabels();
 		if (e.ButtonIndex >= 0 && e.ButtonIndex < buttonLabels.Count) {
 			string buttonName = MapButtonLabelToName(buttonLabels[e.ButtonIndex]);
-			foreach (int frame in e.Frames) {
-				ViewModel.SetButtonAtFrame(frame, 0, buttonName, e.PaintValue);
-			}
-			ViewModel.RefreshFrames();
+			ViewModel.PaintButton(e.Frames, 0, buttonName, e.PaintValue);
 		}
 	}
 

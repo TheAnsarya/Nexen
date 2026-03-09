@@ -777,35 +777,39 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	}
 
 	/// <summary>
-	/// Sets a button state at a specific frame without updating frames (for batch operations).
+	/// Batch-paints a button across multiple frames. Undoable as a single action.
 	/// </summary>
-	public void SetButtonAtFrame(int frameIndex, int port, string button, bool state) {
-		if (Movie is null || frameIndex < 0 || frameIndex >= Movie.InputFrames.Count) {
+	public void PaintButton(IReadOnlyList<int> frameIndices, int port, string button, bool state) {
+		if (Movie is null || frameIndices.Count == 0) {
 			return;
 		}
 
-		var frame = Movie.InputFrames[frameIndex];
-		if (port < 0 || port >= frame.Controllers.Length) {
+		var validFrames = new List<int>(frameIndices.Count);
+		var oldInputs = new List<ControllerInput>(frameIndices.Count);
+
+		foreach (int idx in frameIndices) {
+			if (idx < 0 || idx >= Movie.InputFrames.Count) {
+				continue;
+			}
+
+			var frame = Movie.InputFrames[idx];
+			if (port < 0 || port >= frame.Controllers.Length) {
+				continue;
+			}
+
+			validFrames.Add(idx);
+			oldInputs.Add(CloneControllerInput(frame.Controllers[port]));
+		}
+
+		if (validFrames.Count == 0) {
 			return;
 		}
 
-		var controller = frame.Controllers[port];
-		switch (button) {
-			case "A" or "a": controller.A = state; break;
-			case "B" or "b": controller.B = state; break;
-			case "X" or "x": controller.X = state; break;
-			case "Y" or "y": controller.Y = state; break;
-			case "L" or "l": controller.L = state; break;
-			case "R" or "r": controller.R = state; break;
-			case "UP" or "Up" or "up": controller.Up = state; break;
-			case "DOWN" or "Down" or "down": controller.Down = state; break;
-			case "LEFT" or "Left" or "left": controller.Left = state; break;
-			case "RIGHT" or "Right" or "right": controller.Right = state; break;
-			case "START" or "Start" or "start": controller.Start = state; break;
-			case "SELECT" or "Select" or "select": controller.Select = state; break;
-		}
+		ExecuteAction(new PaintInputAction(Movie, validFrames, port, button, state, oldInputs));
 
-		HasUnsavedChanges = true;
+		foreach (int idx in validFrames) {
+			RefreshFrameAt(idx);
+		}
 	}
 
 	/// <summary>
@@ -1016,6 +1020,12 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			case ClearInputAction clear:
 				// No structural change — O(1) refresh using stored index
 				RefreshFrameAt(clear.FrameIndex);
+				break;
+			case PaintInputAction paint:
+				// Refresh only the painted frames — O(k) for k painted frames
+				foreach (int idx in paint.FrameIndices) {
+					RefreshFrameAt(idx);
+				}
 				break;
 			default:
 				// Unknown action type — fall back to full rebuild
@@ -2223,6 +2233,60 @@ public sealed class ClearInputAction : UndoableAction {
 		Up = src.Up, Down = src.Down, Left = src.Left, Right = src.Right,
 		Start = src.Start, Select = src.Select
 	};
+}
+
+/// <summary>
+/// Action for batch-painting a button across multiple frames.
+/// </summary>
+public sealed class PaintInputAction : UndoableAction {
+	private readonly MovieData _movie;
+	private readonly List<int> _frameIndices;
+	private readonly int _port;
+	private readonly string _button;
+	private readonly bool _state;
+	private readonly List<ControllerInput> _oldInputs;
+
+	public IReadOnlyList<int> FrameIndices => _frameIndices;
+
+	public override string Description => $"Paint {_frameIndices.Count} frame(s)";
+
+	public PaintInputAction(MovieData movie, List<int> frameIndices, int port, string button, bool state, List<ControllerInput> oldInputs) {
+		_movie = movie;
+		_frameIndices = frameIndices;
+		_port = port;
+		_button = button;
+		_state = state;
+		_oldInputs = oldInputs;
+	}
+
+	public override void Execute() {
+		for (int i = 0; i < _frameIndices.Count; i++) {
+			ApplyButton(_movie.InputFrames[_frameIndices[i]].Controllers[_port], _button, _state);
+		}
+	}
+
+	public override void Undo() {
+		for (int i = 0; i < _frameIndices.Count; i++) {
+			_movie.InputFrames[_frameIndices[i]].Controllers[_port] = _oldInputs[i];
+		}
+	}
+
+	private static void ApplyButton(ControllerInput controller, string button, bool state) {
+		switch (button) {
+			case "A" or "a": controller.A = state; break;
+			case "B" or "b": controller.B = state; break;
+			case "X" or "x": controller.X = state; break;
+			case "Y" or "y": controller.Y = state; break;
+			case "L" or "l": controller.L = state; break;
+			case "R" or "r": controller.R = state; break;
+			case "UP" or "Up" or "up": controller.Up = state; break;
+			case "DOWN" or "Down" or "down": controller.Down = state; break;
+			case "LEFT" or "Left" or "left": controller.Left = state; break;
+			case "RIGHT" or "Right" or "right": controller.Right = state; break;
+			case "START" or "Start" or "start": controller.Start = state; break;
+			case "SELECT" or "Select" or "select": controller.Select = state; break;
+		}
+	}
 }
 
 #endregion

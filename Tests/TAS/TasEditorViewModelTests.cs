@@ -736,6 +736,65 @@ public class TasEditorViewModelTests {
 	}
 
 	#endregion
+
+	#region Paint Input Action Tests
+
+	[Fact]
+	public void PaintInputAction_Execute_SetsButtonOnAllFrames() {
+		var movie = CreateTestMovieData(5);
+		var frames = new List<int> { 0, 2, 4 };
+		var oldInputs = frames.Select(i => CloneControllerInput(movie.InputFrames[i].Controllers[0])).ToList();
+		var action = new PaintInputAction(movie, frames, 0, "A", true, oldInputs);
+
+		action.Execute();
+
+		Assert.True(movie.InputFrames[0].Controllers[0].A);
+		Assert.False(movie.InputFrames[1].Controllers[0].A);
+		Assert.True(movie.InputFrames[2].Controllers[0].A);
+		Assert.False(movie.InputFrames[3].Controllers[0].A);
+		Assert.True(movie.InputFrames[4].Controllers[0].A);
+	}
+
+	[Fact]
+	public void PaintInputAction_Undo_RestoresOriginalState() {
+		var movie = CreateTestMovieData(3);
+		movie.InputFrames[0].Controllers[0].A = true;
+		movie.InputFrames[1].Controllers[0].A = false;
+		movie.InputFrames[2].Controllers[0].A = true;
+
+		var frames = new List<int> { 0, 1, 2 };
+		var oldInputs = frames.Select(i => CloneControllerInput(movie.InputFrames[i].Controllers[0])).ToList();
+		var action = new PaintInputAction(movie, frames, 0, "A", false, oldInputs);
+
+		action.Execute();
+		Assert.False(movie.InputFrames[0].Controllers[0].A);
+		Assert.False(movie.InputFrames[1].Controllers[0].A);
+		Assert.False(movie.InputFrames[2].Controllers[0].A);
+
+		action.Undo();
+		Assert.True(movie.InputFrames[0].Controllers[0].A);
+		Assert.False(movie.InputFrames[1].Controllers[0].A);
+		Assert.True(movie.InputFrames[2].Controllers[0].A);
+	}
+
+	[Fact]
+	public void PaintInputAction_Description_ShowsFrameCount() {
+		var movie = CreateTestMovieData(5);
+		var frames = new List<int> { 1, 3, 4 };
+		var oldInputs = frames.Select(i => CloneControllerInput(movie.InputFrames[i].Controllers[0])).ToList();
+		var action = new PaintInputAction(movie, frames, 0, "B", true, oldInputs);
+
+		Assert.Equal("Paint 3 frame(s)", action.Description);
+	}
+
+	private static ControllerInput CloneControllerInput(ControllerInput src) => new() {
+		A = src.A, B = src.B, X = src.X, Y = src.Y,
+		L = src.L, R = src.R,
+		Up = src.Up, Down = src.Down, Left = src.Left, Right = src.Right,
+		Start = src.Start, Select = src.Select
+	};
+
+	#endregion
 }
 
 /// <summary>
