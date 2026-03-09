@@ -157,6 +157,24 @@ public class TasOperationBenchmarks {
 
 		return _frames.Count;
 	}
+
+	/// <summary>
+	/// Paint batch: Refresh only painted frames O(k) vs full rebuild O(n).
+	/// Simulates painting 50 frames with per-frame refresh.
+	/// </summary>
+	[Benchmark]
+	public int PaintBatch_50() {
+		int paintCount = 50;
+		int startFrame = FrameCount / 4;
+
+		// Simulate refreshing only the painted frames
+		for (int i = 0; i < paintCount; i++) {
+			int idx = startFrame + i;
+			_frames[idx].FrameNumber = idx + 1; // Simulate RefreshFrameAt
+		}
+
+		return paintCount;
+	}
 }
 
 /// <summary>
