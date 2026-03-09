@@ -95,18 +95,21 @@ void BaseControlDevice::SetTextState(string textState) {
 		_state.State.insert(_state.State.end(), textState.begin(), textState.end());
 	} else {
 		if (HasCoordinates()) {
-			vector<string> data = StringUtilities::Split(textState, ' ');
-			if (data.size() >= 3) {
-				MousePosition pos;
-				try {
-					pos.X = (int16_t)std::stol(data[0]);
-					pos.Y = (int16_t)std::stol(data[1]);
-				} catch (std::exception&) {
-					pos.X = -1;
-					pos.Y = -1;
+			size_t space1 = textState.find(' ');
+			if (space1 != string::npos) {
+				size_t space2 = textState.find(' ', space1 + 1);
+				if (space2 != string::npos) {
+					MousePosition pos;
+					try {
+						pos.X = (int16_t)std::stoi(textState.substr(0, space1));
+						pos.Y = (int16_t)std::stoi(textState.substr(space1 + 1, space2 - space1 - 1));
+					} catch (std::exception&) {
+						pos.X = -1;
+						pos.Y = -1;
+					}
+					SetCoordinates(pos);
+					textState = textState.substr(space2 + 1);
 				}
-				SetCoordinates(pos);
-				textState = data[2];
 			}
 		}
 
@@ -138,7 +141,7 @@ string BaseControlDevice::GetTextState() {
 
 		if (HasCoordinates()) {
 			MousePosition pos = GetCoordinates();
-			output += std::to_string(pos.X) + " " + std::to_string(pos.Y) + " ";
+			output.append(std::format("{} {} ", pos.X, pos.Y));
 		}
 
 		int keyNumber = 0;

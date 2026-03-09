@@ -177,6 +177,7 @@ public:
 		auto lock = _stateLock.AcquireSafe();
 
 		string state;
+		state.reserve(HubPortCount * 24);
 		for (int i = 0; i < HubPortCount; i++) {
 			if (i != 0) {
 				state += ":";
