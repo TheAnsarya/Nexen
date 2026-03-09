@@ -40,3 +40,22 @@ TEST(NotificationManagerTests, ExpiredListeners_AreIgnoredWhenSendingNotificatio
 	EXPECT_EQ(liveListener->NotificationCount, 1);
 	EXPECT_TRUE(liveListener->LastType == ConsoleNotificationType::GameResumed);
 }
+
+TEST(NotificationManagerTests, SendNotification_PrunesExpiredListenersForSubsequentSends) {
+	NotificationManager manager;
+	auto liveListener = std::make_shared<TestNotificationListener>();
+	manager.RegisterNotificationListener(liveListener);
+
+	{
+		for (int i = 0; i < 10; i++) {
+			auto expiredListener = std::make_shared<TestNotificationListener>();
+			manager.RegisterNotificationListener(expiredListener);
+		}
+	}
+
+	manager.SendNotification(ConsoleNotificationType::GameLoaded, nullptr);
+	manager.SendNotification(ConsoleNotificationType::GamePaused, nullptr);
+
+	EXPECT_EQ(liveListener->NotificationCount, 2);
+	EXPECT_TRUE(liveListener->LastType == ConsoleNotificationType::GamePaused);
+}

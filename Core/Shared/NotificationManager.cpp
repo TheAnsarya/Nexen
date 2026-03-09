@@ -37,18 +37,29 @@ void NotificationManager::CleanupNotificationListeners() {
 }
 
 void NotificationManager::SendNotification(ConsoleNotificationType type, void* parameter) {
-	// Snapshot listener list under lock, then iterate outside lock.
-	// This minimizes lock hold time — callbacks execute without contention.
-	vector<weak_ptr<INotificationListener>> snapshot;
+	// Build a strong snapshot under lock and prune expired listeners in one pass.
+	// This keeps callback execution lock-free while reducing weak_ptr lock churn.
+	vector<shared_ptr<INotificationListener>> snapshot;
 	{
 		auto lock = _lock.AcquireSafe();
-		snapshot = _listeners;
+		snapshot.reserve(_listeners.size());
+
+		auto writeIt = _listeners.begin();
+		for (auto readIt = _listeners.begin(); readIt != _listeners.end(); readIt++) {
+			shared_ptr<INotificationListener> listener = readIt->lock();
+			if (!listener) {
+				continue;
+			}
+
+			*writeIt = *readIt;
+			writeIt++;
+			snapshot.push_back(std::move(listener));
+		}
+
+		_listeners.erase(writeIt, _listeners.end());
 	}
 
-	for (size_t i = 0; i < snapshot.size(); i++) {
-		shared_ptr<INotificationListener> listener = snapshot[i].lock();
-		if (listener) {
-			listener->ProcessNotification(type, parameter);
-		}
+	for (const shared_ptr<INotificationListener>& listener : snapshot) {
+		listener->ProcessNotification(type, parameter);
 	}
 }
