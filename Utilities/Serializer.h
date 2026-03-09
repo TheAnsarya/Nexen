@@ -518,7 +518,7 @@ public:
 
 	bool ContainsKey(const char* name) {
 		string key = GetKey(name, -1);
-		return _values.find(key) != _values.end();
+		return _values.contains(key);
 	}
 
 	void PushNamePrefix(const char* name, int index = -1);

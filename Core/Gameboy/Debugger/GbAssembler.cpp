@@ -105,8 +105,8 @@ int GbAssembler::ReadValue(const string& operand, int min, int max, unordered_ma
 			if (std::regex_match(operand, labelRegex)) {
 				if (firstPass) {
 					return 0;
-				} else if (localLabels.find(operand) != localLabels.end()) {
-					value = localLabels.find(operand)->second;
+				} else if (auto it = localLabels.find(operand); it != localLabels.end()) {
+					value = it->second;
 				} else {
 					int labelAddress = _labelManager->GetLabelRelativeAddress(operand, CpuType::Gameboy);
 					if (labelAddress >= 0) {
@@ -279,7 +279,7 @@ void GbAssembler::RunPass(vector<int16_t>& output, const string& code, uint32_t 
 			string labelName = line.substr(0, labelDefIndex);
 			if (std::regex_search(labelName, match, labelRegex)) {
 				string label = match.str(1);
-				if (firstPass && currentPassLabels.find(label) != currentPassLabels.end()) {
+				if (firstPass && currentPassLabels.contains(label)) {
 					output.push_back(AssemblerSpecialCodes::LabelRedefinition);
 					continue;
 				} else {

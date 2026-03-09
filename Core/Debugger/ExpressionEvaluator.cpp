@@ -245,7 +245,7 @@ string ExpressionEvaluator::GetNextToken(const string& expression, size_t& pos, 
 		for (size_t len = expression.size(); pos < len; pos++) {
 			c = static_cast<char>(std::tolower(static_cast<unsigned char>(expression[pos])));
 			operatorToken += c;
-			if (output.empty() || _operators.find(operatorToken) != _operators.end()) {
+			if (output.empty() || _operators.contains(operatorToken)) {
 				// If appending the next char results in a valid operator, append it (or if this is the first character)
 				output += c;
 			} else {

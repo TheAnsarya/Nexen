@@ -56,7 +56,7 @@ public:
 	/// Size check first for fast path when no addresses frozen.
 	/// </remarks>
 	bool IsFrozenAddress(uint32_t addr) {
-		return _frozenAddresses.size() > 0 && _frozenAddresses.find(addr) != _frozenAddresses.end();
+		return _frozenAddresses.size() > 0 && _frozenAddresses.contains(addr);
 	}
 
 	/// <summary>

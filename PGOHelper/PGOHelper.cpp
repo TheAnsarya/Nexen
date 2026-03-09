@@ -55,7 +55,7 @@ vector<string> GetFilesInFolder(string rootFolder, std::unordered_set<string> ex
 		for(fs::directory_iterator i(PathUtil::FromUtf8(folder)), end; i != end; i++) {
 			string extension = PathUtil::ToUtf8(i->path().extension());
 			std::ranges::transform(extension, extension.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-			if(extensions.find(extension) != extensions.end()) {
+			if(extensions.contains(extension)) {
 				files.push_back(PathUtil::ToUtf8(i->path()));
 			}
 		}

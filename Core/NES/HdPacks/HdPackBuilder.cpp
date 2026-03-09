@@ -231,12 +231,12 @@ void HdPackBuilder::SaveHdPack() {
 	stringstream tileRows;
 	stringstream ss;
 	int pngIndex = 0;
-	ss << "<ver>" << std::to_string(BaseHdNesPack::CurrentVersion) << std::endl;
-	ss << "<scale>" << _hdData.Scale << std::endl;
-	ss << "<supportedRom>" << _emu->GetRomInfo().RomFile.GetSha1Hash() << std::endl;
+	ss << "<ver>" << std::to_string(BaseHdNesPack::CurrentVersion) << '\n';
+	ss << "<scale>" << _hdData.Scale << '\n';
+	ss << "<supportedRom>" << _emu->GetRomInfo().RomFile.GetSha1Hash() << '\n';
 	if (_options.IgnoreOverscan) {
 		OverscanDimensions overscan = _emu->GetSettings()->GetOverscan();
-		ss << "<overscan>" << overscan.Top << "," << overscan.Right << "," << overscan.Bottom << "," << overscan.Left << std::endl;
+		ss << "<overscan>" << overscan.Top << "," << overscan.Right << "," << overscan.Bottom << "," << overscan.Left << '\n';
 	}
 
 	int tileDimension = 8 * _hdData.Scale;
@@ -262,12 +262,12 @@ void HdPackBuilder::SaveHdPack() {
 				pngName = "Chr_" + HexUtilities::ToHex(chrBankId) + "_" + std::to_string(pngNumber) + ".png";
 			}
 
-			tileRows << std::endl
-			         << "#" << pngName << std::endl;
+			tileRows << '\n'
+			         << "#" << pngName << '\n';
 			tileRows << pngRows.str();
 			pngRows = stringstream();
 
-			ss << "<img>" << pngName << std::endl;
+			ss << "<img>" << pngName << '\n';
 			PNGHelper::WritePNG(FolderUtilities::CombinePath(_saveFolder, pngName), pngBuffer.get(), pngDimension, pngDimension, 32);
 			pngNumber++;
 			pngIndex++;
@@ -322,7 +322,7 @@ void HdPackBuilder::SaveHdPack() {
 				if (tileInfo) {
 					DrawTile(tileInfo, i, pngBuffer.get(), pageNumber, spritesOnly);
 
-					pngRows << tileInfo->ToString(pngIndex) << std::endl;
+					pngRows << tileInfo->ToString(pngIndex) << '\n';
 
 					pageEmpty = false;
 					pngEmpty = false;
@@ -343,13 +343,13 @@ void HdPackBuilder::SaveHdPack() {
 
 	for (unique_ptr<HdPackCondition>& condition : _hdData.Conditions) {
 		if (!condition->IsExcludedFromFile()) {
-			ss << condition->ToString() << std::endl;
+			ss << condition->ToString() << '\n';
 		}
 	}
 
 	for (int i = 0; i < HdPackData::BgLayerCount; i++) {
 		for (HdBackgroundInfo& bgInfo : _hdData.BackgroundsByPriority[i]) {
-			ss << bgInfo.ToString() << std::endl;
+			ss << bgInfo.ToString() << '\n';
 		}
 	}
 
@@ -358,15 +358,15 @@ void HdPackBuilder::SaveHdPack() {
 		if (bgmInfo.second.LoopPosition > 0) {
 			ss << "," << std::to_string(bgmInfo.second.LoopPosition);
 		}
-		ss << std::endl;
+		ss << '\n';
 	}
 
 	for (auto& sfxInfo : _hdData.SfxFilesById) {
-		ss << "<sfx>" << std::to_string(sfxInfo.first >> 8) << "," << std::to_string(sfxInfo.first & 0xFF) << "," << VirtualFile(sfxInfo.second).GetFileName() << std::endl;
+		ss << "<sfx>" << std::to_string(sfxInfo.first >> 8) << "," << std::to_string(sfxInfo.first & 0xFF) << "," << VirtualFile(sfxInfo.second).GetFileName() << '\n';
 	}
 
 	for (auto& patchInfo : _hdData.PatchesByHash) {
-		ss << "<patch>" << VirtualFile(patchInfo.second).GetFileName() << "," << patchInfo.first << std::endl;
+		ss << "<patch>" << VirtualFile(patchInfo.second).GetFileName() << "," << patchInfo.first << '\n';
 	}
 
 	if (_hdData.OptionFlags != 0) {

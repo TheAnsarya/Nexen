@@ -152,7 +152,7 @@ bool LabelManager::HasLabelOrComment(AddressInfo address) {
 	if (address.Address >= 0) {
 		uint64_t key = GetLabelKey(address.Address, address.Type);
 		if (key >= 0) {
-			return _codeLabels.find(key) != _codeLabels.end();
+			return _codeLabels.contains(key);
 		}
 	}
 	return false;

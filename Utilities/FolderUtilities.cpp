@@ -181,7 +181,7 @@ vector<string> FolderUtilities::GetFilesInFolder(const string& rootFolder, const
 			} else {
 				string extension = PathUtil::ToUtf8(i->path().extension());
 				std::ranges::transform(extension, extension.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-				if (extensions.empty() || extensions.find(extension) != extensions.end()) {
+				if (extensions.empty() || extensions.contains(extension)) {
 					files.push_back(PathUtil::ToUtf8(i->path()));
 				}
 			}
@@ -190,7 +190,7 @@ vector<string> FolderUtilities::GetFilesInFolder(const string& rootFolder, const
 		for (fs::directory_iterator i(PathUtil::FromUtf8(rootFolder)), end; i != end; i++) {
 			string extension = PathUtil::ToUtf8(i->path().extension());
 			std::ranges::transform(extension, extension.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-			if (extensions.empty() || extensions.find(extension) != extensions.end()) {
+			if (extensions.empty() || extensions.contains(extension)) {
 				files.push_back(PathUtil::ToUtf8(i->path()));
 			}
 		}

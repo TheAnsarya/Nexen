@@ -34,7 +34,7 @@ void Base6502Assembler<T>::ProcessLine(string code, uint32_t& instructionAddress
 		// Parse label definitions
 		string label = match.str(1);
 		string afterLabel = match.str(2);
-		if (currentPassLabels.find(match.str(1)) != currentPassLabels.end()) {
+		if (currentPassLabels.contains(match.str(1))) {
 			output.push_back(AssemblerSpecialCodes::LabelRedefinition);
 		} else {
 			labels[match.str(1)] = instructionAddress;
@@ -236,7 +236,7 @@ AssemblerSpecialCodes Base6502Assembler<T>::ParseOperand(AssemblerLineData& line
 
 template <class T>
 bool Base6502Assembler<T>::IsOpModeAvailable(const string& opCode, T addrMode) {
-	return _availableModesByOpName[opCode].find(addrMode) != _availableModesByOpName[opCode].end();
+	return _availableModesByOpName[opCode].contains(addrMode);
 }
 
 template <class T>

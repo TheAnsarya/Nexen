@@ -37,7 +37,7 @@ vector<string> ArchiveReader::GetFileList(std::initializer_list<string> extensio
 		std::ranges::transform(lcFilename, lcFilename.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
 		string ext = FolderUtilities::GetExtension(lcFilename);
-		if (extMap.find(ext) != extMap.end()) {
+		if (extMap.contains(ext)) {
 			filenames.push_back(filename);
 		}
 	}
