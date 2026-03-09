@@ -139,7 +139,7 @@ void SystemHud::DisplayMessage(const string& title, const string& message) {
 void SystemHud::DrawMessages(DebugHud* hud, uint32_t screenWidth, uint32_t screenHeight) const {
 	int counter = 0;
 	int lastHeight = 3;
-	for (auto& msg : _messages) {
+	for (const auto& msg : _messages) {
 		if (counter < 4) {
 			DrawMessage(hud, *msg.get(), screenWidth, screenHeight, lastHeight);
 		} else {

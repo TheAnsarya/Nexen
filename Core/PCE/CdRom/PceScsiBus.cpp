@@ -199,8 +199,10 @@ void PceScsiBus::LogCommand(string msg) {
 	}
 
 	msg = "[SCSI] CMD: " + msg + " -";
+	msg.reserve(msg.size() + _cmdBuffer.size() * 4);
 	for (size_t i = 0, len = _cmdBuffer.size(); i < len; i++) {
-		msg += " $" + HexUtilities::ToHex(_cmdBuffer[i]);
+		msg += " $";
+		msg += HexUtilities::ToHex(_cmdBuffer[i]);
 	}
 	_emu->DebugLog(msg);
 }

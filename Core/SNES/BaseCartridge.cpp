@@ -421,6 +421,7 @@ void BaseCartridge::Init(MemoryMappings& mm) {
 	_prgRomHandlers.clear();
 	_saveRamHandlers.clear();
 
+	_prgRomHandlers.reserve(_prgRomSize / 0x1000);
 	for (uint32_t i = 0; i < _prgRomSize; i += 0x1000) {
 		_prgRomHandlers.push_back(std::make_unique<RomHandler>(_prgRom, i, _prgRomSize, MemoryType::SnesPrgRom));
 	}
@@ -439,6 +440,9 @@ void BaseCartridge::Init(MemoryMappings& mm) {
 		}
 	}
 
+	if (_saveRamSize > 0) {
+		_saveRamHandlers.reserve(_saveRamSize / 0x1000);
+	}
 	for (uint32_t i = 0; i < _saveRamSize; i += 0x1000) {
 		_saveRamHandlers.push_back(std::make_unique<RamHandler>(_saveRam, i, _saveRamSize, MemoryType::SnesSaveRam));
 	}

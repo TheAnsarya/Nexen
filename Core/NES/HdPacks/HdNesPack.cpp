@@ -47,7 +47,7 @@ void HdNesPack<scale>::InitializeFallbackTiles() {
 			HdTileKey tileKey = {};
 			tileKey.IsChrRamTile = true;
 			unordered_set<HdTileKey> usedTiles;
-			for (auto& tile : _hdData->Tiles) {
+			for (const auto& tile : _hdData->Tiles) {
 				tileKey.TileIndex = tile->TileIndex;
 				mapper->CopyChrTile(tile->TileIndex * 16, tileKey.TileData);
 

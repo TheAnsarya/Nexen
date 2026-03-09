@@ -34,7 +34,7 @@ HdPackBuilder::HdPackBuilder(Emulator* emu, PpuModel ppuModel, bool isChrRam, Hd
 	if (ifstream(existingPackDefinition)) {
 		HdPackLoader::LoadHdNesPack(existingPackDefinition, _hdData);
 		_hdData.LoadAsync();
-		for (auto& tile : _hdData.Tiles) {
+		for (const auto& tile : _hdData.Tiles) {
 			tile->Init();
 		}
 
