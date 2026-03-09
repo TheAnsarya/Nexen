@@ -176,6 +176,7 @@ public sealed class PianoRollControl : Control {
 
 	// Cached FormattedText for frame numbers (LRU cache for visible frames)
 	private readonly Dictionary<int, FormattedText> _frameNumberCache = new();
+	private readonly List<int> _evictionKeys = new();
 	private double _frameNumberCacheZoom;
 	private const int MaxFrameNumberCacheSize = 200;
 
@@ -295,10 +296,13 @@ public sealed class PianoRollControl : Control {
 					// Evict entries outside visible range instead of clearing all
 					if (_frameNumberCache.Count >= MaxFrameNumberCacheSize) {
 						int visibleEnd = ScrollOffset + visibleFrames;
-						var keysToRemove = _frameNumberCache.Keys
-							.Where(k => k < ScrollOffset - visibleFrames || k > visibleEnd + visibleFrames)
-							.ToList();
-						foreach (var key in keysToRemove) {
+						_evictionKeys.Clear();
+						foreach (var k in _frameNumberCache.Keys) {
+							if (k < ScrollOffset - visibleFrames || k > visibleEnd + visibleFrames) {
+								_evictionKeys.Add(k);
+							}
+						}
+						foreach (var key in _evictionKeys) {
 							_frameNumberCache.Remove(key);
 						}
 
