@@ -237,7 +237,11 @@ public sealed class PianoRollControl : Control {
 
 		// Invalidate cache if zoom changed
 		if (_buttonLabelCache is null || _buttonLabelCacheZoom != ZoomLevel) {
-			_buttonLabelCache = new Dictionary<string, FormattedText>();
+			if (_buttonLabelCache is null) {
+				_buttonLabelCache = new Dictionary<string, FormattedText>();
+			} else {
+				_buttonLabelCache.Clear();
+			}
 			_buttonLabelCacheZoom = ZoomLevel;
 		}
 
@@ -288,9 +292,20 @@ public sealed class PianoRollControl : Control {
 			if (frame % 10 == 0 || ZoomLevel >= 2.0) {
 				// Get or create cached FormattedText
 				if (!_frameNumberCache.TryGetValue(frame, out var text)) {
-					// Prune cache if too large
+					// Evict entries outside visible range instead of clearing all
 					if (_frameNumberCache.Count >= MaxFrameNumberCacheSize) {
-						_frameNumberCache.Clear();
+						int visibleEnd = ScrollOffset + visibleFrames;
+						var keysToRemove = _frameNumberCache.Keys
+							.Where(k => k < ScrollOffset - visibleFrames || k > visibleEnd + visibleFrames)
+							.ToList();
+						foreach (var key in keysToRemove) {
+							_frameNumberCache.Remove(key);
+						}
+
+						// If still over limit, clear entirely as fallback
+						if (_frameNumberCache.Count >= MaxFrameNumberCacheSize) {
+							_frameNumberCache.Clear();
+						}
 					}
 
 					text = new FormattedText(

@@ -227,6 +227,13 @@ if (condition)
 5. ✅ No new warnings in build output
 6. ✅ Hot path changes reviewed for correctness (CPU cores, PPU, memory handlers)
 
+#### Focused Validation Commands (NotificationManager)
+
+- Build Release x64:
+	- `& "C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin\MSBuild.exe" Nexen.sln /p:Configuration=Release /p:Platform=x64 /t:Build /m /nologo /v:m`
+- Run targeted NotificationManager gtests:
+	- `.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=NotificationManagerTests.* --gtest_brief=1`
+
 #### Types of Safe Performance Changes:
 - **Data structure swaps** (e.g., `unordered_map` → sorted `vector`) — same semantics, different performance
 - **Avoiding copies** (e.g., `const string&` instead of `string`) — identical behavior

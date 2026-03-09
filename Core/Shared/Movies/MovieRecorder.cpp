@@ -163,9 +163,9 @@ bool MovieRecorder::Stop() {
 
 void MovieRecorder::RecordInput(const vector<shared_ptr<BaseControlDevice>>& devices) {
 	for (const shared_ptr<BaseControlDevice>& device : devices) {
-		_inputData << ("|" + device->GetTextState());
+		_inputData << '|' << device->GetTextState();
 	}
-	_inputData << "\n";
+	_inputData << '\n';
 }
 
 void MovieRecorder::OnLoadBattery(const string& extension, vector<uint8_t> batteryData) {
@@ -210,10 +210,10 @@ bool MovieRecorder::CreateMovie(const string& movieFile, deque<RewindData>& data
 					uint8_t port = device->GetPort();
 					if (j < rewindData.InputLogs[port].size()) {
 						device->SetRawState(rewindData.InputLogs[port][j]);
-						_inputData << ("|" + device->GetTextState());
+						_inputData << '|' << device->GetTextState();
 					}
 				}
-				_inputData << "\n";
+				_inputData << '\n';
 			}
 		}
 

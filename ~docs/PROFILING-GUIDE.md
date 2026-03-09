@@ -181,6 +181,18 @@ bin\win-x64\Release\Core.Benchmarks.exe --benchmark_format=json > results.json
 compare.py results_before.json results_after.json
 ```
 
+## Focused NotificationManager Validation
+
+Use this focused loop for NotificationManager lock/contention changes:
+
+```powershell
+# Build Release x64
+& "C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin\MSBuild.exe" Nexen.sln /p:Configuration=Release /p:Platform=x64 /t:Build /m /nologo /v:m
+
+# Run targeted gtests
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=NotificationManagerTests.* --gtest_brief=1
+```
+
 ## Performance Targets
 
 | Component | Target | Notes |

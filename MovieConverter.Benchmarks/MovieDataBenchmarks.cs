@@ -59,4 +59,21 @@ public class MovieDataBenchmarks {
 
 	[Benchmark]
 	public MovieData Clone() => _movie.Clone();
+
+	[Benchmark]
+	public void TruncateAt_Middle() {
+		var clone = _movie.Clone();
+		clone.TruncateAt(FrameCount / 2);
+	}
+
+	[Benchmark]
+	public uint CalculateInputCrc32() => _movie.CalculateInputCrc32();
+
+	[Benchmark]
+	public string NexenLogLine_RoundTrip() {
+		var frame = _movie.InputFrames[FrameCount / 2];
+		string line = frame.ToNexenLogLine(2);
+		var parsed = InputFrame.FromNexenLogLine(line, FrameCount / 2);
+		return parsed.ToNexenLogLine(2);
+	}
 }
