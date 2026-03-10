@@ -638,3 +638,64 @@ ExecuteAction(new ModifyInputAction(...));
 
 - [UI/ViewModels/TasEditorViewModel.cs](../../UI/ViewModels/TasEditorViewModel.cs) — `ExecuteAction` (now `internal`, auto-dispatches)
 - [UI/TAS/TasLuaApi.cs](../../UI/TAS/TasLuaApi.cs) — All 4 mutation methods now use undo actions
+
+---
+
+## 19. C++ Controller Text State Optimizations
+
+### Problem
+
+`BaseControlDevice::GetTextState()` built per-frame text state strings by repeated `string +=` concatenation — each append allocated a new temporary string. `SetTextState()` tokenized the input by collecting all tokens into a `vector<string>` before processing.
+
+### Solution
+
+**GetTextState → `std::format`:**
+
+```cpp
+// Before: repeated concatenation
+string result = state.Header;
+result += " ";
+result += std::to_string(value1);
+result += " ";
+result += std::to_string(value2);
+
+// After: single formatted string
+return std::format("{} {} {}", state.Header, value1, value2);
+```
+
+**SetTextState → find-based tokenizer:**
+
+```cpp
+// Before: collect all tokens into vector
+vector<string> tokens;
+// ... split and collect all tokens
+for (auto& tok : tokens) { ... }
+
+// After: find-based iteration with no allocation
+size_t pos = 0;
+size_t end;
+while ((end = text.find(' ', pos)) != string::npos) {
+	string_view token(text.data() + pos, end - pos);
+	// process token directly
+	pos = end + 1;
+}
+```
+
+**ControllerHub::GetTextState → reserve:**
+
+```cpp
+// Pre-allocate output string based on port count
+string result;
+result.reserve(HubPortCount * 24);
+```
+
+### Impact
+
+- `GetTextState()` — single allocation via `std::format` instead of N concatenation temporaries
+- `SetTextState()` — zero heap allocations for tokenization (was 1 vector + N strings)
+- `ControllerHub::GetTextState()` — avoids reallocation of output string during hub aggregation
+
+### Files
+
+- [Core/Shared/BaseControlDevice.cpp](../../Core/Shared/BaseControlDevice.cpp) — GetTextState/SetTextState
+- [Core/Shared/ControllerHub.h](../../Core/Shared/ControllerHub.h) — GetTextState reserve
