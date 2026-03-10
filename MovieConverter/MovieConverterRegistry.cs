@@ -15,15 +15,20 @@ public static class MovieConverterRegistry {
 	private static FrozenDictionary<MovieFormat, IMovieConverter>? _formatLookup;
 	private static FrozenDictionary<string, IMovieConverter>? _extensionLookup;
 
+	// Cached collections (built once during initialization)
+	private static IReadOnlyList<IMovieConverter>? _cachedConverters;
+	private static IReadOnlyList<IMovieConverter>? _cachedReadable;
+	private static IReadOnlyList<IMovieConverter>? _cachedWritable;
+	private static string? _cachedOpenFilter;
+	private static string? _cachedSaveFilter;
+
 	/// <summary>
 	/// All registered converters
 	/// </summary>
 	public static IReadOnlyList<IMovieConverter> Converters {
 		get {
 			EnsureInitialized();
-			lock (_lock) {
-				return _converters.ToList();
-			}
+			return _cachedConverters!;
 		}
 	}
 
@@ -36,6 +41,11 @@ public static class MovieConverterRegistry {
 			// Remove existing converter for same format
 			_converters.RemoveAll(c => c.Format == converter.Format);
 			_converters.Add(converter);
+
+			// Rebuild caches if already initialized
+			if (_initialized) {
+				RebuildCaches();
+			}
 		}
 	}
 
@@ -62,7 +72,7 @@ public static class MovieConverterRegistry {
 			extension = "." + extension;
 		}
 
-		return _extensionLookup?.GetValueOrDefault(extension.ToLowerInvariant());
+		return _extensionLookup?.GetValueOrDefault(extension);
 	}
 
 	/// <summary>
@@ -81,9 +91,7 @@ public static class MovieConverterRegistry {
 	/// </summary>
 	public static IEnumerable<IMovieConverter> GetReadableFormats() {
 		EnsureInitialized();
-		lock (_lock) {
-			return _converters.Where(c => c.CanRead).ToList();
-		}
+		return _cachedReadable!;
 	}
 
 	/// <summary>
@@ -91,9 +99,7 @@ public static class MovieConverterRegistry {
 	/// </summary>
 	public static IEnumerable<IMovieConverter> GetWritableFormats() {
 		EnsureInitialized();
-		lock (_lock) {
-			return _converters.Where(c => c.CanWrite).ToList();
-		}
+		return _cachedWritable!;
 	}
 
 	/// <summary>
@@ -102,23 +108,7 @@ public static class MovieConverterRegistry {
 	/// <returns>Filter string like "BizHawk Movie (*.bk2)|*.bk2|..."</returns>
 	public static string GetOpenFileFilter() {
 		EnsureInitialized();
-
-		var filters = new List<string>();
-		var allExtensions = new List<string>();
-
-		lock (_lock) {
-			foreach (IMovieConverter? converter in _converters.Where(c => c.CanRead)) {
-				string exts = string.Join(";", converter.Extensions.Select(e => "*" + e));
-				filters.Add($"{converter.FormatName} ({exts})|{exts}");
-				allExtensions.AddRange(converter.Extensions.Select(e => "*" + e));
-			}
-		}
-
-		// Add "All Movie Files" option at the beginning
-		string allExts = string.Join(";", allExtensions);
-		filters.Insert(0, $"All Movie Files ({allExts})|{allExts}");
-
-		return string.Join("|", filters);
+		return _cachedOpenFilter!;
 	}
 
 	/// <summary>
@@ -126,17 +116,7 @@ public static class MovieConverterRegistry {
 	/// </summary>
 	public static string GetSaveFileFilter() {
 		EnsureInitialized();
-
-		var filters = new List<string>();
-
-		lock (_lock) {
-			foreach (IMovieConverter? converter in _converters.Where(c => c.CanWrite)) {
-				string exts = string.Join(";", converter.Extensions.Select(e => "*" + e));
-				filters.Add($"{converter.FormatName} ({exts})|{exts}");
-			}
-		}
-
-		return string.Join("|", filters);
+		return _cachedSaveFilter!;
 	}
 
 	/// <summary>
@@ -260,13 +240,53 @@ public static class MovieConverterRegistry {
 			_converters.Add(new Converters.VbmMovieConverter());
 			_converters.Add(new Converters.GmvMovieConverter());
 
-			// Build frozen dictionaries for O(1) lookups
-			_formatLookup = _converters.ToFrozenDictionary(c => c.Format);
-			_extensionLookup = _converters
-				.SelectMany(c => c.Extensions.Select(ext => (Extension: ext.ToLowerInvariant(), Converter: c)))
-				.ToFrozenDictionary(x => x.Extension, x => x.Converter);
+			RebuildCaches();
 
 			_initialized = true;
 		}
+	}
+
+	private static void RebuildCaches() {
+		// Build frozen dictionaries for O(1) lookups
+		_formatLookup = _converters.ToFrozenDictionary(c => c.Format);
+		_extensionLookup = _converters
+			.SelectMany(c => c.Extensions.Select(ext => (Extension: ext, Converter: c)))
+			.ToFrozenDictionary(x => x.Extension, x => x.Converter, StringComparer.OrdinalIgnoreCase);
+
+		// Cache immutable collections
+		_cachedConverters = _converters.ToList().AsReadOnly();
+		_cachedReadable = _converters.Where(c => c.CanRead).ToList().AsReadOnly();
+		_cachedWritable = _converters.Where(c => c.CanWrite).ToList().AsReadOnly();
+
+		// Cache file filter strings
+		_cachedOpenFilter = BuildOpenFileFilter();
+		_cachedSaveFilter = BuildSaveFileFilter();
+	}
+
+	private static string BuildOpenFileFilter() {
+		var filters = new List<string>();
+		var allExtensions = new List<string>();
+
+		foreach (IMovieConverter converter in _converters.Where(c => c.CanRead)) {
+			string exts = string.Join(";", converter.Extensions.Select(e => "*" + e));
+			filters.Add($"{converter.FormatName} ({exts})|{exts}");
+			allExtensions.AddRange(converter.Extensions.Select(e => "*" + e));
+		}
+
+		string allExts = string.Join(";", allExtensions);
+		filters.Insert(0, $"All Movie Files ({allExts})|{allExts}");
+
+		return string.Join("|", filters);
+	}
+
+	private static string BuildSaveFileFilter() {
+		var filters = new List<string>();
+
+		foreach (IMovieConverter converter in _converters.Where(c => c.CanWrite)) {
+			string exts = string.Join(";", converter.Extensions.Select(e => "*" + e));
+			filters.Add($"{converter.FormatName} ({exts})|{exts}");
+		}
+
+		return string.Join("|", filters);
 	}
 }

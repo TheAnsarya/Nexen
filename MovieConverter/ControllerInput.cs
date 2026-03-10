@@ -412,18 +412,16 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 	/// </summary>
 	/// <returns>8-character string for NES input</returns>
 	public string ToFm2Format() {
-		Span<char> chars =
-		[
-			Right ? 'R' : '.',
-			Left ? 'L' : '.',
-			Down ? 'D' : '.',
-			Up ? 'U' : '.',
-			Start ? 'T' : '.',  // FM2 uses T for Start
-			Select ? 'S' : '.',
-			B ? 'B' : '.',
-			A ? 'A' : '.',
-		];
-		return new string(chars);
+		return string.Create(8, this, static (chars, input) => {
+			chars[0] = input.Right ? 'R' : '.';
+			chars[1] = input.Left ? 'L' : '.';
+			chars[2] = input.Down ? 'D' : '.';
+			chars[3] = input.Up ? 'U' : '.';
+			chars[4] = input.Start ? 'T' : '.';  // FM2 uses T for Start
+			chars[5] = input.Select ? 'S' : '.';
+			chars[6] = input.B ? 'B' : '.';
+			chars[7] = input.A ? 'A' : '.';
+		});
 	}
 
 	/// <summary>

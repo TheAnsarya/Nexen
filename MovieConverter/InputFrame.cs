@@ -153,39 +153,41 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 			return frame;
 		}
 
-		// Split by pipe
-		string[] parts = line.Split('|');
+		// Split by pipe using span-based parsing to avoid string[] allocation
+		ReadOnlySpan<char> span = line.AsSpan();
+		Span<Range> ranges = stackalloc Range[16];
+		int count = span.Split(ranges, '|');
 		int portIndex = 0;
 
-		foreach (string part in parts) {
-			string trimmed = part.Trim();
+		for (int i = 0; i < count; i++) {
+			ReadOnlySpan<char> part = span[ranges[i]].Trim();
 
 			// Skip empty parts
-			if (string.IsNullOrEmpty(trimmed)) {
+			if (part.IsEmpty) {
 				continue;
 			}
 
 			// Check for special markers
-			if (trimmed.StartsWith('#')) {
-				// Comment
-				frame.Comment = trimmed[1..].Trim();
+			if (part[0] == '#') {
+				// Comment — must allocate string for storage
+				frame.Comment = part[1..].Trim().ToString();
 				continue;
 			}
 
-			if (trimmed == "LAG") {
+			if (part.Equals("LAG", StringComparison.Ordinal)) {
 				frame.IsLagFrame = true;
 				continue;
 			}
 
-			if (trimmed.StartsWith("CMD:")) {
+			if (part.StartsWith("CMD:", StringComparison.Ordinal)) {
 				// Command
-				frame.Command = ParseCommand(trimmed[4..]);
+				frame.Command = ParseCommand(part[4..]);
 				continue;
 			}
 
 			// Controller input
-			if (portIndex < MaxPorts && trimmed.Length >= 8) {
-				frame.Controllers[portIndex] = ControllerInput.FromNexenFormat(trimmed);
+			if (portIndex < MaxPorts && part.Length >= 8) {
+				frame.Controllers[portIndex] = ControllerInput.FromNexenFormat(part);
 				portIndex++;
 			}
 		}
@@ -320,12 +322,13 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 		return sb.ToString();
 	}
 
-	private static FrameCommand ParseCommand(string commandStr) {
+	private static FrameCommand ParseCommand(ReadOnlySpan<char> commandStr) {
 		FrameCommand command = FrameCommand.None;
-		string[] parts = commandStr.Split(',');
+		Span<Range> ranges = stackalloc Range[16];
+		int count = commandStr.Split(ranges, ',');
 
-		foreach (string part in parts) {
-			string trimmed = part.Trim();
+		for (int i = 0; i < count; i++) {
+			ReadOnlySpan<char> trimmed = commandStr[ranges[i]].Trim();
 			if (trimmed.StartsWith("FDS_INSERT:", StringComparison.OrdinalIgnoreCase) ||
 				trimmed.StartsWith("FDS_SELECT:", StringComparison.OrdinalIgnoreCase)) {
 				command |= trimmed.StartsWith("FDS_INSERT", StringComparison.OrdinalIgnoreCase)
@@ -334,18 +337,25 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 				continue;
 			}
 
-			command |= trimmed.ToUpperInvariant() switch {
-				"SOFT_RESET" => FrameCommand.SoftReset,
-				"HARD_RESET" => FrameCommand.HardReset,
-				"FDS_INSERT" => FrameCommand.FdsInsert,
-				"FDS_SELECT" => FrameCommand.FdsSelect,
-				"VS_COIN" => FrameCommand.VsInsertCoin,
-				"VS_SERVICE" => FrameCommand.VsServiceButton,
-				"CTRL_SWAP" => FrameCommand.ControllerSwap,
-				"PAUSE" => FrameCommand.Pause,
-				"POWER_OFF" => FrameCommand.PowerOff,
-				_ => FrameCommand.None
-			};
+			if (trimmed.Equals("SOFT_RESET", StringComparison.OrdinalIgnoreCase)) {
+				command |= FrameCommand.SoftReset;
+			} else if (trimmed.Equals("HARD_RESET", StringComparison.OrdinalIgnoreCase)) {
+				command |= FrameCommand.HardReset;
+			} else if (trimmed.Equals("FDS_INSERT", StringComparison.OrdinalIgnoreCase)) {
+				command |= FrameCommand.FdsInsert;
+			} else if (trimmed.Equals("FDS_SELECT", StringComparison.OrdinalIgnoreCase)) {
+				command |= FrameCommand.FdsSelect;
+			} else if (trimmed.Equals("VS_COIN", StringComparison.OrdinalIgnoreCase)) {
+				command |= FrameCommand.VsInsertCoin;
+			} else if (trimmed.Equals("VS_SERVICE", StringComparison.OrdinalIgnoreCase)) {
+				command |= FrameCommand.VsServiceButton;
+			} else if (trimmed.Equals("CTRL_SWAP", StringComparison.OrdinalIgnoreCase)) {
+				command |= FrameCommand.ControllerSwap;
+			} else if (trimmed.Equals("PAUSE", StringComparison.OrdinalIgnoreCase)) {
+				command |= FrameCommand.Pause;
+			} else if (trimmed.Equals("POWER_OFF", StringComparison.OrdinalIgnoreCase)) {
+				command |= FrameCommand.PowerOff;
+			}
 		}
 
 		return command;

@@ -35,7 +35,10 @@ public class MovieConverterRegistryTests {
 
 	[Fact]
 	public void GetConverter_ReturnsNullForUnknownFormat() {
-		var converter = MovieConverterRegistry.GetConverter(MovieFormat.Unknown);
+		// Unknown format has no built-in converter; however, another test may
+		// register one via Register_AddsConverterToList (test order is not guaranteed).
+		// Verify that lookup by a non-registered format returns null instead.
+		var converter = MovieConverterRegistry.GetConverter((MovieFormat)999);
 
 		Assert.Null(converter);
 	}

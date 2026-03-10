@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -405,16 +406,9 @@ public sealed class SmvMovieConverter : MovieConverterBase {
 	}
 
 	/// <summary>
-	/// Count set bits in a byte
+	/// Count set bits in a value
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static int CountSetBits(int value) {
-		int count = 0;
-		while (value != 0) {
-			count += value & 1;
-			value >>= 1;
-		}
-
-		return count;
-	}
+	private static int CountSetBits(int value) =>
+		BitOperations.PopCount((uint)value);
 }
