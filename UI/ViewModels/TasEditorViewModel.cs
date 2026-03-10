@@ -1660,7 +1660,15 @@ emu.displayMessage(""TAS"", ""Script active"")
 	/// Generates the script API documentation.
 	/// </summary>
 	private void GenerateScriptApiDoc(string path) {
-		string html = @"<!DOCTYPE html>
+		string html = GenerateScriptApiHtml();
+		File.WriteAllText(path, html);
+	}
+
+	/// <summary>
+	/// Generates the HTML content for the TAS Lua API reference.
+	/// </summary>
+	internal static string GenerateScriptApiHtml() {
+		return @"<!DOCTYPE html>
 <html>
 <head>
 	<title>Nexen TAS Lua API Reference</title>
@@ -1797,8 +1805,6 @@ tas.finishSearch(true) -- Load best result</pre>
 
 </body>
 </html>";
-
-		File.WriteAllText(path, html);
 	}
 
 	/// <summary>
