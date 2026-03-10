@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -14,8 +14,6 @@ namespace Nexen.TAS;
 /// </summary>
 public sealed class TasLuaApi {
 	private readonly TasEditorViewModel _viewModel;
-	private readonly GreenzoneManager _greenzone;
-	private readonly InputRecorder _recorder;
 
 	private bool _isSearching;
 	private int _searchStartFrame;
@@ -28,13 +26,17 @@ public sealed class TasLuaApi {
 	/// </summary>
 	private readonly Dictionary<string, bool> _frameInputCache = new(12);
 
+	/// <summary>Shortcut to the greenzone manager.</summary>
+	private GreenzoneManager Greenzone => _viewModel.Greenzone;
+
+	/// <summary>Shortcut to the input recorder.</summary>
+	private InputRecorder Recorder => _viewModel.Recorder;
+
 	/// <summary>
 	/// Initializes TAS Lua API with references to core TAS components.
 	/// </summary>
 	public TasLuaApi(TasEditorViewModel viewModel) {
 		_viewModel = viewModel;
-		_greenzone = viewModel.Greenzone;
-		_recorder = viewModel.Recorder;
 	}
 
 	#region Movie Information
@@ -103,7 +105,7 @@ public sealed class TasLuaApi {
 			return false;
 		}
 
-		int actualFrame = await _greenzone.SeekToFrameAsync(frame);
+		int actualFrame = await Greenzone.SeekToFrameAsync(frame);
 		return actualFrame >= 0;
 	}
 
@@ -201,7 +203,7 @@ public sealed class TasLuaApi {
 		if (input.TryGetValue("right", out bool right)) newInput.Right = right;
 
 		_viewModel.ExecuteAction(new ModifyInputAction(frameData, frame, controller, newInput));
-		_greenzone.InvalidateFrom(frame);
+		Greenzone.InvalidateFrom(frame);
 
 		return true;
 	}
@@ -221,7 +223,7 @@ public sealed class TasLuaApi {
 		}
 
 		_viewModel.ExecuteAction(new ClearInputAction(frameData, frame));
-		_greenzone.InvalidateFrom(frame);
+		Greenzone.InvalidateFrom(frame);
 
 		return true;
 	}
@@ -260,7 +262,7 @@ public sealed class TasLuaApi {
 		}
 
 		_viewModel.ExecuteAction(new InsertFramesAction(movie, position, frames));
-		_greenzone.InvalidateFrom(position);
+		Greenzone.InvalidateFrom(position);
 
 		return true;
 	}
@@ -282,7 +284,7 @@ public sealed class TasLuaApi {
 		count = Math.Min(count, movie.InputFrames.Count - position);
 
 		_viewModel.ExecuteAction(new DeleteFramesAction(movie, position, count));
-		_greenzone.InvalidateFrom(position);
+		Greenzone.InvalidateFrom(position);
 
 		return true;
 	}
@@ -296,11 +298,11 @@ public sealed class TasLuaApi {
 	/// </summary>
 	public Dictionary<string, object> GetGreenzoneInfo() {
 		return new Dictionary<string, object> {
-			["savestateCount"] = _greenzone.SavestateCount,
-			["memoryUsageMB"] = _greenzone.TotalMemoryUsage / (1024.0 * 1024.0),
-			["captureInterval"] = _greenzone.CaptureInterval,
-			["maxSavestates"] = _greenzone.MaxSavestates,
-			["compressionEnabled"] = _greenzone.CompressionEnabled
+			["savestateCount"] = Greenzone.SavestateCount,
+			["memoryUsageMB"] = Greenzone.TotalMemoryUsage / (1024.0 * 1024.0),
+			["captureInterval"] = Greenzone.CaptureInterval,
+			["maxSavestates"] = Greenzone.MaxSavestates,
+			["compressionEnabled"] = Greenzone.CompressionEnabled
 		};
 	}
 
@@ -308,21 +310,21 @@ public sealed class TasLuaApi {
 	/// Captures a savestate at the current frame.
 	/// </summary>
 	public void CaptureGreenzone() {
-		_greenzone.CaptureCurrentState(_viewModel.PlaybackFrame);
+		Greenzone.CaptureCurrentState(_viewModel.PlaybackFrame);
 	}
 
 	/// <summary>
 	/// Clears all greenzone savestates.
 	/// </summary>
 	public void ClearGreenzone() {
-		_greenzone.Clear();
+		Greenzone.Clear();
 	}
 
 	/// <summary>
 	/// Checks if a frame has a greenzone savestate.
 	/// </summary>
 	public bool HasSavestate(int frame) {
-		return _greenzone.HasState(frame);
+		return Greenzone.HasState(frame);
 	}
 
 	#endregion
@@ -339,26 +341,26 @@ public sealed class TasLuaApi {
 			_ => RecordingMode.Append
 		};
 
-		_recorder.StartRecording(recordMode);
+		Recorder.StartRecording(recordMode);
 	}
 
 	/// <summary>
 	/// Stops recording.
 	/// </summary>
 	public void StopRecording() {
-		_recorder.StopRecording();
+		Recorder.StopRecording();
 	}
 
 	/// <summary>
 	/// Gets whether recording is active.
 	/// </summary>
-	public bool IsRecording() => _recorder.IsRecording;
+	public bool IsRecording() => Recorder.IsRecording;
 
 	/// <summary>
 	/// Rerecords from a specific frame.
 	/// </summary>
 	public bool RerecordFrom(int frame) {
-		return _recorder.RerecordFrom(frame);
+		return Recorder.RerecordFrom(frame);
 	}
 
 	#endregion
@@ -369,7 +371,10 @@ public sealed class TasLuaApi {
 	/// Creates a new branch with the current movie state.
 	/// </summary>
 	public string CreateBranch(string name = "") {
-		var branch = _recorder.CreateBranch(name);
+		var branch = Recorder.CreateBranch(name);
+		if (branch is not null) {
+			_viewModel.Branches.Add(branch);
+		}
 		return branch?.Name ?? "";
 	}
 
@@ -390,7 +395,7 @@ public sealed class TasLuaApi {
 	public bool LoadBranch(string name) {
 		foreach (var branch in _viewModel.Branches) {
 			if (branch.Name == name) {
-				_recorder.LoadBranch(branch);
+				Recorder.LoadBranch(branch);
 				return true;
 			}
 		}
@@ -428,7 +433,10 @@ public sealed class TasLuaApi {
 		_searchState.Clear();
 
 		// Create a branch to preserve current state
-		_recorder.CreateBranch($"Search_{DateTime.Now:HHmmss}");
+		var branch = Recorder.CreateBranch($"Search_{DateTime.Now:HHmmss}");
+		if (branch is not null) {
+			_viewModel.Branches.Add(branch);
+		}
 	}
 
 	/// <summary>
@@ -473,7 +481,10 @@ public sealed class TasLuaApi {
 	/// </summary>
 	public void MarkBestResult() {
 		_searchBestFrame = _viewModel.PlaybackFrame;
-		_recorder.CreateBranch($"Best_{DateTime.Now:HHmmss}");
+		var branch = Recorder.CreateBranch($"Best_{DateTime.Now:HHmmss}");
+		if (branch is not null) {
+			_viewModel.Branches.Add(branch);
+		}
 	}
 
 	/// <summary>
@@ -486,7 +497,7 @@ public sealed class TasLuaApi {
 			// Find the "Best_" branch
 			foreach (var branch in _viewModel.Branches) {
 				if (branch.Name.StartsWith("Best_")) {
-					_recorder.LoadBranch(branch);
+					Recorder.LoadBranch(branch);
 					break;
 				}
 			}
