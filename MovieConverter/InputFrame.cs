@@ -261,45 +261,63 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 	public static bool operator !=(InputFrame? left, InputFrame? right) => !(left == right);
 
 	private string GetCommandPrefix() {
-		var commands = new List<string>(4);
+		var sb = new StringBuilder(64);
+		sb.Append("CMD:");
+
+		bool first = true;
+		void AppendCmd(string cmd) {
+			if (!first) sb.Append(',');
+			sb.Append(cmd);
+			first = false;
+		}
 
 		if (Command.HasFlag(FrameCommand.SoftReset)) {
-			commands.Add("SOFT_RESET");
+			AppendCmd("SOFT_RESET");
 		}
 
 		if (Command.HasFlag(FrameCommand.HardReset)) {
-			commands.Add("HARD_RESET");
+			AppendCmd("HARD_RESET");
 		}
 
 		if (Command.HasFlag(FrameCommand.FdsInsert)) {
-			commands.Add($"FDS_INSERT:{FdsDiskNumber ?? 0}:{FdsDiskSide ?? 0}");
+			if (!first) sb.Append(',');
+			sb.Append("FDS_INSERT:");
+			sb.Append(FdsDiskNumber ?? 0);
+			sb.Append(':');
+			sb.Append(FdsDiskSide ?? 0);
+			first = false;
 		}
 
 		if (Command.HasFlag(FrameCommand.FdsSelect)) {
-			commands.Add($"FDS_SELECT:{FdsDiskNumber ?? 0}:{FdsDiskSide ?? 0}");
+			if (!first) sb.Append(',');
+			sb.Append("FDS_SELECT:");
+			sb.Append(FdsDiskNumber ?? 0);
+			sb.Append(':');
+			sb.Append(FdsDiskSide ?? 0);
+			first = false;
 		}
 
 		if (Command.HasFlag(FrameCommand.VsInsertCoin)) {
-			commands.Add("VS_COIN");
+			AppendCmd("VS_COIN");
 		}
 
 		if (Command.HasFlag(FrameCommand.VsServiceButton)) {
-			commands.Add("VS_SERVICE");
+			AppendCmd("VS_SERVICE");
 		}
 
 		if (Command.HasFlag(FrameCommand.ControllerSwap)) {
-			commands.Add("CTRL_SWAP");
+			AppendCmd("CTRL_SWAP");
 		}
 
 		if (Command.HasFlag(FrameCommand.Pause)) {
-			commands.Add("PAUSE");
+			AppendCmd("PAUSE");
 		}
 
 		if (Command.HasFlag(FrameCommand.PowerOff)) {
-			commands.Add("POWER_OFF");
+			AppendCmd("POWER_OFF");
 		}
 
-		return $"CMD:{string.Join(',', commands)}";
+		return sb.ToString();
 	}
 
 	private static FrameCommand ParseCommand(string commandStr) {
@@ -307,14 +325,16 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 		string[] parts = commandStr.Split(',');
 
 		foreach (string part in parts) {
-			string trimmed = part.Trim().ToUpperInvariant();
-			if (trimmed.StartsWith("FDS_INSERT:") || trimmed.StartsWith("FDS_SELECT:")) {
-				// Parse disk info: FDS_INSERT:0:1 means disk 0, side B
-				command |= trimmed.StartsWith("FDS_INSERT") ? FrameCommand.FdsInsert : FrameCommand.FdsSelect;
+			string trimmed = part.Trim();
+			if (trimmed.StartsWith("FDS_INSERT:", StringComparison.OrdinalIgnoreCase) ||
+				trimmed.StartsWith("FDS_SELECT:", StringComparison.OrdinalIgnoreCase)) {
+				command |= trimmed.StartsWith("FDS_INSERT", StringComparison.OrdinalIgnoreCase)
+					? FrameCommand.FdsInsert
+					: FrameCommand.FdsSelect;
 				continue;
 			}
 
-			command |= trimmed switch {
+			command |= trimmed.ToUpperInvariant() switch {
 				"SOFT_RESET" => FrameCommand.SoftReset,
 				"HARD_RESET" => FrameCommand.HardReset,
 				"FDS_INSERT" => FrameCommand.FdsInsert,
