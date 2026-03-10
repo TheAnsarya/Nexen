@@ -144,15 +144,20 @@ string BaseControlDevice::GetTextState() {
 		output.reserve(keyNames.size() + 20);
 
 		if (HasCoordinates()) {
-			MousePosition pos = GetCoordinates();
-			output.append(std::format("{} {} ", pos.X, pos.Y));
+			MousePosition pos = GetCoordinatesUnsafe();
+			char buf[24];
+			auto [p1, ec1] = std::to_chars(buf, buf + sizeof(buf), pos.X);
+			*p1++ = ' ';
+			auto [p2, ec2] = std::to_chars(p1, buf + sizeof(buf), pos.Y);
+			*p2++ = ' ';
+			output.append(buf, p2);
 		}
 
 		int keyNumber = 0;
 		for (size_t i = 0; i < keyNames.size(); i++) {
 			if (keyNames[i] != ':') {
 				// Ignore colons in string (used by ControllerHub to split controllers)
-				output += IsPressed((uint8_t)keyNumber) ? keyNames[i] : '.';
+				output += IsPressedUnsafe((uint8_t)keyNumber) ? keyNames[i] : '.';
 				keyNumber++;
 			} else {
 				output += ':';
@@ -163,14 +168,18 @@ string BaseControlDevice::GetTextState() {
 	}
 }
 
-void BaseControlDevice::EnsureCapacity(int32_t minBitCount) {
-	auto lock = _stateLock.AcquireSafe();
+void BaseControlDevice::EnsureCapacityUnsafe(int32_t minBitCount) {
 	uint32_t minByteCount = minBitCount / 8 + 1 + (HasCoordinates() ? 32 : 0);
 	int32_t gap = minByteCount - (int32_t)_state.State.size();
 
 	if (gap > 0) {
 		_state.State.insert(_state.State.end(), gap, 0);
 	}
+}
+
+void BaseControlDevice::EnsureCapacity(int32_t minBitCount) {
+	auto lock = _stateLock.AcquireSafe();
+	EnsureCapacityUnsafe(minBitCount);
 }
 
 bool BaseControlDevice::HasCoordinates() {
@@ -185,11 +194,15 @@ uint32_t BaseControlDevice::GetByteIndex(uint8_t bit) {
 	return bit / 8 + (HasCoordinates() ? 4 : 0);
 }
 
-bool BaseControlDevice::IsPressed(uint8_t bit) {
-	auto lock = _stateLock.AcquireSafe();
-	EnsureCapacity(bit);
+bool BaseControlDevice::IsPressedUnsafe(uint8_t bit) {
+	EnsureCapacityUnsafe(bit);
 	uint8_t bitMask = 1 << (bit % 8);
 	return (_state.State[GetByteIndex(bit)] & bitMask) != 0;
+}
+
+bool BaseControlDevice::IsPressed(uint8_t bit) {
+	auto lock = _stateLock.AcquireSafe();
+	return IsPressedUnsafe(bit);
 }
 
 void BaseControlDevice::SetBitValue(uint8_t bit, bool set) {
@@ -248,14 +261,18 @@ void BaseControlDevice::SetCoordinates(MousePosition pos) {
 	_state.State[3] = (pos.Y >> 8) & 0xFF;
 }
 
-MousePosition BaseControlDevice::GetCoordinates() {
-	auto lock = _stateLock.AcquireSafe();
-	EnsureCapacity(-1);
+MousePosition BaseControlDevice::GetCoordinatesUnsafe() {
+	EnsureCapacityUnsafe(-1);
 
 	MousePosition pos;
 	pos.X = _state.State[0] | (_state.State[1] << 8);
 	pos.Y = _state.State[2] | (_state.State[3] << 8);
 	return pos;
+}
+
+MousePosition BaseControlDevice::GetCoordinates() {
+	auto lock = _stateLock.AcquireSafe();
+	return GetCoordinatesUnsafe();
 }
 
 void BaseControlDevice::Connect() {

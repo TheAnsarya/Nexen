@@ -60,6 +60,9 @@ protected:
 	virtual void RefreshStateBuffer() {}
 
 	void EnsureCapacity(int32_t minBitCount);
+	void EnsureCapacityUnsafe(int32_t minBitCount);
+	bool IsPressedUnsafe(uint8_t bit);
+	MousePosition GetCoordinatesUnsafe();
 	uint32_t GetByteIndex(uint8_t bit);
 	virtual bool HasCoordinates();
 	virtual bool IsRawString();
