@@ -85,7 +85,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | Feature | Status | Notes |
 | --------- | -------- | ------- |
 | C++23 Modernization | ✅ Complete | Smart pointers, ranges, format |
-| Unit Tests | ✅ Complete | 2488 tests (1548 C++, 633 .NET, 307 MovieConverter) |
+| Unit Tests | ✅ Complete | 2621 tests (1548 C++, 766 .NET, 307 MovieConverter) |
 | Pansy Export | ✅ Complete | All 7 phases |
 | Infinite Save States | ✅ Complete | Visual picker, timestamped |
 | TAS Editor | ✅ Complete | Piano roll, greenzone, Lua |
