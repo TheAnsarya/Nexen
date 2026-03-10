@@ -1,6 +1,5 @@
 #pragma once
 #include "pch.h"
-#include <cstring>
 #include "Shared/SettingTypes.h"
 
 /// <summary>
@@ -15,24 +14,28 @@
 /// - Zapper: X/Y coordinates + trigger state
 ///
 /// State vector size varies by device type.
-/// Comparison uses memcmp for efficient byte-wise equality check.
+/// Comparison uses vector equality for byte-wise check.
 /// </remarks>
 struct ControlDeviceState {
 	/// <summary>Raw device state bytes (device-specific encoding)</summary>
 	vector<uint8_t> State;
 
 	/// <summary>
+	/// Compare device states for equality.
+	/// </summary>
+	/// <param name="other">Other device state to compare against</param>
+	/// <returns>True if states are identical in size and content</returns>
+	bool operator==(const ControlDeviceState& other) const {
+		return State == other.State;
+	}
+
+	/// <summary>
 	/// Compare device states for inequality.
 	/// </summary>
 	/// <param name="other">Other device state to compare against</param>
 	/// <returns>True if states differ in size or content</returns>
-	/// <remarks>
-	/// Uses memcmp for efficient byte-wise comparison.
-	/// Returns true if either size differs OR any byte differs.
-	/// Used for detecting input changes frame-to-frame.
-	/// </remarks>
-	bool operator!=(ControlDeviceState& other) {
-		return State.size() != other.State.size() || memcmp(State.data(), other.State.data(), State.size()) != 0;
+	bool operator!=(const ControlDeviceState& other) const {
+		return State != other.State;
 	}
 };
 
