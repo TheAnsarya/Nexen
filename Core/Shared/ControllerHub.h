@@ -68,6 +68,8 @@ protected:
 	/// Format: [length:1][data...] for each port.
 	/// </summary>
 	void UpdateStateFromPorts() {
+		_state.State.clear();
+		_state.State.reserve(HubPortCount * 16);
 		for (int i = 0; i < HubPortCount; i++) {
 			if (_ports[i]) {
 				ControlDeviceState portState = _ports[i]->GetRawState();
@@ -242,8 +244,6 @@ public:
 	/// Refresh hub state after debugger controller changes.
 	/// </summary>
 	void RefreshHubState() override {
-		// Used when the connected devices are updated by code (e.g by the debugger)
-		_state.State.clear();
 		UpdateStateFromPorts();
 	}
 
