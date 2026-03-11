@@ -103,7 +103,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 	/// <summary>Gets the available controller layouts.</summary>
 	public static IReadOnlyList<ControllerLayout> AvailableLayouts { get; } =
-		Enum.GetValues<ControllerLayout>().ToList();
+		Enum.GetValues<ControllerLayout>();
 
 	/// <summary>Gets or sets whether recording is active.</summary>
 	[Reactive] public bool IsRecording { get; set; }
@@ -697,14 +697,14 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// <summary>
 	/// Goes to a specific frame.
 	/// </summary>
-	public async System.Threading.Tasks.Task GoToFrameAsync() {
+	public System.Threading.Tasks.Task GoToFrameAsync() {
 		// TODO: Implement frame input dialog
 		// For now, just go to first frame
 		if (Movie is not null && Movie.InputFrames.Count > 0) {
 			SelectedFrameIndex = 0;
 		}
 
-		await System.Threading.Tasks.Task.CompletedTask;
+		return System.Threading.Tasks.Task.CompletedTask;
 	}
 
 	/// <summary>
@@ -721,20 +721,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		var newInput = CloneControllerInput(frame.Controllers[port]);
-		switch (button) {
-			case "A" or "a": newInput.A = !newInput.A; break;
-			case "B" or "b": newInput.B = !newInput.B; break;
-			case "X" or "x": newInput.X = !newInput.X; break;
-			case "Y" or "y": newInput.Y = !newInput.Y; break;
-			case "L" or "l": newInput.L = !newInput.L; break;
-			case "R" or "r": newInput.R = !newInput.R; break;
-			case "UP" or "Up" or "up": newInput.Up = !newInput.Up; break;
-			case "DOWN" or "Down" or "down": newInput.Down = !newInput.Down; break;
-			case "LEFT" or "Left" or "left": newInput.Left = !newInput.Left; break;
-			case "RIGHT" or "Right" or "right": newInput.Right = !newInput.Right; break;
-			case "START" or "Start" or "start": newInput.Start = !newInput.Start; break;
-			case "SELECT" or "Select" or "select": newInput.Select = !newInput.Select; break;
-		}
+		newInput.SetButton(button, !newInput.GetButton(button));
 
 		ExecuteAction(new ModifyInputAction(frame, SelectedFrameIndex, port, newInput));
 	}
@@ -753,20 +740,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		var newInput = CloneControllerInput(frame.Controllers[port]);
-		switch (button) {
-			case "A" or "a": newInput.A = newState; break;
-			case "B" or "b": newInput.B = newState; break;
-			case "X" or "x": newInput.X = newState; break;
-			case "Y" or "y": newInput.Y = newState; break;
-			case "L" or "l": newInput.L = newState; break;
-			case "R" or "r": newInput.R = newState; break;
-			case "UP" or "Up" or "up": newInput.Up = newState; break;
-			case "DOWN" or "Down" or "down": newInput.Down = newState; break;
-			case "LEFT" or "Left" or "left": newInput.Left = newState; break;
-			case "RIGHT" or "Right" or "right": newInput.Right = newState; break;
-			case "START" or "Start" or "start": newInput.Start = newState; break;
-			case "SELECT" or "Select" or "select": newInput.Select = newState; break;
-		}
+		newInput.SetButton(button, newState);
 
 		ExecuteAction(new ModifyInputAction(frame, frameIndex, port, newInput));
 	}
@@ -839,12 +813,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		RefreshFrameAt(PlaybackFrame);
 	}
 
-	internal static ControllerInput CloneControllerInput(ControllerInput src) => new() {
-		A = src.A, B = src.B, X = src.X, Y = src.Y,
-		L = src.L, R = src.R,
-		Up = src.Up, Down = src.Down, Left = src.Left, Right = src.Right,
-		Start = src.Start, Select = src.Select
-	};
+	internal static ControllerInput CloneControllerInput(ControllerInput src) => src.Clone();
 
 	/// <summary>
 	/// Inserts a frame ViewModel at the specified index and updates subsequent frame numbers. O(n) for renumbering but avoids full collection rebuild.
@@ -1404,9 +1373,9 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// <summary>
 	/// Shows the branch management dialog.
 	/// </summary>
-	public async System.Threading.Tasks.Task ManageBranchesAsync() {
+	public System.Threading.Tasks.Task ManageBranchesAsync() {
 		// TODO: Implement branch management dialog
-		await System.Threading.Tasks.Task.CompletedTask;
+		return System.Threading.Tasks.Task.CompletedTask;
 	}
 
 	/// <summary>
@@ -2165,7 +2134,7 @@ public sealed class ModifyInputAction : UndoableAction {
 		_frame = frame;
 		_frameIndex = frameIndex;
 		_port = port;
-		_oldInput = CloneInput(frame.Controllers[port]);
+		_oldInput = frame.Controllers[port].Clone();
 		_newInput = newInput;
 	}
 
@@ -2176,21 +2145,6 @@ public sealed class ModifyInputAction : UndoableAction {
 	public override void Undo() {
 		_frame.Controllers[_port] = _oldInput;
 	}
-
-	private static ControllerInput CloneInput(ControllerInput src) => new() {
-		A = src.A,
-		B = src.B,
-		X = src.X,
-		Y = src.Y,
-		L = src.L,
-		R = src.R,
-		Up = src.Up,
-		Down = src.Down,
-		Left = src.Left,
-		Right = src.Right,
-		Start = src.Start,
-		Select = src.Select
-	};
 }
 
 /// <summary>
@@ -2210,7 +2164,7 @@ public sealed class ClearInputAction : UndoableAction {
 		_frameIndex = frameIndex;
 		_oldInputs = new ControllerInput[frame.Controllers.Length];
 		for (int i = 0; i < frame.Controllers.Length; i++) {
-			_oldInputs[i] = CloneInput(frame.Controllers[i]);
+			_oldInputs[i] = frame.Controllers[i].Clone();
 		}
 	}
 
@@ -2225,13 +2179,6 @@ public sealed class ClearInputAction : UndoableAction {
 			_frame.Controllers[i] = _oldInputs[i];
 		}
 	}
-
-	private static ControllerInput CloneInput(ControllerInput src) => new() {
-		A = src.A, B = src.B, X = src.X, Y = src.Y,
-		L = src.L, R = src.R,
-		Up = src.Up, Down = src.Down, Left = src.Left, Right = src.Right,
-		Start = src.Start, Select = src.Select
-	};
 }
 
 /// <summary>
@@ -2260,30 +2207,13 @@ public sealed class PaintInputAction : UndoableAction {
 
 	public override void Execute() {
 		for (int i = 0; i < _frameIndices.Count; i++) {
-			ApplyButton(_movie.InputFrames[_frameIndices[i]].Controllers[_port], _button, _state);
+			_movie.InputFrames[_frameIndices[i]].Controllers[_port].SetButton(_button, _state);
 		}
 	}
 
 	public override void Undo() {
 		for (int i = 0; i < _frameIndices.Count; i++) {
 			_movie.InputFrames[_frameIndices[i]].Controllers[_port] = _oldInputs[i];
-		}
-	}
-
-	private static void ApplyButton(ControllerInput controller, string button, bool state) {
-		switch (button) {
-			case "A" or "a": controller.A = state; break;
-			case "B" or "b": controller.B = state; break;
-			case "X" or "x": controller.X = state; break;
-			case "Y" or "y": controller.Y = state; break;
-			case "L" or "l": controller.L = state; break;
-			case "R" or "r": controller.R = state; break;
-			case "UP" or "Up" or "up": controller.Up = state; break;
-			case "DOWN" or "Down" or "down": controller.Down = state; break;
-			case "LEFT" or "Left" or "left": controller.Left = state; break;
-			case "RIGHT" or "Right" or "right": controller.Right = state; break;
-			case "START" or "Start" or "start": controller.Start = state; break;
-			case "SELECT" or "Select" or "select": controller.Select = state; break;
 		}
 	}
 }

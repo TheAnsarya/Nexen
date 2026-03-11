@@ -149,10 +149,10 @@ public sealed class NexenMovieConverter : MovieConverterBase {
 				movie.Scripts.Add(new EmbeddedScript {
 					Name = entry.Name,
 					Content = reader.ReadToEnd(),
-					Language = Path.GetExtension(entry.Name).ToUpperInvariant() switch {
-						".LUA" => "lua",
-						".PY" => "python",
-						".JS" => "javascript",
+					Language = Path.GetExtension(entry.Name) switch {
+						var e when e.Equals(".lua", StringComparison.OrdinalIgnoreCase) => "lua",
+						var e when e.Equals(".py", StringComparison.OrdinalIgnoreCase) => "python",
+						var e when e.Equals(".js", StringComparison.OrdinalIgnoreCase) => "javascript",
 						_ => "lua"
 					}
 				});
@@ -274,9 +274,9 @@ public sealed class NexenMovieConverter : MovieConverterBase {
 		// Write optional embedded scripts
 		if (movie.Scripts is { Count: > 0 }) {
 			foreach (EmbeddedScript script in movie.Scripts) {
-				string ext = script.Language.ToUpperInvariant() switch {
-					"PYTHON" => ".py",
-					"JAVASCRIPT" => ".js",
+				string ext = script.Language switch {
+					var l when l.Equals("python", StringComparison.OrdinalIgnoreCase) => ".py",
+					var l when l.Equals("javascript", StringComparison.OrdinalIgnoreCase) => ".js",
 					_ => ".lua"
 				};
 				string scriptName = script.Name.EndsWith(ext, StringComparison.OrdinalIgnoreCase)

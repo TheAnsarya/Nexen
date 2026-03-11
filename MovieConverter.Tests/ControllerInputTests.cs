@@ -362,4 +362,60 @@ public class ControllerInputTests {
 			KeyboardData = new byte[] { 0x01, 0x02, 0x03 }
 		};
 	}
+
+	#region SetButton / GetButton
+
+	[Theory]
+	[InlineData("A", "a")]
+	[InlineData("B", "b")]
+	[InlineData("X", "x")]
+	[InlineData("Y", "y")]
+	[InlineData("L", "l")]
+	[InlineData("R", "r")]
+	[InlineData("Up", "up")]
+	[InlineData("Down", "down")]
+	[InlineData("Left", "left")]
+	[InlineData("Right", "right")]
+	[InlineData("Start", "start")]
+	[InlineData("Select", "select")]
+	public void SetButton_SetsAndGetButton_Reads(string upper, string lower) {
+		var input = new ControllerInput();
+
+		Assert.False(input.GetButton(upper));
+		input.SetButton(upper, true);
+		Assert.True(input.GetButton(upper));
+		Assert.True(input.GetButton(lower));
+
+		input.SetButton(lower, false);
+		Assert.False(input.GetButton(upper));
+	}
+
+	[Theory]
+	[InlineData("UP")]
+	[InlineData("DOWN")]
+	[InlineData("LEFT")]
+	[InlineData("RIGHT")]
+	[InlineData("START")]
+	[InlineData("SELECT")]
+	public void SetButton_AllCapsVariant_Works(string button) {
+		var input = new ControllerInput();
+		input.SetButton(button, true);
+		Assert.True(input.GetButton(button));
+	}
+
+	[Fact]
+	public void GetButton_UnknownButton_ReturnsFalse() {
+		var input = new ControllerInput { A = true, B = true };
+		Assert.False(input.GetButton("Unknown"));
+		Assert.False(input.GetButton(""));
+	}
+
+	[Fact]
+	public void SetButton_UnknownButton_NoOp() {
+		var input = new ControllerInput();
+		input.SetButton("Unknown", true);
+		Assert.False(input.HasInput);
+	}
+
+	#endregion
 }

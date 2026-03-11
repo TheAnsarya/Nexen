@@ -595,6 +595,45 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 	};
 
 	/// <summary>
+	/// Sets a button by name. Case-insensitive matching.
+	/// </summary>
+	public void SetButton(string button, bool state) {
+		switch (button) {
+			case "A" or "a": A = state; break;
+			case "B" or "b": B = state; break;
+			case "X" or "x": X = state; break;
+			case "Y" or "y": Y = state; break;
+			case "L" or "l": L = state; break;
+			case "R" or "r": R = state; break;
+			case "UP" or "Up" or "up": Up = state; break;
+			case "DOWN" or "Down" or "down": Down = state; break;
+			case "LEFT" or "Left" or "left": Left = state; break;
+			case "RIGHT" or "Right" or "right": Right = state; break;
+			case "START" or "Start" or "start": Start = state; break;
+			case "SELECT" or "Select" or "select": Select = state; break;
+		}
+	}
+
+	/// <summary>
+	/// Gets a button state by name. Case-insensitive matching. Returns false for unknown buttons.
+	/// </summary>
+	public bool GetButton(string button) => button switch {
+		"A" or "a" => A,
+		"B" or "b" => B,
+		"X" or "x" => X,
+		"Y" or "y" => Y,
+		"L" or "l" => L,
+		"R" or "r" => R,
+		"UP" or "Up" or "up" => Up,
+		"DOWN" or "Down" or "down" => Down,
+		"LEFT" or "Left" or "left" => Left,
+		"RIGHT" or "Right" or "right" => Right,
+		"START" or "Start" or "start" => Start,
+		"SELECT" or "Select" or "select" => Select,
+		_ => false
+	};
+
+	/// <summary>
 	/// Check equality with another ControllerInput.
 	/// Compares all fields to ensure correctness for mouse, analog, and special inputs.
 	/// </summary>
