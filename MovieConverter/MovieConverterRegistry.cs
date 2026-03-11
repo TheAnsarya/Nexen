@@ -254,9 +254,9 @@ public static class MovieConverterRegistry {
 			.ToFrozenDictionary(x => x.Extension, x => x.Converter, StringComparer.OrdinalIgnoreCase);
 
 		// Cache immutable collections
-		_cachedConverters = _converters.ToList().AsReadOnly();
-		_cachedReadable = _converters.Where(c => c.CanRead).ToList().AsReadOnly();
-		_cachedWritable = _converters.Where(c => c.CanWrite).ToList().AsReadOnly();
+		_cachedConverters = _converters.ToArray().AsReadOnly();
+		_cachedReadable = _converters.Where(c => c.CanRead).ToArray().AsReadOnly();
+		_cachedWritable = _converters.Where(c => c.CanWrite).ToArray().AsReadOnly();
 
 		// Cache file filter strings
 		_cachedOpenFilter = BuildOpenFileFilter();

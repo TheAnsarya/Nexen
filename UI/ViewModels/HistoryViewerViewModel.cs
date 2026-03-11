@@ -126,7 +126,7 @@ public sealed class HistoryViewerViewModel : DisposableViewModel {
 				TimeSpan end = new TimeSpan(0, 0, (int)(segEnd / _fps));
 
 				string segmentName = ResourceHelper.GetMessage("MovieSegment", (itemCount + 1).ToString());
-				string label = segmentName + ", " + start.ToString() + " - " + end.ToString();
+				string label = $"{segmentName}, {FormatTime(start)} - {FormatTime(end)}";
 
 				actions.Add(new ContextMenuAction() {
 					ActionType = ActionType.Custom,
@@ -203,15 +203,23 @@ public sealed class HistoryViewerViewModel : DisposableViewModel {
 		CurrentPosition = state.Position;
 		MaxPosition = state.Length;
 
-		Array.Resize(ref state.Segments, (int)state.SegmentCount);
-		_segments = state.Segments;
+		if (_segments.Length != (int)state.SegmentCount) {
+			Array.Resize(ref state.Segments, (int)state.SegmentCount);
+			_segments = state.Segments;
+		}
 
 		TimeSpan currentPosition = new TimeSpan(0, 0, (int)(CurrentPosition / _fps));
 		TimeSpan totalLength = new TimeSpan(0, 0, (int)(MaxPosition / _fps));
-		CurrentTimeText = currentPosition.Minutes.ToString("00") + ":" + currentPosition.Seconds.ToString("00");
-		TotalTimeText = totalLength.Minutes.ToString("00") + ":" + totalLength.Seconds.ToString("00");
+		CurrentTimeText = FormatTime(currentPosition);
+		TotalTimeText = FormatTime(totalLength);
 
 		_blockCoreUpdates = false;
+	}
+
+	private static string FormatTime(TimeSpan time) {
+		return time.TotalHours >= 1
+			? $"{(int)time.TotalHours}:{time.Minutes:00}:{time.Seconds:00}"
+			: $"{time.Minutes:00}:{time.Seconds:00}";
 	}
 
 	public void TogglePause() {
