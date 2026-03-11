@@ -101,6 +101,10 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// <summary>Gets the controller buttons for the current layout.</summary>
 	[Reactive] public List<ControllerButtonInfo> ControllerButtons { get; private set; } = new();
 
+	/// <summary>Gets the piano roll button labels derived from the current controller layout.</summary>
+	public IReadOnlyList<string> PianoRollButtonLabels =>
+		ControllerButtons.Select(b => b.Label).ToList();
+
 	/// <summary>Gets the available controller layouts.</summary>
 	public static IReadOnlyList<ControllerLayout> AvailableLayouts { get; } =
 		Enum.GetValues<ControllerLayout>();
@@ -303,7 +307,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
 				CustomText = "Set Comment",
-				OnClick = SetComment,
+				OnClick = () => _ = SetCommentAsync(),
 				IsEnabled = () => SelectedFrameIndex >= 0
 			}
 		};
@@ -328,7 +332,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
 				CustomText = "Greenzone Settings...",
-				OnClick = ShowGreenzoneSettings
+				OnClick = () => _ = ShowGreenzoneSettingsAsync()
 			}
 		};
 
@@ -677,34 +681,53 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// <summary>
 	/// Sets a comment on the selected frame.
 	/// </summary>
-	public void SetComment() {
-		if (Movie is null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
+	public async System.Threading.Tasks.Task SetCommentAsync() {
+		if (Movie is null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count || _window is null) {
 			return;
 		}
 
 		var frame = Movie.InputFrames[SelectedFrameIndex];
-		if (string.IsNullOrEmpty(frame.Comment)) {
-			frame.Comment = $"Comment {SelectedFrameIndex}";
-		} else {
-			frame.Comment = null;
+		string currentComment = frame.Comment ?? "";
+
+		string? result = await Windows.TasInputDialog.ShowTextAsync(
+			_window,
+			"Set Frame Comment",
+			$"Comment for frame {SelectedFrameIndex}:\n(Leave empty to remove comment)",
+			currentComment);
+
+		if (result is null) {
+			return; // cancelled
 		}
 
+		frame.Comment = string.IsNullOrWhiteSpace(result) ? null : result;
 		RefreshFrameAt(SelectedFrameIndex);
 		HasUnsavedChanges = true;
 		StatusMessage = frame.Comment is not null ? $"Set comment on frame {SelectedFrameIndex}" : $"Removed comment from frame {SelectedFrameIndex}";
 	}
 
 	/// <summary>
-	/// Goes to a specific frame.
+	/// Goes to a specific frame via input dialog.
 	/// </summary>
-	public System.Threading.Tasks.Task GoToFrameAsync() {
-		// TODO: Implement frame input dialog
-		// For now, just go to first frame
-		if (Movie is not null && Movie.InputFrames.Count > 0) {
-			SelectedFrameIndex = 0;
+	public async System.Threading.Tasks.Task GoToFrameAsync() {
+		if (Movie is null || Movie.InputFrames.Count == 0 || _window is null) {
+			return;
 		}
 
-		return System.Threading.Tasks.Task.CompletedTask;
+		int maxFrame = Movie.InputFrames.Count - 1;
+		int defaultFrame = SelectedFrameIndex >= 0 ? SelectedFrameIndex : 0;
+
+		int? result = await Windows.TasInputDialog.ShowNumericAsync(
+			_window,
+			"Go To Frame",
+			$"Enter frame number (0 - {maxFrame:N0}):",
+			defaultFrame,
+			0,
+			maxFrame);
+
+		if (result.HasValue) {
+			SelectedFrameIndex = result.Value;
+			StatusMessage = $"Jumped to frame {result.Value}";
+		}
 	}
 
 	/// <summary>
@@ -1277,16 +1300,29 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	#endregion
 
 	/// <summary>
-	/// Seeks to a specific frame using the greenzone.
+	/// Seeks to a specific frame using the greenzone, prompting for target frame.
 	/// </summary>
 	public async System.Threading.Tasks.Task SeekToFrameAsync() {
-		if (Movie is null || Greenzone.SavestateCount == 0) {
+		if (Movie is null || Greenzone.SavestateCount == 0 || _window is null) {
 			return;
 		}
 
-		// TODO: Implement frame input dialog
-		int targetFrame = SelectedFrameIndex >= 0 ? SelectedFrameIndex : 0;
+		int maxFrame = Movie.InputFrames.Count - 1;
+		int defaultFrame = SelectedFrameIndex >= 0 ? SelectedFrameIndex : 0;
 
+		int? result = await Windows.TasInputDialog.ShowNumericAsync(
+			_window,
+			"Seek To Frame",
+			$"Enter target frame (0 - {maxFrame:N0}):\nSeeks using greenzone savestates.",
+			defaultFrame,
+			0,
+			maxFrame);
+
+		if (!result.HasValue) {
+			return;
+		}
+
+		int targetFrame = result.Value;
 		int actualFrame = await Greenzone.SeekToFrameAsync(targetFrame);
 
 		if (actualFrame >= 0) {
@@ -1373,17 +1409,49 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// <summary>
 	/// Shows the branch management dialog.
 	/// </summary>
-	public System.Threading.Tasks.Task ManageBranchesAsync() {
-		// TODO: Implement branch management dialog
-		return System.Threading.Tasks.Task.CompletedTask;
+	public async System.Threading.Tasks.Task ManageBranchesAsync() {
+		if (_window is null) {
+			return;
+		}
+
+		var result = await Windows.BranchManagementDialog.ShowAsync(_window, Branches);
+
+		if (result.Changed) {
+			HasUnsavedChanges = true;
+		}
+
+		if (result.LoadedBranch is not null) {
+			LoadBranch(result.LoadedBranch);
+		}
 	}
 
 	/// <summary>
 	/// Shows greenzone settings dialog.
 	/// </summary>
-	public void ShowGreenzoneSettings() {
-		// TODO: Implement greenzone settings dialog
-		StatusMessage = $"Greenzone: {SavestateCount} states, {GreenzoneMemoryMB:F1} MB";
+	public async System.Threading.Tasks.Task ShowGreenzoneSettingsAsync() {
+		if (_window is null) {
+			return;
+		}
+
+		var settings = await Windows.GreenzoneSettingsDialog.ShowAsync(_window, Greenzone);
+		if (settings is null) {
+			return;
+		}
+
+		if (settings.ClearRequested) {
+			Greenzone.Clear();
+			StatusMessage = "Greenzone cleared";
+		}
+
+		Greenzone.CaptureInterval = settings.CaptureInterval;
+		Greenzone.MaxSavestates = settings.MaxSavestates;
+		Greenzone.RingBufferSize = settings.RingBufferSize;
+		Greenzone.CompressionEnabled = settings.CompressionEnabled;
+		Greenzone.CompressionThreshold = settings.CompressionThreshold;
+
+		SavestateCount = Greenzone.SavestateCount;
+		GreenzoneMemoryMB = Greenzone.TotalMemoryUsage / (1024.0 * 1024.0);
+		StatusMessage = $"Greenzone settings updated (interval={settings.CaptureInterval}, max={settings.MaxSavestates})";
 	}
 
 	#endregion
@@ -1846,6 +1914,7 @@ tas.finishSearch(true) -- Load best result</pre>
 			ControllerLayout.Lynx => GetLynxButtons(),
 			_ => GetSnesButtons()
 		};
+		this.RaisePropertyChanged(nameof(PianoRollButtonLabels));
 	}
 
 	private static List<ControllerButtonInfo> GetNesButtons() => new() {

@@ -45,7 +45,7 @@
 				<Button Content="⏯" ToolTip.Tip="Play/Pause (Space)" Width="30" Click="OnPlayPauseClick" />
 				<Button Content="⏭" ToolTip.Tip="Frame advance (F)" Width="30" Click="OnFrameAdvanceClick" />
 				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
-				<ToggleButton Content="●" ToolTip.Tip="Record" Width="30" Foreground="Red" IsChecked="{Binding IsRecording}" />
+				<ToggleButton Content="●" ToolTip.Tip="Record" Width="30" Foreground="Red" IsChecked="{Binding IsRecording}" Click="OnRecordToggleClick" />
 				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
 				<TextBlock Text="Speed:" VerticalAlignment="Center" />
 				<TextBlock Text="{Binding PlaybackSpeed, StringFormat={}{0:F2}x}" VerticalAlignment="Center" Width="40" />
@@ -226,6 +226,7 @@
 					SelectedFrame="{Binding SelectedFrameIndex}"
 					PlaybackFrame="{Binding PlaybackFrame}"
 					GreenzoneStart="{Binding GreenzoneStart}"
+					ButtonLabels="{Binding PianoRollButtonLabels}"
 					Height="200"
 				/>
 			</Border>

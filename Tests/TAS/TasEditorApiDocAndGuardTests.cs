@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Threading.Tasks;
 using Nexen.MovieConverter;
 using Nexen.TAS;
 using Nexen.ViewModels;
@@ -265,13 +266,12 @@ public class TasEditorApiDocAndGuardTests : IDisposable {
 
 	#endregion
 
-	#region ShowGreenzoneSettings
+	#region ShowGreenzoneSettingsAsync
 
 	[Fact]
-	public void ShowGreenzoneSettings_SetsStatusMessage() {
-		_vm.ShowGreenzoneSettings();
-
-		Assert.Contains("Greenzone", _vm.StatusMessage);
+	public async Task ShowGreenzoneSettingsAsync_NoWindow_ReturnsGracefully() {
+		// Without a window, the dialog can't show — should not throw
+		await _vm.ShowGreenzoneSettingsAsync();
 	}
 
 	#endregion

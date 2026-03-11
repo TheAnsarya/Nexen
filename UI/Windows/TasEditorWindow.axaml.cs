@@ -343,10 +343,29 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 	/// <summary>
 	/// Called when the window is closing. Prompts to save unsaved changes.
 	/// </summary>
-	protected override void OnClosing(WindowClosingEventArgs e) {
+	protected override async void OnClosing(WindowClosingEventArgs e) {
 		if (ViewModel?.HasUnsavedChanges == true) {
-			// TODO: Show confirmation dialog
-			// For now, allow close without prompting
+			e.Cancel = true;
+			var result = await MessageBox.Show(
+				this,
+				"You have unsaved changes. Save before closing?",
+				"TAS Editor - Unsaved Changes",
+				MessageBoxButtons.YesNoCancel,
+				MessageBoxIcon.Question);
+
+			switch (result) {
+				case DialogResult.Yes:
+					await ViewModel.SaveFileAsync();
+					ViewModel.HasUnsavedChanges = false;
+					Close();
+					break;
+				case DialogResult.No:
+					ViewModel.HasUnsavedChanges = false;
+					Close();
+					break;
+				// Cancel: do nothing, window stays open
+			}
+			return;
 		}
 		base.OnClosing(e);
 	}
@@ -387,6 +406,18 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 
 	private void OnFrameAdvanceClick(object? sender, RoutedEventArgs e) {
 		ViewModel?.FrameAdvance();
+	}
+
+	private void OnRecordToggleClick(object? sender, RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		if (ViewModel.IsRecording) {
+			ViewModel.StartRecording();
+		} else {
+			ViewModel.StopRecording();
+		}
 	}
 
 	#endregion

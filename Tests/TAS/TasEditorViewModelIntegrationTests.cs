@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Threading.Tasks;
 using Nexen.MovieConverter;
 using Nexen.ViewModels;
 using Xunit;
@@ -344,46 +345,32 @@ public class TasEditorViewModelIntegrationTests : IDisposable {
 
 	#endregion
 
-	#region SetComment
+	#region SetCommentAsync
 
 	[Fact]
-	public void SetComment_NoMovie_NoOp() {
-		_vm.SetComment();
-		// Should not throw
+	public async Task SetCommentAsync_NoMovie_NoOp() {
+		await _vm.SetCommentAsync();
+		// Should not throw — no movie loaded
 	}
 
 	[Fact]
-	public void SetComment_SetsDefaultComment() {
+	public async Task SetCommentAsync_NoWindow_NoOp() {
 		var movie = CreateTestMovie(5);
 		SetMovie(movie);
 		_vm.SelectedFrameIndex = 2;
 
-		_vm.SetComment();
-
-		Assert.Equal("Comment 2", movie.InputFrames[2].Comment);
-		Assert.True(_vm.HasUnsavedChanges);
+		// Without a window, the dialog can't show — should return without changes
+		await _vm.SetCommentAsync();
+		Assert.Null(movie.InputFrames[2].Comment);
 	}
 
 	[Fact]
-	public void SetComment_TogglesOff_WhenAlreadySet() {
-		var movie = CreateTestMovie(5);
-		SetMovie(movie);
-		_vm.SelectedFrameIndex = 1;
-
-		_vm.SetComment();
-		Assert.NotNull(movie.InputFrames[1].Comment);
-
-		_vm.SetComment();
-		Assert.Null(movie.InputFrames[1].Comment);
-	}
-
-	[Fact]
-	public void SetComment_OutOfRange_NoOp() {
+	public async Task SetCommentAsync_OutOfRange_NoOp() {
 		var movie = CreateTestMovie(5);
 		SetMovie(movie);
 		_vm.SelectedFrameIndex = 10;
 
-		_vm.SetComment();
+		await _vm.SetCommentAsync();
 		// Should not throw, all frames should be unchanged
 		Assert.All(movie.InputFrames, f => Assert.Null(f.Comment));
 	}
