@@ -101,11 +101,11 @@ public:
 	virtual void Init() {}
 
 	[[nodiscard]] uint8_t GetPort();
-	ControllerType GetControllerType();
+	[[nodiscard]] ControllerType GetControllerType();
 
 	[[nodiscard]] bool IsPressed(uint8_t bit);
 
-	MousePosition GetCoordinates();
+	[[nodiscard]] MousePosition GetCoordinates();
 	void SetCoordinates(MousePosition pos);
 
 	void Connect();
@@ -119,13 +119,13 @@ public:
 	void SetBitValue(uint8_t bit, bool set);
 
 	virtual void SetTextState(string_view state);
-	virtual string GetTextState();
+	[[nodiscard]] virtual string GetTextState();
 
 	void SetStateFromInput();
 	virtual void OnAfterSetState() {}
 
 	virtual void SetRawState(ControlDeviceState state);
-	virtual ControlDeviceState GetRawState();
+	[[nodiscard]] virtual ControlDeviceState GetRawState();
 
 	virtual void InternalDrawController(InputHud& hud) {}
 	virtual void DrawController(InputHud& hud);

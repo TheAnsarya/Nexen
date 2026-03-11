@@ -41,7 +41,7 @@ void RewindData::ProcessXorState(T& data, deque<RewindData>& prevStates, int32_t
 }
 
 void RewindData::LoadState(Emulator* emu, deque<RewindData>& prevStates, int32_t position, bool sendNotification) {
-	if (_saveStateData.size() == 0) {
+	if (_saveStateData.empty()) {
 		return;
 	}
 
@@ -64,7 +64,7 @@ void RewindData::SaveState(Emulator* emu, deque<RewindData>& prevStates, int32_t
 	std::stringstream state;
 	emu->Serialize(state, true, 0);
 
-	string data = state.str();
+	string data = std::move(state).str();
 
 	position = position > 0 ? position : (int32_t)prevStates.size();
 

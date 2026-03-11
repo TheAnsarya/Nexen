@@ -196,10 +196,10 @@ public:
 	[[nodiscard]] bool HasHistory();
 
 	/// <summary>Get copy of history deque (for UI/debugging)</summary>
-	deque<RewindData> GetHistory();
+	[[nodiscard]] deque<RewindData> GetHistory();
 
 	/// <summary>Get rewind buffer statistics</summary>
-	RewindStats GetStats();
+	[[nodiscard]] RewindStats GetStats();
 
 	/// <summary>Send video frame to display or history</summary>
 	void SendFrame(RenderedFrame& frame, bool forRewind);

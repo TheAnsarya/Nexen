@@ -122,7 +122,7 @@ public:
 	void SetInputReadFlag();
 
 	/// <summary>Get lag frame counter</summary>
-	uint32_t GetLagCounter();
+	[[nodiscard]] uint32_t GetLagCounter();
 
 	/// <summary>Reset lag frame counter</summary>
 	void ResetLagCounter();
@@ -131,13 +131,13 @@ public:
 	/// Check if controller type connected.
 	/// </summary>
 	/// <param name="type">Controller type to check</param>
-	bool HasControlDevice(ControllerType type);
+	[[nodiscard]] bool HasControlDevice(ControllerType type);
 
 	/// <summary>Check if keyboard connected (for on-screen keyboard hint)</summary>
 	virtual bool IsKeyboardConnected() { return false; }
 
 	/// <summary>Get total input poll count</summary>
-	uint32_t GetPollCounter();
+	[[nodiscard]] uint32_t GetPollCounter();
 
 	/// <summary>Set input poll count (for save state restore)</summary>
 	void SetPollCounter(uint32_t value);

@@ -63,7 +63,7 @@ public:
 	void GetStateData(stringstream& stateData, deque<RewindData>& prevStates, int32_t position);
 
 	/// <summary>Get compressed state size in bytes</summary>
-	[[nodiscard]] uint32_t GetStateSize() { return (uint32_t)_saveStateData.size(); }
+	[[nodiscard]] uint32_t GetStateSize() const { return (uint32_t)_saveStateData.size(); }
 
 	/// <summary>
 	/// Load this savestate into emulator.
