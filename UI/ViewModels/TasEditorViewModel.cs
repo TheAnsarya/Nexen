@@ -40,6 +40,12 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// <summary>Gets or sets the currently selected frame index.</summary>
 	[Reactive] public int SelectedFrameIndex { get; set; } = -1;
 
+	/// <summary>Gets or sets the list of selected frame indices for multi-selection.</summary>
+	[Reactive] public List<int> SelectedFrameIndices { get; set; } = new();
+
+	/// <summary>Gets whether multiple frames are selected.</summary>
+	public bool HasMultipleSelection => SelectedFrameIndices.Count > 1;
+
 	/// <summary>Gets whether the selected frame is a lag frame.</summary>
 	public bool SelectedFrameIsLag =>
 		Movie is not null &&
@@ -109,6 +115,10 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	public static IReadOnlyList<ControllerLayout> AvailableLayouts { get; } =
 		Enum.GetValues<ControllerLayout>();
 
+	/// <summary>Gets the available search modes for the ComboBox.</summary>
+	public static IReadOnlyList<FrameSearchMode> SearchModes { get; } =
+		Enum.GetValues<FrameSearchMode>();
+
 	/// <summary>Gets or sets whether recording is active.</summary>
 	[Reactive] public bool IsRecording { get; set; }
 
@@ -157,6 +167,27 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 	/// <summary>Gets the input recorder for TAS recording.</summary>
 	public InputRecorder Recorder { get; }
+
+	/// <summary>Gets or sets whether the search bar is visible.</summary>
+	[Reactive] public bool IsSearchVisible { get; set; }
+
+	/// <summary>Gets or sets the search query text.</summary>
+	[Reactive] public string SearchText { get; set; } = "";
+
+	/// <summary>Gets or sets the search mode.</summary>
+	[Reactive] public FrameSearchMode SearchMode { get; set; } = FrameSearchMode.Comment;
+
+	/// <summary>Gets the search results (matching frame indices).</summary>
+	[Reactive] public List<int> SearchResults { get; private set; } = new();
+
+	/// <summary>Gets the current search result index within SearchResults.</summary>
+	[Reactive] public int SearchResultIndex { get; set; } = -1;
+
+	/// <summary>Gets the search results summary text.</summary>
+	public string SearchSummary =>
+		SearchResults.Count > 0
+			? $"{SearchResultIndex + 1} of {SearchResults.Count}"
+			: "No results";
 
 	public TasEditorViewModel() {
 		// Initialize Lua API
@@ -648,10 +679,111 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	}
 
 	/// <summary>
+	/// Inserts a blank frame above the current selection.
+	/// </summary>
+	public void InsertFrameAbove() {
+		if (Movie is null) {
+			return;
+		}
+
+		int insertAt = Math.Max(0, SelectedFrameIndex);
+		var frames = new List<InputFrame> { new InputFrame(insertAt) };
+		ExecuteAction(new InsertFramesAction(Movie, insertAt, frames));
+		StatusMessage = $"Inserted frame above at {insertAt}";
+	}
+
+	/// <summary>
+	/// Inserts a blank frame below the current selection.
+	/// </summary>
+	public void InsertFrameBelow() {
+		if (Movie is null) {
+			return;
+		}
+
+		int insertAt = Math.Min(Movie.InputFrames.Count, SelectedFrameIndex + 1);
+		var frames = new List<InputFrame> { new InputFrame(insertAt) };
+		ExecuteAction(new InsertFramesAction(Movie, insertAt, frames));
+		StatusMessage = $"Inserted frame below at {insertAt}";
+	}
+
+	/// <summary>
+	/// Toggles a marker (comment) on the selected frame.
+	/// If the frame already has a comment starting with "[M]", removes it.
+	/// Otherwise, prepends "[M] " to the existing comment or sets "[M]".
+	/// </summary>
+	public void ToggleMarker() {
+		if (Movie is null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
+			return;
+		}
+
+		var frame = Movie.InputFrames[SelectedFrameIndex];
+		if (frame.Comment is not null && frame.Comment.StartsWith("[M]")) {
+			// Remove marker
+			string remaining = frame.Comment.Length > 3 ? frame.Comment[3..].TrimStart() : "";
+			frame.Comment = string.IsNullOrWhiteSpace(remaining) ? null : remaining;
+			StatusMessage = $"Removed marker from frame {SelectedFrameIndex}";
+		} else {
+			// Add marker
+			frame.Comment = frame.Comment is not null ? $"[M] {frame.Comment}" : "[M]";
+			StatusMessage = $"Set marker on frame {SelectedFrameIndex}";
+		}
+		RefreshFrameAt(SelectedFrameIndex);
+		HasUnsavedChanges = true;
+	}
+
+	/// <summary>
+	/// Selects a range of frames from the anchor (first selected) to the given target index.
+	/// </summary>
+	public void SelectRangeTo(int targetIndex) {
+		if (Movie is null || SelectedFrameIndex < 0) {
+			return;
+		}
+
+		int start = Math.Min(SelectedFrameIndex, targetIndex);
+		int end = Math.Max(SelectedFrameIndex, targetIndex);
+		start = Math.Max(0, start);
+		end = Math.Min(Movie.InputFrames.Count - 1, end);
+
+		var indices = new List<int>();
+		for (int i = start; i <= end; i++) {
+			indices.Add(i);
+		}
+		SelectedFrameIndices = indices;
+	}
+
+	/// <summary>
 	/// Deletes the selected frames.
 	/// </summary>
 	public void DeleteFrames() {
-		if (Movie is null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
+		if (Movie is null) {
+			return;
+		}
+
+		// Multi-selection: delete all selected frames
+		if (SelectedFrameIndices.Count > 1) {
+			var sorted = SelectedFrameIndices
+				.Where(i => i >= 0 && i < Movie.InputFrames.Count)
+				.Distinct()
+				.OrderByDescending(i => i)
+				.ToList();
+
+			if (sorted.Count == 0) return;
+
+			foreach (int idx in sorted) {
+				ExecuteAction(new DeleteFramesAction(Movie, idx, 1));
+			}
+
+			StatusMessage = $"Deleted {sorted.Count} frames";
+
+			// Adjust selection
+			int minDeleted = sorted[^1];
+			SelectedFrameIndex = Math.Min(minDeleted, Movie.InputFrames.Count - 1);
+			SelectedFrameIndices.Clear();
+			return;
+		}
+
+		// Single selection fallback
+		if (SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
 			return;
 		}
 
@@ -666,15 +798,34 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	}
 
 	/// <summary>
-	/// Clears the input on the selected frame.
+	/// Clears the input on the selected frame(s).
 	/// </summary>
 	public void ClearSelectedInput() {
-		if (Movie is null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
+		if (Movie is null) {
 			return;
 		}
 
-		var frame = Movie.InputFrames[SelectedFrameIndex];
-		ExecuteAction(new ClearInputAction(frame, SelectedFrameIndex));
+		// Multi-selection: clear all selected frames
+		if (SelectedFrameIndices.Count > 1) {
+			int cleared = 0;
+			foreach (int idx in SelectedFrameIndices.Where(i => i >= 0 && i < Movie.InputFrames.Count)) {
+				var frame = Movie.InputFrames[idx];
+				ExecuteAction(new ClearInputAction(frame, idx));
+				cleared++;
+			}
+			if (cleared > 0) {
+				StatusMessage = $"Cleared input on {cleared} frames";
+			}
+			return;
+		}
+
+		// Single selection fallback
+		if (SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
+			return;
+		}
+
+		var singleFrame = Movie.InputFrames[SelectedFrameIndex];
+		ExecuteAction(new ClearInputAction(singleFrame, SelectedFrameIndex));
 		StatusMessage = $"Cleared input on frame {SelectedFrameIndex}";
 	}
 
@@ -728,6 +879,77 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			SelectedFrameIndex = result.Value;
 			StatusMessage = $"Jumped to frame {result.Value}";
 		}
+	}
+
+	/// <summary>
+	/// Toggles the search bar visibility.
+	/// </summary>
+	public void ToggleSearch() {
+		IsSearchVisible = !IsSearchVisible;
+		if (!IsSearchVisible) {
+			SearchResults = new();
+			SearchResultIndex = -1;
+		}
+	}
+
+	/// <summary>
+	/// Executes a search with the current search text and mode.
+	/// </summary>
+	public void ExecuteSearch() {
+		if (Movie is null || string.IsNullOrWhiteSpace(SearchText) && SearchMode != FrameSearchMode.LagFrame && SearchMode != FrameSearchMode.Marker) {
+			SearchResults = new();
+			SearchResultIndex = -1;
+			return;
+		}
+
+		var results = new List<int>();
+		for (int i = 0; i < Movie.InputFrames.Count; i++) {
+			var frame = Movie.InputFrames[i];
+			bool match = SearchMode switch {
+				FrameSearchMode.Comment => frame.Comment is not null && frame.Comment.Contains(SearchText, StringComparison.OrdinalIgnoreCase),
+				FrameSearchMode.ButtonPressed => frame.Controllers.Length > 0 && frame.Controllers[0].GetButton(SearchText),
+				FrameSearchMode.LagFrame => frame.IsLagFrame,
+				FrameSearchMode.Marker => frame.Comment is not null && frame.Comment.StartsWith("[M]"),
+				_ => false,
+			};
+			if (match) {
+				results.Add(i);
+			}
+		}
+
+		SearchResults = results;
+		SearchResultIndex = results.Count > 0 ? 0 : -1;
+
+		if (results.Count > 0) {
+			SelectedFrameIndex = results[0];
+			StatusMessage = $"Found {results.Count} matches";
+		} else {
+			StatusMessage = "No matches found";
+		}
+	}
+
+	/// <summary>
+	/// Navigates to the next search result.
+	/// </summary>
+	public void SearchNext() {
+		if (SearchResults.Count == 0) {
+			return;
+		}
+
+		SearchResultIndex = (SearchResultIndex + 1) % SearchResults.Count;
+		SelectedFrameIndex = SearchResults[SearchResultIndex];
+	}
+
+	/// <summary>
+	/// Navigates to the previous search result.
+	/// </summary>
+	public void SearchPrevious() {
+		if (SearchResults.Count == 0) {
+			return;
+		}
+
+		SearchResultIndex = (SearchResultIndex - 1 + SearchResults.Count) % SearchResults.Count;
+		SelectedFrameIndex = SearchResults[SearchResultIndex];
 	}
 
 	/// <summary>
@@ -1063,7 +1285,28 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Copies the selected frame(s) to clipboard.
 	/// </summary>
 	public void Copy() {
-		if (Movie is null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
+		if (Movie is null) {
+			return;
+		}
+
+		// Multi-selection: copy all selected frames
+		if (SelectedFrameIndices.Count > 1) {
+			var sorted = SelectedFrameIndices
+				.Where(i => i >= 0 && i < Movie.InputFrames.Count)
+				.OrderBy(i => i)
+				.ToList();
+
+			if (sorted.Count == 0) return;
+
+			_clipboard = sorted.Select(i => Movie.InputFrames[i].Clone()).ToList();
+			_clipboardStartIndex = sorted[0];
+			HasClipboard = true;
+			StatusMessage = $"Copied {_clipboard.Count} frame(s)";
+			return;
+		}
+
+		// Single selection fallback
+		if (SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
 			return;
 		}
 
@@ -2345,6 +2588,27 @@ public sealed class ControllerButtonInfo {
 		Column = column;
 		Row = row;
 	}
+}
+
+#endregion
+
+#region Frame Search Types
+
+/// <summary>
+/// Search mode for finding frames in the TAS editor.
+/// </summary>
+public enum FrameSearchMode {
+	/// <summary>Search frame comments for matching text.</summary>
+	Comment,
+
+	/// <summary>Search for frames with a specific button pressed.</summary>
+	ButtonPressed,
+
+	/// <summary>Search for lag frames.</summary>
+	LagFrame,
+
+	/// <summary>Search for frames with markers.</summary>
+	Marker
 }
 
 #endregion

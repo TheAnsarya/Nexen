@@ -53,6 +53,8 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		AvaloniaXamlLoader.Load(this);
 		_frameList = this.FindControl<ListBox>("FrameList")!;
 		_pianoRoll = this.FindControl<PianoRollControl>("PianoRoll")!;
+
+		_frameList.SelectionChanged += OnFrameListSelectionChanged;
 	}
 
 	/// <summary>
@@ -293,7 +295,32 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 						ViewModel.Cut();
 						e.Handled = true;
 						return;
+					case Avalonia.Input.Key.A:
+						// Select all frames
+						_frameList.SelectAll();
+						e.Handled = true;
+						return;
+					case Avalonia.Input.Key.F:
+						// Toggle search bar
+						ViewModel.ToggleSearch();
+						if (ViewModel.IsSearchVisible) {
+							var searchBox = this.FindControl<Avalonia.Controls.TextBox>("SearchBox");
+							searchBox?.Focus();
+						}
+						e.Handled = true;
+						return;
 				}
+			}
+
+			// F3 / Shift+F3 for search navigation
+			if (e.Key == Avalonia.Input.Key.F3) {
+				if (e.KeyModifiers.HasFlag(Avalonia.Input.KeyModifiers.Shift)) {
+					ViewModel.SearchPrevious();
+				} else {
+					ViewModel.SearchNext();
+				}
+				e.Handled = true;
+				return;
 			}
 
 			// Frame navigation with arrow keys when ListBox doesn't have focus
@@ -417,6 +444,95 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 			ViewModel.StartRecording();
 		} else {
 			ViewModel.StopRecording();
+		}
+	}
+
+	#endregion
+
+	#region Frame List Selection
+
+	private void OnFrameListSelectionChanged(object? sender, SelectionChangedEventArgs e) {
+		if (ViewModel is null) return;
+
+		var indices = new List<int>();
+		foreach (var item in _frameList.SelectedItems!) {
+			int idx = _frameList.ItemsSource is System.Collections.IList list ? list.IndexOf(item) : -1;
+			if (idx >= 0) {
+				indices.Add(idx);
+			}
+		}
+		ViewModel.SelectedFrameIndices = indices;
+	}
+
+	#endregion
+
+	#region Context Menu Handlers
+
+	private void OnInsertAboveClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		ViewModel?.InsertFrameAbove();
+	}
+
+	private void OnInsertBelowClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		ViewModel?.InsertFrameBelow();
+	}
+
+	private void OnCutClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		ViewModel?.Cut();
+	}
+
+	private void OnCopyClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		ViewModel?.Copy();
+	}
+
+	private void OnPasteClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		ViewModel?.Paste();
+	}
+
+	private void OnDeleteClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		ViewModel?.DeleteFrames();
+	}
+
+	private void OnClearInputClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		ViewModel?.ClearSelectedInput();
+	}
+
+	private void OnSelectAllClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		_frameList.SelectAll();
+	}
+
+	private void OnSelectRangeToHereClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) return;
+		// Use the right-clicked index (from SelectedFrameIndex since context menu opened at that item)
+		ViewModel.SelectRangeTo(ViewModel.SelectedFrameIndex);
+	}
+
+	private void OnSetCommentClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		_ = ViewModel?.SetCommentAsync();
+	}
+
+	private void OnSetMarkerClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		ViewModel?.ToggleMarker();
+	}
+
+	#endregion
+
+	#region Search Handlers
+
+	private void OnSearchClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		ViewModel?.ExecuteSearch();
+	}
+
+	private void OnSearchNextClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		ViewModel?.SearchNext();
+	}
+
+	private void OnSearchPreviousClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		ViewModel?.SearchPrevious();
+	}
+
+	private void OnSearchCloseClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is not null) {
+			ViewModel.IsSearchVisible = false;
 		}
 	}
 

@@ -79,6 +79,20 @@
 			</Grid>
 		</Border>
 
+		<!-- Search Bar (toggle with Ctrl+F) -->
+		<Border DockPanel.Dock="Top" IsVisible="{Binding IsSearchVisible}" BorderBrush="Gray" BorderThickness="0 0 0 1" Padding="5" Background="#1a1a2e">
+			<StackPanel Orientation="Horizontal" Spacing="5">
+				<TextBlock Text="Find:" VerticalAlignment="Center" />
+				<TextBox Name="SearchBox" Text="{Binding SearchText}" Width="200" Watermark="Search frames..." />
+				<ComboBox SelectedItem="{Binding SearchMode}" ItemsSource="{Binding Source={x:Static vm:TasEditorViewModel.SearchModes}}" Width="120" />
+				<Button Content="🔍" ToolTip.Tip="Search (Enter)" Width="30" Click="OnSearchClick" />
+				<Button Content="▼" ToolTip.Tip="Next (F3)" Width="30" Click="OnSearchNextClick" />
+				<Button Content="▲" ToolTip.Tip="Previous (Shift+F3)" Width="30" Click="OnSearchPreviousClick" />
+				<TextBlock Text="{Binding SearchSummary}" VerticalAlignment="Center" Margin="10 0 0 0" Foreground="Cyan" />
+				<Button Content="✕" ToolTip.Tip="Close search" Width="30" Click="OnSearchCloseClick" HorizontalAlignment="Right" />
+			</StackPanel>
+		</Border>
+
 		<!-- Main Content -->
 		<Grid>
 			<Grid.RowDefinitions>
@@ -98,19 +112,44 @@
 					Name="FrameList"
 					ItemsSource="{Binding Frames}"
 					SelectedIndex="{Binding SelectedFrameIndex}"
-					SelectionMode="Single"
+					SelectionMode="Multiple"
 					FontFamily="Consolas"
 					FontSize="12"
 				>
+					<ListBox.ContextMenu>
+						<ContextMenu>
+							<MenuItem Header="Insert Frame _Above" Click="OnInsertAboveClick" />
+							<MenuItem Header="Insert Frame _Below" Click="OnInsertBelowClick" />
+							<Separator />
+							<MenuItem Header="Cu_t" Click="OnCutClick" InputGesture="Ctrl+X" />
+							<MenuItem Header="_Copy" Click="OnCopyClick" InputGesture="Ctrl+C" />
+							<MenuItem Header="_Paste" Click="OnPasteClick" InputGesture="Ctrl+V" />
+							<Separator />
+							<MenuItem Header="_Delete Selected" Click="OnDeleteClick" InputGesture="Delete" />
+							<MenuItem Header="C_lear Input" Click="OnClearInputClick" />
+							<Separator />
+							<MenuItem Header="Select _All" Click="OnSelectAllClick" InputGesture="Ctrl+A" />
+							<MenuItem Header="Select Range _To Here" Click="OnSelectRangeToHereClick" />
+							<Separator />
+							<MenuItem Header="Set _Comment..." Click="OnSetCommentClick" />
+							<MenuItem Header="Set _Marker" Click="OnSetMarkerClick" />
+						</ContextMenu>
+					</ListBox.ContextMenu>
 					<ListBox.ItemTemplate>
 						<DataTemplate>
-							<Grid ColumnDefinitions="60,120,120,40,*" Background="{Binding Background}">
-								<TextBlock Grid.Column="0" Text="{Binding FrameNumber}" />
-								<TextBlock Grid.Column="1" Text="{Binding P1Input}" />
-								<TextBlock Grid.Column="2" Text="{Binding P2Input}" />
-								<TextBlock Grid.Column="3" Text="L" FontWeight="Bold" Foreground="Red"
+							<Grid ColumnDefinitions="16,16,60,120,120,40,*" Background="{Binding Background}">
+								<!-- Greenzone indicator -->
+								<Ellipse Grid.Column="0" Width="8" Height="8" Fill="LimeGreen"
+									IsVisible="{Binding IsGreenzone}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+								<!-- Marker indicator -->
+								<TextBlock Grid.Column="1" Text="📌" FontSize="10"
+									IsVisible="{Binding HasMarker}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+								<TextBlock Grid.Column="2" Text="{Binding FrameNumber}" />
+								<TextBlock Grid.Column="3" Text="{Binding P1Input}" />
+								<TextBlock Grid.Column="4" Text="{Binding P2Input}" />
+								<TextBlock Grid.Column="5" Text="L" FontWeight="Bold" Foreground="Red"
 									IsVisible="{Binding IsLagFrame}" HorizontalAlignment="Center" />
-								<TextBlock Grid.Column="4" Text="{Binding CommentText}" Foreground="Gray" />
+								<TextBlock Grid.Column="6" Text="{Binding CommentText}" Foreground="Gray" />
 							</Grid>
 						</DataTemplate>
 					</ListBox.ItemTemplate>
@@ -174,7 +213,7 @@
 						<TextBlock Text="Movie Info" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
 						<Rectangle Height="1" Fill="Gray" />
 
-						<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*">
+						<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*">
 							<TextBlock Text="Format:" VerticalAlignment="Center" />
 							<TextBlock Grid.Column="1" Text="{Binding Movie.SourceFormat, FallbackValue=None}" Margin="5 0 0 0" VerticalAlignment="Center" />
 
@@ -189,6 +228,18 @@
 
 							<TextBlock Grid.Row="4" Text="Author:" VerticalAlignment="Center" Margin="0 5 0 0" />
 							<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Movie.Author, FallbackValue=Unknown}" Margin="5 5 0 0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+
+							<TextBlock Grid.Row="5" Text="Game:" VerticalAlignment="Center" Margin="0 5 0 0" />
+							<TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Movie.GameName, FallbackValue=—}" Margin="5 5 0 0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+
+							<TextBlock Grid.Row="6" Text="System:" VerticalAlignment="Center" Margin="0 5 0 0" />
+							<TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Movie.SystemType, FallbackValue=—}" Margin="5 5 0 0" VerticalAlignment="Center" />
+
+							<TextBlock Grid.Row="7" Text="Region:" VerticalAlignment="Center" Margin="0 5 0 0" />
+							<TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Movie.Region, FallbackValue=—}" Margin="5 5 0 0" VerticalAlignment="Center" />
+
+							<TextBlock Grid.Row="8" Text="ROM:" VerticalAlignment="Center" Margin="0 5 0 0" />
+							<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Movie.RomFileName, FallbackValue=—}" Margin="5 5 0 0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Movie.RomFileName}" />
 						</Grid>
 
 						<!-- Branches -->
