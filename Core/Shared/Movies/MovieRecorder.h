@@ -22,6 +22,7 @@ private:
 	unique_ptr<ZipWriter> _writer;
 	std::unordered_map<string, vector<uint8_t>> _batteryData;
 	stringstream _inputData;
+	string _textStateBuf;
 	bool _hasSaveState = false;
 	stringstream _saveStateData;
 

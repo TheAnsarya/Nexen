@@ -120,6 +120,7 @@ public:
 
 	virtual void SetTextState(string_view state);
 	[[nodiscard]] virtual string GetTextState();
+	void GetTextState(string& output);
 
 	void SetStateFromInput();
 	virtual void OnAfterSetState() {}

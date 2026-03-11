@@ -131,16 +131,22 @@ void BaseControlDevice::SetTextState(string_view textState) {
 }
 
 string BaseControlDevice::GetTextState() {
+	string output;
+	GetTextState(output);
+	return output;
+}
+
+void BaseControlDevice::GetTextState(string& output) {
 	auto lock = _stateLock.AcquireSafe();
+	output.clear();
 	if (IsRawString()) {
-		return string((char*)_state.State.data(), _state.State.size());
+		output.assign((char*)_state.State.data(), _state.State.size());
 	} else {
 		if (!_keyNamesCached) {
 			_cachedKeyNames = GetKeyNames();
 			_keyNamesCached = true;
 		}
 		const string& keyNames = _cachedKeyNames;
-		string output;
 		output.reserve(keyNames.size() + 20);
 
 		if (HasCoordinates()) {
@@ -156,15 +162,12 @@ string BaseControlDevice::GetTextState() {
 		int keyNumber = 0;
 		for (size_t i = 0; i < keyNames.size(); i++) {
 			if (keyNames[i] != ':') {
-				// Ignore colons in string (used by ControllerHub to split controllers)
 				output += IsPressedUnsafe((uint8_t)keyNumber) ? keyNames[i] : '.';
 				keyNumber++;
 			} else {
 				output += ':';
 			}
 		}
-
-		return output;
 	}
 }
 
