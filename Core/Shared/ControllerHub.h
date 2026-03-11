@@ -204,7 +204,7 @@ public:
 		auto lock = _stateLock.AcquireSafe();
 		_state = state;
 
-		vector<uint8_t> data = state.State;
+		const vector<uint8_t>& data = state.State;
 		int pos = 0;
 
 		for (int i = 0; i < HubPortCount; i++) {

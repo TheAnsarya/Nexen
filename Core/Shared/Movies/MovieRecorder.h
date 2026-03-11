@@ -26,16 +26,16 @@ private:
 	stringstream _saveStateData;
 
 	void GetGameSettings(stringstream& out);
-	void WriteString(stringstream& out, const string& name, const string& value);
-	void WriteInt(stringstream& out, const string& name, uint32_t value);
-	void WriteBool(stringstream& out, const string& name, bool enabled);
+	void WriteString(stringstream& out, string_view name, string_view value);
+	void WriteInt(stringstream& out, string_view name, uint32_t value);
+	void WriteBool(stringstream& out, string_view name, bool enabled);
 
 public:
 	MovieRecorder(Emulator* emu);
 	virtual ~MovieRecorder();
 
 	[[nodiscard]] bool Record(const RecordMovieOptions& options);
-	bool Stop();
+	[[nodiscard]] bool Stop();
 
 	// Inherited via IInputRecorder
 	void RecordInput(const vector<shared_ptr<BaseControlDevice>>& devices) override;

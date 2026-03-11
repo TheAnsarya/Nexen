@@ -75,7 +75,7 @@ protected:
 	void StrobeProcessRead();
 	void StrobeProcessWrite(uint8_t value);
 
-	virtual string GetKeyNames() { return ""; }
+	[[nodiscard]] virtual string GetKeyNames() { return ""; }
 
 	void SetPressedState(uint8_t bit, uint16_t keyCode);
 	void SetPressedState(uint8_t bit, bool enabled);
@@ -134,9 +134,9 @@ public:
 	virtual void WriteRam(uint16_t addr, uint8_t value) = 0;
 
 	// Used by Lua API
-	virtual vector<DeviceButtonName> GetKeyNameAssociations() { return {}; }
+	[[nodiscard]] virtual vector<DeviceButtonName> GetKeyNameAssociations() { return {}; }
 
-	virtual bool HasControllerType(ControllerType type);
+	[[nodiscard]] virtual bool HasControllerType(ControllerType type);
 
 	void static SwapButtons(const shared_ptr<BaseControlDevice>& state1, uint8_t button1, const shared_ptr<BaseControlDevice>& state2, uint8_t button2);
 

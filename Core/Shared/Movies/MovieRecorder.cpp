@@ -104,15 +104,15 @@ void MovieRecorder::GetGameSettings(stringstream& out) {
 	}
 }
 
-void MovieRecorder::WriteString(stringstream& out, const string& name, const string& value) {
+void MovieRecorder::WriteString(stringstream& out, string_view name, string_view value) {
 	out << name << " " << value << "\n";
 }
 
-void MovieRecorder::WriteInt(stringstream& out, const string& name, uint32_t value) {
+void MovieRecorder::WriteInt(stringstream& out, string_view name, uint32_t value) {
 	out << name << " " << value << "\n";
 }
 
-void MovieRecorder::WriteBool(stringstream& out, const string& name, bool enabled) {
+void MovieRecorder::WriteBool(stringstream& out, string_view name, bool enabled) {
 	out << name << " " << (enabled ? "true" : "false") << "\n";
 }
 
