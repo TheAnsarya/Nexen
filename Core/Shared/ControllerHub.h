@@ -198,6 +198,28 @@ public:
 	}
 
 	/// <summary>
+	/// Get state as text into reusable buffer.
+	/// Avoids per-frame allocation for multitap controllers.
+	/// </summary>
+	void GetTextState(string& output) override {
+		auto lock = _stateLock.AcquireSafe();
+
+		output.clear();
+		output.reserve(HubPortCount * 24);
+
+		string portBuf;
+		for (int i = 0; i < HubPortCount; i++) {
+			if (i != 0) {
+				output += ":";
+			}
+			if (_ports[i]) {
+				_ports[i]->GetTextState(portBuf);
+				output += portBuf;
+			}
+		}
+	}
+
+	/// <summary>
 	/// Set raw state from binary format (length-prefixed chunks).
 	/// </summary>
 	void SetRawState(ControlDeviceState state) override {
