@@ -147,6 +147,9 @@
 		<ClCompile Include="Shared\ControlDeviceStateTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="Shared\MovieTasTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Shared\Base64Tests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
