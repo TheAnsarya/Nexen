@@ -191,7 +191,7 @@ bool MovieRecorder::CreateMovie(const string& movieFile, deque<RewindData>& data
 	_filename = movieFile;
 	_writer = std::make_unique<ZipWriter>();
 	if (startPosition < data.size() && endPosition <= data.size() && _writer->Initialize(_filename)) {
-		vector<shared_ptr<BaseControlDevice>> devices = console->GetControlManager()->GetControlDevices();
+		const auto& devices = console->GetControlManager()->GetControlDevices();
 
 		if (startPosition > 0 || hasBattery || _emu->GetSettings()->HasRandomPowerOnState(_emu->GetConsoleType())) {
 			// Create a movie from a savestate if we don't start from the beginning (or if the game has save ram, or if the power on state is random)
@@ -206,7 +206,7 @@ bool MovieRecorder::CreateMovie(const string& movieFile, deque<RewindData>& data
 		for (uint32_t i = startPosition; i < endPosition; i++) {
 			const RewindData& rewindData = data[i];
 			for (uint32_t j = 0; j < RewindManager::BufferSize; j++) {
-				for (shared_ptr<BaseControlDevice>& device : devices) {
+				for (const auto& device : devices) {
 					uint8_t port = device->GetPort();
 					if (j < rewindData.InputLogs[port].size()) {
 						device->SetRawState(rewindData.InputLogs[port][j]);

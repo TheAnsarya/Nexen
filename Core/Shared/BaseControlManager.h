@@ -186,7 +186,7 @@ public:
 	void RefreshHubState();
 
 	/// <summary>Get all connected controller devices</summary>
-	vector<shared_ptr<BaseControlDevice>> GetControlDevices();
+	const vector<shared_ptr<BaseControlDevice>>& GetControlDevices();
 
 	/// <summary>
 	/// Get controller device by type (template).

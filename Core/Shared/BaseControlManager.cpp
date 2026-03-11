@@ -115,7 +115,7 @@ void BaseControlManager::RefreshHubState() {
 	}
 }
 
-vector<shared_ptr<BaseControlDevice>> BaseControlManager::GetControlDevices() {
+const vector<shared_ptr<BaseControlDevice>>& BaseControlManager::GetControlDevices() {
 	return _controlDevices;
 }
 
@@ -193,12 +193,9 @@ void BaseControlManager::ResetLagCounter() {
 bool BaseControlManager::HasControlDevice(ControllerType type) {
 	auto lock = _deviceLock.AcquireSafe();
 
-	for (shared_ptr<BaseControlDevice>& device : _controlDevices) {
-		if (device->HasControllerType(type)) {
-			return true;
-		}
-	}
-	return false;
+	return std::ranges::any_of(_controlDevices, [type](const auto& device) {
+		return device->HasControllerType(type);
+	});
 }
 
 uint32_t BaseControlManager::GetPollCounter() {

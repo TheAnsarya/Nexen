@@ -124,9 +124,8 @@ bool NexenMovie::Play(VirtualFile& file) {
 		_inputData.reserve(lineEstimate);
 	}
 
-	while (inputData) {
-		string line;
-		std::getline(inputData, line);
+	string line;
+	while (std::getline(inputData, line)) {
 		if (line.starts_with("|")) {
 			_inputData.push_back(StringUtilities::Split(string_view(line).substr(1), '|'));
 		}
@@ -184,7 +183,7 @@ bool NexenMovie::Play(VirtualFile& file) {
 }
 
 template <typename T>
-T FromString(string name, const vector<string>& enumNames, T defaultValue) {
+T FromString(string_view name, const vector<string>& enumNames, T defaultValue) {
 	for (size_t i = 0; i < enumNames.size(); i++) {
 		if (name == enumNames[i]) {
 			return (T)i;
@@ -194,10 +193,8 @@ T FromString(string name, const vector<string>& enumNames, T defaultValue) {
 }
 
 void NexenMovie::ParseSettings(stringstream& data) {
-	while (!data.eof()) {
-		string line;
-		std::getline(data, line);
-
+	string line;
+	while (std::getline(data, line)) {
 		if (!line.empty()) {
 			size_t index = line.find_first_of(' ');
 			if (index != string::npos) {
@@ -205,9 +202,9 @@ void NexenMovie::ParseSettings(stringstream& data) {
 				string value = line.substr(index + 1);
 
 				if (name == "Cheat") {
-					_cheats.push_back(value);
+					_cheats.push_back(std::move(value));
 				} else {
-					_settings[name] = value;
+					_settings.insert_or_assign(std::move(name), std::move(value));
 				}
 			}
 		}

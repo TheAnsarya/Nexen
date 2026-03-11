@@ -32,7 +32,7 @@ void MovieManager::Play(VirtualFile file, bool forTest) {
 			reader.LoadArchive(fileData);
 
 			vector<string> files = reader.GetFileList();
-			if (std::ranges::contains(files, string("GameSettings.txt"))) {
+			if (std::ranges::contains(files, string_view{"GameSettings.txt"})) {
 				player = std::make_unique<NexenMovie>(_emu, forTest);
 			}
 		}
