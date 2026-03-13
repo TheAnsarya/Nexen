@@ -632,3 +632,14 @@ template HdNesPack<7>::HdNesPack(NesConsole* console, EmuSettings* settings, HdP
 template HdNesPack<8>::HdNesPack(NesConsole* console, EmuSettings* settings, HdPackData* hdData);
 template HdNesPack<9>::HdNesPack(NesConsole* console, EmuSettings* settings, HdPackData* hdData);
 template HdNesPack<10>::HdNesPack(NesConsole* console, EmuSettings* settings, HdPackData* hdData);
+
+template HdNesPack<1>::~HdNesPack();
+template HdNesPack<2>::~HdNesPack();
+template HdNesPack<3>::~HdNesPack();
+template HdNesPack<4>::~HdNesPack();
+template HdNesPack<5>::~HdNesPack();
+template HdNesPack<6>::~HdNesPack();
+template HdNesPack<7>::~HdNesPack();
+template HdNesPack<8>::~HdNesPack();
+template HdNesPack<9>::~HdNesPack();
+template HdNesPack<10>::~HdNesPack();
