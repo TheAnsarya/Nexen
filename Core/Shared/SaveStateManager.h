@@ -124,7 +124,7 @@ private:
 	vector<uint8_t> _bgCompressStateBuffer;
 
 	// ========== Async Write Infrastructure ==========
-	std::jthread _writeThread;
+	std::thread _writeThread;
 	std::queue<SaveStateSnapshot> _writeQueue;
 	std::mutex _writeMutex;
 	std::condition_variable _writeCv;

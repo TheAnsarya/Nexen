@@ -26,7 +26,7 @@ SaveStateManager::SaveStateManager(Emulator* emu) {
 	_recentPlaySlot = 0;
 	_lastRecentPlayTime = 0;
 	_shutdownRequested = false;
-	_writeThread = std::jthread([this](std::stop_token) { BackgroundWriteLoop(); });
+	_writeThread = std::thread([this]() { BackgroundWriteLoop(); });
 }
 
 SaveStateManager::~SaveStateManager() {
