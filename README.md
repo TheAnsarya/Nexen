@@ -103,7 +103,7 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 - **Piano Roll View** - Visual timeline for frame-by-frame editing with batch paint
 - **Full Undo/Redo** - Every operation (toggle, paint, insert, delete, clear, fork) is undoable
 - **Greenzone System** - Instant seeking with automatic savestates
-- **O(1) Incremental Updates** - Single-frame refresh instead of full rebuild
+- **Fast Timeline Refresh** - Smooth frame navigation during long movies
 - **Input Recording** - Capture, insert, and overwrite modes with branch support
 - **Branches** - Fork, compare, and load alternate strategies
 - **Lua Scripting** - Automate TAS workflows with full undo integration
@@ -130,6 +130,17 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 - Per-channel volume control
 - Audio recording (WAV)
 
+## 🧭 Using Nexen
+
+| Guide | Description |
+|---|---|
+| [Save States Guide](docs/Save-States.md) | Quick save, designated slots, and visual picker workflows |
+| [Rewind Guide](docs/Rewind.md) | Rewind usage and route iteration workflows |
+| [Movie System Guide](docs/Movie-System.md) | Record, playback, import/export, and deterministic playback workflows |
+| [TAS Editor Manual](docs/TAS-Editor-Manual.md) | Complete frame-by-frame TAS editing workflow |
+| [Debugging Guide](docs/Debugging.md) | Disassembler, memory viewer, breakpoints, trace, and CDL usage |
+| [Video and Audio Guide](docs/Video-Audio.md) | Rendering and audio configuration workflows |
+
 ## Quick Start
 
 ### Windows
@@ -155,30 +166,31 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 ## 📖 Documentation
 
 | Document | Description |
-| ---------- | ------------- |
+|---|---|
+| [Documentation Index](docs/README.md) | Entry point for user-facing docs |
 | [Compiling](COMPILING.md) | Build from source |
-| [TAS Editor Manual](docs/TAS-Editor-Manual.md) | Complete TAS workflow guide |
-| [TAS Developer Guide](docs/TAS-Developer-Guide.md) | TAS system internals and extension |
-| [TAS/Movie Architecture](docs/TAS_ARCHITECTURE.md) | Movie recording, playback, and TAS architecture |
-| [Movie Format (.nexen-movie)](docs/NEXEN_MOVIE_FORMAT.md) | ZIP-based movie file format specification |
-| [Debugger Performance](docs/DEBUGGER-PERFORMANCE.md) | Debugger optimization techniques |
-| [Atari Lynx ROM Format](docs/ATARI-LYNX-FORMAT.md) | .atari-lynx file format specification |
+| [Performance Guide](docs/PERFORMANCE.md) | Centralized performance strategy and references |
 | [Release Guide](docs/RELEASE.md) | Creating releases |
 | [API Documentation](docs/README.md) | Generated API docs |
 
-### Atari Lynx Documentation
+### Systems Documentation
 
-| Document | Description |
-| ---------- | ------------- |
-| [Lynx Emulation](docs/LYNX-EMULATION.md) | Hardware overview, architecture, TAS support |
-| [Lynx Accuracy Status](docs/LYNX-ACCURACY.md) | Per-subsystem accuracy tracking |
-| [Lynx Testing Guide](docs/LYNX-TESTING.md) | Running tests and benchmarks |
-| [Lynx Hardware Bugs](docs/LYNX-HARDWARE-BUGS.md) | Documented hardware bugs and quirks |
+| System | Guide |
+|---|---|
+| All systems (index) | [Systems Index](docs/systems/README.md) |
+| NES / Famicom | [NES Guide](docs/systems/NES.md) |
+| SNES / Super Famicom | [SNES Guide](docs/systems/SNES.md) |
+| Game Boy / Game Boy Color | [GB Guide](docs/systems/GB.md) |
+| Game Boy Advance | [GBA Guide](docs/systems/GBA.md) |
+| Sega Master System / Game Gear | [SMS Guide](docs/systems/SMS.md) |
+| PC Engine / TurboGrafx-16 | [PCE Guide](docs/systems/PCE.md) |
+| WonderSwan / WonderSwan Color | [WS Guide](docs/systems/WS.md) |
+| Atari Lynx | [Lynx Guide](docs/systems/Lynx.md) |
 
 ### Developer Documentation
 
 | Document | Description |
-| ---------- | ------------- |
+|---|---|
 | [Architecture Overview](~docs/ARCHITECTURE-OVERVIEW.md) | System design |
 | [C++ Development Guide](~docs/CPP-DEVELOPMENT-GUIDE.md) | Coding standards |
 | [Code Documentation Style](~docs/CODE-DOCUMENTATION-STYLE.md) | C++ documentation style guide |
@@ -197,12 +209,12 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 ### Emulation Core Documentation
 
 | Document | Description |
-| ---------- | ------------- |
-| [NES Core](~docs/NES-CORE.md) | NES/Famicom emulation core |
-| [SNES Core](~docs/SNES-CORE.md) | SNES/Super Famicom emulation core |
-| [GB/GBA Core](~docs/GB-GBA-CORE.md) | Game Boy & GBA emulation core |
-| [SMS/PCE/WS Core](~docs/SMS-PCE-WS-CORE.md) | SMS, PC Engine, and WonderSwan cores |
-| [Lynx Core](~docs/LYNX-CORE.md) | Atari Lynx emulation core |
+|---|---|
+| [NES Core](~docs/NES-CORE.md) | NES/Famicom emulation core internals |
+| [SNES Core](~docs/SNES-CORE.md) | SNES/Super Famicom emulation core internals |
+| [GB/GBA Core](~docs/GB-GBA-CORE.md) | Game Boy and GBA emulation core internals |
+| [SMS/PCE/WS Core](~docs/SMS-PCE-WS-CORE.md) | SMS, PCE, and WS core internals |
+| [Lynx Core](~docs/LYNX-CORE.md) | Atari Lynx core internals |
 
 ## ⌨️ Keyboard Shortcuts
 
