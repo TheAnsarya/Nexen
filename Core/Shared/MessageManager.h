@@ -3,6 +3,7 @@
 #include "pch.h"
 
 #include "Core/Shared/Interfaces/IMessageManager.h"
+#include <deque>
 #include <unordered_map>
 #include "Utilities/SimpleLock.h"
 
@@ -58,7 +59,7 @@ private:
 	static bool _outputToStdout;    ///< Log to stdout flag
 	static SimpleLock _logLock;     ///< Log access synchronization
 	static SimpleLock _messageLock; ///< Message access synchronization
-	static std::list<string> _log;  ///< In-memory log buffer
+	static std::deque<string> _log; ///< In-memory log buffer (deque for O(1) push/pop with cache locality)
 
 public:
 	/// <summary>
@@ -73,7 +74,7 @@ public:
 	/// </summary>
 	/// <param name="key">Localization key (e.g., "Cheats.CheatsApplied")</param>
 	/// <returns>Localized string or key if not found</returns>
-	static string Localize(const string& key);
+	[[nodiscard]] static string Localize(const string& key);
 
 	/// <summary>Register UI message handler</summary>
 	static void RegisterMessageManager(IMessageManager* messageManager);
@@ -104,6 +105,9 @@ public:
 	/// </remarks>
 	static void Log(const string& message = "");
 
+	/// <summary>Move-overload for Log() to avoid copying temporary strings.</summary>
+	static void Log(string&& message);
+
 	/// <summary>Clear in-memory log buffer</summary>
 	static void ClearLog();
 
@@ -111,5 +115,5 @@ public:
 	/// Get full log history as newline-separated string.
 	/// </summary>
 	/// <returns>Complete log contents</returns>
-	static string GetLog();
+	[[nodiscard]] static string GetLog();
 };

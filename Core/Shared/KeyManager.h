@@ -60,37 +60,37 @@ public:
 	/// </summary>
 	/// <param name="keyCode">Platform-specific key code</param>
 	/// <returns>True if key down</returns>
-	static bool IsKeyPressed(uint16_t keyCode);
+	[[nodiscard]] static bool IsKeyPressed(uint16_t keyCode);
 
 	/// <summary>
 	/// Get analog axis position (for gamepad sticks/triggers).
 	/// </summary>
 	/// <param name="keyCode">Axis key code</param>
 	/// <returns>Axis value (-32768 to 32767), or empty if not analog</returns>
-	static optional<int16_t> GetAxisPosition(uint16_t keyCode);
+	[[nodiscard]] static optional<int16_t> GetAxisPosition(uint16_t keyCode);
 
 	/// <summary>
 	/// Check if mouse button currently pressed.
 	/// </summary>
 	/// <param name="button">Mouse button (Left, Right, Middle)</param>
-	static bool IsMouseButtonPressed(MouseButton button);
+	[[nodiscard]] static bool IsMouseButtonPressed(MouseButton button);
 
 	/// <summary>Get list of all currently pressed keys</summary>
-	static vector<uint16_t> GetPressedKeys();
+	[[nodiscard]] static vector<uint16_t> GetPressedKeys();
 
 	/// <summary>
 	/// Get human-readable key name.
 	/// </summary>
 	/// <param name="keyCode">Platform-specific key code</param>
 	/// <returns>Key name (e.g., "Space", "Enter", "A")</returns>
-	static string GetKeyName(uint16_t keyCode);
+	[[nodiscard]] static string GetKeyName(uint16_t keyCode);
 
 	/// <summary>
 	/// Get key code from name.
 	/// </summary>
 	/// <param name="keyName">Key name (e.g., "Space", "Enter")</param>
 	/// <returns>Platform-specific key code</returns>
-	static uint16_t GetKeyCode(const string& keyName);
+	[[nodiscard]] static uint16_t GetKeyCode(const string& keyName);
 
 	/// <summary>Update connected device list (gamepads, etc.)</summary>
 	static void UpdateDevices();
@@ -108,7 +108,7 @@ public:
 	/// <param name="emu">Emulator instance</param>
 	/// <param name="mouseSensitivity">Sensitivity multiplier (0-100)</param>
 	/// <returns>Mouse movement (clears accumulator)</returns>
-	static MouseMovement GetMouseMovement(Emulator* emu, uint32_t mouseSensitivity);
+	[[nodiscard]] static MouseMovement GetMouseMovement(Emulator* emu, uint32_t mouseSensitivity);
 
 	/// <summary>
 	/// Set absolute mouse position.
@@ -119,7 +119,7 @@ public:
 	static void SetMousePosition(Emulator* emu, double x, double y);
 
 	/// <summary>Get current mouse position</summary>
-	static MousePosition GetMousePosition();
+	[[nodiscard]] static MousePosition GetMousePosition();
 
 	/// <summary>
 	/// Set force feedback (single motor).

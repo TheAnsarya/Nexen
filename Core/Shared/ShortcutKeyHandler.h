@@ -47,7 +47,7 @@ public:
 	ShortcutKeyHandler(Emulator* emu);
 	virtual ~ShortcutKeyHandler();
 
-	bool IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t shortcutParam);
+	[[nodiscard]] bool IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t shortcutParam);
 	void ProcessKeys();
 
 	void ProcessNotification(ConsoleNotificationType type, void* parameter) override;

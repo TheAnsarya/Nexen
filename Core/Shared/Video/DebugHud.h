@@ -22,7 +22,7 @@ public:
 	DebugHud();
 	~DebugHud();
 
-	bool HasCommands() { return _commandCount > 0; }
+	[[nodiscard]] bool HasCommands() { return _commandCount > 0; }
 
 	bool Draw(uint32_t* argbBuffer, FrameInfo frameInfo, OverscanDimensions overscan, uint32_t frameNumber, HudScaleFactors scaleFactors, bool clearAndUpdate = false);
 	void ClearScreen();

@@ -96,22 +96,22 @@ public:
 	void Reset();
 
 	/// <summary>Get raw CDL data buffer.</summary>
-	uint8_t* GetRawData() { return _cdlData.get(); }
+	[[nodiscard]] uint8_t* GetRawData() { return _cdlData.get(); }
 
 	/// <summary>Get CDL data size.</summary>
-	uint32_t GetSize() { return _cdlSize; }
+	[[nodiscard]] uint32_t GetSize() { return _cdlSize; }
 
 	/// <summary>Get the ROM memory type being tracked.</summary>
-	MemoryType GetMemoryType() { return _prgRomType; }
+	[[nodiscard]] MemoryType GetMemoryType() { return _prgRomType; }
 
 	/// <summary>Get CDL statistics.</summary>
-	CdlStatistics GetStatistics();
+	[[nodiscard]] CdlStatistics GetStatistics();
 
 	/// <summary>Load CDL data from file.</summary>
-	bool LoadCdlFile(const string& cdlFilepath);
+	[[nodiscard]] bool LoadCdlFile(const string& cdlFilepath);
 
 	/// <summary>Save CDL data to file.</summary>
-	bool SaveCdlFile(const string& cdlFilepath);
+	[[nodiscard]] bool SaveCdlFile(const string& cdlFilepath);
 
 	/// <summary>Get CDL data for a range.</summary>
 	void GetCdlData(uint32_t offset, uint32_t length, uint8_t* cdlData);
@@ -120,7 +120,7 @@ public:
 	void SetCdlData(uint8_t* cdlData, uint32_t length);
 
 	/// <summary>Get CDL flags for a single address.</summary>
-	uint8_t GetFlags(uint32_t addr);
+	[[nodiscard]] uint8_t GetFlags(uint32_t addr);
 
 private:
 	/// <summary>

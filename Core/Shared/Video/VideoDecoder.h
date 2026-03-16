@@ -80,16 +80,16 @@ public:
 
 	void ForceFilterUpdate() { _forceFilterUpdate = true; }
 
-	uint32_t GetFrameCount();
-	FrameInfo GetBaseFrameInfo(bool removeOverscan);
-	FrameInfo GetFrameInfo();
+	[[nodiscard]] uint32_t GetFrameCount();
+	[[nodiscard]] FrameInfo GetBaseFrameInfo(bool removeOverscan);
+	[[nodiscard]] FrameInfo GetFrameInfo();
 	[[nodiscard]] double GetLastFrameScale() { return _frame.Scale; }
 
 	void UpdateFrame(RenderedFrame frame, bool sync, bool forRewind);
 
 	void WaitForAsyncFrameDecode();
 
-	bool IsRunning();
+	[[nodiscard]] bool IsRunning();
 	void StartThread();
 	void StopThread();
 };

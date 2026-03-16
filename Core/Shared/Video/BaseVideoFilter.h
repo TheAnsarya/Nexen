@@ -70,9 +70,9 @@ protected:
 
 	virtual void ApplyFilter(uint16_t* ppuOutputBuffer) = 0;
 	virtual void OnBeforeApplyFilter();
-	bool IsOddFrame();
-	uint32_t GetVideoPhaseOffset();
-	uint32_t GetBufferSize();
+	[[nodiscard]] bool IsOddFrame();
+	[[nodiscard]] uint32_t GetVideoPhaseOffset();
+	[[nodiscard]] uint32_t GetBufferSize();
 
 protected:
 	virtual FrameInfo GetFrameInfo();
@@ -86,15 +86,15 @@ public:
 	template <typename T>
 	static void InitNtscFilter(T& ntscSetup, VideoConfig& cfg);
 
-	uint32_t* GetOutputBuffer();
+	[[nodiscard]] uint32_t* GetOutputBuffer();
 	FrameInfo SendFrame(uint16_t* ppuOutputBuffer, uint32_t frameNumber, uint32_t videoPhaseOffset, void* frameData, bool enableOverscan = true);
 	void TakeScreenshot(const string& romName, VideoFilterType filterType);
 	void TakeScreenshot(VideoFilterType filterType, string filename, std::stringstream* stream = nullptr);
 
-	virtual HudScaleFactors GetScaleFactor() { return {1.0, 1.0}; }
-	virtual OverscanDimensions GetOverscan();
+	[[nodiscard]] virtual HudScaleFactors GetScaleFactor() { return {1.0, 1.0}; }
+	[[nodiscard]] virtual OverscanDimensions GetOverscan();
 	void SetOverscan(OverscanDimensions dimensions);
-	FrameInfo GetFrameInfo(uint16_t* ppuOutputBuffer, bool enableOverscan);
+	[[nodiscard]] FrameInfo GetFrameInfo(uint16_t* ppuOutputBuffer, bool enableOverscan);
 
 	void SetBaseFrameInfo(FrameInfo frameInfo);
 };

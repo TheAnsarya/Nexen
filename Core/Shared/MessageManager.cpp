@@ -82,7 +82,7 @@ std::unordered_map<string, string> MessageManager::_enResources = {
     {"VideoRecorderStopped",          "Recording saved to: %1"                                                                                },
 };
 
-std::list<string> MessageManager::_log;
+std::deque<string> MessageManager::_log;
 SimpleLock MessageManager::_logLock;
 SimpleLock MessageManager::_messageLock;
 bool MessageManager::_osdEnabled = true;
@@ -179,6 +179,22 @@ void MessageManager::Log(const string& message) {
 
 	if (_outputToStdout) {
 		std::cout << (message.empty() ? _log.back() : message) << '\n';
+	}
+}
+
+void MessageManager::Log(string&& message) {
+	auto lock = _logLock.AcquireSafe();
+	if (message.empty()) {
+		_log.push_back("------------------------------------------------------");
+	} else {
+		_log.push_back(std::move(message));
+	}
+	if (_log.size() > 1000) {
+		_log.pop_front();
+	}
+
+	if (_outputToStdout) {
+		std::cout << _log.back() << '\n';
 	}
 }
 

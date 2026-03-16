@@ -42,6 +42,7 @@ class NotificationManager {
 private:
 	SimpleLock _lock;                                   ///< Thread synchronization lock
 	vector<weak_ptr<INotificationListener>> _listeners; ///< Registered listeners (weak refs)
+	vector<shared_ptr<INotificationListener>> _snapshot; ///< Reusable snapshot buffer (avoids heap alloc per notification)
 
 	/// <summary>Remove dead listener references (expired weak_ptr)</summary>
 	void CleanupNotificationListeners();

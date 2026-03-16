@@ -39,10 +39,11 @@ void NotificationManager::CleanupNotificationListeners() {
 void NotificationManager::SendNotification(ConsoleNotificationType type, void* parameter) {
 	// Build a strong snapshot under lock and prune expired listeners in one pass.
 	// This keeps callback execution lock-free while reducing weak_ptr lock churn.
-	vector<shared_ptr<INotificationListener>> snapshot;
+	// Reuses _snapshot member to avoid heap allocation on every notification.
 	{
 		auto lock = _lock.AcquireSafe();
-		snapshot.reserve(_listeners.size());
+		_snapshot.clear();
+		_snapshot.reserve(_listeners.size());
 
 		auto writeIt = _listeners.begin();
 		for (auto readIt = _listeners.begin(); readIt != _listeners.end(); readIt++) {
@@ -53,13 +54,16 @@ void NotificationManager::SendNotification(ConsoleNotificationType type, void* p
 
 			*writeIt = *readIt;
 			writeIt++;
-			snapshot.push_back(std::move(listener));
+			_snapshot.push_back(std::move(listener));
 		}
 
 		_listeners.erase(writeIt, _listeners.end());
 	}
 
-	for (size_t i = 0; i < snapshot.size(); i++) {
-		snapshot[i]->ProcessNotification(type, parameter);
+	for (size_t i = 0; i < _snapshot.size(); i++) {
+		_snapshot[i]->ProcessNotification(type, parameter);
 	}
+
+	// Release shared_ptr refs after callbacks complete
+	_snapshot.clear();
 }

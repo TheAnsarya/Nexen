@@ -140,21 +140,21 @@ private:
 	/// Get filesystem path for save state slot (legacy mode).
 	/// </summary>
 	/// <param name="stateIndex">Slot index (0-11)</param>
-	string GetStateFilepath(int stateIndex);
+	[[nodiscard]] string GetStateFilepath(int stateIndex);
 
 	/// <summary>
 	/// Get the per-ROM save state directory path.
 	/// Creates the directory if it doesn't exist.
 	/// </summary>
 	/// <returns>Path to ROM-specific save state folder</returns>
-	string GetRomSaveStateDirectory();
+	[[nodiscard]] string GetRomSaveStateDirectory();
 
 	/// <summary>
 	/// Generate a timestamped filepath for a new save state.
 	/// Format: {SaveStateFolder}/{RomName}/{RomName}_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
 	/// </summary>
 	/// <returns>Full path for new timestamped save state</returns>
-	string GetTimestampedFilepath();
+	[[nodiscard]] string GetTimestampedFilepath();
 
 	/// <summary>
 	/// Generate filepath for a Recent Play slot.
@@ -162,21 +162,21 @@ private:
 	/// </summary>
 	/// <param name="slotIndex">Slot index (0-11)</param>
 	/// <returns>Full path for the Recent Play slot</returns>
-	string GetRecentPlayFilepath(uint32_t slotIndex);
+	[[nodiscard]] string GetRecentPlayFilepath(uint32_t slotIndex);
 
 	/// <summary>
 	/// Generate filepath for the Auto Save state.
 	/// Format: {SaveStateFolder}/{RomName}/{RomName}_auto.nexen-save
 	/// </summary>
 	/// <returns>Full path for the Auto Save state</returns>
-	string GetAutoSaveFilepath();
+	[[nodiscard]] string GetAutoSaveFilepath();
 
 	/// <summary>
 	/// Parse timestamp from a timestamped save state filename.
 	/// </summary>
 	/// <param name="filename">Filename (without path) to parse</param>
 	/// <returns>Unix timestamp, or 0 if parsing failed</returns>
-	time_t ParseTimestampFromFilename(const string& filename);
+	[[nodiscard]] time_t ParseTimestampFromFilename(const string& filename);
 
 	/// <summary>Save screenshot to stream (PNG compressed)</summary>
 	void SaveVideoData(ostream& stream);
@@ -194,7 +194,7 @@ private:
 	void WriteValue(ostream& stream, uint32_t value);
 
 	/// <summary>Read 32-bit value from stream (little-endian)</summary>
-	uint32_t ReadValue(istream& stream);
+	[[nodiscard]] uint32_t ReadValue(istream& stream);
 
 public:
 	static constexpr uint32_t FileFormatVersion = 4;       ///< Current save state version
@@ -273,7 +273,7 @@ public:
 	/// <param name="saveStatePath">Save state file path</param>
 	/// <param name="pngData">Output PNG data buffer</param>
 	/// <returns>PNG data size in bytes, or -1 on error</returns>
-	int32_t GetSaveStatePreview(const string& saveStatePath, uint8_t* pngData);
+	[[nodiscard]] int32_t GetSaveStatePreview(const string& saveStatePath, uint8_t* pngData);
 
 	/// <summary>
 	/// Select save state slot for next save/load.
@@ -294,14 +294,14 @@ public:
 	/// Creates a save state with datetime-based filename in the ROM's subdirectory.
 	/// </summary>
 	/// <returns>Full path to the saved file, or empty string on failure</returns>
-	string SaveTimestampedState();
+	[[nodiscard]] string SaveTimestampedState();
 
 	/// <summary>
 	/// Get list of all save states for the current ROM.
 	/// Returns saves from the ROM's subdirectory, sorted by timestamp (newest first).
 	/// </summary>
 	/// <returns>Vector of SaveStateInfo structs</returns>
-	vector<SaveStateInfo> GetSaveStateList();
+	[[nodiscard]] vector<SaveStateInfo> GetSaveStateList();
 
 	/// <summary>
 	/// Delete a specific save state file.
@@ -314,7 +314,7 @@ public:
 	/// Get the number of save states for the current ROM.
 	/// </summary>
 	/// <returns>Count of save state files</returns>
-	uint32_t GetSaveStateCount();
+	[[nodiscard]] uint32_t GetSaveStateCount();
 
 	// ========== Recent Play Queue Methods ==========
 
@@ -324,13 +324,13 @@ public:
 	/// Called automatically every 5 minutes during gameplay.
 	/// </summary>
 	/// <returns>Full path to the saved file, or empty string on failure</returns>
-	string SaveRecentPlayState();
+	[[nodiscard]] string SaveRecentPlayState();
 
 	/// <summary>
 	/// Check if enough time has passed for a new Recent Play save.
 	/// </summary>
 	/// <returns>True if 5+ minutes since last Recent Play save</returns>
-	bool ShouldSaveRecentPlay();
+	[[nodiscard]] bool ShouldSaveRecentPlay();
 
 	/// <summary>
 	/// Reset the Recent Play timer (e.g., when loading a ROM).
@@ -341,7 +341,7 @@ public:
 	/// Get Recent Play saves only, sorted newest first.
 	/// </summary>
 	/// <returns>Vector of SaveStateInfo with origin=Recent</returns>
-	vector<SaveStateInfo> GetRecentPlayStates();
+	[[nodiscard]] vector<SaveStateInfo> GetRecentPlayStates();
 
 	// ========== Designated Save Methods ==========
 
@@ -356,7 +356,7 @@ public:
 	/// Get the current designated save path.
 	/// </summary>
 	/// <returns>Path to designated save, or empty if none set</returns>
-	string GetDesignatedSave() const;
+	[[nodiscard]] string GetDesignatedSave() const;
 
 	/// <summary>
 	/// Load the designated save state (F4 action).

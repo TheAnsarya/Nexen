@@ -105,11 +105,11 @@ public:
 	VideoRenderer(Emulator* emu);
 	~VideoRenderer();
 
-	FrameInfo GetRendererSize();
+	[[nodiscard]] FrameInfo GetRendererSize();
 	void SetRendererSize(uint32_t width, uint32_t height);
 
 	void SetScriptHudScale(uint32_t scale) { _scriptHudScale = scale; }
-	std::pair<FrameInfo, OverscanDimensions> GetScriptHudSize();
+	[[nodiscard]] std::pair<FrameInfo, OverscanDimensions> GetScriptHudSize();
 
 	void StartThread();
 	void StopThread();
@@ -122,5 +122,5 @@ public:
 	void StartRecording(const string& filename, RecordAviOptions options);
 	void AddRecordingSound(int16_t* soundBuffer, uint32_t sampleCount, uint32_t sampleRate);
 	void StopRecording();
-	bool IsRecording();
+	[[nodiscard]] bool IsRecording();
 };
