@@ -18,16 +18,16 @@ The current expansion effort is tracked under GitHub Epic [#673](https://github.
 
 Atari 2600 follow-up implementation issues:
 
-- [#697](https://github.com/TheAnsarya/Nexen/issues/697): CPU/RIOT bring-up skeleton
-- [#698](https://github.com/TheAnsarya/Nexen/issues/698): TIA timing spike and smoke-test harness
-- [#699](https://github.com/TheAnsarya/Nexen/issues/699): Bankswitching order and regression matrix
+- [#697](https://github.com/TheAnsarya/Nexen/issues/697): CPU/RIOT bring-up skeleton ([Plan](../~docs/plans/atari-2600-cpu-riot-bringup-skeleton.md))
+- [#698](https://github.com/TheAnsarya/Nexen/issues/698): TIA timing spike and smoke-test harness ([Plan](../~docs/plans/atari-2600-tia-timing-spike-harness.md))
+- [#699](https://github.com/TheAnsarya/Nexen/issues/699): Bankswitching order and regression matrix ([Plan](../~docs/plans/atari-2600-mapper-order-and-regression-matrix.md))
 
 Genesis follow-up implementation issues:
 
-- [#700](https://github.com/TheAnsarya/Nexen/issues/700): M68000 integration boundary and bring-up spike
-- [#701](https://github.com/TheAnsarya/Nexen/issues/701): VDP timing and DMA milestone plan with harness checkpoints
-- [#702](https://github.com/TheAnsarya/Nexen/issues/702): Z80 and audio subsystem integration staging
-- [#703](https://github.com/TheAnsarya/Nexen/issues/703): Benchmark and correctness gates per phase
+- [#700](https://github.com/TheAnsarya/Nexen/issues/700): M68000 integration boundary and bring-up spike ([Plan](../~docs/plans/genesis-m68000-boundary-and-bringup.md))
+- [#701](https://github.com/TheAnsarya/Nexen/issues/701): VDP timing and DMA milestone plan with harness checkpoints ([Plan](../~docs/plans/genesis-vdp-dma-milestones-and-harness.md))
+- [#702](https://github.com/TheAnsarya/Nexen/issues/702): Z80 and audio subsystem integration staging ([Plan](../~docs/plans/genesis-z80-audio-integration-staging.md))
+- [#703](https://github.com/TheAnsarya/Nexen/issues/703): Benchmark and correctness gates per phase ([Plan](../~docs/plans/platform-parity-benchmark-and-correctness-gates.md))
 
 Research and compatibility follow-up issues:
 

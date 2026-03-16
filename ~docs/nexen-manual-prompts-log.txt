@@ -555,6 +555,8 @@ The user-only manual prompt file `~docs\nexen-manual-prompts-log.txt`, thank you
 
 [Nexen] continue completing github issues `https://github.com/TheAnsarya/Nexen/issues` and make new issues as we find them, all work should have an issue; make plans, issues, docs, chat/sesssion logs, readmes, instructions and tutorials, come up with our future work; FOR THE FUTURE: research and make make research documents for atari 2600 emulation from all the docs and emulators that are on the internet, and especially research and document (always link to sources in a doc) evaluate other emulators code for the Sega Genesis; break down the astari 2600 into sections and create plans and documents for how it works; then break down the sega menesis/megadrive into tiny sections , a massive document tree for plans for the development of the emulator, do multiple sessions making explicit comprehenesive step by step plans and research docs of how everything works; make sonic one and jurrassic park work; continue;
 
+continue working;
+
 
 
 

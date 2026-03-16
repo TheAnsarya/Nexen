@@ -15,6 +15,18 @@ Extend the Q2 feasibility work into a multi-session research and execution progr
 | Sonic 1/Jurassic Park compatibility path | [#706](https://github.com/TheAnsarya/Nexen/issues/706) | Milestone-gated execution matrix and harness strategy |
 | Multi-session execution workflow | [#707](https://github.com/TheAnsarya/Nexen/issues/707) | Repeatable research-to-implementation session cadence |
 
+## Execution Staging Tracks
+
+| Track | Primary Issue | Plan Document |
+|---|---|---|
+| Atari CPU/RIOT bring-up | [#697](https://github.com/TheAnsarya/Nexen/issues/697) | [Atari CPU/RIOT Bring-Up Skeleton Plan](atari-2600-cpu-riot-bringup-skeleton.md) |
+| Atari TIA timing harness | [#698](https://github.com/TheAnsarya/Nexen/issues/698) | [Atari TIA Timing Spike Harness Plan](atari-2600-tia-timing-spike-harness.md) |
+| Atari mapper order and matrix | [#699](https://github.com/TheAnsarya/Nexen/issues/699) | [Atari Mapper Order and Regression Matrix](atari-2600-mapper-order-and-regression-matrix.md) |
+| Genesis M68000 boundary | [#700](https://github.com/TheAnsarya/Nexen/issues/700) | [Genesis M68000 Boundary and Bring-Up Plan](genesis-m68000-boundary-and-bringup.md) |
+| Genesis VDP DMA milestones | [#701](https://github.com/TheAnsarya/Nexen/issues/701) | [Genesis VDP DMA Milestone Plan](genesis-vdp-dma-milestones-and-harness.md) |
+| Genesis Z80/audio staging | [#702](https://github.com/TheAnsarya/Nexen/issues/702) | [Genesis Z80 Audio Integration Staging](genesis-z80-audio-integration-staging.md) |
+| Cross-phase benchmark/correctness gates | [#703](https://github.com/TheAnsarya/Nexen/issues/703) | [Platform Parity Benchmark and Correctness Gates](platform-parity-benchmark-and-correctness-gates.md) |
+
 ## Session Cadence Template
 
 ### Session Type A: Research Expansion
