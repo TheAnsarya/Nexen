@@ -11,13 +11,27 @@ This directory contains user-facing documentation for Nexen.
 | [Movie System Guide](Movie-System.md) | Record, playback, import/export, and deterministic movie workflows |
 | [Debugging Guide](Debugging.md) | Disassembler, memory viewer, breakpoints, trace, and CDL usage |
 | [Video and Audio Guide](Video-Audio.md) | Rendering and audio configuration workflows |
-| [Screenshot Capture Checklist](screenshots/CAPTURE-CHECKLIST.md) | Capture plan for all screenshot anchor IDs used in walkthrough guides |
 | [TAS Editor Manual](TAS-Editor-Manual.md) | Complete TAS workflow guide |
 | [TAS Developer Guide](TAS-Developer-Guide.md) | Technical internals for TAS extensions |
 | [TAS Architecture](TAS_ARCHITECTURE.md) | TAS and movie system architecture |
 | [Movie Format Spec](NEXEN_MOVIE_FORMAT.md) | .nexen-movie file format specification |
 | [Performance Guide](PERFORMANCE.md) | Consolidated performance references and validation workflow |
 | [Release Guide](RELEASE.md) | Release and publishing workflow |
+
+## Developer Tasks
+
+| Task Document | Description |
+|---|---|
+| [Screenshot Capture Checklist](screenshots/CAPTURE-CHECKLIST.md) | Capture and verify every screenshot anchor used by user guides |
+| [Atari 2600 Emulation Roadmap](../~docs/plans/long-term-missing-platforms.md) | Feasibility, architecture constraints, and implementation staging for Atari 2600 |
+| [Sega Genesis Emulation Roadmap](../~docs/plans/long-term-missing-platforms.md) | Feasibility, architecture constraints, and implementation staging for Genesis/Mega Drive |
+| [Performance Improvement Plan](../~docs/plans/performance-improvement-plan.md) | Multi-phase emulation and audio performance optimization roadmap |
+| [Hot Path Optimization Plan](../~docs/plans/hot-path-optimization-plan.md) | CPU/PPU hot-path micro-optimization plan and benchmark strategy |
+| [Debugger Performance Optimization Plan](../~docs/plans/debugger-performance-optimization.md) | Debugger pipeline overhead reduction and benchmark-driven fixes |
+| [Save State System Overhaul](../~docs/plans/save-state-system-overhaul.md) | Save-state architecture and reliability improvement planning |
+| [TAS UI Comprehensive Plan](../~docs/plans/tas-ui-comprehensive-plan.md) | TAS editor and workflow modernization roadmap |
+| [UI Modernization Plan](../~docs/plans/ui-modernization-plan.md) | Broader UI modernization and consistency tasks |
+| [Documentation Restructure Plan](../~docs/plans/documentation-restructure-plan.md) | Documentation hierarchy and feature-first navigation roadmap |
 
 ## Systems Documentation
 
