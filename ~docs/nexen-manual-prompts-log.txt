@@ -547,6 +547,7 @@ Yes, continue and do those three tasks, make sure all work is covered by issues 
 
 in the `readme.md` move the `Screenshot Capture Checklist` from user guides into a new `Developer Tasks` section and also add Sega Genesis and Atari 2600 emulation and performance improvements to this section along with whatever other plans we have in our docs; continue;
 
+I think the issues mentioned in `https://github.com/TheAnsarya/Nexen/blob/master/%7Edocs/phase-7.5-pansy-sync.md` have already been done, but if not fix them and then mark them as complete or remove nonsense; continue;
 
 
 
