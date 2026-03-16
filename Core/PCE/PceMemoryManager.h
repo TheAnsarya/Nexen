@@ -221,7 +221,7 @@ public:
 __forceinline uint8_t PceMemoryManager::Read(uint16_t addr, MemoryOperationType type) {
 	uint8_t bank = _state.Mpr[(addr & 0xE000) >> 13];
 	uint8_t value;
-	if (bank != 0xFF) {
+	if (bank != 0xFF) [[likely]] {
 		value = _readBanks[bank][addr & 0x1FFF];
 	} else {
 		value = ReadRegister(addr & 0x1FFF);
@@ -250,7 +250,7 @@ __forceinline void PceMemoryManager::Write(uint16_t addr, uint8_t value, MemoryO
 				// Only allow writes to the first 2kb - save RAM is not mirrored
 				_writeBanks[bank][addr & 0x7FF] = value;
 			}
-		} else if (bank != 0xFF) {
+		} else if (bank != 0xFF) [[likely]] {
 			if (_writeBanks[bank]) {
 				_writeBanks[bank][addr & 0x1FFF] = value;
 			}

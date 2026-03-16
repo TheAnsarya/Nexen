@@ -183,7 +183,7 @@ void SnesCpu::BranchRelative(bool branch) {
 	if (branch) {
 		int8_t offset = _operand;
 		Idle();
-		if (_state.EmulationMode && ((uint16_t)(_state.PC + offset) & 0xFF00) != (_state.PC & 0xFF00)) {
+		if (_state.EmulationMode && ((uint16_t)(_state.PC + offset) & 0xFF00) != (_state.PC & 0xFF00)) [[unlikely]] {
 			// Extra cycle in emulation mode if crossing a page
 			Idle();
 		}

@@ -258,7 +258,7 @@ private:
 
 	uint16_t GetInd() {
 		uint16_t addr = GetOperand();
-		if ((addr & 0xFF) == 0xFF) {
+		if ((addr & 0xFF) == 0xFF) [[unlikely]] {
 			uint8_t lo = MemoryRead(addr);
 			uint8_t hi = MemoryRead(addr - 0xFF);
 			return (lo | hi << 8);
@@ -276,7 +276,7 @@ private:
 		zero += X();
 
 		uint16_t addr;
-		if (zero == 0xFF) {
+		if (zero == 0xFF) [[unlikely]] {
 			uint8_t lo = MemoryRead(0xFF);
 			uint8_t hi = MemoryRead(0x00);
 			addr = lo | hi << 8;
@@ -290,7 +290,7 @@ private:
 		uint8_t zero = ReadByte();
 
 		uint16_t addr;
-		if (zero == 0xFF) {
+		if (zero == 0xFF) [[unlikely]] {
 			uint8_t lo = MemoryRead(0xFF);
 			uint8_t hi = MemoryRead(0x00);
 			addr = lo | hi << 8;
@@ -447,7 +447,7 @@ private:
 			}
 			DummyRead();
 
-			if (CheckPageCrossed(PC(), offset)) {
+			if (CheckPageCrossed(PC(), offset)) [[unlikely]] {
 				DummyRead();
 			}
 

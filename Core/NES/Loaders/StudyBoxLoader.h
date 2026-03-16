@@ -16,5 +16,5 @@ private:
 public:
 	using BaseLoader::BaseLoader;
 
-	void LoadRom(RomData& romData, vector<uint8_t>& romFile, string filepath);
+	void LoadRom(RomData& romData, vector<uint8_t>& romFile, const string& filepath);
 };

@@ -118,7 +118,7 @@ bool StudyBoxLoader::LoadStudyBoxTape(vector<uint8_t>& studyBoxFile, StudyBoxDat
 	return studyBoxData.Pages.size() > 0;
 }
 
-void StudyBoxLoader::LoadRom(RomData& romData, vector<uint8_t>& romFile, string filepath) {
+void StudyBoxLoader::LoadRom(RomData& romData, vector<uint8_t>& romFile, const string& filepath) {
 	romData.Info.Hash.PrgCrc32 = romData.Info.Hash.Crc32;
 
 	romData.Info.Format = RomFormat::StudyBox;
