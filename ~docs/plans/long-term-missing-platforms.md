@@ -84,6 +84,12 @@ Detailed planning and issue breakdown:
 - Bus arbitration: Medium
 - Overall: This is essentially a new emulator
 
+Detailed planning and issue breakdown:
+
+- [Genesis Architecture and Incremental Plan](genesis-architecture-and-incremental-plan.md)
+- [#696](https://github.com/TheAnsarya/Nexen/issues/696) parent spike issue
+- [#700](https://github.com/TheAnsarya/Nexen/issues/700), [#701](https://github.com/TheAnsarya/Nexen/issues/701), [#702](https://github.com/TheAnsarya/Nexen/issues/702), [#703](https://github.com/TheAnsarya/Nexen/issues/703) follow-up implementation issues
+
 ## Recommendations
 
 1. **Atari 2600 first** — Simpler system, reuses existing 6502 knowledge

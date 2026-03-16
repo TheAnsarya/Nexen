@@ -28,6 +28,7 @@ This directory contains user-facing documentation for Nexen.
 | [Atari 2600 Emulation Roadmap](../~docs/plans/long-term-missing-platforms.md) | Feasibility, architecture constraints, and implementation staging for Atari 2600 |
 | [Atari 2600 Feasibility and Harness Plan](../~docs/plans/atari-2600-feasibility-and-harness-plan.md) | Detailed spike scope, measurable harness milestones, and issue decomposition for Atari 2600 |
 | [Sega Genesis Emulation Roadmap](../~docs/plans/long-term-missing-platforms.md) | Feasibility, architecture constraints, and implementation staging for Genesis/Mega Drive |
+| [Sega Genesis Architecture and Incremental Plan](../~docs/plans/genesis-architecture-and-incremental-plan.md) | Detailed phase plan, risks, and benchmark/correctness gates for Genesis support |
 | [Performance Improvement Plan](../~docs/plans/performance-improvement-plan.md) | Multi-phase emulation and audio performance optimization roadmap |
 | [Hot Path Optimization Plan](../~docs/plans/hot-path-optimization-plan.md) | CPU/PPU hot-path micro-optimization plan and benchmark strategy |
 | [Debugger Performance Optimization Plan](../~docs/plans/debugger-performance-optimization.md) | Debugger pipeline overhead reduction and benchmark-driven fixes |

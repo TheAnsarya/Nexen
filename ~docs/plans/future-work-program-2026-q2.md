@@ -41,6 +41,8 @@ Acceptance criteria:
 
 Owner issue: [#695](https://github.com/TheAnsarya/Nexen/issues/695)
 
+Primary plan: [Atari 2600 Feasibility and Test Harness Plan](atari-2600-feasibility-and-harness-plan.md)
+
 Deliverables:
 
 - A detailed Atari 2600 feasibility report linked from [Long-Term Missing Platforms](long-term-missing-platforms.md).
@@ -56,6 +58,8 @@ Acceptance criteria:
 ### Milestone 3 - Sega Genesis Feasibility and Validation Path
 
 Owner issue: [#696](https://github.com/TheAnsarya/Nexen/issues/696)
+
+Primary plan: [Sega Genesis Architecture and Incremental Plan](genesis-architecture-and-incremental-plan.md)
 
 Deliverables:
 
