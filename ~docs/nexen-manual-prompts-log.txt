@@ -496,6 +496,46 @@ Update the `readme.md` and linked documentation to be comprehensive and accurate
 
 [all repos] did you make benchmarks and tests for all of the work you just did? do it! make more benchmarks and tests and make more issues and implement them; continue;
 
+[Nexen,poppy,pansy,peony] Make sure Nexen, poppy, pansy, and peony all cover the same game-systems (nes, snes, gb, lynx, etc) and if one of them supports a system, they should all support that system. If Nexen does not have the system, then only add the system to a long-term plan since emulation is a much larger job than the other three; make docs and issues epics and subissues and plans and chat/session logs and then impolement the work; continue;
+
+[Nexen] build the project and run it so we can test it, if it works we're going to build a release `1.4.1` in github as our current release does not have builds, only sources, and this is unacceptable, people have to be able to download and run the application, on windows and macos and linux, see Nexen issue #672: `https://github.com/TheAnsarya/Nexen/issues/672`; continue;
+
+[Nexen] update the `readme.md` with everything we have added up to now, and make sure all info is accurate, update release table, update docs about movies and tas; continue;
+
+[Nexen] update `https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.1` with a comprehensive release description; continue;
+
+[pansy] complete issues and keep working; continue; do all issues; go; continue;
+
+[Nexen] Let's fix github issue #674 `https://github.com/TheAnsarya/Nexen/issues/674` so research and make a plan and add it to the issue, and start by opening the latest nexen so I can test this, wait for my result (watch the log files), and then tryout and test fixes for this problem and implement the best fix; continue;
+
+--- steer
+The "Reset" menu option also causes a crash; continue;
+
+You fixed it for "power off"; The problem still exists in the "Reset" path; fix that; make and update issues and docs; continue;
+
+[Nexen] add a bunch of where-are-we logging on the Rest() code path, then open Nexen, let me test this issue #674, and then chedck the log and find how far we get before the crash and focus on that spot to fix the crash; continue;
+
+ok done, continue;
+
+ok done, continue;
+
+ok done, continue;
+
+run Nexen to test the Reset() code but run it in debug mode and attach to those processes and those messages and find where we crash? continue;
+
+ok done, continue;
+
+it crashed on step #2
+
+ok done
+
+[Nexen] reopen issue #674 with a comment that describes that the closure was a mistake since the Reset() problem was not fixed yet; Stop spiraling, instead find the issue now, focus on finding and fixing the reset crash issue, the c++ code should already have logging, add logs through the core code paths for reset and monitor the logs so we can find the exact spot of the crash; continue;
+
+[Nexen] What the fuck, it has been a couple days with this issue unsolved, just spiraling and wasting my time and resources; find a new approach to fixing the reset() crash and don't go that far down a rabbit hole, go step by step through the code tree or figure out why a reset isn't power-off/power-on, i guess it's a different signal, add logging and run nexen 100 times if that's helpful (don't end the session, just pause and wait for the crash/log), and find a god damned solution, you've wasted days on this; continue;
+
+ok
+
+
 
 
 
@@ -539,6 +579,8 @@ Update all four projects (Nexen, poppy, pansy, peony) to dotnet 11 and c#15 and 
 
 
 
+
+[Nexen] if nexen is working and great, then build a release `1.4.1` in github with macos/windows/linux builds from CI/CD as our current release (1.4.0) does not have builds, only sources, and this is unacceptable, people have to be able to download and run the application, on windows and macos and linux, see Nexen issue #672: `https://github.com/TheAnsarya/Nexen/issues/672`; continue;
 
 
 
