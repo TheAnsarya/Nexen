@@ -92,6 +92,14 @@ Status: Completed from deferred backlog (2026-03-17)
 	- `COMPAT_MATRIX_SUMMARY PASS=<n> FAIL=<n> DIGEST=<hash>`
 - Added focused tests in `Atari2600CompatibilityMatrixTests` covering deterministic digest stability and failure-path behavior for empty ROM entries.
 
+### Issue [#727](https://github.com/TheAnsarya/Nexen/issues/727)
+
+- Added performance gate harness path (`RunPerformanceGate`) for per-title budget checks following correctness gates.
+- Added machine-readable performance output lines:
+	- `PERF_RESULT <title> <PASS|FAIL> MAPPER=<mode> ELAPSED_US=<micros> BUDGET_US=<micros> DIGEST=<hash>`
+	- `PERF_GATE_SUMMARY PASS=<n> FAIL=<n> BUDGET_US=<micros> DIGEST=<hash>`
+- Added focused tests in `Atari2600PerformanceGateTests` for deterministic digest stability and strict-budget failure path behavior.
+
 Validation command used for promoted TIA work:
 
 ```powershell
@@ -108,6 +116,23 @@ Updated validation command after compatibility matrix integration:
 
 Result: 36 tests from 11 suites passed.
 
+Updated validation command after performance gate integration:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600* --gtest_brief=1
+```
+
+Result: 40 tests from 13 suites passed.
+
+Comprehensive regression validation:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_brief=1
+dotnet test --no-build -c Release
+```
+
+Result: 1681 native tests passed and 331 managed tests passed.
+
 ## Deferred Future-Work Linkage
 
 Status: Future Work only. Do not start these issues until explicitly scheduled.
@@ -118,6 +143,7 @@ Completed from this deferred set:
 - TIA render follow-through: [#722](https://github.com/TheAnsarya/Nexen/issues/722)
 - TIA audio follow-through: [#723](https://github.com/TheAnsarya/Nexen/issues/723)
 - Compatibility harness expansion: [#725](https://github.com/TheAnsarya/Nexen/issues/725)
+- Performance gate harness expansion: [#727](https://github.com/TheAnsarya/Nexen/issues/727)
 
 - Parent future-work epic: [#717](https://github.com/TheAnsarya/Nexen/issues/717)
 

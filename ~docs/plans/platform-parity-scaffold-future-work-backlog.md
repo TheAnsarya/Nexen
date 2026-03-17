@@ -14,6 +14,7 @@ Promoted and completed from backlog:
 - [#724](https://github.com/TheAnsarya/Nexen/issues/724): Behavior-accurate mapper follow-through (completed 2026-03-17).
 - [#725](https://github.com/TheAnsarya/Nexen/issues/725): ROM corpus compatibility matrix/checkpoint harness expansion (completed 2026-03-17).
 - [#726](https://github.com/TheAnsarya/Nexen/issues/726): Save-state serialization and restore determinism gates (completed 2026-03-17).
+- [#727](https://github.com/TheAnsarya/Nexen/issues/727): Performance gate execution after correctness stabilization (completed 2026-03-17).
 
 ## Purpose
 
@@ -49,7 +50,7 @@ Deferred child issues:
 | [#724](https://github.com/TheAnsarya/Nexen/issues/724) | Behavior-accurate mapper implementations (completed; promoted from deferred backlog) |
 | [#725](https://github.com/TheAnsarya/Nexen/issues/725) | ROM corpus compatibility harness and checkpoint reports (completed; promoted from deferred backlog) |
 | [#726](https://github.com/TheAnsarya/Nexen/issues/726) | Save-state serialization and determinism gates (completed; promoted from deferred backlog) |
-| [#727](https://github.com/TheAnsarya/Nexen/issues/727) | Performance gate execution after correctness stabilization |
+| [#727](https://github.com/TheAnsarya/Nexen/issues/727) | Performance gate execution after correctness stabilization (completed; promoted from deferred backlog) |
 
 ## Genesis Future-Work Tree
 

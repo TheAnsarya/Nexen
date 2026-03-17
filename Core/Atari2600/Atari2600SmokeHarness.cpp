@@ -330,3 +330,85 @@ Atari2600CompatibilityMatrixResult Atari2600SmokeHarness::RunCompatibilityMatrix
 	result.OutputLines.push_back(std::format("COMPAT_MATRIX_SUMMARY PASS={} FAIL={} DIGEST={}", result.PassCount, result.FailCount, result.Digest));
 	return result;
 }
+
+Atari2600PerformanceGateResult Atari2600SmokeHarness::RunPerformanceGate(Atari2600Console& console, const vector<Atari2600BaselineRomCase>& romSet, uint64_t budgetMicros) {
+	Atari2600PerformanceGateResult result = {};
+	result.BudgetMicros = budgetMicros;
+	result.Entries.reserve(romSet.size());
+
+	for (const Atari2600BaselineRomCase& romCase : romSet) {
+		Atari2600PerformanceGateEntry entry = {};
+		entry.Name = romCase.Name;
+
+		if (romCase.RomData.empty()) {
+			entry.Pass = false;
+			entry.MapperMode = "none";
+			entry.DeterministicDigest = ToHex(0);
+			result.FailCount++;
+			result.OutputLines.push_back(std::format("PERF_RESULT {} FAIL MAPPER={} ELAPSED_US=0 DIGEST={}", entry.Name, entry.MapperMode, entry.DeterministicDigest));
+			result.Entries.push_back(std::move(entry));
+			continue;
+		}
+
+		VirtualFile romFile(romCase.RomData.data(), romCase.RomData.size(), romCase.Name);
+		auto start = std::chrono::steady_clock::now();
+		LoadRomResult loadResult = console.LoadRom(romFile);
+
+		bool runPass = false;
+		string baselineDigest;
+		string timingDigest;
+		if (loadResult == LoadRomResult::Success) {
+			entry.MapperMode = console.DebugGetMapperMode();
+			Atari2600HarnessResult baseline = RunBaseline(console);
+			Atari2600TimingSpikeResult timing = RunTimingSpike(console, 12);
+			baselineDigest = baseline.Digest;
+			timingDigest = timing.Digest;
+			runPass = baseline.FailCount == 0 && timing.Stable;
+		} else {
+			entry.MapperMode = "load-fail";
+			baselineDigest = "0";
+			timingDigest = "0";
+		}
+
+		auto end = std::chrono::steady_clock::now();
+		entry.ElapsedMicros = (uint64_t)std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+		string deterministicInput = std::format("{}:{}:{}:{}", entry.Name, entry.MapperMode, baselineDigest, timingDigest);
+		uint64_t hash = 1469598103934665603ull;
+		for (uint8_t ch : deterministicInput) {
+			hash ^= ch;
+			hash *= 1099511628211ull;
+		}
+		entry.DeterministicDigest = ToHex(hash);
+
+		entry.Pass = runPass && entry.ElapsedMicros <= budgetMicros;
+		if (entry.Pass) {
+			result.PassCount++;
+		} else {
+			result.FailCount++;
+		}
+
+		result.OutputLines.push_back(std::format(
+			"PERF_RESULT {} {} MAPPER={} ELAPSED_US={} BUDGET_US={} DIGEST={}",
+			entry.Name,
+			entry.Pass ? "PASS" : "FAIL",
+			entry.MapperMode,
+			entry.ElapsedMicros,
+			budgetMicros,
+			entry.DeterministicDigest));
+		result.Entries.push_back(std::move(entry));
+	}
+
+	uint64_t matrixHash = 1469598103934665603ull;
+	for (const Atari2600PerformanceGateEntry& entry : result.Entries) {
+		string line = std::format("{}:{}:{}:{}", entry.Name, entry.Pass ? "PASS" : "FAIL", entry.MapperMode, entry.DeterministicDigest);
+		for (uint8_t ch : line) {
+			matrixHash ^= ch;
+			matrixHash *= 1099511628211ull;
+		}
+	}
+
+	result.Digest = ToHex(matrixHash);
+	result.OutputLines.push_back(std::format("PERF_GATE_SUMMARY PASS={} FAIL={} BUDGET_US={} DIGEST={}", result.PassCount, result.FailCount, result.BudgetMicros, result.Digest));
+	return result;
+}
