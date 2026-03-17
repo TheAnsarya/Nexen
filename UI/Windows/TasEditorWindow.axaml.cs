@@ -160,8 +160,8 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		Dispatcher.UIThread.Post(() => {
 			if (vm.IsPlaying) {
 				vm.PlaybackFrame++;
-				// Update UI less frequently for performance
-				if (frame % 10 == 0 || frame == movie.InputFrames.Count - 1) {
+				int nextFrame = vm.PlaybackFrame;
+				if (TasEditorViewModel.ShouldRefreshPlaybackUi(nextFrame, movie.InputFrames.Count, vm.PlaybackSpeed)) {
 					vm.SelectedFrameIndex = vm.PlaybackFrame;
 					vm.StatusMessage = $"Frame {vm.PlaybackFrame + 1} / {movie.InputFrames.Count}";
 				}

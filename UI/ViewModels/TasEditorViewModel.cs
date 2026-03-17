@@ -2175,6 +2175,37 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	#region Playback Controls
 
 	/// <summary>
+	/// Computes the UI refresh interval for playback updates based on effective frame rate.
+	/// 60 fps -> every frame, 120 fps -> every 2 frames, 240 fps -> every 4 frames.
+	/// </summary>
+	internal static int ComputePlaybackUiUpdateInterval(double playbackSpeed) {
+		const double baseFps = 60.0;
+		double effectiveFps = Math.Max(baseFps, baseFps * Math.Max(playbackSpeed, 0.0));
+		return Math.Max(1, (int)Math.Round(effectiveFps / baseFps, MidpointRounding.AwayFromZero));
+	}
+
+	/// <summary>
+	/// Determines whether playback UI should refresh for the provided next frame.
+	/// Always refreshes on the final frame to avoid visual frame skipping.
+	/// </summary>
+	internal static bool ShouldRefreshPlaybackUi(int nextFrame, int totalFrames, double playbackSpeed) {
+		if (totalFrames <= 0) {
+			return true;
+		}
+
+		if (nextFrame >= totalFrames - 1) {
+			return true;
+		}
+
+		int interval = ComputePlaybackUiUpdateInterval(playbackSpeed);
+		if (interval <= 1) {
+			return true;
+		}
+
+		return nextFrame % interval == 0;
+	}
+
+	/// <summary>
 	/// Toggles playback on/off.
 	/// </summary>
 	public void TogglePlayback() {
