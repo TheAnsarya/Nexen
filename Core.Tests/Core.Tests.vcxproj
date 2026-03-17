@@ -204,6 +204,9 @@
 		<ClCompile Include="Genesis\GenesisM68kBoundaryScaffoldTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="Genesis\GenesisMemoryMapOwnershipTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Genesis\GenesisVdpDmaScaffoldTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>

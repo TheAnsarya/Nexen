@@ -3,7 +3,34 @@
 
 GenesisPlatformBusStub::GenesisPlatformBusStub()
 	: _workRam(64 * 1024, 0),
+	  _io(0x20, 0),
 	  _vdpIo(0x20, 0) {
+}
+
+GenesisBusOwner GenesisPlatformBusStub::DecodeOwner(uint32_t address) const {
+	address &= 0xFFFFFF;
+
+	if (address < 0x400000) {
+		return GenesisBusOwner::Rom;
+	}
+
+	if (address >= 0xA00000 && address <= 0xA0FFFF) {
+		return GenesisBusOwner::Z80;
+	}
+
+	if (address >= 0xA10000 && address <= 0xA1001F) {
+		return GenesisBusOwner::Io;
+	}
+
+	if (address >= 0xC00000 && address <= 0xC0001F) {
+		return GenesisBusOwner::Vdp;
+	}
+
+	if (address >= 0xFF0000) {
+		return GenesisBusOwner::WorkRam;
+	}
+
+	return GenesisBusOwner::OpenBus;
 }
 
 void GenesisPlatformBusStub::LoadRom(const vector<uint8_t>& romData) {
@@ -15,68 +42,106 @@ void GenesisPlatformBusStub::LoadRom(const vector<uint8_t>& romData) {
 
 void GenesisPlatformBusStub::Reset() {
 	std::fill(_workRam.begin(), _workRam.end(), 0);
+	std::fill(_io.begin(), _io.end(), 0);
 	std::fill(_vdpIo.begin(), _vdpIo.end(), 0);
 	_z80WindowAccessed = false;
+	_ioWindowAccessed = false;
 	_vdpWindowAccessed = false;
 	_dmaRequested = false;
+	_romReadCount = 0;
+	_z80ReadCount = 0;
+	_z80WriteCount = 0;
+	_ioReadCount = 0;
+	_ioWriteCount = 0;
 	_vdpReadCount = 0;
 	_vdpWriteCount = 0;
+	_workRamReadCount = 0;
+	_workRamWriteCount = 0;
+	_openBusReadCount = 0;
+	_openBusWriteCount = 0;
 	_lastVdpAddress = 0;
 	_lastVdpValue = 0;
 }
 
 uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 	address &= 0xFFFFFF;
+	GenesisBusOwner owner = DecodeOwner(address);
 
-	if (address < 0x400000) {
-		if (_rom.empty()) {
+	switch (owner) {
+		case GenesisBusOwner::Rom:
+			_romReadCount++;
+			if (_rom.empty()) {
+				return 0xFF;
+			}
+			return _rom[address % _rom.size()];
+
+		case GenesisBusOwner::Z80:
+			_z80WindowAccessed = true;
+			_z80ReadCount++;
+			return 0;
+
+		case GenesisBusOwner::Io:
+			_ioWindowAccessed = true;
+			_ioReadCount++;
+			return _io[address & 0x1F];
+
+		case GenesisBusOwner::Vdp:
+			_vdpWindowAccessed = true;
+			_vdpReadCount++;
+			_lastVdpAddress = address;
+			_lastVdpValue = _vdpIo[address & 0x1F];
+			return _lastVdpValue;
+
+		case GenesisBusOwner::WorkRam:
+			_workRamReadCount++;
+			return _workRam[address & 0xFFFF];
+
+		case GenesisBusOwner::OpenBus:
+		default:
+			_openBusReadCount++;
 			return 0xFF;
-		}
-		return _rom[address % _rom.size()];
 	}
-
-	if (address >= 0xA00000 && address <= 0xA0FFFF) {
-		_z80WindowAccessed = true;
-		return 0;
-	}
-
-	if (address >= 0xC00000 && address <= 0xC0001F) {
-		_vdpWindowAccessed = true;
-		_vdpReadCount++;
-		_lastVdpAddress = address;
-		_lastVdpValue = _vdpIo[address & 0x1F];
-		return _lastVdpValue;
-	}
-
-	if (address >= 0xFF0000) {
-		return _workRam[address & 0xFFFF];
-	}
-
-	return 0;
 }
 
 void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 	address &= 0xFFFFFF;
+	GenesisBusOwner owner = DecodeOwner(address);
 
-	if (address >= 0xA00000 && address <= 0xA0FFFF) {
-		_z80WindowAccessed = true;
-		return;
-	}
+	switch (owner) {
+		case GenesisBusOwner::Rom:
+			return;
 
-	if (address >= 0xC00000 && address <= 0xC0001F) {
-		_vdpWindowAccessed = true;
-		_vdpWriteCount++;
-		_lastVdpAddress = address;
-		_lastVdpValue = value;
-		_vdpIo[address & 0x1F] = value;
-		if (address >= 0xC00004 && address <= 0xC00007 && (value & 0x80) != 0) {
-			_dmaRequested = true;
-		}
-		return;
-	}
+		case GenesisBusOwner::Z80:
+			_z80WindowAccessed = true;
+			_z80WriteCount++;
+			return;
 
-	if (address >= 0xFF0000) {
-		_workRam[address & 0xFFFF] = value;
+		case GenesisBusOwner::Io:
+			_ioWindowAccessed = true;
+			_ioWriteCount++;
+			_io[address & 0x1F] = value;
+			return;
+
+		case GenesisBusOwner::Vdp:
+			_vdpWindowAccessed = true;
+			_vdpWriteCount++;
+			_lastVdpAddress = address;
+			_lastVdpValue = value;
+			_vdpIo[address & 0x1F] = value;
+			if (address >= 0xC00004 && address <= 0xC00007 && (value & 0x80) != 0) {
+				_dmaRequested = true;
+			}
+			return;
+
+		case GenesisBusOwner::WorkRam:
+			_workRamWriteCount++;
+			_workRam[address & 0xFFFF] = value;
+			return;
+
+		case GenesisBusOwner::OpenBus:
+		default:
+			_openBusWriteCount++;
+			return;
 	}
 }
 

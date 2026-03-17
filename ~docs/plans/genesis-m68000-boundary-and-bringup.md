@@ -67,6 +67,17 @@ Status: Completed from deferred backlog (2026-03-17)
 	- interrupt vector dispatch,
 	- exception-state latching and stack pointer progression.
 
+### Issue [#729](https://github.com/TheAnsarya/Nexen/issues/729)
+
+- Expanded Genesis bus decode into explicit ownership routing for ROM, Z80 window, I/O window, VDP window, work RAM, and open-bus ranges.
+- Added deterministic ownership counters and access markers for read/write paths in `GenesisPlatformBusStub`.
+- Added `GenesisBusOwner` decode exposure (`GetOwnerForAddress`) for correctness-focused routing assertions.
+- Added focused tests in `GenesisMemoryMapOwnershipTests` to validate:
+	- address-window owner decode invariants,
+	- deterministic I/O window ownership behavior,
+	- open-bus read/write tracking and return semantics,
+	- 24-bit address wrap behavior for work RAM ownership.
+
 Validation commands:
 
 ```powershell
@@ -76,6 +87,12 @@ dotnet test --no-build -c Release
 ```
 
 Result: 9 Genesis tests passed; 1682 native tests passed; 331 managed tests passed.
+
+Updated validation result after memory-map ownership integration:
+
+- Focused Genesis tests: 13 tests from 4 suites passed.
+- Full native regression: 1686 tests from 129 suites passed.
+- Managed regression: 331 tests passed.
 
 ## Related Research
 

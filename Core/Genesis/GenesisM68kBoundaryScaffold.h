@@ -8,18 +8,40 @@ public:
 	virtual void WriteByte(uint32_t address, uint8_t value) = 0;
 };
 
+enum class GenesisBusOwner : uint8_t {
+	Rom = 0,
+	Z80 = 1,
+	Io = 2,
+	Vdp = 3,
+	WorkRam = 4,
+	OpenBus = 5
+};
+
 class GenesisPlatformBusStub final : public IGenesisM68kBus {
 private:
 	vector<uint8_t> _rom;
 	vector<uint8_t> _workRam;
+	vector<uint8_t> _io;
 	vector<uint8_t> _vdpIo;
 	bool _z80WindowAccessed = false;
+	bool _ioWindowAccessed = false;
 	bool _vdpWindowAccessed = false;
 	bool _dmaRequested = false;
+	uint32_t _romReadCount = 0;
+	uint32_t _z80ReadCount = 0;
+	uint32_t _z80WriteCount = 0;
+	uint32_t _ioReadCount = 0;
+	uint32_t _ioWriteCount = 0;
 	uint32_t _vdpReadCount = 0;
 	uint32_t _vdpWriteCount = 0;
+	uint32_t _workRamReadCount = 0;
+	uint32_t _workRamWriteCount = 0;
+	uint32_t _openBusReadCount = 0;
+	uint32_t _openBusWriteCount = 0;
 	uint32_t _lastVdpAddress = 0;
 	uint8_t _lastVdpValue = 0;
+
+	[[nodiscard]] GenesisBusOwner DecodeOwner(uint32_t address) const;
 
 public:
 	GenesisPlatformBusStub();
@@ -30,13 +52,24 @@ public:
 	void WriteByte(uint32_t address, uint8_t value) override;
 
 	[[nodiscard]] bool WasZ80WindowAccessed() const { return _z80WindowAccessed; }
+	[[nodiscard]] bool WasIoWindowAccessed() const { return _ioWindowAccessed; }
 	[[nodiscard]] bool WasVdpWindowAccessed() const { return _vdpWindowAccessed; }
 	[[nodiscard]] bool WasDmaRequested() const { return _dmaRequested; }
+	[[nodiscard]] uint32_t GetRomReadCount() const { return _romReadCount; }
+	[[nodiscard]] uint32_t GetZ80ReadCount() const { return _z80ReadCount; }
+	[[nodiscard]] uint32_t GetZ80WriteCount() const { return _z80WriteCount; }
+	[[nodiscard]] uint32_t GetIoReadCount() const { return _ioReadCount; }
+	[[nodiscard]] uint32_t GetIoWriteCount() const { return _ioWriteCount; }
 	[[nodiscard]] uint32_t GetVdpReadCount() const { return _vdpReadCount; }
 	[[nodiscard]] uint32_t GetVdpWriteCount() const { return _vdpWriteCount; }
+	[[nodiscard]] uint32_t GetWorkRamReadCount() const { return _workRamReadCount; }
+	[[nodiscard]] uint32_t GetWorkRamWriteCount() const { return _workRamWriteCount; }
+	[[nodiscard]] uint32_t GetOpenBusReadCount() const { return _openBusReadCount; }
+	[[nodiscard]] uint32_t GetOpenBusWriteCount() const { return _openBusWriteCount; }
 	[[nodiscard]] uint32_t GetLastVdpAddress() const { return _lastVdpAddress; }
 	[[nodiscard]] uint8_t GetLastVdpValue() const { return _lastVdpValue; }
 	[[nodiscard]] uint32_t GetWorkRamSize() const { return (uint32_t)_workRam.size(); }
+	[[nodiscard]] GenesisBusOwner GetOwnerForAddress(uint32_t address) const { return DecodeOwner(address); }
 };
 
 class GenesisM68kCpuStub {
