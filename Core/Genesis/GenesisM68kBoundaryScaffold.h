@@ -45,6 +45,18 @@ private:
 	uint32_t _programCounter = 0;
 	uint64_t _cycleCount = 0;
 	uint8_t _interruptLevel = 0;
+	uint16_t _statusRegister = 0x2000;
+	uint32_t _supervisorStackPointer = 0xFFFFFE;
+	uint32_t _lastExceptionVectorAddress = 0;
+	uint32_t _interruptSequenceCount = 0;
+	uint8_t _instructionCyclesRemaining = 0;
+
+	[[nodiscard]] uint16_t ReadWord(uint32_t address) const;
+	[[nodiscard]] uint32_t ReadLong(uint32_t address) const;
+	void WriteWord(uint32_t address, uint16_t value);
+	void WriteLong(uint32_t address, uint32_t value);
+	void BeginInterruptSequence(uint8_t level);
+	void BeginNextInstruction();
 
 public:
 	void AttachBus(IGenesisM68kBus* bus);
@@ -55,6 +67,10 @@ public:
 	[[nodiscard]] uint32_t GetProgramCounter() const { return _programCounter; }
 	[[nodiscard]] uint64_t GetCycleCount() const { return _cycleCount; }
 	[[nodiscard]] uint8_t GetInterruptLevel() const { return _interruptLevel; }
+	[[nodiscard]] uint16_t GetStatusRegister() const { return _statusRegister; }
+	[[nodiscard]] uint32_t GetSupervisorStackPointer() const { return _supervisorStackPointer; }
+	[[nodiscard]] uint32_t GetLastExceptionVectorAddress() const { return _lastExceptionVectorAddress; }
+	[[nodiscard]] uint32_t GetInterruptSequenceCount() const { return _interruptSequenceCount; }
 };
 
 class GenesisM68kBoundaryScaffold {

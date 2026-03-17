@@ -84,10 +84,92 @@ void GenesisM68kCpuStub::AttachBus(IGenesisM68kBus* bus) {
 	_bus = bus;
 }
 
+uint16_t GenesisM68kCpuStub::ReadWord(uint32_t address) const {
+	if (!_bus) {
+		return 0;
+	}
+
+	uint8_t hi = _bus->ReadByte(address & 0xFFFFFF);
+	uint8_t lo = _bus->ReadByte((address + 1) & 0xFFFFFF);
+	return (uint16_t)(((uint16_t)hi << 8) | lo);
+}
+
+uint32_t GenesisM68kCpuStub::ReadLong(uint32_t address) const {
+	uint16_t hi = ReadWord(address);
+	uint16_t lo = ReadWord(address + 2);
+	return ((uint32_t)hi << 16) | lo;
+}
+
+void GenesisM68kCpuStub::WriteWord(uint32_t address, uint16_t value) {
+	if (!_bus) {
+		return;
+	}
+
+	address &= 0xFFFFFF;
+	_bus->WriteByte(address, (uint8_t)((value >> 8) & 0xFF));
+	_bus->WriteByte((address + 1) & 0xFFFFFF, (uint8_t)(value & 0xFF));
+}
+
+void GenesisM68kCpuStub::WriteLong(uint32_t address, uint32_t value) {
+	WriteWord(address, (uint16_t)((value >> 16) & 0xFFFF));
+	WriteWord(address + 2, (uint16_t)(value & 0xFFFF));
+}
+
+void GenesisM68kCpuStub::BeginInterruptSequence(uint8_t level) {
+	uint32_t vectorAddress = (uint32_t)(24 + level) * 4u;
+	uint16_t previousStatus = _statusRegister;
+	uint32_t previousPc = _programCounter;
+
+	_supervisorStackPointer = (_supervisorStackPointer - 4) & 0xFFFFFF;
+	WriteLong(_supervisorStackPointer, previousPc);
+	_supervisorStackPointer = (_supervisorStackPointer - 2) & 0xFFFFFF;
+	WriteWord(_supervisorStackPointer, previousStatus);
+
+	_statusRegister = (uint16_t)((previousStatus | 0x2000) & 0xF8FF);
+	_statusRegister = (uint16_t)(_statusRegister | ((uint16_t)level << 8));
+
+	_programCounter = ReadLong(vectorAddress) & 0xFFFFFF;
+	_lastExceptionVectorAddress = vectorAddress;
+	_interruptSequenceCount++;
+	_interruptLevel = 0;
+	_instructionCyclesRemaining = 44;
+}
+
+void GenesisM68kCpuStub::BeginNextInstruction() {
+	uint8_t activeMask = (uint8_t)((_statusRegister >> 8) & 0x7);
+	if (_interruptLevel > activeMask) {
+		BeginInterruptSequence(_interruptLevel);
+		return;
+	}
+
+	uint16_t opcode = ReadWord(_programCounter);
+	uint8_t instructionSize = 2;
+	uint8_t instructionCycles = 4;
+
+	if (opcode == 0x4E71) {
+		instructionSize = 2;
+		instructionCycles = 4;
+	} else if ((opcode & 0xF100) == 0x7000) {
+		instructionSize = 2;
+		instructionCycles = 4;
+	} else {
+		instructionSize = 2;
+		instructionCycles = 4;
+	}
+
+	_programCounter = (_programCounter + instructionSize) & 0xFFFFFF;
+	_instructionCyclesRemaining = instructionCycles;
+}
+
 void GenesisM68kCpuStub::Reset() {
 	_programCounter = 0;
 	_cycleCount = 0;
 	_interruptLevel = 0;
+	_statusRegister = 0x2000;
+	_supervisorStackPointer = 0xFFFFFE;
+	_lastExceptionVectorAddress = 0;
+	_interruptSequenceCount = 0;
+	_instructionCyclesRemaining = 0;
 }
 
 void GenesisM68kCpuStub::StepCycles(uint32_t cycles) {
@@ -96,9 +178,13 @@ void GenesisM68kCpuStub::StepCycles(uint32_t cycles) {
 	}
 
 	for (uint32_t i = 0; i < cycles; i++) {
-		volatile uint8_t opcodeByte = _bus->ReadByte(_programCounter);
-		(void)opcodeByte;
-		_programCounter = (_programCounter + 2) & 0xFFFFFF;
+		if (_instructionCyclesRemaining == 0) {
+			BeginNextInstruction();
+		}
+
+		if (_instructionCyclesRemaining > 0) {
+			_instructionCyclesRemaining--;
+		}
 		_cycleCount++;
 	}
 }
