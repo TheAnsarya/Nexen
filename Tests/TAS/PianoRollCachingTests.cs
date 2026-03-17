@@ -13,53 +13,51 @@ public class PianoRollCachingTests {
 	#region Cache Invalidation Tests
 
 	[Fact]
-	public void FormattedTextCache_ShouldInvalidateOnZoomChange() {
+	public void FormattedTextCache_ShouldRetainRecentZoomBuckets() {
 		// Arrange
-		var cache = new Dictionary<string, object>();
-		double cachedZoom = 1.0;
-		double currentZoom = 1.0;
+		var caches = new Dictionary<double, Dictionary<string, object>> {
+			[1.0] = new Dictionary<string, object> {
+				["A"] = "text_A_at_zoom_1.0"
+			}
+		};
 
-		// Populate cache
-		cache["A"] = "text_A_at_zoom_1.0";
-		cache["B"] = "text_B_at_zoom_1.0";
-
-		// Act - zoom changes
-		currentZoom = 2.0;
-		bool shouldInvalidate = cachedZoom != currentZoom;
-
-		if (shouldInvalidate) {
-			cache.Clear();
-			cachedZoom = currentZoom;
-		}
+		// Act - add a second zoom bucket
+		caches[2.0] = new Dictionary<string, object> {
+			["A"] = "text_A_at_zoom_2.0"
+		};
 
 		// Assert
-		Assert.Empty(cache);
-		Assert.Equal(2.0, cachedZoom);
+		Assert.Equal(2, caches.Count);
+		Assert.True(caches.ContainsKey(1.0));
+		Assert.True(caches.ContainsKey(2.0));
 	}
 
 	[Fact]
-	public void FormattedTextCache_ShouldNotInvalidateIfZoomSame() {
+	public void FormattedTextCache_ShouldEvictOldestZoomBucketWhenOverLimit() {
 		// Arrange
-		var cache = new Dictionary<string, object>();
-		double cachedZoom = 1.0;
-		double currentZoom = 1.0;
+		const int maxZoomBuckets = 3;
+		var caches = new Dictionary<double, Dictionary<string, object>> {
+			[1.0] = new Dictionary<string, object>(),
+			[1.25] = new Dictionary<string, object>(),
+			[1.5] = new Dictionary<string, object>()
+		};
+		var order = new LinkedList<double>(new[] { 1.0, 1.25, 1.5 });
 
-		// Populate cache
-		cache["A"] = "text_A";
-		cache["B"] = "text_B";
-
-		// Act - zoom stays same
-		bool shouldInvalidate = cachedZoom != currentZoom;
-
-		if (shouldInvalidate) {
-			cache.Clear();
-			cachedZoom = currentZoom;
+		// Act - add one more bucket, evict oldest
+		caches[2.0] = new Dictionary<string, object>();
+		order.AddLast(2.0);
+		while (caches.Count > maxZoomBuckets) {
+			double oldest = order.First!.Value;
+			order.RemoveFirst();
+			caches.Remove(oldest);
 		}
 
-		// Assert - cache preserved
-		Assert.Equal(2, cache.Count);
-		Assert.True(cache.ContainsKey("A"));
-		Assert.True(cache.ContainsKey("B"));
+		// Assert
+		Assert.Equal(maxZoomBuckets, caches.Count);
+		Assert.False(caches.ContainsKey(1.0));
+		Assert.True(caches.ContainsKey(1.25));
+		Assert.True(caches.ContainsKey(1.5));
+		Assert.True(caches.ContainsKey(2.0));
 	}
 
 	#endregion
@@ -71,21 +69,40 @@ public class PianoRollCachingTests {
 		// Arrange
 		const int maxCacheSize = 200;
 		var cache = new Dictionary<int, string>();
+		var lruOrder = new LinkedList<int>();
+		var lruNodes = new Dictionary<int, LinkedListNode<int>>();
+
+		void TouchFrame(int frame) {
+			if (lruNodes.TryGetValue(frame, out var existing)) {
+				lruOrder.Remove(existing);
+			}
+			lruNodes[frame] = lruOrder.AddLast(frame);
+		}
+
+		void AddFrame(int frame) {
+			cache[frame] = $"frame_{frame}";
+			TouchFrame(frame);
+			while (cache.Count > maxCacheSize) {
+				int oldest = lruOrder.First!.Value;
+				lruOrder.RemoveFirst();
+				lruNodes.Remove(oldest);
+				cache.Remove(oldest);
+			}
+		}
 
 		// Fill cache to limit
 		for (int i = 0; i < maxCacheSize; i++) {
-			cache[i] = $"frame_{i}";
+			AddFrame(i);
 		}
 
-		// Act - add one more, should trigger prune
+		// Act - add one more, should evict oldest only
 		int newFrame = maxCacheSize;
-		if (cache.Count >= maxCacheSize) {
-			cache.Clear();
-		}
-		cache[newFrame] = $"frame_{newFrame}";
+		AddFrame(newFrame);
 
-		// Assert - cache was cleared and only has new entry
-		Assert.Single(cache);
+		// Assert
+		Assert.Equal(maxCacheSize, cache.Count);
+		Assert.False(cache.ContainsKey(0));
+		Assert.True(cache.ContainsKey(1));
 		Assert.True(cache.ContainsKey(newFrame));
 	}
 

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -171,15 +173,26 @@ public sealed class PianoRollControl : Control {
 	private static readonly Typeface BoldTypeface = new("Segoe UI", FontStyle.Normal, FontWeight.Bold);
 	private static readonly Typeface NormalTypeface = new("Segoe UI");
 
-	// Cached FormattedText for button labels (fixed set, can be cached for current zoom)
-	private Dictionary<string, FormattedText>? _buttonLabelCache;
-	private double _buttonLabelCacheZoom;
+	// Keep several zoom buckets to avoid expensive full cache clears on frequent zoom toggles.
+	private readonly Dictionary<double, Dictionary<string, FormattedText>> _buttonLabelCaches = new();
+	private readonly LinkedList<double> _buttonLabelZoomOrder = new();
+	private readonly Dictionary<double, LinkedListNode<double>> _buttonLabelZoomNodes = new();
 
-	// Cached FormattedText for frame numbers (LRU cache for visible frames)
-	private readonly Dictionary<int, FormattedText> _frameNumberCache = new();
-	private readonly List<int> _evictionKeys = new();
-	private double _frameNumberCacheZoom;
+	private readonly Dictionary<double, FrameNumberTextCache> _frameNumberCaches = new();
+	private readonly LinkedList<double> _frameNumberZoomOrder = new();
+	private readonly Dictionary<double, LinkedListNode<double>> _frameNumberZoomNodes = new();
+	private readonly object _frameNumberCacheLock = new();
+	private int _framePrefetchToken;
+
 	private const int MaxFrameNumberCacheSize = 200;
+	private const int MaxZoomCacheSize = 3;
+	private const int FramePrefetchBatchSize = 64;
+
+	private sealed class FrameNumberTextCache {
+		public Dictionary<int, FormattedText> Items { get; } = new();
+		public LinkedList<int> LruOrder { get; } = new();
+		public Dictionary<int, LinkedListNode<int>> LruNodes { get; } = new();
+	}
 
 	#endregion
 
@@ -236,16 +249,7 @@ public sealed class PianoRollControl : Control {
 
 	private void DrawLaneHeaders(DrawingContext context, IReadOnlyList<string> buttons, int cellHeight) {
 		var textBrush = Brushes.Black;
-
-		// Invalidate cache if zoom changed
-		if (_buttonLabelCache is null || _buttonLabelCacheZoom != ZoomLevel) {
-			if (_buttonLabelCache is null) {
-				_buttonLabelCache = new Dictionary<string, FormattedText>();
-			} else {
-				_buttonLabelCache.Clear();
-			}
-			_buttonLabelCacheZoom = ZoomLevel;
-		}
+		var cache = GetOrCreateButtonLabelCache(ZoomLevel);
 
 		for (int i = 0; i < buttons.Count; i++) {
 			var rect = new Rect(0, HeaderHeight + i * cellHeight, LaneHeaderWidth, cellHeight);
@@ -253,7 +257,7 @@ public sealed class PianoRollControl : Control {
 			context.DrawRectangle(GrayBorderPen, rect);
 
 			// Get or create cached FormattedText
-			if (!_buttonLabelCache.TryGetValue(buttons[i], out var text)) {
+			if (!cache.TryGetValue(buttons[i], out var text)) {
 				text = new FormattedText(
 					buttons[i],
 					System.Globalization.CultureInfo.CurrentCulture,
@@ -262,7 +266,7 @@ public sealed class PianoRollControl : Control {
 					10 * ZoomLevel,
 					textBrush
 				);
-				_buttonLabelCache[buttons[i]] = text;
+				cache[buttons[i]] = text;
 			}
 
 			var textX = rect.X + (rect.Width - text.Width) / 2;
@@ -273,12 +277,7 @@ public sealed class PianoRollControl : Control {
 
 	private void DrawFrameHeaders(DrawingContext context, Rect bounds, int cellWidth) {
 		var textBrush = Brushes.Black;
-
-		// Invalidate cache if zoom changed
-		if (_frameNumberCacheZoom != ZoomLevel) {
-			_frameNumberCache.Clear();
-			_frameNumberCacheZoom = ZoomLevel;
-		}
+		var cache = GetOrCreateFrameNumberCache(ZoomLevel);
 
 		int visibleFrames = (int)((bounds.Width - LaneHeaderWidth) / cellWidth) + 1;
 
@@ -292,42 +291,172 @@ public sealed class PianoRollControl : Control {
 
 			// Only show frame numbers at intervals
 			if (frame % 10 == 0 || ZoomLevel >= 2.0) {
-				// Get or create cached FormattedText
-				if (!_frameNumberCache.TryGetValue(frame, out var text)) {
-					// Evict entries outside visible range instead of clearing all
-					if (_frameNumberCache.Count >= MaxFrameNumberCacheSize) {
-						int visibleEnd = ScrollOffset + visibleFrames;
-						_evictionKeys.Clear();
-						foreach (var k in _frameNumberCache.Keys) {
-							if (k < ScrollOffset - visibleFrames || k > visibleEnd + visibleFrames) {
-								_evictionKeys.Add(k);
-							}
-						}
-						foreach (var key in _evictionKeys) {
-							_frameNumberCache.Remove(key);
-						}
-
-						// If still over limit, clear entirely as fallback
-						if (_frameNumberCache.Count >= MaxFrameNumberCacheSize) {
-							_frameNumberCache.Clear();
-						}
+				FormattedText text;
+				lock (_frameNumberCacheLock) {
+					if (!cache.Items.TryGetValue(frame, out text!)) {
+						text = new FormattedText(
+							frame.ToString(),
+							System.Globalization.CultureInfo.CurrentCulture,
+							FlowDirection.LeftToRight,
+							NormalTypeface,
+							8 * ZoomLevel,
+							textBrush
+						);
+						AddOrUpdateFrameText(cache, frame, text);
+					} else {
+						TouchFrameText(cache, frame);
 					}
-
-					text = new FormattedText(
-						frame.ToString(),
-						System.Globalization.CultureInfo.CurrentCulture,
-						FlowDirection.LeftToRight,
-						NormalTypeface,
-						8 * ZoomLevel,
-						textBrush
-					);
-					_frameNumberCache[frame] = text;
 				}
 
 				var textX = rect.X + (rect.Width - text.Width) / 2;
 				context.DrawText(text, new Point(textX, (HeaderHeight - text.Height) / 2));
 			}
 		}
+
+		QueueFrameTextPrefetch(ScrollOffset, visibleFrames, ZoomLevel);
+	}
+
+	private void QueueFrameTextPrefetch(int scrollOffset, int visibleFrames, double zoom) {
+		var frames = Frames;
+		if (frames is null || frames.Count == 0) {
+			return;
+		}
+
+		int start = Math.Max(0, scrollOffset - visibleFrames);
+		int end = Math.Min(frames.Count - 1, scrollOffset + (visibleFrames * 2));
+		if (start >= end) {
+			return;
+		}
+
+		int token = Interlocked.Increment(ref _framePrefetchToken);
+		Task.Run(() => PrefetchFrameText(token, start, end, zoom));
+	}
+
+	private void PrefetchFrameText(int token, int start, int end, double zoom) {
+		if (token != Volatile.Read(ref _framePrefetchToken)) {
+			return;
+		}
+
+		var pending = new List<int>(FramePrefetchBatchSize);
+		var cache = GetOrCreateFrameNumberCache(zoom);
+
+		lock (_frameNumberCacheLock) {
+			for (int frame = start; frame <= end && pending.Count < FramePrefetchBatchSize; frame++) {
+				if (frame % 10 != 0 && zoom < 2.0) {
+					continue;
+				}
+
+				if (!cache.Items.ContainsKey(frame)) {
+					pending.Add(frame);
+				}
+			}
+		}
+
+		if (pending.Count == 0 || token != Volatile.Read(ref _framePrefetchToken)) {
+			return;
+		}
+
+		var prepared = new List<(int Frame, FormattedText Text)>(pending.Count);
+		foreach (int frame in pending) {
+			prepared.Add((frame, new FormattedText(
+				frame.ToString(),
+				System.Globalization.CultureInfo.CurrentCulture,
+				FlowDirection.LeftToRight,
+				NormalTypeface,
+				8 * zoom,
+				Brushes.Black
+			)));
+		}
+
+		if (token != Volatile.Read(ref _framePrefetchToken)) {
+			return;
+		}
+
+		bool added = false;
+		lock (_frameNumberCacheLock) {
+			foreach (var (frame, text) in prepared) {
+				if (!cache.Items.ContainsKey(frame)) {
+					AddOrUpdateFrameText(cache, frame, text);
+					added = true;
+				}
+			}
+		}
+
+		if (added) {
+			Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
+		}
+	}
+
+	private Dictionary<string, FormattedText> GetOrCreateButtonLabelCache(double zoom) {
+		double zoomKey = NormalizeZoom(zoom);
+		if (!_buttonLabelCaches.TryGetValue(zoomKey, out var cache)) {
+			cache = new Dictionary<string, FormattedText>();
+			_buttonLabelCaches[zoomKey] = cache;
+		}
+
+		TouchZoomEntry(zoomKey, _buttonLabelZoomOrder, _buttonLabelZoomNodes);
+		if (_buttonLabelCaches.Count > MaxZoomCacheSize && _buttonLabelZoomOrder.First is not null) {
+			double evictZoom = _buttonLabelZoomOrder.First.Value;
+			_buttonLabelZoomOrder.RemoveFirst();
+			_buttonLabelZoomNodes.Remove(evictZoom);
+			_buttonLabelCaches.Remove(evictZoom);
+		}
+
+		return cache;
+	}
+
+	private FrameNumberTextCache GetOrCreateFrameNumberCache(double zoom) {
+		double zoomKey = NormalizeZoom(zoom);
+		lock (_frameNumberCacheLock) {
+			if (!_frameNumberCaches.TryGetValue(zoomKey, out var cache)) {
+				cache = new FrameNumberTextCache();
+				_frameNumberCaches[zoomKey] = cache;
+			}
+
+			TouchZoomEntry(zoomKey, _frameNumberZoomOrder, _frameNumberZoomNodes);
+			if (_frameNumberCaches.Count > MaxZoomCacheSize && _frameNumberZoomOrder.First is not null) {
+				double evictZoom = _frameNumberZoomOrder.First.Value;
+				_frameNumberZoomOrder.RemoveFirst();
+				_frameNumberZoomNodes.Remove(evictZoom);
+				_frameNumberCaches.Remove(evictZoom);
+			}
+
+			return cache;
+		}
+	}
+
+	private static void TouchZoomEntry(double zoomKey, LinkedList<double> order, Dictionary<double, LinkedListNode<double>> nodes) {
+		if (nodes.TryGetValue(zoomKey, out var existing)) {
+			order.Remove(existing);
+			nodes[zoomKey] = order.AddLast(zoomKey);
+		} else {
+			nodes[zoomKey] = order.AddLast(zoomKey);
+		}
+	}
+
+	private static void AddOrUpdateFrameText(FrameNumberTextCache cache, int frame, FormattedText text) {
+		cache.Items[frame] = text;
+		TouchFrameText(cache, frame);
+
+		while (cache.Items.Count > MaxFrameNumberCacheSize && cache.LruOrder.First is not null) {
+			int oldest = cache.LruOrder.First.Value;
+			cache.LruOrder.RemoveFirst();
+			cache.LruNodes.Remove(oldest);
+			cache.Items.Remove(oldest);
+		}
+	}
+
+	private static void TouchFrameText(FrameNumberTextCache cache, int frame) {
+		if (cache.LruNodes.TryGetValue(frame, out var existing)) {
+			cache.LruOrder.Remove(existing);
+			cache.LruNodes[frame] = cache.LruOrder.AddLast(frame);
+		} else {
+			cache.LruNodes[frame] = cache.LruOrder.AddLast(frame);
+		}
+	}
+
+	private static double NormalizeZoom(double zoom) {
+		return Math.Round(zoom, 3);
 	}
 
 	private void DrawGrid(DrawingContext context, Rect bounds, IReadOnlyList<string> buttons, int cellWidth, int cellHeight) {
