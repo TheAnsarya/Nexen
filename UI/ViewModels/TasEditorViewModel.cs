@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Nexen.Config;
 using Nexen.Config.Shortcuts;
 using Nexen.Controls;
@@ -95,6 +96,12 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// <summary>Gets or sets whether playback is active.</summary>
 	[Reactive] public bool IsPlaying { get; set; }
 
+	/// <summary>Gets or sets whether TAS auto-save is enabled.</summary>
+	[Reactive] public bool AutoSaveEnabled { get; set; } = true;
+
+	/// <summary>Gets or sets the TAS auto-save interval in minutes.</summary>
+	[Reactive] public int AutoSaveIntervalMinutes { get; set; } = 5;
+
 	/// <summary>Gets or sets the current playback frame.</summary>
 	[Reactive] public int PlaybackFrame { get; set; }
 
@@ -161,6 +168,9 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	private int _clipboardStartIndex;
 	private IMovieConverter? _currentConverter;
 	private Windows.TasEditorWindow? _window;
+	private DispatcherTimer? _autoSaveTimer;
+	private bool _isAutoSaving;
+	private Func<string, System.Threading.Tasks.Task<DialogResult>>? _recoveryPromptOverride;
 
 	/// <summary>Gets the greenzone manager for savestate management.</summary>
 	public GreenzoneManager Greenzone { get; } = new();
@@ -240,7 +250,17 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		AddDisposable(this.WhenAnyValue(x => x.FilePath, x => x.HasUnsavedChanges).Subscribe(_ => UpdateWindowTitle()));
 		AddDisposable(this.WhenAnyValue(x => x.CurrentLayout).Subscribe(_ => UpdateControllerButtons()));
 		AddDisposable(this.WhenAnyValue(x => x.SelectedFrameIndex).Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedFrameIsLag))));
+		AddDisposable(this.WhenAnyValue(x => x.AutoSaveEnabled).Subscribe(_ => RestartAutoSaveTimer()));
+		AddDisposable(this.WhenAnyValue(x => x.AutoSaveIntervalMinutes).Subscribe(minutes => {
+			int clamped = Math.Clamp(minutes, 1, 60);
+			if (minutes != clamped) {
+				AutoSaveIntervalMinutes = clamped;
+				return;
+			}
+			RestartAutoSaveTimer();
+		}));
 		UpdateControllerButtons();
+		RestartAutoSaveTimer();
 	}
 
 	/// <summary>
@@ -581,6 +601,10 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// </summary>
 	public async System.Threading.Tasks.Task LoadMovieAsync(string path) {
 		try {
+			if (await TryRecoverAutoSaveAsync(path)) {
+				return;
+			}
+
 			var format = MovieConverterRegistry.DetectFormat(path);
 			var converter = MovieConverterRegistry.GetConverter(format);
 
@@ -616,6 +640,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		try {
 			await using var stream = File.Create(FilePath);
 			await _currentConverter.WriteAsync(Movie, stream);
+			DeleteAutoSaveFile(FilePath);
 			HasUnsavedChanges = false;
 			StatusMessage = $"Saved {Movie.InputFrames.Count:N0} frames to {Path.GetFileName(FilePath)}";
 		} catch (Exception ex) {
@@ -651,11 +676,134 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 				await converter.WriteAsync(Movie, stream);
 				FilePath = path;
 				_currentConverter = converter;
+				DeleteAutoSaveFile(path);
 				HasUnsavedChanges = false;
 				StatusMessage = $"Saved {Movie.InputFrames.Count:N0} frames to {Path.GetFileName(path)}";
 			} catch (Exception ex) {
 				StatusMessage = $"Error saving file: {ex.Message}";
 			}
+		}
+	}
+
+	private void RestartAutoSaveTimer() {
+		_autoSaveTimer?.Stop();
+		if (!AutoSaveEnabled) {
+			return;
+		}
+
+		_autoSaveTimer ??= new DispatcherTimer();
+		_autoSaveTimer.Interval = TimeSpan.FromMinutes(Math.Clamp(AutoSaveIntervalMinutes, 1, 60));
+		_autoSaveTimer.Tick -= OnAutoSaveTimerTick;
+		_autoSaveTimer.Tick += OnAutoSaveTimerTick;
+		_autoSaveTimer.Start();
+	}
+
+	private async void OnAutoSaveTimerTick(object? sender, EventArgs e) {
+		try {
+			await TryAutoSaveAsync();
+		} catch {
+			// Keep timer alive even if one auto-save attempt fails.
+		}
+	}
+
+	internal static string BuildAutoSavePath(string moviePath) {
+		string dir = Path.GetDirectoryName(moviePath) ?? ".";
+		string name = Path.GetFileNameWithoutExtension(moviePath);
+		string ext = Path.GetExtension(moviePath);
+		return Path.Combine(dir, $"{name}.autosave{ext}");
+	}
+
+	internal bool ShouldAutoSaveNow() {
+		return AutoSaveEnabled
+			&& !IsPlaying
+			&& HasUnsavedChanges
+			&& Movie is not null
+			&& _currentConverter?.CanWrite == true
+			&& !string.IsNullOrWhiteSpace(FilePath)
+			&& !_isAutoSaving;
+	}
+
+	internal async System.Threading.Tasks.Task<bool> TryAutoSaveAsync() {
+		if (!ShouldAutoSaveNow() || Movie is null || _currentConverter is null || string.IsNullOrWhiteSpace(FilePath)) {
+			return false;
+		}
+
+		string autoSavePath = BuildAutoSavePath(FilePath);
+		try {
+			_isAutoSaving = true;
+			string? directory = Path.GetDirectoryName(autoSavePath);
+			if (!string.IsNullOrEmpty(directory)) {
+				Directory.CreateDirectory(directory);
+			}
+
+			await using var stream = File.Create(autoSavePath);
+			await _currentConverter.WriteAsync(Movie, stream);
+			StatusMessage = $"Auto-saved snapshot to {Path.GetFileName(autoSavePath)}";
+			return true;
+		} catch (Exception ex) {
+			StatusMessage = $"Auto-save failed: {ex.Message}";
+			return false;
+		} finally {
+			_isAutoSaving = false;
+		}
+	}
+
+	internal static bool ShouldPromptAutoSaveRecovery(string moviePath, string autoSavePath) {
+		if (!File.Exists(autoSavePath)) {
+			return false;
+		}
+
+		if (!File.Exists(moviePath)) {
+			return true;
+		}
+
+		DateTime autoSaveTime = File.GetLastWriteTimeUtc(autoSavePath);
+		DateTime movieTime = File.GetLastWriteTimeUtc(moviePath);
+		return autoSaveTime >= movieTime;
+	}
+
+	internal async System.Threading.Tasks.Task<bool> TryRecoverAutoSaveAsync(string path) {
+		string autoSavePath = BuildAutoSavePath(path);
+		if (!ShouldPromptAutoSaveRecovery(path, autoSavePath)) {
+			return false;
+		}
+
+		DialogResult result = _recoveryPromptOverride is not null
+			? await _recoveryPromptOverride(autoSavePath)
+			: await MessageBox.Show(
+				_window,
+				$"An autosave snapshot was found for this movie. Recover it now?\n\nSnapshot: {Path.GetFileName(autoSavePath)}",
+				"TAS Editor Recovery",
+				MessageBoxButtons.YesNo,
+				MessageBoxIcon.Question);
+
+		if (result != DialogResult.Yes) {
+			return false;
+		}
+
+		var format = MovieConverterRegistry.DetectFormat(path);
+		var converter = MovieConverterRegistry.GetConverter(format);
+		if (converter is null || !converter.CanRead) {
+			return false;
+		}
+
+		await using var stream = File.OpenRead(autoSavePath);
+		Movie = await converter.ReadAsync(stream);
+		FilePath = path;
+		_currentConverter = converter;
+		HasUnsavedChanges = true;
+		StatusMessage = $"Recovered autosave snapshot from {Path.GetFileName(autoSavePath)}";
+		return true;
+	}
+
+	internal void SetRecoveryPromptOverride(Func<string, System.Threading.Tasks.Task<DialogResult>>? prompt) {
+		_recoveryPromptOverride = prompt;
+	}
+
+	private static void DeleteAutoSaveFile(string path) {
+		string autoSavePath = BuildAutoSavePath(path);
+		if (File.Exists(autoSavePath)) {
+			File.Delete(autoSavePath);
 		}
 	}
 
@@ -2599,6 +2747,13 @@ tas.finishSearch(true) -- Load best result</pre>
 	};
 
 	#endregion
+
+	protected override void DisposeView() {
+		if (_autoSaveTimer is not null) {
+			_autoSaveTimer.Tick -= OnAutoSaveTimerTick;
+			_autoSaveTimer.Stop();
+		}
+	}
 
 	private void UpdateWindowTitle() {
 		string title = "TAS Editor";

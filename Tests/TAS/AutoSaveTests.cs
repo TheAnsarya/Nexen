@@ -1,4 +1,7 @@
+using System.Reflection;
 using Nexen.MovieConverter;
+using Nexen.ViewModels;
+using Nexen.Windows;
 using Xunit;
 
 namespace Nexen.Tests.TAS;
@@ -267,6 +270,223 @@ public class AutoSaveTests {
 		bool autoSaveEnabled = false;
 		bool shouldSave = autoSaveEnabled && !isPlaying;
 		Assert.False(shouldSave);
+	}
+
+	#endregion
+
+	#region TasEditorViewModel Auto-Save Integration
+
+	private static void SetMovieOnViewModel(TasEditorViewModel vm, MovieData movie) {
+		var prop = typeof(TasEditorViewModel).GetProperty(nameof(TasEditorViewModel.Movie));
+		prop!.SetValue(vm, movie);
+		vm.Recorder.Movie = movie;
+	}
+
+	private static void SetConverterOnViewModel(TasEditorViewModel vm, IMovieConverter converter) {
+		var field = typeof(TasEditorViewModel).GetField("_currentConverter", BindingFlags.Instance | BindingFlags.NonPublic);
+		field!.SetValue(vm, converter);
+	}
+
+	private static TasEditorViewModel CreateConfiguredViewModel(MovieData movie, string moviePath, bool hasUnsavedChanges = true) {
+		var vm = new TasEditorViewModel();
+		SetMovieOnViewModel(vm, movie);
+		vm.FilePath = moviePath;
+		vm.HasUnsavedChanges = hasUnsavedChanges;
+
+		var format = MovieConverterRegistry.DetectFormat(moviePath);
+		var converter = MovieConverterRegistry.GetConverter(format);
+		Assert.NotNull(converter);
+		SetConverterOnViewModel(vm, converter!);
+
+		return vm;
+	}
+
+	[Fact]
+	public void ViewModel_BuildAutoSavePath_AppendsAutosaveBeforeExtension() {
+		string path = TasEditorViewModel.BuildAutoSavePath(@"C:\movies\example.nexen-movie");
+		Assert.Equal(@"C:\movies\example.autosave.nexen-movie", path);
+	}
+
+	[Fact]
+	public void ViewModel_ShouldPromptRecovery_FalseWhenAutosaveMissing() {
+		string baseDir = Path.Combine(Path.GetTempPath(), "nexen-autosave-tests", Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(baseDir);
+		try {
+			string moviePath = Path.Combine(baseDir, "movie.nexen-movie");
+			File.WriteAllText(moviePath, "movie");
+			string autoPath = TasEditorViewModel.BuildAutoSavePath(moviePath);
+
+			Assert.False(TasEditorViewModel.ShouldPromptAutoSaveRecovery(moviePath, autoPath));
+		} finally {
+			Directory.Delete(baseDir, true);
+		}
+	}
+
+	[Fact]
+	public void ViewModel_ShouldPromptRecovery_TrueWhenMovieMissing() {
+		string baseDir = Path.Combine(Path.GetTempPath(), "nexen-autosave-tests", Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(baseDir);
+		try {
+			string moviePath = Path.Combine(baseDir, "movie.nexen-movie");
+			string autoPath = TasEditorViewModel.BuildAutoSavePath(moviePath);
+			File.WriteAllText(autoPath, "autosave");
+
+			Assert.True(TasEditorViewModel.ShouldPromptAutoSaveRecovery(moviePath, autoPath));
+		} finally {
+			Directory.Delete(baseDir, true);
+		}
+	}
+
+	[Fact]
+	public void ViewModel_ShouldPromptRecovery_TrueWhenAutosaveNewer() {
+		string baseDir = Path.Combine(Path.GetTempPath(), "nexen-autosave-tests", Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(baseDir);
+		try {
+			string moviePath = Path.Combine(baseDir, "movie.nexen-movie");
+			string autoPath = TasEditorViewModel.BuildAutoSavePath(moviePath);
+			File.WriteAllText(moviePath, "movie");
+			File.WriteAllText(autoPath, "autosave");
+			File.SetLastWriteTimeUtc(moviePath, DateTime.UtcNow.AddMinutes(-10));
+			File.SetLastWriteTimeUtc(autoPath, DateTime.UtcNow.AddMinutes(-1));
+
+			Assert.True(TasEditorViewModel.ShouldPromptAutoSaveRecovery(moviePath, autoPath));
+		} finally {
+			Directory.Delete(baseDir, true);
+		}
+	}
+
+	[Fact]
+	public void ViewModel_ShouldAutoSaveNow_FalseDuringPlayback() {
+		string moviePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nexen-movie");
+		using var vm = CreateConfiguredViewModel(CreateTestMovie(10), moviePath);
+		vm.IsPlaying = true;
+
+		Assert.False(vm.ShouldAutoSaveNow());
+	}
+
+	[Fact]
+	public void ViewModel_ShouldAutoSaveNow_FalseWhenDisabled() {
+		string moviePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nexen-movie");
+		using var vm = CreateConfiguredViewModel(CreateTestMovie(10), moviePath);
+		vm.AutoSaveEnabled = false;
+
+		Assert.False(vm.ShouldAutoSaveNow());
+	}
+
+	[Fact]
+	public void ViewModel_ShouldAutoSaveNow_FalseWhenNotDirty() {
+		string moviePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nexen-movie");
+		using var vm = CreateConfiguredViewModel(CreateTestMovie(10), moviePath, hasUnsavedChanges: false);
+
+		Assert.False(vm.ShouldAutoSaveNow());
+	}
+
+	[Fact]
+	public void ViewModel_ShouldAutoSaveNow_TrueWhenEligible() {
+		string moviePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".nexen-movie");
+		using var vm = CreateConfiguredViewModel(CreateTestMovie(10), moviePath, hasUnsavedChanges: true);
+		vm.IsPlaying = false;
+		vm.AutoSaveEnabled = true;
+
+		Assert.True(vm.ShouldAutoSaveNow());
+	}
+
+	[Fact]
+	public async Task ViewModel_TryAutoSaveAsync_WritesAutosaveFile() {
+		string baseDir = Path.Combine(Path.GetTempPath(), "nexen-autosave-tests", Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(baseDir);
+		try {
+			string moviePath = Path.Combine(baseDir, "movie.nexen-movie");
+			using var vm = CreateConfiguredViewModel(CreateTestMovie(50), moviePath, hasUnsavedChanges: true);
+
+			bool saved = await vm.TryAutoSaveAsync();
+			Assert.True(saved);
+			Assert.True(File.Exists(TasEditorViewModel.BuildAutoSavePath(moviePath)));
+		} finally {
+			Directory.Delete(baseDir, true);
+		}
+	}
+
+	[Fact]
+	public async Task ViewModel_TryAutoSaveAsync_DoesNotRunDuringPlayback() {
+		string baseDir = Path.Combine(Path.GetTempPath(), "nexen-autosave-tests", Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(baseDir);
+		try {
+			string moviePath = Path.Combine(baseDir, "movie.nexen-movie");
+			using var vm = CreateConfiguredViewModel(CreateTestMovie(50), moviePath, hasUnsavedChanges: true);
+			vm.IsPlaying = true;
+
+			bool saved = await vm.TryAutoSaveAsync();
+			Assert.False(saved);
+			Assert.False(File.Exists(TasEditorViewModel.BuildAutoSavePath(moviePath)));
+		} finally {
+			Directory.Delete(baseDir, true);
+		}
+	}
+
+	[Fact]
+	public async Task ViewModel_TryRecoverAutoSaveAsync_RespectsNoPromptChoice() {
+		string baseDir = Path.Combine(Path.GetTempPath(), "nexen-autosave-tests", Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(baseDir);
+		try {
+			string moviePath = Path.Combine(baseDir, "movie.nexen-movie");
+			string autoPath = TasEditorViewModel.BuildAutoSavePath(moviePath);
+			MovieConverterRegistry.Write(CreateTestMovie(5), moviePath);
+			MovieConverterRegistry.Write(CreateTestMovie(9), autoPath);
+			File.SetLastWriteTimeUtc(moviePath, DateTime.UtcNow.AddMinutes(-10));
+			File.SetLastWriteTimeUtc(autoPath, DateTime.UtcNow.AddMinutes(-1));
+
+			using var vm = new TasEditorViewModel();
+			vm.SetRecoveryPromptOverride(_ => Task.FromResult(DialogResult.No));
+
+			bool recovered = await vm.TryRecoverAutoSaveAsync(moviePath);
+			Assert.False(recovered);
+		} finally {
+			Directory.Delete(baseDir, true);
+		}
+	}
+
+	[Fact]
+	public async Task ViewModel_TryRecoverAutoSaveAsync_LoadsAutosaveWhenConfirmed() {
+		string baseDir = Path.Combine(Path.GetTempPath(), "nexen-autosave-tests", Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(baseDir);
+		try {
+			string moviePath = Path.Combine(baseDir, "movie.nexen-movie");
+			string autoPath = TasEditorViewModel.BuildAutoSavePath(moviePath);
+			MovieConverterRegistry.Write(CreateTestMovie(4), moviePath);
+			MovieConverterRegistry.Write(CreateTestMovie(11), autoPath);
+			File.SetLastWriteTimeUtc(moviePath, DateTime.UtcNow.AddMinutes(-10));
+			File.SetLastWriteTimeUtc(autoPath, DateTime.UtcNow.AddMinutes(-1));
+
+			using var vm = new TasEditorViewModel();
+			vm.SetRecoveryPromptOverride(_ => Task.FromResult(DialogResult.Yes));
+
+			bool recovered = await vm.TryRecoverAutoSaveAsync(moviePath);
+			Assert.True(recovered);
+			Assert.Equal(moviePath, vm.FilePath);
+			Assert.True(vm.HasUnsavedChanges);
+			Assert.Equal(11, vm.Movie!.InputFrames.Count);
+		} finally {
+			Directory.Delete(baseDir, true);
+		}
+	}
+
+	[Fact]
+	public async Task ViewModel_SaveFileAsync_RemovesAutosaveSnapshot() {
+		string baseDir = Path.Combine(Path.GetTempPath(), "nexen-autosave-tests", Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(baseDir);
+		try {
+			string moviePath = Path.Combine(baseDir, "movie.nexen-movie");
+			using var vm = CreateConfiguredViewModel(CreateTestMovie(20), moviePath, hasUnsavedChanges: true);
+			string autoPath = TasEditorViewModel.BuildAutoSavePath(moviePath);
+			await vm.TryAutoSaveAsync();
+			Assert.True(File.Exists(autoPath));
+
+			await vm.SaveFileAsync();
+			Assert.False(File.Exists(autoPath));
+		} finally {
+			Directory.Delete(baseDir, true);
+		}
 	}
 
 	#endregion
