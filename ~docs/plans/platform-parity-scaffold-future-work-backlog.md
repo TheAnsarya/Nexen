@@ -25,6 +25,7 @@ Promoted and completed from backlog:
 - [#735](https://github.com/TheAnsarya/Nexen/issues/735): YM2612 synthesis and timing scaffold (completed 2026-03-17).
 - [#736](https://github.com/TheAnsarya/Nexen/issues/736): SN76489 PSG and mixed-output scaffold (completed 2026-03-17).
 - [#737](https://github.com/TheAnsarya/Nexen/issues/737): Sonic/Jurassic compatibility harness expansion (completed 2026-03-17).
+- [#738](https://github.com/TheAnsarya/Nexen/issues/738): Save-state serialization and replay determinism gates (completed 2026-03-17).
 
 ## Purpose
 
@@ -87,7 +88,7 @@ Deferred child issues:
 | [#735](https://github.com/TheAnsarya/Nexen/issues/735) | YM2612 synthesis and timing synchronization (completed; promoted from deferred backlog) |
 | [#736](https://github.com/TheAnsarya/Nexen/issues/736) | SN76489 PSG path and mixed output integration (completed; promoted from deferred backlog) |
 | [#737](https://github.com/TheAnsarya/Nexen/issues/737) | Sonic 1 and Jurassic Park compatibility harness execution (completed; promoted from deferred backlog) |
-| [#738](https://github.com/TheAnsarya/Nexen/issues/738) | Save-state serialization and replay determinism gates |
+| [#738](https://github.com/TheAnsarya/Nexen/issues/738) | Save-state serialization and replay determinism gates (completed; promoted from deferred backlog) |
 | [#739](https://github.com/TheAnsarya/Nexen/issues/739) | Performance gate execution after correctness stabilization |
 
 ## Scheduling Rule

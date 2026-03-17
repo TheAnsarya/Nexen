@@ -183,9 +183,29 @@ Updated validation result after compatibility harness integration:
 - Full native regression: 1709 tests from 137 suites passed.
 - Managed regression: 331 tests passed.
 
+### Issue [#738](https://github.com/TheAnsarya/Nexen/issues/738)
+
+- Added explicit Genesis scaffold save-state snapshots for bus, CPU, and scaffold timing/scheduler state.
+- Added deterministic state restore API coverage across:
+	- memory and mapped window counters,
+	- VDP register/latch/render state,
+	- DMA/Z80 arbitration state,
+	- YM2612/SN76489/mixed-audio counters and digests,
+	- CPU execution and interrupt-sequence state,
+	- frame/scanline scheduler state and timing events.
+- Added focused `GenesisSaveStateDeterminismTests` to validate:
+	- exact save-state round-trip identity after destructive mutation,
+	- deterministic replay-equivalence after restore for render/audio digest and timing state.
+
+Updated validation result after save-state determinism integration:
+
+- Focused Genesis tests: 38 tests from 13 suites passed.
+- Full native regression: 1711 tests from 138 suites passed.
+- Managed regression: 331 tests passed.
+
 ## Deferred Future-Work Linkage
 
-Status: Future Work only. Do not start these issues until explicitly scheduled.
+Status: Future Work by default. Issue [#738](https://github.com/TheAnsarya/Nexen/issues/738) has been promoted and completed in this execution sprint.
 
 - Parent future-work epic: [#718](https://github.com/TheAnsarya/Nexen/issues/718)
 - VDP register semantics follow-through: [#730](https://github.com/TheAnsarya/Nexen/issues/730)
@@ -193,6 +213,7 @@ Status: Future Work only. Do not start these issues until explicitly scheduled.
 - VDP DMA and contention follow-through: [#732](https://github.com/TheAnsarya/Nexen/issues/732)
 - H/V interrupt scheduling follow-through: [#733](https://github.com/TheAnsarya/Nexen/issues/733)
 - Sonic/Jurassic compatibility harness execution: [#737](https://github.com/TheAnsarya/Nexen/issues/737)
+- Save-state serialization and replay determinism gates: [#738](https://github.com/TheAnsarya/Nexen/issues/738) (completed)
 
 ## Related Research
 

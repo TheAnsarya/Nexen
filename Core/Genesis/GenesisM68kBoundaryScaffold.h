@@ -23,6 +23,108 @@ enum class GenesisVdpDmaMode : uint8_t {
 	Fill = 2
 };
 
+struct GenesisPlatformBusSaveState {
+	vector<uint8_t> Rom;
+	vector<uint8_t> WorkRam;
+	vector<uint8_t> Io;
+	vector<uint8_t> VdpIo;
+	std::array<uint8_t, 0x20> VdpRegisters = {};
+	uint16_t VdpStatus = 0;
+	uint16_t VdpDataPortLatch = 0;
+	uint16_t VdpControlWordLatch = 0;
+	uint8_t PlaneASample = 0;
+	uint8_t PlaneBSample = 0;
+	uint8_t WindowSample = 0;
+	uint8_t SpriteSample = 0;
+	bool PlaneAPriority = false;
+	bool PlaneBPriority = false;
+	bool WindowEnabled = false;
+	bool WindowPriority = false;
+	bool SpritePriority = false;
+	uint16_t ScrollX = 0;
+	uint16_t ScrollY = 0;
+	vector<uint8_t> RenderLine;
+	string RenderLineDigest;
+	GenesisVdpDmaMode DmaMode = GenesisVdpDmaMode::None;
+	uint32_t DmaTransferWords = 0;
+	uint32_t DmaActiveCyclesRemaining = 0;
+	uint32_t DmaContentionCycles = 0;
+	uint32_t DmaContentionEvents = 0;
+	bool Z80Bootstrapped = false;
+	bool Z80Running = false;
+	bool Z80BusRequested = false;
+	uint32_t Z80BootstrapCount = 0;
+	uint32_t Z80HandoffCount = 0;
+	uint64_t Z80ExecutedCycles = 0;
+	std::array<uint8_t, 0x200> Ym2612Registers = {};
+	uint8_t Ym2612AddressPort0 = 0;
+	uint8_t Ym2612AddressPort1 = 0;
+	uint64_t Ym2612ClockAccumulator = 0;
+	uint32_t Ym2612SampleCount = 0;
+	int16_t Ym2612LastSample = 0;
+	uint32_t Ym2612WriteCount = 0;
+	string Ym2612Digest;
+	std::array<uint8_t, 16> Sn76489Registers = {};
+	uint8_t Sn76489LatchedRegister = 0;
+	uint64_t Sn76489ClockAccumulator = 0;
+	uint32_t Sn76489SampleCount = 0;
+	int16_t Sn76489LastSample = 0;
+	uint32_t Sn76489WriteCount = 0;
+	string Sn76489Digest;
+	int16_t MixedLastSample = 0;
+	uint32_t MixedSampleCount = 0;
+	string MixedDigest;
+	bool Z80WindowAccessed = false;
+	bool IoWindowAccessed = false;
+	bool VdpWindowAccessed = false;
+	bool DmaRequested = false;
+	uint32_t RomReadCount = 0;
+	uint32_t Z80ReadCount = 0;
+	uint32_t Z80WriteCount = 0;
+	uint32_t IoReadCount = 0;
+	uint32_t IoWriteCount = 0;
+	uint32_t VdpReadCount = 0;
+	uint32_t VdpWriteCount = 0;
+	uint32_t WorkRamReadCount = 0;
+	uint32_t WorkRamWriteCount = 0;
+	uint32_t OpenBusReadCount = 0;
+	uint32_t OpenBusWriteCount = 0;
+	uint32_t LastVdpAddress = 0;
+	uint8_t LastVdpValue = 0;
+
+	bool operator==(const GenesisPlatformBusSaveState&) const = default;
+};
+
+struct GenesisM68kCpuSaveState {
+	uint32_t ProgramCounter = 0;
+	uint64_t CycleCount = 0;
+	uint8_t InterruptLevel = 0;
+	uint16_t StatusRegister = 0;
+	uint32_t SupervisorStackPointer = 0;
+	uint32_t LastExceptionVectorAddress = 0;
+	uint32_t InterruptSequenceCount = 0;
+	uint8_t InstructionCyclesRemaining = 0;
+
+	bool operator==(const GenesisM68kCpuSaveState&) const = default;
+};
+
+struct GenesisBoundaryScaffoldSaveState {
+	GenesisPlatformBusSaveState Bus;
+	GenesisM68kCpuSaveState Cpu;
+	bool Started = false;
+	uint32_t TimingScanline = 0;
+	uint32_t TimingFrame = 0;
+	uint32_t TimingCycleRemainder = 0;
+	bool HInterruptEnabled = true;
+	bool VInterruptEnabled = true;
+	uint32_t HInterruptIntervalScanlines = 16;
+	uint32_t HInterruptCount = 0;
+	uint32_t VInterruptCount = 0;
+	vector<string> TimingEvents;
+
+	bool operator==(const GenesisBoundaryScaffoldSaveState&) const = default;
+};
+
 class GenesisPlatformBusStub final : public IGenesisM68kBus {
 private:
 	vector<uint8_t> _rom;
@@ -169,6 +271,8 @@ public:
 	[[nodiscard]] int16_t GetMixedLastSample() const { return _mixedLastSample; }
 	[[nodiscard]] uint32_t GetMixedSampleCount() const { return _mixedSampleCount; }
 	[[nodiscard]] const string& GetMixedDigest() const { return _mixedDigest; }
+	[[nodiscard]] GenesisPlatformBusSaveState SaveState() const;
+	void LoadState(const GenesisPlatformBusSaveState& state);
 };
 
 class GenesisM68kCpuStub {
@@ -203,6 +307,8 @@ public:
 	[[nodiscard]] uint32_t GetSupervisorStackPointer() const { return _supervisorStackPointer; }
 	[[nodiscard]] uint32_t GetLastExceptionVectorAddress() const { return _lastExceptionVectorAddress; }
 	[[nodiscard]] uint32_t GetInterruptSequenceCount() const { return _interruptSequenceCount; }
+	[[nodiscard]] GenesisM68kCpuSaveState SaveState() const;
+	void LoadState(const GenesisM68kCpuSaveState& state);
 };
 
 class GenesisM68kBoundaryScaffold {
@@ -239,6 +345,8 @@ public:
 	[[nodiscard]] uint32_t GetHorizontalInterruptCount() const { return _hInterruptCount; }
 	[[nodiscard]] uint32_t GetVerticalInterruptCount() const { return _vInterruptCount; }
 	[[nodiscard]] const vector<string>& GetTimingEvents() const { return _timingEvents; }
+	[[nodiscard]] GenesisBoundaryScaffoldSaveState SaveState() const;
+	void LoadState(const GenesisBoundaryScaffoldSaveState& state);
 	GenesisM68kCpuStub& GetCpu() { return _cpu; }
 	GenesisPlatformBusStub& GetBus() { return _bus; }
 };

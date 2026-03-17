@@ -298,6 +298,148 @@ void GenesisPlatformBusStub::Reset() {
 	_lastVdpValue = 0;
 }
 
+GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
+	GenesisPlatformBusSaveState state = {};
+	state.Rom = _rom;
+	state.WorkRam = _workRam;
+	state.Io = _io;
+	state.VdpIo = _vdpIo;
+	state.VdpRegisters = _vdpRegisters;
+	state.VdpStatus = _vdpStatus;
+	state.VdpDataPortLatch = _vdpDataPortLatch;
+	state.VdpControlWordLatch = _vdpControlWordLatch;
+	state.PlaneASample = _planeASample;
+	state.PlaneBSample = _planeBSample;
+	state.WindowSample = _windowSample;
+	state.SpriteSample = _spriteSample;
+	state.PlaneAPriority = _planeAPriority;
+	state.PlaneBPriority = _planeBPriority;
+	state.WindowEnabled = _windowEnabled;
+	state.WindowPriority = _windowPriority;
+	state.SpritePriority = _spritePriority;
+	state.ScrollX = _scrollX;
+	state.ScrollY = _scrollY;
+	state.RenderLine = _renderLine;
+	state.RenderLineDigest = _renderLineDigest;
+	state.DmaMode = _dmaMode;
+	state.DmaTransferWords = _dmaTransferWords;
+	state.DmaActiveCyclesRemaining = _dmaActiveCyclesRemaining;
+	state.DmaContentionCycles = _dmaContentionCycles;
+	state.DmaContentionEvents = _dmaContentionEvents;
+	state.Z80Bootstrapped = _z80Bootstrapped;
+	state.Z80Running = _z80Running;
+	state.Z80BusRequested = _z80BusRequested;
+	state.Z80BootstrapCount = _z80BootstrapCount;
+	state.Z80HandoffCount = _z80HandoffCount;
+	state.Z80ExecutedCycles = _z80ExecutedCycles;
+	state.Ym2612Registers = _ym2612Registers;
+	state.Ym2612AddressPort0 = _ym2612AddressPort0;
+	state.Ym2612AddressPort1 = _ym2612AddressPort1;
+	state.Ym2612ClockAccumulator = _ym2612ClockAccumulator;
+	state.Ym2612SampleCount = _ym2612SampleCount;
+	state.Ym2612LastSample = _ym2612LastSample;
+	state.Ym2612WriteCount = _ym2612WriteCount;
+	state.Ym2612Digest = _ym2612Digest;
+	state.Sn76489Registers = _sn76489Registers;
+	state.Sn76489LatchedRegister = _sn76489LatchedRegister;
+	state.Sn76489ClockAccumulator = _sn76489ClockAccumulator;
+	state.Sn76489SampleCount = _sn76489SampleCount;
+	state.Sn76489LastSample = _sn76489LastSample;
+	state.Sn76489WriteCount = _sn76489WriteCount;
+	state.Sn76489Digest = _sn76489Digest;
+	state.MixedLastSample = _mixedLastSample;
+	state.MixedSampleCount = _mixedSampleCount;
+	state.MixedDigest = _mixedDigest;
+	state.Z80WindowAccessed = _z80WindowAccessed;
+	state.IoWindowAccessed = _ioWindowAccessed;
+	state.VdpWindowAccessed = _vdpWindowAccessed;
+	state.DmaRequested = _dmaRequested;
+	state.RomReadCount = _romReadCount;
+	state.Z80ReadCount = _z80ReadCount;
+	state.Z80WriteCount = _z80WriteCount;
+	state.IoReadCount = _ioReadCount;
+	state.IoWriteCount = _ioWriteCount;
+	state.VdpReadCount = _vdpReadCount;
+	state.VdpWriteCount = _vdpWriteCount;
+	state.WorkRamReadCount = _workRamReadCount;
+	state.WorkRamWriteCount = _workRamWriteCount;
+	state.OpenBusReadCount = _openBusReadCount;
+	state.OpenBusWriteCount = _openBusWriteCount;
+	state.LastVdpAddress = _lastVdpAddress;
+	state.LastVdpValue = _lastVdpValue;
+	return state;
+}
+
+void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state) {
+	_rom = state.Rom;
+	_workRam = state.WorkRam;
+	_io = state.Io;
+	_vdpIo = state.VdpIo;
+	_vdpRegisters = state.VdpRegisters;
+	_vdpStatus = state.VdpStatus;
+	_vdpDataPortLatch = state.VdpDataPortLatch;
+	_vdpControlWordLatch = state.VdpControlWordLatch;
+	_planeASample = state.PlaneASample;
+	_planeBSample = state.PlaneBSample;
+	_windowSample = state.WindowSample;
+	_spriteSample = state.SpriteSample;
+	_planeAPriority = state.PlaneAPriority;
+	_planeBPriority = state.PlaneBPriority;
+	_windowEnabled = state.WindowEnabled;
+	_windowPriority = state.WindowPriority;
+	_spritePriority = state.SpritePriority;
+	_scrollX = state.ScrollX;
+	_scrollY = state.ScrollY;
+	_renderLine = state.RenderLine;
+	_renderLineDigest = state.RenderLineDigest;
+	_dmaMode = state.DmaMode;
+	_dmaTransferWords = state.DmaTransferWords;
+	_dmaActiveCyclesRemaining = state.DmaActiveCyclesRemaining;
+	_dmaContentionCycles = state.DmaContentionCycles;
+	_dmaContentionEvents = state.DmaContentionEvents;
+	_z80Bootstrapped = state.Z80Bootstrapped;
+	_z80Running = state.Z80Running;
+	_z80BusRequested = state.Z80BusRequested;
+	_z80BootstrapCount = state.Z80BootstrapCount;
+	_z80HandoffCount = state.Z80HandoffCount;
+	_z80ExecutedCycles = state.Z80ExecutedCycles;
+	_ym2612Registers = state.Ym2612Registers;
+	_ym2612AddressPort0 = state.Ym2612AddressPort0;
+	_ym2612AddressPort1 = state.Ym2612AddressPort1;
+	_ym2612ClockAccumulator = state.Ym2612ClockAccumulator;
+	_ym2612SampleCount = state.Ym2612SampleCount;
+	_ym2612LastSample = state.Ym2612LastSample;
+	_ym2612WriteCount = state.Ym2612WriteCount;
+	_ym2612Digest = state.Ym2612Digest;
+	_sn76489Registers = state.Sn76489Registers;
+	_sn76489LatchedRegister = state.Sn76489LatchedRegister;
+	_sn76489ClockAccumulator = state.Sn76489ClockAccumulator;
+	_sn76489SampleCount = state.Sn76489SampleCount;
+	_sn76489LastSample = state.Sn76489LastSample;
+	_sn76489WriteCount = state.Sn76489WriteCount;
+	_sn76489Digest = state.Sn76489Digest;
+	_mixedLastSample = state.MixedLastSample;
+	_mixedSampleCount = state.MixedSampleCount;
+	_mixedDigest = state.MixedDigest;
+	_z80WindowAccessed = state.Z80WindowAccessed;
+	_ioWindowAccessed = state.IoWindowAccessed;
+	_vdpWindowAccessed = state.VdpWindowAccessed;
+	_dmaRequested = state.DmaRequested;
+	_romReadCount = state.RomReadCount;
+	_z80ReadCount = state.Z80ReadCount;
+	_z80WriteCount = state.Z80WriteCount;
+	_ioReadCount = state.IoReadCount;
+	_ioWriteCount = state.IoWriteCount;
+	_vdpReadCount = state.VdpReadCount;
+	_vdpWriteCount = state.VdpWriteCount;
+	_workRamReadCount = state.WorkRamReadCount;
+	_workRamWriteCount = state.WorkRamWriteCount;
+	_openBusReadCount = state.OpenBusReadCount;
+	_openBusWriteCount = state.OpenBusWriteCount;
+	_lastVdpAddress = state.LastVdpAddress;
+	_lastVdpValue = state.LastVdpValue;
+}
+
 uint8_t GenesisPlatformBusStub::ComposeRenderPixel() const {
 	uint8_t output = 0;
 
@@ -634,6 +776,30 @@ void GenesisM68kCpuStub::SetInterrupt(uint8_t level) {
 	_interruptLevel = std::min<uint8_t>(level, 7);
 }
 
+GenesisM68kCpuSaveState GenesisM68kCpuStub::SaveState() const {
+	GenesisM68kCpuSaveState state = {};
+	state.ProgramCounter = _programCounter;
+	state.CycleCount = _cycleCount;
+	state.InterruptLevel = _interruptLevel;
+	state.StatusRegister = _statusRegister;
+	state.SupervisorStackPointer = _supervisorStackPointer;
+	state.LastExceptionVectorAddress = _lastExceptionVectorAddress;
+	state.InterruptSequenceCount = _interruptSequenceCount;
+	state.InstructionCyclesRemaining = _instructionCyclesRemaining;
+	return state;
+}
+
+void GenesisM68kCpuStub::LoadState(const GenesisM68kCpuSaveState& state) {
+	_programCounter = state.ProgramCounter;
+	_cycleCount = state.CycleCount;
+	_interruptLevel = state.InterruptLevel;
+	_statusRegister = state.StatusRegister;
+	_supervisorStackPointer = state.SupervisorStackPointer;
+	_lastExceptionVectorAddress = state.LastExceptionVectorAddress;
+	_interruptSequenceCount = state.InterruptSequenceCount;
+	_instructionCyclesRemaining = state.InstructionCyclesRemaining;
+}
+
 GenesisM68kBoundaryScaffold::GenesisM68kBoundaryScaffold() {
 	_cpu.AttachBus(&_bus);
 }
@@ -701,4 +867,37 @@ void GenesisM68kBoundaryScaffold::StepFrameScaffold(uint32_t cpuCycles) {
 	_bus.StepSn76489(cpuCycles);
 	_bus.UpdateMixedSample();
 	AdvanceTiming(cpuCycles);
+}
+
+GenesisBoundaryScaffoldSaveState GenesisM68kBoundaryScaffold::SaveState() const {
+	GenesisBoundaryScaffoldSaveState state = {};
+	state.Bus = _bus.SaveState();
+	state.Cpu = _cpu.SaveState();
+	state.Started = _started;
+	state.TimingScanline = _timingScanline;
+	state.TimingFrame = _timingFrame;
+	state.TimingCycleRemainder = _timingCycleRemainder;
+	state.HInterruptEnabled = _hInterruptEnabled;
+	state.VInterruptEnabled = _vInterruptEnabled;
+	state.HInterruptIntervalScanlines = _hInterruptIntervalScanlines;
+	state.HInterruptCount = _hInterruptCount;
+	state.VInterruptCount = _vInterruptCount;
+	state.TimingEvents = _timingEvents;
+	return state;
+}
+
+void GenesisM68kBoundaryScaffold::LoadState(const GenesisBoundaryScaffoldSaveState& state) {
+	_bus.LoadState(state.Bus);
+	_cpu.LoadState(state.Cpu);
+	_cpu.AttachBus(&_bus);
+	_started = state.Started;
+	_timingScanline = state.TimingScanline;
+	_timingFrame = state.TimingFrame;
+	_timingCycleRemainder = state.TimingCycleRemainder;
+	_hInterruptEnabled = state.HInterruptEnabled;
+	_vInterruptEnabled = state.VInterruptEnabled;
+	_hInterruptIntervalScanlines = std::max<uint32_t>(1, state.HInterruptIntervalScanlines);
+	_hInterruptCount = state.HInterruptCount;
+	_vInterruptCount = state.VInterruptCount;
+	_timingEvents = state.TimingEvents;
 }
