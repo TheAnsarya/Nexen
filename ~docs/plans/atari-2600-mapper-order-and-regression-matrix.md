@@ -114,12 +114,32 @@ Observed result snapshot:
 
 - `[==========] 18 tests from 4 test suites ran.`
 
+## Phase D Evidence (#724)
+
+- Refined `3F` switching behavior to react only to `$xx3f` strobe mirrors rather than any low-address write.
+- Kept deterministic bank selection behavior for both `3F` and fallback paths via centralized value-to-bank mapping.
+- Added focused behavior-accuracy tests: `Atari2600MapperPhaseDTests`.
+- Updated existing `Phase C` 3F test to use canonical strobe writes.
+
+Focused command:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600MapperPhaseDTests.*:Atari2600AudioPhaseATests.*:Atari2600RenderPhaseATests.*:Atari2600TiaPhaseATests.*:Atari2600RiotPhaseATests.*:Atari2600CpuPhaseATests.*:Atari2600TimingSpikeHarnessTests.*:Atari2600MapperPhaseATests.*:Atari2600MapperPhaseBTests.*:Atari2600MapperPhaseCTests.* --gtest_brief=1
+```
+
+Observed result snapshot:
+
+- `[==========] 34 tests from 10 test suites ran.`
+
 ## Deferred Future-Work Linkage
 
 Status: Future Work only. Do not start these issues until explicitly scheduled.
 
-- Parent future-work epic: [#717](https://github.com/TheAnsarya/Nexen/issues/717)
+Completed from this deferred set:
+
 - Behavior-accurate mapper completion: [#724](https://github.com/TheAnsarya/Nexen/issues/724)
+
+- Parent future-work epic: [#717](https://github.com/TheAnsarya/Nexen/issues/717)
 - Atari compatibility harness expansion: [#725](https://github.com/TheAnsarya/Nexen/issues/725)
 - Post-correctness performance gates: [#727](https://github.com/TheAnsarya/Nexen/issues/727)
 

@@ -29,7 +29,7 @@ namespace {
 		EXPECT_EQ(console.DebugReadCartridge(0x1000), 0x40);
 		EXPECT_EQ(console.DebugReadCartridge(0x1800), 0x43);
 
-		console.DebugWriteCartridge(0x0001, 0x02);
+		console.DebugWriteCartridge(0x003f, 0x02);
 		EXPECT_EQ(console.DebugReadCartridge(0x1000), 0x42);
 		EXPECT_EQ(console.DebugReadCartridge(0x1800), 0x43);
 	}

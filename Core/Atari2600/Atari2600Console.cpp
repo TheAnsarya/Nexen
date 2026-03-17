@@ -42,6 +42,17 @@ private:
 		return _romName.find(token) != string::npos;
 	}
 
+	[[nodiscard]] static uint8_t SelectBankFromValue(uint8_t value, uint8_t bankCount) {
+		if (bankCount <= 1) {
+			return 0;
+		}
+
+		if ((bankCount & (uint8_t)(bankCount - 1)) == 0) {
+			return (uint8_t)(value & (bankCount - 1));
+		}
+		return (uint8_t)(value % bankCount);
+	}
+
 	void SelectMode() {
 		if (_rom.empty()) {
 			_mode = MapperMode::None;
@@ -248,13 +259,13 @@ public:
 	}
 
 	void Write(uint16_t addr, uint8_t value) {
-		if (_mode == MapperMode::Mapper3F && (addr & 0x1FC0) == 0x0000 && _fallbackBankCount > 0) {
-			_activeBank = (uint8_t)(value % _fallbackBankCount);
+		if (_mode == MapperMode::Mapper3F && (addr & 0x003F) == 0x003F && _fallbackBankCount > 0) {
+			_activeBank = SelectBankFromValue(value, _fallbackBankCount);
 			return;
 		}
 
 		if (_mode == MapperMode::RareFallback && addr >= 0x1000 && addr <= 0x1FFF && _fallbackBankCount > 0) {
-			_activeBank = (uint8_t)(value % _fallbackBankCount);
+			_activeBank = SelectBankFromValue(value, _fallbackBankCount);
 			return;
 		}
 
