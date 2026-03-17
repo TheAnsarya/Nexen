@@ -149,6 +149,8 @@ public sealed class PianoRollControl : Control {
 	private bool _paintValue;
 	private int _paintButton;
 	private int _paintStartFrame;
+	private int _keyboardFrame = -1;
+	private int _keyboardButton;
 	private readonly HashSet<(int frame, int button)> _paintedCells = new();
 	private readonly List<int> _paintFrameBuffer = new();
 
@@ -611,6 +613,8 @@ public sealed class PianoRollControl : Control {
 			_isPainting = true;
 			_paintStartFrame = frame;
 			_paintButton = button;
+			_keyboardFrame = frame;
+			_keyboardButton = button;
 			_paintedCells.Clear();
 
 			// Determine paint value (toggle current state)
@@ -623,6 +627,8 @@ public sealed class PianoRollControl : Control {
 			e.Handled = true;
 		} else if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed) {
 			// Right-click for selection
+			_keyboardFrame = frame;
+			_keyboardButton = button;
 			SelectionStart = frame;
 			SelectionEnd = frame;
 			SelectionChanged?.Invoke(this, new PianoRollSelectionEventArgs(frame, frame));
@@ -689,27 +695,60 @@ public sealed class PianoRollControl : Control {
 	protected override void OnKeyDown(KeyEventArgs e) {
 		base.OnKeyDown(e);
 
+		if (e.KeyModifiers.HasFlag(KeyModifiers.Control) && e.Key == Key.G) {
+			e.Handled = false;
+			return;
+		}
+
+		if (Frames is null || Frames.Count == 0) {
+			return;
+		}
+
+		EnsureKeyboardCursor();
+		bool extendSelection = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+		var buttons = ButtonLabels ?? _defaultButtons;
+
 		switch (e.Key) {
 			case Key.Left:
-				ScrollOffset = Math.Max(0, ScrollOffset - 1);
+				MoveKeyboardFrame(-1, extendSelection);
 				e.Handled = true;
 				break;
 
 			case Key.Right:
-				ScrollOffset++;
+				MoveKeyboardFrame(1, extendSelection);
+				e.Handled = true;
+				break;
+
+			case Key.Up:
+				_keyboardButton = Math.Max(0, _keyboardButton - 1);
+				e.Handled = true;
+				break;
+
+			case Key.Down:
+				_keyboardButton = Math.Min(buttons.Count - 1, _keyboardButton + 1);
 				e.Handled = true;
 				break;
 
 			case Key.Home:
-				ScrollOffset = 0;
+				MoveKeyboardFrame(-int.MaxValue, extendSelection);
 				e.Handled = true;
 				break;
 
 			case Key.End:
-				if (Frames is not null) {
-					ScrollOffset = Math.Max(0, Frames.Count - 10);
-				}
+				MoveKeyboardFrame(int.MaxValue, extendSelection);
+				e.Handled = true;
+				break;
 
+			case Key.Tab:
+				_keyboardButton = ComputeNextButtonLane(_keyboardButton, buttons.Count, e.KeyModifiers.HasFlag(KeyModifiers.Shift));
+				e.Handled = true;
+				break;
+
+			case Key.Enter:
+				if (_keyboardFrame >= 0 && _keyboardFrame < Frames.Count && _keyboardButton >= 0 && _keyboardButton < buttons.Count) {
+					bool newState = !GetCurrentButtonState(_keyboardFrame, _keyboardButton);
+					CellClicked?.Invoke(this, new PianoRollCellEventArgs(_keyboardFrame, _keyboardButton, newState));
+				}
 				e.Handled = true;
 				break;
 
@@ -726,6 +765,69 @@ public sealed class PianoRollControl : Control {
 	}
 
 	#endregion
+
+	private void EnsureKeyboardCursor() {
+		if (_keyboardFrame >= 0) {
+			return;
+		}
+
+		if (SelectedFrame >= 0) {
+			_keyboardFrame = SelectedFrame;
+		} else if (SelectionStart >= 0) {
+			_keyboardFrame = SelectionStart;
+		} else {
+			_keyboardFrame = ScrollOffset;
+		}
+
+		_keyboardButton = Math.Max(0, _keyboardButton);
+	}
+
+	private void MoveKeyboardFrame(int delta, bool extendSelection) {
+		if (Frames is null || Frames.Count == 0) {
+			return;
+		}
+
+		var result = ComputeFrameSelectionAfterMove(_keyboardFrame, SelectionStart, SelectionEnd, Frames.Count, delta, extendSelection);
+		SelectionStart = result.Start;
+		SelectionEnd = result.End;
+		_keyboardFrame = result.Cursor;
+		SelectedFrame = result.Cursor;
+		SelectionChanged?.Invoke(this, new PianoRollSelectionEventArgs(SelectionStart, SelectionEnd));
+		ScrollToFrame(result.Cursor);
+	}
+
+	internal static int ComputeNextButtonLane(int currentLane, int laneCount, bool reverse) {
+		if (laneCount <= 0) {
+			return 0;
+		}
+
+		int step = reverse ? -1 : 1;
+		int next = (currentLane + step) % laneCount;
+		if (next < 0) {
+			next += laneCount;
+		}
+		return next;
+	}
+
+	internal static (int Start, int End, int Cursor) ComputeFrameSelectionAfterMove(int currentFrame, int selectionStart, int selectionEnd, int frameCount, int delta, bool extendSelection) {
+		if (frameCount <= 0) {
+			return (-1, -1, -1);
+		}
+
+		int maxFrame = frameCount - 1;
+		int cursor = currentFrame < 0 ? 0 : currentFrame;
+		int next = delta switch {
+			<= -1000000 => 0,
+			>= 1000000 => maxFrame,
+			_ => Math.Clamp(cursor + delta, 0, maxFrame)
+		};
+
+		if (extendSelection && selectionStart >= 0) {
+			return (selectionStart, next, next);
+		}
+
+		return (next, next, next);
+	}
 
 	#region Helpers
 

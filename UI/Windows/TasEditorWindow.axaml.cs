@@ -312,6 +312,10 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 						}
 						e.Handled = true;
 						return;
+					case Avalonia.Input.Key.G:
+						_ = ViewModel.GoToFrameAsync();
+						e.Handled = true;
+						return;
 				}
 			}
 
@@ -714,7 +718,8 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 
 	private void OnPianoRollSelectionChanged(object? sender, PianoRollSelectionEventArgs e) {
 		if (ViewModel != null) {
-			ViewModel.SelectedFrameIndex = e.SelectionStart;
+			ViewModel.SelectFrameRange(e.SelectionStart, e.SelectionEnd);
+			ApplySelectionFromViewModel();
 		}
 	}
 
