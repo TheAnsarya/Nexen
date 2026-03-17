@@ -23,9 +23,4 @@
 		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<!-- Modern JSON source generation for AOT compatibility -->
-		<PackageReference Include="System.IO.Hashing" Version="10.0.2" />
-	</ItemGroup>
-
 </Project>
