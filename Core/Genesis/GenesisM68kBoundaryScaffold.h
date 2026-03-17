@@ -27,6 +27,19 @@ private:
 	uint16_t _vdpStatus = 0x0001;
 	uint16_t _vdpDataPortLatch = 0;
 	uint16_t _vdpControlWordLatch = 0;
+	uint8_t _planeASample = 0;
+	uint8_t _planeBSample = 0;
+	uint8_t _windowSample = 0;
+	uint8_t _spriteSample = 0;
+	bool _planeAPriority = false;
+	bool _planeBPriority = false;
+	bool _windowEnabled = false;
+	bool _windowPriority = false;
+	bool _spritePriority = false;
+	uint16_t _scrollX = 0;
+	uint16_t _scrollY = 0;
+	vector<uint8_t> _renderLine;
+	string _renderLineDigest;
 	bool _z80WindowAccessed = false;
 	bool _ioWindowAccessed = false;
 	bool _vdpWindowAccessed = false;
@@ -47,6 +60,7 @@ private:
 
 	[[nodiscard]] GenesisBusOwner DecodeOwner(uint32_t address) const;
 	void ApplyVdpControlWord(uint16_t controlWord);
+	[[nodiscard]] uint8_t ComposeRenderPixel() const;
 
 public:
 	GenesisPlatformBusStub();
@@ -79,6 +93,11 @@ public:
 	[[nodiscard]] uint16_t GetVdpStatus() const { return _vdpStatus; }
 	[[nodiscard]] uint16_t GetVdpDataPortLatch() const { return _vdpDataPortLatch; }
 	[[nodiscard]] uint16_t GetVdpControlWordLatch() const { return _vdpControlWordLatch; }
+	void SetRenderCompositionInputs(uint8_t planeA, bool planeAPriority, uint8_t planeB, bool planeBPriority, uint8_t window, bool windowEnabled, bool windowPriority, uint8_t sprite, bool spritePriority);
+	void SetScroll(uint16_t scrollX, uint16_t scrollY);
+	void RenderScaffoldLine(uint32_t pixelCount = 64);
+	[[nodiscard]] uint8_t GetRenderLinePixel(uint32_t index) const;
+	[[nodiscard]] const string& GetRenderLineDigest() const { return _renderLineDigest; }
 };
 
 class GenesisM68kCpuStub {

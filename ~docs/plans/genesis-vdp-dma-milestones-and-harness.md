@@ -118,6 +118,23 @@ dotnet test --no-build -c Release
 
 Result: 15 Genesis tests passed; 1688 native tests passed; 331 managed tests passed.
 
+### Issue [#731](https://github.com/TheAnsarya/Nexen/issues/731)
+
+- Added deterministic scaffold render-composition inputs for plane A, plane B, window, sprite, priorities, and scroll offsets.
+- Added priority-aware deterministic render composition (`ComposeRenderPixel`) for background/window/sprite pipeline checkpointing.
+- Added deterministic line rendering and digest capture (`RenderScaffoldLine`, `GetRenderLineDigest`) to support repeatable checkpoint assertions.
+- Added focused `GenesisVdpRenderPipelineTests` for:
+	- sprite-priority overlay behavior,
+	- window-priority override behavior,
+	- deterministic digest stability on repeated runs,
+	- digest variation under scroll changes.
+
+Updated validation result after render-pipeline scaffold integration:
+
+- Focused Genesis tests: 19 tests from 6 suites passed.
+- Full native regression: 1692 tests from 131 suites passed.
+- Managed regression: 331 tests passed.
+
 ## Deferred Future-Work Linkage
 
 Status: Future Work only. Do not start these issues until explicitly scheduled.

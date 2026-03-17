@@ -1,6 +1,12 @@
 #include "pch.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
 
+namespace {
+	string ToHexDigest(uint64_t value) {
+		return std::format("{:016x}", value);
+	}
+}
+
 GenesisPlatformBusStub::GenesisPlatformBusStub()
 	: _workRam(64 * 1024, 0),
 	  _io(0x20, 0),
@@ -73,6 +79,19 @@ void GenesisPlatformBusStub::Reset() {
 	_vdpStatus = 0x0001;
 	_vdpDataPortLatch = 0;
 	_vdpControlWordLatch = 0;
+	_planeASample = 0;
+	_planeBSample = 0;
+	_windowSample = 0;
+	_spriteSample = 0;
+	_planeAPriority = false;
+	_planeBPriority = false;
+	_windowEnabled = false;
+	_windowPriority = false;
+	_spritePriority = false;
+	_scrollX = 0;
+	_scrollY = 0;
+	_renderLine.clear();
+	_renderLineDigest.clear();
 	_z80WindowAccessed = false;
 	_ioWindowAccessed = false;
 	_vdpWindowAccessed = false;
@@ -90,6 +109,69 @@ void GenesisPlatformBusStub::Reset() {
 	_openBusWriteCount = 0;
 	_lastVdpAddress = 0;
 	_lastVdpValue = 0;
+}
+
+uint8_t GenesisPlatformBusStub::ComposeRenderPixel() const {
+	uint8_t output = 0;
+
+	if (_planeBSample != 0) {
+		output = _planeBSample;
+	}
+
+	if (_planeASample != 0 && (_planeAPriority || output == 0)) {
+		output = _planeASample;
+	}
+
+	if (_windowEnabled && _windowSample != 0 && (_windowPriority || output == 0)) {
+		output = _windowSample;
+	}
+
+	if (_spriteSample != 0 && (_spritePriority || output == 0)) {
+		output = _spriteSample;
+	}
+
+	return output;
+}
+
+void GenesisPlatformBusStub::SetRenderCompositionInputs(uint8_t planeA, bool planeAPriority, uint8_t planeB, bool planeBPriority, uint8_t window, bool windowEnabled, bool windowPriority, uint8_t sprite, bool spritePriority) {
+	_planeASample = planeA;
+	_planeAPriority = planeAPriority;
+	_planeBSample = planeB;
+	_planeBPriority = planeBPriority;
+	_windowSample = window;
+	_windowEnabled = windowEnabled;
+	_windowPriority = windowPriority;
+	_spriteSample = sprite;
+	_spritePriority = spritePriority;
+}
+
+void GenesisPlatformBusStub::SetScroll(uint16_t scrollX, uint16_t scrollY) {
+	_scrollX = scrollX;
+	_scrollY = scrollY;
+}
+
+void GenesisPlatformBusStub::RenderScaffoldLine(uint32_t pixelCount) {
+	_renderLine.clear();
+	_renderLine.reserve(pixelCount);
+
+	uint8_t base = ComposeRenderPixel();
+	uint64_t hash = 1469598103934665603ull;
+	for (uint32_t i = 0; i < pixelCount; i++) {
+		uint8_t offset = (uint8_t)(((uint32_t)_scrollX + (uint32_t)_scrollY + i) & 0x03);
+		uint8_t pixel = (uint8_t)((base + offset) & 0x3F);
+		_renderLine.push_back(pixel);
+		hash ^= pixel;
+		hash *= 1099511628211ull;
+	}
+
+	_renderLineDigest = ToHexDigest(hash);
+}
+
+uint8_t GenesisPlatformBusStub::GetRenderLinePixel(uint32_t index) const {
+	if (index >= _renderLine.size()) {
+		return 0;
+	}
+	return _renderLine[index];
 }
 
 uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
