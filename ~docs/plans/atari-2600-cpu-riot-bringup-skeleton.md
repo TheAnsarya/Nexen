@@ -148,6 +148,30 @@ Validation evidence:
 
 Result: 28 tests from 8 Atari suites passed.
 
+## Execution Evidence: Issue #726
+
+Issue: [#726](https://github.com/TheAnsarya/Nexen/issues/726)
+
+Status: Completed (2026-03-17)
+
+Implemented outcomes:
+
+- Expanded Atari platform serialization to cover CPU, RIOT, TIA, mapper state, and frame summary values.
+- Added import/export state helpers for CPU, RIOT, TIA, and mapper to support save/load round-trip correctness.
+- Added focused save-state determinism tests validating replay equivalence after restore and deterministic payload output for unchanged state.
+
+Validation evidence:
+
+```powershell
+& "C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin\MSBuild.exe" Nexen.sln /p:Configuration=Release /p:Platform=x64 /t:Build /m /nologo /v:m
+```
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600SaveStateDeterminismTests.*:Atari2600CompatibilityMatrixTests.*:Atari2600MapperPhaseDTests.*:Atari2600AudioPhaseATests.*:Atari2600RenderPhaseATests.*:Atari2600TiaPhaseATests.*:Atari2600RiotPhaseATests.*:Atari2600CpuPhaseATests.*:Atari2600TimingSpikeHarnessTests.*:Atari2600MapperPhaseATests.*:Atari2600MapperPhaseBTests.*:Atari2600MapperPhaseCTests.* --gtest_brief=1
+```
+
+Result: 38 tests from 12 Atari suites passed.
+
 ## Deferred Future-Work Linkage
 
 Status: Future Work only. Do not start these issues until explicitly scheduled.
@@ -158,9 +182,9 @@ Completed from this deferred set:
 - RIOT semantics follow-through: [#720](https://github.com/TheAnsarya/Nexen/issues/720)
 - TIA timing follow-through: [#721](https://github.com/TheAnsarya/Nexen/issues/721)
 - TIA render pipeline follow-through: [#722](https://github.com/TheAnsarya/Nexen/issues/722)
+- Save-state determinism follow-through: [#726](https://github.com/TheAnsarya/Nexen/issues/726)
 
 - Parent future-work epic: [#717](https://github.com/TheAnsarya/Nexen/issues/717)
-- Save-state determinism follow-through: [#726](https://github.com/TheAnsarya/Nexen/issues/726)
 
 ## Dependencies
 

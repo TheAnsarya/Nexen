@@ -277,6 +277,22 @@ public:
 		return _activeBank;
 	}
 
+	void ExportState(uint8_t& activeBank, uint8_t& segmentBank0, uint8_t& segmentBank1, uint8_t& segmentBank2, uint8_t& fixedSegmentBank) const {
+		activeBank = _activeBank;
+		segmentBank0 = _segmentBanks[0];
+		segmentBank1 = _segmentBanks[1];
+		segmentBank2 = _segmentBanks[2];
+		fixedSegmentBank = _fixedSegmentBank;
+	}
+
+	void ImportState(uint8_t activeBank, uint8_t segmentBank0, uint8_t segmentBank1, uint8_t segmentBank2, uint8_t fixedSegmentBank) {
+		_activeBank = activeBank;
+		_segmentBanks[0] = segmentBank0;
+		_segmentBanks[1] = segmentBank1;
+		_segmentBanks[2] = segmentBank2;
+		_fixedSegmentBank = fixedSegmentBank;
+	}
+
 	[[nodiscard]] string GetModeName() const {
 		switch (_mode) {
 			case MapperMode::Fixed2K: return "2k";
@@ -387,6 +403,16 @@ class Atari2600Riot {
 
 		Atari2600RiotState GetState() const {
 			return _state;
+		}
+
+		void SetState(const Atari2600RiotState& state) {
+			_state = state;
+			if (_state.TimerDivider == 0) {
+				_state.TimerDivider = 1;
+			}
+			if (_state.TimerDividerCounter == 0) {
+				_state.TimerDividerCounter = _state.TimerDivider;
+			}
 		}
 	};
 
@@ -655,6 +681,16 @@ class Atari2600Riot {
 
 		Atari2600TiaState GetState() const {
 			return _state;
+		}
+
+		void SetState(const Atari2600TiaState& state) {
+			_state = state;
+			if (_state.AudioCounter0 == 0) {
+				_state.AudioCounter0 = (uint16_t)(_state.AudioFrequency0 + 1);
+			}
+			if (_state.AudioCounter1 == 0) {
+				_state.AudioCounter1 = (uint16_t)(_state.AudioFrequency1 + 1);
+			}
 		}
 
 		void ResetAudioHistory() {
@@ -956,6 +992,28 @@ class Atari2600Riot {
 		uint16_t GetProgramCounter() const {
 			return _pc;
 		}
+
+		void ExportState(uint16_t& programCounter, uint64_t& cycleCount, uint8_t& a, uint8_t& x, uint8_t& y, uint8_t& sp, uint8_t& status, uint8_t& remainingCycles) const {
+			programCounter = _pc;
+			cycleCount = _cycleCount;
+			a = _a;
+			x = _x;
+			y = _y;
+			sp = _sp;
+			status = _status;
+			remainingCycles = _instructionCyclesRemaining;
+		}
+
+		void ImportState(uint16_t programCounter, uint64_t cycleCount, uint8_t a, uint8_t x, uint8_t y, uint8_t sp, uint8_t status, uint8_t remainingCycles) {
+			_pc = programCounter & 0x1FFF;
+			_cycleCount = cycleCount;
+			_a = a;
+			_x = x;
+			_y = y;
+			_sp = sp;
+			_status = status;
+			_instructionCyclesRemaining = remainingCycles;
+		}
 	};
 
 	class Atari2600ControlManager final : public BaseControlManager {
@@ -1249,9 +1307,111 @@ void Atari2600Console::GetConsoleState(BaseState& state, ConsoleType consoleType
 }
 
 void Atari2600Console::Serialize(Serializer& s) {
+	uint16_t cpuProgramCounter = 0;
+	uint64_t cpuCycleCount = 0;
+	uint8_t cpuA = 0;
+	uint8_t cpuX = 0;
+	uint8_t cpuY = 0;
+	uint8_t cpuSp = 0;
+	uint8_t cpuStatus = 0;
+	uint8_t cpuRemainingCycles = 0;
+
+	Atari2600RiotState riotState = {};
+	Atari2600TiaState tiaState = {};
+
+	uint8_t mapperActiveBank = 0;
+	uint8_t mapperSegmentBank0 = 0;
+	uint8_t mapperSegmentBank1 = 0;
+	uint8_t mapperSegmentBank2 = 0;
+	uint8_t mapperFixedSegmentBank = 0;
+
+	if (s.IsSaving()) {
+		_cpu->ExportState(cpuProgramCounter, cpuCycleCount, cpuA, cpuX, cpuY, cpuSp, cpuStatus, cpuRemainingCycles);
+		riotState = _riot->GetState();
+		tiaState = _tia->GetState();
+		_mapper->ExportState(mapperActiveBank, mapperSegmentBank0, mapperSegmentBank1, mapperSegmentBank2, mapperFixedSegmentBank);
+	}
+
 	SV(_romLoaded);
 	SV(_lastFrameSummary.FrameCount);
 	SV(_lastFrameSummary.CpuCyclesThisFrame);
 	SV(_lastFrameSummary.ScanlineAtFrameEnd);
 	SV(_lastFrameSummary.ColorClockAtFrameEnd);
+
+	SV(cpuProgramCounter);
+	SV(cpuCycleCount);
+	SV(cpuA);
+	SV(cpuX);
+	SV(cpuY);
+	SV(cpuSp);
+	SV(cpuStatus);
+	SV(cpuRemainingCycles);
+
+	SV(riotState.PortA);
+	SV(riotState.PortB);
+	SV(riotState.PortADirection);
+	SV(riotState.PortBDirection);
+	SV(riotState.PortAInput);
+	SV(riotState.PortBInput);
+	SV(riotState.Timer);
+	SV(riotState.TimerDivider);
+	SV(riotState.TimerDividerCounter);
+	SV(riotState.TimerUnderflow);
+	SV(riotState.InterruptFlag);
+	SV(riotState.InterruptEdgeCount);
+	SV(riotState.CpuCycles);
+
+	SV(tiaState.FrameCount);
+	SV(tiaState.Scanline);
+	SV(tiaState.ColorClock);
+	SV(tiaState.WsyncHold);
+	SV(tiaState.WsyncCount);
+	SV(tiaState.HmovePending);
+	SV(tiaState.HmoveStrobeCount);
+	SV(tiaState.HmoveApplyCount);
+	SV(tiaState.ColorBackground);
+	SV(tiaState.ColorPlayfield);
+	SV(tiaState.ColorPlayer0);
+	SV(tiaState.ColorPlayer1);
+	SV(tiaState.Playfield0);
+	SV(tiaState.Playfield1);
+	SV(tiaState.Playfield2);
+	SV(tiaState.PlayfieldReflect);
+	SV(tiaState.Player0Graphics);
+	SV(tiaState.Player1Graphics);
+	SV(tiaState.Missile0Enabled);
+	SV(tiaState.Missile1Enabled);
+	SV(tiaState.BallEnabled);
+	SV(tiaState.Player0X);
+	SV(tiaState.Player1X);
+	SV(tiaState.BallX);
+	SV(tiaState.RenderRevision);
+	SV(tiaState.AudioControl0);
+	SV(tiaState.AudioControl1);
+	SV(tiaState.AudioFrequency0);
+	SV(tiaState.AudioFrequency1);
+	SV(tiaState.AudioVolume0);
+	SV(tiaState.AudioVolume1);
+	SV(tiaState.AudioCounter0);
+	SV(tiaState.AudioCounter1);
+	SV(tiaState.AudioPhase0);
+	SV(tiaState.AudioPhase1);
+	SV(tiaState.LastMixedSample);
+	SV(tiaState.AudioMixAccumulator);
+	SV(tiaState.AudioSampleCount);
+	SV(tiaState.AudioRevision);
+	SV(tiaState.TotalColorClocks);
+
+	SV(mapperActiveBank);
+	SV(mapperSegmentBank0);
+	SV(mapperSegmentBank1);
+	SV(mapperSegmentBank2);
+	SV(mapperFixedSegmentBank);
+
+	if (!s.IsSaving()) {
+		_cpu->ImportState(cpuProgramCounter, cpuCycleCount, cpuA, cpuX, cpuY, cpuSp, cpuStatus, cpuRemainingCycles);
+		_riot->SetState(riotState);
+		_tia->SetState(tiaState);
+		_mapper->ImportState(mapperActiveBank, mapperSegmentBank0, mapperSegmentBank1, mapperSegmentBank2, mapperFixedSegmentBank);
+	}
 }
