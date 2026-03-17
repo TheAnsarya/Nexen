@@ -296,8 +296,11 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 						e.Handled = true;
 						return;
 					case Avalonia.Input.Key.A:
-						// Select all frames
-						_frameList.SelectAll();
+						if (e.KeyModifiers.HasFlag(Avalonia.Input.KeyModifiers.Shift)) {
+							SelectNoFramesFromUi();
+						} else {
+							SelectAllFramesFromUi();
+						}
 						e.Handled = true;
 						return;
 					case Avalonia.Input.Key.F:
@@ -419,6 +422,23 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		ViewModel?.InsertFrames();
 	}
 
+	private void OnSelectAllFramesClick(object? sender, RoutedEventArgs e) {
+		SelectAllFramesFromUi();
+	}
+
+	private void OnSelectNoFramesClick(object? sender, RoutedEventArgs e) {
+		SelectNoFramesFromUi();
+	}
+
+	private async void OnSelectRangeDialogClick(object? sender, RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.SelectRangeDialogAsync();
+		ApplySelectionFromViewModel();
+	}
+
 	private void OnDeleteFrameClick(object? sender, RoutedEventArgs e) {
 		ViewModel?.DeleteFrames();
 	}
@@ -464,6 +484,39 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		ViewModel.SelectedFrameIndices = indices;
 	}
 
+	private void ApplySelectionFromViewModel() {
+		if (ViewModel is null || _frameList.ItemsSource is not System.Collections.IList items || _frameList.SelectedItems is null) {
+			return;
+		}
+
+		_frameList.SelectedItems.Clear();
+		foreach (int idx in ViewModel.SelectedFrameIndices) {
+			if (idx >= 0 && idx < items.Count) {
+				_frameList.SelectedItems.Add(items[idx]);
+			}
+		}
+
+		_frameList.SelectedIndex = ViewModel.SelectedFrameIndex;
+	}
+
+	private void SelectAllFramesFromUi() {
+		if (ViewModel is null) {
+			return;
+		}
+
+		ViewModel.SelectAllFrames();
+		ApplySelectionFromViewModel();
+	}
+
+	private void SelectNoFramesFromUi() {
+		if (ViewModel is null) {
+			return;
+		}
+
+		ViewModel.SelectNoFrames();
+		ApplySelectionFromViewModel();
+	}
+
 	#endregion
 
 	#region Context Menu Handlers
@@ -497,13 +550,63 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 	}
 
 	private void OnSelectAllClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
-		_frameList.SelectAll();
+		SelectAllFramesFromUi();
+	}
+
+	private void OnSelectNoneClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		SelectNoFramesFromUi();
+	}
+
+	private async void OnSelectRangeDialogFromMenuClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.SelectRangeDialogAsync();
+		ApplySelectionFromViewModel();
 	}
 
 	private void OnSelectRangeToHereClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
 		if (ViewModel is null) return;
-		// Use the right-clicked index (from SelectedFrameIndex since context menu opened at that item)
-		ViewModel.SelectRangeTo(ViewModel.SelectedFrameIndex);
+		int target = _frameList.SelectedIndex;
+		ViewModel.SelectRangeTo(target);
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnBulkInsertClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.BulkInsertDialogAsync();
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnBulkSetButtonClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.BulkSetButtonDialogAsync(true);
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnBulkClearButtonClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.BulkSetButtonDialogAsync(false);
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnPatternFillClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.PatternFillDialogAsync();
+		ApplySelectionFromViewModel();
 	}
 
 	private void OnSetCommentClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {

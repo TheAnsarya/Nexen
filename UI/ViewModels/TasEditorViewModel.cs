@@ -318,8 +318,33 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			new ContextMenuSeparator(),
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
+				CustomText = "Select All",
+				OnClick = SelectAllFrames,
+				IsEnabled = () => Movie is not null && Movie.InputFrames.Count > 0
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Select None",
+				OnClick = SelectNoFrames,
+				IsEnabled = () => SelectedFrameIndices.Count > 0 || SelectedFrameIndex >= 0
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Select Range...",
+				OnClick = () => _ = SelectRangeDialogAsync(),
+				IsEnabled = () => Movie is not null && Movie.InputFrames.Count > 0
+			},
+			new ContextMenuSeparator(),
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
 				CustomText = "Insert Frame(s)",
 				OnClick = InsertFrames,
+				IsEnabled = () => Movie is not null
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Insert N Frame(s)...",
+				OnClick = () => _ = BulkInsertDialogAsync(),
 				IsEnabled = () => Movie is not null
 			},
 			new ContextMenuAction() {
@@ -334,6 +359,24 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 				CustomText = "Clear Input",
 				OnClick = ClearSelectedInput,
 				IsEnabled = () => SelectedFrameIndex >= 0
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Bulk Set Button...",
+				OnClick = () => _ = BulkSetButtonDialogAsync(true),
+				IsEnabled = () => Movie is not null && (SelectedFrameIndices.Count > 0 || SelectedFrameIndex >= 0)
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Bulk Clear Button...",
+				OnClick = () => _ = BulkSetButtonDialogAsync(false),
+				IsEnabled = () => Movie is not null && (SelectedFrameIndices.Count > 0 || SelectedFrameIndex >= 0)
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Pattern Fill...",
+				OnClick = () => _ = PatternFillDialogAsync(),
+				IsEnabled = () => Movie is not null && (SelectedFrameIndices.Count > 0 || SelectedFrameIndex >= 0)
 			},
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
@@ -673,9 +716,29 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		int insertAt = Math.Max(0, SelectedFrameIndex);
-		var frames = new List<InputFrame> { new InputFrame(insertAt) };
+		InsertFramesAt(insertAt, 1);
+	}
+
+	/// <summary>
+	/// Inserts a specified number of frames at the requested position.
+	/// </summary>
+	public void InsertFramesAt(int position, int count) {
+		if (Movie is null || count <= 0) {
+			return;
+		}
+
+		int insertAt = Math.Clamp(position, 0, Movie.InputFrames.Count);
+		var frames = new List<InputFrame>(count);
+		for (int i = 0; i < count; i++) {
+			frames.Add(CreateEmptyFrame(insertAt + i));
+		}
+
 		ExecuteAction(new InsertFramesAction(Movie, insertAt, frames));
-		StatusMessage = $"Inserted frame at {insertAt}";
+		SelectedFrameIndex = insertAt;
+		SelectedFrameIndices = Enumerable.Range(insertAt, count).ToList();
+		StatusMessage = count == 1
+			? $"Inserted frame at {insertAt}"
+			: $"Inserted {count} frames at {insertAt}";
 	}
 
 	/// <summary>
@@ -687,8 +750,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		int insertAt = Math.Max(0, SelectedFrameIndex);
-		var frames = new List<InputFrame> { new InputFrame(insertAt) };
-		ExecuteAction(new InsertFramesAction(Movie, insertAt, frames));
+		InsertFramesAt(insertAt, 1);
 		StatusMessage = $"Inserted frame above at {insertAt}";
 	}
 
@@ -701,9 +763,89 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		int insertAt = Math.Min(Movie.InputFrames.Count, SelectedFrameIndex + 1);
-		var frames = new List<InputFrame> { new InputFrame(insertAt) };
-		ExecuteAction(new InsertFramesAction(Movie, insertAt, frames));
+		InsertFramesAt(insertAt, 1);
 		StatusMessage = $"Inserted frame below at {insertAt}";
+	}
+
+	/// <summary>
+	/// Selects all frames in the loaded movie.
+	/// </summary>
+	public void SelectAllFrames() {
+		if (Movie is null || Movie.InputFrames.Count == 0) {
+			return;
+		}
+
+		SelectedFrameIndices = Enumerable.Range(0, Movie.InputFrames.Count).ToList();
+		SelectedFrameIndex = 0;
+		StatusMessage = $"Selected all {SelectedFrameIndices.Count} frames";
+	}
+
+	/// <summary>
+	/// Clears the current frame selection.
+	/// </summary>
+	public void SelectNoFrames() {
+		SelectedFrameIndices = new();
+		SelectedFrameIndex = -1;
+		StatusMessage = "Selection cleared";
+	}
+
+	/// <summary>
+	/// Selects a contiguous frame range inclusive.
+	/// </summary>
+	public void SelectFrameRange(int fromFrame, int toFrame) {
+		if (Movie is null || Movie.InputFrames.Count == 0) {
+			return;
+		}
+
+		int start = Math.Clamp(Math.Min(fromFrame, toFrame), 0, Movie.InputFrames.Count - 1);
+		int end = Math.Clamp(Math.Max(fromFrame, toFrame), 0, Movie.InputFrames.Count - 1);
+
+		SelectedFrameIndices = Enumerable.Range(start, end - start + 1).ToList();
+		SelectedFrameIndex = start;
+		StatusMessage = $"Selected range {start} to {end} ({SelectedFrameIndices.Count} frames)";
+	}
+
+	/// <summary>
+	/// Shows the select-range dialog and applies the chosen range.
+	/// </summary>
+	public async System.Threading.Tasks.Task SelectRangeDialogAsync() {
+		if (Movie is null || Movie.InputFrames.Count == 0 || _window is null) {
+			return;
+		}
+
+		int maxFrame = Movie.InputFrames.Count - 1;
+		int defaultFrom = SelectedFrameIndex >= 0 ? SelectedFrameIndex : 0;
+		int defaultTo = SelectedFrameIndices.Count > 0 ? SelectedFrameIndices.Max() : defaultFrom;
+		var range = await Windows.TasSelectRangeDialog.ShowAsync(_window, maxFrame, defaultFrom, defaultTo);
+		if (!range.HasValue) {
+			return;
+		}
+
+		SelectFrameRange(range.Value.FromFrame, range.Value.ToFrame);
+	}
+
+	/// <summary>
+	/// Shows a dialog for inserting N frames at the selected position.
+	/// </summary>
+	public async System.Threading.Tasks.Task BulkInsertDialogAsync() {
+		if (Movie is null || _window is null) {
+			return;
+		}
+
+		int? result = await Windows.TasInputDialog.ShowNumericAsync(
+			_window,
+			"Insert N Frames",
+			"How many frames should be inserted?",
+			1,
+			1,
+			100000);
+
+		if (!result.HasValue) {
+			return;
+		}
+
+		int insertAt = SelectedFrameIndex >= 0 ? SelectedFrameIndex : Movie.InputFrames.Count;
+		InsertFramesAt(insertAt, result.Value);
 	}
 
 	/// <summary>
@@ -738,17 +880,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		if (Movie is null || SelectedFrameIndex < 0) {
 			return;
 		}
-
-		int start = Math.Min(SelectedFrameIndex, targetIndex);
-		int end = Math.Max(SelectedFrameIndex, targetIndex);
-		start = Math.Max(0, start);
-		end = Math.Min(Movie.InputFrames.Count - 1, end);
-
-		var indices = new List<int>();
-		for (int i = start; i <= end; i++) {
-			indices.Add(i);
-		}
-		SelectedFrameIndices = indices;
+		SelectFrameRange(SelectedFrameIndex, targetIndex);
 	}
 
 	/// <summary>
@@ -767,11 +899,16 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 				.OrderByDescending(i => i)
 				.ToList();
 
-			if (sorted.Count == 0) return;
-
-			foreach (int idx in sorted) {
-				ExecuteAction(new DeleteFramesAction(Movie, idx, 1));
+			if (sorted.Count == 0) {
+				return;
 			}
+
+			var actions = new List<UndoableAction>(sorted.Count);
+			foreach (int idx in sorted) {
+				actions.Add(new DeleteFramesAction(Movie, idx, 1));
+			}
+
+			ExecuteAction(new BulkUndoableAction($"Delete {sorted.Count} frame(s)", actions));
 
 			StatusMessage = $"Deleted {sorted.Count} frames";
 
@@ -807,12 +944,23 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 		// Multi-selection: clear all selected frames
 		if (SelectedFrameIndices.Count > 1) {
-			int cleared = 0;
-			foreach (int idx in SelectedFrameIndices.Where(i => i >= 0 && i < Movie.InputFrames.Count)) {
-				var frame = Movie.InputFrames[idx];
-				ExecuteAction(new ClearInputAction(frame, idx));
-				cleared++;
+			var targets = SelectedFrameIndices
+				.Where(i => i >= 0 && i < Movie.InputFrames.Count)
+				.Distinct()
+				.OrderBy(i => i)
+				.ToList();
+
+			if (targets.Count == 0) {
+				return;
 			}
+
+			var actions = new List<UndoableAction>(targets.Count);
+			foreach (int idx in targets) {
+				actions.Add(new ClearInputAction(Movie.InputFrames[idx], idx));
+			}
+
+			ExecuteAction(new BulkUndoableAction($"Clear input on {targets.Count} frame(s)", actions));
+			int cleared = targets.Count;
 			if (cleared > 0) {
 				StatusMessage = $"Cleared input on {cleared} frames";
 			}
@@ -827,6 +975,175 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		var singleFrame = Movie.InputFrames[SelectedFrameIndex];
 		ExecuteAction(new ClearInputAction(singleFrame, SelectedFrameIndex));
 		StatusMessage = $"Cleared input on frame {SelectedFrameIndex}";
+	}
+
+	/// <summary>
+	/// Sets or clears a specific button for the selected frames.
+	/// </summary>
+	public void SetButtonOnSelectedFrames(int port, string button, bool state) {
+		if (Movie is null || string.IsNullOrWhiteSpace(button)) {
+			return;
+		}
+
+		List<int> targets = BuildSelectionIndices();
+		if (targets.Count == 0) {
+			return;
+		}
+
+		if (!TryResolveButtonId(button, out string buttonId)) {
+			StatusMessage = $"Unknown button: {button}";
+			return;
+		}
+
+		PaintButton(targets, port, buttonId, state);
+		StatusMessage = $"{(state ? "Set" : "Cleared")} {buttonId} on {targets.Count} frame(s)";
+	}
+
+	/// <summary>
+	/// Repeats the initial N-frame input pattern across the selected range.
+	/// </summary>
+	public void PatternFillSelectedRange(int intervalFrames, int port = 0) {
+		if (Movie is null || intervalFrames <= 0) {
+			return;
+		}
+
+		List<int> selected = BuildSelectionIndices();
+		if (selected.Count == 0) {
+			return;
+		}
+
+		int start = selected.Min();
+		int end = selected.Max();
+		if (start < 0 || end >= Movie.InputFrames.Count) {
+			return;
+		}
+
+		int patternLength = Math.Min(intervalFrames, end - start + 1);
+		var pattern = new List<ControllerInput>(patternLength);
+		for (int i = 0; i < patternLength; i++) {
+			pattern.Add(CloneControllerInput(Movie.InputFrames[start + i].Controllers[port]));
+		}
+
+		var actions = new List<UndoableAction>(end - start + 1);
+		for (int frame = start; frame <= end; frame++) {
+			ControllerInput source = CloneControllerInput(pattern[(frame - start) % patternLength]);
+			actions.Add(new ModifyInputAction(Movie.InputFrames[frame], frame, port, source));
+		}
+
+		ExecuteAction(new BulkUndoableAction($"Pattern fill {end - start + 1} frame(s)", actions));
+		SelectedFrameIndex = start;
+		SelectedFrameIndices = Enumerable.Range(start, end - start + 1).ToList();
+		StatusMessage = $"Pattern fill applied from frame {start} to {end} with interval {patternLength}";
+	}
+
+	/// <summary>
+	/// Shows a dialog for choosing a button to set or clear on the selected frames.
+	/// </summary>
+	public async System.Threading.Tasks.Task BulkSetButtonDialogAsync(bool state) {
+		if (_window is null) {
+			return;
+		}
+
+		string defaultButton = ControllerButtons.FirstOrDefault()?.ButtonId ?? "A";
+		string verb = state ? "Set" : "Clear";
+		string? button = await Windows.TasInputDialog.ShowTextAsync(
+			_window,
+			$"Bulk {verb} Button",
+			$"Button to {verb.ToLowerInvariant()} across selected range:",
+			defaultButton);
+
+		if (string.IsNullOrWhiteSpace(button)) {
+			return;
+		}
+
+		SetButtonOnSelectedFrames(0, button, state);
+	}
+
+	/// <summary>
+	/// Shows a dialog for pattern-fill interval and applies it to the selected range.
+	/// </summary>
+	public async System.Threading.Tasks.Task PatternFillDialogAsync() {
+		if (_window is null) {
+			return;
+		}
+
+		int? interval = await Windows.TasInputDialog.ShowNumericAsync(
+			_window,
+			"Pattern Fill",
+			"Repeat input pattern every N frames:",
+			2,
+			1,
+			100000);
+
+		if (!interval.HasValue) {
+			return;
+		}
+
+		PatternFillSelectedRange(interval.Value);
+	}
+
+	private List<int> BuildSelectionIndices() {
+		if (Movie is null) {
+			return new List<int>();
+		}
+
+		if (SelectedFrameIndices.Count > 0) {
+			return SelectedFrameIndices
+				.Where(i => i >= 0 && i < Movie.InputFrames.Count)
+				.Distinct()
+				.OrderBy(i => i)
+				.ToList();
+		}
+
+		if (SelectedFrameIndex >= 0 && SelectedFrameIndex < Movie.InputFrames.Count) {
+			return new List<int> { SelectedFrameIndex };
+		}
+
+		return new List<int>();
+	}
+
+	private bool TryResolveButtonId(string rawButton, out string buttonId) {
+		buttonId = string.Empty;
+		if (string.IsNullOrWhiteSpace(rawButton)) {
+			return false;
+		}
+
+		string normalized = rawButton.Trim().ToUpperInvariant();
+		normalized = normalized switch {
+			"ST" => "START",
+			"SEL" => "SELECT",
+			"↑" => "UP",
+			"↓" => "DOWN",
+			"←" => "LEFT",
+			"→" => "RIGHT",
+			_ => normalized
+		};
+
+		ControllerButtonInfo? match = ControllerButtons.FirstOrDefault(btn =>
+			string.Equals(btn.ButtonId, normalized, StringComparison.OrdinalIgnoreCase) ||
+			string.Equals(btn.Label, normalized, StringComparison.OrdinalIgnoreCase));
+
+		if (match is null) {
+			return false;
+		}
+
+		buttonId = match.ButtonId;
+		return true;
+	}
+
+	private InputFrame CreateEmptyFrame(int frameNumber) {
+		if (Movie is null) {
+			return new InputFrame(frameNumber);
+		}
+
+		int controllerCount = Movie.InputFrames.Count > 0 ? Movie.InputFrames[0].Controllers.Length : 1;
+		var frame = new InputFrame(frameNumber) {
+			Controllers = new ControllerInput[controllerCount]
+		};
+		for (int i = 0; i < controllerCount; i++) {
+			frame.Controllers[i] = new ControllerInput();
+		}
+		return frame;
 	}
 
 	/// <summary>
@@ -1208,6 +1525,17 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// </summary>
 	private void ApplyIncrementalUpdate(UndoableAction action, bool isUndo) {
 		switch (action) {
+			case BulkUndoableAction bulk:
+				if (isUndo) {
+					for (int i = bulk.Actions.Count - 1; i >= 0; i--) {
+						ApplyIncrementalUpdate(bulk.Actions[i], true);
+					}
+				} else {
+					foreach (UndoableAction child in bulk.Actions) {
+						ApplyIncrementalUpdate(child, false);
+					}
+				}
+				break;
 			case InsertFramesAction insert:
 				if (isUndo) {
 					// Undo of insert = frames were removed
@@ -2369,6 +2697,35 @@ public abstract class UndoableAction {
 
 	/// <summary>Undoes the action.</summary>
 	public abstract void Undo();
+}
+
+/// <summary>
+/// Action that groups multiple undoable actions into a single undo/redo step.
+/// </summary>
+public sealed class BulkUndoableAction : UndoableAction {
+	private readonly List<UndoableAction> _actions;
+	private readonly string _description;
+
+	public IReadOnlyList<UndoableAction> Actions => _actions;
+
+	public override string Description => _description;
+
+	public BulkUndoableAction(string description, List<UndoableAction> actions) {
+		_description = description;
+		_actions = actions;
+	}
+
+	public override void Execute() {
+		foreach (UndoableAction action in _actions) {
+			action.Execute();
+		}
+	}
+
+	public override void Undo() {
+		for (int i = _actions.Count - 1; i >= 0; i--) {
+			_actions[i].Undo();
+		}
+	}
 }
 
 /// <summary>

@@ -40,6 +40,9 @@
 				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
 				<Button Content="+" ToolTip.Tip="Insert frame (Insert)" Width="30" Click="OnInsertFrameClick" />
 				<Button Content="-" ToolTip.Tip="Delete frame (Delete)" Width="30" Click="OnDeleteFrameClick" />
+				<Button Content="All" ToolTip.Tip="Select all frames (Ctrl+A)" Width="40" Click="OnSelectAllFramesClick" />
+				<Button Content="None" ToolTip.Tip="Clear selection (Ctrl+Shift+A)" Width="50" Click="OnSelectNoFramesClick" />
+				<Button Content="Range" ToolTip.Tip="Select frame range" Width="55" Click="OnSelectRangeDialogClick" />
 				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
 				<Button Content="⏮" ToolTip.Tip="Frame rewind (R)" Width="30" Click="OnFrameRewindClick" />
 				<Button Content="⏯" ToolTip.Tip="Play/Pause (Space)" Width="30" Click="OnPlayPauseClick" />
@@ -129,7 +132,14 @@
 							<MenuItem Header="C_lear Input" Click="OnClearInputClick" />
 							<Separator />
 							<MenuItem Header="Select _All" Click="OnSelectAllClick" InputGesture="Ctrl+A" />
+							<MenuItem Header="Select _None" Click="OnSelectNoneClick" InputGesture="Ctrl+Shift+A" />
+							<MenuItem Header="Select _Range..." Click="OnSelectRangeDialogFromMenuClick" />
 							<MenuItem Header="Select Range _To Here" Click="OnSelectRangeToHereClick" />
+							<Separator />
+							<MenuItem Header="_Insert N Frames..." Click="OnBulkInsertClick" />
+							<MenuItem Header="Bulk _Set Button..." Click="OnBulkSetButtonClick" />
+							<MenuItem Header="Bulk C_lear Button..." Click="OnBulkClearButtonClick" />
+							<MenuItem Header="_Pattern Fill..." Click="OnPatternFillClick" />
 							<Separator />
 							<MenuItem Header="Set _Comment..." Click="OnSetCommentClick" />
 							<MenuItem Header="Set _Marker" Click="OnSetMarkerClick" />
