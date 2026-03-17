@@ -114,6 +114,15 @@ Observed result snapshot:
 
 - `[==========] 18 tests from 4 test suites ran.`
 
+## Deferred Future-Work Linkage
+
+Status: Future Work only. Do not start these issues until explicitly scheduled.
+
+- Parent future-work epic: [#717](https://github.com/TheAnsarya/Nexen/issues/717)
+- Behavior-accurate mapper completion: [#724](https://github.com/TheAnsarya/Nexen/issues/724)
+- Atari compatibility harness expansion: [#725](https://github.com/TheAnsarya/Nexen/issues/725)
+- Post-correctness performance gates: [#727](https://github.com/TheAnsarya/Nexen/issues/727)
+
 ## Related Research
 
 - [Atari 2600 Bankswitching and Cartridge Formats](../research/platform-parity/atari-2600/bankswitching.md)

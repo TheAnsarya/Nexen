@@ -63,6 +63,16 @@ Define and implement a deterministic TIA timing spike with scriptable pass/fail 
 	- `[==========] 10 tests from 2 test suites ran.`
 	- `TIMING_SPIKE SUMMARY STABLE=true DIGEST=<stable-hash>` (from harness output lines)
 
+## Deferred Future-Work Linkage
+
+Status: Future Work only. Do not start these issues until explicitly scheduled.
+
+- Parent future-work epic: [#717](https://github.com/TheAnsarya/Nexen/issues/717)
+- TIA timing follow-through: [#721](https://github.com/TheAnsarya/Nexen/issues/721)
+- TIA render follow-through: [#722](https://github.com/TheAnsarya/Nexen/issues/722)
+- TIA audio follow-through: [#723](https://github.com/TheAnsarya/Nexen/issues/723)
+- Compatibility harness expansion: [#725](https://github.com/TheAnsarya/Nexen/issues/725)
+
 ## Dependencies
 
 - [Atari 2600 TIA Video and Timing](../research/platform-parity/atari-2600/tia-video-timing.md)

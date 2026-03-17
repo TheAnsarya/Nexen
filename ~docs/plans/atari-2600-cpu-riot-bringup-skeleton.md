@@ -49,6 +49,15 @@ Create a buildable Atari 2600 core skeleton with explicit CPU, memory-map, and R
 - Smoke test can step frames without crash.
 - Test scaffold exists for CPU/RIOT wiring assertions.
 
+## Deferred Future-Work Linkage
+
+Status: Future Work only. Do not start these issues until explicitly scheduled.
+
+- Parent future-work epic: [#717](https://github.com/TheAnsarya/Nexen/issues/717)
+- CPU follow-through: [#719](https://github.com/TheAnsarya/Nexen/issues/719)
+- RIOT semantics follow-through: [#720](https://github.com/TheAnsarya/Nexen/issues/720)
+- Save-state determinism follow-through: [#726](https://github.com/TheAnsarya/Nexen/issues/726)
+
 ## Dependencies
 
 - [Atari 2600 Feasibility and Harness Plan](atari-2600-feasibility-and-harness-plan.md)

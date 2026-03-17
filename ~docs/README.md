@@ -90,6 +90,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Keyboard Shortcuts](keyboard-shortcuts-save-states.md) | Save state shortcut design |
 | [Q2 Future Work Program](plans/future-work-program-2026-q2.md) | Milestone-driven execution plan for Epic #673 and sub-issues |
 | [Q3 Platform Parity Research Program](plans/platform-parity-research-program-2026-q3.md) | Multi-session research and execution plan for #704-#707 |
+| [Scaffold Future-Work Backlog](plans/platform-parity-scaffold-future-work-backlog.md) | Deferred issue tree for converting Atari/Genesis scaffold phases into production implementation work |
 | [Atari 2600 Feasibility and Harness Plan](plans/atari-2600-feasibility-and-harness-plan.md) | Spike architecture boundaries, risk register, and harness milestones |
 | [Genesis Architecture and Incremental Plan](plans/genesis-architecture-and-incremental-plan.md) | Phase plan, risk register, and benchmark/correctness gates for Genesis |
 | [Atari CPU/RIOT Bring-Up Skeleton Plan](plans/atari-2600-cpu-riot-bringup-skeleton.md) | Issue-backed implementation scaffold for Atari CPU and RIOT boundaries (#697) |

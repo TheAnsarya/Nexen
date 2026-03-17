@@ -1,0 +1,82 @@
+# Platform Parity Scaffold Future-Work Backlog
+
+Parent epic: [#673](https://github.com/TheAnsarya/Nexen/issues/673)
+
+Status: Future Work only. Do not start implementation from this backlog until explicitly scheduled.
+
+## Purpose
+
+Backfill the completed scaffold phases with a deferred execution tree so Atari 2600 and Genesis scaffold work can be converted into production-ready implementations later without losing scope, dependencies, or validation expectations.
+
+## Sub-Epics
+
+| Sub-Epic | Scope | Status |
+|---|---|---|
+| [#717](https://github.com/TheAnsarya/Nexen/issues/717) | Atari 2600 scaffold-to-production implementation program | Future Work |
+| [#718](https://github.com/TheAnsarya/Nexen/issues/718) | Genesis scaffold-to-production implementation program | Future Work |
+
+## Atari 2600 Future-Work Tree
+
+Scaffold lineage:
+
+- [#697](https://github.com/TheAnsarya/Nexen/issues/697)
+- [#698](https://github.com/TheAnsarya/Nexen/issues/698)
+- [#699](https://github.com/TheAnsarya/Nexen/issues/699)
+- [#711](https://github.com/TheAnsarya/Nexen/issues/711)
+- [#712](https://github.com/TheAnsarya/Nexen/issues/712)
+- [#713](https://github.com/TheAnsarya/Nexen/issues/713)
+
+Deferred child issues:
+
+| Issue | Focus |
+|---|---|
+| [#719](https://github.com/TheAnsarya/Nexen/issues/719) | Cycle-accurate 6507 execution semantics |
+| [#720](https://github.com/TheAnsarya/Nexen/issues/720) | RIOT timer and I/O edge behavior |
+| [#721](https://github.com/TheAnsarya/Nexen/issues/721) | TIA timing and WSYNC/HMOVE edge cases |
+| [#722](https://github.com/TheAnsarya/Nexen/issues/722) | TIA playfield and object rendering pipeline |
+| [#723](https://github.com/TheAnsarya/Nexen/issues/723) | TIA audio channels and deterministic mixer integration |
+| [#724](https://github.com/TheAnsarya/Nexen/issues/724) | Behavior-accurate mapper implementations |
+| [#725](https://github.com/TheAnsarya/Nexen/issues/725) | ROM corpus compatibility harness and checkpoint reports |
+| [#726](https://github.com/TheAnsarya/Nexen/issues/726) | Save-state serialization and determinism gates |
+| [#727](https://github.com/TheAnsarya/Nexen/issues/727) | Performance gate execution after correctness stabilization |
+
+## Genesis Future-Work Tree
+
+Scaffold lineage:
+
+- [#700](https://github.com/TheAnsarya/Nexen/issues/700)
+- [#701](https://github.com/TheAnsarya/Nexen/issues/701)
+- [#702](https://github.com/TheAnsarya/Nexen/issues/702)
+- [#703](https://github.com/TheAnsarya/Nexen/issues/703)
+- [#715](https://github.com/TheAnsarya/Nexen/issues/715)
+- [#716](https://github.com/TheAnsarya/Nexen/issues/716)
+
+Deferred child issues:
+
+| Issue | Focus |
+|---|---|
+| [#728](https://github.com/TheAnsarya/Nexen/issues/728) | M68000 core semantics and interrupt/exception flow |
+| [#729](https://github.com/TheAnsarya/Nexen/issues/729) | Full memory-map decode and bus ownership rules |
+| [#730](https://github.com/TheAnsarya/Nexen/issues/730) | VDP register and status semantics |
+| [#731](https://github.com/TheAnsarya/Nexen/issues/731) | VDP background and sprite rendering pipeline |
+| [#732](https://github.com/TheAnsarya/Nexen/issues/732) | VDP DMA modes and contention timing behavior |
+| [#733](https://github.com/TheAnsarya/Nexen/issues/733) | H/V interrupt scheduling and frame event timing |
+| [#734](https://github.com/TheAnsarya/Nexen/issues/734) | Z80 subsystem bootstrap and shared-bus handoff |
+| [#735](https://github.com/TheAnsarya/Nexen/issues/735) | YM2612 synthesis and timing synchronization |
+| [#736](https://github.com/TheAnsarya/Nexen/issues/736) | SN76489 PSG path and mixed output integration |
+| [#737](https://github.com/TheAnsarya/Nexen/issues/737) | Sonic 1 and Jurassic Park compatibility harness execution |
+| [#738](https://github.com/TheAnsarya/Nexen/issues/738) | Save-state serialization and replay determinism gates |
+| [#739](https://github.com/TheAnsarya/Nexen/issues/739) | Performance gate execution after correctness stabilization |
+
+## Scheduling Rule
+
+All issues in this backlog remain parked as future work unless one of the following occurs:
+
+1. They are explicitly pulled into an active milestone by the maintainer.
+2. A dedicated execution sprint is declared for Atari or Genesis parity completion.
+3. A compatibility blocker requires selective promotion of one future-work item.
+
+## References
+
+- [Q3 Platform Parity Research Program](platform-parity-research-program-2026-q3.md)
+- [Nexen Future Work Index](../../docs/FUTURE-WORK.md)

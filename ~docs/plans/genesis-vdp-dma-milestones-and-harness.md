@@ -96,6 +96,17 @@ Observed result snapshot:
 
 - `[==========] 8 tests from 3 test suites ran.`
 
+## Deferred Future-Work Linkage
+
+Status: Future Work only. Do not start these issues until explicitly scheduled.
+
+- Parent future-work epic: [#718](https://github.com/TheAnsarya/Nexen/issues/718)
+- VDP register semantics follow-through: [#730](https://github.com/TheAnsarya/Nexen/issues/730)
+- VDP render pipeline follow-through: [#731](https://github.com/TheAnsarya/Nexen/issues/731)
+- VDP DMA and contention follow-through: [#732](https://github.com/TheAnsarya/Nexen/issues/732)
+- H/V interrupt scheduling follow-through: [#733](https://github.com/TheAnsarya/Nexen/issues/733)
+- Sonic/Jurassic compatibility harness execution: [#737](https://github.com/TheAnsarya/Nexen/issues/737)
+
 ## Related Research
 
 - [Genesis VDP Rendering and DMA](../research/platform-parity/genesis/vdp-rendering-dma.md)

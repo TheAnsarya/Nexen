@@ -42,6 +42,7 @@ This directory contains user-facing documentation for Nexen.
 | [Documentation Restructure Plan](../~docs/plans/documentation-restructure-plan.md) | Documentation hierarchy and feature-first navigation roadmap |
 | [Q2 2026 Future Work Program](../~docs/plans/future-work-program-2026-q2.md) | Milestones and acceptance criteria for platform-parity planning and execution |
 | [Q3 2026 Platform Parity Research Program](../~docs/plans/platform-parity-research-program-2026-q3.md) | Multi-session research and execution cadence for issues #704-#707 |
+| [Scaffold Future-Work Backlog](../~docs/plans/platform-parity-scaffold-future-work-backlog.md) | Deferred Atari/Genesis issue tree for post-scaffold implementation fill-in |
 
 ## Systems Documentation
 

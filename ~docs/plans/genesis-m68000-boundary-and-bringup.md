@@ -43,6 +43,16 @@ Define the minimum stable M68000 integration boundary for Nexen and a phased bri
 - Build-time scaffolding compiles in Release x64.
 - Follow-up implementation tasks are listed and dependency-ordered.
 
+## Deferred Future-Work Linkage
+
+Status: Future Work only. Do not start these issues until explicitly scheduled.
+
+- Parent future-work epic: [#718](https://github.com/TheAnsarya/Nexen/issues/718)
+- M68000 semantics follow-through: [#728](https://github.com/TheAnsarya/Nexen/issues/728)
+- Memory-map and bus ownership follow-through: [#729](https://github.com/TheAnsarya/Nexen/issues/729)
+- Interrupt/frame event scheduling follow-through: [#733](https://github.com/TheAnsarya/Nexen/issues/733)
+- Z80 bus handoff follow-through: [#734](https://github.com/TheAnsarya/Nexen/issues/734)
+
 ## Related Research
 
 - [Genesis M68000 CPU Integration](../research/platform-parity/genesis/cpu-m68000.md)
