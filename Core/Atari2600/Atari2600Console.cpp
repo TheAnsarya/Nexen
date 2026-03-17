@@ -9,30 +9,138 @@
 #include <functional>
 
 class Atari2600Mapper {
-	private:
-		vector<uint8_t> _rom;
-
-	public:
-		void LoadRom(const vector<uint8_t>& romData) {
-			_rom = romData;
-		}
-
-		uint8_t Read(uint16_t addr) const {
-			if (_rom.empty() || addr < 0x1000) {
-				return 0xFF;
-			}
-
-			size_t offset = (size_t)(addr - 0x1000) % _rom.size();
-			return _rom[offset];
-		}
-
-		void Write(uint16_t addr, uint8_t value) {
-			(void)addr;
-			(void)value;
-		}
+private:
+	enum class MapperMode {
+		None,
+		Fixed2K,
+		Fixed4K,
+		F8,
+		F6,
+		Unknown
 	};
 
-	class Atari2600Riot {
+	vector<uint8_t> _rom;
+	MapperMode _mode = MapperMode::None;
+	uint8_t _activeBank = 0;
+
+	void SelectMode() {
+		if (_rom.empty()) {
+			_mode = MapperMode::None;
+			_activeBank = 0;
+			return;
+		}
+
+		size_t size = _rom.size();
+		if (size <= 2048) {
+			_mode = MapperMode::Fixed2K;
+			_activeBank = 0;
+		} else if (size <= 4096) {
+			_mode = MapperMode::Fixed4K;
+			_activeBank = 0;
+		} else if (size == 8192) {
+			_mode = MapperMode::F8;
+			_activeBank = 1;
+		} else if (size == 16384) {
+			_mode = MapperMode::F6;
+			_activeBank = 0;
+		} else {
+			_mode = MapperMode::Unknown;
+			_activeBank = 0;
+		}
+	}
+
+	void HandleBankswitch(uint16_t addr) {
+		addr &= 0x1FFF;
+
+		switch (_mode) {
+			case MapperMode::F8:
+				if (addr == 0x1FF8) {
+					_activeBank = 0;
+				} else if (addr == 0x1FF9) {
+					_activeBank = 1;
+				}
+				break;
+
+			case MapperMode::F6:
+				if (addr >= 0x1FF6 && addr <= 0x1FF9) {
+					_activeBank = (uint8_t)(addr - 0x1FF6);
+				}
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	[[nodiscard]] size_t GetOffset(uint16_t addr) const {
+		if (_rom.empty() || addr < 0x1000) {
+			return 0;
+		}
+
+		uint16_t cartAddr = (uint16_t)(addr - 0x1000);
+		switch (_mode) {
+			case MapperMode::Fixed2K:
+				return cartAddr & 0x07FF;
+
+			case MapperMode::Fixed4K:
+				return cartAddr & 0x0FFF;
+
+			case MapperMode::F8:
+				return ((size_t)_activeBank * 0x1000) + (cartAddr & 0x0FFF);
+
+			case MapperMode::F6:
+				return ((size_t)_activeBank * 0x1000) + (cartAddr & 0x0FFF);
+
+			case MapperMode::Unknown:
+				return cartAddr % _rom.size();
+
+			case MapperMode::None:
+			default:
+				return 0;
+		}
+	}
+
+public:
+	void LoadRom(const vector<uint8_t>& romData) {
+		_rom = romData;
+		SelectMode();
+	}
+
+	uint8_t Read(uint16_t addr) {
+		if (_rom.empty() || addr < 0x1000) {
+			return 0xFF;
+		}
+
+		HandleBankswitch(addr);
+		size_t offset = GetOffset(addr);
+		if (offset >= _rom.size()) {
+			offset %= _rom.size();
+		}
+		return _rom[offset];
+	}
+
+	void Write(uint16_t addr, uint8_t value) {
+		(void)value;
+		HandleBankswitch(addr);
+	}
+
+	[[nodiscard]] uint8_t GetActiveBank() const {
+		return _activeBank;
+	}
+
+	[[nodiscard]] string GetModeName() const {
+		switch (_mode) {
+			case MapperMode::Fixed2K: return "2k";
+			case MapperMode::Fixed4K: return "4k";
+			case MapperMode::F8: return "f8";
+			case MapperMode::F6: return "f6";
+			case MapperMode::Unknown: return "unknown";
+			default: return "none";
+		}
+	}
+};
+
+class Atari2600Riot {
 	private:
 		Atari2600RiotState _state = {};
 
@@ -308,6 +416,27 @@ Atari2600RiotState Atari2600Console::GetRiotState() const {
 
 Atari2600TiaState Atari2600Console::GetTiaState() const {
 	return _tia->GetState();
+}
+
+uint8_t Atari2600Console::DebugReadCartridge(uint16_t addr) const {
+	if (!_bus) {
+		return 0xFF;
+	}
+	return _bus->Read(addr);
+}
+
+void Atari2600Console::DebugWriteCartridge(uint16_t addr, uint8_t value) {
+	if (_bus) {
+		_bus->Write(addr, value);
+	}
+}
+
+uint8_t Atari2600Console::DebugGetMapperBankIndex() const {
+	return _mapper ? _mapper->GetActiveBank() : 0;
+}
+
+string Atari2600Console::DebugGetMapperMode() const {
+	return _mapper ? _mapper->GetModeName() : "none";
 }
 
 void Atari2600Console::RenderDebugFrame() {

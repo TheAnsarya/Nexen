@@ -65,6 +65,22 @@ Dependency issue placeholders (to be replaced with issue IDs once created):
 - Phase B tracking issue: [#712](https://github.com/TheAnsarya/Nexen/issues/712)
 - Phase C tracking issue: [#713](https://github.com/TheAnsarya/Nexen/issues/713)
 
+## Phase A Evidence
+
+- Implemented in feature branch: fixed `2K/4K`, `F8`, and `F6` mapper handling with bankswitch hotspots.
+- Added focused regression tests: `Atari2600MapperPhaseATests`.
+- Added digest stability regression check against a Phase A baseline corpus.
+
+Focused command:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600MapperPhaseATests.*:Atari2600TimingSpikeHarnessTests.* --gtest_brief=1
+```
+
+Observed result snapshot:
+
+- `[==========] 11 tests from 2 test suites ran.`
+
 ## Related Research
 
 - [Atari 2600 Bankswitching and Cartridge Formats](../research/platform-parity/atari-2600/bankswitching.md)
