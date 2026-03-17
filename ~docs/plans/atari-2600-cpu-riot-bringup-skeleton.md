@@ -73,6 +73,31 @@ Validation evidence:
 
 Result: 20 tests from 5 Atari suites passed.
 
+## Execution Evidence: Issue #720
+
+Issue: [#720](https://github.com/TheAnsarya/Nexen/issues/720)
+
+Status: Completed (2026-03-17)
+
+Implemented outcomes:
+
+- Added RIOT direction-register semantics for Port A/Port B read paths.
+- Added deterministic timer-divider behavior for 1/8/64/1024 prescale writes.
+- Added timer underflow interrupt-edge tracking (`InterruptFlag`, `InterruptEdgeCount`) for deterministic checkpoint validation.
+- Added focused RIOT phase tests for direction-masked reads and divider underflow edge progression.
+
+Validation evidence:
+
+```powershell
+& "C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin\MSBuild.exe" Nexen.sln /p:Configuration=Release /p:Platform=x64 /t:Build /m /nologo /v:m
+```
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600RiotPhaseATests.*:Atari2600CpuPhaseATests.*:Atari2600TimingSpikeHarnessTests.*:Atari2600MapperPhaseATests.*:Atari2600MapperPhaseBTests.*:Atari2600MapperPhaseCTests.* --gtest_brief=1
+```
+
+Result: 22 tests from 6 Atari suites passed.
+
 ## Deferred Future-Work Linkage
 
 Status: Future Work only. Do not start these issues until explicitly scheduled.
@@ -80,9 +105,9 @@ Status: Future Work only. Do not start these issues until explicitly scheduled.
 Completed from this deferred set:
 
 - CPU follow-through: [#719](https://github.com/TheAnsarya/Nexen/issues/719)
+- RIOT semantics follow-through: [#720](https://github.com/TheAnsarya/Nexen/issues/720)
 
 - Parent future-work epic: [#717](https://github.com/TheAnsarya/Nexen/issues/717)
-- RIOT semantics follow-through: [#720](https://github.com/TheAnsarya/Nexen/issues/720)
 - Save-state determinism follow-through: [#726](https://github.com/TheAnsarya/Nexen/issues/726)
 
 ## Dependencies

@@ -287,28 +287,60 @@ class Atari2600Riot {
 	private:
 		Atari2600RiotState _state = {};
 
+		void ConfigureTimer(uint8_t value, uint16_t divider) {
+			_state.Timer = value;
+			_state.TimerDivider = std::max<uint16_t>(1, divider);
+			_state.TimerDividerCounter = _state.TimerDivider;
+			_state.TimerUnderflow = false;
+			_state.InterruptFlag = false;
+		}
+
+		[[nodiscard]] uint8_t ReadPortValue(uint8_t outputLatch, uint8_t inputLatch, uint8_t directionMask) const {
+			uint8_t outputBits = (uint8_t)(outputLatch & directionMask);
+			uint8_t inputBits = (uint8_t)(inputLatch & (uint8_t)~directionMask);
+			return (uint8_t)(outputBits | inputBits);
+		}
+
 	public:
 		void Reset() {
 			_state = {};
+			_state.TimerDivider = 1;
+			_state.TimerDividerCounter = 1;
 		}
 
 		void StepCpuCycles(uint32_t cycles) {
 			for (uint32_t i = 0; i < cycles; i++) {
 				_state.CpuCycles++;
-				if (_state.Timer > 0) {
-					_state.Timer--;
-				} else {
-					_state.TimerUnderflow = true;
+
+				if (_state.TimerDividerCounter > 0) {
+					_state.TimerDividerCounter--;
+				}
+
+				if (_state.TimerDividerCounter == 0) {
+					_state.TimerDividerCounter = _state.TimerDivider;
+
+					if (_state.Timer == 0) {
+						_state.Timer = 0x00FF;
+						_state.TimerUnderflow = true;
+						_state.InterruptFlag = true;
+						_state.InterruptEdgeCount++;
+					} else {
+						_state.Timer--;
+					}
 				}
 			}
 		}
 
 		uint8_t ReadRegister(uint16_t addr) const {
 			switch (addr & 0x07) {
-				case 0x00: return _state.PortA;
-				case 0x01: return _state.PortB;
+				case 0x00: return ReadPortValue(_state.PortA, _state.PortAInput, _state.PortADirection);
+				case 0x01: return ReadPortValue(_state.PortB, _state.PortBInput, _state.PortBDirection);
+				case 0x02: return _state.PortADirection;
+				case 0x03: return _state.PortBDirection;
 				case 0x04: return (uint8_t)(_state.Timer & 0xFF);
 				case 0x05: return (uint8_t)((_state.Timer >> 8) & 0xFF);
+				case 0x06: return _state.InterruptFlag ? 1 : 0;
+				case 0x07: return _state.TimerUnderflow ? 1 : 0;
 				default: return 0;
 			}
 		}
@@ -321,13 +353,23 @@ class Atari2600Riot {
 				case 0x01:
 					_state.PortB = value;
 					break;
+				case 0x02:
+					_state.PortADirection = value;
+					break;
+				case 0x03:
+					_state.PortBDirection = value;
+					break;
 				case 0x04:
-					_state.Timer = value;
-					_state.TimerUnderflow = false;
+					ConfigureTimer(value, 1);
 					break;
 				case 0x05:
-					_state.Timer = (uint16_t)value << 6;
-					_state.TimerUnderflow = false;
+					ConfigureTimer(value, 8);
+					break;
+				case 0x06:
+					ConfigureTimer(value, 64);
+					break;
+				case 0x07:
+					ConfigureTimer(value, 1024);
 					break;
 			}
 		}

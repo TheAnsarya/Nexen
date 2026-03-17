@@ -13,8 +13,16 @@ class Atari2600Bus;
 struct Atari2600RiotState {
 	uint8_t PortA = 0;
 	uint8_t PortB = 0;
+	uint8_t PortADirection = 0;
+	uint8_t PortBDirection = 0;
+	uint8_t PortAInput = 0;
+	uint8_t PortBInput = 0;
 	uint16_t Timer = 0;
+	uint16_t TimerDivider = 1;
+	uint16_t TimerDividerCounter = 1;
 	bool TimerUnderflow = false;
+	bool InterruptFlag = false;
+	uint32_t InterruptEdgeCount = 0;
 	uint64_t CpuCycles = 0;
 };
 
