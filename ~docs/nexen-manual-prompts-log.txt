@@ -569,6 +569,7 @@ switch to the main branch, fix the `MovieConverter System.IO.Hashing CS0234 erro
 
 [Nexen] You're creating scaffolding, right? Make plans and a sub-epics and a ton of issues for implementing all the scaffolds as you create the scaffolding; Don't just make a skeleton, make future work efforts (epics, issues, plans, docs) for filling in the details later, mark them as future work so we don't start working them yet; go back and add this planning and issues, etc to the work we have already done scaffolding; continue;
 
+continue scaffolding and making plans and issues until you are done, and then start working on the new issues; continue;
 
 
 

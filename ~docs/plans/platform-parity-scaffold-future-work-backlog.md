@@ -2,7 +2,11 @@
 
 Parent epic: [#673](https://github.com/TheAnsarya/Nexen/issues/673)
 
-Status: Future Work only. Do not start implementation from this backlog until explicitly scheduled.
+Status: Future Work only. Do not start implementation from this backlog until explicitly scheduled, except for explicitly promoted items listed below.
+
+Promoted and completed from backlog:
+
+- [#719](https://github.com/TheAnsarya/Nexen/issues/719): Cycle-accurate 6507 execution semantics (completed 2026-03-17).
 
 ## Purpose
 
@@ -30,7 +34,7 @@ Deferred child issues:
 
 | Issue | Focus |
 |---|---|
-| [#719](https://github.com/TheAnsarya/Nexen/issues/719) | Cycle-accurate 6507 execution semantics |
+| [#719](https://github.com/TheAnsarya/Nexen/issues/719) | Cycle-accurate 6507 execution semantics (completed; promoted from deferred backlog) |
 | [#720](https://github.com/TheAnsarya/Nexen/issues/720) | RIOT timer and I/O edge behavior |
 | [#721](https://github.com/TheAnsarya/Nexen/issues/721) | TIA timing and WSYNC/HMOVE edge cases |
 | [#722](https://github.com/TheAnsarya/Nexen/issues/722) | TIA playfield and object rendering pipeline |

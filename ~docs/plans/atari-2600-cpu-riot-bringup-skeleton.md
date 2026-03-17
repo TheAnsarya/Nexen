@@ -49,12 +49,39 @@ Create a buildable Atari 2600 core skeleton with explicit CPU, memory-map, and R
 - Smoke test can step frames without crash.
 - Test scaffold exists for CPU/RIOT wiring assertions.
 
+## Execution Evidence: Issue #719
+
+Issue: [#719](https://github.com/TheAnsarya/Nexen/issues/719)
+
+Status: Completed (2026-03-17)
+
+Implemented outcomes:
+
+- Replaced one-byte stub stepping in Atari CPU adapter with instruction-level decode and deterministic cycle accounting.
+- Added cycle-aware branching and arithmetic/control-path support used by scaffold ROMs and harness paths.
+- Added focused CPU phase tests that validate instruction-cycle boundaries and branch-selected side effects through RIOT port writes.
+
+Validation evidence:
+
+```powershell
+& "C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin\MSBuild.exe" Nexen.sln /p:Configuration=Release /p:Platform=x64 /t:Build /m /nologo /v:m
+```
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600CpuPhaseATests.*:Atari2600TimingSpikeHarnessTests.*:Atari2600MapperPhaseATests.*:Atari2600MapperPhaseBTests.*:Atari2600MapperPhaseCTests.* --gtest_brief=1
+```
+
+Result: 20 tests from 5 Atari suites passed.
+
 ## Deferred Future-Work Linkage
 
 Status: Future Work only. Do not start these issues until explicitly scheduled.
 
-- Parent future-work epic: [#717](https://github.com/TheAnsarya/Nexen/issues/717)
+Completed from this deferred set:
+
 - CPU follow-through: [#719](https://github.com/TheAnsarya/Nexen/issues/719)
+
+- Parent future-work epic: [#717](https://github.com/TheAnsarya/Nexen/issues/717)
 - RIOT semantics follow-through: [#720](https://github.com/TheAnsarya/Nexen/issues/720)
 - Save-state determinism follow-through: [#726](https://github.com/TheAnsarya/Nexen/issues/726)
 

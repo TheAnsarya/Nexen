@@ -430,11 +430,214 @@ class Atari2600Riot {
 		std::function<void(uint16_t, uint8_t)> _write;
 		uint16_t _pc = 0x1000;
 		uint64_t _cycleCount = 0;
+		uint8_t _a = 0;
+		uint8_t _x = 0;
+		uint8_t _y = 0;
+		uint8_t _sp = 0xFD;
+		uint8_t _status = 0x24;
+		uint8_t _instructionCyclesRemaining = 0;
+
+		static constexpr uint8_t FlagCarry = 0x01;
+		static constexpr uint8_t FlagZero = 0x02;
+		static constexpr uint8_t FlagInterruptDisable = 0x04;
+		static constexpr uint8_t FlagDecimal = 0x08;
+		static constexpr uint8_t FlagBreak = 0x10;
+		static constexpr uint8_t FlagUnused = 0x20;
+		static constexpr uint8_t FlagOverflow = 0x40;
+		static constexpr uint8_t FlagNegative = 0x80;
+
+		[[nodiscard]] uint8_t Read(uint16_t addr) const {
+			return _read ? _read(addr & 0x1FFF) : 0xFF;
+		}
+
+		void Write(uint16_t addr, uint8_t value) const {
+			if (_write) {
+				_write(addr & 0x1FFF, value);
+			}
+		}
+
+		[[nodiscard]] uint8_t FetchByte() {
+			uint8_t value = Read(_pc);
+			_pc = (_pc + 1) & 0x1FFF;
+			return value;
+		}
+
+		[[nodiscard]] uint16_t FetchWord() {
+			uint16_t low = FetchByte();
+			uint16_t high = FetchByte();
+			return (uint16_t)((high << 8) | low);
+		}
+
+		void SetFlag(uint8_t flag, bool enabled) {
+			if (enabled) {
+				_status |= flag;
+			} else {
+				_status &= (uint8_t)~flag;
+			}
+		}
+
+		[[nodiscard]] bool GetFlag(uint8_t flag) const {
+			return (_status & flag) != 0;
+		}
+
+		void UpdateZeroNegative(uint8_t value) {
+			SetFlag(FlagZero, value == 0);
+			SetFlag(FlagNegative, (value & 0x80) != 0);
+		}
+
+		[[nodiscard]] uint8_t AddWithCarry(uint8_t left, uint8_t right, bool subtract) {
+			uint16_t operand = subtract ? (uint16_t)(right ^ 0xFF) : right;
+			uint16_t carryIn = GetFlag(FlagCarry) ? 1 : 0;
+			uint16_t sum = (uint16_t)left + operand + carryIn;
+			uint8_t result = (uint8_t)sum;
+
+			SetFlag(FlagCarry, sum > 0xFF);
+			SetFlag(FlagOverflow, ((~(left ^ operand) & (left ^ result)) & 0x80) != 0);
+			UpdateZeroNegative(result);
+			return result;
+		}
+
+		[[nodiscard]] uint8_t Compare(uint8_t left, uint8_t right) {
+			uint16_t diff = (uint16_t)left - right;
+			SetFlag(FlagCarry, left >= right);
+			SetFlag(FlagZero, left == right);
+			SetFlag(FlagNegative, (diff & 0x80) != 0);
+			return 2;
+		}
+
+		[[nodiscard]] uint8_t BranchIf(bool condition) {
+			int8_t offset = (int8_t)FetchByte();
+			if (!condition) {
+				return 2;
+			}
+
+			uint16_t sourcePc = _pc;
+			uint16_t targetPc = (uint16_t)(_pc + offset);
+			_pc = targetPc & 0x1FFF;
+
+			uint8_t cycles = 3;
+			if (((sourcePc ^ targetPc) & 0xFF00) != 0) {
+				cycles++;
+			}
+			return cycles;
+		}
+
+		[[nodiscard]] uint8_t ExecuteInstruction() {
+			uint8_t opcode = FetchByte();
+
+			switch (opcode) {
+				case 0x00:
+				case 0xEA:
+					return 2;
+
+				case 0xA9:
+					_a = FetchByte();
+					UpdateZeroNegative(_a);
+					return 2;
+
+				case 0xA2:
+					_x = FetchByte();
+					UpdateZeroNegative(_x);
+					return 2;
+
+				case 0xA0:
+					_y = FetchByte();
+					UpdateZeroNegative(_y);
+					return 2;
+
+				case 0x8D: {
+					uint16_t addr = FetchWord();
+					Write(addr, _a);
+					return 4;
+				}
+
+				case 0x8E: {
+					uint16_t addr = FetchWord();
+					Write(addr, _x);
+					return 4;
+				}
+
+				case 0x8C: {
+					uint16_t addr = FetchWord();
+					Write(addr, _y);
+					return 4;
+				}
+
+				case 0xAA:
+					_x = _a;
+					UpdateZeroNegative(_x);
+					return 2;
+
+				case 0xE8:
+					_x++;
+					UpdateZeroNegative(_x);
+					return 2;
+
+				case 0xCA:
+					_x--;
+					UpdateZeroNegative(_x);
+					return 2;
+
+				case 0xC8:
+					_y++;
+					UpdateZeroNegative(_y);
+					return 2;
+
+				case 0x88:
+					_y--;
+					UpdateZeroNegative(_y);
+					return 2;
+
+				case 0x18:
+					SetFlag(FlagCarry, false);
+					return 2;
+
+				case 0x38:
+					SetFlag(FlagCarry, true);
+					return 2;
+
+				case 0x69:
+					_a = AddWithCarry(_a, FetchByte(), false);
+					return 2;
+
+				case 0xE9:
+					_a = AddWithCarry(_a, FetchByte(), true);
+					return 2;
+
+				case 0xC9:
+					return Compare(_a, FetchByte());
+
+				case 0x4C:
+					_pc = FetchWord() & 0x1FFF;
+					return 3;
+
+				case 0xF0:
+					return BranchIf(GetFlag(FlagZero));
+
+				case 0xD0:
+					return BranchIf(!GetFlag(FlagZero));
+
+				case 0x10:
+					return BranchIf(!GetFlag(FlagNegative));
+
+				case 0x30:
+					return BranchIf(GetFlag(FlagNegative));
+
+				default:
+					return 2;
+			}
+		}
 
 	public:
 		void Reset() {
 			_pc = 0x1000;
 			_cycleCount = 0;
+			_a = 0;
+			_x = 0;
+			_y = 0;
+			_sp = 0xFD;
+			_status = FlagUnused | FlagInterruptDisable;
+			_instructionCyclesRemaining = 0;
 		}
 
 		void SetReadCallback(std::function<uint8_t(uint16_t)> cb) {
@@ -447,11 +650,14 @@ class Atari2600Riot {
 
 		void StepCycles(uint32_t cycles) {
 			for (uint32_t i = 0; i < cycles; i++) {
-				if (_read) {
-					volatile uint8_t opcode = _read(_pc);
-					(void)opcode;
+				if (_instructionCyclesRemaining == 0) {
+					_instructionCyclesRemaining = ExecuteInstruction();
+					if (_instructionCyclesRemaining == 0) {
+						_instructionCyclesRemaining = 1;
+					}
 				}
-				_pc = (_pc + 1) & 0x1FFF;
+
+				_instructionCyclesRemaining--;
 				_cycleCount++;
 			}
 		}
