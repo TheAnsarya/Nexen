@@ -199,6 +199,19 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			? $"{SearchResultIndex + 1} of {SearchResults.Count}"
 			: "No results";
 
+	/// <summary>Gets marker/comment entries for the marker panel.</summary>
+	public ObservableCollection<TasMarkerEntryViewModel> MarkerEntries { get; } = new();
+
+	/// <summary>Gets or sets the selected marker/comment entry.</summary>
+	[Reactive] public TasMarkerEntryViewModel? SelectedMarkerEntry { get; set; }
+
+	/// <summary>Gets or sets the marker entry filter mode.</summary>
+	[Reactive] public MarkerEntryFilterType MarkerEntryFilter { get; set; } = MarkerEntryFilterType.All;
+
+	/// <summary>Gets the available marker entry filters.</summary>
+	public static IReadOnlyList<MarkerEntryFilterType> MarkerEntryFilters { get; } =
+		Enum.GetValues<MarkerEntryFilterType>();
+
 	public TasEditorViewModel() {
 		// Initialize Lua API
 		LuaApi = new TasLuaApi(this);
@@ -251,6 +264,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		AddDisposable(this.WhenAnyValue(x => x.CurrentLayout).Subscribe(_ => UpdateControllerButtons()));
 		AddDisposable(this.WhenAnyValue(x => x.SelectedFrameIndex).Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedFrameIsLag))));
 		AddDisposable(this.WhenAnyValue(x => x.AutoSaveEnabled).Subscribe(_ => RestartAutoSaveTimer()));
+		AddDisposable(this.WhenAnyValue(x => x.MarkerEntryFilter).Subscribe(_ => RefreshMarkerEntries()));
 		AddDisposable(this.WhenAnyValue(x => x.AutoSaveIntervalMinutes).Subscribe(minutes => {
 			int clamped = Math.Clamp(minutes, 1, 60);
 			if (minutes != clamped) {
@@ -618,6 +632,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			FilePath = path;
 			_currentConverter = converter;
 			HasUnsavedChanges = false;
+			RefreshMarkerEntries();
 			StatusMessage = $"Loaded {Movie.InputFrames.Count:N0} frames from {Path.GetFileName(path)}";
 		} catch (Exception ex) {
 			StatusMessage = $"Error loading file: {ex.Message}";
@@ -1019,6 +1034,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 		RefreshFrameAt(SelectedFrameIndex);
 		HasUnsavedChanges = true;
+		RefreshMarkerEntries();
 	}
 
 	/// <summary>
@@ -1318,7 +1334,202 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		frame.Comment = string.IsNullOrWhiteSpace(result) ? null : result;
 		RefreshFrameAt(SelectedFrameIndex);
 		HasUnsavedChanges = true;
+		RefreshMarkerEntries();
 		StatusMessage = frame.Comment is not null ? $"Set comment on frame {SelectedFrameIndex}" : $"Removed comment from frame {SelectedFrameIndex}";
+	}
+
+	/// <summary>
+	/// Rebuilds the marker/comment list from current movie data.
+	/// </summary>
+	public void RefreshMarkerEntries() {
+		MarkerEntries.Clear();
+		if (Movie is null) {
+			SelectedMarkerEntry = null;
+			return;
+		}
+
+		for (int i = 0; i < Movie.InputFrames.Count; i++) {
+			string? comment = Movie.InputFrames[i].Comment;
+			if (string.IsNullOrWhiteSpace(comment)) {
+				continue;
+			}
+
+			MarkerEntryType type = ClassifyMarkerEntryType(comment);
+			if (!MatchesMarkerFilter(type)) {
+				continue;
+			}
+
+			MarkerEntries.Add(new TasMarkerEntryViewModel(i, comment, type));
+		}
+
+		if (SelectedMarkerEntry is not null) {
+			SelectedMarkerEntry = MarkerEntries.FirstOrDefault(e => e.FrameIndex == SelectedMarkerEntry.FrameIndex);
+		}
+	}
+
+	/// <summary>
+	/// Navigates to the frame of the selected marker entry.
+	/// </summary>
+	public void NavigateToMarkerEntry(TasMarkerEntryViewModel? entry) {
+		if (entry is null || Movie is null) {
+			return;
+		}
+
+		if (entry.FrameIndex < 0 || entry.FrameIndex >= Movie.InputFrames.Count) {
+			return;
+		}
+
+		SelectedFrameIndex = entry.FrameIndex;
+		SelectedFrameIndices = new List<int> { entry.FrameIndex };
+		StatusMessage = $"Navigated to frame {entry.FrameIndex}";
+	}
+
+	/// <summary>
+	/// Adds or updates a marker/comment entry at the requested frame.
+	/// </summary>
+	internal bool UpsertMarkerEntry(int frameIndex, string? text) {
+		if (Movie is null || frameIndex < 0 || frameIndex >= Movie.InputFrames.Count) {
+			return false;
+		}
+
+		Movie.InputFrames[frameIndex].Comment = string.IsNullOrWhiteSpace(text) ? null : text.Trim();
+		RefreshFrameAt(frameIndex);
+		HasUnsavedChanges = true;
+		RefreshMarkerEntries();
+		return true;
+	}
+
+	/// <summary>
+	/// Deletes the currently selected marker/comment entry.
+	/// </summary>
+	public void DeleteSelectedMarkerEntry() {
+		if (SelectedMarkerEntry is null) {
+			return;
+		}
+
+		int frameIndex = SelectedMarkerEntry.FrameIndex;
+
+		if (UpsertMarkerEntry(frameIndex, null)) {
+			StatusMessage = $"Removed marker/comment from frame {frameIndex}";
+		}
+	}
+
+	/// <summary>
+	/// Exports currently visible marker entries to a text file.
+	/// </summary>
+	internal bool ExportMarkerEntries(string path) {
+		if (string.IsNullOrWhiteSpace(path)) {
+			return false;
+		}
+
+		var lines = new List<string>(MarkerEntries.Count + 1) {
+			"Frame\tType\tComment"
+		};
+
+		foreach (var entry in MarkerEntries.OrderBy(e => e.FrameIndex)) {
+			lines.Add($"{entry.FrameIndex}\t{entry.Type}\t{entry.Comment}");
+		}
+
+		File.WriteAllLines(path, lines);
+		StatusMessage = $"Exported {MarkerEntries.Count} marker/comment entries";
+		return true;
+	}
+
+	/// <summary>
+	/// Adds a marker/comment entry from panel UI.
+	/// </summary>
+	public async System.Threading.Tasks.Task AddMarkerEntryAsync() {
+		if (Movie is null || _window is null) {
+			return;
+		}
+
+		int maxFrame = Math.Max(0, Movie.InputFrames.Count - 1);
+		int defaultFrame = SelectedFrameIndex >= 0 ? SelectedFrameIndex : 0;
+		int? frameIndex = await Windows.TasInputDialog.ShowNumericAsync(_window, "Add Marker/Comment", $"Frame index (0 - {maxFrame:N0}):", defaultFrame, 0, maxFrame);
+		if (!frameIndex.HasValue) {
+			return;
+		}
+
+		string? text = await Windows.TasInputDialog.ShowTextAsync(_window, "Add Marker/Comment", "Comment text ([M] prefix marks marker, TODO keyword marks TODO):", "[M]");
+		if (text is null) {
+			return;
+		}
+
+		if (UpsertMarkerEntry(frameIndex.Value, text)) {
+			StatusMessage = $"Added marker/comment on frame {frameIndex.Value}";
+		}
+	}
+
+	/// <summary>
+	/// Edits the currently selected marker/comment entry.
+	/// </summary>
+	public async System.Threading.Tasks.Task EditSelectedMarkerEntryAsync() {
+		if (SelectedMarkerEntry is null || _window is null) {
+			return;
+		}
+
+		string? text = await Windows.TasInputDialog.ShowTextAsync(
+			_window,
+			"Edit Marker/Comment",
+			$"Comment for frame {SelectedMarkerEntry.FrameIndex}:\n(Leave empty to remove)",
+			SelectedMarkerEntry.Comment);
+
+		if (text is null) {
+			return;
+		}
+
+		if (UpsertMarkerEntry(SelectedMarkerEntry.FrameIndex, text)) {
+			StatusMessage = string.IsNullOrWhiteSpace(text)
+				? $"Removed marker/comment from frame {SelectedMarkerEntry.FrameIndex}"
+				: $"Updated marker/comment on frame {SelectedMarkerEntry.FrameIndex}";
+		}
+	}
+
+	/// <summary>
+	/// Exports marker/comment entries via save-file dialog.
+	/// </summary>
+	public async System.Threading.Tasks.Task ExportMarkerEntriesAsync() {
+		if (_window is null) {
+			return;
+		}
+
+		string? path = await FileDialogHelper.SaveFile(
+			ConfigManager.MovieFolder,
+			"tas-markers.txt",
+			_window,
+			"txt");
+
+		if (string.IsNullOrWhiteSpace(path)) {
+			return;
+		}
+
+		try {
+			ExportMarkerEntries(path);
+		} catch (Exception ex) {
+			StatusMessage = $"Error exporting markers: {ex.Message}";
+		}
+	}
+
+	private bool MatchesMarkerFilter(MarkerEntryType type) {
+		return MarkerEntryFilter switch {
+			MarkerEntryFilterType.All => true,
+			MarkerEntryFilterType.Comment => type == MarkerEntryType.Comment,
+			MarkerEntryFilterType.Marker => type == MarkerEntryType.Marker,
+			MarkerEntryFilterType.Todo => type == MarkerEntryType.Todo,
+			_ => true
+		};
+	}
+
+	internal static MarkerEntryType ClassifyMarkerEntryType(string comment) {
+		if (comment.StartsWith("[M]", StringComparison.OrdinalIgnoreCase)) {
+			return MarkerEntryType.Marker;
+		}
+
+		if (comment.Contains("TODO", StringComparison.OrdinalIgnoreCase)) {
+			return MarkerEntryType.Todo;
+		}
+
+		return MarkerEntryType.Comment;
 	}
 
 	/// <summary>
@@ -1498,12 +1709,15 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		Frames.Clear();
 
 		if (Movie is null) {
+			RefreshMarkerEntries();
 			return;
 		}
 
 		for (int i = 0; i < Movie.InputFrames.Count; i++) {
 			Frames.Add(new TasFrameViewModel(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart));
 		}
+
+		RefreshMarkerEntries();
 	}
 
 	/// <summary>
@@ -3121,6 +3335,40 @@ public enum FrameSearchMode {
 
 	/// <summary>Search for frames with markers.</summary>
 	Marker
+}
+
+/// <summary>
+/// Marker/comment type classification for panel filtering.
+/// </summary>
+public enum MarkerEntryType {
+	Comment,
+	Marker,
+	Todo
+}
+
+/// <summary>
+/// Filter for marker/comment list panel.
+/// </summary>
+public enum MarkerEntryFilterType {
+	All,
+	Comment,
+	Marker,
+	Todo
+}
+
+/// <summary>
+/// View model item for marker/comment panel rows.
+/// </summary>
+public sealed class TasMarkerEntryViewModel {
+	public int FrameIndex { get; }
+	public string Comment { get; }
+	public MarkerEntryType Type { get; }
+
+	public TasMarkerEntryViewModel(int frameIndex, string comment, MarkerEntryType type) {
+		FrameIndex = frameIndex;
+		Comment = comment;
+		Type = type;
+	}
 }
 
 #endregion

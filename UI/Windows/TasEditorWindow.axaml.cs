@@ -617,6 +617,50 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		ViewModel?.ToggleMarker();
 	}
 
+	private void OnMarkerEntryDoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		ViewModel.NavigateToMarkerEntry(ViewModel.SelectedMarkerEntry);
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnMarkerAddClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.AddMarkerEntryAsync();
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnMarkerEditClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.EditSelectedMarkerEntryAsync();
+		ApplySelectionFromViewModel();
+	}
+
+	private void OnMarkerDeleteClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		ViewModel.DeleteSelectedMarkerEntry();
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnMarkerExportClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.ExportMarkerEntriesAsync();
+	}
+
 	#endregion
 
 	#region Search Handlers
