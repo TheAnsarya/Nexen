@@ -1141,6 +1141,7 @@
     <ClCompile Include="Lynx\LynxDecrypt.cpp" />
     <ClCompile Include="Lynx\LynxSuzy.cpp" />
     <ClCompile Include="Genesis\GenesisM68kBoundaryScaffold.cpp" />
+    <ClCompile Include="Genesis\GenesisSmokeHarness.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxDisUtils.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxDebugger.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxAssembler.cpp" />

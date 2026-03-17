@@ -167,6 +167,22 @@ Updated validation result after H/V interrupt scheduling integration:
 - Full native regression: 1698 tests from 133 suites passed.
 - Managed regression: 331 tests passed.
 
+### Issue [#737](https://github.com/TheAnsarya/Nexen/issues/737)
+
+- Added executable Genesis compatibility matrix harness (`GenesisSmokeHarness::RunCompatibilityMatrix`) with title-targeted checkpoints.
+- Added machine-readable output lines for compatibility diagnostics:
+	- `GEN_COMPAT_CHECK <id> <PASS|FAIL> <context>`
+	- `GEN_COMPAT_RESULT <title> <PASS|FAIL> PASS=<n> FAIL=<n> DIGEST=<hash>`
+	- `GEN_COMPAT_MATRIX_SUMMARY PASS=<n> FAIL=<n> DIGEST=<hash>`
+- Added Sonic/Jurassic-style title checkpoint routing and deterministic digest verification gates.
+- Added focused `GenesisCompatibilityHarnessTests` for deterministic digest stability and failure-path diagnostics on invalid entries.
+
+Updated validation result after compatibility harness integration:
+
+- Focused Genesis tests: 36 tests from 12 suites passed.
+- Full native regression: 1709 tests from 137 suites passed.
+- Managed regression: 331 tests passed.
+
 ## Deferred Future-Work Linkage
 
 Status: Future Work only. Do not start these issues until explicitly scheduled.
