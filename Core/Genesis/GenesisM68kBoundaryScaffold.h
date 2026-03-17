@@ -12,7 +12,14 @@ class GenesisPlatformBusStub final : public IGenesisM68kBus {
 private:
 	vector<uint8_t> _rom;
 	vector<uint8_t> _workRam;
+	vector<uint8_t> _vdpIo;
 	bool _z80WindowAccessed = false;
+	bool _vdpWindowAccessed = false;
+	bool _dmaRequested = false;
+	uint32_t _vdpReadCount = 0;
+	uint32_t _vdpWriteCount = 0;
+	uint32_t _lastVdpAddress = 0;
+	uint8_t _lastVdpValue = 0;
 
 public:
 	GenesisPlatformBusStub();
@@ -23,6 +30,12 @@ public:
 	void WriteByte(uint32_t address, uint8_t value) override;
 
 	[[nodiscard]] bool WasZ80WindowAccessed() const { return _z80WindowAccessed; }
+	[[nodiscard]] bool WasVdpWindowAccessed() const { return _vdpWindowAccessed; }
+	[[nodiscard]] bool WasDmaRequested() const { return _dmaRequested; }
+	[[nodiscard]] uint32_t GetVdpReadCount() const { return _vdpReadCount; }
+	[[nodiscard]] uint32_t GetVdpWriteCount() const { return _vdpWriteCount; }
+	[[nodiscard]] uint32_t GetLastVdpAddress() const { return _lastVdpAddress; }
+	[[nodiscard]] uint8_t GetLastVdpValue() const { return _lastVdpValue; }
 	[[nodiscard]] uint32_t GetWorkRamSize() const { return (uint32_t)_workRam.size(); }
 };
 

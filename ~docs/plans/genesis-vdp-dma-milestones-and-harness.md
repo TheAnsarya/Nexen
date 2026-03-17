@@ -64,6 +64,22 @@ Define phased VDP timing and DMA milestones with deterministic checkpoint output
 - Deterministic digest strategy is defined for repeated-run validation.
 - Smoke ROM targets and expected pass outcomes are documented.
 
+## Scaffold Checkpoint Evidence
+
+- Added deterministic VDP window decode tracking to `GenesisPlatformBusStub` for addresses `0xc00000-0xc0001f`.
+- Added DMA latch checkpoint behavior for control-port writes (`0xc00004-0xc00007` with bit `0x80`).
+- Added focused regression suite: `GenesisVdpDmaScaffoldTests`.
+
+Focused command:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=GenesisM68kBoundaryScaffoldTests.*:GenesisVdpDmaScaffoldTests.* --gtest_brief=1
+```
+
+Observed result snapshot:
+
+- `[==========] 5 tests from 2 test suites ran.`
+
 ## Related Research
 
 - [Genesis VDP Rendering and DMA](../research/platform-parity/genesis/vdp-rendering-dma.md)

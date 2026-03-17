@@ -565,6 +565,7 @@ make a feature branch for this work
 
 continue what you were doing; continue for a while, work those issues; continue;
 
+switch to the main branch, fix the `MovieConverter System.IO.Hashing CS0234 error` error and git/push it, then merge the fix into this feature branch, return to using this feature branch, and then continue work through the parity issues; continue;
 
 
 

@@ -2,7 +2,8 @@
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
 
 GenesisPlatformBusStub::GenesisPlatformBusStub()
-	: _workRam(64 * 1024, 0) {
+	: _workRam(64 * 1024, 0),
+	  _vdpIo(0x20, 0) {
 }
 
 void GenesisPlatformBusStub::LoadRom(const vector<uint8_t>& romData) {
@@ -14,7 +15,14 @@ void GenesisPlatformBusStub::LoadRom(const vector<uint8_t>& romData) {
 
 void GenesisPlatformBusStub::Reset() {
 	std::fill(_workRam.begin(), _workRam.end(), 0);
+	std::fill(_vdpIo.begin(), _vdpIo.end(), 0);
 	_z80WindowAccessed = false;
+	_vdpWindowAccessed = false;
+	_dmaRequested = false;
+	_vdpReadCount = 0;
+	_vdpWriteCount = 0;
+	_lastVdpAddress = 0;
+	_lastVdpValue = 0;
 }
 
 uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
@@ -32,6 +40,14 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 		return 0;
 	}
 
+	if (address >= 0xC00000 && address <= 0xC0001F) {
+		_vdpWindowAccessed = true;
+		_vdpReadCount++;
+		_lastVdpAddress = address;
+		_lastVdpValue = _vdpIo[address & 0x1F];
+		return _lastVdpValue;
+	}
+
 	if (address >= 0xFF0000) {
 		return _workRam[address & 0xFFFF];
 	}
@@ -44,6 +60,18 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 
 	if (address >= 0xA00000 && address <= 0xA0FFFF) {
 		_z80WindowAccessed = true;
+		return;
+	}
+
+	if (address >= 0xC00000 && address <= 0xC0001F) {
+		_vdpWindowAccessed = true;
+		_vdpWriteCount++;
+		_lastVdpAddress = address;
+		_lastVdpValue = value;
+		_vdpIo[address & 0x1F] = value;
+		if (address >= 0xC00004 && address <= 0xC00007 && (value & 0x80) != 0) {
+			_dmaRequested = true;
+		}
 		return;
 	}
 
