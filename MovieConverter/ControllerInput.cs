@@ -601,8 +601,11 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 		switch (button) {
 			case "A" or "a": A = state; break;
 			case "B" or "b": B = state; break;
+			case "C" or "c": C = state; break;
 			case "X" or "x": X = state; break;
 			case "Y" or "y": Y = state; break;
+			case "Z" or "z": Z = state; break;
+			case "MODE" or "Mode" or "mode": Mode = state; break;
 			case "L" or "l": L = state; break;
 			case "R" or "r": R = state; break;
 			case "UP" or "Up" or "up": Up = state; break;
@@ -620,8 +623,11 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 	public bool GetButton(string button) => button switch {
 		"A" or "a" => A,
 		"B" or "b" => B,
+		"C" or "c" => C,
 		"X" or "x" => X,
 		"Y" or "y" => Y,
+		"Z" or "z" => Z,
+		"MODE" or "Mode" or "mode" => Mode,
 		"L" or "l" => L,
 		"R" or "r" => R,
 		"UP" or "Up" or "up" => Up,

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -113,6 +114,15 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 	/// <summary>Gets the controller buttons for the current layout.</summary>
 	[Reactive] public List<ControllerButtonInfo> ControllerButtons { get; private set; } = new();
+
+	/// <summary>Gets a raw hex dump of the selected frame's controller bytes.</summary>
+	[Reactive] public string SelectedFrameHexPreview { get; private set; } = "No frame selected";
+
+	/// <summary>Gets the visual input preview buttons for the selected frame.</summary>
+	public ObservableCollection<ControllerButtonPreviewViewModel> InputPreviewButtons { get; } = new();
+
+	/// <summary>Gets the grid column count for the visual input preview.</summary>
+	[Reactive] public int InputPreviewColumns { get; private set; } = 4;
 
 	/// <summary>Gets the piano roll button labels derived from the current controller layout.</summary>
 	public IReadOnlyList<string> PianoRollButtonLabels =>
@@ -259,10 +269,17 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			DetectControllerLayout();
 			Recorder.Movie = Movie;
 			Greenzone.Clear();
+			RefreshSelectedFramePreview();
 		}));
 		AddDisposable(this.WhenAnyValue(x => x.FilePath, x => x.HasUnsavedChanges).Subscribe(_ => UpdateWindowTitle()));
-		AddDisposable(this.WhenAnyValue(x => x.CurrentLayout).Subscribe(_ => UpdateControllerButtons()));
-		AddDisposable(this.WhenAnyValue(x => x.SelectedFrameIndex).Subscribe(_ => this.RaisePropertyChanged(nameof(SelectedFrameIsLag))));
+		AddDisposable(this.WhenAnyValue(x => x.CurrentLayout).Subscribe(_ => {
+			UpdateControllerButtons();
+			RefreshSelectedFramePreview();
+		}));
+		AddDisposable(this.WhenAnyValue(x => x.SelectedFrameIndex).Subscribe(_ => {
+			this.RaisePropertyChanged(nameof(SelectedFrameIsLag));
+			RefreshSelectedFramePreview();
+		}));
 		AddDisposable(this.WhenAnyValue(x => x.AutoSaveEnabled).Subscribe(_ => RestartAutoSaveTimer()));
 		AddDisposable(this.WhenAnyValue(x => x.MarkerEntryFilter).Subscribe(_ => RefreshMarkerEntries()));
 		AddDisposable(this.WhenAnyValue(x => x.AutoSaveIntervalMinutes).Subscribe(minutes => {
@@ -274,7 +291,124 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			RestartAutoSaveTimer();
 		}));
 		UpdateControllerButtons();
+		RefreshSelectedFramePreview();
 		RestartAutoSaveTimer();
+	}
+
+	private void RefreshSelectedFramePreview() {
+		SelectedFrameHexPreview = BuildFrameHexPreview(Movie, SelectedFrameIndex);
+
+		InputPreviewButtons.Clear();
+		ControllerInput? selectedController = GetSelectedControllerInput(0);
+		List<ControllerButtonPreviewViewModel> previewButtons = BuildInputPreviewButtons(ControllerButtons, selectedController);
+		foreach (ControllerButtonPreviewViewModel previewButton in previewButtons) {
+			InputPreviewButtons.Add(previewButton);
+		}
+
+		InputPreviewColumns = Math.Max(1, ControllerButtons.Count > 0
+			? ControllerButtons.Max(button => button.Column) + 1
+			: 1);
+	}
+
+	private ControllerInput? GetSelectedControllerInput(int port) {
+		if (Movie is null || SelectedFrameIndex < 0 || SelectedFrameIndex >= Movie.InputFrames.Count) {
+			return null;
+		}
+
+		ControllerInput[] controllers = Movie.InputFrames[SelectedFrameIndex].Controllers;
+		if (port < 0 || port >= controllers.Length) {
+			return null;
+		}
+
+		return controllers[port];
+	}
+
+	internal static string BuildFrameHexPreview(MovieData? movie, int selectedFrameIndex) {
+		if (movie is null || selectedFrameIndex < 0 || selectedFrameIndex >= movie.InputFrames.Count) {
+			return "No frame selected";
+		}
+
+		InputFrame frame = movie.InputFrames[selectedFrameIndex];
+		if (frame.Controllers.Length == 0) {
+			return "No controller data";
+		}
+
+		var sb = new StringBuilder();
+		for (int i = 0; i < frame.Controllers.Length; i++) {
+			ControllerInput controller = frame.Controllers[i];
+			if (i > 0) {
+				sb.AppendLine();
+			}
+
+			sb.Append('P');
+			sb.Append(i + 1);
+			sb.Append(" [");
+			sb.Append(controller.Type);
+			sb.Append("] ");
+
+			byte[] bytes = BuildControllerPreviewBytes(controller);
+			for (int j = 0; j < bytes.Length; j++) {
+				if (j > 0) {
+					sb.Append(' ');
+				}
+				sb.Append(bytes[j].ToString("x2"));
+			}
+		}
+
+		return sb.ToString();
+	}
+
+	internal static byte[] BuildControllerPreviewBytes(ControllerInput input) {
+		var bytes = new List<byte>(16);
+		ushort buttonBits = input.ButtonBits;
+		bytes.Add((byte)(buttonBits & 0xff));
+		bytes.Add((byte)(buttonBits >> 8));
+
+		if (input.AnalogX.HasValue) {
+			bytes.Add(unchecked((byte)input.AnalogX.Value));
+		}
+
+		if (input.AnalogY.HasValue) {
+			bytes.Add(unchecked((byte)input.AnalogY.Value));
+		}
+
+		if (input.AnalogRX.HasValue) {
+			bytes.Add(unchecked((byte)input.AnalogRX.Value));
+		}
+
+		if (input.AnalogRY.HasValue) {
+			bytes.Add(unchecked((byte)input.AnalogRY.Value));
+		}
+
+		if (input.TriggerL.HasValue) {
+			bytes.Add(input.TriggerL.Value);
+		}
+
+		if (input.TriggerR.HasValue) {
+			bytes.Add(input.TriggerR.Value);
+		}
+
+		if (input.KeyboardData is { Length: > 0 }) {
+			int len = Math.Min(8, input.KeyboardData.Length);
+			for (int i = 0; i < len; i++) {
+				bytes.Add(input.KeyboardData[i]);
+			}
+		}
+
+		return [.. bytes];
+	}
+
+	internal static List<ControllerButtonPreviewViewModel> BuildInputPreviewButtons(IReadOnlyList<ControllerButtonInfo> layoutButtons, ControllerInput? input) {
+		return layoutButtons
+			.OrderBy(button => button.Row)
+			.ThenBy(button => button.Column)
+			.Select(button => new ControllerButtonPreviewViewModel(
+				button.ButtonId,
+				button.Label,
+				button.Column,
+				button.Row,
+				input?.GetButton(button.ButtonId) == true))
+			.ToList();
 	}
 
 	/// <summary>
@@ -1710,6 +1844,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 		if (Movie is null) {
 			RefreshMarkerEntries();
+			RefreshSelectedFramePreview();
 			return;
 		}
 
@@ -1718,6 +1853,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		RefreshMarkerEntries();
+		RefreshSelectedFramePreview();
 	}
 
 	/// <summary>
@@ -1726,6 +1862,9 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	private void RefreshFrameAt(int index) {
 		if (index >= 0 && index < Frames.Count) {
 			Frames[index].RefreshFromFrame();
+			if (index == SelectedFrameIndex) {
+				RefreshSelectedFramePreview();
+			}
 		}
 	}
 
@@ -1859,6 +1998,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 		UpdateUndoRedoState();
 		ApplyIncrementalUpdate(action, isUndo: true);
+		RefreshSelectedFramePreview();
 		HasUnsavedChanges = true;
 		StatusMessage = $"Undid: {action.Description}";
 	}
@@ -1877,6 +2017,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 		UpdateUndoRedoState();
 		ApplyIncrementalUpdate(action, isUndo: false);
+		RefreshSelectedFramePreview();
 		HasUnsavedChanges = true;
 		StatusMessage = $"Redid: {action.Description}";
 	}
@@ -3313,6 +3454,40 @@ public sealed class ControllerButtonInfo {
 		Label = label;
 		Column = column;
 		Row = row;
+	}
+}
+
+/// <summary>
+/// View model item for the selected-frame controller diagram preview.
+/// </summary>
+public sealed class ControllerButtonPreviewViewModel {
+	/// <summary>Gets the button identifier used in ControllerInput.</summary>
+	public string ButtonId { get; }
+
+	/// <summary>Gets the display label for the button.</summary>
+	public string Label { get; }
+
+	/// <summary>Gets the column position for layout-aware ordering.</summary>
+	public int Column { get; }
+
+	/// <summary>Gets the row position for layout-aware ordering.</summary>
+	public int Row { get; }
+
+	/// <summary>Gets whether this button is currently pressed.</summary>
+	public bool IsPressed { get; }
+
+	/// <summary>Gets the preview background brush based on press state.</summary>
+	public IBrush Background => IsPressed ? Brushes.ForestGreen : Brushes.DimGray;
+
+	/// <summary>Gets the preview foreground brush.</summary>
+	public IBrush Foreground => Brushes.White;
+
+	public ControllerButtonPreviewViewModel(string buttonId, string label, int column, int row, bool isPressed) {
+		ButtonId = buttonId;
+		Label = label;
+		Column = column;
+		Row = row;
+		IsPressed = isPressed;
 	}
 }
 
