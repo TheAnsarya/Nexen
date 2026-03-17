@@ -818,6 +818,7 @@
     <ClInclude Include="Lynx\LynxDecrypt.h" />
     <ClInclude Include="Lynx\LynxSuzy.h" />
     <ClInclude Include="Lynx\LynxTypes.h" />
+    <ClInclude Include="Genesis\GenesisM68kBoundaryScaffold.h" />
     <ClInclude Include="Lynx\Debugger\LynxDisUtils.h" />
     <ClInclude Include="Lynx\Debugger\LynxDebugger.h" />
     <ClInclude Include="Lynx\Debugger\LynxAssembler.h" />
@@ -825,6 +826,9 @@
     <ClInclude Include="Lynx\Debugger\LynxTraceLogger.h" />
     <ClInclude Include="Lynx\Debugger\LynxEventManager.h" />
     <ClInclude Include="Lynx\Debugger\DummyLynxCpu.h" />
+    <ClInclude Include="Atari2600\Atari2600Console.h" />
+    <ClInclude Include="Atari2600\Atari2600DefaultVideoFilter.h" />
+    <ClInclude Include="Atari2600\Atari2600SmokeHarness.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Debugger\Base6502Assembler.cpp" />
@@ -1136,6 +1140,7 @@
     <ClCompile Include="Lynx\LynxMikey.cpp" />
     <ClCompile Include="Lynx\LynxDecrypt.cpp" />
     <ClCompile Include="Lynx\LynxSuzy.cpp" />
+    <ClCompile Include="Genesis\GenesisM68kBoundaryScaffold.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxDisUtils.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxDebugger.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxAssembler.cpp" />
@@ -1143,6 +1148,8 @@
     <ClCompile Include="Lynx\Debugger\LynxTraceLogger.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxEventManager.cpp" />
     <ClCompile Include="Lynx\Debugger\DummyLynxCpu.cpp" />
+    <ClCompile Include="Atari2600\Atari2600Console.cpp" />
+    <ClCompile Include="Atari2600\Atari2600SmokeHarness.cpp" />
     <ClCompile Include="WS\WsConsole.cpp" />
     <ClCompile Include="WS\WsControlManager.cpp" />
     <ClCompile Include="WS\WsCpu.cpp" />

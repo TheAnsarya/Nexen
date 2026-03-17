@@ -557,8 +557,9 @@ The user-only manual prompt file `~docs\nexen-manual-prompts-log.txt`, thank you
 
 continue working;
 
+continue immediately with implementation work for #697 (Atari CPU/RIOT skeleton code + build/test scaffolding); then do #700 first (Genesis M68000 boundary scaffolding compile path), then #698; continue;
 
-
+Yes, continue doing that
 
 
 

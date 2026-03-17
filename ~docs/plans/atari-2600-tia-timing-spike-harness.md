@@ -34,11 +34,15 @@ Define and implement a deterministic TIA timing spike with scriptable pass/fail 
 ## Run Command Templates
 
 ```powershell
-.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600TiaTiming* --gtest_brief=1
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600TimingSpikeHarnessTests.TimingSpikeHarnessHasStableScanlineDeltas --gtest_brief=1
 ```
 
 ```powershell
-.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600SmokeHarness* --gtest_brief=1
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600TimingSpikeHarnessTests.* --gtest_brief=1
+```
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=GenesisM68kBoundaryScaffoldTests.*:Atari2600TimingSpikeHarnessTests.* --gtest_brief=1
 ```
 
 ## Expected Outcomes
@@ -46,6 +50,9 @@ Define and implement a deterministic TIA timing spike with scriptable pass/fail 
 - All baseline checkpoints return `PASS`.
 - Digest remains stable across repeated runs on unchanged code.
 - Failing checkpoint reports include cycle/scanline context.
+- Current focused run prints:
+	- `[==========] 8 tests from 2 test suites ran.`
+	- `TIMING_SPIKE SUMMARY STABLE=true DIGEST=<stable-hash>` (from harness output lines)
 
 ## Dependencies
 

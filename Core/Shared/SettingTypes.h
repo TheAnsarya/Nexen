@@ -348,7 +348,8 @@ enum class ConsoleType {
 	Sms = 4,
 	Gba = 5,
 	Ws = 6,
-	Lynx = 7
+	Lynx = 7,
+	Atari2600 = 8
 };
 
 enum class GameboyModel {
