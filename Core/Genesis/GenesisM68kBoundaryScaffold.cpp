@@ -24,7 +24,7 @@ GenesisBusOwner GenesisPlatformBusStub::DecodeOwner(uint32_t address) const {
 		return GenesisBusOwner::Z80;
 	}
 
-	if (address >= 0xA10000 && address <= 0xA1001F) {
+	if ((address >= 0xA10000 && address <= 0xA1001F) || (address >= 0xA11100 && address <= 0xA11201)) {
 		return GenesisBusOwner::Io;
 	}
 
@@ -115,6 +115,36 @@ uint32_t GenesisPlatformBusStub::ConsumeDmaContention(uint32_t requestedCycles) 
 	return penalty;
 }
 
+void GenesisPlatformBusStub::BootstrapZ80() {
+	if (!_z80Bootstrapped) {
+		_z80Bootstrapped = true;
+		_z80BootstrapCount++;
+	}
+
+	if (!_z80BusRequested) {
+		_z80Running = true;
+	}
+}
+
+void GenesisPlatformBusStub::RequestZ80Bus(bool requestBusForM68k) {
+	if (_z80BusRequested != requestBusForM68k) {
+		_z80HandoffCount++;
+	}
+
+	_z80BusRequested = requestBusForM68k;
+	if (_z80BusRequested) {
+		_z80Running = false;
+	} else if (_z80Bootstrapped) {
+		_z80Running = true;
+	}
+}
+
+void GenesisPlatformBusStub::StepZ80Cycles(uint32_t cycles) {
+	if (_z80Running && !_z80BusRequested) {
+		_z80ExecutedCycles += cycles;
+	}
+}
+
 void GenesisPlatformBusStub::LoadRom(const vector<uint8_t>& romData) {
 	_rom = romData;
 	if (_rom.empty()) {
@@ -148,6 +178,12 @@ void GenesisPlatformBusStub::Reset() {
 	_dmaActiveCyclesRemaining = 0;
 	_dmaContentionCycles = 0;
 	_dmaContentionEvents = 0;
+	_z80Bootstrapped = false;
+	_z80Running = false;
+	_z80BusRequested = false;
+	_z80BootstrapCount = 0;
+	_z80HandoffCount = 0;
+	_z80ExecutedCycles = 0;
 	_z80WindowAccessed = false;
 	_ioWindowAccessed = false;
 	_vdpWindowAccessed = false;
@@ -245,11 +281,20 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 		case GenesisBusOwner::Z80:
 			_z80WindowAccessed = true;
 			_z80ReadCount++;
+			if (_z80Running && !_z80BusRequested) {
+				return 0xFF;
+			}
 			return 0;
 
 		case GenesisBusOwner::Io:
 			_ioWindowAccessed = true;
 			_ioReadCount++;
+			if (address == 0xA11100) {
+				return _z80BusRequested ? 0x01 : 0x00;
+			}
+			if (address == 0xA11200) {
+				return _z80Running ? 0x01 : 0x00;
+			}
 			return _io[address & 0x1F];
 
 		case GenesisBusOwner::Vdp:
@@ -288,12 +333,25 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 		case GenesisBusOwner::Z80:
 			_z80WindowAccessed = true;
 			_z80WriteCount++;
+			if (_z80Running && !_z80BusRequested) {
+				return;
+			}
 			return;
 
 		case GenesisBusOwner::Io:
 			_ioWindowAccessed = true;
 			_ioWriteCount++;
 			_io[address & 0x1F] = value;
+			if (address == 0xA11100) {
+				RequestZ80Bus((value & 0x01) != 0);
+			}
+			if (address == 0xA11200) {
+				if ((value & 0x01) == 0) {
+					_z80Running = false;
+				} else {
+					BootstrapZ80();
+				}
+			}
 			return;
 
 		case GenesisBusOwner::Vdp:
@@ -516,5 +574,6 @@ void GenesisM68kBoundaryScaffold::StepFrameScaffold(uint32_t cpuCycles) {
 	uint32_t contentionPenalty = _bus.ConsumeDmaContention(cpuCycles);
 	uint32_t executableCycles = cpuCycles > contentionPenalty ? cpuCycles - contentionPenalty : 0;
 	_cpu.StepCycles(executableCycles);
+	_bus.StepZ80Cycles(cpuCycles / 2);
 	AdvanceTiming(cpuCycles);
 }

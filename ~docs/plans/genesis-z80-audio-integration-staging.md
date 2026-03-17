@@ -66,6 +66,30 @@ Create a staged integration plan for Z80, YM2612, and SN76489 that preserves cor
 - A staged rollout path exists that avoids all-at-once subsystem landing.
 - Audio determinism and latency checks are documented per phase.
 
+## Execution Evidence: Promoted Z80 Bootstrap and Bus Handoff Follow-Through
+
+Status: Completed from deferred backlog (2026-03-17)
+
+### Issue [#734](https://github.com/TheAnsarya/Nexen/issues/734)
+
+- Added deterministic Z80 bootstrap/run state and bus-request handoff controls in `GenesisPlatformBusStub`.
+- Added deterministic shared-bus arbitration behavior for the Z80 window when Z80 is running versus bus-request handoff active.
+- Added deterministic Z80 cycle progression tracking through scaffold stepping (`StepZ80Cycles`).
+- Added focused `GenesisZ80HandoffTests` to validate:
+	- bootstrap state transition behavior,
+	- bus-request halt/resume handoff behavior,
+	- Z80 window access behavior under ownership handoff.
+
+Validation commands:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Genesis* --gtest_brief=1
+.\bin\win-x64\Release\Core.Tests.exe --gtest_brief=1
+dotnet test --no-build -c Release
+```
+
+Result: 28 Genesis tests passed; 1701 native tests passed; 331 managed tests passed.
+
 ## Related Research
 
 - [Genesis Z80 Audio Bus](../research/platform-parity/genesis/z80-audio-bus.md)

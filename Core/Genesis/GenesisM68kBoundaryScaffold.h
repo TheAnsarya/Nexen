@@ -51,6 +51,12 @@ private:
 	uint32_t _dmaActiveCyclesRemaining = 0;
 	uint32_t _dmaContentionCycles = 0;
 	uint32_t _dmaContentionEvents = 0;
+	bool _z80Bootstrapped = false;
+	bool _z80Running = false;
+	bool _z80BusRequested = false;
+	uint32_t _z80BootstrapCount = 0;
+	uint32_t _z80HandoffCount = 0;
+	uint64_t _z80ExecutedCycles = 0;
 	bool _z80WindowAccessed = false;
 	bool _ioWindowAccessed = false;
 	bool _vdpWindowAccessed = false;
@@ -112,11 +118,20 @@ public:
 	[[nodiscard]] const string& GetRenderLineDigest() const { return _renderLineDigest; }
 	void BeginDmaTransfer(GenesisVdpDmaMode mode, uint32_t transferWords);
 	uint32_t ConsumeDmaContention(uint32_t requestedCycles);
+	void BootstrapZ80();
+	void RequestZ80Bus(bool requestBusForM68k);
+	void StepZ80Cycles(uint32_t cycles);
 	[[nodiscard]] GenesisVdpDmaMode GetDmaMode() const { return _dmaMode; }
 	[[nodiscard]] uint32_t GetDmaTransferWords() const { return _dmaTransferWords; }
 	[[nodiscard]] uint32_t GetDmaActiveCyclesRemaining() const { return _dmaActiveCyclesRemaining; }
 	[[nodiscard]] uint32_t GetDmaContentionCycles() const { return _dmaContentionCycles; }
 	[[nodiscard]] uint32_t GetDmaContentionEvents() const { return _dmaContentionEvents; }
+	[[nodiscard]] bool IsZ80Bootstrapped() const { return _z80Bootstrapped; }
+	[[nodiscard]] bool IsZ80Running() const { return _z80Running; }
+	[[nodiscard]] bool IsZ80BusRequested() const { return _z80BusRequested; }
+	[[nodiscard]] uint32_t GetZ80BootstrapCount() const { return _z80BootstrapCount; }
+	[[nodiscard]] uint32_t GetZ80HandoffCount() const { return _z80HandoffCount; }
+	[[nodiscard]] uint64_t GetZ80ExecutedCycles() const { return _z80ExecutedCycles; }
 };
 
 class GenesisM68kCpuStub {
