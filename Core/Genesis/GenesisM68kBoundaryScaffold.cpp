@@ -33,6 +33,31 @@ GenesisBusOwner GenesisPlatformBusStub::DecodeOwner(uint32_t address) const {
 	return GenesisBusOwner::OpenBus;
 }
 
+void GenesisPlatformBusStub::ApplyVdpControlWord(uint16_t controlWord) {
+	if ((controlWord & 0xC000) == 0x8000) {
+		uint8_t regIndex = (uint8_t)((controlWord >> 8) & 0x1F);
+		uint8_t regValue = (uint8_t)(controlWord & 0xFF);
+		_vdpRegisters[regIndex] = regValue;
+
+		if (regIndex == 1) {
+			if ((regValue & 0x40) != 0) {
+				_vdpStatus |= 0x0008;
+			} else {
+				_vdpStatus = (uint16_t)(_vdpStatus & ~0x0008);
+			}
+
+			if ((regValue & 0x20) != 0) {
+				_dmaRequested = true;
+			}
+		}
+	} else if ((controlWord & 0xC000) == 0x4000) {
+		// Model a deterministic status side effect for control-word command routing.
+		_vdpStatus |= 0x8000;
+		_vdpStatus = (uint16_t)(_vdpStatus & ~0x0001);
+		_vdpStatus |= 0x0002;
+	}
+}
+
 void GenesisPlatformBusStub::LoadRom(const vector<uint8_t>& romData) {
 	_rom = romData;
 	if (_rom.empty()) {
@@ -44,6 +69,10 @@ void GenesisPlatformBusStub::Reset() {
 	std::fill(_workRam.begin(), _workRam.end(), 0);
 	std::fill(_io.begin(), _io.end(), 0);
 	std::fill(_vdpIo.begin(), _vdpIo.end(), 0);
+	std::fill(_vdpRegisters.begin(), _vdpRegisters.end(), 0);
+	_vdpStatus = 0x0001;
+	_vdpDataPortLatch = 0;
+	_vdpControlWordLatch = 0;
 	_z80WindowAccessed = false;
 	_ioWindowAccessed = false;
 	_vdpWindowAccessed = false;
@@ -89,7 +118,14 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 			_vdpWindowAccessed = true;
 			_vdpReadCount++;
 			_lastVdpAddress = address;
-			_lastVdpValue = _vdpIo[address & 0x1F];
+			if (address <= 0xC00003) {
+				_lastVdpValue = (uint8_t)((_vdpDataPortLatch >> ((address & 1) == 0 ? 8 : 0)) & 0xFF);
+			} else {
+				_lastVdpValue = (uint8_t)((_vdpStatus >> ((address & 1) == 0 ? 8 : 0)) & 0xFF);
+				if ((address & 1) == 0) {
+					_vdpStatus = (uint16_t)(_vdpStatus & ~0x8000);
+				}
+			}
 			return _lastVdpValue;
 
 		case GenesisBusOwner::WorkRam:
@@ -128,6 +164,22 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 			_lastVdpAddress = address;
 			_lastVdpValue = value;
 			_vdpIo[address & 0x1F] = value;
+			if (address <= 0xC00003) {
+				if ((address & 1) == 0) {
+					_vdpDataPortLatch = (uint16_t)((_vdpDataPortLatch & 0x00FF) | ((uint16_t)value << 8));
+				} else {
+					_vdpDataPortLatch = (uint16_t)((_vdpDataPortLatch & 0xFF00) | value);
+				}
+				_vdpStatus = (uint16_t)(_vdpStatus & ~0x0002);
+				_vdpStatus |= 0x0001;
+			} else {
+				if ((address & 1) == 0) {
+					_vdpControlWordLatch = (uint16_t)((_vdpControlWordLatch & 0x00FF) | ((uint16_t)value << 8));
+				} else {
+					_vdpControlWordLatch = (uint16_t)((_vdpControlWordLatch & 0xFF00) | value);
+					ApplyVdpControlWord(_vdpControlWordLatch);
+				}
+			}
 			if (address >= 0xC00004 && address <= 0xC00007 && (value & 0x80) != 0) {
 				_dmaRequested = true;
 			}

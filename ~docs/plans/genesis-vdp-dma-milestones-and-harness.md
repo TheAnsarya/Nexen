@@ -96,6 +96,28 @@ Observed result snapshot:
 
 - `[==========] 8 tests from 3 test suites ran.`
 
+## Execution Evidence: Promoted VDP Register/Status Follow-Through
+
+Status: Completed from deferred backlog (2026-03-17)
+
+### Issue [#730](https://github.com/TheAnsarya/Nexen/issues/730)
+
+- Added deterministic VDP register-file and status model state to the Genesis scaffold bus path.
+- Implemented control-port command decoding for register writes and deterministic status side effects.
+- Implemented status-port read behavior with sticky pending-bit clear-on-read semantics.
+- Preserved and expanded control/data-port deterministic read/write behavior for scaffold checkpoints.
+- Added focused tests in `GenesisVdpRegisterStatusTests` and updated `GenesisVdpDmaScaffoldTests` for control/data-port semantics.
+
+Validation commands:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Genesis* --gtest_brief=1
+.\bin\win-x64\Release\Core.Tests.exe --gtest_brief=1
+dotnet test --no-build -c Release
+```
+
+Result: 15 Genesis tests passed; 1688 native tests passed; 331 managed tests passed.
+
 ## Deferred Future-Work Linkage
 
 Status: Future Work only. Do not start these issues until explicitly scheduled.

@@ -23,6 +23,10 @@ private:
 	vector<uint8_t> _workRam;
 	vector<uint8_t> _io;
 	vector<uint8_t> _vdpIo;
+	std::array<uint8_t, 0x20> _vdpRegisters = {};
+	uint16_t _vdpStatus = 0x0001;
+	uint16_t _vdpDataPortLatch = 0;
+	uint16_t _vdpControlWordLatch = 0;
 	bool _z80WindowAccessed = false;
 	bool _ioWindowAccessed = false;
 	bool _vdpWindowAccessed = false;
@@ -42,6 +46,7 @@ private:
 	uint8_t _lastVdpValue = 0;
 
 	[[nodiscard]] GenesisBusOwner DecodeOwner(uint32_t address) const;
+	void ApplyVdpControlWord(uint16_t controlWord);
 
 public:
 	GenesisPlatformBusStub();
@@ -70,6 +75,10 @@ public:
 	[[nodiscard]] uint8_t GetLastVdpValue() const { return _lastVdpValue; }
 	[[nodiscard]] uint32_t GetWorkRamSize() const { return (uint32_t)_workRam.size(); }
 	[[nodiscard]] GenesisBusOwner GetOwnerForAddress(uint32_t address) const { return DecodeOwner(address); }
+	[[nodiscard]] uint8_t GetVdpRegister(uint8_t index) const { return _vdpRegisters[index & 0x1F]; }
+	[[nodiscard]] uint16_t GetVdpStatus() const { return _vdpStatus; }
+	[[nodiscard]] uint16_t GetVdpDataPortLatch() const { return _vdpDataPortLatch; }
+	[[nodiscard]] uint16_t GetVdpControlWordLatch() const { return _vdpControlWordLatch; }
 };
 
 class GenesisM68kCpuStub {

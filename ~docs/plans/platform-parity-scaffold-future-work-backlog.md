@@ -17,6 +17,7 @@ Promoted and completed from backlog:
 - [#727](https://github.com/TheAnsarya/Nexen/issues/727): Performance gate execution after correctness stabilization (completed 2026-03-17).
 - [#728](https://github.com/TheAnsarya/Nexen/issues/728): M68000 core semantics and exception/interrupt flow (completed 2026-03-17).
 - [#729](https://github.com/TheAnsarya/Nexen/issues/729): Genesis memory map decode and bus ownership rules (completed 2026-03-17).
+- [#730](https://github.com/TheAnsarya/Nexen/issues/730): VDP register file semantics and status behavior (completed 2026-03-17).
 
 ## Purpose
 
@@ -71,7 +72,7 @@ Deferred child issues:
 |---|---|
 | [#728](https://github.com/TheAnsarya/Nexen/issues/728) | M68000 core semantics and interrupt/exception flow (completed; promoted from deferred backlog) |
 | [#729](https://github.com/TheAnsarya/Nexen/issues/729) | Full memory-map decode and bus ownership rules (completed; promoted from deferred backlog) |
-| [#730](https://github.com/TheAnsarya/Nexen/issues/730) | VDP register and status semantics |
+| [#730](https://github.com/TheAnsarya/Nexen/issues/730) | VDP register and status semantics (completed; promoted from deferred backlog) |
 | [#731](https://github.com/TheAnsarya/Nexen/issues/731) | VDP background and sprite rendering pipeline |
 | [#732](https://github.com/TheAnsarya/Nexen/issues/732) | VDP DMA modes and contention timing behavior |
 | [#733](https://github.com/TheAnsarya/Nexen/issues/733) | H/V interrupt scheduling and frame event timing |
