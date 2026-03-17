@@ -174,6 +174,9 @@
 		<ClCompile Include="Atari2600\Atari2600TiaPhaseATests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="Atari2600\Atari2600RenderPhaseATests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Atari2600\Atari2600MapperPhaseBTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>

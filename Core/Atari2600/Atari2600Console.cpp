@@ -384,6 +384,14 @@ class Atari2600Riot {
 		Atari2600TiaState _state = {};
 		static constexpr uint32_t HmoveBlankColorClocks = 8;
 
+		[[nodiscard]] static uint16_t NormalizeRegisterAddress(uint16_t addr) {
+			return addr & 0x3F;
+		}
+
+		void MarkRenderDirty() {
+			_state.RenderRevision++;
+		}
+
 		void AdvanceScanline() {
 			_state.ColorClock = 0;
 			_state.Scanline++;
@@ -406,6 +414,9 @@ class Atari2600Riot {
 	public:
 		void Reset() {
 			_state = {};
+			_state.Player0X = 24;
+			_state.Player1X = 96;
+			_state.BallX = 80;
 		}
 
 		void StepCpuCycles(uint32_t cpuCycles) {
@@ -431,6 +442,120 @@ class Atari2600Riot {
 		void RequestHmove() {
 			_state.HmovePending = true;
 			_state.HmoveStrobeCount++;
+		}
+
+		uint8_t ReadRegister(uint16_t addr) const {
+			switch (NormalizeRegisterAddress(addr)) {
+				case 0x06: return _state.ColorPlayer0;
+				case 0x07: return _state.ColorPlayer1;
+				case 0x08: return _state.ColorPlayfield;
+				case 0x09: return _state.ColorBackground;
+				case 0x0A: return _state.PlayfieldReflect ? 0x01 : 0x00;
+				case 0x0D: return _state.Playfield0;
+				case 0x0E: return _state.Playfield1;
+				case 0x0F: return _state.Playfield2;
+				case 0x1B: return _state.Player0Graphics;
+				case 0x1C: return _state.Player1Graphics;
+				case 0x1D: return _state.Missile0Enabled ? 0x02 : 0x00;
+				case 0x1E: return _state.Missile1Enabled ? 0x02 : 0x00;
+				case 0x1F: return _state.BallEnabled ? 0x02 : 0x00;
+				default: return 0;
+			}
+		}
+
+		void WriteRegister(uint16_t addr, uint8_t value) {
+			switch (NormalizeRegisterAddress(addr)) {
+				case 0x02:
+					RequestWsync();
+					break;
+
+				case 0x2A:
+					RequestHmove();
+					break;
+
+				case 0x06:
+					_state.ColorPlayer0 = value;
+					MarkRenderDirty();
+					break;
+
+				case 0x07:
+					_state.ColorPlayer1 = value;
+					MarkRenderDirty();
+					break;
+
+				case 0x08:
+					_state.ColorPlayfield = value;
+					MarkRenderDirty();
+					break;
+
+				case 0x09:
+					_state.ColorBackground = value;
+					MarkRenderDirty();
+					break;
+
+				case 0x0A:
+					_state.PlayfieldReflect = (value & 0x01) != 0;
+					MarkRenderDirty();
+					break;
+
+				case 0x0D:
+					_state.Playfield0 = value;
+					MarkRenderDirty();
+					break;
+
+				case 0x0E:
+					_state.Playfield1 = value;
+					MarkRenderDirty();
+					break;
+
+				case 0x0F:
+					_state.Playfield2 = value;
+					MarkRenderDirty();
+					break;
+
+				case 0x10:
+					_state.Player0X = (uint8_t)(_state.ColorClock % Atari2600Console::ScreenWidth);
+					MarkRenderDirty();
+					break;
+
+				case 0x11:
+					_state.Player1X = (uint8_t)(_state.ColorClock % Atari2600Console::ScreenWidth);
+					MarkRenderDirty();
+					break;
+
+				case 0x14:
+					_state.BallX = (uint8_t)(_state.ColorClock % Atari2600Console::ScreenWidth);
+					MarkRenderDirty();
+					break;
+
+				case 0x1B:
+					_state.Player0Graphics = value;
+					MarkRenderDirty();
+					break;
+
+				case 0x1C:
+					_state.Player1Graphics = value;
+					MarkRenderDirty();
+					break;
+
+				case 0x1D:
+					_state.Missile0Enabled = (value & 0x02) != 0;
+					MarkRenderDirty();
+					break;
+
+				case 0x1E:
+					_state.Missile1Enabled = (value & 0x02) != 0;
+					MarkRenderDirty();
+					break;
+
+				case 0x1F:
+					_state.BallEnabled = (value & 0x02) != 0;
+					MarkRenderDirty();
+					break;
+
+				default:
+					break;
+			}
 		}
 
 		Atari2600TiaState GetState() const {
@@ -459,6 +584,9 @@ class Atari2600Riot {
 			if ((addr & 0x1080) == 0x0080 && _riot) {
 				return _riot->ReadRegister(addr);
 			}
+			if ((addr & 0x1080) == 0x0000 && _tia) {
+				return _tia->ReadRegister(addr);
+			}
 			return 0;
 		}
 
@@ -472,17 +600,8 @@ class Atari2600Riot {
 				_riot->WriteRegister(addr, value);
 				return;
 			}
-			if (_tia) {
-				switch (addr & 0x3F) {
-					case 0x02:
-						_tia->RequestWsync();
-						break;
-					case 0x2A:
-						_tia->RequestHmove();
-						break;
-					default:
-						break;
-				}
+			if ((addr & 0x1080) == 0x0000 && _tia) {
+				_tia->WriteRegister(addr, value);
 			}
 		}
 	};
@@ -856,11 +975,71 @@ string Atari2600Console::DebugGetMapperMode() const {
 }
 
 void Atari2600Console::RenderDebugFrame() {
-	uint32_t frame = _lastFrameSummary.FrameCount;
+	Atari2600TiaState tiaState = _tia->GetState();
+	auto toRgb565 = [](uint8_t tiaColor) {
+		uint8_t hue = (uint8_t)((tiaColor >> 4) & 0x0F);
+		uint8_t lum = (uint8_t)(tiaColor & 0x0F);
+		uint8_t red = (uint8_t)((hue * 3 + lum) & 0x1F);
+		uint8_t green = (uint8_t)((hue * 5 + lum * 2) & 0x3F);
+		uint8_t blue = (uint8_t)((hue * 7 + lum) & 0x1F);
+		return (uint16_t)((red << 11) | (green << 5) | blue);
+	};
+
+	auto getPlayfieldBit = [&tiaState](uint32_t index) {
+		index %= 20;
+		if (index < 4) {
+			return ((tiaState.Playfield0 >> (4 + index)) & 0x01) != 0;
+		}
+		if (index < 12) {
+			return ((tiaState.Playfield1 >> (11 - index)) & 0x01) != 0;
+		}
+		return ((tiaState.Playfield2 >> (19 - index)) & 0x01) != 0;
+	};
+
+	auto isPlayerPixel = [](uint8_t graphics, uint32_t x, uint32_t originX) {
+		if (x < originX || x >= originX + 8) {
+			return false;
+		}
+		uint32_t bit = 7 - (x - originX);
+		return ((graphics >> bit) & 0x01) != 0;
+	};
+
+	uint16_t colorBackground = toRgb565(tiaState.ColorBackground);
+	uint16_t colorPlayfield = toRgb565(tiaState.ColorPlayfield);
+	uint16_t colorPlayer0 = toRgb565(tiaState.ColorPlayer0);
+	uint16_t colorPlayer1 = toRgb565(tiaState.ColorPlayer1);
+
 	for (uint32_t y = 0; y < ScreenHeight; y++) {
-		uint8_t shade = (uint8_t)((y + frame) & 0x1F);
-		uint16_t pixel = (uint16_t)((shade << 11) | (shade << 6) | shade);
 		for (uint32_t x = 0; x < ScreenWidth; x++) {
+			uint16_t pixel = colorBackground;
+
+			uint32_t coarsePixel = (x / 4);
+			uint32_t halfIndex = coarsePixel % 20;
+			if (coarsePixel >= 20 && tiaState.PlayfieldReflect) {
+				halfIndex = 19 - halfIndex;
+			}
+
+			if (getPlayfieldBit(halfIndex)) {
+				pixel = colorPlayfield;
+			}
+
+			if (tiaState.Missile0Enabled && x == (uint32_t)((tiaState.Player0X + 8) % ScreenWidth)) {
+				pixel = colorPlayfield;
+			}
+			if (tiaState.Missile1Enabled && x == (uint32_t)((tiaState.Player1X + 8) % ScreenWidth)) {
+				pixel = colorPlayfield;
+			}
+			if (tiaState.BallEnabled && x >= tiaState.BallX && x < (uint32_t)(tiaState.BallX + 4)) {
+				pixel = colorPlayfield;
+			}
+
+			if (isPlayerPixel(tiaState.Player0Graphics, x, tiaState.Player0X)) {
+				pixel = colorPlayer0;
+			}
+			if (isPlayerPixel(tiaState.Player1Graphics, x, tiaState.Player1X)) {
+				pixel = colorPlayer1;
+			}
+
 			_frameBuffer[y * ScreenWidth + x] = pixel;
 		}
 	}

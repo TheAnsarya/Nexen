@@ -35,6 +35,23 @@ struct Atari2600TiaState {
 	bool HmovePending = false;
 	uint32_t HmoveStrobeCount = 0;
 	uint32_t HmoveApplyCount = 0;
+	uint8_t ColorBackground = 0;
+	uint8_t ColorPlayfield = 0;
+	uint8_t ColorPlayer0 = 0;
+	uint8_t ColorPlayer1 = 0;
+	uint8_t Playfield0 = 0;
+	uint8_t Playfield1 = 0;
+	uint8_t Playfield2 = 0;
+	bool PlayfieldReflect = false;
+	uint8_t Player0Graphics = 0;
+	uint8_t Player1Graphics = 0;
+	bool Missile0Enabled = false;
+	bool Missile1Enabled = false;
+	bool BallEnabled = false;
+	uint8_t Player0X = 24;
+	uint8_t Player1X = 96;
+	uint8_t BallX = 80;
+	uint32_t RenderRevision = 0;
 	uint64_t TotalColorClocks = 0;
 };
 

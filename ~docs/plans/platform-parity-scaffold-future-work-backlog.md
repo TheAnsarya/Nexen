@@ -9,6 +9,7 @@ Promoted and completed from backlog:
 - [#719](https://github.com/TheAnsarya/Nexen/issues/719): Cycle-accurate 6507 execution semantics (completed 2026-03-17).
 - [#720](https://github.com/TheAnsarya/Nexen/issues/720): RIOT timer and I/O edge semantics (completed 2026-03-17).
 - [#721](https://github.com/TheAnsarya/Nexen/issues/721): TIA scanline timing and WSYNC/HMOVE edge semantics (completed 2026-03-17).
+- [#722](https://github.com/TheAnsarya/Nexen/issues/722): TIA playfield and object rendering pipeline (completed 2026-03-17).
 
 ## Purpose
 
@@ -39,7 +40,7 @@ Deferred child issues:
 | [#719](https://github.com/TheAnsarya/Nexen/issues/719) | Cycle-accurate 6507 execution semantics (completed; promoted from deferred backlog) |
 | [#720](https://github.com/TheAnsarya/Nexen/issues/720) | RIOT timer and I/O edge behavior (completed; promoted from deferred backlog) |
 | [#721](https://github.com/TheAnsarya/Nexen/issues/721) | TIA timing and WSYNC/HMOVE edge cases (completed; promoted from deferred backlog) |
-| [#722](https://github.com/TheAnsarya/Nexen/issues/722) | TIA playfield and object rendering pipeline |
+| [#722](https://github.com/TheAnsarya/Nexen/issues/722) | TIA playfield and object rendering pipeline (completed; promoted from deferred backlog) |
 | [#723](https://github.com/TheAnsarya/Nexen/issues/723) | TIA audio channels and deterministic mixer integration |
 | [#724](https://github.com/TheAnsarya/Nexen/issues/724) | Behavior-accurate mapper implementations |
 | [#725](https://github.com/TheAnsarya/Nexen/issues/725) | ROM corpus compatibility harness and checkpoint reports |
