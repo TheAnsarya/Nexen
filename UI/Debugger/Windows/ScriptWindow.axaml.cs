@@ -27,7 +27,7 @@ using Nexen.Debugger.Views;
 using Nexen.Interop;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Windows; 
+namespace Nexen.Debugger.Windows;
 public class ScriptWindow : NexenWindow, INotificationHandler {
 	private static XshdSyntaxDefinition _syntaxDef;
 	private IHighlightingDefinition _highlighting;

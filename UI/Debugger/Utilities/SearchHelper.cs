@@ -11,7 +11,7 @@ using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Utilities; 
+namespace Nexen.Debugger.Utilities;
 public static class SearchHelper {
 	private static List<string> GetSearchTerms(string searchString) {
 		searchString = searchString.Trim();

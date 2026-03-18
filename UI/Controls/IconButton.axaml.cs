@@ -8,7 +8,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.Windows;
 
-namespace Nexen.Controls; 
+namespace Nexen.Controls;
 public class IconButton : Button {
 	protected override Type StyleKeyOverride => typeof(Button);
 
