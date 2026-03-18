@@ -56,3 +56,4 @@ Reference catalogs:
 - Second pass continues the same ColorBold aesthetic for the next highest-usage icons from inventory.
 - Third pass extends the same ColorBold aesthetic to system/platform icons and frequent utility icons.
 - Third-pass system/platform SVGs were redesigned after feedback to replace generic controller glyphs.
+- Third-pass system/platform SVGs were refined again to use system/logo-centric marks (SNES no-text 4-color logo mark, DMG-style Game Boy, purple GBA, and revised NES/PCE/SMS/WS designs).

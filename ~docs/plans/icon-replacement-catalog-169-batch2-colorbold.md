@@ -63,13 +63,13 @@ Revised after owner feedback to replace generic gamepad glyphs with platform-spe
 
 | Current | Proposed (ColorBold SVG) | Mapping | Color Intent |
 |---|---|---|---|
-| <img src="../../UI/Assets/NesIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/NesIcon.svg" width="24" /> | NesIcon.png -> custom NES pad | NES retro gray/red |
-| <img src="../../UI/Assets/SnesIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/SnesIcon.svg" width="24" /> | SnesIcon.png -> custom SNES 4-color pad | SNES four-color face buttons |
-| <img src="../../UI/Assets/GameboyIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/GameboyIcon.svg" width="24" /> | GameboyIcon.png -> custom handheld | GB green-screen handheld |
-| <img src="../../UI/Assets/GbaIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/GbaIcon.svg" width="24" /> | GbaIcon.png -> custom wide handheld | GBA blue handheld |
-| <img src="../../UI/Assets/PceIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/PceIcon.svg" width="24" /> | PceIcon.png -> custom chip board | PCE teal circuit board |
-| <img src="../../UI/Assets/SmsIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/SmsIcon.svg" width="24" /> | SmsIcon.png -> custom classic pad | SMS amber controller |
-| <img src="../../UI/Assets/WsIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/WsIcon.svg" width="24" /> | WsIcon.png -> custom WS mark | WS slate with stylized white mark |
+| <img src="../../UI/Assets/NesIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/NesIcon.svg" width="24" /> | NesIcon.png -> custom NES console mark | NES gray shell + red slot accent |
+| <img src="../../UI/Assets/SnesIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/SnesIcon.svg" width="24" /> | SnesIcon.png -> custom SNES 4-color logo mark | SNES iconic 4-color symbol (no text) |
+| <img src="../../UI/Assets/GameboyIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/GameboyIcon.svg" width="24" /> | GameboyIcon.png -> custom DMG-style handheld | GB gray body + green screen |
+| <img src="../../UI/Assets/GbaIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/GbaIcon.svg" width="24" /> | GbaIcon.png -> custom GBA handheld | GBA purple shell palette |
+| <img src="../../UI/Assets/PceIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/PceIcon.svg" width="24" /> | PceIcon.png -> custom PC Engine console mark | PCE light shell + orange accent |
+| <img src="../../UI/Assets/SmsIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/SmsIcon.svg" width="24" /> | SmsIcon.png -> custom Master System console mark | SMS black console + red dial motif |
+| <img src="../../UI/Assets/WsIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/WsIcon.svg" width="24" /> | WsIcon.png -> custom WonderSwan handheld | WS light handheld + blue display |
 | <img src="../../UI/Assets/LynxIcon.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/LynxIcon.svg" width="24" /> | LynxIcon.png -> paw | Lynx brown accent |
 | <img src="../../UI/Assets/EditLabel.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/EditLabel.svg" width="24" /> | EditLabel.png -> label-outline | Label purple accent |
 | <img src="../../UI/Assets/Add.png" width="24" /> | <img src="../../UI/Assets/Proposed/ColorBold/Add.svg" width="24" /> | Add.png -> plus-thick | Add green accent |
@@ -87,4 +87,5 @@ Revised after owner feedback to replace generic gamepad glyphs with platform-spe
 - Batch 2 glyphs are slightly scaled up for better readability, with an extra-bold larger close X.
 - Second-pass icons continue the same ColorBold visual language for additional high-usage assets.
 - Third-pass icons continue the same ColorBold visual language for platform/system and utility assets.
+- Platform/system icons were redesigned again to avoid generic/janky controller silhouettes and emphasize system identity.
 - If approved, the next step is to replace icon paths in small grouped commits and validate after each group.

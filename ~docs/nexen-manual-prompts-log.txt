@@ -595,6 +595,7 @@ Add a dedicated second-pass tag (similar to the first icon-origin tag) for tight
 
 The `Third Pass: System/Platform` icons are all garbage, although the `Frequent Utility` ones seem fine and the Lynx icon is nice; like the snes logo should be a version of the four colored snes icon; find better icons; continue; 
 
+The `Third Pass: System/Platform` icons are still all garbage don't make janky inaccurate controllers, make an icon that represents the system, like for snes I didn't mean add the four colors to a controller I meant use the four colors in the iconic logo as represented in an example `https://images.alphacoders.com/285/thumb-1920-28573.jpg` (no text! just the 4 color logo), although the gameboy icon should probably be a gameboy, same with a purple gba, and fix the others; continue;
 
 
 
