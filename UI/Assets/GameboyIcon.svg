@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-	<rect x="5" y="1.8" width="14" height="20.4" rx="2.5" fill="#cfd8dc"/>
-	<rect x="6.4" y="3.8" width="11.2" height="8" rx="0.8" fill="#7cb342"/>
-	<rect x="8" y="14.2" width="3.1" height="1" rx="0.3" fill="#455a64"/>
-	<rect x="9.05" y="13.15" width="1" height="3.1" rx="0.3" fill="#455a64"/>
-	<ellipse cx="14.5" cy="14.7" rx="1" ry="0.8" fill="#8e24aa" transform="rotate(-25 14.5 14.7)"/>
-	<ellipse cx="16.5" cy="16.2" rx="1" ry="0.8" fill="#8e24aa" transform="rotate(-25 16.5 16.2)"/>
-	<rect x="8.2" y="18.2" width="2.8" height="0.55" rx="0.25" fill="#78909c"/>
-	<rect x="13" y="18.2" width="2.8" height="0.55" rx="0.25" fill="#78909c"/>
+	<rect x="4.3" y="1" width="15.4" height="22" rx="2.6" fill="#cfd8dc"/>
+	<rect x="5.9" y="3.1" width="12.2" height="8.6" rx="0.85" fill="#7cb342"/>
+	<rect x="7.8" y="14.1" width="3.4" height="1.05" rx="0.3" fill="#455a64"/>
+	<rect x="8.98" y="12.92" width="1.05" height="3.4" rx="0.3" fill="#455a64"/>
+	<ellipse cx="14.9" cy="14.6" rx="1.05" ry="0.82" fill="#8e24aa" transform="rotate(-25 14.9 14.6)"/>
+	<ellipse cx="16.95" cy="16.1" rx="1.05" ry="0.82" fill="#8e24aa" transform="rotate(-25 16.95 16.1)"/>
+	<rect x="8.2" y="18.55" width="2.95" height="0.58" rx="0.25" fill="#78909c"/>
+	<rect x="13.05" y="18.55" width="2.95" height="0.58" rx="0.25" fill="#78909c"/>
 </svg>

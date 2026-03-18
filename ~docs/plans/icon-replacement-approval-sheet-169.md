@@ -57,3 +57,4 @@ Reference catalogs:
 - Third pass extends the same ColorBold aesthetic to system/platform icons and frequent utility icons.
 - Third-pass system/platform SVGs were redesigned after feedback to replace generic controller glyphs.
 - Third-pass system/platform SVGs were refined again to use system/logo-centric marks (SNES no-text 4-color logo mark, DMG-style Game Boy, purple GBA, and revised NES/PCE/SMS/WS designs).
+- Third-pass system/platform SVGs were refined again after additional feedback with research-driven shape tuning: SNES no-background mark with corrected color order, slightly larger Game Boy, and improved NES/GBA/PCE/SMS/WonderSwan silhouettes.

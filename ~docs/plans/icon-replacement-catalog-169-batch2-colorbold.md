@@ -88,4 +88,6 @@ Revised after owner feedback to replace generic gamepad glyphs with platform-spe
 - Second-pass icons continue the same ColorBold visual language for additional high-usage assets.
 - Third-pass icons continue the same ColorBold visual language for platform/system and utility assets.
 - Platform/system icons were redesigned again to avoid generic/janky controller silhouettes and emphasize system identity.
+- Latest refinement pass adjusted SNES to a no-background 4-color logo-style mark with corrected color order and revised shape proportions.
+- Latest refinement pass enlarged the Game Boy icon slightly and reworked NES, GBA, PCE, SMS, and WonderSwan for closer system-identity cues.
 - If approved, the next step is to replace icon paths in small grouped commits and validate after each group.
