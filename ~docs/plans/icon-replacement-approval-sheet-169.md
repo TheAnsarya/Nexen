@@ -58,3 +58,4 @@ Reference catalogs:
 - Third-pass system/platform SVGs were redesigned after feedback to replace generic controller glyphs.
 - Third-pass system/platform SVGs were refined again to use system/logo-centric marks (SNES no-text 4-color logo mark, DMG-style Game Boy, purple GBA, and revised NES/PCE/SMS/WS designs).
 - Third-pass system/platform SVGs were refined again after additional feedback with research-driven shape tuning: SNES no-background mark with corrected color order, slightly larger Game Boy, and improved NES/GBA/PCE/SMS/WonderSwan silhouettes.
+- Third-pass system/platform SVGs received a micro-pass for geometry fidelity: SNES blue/red cutout treatment and additional NES/GBA/PCE/SMS/WonderSwan silhouette tuning.

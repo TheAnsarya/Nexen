@@ -90,4 +90,5 @@ Revised after owner feedback to replace generic gamepad glyphs with platform-spe
 - Platform/system icons were redesigned again to avoid generic/janky controller silhouettes and emphasize system identity.
 - Latest refinement pass adjusted SNES to a no-background 4-color logo-style mark with corrected color order and revised shape proportions.
 - Latest refinement pass enlarged the Game Boy icon slightly and reworked NES, GBA, PCE, SMS, and WonderSwan for closer system-identity cues.
+- Latest micro-pass added SNES logo cutouts on blue/red petals and further tuned NES, GBA, PCE, SMS, and WonderSwan silhouettes toward more faithful system marks.
 - If approved, the next step is to replace icon paths in small grouped commits and validate after each group.
