@@ -61,4 +61,55 @@ namespace {
 		EXPECT_EQ(scaffoldA.GetBus().GetDmaContentionCycles(), scaffoldB.GetBus().GetDmaContentionCycles());
 		EXPECT_EQ(scaffoldA.GetBus().GetDmaActiveCyclesRemaining(), scaffoldB.GetBus().GetDmaActiveCyclesRemaining());
 	}
+
+	TEST(GenesisVdpDmaContentionTests, ContentionPenaltyTracksSmallTimingWindows) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<uint8_t> rom(0x400, 0x4e);
+		for (size_t i = 0; i + 1 < rom.size(); i += 2) {
+			rom[i] = 0x4e;
+			rom[i + 1] = 0x71;
+		}
+
+		scaffold.LoadRom(rom);
+		scaffold.Startup();
+		scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 8);
+
+		scaffold.StepFrameScaffold(3);
+		EXPECT_EQ(scaffold.GetCpu().GetCycleCount(), 2u);
+		EXPECT_EQ(scaffold.GetBus().GetDmaContentionCycles(), 1u);
+
+		scaffold.StepFrameScaffold(4);
+		EXPECT_EQ(scaffold.GetCpu().GetCycleCount(), 5u);
+		EXPECT_EQ(scaffold.GetBus().GetDmaContentionCycles(), 2u);
+
+		scaffold.StepFrameScaffold(8);
+		EXPECT_EQ(scaffold.GetCpu().GetCycleCount(), 11u);
+		EXPECT_EQ(scaffold.GetBus().GetDmaContentionCycles(), 4u);
+		EXPECT_EQ(scaffold.GetBus().GetDmaContentionEvents(), 3u);
+	}
+
+	TEST(GenesisVdpDmaContentionTests, DmaContentionEndsAfterTransferCyclesAreConsumed) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<uint8_t> rom(0x400, 0x4e);
+		for (size_t i = 0; i + 1 < rom.size(); i += 2) {
+			rom[i] = 0x4e;
+			rom[i + 1] = 0x71;
+		}
+
+		scaffold.LoadRom(rom);
+		scaffold.Startup();
+		scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Fill, 2);
+
+		scaffold.StepFrameScaffold(64);
+		EXPECT_EQ(scaffold.GetBus().GetDmaActiveCyclesRemaining(), 0u);
+		EXPECT_EQ(scaffold.GetBus().GetDmaMode(), GenesisVdpDmaMode::None);
+		EXPECT_EQ(scaffold.GetBus().GetDmaContentionCycles(), 8u);
+		EXPECT_EQ(scaffold.GetCpu().GetCycleCount(), 56u);
+
+		uint64_t cpuBefore = scaffold.GetCpu().GetCycleCount();
+		uint32_t contentionBefore = scaffold.GetBus().GetDmaContentionCycles();
+		scaffold.StepFrameScaffold(16);
+		EXPECT_EQ(scaffold.GetCpu().GetCycleCount() - cpuBefore, 16u);
+		EXPECT_EQ(scaffold.GetBus().GetDmaContentionCycles(), contentionBefore);
+	}
 }

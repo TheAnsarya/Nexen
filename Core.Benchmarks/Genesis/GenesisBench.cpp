@@ -86,3 +86,39 @@ static void BM_Genesis_PerformanceGate_Corpus(benchmark::State& state) {
 	state.SetLabel("performance-gate");
 }
 BENCHMARK(BM_Genesis_PerformanceGate_Corpus);
+
+static void BM_Genesis_DmaContention_CopyBurst(benchmark::State& state) {
+	GenesisM68kBoundaryScaffold scaffold;
+	vector<uint8_t> rom = BuildNopRom(0x8000);
+	scaffold.LoadRom(rom);
+
+	for (auto _ : state) {
+		scaffold.Startup();
+		scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 64);
+		scaffold.StepFrameScaffold(512);
+		benchmark::DoNotOptimize(scaffold.GetBus().GetDmaContentionCycles());
+		benchmark::DoNotOptimize(scaffold.GetCpu().GetCycleCount());
+	}
+
+	state.SetItemsProcessed(state.iterations() * 64);
+	state.SetLabel("dma-copy-contention");
+}
+BENCHMARK(BM_Genesis_DmaContention_CopyBurst);
+
+static void BM_Genesis_DmaContention_FillBurst(benchmark::State& state) {
+	GenesisM68kBoundaryScaffold scaffold;
+	vector<uint8_t> rom = BuildNopRom(0x8000);
+	scaffold.LoadRom(rom);
+
+	for (auto _ : state) {
+		scaffold.Startup();
+		scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Fill, 64);
+		scaffold.StepFrameScaffold(512);
+		benchmark::DoNotOptimize(scaffold.GetBus().GetDmaContentionCycles());
+		benchmark::DoNotOptimize(scaffold.GetCpu().GetCycleCount());
+	}
+
+	state.SetItemsProcessed(state.iterations() * 64);
+	state.SetLabel("dma-fill-contention");
+}
+BENCHMARK(BM_Genesis_DmaContention_FillBurst);
