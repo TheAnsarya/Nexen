@@ -183,3 +183,24 @@ Artifact output path:
 
 - `bench-genesis-fast-ci.json` at repository root.
 - Upload this file in CI for benchmark comparison and trend review.
+
+## Genesis Title Regression Pack (Issue #760)
+
+Use this small title pack for quick Genesis regression checks:
+
+- Sonic class (`sonic-*.bin` behavior path)
+- Jurassic class (`jurassic-*.bin` behavior path)
+- Generic class (all other names)
+
+Quick-run command:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter="GenesisCompatibilityHarnessTests.*:GenesisPerformanceGateTests.*" --gtest_brief=1
+```
+
+Machine-parseable summary lines produced by the harness:
+
+- `GEN_COMPAT_RESULT <title> <PASS|FAIL> PASS=<n> FAIL=<n> DIGEST=<hash>`
+- `GEN_COMPAT_MATRIX_SUMMARY PASS=<n> FAIL=<n> DIGEST=<hash>`
+- `GEN_PERF_RESULT <title> <PASS|FAIL> CLASS=<class> ELAPSED_US=<n> BUDGET_US=<n> DIGEST=<hash>`
+- `GEN_PERF_GATE_SUMMARY PASS=<n> FAIL=<n> BUDGET_US=<n> DIGEST=<hash>`
