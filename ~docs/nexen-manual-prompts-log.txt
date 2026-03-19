@@ -613,7 +613,9 @@ I see a lot of crazy words like "provenance" and "validation checklist integrati
 
 continue working issues and make new ones, with tests, benchmarks, and docs, chat/session logs, etc; continue;
 
+OK, Issue #752 "Create a curated Atari 2600 + Genesis reference ROM validation manifest with provenance and expected signatures." what the hell does that even mean? what are we making here? does it help implement emulation? Explain this to me and I will decide where we go with these issues;
 
+OK, now I understand it, yes please rewrite the language to be plainer and more easily understood, or at least just add extra description that lets us know these are example code sections that can be used for testing and ensuring regression tests are more standard and easier; updates the issues and the docs and work on them, let me know if you need a pointer to full rom sets for both systems
 
 
 

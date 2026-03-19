@@ -157,6 +157,32 @@ Gap follow-up issues created from this workflow:
 - [#751](https://github.com/TheAnsarya/Nexen/issues/751): automate Atari/Genesis reference-trace artifact generation for CI diffs.
 - [#752](https://github.com/TheAnsarya/Nexen/issues/752): build Atari/Genesis reference ROM manifest schema and seed set.
 
+### Plain-Language Explanation for #751 and #752
+
+- #751 means: run the same focused tests and benchmarks every time and save the outputs to files in a predictable place.
+- #752 means: keep a small example checklist of ROM entries used for regression checks so everyone runs the same test set.
+- These are test quality tools. They do not add new emulation behavior directly.
+- They help emulator work by catching regressions faster and making comparisons consistent.
+
+### #751 Artifact Pack Command
+
+```powershell
+.\scripts\reference-validation-pack.ps1 -SkipBuild
+```
+
+Expected outputs:
+
+- `artifacts/reference-validation/atari-harness.txt`
+- `artifacts/reference-validation/genesis-harness.txt`
+- `artifacts/reference-validation/atari-genesis-benchmarks.json`
+- `artifacts/reference-validation/reference-validation-summary.json`
+
+### #752 Example ROM Checklist File
+
+- File: `~docs/testing/reference-rom-validation-manifest.example.json`
+- Purpose: example ROM entries for standardized regression checks.
+- Important: this file uses placeholders until real ROM hashes are filled in.
+
 ## Genesis-Only Fast CI Command Pack (Issue #765)
 
 Use these commands for quick Genesis-only validation locally or in CI.
