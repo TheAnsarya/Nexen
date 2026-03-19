@@ -292,3 +292,24 @@ Trend guard rule:
 
 - Investigate any benchmark with `delta > 5%` slowdown.
 - Keep baseline and candidate JSON files as CI artifacts for review.
+
+## Reference Drift Comparator Script (Issues #787 and #798)
+
+Use this script to compare baseline and candidate artifact packs and fail on digest drift or large benchmark deltas.
+
+Command:
+
+```powershell
+powershell -File scripts/compare-reference-validation.ps1 -BaselineDir artifacts/reference-validation-baseline -CandidateDir artifacts/reference-validation
+```
+
+Behavior:
+
+- Compares Atari and Genesis summary/digest lines from harness outputs.
+- Compares benchmark rows and flags absolute CPU-time delta above 5%.
+- Returns exit code `1` on drift by default.
+
+## Epic 16 Tracking Docs
+
+- Closure matrix: [platform-parity-epic16-closure-matrix.md](platform-parity-epic16-closure-matrix.md)
+- Weekly cadence and triage: [platform-parity-epic16-weekly-cadence.md](platform-parity-epic16-weekly-cadence.md)

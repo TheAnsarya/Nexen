@@ -43,4 +43,44 @@ namespace {
 		console.StepCpuCycles(1);
 		EXPECT_TRUE(console.GetRiotState().TimerUnderflow);
 	}
+
+	TEST(Atari2600RiotPhaseATests, StatusReadsRemainStableUntilTimerIsReconfigured) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+
+		console.Reset();
+		console.DebugWriteCartridge(0x0084, 0x00); // divider=1, timer=0 (underflow on next tick)
+		console.StepCpuCycles(1);
+
+		EXPECT_EQ(console.DebugReadCartridge(0x0086), 1u);
+		EXPECT_EQ(console.DebugReadCartridge(0x0087), 1u);
+		EXPECT_EQ(console.DebugReadCartridge(0x0086), 1u);
+		EXPECT_EQ(console.DebugReadCartridge(0x0087), 1u);
+
+		Atari2600RiotState afterReads = console.GetRiotState();
+		EXPECT_TRUE(afterReads.InterruptFlag);
+		EXPECT_TRUE(afterReads.TimerUnderflow);
+		EXPECT_EQ(afterReads.InterruptEdgeCount, 1u);
+	}
+
+	TEST(Atari2600RiotPhaseATests, TimerReconfigureClearsStatusAfterReadSequence) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+
+		console.Reset();
+		console.DebugWriteCartridge(0x0084, 0x00); // underflow on next step
+		console.StepCpuCycles(1);
+
+		// Read status first to lock deterministic read ordering, then reconfigure timer.
+		EXPECT_EQ(console.DebugReadCartridge(0x0086), 1u);
+		EXPECT_EQ(console.DebugReadCartridge(0x0087), 1u);
+		console.DebugWriteCartridge(0x0084, 0x05);
+
+		Atari2600RiotState state = console.GetRiotState();
+		EXPECT_FALSE(state.InterruptFlag);
+		EXPECT_FALSE(state.TimerUnderflow);
+		EXPECT_EQ(state.Timer, 0x0005u);
+		EXPECT_EQ(state.TimerDivider, 1u);
+		EXPECT_EQ(state.InterruptEdgeCount, 1u);
+	}
 }

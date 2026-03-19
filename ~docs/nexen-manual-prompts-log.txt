@@ -689,9 +689,40 @@ fix as many warnings as you can; continue;
 
 [Nexen] Create a root level `*.md` document and link to it from the readme for primary developer tasks showing what I should be doing (adding reference roms? approving icons? manually testing a feature (give me a link to the manual testing doc!)? adding screenshots to documentation (make a plan!)? or what?) what features are we in the middle of? give me a handful of prompts that would advance the project in a meaningful way, let me know how to support the atari-2600/sega-genesis testing code examples and what folders and files I need to create; after letting me know what to do, continue working on genesis and atari 2600 emulation and add a ton of more issues for that emulation work based on the docs and benchmarks and tests and go for very long time, working for a half hour or so would be ok;
 
+add a dozen more issues, and then implement everything; continue; work on issues for an hour; continue;
+
+stop doing all these abstract tests, fucking actually implement emulation; stop moving clouds around, build a damn house; concrete not ethereal; make issues not for testing but real implementation of a sega genesis emulator, we'll deal with scaffold structures later; make a sprite be shown on a screen or something; make real issues and implement an actual emulator, not gundgy nonsense that doesn't advance our purpioses of emulating Sonic, I want to play it in perfect emulation with pansy recording and debugging; continue;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- switch to claude opus 4.6
+[Nexen] Create a root level `*.md` document and link to it from the readme for primary developer tasks showing what I should be doing (adding reference roms? approving icons? manually testing a feature (give me a link to the manual testing doc!)? adding screenshots to documentation (make a plan!)? or what?) what features are we in the middle of? give me a handful of prompts that would advance the project in a meaningful way, let me know how to support the atari-2600/sega-genesis testing code examples and what folders and files I need to create; after letting me know what to do, continue working on genesis and atari 2600 emulation and add a ton of more issues for that emulation work based on the docs and benchmarks and tests and go for very long time;
 
 
 

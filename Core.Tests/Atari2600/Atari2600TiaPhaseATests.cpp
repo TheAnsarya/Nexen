@@ -52,4 +52,50 @@ namespace {
 		EXPECT_EQ(tiaState.HmoveApplyCount, 6u);
 		EXPECT_EQ(tiaState.ColorClock, 11u);
 	}
+
+	TEST(Atari2600TiaPhaseATests, ColorClockWrapCarriesToNextScanlineAtBoundary) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+
+		console.Reset();
+		console.StepCpuCycles(76); // 76 * 3 = 228 color clocks => one full scanline.
+
+		Atari2600TiaState tiaState = console.GetTiaState();
+		EXPECT_EQ(tiaState.Scanline, 1u);
+		EXPECT_EQ(tiaState.ColorClock, 0u);
+		EXPECT_EQ(tiaState.TotalColorClocks, 228u);
+	}
+
+	TEST(Atari2600TiaPhaseATests, WsyncNearWrapPerformsSingleCarryThenClockAdvance) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+
+		console.Reset();
+		console.StepCpuCycles(75); // color clock 225 on scanline 0.
+		console.RequestWsync();
+		console.StepCpuCycles(1);
+
+		Atari2600TiaState tiaState = console.GetTiaState();
+		EXPECT_EQ(tiaState.Scanline, 1u);
+		EXPECT_EQ(tiaState.ColorClock, 3u);
+		EXPECT_EQ(tiaState.WsyncCount, 1u);
+		EXPECT_EQ(tiaState.TotalColorClocks, 228u);
+	}
+
+	TEST(Atari2600TiaPhaseATests, HmoveAtBoundaryDoesNotDoubleWrapScanline) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+
+		console.Reset();
+		console.StepCpuCycles(75); // color clock 225.
+		console.RequestHmove();
+		console.StepCpuCycles(1);
+
+		Atari2600TiaState tiaState = console.GetTiaState();
+		EXPECT_EQ(tiaState.Scanline, 1u);
+		EXPECT_EQ(tiaState.ColorClock, 8u);
+		EXPECT_EQ(tiaState.HmoveStrobeCount, 1u);
+		EXPECT_EQ(tiaState.HmoveApplyCount, 1u);
+		EXPECT_EQ(tiaState.TotalColorClocks, 236u);
+	}
 }
