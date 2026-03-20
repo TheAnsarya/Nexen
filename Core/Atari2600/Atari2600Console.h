@@ -58,6 +58,11 @@ struct Atari2600TiaState {
 	uint8_t Missile0X = 32;
 	uint8_t Missile1X = 104;
 	uint8_t BallX = 80;
+	int8_t MotionPlayer0 = 0;
+	int8_t MotionPlayer1 = 0;
+	int8_t MotionMissile0 = 0;
+	int8_t MotionMissile1 = 0;
+	int8_t MotionBall = 0;
 	uint8_t CollisionCxm0p = 0;
 	uint8_t CollisionCxm1p = 0;
 	uint8_t CollisionCxp0fb = 0;

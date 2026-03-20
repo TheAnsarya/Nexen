@@ -471,6 +471,31 @@ class Atari2600Riot {
 			_state.CollisionCxppmm = 0;
 		}
 
+		[[nodiscard]] static int8_t DecodeMotionNibble(uint8_t value) {
+			int8_t motion = (int8_t)((value >> 4) & 0x0F);
+			if ((motion & 0x08) != 0) {
+				motion = (int8_t)(motion - 16);
+			}
+			return motion;
+		}
+
+		[[nodiscard]] static uint8_t WrapHorizontal(int32_t value) {
+			int32_t wrapped = value % (int32_t)Atari2600Console::ScreenWidth;
+			if (wrapped < 0) {
+				wrapped += Atari2600Console::ScreenWidth;
+			}
+			return (uint8_t)wrapped;
+		}
+
+		void ApplyHmoveDisplacements() {
+			_state.Player0X = WrapHorizontal((int32_t)_state.Player0X + _state.MotionPlayer0);
+			_state.Player1X = WrapHorizontal((int32_t)_state.Player1X + _state.MotionPlayer1);
+			_state.Missile0X = WrapHorizontal((int32_t)_state.Missile0X + _state.MotionMissile0);
+			_state.Missile1X = WrapHorizontal((int32_t)_state.Missile1X + _state.MotionMissile1);
+			_state.BallX = WrapHorizontal((int32_t)_state.BallX + _state.MotionBall);
+			CaptureCurrentScanlineState();
+		}
+
 		[[nodiscard]] Atari2600ScanlineRenderState BuildScanlineRenderState() const {
 			Atari2600ScanlineRenderState scanline = {};
 			scanline.ColorBackground = _state.ColorBackground;
@@ -602,6 +627,7 @@ class Atari2600Riot {
 				if (_state.HmovePending && !_state.HmoveDelayToNextScanline) {
 					_state.HmovePending = false;
 					_state.HmoveApplyCount++;
+					ApplyHmoveDisplacements();
 					if (_state.Scanline < Atari2600Console::ScreenHeight) {
 						_hmoveBlankScanlines[_state.Scanline] = 1;
 					}
@@ -625,6 +651,11 @@ class Atari2600Riot {
 		void ClearHmove() {
 			_state.HmovePending = false;
 			_state.HmoveDelayToNextScanline = false;
+			_state.MotionPlayer0 = 0;
+			_state.MotionPlayer1 = 0;
+			_state.MotionMissile0 = 0;
+			_state.MotionMissile1 = 0;
+			_state.MotionBall = 0;
 		}
 
 		[[nodiscard]] bool IsHmoveBlankScanline(uint32_t scanline) const {
@@ -889,6 +920,26 @@ class Atari2600Riot {
 					_state.BallEnabled = (value & 0x02) != 0;
 					MarkRenderDirty();
 					CaptureCurrentScanlineState();
+					break;
+
+				case 0x20:
+					_state.MotionPlayer0 = DecodeMotionNibble(value);
+					break;
+
+				case 0x21:
+					_state.MotionPlayer1 = DecodeMotionNibble(value);
+					break;
+
+				case 0x22:
+					_state.MotionMissile0 = DecodeMotionNibble(value);
+					break;
+
+				case 0x23:
+					_state.MotionMissile1 = DecodeMotionNibble(value);
+					break;
+
+				case 0x24:
+					_state.MotionBall = DecodeMotionNibble(value);
 					break;
 
 				default:
@@ -1711,6 +1762,11 @@ void Atari2600Console::Serialize(Serializer& s) {
 	SV(tiaState.Missile0X);
 	SV(tiaState.Missile1X);
 	SV(tiaState.BallX);
+	SV(tiaState.MotionPlayer0);
+	SV(tiaState.MotionPlayer1);
+	SV(tiaState.MotionMissile0);
+	SV(tiaState.MotionMissile1);
+	SV(tiaState.MotionBall);
 	SV(tiaState.CollisionCxm0p);
 	SV(tiaState.CollisionCxm1p);
 	SV(tiaState.CollisionCxp0fb);

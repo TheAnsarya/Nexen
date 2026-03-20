@@ -279,4 +279,52 @@ namespace {
 
 		EXPECT_TRUE((console.DebugReadCartridge(0x0000) & 0x80) != 0); // cxm0p missile0-player1
 	}
+
+	TEST(Atari2600TiaPhaseATests, HmxxRegistersApplyDisplacementOnHmove) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+
+		console.Reset();
+		console.DebugWriteCartridge(0x0020, 0x10); // hmp0 +1
+		console.DebugWriteCartridge(0x0021, 0x20); // hmp1 +2
+		console.DebugWriteCartridge(0x0022, 0x30); // hmm0 +3
+		console.DebugWriteCartridge(0x0023, 0x40); // hmm1 +4
+		console.DebugWriteCartridge(0x0024, 0xE0); // hmbl -2
+		console.DebugWriteCartridge(0x002A, 0x00); // hmove
+		console.StepCpuCycles(1);
+
+		Atari2600TiaState tiaState = console.GetTiaState();
+		EXPECT_EQ(tiaState.Player0X, 25u);
+		EXPECT_EQ(tiaState.Player1X, 98u);
+		EXPECT_EQ(tiaState.Missile0X, 35u);
+		EXPECT_EQ(tiaState.Missile1X, 108u);
+		EXPECT_EQ(tiaState.BallX, 78u);
+	}
+
+	TEST(Atari2600TiaPhaseATests, HmxxPositiveDisplacementWrapsAtScreenEdge) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+
+		console.Reset();
+		console.StepCpuCycles(53);                // color clock 159
+		console.DebugWriteCartridge(0x0010, 0x00); // resp0 => x=159
+		console.DebugWriteCartridge(0x0020, 0x20); // hmp0 +2
+		console.DebugWriteCartridge(0x002A, 0x00); // hmove
+		console.StepCpuCycles(1);
+
+		EXPECT_EQ(console.GetTiaState().Player0X, 1u);
+	}
+
+	TEST(Atari2600TiaPhaseATests, HmclrClearsMotionRegistersBeforeHmove) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+
+		console.Reset();
+		console.DebugWriteCartridge(0x0020, 0x30); // hmp0 +3
+		console.DebugWriteCartridge(0x002B, 0x00); // hmclr
+		console.DebugWriteCartridge(0x002A, 0x00); // hmove
+		console.StepCpuCycles(1);
+
+		EXPECT_EQ(console.GetTiaState().Player0X, 24u);
+	}
 }
