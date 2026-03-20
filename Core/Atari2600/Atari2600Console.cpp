@@ -1375,10 +1375,11 @@ void Atari2600Console::RenderDebugFrame() {
 	};
 
 	auto isPlayerPixel = [](uint8_t graphics, uint32_t x, uint32_t originX) {
-		if (x < originX || x >= originX + 8) {
+		uint32_t relativeX = (x + Atari2600Console::ScreenWidth - originX) % Atari2600Console::ScreenWidth;
+		if (relativeX >= 8) {
 			return false;
 		}
-		uint32_t bit = 7 - (x - originX);
+		uint32_t bit = 7 - relativeX;
 		return ((graphics >> bit) & 0x01) != 0;
 	};
 
@@ -1404,7 +1405,8 @@ void Atari2600Console::RenderDebugFrame() {
 			bool playfieldPixel = getPlayfieldBit(scanlineState, halfIndex);
 			bool missile0Pixel = scanlineState.Missile0Enabled && x == scanlineState.Missile0X;
 			bool missile1Pixel = scanlineState.Missile1Enabled && x == scanlineState.Missile1X;
-			bool ballPixel = scanlineState.BallEnabled && x >= scanlineState.BallX && x < (uint32_t)(scanlineState.BallX + 4);
+			uint32_t ballOffset = (x + ScreenWidth - scanlineState.BallX) % ScreenWidth;
+			bool ballPixel = scanlineState.BallEnabled && ballOffset < 4;
 			bool player0Pixel = isPlayerPixel(scanlineState.Player0Graphics, x, scanlineState.Player0X);
 			bool player1Pixel = isPlayerPixel(scanlineState.Player1Graphics, x, scanlineState.Player1X);
 			_tia->LatchCollisionPixel(missile0Pixel, missile1Pixel, player0Pixel, player1Pixel, ballPixel, playfieldPixel);

@@ -201,4 +201,40 @@ namespace {
 		EXPECT_NE(playfieldDominantPixel, playerDominantPixel);
 		EXPECT_EQ(playfieldDominantPixel, playfieldPriorityFrame[4]);
 	}
+
+	TEST(Atari2600RenderPhaseATests, PlayerSpriteWrapsAtRightEdge) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadNopRom(console, "render-player-wrap.a26");
+
+		console.DebugWriteCartridge(0x0009, 0x01); // colubk
+		console.DebugWriteCartridge(0x0006, 0xAE); // colup0
+		console.DebugWriteCartridge(0x001B, 0xFF); // grp0
+		console.StepCpuCycles(53);                 // color clock 159
+		console.DebugWriteCartridge(0x0010, 0x00); // resp0 => x=159
+		console.RunFrame();
+
+		const uint16_t* frame = GetFramePixels(console);
+		uint16_t background = frame[8];
+		EXPECT_NE(frame[159], background);
+		EXPECT_NE(frame[0], background);
+		EXPECT_NE(frame[6], background);
+		EXPECT_EQ(frame[7], background);
+	}
+
+	TEST(Atari2600RenderPhaseATests, BallWrapSetsCxblpfCollisionLatch) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadNopRom(console, "render-ball-wrap-collision.a26");
+
+		console.DebugWriteCartridge(0x000D, 0x10); // pf0 only left-most playfield pixel
+		console.DebugWriteCartridge(0x000E, 0x00);
+		console.DebugWriteCartridge(0x000F, 0x00);
+		console.DebugWriteCartridge(0x001F, 0x02); // enabl
+		console.StepCpuCycles(53);                 // color clock 159
+		console.DebugWriteCartridge(0x0014, 0x00); // resbl => x=159
+		console.RunFrame();
+
+		EXPECT_TRUE((console.DebugReadCartridge(0x0006) & 0x80) != 0); // cxblpf
+	}
 }
