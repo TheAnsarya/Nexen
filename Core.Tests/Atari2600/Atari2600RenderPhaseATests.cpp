@@ -72,6 +72,29 @@ namespace {
 		EXPECT_EQ(withoutPlayer[24], withoutPlayer[0]);
 	}
 
+	TEST(Atari2600RenderPhaseATests, Refp0FlipsPlayerBitDirectionAcrossSpriteSpan) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadNopRom(console, "render-player-reflect.a26");
+
+		console.DebugWriteCartridge(0x0009, 0x01); // colubk
+		console.DebugWriteCartridge(0x0006, 0xAE); // colup0
+		console.DebugWriteCartridge(0x001B, 0x80); // grp0 left-most bit only
+
+		console.DebugWriteCartridge(0x000B, 0x00); // refp0 off
+		console.RunFrame();
+		const uint16_t* nonReflected = GetFramePixels(console);
+		uint16_t backgroundPixel = nonReflected[32];
+		EXPECT_NE(nonReflected[24], backgroundPixel);
+		EXPECT_EQ(nonReflected[31], backgroundPixel);
+
+		console.DebugWriteCartridge(0x000B, 0x08); // refp0 on
+		console.RunFrame();
+		const uint16_t* reflected = GetFramePixels(console);
+		EXPECT_EQ(reflected[24], backgroundPixel);
+		EXPECT_NE(reflected[31], backgroundPixel);
+	}
+
 	TEST(Atari2600RenderPhaseATests, BallEnableProducesDeterministicPlayfieldColoredPixels) {
 		Emulator emu;
 		Atari2600Console console(&emu);

@@ -512,6 +512,8 @@ class Atari2600Riot {
 			scanline.Nusiz1 = _state.Nusiz1;
 			scanline.Player0Graphics = _state.VdelPlayer0 ? _state.DelayedPlayer0Graphics : _state.Player0Graphics;
 			scanline.Player1Graphics = _state.VdelPlayer1 ? _state.DelayedPlayer1Graphics : _state.Player1Graphics;
+			scanline.Player0Reflect = _state.Player0Reflect;
+			scanline.Player1Reflect = _state.Player1Reflect;
 			scanline.Missile0Enabled = _state.Missile0Enabled;
 			scanline.Missile1Enabled = _state.Missile1Enabled;
 			scanline.BallEnabled = _state.VdelBall ? _state.DelayedBallEnabled : _state.BallEnabled;
@@ -739,6 +741,8 @@ class Atari2600Riot {
 					return (uint8_t)((_state.PlayfieldReflect ? 0x01 : 0x00)
 						| (_state.PlayfieldScoreMode ? 0x02 : 0x00)
 						| (_state.PlayfieldPriority ? 0x04 : 0x00));
+				case 0x0B: return _state.Player0Reflect ? 0x08 : 0x00;
+				case 0x0C: return _state.Player1Reflect ? 0x08 : 0x00;
 				case 0x0D: return _state.Playfield0;
 				case 0x0E: return _state.Playfield1;
 				case 0x0F: return _state.Playfield2;
@@ -814,6 +818,18 @@ class Atari2600Riot {
 					_state.PlayfieldReflect = (value & 0x01) != 0;
 					_state.PlayfieldScoreMode = (value & 0x02) != 0;
 					_state.PlayfieldPriority = (value & 0x04) != 0;
+					MarkRenderDirty();
+					CaptureCurrentScanlineState();
+					break;
+
+				case 0x0B:
+					_state.Player0Reflect = (value & 0x08) != 0;
+					MarkRenderDirty();
+					CaptureCurrentScanlineState();
+					break;
+
+				case 0x0C:
+					_state.Player1Reflect = (value & 0x08) != 0;
 					MarkRenderDirty();
 					CaptureCurrentScanlineState();
 					break;
@@ -1498,7 +1514,7 @@ void Atari2600Console::RenderDebugFrame() {
 		return 1u << ((nusiz >> 4) & 0x03);
 	};
 
-	auto isPlayerPixel = [&](uint8_t graphics, uint8_t nusiz, uint32_t x, uint32_t originX) {
+	auto isPlayerPixel = [&](uint8_t graphics, bool reflect, uint8_t nusiz, uint32_t x, uint32_t originX) {
 		std::array<uint8_t, 3> offsets = {};
 		uint32_t copyCount = getCopyOffsets(nusiz, offsets);
 		uint32_t pixelScale = getPlayerScale(nusiz);
@@ -1508,7 +1524,8 @@ void Atari2600Console::RenderDebugFrame() {
 			uint32_t copyOrigin = (originX + offsets[i]) % ScreenWidth;
 			uint32_t relativeX = (x + ScreenWidth - copyOrigin) % ScreenWidth;
 			if (relativeX < spriteWidth) {
-				uint32_t bit = 7 - (relativeX / pixelScale);
+				uint32_t bitIndex = relativeX / pixelScale;
+				uint32_t bit = reflect ? bitIndex : (7 - bitIndex);
 				if (((graphics >> bit) & 0x01) != 0) {
 					return true;
 				}
@@ -1559,8 +1576,8 @@ void Atari2600Console::RenderDebugFrame() {
 			bool missile1Pixel = isMissilePixel(scanlineState.Missile1Enabled, scanlineState.Nusiz1, x, scanlineState.Missile1X);
 			uint32_t ballOffset = (x + ScreenWidth - scanlineState.BallX) % ScreenWidth;
 			bool ballPixel = scanlineState.BallEnabled && ballOffset < 4;
-			bool player0Pixel = isPlayerPixel(scanlineState.Player0Graphics, scanlineState.Nusiz0, x, scanlineState.Player0X);
-			bool player1Pixel = isPlayerPixel(scanlineState.Player1Graphics, scanlineState.Nusiz1, x, scanlineState.Player1X);
+			bool player0Pixel = isPlayerPixel(scanlineState.Player0Graphics, scanlineState.Player0Reflect, scanlineState.Nusiz0, x, scanlineState.Player0X);
+			bool player1Pixel = isPlayerPixel(scanlineState.Player1Graphics, scanlineState.Player1Reflect, scanlineState.Nusiz1, x, scanlineState.Player1X);
 			_tia->LatchCollisionPixel(missile0Pixel, missile1Pixel, player0Pixel, player1Pixel, ballPixel, playfieldPixel);
 
 			uint16_t playfieldPixelColor = colorPlayfield;
@@ -1778,6 +1795,8 @@ void Atari2600Console::Serialize(Serializer& s) {
 	SV(tiaState.Nusiz1);
 	SV(tiaState.Player0Graphics);
 	SV(tiaState.Player1Graphics);
+	SV(tiaState.Player0Reflect);
+	SV(tiaState.Player1Reflect);
 	SV(tiaState.Missile0Enabled);
 	SV(tiaState.Missile1Enabled);
 	SV(tiaState.BallEnabled);

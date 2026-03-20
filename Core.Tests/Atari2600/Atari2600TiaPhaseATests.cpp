@@ -90,6 +90,21 @@ namespace {
 		EXPECT_EQ(console.DebugReadCartridge(0x000A), 0x07u);
 	}
 
+	TEST(Atari2600TiaPhaseATests, RefpBitsPopulatePerScanlineReflectionState) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+
+		console.Reset();
+		console.DebugWriteCartridge(0x000B, 0x08);
+		console.DebugWriteCartridge(0x000C, 0x08);
+
+		Atari2600ScanlineRenderState line0 = console.DebugGetScanlineRenderState(0);
+		EXPECT_TRUE(line0.Player0Reflect);
+		EXPECT_TRUE(line0.Player1Reflect);
+		EXPECT_EQ(console.DebugReadCartridge(0x000B), 0x08u);
+		EXPECT_EQ(console.DebugReadCartridge(0x000C), 0x08u);
+	}
+
 	TEST(Atari2600TiaPhaseATests, PlayfieldRegisterWritesLatchPerScanline) {
 		Emulator emu;
 		Atari2600Console console(&emu);
@@ -263,6 +278,27 @@ namespace {
 
 		console.DebugWriteCartridge(0x002C, 0x00);
 		EXPECT_EQ(console.DebugReadCartridge(0x0000), 0u);
+	}
+
+	TEST(Atari2600TiaPhaseATests, Refp0ChangesPlayerPlayfieldCollisionEdge) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadNopRom(console, "tia-refp-collision.a26");
+
+		console.DebugWriteCartridge(0x0010, 0x00); // resp0 => x=0
+		console.DebugWriteCartridge(0x000D, 0x10); // pf0 left-most playfield bit at x=0
+		console.DebugWriteCartridge(0x000E, 0x00);
+		console.DebugWriteCartridge(0x000F, 0x00);
+		console.DebugWriteCartridge(0x001B, 0x80); // left-most player bit only
+
+		console.DebugWriteCartridge(0x000B, 0x00); // refp0 off
+		console.RunFrame();
+		EXPECT_TRUE((console.DebugReadCartridge(0x0002) & 0x80) != 0); // cxp0fb p0-pf
+
+		console.DebugWriteCartridge(0x002C, 0x00); // cxclr
+		console.DebugWriteCartridge(0x000B, 0x08); // refp0 on
+		console.RunFrame();
+		EXPECT_EQ(console.DebugReadCartridge(0x0002), 0u);
 	}
 
 	TEST(Atari2600TiaPhaseATests, NusizMissileCopyModeCanLatchCxm0p) {

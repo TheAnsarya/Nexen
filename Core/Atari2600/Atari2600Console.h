@@ -50,6 +50,8 @@ struct Atari2600TiaState {
 	uint8_t Nusiz1 = 0;
 	uint8_t Player0Graphics = 0;
 	uint8_t Player1Graphics = 0;
+	bool Player0Reflect = false;
+	bool Player1Reflect = false;
 	bool Missile0Enabled = false;
 	bool Missile1Enabled = false;
 	bool BallEnabled = false;
@@ -110,6 +112,8 @@ struct Atari2600ScanlineRenderState {
 	uint8_t Nusiz1 = 0;
 	uint8_t Player0Graphics = 0;
 	uint8_t Player1Graphics = 0;
+	bool Player0Reflect = false;
+	bool Player1Reflect = false;
 	bool Missile0Enabled = false;
 	bool Missile1Enabled = false;
 	bool BallEnabled = false;
