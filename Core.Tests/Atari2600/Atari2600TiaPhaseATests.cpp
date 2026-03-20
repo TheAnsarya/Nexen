@@ -189,6 +189,55 @@ namespace {
 		EXPECT_EQ(tiaState.TotalColorClocks, 228u);
 	}
 
+	TEST(Atari2600TiaPhaseATests, ColorClockCarryStressMatrixMatchesExpectedWrapMath) {
+		for (uint32_t preCycles = 70; preCycles <= 78; preCycles++) {
+			for (uint32_t burstCycles = 1; burstCycles <= 4; burstCycles++) {
+				Emulator emu;
+				Atari2600Console console(&emu);
+
+				console.Reset();
+				console.StepCpuCycles(preCycles);
+				console.StepCpuCycles(burstCycles);
+
+				uint32_t totalColorClocks = (preCycles + burstCycles) * 3;
+				uint32_t expectedScanline = totalColorClocks / 228;
+				uint32_t expectedColorClock = totalColorClocks % 228;
+
+				Atari2600TiaState tiaState = console.GetTiaState();
+				EXPECT_EQ(tiaState.Scanline, expectedScanline);
+				EXPECT_EQ(tiaState.ColorClock, expectedColorClock);
+				EXPECT_EQ(tiaState.TotalColorClocks, totalColorClocks);
+			}
+		}
+	}
+
+	TEST(Atari2600TiaPhaseATests, ColorClockCarryStressMatrixIsDeterministicAcrossRuns) {
+		auto runMatrix = []() {
+			std::vector<std::pair<uint32_t, uint32_t>> samples;
+			for (uint32_t preCycles = 72; preCycles <= 76; preCycles++) {
+				Emulator emu;
+				Atari2600Console console(&emu);
+				console.Reset();
+
+				console.StepCpuCycles(preCycles);
+				console.RequestWsync();
+				console.StepCpuCycles(1);
+				Atari2600TiaState afterWsync = console.GetTiaState();
+				samples.emplace_back(afterWsync.Scanline, afterWsync.ColorClock);
+
+				console.DebugWriteCartridge(0x002A, 0x00);
+				console.StepCpuCycles(1);
+				Atari2600TiaState afterHmove = console.GetTiaState();
+				samples.emplace_back(afterHmove.Scanline, afterHmove.ColorClock);
+			}
+			return samples;
+		};
+
+		auto runA = runMatrix();
+		auto runB = runMatrix();
+		EXPECT_EQ(runA, runB);
+	}
+
 	TEST(Atari2600TiaPhaseATests, WsyncNearWrapPerformsSingleCarryThenClockAdvance) {
 		Emulator emu;
 		Atari2600Console console(&emu);
