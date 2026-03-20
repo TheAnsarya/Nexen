@@ -41,6 +41,26 @@ namespace {
 			});
 		}
 
+		string BuildCompatibilityFailContext(const Atari2600CompatibilityEntry& entry) {
+			string actualMapper = entry.MapperMode.empty() ? "unknown" : entry.MapperMode;
+			string expectedMapper = entry.ExpectedMapper.empty() ? "unknown" : entry.ExpectedMapper;
+			string baselineDigest = entry.BaselineDigest.empty() ? "n/a" : entry.BaselineDigest;
+			string timingDigest = entry.TimingDigest.empty() ? "n/a" : entry.TimingDigest;
+			bool mapperMatch = actualMapper == expectedMapper;
+			return std::format(
+				"COMPAT_FAIL_CONTEXT {} mapper={} expected_mapper={} mapper_match={} failed_ids={} digest={} baseline_digest={} timing_digest={} rom_size={} load_result={}",
+				entry.Name,
+				actualMapper,
+				expectedMapper,
+				mapperMatch ? 1 : 0,
+				BuildFailedCompatibilityCheckpointIds(entry.Checkpoints),
+				entry.Digest,
+				baselineDigest,
+				timingDigest,
+				entry.RomSize,
+				entry.LoadResult);
+		}
+
 	string BuildDigest(const vector<Atari2600HarnessCheckpoint>& checkpoints) {
 		uint64_t hash = 1469598103934665603ull;
 		for (const Atari2600HarnessCheckpoint& cp : checkpoints) {
@@ -296,6 +316,12 @@ Atari2600CompatibilityMatrixResult Atari2600SmokeHarness::RunCompatibilityMatrix
 	for (const Atari2600BaselineRomCase& romCase : romSet) {
 		Atari2600CompatibilityEntry entry = {};
 		entry.Name = romCase.Name;
+		entry.RomSize = romCase.RomData.size();
+		entry.LoadResult = 0;
+		entry.MapperMode = "unknown";
+		entry.ExpectedMapper = romCase.RomData.empty() ? "unknown" : InferExpectedMapper(romCase);
+		entry.BaselineDigest = "n/a";
+		entry.TimingDigest = "n/a";
 
 		auto addCheckpoint = [&](string id, bool pass, string context) {
 			Atari2600CompatibilityCheckpoint cp = {};
@@ -316,10 +342,11 @@ Atari2600CompatibilityMatrixResult Atari2600SmokeHarness::RunCompatibilityMatrix
 
 		if (romCase.RomData.empty()) {
 			addCheckpoint("COMPAT-CP-LOAD", false, "empty_rom_data");
+			entry.LoadResult = -1;
 			entry.Pass = false;
 			entry.Digest = BuildCompatibilityDigest(entry.Checkpoints);
 			result.FailCount++;
-			result.OutputLines.push_back(std::format("COMPAT_FAIL_CONTEXT {} mapper=unknown failed_ids={} digest={}", entry.Name, BuildFailedCompatibilityCheckpointIds(entry.Checkpoints), entry.Digest));
+			result.OutputLines.push_back(BuildCompatibilityFailContext(entry));
 			result.OutputLines.push_back(std::format("COMPAT_RESULT {} FAIL PASS={} FAIL={} DIGEST={}", entry.Name, entry.PassCount, entry.FailCount, entry.Digest));
 			result.Entries.push_back(std::move(entry));
 			continue;
@@ -328,24 +355,27 @@ Atari2600CompatibilityMatrixResult Atari2600SmokeHarness::RunCompatibilityMatrix
 		VirtualFile romFile(romCase.RomData.data(), romCase.RomData.size(), romCase.Name);
 		LoadRomResult loadResult = console.LoadRom(romFile);
 		if (loadResult != LoadRomResult::Success) {
+			entry.LoadResult = (int)loadResult;
 			addCheckpoint("COMPAT-CP-LOAD", false, std::format("load_result={}", (int)loadResult));
 			entry.Pass = false;
 			entry.Digest = BuildCompatibilityDigest(entry.Checkpoints);
 			result.FailCount++;
-			result.OutputLines.push_back(std::format("COMPAT_FAIL_CONTEXT {} mapper=unknown failed_ids={} digest={}", entry.Name, BuildFailedCompatibilityCheckpointIds(entry.Checkpoints), entry.Digest));
+			result.OutputLines.push_back(BuildCompatibilityFailContext(entry));
 			result.OutputLines.push_back(std::format("COMPAT_RESULT {} FAIL PASS={} FAIL={} DIGEST={}", entry.Name, entry.PassCount, entry.FailCount, entry.Digest));
 			result.Entries.push_back(std::move(entry));
 			continue;
 		}
 
+		entry.LoadResult = (int)loadResult;
 		entry.MapperMode = console.DebugGetMapperMode();
-		string expectedMapper = InferExpectedMapper(romCase);
-		addCheckpoint("COMPAT-CP-MAPPER", entry.MapperMode == expectedMapper, std::format("expected={} actual={}", expectedMapper, entry.MapperMode));
+		addCheckpoint("COMPAT-CP-MAPPER", entry.MapperMode == entry.ExpectedMapper, std::format("expected={} actual={}", entry.ExpectedMapper, entry.MapperMode));
 
 		Atari2600HarnessResult baseline = RunBaseline(console);
+		entry.BaselineDigest = baseline.Digest;
 		addCheckpoint("COMPAT-CP-BASELINE", baseline.FailCount == 0, std::format("pass={} fail={} digest={}", baseline.PassCount, baseline.FailCount, baseline.Digest));
 
 		Atari2600TimingSpikeResult timing = RunTimingSpike(console, 10);
+		entry.TimingDigest = timing.Digest;
 		addCheckpoint("COMPAT-CP-TIMING", timing.Stable, std::format("stable={} digest={}", timing.Stable ? 1 : 0, timing.Digest));
 
 		string digestA = BuildCompatibilityDigest(entry.Checkpoints);
@@ -358,7 +388,7 @@ Atari2600CompatibilityMatrixResult Atari2600SmokeHarness::RunCompatibilityMatrix
 			result.PassCount++;
 		} else {
 			result.FailCount++;
-			result.OutputLines.push_back(std::format("COMPAT_FAIL_CONTEXT {} mapper={} failed_ids={} digest={}", entry.Name, entry.MapperMode, BuildFailedCompatibilityCheckpointIds(entry.Checkpoints), entry.Digest));
+			result.OutputLines.push_back(BuildCompatibilityFailContext(entry));
 		}
 
 		result.OutputLines.push_back(std::format("COMPAT_RESULT {} {} PASS={} FAIL={} DIGEST={}", entry.Name, entry.Pass ? "PASS" : "FAIL", entry.PassCount, entry.FailCount, entry.Digest));

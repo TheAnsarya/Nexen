@@ -55,6 +55,11 @@ struct Atari2600CompatibilityCheckpoint {
 struct Atari2600CompatibilityEntry {
 	string Name;
 	string MapperMode;
+	string ExpectedMapper;
+	string BaselineDigest;
+	string TimingDigest;
+	int LoadResult = 0;
+	size_t RomSize = 0;
 	vector<Atari2600CompatibilityCheckpoint> Checkpoints;
 	bool Pass = false;
 	int PassCount = 0;

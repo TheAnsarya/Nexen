@@ -719,7 +719,9 @@ implement several issues in a row
 
 git ignore the artifacts folder; implement several issues in a row;
 
+implement several issues in a row
 
+How far away are we from a working Atari 2600 emulator?
 
 
 

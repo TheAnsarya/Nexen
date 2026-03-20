@@ -88,6 +88,7 @@ Status: Completed from deferred backlog (2026-03-17)
 - Added a title-targeted compatibility matrix harness path (`RunCompatibilityMatrix`) with deterministic per-title checkpoints.
 - Added machine-readable compatibility output lines:
 	- `COMPAT_CHECK <id> <PASS|FAIL> <context>`
+	- `COMPAT_FAIL_CONTEXT <title> mapper=<mode> expected_mapper=<mode> mapper_match=<0|1> failed_ids=<id-list> digest=<hash> baseline_digest=<hash|n/a> timing_digest=<hash|n/a> rom_size=<bytes> load_result=<code>`
 	- `COMPAT_RESULT <title> <PASS|FAIL> PASS=<n> FAIL=<n> DIGEST=<hash>`
 	- `COMPAT_MATRIX_SUMMARY PASS=<n> FAIL=<n> DIGEST=<hash>`
 - Added focused tests in `Atari2600CompatibilityMatrixTests` covering deterministic digest stability and failure-path behavior for empty ROM entries.
