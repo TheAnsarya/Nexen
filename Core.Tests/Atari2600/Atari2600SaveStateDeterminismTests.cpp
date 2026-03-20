@@ -48,6 +48,47 @@ namespace {
 		console.StepCpuCycles(41);
 	}
 
+	uint64_t HashMix(uint64_t hash, uint64_t value) {
+		hash ^= value + 0x9e3779b97f4a7c15ULL + (hash << 6) + (hash >> 2);
+		return hash;
+	}
+
+	vector<uint64_t> RunLongFrameDigestCheckpoints(uint32_t frameCount, uint32_t checkpointInterval) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadMapper3fRom(console);
+
+		vector<uint64_t> checkpoints;
+		checkpoints.reserve(frameCount / checkpointInterval);
+		uint64_t digest = 0xcbf29ce484222325ULL;
+
+		for (uint32_t frame = 1; frame <= frameCount; frame++) {
+			console.RunFrame();
+
+			if ((frame % checkpointInterval) == 0) {
+				Atari2600FrameStepSummary summary = console.GetLastFrameSummary();
+				Atari2600RiotState riotState = console.GetRiotState();
+				Atari2600TiaState tiaState = console.GetTiaState();
+
+				digest = HashMix(digest, summary.FrameCount);
+				digest = HashMix(digest, summary.CpuCyclesThisFrame);
+				digest = HashMix(digest, summary.ScanlineAtFrameEnd);
+				digest = HashMix(digest, summary.ColorClockAtFrameEnd);
+				digest = HashMix(digest, riotState.InterruptEdgeCount);
+				digest = HashMix(digest, riotState.Timer);
+				digest = HashMix(digest, tiaState.TotalColorClocks);
+				digest = HashMix(digest, tiaState.HmoveApplyCount);
+				digest = HashMix(digest, tiaState.AudioMixAccumulator);
+				digest = HashMix(digest, tiaState.CollisionCxp0fb);
+				digest = HashMix(digest, tiaState.CollisionCxppmm);
+
+				checkpoints.push_back(digest);
+			}
+		}
+
+		return checkpoints;
+	}
+
 	TEST(Atari2600SaveStateDeterminismTests, SerializeRoundTripReplaysDeterministically) {
 		Emulator emu;
 		Atari2600Console console(&emu);
@@ -97,5 +138,15 @@ namespace {
 
 		EXPECT_FALSE(payloadA.empty());
 		EXPECT_EQ(payloadA, payloadB);
+	}
+
+	TEST(Atari2600SaveStateDeterminismTests, LongRunFrameDigestCheckpointsRemainStableAt10kFrames) {
+		vector<uint64_t> runA = RunLongFrameDigestCheckpoints(10000, 1000);
+		vector<uint64_t> runB = RunLongFrameDigestCheckpoints(10000, 1000);
+
+		ASSERT_EQ(runA.size(), 10u);
+		ASSERT_EQ(runB.size(), 10u);
+		EXPECT_EQ(runA, runB);
+		EXPECT_NE(runA.back(), 0u);
 	}
 }
