@@ -102,6 +102,7 @@ namespace {
 
 		console.DebugWriteCartridge(0x0009, 0x01); // colubk
 		console.DebugWriteCartridge(0x0008, 0x3E); // colupf
+		console.DebugWriteCartridge(0x000A, 0x20); // ctrlpf ball size 4
 		console.DebugWriteCartridge(0x000D, 0x00);
 		console.DebugWriteCartridge(0x000E, 0x00);
 		console.DebugWriteCartridge(0x000F, 0x00);
@@ -119,6 +120,35 @@ namespace {
 		}
 
 		EXPECT_EQ(ballPixels, 4u);
+	}
+
+	TEST(Atari2600RenderPhaseATests, CtrlpfBallSizeBitsScaleRenderedBallSpan) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadNopRom(console, "render-ball-size-ctrlpf.a26");
+
+		console.DebugWriteCartridge(0x0009, 0x01); // colubk
+		console.DebugWriteCartridge(0x0008, 0x3E); // colupf
+		console.DebugWriteCartridge(0x001F, 0x02); // enabl
+
+		auto countSpan = [&](uint8_t ctrlpfValue) {
+			console.DebugWriteCartridge(0x000A, ctrlpfValue);
+			console.RunFrame();
+			const uint16_t* framePixels = GetFramePixels(console);
+			uint16_t backgroundPixel = framePixels[0];
+			size_t count = 0;
+			for (uint32_t x = 80; x < 88; x++) {
+				if (framePixels[x] != backgroundPixel) {
+					count++;
+				}
+			}
+			return count;
+		};
+
+		EXPECT_EQ(countSpan(0x00), 1u);
+		EXPECT_EQ(countSpan(0x10), 2u);
+		EXPECT_EQ(countSpan(0x20), 4u);
+		EXPECT_EQ(countSpan(0x30), 8u);
 	}
 
 	TEST(Atari2600RenderPhaseATests, HmoveBlankingDrawsBlackBarOnFirstEightPixels) {
@@ -250,6 +280,7 @@ namespace {
 		Atari2600Console console(&emu);
 		LoadNopRom(console, "render-ball-wrap-collision.a26");
 
+		console.DebugWriteCartridge(0x000A, 0x20); // ctrlpf ball size 4
 		console.DebugWriteCartridge(0x000D, 0x10); // pf0 only left-most playfield pixel
 		console.DebugWriteCartridge(0x000E, 0x00);
 		console.DebugWriteCartridge(0x000F, 0x00);

@@ -46,6 +46,7 @@ struct Atari2600TiaState {
 	bool PlayfieldReflect = false;
 	bool PlayfieldScoreMode = false;
 	bool PlayfieldPriority = false;
+	uint8_t BallSize = 1;
 	uint8_t Nusiz0 = 0;
 	uint8_t Nusiz1 = 0;
 	uint8_t Player0Graphics = 0;
@@ -108,6 +109,7 @@ struct Atari2600ScanlineRenderState {
 	bool PlayfieldReflect = false;
 	bool PlayfieldScoreMode = false;
 	bool PlayfieldPriority = false;
+	uint8_t BallSize = 1;
 	uint8_t Nusiz0 = 0;
 	uint8_t Nusiz1 = 0;
 	uint8_t Player0Graphics = 0;

@@ -90,6 +90,23 @@ namespace {
 		EXPECT_EQ(console.DebugReadCartridge(0x000A), 0x07u);
 	}
 
+	TEST(Atari2600TiaPhaseATests, CtrlpfBallSizeBitsPopulateDecodedWidth) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+
+		console.Reset();
+		console.DebugWriteCartridge(0x000A, 0x30);
+
+		Atari2600TiaState tiaState = console.GetTiaState();
+		EXPECT_EQ(tiaState.BallSize, 8u);
+		EXPECT_EQ(console.DebugReadCartridge(0x000A), 0x30u);
+
+		console.DebugWriteCartridge(0x000A, 0x10);
+		tiaState = console.GetTiaState();
+		EXPECT_EQ(tiaState.BallSize, 2u);
+		EXPECT_EQ(console.DebugReadCartridge(0x000A), 0x10u);
+	}
+
 	TEST(Atari2600TiaPhaseATests, RefpBitsPopulatePerScanlineReflectionState) {
 		Emulator emu;
 		Atari2600Console console(&emu);
