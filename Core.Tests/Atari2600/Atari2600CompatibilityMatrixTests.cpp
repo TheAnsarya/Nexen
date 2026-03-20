@@ -5,10 +5,25 @@
 
 namespace {
 	vector<Atari2600BaselineRomCase> BuildCompatibilityCorpus() {
+		auto makeNopRom = [](size_t size) -> vector<uint8_t> {
+			vector<uint8_t> rom(size, 0xEA);
+			for (size_t offset = 0x1000; offset <= size; offset += 0x1000) {
+				rom[offset - 3] = 0x4C;
+				rom[offset - 2] = 0x00;
+				rom[offset - 1] = 0x10;
+			}
+			if (size < 0x1000) {
+				rom[size - 3] = 0x4C;
+				rom[size - 2] = 0x00;
+				rom[size - 1] = 0x10;
+			}
+			return rom;
+		};
+
 		vector<Atari2600BaselineRomCase> corpus;
-		corpus.push_back({"compat-target-f8.a26", vector<uint8_t>(8192, 0xEA)});
-		corpus.push_back({"compat-target-f6.a26", vector<uint8_t>(16384, 0xEA)});
-		corpus.push_back({"compat-target-3f.a26", vector<uint8_t>(8192, 0xEA)});
+		corpus.push_back({"compat-target-f8.a26", makeNopRom(8192)});
+		corpus.push_back({"compat-target-f6.a26", makeNopRom(16384)});
+		corpus.push_back({"compat-target-3f.a26", makeNopRom(8192)});
 		return corpus;
 	}
 

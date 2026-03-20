@@ -6,6 +6,10 @@
 namespace {
 	void LoadNopRom(Atari2600Console& console, const string& name) {
 		vector<uint8_t> rom(4096, 0xEA);
+		// Place JMP $1000 at end of ROM so CPU loops instead of wrapping into TIA/RIOT space
+		rom[0x0FFD] = 0x4C; // JMP abs
+		rom[0x0FFE] = 0x00; // low byte of $1000
+		rom[0x0FFF] = 0x10; // high byte of $1000
 		VirtualFile romFile(rom.data(), rom.size(), name);
 		ASSERT_EQ(console.LoadRom(romFile), LoadRomResult::Success);
 	}

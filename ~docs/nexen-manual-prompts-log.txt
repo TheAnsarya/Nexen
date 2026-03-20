@@ -738,7 +738,15 @@ Separate the Atari 2600 from the NES debugger and any other NES nonsense since i
 
 Don't use a NES state for Atai 2600! I told you this before! separate code silos! The NES implementation can be a reference, but the 2600 should have it's own class and objects and code and functions and datastructures; continue working; continue;
 
-[All] I would like timestamps on both the prompts and every returned message; I want to see when everything happened  and this is helpful sometimes by showing that a process has been hung for 20 minutes, but also I just want date/times on everything; add to copilot instructions because I always want timestamps; [Nexen] Make sure the Atari 2600 implementation is correct (make tests) and fast and low memory/allocation (benchmarks), have you referenced other 2600 emulators like MESS (add to docs) to ensure correctness and performance and good architecture? The more you add to Nexen, the more you should abstract/silo the different systems so functionality is present for every system and you you swap which one is running into the same app; continue working 2600 emulation issues;
+[All] I would like timestamps on both the prompts and every returned message; I want to see when everything happened  and this is helpful sometimes by showing that a process has been hung for 20 minutes, but also I just want date/times on everything; add to copilot instructions because I always want timestamps; [Nexen] Make sure the Atari 2600 implementation is correct (make tests) and fast and low memory/allocation (benchmarks), have you referenced other 2600 emulators like MESS? (internet research, add to docs) to ensure correctness and performance and good architecture? The more you add to Nexen, the more you should abstract/silo the different systems so functionality is present for every system and you swap which one is running into the same app; continue working 2600 emulation issues;
+
+The time stamps are incorrect, continue what you were doing;
+
+How do I give you access to the actual time so my timestamps are accurate?
+
+Is there a VSCode extension that adds timestamps to chat responses? add that, then continue with the 2600 work we just started; continue;
+
+[Nexen] Continue working the 2600 emulator, update issues, make issues, and docs and plans and chat/session logs and go! ; make debugger UI and TAS/movie UI for the Atari 2600 and different memory and code view and sprite viewer and vram display debug view, this is not an NES, the memory and display are way different; continue; focus on creating a production ready Atari 2600 emulator, keep referencing other emulators; make sure the save states are complete, and make screen shots and all of that like the other systems, to utilize the infinite save system and the recent roms screen, etc; continue;
 
 
 
@@ -753,14 +761,6 @@ Don't use a NES state for Atai 2600! I told you this before! separate code silos
 
 
 
-
-
-
-
-
-
--- switch to claude opus 4.6
-[Nexen] Create a root level `*.md` document and link to it from the readme for primary developer tasks showing what I should be doing (adding reference roms? approving icons? manually testing a feature (give me a link to the manual testing doc!)? adding screenshots to documentation (make a plan!)? or what?) what features are we in the middle of? give me a handful of prompts that would advance the project in a meaningful way, let me know how to support the atari-2600/sega-genesis testing code examples and what folders and files I need to create; after letting me know what to do, continue working on genesis and atari 2600 emulation and add a ton of more issues for that emulation work based on the docs and benchmarks and tests and go for very long time;
 
 
 
@@ -803,91 +803,14 @@ This thing is not ready for release but
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 [Nexen] for the work epic: research and determine if we should Create an MCP server for Nexen? Does it help our development efforts to have an api interation with the emulator?; if so Make plans and issues, with multiple epics, and sub-issues of those epics to accomplish this; maybe institute a window screenshot api so we can get illustrations for the documentation;
 
-
-
-
-
-[Nexen] Make the `README.md` 100% correct, describe the emulator at the top, show main features, especially those we've added since the Mesen fork (like infinite savestates, "TAS movies", pansy output, better per-rom organization of files, massive performance and testing improvements), link to the real releases, make sure every documentation (`*.md) file is linked in the documentation tree starting at the main readme, every documentation should be reachable, make sub pages with descriptions and such;
 
 [Nexen] create epics, issues, plans, docs, etc: analyze all the documentation, and create a docs plan, to make all the documents updated to the current code state, and make everything accurately described and documented; and explain all the menus and dialogs and create a full 
 
 
 
-
-
-
-
-
-
-
-
-
 [Nexen] update the chat logs and session logs, git commit everything; Make sure all of the changes you made for performance are 100% covered by tests so that we did not change the ***outcome*** of any of those methods/code and just improved the speed and memory usage; make sure issues have been created for all of this work (and todos, and docs, and plans, etc, track everything and document everything and update docs to reflect the current usage); also make sure comments for all the code changes have been updated and update them in the future; continue; is there any other code sections on the hotpath that are easy performance improvements? (test the hell out of them, we can't afford to reduce emulator accuracy in any way, hit the corner cases! full coverage!); continue; continue; Go back to the performance improvements; continue;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

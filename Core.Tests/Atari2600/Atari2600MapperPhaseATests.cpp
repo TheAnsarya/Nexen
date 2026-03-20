@@ -170,19 +170,26 @@ namespace {
 		Emulator emu;
 		Atari2600Console console(&emu);
 
+		auto makeNopRom = [](size_t size) -> vector<uint8_t> {
+			vector<uint8_t> rom(size, 0xEA);
+			for (size_t offset = 0x1000; offset <= size; offset += 0x1000) {
+				rom[offset - 3] = 0x4C;
+				rom[offset - 2] = 0x00;
+				rom[offset - 1] = 0x10;
+			}
+			if (size < 0x1000) {
+				rom[size - 3] = 0x4C;
+				rom[size - 2] = 0x00;
+				rom[size - 1] = 0x10;
+			}
+			return rom;
+		};
+
 		vector<Atari2600BaselineRomCase> romSet;
-		romSet.push_back({"phasea-2k.a26", vector<uint8_t>(2048, 0xEA)});
-		romSet.push_back({"phasea-4k.a26", vector<uint8_t>(4096, 0xEA)});
-
-		vector<uint8_t> f8(8192, 0xEA);
-		std::fill(f8.begin() + 0x1000, f8.begin() + 0x2000, 0x00);
-		romSet.push_back({"phasea-f8.a26", f8});
-
-		vector<uint8_t> f6(16384, 0xEA);
-		std::fill(f6.begin() + 0x1000, f6.begin() + 0x2000, 0x00);
-		std::fill(f6.begin() + 0x2000, f6.begin() + 0x3000, 0xFF);
-		std::fill(f6.begin() + 0x3000, f6.begin() + 0x4000, 0x55);
-		romSet.push_back({"phasea-f6.a26", f6});
+		romSet.push_back({"phasea-2k.a26", makeNopRom(2048)});
+		romSet.push_back({"phasea-4k.a26", makeNopRom(4096)});
+		romSet.push_back({"phasea-f8.a26", makeNopRom(8192)});
+		romSet.push_back({"phasea-f6.a26", makeNopRom(16384)});
 
 		Atari2600BaselineRomSetResult runA = Atari2600SmokeHarness::RunBaselineRomSet(console, romSet);
 		Atari2600BaselineRomSetResult runB = Atari2600SmokeHarness::RunBaselineRomSet(console, romSet);

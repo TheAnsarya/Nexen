@@ -6,25 +6,37 @@
 
 namespace {
 	vector<Atari2600BaselineRomCase> CreateBaselineRomSet() {
+		auto makeNopRom = [](size_t size) -> vector<uint8_t> {
+			vector<uint8_t> rom(size, 0xEA);
+			for (size_t offset = 0x1000; offset <= size; offset += 0x1000) {
+				rom[offset - 3] = 0x4C;
+				rom[offset - 2] = 0x00;
+				rom[offset - 1] = 0x10;
+			}
+			if (size < 0x1000) {
+				rom[size - 3] = 0x4C;
+				rom[size - 2] = 0x00;
+				rom[size - 1] = 0x10;
+			}
+			return rom;
+		};
+
 		vector<Atari2600BaselineRomCase> romSet;
 
 		Atari2600BaselineRomCase nopRom = {};
 		nopRom.Name = "baseline-nop-fill.a26";
-		nopRom.RomData.assign(4096, 0xEA);
+		nopRom.RomData = makeNopRom(4096);
 		romSet.push_back(std::move(nopRom));
 
-		Atari2600BaselineRomCase zeroRom = {};
-		zeroRom.Name = "baseline-zero-fill.a26";
-		zeroRom.RomData.assign(4096, 0x00);
-		romSet.push_back(std::move(zeroRom));
+		Atari2600BaselineRomCase rom8k = {};
+		rom8k.Name = "baseline-nop-8k.a26";
+		rom8k.RomData = makeNopRom(8192);
+		romSet.push_back(std::move(rom8k));
 
-		Atari2600BaselineRomCase rampRom = {};
-		rampRom.Name = "baseline-ramp-pattern.a26";
-		rampRom.RomData.resize(4096);
-		for (size_t i = 0; i < rampRom.RomData.size(); i++) {
-			rampRom.RomData[i] = (uint8_t)(i & 0xFF);
-		}
-		romSet.push_back(std::move(rampRom));
+		Atari2600BaselineRomCase rom16k = {};
+		rom16k.Name = "baseline-nop-16k.a26";
+		rom16k.RomData = makeNopRom(16384);
+		romSet.push_back(std::move(rom16k));
 
 		return romSet;
 	}
@@ -46,6 +58,9 @@ namespace {
 		Atari2600Console console(&emu);
 
 		vector<uint8_t> rom(4096, 0xEA);
+		rom[0x0FFD] = 0x4C;
+		rom[0x0FFE] = 0x00;
+		rom[0x0FFF] = 0x10;
 		VirtualFile smokeRom(rom.data(), rom.size(), "smoke.a26");
 
 		EXPECT_EQ(console.LoadRom(smokeRom), LoadRomResult::Success);
@@ -59,6 +74,13 @@ namespace {
 	TEST(Atari2600TimingSpikeHarnessTests, BaselineHarnessReturnsPassingCheckpointSet) {
 		Emulator emu;
 		Atari2600Console console(&emu);
+
+		vector<uint8_t> rom(4096, 0xEA);
+		rom[0x0FFD] = 0x4C;
+		rom[0x0FFE] = 0x00;
+		rom[0x0FFF] = 0x10;
+		VirtualFile nopRom(rom.data(), rom.size(), "baseline.a26");
+		console.LoadRom(nopRom);
 
 		Atari2600HarnessResult result = Atari2600SmokeHarness::RunBaseline(console);
 

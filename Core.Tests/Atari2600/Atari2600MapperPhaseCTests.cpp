@@ -63,9 +63,24 @@ namespace {
 		Emulator emu;
 		Atari2600Console console(&emu);
 
+		auto makeNopRom = [](size_t size) -> vector<uint8_t> {
+			vector<uint8_t> rom(size, 0xEA);
+			for (size_t offset = 0x1000; offset <= size; offset += 0x1000) {
+				rom[offset - 3] = 0x4C;
+				rom[offset - 2] = 0x00;
+				rom[offset - 1] = 0x10;
+			}
+			if (size < 0x1000) {
+				rom[size - 3] = 0x4C;
+				rom[size - 2] = 0x00;
+				rom[size - 1] = 0x10;
+			}
+			return rom;
+		};
+
 		vector<Atari2600BaselineRomCase> romSet;
-		romSet.push_back({"phasec-3f.a26", vector<uint8_t>(8192, 0xEA)});
-		romSet.push_back({"phasec-rare-homebrew.a26", vector<uint8_t>(16384, 0xEA)});
+		romSet.push_back({"phasec-3f.a26", makeNopRom(8192)});
+		romSet.push_back({"phasec-rare-homebrew.a26", makeNopRom(16384)});
 
 		Atari2600BaselineRomSetResult runA = Atari2600SmokeHarness::RunBaselineRomSet(console, romSet);
 		Atari2600BaselineRomSetResult runB = Atari2600SmokeHarness::RunBaselineRomSet(console, romSet);
