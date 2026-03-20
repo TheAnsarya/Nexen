@@ -460,6 +460,17 @@ class Atari2600Riot {
 			_state.AudioRevision++;
 		}
 
+		void ClearCollisionLatches() {
+			_state.CollisionCxm0p = 0;
+			_state.CollisionCxm1p = 0;
+			_state.CollisionCxp0fb = 0;
+			_state.CollisionCxp1fb = 0;
+			_state.CollisionCxm0fb = 0;
+			_state.CollisionCxm1fb = 0;
+			_state.CollisionCxblpf = 0;
+			_state.CollisionCxppmm = 0;
+		}
+
 		[[nodiscard]] Atari2600ScanlineRenderState BuildScanlineRenderState() const {
 			Atari2600ScanlineRenderState scanline = {};
 			scanline.ColorBackground = _state.ColorBackground;
@@ -479,6 +490,8 @@ class Atari2600Riot {
 			scanline.BallEnabled = _state.BallEnabled;
 			scanline.Player0X = _state.Player0X;
 			scanline.Player1X = _state.Player1X;
+			scanline.Missile0X = _state.Missile0X;
+			scanline.Missile1X = _state.Missile1X;
 			scanline.BallX = _state.BallX;
 			return scanline;
 		}
@@ -560,9 +573,12 @@ class Atari2600Riot {
 			_scanlineRenderState.fill({});
 			_state.Player0X = 24;
 			_state.Player1X = 96;
+			_state.Missile0X = 32;
+			_state.Missile1X = 104;
 			_state.BallX = 80;
 			_state.AudioCounter0 = 1;
 			_state.AudioCounter1 = 1;
+			ClearCollisionLatches();
 			CaptureCurrentScanlineState();
 		}
 
@@ -623,10 +639,64 @@ class Atari2600Riot {
 			return _scanlineRenderState[scanline];
 		}
 
+		void LatchCollisionPixel(bool missile0Pixel, bool missile1Pixel, bool player0Pixel, bool player1Pixel, bool ballPixel, bool playfieldPixel) {
+			if (missile0Pixel && player1Pixel) {
+				_state.CollisionCxm0p |= 0x80;
+			}
+			if (missile0Pixel && player0Pixel) {
+				_state.CollisionCxm0p |= 0x40;
+			}
+			if (missile1Pixel && player0Pixel) {
+				_state.CollisionCxm1p |= 0x80;
+			}
+			if (missile1Pixel && player1Pixel) {
+				_state.CollisionCxm1p |= 0x40;
+			}
+			if (player0Pixel && playfieldPixel) {
+				_state.CollisionCxp0fb |= 0x80;
+			}
+			if (player0Pixel && ballPixel) {
+				_state.CollisionCxp0fb |= 0x40;
+			}
+			if (player1Pixel && playfieldPixel) {
+				_state.CollisionCxp1fb |= 0x80;
+			}
+			if (player1Pixel && ballPixel) {
+				_state.CollisionCxp1fb |= 0x40;
+			}
+			if (missile0Pixel && playfieldPixel) {
+				_state.CollisionCxm0fb |= 0x80;
+			}
+			if (missile0Pixel && ballPixel) {
+				_state.CollisionCxm0fb |= 0x40;
+			}
+			if (missile1Pixel && playfieldPixel) {
+				_state.CollisionCxm1fb |= 0x80;
+			}
+			if (missile1Pixel && ballPixel) {
+				_state.CollisionCxm1fb |= 0x40;
+			}
+			if (ballPixel && playfieldPixel) {
+				_state.CollisionCxblpf |= 0x80;
+			}
+			if (player0Pixel && player1Pixel) {
+				_state.CollisionCxppmm |= 0x80;
+			}
+			if (missile0Pixel && missile1Pixel) {
+				_state.CollisionCxppmm |= 0x40;
+			}
+		}
+
 		uint8_t ReadRegister(uint16_t addr) const {
 			switch (NormalizeRegisterAddress(addr)) {
-				case 0x06: return _state.ColorPlayer0;
-				case 0x07: return _state.ColorPlayer1;
+				case 0x00: return _state.CollisionCxm0p;
+				case 0x01: return _state.CollisionCxm1p;
+				case 0x02: return _state.CollisionCxp0fb;
+				case 0x03: return _state.CollisionCxp1fb;
+				case 0x04: return _state.CollisionCxm0fb;
+				case 0x05: return _state.CollisionCxm1fb;
+				case 0x06: return _state.CollisionCxblpf;
+				case 0x07: return _state.CollisionCxppmm;
 				case 0x08: return _state.ColorPlayfield;
 				case 0x09: return _state.ColorBackground;
 				case 0x0A:
@@ -663,6 +733,10 @@ class Atari2600Riot {
 
 				case 0x2B:
 					ClearHmove();
+					break;
+
+				case 0x2C:
+					ClearCollisionLatches();
 					break;
 
 				case 0x06:
@@ -719,6 +793,18 @@ class Atari2600Riot {
 
 				case 0x11:
 					_state.Player1X = (uint8_t)(_state.ColorClock % Atari2600Console::ScreenWidth);
+					MarkRenderDirty();
+					CaptureCurrentScanlineState();
+					break;
+
+				case 0x12:
+					_state.Missile0X = (uint8_t)(_state.ColorClock % Atari2600Console::ScreenWidth);
+					MarkRenderDirty();
+					CaptureCurrentScanlineState();
+					break;
+
+				case 0x13:
+					_state.Missile1X = (uint8_t)(_state.ColorClock % Atari2600Console::ScreenWidth);
 					MarkRenderDirty();
 					CaptureCurrentScanlineState();
 					break;
@@ -1316,11 +1402,12 @@ void Atari2600Console::RenderDebugFrame() {
 			}
 
 			bool playfieldPixel = getPlayfieldBit(scanlineState, halfIndex);
-			bool missile0Pixel = scanlineState.Missile0Enabled && x == (uint32_t)((scanlineState.Player0X + 8) % ScreenWidth);
-			bool missile1Pixel = scanlineState.Missile1Enabled && x == (uint32_t)((scanlineState.Player1X + 8) % ScreenWidth);
+			bool missile0Pixel = scanlineState.Missile0Enabled && x == scanlineState.Missile0X;
+			bool missile1Pixel = scanlineState.Missile1Enabled && x == scanlineState.Missile1X;
 			bool ballPixel = scanlineState.BallEnabled && x >= scanlineState.BallX && x < (uint32_t)(scanlineState.BallX + 4);
 			bool player0Pixel = isPlayerPixel(scanlineState.Player0Graphics, x, scanlineState.Player0X);
 			bool player1Pixel = isPlayerPixel(scanlineState.Player1Graphics, x, scanlineState.Player1X);
+			_tia->LatchCollisionPixel(missile0Pixel, missile1Pixel, player0Pixel, player1Pixel, ballPixel, playfieldPixel);
 
 			uint16_t playfieldPixelColor = colorPlayfield;
 			if (scanlineState.PlayfieldScoreMode) {
@@ -1540,7 +1627,17 @@ void Atari2600Console::Serialize(Serializer& s) {
 	SV(tiaState.BallEnabled);
 	SV(tiaState.Player0X);
 	SV(tiaState.Player1X);
+	SV(tiaState.Missile0X);
+	SV(tiaState.Missile1X);
 	SV(tiaState.BallX);
+	SV(tiaState.CollisionCxm0p);
+	SV(tiaState.CollisionCxm1p);
+	SV(tiaState.CollisionCxp0fb);
+	SV(tiaState.CollisionCxp1fb);
+	SV(tiaState.CollisionCxm0fb);
+	SV(tiaState.CollisionCxm1fb);
+	SV(tiaState.CollisionCxblpf);
+	SV(tiaState.CollisionCxppmm);
 	SV(tiaState.RenderRevision);
 	SV(tiaState.AudioControl0);
 	SV(tiaState.AudioControl1);

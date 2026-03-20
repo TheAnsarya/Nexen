@@ -53,7 +53,17 @@ struct Atari2600TiaState {
 	bool BallEnabled = false;
 	uint8_t Player0X = 24;
 	uint8_t Player1X = 96;
+	uint8_t Missile0X = 32;
+	uint8_t Missile1X = 104;
 	uint8_t BallX = 80;
+	uint8_t CollisionCxm0p = 0;
+	uint8_t CollisionCxm1p = 0;
+	uint8_t CollisionCxp0fb = 0;
+	uint8_t CollisionCxp1fb = 0;
+	uint8_t CollisionCxm0fb = 0;
+	uint8_t CollisionCxm1fb = 0;
+	uint8_t CollisionCxblpf = 0;
+	uint8_t CollisionCxppmm = 0;
 	uint32_t RenderRevision = 0;
 	uint8_t AudioControl0 = 0;
 	uint8_t AudioControl1 = 0;
@@ -90,6 +100,8 @@ struct Atari2600ScanlineRenderState {
 	bool BallEnabled = false;
 	uint8_t Player0X = 24;
 	uint8_t Player1X = 96;
+	uint8_t Missile0X = 32;
+	uint8_t Missile1X = 104;
 	uint8_t BallX = 80;
 };
 

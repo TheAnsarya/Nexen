@@ -1,8 +1,15 @@
 #include "pch.h"
 #include "Shared/Emulator.h"
 #include "Atari2600/Atari2600Console.h"
+#include "Utilities/VirtualFile.h"
 
 namespace {
+	void LoadNopRom(Atari2600Console& console, const string& name) {
+		vector<uint8_t> rom(4096, 0xEA);
+		VirtualFile romFile(rom.data(), rom.size(), name);
+		ASSERT_EQ(console.LoadRom(romFile), LoadRomResult::Success);
+	}
+
 	TEST(Atari2600TiaPhaseATests, WsyncAdvancesScanlineOnNextCpuCycleBoundary) {
 		Emulator emu;
 		Atari2600Console console(&emu);
@@ -181,5 +188,80 @@ namespace {
 		EXPECT_EQ(tiaState.HmoveApplyCount, 1u);
 		EXPECT_EQ(tiaState.Scanline, 1u);
 		EXPECT_EQ(tiaState.ColorClock, 2u);
+	}
+
+	TEST(Atari2600TiaPhaseATests, CollisionRegistersLatchAndCxclrClears) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadNopRom(console, "tia-collision-latches.a26");
+
+		console.DebugWriteCartridge(0x000D, 0xF0);
+		console.DebugWriteCartridge(0x000E, 0xFF);
+		console.DebugWriteCartridge(0x000F, 0xFF);
+		console.DebugWriteCartridge(0x001B, 0xFF);
+		console.DebugWriteCartridge(0x001C, 0xFF);
+		console.DebugWriteCartridge(0x001D, 0x02);
+		console.DebugWriteCartridge(0x001E, 0x02);
+		console.DebugWriteCartridge(0x001F, 0x02);
+		console.DebugWriteCartridge(0x0010, 0x00);
+		console.DebugWriteCartridge(0x0011, 0x00);
+		console.DebugWriteCartridge(0x0012, 0x00);
+		console.DebugWriteCartridge(0x0013, 0x00);
+		console.DebugWriteCartridge(0x0014, 0x00);
+
+		console.RunFrame();
+
+		EXPECT_EQ(console.DebugReadCartridge(0x0000), 0xC0u); // cxm0p
+		EXPECT_EQ(console.DebugReadCartridge(0x0001), 0xC0u); // cxm1p
+		EXPECT_EQ(console.DebugReadCartridge(0x0002), 0xC0u); // cxp0fb
+		EXPECT_EQ(console.DebugReadCartridge(0x0003), 0xC0u); // cxp1fb
+		EXPECT_EQ(console.DebugReadCartridge(0x0004), 0xC0u); // cxm0fb
+		EXPECT_EQ(console.DebugReadCartridge(0x0005), 0xC0u); // cxm1fb
+		EXPECT_EQ(console.DebugReadCartridge(0x0006), 0x80u); // cxblpf
+		EXPECT_EQ(console.DebugReadCartridge(0x0007), 0xC0u); // cxppmm
+
+		console.DebugWriteCartridge(0x002C, 0x00); // cxclr
+		for (uint16_t i = 0; i < 8; i++) {
+			EXPECT_EQ(console.DebugReadCartridge(i), 0u);
+		}
+	}
+
+	TEST(Atari2600TiaPhaseATests, CollisionLatchesPersistUntilCxclr) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadNopRom(console, "tia-collision-persist.a26");
+
+		console.DebugWriteCartridge(0x000D, 0xF0);
+		console.DebugWriteCartridge(0x000E, 0xFF);
+		console.DebugWriteCartridge(0x000F, 0xFF);
+		console.DebugWriteCartridge(0x001B, 0xFF);
+		console.DebugWriteCartridge(0x001C, 0xFF);
+		console.DebugWriteCartridge(0x001D, 0x02);
+		console.DebugWriteCartridge(0x001E, 0x02);
+		console.DebugWriteCartridge(0x001F, 0x02);
+		console.DebugWriteCartridge(0x0010, 0x00);
+		console.DebugWriteCartridge(0x0011, 0x00);
+		console.DebugWriteCartridge(0x0012, 0x00);
+		console.DebugWriteCartridge(0x0013, 0x00);
+		console.DebugWriteCartridge(0x0014, 0x00);
+
+		console.RunFrame();
+		uint8_t latchedCxm0p = console.DebugReadCartridge(0x0000);
+		EXPECT_NE(latchedCxm0p, 0u);
+
+		console.DebugWriteCartridge(0x000D, 0x00);
+		console.DebugWriteCartridge(0x000E, 0x00);
+		console.DebugWriteCartridge(0x000F, 0x00);
+		console.DebugWriteCartridge(0x001B, 0x00);
+		console.DebugWriteCartridge(0x001C, 0x00);
+		console.DebugWriteCartridge(0x001D, 0x00);
+		console.DebugWriteCartridge(0x001E, 0x00);
+		console.DebugWriteCartridge(0x001F, 0x00);
+		console.RunFrame();
+
+		EXPECT_EQ(console.DebugReadCartridge(0x0000), latchedCxm0p);
+
+		console.DebugWriteCartridge(0x002C, 0x00);
+		EXPECT_EQ(console.DebugReadCartridge(0x0000), 0u);
 	}
 }
