@@ -510,11 +510,11 @@ class Atari2600Riot {
 			scanline.PlayfieldPriority = _state.PlayfieldPriority;
 			scanline.Nusiz0 = _state.Nusiz0;
 			scanline.Nusiz1 = _state.Nusiz1;
-			scanline.Player0Graphics = _state.Player0Graphics;
-			scanline.Player1Graphics = _state.Player1Graphics;
+			scanline.Player0Graphics = _state.VdelPlayer0 ? _state.DelayedPlayer0Graphics : _state.Player0Graphics;
+			scanline.Player1Graphics = _state.VdelPlayer1 ? _state.DelayedPlayer1Graphics : _state.Player1Graphics;
 			scanline.Missile0Enabled = _state.Missile0Enabled;
 			scanline.Missile1Enabled = _state.Missile1Enabled;
-			scanline.BallEnabled = _state.BallEnabled;
+			scanline.BallEnabled = _state.VdelBall ? _state.DelayedBallEnabled : _state.BallEnabled;
 			scanline.Player0X = _state.Player0X;
 			scanline.Player1X = _state.Player1X;
 			scanline.Missile0X = _state.Missile0X;
@@ -573,6 +573,9 @@ class Atari2600Riot {
 		}
 
 		void AdvanceScanline() {
+			_state.DelayedPlayer0Graphics = _state.Player0Graphics;
+			_state.DelayedPlayer1Graphics = _state.Player1Graphics;
+			_state.DelayedBallEnabled = _state.BallEnabled;
 			_state.ColorClock = 0;
 			_state.Scanline++;
 			_state.HmoveDelayToNextScanline = false;
@@ -744,6 +747,9 @@ class Atari2600Riot {
 				case 0x1D: return _state.Missile0Enabled ? 0x02 : 0x00;
 				case 0x1E: return _state.Missile1Enabled ? 0x02 : 0x00;
 				case 0x1F: return _state.BallEnabled ? 0x02 : 0x00;
+				case 0x25: return _state.VdelPlayer0 ? 0x01 : 0x00;
+				case 0x26: return _state.VdelPlayer1 ? 0x01 : 0x00;
+				case 0x27: return _state.VdelBall ? 0x01 : 0x00;
 				case 0x15: return _state.AudioControl0;
 				case 0x16: return _state.AudioControl1;
 				case 0x17: return _state.AudioFrequency0;
@@ -940,6 +946,24 @@ class Atari2600Riot {
 
 				case 0x24:
 					_state.MotionBall = DecodeMotionNibble(value);
+					break;
+
+				case 0x25:
+					_state.VdelPlayer0 = (value & 0x01) != 0;
+					MarkRenderDirty();
+					CaptureCurrentScanlineState();
+					break;
+
+				case 0x26:
+					_state.VdelPlayer1 = (value & 0x01) != 0;
+					MarkRenderDirty();
+					CaptureCurrentScanlineState();
+					break;
+
+				case 0x27:
+					_state.VdelBall = (value & 0x01) != 0;
+					MarkRenderDirty();
+					CaptureCurrentScanlineState();
 					break;
 
 				default:
@@ -1757,6 +1781,12 @@ void Atari2600Console::Serialize(Serializer& s) {
 	SV(tiaState.Missile0Enabled);
 	SV(tiaState.Missile1Enabled);
 	SV(tiaState.BallEnabled);
+	SV(tiaState.VdelPlayer0);
+	SV(tiaState.VdelPlayer1);
+	SV(tiaState.VdelBall);
+	SV(tiaState.DelayedPlayer0Graphics);
+	SV(tiaState.DelayedPlayer1Graphics);
+	SV(tiaState.DelayedBallEnabled);
 	SV(tiaState.Player0X);
 	SV(tiaState.Player1X);
 	SV(tiaState.Missile0X);

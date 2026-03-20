@@ -327,4 +327,64 @@ namespace {
 
 		EXPECT_EQ(console.GetTiaState().Player0X, 24u);
 	}
+
+	TEST(Atari2600TiaPhaseATests, VdelPlayerUsesPreviousScanlineGraphics) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+
+		console.Reset();
+		console.DebugWriteCartridge(0x0025, 0x01); // vdelp0 on
+		console.DebugWriteCartridge(0x001B, 0xF0); // grp0 on scanline 0
+		console.StepCpuCycles(76);                 // advance to scanline 1
+		console.DebugWriteCartridge(0x001B, 0x0F); // current grp0 differs
+
+		Atari2600ScanlineRenderState delayedState = console.DebugGetScanlineRenderState(1);
+		EXPECT_EQ(delayedState.Player0Graphics, 0xF0u);
+
+		console.DebugWriteCartridge(0x0025, 0x00); // vdelp0 off
+		Atari2600ScanlineRenderState immediateState = console.DebugGetScanlineRenderState(1);
+		EXPECT_EQ(immediateState.Player0Graphics, 0x0Fu);
+	}
+
+	TEST(Atari2600TiaPhaseATests, VdelBallUsesPreviousScanlineEnableState) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+
+		console.Reset();
+		console.DebugWriteCartridge(0x0027, 0x01); // vdelbl on
+		console.DebugWriteCartridge(0x001F, 0x02); // enabl on scanline 0
+		console.StepCpuCycles(76);                 // advance to scanline 1
+		console.DebugWriteCartridge(0x001F, 0x00); // disable current ball
+
+		Atari2600ScanlineRenderState delayedState = console.DebugGetScanlineRenderState(1);
+		EXPECT_TRUE(delayedState.BallEnabled);
+
+		console.DebugWriteCartridge(0x0027, 0x00); // vdelbl off
+		Atari2600ScanlineRenderState immediateState = console.DebugGetScanlineRenderState(1);
+		EXPECT_FALSE(immediateState.BallEnabled);
+	}
+
+	TEST(Atari2600TiaPhaseATests, VdelGraphicsCollisionLatchesRemainDeterministic) {
+		auto runScenario = []() {
+			Emulator emu;
+			Atari2600Console console(&emu);
+			LoadNopRom(console, "tia-vdel-collision.a26");
+
+			console.DebugWriteCartridge(0x000D, 0xF0);
+			console.DebugWriteCartridge(0x000E, 0xFF);
+			console.DebugWriteCartridge(0x000F, 0xFF);
+			console.DebugWriteCartridge(0x0010, 0x00); // resp0 at x=0
+			console.DebugWriteCartridge(0x0025, 0x01); // vdelp0 enabled
+			console.DebugWriteCartridge(0x001B, 0xFF); // scanline 0 player visible
+			console.StepCpuCycles(76);                 // delayed latch captures 0xFF
+			console.DebugWriteCartridge(0x001B, 0x00); // current scanline player hidden
+			console.RunFrame();
+
+			return console.DebugReadCartridge(0x0002); // cxp0fb
+		};
+
+		uint8_t runA = runScenario();
+		uint8_t runB = runScenario();
+		EXPECT_EQ(runA, runB);
+	}
 }
