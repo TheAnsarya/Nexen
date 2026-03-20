@@ -147,4 +147,83 @@ namespace {
 		EXPECT_EQ(scaffold.GetBus().GetDmaContentionCycles(), 3u);
 		EXPECT_EQ(scaffold.GetBus().GetDmaActiveCyclesRemaining(), std::numeric_limits<uint32_t>::max() - 3u);
 	}
+
+	TEST(GenesisVdpDmaContentionTests, ContentionSlopeScalesAcrossTransferSizeBuckets) {
+		constexpr std::array<uint32_t, 8> buckets = {1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u};
+		vector<uint8_t> rom(0x400, 0x4e);
+		for (size_t i = 0; i + 1 < rom.size(); i += 2) {
+			rom[i] = 0x4e;
+			rom[i + 1] = 0x71;
+		}
+
+		auto assertSlopeForMode = [&](GenesisVdpDmaMode mode) {
+			uint32_t previousContention = 0;
+			for (size_t i = 0; i < buckets.size(); i++) {
+				GenesisM68kBoundaryScaffold scaffold;
+				scaffold.LoadRom(rom);
+				scaffold.Startup();
+
+				uint32_t transferWords = buckets[i];
+				scaffold.GetBus().BeginDmaTransfer(mode, transferWords);
+				scaffold.StepFrameScaffold(512);
+
+				uint32_t actualContention = scaffold.GetBus().GetDmaContentionCycles();
+				uint32_t expectedContention = std::min<uint32_t>(transferWords * 4u, 128u);
+				uint64_t expectedCpuCycles = 512u - expectedContention;
+
+				SCOPED_TRACE(std::format("mode={} bucket={} transferWords={}",
+					mode == GenesisVdpDmaMode::Copy ? "copy" : "fill",
+					i,
+					transferWords));
+
+				EXPECT_EQ(actualContention, expectedContention);
+				EXPECT_EQ(scaffold.GetCpu().GetCycleCount(), expectedCpuCycles);
+				EXPECT_GE(actualContention, previousContention);
+				EXPECT_GT(scaffold.GetBus().GetDmaContentionEvents(), 0u);
+
+				previousContention = actualContention;
+			}
+		};
+
+		assertSlopeForMode(GenesisVdpDmaMode::Copy);
+		assertSlopeForMode(GenesisVdpDmaMode::Fill);
+	}
+
+	TEST(GenesisVdpDmaContentionTests, ContentionSlopeDigestIsDeterministicAcrossRepeatedRuns) {
+		constexpr std::array<uint32_t, 8> buckets = {1u, 2u, 4u, 8u, 16u, 32u, 64u, 128u};
+		vector<uint8_t> rom(0x400, 0x4e);
+		for (size_t i = 0; i + 1 < rom.size(); i += 2) {
+			rom[i] = 0x4e;
+			rom[i + 1] = 0x71;
+		}
+
+		auto runScenario = [&]() {
+			uint64_t hash = 1469598103934665603ull;
+			for (GenesisVdpDmaMode mode : {GenesisVdpDmaMode::Copy, GenesisVdpDmaMode::Fill}) {
+				for (uint32_t transferWords : buckets) {
+					GenesisM68kBoundaryScaffold scaffold;
+					scaffold.LoadRom(rom);
+					scaffold.Startup();
+					scaffold.GetBus().BeginDmaTransfer(mode, transferWords);
+					scaffold.StepFrameScaffold(512);
+
+					string line = std::format("{}:{}:{}:{}:{}",
+						mode == GenesisVdpDmaMode::Copy ? "copy" : "fill",
+						transferWords,
+						scaffold.GetBus().GetDmaContentionCycles(),
+						scaffold.GetBus().GetDmaContentionEvents(),
+						scaffold.GetCpu().GetCycleCount());
+					for (uint8_t ch : line) {
+						hash ^= ch;
+						hash *= 1099511628211ull;
+					}
+				}
+			}
+			return hash;
+		};
+
+		uint64_t digestA = runScenario();
+		uint64_t digestB = runScenario();
+		EXPECT_EQ(digestA, digestB);
+	}
 }
