@@ -50,4 +50,75 @@ namespace {
 		EXPECT_EQ(scaffold.GetBus().GetWorkRamWriteCount(), 1u);
 		EXPECT_EQ(scaffold.GetBus().GetWorkRamReadCount(), 1u);
 	}
+
+	TEST(GenesisMemoryMapOwnershipTests, Z80OwnershipTransitionsPreserveDecodeAndToggleAccessSemantics) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+
+		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xA00000), GenesisBusOwner::Z80);
+		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xA11100), GenesisBusOwner::Io);
+		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xA11200), GenesisBusOwner::Io);
+
+		scaffold.GetBus().WriteByte(0xA11200, 0x01);
+		EXPECT_TRUE(scaffold.GetBus().IsZ80Running());
+
+		uint8_t blockedRead = scaffold.GetBus().ReadByte(0xA00000);
+		EXPECT_EQ(blockedRead, 0xFFu);
+
+		scaffold.GetBus().WriteByte(0xA11100, 0x01);
+		EXPECT_FALSE(scaffold.GetBus().IsZ80Running());
+		uint8_t handoffRead = scaffold.GetBus().ReadByte(0xA00000);
+		EXPECT_EQ(handoffRead, 0x00u);
+
+		scaffold.GetBus().WriteByte(0xA11100, 0x00);
+		EXPECT_TRUE(scaffold.GetBus().IsZ80Running());
+		uint8_t resumedRead = scaffold.GetBus().ReadByte(0xA00000);
+		EXPECT_EQ(resumedRead, 0xFFu);
+
+		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xA00000), GenesisBusOwner::Z80);
+		EXPECT_GE(scaffold.GetBus().GetZ80HandoffCount(), 2u);
+		EXPECT_GE(scaffold.GetBus().GetZ80ReadCount(), 3u);
+	}
+
+	TEST(GenesisMemoryMapOwnershipTests, Z80OwnershipTransitionDigestIsDeterministicAcrossRepeatedRuns) {
+		auto runScenario = []() {
+			GenesisM68kBoundaryScaffold scaffold;
+			scaffold.Startup();
+
+			scaffold.GetBus().WriteByte(0xA11200, 0x01);
+			scaffold.StepFrameScaffold(32);
+			uint64_t z80CyclesRunning = scaffold.GetBus().GetZ80ExecutedCycles();
+
+			scaffold.GetBus().WriteByte(0xA11100, 0x01);
+			scaffold.StepFrameScaffold(32);
+			uint64_t z80CyclesHeld = scaffold.GetBus().GetZ80ExecutedCycles();
+
+			scaffold.GetBus().WriteByte(0xA11100, 0x00);
+			scaffold.StepFrameScaffold(32);
+			uint64_t z80CyclesResumed = scaffold.GetBus().GetZ80ExecutedCycles();
+
+			uint8_t blockedRead = scaffold.GetBus().ReadByte(0xA00000);
+			scaffold.GetBus().WriteByte(0xA11100, 0x01);
+			uint8_t handoffRead = scaffold.GetBus().ReadByte(0xA00000);
+
+			return std::tuple<uint64_t, uint64_t, uint64_t, uint32_t, uint32_t, uint8_t, uint8_t>(
+				z80CyclesRunning,
+				z80CyclesHeld,
+				z80CyclesResumed,
+				scaffold.GetBus().GetZ80HandoffCount(),
+				scaffold.GetBus().GetZ80ReadCount(),
+				blockedRead,
+				handoffRead);
+		};
+
+		auto runA = runScenario();
+		auto runB = runScenario();
+
+		EXPECT_EQ(runA, runB);
+		EXPECT_GT(std::get<0>(runA), 0u);
+		EXPECT_EQ(std::get<0>(runA), std::get<1>(runA));
+		EXPECT_GT(std::get<2>(runA), std::get<1>(runA));
+		EXPECT_EQ(std::get<5>(runA), 0xFFu);
+		EXPECT_EQ(std::get<6>(runA), 0x00u);
+	}
 }
