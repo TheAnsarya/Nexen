@@ -754,6 +754,7 @@ Is there a VSCode extension that adds timestamps to chat responses? add that, th
 
 [Nexen] Atari 2600 doesn't use just one type of contoller (like the NES has multiple types of controllers including the light gun and power glove and robot thing) see this copilot question/answer about the basic joystick but also paddles and keypads and trackballs, etc: https://copilot.microsoft.com/chats/iWzEAYX7CgjNLHamY4GVa; Make sure all of these controllers are represented in the UI for different controller configurations and compatiable and integrated into the core input code; different controllers with different input types also affects the TAS/movie feature which needs to be updated; make epics and issues and plans and docs and chat/session logs, and design documents for the UI and design assets for the controllers; continue;
 
+[Nexen] (Atari 2600) continue working issues, making tests and benchmarks for everything! and update/make docs plans designs issues logs, etc; Also, create new epics and issues and docs and designs and plans for the fully implementing the Atari 2600 in pansy/poppy/peony; continue;
 
 
 
