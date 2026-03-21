@@ -239,7 +239,11 @@ enum class ControllerType {
 	GenesisController,
 
 	// Atari 2600
-	Atari2600Joystick
+	Atari2600Joystick,
+	Atari2600Paddle,
+	Atari2600Keypad,
+	Atari2600DrivingController,
+	Atari2600BoosterGrip
 };
 
 struct KeyMapping {

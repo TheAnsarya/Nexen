@@ -1,6 +1,10 @@
 #include "pch.h"
 #include "Atari2600/Atari2600Console.h"
 #include "Atari2600/Atari2600Controller.h"
+#include "Atari2600/Atari2600Paddle.h"
+#include "Atari2600/Atari2600Keypad.h"
+#include "Atari2600/Atari2600DrivingController.h"
+#include "Atari2600/Atari2600BoosterGrip.h"
 #include "Atari2600/Atari2600DefaultVideoFilter.h"
 #include "Shared/BaseControlManager.h"
 #include "Shared/CpuType.h"
@@ -479,8 +483,9 @@ class Atari2600Riot {
 		static constexpr uint32_t HmoveLateCycleThreshold = 73;
 
 		// Input ports for TIA reads (INPT0-INPT5)
-		// INPT0-3: Paddle/pot inputs (bit 7, dumped capacitor)
+		// INPT0-3: Paddle/pot, keypad column, or booster grip button inputs
 		// INPT4-5: Fire buttons (bit 7: 0=pressed, 1=released)
+		uint8_t _inputPort[4] = { 0x80, 0x80, 0x80, 0x80 }; // INPT0-3
 		uint8_t _inputPort4 = 0x80; // P0 fire (not pressed)
 		uint8_t _inputPort5 = 0x80; // P1 fire (not pressed)
 
@@ -679,6 +684,13 @@ class Atari2600Riot {
 			_inputPort5 = port1Fire;
 		}
 
+		void SetInptState(uint8_t inpt0, uint8_t inpt1, uint8_t inpt2, uint8_t inpt3) {
+			_inputPort[0] = inpt0;
+			_inputPort[1] = inpt1;
+			_inputPort[2] = inpt2;
+			_inputPort[3] = inpt3;
+		}
+
 		void BeginFrameCapture() {
 			_hmoveBlankScanlines.fill(0);
 			Atari2600ScanlineRenderState currentState = BuildScanlineRenderState();
@@ -804,10 +816,10 @@ class Atari2600Riot {
 				case 0x05: return _state.CollisionCxm1fb;
 				case 0x06: return _state.CollisionCxblpf;
 				case 0x07: return _state.CollisionCxppmm;
-				case 0x08: return 0x80; // INPT0 — paddle 0 (not connected)
-				case 0x09: return 0x80; // INPT1 — paddle 1 (not connected)
-				case 0x0a: return 0x80; // INPT2 — paddle 2 (not connected)
-				case 0x0b: return 0x80; // INPT3 — paddle 3 (not connected)
+				case 0x08: return _inputPort[0]; // INPT0 — paddle 0 / keypad col / booster
+				case 0x09: return _inputPort[1]; // INPT1 — paddle 1 / keypad col / booster
+				case 0x0a: return _inputPort[2]; // INPT2 — paddle 2 / keypad col / booster
+				case 0x0b: return _inputPort[3]; // INPT3 — paddle 3 / keypad col / booster
 				case 0x0c: return _inputPort4; // INPT4 — P0 fire button
 				case 0x0d: return _inputPort5; // INPT5 — P1 fire button
 				default: return 0;
@@ -1723,10 +1735,11 @@ class Atari2600Riot {
 	private:
 		Atari2600Config _prevConfig = {};
 		// Cached input state for hardware to read
-		uint8_t _swcha = 0xff;     // Joystick directions (active-low, all released)
+		uint8_t _swcha = 0xff;     // Joystick/controller directions (active-low, all released)
 		uint8_t _swchb = 0xff;     // Console switches
 		uint8_t _fireP0 = 0x80;    // P0 fire button (bit 7: 0=pressed, 1=released)
 		uint8_t _fireP1 = 0x80;    // P1 fire button
+		uint8_t _inpt[4] = { 0x80, 0x80, 0x80, 0x80 }; // INPT0-3 state (paddles/keypad/booster)
 
 	public:
 		explicit Atari2600ControlManager(Emulator* emu)
@@ -1736,17 +1749,27 @@ class Atari2600Riot {
 		shared_ptr<BaseControlDevice> CreateControllerDevice(ControllerType type, uint8_t port) override {
 			shared_ptr<BaseControlDevice> device;
 			Atari2600Config& cfg = _emu->GetSettings()->GetAtari2600Config();
+			KeyMappingSet& keys = (port == 0) ? cfg.Port1.Keys : cfg.Port2.Keys;
 
 			switch (type) {
 				default:
 				case ControllerType::None:
 					break;
 				case ControllerType::Atari2600Joystick:
-					if (port == 0) {
-						device = std::make_shared<Atari2600Controller>(_emu, port, cfg.Port1.Keys);
-					} else if (port == 1) {
-						device = std::make_shared<Atari2600Controller>(_emu, port, cfg.Port2.Keys);
-					}
+					device = std::make_shared<Atari2600Controller>(_emu, port, keys);
+					break;
+				case ControllerType::Atari2600Paddle:
+					// Create paddle A for this port (index 0 or 2)
+					device = std::make_shared<Atari2600Paddle>(_emu, port, port * 2, keys);
+					break;
+				case ControllerType::Atari2600Keypad:
+					device = std::make_shared<Atari2600Keypad>(_emu, port, keys);
+					break;
+				case ControllerType::Atari2600DrivingController:
+					device = std::make_shared<Atari2600DrivingController>(_emu, port, keys);
+					break;
+				case ControllerType::Atari2600BoosterGrip:
+					device = std::make_shared<Atari2600BoosterGrip>(_emu, port, keys);
 					break;
 			}
 			return device;
@@ -1788,28 +1811,86 @@ class Atari2600Riot {
 		void UpdateInputState() override {
 			BaseControlManager::UpdateInputState();
 
-			// Build SWCHA byte from both controllers
-			// Bits 7-4: P0 directions (Right=7, Left=6, Down=5, Up=4)
-			// Bits 3-0: P1 directions (Right=3, Left=2, Down=1, Up=0)
 			uint8_t swcha = 0xff;
 			_fireP0 = 0x80;
 			_fireP1 = 0x80;
+			_inpt[0] = 0x80;
+			_inpt[1] = 0x80;
+			_inpt[2] = 0x80;
+			_inpt[3] = 0x80;
 
 			for (shared_ptr<BaseControlDevice>& controller : _controlDevices) {
-				if (controller->GetControllerType() != ControllerType::Atari2600Joystick) {
-					continue;
-				}
-				auto* joystick = static_cast<Atari2600Controller*>(controller.get());
-				uint8_t nibble = joystick->GetDirectionNibble();
+				uint8_t port = controller->GetPort();
+				ControllerType type = controller->GetControllerType();
 
-				if (controller->GetPort() == 0) {
-					// P0 directions go in upper nibble (bits 4-7)
-					swcha = (uint8_t)((swcha & 0x0f) | (nibble << 4));
-					_fireP0 = joystick->GetFireState();
-				} else if (controller->GetPort() == 1) {
-					// P1 directions go in lower nibble (bits 0-3)
-					swcha = (uint8_t)((swcha & 0xf0) | nibble);
-					_fireP1 = joystick->GetFireState();
+				switch (type) {
+					case ControllerType::Atari2600Joystick: {
+						auto* joystick = static_cast<Atari2600Controller*>(controller.get());
+						uint8_t nibble = joystick->GetDirectionNibble();
+						if (port == 0) {
+							swcha = (uint8_t)((swcha & 0x0f) | (nibble << 4));
+							_fireP0 = joystick->GetFireState();
+						} else if (port == 1) {
+							swcha = (uint8_t)((swcha & 0xf0) | nibble);
+							_fireP1 = joystick->GetFireState();
+						}
+						break;
+					}
+
+					case ControllerType::Atari2600Paddle: {
+						auto* paddle = static_cast<Atari2600Paddle*>(controller.get());
+						uint8_t idx = paddle->GetPaddleIndex();
+						if (idx < 4) {
+							// Simplified: position maps directly to INPT threshold
+							// Full accuracy would use scanline-based charge timing
+							_inpt[idx] = paddle->GetInptState(128); // Mid-frame estimate
+						}
+						if (port == 0) {
+							_fireP0 = paddle->GetFireState();
+						} else if (port == 1) {
+							_fireP1 = paddle->GetFireState();
+						}
+						break;
+					}
+
+					case ControllerType::Atari2600Keypad: {
+						// Keypad INPT values are handled per-scanline via GetKeypadColumnState()
+						// SWCHA is not driven by keypad (no direction nibble)
+						break;
+					}
+
+					case ControllerType::Atari2600DrivingController: {
+						auto* driving = static_cast<Atari2600DrivingController*>(controller.get());
+						uint8_t nibble = driving->GetDirectionNibble();
+						if (port == 0) {
+							swcha = (uint8_t)((swcha & 0x0f) | (nibble << 4));
+							_fireP0 = driving->GetFireState();
+						} else if (port == 1) {
+							swcha = (uint8_t)((swcha & 0xf0) | nibble);
+							_fireP1 = driving->GetFireState();
+						}
+						break;
+					}
+
+					case ControllerType::Atari2600BoosterGrip: {
+						auto* grip = static_cast<Atari2600BoosterGrip*>(controller.get());
+						uint8_t nibble = grip->GetDirectionNibble();
+						if (port == 0) {
+							swcha = (uint8_t)((swcha & 0x0f) | (nibble << 4));
+							_fireP0 = grip->GetFireState();
+							_inpt[0] = grip->GetBoosterState();
+							_inpt[1] = grip->GetTriggerState();
+						} else if (port == 1) {
+							swcha = (uint8_t)((swcha & 0xf0) | nibble);
+							_fireP1 = grip->GetFireState();
+							_inpt[2] = grip->GetBoosterState();
+							_inpt[3] = grip->GetTriggerState();
+						}
+						break;
+					}
+
+					default:
+						break;
 				}
 			}
 			_swcha = swcha;
@@ -1828,6 +1909,38 @@ class Atari2600Riot {
 			_swchb = swchb;
 		}
 
+		/// Returns INPT0-3 state for TIA read. Replaces hardcoded 0x80.
+		/// For keypads, scans column based on current SWCHA row select.
+		uint8_t GetInpt(uint8_t index) {
+			if (index > 3) return 0x80;
+
+			// Check if a keypad is connected on the corresponding port
+			uint8_t keypadPort = (index < 2) ? 0 : 1; // INPT0-1 → port 0, INPT2-3 → port 1
+			for (shared_ptr<BaseControlDevice>& controller : _controlDevices) {
+				if (controller->GetControllerType() == ControllerType::Atari2600Keypad &&
+					controller->GetPort() == keypadPort) {
+					auto* keypad = static_cast<Atari2600Keypad*>(controller.get());
+					// Determine which row is selected from SWCHA
+					uint8_t portNibble = (keypadPort == 0) ? ((_swcha >> 4) & 0x0f) : (_swcha & 0x0f);
+					// Find which row has its bit pulled low (active-low scan)
+					uint8_t colIndex = index - (keypadPort * 2); // 0 or 1 within port
+					// Note: keypad only uses 3 columns, but INPT0-3 only gives us
+					// 2 per port (INPT0/1 for port 0, INPT2/3 for port 1)
+					// Actual 2600 hardware: Port 0 keypad uses INPT0/1 for cols,
+					// port 1 keypad uses INPT2/3 for cols
+					for (uint8_t row = 0; row < 4; row++) {
+						if (!(portNibble & (1 << row))) {
+							// This row is selected (active low)
+							return keypad->GetColumnState(row, colIndex);
+						}
+					}
+					return 0x80; // No row selected
+				}
+			}
+
+			return _inpt[index];
+		}
+
 		[[nodiscard]] uint8_t GetSwcha() const { return _swcha; }
 		[[nodiscard]] uint8_t GetSwchb() const { return _swchb; }
 		[[nodiscard]] uint8_t GetFireP0() const { return _fireP0; }
@@ -1839,6 +1952,7 @@ class Atari2600Riot {
 			SV(_swchb);
 			SV(_fireP0);
 			SV(_fireP1);
+			SVArray(_inpt, 4);
 		}
 	};
 
@@ -1910,6 +2024,10 @@ void Atari2600Console::RunFrame() {
 		riotState.PortBInput = ctrlMgr->GetSwchb();
 		_riot->SetState(riotState);
 		_tia->SetFireButtonState(ctrlMgr->GetFireP0(), ctrlMgr->GetFireP1());
+		_tia->SetInptState(
+			ctrlMgr->GetInpt(0), ctrlMgr->GetInpt(1),
+			ctrlMgr->GetInpt(2), ctrlMgr->GetInpt(3)
+		);
 	}
 
 	_tia->BeginFrameCapture();

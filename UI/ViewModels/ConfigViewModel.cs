@@ -50,6 +50,9 @@ public sealed class ConfigViewModel : DisposableViewModel {
 	/// <summary>Gets or sets the Lynx configuration ViewModel.</summary>
 	[Reactive] public LynxConfigViewModel? Lynx { get; set; }
 
+	/// <summary>Gets or sets the Atari 2600 configuration ViewModel.</summary>
+	[Reactive] public Atari2600ConfigViewModel? Atari2600 { get; set; }
+
 	/// <summary>Gets or sets the other consoles configuration ViewModel.</summary>
 	[Reactive] public OtherConsolesConfigViewModel? OtherConsoles { get; set; }
 
@@ -101,6 +104,7 @@ public sealed class ConfigViewModel : DisposableViewModel {
 			case ConfigWindowTab.Sms: Sms ??= AddDisposable(new SmsConfigViewModel()); break;
 			case ConfigWindowTab.Ws: Ws ??= AddDisposable(new WsConfigViewModel()); break;
 			case ConfigWindowTab.Lynx: Lynx ??= AddDisposable(new LynxConfigViewModel()); break;
+			case ConfigWindowTab.Atari2600: Atari2600 ??= AddDisposable(new Atari2600ConfigViewModel()); break;
 			case ConfigWindowTab.OtherConsoles: OtherConsoles ??= AddDisposable(new OtherConsolesConfigViewModel()); break;
 
 			case ConfigWindowTab.Preferences: Preferences ??= AddDisposable(new PreferencesConfigViewModel()); break;
@@ -135,6 +139,7 @@ public sealed class ConfigViewModel : DisposableViewModel {
 		ConfigManager.Config.Sms = Sms?.OriginalConfig ?? ConfigManager.Config.Sms;
 		ConfigManager.Config.Ws = Ws?.OriginalConfig ?? ConfigManager.Config.Ws;
 		ConfigManager.Config.Lynx = Lynx?.OriginalConfig ?? ConfigManager.Config.Lynx;
+		ConfigManager.Config.Atari2600 = Atari2600?.OriginalConfig ?? ConfigManager.Config.Atari2600;
 		ConfigManager.Config.Cv = OtherConsoles?.CvOriginalConfig ?? ConfigManager.Config.Cv;
 		ConfigManager.Config.ApplyConfig();
 		ConfigManager.Config.Save();
@@ -159,6 +164,7 @@ public sealed class ConfigViewModel : DisposableViewModel {
 			Sms?.OriginalConfig.IsIdentical(ConfigManager.Config.Sms) == false ||
 			Ws?.OriginalConfig.IsIdentical(ConfigManager.Config.Ws) == false ||
 			Lynx?.OriginalConfig.IsIdentical(ConfigManager.Config.Lynx) == false ||
+			Atari2600?.OriginalConfig.IsIdentical(ConfigManager.Config.Atari2600) == false ||
 			OtherConsoles?.CvOriginalConfig.IsIdentical(ConfigManager.Config.Cv) == false
 		;
 	}
@@ -193,9 +199,11 @@ public enum ConfigWindowTab {
 	Ws = 11,
 	/// <summary>Lynx-specific settings tab.</summary>
 	Lynx = 12,
+	/// <summary>Atari 2600-specific settings tab.</summary>
+	Atari2600 = 13,
 	/// <summary>Other consoles settings tab.</summary>
-	OtherConsoles = 13,
+	OtherConsoles = 14,
 	//separator
 	/// <summary>General preferences tab.</summary>
-	Preferences = 15
+	Preferences = 16
 }

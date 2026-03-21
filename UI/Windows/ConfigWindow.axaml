@@ -56,6 +56,9 @@
 		<DataTemplate DataType="{x:Type vm:LynxConfigViewModel}">
 			<v:LynxConfigView />
 		</DataTemplate>
+		<DataTemplate DataType="{x:Type vm:Atari2600ConfigViewModel}">
+			<v:Atari2600ConfigView />
+		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:OtherConsolesConfigViewModel}">
 			<v:OtherConsolesConfigView />
 		</DataTemplate>
@@ -183,6 +186,15 @@
 					<StackPanel Orientation="Horizontal">
 						<Image Source="/Assets/LynxIcon.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabLynx}" />
+					</StackPanel>
+				</TabItem.Header>
+			</TabItem>
+
+			<TabItem Content="{Binding Atari2600}">
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<Image Source="/Assets/Controller.png" Margin="0 0 10 0" />
+						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabAtari2600}" />
 					</StackPanel>
 				</TabItem.Header>
 			</TabItem>
