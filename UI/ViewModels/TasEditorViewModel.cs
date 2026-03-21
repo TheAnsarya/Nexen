@@ -2990,6 +2990,7 @@ tas.finishSearch(true) -- Load best result</pre>
 			SystemType.Pce => ControllerLayout.PcEngine,
 			SystemType.Ws => ControllerLayout.WonderSwan,
 			SystemType.Lynx => ControllerLayout.Lynx,
+			SystemType.A2600 => ControllerLayout.Atari2600,
 			_ => Movie.SourceFormat switch {
 				// Fallback to source format hints
 				MovieFormat.Fm2 => ControllerLayout.Nes,
@@ -3017,6 +3018,7 @@ tas.finishSearch(true) -- Load best result</pre>
 			ControllerLayout.PcEngine => GetPcEngineButtons(),
 			ControllerLayout.WonderSwan => GetWonderSwanButtons(),
 			ControllerLayout.Lynx => GetLynxButtons(),
+			ControllerLayout.Atari2600 => GetAtari2600Buttons(),
 			_ => GetSnesButtons()
 		};
 		this.RaisePropertyChanged(nameof(PianoRollButtonLabels));
@@ -3126,6 +3128,57 @@ tas.finishSearch(true) -- Load best result</pre>
 		new("L", "O1", 2, 0),
 		new("R", "O2", 3, 0),
 		new("START", "Pau", 4, 0),
+		new("UP", "↑", 0, 1),
+		new("DOWN", "↓", 1, 1),
+		new("LEFT", "←", 2, 1),
+		new("RIGHT", "→", 3, 1),
+	};
+
+	/// <summary>
+	/// Returns the Atari 2600 joystick button layout (default/most common controller).
+	/// The specific controller type (Paddle, Keypad, etc.) is stored in the C++ settings
+	/// but not directly accessible via MovieData.PortTypes. Future enhancement could parse
+	/// the GameSettings.txt to detect sub-controller types.
+	/// </summary>
+	private static List<ControllerButtonInfo> GetAtari2600Buttons() => GetAtari2600JoystickButtons();
+
+	private static List<ControllerButtonInfo> GetAtari2600JoystickButtons() => new() {
+		new("FIRE", "Fire", 0, 0),
+		new("UP", "↑", 0, 1),
+		new("DOWN", "↓", 1, 1),
+		new("LEFT", "←", 2, 1),
+		new("RIGHT", "→", 3, 1),
+	};
+
+	private static List<ControllerButtonInfo> GetAtari2600PaddleButtons() => new() {
+		new("FIRE", "Fire", 0, 0),
+	};
+
+	private static List<ControllerButtonInfo> GetAtari2600KeypadButtons() => new() {
+		new("1", "1", 0, 0),
+		new("2", "2", 1, 0),
+		new("3", "3", 2, 0),
+		new("4", "4", 0, 1),
+		new("5", "5", 1, 1),
+		new("6", "6", 2, 1),
+		new("7", "7", 0, 2),
+		new("8", "8", 1, 2),
+		new("9", "9", 2, 2),
+		new("STAR", "*", 0, 3),
+		new("0", "0", 1, 3),
+		new("POUND", "#", 2, 3),
+	};
+
+	private static List<ControllerButtonInfo> GetAtari2600DrivingButtons() => new() {
+		new("FIRE", "Fire", 0, 0),
+		new("LEFT", "←", 0, 1),
+		new("RIGHT", "→", 1, 1),
+	};
+
+	private static List<ControllerButtonInfo> GetAtari2600BoosterGripButtons() => new() {
+		new("FIRE", "Fire", 0, 0),
+		new("TRIGGER", "Trg", 1, 0),
+		new("BOOSTER", "Bst", 2, 0),
 		new("UP", "↑", 0, 1),
 		new("DOWN", "↓", 1, 1),
 		new("LEFT", "←", 2, 1),
@@ -3461,7 +3514,10 @@ public enum ControllerLayout {
 	WonderSwan,
 
 	/// <summary>Lynx - A, B, Option1, Option2, Pause, D-Pad</summary>
-	Lynx
+	Lynx,
+
+	/// <summary>Atari 2600 - varies by controller type (Joystick, Paddle, Keypad, Driving, BoosterGrip)</summary>
+	Atari2600
 }
 
 /// <summary>
