@@ -91,6 +91,8 @@ public sealed class InputApi {
 			return input;
 		}
 
+		input.Type = MapRuntimeToMovieControllerType(state.Type);
+
 		// Get button bits from first 2 bytes (most controllers use 16 bits max)
 		ushort buttons = state.StateBytes[0];
 		if (state.StateSize > 1) {
@@ -199,6 +201,31 @@ public sealed class InputApi {
 		}
 
 		return input;
+	}
+
+	/// <summary>
+	/// Maps a runtime ControllerType (Nexen.Config) to a movie ControllerType (MovieConverter).
+	/// </summary>
+	internal static MovieConverter.ControllerType MapRuntimeToMovieControllerType(ControllerType runtimeType) {
+		return runtimeType switch {
+			ControllerType.Atari2600Joystick => MovieConverter.ControllerType.Atari2600Joystick,
+			ControllerType.Atari2600Paddle => MovieConverter.ControllerType.Atari2600Paddle,
+			ControllerType.Atari2600Keypad => MovieConverter.ControllerType.Atari2600Keypad,
+			ControllerType.Atari2600DrivingController => MovieConverter.ControllerType.Atari2600DrivingController,
+			ControllerType.Atari2600BoosterGrip => MovieConverter.ControllerType.Atari2600BoosterGrip,
+			ControllerType.SnesController => MovieConverter.ControllerType.Gamepad,
+			ControllerType.NesController or ControllerType.FamicomController or ControllerType.FamicomControllerP2 => MovieConverter.ControllerType.Gamepad,
+			ControllerType.GameboyController or ControllerType.GbaController => MovieConverter.ControllerType.Gamepad,
+			ControllerType.SnesMouse => MovieConverter.ControllerType.Mouse,
+			ControllerType.SuperScope => MovieConverter.ControllerType.SuperScope,
+			ControllerType.NesZapper or ControllerType.FamicomZapper => MovieConverter.ControllerType.Zapper,
+			ControllerType.GenesisController => MovieConverter.ControllerType.Gamepad,
+			ControllerType.SmsController or ControllerType.ColecoVisionController => MovieConverter.ControllerType.Gamepad,
+			ControllerType.PceController or ControllerType.PceAvenuePad6 => MovieConverter.ControllerType.Gamepad,
+			ControllerType.WsController or ControllerType.WsControllerVertical => MovieConverter.ControllerType.Gamepad,
+			ControllerType.LynxController => MovieConverter.ControllerType.Gamepad,
+			_ => MovieConverter.ControllerType.Gamepad,
+		};
 	}
 }
 

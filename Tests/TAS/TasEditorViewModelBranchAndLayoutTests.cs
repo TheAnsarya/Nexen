@@ -546,4 +546,110 @@ public class TasEditorViewModelBranchAndLayoutTests : IDisposable {
 	}
 
 	#endregion
+
+	#region Multi-Port Controller Editing
+
+	private static MovieData CreateMultiPortMovie(int frameCount, int portCount, SystemType system = SystemType.Nes) {
+		var movie = new MovieData {
+			Author = "MultiPortTest",
+			GameName = "Test Game",
+			SystemType = system,
+			Region = RegionType.NTSC,
+			ControllerCount = portCount,
+		};
+
+		for (int i = 0; i < frameCount; i++) {
+			var controllers = new ControllerInput[portCount];
+			for (int p = 0; p < portCount; p++) {
+				controllers[p] = new ControllerInput();
+			}
+			movie.InputFrames.Add(new InputFrame(i) { Controllers = controllers });
+		}
+
+		return movie;
+	}
+
+	[Fact]
+	public void ActivePortCount_SingleController_HidesSelector() {
+		SetMovie(CreateTestMovie(5));
+		Assert.Equal(1, _vm.ActivePortCount);
+		Assert.False(_vm.IsPortSelectorVisible);
+	}
+
+	[Fact]
+	public void ActivePortCount_TwoControllers_ShowsSelector() {
+		var movie = CreateMultiPortMovie(5, 2);
+		SetMovie(movie);
+		Assert.Equal(2, _vm.ActivePortCount);
+		Assert.True(_vm.IsPortSelectorVisible);
+		Assert.Equal(1, _vm.MaxEditPort);
+	}
+
+	[Fact]
+	public void SelectedEditPort_DefaultsToZero() {
+		SetMovie(CreateMultiPortMovie(3, 2));
+		Assert.Equal(0, _vm.SelectedEditPort);
+	}
+
+	[Fact]
+	public void SelectedEditPort_ClampsWhenMovieChanges() {
+		var twoPort = CreateMultiPortMovie(3, 2);
+		SetMovie(twoPort);
+		_vm.SelectedEditPort = 1;
+		Assert.Equal(1, _vm.SelectedEditPort);
+
+		// Load a single-port movie — should clamp back to 0
+		SetMovie(CreateTestMovie(3));
+		Assert.Equal(0, _vm.SelectedEditPort);
+	}
+
+	[Fact]
+	public void ToggleButton_UsesSelectedEditPort() {
+		var movie = CreateMultiPortMovie(3, 2);
+		SetMovie(movie);
+		_vm.SelectedFrameIndex = 0;
+		_vm.SelectedEditPort = 1;
+
+		// Toggle button on port 1
+		_vm.ToggleButton(1, "A");
+
+		// Port 1 should be toggled, port 0 should not
+		Assert.False(movie.InputFrames[0].Controllers[0].A);
+		Assert.True(movie.InputFrames[0].Controllers[1].A);
+	}
+
+	[Fact]
+	public void PaddleEditor_UsesSelectedEditPort() {
+		var movie = CreateMultiPortMovie(2, 2, SystemType.A2600);
+		movie.PortTypes = [ControllerType.Atari2600Joystick, ControllerType.Atari2600Paddle];
+		movie.InputFrames[0].Controllers[1].PaddlePosition = 64;
+		SetMovie(movie);
+
+		// Port 0 is joystick — paddle editor should NOT be visible
+		_vm.SelectedEditPort = 0;
+		_vm.SelectedFrameIndex = 0;
+		Assert.False(_vm.IsPaddleCoordinateEditorVisible);
+
+		// Port 1 is paddle — paddle editor SHOULD be visible
+		_vm.SelectedEditPort = 1;
+		Assert.True(_vm.IsPaddleCoordinateEditorVisible);
+		Assert.Equal(64, _vm.SelectedPaddlePosition);
+	}
+
+	[Fact]
+	public void Atari2600Buttons_ChangeBySelectedPort() {
+		var movie = CreateMultiPortMovie(2, 2, SystemType.A2600);
+		movie.PortTypes = [ControllerType.Atari2600Joystick, ControllerType.Atari2600Keypad];
+		SetMovie(movie);
+
+		// Port 0 = joystick (5 buttons)
+		_vm.SelectedEditPort = 0;
+		Assert.Equal(5, _vm.ControllerButtons.Count);
+
+		// Port 1 = keypad (12 buttons)
+		_vm.SelectedEditPort = 1;
+		Assert.Equal(12, _vm.ControllerButtons.Count);
+	}
+
+	#endregion
 }

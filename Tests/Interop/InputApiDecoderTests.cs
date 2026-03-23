@@ -396,4 +396,32 @@ public class InputApiDecoderTests {
 	}
 
 	#endregion
+
+	#region Controller Type Mapping
+
+	[Theory]
+	[InlineData(ControllerType.Atari2600Joystick, Nexen.MovieConverter.ControllerType.Atari2600Joystick)]
+	[InlineData(ControllerType.Atari2600Paddle, Nexen.MovieConverter.ControllerType.Atari2600Paddle)]
+	[InlineData(ControllerType.Atari2600Keypad, Nexen.MovieConverter.ControllerType.Atari2600Keypad)]
+	[InlineData(ControllerType.Atari2600DrivingController, Nexen.MovieConverter.ControllerType.Atari2600DrivingController)]
+	[InlineData(ControllerType.Atari2600BoosterGrip, Nexen.MovieConverter.ControllerType.Atari2600BoosterGrip)]
+	[InlineData(ControllerType.SnesController, Nexen.MovieConverter.ControllerType.Gamepad)]
+	[InlineData(ControllerType.NesController, Nexen.MovieConverter.ControllerType.Gamepad)]
+	[InlineData(ControllerType.GameboyController, Nexen.MovieConverter.ControllerType.Gamepad)]
+	[InlineData(ControllerType.SnesMouse, Nexen.MovieConverter.ControllerType.Mouse)]
+	[InlineData(ControllerType.SuperScope, Nexen.MovieConverter.ControllerType.SuperScope)]
+	[InlineData(ControllerType.NesZapper, Nexen.MovieConverter.ControllerType.Zapper)]
+	public void MapRuntimeToMovieControllerType_MapsCorrectly(ControllerType runtime, Nexen.MovieConverter.ControllerType expected) {
+		Nexen.MovieConverter.ControllerType result = InputApi.MapRuntimeToMovieControllerType(runtime);
+		Assert.Equal(expected, result);
+	}
+
+	[Fact]
+	public void DecodeControllerState_SetsTypeFromMapping() {
+		var state = CreateState(ControllerType.Atari2600Joystick, 0x01);
+		Nexen.MovieConverter.ControllerInput result = InputApi.DecodeControllerState(state);
+		Assert.Equal(Nexen.MovieConverter.ControllerType.Atari2600Joystick, result.Type);
+	}
+
+	#endregion
 }

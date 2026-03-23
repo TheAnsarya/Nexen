@@ -248,7 +248,7 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 	/// </summary>
 	private void OnButtonClick(object? sender, RoutedEventArgs e) {
 		if (sender is Button button && button.Tag is string buttonName && ViewModel != null) {
-			ViewModel.ToggleButton(0, buttonName);
+			ViewModel.ToggleButton(ViewModel.SelectedEditPort, buttonName);
 		}
 	}
 
@@ -700,7 +700,7 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		var buttonLabels = _pianoRoll.ButtonLabels ?? GetDefaultButtonLabels();
 		if (e.ButtonIndex >= 0 && e.ButtonIndex < buttonLabels.Count) {
 			string buttonName = MapButtonLabelToName(buttonLabels[e.ButtonIndex]);
-			ViewModel.ToggleButtonAtFrame(e.Frame, 0, buttonName, e.NewState);
+			ViewModel.ToggleButtonAtFrame(e.Frame, ViewModel.SelectedEditPort, buttonName, e.NewState);
 		}
 	}
 
@@ -712,7 +712,7 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		var buttonLabels = _pianoRoll.ButtonLabels ?? GetDefaultButtonLabels();
 		if (e.ButtonIndex >= 0 && e.ButtonIndex < buttonLabels.Count) {
 			string buttonName = MapButtonLabelToName(buttonLabels[e.ButtonIndex]);
-			ViewModel.PaintButton(e.Frames, 0, buttonName, e.PaintValue);
+			ViewModel.PaintButton(e.Frames, ViewModel.SelectedEditPort, buttonName, e.PaintValue);
 		}
 	}
 

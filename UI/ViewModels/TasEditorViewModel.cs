@@ -127,8 +127,20 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// <summary>Gets whether paddle coordinate editing is visible for the selected frame/controller.</summary>
 	[Reactive] public bool IsPaddleCoordinateEditorVisible { get; private set; }
 
-	/// <summary>Gets or sets the selected paddle position (0-255) for port 1 on the selected frame.</summary>
+	/// <summary>Gets or sets the selected paddle position (0-255) for the selected port on the selected frame.</summary>
 	[Reactive] public int SelectedPaddlePosition { get; set; }
+
+	/// <summary>Gets or sets the currently selected controller port for editing (0-based).</summary>
+	[Reactive] public int SelectedEditPort { get; set; }
+
+	/// <summary>Gets the number of active controller ports in the current movie.</summary>
+	[Reactive] public int ActivePortCount { get; private set; } = 1;
+
+	/// <summary>Gets whether the port selector should be visible (more than one active port).</summary>
+	public bool IsPortSelectorVisible => ActivePortCount > 1;
+
+	/// <summary>Gets the maximum valid port index (0-based, for UI binding).</summary>
+	public int MaxEditPort => Math.Max(0, ActivePortCount - 1);
 
 	/// <summary>Gets the piano roll button labels derived from the current controller layout.</summary>
 	public IReadOnlyList<string> PianoRollButtonLabels =>
@@ -276,6 +288,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			DetectControllerLayout();
 			Recorder.Movie = Movie;
 			Greenzone.Clear();
+			UpdateActivePortCount();
 			RefreshSelectedFramePreview();
 		}));
 		AddDisposable(this.WhenAnyValue(x => x.FilePath, x => x.HasUnsavedChanges).Subscribe(_ => UpdateWindowTitle()));
@@ -285,6 +298,11 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}));
 		AddDisposable(this.WhenAnyValue(x => x.SelectedFrameIndex).Subscribe(_ => {
 			this.RaisePropertyChanged(nameof(SelectedFrameIsLag));
+			UpdateActivePortCount();
+			RefreshSelectedFramePreview();
+		}));
+		AddDisposable(this.WhenAnyValue(x => x.SelectedEditPort).Subscribe(_ => {
+			UpdateControllerButtons();
 			RefreshSelectedFramePreview();
 		}));
 		AddDisposable(this.WhenAnyValue(x => x.SelectedPaddlePosition).Subscribe(ApplySelectedPaddlePosition));
@@ -307,10 +325,11 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		SelectedFrameHexPreview = BuildFrameHexPreview(Movie, SelectedFrameIndex);
 
 		InputPreviewButtons.Clear();
-		ControllerInput? selectedController = GetSelectedControllerInput(0);
+		int port = SelectedEditPort;
+		ControllerInput? selectedController = GetSelectedControllerInput(port);
 		IsPaddleCoordinateEditorVisible = CurrentLayout == ControllerLayout.Atari2600
-			&& (Movie?.PortTypes is { Length: > 0 })
-			&& Movie.PortTypes[0] == MovieConverter.ControllerType.Atari2600Paddle
+			&& (Movie?.PortTypes is { Length: > 0 } && port < Movie.PortTypes.Length)
+			&& Movie.PortTypes[port] == MovieConverter.ControllerType.Atari2600Paddle
 			&& selectedController is not null;
 
 		_isUpdatingSelectedPaddlePosition = true;
@@ -342,13 +361,37 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		byte clamped = (byte)Math.Clamp(position, 0, 255);
-		ControllerInput newInput = CloneControllerInput(frame.Controllers[0]);
+		int port = SelectedEditPort;
+		if (port < 0 || port >= frame.Controllers.Length) {
+			return;
+		}
+
+		ControllerInput newInput = CloneControllerInput(frame.Controllers[port]);
 		if (newInput.PaddlePosition == clamped) {
 			return;
 		}
 
 		newInput.PaddlePosition = clamped;
-		ExecuteAction(new ModifyInputAction(frame, SelectedFrameIndex, 0, newInput));
+		ExecuteAction(new ModifyInputAction(frame, SelectedFrameIndex, port, newInput));
+	}
+
+	private void UpdateActivePortCount() {
+		if (Movie is null || Movie.InputFrames.Count == 0) {
+			ActivePortCount = 1;
+		} else {
+			// Use actual controller array length from frames as ground truth,
+			// falling back to Movie.ControllerCount
+			int fromFrames = Movie.InputFrames[0].Controllers.Length;
+			ActivePortCount = Math.Max(1, fromFrames > 0 ? fromFrames : Movie.ControllerCount);
+		}
+
+		// Clamp selected port to valid range
+		if (SelectedEditPort >= ActivePortCount) {
+			SelectedEditPort = 0;
+		}
+
+		this.RaisePropertyChanged(nameof(IsPortSelectorVisible));
+		this.RaisePropertyChanged(nameof(MaxEditPort));
 	}
 
 	private ControllerInput? GetSelectedControllerInput(int port) {
@@ -1758,7 +1801,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			var frame = Movie.InputFrames[i];
 			bool match = SearchMode switch {
 				FrameSearchMode.Comment => frame.Comment is not null && frame.Comment.Contains(SearchText, StringComparison.OrdinalIgnoreCase),
-				FrameSearchMode.ButtonPressed => frame.Controllers.Length > 0 && frame.Controllers[0].GetButton(SearchText),
+				FrameSearchMode.ButtonPressed => frame.Controllers.Length > SelectedEditPort && frame.Controllers[SelectedEditPort].GetButton(SearchText),
 				FrameSearchMode.LagFrame => frame.IsLagFrame,
 				FrameSearchMode.Marker => frame.Comment is not null && frame.Comment.StartsWith("[M]"),
 				_ => false,
@@ -2492,6 +2535,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			return;
 		}
 
+		PopulatePortTypesFromRuntime();
 		Recorder.StartRecording(RecordMode, SelectedFrameIndex);
 	}
 
@@ -2506,6 +2550,32 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		Recorder.StopRecording();
 		SyncNewFrames();
 		HasUnsavedChanges = true;
+	}
+
+	/// <summary>
+	/// Populates the movie's PortTypes and ControllerCount from the runtime controller state.
+	/// Called at recording start to ensure the movie captures per-port controller types.
+	/// </summary>
+	private void PopulatePortTypesFromRuntime() {
+		if (Movie is null) {
+			return;
+		}
+
+		try {
+			ControllerInput[] states = InputApi.GetControllerStates();
+			if (states.Length == 0) {
+				return;
+			}
+
+			Movie.ControllerCount = states.Length;
+			for (int i = 0; i < states.Length && i < Movie.PortTypes.Length; i++) {
+				Movie.PortTypes[i] = states[i].Type;
+			}
+
+			UpdateActivePortCount();
+		} catch {
+			// Runtime polling may fail if emulator is not running — keep existing values
+		}
 	}
 
 	/// <summary>
@@ -3179,8 +3249,9 @@ tas.finishSearch(true) -- Load best result</pre>
 	/// Returns Atari 2600 button layout based on controller subtype stored in port 1.
 	/// </summary>
 	private List<ControllerButtonInfo> GetAtari2600Buttons() {
-		MovieConverter.ControllerType portType = (Movie?.PortTypes is { Length: > 0 })
-			? Movie.PortTypes[0]
+		int port = SelectedEditPort;
+		MovieConverter.ControllerType portType = (Movie?.PortTypes is { Length: > 0 } && port < Movie.PortTypes.Length)
+			? Movie.PortTypes[port]
 			: MovieConverter.ControllerType.Atari2600Joystick;
 
 		return portType switch {
