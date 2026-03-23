@@ -651,5 +651,22 @@ public class TasEditorViewModelBranchAndLayoutTests : IDisposable {
 		Assert.Equal(12, _vm.ControllerButtons.Count);
 	}
 
+	[Theory]
+	[InlineData(ControllerType.Atari2600Joystick, 5, "UP")]
+	[InlineData(ControllerType.Atari2600Paddle, 1, "FIRE")]
+	[InlineData(ControllerType.Atari2600Keypad, 12, "POUND")]
+	[InlineData(ControllerType.Atari2600DrivingController, 3, "LEFT")]
+	[InlineData(ControllerType.Atari2600BoosterGrip, 7, "BOOSTER")]
+	public void Atari2600Buttons_ExposeExpectedSubtypeButtons(ControllerType portType, int expectedCount, string expectedButtonId) {
+		var movie = CreateMultiPortMovie(2, 2, SystemType.A2600);
+		movie.PortTypes = [portType, ControllerType.Atari2600Joystick];
+		SetMovie(movie);
+
+		_vm.SelectedEditPort = 0;
+
+		Assert.Equal(expectedCount, _vm.ControllerButtons.Count);
+		Assert.Contains(_vm.ControllerButtons, b => b.ButtonId == expectedButtonId);
+	}
+
 	#endregion
 }
