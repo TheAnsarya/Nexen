@@ -64,6 +64,8 @@ enum class RowDataType {
 	HClock,
 	FrameCount,
 	CycleCount,
+	RiotTimer,
+	RiotInterrupt,
 
 	R0,
 	R1,
@@ -126,6 +128,8 @@ struct TraceLogPpuState {
 	uint32_t HClock;
 	int32_t Scanline;
 	uint32_t FrameCount;
+	uint32_t Aux0;
+	uint32_t Aux1;
 };
 
 struct RowPart {
@@ -366,6 +370,10 @@ protected:
 			return RowDataType::FrameCount;
 		} else if (tag == "CycleCount") {
 			return RowDataType::CycleCount;
+		} else if (tag == "RiotTimer") {
+			return RowDataType::RiotTimer;
+		} else if (tag == "RiotInterrupt") {
+			return RowDataType::RiotInterrupt;
 		}
 
 		return GetFormatTagType(tag);
@@ -408,6 +416,12 @@ protected:
 				break;
 			case RowDataType::CycleCount:
 				WriteIntValue(output, (uint64_t)((TraceLoggerType*)this)->GetCycleCount(cpuState), rowPart);
+				break;
+			case RowDataType::RiotTimer:
+				WriteIntValue(output, ppuState.Aux0, rowPart);
+				break;
+			case RowDataType::RiotInterrupt:
+				WriteIntValue(output, ppuState.Aux1, rowPart);
 				break;
 
 			case RowDataType::PC:

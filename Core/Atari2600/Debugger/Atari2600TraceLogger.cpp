@@ -22,6 +22,10 @@ RowDataType Atari2600TraceLogger::GetFormatTagType(string& tag) {
 		return RowDataType::PS;
 	} else if (tag == "SP") {
 		return RowDataType::SP;
+	} else if (tag == "INTIM") {
+		return RowDataType::RiotTimer;
+	} else if (tag == "RIF") {
+		return RowDataType::RiotInterrupt;
 	} else {
 		return RowDataType::Text;
 	}
@@ -58,10 +62,13 @@ void Atari2600TraceLogger::GetTraceRow(string& output, Atari2600CpuState& cpuSta
 
 void Atari2600TraceLogger::LogPpuState() {
 	Atari2600TiaState tiaState = _console->GetTiaState();
+	Atari2600RiotState riotState = _console->GetRiotState();
 	_ppuState[_currentPos] = {
+		(uint32_t)tiaState.TotalColorClocks,
 		(uint32_t)tiaState.ColorClock,
-		0,
 		(int32_t)tiaState.Scanline,
-		_console->GetFrameCount()
+		_console->GetFrameCount(),
+		(uint32_t)(riotState.Timer & 0xFFFF),
+		riotState.InterruptFlag ? 1u : 0u
 	};
 }
