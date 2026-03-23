@@ -552,6 +552,27 @@ public class Atari2600PansyExportTests {
 		}
 	}
 
+	[Fact]
+	public void CrossRefs_TiaAndRiotRegisterAccess_Roundtrip() {
+		var xrefs = new List<(uint From, uint To, CrossRefType Type)> {
+			(0x1100, 0x0015, CrossRefType.Write), // STA AUDC0 (TIA)
+			(0x1105, 0x0284, CrossRefType.Read),  // LDA INTIM (RIOT)
+			(0x1108, 0x0280, CrossRefType.Write), // STA SWCHA (RIOT)
+		};
+		var xrefData = BuildCrossRefSection(xrefs);
+		var pansyFile = BuildMinimalPansyFile(xrefData, SECTION_CROSS_REFS, PLATFORM_ATARI_2600);
+		var tempPath = WriteTempPansy(pansyFile);
+		try {
+			var loader = PansyLoader.Load(tempPath);
+			Assert.Equal(3, loader.CrossReferences.Count);
+			Assert.Contains(loader.CrossReferences, x => x.From == 0x1100 && x.To == 0x0015 && x.Type == CrossRefType.Write);
+			Assert.Contains(loader.CrossReferences, x => x.From == 0x1105 && x.To == 0x0284 && x.Type == CrossRefType.Read);
+			Assert.Contains(loader.CrossReferences, x => x.From == 0x1108 && x.To == 0x0280 && x.Type == CrossRefType.Write);
+		} finally {
+			CleanupTemp(tempPath);
+		}
+	}
+
 	#endregion
 
 	#region Header Validation Tests
