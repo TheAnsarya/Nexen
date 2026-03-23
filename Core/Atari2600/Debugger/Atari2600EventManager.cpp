@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Atari2600/Debugger/Atari2600EventManager.h"
 #include "Atari2600/Atari2600Console.h"
+#include "Atari2600/Atari2600DefaultVideoFilter.h"
 #include "Debugger/DebugTypes.h"
 #include "Debugger/Debugger.h"
 #include "Debugger/DebugBreakHelper.h"
@@ -9,6 +10,8 @@
 Atari2600EventManager::Atari2600EventManager(Debugger* debugger, Atari2600Console* console) {
 	_debugger = debugger;
 	_console = console;
+	_ppuBuffer = std::make_unique<uint16_t[]>(Atari2600Console::ScreenWidth * Atari2600Console::ScreenHeight);
+	memset(_ppuBuffer.get(), 0, Atari2600Console::ScreenWidth * Atari2600Console::ScreenHeight * sizeof(uint16_t));
 }
 
 Atari2600EventManager::~Atari2600EventManager() = default;
@@ -103,6 +106,12 @@ uint32_t Atari2600EventManager::TakeEventSnapshot(bool forAutoRefresh) {
 	DebugBreakHelper breakHelper(_debugger);
 	auto lock = _lock.AcquireSafe();
 
+	constexpr uint32_t pixelCount = Atari2600Console::ScreenWidth * Atari2600Console::ScreenHeight;
+	uint32_t* frameBuffer = _console->GetFrameBuffer();
+	if (frameBuffer) {
+		memcpy(_ppuBuffer.get(), frameBuffer, pixelCount * sizeof(uint16_t));
+	}
+
 	_snapshotCurrentFrame = _debugEvents;
 	_snapshotPrevFrame = _prevDebugEvents;
 	_snapshotScanline = _console->GetCurrentScanline();
@@ -120,13 +129,16 @@ FrameInfo Atari2600EventManager::GetDisplayBufferSize() {
 }
 
 void Atari2600EventManager::DrawScreen(uint32_t* buffer) {
-	// Minimal screen drawing for event viewer
-	uint32_t visibleWidth = Atari2600Console::ScreenWidth;
-	uint32_t visibleHeight = Atari2600Console::ScreenHeight;
+	uint16_t* src = _ppuBuffer.get();
+	constexpr uint32_t visibleWidth = Atari2600Console::ScreenWidth;
+	constexpr uint32_t visibleHeight = Atari2600Console::ScreenHeight;
 
 	for (uint32_t y = 0; y < visibleHeight * 2 && y < _scanlineCount * 2; y++) {
-		for (uint32_t x = 0; x < visibleWidth * 2 && x < (uint32_t)ScanlineWidth; x++) {
-			buffer[y * ScanlineWidth + x] = 0xFF000000; // Black background
+		for (uint32_t x = 0; x < visibleWidth * 2; x++) {
+			int srcOffset = (y >> 1) * visibleWidth + (x >> 1);
+			uint16_t paletteIndex = src[srcOffset] & 0x7f;
+			uint32_t color = Atari2600DefaultVideoFilter::NtscPalette[paletteIndex];
+			buffer[y * ScanlineWidth + x + HblankWidth * 2] = 0xff000000 | color;
 		}
 	}
 }

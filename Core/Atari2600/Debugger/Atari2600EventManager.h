@@ -25,12 +25,15 @@ class Atari2600EventManager final : public BaseEventManager {
 private:
 	// 228 color clocks per scanline, 2x for display zoom
 	static constexpr int ScanlineWidth = 228 * 2;
+	// HBLANK is 68 color clocks before the visible area begins
+	static constexpr int HblankWidth = 68;
 
 	Atari2600EventViewerConfig _config = {};
 	Atari2600Console* _console = nullptr;
 	Debugger* _debugger = nullptr;
 
 	uint32_t _scanlineCount = 262;
+	std::unique_ptr<uint16_t[]> _ppuBuffer;
 
 protected:
 	bool ShowPreviousFrameEvents() override;
