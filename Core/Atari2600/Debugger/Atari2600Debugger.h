@@ -60,6 +60,9 @@ public:
 	void ProcessRead(uint32_t addr, uint8_t value, MemoryOperationType type);
 	void ProcessWrite(uint32_t addr, uint8_t value, MemoryOperationType type);
 
+	template <MemoryOperationType opType>
+	void ProcessMemoryAccess(uint32_t addr, uint8_t value, MemoryType memType);
+
 	void ProcessInterrupt(uint32_t originalPc, uint32_t currentPc, bool forNmi) override;
 	void ProcessPpuCycle();
 

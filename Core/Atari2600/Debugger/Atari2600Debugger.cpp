@@ -390,3 +390,12 @@ void Atari2600Debugger::ProcessInputOverrides(DebugControllerState inputOverride
 	}
 	controlManager->RefreshHubState();
 }
+
+template <MemoryOperationType opType>
+void Atari2600Debugger::ProcessMemoryAccess(uint32_t addr, uint8_t value, MemoryType memType) {
+	MemoryOperationInfo operation(addr, value, opType, memType);
+	_eventManager->AddEvent(DebugEventType::Register, operation);
+}
+
+template void Atari2600Debugger::ProcessMemoryAccess<MemoryOperationType::Read>(uint32_t addr, uint8_t value, MemoryType memType);
+template void Atari2600Debugger::ProcessMemoryAccess<MemoryOperationType::Write>(uint32_t addr, uint8_t value, MemoryType memType);

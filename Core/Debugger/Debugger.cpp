@@ -489,7 +489,7 @@ void Debugger::ProcessMemoryAccess(uint32_t addr, T& value) {
 			// TODO: Wire ProcessMemoryAccess when LynxDebugger supports it
 			break;
 		case CpuType::Atari2600:
-			// TODO: Wire ProcessMemoryAccess when Atari2600Debugger supports it
+			GetDebugger<CpuType::Atari2600, Atari2600Debugger>()->ProcessMemoryAccess<opType>(addr, value, memType);
 			break;
 	}
 
@@ -1544,6 +1544,9 @@ template void Debugger::ProcessMemoryAccess<CpuType::Pce, MemoryType::PceArcadeC
 template void Debugger::ProcessMemoryAccess<CpuType::Pce, MemoryType::PceArcadeCardRam, MemoryOperationType::Read>(uint32_t addr, uint8_t& value);
 template void Debugger::ProcessMemoryAccess<CpuType::Sms, MemoryType::SmsPort, MemoryOperationType::Write>(uint32_t addr, uint8_t& value);
 template void Debugger::ProcessMemoryAccess<CpuType::Sms, MemoryType::SmsPort, MemoryOperationType::Read>(uint32_t addr, uint8_t& value);
+
+template void Debugger::ProcessMemoryAccess<CpuType::Atari2600, MemoryType::Atari2600TiaRegisters, MemoryOperationType::Write>(uint32_t addr, uint8_t& value);
+template void Debugger::ProcessMemoryAccess<CpuType::Atari2600, MemoryType::Atari2600TiaRegisters, MemoryOperationType::Read>(uint32_t addr, uint8_t& value);
 
 template void Debugger::ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Write>(uint32_t addr, uint8_t& value);
 template void Debugger::ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Read>(uint32_t addr, uint8_t& value);
