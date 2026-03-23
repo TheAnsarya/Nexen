@@ -836,6 +836,12 @@
     <ClInclude Include="Lynx\Debugger\LynxEventManager.h" />
     <ClInclude Include="Lynx\Debugger\DummyLynxCpu.h" />
     <ClInclude Include="Atari2600\Atari2600Console.h" />
+    <ClInclude Include="Atari2600\Atari2600Mapper.h" />
+    <ClInclude Include="Atari2600\Atari2600Riot.h" />
+    <ClInclude Include="Atari2600\Atari2600Tia.h" />
+    <ClInclude Include="Atari2600\Atari2600Bus.h" />
+    <ClInclude Include="Atari2600\Atari2600CpuAdapter.h" />
+    <ClInclude Include="Atari2600\Atari2600ControlManager.h" />
     <ClInclude Include="Atari2600\Atari2600DefaultVideoFilter.h" />
     <ClInclude Include="Atari2600\Atari2600SmokeHarness.h" />
     <ClInclude Include="Atari2600\Atari2600Types.h" />
@@ -1171,6 +1177,8 @@
     <ClCompile Include="Lynx\Debugger\LynxEventManager.cpp" />
     <ClCompile Include="Lynx\Debugger\DummyLynxCpu.cpp" />
     <ClCompile Include="Atari2600\Atari2600Console.cpp" />
+    <ClCompile Include="Atari2600\Atari2600Bus.cpp" />
+    <ClCompile Include="Atari2600\Atari2600ControlManager.cpp" />
     <ClCompile Include="Atari2600\Atari2600SmokeHarness.cpp" />
     <ClCompile Include="Atari2600\Debugger\Atari2600DisUtils.cpp" />
     <ClCompile Include="Atari2600\Debugger\Atari2600Debugger.cpp" />
