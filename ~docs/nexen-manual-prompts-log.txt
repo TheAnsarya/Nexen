@@ -769,8 +769,11 @@ continue;
 
 work as many 2600 issues as can for as long as you can, do like 10 issues in order; update and make issues, plans, docs, designs, chat/session logs, epics, etc; make fully working 2600 emulator and pansy output and tas and debugging with full UI and everything; continue for a long time, many issues in a row; continue;
 
+*****************
+Yep! I have a multi-system compiler for like (NES, SNES, GB, etc, and some of the other systems Mesen/Nexen support) named poppy `https://github.com/TheAnsarya/poppy` which is still a WORK IN PROGRESS, although it it is very advanced and works great for the basic NES/SNEs systems and to support that I made a code formatter/highlighter/basic-intellisense VSCode  Extension (also a WIP) so working with assembly files (we use `*.pasm`) is easier and colorful and context aware. These tools have a lot going on but are part of a much larger effort so aren't production ready yet.
+*************************
 
-
+work as many 2600 issues as can for as long as you can, do like 10 issues in order; update and make issues, plans, docs, designs, chat/session logs, epics, etc; make fully working 2600 emulator and pansy output and tas and debugging with full UI and everything; continue for a long time, many issues in a row; continue;
 
 
 

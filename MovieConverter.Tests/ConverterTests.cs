@@ -114,6 +114,39 @@ public class ConverterTests {
 	}
 
 	[Fact]
+	public void NexenConverter_RoundTripsAtari2600Metadata() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 2,
+			ControllersSwapped = true,
+			Region = RegionType.NTSC,
+			GameName = "Atari 2600 Metadata Test"
+		};
+
+		movie.PortTypes[0] = ControllerType.Atari2600BoosterGrip;
+		movie.PortTypes[1] = ControllerType.Atari2600Paddle;
+		movie.ExtraData = new Dictionary<string, string> {
+			["Atari2600.Mapper"] = "F8",
+			["Atari2600.ControllerProfile"] = "booster+paddle"
+		};
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.NexenMovieConverter();
+		converter.Write(movie, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream);
+
+		Assert.Equal(SystemType.A2600, loaded.SystemType);
+		Assert.True(loaded.ControllersSwapped);
+		Assert.Equal(ControllerType.Atari2600BoosterGrip, loaded.PortTypes[0]);
+		Assert.Equal(ControllerType.Atari2600Paddle, loaded.PortTypes[1]);
+		Assert.NotNull(loaded.ExtraData);
+		Assert.Equal("F8", loaded.ExtraData!["Atari2600.Mapper"]);
+		Assert.Equal("booster+paddle", loaded.ExtraData["Atari2600.ControllerProfile"]);
+	}
+
+	[Fact]
 	public void Fm2Converter_ParsesHeader() {
 		// Create a minimal FM2 file content
 		string fm2Content = """
