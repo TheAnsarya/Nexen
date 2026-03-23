@@ -17,7 +17,9 @@
 #include "Atari2600/Debugger/Atari2600TraceLogger.h"
 #include "Atari2600/Debugger/Atari2600EventManager.h"
 #include "Atari2600/Debugger/Atari2600Assembler.h"
+#include "Atari2600/Debugger/Atari2600PpuTools.h"
 #include "Shared/BaseControlManager.h"
+#include "Atari2600/Atari2600Controller.h"
 #include "Utilities/HexUtilities.h"
 #include "Utilities/FolderUtilities.h"
 #include "Utilities/Patches/IpsPatcher.h"
@@ -49,6 +51,7 @@ Atari2600Debugger::Atari2600Debugger(Debugger* debugger) : IDebugger(debugger->G
 	_breakpointManager = std::make_unique<BreakpointManager>(debugger, this, CpuType::Atari2600, _eventManager.get());
 	_traceLogger = std::make_unique<Atari2600TraceLogger>(debugger, this, console);
 	_assembler = std::make_unique<Atari2600Assembler>(debugger->GetLabelManager());
+	_ppuTools = std::make_unique<Atari2600PpuTools>(debugger, _emu, console);
 	_step = std::make_unique<StepRequest>();
 }
 
@@ -271,6 +274,7 @@ StepBackConfig Atari2600Debugger::GetStepBackConfig() {
 }
 
 void Atari2600Debugger::DrawPartialFrame() {
+	_console->DebugRenderFrame();
 }
 
 DebuggerFeatures Atari2600Debugger::GetSupportedFeatures() {
@@ -334,6 +338,7 @@ void Atari2600Debugger::GetPpuState(BaseState& state) {
 }
 
 void Atari2600Debugger::SetPpuState(BaseState& state) {
+	_console->SetTiaState(reinterpret_cast<Atari2600TiaState&>(state));
 }
 
 ITraceLogger* Atari2600Debugger::GetTraceLogger() {
@@ -341,7 +346,7 @@ ITraceLogger* Atari2600Debugger::GetTraceLogger() {
 }
 
 PpuTools* Atari2600Debugger::GetPpuTools() {
-	return nullptr;
+	return _ppuTools.get();
 }
 
 bool Atari2600Debugger::SaveRomToDisk(const string& filename, bool saveAsIps, CdlStripOption stripOption) {
@@ -372,4 +377,16 @@ bool Atari2600Debugger::SaveRomToDisk(const string& filename, bool saveAsIps, Cd
 }
 
 void Atari2600Debugger::ProcessInputOverrides(DebugControllerState inputOverrides[8]) {
+	BaseControlManager* controlManager = _console->GetControlManager();
+	for (int i = 0; i < 2; i++) {
+		shared_ptr<Atari2600Controller> controller = std::dynamic_pointer_cast<Atari2600Controller>(controlManager->GetControlDeviceByIndex(i));
+		if (controller && inputOverrides[i].HasPressedButton()) {
+			controller->SetBitValue(Atari2600Controller::Buttons::Up, inputOverrides[i].Up);
+			controller->SetBitValue(Atari2600Controller::Buttons::Down, inputOverrides[i].Down);
+			controller->SetBitValue(Atari2600Controller::Buttons::Left, inputOverrides[i].Left);
+			controller->SetBitValue(Atari2600Controller::Buttons::Right, inputOverrides[i].Right);
+			controller->SetBitValue(Atari2600Controller::Buttons::Fire, inputOverrides[i].A);
+		}
+	}
+	controlManager->RefreshHubState();
 }

@@ -13,6 +13,7 @@ class BreakpointManager;
 class IAssembler;
 class BaseEventManager;
 class Atari2600TraceLogger;
+class Atari2600PpuTools;
 class Emulator;
 class Atari2600Console;
 
@@ -33,6 +34,7 @@ class Atari2600Debugger final : public IDebugger {
 	unique_ptr<BreakpointManager> _breakpointManager;
 	unique_ptr<Atari2600TraceLogger> _traceLogger;
 	unique_ptr<IAssembler> _assembler;
+	unique_ptr<Atari2600PpuTools> _ppuTools;
 
 	uint8_t _prevOpCode = 0x01;
 	uint32_t _prevProgramCounter = 0;

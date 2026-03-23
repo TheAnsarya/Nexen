@@ -65,6 +65,7 @@ public:
 	void RequestHmove();
 	Atari2600RiotState GetRiotState() const;
 	Atari2600TiaState GetTiaState() const;
+	void SetTiaState(const Atari2600TiaState& state);
 	Atari2600FrameStepSummary GetLastFrameSummary() const { return _lastFrameSummary; }
 	uint8_t DebugReadCartridge(uint16_t addr);
 	void DebugWriteCartridge(uint16_t addr, uint8_t value);
@@ -81,4 +82,5 @@ public:
 	uint32_t GetCurrentScanline() const;
 	uint32_t GetCurrentColorClock() const;
 	uint32_t* GetFrameBuffer();
+	void DebugRenderFrame();
 };

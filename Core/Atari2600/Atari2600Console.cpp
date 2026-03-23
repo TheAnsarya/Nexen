@@ -122,6 +122,10 @@ Atari2600TiaState Atari2600Console::GetTiaState() const {
 	return _tia->GetState();
 }
 
+void Atari2600Console::SetTiaState(const Atari2600TiaState& state) {
+	_tia->SetState(state);
+}
+
 uint8_t Atari2600Console::DebugReadCartridge(uint16_t addr) {
 	if (!_bus) {
 		return 0xFF;
@@ -201,6 +205,10 @@ uint32_t* Atari2600Console::GetFrameBuffer() {
 	// Frame buffer is stored as uint16_t (RGB565), but the interface
 	// expects uint32_t*. Reinterpret the underlying storage.
 	return reinterpret_cast<uint32_t*>(_frameBuffer.data());
+}
+
+void Atari2600Console::DebugRenderFrame() {
+	RenderDebugFrame();
 }
 
 void Atari2600Console::RenderDebugFrame() {

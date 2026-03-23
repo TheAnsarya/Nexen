@@ -767,12 +767,7 @@ TAS/movie recordings should not use just one controller type, it should be savin
 
 continue;
 
-
-
-
-
-
-
+work as many 2600 issues as can for as long as you can, do like 10 issues in order; update and make issues, plans, docs, designs, chat/session logs, epics, etc; make fully working 2600 emulator and pansy output and tas and debugging with full UI and everything; continue for a long time, many issues in a row; continue;
 
 
 

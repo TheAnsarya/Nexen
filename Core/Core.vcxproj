@@ -848,6 +848,7 @@
     <ClInclude Include="Atari2600\Debugger\Atari2600DisUtils.h" />
     <ClInclude Include="Atari2600\Debugger\Atari2600Debugger.h" />
     <ClInclude Include="Atari2600\Debugger\Atari2600Assembler.h" />
+    <ClInclude Include="Atari2600\Debugger\Atari2600PpuTools.h" />
     <ClInclude Include="Atari2600\Debugger\Atari2600TraceLogger.h" />
     <ClInclude Include="Atari2600\Debugger\Atari2600EventManager.h" />
   </ItemGroup>
@@ -1183,6 +1184,7 @@
     <ClCompile Include="Atari2600\Debugger\Atari2600DisUtils.cpp" />
     <ClCompile Include="Atari2600\Debugger\Atari2600Debugger.cpp" />
     <ClCompile Include="Atari2600\Debugger\Atari2600Assembler.cpp" />
+    <ClCompile Include="Atari2600\Debugger\Atari2600PpuTools.cpp" />
     <ClCompile Include="Atari2600\Debugger\Atari2600TraceLogger.cpp" />
     <ClCompile Include="Atari2600\Debugger\Atari2600EventManager.cpp" />
     <ClCompile Include="WS\WsConsole.cpp" />
