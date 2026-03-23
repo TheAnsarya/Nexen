@@ -763,6 +763,19 @@ Is there a VSCode extension that adds timestamps to chat responses? add that, th
 
 work as many 2600 issues as can for as long as you can, do like 10 issues in order; update and make issues, plans, docs, designs, chat/session logs, epics, etc; make fully working 2600 emulator and pansy output and tas and debugging with full UI and everything; continue for a long time, many issues in a row; continue;
 
+TAS/movie recordings should not use just one controller type, it should be saving what kind of controller it is recording with a different set of inputs for each and also some systems allow two controllers or more, you need to record these as well if the additional controllers are there, but don't add that overhead if there is only one controller; continue; work as many 2600 issues as can for as long as you can, do like 10 issues in order; update and make issues, plans, docs, designs, chat/session logs, epics, etc; make fully working 2600 emulator and pansy output and tas and debugging with full UI and everything; continue for a long time, many issues in a row; continue; ***do not stop after one issue*** continue working for as long as you can;
+
+continue;
+
+
+
+
+
+
+
+
+
+
 
 
 
