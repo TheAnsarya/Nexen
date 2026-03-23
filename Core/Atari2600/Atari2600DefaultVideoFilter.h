@@ -13,6 +13,7 @@ private:
 	uint32_t _calculatedPalette[128] = {};
 	VideoConfig _videoConfig = {};
 
+public:
 	// Standard Stella NTSC TIA master palette — 128 colors as 0x00RRGGBB
 	// 16 hues x 8 luminance levels, indexed by (tiaColor >> 1)
 	static constexpr uint32_t NtscPalette[128] = {
