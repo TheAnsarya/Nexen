@@ -101,6 +101,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Genesis VDP DMA Milestone Plan](plans/genesis-vdp-dma-milestones-and-harness.md) | VDP timing and DMA checkpoint matrix for staged execution (#701) |
 | [Genesis Z80 Audio Integration Staging](plans/genesis-z80-audio-integration-staging.md) | Phased Z80/YM2612/SN76489 integration and risk controls (#702) |
 | [Platform Parity Benchmark and Correctness Gates](plans/platform-parity-benchmark-and-correctness-gates.md) | Cross-phase quality gates and evidence framework (#703) |
+| [Atari 2600 + Genesis Parity Tracker](plans/atari2600-genesis-parity-tracker.md) | Active multi-phase checklist, issue linkage, and closure criteria for parity execution (#750) |
 | [Platform Parity Source Index](research/platform-parity/source-index.md) | External hardware and emulator code references used by research docs |
 | [User Future Work Index](../docs/FUTURE-WORK.md) | Public roadmap entry for active and upcoming tracks |
 | [User Tutorials Index](../docs/TUTORIALS.md) | Step-by-step user and contributor workflow tutorials |
