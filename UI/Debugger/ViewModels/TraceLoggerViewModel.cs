@@ -871,6 +871,15 @@ public sealed class TraceLoggerOptionTab : DisposableViewModel {
 					StatusFlagFormat.Text or _ => "P:[P,8] "
 				});
 				break;
+
+			case CpuType.Atari2600:
+				addTag(cfg.ShowRegisters, "A:[A,2h] X:[X,2h] Y:[Y,2h] S:[SP,2h] ");
+				addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
+					StatusFlagFormat.Hexadecimal => "P:[P,h] ",
+					StatusFlagFormat.CompactText => "P:[P] ",
+					StatusFlagFormat.Text or _ => "P:[P,8] "
+				});
+				break;
 		}
 
 		addTag(cfg.ShowFramePosition, "V:[Scanline,3] H:[Cycle,3] ");
