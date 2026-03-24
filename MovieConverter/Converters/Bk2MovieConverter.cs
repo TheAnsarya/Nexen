@@ -297,8 +297,19 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 			}
 		}
 
-		// Segments 2..count-2 are controller ports
-		for (int i = 2; i < count - 1; i++) {
+		// For A2600, the last segment before trailing empty is console switches (Sr)
+		int controllerEndIdx = count - 1;
+		if (system == SystemType.A2600 && count > 3) {
+			ReadOnlySpan<char> lastSegment = span[ranges[count - 2]];
+			if (lastSegment.Length <= 2) {
+				// Parse as console switches segment
+				ParseA2600ConsoleSwitches(lastSegment, frame);
+				controllerEndIdx = count - 2;
+			}
+		}
+
+		// Segments 2..controllerEndIdx-1 are controller ports
+		for (int i = 2; i < controllerEndIdx; i++) {
 			ReadOnlySpan<char> segment = span[ranges[i]];
 
 			// Parse controller input
@@ -346,6 +357,10 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 
 			case SystemType.Lynx:
 				ParseLynxInput(segment, input);
+				break;
+
+			case SystemType.A2600:
+				ParseA2600Input(segment, input);
 				break;
 
 			default:
@@ -455,6 +470,34 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 		input.L = s[6] != '.';     // Option1 -> L
 		input.R = s[7] != '.';     // Option2 -> R
 		input.Start = s[8] != '.'; // Pause -> Start
+	}
+
+	private static void ParseA2600Input(ReadOnlySpan<char> s, ControllerInput input) {
+		// A2600 joystick: UDLRB (5 chars)
+		// U=Up, D=Down, L=Left, R=Right, B=Button (Fire)
+		if (s.Length < 5) {
+			return;
+		}
+
+		input.Up = s[0] != '.';
+		input.Down = s[1] != '.';
+		input.Left = s[2] != '.';
+		input.Right = s[3] != '.';
+		input.A = s[4] != '.'; // Fire button mapped to A
+	}
+
+	private static void ParseA2600ConsoleSwitches(ReadOnlySpan<char> s, InputFrame frame) {
+		// Console switches: Sr (Select, Reset) — 2 chars
+		for (int i = 0; i < s.Length; i++) {
+			switch (s[i]) {
+				case 'S':
+					frame.Command |= FrameCommand.Atari2600Select;
+					break;
+				case 'r':
+					frame.Command |= FrameCommand.Atari2600Reset;
+					break;
+			}
+		}
 	}
 
 	private static void ParseGenericInput(ReadOnlySpan<char> s, ControllerInput input) {
@@ -636,6 +679,11 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 			sb.Append('|');
 		}
 
+		// A2600: add console switches column
+		if (system == SystemType.A2600) {
+			sb.Append("Sr|");
+		}
+
 		return sb.ToString();
 	}
 
@@ -647,6 +695,7 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 			SystemType.Gb or SystemType.Gbc => "RLDUTSBA",
 			SystemType.Gba => "RLDUTSBAlr",
 			SystemType.Lynx => "UDLRABOoP",
+			SystemType.A2600 => "UDLRB",
 			_ => "RLDUTSBA"
 		};
 	}
@@ -673,6 +722,13 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 			sb.Append(FormatBk2Controller(input, system));
 			sb.Append('|');
 		}
+
+		// A2600: append console switches segment
+		if (system == SystemType.A2600) {
+			sb.Append(frame.Command.HasFlag(FrameCommand.Atari2600Select) ? 'S' : '.');
+			sb.Append(frame.Command.HasFlag(FrameCommand.Atari2600Reset) ? 'r' : '.');
+			sb.Append('|');
+		}
 	}
 
 	private static string FormatBk2Controller(ControllerInput input, SystemType system) {
@@ -683,6 +739,7 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 			SystemType.Gb or SystemType.Gbc => FormatNes(input),
 			SystemType.Gba => FormatGba(input),
 			SystemType.Lynx => FormatLynx(input),
+			SystemType.A2600 => FormatA2600(input),
 			_ => FormatNes(input)
 		};
 	}
@@ -760,6 +817,16 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 			chars[6] = input.L ? 'O' : '.';     // Option1
 			chars[7] = input.R ? 'o' : '.';     // Option2
 			chars[8] = input.Start ? 'P' : '.'; // Pause
+		});
+	}
+
+	private static string FormatA2600(ControllerInput i) {
+		return string.Create(5, i, static (chars, input) => {
+			chars[0] = input.Up ? 'U' : '.';
+			chars[1] = input.Down ? 'D' : '.';
+			chars[2] = input.Left ? 'L' : '.';
+			chars[3] = input.Right ? 'R' : '.';
+			chars[4] = input.A ? 'B' : '.'; // Fire button
 		});
 	}
 }

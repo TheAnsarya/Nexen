@@ -469,4 +469,210 @@ public class ConverterTests {
 		Assert.Equal(canRead, converter.CanRead);
 		Assert.Equal(canWrite, converter.CanWrite);
 	}
+
+	#region BK2 Atari 2600 Console Switches
+
+	[Fact]
+	public void Bk2Converter_ParsesA2600JoystickInput() {
+		// BK2 A2600 format: |command|UDLRB|UDLRB|Sr|
+		using var stream = new MemoryStream();
+		using (var archive = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true)) {
+			var headerEntry = archive.CreateEntry("Header.txt");
+			using (var writer = new StreamWriter(headerEntry.Open())) {
+				writer.WriteLine("Platform A26");
+				writer.WriteLine("GameName Test A2600");
+			}
+
+			var inputEntry = archive.CreateEntry("Input Log.txt");
+			using (var writer = new StreamWriter(inputEntry.Open())) {
+				writer.WriteLine("[Input]");
+				writer.WriteLine("|.|U.LR.|.....|..|");
+				writer.WriteLine("|.|....B|UD...|..|");
+			}
+		}
+
+		stream.Position = 0;
+		var converter = new Converters.Bk2MovieConverter();
+		var movie = converter.Read(stream, "test.bk2");
+
+		Assert.Equal(SystemType.A2600, movie.SystemType);
+		Assert.Equal(2, movie.TotalFrames);
+
+		// Frame 0: P1 has Up+Left+Right
+		Assert.True(movie.InputFrames[0].Controllers[0].Up);
+		Assert.False(movie.InputFrames[0].Controllers[0].Down);
+		Assert.True(movie.InputFrames[0].Controllers[0].Left);
+		Assert.True(movie.InputFrames[0].Controllers[0].Right);
+		Assert.False(movie.InputFrames[0].Controllers[0].A); // Fire
+
+		// Frame 1: P1 has Fire, P2 has Up+Down
+		Assert.True(movie.InputFrames[1].Controllers[0].A);
+		Assert.True(movie.InputFrames[1].Controllers[1].Up);
+		Assert.True(movie.InputFrames[1].Controllers[1].Down);
+	}
+
+	[Fact]
+	public void Bk2Converter_ParsesA2600ConsoleSwitches() {
+		using var stream = new MemoryStream();
+		using (var archive = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true)) {
+			var headerEntry = archive.CreateEntry("Header.txt");
+			using (var writer = new StreamWriter(headerEntry.Open())) {
+				writer.WriteLine("Platform A26");
+			}
+
+			var inputEntry = archive.CreateEntry("Input Log.txt");
+			using (var writer = new StreamWriter(inputEntry.Open())) {
+				writer.WriteLine("[Input]");
+				writer.WriteLine("|.|.....|.....|..|");  // No switches
+				writer.WriteLine("|.|.....|.....|S.|");  // Select only
+				writer.WriteLine("|.|.....|.....|.r|");  // Reset only
+				writer.WriteLine("|.|.....|.....|Sr|");  // Both
+			}
+		}
+
+		stream.Position = 0;
+		var converter = new Converters.Bk2MovieConverter();
+		var movie = converter.Read(stream, "test.bk2");
+
+		Assert.Equal(4, movie.TotalFrames);
+
+		// Frame 0: no switches
+		Assert.Equal(FrameCommand.None, movie.InputFrames[0].Command);
+
+		// Frame 1: Select only
+		Assert.True(movie.InputFrames[1].Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.False(movie.InputFrames[1].Command.HasFlag(FrameCommand.Atari2600Reset));
+
+		// Frame 2: Reset only
+		Assert.False(movie.InputFrames[2].Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.True(movie.InputFrames[2].Command.HasFlag(FrameCommand.Atari2600Reset));
+
+		// Frame 3: Both
+		Assert.True(movie.InputFrames[3].Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.True(movie.InputFrames[3].Command.HasFlag(FrameCommand.Atari2600Reset));
+	}
+
+	[Fact]
+	public void Bk2Converter_A2600_RoundTripsConsoleSwitches() {
+		var original = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 2,
+			GameName = "Console Switch Roundtrip"
+		};
+
+		// Frame 0: normal input, no switches
+		var frame0 = new InputFrame(0);
+		frame0.Controllers[0].Up = true;
+		frame0.Controllers[0].A = true; // Fire
+		original.AddFrame(frame0);
+
+		// Frame 1: Select pressed
+		var frame1 = new InputFrame(1);
+		frame1.Command = FrameCommand.Atari2600Select;
+		original.AddFrame(frame1);
+
+		// Frame 2: Reset pressed with joystick input
+		var frame2 = new InputFrame(2);
+		frame2.Command = FrameCommand.Atari2600Reset;
+		frame2.Controllers[0].Down = true;
+		frame2.Controllers[1].Left = true;
+		original.AddFrame(frame2);
+
+		// Frame 3: Both switches
+		var frame3 = new InputFrame(3);
+		frame3.Command = FrameCommand.Atari2600Select | FrameCommand.Atari2600Reset;
+		original.AddFrame(frame3);
+
+		// Write and read back
+		using var stream = new MemoryStream();
+		var converter = new Converters.Bk2MovieConverter();
+		converter.Write(original, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream, "test.bk2");
+
+		Assert.Equal(SystemType.A2600, loaded.SystemType);
+		Assert.Equal(4, loaded.TotalFrames);
+
+		// Frame 0: input preserved, no switches
+		Assert.True(loaded.InputFrames[0].Controllers[0].Up);
+		Assert.True(loaded.InputFrames[0].Controllers[0].A);
+		Assert.False(loaded.InputFrames[0].Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.False(loaded.InputFrames[0].Command.HasFlag(FrameCommand.Atari2600Reset));
+
+		// Frame 1: Select
+		Assert.True(loaded.InputFrames[1].Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.False(loaded.InputFrames[1].Command.HasFlag(FrameCommand.Atari2600Reset));
+
+		// Frame 2: Reset + joystick input
+		Assert.True(loaded.InputFrames[2].Command.HasFlag(FrameCommand.Atari2600Reset));
+		Assert.True(loaded.InputFrames[2].Controllers[0].Down);
+		Assert.True(loaded.InputFrames[2].Controllers[1].Left);
+
+		// Frame 3: Both
+		Assert.True(loaded.InputFrames[3].Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.True(loaded.InputFrames[3].Command.HasFlag(FrameCommand.Atari2600Reset));
+	}
+
+	[Fact]
+	public void Bk2Converter_A2600_FormatIncludesConsoleSwitchColumn() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 1
+		};
+
+		var frame = new InputFrame(0);
+		frame.Controllers[0].Up = true;
+		frame.Controllers[0].A = true;
+		frame.Command = FrameCommand.Atari2600Select;
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.Bk2MovieConverter();
+		converter.Write(movie, stream);
+
+		// Read the Input Log.txt content from the BK2 ZIP
+		stream.Position = 0;
+		using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+		var inputEntry = archive.GetEntry("Input Log.txt")!;
+		using var reader = new StreamReader(inputEntry.Open());
+		string content = reader.ReadToEnd();
+
+		// Should contain the console switches column (S. = Select pressed, no Reset)
+		Assert.Contains("S.", content);
+		// Should contain proper A2600 button format (U...B = Up + Fire)
+		Assert.Contains("U...B", content);
+	}
+
+	[Fact]
+	public void Bk2Converter_A2600_NoConsoleSwitchesWhenNotA2600() {
+		var movie = new MovieData {
+			SystemType = SystemType.Nes,
+			ControllerCount = 2
+		};
+
+		var frame = new InputFrame(0);
+		frame.Controllers[0].A = true;
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.Bk2MovieConverter();
+		converter.Write(movie, stream);
+
+		// Read the Input Log.txt content
+		stream.Position = 0;
+		using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+		var inputEntry = archive.GetEntry("Input Log.txt")!;
+		using var reader = new StreamReader(inputEntry.Open());
+		string content = reader.ReadToEnd();
+
+		// NES format should have |.|RLDUTSBA|RLDUTSBA| — no extra console switch column
+		string[] lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+		// Input line should have exactly 4 pipe segments (|cmd|P1|P2|)
+		string inputLine = lines.First(l => l.StartsWith("|."));
+		int pipeCount = inputLine.Count(c => c == '|');
+		Assert.Equal(4, pipeCount); // |cmd|P1|P2|
+	}
+
+	#endregion
 }
