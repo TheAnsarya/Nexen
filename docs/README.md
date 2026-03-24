@@ -28,6 +28,7 @@ This directory contains user-facing documentation for Nexen.
 | [Manual Testing Hub](manual-testing/README.md) | Starting manual instructions and execution order |
 | [Atari 2600 Debug and TAS Manual Test](manual-testing/atari2600-debug-and-tas-manual-test.md) | End-to-end debugger, TAS, and movie validation workflow |
 | [Manual Step Priority Ranking](manual-testing/manual-step-priority-ranking.md) | Release impact ranking for manual validation steps |
+| [Developer Testing and Manual Validation Index](../~docs/testing/README.md) | Full manual and automated testing tree |
 
 ## Developer Tasks
 

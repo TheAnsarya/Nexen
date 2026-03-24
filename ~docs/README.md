@@ -76,7 +76,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | Folder | Description |
 | -------- | ------------- |
 | [modernization/](modernization/) | C++ modernization tracking and roadmaps |
-| [testing/](testing/) | Test plans and benchmarking documentation |
+| [testing/](testing/README.md) | Manual testing index, test plans, and benchmarking documentation |
 | [plans/](plans/) | Planning documents for future features |
 | [research/](research/) | Source-cited platform-parity and subsystem research |
 | [session-logs/](session-logs/) | Development session logs |

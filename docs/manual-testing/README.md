@@ -16,6 +16,12 @@ This section is the starting point for manual release validation in Nexen.
 | [Manual Step Priority Ranking](manual-step-priority-ranking.md) | Rank each manual test by release impact and failure severity |
 | [Atari 2600 Debug and TAS Manual Test](atari2600-debug-and-tas-manual-test.md) | End-to-end operator checklist for debugger UI, TAS UI, and movie workflows |
 
+## Full Testing Tree
+
+For the full developer-facing manual and automated testing catalog, use:
+
+- [Developer Testing and Manual Validation Index](../../~docs/testing/README.md)
+
 ## Release Rule
 
 Do not mark Atari 2600 release-ready unless every Critical step and every High step passes.
