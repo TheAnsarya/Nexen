@@ -189,6 +189,74 @@ namespace {
 		EXPECT_EQ(paddle.GetFireState(), 0x80);
 	}
 
+	TEST_F(PaddleTest, MidPositionThresholdCrossover) {
+		Atari2600Paddle paddle(&emu, 0, 0, emptyKeys);
+		paddle.SetCoordinates({ 128, 0 });
+		EXPECT_EQ(paddle.GetPaddlePosition(), 128u);
+		// Scanline below position → 0x00 (threshold not met)
+		EXPECT_EQ(paddle.GetInptState(127), 0x00);
+		// Scanline at position → 0x80 (threshold met)
+		EXPECT_EQ(paddle.GetInptState(128), 0x80);
+		// Scanline above position → 0x80
+		EXPECT_EQ(paddle.GetInptState(200), 0x80);
+	}
+
+	TEST_F(PaddleTest, MaxPositionOnlyLastScanlineMeetsThreshold) {
+		Atari2600Paddle paddle(&emu, 0, 0, emptyKeys);
+		paddle.SetCoordinates({ 255, 0 });
+		EXPECT_EQ(paddle.GetPaddlePosition(), 255u);
+		// Scanline 254 → below threshold
+		EXPECT_EQ(paddle.GetInptState(254), 0x00);
+		// Scanline 255 → exactly at threshold
+		EXPECT_EQ(paddle.GetInptState(255), 0x80);
+	}
+
+	TEST_F(PaddleTest, MinPositionAllScanlinesMeetThreshold) {
+		Atari2600Paddle paddle(&emu, 0, 0, emptyKeys);
+		// Position 0 is default, all scanlines >= 0
+		EXPECT_EQ(paddle.GetInptState(0), 0x80);
+		EXPECT_EQ(paddle.GetInptState(1), 0x80);
+		EXPECT_EQ(paddle.GetInptState(127), 0x80);
+		EXPECT_EQ(paddle.GetInptState(255), 0x80);
+	}
+
+	TEST_F(PaddleTest, SetCoordinatesUpdatesPosition) {
+		Atari2600Paddle paddle(&emu, 0, 0, emptyKeys);
+		EXPECT_EQ(paddle.GetPaddlePosition(), 0u);
+
+		paddle.SetCoordinates({ 42, 0 });
+		EXPECT_EQ(paddle.GetPaddlePosition(), 42u);
+
+		paddle.SetCoordinates({ 200, 0 });
+		EXPECT_EQ(paddle.GetPaddlePosition(), 200u);
+	}
+
+	TEST_F(PaddleTest, KeyAssociationCountCorrect) {
+		Atari2600Paddle paddle(&emu, 0, 0, emptyKeys);
+		// Should have exactly 1 association (fire)
+		auto names = paddle.GetKeyNameAssociations();
+		EXPECT_EQ(names.size(), 1u);
+	}
+
+	TEST_F(PaddleTest, KeyAssociationHasFire) {
+		Atari2600Paddle paddle(&emu, 0, 0, emptyKeys);
+		auto names = paddle.GetKeyNameAssociations();
+		ASSERT_EQ(names.size(), 1u);
+		EXPECT_EQ(names[0].ButtonId, Atari2600Paddle::Buttons::Fire);
+	}
+
+	TEST_F(PaddleTest, PortAssignmentPreserved) {
+		Atari2600Paddle paddleP0(&emu, 0, 0, emptyKeys);
+		Atari2600Paddle paddleP1(&emu, 1, 2, emptyKeys);
+		EXPECT_EQ(paddleP0.GetPort(), 0u);
+		EXPECT_EQ(paddleP1.GetPort(), 1u);
+	}
+
+	TEST_F(PaddleTest, ControllerTypeIsPaddle) {
+		Atari2600Paddle paddle(&emu, 0, 0, emptyKeys);
+		EXPECT_EQ(paddle.GetControllerType(), ControllerType::Atari2600Paddle);
+	}
+
 	// ========================================================================
 	// 24.3 — Keypad Controller (CX50) Tests (#867)
 	// ========================================================================
