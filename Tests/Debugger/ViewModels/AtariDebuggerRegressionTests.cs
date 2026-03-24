@@ -1,6 +1,7 @@
 using Nexen.Config;
 using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
+using System.Reflection;
 using Xunit;
 
 namespace Nexen.Tests.Debugger.ViewModels;
@@ -9,6 +10,12 @@ namespace Nexen.Tests.Debugger.ViewModels;
 /// Regression tests for Atari 2600 debugger formatting behavior.
 /// </summary>
 public class AtariDebuggerRegressionTests {
+	private static void SetPrivateField<T>(object instance, string fieldName, T value) {
+		FieldInfo? field = instance.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+		Assert.NotNull(field);
+		field!.SetValue(instance, value);
+	}
+
 	[Theory]
 	[InlineData(StatusFlagFormat.Hexadecimal, "P:[P,h]")]
 	[InlineData(StatusFlagFormat.CompactText, "P:[P]")]
@@ -56,5 +63,56 @@ public class AtariDebuggerRegressionTests {
 		Assert.Equal("90", vm.ExclusiveCycles);
 		Assert.Equal("180", vm.InclusiveCycles);
 		Assert.Equal("90", vm.AvgCycles);
+	}
+
+	[Fact]
+	public void ProfilerTab_RefreshGrid_HidesResetRow_WhenRealRowsExist() {
+		var tab = new ProfilerTab {
+			CpuType = CpuType.Atari2600
+		};
+
+		var rows = new[] {
+			new ProfiledFunction {
+				Address = new AddressInfo { Address = -1 },
+				ExclusiveCycles = 100,
+				InclusiveCycles = 100
+			},
+			new ProfiledFunction {
+				Address = new AddressInfo { Address = 0x1234 },
+				ExclusiveCycles = 50,
+				InclusiveCycles = 50
+			}
+		};
+
+		SetPrivateField(tab, "_coreProfilerData", rows);
+		SetPrivateField(tab, "_dataSize", rows.Length);
+
+		tab.RefreshGrid();
+
+		Assert.Single(tab.GridData);
+		Assert.DoesNotContain("[Reset]", tab.GridData[0].FunctionName);
+	}
+
+	[Fact]
+	public void ProfilerTab_RefreshGrid_ShowsResetRow_WhenNoRealRowsExist() {
+		var tab = new ProfilerTab {
+			CpuType = CpuType.Atari2600
+		};
+
+		var rows = new[] {
+			new ProfiledFunction {
+				Address = new AddressInfo { Address = -1 },
+				ExclusiveCycles = 100,
+				InclusiveCycles = 100
+			}
+		};
+
+		SetPrivateField(tab, "_coreProfilerData", rows);
+		SetPrivateField(tab, "_dataSize", rows.Length);
+
+		tab.RefreshGrid();
+
+		Assert.Single(tab.GridData);
+		Assert.Equal("[Reset]", tab.GridData[0].FunctionName);
 	}
 }
