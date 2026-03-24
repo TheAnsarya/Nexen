@@ -713,8 +713,9 @@ work as many 2600 issues as can for as long as you can, do like 10 issues in ord
 
 [Nexen] Do the `Natural next steps` and implement as many issues as needed for creating a release ready codebase; continue for a long time; continue;
 
+go
 
-
+go; continue;
 
 
 

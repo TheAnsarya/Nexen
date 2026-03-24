@@ -3,17 +3,17 @@
 	"tasks": [
 		{
 			"label": "Build Nexen Release x64",
-			"type": "shell",
-			"command": "& \"C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\MSBuild\\Current\\Bin\\MSBuild.exe\" Nexen.sln /p:Configuration=Release /p:Platform=x64 /t:Build /m /nologo /v:m",
-			"problemMatcher": [
-				"$msCompile"
+			"type": "process",
+			"command": "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\MSBuild\\Current\\Bin\\MSBuild.exe",
+			"args": [
+				"Nexen.sln",
+				"/p:Configuration=Release",
+				"/p:Platform=x64",
+				"/t:Build",
+				"/m",
+				"/nologo",
+				"/v:m"
 			],
-			"group": "build"
-		},
-		{
-			"label": "Build Nexen Release x64",
-			"type": "shell",
-			"command": "\"C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\MSBuild\\Current\\Bin\\MSBuild.exe\" Nexen.sln /p:Configuration=Release /p:Platform=x64 /t:Build /m /nologo /v:m",
 			"problemMatcher": [
 				"$msCompile"
 			],
@@ -21,8 +21,26 @@
 		},
 		{
 			"label": "Build Nexen",
+			"type": "process",
+			"command": "C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\MSBuild\\Current\\Bin\\MSBuild.exe",
+			"args": [
+				"Nexen.sln",
+				"/p:Configuration=Release",
+				"/p:Platform=x64",
+				"/t:Build",
+				"/m",
+				"/nologo",
+				"/v:m"
+			],
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Clean Nexen Release x64",
 			"type": "shell",
-			"command": "cmd /c \"\"C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\MSBuild\\Current\\Bin\\MSBuild.exe\" Nexen.sln /p:Configuration=Release /p:Platform=x64 /t:Build /m /nologo /v:m\"",
+			"command": "& \"C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\MSBuild\\Current\\Bin\\MSBuild.exe\" Nexen.sln /p:Configuration=Release /p:Platform=x64 /t:Clean /m /nologo /v:m",
 			"problemMatcher": [
 				"$msCompile"
 			],
