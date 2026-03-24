@@ -17,8 +17,17 @@ This directory contains user-facing documentation for Nexen.
 | [TAS Developer Guide](TAS-Developer-Guide.md) | Technical internals for TAS extensions |
 | [TAS Architecture](TAS_ARCHITECTURE.md) | TAS and movie system architecture |
 | [Movie Format Spec](NEXEN_MOVIE_FORMAT.md) | .nexen-movie file format specification |
+| [Manual Testing Hub](manual-testing/README.md) | Ranked and repeatable manual release validation workflows |
 | [Performance Guide](PERFORMANCE.md) | Consolidated performance references and validation workflow |
 | [Release Guide](RELEASE.md) | Release and publishing workflow |
+
+## Manual Testing
+
+| Document | Description |
+|---|---|
+| [Manual Testing Hub](manual-testing/README.md) | Starting manual instructions and execution order |
+| [Atari 2600 Debug and TAS Manual Test](manual-testing/atari2600-debug-and-tas-manual-test.md) | End-to-end debugger, TAS, and movie validation workflow |
+| [Manual Step Priority Ranking](manual-testing/manual-step-priority-ranking.md) | Release impact ranking for manual validation steps |
 
 ## Developer Tasks
 

@@ -790,5 +790,40 @@ public class TasEditorViewModelBranchAndLayoutTests : IDisposable {
 		Assert.Contains(_vm.ControllerButtons, b => b.ButtonId == expectedButtonId);
 	}
 
+	[Theory]
+	[InlineData(ControllerType.Atari2600Joystick)]
+	[InlineData(ControllerType.Atari2600Paddle)]
+	[InlineData(ControllerType.Atari2600Keypad)]
+	[InlineData(ControllerType.Atari2600DrivingController)]
+	[InlineData(ControllerType.Atari2600BoosterGrip)]
+	public void ConsoleSwitchPanel_Visible_ForAllAtari2600ControllerSubtypes(ControllerType portType) {
+		var movie = CreateMultiPortMovie(2, 1, SystemType.A2600);
+		movie.PortTypes = [portType];
+		SetMovie(movie);
+
+		_vm.SelectedFrameIndex = 0;
+		Assert.True(_vm.IsConsoleSwitchPanelVisible);
+	}
+
+	[Theory]
+	[InlineData(ControllerType.Atari2600Joystick, false)]
+	[InlineData(ControllerType.Atari2600Paddle, true)]
+	[InlineData(ControllerType.Atari2600Keypad, false)]
+	[InlineData(ControllerType.Atari2600DrivingController, false)]
+	[InlineData(ControllerType.Atari2600BoosterGrip, false)]
+	public void PaddleEditor_Visibility_MatchesAtari2600ControllerSubtype(ControllerType portType, bool expectedVisible) {
+		var movie = CreateMultiPortMovie(2, 1, SystemType.A2600);
+		movie.PortTypes = [portType];
+		movie.InputFrames[0].Controllers[0].PaddlePosition = 77;
+		SetMovie(movie);
+
+		_vm.SelectedFrameIndex = 0;
+		Assert.Equal(expectedVisible, _vm.IsPaddleCoordinateEditorVisible);
+
+		if (expectedVisible) {
+			Assert.Equal(77, _vm.SelectedPaddlePosition);
+		}
+	}
+
 	#endregion
 }

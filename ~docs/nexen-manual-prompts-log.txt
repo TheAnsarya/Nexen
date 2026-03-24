@@ -707,10 +707,9 @@ work as many 2600 issues as can for as long as you can, do like 10 issues in ord
 
 work as many 2600 issues as can for as long as you can, do like 10 issues in order; update and make issues, plans, docs, designs, chat/session logs, epics, etc; make fully working 2600 emulator and pansy output and tas and debugging with full UI and everything; continue for a long time, many issues in a row; continue;
 
-[Nexen] Continue working the 2600 emulator and making it work, but also continue setting up a focused (make-it-work) emulator for the Atari Lynx as well with issues, make new epics and issues, but we want working emulators for 2600 and lynx with full debugging and vram and memory and code debugging and wram and sprites and sound etc; focus on the goal of a real emulator; update issues, make issues, and docs and plans and chat/session logs and go! ; make debugger UI and TAS/movie UI for the Atari 2600 and different memory and code view and sprite viewer and vram display debug view, this is not an NES, and the Atari2600 is not a Lynx, the memory and display are way different; continue; focus on creating a production ready Atari 2600 emulator, keep referencing other emulators; make sure the save states are complete, and make screen shots and all of that like the other systems, to utilize the infinite save system and the recent roms screen, etc; continue;
-
 [Nexen] Continue working on perfecting the Atari 2600 emulation and debugging and TAS/movie feature and controllers (and the UI for input controllers for all of the different 2600 controllers) and savestate management and pansy/etc generation and such, focusing on completeness/correctness/performance working towards a competant release version, making and updating epics, issues, docs, plans, designs, session/chat logs, tests, benchmarks, etc.; then implement and git commit, always tying commits to issues; continue;
 
+[Nexen] Make the Debug UI for Atari 2600 comprehensive and correct and complete; make issues, implement them; update docs for debugging; Validate that we have full coverage for the movie/TAS feature's UI; finish the UI for a2600 controllers as well; Make/plan a manual testing instructions document for the atari 2600 and integrate it into a larger docunmentation tree with all the manual testing from a starting manual instructions doc, a doc that describes and ranks importance of manual steps; focus on making a stable, complete, fully-working(ignore genesis) release; continue;
 
 
 
@@ -721,6 +720,29 @@ work as many 2600 issues as can for as long as you can, do like 10 issues in ord
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+15/64 battles
+1280/5000 stall coin
+Martha
+Krista
+Arachne
+Folio
+Helios
+Peppy
+Kayla
+Aurora
+Galahad
+Keira
 
 
 

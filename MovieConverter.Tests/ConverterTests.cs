@@ -455,6 +455,72 @@ public class ConverterTests {
 		Assert.Equal((byte)200, ctrl1.PaddlePosition);
 	}
 
+	[Fact]
+	public void NexenConverter_RoundTripsA2600ConsoleSwitchesAndPaddle() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 2
+		};
+		movie.PortTypes[0] = ControllerType.Atari2600Paddle;
+		movie.PortTypes[1] = ControllerType.Atari2600Joystick;
+
+		// Frame 0: paddle fire + position 64, Select pressed, P2 joystick up
+		var frame0 = new InputFrame(0);
+		frame0.Controllers[0].SetButton("FIRE", true);
+		frame0.Controllers[0].PaddlePosition = 64;
+		frame0.Controllers[0].Type = ControllerType.Atari2600Paddle;
+		frame0.Controllers[1].SetButton("UP", true);
+		frame0.Controllers[1].Type = ControllerType.Atari2600Joystick;
+		frame0.Command = FrameCommand.Atari2600Select;
+		movie.AddFrame(frame0);
+
+		// Frame 1: paddle position 200, Reset pressed, no buttons
+		var frame1 = new InputFrame(1);
+		frame1.Controllers[0].PaddlePosition = 200;
+		frame1.Controllers[0].Type = ControllerType.Atari2600Paddle;
+		frame1.Controllers[1].Type = ControllerType.Atari2600Joystick;
+		frame1.Command = FrameCommand.Atari2600Reset;
+		movie.AddFrame(frame1);
+
+		// Frame 2: both switches, paddle at 0, P2 fire+down
+		var frame2 = new InputFrame(2);
+		frame2.Controllers[0].PaddlePosition = 0;
+		frame2.Controllers[0].Type = ControllerType.Atari2600Paddle;
+		frame2.Controllers[1].SetButton("FIRE", true);
+		frame2.Controllers[1].SetButton("DOWN", true);
+		frame2.Controllers[1].Type = ControllerType.Atari2600Joystick;
+		frame2.Command = FrameCommand.Atari2600Select | FrameCommand.Atari2600Reset;
+		movie.AddFrame(frame2);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.NexenMovieConverter();
+		converter.Write(movie, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream);
+
+		Assert.Equal(3, loaded.TotalFrames);
+
+		// Frame 0: paddle + fire + Select
+		Assert.True(loaded.InputFrames[0].Controllers[0].A, "P1 Fire");
+		Assert.Equal((byte)64, loaded.InputFrames[0].Controllers[0].PaddlePosition);
+		Assert.True(loaded.InputFrames[0].Controllers[1].Up, "P2 Up");
+		Assert.True(loaded.InputFrames[0].Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.False(loaded.InputFrames[0].Command.HasFlag(FrameCommand.Atari2600Reset));
+
+		// Frame 1: paddle + Reset
+		Assert.Equal((byte)200, loaded.InputFrames[1].Controllers[0].PaddlePosition);
+		Assert.True(loaded.InputFrames[1].Command.HasFlag(FrameCommand.Atari2600Reset));
+		Assert.False(loaded.InputFrames[1].Command.HasFlag(FrameCommand.Atari2600Select));
+
+		// Frame 2: paddle + both switches + P2 fire+down
+		Assert.Equal((byte)0, loaded.InputFrames[2].Controllers[0].PaddlePosition);
+		Assert.True(loaded.InputFrames[2].Controllers[1].A, "P2 Fire");
+		Assert.True(loaded.InputFrames[2].Controllers[1].Down, "P2 Down");
+		Assert.True(loaded.InputFrames[2].Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.True(loaded.InputFrames[2].Command.HasFlag(FrameCommand.Atari2600Reset));
+	}
+
 	[Theory]
 	[InlineData(typeof(Converters.NexenMovieConverter), true, true)]
 	[InlineData(typeof(Converters.Bk2MovieConverter), true, true)]

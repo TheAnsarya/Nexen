@@ -35,17 +35,17 @@ dotnet test --no-build -c Release --nologo -v m
 | Audio output path | TIA mixed samples reach SoundMixer output pipeline | #844 completion + Atari2600AudioPhaseATests | Complete |
 | Video/frame buffer | Frame buffer is rendered and exposed through standard frame interface | Render tests + GetPpuFrame path | Complete |
 | Save-state determinism | Save/load replay behavior stable across runs | Atari2600SaveStateDeterminismTests | Complete |
-| TAS/movie baseline | A2600 layout detection and subtype mapping in TAS editor | #872 + #873 progress | Partial |
-| TAS paddle coordinates | Coordinate edit/visualization in TAS workflow | #874 | Open |
-| Debugger parity | Event viewer + debug pipeline parity and UX validation | #877 follow-up + manual checks | Partial |
-| Pansy export parity | A2600 metadata export shape and stability | #878 | Open |
+| TAS/movie baseline | A2600 layout detection and subtype mapping in TAS editor | #872 + #873 + #910 + #911 | Complete |
+| TAS paddle coordinates | Coordinate edit/visualization in TAS workflow | #874 (closed) | Complete |
+| TAS console switches | SELECT/RESET toggle UI and movie roundtrip | #910 + #911 | Complete |
+| BK2 converter parity | Joystick, paddle position, console switches in BK2 format | #911 + #912 | Complete |
+| Debugger parity | Event viewer + debug pipeline parity and UX validation | #877 (closed) + manual checks | Complete |
+| Pansy export parity | A2600 metadata export shape and stability | #878 (closed) | Complete |
 | Production docs traceability | Consolidated matrix and linked queue | This document + #847/#841 updates | Complete |
 
 ## Remaining Open Work
 
-1. Complete TAS paddle coordinate editing flow ([#874](https://github.com/TheAnsarya/Nexen/issues/874)).
-2. Execute Atari2600Console split refactor with no behavior regressions ([#877](https://github.com/TheAnsarya/Nexen/issues/877)).
-3. Complete Atari 2600 Pansy export parity and tests ([#878](https://github.com/TheAnsarya/Nexen/issues/878)).
+1. BK2 converter support for keypad/driving/booster-grip controller types ([#913](https://github.com/TheAnsarya/Nexen/issues/913)) — low priority.
 
 ## Sign-Off Criteria
 

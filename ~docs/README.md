@@ -103,6 +103,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Platform Parity Benchmark and Correctness Gates](plans/platform-parity-benchmark-and-correctness-gates.md) | Cross-phase quality gates and evidence framework (#703) |
 | [Atari 2600 + Genesis Parity Tracker](plans/atari2600-genesis-parity-tracker.md) | Active multi-phase checklist, issue linkage, and closure criteria for parity execution (#750) |
 | [Platform Parity Source Index](research/platform-parity/source-index.md) | External hardware and emulator code references used by research docs |
+| [Atari 2600 TAS and Movie UI Coverage Audit](testing/atari2600-tas-ui-coverage-audit.md) | Automated and manual validation status for Atari 2600 TAS and movie UI release readiness |
 | [User Future Work Index](../docs/FUTURE-WORK.md) | Public roadmap entry for active and upcoming tracks |
 | [User Tutorials Index](../docs/TUTORIALS.md) | Step-by-step user and contributor workflow tutorials |
 

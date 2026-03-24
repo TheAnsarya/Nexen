@@ -168,6 +168,7 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 | Document | Description |
 |---|---|
 | [Documentation Index](docs/README.md) | Entry point for user-facing docs |
+| [Manual Testing Hub](docs/manual-testing/README.md) | Ranked manual release validation workflows |
 | [Compiling](COMPILING.md) | Build from source |
 | [Performance Guide](docs/PERFORMANCE.md) | Centralized performance strategy and references |
 | [Release Guide](docs/RELEASE.md) | Creating releases |
