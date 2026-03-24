@@ -237,6 +237,220 @@ public class ConverterTests {
 		Assert.Empty(duplicates);
 	}
 
+	[Fact]
+	public void NexenConverter_RoundTripsAtari2600JoystickInput() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 1
+		};
+		movie.PortTypes[0] = ControllerType.Atari2600Joystick;
+
+		var frame = new InputFrame(0);
+		frame.Controllers[0].SetButton("FIRE", true);
+		frame.Controllers[0].SetButton("UP", true);
+		frame.Controllers[0].SetButton("RIGHT", true);
+		frame.Controllers[0].Type = ControllerType.Atari2600Joystick;
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.NexenMovieConverter();
+		converter.Write(movie, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream);
+
+		var ctrl = loaded.InputFrames[0].Controllers[0];
+		Assert.True(ctrl.A, "Fire (A) should be set");
+		Assert.True(ctrl.Up, "Up should be set");
+		Assert.True(ctrl.Right, "Right should be set");
+		Assert.False(ctrl.Down, "Down should not be set");
+		Assert.False(ctrl.Left, "Left should not be set");
+		Assert.False(ctrl.B, "B should not be set");
+	}
+
+	[Fact]
+	public void NexenConverter_RoundTripsAtari2600PaddleInput() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 1
+		};
+		movie.PortTypes[0] = ControllerType.Atari2600Paddle;
+
+		var frame = new InputFrame(0);
+		frame.Controllers[0].SetButton("FIRE", true);
+		frame.Controllers[0].PaddlePosition = 128;
+		frame.Controllers[0].Type = ControllerType.Atari2600Paddle;
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.NexenMovieConverter();
+		converter.Write(movie, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream);
+
+		var ctrl = loaded.InputFrames[0].Controllers[0];
+		Assert.True(ctrl.A, "Fire (A) should be set");
+		Assert.Equal((byte)128, ctrl.PaddlePosition);
+	}
+
+	[Fact]
+	public void NexenConverter_RoundTripsAtari2600KeypadInput() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 1
+		};
+		movie.PortTypes[0] = ControllerType.Atari2600Keypad;
+
+		// Keys map: 1→Y, 5→A, POUND→Right
+		var frame = new InputFrame(0);
+		frame.Controllers[0].SetButton("1", true);     // → Y
+		frame.Controllers[0].SetButton("5", true);     // → A
+		frame.Controllers[0].SetButton("POUND", true); // → Right
+		frame.Controllers[0].Type = ControllerType.Atari2600Keypad;
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.NexenMovieConverter();
+		converter.Write(movie, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream);
+
+		var ctrl = loaded.InputFrames[0].Controllers[0];
+		Assert.True(ctrl.Y, "Key 1 (Y) should be set");
+		Assert.True(ctrl.A, "Key 5 (A) should be set");
+		Assert.True(ctrl.Right, "Key # (Right) should be set");
+		Assert.False(ctrl.B, "Key 4 (B) should not be set");
+		Assert.False(ctrl.X, "Key 2 (X) should not be set");
+	}
+
+	[Fact]
+	public void NexenConverter_RoundTripsAtari2600DrivingInput() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 1
+		};
+		movie.PortTypes[0] = ControllerType.Atari2600DrivingController;
+
+		var frame = new InputFrame(0);
+		frame.Controllers[0].SetButton("FIRE", true);
+		frame.Controllers[0].SetButton("LEFT", true);
+		frame.Controllers[0].Type = ControllerType.Atari2600DrivingController;
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.NexenMovieConverter();
+		converter.Write(movie, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream);
+
+		var ctrl = loaded.InputFrames[0].Controllers[0];
+		Assert.True(ctrl.A, "Fire (A) should be set");
+		Assert.True(ctrl.Left, "Left should be set");
+		Assert.False(ctrl.Right, "Right should not be set");
+	}
+
+	[Fact]
+	public void NexenConverter_RoundTripsAtari2600BoosterGripInput() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 1
+		};
+		movie.PortTypes[0] = ControllerType.Atari2600BoosterGrip;
+
+		var frame = new InputFrame(0);
+		frame.Controllers[0].SetButton("FIRE", true);
+		frame.Controllers[0].SetButton("TRIGGER", true);
+		frame.Controllers[0].SetButton("UP", true);
+		frame.Controllers[0].Type = ControllerType.Atari2600BoosterGrip;
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.NexenMovieConverter();
+		converter.Write(movie, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream);
+
+		var ctrl = loaded.InputFrames[0].Controllers[0];
+		Assert.True(ctrl.A, "Fire (A) should be set");
+		Assert.True(ctrl.B, "Trigger (B) should be set");
+		Assert.True(ctrl.Up, "Up should be set");
+		Assert.False(ctrl.Down, "Down should not be set");
+		Assert.False(ctrl.Left, "Left should not be set");
+	}
+
+	/// <summary>
+	/// Verifies that extended buttons (C/Z/Mode) are NOT preserved by the current
+	/// 12-char NexenFormat text serializer. This documents the known limitation
+	/// that Booster (C) for BoosterGrip does not survive text roundtrip.
+	/// </summary>
+	[Fact]
+	public void NexenConverter_ExtendedButtonsNotPreservedInTextFormat() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 1
+		};
+		movie.PortTypes[0] = ControllerType.Atari2600BoosterGrip;
+
+		var frame = new InputFrame(0);
+		frame.Controllers[0].C = true; // Booster
+		frame.Controllers[0].Type = ControllerType.Atari2600BoosterGrip;
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.NexenMovieConverter();
+		converter.Write(movie, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream);
+
+		// C (Booster) is NOT in the 12-char "BYsSUDLRAXLR" text format
+		Assert.False(loaded.InputFrames[0].Controllers[0].C,
+			"Extended button C is not preserved in current text format");
+	}
+
+	[Fact]
+	public void NexenConverter_RoundTripsAtari2600DualPortInput() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 2
+		};
+		movie.PortTypes[0] = ControllerType.Atari2600Joystick;
+		movie.PortTypes[1] = ControllerType.Atari2600Paddle;
+
+		var frame = new InputFrame(0);
+		// Port 0: Joystick with Fire+Down
+		frame.Controllers[0].SetButton("FIRE", true);
+		frame.Controllers[0].SetButton("DOWN", true);
+		frame.Controllers[0].Type = ControllerType.Atari2600Joystick;
+		// Port 1: Paddle with Fire + position 200
+		frame.Controllers[1].SetButton("FIRE", true);
+		frame.Controllers[1].PaddlePosition = 200;
+		frame.Controllers[1].Type = ControllerType.Atari2600Paddle;
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.NexenMovieConverter();
+		converter.Write(movie, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream);
+
+		// Port 0 — Joystick
+		var ctrl0 = loaded.InputFrames[0].Controllers[0];
+		Assert.True(ctrl0.A, "P1 Fire (A) should be set");
+		Assert.True(ctrl0.Down, "P1 Down should be set");
+		Assert.False(ctrl0.Up, "P1 Up should not be set");
+
+		// Port 1 — Paddle
+		var ctrl1 = loaded.InputFrames[0].Controllers[1];
+		Assert.True(ctrl1.A, "P2 Fire (A) should be set");
+		Assert.Equal((byte)200, ctrl1.PaddlePosition);
+	}
+
 	[Theory]
 	[InlineData(typeof(Converters.NexenMovieConverter), true, true)]
 	[InlineData(typeof(Converters.Bk2MovieConverter), true, true)]

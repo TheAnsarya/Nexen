@@ -165,6 +165,7 @@ public class GameDataManagerTests
 	[InlineData(ConsoleType.PcEngine, "PCE")]
 	[InlineData(ConsoleType.Sms, "SMS")]
 	[InlineData(ConsoleType.Ws, "WS")]
+	[InlineData(ConsoleType.Atari2600, "A2600")]
 	public void BuildPath_SystemFolderInPath(ConsoleType system, string expectedFolder)
 	{
 		string basePath = Path.Combine("C:", "Data");
