@@ -619,76 +619,6 @@ OK, now I understand it, yes please rewrite the language to be plainer and more 
 
 [Nexen] Create a root level `*.md` document and link to it from the readme for primary developer tasks showing what I should be doing (adding reference roms? approving icons? manually testing a feature (give me a link to the manual testing doc!)? adding screenshots to documentation (make a plan!)? or what?) what features are we in the middle of? give me a handful of prompts that would advance the project in a meaningful way, 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Update all four projects (Nexen, poppy, pansy, peony) to dotnet 11 and c#15 and update github CI/CD config to install the sdk (see instructions listed at: https://copilot.microsoft.com/chats/Rkj5Q5ydHbfRjVV36XhGr) 
-
-
-
-
-[Nexen] git commit everything, and then release another version of Nexen to github, updating the patch version number; Make an announcement `discord` post ***with formatting*** for this Nexen release, with all the differences since we forked from Mesen and why we did and save it in an `md` documentation file and show me this file; continue;
-
-
-
-
-fix as many warnings as you can; continue;
-
-
-
-
-
-[Nexen] Make more Tests (correctness of everything! reference external Lynx technical docs) and performance Benchmarks (speed and memory and allocation!) and create countless documentation sections (and update `readme.md`) and update chat/session logs and todos, and make the Atari Lynx emulator super accurate and fully tested and with no problems, fix issues and everything and analyze both Core and UI for problems with the Lynx code, does Movie/TAS work with Lynx? Are all Atari Lynx joypad buttons represented in the TAS/Movie input file? fix it!; continue;
-
-
-
-
-
-
-
-
-
-
-
-[Nexen] SUPER GIGANTIC EFFORT: `Add Fairchild Channel F emulation to Core and UI and debugger, etc`; plan it comprehensively over multiple sessions! make a few epics and a ton of sub-issues and sub-sub-issues and todolists, and plans and documents and do research to create a giant plan to add `Fairchild Channel F` emulation and work effort to implement `Fairchild Channel F` emulation and debugging and pansy creation and save states and labels and everything else, make it a first class emulation option; Find source code for other `Fairchild Channel F` emulators and `Fairchild Channel F` documentation and make a big plan for how we can add a system to Nexen: we need an emulation core framework that we can make run `Fairchild Channel F`, add required interfaces, add lua integration, add UI file opening/savestates/etc, add movie/tas support (that's an epic itself), Add input configuration (joypad button mapping), add debugging and code views, emulate all versions of the console with their differences, document like crazy, document document document, work for a very long time to create this plan, multiple sessions of planning and research and code prototyping with a bunch of code-plans for each sub-effort, and a full testing coverage and benchmarking for the emulation/ui/tools/debugging/etc; We need to prove we are a separate emulator from our predecessor (Mesen), now that we've added the Atari Lynx, let's add a second one so we are going to add a whole new system; make sure to focus on accuracy and performance, but always accuracy and timing first; don't get distracted, focus on making practical researched changes in chunks, keep issues and docs and logs updated; continue; There should be a new features branch (maybe `features-channel-f` off of the atari-lynx branch) for all of this work, don't make changes directly in the master branch; Continue planning for `Fairchild Channel F` implementation of emulation debugging, movie recording and playing, save states, sram saving/loading, metadata (hashes, etc), UI usage, input button mapping, debugging; plan and figure out how you are going to implement this work effort (make documents and a big "prompts" file where you generate a series of prompts for me to run in order to implement the giant feature (again, make sure all work is in a new feature branch)); continue; implement after all planning and todo and issue creation is done; continue;
-
-
-[Nexen] SUPER GIGANTIC EFFORT: `Add Atari Jaguar emulation to Core and UI and debugger, etc`; plan it comprehensively over multiple sessions! make a few epics and a ton of sub-issues and sub-sub-issues and todolists, and plans and documents and do research to create a giant plan to add Jaguar emulation and work effort to implement Atari Jaguar emulation and debugging and pansy creation and save states and labels and everything else, make it a first class emulation option; Find source code for other atari Jaguar emulators and atari Jaguar documentation and make a big plan for how we can add a system to Nexen: we need an emulation core framework that we can make run Atari Jaguar, add required interfaces, add lua integration, add UI file opening/savestates/etc, add movie/tas support (that's an epic itself), Add input configuration (joypad button mapping), add debugging and code views, emulate all versions of the console with their differences, document like crazy, document document document, work for a very long time to create this plan, multiple sessions of planning and research and code prototyping with a bunch of code-plans for each sub-effort, and a full testing coverage and benchmarking for the emulation/ui/tools/debugging/etc; We need to prove we are a separate emulator from our predecessor (Mesen), now that we've added the Atari Lynx, let's add a second one so we are going to add a whole new system; make sure to focus on accuracy and performance, but always accuracy and timing first; don't get distracted, focus on making practical researched changes in chunks, keep issues and docs and logs updated; continue; There should be a new features branch (maybe `features-atari-jaguar` off of the atari-lynx branch) for all of this work, don't make changes directly in the master branch; Continue planning for Atari Jaguar implementation of emulation debugging, movie recording and playing, save states, sram saving/loading, metadata (hashes, etc), UI usage, input button mapping, debugging; plan and figure out how you are going to implement this work effort (make documents and a big "prompts" file where you generate a series of prompts for me to run in order to implement the giant feature (again, make sure all work is in a new feature branch)); continue; implement after all planning and todo and issue creation is done; continue;
-
-[Nexen] Create a root level `*.md` document and link to it from the readme for primary developer tasks showing what I should be doing (adding reference roms? approving icons? manually testing a feature (give me a link to the manual testing doc!)? adding screenshots to documentation (make a plan!)? or what?) what features are we in the middle of? give me a handful of prompts that would advance the project in a meaningful way, let me know how to support the atari-2600/sega-genesis testing code examples and what folders and files I need to create; after letting me know what to do, continue working on genesis and atari 2600 emulation and add a ton of more issues for that emulation work based on the docs and benchmarks and tests and go for very long time, working for a half hour or so would be ok;
-
 add a dozen more issues, and then implement everything; continue; work on issues for an hour; continue;
 
 -- switch to claude opus 4.6
@@ -777,6 +707,77 @@ work as many 2600 issues as can for as long as you can, do like 10 issues in ord
 
 work as many 2600 issues as can for as long as you can, do like 10 issues in order; update and make issues, plans, docs, designs, chat/session logs, epics, etc; make fully working 2600 emulator and pansy output and tas and debugging with full UI and everything; continue for a long time, many issues in a row; continue;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Update all four projects (Nexen, poppy, pansy, peony) to dotnet 11 and c#15 and update github CI/CD config to install the sdk (see instructions listed at: https://copilot.microsoft.com/chats/Rkj5Q5ydHbfRjVV36XhGr) 
+
+
+
+
+[Nexen] git commit everything, and then release another version of Nexen to github, updating the patch version number; Make an announcement `discord` post ***with formatting*** for this Nexen release, with all the differences since we forked from Mesen and why we did and save it in an `md` documentation file and show me this file; continue;
+
+
+
+
+fix as many warnings as you can; continue;
+
+
+
+
+
+[Nexen] Make more Tests (correctness of everything! reference external Lynx technical docs) and performance Benchmarks (speed and memory and allocation!) and create countless documentation sections (and update `readme.md`) and update chat/session logs and todos, and make the Atari Lynx emulator super accurate and fully tested and with no problems, fix issues and everything and analyze both Core and UI for problems with the Lynx code, does Movie/TAS work with Lynx? Are all Atari Lynx joypad buttons represented in the TAS/Movie input file? fix it!; continue;
+
+
+
+
+
+
+
+
+
+
+
+[Nexen] SUPER GIGANTIC EFFORT: `Add Fairchild Channel F emulation to Core and UI and debugger, etc`; plan it comprehensively over multiple sessions! make a few epics and a ton of sub-issues and sub-sub-issues and todolists, and plans and documents and do research to create a giant plan to add `Fairchild Channel F` emulation and work effort to implement `Fairchild Channel F` emulation and debugging and pansy creation and save states and labels and everything else, make it a first class emulation option; Find source code for other `Fairchild Channel F` emulators and `Fairchild Channel F` documentation and make a big plan for how we can add a system to Nexen: we need an emulation core framework that we can make run `Fairchild Channel F`, add required interfaces, add lua integration, add UI file opening/savestates/etc, add movie/tas support (that's an epic itself), Add input configuration (joypad button mapping), add debugging and code views, emulate all versions of the console with their differences, document like crazy, document document document, work for a very long time to create this plan, multiple sessions of planning and research and code prototyping with a bunch of code-plans for each sub-effort, and a full testing coverage and benchmarking for the emulation/ui/tools/debugging/etc; We need to prove we are a separate emulator from our predecessor (Mesen), now that we've added the Atari Lynx, let's add a second one so we are going to add a whole new system; make sure to focus on accuracy and performance, but always accuracy and timing first; don't get distracted, focus on making practical researched changes in chunks, keep issues and docs and logs updated; continue; There should be a new features branch (maybe `features-channel-f` off of the atari-lynx branch) for all of this work, don't make changes directly in the master branch; Continue planning for `Fairchild Channel F` implementation of emulation debugging, movie recording and playing, save states, sram saving/loading, metadata (hashes, etc), UI usage, input button mapping, debugging; plan and figure out how you are going to implement this work effort (make documents and a big "prompts" file where you generate a series of prompts for me to run in order to implement the giant feature (again, make sure all work is in a new feature branch)); continue; implement after all planning and todo and issue creation is done; continue;
+
+
+[Nexen] SUPER GIGANTIC EFFORT: `Add Atari Jaguar emulation to Core and UI and debugger, etc`; plan it comprehensively over multiple sessions! make a few epics and a ton of sub-issues and sub-sub-issues and todolists, and plans and documents and do research to create a giant plan to add Jaguar emulation and work effort to implement Atari Jaguar emulation and debugging and pansy creation and save states and labels and everything else, make it a first class emulation option; Find source code for other atari Jaguar emulators and atari Jaguar documentation and make a big plan for how we can add a system to Nexen: we need an emulation core framework that we can make run Atari Jaguar, add required interfaces, add lua integration, add UI file opening/savestates/etc, add movie/tas support (that's an epic itself), Add input configuration (joypad button mapping), add debugging and code views, emulate all versions of the console with their differences, document like crazy, document document document, work for a very long time to create this plan, multiple sessions of planning and research and code prototyping with a bunch of code-plans for each sub-effort, and a full testing coverage and benchmarking for the emulation/ui/tools/debugging/etc; We need to prove we are a separate emulator from our predecessor (Mesen), now that we've added the Atari Lynx, let's add a second one so we are going to add a whole new system; make sure to focus on accuracy and performance, but always accuracy and timing first; don't get distracted, focus on making practical researched changes in chunks, keep issues and docs and logs updated; continue; There should be a new features branch (maybe `features-atari-jaguar` off of the atari-lynx branch) for all of this work, don't make changes directly in the master branch; Continue planning for Atari Jaguar implementation of emulation debugging, movie recording and playing, save states, sram saving/loading, metadata (hashes, etc), UI usage, input button mapping, debugging; plan and figure out how you are going to implement this work effort (make documents and a big "prompts" file where you generate a series of prompts for me to run in order to implement the giant feature (again, make sure all work is in a new feature branch)); continue; implement after all planning and todo and issue creation is done; continue;
+
+[Nexen] Create a root level `*.md` document and link to it from the readme for primary developer tasks showing what I should be doing (adding reference roms? approving icons? manually testing a feature (give me a link to the manual testing doc!)? adding screenshots to documentation (make a plan!)? or what?) what features are we in the middle of? give me a handful of prompts that would advance the project in a meaningful way, let me know how to support the atari-2600/sega-genesis testing code examples and what folders and files I need to create; after letting me know what to do, continue working on genesis and atari 2600 emulation and add a ton of more issues for that emulation work based on the docs and benchmarks and tests and go for very long time, working for a half hour or so would be ok;
 
 
 
