@@ -364,6 +364,14 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 			AppendCmd("POWER_OFF");
 		}
 
+		if (Command.HasFlag(FrameCommand.Atari2600Select)) {
+			AppendCmd("A26_SELECT");
+		}
+
+		if (Command.HasFlag(FrameCommand.Atari2600Reset)) {
+			AppendCmd("A26_RESET");
+		}
+
 		return sb.ToString();
 	}
 
@@ -400,6 +408,10 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 				command |= FrameCommand.Pause;
 			} else if (trimmed.Equals("POWER_OFF", StringComparison.OrdinalIgnoreCase)) {
 				command |= FrameCommand.PowerOff;
+			} else if (trimmed.Equals("A26_SELECT", StringComparison.OrdinalIgnoreCase)) {
+				command |= FrameCommand.Atari2600Select;
+			} else if (trimmed.Equals("A26_RESET", StringComparison.OrdinalIgnoreCase)) {
+				command |= FrameCommand.Atari2600Reset;
 			}
 		}
 

@@ -279,6 +279,12 @@ public enum FrameCommand {
 	/// <summary>Power off</summary>
 	PowerOff = 1 << 14,
 
+	/// <summary>Atari 2600: Console Select switch (SWCHB bit 1)</summary>
+	Atari2600Select = 1 << 15,
+
+	/// <summary>Atari 2600: Console Reset switch (SWCHB bit 0)</summary>
+	Atari2600Reset = 1 << 16,
+
 	// Aliases for compatibility with various format converters
 
 	/// <summary>Alias for SoftReset</summary>
