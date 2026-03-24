@@ -130,6 +130,15 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// <summary>Gets or sets the selected paddle position (0-255) for the selected port on the selected frame.</summary>
 	[Reactive] public int SelectedPaddlePosition { get; set; }
 
+	/// <summary>Gets whether the console switch panel is visible (Atari 2600 only).</summary>
+	[Reactive] public bool IsConsoleSwitchPanelVisible { get; private set; }
+
+	/// <summary>Gets whether the Select console switch is active on the selected frame.</summary>
+	[Reactive] public bool IsSelectedFrameSelectActive { get; private set; }
+
+	/// <summary>Gets whether the Reset console switch is active on the selected frame.</summary>
+	[Reactive] public bool IsSelectedFrameResetActive { get; private set; }
+
 	/// <summary>Gets or sets the currently selected controller port for editing (0-based).</summary>
 	[Reactive] public int SelectedEditPort { get; set; }
 
@@ -335,6 +344,18 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		_isUpdatingSelectedPaddlePosition = true;
 		SelectedPaddlePosition = selectedController?.PaddlePosition ?? 0;
 		_isUpdatingSelectedPaddlePosition = false;
+
+		// Update console switch panel visibility and state
+		IsConsoleSwitchPanelVisible = CurrentLayout == ControllerLayout.Atari2600;
+		if (IsConsoleSwitchPanelVisible && Movie is not null
+			&& SelectedFrameIndex >= 0 && SelectedFrameIndex < Movie.InputFrames.Count) {
+			var cmd = Movie.InputFrames[SelectedFrameIndex].Command;
+			IsSelectedFrameSelectActive = cmd.HasFlag(FrameCommand.Atari2600Select);
+			IsSelectedFrameResetActive = cmd.HasFlag(FrameCommand.Atari2600Reset);
+		} else {
+			IsSelectedFrameSelectActive = false;
+			IsSelectedFrameResetActive = false;
+		}
 
 		List<ControllerButtonPreviewViewModel> previewButtons = BuildInputPreviewButtons(ControllerButtons, selectedController);
 		foreach (ControllerButtonPreviewViewModel previewButton in previewButtons) {
@@ -1863,6 +1884,47 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		newInput.SetButton(button, !newInput.GetButton(button));
 
 		ExecuteAction(new ModifyInputAction(frame, SelectedFrameIndex, port, newInput));
+	}
+
+	/// <summary>
+	/// Toggles the Atari 2600 Select console switch on the selected frame(s). Undoable.
+	/// </summary>
+	public void ToggleConsoleSwitchSelect() {
+		ToggleConsoleSwitchFlag(FrameCommand.Atari2600Select);
+	}
+
+	/// <summary>
+	/// Toggles the Atari 2600 Reset console switch on the selected frame(s). Undoable.
+	/// </summary>
+	public void ToggleConsoleSwitchReset() {
+		ToggleConsoleSwitchFlag(FrameCommand.Atari2600Reset);
+	}
+
+	private void ToggleConsoleSwitchFlag(FrameCommand flag) {
+		if (Movie is null) {
+			return;
+		}
+
+		// Collect target frames from multi-selection or single selection
+		List<InputFrame> targets = new();
+		if (SelectedFrameIndices.Count > 1) {
+			foreach (int idx in SelectedFrameIndices) {
+				if (idx >= 0 && idx < Movie.InputFrames.Count) {
+					targets.Add(Movie.InputFrames[idx]);
+				}
+			}
+		} else if (SelectedFrameIndex >= 0 && SelectedFrameIndex < Movie.InputFrames.Count) {
+			targets.Add(Movie.InputFrames[SelectedFrameIndex]);
+		}
+
+		if (targets.Count == 0) {
+			return;
+		}
+
+		// Toggle based on first frame's current state
+		bool currentState = targets[0].Command.HasFlag(flag);
+		ExecuteAction(new ModifyCommandAction(targets, flag, !currentState));
+		RefreshSelectedFramePreview();
 	}
 
 	/// <summary>
@@ -3528,6 +3590,43 @@ public sealed class ModifyInputAction : UndoableAction {
 
 	public override void Undo() {
 		_frame.Controllers[_port] = _oldInput;
+	}
+}
+
+/// <summary>
+/// Action for modifying FrameCommand flags on one or more frames.
+/// Used for toggling console switches (Atari 2600 Select/Reset).
+/// </summary>
+public sealed class ModifyCommandAction : UndoableAction {
+	private readonly List<(InputFrame Frame, FrameCommand OldCommand)> _frames;
+	private readonly FrameCommand _flag;
+	private readonly bool _newState;
+
+	public override string Description => $"Toggle {_flag}";
+
+	public ModifyCommandAction(IReadOnlyList<InputFrame> frames, FrameCommand flag, bool newState) {
+		_flag = flag;
+		_newState = newState;
+		_frames = new(frames.Count);
+		foreach (var f in frames) {
+			_frames.Add((f, f.Command));
+		}
+	}
+
+	public override void Execute() {
+		foreach (var (frame, _) in _frames) {
+			if (_newState) {
+				frame.Command |= _flag;
+			} else {
+				frame.Command &= ~_flag;
+			}
+		}
+	}
+
+	public override void Undo() {
+		foreach (var (frame, oldCommand) in _frames) {
+			frame.Command = oldCommand;
+		}
 	}
 }
 

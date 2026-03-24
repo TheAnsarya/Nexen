@@ -263,6 +263,14 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		}
 	}
 
+	private void OnConsoleSwitchSelectClick(object? sender, RoutedEventArgs e) {
+		ViewModel?.ToggleConsoleSwitchSelect();
+	}
+
+	private void OnConsoleSwitchResetClick(object? sender, RoutedEventArgs e) {
+		ViewModel?.ToggleConsoleSwitchReset();
+	}
+
 	/// <summary>
 	/// Called when the window is initialized.
 	/// </summary>

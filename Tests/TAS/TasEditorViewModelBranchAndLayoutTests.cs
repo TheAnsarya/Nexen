@@ -396,6 +396,128 @@ public class TasEditorViewModelBranchAndLayoutTests : IDisposable {
 
 	#endregion
 
+	#region Console Switch Toggle (Atari 2600)
+
+	[Fact]
+	public void ConsoleSwitchPanel_VisibleOnly_ForAtari2600Layout() {
+		SetMovie(CreateTestMovie(2, SystemType.A2600));
+		_vm.SelectedFrameIndex = 0;
+		Assert.True(_vm.IsConsoleSwitchPanelVisible);
+
+		SetMovie(CreateTestMovie(2, SystemType.Nes));
+		_vm.SelectedFrameIndex = 0;
+		Assert.False(_vm.IsConsoleSwitchPanelVisible);
+	}
+
+	[Fact]
+	public void ToggleConsoleSwitchSelect_SetsFrameCommandFlag() {
+		SetMovie(CreateTestMovie(3, SystemType.A2600));
+		_vm.SelectedFrameIndex = 1;
+
+		_vm.ToggleConsoleSwitchSelect();
+		Assert.True(_vm.Movie!.InputFrames[1].Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.True(_vm.IsSelectedFrameSelectActive);
+
+		// Toggle off
+		_vm.ToggleConsoleSwitchSelect();
+		Assert.False(_vm.Movie!.InputFrames[1].Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.False(_vm.IsSelectedFrameSelectActive);
+	}
+
+	[Fact]
+	public void ToggleConsoleSwitchReset_SetsFrameCommandFlag() {
+		SetMovie(CreateTestMovie(3, SystemType.A2600));
+		_vm.SelectedFrameIndex = 1;
+
+		_vm.ToggleConsoleSwitchReset();
+		Assert.True(_vm.Movie!.InputFrames[1].Command.HasFlag(FrameCommand.Atari2600Reset));
+		Assert.True(_vm.IsSelectedFrameResetActive);
+	}
+
+	[Fact]
+	public void ToggleConsoleSwitchSelect_Undoable() {
+		SetMovie(CreateTestMovie(3, SystemType.A2600));
+		_vm.SelectedFrameIndex = 0;
+
+		_vm.ToggleConsoleSwitchSelect();
+		Assert.True(_vm.Movie!.InputFrames[0].Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.True(_vm.CanUndo);
+
+		_vm.Undo();
+		Assert.False(_vm.Movie!.InputFrames[0].Command.HasFlag(FrameCommand.Atari2600Select));
+	}
+
+	[Fact]
+	public void ToggleConsoleSwitchReset_Undoable_AndRedoable() {
+		SetMovie(CreateTestMovie(3, SystemType.A2600));
+		_vm.SelectedFrameIndex = 0;
+
+		_vm.ToggleConsoleSwitchReset();
+		Assert.True(_vm.Movie!.InputFrames[0].Command.HasFlag(FrameCommand.Atari2600Reset));
+
+		_vm.Undo();
+		Assert.False(_vm.Movie!.InputFrames[0].Command.HasFlag(FrameCommand.Atari2600Reset));
+
+		_vm.Redo();
+		Assert.True(_vm.Movie!.InputFrames[0].Command.HasFlag(FrameCommand.Atari2600Reset));
+	}
+
+	[Fact]
+	public void ToggleConsoleSwitchSelect_BothFlagsIndependent() {
+		SetMovie(CreateTestMovie(3, SystemType.A2600));
+		_vm.SelectedFrameIndex = 0;
+
+		_vm.ToggleConsoleSwitchSelect();
+		_vm.ToggleConsoleSwitchReset();
+
+		var cmd = _vm.Movie!.InputFrames[0].Command;
+		Assert.True(cmd.HasFlag(FrameCommand.Atari2600Select));
+		Assert.True(cmd.HasFlag(FrameCommand.Atari2600Reset));
+
+		// Undo only removes Reset
+		_vm.Undo();
+		cmd = _vm.Movie!.InputFrames[0].Command;
+		Assert.True(cmd.HasFlag(FrameCommand.Atari2600Select));
+		Assert.False(cmd.HasFlag(FrameCommand.Atari2600Reset));
+	}
+
+	[Fact]
+	public void ToggleConsoleSwitchSelect_NoMovie_DoesNotThrow() {
+		_vm.ToggleConsoleSwitchSelect();
+		_vm.ToggleConsoleSwitchReset();
+		// Should not throw
+	}
+
+	[Fact]
+	public void ToggleConsoleSwitchSelect_NoSelectedFrame_DoesNotThrow() {
+		SetMovie(CreateTestMovie(3, SystemType.A2600));
+		_vm.SelectedFrameIndex = -1;
+
+		_vm.ToggleConsoleSwitchSelect();
+		// Should not throw or modify any frame
+	}
+
+	[Fact]
+	public void ConsoleSwitchState_UpdatesOnFrameSelection() {
+		SetMovie(CreateTestMovie(3, SystemType.A2600));
+		_vm.Movie!.InputFrames[1].Command = FrameCommand.Atari2600Select;
+		_vm.Movie!.InputFrames[2].Command = FrameCommand.Atari2600Reset;
+
+		_vm.SelectedFrameIndex = 0;
+		Assert.False(_vm.IsSelectedFrameSelectActive);
+		Assert.False(_vm.IsSelectedFrameResetActive);
+
+		_vm.SelectedFrameIndex = 1;
+		Assert.True(_vm.IsSelectedFrameSelectActive);
+		Assert.False(_vm.IsSelectedFrameResetActive);
+
+		_vm.SelectedFrameIndex = 2;
+		Assert.False(_vm.IsSelectedFrameSelectActive);
+		Assert.True(_vm.IsSelectedFrameResetActive);
+	}
+
+	#endregion
+
 	#region Frame Navigation — FrameAdvance
 
 	// Note: FrameAdvance/FrameRewind call EmuApi.IsRunning() (native P/Invoke)
