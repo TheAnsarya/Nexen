@@ -711,6 +711,7 @@ work as many 2600 issues as can for as long as you can, do like 10 issues in ord
 
 [Nexen] Make the Debug UI for Atari 2600 comprehensive and correct and complete; make issues, implement them; update docs for debugging; Validate that we have full coverage for the movie/TAS feature's UI; finish the UI for a2600 controllers as well; Make/plan a manual testing instructions document for the atari 2600 and integrate it into a larger docunmentation tree with all the manual testing from a starting manual instructions doc, a doc that describes and ranks importance of manual steps; focus on making a stable, complete, fully-working(ignore genesis) release; continue;
 
+[Nexen] Do the `Natural next steps` and implement as many issues as needed for creating a release ready codebase; continue for a long time; continue;
 
 
 

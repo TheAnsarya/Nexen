@@ -953,4 +953,117 @@ public class ConverterTests {
 	}
 
 	#endregion
+
+	#region BK2 Atari 2600 Controller Subtypes
+
+	[Fact]
+	public void Bk2Converter_A2600_RoundTripsKeypadSubtype() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 1
+		};
+		movie.PortTypes[0] = ControllerType.Atari2600Keypad;
+
+		var frame = new InputFrame(0);
+		frame.Controllers[0].Y = true;      // "1"
+		frame.Controllers[0].A = true;      // "5"
+		frame.Controllers[0].Right = true;  // "#"
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.Bk2MovieConverter();
+		converter.Write(movie, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream, "test.bk2");
+
+		Assert.Equal(ControllerType.Atari2600Keypad, loaded.PortTypes[0]);
+		Assert.True(loaded.InputFrames[0].Controllers[0].Y);
+		Assert.True(loaded.InputFrames[0].Controllers[0].A);
+		Assert.True(loaded.InputFrames[0].Controllers[0].Right);
+	}
+
+	[Fact]
+	public void Bk2Converter_A2600_RoundTripsDrivingSubtype() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 1
+		};
+		movie.PortTypes[0] = ControllerType.Atari2600DrivingController;
+
+		var frame = new InputFrame(0);
+		frame.Controllers[0].Left = true;
+		frame.Controllers[0].A = true;
+		frame.Controllers[0].PaddlePosition = 144;
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.Bk2MovieConverter();
+		converter.Write(movie, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream, "test.bk2");
+
+		Assert.Equal(ControllerType.Atari2600DrivingController, loaded.PortTypes[0]);
+		Assert.True(loaded.InputFrames[0].Controllers[0].Left);
+		Assert.True(loaded.InputFrames[0].Controllers[0].A);
+		Assert.Equal((byte)144, loaded.InputFrames[0].Controllers[0].PaddlePosition);
+	}
+
+	[Fact]
+	public void Bk2Converter_A2600_RoundTripsBoosterGripSubtype() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 1
+		};
+		movie.PortTypes[0] = ControllerType.Atari2600BoosterGrip;
+
+		var frame = new InputFrame(0);
+		frame.Controllers[0].Up = true;
+		frame.Controllers[0].A = true; // Fire
+		frame.Controllers[0].B = true; // Trigger
+		frame.Controllers[0].C = true; // Booster
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.Bk2MovieConverter();
+		converter.Write(movie, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream, "test.bk2");
+
+		Assert.Equal(ControllerType.Atari2600BoosterGrip, loaded.PortTypes[0]);
+		Assert.True(loaded.InputFrames[0].Controllers[0].Up);
+		Assert.True(loaded.InputFrames[0].Controllers[0].A);
+		Assert.True(loaded.InputFrames[0].Controllers[0].B);
+		Assert.True(loaded.InputFrames[0].Controllers[0].C);
+	}
+
+	[Fact]
+	public void Bk2Converter_A2600_WritesSyncSettingsPortTypesMetadata() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 2
+		};
+		movie.PortTypes[0] = ControllerType.Atari2600Keypad;
+		movie.PortTypes[1] = ControllerType.Atari2600BoosterGrip;
+		movie.AddFrame(new InputFrame(0));
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.Bk2MovieConverter();
+		converter.Write(movie, stream);
+
+		stream.Position = 0;
+		using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+		var syncEntry = archive.GetEntry("SyncSettings.json");
+		Assert.NotNull(syncEntry);
+
+		using var reader = new StreamReader(syncEntry!.Open());
+		string sync = reader.ReadToEnd();
+		Assert.Contains("A2600PortTypes", sync);
+		Assert.Contains("Atari2600Keypad", sync);
+		Assert.Contains("Atari2600BoosterGrip", sync);
+	}
+
+	#endregion
 }
