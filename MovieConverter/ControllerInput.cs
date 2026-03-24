@@ -219,15 +219,15 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 	}
 
 	/// <summary>
-	/// Convert to Nexen/Mesen text format: BYsSUDLRAXLR
+	/// Convert to Nexen/Mesen text format: BYsSUDLRAXLRcZM
 	/// </summary>
-	/// <returns>12-character string representing button states</returns>
+	/// <returns>15-character string representing button states</returns>
 	public string ToNexenFormat() {
 		if (Type == ControllerType.None) {
-			return "............";
+			return "...............";
 		}
 
-		return string.Create(12, this, static (chars, input) => {
+		return string.Create(15, this, static (chars, input) => {
 			chars[0] = input.B ? 'B' : '.';
 			chars[1] = input.Y ? 'Y' : '.';
 			chars[2] = input.Select ? 's' : '.';
@@ -240,13 +240,17 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 			chars[9] = input.X ? 'X' : '.';
 			chars[10] = input.L ? 'l' : '.';
 			chars[11] = input.R ? 'r' : '.';
+			chars[12] = input.C ? 'c' : '.';
+			chars[13] = input.Z ? 'Z' : '.';
+			chars[14] = input.Mode ? 'M' : '.';
 		});
 	}
 
 	/// <summary>
-	/// Parse from Nexen/Mesen text format
+	/// Parse from Nexen/Mesen text format.
+	/// Supports both 12-char legacy (BYsSUDLRAXLR) and 15-char extended (BYsSUDLRAXLRcZM) formats.
 	/// </summary>
-	/// <param name="input">12-character input string</param>
+	/// <param name="input">12 or 15-character input string</param>
 	/// <returns>Parsed ControllerInput</returns>
 	public static ControllerInput FromNexenFormat(ReadOnlySpan<char> input) {
 		var ctrl = new ControllerInput { Type = ControllerType.Gamepad };
@@ -255,7 +259,7 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 			return ctrl;
 		}
 
-		// Nexen format: BYsSUDLRAXLR
+		// Nexen format: BYsSUDLRAXLRcZM (first 12 are standard SNES buttons)
 		ctrl.B = input[0] != '.';
 		ctrl.Y = input[1] != '.';
 		ctrl.Select = input[2] != '.';
@@ -268,6 +272,13 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 		ctrl.X = input[9] != '.';
 		ctrl.L = input[10] != '.';
 		ctrl.R = input[11] != '.';
+
+		// Extended buttons (Genesis 6-button, Atari BoosterGrip) — chars 12-14
+		if (input.Length >= 15) {
+			ctrl.C = input[12] != '.';
+			ctrl.Z = input[13] != '.';
+			ctrl.Mode = input[14] != '.';
+		}
 
 		return ctrl;
 	}

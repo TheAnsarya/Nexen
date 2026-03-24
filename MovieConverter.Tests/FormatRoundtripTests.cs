@@ -39,7 +39,7 @@ public class FormatRoundtripTests {
 		string nexen = input.ToNexenFormat();
 		var parsed = ControllerInput.FromNexenFormat(nexen);
 
-		Assert.Equal("............", nexen);
+		Assert.Equal("...............", nexen);
 		Assert.False(parsed.HasInput);
 	}
 
@@ -52,7 +52,7 @@ public class FormatRoundtripTests {
 
 		Assert.True(parsed.A);
 		Assert.False(parsed.B);
-		Assert.Equal("........A...", nexen);
+		Assert.Equal("........A......", nexen);
 	}
 
 	[Theory]
@@ -104,7 +104,7 @@ public class FormatRoundtripTests {
 
 		string nexen = input.ToNexenFormat();
 
-		Assert.Equal(12, nexen.Length);
+		Assert.Equal(15, nexen.Length);
 		Assert.Equal('B', nexen[0]);
 		Assert.Equal('Y', nexen[1]);
 		Assert.Equal('s', nexen[2]);  // lowercase
@@ -117,6 +117,9 @@ public class FormatRoundtripTests {
 		Assert.Equal('X', nexen[9]);
 		Assert.Equal('l', nexen[10]); // lowercase
 		Assert.Equal('r', nexen[11]); // lowercase
+		Assert.Equal('.', nexen[12]); // C not set
+		Assert.Equal('.', nexen[13]); // Z not set
+		Assert.Equal('.', nexen[14]); // Mode not set
 	}
 
 	[Fact]
@@ -125,7 +128,7 @@ public class FormatRoundtripTests {
 
 		string nexen = input.ToNexenFormat();
 
-		Assert.Equal("............", nexen);
+		Assert.Equal("...............", nexen);
 	}
 
 	#endregion

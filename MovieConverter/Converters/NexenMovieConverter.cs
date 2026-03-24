@@ -235,7 +235,7 @@ public sealed class NexenMovieConverter : MovieConverterBase {
 			writer.WriteLine($"// Duration: {movie.Duration:hh\\:mm\\:ss\\.fff}");
 			writer.WriteLine($"// Rerecords: {movie.RerecordCount}");
 			writer.WriteLine("// Format: [CMD:...]|P1|P2|...|[LAG]|[# comment]");
-			writer.WriteLine("// Buttons: BYsSUDLRAXLR (SNES) or RLDUSTBA (NES)");
+			writer.WriteLine("// Buttons: BYsSUDLRAXLRcZM (standard + extended)");
 			writer.WriteLine();
 
 			foreach (InputFrame frame in movie.InputFrames) {

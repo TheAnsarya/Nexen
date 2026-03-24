@@ -363,6 +363,7 @@ public class ConverterTests {
 		var frame = new InputFrame(0);
 		frame.Controllers[0].SetButton("FIRE", true);
 		frame.Controllers[0].SetButton("TRIGGER", true);
+		frame.Controllers[0].SetButton("BOOSTER", true);
 		frame.Controllers[0].SetButton("UP", true);
 		frame.Controllers[0].Type = ControllerType.Atari2600BoosterGrip;
 		movie.AddFrame(frame);
@@ -377,18 +378,18 @@ public class ConverterTests {
 		var ctrl = loaded.InputFrames[0].Controllers[0];
 		Assert.True(ctrl.A, "Fire (A) should be set");
 		Assert.True(ctrl.B, "Trigger (B) should be set");
+		Assert.True(ctrl.C, "Booster (C) should be set");
 		Assert.True(ctrl.Up, "Up should be set");
 		Assert.False(ctrl.Down, "Down should not be set");
 		Assert.False(ctrl.Left, "Left should not be set");
 	}
 
 	/// <summary>
-	/// Verifies that extended buttons (C/Z/Mode) are NOT preserved by the current
-	/// 12-char NexenFormat text serializer. This documents the known limitation
-	/// that Booster (C) for BoosterGrip does not survive text roundtrip.
+	/// Verifies that extended buttons (C/Z/Mode) ARE preserved by the expanded
+	/// 15-char NexenFormat text serializer (BYsSUDLRAXLRcZM).
 	/// </summary>
 	[Fact]
-	public void NexenConverter_ExtendedButtonsNotPreservedInTextFormat() {
+	public void NexenConverter_ExtendedButtonsPreservedInTextFormat() {
 		var movie = new MovieData {
 			SystemType = SystemType.A2600,
 			ControllerCount = 1
@@ -397,6 +398,8 @@ public class ConverterTests {
 
 		var frame = new InputFrame(0);
 		frame.Controllers[0].C = true; // Booster
+		frame.Controllers[0].Z = true;
+		frame.Controllers[0].Mode = true;
 		frame.Controllers[0].Type = ControllerType.Atari2600BoosterGrip;
 		movie.AddFrame(frame);
 
@@ -407,9 +410,10 @@ public class ConverterTests {
 		stream.Position = 0;
 		var loaded = converter.Read(stream);
 
-		// C (Booster) is NOT in the 12-char "BYsSUDLRAXLR" text format
-		Assert.False(loaded.InputFrames[0].Controllers[0].C,
-			"Extended button C is not preserved in current text format");
+		var ctrl = loaded.InputFrames[0].Controllers[0];
+		Assert.True(ctrl.C, "C (Booster) should be preserved in 15-char format");
+		Assert.True(ctrl.Z, "Z should be preserved in 15-char format");
+		Assert.True(ctrl.Mode, "Mode should be preserved in 15-char format");
 	}
 
 	[Fact]
