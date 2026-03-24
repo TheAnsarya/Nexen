@@ -238,4 +238,88 @@ namespace {
 		// State payloads should be identical
 		EXPECT_EQ(snapshot1, snapshot2);
 	}
+
+	TEST(Atari2600SaveStateDeterminismTests, ConsoleSwitchSelectClearsSWCHBBit1) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadMapper3fRom(console);
+		console.RunFrame();
+
+		auto* cm = GetControlMgr(console);
+		uint8_t swchbBefore = cm->GetSwchb();
+		EXPECT_TRUE(swchbBefore & 0x02); // Bit 1 set = Select not pressed
+
+		cm->SetConsoleSwitchState(true, false); // Select pressed
+		cm->UpdateInputState();
+		uint8_t swchbAfter = cm->GetSwchb();
+		EXPECT_FALSE(swchbAfter & 0x02); // Bit 1 cleared = Select pressed
+		EXPECT_TRUE(swchbAfter & 0x01);  // Bit 0 still set = Reset not pressed
+	}
+
+	TEST(Atari2600SaveStateDeterminismTests, ConsoleSwitchResetClearsSWCHBBit0) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadMapper3fRom(console);
+		console.RunFrame();
+
+		auto* cm = GetControlMgr(console);
+		cm->SetConsoleSwitchState(false, true); // Reset pressed
+		cm->UpdateInputState();
+		uint8_t swchb = cm->GetSwchb();
+		EXPECT_FALSE(swchb & 0x01); // Bit 0 cleared = Reset pressed
+		EXPECT_TRUE(swchb & 0x02);  // Bit 1 still set = Select not pressed
+	}
+
+	TEST(Atari2600SaveStateDeterminismTests, ConsoleSwitchBothPressedClearsBits0And1) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadMapper3fRom(console);
+		console.RunFrame();
+
+		auto* cm = GetControlMgr(console);
+		cm->SetConsoleSwitchState(true, true); // Both pressed
+		cm->UpdateInputState();
+		uint8_t swchb = cm->GetSwchb();
+		EXPECT_FALSE(swchb & 0x01); // Bit 0 cleared
+		EXPECT_FALSE(swchb & 0x02); // Bit 1 cleared
+	}
+
+	TEST(Atari2600SaveStateDeterminismTests, ConsoleSwitchReleasedRestoresBits) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadMapper3fRom(console);
+		console.RunFrame();
+
+		auto* cm = GetControlMgr(console);
+		// Press both
+		cm->SetConsoleSwitchState(true, true);
+		cm->UpdateInputState();
+		EXPECT_FALSE(cm->GetSwchb() & 0x03);
+
+		// Release both
+		cm->SetConsoleSwitchState(false, false);
+		cm->UpdateInputState();
+		EXPECT_TRUE(cm->GetSwchb() & 0x01); // Reset released
+		EXPECT_TRUE(cm->GetSwchb() & 0x02); // Select released
+	}
+
+	TEST(Atari2600SaveStateDeterminismTests, ConsoleSwitchStateSurvivesSaveLoad) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadMapper3fRom(console);
+		console.RunFrame();
+
+		auto* cm = GetControlMgr(console);
+		cm->SetConsoleSwitchState(true, false); // Select pressed
+		cm->UpdateInputState();
+
+		string snapshot = SaveStatePayload(console);
+		LoadStatePayload(console, snapshot);
+
+		auto* cm2 = GetControlMgr(console);
+		// After load, the switch state should be preserved (serialized)
+		cm2->UpdateInputState();
+		EXPECT_FALSE(cm2->GetSwchb() & 0x02); // Select still pressed
+		EXPECT_TRUE(cm2->GetSwchb() & 0x01);  // Reset still released
+	}
 }

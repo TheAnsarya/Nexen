@@ -15,6 +15,10 @@ private:
 	uint8_t _fireP1 = 0x80;    // P1 fire button
 	uint8_t _inpt[4] = { 0x80, 0x80, 0x80, 0x80 }; // INPT0-3 state (paddles/keypad/booster)
 
+	// Console switch overrides (per-frame, set by TAS/movie playback)
+	bool _consoleSwitchSelect = false; // SWCHB bit 1 (active-low: true=pressed=0)
+	bool _consoleSwitchReset = false;  // SWCHB bit 0 (active-low: true=pressed=0)
+
 public:
 	explicit Atari2600ControlManager(Emulator* emu);
 
@@ -30,6 +34,9 @@ public:
 	[[nodiscard]] uint8_t GetSwchb() const { return _swchb; }
 	[[nodiscard]] uint8_t GetFireP0() const { return _fireP0; }
 	[[nodiscard]] uint8_t GetFireP1() const { return _fireP1; }
+
+	/// Sets per-frame console switch state (for TAS/movie playback)
+	void SetConsoleSwitchState(bool select, bool reset);
 
 	void Serialize(Serializer& s) override;
 };

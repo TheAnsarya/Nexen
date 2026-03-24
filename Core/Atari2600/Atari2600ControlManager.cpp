@@ -169,6 +169,8 @@ void Atari2600ControlManager::UpdateInputState() {
 	// Bit 7: Color/BW (1=Color, 0=BW)
 	Atari2600Config& cfg = _emu->GetSettings()->GetAtari2600Config();
 	uint8_t swchb = 0x37; // Reset=1, Select=1, unused bits=1
+	if (_consoleSwitchReset) swchb &= ~0x01;  // Active-low: pressed clears bit
+	if (_consoleSwitchSelect) swchb &= ~0x02; // Active-low: pressed clears bit
 	if (cfg.P0DifficultyB) swchb |= 0x08;
 	if (cfg.P1DifficultyB) swchb |= 0x40;
 	if (cfg.ColorMode) swchb |= 0x80;
@@ -206,6 +208,11 @@ uint8_t Atari2600ControlManager::GetInpt(uint8_t index) {
 	return _inpt[index];
 }
 
+void Atari2600ControlManager::SetConsoleSwitchState(bool select, bool reset) {
+	_consoleSwitchSelect = select;
+	_consoleSwitchReset = reset;
+}
+
 void Atari2600ControlManager::Serialize(Serializer& s) {
 	BaseControlManager::Serialize(s);
 	SV(_swcha);
@@ -213,4 +220,6 @@ void Atari2600ControlManager::Serialize(Serializer& s) {
 	SV(_fireP0);
 	SV(_fireP1);
 	SVArray(_inpt, 4);
+	SV(_consoleSwitchSelect);
+	SV(_consoleSwitchReset);
 }

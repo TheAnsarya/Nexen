@@ -149,6 +149,17 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 
 		// Feed input to emulator for each controller
 		var inputFrame = movie.InputFrames[frame];
+
+		// Apply Atari 2600 console switch commands for this frame
+		bool a26Select = inputFrame.Command.HasFlag(MovieConverter.FrameCommand.Atari2600Select);
+		bool a26Reset = inputFrame.Command.HasFlag(MovieConverter.FrameCommand.Atari2600Reset);
+		if (a26Select || a26Reset) {
+			InputApi.SetAtari2600ConsoleSwitches(a26Select, a26Reset);
+		} else {
+			// Clear console switches when no command flags are set
+			InputApi.SetAtari2600ConsoleSwitches(false, false);
+		}
+
 		for (int i = 0; i < inputFrame.Controllers.Length && i < 4; i++) {
 			var ctrl = inputFrame.Controllers[i];
 			if (ctrl != null) {

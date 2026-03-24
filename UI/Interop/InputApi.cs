@@ -63,6 +63,8 @@ public sealed class InputApi {
 	[DllImport(DllPath, EntryPoint = "GetControllerStates")]
 	private static extern void GetControllerStatesWrapper(IntPtr buffer, out uint count);
 
+	[DllImport(DllPath)] public static extern void SetAtari2600ConsoleSwitches([MarshalAs(UnmanagedType.I1)] bool select, [MarshalAs(UnmanagedType.I1)] bool reset);
+
 	/// <summary>
 	/// Gets the current controller states from the emulator.
 	/// </summary>
