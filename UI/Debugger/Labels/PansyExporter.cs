@@ -800,7 +800,10 @@ public static class PansyExporter {
 
 			case ConsoleType.Atari2600:
 				// Atari 2600 Memory Map (13-bit address bus, 8KB space)
-				regions.Add((0x0000, 0x007F, "TIA_Write", PansyMemoryRegionType.IO, (byte)MemoryType.Atari2600TiaRegisters));
+				// TIA has separate read ($00-$0D) and write ($00-$2C) register sets
+				// overlapping in address space — distinguished by R/W signal
+				regions.Add((0x0000, 0x000D, "TIA_Read", PansyMemoryRegionType.IO, (byte)MemoryType.Atari2600TiaRegisters));
+				regions.Add((0x0000, 0x002C, "TIA_Write", PansyMemoryRegionType.IO, (byte)MemoryType.Atari2600TiaRegisters));
 				regions.Add((0x0080, 0x00FF, "RAM", PansyMemoryRegionType.RAM, (byte)MemoryType.Atari2600Ram));
 				regions.Add((0x0280, 0x029F, "RIOT", PansyMemoryRegionType.IO, (byte)MemoryType.Atari2600Memory));
 				regions.Add((0x1000, 0x1FFF, "Cart_ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.Atari2600PrgRom));

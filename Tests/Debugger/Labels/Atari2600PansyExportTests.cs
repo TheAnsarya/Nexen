@@ -39,7 +39,8 @@ public class Atari2600PansyExportTests {
 
 	// Atari 2600 memory map constants
 	private const uint TIA_START = 0x0000;
-	private const uint TIA_END = 0x007f;
+	private const uint TIA_READ_END = 0x000d;
+	private const uint TIA_WRITE_END = 0x002c;
 	private const uint RAM_START = 0x0080;
 	private const uint RAM_END = 0x00ff;
 	private const uint RIOT_START = 0x0280;
@@ -77,13 +78,13 @@ public class Atari2600PansyExportTests {
 	#region Memory Region Tests
 
 	[Fact]
-	public void MemoryRegions_Atari2600_HasFourRegions() {
+	public void MemoryRegions_Atari2600_HasFiveRegions() {
 		var regionData = BuildAtari2600MemoryRegions();
 		var pansyFile = BuildMinimalPansyFile(regionData, SECTION_MEMORY_REGIONS, PLATFORM_ATARI_2600);
 		var tempPath = WriteTempPansy(pansyFile);
 		try {
 			var loader = PansyLoader.Load(tempPath);
-			Assert.Equal(4, loader.MemoryRegions.Count);
+			Assert.Equal(5, loader.MemoryRegions.Count);
 		} finally {
 			CleanupTemp(tempPath);
 		}
@@ -96,10 +97,14 @@ public class Atari2600PansyExportTests {
 		var tempPath = WriteTempPansy(pansyFile);
 		try {
 			var loader = PansyLoader.Load(tempPath);
-			var tia = loader.MemoryRegions.First(r => r.Name == "TIA_Write");
-			Assert.Equal(TIA_START, tia.Start);
-			Assert.Equal(TIA_END, tia.End);
-			Assert.Equal((byte)MemoryRegionType.IO, tia.Type);
+			var tiaRead = loader.MemoryRegions.First(r => r.Name == "TIA_Read");
+			Assert.Equal(TIA_START, tiaRead.Start);
+			Assert.Equal(TIA_READ_END, tiaRead.End);
+			Assert.Equal((byte)MemoryRegionType.IO, tiaRead.Type);
+			var tiaWrite = loader.MemoryRegions.First(r => r.Name == "TIA_Write");
+			Assert.Equal(TIA_START, tiaWrite.Start);
+			Assert.Equal(TIA_WRITE_END, tiaWrite.End);
+			Assert.Equal((byte)MemoryRegionType.IO, tiaWrite.Type);
 		} finally {
 			CleanupTemp(tempPath);
 		}
@@ -178,7 +183,8 @@ public class Atari2600PansyExportTests {
 			var loader = PansyLoader.Load(tempPath);
 			var starts = loader.MemoryRegions.Select(r => r.Start).ToList();
 			for (int i = 1; i < starts.Count; i++) {
-				Assert.True(starts[i] > starts[i - 1], $"Region {i} start ({starts[i]:x4}) should be > region {i - 1} start ({starts[i - 1]:x4})");
+				// TIA_Read and TIA_Write share start address 0x0000 (hardware uses R/W signal)
+				Assert.True(starts[i] >= starts[i - 1], $"Region {i} start ({starts[i]:x4}) should be >= region {i - 1} start ({starts[i - 1]:x4})");
 			}
 		} finally {
 			CleanupTemp(tempPath);
@@ -186,17 +192,25 @@ public class Atari2600PansyExportTests {
 	}
 
 	[Fact]
-	public void MemoryRegions_NoOverlap() {
+	public void MemoryRegions_NoUnexpectedOverlap() {
 		var regionData = BuildAtari2600MemoryRegions();
 		var pansyFile = BuildMinimalPansyFile(regionData, SECTION_MEMORY_REGIONS, PLATFORM_ATARI_2600);
 		var tempPath = WriteTempPansy(pansyFile);
 		try {
 			var loader = PansyLoader.Load(tempPath);
-			var regions = loader.MemoryRegions.OrderBy(r => r.Start).ToList();
-			for (int i = 1; i < regions.Count; i++) {
-				Assert.True(regions[i].Start > regions[i - 1].End,
-					$"Region '{regions[i].Name}' overlaps with '{regions[i - 1].Name}'");
+			// TIA_Read and TIA_Write share address range (hardware uses R/W signal).
+			// All other regions must not overlap.
+			var nonTia = loader.MemoryRegions
+				.Where(r => !r.Name.StartsWith("TIA_"))
+				.OrderBy(r => r.Start).ToList();
+			for (int i = 1; i < nonTia.Count; i++) {
+				Assert.True(nonTia[i].Start > nonTia[i - 1].End,
+					$"Region '{nonTia[i].Name}' overlaps with '{nonTia[i - 1].Name}'");
 			}
+			// Verify TIA_Read is subset of TIA_Write
+			var tiaRead = loader.MemoryRegions.First(r => r.Name == "TIA_Read");
+			var tiaWrite = loader.MemoryRegions.First(r => r.Name == "TIA_Write");
+			Assert.True(tiaRead.End <= tiaWrite.End, "TIA_Read should be subset of TIA_Write range");
 		} finally {
 			CleanupTemp(tempPath);
 		}
@@ -660,7 +674,7 @@ public class Atari2600PansyExportTests {
 			Assert.Equal("MainLoop", loader.Symbols[0x100]);
 
 			// Verify memory regions
-			Assert.Equal(4, loader.MemoryRegions.Count);
+			Assert.Equal(5, loader.MemoryRegions.Count);
 
 			// Verify header
 			Assert.Equal(PLATFORM_ATARI_2600, loader.Platform);
@@ -730,7 +744,7 @@ public class Atari2600PansyExportTests {
 			Assert.Equal(3, loader.CrossReferences.Count);
 
 			// Memory regions
-			Assert.Equal(4, loader.MemoryRegions.Count);
+			Assert.Equal(5, loader.MemoryRegions.Count);
 
 			// Header
 			Assert.Equal(PLATFORM_ATARI_2600, loader.Platform);
@@ -796,7 +810,8 @@ public class Atari2600PansyExportTests {
 	/// </summary>
 	private static byte[] BuildAtari2600MemoryRegions() {
 		var regions = new List<(uint Start, uint End, string Name, byte Type, byte Bank)> {
-			(TIA_START, TIA_END, "TIA_Write", (byte)MemoryRegionType.IO, 0),
+			(TIA_START, TIA_READ_END, "TIA_Read", (byte)MemoryRegionType.IO, 0),
+			(TIA_START, TIA_WRITE_END, "TIA_Write", (byte)MemoryRegionType.IO, 0),
 			(RAM_START, RAM_END, "RAM", (byte)MemoryRegionType.RAM, 0),
 			(RIOT_START, RIOT_END, "RIOT", (byte)MemoryRegionType.IO, 0),
 			(ROM_START, ROM_END, "Cart_ROM", (byte)MemoryRegionType.ROM, 0),
