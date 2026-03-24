@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Shared/Emulator.h"
 #include "Atari2600/Atari2600Console.h"
+#include "Atari2600/Atari2600ControlManager.h"
 #include "Utilities/Serializer.h"
 #include "Utilities/VirtualFile.h"
 
@@ -148,5 +149,93 @@ namespace {
 		ASSERT_EQ(runB.size(), 10u);
 		EXPECT_EQ(runA, runB);
 		EXPECT_NE(runA.back(), 0u);
+	}
+
+	// ========================================================================
+	// Controller Manager State Roundtrip Tests (#907)
+	// ========================================================================
+
+	Atari2600ControlManager* GetControlMgr(Atari2600Console& console) {
+		return static_cast<Atari2600ControlManager*>(console.GetControlManager());
+	}
+
+	TEST(Atari2600SaveStateDeterminismTests, ControlManagerStateRoundtrips) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadMapper3fRom(console);
+
+		// Run a few frames to populate controller state
+		console.RunFrame();
+		console.RunFrame();
+
+		auto* cm = GetControlMgr(console);
+		ASSERT_NE(cm, nullptr);
+
+		uint8_t expectedSwcha = cm->GetSwcha();
+		uint8_t expectedSwchb = cm->GetSwchb();
+		uint8_t expectedFireP0 = cm->GetFireP0();
+		uint8_t expectedFireP1 = cm->GetFireP1();
+
+		// Save state
+		string snapshot = SaveStatePayload(console);
+
+		// Mutate state by running more frames
+		console.RunFrame();
+		console.RunFrame();
+
+		// Load state
+		LoadStatePayload(console, snapshot);
+
+		// Verify controller state restored
+		auto* cmRestored = GetControlMgr(console);
+		EXPECT_EQ(cmRestored->GetSwcha(), expectedSwcha);
+		EXPECT_EQ(cmRestored->GetSwchb(), expectedSwchb);
+		EXPECT_EQ(cmRestored->GetFireP0(), expectedFireP0);
+		EXPECT_EQ(cmRestored->GetFireP1(), expectedFireP1);
+	}
+
+	TEST(Atari2600SaveStateDeterminismTests, ControlManagerDefaultsAfterLoadRom) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadMapper3fRom(console);
+
+		auto* cm = GetControlMgr(console);
+		ASSERT_NE(cm, nullptr);
+
+		// After ROM load, controller state should be at defaults
+		// SWCHA: 0xff (all directions released, active-low)
+		EXPECT_EQ(cm->GetSwcha(), 0xff);
+		// Fire buttons: 0x80 (released)
+		EXPECT_EQ(cm->GetFireP0(), 0x80);
+		EXPECT_EQ(cm->GetFireP1(), 0x80);
+	}
+
+	TEST(Atari2600SaveStateDeterminismTests, ControlManagerStateSurvivesMultipleRoundtrips) {
+		Emulator emu;
+		Atari2600Console console(&emu);
+		LoadMapper3fRom(console);
+
+		console.RunFrame();
+		console.RunFrame();
+		console.RunFrame();
+
+		// First roundtrip
+		string snapshot1 = SaveStatePayload(console);
+		LoadStatePayload(console, snapshot1);
+
+		auto* cm1 = GetControlMgr(console);
+		uint8_t swcha1 = cm1->GetSwcha();
+		uint8_t fireP0_1 = cm1->GetFireP0();
+
+		// Second roundtrip from the restored state
+		string snapshot2 = SaveStatePayload(console);
+		LoadStatePayload(console, snapshot2);
+
+		auto* cm2 = GetControlMgr(console);
+		EXPECT_EQ(cm2->GetSwcha(), swcha1);
+		EXPECT_EQ(cm2->GetFireP0(), fireP0_1);
+
+		// State payloads should be identical
+		EXPECT_EQ(snapshot1, snapshot2);
 	}
 }
