@@ -744,7 +744,6 @@ work as many 2600 issues as can for as long as you can, do like 10 issues in ord
 
 
 
-
 Update all four projects (Nexen, poppy, pansy, peony) to dotnet 11 and c#15 and update github CI/CD config to install the sdk (see instructions listed at: https://copilot.microsoft.com/chats/Rkj5Q5ydHbfRjVV36XhGr) 
 
 
