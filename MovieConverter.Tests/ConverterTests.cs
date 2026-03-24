@@ -675,4 +675,216 @@ public class ConverterTests {
 	}
 
 	#endregion
+
+	#region BK2 Atari 2600 Paddle Position
+
+	[Fact]
+	public void Bk2Converter_ParsesA2600PaddlePosition() {
+		// BK2 A2600 paddle format: |command|UDLRB,PPP|UDLRB|Sr|
+		using var stream = new MemoryStream();
+		using (var archive = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true)) {
+			var headerEntry = archive.CreateEntry("Header.txt");
+			using (var writer = new StreamWriter(headerEntry.Open())) {
+				writer.WriteLine("Platform A26");
+			}
+
+			var inputEntry = archive.CreateEntry("Input Log.txt");
+			using (var writer = new StreamWriter(inputEntry.Open())) {
+				writer.WriteLine("[Input]");
+				writer.WriteLine("|.|....B,  128|.....|..|");  // P1 paddle at 128 with fire
+				writer.WriteLine("|.|UDLRB,    0|.....|..|");  // P1 all dirs + fire, paddle at 0
+				writer.WriteLine("|.|.....,  255|.....|..|");  // P1 no buttons, paddle at 255
+			}
+		}
+
+		stream.Position = 0;
+		var converter = new Converters.Bk2MovieConverter();
+		var movie = converter.Read(stream, "test.bk2");
+
+		Assert.Equal(3, movie.TotalFrames);
+
+		// Frame 0: fire + paddle 128
+		Assert.True(movie.InputFrames[0].Controllers[0].A);
+		Assert.Equal((byte)128, movie.InputFrames[0].Controllers[0].PaddlePosition);
+
+		// Frame 1: all directions + fire + paddle 0
+		Assert.True(movie.InputFrames[1].Controllers[0].Up);
+		Assert.True(movie.InputFrames[1].Controllers[0].Down);
+		Assert.True(movie.InputFrames[1].Controllers[0].Left);
+		Assert.True(movie.InputFrames[1].Controllers[0].Right);
+		Assert.True(movie.InputFrames[1].Controllers[0].A);
+		Assert.Equal((byte)0, movie.InputFrames[1].Controllers[0].PaddlePosition);
+
+		// Frame 2: no buttons, paddle 255
+		Assert.False(movie.InputFrames[2].Controllers[0].A);
+		Assert.Equal((byte)255, movie.InputFrames[2].Controllers[0].PaddlePosition);
+	}
+
+	[Fact]
+	public void Bk2Converter_A2600_RoundTripsPaddlePosition() {
+		var original = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 2,
+			GameName = "Paddle Roundtrip"
+		};
+
+		// Frame 0: P1 paddle at 128 with fire
+		var frame0 = new InputFrame(0);
+		frame0.Controllers[0].A = true;
+		frame0.Controllers[0].PaddlePosition = 128;
+		original.AddFrame(frame0);
+
+		// Frame 1: P1 paddle at 0, P2 paddle at 255
+		var frame1 = new InputFrame(1);
+		frame1.Controllers[0].PaddlePosition = 0;
+		frame1.Controllers[1].PaddlePosition = 255;
+		frame1.Controllers[1].A = true;
+		original.AddFrame(frame1);
+
+		// Frame 2: P1 no paddle (joystick), P2 paddle at 100
+		var frame2 = new InputFrame(2);
+		frame2.Controllers[0].Up = true;
+		frame2.Controllers[0].A = true;
+		frame2.Controllers[1].PaddlePosition = 100;
+		original.AddFrame(frame2);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.Bk2MovieConverter();
+		converter.Write(original, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream, "test.bk2");
+
+		Assert.Equal(3, loaded.TotalFrames);
+
+		// Frame 0
+		Assert.True(loaded.InputFrames[0].Controllers[0].A);
+		Assert.Equal((byte)128, loaded.InputFrames[0].Controllers[0].PaddlePosition);
+		Assert.Null(loaded.InputFrames[0].Controllers[1].PaddlePosition);
+
+		// Frame 1
+		Assert.Equal((byte)0, loaded.InputFrames[1].Controllers[0].PaddlePosition);
+		Assert.Equal((byte)255, loaded.InputFrames[1].Controllers[1].PaddlePosition);
+		Assert.True(loaded.InputFrames[1].Controllers[1].A);
+
+		// Frame 2
+		Assert.True(loaded.InputFrames[2].Controllers[0].Up);
+		Assert.True(loaded.InputFrames[2].Controllers[0].A);
+		Assert.Null(loaded.InputFrames[2].Controllers[0].PaddlePosition);
+		Assert.Equal((byte)100, loaded.InputFrames[2].Controllers[1].PaddlePosition);
+	}
+
+	[Fact]
+	public void Bk2Converter_A2600_PaddleWithConsoleSwitches() {
+		var original = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 1,
+			GameName = "Paddle+Switches"
+		};
+
+		// Frame 0: paddle at 64, Select pressed
+		var frame0 = new InputFrame(0);
+		frame0.Controllers[0].A = true;
+		frame0.Controllers[0].PaddlePosition = 64;
+		frame0.Command = FrameCommand.Atari2600Select;
+		original.AddFrame(frame0);
+
+		// Frame 1: paddle at 200, Reset pressed, fire + left
+		var frame1 = new InputFrame(1);
+		frame1.Controllers[0].A = true;
+		frame1.Controllers[0].Left = true;
+		frame1.Controllers[0].PaddlePosition = 200;
+		frame1.Command = FrameCommand.Atari2600Reset;
+		original.AddFrame(frame1);
+
+		// Frame 2: paddle at 0, both switches
+		var frame2 = new InputFrame(2);
+		frame2.Controllers[0].PaddlePosition = 0;
+		frame2.Command = FrameCommand.Atari2600Select | FrameCommand.Atari2600Reset;
+		original.AddFrame(frame2);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.Bk2MovieConverter();
+		converter.Write(original, stream);
+
+		stream.Position = 0;
+		var loaded = converter.Read(stream, "test.bk2");
+
+		Assert.Equal(3, loaded.TotalFrames);
+
+		// Frame 0: paddle + Select
+		Assert.True(loaded.InputFrames[0].Controllers[0].A);
+		Assert.Equal((byte)64, loaded.InputFrames[0].Controllers[0].PaddlePosition);
+		Assert.True(loaded.InputFrames[0].Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.False(loaded.InputFrames[0].Command.HasFlag(FrameCommand.Atari2600Reset));
+
+		// Frame 1: paddle + Reset + fire + left
+		Assert.True(loaded.InputFrames[1].Controllers[0].A);
+		Assert.True(loaded.InputFrames[1].Controllers[0].Left);
+		Assert.Equal((byte)200, loaded.InputFrames[1].Controllers[0].PaddlePosition);
+		Assert.True(loaded.InputFrames[1].Command.HasFlag(FrameCommand.Atari2600Reset));
+
+		// Frame 2: paddle + both switches
+		Assert.Equal((byte)0, loaded.InputFrames[2].Controllers[0].PaddlePosition);
+		Assert.True(loaded.InputFrames[2].Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.True(loaded.InputFrames[2].Command.HasFlag(FrameCommand.Atari2600Reset));
+	}
+
+	[Fact]
+	public void Bk2Converter_A2600_NoPaddlePreservesJoystickFormat() {
+		// Verify backward compatibility — joystick-only A2600 movies keep 5-char format
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 1
+		};
+
+		var frame = new InputFrame(0);
+		frame.Controllers[0].Up = true;
+		frame.Controllers[0].A = true;
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.Bk2MovieConverter();
+		converter.Write(movie, stream);
+
+		// Read raw Input Log.txt content
+		stream.Position = 0;
+		using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+		var inputEntry = archive.GetEntry("Input Log.txt")!;
+		using var reader = new StreamReader(inputEntry.Open());
+		string content = reader.ReadToEnd();
+
+		// Should contain standard 5-char joystick format without comma
+		Assert.Contains("U...B", content);
+		Assert.DoesNotContain(",", content);
+	}
+
+	[Fact]
+	public void Bk2Converter_A2600_PaddleFormatInRawOutput() {
+		var movie = new MovieData {
+			SystemType = SystemType.A2600,
+			ControllerCount = 1
+		};
+
+		var frame = new InputFrame(0);
+		frame.Controllers[0].A = true;
+		frame.Controllers[0].PaddlePosition = 128;
+		movie.AddFrame(frame);
+
+		using var stream = new MemoryStream();
+		var converter = new Converters.Bk2MovieConverter();
+		converter.Write(movie, stream);
+
+		// Read raw Input Log.txt content
+		stream.Position = 0;
+		using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+		var inputEntry = archive.GetEntry("Input Log.txt")!;
+		using var reader = new StreamReader(inputEntry.Open());
+		string content = reader.ReadToEnd();
+
+		// Should contain paddle format: ....B,  128
+		Assert.Contains("....B,  128", content);
+	}
+
+	#endregion
 }

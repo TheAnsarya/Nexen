@@ -473,17 +473,24 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 	}
 
 	private static void ParseA2600Input(ReadOnlySpan<char> s, ControllerInput input) {
-		// A2600 joystick: UDLRB (5 chars)
-		// U=Up, D=Down, L=Left, R=Right, B=Button (Fire)
-		if (s.Length < 5) {
-			return;
-		}
+		// A2600 format: UDLRB (5 chars digital) or UDLRB,PPP (with paddle position)
+		// U=Up, D=Down, L=Left, R=Right, B=Button (Fire), PPP=paddle 0-255
+		int commaIdx = s.IndexOf(',');
+		ReadOnlySpan<char> buttons = commaIdx >= 0 ? s[..commaIdx] : s;
 
-		input.Up = s[0] != '.';
-		input.Down = s[1] != '.';
-		input.Left = s[2] != '.';
-		input.Right = s[3] != '.';
-		input.A = s[4] != '.'; // Fire button mapped to A
+		if (buttons.Length >= 1) input.Up = buttons[0] != '.';
+		if (buttons.Length >= 2) input.Down = buttons[1] != '.';
+		if (buttons.Length >= 3) input.Left = buttons[2] != '.';
+		if (buttons.Length >= 4) input.Right = buttons[3] != '.';
+		if (buttons.Length >= 5) input.A = buttons[4] != '.'; // Fire button mapped to A
+
+		// Parse paddle position if present after comma
+		if (commaIdx >= 0 && commaIdx + 1 < s.Length) {
+			ReadOnlySpan<char> paddleStr = s[(commaIdx + 1)..].Trim();
+			if (byte.TryParse(paddleStr, out byte paddleValue)) {
+				input.PaddlePosition = paddleValue;
+			}
+		}
 	}
 
 	private static void ParseA2600ConsoleSwitches(ReadOnlySpan<char> s, InputFrame frame) {
@@ -821,12 +828,19 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 	}
 
 	private static string FormatA2600(ControllerInput i) {
-		return string.Create(5, i, static (chars, input) => {
+		var buttons = string.Create(5, i, static (chars, input) => {
 			chars[0] = input.Up ? 'U' : '.';
 			chars[1] = input.Down ? 'D' : '.';
 			chars[2] = input.Left ? 'L' : '.';
 			chars[3] = input.Right ? 'R' : '.';
 			chars[4] = input.A ? 'B' : '.'; // Fire button
 		});
+
+		// Append paddle position if present: UDLRB,  128
+		if (i.PaddlePosition is byte paddle) {
+			return $"{buttons},{paddle,5}";
+		}
+
+		return buttons;
 	}
 }
