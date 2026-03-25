@@ -107,6 +107,7 @@ public sealed class Fm2MovieConverter : MovieConverterBase {
 				break;
 
 			case "PALMODE":
+			case "PALFLAG":
 				if (value == "1" || value.Equals("true", StringComparison.OrdinalIgnoreCase)) {
 					movie.Region = RegionType.PAL;
 				}
