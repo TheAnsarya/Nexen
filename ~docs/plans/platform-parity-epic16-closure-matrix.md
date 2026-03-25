@@ -26,7 +26,7 @@ Use this matrix to track closure evidence for each Epic 16 sub-issue.
 | #787 | Atari/Genesis harness documentation | N/A | N/A | `docs/HARNESS-DRIFT-COMPARATOR.md` | `e9406e32` | closed |
 | #788 | Epic 16 closure matrix documentation | N/A | N/A | `~docs/plans/platform-parity-epic16-closure-matrix.md` | `<this commit>` | closed |
 | #799 | Parity closure matrix template | N/A | N/A | `~docs/plans/platform-parity-epic16-closure-matrix.md` | `57deda37` | closed |
-| #800 | Week-by-week triage cadence | N/A | N/A | `~docs/plans/platform-parity-epic16-weekly-cadence.md` | `<pending>` | open |
+| #800 | Week-by-week triage cadence | N/A | N/A | `~docs/plans/platform-parity-epic16-weekly-cadence.md` | `<this commit>` | closed |
 
 ## Epic Close Criteria
 

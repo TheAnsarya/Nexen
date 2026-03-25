@@ -61,6 +61,7 @@ This directory contains user-facing documentation for Nexen.
 | [Scaffold Future-Work Backlog](../~docs/plans/platform-parity-scaffold-future-work-backlog.md) | Deferred Atari/Genesis issue tree for post-scaffold implementation fill-in |
 | [Harness Drift Comparator](HARNESS-DRIFT-COMPARATOR.md) | Baseline/candidate artifact comparison script and CI integration guide |
 | [Epic 16 Closure Matrix](../~docs/plans/platform-parity-epic16-closure-matrix.md) | Issue-to-evidence traceability matrix for Epic 16 parity work |
+| [Epic 16 Weekly Cadence](../~docs/plans/platform-parity-epic16-weekly-cadence.md) | Week-by-week execution cadence and triage checklist |
 
 ## Systems Documentation
 
