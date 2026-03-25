@@ -735,6 +735,7 @@ continue now with non-Genesis work only (#933/#934 app + 2600/Lynx verification)
 
 [Nexen] Release version 1.4.2 so we can test it thouroughly; continue working non-deferred issues; update docs and readme; continue;
 
+[Nexen] Whoops! Cancel 1.4.2; Merge branch into main, then make 1.4.3 from the main branch Release version 1.4.3 so we can test it thouroughly; update docs and readme; make a new branch for 2600 and lynx work and move to it; continue working non-deferred issues; update docs and readme; continue;
 
 
 
