@@ -393,6 +393,72 @@ public class InputApiDecoderTests {
 
 	#endregion
 
+	#region Atari 2600 Controller Tests
+
+	[Fact]
+	public void Decode_Atari2600Joystick_DPadAndFire() {
+		// A2600 joystick: Up=0, Down=1, Left=2, Right=3, Fire=4
+		var state = CreateState(ControllerType.Atari2600Joystick, 0x1F);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.Up);
+		Assert.True(result.Down);
+		Assert.True(result.Left);
+		Assert.True(result.Right);
+		Assert.True(result.A); // Fire
+		Assert.False(result.B);
+	}
+
+	[Fact]
+	public void Decode_Atari2600Driving_LeftRightFire() {
+		// A2600 driving: Left=0, Right=1, Fire=2
+		var state = CreateState(ControllerType.Atari2600DrivingController, 0x07);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.Left);
+		Assert.True(result.Right);
+		Assert.True(result.A); // Fire
+		Assert.False(result.Up);
+		Assert.False(result.Down);
+	}
+
+	[Fact]
+	public void Decode_Atari2600BoosterGrip_MapsAllConfiguredButtons() {
+		// A2600 booster: Fire=0, Trigger=1, Booster=2, Up=3, Down=4, Left=5, Right=6
+		var state = CreateState(ControllerType.Atari2600BoosterGrip, 0x7F);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.A); // Fire
+		Assert.True(result.B); // Trigger
+		Assert.True(result.X); // Booster
+		Assert.True(result.Up);
+		Assert.True(result.Down);
+		Assert.True(result.Left);
+		Assert.True(result.Right);
+	}
+
+	[Fact]
+	public void Decode_Atari2600Keypad_MapsAllTwelveBits() {
+		// A2600 keypad bits 0-11 -> A/B/X/Y/L/R/Up/Down/Left/Right/Select/Start
+		var state = CreateState(ControllerType.Atari2600Keypad, 0xFF, 0x0F);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.A);
+		Assert.True(result.B);
+		Assert.True(result.X);
+		Assert.True(result.Y);
+		Assert.True(result.L);
+		Assert.True(result.R);
+		Assert.True(result.Up);
+		Assert.True(result.Down);
+		Assert.True(result.Left);
+		Assert.True(result.Right);
+		Assert.True(result.Select);
+		Assert.True(result.Start);
+	}
+
+	#endregion
+
 	#region Edge Cases
 
 	[Fact]

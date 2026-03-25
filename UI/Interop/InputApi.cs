@@ -189,6 +189,50 @@ public sealed class InputApi {
 				input.B = (buttons & (1 << 6)) != 0;
 				break;
 
+			case ControllerType.Atari2600Joystick:
+			case ControllerType.Atari2600Paddle:
+				// A2600 joystick/paddle: Up=0, Down=1, Left=2, Right=3, Fire=4
+				input.Up = (buttons & (1 << 0)) != 0;
+				input.Down = (buttons & (1 << 1)) != 0;
+				input.Left = (buttons & (1 << 2)) != 0;
+				input.Right = (buttons & (1 << 3)) != 0;
+				input.A = (buttons & (1 << 4)) != 0; // Fire
+				break;
+
+			case ControllerType.Atari2600DrivingController:
+				// A2600 driving: Left=0, Right=1, Fire=2
+				input.Left = (buttons & (1 << 0)) != 0;
+				input.Right = (buttons & (1 << 1)) != 0;
+				input.A = (buttons & (1 << 2)) != 0; // Fire
+				break;
+
+			case ControllerType.Atari2600BoosterGrip:
+				// A2600 booster grip: Fire=0, Trigger=1, Booster=2, Up=3, Down=4, Left=5, Right=6
+				input.A = (buttons & (1 << 0)) != 0; // Fire
+				input.B = (buttons & (1 << 1)) != 0; // Trigger
+				input.X = (buttons & (1 << 2)) != 0; // Booster
+				input.Up = (buttons & (1 << 3)) != 0;
+				input.Down = (buttons & (1 << 4)) != 0;
+				input.Left = (buttons & (1 << 5)) != 0;
+				input.Right = (buttons & (1 << 6)) != 0;
+				break;
+
+			case ControllerType.Atari2600Keypad:
+				// A2600 keypad (12 keys) mapped to available ControllerInput fields.
+				input.A = (buttons & (1 << 0)) != 0;      // 1
+				input.B = (buttons & (1 << 1)) != 0;      // 2
+				input.X = (buttons & (1 << 2)) != 0;      // 3
+				input.Y = (buttons & (1 << 3)) != 0;      // 4
+				input.L = (buttons & (1 << 4)) != 0;      // 5
+				input.R = (buttons & (1 << 5)) != 0;      // 6
+				input.Up = (buttons & (1 << 6)) != 0;     // 7
+				input.Down = (buttons & (1 << 7)) != 0;   // 8
+				input.Left = (buttons & (1 << 8)) != 0;   // 9
+				input.Right = (buttons & (1 << 9)) != 0;  // *
+				input.Select = (buttons & (1 << 10)) != 0; // 0
+				input.Start = (buttons & (1 << 11)) != 0; // #
+				break;
+
 			case ControllerType.LynxController:
 				// Lynx: Up=0, Down=1, Left=2, Right=3, A=4, B=5, Option1=6, Option2=7, Pause=8
 				input.Up = (buttons & (1 << 0)) != 0;
