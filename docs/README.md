@@ -30,6 +30,12 @@ This directory contains user-facing documentation for Nexen.
 | [Manual Step Priority Ranking](manual-testing/manual-step-priority-ranking.md) | Release impact ranking for manual validation steps |
 | [Developer Testing and Manual Validation Index](../~docs/testing/README.md) | Full manual and automated testing tree |
 
+## Libraries
+
+| Document | Description |
+|---|---|
+| [MovieConverter Library](../MovieConverter/README.md) | TAS movie format conversion library — read/write Nexen, BK2, LSMV, FM2, SMV; import VBM, GMV |
+
 ## Developer Tasks
 
 | Task Document | Description |

@@ -24,9 +24,9 @@ A .NET library for converting TAS (Tool-Assisted Speedrun) movie files between d
 | BK2 | `.bk2` | BizHawk | Multi | ✅ | ✅ |
 | LSMV | `.lsmv` | lsnes | SNES, GB | ✅ | ✅ |
 | FM2 | `.fm2` | FCEUX | NES | ✅ | ✅ |
-| SMV | `.smv` | Snes9x | SNES | ✅ | 🔲 |
-| VBM | `.vbm` | VisualBoyAdvance | GBA, GB, GBC | ✅ | 🔲 |
-| GMV | `.gmv` | Gens | Genesis | ✅ | 🔲 |
+| SMV | `.smv` | Snes9x | SNES | ✅ | ✅ |
+| VBM | `.vbm` | VisualBoyAdvance | GBA, GB, GBC | ✅ | ❌ |
+| GMV | `.gmv` | Gens | Genesis | ✅ | ❌ |
 
 Legend: ✅ Implemented | 🔲 Planned | ❌ Not supported
 

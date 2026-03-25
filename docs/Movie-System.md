@@ -58,6 +58,20 @@ Nexen supports import and export for common TAS/movie formats. Use this when sha
 | 2 | Playback View (Paused at Target Frame) | `movie-b-02-paused-target` | `docs/screenshots/movie-system/b-02-paused-target.png` |
 | 3 | TAS Editor (Piano Roll) | `movie-b-03-tas-piano-roll` | `docs/screenshots/movie-system/b-03-tas-piano-roll.png` |
 
+## Supported Formats
+
+| Format | Extension | Emulator | Systems | Read | Write |
+|---|---|---|---|---|---|
+| Nexen | `.nexen-movie` | Nexen | Multi | ✅ | ✅ |
+| BK2 | `.bk2` | BizHawk | Multi | ✅ | ✅ |
+| LSMV | `.lsmv` | lsnes | SNES, GB | ✅ | ✅ |
+| FM2 | `.fm2` | FCEUX | NES | ✅ | ✅ |
+| SMV | `.smv` | Snes9x | SNES | ✅ | ✅ |
+| VBM | `.vbm` | VisualBoyAdvance | GBA, GB, GBC | ✅ | ❌ |
+| GMV | `.gmv` | Gens | Genesis | ✅ | ❌ |
+
+For full technical details on the MovieConverter library, see the [MovieConverter README](../MovieConverter/README.md).
+
 ## File Format
 
 - Nexen native movie format: `.nexen-movie`
