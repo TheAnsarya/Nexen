@@ -2577,7 +2577,18 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		int targetFrame = result.Value;
-		int actualFrame = await Greenzone.SeekToFrameAsync(targetFrame);
+		StatusMessage = $"Seeking to frame {targetFrame + 1:N0}...";
+
+		int lastProgressUpdate = -1;
+		int actualFrame = await Greenzone.SeekToFrameAsync(targetFrame, (current, target) => {
+			// Throttle UI status updates during long seeks to reduce churn.
+			if (current - lastProgressUpdate < 120) {
+				return;
+			}
+
+			lastProgressUpdate = current;
+			StatusMessage = $"Seeking... {current + 1:N0}/{target + 1:N0}";
+		});
 
 		if (actualFrame >= 0) {
 			PlaybackFrame = actualFrame;
