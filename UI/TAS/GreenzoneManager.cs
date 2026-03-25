@@ -23,6 +23,10 @@ public sealed class GreenzoneManager : IDisposable {
 	private readonly SemaphoreSlim _compressionSemaphore = new(1, 1);
 	private readonly object _ringBufferLock = new();
 	private readonly Queue<int> _ringBuffer = new();
+	private CancellationTokenSource? _seekCts;
+	private readonly object _seekLock = new();
+	private readonly object _pruneLock = new();
+	private readonly List<int> _pruneBuffer = new();
 	private bool _disposed;
 
 	/// <summary>Gets or sets the interval between automatic greenzone captures.</summary>
@@ -39,6 +43,9 @@ public sealed class GreenzoneManager : IDisposable {
 
 	/// <summary>Gets or sets the frame threshold after which states get compressed.</summary>
 	public int CompressionThreshold { get; set; } = 300; // 5 seconds
+
+	/// <summary>Gets or sets the maximum memory budget in bytes. When exceeded, oldest states are pruned.</summary>
+	public long MaxMemoryBytes { get; set; } = 256L * 1024 * 1024; // 256 MB default
 
 	/// <summary>Gets the current frame with the latest savestate. O(log n) via SortedSet.</summary>
 	public int LatestFrame {
@@ -112,8 +119,8 @@ public sealed class GreenzoneManager : IDisposable {
 		Interlocked.Add(ref _totalMemoryUsage, data.Length);
 		AddToRingBuffer(frame);
 
-		// Prune if we're over the limit
-		if (_savestates.Count > MaxSavestates) {
+		// Prune if we're over the count limit or memory budget
+		if (_savestates.Count > MaxSavestates || Interlocked.Read(ref _totalMemoryUsage) > MaxMemoryBytes) {
 			PruneSavestates();
 		}
 
@@ -212,12 +219,23 @@ public sealed class GreenzoneManager : IDisposable {
 
 	/// <summary>
 	/// Seeks to a specific frame, loading the nearest savestate and advancing if needed.
+	/// Cancels any previous in-flight seek automatically.
 	/// </summary>
 	/// <param name="targetFrame">The target frame.</param>
-	/// <returns>The actual frame reached after seeking.</returns>
-	public async Task<int> SeekToFrameAsync(int targetFrame) {
+	/// <param name="progress">Optional progress callback receiving (currentFrame, targetFrame).</param>
+	/// <returns>The actual frame reached after seeking, or -1 if cancelled/failed.</returns>
+	public async Task<int> SeekToFrameAsync(int targetFrame, Action<int, int>? progress = null) {
 		if (_disposed || !EmuApi.IsRunning()) {
 			return -1;
+		}
+
+		// Cancel any previous seek and create a new token
+		CancellationToken ct;
+		lock (_seekLock) {
+			_seekCts?.Cancel();
+			_seekCts?.Dispose();
+			_seekCts = new CancellationTokenSource();
+			ct = _seekCts.Token;
 		}
 
 		int nearestFrame = GetNearestStateFrame(targetFrame);
@@ -235,18 +253,19 @@ public sealed class GreenzoneManager : IDisposable {
 		int framesToAdvance = targetFrame - nearestFrame;
 
 		if (framesToAdvance > 0) {
-			// Batch frame advances for better performance
-			// Only yield periodically to keep UI responsive
 			const int yieldInterval = 20;
 
 			for (int i = 0; i < framesToAdvance; i++) {
-				// Execute a single frame (synchronous)
+				if (ct.IsCancellationRequested) {
+					return -1;
+				}
+
 				EmuApi.ExecuteShortcut(new ExecuteShortcutParams {
 					Shortcut = Config.Shortcuts.EmulatorShortcut.RunSingleFrame
 				});
 
-				// Yield periodically to keep UI responsive
 				if (i % yieldInterval == 0) {
+					progress?.Invoke(nearestFrame + i, targetFrame);
 					await Task.Yield();
 				}
 			}
@@ -254,6 +273,15 @@ public sealed class GreenzoneManager : IDisposable {
 
 		SavestateLoaded?.Invoke(this, new GreenzoneEventArgs(targetFrame, 0));
 		return targetFrame;
+	}
+
+	/// <summary>
+	/// Cancels any in-flight seek operation.
+	/// </summary>
+	public void CancelSeek() {
+		lock (_seekLock) {
+			_seekCts?.Cancel();
+		}
 	}
 
 	/// <summary>
@@ -387,55 +415,90 @@ public sealed class GreenzoneManager : IDisposable {
 	}
 
 	private void PruneSavestates() {
-		// Remove oldest non-interval states first
-		var toRemove = _savestates
-			.Where(kv => kv.Key % CaptureInterval != 0)
-			.OrderBy(kv => kv.Key)
-			.Take(_savestates.Count - MaxSavestates + 100) // Leave some headroom
-			.Select(kv => kv.Key)
-			.ToList();
+		lock (_pruneLock) {
+			// Zero-allocation pruning: iterate _frameIndex (already sorted) directly
+			// instead of LINQ .Where().OrderBy().Take().Select().ToList()
+			int removeTarget = _savestates.Count - MaxSavestates + 100; // Leave headroom
 
-		int prunedCount = 0;
-		long freedMemory = 0;
+			// Also prune for memory budget if exceeded
+			long currentMemory = Interlocked.Read(ref _totalMemoryUsage);
+			bool memoryOverBudget = currentMemory > MaxMemoryBytes;
 
-		foreach (var frame in toRemove) {
-			if (_savestates.TryRemove(frame, out var state)) {
-				lock (_indexLock) {
-					_frameIndex.Remove(frame);
-				}
-
-				long size = state.Data?.LongLength ?? 0;
-				prunedCount++;
-				freedMemory += size;
-				Interlocked.Add(ref _totalMemoryUsage, -size);
+			if (removeTarget <= 0 && !memoryOverBudget) {
+				return;
 			}
-		}
 
-		SavestatesPruned?.Invoke(this, new GreenzonePruneEventArgs(prunedCount, freedMemory));
+			// Reuse the buffer to avoid allocation on every prune call
+			_pruneBuffer.Clear();
+
+			lock (_indexLock) {
+				foreach (int frame in _frameIndex) {
+					// Skip interval-aligned frames (preserve keyframes)
+					if (frame % CaptureInterval == 0) {
+						continue;
+					}
+
+					_pruneBuffer.Add(frame);
+
+					// For count-based pruning, stop once we have enough candidates
+					if (!memoryOverBudget && _pruneBuffer.Count >= removeTarget) {
+						break;
+					}
+				}
+			}
+
+			int prunedCount = 0;
+			long freedMemory = 0;
+
+			foreach (int frame in _pruneBuffer) {
+				if (_savestates.TryRemove(frame, out var state)) {
+					lock (_indexLock) {
+						_frameIndex.Remove(frame);
+					}
+
+					long size = state.Data?.LongLength ?? 0;
+					prunedCount++;
+					freedMemory += size;
+					Interlocked.Add(ref _totalMemoryUsage, -size);
+
+					// For memory-based pruning, stop once we're back under budget
+					if (memoryOverBudget && Interlocked.Read(ref _totalMemoryUsage) <= MaxMemoryBytes) {
+						break;
+					}
+				}
+			}
+
+			SavestatesPruned?.Invoke(this, new GreenzonePruneEventArgs(prunedCount, freedMemory));
+		}
 	}
 
 	private async Task CompressOldStatesAsync() {
 		await _compressionSemaphore.WaitAsync();
 
 		try {
-			var latestFrame = LatestFrame;
-			var toCompress = _savestates
-				.Where(kv => !kv.Value.IsCompressed && latestFrame - kv.Key > CompressionThreshold)
-				.ToList();
+			int latestFrame = LatestFrame;
 
-			foreach (var kv in toCompress) {
-				if (kv.Value.Data is not null && !kv.Value.IsCompressed) {
-					var compressed = CompressData(kv.Value.Data);
+			foreach (var kv in _savestates) {
+				if (kv.Value.IsCompressed || kv.Value.Data is null) {
+					continue;
+				}
 
-					// Only use compressed if it's actually smaller
-					if (compressed.Length < kv.Value.Data.Length) {
-						long sizeDelta = compressed.Length - kv.Value.Data.Length;
-						kv.Value.Data = compressed;
-						kv.Value.IsCompressed = true;
-						Interlocked.Add(ref _totalMemoryUsage, sizeDelta);
-					}
+				if (latestFrame - kv.Key <= CompressionThreshold) {
+					continue;
+				}
+
+				var compressed = CompressData(kv.Value.Data);
+
+				// Only use compressed if it's actually smaller
+				if (compressed.Length < kv.Value.Data.Length) {
+					long sizeDelta = compressed.Length - kv.Value.Data.Length;
+					kv.Value.Data = compressed;
+					kv.Value.IsCompressed = true;
+					Interlocked.Add(ref _totalMemoryUsage, sizeDelta);
 				}
 			}
+		} catch (Exception ex) {
+			System.Diagnostics.Debug.WriteLine($"Background greenzone compression failed: {ex.Message}");
 		} finally {
 			_compressionSemaphore.Release();
 		}
@@ -472,6 +535,13 @@ public sealed class GreenzoneManager : IDisposable {
 		}
 
 		_disposed = true;
+
+		lock (_seekLock) {
+			_seekCts?.Cancel();
+			_seekCts?.Dispose();
+			_seekCts = null;
+		}
+
 		_savestates.Clear();
 
 		lock (_indexLock) {

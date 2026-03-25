@@ -2726,13 +2726,14 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 		Greenzone.CaptureInterval = settings.CaptureInterval;
 		Greenzone.MaxSavestates = settings.MaxSavestates;
+		Greenzone.MaxMemoryBytes = settings.MaxMemoryMB * 1024L * 1024L;
 		Greenzone.RingBufferSize = settings.RingBufferSize;
 		Greenzone.CompressionEnabled = settings.CompressionEnabled;
 		Greenzone.CompressionThreshold = settings.CompressionThreshold;
 
 		SavestateCount = Greenzone.SavestateCount;
 		GreenzoneMemoryMB = Greenzone.TotalMemoryUsage / (1024.0 * 1024.0);
-		StatusMessage = $"Greenzone settings updated (interval={settings.CaptureInterval}, max={settings.MaxSavestates})";
+		StatusMessage = $"Greenzone settings updated (interval={settings.CaptureInterval}, max={settings.MaxSavestates}, memory={settings.MaxMemoryMB}MB)";
 	}
 
 	#endregion

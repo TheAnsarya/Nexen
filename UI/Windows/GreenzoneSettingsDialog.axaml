@@ -29,21 +29,24 @@
 		</Border>
 
 		<!-- Settings -->
-		<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="10" RowSpacing="8">
+		<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="10" RowSpacing="8">
 			<TextBlock Text="Capture Interval:" VerticalAlignment="Center" ToolTip.Tip="Frames between automatic savestate captures" />
 			<NumericUpDown Grid.Column="1" Name="nudInterval" Minimum="1" Maximum="3600" Value="60" FormatString="N0" />
 
 			<TextBlock Grid.Row="1" Text="Max Savestates:" VerticalAlignment="Center" ToolTip.Tip="Maximum number of savestates in memory" />
 			<NumericUpDown Grid.Row="1" Grid.Column="1" Name="nudMaxStates" Minimum="10" Maximum="100000" Value="1000" FormatString="N0" />
 
-			<TextBlock Grid.Row="2" Text="Ring Buffer Size:" VerticalAlignment="Center" ToolTip.Tip="Recent frames kept uncompressed for fast rewind" />
-			<NumericUpDown Grid.Row="2" Grid.Column="1" Name="nudRingBuffer" Minimum="10" Maximum="3600" Value="120" FormatString="N0" />
+			<TextBlock Grid.Row="2" Text="Memory Limit (MB):" VerticalAlignment="Center" ToolTip.Tip="Maximum memory budget for greenzone in megabytes" />
+			<NumericUpDown Grid.Row="2" Grid.Column="1" Name="nudMaxMemoryMB" Minimum="32" Maximum="8192" Value="256" FormatString="N0" />
 
-			<TextBlock Grid.Row="3" Text="Compression:" VerticalAlignment="Center" />
-			<CheckBox Grid.Row="3" Grid.Column="1" Name="chkCompression" Content="Compress older states" IsChecked="True" />
+			<TextBlock Grid.Row="3" Text="Ring Buffer Size:" VerticalAlignment="Center" ToolTip.Tip="Recent frames kept uncompressed for fast rewind" />
+			<NumericUpDown Grid.Row="3" Grid.Column="1" Name="nudRingBuffer" Minimum="10" Maximum="3600" Value="120" FormatString="N0" />
 
-			<TextBlock Grid.Row="4" Text="Compression Threshold:" VerticalAlignment="Center" ToolTip.Tip="Frames older than this get compressed" />
-			<NumericUpDown Grid.Row="4" Grid.Column="1" Name="nudCompThreshold" Minimum="30" Maximum="36000" Value="300" FormatString="N0" />
+			<TextBlock Grid.Row="4" Text="Compression:" VerticalAlignment="Center" />
+			<CheckBox Grid.Row="4" Grid.Column="1" Name="chkCompression" Content="Compress older states" IsChecked="True" />
+
+			<TextBlock Grid.Row="5" Text="Compression Threshold:" VerticalAlignment="Center" ToolTip.Tip="Frames older than this get compressed" />
+			<NumericUpDown Grid.Row="5" Grid.Column="1" Name="nudCompThreshold" Minimum="30" Maximum="36000" Value="300" FormatString="N0" />
 		</Grid>
 
 		<!-- Buttons -->
