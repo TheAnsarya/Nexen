@@ -219,6 +219,19 @@ public class TasEditorViewModelBranchAndLayoutTests : IDisposable {
 	[Theory]
 	[InlineData(SystemType.Lynx)]
 	[InlineData(SystemType.A2600)]
+	public void RerecordFromSelected_OutOfRangeFrame_SetsOutOfRangeStatus_ForNonGenesisSystems(SystemType system) {
+		SetMovie(CreateTestMovie(8, system));
+		_vm.SelectedFrameIndex = 64;
+
+		_vm.RerecordFromSelected();
+
+		Assert.Equal("Failed to rerecord - selected frame is out of range", _vm.StatusMessage);
+		Assert.Equal(8, _vm.Movie!.InputFrames.Count);
+	}
+
+	[Theory]
+	[InlineData(SystemType.Lynx)]
+	[InlineData(SystemType.A2600)]
 	public void RefreshFrames_ClampsSelectedAndPlaybackFrame_AfterMovieTruncation(SystemType system) {
 		var movie = CreateTestMovie(10, system);
 		SetMovie(movie);

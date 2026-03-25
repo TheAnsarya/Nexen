@@ -2698,6 +2698,11 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			return;
 		}
 
+		if (SelectedFrameIndex >= Movie.InputFrames.Count) {
+			StatusMessage = "Failed to rerecord - selected frame is out of range";
+			return;
+		}
+
 		if (Recorder.RerecordFrom(SelectedFrameIndex)) {
 			UpdateFrames();
 			HasUnsavedChanges = true;
