@@ -108,7 +108,7 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 	/// <param name="portCount">Number of ports to include</param>
 	/// <returns>Single line for input log</returns>
 	public string ToNexenLogLine(int portCount = 2) {
-		var sb = new StringBuilder(portCount * 14 + 16);
+		var sb = new StringBuilder((portCount * 14) + 16);
 
 		// Command prefix (if any)
 		if (Command != FrameCommand.None) {
