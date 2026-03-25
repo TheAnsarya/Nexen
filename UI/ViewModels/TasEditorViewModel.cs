@@ -1989,6 +1989,14 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		Frames.Clear();
 
 		if (Movie is null) {
+			if (SelectedFrameIndex != -1) {
+				SelectedFrameIndex = -1;
+			}
+
+			if (PlaybackFrame != 0) {
+				PlaybackFrame = 0;
+			}
+
 			RefreshMarkerEntries();
 			RefreshSelectedFramePreview();
 			return;
@@ -1996,6 +2004,34 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 		for (int i = 0; i < Movie.InputFrames.Count; i++) {
 			Frames.Add(new TasFrameViewModel(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart));
+		}
+
+		if (Movie.InputFrames.Count == 0) {
+			if (SelectedFrameIndex != -1) {
+				SelectedFrameIndex = -1;
+			}
+
+			if (PlaybackFrame != 0) {
+				PlaybackFrame = 0;
+			}
+		} else {
+			int maxFrame = Movie.InputFrames.Count - 1;
+
+			if (SelectedFrameIndex > maxFrame) {
+				SelectedFrameIndex = maxFrame;
+			}
+
+			if (SelectedFrameIndex < -1) {
+				SelectedFrameIndex = -1;
+			}
+
+			if (PlaybackFrame > maxFrame) {
+				PlaybackFrame = maxFrame;
+			}
+
+			if (PlaybackFrame < 0) {
+				PlaybackFrame = 0;
+			}
 		}
 
 		RefreshMarkerEntries();

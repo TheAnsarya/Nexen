@@ -725,12 +725,15 @@ Continue working issues;
 
 continue working!
 
+continue working issues and work, all work has an issue; continue;
 
+did you close all those sega genesis issues? I didn't want them closed, I wanted them deferred until later, so label them deferred and reopen them; continue;
 
+Nope! Stop opening closed and also completed issues; if the issue has been completed then keep it closed, and re-close completed issues, we should only be reopening issues that haven't been donel continue;
 
+continue now with non-Genesis work only (#933/#934 app + 2600/Lynx verification);
 
-
-
+[Nexen] Release version 1.4.2 so we can test it thouroughly; continue working non-deferred issues; update docs and readme; continue;
 
 
 

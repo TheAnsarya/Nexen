@@ -199,6 +199,43 @@ public class TasEditorViewModelBranchAndLayoutTests : IDisposable {
 
 	#endregion
 
+	#region Rerecord And Refresh Regression
+
+	[Theory]
+	[InlineData(SystemType.Lynx)]
+	[InlineData(SystemType.A2600)]
+	public void RerecordFromSelected_WithoutGreenzoneState_SetsFailureStatus_ForNonGenesisSystems(SystemType system) {
+		SetMovie(CreateTestMovie(8, system));
+		_vm.SelectedFrameIndex = 4;
+		_vm.HasUnsavedChanges = false;
+
+		_vm.RerecordFromSelected();
+
+		Assert.Equal("Failed to rerecord - no greenzone state available for this frame", _vm.StatusMessage);
+		Assert.False(_vm.HasUnsavedChanges);
+		Assert.Equal(8, _vm.Movie!.InputFrames.Count);
+	}
+
+	[Theory]
+	[InlineData(SystemType.Lynx)]
+	[InlineData(SystemType.A2600)]
+	public void RefreshFrames_ClampsSelectedAndPlaybackFrame_AfterMovieTruncation(SystemType system) {
+		var movie = CreateTestMovie(10, system);
+		SetMovie(movie);
+
+		_vm.SelectedFrameIndex = 9;
+		_vm.PlaybackFrame = 9;
+
+		movie.InputFrames.RemoveRange(4, movie.InputFrames.Count - 4);
+		_vm.RefreshFrames();
+
+		Assert.Equal(4, _vm.Movie!.InputFrames.Count);
+		Assert.Equal(3, _vm.SelectedFrameIndex);
+		Assert.Equal(3, _vm.PlaybackFrame);
+	}
+
+	#endregion
+
 	#region Controller Layout Detection
 
 	[Theory]
