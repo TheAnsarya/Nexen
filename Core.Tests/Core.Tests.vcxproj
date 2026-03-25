@@ -225,6 +225,9 @@
 		<ClCompile Include="Genesis\GenesisSaveStateDeterminismTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="Genesis\GenesisSaveStateBoundaryReplayTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Genesis\GenesisPerformanceGateTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
