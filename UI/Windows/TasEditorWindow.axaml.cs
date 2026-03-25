@@ -150,14 +150,10 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		// Feed input to emulator for each controller
 		var inputFrame = movie.InputFrames[frame];
 
-		// Apply Atari 2600 console switch commands for this frame
-		bool a26Select = inputFrame.Command.HasFlag(MovieConverter.FrameCommand.Atari2600Select);
-		bool a26Reset = inputFrame.Command.HasFlag(MovieConverter.FrameCommand.Atari2600Reset);
-		if (a26Select || a26Reset) {
-			InputApi.SetAtari2600ConsoleSwitches(a26Select, a26Reset);
-		} else {
-			// Clear console switches when no command flags are set
-			InputApi.SetAtari2600ConsoleSwitches(false, false);
+		// Apply Atari 2600 console switch commands only when editing/playing Atari 2600 movies.
+		var switchState = ComputeAtari2600ConsoleSwitchState(vm.CurrentLayout, inputFrame.Command);
+		if (switchState.Apply) {
+			InputApi.SetAtari2600ConsoleSwitches(switchState.Select, switchState.Reset);
 		}
 
 		for (int i = 0; i < inputFrame.Controllers.Length && i < 4; i++) {
@@ -178,6 +174,18 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 				}
 			}
 		});
+	}
+
+	internal static (bool Apply, bool Select, bool Reset) ComputeAtari2600ConsoleSwitchState(
+		ControllerLayout layout,
+		MovieConverter.FrameCommand command) {
+		if (layout != ControllerLayout.Atari2600) {
+			return (false, false, false);
+		}
+
+		bool select = command.HasFlag(MovieConverter.FrameCommand.Atari2600Select);
+		bool reset = command.HasFlag(MovieConverter.FrameCommand.Atari2600Reset);
+		return (true, select, reset);
 	}
 
 	/// <summary>
