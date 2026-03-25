@@ -719,6 +719,19 @@ go; continue;
 
 go; continue;
 
+Continue working issues;
+
+[Nexen] Ignore Genesis for now, mark all the Sega Genesis issues with a `deferred` label, only focus on 2600, Lynx, and the application in general, maybe work on issue #920 `[21.39] TAS playback emulation core integration` making subissues, docs, issues, epics, plans, chat/session logs, designs, benchmarks, tests, etc; don't just make tests (although definitely make them) but focus on actual code changes and progress; focus on making a stable, complete, fully-working release; continue;
+
+
+
+
+
+
+
+
+
+
 
 
 
