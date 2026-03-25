@@ -23,9 +23,9 @@ Use this matrix to track closure evidence for each Epic 16 sub-issue.
 | #786 | Genesis save-state boundary replay | `Core.Tests.exe --gtest_filter="GenesisSaveStateBoundaryReplayTests.*" --gtest_brief=1` | N/A | `Core.Tests/Genesis/GenesisSaveStateBoundaryReplayTests.cpp` | `55d230c7` | closed |
 | #794 | Genesis interrupt replay digest suite | `Core.Tests.exe --gtest_filter="GenesisInterruptReplayDigestTests.*" --gtest_brief=1` | N/A | `Core.Tests/Genesis/GenesisInterruptReplayDigestTests.cpp` | `86e3cc89` | closed |
 | #796 | Genesis mixed-audio digest checkpoints | `Core.Tests.exe --gtest_filter="GenesisMixedAudioDigestCheckpointTests.*" --gtest_brief=1` | N/A | `Core.Tests/Genesis/GenesisMixedAudioDigestCheckpointTests.cpp` | `282a7131` | closed |
-| #787 | Atari/Genesis harness documentation | N/A | N/A | `~docs/plans/` | `<pending>` | open |
-| #788 | Epic 16 closure matrix documentation | N/A | N/A | `~docs/plans/platform-parity-epic16-closure-matrix.md` | `<pending>` | open |
-| #799 | Parity closure matrix template | N/A | N/A | `~docs/plans/platform-parity-epic16-closure-matrix.md` | `<this commit>` | in-progress |
+| #787 | Atari/Genesis harness documentation | N/A | N/A | `docs/HARNESS-DRIFT-COMPARATOR.md` | `e9406e32` | closed |
+| #788 | Epic 16 closure matrix documentation | N/A | N/A | `~docs/plans/platform-parity-epic16-closure-matrix.md` | `<this commit>` | closed |
+| #799 | Parity closure matrix template | N/A | N/A | `~docs/plans/platform-parity-epic16-closure-matrix.md` | `57deda37` | closed |
 | #800 | Week-by-week triage cadence | N/A | N/A | `~docs/plans/platform-parity-epic16-weekly-cadence.md` | `<pending>` | open |
 
 ## Epic Close Criteria
