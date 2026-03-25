@@ -152,6 +152,53 @@ public class ControllerInputTests {
 		Assert.False(input1.Equals(input3));
 	}
 
+	[Fact]
+	public void SetButton_AtariAliases_MapToExpectedButtons() {
+		var input = new ControllerInput();
+
+		input.SetButton("FIRE", true);
+		input.SetButton("TRIGGER", true);
+		input.SetButton("BOOSTER", true);
+
+		Assert.True(input.A);
+		Assert.True(input.B);
+		Assert.True(input.C);
+		Assert.True(input.GetButton("FIRE"));
+		Assert.True(input.GetButton("TRIGGER"));
+		Assert.True(input.GetButton("BOOSTER"));
+	}
+
+	[Fact]
+	public void SetButton_AtariKeypadMappings_AreRoundTrippable() {
+		var input = new ControllerInput();
+
+		input.SetButton("1", true);
+		input.SetButton("2", true);
+		input.SetButton("3", true);
+		input.SetButton("4", true);
+		input.SetButton("5", true);
+		input.SetButton("6", true);
+		input.SetButton("7", true);
+		input.SetButton("8", true);
+		input.SetButton("9", true);
+		input.SetButton("STAR", true);
+		input.SetButton("0", true);
+		input.SetButton("POUND", true);
+
+		Assert.True(input.GetButton("1"));
+		Assert.True(input.GetButton("2"));
+		Assert.True(input.GetButton("3"));
+		Assert.True(input.GetButton("4"));
+		Assert.True(input.GetButton("5"));
+		Assert.True(input.GetButton("6"));
+		Assert.True(input.GetButton("7"));
+		Assert.True(input.GetButton("8"));
+		Assert.True(input.GetButton("9"));
+		Assert.True(input.GetButton("STAR"));
+		Assert.True(input.GetButton("0"));
+		Assert.True(input.GetButton("POUND"));
+	}
+
 	#region Equals Covers All Fields
 
 	[Fact]

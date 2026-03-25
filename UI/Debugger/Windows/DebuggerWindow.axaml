@@ -187,7 +187,7 @@
 					IsVisible="{Binding BreakElapsedCycles.Length}"
 				>
 					<Image
-						Source="/Assets/Speed.png"
+						Source="/Assets/Speed.svg"
 						VerticalAlignment="Center"
 						Stretch="None"
 					/>

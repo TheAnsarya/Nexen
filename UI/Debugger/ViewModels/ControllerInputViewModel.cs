@@ -6,7 +6,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for individual controller input state and overrides.
 /// </summary>
@@ -108,8 +108,8 @@ public sealed class ControllerInputViewModel : ViewModelBase {
 		IsSnes = consoleType == ConsoleType.Snes;
 		IsWs = consoleType == ConsoleType.Ws;
 		HasShoulderButtons = consoleType is ConsoleType.Snes or ConsoleType.Gba;
-		HasSelectButton = consoleType != ConsoleType.Sms;
-		HasStartButton = consoleType != ConsoleType.Sms || index == 0;
+		HasSelectButton = consoleType is not ConsoleType.Sms and not ConsoleType.Atari2600;
+		HasStartButton = (consoleType != ConsoleType.Sms || index == 0) && consoleType != ConsoleType.Atari2600;
 		ViewHeight = consoleType != ConsoleType.Ws ? (HasShoulderButtons ? 34 : 30) : 64;
 
 		if (Design.IsDesignMode) {

@@ -1,0 +1,87 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:v="using:Nexen.Views"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:l="using:Nexen.Localization"
+	mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="350"
+	VerticalAlignment="Stretch"
+	HorizontalAlignment="Stretch"
+	x:DataType="vm:Atari2600ConfigViewModel"
+	x:Class="Nexen.Views.Atari2600ConfigView"
+>
+	<Design.DataContext>
+		<vm:Atari2600ConfigViewModel />
+	</Design.DataContext>
+
+	<TabControl TabStripPlacement="Top" SelectedIndex="{Binding SelectedTab}">
+		<TabItem Header="{l:Translate tpgGeneral}">
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<StackPanel>
+					<c:OptionSection Header="{l:Translate lblConsoleSwitches}" Margin="0">
+						<CheckBox IsChecked="{Binding Config.P0DifficultyB}" Content="{l:Translate chkP0DifficultyB}" />
+						<CheckBox IsChecked="{Binding Config.P1DifficultyB}" Content="{l:Translate chkP1DifficultyB}" />
+						<CheckBox IsChecked="{Binding Config.ColorMode}" Content="{l:Translate chkColorMode}" />
+					</c:OptionSection>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
+		<TabItem Header="{l:Translate tpgAudio}">
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<StackPanel>
+					<c:GroupBox Header="{l:Translate grpVolume}" HorizontalAlignment="Left">
+						<StackPanel Orientation="Horizontal" Height="150">
+							<StackPanel.Styles>
+								<Style Selector="c|NexenSlider">
+									<Setter Property="Minimum" Value="0" />
+									<Setter Property="Maximum" Value="100" />
+									<Setter Property="Orientation" Value="Vertical" />
+									<Setter Property="Margin" Value="5 0" />
+								</Style>
+							</StackPanel.Styles>
+
+							<c:NexenSlider Text="{l:Translate lblChannel1}" Value="{Binding Config.Channel0Vol}" />
+							<c:NexenSlider Text="{l:Translate lblChannel2}" Value="{Binding Config.Channel1Vol}" />
+						</StackPanel>
+					</c:GroupBox>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
+		<TabItem Header="{l:Translate tpgEmulation}">
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<StackPanel>
+					<c:OptionSection Header="{l:Translate lblDeveloperSettings}" Margin="0">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="{l:Translate lblRamPowerOnState}" />
+							<c:EnumComboBox SelectedItem="{Binding Config.RamPowerOnState}" Width="200" />
+						</StackPanel>
+					</c:OptionSection>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
+		<TabItem Header="{l:Translate tpgInput}">
+			<v:Atari2600InputConfigView DataContext="{Binding Input}" />
+		</TabItem>
+		<TabItem Header="{l:Translate tpgVideo}">
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<StackPanel>
+					<v:VideoConfigOverrideView DataContext="{Binding Config.ConfigOverrides}" />
+
+					<c:OptionSection Header="{l:Translate lblDisplaySettings}">
+						<c:CheckBoxWarning IsChecked="{Binding Config.HidePlayfield}" Text="{l:Translate chkHidePlayfield}" />
+						<c:CheckBoxWarning IsChecked="{Binding Config.HidePlayer0}" Text="{l:Translate chkHidePlayer0}" />
+						<c:CheckBoxWarning IsChecked="{Binding Config.HidePlayer1}" Text="{l:Translate chkHidePlayer1}" />
+						<c:CheckBoxWarning IsChecked="{Binding Config.HideMissile0}" Text="{l:Translate chkHideMissile0}" />
+						<c:CheckBoxWarning IsChecked="{Binding Config.HideMissile1}" Text="{l:Translate chkHideMissile1}" />
+						<c:CheckBoxWarning IsChecked="{Binding Config.HideBall}" Text="{l:Translate chkHideBall}" />
+					</c:OptionSection>
+				</StackPanel>
+			</ScrollViewer>
+		</TabItem>
+	</TabControl>
+</UserControl>

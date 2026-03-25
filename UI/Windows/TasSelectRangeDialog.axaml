@@ -1,0 +1,45 @@
+<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	d:DesignWidth="420"
+	d:DesignHeight="220"
+	x:Class="Nexen.Windows.TasSelectRangeDialog"
+	SizeToContent="Height"
+	Width="380"
+	CanResize="False"
+	WindowStartupLocation="CenterOwner"
+	Title="Select Range"
+	Background="{StaticResource NexenDarkBackgroundColor}"
+>
+	<StackPanel Margin="20" Spacing="10">
+		<TextBlock
+			Text="Select frame range"
+			FontSize="14"
+			Foreground="LightGray"
+		/>
+
+		<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" RowSpacing="8" ColumnSpacing="10">
+			<TextBlock Grid.Row="0" Grid.Column="0" Text="From frame:" VerticalAlignment="Center" />
+			<TextBox Grid.Row="0" Grid.Column="1" Name="txtFrom" />
+
+			<TextBlock Grid.Row="1" Grid.Column="0" Text="To frame:" VerticalAlignment="Center" />
+			<TextBox Grid.Row="1" Grid.Column="1" Name="txtTo" />
+		</Grid>
+
+		<TextBlock
+			Name="txtError"
+			Text=""
+			FontSize="11"
+			Foreground="Red"
+			IsVisible="False"
+		/>
+
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+			<Button Content="OK" Width="80" Click="OnOkClick" IsDefault="True" />
+			<Button Content="Cancel" Width="80" Click="OnCancelClick" IsCancel="True" />
+		</StackPanel>
+	</StackPanel>
+</Window>

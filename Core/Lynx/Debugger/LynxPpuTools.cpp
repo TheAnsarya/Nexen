@@ -372,6 +372,13 @@ void LynxPpuTools::GetSpriteList(GetSpritePreviewOptions options, BaseState& bas
 		sprite.TileCount = 1;
 		sprite.TileAddresses[0] = dataAddr;
 
+		// SCB chain metadata
+		uint8_t sprColl = vram[(scbAddr + 2) & 0xFFFF];
+		uint16_t scbNext = vram[(scbAddr + 3) & 0xFFFF] | (vram[(scbAddr + 4) & 0xFFFF] << 8);
+		sprite.ScbAddress = scbAddr;
+		sprite.ScbNext = scbNext;
+		sprite.CollisionNumber = sprColl & 0x0f;
+
 		// Map sprite type to priority/mode
 		switch (spriteType) {
 			case LynxSpriteType::BackgroundShadow:

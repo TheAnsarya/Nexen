@@ -14,6 +14,7 @@ Extend the Q2 feasibility work into a multi-session research and execution progr
 | Genesis emulator comparative study | [#705](https://github.com/TheAnsarya/Nexen/issues/705) | Comparative architecture findings and recommended integration strategy |
 | Sonic 1/Jurassic Park compatibility path | [#706](https://github.com/TheAnsarya/Nexen/issues/706) | Milestone-gated execution matrix and harness strategy |
 | Multi-session execution workflow | [#707](https://github.com/TheAnsarya/Nexen/issues/707) | Repeatable research-to-implementation session cadence |
+| Scaffold follow-through backlog (deferred) | [#717](https://github.com/TheAnsarya/Nexen/issues/717), [#718](https://github.com/TheAnsarya/Nexen/issues/718) | Future-work issue tree for filling scaffold details later |
 
 ## Execution Staging Tracks
 
@@ -26,6 +27,9 @@ Extend the Q2 feasibility work into a multi-session research and execution progr
 | Genesis VDP DMA milestones | [#701](https://github.com/TheAnsarya/Nexen/issues/701) | [Genesis VDP DMA Milestone Plan](genesis-vdp-dma-milestones-and-harness.md) |
 | Genesis Z80/audio staging | [#702](https://github.com/TheAnsarya/Nexen/issues/702) | [Genesis Z80 Audio Integration Staging](genesis-z80-audio-integration-staging.md) |
 | Cross-phase benchmark/correctness gates | [#703](https://github.com/TheAnsarya/Nexen/issues/703) | [Platform Parity Benchmark and Correctness Gates](platform-parity-benchmark-and-correctness-gates.md) |
+| Atari mapper scaffold phases B/C | [#712](https://github.com/TheAnsarya/Nexen/issues/712), [#713](https://github.com/TheAnsarya/Nexen/issues/713) | [Atari Mapper Order and Regression Matrix](atari-2600-mapper-order-and-regression-matrix.md) |
+| Genesis scaffold VDP/DMA and timing checkpoints | [#715](https://github.com/TheAnsarya/Nexen/issues/715), [#716](https://github.com/TheAnsarya/Nexen/issues/716) | [Genesis VDP DMA Milestone Plan](genesis-vdp-dma-milestones-and-harness.md) |
+| Deferred scaffold completion backlog | [#717](https://github.com/TheAnsarya/Nexen/issues/717), [#718](https://github.com/TheAnsarya/Nexen/issues/718) | [Scaffold Future-Work Backlog](platform-parity-scaffold-future-work-backlog.md) |
 
 ## Session Cadence Template
 

@@ -43,6 +43,57 @@ Define the minimum stable M68000 integration boundary for Nexen and a phased bri
 - Build-time scaffolding compiles in Release x64.
 - Follow-up implementation tasks are listed and dependency-ordered.
 
+## Deferred Future-Work Linkage
+
+Status: Future Work only. Do not start these issues until explicitly scheduled.
+
+- Parent future-work epic: [#718](https://github.com/TheAnsarya/Nexen/issues/718)
+- M68000 semantics follow-through: [#728](https://github.com/TheAnsarya/Nexen/issues/728)
+- Memory-map and bus ownership follow-through: [#729](https://github.com/TheAnsarya/Nexen/issues/729)
+- Interrupt/frame event scheduling follow-through: [#733](https://github.com/TheAnsarya/Nexen/issues/733)
+- Z80 bus handoff follow-through: [#734](https://github.com/TheAnsarya/Nexen/issues/734)
+
+## Execution Evidence: Promoted M68000 Semantics Follow-Through
+
+Status: Completed from deferred backlog (2026-03-17)
+
+### Issue [#728](https://github.com/TheAnsarya/Nexen/issues/728)
+
+- Replaced per-cycle PC bump stub behavior with deterministic instruction cadence in `GenesisM68kCpuStub::StepCycles`.
+- Added interrupt/exception entry flow with vector fetch, supervisor stack pushes, SR interrupt mask latch, and deterministic service-cycle window.
+- Extended CPU scaffold state exposure for deterministic checkpoint assertions (`GetStatusRegister`, `GetSupervisorStackPointer`, `GetLastExceptionVectorAddress`, `GetInterruptSequenceCount`).
+- Expanded focused tests in `GenesisM68kBoundaryScaffoldTests` to validate:
+	- deterministic instruction stepping cadence,
+	- interrupt vector dispatch,
+	- exception-state latching and stack pointer progression.
+
+### Issue [#729](https://github.com/TheAnsarya/Nexen/issues/729)
+
+- Expanded Genesis bus decode into explicit ownership routing for ROM, Z80 window, I/O window, VDP window, work RAM, and open-bus ranges.
+- Added deterministic ownership counters and access markers for read/write paths in `GenesisPlatformBusStub`.
+- Added `GenesisBusOwner` decode exposure (`GetOwnerForAddress`) for correctness-focused routing assertions.
+- Added focused tests in `GenesisMemoryMapOwnershipTests` to validate:
+	- address-window owner decode invariants,
+	- deterministic I/O window ownership behavior,
+	- open-bus read/write tracking and return semantics,
+	- 24-bit address wrap behavior for work RAM ownership.
+
+Validation commands:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Genesis* --gtest_brief=1
+.\bin\win-x64\Release\Core.Tests.exe --gtest_brief=1
+dotnet test --no-build -c Release
+```
+
+Result: 9 Genesis tests passed; 1682 native tests passed; 331 managed tests passed.
+
+Updated validation result after memory-map ownership integration:
+
+- Focused Genesis tests: 13 tests from 4 suites passed.
+- Full native regression: 1686 tests from 129 suites passed.
+- Managed regression: 331 tests passed.
+
 ## Related Research
 
 - [Genesis M68000 CPU Integration](../research/platform-parity/genesis/cpu-m68000.md)

@@ -149,6 +149,13 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 
 		// Feed input to emulator for each controller
 		var inputFrame = movie.InputFrames[frame];
+
+		// Apply Atari 2600 console switch commands only when editing/playing Atari 2600 movies.
+		var switchState = ComputeAtari2600ConsoleSwitchState(vm.CurrentLayout, inputFrame.Command);
+		if (switchState.Apply) {
+			InputApi.SetAtari2600ConsoleSwitches(switchState.Select, switchState.Reset);
+		}
+
 		for (int i = 0; i < inputFrame.Controllers.Length && i < 4; i++) {
 			var ctrl = inputFrame.Controllers[i];
 			if (ctrl != null) {
@@ -160,13 +167,25 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		Dispatcher.UIThread.Post(() => {
 			if (vm.IsPlaying) {
 				vm.PlaybackFrame++;
-				// Update UI less frequently for performance
-				if (frame % 10 == 0 || frame == movie.InputFrames.Count - 1) {
+				int nextFrame = vm.PlaybackFrame;
+				if (TasEditorViewModel.ShouldRefreshPlaybackUi(nextFrame, movie.InputFrames.Count, vm.PlaybackSpeed)) {
 					vm.SelectedFrameIndex = vm.PlaybackFrame;
 					vm.StatusMessage = $"Frame {vm.PlaybackFrame + 1} / {movie.InputFrames.Count}";
 				}
 			}
 		});
+	}
+
+	internal static (bool Apply, bool Select, bool Reset) ComputeAtari2600ConsoleSwitchState(
+		ControllerLayout layout,
+		MovieConverter.FrameCommand command) {
+		if (layout != ControllerLayout.Atari2600) {
+			return (false, false, false);
+		}
+
+		bool select = command.HasFlag(MovieConverter.FrameCommand.Atari2600Select);
+		bool reset = command.HasFlag(MovieConverter.FrameCommand.Atari2600Reset);
+		return (true, select, reset);
 	}
 
 	/// <summary>
@@ -248,8 +267,16 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 	/// </summary>
 	private void OnButtonClick(object? sender, RoutedEventArgs e) {
 		if (sender is Button button && button.Tag is string buttonName && ViewModel != null) {
-			ViewModel.ToggleButton(0, buttonName);
+			ViewModel.ToggleButton(ViewModel.SelectedEditPort, buttonName);
 		}
+	}
+
+	private void OnConsoleSwitchSelectClick(object? sender, RoutedEventArgs e) {
+		ViewModel?.ToggleConsoleSwitchSelect();
+	}
+
+	private void OnConsoleSwitchResetClick(object? sender, RoutedEventArgs e) {
+		ViewModel?.ToggleConsoleSwitchReset();
 	}
 
 	/// <summary>
@@ -296,8 +323,11 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 						e.Handled = true;
 						return;
 					case Avalonia.Input.Key.A:
-						// Select all frames
-						_frameList.SelectAll();
+						if (e.KeyModifiers.HasFlag(Avalonia.Input.KeyModifiers.Shift)) {
+							SelectNoFramesFromUi();
+						} else {
+							SelectAllFramesFromUi();
+						}
 						e.Handled = true;
 						return;
 					case Avalonia.Input.Key.F:
@@ -307,6 +337,10 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 							var searchBox = this.FindControl<Avalonia.Controls.TextBox>("SearchBox");
 							searchBox?.Focus();
 						}
+						e.Handled = true;
+						return;
+					case Avalonia.Input.Key.G:
+						_ = ViewModel.GoToFrameAsync();
 						e.Handled = true;
 						return;
 				}
@@ -419,6 +453,23 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		ViewModel?.InsertFrames();
 	}
 
+	private void OnSelectAllFramesClick(object? sender, RoutedEventArgs e) {
+		SelectAllFramesFromUi();
+	}
+
+	private void OnSelectNoFramesClick(object? sender, RoutedEventArgs e) {
+		SelectNoFramesFromUi();
+	}
+
+	private async void OnSelectRangeDialogClick(object? sender, RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.SelectRangeDialogAsync();
+		ApplySelectionFromViewModel();
+	}
+
 	private void OnDeleteFrameClick(object? sender, RoutedEventArgs e) {
 		ViewModel?.DeleteFrames();
 	}
@@ -464,6 +515,39 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		ViewModel.SelectedFrameIndices = indices;
 	}
 
+	private void ApplySelectionFromViewModel() {
+		if (ViewModel is null || _frameList.ItemsSource is not System.Collections.IList items || _frameList.SelectedItems is null) {
+			return;
+		}
+
+		_frameList.SelectedItems.Clear();
+		foreach (int idx in ViewModel.SelectedFrameIndices) {
+			if (idx >= 0 && idx < items.Count) {
+				_frameList.SelectedItems.Add(items[idx]);
+			}
+		}
+
+		_frameList.SelectedIndex = ViewModel.SelectedFrameIndex;
+	}
+
+	private void SelectAllFramesFromUi() {
+		if (ViewModel is null) {
+			return;
+		}
+
+		ViewModel.SelectAllFrames();
+		ApplySelectionFromViewModel();
+	}
+
+	private void SelectNoFramesFromUi() {
+		if (ViewModel is null) {
+			return;
+		}
+
+		ViewModel.SelectNoFrames();
+		ApplySelectionFromViewModel();
+	}
+
 	#endregion
 
 	#region Context Menu Handlers
@@ -497,13 +581,63 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 	}
 
 	private void OnSelectAllClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
-		_frameList.SelectAll();
+		SelectAllFramesFromUi();
+	}
+
+	private void OnSelectNoneClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		SelectNoFramesFromUi();
+	}
+
+	private async void OnSelectRangeDialogFromMenuClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.SelectRangeDialogAsync();
+		ApplySelectionFromViewModel();
 	}
 
 	private void OnSelectRangeToHereClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
 		if (ViewModel is null) return;
-		// Use the right-clicked index (from SelectedFrameIndex since context menu opened at that item)
-		ViewModel.SelectRangeTo(ViewModel.SelectedFrameIndex);
+		int target = _frameList.SelectedIndex;
+		ViewModel.SelectRangeTo(target);
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnBulkInsertClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.BulkInsertDialogAsync();
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnBulkSetButtonClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.BulkSetButtonDialogAsync(true);
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnBulkClearButtonClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.BulkSetButtonDialogAsync(false);
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnPatternFillClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.PatternFillDialogAsync();
+		ApplySelectionFromViewModel();
 	}
 
 	private void OnSetCommentClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
@@ -512,6 +646,50 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 
 	private void OnSetMarkerClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
 		ViewModel?.ToggleMarker();
+	}
+
+	private void OnMarkerEntryDoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		ViewModel.NavigateToMarkerEntry(ViewModel.SelectedMarkerEntry);
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnMarkerAddClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.AddMarkerEntryAsync();
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnMarkerEditClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.EditSelectedMarkerEntryAsync();
+		ApplySelectionFromViewModel();
+	}
+
+	private void OnMarkerDeleteClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		ViewModel.DeleteSelectedMarkerEntry();
+		ApplySelectionFromViewModel();
+	}
+
+	private async void OnMarkerExportClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
+		if (ViewModel is null) {
+			return;
+		}
+
+		await ViewModel.ExportMarkerEntriesAsync();
 	}
 
 	#endregion
@@ -549,7 +727,7 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		var buttonLabels = _pianoRoll.ButtonLabels ?? GetDefaultButtonLabels();
 		if (e.ButtonIndex >= 0 && e.ButtonIndex < buttonLabels.Count) {
 			string buttonName = MapButtonLabelToName(buttonLabels[e.ButtonIndex]);
-			ViewModel.ToggleButtonAtFrame(e.Frame, 0, buttonName, e.NewState);
+			ViewModel.ToggleButtonAtFrame(e.Frame, ViewModel.SelectedEditPort, buttonName, e.NewState);
 		}
 	}
 
@@ -561,13 +739,14 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		var buttonLabels = _pianoRoll.ButtonLabels ?? GetDefaultButtonLabels();
 		if (e.ButtonIndex >= 0 && e.ButtonIndex < buttonLabels.Count) {
 			string buttonName = MapButtonLabelToName(buttonLabels[e.ButtonIndex]);
-			ViewModel.PaintButton(e.Frames, 0, buttonName, e.PaintValue);
+			ViewModel.PaintButton(e.Frames, ViewModel.SelectedEditPort, buttonName, e.PaintValue);
 		}
 	}
 
 	private void OnPianoRollSelectionChanged(object? sender, PianoRollSelectionEventArgs e) {
 		if (ViewModel != null) {
-			ViewModel.SelectedFrameIndex = e.SelectionStart;
+			ViewModel.SelectFrameRange(e.SelectionStart, e.SelectionEnd);
+			ApplySelectionFromViewModel();
 		}
 	}
 
@@ -582,6 +761,8 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 			"→" => "RIGHT",
 			"ST" => "START",
 			"SE" => "SELECT",
+			"*" => "STAR",
+			"#" => "POUND",
 			_ => label.ToUpperInvariant()
 		};
 	}

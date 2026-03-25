@@ -90,6 +90,7 @@ public static class PansyExporter {
 		[RomFormat.Pce] = 0x07,      // PC Engine
 		[RomFormat.Ws] = 0x0a,       // WonderSwan
 		[RomFormat.Lynx] = 0x09,     // Atari Lynx
+		[RomFormat.Atari2600] = 0x08, // Atari 2600
 	}.ToFrozenDictionary();
 
 	/// <summary>
@@ -795,6 +796,17 @@ public static class PansyExporter {
 				regions.Add((0xFD00, 0xFDFF, "Mikey_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.LynxMemory));
 				regions.Add((0xFE00, 0xFFF7, "Boot_ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.LynxBootRom));
 				regions.Add((0xFFFA, 0xFFFF, "Vectors", PansyMemoryRegionType.ROM, (byte)MemoryType.LynxMemory));
+				break;
+
+			case ConsoleType.Atari2600:
+				// Atari 2600 Memory Map (13-bit address bus, 8KB space)
+				// TIA has separate read ($00-$0D) and write ($00-$2C) register sets
+				// overlapping in address space — distinguished by R/W signal
+				regions.Add((0x0000, 0x000D, "TIA_Read", PansyMemoryRegionType.IO, (byte)MemoryType.Atari2600TiaRegisters));
+				regions.Add((0x0000, 0x002C, "TIA_Write", PansyMemoryRegionType.IO, (byte)MemoryType.Atari2600TiaRegisters));
+				regions.Add((0x0080, 0x00FF, "RAM", PansyMemoryRegionType.RAM, (byte)MemoryType.Atari2600Ram));
+				regions.Add((0x0280, 0x029F, "RIOT", PansyMemoryRegionType.IO, (byte)MemoryType.Atari2600Memory));
+				regions.Add((0x1000, 0x1FFF, "Cart_ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.Atari2600PrgRom));
 				break;
 
 			// Add more console types as needed

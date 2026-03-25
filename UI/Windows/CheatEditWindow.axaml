@@ -62,12 +62,12 @@
 				/>
 
 				<StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" IsVisible="{Binding ShowInvalidCodeHint}">
-					<Image Source="/Assets/Warning.png" Stretch="None" Margin="3" />
+					<Image Source="/Assets/Warning.svg" Stretch="None" Margin="3" />
 					<TextBlock Text="{l:Translate lblInvalidCodes}" VerticalAlignment="Center" />
 				</StackPanel>
 			
 				<StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal">
-					<Image Source="/Assets/Help.png" Stretch="None" Margin="3" />
+					<Image Source="/Assets/Help.svg" Stretch="None" Margin="3" />
 					<TextBlock Text="{l:Translate lblHint}" VerticalAlignment="Center" />
 				</StackPanel>
 			</Grid>

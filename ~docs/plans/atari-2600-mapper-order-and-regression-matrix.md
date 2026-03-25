@@ -65,6 +65,84 @@ Dependency issue placeholders (to be replaced with issue IDs once created):
 - Phase B tracking issue: [#712](https://github.com/TheAnsarya/Nexen/issues/712)
 - Phase C tracking issue: [#713](https://github.com/TheAnsarya/Nexen/issues/713)
 
+## Phase A Evidence
+
+- Implemented in feature branch: fixed `2K/4K`, `F8`, and `F6` mapper handling with bankswitch hotspots.
+- Added focused regression tests: `Atari2600MapperPhaseATests`.
+- Added digest stability regression check against a Phase A baseline corpus.
+
+Focused command:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600MapperPhaseATests.*:Atari2600TimingSpikeHarnessTests.* --gtest_brief=1
+```
+
+Observed result snapshot:
+
+- `[==========] 11 tests from 2 test suites ran.`
+
+## Phase B Evidence
+
+- Implemented `F4`, `FE`, and `E0` mapper handling with bankswitch and segmented-window read mapping.
+- Added focused regression tests: `Atari2600MapperPhaseBTests`.
+- Re-ran harness and mapper suites together to validate deterministic behavior under the expanded corpus.
+
+Focused command:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600MapperPhaseATests.*:Atari2600MapperPhaseBTests.*:Atari2600TimingSpikeHarnessTests.* --gtest_brief=1
+```
+
+Observed result snapshot:
+
+- `[==========] 15 tests from 3 test suites ran.`
+
+## Phase C Evidence
+
+- Implemented `3F` (Tigervision-style) mapper behavior with switchable lower 2K window and fixed upper 2K window.
+- Added deterministic rare/homebrew fallback mode (`fallback`) for non-standard mapper cases.
+- Updated mapper write routing to observe low-address switch writes while keeping prior mapper paths intact.
+- Added dedicated edge-case tests: `Atari2600MapperPhaseCTests`.
+
+Focused command:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600MapperPhaseATests.*:Atari2600MapperPhaseBTests.*:Atari2600MapperPhaseCTests.*:Atari2600TimingSpikeHarnessTests.* --gtest_brief=1
+```
+
+Observed result snapshot:
+
+- `[==========] 18 tests from 4 test suites ran.`
+
+## Phase D Evidence (#724)
+
+- Refined `3F` switching behavior to react only to `$xx3f` strobe mirrors rather than any low-address write.
+- Kept deterministic bank selection behavior for both `3F` and fallback paths via centralized value-to-bank mapping.
+- Added focused behavior-accuracy tests: `Atari2600MapperPhaseDTests`.
+- Updated existing `Phase C` 3F test to use canonical strobe writes.
+
+Focused command:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Atari2600MapperPhaseDTests.*:Atari2600AudioPhaseATests.*:Atari2600RenderPhaseATests.*:Atari2600TiaPhaseATests.*:Atari2600RiotPhaseATests.*:Atari2600CpuPhaseATests.*:Atari2600TimingSpikeHarnessTests.*:Atari2600MapperPhaseATests.*:Atari2600MapperPhaseBTests.*:Atari2600MapperPhaseCTests.* --gtest_brief=1
+```
+
+Observed result snapshot:
+
+- `[==========] 34 tests from 10 test suites ran.`
+
+## Deferred Future-Work Linkage
+
+Status: Future Work only. Do not start these issues until explicitly scheduled.
+
+Completed from this deferred set:
+
+- Behavior-accurate mapper completion: [#724](https://github.com/TheAnsarya/Nexen/issues/724)
+
+- Parent future-work epic: [#717](https://github.com/TheAnsarya/Nexen/issues/717)
+- Atari compatibility harness expansion: [#725](https://github.com/TheAnsarya/Nexen/issues/725)
+- Post-correctness performance gates: [#727](https://github.com/TheAnsarya/Nexen/issues/727)
+
 ## Related Research
 
 - [Atari 2600 Bankswitching and Cartridge Formats](../research/platform-parity/atari-2600/bankswitching.md)

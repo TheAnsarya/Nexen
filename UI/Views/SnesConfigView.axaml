@@ -120,7 +120,7 @@
 				<StackPanel>
 					<Border BorderThickness="1" BorderBrush="Gray" Padding="3" Width="370" HorizontalAlignment="Left">
 						<Panel>
-							<Image Source="/Assets/Help.png" Margin="0" Width="16" Height="16" HorizontalAlignment="Left" />
+							<Image Source="/Assets/Help.svg" Margin="0" Width="16" Height="16" HorizontalAlignment="Left" />
 							<TextBlock Text="{l:Translate lblOverclockHint}" TextWrapping="Wrap" Margin="25 0 0 0" />
 						</Panel>
 					</Border>

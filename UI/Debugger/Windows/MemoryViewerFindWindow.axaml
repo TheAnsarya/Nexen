@@ -26,7 +26,7 @@
 	<DockPanel Margin="3">
 		<StackPanel DockPanel.Dock="Bottom">
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" IsVisible="{Binding ShowNotFoundError}">
-				<Image Source="/Assets/Warning.png" Stretch="None" />
+				<Image Source="/Assets/Warning.svg" Stretch="None" />
 				<TextBlock Text="{l:Translate lblNoMatchFound}" Padding="3" />
 			</StackPanel>
 			
@@ -81,7 +81,7 @@
 				Grid.Column="2"
 				Stretch="None"
 				Margin="2 -1 2 0"
-				Source="/Assets/Help.png"
+				Source="/Assets/Help.svg"
 				ToolTip.Tip="{l:Translate lblSearchHelp}"
 				ToolTip.Placement="Bottom"
 				ToolTip.ShowDelay="0"

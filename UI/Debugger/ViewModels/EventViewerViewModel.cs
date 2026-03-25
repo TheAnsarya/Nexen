@@ -310,6 +310,7 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 			CpuType.Gba => Config.GbaConfig,
 			CpuType.Ws => Config.WsConfig,
 			CpuType.Lynx => Config.LynxConfig,
+			CpuType.Atari2600 => Config.Atari2600Config,
 			_ => throw new Exception("Invalid cpu type")
 		};
 	}
@@ -408,6 +409,7 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 			CpuType.Gba => new PixelPoint(evt.Cycle, evt.Scanline * 4),
 			CpuType.Ws => new PixelPoint(evt.Cycle * 2, evt.Scanline * 2),
 			CpuType.Lynx => new PixelPoint(evt.Cycle * 2, evt.Scanline * 2),
+			CpuType.Atari2600 => new PixelPoint(evt.Cycle * 2, evt.Scanline * 2),
 			_ => throw new Exception("Invalid cpu type")
 		};
 	}
@@ -509,6 +511,8 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 			DebugApi.SetEventViewerConfig(CpuType, wsCfg.ToInterop());
 		} else if (ConsoleConfig is LynxEventViewerConfig lynxCfg) {
 			DebugApi.SetEventViewerConfig(CpuType, lynxCfg.ToInterop());
+		} else if (ConsoleConfig is Atari2600EventViewerConfig a2600Cfg) {
+			DebugApi.SetEventViewerConfig(CpuType, a2600Cfg.ToInterop());
 		}
 	}
 

@@ -52,7 +52,7 @@
 				/>
 				<DockPanel Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsGba}">
 					<Image
-						Source="/Assets/Help.png"
+						Source="/Assets/Help.svg"
 						Stretch="None"
 						Margin="4 4"
 						DockPanel.Dock="Right"

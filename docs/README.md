@@ -17,8 +17,24 @@ This directory contains user-facing documentation for Nexen.
 | [TAS Developer Guide](TAS-Developer-Guide.md) | Technical internals for TAS extensions |
 | [TAS Architecture](TAS_ARCHITECTURE.md) | TAS and movie system architecture |
 | [Movie Format Spec](NEXEN_MOVIE_FORMAT.md) | .nexen-movie file format specification |
+| [Manual Testing Hub](manual-testing/README.md) | Ranked and repeatable manual release validation workflows |
 | [Performance Guide](PERFORMANCE.md) | Consolidated performance references and validation workflow |
 | [Release Guide](RELEASE.md) | Release and publishing workflow |
+
+## Manual Testing
+
+| Document | Description |
+|---|---|
+| [Manual Testing Hub](manual-testing/README.md) | Starting manual instructions and execution order |
+| [Atari 2600 Debug and TAS Manual Test](manual-testing/atari2600-debug-and-tas-manual-test.md) | End-to-end debugger, TAS, and movie validation workflow |
+| [Manual Step Priority Ranking](manual-testing/manual-step-priority-ranking.md) | Release impact ranking for manual validation steps |
+| [Developer Testing and Manual Validation Index](../~docs/testing/README.md) | Full manual and automated testing tree |
+
+## Libraries
+
+| Document | Description |
+|---|---|
+| [MovieConverter Library](../MovieConverter/README.md) | TAS movie format conversion library — read/write Nexen, BK2, LSMV, FM2, SMV; import VBM, GMV |
 
 ## Developer Tasks
 
@@ -42,6 +58,10 @@ This directory contains user-facing documentation for Nexen.
 | [Documentation Restructure Plan](../~docs/plans/documentation-restructure-plan.md) | Documentation hierarchy and feature-first navigation roadmap |
 | [Q2 2026 Future Work Program](../~docs/plans/future-work-program-2026-q2.md) | Milestones and acceptance criteria for platform-parity planning and execution |
 | [Q3 2026 Platform Parity Research Program](../~docs/plans/platform-parity-research-program-2026-q3.md) | Multi-session research and execution cadence for issues #704-#707 |
+| [Scaffold Future-Work Backlog](../~docs/plans/platform-parity-scaffold-future-work-backlog.md) | Deferred Atari/Genesis issue tree for post-scaffold implementation fill-in |
+| [Harness Drift Comparator](HARNESS-DRIFT-COMPARATOR.md) | Baseline/candidate artifact comparison script and CI integration guide |
+| [Epic 16 Closure Matrix](../~docs/plans/platform-parity-epic16-closure-matrix.md) | Issue-to-evidence traceability matrix for Epic 16 parity work |
+| [Epic 16 Weekly Cadence](../~docs/plans/platform-parity-epic16-weekly-cadence.md) | Week-by-week execution cadence and triage checklist |
 
 ## Systems Documentation
 

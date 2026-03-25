@@ -28,14 +28,14 @@
 			</Button>
 		</Panel>
 		<Button DockPanel.Dock="Left" IsVisible="{Binding ShowArrows}" Background="Transparent" BorderThickness="0" Click="OnPrevPageClick" VerticalAlignment="Stretch" Height="NaN" MinWidth="0" Margin="0">
-			<Image Source="/Assets/MediaPlay.png" VerticalAlignment="Center" HorizontalAlignment="Left" Width="16">
+			<Image Source="/Assets/MediaPlay.svg" VerticalAlignment="Center" HorizontalAlignment="Left" Width="16">
 				<Image.RenderTransform>
 					<RotateTransform Angle="180" />
 				</Image.RenderTransform>
 			</Image>
 		</Button>
 		<Button DockPanel.Dock="Right" IsVisible="{Binding ShowArrows}" Background="Transparent" BorderThickness="0" Click="OnNextPageClick" VerticalAlignment="Stretch" Height="NaN" MinWidth="0" Margin="0">
-			<Image Source="/Assets/MediaPlay.png" VerticalAlignment="Center" HorizontalAlignment="Right" Width="16" />
+			<Image Source="/Assets/MediaPlay.svg" VerticalAlignment="Center" HorizontalAlignment="Right" Width="16" />
 		</Button>
 		<Grid Name="Grid" />
 	</DockPanel>

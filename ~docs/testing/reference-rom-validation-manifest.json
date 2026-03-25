@@ -1,0 +1,304 @@
+{
+	"$schema": "reference-rom-validation-manifest.schema.json",
+	"manifestVersion": "1.0",
+	"description": "Curated reference ROM validation manifest for Nexen regression testing. Each entry describes a reference ROM with expected checksums, mapper type, and test harness bindings.",
+	"plainLanguageNote": "SHA-256 values are placeholders. Replace with real hashes from your local reference ROM collection at C:\\~reference-roms\\. Never commit actual ROM files to the repository.",
+	"systems": [
+		{
+			"platform": "atari2600",
+			"entries": [
+				{
+					"id": "a26-2k-basic",
+					"romFileHint": "combat.a26",
+					"sourceNote": "Known-good 2K ROM for basic mapper and joystick controller validation.",
+					"sha256": "replace-with-real-sha256",
+					"romSizeBytes": 2048,
+					"expected": {
+						"mapper": "2k",
+						"harness": "Atari2600TimingSpikeHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "joystick"
+					},
+					"tags": ["mapper-basic", "joystick", "smoke-test"]
+				},
+				{
+					"id": "a26-4k-basic",
+					"romFileHint": "adventure.a26",
+					"sourceNote": "Known-good 4K ROM for standard mapper and timing validation.",
+					"sha256": "replace-with-real-sha256",
+					"romSizeBytes": 4096,
+					"expected": {
+						"mapper": "4k",
+						"harness": "Atari2600TimingSpikeHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "joystick"
+					},
+					"tags": ["mapper-basic", "joystick"]
+				},
+				{
+					"id": "a26-f8-bankswitching",
+					"romFileHint": "asteroids.a26",
+					"sourceNote": "Known-good 8K F8 bankswitched ROM for mapper validation.",
+					"sha256": "replace-with-real-sha256",
+					"romSizeBytes": 8192,
+					"expected": {
+						"mapper": "f8",
+						"harness": "Atari2600MapperPhaseATests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "joystick"
+					},
+					"tags": ["mapper-f8", "bankswitching"]
+				},
+				{
+					"id": "a26-f6-bankswitching",
+					"romFileHint": "jr-pac-man.a26",
+					"sourceNote": "Known-good 16K F6 bankswitched ROM for mapper validation.",
+					"sha256": "replace-with-real-sha256",
+					"romSizeBytes": 16384,
+					"expected": {
+						"mapper": "f6",
+						"harness": "Atari2600MapperPhaseATests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "joystick"
+					},
+					"tags": ["mapper-f6", "bankswitching"]
+				},
+				{
+					"id": "a26-f4-bankswitching",
+					"romFileHint": "fatal-run.a26",
+					"sourceNote": "Known-good 32K F4 bankswitched ROM for mapper validation.",
+					"sha256": "replace-with-real-sha256",
+					"romSizeBytes": 32768,
+					"expected": {
+						"mapper": "f4",
+						"harness": "Atari2600MapperPhaseBTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "joystick"
+					},
+					"tags": ["mapper-f4", "bankswitching"]
+				},
+				{
+					"id": "a26-e0-segmented",
+					"romFileHint": "montezumas-revenge.a26",
+					"sourceNote": "Known-good E0 segmented ROM for multi-window mapper validation.",
+					"sha256": "replace-with-real-sha256",
+					"romSizeBytes": 8192,
+					"expected": {
+						"mapper": "e0",
+						"harness": "Atari2600MapperPhaseBTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "joystick"
+					},
+					"tags": ["mapper-e0", "segmented", "mapper-edge"]
+				},
+				{
+					"id": "a26-3f-tigervision",
+					"romFileHint": "espial.a26",
+					"sourceNote": "Known-good 3F Tigervision ROM for window-switching mapper validation.",
+					"sha256": "replace-with-real-sha256",
+					"romSizeBytes": 8192,
+					"expected": {
+						"mapper": "3f",
+						"harness": "Atari2600MapperPhaseCTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "joystick"
+					},
+					"tags": ["mapper-3f", "tigervision", "mapper-edge"]
+				},
+				{
+					"id": "a26-fe-bankswitching",
+					"romFileHint": "decathlon.a26",
+					"sourceNote": "Known-good FE bankswitched ROM for activision mapper validation.",
+					"sha256": "replace-with-real-sha256",
+					"romSizeBytes": 8192,
+					"expected": {
+						"mapper": "fe",
+						"harness": "Atari2600MapperPhaseBTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "joystick"
+					},
+					"tags": ["mapper-fe", "activision", "mapper-edge"]
+				},
+				{
+					"id": "a26-paddle-controller",
+					"romFileHint": "breakout.a26",
+					"sourceNote": "Known-good paddle controller game for INPT threshold validation.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"mapper": "2k",
+						"harness": "Atari2600TimingSpikeHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "paddle"
+					},
+					"tags": ["paddle", "analog-input", "controller-edge"]
+				},
+				{
+					"id": "a26-keypad-controller",
+					"romFileHint": "basic-programming.a26",
+					"sourceNote": "Known-good keypad controller game for column scan validation.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"mapper": "4k",
+						"harness": "Atari2600TimingSpikeHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "keypad"
+					},
+					"tags": ["keypad", "matrix-scan", "controller-edge"]
+				},
+				{
+					"id": "a26-driving-controller",
+					"romFileHint": "indy-500.a26",
+					"sourceNote": "Known-good driving controller game for gray code validation.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"mapper": "2k",
+						"harness": "Atari2600TimingSpikeHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "driving"
+					},
+					"tags": ["driving", "gray-code", "controller-edge"]
+				},
+				{
+					"id": "a26-timing-sensitive",
+					"romFileHint": "pitfall.a26",
+					"sourceNote": "Known-good timing-sensitive ROM for cycle-accurate TIA validation.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"mapper": "4k",
+						"harness": "Atari2600TimingSpikeHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "joystick"
+					},
+					"tags": ["timing-sensitive", "kernel-tricks", "benchmark"]
+				},
+				{
+					"id": "a26-collision-heavy",
+					"romFileHint": "space-invaders.a26",
+					"sourceNote": "Known-good collision-heavy ROM for TIA collision latch validation.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"mapper": "4k",
+						"harness": "Atari2600TimingSpikeHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "joystick"
+					},
+					"tags": ["collision", "sprite-heavy", "rendering"]
+				},
+				{
+					"id": "a26-audio-heavy",
+					"romFileHint": "pitfall-ii.a26",
+					"sourceNote": "Known-good audio-heavy ROM for TIA audio channel validation.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"mapper": "f8",
+						"harness": "Atari2600TimingSpikeHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "joystick",
+						"audioChannels": 2
+					},
+					"tags": ["audio-heavy", "dpc"]
+				},
+				{
+					"id": "a26-performance-gate",
+					"romFileHint": "river-raid.a26",
+					"sourceNote": "Known-good ROM used as performance gate regression benchmark.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"mapper": "f8",
+						"harness": "Atari2600PerformanceGateTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "joystick",
+						"frameCount": 600
+					},
+					"tags": ["performance-gate", "benchmark", "regression"]
+				}
+			]
+		},
+		{
+			"platform": "genesis",
+			"entries": [
+				{
+					"id": "gen-platformer-basic",
+					"romFileHint": "sonic-the-hedgehog.md",
+					"sourceNote": "Known-good platformer ROM for Genesis core validation.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"titleClass": "sonic",
+						"harness": "GenesisCompatibilityHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "6button"
+					},
+					"tags": ["platformer", "vdp-scrolling", "benchmark"]
+				},
+				{
+					"id": "gen-rpg-basic",
+					"romFileHint": "phantasy-star-iv.md",
+					"sourceNote": "Known-good RPG ROM for Genesis text/menu system validation.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"titleClass": "rpg",
+						"harness": "GenesisCompatibilityHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "3button"
+					},
+					"tags": ["rpg", "text-heavy", "sram"]
+				},
+				{
+					"id": "gen-audio-ym2612",
+					"romFileHint": "streets-of-rage-2.md",
+					"sourceNote": "Known-good YM2612-heavy ROM for Genesis audio validation.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"titleClass": "action",
+						"harness": "GenesisCompatibilityHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "6button",
+						"audioChannels": 10
+					},
+					"tags": ["audio-heavy", "ym2612", "psg"]
+				},
+				{
+					"id": "gen-z80-bus",
+					"romFileHint": "golden-axe.md",
+					"sourceNote": "Known-good Z80 bus-heavy ROM for bus arbitration validation.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"titleClass": "action",
+						"harness": "GenesisCompatibilityHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "3button"
+					},
+					"tags": ["z80-bus", "bus-arbitration"]
+				},
+				{
+					"id": "gen-interrupt-timing",
+					"romFileHint": "road-rash.md",
+					"sourceNote": "Known-good interrupt-timing-sensitive ROM for IRQ/HInt validation.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"titleClass": "racing",
+						"harness": "GenesisCompatibilityHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "3button"
+					},
+					"tags": ["interrupt-timing", "hint-heavy", "vdp-mode"]
+				},
+				{
+					"id": "gen-performance-gate",
+					"romFileHint": "gunstar-heroes.md",
+					"sourceNote": "Known-good performance-heavy ROM for regression benchmark.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"titleClass": "action",
+						"harness": "GenesisPerformanceGateTests",
+						"summaryDigest": "capture-after-first-known-good-run",
+						"controllerType": "6button",
+						"frameCount": 600
+					},
+					"tags": ["performance-gate", "sprite-heavy", "benchmark"]
+				}
+			]
+		}
+	],
+	"nextStep": "Replace placeholder SHA-256 values with real hashes from your local C:\\~reference-roms\\ collection. Run each test harness once to capture known-good summaryDigest values, then update this manifest. See ~docs/testing/reference-rom-validation-guide.md for the workflow."
+}

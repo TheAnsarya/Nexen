@@ -199,6 +199,9 @@ BenchmarkDotNet.Artifacts/
 Benchmarks/BenchmarkDotNet.Artifacts/
 MovieConverter.Benchmarks/BenchmarkDotNet.Artifacts/
 
+# Generated validation artifacts
+artifacts/
+
 # Temp build/benchmark/test output files
 bench-*.json
 bench-*.txt

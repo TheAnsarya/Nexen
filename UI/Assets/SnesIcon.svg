@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+	<defs>
+		<mask id="snesBlueCut">
+			<rect x="0" y="0" width="24" height="24" fill="#ffffff"/>
+			<ellipse cx="13.9" cy="9.1" rx="1.05" ry="0.72" transform="rotate(-18 13.9 9.1)" fill="#000000"/>
+		</mask>
+		<mask id="snesRedCut">
+			<rect x="0" y="0" width="24" height="24" fill="#ffffff"/>
+			<ellipse cx="14.8" cy="13.8" rx="1.05" ry="0.72" transform="rotate(18 14.8 13.8)" fill="#000000"/>
+		</mask>
+	</defs>
+	<ellipse cx="12" cy="7.05" rx="3.65" ry="2.25" fill="#3d5afe" transform="rotate(-18 12 7.05)" mask="url(#snesBlueCut)"/>
+	<ellipse cx="16.45" cy="11.45" rx="3.65" ry="2.25" fill="#e53935" transform="rotate(18 16.45 11.45)" mask="url(#snesRedCut)"/>
+	<ellipse cx="12" cy="15.8" rx="3.65" ry="2.25" fill="#fdd835" transform="rotate(-18 12 15.8)"/>
+	<ellipse cx="7.55" cy="11.45" rx="3.65" ry="2.25" fill="#43a047" transform="rotate(18 7.55 11.45)"/>
+</svg>

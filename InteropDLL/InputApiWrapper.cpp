@@ -7,6 +7,7 @@
 #include "Core/Shared/Interfaces/IConsole.h"
 #include "Utilities/StringUtilities.h"
 #include "Core/Shared/Interfaces/IMouseManager.h"
+#include "Core/Atari2600/Atari2600ControlManager.h"
 
 extern unique_ptr<IKeyManager> _keyManager;
 extern unique_ptr<IMouseManager> _mouseManager;
@@ -159,6 +160,18 @@ DllExport void __stdcall GetControllerStates(ControllerStateInterop* buffer, uin
 		buffer[i].StateSize = (uint8_t)std::min(stateBytes.size(), sizeof(buffer[i].StateBytes));
 		memset(buffer[i].StateBytes, 0, sizeof(buffer[i].StateBytes));
 		memcpy(buffer[i].StateBytes, stateBytes.data(), buffer[i].StateSize);
+	}
+}
+
+DllExport void __stdcall SetAtari2600ConsoleSwitches(bool select, bool reset) {
+	if (!_emu) return;
+	IConsole* console = _emu->GetConsoleUnsafe();
+	if (!console) return;
+	BaseControlManager* controlManager = console->GetControlManager();
+	if (!controlManager) return;
+	auto* a26cm = dynamic_cast<Atari2600ControlManager*>(controlManager);
+	if (a26cm) {
+		a26cm->SetConsoleSwitchState(select, reset);
 	}
 }
 }

@@ -119,6 +119,15 @@ public sealed class SpritePreviewModel : ViewModelBase {
 	/// <summary>Gets the addresses of all tiles in this sprite.</summary>
 	public UInt32[] TileAddresses { get; set; } = [];
 
+	/// <summary>Gets or sets the SCB chain address (Lynx only, -1 if unused).</summary>
+	[Reactive] public int ScbAddress { get; set; }
+
+	/// <summary>Gets or sets the SCBNEXT pointer (Lynx only, -1 if unused).</summary>
+	[Reactive] public int ScbNext { get; set; }
+
+	/// <summary>Gets or sets the SPRCOLL collision number (Lynx only, -1 if unused).</summary>
+	[Reactive] public int CollisionNumber { get; set; }
+
 	private UInt32[] _rawPreview = new UInt32[128 * 128];
 
 	/// <summary>Gets or sets the sprite preview bitmap.</summary>
@@ -224,6 +233,10 @@ public sealed class SpritePreviewModel : ViewModelBase {
 		DoubleSize = sprite.DoubleSize;
 		TransformParamIndex = sprite.TransformParamIndex;
 
+		ScbAddress = sprite.ScbAddress;
+		ScbNext = sprite.ScbNext;
+		CollisionNumber = sprite.CollisionNumber;
+
 		string flags = sprite.HorizontalMirror == NullableBoolean.True ? "H" : "";
 		flags += sprite.VerticalMirror == NullableBoolean.True ? "V" : "";
 		flags += sprite.Visibility == SpriteVisibility.Disabled ? "D" : "";
@@ -321,5 +334,9 @@ public sealed class SpritePreviewModel : ViewModelBase {
 
 		dst.UseExtendedVram = UseExtendedVram;
 		dst.UseSecondTable = UseSecondTable;
+
+		dst.ScbAddress = ScbAddress;
+		dst.ScbNext = ScbNext;
+		dst.CollisionNumber = CollisionNumber;
 	}
 }

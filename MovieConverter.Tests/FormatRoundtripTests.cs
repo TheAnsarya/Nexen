@@ -39,7 +39,7 @@ public class FormatRoundtripTests {
 		string nexen = input.ToNexenFormat();
 		var parsed = ControllerInput.FromNexenFormat(nexen);
 
-		Assert.Equal("............", nexen);
+		Assert.Equal("...............", nexen);
 		Assert.False(parsed.HasInput);
 	}
 
@@ -52,7 +52,7 @@ public class FormatRoundtripTests {
 
 		Assert.True(parsed.A);
 		Assert.False(parsed.B);
-		Assert.Equal("........A...", nexen);
+		Assert.Equal("........A......", nexen);
 	}
 
 	[Theory]
@@ -104,7 +104,7 @@ public class FormatRoundtripTests {
 
 		string nexen = input.ToNexenFormat();
 
-		Assert.Equal(12, nexen.Length);
+		Assert.Equal(15, nexen.Length);
 		Assert.Equal('B', nexen[0]);
 		Assert.Equal('Y', nexen[1]);
 		Assert.Equal('s', nexen[2]);  // lowercase
@@ -117,6 +117,9 @@ public class FormatRoundtripTests {
 		Assert.Equal('X', nexen[9]);
 		Assert.Equal('l', nexen[10]); // lowercase
 		Assert.Equal('r', nexen[11]); // lowercase
+		Assert.Equal('.', nexen[12]); // C not set
+		Assert.Equal('.', nexen[13]); // Z not set
+		Assert.Equal('.', nexen[14]); // Mode not set
 	}
 
 	[Fact]
@@ -125,7 +128,7 @@ public class FormatRoundtripTests {
 
 		string nexen = input.ToNexenFormat();
 
-		Assert.Equal("............", nexen);
+		Assert.Equal("...............", nexen);
 	}
 
 	#endregion
@@ -785,6 +788,37 @@ public class FormatRoundtripTests {
 	}
 
 	[Fact]
+	public void GetCommandPrefix_Atari2600Select() {
+		var frame = new InputFrame { Command = FrameCommand.Atari2600Select };
+
+		string line = frame.ToNexenLogLine(1);
+
+		Assert.StartsWith("CMD:A26_SELECT|", line);
+	}
+
+	[Fact]
+	public void GetCommandPrefix_Atari2600Reset() {
+		var frame = new InputFrame { Command = FrameCommand.Atari2600Reset };
+
+		string line = frame.ToNexenLogLine(1);
+
+		Assert.StartsWith("CMD:A26_RESET|", line);
+	}
+
+	[Fact]
+	public void GetCommandPrefix_Atari2600SelectAndReset() {
+		var frame = new InputFrame {
+			Command = FrameCommand.Atari2600Select | FrameCommand.Atari2600Reset
+		};
+
+		string line = frame.ToNexenLogLine(1);
+
+		Assert.Contains("A26_SELECT", line);
+		Assert.Contains("A26_RESET", line);
+		Assert.StartsWith("CMD:", line);
+	}
+
+	[Fact]
 	public void GetCommandPrefix_NoCommand_NoPrefix() {
 		var frame = new InputFrame();
 		frame.Controllers[0].A = true;
@@ -806,6 +840,8 @@ public class FormatRoundtripTests {
 	[InlineData(FrameCommand.ControllerSwap)]
 	[InlineData(FrameCommand.Pause)]
 	[InlineData(FrameCommand.PowerOff)]
+	[InlineData(FrameCommand.Atari2600Select)]
+	[InlineData(FrameCommand.Atari2600Reset)]
 	public void CommandRoundtrip_SingleCommand(FrameCommand cmd) {
 		var frame = new InputFrame { Command = cmd };
 
@@ -911,6 +947,44 @@ public class FormatRoundtripTests {
 		var parsed = InputFrame.FromNexenLogLine(line, 0);
 
 		Assert.True(parsed.Command.HasFlag(FrameCommand.SoftReset));
+	}
+
+	[Fact]
+	public void CommandRoundtrip_Atari2600SelectWithInputs() {
+		var frame = new InputFrame {
+			Command = FrameCommand.Atari2600Select
+		};
+		frame.Controllers[0].A = true;
+		frame.Controllers[0].Right = true;
+
+		string line = frame.ToNexenLogLine(1);
+		var parsed = InputFrame.FromNexenLogLine(line, 0);
+
+		Assert.True(parsed.Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.True(parsed.Controllers[0].A);
+		Assert.True(parsed.Controllers[0].Right);
+	}
+
+	[Fact]
+	public void CommandRoundtrip_Atari2600CombinedWithOtherCommands() {
+		var cmd = FrameCommand.SoftReset | FrameCommand.Atari2600Select | FrameCommand.Atari2600Reset;
+		var frame = new InputFrame { Command = cmd };
+
+		string line = frame.ToNexenLogLine(1);
+		var parsed = InputFrame.FromNexenLogLine(line, 0);
+
+		Assert.True(parsed.Command.HasFlag(FrameCommand.SoftReset));
+		Assert.True(parsed.Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.True(parsed.Command.HasFlag(FrameCommand.Atari2600Reset));
+	}
+
+	[Fact]
+	public void CommandParsing_CaseInsensitive_Atari2600() {
+		string line = "CMD:a26_select,a26_reset|............";
+		var parsed = InputFrame.FromNexenLogLine(line, 0);
+
+		Assert.True(parsed.Command.HasFlag(FrameCommand.Atari2600Select));
+		Assert.True(parsed.Command.HasFlag(FrameCommand.Atari2600Reset));
 	}
 
 	[Fact]

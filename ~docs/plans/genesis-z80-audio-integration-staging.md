@@ -66,6 +66,62 @@ Create a staged integration plan for Z80, YM2612, and SN76489 that preserves cor
 - A staged rollout path exists that avoids all-at-once subsystem landing.
 - Audio determinism and latency checks are documented per phase.
 
+## Execution Evidence: Promoted Z80 Bootstrap and Bus Handoff Follow-Through
+
+Status: Completed from deferred backlog (2026-03-17)
+
+### Issue [#734](https://github.com/TheAnsarya/Nexen/issues/734)
+
+- Added deterministic Z80 bootstrap/run state and bus-request handoff controls in `GenesisPlatformBusStub`.
+- Added deterministic shared-bus arbitration behavior for the Z80 window when Z80 is running versus bus-request handoff active.
+- Added deterministic Z80 cycle progression tracking through scaffold stepping (`StepZ80Cycles`).
+- Added focused `GenesisZ80HandoffTests` to validate:
+	- bootstrap state transition behavior,
+	- bus-request halt/resume handoff behavior,
+	- Z80 window access behavior under ownership handoff.
+
+Validation commands:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Genesis* --gtest_brief=1
+.\bin\win-x64\Release\Core.Tests.exe --gtest_brief=1
+dotnet test --no-build -c Release
+```
+
+Result: 28 Genesis tests passed; 1701 native tests passed; 331 managed tests passed.
+
+### Issue [#735](https://github.com/TheAnsarya/Nexen/issues/735)
+
+- Added deterministic YM2612 scaffold register model with address/data sequencing for both ports.
+- Added deterministic YM2612 timing progression and sample synthesis scaffold (`StepYm2612`) synchronized with frame stepping.
+- Added deterministic YM register/write/sample/digest tracking for regression checkpointing.
+- Added focused `GenesisYm2612TimingTests` to validate:
+	- register write sequencing behavior,
+	- deterministic sample generation across identical runs,
+	- sample-count progression tied to cycle stepping thresholds.
+
+Updated validation result after YM2612 timing scaffold integration:
+
+- Focused Genesis tests: 31 tests from 10 suites passed.
+- Full native regression: 1704 tests from 135 suites passed.
+- Managed regression: 331 tests passed.
+
+### Issue [#736](https://github.com/TheAnsarya/Nexen/issues/736)
+
+- Added deterministic SN76489 scaffold register model, write sequencing, and sample stepping path.
+- Added deterministic mixed-output scaffold integration combining YM2612 and PSG samples.
+- Added deterministic PSG and mixed-audio digest/counter tracking for regression checkpoints.
+- Added focused `GenesisPsgMixedAudioTests` to validate:
+	- PSG register writes through mapped port behavior,
+	- PSG sample timing progression,
+	- mixed-output determinism across identical runs.
+
+Updated validation result after PSG/mixed-output scaffold integration:
+
+- Focused Genesis tests: 34 tests from 11 suites passed.
+- Full native regression: 1707 tests from 136 suites passed.
+- Managed regression: 331 tests passed.
+
 ## Related Research
 
 - [Genesis Z80 Audio Bus](../research/platform-parity/genesis/z80-audio-bus.md)

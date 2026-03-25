@@ -32,7 +32,12 @@ void EmuSettings::CopySettings(EmuSettings& src) {
 	SetNesConfig(src._nes);
 	SetPcEngineConfig(src._pce);
 	SetSmsConfig(src._sms);
+	SetCvConfig(src._cv);
 	SetGbaConfig(src._gba);
+	SetWsConfig(src._ws);
+	SetLynxConfig(src._lynx);
+	SetGenesisConfig(src._genesis);
+	SetAtari2600Config(src._atari2600);
 }
 
 void EmuSettings::Serialize(Serializer& s) {
@@ -152,6 +157,19 @@ void EmuSettings::Serialize(Serializer& s) {
 			break;
 
 		case ConsoleType::Atari2600:
+			SV(_atari2600.RamPowerOnState);
+			SV(_atari2600.P0DifficultyB);
+			SV(_atari2600.P1DifficultyB);
+			SV(_atari2600.ColorMode);
+			SV(_atari2600.Port1.Type);
+			SV(_atari2600.Port2.Type);
+			break;
+
+		case ConsoleType::Genesis:
+			SV(_genesis.RamPowerOnState);
+			SV(_genesis.Port1.Type);
+			SV(_genesis.Port2.Type);
+			SV(_genesis.Region);
 			break;
 
 		default:
@@ -285,6 +303,22 @@ void EmuSettings::SetLynxConfig(LynxConfig& config) {
 
 LynxConfig& EmuSettings::GetLynxConfig() {
 	return _lynx;
+}
+
+void EmuSettings::SetGenesisConfig(GenesisConfig& config) {
+	_genesis = config;
+}
+
+GenesisConfig& EmuSettings::GetGenesisConfig() {
+	return _genesis;
+}
+
+void EmuSettings::SetAtari2600Config(Atari2600Config& config) {
+	_atari2600 = config;
+}
+
+Atari2600Config& EmuSettings::GetAtari2600Config() {
+	return _atari2600;
 }
 
 void EmuSettings::SetGameConfig(GameConfig& config) {
@@ -440,6 +474,7 @@ OverscanDimensions EmuSettings::GetOverscan() {
 		case ConsoleType::Ws:
 		case ConsoleType::Lynx:
 		case ConsoleType::Atari2600:
+		case ConsoleType::Genesis:
 			break;
 	}
 
@@ -467,7 +502,7 @@ double EmuSettings::GetAspectRatio(ConsoleRegion region, FrameInfo baseFrameSize
 
 		// For auto, ntsc and pal, these are PAR ratios, so multiply them with the base screen's aspect ratio to get the expected screen aspect ratio
 		case VideoAspectRatio::Auto:
-			if (_emu->GetConsoleType() == ConsoleType::Gameboy || _emu->GetConsoleType() == ConsoleType::Gba || _emu->GetConsoleType() == ConsoleType::Ws || _emu->GetConsoleType() == ConsoleType::Lynx || _emu->GetConsoleType() == ConsoleType::Atari2600) {
+			if (_emu->GetConsoleType() == ConsoleType::Gameboy || _emu->GetConsoleType() == ConsoleType::Gba || _emu->GetConsoleType() == ConsoleType::Ws || _emu->GetConsoleType() == ConsoleType::Lynx || _emu->GetConsoleType() == ConsoleType::Atari2600 || _emu->GetConsoleType() == ConsoleType::Genesis) {
 				// GB/GBA/WS/Lynx/Atari2600 shouldn't use NTSC/PAL aspect ratio when in auto mode
 				return screenAspectRatio;
 			} else if (_emu->GetRomInfo().Format == RomFormat::GameGear) {
@@ -552,7 +587,9 @@ bool EmuSettings::HasRandomPowerOnState(ConsoleType consoleType) {
 		case ConsoleType::Gba:
 			return _gba.RamPowerOnState == RamState::Random;
 		case ConsoleType::Atari2600:
-			return false;
+			return _atari2600.RamPowerOnState == RamState::Random;
+		case ConsoleType::Genesis:
+			return _genesis.RamPowerOnState == RamState::Random;
 	}
 
 	return false;

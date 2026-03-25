@@ -121,6 +121,7 @@ public sealed class DebugApi {
 			CpuType.Gba => GetPpuState<GbaPpuState>(cpuType),
 			CpuType.Ws => GetPpuState<WsPpuState>(cpuType),
 			CpuType.Lynx => GetPpuState<LynxPpuState>(cpuType),
+			CpuType.Atari2600 => GetPpuState<Atari2600TiaState>(cpuType),
 			_ => throw new Exception("Unsupported cpu type")
 		};
 	}
@@ -142,6 +143,7 @@ public sealed class DebugApi {
 			CpuType.Gba => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
 			CpuType.Ws => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
 			CpuType.Lynx => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
+			CpuType.Atari2600 => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
 			_ => throw new Exception("Unsupported cpu type")
 		};
 	}
@@ -392,6 +394,7 @@ public sealed class DebugApi {
 	[DllImport(DllPath)] public static extern void SetEventViewerConfig(CpuType cpuType, InteropSmsEventViewerConfig config);
 	[DllImport(DllPath)] public static extern void SetEventViewerConfig(CpuType cpuType, InteropWsEventViewerConfig config);
 	[DllImport(DllPath)] public static extern void SetEventViewerConfig(CpuType cpuType, InteropLynxEventViewerConfig config);
+	[DllImport(DllPath)] public static extern void SetEventViewerConfig(CpuType cpuType, InteropAtari2600EventViewerConfig config);
 
 	[DllImport(DllPath, EntryPoint = "GetEventViewerEvent")] private static extern DebugEventInfo GetEventViewerEventWrapper(CpuType cpuType, UInt16 scanline, UInt16 cycle);
 	public static DebugEventInfo? GetEventViewerEvent(CpuType cpuType, UInt16 scanline, UInt16 cycle) {
@@ -530,6 +533,7 @@ public sealed class DebugApi {
 			CpuType.Gba => state is GbaCpuState,
 			CpuType.Ws => state is WsCpuState,
 			CpuType.Lynx => state is LynxCpuState,
+			CpuType.Atari2600 => state is Atari2600CpuState,
 			_ => false
 		};
 	}
@@ -544,6 +548,7 @@ public sealed class DebugApi {
 			ConsoleType.Gba => state is GbaPpuState,
 			ConsoleType.Ws => state is WsPpuState,
 			ConsoleType.Lynx => state is LynxPpuState,
+			ConsoleType.Atari2600 => state is Atari2600TiaState,
 			_ => false
 		};
 	}
@@ -572,6 +577,8 @@ public enum MemoryType {
 	GbaMemory,
 	WsMemory,
 	LynxMemory,
+	GenesisMemory,
+	Atari2600Memory,
 
 	SnesPrgRom,
 	SnesWorkRam,
@@ -660,6 +667,15 @@ public enum MemoryType {
 	LynxWorkRam,
 	LynxBootRom,
 	LynxSaveRam,
+
+	GenesisPrgRom,
+	GenesisWorkRam,
+	GenesisVideoRam,
+	GenesisPaletteRam,
+
+	Atari2600PrgRom,
+	Atari2600Ram,
+	Atari2600TiaRegisters,
 
 	None,
 }
@@ -1029,6 +1045,19 @@ public sealed class InteropLynxEventViewerConfig {
 	[MarshalAs(UnmanagedType.I1)] public bool ShowPreviousFrameEvents;
 }
 
+[StructLayout(LayoutKind.Sequential)]
+public sealed class InteropAtari2600EventViewerConfig {
+	public InteropEventViewerCategoryCfg Irq;
+	public InteropEventViewerCategoryCfg MarkedBreakpoints;
+
+	public InteropEventViewerCategoryCfg TiaWrite;
+	public InteropEventViewerCategoryCfg TiaRead;
+	public InteropEventViewerCategoryCfg RiotWrite;
+	public InteropEventViewerCategoryCfg RiotRead;
+
+	[MarshalAs(UnmanagedType.I1)] public bool ShowPreviousFrameEvents;
+}
+
 public enum TilemapDisplayMode {
 	Default,
 	Grayscale,
@@ -1252,6 +1281,10 @@ public unsafe struct DebugSpriteInfo {
 
 	public UInt32 TileCount;
 	public fixed UInt32 TileAddresses[8 * 8];
+
+	public Int32 ScbAddress;
+	public Int32 ScbNext;
+	public Int32 CollisionNumber;
 }
 
 public enum RawPaletteFormat {
@@ -1466,7 +1499,9 @@ public enum CpuType : byte {
 	Sms,
 	Gba,
 	Ws,
-	Lynx
+	Lynx,
+	Genesis,
+	Atari2600
 }
 
 public enum StepType {

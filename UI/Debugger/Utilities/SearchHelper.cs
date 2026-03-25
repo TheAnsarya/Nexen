@@ -4,14 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Media.Imaging;
+using Avalonia.Media;
 using Nexen.Debugger.Integration;
 using Nexen.Debugger.Labels;
 using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Utilities; 
+namespace Nexen.Debugger.Utilities;
 public static class SearchHelper {
 	private static List<string> GetSearchTerms(string searchString) {
 		searchString = searchString.Trim();
@@ -238,7 +238,7 @@ public record SearchResultInfo {
 		}
 	}
 
-	public Bitmap? UiIcon {
+	public IImage? UiIcon {
 		get {
 			string? img = null;
 			if (AbsoluteAddress?.Address >= 0) {
@@ -251,7 +251,7 @@ public record SearchResultInfo {
 				img = "Assets/Enum.png";
 			}
 
-			return img is not null ? ImageUtilities.BitmapFromAsset(img) : null;
+			return img is not null ? ImageUtilities.ImageFromAsset(img) : null;
 		}
 	}
 

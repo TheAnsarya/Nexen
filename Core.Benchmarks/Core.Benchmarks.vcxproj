@@ -57,6 +57,7 @@
 			<EnableCOMDATFolding>true</EnableCOMDATFolding>
 			<OptimizeReferences>true</OptimizeReferences>
 			<GenerateDebugInformation>true</GenerateDebugInformation>
+			<AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemGroup>
@@ -85,6 +86,12 @@
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
 		<ClCompile Include="Gameboy\GbCpuBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Atari2600\Atari2600Bench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Genesis\GenesisBench.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
 		<ClCompile Include="PPU\PpuRenderBench.cpp">

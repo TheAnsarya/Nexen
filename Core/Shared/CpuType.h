@@ -24,7 +24,9 @@ enum class CpuType : uint8_t {
 	Sms,     ///< Sega Master System Z80 CPU (8-bit, 16-bit addressing)
 	Gba,     ///< Game Boy Advance ARM7TDMI CPU (32-bit RISC)
 	Ws,      ///< WonderSwan NEC V30MZ CPU (80186-compatible)
-	Lynx     ///< Atari Lynx 65C02 CPU (8-bit, 16-bit addressing)
+	Lynx,       ///< Atari Lynx 65C02 CPU (8-bit, 16-bit addressing)
+	Genesis,    ///< Sega Genesis Motorola 68000 CPU (16/32-bit)
+	Atari2600   ///< Atari 2600 6507 CPU (6502 subset, 13-bit addressing)
 };
 
 /// <summary>
@@ -43,6 +45,6 @@ public:
 	/// [[nodiscard]] prevents accidentally discarding the count value.
 	/// </remarks>
 	[[nodiscard]] static constexpr int GetCpuTypeCount() {
-		return (int)CpuType::Lynx + 1;
+		return (int)CpuType::Atari2600 + 1;
 	}
 };

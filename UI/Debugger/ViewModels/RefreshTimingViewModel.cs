@@ -6,7 +6,7 @@ using Nexen.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for configuring refresh timing settings in debugger windows.
 /// </summary>
@@ -76,6 +76,7 @@ public sealed class RefreshTimingViewModel : ViewModelBase {
 			ConsoleType.Gba => 160,
 			ConsoleType.Ws => 144,
 			ConsoleType.Lynx => 102,
+			ConsoleType.Atari2600 => 192,
 			_ => throw new Exception("Invalid console type")
 		};
 

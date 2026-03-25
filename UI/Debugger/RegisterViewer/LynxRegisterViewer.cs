@@ -18,6 +18,7 @@ public sealed class LynxRegisterViewer {
 			GetCpuTab(ref state),
 			GetMikeyTab(ref state),
 			GetSuzyTab(ref state),
+			GetMathTab(ref state),
 		};
 
 		return tabs;
@@ -95,38 +96,10 @@ public sealed class LynxRegisterViewer {
 		List<RegEntry> entries = new() {
 			new RegEntry("", "Sprite Busy", suzy.SpriteBusy),
 			new RegEntry("", "Sprite Enabled", suzy.SpriteEnabled),
-			new RegEntry("", "SCB Address", suzy.SCBAddress, Format.X16),
-			new RegEntry("", "Sprite Control 0", suzy.SpriteControl0, Format.X8),
-			new RegEntry("", "Sprite Control 1", suzy.SpriteControl1, Format.X8),
-			new RegEntry("", "Sprite Init", suzy.SpriteInit, Format.X8),
-			new RegEntry("", ""),
-			new RegEntry("", "Math Registers"),
-			new RegEntry("", "  ABCD", suzy.MathABCD, Format.X32),
-			new RegEntry("", "    A (byte 3)", (byte)(suzy.MathABCD >> 24), Format.X8),
-			new RegEntry("", "    B (byte 2)", (byte)(suzy.MathABCD >> 16), Format.X8),
-			new RegEntry("", "    C (byte 1)", (byte)(suzy.MathABCD >> 8), Format.X8),
-			new RegEntry("", "    D (byte 0)", (byte)(suzy.MathABCD), Format.X8),
-			new RegEntry("", "  EFGH", suzy.MathEFGH, Format.X32),
-			new RegEntry("", "    E (byte 3)", (byte)(suzy.MathEFGH >> 24), Format.X8),
-			new RegEntry("", "    F (byte 2)", (byte)(suzy.MathEFGH >> 16), Format.X8),
-			new RegEntry("", "    G (byte 1)", (byte)(suzy.MathEFGH >> 8), Format.X8),
-			new RegEntry("", "    H (byte 0)", (byte)(suzy.MathEFGH), Format.X8),
-			new RegEntry("", "  JKLM", suzy.MathJKLM, Format.X32),
-			new RegEntry("", "    J (byte 3)", (byte)(suzy.MathJKLM >> 24), Format.X8),
-			new RegEntry("", "    K (byte 2)", (byte)(suzy.MathJKLM >> 16), Format.X8),
-			new RegEntry("", "    L (byte 1)", (byte)(suzy.MathJKLM >> 8), Format.X8),
-			new RegEntry("", "    M (byte 0)", (byte)(suzy.MathJKLM), Format.X8),
-			new RegEntry("", "  NP", suzy.MathNP, Format.X16),
-			new RegEntry("", "    N (byte 1)", (byte)(suzy.MathNP >> 8), Format.X8),
-			new RegEntry("", "    P (byte 0)", (byte)(suzy.MathNP), Format.X8),
-			new RegEntry("", "  AB Sign", suzy.MathAB_sign),
-			new RegEntry("", "  CD Sign", suzy.MathCD_sign),
-			new RegEntry("", "  EFGH Sign", suzy.MathEFGH_sign),
-			new RegEntry("", "  Sign", suzy.MathSign),
-			new RegEntry("", "  Accumulate", suzy.MathAccumulate),
-			new RegEntry("", "  In Progress", suzy.MathInProgress),
-			new RegEntry("", "  Overflow", suzy.MathOverflow),
-			new RegEntry("", "  Last Carry", suzy.LastCarry),
+			new RegEntry("$FC10", "SCB Address", suzy.SCBAddress, Format.X16),
+			new RegEntry("$FC04", "Sprite Control 0", suzy.SpriteControl0, Format.X8),
+			new RegEntry("$FC05", "Sprite Control 1", suzy.SpriteControl1, Format.X8),
+			new RegEntry("$FC08", "Sprite Init", suzy.SpriteInit, Format.X8),
 			new RegEntry("", ""),
 			new RegEntry("", "SPRSYS Flags"),
 			new RegEntry("", "  Unsafe Access", suzy.UnsafeAccess),
@@ -135,10 +108,54 @@ public sealed class LynxRegisterViewer {
 			new RegEntry("", "  VStretch", suzy.VStretch),
 			new RegEntry("", "  LeftHand", suzy.LeftHand),
 			new RegEntry("", ""),
-			new RegEntry("", "Joystick", suzy.Joystick, Format.X8),
-			new RegEntry("", "Switches", suzy.Switches, Format.X8),
+			new RegEntry("$FCB0", "Joystick", suzy.Joystick, Format.X8),
+			new RegEntry("$FCB1", "Switches", suzy.Switches, Format.X8),
 		};
 
 		return new RegisterViewerTab("Suzy", entries, CpuType.Lynx, MemoryType.LynxMemory);
+	}
+
+	private static RegisterViewerTab GetMathTab(ref LynxState state) {
+		ref LynxSuzyState suzy = ref state.Suzy;
+
+		List<RegEntry> entries = new() {
+			new RegEntry("", "Multiply Operands (ABCD)"),
+			new RegEntry("$FC52-55", "ABCD", suzy.MathABCD, Format.X32),
+			new RegEntry("$FC55", "  A (byte 3)", (byte)(suzy.MathABCD >> 24), Format.X8),
+			new RegEntry("$FC54", "  B (byte 2)", (byte)(suzy.MathABCD >> 16), Format.X8),
+			new RegEntry("$FC53", "  C (byte 1)", (byte)(suzy.MathABCD >> 8), Format.X8),
+			new RegEntry("$FC52", "  D (byte 0)", (byte)(suzy.MathABCD), Format.X8),
+			new RegEntry("", ""),
+			new RegEntry("", "Result / Dividend (EFGH)"),
+			new RegEntry("$FC60-63", "EFGH", suzy.MathEFGH, Format.X32),
+			new RegEntry("$FC63", "  E (byte 3)", (byte)(suzy.MathEFGH >> 24), Format.X8),
+			new RegEntry("$FC62", "  F (byte 2)", (byte)(suzy.MathEFGH >> 16), Format.X8),
+			new RegEntry("$FC61", "  G (byte 1)", (byte)(suzy.MathEFGH >> 8), Format.X8),
+			new RegEntry("$FC60", "  H (byte 0)", (byte)(suzy.MathEFGH), Format.X8),
+			new RegEntry("", ""),
+			new RegEntry("", "Accumulator / Remainder (JKLM)"),
+			new RegEntry("$FC6C-6F", "JKLM", suzy.MathJKLM, Format.X32),
+			new RegEntry("$FC6F", "  J (byte 3)", (byte)(suzy.MathJKLM >> 24), Format.X8),
+			new RegEntry("$FC6E", "  K (byte 2)", (byte)(suzy.MathJKLM >> 16), Format.X8),
+			new RegEntry("$FC6D", "  L (byte 1)", (byte)(suzy.MathJKLM >> 8), Format.X8),
+			new RegEntry("$FC6C", "  M (byte 0)", (byte)(suzy.MathJKLM), Format.X8),
+			new RegEntry("", ""),
+			new RegEntry("", "Divisor (NP)"),
+			new RegEntry("$FC56-57", "NP", suzy.MathNP, Format.X16),
+			new RegEntry("$FC57", "  N (byte 1)", (byte)(suzy.MathNP >> 8), Format.X8),
+			new RegEntry("$FC56", "  P (byte 0)", (byte)(suzy.MathNP), Format.X8),
+			new RegEntry("", ""),
+			new RegEntry("", "Status"),
+			new RegEntry("", "  AB Sign", suzy.MathAB_sign),
+			new RegEntry("", "  CD Sign", suzy.MathCD_sign),
+			new RegEntry("", "  EFGH Sign", suzy.MathEFGH_sign),
+			new RegEntry("", "  Signed Mode", suzy.MathSign),
+			new RegEntry("", "  Accumulate", suzy.MathAccumulate),
+			new RegEntry("", "  In Progress", suzy.MathInProgress),
+			new RegEntry("", "  Overflow", suzy.MathOverflow),
+			new RegEntry("", "  Last Carry", suzy.LastCarry),
+		};
+
+		return new RegisterViewerTab("Math", entries, CpuType.Lynx, MemoryType.LynxMemory);
 	}
 }

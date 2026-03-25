@@ -38,6 +38,8 @@ enum class MemoryType {
 	GbaMemory,     ///< Game Boy Advance ARM7 address space (32-bit, 4GB)
 	WsMemory,      ///< WonderSwan address space
 	LynxMemory,    ///< Atari Lynx 65C02 address space (16-bit, 64KB)
+	GenesisMemory, ///< Genesis M68000 CPU address space (24-bit, 16MB)
+	Atari2600Memory, ///< Atari 2600 6507 CPU address space (13-bit, 8KB)
 
 	// ===== SNES memory regions =====
 	SnesPrgRom,               ///< SNES program ROM (cartridge code/data)
@@ -134,6 +136,17 @@ enum class MemoryType {
 	LynxWorkRam,      ///< Lynx work RAM (64KB)
 	LynxBootRom,      ///< Lynx boot ROM (512 bytes)
 	LynxSaveRam,      ///< Lynx EEPROM save data
+
+	// ===== Sega Genesis memory regions =====
+	GenesisPrgRom,     ///< Genesis program ROM (cartridge, up to 4MB)
+	GenesisWorkRam,    ///< Genesis work RAM (64KB)
+	GenesisVideoRam,   ///< Genesis video RAM (64KB VRAM)
+	GenesisPaletteRam, ///< Genesis palette RAM (128 bytes CRAM)
+
+	// ===== Atari 2600 memory regions =====
+	Atari2600PrgRom,       ///< Atari 2600 cartridge ROM (2KB-32KB)
+	Atari2600Ram,          ///< Atari 2600 RIOT RAM (128 bytes)
+	Atari2600TiaRegisters, ///< Atari 2600 TIA hardware registers
 
 	/// <summary>Sentinel value for invalid/unspecified memory type</summary>
 	None

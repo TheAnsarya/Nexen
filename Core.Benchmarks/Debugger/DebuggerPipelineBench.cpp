@@ -555,7 +555,8 @@ static void BM_Callstack_RingBuffer_PushPop(benchmark::State& state) {
 
 	for (auto _ : state) {
 		callstack.push_back(frame);
-		benchmark::DoNotOptimize(callstack.back());
+		StackFrameInfo observed = callstack.back();
+		benchmark::DoNotOptimize(observed.Return);
 		callstack.pop_back();
 	}
 	state.SetItemsProcessed(state.iterations() * 2);
@@ -781,6 +782,118 @@ static void BM_EventManager_RingBuffer(benchmark::State& state) {
 	state.SetItemsProcessed(state.iterations());
 }
 BENCHMARK(BM_EventManager_RingBuffer);
+
+// =============================================================================
+// 8.5 Additional Debugger Hot-Path Scenarios
+// =============================================================================
+
+// Breakpoint path with sparse breakpoints and mixed hit/miss pattern.
+static void BM_Debugger_BreakpointPath_UnorderedSetSparse(benchmark::State& state) {
+	std::unordered_set<uint32_t> breakpoints;
+	for (uint32_t i = 0; i < 64; i++) {
+		breakpoints.insert(0x2000 + (i * 97));
+	}
+
+	auto addrs = GenerateRandomAddresses(20000, 0x10000);
+	uint32_t idx = 0;
+	uint32_t hits = 0;
+
+	for (auto _ : state) {
+		uint32_t addr = addrs[idx++ % addrs.size()];
+		bool hit = breakpoints.find(addr) != breakpoints.end();
+		hits += hit ? 1u : 0u;
+		benchmark::DoNotOptimize(hit);
+	}
+	state.SetItemsProcessed(state.iterations());
+	state.counters["hits"] = hits;
+	state.SetLabel("sparse bp set lookup");
+}
+BENCHMARK(BM_Debugger_BreakpointPath_UnorderedSetSparse);
+
+// Trace row formatting using std::format (common debugger display path).
+static void BM_Debugger_TraceRowFormatting_StdFormat(benchmark::State& state) {
+	uint32_t pc = 0x008123;
+	uint8_t op = 0xA9;
+	uint8_t arg0 = 0x40;
+	uint8_t arg1 = 0x10;
+	uint64_t cycles = 0;
+	uint32_t scanline = 0;
+
+	for (auto _ : state) {
+		string row = std::format("PC={:06x} OP={:02x} ARGS={:02x} {:02x} CYC={} SL={}", pc, op, arg0, arg1, cycles, scanline);
+		cycles += 3;
+		scanline = (scanline + 1) % 262;
+		benchmark::DoNotOptimize(row);
+	}
+	state.SetItemsProcessed(state.iterations());
+	state.SetLabel("std::format trace rows");
+}
+BENCHMARK(BM_Debugger_TraceRowFormatting_StdFormat);
+
+// Trace row formatting using append-style string assembly.
+static void BM_Debugger_TraceRowFormatting_Append(benchmark::State& state) {
+	uint32_t pc = 0x008123;
+	uint8_t op = 0xA9;
+	uint8_t arg0 = 0x40;
+	uint8_t arg1 = 0x10;
+	uint64_t cycles = 0;
+	uint32_t scanline = 0;
+
+	for (auto _ : state) {
+		string row;
+		row.reserve(64);
+		row += "PC=";
+		row += std::format("{:06x}", pc);
+		row += " OP=";
+		row += std::format("{:02x}", op);
+		row += " ARGS=";
+		row += std::format("{:02x} {:02x}", arg0, arg1);
+		row += " CYC=";
+		row += std::to_string(cycles);
+		row += " SL=";
+		row += std::to_string(scanline);
+		cycles += 3;
+		scanline = (scanline + 1) % 262;
+		benchmark::DoNotOptimize(row);
+	}
+	state.SetItemsProcessed(state.iterations());
+	state.SetLabel("append-style trace rows");
+}
+BENCHMARK(BM_Debugger_TraceRowFormatting_Append);
+
+// Request dispatch overhead for direct call path.
+static void BM_Debugger_RequestDispatch_Direct(benchmark::State& state) {
+	uint64_t accum = 0;
+	auto direct = [](uint32_t requestId, uint64_t& value) {
+		value += (uint64_t)(requestId * 3 + 1);
+	};
+
+	uint32_t requestId = 0;
+	for (auto _ : state) {
+		direct(requestId++, accum);
+		benchmark::DoNotOptimize(accum);
+	}
+	state.SetItemsProcessed(state.iterations());
+	state.SetLabel("direct request callback");
+}
+BENCHMARK(BM_Debugger_RequestDispatch_Direct);
+
+// Request dispatch overhead for std::function wrapper path.
+static void BM_Debugger_RequestDispatch_StdFunction(benchmark::State& state) {
+	uint64_t accum = 0;
+	std::function<void(uint32_t, uint64_t&)> wrapped = [](uint32_t requestId, uint64_t& value) {
+		value += (uint64_t)(requestId * 3 + 1);
+	};
+
+	uint32_t requestId = 0;
+	for (auto _ : state) {
+		wrapped(requestId++, accum);
+		benchmark::DoNotOptimize(accum);
+	}
+	state.SetItemsProcessed(state.iterations());
+	state.SetLabel("std::function wrapper");
+}
+BENCHMARK(BM_Debugger_RequestDispatch_StdFunction);
 
 // =============================================================================
 // 8. Composite: Simulated Full Debugger Pipeline

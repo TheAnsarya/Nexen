@@ -63,6 +63,14 @@ DllExport void __stdcall SetLynxConfig(LynxConfig config) {
 	_emu->GetSettings()->SetLynxConfig(config);
 }
 
+DllExport void __stdcall SetGenesisConfig(GenesisConfig config) {
+	_emu->GetSettings()->SetGenesisConfig(config);
+}
+
+DllExport void __stdcall SetAtari2600Config(Atari2600Config config) {
+	_emu->GetSettings()->SetAtari2600Config(config);
+}
+
 DllExport void __stdcall SetGameConfig(GameConfig config) {
 	_emu->GetSettings()->SetGameConfig(config);
 }

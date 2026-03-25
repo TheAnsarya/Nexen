@@ -25,6 +25,56 @@ public class InputApiDecoderTests {
 
 	#endregion
 
+	#region Lynx Controller Tests
+
+	[Fact]
+	public void Decode_LynxController_AllButtonsOff() {
+		var state = CreateState(ControllerType.LynxController, 0x00, 0x00);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.False(result.Up);
+		Assert.False(result.Down);
+		Assert.False(result.Left);
+		Assert.False(result.Right);
+		Assert.False(result.A);
+		Assert.False(result.B);
+		Assert.False(result.L);
+		Assert.False(result.R);
+		Assert.False(result.Start);
+	}
+
+	[Fact]
+	public void Decode_LynxController_DPadAndFaceButtons() {
+		// Lynx: Up=0, Down=1, Left=2, Right=3, A=4, B=5
+		var state = CreateState(ControllerType.LynxController, 0x3F, 0x00);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.Up);
+		Assert.True(result.Down);
+		Assert.True(result.Left);
+		Assert.True(result.Right);
+		Assert.True(result.A);
+		Assert.True(result.B);
+		Assert.False(result.L);
+		Assert.False(result.R);
+		Assert.False(result.Start);
+	}
+
+	[Fact]
+	public void Decode_LynxController_OptionAndPauseButtons() {
+		// Lynx: Option1=6, Option2=7, Pause=8
+		var state = CreateState(ControllerType.LynxController, 0xC0, 0x01);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.L); // Option1
+		Assert.True(result.R); // Option2
+		Assert.True(result.Start); // Pause
+		Assert.False(result.Up);
+		Assert.False(result.A);
+	}
+
+	#endregion
+
 	#region SNES Controller Tests
 
 	[Fact]
@@ -343,6 +393,72 @@ public class InputApiDecoderTests {
 
 	#endregion
 
+	#region Atari 2600 Controller Tests
+
+	[Fact]
+	public void Decode_Atari2600Joystick_DPadAndFire() {
+		// A2600 joystick: Up=0, Down=1, Left=2, Right=3, Fire=4
+		var state = CreateState(ControllerType.Atari2600Joystick, 0x1F);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.Up);
+		Assert.True(result.Down);
+		Assert.True(result.Left);
+		Assert.True(result.Right);
+		Assert.True(result.A); // Fire
+		Assert.False(result.B);
+	}
+
+	[Fact]
+	public void Decode_Atari2600Driving_LeftRightFire() {
+		// A2600 driving: Left=0, Right=1, Fire=2
+		var state = CreateState(ControllerType.Atari2600DrivingController, 0x07);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.Left);
+		Assert.True(result.Right);
+		Assert.True(result.A); // Fire
+		Assert.False(result.Up);
+		Assert.False(result.Down);
+	}
+
+	[Fact]
+	public void Decode_Atari2600BoosterGrip_MapsAllConfiguredButtons() {
+		// A2600 booster: Fire=0, Trigger=1, Booster=2, Up=3, Down=4, Left=5, Right=6
+		var state = CreateState(ControllerType.Atari2600BoosterGrip, 0x7F);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.A); // Fire
+		Assert.True(result.B); // Trigger
+		Assert.True(result.X); // Booster
+		Assert.True(result.Up);
+		Assert.True(result.Down);
+		Assert.True(result.Left);
+		Assert.True(result.Right);
+	}
+
+	[Fact]
+	public void Decode_Atari2600Keypad_MapsAllTwelveBits() {
+		// A2600 keypad bits 0-11 -> A/B/X/Y/L/R/Up/Down/Left/Right/Select/Start
+		var state = CreateState(ControllerType.Atari2600Keypad, 0xFF, 0x0F);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.A);
+		Assert.True(result.B);
+		Assert.True(result.X);
+		Assert.True(result.Y);
+		Assert.True(result.L);
+		Assert.True(result.R);
+		Assert.True(result.Up);
+		Assert.True(result.Down);
+		Assert.True(result.Left);
+		Assert.True(result.Right);
+		Assert.True(result.Select);
+		Assert.True(result.Start);
+	}
+
+	#endregion
+
 	#region Edge Cases
 
 	[Fact]
@@ -393,6 +509,35 @@ public class InputApiDecoderTests {
 		Assert.True(result.Select); // bit 6
 		Assert.True(result.Start);  // bit 7
 		Assert.False(result.Up);    // bit 8 (not set)
+	}
+
+	#endregion
+
+	#region Controller Type Mapping
+
+	[Theory]
+	[InlineData(ControllerType.Atari2600Joystick, Nexen.MovieConverter.ControllerType.Atari2600Joystick)]
+	[InlineData(ControllerType.Atari2600Paddle, Nexen.MovieConverter.ControllerType.Atari2600Paddle)]
+	[InlineData(ControllerType.Atari2600Keypad, Nexen.MovieConverter.ControllerType.Atari2600Keypad)]
+	[InlineData(ControllerType.Atari2600DrivingController, Nexen.MovieConverter.ControllerType.Atari2600DrivingController)]
+	[InlineData(ControllerType.Atari2600BoosterGrip, Nexen.MovieConverter.ControllerType.Atari2600BoosterGrip)]
+	[InlineData(ControllerType.SnesController, Nexen.MovieConverter.ControllerType.Gamepad)]
+	[InlineData(ControllerType.NesController, Nexen.MovieConverter.ControllerType.Gamepad)]
+	[InlineData(ControllerType.GameboyController, Nexen.MovieConverter.ControllerType.Gamepad)]
+	[InlineData(ControllerType.LynxController, Nexen.MovieConverter.ControllerType.Gamepad)]
+	[InlineData(ControllerType.SnesMouse, Nexen.MovieConverter.ControllerType.Mouse)]
+	[InlineData(ControllerType.SuperScope, Nexen.MovieConverter.ControllerType.SuperScope)]
+	[InlineData(ControllerType.NesZapper, Nexen.MovieConverter.ControllerType.Zapper)]
+	public void MapRuntimeToMovieControllerType_MapsCorrectly(ControllerType runtime, Nexen.MovieConverter.ControllerType expected) {
+		Nexen.MovieConverter.ControllerType result = InputApi.MapRuntimeToMovieControllerType(runtime);
+		Assert.Equal(expected, result);
+	}
+
+	[Fact]
+	public void DecodeControllerState_SetsTypeFromMapping() {
+		var state = CreateState(ControllerType.Atari2600Joystick, 0x01);
+		Nexen.MovieConverter.ControllerInput result = InputApi.DecodeControllerState(state);
+		Assert.Equal(Nexen.MovieConverter.ControllerType.Atari2600Joystick, result.Type);
 	}
 
 	#endregion

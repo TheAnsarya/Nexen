@@ -329,7 +329,7 @@ public sealed class SmvMovieConverter : MovieConverterBase {
 
 		BinaryPrimitives.WriteUInt32LittleEndian(header, SmvSignature); // SMV signature
 		BinaryPrimitives.WriteUInt32LittleEndian(header[4..], 5); // Version (SMV 1.51)
-		BinaryPrimitives.WriteUInt32LittleEndian(header[8..], (uint)Environment.TickCount); // UID
+		BinaryPrimitives.WriteUInt32LittleEndian(header[8..], (uint)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() & 0xffffffff)); // UID
 		BinaryPrimitives.WriteUInt32LittleEndian(header[12..], (uint)movie.RerecordCount);
 		BinaryPrimitives.WriteUInt32LittleEndian(header[16..], (uint)movie.TotalFrames);
 

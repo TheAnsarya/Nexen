@@ -129,6 +129,35 @@ public class InputFrameTests {
 	}
 
 	[Fact]
+	public void ToNexenLogLine_IncludesPaddleMetadataWhenPresent() {
+		var frame = new InputFrame(12);
+		frame.Controllers[0].PaddlePosition = 173;
+
+		string line = frame.ToNexenLogLine(1);
+
+		Assert.Contains("P1X:173", line);
+	}
+
+	[Fact]
+	public void FromNexenLogLine_ParsesPaddleMetadata() {
+		string line = "............|P1X:201|# Paddle test";
+
+		var frame = InputFrame.FromNexenLogLine(line, 9);
+
+		Assert.Equal((byte)201, frame.Controllers[0].PaddlePosition);
+		Assert.Equal("Paddle test", frame.Comment);
+	}
+
+	[Fact]
+	public void FromNexenLogLine_IgnoresInvalidPaddleMetadata() {
+		string line = "............|P1X:abc|P9X:10";
+
+		var frame = InputFrame.FromNexenLogLine(line, 3);
+
+		Assert.Null(frame.Controllers[0].PaddlePosition);
+	}
+
+	[Fact]
 	public void Equality_ComparesCorrectly() {
 		var frame1 = new InputFrame(10);
 		frame1.Controllers[0].A = true;

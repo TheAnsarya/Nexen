@@ -34,27 +34,27 @@
 				<Grid ColumnDefinitions="Auto,150,Auto" RowDefinitions="Auto,Auto">
 					<TextBlock VerticalAlignment="Center" Text="{l:Translate lblScale}" />
 					<ComboBox Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Filters}" SelectedItem="{Binding SelectedFilter}" />
-					<Image Grid.Column="2" Stretch="None" Margin="5 0" Source="/Assets/Help.png" ToolTip.Tip="{l:Translate lblScaleHelp}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" />
+					<Image Grid.Column="2" Stretch="None" Margin="5 0" Source="/Assets/Help.svg" ToolTip.Tip="{l:Translate lblScaleHelp}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" />
 
 					<TextBlock Grid.Row="1" VerticalAlignment="Center" Text="{l:Translate lblBankSize}" IsVisible="{Binding IsBankSizeVisible}" />
 					<ComboBox Grid.Column="1" Grid.Row="1" HorizontalAlignment="Stretch" ItemsSource="{Binding BankSizes}" SelectedItem="{Binding SelectedBankSize}" IsVisible="{Binding IsBankSizeVisible}" />
-					<Image Grid.Column="2" Grid.Row="1" Stretch="None" Margin="5 0" Source="/Assets/Help.png" ToolTip.Tip="{l:Translate lblBankSizeHelp}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" IsVisible="{Binding IsBankSizeVisible}" />
+					<Image Grid.Column="2" Grid.Row="1" Stretch="None" Margin="5 0" Source="/Assets/Help.svg" ToolTip.Tip="{l:Translate lblBankSizeHelp}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" IsVisible="{Binding IsBankSizeVisible}" />
 				</Grid>
 				<WrapPanel>
 					<CheckBox Content="{l:Translate chkGroupBlankTiles}" IsChecked="{Binding Config.GroupBlankTiles}" />
-					<Image Stretch="None" Margin="5 0" Source="/Assets/Help.png" ToolTip.Tip="{l:Translate lblGroupBlankTilesHelp}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" />
+					<Image Stretch="None" Margin="5 0" Source="/Assets/Help.svg" ToolTip.Tip="{l:Translate lblGroupBlankTilesHelp}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" />
 				</WrapPanel>
 				<WrapPanel>
 					<CheckBox Content="{l:Translate chkSortByUsageFrequency}" IsChecked="{Binding Config.SortByUsageFrequency}" />
-					<Image Stretch="None" Margin="5 0" Source="/Assets/Help.png" ToolTip.Tip="{l:Translate lblSortByUsageFrequencyHelp}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" />
+					<Image Stretch="None" Margin="5 0" Source="/Assets/Help.svg" ToolTip.Tip="{l:Translate lblSortByUsageFrequencyHelp}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" />
 				</WrapPanel>
 				<WrapPanel>
 					<CheckBox Content="{l:Translate chkUseLargeSprites}" IsChecked="{Binding Config.UseLargeSprites}" />
-					<Image Stretch="None" Margin="5 0" Source="/Assets/Help.png" ToolTip.Tip="{l:Translate lblUseLargeSpritesHelp}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" />
+					<Image Stretch="None" Margin="5 0" Source="/Assets/Help.svg" ToolTip.Tip="{l:Translate lblUseLargeSpritesHelp}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" />
 				</WrapPanel>
 				<WrapPanel>
 					<CheckBox Content="{l:Translate chkIgnoreOverscan}" IsChecked="{Binding Config.IgnoreOverscan}" />
-					<Image Stretch="None" Margin="5 0" Source="/Assets/Help.png" ToolTip.Tip="{l:Translate lblIgnoreOverscanHelp}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" />
+					<Image Stretch="None" Margin="5 0" Source="/Assets/Help.svg" ToolTip.Tip="{l:Translate lblIgnoreOverscanHelp}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" />
 				</WrapPanel>
 			</c:OptionSection>
 		</Grid>

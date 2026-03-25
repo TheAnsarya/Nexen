@@ -156,6 +156,7 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 			using Stream syncStream = syncEntry.Open();
 			using var reader = new StreamReader(syncStream, Encoding.UTF8);
 			movie.SyncSettings = reader.ReadToEnd();
+			TryParseA2600PortTypesFromSyncSettings(movie);
 		}
 
 		// Read Markers.txt
@@ -204,7 +205,7 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 				}
 
 				// Parse input line
-				InputFrame frame = ParseBk2InputLine(line, frameNumber, movie.SystemType, out bool isLag);
+				InputFrame frame = ParseBk2InputLine(line, frameNumber, movie.SystemType, movie.PortTypes, out bool isLag);
 				movie.InputFrames.Add(frame);
 				frameNumber++;
 
@@ -265,7 +266,7 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 	/// Parse a single BK2 input line
 	/// </summary>
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static InputFrame ParseBk2InputLine(string line, int frameNumber, SystemType system, out bool isLag) {
+	private static InputFrame ParseBk2InputLine(string line, int frameNumber, SystemType system, ControllerType[]? portTypes, out bool isLag) {
 		var frame = new InputFrame {
 			FrameNumber = frameNumber
 		};
@@ -297,13 +298,31 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 			}
 		}
 
-		// Segments 2..count-2 are controller ports
-		for (int i = 2; i < count - 1; i++) {
+		// For A2600, the last segment before trailing empty is console switches (Sr)
+		int controllerEndIdx = count - 1;
+		if (system == SystemType.A2600 && count > 3) {
+			ReadOnlySpan<char> lastSegment = span[ranges[count - 2]];
+			if (lastSegment.Length <= 2) {
+				// Parse as console switches segment
+				ParseA2600ConsoleSwitches(lastSegment, frame);
+				controllerEndIdx = count - 2;
+			}
+		}
+
+		// Segments 2..controllerEndIdx-1 are controller ports
+		for (int i = 2; i < controllerEndIdx; i++) {
 			ReadOnlySpan<char> segment = span[ranges[i]];
 
 			// Parse controller input
 			if (portIndex < InputFrame.MaxPorts) {
-				frame.Controllers[portIndex] = ParseBk2ControllerInput(segment, system);
+				ControllerType portType = system == SystemType.A2600 && portTypes != null && portIndex < portTypes.Length
+					? portTypes[portIndex]
+					: ControllerType.Gamepad;
+
+				frame.Controllers[portIndex] = ParseBk2ControllerInput(segment, system, portType);
+				if (system == SystemType.A2600) {
+					frame.Controllers[portIndex].Type = portType;
+				}
 				portIndex++;
 			}
 		}
@@ -314,7 +333,7 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 	/// <summary>
 	/// Parse BK2 controller button string
 	/// </summary>
-	private static ControllerInput ParseBk2ControllerInput(ReadOnlySpan<char> segment, SystemType system) {
+	private static ControllerInput ParseBk2ControllerInput(ReadOnlySpan<char> segment, SystemType system, ControllerType portType = ControllerType.Gamepad) {
 		var input = new ControllerInput();
 
 		// BK2 uses different button orders for different systems
@@ -346,6 +365,10 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 
 			case SystemType.Lynx:
 				ParseLynxInput(segment, input);
+				break;
+
+			case SystemType.A2600:
+				ParseA2600Input(segment, input, portType);
 				break;
 
 			default:
@@ -457,6 +480,120 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 		input.Start = s[8] != '.'; // Pause -> Start
 	}
 
+	private static void ParseA2600Input(ReadOnlySpan<char> s, ControllerInput input, ControllerType portType) {
+		switch (portType) {
+			case ControllerType.Atari2600Paddle:
+				ParseA2600PaddleInput(s, input);
+				return;
+
+			case ControllerType.Atari2600Keypad:
+				ParseA2600KeypadInput(s, input);
+				return;
+
+			case ControllerType.Atari2600DrivingController:
+				ParseA2600DrivingInput(s, input);
+				return;
+
+			case ControllerType.Atari2600BoosterGrip:
+				ParseA2600BoosterGripInput(s, input);
+				return;
+
+			default:
+				ParseA2600JoystickInput(s, input);
+				return;
+		}
+	}
+
+	private static void ParseA2600JoystickInput(ReadOnlySpan<char> s, ControllerInput input) {
+		// A2600 format: UDLRB (5 chars digital) or UDLRB,PPP (with paddle position)
+		// U=Up, D=Down, L=Left, R=Right, B=Button (Fire), PPP=paddle 0-255
+		int commaIdx = s.IndexOf(',');
+		ReadOnlySpan<char> buttons = commaIdx >= 0 ? s[..commaIdx] : s;
+
+		if (buttons.Length >= 1) input.Up = buttons[0] != '.';
+		if (buttons.Length >= 2) input.Down = buttons[1] != '.';
+		if (buttons.Length >= 3) input.Left = buttons[2] != '.';
+		if (buttons.Length >= 4) input.Right = buttons[3] != '.';
+		if (buttons.Length >= 5) input.A = buttons[4] != '.'; // Fire button mapped to A
+
+		// Parse paddle position if present after comma
+		if (commaIdx >= 0 && commaIdx + 1 < s.Length) {
+			ReadOnlySpan<char> paddleStr = s[(commaIdx + 1)..].Trim();
+			if (byte.TryParse(paddleStr, out byte paddleValue)) {
+				input.PaddlePosition = paddleValue;
+			}
+		}
+	}
+
+	private static void ParseA2600PaddleInput(ReadOnlySpan<char> s, ControllerInput input) =>
+		ParseA2600JoystickInput(s, input);
+
+	private static void ParseA2600KeypadInput(ReadOnlySpan<char> s, ControllerInput input) {
+		// Keypad order: 123456789*0#
+		if (s.Length < 12) {
+			return;
+		}
+
+		input.Y = s[0] != '.';
+		input.X = s[1] != '.';
+		input.L = s[2] != '.';
+		input.B = s[3] != '.';
+		input.A = s[4] != '.';
+		input.R = s[5] != '.';
+		input.Select = s[6] != '.';
+		input.Start = s[7] != '.';
+		input.Up = s[8] != '.';
+		input.Left = s[9] != '.';
+		input.Down = s[10] != '.';
+		input.Right = s[11] != '.';
+	}
+
+	private static void ParseA2600DrivingInput(ReadOnlySpan<char> s, ControllerInput input) {
+		// Driving format: LRB[,pos]
+		int commaIdx = s.IndexOf(',');
+		ReadOnlySpan<char> buttons = commaIdx >= 0 ? s[..commaIdx] : s;
+
+		if (buttons.Length >= 1) input.Left = buttons[0] != '.';
+		if (buttons.Length >= 2) input.Right = buttons[1] != '.';
+		if (buttons.Length >= 3) input.A = buttons[2] != '.';
+
+		if (commaIdx >= 0 && commaIdx + 1 < s.Length) {
+			ReadOnlySpan<char> value = s[(commaIdx + 1)..].Trim();
+			if (byte.TryParse(value, out byte rotary)) {
+				input.PaddlePosition = rotary;
+			}
+		}
+	}
+
+	private static void ParseA2600BoosterGripInput(ReadOnlySpan<char> s, ControllerInput input) {
+		// Booster Grip format: UDLRABC (fire/trigger/booster)
+		if (s.Length < 7) {
+			return;
+		}
+
+		input.Up = s[0] != '.';
+		input.Down = s[1] != '.';
+		input.Left = s[2] != '.';
+		input.Right = s[3] != '.';
+		input.A = s[4] != '.'; // Fire
+		input.B = s[5] != '.'; // Trigger
+		input.C = s[6] != '.'; // Booster
+	}
+
+	private static void ParseA2600ConsoleSwitches(ReadOnlySpan<char> s, InputFrame frame) {
+		// Console switches: Sr (Select, Reset) — 2 chars
+		for (int i = 0; i < s.Length; i++) {
+			switch (s[i]) {
+				case 'S':
+					frame.Command |= FrameCommand.Atari2600Select;
+					break;
+				case 'r':
+					frame.Command |= FrameCommand.Atari2600Reset;
+					break;
+			}
+		}
+	}
+
 	private static void ParseGenericInput(ReadOnlySpan<char> s, ControllerInput input) {
 		// Try to detect any pressed buttons by non-dot characters
 		foreach (char c in s) {
@@ -557,11 +694,16 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 		}
 
 		// Write SyncSettings.json
-		if (!string.IsNullOrEmpty(movie.SyncSettings)) {
+		string? syncSettingsToWrite = movie.SyncSettings;
+		if (movie.SystemType == SystemType.A2600) {
+			syncSettingsToWrite = MergeA2600PortTypesIntoSyncSettings(syncSettingsToWrite, movie.PortTypes, movie.ControllerCount);
+		}
+
+		if (!string.IsNullOrEmpty(syncSettingsToWrite)) {
 			ZipArchiveEntry syncEntry = archive.CreateEntry("SyncSettings.json", CompressionLevel.Optimal);
 			using Stream syncStream = syncEntry.Open();
 			using var writer = new StreamWriter(syncStream, Encoding.UTF8);
-			writer.Write(movie.SyncSettings);
+			writer.Write(syncSettingsToWrite);
 		}
 
 		// Write Markers.txt
@@ -602,7 +744,7 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 			var sb = new StringBuilder(64);
 			foreach (InputFrame frame in movie.InputFrames) {
 				sb.Clear();
-				FormatBk2InputLine(sb, frame, movie.SystemType, movie.ControllerCount);
+				FormatBk2InputLine(sb, frame, movie.SystemType, movie.ControllerCount, movie.PortTypes);
 				writer.Write(sb);
 				writer.WriteLine();
 			}
@@ -636,6 +778,11 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 			sb.Append('|');
 		}
 
+		// A2600: add console switches column
+		if (system == SystemType.A2600) {
+			sb.Append("Sr|");
+		}
+
 		return sb.ToString();
 	}
 
@@ -647,11 +794,12 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 			SystemType.Gb or SystemType.Gbc => "RLDUTSBA",
 			SystemType.Gba => "RLDUTSBAlr",
 			SystemType.Lynx => "UDLRABOoP",
+			SystemType.A2600 => "UDLRB",
 			_ => "RLDUTSBA"
 		};
 	}
 
-	private static void FormatBk2InputLine(StringBuilder sb, InputFrame frame, SystemType system, int controllerCount) {
+	private static void FormatBk2InputLine(StringBuilder sb, InputFrame frame, SystemType system, int controllerCount, ControllerType[]? portTypes) {
 		sb.Append('|');
 
 		// Command column
@@ -670,12 +818,22 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 		// Controller columns
 		for (int i = 0; i < controllerCount; i++) {
 			ControllerInput input = frame.Controllers[i];
-			sb.Append(FormatBk2Controller(input, system));
+			ControllerType portType = system == SystemType.A2600 && portTypes != null && i < portTypes.Length
+				? portTypes[i]
+				: ControllerType.Gamepad;
+			sb.Append(FormatBk2Controller(input, system, portType));
+			sb.Append('|');
+		}
+
+		// A2600: append console switches segment
+		if (system == SystemType.A2600) {
+			sb.Append(frame.Command.HasFlag(FrameCommand.Atari2600Select) ? 'S' : '.');
+			sb.Append(frame.Command.HasFlag(FrameCommand.Atari2600Reset) ? 'r' : '.');
 			sb.Append('|');
 		}
 	}
 
-	private static string FormatBk2Controller(ControllerInput input, SystemType system) {
+	private static string FormatBk2Controller(ControllerInput input, SystemType system, ControllerType portType = ControllerType.Gamepad) {
 		return system switch {
 			SystemType.Nes => FormatNes(input),
 			SystemType.Snes => FormatSnes(input),
@@ -683,6 +841,7 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 			SystemType.Gb or SystemType.Gbc => FormatNes(input),
 			SystemType.Gba => FormatGba(input),
 			SystemType.Lynx => FormatLynx(input),
+			SystemType.A2600 => FormatA2600(input, portType),
 			_ => FormatNes(input)
 		};
 	}
@@ -761,5 +920,213 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 			chars[7] = input.R ? 'o' : '.';     // Option2
 			chars[8] = input.Start ? 'P' : '.'; // Pause
 		});
+	}
+
+	private static string FormatA2600(ControllerInput i, ControllerType portType) {
+		return portType switch {
+			ControllerType.Atari2600Paddle => FormatA2600Paddle(i),
+			ControllerType.Atari2600Keypad => FormatA2600Keypad(i),
+			ControllerType.Atari2600DrivingController => FormatA2600Driving(i),
+			ControllerType.Atari2600BoosterGrip => FormatA2600BoosterGrip(i),
+			_ => FormatA2600Joystick(i)
+		};
+	}
+
+	private static string FormatA2600Joystick(ControllerInput i) {
+		var buttons = string.Create(5, i, static (chars, input) => {
+			chars[0] = input.Up ? 'U' : '.';
+			chars[1] = input.Down ? 'D' : '.';
+			chars[2] = input.Left ? 'L' : '.';
+			chars[3] = input.Right ? 'R' : '.';
+			chars[4] = input.A ? 'B' : '.'; // Fire button
+		});
+
+		// Append paddle position if present: UDLRB,  128
+		if (i.PaddlePosition is byte paddle) {
+			return $"{buttons},{paddle,5}";
+		}
+
+		return buttons;
+	}
+
+	private static string FormatA2600Paddle(ControllerInput i) => FormatA2600Joystick(i);
+
+	private static string FormatA2600Keypad(ControllerInput i) {
+		return string.Create(12, i, static (chars, input) => {
+			chars[0] = input.Y ? '1' : '.';
+			chars[1] = input.X ? '2' : '.';
+			chars[2] = input.L ? '3' : '.';
+			chars[3] = input.B ? '4' : '.';
+			chars[4] = input.A ? '5' : '.';
+			chars[5] = input.R ? '6' : '.';
+			chars[6] = input.Select ? '7' : '.';
+			chars[7] = input.Start ? '8' : '.';
+			chars[8] = input.Up ? '9' : '.';
+			chars[9] = input.Left ? '*' : '.';
+			chars[10] = input.Down ? '0' : '.';
+			chars[11] = input.Right ? '#' : '.';
+		});
+	}
+
+	private static string FormatA2600Driving(ControllerInput i) {
+		var buttons = string.Create(3, i, static (chars, input) => {
+			chars[0] = input.Left ? 'L' : '.';
+			chars[1] = input.Right ? 'R' : '.';
+			chars[2] = input.A ? 'B' : '.';
+		});
+
+		if (i.PaddlePosition is byte rotary) {
+			return $"{buttons},{rotary,5}";
+		}
+
+		return buttons;
+	}
+
+	private static string FormatA2600BoosterGrip(ControllerInput i) {
+		return string.Create(7, i, static (chars, input) => {
+			chars[0] = input.Up ? 'U' : '.';
+			chars[1] = input.Down ? 'D' : '.';
+			chars[2] = input.Left ? 'L' : '.';
+			chars[3] = input.Right ? 'R' : '.';
+			chars[4] = input.A ? 'A' : '.'; // Fire
+			chars[5] = input.B ? 'B' : '.'; // Trigger
+			chars[6] = input.C ? 'C' : '.'; // Booster
+		});
+	}
+
+	private static void TryParseA2600PortTypesFromSyncSettings(MovieData movie) {
+		if (movie.SystemType != SystemType.A2600 || string.IsNullOrWhiteSpace(movie.SyncSettings)) {
+			return;
+		}
+
+		try {
+			using JsonDocument doc = JsonDocument.Parse(movie.SyncSettings);
+			if (!doc.RootElement.TryGetProperty("Nexen", out JsonElement nexenNode)) {
+				return;
+			}
+
+			if (!nexenNode.TryGetProperty("A2600PortTypes", out JsonElement portTypesNode) ||
+				portTypesNode.ValueKind != JsonValueKind.Array) {
+				return;
+			}
+
+			int idx = 0;
+			foreach (JsonElement element in portTypesNode.EnumerateArray()) {
+				if (idx >= movie.PortTypes.Length) {
+					break;
+				}
+
+				if (element.ValueKind == JsonValueKind.String) {
+					movie.PortTypes[idx] = ParseA2600PortTypeString(element.GetString());
+				}
+
+				idx++;
+			}
+		} catch (JsonException) {
+			// Ignore malformed SyncSettings and keep default controller port types.
+		}
+	}
+
+	private static string MergeA2600PortTypesIntoSyncSettings(string? existingSyncSettings, ControllerType[]? portTypes, int controllerCount) {
+		if (portTypes == null || controllerCount <= 0) {
+			return existingSyncSettings ?? string.Empty;
+		}
+
+		int count = Math.Clamp(controllerCount, 1, InputFrame.MaxPorts);
+		var typeNames = new string[count];
+		for (int i = 0; i < count; i++) {
+			typeNames[i] = ToA2600PortTypeString(i < portTypes.Length ? portTypes[i] : ControllerType.Atari2600Joystick);
+		}
+
+		try {
+			using var output = new MemoryStream();
+			using var writer = new Utf8JsonWriter(output);
+
+			if (!string.IsNullOrWhiteSpace(existingSyncSettings)) {
+				using JsonDocument doc = JsonDocument.Parse(existingSyncSettings);
+				if (doc.RootElement.ValueKind != JsonValueKind.Object) {
+					return existingSyncSettings;
+				}
+
+				writer.WriteStartObject();
+				bool hasNexen = false;
+				foreach (JsonProperty prop in doc.RootElement.EnumerateObject()) {
+					if (prop.NameEquals("Nexen")) {
+						hasNexen = true;
+						WriteMergedNexenObject(writer, prop.Value, typeNames);
+					} else {
+						prop.WriteTo(writer);
+					}
+				}
+
+				if (!hasNexen) {
+					WriteMergedNexenObject(writer, null, typeNames);
+				}
+
+				writer.WriteEndObject();
+			} else {
+				writer.WriteStartObject();
+				WriteMergedNexenObject(writer, null, typeNames);
+				writer.WriteEndObject();
+			}
+
+			writer.Flush();
+			return Encoding.UTF8.GetString(output.ToArray());
+		} catch (JsonException) {
+			// Preserve existing settings if invalid and still emit A2600 metadata if no settings exist.
+			if (!string.IsNullOrWhiteSpace(existingSyncSettings)) {
+				return existingSyncSettings;
+			}
+
+			using var output = new MemoryStream();
+			using var writer = new Utf8JsonWriter(output);
+			writer.WriteStartObject();
+			WriteMergedNexenObject(writer, null, typeNames);
+			writer.WriteEndObject();
+			writer.Flush();
+			return Encoding.UTF8.GetString(output.ToArray());
+		}
+	}
+
+	private static void WriteMergedNexenObject(Utf8JsonWriter writer, JsonElement? existingNexen, string[] typeNames) {
+		writer.WritePropertyName("Nexen");
+		writer.WriteStartObject();
+
+		if (existingNexen is JsonElement existing && existing.ValueKind == JsonValueKind.Object) {
+			foreach (JsonProperty prop in existing.EnumerateObject()) {
+				if (!prop.NameEquals("A2600PortTypes")) {
+					prop.WriteTo(writer);
+				}
+			}
+		}
+
+		writer.WritePropertyName("A2600PortTypes");
+		writer.WriteStartArray();
+		foreach (string typeName in typeNames) {
+			writer.WriteStringValue(typeName);
+		}
+		writer.WriteEndArray();
+
+		writer.WriteEndObject();
+	}
+
+	private static string ToA2600PortTypeString(ControllerType portType) {
+		return portType switch {
+			ControllerType.Atari2600Paddle => "Atari2600Paddle",
+			ControllerType.Atari2600Keypad => "Atari2600Keypad",
+			ControllerType.Atari2600DrivingController => "Atari2600DrivingController",
+			ControllerType.Atari2600BoosterGrip => "Atari2600BoosterGrip",
+			_ => "Atari2600Joystick"
+		};
+	}
+
+	private static ControllerType ParseA2600PortTypeString(string? value) {
+		return value switch {
+			"Atari2600Paddle" => ControllerType.Atari2600Paddle,
+			"Atari2600Keypad" => ControllerType.Atari2600Keypad,
+			"Atari2600DrivingController" => ControllerType.Atari2600DrivingController,
+			"Atari2600BoosterGrip" => ControllerType.Atari2600BoosterGrip,
+			_ => ControllerType.Atari2600Joystick
+		};
 	}
 }

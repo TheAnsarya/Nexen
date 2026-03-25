@@ -647,6 +647,37 @@
 			<Control ID="btnSetup">Setup</Control>
 		</Form>
 
+		<Form ID="Atari2600ConfigView">
+			<Control ID="tpgGeneral">General</Control>
+			<Control ID="lblConsoleSwitches">Console Switches</Control>
+			<Control ID="chkP0DifficultyB">Player 1 difficulty B (beginner)</Control>
+			<Control ID="chkP1DifficultyB">Player 2 difficulty B (beginner)</Control>
+			<Control ID="chkColorMode">Color mode (vs B/W)</Control>
+
+			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="grpVolume">Volume</Control>
+			<Control ID="lblChannel1">Channel 1</Control>
+			<Control ID="lblChannel2">Channel 2</Control>
+
+			<Control ID="tpgEmulation">Emulation</Control>
+			<Control ID="lblDeveloperSettings">Recommended settings for developers (homebrew / ROM hacking)</Control>
+			<Control ID="lblRamPowerOnState">Default power on state for RAM: </Control>
+
+			<Control ID="tpgInput">Input</Control>
+			<Control ID="grpControllers">Controllers</Control>
+			<Control ID="lblController1">Left (Port 1):</Control>
+			<Control ID="lblController2">Right (Port 2):</Control>
+
+			<Control ID="tpgVideo">Video</Control>
+			<Control ID="lblDisplaySettings">Display Settings</Control>
+			<Control ID="chkHidePlayfield">Hide playfield</Control>
+			<Control ID="chkHidePlayer0">Hide player 0 (P0)</Control>
+			<Control ID="chkHidePlayer1">Hide player 1 (P1)</Control>
+			<Control ID="chkHideMissile0">Hide missile 0 (M0)</Control>
+			<Control ID="chkHideMissile1">Hide missile 1 (M1)</Control>
+			<Control ID="chkHideBall">Hide ball (BL)</Control>
+		</Form>
+
 		<Form ID="ShortcutKeysTabView">
 			<Control ID="lblShortcutWarning">Warning: Your current configuration contains conflicting key bindings. If this is not intentional, please review and correct your key bindings.</Control>
 			<Control ID="colAction">Action</Control>
@@ -673,6 +704,7 @@
 			<Control ID="tabSms">SMS</Control>
 			<Control ID="tabWs">WonderSwan</Control>
 			<Control ID="tabLynx">Lynx</Control>
+			<Control ID="tabAtari2600">Atari 2600</Control>
 			<Control ID="tabOtherConsoles">Other systems</Control>
 			<Control ID="tabPreferences">Preferences</Control>
 
@@ -2109,6 +2141,12 @@ E
 			<Value ID="SmsController">SMS Controller</Value>
 			<Value ID="SmsLightPhaser">Light Phaser</Value>
 			<Value ID="ColecoVisionController">ColecoVision Controller</Value>
+
+			<Value ID="Atari2600Joystick">Joystick (CX40)</Value>
+			<Value ID="Atari2600Paddle">Paddle (CX30)</Value>
+			<Value ID="Atari2600Keypad">Keypad (CX50)</Value>
+			<Value ID="Atari2600DrivingController">Driving Controller (CX20)</Value>
+			<Value ID="Atari2600BoosterGrip">Booster Grip</Value>
 		</Enum>
 		<Enum ID="NesJissenMahjongButtons">
 			<Value ID="A">A</Value>

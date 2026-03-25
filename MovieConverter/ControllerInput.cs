@@ -219,15 +219,15 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 	}
 
 	/// <summary>
-	/// Convert to Nexen/Mesen text format: BYsSUDLRAXLR
+	/// Convert to Nexen/Mesen text format: BYsSUDLRAXLRcZM
 	/// </summary>
-	/// <returns>12-character string representing button states</returns>
+	/// <returns>15-character string representing button states</returns>
 	public string ToNexenFormat() {
 		if (Type == ControllerType.None) {
-			return "............";
+			return "...............";
 		}
 
-		return string.Create(12, this, static (chars, input) => {
+		return string.Create(15, this, static (chars, input) => {
 			chars[0] = input.B ? 'B' : '.';
 			chars[1] = input.Y ? 'Y' : '.';
 			chars[2] = input.Select ? 's' : '.';
@@ -240,13 +240,17 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 			chars[9] = input.X ? 'X' : '.';
 			chars[10] = input.L ? 'l' : '.';
 			chars[11] = input.R ? 'r' : '.';
+			chars[12] = input.C ? 'c' : '.';
+			chars[13] = input.Z ? 'Z' : '.';
+			chars[14] = input.Mode ? 'M' : '.';
 		});
 	}
 
 	/// <summary>
-	/// Parse from Nexen/Mesen text format
+	/// Parse from Nexen/Mesen text format.
+	/// Supports both 12-char legacy (BYsSUDLRAXLR) and 15-char extended (BYsSUDLRAXLRcZM) formats.
 	/// </summary>
-	/// <param name="input">12-character input string</param>
+	/// <param name="input">12 or 15-character input string</param>
 	/// <returns>Parsed ControllerInput</returns>
 	public static ControllerInput FromNexenFormat(ReadOnlySpan<char> input) {
 		var ctrl = new ControllerInput { Type = ControllerType.Gamepad };
@@ -255,7 +259,7 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 			return ctrl;
 		}
 
-		// Nexen format: BYsSUDLRAXLR
+		// Nexen format: BYsSUDLRAXLRcZM (first 12 are standard SNES buttons)
 		ctrl.B = input[0] != '.';
 		ctrl.Y = input[1] != '.';
 		ctrl.Select = input[2] != '.';
@@ -268,6 +272,13 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 		ctrl.X = input[9] != '.';
 		ctrl.L = input[10] != '.';
 		ctrl.R = input[11] != '.';
+
+		// Extended buttons (Genesis 6-button, Atari BoosterGrip) — chars 12-14
+		if (input.Length >= 15) {
+			ctrl.C = input[12] != '.';
+			ctrl.Z = input[13] != '.';
+			ctrl.Mode = input[14] != '.';
+		}
 
 		return ctrl;
 	}
@@ -601,10 +612,28 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 		switch (button) {
 			case "A" or "a": A = state; break;
 			case "B" or "b": B = state; break;
+			case "C" or "c": C = state; break;
+			case "FIRE" or "Fire" or "fire": A = state; break;
+			case "TRIGGER" or "Trigger" or "trigger": B = state; break;
+			case "BOOSTER" or "Booster" or "booster": C = state; break;
 			case "X" or "x": X = state; break;
 			case "Y" or "y": Y = state; break;
+			case "Z" or "z": Z = state; break;
+			case "MODE" or "Mode" or "mode": Mode = state; break;
 			case "L" or "l": L = state; break;
 			case "R" or "r": R = state; break;
+			case "1": Y = state; break;
+			case "2": X = state; break;
+			case "3": L = state; break;
+			case "4": B = state; break;
+			case "5": A = state; break;
+			case "6": R = state; break;
+			case "7": Select = state; break;
+			case "8": Start = state; break;
+			case "9": Up = state; break;
+			case "STAR" or "Star" or "star": Left = state; break;
+			case "0": Down = state; break;
+			case "POUND" or "Pound" or "pound": Right = state; break;
 			case "UP" or "Up" or "up": Up = state; break;
 			case "DOWN" or "Down" or "down": Down = state; break;
 			case "LEFT" or "Left" or "left": Left = state; break;
@@ -620,10 +649,28 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 	public bool GetButton(string button) => button switch {
 		"A" or "a" => A,
 		"B" or "b" => B,
+		"C" or "c" => C,
+		"FIRE" or "Fire" or "fire" => A,
+		"TRIGGER" or "Trigger" or "trigger" => B,
+		"BOOSTER" or "Booster" or "booster" => C,
 		"X" or "x" => X,
 		"Y" or "y" => Y,
+		"Z" or "z" => Z,
+		"MODE" or "Mode" or "mode" => Mode,
 		"L" or "l" => L,
 		"R" or "r" => R,
+		"1" => Y,
+		"2" => X,
+		"3" => L,
+		"4" => B,
+		"5" => A,
+		"6" => R,
+		"7" => Select,
+		"8" => Start,
+		"9" => Up,
+		"STAR" or "Star" or "star" => Left,
+		"0" => Down,
+		"POUND" or "Pound" or "pound" => Right,
 		"UP" or "Up" or "up" => Up,
 		"DOWN" or "Down" or "down" => Down,
 		"LEFT" or "Left" or "left" => Left,

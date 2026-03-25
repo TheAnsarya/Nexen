@@ -14,6 +14,7 @@ namespace Nexen.Windows;
 public sealed class GreenzoneSettings {
 	public int CaptureInterval { get; set; } = 60;
 	public int MaxSavestates { get; set; } = 1000;
+	public long MaxMemoryMB { get; set; } = 256;
 	public int RingBufferSize { get; set; } = 120;
 	public bool CompressionEnabled { get; set; } = true;
 	public int CompressionThreshold { get; set; } = 300;
@@ -26,6 +27,7 @@ public sealed class GreenzoneSettings {
 public partial class GreenzoneSettingsDialog : NexenWindow {
 	private NumericUpDown _nudInterval = null!;
 	private NumericUpDown _nudMaxStates = null!;
+	private NumericUpDown _nudMaxMemoryMB = null!;
 	private NumericUpDown _nudRingBuffer = null!;
 	private CheckBox _chkCompression = null!;
 	private NumericUpDown _nudCompThreshold = null!;
@@ -43,6 +45,7 @@ public partial class GreenzoneSettingsDialog : NexenWindow {
 		AvaloniaXamlLoader.Load(this);
 		_nudInterval = this.FindControl<NumericUpDown>("nudInterval")!;
 		_nudMaxStates = this.FindControl<NumericUpDown>("nudMaxStates")!;
+		_nudMaxMemoryMB = this.FindControl<NumericUpDown>("nudMaxMemoryMB")!;
 		_nudRingBuffer = this.FindControl<NumericUpDown>("nudRingBuffer")!;
 		_chkCompression = this.FindControl<CheckBox>("chkCompression")!;
 		_nudCompThreshold = this.FindControl<NumericUpDown>("nudCompThreshold")!;
@@ -76,6 +79,7 @@ public partial class GreenzoneSettingsDialog : NexenWindow {
 		// Populate current values
 		dialog._nudInterval.Value = greenzone.CaptureInterval;
 		dialog._nudMaxStates.Value = greenzone.MaxSavestates;
+		dialog._nudMaxMemoryMB.Value = greenzone.MaxMemoryBytes / (1024 * 1024);
 		dialog._nudRingBuffer.Value = greenzone.RingBufferSize;
 		dialog._chkCompression.IsChecked = greenzone.CompressionEnabled;
 		dialog._nudCompThreshold.Value = greenzone.CompressionThreshold;
@@ -92,6 +96,7 @@ public partial class GreenzoneSettingsDialog : NexenWindow {
 				tcs.TrySetResult(new GreenzoneSettings {
 					CaptureInterval = (int)(dialog._nudInterval.Value ?? 60),
 					MaxSavestates = (int)(dialog._nudMaxStates.Value ?? 1000),
+					MaxMemoryMB = (long)(dialog._nudMaxMemoryMB.Value ?? 256),
 					RingBufferSize = (int)(dialog._nudRingBuffer.Value ?? 120),
 					CompressionEnabled = dialog._chkCompression.IsChecked ?? true,
 					CompressionThreshold = (int)(dialog._nudCompThreshold.Value ?? 300),

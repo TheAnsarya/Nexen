@@ -43,6 +43,7 @@ public sealed class ConsoleOverrideConfig : BaseConfig<GameConfig> {
 			case ConsoleType.Gba: return ConfigManager.Config.Gba.ConfigOverrides;
 			case ConsoleType.Ws: return ConfigManager.Config.Ws.ConfigOverrides;
 			case ConsoleType.Lynx: return ConfigManager.Config.Lynx.ConfigOverrides;
+			case ConsoleType.Atari2600: return ConfigManager.Config.Atari2600.ConfigOverrides;
 		}
 
 		return null;

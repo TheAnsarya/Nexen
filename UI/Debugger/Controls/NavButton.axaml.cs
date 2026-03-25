@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
+using Avalonia.Media;
 using Nexen.Debugger.ViewModels;
 using Nexen.Localization;
 using Nexen.Utilities;
@@ -12,9 +12,9 @@ namespace Nexen.Debugger.Controls;
 public class NavButton : UserControl {
 	public static readonly StyledProperty<NavType> NavProperty = AvaloniaProperty.Register<NavButton, NavType>(nameof(NavProperty));
 	public static readonly StyledProperty<string> TooltipTextProperty = AvaloniaProperty.Register<NavButton, string>(nameof(TooltipText), "");
-	public static readonly StyledProperty<Bitmap?> IconProperty = AvaloniaProperty.Register<NavButton, Bitmap?>(nameof(Icon));
+	public static readonly StyledProperty<IImage?> IconProperty = AvaloniaProperty.Register<NavButton, IImage?>(nameof(Icon));
 
-	public Bitmap? Icon {
+	public IImage? Icon {
 		get { return GetValue(IconProperty); }
 		set { SetValue(IconProperty, value); }
 	}
@@ -31,14 +31,14 @@ public class NavButton : UserControl {
 
 	static NavButton() {
 		NavProperty.Changed.AddClassHandler<NavButton>((x, e) => {
-			x.Icon = ImageUtilities.BitmapFromAsset("Assets/" + x.Nav.ToString() + ".png");
+			x.Icon = ImageUtilities.ImageFromAsset("Assets/" + x.Nav.ToString() + ".png");
 			x.TooltipText = ResourceHelper.GetEnumText(x.Nav);
 		});
 	}
 
 	public NavButton() {
 		InitializeComponent();
-		Icon = ImageUtilities.BitmapFromAsset("Assets/" + Nav.ToString() + ".png");
+		Icon = ImageUtilities.ImageFromAsset("Assets/" + Nav.ToString() + ".png");
 		TooltipText = ResourceHelper.GetEnumText(Nav);
 	}
 

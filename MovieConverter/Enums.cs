@@ -208,7 +208,22 @@ public enum ControllerType {
 	BarcodeReader,
 
 	/// <summary>Satellaview</summary>
-	Satellaview
+	Satellaview,
+
+	/// <summary>Atari 2600 joystick</summary>
+	Atari2600Joystick,
+
+	/// <summary>Atari 2600 paddle controller</summary>
+	Atari2600Paddle,
+
+	/// <summary>Atari 2600 keypad controller</summary>
+	Atari2600Keypad,
+
+	/// <summary>Atari 2600 driving controller</summary>
+	Atari2600DrivingController,
+
+	/// <summary>Atari 2600 booster grip controller</summary>
+	Atari2600BoosterGrip
 }
 
 /// <summary>
@@ -263,6 +278,12 @@ public enum FrameCommand {
 
 	/// <summary>Power off</summary>
 	PowerOff = 1 << 14,
+
+	/// <summary>Atari 2600: Console Select switch (SWCHB bit 1)</summary>
+	Atari2600Select = 1 << 15,
+
+	/// <summary>Atari 2600: Console Reset switch (SWCHB bit 0)</summary>
+	Atari2600Reset = 1 << 16,
 
 	// Aliases for compatibility with various format converters
 

@@ -320,6 +320,10 @@ public enum RomFormat {
 	Ws,
 
 	Lynx,
+
+	Genesis,
+
+	Atari2600,
 }
 
 public enum ConsoleType {
@@ -331,6 +335,8 @@ public enum ConsoleType {
 	Gba = 5,
 	Ws = 6,
 	Lynx = 7,
+	Atari2600 = 8,
+	Genesis = 9,
 }
 
 public struct InteropDipSwitchInfo {

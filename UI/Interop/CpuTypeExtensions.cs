@@ -1,6 +1,6 @@
 using System;
 
-namespace Nexen.Interop; 
+namespace Nexen.Interop;
 public static class CpuTypeExtensions {
 	public static MemoryType ToMemoryType(this CpuType cpuType) {
 		return cpuType switch {
@@ -18,6 +18,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => MemoryType.GbaMemory,
 			CpuType.Ws => MemoryType.WsMemory,
 			CpuType.Lynx => MemoryType.LynxMemory,
+			CpuType.Atari2600 => MemoryType.Atari2600Memory,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -32,6 +33,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => MemoryType.GbaVideoRam,
 			CpuType.Ws => MemoryType.WsWorkRam,
 			CpuType.Lynx => MemoryType.LynxWorkRam,
+			CpuType.Atari2600 => MemoryType.Atari2600TiaRegisters,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -46,6 +48,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => MemoryType.GbaSpriteRam,
 			CpuType.Ws => MemoryType.None,
 			CpuType.Lynx => MemoryType.None,
+			CpuType.Atari2600 => MemoryType.None,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -66,6 +69,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => MemoryType.GbaPrgRom,
 			CpuType.Ws => MemoryType.WsPrgRom,
 			CpuType.Lynx => MemoryType.LynxPrgRom,
+			CpuType.Atari2600 => MemoryType.Atari2600PrgRom,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -86,6 +90,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => MemoryType.GbaIntWorkRam,
 			CpuType.Ws => MemoryType.WsWorkRam,
 			CpuType.Lynx => MemoryType.LynxWorkRam,
+			CpuType.Atari2600 => MemoryType.Atari2600Ram,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -106,6 +111,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => 7,
 			CpuType.Ws => 5,
 			CpuType.Lynx => 4,
+			CpuType.Atari2600 => 4,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -126,6 +132,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => 4,
 			CpuType.Ws => 4,
 			CpuType.Lynx => 3,
+			CpuType.Atari2600 => 3,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -146,6 +153,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => DebuggerFlags.GbaDebuggerEnabled,
 			CpuType.Ws => DebuggerFlags.WsDebuggerEnabled,
 			CpuType.Lynx => DebuggerFlags.LynxDebuggerEnabled,
+			CpuType.Atari2600 => DebuggerFlags.Atari2600DebuggerEnabled,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -166,6 +174,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => ConsoleType.Gba,
 			CpuType.Ws => ConsoleType.Ws,
 			CpuType.Lynx => ConsoleType.Lynx,
+			CpuType.Atari2600 => ConsoleType.Atari2600,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -178,6 +187,7 @@ public static class CpuTypeExtensions {
 			case CpuType.Pce:
 			case CpuType.Sms:
 			case CpuType.Lynx:
+			case CpuType.Atari2600:
 				return true;
 
 			default:
@@ -198,6 +208,7 @@ public static class CpuTypeExtensions {
 			case CpuType.Gba:
 			case CpuType.Ws:
 			case CpuType.Lynx:
+			case CpuType.Atari2600:
 				return true;
 
 			default:
@@ -242,6 +253,7 @@ public static class CpuTypeExtensions {
 			case CpuType.Nes:
 			case CpuType.Pce:
 			case CpuType.Lynx:
+			case CpuType.Atari2600:
 				return true;
 
 			default:
@@ -261,6 +273,7 @@ public static class CpuTypeExtensions {
 			//TODOGBA - assembler support
 			CpuType.Ws => 0x90,
 			CpuType.Lynx => 0xEA,
+			CpuType.Atari2600 => 0xEA,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}

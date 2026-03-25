@@ -819,6 +819,15 @@
     <ClInclude Include="Lynx\LynxSuzy.h" />
     <ClInclude Include="Lynx\LynxTypes.h" />
     <ClInclude Include="Genesis\GenesisM68kBoundaryScaffold.h" />
+    <ClInclude Include="Genesis\GenesisTypes.h" />
+    <ClInclude Include="Genesis\GenesisConsole.h" />
+    <ClInclude Include="Genesis\GenesisM68k.h" />
+    <ClInclude Include="Genesis\GenesisVdp.h" />
+    <ClInclude Include="Genesis\GenesisMemoryManager.h" />
+    <ClInclude Include="Genesis\GenesisPsg.h" />
+    <ClInclude Include="Genesis\GenesisControlManager.h" />
+    <ClInclude Include="Genesis\GenesisDefaultVideoFilter.h" />
+    <ClInclude Include="Genesis\Input\GenesisController.h" />
     <ClInclude Include="Lynx\Debugger\LynxDisUtils.h" />
     <ClInclude Include="Lynx\Debugger\LynxDebugger.h" />
     <ClInclude Include="Lynx\Debugger\LynxAssembler.h" />
@@ -827,8 +836,21 @@
     <ClInclude Include="Lynx\Debugger\LynxEventManager.h" />
     <ClInclude Include="Lynx\Debugger\DummyLynxCpu.h" />
     <ClInclude Include="Atari2600\Atari2600Console.h" />
+    <ClInclude Include="Atari2600\Atari2600Mapper.h" />
+    <ClInclude Include="Atari2600\Atari2600Riot.h" />
+    <ClInclude Include="Atari2600\Atari2600Tia.h" />
+    <ClInclude Include="Atari2600\Atari2600Bus.h" />
+    <ClInclude Include="Atari2600\Atari2600CpuAdapter.h" />
+    <ClInclude Include="Atari2600\Atari2600ControlManager.h" />
     <ClInclude Include="Atari2600\Atari2600DefaultVideoFilter.h" />
     <ClInclude Include="Atari2600\Atari2600SmokeHarness.h" />
+    <ClInclude Include="Atari2600\Atari2600Types.h" />
+    <ClInclude Include="Atari2600\Debugger\Atari2600DisUtils.h" />
+    <ClInclude Include="Atari2600\Debugger\Atari2600Debugger.h" />
+    <ClInclude Include="Atari2600\Debugger\Atari2600Assembler.h" />
+    <ClInclude Include="Atari2600\Debugger\Atari2600PpuTools.h" />
+    <ClInclude Include="Atari2600\Debugger\Atari2600TraceLogger.h" />
+    <ClInclude Include="Atari2600\Debugger\Atari2600EventManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Debugger\Base6502Assembler.cpp" />
@@ -1141,6 +1163,13 @@
     <ClCompile Include="Lynx\LynxDecrypt.cpp" />
     <ClCompile Include="Lynx\LynxSuzy.cpp" />
     <ClCompile Include="Genesis\GenesisM68kBoundaryScaffold.cpp" />
+    <ClCompile Include="Genesis\GenesisSmokeHarness.cpp" />
+    <ClCompile Include="Genesis\GenesisConsole.cpp" />
+    <ClCompile Include="Genesis\GenesisM68k.cpp" />
+    <ClCompile Include="Genesis\GenesisVdp.cpp" />
+    <ClCompile Include="Genesis\GenesisMemoryManager.cpp" />
+    <ClCompile Include="Genesis\GenesisPsg.cpp" />
+    <ClCompile Include="Genesis\GenesisControlManager.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxDisUtils.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxDebugger.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxAssembler.cpp" />
@@ -1149,7 +1178,15 @@
     <ClCompile Include="Lynx\Debugger\LynxEventManager.cpp" />
     <ClCompile Include="Lynx\Debugger\DummyLynxCpu.cpp" />
     <ClCompile Include="Atari2600\Atari2600Console.cpp" />
+    <ClCompile Include="Atari2600\Atari2600Bus.cpp" />
+    <ClCompile Include="Atari2600\Atari2600ControlManager.cpp" />
     <ClCompile Include="Atari2600\Atari2600SmokeHarness.cpp" />
+    <ClCompile Include="Atari2600\Debugger\Atari2600DisUtils.cpp" />
+    <ClCompile Include="Atari2600\Debugger\Atari2600Debugger.cpp" />
+    <ClCompile Include="Atari2600\Debugger\Atari2600Assembler.cpp" />
+    <ClCompile Include="Atari2600\Debugger\Atari2600PpuTools.cpp" />
+    <ClCompile Include="Atari2600\Debugger\Atari2600TraceLogger.cpp" />
+    <ClCompile Include="Atari2600\Debugger\Atari2600EventManager.cpp" />
     <ClCompile Include="WS\WsConsole.cpp" />
     <ClCompile Include="WS\WsControlManager.cpp" />
     <ClCompile Include="WS\WsCpu.cpp" />

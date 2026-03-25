@@ -51,6 +51,8 @@ public sealed class DefaultLabelHelper {
 			SetWsDefaultLabels();
 		} else if (cpuTypes.Contains(CpuType.Lynx)) {
 			SetLynxDefaultLabels();
+		} else if (cpuTypes.Contains(CpuType.Atari2600)) {
+			SetAtari2600DefaultLabels();
 		}
 	}
 
@@ -725,5 +727,82 @@ public sealed class DefaultLabelHelper {
 
 		// Memory map control
 		LabelManager.SetLabel(0xFFF9, MemoryType.LynxMemory, "MAPCTL", "Memory Map Control");
+	}
+
+	private static void SetAtari2600DefaultLabels() {
+		// TIA Write registers ($00-$2C)
+		LabelManager.SetLabel(0x00, MemoryType.Atari2600Memory, "VSYNC", "TIA - Vertical Sync Set-Clear");
+		LabelManager.SetLabel(0x01, MemoryType.Atari2600Memory, "VBLANK", "TIA - Vertical Blank Set-Clear");
+		LabelManager.SetLabel(0x02, MemoryType.Atari2600Memory, "WSYNC", "TIA - Wait for Horizontal Blank");
+		LabelManager.SetLabel(0x03, MemoryType.Atari2600Memory, "RSYNC", "TIA - Reset Horizontal Sync Counter");
+		LabelManager.SetLabel(0x04, MemoryType.Atari2600Memory, "NUSIZ0", "TIA - Number-Size Player/Missile 0");
+		LabelManager.SetLabel(0x05, MemoryType.Atari2600Memory, "NUSIZ1", "TIA - Number-Size Player/Missile 1");
+		LabelManager.SetLabel(0x06, MemoryType.Atari2600Memory, "COLUP0", "TIA - Color-Luminance Player 0");
+		LabelManager.SetLabel(0x07, MemoryType.Atari2600Memory, "COLUP1", "TIA - Color-Luminance Player 1");
+		LabelManager.SetLabel(0x08, MemoryType.Atari2600Memory, "COLUPF", "TIA - Color-Luminance Playfield");
+		LabelManager.SetLabel(0x09, MemoryType.Atari2600Memory, "COLUBK", "TIA - Color-Luminance Background");
+		LabelManager.SetLabel(0x0A, MemoryType.Atari2600Memory, "CTRLPF", "TIA - Control Playfield Ball Size & Collisions");
+		LabelManager.SetLabel(0x0B, MemoryType.Atari2600Memory, "REFP0", "TIA - Reflect Player 0");
+		LabelManager.SetLabel(0x0C, MemoryType.Atari2600Memory, "REFP1", "TIA - Reflect Player 1");
+		LabelManager.SetLabel(0x0D, MemoryType.Atari2600Memory, "PF0", "TIA - Playfield Register 0");
+		LabelManager.SetLabel(0x0E, MemoryType.Atari2600Memory, "PF1", "TIA - Playfield Register 1");
+		LabelManager.SetLabel(0x0F, MemoryType.Atari2600Memory, "PF2", "TIA - Playfield Register 2");
+		LabelManager.SetLabel(0x10, MemoryType.Atari2600Memory, "RESP0", "TIA - Reset Player 0");
+		LabelManager.SetLabel(0x11, MemoryType.Atari2600Memory, "RESP1", "TIA - Reset Player 1");
+		LabelManager.SetLabel(0x12, MemoryType.Atari2600Memory, "RESM0", "TIA - Reset Missile 0");
+		LabelManager.SetLabel(0x13, MemoryType.Atari2600Memory, "RESM1", "TIA - Reset Missile 1");
+		LabelManager.SetLabel(0x14, MemoryType.Atari2600Memory, "RESBL", "TIA - Reset Ball");
+		LabelManager.SetLabel(0x15, MemoryType.Atari2600Memory, "AUDC0", "TIA - Audio Control 0");
+		LabelManager.SetLabel(0x16, MemoryType.Atari2600Memory, "AUDC1", "TIA - Audio Control 1");
+		LabelManager.SetLabel(0x17, MemoryType.Atari2600Memory, "AUDF0", "TIA - Audio Frequency 0");
+		LabelManager.SetLabel(0x18, MemoryType.Atari2600Memory, "AUDF1", "TIA - Audio Frequency 1");
+		LabelManager.SetLabel(0x19, MemoryType.Atari2600Memory, "AUDV0", "TIA - Audio Volume 0");
+		LabelManager.SetLabel(0x1A, MemoryType.Atari2600Memory, "AUDV1", "TIA - Audio Volume 1");
+		LabelManager.SetLabel(0x1B, MemoryType.Atari2600Memory, "GRP0", "TIA - Graphics Player 0");
+		LabelManager.SetLabel(0x1C, MemoryType.Atari2600Memory, "GRP1", "TIA - Graphics Player 1");
+		LabelManager.SetLabel(0x1D, MemoryType.Atari2600Memory, "ENAM0", "TIA - Enable Missile 0");
+		LabelManager.SetLabel(0x1E, MemoryType.Atari2600Memory, "ENAM1", "TIA - Enable Missile 1");
+		LabelManager.SetLabel(0x1F, MemoryType.Atari2600Memory, "ENABL", "TIA - Enable Ball");
+		LabelManager.SetLabel(0x20, MemoryType.Atari2600Memory, "HMP0", "TIA - Horizontal Motion Player 0");
+		LabelManager.SetLabel(0x21, MemoryType.Atari2600Memory, "HMP1", "TIA - Horizontal Motion Player 1");
+		LabelManager.SetLabel(0x22, MemoryType.Atari2600Memory, "HMM0", "TIA - Horizontal Motion Missile 0");
+		LabelManager.SetLabel(0x23, MemoryType.Atari2600Memory, "HMM1", "TIA - Horizontal Motion Missile 1");
+		LabelManager.SetLabel(0x24, MemoryType.Atari2600Memory, "HMBL", "TIA - Horizontal Motion Ball");
+		LabelManager.SetLabel(0x25, MemoryType.Atari2600Memory, "VDELP0", "TIA - Vertical Delay Player 0");
+		LabelManager.SetLabel(0x26, MemoryType.Atari2600Memory, "VDELP1", "TIA - Vertical Delay Player 1");
+		LabelManager.SetLabel(0x27, MemoryType.Atari2600Memory, "VDELBL", "TIA - Vertical Delay Ball");
+		LabelManager.SetLabel(0x28, MemoryType.Atari2600Memory, "RESMP0", "TIA - Reset Missile 0 to Player 0");
+		LabelManager.SetLabel(0x29, MemoryType.Atari2600Memory, "RESMP1", "TIA - Reset Missile 1 to Player 1");
+		LabelManager.SetLabel(0x2A, MemoryType.Atari2600Memory, "HMOVE", "TIA - Apply Horizontal Motion");
+		LabelManager.SetLabel(0x2B, MemoryType.Atari2600Memory, "HMCLR", "TIA - Clear Horizontal Motion Registers");
+		LabelManager.SetLabel(0x2C, MemoryType.Atari2600Memory, "CXCLR", "TIA - Clear Collision Latches");
+
+		// TIA Read registers ($30-$3D) — mapped at $00-$0D with bit 4 set
+		LabelManager.SetLabel(0x30, MemoryType.Atari2600Memory, "CXM0P", "TIA Read - Collision M0-P1, M0-P0");
+		LabelManager.SetLabel(0x31, MemoryType.Atari2600Memory, "CXM1P", "TIA Read - Collision M1-P0, M1-P1");
+		LabelManager.SetLabel(0x32, MemoryType.Atari2600Memory, "CXP0FB", "TIA Read - Collision P0-PF, P0-BL");
+		LabelManager.SetLabel(0x33, MemoryType.Atari2600Memory, "CXP1FB", "TIA Read - Collision P1-PF, P1-BL");
+		LabelManager.SetLabel(0x34, MemoryType.Atari2600Memory, "CXM0FB", "TIA Read - Collision M0-PF, M0-BL");
+		LabelManager.SetLabel(0x35, MemoryType.Atari2600Memory, "CXM1FB", "TIA Read - Collision M1-PF, M1-BL");
+		LabelManager.SetLabel(0x36, MemoryType.Atari2600Memory, "CXBLPF", "TIA Read - Collision BL-PF");
+		LabelManager.SetLabel(0x37, MemoryType.Atari2600Memory, "CXPPMM", "TIA Read - Collision P0-P1, M0-M1");
+		LabelManager.SetLabel(0x38, MemoryType.Atari2600Memory, "INPT0", "TIA Read - Pot Port 0");
+		LabelManager.SetLabel(0x39, MemoryType.Atari2600Memory, "INPT1", "TIA Read - Pot Port 1");
+		LabelManager.SetLabel(0x3A, MemoryType.Atari2600Memory, "INPT2", "TIA Read - Pot Port 2");
+		LabelManager.SetLabel(0x3B, MemoryType.Atari2600Memory, "INPT3", "TIA Read - Pot Port 3");
+		LabelManager.SetLabel(0x3C, MemoryType.Atari2600Memory, "INPT4", "TIA Read - P0 Fire Button");
+		LabelManager.SetLabel(0x3D, MemoryType.Atari2600Memory, "INPT5", "TIA Read - P1 Fire Button");
+
+		// RIOT registers ($0280-$029F)
+		LabelManager.SetLabel(0x0280, MemoryType.Atari2600Memory, "SWCHA", "RIOT - Port A Data (Joysticks)");
+		LabelManager.SetLabel(0x0281, MemoryType.Atari2600Memory, "SWACNT", "RIOT - Port A DDR");
+		LabelManager.SetLabel(0x0282, MemoryType.Atari2600Memory, "SWCHB", "RIOT - Port B Data (Console Switches)");
+		LabelManager.SetLabel(0x0283, MemoryType.Atari2600Memory, "SWBCNT", "RIOT - Port B DDR");
+		LabelManager.SetLabel(0x0284, MemoryType.Atari2600Memory, "INTIM", "RIOT - Timer Output");
+		LabelManager.SetLabel(0x0285, MemoryType.Atari2600Memory, "INSTAT", "RIOT - Timer Status");
+		LabelManager.SetLabel(0x0294, MemoryType.Atari2600Memory, "TIM1T", "RIOT - Set 1-Clock Interval");
+		LabelManager.SetLabel(0x0295, MemoryType.Atari2600Memory, "TIM8T", "RIOT - Set 8-Clock Interval");
+		LabelManager.SetLabel(0x0296, MemoryType.Atari2600Memory, "TIM64T", "RIOT - Set 64-Clock Interval");
+		LabelManager.SetLabel(0x0297, MemoryType.Atari2600Memory, "T1024T", "RIOT - Set 1024-Clock Interval");
 	}
 }

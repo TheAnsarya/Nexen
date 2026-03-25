@@ -48,7 +48,7 @@
 			</TabControl.ContentTemplate>
 		</TabControl>
 		<Image
-			Source="/Assets/Help.png"
+			Source="/Assets/Help.svg"
 			Stretch="None"
 			Margin="4 4"
 			VerticalAlignment="Top"

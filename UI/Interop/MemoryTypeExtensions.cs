@@ -1,6 +1,6 @@
 using System;
 
-namespace Nexen.Interop; 
+namespace Nexen.Interop;
 public static class MemoryTypeExtensions {
 	public static CpuType ToCpuType(this MemoryType memType) {
 		switch (memType) {
@@ -127,6 +127,12 @@ public static class MemoryTypeExtensions {
 			case MemoryType.LynxSaveRam:
 				return CpuType.Lynx;
 
+			case MemoryType.Atari2600Memory:
+			case MemoryType.Atari2600PrgRom:
+			case MemoryType.Atari2600Ram:
+			case MemoryType.Atari2600TiaRegisters:
+				return CpuType.Atari2600;
+
 			default:
 				throw new NotImplementedException("Unsupported cpu type");
 		}
@@ -233,6 +239,7 @@ public static class MemoryTypeExtensions {
 			case MemoryType.GbaMemory:
 			case MemoryType.WsMemory:
 			case MemoryType.LynxMemory:
+			case MemoryType.Atari2600Memory:
 				return true;
 		}
 
@@ -261,6 +268,7 @@ public static class MemoryTypeExtensions {
 			case MemoryType.WsPrgRom:
 			case MemoryType.LynxPrgRom:
 			case MemoryType.LynxBootRom:
+			case MemoryType.Atari2600PrgRom:
 				return true;
 		}
 
@@ -344,6 +352,13 @@ public static class MemoryTypeExtensions {
 			case MemoryType.LynxWorkRam:
 			case MemoryType.LynxBootRom:
 				return true;
+
+			//Atari 2600
+			case MemoryType.Atari2600Memory:
+			case MemoryType.Atari2600PrgRom:
+			case MemoryType.Atari2600Ram:
+			case MemoryType.Atari2600TiaRegisters:
+				return true;
 		}
 
 		return false;
@@ -365,6 +380,7 @@ public static class MemoryTypeExtensions {
 			case MemoryType.GbaMemory:
 			case MemoryType.WsMemory:
 			case MemoryType.LynxMemory:
+			case MemoryType.Atari2600Memory:
 				return true;
 		}
 
@@ -401,6 +417,10 @@ public static class MemoryTypeExtensions {
 
 			case MemoryType.LynxMemory:
 			case MemoryType.LynxPrgRom:
+				return true;
+
+			case MemoryType.Atari2600Memory:
+			case MemoryType.Atari2600PrgRom:
 				return true;
 
 			case MemoryType.NesPpuMemory:
@@ -555,6 +575,11 @@ public static class MemoryTypeExtensions {
 			MemoryType.LynxWorkRam => "WRAM",
 			MemoryType.LynxBootRom => "BOOT",
 			MemoryType.LynxSaveRam => "SRAM",
+
+			MemoryType.Atari2600Memory => "CPU",
+			MemoryType.Atari2600PrgRom => "ROM",
+			MemoryType.Atari2600Ram => "RAM",
+			MemoryType.Atari2600TiaRegisters => "TIA",
 
 			MemoryType.None => "n/a",
 

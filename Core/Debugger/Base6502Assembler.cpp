@@ -297,3 +297,7 @@ template bool Base6502Assembler<PceAddrMode>::IsOpModeAvailable(const string& op
 enum class LynxAddrMode : uint8_t;
 template void Base6502Assembler<LynxAddrMode>::ProcessLine(string code, uint32_t& instructionAddress, vector<int16_t>& output, unordered_map<string, uint32_t>& labels, bool firstPass, unordered_map<string, uint32_t>& currentPassLabels);
 template bool Base6502Assembler<LynxAddrMode>::IsOpModeAvailable(const string& opcode, LynxAddrMode mode);
+
+enum class Atari2600AddrMode : uint8_t;
+template void Base6502Assembler<Atari2600AddrMode>::ProcessLine(string code, uint32_t& instructionAddress, vector<int16_t>& output, unordered_map<string, uint32_t>& labels, bool firstPass, unordered_map<string, uint32_t>& currentPassLabels);
+template bool Base6502Assembler<Atari2600AddrMode>::IsOpModeAvailable(const string& opcode, Atari2600AddrMode mode);

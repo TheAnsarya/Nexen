@@ -1,14 +1,14 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
+using Avalonia.Media;
 using Nexen.Utilities;
 
-namespace Nexen.Controls; 
+namespace Nexen.Controls;
 public class OptionSection : ItemsControl {
 	public static readonly StyledProperty<string> HeaderProperty = AvaloniaProperty.Register<OptionSection, string>(nameof(Header));
 	public static readonly StyledProperty<string> IconProperty = AvaloniaProperty.Register<OptionSection, string>(nameof(Icon), "");
-	public static readonly StyledProperty<Bitmap?> IconSourceProperty = AvaloniaProperty.Register<OptionSection, Bitmap?>(nameof(IconSource));
+	public static readonly StyledProperty<IImage?> IconSourceProperty = AvaloniaProperty.Register<OptionSection, IImage?>(nameof(IconSource));
 
 	public string Header {
 		get { return GetValue(HeaderProperty); }
@@ -20,13 +20,13 @@ public class OptionSection : ItemsControl {
 		set { SetValue(IconProperty, value); }
 	}
 
-	public Bitmap? IconSource {
+	public IImage? IconSource {
 		get { return GetValue(IconSourceProperty); }
 		set { SetValue(IconSourceProperty, value); }
 	}
 
 	static OptionSection() {
-		IconProperty.Changed.AddClassHandler<OptionSection>((x, e) => x.IconSource = ImageUtilities.BitmapFromAsset(x.Icon));
+		IconProperty.Changed.AddClassHandler<OptionSection>((x, e) => x.IconSource = ImageUtilities.ImageFromAsset(x.Icon));
 	}
 
 	public OptionSection() {

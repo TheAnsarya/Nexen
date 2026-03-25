@@ -233,7 +233,17 @@ enum class ControllerType {
 	WsControllerVertical,
 
 	// Lynx
-	LynxController
+	LynxController,
+
+	// Genesis
+	GenesisController,
+
+	// Atari 2600
+	Atari2600Joystick,
+	Atari2600Paddle,
+	Atari2600Keypad,
+	Atari2600DrivingController,
+	Atari2600BoosterGrip
 };
 
 struct KeyMapping {
@@ -349,7 +359,8 @@ enum class ConsoleType {
 	Gba = 5,
 	Ws = 6,
 	Lynx = 7,
-	Atari2600 = 8
+	Atari2600 = 8,
+	Genesis = 9
 };
 
 enum class GameboyModel {
@@ -751,6 +762,41 @@ struct LynxConfig {
 	uint32_t Channel4Vol = 100;
 };
 
+struct GenesisConfig {
+	ControllerConfig Port1;
+	ControllerConfig Port2;
+
+	ConsoleRegion Region = ConsoleRegion::Auto;
+	RamState RamPowerOnState = RamState::Random;
+
+	bool RemoveSpriteLimit = false;
+	bool DisableSprites = false;
+	bool DisableBackground = false;
+
+	OverscanDimensions Overscan = {};
+};
+
+struct Atari2600Config {
+	ControllerConfig Port1;
+	ControllerConfig Port2;
+
+	bool P0DifficultyB = true;
+	bool P1DifficultyB = true;
+	bool ColorMode = true;
+
+	RamState RamPowerOnState = RamState::AllZeros;
+
+	uint32_t Channel0Vol = 100;
+	uint32_t Channel1Vol = 100;
+
+	bool HidePlayfield = false;
+	bool HidePlayer0 = false;
+	bool HidePlayer1 = false;
+	bool HideMissile0 = false;
+	bool HideMissile1 = false;
+	bool HideBall = false;
+};
+
 struct AudioPlayerConfig {
 	uint32_t Volume = 100;
 	bool Repeat = false;
@@ -828,6 +874,8 @@ struct DebugConfig {
 	bool WsBreakOnInvalidOpCode = false;
 
 	bool LynxBreakOnBrk = false;
+
+	bool Atari2600BreakOnBrk = false;
 
 	bool ScriptAllowIoOsAccess = false;
 	bool ScriptAllowNetworkAccess = false;
@@ -1072,4 +1120,5 @@ enum class DebuggerFlags {
 	GbaDebuggerEnabled = (1 << 11),
 	WsDebuggerEnabled = (1 << 12),
 	LynxDebuggerEnabled = (1 << 13),
+	Atari2600DebuggerEnabled = (1 << 14),
 };

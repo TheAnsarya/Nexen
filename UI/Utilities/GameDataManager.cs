@@ -64,6 +64,7 @@ public static class GameDataManager {
 		ConsoleType.Gba => "GBA",
 		ConsoleType.Ws => "WS",
 		ConsoleType.Lynx => "LYNX",
+		ConsoleType.Atari2600 => "A2600",
 		_ => system.ToString().ToUpperInvariant()
 	};
 

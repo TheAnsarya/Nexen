@@ -149,6 +149,8 @@ public sealed class RegisterViewerWindowViewModel : DisposableViewModel, ICpuTyp
 			_state = DebugApi.GetConsoleState<WsState>(ConsoleType.Ws);
 		} else if (_romInfo.ConsoleType == ConsoleType.Lynx) {
 			_state = DebugApi.GetConsoleState<LynxState>(ConsoleType.Lynx);
+		} else if (_romInfo.ConsoleType == ConsoleType.Atari2600) {
+			_state = DebugApi.GetConsoleState<Atari2600State>(ConsoleType.Atari2600);
 		}
 
 		Dispatcher.UIThread.Post(() => RefreshTabs());
@@ -182,6 +184,8 @@ public sealed class RegisterViewerWindowViewModel : DisposableViewModel, ICpuTyp
 			tabs = WsRegisterViewer.GetTabs(ref wsState);
 		} else if (lastState is LynxState lynxState) {
 			tabs = LynxRegisterViewer.GetTabs(ref lynxState);
+		} else if (lastState is Atari2600State a2600State) {
+			tabs = Atari2600RegisterViewer.GetTabs(ref a2600State);
 		}
 
 		foreach (RegisterViewerTab tab in tabs) {

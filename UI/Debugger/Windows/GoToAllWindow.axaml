@@ -87,7 +87,7 @@
 						<Border BorderBrush="Gray" BorderThickness="0 0 0 1" Padding="5 2">
 							<Grid ColumnDefinitions="1*,1*" RowDefinitions="1*,1*" IsEnabled="{Binding !Disabled}">
 								<StackPanel Orientation="Horizontal">
-									<Image Stretch="None" Source="/Assets/Warning.png" IsVisible="{Binding Disabled}" />
+									<Image Stretch="None" Source="/Assets/Warning.svg" IsVisible="{Binding Disabled}" />
 									<Image Stretch="None" Source="{Binding UiIcon}" />
 									<TextBlock Text="{Binding UiLabelName}" Margin="5 0 0 0" VerticalAlignment="Center" />
 								</StackPanel>

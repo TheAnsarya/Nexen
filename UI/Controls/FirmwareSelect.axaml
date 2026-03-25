@@ -15,7 +15,7 @@
 		<Image
 			Grid.Column="1"
 			Stretch="None"
-			Source="/Assets/Warning.png"
+			Source="/Assets/Warning.svg"
 			ToolTip.Tip="{Binding WarningMessage}"
 			ToolTip.ShowDelay="0"
 			IsVisible="{Binding WarningMessage.Length}"

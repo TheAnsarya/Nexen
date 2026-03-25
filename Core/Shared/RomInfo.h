@@ -33,6 +33,10 @@ enum class RomFormat {
 	Ws,
 
 	Lynx,
+
+	Genesis,
+
+	Atari2600,
 };
 
 struct DipSwitchInfo {

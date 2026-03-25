@@ -105,6 +105,89 @@ public class ErrorHandlingTests {
 		Assert.Equal(0, movie.TotalFrames);
 	}
 
+	[Fact]
+	public void VbmConverter_TruncatedFrameData_ReadsPartialFrames() {
+		var converter = new Converters.VbmMovieConverter();
+		// 128 header + 3 bytes (not enough for a full 2-byte frame pair)
+		var data = new byte[131];
+		BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(0), 0x1a4d4256); // VBM\x1A
+		BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(12), 5);          // Claims 5 frames
+		data[21] = 0x01; // Controller 1
+		data[22] = 0x01; // GBA
+		BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(28), 128);        // Input at offset 128
+
+		using var stream = new MemoryStream(data);
+		var movie = converter.Read(stream, "test.vbm");
+
+		// Should read only 1 complete frame (2 bytes), not crash on incomplete data
+		Assert.True(movie.TotalFrames < 5);
+	}
+
+	[Fact]
+	public void VbmConverter_ExactlyMinimumHeaderSize_Reads() {
+		var converter = new Converters.VbmMovieConverter();
+		// Exactly 64 bytes — minimum valid, no extended header fields
+		var data = new byte[64];
+		BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(0), 0x1a4d4256); // VBM\x1A
+		BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(12), 0);          // 0 frames
+		data[21] = 0x01; // Controller 1
+		data[22] = 0x00; // GB (no system flags = GB default)
+		BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(28), 64);         // Input at offset 64
+
+		using var stream = new MemoryStream(data);
+		var movie = converter.Read(stream, "test.vbm");
+
+		Assert.Equal(MovieFormat.Vbm, movie.SourceFormat);
+		Assert.Equal(SystemType.Gb, movie.SystemType);
+	}
+
+	[Fact]
+	public void VbmConverter_AllSystemFlagsCombined_PicksGba() {
+		var converter = new Converters.VbmMovieConverter();
+		var data = new byte[128];
+		BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(0), 0x1a4d4256);
+		BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(12), 0);
+		data[21] = 0x01;
+		data[22] = 0x07; // GBA | GBC | SGB all set
+		BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(28), 128);
+
+		using var stream = new MemoryStream(data);
+		var movie = converter.Read(stream, "test.vbm");
+
+		// GBA takes priority (checked first)
+		Assert.Equal(SystemType.Gba, movie.SystemType);
+	}
+
+	[Fact]
+	public void VbmConverter_NoControllersEnabled_DefaultsToOne() {
+		var converter = new Converters.VbmMovieConverter();
+		var data = new byte[128];
+		BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(0), 0x1a4d4256);
+		BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(12), 0);
+		data[21] = 0x00; // No controllers
+		data[22] = 0x01; // GBA
+		BinaryPrimitives.WriteUInt32LittleEndian(data.AsSpan(28), 128);
+
+		using var stream = new MemoryStream(data);
+		var movie = converter.Read(stream, "test.vbm");
+
+		Assert.Equal(1, movie.ControllerCount);
+	}
+
+	[Fact]
+	public void VbmConverter_CanWrite_ReturnsFalse() {
+		var converter = new Converters.VbmMovieConverter();
+		Assert.False(converter.CanWrite);
+	}
+
+	[Fact]
+	public void VbmConverter_Write_ThrowsNotSupported() {
+		var converter = new Converters.VbmMovieConverter();
+		using var stream = new MemoryStream();
+
+		Assert.Throws<NotSupportedException>(() => converter.Write(new MovieData(), stream));
+	}
+
 	#endregion
 
 	#region GMV Error Handling
@@ -141,6 +224,90 @@ public class ErrorHandlingTests {
 
 		Assert.Equal(MovieFormat.Gmv, movie.SourceFormat);
 		Assert.Equal(SystemType.Genesis, movie.SystemType);
+	}
+
+	[Fact]
+	public void GmvConverter_TruncatedHeader_ThrowsException() {
+		var converter = new Converters.GmvMovieConverter();
+		// Only 32 bytes — less than 64-byte GMV header
+		var data = new byte[32];
+		Encoding.ASCII.GetBytes("Gens Movie ").CopyTo(data, 0);
+
+		using var stream = new MemoryStream(data);
+
+		Assert.ThrowsAny<Exception>(() => converter.Read(stream, "test.gmv"));
+	}
+
+	[Fact]
+	public void GmvConverter_PartialFrameData_TruncatesCleanly() {
+		var converter = new Converters.GmvMovieConverter();
+		// 64 header + 5 bytes (partial frame: 3 bytes/frame for 1 controller)
+		var data = new byte[69];
+		Encoding.ASCII.GetBytes("Gens Movie ").CopyTo(data, 0);
+		data[16] = 0x40; // 3-button
+		data[17] = 0x01; // P1 only
+
+		using var stream = new MemoryStream(data);
+		var movie = converter.Read(stream, "test.gmv");
+
+		// 5 / 3 = 1 complete frame, partial truncated
+		Assert.Equal(1, movie.TotalFrames);
+	}
+
+	[Fact]
+	public void GmvConverter_NoControllersEnabled_DefaultsToOne() {
+		var converter = new Converters.GmvMovieConverter();
+		var data = new byte[64];
+		Encoding.ASCII.GetBytes("Gens Movie ").CopyTo(data, 0);
+		data[16] = 0x40; // 3-button
+		data[17] = 0x00; // No controllers enabled
+
+		using var stream = new MemoryStream(data);
+		var movie = converter.Read(stream, "test.gmv");
+
+		Assert.True(movie.ControllerCount >= 1);
+	}
+
+	[Fact]
+	public void GmvConverter_PalFlag_SetsRegionPAL() {
+		var converter = new Converters.GmvMovieConverter();
+		var data = new byte[64];
+		Encoding.ASCII.GetBytes("Gens Movie ").CopyTo(data, 0);
+		data[16] = 0x60; // 3-button + PAL
+		data[17] = 0x01;
+
+		using var stream = new MemoryStream(data);
+		var movie = converter.Read(stream, "test.gmv");
+
+		Assert.Equal(RegionType.PAL, movie.Region);
+	}
+
+	[Fact]
+	public void GmvConverter_SavestateFlag_SetsStartType() {
+		var converter = new Converters.GmvMovieConverter();
+		var data = new byte[64];
+		Encoding.ASCII.GetBytes("Gens Movie ").CopyTo(data, 0);
+		data[16] = 0xc0; // Savestate + 3-button
+		data[17] = 0x01;
+
+		using var stream = new MemoryStream(data);
+		var movie = converter.Read(stream, "test.gmv");
+
+		Assert.Equal(StartType.Savestate, movie.StartType);
+	}
+
+	[Fact]
+	public void GmvConverter_CanWrite_ReturnsFalse() {
+		var converter = new Converters.GmvMovieConverter();
+		Assert.False(converter.CanWrite);
+	}
+
+	[Fact]
+	public void GmvConverter_Write_ThrowsNotSupported() {
+		var converter = new Converters.GmvMovieConverter();
+		using var stream = new MemoryStream();
+
+		Assert.Throws<NotSupportedException>(() => converter.Write(new MovieData(), stream));
 	}
 
 	#endregion

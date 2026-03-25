@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "Shared/Interfaces/IConsole.h"
+#include "Atari2600/Atari2600Types.h"
 
 class Emulator;
 class BaseControlManager;
@@ -9,29 +10,6 @@ class Atari2600Riot;
 class Atari2600Tia;
 class Atari2600Mapper;
 class Atari2600Bus;
-
-struct Atari2600RiotState {
-	uint8_t PortA = 0;
-	uint8_t PortB = 0;
-	uint16_t Timer = 0;
-	bool TimerUnderflow = false;
-	uint64_t CpuCycles = 0;
-};
-
-struct Atari2600TiaState {
-	uint32_t FrameCount = 0;
-	uint32_t Scanline = 0;
-	uint32_t ColorClock = 0;
-	bool WsyncHold = false;
-	uint64_t TotalColorClocks = 0;
-};
-
-struct Atari2600FrameStepSummary {
-	uint32_t FrameCount = 0;
-	uint32_t CpuCyclesThisFrame = 0;
-	uint32_t ScanlineAtFrameEnd = 0;
-	uint32_t ColorClockAtFrameEnd = 0;
-};
 
 class Atari2600Console final : public IConsole {
 private:
@@ -49,9 +27,9 @@ private:
 	void RenderDebugFrame();
 
 public:
-	static constexpr uint32_t ScreenWidth = 160;
-	static constexpr uint32_t ScreenHeight = 192;
-	static constexpr uint32_t CpuCyclesPerFrame = 19912;
+	static constexpr uint32_t ScreenWidth = Atari2600Constants::ScreenWidth;
+	static constexpr uint32_t ScreenHeight = Atari2600Constants::ScreenHeight;
+	static constexpr uint32_t CpuCyclesPerFrame = Atari2600Constants::CpuCyclesPerFrame;
 
 	[[nodiscard]] static vector<string> GetSupportedExtensions() { return {".a26"}; }
 	[[nodiscard]] static vector<string> GetSupportedSignatures() { return {}; }
@@ -84,7 +62,25 @@ public:
 
 	void StepCpuCycles(uint32_t cpuCycles);
 	void RequestWsync();
+	void RequestHmove();
 	Atari2600RiotState GetRiotState() const;
 	Atari2600TiaState GetTiaState() const;
+	void SetTiaState(const Atari2600TiaState& state);
 	Atari2600FrameStepSummary GetLastFrameSummary() const { return _lastFrameSummary; }
+	uint8_t DebugReadCartridge(uint16_t addr);
+	void DebugWriteCartridge(uint16_t addr, uint8_t value);
+	Atari2600ScanlineRenderState DebugGetScanlineRenderState(uint32_t scanline) const;
+	uint8_t DebugGetMapperBankIndex() const;
+	string DebugGetMapperMode() const;
+
+	// Debugger accessors
+	Atari2600CpuState GetCpuState() const;
+	void SetCpuState(const Atari2600CpuState& state);
+	uint8_t DebugRead(uint16_t addr);
+	void DebugWrite(uint16_t addr, uint8_t value);
+	uint32_t GetFrameCount() const;
+	uint32_t GetCurrentScanline() const;
+	uint32_t GetCurrentColorClock() const;
+	uint32_t* GetFrameBuffer();
+	void DebugRenderFrame();
 };

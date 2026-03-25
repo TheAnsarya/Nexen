@@ -59,6 +59,8 @@ private:
 	GbaConfig _gba;
 	WsConfig _ws;
 	LynxConfig _lynx;
+	GenesisConfig _genesis;
+	Atari2600Config _atari2600;
 
 	atomic<uint32_t> _flags;
 	atomic<uint64_t> _debuggerFlags;
@@ -126,6 +128,12 @@ public:
 
 	void SetLynxConfig(LynxConfig& config);
 	LynxConfig& GetLynxConfig();
+
+	void SetGenesisConfig(GenesisConfig& config);
+	GenesisConfig& GetGenesisConfig();
+
+	void SetAtari2600Config(Atari2600Config& config);
+	Atari2600Config& GetAtari2600Config();
 
 	void SetGameConfig(GameConfig& config);
 	GameConfig& GetGameConfig();

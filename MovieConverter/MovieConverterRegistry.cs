@@ -16,7 +16,9 @@ public static class MovieConverterRegistry {
 	private static FrozenDictionary<string, IMovieConverter>? _extensionLookup;
 
 	// Cached collections (built once during initialization)
+#pragma warning disable IDE0032 // Backing field is set from RebuildCaches(), not from property setter
 	private static IReadOnlyList<IMovieConverter>? _cachedConverters;
+#pragma warning restore IDE0032
 	private static IReadOnlyList<IMovieConverter>? _cachedReadable;
 	private static IReadOnlyList<IMovieConverter>? _cachedWritable;
 	private static string? _cachedOpenFilter;

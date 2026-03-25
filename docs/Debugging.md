@@ -26,6 +26,22 @@ Nexen includes integrated debugging tools for tracing execution, inspecting memo
 - Use breakpoints and rewind together for fast iteration.
 - Save states before risky edits or long trace sessions.
 
+## Atari 2600 Debugger UI Checklist
+
+Use this focused checklist when validating Atari 2600 debugger readiness:
+
+1. Breakpoint precision: execution breakpoints stop exactly at expected addresses.
+2. Disassembly stepping: single-step updates PC and instruction context correctly.
+3. Memory parity: TIA and RIOT register writes are reflected in memory viewer.
+4. Event parity: event viewer entries match observed memory and execution transitions.
+5. Trace parity: trace logger ordering and tags are stable across repeated runs.
+
+For full manual execution flow and ranked release priority, use:
+
+- [Manual Testing Hub](manual-testing/README.md)
+- [Atari 2600 Debug and TAS Manual Test](manual-testing/atari2600-debug-and-tas-manual-test.md)
+- [Manual Step Priority Ranking](manual-testing/manual-step-priority-ranking.md)
+
 ## Panel Walkthrough (Screenshot Anchors)
 
 ### Walkthrough A: Breakpoint and Disassembly Inspection
@@ -58,4 +74,5 @@ Nexen includes integrated debugging tools for tracing execution, inspecting memo
 
 - [Debugger Performance](DEBUGGER-PERFORMANCE.md)
 - [Movie System Guide](Movie-System.md)
+- [Manual Testing Hub](manual-testing/README.md)
 - [Systems Documentation](systems/README.md)

@@ -32,7 +32,7 @@
 			<TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/Debugger.png" Margin="0 0 10 0" />
+						<Image Source="/Assets/Debugger.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabDebugger}"/>
 					</StackPanel>
 				</TabItem.Header>
@@ -79,7 +79,7 @@
 			<TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/Script.png" Margin="0 0 10 0" />
+						<Image Source="/Assets/Script.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabScriptWindow}" />
 					</StackPanel>
 				</TabItem.Header>

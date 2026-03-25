@@ -40,6 +40,9 @@
 				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
 				<Button Content="+" ToolTip.Tip="Insert frame (Insert)" Width="30" Click="OnInsertFrameClick" />
 				<Button Content="-" ToolTip.Tip="Delete frame (Delete)" Width="30" Click="OnDeleteFrameClick" />
+				<Button Content="All" ToolTip.Tip="Select all frames (Ctrl+A)" Width="40" Click="OnSelectAllFramesClick" />
+				<Button Content="None" ToolTip.Tip="Clear selection (Ctrl+Shift+A)" Width="50" Click="OnSelectNoFramesClick" />
+				<Button Content="Range" ToolTip.Tip="Select frame range" Width="55" Click="OnSelectRangeDialogClick" />
 				<Rectangle Width="1" Fill="Gray" Margin="5 0" />
 				<Button Content="⏮" ToolTip.Tip="Frame rewind (R)" Width="30" Click="OnFrameRewindClick" />
 				<Button Content="⏯" ToolTip.Tip="Play/Pause (Space)" Width="30" Click="OnPlayPauseClick" />
@@ -129,7 +132,14 @@
 							<MenuItem Header="C_lear Input" Click="OnClearInputClick" />
 							<Separator />
 							<MenuItem Header="Select _All" Click="OnSelectAllClick" InputGesture="Ctrl+A" />
+							<MenuItem Header="Select _None" Click="OnSelectNoneClick" InputGesture="Ctrl+Shift+A" />
+							<MenuItem Header="Select _Range..." Click="OnSelectRangeDialogFromMenuClick" />
 							<MenuItem Header="Select Range _To Here" Click="OnSelectRangeToHereClick" />
+							<Separator />
+							<MenuItem Header="_Insert N Frames..." Click="OnBulkInsertClick" />
+							<MenuItem Header="Bulk _Set Button..." Click="OnBulkSetButtonClick" />
+							<MenuItem Header="Bulk C_lear Button..." Click="OnBulkClearButtonClick" />
+							<MenuItem Header="_Pattern Fill..." Click="OnPatternFillClick" />
 							<Separator />
 							<MenuItem Header="Set _Comment..." Click="OnSetCommentClick" />
 							<MenuItem Header="Set _Marker" Click="OnSetMarkerClick" />
@@ -185,8 +195,15 @@
 							HorizontalAlignment="Stretch"
 						/>
 
-						<!-- Controller 1 -->
-						<TextBlock Text="Controller 1" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
+					<!-- Port Selector (visible when multiple ports) -->
+					<StackPanel IsVisible="{Binding IsPortSelectorVisible}" Spacing="4">
+						<TextBlock Text="Active Port" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
+						<Rectangle Height="1" Fill="Gray" />
+						<c:NexenNumericUpDown Value="{Binding SelectedEditPort}" Minimum="0" Maximum="{Binding MaxEditPort}" Width="80" />
+					</StackPanel>
+
+					<!-- Controller Buttons -->
+					<TextBlock Text="Controller Buttons" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
 						<Rectangle Height="1" Fill="Gray" />
 
 						<ItemsControl ItemsSource="{Binding ControllerButtons}">
@@ -205,6 +222,68 @@
 										Margin="2"
 										Click="OnButtonClick"
 									/>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+
+						<StackPanel IsVisible="{Binding IsPaddleCoordinateEditorVisible}" Spacing="6">
+							<TextBlock Text="Paddle Position" FontWeight="SemiBold" Margin="0 4 0 0" />
+							<StackPanel Orientation="Horizontal" Spacing="6">
+								<c:NexenNumericUpDown Value="{Binding SelectedPaddlePosition}" Minimum="0" Maximum="255" Width="100" />
+								<TextBlock Text="(0-255)" VerticalAlignment="Center" Foreground="Gray" />
+							</StackPanel>
+						</StackPanel>
+
+						<!-- Console Switches (Atari 2600 only) -->
+						<StackPanel IsVisible="{Binding IsConsoleSwitchPanelVisible}" Spacing="4">
+							<TextBlock Text="Console Switches" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
+							<Rectangle Height="1" Fill="Gray" />
+							<StackPanel Orientation="Horizontal" Spacing="6">
+								<ToggleButton
+									Content="SELECT"
+									IsChecked="{Binding IsSelectedFrameSelectActive}"
+									Click="OnConsoleSwitchSelectClick"
+									Width="70" Height="28"
+									ToolTip.Tip="Toggle Atari 2600 Select switch on selected frame(s)"
+								/>
+								<ToggleButton
+									Content="RESET"
+									IsChecked="{Binding IsSelectedFrameResetActive}"
+									Click="OnConsoleSwitchResetClick"
+									Width="70" Height="28"
+									Foreground="OrangeRed"
+									ToolTip.Tip="Toggle Atari 2600 Reset switch on selected frame(s)"
+								/>
+							</StackPanel>
+						</StackPanel>
+
+						<!-- Input preview pane -->
+						<TextBlock Text="Input Preview" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
+						<Rectangle Height="1" Fill="Gray" />
+
+						<TextBlock Text="Raw Hex (all ports)" FontWeight="SemiBold" />
+						<TextBox
+							Text="{Binding SelectedFrameHexPreview}"
+							IsReadOnly="True"
+							AcceptsReturn="True"
+							TextWrapping="Wrap"
+							Height="68"
+							FontFamily="Consolas"
+							FontSize="12"
+						/>
+
+						<TextBlock Text="Controller Diagram (P1)" FontWeight="SemiBold" Margin="0 4 0 0" />
+						<ItemsControl ItemsSource="{Binding InputPreviewButtons}">
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<UniformGrid Columns="{Binding InputPreviewColumns}" />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Border Background="{Binding Background}" CornerRadius="4" Padding="4" Margin="2" MinWidth="36">
+										<TextBlock Text="{Binding Label}" Foreground="{Binding Foreground}" FontWeight="Bold" HorizontalAlignment="Center" />
+									</Border>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
 						</ItemsControl>
@@ -241,6 +320,49 @@
 							<TextBlock Grid.Row="8" Text="ROM:" VerticalAlignment="Center" Margin="0 5 0 0" />
 							<TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Movie.RomFileName, FallbackValue=—}" Margin="5 5 0 0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Movie.RomFileName}" />
 						</Grid>
+
+						<!-- Auto-save settings -->
+						<TextBlock Text="Auto-Save" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
+						<Rectangle Height="1" Fill="Gray" />
+						<StackPanel Orientation="Horizontal" Margin="0 0 0 5">
+							<CheckBox Content="Enable auto-save" IsChecked="{Binding AutoSaveEnabled}" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="0 0 0 5">
+							<TextBlock Text="Interval (minutes):" VerticalAlignment="Center" />
+							<c:NexenNumericUpDown Value="{Binding AutoSaveIntervalMinutes}" Margin="6 0 0 0" Minimum="1" Maximum="60" Width="70" IsEnabled="{Binding AutoSaveEnabled}" />
+						</StackPanel>
+
+						<!-- Marker/comment list panel -->
+						<TextBlock Text="Markers &amp; Comments" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />
+						<Rectangle Height="1" Fill="Gray" />
+						<StackPanel Orientation="Horizontal" Margin="0 0 0 5" Spacing="6">
+							<TextBlock Text="Filter:" VerticalAlignment="Center" />
+							<ComboBox Width="130" ItemsSource="{Binding MarkerEntryFilters}" SelectedItem="{Binding MarkerEntryFilter}" />
+						</StackPanel>
+						<ListBox
+							Name="MarkerList"
+							ItemsSource="{Binding MarkerEntries}"
+							SelectedItem="{Binding SelectedMarkerEntry}"
+							MaxHeight="150"
+							SelectionMode="Single"
+							DoubleTapped="OnMarkerEntryDoubleTapped"
+						>
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<Grid ColumnDefinitions="65,70,*" Margin="0 1">
+										<TextBlock Grid.Column="0" Text="{Binding FrameIndex, StringFormat=F#{0}}" />
+										<TextBlock Grid.Column="1" Text="{Binding Type}" Foreground="Gray" />
+										<TextBlock Grid.Column="2" Text="{Binding Comment}" TextTrimming="CharacterEllipsis" />
+									</Grid>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+						<WrapPanel Margin="0 5 0 0" Orientation="Horizontal" ItemHeight="28" ItemWidth="70">
+							<Button Content="Add" Click="OnMarkerAddClick" />
+							<Button Content="Edit" Click="OnMarkerEditClick" />
+							<Button Content="Delete" Click="OnMarkerDeleteClick" />
+							<Button Content="Export" Click="OnMarkerExportClick" />
+						</WrapPanel>
 
 						<!-- Branches -->
 						<TextBlock Text="Branches" FontWeight="Bold" FontSize="14" Margin="0 10 0 0" />

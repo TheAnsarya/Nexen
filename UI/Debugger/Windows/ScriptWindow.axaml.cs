@@ -27,7 +27,7 @@ using Nexen.Debugger.Views;
 using Nexen.Interop;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Windows; 
+namespace Nexen.Debugger.Windows;
 public class ScriptWindow : NexenWindow, INotificationHandler {
 	private static XshdSyntaxDefinition _syntaxDef;
 	private IHighlightingDefinition _highlighting;
@@ -328,9 +328,9 @@ public class ScriptWindow : NexenWindow, INotificationHandler {
 		public IImage Image {
 			get {
 				if (_enumName != null) {
-					return ImageUtilities.BitmapFromAsset("Assets/Enum.png")!;
+					return ImageUtilities.ImageFromAsset("Assets/Enum.png")!;
 				} else {
-					return ImageUtilities.BitmapFromAsset(CodeCompletionHelper.GetEntry(Text)?.EnumValues.Count > 0 ? "Assets/Enum.png" : "Assets/Function.png")!;
+					return ImageUtilities.ImageFromAsset(CodeCompletionHelper.GetEntry(Text)?.EnumValues.Count > 0 ? "Assets/Enum.png" : "Assets/Function.png")!;
 				}
 			}
 		}

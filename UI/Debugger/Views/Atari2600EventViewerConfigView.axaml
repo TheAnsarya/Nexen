@@ -1,0 +1,52 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	mc:Ignorable="d"
+	Design.Width="200"
+	Design.Height="400"
+	VerticalAlignment="Stretch"
+	HorizontalAlignment="Stretch"
+	x:DataType="cfg:Atari2600EventViewerConfig"
+	x:Class="Nexen.Debugger.Views.Atari2600EventViewerConfigView"
+>
+	<Design.DataContext>
+		<cfg:Atari2600EventViewerConfig />
+	</Design.DataContext>
+
+	<StackPanel>
+		<Grid ColumnDefinitions="10, 1*, 10, 1*" RowDefinitions="Auto,Auto">
+			<c:OptionSection Header="TIA writes" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="0" />
+			<c:OptionSection Header="TIA reads" Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Margin="10 0 0 0" />
+			<StackPanel Grid.Column="1" Grid.Row="1">
+				<dc:EventViewerCategoryControl Text="TIA" Config="{Binding TiaWrite}" />
+			</StackPanel>
+			<StackPanel Grid.Column="3" Grid.Row="1">
+				<dc:EventViewerCategoryControl Text="TIA" Config="{Binding TiaRead}" />
+			</StackPanel>
+		</Grid>
+
+		<Grid ColumnDefinitions="10, 1*, 10, 1*" RowDefinitions="Auto,Auto" Margin="0 15 0 0">
+			<c:OptionSection Header="RIOT writes" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="0" />
+			<c:OptionSection Header="RIOT reads" Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Margin="10 0 0 0" />
+			<StackPanel Grid.Column="1" Grid.Row="1">
+				<dc:EventViewerCategoryControl Text="RIOT" Config="{Binding RiotWrite}" />
+			</StackPanel>
+			<StackPanel Grid.Column="3" Grid.Row="1">
+				<dc:EventViewerCategoryControl Text="RIOT" Config="{Binding RiotRead}" />
+			</StackPanel>
+		</Grid>
+
+		<c:OptionSection Header="Other events" />
+		<StackPanel>
+			<dc:EventViewerCategoryControl Text="IRQ" Config="{Binding Irq}" />
+			<dc:EventViewerCategoryControl Text="Marked Breakpoints" Config="{Binding MarkedBreakpoints}" />
+		</StackPanel>
+
+		<CheckBox Margin="0 10 0 0" IsChecked="{Binding ShowPreviousFrameEvents}" Content="Show previous frame events" />
+	</StackPanel>
+</UserControl>

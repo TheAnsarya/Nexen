@@ -96,3 +96,27 @@ Reasons:
 - Scope and risk are documented in this plan.
 - Test harness milestones are measurable and explicitly sequenced.
 - Follow-up implementation issues exist and are linked.
+
+## 2026-03-20 Integration Wiring Sprint Delta
+
+Active epic: [#830](https://github.com/TheAnsarya/Nexen/issues/830)
+
+### New Issue Batch
+
+- [#831](https://github.com/TheAnsarya/Nexen/issues/831) - Fix Atari lightweight CDL PRG-ROM memory resolution.
+- [#832](https://github.com/TheAnsarya/Nexen/issues/832) - Implement Atari absolute-address mapping for debugger and CDL.
+- [#833](https://github.com/TheAnsarya/Nexen/issues/833) - Add deterministic tests for Atari CDL/address-translation integration.
+
+### Integration Gaps Addressed
+
+- CPU-derived PRG-ROM memory type fallback for lightweight CDL startup now uses console PC absolute memory type when primary lookup has no registered memory.
+- Atari absolute-address translation now returns typed Atari memory regions and mapper-backed ROM offsets.
+- Atari PC absolute-address reporting now returns bounded ROM offsets suitable for CDL indexing.
+
+### Current Verification Gates
+
+- Build: `Nexen.sln` Release x64 via MSBuild.
+- Focused integration tests: `Core.Tests.exe --gtest_filter=Atari2600IntegrationWiringTests.* --gtest_brief=1`.
+- Focused Atari regression: `Core.Tests.exe --gtest_filter=Atari2600* --gtest_brief=1`.
+- Full C++ regression: `Core.Tests.exe --gtest_brief=1`.
+- Full .NET regression: `dotnet test --no-build -c Release`.

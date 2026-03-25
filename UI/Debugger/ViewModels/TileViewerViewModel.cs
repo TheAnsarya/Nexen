@@ -425,6 +425,7 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 			CpuType.Gba => new Enum[] { TileFormat.GbaBpp4, TileFormat.GbaBpp8 },
 			CpuType.Ws => new Enum[] { TileFormat.Bpp2, TileFormat.SmsBpp4, TileFormat.WsBpp4Packed },
 			CpuType.Lynx => new Enum[] { TileFormat.Bpp4 },
+			CpuType.Atari2600 => new Enum[] { TileFormat.Bpp4 },
 			_ => throw new Exception("Unsupported CPU type")
 		};
 

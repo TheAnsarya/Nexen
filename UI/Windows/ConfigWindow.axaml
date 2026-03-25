@@ -56,6 +56,9 @@
 		<DataTemplate DataType="{x:Type vm:LynxConfigViewModel}">
 			<v:LynxConfigView />
 		</DataTemplate>
+		<DataTemplate DataType="{x:Type vm:Atari2600ConfigViewModel}">
+			<v:Atari2600ConfigView />
+		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:OtherConsolesConfigViewModel}">
 			<v:OtherConsolesConfigView />
 		</DataTemplate>
@@ -74,7 +77,7 @@
 				<Button Grid.Column="4" MinWidth="70" HorizontalContentAlignment="Center" Click="Cancel_OnClick" Content="{l:Translate btnCancel}" />
 			</Grid>
 		</Panel>
-		
+
 		<TabControl TabStripPlacement="Left" Background="#20888888" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" Padding="0">
 			<TabItem Content="{Binding Audio}">
 				<TabItem.Header>
@@ -103,22 +106,22 @@
 			<TabItem Content="{Binding Video}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/VideoOptions.png" Margin="0 0 10 0" />
+						<Image Source="/Assets/VideoOptions.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabVideo}" />
 					</StackPanel>
 				</TabItem.Header>
 			</TabItem>
-			
+
 			<TabItem IsEnabled="False" MinHeight="10">
 				<TabItem.Header>
 					<Rectangle Fill="{StaticResource NexenGrayBorderColor}" Height="1" />
 				</TabItem.Header>
 			</TabItem>
-			
-			<TabItem Content="{Binding Nes}"> 
+
+			<TabItem Content="{Binding Nes}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/NesIcon.png" Margin="0 0 10 0" />
+						<Image Source="/Assets/NesIcon.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabNes}" />
 					</StackPanel>
 				</TabItem.Header>
@@ -127,7 +130,7 @@
 			<TabItem Content="{Binding Snes}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/SnesIcon.png" Margin="0 0 10 0" />
+						<Image Source="/Assets/SnesIcon.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabSnes}" />
 					</StackPanel>
 				</TabItem.Header>
@@ -136,7 +139,7 @@
 			<TabItem Content="{Binding Gameboy}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/GameboyIcon.png" Margin="0 0 10 0" />
+						<Image Source="/Assets/GameboyIcon.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabGameboy}" />
 					</StackPanel>
 				</TabItem.Header>
@@ -145,7 +148,7 @@
 			<TabItem Content="{Binding Gba}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/GbaIcon.png" Margin="0 0 10 0" />
+						<Image Source="/Assets/GbaIcon.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabGba}" />
 					</StackPanel>
 				</TabItem.Header>
@@ -154,7 +157,7 @@
 			<TabItem Content="{Binding PcEngine}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/PceIcon.png" Margin="0 0 10 0" />
+						<Image Source="/Assets/PceIcon.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabPcEngine}" />
 					</StackPanel>
 				</TabItem.Header>
@@ -163,7 +166,7 @@
 			<TabItem Content="{Binding Sms}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/SmsIcon.png" Margin="0 0 10 0" />
+						<Image Source="/Assets/SmsIcon.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabSms}" />
 					</StackPanel>
 				</TabItem.Header>
@@ -172,7 +175,7 @@
 			<TabItem Content="{Binding Ws}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/WsIcon.png" Margin="0 0 10 0" />
+						<Image Source="/Assets/WsIcon.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabWs}" />
 					</StackPanel>
 				</TabItem.Header>
@@ -181,31 +184,40 @@
 			<TabItem Content="{Binding Lynx}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/LynxIcon.png" Margin="0 0 10 0" />
+						<Image Source="/Assets/LynxIcon.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabLynx}" />
 					</StackPanel>
 				</TabItem.Header>
 			</TabItem>
-			
+
+			<TabItem Content="{Binding Atari2600}">
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<Image Source="/Assets/Controller.png" Margin="0 0 10 0" />
+						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabAtari2600}" />
+					</StackPanel>
+				</TabItem.Header>
+			</TabItem>
+
 			<TabItem Content="{Binding OtherConsoles}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/Drive.png" Margin="0 0 10 0" />
+						<Image Source="/Assets/Drive.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabOtherConsoles}" />
 					</StackPanel>
 				</TabItem.Header>
 			</TabItem>
-			
+
 			<TabItem IsEnabled="False" MinHeight="10">
 				<TabItem.Header>
 					<Rectangle Fill="{StaticResource NexenGrayBorderColor}" Height="1" />
 				</TabItem.Header>
 			</TabItem>
-			
+
 			<TabItem Content="{Binding Preferences}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/Settings.png" Margin="0 0 10 0" />
+						<Image Source="/Assets/Settings.svg" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabPreferences}" />
 					</StackPanel>
 				</TabItem.Header>

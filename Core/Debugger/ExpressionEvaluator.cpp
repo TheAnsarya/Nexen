@@ -93,6 +93,9 @@ TokenSpan ExpressionEvaluator::GetAvailableTokens() {
 		case CpuType::Lynx:
 			// Lynx uses 65C02, reuse NES/PCE token set for registers
 			return GetNesTokens();
+		case CpuType::Atari2600:
+			// Atari 2600 uses 6502, reuse NES token set for registers
+			return GetNesTokens();
 	}
 
 	return {};
@@ -495,6 +498,10 @@ int64_t ExpressionEvaluator::Evaluate(ExpressionData& data, EvalResultType& resu
 									break;
 								case CpuType::Lynx:
 									// Lynx uses 65C02, reuse NES token value getter
+									token = GetNesTokenValue(token, resultType);
+									break;
+								case CpuType::Atari2600:
+									// Atari 2600 uses 6502, reuse NES token value getter
 									token = GetNesTokenValue(token, resultType);
 									break;
 							}

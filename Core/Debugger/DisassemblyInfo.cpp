@@ -21,6 +21,7 @@
 #include "GBA/Debugger/GbaDisUtils.h"
 #include "WS/Debugger/WsDisUtils.h"
 #include "Lynx/Debugger/LynxDisUtils.h"
+#include "Atari2600/Debugger/Atari2600DisUtils.h"
 #include "Shared/EmuSettings.h"
 
 DisassemblyInfo::DisassemblyInfo() {
@@ -100,6 +101,9 @@ void DisassemblyInfo::GetDisassembly(string& out, uint32_t memoryAddr, LabelMana
 		case CpuType::Lynx:
 			LynxDisUtils::GetDisassembly(*this, out, memoryAddr, labelManager, settings);
 			break;
+		case CpuType::Atari2600:
+			Atari2600DisUtils::GetDisassembly(*this, out, memoryAddr, labelManager, settings);
+			break;
 
 		[[unlikely]] default:
 			throw std::runtime_error("GetDisassembly - Unsupported CPU type");
@@ -145,6 +149,8 @@ EffectiveAddressInfo DisassemblyInfo::GetEffectiveAddress(Debugger* debugger, vo
 			return WsDisUtils::GetEffectiveAddress(*this, (WsConsole*)debugger->GetConsole(), *(WsCpuState*)cpuState);
 		case CpuType::Lynx:
 			return LynxDisUtils::GetEffectiveAddress(*this, (LynxConsole*)debugger->GetConsole(), *(LynxCpuState*)cpuState);
+		case CpuType::Atari2600:
+			return Atari2600DisUtils::GetEffectiveAddress(*this, *(Atari2600CpuState*)cpuState, debugger->GetMemoryDumper());
 	}
 
 	[[unlikely]] throw std::runtime_error("GetEffectiveAddress - Unsupported CPU type");
@@ -233,6 +239,8 @@ uint8_t DisassemblyInfo::GetOpSize(uint32_t opCode, uint8_t flags, CpuType type,
 			return WsDisUtils::GetOpSize(cpuAddress, memType, memoryDumper);
 		case CpuType::Lynx:
 			return LynxDisUtils::GetOpSize(opCode);
+		case CpuType::Atari2600:
+			return Atari2600DisUtils::GetOpSize(opCode);
 	}
 
 	[[unlikely]] throw std::runtime_error("GetOpSize - Unsupported CPU type");
@@ -268,6 +276,8 @@ bool DisassemblyInfo::IsJumpToSub() {
 			return WsDisUtils::IsJumpToSub(GetFullOpCode<CpuType::Ws>());
 		case CpuType::Lynx:
 			return LynxDisUtils::IsJumpToSub(GetOpCode());
+		case CpuType::Atari2600:
+			return Atari2600DisUtils::IsJumpToSub(GetOpCode());
 	}
 
 	[[unlikely]] throw std::runtime_error("IsJumpToSub - Unsupported CPU type");
@@ -303,6 +313,8 @@ bool DisassemblyInfo::IsReturnInstruction() {
 			return WsDisUtils::IsReturnInstruction(GetFullOpCode<CpuType::Ws>());
 		case CpuType::Lynx:
 			return LynxDisUtils::IsReturnInstruction(GetOpCode());
+		case CpuType::Atari2600:
+			return Atari2600DisUtils::IsReturnInstruction(GetOpCode());
 	}
 
 	[[unlikely]] throw std::runtime_error("IsReturnInstruction - Unsupported CPU type");
@@ -357,6 +369,8 @@ bool DisassemblyInfo::IsUnconditionalJump() {
 			return WsDisUtils::IsUnconditionalJump(GetFullOpCode<CpuType::Ws>());
 		case CpuType::Lynx:
 			return LynxDisUtils::IsUnconditionalJump(GetOpCode());
+		case CpuType::Atari2600:
+			return Atari2600DisUtils::IsUnconditionalJump(GetOpCode());
 	}
 
 	[[unlikely]] throw std::runtime_error("IsUnconditionalJump - Unsupported CPU type");
@@ -397,6 +411,8 @@ bool DisassemblyInfo::IsJump() {
 			return WsDisUtils::IsConditionalJump(GetFullOpCode<CpuType::Ws>());
 		case CpuType::Lynx:
 			return LynxDisUtils::IsConditionalJump(GetOpCode());
+		case CpuType::Atari2600:
+			return Atari2600DisUtils::IsConditionalJump(GetOpCode());
 	}
 
 	[[unlikely]] throw std::runtime_error("IsJump - Unsupported CPU type");

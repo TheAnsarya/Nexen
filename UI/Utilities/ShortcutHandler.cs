@@ -336,6 +336,18 @@ public sealed class ShortcutHandler {
 				}
 
 				break;
+
+			case ConsoleType.Atari2600:
+				switch (layer) {
+					case VideoLayer.Bg1: return (() => ConfigManager.Config.Atari2600.HidePlayfield, (val) => ConfigManager.Config.Atari2600.HidePlayfield = val);
+					case VideoLayer.Bg2: return (() => ConfigManager.Config.Atari2600.HideBall, (val) => ConfigManager.Config.Atari2600.HideBall = val);
+					case VideoLayer.Bg3: return (() => ConfigManager.Config.Atari2600.HideMissile0, (val) => ConfigManager.Config.Atari2600.HideMissile0 = val);
+					case VideoLayer.Bg4: return (() => ConfigManager.Config.Atari2600.HideMissile1, (val) => ConfigManager.Config.Atari2600.HideMissile1 = val);
+					case VideoLayer.Sprite1: return (() => ConfigManager.Config.Atari2600.HidePlayer0, (val) => ConfigManager.Config.Atari2600.HidePlayer0 = val);
+					case VideoLayer.Sprite2: return (() => ConfigManager.Config.Atari2600.HidePlayer1, (val) => ConfigManager.Config.Atari2600.HidePlayer1 = val);
+				}
+
+				break;
 		}
 
 		return (null, null);
@@ -380,6 +392,12 @@ public sealed class ShortcutHandler {
 		ConfigManager.Config.Ws.DisableSprites = false;
 		ConfigManager.Config.Lynx.DisableBackground = false;
 		ConfigManager.Config.Lynx.DisableSprites = false;
+		ConfigManager.Config.Atari2600.HidePlayfield = false;
+		ConfigManager.Config.Atari2600.HidePlayer0 = false;
+		ConfigManager.Config.Atari2600.HidePlayer1 = false;
+		ConfigManager.Config.Atari2600.HideMissile0 = false;
+		ConfigManager.Config.Atari2600.HideMissile1 = false;
+		ConfigManager.Config.Atari2600.HideBall = false;
 		UpdateAllCoreConfig();
 		DisplayMessageHelper.DisplayMessage("Debug", ResourceHelper.GetMessage("AllLayersEnabled"));
 	}
@@ -394,6 +412,7 @@ public sealed class ShortcutHandler {
 		ConfigManager.Config.Cv.ApplyConfig();
 		ConfigManager.Config.Ws.ApplyConfig();
 		ConfigManager.Config.Lynx.ApplyConfig();
+		ConfigManager.Config.Atari2600.ApplyConfig();
 	}
 
 	private void SetEmulationSpeed(uint emulationSpeed) {

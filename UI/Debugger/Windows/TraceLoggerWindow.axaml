@@ -127,14 +127,14 @@
 									IsVisible="{Binding Options.UseCustomFormat}"
 									MaxLength="1000"
 								/>
-								<Image Grid.Row="0" Grid.Column="2" Source="/Assets/Help.png" ToolTip.Tip="{Binding FormatTooltip}" ToolTip.Placement="Right" ToolTip.ShowDelay="0" />
+								<Image Grid.Row="0" Grid.Column="2" Source="/Assets/Help.svg" ToolTip.Tip="{Binding FormatTooltip}" ToolTip.Placement="Right" ToolTip.ShowDelay="0" />
 								
 								<TextBlock VerticalAlignment="Center" Grid.Row="1" Text="{l:Translate lblCondition}" />
 								<DockPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
 									<Image
 										DockPanel.Dock="Right"
 										Stretch="None"
-										Source="/Assets/Help.png"
+										Source="/Assets/Help.svg"
 										ToolTip.Tip="{Binding HelpTooltip}"
 										ToolTip.Placement="Right"
 										ToolTip.ShowDelay="0"
@@ -143,7 +143,7 @@
 										IsVisible="{Binding !IsConditionValid}"
 										DockPanel.Dock="Right"
 										Stretch="None"
-										Source="/Assets/Error.png"
+										Source="/Assets/Error.svg"
 										ToolTip.Tip="{l:Translate lblConditionError}"
 										ToolTip.Placement="Right"
 										ToolTip.ShowDelay="0"

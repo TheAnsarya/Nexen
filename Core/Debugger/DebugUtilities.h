@@ -67,6 +67,10 @@ public:
 				return MemoryType::WsMemory;
 			case CpuType::Lynx:
 				return MemoryType::LynxMemory;
+			case CpuType::Genesis:
+				return MemoryType::GenesisMemory;
+			case CpuType::Atari2600:
+				return MemoryType::Atari2600Memory;
 		}
 
 		[[unlikely]] throw std::runtime_error("Invalid CPU type");
@@ -106,6 +110,10 @@ public:
 			case CpuType::Ws:
 				return 5;
 			case CpuType::Lynx:
+				return 4;
+			case CpuType::Genesis:
+				return 6;
+			case CpuType::Atari2600:
 				return 4;
 		}
 
@@ -242,6 +250,19 @@ public:
 			case MemoryType::LynxSaveRam:
 				return CpuType::Lynx;
 
+			case MemoryType::GenesisMemory:
+			case MemoryType::GenesisPrgRom:
+			case MemoryType::GenesisWorkRam:
+			case MemoryType::GenesisVideoRam:
+			case MemoryType::GenesisPaletteRam:
+				return CpuType::Genesis;
+
+			case MemoryType::Atari2600Memory:
+			case MemoryType::Atari2600PrgRom:
+			case MemoryType::Atari2600Ram:
+			case MemoryType::Atari2600TiaRegisters:
+				return CpuType::Atari2600;
+
 			[[unlikely]] default:
 				throw std::runtime_error("Invalid CPU type");
 		}
@@ -287,6 +308,10 @@ public:
 				return MemoryType::WsPrgRom;
 			case CpuType::Lynx:
 				return MemoryType::LynxPrgRom;
+			case CpuType::Genesis:
+				return MemoryType::GenesisPrgRom;
+			case CpuType::Atari2600:
+				return MemoryType::Atari2600PrgRom;
 		}
 
 		[[unlikely]] return MemoryType::None;
@@ -296,7 +321,7 @@ public:
 	/// Get last CPU memory type enum value.
 	/// </summary>
 	[[nodiscard]] static constexpr MemoryType GetLastCpuMemoryType() {
-		return MemoryType::LynxMemory;
+		return MemoryType::Atari2600Memory;
 	}
 
 	/// <summary>
@@ -335,6 +360,10 @@ public:
 			case MemoryType::GbaPaletteRam:
 				return true;
 
+			case MemoryType::GenesisVideoRam:
+			case MemoryType::GenesisPaletteRam:
+				return true;
+
 			default:
 				return false;
 		}
@@ -365,6 +394,10 @@ public:
 			case MemoryType::WsPrgRom:
 			case MemoryType::LynxPrgRom:
 			case MemoryType::LynxBootRom:
+			case MemoryType::GenesisPrgRom:
+				return true;
+
+			case MemoryType::Atari2600PrgRom:
 				return true;
 
 			default:
@@ -399,7 +432,7 @@ public:
 	/// Get last CPU type enum value.
 	/// </summary>
 	[[nodiscard]] static constexpr CpuType GetLastCpuType() {
-		return CpuType::Lynx;
+		return CpuType::Atari2600;
 	}
 
 	/// <summary>

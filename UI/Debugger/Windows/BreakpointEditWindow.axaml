@@ -88,8 +88,8 @@
 					Text="{Binding Breakpoint.Condition, Converter={StaticResource NullTextConverter}}"
 				/>
 
-				<Image Grid.Column="1" Stretch="None" Source="/Assets/Warning.png" ToolTip.Tip="{l:Translate lblConditionError}" IsVisible="{Binding !IsConditionValid}" />
-				<Image Grid.Column="2" Stretch="None" Source="/Assets/Help.png" ToolTip.Tip="{Binding HelpTooltip}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" />
+				<Image Grid.Column="1" Stretch="None" Source="/Assets/Warning.svg" ToolTip.Tip="{l:Translate lblConditionError}" IsVisible="{Binding !IsConditionValid}" />
+				<Image Grid.Column="2" Stretch="None" Source="/Assets/Help.svg" ToolTip.Tip="{Binding HelpTooltip}" ToolTip.Placement="Right" ToolTip.ShowDelay="100" />
 			</Grid>
 		</Grid>
 	</DockPanel>

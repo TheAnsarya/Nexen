@@ -92,6 +92,10 @@ struct DebugSpriteInfo {
 	uint32_t TileCount;            ///< Number of tiles in sprite
 	uint32_t TileAddresses[8 * 8]; ///< VRAM addresses of all tiles (max 8x8 tiles)
 
+	int32_t ScbAddress;      ///< SCB chain address (Lynx only, -1 if unused)
+	int32_t ScbNext;         ///< SCBNEXT pointer (Lynx only, -1 if unused)
+	int32_t CollisionNumber; ///< SPRCOLL value (Lynx only, -1 if unused)
+
 public:
 	/// <summary>
 	/// Initialize sprite info to default values.
@@ -122,6 +126,9 @@ public:
 		UseExtendedVram = false;
 		UseSecondTable = NullableBoolean::Undefined;
 		TileCount = 0;
+		ScbAddress = -1;
+		ScbNext = -1;
+		CollisionNumber = -1;
 	}
 };
 

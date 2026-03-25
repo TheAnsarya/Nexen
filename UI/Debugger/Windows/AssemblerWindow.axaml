@@ -109,13 +109,13 @@
 							<TextBlock Text="{Binding OriginalByteCount}" IsVisible="{Binding OriginalByteCount}" />
 							<Image
 								Margin="5 0"
-								Source="/Assets/Warning.png"
+								Source="/Assets/Warning.svg"
 								IsVisible="{Binding OriginalSizeExceeded}"
 								ToolTip.Tip="{l:Translate lblByteCountExceeded}"
 							/>
 							<Image
 								Margin="5 0"
-								Source="/Assets/Warning.png"
+								Source="/Assets/Warning.svg"
 								IsVisible="{Binding MaxSizeExceeded}"
 								ToolTip.Tip="{l:Translate lblMaxSizeExceeded}"
 							/>

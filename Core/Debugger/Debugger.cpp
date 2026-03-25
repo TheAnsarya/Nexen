@@ -46,6 +46,8 @@
 #include "WS/WsTypes.h"
 #include "Lynx/LynxTypes.h"
 #include "Lynx/Debugger/LynxDebugger.h"
+#include "Atari2600/Atari2600Types.h"
+#include "Atari2600/Debugger/Atari2600Debugger.h"
 #include "Shared/BaseControlManager.h"
 #include "Shared/EmuSettings.h"
 #include "Shared/Audio/SoundMixer.h"
@@ -133,6 +135,9 @@ Debugger::Debugger(Emulator* emu, IConsole* console) {
 				break;
 			case CpuType::Lynx:
 				debugger = std::make_unique<LynxDebugger>(this);
+				break;
+			case CpuType::Atari2600:
+				debugger = std::make_unique<Atari2600Debugger>(this);
 				break;
 			default:
 				[[unlikely]] throw std::runtime_error("Unsupported CPU type");
@@ -232,6 +237,8 @@ uint64_t Debugger::GetCpuCycleCount() {
 			return GetDebugger<type, WsDebugger>()->GetCpuCycleCount();
 		case CpuType::Lynx:
 			return GetDebugger<type, LynxDebugger>()->GetCpuCycleCount();
+		case CpuType::Atari2600:
+			return GetDebugger<type, Atari2600Debugger>()->GetCpuCycleCount();
 		default:
 			return 0;
 			break;
@@ -309,6 +316,9 @@ void Debugger::ProcessInstruction() {
 		case CpuType::Lynx:
 			GetDebugger<type, LynxDebugger>()->ProcessInstruction();
 			break;
+		case CpuType::Atari2600:
+			GetDebugger<type, Atari2600Debugger>()->ProcessInstruction();
+			break;
 	}
 
 	debugger->AllowChangeProgramCounter = false;
@@ -373,6 +383,9 @@ void Debugger::ProcessMemoryRead(uint32_t addr, T& value, MemoryOperationType op
 		case CpuType::Lynx:
 			GetDebugger<CpuType::Lynx, LynxDebugger>()->ProcessRead(addr, value, opType);
 			break;
+		case CpuType::Atari2600:
+			GetDebugger<CpuType::Atari2600, Atari2600Debugger>()->ProcessRead(addr, value, opType);
+			break;
 	}
 
 	if (_scriptManager->HasCpuMemoryCallbacks()) {
@@ -432,6 +445,9 @@ bool Debugger::ProcessMemoryWrite(uint32_t addr, T& value, MemoryOperationType o
 		case CpuType::Lynx:
 			GetDebugger<CpuType::Lynx, LynxDebugger>()->ProcessWrite(addr, value, opType);
 			break;
+		case CpuType::Atari2600:
+			GetDebugger<CpuType::Atari2600, Atari2600Debugger>()->ProcessWrite(addr, value, opType);
+			break;
 	}
 
 	if (_scriptManager->HasCpuMemoryCallbacks()) {
@@ -471,6 +487,9 @@ void Debugger::ProcessMemoryAccess(uint32_t addr, T& value) {
 			break;
 		case CpuType::Lynx:
 			// TODO: Wire ProcessMemoryAccess when LynxDebugger supports it
+			break;
+		case CpuType::Atari2600:
+			GetDebugger<CpuType::Atari2600, Atari2600Debugger>()->ProcessMemoryAccess<opType>(addr, value, memType);
 			break;
 	}
 
@@ -629,6 +648,9 @@ void Debugger::ProcessPpuCycle() {
 			break;
 		case CpuType::Lynx:
 			GetDebugger<type, LynxDebugger>()->ProcessPpuCycle();
+			break;
+		case CpuType::Atari2600:
+			GetDebugger<type, Atari2600Debugger>()->ProcessPpuCycle();
 			break;
 		default:
 			[[unlikely]] throw std::runtime_error("Invalid cpu type");
@@ -876,6 +898,9 @@ void Debugger::PauseOnNextFrame() {
 		case CpuType::Lynx:
 			Step(CpuType::Lynx, 102, StepType::SpecificScanline, BreakSource::PpuStep);
 			break;
+		case CpuType::Atari2600:
+			Step(CpuType::Atari2600, 262, StepType::SpecificScanline, BreakSource::PpuStep);
+			break;
 	}
 }
 
@@ -972,6 +997,8 @@ bool Debugger::IsDebugWindowOpened(CpuType cpuType) {
 			return _settings->CheckDebuggerFlag(DebuggerFlags::WsDebuggerEnabled);
 		case CpuType::Lynx:
 			return _settings->CheckDebuggerFlag(DebuggerFlags::LynxDebuggerEnabled);
+		case CpuType::Atari2600:
+			return _settings->CheckDebuggerFlag(DebuggerFlags::Atari2600DebuggerEnabled);
 	}
 
 	return false;
@@ -1071,6 +1098,9 @@ void Debugger::GetCpuState(BaseState& dstState, CpuType cpuType) {
 		case CpuType::Lynx:
 			memcpy(&dstState, &srcState, sizeof(LynxCpuState));
 			break;
+		case CpuType::Atari2600:
+			memcpy(&dstState, &srcState, sizeof(Atari2600CpuState));
+			break;
 	}
 }
 
@@ -1119,6 +1149,9 @@ void Debugger::SetCpuState(BaseState& srcState, CpuType cpuType) {
 			break;
 		case CpuType::Lynx:
 			memcpy(&dstState, &srcState, sizeof(LynxCpuState));
+			break;
+		case CpuType::Atari2600:
+			memcpy(&dstState, &srcState, sizeof(Atari2600CpuState));
 			break;
 	}
 }
@@ -1172,6 +1205,9 @@ void Debugger::GetPpuState(BaseState& state, CpuType cpuType) {
 		case CpuType::Lynx:
 			GetDebugger<CpuType::Lynx, LynxDebugger>()->GetPpuState(state);
 			break;
+		case CpuType::Atari2600:
+			GetDebugger<CpuType::Atari2600, Atari2600Debugger>()->GetPpuState(state);
+			break;
 	}
 }
 
@@ -1220,6 +1256,9 @@ void Debugger::SetPpuState(BaseState& state, CpuType cpuType) {
 		}
 		case CpuType::Lynx:
 			GetDebugger<CpuType::Lynx, LynxDebugger>()->SetPpuState(state);
+			break;
+		case CpuType::Atari2600:
+			GetDebugger<CpuType::Atari2600, Atari2600Debugger>()->SetPpuState(state);
 			break;
 	}
 }
@@ -1337,6 +1376,8 @@ bool Debugger::SaveRomToDisk(const string& filename, bool saveAsIps, CdlStripOpt
 			return GetDebugger<CpuType::Ws, WsDebugger>()->SaveRomToDisk(filename, saveAsIps, stripOption);
 		case CpuType::Lynx:
 			return GetDebugger<CpuType::Lynx, LynxDebugger>()->SaveRomToDisk(filename, saveAsIps, stripOption);
+		case CpuType::Atari2600:
+			return GetDebugger<CpuType::Atari2600, Atari2600Debugger>()->SaveRomToDisk(filename, saveAsIps, stripOption);
 	}
 
 	return false;
@@ -1450,6 +1491,7 @@ template void Debugger::ProcessInstruction<CpuType::Sms>();
 template void Debugger::ProcessInstruction<CpuType::Gba>();
 template void Debugger::ProcessInstruction<CpuType::Ws>();
 template void Debugger::ProcessInstruction<CpuType::Lynx>();
+template void Debugger::ProcessInstruction<CpuType::Atari2600>();
 
 template void Debugger::ProcessMemoryRead<CpuType::Snes>(uint32_t addr, uint8_t& value, MemoryOperationType opType);
 template void Debugger::ProcessMemoryRead<CpuType::Sa1>(uint32_t addr, uint8_t& value, MemoryOperationType opType);
@@ -1471,6 +1513,8 @@ template void Debugger::ProcessMemoryRead<CpuType::Gba, 4>(uint32_t addr, uint32
 template void Debugger::ProcessMemoryRead<CpuType::Ws, 1>(uint32_t addr, uint8_t& value, MemoryOperationType opType);
 template void Debugger::ProcessMemoryRead<CpuType::Ws, 2>(uint32_t addr, uint16_t& value, MemoryOperationType opType);
 template void Debugger::ProcessMemoryRead<CpuType::Lynx>(uint32_t addr, uint8_t& value, MemoryOperationType opType);
+template void Debugger::ProcessMemoryRead<CpuType::Atari2600>(uint32_t addr, uint8_t& value, MemoryOperationType opType);
+template void Debugger::ProcessMemoryRead<CpuType::Genesis>(uint32_t addr, uint8_t& value, MemoryOperationType opType);
 
 template bool Debugger::ProcessMemoryWrite<CpuType::Snes>(uint32_t addr, uint8_t& value, MemoryOperationType opType);
 template bool Debugger::ProcessMemoryWrite<CpuType::Sa1>(uint32_t addr, uint8_t& value, MemoryOperationType opType);
@@ -1491,6 +1535,8 @@ template bool Debugger::ProcessMemoryWrite<CpuType::Gba, 4>(uint32_t addr, uint3
 template bool Debugger::ProcessMemoryWrite<CpuType::Ws, 1>(uint32_t addr, uint8_t& value, MemoryOperationType opType);
 template bool Debugger::ProcessMemoryWrite<CpuType::Ws, 2>(uint32_t addr, uint16_t& value, MemoryOperationType opType);
 template bool Debugger::ProcessMemoryWrite<CpuType::Lynx>(uint32_t addr, uint8_t& value, MemoryOperationType opType);
+template bool Debugger::ProcessMemoryWrite<CpuType::Atari2600>(uint32_t addr, uint8_t& value, MemoryOperationType opType);
+template bool Debugger::ProcessMemoryWrite<CpuType::Genesis>(uint32_t addr, uint8_t& value, MemoryOperationType opType);
 
 template void Debugger::ProcessMemoryAccess<CpuType::Pce, MemoryType::PceAdpcmRam, MemoryOperationType::Write>(uint32_t addr, uint8_t& value);
 template void Debugger::ProcessMemoryAccess<CpuType::Pce, MemoryType::PceAdpcmRam, MemoryOperationType::Read>(uint32_t addr, uint8_t& value);
@@ -1498,6 +1544,9 @@ template void Debugger::ProcessMemoryAccess<CpuType::Pce, MemoryType::PceArcadeC
 template void Debugger::ProcessMemoryAccess<CpuType::Pce, MemoryType::PceArcadeCardRam, MemoryOperationType::Read>(uint32_t addr, uint8_t& value);
 template void Debugger::ProcessMemoryAccess<CpuType::Sms, MemoryType::SmsPort, MemoryOperationType::Write>(uint32_t addr, uint8_t& value);
 template void Debugger::ProcessMemoryAccess<CpuType::Sms, MemoryType::SmsPort, MemoryOperationType::Read>(uint32_t addr, uint8_t& value);
+
+template void Debugger::ProcessMemoryAccess<CpuType::Atari2600, MemoryType::Atari2600TiaRegisters, MemoryOperationType::Write>(uint32_t addr, uint8_t& value);
+template void Debugger::ProcessMemoryAccess<CpuType::Atari2600, MemoryType::Atari2600TiaRegisters, MemoryOperationType::Read>(uint32_t addr, uint8_t& value);
 
 template void Debugger::ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Write>(uint32_t addr, uint8_t& value);
 template void Debugger::ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Read>(uint32_t addr, uint8_t& value);
@@ -1529,6 +1578,7 @@ template void Debugger::ProcessInterrupt<CpuType::Sms>(uint32_t originalPc, uint
 template void Debugger::ProcessInterrupt<CpuType::Gba>(uint32_t originalPc, uint32_t currentPc, bool forNmi);
 template void Debugger::ProcessInterrupt<CpuType::Ws>(uint32_t originalPc, uint32_t currentPc, bool forNmi);
 template void Debugger::ProcessInterrupt<CpuType::Lynx>(uint32_t originalPc, uint32_t currentPc, bool forNmi);
+template void Debugger::ProcessInterrupt<CpuType::Atari2600>(uint32_t originalPc, uint32_t currentPc, bool forNmi);
 
 template void Debugger::ProcessPpuRead<CpuType::Snes>(uint16_t addr, uint8_t& value, MemoryType memoryType, MemoryOperationType opType);
 template void Debugger::ProcessPpuRead<CpuType::Gameboy>(uint16_t addr, uint8_t& value, MemoryType memoryType, MemoryOperationType opType);
@@ -1552,6 +1602,7 @@ template void Debugger::ProcessPpuCycle<CpuType::Sms>();
 template void Debugger::ProcessPpuCycle<CpuType::Gba>();
 template void Debugger::ProcessPpuCycle<CpuType::Ws>();
 template void Debugger::ProcessPpuCycle<CpuType::Lynx>();
+template void Debugger::ProcessPpuCycle<CpuType::Atari2600>();
 
 template void Debugger::ProcessBreakConditions<1>(CpuType sourceCpu, StepRequest& step, BreakpointManager* bpManager, MemoryOperationInfo& operation, AddressInfo& addressInfo);
 template void Debugger::ProcessBreakConditions<2>(CpuType sourceCpu, StepRequest& step, BreakpointManager* bpManager, MemoryOperationInfo& operation, AddressInfo& addressInfo);

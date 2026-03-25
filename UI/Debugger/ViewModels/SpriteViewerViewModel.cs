@@ -457,6 +457,13 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 			entries.AddEntry("Priority", ResourceHelper.GetEnumText(sprite.Priority));
 		}
 
+		if (sprite.ScbAddress >= 0) {
+			entries.AddSeparator("ScbSeparator");
+			entries.AddEntry("SCB address", "$" + sprite.ScbAddress.ToString("X4"));
+			entries.AddEntry("SCB next", "$" + sprite.ScbNext.ToString("X4"));
+			entries.AddEntry("Collision #", sprite.CollisionNumber.ToString());
+		}
+
 		entries.EndUpdate();
 
 		if (existingTooltip is not null) {

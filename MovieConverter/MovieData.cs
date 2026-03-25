@@ -1,4 +1,3 @@
-using System.IO.Hashing;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -11,6 +10,27 @@ namespace Nexen.MovieConverter;
 /// Designed to be a superset of all supported format features.
 /// </summary>
 public sealed class MovieData {
+	private static readonly uint[] Crc32Table = CreateCrc32Table();
+
+	private static uint[] CreateCrc32Table() {
+		var table = new uint[256];
+		for (uint i = 0; i < table.Length; i++) {
+			uint value = i;
+			for (int bit = 0; bit < 8; bit++) {
+				value = (value & 1) != 0
+					? (value >> 1) ^ 0xedb88320u
+					: value >> 1;
+			}
+			table[i] = value;
+		}
+		return table;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static uint UpdateCrc32(uint crc, byte value) {
+		return (crc >> 8) ^ Crc32Table[(crc ^ value) & 0xff];
+	}
+
 	// ========== Metadata ==========
 
 	/// <summary>Author(s) of the TAS</summary>
@@ -279,29 +299,17 @@ public sealed class MovieData {
 	/// Calculate the CRC32 of the input data (for verification)
 	/// </summary>
 	public uint CalculateInputCrc32() {
-		var crc = new Crc32();
-		const int bufferSize = 4096;
-		Span<byte> buffer = stackalloc byte[bufferSize];
-		int offset = 0;
+		uint crc = 0xffffffffu;
 
 		foreach (InputFrame frame in InputFrames) {
 			for (int i = 0; i < ControllerCount; i++) {
-				if (offset + 2 > bufferSize) {
-					crc.Append(buffer[..offset]);
-					offset = 0;
-				}
-
 				ushort smv = frame.Controllers[i].ToSmvFormat();
-				buffer[offset++] = (byte)(smv & 0xff);
-				buffer[offset++] = (byte)(smv >> 8);
+				crc = UpdateCrc32(crc, (byte)(smv & 0xff));
+				crc = UpdateCrc32(crc, (byte)(smv >> 8));
 			}
 		}
 
-		if (offset > 0) {
-			crc.Append(buffer[..offset]);
-		}
-
-		return crc.GetCurrentHashAsUInt32();
+		return ~crc;
 	}
 
 	/// <summary>

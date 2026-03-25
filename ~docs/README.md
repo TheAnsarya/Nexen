@@ -76,7 +76,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | Folder | Description |
 | -------- | ------------- |
 | [modernization/](modernization/) | C++ modernization tracking and roadmaps |
-| [testing/](testing/) | Test plans and benchmarking documentation |
+| [testing/](testing/README.md) | Manual testing index, test plans, and benchmarking documentation |
 | [plans/](plans/) | Planning documents for future features |
 | [research/](research/) | Source-cited platform-parity and subsystem research |
 | [session-logs/](session-logs/) | Development session logs |
@@ -90,16 +90,20 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Keyboard Shortcuts](keyboard-shortcuts-save-states.md) | Save state shortcut design |
 | [Q2 Future Work Program](plans/future-work-program-2026-q2.md) | Milestone-driven execution plan for Epic #673 and sub-issues |
 | [Q3 Platform Parity Research Program](plans/platform-parity-research-program-2026-q3.md) | Multi-session research and execution plan for #704-#707 |
+| [Scaffold Future-Work Backlog](plans/platform-parity-scaffold-future-work-backlog.md) | Deferred issue tree for converting Atari/Genesis scaffold phases into production implementation work |
 | [Atari 2600 Feasibility and Harness Plan](plans/atari-2600-feasibility-and-harness-plan.md) | Spike architecture boundaries, risk register, and harness milestones |
 | [Genesis Architecture and Incremental Plan](plans/genesis-architecture-and-incremental-plan.md) | Phase plan, risk register, and benchmark/correctness gates for Genesis |
 | [Atari CPU/RIOT Bring-Up Skeleton Plan](plans/atari-2600-cpu-riot-bringup-skeleton.md) | Issue-backed implementation scaffold for Atari CPU and RIOT boundaries (#697) |
 | [Atari TIA Timing Spike Harness Plan](plans/atari-2600-tia-timing-spike-harness.md) | Deterministic TIA timing checkpoints and smoke harness contract (#698) |
 | [Atari Mapper Order and Regression Matrix](plans/atari-2600-mapper-order-and-regression-matrix.md) | Mapper priority and regression matrix for staged cartridge support (#699) |
+| [Atari 2600 Production Readiness Matrix](testing/atari2600-production-readiness-matrix.md) | Consolidated build/test/TAS/debugger/export validation checklist for Atari 2600 |
 | [Genesis M68000 Boundary and Bring-Up Plan](plans/genesis-m68000-boundary-and-bringup.md) | M68000 contract and phased bring-up scaffold (#700) |
 | [Genesis VDP DMA Milestone Plan](plans/genesis-vdp-dma-milestones-and-harness.md) | VDP timing and DMA checkpoint matrix for staged execution (#701) |
 | [Genesis Z80 Audio Integration Staging](plans/genesis-z80-audio-integration-staging.md) | Phased Z80/YM2612/SN76489 integration and risk controls (#702) |
 | [Platform Parity Benchmark and Correctness Gates](plans/platform-parity-benchmark-and-correctness-gates.md) | Cross-phase quality gates and evidence framework (#703) |
+| [Atari 2600 + Genesis Parity Tracker](plans/atari2600-genesis-parity-tracker.md) | Active multi-phase checklist, issue linkage, and closure criteria for parity execution (#750) |
 | [Platform Parity Source Index](research/platform-parity/source-index.md) | External hardware and emulator code references used by research docs |
+| [Atari 2600 TAS and Movie UI Coverage Audit](testing/atari2600-tas-ui-coverage-audit.md) | Automated and manual validation status for Atari 2600 TAS and movie UI release readiness |
 | [User Future Work Index](../docs/FUTURE-WORK.md) | Public roadmap entry for active and upcoming tracks |
 | [User Tutorials Index](../docs/TUTORIALS.md) | Step-by-step user and contributor workflow tutorials |
 

@@ -259,8 +259,22 @@ public sealed class ProfilerTab : ReactiveObject {
 	/// </summary>
 	public void RefreshGrid() {
 		lock (_updateLock) {
-			Array.Resize(ref _profilerData, _dataSize);
-			Array.Copy(_coreProfilerData, _profilerData, _dataSize);
+			ProfiledFunction[] snapshot = new ProfiledFunction[_dataSize];
+			Array.Copy(_coreProfilerData, snapshot, _dataSize);
+
+			List<ProfiledFunction> visibleRows = new(_dataSize);
+			foreach (ProfiledFunction func in snapshot) {
+				if (func.Address.Address != -1) {
+					visibleRows.Add(func);
+				}
+			}
+
+			if (visibleRows.Count == 0 && snapshot.Length > 0) {
+				// Keep the reset aggregate visible only when there are no real frames yet.
+				visibleRows.Add(snapshot[0]);
+			}
+
+			_profilerData = visibleRows.ToArray();
 		}
 
 		Sort();
@@ -452,7 +466,12 @@ public sealed class ProfiledFunctionViewModel : INotifyPropertyChanged {
 		MaxCycles = _funcData.MaxCycles == 0 ? "n/a" : _funcData.MaxCycles.ToString();
 
 		AvgCycles = (_funcData.CallCount == 0 ? 0 : (_funcData.InclusiveCycles / _funcData.CallCount)).ToString();
-		ExclusivePercent = ((double)_funcData.ExclusiveCycles / _totalCycles * 100).ToString("0.00");
-		InclusivePercent = ((double)_funcData.InclusiveCycles / _totalCycles * 100).ToString("0.00");
+		if (_totalCycles == 0) {
+			ExclusivePercent = "0.00";
+			InclusivePercent = "0.00";
+		} else {
+			ExclusivePercent = ((double)_funcData.ExclusiveCycles / _totalCycles * 100).ToString("0.00");
+			InclusivePercent = ((double)_funcData.InclusiveCycles / _totalCycles * 100).ToString("0.00");
+		}
 	}
 }

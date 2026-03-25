@@ -39,6 +39,7 @@
 #include "WS/WsConsole.h"
 #include "Lynx/LynxConsole.h"
 #include "Atari2600/Atari2600Console.h"
+#include "Genesis/GenesisConsole.h"
 #include "Debugger/Debugger.h"
 #include "Debugger/BaseEventManager.h"
 #include "Debugger/DebugTypes.h"
@@ -571,6 +572,7 @@ void Emulator::TryLoadRom(VirtualFile& romFile, LoadRomResult& result, unique_pt
 	TryLoadRom<WsConsole>(romFile, result, console, useFileSignature);
 	TryLoadRom<LynxConsole>(romFile, result, console, useFileSignature);
 	TryLoadRom<Atari2600Console>(romFile, result, console, useFileSignature);
+	TryLoadRom<GenesisConsole>(romFile, result, console, useFileSignature);
 }
 
 template <typename T>
@@ -1081,6 +1083,13 @@ void Emulator::StartLightweightCdl() {
 	CpuType mainCpu = cpuTypes[0];
 	MemoryType prgRomType = DebugUtilities::GetPrgRomMemoryType(mainCpu);
 	ConsoleMemoryInfo memInfo = GetMemory(prgRomType);
+	if (memInfo.Size == 0) {
+		AddressInfo pcAddress = _console->GetPcAbsoluteAddress();
+		if (pcAddress.Type != MemoryType::None) {
+			prgRomType = pcAddress.Type;
+			memInfo = GetMemory(prgRomType);
+		}
+	}
 
 	if (memInfo.Size == 0) {
 		return; // No PRG ROM registered

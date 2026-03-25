@@ -561,6 +561,212 @@ continue immediately with implementation work for #697 (Atari CPU/RIOT skeleton 
 
 Yes, continue doing that
 
+make a feature branch for this work
+
+continue what you were doing; continue for a while, work those issues; continue;
+
+switch to the main branch, fix the `MovieConverter System.IO.Hashing CS0234 error` error and git/push it, then merge the fix into this feature branch, return to using this feature branch, and then continue work through the parity issues; continue;
+
+[Nexen] You're creating scaffolding, right? Make plans and a sub-epics and a ton of issues for implementing all the scaffolds as you create the scaffolding; Don't just make a skeleton, make future work efforts (epics, issues, plans, docs) for filling in the details later, mark them as future work so we don't start working them yet; go back and add this planning and issues, etc to the work we have already done scaffolding; continue;
+
+continue scaffolding and making plans and issues until you are done, and then start working on the new issues; continue;
+
+[Nexen] just keep working and go as long as you can; continue;
+
+[Nexen] just keep working and go as long as you can; continue;
+
+[Nexen] just keep working and go as long as you can; continue;
+
+can you find scalable icon assets that are equivalent to what we have to replace or at least some of them, so they look good small but also scale up; we need to work through issue #169 as we can to replace icons as we find replacements; always consult me on whether an icon can replace another by showing me both before commiting to the change; continue;
+
+Do not use these icons, they are monochrome and lame; we don't need full color and graphics but we need something bolder and some color is necessary for things like record error warning help etc, and flat black outlines are not good icons; continue;
+
+I do not like Batch 3 icons, Batch 2 icons are mostly great except: record and stop look exactly alike, leave record alone and make stop into a red square, make close a Red X instead of a circle, make play a green triangle instead of in a a green circle, and make pause a yellow || instead of in a circle, make the "?" in help white instea of black, make reset settings bold and a lighter purple, make the debugger bug green; continue;
+
+by "leave record alone" for the record icon, i mean keep the curent batch 2 record icon, not the old mesen one, and make the "?" in the help icon smaller, and make all the icon replacements slightly larger, make close x bold and bigger, continue;
+
+I love these new batch 2 icons, save them! implement them! attack other icons with this same ethos and aesthetic; make a tag for this commit so we know where these icons came from; continue;
+
+There was a previous code effort that changed Nexen to use svg icons, reimplement that so we are using the real icons and not png bs with tiny images, unless this causes a performance hit; avalonia has svg  support and so does Nexen; continue;
+
+yes please do that: "continue immediately with a second SVG pass for the next highest-usage icon group from the inventory and keep the same aesthetic"; continue;
+
+Add a dedicated second-pass tag (similar to the first icon-origin tag) for tighter rollback checkpoints.; Run pass 3 on the next inventory group (system/platform icons and frequent utility icons) with the same ColorBold aesthetic.; continue;
+
+The `Third Pass: System/Platform` icons are all garbage, although the `Frequent Utility` ones seem fine and the Lynx icon is nice; like the snes logo should be a version of the four colored snes icon; find better icons; continue; 
+
+The `Third Pass: System/Platform` icons are still all garbage don't make janky inaccurate controllers, make an icon that represents the system, like for snes I didn't mean add the four colors to a controller I meant use the four colors in the iconic logo as represented in an example `https://images.alphacoders.com/285/thumb-1920-28573.jpg` (no text! just the 4 color logo), although the gameboy icon should probably be a gameboy, same with a purple gba, and fix the others; continue;
+
+gameboy icon is great, could it be slightly larger? snes logo does not need a white circle background, just the colors, also the colors are in the wrong order (yellow/green swapped) and the color shapes look wrong, research snes logos on the internet and match the official one more closely; the GBA icon does not look like a gba, fail; NES icon: what is this. it looks like nothing, is it supposed to be an NES? please spend time making a more accurate version, check nes icons from the internet and get inspired; PCE, SMS, WonderSwan: nope, research iconography for these systems and make better icons; continue;
+
+"If you want, I can do one more micro-pass focused only on SNES geometry (petal tilt, spacing, and overlap) to get even closer visually." Yes, please, and look at the reference snes logos to add the cutouts on the red and blue ones, match the icon svg to the real logo as best you can, this is not a copyright issue as it is a fair use replica; Logos for NES, GBA, PCE, SMS, WS: nope these are still bad; continue;
+
+[Nexen] push all the approved icons to production but don't do the one's I haven't signed off on yet, and update the documentation to show which ones are implemented, then look at other icons that need updating to see if we can find some easy wins (platforms/systems is difficult and will take a while); then focus on atari 2600 & sega genesis emulation and debugging, make a shiton of issues as we planned and discussed and then implement them, make benchmarks and tests for full comprehensive coverage; continuously research additional emulation accuracy and performance and reference other emulators and make our core solid and our debugger environment responsive and useful.; continue;
+
+let's see the new icon reccomendations, make them if necessary, open the document file that contains them for review; then continue with the high value continuation options: Implement #742 next: Atari 2600 deterministic edge-case expansion (RIOT/TIA/mapper interaction depth).; Implement #743 next: Genesis combined DMA/Z80/interrupt interaction tests.; Implement #748 next: CI-friendly focused commands and docs so ongoing parity work is faster to run and review.; continue;
+
+Continue with the next Atari/Genesis sub-issues from #740.
+
+I see a lot of crazy words like "provenance" and "validation checklist integration points for harness and benchmark gates"  and none of this makes sense. Please use plain language as you add a ton of issues for implementing the emulation of sega genesis make epics and subisssues and then implement them all, repeat again and again; continue; make the thing work and implement all of our plans, but don't get stuck in weird meta crap; continue;
+
+"fail-context tags" and "harnesses"??? I thought we said said plain langauge while we implement genesis emulation!; continue working issues and making new issues to wok; continue;
+
+continue working issues and make new ones, with tests, benchmarks, and docs, chat/session logs, etc; continue;
+
+OK, Issue #752 "Create a curated Atari 2600 + Genesis reference ROM validation manifest with provenance and expected signatures." what the hell does that even mean? what are we making here? does it help implement emulation? Explain this to me and I will decide where we go with these issues;
+
+OK, now I understand it, yes please rewrite the language to be plainer and more easily understood, or at least just add extra description that lets us know these are example code sections that can be used for testing and ensuring regression tests are more standard and easier; updates the issues and the docs and work on them, let me know if you need a pointer to full rom sets for both systems
+
+[Nexen] Create a root level `*.md` document and link to it from the readme for primary developer tasks showing what I should be doing (adding reference roms? approving icons? manually testing a feature (give me a link to the manual testing doc!)? adding screenshots to documentation (make a plan!)? or what?) what features are we in the middle of? give me a handful of prompts that would advance the project in a meaningful way, 
+
+add a dozen more issues, and then implement everything; continue; work on issues for an hour; continue;
+
+-- switch to claude opus 4.6
+stop doing all these abstract tests, fucking actually implement emulation; stop moving clouds around, build a damn house; concrete not ethereal; make issues not for testing but real implementation of a sega genesis emulator, we'll deal with scaffold structures later; make a sprite be shown on a screen or something; make real issues and implement an actual emulator, not gundgy nonsense that doesn't advance our purpioses of emulating Sonic, I want to play it in perfect emulation with pansy recording and debugging; continue;
+
+Work emulator implementations issues, making new issues, updating epics issues docs plans chat/session-logs benchmarks tests, and implement , focus on implementing, emulator stuff, also add some 2600 implementation issues and work them to, and work for a very long time;
+
+--- chatgpt-codex-5.3
+continue;
+
+continue;
+
+continue;
+
+continue;
+
+Commit only the four code/test files (ignore artifacts)
+
+Close issue #815 now using commit 8461d7da
+
+Work emulator implementations issues, making new issues, updating epics issues docs plans chat/session-logs benchmarks tests, and implement , focus on implementing, emulator stuff, also add some 2600 implementation issues and work them to, and work for a very long time;
+
+Work emulator implementations issues, making new issues, updating epics issues docs plans chat/session-logs benchmarks tests, and implement , focus on implementing, emulator stuff, also add some 2600 implementation issues and work them to, and work for a very long time;
+
+implement several issues in a row
+
+implement several issues in a row
+
+git ignore the artifacts folder; implement several issues in a row;
+
+implement several issues in a row
+
+Push branch to remote; How far away are we from a working Atari 2600 emulator? ; implement several issues in a row
+
+How far away are we from a working Atari 2600 emulator?
+
+continue;
+
+Awesome! `If your definition is “fully integrated with debugger/settings/memory viewer UX,” you are one focused milestone away.` create a full spatch of epics and issues and focus intently on getting an atari 2600 emulator fully working with integration wiring and chat/session logs, and dpcs, and plans, and more issues and implement them all until we have a complete emulation solution for atari 2600 from core, to debugging, to TAS/movie and save states and pansy recording and project types, and seetings and memory and vram visualization and sprites and stuff; continue;
+
+-- switch to claude opus 4.6
+Awesome! `If your definition is “fully integrated with debugger/settings/memory viewer UX,” you are one focused milestone away.` create a full spatch of epics and issues and focus intently on getting an atari 2600 emulator fully working with integration wiring and chat/session logs, and dpcs, and plans, and more issues and implement them all until we have a complete emulation solution for atari 2600 from core, to debugging, to TAS/movie and save states and pansy recording and project types, and seetings and memory and vram visualization and sprites and stuff; continue;
+
+I have lots of premium request budget left so stop rate limiting me, continue;
+
+Separate the Atari 2600 from the NES debugger and any other NES nonsense since it is a completely different console; continue working on what you were doing; continue;
+
+Don't use a NES state for Atai 2600! I told you this before! separate code silos! The NES implementation can be a reference, but the 2600 should have it's own class and objects and code and functions and datastructures; continue working; continue;
+
+[All] I would like timestamps on both the prompts and every returned message; I want to see when everything happened  and this is helpful sometimes by showing that a process has been hung for 20 minutes, but also I just want date/times on everything; add to copilot instructions because I always want timestamps; [Nexen] Make sure the Atari 2600 implementation is correct (make tests) and fast and low memory/allocation (benchmarks), have you referenced other 2600 emulators like MESS? (internet research, add to docs) to ensure correctness and performance and good architecture? The more you add to Nexen, the more you should abstract/silo the different systems so functionality is present for every system and you swap which one is running into the same app; continue working 2600 emulation issues;
+
+The time stamps are incorrect, continue what you were doing;
+
+How do I give you access to the actual time so my timestamps are accurate?
+
+Is there a VSCode extension that adds timestamps to chat responses? add that, then continue with the 2600 work we just started; continue;
+
+[Nexen] Continue working the 2600 emulator, update issues, make issues, and docs and plans and chat/session logs and go! ; make debugger UI and TAS/movie UI for the Atari 2600 and different memory and code view and sprite viewer and vram display debug view, this is not an NES, the memory and display are way different; continue; focus on creating a production ready Atari 2600 emulator, keep referencing other emulators; make sure the save states are complete, and make screen shots and all of that like the other systems, to utilize the infinite save system and the recent roms screen, etc; continue;
+
+[Nexen] Continue working the 2600 emulator and making it work, but also continue setting up a focused (make-it-work) emulator for the Atari Lynx as well with issues, make new wpics and issues, but we want a working emulator for 2600 and lynx with full debugging and vram and memory and code debugging and wram and sprites and sound etc; focus on the goal of a real emulator, ; update issues, make issues, and docs and plans and chat/session logs and go! ; make debugger UI and TAS/movie UI for the Atari 2600 and different memory and code view and sprite viewer and vram display debug view, this is not an NES, the memory and display are way different; continue; focus on creating a production ready Atari 2600 emulator, keep referencing other emulators; make sure the save states are complete, and make screen shots and all of that like the other systems, to utilize the infinite save system and the recent roms screen, etc; continue;
+
+[Nexen] Continue working the 2600 emulator and making it work, but also continue setting up a focused (make-it-work) emulator for the Atari Lynx as well with issues, make new epics and issues, but we want working emulators for 2600 and lynx with full debugging and vram and memory and code debugging and wram and sprites and sound etc; focus on the goal of a real emulator; update issues, make issues, and docs and plans and chat/session logs and go! ; make debugger UI and TAS/movie UI for the Atari 2600 and different memory and code view and sprite viewer and vram display debug view, this is not an NES, and the Atari2600 is not a Lynx, the memory and display are way different; continue; focus on creating a production ready Atari 2600 emulator, keep referencing other emulators; make sure the save states are complete, and make screen shots and all of that like the other systems, to utilize the infinite save system and the recent roms screen, etc; continue;
+
+[Nexen] Atari 2600 doesn't use just one type of contoller (like the NES has multiple types of controllers including the light gun and power glove and robot thing) see this copilot question/answer about the basic joystick but also paddles and keypads and trackballs, etc: https://copilot.microsoft.com/chats/iWzEAYX7CgjNLHamY4GVa; Make sure all of these controllers are represented in the UI for different controller configurations and compatiable and integrated into the core input code; different controllers with different input types also affects the TAS/movie feature which needs to be updated; make epics and issues and plans and docs and chat/session logs, and design documents for the UI and design assets for the controllers; continue;
+
+[Nexen] (Atari 2600) continue working issues, making tests and benchmarks for everything! and update/make docs plans designs issues logs, etc; Also, create new epics and issues and docs and designs and plans for the fully implementing the Atari 2600 in pansy/poppy/peony; continue;
+
+[All] you can remove timestamps from the co-pilot instructions for the chat until either the vscode chat or the AI understands the current date/time since they're all made up; please continue working through 2600 issues to make a fully functional app/emulator; double check that TAS/movie input functionality for the 2600 works with all 6 controller types; continue;
+
+--- chatgpt-codex-5.3
+[All] please continue working through 2600 issues to make a fully functional app/emulator; double check that TAS/movie input functionality for the 2600 works with all 6 controller types; continue;
+
+work as many 2600 issues as can for as long as you can, do like 10 issues in order; update and make issues, plans, docs, designs, chat/session logs, epics, etc; make fully working 2600 emulator and pansy output and tas and debugging with full UI and everything; continue for a long time, many issues in a row; continue;
+
+TAS/movie recordings should not use just one controller type, it should be saving what kind of controller it is recording with a different set of inputs for each and also some systems allow two controllers or more, you need to record these as well if the additional controllers are there, but don't add that overhead if there is only one controller; continue; work as many 2600 issues as can for as long as you can, do like 10 issues in order; update and make issues, plans, docs, designs, chat/session logs, epics, etc; make fully working 2600 emulator and pansy output and tas and debugging with full UI and everything; continue for a long time, many issues in a row; continue; ***do not stop after one issue*** continue working for as long as you can;
+
+continue;
+
+work as many 2600 issues as can for as long as you can, do like 10 issues in order; update and make issues, plans, docs, designs, chat/session logs, epics, etc; make fully working 2600 emulator and pansy output and tas and debugging with full UI and everything; continue for a long time, many issues in a row; continue;
+
+*****************
+Yep! I have a multi-system compiler for like (NES, SNES, GB, etc, and some of the other systems Mesen/Nexen support) named poppy `https://github.com/TheAnsarya/poppy` which is still a WORK IN PROGRESS, although it it is very advanced and works great for the basic NES/SNEs systems and to support that I made a code formatter/highlighter/basic-intellisense VSCode  Extension (also a WIP) so working with assembly files (we use `*.pasm`) is easier and colorful and context aware. These tools have a lot going on but are part of a much larger effort so aren't production ready yet.
+*************************
+
+work as many 2600 issues as can for as long as you can, do like 10 issues in order; update and make issues, plans, docs, designs, chat/session logs, epics, etc; make fully working 2600 emulator and pansy output and tas and debugging with full UI and everything; continue for a long time, many issues in a row; continue;
+
+work as many 2600 issues as can for as long as you can, do like 10 issues in order; update and make issues, plans, docs, designs, chat/session logs, epics, etc; make fully working 2600 emulator and pansy output and tas and debugging with full UI and everything; continue for a long time, many issues in a row; continue;
+
+[Nexen] Continue working on perfecting the Atari 2600 emulation and debugging and TAS/movie feature and controllers (and the UI for input controllers for all of the different 2600 controllers) and savestate management and pansy/etc generation and such, focusing on completeness/correctness/performance working towards a competant release version, making and updating epics, issues, docs, plans, designs, session/chat logs, tests, benchmarks, etc.; then implement and git commit, always tying commits to issues; continue;
+
+[Nexen] Make the Debug UI for Atari 2600 comprehensive and correct and complete; make issues, implement them; update docs for debugging; Validate that we have full coverage for the movie/TAS feature's UI; finish the UI for a2600 controllers as well; Make/plan a manual testing instructions document for the atari 2600 and integrate it into a larger docunmentation tree with all the manual testing from a starting manual instructions doc, a doc that describes and ranks importance of manual steps; focus on making a stable, complete, fully-working(ignore genesis) release; continue;
+
+[Nexen] Do the `Natural next steps` and implement as many issues as needed for creating a release ready codebase; continue for a long time; continue;
+
+go
+
+go; continue;
+
+go; continue;
+
+Continue working issues;
+
+[Nexen] Ignore Genesis for now, mark all the Sega Genesis issues with a `deferred` label, only focus on 2600, Lynx, and the application in general, maybe work on issue #920 `[21.39] TAS playback emulation core integration` making subissues, docs, issues, epics, plans, chat/session logs, designs, benchmarks, tests, etc; don't just make tests (although definitely make them) but focus on actual code changes and progress; focus on making a stable, complete, fully-working release; continue;
+
+continue working!
+
+continue working issues and work, all work has an issue; continue;
+
+did you close all those sega genesis issues? I didn't want them closed, I wanted them deferred until later, so label them deferred and reopen them; continue;
+
+Nope! Stop opening closed and also completed issues; if the issue has been completed then keep it closed, and re-close completed issues, we should only be reopening issues that haven't been donel continue;
+
+continue now with non-Genesis work only (#933/#934 app + 2600/Lynx verification);
+
+[Nexen] Release version 1.4.2 so we can test it thouroughly; continue working non-deferred issues; update docs and readme; continue;
+
+[Nexen] Whoops! Cancel 1.4.2; Merge branch into main, then make 1.4.3 from the main branch Release version 1.4.3 so we can test it thouroughly; update docs and readme; make a new branch for 2600 and lynx work and move to it; continue working non-deferred issues; update docs and readme; continue;
+
+1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+15/64 battles
+1280/5000 stall coin
+Martha
+Krista
+Arachne
+Folio
+Helios
+Peppy
+Kayla
+Aurora
+Galahad
+Keira
+
 
 
 
@@ -588,71 +794,12 @@ Update all four projects (Nexen, poppy, pansy, peony) to dotnet 11 and c#15 and 
 
 
 
-
-
-
-
-
-
-[Nexen] if nexen is working and great, then build a release `1.4.1` in github with macos/windows/linux builds from CI/CD as our current release (1.4.0) does not have builds, only sources, and this is unacceptable, people have to be able to download and run the application, on windows and macos and linux, see Nexen issue #672: `https://github.com/TheAnsarya/Nexen/issues/672`; continue;
-
-
-
-
-
-
-
-
-[Nexen] 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-[Nexen] git commit everything, and then release another version of Nexen to github, updating the patch version number; Make an announcement `discord` post ***with formatting*** for this Nexen release, with all the differences since we forked from Mesen and why we did and save it in an `md` dicumentation file and show me this file;  continue;
+[Nexen] git commit everything, and then release another version of Nexen to github, updating the patch version number; Make an announcement `discord` post ***with formatting*** for this Nexen release, with all the differences since we forked from Mesen and why we did and save it in an `md` documentation file and show me this file; continue;
 
 
 
 
 fix as many warnings as you can; continue;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -670,26 +817,12 @@ fix as many warnings as you can; continue;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 [Nexen] SUPER GIGANTIC EFFORT: `Add Fairchild Channel F emulation to Core and UI and debugger, etc`; plan it comprehensively over multiple sessions! make a few epics and a ton of sub-issues and sub-sub-issues and todolists, and plans and documents and do research to create a giant plan to add `Fairchild Channel F` emulation and work effort to implement `Fairchild Channel F` emulation and debugging and pansy creation and save states and labels and everything else, make it a first class emulation option; Find source code for other `Fairchild Channel F` emulators and `Fairchild Channel F` documentation and make a big plan for how we can add a system to Nexen: we need an emulation core framework that we can make run `Fairchild Channel F`, add required interfaces, add lua integration, add UI file opening/savestates/etc, add movie/tas support (that's an epic itself), Add input configuration (joypad button mapping), add debugging and code views, emulate all versions of the console with their differences, document like crazy, document document document, work for a very long time to create this plan, multiple sessions of planning and research and code prototyping with a bunch of code-plans for each sub-effort, and a full testing coverage and benchmarking for the emulation/ui/tools/debugging/etc; We need to prove we are a separate emulator from our predecessor (Mesen), now that we've added the Atari Lynx, let's add a second one so we are going to add a whole new system; make sure to focus on accuracy and performance, but always accuracy and timing first; don't get distracted, focus on making practical researched changes in chunks, keep issues and docs and logs updated; continue; There should be a new features branch (maybe `features-channel-f` off of the atari-lynx branch) for all of this work, don't make changes directly in the master branch; Continue planning for `Fairchild Channel F` implementation of emulation debugging, movie recording and playing, save states, sram saving/loading, metadata (hashes, etc), UI usage, input button mapping, debugging; plan and figure out how you are going to implement this work effort (make documents and a big "prompts" file where you generate a series of prompts for me to run in order to implement the giant feature (again, make sure all work is in a new feature branch)); continue; implement after all planning and todo and issue creation is done; continue;
 
 
 [Nexen] SUPER GIGANTIC EFFORT: `Add Atari Jaguar emulation to Core and UI and debugger, etc`; plan it comprehensively over multiple sessions! make a few epics and a ton of sub-issues and sub-sub-issues and todolists, and plans and documents and do research to create a giant plan to add Jaguar emulation and work effort to implement Atari Jaguar emulation and debugging and pansy creation and save states and labels and everything else, make it a first class emulation option; Find source code for other atari Jaguar emulators and atari Jaguar documentation and make a big plan for how we can add a system to Nexen: we need an emulation core framework that we can make run Atari Jaguar, add required interfaces, add lua integration, add UI file opening/savestates/etc, add movie/tas support (that's an epic itself), Add input configuration (joypad button mapping), add debugging and code views, emulate all versions of the console with their differences, document like crazy, document document document, work for a very long time to create this plan, multiple sessions of planning and research and code prototyping with a bunch of code-plans for each sub-effort, and a full testing coverage and benchmarking for the emulation/ui/tools/debugging/etc; We need to prove we are a separate emulator from our predecessor (Mesen), now that we've added the Atari Lynx, let's add a second one so we are going to add a whole new system; make sure to focus on accuracy and performance, but always accuracy and timing first; don't get distracted, focus on making practical researched changes in chunks, keep issues and docs and logs updated; continue; There should be a new features branch (maybe `features-atari-jaguar` off of the atari-lynx branch) for all of this work, don't make changes directly in the master branch; Continue planning for Atari Jaguar implementation of emulation debugging, movie recording and playing, save states, sram saving/loading, metadata (hashes, etc), UI usage, input button mapping, debugging; plan and figure out how you are going to implement this work effort (make documents and a big "prompts" file where you generate a series of prompts for me to run in order to implement the giant feature (again, make sure all work is in a new feature branch)); continue; implement after all planning and todo and issue creation is done; continue;
 
-
+[Nexen] Create a root level `*.md` document and link to it from the readme for primary developer tasks showing what I should be doing (adding reference roms? approving icons? manually testing a feature (give me a link to the manual testing doc!)? adding screenshots to documentation (make a plan!)? or what?) what features are we in the middle of? give me a handful of prompts that would advance the project in a meaningful way, let me know how to support the atari-2600/sega-genesis testing code examples and what folders and files I need to create; after letting me know what to do, continue working on genesis and atari 2600 emulation and add a ton of more issues for that emulation work based on the docs and benchmarks and tests and go for very long time, working for a half hour or so would be ok;
 
 
 
@@ -737,91 +870,14 @@ This thing is not ready for release but
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 [Nexen] for the work epic: research and determine if we should Create an MCP server for Nexen? Does it help our development efforts to have an api interation with the emulator?; if so Make plans and issues, with multiple epics, and sub-issues of those epics to accomplish this; maybe institute a window screenshot api so we can get illustrations for the documentation;
 
-
-
-
-
-[Nexen] Make the `README.md` 100% correct, describe the emulator at the top, show main features, especially those we've added since the Mesen fork (like infinite savestates, "TAS movies", pansy output, better per-rom organization of files, massive performance and testing improvements), link to the real releases, make sure every documentation (`*.md) file is linked in the documentation tree starting at the main readme, every documentation should be reachable, make sub pages with descriptions and such;
 
 [Nexen] create epics, issues, plans, docs, etc: analyze all the documentation, and create a docs plan, to make all the documents updated to the current code state, and make everything accurately described and documented; and explain all the menus and dialogs and create a full 
 
 
 
-
-
-
-
-
-
-
-
-
 [Nexen] update the chat logs and session logs, git commit everything; Make sure all of the changes you made for performance are 100% covered by tests so that we did not change the ***outcome*** of any of those methods/code and just improved the speed and memory usage; make sure issues have been created for all of this work (and todos, and docs, and plans, etc, track everything and document everything and update docs to reflect the current usage); also make sure comments for all the code changes have been updated and update them in the future; continue; is there any other code sections on the hotpath that are easy performance improvements? (test the hell out of them, we can't afford to reduce emulator accuracy in any way, hit the corner cases! full coverage!); continue; continue; Go back to the performance improvements; continue;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
