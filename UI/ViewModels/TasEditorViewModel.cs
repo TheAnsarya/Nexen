@@ -2374,8 +2374,11 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		PlaybackFrame = SelectedFrameIndex >= 0 ? SelectedFrameIndex : 0;
 		StatusMessage = $"Playing at {PlaybackSpeed:F2}x speed";
 
-		// TODO: Connect to emulation core for actual playback
-		// For now, just update the status
+		// Resume emulation — PpuFrameDone handler in TasEditorWindow feeds
+		// movie input each frame and advances PlaybackFrame automatically
+		if (EmuApi.IsRunning() && EmuApi.IsPaused()) {
+			EmuApi.Resume();
+		}
 	}
 
 	/// <summary>
