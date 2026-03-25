@@ -3390,6 +3390,8 @@ tas.finishSearch(true) -- Load best result</pre>
 			_autoSaveTimer.Tick -= OnAutoSaveTimerTick;
 			_autoSaveTimer.Stop();
 		}
+
+		Greenzone.CancelSeek();
 	}
 
 	private void UpdateWindowTitle() {
