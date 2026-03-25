@@ -65,7 +65,7 @@ void GbaPpu::Init(Emulator* emu, GbaConsole* console, GbaMemoryManager* memoryMa
 	}
 
 	// Generate color math function pointer table for all blend mode combinations
-	StaticFor<0, 128>::Apply([=](auto i) {
+	StaticFor<0, 128>::Apply([this](auto i) {
 		_colorMathFunc[i] = &GbaPpu::ProcessColorMath<(GbaPpuBlendEffect)(i >> 5), (bool)(i & 0x01), (bool)(i & 0x02), (bool)(i & 0x04), (bool)(i & 0x08), (bool)(i & 0x10)>;
 	});
 }

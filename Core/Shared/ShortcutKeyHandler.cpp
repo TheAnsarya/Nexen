@@ -24,7 +24,7 @@ ShortcutKeyHandler::ShortcutKeyHandler(Emulator* emu) {
 	_needRepeat = false;
 
 	_stopThread = false;
-	_thread = std::thread([=]() {
+	_thread = std::thread([this]() {
 		while (!_stopThread) {
 			ProcessKeys();
 			std::this_thread::sleep_for(std::chrono::duration<int, std::milli>(50));

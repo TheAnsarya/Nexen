@@ -79,8 +79,8 @@ DllExport void __stdcall HistoryViewerInitialize(void* windowHandle, void* viewe
 #endif
 }
 
-DllExport HistoryViewerState __stdcall HistoryViewerGetState() {
-	return _historyViewer ? _historyViewer->GetState() : HistoryViewerState{};
+DllExport void __stdcall HistoryViewerGetState(HistoryViewerState& state) {
+	state = _historyViewer ? _historyViewer->GetState() : HistoryViewerState{};
 }
 
 DllExport void __stdcall HistoryViewerSetOptions(HistoryViewerOptions options) {

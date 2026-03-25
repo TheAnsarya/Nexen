@@ -172,11 +172,11 @@ DllExport uint32_t __stdcall GetProgramCounter(CpuType cpuType, bool getInstPc) 
 DllExport void __stdcall SetProgramCounter(CpuType cpuType, uint32_t addr) {
 	WithDebugger(void, SetProgramCounter(cpuType, addr));
 }
-DllExport DebuggerFeatures __stdcall GetDebuggerFeatures(CpuType cpuType) {
-	return WithDebugger(DebuggerFeatures, GetDebuggerFeatures(cpuType));
+DllExport void __stdcall GetDebuggerFeatures(CpuType cpuType, DebuggerFeatures& features) {
+	features = WithDebugger(DebuggerFeatures, GetDebuggerFeatures(cpuType));
 }
-DllExport CpuInstructionProgress __stdcall GetInstructionProgress(CpuType cpuType) {
-	return WithDebugger(CpuInstructionProgress, GetInstructionProgress(cpuType));
+DllExport void __stdcall GetInstructionProgress(CpuType cpuType, CpuInstructionProgress& progress) {
+	progress = WithDebugger(CpuInstructionProgress, GetInstructionProgress(cpuType));
 }
 
 DllExport void __stdcall GetDebuggerLog(char* outBuffer, uint32_t maxLength) {
@@ -272,14 +272,14 @@ DllExport void __stdcall GetTileView(CpuType cpuType, GetTileViewOptions options
 DllExport void __stdcall GetPpuToolsState(CpuType cpuType, BaseState& state) {
 	return WithToolVoid(GetPpuTools(cpuType), GetPpuToolsState(state));
 }
-DllExport DebugTilemapInfo __stdcall GetTilemap(CpuType cpuType, GetTilemapOptions options, BaseState& state, BaseState& ppuToolsState, uint8_t* vram, uint32_t* palette, uint32_t* outputBuffer) {
-	return WithTool(DebugTilemapInfo, GetPpuTools(cpuType), GetTilemap(options, state, ppuToolsState, vram, palette, outputBuffer));
+DllExport void __stdcall GetTilemap(CpuType cpuType, GetTilemapOptions options, BaseState& state, BaseState& ppuToolsState, uint8_t* vram, uint32_t* palette, uint32_t* outputBuffer, DebugTilemapInfo& tilemapInfo) {
+	tilemapInfo = WithTool(DebugTilemapInfo, GetPpuTools(cpuType), GetTilemap(options, state, ppuToolsState, vram, palette, outputBuffer));
 }
 DllExport FrameInfo __stdcall GetTilemapSize(CpuType cpuType, GetTilemapOptions options, BaseState& state) {
 	return WithTool(FrameInfo, GetPpuTools(cpuType), GetTilemapSize(options, state));
 }
-DllExport DebugTilemapTileInfo __stdcall GetTilemapTileInfo(uint32_t x, uint32_t y, CpuType cpuType, GetTilemapOptions options, uint8_t* vram, BaseState& state, BaseState& ppuToolsState) {
-	return WithTool(DebugTilemapTileInfo, GetPpuTools(cpuType), GetTilemapTileInfo(x, y, vram, options, state, ppuToolsState));
+DllExport void __stdcall GetTilemapTileInfo(uint32_t x, uint32_t y, CpuType cpuType, GetTilemapOptions options, uint8_t* vram, BaseState& state, BaseState& ppuToolsState, DebugTilemapTileInfo& tileInfo) {
+	tileInfo = WithTool(DebugTilemapTileInfo, GetPpuTools(cpuType), GetTilemapTileInfo(x, y, vram, options, state, ppuToolsState));
 }
 
 DllExport DebugSpritePreviewInfo __stdcall GetSpritePreviewInfo(CpuType cpuType, GetSpritePreviewOptions options, BaseState& state, BaseState& ppuToolsState) {
@@ -325,8 +325,8 @@ DllExport FrameInfo __stdcall GetEventViewerDisplaySize(CpuType cpuType) {
 DllExport void __stdcall GetEventViewerOutput(CpuType cpuType, uint32_t* buffer, uint32_t bufferSize) {
 	WithToolVoid(GetEventManager(cpuType), GetDisplayBuffer(buffer, bufferSize));
 }
-DllExport DebugEventInfo __stdcall GetEventViewerEvent(CpuType cpuType, uint16_t scanline, uint16_t cycle) {
-	return WithTool(DebugEventInfo, GetEventManager(cpuType), GetEvent(scanline, cycle));
+DllExport void __stdcall GetEventViewerEvent(CpuType cpuType, uint16_t scanline, uint16_t cycle, DebugEventInfo& eventInfo) {
+	eventInfo = WithTool(DebugEventInfo, GetEventManager(cpuType), GetEvent(scanline, cycle));
 }
 DllExport uint32_t __stdcall TakeEventSnapshot(CpuType cpuType, bool forAutoRefresh) {
 	return WithTool(uint32_t, GetEventManager(cpuType), TakeEventSnapshot(forAutoRefresh));

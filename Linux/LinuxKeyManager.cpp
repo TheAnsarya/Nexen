@@ -166,7 +166,7 @@ void LinuxKeyManager::CheckForGamepads(bool logInformation)
 
 void LinuxKeyManager::StartUpdateDeviceThread()
 {
-	_updateDeviceThread = std::thread([=]() {
+	_updateDeviceThread = std::thread([this]() {
 		while(!_stopUpdateDeviceThread) {
 			//Check for newly plugged in controllers every 5 secs
 			vector<shared_ptr<LinuxGameController>> controllersToAdd;

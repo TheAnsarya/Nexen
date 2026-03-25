@@ -191,8 +191,17 @@ public sealed class DebugApi {
 
 	[DllImport(DllPath)] public static extern Int64 EvaluateExpression([MarshalAs(UnmanagedType.LPUTF8Str)] string expression, CpuType cpuType, out EvalResultType resultType, [MarshalAs(UnmanagedType.I1)] bool useCache);
 
-	[DllImport(DllPath)] public static extern DebuggerFeatures GetDebuggerFeatures(CpuType type);
-	[DllImport(DllPath)] public static extern CpuInstructionProgress GetInstructionProgress(CpuType type);
+	[DllImport(DllPath, EntryPoint = "GetDebuggerFeatures")] private static extern void GetDebuggerFeaturesWrapper(CpuType type, out DebuggerFeatures features);
+	public static DebuggerFeatures GetDebuggerFeatures(CpuType type) {
+		GetDebuggerFeaturesWrapper(type, out DebuggerFeatures features);
+		return features;
+	}
+
+	[DllImport(DllPath, EntryPoint = "GetInstructionProgress")] private static extern void GetInstructionProgressWrapper(CpuType type, out CpuInstructionProgress progress);
+	public static CpuInstructionProgress GetInstructionProgress(CpuType type) {
+		GetInstructionProgressWrapper(type, out CpuInstructionProgress progress);
+		return progress;
+	}
 
 	[DllImport(DllPath)] public static extern Int32 GetMemorySize(MemoryType type);
 	[DllImport(DllPath)] public static extern Byte GetMemoryValue(MemoryType type, UInt32 address);
@@ -272,7 +281,7 @@ public sealed class DebugApi {
 		DebugApi.GetMemoryStateWrapper(type, dst);
 	}
 
-	[DllImport(DllPath)] private static extern DebugTilemapInfo GetTilemap(CpuType cpuType, InteropGetTilemapOptions options, IntPtr state, IntPtr ppuToolsState, byte[] vram, UInt32[] palette, IntPtr outputBuffer);
+	[DllImport(DllPath, EntryPoint = "GetTilemap")] private static extern void GetTilemapWrapper(CpuType cpuType, InteropGetTilemapOptions options, IntPtr state, IntPtr ppuToolsState, byte[] vram, UInt32[] palette, IntPtr outputBuffer, out DebugTilemapInfo tilemapInfo);
 	public unsafe static DebugTilemapInfo GetTilemap(CpuType cpuType, GetTilemapOptions options, BaseState state, BaseState ppuToolsState, byte[] vram, UInt32[] palette, IntPtr outputBuffer) {
 		Debug.Assert(state.GetType().IsValueType);
 		Debug.Assert(IsValidPpuState(ref state, cpuType));
@@ -288,7 +297,8 @@ public sealed class DebugApi {
 				InteropGetTilemapOptions interopOptions = options.ToInterop();
 				interopOptions.CompareVram = (IntPtr)compareVramPtr;
 				interopOptions.AccessCounters = (IntPtr)accessCounters;
-				return DebugApi.GetTilemap(cpuType, interopOptions, (IntPtr)stateBuffer, (IntPtr)ppuToolsStateBuffer, vram, palette, outputBuffer);
+				DebugApi.GetTilemapWrapper(cpuType, interopOptions, (IntPtr)stateBuffer, (IntPtr)ppuToolsStateBuffer, vram, palette, outputBuffer, out DebugTilemapInfo tilemapInfo);
+				return tilemapInfo;
 			}
 		}
 	}
@@ -304,7 +314,7 @@ public sealed class DebugApi {
 		return DebugApi.GetTilemapSize(cpuType, options.ToInterop(), (IntPtr)ptr);
 	}
 
-	[DllImport(DllPath)] private static extern DebugTilemapTileInfo GetTilemapTileInfo(UInt32 x, UInt32 y, CpuType cpuType, InteropGetTilemapOptions options, byte[] vram, IntPtr state, IntPtr ppuToolsState);
+	[DllImport(DllPath, EntryPoint = "GetTilemapTileInfo")] private static extern void GetTilemapTileInfoWrapper(UInt32 x, UInt32 y, CpuType cpuType, InteropGetTilemapOptions options, byte[] vram, IntPtr state, IntPtr ppuToolsState, out DebugTilemapTileInfo tileInfo);
 	public unsafe static DebugTilemapTileInfo? GetTilemapTileInfo(UInt32 x, UInt32 y, CpuType cpuType, GetTilemapOptions options, byte[] vram, BaseState state, BaseState ppuToolsState) {
 		Debug.Assert(state.GetType().IsValueType);
 		Debug.Assert(IsValidPpuState(ref state, cpuType));
@@ -315,7 +325,7 @@ public sealed class DebugApi {
 		byte* ppuToolsStateBuffer = stackalloc byte[GetStateSize(ppuToolsState)];
 		Marshal.StructureToPtr(ppuToolsState, (IntPtr)ppuToolsStateBuffer, false);
 
-		DebugTilemapTileInfo info = DebugApi.GetTilemapTileInfo(x, y, cpuType, options.ToInterop(), vram, (IntPtr)ptr, (IntPtr)ppuToolsStateBuffer);
+		DebugApi.GetTilemapTileInfoWrapper(x, y, cpuType, options.ToInterop(), vram, (IntPtr)ptr, (IntPtr)ppuToolsStateBuffer, out DebugTilemapTileInfo info);
 		return info.Row >= 0 ? info : null;
 	}
 
@@ -396,9 +406,9 @@ public sealed class DebugApi {
 	[DllImport(DllPath)] public static extern void SetEventViewerConfig(CpuType cpuType, InteropLynxEventViewerConfig config);
 	[DllImport(DllPath)] public static extern void SetEventViewerConfig(CpuType cpuType, InteropAtari2600EventViewerConfig config);
 
-	[DllImport(DllPath, EntryPoint = "GetEventViewerEvent")] private static extern DebugEventInfo GetEventViewerEventWrapper(CpuType cpuType, UInt16 scanline, UInt16 cycle);
+	[DllImport(DllPath, EntryPoint = "GetEventViewerEvent")] private static extern void GetEventViewerEventWrapper(CpuType cpuType, UInt16 scanline, UInt16 cycle, out DebugEventInfo evt);
 	public static DebugEventInfo? GetEventViewerEvent(CpuType cpuType, UInt16 scanline, UInt16 cycle) {
-		DebugEventInfo evt = DebugApi.GetEventViewerEventWrapper(cpuType, scanline, cycle);
+		DebugApi.GetEventViewerEventWrapper(cpuType, scanline, cycle, out DebugEventInfo evt);
 		if (evt.ProgramCounter != UInt32.MaxValue) {
 			return evt;
 		}

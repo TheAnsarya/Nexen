@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Nexen.Config;
 
-namespace Nexen.Interop; 
+namespace Nexen.Interop;
 public sealed class HistoryApi {
 	private const string DllPath = EmuApi.DllName;
 
@@ -20,7 +20,11 @@ public sealed class HistoryApi {
 	[DllImport(DllPath)] public static extern void HistoryViewerSetPosition(UInt32 seekPosition);
 	[DllImport(DllPath)] public static extern void HistoryViewerResumeGameplay(UInt32 seekPosition);
 
-	[DllImport(DllPath)] public static extern HistoryViewerState HistoryViewerGetState();
+	[DllImport(DllPath, EntryPoint = "HistoryViewerGetState")] private static extern void HistoryViewerGetStateWrapper(out HistoryViewerState state);
+	public static HistoryViewerState HistoryViewerGetState() {
+		HistoryViewerGetStateWrapper(out HistoryViewerState state);
+		return state;
+	}
 	[DllImport(DllPath)] public static extern void HistoryViewerSetOptions(HistoryViewerOptions options);
 
 	[DllImport(DllPath)] public static extern IntPtr HistoryViewerRegisterNotificationCallback(NotificationListener.NotificationCallback callback);

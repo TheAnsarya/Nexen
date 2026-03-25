@@ -42,7 +42,11 @@ public sealed class ConfigApi {
 	[DllImport(DllPath)] public static extern void SetEmulationFlag(EmulationFlags flag, bool enabled);
 	[DllImport(DllPath)] public static extern void SetDebuggerFlag(DebuggerFlags flag, bool enabled);
 
-	[DllImport(DllPath)] public static extern InteropNesConfig GetNesConfig();
+	[DllImport(DllPath, EntryPoint = "GetNesConfig")] private static extern void GetNesConfigWrapper(out InteropNesConfig config);
+	public static InteropNesConfig GetNesConfig() {
+		GetNesConfigWrapper(out InteropNesConfig config);
+		return config;
+	}
 
 	[DllImport(DllPath, EntryPoint = "GetAudioDevices")] private static extern void GetAudioDevicesWrapper(IntPtr outDeviceList, Int32 maxSize);
 	public unsafe static List<string> GetAudioDevices() {

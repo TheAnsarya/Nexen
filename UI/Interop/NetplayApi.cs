@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Nexen.Config;
 
-namespace Nexen.Interop; 
+namespace Nexen.Interop;
 public sealed class NetplayApi {
 	private const string DllPath = EmuApi.DllName;
 
@@ -24,7 +24,11 @@ public sealed class NetplayApi {
 	}
 
 	[DllImport(DllPath)] public static extern void NetPlaySelectController(NetplayControllerInfo controllerPort);
-	[DllImport(DllPath)] public static extern NetplayControllerInfo NetPlayGetControllerPort();
+	[DllImport(DllPath, EntryPoint = "NetPlayGetControllerPort")] private static extern void NetPlayGetControllerPortWrapper(out NetplayControllerInfo controllerPort);
+	public static NetplayControllerInfo NetPlayGetControllerPort() {
+		NetPlayGetControllerPortWrapper(out NetplayControllerInfo controllerPort);
+		return controllerPort;
+	}
 }
 
 public struct NetplayControllerInfo {
