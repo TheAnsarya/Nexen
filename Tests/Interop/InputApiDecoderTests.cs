@@ -25,6 +25,56 @@ public class InputApiDecoderTests {
 
 	#endregion
 
+	#region Lynx Controller Tests
+
+	[Fact]
+	public void Decode_LynxController_AllButtonsOff() {
+		var state = CreateState(ControllerType.LynxController, 0x00, 0x00);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.False(result.Up);
+		Assert.False(result.Down);
+		Assert.False(result.Left);
+		Assert.False(result.Right);
+		Assert.False(result.A);
+		Assert.False(result.B);
+		Assert.False(result.L);
+		Assert.False(result.R);
+		Assert.False(result.Start);
+	}
+
+	[Fact]
+	public void Decode_LynxController_DPadAndFaceButtons() {
+		// Lynx: Up=0, Down=1, Left=2, Right=3, A=4, B=5
+		var state = CreateState(ControllerType.LynxController, 0x3F, 0x00);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.Up);
+		Assert.True(result.Down);
+		Assert.True(result.Left);
+		Assert.True(result.Right);
+		Assert.True(result.A);
+		Assert.True(result.B);
+		Assert.False(result.L);
+		Assert.False(result.R);
+		Assert.False(result.Start);
+	}
+
+	[Fact]
+	public void Decode_LynxController_OptionAndPauseButtons() {
+		// Lynx: Option1=6, Option2=7, Pause=8
+		var state = CreateState(ControllerType.LynxController, 0xC0, 0x01);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.L); // Option1
+		Assert.True(result.R); // Option2
+		Assert.True(result.Start); // Pause
+		Assert.False(result.Up);
+		Assert.False(result.A);
+	}
+
+	#endregion
+
 	#region SNES Controller Tests
 
 	[Fact]
@@ -408,6 +458,7 @@ public class InputApiDecoderTests {
 	[InlineData(ControllerType.SnesController, Nexen.MovieConverter.ControllerType.Gamepad)]
 	[InlineData(ControllerType.NesController, Nexen.MovieConverter.ControllerType.Gamepad)]
 	[InlineData(ControllerType.GameboyController, Nexen.MovieConverter.ControllerType.Gamepad)]
+	[InlineData(ControllerType.LynxController, Nexen.MovieConverter.ControllerType.Gamepad)]
 	[InlineData(ControllerType.SnesMouse, Nexen.MovieConverter.ControllerType.Mouse)]
 	[InlineData(ControllerType.SuperScope, Nexen.MovieConverter.ControllerType.SuperScope)]
 	[InlineData(ControllerType.NesZapper, Nexen.MovieConverter.ControllerType.Zapper)]

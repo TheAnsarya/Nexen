@@ -189,6 +189,19 @@ public sealed class InputApi {
 				input.B = (buttons & (1 << 6)) != 0;
 				break;
 
+			case ControllerType.LynxController:
+				// Lynx: Up=0, Down=1, Left=2, Right=3, A=4, B=5, Option1=6, Option2=7, Pause=8
+				input.Up = (buttons & (1 << 0)) != 0;
+				input.Down = (buttons & (1 << 1)) != 0;
+				input.Left = (buttons & (1 << 2)) != 0;
+				input.Right = (buttons & (1 << 3)) != 0;
+				input.A = (buttons & (1 << 4)) != 0;
+				input.B = (buttons & (1 << 5)) != 0;
+				input.L = (buttons & (1 << 6)) != 0; // Option1
+				input.R = (buttons & (1 << 7)) != 0; // Option2
+				input.Start = (buttons & (1 << 8)) != 0; // Pause
+				break;
+
 			default:
 				// Generic fallback - assume NES-like layout
 				input.Up = (buttons & (1 << 0)) != 0;
