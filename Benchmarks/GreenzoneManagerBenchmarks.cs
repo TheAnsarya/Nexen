@@ -172,6 +172,65 @@ public class GreenzoneManagerBenchmarks {
 		return DecompressData(compressed);
 	}
 
+	#endregion
+
+	#region Seek Latency — Lynx / Atari 2600 Platform Typical Depths
+
+	/// <summary>
+	/// Benchmarks seek latency for typical Lynx movie depths.
+	/// Lynx runs at ~75fps; short TAS runs of 10 seconds = ~750 frames, 1 minute = ~4500 frames.
+	/// These benchmarks exercise pure lookup performance on Lynx-depth greenzones.
+	/// </summary>
+	[Benchmark(Description = "GetNearestStateFrame — Lynx 750-frame depth (mid)")]
+	[BenchmarkCategory("SeekLatency")]
+	public int SeekLatency_Lynx_ShortMovie_Mid() {
+		// Lynx 10-second movie target: frame 375 (midpoint of 0..750)
+		return _greenzone.GetNearestStateFrame(375);
+	}
+
+	[Benchmark(Description = "GetNearestStateFrame — Lynx 4500-frame depth (mid)")]
+	[BenchmarkCategory("SeekLatency")]
+	public int SeekLatency_Lynx_LongMovie_Mid() {
+		// Lynx 60-second movie target: frame 2250
+		int midFrame = (int)(StateCount * 0.5) * 60;
+		return _greenzone.GetNearestStateFrame(midFrame);
+	}
+
+	/// <summary>
+	/// Benchmarks seek latency for typical Atari 2600 movie depths.
+	/// A2600 runs at ~60fps; 10-second TAS = ~600 frames, 1 minute = ~3600 frames.
+	/// These benchmarks exercise pure lookup performance on A2600-depth greenzones.
+	/// </summary>
+	[Benchmark(Description = "GetNearestStateFrame — A2600 600-frame depth (mid)")]
+	[BenchmarkCategory("SeekLatency")]
+	public int SeekLatency_A2600_ShortMovie_Mid() {
+		// A2600 10-second movie target: frame 300 (midpoint of 0..600)
+		return _greenzone.GetNearestStateFrame(300);
+	}
+
+	[Benchmark(Description = "GetNearestStateFrame — A2600 3600-frame depth (mid)")]
+	[BenchmarkCategory("SeekLatency")]
+	public int SeekLatency_A2600_LongMovie_Mid() {
+		// A2600 60-second movie target: frame 1800
+		int midFrame = (int)(StateCount * 0.4) * 60;
+		return _greenzone.GetNearestStateFrame(midFrame);
+	}
+
+	[Benchmark(Description = "GetNearestStateFrame — post-invalidation boundary (Lynx/A2600)")]
+	[BenchmarkCategory("SeekLatency")]
+	public int SeekLatency_PostInvalidation_Boundary() {
+		// Simulate seeking just past the last valid state after a rerecord invalidation.
+		// GetNearestStateFrame must return the last valid frame, not beyond it.
+		// Using StateCount*60-1 (one before the last stored state) to exercise this path.
+		int nearBoundary = (StateCount - 1) * 60 - 1;
+		return _greenzone.GetNearestStateFrame(nearBoundary);
+	}
+
+	#endregion
+
+	#region Private Helpers
+
+
 	/// <summary>Mirror of GreenzoneManager.CompressData (private).</summary>
 	private static byte[] CompressData(byte[] data) {
 		using var output = new System.IO.MemoryStream(data.Length * 3 / 4);

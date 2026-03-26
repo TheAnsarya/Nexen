@@ -249,6 +249,72 @@ public class TasEditorViewModelBranchAndLayoutTests : IDisposable {
 
 	#endregion
 
+	#region Greenzone Seek Path Guard (Lynx / Atari 2600)
+
+	/// <summary>
+	/// SeekToFrameAsync exits early when no movie is loaded.
+	/// Verify no crash or status mutation occurs when seek is attempted with no movie.
+	/// </summary>
+	[Fact]
+	public async System.Threading.Tasks.Task SeekToFrameAsync_WithNoMovie_ExitsCleanly() {
+		// No movie loaded — seeking should be a no-op regardless of platform
+		Assert.Null(_vm.Movie);
+		string statusBefore = _vm.StatusMessage;
+
+		// Should not throw even when no movie or window
+		await _vm.SeekToFrameAsync();
+
+		// Status must not change — guard exited cleanly
+		Assert.Equal(statusBefore, _vm.StatusMessage);
+	}
+
+	/// <summary>
+	/// When a movie is loaded but the greenzone has no savestates, seeking must be blocked.
+	/// Verify the ViewModel reports the correct result for both Lynx and Atari 2600.
+	/// </summary>
+	[Theory]
+	[InlineData(SystemType.Lynx)]
+	[InlineData(SystemType.A2600)]
+	public async System.Threading.Tasks.Task SeekToFrameAsync_WithMovieButNoGreenzoneStates_ExitsCleanlyForPlatform(SystemType system) {
+		SetMovie(CreateTestMovie(100, system));
+		_vm.SelectedFrameIndex = 50;
+		string statusBefore = _vm.StatusMessage;
+
+		// Greenzone.SavestateCount == 0 and _window == null → early exit
+		await _vm.SeekToFrameAsync();
+
+		// Guard must not alter status message when seek is blocked
+		Assert.Equal(statusBefore, _vm.StatusMessage);
+	}
+
+	/// <summary>
+	/// After truncation, SelectedFrameIndex is clamped. A subsequent call to SeekToFrameAsync
+	/// must not observe an out-of-range frame index. Validates truncation + seek interaction
+	/// for Lynx and Atari 2600 system types.
+	/// </summary>
+	[Theory]
+	[InlineData(SystemType.Lynx)]
+	[InlineData(SystemType.A2600)]
+	public void SeekTarget_AfterTruncation_IsWithinMovieBounds(SystemType system) {
+		var movie = CreateTestMovie(50, system);
+		SetMovie(movie);
+
+		_vm.SelectedFrameIndex = 49;
+
+		// Truncate to 20 frames and refresh
+		movie.InputFrames.RemoveRange(20, movie.InputFrames.Count - 20);
+		_vm.RefreshFrames();
+
+		// SelectedFrameIndex must always be within movie bounds after refresh
+		Assert.InRange(_vm.SelectedFrameIndex, 0, _vm.Movie!.InputFrames.Count - 1);
+		// The seek dialog would cap to maxFrame = InputFrames.Count - 1 = 19
+		int maxValidSeekFrame = _vm.Movie.InputFrames.Count - 1;
+		Assert.True(_vm.SelectedFrameIndex <= maxValidSeekFrame,
+			$"SelectedFrameIndex={_vm.SelectedFrameIndex} exceeds maxValidSeekFrame={maxValidSeekFrame}");
+	}
+
+	#endregion
+
 	#region Controller Layout Detection
 
 	[Theory]
