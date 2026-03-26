@@ -794,6 +794,7 @@ Also emulate the Luxor versions `Luxor Channel F BIOS SL90025 (1976) (Luxor).bin
 
 1 go
 
+[Nexen, pansy, poppy] (Channel F) continue making issues and working issues and updating docs, etc. go!; continue;
 
 
 

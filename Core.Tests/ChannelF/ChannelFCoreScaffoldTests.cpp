@@ -65,6 +65,37 @@ TEST(ChannelFCoreScaffold, SerializeRoundtripPreservesState) {
 	EXPECT_EQ(loaded.GetDeterministicState(), original.GetDeterministicState());
 }
 
+TEST(ChannelFCoreScaffold, SerializeRoundtripContinuesDeterministically) {
+	ChannelFCoreScaffold original;
+	original.SetPanelButtons(0x06);
+	original.SetRightController(0x12);
+	original.SetLeftController(0x48);
+	for(int i = 0; i < 40; i++) {
+		original.RunFrame();
+	}
+
+	Serializer saver(1, true, SerializeFormat::Binary);
+	original.Serialize(saver);
+
+	std::stringstream ss;
+	saver.SaveTo(ss);
+	ss.seekg(0);
+
+	ChannelFCoreScaffold restored;
+	Serializer loader(1, false, SerializeFormat::Binary);
+	loader.LoadFrom(ss);
+	restored.Serialize(loader);
+
+	for(int i = 0; i < 120; i++) {
+		original.RunFrame();
+		restored.RunFrame();
+	}
+
+	EXPECT_EQ(restored.GetFrameCount(), original.GetFrameCount());
+	EXPECT_EQ(restored.GetMasterClock(), original.GetMasterClock());
+	EXPECT_EQ(restored.GetDeterministicState(), original.GetDeterministicState());
+}
+
 TEST(ChannelFCoreScaffold, LuxorHashesSelectSystemIIVariant) {
 	ChannelFCoreScaffold core;
 	core.DetectVariantFromHashes(
