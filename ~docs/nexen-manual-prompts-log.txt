@@ -763,9 +763,11 @@ continue working issues and builds;
 
 Continue;
 
+find more performance improvements, benchmark and test them for correctness and speed and memory usage and make issues/docs/etc; continue;
 
+find more performance improvements, benchmark and test them for correctness and speed and memory usage and make issues/docs/etc; continue;
 
-
+[Nexen] (Atari Lynx) Work on issue #955 `[950.5] ComLynx Multi-Player Not Implemented`; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
 
 
 

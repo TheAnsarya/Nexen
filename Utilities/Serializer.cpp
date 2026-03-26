@@ -45,6 +45,7 @@ void Serializer::ResetForFastLoad() {
 }
 
 void Serializer::AddKeyPrefix(const string& prefix) {
+	// Single-pass using C++17 node extraction (avoids extra string allocations)
 	vector<string> keys;
 	keys.reserve(_values.size());
 	for (auto& kvp : _values) {
@@ -52,32 +53,29 @@ void Serializer::AddKeyPrefix(const string& prefix) {
 	}
 
 	for (string& key : keys) {
-		_values[prefix + key] = _values[key];
-		_values.erase(key);
+		auto node = _values.extract(key);
+		node.key() = prefix + key;
+		_values.insert(std::move(node));
 	}
 }
 
 void Serializer::RemoveKeyPrefix(const string& prefix) {
-	vector<string> keys;
-	vector<string> keysToRemove;
-	keys.reserve(_values.size());
-	keysToRemove.reserve(_values.size());
+	// Single-pass: extract matching nodes, strip prefix, reinsert; erase non-matching
+	vector<decltype(_values)::node_type> matching;
+	matching.reserve(_values.size());
 
-	for (auto& kvp : _values) {
-		if (kvp.first.starts_with(prefix) && kvp.first.size() > prefix.size()) {
-			keys.push_back(kvp.first);
+	for (auto it = _values.begin(); it != _values.end(); ) {
+		if (it->first.starts_with(prefix) && it->first.size() > prefix.size()) {
+			auto node = _values.extract(it++);
+			node.key() = node.key().substr(prefix.length());
+			matching.push_back(std::move(node));
 		} else {
-			keysToRemove.push_back(kvp.first);
+			it = _values.erase(it);
 		}
 	}
 
-	for (string& key : keysToRemove) {
-		_values.erase(key);
-	}
-
-	for (string& key : keys) {
-		_values[key.substr(prefix.length())] = _values[key];
-		_values.erase(key);
+	for (auto& node : matching) {
+		_values.insert(std::move(node));
 	}
 }
 

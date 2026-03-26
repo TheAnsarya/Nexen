@@ -57,7 +57,7 @@ void RewindManager::ProcessNotification(ConsoleNotificationType type, void* para
 		return;
 	}
 
-	if (type == ConsoleNotificationType::PpuFrameDone) {
+	if (type == ConsoleNotificationType::PpuFrameDone) [[likely]] {
 		_hasHistory = _history.size() >= 2;
 		if (_settings->GetPreferences().RewindBufferSize > 0) {
 			switch (_rewindState) {
@@ -85,7 +85,7 @@ void RewindManager::ProcessNotification(ConsoleNotificationType type, void* para
 					}
 					break;
 
-				case RewindState::Stopped:
+				case RewindState::Stopped: [[likely]]
 					_currentHistory.FrameCount++;
 					break;
 			}

@@ -22,7 +22,7 @@ uint32_t SoundResampler::GetTargetRate() {
 }
 
 double SoundResampler::GetTargetRateAdjustment() {
-	AudioConfig cfg = _emu->GetSettings()->GetAudioConfig();
+	const AudioConfig& cfg = _emu->GetSettings()->GetAudioConfig();
 	bool isRecording = _emu->GetSoundMixer()->IsRecording() || _emu->GetVideoRenderer()->IsRecording();
 	if (!isRecording && !cfg.DisableDynamicSampleRate) {
 		// Don't deviate from selected sample rate while recording
