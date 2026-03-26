@@ -838,6 +838,7 @@
     <ClInclude Include="Lynx\Debugger\DummyLynxCpu.h" />
     <ClInclude Include="Atari2600\Atari2600Console.h" />
     <ClInclude Include="ChannelF\ChannelFBiosDatabase.h" />
+    <ClInclude Include="ChannelF\ChannelFCoreScaffold.h" />
     <ClInclude Include="ChannelF\ChannelFOpcodeTable.h" />
     <ClInclude Include="Atari2600\Atari2600Mapper.h" />
     <ClInclude Include="Atari2600\Atari2600Riot.h" />
@@ -1183,6 +1184,7 @@
     <ClCompile Include="Lynx\Debugger\DummyLynxCpu.cpp" />
     <ClCompile Include="Atari2600\Atari2600Console.cpp" />
     <ClCompile Include="ChannelF\ChannelFBiosDatabase.cpp" />
+    <ClCompile Include="ChannelF\ChannelFCoreScaffold.cpp" />
     <ClCompile Include="ChannelF\ChannelFOpcodeTable.cpp" />
     <ClCompile Include="Atari2600\Atari2600Bus.cpp" />
     <ClCompile Include="Atari2600\Atari2600ControlManager.cpp" />
