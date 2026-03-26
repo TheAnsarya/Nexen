@@ -82,3 +82,17 @@
 - Channel F appears as first-class system option in Nexen UI and docs.
 - CI lanes for Channel F tests/benchmarks are green.
 - Release readiness checklist #1023 signed off.
+
+## 2026-03-26 Progress Checkpoint
+
+- Completed a cross-repo Channel F metadata slice tied to #1030 and #1031.
+- Nexen now exports Channel F `.pansy` files using platform id `0x1f` (Fairchild Channel F).
+- Channel F system memory regions are now emitted in export output:
+	- Cartridge ROM (`$0000-$17ff`)
+	- System RAM (`$2800-$2fff`)
+	- Video RAM (`$3000-$37ff`)
+	- I/O registers (`$3800-$38ff`)
+- Validation evidence captured this session:
+	- `Core.Tests.exe --gtest_filter=ChannelF* --gtest_brief=1` (15/15 passed)
+	- `Core.Benchmarks.exe --benchmark_filter=BM_ChannelFCore_* --benchmark_repetitions=3`
+	- Release x64 solution build successful
