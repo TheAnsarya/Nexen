@@ -790,6 +790,7 @@ Also emulate the Luxor versions `Luxor Channel F BIOS SL90025 (1976) (Luxor).bin
 
 [Nexen] (Channel F) continue working and making issues, implement core emulation in c++ and UI debugging and TAS/movies core/UI and input controllers UI/core in c# and continue; performance benchmarks and tests for correctness, test all code, benchmark all hot paths, continue; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
 
+[Nexen, pansy, poppy] (Channel F) Add Channel F to pansy and update Nexen to generate the Channel F version of the pansy file and labels and save states etc, and update the poppy assembler to compile channel f and bring assets into the pipeline; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; Continue working on Nexen's channel f issues
 
 
 
