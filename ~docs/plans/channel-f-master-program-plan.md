@@ -14,6 +14,12 @@
 - Support Channel F System I, System II, and documented variant behavior where feasible.
 - Ship with comprehensive test/benchmark evidence and full documentation.
 
+## Local ROM Inputs
+
+- BIOS path: C:\~reference-roms\channel f\Channel F BIOS (1976) (Fairchild, Luxor)\
+- ROM root path: C:\~reference-roms\channel f\ (use subfolders for per-title matrices)
+- Use these as canonical local sources for #971, #975, #976, #982, and #1016.
+
 ## Workstreams
 
 ## 1. Core Emulation

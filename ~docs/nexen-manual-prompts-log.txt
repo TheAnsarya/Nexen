@@ -780,7 +780,11 @@ VSCode crashed, resume working; continue;
 
 install `Ripgrep` into the shell since you try to use it so often; continue and resume;
 
+--- steer
+Channel F BIOS == `C:\~reference-roms\channel f\Channel F BIOS (1976) (Fairchild, Luxor)\`, Channel F ROMs == `C:\~reference-roms\channel f\` sub folders
 
+--- steer
+Also emulate the Luxor versions `Luxor Channel F BIOS SL90025 (1976) (Luxor).bin`
 
 
 

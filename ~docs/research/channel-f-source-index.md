@@ -32,6 +32,29 @@ This document tracks external technical references for the Channel F program and
 
 Known BIOS hashes should be validated in Nexen metadata tables during bring-up.
 
+## Local Reference ROM Locations
+
+| Item | Path |
+|---|---|
+| Channel F BIOS directory | C:\~reference-roms\channel f\Channel F BIOS (1976) (Fairchild, Luxor)\ |
+| Channel F ROM root | C:\~reference-roms\channel f\ |
+
+## Verified Local BIOS Files
+
+| File |
+|---|
+| Fairchild Channel F BIOS (With Hockey+Tennis).bin |
+| Fairchild Channel F BIOS SL31253 (1976) (Fairchild).bin |
+| Fairchild Channel F BIOS SL31254 (1976) (Fairchild).bin |
+| Luxor Channel F BIOS SL90025 (1976) (Luxor).bin |
+| Hockey & Tennis (1976) (Fairchild) (BIOS Game Hack).chf |
+
+## Verified Luxor System II BIOS Hashes
+
+| BIOS | SHA1 | MD5 |
+|---|---|---|
+| Luxor Channel F BIOS SL90025 (1976) (Luxor).bin | 759e2ed31fbde4a2d8daf8b9f3e0dffebc90dae2 | 95d339631d867c8f1d15a5f2ec26069d |
+
 ## Mapping to Issue Tree
 
 | Area | Issues |

@@ -177,6 +177,12 @@
 		<ClCompile Include="Atari2600\Atari2600CpuOpcodeTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="ChannelF\ChannelFOpcodeTableTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="ChannelF\ChannelFBiosDatabaseTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Atari2600\Atari2600RiotPhaseATests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
