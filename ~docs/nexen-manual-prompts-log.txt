@@ -739,6 +739,19 @@ continue now with non-Genesis work only (#933/#934 app + 2600/Lynx verification)
 
 1
 
+`https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.3` has no builds, are those being done? what are we waiting on?
+
+yes please do that
+
+There are a bunch of warnings and errors in `https://github.com/TheAnsarya/Nexen/actions/runs/23556399472/job/68584262761` like `InteropDLL/DebugApiWrapper.cpp:328:36: warning: 'GetEventViewerEvent' has C-linkage specified, but returns user-defined type 'DebugEventInfo' which is incompatible with C [-Wreturn-type-c-linkage]`; continue;
+
+continue by opening focused cleanup issues for the warning groups (Interop C-linkage first, then deprecated captures/enum arithmetic), then implement fixes on the current branch.
+
+are we ignoring errors/warnings or are we fixing them? fix them!; continue;
+
+continue working issues and builds;
+
+[Nexen] (Atari Lynx) Ensure the debugger has all the system specific stuff for the Lynx, UI and core integration, make sure everything is wired up correctly and that VRAM viewer UI and the rest of it is system specific and correct and working; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks; continue;
 
 
 
@@ -754,18 +767,9 @@ continue now with non-Genesis work only (#933/#934 app + 2600/Lynx verification)
 
 
 
-15/64 battles
-1280/5000 stall coin
-Martha
-Krista
-Arachne
-Folio
-Helios
-Peppy
-Kayla
-Aurora
-Galahad
-Keira
+
+
+
 
 
 

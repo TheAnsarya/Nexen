@@ -151,6 +151,12 @@
 		<ClCompile Include="Lynx\LynxAllocBench.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="Lynx\LynxPpuToolsBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Lynx\LynxDisUtilsBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Debugger\DebuggerPipelineBench.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
