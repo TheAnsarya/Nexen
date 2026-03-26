@@ -121,6 +121,24 @@ static void BM_LynxApu_StereoMix(benchmark::State& state) {
 }
 BENCHMARK(BM_LynxApu_StereoMix);
 
+// Benchmark stereo mix when all channels muted (STEREO = 0xFF fast-skip)
+static void BM_LynxApu_StereoMix_AllMuted(benchmark::State& state) {
+	uint8_t stereo = 0xff; // All channels muted on both sides
+	int16_t buffer[2] = {};
+
+	for (auto _ : state) {
+		// Mirrors the fast-skip path in LynxApu::MixOutput()
+		if (stereo == 0xff) [[unlikely]] {
+			buffer[0] = 0;
+			buffer[1] = 0;
+		}
+		benchmark::DoNotOptimize(buffer);
+		benchmark::ClobberMemory();
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_LynxApu_StereoMix_AllMuted);
+
 // Benchmark mono mix (comparison baseline)
 static void BM_LynxApu_MonoMix(benchmark::State& state) {
 	LynxAudioChannelState channels[4] = {};
@@ -249,3 +267,67 @@ static void BM_LynxApu_VolumeAttenuation(benchmark::State& state) {
 	state.SetItemsProcessed(state.iterations());
 }
 BENCHMARK(BM_LynxApu_VolumeAttenuation);
+
+// =============================================================================
+// APU Tick (Isolated Timer Processing)
+// =============================================================================
+
+// Benchmark the per-channel timer tick loop without MixOutput.
+// Simulates TickChannelTimer for all 4 channels over a realistic
+// cycle delta (1 frame = ~16,000 CPU cycles at ~1 MHz, ~267 ticks per channel).
+static void BM_LynxApu_TickIsolated(benchmark::State& state) {
+	// 4-channel timer state: counter, backupValue, lastTick, enabled
+	struct ChannelTimerSim {
+		uint8_t counter;
+		uint8_t backupValue;
+		uint64_t lastTick;
+		bool enabled;
+		uint8_t clockSource; // prescaler index 0-6 (7=linked)
+	};
+
+	static constexpr uint32_t prescalerPeriods[7] = {
+		1, 2, 4, 8, 16, 64, 256
+	};
+
+	ChannelTimerSim channels[4] = {
+		{ 0x80, 0x80, 0, true, 2 },  // channel 0: period=4
+		{ 0x40, 0x40, 0, true, 3 },  // channel 1: period=8
+		{ 0xc0, 0xc0, 0, true, 1 },  // channel 2: period=2
+		{ 0x20, 0x20, 0, true, 4 },  // channel 3: period=16
+	};
+
+	uint64_t currentCycle = 0;
+	uint8_t tickableMask = 0x0f; // all 4 enabled
+	uint16_t shiftReg = 0x001;
+
+	for (auto _ : state) {
+		currentCycle += 16000; // ~1 frame of CPU cycles
+
+		for (int ch = 0; ch < 4; ch++) {
+			if (!(tickableMask & (1 << ch))) {
+				channels[ch].lastTick = currentCycle;
+				continue;
+			}
+			auto& c = channels[ch];
+			if (!c.enabled || c.clockSource >= 7) {
+				c.lastTick = currentCycle;
+				continue;
+			}
+			uint32_t period = prescalerPeriods[c.clockSource];
+			while (currentCycle - c.lastTick >= period) {
+				c.lastTick += period;
+				c.counter--;
+				if (c.counter == 0xff) { // underflow
+					c.counter = c.backupValue;
+					// Simulate LFSR clock (the audio generation step)
+					uint8_t fb = ((shiftReg >> 0) ^ (shiftReg >> 1)) & 1;
+					shiftReg = ((shiftReg << 1) | fb) & 0x0FFF;
+				}
+			}
+		}
+		benchmark::DoNotOptimize(shiftReg);
+		benchmark::DoNotOptimize(channels);
+	}
+	state.SetItemsProcessed(state.iterations() * 4); // 4 channels per tick
+}
+BENCHMARK(BM_LynxApu_TickIsolated);

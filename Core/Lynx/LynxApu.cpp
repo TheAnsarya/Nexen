@@ -176,6 +176,20 @@ void LynxApu::ClockChannel(int ch) {
 }
 
 void LynxApu::MixOutput() {
+	// Fast path: when all channels are muted (STEREO register = 0xFF means
+	// all channels disabled on both left and right), skip the mix loop entirely.
+	// Also fast-skip when no channels are enabled for ticking — their outputs
+	// remain at their last value, but if all are disabled the audio is silent.
+	if (_state.Stereo == 0xff) [[unlikely]] {
+		_soundBuffer[_sampleCount * 2] = 0;
+		_soundBuffer[_sampleCount * 2 + 1] = 0;
+		_sampleCount++;
+		if (_sampleCount >= MaxSamples) {
+			PlayQueuedAudio();
+		}
+		return;
+	}
+
 	int32_t leftSum = 0;
 	int32_t rightSum = 0;
 
