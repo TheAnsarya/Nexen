@@ -96,3 +96,13 @@
 	- `Core.Tests.exe --gtest_filter=ChannelF* --gtest_brief=1` (15/15 passed)
 	- `Core.Benchmarks.exe --benchmark_filter=BM_ChannelFCore_* --benchmark_repetitions=3`
 	- Release x64 solution build successful
+
+## 2026-03-26 Progress Checkpoint (Session 15)
+
+- Closed #1033: Exhaustive BIOS database tests (all 4 entries + unknown hashes + IsKnownLuxorSystemII).
+- Closed #1033: Opcode table tests (defined count, metadata consistency, all-opcode scan).
+- Added 3 new benchmarks: SerializeRoundtrip (~23µs), Reset (~3ns), OpcodeTableFullScan (~150ns).
+- Channel F test count: 32 gtest tests (up from 16), 8 benchmarks (up from 5).
+- Cross-repo: pansy #90 closed (CDL/cross-ref/symbol/full-file roundtrip, 543 tests pass).
+- Cross-repo: poppy #197 closed (12 alias theory tests, 1957 tests pass).
+- All builds clean, all tests green across Nexen/pansy/poppy.
