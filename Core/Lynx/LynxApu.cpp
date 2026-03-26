@@ -25,13 +25,21 @@ void LynxApu::Init() {
 
 	_state.Stereo = 0x00;  // All channels enabled on both sides
 	_state.Panning = 0x00; // No attenuation applied (full volume)
+
+	RecalculateChannelTickableMask();
 }
 
 void LynxApu::Tick(uint64_t currentCycle) {
-	// Clock each audio channel's own timer using actual CPU cycle count.
-	// This matches how Mikey system timers work: elapsed = currentCycle - LastTick.
+	// Use the tickable mask to skip disabled and linked channels.
+	// Active channels get full timer processing; inactive channels
+	// just advance LastTick to avoid delta accumulation when re-enabled.
+	uint8_t mask = _channelTickableMask;
 	for (int ch = 0; ch < 4; ch++) {
-		TickChannelTimer(ch, currentCycle);
+		if (mask & (1 << ch)) {
+			TickChannelTimer(ch, currentCycle);
+		} else {
+			_state.Channels[ch].LastTick = currentCycle;
+		}
 	}
 
 	// Generate audio samples at the target sample rate
@@ -290,6 +298,7 @@ void LynxApu::WriteRegister(uint8_t addr, uint8_t value) {
 					channel.TimerDone = false;
 					channel.Counter = channel.BackupValue;
 				}
+				UpdateChannelTickableMask(ch);
 				break;
 			case 7: channel.Counter = value; break;
 		}
@@ -315,6 +324,19 @@ void LynxApu::WriteRegister(uint8_t addr, uint8_t value) {
 	}
 }
 
+void LynxApu::UpdateChannelTickableMask(int ch) {
+	LynxAudioChannelState& channel = _state.Channels[ch];
+	bool tickable = channel.Enabled && (channel.Control & 0x07) != 7;
+	uint8_t bit = static_cast<uint8_t>(1 << ch);
+	_channelTickableMask = (_channelTickableMask & ~bit) | (tickable ? bit : 0);
+}
+
+void LynxApu::RecalculateChannelTickableMask() {
+	for (int i = 0; i < 4; i++) {
+		UpdateChannelTickableMask(i);
+	}
+}
+
 void LynxApu::Serialize(Serializer& s) {
 	for (int i = 0; i < 4; i++) {
 		SVI(_state.Channels[i].Volume);
@@ -335,4 +357,8 @@ void LynxApu::Serialize(Serializer& s) {
 
 	SV(_sampleCount);
 	SV(_lastSampleCycle);
+
+	if (!s.IsSaving()) {
+		RecalculateChannelTickableMask();
+	}
 }
