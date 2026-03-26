@@ -57,6 +57,9 @@
 		<DataTemplate DataType="{x:Type cfg:Atari2600EventViewerConfig}">
 			<v:Atari2600EventViewerConfigView />
 		</DataTemplate>
+		<DataTemplate DataType="{x:Type cfg:LynxEventViewerConfig}">
+			<v:LynxEventViewerConfigView />
+		</DataTemplate>
 	</Window.DataTemplates>
 
 	<DockPanel>
