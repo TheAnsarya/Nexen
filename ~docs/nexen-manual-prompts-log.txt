@@ -788,6 +788,7 @@ Also emulate the Luxor versions `Luxor Channel F BIOS SL90025 (1976) (Luxor).bin
 
 [Nexen] (Channel F) continue working and making issues, implement core emulation in c++ and UI debugging and TAS/movies core/UI and input controllers UI/core in c# and continue; performance benchmarks and tests for correctness, test all code, benchmark all hot paths, continue; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
 
+[Nexen] (Channel F) continue working and making issues, implement core emulation in c++ and UI debugging and TAS/movies core/UI and input controllers UI/core in c# and continue; performance benchmarks and tests for correctness, test all code, benchmark all hot paths, continue; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
 
 
 

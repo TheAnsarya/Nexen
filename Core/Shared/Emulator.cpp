@@ -39,6 +39,7 @@
 #include "WS/WsConsole.h"
 #include "Lynx/LynxConsole.h"
 #include "Atari2600/Atari2600Console.h"
+#include "ChannelF/ChannelFConsole.h"
 #include "Genesis/GenesisConsole.h"
 #include "Debugger/Debugger.h"
 #include "Debugger/BaseEventManager.h"
@@ -573,6 +574,7 @@ void Emulator::TryLoadRom(VirtualFile& romFile, LoadRomResult& result, unique_pt
 	TryLoadRom<WsConsole>(romFile, result, console, useFileSignature);
 	TryLoadRom<LynxConsole>(romFile, result, console, useFileSignature);
 	TryLoadRom<Atari2600Console>(romFile, result, console, useFileSignature);
+	TryLoadRom<ChannelFConsole>(romFile, result, console, useFileSignature);
 	TryLoadRom<GenesisConsole>(romFile, result, console, useFileSignature);
 }
 

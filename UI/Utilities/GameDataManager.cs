@@ -65,6 +65,7 @@ public static class GameDataManager {
 		ConsoleType.Ws => "WS",
 		ConsoleType.Lynx => "LYNX",
 		ConsoleType.Atari2600 => "A2600",
+		ConsoleType.ChannelF => "CHANNELF",
 		_ => system.ToString().ToUpperInvariant()
 	};
 

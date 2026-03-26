@@ -172,6 +172,9 @@ void EmuSettings::Serialize(Serializer& s) {
 			SV(_genesis.Region);
 			break;
 
+		case ConsoleType::ChannelF:
+			break;
+
 		default:
 			[[unlikely]] throw std::runtime_error("unsupported console type");
 	}
@@ -475,6 +478,7 @@ OverscanDimensions EmuSettings::GetOverscan() {
 		case ConsoleType::Lynx:
 		case ConsoleType::Atari2600:
 		case ConsoleType::Genesis:
+		case ConsoleType::ChannelF:
 			break;
 	}
 
@@ -502,7 +506,7 @@ double EmuSettings::GetAspectRatio(ConsoleRegion region, FrameInfo baseFrameSize
 
 		// For auto, ntsc and pal, these are PAR ratios, so multiply them with the base screen's aspect ratio to get the expected screen aspect ratio
 		case VideoAspectRatio::Auto:
-			if (_emu->GetConsoleType() == ConsoleType::Gameboy || _emu->GetConsoleType() == ConsoleType::Gba || _emu->GetConsoleType() == ConsoleType::Ws || _emu->GetConsoleType() == ConsoleType::Lynx || _emu->GetConsoleType() == ConsoleType::Atari2600 || _emu->GetConsoleType() == ConsoleType::Genesis) {
+			if (_emu->GetConsoleType() == ConsoleType::Gameboy || _emu->GetConsoleType() == ConsoleType::Gba || _emu->GetConsoleType() == ConsoleType::Ws || _emu->GetConsoleType() == ConsoleType::Lynx || _emu->GetConsoleType() == ConsoleType::Atari2600 || _emu->GetConsoleType() == ConsoleType::Genesis || _emu->GetConsoleType() == ConsoleType::ChannelF) {
 				// GB/GBA/WS/Lynx/Atari2600 shouldn't use NTSC/PAL aspect ratio when in auto mode
 				return screenAspectRatio;
 			} else if (_emu->GetRomInfo().Format == RomFormat::GameGear) {
@@ -590,6 +594,8 @@ bool EmuSettings::HasRandomPowerOnState(ConsoleType consoleType) {
 			return _atari2600.RamPowerOnState == RamState::Random;
 		case ConsoleType::Genesis:
 			return _genesis.RamPowerOnState == RamState::Random;
+		case ConsoleType::ChannelF:
+			return false;
 	}
 
 	return false;

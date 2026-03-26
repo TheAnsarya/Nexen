@@ -360,7 +360,8 @@ enum class ConsoleType {
 	Ws = 6,
 	Lynx = 7,
 	Atari2600 = 8,
-	Genesis = 9
+	Genesis = 9,
+	ChannelF = 10
 };
 
 enum class GameboyModel {

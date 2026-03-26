@@ -183,6 +183,9 @@
 		<ClCompile Include="ChannelF\ChannelFBiosDatabaseTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="ChannelF\ChannelFConsoleTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="ChannelF\ChannelFCoreScaffoldTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
