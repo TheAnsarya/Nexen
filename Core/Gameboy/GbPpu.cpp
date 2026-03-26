@@ -154,7 +154,7 @@ void GbPpu::Exec() {
 void GbPpu::ExecCycle() {
 	PpuMode oldMode = _state.IrqMode;
 
-	if (_state.Scanline < 144) {
+	if (_state.Scanline < 144) [[likely]] {
 		if (_state.Scanline == 0 && _isFirstFrame) {
 			ProcessFirstScanlineAfterPowerOn();
 		} else {

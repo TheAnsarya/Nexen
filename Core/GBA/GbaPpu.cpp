@@ -157,10 +157,11 @@ void GbaPpu::ProcessEndOfScanline() {
 
 		_emu->ProcessEvent(EventType::StartFrame, CpuType::Gba);
 
+		uint32_t emulationSpeed = settings->GetEmulationSpeed();
 		_skipRender = (!cfg.DisableFrameSkipping &&
 		               !_emu->GetRewindManager()->IsRewinding() &&
 		               !_emu->GetVideoRenderer()->IsRecording() &&
-		               (settings->GetEmulationSpeed() == 0 || settings->GetEmulationSpeed() > 150) &&
+		               (emulationSpeed == 0 || emulationSpeed > 150) &&
 		               _frameSkipTimer.GetElapsedMS() < 15);
 		if (!_skipRender) {
 			_currentBuffer = _currentBuffer == _outputBuffers[0].get() ? _outputBuffers[1].get() : _outputBuffers[0].get();
@@ -217,7 +218,7 @@ void GbaPpu::RenderScanline(bool forceRender) {
 	ProcessSprites();
 	ProcessWindow();
 
-	if (_state.Scanline >= 160 || _lastRenderCycle >= 1056) {
+	if (_state.Scanline >= 160 || _lastRenderCycle >= 1056) [[unlikely]] {
 		return;
 	}
 
