@@ -207,6 +207,9 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 | [Debugger Subsystem](~docs/DEBUGGER.md) | Debugger internals |
 | [Utilities Library](~docs/UTILITIES-LIBRARY.md) | Shared utility library |
 | [Pansy Integration](~docs/pansy-export-index.md) | Metadata export system |
+| [Channel F Master Program Plan](~docs/plans/channel-f-master-program-plan.md) | Multi-epic roadmap for first-class Fairchild Channel F support |
+| [Channel F Implementation Prompts](~docs/plans/channel-f-implementation-prompts.md) | Ordered multi-session execution prompt pack |
+| [Channel F Source Index](~docs/research/channel-f-source-index.md) | External references mapped to implementation work |
 
 ### Emulation Core Documentation
 
