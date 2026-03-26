@@ -3,6 +3,10 @@
 #include "Utilities/VirtualFile.h"
 #include "Atari2600/Atari2600Console.h"
 #include "Atari2600/Atari2600SmokeHarness.h"
+#include "Atari2600/Atari2600Tia.h"
+#include "Atari2600/Atari2600Riot.h"
+#include "Atari2600/Atari2600Bus.h"
+#include "Atari2600/Atari2600Mapper.h"
 
 namespace {
 	vector<uint8_t> BuildNopRom(size_t size) {
@@ -102,3 +106,99 @@ static void BM_Atari2600_PerformanceGate_Corpus(benchmark::State& state) {
 	state.SetLabel("performance-gate");
 }
 BENCHMARK(BM_Atari2600_PerformanceGate_Corpus);
+
+// --- Subsystem-level benchmarks ---
+
+static void BM_Atari2600_TiaStepCpuCycles(benchmark::State& state) {
+	Atari2600Tia tia;
+	tia.Reset();
+	uint32_t cyclesPerIteration = Atari2600Constants::CpuCyclesPerFrame;
+
+	for (auto _ : state) {
+		tia.BeginFrameCapture();
+		tia.StepCpuCycles(cyclesPerIteration);
+		benchmark::DoNotOptimize(tia.GetState().TotalColorClocks);
+	}
+
+	state.SetItemsProcessed(state.iterations() * cyclesPerIteration);
+	state.SetLabel("tia-step-cpu-cycles");
+}
+BENCHMARK(BM_Atari2600_TiaStepCpuCycles);
+
+static void BM_Atari2600_TiaAudioStep(benchmark::State& state) {
+	Atari2600Tia tia;
+	tia.Reset();
+
+	// Configure channels with non-zero volume for realistic workload
+	tia.WriteRegister(0x15, 0x02); // AUDC0 = tone
+	tia.WriteRegister(0x16, 0x0F); // AUDF0 = freq 15
+	tia.WriteRegister(0x17, 0x0A); // AUDV0 = vol 10
+	tia.WriteRegister(0x18, 0x01); // AUDC1 = square
+	tia.WriteRegister(0x19, 0x08); // AUDF1 = freq 8
+	tia.WriteRegister(0x1A, 0x06); // AUDV1 = vol 6
+
+	uint32_t cyclesPerIteration = Atari2600Constants::CpuCyclesPerFrame;
+
+	for (auto _ : state) {
+		tia.BeginFrameCapture();
+		tia.StepCpuCycles(cyclesPerIteration);
+		auto audioData = tia.GetAudioBuffer();
+		benchmark::DoNotOptimize(audioData.data());
+		benchmark::DoNotOptimize(audioData.size());
+	}
+
+	state.SetItemsProcessed(state.iterations() * cyclesPerIteration);
+	state.SetLabel("tia-audio-step");
+}
+BENCHMARK(BM_Atari2600_TiaAudioStep);
+
+static void BM_Atari2600_RiotTimerStep(benchmark::State& state) {
+	Atari2600Riot riot;
+	riot.Reset();
+
+	// Configure timer with TIM64T (divider = 64)
+	riot.WriteRegister(0x0296, 0xFF); // TIM64T = 255
+
+	uint32_t cyclesPerIteration = Atari2600Constants::CpuCyclesPerFrame;
+
+	for (auto _ : state) {
+		riot.StepCpuCycles(cyclesPerIteration);
+		benchmark::DoNotOptimize(riot.ReadRegister(0x0284)); // Read timer
+	}
+
+	state.SetItemsProcessed(state.iterations() * cyclesPerIteration);
+	state.SetLabel("riot-timer-step");
+}
+BENCHMARK(BM_Atari2600_RiotTimerStep);
+
+static void BM_Atari2600_BusDispatch(benchmark::State& state) {
+	Emulator emu;
+	Atari2600Console console(&emu);
+
+	vector<uint8_t> rom(4096, 0xea);
+	VirtualFile romFile(rom.data(), rom.size(), "bench-bus.a26");
+	if (console.LoadRom(romFile) != LoadRomResult::Success) {
+		state.SkipWithError("failed to load Atari2600 benchmark ROM");
+		return;
+	}
+
+	// Mix of address regions: cartridge, RIOT, TIA
+	static constexpr uint16_t addresses[] = {
+		0x1000, 0x1100, 0x1200, 0x1FFF, // Cartridge (most common)
+		0x0080, 0x00FF,                   // RIOT RAM
+		0x0000, 0x000D,                   // TIA
+	};
+	static constexpr size_t addrCount = sizeof(addresses) / sizeof(addresses[0]);
+
+	uint8_t checksum = 0;
+	for (auto _ : state) {
+		for (size_t j = 0; j < addrCount; j++) {
+			checksum ^= console.DebugRead(addresses[j]);
+		}
+	}
+
+	benchmark::DoNotOptimize(checksum);
+	state.SetItemsProcessed(state.iterations() * addrCount);
+	state.SetLabel("bus-dispatch");
+}
+BENCHMARK(BM_Atari2600_BusDispatch);

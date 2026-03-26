@@ -33,14 +33,14 @@ public:
 		for (uint32_t i = 0; i < cycles; i++) {
 			_state.CpuCycles++;
 
-			if (_state.TimerDividerCounter > 0) {
+			if (_state.TimerDividerCounter > 0) [[likely]] {
 				_state.TimerDividerCounter--;
 			}
 
-			if (_state.TimerDividerCounter == 0) {
+			if (_state.TimerDividerCounter == 0) [[unlikely]] {
 				_state.TimerDividerCounter = _state.TimerDivider;
 
-				if (_state.Timer == 0) {
+				if (_state.Timer == 0) [[unlikely]] {
 					_state.Timer = 0x00FF;
 					_state.TimerUnderflow = true;
 					_state.InterruptFlag = true;
