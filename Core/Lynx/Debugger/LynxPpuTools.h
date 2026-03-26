@@ -18,8 +18,8 @@ class LynxConsole;
 /// position, size, stretch/tilt, palette remap, and collision data.
 /// Persistent fields carry forward across sprites via reload-skip flags.
 ///
-/// TODO items for full implementation:
-/// - Tile viewer: Decode sprite pixel data from cart ROM as tiles
+/// Tile viewer uses WsBpp4Packed format (packed nibbles, high-nibble-first)
+/// which matches the Lynx 4bpp framebuffer layout exactly.
 /// </summary>
 class LynxPpuTools final : public PpuTools {
 private:
