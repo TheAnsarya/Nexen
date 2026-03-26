@@ -474,3 +474,85 @@ static void BM_LynxSuzy_SprsysRead(benchmark::State& state) {
 	state.SetItemsProcessed(state.iterations());
 }
 BENCHMARK(BM_LynxSuzy_SprsysRead);
+
+// =============================================================================
+// Sprite Decode Benchmarks
+// =============================================================================
+
+// Benchmark per-sprite SCB field decode + pixel line decode throughput.
+// Simulates reading an SCB header (control, collision, next pointer, position,
+// size) and decoding one packed 4-BPP sprite line into a pixel buffer.
+// This isolates the per-sprite data processing overhead.
+static void BM_LynxSuzy_SpriteLineDecode(benchmark::State& state) {
+	// Simulated SCB header in work RAM (5 bytes of control + position fields)
+	uint8_t sprctl0 = 0xC4; // 4bpp, normal type
+	uint8_t sprcoll = 0x03; // collision number 3
+	int16_t hpos = 80;
+	uint16_t hsize = 0x0200; // 2x scale (8.8 fixed)
+
+	// Simulated packed 4-BPP sprite data (16 pixels per line)
+	// Format: literal mode, each nibble = 1 pixel index
+	static constexpr uint8_t spriteData[8] = {
+		0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0
+	};
+	uint8_t pixelBuf[160]; // output scanline
+
+	for (auto _ : state) {
+		// Phase 1: SCB field decode
+		int bpp = ((sprctl0 >> 6) & 0x03) + 1; // 1-4 bpp from bits 7:6
+		bool hflip = (sprctl0 & 0x20) != 0;
+		bool vflip = (sprctl0 & 0x10) != 0;
+		uint8_t spriteType = sprctl0 & 0x07;
+		uint8_t collNum = sprcoll & 0x0f;
+		bool dontCollide = (sprcoll & 0x20) != 0;
+
+		benchmark::DoNotOptimize(bpp);
+		benchmark::DoNotOptimize(hflip);
+		benchmark::DoNotOptimize(vflip);
+		benchmark::DoNotOptimize(spriteType);
+		benchmark::DoNotOptimize(collNum);
+		benchmark::DoNotOptimize(dontCollide);
+
+		// Phase 2: Decode one 4-BPP packed sprite scanline (16 pixels)
+		int pixelCount = 0;
+		if (bpp == 4) {
+			// 4-BPP literal: each byte = 2 pixels (high nibble, low nibble)
+			for (int i = 0; i < 8 && pixelCount < 16; i++) {
+				pixelBuf[pixelCount++] = (spriteData[i] >> 4) & 0x0f;
+				pixelBuf[pixelCount++] = spriteData[i] & 0x0f;
+			}
+		} else {
+			// Simplified BPP decode for other depths
+			uint8_t mask = (1 << bpp) - 1;
+			int bitsRemaining = 0;
+			uint16_t bitBuffer = 0;
+			for (int i = 0; i < 8 && pixelCount < 16; i++) {
+				bitBuffer = (bitBuffer << 8) | spriteData[i];
+				bitsRemaining += 8;
+				while (bitsRemaining >= bpp && pixelCount < 16) {
+					bitsRemaining -= bpp;
+					pixelBuf[pixelCount++] = (bitBuffer >> bitsRemaining) & mask;
+				}
+			}
+		}
+
+		// Phase 3: Apply scaling per pixel (hsize 8.8 fixed-point accumulation)
+		uint16_t hAccum = 0;
+		int screenPixels = 0;
+		for (int p = 0; p < pixelCount; p++) {
+			hAccum += hsize;
+			int wholePixels = hAccum >> 8;
+			hAccum &= 0xff;
+			screenPixels += wholePixels;
+		}
+
+		benchmark::DoNotOptimize(pixelBuf);
+		benchmark::DoNotOptimize(screenPixels);
+
+		// Vary inputs to prevent dead-code elimination
+		sprctl0 ^= 0x01;
+		hpos += 1;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_LynxSuzy_SpriteLineDecode);
