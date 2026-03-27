@@ -26,7 +26,8 @@ enum class CpuType : uint8_t {
 	Ws,      ///< WonderSwan NEC V30MZ CPU (80186-compatible)
 	Lynx,       ///< Atari Lynx 65C02 CPU (8-bit, 16-bit addressing)
 	Genesis,    ///< Sega Genesis Motorola 68000 CPU (16/32-bit)
-	Atari2600   ///< Atari 2600 6507 CPU (6502 subset, 13-bit addressing)
+	Atari2600,  ///< Atari 2600 6507 CPU (6502 subset, 13-bit addressing)
+	ChannelF    ///< Fairchild Channel F F8 CPU (8-bit, 16-bit addressing)
 };
 
 /// <summary>
@@ -45,6 +46,6 @@ public:
 	/// [[nodiscard]] prevents accidentally discarding the count value.
 	/// </remarks>
 	[[nodiscard]] static constexpr int GetCpuTypeCount() {
-		return (int)CpuType::Atari2600 + 1;
+		return (int)CpuType::ChannelF + 1;
 	}
 };

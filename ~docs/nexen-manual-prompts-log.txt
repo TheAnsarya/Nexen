@@ -803,6 +803,26 @@ continue;
 
 continue;
 
+continue working, also adding peony tasks/issues for Channel F decompilation/disassembly; we want the Channel F entire pipeline/stack working great, with complete and comprehensive emulation core and ui in Nexen, a fully functional assembler in poppy, complete coverage in pansy, and complete accurate disassembly in peony (using a pansy or not); this is our goal for today; continue;
+
+continue;
+
+
+
+
+
+
+
+
+
+
+
+
+5226-2660=2566
+
+
+
+
 
 
 

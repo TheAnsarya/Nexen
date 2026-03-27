@@ -2,6 +2,8 @@
 #include "pch.h"
 #include "Shared/Interfaces/IConsole.h"
 #include "ChannelF/ChannelFCoreScaffold.h"
+#include "ChannelF/ChannelFCpu.h"
+#include "ChannelF/ChannelFMemoryManager.h"
 #include "ChannelF/ChannelFControlManager.h"
 #include "ChannelF/ChannelFDefaultVideoFilter.h"
 
@@ -11,15 +13,21 @@ class ChannelFConsole final : public IConsole {
 public:
 	static constexpr uint32_t ScreenWidth = 128;
 	static constexpr uint32_t ScreenHeight = 64;
+	static constexpr uint32_t CpuClockHz = 1789773;
+	static constexpr double Fps = 60.0;
+	static constexpr uint32_t CyclesPerFrame = CpuClockHz / (uint32_t)Fps;
 
 private:
 	Emulator* _emu = nullptr;
 	ChannelFCoreScaffold _core;
+	unique_ptr<ChannelFCpu> _cpu;
+	unique_ptr<ChannelFMemoryManager> _memoryManager;
 	unique_ptr<ChannelFControlManager> _controlManager;
 	vector<uint16_t> _frameBuffer;
 	uint32_t _frameCount = 0;
 	RomFormat _romFormat = RomFormat::Unknown;
 	string _romSha1;
+	bool _romLoaded = false;
 
 public:
 	[[nodiscard]] static vector<string> GetSupportedExtensions() { return {".chf"}; }

@@ -148,6 +148,11 @@ enum class MemoryType {
 	Atari2600Ram,          ///< Atari 2600 RIOT RAM (128 bytes)
 	Atari2600TiaRegisters, ///< Atari 2600 TIA hardware registers
 
+	// ===== Fairchild Channel F memory regions =====
+	ChannelFBiosRom,  ///< Channel F BIOS ROM (2KB - two 1KB chips)
+	ChannelFCartRom,  ///< Channel F cartridge ROM (2K-32K)
+	ChannelFVideoRam, ///< Channel F video RAM (128x64 pixel buffer)
+
 	/// <summary>Sentinel value for invalid/unspecified memory type</summary>
 	None
 };

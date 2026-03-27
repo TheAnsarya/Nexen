@@ -192,7 +192,8 @@ TEST(ChannelFOpcodeTable, Get_DefinedOpcode_HasMnemonic) {
 }
 
 TEST(ChannelFOpcodeTable, Get_UndefinedOpcode_ReturnsIll) {
-	const auto& info = ChannelFOpcodeTable::Get(0xff);
+	// $2d is one of three undefined opcodes in the F8 instruction set
+	const auto& info = ChannelFOpcodeTable::Get(0x2d);
 	EXPECT_FALSE(info.IsDefined);
 	EXPECT_STREQ(info.Mnemonic, "ill");
 	EXPECT_EQ(info.Size, 1);
