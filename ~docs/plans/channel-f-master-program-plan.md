@@ -106,3 +106,12 @@
 - Cross-repo: pansy #90 closed (CDL/cross-ref/symbol/full-file roundtrip, 543 tests pass).
 - Cross-repo: poppy #197 closed (12 alias theory tests, 1957 tests pass).
 - All builds clean, all tests green across Nexen/pansy/poppy.
+
+## 2026-03-27 Progress Checkpoint (Session 16)
+
+- Cleanup: Closed Nexen #1028 (microbenchmark harness — covered by existing 8 benchmarks), pansy #88/#89 (stale duplicates).
+- Closed Nexen #1034: 6 new scaffold behavior tests (input divergence, multi-reset idempotency, all 4 BIOS variant detection, unknown hash, zero-input safety, mid-run input change divergence).
+- Channel F test count: 38 gtest tests (up from 32), 8 benchmarks clean.
+- Cross-repo: pansy #91 closed (compressed roundtrip + metadata section tests, 546 tests pass).
+- Cross-repo: poppy #198 closed (Channel F include file with full F8 hardware definitions, 1957 tests pass).
+- All builds clean, all tests green across Nexen/pansy/poppy.
