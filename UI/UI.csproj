@@ -10,7 +10,7 @@
 	<StartupObject>Nexen.Program</StartupObject>
 	<Version>1.4.4</Version>
 	<FileVersion>1.4.4</FileVersion>
-	<Copyright>(C) 2014-2026 Sour/TheAnsarya</Copyright>
+	<Copyright>(C) 2026 TheAnsarya</Copyright>
   </PropertyGroup>
 	<PropertyGroup>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
