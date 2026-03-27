@@ -172,6 +172,11 @@ enum EvalValues : int64_t {
 	RegPS, ///< Processor status (all platforms)
 
 	RegPC,         ///< Program counter (all platforms)
+	RegPC1,        ///< Secondary/backup program counter (Channel F)
+	RegDC0,        ///< Channel F data counter 0
+	RegDC1,        ///< Channel F data counter 1
+	RegISAR,       ///< Channel F indirect scratchpad address register
+	RegIE,         ///< Channel F interrupts-enabled flag
 	PpuFrameCount, ///< PPU frame counter
 	PpuCycle,      ///< PPU cycle in current scanline
 	PpuHClock,     ///< PPU horizontal clock
@@ -374,6 +379,7 @@ private:
 	TokenSpan GetSmsTokens();
 	TokenSpan GetGbaTokens();
 	TokenSpan GetWsTokens();
+	TokenSpan GetChannelFTokens();
 
 	// Platform-specific value getters (EvalValues → current register value)
 	int64_t GetSnesTokenValue(int64_t token, EvalResultType& resultType);
@@ -388,6 +394,7 @@ private:
 	int64_t GetSmsTokenValue(int64_t token, EvalResultType& resultType);
 	int64_t GetGbaTokenValue(int64_t token, EvalResultType& resultType);
 	int64_t GetWsTokenValue(int64_t token, EvalResultType& resultType);
+	int64_t GetChannelFTokenValue(int64_t token, EvalResultType& resultType);
 
 	/// <summary>
 	/// Convert value to boolean result.

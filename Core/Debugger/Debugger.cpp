@@ -508,7 +508,7 @@ void Debugger::ProcessMemoryAccess(uint32_t addr, T& value) {
 			GetDebugger<CpuType::Atari2600, Atari2600Debugger>()->ProcessMemoryAccess<opType>(addr, value, memType);
 			break;
 		case CpuType::ChannelF:
-			// TODO: Wire ProcessMemoryAccess when ChannelFDebugger supports it
+			GetDebugger<CpuType::ChannelF, ChannelFDebugger>()->ProcessMemoryAccess<opType>(addr, value, memType);
 			break;
 	}
 
@@ -1591,6 +1591,9 @@ template void Debugger::ProcessMemoryAccess<CpuType::Sms, MemoryType::SmsPort, M
 
 template void Debugger::ProcessMemoryAccess<CpuType::Atari2600, MemoryType::Atari2600TiaRegisters, MemoryOperationType::Write>(uint32_t addr, uint8_t& value);
 template void Debugger::ProcessMemoryAccess<CpuType::Atari2600, MemoryType::Atari2600TiaRegisters, MemoryOperationType::Read>(uint32_t addr, uint8_t& value);
+
+template void Debugger::ProcessMemoryAccess<CpuType::ChannelF, MemoryType::ChannelFMemory, MemoryOperationType::Write>(uint32_t addr, uint8_t& value);
+template void Debugger::ProcessMemoryAccess<CpuType::ChannelF, MemoryType::ChannelFMemory, MemoryOperationType::Read>(uint32_t addr, uint8_t& value);
 
 template void Debugger::ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Write>(uint32_t addr, uint8_t& value);
 template void Debugger::ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Read>(uint32_t addr, uint8_t& value);

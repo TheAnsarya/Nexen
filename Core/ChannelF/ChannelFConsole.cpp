@@ -22,9 +22,12 @@ ChannelFConsole::ChannelFConsole(Emulator* emu)
 		_memoryManager->WriteMemory(addr, value);
 	});
 	_cpu->SetReadPortCallback([this](uint8_t port) {
-		return _memoryManager->ReadPort(port);
+		uint8_t value = _memoryManager->ReadPort(port);
+		_emu->ProcessMemoryAccess<CpuType::ChannelF, MemoryType::ChannelFMemory, MemoryOperationType::Read>(port, value);
+		return value;
 	});
 	_cpu->SetWritePortCallback([this](uint8_t port, uint8_t value) {
+		_emu->ProcessMemoryAccess<CpuType::ChannelF, MemoryType::ChannelFMemory, MemoryOperationType::Write>(port, value);
 		_memoryManager->WritePort(port, value);
 	});
 }

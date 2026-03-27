@@ -357,3 +357,12 @@ void ChannelFDebugger::ProcessInputOverrides(DebugControllerState inputOverrides
 	}
 	controlManager->RefreshHubState();
 }
+
+template <MemoryOperationType opType>
+void ChannelFDebugger::ProcessMemoryAccess(uint32_t addr, uint8_t value, MemoryType memType) {
+	MemoryOperationInfo operation(addr, value, opType, memType);
+	_eventManager->AddEvent(DebugEventType::Register, operation);
+}
+
+template void ChannelFDebugger::ProcessMemoryAccess<MemoryOperationType::Read>(uint32_t addr, uint8_t value, MemoryType memType);
+template void ChannelFDebugger::ProcessMemoryAccess<MemoryOperationType::Write>(uint32_t addr, uint8_t value, MemoryType memType);
