@@ -40,6 +40,7 @@ enum class MemoryType {
 	LynxMemory,    ///< Atari Lynx 65C02 address space (16-bit, 64KB)
 	GenesisMemory, ///< Genesis M68000 CPU address space (24-bit, 16MB)
 	Atari2600Memory, ///< Atari 2600 6507 CPU address space (13-bit, 8KB)
+	ChannelFMemory,  ///< Channel F F8 CPU address space (16-bit, 64KB)
 
 	// ===== SNES memory regions =====
 	SnesPrgRom,               ///< SNES program ROM (cartridge code/data)

@@ -19,6 +19,7 @@ public static class CpuTypeExtensions {
 			CpuType.Ws => MemoryType.WsMemory,
 			CpuType.Lynx => MemoryType.LynxMemory,
 			CpuType.Atari2600 => MemoryType.Atari2600Memory,
+			CpuType.ChannelF => MemoryType.ChannelFMemory,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -34,6 +35,7 @@ public static class CpuTypeExtensions {
 			CpuType.Ws => MemoryType.WsWorkRam,
 			CpuType.Lynx => MemoryType.LynxWorkRam,
 			CpuType.Atari2600 => MemoryType.Atari2600TiaRegisters,
+			CpuType.ChannelF => MemoryType.ChannelFVideoRam,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -49,6 +51,7 @@ public static class CpuTypeExtensions {
 			CpuType.Ws => MemoryType.None,
 			CpuType.Lynx => MemoryType.None,
 			CpuType.Atari2600 => MemoryType.None,
+			CpuType.ChannelF => MemoryType.None,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -70,6 +73,7 @@ public static class CpuTypeExtensions {
 			CpuType.Ws => MemoryType.WsPrgRom,
 			CpuType.Lynx => MemoryType.LynxPrgRom,
 			CpuType.Atari2600 => MemoryType.Atari2600PrgRom,
+			CpuType.ChannelF => MemoryType.ChannelFCartRom,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -91,6 +95,7 @@ public static class CpuTypeExtensions {
 			CpuType.Ws => MemoryType.WsWorkRam,
 			CpuType.Lynx => MemoryType.LynxWorkRam,
 			CpuType.Atari2600 => MemoryType.Atari2600Ram,
+			CpuType.ChannelF => MemoryType.ChannelFVideoRam,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -112,6 +117,7 @@ public static class CpuTypeExtensions {
 			CpuType.Ws => 5,
 			CpuType.Lynx => 4,
 			CpuType.Atari2600 => 4,
+			CpuType.ChannelF => 4,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -133,6 +139,7 @@ public static class CpuTypeExtensions {
 			CpuType.Ws => 4,
 			CpuType.Lynx => 3,
 			CpuType.Atari2600 => 3,
+			CpuType.ChannelF => 3,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -154,6 +161,7 @@ public static class CpuTypeExtensions {
 			CpuType.Ws => DebuggerFlags.WsDebuggerEnabled,
 			CpuType.Lynx => DebuggerFlags.LynxDebuggerEnabled,
 			CpuType.Atari2600 => DebuggerFlags.Atari2600DebuggerEnabled,
+			CpuType.ChannelF => DebuggerFlags.ChannelFDebuggerEnabled,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -175,6 +183,7 @@ public static class CpuTypeExtensions {
 			CpuType.Ws => ConsoleType.Ws,
 			CpuType.Lynx => ConsoleType.Lynx,
 			CpuType.Atari2600 => ConsoleType.Atari2600,
+			CpuType.ChannelF => ConsoleType.ChannelF,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}
@@ -209,6 +218,7 @@ public static class CpuTypeExtensions {
 			case CpuType.Ws:
 			case CpuType.Lynx:
 			case CpuType.Atari2600:
+			case CpuType.ChannelF:
 				return true;
 
 			default:
@@ -274,6 +284,7 @@ public static class CpuTypeExtensions {
 			CpuType.Ws => 0x90,
 			CpuType.Lynx => 0xEA,
 			CpuType.Atari2600 => 0xEA,
+			CpuType.ChannelF => 0x2b,
 			_ => throw new Exception("Invalid CPU type"),
 		};
 	}

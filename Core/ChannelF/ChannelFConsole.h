@@ -58,4 +58,11 @@ public:
 	void GetConsoleState(BaseState& state, ConsoleType consoleType) override;
 	string GetHash(HashType hashType) override;
 	void Serialize(Serializer& s) override;
+
+	// Debugger helpers
+	ChannelFCpuState GetCpuState();
+	void SetCpuState(ChannelFCpuState& state);
+	uint8_t DebugRead(uint16_t addr);
+	void DebugRenderFrame();
+	uint32_t GetFrameCount();
 };

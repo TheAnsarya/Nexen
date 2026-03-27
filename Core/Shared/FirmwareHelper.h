@@ -49,7 +49,8 @@ enum class FirmwareType {
 	Ymf288AdpcmRom,  ///< Yamaha YMF288 ADPCM sample ROM (percussion sounds)
 	SmsBootRom,      ///< Sega Master System boot ROM
 	GgBootRom,       ///< Sega Game Gear boot ROM
-	LynxBootRom      ///< Atari Lynx boot ROM (512 bytes)
+	LynxBootRom,     ///< Atari Lynx boot ROM (512 bytes)
+	ChannelFBios     ///< Fairchild Channel F system BIOS (2KB)
 };
 
 /// <summary>
@@ -468,6 +469,33 @@ public:
 		}
 
 		MessageManager::DisplayMessage("Error", "Could not find ADPCM ROM for YMF288 (EPSM) - sound emulation will be incorrect.");
+		return false;
+	}
+
+	static bool LoadChannelFBios(Emulator* emu, vector<uint8_t>& biosRom) {
+		string filename = "channelf.bin";
+		uint32_t size = 0x0800; // 2KB combined BIOS
+		if (AttemptLoadFirmware(biosRom, filename, size, "sl31253_sl31254.bin")) {
+			return true;
+		}
+
+		// Try loading as two separate 1KB halves
+		vector<uint8_t> bios1, bios2;
+		if (AttemptLoadFirmware(bios1, "sl31253.bin", 0x0400) && AttemptLoadFirmware(bios2, "sl31254.bin", 0x0400)) {
+			biosRom.resize(0x0800);
+			memcpy(biosRom.data(), bios1.data(), 0x0400);
+			memcpy(biosRom.data() + 0x0400, bios2.data(), 0x0400);
+			return true;
+		}
+
+		MissingFirmwareMessage msg(filename.c_str(), FirmwareType::ChannelFBios, size);
+		emu->GetNotificationManager()->SendNotification(ConsoleNotificationType::MissingFirmware, &msg);
+
+		if (AttemptLoadFirmware(biosRom, filename, size, "sl31253_sl31254.bin")) {
+			return true;
+		}
+
+		MessageManager::DisplayMessage("Error", "Could not find BIOS for the Fairchild Channel F");
 		return false;
 	}
 };

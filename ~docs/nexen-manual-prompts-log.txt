@@ -807,6 +807,63 @@ continue working, also adding peony tasks/issues for Channel F decompilation/dis
 
 continue;
 
+[Nexen] work through all the Channel F issues, updating documentation and readmes, make a working complete comprehensive correct accurate emulator and supporting infrastructure (input controller UI, debugging UI and wire-up, TAS/movie support from core to UI, savestates, debug viewers like vram and memory and registers); continue; [poppy] create complete comprehensive documentation for the Channel F poppy assembly language (`*.pasm`) and how to program for the channel f (system structure, instructions, assembly commands and syntax (like `inc` for including files and labels and variables and registers and loops) and make examples (make new epics/issues/benchmarks/tests/docs/plans/etc); continue;
+
+--- chatgpt-codex-5.3
+--- continue button
+
+[Nexen] work through all the Channel F issues, make a working complete comprehensive correct accurate emulator and supporting infrastructure (input controller UI, debugging UI and wire-up, TAS/movie support from core to UI, savestates, debug viewers like vram and memory and registers); update all of the Channel F documentation; continue; [poppy, pansy, peony] continue;
+
+[Nexen] work through all the Channel F issues, make a working complete comprehensive correct accurate emulator and supporting infrastructure (input controller UI, debugging UI and wire-up, TAS/movie support from core to UI, savestates, debug viewers like vram and memory and registers); update all of the Channel F documentation; continue; [poppy, pansy, peony] continue;
+
+
+
+
+
+
+[Nexen] Make sure the emulator core for Atari Lynx is correct, accurate, and complete for emulating a game from start to finish, with all memory and banking and vram, and sprites and music and debugging tools and all of the UI and TAS/movie functionality, and controller input UI and everything else, etc; continue; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

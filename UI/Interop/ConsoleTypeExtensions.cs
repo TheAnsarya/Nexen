@@ -13,7 +13,7 @@ public static class ConsoleTypeExtensions {
 			ConsoleType.Ws => CpuType.Ws,
 			ConsoleType.Lynx => CpuType.Lynx,
 			ConsoleType.Atari2600 => CpuType.Atari2600,
-			ConsoleType.ChannelF => CpuType.Atari2600,
+			ConsoleType.ChannelF => CpuType.ChannelF,
 			_ => throw new Exception("Invalid type")
 		};
 	}

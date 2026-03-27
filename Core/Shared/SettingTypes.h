@@ -243,7 +243,11 @@ enum class ControllerType {
 	Atari2600Paddle,
 	Atari2600Keypad,
 	Atari2600DrivingController,
-	Atari2600BoosterGrip
+	Atari2600BoosterGrip,
+
+	// Channel F
+	ChannelFController,
+	ChannelFConsolePanel
 };
 
 struct KeyMapping {
@@ -1122,4 +1126,5 @@ enum class DebuggerFlags {
 	WsDebuggerEnabled = (1 << 12),
 	LynxDebuggerEnabled = (1 << 13),
 	Atari2600DebuggerEnabled = (1 << 14),
+	ChannelFDebuggerEnabled = (1 << 15),
 };

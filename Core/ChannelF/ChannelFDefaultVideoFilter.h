@@ -5,8 +5,14 @@
 class Emulator;
 
 class ChannelFDefaultVideoFilter final : public BaseVideoFilter {
-private:
-	uint32_t _palette[128] = {};
+public:
+	// Channel F 4-color palette (ARGB)
+	static constexpr uint32_t ChannelFPalette[4] = {
+		0xff101010, // Color 0: Background (black/dark gray)
+		0xff1cdf1c, // Color 1: Green
+		0xff3131fd, // Color 2: Blue
+		0xfffdfdfd  // Color 3: White/Gray
+	};
 
 protected:
 	void ApplyFilter(uint16_t* ppuOutputBuffer) override {
@@ -20,7 +26,7 @@ protected:
 		}
 
 		for (uint32_t i = 0; i < pixelCount; i++) {
-			out[i] = _palette[ppuOutputBuffer[i] & 0x7f];
+			out[i] = ChannelFPalette[ppuOutputBuffer[i] & 0x03];
 		}
 	}
 
@@ -31,10 +37,5 @@ public:
 		info.Width = 128;
 		info.Height = 64;
 		SetBaseFrameInfo(info);
-
-		for (int i = 0; i < 128; i++) {
-			uint32_t c = (uint32_t)(i * 2);
-			_palette[i] = 0xff000000 | (c << 16) | (c << 8) | c;
-		}
 	}
 };

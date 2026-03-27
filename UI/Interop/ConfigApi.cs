@@ -80,6 +80,7 @@ public enum DebuggerFlags : UInt32 {
 	WsDebuggerEnabled = 1 << 12,
 	LynxDebuggerEnabled = 1 << 13,
 	Atari2600DebuggerEnabled = 1 << 14,
+	ChannelFDebuggerEnabled = 1 << 15,
 }
 
 public struct InteropShortcutKeyInfo {

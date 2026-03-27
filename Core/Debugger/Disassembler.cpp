@@ -24,6 +24,7 @@
 #include "WS/WsTypes.h"
 #include "WS/Debugger/WsDisUtils.h"
 #include "Atari2600/Atari2600Types.h"
+#include "ChannelF/ChannelFTypes.h"
 #include "Shared/EmuSettings.h"
 #include "Utilities/FastString.h"
 #include "Utilities/HexUtilities.h"
@@ -622,6 +623,25 @@ void Disassembler::GetLineData(DisassemblyResult& row, CpuType type, MemoryType 
 					CodeDataLogger* cdl = cdlManager->GetCodeDataLogger(row.Address.Type);
 					if (!disInfo.IsInitialized()) {
 						disInfo = DisassemblyInfo(row.Address.Address, 0, CpuType::Atari2600, row.Address.Type, _memoryDumper);
+					} else {
+						data.Flags |= (!cdl || cdl->IsCode(data.AbsoluteAddress.Address)) ? LineFlags::VerifiedCode : LineFlags::UnexecutedCode;
+					}
+
+					data.OpSize = disInfo.GetOpSize();
+					data.EffectiveAddress = disInfo.GetEffectiveAddress(_debugger, &state, lineCpuType);
+					if (showMemoryValues && data.EffectiveAddress.ValueSize >= 0) {
+						data.Value = disInfo.GetMemoryValue(data.EffectiveAddress, _memoryDumper, memType);
+					}
+					break;
+				}
+
+				case CpuType::ChannelF: {
+					ChannelFCpuState state = (ChannelFCpuState&)_debugger->GetCpuStateRef(lineCpuType);
+					state.PC0 = (uint16_t)row.CpuAddress;
+
+					CodeDataLogger* cdl = cdlManager->GetCodeDataLogger(row.Address.Type);
+					if (!disInfo.IsInitialized()) {
+						disInfo = DisassemblyInfo(row.Address.Address, 0, CpuType::ChannelF, row.Address.Type, _memoryDumper);
 					} else {
 						data.Flags |= (!cdl || cdl->IsCode(data.AbsoluteAddress.Address)) ? LineFlags::VerifiedCode : LineFlags::UnexecutedCode;
 					}

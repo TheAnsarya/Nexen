@@ -589,6 +589,7 @@ public enum MemoryType {
 	LynxMemory,
 	GenesisMemory,
 	Atari2600Memory,
+	ChannelFMemory,
 
 	SnesPrgRom,
 	SnesWorkRam,
@@ -686,6 +687,10 @@ public enum MemoryType {
 	Atari2600PrgRom,
 	Atari2600Ram,
 	Atari2600TiaRegisters,
+
+	ChannelFBiosRom,
+	ChannelFCartRom,
+	ChannelFVideoRam,
 
 	None,
 }
@@ -1511,7 +1516,8 @@ public enum CpuType : byte {
 	Ws,
 	Lynx,
 	Genesis,
-	Atari2600
+	Atari2600,
+	ChannelF
 }
 
 public enum StepType {

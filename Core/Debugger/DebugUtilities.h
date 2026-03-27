@@ -71,6 +71,8 @@ public:
 				return MemoryType::GenesisMemory;
 			case CpuType::Atari2600:
 				return MemoryType::Atari2600Memory;
+			case CpuType::ChannelF:
+				return MemoryType::ChannelFMemory;
 		}
 
 		[[unlikely]] throw std::runtime_error("Invalid CPU type");
@@ -114,6 +116,8 @@ public:
 			case CpuType::Genesis:
 				return 6;
 			case CpuType::Atari2600:
+				return 4;
+			case CpuType::ChannelF:
 				return 4;
 		}
 
@@ -263,6 +267,12 @@ public:
 			case MemoryType::Atari2600TiaRegisters:
 				return CpuType::Atari2600;
 
+			case MemoryType::ChannelFMemory:
+			case MemoryType::ChannelFBiosRom:
+			case MemoryType::ChannelFCartRom:
+			case MemoryType::ChannelFVideoRam:
+				return CpuType::ChannelF;
+
 			[[unlikely]] default:
 				throw std::runtime_error("Invalid CPU type");
 		}
@@ -312,6 +322,8 @@ public:
 				return MemoryType::GenesisPrgRom;
 			case CpuType::Atari2600:
 				return MemoryType::Atari2600PrgRom;
+			case CpuType::ChannelF:
+				return MemoryType::ChannelFCartRom;
 		}
 
 		[[unlikely]] return MemoryType::None;
@@ -321,7 +333,7 @@ public:
 	/// Get last CPU memory type enum value.
 	/// </summary>
 	[[nodiscard]] static constexpr MemoryType GetLastCpuMemoryType() {
-		return MemoryType::Atari2600Memory;
+		return MemoryType::ChannelFMemory;
 	}
 
 	/// <summary>
@@ -400,6 +412,10 @@ public:
 			case MemoryType::Atari2600PrgRom:
 				return true;
 
+			case MemoryType::ChannelFBiosRom:
+			case MemoryType::ChannelFCartRom:
+				return true;
+
 			default:
 				return false;
 		}
@@ -432,7 +448,7 @@ public:
 	/// Get last CPU type enum value.
 	/// </summary>
 	[[nodiscard]] static constexpr CpuType GetLastCpuType() {
-		return CpuType::Atari2600;
+		return CpuType::ChannelF;
 	}
 
 	/// <summary>

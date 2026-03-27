@@ -123,3 +123,28 @@
 - Cross-repo: pansy #92 closed (Channel F bookmark + CPU state roundtrip tests, 549 tests pass).
 - Cross-repo: poppy #199 closed (Channel F hello-world example project template, 1957 tests pass).
 - All builds clean, all tests green across Nexen/pansy/poppy.
+
+## 2026-03-27 Progress Checkpoint (Session 18)
+
+- Integrated Channel F debugger wiring into Core dispatcher paths, including explicit template instantiations for instruction, memory read/write, interrupt, and PPU-cycle stubs.
+- Added Channel F disassembly integration in both disassembly pipeline stages:
+	- `Core/Debugger/Disassembler.cpp` CPU-state/effective-address path
+	- `Core/Debugger/DisassemblyInfo.cpp` opcode size, call/return, branch classification, and text formatting dispatch
+- Added new Channel F debugger modules and project wiring in `Core/Core.vcxproj`:
+	- `ChannelFDebugger`, `ChannelFDisUtils`, `ChannelFEventManager`, `ChannelFTraceLogger`
+	- Controller/panel/types headers for build graph completeness
+- Extended memory/cpu mapping utilities and interop enums to include full Channel F types:
+	- Core: `MemoryType::ChannelFMemory`, `CpuType::ChannelF` utility mappings, debugger flag bit
+	- UI interop: `CpuType`, `MemoryType`, debugger flag, CPU/memory extension maps
+- Hardened Channel F runtime and debugger behavior for test environments:
+	- BIOS firmware load now degrades gracefully when home/firmware folders are not configured
+	- CDL file load/save in debugger now safely no-ops when home folder paths are unavailable
+- Validation evidence captured this session:
+	- Release x64 build: `MSBuild.exe Nexen.sln /p:Configuration=Release /p:Platform=x64 /t:Build /m /nologo /v:m` (success)
+	- Focused tests: `Core.Tests.exe --gtest_filter=ChannelF* --gtest_brief=1` (44/44 passed)
+
+- Remaining high-priority follow-ups:
+	- Channel F-specific key mapping config plumbing (currently functional with default mappings)
+	- TAS/movie end-to-end wiring and UI widgets for Channel F gesture inputs
+	- Debug visualization refinements (event timeline scanline/cycle semantics, register tooling polish)
+	- Cross-repo documentation completion sweep (Nexen/poppy/pansy/peony)

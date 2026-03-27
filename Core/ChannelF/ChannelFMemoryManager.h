@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include "ChannelF/ChannelFTypes.h"
 
 /// <summary>
 /// Memory bus for the Fairchild Channel F system.
@@ -20,12 +21,12 @@
 /// </summary>
 class ChannelFMemoryManager {
 public:
-	static constexpr uint32_t BiosSize = 0x0800;     // 2KB BIOS
-	static constexpr uint32_t MaxCartSize = 0x10000;  // Up to 64KB cart
-	static constexpr uint32_t VramSize = 128 * 64;    // 128x64 pixel buffer
-	static constexpr uint32_t ScreenWidth = 128;
-	static constexpr uint32_t ScreenHeight = 64;
-	static constexpr uint8_t NumColors = 4;
+	static constexpr uint32_t BiosSize = ChannelFConstants::BiosSize;
+	static constexpr uint32_t MaxCartSize = ChannelFConstants::MaxCartSize;
+	static constexpr uint32_t VramSize = ChannelFConstants::VramSize;
+	static constexpr uint32_t ScreenWidth = ChannelFConstants::ScreenWidth;
+	static constexpr uint32_t ScreenHeight = ChannelFConstants::ScreenHeight;
+	static constexpr uint8_t NumColors = ChannelFConstants::NumColors;
 
 private:
 	// ROM storage
@@ -34,7 +35,7 @@ private:
 	uint32_t _cartSize = 0;
 
 	// Video RAM (one byte per pixel: 2-bit color index)
-	uint8_t _vram[VramSize] = {};
+	uint8_t _vram[ChannelFConstants::VramSize] = {};
 
 	// I/O port latches
 	uint8_t _portLatch[256] = {};
@@ -70,6 +71,14 @@ public:
 
 	// Controller input (set by control manager each frame)
 	void SetControllerState(uint8_t ctrl1, uint8_t ctrl2, uint8_t console);
+
+	// State accessors for GetConsoleState and serialization
+	[[nodiscard]] ChannelFVideoState GetVideoState() const;
+	[[nodiscard]] ChannelFAudioState GetAudioState() const;
+	[[nodiscard]] ChannelFPortState GetPortState() const;
+	void SetVideoState(const ChannelFVideoState& state);
+	void SetAudioState(const ChannelFAudioState& state);
+	void SetPortState(const ChannelFPortState& state);
 
 	// Accessors for debugger and rendering
 	[[nodiscard]] const uint8_t* GetVram() const { return _vram; }

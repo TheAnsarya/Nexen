@@ -116,3 +116,46 @@ void ChannelFMemoryManager::SetControllerState(uint8_t ctrl1, uint8_t ctrl2, uin
 	_controller2 = ctrl2;
 	_consoleButtons = console;
 }
+
+ChannelFVideoState ChannelFMemoryManager::GetVideoState() const {
+	ChannelFVideoState state = {};
+	state.Color = _videoColor;
+	state.X = _videoX;
+	state.Y = _videoY;
+	return state;
+}
+
+ChannelFAudioState ChannelFMemoryManager::GetAudioState() const {
+	ChannelFAudioState state = {};
+	state.Tone = _soundTone;
+	state.Frequency = _soundFreq;
+	state.SoundEnabled = (_soundTone != 0);
+	return state;
+}
+
+ChannelFPortState ChannelFMemoryManager::GetPortState() const {
+	ChannelFPortState state = {};
+	state.Port0 = _portLatch[0];
+	state.Port1 = _portLatch[1];
+	state.Port4 = _controller2;
+	state.Port5 = _controller1;
+	return state;
+}
+
+void ChannelFMemoryManager::SetVideoState(const ChannelFVideoState& state) {
+	_videoColor = state.Color;
+	_videoX = state.X;
+	_videoY = state.Y;
+}
+
+void ChannelFMemoryManager::SetAudioState(const ChannelFAudioState& state) {
+	_soundTone = state.Tone;
+	_soundFreq = state.Frequency;
+}
+
+void ChannelFMemoryManager::SetPortState(const ChannelFPortState& state) {
+	_portLatch[0] = state.Port0;
+	_portLatch[1] = state.Port1;
+	_controller2 = state.Port4;
+	_controller1 = state.Port5;
+}
