@@ -796,7 +796,10 @@ Also emulate the Luxor versions `Luxor Channel F BIOS SL90025 (1976) (Luxor).bin
 
 [Nexen, pansy, poppy] (Channel F) continue making issues and working issues and updating docs, etc. go!; continue;
 
+-- switch to claude opus 4.6
+[Nexen, pansy, poppy] (Channel F) continue making issues and working issues and updating docs, etc., tests and benchmarks, go!; continue;
 
+continue;
 
 
 

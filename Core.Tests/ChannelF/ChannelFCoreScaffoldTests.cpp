@@ -212,3 +212,136 @@ TEST(ChannelFOpcodeTable, AllOpcodes_HaveValidMetadata) {
 		EXPECT_GE(info.Cycles, 1);
 	}
 }
+
+// ── ChannelFCoreScaffold Behavior Tests ──
+
+TEST(ChannelFCoreScaffold, DifferentInputs_ProduceDifferentState) {
+	ChannelFCoreScaffold a;
+	ChannelFCoreScaffold b;
+
+	a.SetPanelButtons(0x01);
+	a.SetRightController(0x00);
+	a.SetLeftController(0x00);
+
+	b.SetPanelButtons(0x00);
+	b.SetRightController(0xff);
+	b.SetLeftController(0x00);
+
+	for(int i = 0; i < 60; i++) {
+		a.RunFrame();
+		b.RunFrame();
+	}
+
+	EXPECT_EQ(a.GetFrameCount(), b.GetFrameCount());
+	EXPECT_NE(a.GetDeterministicState(), b.GetDeterministicState());
+}
+
+TEST(ChannelFCoreScaffold, MultipleResets_AreIdempotent) {
+	ChannelFCoreScaffold core;
+	core.SetPanelButtons(0x0f);
+	core.SetRightController(0xcc);
+	core.SetLeftController(0x33);
+	for(int i = 0; i < 30; i++) {
+		core.RunFrame();
+	}
+
+	core.Reset();
+	uint32_t stateAfterOne = core.GetDeterministicState();
+	uint32_t frameAfterOne = core.GetFrameCount();
+	uint64_t clockAfterOne = core.GetMasterClock();
+
+	core.Reset();
+	EXPECT_EQ(core.GetDeterministicState(), stateAfterOne);
+	EXPECT_EQ(core.GetFrameCount(), frameAfterOne);
+	EXPECT_EQ(core.GetMasterClock(), clockAfterOne);
+
+	core.Reset();
+	core.Reset();
+	EXPECT_EQ(core.GetDeterministicState(), stateAfterOne);
+	EXPECT_EQ(core.GetFrameCount(), frameAfterOne);
+	EXPECT_EQ(core.GetMasterClock(), clockAfterOne);
+}
+
+TEST(ChannelFCoreScaffold, DetectVariant_AllBiosEntries) {
+	// Fairchild SL31253 (System I BIOS 1)
+	{
+		ChannelFCoreScaffold core;
+		core.DetectVariantFromHashes(
+			"81193965a374d77b99b4743d317824b53c3e3c78",
+			"ac9804d4c0e9d07e33472e3726ed15c3"
+		);
+		EXPECT_EQ(core.GetVariant(), ChannelFBiosVariant::SystemI);
+	}
+
+	// Fairchild SL31254 (System I BIOS 2)
+	{
+		ChannelFCoreScaffold core;
+		core.DetectVariantFromHashes(
+			"8f70d1b74483ba3a37e86cf16c849d601a8c3d2c",
+			"da98f4bb3242ab80d76629021bb27585"
+		);
+		EXPECT_EQ(core.GetVariant(), ChannelFBiosVariant::SystemI);
+	}
+
+	// Hockey+Tennis (System I game ROM)
+	{
+		ChannelFCoreScaffold core;
+		core.DetectVariantFromHashes(
+			"4b0a38b5af525aa598907683f0dcfeaa90d242e0",
+			"495aa78eefd90504a15e20dddcc4943f"
+		);
+		EXPECT_EQ(core.GetVariant(), ChannelFBiosVariant::SystemI);
+	}
+
+	// Luxor SL90025 (System II)
+	{
+		ChannelFCoreScaffold core;
+		core.DetectVariantFromHashes(
+			"759e2ed31fbde4a2d8daf8b9f3e0dffebc90dae2",
+			"95d339631d867c8f1d15a5f2ec26069d"
+		);
+		EXPECT_EQ(core.GetVariant(), ChannelFBiosVariant::SystemII);
+	}
+}
+
+TEST(ChannelFCoreScaffold, DetectVariant_UnknownHashes_ReturnsUnknown) {
+	ChannelFCoreScaffold core;
+	core.DetectVariantFromHashes(
+		"0000000000000000000000000000000000000000",
+		"00000000000000000000000000000000"
+	);
+	EXPECT_EQ(core.GetVariant(), ChannelFBiosVariant::Unknown);
+}
+
+TEST(ChannelFCoreScaffold, ZeroInput_RunsWithoutCrash) {
+	ChannelFCoreScaffold core;
+	// Do not set any input — verify default zero input is safe
+	for(int i = 0; i < 300; i++) {
+		core.RunFrame();
+	}
+
+	EXPECT_EQ(core.GetFrameCount(), 300u);
+	EXPECT_EQ(core.GetMasterClock(), 300ull * ChannelFCoreScaffold::CyclesPerFrame);
+}
+
+TEST(ChannelFCoreScaffold, InputChangesMidRun_DeterminsticDivergence) {
+	ChannelFCoreScaffold a;
+	ChannelFCoreScaffold b;
+
+	// Both run identically for first 30 frames
+	for(int i = 0; i < 30; i++) {
+		a.RunFrame();
+		b.RunFrame();
+	}
+	EXPECT_EQ(a.GetDeterministicState(), b.GetDeterministicState());
+
+	// Diverge: only 'a' gets input, 'b' stays at zero
+	a.SetRightController(0x42);
+	for(int i = 0; i < 30; i++) {
+		a.RunFrame();
+		b.RunFrame();
+	}
+
+	EXPECT_EQ(a.GetFrameCount(), b.GetFrameCount());
+	EXPECT_NE(a.GetDeterministicState(), b.GetDeterministicState());
+}
