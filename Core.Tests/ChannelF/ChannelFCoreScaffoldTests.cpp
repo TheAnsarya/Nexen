@@ -2,6 +2,8 @@
 #include "ChannelF/ChannelFCoreScaffold.h"
 #include "ChannelF/ChannelFOpcodeTable.h"
 #include "ChannelF/ChannelFBiosDatabase.h"
+#include "Utilities/Serializer.h"
+#include <sstream>
 
 TEST(ChannelFCoreScaffold, ResetClearsState) {
 	ChannelFCoreScaffold core;
@@ -344,4 +346,82 @@ TEST(ChannelFCoreScaffold, InputChangesMidRun_DeterminsticDivergence) {
 
 	EXPECT_EQ(a.GetFrameCount(), b.GetFrameCount());
 	EXPECT_NE(a.GetDeterministicState(), b.GetDeterministicState());
+}
+
+// ── Serialize Edge Case Tests ──
+
+TEST(ChannelFCoreScaffold, SerializeAtFrame0_RoundtripPreservesInitialState) {
+	ChannelFCoreScaffold original;
+	// Do NOT call RunFrame — serialize at frame 0
+
+	Serializer saver(1, true, SerializeFormat::Binary);
+	original.Serialize(saver);
+
+	std::stringstream ss;
+	saver.SaveTo(ss);
+	ss.seekg(0);
+
+	ChannelFCoreScaffold loaded;
+	Serializer loader(1, false, SerializeFormat::Binary);
+	loader.LoadFrom(ss);
+	loaded.Serialize(loader);
+
+	EXPECT_EQ(loaded.GetFrameCount(), 0u);
+	EXPECT_EQ(loaded.GetMasterClock(), 0u);
+	EXPECT_EQ(loaded.GetDeterministicState(), original.GetDeterministicState());
+}
+
+TEST(ChannelFCoreScaffold, SerializeWithMaxInputs_RoundtripPreservesState) {
+	ChannelFCoreScaffold original;
+	original.SetPanelButtons(0xff);
+	original.SetRightController(0xff);
+	original.SetLeftController(0xff);
+	for(int i = 0; i < 60; i++) {
+		original.RunFrame();
+	}
+
+	Serializer saver(1, true, SerializeFormat::Binary);
+	original.Serialize(saver);
+
+	std::stringstream ss;
+	saver.SaveTo(ss);
+	ss.seekg(0);
+
+	ChannelFCoreScaffold loaded;
+	Serializer loader(1, false, SerializeFormat::Binary);
+	loader.LoadFrom(ss);
+	loaded.Serialize(loader);
+
+	EXPECT_EQ(loaded.GetFrameCount(), original.GetFrameCount());
+	EXPECT_EQ(loaded.GetMasterClock(), original.GetMasterClock());
+	EXPECT_EQ(loaded.GetDeterministicState(), original.GetDeterministicState());
+}
+
+TEST(ChannelFCoreScaffold, SerializeWithVariant_RoundtripPreservesVariant) {
+	ChannelFCoreScaffold original;
+	original.DetectVariantFromHashes(
+		"759e2ed31fbde4a2d8daf8b9f3e0dffebc90dae2",
+		"95d339631d867c8f1d15a5f2ec26069d"
+	);
+	EXPECT_EQ(original.GetVariant(), ChannelFBiosVariant::SystemII);
+
+	for(int i = 0; i < 10; i++) {
+		original.RunFrame();
+	}
+
+	Serializer saver(1, true, SerializeFormat::Binary);
+	original.Serialize(saver);
+
+	std::stringstream ss;
+	saver.SaveTo(ss);
+	ss.seekg(0);
+
+	ChannelFCoreScaffold loaded;
+	Serializer loader(1, false, SerializeFormat::Binary);
+	loader.LoadFrom(ss);
+	loaded.Serialize(loader);
+
+	EXPECT_EQ(loaded.GetVariant(), ChannelFBiosVariant::SystemII);
+	EXPECT_EQ(loaded.GetFrameCount(), original.GetFrameCount());
+	EXPECT_EQ(loaded.GetDeterministicState(), original.GetDeterministicState());
 }
