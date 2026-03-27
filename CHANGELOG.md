@@ -5,6 +5,15 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.4] - 2026-03-27
+
+### Fixed
+
+- **Linux SIGSEGV crash on startup** — Bundle ICU 72.1 via `Microsoft.ICU.ICU4C.Runtime` NuGet package instead of relying on system ICU (#1039)
+	- Fixes `locale_get_default_76()` crash in `libicuuc.so.76` on KUbuntu 25.10 and other Linux distros with incompatible system ICU
+	- App-local ICU configured via `runtimeconfig.template.json` with `System.Globalization.AppLocalIcu`
+	- Full internationalization/multi-language support preserved (not using InvariantGlobalization)
+
 ## [1.4.0] - 2026-07-24
 
 ### Added

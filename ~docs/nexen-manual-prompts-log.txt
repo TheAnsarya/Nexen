@@ -816,6 +816,28 @@ continue;
 
 [Nexen] work through all the Channel F issues, make a working complete comprehensive correct accurate emulator and supporting infrastructure (input controller UI, debugging UI and wire-up, TAS/movie support from core to UI, savestates, debug viewers like vram and memory and registers); update all of the Channel F documentation; continue; [poppy, pansy, peony] continue;
 
+continue;
+
+[Nexen] Research and fix this reported issue: `https://github.com/TheAnsarya/Nexen/issues/1039` figure out why linux build is crashing and fix it, go, continue; research, update docs, update tests and benchmarks, update code, update issues, fix the problem and update logs and the issue; after you fix it, make a release with only a patch number increase +1, and link to the release in the issue as a possible fix; continue;
+
+I still want internationalization and multi-language support;, don't get rid of it, just make sure there's a local version of the code instead of relying on the system; continue;
+
+--- steer
+Use the Microsoft.ICU.ICU4C.Runtime NuGet package
+
+
+
+
+
+
+
+
+
+
+[Nexen] work through all the Channel F issues, make a working complete comprehensive correct accurate emulator and supporting infrastructure (input controller UI, debugging UI and wire-up, TAS/movie support from core to UI, savestates, debug viewers like vram and memory and registers); update all of the Channel F documentation; continue; [poppy, pansy, peony] continue;
+
+
+
 
 
 
