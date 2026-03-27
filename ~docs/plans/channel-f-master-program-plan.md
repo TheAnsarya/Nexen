@@ -115,3 +115,11 @@
 - Cross-repo: pansy #91 closed (compressed roundtrip + metadata section tests, 546 tests pass).
 - Cross-repo: poppy #198 closed (Channel F include file with full F8 hardware definitions, 1957 tests pass).
 - All builds clean, all tests green across Nexen/pansy/poppy.
+
+## 2026-03-27 Progress Checkpoint (Session 17)
+
+- Closed Nexen #1035: 3 new serialize edge case tests (frame-0 roundtrip, max-inputs roundtrip, variant preservation).
+- Channel F test count: 41 gtest tests (up from 38), 8 benchmarks clean.
+- Cross-repo: pansy #92 closed (Channel F bookmark + CPU state roundtrip tests, 549 tests pass).
+- Cross-repo: poppy #199 closed (Channel F hello-world example project template, 1957 tests pass).
+- All builds clean, all tests green across Nexen/pansy/poppy.
