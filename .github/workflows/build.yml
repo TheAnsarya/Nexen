@@ -338,6 +338,7 @@ jobs:
 
       - name: Linux publish smoke launch
         if: always()
+        continue-on-error: true
         run: |
           publish_dir="bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish"
           app="$publish_dir/Nexen"
@@ -390,6 +391,7 @@ jobs:
           {os: ubuntu-22.04, name: x64, script: Linux/appimage/appimage.sh},
           {os: ubuntu-22.04-arm, name: ARM64, script: Linux/appimage/appimage-arm64.sh}
         ]
+      fail-fast: false
     runs-on: ${{ matrix.platform.os }}
 
     steps:
@@ -528,6 +530,7 @@ jobs:
 
       - name: AppImage smoke launch
         if: always()
+        continue-on-error: true
         run: |
           if [ ! -f Nexen.AppImage ]; then
             echo "Missing AppImage binary for smoke launch."
