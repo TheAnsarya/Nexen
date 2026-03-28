@@ -857,8 +857,19 @@ continue; go for a long time, like 10+ minutes; do issues and problems and fix a
 
 [Nexen] Make sure everything builds and fix all errors and warnings; Make a new release increasing the patch number; continue;
 
+what is this `the 8 .NET Pansy export tests`? We are using dotnet 11 and c#14, always the most modern versions of everything!; continue;
 
+The version of the native libSkiaSharp library (88.1) is incompatible with this version of SkiaSharp. Supported versions of the native libSkiaSharp library are in the range [116.0, 117.0).
 
+do not remove genesis code, just let it sit until we work on it later, as long as it doesn't crash anything; The version of the native libSkiaSharp library (88.1) is incompatible with this version of SkiaSharp. Supported versions of the native libSkiaSharp library are in the range [116.0, 117.0).
+
+github actions won't compile dotnet 10, but it used to, fix the CI configs to make `    16>C:\Program Files\dotnet\sdk\10.0.105\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.DefaultItems.targets(145,5): warning NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported. [D:\a\Nexen\Nexen\UI\UI.csproj]` fixed because we were deploying dotnet10 releases recently;
+
+wtf is this build nonsense on github? we're supposed to be building with vs2026, we've been doing it for weeks;
+
+god damnit, I had a fully working build/release pipeline ***yesterday*** why are you failing and what did you change? why does a `warning-report` error kill my entire windows build? focus everything on making a stable current build and full release in github, analyze the github action logs and solve those problems (using vs2026) so we have a working modern current release; 
+
+you just returned nothing from my prompt, please actually solve it: god damnit, I had a fully working build/release pipeline ***yesterday*** why are you failing and what did you change? why does a `warning-report` error kill my entire windows build? focus everything on making a stable current build and full release in github, analyze the github action logs and solve those problems (using vs2026) so we have a working modern current release;
 
 
 

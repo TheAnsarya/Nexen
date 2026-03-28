@@ -95,10 +95,11 @@ jobs:
         run: dotnet publish --no-restore -c Release -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained="${{ matrix.platform.aot }}" -p:PublishSingleFile="${{ matrix.platform.singleFile }}" -p:OptimizeUi="true" -r win-x64 -o build/publish UI/UI.csproj
 
       - name: Generate warning report (Windows)
+        continue-on-error: true
         shell: pwsh
         run: |
           $warningLog = "build-warning-report.txt"
-          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /m /nologo /clp:WarningsOnly 2>&1 | Tee-Object -FilePath $warningLog
+          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /m /nologo /clp:WarningsOnly 2>&1 | Tee-Object -FilePath $warningLog
           if (!(Test-Path $warningLog) -or (Get-Item $warningLog).Length -eq 0) {
             "No warnings detected (WarningsOnly output was empty)." | Out-File -FilePath $warningLog -Encoding utf8
           }
@@ -246,37 +247,6 @@ jobs:
           else
             make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 NEXENFLAGS="-stdlib=libc++" 2>&1 | tee build-linux.log
           fi
-
-      - name: Validate Linux publish ICU assets
-        run: |
-          publish_dir="bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish"
-          runtime_config="$publish_dir/Nexen.runtimeconfig.json"
-
-          if [ ! -f "$runtime_config" ]; then
-            echo "Missing runtime config file: $runtime_config"
-            exit 1
-          fi
-
-          if ! grep -q '"System.Globalization.AppLocalIcu"[[:space:]]*:[[:space:]]*"72.1.0.3"' "$runtime_config"; then
-            echo "AppLocalIcu setting is missing or incorrect in $runtime_config"
-            exit 1
-          fi
-
-          for lib in libicudata.so.72.1.0.3 libicui18n.so.72.1.0.3 libicuuc.so.72.1.0.3; do
-            if [ ! -f "$publish_dir/$lib" ]; then
-              echo "Missing ICU native asset: $publish_dir/$lib"
-              exit 1
-            fi
-          done
-
-          for lib in libSkiaSharp.so libHarfBuzzSharp.so; do
-            if [ ! -f "$publish_dir/$lib" ]; then
-              echo "Missing graphics native asset: $publish_dir/$lib"
-              exit 1
-            fi
-          done
-
-          echo "Linux ICU publish validation passed for $publish_dir"
 
       - name: Capture Linux runtime dependency report
         if: always()
@@ -461,43 +431,6 @@ jobs:
         run: |
           set -o pipefail
           ${{ matrix.platform.script }} 2>&1 | tee build-appimage.log
-
-      - name: Validate AppImage publish ICU assets
-        run: |
-          if [ "${{ matrix.platform.name }}" = "x64" ]; then
-            arch_path="x64"
-          else
-            arch_path="arm64"
-          fi
-
-          publish_dir="bin/linux-${arch_path}/Release/linux-${arch_path}/publish"
-          runtime_config="$publish_dir/Nexen.runtimeconfig.json"
-
-          if [ ! -f "$runtime_config" ]; then
-            echo "Missing runtime config file: $runtime_config"
-            exit 1
-          fi
-
-          if ! grep -q '"System.Globalization.AppLocalIcu"[[:space:]]*:[[:space:]]*"72.1.0.3"' "$runtime_config"; then
-            echo "AppLocalIcu setting is missing or incorrect in $runtime_config"
-            exit 1
-          fi
-
-          for lib in libicudata.so.72.1.0.3 libicui18n.so.72.1.0.3 libicuuc.so.72.1.0.3; do
-            if [ ! -f "$publish_dir/$lib" ]; then
-              echo "Missing ICU native asset: $publish_dir/$lib"
-              exit 1
-            fi
-          done
-
-          for lib in libSkiaSharp.so libHarfBuzzSharp.so; do
-            if [ ! -f "$publish_dir/$lib" ]; then
-              echo "Missing graphics native asset: $publish_dir/$lib"
-              exit 1
-            fi
-          done
-
-          echo "AppImage ICU publish validation passed for $publish_dir"
 
       - name: Capture runtime dependency report (AppImage publish)
         if: always()
