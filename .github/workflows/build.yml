@@ -89,6 +89,22 @@ jobs:
       - name: Publish Nexen
         run: dotnet publish --no-restore -c Release -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained="${{ matrix.platform.aot }}" -p:PublishSingleFile="${{ matrix.platform.singleFile }}" -p:OptimizeUi="true" -r win-x64 -o build/publish UI/UI.csproj
 
+      - name: Generate warning report (Windows)
+        shell: pwsh
+        run: |
+          $warningLog = "build-warning-report.txt"
+          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /m /nologo /clp:WarningsOnly 2>&1 | Tee-Object -FilePath $warningLog
+          if (!(Test-Path $warningLog) -or (Get-Item $warningLog).Length -eq 0) {
+            "No warnings detected (WarningsOnly output was empty)." | Out-File -FilePath $warningLog -Encoding utf8
+          }
+
+      - name: Upload warning report (Windows)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Warning Report (Windows${{ matrix.platform.aotString }})
+          path: build-warning-report.txt
+
       - name: Upload Nexen
         uses: actions/upload-artifact@v4
         with:
@@ -171,10 +187,11 @@ jobs:
       # For clang, also use libc++ for C++23 <format> support
       - name: Build Nexen
         run: |
+          set -o pipefail
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=gcc-13 CXX=g++-13
+            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=gcc-13 CXX=g++-13 2>&1 | tee build-linux.log
           else
-            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 NEXENFLAGS="-stdlib=libc++"
+            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 NEXENFLAGS="-stdlib=libc++" 2>&1 | tee build-linux.log
           fi
 
       - name: Validate Linux publish ICU assets
@@ -199,7 +216,32 @@ jobs:
             fi
           done
 
+          for lib in libSkiaSharp.so libHarfBuzzSharp.so; do
+            if [ ! -f "$publish_dir/$lib" ]; then
+              echo "Missing graphics native asset: $publish_dir/$lib"
+              exit 1
+            fi
+          done
+
           echo "Linux ICU publish validation passed for $publish_dir"
+
+      - name: Generate warning report (Linux)
+        if: always()
+        run: |
+          if [ -f build-linux.log ]; then
+            grep -Ei "warning" build-linux.log > build-warning-report-linux.txt || true
+          fi
+
+          if [ ! -f build-warning-report-linux.txt ] || [ ! -s build-warning-report-linux.txt ]; then
+            echo "No warnings detected in Linux build log." > build-warning-report-linux.txt
+          fi
+
+      - name: Upload warning report (Linux)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Warning Report (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: build-warning-report-linux.txt
 
       - name: Upload Nexen
         uses: actions/upload-artifact@v4
@@ -254,7 +296,8 @@ jobs:
 
       - name: Build Nexen (AppImage)
         run: |
-          ${{ matrix.platform.script }}
+          set -o pipefail
+          ${{ matrix.platform.script }} 2>&1 | tee build-appimage.log
 
       - name: Validate AppImage publish ICU assets
         run: |
@@ -284,7 +327,33 @@ jobs:
             fi
           done
 
+          for lib in libSkiaSharp.so libHarfBuzzSharp.so; do
+            if [ ! -f "$publish_dir/$lib" ]; then
+              echo "Missing graphics native asset: $publish_dir/$lib"
+              exit 1
+            fi
+          done
+
           echo "AppImage ICU publish validation passed for $publish_dir"
+
+      - name: Generate warning report (AppImage)
+        if: always()
+        run: |
+          if [ -f build-appimage.log ]; then
+            grep -Ei "warning" build-appimage.log > build-warning-report-appimage.txt || true
+          fi
+
+          if [ ! -f build-warning-report-appimage.txt ] || [ ! -s build-warning-report-appimage.txt ]; then
+            echo "No warnings detected in AppImage build log." > build-warning-report-appimage.txt
+          fi
+
+      - name: Upload warning report (AppImage)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Warning Report (AppImage - ${{ matrix.platform.name }})
+          path: build-warning-report-appimage.txt
+
       - name: Upload Nexen (AppImage)
         uses: actions/upload-artifact@v4
         with:

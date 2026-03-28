@@ -116,6 +116,8 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [UI Settings Completeness Plan](plans/ui-settings-completeness-epic-18.md) | Epic #1040 execution plan for cross-platform settings/input/movie/savestate UX completeness |
 | [Epic 22 Stability and Modernization Plan](plans/epic-22-stability-modernization-plan-2026-03-28.md) | Execution plan for crash/segfault mitigation, runtime compatibility, warning hardening, and modernization gates (#1048-#1054) |
 | [Epic 22 Validation Pack](testing/epic-22-validation-pack-2026-03-28.md) | Build/test/benchmark/runtime evidence snapshot for the 2026-03-28 stabilization pass |
+| [Linux Runtime Crash Matrix](testing/linux-runtime-crash-matrix-2026-03-28.md) | Distro-by-distro crash/segfault signature matrix with current mitigation status for #1049 |
+| [Linux Crash Hardening Fix Order](plans/linux-crash-hardening-order-2026-03-28.md) | Ordered stabilization sequence for runtime dependencies, warnings, and cross-distro validation (#1049, #1051, #1054) |
 | [Platform Parity Source Index](research/platform-parity/source-index.md) | External hardware and emulator code references used by research docs |
 | [Atari 2600 TAS and Movie UI Coverage Audit](testing/atari2600-tas-ui-coverage-audit.md) | Automated and manual validation status for Atari 2600 TAS and movie UI release readiness |
 | [UI Settings Coverage Matrix (2026-03-28)](testing/ui-settings-coverage-matrix-2026-03-28.md) | Initial cross-platform settings/config/input/movie/savestate UI gap matrix and action checklist |
