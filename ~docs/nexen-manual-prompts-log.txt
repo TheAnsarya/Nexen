@@ -851,7 +851,11 @@ continue; go for a long time, like 10+ minutes; do issues and problems and fix a
 
 [Nexen] make sure the Linux build will work, there was a crashing issue, make sure we fixed that and any other linux issues (error or warnings or crashes); Make the UI perfect; review all of the modified UI and make sure it's awesome and fully done; make issues and then implement them for fixing the UI; continue;
 
+--- try again
 
+[Nexen] Integrate the two pull requests for Mesen into our Nexen `https://github.com/SourMesen/Mesen2/pull/89` and `https://github.com/SourMesen/Mesen2/pull/90`; make these issues and docs, test and benchmark, and implement the code changes ensuring they are correct; document it; fix any issues that stop emulation or UI, continue and update UI make all UI work and have real labels and continue working Nexen issues; continue;
+
+[Nexen] Make sure everything builds and fix all errors and warnings; Make a new release increasing the patch number; continue;
 
 
 
