@@ -117,6 +117,7 @@
 	<PackageReference Include="Avalonia.Diagnostics" Version="11.3.11" Condition="'$(OptimizeUi)'!='true'" />
 	<PackageReference Include="Avalonia.ReactiveUI" Version="11.3.9" />
 	<PackageReference Include="Avalonia.Svg.Skia" Version="11.3.0" />
+	<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
 	<PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
 	<PackageReference Include="Dock.Avalonia" Version="11.3.11.7" />
 	<PackageReference Include="Dock.Avalonia.Themes.Fluent" Version="11.3.11.7" />
