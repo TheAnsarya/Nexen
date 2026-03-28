@@ -24,14 +24,18 @@ This matrix tracks distro-specific crash signatures and stabilization status for
 1. Ensure app-local ICU token and native assets match exactly (`72.1.0.3`).
 2. Verify Linux publish outputs include ICU, Skia, and HarfBuzz native assets.
 3. Block CI on missing runtime dependencies.
-4. Keep benchmark/test checkpoints for each runtime package or CI change.
-5. Capture Linux publish dependency traces (`ldd`, `readelf`) as CI artifacts for diagnostics.
+4. Run CI smoke launches for Linux publish and AppImage outputs using `xvfb-run` + timeout.
+5. Treat crash signatures (`segmentation fault`, `sigsegv`, `core dumped`, `abort`, `fatal`) as CI failures.
+6. Keep benchmark/test checkpoints for each runtime package or CI change.
+7. Capture Linux publish dependency traces (`ldd`, `readelf`) and smoke logs as CI artifacts for diagnostics.
 
 ## CI Diagnostic Artifacts
 
 Linux matrix jobs upload `runtime-deps-linux.txt` (`ldd` output for published binary) and `runtime-readelf-linux.txt` (`readelf -d` output for published binary).
 
 AppImage jobs upload `runtime-deps-appimage.txt` and `runtime-readelf-appimage.txt`.
+
+Smoke-launch logs are uploaded as `smoke-linux.log` and `smoke-appimage.log` artifacts.
 
 ## Remaining Risks
 
