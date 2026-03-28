@@ -116,6 +116,7 @@
 	<PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.3.11" />
 	<PackageReference Include="Avalonia.Diagnostics" Version="11.3.11" Condition="'$(OptimizeUi)'!='true'" />
 	<PackageReference Include="Avalonia.ReactiveUI" Version="11.3.9" />
+	<PackageReference Include="Avalonia.Svg.Skia" Version="11.3.0" />
 	<PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
 	<PackageReference Include="Dock.Avalonia" Version="11.3.11.7" />
 	<PackageReference Include="Dock.Avalonia.Themes.Fluent" Version="11.3.11.7" />
@@ -126,7 +127,6 @@
 	<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
 	<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.2" />
 	<PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
-	<PackageReference Include="Avalonia.Svg.Skia" Version="11.3.0" />
 	<PackageReference Include="StreamHash" Version="1.10.0" />
    </ItemGroup>
    <ItemGroup>

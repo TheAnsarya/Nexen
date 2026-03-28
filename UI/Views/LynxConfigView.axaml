@@ -23,6 +23,7 @@
 		<TabItem Header="{l:Translate tpgGeneral}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
+					<TextBlock Margin="0 0 0 8" Foreground="Gray" TextWrapping="Wrap" Text="{l:Translate lblLynxGeneralHint}" />
 					<CheckBox IsChecked="{Binding Config.AutoRotate}" Content="{l:Translate chkAutoRotate}" />
 				</StackPanel>
 			</ScrollViewer>
@@ -53,6 +54,7 @@
 		<TabItem Header="{l:Translate tpgEmulation}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
+					<TextBlock Margin="0 0 0 8" Foreground="Gray" TextWrapping="Wrap" Text="{l:Translate lblLynxBootRomHint}" />
 					<CheckBox IsChecked="{Binding Config.UseBootRom}" Content="{l:Translate chkUseBootRom}"/>
 				</StackPanel>
 			</ScrollViewer>
@@ -60,6 +62,7 @@
 		<TabItem Header="{l:Translate tpgInput}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<c:OptionSection Header="{l:Translate grpControllers}" Margin="0">
+					<TextBlock Margin="0 0 0 8" Foreground="Gray" TextWrapping="Wrap" Text="{l:Translate lblLynxInputHint}" />
 					<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto">
 						<TextBlock Text="{l:Translate lblPlayer1}" />
 						<Button
@@ -79,6 +82,7 @@
 					<v:VideoConfigOverrideView DataContext="{Binding Config.ConfigOverrides}" />
 					
 					<c:OptionSection Header="{l:Translate lblDisplaySettings}">
+						<TextBlock Margin="0 0 0 8" Foreground="Gray" TextWrapping="Wrap" Text="{l:Translate lblLynxVideoHint}" />
 						<CheckBox IsChecked="{Binding Config.BlendFrames}" Content="{l:Translate chkBlendFrames}" />
 						<c:CheckBoxWarning IsChecked="{Binding Config.DisableBackground}" Text="{l:Translate chkDisableBackground}" />
 						<c:CheckBoxWarning IsChecked="{Binding Config.DisableSprites}" Text="{l:Translate chkDisableSprites}" />

@@ -21,7 +21,7 @@
 	<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,*,Auto">
 		<TextBlock Text="{l:Translate lblDescription}" VerticalAlignment="Center" />
 		<TextBox Grid.Column="1" Text="{Binding Cheat.Description, Converter={StaticResource NullTextConverter}}" />
-	
+
 		<CheckBox
 			Grid.Row="1"
 			Grid.ColumnSpan="2"
@@ -62,17 +62,17 @@
 				/>
 
 				<StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" IsVisible="{Binding ShowInvalidCodeHint}">
-					<Image Source="/Assets/Warning.svg" Stretch="None" Margin="3" />
+					<Image Source="{SvgImage /Assets/Warning.svg}" Stretch="None" Margin="3" />
 					<TextBlock Text="{l:Translate lblInvalidCodes}" VerticalAlignment="Center" />
 				</StackPanel>
-			
+
 				<StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal">
-					<Image Source="/Assets/Help.svg" Stretch="None" Margin="3" />
+					<Image Source="{SvgImage /Assets/Help.svg}" Stretch="None" Margin="3" />
 					<TextBlock Text="{l:Translate lblHint}" VerticalAlignment="Center" />
 				</StackPanel>
 			</Grid>
 		</c:GroupBox>
-		
+
 		<StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
 			<Button
 				MinWidth="70"
@@ -82,7 +82,7 @@
 				Content="{l:Translate btnOK}"
 				IsEnabled="{Binding OkButtonEnabled}"
 			/>
-			
+
 			<Button
 				MinWidth="70"
 				HorizontalContentAlignment="Center"

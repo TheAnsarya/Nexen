@@ -825,6 +825,85 @@ I still want internationalization and multi-language support;, don't get rid of 
 --- steer
 Use the Microsoft.ICU.ICU4C.Runtime NuGet package
 
+[Nexen] work through all the Channel F issues, make a working complete comprehensive correct accurate emulator and supporting infrastructure (input controller UI, debugging UI and wire-up, TAS/movie support from core to UI, savestates, debug viewers like vram and memory and registers); update all of the Channel F documentation; continue; [poppy, pansy, peony] continue;
+
+[Nexen] the emulator is crashing when opened, the release version isn't even giving me an error, it just never loads; open Nexen, watch the console output and run debug and see what is wrong and fix it; continue;
+
+Hey, continue working on the crash, but use the repoerts in the comments of `https://github.com/TheAnsarya/Nexen/issues/1039`; continue; fix as many warnings as you can; continue;
+
+[Nexen] don't revert code, don't go back to Mesen, ignore Mesen we are Nexen. At one point we supported svg, we don't now I guess, so instead of spiraling implement svg support favoring existing packages; continue;
+
+continue to finish up this session (and make issues, docs, plans, chat/session logs); [Nexen] settings for each system UI is incomplete, 2600 and Lynx and Channel F and others all have labels without actual descriptive text, functionality might not work, research and review and survey the UI for settings, and config, and input, and movies, and savestates, etc, make the UI awesome and cover every platform and also be comprehensive and make issues, epics, docs, plans, tests, benchmarks, etc; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+fix as many warnings as you can; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -838,60 +917,7 @@ Use the Microsoft.ICU.ICU4C.Runtime NuGet package
 
 
 
-
-
-
-
-
 [Nexen] Make sure the emulator core for Atari Lynx is correct, accurate, and complete for emulating a game from start to finish, with all memory and banking and vram, and sprites and music and debugging tools and all of the UI and TAS/movie functionality, and controller input UI and everything else, etc; continue; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -901,26 +927,7 @@ Use the Microsoft.ICU.ICU4C.Runtime NuGet package
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Update all four projects (Nexen, poppy, pansy, peony) to dotnet 11 and c#15 and update github CI/CD config to install the sdk (see instructions listed at: https://copilot.microsoft.com/chats/Rkj5Q5ydHbfRjVV36XhGr) 
-
 
 
 
@@ -928,10 +935,7 @@ Update all four projects (Nexen, poppy, pansy, peony) to dotnet 11 and c#15 and 
 
 
 
-
 fix as many warnings as you can; continue;
-
-
 
 
 

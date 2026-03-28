@@ -39,7 +39,7 @@
 			Margin="5 0 5 0"
 		>
 			<TextBlock Grid.Column="0" Grid.Row="0" Text="{l:Translate lblMemoryType}" />
-			<c:EnumComboBox 
+			<c:EnumComboBox
 				Grid.Column="1" Grid.Row="0"
 				SelectedItem="{Binding Label.MemoryType}"
 				AvailableValues="{Binding AvailableMemoryTypes}"
@@ -83,7 +83,7 @@
 			</StackPanel>
 
 			<Grid Grid.Row="5" Margin="0 5" Grid.ColumnSpan="2" ColumnDefinitions="Auto,*" RowDefinitions="Auto" IsVisible="{Binding ErrorMessage.Length}" >
-				<Image Source="/Assets/Warning.svg" Stretch="None" />
+				<Image Source="{SvgImage /Assets/Warning.svg}" Stretch="None" />
 				<TextBlock Grid.Column="1" Text="{Binding ErrorMessage}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="3 0 0 0" />
 			</Grid>
 		</Grid>

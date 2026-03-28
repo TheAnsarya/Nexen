@@ -23,6 +23,7 @@
 		<TabItem Header="{l:Translate tpgAudio}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
+					<TextBlock Margin="0 0 0 8" Foreground="Gray" TextWrapping="Wrap" Text="{l:Translate lblChannelFAudioHelp}" />
 					<c:GroupBox Header="{l:Translate grpVolume}" HorizontalAlignment="Left">
 						<StackPanel Orientation="Horizontal" Height="150">
 							<StackPanel.Styles>
@@ -34,7 +35,7 @@
 								</Style>
 							</StackPanel.Styles>
 
-							<c:NexenSlider Text="Audio" Value="{Binding Config.AudioVol}" />
+							<c:NexenSlider Text="{l:Translate lblAudio}" Value="{Binding Config.AudioVol}" />
 						</StackPanel>
 					</c:GroupBox>
 				</StackPanel>
@@ -44,6 +45,7 @@
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
 					<c:OptionSection Header="{l:Translate lblDeveloperSettings}" Margin="0">
+						<TextBlock Margin="0 0 0 8" Foreground="Gray" TextWrapping="Wrap" Text="{l:Translate lblChannelFDeveloperSettingsHint}" />
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="{l:Translate lblRamPowerOnState}" />
 							<c:EnumComboBox SelectedItem="{Binding Config.RamPowerOnState}" Width="200" />

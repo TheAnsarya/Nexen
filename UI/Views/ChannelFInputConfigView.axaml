@@ -19,13 +19,14 @@
 	<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 		<StackPanel>
 			<c:OptionSection Header="{l:Translate grpControllers}" Margin="0">
+				<TextBlock Margin="0 0 0 8" Foreground="Gray" TextWrapping="Wrap" Text="{l:Translate lblInputHint}" />
 				<Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" HorizontalAlignment="Left">
-					<TextBlock Grid.Row="0" Grid.Column="0" Text="Controller:" />
+					<TextBlock Grid.Row="0" Grid.Column="0" Text="{l:Translate lblMainController}" />
 					<c:InputComboBox Grid.Row="0" Grid.Column="1" Port="0"
 						Config="{Binding Config.Controller}"
 						ControllerType="{Binding Config.Controller.Type}"
 						AvailableValues="{Binding AvailableControllerTypes}" />
-					<TextBlock Grid.Row="1" Grid.Column="0" Text="Console Panel:" />
+					<TextBlock Grid.Row="1" Grid.Column="0" Text="{l:Translate lblConsolePanel}" />
 					<c:InputComboBox Grid.Row="1" Grid.Column="1" Port="1"
 						Config="{Binding Config.ConsolePanel}"
 						ControllerType="{Binding Config.ConsolePanel.Type}"

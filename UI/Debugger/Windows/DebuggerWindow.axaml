@@ -19,7 +19,7 @@
 	xmlns:dm="clr-namespace:Dock.Model;assembly=Dock.Model.Avalonia"
 	xmlns:dmc="clr-namespace:Dock.Model.Controls;assembly=Dock.Model.Avalonia"
 	mc:Ignorable="d"
-	DragDrop.AllowDrop="True"  
+	DragDrop.AllowDrop="True"
 	x:Class="Nexen.Debugger.Windows.DebuggerWindow"
 	x:DataType="vm:DebuggerWindowViewModel"
 	Title="{Binding Title}"
@@ -97,11 +97,11 @@
 		<DataTemplate DataType="{x:Type sv:SpcStatusViewModel}">
 			<sv:SpcStatusView />
 		</DataTemplate>
-		
+
 		<DataTemplate DataType="{x:Type vmd:BaseToolContainerViewModel}">
 			<vd:ToolContainerView />
 		</DataTemplate>
-		
+
 		<DataTemplate DataType="{x:Type vm:BreakpointListViewModel}">
 			<v:BreakpointListView />
 		</DataTemplate>
@@ -133,7 +133,7 @@
 			<v:WatchListView />
 		</DataTemplate>
 	</Window.DataTemplates>
-	
+
 	<DockPanel>
 		<c:NexenMenu DockPanel.Dock="Top" Name="ActionMenu">
 			<MenuItem Header="{l:Translate mnuFile}" ItemsSource="{Binding FileMenuItems}" />
@@ -187,7 +187,7 @@
 					IsVisible="{Binding BreakElapsedCycles.Length}"
 				>
 					<Image
-						Source="/Assets/Speed.svg"
+						Source="{SvgImage /Assets/Speed.svg}"
 						VerticalAlignment="Center"
 						Stretch="None"
 					/>
@@ -204,7 +204,7 @@
 				IsVisible="{Binding Config.ShowMemoryMappings}"
 				DockPanel.Dock="Bottom"
 		  />
-			
+
 			<idc:DockControl Layout="{Binding DockLayout}" />
 		</DockPanel>
 	</DockPanel>

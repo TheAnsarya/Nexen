@@ -24,6 +24,7 @@
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
 					<c:OptionSection Header="{l:Translate lblConsoleSwitches}" Margin="0">
+						<TextBlock Margin="0 0 0 8" Foreground="Gray" TextWrapping="Wrap" Text="{l:Translate lblAtari2600ConsoleSwitchesHint}" />
 						<CheckBox IsChecked="{Binding Config.P0DifficultyB}" Content="{l:Translate chkP0DifficultyB}" />
 						<CheckBox IsChecked="{Binding Config.P1DifficultyB}" Content="{l:Translate chkP1DifficultyB}" />
 						<CheckBox IsChecked="{Binding Config.ColorMode}" Content="{l:Translate chkColorMode}" />
@@ -56,6 +57,7 @@
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
 					<c:OptionSection Header="{l:Translate lblDeveloperSettings}" Margin="0">
+						<TextBlock Margin="0 0 0 8" Foreground="Gray" TextWrapping="Wrap" Text="{l:Translate lblAtari2600DeveloperSettingsHint}" />
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="{l:Translate lblRamPowerOnState}" />
 							<c:EnumComboBox SelectedItem="{Binding Config.RamPowerOnState}" Width="200" />
@@ -73,6 +75,7 @@
 					<v:VideoConfigOverrideView DataContext="{Binding Config.ConfigOverrides}" />
 
 					<c:OptionSection Header="{l:Translate lblDisplaySettings}">
+						<TextBlock Margin="0 0 0 8" Foreground="Gray" TextWrapping="Wrap" Text="{l:Translate lblAtari2600VideoHint}" />
 						<c:CheckBoxWarning IsChecked="{Binding Config.HidePlayfield}" Text="{l:Translate chkHidePlayfield}" />
 						<c:CheckBoxWarning IsChecked="{Binding Config.HidePlayer0}" Text="{l:Translate chkHidePlayer0}" />
 						<c:CheckBoxWarning IsChecked="{Binding Config.HidePlayer1}" Text="{l:Translate chkHidePlayer1}" />

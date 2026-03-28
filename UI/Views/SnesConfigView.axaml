@@ -18,7 +18,7 @@
 	<Design.DataContext>
 		<vm:SnesConfigViewModel />
 	</Design.DataContext>
-	
+
 	<UserControl.Styles>
 		<Style Selector="TextBlock.red">
 			<Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
@@ -27,7 +27,7 @@
 			<Setter Property="Foreground" Value="{DynamicResource NexenNotRecommendedInactiveBrush}" />
 		</Style>
 	</UserControl.Styles>
-	
+
 	<TabControl TabStripPlacement="Top" SelectedIndex="{Binding SelectedTab}">
 		<TabItem Header="{l:Translate tpgGeneral}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
@@ -44,7 +44,7 @@
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
-		
+
 		<TabItem Header="{l:Translate tpgAudio}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
@@ -79,7 +79,7 @@
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
-		
+
 		<TabItem Header="{l:Translate tpgEmulation}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
@@ -104,7 +104,7 @@
 							/>
 						</StackPanel>
 					</Grid>
-					
+
 					<c:CheckBoxWarning IsChecked="{Binding Config.EnableRandomPowerOnState}" Text="{l:Translate chkRandomPowerOnState}" />
 					<c:CheckBoxWarning IsChecked="{Binding Config.EnableStrictBoardMappings}" Text="{l:Translate chkStrictBoardMappings}" />
 				</StackPanel>
@@ -120,7 +120,7 @@
 				<StackPanel>
 					<Border BorderThickness="1" BorderBrush="Gray" Padding="3" Width="370" HorizontalAlignment="Left">
 						<Panel>
-							<Image Source="/Assets/Help.svg" Margin="0" Width="16" Height="16" HorizontalAlignment="Left" />
+							<Image Source="{SvgImage /Assets/Help.svg}" Margin="0" Width="16" Height="16" HorizontalAlignment="Left" />
 							<TextBlock Text="{l:Translate lblOverclockHint}" TextWrapping="Wrap" Margin="25 0 0 0" />
 						</Panel>
 					</Border>

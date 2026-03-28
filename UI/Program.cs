@@ -147,8 +147,11 @@ class Program {
 	}
 
 	// Avalonia configuration, don't remove; also used by visual designer.
-	public static AppBuilder BuildAvaloniaApp()
-		 => AppBuilder.Configure<App>()
+	public static AppBuilder BuildAvaloniaApp() {
+		// Ensure SVG support assembly is preserved by the trimmer/AOT
+		GC.KeepAlive(typeof(Avalonia.Svg.Skia.SvgImageExtension).Assembly);
+
+		return AppBuilder.Configure<App>()
 				.UseReactiveUI()
 				.UsePlatformDetect()
 				.With(new Win32PlatformOptions { })
@@ -157,4 +160,5 @@ class Program {
 				})
 				.With(new AvaloniaNativePlatformOptions { RenderingMode = new AvaloniaNativeRenderingMode[] { AvaloniaNativeRenderingMode.OpenGl, AvaloniaNativeRenderingMode.Software } })
 				.LogToTrace();
+	}
 }
