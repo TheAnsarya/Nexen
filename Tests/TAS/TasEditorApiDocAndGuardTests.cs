@@ -241,6 +241,16 @@ public class TasEditorApiDocAndGuardTests : IDisposable {
 		// Guard should prevent crash
 	}
 
+	[Fact]
+	public void RerecordFromSelected_SelectedFrameOutOfRange_SetsStatusMessage() {
+		SetMovie(CreateTestMovie(10));
+		_vm.SelectedFrameIndex = 99;
+
+		_vm.RerecordFromSelected();
+
+		Assert.Equal("Failed to rerecord - selected frame is out of range", _vm.StatusMessage);
+	}
+
 	#endregion
 
 	#region TogglePlayback

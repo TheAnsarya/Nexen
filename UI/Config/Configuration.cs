@@ -35,6 +35,7 @@ public partial class Configuration : ReactiveObject {
 	[Reactive] public WsConfig Ws { get; set; } = new();
 	[Reactive] public LynxConfig Lynx { get; set; } = new();
 	[Reactive] public Atari2600Config Atari2600 { get; set; } = new();
+	[Reactive] public ChannelFConfig ChannelF { get; set; } = new();
 	[Reactive] public PreferencesConfig Preferences { get; set; } = new();
 	[Reactive] public AudioPlayerConfig AudioPlayer { get; set; } = new();
 	[Reactive] public DebugConfig Debug { get; set; } = new();
@@ -87,6 +88,8 @@ public partial class Configuration : ReactiveObject {
 		Cv.ApplyConfig();
 		Ws.ApplyConfig();
 		Lynx.ApplyConfig();
+		Atari2600.ApplyConfig();
+		ChannelF.ApplyConfig();
 		Preferences.ApplyConfig();
 		AudioPlayer.ApplyConfig();
 		Debug.ApplyConfig();
@@ -133,6 +136,10 @@ public partial class Configuration : ReactiveObject {
 			Debug.Integration.BackgroundCdlRecording = false;
 		}
 
+		if (ConfigUpgrade < (int)ConfigUpgradeHint.ChannelFInput) {
+			ChannelF.InitializeDefaults(DefaultKeyMappings);
+		}
+
 		ConfigUpgrade = (int)ConfigUpgradeHint.NextValue - 1;
 		Version = EmuApi.GetNexenVersion().ToString(3);
 	}
@@ -148,6 +155,7 @@ public partial class Configuration : ReactiveObject {
 			Cv.InitializeDefaults(DefaultKeyMappings);
 			Ws.InitializeDefaults(DefaultKeyMappings);
 			Lynx.InitializeDefaults(DefaultKeyMappings);
+			ChannelF.InitializeDefaults(DefaultKeyMappings);
 			ConfigUpgrade = (int)ConfigUpgradeHint.NextValue - 1;
 		}
 
@@ -317,5 +325,6 @@ public enum ConfigUpgradeHint {
 	WsInput,
 	BackgroundCdlRecording,
 	LynxInput,
+	ChannelFInput,
 	NextValue,
 }

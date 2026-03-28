@@ -71,6 +71,17 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Genesis Breakdown](research/platform-parity/genesis/README.md) | Comparative Genesis emulator architecture research |
 | [Compatibility Path](research/platform-parity/compatibility/sonic1-jurassic-park.md) | Sonic 1 and Jurassic Park execution milestones |
 
+## Fairchild Channel F Program
+
+| Document | Description |
+| ---------- | ------------- |
+| [Channel F Master Program Plan](plans/channel-f-master-program-plan.md) | End-to-end multi-epic roadmap and quality gates |
+| [Channel F Implementation Architecture](plans/channel-f-implementation-architecture.md) | Core and integration design for CPU/bus/video/audio/input/tooling |
+| [Channel F Testing and Benchmark Plan](plans/channel-f-testing-and-benchmark-plan.md) | Correctness, performance, and memory validation framework |
+| [Channel F Ordered Prompt Pack](plans/channel-f-implementation-prompts.md) | Session-by-session execution prompts |
+| [Channel F Source Index](research/channel-f-source-index.md) | External technical references and mapping to issue tree |
+| [Channel F Origin Prompt](plans/channel-f-origin-prompt.md) | Canonical request tracked on all related issues |
+
 ## 📁 Subfolders
 
 | Folder | Description |
@@ -102,8 +113,14 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Genesis Z80 Audio Integration Staging](plans/genesis-z80-audio-integration-staging.md) | Phased Z80/YM2612/SN76489 integration and risk controls (#702) |
 | [Platform Parity Benchmark and Correctness Gates](plans/platform-parity-benchmark-and-correctness-gates.md) | Cross-phase quality gates and evidence framework (#703) |
 | [Atari 2600 + Genesis Parity Tracker](plans/atari2600-genesis-parity-tracker.md) | Active multi-phase checklist, issue linkage, and closure criteria for parity execution (#750) |
+| [UI Settings Completeness Plan](plans/ui-settings-completeness-epic-18.md) | Epic #1040 execution plan for cross-platform settings/input/movie/savestate UX completeness |
+| [Epic 22 Stability and Modernization Plan](plans/epic-22-stability-modernization-plan-2026-03-28.md) | Execution plan for crash/segfault mitigation, runtime compatibility, warning hardening, and modernization gates (#1048-#1055) |
+| [Epic 22 Validation Pack](testing/epic-22-validation-pack-2026-03-28.md) | Build/test/benchmark/runtime evidence snapshot for the 2026-03-28 stabilization pass |
+| [Linux Runtime Crash Matrix](testing/linux-runtime-crash-matrix-2026-03-28.md) | Distro-by-distro crash/segfault signature matrix with current mitigation status for #1049 |
+| [Linux Crash Hardening Fix Order](plans/linux-crash-hardening-order-2026-03-28.md) | Ordered stabilization sequence for runtime dependencies, warnings, and cross-distro validation (#1049, #1051, #1054) |
 | [Platform Parity Source Index](research/platform-parity/source-index.md) | External hardware and emulator code references used by research docs |
 | [Atari 2600 TAS and Movie UI Coverage Audit](testing/atari2600-tas-ui-coverage-audit.md) | Automated and manual validation status for Atari 2600 TAS and movie UI release readiness |
+| [UI Settings Coverage Matrix (2026-03-28)](testing/ui-settings-coverage-matrix-2026-03-28.md) | Initial cross-platform settings/config/input/movie/savestate UI gap matrix and action checklist |
 | [User Future Work Index](../docs/FUTURE-WORK.md) | Public roadmap entry for active and upcoming tracks |
 | [User Tutorials Index](../docs/TUTORIALS.md) | Step-by-step user and contributor workflow tutorials |
 

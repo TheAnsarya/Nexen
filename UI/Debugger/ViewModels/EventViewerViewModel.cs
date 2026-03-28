@@ -311,6 +311,7 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 			CpuType.Ws => Config.WsConfig,
 			CpuType.Lynx => Config.LynxConfig,
 			CpuType.Atari2600 => Config.Atari2600Config,
+			CpuType.ChannelF => Config.ChannelFConfig,
 			_ => throw new Exception("Invalid cpu type")
 		};
 	}
@@ -410,6 +411,7 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 			CpuType.Ws => new PixelPoint(evt.Cycle * 2, evt.Scanline * 2),
 			CpuType.Lynx => new PixelPoint(evt.Cycle * 2, evt.Scanline * 2),
 			CpuType.Atari2600 => new PixelPoint(evt.Cycle * 2, evt.Scanline * 2),
+			CpuType.ChannelF => new PixelPoint(evt.Cycle * 2, evt.Scanline * 2),
 			_ => throw new Exception("Invalid cpu type")
 		};
 	}
@@ -482,6 +484,18 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 				yPos = result.Y / 2;
 				break;
 
+			case CpuType.Atari2600:
+				result.X = p.X / 2 * 2;
+				xPos = result.X / 2;
+				yPos = result.Y / 2;
+				break;
+
+			case CpuType.ChannelF:
+				result.X = p.X / 2 * 2;
+				xPos = result.X / 2;
+				yPos = result.Y / 2;
+				break;
+
 			default:
 				throw new Exception("Invalid cpu type");
 		}
@@ -513,6 +527,8 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 			DebugApi.SetEventViewerConfig(CpuType, lynxCfg.ToInterop());
 		} else if (ConsoleConfig is Atari2600EventViewerConfig a2600Cfg) {
 			DebugApi.SetEventViewerConfig(CpuType, a2600Cfg.ToInterop());
+		} else if (ConsoleConfig is ChannelFEventViewerConfig channelFCfg) {
+			DebugApi.SetEventViewerConfig(CpuType, channelFCfg.ToInterop());
 		}
 	}
 

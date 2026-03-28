@@ -91,6 +91,7 @@ public static class PansyExporter {
 		[RomFormat.Ws] = 0x0a,       // WonderSwan
 		[RomFormat.Lynx] = 0x09,     // Atari Lynx
 		[RomFormat.Atari2600] = 0x08, // Atari 2600
+		[RomFormat.ChannelF] = 0x1f, // Fairchild Channel F
 	}.ToFrozenDictionary();
 
 	/// <summary>
@@ -807,6 +808,14 @@ public static class PansyExporter {
 				regions.Add((0x0080, 0x00FF, "RAM", PansyMemoryRegionType.RAM, (byte)MemoryType.Atari2600Ram));
 				regions.Add((0x0280, 0x029F, "RIOT", PansyMemoryRegionType.IO, (byte)MemoryType.Atari2600Memory));
 				regions.Add((0x1000, 0x1FFF, "Cart_ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.Atari2600PrgRom));
+				break;
+
+			case ConsoleType.ChannelF:
+				// Fairchild Channel F Memory Map
+				regions.Add((0x0000, 0x17ff, "Cartridge_ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.None));
+				regions.Add((0x2800, 0x2fff, "System_RAM", PansyMemoryRegionType.RAM, (byte)MemoryType.None));
+				regions.Add((0x3000, 0x37ff, "Video_RAM", PansyMemoryRegionType.VRAM, (byte)MemoryType.None));
+				regions.Add((0x3800, 0x38ff, "IO_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.None));
 				break;
 
 			// Add more console types as needed

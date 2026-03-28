@@ -298,7 +298,7 @@
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
-		
+
 		<TabItem Header="{l:Translate tpgEmulation}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
@@ -342,13 +342,13 @@
 		<TabItem Header="{l:Translate tpgInput}">
 			<v:NesInputConfigView DataContext="{Binding Input}" />
 		</TabItem>
-		
+
 		<TabItem Header="{l:Translate tpgOverclocking}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
 					<Border BorderThickness="1" BorderBrush="Gray" Padding="3" Width="370" HorizontalAlignment="Left">
 						<Panel>
-							<Image Source="/Assets/Help.svg" Margin="0" Width="16" Height="16" HorizontalAlignment="Left" />
+							<Image Source="{SvgImage /Assets/Help.svg}" Margin="0" Width="16" Height="16" HorizontalAlignment="Left" />
 							<TextBlock Text="{l:Translate lblOverclockHint}" TextWrapping="Wrap" Margin="25 0 0 0" />
 						</Panel>
 					</Border>
@@ -379,7 +379,7 @@
 						<c:CheckBoxWarning IsChecked="{Binding Config.ForceBackgroundFirstColumn}" Text="{l:Translate chkForceBackgroundFirstColumn}" />
 						<c:CheckBoxWarning IsChecked="{Binding Config.ForceSpritesFirstColumn}" Text="{l:Translate chkForceSpritesFirstColumn}" />
 					</c:OptionSection>
-					
+
 					<c:OptionSection Header="{l:Translate lblPalette}">
 						<c:PaletteConfig
 							ColumnCount="16"
@@ -393,7 +393,7 @@
 						<CheckBox IsChecked="{Binding ShowColorIndexes}" Content="{l:Translate chkShowColorIndexes}" />
 						<CheckBox IsChecked="{Binding Config.UseCustomVsPalette}" Content="{l:Translate chkUseCustomVsPalette}" />
 					</c:OptionSection>
-					
+
 					<c:OptionSection Header="{l:Translate lblOverscan}" HorizontalAlignment="Left">
 						<Border BorderBrush="{StaticResource NexenGrayBorderColor}" BorderThickness="1" Margin="0 0 0 5">
 							<TabControl>

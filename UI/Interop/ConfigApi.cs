@@ -30,6 +30,7 @@ public sealed class ConfigApi {
 	[DllImport(DllPath)] public static extern void SetLynxConfig(InteropLynxConfig config);
 	[DllImport(DllPath)] public static extern void SetGenesisConfig(InteropGenesisConfig config);
 	[DllImport(DllPath)] public static extern void SetAtari2600Config(InteropAtari2600Config config);
+	[DllImport(DllPath)] public static extern void SetChannelFConfig(InteropChannelFConfig config);
 
 	[DllImport(DllPath)] public static extern void SetGameConfig(InteropGameConfig config);
 
@@ -42,7 +43,11 @@ public sealed class ConfigApi {
 	[DllImport(DllPath)] public static extern void SetEmulationFlag(EmulationFlags flag, bool enabled);
 	[DllImport(DllPath)] public static extern void SetDebuggerFlag(DebuggerFlags flag, bool enabled);
 
-	[DllImport(DllPath)] public static extern InteropNesConfig GetNesConfig();
+	[DllImport(DllPath, EntryPoint = "GetNesConfig")] private static extern void GetNesConfigWrapper(out InteropNesConfig config);
+	public static InteropNesConfig GetNesConfig() {
+		GetNesConfigWrapper(out InteropNesConfig config);
+		return config;
+	}
 
 	[DllImport(DllPath, EntryPoint = "GetAudioDevices")] private static extern void GetAudioDevicesWrapper(IntPtr outDeviceList, Int32 maxSize);
 	public unsafe static List<string> GetAudioDevices() {
@@ -76,6 +81,7 @@ public enum DebuggerFlags : UInt32 {
 	WsDebuggerEnabled = 1 << 12,
 	LynxDebuggerEnabled = 1 << 13,
 	Atari2600DebuggerEnabled = 1 << 14,
+	ChannelFDebuggerEnabled = 1 << 15,
 }
 
 public struct InteropShortcutKeyInfo {

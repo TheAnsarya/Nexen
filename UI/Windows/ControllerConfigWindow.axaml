@@ -28,7 +28,7 @@
 	<StackPanel>
 		<Border BorderThickness="1" BorderBrush="Gray" Padding="3" Margin="2">
 			<Panel>
-				<Image Source="/Assets/Help.svg" Margin="0" Width="16" Height="16" HorizontalAlignment="Left" />
+				<Image Source="{SvgImage /Assets/Help.svg}" Margin="0" Width="16" Height="16" HorizontalAlignment="Left" />
 				<TextBlock Text="{l:Translate lblHint}" TextWrapping="Wrap" Margin="25 0 0 0" VerticalAlignment="Center" />
 			</Panel>
 		</Border>
@@ -40,10 +40,10 @@
 		</TabControl>
 
 		<Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
-			<Button 
+			<Button
 				Name="PresetButton"
 				Content="{l:Translate btnSelectPreset}"
-				Click="btnPreset_OnClick" 
+				Click="btnPreset_OnClick"
 				VerticalAlignment="Top"
 				Margin="12"
 				IsVisible="{Binding ShowPresets}"

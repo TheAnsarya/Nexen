@@ -36,10 +36,9 @@ FrameInfo BaseVideoFilter::GetFrameInfo() {
 void BaseVideoFilter::UpdateBufferSize() {
 	uint32_t newBufferSize = _frameInfo.Width * _frameInfo.Height;
 	if (_bufferSize != newBufferSize) {
-		_frameLock.Acquire();
+		// No lock needed — caller (SendFrame) already holds _frameLock
 		_bufferSize = newBufferSize;
 		_outputBuffer = std::make_unique<uint32_t[]>(newBufferSize);
-		_frameLock.Release();
 	}
 }
 

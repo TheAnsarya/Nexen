@@ -20,23 +20,23 @@ private:
 	uint32_t _prefetchAddr = 0;
 
 	// ===== Memory access =====
-	uint8_t Read8(uint32_t addr);
-	uint16_t Read16(uint32_t addr);
-	uint32_t Read32(uint32_t addr);
-	void Write8(uint32_t addr, uint8_t value);
-	void Write16(uint32_t addr, uint16_t value);
-	void Write32(uint32_t addr, uint32_t value);
+	__forceinline uint8_t Read8(uint32_t addr);
+	__forceinline uint16_t Read16(uint32_t addr);
+	__forceinline uint32_t Read32(uint32_t addr);
+	__forceinline void Write8(uint32_t addr, uint8_t value);
+	__forceinline void Write16(uint32_t addr, uint16_t value);
+	__forceinline void Write32(uint32_t addr, uint32_t value);
 
 	// ===== Stack =====
-	void Push16(uint16_t value);
-	void Push32(uint32_t value);
-	uint16_t Pop16();
-	uint32_t Pop32();
+	__forceinline void Push16(uint16_t value);
+	__forceinline void Push32(uint32_t value);
+	__forceinline uint16_t Pop16();
+	__forceinline uint32_t Pop32();
 
 	// ===== Instruction fetch =====
-	uint16_t FetchOpcode();
-	uint16_t FetchWord();
-	uint32_t FetchLong();
+	__forceinline uint16_t FetchOpcode();
+	__forceinline uint16_t FetchWord();
+	__forceinline uint32_t FetchLong();
 
 	// ===== Effective address resolution =====
 	// Returns the address for a given mode/register pair
@@ -61,10 +61,18 @@ private:
 	// ===== Active stack pointer =====
 	uint32_t& SP() { return _state.A[7]; }
 
-	// ===== Size helpers =====
-	static uint32_t SizeMask(uint8_t size);
-	static uint32_t SignBit(uint8_t size);
-	static bool IsNeg(uint32_t value, uint8_t size);
+	// ===== Size helpers (constexpr lookup tables — no branches) =====
+	static __forceinline constexpr uint32_t SizeMask(uint8_t size) {
+		constexpr uint32_t masks[] = { 0xff, 0xffff, 0xffffffff };
+		return masks[size];
+	}
+	static __forceinline constexpr uint32_t SignBit(uint8_t size) {
+		constexpr uint32_t bits[] = { 0x80, 0x8000, 0x80000000 };
+		return bits[size];
+	}
+	static __forceinline bool IsNeg(uint32_t value, uint8_t size) {
+		return (value & SignBit(size)) != 0;
+	}
 
 	// ===== Exception handling =====
 	void RaiseException(uint8_t vector);
@@ -75,7 +83,7 @@ private:
 
 	// ===== Instruction execution =====
 	void ExecuteInstruction(uint16_t opcode);
-	void AddCycles(uint32_t cycles);
+	__forceinline void AddCycles(uint32_t cycles);
 
 	// --- Data Movement ---
 	void Op_MOVE(uint16_t opcode);

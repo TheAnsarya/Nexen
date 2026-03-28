@@ -6,7 +6,7 @@
 
 uint8_t Atari2600Bus::Read(uint16_t addr) {
 	addr &= 0x1FFF;
-	if ((addr & 0x1000) == 0x1000 && _mapper) {
+	if ((addr & 0x1000) == 0x1000 && _mapper) [[likely]] {
 		return _mapper->Read(addr);
 	}
 	if ((addr & 0x1080) == 0x0080 && _riot) {

@@ -84,10 +84,14 @@ value. */
 
 /* Interface for user-defined custom blitters */
 
-enum { nes_ntsc_in_chunk = 3 };    /* number of input pixels read per chunk */
-enum { nes_ntsc_out_chunk = 7 };   /* number of output pixels generated per chunk */
-enum { nes_ntsc_black = 15 };      /* palette index for black */
-enum { nes_ntsc_burst_count = 3 }; /* burst phase cycles through 0, 1, and 2 */
+enum {
+	nes_ntsc_in_chunk = 3,      /* number of input pixels read per chunk */
+	nes_ntsc_out_chunk = 7,     /* number of output pixels generated per chunk */
+	nes_ntsc_black = 15,        /* palette index for black */
+	nes_ntsc_burst_count = 3,   /* burst phase cycles through 0, 1, and 2 */
+	nes_ntsc_entry_size = 128,
+	nes_ntsc_burst_size = nes_ntsc_entry_size / nes_ntsc_burst_count
+};
 
 /* Begins outputting row and starts three pixels. First pixel will be cut off a bit.
 Use nes_ntsc_black for unused pixels. Declares variables, so must be before first
@@ -110,12 +114,10 @@ statement in a block (unless you're using C++). */
 	NES_NTSC_RGB_OUT_14_(index, rgb_out, bits, 0)
 
 /* private */
-enum { nes_ntsc_entry_size = 128 };
 typedef unsigned long nes_ntsc_rgb_t;
 struct nes_ntsc_t {
 	nes_ntsc_rgb_t table[nes_ntsc_palette_size][nes_ntsc_entry_size];
 };
-enum { nes_ntsc_burst_size = nes_ntsc_entry_size / nes_ntsc_burst_count };
 
 #define NES_NTSC_ENTRY_(ktable, n) \
 	(nes_ntsc_rgb_t const*)(ktable + (n) * (nes_ntsc_entry_size * sizeof(nes_ntsc_rgb_t)))

@@ -60,6 +60,11 @@ public class ColorIndexPickerWindow : NexenWindow {
 				ColumnCount = 16;
 				break;
 
+			case CpuType.ChannelF:
+				Palette = GenerateChannelFPalette();
+				ColumnCount = 4;
+				break;
+
 			default:
 				throw new NotImplementedException();
 		}
@@ -145,6 +150,15 @@ public class ColorIndexPickerWindow : NexenWindow {
 		}
 
 		return pal;
+	}
+
+	private static UInt32[] GenerateChannelFPalette() {
+		return new UInt32[] {
+			0xff101010,
+			0xff1cdf1c,
+			0xff3131fd,
+			0xfffdfdfd
+		};
 	}
 
 	private static byte Rgb222To8Bit(byte color) {

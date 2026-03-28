@@ -52,11 +52,11 @@ DllExport void __stdcall NetPlaySelectController(NetplayControllerInfo controlle
 	}
 }
 
-DllExport NetplayControllerInfo __stdcall NetPlayGetControllerPort() {
+DllExport void __stdcall NetPlayGetControllerPort(NetplayControllerInfo& controllerInfo) {
 	if (_emu->GetGameServer()->Started()) {
-		return _emu->GetGameServer()->GetHostControllerPort();
+		controllerInfo = _emu->GetGameServer()->GetHostControllerPort();
 	} else {
-		return _emu->GetGameClient()->GetControllerPort();
+		controllerInfo = _emu->GetGameClient()->GetControllerPort();
 	}
 }
 }

@@ -181,7 +181,10 @@ public class PansyExporterTests
 	[InlineData(0x04, "GBA")]
 	[InlineData(0x06, "SMS")]
 	[InlineData(0x07, "PCEngine")]
-	[InlineData(0x0B, "WonderSwan")]
+	[InlineData(0x08, "Atari2600")]
+	[InlineData(0x09, "Lynx")]
+	[InlineData(0x0a, "WonderSwan")]
+	[InlineData(0x1f, "ChannelF")]
 	public void PlatformId_ValidValues_AreRecognized(byte id, string platformName)
 	{
 		Assert.True(id > 0, $"Platform {platformName} should have valid ID");
@@ -1021,6 +1024,150 @@ public class PansyExporterTests
 
 			// Section data
 			writer.Write(sectionData);
+		}
+
+		return ms.ToArray();
+	}
+
+	#endregion
+
+	#region Channel F Pansy Export Tests
+
+	[Fact]
+	public void ChannelF_PlatformId_Is0x1f()
+	{
+		// Verify Channel F platform ID matches Pansy spec constant
+		const byte expected = 0x1f;
+		Assert.Equal(expected, Pansy.Core.PansyLoader.PLATFORM_CHANNEL_F);
+	}
+
+	[Fact]
+	public void ChannelF_Header_CorrectPlatformByte()
+	{
+		// Build a minimal Pansy header for Channel F and verify the platform byte
+		using var ms = new MemoryStream();
+		using var writer = new BinaryWriter(ms);
+
+		writer.Write(Encoding.ASCII.GetBytes(MAGIC));
+		writer.Write(VERSION_1_0);
+		writer.Write((ushort)0);          // Flags
+		writer.Write((byte)0x1f);         // Platform: Channel F
+		writer.Write((byte)0);            // Reserved
+		writer.Write((ushort)0);          // Reserved
+		writer.Write((uint)0x1800);       // ROM size (6KB typical)
+		writer.Write((uint)0xAABBCCDD);   // ROM CRC
+		writer.Write((uint)0);            // Section count
+		writer.Write((uint)0);            // Reserved
+
+		ms.Position = 0;
+		var header = ReadTestHeader(ms);
+
+		Assert.NotNull(header);
+		Assert.Equal(0x1f, header.Platform);
+		Assert.Equal(0x1800u, header.RomSize);
+	}
+
+	[Fact]
+	public void ChannelF_MemoryRegions_HasFourRegions()
+	{
+		// Channel F should have exactly 4 memory regions
+		var regions = BuildChannelFMemoryRegions();
+		Assert.Equal(4, regions.Count);
+	}
+
+	[Fact]
+	public void ChannelF_MemoryRegions_CartridgeRom_CorrectRange()
+	{
+		var regions = BuildChannelFMemoryRegions();
+		var rom = regions[0];
+		Assert.Equal(0x0000u, rom.Start);
+		Assert.Equal(0x17ffu, rom.End);
+		Assert.Equal("Cartridge_ROM", rom.Name);
+	}
+
+	[Fact]
+	public void ChannelF_MemoryRegions_SystemRam_CorrectRange()
+	{
+		var regions = BuildChannelFMemoryRegions();
+		var ram = regions[1];
+		Assert.Equal(0x2800u, ram.Start);
+		Assert.Equal(0x2fffu, ram.End);
+		Assert.Equal("System_RAM", ram.Name);
+	}
+
+	[Fact]
+	public void ChannelF_MemoryRegions_VideoRam_CorrectRange()
+	{
+		var regions = BuildChannelFMemoryRegions();
+		var vram = regions[2];
+		Assert.Equal(0x3000u, vram.Start);
+		Assert.Equal(0x37ffu, vram.End);
+		Assert.Equal("Video_RAM", vram.Name);
+	}
+
+	[Fact]
+	public void ChannelF_MemoryRegions_IoRegisters_CorrectRange()
+	{
+		var regions = BuildChannelFMemoryRegions();
+		var io = regions[3];
+		Assert.Equal(0x3800u, io.Start);
+		Assert.Equal(0x38ffu, io.End);
+		Assert.Equal("IO_Registers", io.Name);
+	}
+
+	[Fact]
+	public void ChannelF_FullFile_RoundtripWithPansyLoader()
+	{
+		// Use PansyWriter + PansyLoader for a proper roundtrip test
+		var writer = new Pansy.Core.PansyWriter {
+			Platform = Pansy.Core.PansyLoader.PLATFORM_CHANNEL_F,
+			RomSize = 0x1800,
+			RomCrc32 = 0xAABBCCDD,
+		};
+
+		writer.AddMemoryRegion(new Pansy.Core.MemoryRegion(0x0000, 0x17ff, (byte)Pansy.Core.MemoryRegionType.ROM, 0, "Cartridge_ROM"));
+		writer.AddMemoryRegion(new Pansy.Core.MemoryRegion(0x2800, 0x2fff, (byte)Pansy.Core.MemoryRegionType.RAM, 0, "System_RAM"));
+		writer.AddMemoryRegion(new Pansy.Core.MemoryRegion(0x3000, 0x37ff, (byte)Pansy.Core.MemoryRegionType.VRAM, 0, "Video_RAM"));
+		writer.AddMemoryRegion(new Pansy.Core.MemoryRegion(0x3800, 0x38ff, (byte)Pansy.Core.MemoryRegionType.IO, 0, "IO_Registers"));
+
+		var fileBytes = writer.Generate();
+		var loader = new Pansy.Core.PansyLoader(fileBytes);
+
+		Assert.Equal(0x1f, loader.Platform);
+		Assert.Equal(0x1800u, loader.RomSize);
+		Assert.Equal(0xAABBCCDDu, loader.RomCrc32);
+		Assert.Equal(4, loader.MemoryRegions.Count);
+		Assert.Equal("Cartridge_ROM", loader.MemoryRegions[0].Name);
+		Assert.Equal("Video_RAM", loader.MemoryRegions[2].Name);
+	}
+
+	private sealed record ChannelFRegion(uint Start, uint End, string Name, byte Type, byte MemType);
+
+	private static List<ChannelFRegion> BuildChannelFMemoryRegions()
+	{
+		return [
+			new ChannelFRegion(0x0000, 0x17ff, "Cartridge_ROM", 1, 0), // ROM
+			new ChannelFRegion(0x2800, 0x2fff, "System_RAM", 2, 0),    // RAM
+			new ChannelFRegion(0x3000, 0x37ff, "Video_RAM", 3, 0),     // VRAM
+			new ChannelFRegion(0x3800, 0x38ff, "IO_Registers", 4, 0),  // IO
+		];
+	}
+
+	private static byte[] BuildChannelFRegionSection(List<ChannelFRegion> regions)
+	{
+		using var ms = new MemoryStream();
+		using var writer = new BinaryWriter(ms);
+
+		writer.Write((uint)regions.Count);
+		foreach (var region in regions) {
+			writer.Write(region.Start);
+			writer.Write(region.End);
+			writer.Write(region.Type);
+			writer.Write(region.MemType);
+			writer.Write((ushort)0); // Flags
+			byte[] nameBytes = Encoding.UTF8.GetBytes(region.Name);
+			writer.Write((ushort)nameBytes.Length);
+			writer.Write(nameBytes);
 		}
 
 		return ms.ToArray();

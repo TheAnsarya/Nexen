@@ -6,6 +6,7 @@
 #include "SNES/SnesCpu.h"
 #include "SNES/SnesMemoryManager.h"
 #include "SNES/BaseCartridge.h"
+#include "SNES/CartTypes.h"
 #include "SNES/RamHandler.h"
 #include "Shared/Emulator.h"
 #include "Shared/EmuSettings.h"
@@ -50,25 +51,57 @@ Gsu::Gsu(SnesConsole* console, uint32_t gsuRamSize) {
 	cpuMappings->RegisterHandler(0x00, 0x3F, 0x3000, 0x3FFF, this);
 	cpuMappings->RegisterHandler(0x80, 0xBF, 0x3000, 0x3FFF, this);
 
-	for (int i = 0; i < 0x3F; i++) {
-		cpuMappings->RegisterHandler(i, i, 0x6000, 0x7FFF, _gsuCpuRamHandlers);
-		cpuMappings->RegisterHandler(i + 0x80, i + 0x80, 0x6000, 0x7FFF, _gsuCpuRamHandlers);
+	if (_console->GetCartridge()->GetCartFlags() & CartFlags::HiRom) {
+		// HiROM+GSU mapping
+		uint32_t pageIncrement = 8;
+
+		for (uint8_t i = 0; i < 0x3F; i++) {
+			cpuMappings->RegisterHandler(i, i, 0x6000, 0x7FFF, _gsuCpuRamHandlers);
+			cpuMappings->RegisterHandler(i + 0x80, i + 0x80, 0x6000, 0x7FFF, _gsuCpuRamHandlers);
+		}
+
+		cpuMappings->RegisterHandler(0x00, 0x3F, 0x8000, 0xFFFF, _gsuCpuRomHandlers, pageIncrement);
+		cpuMappings->RegisterHandler(0x80, 0xBF, 0x8000, 0xFFFF, _gsuCpuRomHandlers, pageIncrement);
+
+		// ROM at $40-$6F (skip $70-$71 GSU RAM) and $72-$7D
+		cpuMappings->RegisterHandler(0x40, 0x6F, 0x0000, 0xFFFF, _gsuCpuRomHandlers);
+		cpuMappings->RegisterHandler(0x72, 0x7D, 0x0000, 0xFFFF, _gsuCpuRomHandlers);
+
+		// Mirrors at $C0-$EF and $F2-$FF
+		cpuMappings->RegisterHandler(0xC0, 0xEF, 0x0000, 0xFFFF, _gsuCpuRomHandlers);
+		cpuMappings->RegisterHandler(0xF2, 0xFF, 0x0000, 0xFFFF, _gsuCpuRomHandlers);
+
+		// RAM at $70-$71 and $F0-$F1 (registered AFTER ROM so it overrides)
+		cpuMappings->RegisterHandler(0x70, 0x71, 0x0000, 0xFFFF, _gsuCpuRamHandlers);
+		cpuMappings->RegisterHandler(0xF0, 0xF1, 0x0000, 0xFFFF, _gsuCpuRamHandlers);
+
+		// GSU mappings (HiROM - linear 64KB per bank)
+		for (uint32_t bank = 0; bank < (uint32_t)prgRomHandlers.size() / 16; bank++) {
+			_mappings.RegisterHandler(bank, bank, 0x0000, 0xFFFF, prgRomHandlers, bank * 16);
+		}
+		_mappings.RegisterHandler(0x70, 0x71, 0x0000, 0xFFFF, _gsuRamHandlers);
+	} else {
+		// LoROM+GSU mapping (original)
+		for (int i = 0; i < 0x3F; i++) {
+			cpuMappings->RegisterHandler(i, i, 0x6000, 0x7FFF, _gsuCpuRamHandlers);
+			cpuMappings->RegisterHandler(i + 0x80, i + 0x80, 0x6000, 0x7FFF, _gsuCpuRamHandlers);
+		}
+		cpuMappings->RegisterHandler(0x70, 0x71, 0x0000, 0xFFFF, _gsuCpuRamHandlers);
+		cpuMappings->RegisterHandler(0xF0, 0xF1, 0x0000, 0xFFFF, _gsuCpuRamHandlers);
+
+		cpuMappings->RegisterHandler(0x00, 0x3F, 0x8000, 0xFFFF, _gsuCpuRomHandlers);
+		cpuMappings->RegisterHandler(0x80, 0xBF, 0x8000, 0xFFFF, _gsuCpuRomHandlers);
+
+		cpuMappings->RegisterHandler(0x40, 0x5F, 0x0000, 0xFFFF, _gsuCpuRomHandlers);
+		cpuMappings->RegisterHandler(0xC0, 0xDF, 0x0000, 0xFFFF, _gsuCpuRomHandlers);
+
+		// GSU mappings
+		_mappings.RegisterHandler(0x00, 0x3F, 0x8000, 0xFFFF, prgRomHandlers);
+		_mappings.RegisterHandler(0x00, 0x3F, 0x0000, 0x7FFF, prgRomHandlers); // Mirror
+
+		_mappings.RegisterHandler(0x40, 0x5F, 0x0000, 0xFFFF, prgRomHandlers);
+		_mappings.RegisterHandler(0x70, 0x71, 0x0000, 0xFFFF, _gsuRamHandlers);
 	}
-	cpuMappings->RegisterHandler(0x70, 0x71, 0x0000, 0xFFFF, _gsuCpuRamHandlers);
-	cpuMappings->RegisterHandler(0xF0, 0xF1, 0x0000, 0xFFFF, _gsuCpuRamHandlers);
-
-	cpuMappings->RegisterHandler(0x00, 0x3F, 0x8000, 0xFFFF, _gsuCpuRomHandlers);
-	cpuMappings->RegisterHandler(0x80, 0xBF, 0x8000, 0xFFFF, _gsuCpuRomHandlers);
-
-	cpuMappings->RegisterHandler(0x40, 0x5F, 0x0000, 0xFFFF, _gsuCpuRomHandlers);
-	cpuMappings->RegisterHandler(0xC0, 0xDF, 0x0000, 0xFFFF, _gsuCpuRomHandlers);
-
-	// GSU mappings
-	_mappings.RegisterHandler(0x00, 0x3F, 0x8000, 0xFFFF, prgRomHandlers);
-	_mappings.RegisterHandler(0x00, 0x3F, 0x0000, 0x7FFF, prgRomHandlers); // Mirror
-
-	_mappings.RegisterHandler(0x40, 0x5F, 0x0000, 0xFFFF, prgRomHandlers);
-	_mappings.RegisterHandler(0x70, 0x71, 0x0000, 0xFFFF, _gsuRamHandlers);
 }
 
 Gsu::~Gsu() = default;
@@ -628,7 +661,7 @@ void Gsu::WaitRamOperation() {
 }
 
 void Gsu::WaitForRomAccess() {
-	if (!_state.GsuRomAccess) {
+	if (!_state.GsuRomAccess && _state.ProgramBank <= 0x5F) {
 		_waitForRomAccess = true;
 		_stopped = true;
 	}
@@ -668,7 +701,7 @@ void Gsu::Step(uint64_t cycles) {
 	_state.CycleCount += cycles;
 
 	if (_state.RomDelay) {
-		_state.RomDelay -= std::min<uint8_t>((uint8_t)cycles, _state.RomDelay);
+		_state.RomDelay -= (cycles >= _state.RomDelay) ? _state.RomDelay : (uint8_t)cycles;
 		if (_state.RomDelay == 0) {
 			WaitForRomAccess();
 			_state.RomReadBuffer = ReadGsu((_state.RomBank << 16) | _state.R[14], MemoryOperationType::Read);
@@ -677,7 +710,7 @@ void Gsu::Step(uint64_t cycles) {
 	}
 
 	if (_state.RamDelay) {
-		_state.RamDelay -= std::min<uint8_t>((uint8_t)cycles, _state.RamDelay);
+		_state.RamDelay -= (cycles >= _state.RamDelay) ? _state.RamDelay : (uint8_t)cycles;
 		if (_state.RamDelay == 0) {
 			WaitForRamAccess();
 			WriteGsu(0x700000 | (_state.RamBank << 16) | _state.RamWriteAddress, _state.RamWriteValue, MemoryOperationType::Write);
@@ -825,6 +858,14 @@ void Gsu::Write(uint32_t addr, uint8_t value) {
 				_state.RomDelay = _state.ClockSelect ? 5 : 6;
 			} else if (addr == 0x301F) {
 				_state.SFR.Running = true;
+				_waitForRomAccess = false;
+				_waitForRamAccess = false;
+				_state.SFR.RomReadPending = false;
+				_state.RomDelay = 0;
+				_state.RamDelay = 0;
+				if (_state.CycleCount < _memoryManager->GetMasterClock() * _clockMultiplier) {
+					_state.CycleCount = _memoryManager->GetMasterClock() * _clockMultiplier;
+				}
 				UpdateRunningState();
 			}
 			break;

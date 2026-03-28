@@ -148,7 +148,31 @@
 		<ClCompile Include="Lynx\LynxUartBench.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="Lynx\ComLynxCableBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="ChannelF\ChannelFCoreBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Lynx\LynxAllocBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Lynx\LynxPpuToolsBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Lynx\LynxDisUtilsBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Lynx\LynxCartBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Lynx\LynxDecryptBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Lynx\LynxEepromBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Lynx\LynxGameDatabaseBench.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
 		<ClCompile Include="Debugger\DebuggerPipelineBench.cpp">

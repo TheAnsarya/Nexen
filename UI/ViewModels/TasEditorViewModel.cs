@@ -2698,6 +2698,11 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			return;
 		}
 
+		if (SelectedFrameIndex >= Movie.InputFrames.Count) {
+			StatusMessage = "Failed to rerecord - selected frame is out of range";
+			return;
+		}
+
 		if (Recorder.RerecordFrom(SelectedFrameIndex)) {
 			UpdateFrames();
 			HasUnsavedChanges = true;
@@ -3215,6 +3220,7 @@ tas.finishSearch(true) -- Load best result</pre>
 			SystemType.Ws => ControllerLayout.WonderSwan,
 			SystemType.Lynx => ControllerLayout.Lynx,
 			SystemType.A2600 => ControllerLayout.Atari2600,
+			SystemType.ChannelF => ControllerLayout.ChannelF,
 			_ => Movie.SourceFormat switch {
 				// Fallback to source format hints
 				MovieFormat.Fm2 => ControllerLayout.Nes,
@@ -3243,6 +3249,7 @@ tas.finishSearch(true) -- Load best result</pre>
 			ControllerLayout.WonderSwan => GetWonderSwanButtons(),
 			ControllerLayout.Lynx => GetLynxButtons(),
 			ControllerLayout.Atari2600 => GetAtari2600Buttons(),
+			ControllerLayout.ChannelF => GetChannelFButtons(),
 			_ => GetSnesButtons()
 		};
 		this.RaisePropertyChanged(nameof(PianoRollButtonLabels));
@@ -3417,6 +3424,17 @@ tas.finishSearch(true) -- Load best result</pre>
 		new("DOWN", "↓", 1, 1),
 		new("LEFT", "←", 2, 1),
 		new("RIGHT", "→", 3, 1),
+	};
+
+	private static List<ControllerButtonInfo> GetChannelFButtons() => new() {
+		new("RIGHT", "→", 0, 0),
+		new("LEFT", "←", 1, 0),
+		new("BACK", "Bk", 2, 0),
+		new("FORWARD", "Fw", 3, 0),
+		new("TWISTCCW", "↺", 0, 1),
+		new("TWISTCW", "↻", 1, 1),
+		new("PULL", "Pl", 2, 1),
+		new("PUSH", "Ps", 3, 1),
 	};
 
 	#endregion
@@ -3790,7 +3808,10 @@ public enum ControllerLayout {
 	Lynx,
 
 	/// <summary>Atari 2600 - varies by controller type (Joystick, Paddle, Keypad, Driving, BoosterGrip)</summary>
-	Atari2600
+	Atari2600,
+
+	/// <summary>Fairchild Channel F - Right, Left, Back, Forward, Twist CCW, Twist CW, Pull, Push</summary>
+	ChannelF
 }
 
 /// <summary>

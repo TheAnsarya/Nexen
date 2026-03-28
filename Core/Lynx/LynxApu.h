@@ -52,6 +52,18 @@ private:
 	/// <summary>Same prescaler values as system timers: {4,8,16,32,64,128,256,0}</summary>
 	static constexpr uint32_t _prescalerPeriods[8] = { 4, 8, 16, 32, 64, 128, 256, 0 };
 
+	/// <summary>Bitmask of channels that need per-Tick() processing.
+	/// A channel is tickable when it is enabled AND not linked (clock source != 7).
+	/// Linked channels are driven by cascade only.
+	/// Mirrors Mikey's _tickableMask pattern for system timers.</summary>
+	uint8_t _channelTickableMask = 0;
+
+	/// <summary>Update the tickable bit for one audio channel.</summary>
+	void UpdateChannelTickableMask(int ch);
+
+	/// <summary>Recalculate _channelTickableMask for all 4 channels.</summary>
+	void RecalculateChannelTickableMask();
+
 	/// <summary>Clock a single audio channel's LFSR (called on timer underflow)</summary>
 	void ClockChannel(int ch);
 

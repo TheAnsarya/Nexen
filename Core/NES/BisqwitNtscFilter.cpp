@@ -49,7 +49,7 @@ BisqwitNtscFilter::BisqwitNtscFilter(Emulator* emu) : BaseVideoFilter(emu) {
 		}
 	}
 
-	_extraThread = std::thread([=]() {
+	_extraThread = std::thread([this]() {
 		// Worker thread to improve decode speed
 		while (!_stopThread) {
 			_waitWork.Wait();
@@ -276,9 +276,9 @@ void BisqwitNtscFilter::DecodeFrame(int startRow, int endRow, uint16_t* ppuOutpu
  *         would convey in the colorburst period in the beginning of each scanline.
  */
 void BisqwitNtscFilter::NtscDecodeLine(int width, const int8_t* signal, uint32_t* target, int phase0) {
-	auto Read = [=](int pos) -> char { return pos >= 0 && pos < width ? signal[pos] : 0; };
-	auto Cos = [=](int pos) -> char { return _sinetable[(pos + 36) % 12 + phase0]; };
-	auto Sin = [=](int pos) -> char { return _sinetable[(pos + 36) % 12 + 3 + phase0]; };
+	auto Read = [width, signal](int pos) -> char { return pos >= 0 && pos < width ? signal[pos] : 0; };
+	auto Cos = [this, phase0](int pos) -> char { return _sinetable[(pos + 36) % 12 + phase0]; };
+	auto Sin = [this, phase0](int pos) -> char { return _sinetable[(pos + 36) % 12 + 3 + phase0]; };
 
 	int ysum = _brightness, isum = 0, qsum = 0;
 	int leftOverscan = GetOverscan().Left * 8;

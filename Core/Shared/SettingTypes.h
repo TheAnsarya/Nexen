@@ -243,7 +243,11 @@ enum class ControllerType {
 	Atari2600Paddle,
 	Atari2600Keypad,
 	Atari2600DrivingController,
-	Atari2600BoosterGrip
+	Atari2600BoosterGrip,
+
+	// Channel F
+	ChannelFController,
+	ChannelFConsolePanel
 };
 
 struct KeyMapping {
@@ -360,7 +364,8 @@ enum class ConsoleType {
 	Ws = 6,
 	Lynx = 7,
 	Atari2600 = 8,
-	Genesis = 9
+	Genesis = 9,
+	ChannelF = 10
 };
 
 enum class GameboyModel {
@@ -797,6 +802,15 @@ struct Atari2600Config {
 	bool HideBall = false;
 };
 
+struct ChannelFConfig {
+	ControllerConfig Controller;
+	ControllerConfig ConsolePanel;
+
+	RamState RamPowerOnState = RamState::AllZeros;
+
+	uint32_t AudioVol = 100;
+};
+
 struct AudioPlayerConfig {
 	uint32_t Volume = 100;
 	bool Repeat = false;
@@ -1121,4 +1135,5 @@ enum class DebuggerFlags {
 	WsDebuggerEnabled = (1 << 12),
 	LynxDebuggerEnabled = (1 << 13),
 	Atari2600DebuggerEnabled = (1 << 14),
+	ChannelFDebuggerEnabled = (1 << 15),
 };

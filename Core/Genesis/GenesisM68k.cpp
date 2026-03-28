@@ -11,38 +11,16 @@ void GenesisM68k::Init(Emulator* emu, GenesisConsole* console, GenesisMemoryMana
 	_memoryManager = memoryManager;
 }
 
-// ===== Size helpers =====
-
-uint32_t GenesisM68k::SizeMask(uint8_t size) {
-	switch (size) {
-		case 0: return 0xFF;
-		case 1: return 0xFFFF;
-		default: return 0xFFFFFFFF;
-	}
-}
-
-uint32_t GenesisM68k::SignBit(uint8_t size) {
-	switch (size) {
-		case 0: return 0x80;
-		case 1: return 0x8000;
-		default: return 0x80000000;
-	}
-}
-
-bool GenesisM68k::IsNeg(uint32_t value, uint8_t size) {
-	return (value & SignBit(size)) != 0;
-}
-
 // ===== Memory access (delegates to memory manager) =====
 
 uint8_t GenesisM68k::Read8(uint32_t addr) {
-	addr &= 0xFFFFFF; // 24-bit address bus
+	addr &= 0xffffff; // 24-bit address bus
 	AddCycles(4);
 	return _memoryManager->Read8(addr);
 }
 
 uint16_t GenesisM68k::Read16(uint32_t addr) {
-	addr &= 0xFFFFFE; // Word-aligned
+	addr &= 0xfffffe; // Word-aligned
 	AddCycles(4);
 	return _memoryManager->Read16(addr);
 }
@@ -54,20 +32,20 @@ uint32_t GenesisM68k::Read32(uint32_t addr) {
 }
 
 void GenesisM68k::Write8(uint32_t addr, uint8_t value) {
-	addr &= 0xFFFFFF;
+	addr &= 0xffffff;
 	AddCycles(4);
 	_memoryManager->Write8(addr, value);
 }
 
 void GenesisM68k::Write16(uint32_t addr, uint16_t value) {
-	addr &= 0xFFFFFE;
+	addr &= 0xfffffe;
 	AddCycles(4);
 	_memoryManager->Write16(addr, value);
 }
 
 void GenesisM68k::Write32(uint32_t addr, uint32_t value) {
 	Write16(addr, (uint16_t)(value >> 16));
-	Write16(addr + 2, (uint16_t)(value & 0xFFFF));
+	Write16(addr + 2, (uint16_t)(value & 0xffff));
 }
 
 // ===== Stack =====
@@ -191,12 +169,12 @@ bool GenesisM68k::TestCondition(uint8_t cc) {
 		case 0x7: return Z;              // EQ (equal)
 		case 0x8: return !V;             // VC (overflow clear)
 		case 0x9: return V;              // VS (overflow set)
-		case 0xA: return !N;             // PL (plus)
-		case 0xB: return N;              // MI (minus)
-		case 0xC: return N == V;         // GE (greater or equal)
-		case 0xD: return N != V;         // LT (less than)
-		case 0xE: return !Z && (N == V); // GT (greater than)
-		case 0xF: return Z || (N != V);  // LE (less or equal)
+		case 0xa: return !N;             // PL (plus)
+		case 0xb: return N;              // MI (minus)
+		case 0xc: return N == V;         // GE (greater or equal)
+		case 0xd: return N != V;         // LT (less than)
+		case 0xe: return !Z && (N == V); // GT (greater than)
+		case 0xf: return Z || (N != V);  // LE (less or equal)
 		default: return false;
 	}
 }
@@ -234,9 +212,9 @@ uint32_t GenesisM68k::GetEffectiveAddress(uint8_t mode, uint8_t reg, uint8_t siz
 		case 6: // (d8, An, Xn) - index
 		{
 			uint16_t ext = FetchWord();
-			uint8_t xreg = (ext >> 12) & 0x0F;
+			uint8_t xreg = (ext >> 12) & 0x0f;
 			bool isLong = (ext >> 11) & 1;
-			int8_t disp = (int8_t)(ext & 0xFF);
+			int8_t disp = (int8_t)(ext & 0xff);
 			int32_t xval;
 			if (xreg < 8) {
 				xval = isLong ? (int32_t)_state.D[xreg] : (int16_t)(uint16_t)_state.D[xreg];
@@ -261,9 +239,9 @@ uint32_t GenesisM68k::GetEffectiveAddress(uint8_t mode, uint8_t reg, uint8_t siz
 				{
 					uint32_t pc = _state.PC;
 					uint16_t ext = FetchWord();
-					uint8_t xreg = (ext >> 12) & 0x0F;
+					uint8_t xreg = (ext >> 12) & 0x0f;
 					bool isLong = (ext >> 11) & 1;
-					int8_t disp = (int8_t)(ext & 0xFF);
+					int8_t disp = (int8_t)(ext & 0xff);
 					int32_t xval;
 					if (xreg < 8) {
 						xval = isLong ? (int32_t)_state.D[xreg] : (int16_t)(uint16_t)_state.D[xreg];
@@ -313,7 +291,7 @@ void GenesisM68k::WriteEa(uint8_t mode, uint8_t reg, uint8_t size, uint32_t valu
 			return;
 		case 1: // An
 			if (size == 1) {
-				_state.A[reg] = (int16_t)(uint16_t)(value & 0xFFFF); // Sign-extend word to long
+				_state.A[reg] = (int16_t)(uint16_t)(value & 0xffff); // Sign-extend word to long
 			} else {
 				_state.A[reg] = value;
 			}
@@ -417,7 +395,7 @@ void GenesisM68k::Reset(bool softReset) {
 // Decodes the 68000 instruction set by examining opcode bit fields
 
 void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
-	uint8_t group = (opcode >> 12) & 0x0F;
+	uint8_t group = (opcode >> 12) & 0x0f;
 
 	switch (group) {
 		case 0x0: // Bit manipulation / MOVEP / Immediate
@@ -444,11 +422,11 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 				uint8_t subOp = (opcode >> 9) & 7;
 				switch (subOp) {
 					case 0: // ORI
-						if ((opcode & 0x3F) == 0x3C) Op_ORI_SR(opcode);
+						if ((opcode & 0x3f) == 0x3c) Op_ORI_SR(opcode);
 						else Op_ORI(opcode);
 						break;
 					case 1: // ANDI
-						if ((opcode & 0x3F) == 0x3C) Op_ANDI_SR(opcode);
+						if ((opcode & 0x3f) == 0x3c) Op_ANDI_SR(opcode);
 						else Op_ANDI(opcode);
 						break;
 					case 2: Op_SUBI(opcode); break;
@@ -465,7 +443,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 						break;
 					}
 					case 5: // EORI
-						if ((opcode & 0x3F) == 0x3C) Op_EORI_SR(opcode);
+						if ((opcode & 0x3f) == 0x3c) Op_EORI_SR(opcode);
 						else Op_EORI(opcode);
 						break;
 					case 6: Op_CMPI(opcode); break;
@@ -491,41 +469,41 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 
 		case 0x4: // Miscellaneous
 		{
-			if ((opcode & 0xFFC0) == 0x46C0) { Op_MOVE_SR(opcode); break; } // MOVE to SR
-			if ((opcode & 0xFFC0) == 0x44C0) { Op_MOVE_SR(opcode); break; } // MOVE to CCR
-			if ((opcode & 0xFFC0) == 0x40C0) { Op_MOVE_SR(opcode); break; } // MOVE from SR
-			if ((opcode & 0xFFF0) == 0x4E60) { Op_MOVE_USP(opcode); break; }
-			if ((opcode & 0xFFF8) == 0x4E50) { Op_LINK(opcode); break; }
-			if ((opcode & 0xFFF8) == 0x4E58) { Op_UNLK(opcode); break; }
-			if ((opcode & 0xFFF8) == 0x4840) { Op_SWAP(opcode); break; }
-			if ((opcode & 0xFFF8) == 0x4880) { Op_EXT(opcode); break; }  // EXT.W
-			if ((opcode & 0xFFF8) == 0x48C0) { Op_EXT(opcode); break; }  // EXT.L
-			if (opcode == 0x4E75) { Op_RTS(opcode); break; }
-			if (opcode == 0x4E73) { Op_RTE(opcode); break; }
-			if (opcode == 0x4E77) { Op_RTR(opcode); break; }
-			if (opcode == 0x4E71) { Op_NOP(opcode); break; }
-			if (opcode == 0x4E70) { Op_RESET(opcode); break; }
-			if (opcode == 0x4E72) { Op_STOP(opcode); break; }
-			if ((opcode & 0xFFF0) == 0x4E40) { Op_TRAP(opcode); break; }
-			if ((opcode & 0xFFC0) == 0x4EC0) { Op_JMP(opcode); break; }
-			if ((opcode & 0xFFC0) == 0x4E80) { Op_JSR(opcode); break; }
-			if ((opcode & 0xFFC0) == 0x4800) { // NBCD - not implementing now
+			if ((opcode & 0xffc0) == 0x46c0) { Op_MOVE_SR(opcode); break; } // MOVE to SR
+			if ((opcode & 0xffc0) == 0x44c0) { Op_MOVE_SR(opcode); break; } // MOVE to CCR
+			if ((opcode & 0xffc0) == 0x40c0) { Op_MOVE_SR(opcode); break; } // MOVE from SR
+			if ((opcode & 0xfff0) == 0x4e60) { Op_MOVE_USP(opcode); break; }
+			if ((opcode & 0xfff8) == 0x4e50) { Op_LINK(opcode); break; }
+			if ((opcode & 0xfff8) == 0x4e58) { Op_UNLK(opcode); break; }
+			if ((opcode & 0xfff8) == 0x4840) { Op_SWAP(opcode); break; }
+			if ((opcode & 0xfff8) == 0x4880) { Op_EXT(opcode); break; }  // EXT.W
+			if ((opcode & 0xfff8) == 0x48c0) { Op_EXT(opcode); break; }  // EXT.L
+			if (opcode == 0x4e75) { Op_RTS(opcode); break; }
+			if (opcode == 0x4e73) { Op_RTE(opcode); break; }
+			if (opcode == 0x4e77) { Op_RTR(opcode); break; }
+			if (opcode == 0x4e71) { Op_NOP(opcode); break; }
+			if (opcode == 0x4e70) { Op_RESET(opcode); break; }
+			if (opcode == 0x4e72) { Op_STOP(opcode); break; }
+			if ((opcode & 0xfff0) == 0x4e40) { Op_TRAP(opcode); break; }
+			if ((opcode & 0xffc0) == 0x4ec0) { Op_JMP(opcode); break; }
+			if ((opcode & 0xffc0) == 0x4e80) { Op_JSR(opcode); break; }
+			if ((opcode & 0xffc0) == 0x4800) { // NBCD - not implementing now
 				Op_ILLEGAL(opcode); break;
 			}
-			if ((opcode & 0xFB80) == 0x4880) { Op_MOVEM(opcode); break; }
-			if ((opcode & 0xFFC0) == 0x4AC0) { Op_TST(opcode); break; } // TAS
-			if ((opcode & 0xFF00) == 0x4A00) { Op_TST(opcode); break; }
+			if ((opcode & 0xfb80) == 0x4880) { Op_MOVEM(opcode); break; }
+			if ((opcode & 0xffc0) == 0x4ac0) { Op_TST(opcode); break; } // TAS
+			if ((opcode & 0xff00) == 0x4a00) { Op_TST(opcode); break; }
 
 			uint8_t subOp = (opcode >> 6) & 3;
 			switch (subOp) {
 				case 0: case 1: case 2:
 				{
-					uint8_t op2 = (opcode >> 8) & 0x0F;
-					if (op2 == 0x02 || op2 == 0x06 || op2 == 0x0A) {
+					uint8_t op2 = (opcode >> 8) & 0x0f;
+					if (op2 == 0x02 || op2 == 0x06 || op2 == 0x0a) {
 						Op_CLR(opcode);
-					} else if (op2 == 0x04 || op2 == 0x08 || op2 == 0x0C) {
+					} else if (op2 == 0x04 || op2 == 0x08 || op2 == 0x0c) {
 						Op_NEG(opcode);
-					} else if ((opcode & 0xFFC0) == 0x4AC0) {
+					} else if ((opcode & 0xffc0) == 0x4ac0) {
 						Op_TST(opcode);
 					} else {
 						Op_ILLEGAL(opcode);
@@ -533,9 +511,9 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 					break;
 				}
 				default:
-					if ((opcode & 0xFFC0) == 0x4EC0) Op_JMP(opcode);
-					else if ((opcode & 0xFFC0) == 0x4E80) Op_JSR(opcode);
-					else if ((opcode & 0xFFC0) == 0x41C0 || (opcode & 0xF1C0) == 0x41C0) Op_LEA(opcode);
+					if ((opcode & 0xffc0) == 0x4ec0) Op_JMP(opcode);
+					else if ((opcode & 0xffc0) == 0x4e80) Op_JSR(opcode);
+					else if ((opcode & 0xffc0) == 0x41c0 || (opcode & 0xf1c0) == 0x41c0) Op_LEA(opcode);
 					else Op_ILLEGAL(opcode);
 					break;
 			}
@@ -559,7 +537,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 
 		case 0x6: // Bcc/BSR/BRA
 		{
-			uint8_t cc = (opcode >> 8) & 0x0F;
+			uint8_t cc = (opcode >> 8) & 0x0f;
 			if (cc == 0) Op_BRA(opcode);
 			else if (cc == 1) Op_BSR(opcode);
 			else Op_Bcc(opcode);
@@ -587,7 +565,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 			break;
 		}
 
-		case 0xB: // CMP/CMPA/EOR
+		case 0xb: // CMP/CMPA/EOR
 		{
 			uint8_t opMode = (opcode >> 6) & 7;
 			if (opMode == 3 || opMode == 7) Op_CMPA(opcode);
@@ -596,17 +574,17 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 			break;
 		}
 
-		case 0xC: // AND/MUL/EXG
+		case 0xc: // AND/MUL/EXG
 		{
 			uint8_t opMode = (opcode >> 6) & 7;
 			if (opMode == 3) Op_MULU(opcode);
 			else if (opMode == 7) Op_MULS(opcode);
-			else if ((opcode & 0xF130) == 0xC100) Op_EXG(opcode);
+			else if ((opcode & 0xf130) == 0xc100) Op_EXG(opcode);
 			else Op_AND(opcode);
 			break;
 		}
 
-		case 0xD: // ADD/ADDA
+		case 0xd: // ADD/ADDA
 		{
 			uint8_t opMode = (opcode >> 6) & 7;
 			if (opMode == 3 || opMode == 7) Op_ADDA(opcode);
@@ -614,7 +592,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 			break;
 		}
 
-		case 0xE: // Shift/Rotate
+		case 0xe: // Shift/Rotate
 		{
 			uint8_t type = (opcode >> 3) & 3;
 			switch (type & 3) {
@@ -626,8 +604,8 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 			break;
 		}
 
-		case 0xA: // Line-A (unimplemented)
-		case 0xF: // Line-F (unimplemented)
+		case 0xa: // Line-A (unimplemented)
+		case 0xf: // Line-F (unimplemented)
 		default:
 			Op_ILLEGAL(opcode);
 			break;
@@ -670,7 +648,7 @@ void GenesisM68k::Op_MOVEA(uint16_t opcode) {
 
 void GenesisM68k::Op_MOVEQ(uint16_t opcode) {
 	uint8_t dstReg = (opcode >> 9) & 7;
-	int8_t data = (int8_t)(opcode & 0xFF);
+	int8_t data = (int8_t)(opcode & 0xff);
 	_state.D[dstReg] = (int32_t)data; // Sign extend
 	SetFlags_Logical(_state.D[dstReg], 2);
 	AddCycles(4);
@@ -765,7 +743,7 @@ void GenesisM68k::Op_CLR(uint16_t opcode) {
 void GenesisM68k::Op_EXG(uint16_t opcode) {
 	uint8_t rx = (opcode >> 9) & 7;
 	uint8_t ry = opcode & 7;
-	uint8_t opMode = (opcode >> 3) & 0x1F;
+	uint8_t opMode = (opcode >> 3) & 0x1f;
 
 	if (opMode == 0x08) { // Data <-> Data
 		std::swap(_state.D[rx], _state.D[ry]);
@@ -1031,13 +1009,13 @@ void GenesisM68k::Op_DIVU(uint16_t opcode) {
 	uint32_t quotient = dividend / divisor;
 	uint16_t remainder = (uint16_t)(dividend % divisor);
 
-	if (quotient > 0xFFFF) {
+	if (quotient > 0xffff) {
 		SetCcr(M68kFlags::Overflow);
 		ClearCcr(M68kFlags::Carry);
 	} else {
-		_state.D[reg] = ((uint32_t)remainder << 16) | (quotient & 0xFFFF);
+		_state.D[reg] = ((uint32_t)remainder << 16) | (quotient & 0xffff);
 		ClearCcr(M68kFlags::Carry | M68kFlags::Overflow);
-		SetCcrIf(M68kFlags::Zero, (quotient & 0xFFFF) == 0);
+		SetCcrIf(M68kFlags::Zero, (quotient & 0xffff) == 0);
 		SetCcrIf(M68kFlags::Negative, (quotient & 0x8000) != 0);
 	}
 	AddCycles(140); // Worst case
@@ -1061,9 +1039,9 @@ void GenesisM68k::Op_DIVS(uint16_t opcode) {
 		SetCcr(M68kFlags::Overflow);
 		ClearCcr(M68kFlags::Carry);
 	} else {
-		_state.D[reg] = ((uint32_t)(uint16_t)remainder << 16) | ((uint16_t)quotient & 0xFFFF);
+		_state.D[reg] = ((uint32_t)(uint16_t)remainder << 16) | ((uint16_t)quotient & 0xffff);
 		ClearCcr(M68kFlags::Carry | M68kFlags::Overflow);
-		SetCcrIf(M68kFlags::Zero, (quotient & 0xFFFF) == 0);
+		SetCcrIf(M68kFlags::Zero, (quotient & 0xffff) == 0);
 		SetCcrIf(M68kFlags::Negative, (quotient & 0x8000) != 0);
 	}
 	AddCycles(158);
@@ -1088,7 +1066,7 @@ void GenesisM68k::Op_EXT(uint16_t opcode) {
 		_state.D[reg] = (int16_t)(uint16_t)_state.D[reg];
 		SetFlags_Logical(_state.D[reg], 2);
 	} else { // EXT.W
-		_state.D[reg] = (_state.D[reg] & 0xFFFF0000) | ((uint16_t)(int8_t)_state.D[reg]);
+		_state.D[reg] = (_state.D[reg] & 0xffff0000) | ((uint16_t)(int8_t)_state.D[reg]);
 		SetFlags_Logical(_state.D[reg], 1);
 	}
 	AddCycles(4);
@@ -1254,7 +1232,7 @@ void GenesisM68k::Op_ASd(uint16_t opcode) {
 	uint8_t reg = opcode & 7;
 	uint8_t count;
 	if (opcode & 0x20) {
-		count = _state.D[(opcode >> 9) & 7] & 0x3F;
+		count = _state.D[(opcode >> 9) & 7] & 0x3f;
 	} else {
 		count = (opcode >> 9) & 7;
 		if (count == 0) count = 8;
@@ -1292,7 +1270,7 @@ void GenesisM68k::Op_LSd(uint16_t opcode) {
 	uint8_t reg = opcode & 7;
 	uint8_t count;
 	if (opcode & 0x20) {
-		count = _state.D[(opcode >> 9) & 7] & 0x3F;
+		count = _state.D[(opcode >> 9) & 7] & 0x3f;
 	} else {
 		count = (opcode >> 9) & 7;
 		if (count == 0) count = 8;
@@ -1328,7 +1306,7 @@ void GenesisM68k::Op_ROd(uint16_t opcode) {
 	uint8_t reg = opcode & 7;
 	uint8_t count;
 	if (opcode & 0x20) {
-		count = _state.D[(opcode >> 9) & 7] & 0x3F;
+		count = _state.D[(opcode >> 9) & 7] & 0x3f;
 	} else {
 		count = (opcode >> 9) & 7;
 		if (count == 0) count = 8;
@@ -1365,7 +1343,7 @@ void GenesisM68k::Op_ROXd(uint16_t opcode) {
 	uint8_t reg = opcode & 7;
 	uint8_t count;
 	if (opcode & 0x20) {
-		count = _state.D[(opcode >> 9) & 7] & 0x3F;
+		count = _state.D[(opcode >> 9) & 7] & 0x3f;
 	} else {
 		count = (opcode >> 9) & 7;
 		if (count == 0) count = 8;
@@ -1495,7 +1473,7 @@ void GenesisM68k::Op_BCHG(uint16_t opcode) {
 // ===== Branch =====
 
 void GenesisM68k::Op_BRA(uint16_t opcode) {
-	int8_t disp8 = (int8_t)(opcode & 0xFF);
+	int8_t disp8 = (int8_t)(opcode & 0xff);
 	int32_t offset;
 	if (disp8 == 0) {
 		offset = (int16_t)FetchWord();
@@ -1508,7 +1486,7 @@ void GenesisM68k::Op_BRA(uint16_t opcode) {
 }
 
 void GenesisM68k::Op_BSR(uint16_t opcode) {
-	int8_t disp8 = (int8_t)(opcode & 0xFF);
+	int8_t disp8 = (int8_t)(opcode & 0xff);
 	int32_t offset;
 	uint32_t returnPC;
 	if (disp8 == 0) {
@@ -1524,8 +1502,8 @@ void GenesisM68k::Op_BSR(uint16_t opcode) {
 }
 
 void GenesisM68k::Op_Bcc(uint16_t opcode) {
-	uint8_t cc = (opcode >> 8) & 0x0F;
-	int8_t disp8 = (int8_t)(opcode & 0xFF);
+	uint8_t cc = (opcode >> 8) & 0x0f;
+	int8_t disp8 = (int8_t)(opcode & 0xff);
 	int32_t offset;
 
 	if (disp8 == 0) {
@@ -1544,14 +1522,14 @@ void GenesisM68k::Op_Bcc(uint16_t opcode) {
 }
 
 void GenesisM68k::Op_DBcc(uint16_t opcode) {
-	uint8_t cc = (opcode >> 8) & 0x0F;
+	uint8_t cc = (opcode >> 8) & 0x0f;
 	uint8_t reg = opcode & 7;
 	int16_t disp = (int16_t)FetchWord();
 
 	if (!TestCondition(cc)) {
 		int16_t counter = (int16_t)(uint16_t)_state.D[reg];
 		counter--;
-		_state.D[reg] = (_state.D[reg] & 0xFFFF0000) | (uint16_t)counter;
+		_state.D[reg] = (_state.D[reg] & 0xffff0000) | (uint16_t)counter;
 		if (counter != -1) {
 			_state.PC = (_state.PC - 4) + 2 + disp;
 			AddCycles(10);
@@ -1564,11 +1542,11 @@ void GenesisM68k::Op_DBcc(uint16_t opcode) {
 }
 
 void GenesisM68k::Op_Scc(uint16_t opcode) {
-	uint8_t cc = (opcode >> 8) & 0x0F;
+	uint8_t cc = (opcode >> 8) & 0x0f;
 	uint8_t mode = (opcode >> 3) & 7;
 	uint8_t reg = opcode & 7;
 
-	uint8_t val = TestCondition(cc) ? 0xFF : 0x00;
+	uint8_t val = TestCondition(cc) ? 0xff : 0x00;
 	WriteEa(mode, reg, 0, val);
 	AddCycles(mode == 0 ? (TestCondition(cc) ? 6 : 4) : 8);
 }
@@ -1613,7 +1591,7 @@ void GenesisM68k::Op_RTE(uint16_t opcode) {
 
 void GenesisM68k::Op_RTR(uint16_t opcode) {
 	uint16_t ccr = Pop16();
-	_state.SR = (_state.SR & 0xFF00) | (ccr & 0x001F);
+	_state.SR = (_state.SR & 0xff00) | (ccr & 0x001f);
 	_state.PC = Pop32();
 	AddCycles(20);
 }
@@ -1625,7 +1603,7 @@ void GenesisM68k::Op_NOP(uint16_t opcode) {
 }
 
 void GenesisM68k::Op_TRAP(uint16_t opcode) {
-	uint8_t vector = 32 + (opcode & 0x0F);
+	uint8_t vector = 32 + (opcode & 0x0f);
 	RaiseException(vector);
 }
 
@@ -1653,16 +1631,16 @@ void GenesisM68k::Op_MOVE_SR(uint16_t opcode) {
 	uint8_t mode = (opcode >> 3) & 7;
 	uint8_t reg = opcode & 7;
 
-	if ((opcode & 0xFFC0) == 0x40C0) {
+	if ((opcode & 0xffc0) == 0x40c0) {
 		// MOVE from SR
 		WriteEa(mode, reg, 1, _state.SR);
 		AddCycles(6);
-	} else if ((opcode & 0xFFC0) == 0x44C0) {
+	} else if ((opcode & 0xffc0) == 0x44c0) {
 		// MOVE to CCR
 		uint16_t data = (uint16_t)ReadEa(mode, reg, 1);
-		_state.SR = (_state.SR & 0xFF00) | (data & 0x001F);
+		_state.SR = (_state.SR & 0xff00) | (data & 0x001f);
 		AddCycles(12);
-	} else if ((opcode & 0xFFC0) == 0x46C0) {
+	} else if ((opcode & 0xffc0) == 0x46c0) {
 		// MOVE to SR
 		if (!IsSupervisor()) {
 			RaiseException(8);
@@ -1696,10 +1674,10 @@ void GenesisM68k::Op_MOVE_USP(uint16_t opcode) {
 }
 
 void GenesisM68k::Op_ANDI_SR(uint16_t opcode) {
-	if ((opcode & 0xFF) == 0x3C) {
+	if ((opcode & 0xff) == 0x3c) {
 		// ANDI to CCR
 		uint16_t imm = FetchWord();
-		_state.SR &= (0xFF00 | (imm & 0x001F));
+		_state.SR &= (0xff00 | (imm & 0x001f));
 	} else {
 		if (!IsSupervisor()) { RaiseException(8); return; }
 		uint16_t imm = FetchWord();
@@ -1709,9 +1687,9 @@ void GenesisM68k::Op_ANDI_SR(uint16_t opcode) {
 }
 
 void GenesisM68k::Op_ORI_SR(uint16_t opcode) {
-	if ((opcode & 0xFF) == 0x3C) {
+	if ((opcode & 0xff) == 0x3c) {
 		uint16_t imm = FetchWord();
-		_state.SR |= (imm & 0x001F);
+		_state.SR |= (imm & 0x001f);
 	} else {
 		if (!IsSupervisor()) { RaiseException(8); return; }
 		uint16_t imm = FetchWord();
@@ -1721,9 +1699,9 @@ void GenesisM68k::Op_ORI_SR(uint16_t opcode) {
 }
 
 void GenesisM68k::Op_EORI_SR(uint16_t opcode) {
-	if ((opcode & 0xFF) == 0x3C) {
+	if ((opcode & 0xff) == 0x3c) {
 		uint16_t imm = FetchWord();
-		_state.SR ^= (imm & 0x001F);
+		_state.SR ^= (imm & 0x001f);
 	} else {
 		if (!IsSupervisor()) { RaiseException(8); return; }
 		uint16_t imm = FetchWord();

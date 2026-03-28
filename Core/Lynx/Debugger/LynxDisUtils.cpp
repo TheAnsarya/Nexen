@@ -179,6 +179,66 @@ constexpr LynxAddrMode _opMode[256] = {
 	LynxAddrMode::Abs,   LynxAddrMode::AbsX,  LynxAddrMode::AbsX,  LynxAddrMode::Imp,
 };
 
+/// <summary>
+/// Pre-computed direct opcode-to-size table, avoiding the double indirection
+/// of _opMode[opCode] then _opSize[mode]. Generated at compile time.
+/// </summary>
+constexpr auto MakeOpSizeDirect() -> std::array<uint8_t, 256> {
+	std::array<uint8_t, 256> result{};
+	for (int i = 0; i < 256; i++) {
+		result[i] = _opSize[static_cast<int>(_opMode[i])];
+	}
+	return result;
+}
+
+constexpr auto _opSizeDirect = MakeOpSizeDirect();
+
+/// <summary>
+/// Combined opcode classification flags for efficient single-lookup queries.
+/// Replaces four separate switch statements with one indexed table read + bit test.
+/// </summary>
+enum OpClassifyFlags : uint8_t {
+	CLASSIFY_UNCONDITIONAL = 1 << 0,
+	CLASSIFY_CONDITIONAL   = 1 << 1,
+	CLASSIFY_JUMP_TO_SUB   = 1 << 2,
+	CLASSIFY_RETURN        = 1 << 3,
+};
+
+constexpr auto MakeOpClassify() -> std::array<uint8_t, 256> {
+	std::array<uint8_t, 256> result{};
+
+	// Unconditional jumps
+	result[0x20] |= CLASSIFY_UNCONDITIONAL; // JSR abs
+	result[0x40] |= CLASSIFY_UNCONDITIONAL; // RTI
+	result[0x4c] |= CLASSIFY_UNCONDITIONAL; // JMP abs
+	result[0x60] |= CLASSIFY_UNCONDITIONAL; // RTS
+	result[0x6c] |= CLASSIFY_UNCONDITIONAL; // JMP (abs)
+	result[0x7c] |= CLASSIFY_UNCONDITIONAL; // JMP (abs,X) — 65C02
+	result[0x80] |= CLASSIFY_UNCONDITIONAL; // BRA — 65C02
+
+	// Conditional jumps
+	result[0x10] |= CLASSIFY_CONDITIONAL; // BPL
+	result[0x30] |= CLASSIFY_CONDITIONAL; // BMI
+	result[0x50] |= CLASSIFY_CONDITIONAL; // BVC
+	result[0x70] |= CLASSIFY_CONDITIONAL; // BVS
+	result[0x90] |= CLASSIFY_CONDITIONAL; // BCC
+	result[0xb0] |= CLASSIFY_CONDITIONAL; // BCS
+	result[0xd0] |= CLASSIFY_CONDITIONAL; // BNE
+	result[0xf0] |= CLASSIFY_CONDITIONAL; // BEQ
+
+	// Jump to sub (interrupt-like calls)
+	result[0x00] |= CLASSIFY_JUMP_TO_SUB; // BRK
+	result[0x20] |= CLASSIFY_JUMP_TO_SUB; // JSR abs
+
+	// Return instructions
+	result[0x60] |= CLASSIFY_RETURN; // RTS
+	result[0x40] |= CLASSIFY_RETURN; // RTI
+
+	return result;
+}
+
+constexpr auto _opClassify = MakeOpClassify();
+
 void LynxDisUtils::GetDisassembly(DisassemblyInfo& info, string& out, uint32_t memoryAddr, LabelManager* labelManager, EmuSettings* settings) {
 	FastString str;
 	uint8_t* byteCode = info.GetByteCode();
@@ -285,7 +345,7 @@ void LynxDisUtils::GetDisassembly(DisassemblyInfo& info, string& out, uint32_t m
 }
 
 EffectiveAddressInfo LynxDisUtils::GetEffectiveAddress(DisassemblyInfo& info, LynxConsole* console, LynxCpuState& state) {
-	bool isJump = LynxDisUtils::IsUnconditionalJump(info.GetOpCode()) || LynxDisUtils::IsConditionalJump(info.GetOpCode());
+	bool isJump = (_opClassify[info.GetOpCode()] & (CLASSIFY_UNCONDITIONAL | CLASSIFY_CONDITIONAL)) != 0;
 	if (isJump) {
 		return {};
 	}
@@ -343,7 +403,7 @@ uint8_t LynxDisUtils::GetOpSize(LynxAddrMode addrMode) {
 }
 
 uint8_t LynxDisUtils::GetOpSize(uint8_t opCode) {
-	return GetOpSize(_opMode[opCode]);
+	return _opSizeDirect[opCode];
 }
 
 char const* const LynxDisUtils::GetOpName(uint8_t opCode) {
@@ -355,56 +415,27 @@ LynxAddrMode LynxDisUtils::GetOpMode(uint8_t opCode) {
 }
 
 bool LynxDisUtils::IsUnconditionalJump(uint8_t opCode) {
-	switch (opCode) {
-		case 0x20: // JSR abs
-		case 0x40: // RTI
-		case 0x4c: // JMP abs
-		case 0x60: // RTS
-		case 0x6c: // JMP (abs)
-		case 0x7c: // JMP (abs,X) — 65C02
-		case 0x80: // BRA — 65C02
-			return true;
-		default:
-			return false;
-	}
+	return (_opClassify[opCode] & CLASSIFY_UNCONDITIONAL) != 0;
 }
 
 bool LynxDisUtils::IsConditionalJump(uint8_t opCode) {
-	switch (opCode) {
-		case 0x10: // BPL
-		case 0x30: // BMI
-		case 0x50: // BVC
-		case 0x70: // BVS
-		case 0x90: // BCC
-		case 0xb0: // BCS
-		case 0xd0: // BNE
-		case 0xf0: // BEQ
-			return true;
-		default:
-			return false;
-	}
+	return (_opClassify[opCode] & CLASSIFY_CONDITIONAL) != 0;
 }
 
 bool LynxDisUtils::IsJumpToSub(uint8_t opCode) {
-	switch (opCode) {
-		case 0x00: // BRK (acts like interrupt call)
-		case 0x20: // JSR abs
-			return true;
-		default:
-			return false;
-	}
+	return (_opClassify[opCode] & CLASSIFY_JUMP_TO_SUB) != 0;
 }
 
 bool LynxDisUtils::IsReturnInstruction(uint8_t opCode) {
-	return opCode == 0x60 || opCode == 0x40; // RTS or RTI
+	return (_opClassify[opCode] & CLASSIFY_RETURN) != 0;
 }
 
 CdlFlags::CdlFlags LynxDisUtils::GetOpFlags(uint8_t opCode, uint16_t pc, uint16_t prevPc) {
-	uint8_t opSize = GetOpSize(opCode);
-	if (IsJumpToSub(opCode)) {
+	uint8_t flags = _opClassify[opCode];
+	if (flags & CLASSIFY_JUMP_TO_SUB) {
 		return CdlFlags::SubEntryPoint;
-	} else if (IsUnconditionalJump(opCode) || IsConditionalJump(opCode)) {
-		if (prevPc + opSize != pc) {
+	} else if (flags & (CLASSIFY_UNCONDITIONAL | CLASSIFY_CONDITIONAL)) {
+		if (prevPc + _opSizeDirect[opCode] != pc) {
 			return CdlFlags::JumpTarget;
 		}
 	}

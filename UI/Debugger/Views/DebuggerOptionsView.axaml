@@ -17,7 +17,7 @@
 	<Design.DataContext>
 		<dvm:DebuggerOptionsViewModel />
 	</Design.DataContext>
-	
+
 	<UserControl.Styles>
 		<Style Selector="WrapPanel > CheckBox">
 			<Setter Property="Margin" Value="0 0 7 0" />
@@ -36,7 +36,7 @@
 					Width="105"
 					SelectedItem="{Binding Config.VerifiedDataDisplay}"
 				/>
-				
+
 				<TextBlock Grid.Row="1" VerticalAlignment="Center" Text="{l:Translate lblUnidentifiedBlock}" />
 				<c:EnumComboBox
 					Grid.Row="1" Grid.Column="1"
@@ -52,7 +52,7 @@
 				/>
 				<DockPanel Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsGba}">
 					<Image
-						Source="/Assets/Help.svg"
+						Source="{SvgImage /Assets/Help.svg}"
 						Stretch="None"
 						Margin="4 4"
 						DockPanel.Dock="Right"
@@ -69,13 +69,13 @@
 						SelectedItem="{Binding Config.Gba.DisassemblyMode}"
 					/>
 				</DockPanel>
-				
+
 				<DockPanel Grid.Row="3" Grid.ColumnSpan="2">
 					<TextBlock VerticalAlignment="Center" Text="{l:Translate lblAddressDisplay}" />
 					<c:EnumComboBox SelectedItem="{Binding Config.AddressDisplayType}" />
 				</DockPanel>
 			</Grid>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.ShowByteCode}"
 				Content="{l:Translate chkShowByteCode}"
@@ -158,7 +158,7 @@
 					IsChecked="{Binding Config.Gameboy.GbBreakOnNopLoad}"
 					Content="{l:Translate chkGbBreakOnNopLoad}"
 				/>
-				
+
 				<!-- not implemented -->
 				<CheckBox
 					IsVisible="False"
@@ -284,32 +284,32 @@
 					</MultiBinding>
 				</CheckBox.IsVisible>
 			</CheckBox>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.BringToFrontOnBreak}"
 				Content="{l:Translate chkBringToFrontOnBreak}"
 			/>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.BringToFrontOnPause}"
 				Content="{l:Translate chkBringToFrontOnPause}"
 			/>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.FocusGameOnResume}"
 				Content="{l:Translate chkFocusGameOnResume}"
 			/>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.RefreshWhileRunning}"
 				Content="{l:Translate chkRefreshWhileRunning}"
 			/>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.DrawPartialFrame}"
 				Content="{l:Translate chkDrawPartialFrame}"
 			/>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.UsePredictiveBreakpoints}"
 				Content="{l:Translate chkUsePredictiveBreakpoints}"

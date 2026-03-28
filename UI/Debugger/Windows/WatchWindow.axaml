@@ -30,7 +30,7 @@
 			<Setter Property="IsVisible" Value="False" />
 		</Style>
 	</Window.Styles>
-	
+
 	<Panel>
 		<TabControl ItemsSource="{Binding WatchTabs}" SelectedItem="{Binding SelectedTab}" Padding="1">
 			<TabControl.ItemTemplate>
@@ -48,7 +48,7 @@
 			</TabControl.ContentTemplate>
 		</TabControl>
 		<Image
-			Source="/Assets/Help.svg"
+			Source="{SvgImage /Assets/Help.svg}"
 			Stretch="None"
 			Margin="4 4"
 			VerticalAlignment="Top"

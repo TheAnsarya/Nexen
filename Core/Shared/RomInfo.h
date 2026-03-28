@@ -37,6 +37,7 @@ enum class RomFormat {
 	Genesis,
 
 	Atari2600,
+	ChannelF,
 };
 
 struct DipSwitchInfo {

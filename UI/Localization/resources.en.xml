@@ -650,6 +650,7 @@
 		<Form ID="Atari2600ConfigView">
 			<Control ID="tpgGeneral">General</Control>
 			<Control ID="lblConsoleSwitches">Console Switches</Control>
+			<Control ID="lblAtari2600ConsoleSwitchesHint">Toggle the console's physical front-panel switches used by many Atari 2600 games (difficulty and color/B&amp;W mode).</Control>
 			<Control ID="chkP0DifficultyB">Player 1 difficulty B (beginner)</Control>
 			<Control ID="chkP1DifficultyB">Player 2 difficulty B (beginner)</Control>
 			<Control ID="chkColorMode">Color mode (vs B/W)</Control>
@@ -661,6 +662,7 @@
 
 			<Control ID="tpgEmulation">Emulation</Control>
 			<Control ID="lblDeveloperSettings">Recommended settings for developers (homebrew / ROM hacking)</Control>
+			<Control ID="lblAtari2600DeveloperSettingsHint">Choose how RAM initializes on power-on. Randomized RAM can expose startup assumptions and improve compatibility testing.</Control>
 			<Control ID="lblRamPowerOnState">Default power on state for RAM: </Control>
 
 			<Control ID="tpgInput">Input</Control>
@@ -670,12 +672,70 @@
 
 			<Control ID="tpgVideo">Video</Control>
 			<Control ID="lblDisplaySettings">Display Settings</Control>
+			<Control ID="lblAtari2600VideoHint">These options hide individual TIA layers to help debug graphics composition and sprite/playfield interactions.</Control>
 			<Control ID="chkHidePlayfield">Hide playfield</Control>
 			<Control ID="chkHidePlayer0">Hide player 0 (P0)</Control>
 			<Control ID="chkHidePlayer1">Hide player 1 (P1)</Control>
 			<Control ID="chkHideMissile0">Hide missile 0 (M0)</Control>
 			<Control ID="chkHideMissile1">Hide missile 1 (M1)</Control>
 			<Control ID="chkHideBall">Hide ball (BL)</Control>
+		</Form>
+
+		<Form ID="Atari2600InputConfigView">
+			<Control ID="lblController1">Left (Port 1):</Control>
+			<Control ID="lblController2">Right (Port 2):</Control>
+		</Form>
+
+		<Form ID="LynxConfigView">
+			<Control ID="tpgGeneral">General</Control>
+			<Control ID="lblLynxGeneralHint">Enable auto-rotation to match the orientation expected by games that support portrait and landscape modes.</Control>
+			<Control ID="chkAutoRotate">Automatically rotate screen</Control>
+
+			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="grpVolume">Volume</Control>
+			<Control ID="lblChannel1">Channel 1</Control>
+			<Control ID="lblChannel2">Channel 2</Control>
+			<Control ID="lblChannel3">Channel 3</Control>
+			<Control ID="lblChannel4">Channel 4</Control>
+
+			<Control ID="tpgEmulation">Emulation</Control>
+			<Control ID="lblLynxBootRomHint">Use the original Lynx boot ROM for improved startup behavior and compatibility with software that depends on boot code routines.</Control>
+			<Control ID="chkUseBootRom">Use boot ROM</Control>
+
+			<Control ID="tpgInput">Input</Control>
+			<Control ID="grpControllers">Controllers</Control>
+			<Control ID="lblLynxInputHint">Configure the Lynx handheld controls for player 1.</Control>
+			<Control ID="lblPlayer1">Player 1</Control>
+			<Control ID="btnSetup">Setup</Control>
+
+			<Control ID="tpgVideo">Video</Control>
+			<Control ID="lblDisplaySettings">Display Settings</Control>
+			<Control ID="lblLynxVideoHint">Use these options to approximate LCD behavior or selectively disable layers while debugging graphics output.</Control>
+			<Control ID="chkBlendFrames">Enable LCD frame blending</Control>
+			<Control ID="chkDisableBackground">Disable background</Control>
+			<Control ID="chkDisableSprites">Disable sprites</Control>
+		</Form>
+
+		<Form ID="ChannelFConfigView">
+			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="grpVolume">Volume</Control>
+			<Control ID="lblAudio">Audio</Control>
+			<Control ID="lblChannelFAudioHelp">Channel F uses a single mixed audio channel. Adjust this slider to control overall output volume.</Control>
+
+			<Control ID="tpgEmulation">Emulation</Control>
+			<Control ID="lblDeveloperSettings">Recommended settings for developers (homebrew / ROM hacking)</Control>
+			<Control ID="lblChannelFDeveloperSettingsHint">RAM power-on behavior can affect startup logic. Use random RAM to detect assumptions and improve compatibility testing.</Control>
+			<Control ID="lblRamPowerOnState">Default power on state for RAM: </Control>
+
+			<Control ID="tpgInput">Input</Control>
+			<Control ID="tpgVideo">Video</Control>
+		</Form>
+
+		<Form ID="ChannelFInputConfigView">
+			<Control ID="grpControllers">Controllers</Control>
+			<Control ID="lblInputHint">Configure the detachable hand controller and the console front-panel controls used by Channel F games.</Control>
+			<Control ID="lblMainController">Hand Controller:</Control>
+			<Control ID="lblConsolePanel">Console Panel:</Control>
 		</Form>
 
 		<Form ID="ShortcutKeysTabView">
@@ -705,6 +765,7 @@
 			<Control ID="tabWs">WonderSwan</Control>
 			<Control ID="tabLynx">Lynx</Control>
 			<Control ID="tabAtari2600">Atari 2600</Control>
+			<Control ID="tabChannelF">Channel F</Control>
 			<Control ID="tabOtherConsoles">Other systems</Control>
 			<Control ID="tabPreferences">Preferences</Control>
 
@@ -949,6 +1010,28 @@
 			<Control ID="lblDescription">Description:</Control>
 			<Control ID="btnBrowse">Browse...</Control>
 			<Control ID="btnOK">Record</Control>
+			<Control ID="btnCancel">Cancel</Control>
+		</Form>
+		<Form ID="GreenzoneSettingsDialog">
+			<Control ID="wndTitle">Greenzone Settings</Control>
+			<Control ID="lblTitle">Greenzone Settings</Control>
+			<Control ID="lblHint">Tune capture interval, memory budget, and compression to balance rewind smoothness and RAM usage.</Control>
+			<Control ID="lblSavestates">Savestates:</Control>
+			<Control ID="lblMemoryUsage">Memory Usage:</Control>
+			<Control ID="lblCaptureInterval">Capture Interval:</Control>
+			<Control ID="ttCaptureInterval">Frames between automatic savestate captures.</Control>
+			<Control ID="lblMaxSavestates">Max Savestates:</Control>
+			<Control ID="ttMaxSavestates">Maximum number of savestates kept in memory.</Control>
+			<Control ID="lblMemoryLimit">Memory Limit (MB):</Control>
+			<Control ID="ttMemoryLimit">Maximum memory budget for greenzone in megabytes.</Control>
+			<Control ID="lblRingBufferSize">Ring Buffer Size:</Control>
+			<Control ID="ttRingBufferSize">Recent frames kept uncompressed for fast rewind.</Control>
+			<Control ID="lblCompression">Compression:</Control>
+			<Control ID="chkCompression">Compress older states</Control>
+			<Control ID="lblCompressionThreshold">Compression Threshold:</Control>
+			<Control ID="ttCompressionThreshold">Frames older than this are compressed.</Control>
+			<Control ID="btnClearAllStates">Clear All States</Control>
+			<Control ID="btnOK">OK</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
 		<Form ID="HdPackBuilderWindow">
@@ -1832,6 +1915,9 @@
 		<Message ID="MovieExportEntireSegment">Export entire segment</Message>
 		<Message ID="MovieExportSpecificRange">Export specific range...</Message>
 		<Message ID="MovieSaveError">An error occurred while trying to save the movie file.</Message>
+		<Message ID="InvalidMoviePath">Please select a valid movie file path before recording.</Message>
+		<Message ID="MovieRecordStartError">Unable to start movie recording.&#xA;&#xA;Details:&#xA;{0}</Message>
+		<Message ID="GreenzoneMemoryUsageMB">{0} MB</Message>
 		<Message ID="FileSaveError">An error occurred while trying to save the file.</Message>
 
 		<Message ID="SetKeyHint">Press any key on your keyboard to set a new binding.</Message>
@@ -2133,6 +2219,7 @@ E
 			<Value ID="DatachBarcodeReader">Datach Barcode Reader</Value>
 
 			<Value ID="GameboyController">Gameboy Controller</Value>
+			<Value ID="GameboyAccelerometer">Game Boy Accelerometer</Value>
 
 			<Value ID="PceController">2-button Controller</Value>
 			<Value ID="PceAvenuePad6">6-button Controller</Value>
@@ -2142,11 +2229,23 @@ E
 			<Value ID="SmsLightPhaser">Light Phaser</Value>
 			<Value ID="ColecoVisionController">ColecoVision Controller</Value>
 
+			<Value ID="GbaController">GBA Controller</Value>
+
+			<Value ID="WsController">WonderSwan Controller (Horizontal)</Value>
+			<Value ID="WsControllerVertical">WonderSwan Controller (Vertical)</Value>
+
+			<Value ID="LynxController">Atari Lynx Controller</Value>
+
+			<Value ID="GenesisController">Genesis Controller</Value>
+
 			<Value ID="Atari2600Joystick">Joystick (CX40)</Value>
 			<Value ID="Atari2600Paddle">Paddle (CX30)</Value>
 			<Value ID="Atari2600Keypad">Keypad (CX50)</Value>
 			<Value ID="Atari2600DrivingController">Driving Controller (CX20)</Value>
 			<Value ID="Atari2600BoosterGrip">Booster Grip</Value>
+
+			<Value ID="ChannelFController">Channel F Hand Controller</Value>
+			<Value ID="ChannelFConsolePanel">Channel F Console Panel</Value>
 		</Enum>
 		<Enum ID="NesJissenMahjongButtons">
 			<Value ID="A">A</Value>

@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+using System;
+using System.IO;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -8,7 +9,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 
-namespace Nexen.Windows; 
+namespace Nexen.Windows;
 public class MovieRecordWindow : NexenWindow {
 	public MovieRecordWindow() {
 		InitializeComponent();
@@ -22,7 +23,10 @@ public class MovieRecordWindow : NexenWindow {
 	}
 
 	private async void OnBrowseClick(object sender, RoutedEventArgs e) {
-		MovieRecordConfigViewModel model = (MovieRecordConfigViewModel)DataContext!;
+		if (DataContext is not MovieRecordConfigViewModel model) {
+			await NexenMsgBox.Show(this, "UnexpectedError", MessageBoxButtons.OK, MessageBoxIcon.Error, "Movie recording configuration is not initialized.");
+			return;
+		}
 
 		string? filename = await FileDialogHelper.SaveFile(ConfigManager.MovieFolder, EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.NexenMovieExt, VisualRoot, FileDialogHelper.NexenMovieExt);
 		if (filename != null) {
@@ -30,11 +34,38 @@ public class MovieRecordWindow : NexenWindow {
 		}
 	}
 
-	private void Ok_OnClick(object sender, RoutedEventArgs e) {
-		MovieRecordConfigViewModel model = (MovieRecordConfigViewModel)DataContext!;
+	private async void Ok_OnClick(object sender, RoutedEventArgs e) {
+		if (DataContext is not MovieRecordConfigViewModel model) {
+			await NexenMsgBox.Show(this, "UnexpectedError", MessageBoxButtons.OK, MessageBoxIcon.Error, "Movie recording configuration is not initialized.");
+			return;
+		}
+
+		if (string.IsNullOrWhiteSpace(model.SavePath)) {
+			await NexenMsgBox.Show(this, "InvalidMoviePath", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+			return;
+		}
+
+		string? folderPath = Path.GetDirectoryName(model.SavePath);
+		if (string.IsNullOrWhiteSpace(folderPath)) {
+			await NexenMsgBox.Show(this, "InvalidMoviePath", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+			return;
+		}
+
+		try {
+			Directory.CreateDirectory(folderPath);
+		} catch (Exception ex) {
+			await NexenMsgBox.Show(this, "MovieRecordStartError", MessageBoxButtons.OK, MessageBoxIcon.Error, ex.Message);
+			return;
+		}
+
 		model.SaveConfig();
 
-		RecordApi.MovieRecord(new RecordMovieOptions(model.SavePath, model.Config.Author, model.Config.Description, model.Config.RecordFrom));
+		try {
+			RecordApi.MovieRecord(new RecordMovieOptions(model.SavePath, model.Config.Author, model.Config.Description, model.Config.RecordFrom));
+		} catch (Exception ex) {
+			await NexenMsgBox.Show(this, "MovieRecordStartError", MessageBoxButtons.OK, MessageBoxIcon.Error, ex.Message);
+			return;
+		}
 
 		Close(true);
 	}

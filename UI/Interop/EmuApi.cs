@@ -324,6 +324,7 @@ public enum RomFormat {
 	Genesis,
 
 	Atari2600,
+	ChannelF,
 }
 
 public enum ConsoleType {
@@ -337,6 +338,7 @@ public enum ConsoleType {
 	Lynx = 7,
 	Atari2600 = 8,
 	Genesis = 9,
+	ChannelF = 10,
 }
 
 public struct InteropDipSwitchInfo {

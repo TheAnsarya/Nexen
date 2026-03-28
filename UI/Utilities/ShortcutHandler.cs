@@ -413,6 +413,7 @@ public sealed class ShortcutHandler {
 		ConfigManager.Config.Ws.ApplyConfig();
 		ConfigManager.Config.Lynx.ApplyConfig();
 		ConfigManager.Config.Atari2600.ApplyConfig();
+		ConfigManager.Config.ChannelF.ApplyConfig();
 	}
 
 	private void SetEmulationSpeed(uint emulationSpeed) {

@@ -39,6 +39,7 @@
 #include "WS/WsConsole.h"
 #include "Lynx/LynxConsole.h"
 #include "Atari2600/Atari2600Console.h"
+#include "ChannelF/ChannelFConsole.h"
 #include "Genesis/GenesisConsole.h"
 #include "Debugger/Debugger.h"
 #include "Debugger/BaseEventManager.h"
@@ -131,7 +132,8 @@ void Emulator::Run() {
 	_lastFrameTimer.Reset();
 
 	while (!_stopFlag) {
-		bool useRunAhead = _settings->GetEmulationConfig().RunAheadFrames > 0 && !_debugger && !_audioPlayerHud && !_rewindManager->IsRewinding() && _settings->GetEmulationSpeed() > 0 && _settings->GetEmulationSpeed() <= 100;
+		uint32_t emulationSpeed = _settings->GetEmulationSpeed();
+		bool useRunAhead = _settings->GetEmulationConfig().RunAheadFrames > 0 && !_debugger && !_audioPlayerHud && !_rewindManager->IsRewinding() && emulationSpeed > 0 && emulationSpeed <= 100;
 		if (useRunAhead) {
 			RunFrameWithRunAhead();
 		} else {
@@ -572,6 +574,7 @@ void Emulator::TryLoadRom(VirtualFile& romFile, LoadRomResult& result, unique_pt
 	TryLoadRom<WsConsole>(romFile, result, console, useFileSignature);
 	TryLoadRom<LynxConsole>(romFile, result, console, useFileSignature);
 	TryLoadRom<Atari2600Console>(romFile, result, console, useFileSignature);
+	TryLoadRom<ChannelFConsole>(romFile, result, console, useFileSignature);
 	TryLoadRom<GenesisConsole>(romFile, result, console, useFileSignature);
 }
 

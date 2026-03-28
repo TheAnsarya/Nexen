@@ -8,7 +8,7 @@ namespace Nexen.Debugger.RegisterViewer;
 
 /// <summary>
 /// Register viewer for the Atari Lynx debugger.
-/// Displays CPU (65SC02), Mikey (timers, display, UART/ComLynx), and Suzy (sprites, math) state.
+/// Displays CPU (65SC02), Mikey (timers, display, UART/ComLynx), Suzy (sprites, math), and APU (audio channels) state.
 /// UART registers reference §2 (SERCTL write), §3 (SERCTL read), §4 (SERDAT).
 /// </summary>
 public sealed class LynxRegisterViewer {
@@ -19,6 +19,7 @@ public sealed class LynxRegisterViewer {
 			GetMikeyTab(ref state),
 			GetSuzyTab(ref state),
 			GetMathTab(ref state),
+			GetApuTab(ref state),
 		};
 
 		return tabs;
@@ -157,5 +158,60 @@ public sealed class LynxRegisterViewer {
 		};
 
 		return new RegisterViewerTab("Math", entries, CpuType.Lynx, MemoryType.LynxMemory);
+	}
+
+	/// <summary>
+	/// Build the APU tab showing all 4 LFSR-based audio channels and global stereo/panning registers.
+	/// Each channel occupies 8 bytes in Mikey at $FD20 (Ch0), $FD28 (Ch1), $FD30 (Ch2), $FD38 (Ch3).
+	/// Channel 3 supports DAC mode for PCM playback.
+	/// Per-channel attenuation is nibble-packed: upper nibble = left, lower nibble = right.
+	/// </summary>
+	private static RegisterViewerTab GetApuTab(ref LynxState state) {
+		ref LynxApuState apu = ref state.Mikey.Apu;
+
+		// Channel base addresses in Mikey memory map
+		string[] channelAddrs = { "$FD20", "$FD28", "$FD30", "$FD38" };
+
+		List<RegEntry> entries = new() {
+			new RegEntry("$FD50", "MSTEREO", apu.Stereo, Format.X8),
+			new RegEntry("", "  Ch0 Left",   (apu.Stereo & 0x80) != 0),
+			new RegEntry("", "  Ch1 Left",   (apu.Stereo & 0x40) != 0),
+			new RegEntry("", "  Ch2 Left",   (apu.Stereo & 0x20) != 0),
+			new RegEntry("", "  Ch3 Left",   (apu.Stereo & 0x10) != 0),
+			new RegEntry("", "  Ch0 Right",  (apu.Stereo & 0x08) != 0),
+			new RegEntry("", "  Ch1 Right",  (apu.Stereo & 0x04) != 0),
+			new RegEntry("", "  Ch2 Right",  (apu.Stereo & 0x02) != 0),
+			new RegEntry("", "  Ch3 Right",  (apu.Stereo & 0x01) != 0),
+			new RegEntry("", ""),
+			new RegEntry("$FD48", "MPAN", apu.Panning, Format.X8),
+			new RegEntry("", "  Ch0 Pan Enable", (apu.Panning & 0x01) != 0),
+			new RegEntry("", "  Ch1 Pan Enable", (apu.Panning & 0x02) != 0),
+			new RegEntry("", "  Ch2 Pan Enable", (apu.Panning & 0x04) != 0),
+			new RegEntry("", "  Ch3 Pan Enable", (apu.Panning & 0x08) != 0),
+		};
+
+		for (int i = 0; i < 4 && apu.Channels != null; i++) {
+			ref LynxAudioChannelState ch = ref apu.Channels[i];
+			string label = i == 3 ? $"Channel {i} (DAC)" : $"Channel {i}";
+
+			entries.Add(new RegEntry("", ""));
+			entries.Add(new RegEntry(channelAddrs[i], label));
+			entries.Add(new RegEntry($"Ch{i}+0", "  Volume",         ch.Volume, Format.X8));
+			entries.Add(new RegEntry($"Ch{i}+1", "  Feedback Enable", ch.FeedbackEnable, Format.X8));
+			entries.Add(new RegEntry($"Ch{i}+2", "  Output",          ch.Output, Format.X8));
+			entries.Add(new RegEntry($"Ch{i}+3/4", "  Shift Register",  ch.ShiftRegister, Format.X16));
+			entries.Add(new RegEntry($"Ch{i}+5", "  Backup (freq)",   ch.BackupValue, Format.X8));
+			entries.Add(new RegEntry($"Ch{i}+6", "  Control",          ch.Control, Format.X8));
+			entries.Add(new RegEntry("", "    Enabled",     ch.Enabled));
+			entries.Add(new RegEntry("", "    Integrate",   ch.Integrate));
+			entries.Add(new RegEntry($"Ch{i}+7", "  Counter",          ch.Counter, Format.X8));
+			// Attenuation: upper nibble = left channel level, lower nibble = right
+			entries.Add(new RegEntry($"$FD4{i}", "  Attenuation",      ch.Attenuation, Format.X8));
+			entries.Add(new RegEntry("", "    Left",        (byte)(ch.Attenuation >> 4), Format.X8));
+			entries.Add(new RegEntry("", "    Right",       (byte)(ch.Attenuation & 0x0f), Format.X8));
+			entries.Add(new RegEntry("", "    Timer Done",  ch.TimerDone));
+		}
+
+		return new RegisterViewerTab("APU", entries, CpuType.Lynx, MemoryType.LynxMemory);
 	}
 }

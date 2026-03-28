@@ -22,6 +22,10 @@ void LynxCart::Init(Emulator* emu, LynxConsole* console, const LynxCartInfo& inf
 	_bank0Offset = 0;
 	_bank1Offset = _bank0Size;
 
+	// Precompute bitmasks for power-of-2 address wrapping
+	_bank0Mask = (_bank0Size > 0) ? (_bank0Size - 1) : 0;
+	_bank1Mask = (_bank1Size > 0) ? (_bank1Size - 1) : 0;
+
 	// Validate sizes against ROM
 	if (_bank0Size + _bank1Size > _romSize) {
 		MessageManager::Log(std::format("Warning: Bank sizes ({} + {} = {}) exceed ROM size ({})",
@@ -34,6 +38,9 @@ void LynxCart::Init(Emulator* emu, LynxConsole* console, const LynxCartInfo& inf
 		if (_bank1Offset + _bank1Size > _romSize) {
 			_bank1Size = _romSize - _bank1Offset;
 		}
+		// Recompute masks after adjustment
+		_bank0Mask = (_bank0Size > 0) ? (_bank0Size - 1) : 0;
+		_bank1Mask = (_bank1Size > 0) ? (_bank1Size - 1) : 0;
 	}
 
 	// Initialize state
@@ -146,15 +153,10 @@ void LynxCart::SelectBank(uint8_t bank) {
 
 uint32_t LynxCart::GetCurrentRomAddress() const {
 	uint32_t bankOffset = (_state.CurrentBank == 0) ? _bank0Offset : _bank1Offset;
-	uint32_t bankSize = (_state.CurrentBank == 0) ? _bank0Size : _bank1Size;
+	uint32_t bankMask = (_state.CurrentBank == 0) ? _bank0Mask : _bank1Mask;
 
-	// Address within bank wraps around bank size
-	uint32_t addr = _state.AddressCounter;
-	if (bankSize > 0) {
-		addr %= bankSize;
-	}
-
-	return bankOffset + addr;
+	// Address within bank wraps via bitmask (bank sizes are power-of-2)
+	return bankOffset + (_state.AddressCounter & bankMask);
 }
 
 void LynxCart::Serialize(Serializer& s) {

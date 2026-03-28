@@ -56,7 +56,7 @@ void GbaApu::Init(Emulator* emu, GbaConsole* console, GbaDmaController* dmaContr
 	}
 
 	// Generate templated run functions for all channel enable combinations (16 variants)
-	StaticFor<0, 16>::Apply([=](auto i) {
+	StaticFor<0, 16>::Apply([this](auto i) {
 		_runFunc[i] = &GbaApu::InternalRun<(bool)(i & 0x01), (bool)(i & 0x02), (bool)(i & 0x04), (bool)(i & 0x08)>;
 	});
 }

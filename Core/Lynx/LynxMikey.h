@@ -10,6 +10,7 @@ class LynxMemoryManager;
 class LynxCart;
 class LynxApu;
 class LynxEeprom;
+class ComLynxCable;
 
 /// <summary>
 /// Mikey chip — timers, audio, display DMA, interrupts, and UART/ComLynx.
@@ -55,6 +56,11 @@ private:
 	LynxCart* _cart = nullptr;
 	LynxApu* _apu = nullptr;
 	LynxEeprom* _eeprom = nullptr;
+
+	/// <summary>Optional ComLynx cable for multi-unit networking (§11).
+	/// When non-null, TX loopback also broadcasts to other connected units.
+	/// Not serialized — runtime wiring only.</summary>
+	ComLynxCable* _comLynxCable = nullptr;
 
 	LynxMikeyState _state = {};
 
@@ -197,6 +203,11 @@ public:
 
 	/// <summary>Set Cart reference (needed for SYSCTL1 bank strobe).</summary>
 	void SetCart(LynxCart* cart) { _cart = cart; }
+
+	/// <summary>Set ComLynx cable for multi-unit networking (§11).
+	/// When non-null, TX loopback also broadcasts to connected units.
+	/// Pass nullptr to disconnect from cable.</summary>
+	void SetComLynxCable(ComLynxCable* cable) { _comLynxCable = cable; }
 
 	/// <summary>Read a Mikey register.
 	/// Handles timers ($FD00–$FD1F), audio ($FD20–$FD4F), interrupts ($FD80–$FD81),

@@ -65,7 +65,7 @@ void GbaPpu::Init(Emulator* emu, GbaConsole* console, GbaMemoryManager* memoryMa
 	}
 
 	// Generate color math function pointer table for all blend mode combinations
-	StaticFor<0, 128>::Apply([=](auto i) {
+	StaticFor<0, 128>::Apply([this](auto i) {
 		_colorMathFunc[i] = &GbaPpu::ProcessColorMath<(GbaPpuBlendEffect)(i >> 5), (bool)(i & 0x01), (bool)(i & 0x02), (bool)(i & 0x04), (bool)(i & 0x08), (bool)(i & 0x10)>;
 	});
 }
@@ -157,10 +157,11 @@ void GbaPpu::ProcessEndOfScanline() {
 
 		_emu->ProcessEvent(EventType::StartFrame, CpuType::Gba);
 
+		uint32_t emulationSpeed = settings->GetEmulationSpeed();
 		_skipRender = (!cfg.DisableFrameSkipping &&
 		               !_emu->GetRewindManager()->IsRewinding() &&
 		               !_emu->GetVideoRenderer()->IsRecording() &&
-		               (settings->GetEmulationSpeed() == 0 || settings->GetEmulationSpeed() > 150) &&
+		               (emulationSpeed == 0 || emulationSpeed > 150) &&
 		               _frameSkipTimer.GetElapsedMS() < 15);
 		if (!_skipRender) {
 			_currentBuffer = _currentBuffer == _outputBuffers[0].get() ? _outputBuffers[1].get() : _outputBuffers[0].get();
@@ -217,7 +218,7 @@ void GbaPpu::RenderScanline(bool forceRender) {
 	ProcessSprites();
 	ProcessWindow();
 
-	if (_state.Scanline >= 160 || _lastRenderCycle >= 1056) {
+	if (_state.Scanline >= 160 || _lastRenderCycle >= 1056) [[unlikely]] {
 		return;
 	}
 

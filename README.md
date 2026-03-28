@@ -27,26 +27,26 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **Standard** | [Nexen-Windows-x64-v1.4.3.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.3/Nexen-Windows-x64-v1.4.3.exe) | Single-file, recommended |
-| **Native AOT** | [Nexen-Windows-x64-AoT-v1.4.3.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.3/Nexen-Windows-x64-AoT-v1.4.3.exe) | Faster startup |
+| **Standard** | [Nexen-Windows-x64-v1.4.6.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.6/Nexen-Windows-x64-v1.4.6.exe) | Single-file, recommended |
+| **Native AOT** | [Nexen-Windows-x64-AoT-v1.4.6.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.6/Nexen-Windows-x64-AoT-v1.4.6.exe) | Faster startup |
 
 ### Linux
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **AppImage x64** | [Nexen-Linux-x64-v1.4.3.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.3/Nexen-Linux-x64-v1.4.3.AppImage) | Recommended |
-| **AppImage ARM64** | [Nexen-Linux-ARM64-v1.4.3.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.3/Nexen-Linux-ARM64-v1.4.3.AppImage) | Raspberry Pi, etc. |
-| Binary x64 (clang) | [Nexen-Linux-x64-v1.4.3.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.3/Nexen-Linux-x64-v1.4.3.tar.gz) | Tarball, requires SDL2 |
-| Binary x64 (gcc) | [Nexen-Linux-x64-gcc-v1.4.3.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.3/Nexen-Linux-x64-gcc-v1.4.3.tar.gz) | Tarball, requires SDL2 |
-| Binary ARM64 (clang) | [Nexen-Linux-ARM64-v1.4.3.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.3/Nexen-Linux-ARM64-v1.4.3.tar.gz) | Tarball, requires SDL2 |
-| Binary ARM64 (gcc) | [Nexen-Linux-ARM64-gcc-v1.4.3.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.3/Nexen-Linux-ARM64-gcc-v1.4.3.tar.gz) | Tarball, requires SDL2 |
-| Native AOT x64 | [Nexen-Linux-x64-AoT-v1.4.3.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.3/Nexen-Linux-x64-AoT-v1.4.3.tar.gz) | Faster startup |
+| **AppImage x64** | [Nexen-Linux-x64-v1.4.6.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.6/Nexen-Linux-x64-v1.4.6.AppImage) | Recommended |
+| **AppImage ARM64** | [Nexen-Linux-ARM64-v1.4.6.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.6/Nexen-Linux-ARM64-v1.4.6.AppImage) | Raspberry Pi, etc. |
+| Binary x64 (clang) | [Nexen-Linux-x64-v1.4.6.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.6/Nexen-Linux-x64-v1.4.6.tar.gz) | Tarball, requires SDL2 |
+| Binary x64 (gcc) | [Nexen-Linux-x64-gcc-v1.4.6.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.6/Nexen-Linux-x64-gcc-v1.4.6.tar.gz) | Tarball, requires SDL2 |
+| Binary ARM64 (clang) | [Nexen-Linux-ARM64-v1.4.6.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.6/Nexen-Linux-ARM64-v1.4.6.tar.gz) | Tarball, requires SDL2 |
+| Binary ARM64 (gcc) | [Nexen-Linux-ARM64-gcc-v1.4.6.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.6/Nexen-Linux-ARM64-gcc-v1.4.6.tar.gz) | Tarball, requires SDL2 |
+| Native AOT x64 | [Nexen-Linux-x64-AoT-v1.4.6.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.6/Nexen-Linux-x64-AoT-v1.4.6.tar.gz) | Faster startup |
 
 ### macOS (Apple Silicon)
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **Standard** | [Nexen-macOS-ARM64-v1.4.3.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.3/Nexen-macOS-ARM64-v1.4.3.zip) | App bundle |
+| **Standard** | [Nexen-macOS-ARM64-v1.4.6.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.6/Nexen-macOS-ARM64-v1.4.6.zip) | App bundle |
 | ~~Native AOT~~ | *Temporarily unavailable* | .NET 10 ILC compiler bug |
 
 > ℹ️ **Notes:**
@@ -55,7 +55,7 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 > - macOS: Right-click → Open on first launch to bypass Gatekeeper
 > - macOS Intel (x64) builds are no longer provided
 > - macOS Native AOT is disabled due to a [.NET 10 ILC compiler crash](https://github.com/TheAnsarya/Nexen/issues/238)
-> - **Download links point to v1.4.3** — Updated on each release
+> - **Download links point to v1.4.6** — Updated on each release
 
 ---
 
@@ -145,21 +145,21 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 
 ### Windows
 
-1. Download `Nexen-Windows-x64-v1.4.3.exe` from [Releases](https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.3)
+1. Download `Nexen-Windows-x64-v1.4.6.exe` from [Releases](https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.6)
 2. Run the executable (no installation needed)
 3. **File → Open** to load a ROM
 
 ### Linux
 
-1. Download `Nexen-Linux-x64-v1.4.3.AppImage`
-2. Make executable: `chmod +x Nexen-Linux-x64-v1.4.3.AppImage`
-3. Run: `./Nexen-Linux-x64-v1.4.3.AppImage`
+1. Download `Nexen-Linux-x64-v1.4.6.AppImage`
+2. Make executable: `chmod +x Nexen-Linux-x64-v1.4.6.AppImage`
+3. Run: `./Nexen-Linux-x64-v1.4.6.AppImage`
 
 > For non-AppImage builds, install SDL2 first: `sudo apt install libsdl2-2.0-0`
 
 ### macOS
 
-1. Download `Nexen-macOS-ARM64-v1.4.3.zip`
+1. Download `Nexen-macOS-ARM64-v1.4.6.zip`
 2. Extract and move `Nexen.app` to Applications
 3. Right-click → Open (first launch only, to bypass Gatekeeper)
 
@@ -207,6 +207,9 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 | [Debugger Subsystem](~docs/DEBUGGER.md) | Debugger internals |
 | [Utilities Library](~docs/UTILITIES-LIBRARY.md) | Shared utility library |
 | [Pansy Integration](~docs/pansy-export-index.md) | Metadata export system |
+| [Channel F Master Program Plan](~docs/plans/channel-f-master-program-plan.md) | Multi-epic roadmap for first-class Fairchild Channel F support |
+| [Channel F Implementation Prompts](~docs/plans/channel-f-implementation-prompts.md) | Ordered multi-session execution prompt pack |
+| [Channel F Source Index](~docs/research/channel-f-source-index.md) | External references mapped to implementation work |
 
 ### Emulation Core Documentation
 

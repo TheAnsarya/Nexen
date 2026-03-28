@@ -23,7 +23,7 @@
 						<StackPanel>
 							<Border BorderBrush="{StaticResource NexenGrayBorderColor}" BorderThickness="1" Margin="0 -1 0 0">
 								<Grid ColumnDefinitions="3*, 1*" Margin="5 0 5 0">
-									<TextBlock Grid.Column="0" Text="{Binding Name}}" />
+									<TextBlock Grid.Column="0" Text="{Binding Name}" />
 									<c:KeyBindingButton Grid.Column="1" KeyBinding="{Binding KeyMapping}" HorizontalAlignment="Stretch" />
 								</Grid>
 							</Border>

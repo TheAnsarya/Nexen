@@ -17,7 +17,7 @@
 >
 	<DockPanel Margin="5">
 		<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
-			<c:ButtonWithIcon Icon="Assets/Record.png" MinWidth="70" Click="Ok_OnClick" Text="{l:Translate btnOK}" />
+			<c:ButtonWithIcon Icon="Assets/Record.png" MinWidth="70" Click="Ok_OnClick" Text="{l:Translate btnOK}" IsEnabled="{Binding CanRecord}" />
 			<Button MinWidth="70" HorizontalContentAlignment="Center" IsCancel="True" Click="Cancel_OnClick" Content="{l:Translate btnCancel}" />
 		</StackPanel>
 

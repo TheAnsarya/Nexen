@@ -2,6 +2,7 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:l="using:Nexen.Localization"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d"
 	d:DesignWidth="420"
@@ -12,48 +13,49 @@
 	CanResize="False"
 	Focusable="True"
 	WindowStartupLocation="CenterOwner"
-	Title="Greenzone Settings"
+	Title="{l:Translate wndTitle}"
 	Background="{StaticResource NexenDarkBackgroundColor}"
 >
 	<StackPanel Margin="20" Spacing="15">
-		<TextBlock Text="Greenzone Settings" FontSize="18" FontWeight="Bold" Foreground="{StaticResource NexenAccentHighlightColor}" />
+		<TextBlock Text="{l:Translate lblTitle}" FontSize="18" FontWeight="Bold" Foreground="{StaticResource NexenAccentHighlightColor}" />
+		<TextBlock Text="{l:Translate lblHint}" Foreground="Gray" TextWrapping="Wrap" />
 
 		<!-- Current Status -->
 		<Border BorderBrush="Gray" BorderThickness="1" CornerRadius="4" Padding="10">
 			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*">
-				<TextBlock Text="Savestates:" VerticalAlignment="Center" Foreground="Gray" />
+				<TextBlock Text="{l:Translate lblSavestates}" VerticalAlignment="Center" Foreground="Gray" />
 				<TextBlock Grid.Column="1" Name="txtStateCount" Text="0" Margin="10,0,0,0" VerticalAlignment="Center" />
-				<TextBlock Grid.Row="1" Text="Memory Usage:" VerticalAlignment="Center" Foreground="Gray" Margin="0,5,0,0" />
+				<TextBlock Grid.Row="1" Text="{l:Translate lblMemoryUsage}" VerticalAlignment="Center" Foreground="Gray" Margin="0,5,0,0" />
 				<TextBlock Grid.Row="1" Grid.Column="1" Name="txtMemory" Text="0.0 MB" Margin="10,5,0,0" VerticalAlignment="Center" />
 			</Grid>
 		</Border>
 
 		<!-- Settings -->
 		<Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" ColumnSpacing="10" RowSpacing="8">
-			<TextBlock Text="Capture Interval:" VerticalAlignment="Center" ToolTip.Tip="Frames between automatic savestate captures" />
+			<TextBlock Text="{l:Translate lblCaptureInterval}" VerticalAlignment="Center" ToolTip.Tip="{l:Translate ttCaptureInterval}" />
 			<NumericUpDown Grid.Column="1" Name="nudInterval" Minimum="1" Maximum="3600" Value="60" FormatString="N0" />
 
-			<TextBlock Grid.Row="1" Text="Max Savestates:" VerticalAlignment="Center" ToolTip.Tip="Maximum number of savestates in memory" />
+			<TextBlock Grid.Row="1" Text="{l:Translate lblMaxSavestates}" VerticalAlignment="Center" ToolTip.Tip="{l:Translate ttMaxSavestates}" />
 			<NumericUpDown Grid.Row="1" Grid.Column="1" Name="nudMaxStates" Minimum="10" Maximum="100000" Value="1000" FormatString="N0" />
 
-			<TextBlock Grid.Row="2" Text="Memory Limit (MB):" VerticalAlignment="Center" ToolTip.Tip="Maximum memory budget for greenzone in megabytes" />
+			<TextBlock Grid.Row="2" Text="{l:Translate lblMemoryLimit}" VerticalAlignment="Center" ToolTip.Tip="{l:Translate ttMemoryLimit}" />
 			<NumericUpDown Grid.Row="2" Grid.Column="1" Name="nudMaxMemoryMB" Minimum="32" Maximum="8192" Value="256" FormatString="N0" />
 
-			<TextBlock Grid.Row="3" Text="Ring Buffer Size:" VerticalAlignment="Center" ToolTip.Tip="Recent frames kept uncompressed for fast rewind" />
+			<TextBlock Grid.Row="3" Text="{l:Translate lblRingBufferSize}" VerticalAlignment="Center" ToolTip.Tip="{l:Translate ttRingBufferSize}" />
 			<NumericUpDown Grid.Row="3" Grid.Column="1" Name="nudRingBuffer" Minimum="10" Maximum="3600" Value="120" FormatString="N0" />
 
-			<TextBlock Grid.Row="4" Text="Compression:" VerticalAlignment="Center" />
-			<CheckBox Grid.Row="4" Grid.Column="1" Name="chkCompression" Content="Compress older states" IsChecked="True" />
+			<TextBlock Grid.Row="4" Text="{l:Translate lblCompression}" VerticalAlignment="Center" />
+			<CheckBox Grid.Row="4" Grid.Column="1" Name="chkCompression" Content="{l:Translate chkCompression}" IsChecked="True" />
 
-			<TextBlock Grid.Row="5" Text="Compression Threshold:" VerticalAlignment="Center" ToolTip.Tip="Frames older than this get compressed" />
+			<TextBlock Grid.Row="5" Text="{l:Translate lblCompressionThreshold}" VerticalAlignment="Center" ToolTip.Tip="{l:Translate ttCompressionThreshold}" />
 			<NumericUpDown Grid.Row="5" Grid.Column="1" Name="nudCompThreshold" Minimum="30" Maximum="36000" Value="300" FormatString="N0" />
 		</Grid>
 
 		<!-- Buttons -->
 		<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
-			<Button Content="Clear All States" Click="OnClearClick" Foreground="Red" />
-			<Button Content="OK" Width="80" Click="OnOkClick" IsDefault="True" />
-			<Button Content="Cancel" Width="80" Click="OnCancelClick" IsCancel="True" />
+			<Button Content="{l:Translate btnClearAllStates}" Click="OnClearClick" Foreground="Red" />
+			<Button Content="{l:Translate btnOK}" Width="80" Click="OnOkClick" IsDefault="True" />
+			<Button Content="{l:Translate btnCancel}" Width="80" Click="OnCancelClick" IsCancel="True" />
 		</StackPanel>
 	</StackPanel>
 </Window>

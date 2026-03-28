@@ -71,6 +71,10 @@ DllExport void __stdcall SetAtari2600Config(Atari2600Config config) {
 	_emu->GetSettings()->SetAtari2600Config(config);
 }
 
+DllExport void __stdcall SetChannelFConfig(ChannelFConfig config) {
+	_emu->GetSettings()->SetChannelFConfig(config);
+}
+
 DllExport void __stdcall SetGameConfig(GameConfig config) {
 	_emu->GetSettings()->SetGameConfig(config);
 }
@@ -92,8 +96,8 @@ DllExport void __stdcall SetShortcutKeys(ShortcutKeyInfo shortcuts[], uint32_t c
 	_emu->GetSettings()->SetShortcutKeys(shortcutList);
 }
 
-DllExport NesConfig __stdcall GetNesConfig() {
-	return _emu->GetSettings()->GetNesConfig();
+DllExport void __stdcall GetNesConfig(NesConfig& config) {
+	config = _emu->GetSettings()->GetNesConfig();
 }
 
 DllExport void __stdcall GetAudioDevices(char* outDeviceList, uint32_t maxLength) {

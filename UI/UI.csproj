@@ -8,9 +8,9 @@
 	<AssemblyName>Nexen</AssemblyName>
 	<RootNamespace>Nexen</RootNamespace>
 	<StartupObject>Nexen.Program</StartupObject>
-	<Version>1.0.1</Version>
-	<FileVersion>1.0.1</FileVersion>
-	<Copyright>(C) 2014-2026 Sour/TheAnsarya</Copyright>
+	<Version>1.4.5</Version>
+	<FileVersion>1.4.5</FileVersion>
+	<Copyright>(C) 2026 TheAnsarya</Copyright>
   </PropertyGroup>
 	<PropertyGroup>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -47,8 +47,8 @@
 		<CFBundleName>Nexen</CFBundleName> <!-- Also defines .app file name -->
 		<CFBundleDisplayName>Nexen</CFBundleDisplayName>
 		<CFBundleIdentifier>com.nexen</CFBundleIdentifier>
-		<CFBundleVersion>1.0.1</CFBundleVersion>
-		<CFBundleShortVersionString>1.0.1</CFBundleShortVersionString>
+		<CFBundleVersion>1.4.5</CFBundleVersion>
+		<CFBundleShortVersionString>1.4.5</CFBundleShortVersionString>
 		<CFBundlePackageType>APPL</CFBundlePackageType>
 		<CFBundleSignature>????</CFBundleSignature>
 		<CFBundleExecutable>Nexen</CFBundleExecutable>
@@ -116,6 +116,8 @@
 	<PackageReference Include="Avalonia.Controls.ColorPicker" Version="11.3.11" />
 	<PackageReference Include="Avalonia.Diagnostics" Version="11.3.11" Condition="'$(OptimizeUi)'!='true'" />
 	<PackageReference Include="Avalonia.ReactiveUI" Version="11.3.9" />
+	<PackageReference Include="Avalonia.Svg.Skia" Version="11.3.0" />
+	<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.116.1" />
 	<PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
 	<PackageReference Include="Dock.Avalonia" Version="11.3.11.7" />
 	<PackageReference Include="Dock.Avalonia.Themes.Fluent" Version="11.3.11.7" />
@@ -123,10 +125,12 @@
 	<PackageReference Include="Dotnet.Bundle" Version="*" />
 	<PackageReference Include="ELFSharp" Version="2.17.3" />
 	<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
-	<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
-	<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.2" />
-	<PackageReference Include="Avalonia.Svg.Skia" Version="11.3.0" />
-	<PackageReference Include="StreamHash" Version="1.10.0" />
+	<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
+	<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.5" />
+	<PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
+	<PackageReference Include="Microsoft.ICU.ICU4C.Runtime.linux-x64" Version="72.1.0.3" Condition="'$(RuntimeIdentifier)'=='linux-x64'" />
+	<PackageReference Include="Microsoft.ICU.ICU4C.Runtime.linux-arm64" Version="72.1.0.3" Condition="'$(RuntimeIdentifier)'=='linux-arm64'" />
+	<PackageReference Include="StreamHash" Version="1.11.2" />
    </ItemGroup>
    <ItemGroup>
 	<ProjectReference Include="..\MovieConverter\MovieConverter.csproj" />

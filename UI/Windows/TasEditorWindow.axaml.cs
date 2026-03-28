@@ -763,6 +763,12 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 			"SE" => "SELECT",
 			"*" => "STAR",
 			"#" => "POUND",
+			"BK" => "BACK",
+			"FW" => "FORWARD",
+			"↺" => "TWISTCCW",
+			"↻" => "TWISTCW",
+			"PL" => "PULL",
+			"PS" => "PUSH",
 			_ => label.ToUpperInvariant()
 		};
 	}

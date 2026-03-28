@@ -2,7 +2,7 @@ using Nexen.Config;
 using Nexen.Interop;
 using Nexen.ViewModels;
 
-namespace Nexen.Debugger.ViewModels; 
+namespace Nexen.Debugger.ViewModels;
 public sealed class DebuggerOptionsViewModel : ViewModelBase {
 	public DebuggerConfig Config { get; }
 
@@ -15,6 +15,7 @@ public sealed class DebuggerOptionsViewModel : ViewModelBase {
 	public bool IsGba { get; }
 	public bool IsWs { get; }
 	public bool IsLynx { get; }
+	public bool IsChannelF { get; }
 
 	public bool HasSpecificBreakOptions { get; }
 
@@ -31,7 +32,8 @@ public sealed class DebuggerOptionsViewModel : ViewModelBase {
 		IsGba = cpuType == CpuType.Gba;
 		IsWs = cpuType == CpuType.Ws;
 		IsLynx = cpuType == CpuType.Lynx;
+		IsChannelF = cpuType == CpuType.ChannelF;
 
-		HasSpecificBreakOptions = IsSnes || IsSpc || IsNes || IsGameboy || IsPce || IsSms || IsGba || IsWs || IsLynx;
+		HasSpecificBreakOptions = IsSnes || IsSpc || IsNes || IsGameboy || IsPce || IsSms || IsGba || IsWs || IsLynx || IsChannelF;
 	}
 }

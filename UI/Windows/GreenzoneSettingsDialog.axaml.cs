@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Nexen.Localization;
 using Nexen.TAS;
 using Nexen.Utilities;
 
@@ -43,12 +44,12 @@ public partial class GreenzoneSettingsDialog : NexenWindow {
 
 	private void InitializeComponent() {
 		AvaloniaXamlLoader.Load(this);
-		_nudInterval = this.FindControl<NumericUpDown>("nudInterval")!;
-		_nudMaxStates = this.FindControl<NumericUpDown>("nudMaxStates")!;
-		_nudMaxMemoryMB = this.FindControl<NumericUpDown>("nudMaxMemoryMB")!;
-		_nudRingBuffer = this.FindControl<NumericUpDown>("nudRingBuffer")!;
-		_chkCompression = this.FindControl<CheckBox>("chkCompression")!;
-		_nudCompThreshold = this.FindControl<NumericUpDown>("nudCompThreshold")!;
+		_nudInterval = this.FindControl<NumericUpDown>("nudInterval") ?? throw new InvalidOperationException("nudInterval control is missing.");
+		_nudMaxStates = this.FindControl<NumericUpDown>("nudMaxStates") ?? throw new InvalidOperationException("nudMaxStates control is missing.");
+		_nudMaxMemoryMB = this.FindControl<NumericUpDown>("nudMaxMemoryMB") ?? throw new InvalidOperationException("nudMaxMemoryMB control is missing.");
+		_nudRingBuffer = this.FindControl<NumericUpDown>("nudRingBuffer") ?? throw new InvalidOperationException("nudRingBuffer control is missing.");
+		_chkCompression = this.FindControl<CheckBox>("chkCompression") ?? throw new InvalidOperationException("chkCompression control is missing.");
+		_nudCompThreshold = this.FindControl<NumericUpDown>("nudCompThreshold") ?? throw new InvalidOperationException("nudCompThreshold control is missing.");
 	}
 
 	private void OnOkClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
@@ -85,8 +86,15 @@ public partial class GreenzoneSettingsDialog : NexenWindow {
 		dialog._nudCompThreshold.Value = greenzone.CompressionThreshold;
 
 		// Status display
-		dialog.FindControl<TextBlock>("txtStateCount")!.Text = greenzone.SavestateCount.ToString("N0");
-		dialog.FindControl<TextBlock>("txtMemory")!.Text = $"{greenzone.TotalMemoryUsage / (1024.0 * 1024.0):F1} MB";
+		TextBlock? stateCount = dialog.FindControl<TextBlock>("txtStateCount");
+		TextBlock? memory = dialog.FindControl<TextBlock>("txtMemory");
+		if (stateCount != null) {
+			stateCount.Text = greenzone.SavestateCount.ToString("N0");
+		}
+
+		if (memory != null) {
+			memory.Text = ResourceHelper.GetMessage("GreenzoneMemoryUsageMB", (greenzone.TotalMemoryUsage / (1024.0 * 1024.0)).ToString("F1"));
+		}
 
 		var tcs = new TaskCompletionSource<GreenzoneSettings?>();
 		dialog.Closed += (_, _) => {

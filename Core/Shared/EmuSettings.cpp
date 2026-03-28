@@ -38,6 +38,7 @@ void EmuSettings::CopySettings(EmuSettings& src) {
 	SetLynxConfig(src._lynx);
 	SetGenesisConfig(src._genesis);
 	SetAtari2600Config(src._atari2600);
+	SetChannelFConfig(src._channelF);
 }
 
 void EmuSettings::Serialize(Serializer& s) {
@@ -170,6 +171,9 @@ void EmuSettings::Serialize(Serializer& s) {
 			SV(_genesis.Port1.Type);
 			SV(_genesis.Port2.Type);
 			SV(_genesis.Region);
+			break;
+
+		case ConsoleType::ChannelF:
 			break;
 
 		default:
@@ -319,6 +323,14 @@ void EmuSettings::SetAtari2600Config(Atari2600Config& config) {
 
 Atari2600Config& EmuSettings::GetAtari2600Config() {
 	return _atari2600;
+}
+
+void EmuSettings::SetChannelFConfig(ChannelFConfig& config) {
+	_channelF = config;
+}
+
+ChannelFConfig& EmuSettings::GetChannelFConfig() {
+	return _channelF;
 }
 
 void EmuSettings::SetGameConfig(GameConfig& config) {
@@ -475,6 +487,7 @@ OverscanDimensions EmuSettings::GetOverscan() {
 		case ConsoleType::Lynx:
 		case ConsoleType::Atari2600:
 		case ConsoleType::Genesis:
+		case ConsoleType::ChannelF:
 			break;
 	}
 
@@ -502,7 +515,7 @@ double EmuSettings::GetAspectRatio(ConsoleRegion region, FrameInfo baseFrameSize
 
 		// For auto, ntsc and pal, these are PAR ratios, so multiply them with the base screen's aspect ratio to get the expected screen aspect ratio
 		case VideoAspectRatio::Auto:
-			if (_emu->GetConsoleType() == ConsoleType::Gameboy || _emu->GetConsoleType() == ConsoleType::Gba || _emu->GetConsoleType() == ConsoleType::Ws || _emu->GetConsoleType() == ConsoleType::Lynx || _emu->GetConsoleType() == ConsoleType::Atari2600 || _emu->GetConsoleType() == ConsoleType::Genesis) {
+			if (_emu->GetConsoleType() == ConsoleType::Gameboy || _emu->GetConsoleType() == ConsoleType::Gba || _emu->GetConsoleType() == ConsoleType::Ws || _emu->GetConsoleType() == ConsoleType::Lynx || _emu->GetConsoleType() == ConsoleType::Atari2600 || _emu->GetConsoleType() == ConsoleType::Genesis || _emu->GetConsoleType() == ConsoleType::ChannelF) {
 				// GB/GBA/WS/Lynx/Atari2600 shouldn't use NTSC/PAL aspect ratio when in auto mode
 				return screenAspectRatio;
 			} else if (_emu->GetRomInfo().Format == RomFormat::GameGear) {
@@ -590,6 +603,8 @@ bool EmuSettings::HasRandomPowerOnState(ConsoleType consoleType) {
 			return _atari2600.RamPowerOnState == RamState::Random;
 		case ConsoleType::Genesis:
 			return _genesis.RamPowerOnState == RamState::Random;
+		case ConsoleType::ChannelF:
+			return false;
 	}
 
 	return false;

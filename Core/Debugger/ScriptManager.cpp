@@ -30,7 +30,7 @@ int ScriptManager::LoadScript(const string& name, const string& path, const stri
 		_hasScript = true;
 		return scriptId;
 	} else {
-		auto result = std::find_if(_scripts.begin(), _scripts.end(), [=](unique_ptr<ScriptHost>& script) {
+		auto result = std::find_if(_scripts.begin(), _scripts.end(), [this, scriptId](unique_ptr<ScriptHost>& script) {
 			return script->GetScriptId() == scriptId;
 		});
 		if (result != _scripts.end()) {
@@ -49,7 +49,7 @@ int ScriptManager::LoadScript(const string& name, const string& path, const stri
 void ScriptManager::RemoveScript(int32_t scriptId) {
 	DebugBreakHelper helper(_debugger);
 	auto lock = _scriptLock.AcquireSafe();
-	_scripts.erase(std::remove_if(_scripts.begin(), _scripts.end(), [=](const unique_ptr<ScriptHost>& script) {
+	_scripts.erase(std::remove_if(_scripts.begin(), _scripts.end(), [this, scriptId](const unique_ptr<ScriptHost>& script) {
 		               if (script->GetScriptId() == scriptId) {
 			               // Send a ScriptEnded event before unloading the script
 			               script->ProcessEvent(EventType::ScriptEnded, _debugger->GetMainCpuType());

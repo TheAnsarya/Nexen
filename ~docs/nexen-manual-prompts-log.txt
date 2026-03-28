@@ -739,6 +739,141 @@ continue now with non-Genesis work only (#933/#934 app + 2600/Lynx verification)
 
 1
 
+`https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.3` has no builds, are those being done? what are we waiting on?
+
+yes please do that
+
+There are a bunch of warnings and errors in `https://github.com/TheAnsarya/Nexen/actions/runs/23556399472/job/68584262761` like `InteropDLL/DebugApiWrapper.cpp:328:36: warning: 'GetEventViewerEvent' has C-linkage specified, but returns user-defined type 'DebugEventInfo' which is incompatible with C [-Wreturn-type-c-linkage]`; continue;
+
+continue by opening focused cleanup issues for the warning groups (Interop C-linkage first, then deprecated captures/enum arithmetic), then implement fixes on the current branch.
+
+are we ignoring errors/warnings or are we fixing them? fix them!; continue;
+
+continue working issues and builds;
+
+[Nexen] (Atari Lynx) Ensure the debugger has all the system specific stuff for the Lynx, UI and core integration, make sure everything is wired up correctly and that VRAM viewer UI and the rest of it is system specific and correct and working; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks; continue;
+
+[Nexen] (Atari Lynx) Work on emulator core completeness and correctness make Lynx emulation work from loading the rom, to full playablability, to debugging, to TAS/movie  feature, to save states, to input/controllers UI; update manual testing documentation for the Lynx, and update the main manual test docs; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
+
+[Nexen] (Atari Lynx) Work on issues; Make UI complete, update docs; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
+
+[Nexen] (Atari Lynx) Work on issues; Make UI complete, update docs; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
+
+[Nexen] (Atari Lynx) Work on issues; Make UI complete, update docs; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
+
+Continue;
+
+find more performance improvements, benchmark and test them for correctness and speed and memory usage and make issues/docs/etc; continue;
+
+find more performance improvements, benchmark and test them for correctness and speed and memory usage and make issues/docs/etc; continue;
+
+don't work on Sega Genesis yet! [Nexen] (Atari Lynx) Work on issue #955 `[950.5] ComLynx Multi-Player Not Implemented`; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
+
+don't reverse the genesis changes, put them back, just don't do more work on the genesis; continue;
+
+find more performance improvements, benchmark and test them for correctness and speed and memory usage and make issues/docs/etc; continue;
+
+--- chatgpt-codex-5.3
+[Nexen] SUPER GIGANTIC EFFORT: `Add Fairchild Channel F emulation to Core and UI and debugger, etc`; plan it comprehensively over multiple sessions! make a few epics and a ton of sub-issues and sub-sub-issues and todolists, and plans and documents and do research to create a giant plan to add `Fairchild Channel F` emulation and work effort to implement `Fairchild Channel F` emulation and debugging and pansy creation and save states and labels and everything else, make it a first class emulation option; Find source code for other `Fairchild Channel F` emulators and `Fairchild Channel F` documentation and make a big plan for how we can add a system to Nexen: we need an emulation core framework that we can make run `Fairchild Channel F`, add required interfaces, add lua integration, add UI file opening/savestates/etc, add movie/tas support (that's an epic itself), Add input configuration (joypad button mapping), add debugging and code views, emulate all versions of the console with their differences, document like crazy, document document document, work for a very long time to create this plan, multiple sessions of planning and research and code prototyping with a bunch of code-plans for each sub-effort, and a full testing coverage and benchmarking for the emulation/ui/tools/debugging/etc; We need to prove we are a separate emulator from our predecessor (Mesen), now that we've added the Atari Lynx, let's add a second one so we are going to add a whole new system; make sure to focus on accuracy and performance, but always accuracy and timing first; don't get distracted, focus on making practical researched changes in chunks, keep issues and docs and logs updated; continue; There should be a new features branch (maybe `features-channel-f` off of the atari-lynx branch) for all of this work, don't make changes directly in the master branch; Continue planning for `Fairchild Channel F` implementation of emulation debugging, movie recording and playing, save states, sram saving/loading, metadata (hashes, etc), UI usage, input button mapping, debugging; plan and figure out how you are going to implement this work effort (make documents and a big "prompts" file where you generate a series of prompts for me to run in order to implement the giant feature (again, make sure all work is in a new feature branch)); continue; implement after all planning and todo and issue creation is done; continue;
+
+VSCode crashed, resume working; continue;
+
+install `Ripgrep` into the shell since you try to use it so often; continue and resume;
+
+--- steer
+Channel F BIOS == `C:\~reference-roms\channel f\Channel F BIOS (1976) (Fairchild, Luxor)\`, Channel F ROMs == `C:\~reference-roms\channel f\` sub folders
+
+--- steer
+Also emulate the Luxor versions `Luxor Channel F BIOS SL90025 (1976) (Luxor).bin`
+
+[Nexen] (Channel F) continue working and making issues, implement core emulation in c++ and UI debugging and TAS/movies core/UI and input controllers UI/core in c# and continue; performance benchmarks and tests for correctness, test all code, benchmark all hot paths, continue; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
+
+[Nexen] (Channel F) continue working and making issues, implement core emulation in c++ and UI debugging and TAS/movies core/UI and input controllers UI/core in c# and continue; performance benchmarks and tests for correctness, test all code, benchmark all hot paths, continue; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
+
+[Nexen, pansy, poppy] (Channel F) Add Channel F to pansy and update Nexen to generate the Channel F version of the pansy file and labels and save states etc, and update the poppy assembler to compile channel f and bring assets into the pipeline; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; Continue working on Nexen's channel f issues
+
+1 go
+
+[Nexen, pansy, poppy] (Channel F) continue making issues and working issues and updating docs, etc. go!; continue;
+
+-- switch to claude opus 4.6
+[Nexen, pansy, poppy] (Channel F) continue making issues and working issues and updating docs, etc., tests and benchmarks, go!; continue;
+
+continue;
+
+continue;
+
+continue working, also adding peony tasks/issues for Channel F decompilation/disassembly; we want the Channel F entire pipeline/stack working great, with complete and comprehensive emulation core and ui in Nexen, a fully functional assembler in poppy, complete coverage in pansy, and complete accurate disassembly in peony (using a pansy or not); this is our goal for today; continue;
+
+continue;
+
+[Nexen] work through all the Channel F issues, updating documentation and readmes, make a working complete comprehensive correct accurate emulator and supporting infrastructure (input controller UI, debugging UI and wire-up, TAS/movie support from core to UI, savestates, debug viewers like vram and memory and registers); continue; [poppy] create complete comprehensive documentation for the Channel F poppy assembly language (`*.pasm`) and how to program for the channel f (system structure, instructions, assembly commands and syntax (like `inc` for including files and labels and variables and registers and loops) and make examples (make new epics/issues/benchmarks/tests/docs/plans/etc); continue;
+
+--- chatgpt-codex-5.3
+--- continue button
+
+[Nexen] work through all the Channel F issues, make a working complete comprehensive correct accurate emulator and supporting infrastructure (input controller UI, debugging UI and wire-up, TAS/movie support from core to UI, savestates, debug viewers like vram and memory and registers); update all of the Channel F documentation; continue; [poppy, pansy, peony] continue;
+
+[Nexen] work through all the Channel F issues, make a working complete comprehensive correct accurate emulator and supporting infrastructure (input controller UI, debugging UI and wire-up, TAS/movie support from core to UI, savestates, debug viewers like vram and memory and registers); update all of the Channel F documentation; continue; [poppy, pansy, peony] continue;
+
+continue;
+
+[Nexen] Research and fix this reported issue: `https://github.com/TheAnsarya/Nexen/issues/1039` figure out why linux build is crashing and fix it, go, continue; research, update docs, update tests and benchmarks, update code, update issues, fix the problem and update logs and the issue; after you fix it, make a release with only a patch number increase +1, and link to the release in the issue as a possible fix; continue;
+
+I still want internationalization and multi-language support;, don't get rid of it, just make sure there's a local version of the code instead of relying on the system; continue;
+
+--- steer
+Use the Microsoft.ICU.ICU4C.Runtime NuGet package
+
+[Nexen] work through all the Channel F issues, make a working complete comprehensive correct accurate emulator and supporting infrastructure (input controller UI, debugging UI and wire-up, TAS/movie support from core to UI, savestates, debug viewers like vram and memory and registers); update all of the Channel F documentation; continue; [poppy, pansy, peony] continue;
+
+[Nexen] the emulator is crashing when opened, the release version isn't even giving me an error, it just never loads; open Nexen, watch the console output and run debug and see what is wrong and fix it; continue;
+
+Hey, continue working on the crash, but use the repoerts in the comments of `https://github.com/TheAnsarya/Nexen/issues/1039`; continue; fix as many warnings as you can; continue;
+
+[Nexen] don't revert code, don't go back to Mesen, ignore Mesen we are Nexen. At one point we supported svg, we don't now I guess, so instead of spiraling implement svg support favoring existing packages; continue;
+
+continue to finish up this session (and make issues, docs, plans, chat/session logs); [Nexen] settings for each system UI is incomplete, 2600 and Lynx and Channel F and others all have labels without actual descriptive text, functionality might not work, research and review and survey the UI for settings, and config, and input, and movies, and savestates, etc, make the UI awesome and cover every platform and also be comprehensive and make issues, epics, docs, plans, tests, benchmarks, etc; continue;
+
+EventViewer Channel F crash-path fixes.; TraceLogger Channel F formatting integration.; ColorIndexPicker Channel F palette integration.; Full regression test/benchmark execution for new UX surfaces (scoped in #1045 and #1046).Continue immediately with debugger crash-path fixes (#1042 follow-on).; Execute targeted tests and benchmark checkpoints (#1045, #1046) and commit results.; Start the global movie/savestate UX refinement pass (#1044).; continue;
+
+Include LynxConfigView.axaml in this commit as-is.; [Nexen] in Linux builds the `Microsoft.ICU.ICU4C.Runtime` NuGet package was causing problems because it had the wrong version because a more modern version had a segfault; find a way to make this work without crashing, see issue: `https://github.com/TheAnsarya/Nexen/issues/1039`; continue; fix as many warnings as you can; continue;
+
+do the next pass focused only on compiler warnings and produce a warnings-only commit.; want Linux-runtime confidence next, I can add a CI validation check that asserts ICU native files are present in Linux publish output.; continue;
+
+make chat/session log, docs, plans, issues, epics, tests, benchmarks, etc; yes do that; continue; fix all crashes and segfaults and library problems and versions, etc, use the most modern libraries and the most modern standards and practices and code; fix as many warnings as you can; continue; 
+
+Expand CI runtime checks from ICU-only to include Skia/HarfBuzz native asset assertions in Linux publish outputs.; Add a warning-report artifact step in CI so warning deltas are tracked per run.; Start the next crash hardening pass from #1049 with a distro-by-distro reproduction matrix and fix ordering.; continue working Nexen issues; continue;
+
+continue;
+
+continue; go for a long time, like 10+ minutes; do issues and problems and fix all crash problems and warnings, make isssue/etc; continue;
+
+[Nexen] make sure the Linux build will work, there was a crashing issue, make sure we fixed that and any other linux issues (error or warnings or crashes); Make the UI perfect; review all of the modified UI and make sure it's awesome and fully done; make issues and then implement them for fixing the UI; continue;
+
+--- try again
+
+[Nexen] Integrate the two pull requests for Mesen into our Nexen `https://github.com/SourMesen/Mesen2/pull/89` and `https://github.com/SourMesen/Mesen2/pull/90`; make these issues and docs, test and benchmark, and implement the code changes ensuring they are correct; document it; fix any issues that stop emulation or UI, continue and update UI make all UI work and have real labels and continue working Nexen issues; continue;
+
+[Nexen] Make sure everything builds and fix all errors and warnings; Make a new release increasing the patch number; continue;
+
+what is this `the 8 .NET Pansy export tests`? We are using dotnet 11 and c#14, always the most modern versions of everything!; continue;
+
+The version of the native libSkiaSharp library (88.1) is incompatible with this version of SkiaSharp. Supported versions of the native libSkiaSharp library are in the range [116.0, 117.0).
+
+do not remove genesis code, just let it sit until we work on it later, as long as it doesn't crash anything; The version of the native libSkiaSharp library (88.1) is incompatible with this version of SkiaSharp. Supported versions of the native libSkiaSharp library are in the range [116.0, 117.0).
+
+github actions won't compile dotnet 10, but it used to, fix the CI configs to make `    16>C:\Program Files\dotnet\sdk\10.0.105\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.DefaultItems.targets(145,5): warning NETSDK1233: Targeting .NET 10.0 or higher in Visual Studio 2022 17.14 is not supported. [D:\a\Nexen\Nexen\UI\UI.csproj]` fixed because we were deploying dotnet10 releases recently;
+
+wtf is this build nonsense on github? we're supposed to be building with vs2026, we've been doing it for weeks;
+
+god damnit, I had a fully working build/release pipeline ***yesterday*** why are you failing and what did you change? why does a `warning-report` error kill my entire windows build? focus everything on making a stable current build and full release in github, analyze the github action logs and solve those problems (using vs2026) so we have a working modern current release; 
+
+you just returned nothing from my prompt, please actually solve it: god damnit, I had a fully working build/release pipeline ***yesterday*** why are you failing and what did you change? why does a `warning-report` error kill my entire windows build? focus everything on making a stable current build and full release in github, analyze the github action logs and solve those problems (using vs2026) so we have a working modern current release;
+
+Also, don't not release the windows builds or whatever succeeds just because another build failed; if it fails on apple, I still want to be able to test windows; continue;
+
+[Nexen] merge the branch into main and then create a new branch just like this one for implementing all the remaining channel f issues we have left; the release for windows 1.4.6 crashes immediately, run it and check all the logs and console output and maybe build and run it as debug to see what the errors are that are crashing it and fix those errors fix and update issues; make sure all this build/release fixing effort over the last couple hours has been logged in an issue and docs so we know what to do next time; fix Nexen issues and make the release runnable and testable; continue;
 
 
 
@@ -747,54 +882,6 @@ continue now with non-Genesis work only (#933/#934 app + 2600/Lynx verification)
 
 
 
-
-
-
-
-
-
-
-15/64 battles
-1280/5000 stall coin
-Martha
-Krista
-Arachne
-Folio
-Helios
-Peppy
-Kayla
-Aurora
-Galahad
-Keira
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Update all four projects (Nexen, poppy, pansy, peony) to dotnet 11 and c#15 and update github CI/CD config to install the sdk (see instructions listed at: https://copilot.microsoft.com/chats/Rkj5Q5ydHbfRjVV36XhGr) 
-
-
-
-
-[Nexen] git commit everything, and then release another version of Nexen to github, updating the patch version number; Make an announcement `discord` post ***with formatting*** for this Nexen release, with all the differences since we forked from Mesen and why we did and save it in an `md` documentation file and show me this file; continue;
 
 
 
@@ -802,6 +889,76 @@ Update all four projects (Nexen, poppy, pansy, peony) to dotnet 11 and c#15 and 
 fix as many warnings as you can; continue;
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Nexen] work through all the Channel F issues, make a working complete comprehensive correct accurate emulator and supporting infrastructure (input controller UI, debugging UI and wire-up, TAS/movie support from core to UI, savestates, debug viewers like vram and memory and registers); update all of the Channel F documentation; continue; [poppy, pansy, peony] continue;
+
+
+
+[Nexen] Make sure the emulator core for Atari Lynx is correct, accurate, and complete for emulating a game from start to finish, with all memory and banking and vram, and sprites and music and debugging tools and all of the UI and TAS/movie functionality, and controller input UI and everything else, etc; continue; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
+
+
+
+
+
+5226-2660=2566
+
+
+
+Update all four projects (Nexen, poppy, pansy, peony) to dotnet 11 and c#15 and update github CI/CD config to install the sdk (see instructions listed at: https://copilot.microsoft.com/chats/Rkj5Q5ydHbfRjVV36XhGr) 
+
+
+
+[Nexen] git commit everything, and then release another version of Nexen to github, updating the patch version number; Make an announcement `discord` post ***with formatting*** for this Nexen release, with all the differences since we forked from Mesen and why we did and save it in an `md` documentation file and show me this file; continue;
+
+
+
+fix as many warnings as you can; continue;
 
 
 
@@ -817,7 +974,7 @@ fix as many warnings as you can; continue;
 
 
 
-[Nexen] SUPER GIGANTIC EFFORT: `Add Fairchild Channel F emulation to Core and UI and debugger, etc`; plan it comprehensively over multiple sessions! make a few epics and a ton of sub-issues and sub-sub-issues and todolists, and plans and documents and do research to create a giant plan to add `Fairchild Channel F` emulation and work effort to implement `Fairchild Channel F` emulation and debugging and pansy creation and save states and labels and everything else, make it a first class emulation option; Find source code for other `Fairchild Channel F` emulators and `Fairchild Channel F` documentation and make a big plan for how we can add a system to Nexen: we need an emulation core framework that we can make run `Fairchild Channel F`, add required interfaces, add lua integration, add UI file opening/savestates/etc, add movie/tas support (that's an epic itself), Add input configuration (joypad button mapping), add debugging and code views, emulate all versions of the console with their differences, document like crazy, document document document, work for a very long time to create this plan, multiple sessions of planning and research and code prototyping with a bunch of code-plans for each sub-effort, and a full testing coverage and benchmarking for the emulation/ui/tools/debugging/etc; We need to prove we are a separate emulator from our predecessor (Mesen), now that we've added the Atari Lynx, let's add a second one so we are going to add a whole new system; make sure to focus on accuracy and performance, but always accuracy and timing first; don't get distracted, focus on making practical researched changes in chunks, keep issues and docs and logs updated; continue; There should be a new features branch (maybe `features-channel-f` off of the atari-lynx branch) for all of this work, don't make changes directly in the master branch; Continue planning for `Fairchild Channel F` implementation of emulation debugging, movie recording and playing, save states, sram saving/loading, metadata (hashes, etc), UI usage, input button mapping, debugging; plan and figure out how you are going to implement this work effort (make documents and a big "prompts" file where you generate a series of prompts for me to run in order to implement the giant feature (again, make sure all work is in a new feature branch)); continue; implement after all planning and todo and issue creation is done; continue;
+
 
 
 [Nexen] SUPER GIGANTIC EFFORT: `Add Atari Jaguar emulation to Core and UI and debugger, etc`; plan it comprehensively over multiple sessions! make a few epics and a ton of sub-issues and sub-sub-issues and todolists, and plans and documents and do research to create a giant plan to add Jaguar emulation and work effort to implement Atari Jaguar emulation and debugging and pansy creation and save states and labels and everything else, make it a first class emulation option; Find source code for other atari Jaguar emulators and atari Jaguar documentation and make a big plan for how we can add a system to Nexen: we need an emulation core framework that we can make run Atari Jaguar, add required interfaces, add lua integration, add UI file opening/savestates/etc, add movie/tas support (that's an epic itself), Add input configuration (joypad button mapping), add debugging and code views, emulate all versions of the console with their differences, document like crazy, document document document, work for a very long time to create this plan, multiple sessions of planning and research and code prototyping with a bunch of code-plans for each sub-effort, and a full testing coverage and benchmarking for the emulation/ui/tools/debugging/etc; We need to prove we are a separate emulator from our predecessor (Mesen), now that we've added the Atari Lynx, let's add a second one so we are going to add a whole new system; make sure to focus on accuracy and performance, but always accuracy and timing first; don't get distracted, focus on making practical researched changes in chunks, keep issues and docs and logs updated; continue; There should be a new features branch (maybe `features-atari-jaguar` off of the atari-lynx branch) for all of this work, don't make changes directly in the master branch; Continue planning for Atari Jaguar implementation of emulation debugging, movie recording and playing, save states, sram saving/loading, metadata (hashes, etc), UI usage, input button mapping, debugging; plan and figure out how you are going to implement this work effort (make documents and a big "prompts" file where you generate a series of prompts for me to run in order to implement the giant feature (again, make sure all work is in a new feature branch)); continue; implement after all planning and todo and issue creation is done; continue;

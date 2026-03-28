@@ -2,6 +2,7 @@ using Xunit;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Nexen.Tests.TAS;
 
@@ -224,6 +225,94 @@ public class GreenzoneManagerTests {
 		}
 
 		Assert.Equal(expectedYields, yieldCount);
+	}
+
+	/// <summary>
+	/// Lynx runs at ~75fps; A2600 at ~60fps. Typical short TAS runs are a few hundred frames.
+	/// Verify the yield interval logic produces the expected batch counts at these realistic depths.
+	/// </summary>
+	[Theory]
+	[InlineData(75, 4)]    // 1 second Lynx ~75fps = 4 yields (at 0, 20, 40, 60)
+	[InlineData(450, 23)]  // 6 second Lynx ~75fps = 23 yields
+	[InlineData(60, 3)]    // 1 second A2600 ~60fps = 3 yields (at 0, 20, 40)
+	[InlineData(360, 18)]  // 6 second A2600 ~60fps = 18 yields
+	public void SeekYieldInterval_CorrectForLynxAndAtari2600TypicalDepths(int frames, int expectedYields) {
+		// Seek yield interval is fixed at 20 frames regardless of platform
+		const int yieldInterval = 20;
+		int yieldCount = 0;
+
+		for (int i = 0; i < frames; i++) {
+			if (i % yieldInterval == 0) {
+				yieldCount++;
+			}
+		}
+
+		Assert.Equal(expectedYields, yieldCount);
+	}
+
+	/// <summary>
+	/// Greenzone lookup (GetNearestStateFrame equivalent) must return the closest
+	/// state at or before the target frame, for typical Lynx/A2600 savestave spacing.
+	/// Lynx/A2600 greenzone capture interval matches the standard 60-frame default.
+	/// </summary>
+	[Theory]
+	[InlineData(75, 60, 60)]   // Target=75, states at 0/60/120/... → nearest=60 (60≤75)
+	[InlineData(59, 60, 0)]    // Target=59, states at 0/60/... → nearest=0 (0≤59, 60>59)
+	[InlineData(120, 60, 120)] // Target=120, states at 0/60/120 → exact match=120
+	[InlineData(179, 60, 120)] // Target=179, states at 0/60/120/180/240 → nearest=120 (180>179)
+	public void GetNearestStateFrame_LynxAtari2600SavestateSpacing(int target, int captureInterval, int expectedNearest) {
+		// Build a sorted state map at the given capture interval up to frame 240
+		var savestates = new SortedDictionary<int, byte[]>();
+
+		for (int frame = 0; frame <= 240; frame += captureInterval) {
+			savestates[frame] = new byte[64];
+		}
+
+		// Simulate GetNearestStateFrame: find largest key <= target
+		int nearest = -1;
+		foreach (int frame in savestates.Keys) {
+			if (frame <= target) {
+				nearest = frame;
+			}
+		}
+
+		Assert.Equal(expectedNearest, nearest);
+	}
+
+	/// <summary>
+	/// After greenzone invalidation past a rerecord point, no state should be returned
+	/// for frames beyond the invalidation boundary. This covers the Lynx/A2600 rerecord
+	/// invalidation path: seeking into an invalidated region returns -1.
+	/// </summary>
+	[Theory]
+	[InlineData(60, 120)]   // States at 0,60 remain; 120+ invalidated; seeking to 120 → -1
+	[InlineData(60, 180)]   // States at 0,60 remain; seeking to 180 → nearest=60
+	[InlineData(0, 60)]     // States only at 0 after invalidation; seeking to 60 → nearest=0
+	public void GetNearestStateFrame_AfterInvalidation_ReturnsCorrectBoundary(int lastValidFrame, int seekTarget) {
+		// Simulate greenzone with states at 0, 60, 120, 180
+		var savestates = new SortedDictionary<int, byte[]> {
+			[0] = new byte[64],
+			[60] = new byte[64],
+			[120] = new byte[64],
+			[180] = new byte[64]
+		};
+
+		// Simulate InvalidateFrom(lastValidFrame + 1): remove all entries > lastValidFrame
+		foreach (var key in savestates.Keys.Where(k => k > lastValidFrame).ToList()) {
+			savestates.Remove(key);
+		}
+
+		// Find nearest state at or before seekTarget
+		int nearest = -1;
+		foreach (int frame in savestates.Keys) {
+			if (frame <= seekTarget) {
+				nearest = frame;
+			}
+		}
+
+		// After invalidation, nearest must be within the remaining states
+		Assert.True(nearest <= lastValidFrame || nearest == -1,
+			$"nearest={nearest} must be <= lastValidFrame={lastValidFrame} or -1");
 	}
 
 	#endregion

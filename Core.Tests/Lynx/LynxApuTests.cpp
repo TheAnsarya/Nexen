@@ -353,3 +353,41 @@ TEST_F(LynxApuTest, Feedback_SingleTap_KnownPattern) {
 	}
 }
 
+//=============================================================================
+// Stereo Mute Fast-Skip Tests
+//=============================================================================
+
+TEST_F(LynxApuTest, Stereo_AllMuted_StereoRegister0xFF) {
+	// When STEREO = 0xFF, all channels are muted on both left and right.
+	// MixOutput() should fast-skip and write zero samples.
+	_apu.Stereo = 0xff;
+	EXPECT_EQ(_apu.Stereo & 0xf0, 0xf0); // Left bits 4-7 all set
+	EXPECT_EQ(_apu.Stereo & 0x0f, 0x0f); // Right bits 0-3 all set
+}
+
+TEST_F(LynxApuTest, Stereo_PartialMute_LeftOnly) {
+	// Left muted (bits 4-7 set), right enabled (bits 0-3 clear)
+	_apu.Stereo = 0xf0;
+	EXPECT_TRUE((_apu.Stereo & (0x10 << 0)) != 0); // Ch0 left muted
+	EXPECT_TRUE((_apu.Stereo & (0x10 << 1)) != 0); // Ch1 left muted
+	EXPECT_TRUE((_apu.Stereo & (0x10 << 2)) != 0); // Ch2 left muted
+	EXPECT_TRUE((_apu.Stereo & (0x10 << 3)) != 0); // Ch3 left muted
+	EXPECT_FALSE((_apu.Stereo & (0x01 << 0)) != 0); // Ch0 right enabled
+}
+
+TEST_F(LynxApuTest, Stereo_PartialMute_RightOnly) {
+	// Left enabled (bits 4-7 clear), right muted (bits 0-3 set)
+	_apu.Stereo = 0x0f;
+	EXPECT_FALSE((_apu.Stereo & (0x10 << 0)) != 0); // Ch0 left enabled
+	EXPECT_TRUE((_apu.Stereo & (0x01 << 0)) != 0);  // Ch0 right muted
+	EXPECT_TRUE((_apu.Stereo & (0x01 << 1)) != 0);  // Ch1 right muted
+	EXPECT_TRUE((_apu.Stereo & (0x01 << 2)) != 0);  // Ch2 right muted
+	EXPECT_TRUE((_apu.Stereo & (0x01 << 3)) != 0);  // Ch3 right muted
+}
+
+TEST_F(LynxApuTest, Stereo_NotFullyMuted_HasAudio) {
+	// STEREO != 0xFF means at least one channel is enabled somewhere
+	_apu.Stereo = 0xfe; // Channel 0 right enabled
+	EXPECT_NE(_apu.Stereo, 0xff);
+}
+

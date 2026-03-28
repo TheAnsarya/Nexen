@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Lynx/LynxMikey.h"
+#include "Lynx/ComLynxCable.h"
 #include "Lynx/LynxConsole.h"
 #include "Lynx/LynxCpu.h"
 #include "Lynx/LynxMemoryManager.h"
@@ -961,6 +962,11 @@ void LynxMikey::ComLynxTxLoopback(uint16_t data) {
 		_uartRxWaiting++;
 	}
 	// If queue is full, data is silently lost (same as ComLynxRxData).
+
+	// §11: Broadcast to other connected units on the ComLynx bus
+	if (_comLynxCable) [[unlikely]] {
+		_comLynxCable->Broadcast(this, data);
+	}
 }
 
 void LynxMikey::ComLynxRxData(uint16_t data) {

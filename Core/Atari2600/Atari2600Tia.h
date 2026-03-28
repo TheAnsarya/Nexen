@@ -128,7 +128,7 @@ private:
 	}
 
 	[[nodiscard]] static uint8_t ComputeChannelSample(uint8_t control, uint8_t phase, uint8_t volume) {
-		if (volume == 0) {
+		if (volume == 0) [[unlikely]] {
 			return 0;
 		}
 
@@ -145,25 +145,26 @@ private:
 		}
 	}
 
+	static void AdvanceAudioChannel(uint16_t& counter, uint8_t frequency, uint8_t& phase, uint8_t control) {
+		if (counter > 0) [[likely]] {
+			counter--;
+		}
+		if (counter == 0) [[unlikely]] {
+			counter = (uint16_t)(frequency + 1);
+			phase = (uint8_t)((phase + 1 + (control & 0x01)) & 0x0F);
+		}
+	}
+
+	[[nodiscard]] static int16_t ToSignedAudioSample(uint8_t sample5bit) {
+		int32_t centered = (int32_t)sample5bit - 15;
+		int32_t scaled = centered * 2048;
+		return (int16_t)std::clamp(scaled, (int32_t)INT16_MIN, (int32_t)INT16_MAX);
+	}
+
 	void StepAudio() {
-		auto toSignedSample = [](uint8_t sample5bit) {
-			int32_t centered = (int32_t)sample5bit - 15;
-			int32_t scaled = centered * 2048;
-			return (int16_t)std::clamp(scaled, (int32_t)INT16_MIN, (int32_t)INT16_MAX);
-		};
 
-		auto advanceChannel = [](uint16_t& counter, uint8_t frequency, uint8_t& phase, uint8_t control) {
-			if (counter > 0) {
-				counter--;
-			}
-			if (counter == 0) {
-				counter = (uint16_t)(frequency + 1);
-				phase = (uint8_t)((phase + 1 + (control & 0x01)) & 0x0F);
-			}
-		};
-
-		advanceChannel(_state.AudioCounter0, _state.AudioFrequency0, _state.AudioPhase0, _state.AudioControl0);
-		advanceChannel(_state.AudioCounter1, _state.AudioFrequency1, _state.AudioPhase1, _state.AudioControl1);
+		AdvanceAudioChannel(_state.AudioCounter0, _state.AudioFrequency0, _state.AudioPhase0, _state.AudioControl0);
+		AdvanceAudioChannel(_state.AudioCounter1, _state.AudioFrequency1, _state.AudioPhase1, _state.AudioControl1);
 
 		uint8_t sample0 = ComputeChannelSample(_state.AudioControl0, _state.AudioPhase0, _state.AudioVolume0);
 		uint8_t sample1 = ComputeChannelSample(_state.AudioControl1, _state.AudioPhase1, _state.AudioVolume1);
@@ -171,7 +172,7 @@ private:
 		_state.AudioMixAccumulator += _state.LastMixedSample;
 		_state.AudioSampleCount++;
 
-		int16_t outputSample = toSignedSample(_state.LastMixedSample);
+		int16_t outputSample = ToSignedAudioSample(_state.LastMixedSample);
 		_audioBuffer.push_back(outputSample);
 		_audioBuffer.push_back(outputSample);
 	}
@@ -183,7 +184,7 @@ private:
 		_state.ColorClock = 0;
 		_state.Scanline++;
 		_state.HmoveDelayToNextScanline = false;
-		if (_state.Scanline >= 262) {
+		if (_state.Scanline >= 262) [[unlikely]] {
 			_state.Scanline = 0;
 			_state.FrameCount++;
 		}
@@ -191,12 +192,12 @@ private:
 	}
 
 	void StepColorClocks(uint32_t colorClocks) {
-		for (uint32_t i = 0; i < colorClocks; i++) {
-			_state.TotalColorClocks++;
-			_state.ColorClock++;
-			if (_state.ColorClock >= 228) {
-				AdvanceScanline();
-			}
+		_state.TotalColorClocks += colorClocks;
+		_state.ColorClock += colorClocks;
+		if (_state.ColorClock >= 228) [[unlikely]] {
+			uint32_t remainder = _state.ColorClock - 228;
+			AdvanceScanline();
+			_state.ColorClock = remainder;
 		}
 	}
 
@@ -243,13 +244,13 @@ public:
 
 	void StepCpuCycles(uint32_t cpuCycles) {
 		for (uint32_t i = 0; i < cpuCycles; i++) {
-			if (_state.WsyncHold) {
+			if (_state.WsyncHold) [[unlikely]] {
 				_state.WsyncHold = false;
 				AdvanceScanline();
 			}
 			StepColorClocks(3);
 			StepAudio();
-			if (_state.HmovePending && !_state.HmoveDelayToNextScanline) {
+			if (_state.HmovePending && !_state.HmoveDelayToNextScanline) [[unlikely]] {
 				_state.HmovePending = false;
 				_state.HmoveApplyCount++;
 				ApplyHmoveDisplacements();

@@ -16,6 +16,13 @@ This index unifies all testing and manual validation documentation.
 | [atari2600-tas-ui-coverage-audit.md](atari2600-tas-ui-coverage-audit.md) | Automated and manual TAS/movie UI coverage assessment |
 | [docs/manual-testing/atari2600-debug-and-tas-manual-test.md](../../docs/manual-testing/atari2600-debug-and-tas-manual-test.md) | Operator checklist for debugger UI and TAS/movie workflows |
 
+## Atari Lynx Release Validation
+
+| Document | Purpose |
+|---|---|
+| [lynx-manual-testing-guide.md](lynx-manual-testing-guide.md) | Developer-facing Lynx manual workflow and expected behavior checks |
+| [docs/manual-testing/lynx-debug-and-tas-manual-test.md](../../docs/manual-testing/lynx-debug-and-tas-manual-test.md) | Operator checklist for Lynx debugger, TAS, save states, and audio |
+
 ## Manual Testing Checklists
 
 | Document | Purpose |

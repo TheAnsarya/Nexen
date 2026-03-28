@@ -133,6 +133,12 @@ public static class MemoryTypeExtensions {
 			case MemoryType.Atari2600TiaRegisters:
 				return CpuType.Atari2600;
 
+			case MemoryType.ChannelFMemory:
+			case MemoryType.ChannelFBiosRom:
+			case MemoryType.ChannelFCartRom:
+			case MemoryType.ChannelFVideoRam:
+				return CpuType.ChannelF;
+
 			default:
 				throw new NotImplementedException("Unsupported cpu type");
 		}
@@ -240,6 +246,7 @@ public static class MemoryTypeExtensions {
 			case MemoryType.WsMemory:
 			case MemoryType.LynxMemory:
 			case MemoryType.Atari2600Memory:
+			case MemoryType.ChannelFMemory:
 				return true;
 		}
 
@@ -269,6 +276,8 @@ public static class MemoryTypeExtensions {
 			case MemoryType.LynxPrgRom:
 			case MemoryType.LynxBootRom:
 			case MemoryType.Atari2600PrgRom:
+			case MemoryType.ChannelFBiosRom:
+			case MemoryType.ChannelFCartRom:
 				return true;
 		}
 
@@ -359,6 +368,13 @@ public static class MemoryTypeExtensions {
 			case MemoryType.Atari2600Ram:
 			case MemoryType.Atari2600TiaRegisters:
 				return true;
+
+			//Channel F
+			case MemoryType.ChannelFMemory:
+			case MemoryType.ChannelFBiosRom:
+			case MemoryType.ChannelFCartRom:
+			case MemoryType.ChannelFVideoRam:
+				return true;
 		}
 
 		return false;
@@ -381,6 +397,7 @@ public static class MemoryTypeExtensions {
 			case MemoryType.WsMemory:
 			case MemoryType.LynxMemory:
 			case MemoryType.Atari2600Memory:
+			case MemoryType.ChannelFMemory:
 				return true;
 		}
 
@@ -421,6 +438,10 @@ public static class MemoryTypeExtensions {
 
 			case MemoryType.Atari2600Memory:
 			case MemoryType.Atari2600PrgRom:
+				return true;
+
+			case MemoryType.ChannelFMemory:
+			case MemoryType.ChannelFCartRom:
 				return true;
 
 			case MemoryType.NesPpuMemory:
@@ -580,6 +601,11 @@ public static class MemoryTypeExtensions {
 			MemoryType.Atari2600PrgRom => "ROM",
 			MemoryType.Atari2600Ram => "RAM",
 			MemoryType.Atari2600TiaRegisters => "TIA",
+
+			MemoryType.ChannelFMemory => "CPU",
+			MemoryType.ChannelFBiosRom => "BIOS",
+			MemoryType.ChannelFCartRom => "ROM",
+			MemoryType.ChannelFVideoRam => "VRAM",
 
 			MemoryType.None => "n/a",
 

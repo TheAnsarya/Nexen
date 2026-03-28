@@ -5,4 +5,11 @@
 		     and vcpkg-configuration.json pins the baseline. -->
 		<VcpkgEnableManifest>true</VcpkgEnableManifest>
 	</PropertyGroup>
+
+	<!-- Suppress NETSDK1233: GitHub Actions windows-latest has VS 2022 17.14 which
+	     the .NET 10 SDK considers unsupported. The build works correctly regardless;
+	     this just silences the spurious version-gate warning in CI. -->
+	<PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+		<NoWarn>$(NoWarn);NETSDK1233</NoWarn>
+	</PropertyGroup>
 </Project>

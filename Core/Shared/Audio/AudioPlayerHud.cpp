@@ -31,7 +31,7 @@ void AudioPlayerHud::Draw(uint32_t frameCounter, double fps) {
 	_hud->DrawRectangle(0, 0, 256, 240, 0, true, 1);
 
 	int y = 12;
-	auto drawLabel = [=, &y](string label, string content) {
+	auto drawLabel = [this, &y](string label, string content) {
 		if (content.size() > 0 && content[0] != 0) {
 			_hud->DrawString(10, y, label, 0xBBBBBB, 0, 1);
 			_hud->DrawString(57, y, content, 0xFFFFFF, 0, 1);

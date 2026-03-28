@@ -1,0 +1,118 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:du="using:Nexen.Debugger.Utilities"
+	xmlns:vm="using:Nexen.Debugger.StatusViews"
+	xmlns:c="using:Nexen.Controls"
+	mc:Ignorable="d" d:DesignWidth="350"
+	VerticalAlignment="Stretch"
+	HorizontalAlignment="Stretch"
+	x:DataType="vm:ChannelFStatusViewModel"
+	x:Class="Nexen.Debugger.StatusViews.ChannelFStatusView"
+>
+	<Design.DataContext>
+		<vm:ChannelFStatusViewModel />
+	</Design.DataContext>
+
+	<UserControl.Styles>
+		<StyleInclude Source="/Styles/DebugStatusStyles.xaml" />
+	</UserControl.Styles>
+
+	<ScrollViewer>
+		<StackPanel>
+			<!-- CPU Registers -->
+			<StackPanel IsEnabled="{Binding EditAllowed}">
+				<WrapPanel>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock>A:</TextBlock>
+						<c:NexenNumericTextBox Value="{Binding RegA}" Hex="True" Max="0xFF" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock>W:</TextBlock>
+						<c:NexenNumericTextBox Value="{Binding RegW}" Hex="True" Max="0xFF" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock>ISAR:</TextBlock>
+						<c:NexenNumericTextBox Value="{Binding RegISAR}" Hex="True" Max="0x3F" />
+					</StackPanel>
+				</WrapPanel>
+
+				<WrapPanel>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock>PC0:</TextBlock>
+						<c:NexenNumericTextBox Value="{Binding RegPC0}" Hex="True" Max="0xFFFF" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock>PC1:</TextBlock>
+						<c:NexenNumericTextBox Value="{Binding RegPC1}" Hex="True" Max="0xFFFF" />
+					</StackPanel>
+				</WrapPanel>
+
+				<WrapPanel>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock>DC0:</TextBlock>
+						<c:NexenNumericTextBox Value="{Binding RegDC0}" Hex="True" Max="0xFFFF" />
+					</StackPanel>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock>DC1:</TextBlock>
+						<c:NexenNumericTextBox Value="{Binding RegDC1}" Hex="True" Max="0xFFFF" />
+					</StackPanel>
+				</WrapPanel>
+
+				<WrapPanel>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock>Cycle:</TextBlock>
+						<c:NexenNumericTextBox Width="70" Value="{Binding CycleCount}" IsEnabled="False" />
+					</StackPanel>
+				</WrapPanel>
+
+				<Rectangle Stroke="{StaticResource NexenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" />
+
+				<!-- W Register Flags -->
+				<WrapPanel Margin="0 2 0 0">
+					<WrapPanel>
+						<CheckBox IsChecked="{Binding FlagS}" Content="Sign" />
+						<CheckBox IsChecked="{Binding FlagC}" Content="Carry" />
+						<CheckBox IsChecked="{Binding FlagZ}" Content="Zero" />
+						<CheckBox IsChecked="{Binding FlagO}" Content="Overflow" />
+					</WrapPanel>
+				</WrapPanel>
+
+				<WrapPanel Margin="0 2 0 0">
+					<CheckBox IsChecked="{Binding InterruptsEnabled}" Content="Interrupts Enabled" />
+				</WrapPanel>
+
+				<Rectangle Stroke="{StaticResource NexenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 4" />
+
+				<!-- Scratchpad Preview -->
+				<StackPanel>
+					<TextBlock>Scratchpad (around ISAR):</TextBlock>
+					<TextBox
+						TextWrapping="Wrap"
+						Width="200"
+						Height="30"
+						IsReadOnly="True"
+						FontFamily="Consolas"
+						Text="{Binding ScratchpadPreview}"
+					/>
+				</StackPanel>
+
+				<Rectangle Stroke="{StaticResource NexenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 4" />
+
+				<!-- Video State -->
+				<WrapPanel>
+					<Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto">
+						<TextBlock>Color:</TextBlock>
+						<c:NexenNumericTextBox Grid.Column="1" Value="{Binding VideoColor}" IsEnabled="False" Max="3" />
+						<TextBlock Grid.Row="1">X:</TextBlock>
+						<c:NexenNumericTextBox Grid.Row="1" Grid.Column="1" Value="{Binding VideoX}" IsEnabled="False" Max="127" />
+						<TextBlock Grid.Row="2">Y:</TextBlock>
+						<c:NexenNumericTextBox Grid.Row="2" Grid.Column="1" Value="{Binding VideoY}" IsEnabled="False" Max="63" />
+					</Grid>
+				</WrapPanel>
+			</StackPanel>
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

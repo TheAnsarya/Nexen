@@ -272,6 +272,7 @@ public sealed class DebuggerWindowViewModel : DisposableViewModel {
 			CpuType.Gba => new GbaStatusViewModel(),
 			CpuType.Ws => new WsStatusViewModel(),
 			CpuType.Lynx => new LynxStatusViewModel(),
+			CpuType.ChannelF => new ChannelFStatusViewModel(),
 			_ => null
 		};
 

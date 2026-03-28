@@ -1,6 +1,6 @@
 # 🎮 Atari Lynx Manual Testing Guide
 
-> **Last updated:** 2026-02-20 | **Platform:** Nexen (Mesen2 fork) | **Branch:** `features-atari-lynx`
+> **Last updated:** 2026-03-26 | **Platform:** Nexen (Mesen2 fork) | **Branch:** `feature/lynx-atari2600-nondeferred-followup`
 
 This guide covers manual testing procedures for the Atari Lynx emulation in Nexen. Use it to verify functionality after code changes.
 
@@ -331,11 +331,11 @@ This guide covers manual testing procedures for the Atari Lynx emulation in Nexe
 
 | Issue | Status | Notes |
 |-------|--------|-------|
-| ComLynx multi-player | Not implemented | UART registers exist but no link cable emulation |
-| Cart shift register addressing | Needs research | May affect some bank-switched games |
-| CpuCyclesPerFrame ~0.18% fast | Known | Integer truncation in timing constant (53235 vs 53333) |
-| Duplicate APU state in LynxState | Design issue | Both `Mikey.Apu` and top-level `Apu` exist |
-| MAPCTL write to RAM | Minor | Hardware register also writes to RAM backing |
+| ComLynx multi-player | Not implemented (#955) | UART registers exist but no link cable emulation |
+| Cart shift register addressing | Needs research (#956) | May affect some bank-switched games |
+| ~~CpuCyclesPerFrame ~0.18% fast~~ | ✅ Resolved | Correctly computed as CpuClockRate/Fps = 53333 |
+| ~~Duplicate APU state in LynxState~~ | ✅ Resolved | Only Mikey.Apu exists, no top-level duplicate |
+| ~~MAPCTL write to RAM~~ | ✅ Not a bug | Register write returns without writing to RAM backing |
 
 ---
 
@@ -368,4 +368,5 @@ Tester: <name>
 
 | Date | Changes |
 |------|---------|
+| 2026-03-26 | Updated known issues (3 of 5 resolved), updated branch reference, added issue links |
 | 2025-06 | Initial guide created — covers all Lynx subsystems |

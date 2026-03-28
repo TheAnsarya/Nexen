@@ -189,10 +189,11 @@ void PceVpc::ProcessStartFrame() {
 	if (_emu->IsRunAheadFrame()) {
 		_skipRender = true;
 	} else {
+		uint32_t emulationSpeed = _emu->GetSettings()->GetEmulationSpeed();
 		_skipRender = (!_emu->GetSettings()->GetPcEngineConfig().DisableFrameSkipping &&
 		               !_emu->GetRewindManager()->IsRewinding() &&
 		               !_emu->GetVideoRenderer()->IsRecording() &&
-		               (_emu->GetSettings()->GetEmulationSpeed() == 0 || _emu->GetSettings()->GetEmulationSpeed() > 150) &&
+		               (emulationSpeed == 0 || emulationSpeed > 150) &&
 		               _frameSkipTimer.GetElapsedMS() < 10);
 	}
 }

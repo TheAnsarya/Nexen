@@ -394,12 +394,12 @@ uint8_t SuperGameboy::GetInput() {
 }
 
 void SuperGameboy::SetInputIndex(uint8_t index) {
-	_controlManager->ProcessInputChange([=]() { _inputIndex = index; });
+	_controlManager->ProcessInputChange([this, index]() { _inputIndex = index; });
 }
 
 void SuperGameboy::SetInputValue(uint8_t index, uint8_t value) {
 	if (_inputIndex == index) {
-		_controlManager->ProcessInputChange([=]() { _input[index] = value; });
+		_controlManager->ProcessInputChange([this, index, value]() { _input[index] = value; });
 	} else {
 		_input[index] = value;
 	}

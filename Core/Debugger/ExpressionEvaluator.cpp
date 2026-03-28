@@ -11,6 +11,7 @@
 #include "Debugger/Disassembler.h"
 #include "Debugger/LabelManager.h"
 #include "Debugger/DebugUtilities.h"
+#include "ChannelF/ChannelFTypes.h"
 #include "Utilities/HexUtilities.h"
 
 const vector<string> ExpressionEvaluator::_binaryOperators = {
@@ -90,6 +91,8 @@ TokenSpan ExpressionEvaluator::GetAvailableTokens() {
 			return GetGbaTokens();
 		case CpuType::Ws:
 			return GetWsTokens();
+		case CpuType::ChannelF:
+			return GetChannelFTokens();
 		case CpuType::Lynx:
 			// Lynx uses 65C02, reuse NES/PCE token set for registers
 			return GetNesTokens();
@@ -99,6 +102,48 @@ TokenSpan ExpressionEvaluator::GetAvailableTokens() {
 	}
 
 	return {};
+}
+
+TokenSpan ExpressionEvaluator::GetChannelFTokens() {
+	static constexpr std::array<TokenEntry, 10> tokens = {{
+		{"a",                      EvalValues::RegA},
+		{"cycle",                  EvalValues::PpuCycle},
+		{"dc0",                    EvalValues::RegDC0},
+		{"dc1",                    EvalValues::RegDC1},
+		{"ie",                     EvalValues::RegIE},
+		{"isar",                   EvalValues::RegISAR},
+		{"pc",                     EvalValues::RegPC},
+		{"pc1",                    EvalValues::RegPC1},
+		{"ps",                     EvalValues::RegPS},
+		{"w",                      EvalValues::RegPS},
+	}};
+	return tokens;
+}
+
+int64_t ExpressionEvaluator::GetChannelFTokenValue(int64_t token, EvalResultType& resultType) {
+	ChannelFCpuState& s = (ChannelFCpuState&)_cpuDebugger->GetState();
+	switch (token) {
+		case EvalValues::RegA:
+			return s.A;
+		case EvalValues::RegPS:
+			return s.W;
+		case EvalValues::RegPC:
+			return s.PC0;
+		case EvalValues::RegPC1:
+			return s.PC1;
+		case EvalValues::RegDC0:
+			return s.DC0;
+		case EvalValues::RegDC1:
+			return s.DC1;
+		case EvalValues::RegISAR:
+			return s.ISAR;
+		case EvalValues::RegIE:
+			return ReturnBool(s.InterruptsEnabled, resultType);
+		case EvalValues::PpuCycle:
+			return (int64_t)s.CycleCount;
+		default:
+			return 0;
+	}
 }
 
 bool ExpressionEvaluator::CheckSpecialTokens(const string& expression, size_t& pos, string& output, ExpressionData& data) {
@@ -495,6 +540,9 @@ int64_t ExpressionEvaluator::Evaluate(ExpressionData& data, EvalResultType& resu
 									break;
 								case CpuType::Ws:
 									token = GetWsTokenValue(token, resultType);
+									break;
+								case CpuType::ChannelF:
+									token = GetChannelFTokenValue(token, resultType);
 									break;
 								case CpuType::Lynx:
 									// Lynx uses 65C02, reuse NES token value getter

@@ -23,35 +23,36 @@ env:
 jobs:
   test-windows:
     name: C++ Unit Tests (Windows)
-    runs-on: windows-latest
-    
+    runs-on: windows-2025-vs2026
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
         with:
           msbuild-architecture: x64
-      
+          vs-prerelease: true
+
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgGitCommitId: '70992f64912b9ab0e60e915ab7421faa197524b7'
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-      
+
       - name: Install vcpkg dependencies
         working-directory: ${{ github.workspace }}
         run: |
           $env:VCPKG_ROOT = "${{ github.workspace }}/vcpkg"
           vcpkg install gtest:x64-windows benchmark:x64-windows
-      
+
       - name: Build Core.Tests
         run: |
-          msbuild Core.Tests\Core.Tests.vcxproj /p:Configuration=Release /p:Platform=x64 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=false /m
-      
+          msbuild Core.Tests\Core.Tests.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=false /m
+
       - name: Run Unit Tests
         working-directory: ${{ github.workspace }}
         run: |
@@ -67,7 +68,7 @@ jobs:
             Write-Error "Test executable not found at: $testExe"
             exit 1
           }
-      
+
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
         if: always()
@@ -75,14 +76,14 @@ jobs:
           name: test-results-windows
           path: test-results.xml
           retention-days: 14
-      
+
       - name: Test Summary
         if: always()
         run: |
           if (Test-Path test-results.xml) {
             [xml]$results = Get-Content test-results.xml
             $testsuites = $results.testsuites
-            Write-Host "## Test Summary" 
+            Write-Host "## Test Summary"
             Write-Host "- **Total Tests:** $($testsuites.tests)"
             Write-Host "- **Failures:** $($testsuites.failures)"
             Write-Host "- **Disabled:** $($testsuites.disabled)"
@@ -91,37 +92,38 @@ jobs:
 
   benchmark-windows:
     name: C++ Benchmarks (Windows)
-    runs-on: windows-latest
+    runs-on: windows-2025-vs2026
     # Don't run benchmarks on PRs - only on push to main branches
     if: github.event_name == 'push'
-    
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      
+
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
         with:
           msbuild-architecture: x64
-      
+          vs-prerelease: true
+
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgGitCommitId: '70992f64912b9ab0e60e915ab7421faa197524b7'
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-      
+
       - name: Install vcpkg dependencies
         working-directory: ${{ github.workspace }}
         run: |
           $env:VCPKG_ROOT = "${{ github.workspace }}/vcpkg"
           vcpkg install gtest:x64-windows benchmark:x64-windows
-      
+
       - name: Build Core.Benchmarks
         run: |
-          msbuild Core.Benchmarks\Core.Benchmarks.vcxproj /p:Configuration=Release /p:Platform=x64 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=false /m
-      
+          msbuild Core.Benchmarks\Core.Benchmarks.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=false /m
+
       - name: Run Benchmarks (Quick)
         working-directory: ${{ github.workspace }}
         run: |

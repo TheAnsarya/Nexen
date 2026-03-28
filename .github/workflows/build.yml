@@ -8,6 +8,10 @@ on:
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  WARNING_BASELINE_WINDOWS: 0
+  WARNING_BASELINE_LINUX: 0
+  WARNING_BASELINE_APPIMAGE: 0
+  WARNING_FAIL_ON_REGRESSION: 0
 
 jobs:
   windows:
@@ -18,7 +22,7 @@ jobs:
           {aot: true, singleFile: false, aotString: " - AoT"}
         ]
       fail-fast: false
-    runs-on: windows-latest
+    runs-on: windows-2025-vs2026
 
     steps:
       - name: Checkout repo
@@ -36,9 +40,10 @@ jobs:
           dotnet-version: 10.x
 
       - name: Setup MSBuild.exe
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
         with:
           msbuild-architecture: x64
+          vs-prerelease: true
 
       - name: Restore packages
         run: dotnet restore -r win-x64 -p:PublishAot="${{ matrix.platform.aot }}" -p:BuildWithNetFrameworkHostedCompiler=true
@@ -47,7 +52,7 @@ jobs:
         uses: ./.github/actions/build-sha1-action
 
       - name: Build C++ core (InteropDLL)
-        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v143 -t:InteropDLL Nexen.sln
+        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -t:InteropDLL Nexen.sln
 
       - name: Copy native libs from NuGet cache
         shell: pwsh
@@ -84,10 +89,75 @@ jobs:
         shell: pwsh
 
       - name: Build UI
-        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v143 -t:UI Nexen.sln
+        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -t:UI Nexen.sln
 
       - name: Publish Nexen
-        run: dotnet publish --no-restore -c Release -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained="${{ matrix.platform.aot }}" -p:PublishSingleFile="${{ matrix.platform.singleFile }}" -p:OptimizeUi="true" -r win-x64 -o build/publish UI/UI.csproj
+        run: dotnet publish --no-restore -c Release -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained="${{ matrix.platform.aot }}" -p:PublishSingleFile="${{ matrix.platform.singleFile }}" -p:IncludeNativeLibrariesForSelfExtract="${{ matrix.platform.singleFile }}" -p:OptimizeUi="true" -r win-x64 -o build/publish UI/UI.csproj
+
+      - name: Generate warning report (Windows)
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $warningLog = "build-warning-report.txt"
+          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /m /nologo /clp:WarningsOnly 2>&1 | Tee-Object -FilePath $warningLog
+          if (!(Test-Path $warningLog) -or (Get-Item $warningLog).Length -eq 0) {
+            "No warnings detected (WarningsOnly output was empty)." | Out-File -FilePath $warningLog -Encoding utf8
+          }
+
+      - name: Upload warning report (Windows)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Warning Report (Windows${{ matrix.platform.aotString }})
+          path: build-warning-report.txt
+
+      - name: Generate warning delta summary (Windows)
+        if: always()
+        shell: pwsh
+        run: |
+          $baseline = [int]$env:WARNING_BASELINE_WINDOWS
+          $count = 0
+          if (Test-Path "build-warning-report.txt") {
+            $count = (Get-Content "build-warning-report.txt" | Where-Object { $_ -match "\bwarning\b" -and $_ -notmatch "^No warnings detected" }).Count
+          }
+
+          $delta = $count - $baseline
+          @(
+            "job=windows${{ matrix.platform.aotString }}"
+            "baseline=$baseline"
+            "count=$count"
+            "delta=$delta"
+          ) | Out-File -FilePath "build-warning-delta-windows.txt" -Encoding utf8
+
+      - name: Upload warning delta summary (Windows)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Warning Delta (Windows${{ matrix.platform.aotString }})
+          path: build-warning-delta-windows.txt
+
+      - name: Enforce warning regression gate (Windows)
+        if: always()
+        shell: pwsh
+        run: |
+          if ($env:WARNING_FAIL_ON_REGRESSION -ne "1") {
+            Write-Host "WARNING_FAIL_ON_REGRESSION is disabled; skipping gate."
+            exit 0
+          }
+
+          $deltaLine = Get-Content "build-warning-delta-windows.txt" | Where-Object { $_ -like "delta=*" }
+          if (-not $deltaLine) {
+            Write-Error "Could not read warning delta from build-warning-delta-windows.txt"
+            exit 1
+          }
+
+          $delta = [int]($deltaLine -replace "delta=", "")
+          if ($delta -gt 0) {
+            Write-Error "Warning regression detected in Windows job (delta=$delta)."
+            exit 1
+          }
+
+          Write-Host "Warning regression gate passed for Windows (delta=$delta)."
 
       - name: Upload Nexen
         uses: actions/upload-artifact@v4
@@ -137,7 +207,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -qy
-          sudo apt-get install -qy libsdl2-dev ccache # The compilers are already installed on GitHub's runners.
+          sudo apt-get install -qy libsdl2-dev ccache xvfb # The compilers are already installed on GitHub's runners.
 
       # Install GCC 13 for C++23 <format> support (default GCC 11 on ubuntu-22.04 doesn't have it)
       - name: Install GCC 13
@@ -171,11 +241,141 @@ jobs:
       # For clang, also use libc++ for C++23 <format> support
       - name: Build Nexen
         run: |
+          set -o pipefail
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=gcc-13 CXX=g++-13
+            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=gcc-13 CXX=g++-13 2>&1 | tee build-linux.log
           else
-            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 NEXENFLAGS="-stdlib=libc++"
+            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 NEXENFLAGS="-stdlib=libc++" 2>&1 | tee build-linux.log
           fi
+
+      - name: Capture Linux runtime dependency report
+        if: always()
+        run: |
+          publish_dir="bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish"
+          if [ -f "$publish_dir/Nexen" ]; then
+            ldd "$publish_dir/Nexen" > runtime-deps-linux.txt || true
+            readelf -d "$publish_dir/Nexen" > runtime-readelf-linux.txt || true
+          else
+            echo "Publish binary missing: $publish_dir/Nexen" > runtime-deps-linux.txt
+            echo "Publish binary missing: $publish_dir/Nexen" > runtime-readelf-linux.txt
+          fi
+
+      - name: Upload runtime dependency report (Linux)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Runtime Dependencies (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: |
+            runtime-deps-linux.txt
+            runtime-readelf-linux.txt
+
+      - name: Generate warning report (Linux)
+        if: always()
+        run: |
+          if [ -f build-linux.log ]; then
+            grep -Ei "warning" build-linux.log > build-warning-report-linux.txt || true
+          fi
+
+          if [ ! -f build-warning-report-linux.txt ] || [ ! -s build-warning-report-linux.txt ]; then
+            echo "No warnings detected in Linux build log." > build-warning-report-linux.txt
+          fi
+
+      - name: Upload warning report (Linux)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Warning Report (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: build-warning-report-linux.txt
+
+      - name: Generate warning delta summary (Linux)
+        if: always()
+        run: |
+          baseline="${WARNING_BASELINE_LINUX}"
+          count=0
+          if [ -f build-warning-report-linux.txt ]; then
+            count=$(grep -Eic "\\bwarning\\b" build-warning-report-linux.txt || true)
+          fi
+          delta=$((count - baseline))
+          {
+            echo "job=linux-${{ matrix.platform.os }}-${{ matrix.compiler }}"
+            echo "baseline=$baseline"
+            echo "count=$count"
+            echo "delta=$delta"
+          } > build-warning-delta-linux.txt
+
+      - name: Upload warning delta summary (Linux)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Warning Delta (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: build-warning-delta-linux.txt
+
+      - name: Enforce warning regression gate (Linux)
+        if: always()
+        run: |
+          if [ "${WARNING_FAIL_ON_REGRESSION}" != "1" ]; then
+            echo "WARNING_FAIL_ON_REGRESSION is disabled; skipping gate."
+            exit 0
+          fi
+
+          if [ ! -f build-warning-delta-linux.txt ]; then
+            echo "Missing build-warning-delta-linux.txt"
+            exit 1
+          fi
+
+          delta=$(grep -E '^delta=' build-warning-delta-linux.txt | sed 's/^delta=//' || true)
+          if [ -z "$delta" ]; then
+            echo "Could not parse warning delta for Linux job."
+            exit 1
+          fi
+
+          if [ "$delta" -gt 0 ]; then
+            echo "Warning regression detected in Linux job (delta=$delta)."
+            exit 1
+          fi
+
+          echo "Warning regression gate passed for Linux (delta=$delta)."
+
+      - name: Linux publish smoke launch
+        if: always()
+        continue-on-error: true
+        run: |
+          publish_dir="bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish"
+          app="$publish_dir/Nexen"
+
+          if [ ! -f "$app" ]; then
+            echo "Missing published binary for smoke launch: $app"
+            exit 1
+          fi
+
+          chmod +x "$app"
+          set +e
+          timeout 20s xvfb-run -a "$app" /DoNotSaveSettings > smoke-linux.log 2>&1
+          code=$?
+          set -e
+
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
+            if grep -Eiq "segmentation fault|sigsegv|core dumped|abort|fatal" smoke-linux.log; then
+              echo "Crash signature detected during Linux smoke launch."
+            fi
+            cat smoke-linux.log
+            exit 1
+          fi
+
+          if grep -Eiq "segmentation fault|sigsegv|core dumped|abort|fatal" smoke-linux.log; then
+            echo "Crash signature detected in Linux smoke log."
+            cat smoke-linux.log
+            exit 1
+          fi
+
+          echo "Linux smoke launch passed (exit code $code)."
+
+      - name: Upload Linux smoke log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux Smoke Log (${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: smoke-linux.log
 
       - name: Upload Nexen
         uses: actions/upload-artifact@v4
@@ -191,6 +391,7 @@ jobs:
           {os: ubuntu-22.04, name: x64, script: Linux/appimage/appimage.sh},
           {os: ubuntu-22.04-arm, name: ARM64, script: Linux/appimage/appimage-arm64.sh}
         ]
+      fail-fast: false
     runs-on: ${{ matrix.platform.os }}
 
     steps:
@@ -211,7 +412,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -qy
-          sudo apt-get install -qy libsdl2-dev libfuse2 ccache # The compilers are already installed on GitHub's runners.
+          sudo apt-get install -qy libsdl2-dev libfuse2 ccache xvfb # The compilers are already installed on GitHub's runners.
 
       # Install LLVM 18 for C++23 support (ubuntu-22.04 default clang doesn't support c++23)
       # Also install libc++ since the system libstdc++ doesn't have <format>
@@ -230,7 +431,141 @@ jobs:
 
       - name: Build Nexen (AppImage)
         run: |
-          ${{ matrix.platform.script }}
+          set -o pipefail
+          ${{ matrix.platform.script }} 2>&1 | tee build-appimage.log
+
+      - name: Capture runtime dependency report (AppImage publish)
+        if: always()
+        run: |
+          if [ "${{ matrix.platform.name }}" = "x64" ]; then
+            arch_path="x64"
+          else
+            arch_path="arm64"
+          fi
+
+          publish_dir="bin/linux-${arch_path}/Release/linux-${arch_path}/publish"
+          if [ -f "$publish_dir/Nexen" ]; then
+            ldd "$publish_dir/Nexen" > runtime-deps-appimage.txt || true
+            readelf -d "$publish_dir/Nexen" > runtime-readelf-appimage.txt || true
+          else
+            echo "Publish binary missing: $publish_dir/Nexen" > runtime-deps-appimage.txt
+            echo "Publish binary missing: $publish_dir/Nexen" > runtime-readelf-appimage.txt
+          fi
+
+      - name: Upload runtime dependency report (AppImage publish)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Runtime Dependencies (AppImage - ${{ matrix.platform.name }})
+          path: |
+            runtime-deps-appimage.txt
+            runtime-readelf-appimage.txt
+
+      - name: Generate warning report (AppImage)
+        if: always()
+        run: |
+          if [ -f build-appimage.log ]; then
+            grep -Ei "warning" build-appimage.log > build-warning-report-appimage.txt || true
+          fi
+
+          if [ ! -f build-warning-report-appimage.txt ] || [ ! -s build-warning-report-appimage.txt ]; then
+            echo "No warnings detected in AppImage build log." > build-warning-report-appimage.txt
+          fi
+
+      - name: Upload warning report (AppImage)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Warning Report (AppImage - ${{ matrix.platform.name }})
+          path: build-warning-report-appimage.txt
+
+      - name: Generate warning delta summary (AppImage)
+        if: always()
+        run: |
+          baseline="${WARNING_BASELINE_APPIMAGE}"
+          count=0
+          if [ -f build-warning-report-appimage.txt ]; then
+            count=$(grep -Eic "\\bwarning\\b" build-warning-report-appimage.txt || true)
+          fi
+          delta=$((count - baseline))
+          {
+            echo "job=appimage-${{ matrix.platform.name }}"
+            echo "baseline=$baseline"
+            echo "count=$count"
+            echo "delta=$delta"
+          } > build-warning-delta-appimage.txt
+
+      - name: Upload warning delta summary (AppImage)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Warning Delta (AppImage - ${{ matrix.platform.name }})
+          path: build-warning-delta-appimage.txt
+
+      - name: Enforce warning regression gate (AppImage)
+        if: always()
+        run: |
+          if [ "${WARNING_FAIL_ON_REGRESSION}" != "1" ]; then
+            echo "WARNING_FAIL_ON_REGRESSION is disabled; skipping gate."
+            exit 0
+          fi
+
+          if [ ! -f build-warning-delta-appimage.txt ]; then
+            echo "Missing build-warning-delta-appimage.txt"
+            exit 1
+          fi
+
+          delta=$(grep -E '^delta=' build-warning-delta-appimage.txt | sed 's/^delta=//' || true)
+          if [ -z "$delta" ]; then
+            echo "Could not parse warning delta for AppImage job."
+            exit 1
+          fi
+
+          if [ "$delta" -gt 0 ]; then
+            echo "Warning regression detected in AppImage job (delta=$delta)."
+            exit 1
+          fi
+
+          echo "Warning regression gate passed for AppImage (delta=$delta)."
+
+      - name: AppImage smoke launch
+        if: always()
+        continue-on-error: true
+        run: |
+          if [ ! -f Nexen.AppImage ]; then
+            echo "Missing AppImage binary for smoke launch."
+            exit 1
+          fi
+
+          chmod +x Nexen.AppImage
+          set +e
+          timeout 20s xvfb-run -a ./Nexen.AppImage /DoNotSaveSettings > smoke-appimage.log 2>&1
+          code=$?
+          set -e
+
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
+            if grep -Eiq "segmentation fault|sigsegv|core dumped|abort|fatal" smoke-appimage.log; then
+              echo "Crash signature detected during AppImage smoke launch."
+            fi
+            cat smoke-appimage.log
+            exit 1
+          fi
+
+          if grep -Eiq "segmentation fault|sigsegv|core dumped|abort|fatal" smoke-appimage.log; then
+            echo "Crash signature detected in AppImage smoke log."
+            cat smoke-appimage.log
+            exit 1
+          fi
+
+          echo "AppImage smoke launch passed (exit code $code)."
+
+      - name: Upload AppImage smoke log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppImage Smoke Log (${{ matrix.platform.name }})
+          path: smoke-appimage.log
+
       - name: Upload Nexen (AppImage)
         uses: actions/upload-artifact@v4
         with:
@@ -340,8 +675,10 @@ jobs:
 
 
   # Create GitHub Release with artifacts when a version tag is pushed
+  # Use always() so the release still runs even if some platform builds fail
+  # (e.g., if macOS fails, Windows/Linux artifacts are still released)
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: always() && startsWith(github.ref, 'refs/tags/v')
     needs: [windows, linux, appimage, macos]
     runs-on: ubuntu-latest
     permissions:

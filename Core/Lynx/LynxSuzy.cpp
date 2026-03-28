@@ -608,12 +608,9 @@ void LynxSuzy::WriteSpritePixel(int x, int y, uint8_t penIndex, uint8_t collNum,
 		x = static_cast<int>(LynxConstants::ScreenWidth) - 1 - x;
 	}
 
-	// Bounds check — unsigned comparison catches negative values (they wrap
-	// to large unsigned) in a single test per axis, halving the branch count.
-	if (static_cast<unsigned>(x) >= LynxConstants::ScreenWidth ||
-		static_cast<unsigned>(y) >= LynxConstants::ScreenHeight) [[unlikely]] {
-		return;
-	}
+	// No bounds check needed: caller guarantees 0 <= x < ScreenWidth and
+	// 0 <= y < ScreenHeight (ProcessSprite checks both axes before calling).
+	// LeftHand mirror preserves x in [0, ScreenWidth).
 
 	// Calculate video RAM address for this pixel (4bpp packed nibbles)
 	uint16_t dispAddr = _state.VideoBase ? _state.VideoBase

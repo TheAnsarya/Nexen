@@ -43,16 +43,16 @@ enum { time_bits = pre_shift + 20 };
 
 static fixed_t const time_unit = (fixed_t)1 << time_bits;
 
-enum { bass_shift = 9 };      /* affects high-pass filter breakpoint frequency */
-enum { end_frame_extra = 2 }; /* allows deltas slightly after frame length */
+static constexpr int bass_shift = 9;      /* affects high-pass filter breakpoint frequency */
+static constexpr int end_frame_extra = 2; /* allows deltas slightly after frame length */
 
-enum { half_width = 8 };
-enum { buf_extra = half_width * 2 + end_frame_extra };
-enum { phase_bits = 5 };
-enum { phase_count = 1 << phase_bits };
-enum { delta_bits = 15 };
-enum { delta_unit = 1 << delta_bits };
-enum { frac_bits = time_bits - pre_shift };
+static constexpr int half_width = 8;
+static constexpr int buf_extra = half_width * 2 + end_frame_extra;
+static constexpr int phase_bits = 5;
+static constexpr int phase_count = 1 << phase_bits;
+static constexpr int delta_bits = 15;
+static constexpr int delta_unit = 1 << delta_bits;
+static constexpr int frac_bits = time_bits - pre_shift;
 
 /* We could eliminate avail and encode whole samples in offset, but that would
 limit the total buffered samples to blip_max_frame. That could only be
