@@ -51,7 +51,17 @@ Status:
 
 1. Baseline established in [~docs/testing/linux-runtime-crash-matrix-2026-03-28.md](../testing/linux-runtime-crash-matrix-2026-03-28.md).
 
-### 5. Controlled Modernization Batches
+### 5. Smoke-Launch Crash Detection in CI
+
+1. Run Linux publish binary under `xvfb-run` with bounded timeout.
+2. Run AppImage artifact under `xvfb-run` with bounded timeout.
+3. Fail on known crash signatures in smoke logs.
+
+Status:
+
+1. Implemented in [build.yml](../../.github/workflows/build.yml) under #1055.
+
+### 6. Controlled Modernization Batches
 
 1. Upgrade dependencies in small compatibility-preserving batches.
 2. After each batch run, execute: Release build, focused native tests, .NET tests, and a benchmark checkpoint.
@@ -64,4 +74,5 @@ Status:
 
 1. Runtime dependency failures are CI-gated for Linux publish paths.
 2. Reproduction matrix shows no open high-severity startup crash signature without mitigation.
-3. At least one cross-distro validation pass confirms startup stability with current artifacts.
+3. Smoke-launch checks are active for both Linux publish and AppImage jobs.
+4. At least one cross-distro validation pass confirms startup stability with current artifacts.

@@ -11,6 +11,7 @@ env:
   WARNING_BASELINE_WINDOWS: 0
   WARNING_BASELINE_LINUX: 0
   WARNING_BASELINE_APPIMAGE: 0
+  WARNING_FAIL_ON_REGRESSION: 0
 
 jobs:
   windows:
@@ -133,6 +134,29 @@ jobs:
           name: Warning Delta (Windows${{ matrix.platform.aotString }})
           path: build-warning-delta-windows.txt
 
+      - name: Enforce warning regression gate (Windows)
+        if: always()
+        shell: pwsh
+        run: |
+          if ($env:WARNING_FAIL_ON_REGRESSION -ne "1") {
+            Write-Host "WARNING_FAIL_ON_REGRESSION is disabled; skipping gate."
+            exit 0
+          }
+
+          $deltaLine = Get-Content "build-warning-delta-windows.txt" | Where-Object { $_ -like "delta=*" }
+          if (-not $deltaLine) {
+            Write-Error "Could not read warning delta from build-warning-delta-windows.txt"
+            exit 1
+          }
+
+          $delta = [int]($deltaLine -replace "delta=", "")
+          if ($delta -gt 0) {
+            Write-Error "Warning regression detected in Windows job (delta=$delta)."
+            exit 1
+          }
+
+          Write-Host "Warning regression gate passed for Windows (delta=$delta)."
+
       - name: Upload Nexen
         uses: actions/upload-artifact@v4
         with:
@@ -181,7 +205,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -qy
-          sudo apt-get install -qy libsdl2-dev ccache # The compilers are already installed on GitHub's runners.
+          sudo apt-get install -qy libsdl2-dev ccache xvfb # The compilers are already installed on GitHub's runners.
 
       # Install GCC 13 for C++23 <format> support (default GCC 11 on ubuntu-22.04 doesn't have it)
       - name: Install GCC 13
@@ -315,6 +339,72 @@ jobs:
           name: Warning Delta (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
           path: build-warning-delta-linux.txt
 
+      - name: Enforce warning regression gate (Linux)
+        if: always()
+        run: |
+          if [ "${WARNING_FAIL_ON_REGRESSION}" != "1" ]; then
+            echo "WARNING_FAIL_ON_REGRESSION is disabled; skipping gate."
+            exit 0
+          fi
+
+          if [ ! -f build-warning-delta-linux.txt ]; then
+            echo "Missing build-warning-delta-linux.txt"
+            exit 1
+          fi
+
+          delta=$(grep -E '^delta=' build-warning-delta-linux.txt | sed 's/^delta=//' || true)
+          if [ -z "$delta" ]; then
+            echo "Could not parse warning delta for Linux job."
+            exit 1
+          fi
+
+          if [ "$delta" -gt 0 ]; then
+            echo "Warning regression detected in Linux job (delta=$delta)."
+            exit 1
+          fi
+
+          echo "Warning regression gate passed for Linux (delta=$delta)."
+
+      - name: Linux publish smoke launch
+        if: always()
+        run: |
+          publish_dir="bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish"
+          app="$publish_dir/Nexen"
+
+          if [ ! -f "$app" ]; then
+            echo "Missing published binary for smoke launch: $app"
+            exit 1
+          fi
+
+          chmod +x "$app"
+          set +e
+          timeout 20s xvfb-run -a "$app" /DoNotSaveSettings > smoke-linux.log 2>&1
+          code=$?
+          set -e
+
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
+            if grep -Eiq "segmentation fault|sigsegv|core dumped|abort|fatal" smoke-linux.log; then
+              echo "Crash signature detected during Linux smoke launch."
+            fi
+            cat smoke-linux.log
+            exit 1
+          fi
+
+          if grep -Eiq "segmentation fault|sigsegv|core dumped|abort|fatal" smoke-linux.log; then
+            echo "Crash signature detected in Linux smoke log."
+            cat smoke-linux.log
+            exit 1
+          fi
+
+          echo "Linux smoke launch passed (exit code $code)."
+
+      - name: Upload Linux smoke log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux Smoke Log (${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: smoke-linux.log
+
       - name: Upload Nexen
         uses: actions/upload-artifact@v4
         with:
@@ -349,7 +439,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update -qy
-          sudo apt-get install -qy libsdl2-dev libfuse2 ccache # The compilers are already installed on GitHub's runners.
+          sudo apt-get install -qy libsdl2-dev libfuse2 ccache xvfb # The compilers are already installed on GitHub's runners.
 
       # Install LLVM 18 for C++23 support (ubuntu-22.04 default clang doesn't support c++23)
       # Also install libc++ since the system libstdc++ doesn't have <format>
@@ -475,6 +565,69 @@ jobs:
         with:
           name: Warning Delta (AppImage - ${{ matrix.platform.name }})
           path: build-warning-delta-appimage.txt
+
+      - name: Enforce warning regression gate (AppImage)
+        if: always()
+        run: |
+          if [ "${WARNING_FAIL_ON_REGRESSION}" != "1" ]; then
+            echo "WARNING_FAIL_ON_REGRESSION is disabled; skipping gate."
+            exit 0
+          fi
+
+          if [ ! -f build-warning-delta-appimage.txt ]; then
+            echo "Missing build-warning-delta-appimage.txt"
+            exit 1
+          fi
+
+          delta=$(grep -E '^delta=' build-warning-delta-appimage.txt | sed 's/^delta=//' || true)
+          if [ -z "$delta" ]; then
+            echo "Could not parse warning delta for AppImage job."
+            exit 1
+          fi
+
+          if [ "$delta" -gt 0 ]; then
+            echo "Warning regression detected in AppImage job (delta=$delta)."
+            exit 1
+          fi
+
+          echo "Warning regression gate passed for AppImage (delta=$delta)."
+
+      - name: AppImage smoke launch
+        if: always()
+        run: |
+          if [ ! -f Nexen.AppImage ]; then
+            echo "Missing AppImage binary for smoke launch."
+            exit 1
+          fi
+
+          chmod +x Nexen.AppImage
+          set +e
+          timeout 20s xvfb-run -a ./Nexen.AppImage /DoNotSaveSettings > smoke-appimage.log 2>&1
+          code=$?
+          set -e
+
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
+            if grep -Eiq "segmentation fault|sigsegv|core dumped|abort|fatal" smoke-appimage.log; then
+              echo "Crash signature detected during AppImage smoke launch."
+            fi
+            cat smoke-appimage.log
+            exit 1
+          fi
+
+          if grep -Eiq "segmentation fault|sigsegv|core dumped|abort|fatal" smoke-appimage.log; then
+            echo "Crash signature detected in AppImage smoke log."
+            cat smoke-appimage.log
+            exit 1
+          fi
+
+          echo "AppImage smoke launch passed (exit code $code)."
+
+      - name: Upload AppImage smoke log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AppImage Smoke Log (${{ matrix.platform.name }})
+          path: smoke-appimage.log
 
       - name: Upload Nexen (AppImage)
         uses: actions/upload-artifact@v4

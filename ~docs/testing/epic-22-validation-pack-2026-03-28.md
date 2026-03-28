@@ -2,12 +2,12 @@
 
 ## Build and Warning Evidence
 
-## Baseline
+### Baseline
 
 1. Release build performed with MSBuild (`Nexen.sln`, `Release|x64`).
 2. Warning scans executed via log extraction (`build-epic22-warnings.log`).
 
-## Findings
+### Findings
 
 1. Initial modernization pass introduced MSB3277 version conflicts in `Nexen.Benchmarks.csproj`.
 2. Conflict cluster reduced by restoring compatible Avalonia/Dock train in UI project.
@@ -16,45 +16,71 @@
 
 ## Regression Tests
 
-1. Native gtest checkpoint:
+1. Native gtest checkpoint.
+
 - Command: `Core.Tests.exe --gtest_filter=NotificationManagerTests.* --gtest_brief=1`
 - Result: 3/3 passed.
 
-2. Managed tests checkpoint:
+1. Managed tests checkpoint.
+
 - Command: `dotnet test --no-build -c Release`
 - Result: 587/587 passed.
 
 ## Benchmark Checkpoint
 
-1. Command:
+1. Command.
+
 - `Core.Benchmarks.exe --benchmark_filter=BM_Atari2600_PerformanceGate_Corpus --benchmark_repetitions=3`
 
-2. Result summary:
+1. Result summary.
+
 - Mean time: 1,127,732 ns.
 - Median time: 1,129,122 ns.
 - Mean throughput: 2.644k items/s.
 
 ## Runtime Compatibility Validation
 
-1. CI now checks Linux publish runtime config and ICU native assets in:
-- Linux matrix build job.
-- AppImage build job.
+1. CI now checks Linux publish runtime config and ICU native assets in both Linux matrix and AppImage jobs.
 
-2. Expected assertions:
+2. Expected assertions.
+
 - `System.Globalization.AppLocalIcu` must be `72.1.0.3`.
-- Publish output must contain:
-- `libicudata.so.72.1.0.3`
-- `libicui18n.so.72.1.0.3`
-- `libicuuc.so.72.1.0.3`
+- Publish output must contain `libicudata.so.72.1.0.3`.
+- Publish output must contain `libicui18n.so.72.1.0.3`.
+- Publish output must contain `libicuuc.so.72.1.0.3`.
+
+## CI Regression Gate Expansion (#1055)
+
+1. Warning delta artifacts are now paired with an optional fail gate in all build jobs.
+
+- Windows.
+- Linux.
+- AppImage.
+
+1. Gate behavior.
+
+- `WARNING_FAIL_ON_REGRESSION=0` keeps telemetry-only mode.
+- `WARNING_FAIL_ON_REGRESSION=1` fails jobs when warning delta is positive.
+
+1. Linux crash smoke checks now run for Linux publish binary (`Nexen`) and AppImage artifact (`Nexen.AppImage`).
+
+2. Smoke-launch logic.
+
+- Uses `xvfb-run` with timeout budget to detect early startup crashes.
+- Treats `segmentation fault`, `sigsegv`, `core dumped`, `abort`, and `fatal` signatures as failures.
+- Uploads smoke logs for post-failure triage.
 
 ## Coverage and Risks
 
-1. Covered:
+1. Covered.
+
 - Release build quality gate.
 - Focused native regression.
 - Full managed test suite.
 - Performance sanity checkpoint.
 - Linux ICU runtime artifact checks in CI.
 
-2. Remaining risk:
+1. Remaining risk.
+
 - Linux-specific runtime behavior still requires cross-distro runtime validation on real targets.
+- Warning fail gate defaults to disabled until baseline values are tuned from real CI history.

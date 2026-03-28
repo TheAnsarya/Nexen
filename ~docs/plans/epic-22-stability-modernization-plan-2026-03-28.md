@@ -19,6 +19,7 @@ Issue mapping:
 5. #1054 CI runtime dependency validation expansion.
 6. #1052 Regression and benchmark evidence pack.
 7. #1053 Documentation and continuity pack.
+8. #1055 CI warning regression gate and Linux smoke-launch crash detection.
 
 ## Current Execution Snapshot
 
@@ -26,6 +27,8 @@ Issue mapping:
 2. Runtime config is validated for `System.Globalization.AppLocalIcu = 72.1.0.3` and required ICU native files.
 3. Warning pass identified and reduced MSB3277 conflict hotspots.
 4. Dependency modernization pass completed for low-risk packages (`Microsoft.Extensions.Logging*`, `StreamHash`).
+5. CI now supports warning-regression fail gating (toggle via `WARNING_FAIL_ON_REGRESSION`).
+6. Linux publish and AppImage smoke-launch steps now detect startup crash signatures in CI logs.
 
 ## Phased Approach
 
@@ -33,28 +36,33 @@ Issue mapping:
 
 1. Maintain Linux startup crash signatures and repro metadata (distros, runtime versions, stack traces).
 2. Keep runtime dependency assertions in CI to prevent regression of missing native assets.
-3. Track known risk areas:
+3. Track known risk areas.
+
 - App-local ICU loading and version token drift.
 - Native graphics stack compatibility (Skia/HarfBuzz/system libs).
 
 ### Phase B: Warning Budget Hardening
 
 1. Capture warning baseline from Release build logs.
-2. Prioritize warning fixes that are:
+2. Prioritize warning fixes with these constraints.
+
 - Low-risk.
 - Deterministic.
 - Non-behavioral.
-3. Keep warning deltas in testing docs and issue comments for traceability.
+
+1. Keep warning deltas in testing docs and issue comments for traceability.
 
 ### Phase C: Modernization Cadence
 
 1. Apply modernization in compatibility-preserving increments.
-2. Validate after each bump:
+2. Validate after each bump.
+
 - Full Release build.
 - Focused native tests.
 - .NET tests.
 - Benchmark checkpoint.
-3. Defer risky transitive jumps to dedicated issues with rollback notes.
+
+1. Defer risky transitive jumps to dedicated issues with rollback notes.
 
 ## Acceptance Criteria
 
@@ -69,3 +77,5 @@ Issue mapping:
 1. Expand runtime validation beyond ICU where practical (Skia/HarfBuzz presence checks).
 2. Add lightweight warning report artifact publication in CI.
 3. Continue dependency modernization with compatibility checks per batch.
+4. Enable warning fail gate (`WARNING_FAIL_ON_REGRESSION=1`) after baseline tuning from live CI runs.
+5. Use Linux/AppImage smoke log artifacts to verify distro-specific crash signatures are no longer reproducible.
