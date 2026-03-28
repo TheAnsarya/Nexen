@@ -880,6 +880,15 @@ public sealed class TraceLoggerOptionTab : DisposableViewModel {
 					StatusFlagFormat.Text or _ => "P:[P,8] "
 				});
 				break;
+
+			case CpuType.ChannelF:
+				addTag(cfg.ShowRegisters, "A:[A,2h] W:[W,2h] ISAR:[ISAR,2h] PC1:[PC1,4h] DC0:[DC0,4h] DC1:[DC1,4h] ");
+				addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
+					StatusFlagFormat.Hexadecimal => "W:[W,h] ",
+					StatusFlagFormat.CompactText => "W:[W] ",
+					StatusFlagFormat.Text or _ => "W:[W,8] "
+				});
+				break;
 		}
 
 		addTag(cfg.ShowFramePosition, "V:[Scanline,3] H:[Cycle,3] ");
@@ -939,6 +948,7 @@ public sealed class TraceLoggerOptionTab : DisposableViewModel {
 			CpuType.Ws => new string[] { "AX", "BX", "CX", "DX", "CS", "IP", "SS", "SP", "BP", "DS", "ES", "SI", "DI", "F" },
 			CpuType.Lynx => new string[] { "A", "X", "Y", "P", "SP" },
 			CpuType.Atari2600 => new string[] { "A", "X", "Y", "P", "SP" },
+			CpuType.ChannelF => new string[] { "A", "W", "ISAR", "PC1", "DC0", "DC1" },
 			_ => throw new Exception("unsupported cpu type")
 		};
 

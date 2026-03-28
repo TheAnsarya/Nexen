@@ -835,6 +835,7 @@ Hey, continue working on the crash, but use the repoerts in the comments of `htt
 
 continue to finish up this session (and make issues, docs, plans, chat/session logs); [Nexen] settings for each system UI is incomplete, 2600 and Lynx and Channel F and others all have labels without actual descriptive text, functionality might not work, research and review and survey the UI for settings, and config, and input, and movies, and savestates, etc, make the UI awesome and cover every platform and also be comprehensive and make issues, epics, docs, plans, tests, benchmarks, etc; continue;
 
+EventViewer Channel F crash-path fixes.; TraceLogger Channel F formatting integration.; ColorIndexPicker Channel F palette integration.; Full regression test/benchmark execution for new UX surfaces (scoped in #1045 and #1046).Continue immediately with debugger crash-path fixes (#1042 follow-on).; Execute targeted tests and benchmark checkpoints (#1045, #1046) and commit results.; Start the global movie/savestate UX refinement pass (#1044).; continue;
 
 
 

@@ -11,4 +11,13 @@ public sealed class ChannelFEventViewerConfig : ViewModelBase {
 	[Reactive] public EventViewerCategoryCfg IoRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[2]);
 
 	[Reactive] public bool ShowPreviousFrameEvents { get; set; } = true;
+
+	public InteropChannelFEventViewerConfig ToInterop() {
+		return new InteropChannelFEventViewerConfig() {
+			MarkedBreakpoints = this.MarkedBreakpoints,
+			IoWrite = this.IoWrite,
+			IoRead = this.IoRead,
+			ShowPreviousFrameEvents = this.ShowPreviousFrameEvents
+		};
+	}
 }

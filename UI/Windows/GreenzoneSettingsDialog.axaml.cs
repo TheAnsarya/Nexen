@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Nexen.Localization;
 using Nexen.TAS;
 using Nexen.Utilities;
 
@@ -86,7 +87,7 @@ public partial class GreenzoneSettingsDialog : NexenWindow {
 
 		// Status display
 		dialog.FindControl<TextBlock>("txtStateCount")!.Text = greenzone.SavestateCount.ToString("N0");
-		dialog.FindControl<TextBlock>("txtMemory")!.Text = $"{greenzone.TotalMemoryUsage / (1024.0 * 1024.0):F1} MB";
+		dialog.FindControl<TextBlock>("txtMemory")!.Text = ResourceHelper.GetMessage("GreenzoneMemoryUsageMB", (greenzone.TotalMemoryUsage / (1024.0 * 1024.0)).ToString("F1"));
 
 		var tcs = new TaskCompletionSource<GreenzoneSettings?>();
 		dialog.Closed += (_, _) => {

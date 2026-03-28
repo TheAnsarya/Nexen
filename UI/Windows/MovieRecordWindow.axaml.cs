@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+using System;
+using System.IO;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -8,7 +9,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 
-namespace Nexen.Windows; 
+namespace Nexen.Windows;
 public class MovieRecordWindow : NexenWindow {
 	public MovieRecordWindow() {
 		InitializeComponent();
@@ -30,11 +31,35 @@ public class MovieRecordWindow : NexenWindow {
 		}
 	}
 
-	private void Ok_OnClick(object sender, RoutedEventArgs e) {
+	private async void Ok_OnClick(object sender, RoutedEventArgs e) {
 		MovieRecordConfigViewModel model = (MovieRecordConfigViewModel)DataContext!;
+
+		if (string.IsNullOrWhiteSpace(model.SavePath)) {
+			await NexenMsgBox.Show(this, "InvalidMoviePath", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+			return;
+		}
+
+		string? folderPath = Path.GetDirectoryName(model.SavePath);
+		if (string.IsNullOrWhiteSpace(folderPath)) {
+			await NexenMsgBox.Show(this, "InvalidMoviePath", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+			return;
+		}
+
+		try {
+			Directory.CreateDirectory(folderPath);
+		} catch (Exception ex) {
+			await NexenMsgBox.Show(this, "MovieRecordStartError", MessageBoxButtons.OK, MessageBoxIcon.Error, ex.Message);
+			return;
+		}
+
 		model.SaveConfig();
 
-		RecordApi.MovieRecord(new RecordMovieOptions(model.SavePath, model.Config.Author, model.Config.Description, model.Config.RecordFrom));
+		try {
+			RecordApi.MovieRecord(new RecordMovieOptions(model.SavePath, model.Config.Author, model.Config.Description, model.Config.RecordFrom));
+		} catch (Exception ex) {
+			await NexenMsgBox.Show(this, "MovieRecordStartError", MessageBoxButtons.OK, MessageBoxIcon.Error, ex.Message);
+			return;
+		}
 
 		Close(true);
 	}

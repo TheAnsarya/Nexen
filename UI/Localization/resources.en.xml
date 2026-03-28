@@ -1011,6 +1011,28 @@
 			<Control ID="btnOK">Record</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
+		<Form ID="GreenzoneSettingsDialog">
+			<Control ID="wndTitle">Greenzone Settings</Control>
+			<Control ID="lblTitle">Greenzone Settings</Control>
+			<Control ID="lblHint">Tune capture interval, memory budget, and compression to balance rewind smoothness and RAM usage.</Control>
+			<Control ID="lblSavestates">Savestates:</Control>
+			<Control ID="lblMemoryUsage">Memory Usage:</Control>
+			<Control ID="lblCaptureInterval">Capture Interval:</Control>
+			<Control ID="ttCaptureInterval">Frames between automatic savestate captures.</Control>
+			<Control ID="lblMaxSavestates">Max Savestates:</Control>
+			<Control ID="ttMaxSavestates">Maximum number of savestates kept in memory.</Control>
+			<Control ID="lblMemoryLimit">Memory Limit (MB):</Control>
+			<Control ID="ttMemoryLimit">Maximum memory budget for greenzone in megabytes.</Control>
+			<Control ID="lblRingBufferSize">Ring Buffer Size:</Control>
+			<Control ID="ttRingBufferSize">Recent frames kept uncompressed for fast rewind.</Control>
+			<Control ID="lblCompression">Compression:</Control>
+			<Control ID="chkCompression">Compress older states</Control>
+			<Control ID="lblCompressionThreshold">Compression Threshold:</Control>
+			<Control ID="ttCompressionThreshold">Frames older than this are compressed.</Control>
+			<Control ID="btnClearAllStates">Clear All States</Control>
+			<Control ID="btnOK">OK</Control>
+			<Control ID="btnCancel">Cancel</Control>
+		</Form>
 		<Form ID="HdPackBuilderWindow">
 			<Control ID="wndTitle">HD Pack Builder</Control>
 
@@ -1892,6 +1914,9 @@
 		<Message ID="MovieExportEntireSegment">Export entire segment</Message>
 		<Message ID="MovieExportSpecificRange">Export specific range...</Message>
 		<Message ID="MovieSaveError">An error occurred while trying to save the movie file.</Message>
+		<Message ID="InvalidMoviePath">Please select a valid movie file path before recording.</Message>
+		<Message ID="MovieRecordStartError">Unable to start movie recording.&#xA;&#xA;Details:&#xA;{0}</Message>
+		<Message ID="GreenzoneMemoryUsageMB">{0} MB</Message>
 		<Message ID="FileSaveError">An error occurred while trying to save the file.</Message>
 
 		<Message ID="SetKeyHint">Press any key on your keyboard to set a new binding.</Message>
