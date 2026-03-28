@@ -765,6 +765,7 @@
 			<Control ID="tabWs">WonderSwan</Control>
 			<Control ID="tabLynx">Lynx</Control>
 			<Control ID="tabAtari2600">Atari 2600</Control>
+			<Control ID="tabChannelF">Channel F</Control>
 			<Control ID="tabOtherConsoles">Other systems</Control>
 			<Control ID="tabPreferences">Preferences</Control>
 

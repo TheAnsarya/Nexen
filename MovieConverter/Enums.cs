@@ -114,6 +114,9 @@ public enum SystemType {
 	/// <summary>Virtual Boy</summary>
 	VirtualBoy,
 
+	/// <summary>Fairchild Channel F</summary>
+	ChannelF,
+
 	/// <summary>Other or unknown system</summary>
 	Other,
 

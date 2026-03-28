@@ -206,7 +206,7 @@
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
 						<Image Source="/Assets/Controller.png" Margin="0 0 10 0" />
-						<TextBlock VerticalAlignment="Center" Text="Channel F" />
+						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabChannelF}" />
 					</StackPanel>
 				</TabItem.Header>
 			</TabItem>
