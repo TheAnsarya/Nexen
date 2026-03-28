@@ -33,6 +33,7 @@ public sealed class TraceLoggerConfig : BaseWindowConfig<TraceLoggerConfig> {
 	[Reactive] public TraceLoggerCpuConfig GbaConfig { get; set; } = new();
 	[Reactive] public TraceLoggerCpuConfig WsConfig { get; set; } = new();
 	[Reactive] public TraceLoggerCpuConfig LynxConfig { get; set; } = new();
+	[Reactive] public TraceLoggerCpuConfig ChannelFConfig { get; set; } = new();
 	[Reactive] public TraceLoggerCpuConfig Atari2600Config { get; set; } = new();
 
 	public TraceLoggerConfig() {
@@ -54,6 +55,7 @@ public sealed class TraceLoggerConfig : BaseWindowConfig<TraceLoggerConfig> {
 			CpuType.Gba => GbaConfig,
 			CpuType.Ws => WsConfig,
 			CpuType.Lynx => LynxConfig,
+			CpuType.ChannelF => ChannelFConfig,
 			CpuType.Atari2600 => Atari2600Config,
 			_ => throw new NotImplementedException("Unsupport cpu type")
 		};

@@ -426,6 +426,7 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 			CpuType.Ws => new Enum[] { TileFormat.Bpp2, TileFormat.SmsBpp4, TileFormat.WsBpp4Packed },
 			CpuType.Lynx => new Enum[] { TileFormat.WsBpp4Packed },
 			CpuType.Atari2600 => new Enum[] { TileFormat.Bpp4 },
+			CpuType.ChannelF => new Enum[] { TileFormat.Bpp2 },
 			_ => throw new Exception("Unsupported CPU type")
 		};
 
@@ -950,6 +951,12 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 				};
 
 			case CpuType.Lynx:
+				return new() {
+					CreatePreset(0, "VRAM", () => ApplyPpuPreset()),
+					CreatePreset(0, "ROM", () => ApplyPrgPreset()),
+				};
+
+			case CpuType.ChannelF:
 				return new() {
 					CreatePreset(0, "VRAM", () => ApplyPpuPreset()),
 					CreatePreset(0, "ROM", () => ApplyPrgPreset()),

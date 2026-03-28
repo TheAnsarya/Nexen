@@ -136,6 +136,10 @@ public partial class Configuration : ReactiveObject {
 			Debug.Integration.BackgroundCdlRecording = false;
 		}
 
+		if (ConfigUpgrade < (int)ConfigUpgradeHint.ChannelFInput) {
+			ChannelF.InitializeDefaults(DefaultKeyMappings);
+		}
+
 		ConfigUpgrade = (int)ConfigUpgradeHint.NextValue - 1;
 		Version = EmuApi.GetNexenVersion().ToString(3);
 	}
@@ -321,5 +325,6 @@ public enum ConfigUpgradeHint {
 	WsInput,
 	BackgroundCdlRecording,
 	LynxInput,
+	ChannelFInput,
 	NextValue,
 }

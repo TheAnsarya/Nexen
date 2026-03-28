@@ -547,6 +547,7 @@ public sealed class DebugApi {
 			CpuType.Ws => state is WsCpuState,
 			CpuType.Lynx => state is LynxCpuState,
 			CpuType.Atari2600 => state is Atari2600CpuState,
+			CpuType.ChannelF => state is ChannelFCpuState,
 			_ => false
 		};
 	}

@@ -479,6 +479,12 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 				};
 				break;
 
+			case CpuType.ChannelF:
+				Tabs = new() {
+					new() { Title = "", Layer = 0 }
+				};
+				break;
+
 			default:
 				throw new Exception("unsupported cpu type");
 		}

@@ -23,7 +23,10 @@ public class MovieRecordWindow : NexenWindow {
 	}
 
 	private async void OnBrowseClick(object sender, RoutedEventArgs e) {
-		MovieRecordConfigViewModel model = (MovieRecordConfigViewModel)DataContext!;
+		if (DataContext is not MovieRecordConfigViewModel model) {
+			await NexenMsgBox.Show(this, "UnexpectedError", MessageBoxButtons.OK, MessageBoxIcon.Error, "Movie recording configuration is not initialized.");
+			return;
+		}
 
 		string? filename = await FileDialogHelper.SaveFile(ConfigManager.MovieFolder, EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.NexenMovieExt, VisualRoot, FileDialogHelper.NexenMovieExt);
 		if (filename != null) {
@@ -32,7 +35,10 @@ public class MovieRecordWindow : NexenWindow {
 	}
 
 	private async void Ok_OnClick(object sender, RoutedEventArgs e) {
-		MovieRecordConfigViewModel model = (MovieRecordConfigViewModel)DataContext!;
+		if (DataContext is not MovieRecordConfigViewModel model) {
+			await NexenMsgBox.Show(this, "UnexpectedError", MessageBoxButtons.OK, MessageBoxIcon.Error, "Movie recording configuration is not initialized.");
+			return;
+		}
 
 		if (string.IsNullOrWhiteSpace(model.SavePath)) {
 			await NexenMsgBox.Show(this, "InvalidMoviePath", MessageBoxButtons.OK, MessageBoxIcon.Warning);

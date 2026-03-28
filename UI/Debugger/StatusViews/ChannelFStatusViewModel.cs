@@ -94,15 +94,16 @@ public sealed class ChannelFStatusViewModel : BaseConsoleStatusViewModel {
 		VideoY = video.Y;
 
 		// Show scratchpad around ISAR pointer (8 bytes centered on ISAR)
-		if (cpu.Scratchpad != null) {
+		if (cpu.Scratchpad is { Length: > 0 }) {
 			StringBuilder sb = new();
-			int start = Math.Max(0, cpu.ISAR - 4);
-			int end = Math.Min(64, start + 8);
+			int isar = Math.Clamp(cpu.ISAR, 0, cpu.Scratchpad.Length - 1);
+			int start = Math.Max(0, isar - 4);
+			int end = Math.Min(cpu.Scratchpad.Length, start + 8);
 			for (int i = start; i < end; i++) {
-				if (i == cpu.ISAR) {
-					sb.Append($"[{cpu.Scratchpad[i]:X2}]");
+				if (i == isar) {
+					sb.Append($"[{cpu.Scratchpad[i]:x2}]");
 				} else {
-					sb.Append($" {cpu.Scratchpad[i]:X2} ");
+					sb.Append($" {cpu.Scratchpad[i]:x2} ");
 				}
 			}
 			ScratchpadPreview = sb.ToString();
