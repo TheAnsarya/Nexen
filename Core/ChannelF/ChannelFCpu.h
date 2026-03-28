@@ -118,6 +118,7 @@ public:
 
 	void Reset();
 	void StepCycles(uint32_t targetCycles);
+	[[nodiscard]] uint8_t StepOne();
 
 	// State export/import for serialization
 	void ExportState(

@@ -49,6 +49,11 @@ private:
 	uint8_t _soundTone = 0;
 	uint8_t _soundFreq = 0;
 
+	// Audio synthesis
+	vector<int16_t> _audioBuffer;
+	uint32_t _audioCounter = 0;  // Divider counter for square wave
+	bool _audioOutput = false;   // Current square wave output level
+
 	// Controller state
 	uint8_t _controller1 = 0xff;
 	uint8_t _controller2 = 0xff;
@@ -79,6 +84,11 @@ public:
 	void SetVideoState(const ChannelFVideoState& state);
 	void SetAudioState(const ChannelFAudioState& state);
 	void SetPortState(const ChannelFPortState& state);
+
+	// Audio synthesis
+	void StepAudio();
+	void BeginFrameCapture();
+	[[nodiscard]] const vector<int16_t>& GetAudioBuffer() const { return _audioBuffer; }
 
 	// Accessors for debugger and rendering
 	[[nodiscard]] const uint8_t* GetVram() const { return _vram; }

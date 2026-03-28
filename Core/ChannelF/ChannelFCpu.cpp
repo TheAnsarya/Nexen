@@ -22,6 +22,12 @@ void ChannelFCpu::StepCycles(uint32_t targetCycles) {
 	}
 }
 
+uint8_t ChannelFCpu::StepOne() {
+	uint8_t cycles = ExecuteInstruction();
+	_cycleCount += cycles;
+	return cycles;
+}
+
 void ChannelFCpu::ExportState(
 	uint8_t& a, uint8_t& w, uint8_t& isar,
 	uint16_t& pc0, uint16_t& pc1, uint16_t& dc0, uint16_t& dc1,

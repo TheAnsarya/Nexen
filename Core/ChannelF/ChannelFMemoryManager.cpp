@@ -30,6 +30,9 @@ void ChannelFMemoryManager::Reset() {
 	_videoY = 0;
 	_soundTone = 0;
 	_soundFreq = 0;
+	_audioBuffer.clear();
+	_audioCounter = 0;
+	_audioOutput = false;
 	_controller1 = 0xff;
 	_controller2 = 0xff;
 	_consoleButtons = 0xff;
@@ -158,4 +161,31 @@ void ChannelFMemoryManager::SetPortState(const ChannelFPortState& state) {
 	_portLatch[1] = state.Port1;
 	_controller2 = state.Port4;
 	_controller1 = state.Port5;
+}
+
+void ChannelFMemoryManager::BeginFrameCapture() {
+	_audioBuffer.clear();
+}
+
+void ChannelFMemoryManager::StepAudio() {
+	// Channel F PSG: single-channel square wave
+	// _soundTone (6-bit from port 5 bits 0-5) controls the period divider
+	// When _soundTone == 0: silence
+	// When _soundTone > 0: square wave with period = _soundTone * 2 CPU cycles
+	int16_t sample = 0;
+	if (_soundTone != 0) {
+		_audioCounter++;
+		if (_audioCounter >= _soundTone) {
+			_audioCounter = 0;
+			_audioOutput = !_audioOutput;
+		}
+		// Square wave: +/- amplitude (~25% of int16_t range for reasonable volume)
+		sample = _audioOutput ? (int16_t)8192 : (int16_t)-8192;
+	} else {
+		_audioCounter = 0;
+		_audioOutput = false;
+	}
+	// Stereo: push left + right (mono duplicated)
+	_audioBuffer.push_back(sample);
+	_audioBuffer.push_back(sample);
 }

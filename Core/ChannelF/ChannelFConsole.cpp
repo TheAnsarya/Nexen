@@ -4,6 +4,7 @@
 #include "Shared/Emulator.h"
 #include "Shared/MemoryType.h"
 #include "Shared/FirmwareHelper.h"
+#include "Shared/Audio/SoundMixer.h"
 #include "Utilities/VirtualFile.h"
 
 ChannelFConsole::ChannelFConsole(Emulator* emu)
@@ -87,8 +88,27 @@ void ChannelFConsole::RunFrame() {
 	}
 
 	if (_romLoaded) {
-		// Execute CPU for one frame's worth of cycles
-		_cpu->StepCycles(CyclesPerFrame);
+		// Clear audio buffer for this frame
+		_memoryManager->BeginFrameCapture();
+
+		// Execute CPU for one frame's worth of cycles, stepping audio per cycle
+		uint32_t cyclesRun = 0;
+		while (cyclesRun < CyclesPerFrame) {
+			uint8_t instrCycles = _cpu->StepOne();
+			for (uint8_t i = 0; i < instrCycles; i++) {
+				_memoryManager->StepAudio();
+			}
+			cyclesRun += instrCycles;
+		}
+
+		// Send audio buffer to SoundMixer for playback
+		const vector<int16_t>& audioBuffer = _memoryManager->GetAudioBuffer();
+		if (!audioBuffer.empty()) {
+			_emu->GetSoundMixer()->PlayAudioBuffer(
+				const_cast<int16_t*>(audioBuffer.data()),
+				(uint32_t)audioBuffer.size() / 2,
+				GetMasterClockRate());
+		}
 
 		// Convert VRAM (2-bit color indices) to frame buffer (palette indices)
 		const uint8_t* vram = _memoryManager->GetVram();
