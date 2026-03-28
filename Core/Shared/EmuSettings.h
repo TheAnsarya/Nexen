@@ -61,6 +61,7 @@ private:
 	LynxConfig _lynx;
 	GenesisConfig _genesis;
 	Atari2600Config _atari2600;
+	ChannelFConfig _channelF;
 
 	atomic<uint32_t> _flags;
 	atomic<uint64_t> _debuggerFlags;
@@ -134,6 +135,9 @@ public:
 
 	void SetAtari2600Config(Atari2600Config& config);
 	Atari2600Config& GetAtari2600Config();
+
+	void SetChannelFConfig(ChannelFConfig& config);
+	ChannelFConfig& GetChannelFConfig();
 
 	void SetGameConfig(GameConfig& config);
 	GameConfig& GetGameConfig();

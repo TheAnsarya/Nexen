@@ -1,0 +1,37 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:v="using:Nexen.Views"
+	xmlns:cfg="using:Nexen.Config"
+	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
+	VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+	x:DataType="vm:ChannelFInputConfigViewModel"
+	x:Class="Nexen.Views.ChannelFInputConfigView"
+>
+	<Design.DataContext>
+		<vm:ChannelFInputConfigViewModel />
+	</Design.DataContext>
+	<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+		<StackPanel>
+			<c:OptionSection Header="{l:Translate grpControllers}" Margin="0">
+				<Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" HorizontalAlignment="Left">
+					<TextBlock Grid.Row="0" Grid.Column="0" Text="Controller:" />
+					<c:InputComboBox Grid.Row="0" Grid.Column="1" Port="0"
+						Config="{Binding Config.Controller}"
+						ControllerType="{Binding Config.Controller.Type}"
+						AvailableValues="{Binding AvailableControllerTypes}" />
+					<TextBlock Grid.Row="1" Grid.Column="0" Text="Console Panel:" />
+					<c:InputComboBox Grid.Row="1" Grid.Column="1" Port="1"
+						Config="{Binding Config.ConsolePanel}"
+						ControllerType="{Binding Config.ConsolePanel.Type}"
+						AvailableValues="{Binding AvailableConsolePanelTypes}" />
+				</Grid>
+			</c:OptionSection>
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

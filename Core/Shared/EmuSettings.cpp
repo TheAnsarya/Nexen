@@ -38,6 +38,7 @@ void EmuSettings::CopySettings(EmuSettings& src) {
 	SetLynxConfig(src._lynx);
 	SetGenesisConfig(src._genesis);
 	SetAtari2600Config(src._atari2600);
+	SetChannelFConfig(src._channelF);
 }
 
 void EmuSettings::Serialize(Serializer& s) {
@@ -322,6 +323,14 @@ void EmuSettings::SetAtari2600Config(Atari2600Config& config) {
 
 Atari2600Config& EmuSettings::GetAtari2600Config() {
 	return _atari2600;
+}
+
+void EmuSettings::SetChannelFConfig(ChannelFConfig& config) {
+	_channelF = config;
+}
+
+ChannelFConfig& EmuSettings::GetChannelFConfig() {
+	return _channelF;
 }
 
 void EmuSettings::SetGameConfig(GameConfig& config) {

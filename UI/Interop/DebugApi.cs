@@ -122,6 +122,7 @@ public sealed class DebugApi {
 			CpuType.Ws => GetPpuState<WsPpuState>(cpuType),
 			CpuType.Lynx => GetPpuState<LynxPpuState>(cpuType),
 			CpuType.Atari2600 => GetPpuState<Atari2600TiaState>(cpuType),
+			CpuType.ChannelF => GetPpuState<ChannelFVideoState>(cpuType),
 			_ => throw new Exception("Unsupported cpu type")
 		};
 	}
@@ -144,6 +145,7 @@ public sealed class DebugApi {
 			CpuType.Ws => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
 			CpuType.Lynx => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
 			CpuType.Atari2600 => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
+			CpuType.ChannelF => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
 			_ => throw new Exception("Unsupported cpu type")
 		};
 	}

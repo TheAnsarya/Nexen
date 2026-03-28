@@ -223,7 +223,13 @@ public enum ControllerType {
 	Atari2600DrivingController,
 
 	/// <summary>Atari 2600 booster grip controller</summary>
-	Atari2600BoosterGrip
+	Atari2600BoosterGrip,
+
+	/// <summary>Fairchild Channel F hand controller</summary>
+	ChannelFController,
+
+	/// <summary>Fairchild Channel F console panel buttons</summary>
+	ChannelFConsolePanel
 }
 
 /// <summary>

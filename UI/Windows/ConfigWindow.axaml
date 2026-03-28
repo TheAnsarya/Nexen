@@ -59,6 +59,9 @@
 		<DataTemplate DataType="{x:Type vm:Atari2600ConfigViewModel}">
 			<v:Atari2600ConfigView />
 		</DataTemplate>
+		<DataTemplate DataType="{x:Type vm:ChannelFConfigViewModel}">
+			<v:ChannelFConfigView />
+		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:OtherConsolesConfigViewModel}">
 			<v:OtherConsolesConfigView />
 		</DataTemplate>
@@ -195,6 +198,15 @@
 					<StackPanel Orientation="Horizontal">
 						<Image Source="/Assets/Controller.png" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabAtari2600}" />
+					</StackPanel>
+				</TabItem.Header>
+			</TabItem>
+
+			<TabItem Content="{Binding ChannelF}">
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<Image Source="/Assets/Controller.png" Margin="0 0 10 0" />
+						<TextBlock VerticalAlignment="Center" Text="Channel F" />
 					</StackPanel>
 				</TabItem.Header>
 			</TabItem>

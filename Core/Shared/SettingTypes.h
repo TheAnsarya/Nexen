@@ -802,6 +802,15 @@ struct Atari2600Config {
 	bool HideBall = false;
 };
 
+struct ChannelFConfig {
+	ControllerConfig Controller;
+	ControllerConfig ConsolePanel;
+
+	RamState RamPowerOnState = RamState::AllZeros;
+
+	uint32_t AudioVol = 100;
+};
+
 struct AudioPlayerConfig {
 	uint32_t Volume = 100;
 	bool Repeat = false;

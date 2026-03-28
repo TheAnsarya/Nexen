@@ -405,6 +405,10 @@ public enum ControllerType {
 	Atari2600Keypad,
 	Atari2600DrivingController,
 	Atari2600BoosterGrip,
+
+	//Channel F
+	ChannelFController,
+	ChannelFConsolePanel,
 }
 
 public static class ControllerTypeExtensions {
@@ -429,6 +433,7 @@ public static class ControllerTypeExtensions {
 			case ControllerType.GenesisController:
 			case ControllerType.Atari2600Joystick:
 			case ControllerType.Atari2600BoosterGrip:
+			case ControllerType.ChannelFController:
 				return true;
 		}
 
@@ -454,6 +459,7 @@ public static class ControllerTypeExtensions {
 			case ControllerType.GenesisController:
 			case ControllerType.Atari2600Joystick:
 			case ControllerType.Atari2600BoosterGrip:
+			case ControllerType.ChannelFController:
 				return true;
 		}
 
@@ -506,6 +512,8 @@ public static class ControllerTypeExtensions {
 			case ControllerType.Atari2600Keypad:
 			case ControllerType.Atari2600DrivingController:
 			case ControllerType.Atari2600BoosterGrip:
+			case ControllerType.ChannelFController:
+			case ControllerType.ChannelFConsolePanel:
 				return true;
 		}
 

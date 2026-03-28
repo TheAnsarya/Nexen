@@ -30,6 +30,7 @@ public sealed class ConfigApi {
 	[DllImport(DllPath)] public static extern void SetLynxConfig(InteropLynxConfig config);
 	[DllImport(DllPath)] public static extern void SetGenesisConfig(InteropGenesisConfig config);
 	[DllImport(DllPath)] public static extern void SetAtari2600Config(InteropAtari2600Config config);
+	[DllImport(DllPath)] public static extern void SetChannelFConfig(InteropChannelFConfig config);
 
 	[DllImport(DllPath)] public static extern void SetGameConfig(InteropGameConfig config);
 
