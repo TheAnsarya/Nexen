@@ -675,8 +675,10 @@ jobs:
 
 
   # Create GitHub Release with artifacts when a version tag is pushed
+  # Use always() so the release still runs even if some platform builds fail
+  # (e.g., if macOS fails, Windows/Linux artifacts are still released)
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: always() && startsWith(github.ref, 'refs/tags/v')
     needs: [windows, linux, appimage, macos]
     runs-on: ubuntu-latest
     permissions:
