@@ -841,6 +841,7 @@ Include LynxConfigView.axaml in this commit as-is.; [Nexen] in Linux builds the 
 
 do the next pass focused only on compiler warnings and produce a warnings-only commit.; want Linux-runtime confidence next, I can add a CI validation check that asserts ICU native files are present in Linux publish output.; continue;
 
+make chat/session log, docs, plans, issues, epics, tests, benchmarks, etc; yes do that; continue; fix all crashes and segfaults and library problems and versions, etc, use the most modern libraries and the most modern standards and practices and code; fix as many warnings as you can; continue; 
 
 
 
