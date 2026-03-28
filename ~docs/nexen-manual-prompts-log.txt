@@ -871,7 +871,9 @@ god damnit, I had a fully working build/release pipeline ***yesterday*** why are
 
 you just returned nothing from my prompt, please actually solve it: god damnit, I had a fully working build/release pipeline ***yesterday*** why are you failing and what did you change? why does a `warning-report` error kill my entire windows build? focus everything on making a stable current build and full release in github, analyze the github action logs and solve those problems (using vs2026) so we have a working modern current release;
 
+Also, don't not release the windows builds or whatever succeeds just because another build failed; if it fails on apple, I still want to be able to test windows; continue;
 
+[Nexen] merge the branch into main and then create a new branch just like this one for implementing all the remaining channel f issues we have left; the release for windows 1.4.6 crashes immediately, run it and check all the logs and console output and maybe build and run it as debug to see what the errors are that are crashing it and fix those errors fix and update issues; make sure all this build/release fixing effort over the last couple hours has been logged in an issue and docs so we know what to do next time; fix Nexen issues and make the release runnable and testable; continue;
 
 
 
