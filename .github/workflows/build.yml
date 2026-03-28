@@ -177,6 +177,30 @@ jobs:
             make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 NEXENFLAGS="-stdlib=libc++"
           fi
 
+      - name: Validate Linux publish ICU assets
+        run: |
+          publish_dir="bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish"
+          runtime_config="$publish_dir/Nexen.runtimeconfig.json"
+
+          if [ ! -f "$runtime_config" ]; then
+            echo "Missing runtime config file: $runtime_config"
+            exit 1
+          fi
+
+          if ! grep -q '"System.Globalization.AppLocalIcu"[[:space:]]*:[[:space:]]*"72.1.0.3"' "$runtime_config"; then
+            echo "AppLocalIcu setting is missing or incorrect in $runtime_config"
+            exit 1
+          fi
+
+          for lib in libicudata.so.72.1.0.3 libicui18n.so.72.1.0.3 libicuuc.so.72.1.0.3; do
+            if [ ! -f "$publish_dir/$lib" ]; then
+              echo "Missing ICU native asset: $publish_dir/$lib"
+              exit 1
+            fi
+          done
+
+          echo "Linux ICU publish validation passed for $publish_dir"
+
       - name: Upload Nexen
         uses: actions/upload-artifact@v4
         with:
@@ -231,6 +255,36 @@ jobs:
       - name: Build Nexen (AppImage)
         run: |
           ${{ matrix.platform.script }}
+
+      - name: Validate AppImage publish ICU assets
+        run: |
+          if [ "${{ matrix.platform.name }}" = "x64" ]; then
+            arch_path="x64"
+          else
+            arch_path="arm64"
+          fi
+
+          publish_dir="bin/linux-${arch_path}/Release/linux-${arch_path}/publish"
+          runtime_config="$publish_dir/Nexen.runtimeconfig.json"
+
+          if [ ! -f "$runtime_config" ]; then
+            echo "Missing runtime config file: $runtime_config"
+            exit 1
+          fi
+
+          if ! grep -q '"System.Globalization.AppLocalIcu"[[:space:]]*:[[:space:]]*"72.1.0.3"' "$runtime_config"; then
+            echo "AppLocalIcu setting is missing or incorrect in $runtime_config"
+            exit 1
+          fi
+
+          for lib in libicudata.so.72.1.0.3 libicui18n.so.72.1.0.3 libicuuc.so.72.1.0.3; do
+            if [ ! -f "$publish_dir/$lib" ]; then
+              echo "Missing ICU native asset: $publish_dir/$lib"
+              exit 1
+            fi
+          done
+
+          echo "AppImage ICU publish validation passed for $publish_dir"
       - name: Upload Nexen (AppImage)
         uses: actions/upload-artifact@v4
         with:
