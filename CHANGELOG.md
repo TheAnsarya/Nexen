@@ -5,6 +5,28 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.5] - 2026-07-25
+
+### Added
+
+- **GSU HiROM memory mapping** — SuperFX coprocessor now supports HiROM cartridge layouts (upstream Mesen2 PR #89) (#1061)
+	- HiROM banks $40-$6f, $72-$7d mapped with 64KB page increments, mirrors at $c0-$ef, $f2-$ff
+	- RAM override at $70-$71 for HiROM carts
+	- GSU-side linear 64KB-per-bank addressing preserved
+- **Channel F TAS editor support** — Full controller layout with 8 buttons (→, ←, Bk, Fw, ↺, ↻, Pl, Ps) (#1063)
+- **Channel F movie converter** — Added `SystemType.ChannelF` for movie format conversion (#1063)
+
+### Fixed
+
+- **GSU accuracy improvements** — Four fixes from upstream Mesen2 PR #90 (#1062):
+	- STOP instruction now flushes pixel cache before halting
+	- R14 ROM stall guard prevents hangs when program bank > $5f
+	- RomDelay/RamDelay underflow prevention (explicit conditional instead of `std::min`)
+	- GO register ($301f) properly resets wait flags, pending delays, and clamps CycleCount
+- **Channel F tab localization** — Replaced hardcoded "Channel F" text with localized resource key (#1063)
+
+---
+
 ## [1.4.4] - 2026-03-27
 
 ### Fixed
