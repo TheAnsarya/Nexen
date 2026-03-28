@@ -25,6 +25,13 @@ This matrix tracks distro-specific crash signatures and stabilization status for
 2. Verify Linux publish outputs include ICU, Skia, and HarfBuzz native assets.
 3. Block CI on missing runtime dependencies.
 4. Keep benchmark/test checkpoints for each runtime package or CI change.
+5. Capture Linux publish dependency traces (`ldd`, `readelf`) as CI artifacts for diagnostics.
+
+## CI Diagnostic Artifacts
+
+Linux matrix jobs upload `runtime-deps-linux.txt` (`ldd` output for published binary) and `runtime-readelf-linux.txt` (`readelf -d` output for published binary).
+
+AppImage jobs upload `runtime-deps-appimage.txt` and `runtime-readelf-appimage.txt`.
 
 ## Remaining Risks
 

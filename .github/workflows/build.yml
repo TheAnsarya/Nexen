@@ -8,6 +8,9 @@ on:
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  WARNING_BASELINE_WINDOWS: 0
+  WARNING_BASELINE_LINUX: 0
+  WARNING_BASELINE_APPIMAGE: 0
 
 jobs:
   windows:
@@ -104,6 +107,31 @@ jobs:
         with:
           name: Warning Report (Windows${{ matrix.platform.aotString }})
           path: build-warning-report.txt
+
+      - name: Generate warning delta summary (Windows)
+        if: always()
+        shell: pwsh
+        run: |
+          $baseline = [int]$env:WARNING_BASELINE_WINDOWS
+          $count = 0
+          if (Test-Path "build-warning-report.txt") {
+            $count = (Get-Content "build-warning-report.txt" | Where-Object { $_ -match "\bwarning\b" -and $_ -notmatch "^No warnings detected" }).Count
+          }
+
+          $delta = $count - $baseline
+          @(
+            "job=windows${{ matrix.platform.aotString }}"
+            "baseline=$baseline"
+            "count=$count"
+            "delta=$delta"
+          ) | Out-File -FilePath "build-warning-delta-windows.txt" -Encoding utf8
+
+      - name: Upload warning delta summary (Windows)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Warning Delta (Windows${{ matrix.platform.aotString }})
+          path: build-warning-delta-windows.txt
 
       - name: Upload Nexen
         uses: actions/upload-artifact@v4
@@ -225,6 +253,27 @@ jobs:
 
           echo "Linux ICU publish validation passed for $publish_dir"
 
+      - name: Capture Linux runtime dependency report
+        if: always()
+        run: |
+          publish_dir="bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish"
+          if [ -f "$publish_dir/Nexen" ]; then
+            ldd "$publish_dir/Nexen" > runtime-deps-linux.txt || true
+            readelf -d "$publish_dir/Nexen" > runtime-readelf-linux.txt || true
+          else
+            echo "Publish binary missing: $publish_dir/Nexen" > runtime-deps-linux.txt
+            echo "Publish binary missing: $publish_dir/Nexen" > runtime-readelf-linux.txt
+          fi
+
+      - name: Upload runtime dependency report (Linux)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Runtime Dependencies (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: |
+            runtime-deps-linux.txt
+            runtime-readelf-linux.txt
+
       - name: Generate warning report (Linux)
         if: always()
         run: |
@@ -242,6 +291,29 @@ jobs:
         with:
           name: Warning Report (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
           path: build-warning-report-linux.txt
+
+      - name: Generate warning delta summary (Linux)
+        if: always()
+        run: |
+          baseline="${WARNING_BASELINE_LINUX}"
+          count=0
+          if [ -f build-warning-report-linux.txt ]; then
+            count=$(grep -Eic "\\bwarning\\b" build-warning-report-linux.txt || true)
+          fi
+          delta=$((count - baseline))
+          {
+            echo "job=linux-${{ matrix.platform.os }}-${{ matrix.compiler }}"
+            echo "baseline=$baseline"
+            echo "count=$count"
+            echo "delta=$delta"
+          } > build-warning-delta-linux.txt
+
+      - name: Upload warning delta summary (Linux)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Warning Delta (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: build-warning-delta-linux.txt
 
       - name: Upload Nexen
         uses: actions/upload-artifact@v4
@@ -336,6 +408,33 @@ jobs:
 
           echo "AppImage ICU publish validation passed for $publish_dir"
 
+      - name: Capture runtime dependency report (AppImage publish)
+        if: always()
+        run: |
+          if [ "${{ matrix.platform.name }}" = "x64" ]; then
+            arch_path="x64"
+          else
+            arch_path="arm64"
+          fi
+
+          publish_dir="bin/linux-${arch_path}/Release/linux-${arch_path}/publish"
+          if [ -f "$publish_dir/Nexen" ]; then
+            ldd "$publish_dir/Nexen" > runtime-deps-appimage.txt || true
+            readelf -d "$publish_dir/Nexen" > runtime-readelf-appimage.txt || true
+          else
+            echo "Publish binary missing: $publish_dir/Nexen" > runtime-deps-appimage.txt
+            echo "Publish binary missing: $publish_dir/Nexen" > runtime-readelf-appimage.txt
+          fi
+
+      - name: Upload runtime dependency report (AppImage publish)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Runtime Dependencies (AppImage - ${{ matrix.platform.name }})
+          path: |
+            runtime-deps-appimage.txt
+            runtime-readelf-appimage.txt
+
       - name: Generate warning report (AppImage)
         if: always()
         run: |
@@ -353,6 +452,29 @@ jobs:
         with:
           name: Warning Report (AppImage - ${{ matrix.platform.name }})
           path: build-warning-report-appimage.txt
+
+      - name: Generate warning delta summary (AppImage)
+        if: always()
+        run: |
+          baseline="${WARNING_BASELINE_APPIMAGE}"
+          count=0
+          if [ -f build-warning-report-appimage.txt ]; then
+            count=$(grep -Eic "\\bwarning\\b" build-warning-report-appimage.txt || true)
+          fi
+          delta=$((count - baseline))
+          {
+            echo "job=appimage-${{ matrix.platform.name }}"
+            echo "baseline=$baseline"
+            echo "count=$count"
+            echo "delta=$delta"
+          } > build-warning-delta-appimage.txt
+
+      - name: Upload warning delta summary (AppImage)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Warning Delta (AppImage - ${{ matrix.platform.name }})
+          path: build-warning-delta-appimage.txt
 
       - name: Upload Nexen (AppImage)
         uses: actions/upload-artifact@v4
