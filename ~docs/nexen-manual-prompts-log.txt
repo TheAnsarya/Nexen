@@ -926,7 +926,23 @@ add all the benchmark artifact folders to gitignore; continue;
 
 [Nexen] fix as many issues as you can as fast as you can and continue working on them for awhile as many issues as you can, let's work on clear this backlog out; continue and continue;
 
-[Nexen] have we finished `https://github.com/TheAnsarya/Nexen/issues/1076`? make issues for the WonderSwan and WonderSwanColor  and fix all Nexen issues as fast as you can, as many as you can, make to to do WSC issues first and then do everything else, although Ignore the CI issues, mark the CI issues as deferred; and don't do Sega Genesis issues, and don't work on "deferred" issues; continue;
+[Nexen] Make sure the current build works, and fix errors and warnings, and then release version `1.4.9` so we can check where we are; [Nexen] have we finished `https://github.com/TheAnsarya/Nexen/issues/1076`? make issues for the WonderSwan and WonderSwanColor  and fix all Nexen issues as fast as you can, as many as you can, make to to do WSC issues first and then do everything else, although Ignore the CI issues, mark the CI issues as deferred; and don't do Sega Genesis issues, and don't work on "deferred" issues; continue;
+
+there are 4 different actions building the 1.4.9 release and also there is no 1.4.9 release on the main page of releases; why is this?
+
+[Nexen] there a bunch of failed builds while trying to make a release; fix all issues with problems and work on everything and make sure the whole app builds and also compare build scripts to make sure they're not much diferent from the last time releasing worked (1.4.8) and fix the issues and problems with build scripts/CI/release and put out 1.4.9; continue;
+
+--- steer
+I don't understand the error `SkiaSharp/HarfBuzzSharp DLLs not found in NuGet cache` why aren't these just nuget packages that are automatically added to the project? Why do you need the dlls and why is hard to get the dlls, just add them to source code git, fix this issue so I stop seeing it; thanks; continue;
+
+
+
+
+
+
+
+[Nexen] (CI/CD, github actions, linux, performance) the `clang` and `AoT` Linux builds are dogshit slow (see comment `https://github.com/TheAnsarya/Nexen/issues/1039#issuecomment-4150100847`) so make performance better for those builds, am I using SDL wrong? research what the problem is and fix it; always use the most modern standards and practices and most modern code and most recent and modern libraries and frameworks; always create/update epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; continue;
+
 
 
 
