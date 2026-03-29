@@ -5,6 +5,20 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.9] - 2026-03-29
+
+### Added
+
+- **WonderSwan issue tracking** — Created 11 WonderSwan/WSC issues for accuracy, cart features, test coverage (#1086-#1096)
+- **Channel F PansyImporter support** — Added Channel F (0x1f) and missing platform mappings to PansyImporter (#1008)
+
+### Fixed
+
+- **First-party compiler warnings eliminated** — Removed unused variables (ChannelFEventManager, EmuApiWrapper), replaced unsafe `strncpy` with `strncpy_s` in LynxConsole, added `(void)` casts for `[[nodiscard]]` returns in Emulator and MovieRecorder
+- **Missing final newlines** — Added final newlines to CamstudioCodec.cpp and RawCodec.h
+
+---
+
 ## [1.4.5] - 2026-07-25
 
 ### Added

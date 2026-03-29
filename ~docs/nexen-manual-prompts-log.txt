@@ -926,6 +926,15 @@ add all the benchmark artifact folders to gitignore; continue;
 
 [Nexen] fix as many issues as you can as fast as you can and continue working on them for awhile as many issues as you can, let's work on clear this backlog out; continue and continue;
 
+[Nexen] have we finished `https://github.com/TheAnsarya/Nexen/issues/1076`? make issues for the WonderSwan and WonderSwanColor  and fix all Nexen issues as fast as you can, as many as you can, make to to do WSC issues first and then do everything else, although Ignore the CI issues, mark the CI issues as deferred; and don't do Sega Genesis issues, and don't work on "deferred" issues; continue;
+
+
+
+
+
+
+[Nexen] fix as many issues as you can as fast as you can and continue working on them for awhile as many issues as you can, let's work on clear this backlog out; continue and continue;
+
 
 
 
