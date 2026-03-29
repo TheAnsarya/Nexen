@@ -167,12 +167,12 @@ public:
 	~WsPpu();
 
 	__forceinline void Exec() {
-		if (_state.Scanline == WsConstants::ScreenHeight) {
+		if (_state.Scanline == WsConstants::ScreenHeight) [[unlikely]] {
 			ProcessSpriteCopy();
 		}
 
-		if (_state.Cycle < 224) {
-			if (_state.Scanline < WsConstants::ScreenHeight + 1 && _state.Scanline > 0) {
+		if (_state.Cycle < 224) [[likely]] {
+			if (_state.Scanline < WsConstants::ScreenHeight + 1 && _state.Scanline > 0) [[likely]] {
 				// Palette lookup + output pixel on the first 224 cycles
 				uint8_t rowIndex = (_state.Scanline & 0x01) ^ 1;
 				PixelData& data = _rowData[rowIndex][_state.Cycle];
@@ -183,7 +183,7 @@ public:
 		} else {
 			if (_state.Cycle == 224) {
 				ProcessHblank();
-			} else if (_state.Cycle == 255) {
+			} else if (_state.Cycle == 255) [[unlikely]] {
 				ProcessEndOfScanline();
 				_state.Cycle = -1;
 			}

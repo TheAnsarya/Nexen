@@ -53,6 +53,13 @@ void WsPpu::SetVideoMode(WsVideoMode mode) {
 void WsPpu::ProcessHblank() {
 	_timer->TickHorizontalTimer();
 	if (_state.Scanline < WsConstants::ScreenHeight) {
+		// VTOTAL values below 143 repeat rendered scanlines until line 143.
+		uint8_t scanline = _state.Scanline;
+		uint8_t visibleScanlineCount = (uint8_t)std::min<uint16_t>((uint16_t)_state.LastScanline + 1, WsConstants::ScreenHeight);
+		if (visibleScanlineCount > 0 && visibleScanlineCount < WsConstants::ScreenHeight) {
+			_state.Scanline = (uint8_t)(_state.Scanline % visibleScanlineCount);
+		}
+
 		switch (_state.Mode) {
 			case WsVideoMode::Monochrome:
 				DrawScanline<WsVideoMode::Monochrome>();
@@ -67,6 +74,8 @@ void WsPpu::ProcessHblank() {
 				DrawScanline<WsVideoMode::Color4bppPacked>();
 				break;
 		}
+
+		_state.Scanline = scanline;
 	}
 }
 
@@ -81,19 +90,15 @@ void WsPpu::ProcessEndOfScanline() {
 	_state.SpritesEnabledLatch = _state.SpritesEnabled;
 	_state.DrawOutsideBgWindowLatch = _state.DrawOutsideBgWindow;
 
-	if (_state.Scanline > _state.LastScanline) {
-		if (_state.Scanline <= 145) {
-			// Support sending frame to LCD even when number of scanlines is less than the 144px resolution
-			SendFrame();
-		}
+	if (_state.Scanline >= std::max<uint16_t>(WsConstants::ScreenHeight, (uint16_t)_state.LastScanline + 1)) [[unlikely]] {
 		_state.Mode = _state.NextMode;
 		_state.Scanline = 0;
 		_emu->ProcessEvent(EventType::StartFrame, CpuType::Ws);
 		_currentBuffer = _currentBuffer == _outputBuffers[0].get() ? _outputBuffers[1].get() : _outputBuffers[0].get();
 		_showIcons = _emu->GetSettings()->GetWsConfig().LcdShowIcons;
-	} else if (_state.Scanline == 145) {
+	} else if (_state.Scanline == 145) [[unlikely]] {
 		SendFrame();
-	} else if (_state.Scanline == 144) {
+	} else if (_state.Scanline == 144) [[unlikely]] {
 		_timer->TickVerticalTimer();
 		((WsControlManager*)_console->GetControlManager())->TriggerKeyIrq();
 		_console->GetMemoryManager()->SetIrqSource(WsIrqSource::VerticalBlank);
@@ -107,7 +112,7 @@ void WsPpu::ProcessEndOfScanline() {
 template <WsVideoMode mode>
 void WsPpu::DrawScanline() {
 	uint8_t rowIndex = _state.Scanline & 0x01;
-	std::fill(_rowData[rowIndex], _rowData[rowIndex] + WsConstants::ScreenWidth, PixelData{});
+	memset(_rowData[rowIndex], 0, sizeof(PixelData) * WsConstants::ScreenWidth);
 
 	DrawSprites<mode>();
 	DrawBackground<mode, 0>();
@@ -158,9 +163,9 @@ void WsPpu::DrawSprites() {
 
 				if (x >= 224) {
 					continue;
-				} else if (_rowData[rowIndex][x].Priority > 0) {
+				} else if (_rowData[rowIndex][x].Priority > 0) [[likely]] {
 					continue;
-				} else if (_state.SpriteWindow.EnabledLatch && showOutsideWindow == _state.SpriteWindow.IsInsideWindow(x, scanline)) {
+				} else if (_state.SpriteWindow.EnabledLatch && showOutsideWindow == _state.SpriteWindow.IsInsideWindow(x, scanline)) [[unlikely]] {
 					// Don't draw this pixel, it's outside/inside the window and should only be drawn on the other side
 					continue;
 				}
@@ -495,9 +500,6 @@ void WsPpu::SendFrame() {
 	if (_state.SleepEnabled || !_state.LcdEnabled || _state.LastScanline == 255 || _console->IsPowerOff()) {
 		// Screen should be white when in sleep mode, or if the last scanline is set to 255
 		std::fill(_currentBuffer, _currentBuffer + WsConstants::MaxPixelCount, 0xFFF);
-	} else if (_state.LastScanline < 144) {
-		// Clear everything after the last scanline (results in less than 144 visible scanlines)
-		std::fill(_currentBuffer + _state.LastScanline * _screenWidth, _currentBuffer + WsConstants::MaxPixelCount, 0xFFF);
 	}
 
 	if (_showIcons) {
