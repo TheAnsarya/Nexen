@@ -944,7 +944,8 @@ public static class PansyExporter {
 	/// <summary>
 	/// Build enhanced cross-references section by analyzing CDL and disassembly.
 	/// Phase 3: Extracts actual cross-references from code analysis.
-	/// Optimized: Uses HashSet for deduplication instead of LINQ DistinctBy.
+	/// Optimized: Uses OPCODE flag (0x10) filtering to skip operand bytes, OpSize-based
+	/// instruction skip to avoid redundant interop calls, and HashSet for O(1) deduplication.
 	/// </summary>
 	private static byte[] BuildEnhancedCrossRefsSection(List<CodeLabel> labels, byte[]? cdlData, uint[] functions, uint[] jumpTargets, CpuType cpuType, MemoryType memType) {
 		if (cdlData is null or { Length: 0 }) {
@@ -963,49 +964,69 @@ public static class PansyExporter {
 		// Use span for faster CDL iteration
 		ReadOnlySpan<byte> cdlSpan = cdlData.AsSpan();
 
+		// Pre-scan: check if CDL has OPCODE flags (0x10) for instruction-start filtering.
+		// If present, we only process opcode start bytes instead of every code byte,
+		// dramatically reducing the number of GetDisassemblyOutput interop calls.
+		bool useOpcodeFilter = false;
+		for (int i = 0; i < cdlSpan.Length; i++) {
+			if ((cdlSpan[i] & 0x10) != 0) {
+				useOpcodeFilter = true;
+				break;
+			}
+		}
+
 		// Scan CDL data for code regions and extract references
-		// CDL flags: 0x01 = Code, 0x02 = Data, 0x04 = JumpTarget, 0x08 = SubEntryPoint
+		// CDL flags: 0x01 = Code, 0x02 = Data, 0x04 = JumpTarget, 0x08 = SubEntryPoint, 0x10 = Opcode
 		for (int i = 0; i < cdlSpan.Length; i++) {
 			byte flags = cdlSpan[i];
-			bool isCode = (flags & 0x01) != 0;
 
-			if (isCode) {
-				// Try to get disassembly at this address to find the target
-				try {
-					var output = DebugApi.GetDisassemblyOutput(cpuType, (uint)i, 1);
-					if (output.Length > 0) {
-						var line = output[0];
+			// Filter: only process instruction start positions
+			// When OPCODE flags are available, skip operand bytes (only first byte of each instruction has 0x10)
+			// Otherwise fall back to processing all CODE bytes
+			if (useOpcodeFilter) {
+				if ((flags & 0x10) == 0) continue;
+			} else {
+				if ((flags & 0x01) == 0) continue;
+			}
 
-						// Check if this instruction references another address
-						if (line.EffectiveAddress >= 0 && line.EffectiveAddress != i) {
-							uint targetAddr = (uint)line.EffectiveAddress;
+			// Try to get disassembly at this address to find the target
+			try {
+				var output = DebugApi.GetDisassemblyOutput(cpuType, (uint)i, 1);
+				if (output.Length > 0) {
+					var line = output[0];
 
-							// Determine xref type based on instruction and target
-							PansyCrossRefType xrefType;
-							if (functionSet.Contains(targetAddr)) {
-								xrefType = PansyCrossRefType.Jsr;
-							} else if (jumpTargetSet.Contains(targetAddr)) {
-								// Check if it's a branch (short jump) or full jump
-								xrefType = IsBranchInstruction(line.ByteCode, cpuType) ? PansyCrossRefType.Branch : PansyCrossRefType.Jmp;
-							} else if (cdlSpan.Length > targetAddr && (cdlSpan[(int)targetAddr] & 0x02) != 0) {
-								// Target is data - this is a read/write
-								xrefType = IsWriteInstruction(line.ByteCode, cpuType) ? PansyCrossRefType.Write : PansyCrossRefType.Read;
-							} else {
-								xrefType = PansyCrossRefType.Jmp; // Default
-							}
+					// Check if this instruction references another address
+					if (line.EffectiveAddress >= 0 && line.EffectiveAddress != i) {
+						uint targetAddr = (uint)line.EffectiveAddress;
 
-							// Optimized: Inline deduplication using HashSet
-							var key = ((uint)i, targetAddr);
-							if (seenXrefs.Add(key)) {
-								xrefs.Add((key.Item1, key.Item2, xrefType, (byte)memType, (byte)line.EffectiveAddressType));
-							}
+						// Determine xref type based on instruction and target
+						PansyCrossRefType xrefType;
+						if (functionSet.Contains(targetAddr)) {
+							xrefType = PansyCrossRefType.Jsr;
+						} else if (jumpTargetSet.Contains(targetAddr)) {
+							// Check if it's a branch (short jump) or full jump
+							xrefType = IsBranchInstruction(line.ByteCode, cpuType) ? PansyCrossRefType.Branch : PansyCrossRefType.Jmp;
+						} else if (cdlSpan.Length > targetAddr && (cdlSpan[(int)targetAddr] & 0x02) != 0) {
+							// Target is data - this is a read/write
+							xrefType = IsWriteInstruction(line.ByteCode, cpuType) ? PansyCrossRefType.Write : PansyCrossRefType.Read;
+						} else {
+							xrefType = PansyCrossRefType.Jmp; // Default
+						}
+
+						// Optimized: Inline deduplication using HashSet
+						var key = ((uint)i, targetAddr);
+						if (seenXrefs.Add(key)) {
+							xrefs.Add((key.Item1, key.Item2, xrefType, (byte)memType, (byte)line.EffectiveAddressType));
 						}
 					}
-				} catch {
-					// Skip addresses that fail to disassemble
-				}
 
-				// Skip ahead based on instruction length (we'll still catch overlapping refs)
+					// Skip past remaining bytes of this instruction to avoid redundant API calls
+					if (line.OpSize > 1) {
+						i += line.OpSize - 1;
+					}
+				}
+			} catch {
+				// Skip addresses that fail to disassemble
 			}
 		}
 
