@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
@@ -23,7 +24,10 @@ public class AboutWindow : NexenWindow {
 	public List<AboutListEntry> AcknowledgeList { get; }
 
 	public AboutWindow() {
-		Version = EmuApi.GetNexenVersion().ToString();
+		string? informationalVersion = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+		Version = string.IsNullOrWhiteSpace(informationalVersion)
+			? Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "unknown"
+			: informationalVersion.Split('+')[0];
 		BuildDate = EmuApi.GetNexenBuildDate();
 		RuntimeVersion = ".NET " + Environment.Version;
 		RuntimeVersion += RuntimeFeature.IsDynamicCodeSupported ? " (JIT)" : " (AOT)";

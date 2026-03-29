@@ -877,6 +877,43 @@ Also, don't not release the windows builds or whatever succeeds just because ano
 
 [Nexen] Make sure pansy output with as much info as possible is working for every system; we want to run FFMQ through Nexen=>Pansy=>Peony=>source/assets=>Poppy=>rom=>Nexen again; continue; work on Nexen issues (make issues, docs, plans, chat/session logs, benchmarks, tests, etc); continue;
 
+continue;
+
+[Nexen] the release seemed to work ok; the UI neds to be updated, do it; There was no menu dialogs in the Debugger menu or the Tools menu, most menu items are just an error; using the movie/TAS stuff crashes the app; fix all errors and make sure eveyrything is covered and works; have me test various isssues, justs tell me what to do and open the app and I'll check what happens;
+
+what?!? never downgrade versions unless you ask permission and explain why! do not downgrade, always use the most most modern versions of libraries and code and standards and practicesl enshirne that in the co-pilot instructions; continue;
+
+--- chatgpt-codex-5.3
+we hit rate limiting, so we switched providers, continue with old prompt: what?!? never downgrade versions unless you ask permission and explain why! do not downgrade, always use the most most modern versions of libraries and code and standards and practicesl enshirne that in the co-pilot instructions; continue;
+
+run nexen and let me test the menus
+
+lots of menu-items are just error dialogs, see image, and TAS menu-items crash the app, fix these things; make epics, issues, docs, chat/session logs, benchmarks, tests, etc; make the UI awesome and perfect, lots of the UI is garbage, input controllers should have full button mapping; continue;
+
+[Nexen] opening the debugger from the Debug menu results in an error message, most tools/debug menu items do. The menu item TAS/movie just crashes Nexen right away; make Nexen usable! get rid of all these errors and warnings! continue;
+
+Debug->Debugger, Tools->Cheats, and others return error dialogs instead of opening the UI, check the log files
+
+rerun the app and let me try again
+
+Works great!
+
+fix as many warnings as you can; continue;
+
+yes do that, don't screw up the CI actions we only just got them working again; continue;
+
+yes do that please; continue;
+
+[Nexen, peony, pansy, poppy] git commit everything, then work issues making new issues when new work is found, and update docs/plans/epics/issues/benchmarks/tests/code-session-logs/etc; continue; work for a while; continue;
+
+
+
+
+
+
+
+
+
 
 
 

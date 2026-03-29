@@ -197,6 +197,7 @@ public static class CpuTypeExtensions {
 			case CpuType.Sms:
 			case CpuType.Lynx:
 			case CpuType.Atari2600:
+			case CpuType.ChannelF:
 				return true;
 
 			default:
@@ -248,6 +249,7 @@ public static class CpuTypeExtensions {
 			case CpuType.Sms:
 			case CpuType.Ws:
 			case CpuType.Lynx:
+			case CpuType.ChannelF:
 				return true;
 
 			default:

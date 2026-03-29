@@ -77,6 +77,7 @@ public sealed class RefreshTimingViewModel : ViewModelBase {
 			ConsoleType.Ws => 144,
 			ConsoleType.Lynx => 102,
 			ConsoleType.Atari2600 => 192,
+			ConsoleType.ChannelF => 64,
 			_ => throw new Exception("Invalid console type")
 		};
 

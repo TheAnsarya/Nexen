@@ -84,7 +84,7 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 	private void OnEmulatorNotification(NotificationEventArgs e) {
 		switch (e.NotificationType) {
 			case ConsoleNotificationType.PpuFrameDone:
-				HandleFrameDone();
+				Dispatcher.UIThread.Post(HandleFrameDone);
 				break;
 
 			case ConsoleNotificationType.GamePaused:

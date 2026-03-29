@@ -201,6 +201,21 @@ if (condition)
 - File-scoped namespaces where applicable
 - Nullable reference types enabled
 
+### ⚠️ MANDATORY: No Silent Version Downgrades
+
+**Never downgrade versions without explicit user approval.**
+
+- Do not reduce project/app/package/tool versions unless the user explicitly approves the downgrade
+- Before proposing any downgrade, explain why it is needed and what compatibility impact it has
+- Prefer forward upgrades and modern defaults whenever possible
+- Keep internal compatibility versions separate from marketing/release versions when both are required
+
+### ⚠️ MANDATORY: Always Prefer Modern Versions
+
+- Always prefer the most modern stable versions of libraries, tooling, language features, and project settings
+- Use current best practices unless a compatibility constraint is explicitly documented
+- If an older version is required for compatibility, document the reason in code comments or docs
+
 ### ⚠️ Comment Safety Rule
 **When adding or modifying comments, NEVER change the actual code.**
 

@@ -1075,6 +1075,16 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 					preset.Format = ppu.Mode.ToTileFormat();
 					break;
 				}
+
+			case CpuType.ChannelF: {
+					preset.Source = MemoryType.ChannelFVideoRam;
+					preset.StartAddress = 0;
+					preset.ColumnCount = 16;
+					preset.RowCount = 32;
+					preset.Layout = TileLayout.Normal;
+					preset.Format = TileFormat.Bpp2;
+					break;
+				}
 		}
 
 		return preset;
@@ -1191,6 +1201,16 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 					preset.Format = ppu.Mode.ToTileFormat();
 					break;
 				}
+
+			case CpuType.ChannelF: {
+					preset.Source = MemoryType.ChannelFVideoRam;
+					preset.StartAddress = 0;
+					preset.ColumnCount = 16;
+					preset.RowCount = 32;
+					preset.Layout = TileLayout.Normal;
+					preset.Format = TileFormat.Bpp2;
+					break;
+				}
 		}
 
 		return preset;
@@ -1287,6 +1307,17 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 						preset.SelectedPalette = 16;
 					}
 
+					break;
+				}
+
+			case CpuType.ChannelF: {
+					preset.Source = MemoryType.ChannelFVideoRam;
+					preset.StartAddress = 0;
+					preset.ColumnCount = 16;
+					preset.RowCount = 32;
+					preset.Layout = TileLayout.Normal;
+					preset.Format = TileFormat.Bpp2;
+					preset.Background = TileBackground.Black;
 					break;
 				}
 		}

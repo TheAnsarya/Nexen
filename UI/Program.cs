@@ -20,6 +20,7 @@ class Program {
 	// Initialization code. Don't use any Avalonia, third-party APIs or any
 	// SynchronizationContext-reliant code before AppMain is called: things aren't initialized
 	// yet and stuff might break.
+	private static bool _loggedNexenCoreLoadPath;
 
 	public static string OriginalFolder { get; private set; }
 	public static string[] CommandLineArgs { get; private set; } = [];
@@ -70,6 +71,7 @@ class Program {
 				Log.Info("No config file found, showing setup wizard");
 				//Could not find configuration file, show wizard
 				DependencyHelper.ExtractNativeDependencies(ConfigManager.HomeFolder);
+				SyncNativeDependenciesFromAppBase();
 				App.ShowConfigWindow = true;
 				BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
 				if (File.Exists(ConfigManager.GetConfigFile())) {
@@ -88,6 +90,7 @@ class Program {
 			Log.Info("Extracting native dependencies...");
 			//Extract core dll & other native dependencies
 			DependencyHelper.ExtractNativeDependencies(ConfigManager.HomeFolder);
+			SyncNativeDependenciesFromAppBase();
 
 			if (CommandLineHelper.IsTestRunner(args)) {
 				Log.Info("Running in test mode");
@@ -137,13 +140,68 @@ class Program {
 			// Prefer local build directory (dev workflow) over HomeFolder
 			string localPath = Path.Combine(AppContext.BaseDirectory, libraryName);
 			if (File.Exists(localPath)) {
+				LogNativeLibraryLoad(libraryName, localPath);
 				return NativeLibrary.Load(localPath);
 			}
 
-			return NativeLibrary.Load(Path.Combine(ConfigManager.HomeFolder, libraryName));
+			string homePath = Path.Combine(ConfigManager.HomeFolder, libraryName);
+			LogNativeLibraryLoad(libraryName, homePath);
+			return NativeLibrary.Load(homePath);
 		}
 
 		return IntPtr.Zero;
+	}
+
+	private static void SyncNativeDependenciesFromAppBase() {
+		string[] nativeFiles = OperatingSystem.IsWindows()
+			? ["NexenCore.dll", "libSkiaSharp.dll", "libHarfBuzzSharp.dll"]
+			: OperatingSystem.IsLinux()
+				? ["NexenCore.so", "libSkiaSharp.so", "libHarfBuzzSharp.so"]
+				: ["NexenCore.dylib", "libSkiaSharp.dylib", "libHarfBuzzSharp.dylib"];
+
+		Directory.CreateDirectory(ConfigManager.HomeFolder);
+
+		foreach (string fileName in nativeFiles) {
+			string sourcePath = Path.Combine(AppContext.BaseDirectory, fileName);
+			if (!File.Exists(sourcePath)) {
+				continue;
+			}
+
+			string destinationPath = Path.Combine(ConfigManager.HomeFolder, fileName);
+			bool shouldCopy = !File.Exists(destinationPath);
+
+			if (!shouldCopy) {
+				FileInfo sourceInfo = new(sourcePath);
+				FileInfo destinationInfo = new(destinationPath);
+				shouldCopy = sourceInfo.Length != destinationInfo.Length || sourceInfo.LastWriteTimeUtc > destinationInfo.LastWriteTimeUtc;
+			}
+
+			if (!shouldCopy) {
+				continue;
+			}
+
+			try {
+				File.Copy(sourcePath, destinationPath, true);
+				Log.Info($"Synchronized native dependency: {fileName} ({new FileInfo(sourcePath).Length} bytes)");
+			} catch (Exception ex) {
+				Log.Error(ex, $"Failed to synchronize native dependency: {fileName}");
+			}
+		}
+	}
+
+	private static void LogNativeLibraryLoad(string libraryName, string path) {
+		if (_loggedNexenCoreLoadPath || !libraryName.Equals("NexenCore.dll", StringComparison.OrdinalIgnoreCase)) {
+			return;
+		}
+
+		_loggedNexenCoreLoadPath = true;
+
+		if (File.Exists(path)) {
+			FileInfo info = new(path);
+			Log.Info($"Loading NexenCore from '{path}' ({info.Length} bytes, mtime {info.LastWriteTimeUtc:O})");
+		} else {
+			Log.Warn($"Attempting to load NexenCore from missing path '{path}'");
+		}
 	}
 
 	// Avalonia configuration, don't remove; also used by visual designer.

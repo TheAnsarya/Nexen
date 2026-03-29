@@ -607,14 +607,11 @@ jobs:
         run: |
           brew install sdl2 ccache llvm
 
-      - name: Get brew prefix
-        run: |
-          echo "brewPrefix=$(brew --prefix)" >> "$GITHUB_ENV"
-
       - name: Setup CCache
         uses: ./.github/actions/setup-ccache-action
         with:
-          ccache-path: '${{ env.brewPrefix }}/opt/ccache/libexec'
+          # macos-14 arm64 runner uses Homebrew under /opt/homebrew
+          ccache-path: '/opt/homebrew/opt/ccache/libexec'
 
       - name: Write commit SHA1 to file
         uses: ./.github/actions/build-sha1-action

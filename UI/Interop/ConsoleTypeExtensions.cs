@@ -28,4 +28,18 @@ public static class ConsoleTypeExtensions {
 			_ => true
 		};
 	}
+
+	public static bool SupportsTasEditor(this ConsoleType type) {
+		return type switch {
+			ConsoleType.ChannelF => false,
+			_ => true
+		};
+	}
+
+	public static bool SupportsMovieTools(this ConsoleType type) {
+		return type switch {
+			ConsoleType.ChannelF => false,
+			_ => true
+		};
+	}
 }

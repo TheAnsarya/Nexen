@@ -24,8 +24,15 @@ class DependencyHelper {
 					}
 
 					string path = Path.Combine(dest, entry.FullName);
+					string extension = Path.GetExtension(path)?.ToLowerInvariant() ?? string.Empty;
 					entry.ExternalAttributes = 0;
 					if (File.Exists(path)) {
+						if (extension is ".dll" or ".so" or ".dylib" or ".exe") {
+							// Always overwrite native/runtime binaries to avoid stale entry-point mismatches.
+							entry.ExtractToFile(path, true);
+							continue;
+						}
+
 						if (Path.GetExtension(path)?.ToLower() == ".bin") {
 							//Don't overwrite BS-X bin files if they already exist on the disk
 							continue;
@@ -44,8 +51,8 @@ class DependencyHelper {
 
 						entry.ExtractToFile(path, true);
 					}
-				} catch {
-
+				} catch (Exception ex) {
+					Log.Error(ex, $"[DependencyHelper] Failed to extract dependency: {entry.FullName}");
 				}
 			}
 		}

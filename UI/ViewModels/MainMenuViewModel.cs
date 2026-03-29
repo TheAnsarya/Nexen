@@ -870,7 +870,7 @@ public sealed class MainMenuViewModel : ViewModelBase {
 			SubActions = [
 				new SimpleMenuAction() {
 					ActionType = ActionType.Play,
-					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && !RecordApi.MovieRecording() && !RecordApi.MoviePlaying(),
+					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && MainWindow.RomInfo.ConsoleType.SupportsMovieTools() && !RecordApi.MovieRecording() && !RecordApi.MoviePlaying(),
 					OnClick = async () => {
 						string? filename = await FileDialogHelper.OpenFile(ConfigManager.MovieFolder, wnd, FileDialogHelper.NexenMovieExt, FileDialogHelper.MesenMovieExt);
 						if(filename is not null) {
@@ -880,13 +880,13 @@ public sealed class MainMenuViewModel : ViewModelBase {
 				},
 				new SimpleMenuAction() {
 					ActionType = ActionType.Record,
-					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && !RecordApi.MovieRecording() && !RecordApi.MoviePlaying(),
+					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && MainWindow.RomInfo.ConsoleType.SupportsMovieTools() && !RecordApi.MovieRecording() && !RecordApi.MoviePlaying(),
 					OnClick = () => new MovieRecordWindow() {
 							DataContext = new MovieRecordConfigViewModel()
 						}.ShowCenteredDialog((Control)wnd)                },
 				new SimpleMenuAction() {
 					ActionType = ActionType.Stop,
-					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && (RecordApi.MovieRecording() || RecordApi.MoviePlaying()),
+					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && MainWindow.RomInfo.ConsoleType.SupportsMovieTools() && (RecordApi.MovieRecording() || RecordApi.MoviePlaying()),
 					OnClick = () => RecordApi.MovieStop()                  }
 			]
 		};
@@ -906,7 +906,7 @@ public sealed class MainMenuViewModel : ViewModelBase {
 
 			new SimpleMenuAction() {
 				ActionType = ActionType.TasEditor,
-				IsEnabled = () => EmulatorState.Instance.IsRomLoaded,
+				IsEnabled = () => EmulatorState.Instance.IsRomLoaded && MainWindow.RomInfo.ConsoleType.SupportsTasEditor(),
 				OnClick = () => ApplicationHelper.GetOrCreateUniqueWindow(wnd, () => new TasEditorWindow())                },
 
 			GetMoviesMenu(wnd),
