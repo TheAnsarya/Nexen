@@ -919,6 +919,22 @@ add the avoidance of static analysis to the peony copilot-instructions
 
 [Nexen, peony, pansy, poppy] git commit everything (except artifacts), then work issues making new issues when new work is found, and update docs/plans/epics/issues/benchmarks/tests/code-session-logs/etc; continue; work for a while; continue; research `https://github.com/TheAnsarya/Nexen/issues/1076` on the internet and this is an existing Mesen issue so are there reports of this problem? fix it making docs, etc, research and plan how to fix it; continue;
 
+[Nexen] Focus on the WonderSwanColor and issue `https://github.com/TheAnsarya/Nexen/issues/1076` and research the WS and WSC chips and systems and other emulators of the WSC and make tests and benchmarks to test everything amd update epics and issues and docs and plans and benchmarks and tests and chat/session logs and docs and etc. and then implement the issues; continue; also add other tests and benchmarks and benchmark possible perfomance improvements and improve performance in the wonderswan code and much as possible, but only after making sure the 1076 fix has been implemented; continue;
+
+--- steer
+add all the benchmark artifact folders to gitignore; continue;
+
+[Nexen] fix as many issues as you can as fast as you can and continue working on them for awhile as many issues as you can, let's work on clear this backlog out; continue and continue;
+
+
+
+
+
+
+
+
+
+
 
 
 
