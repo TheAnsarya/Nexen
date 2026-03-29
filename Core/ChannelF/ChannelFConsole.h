@@ -30,7 +30,7 @@ private:
 	bool _romLoaded = false;
 
 public:
-	[[nodiscard]] static vector<string> GetSupportedExtensions() { return {".chf"}; }
+	[[nodiscard]] static vector<string> GetSupportedExtensions() { return {".chf", ".bin"}; }
 	[[nodiscard]] static vector<string> GetSupportedSignatures() { return {}; }
 
 	explicit ChannelFConsole(Emulator* emu);

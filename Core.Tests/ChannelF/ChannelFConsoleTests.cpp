@@ -2,10 +2,11 @@
 #include "ChannelF/ChannelFConsole.h"
 #include "Shared/Emulator.h"
 
-TEST(ChannelFConsole, SupportedExtensionsContainChfOnly) {
+TEST(ChannelFConsole, SupportedExtensionsContainChfAndBin) {
 	vector<string> ext = ChannelFConsole::GetSupportedExtensions();
-	ASSERT_EQ(ext.size(), 1u);
+	ASSERT_EQ(ext.size(), 2u);
 	EXPECT_EQ(ext[0], ".chf");
+	EXPECT_EQ(ext[1], ".bin");
 }
 
 TEST(ChannelFConsole, LoadRomAndRunFrameUpdatesState) {

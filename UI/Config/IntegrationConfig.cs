@@ -11,7 +11,7 @@ namespace Nexen.Config;
 public sealed class IntegrationConfig : BaseConfig<IntegrationConfig> {
 	[Reactive] public bool AutoLoadDbgFiles { get; set; } = true;
 	[Reactive] public bool AutoLoadLabelFiles { get; set; } = true;
-	[Reactive] public bool AutoLoadCdlFiles { get; set; } = false;
+	[Reactive] public bool AutoLoadCdlFiles { get; set; } = true;
 	[Reactive] public bool AutoLoadSymFiles { get; set; } = true;
 	[Reactive] public bool AutoLoadCdbFiles { get; set; } = true;
 	[Reactive] public bool AutoLoadElfFiles { get; set; } = true;
@@ -20,7 +20,7 @@ public sealed class IntegrationConfig : BaseConfig<IntegrationConfig> {
 	[Reactive] public bool AutoExportPansy { get; set; } = true;
 
 	// Background CDL recording settings
-	[Reactive] public bool BackgroundCdlRecording { get; set; } = false;
+	[Reactive] public bool BackgroundCdlRecording { get; set; } = true;
 	[Reactive] public int AutoSaveIntervalMinutes { get; set; } = 5;
 	[Reactive] public bool SavePansyOnRomUnload { get; set; } = true;
 
