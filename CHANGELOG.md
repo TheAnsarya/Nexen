@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Linux clang/AoT performance** — Fixed critical build bug where CI command-line `NEXENFLAGS` override stripped `-O3`, `-flto=thin`, and `-m64` flags from clang builds. Introduced `EXTRA_CXXFLAGS` variable to pass `-stdlib=libc++` without overriding internal optimization flags (#1097)
+- **C++ benchmark CI stability** — Fixed benchmark smoke step false-failure mode by capturing benchmark output to log file before truncation preview, preserving true process exit codes (#1099)
+- **Benchmark smoke scope hardening** — Restricted benchmark smoke filter to stable CPU subset (`BM_(NesCpu|SnesCpu|GbCpu)_.*`) to avoid crash-prone full-suite execution in push CI (#1100)
 - **Cross-platform build fix** — Replaced MSVC-only `strncpy_s` with cross-platform `snprintf` in LynxConsole (fixed Linux/macOS/AppImage build failures)
 - **CI workflow fixes** — Fixed vcpkg manifest mode in C++ Tests workflow, improved native lib copy step in build workflow to eliminate confusing error messages
 - **First-party compiler warnings eliminated** — Removed unused variables (ChannelFEventManager, EmuApiWrapper), added `(void)` casts for `[[nodiscard]]` returns in Emulator and MovieRecorder

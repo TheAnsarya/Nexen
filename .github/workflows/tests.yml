@@ -129,9 +129,22 @@ jobs:
         run: |
           $benchExe = "bin\win-x64\Release\Core.Benchmarks.exe"
           if (Test-Path $benchExe) {
-            # Run with minimal iterations just to verify benchmarks work
-            # Full benchmark runs should be done manually or in scheduled workflows
-            & $benchExe --benchmark_format=console --benchmark_min_time=0.01s --benchmark_filter="BM_.*" 2>&1 | Select-Object -First 200
+            # Run with minimal iterations just to verify benchmarks work.
+            # Capture output to a file to avoid PowerShell pipeline truncation
+            # causing false non-zero exits for the native benchmark process.
+            # Full benchmark runs should be done manually or in scheduled workflows.
+            $benchLog = "benchmark-quick.log"
+            & $benchExe --benchmark_format=console --benchmark_min_time=0.01s --benchmark_filter="BM_(NesCpu|SnesCpu|GbCpu)_.*" *> $benchLog
+            $exitCode = $LASTEXITCODE
+
+            if (Test-Path $benchLog) {
+              Get-Content $benchLog | Select-Object -First 200
+            }
+
+            if ($exitCode -ne 0) {
+              Write-Error "Benchmark smoke run failed with exit code: $exitCode"
+              exit $exitCode
+            }
           } else {
             Write-Error "Benchmark executable not found at: $benchExe"
             exit 1

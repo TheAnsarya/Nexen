@@ -935,13 +935,14 @@ there are 4 different actions building the 1.4.9 release and also there is no 1.
 --- steer
 I don't understand the error `SkiaSharp/HarfBuzzSharp DLLs not found in NuGet cache` why aren't these just nuget packages that are automatically added to the project? Why do you need the dlls and why is hard to get the dlls, just add them to source code git, fix this issue so I stop seeing it; thanks; continue;
 
+[Nexen] expand the open file dialog with channel f files (chf, bin); make sure cdl and pansy and project export is turned on by default; continue; [Nexen] (CI/CD, github actions, linux, performance) the `clang` and `AoT` Linux builds are dogshit slow (see comment `https://github.com/TheAnsarya/Nexen/issues/1039#issuecomment-4150100847`) so make performance better for those builds, am I using SDL wrong? research what the problem is and fix it; always use the most modern standards and practices and most modern code and most recent and modern libraries and frameworks; always create/update epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; continue;
 
 
 
 
 
 
-[Nexen] (CI/CD, github actions, linux, performance) the `clang` and `AoT` Linux builds are dogshit slow (see comment `https://github.com/TheAnsarya/Nexen/issues/1039#issuecomment-4150100847`) so make performance better for those builds, am I using SDL wrong? research what the problem is and fix it; always use the most modern standards and practices and most modern code and most recent and modern libraries and frameworks; always create/update epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; continue;
+
 
 
 
