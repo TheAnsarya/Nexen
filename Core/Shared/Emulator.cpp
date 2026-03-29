@@ -297,7 +297,7 @@ void Emulator::Stop(bool sendNotification, bool preventRecentGameSave, bool save
 
 	// Save recent play state while console is still alive (before destruction below)
 	if (_console) {
-		_saveStateManager->SaveRecentPlayState();
+		(void)_saveStateManager->SaveRecentPlayState();
 	}
 
 	if (sendNotification) {
@@ -1107,7 +1107,7 @@ void Emulator::StartLightweightCdl() {
 		FolderUtilities::GetDebuggerFolder(),
 		FolderUtilities::GetFilename(_rom.RomFile.GetFileName(), false) + ".cdl"
 	);
-	_cdlRecorder->LoadCdlFile(cdlFilePath);
+	(void)_cdlRecorder->LoadCdlFile(cdlFilePath);
 
 	MessageManager::Log("[LightweightCDL] Started recording for " + _rom.RomFile.GetFileName());
 }
@@ -1122,7 +1122,7 @@ void Emulator::StopLightweightCdl() {
 		FolderUtilities::GetDebuggerFolder(),
 		FolderUtilities::GetFilename(_rom.RomFile.GetFileName(), false) + ".cdl"
 	);
-	_cdlRecorder->SaveCdlFile(cdlFilePath);
+	(void)_cdlRecorder->SaveCdlFile(cdlFilePath);
 
 	MessageManager::Log("[LightweightCDL] Stopped recording, CDL saved.");
 	_cdlRecorder.reset();

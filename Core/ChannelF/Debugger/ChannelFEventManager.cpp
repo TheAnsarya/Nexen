@@ -80,7 +80,6 @@ uint32_t ChannelFEventManager::TakeEventSnapshot(bool forAutoRefresh) {
 	DebugBreakHelper breakHelper(_debugger);
 	auto lock = _lock.AcquireSafe();
 
-	constexpr uint32_t pixelCount = ChannelFConsole::ScreenWidth * ChannelFConsole::ScreenHeight;
 	_console->DebugRenderFrame();
 
 	_snapshotCurrentFrame = _debugEvents;

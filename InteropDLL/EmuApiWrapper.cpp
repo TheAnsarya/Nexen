@@ -292,7 +292,6 @@ DllExport void __stdcall ExecuteShortcut(ExecuteShortcutParams params) {
 }
 DllExport bool __stdcall IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t shortcutParam) {
 	ShortcutKeyHandler* handler = _emu->GetShortcutKeyHandler();
-	bool isRunning = _emu->IsRunning();
 	if (!handler) {
 		bool result = shortcut < EmulatorShortcut::InputBarcode;
 		return result;

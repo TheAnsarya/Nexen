@@ -186,9 +186,9 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 		cartInfo.PageSizeBank0 = atariLynxMeta.Bank0PageSize;
 		cartInfo.PageSizeBank1 = atariLynxMeta.Bank1PageSize;
 		cartInfo.RomSize = _prgRomSize;
-		strncpy(cartInfo.Name, atariLynxMeta.CartName.c_str(), 32);
+		strncpy_s(cartInfo.Name, sizeof(cartInfo.Name), atariLynxMeta.CartName.c_str(), 32);
 		cartInfo.Name[32] = '\0';
-		strncpy(cartInfo.Manufacturer, atariLynxMeta.Manufacturer.c_str(), 16);
+		strncpy_s(cartInfo.Manufacturer, sizeof(cartInfo.Manufacturer), atariLynxMeta.Manufacturer.c_str(), 16);
 		cartInfo.Manufacturer[16] = '\0';
 		cartInfo.Rotation = static_cast<LynxRotation>(atariLynxMeta.Rotation);
 		if (atariLynxMeta.EepromType >= 1 && atariLynxMeta.EepromType <= 5) {
@@ -241,7 +241,7 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 				MessageManager::Log(std::format("  EEPROM auto-detected from database: 93C46"));
 			}
 			// Copy game title from database
-			strncpy(cartInfo.Name, dbEntry->Name, 32);
+			strncpy_s(cartInfo.Name, sizeof(cartInfo.Name), dbEntry->Name, 32);
 			cartInfo.Name[32] = 0;
 		}
 	}

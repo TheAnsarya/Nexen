@@ -25,7 +25,7 @@ MovieRecorder::MovieRecorder(Emulator* emu) {
 }
 
 MovieRecorder::~MovieRecorder() {
-	Stop();
+	(void)Stop();
 }
 
 bool MovieRecorder::Record(const RecordMovieOptions& options) {
