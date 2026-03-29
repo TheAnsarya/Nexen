@@ -1,11 +1,11 @@
 #pragma once
 #include "pch.h"
 #include "Genesis/GenesisTypes.h"
+#include "Genesis/GenesisMemoryManager.h"
 #include "Utilities/ISerializable.h"
 
 class Emulator;
 class GenesisConsole;
-class GenesisMemoryManager;
 
 class GenesisM68k final : public ISerializable {
 private:
@@ -19,24 +19,73 @@ private:
 	uint16_t _prefetch[2] = {};
 	uint32_t _prefetchAddr = 0;
 
-	// ===== Memory access =====
-	__forceinline uint8_t Read8(uint32_t addr);
-	__forceinline uint16_t Read16(uint32_t addr);
-	__forceinline uint32_t Read32(uint32_t addr);
-	__forceinline void Write8(uint32_t addr, uint8_t value);
-	__forceinline void Write16(uint32_t addr, uint16_t value);
-	__forceinline void Write32(uint32_t addr, uint32_t value);
+	// ===== Memory access (inline for hot-path inlining) =====
+	__forceinline uint8_t Read8(uint32_t addr) {
+		addr &= 0xffffff; // 24-bit address bus
+		AddCycles(4);
+		return _memoryManager->Read8(addr);
+	}
+	__forceinline uint16_t Read16(uint32_t addr) {
+		addr &= 0xfffffe; // Word-aligned
+		AddCycles(4);
+		return _memoryManager->Read16(addr);
+	}
+	__forceinline uint32_t Read32(uint32_t addr) {
+		uint16_t hi = Read16(addr);
+		uint16_t lo = Read16(addr + 2);
+		return ((uint32_t)hi << 16) | lo;
+	}
+	__forceinline void Write8(uint32_t addr, uint8_t value) {
+		addr &= 0xffffff;
+		AddCycles(4);
+		_memoryManager->Write8(addr, value);
+	}
+	__forceinline void Write16(uint32_t addr, uint16_t value) {
+		addr &= 0xfffffe;
+		AddCycles(4);
+		_memoryManager->Write16(addr, value);
+	}
+	__forceinline void Write32(uint32_t addr, uint32_t value) {
+		Write16(addr, (uint16_t)(value >> 16));
+		Write16(addr + 2, (uint16_t)(value & 0xffff));
+	}
 
 	// ===== Stack =====
-	__forceinline void Push16(uint16_t value);
-	__forceinline void Push32(uint32_t value);
-	__forceinline uint16_t Pop16();
-	__forceinline uint32_t Pop32();
+	__forceinline void Push16(uint16_t value) {
+		SP() -= 2;
+		Write16(SP(), value);
+	}
+	__forceinline void Push32(uint32_t value) {
+		SP() -= 4;
+		Write32(SP(), value);
+	}
+	__forceinline uint16_t Pop16() {
+		uint16_t val = Read16(SP());
+		SP() += 2;
+		return val;
+	}
+	__forceinline uint32_t Pop32() {
+		uint32_t val = Read32(SP());
+		SP() += 4;
+		return val;
+	}
 
 	// ===== Instruction fetch =====
-	__forceinline uint16_t FetchOpcode();
-	__forceinline uint16_t FetchWord();
-	__forceinline uint32_t FetchLong();
+	__forceinline uint16_t FetchOpcode() {
+		uint16_t op = Read16(_state.PC);
+		_state.PC += 2;
+		return op;
+	}
+	__forceinline uint16_t FetchWord() {
+		uint16_t w = Read16(_state.PC);
+		_state.PC += 2;
+		return w;
+	}
+	__forceinline uint32_t FetchLong() {
+		uint32_t l = Read32(_state.PC);
+		_state.PC += 4;
+		return l;
+	}
 
 	// ===== Effective address resolution =====
 	// Returns the address for a given mode/register pair
@@ -83,7 +132,7 @@ private:
 
 	// ===== Instruction execution =====
 	void ExecuteInstruction(uint16_t opcode);
-	__forceinline void AddCycles(uint32_t cycles);
+	__forceinline void AddCycles(uint32_t cycles) { _state.CycleCount += cycles; }
 
 	// --- Data Movement ---
 	void Op_MOVE(uint16_t opcode);

@@ -11,87 +11,6 @@ void GenesisM68k::Init(Emulator* emu, GenesisConsole* console, GenesisMemoryMana
 	_memoryManager = memoryManager;
 }
 
-// ===== Memory access (delegates to memory manager) =====
-
-uint8_t GenesisM68k::Read8(uint32_t addr) {
-	addr &= 0xffffff; // 24-bit address bus
-	AddCycles(4);
-	return _memoryManager->Read8(addr);
-}
-
-uint16_t GenesisM68k::Read16(uint32_t addr) {
-	addr &= 0xfffffe; // Word-aligned
-	AddCycles(4);
-	return _memoryManager->Read16(addr);
-}
-
-uint32_t GenesisM68k::Read32(uint32_t addr) {
-	uint16_t hi = Read16(addr);
-	uint16_t lo = Read16(addr + 2);
-	return ((uint32_t)hi << 16) | lo;
-}
-
-void GenesisM68k::Write8(uint32_t addr, uint8_t value) {
-	addr &= 0xffffff;
-	AddCycles(4);
-	_memoryManager->Write8(addr, value);
-}
-
-void GenesisM68k::Write16(uint32_t addr, uint16_t value) {
-	addr &= 0xfffffe;
-	AddCycles(4);
-	_memoryManager->Write16(addr, value);
-}
-
-void GenesisM68k::Write32(uint32_t addr, uint32_t value) {
-	Write16(addr, (uint16_t)(value >> 16));
-	Write16(addr + 2, (uint16_t)(value & 0xffff));
-}
-
-// ===== Stack =====
-
-void GenesisM68k::Push16(uint16_t value) {
-	SP() -= 2;
-	Write16(SP(), value);
-}
-
-void GenesisM68k::Push32(uint32_t value) {
-	SP() -= 4;
-	Write32(SP(), value);
-}
-
-uint16_t GenesisM68k::Pop16() {
-	uint16_t val = Read16(SP());
-	SP() += 2;
-	return val;
-}
-
-uint32_t GenesisM68k::Pop32() {
-	uint32_t val = Read32(SP());
-	SP() += 4;
-	return val;
-}
-
-// ===== Instruction fetch =====
-
-uint16_t GenesisM68k::FetchOpcode() {
-	uint16_t op = Read16(_state.PC);
-	_state.PC += 2;
-	return op;
-}
-
-uint16_t GenesisM68k::FetchWord() {
-	uint16_t w = Read16(_state.PC);
-	_state.PC += 2;
-	return w;
-}
-
-uint32_t GenesisM68k::FetchLong() {
-	uint32_t l = Read32(_state.PC);
-	_state.PC += 4;
-	return l;
-}
-
 // ===== Flag operations =====
 
 void GenesisM68k::SetFlags_Logical(uint32_t result, uint8_t size) {
@@ -357,12 +276,6 @@ void GenesisM68k::SetInterrupt(uint8_t level) {
 	if (level > GetIntMask() || level == 7) {
 		ProcessInterrupt(level);
 	}
-}
-
-// ===== Cycle counting =====
-
-void GenesisM68k::AddCycles(uint32_t cycles) {
-	_state.CycleCount += cycles;
 }
 
 // ===== Main execution =====
