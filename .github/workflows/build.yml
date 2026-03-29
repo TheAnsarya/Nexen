@@ -247,7 +247,7 @@ jobs:
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
             make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=gcc-13 CXX=g++-13 2>&1 | tee build-linux.log
           else
-            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 NEXENFLAGS="-stdlib=libc++" 2>&1 | tee build-linux.log
+            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++" 2>&1 | tee build-linux.log
           fi
 
       - name: Capture Linux runtime dependency report
@@ -626,10 +626,10 @@ jobs:
           export CC="${LLVM_PREFIX}/bin/clang"
           export CXX="${LLVM_PREFIX}/bin/clang++"
           # Pass linker flags to use Homebrew's libc++ instead of system libc++
-          # NEXENFLAGS is used for both compile and link in the makefile
+          # EXTRA_CXXFLAGS is appended to CXXFLAGS/CFLAGS alongside NEXENFLAGS in the makefile
           LIBCXX_FLAGS="-stdlib=libc++ -nostdinc++ -isystem ${LLVM_PREFIX}/include/c++/v1"
           LINK_FLAGS="-L${LLVM_PREFIX}/lib/c++ -Wl,-rpath,${LLVM_PREFIX}/lib/c++ -lc++ -lc++abi"
-          make CC="$CC" CXX="$CXX" NEXENFLAGS="${LIBCXX_FLAGS} ${LINK_FLAGS}" ${{ matrix.make_flags }} -j$(sysctl -n hw.logicalcpu)
+          make CC="$CC" CXX="$CXX" EXTRA_CXXFLAGS="${LIBCXX_FLAGS} ${LINK_FLAGS}" ${{ matrix.make_flags }} -j$(sysctl -n hw.logicalcpu)
 
       - name: Sign binary
         env:
