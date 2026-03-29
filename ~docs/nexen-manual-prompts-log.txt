@@ -906,8 +906,28 @@ yes do that please; continue;
 
 [Nexen, peony, pansy, poppy] git commit everything, then work issues making new issues when new work is found, and update docs/plans/epics/issues/benchmarks/tests/code-session-logs/etc; continue; work for a while; continue;
 
+continue another cycle now: open the next batch of issues and start on benchmark-focused follow-ups.; continue;
+
+yeah, so that, continue going working on issues and keep everything updated; continue;
+--- nothing happened
+
+yeah, so do that, continue going working on issues and keep everything updated; continue;
+
+I don't like noise analysis and other stupid data analysis shit for peony, it wastes time and tokens with no results; I want all that probalistic garbage shoved into a corner. Don't delete it but don't use it, quarantine it; focus on results, so start at the first command in the rom and disassemble from there, use cdl and pansy if available, focus on the paths that have a pansy file as that should be be the most common option; 
+
+add the avoidance of static analysis to the peony copilot-instructions
+
+[Nexen, peony, pansy, poppy] git commit everything (except artifacts), then work issues making new issues when new work is found, and update docs/plans/epics/issues/benchmarks/tests/code-session-logs/etc; continue; work for a while; continue; research `https://github.com/TheAnsarya/Nexen/issues/1076` on the internet and this is an existing Mesen issue so are there reports of this problem? fix it making docs, etc, research and plan how to fix it; continue;
 
 
+
+
+
+
+
+
+
+[Nexen, peony, pansy, poppy] git commit everything (except artifacts), fix as many warnings as you can in the repos, starting with the dotnet c# project warnings; continue; then work issues making new issues when new work is found, and update docs/plans/epics/issues/benchmarks/tests/code-session-logs/etc; continue;
 
 
 
