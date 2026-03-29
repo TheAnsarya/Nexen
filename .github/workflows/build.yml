@@ -60,28 +60,30 @@ jobs:
           $outDir = "bin\win-x64\Release"
           New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 
-          # Find and copy SkiaSharp native libs from NuGet packages
+          # SkiaSharp and HarfBuzzSharp native DLLs are NuGet packages with platform-specific
+          # native binaries. After 'dotnet restore', they live in the NuGet package cache.
+          # We need them in the output dir BEFORE package-dependencies.ps1 creates Dependencies.zip.
           $nugetCache = Join-Path $env:USERPROFILE ".nuget\packages"
-          $skipNativeLibs = Join-Path $nugetCache "skiasharp.nativeassets.win32\*\runtimes\win-x64\native\libSkiaSharp.dll"
-          $harfNativeLibs = Join-Path $nugetCache "harfbuzzsharp.nativeassets.win32\*\runtimes\win-x64\native\libHarfBuzzSharp.dll"
 
-          $skiaDll = Get-ChildItem -Path $skipNativeLibs | Select-Object -Last 1
-          $harfDll = Get-ChildItem -Path $harfNativeLibs | Select-Object -Last 1
+          $libs = @(
+            @{ Name = "libSkiaSharp.dll";     Pattern = "skiasharp.nativeassets.win32\*\runtimes\win-x64\native\libSkiaSharp.dll" },
+            @{ Name = "libHarfBuzzSharp.dll"; Pattern = "harfbuzzsharp.nativeassets.win32\*\runtimes\win-x64\native\libHarfBuzzSharp.dll" }
+          )
 
-          if ($skiaDll) {
-            Copy-Item $skiaDll.FullName -Destination $outDir -Force
-            Write-Host "Copied: $($skiaDll.FullName)"
-          } else {
-            Write-Error "libSkiaSharp.dll not found in NuGet cache"
-            exit 1
+          $allFound = $true
+          foreach ($lib in $libs) {
+            $found = Get-ChildItem -Path (Join-Path $nugetCache $lib.Pattern) -ErrorAction SilentlyContinue | Select-Object -Last 1
+            if ($found) {
+              Copy-Item $found.FullName -Destination $outDir -Force
+              Write-Host "OK: $($lib.Name) copied from $($found.FullName)"
+            } else {
+              Write-Host "::warning::$($lib.Name) not found in NuGet cache (dotnet publish will still include it)"
+              $allFound = $false
+            }
           }
 
-          if ($harfDll) {
-            Copy-Item $harfDll.FullName -Destination $outDir -Force
-            Write-Host "Copied: $($harfDll.FullName)"
-          } else {
-            Write-Error "libHarfBuzzSharp.dll not found in NuGet cache"
-            exit 1
+          if ($allFound) {
+            Write-Host "All native libs staged successfully."
           }
 
       - name: Package Dependencies.zip

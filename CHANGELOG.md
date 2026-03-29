@@ -14,7 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **First-party compiler warnings eliminated** — Removed unused variables (ChannelFEventManager, EmuApiWrapper), replaced unsafe `strncpy` with `strncpy_s` in LynxConsole, added `(void)` casts for `[[nodiscard]]` returns in Emulator and MovieRecorder
+- **Cross-platform build fix** — Replaced MSVC-only `strncpy_s` with cross-platform `snprintf` in LynxConsole (fixed Linux/macOS/AppImage build failures)
+- **CI workflow fixes** — Fixed vcpkg manifest mode in C++ Tests workflow, improved native lib copy step in build workflow to eliminate confusing error messages
+- **First-party compiler warnings eliminated** — Removed unused variables (ChannelFEventManager, EmuApiWrapper), added `(void)` casts for `[[nodiscard]]` returns in Emulator and MovieRecorder
 - **Missing final newlines** — Added final newlines to CamstudioCodec.cpp and RawCodec.h
 
 ---
