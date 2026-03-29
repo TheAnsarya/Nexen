@@ -159,8 +159,13 @@ public sealed class PansyImporter {
 			0x02 => MemoryType.SnesPrgRom,
 			0x03 => MemoryType.GbPrgRom,
 			0x04 => MemoryType.GbaPrgRom,
+			0x05 => MemoryType.GenesisPrgRom,
 			0x06 => MemoryType.SmsPrgRom,
 			0x07 => MemoryType.PcePrgRom,
+			0x08 => MemoryType.Atari2600PrgRom,
+			0x09 => MemoryType.LynxPrgRom,
+			0x0a => MemoryType.WsPrgRom,
+			0x1f => MemoryType.ChannelFCartRom,
 			_ => null
 		};
 	}
@@ -171,6 +176,10 @@ public sealed class PansyImporter {
 			0x02 => MemoryType.SnesWorkRam,
 			0x03 => MemoryType.GbWorkRam,
 			0x04 => MemoryType.GbaIntWorkRam,
+			0x08 => MemoryType.Atari2600Ram,
+			0x09 => MemoryType.LynxWorkRam,
+			0x0a => MemoryType.WsWorkRam,
+			0x1f => MemoryType.ChannelFMemory,
 			_ => null
 		};
 	}
@@ -181,6 +190,7 @@ public sealed class PansyImporter {
 			0x02 => MemoryType.SnesSaveRam,
 			0x03 => MemoryType.GbCartRam,
 			0x04 => MemoryType.GbaSaveRam,
+			0x09 => MemoryType.LynxSaveRam,
 			_ => null
 		};
 	}
@@ -246,6 +256,7 @@ public sealed class PansyImporter {
 			0x0a => "WonderSwan",
 			0x0c => "SPC700",
 			0x16 => "Game Gear",
+			0x1f => "Channel F",
 			_ => "Unknown"
 		};
 	}
