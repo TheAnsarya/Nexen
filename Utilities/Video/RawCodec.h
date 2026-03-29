@@ -11,7 +11,7 @@ private:
 	uint8_t* _buffer = nullptr;
 
 public:
-	virtual bool SetupCompress(int width, int height, uint32_t compressionLevel) override {
+	virtual bool SetupCompress(int width, int height, [[maybe_unused]] uint32_t compressionLevel) override {
 		_height = height;
 		_width = width;
 
@@ -26,7 +26,7 @@ public:
 		return true;
 	}
 
-	virtual int CompressFrame(bool isKeyFrame, uint8_t* frameData, uint8_t** compressedData) override {
+	virtual int CompressFrame([[maybe_unused]] bool isKeyFrame, uint8_t* frameData, uint8_t** compressedData) override {
 		*compressedData = _buffer;
 
 		// Data must be padded to be a multiple of 4 bytes for the AVI file to be valid

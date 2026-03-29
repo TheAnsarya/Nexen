@@ -53,7 +53,7 @@ int CamstudioCodec::CompressFrame(bool isKeyFrame, uint8_t* frameData, uint8_t**
 	_compressor.next_out = _compressBuffer.get() + 2;
 	_compressor.avail_out = _compressBufferLength - 2;
 
-	_compressBuffer[0] = (isKeyFrame ? 0x03 : 0x02) | (_compressionLevel << 4);
+	_compressBuffer[0] = static_cast<uint8_t>((isKeyFrame ? 0x03 : 0x02) | (_compressionLevel << 4));
 	_compressBuffer[1] = 8; // 8-bit per color
 
 	uint8_t* rowBuffer = _currentFrame.get();

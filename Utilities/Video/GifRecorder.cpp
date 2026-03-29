@@ -20,7 +20,7 @@ bool GifRecorder::Init(const string& filename) {
 	return true;
 }
 
-bool GifRecorder::StartRecording(uint32_t width, uint32_t height, uint32_t bpp, uint32_t audioSampleRate, double fps) {
+bool GifRecorder::StartRecording(uint32_t width, uint32_t height, [[maybe_unused]] uint32_t bpp, [[maybe_unused]] uint32_t audioSampleRate, double fps) {
 	_width = width;
 	_height = height;
 	_fps = fps;
@@ -51,7 +51,7 @@ bool GifRecorder::AddFrame(void* frameBuffer, uint32_t width, uint32_t height, d
 	return true;
 }
 
-bool GifRecorder::AddSound(int16_t* soundBuffer, uint32_t sampleCount, uint32_t sampleRate) {
+bool GifRecorder::AddSound([[maybe_unused]] int16_t* soundBuffer, [[maybe_unused]] uint32_t sampleCount, [[maybe_unused]] uint32_t sampleRate) {
 	return true;
 }
 
