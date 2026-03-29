@@ -2387,6 +2387,46 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		return nextFrame % interval == 0;
 	}
 
+	private static bool IsEmulatorRunningSafe() {
+		try {
+			return EmuApi.IsRunning();
+		} catch (DllNotFoundException) {
+			return false;
+		} catch (EntryPointNotFoundException) {
+			return false;
+		}
+	}
+
+	private static bool IsEmulatorPausedSafe() {
+		try {
+			return EmuApi.IsPaused();
+		} catch (DllNotFoundException) {
+			return false;
+		} catch (EntryPointNotFoundException) {
+			return false;
+		}
+	}
+
+	private static void ResumeEmulatorSafe() {
+		try {
+			EmuApi.Resume();
+		} catch (DllNotFoundException) {
+			// Managed tests can execute without native runtime loaded.
+		} catch (EntryPointNotFoundException) {
+			// Older native runtimes may be missing newer exports.
+		}
+	}
+
+	private static void PauseEmulatorSafe() {
+		try {
+			EmuApi.Pause();
+		} catch (DllNotFoundException) {
+			// Managed tests can execute without native runtime loaded.
+		} catch (EntryPointNotFoundException) {
+			// Older native runtimes may be missing newer exports.
+		}
+	}
+
 	/// <summary>
 	/// Toggles playback on/off.
 	/// </summary>
@@ -2412,8 +2452,8 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 
 		// Resume emulation — PpuFrameDone handler in TasEditorWindow feeds
 		// movie input each frame and advances PlaybackFrame automatically
-		if (EmuApi.IsRunning() && EmuApi.IsPaused()) {
-			EmuApi.Resume();
+		if (IsEmulatorRunningSafe() && IsEmulatorPausedSafe()) {
+			ResumeEmulatorSafe();
 		}
 	}
 
@@ -2425,8 +2465,8 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		StatusMessage = "Playback stopped";
 
 		// Pause emulation when stopping playback
-		if (EmuApi.IsRunning() && !EmuApi.IsPaused()) {
-			EmuApi.Pause();
+		if (IsEmulatorRunningSafe() && !IsEmulatorPausedSafe()) {
+			PauseEmulatorSafe();
 		}
 	}
 
@@ -2444,7 +2484,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			StatusMessage = $"Frame {PlaybackFrame + 1} / {Movie.InputFrames.Count}";
 
 			// Execute single frame in emulator if running
-			if (EmuApi.IsRunning()) {
+			if (IsEmulatorRunningSafe()) {
 				EmuApi.ExecuteShortcut(new ExecuteShortcutParams {
 					Shortcut = EmulatorShortcut.RunSingleFrame
 				});
@@ -2466,7 +2506,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			StatusMessage = $"Frame {PlaybackFrame + 1} / {Movie.InputFrames.Count}";
 
 			// Use rewind shortcut if available
-			if (EmuApi.IsRunning()) {
+			if (IsEmulatorRunningSafe()) {
 				// Try to load a savestate for frame-accurate rewind
 				// For now, use the rewind feature
 				EmuApi.ExecuteShortcut(new ExecuteShortcutParams {
@@ -2518,8 +2558,8 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		}
 
 		// Pause emulation immediately
-		if (EmuApi.IsRunning() && !EmuApi.IsPaused()) {
-			EmuApi.Pause();
+		if (IsEmulatorRunningSafe() && !IsEmulatorPausedSafe()) {
+			PauseEmulatorSafe();
 		}
 
 		IsPlaying = false; // Pause playback state
@@ -2562,8 +2602,8 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 				IsRecording = true;
 
 				// Resume emulation
-				if (EmuApi.IsRunning() && EmuApi.IsPaused()) {
-					EmuApi.Resume();
+				if (IsEmulatorRunningSafe() && IsEmulatorPausedSafe()) {
+					ResumeEmulatorSafe();
 				}
 				break;
 
@@ -2579,8 +2619,8 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 			case PlaybackInterruptAction.Continue:
 				// Resume playback ignoring the input mismatch
 				IsPlaying = true;
-				if (EmuApi.IsRunning() && EmuApi.IsPaused()) {
-					EmuApi.Resume();
+				if (IsEmulatorRunningSafe() && IsEmulatorPausedSafe()) {
+					ResumeEmulatorSafe();
 				}
 				StatusMessage = $"Continuing playback at frame {frame + 1}";
 				break;
