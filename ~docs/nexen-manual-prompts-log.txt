@@ -875,6 +875,7 @@ Also, don't not release the windows builds or whatever succeeds just because ano
 
 [Nexen] merge the branch into main and then create a new branch just like this one for implementing all the remaining channel f issues we have left; the release for windows 1.4.6 crashes immediately, run it and check all the logs and console output and maybe build and run it as debug to see what the errors are that are crashing it and fix those errors fix and update issues; make sure all this build/release fixing effort over the last couple hours has been logged in an issue and docs so we know what to do next time; fix Nexen issues and make the release runnable and testable; continue;
 
+[Nexen] Make sure pansy output with as much info as possible is working for every system; we want to run FFMQ through Nexen=>Pansy=>Peony=>source/assets=>Poppy=>rom=>Nexen again; continue; work on Nexen issues (make issues, docs, plans, chat/session logs, benchmarks, tests, etc); continue;
 
 
 

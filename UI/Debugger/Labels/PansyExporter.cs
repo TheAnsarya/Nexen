@@ -76,22 +76,30 @@ public static class PansyExporter {
 
 	// Platform IDs matching Pansy specification (PansyLoader constants)
 	private static readonly FrozenDictionary<RomFormat, byte> PlatformIds = new Dictionary<RomFormat, byte>() {
-		[RomFormat.iNes] = 0x01,     // NES
-		[RomFormat.Fds] = 0x01,      // FDS (uses NES platform)
-		[RomFormat.Nsf] = 0x01,      // NSF (uses NES)
-		[RomFormat.Sfc] = 0x02,      // SNES
-		[RomFormat.Spc] = 0x0c,      // SPC700
-		[RomFormat.Gb] = 0x03,       // Game Boy
-		[RomFormat.Gbs] = 0x03,      // GBS
-		[RomFormat.Gba] = 0x04,      // GBA
-		[RomFormat.Sms] = 0x06,      // SMS
-		[RomFormat.GameGear] = 0x16,  // Game Gear (separate from SMS in spec)
-		[RomFormat.Sg] = 0x06,       // SG-1000 (SMS compatible)
-		[RomFormat.Pce] = 0x07,      // PC Engine
-		[RomFormat.Ws] = 0x0a,       // WonderSwan
-		[RomFormat.Lynx] = 0x09,     // Atari Lynx
-		[RomFormat.Atari2600] = 0x08, // Atari 2600
-		[RomFormat.ChannelF] = 0x1f, // Fairchild Channel F
+		[RomFormat.iNes] = 0x01,       // NES
+		[RomFormat.Fds] = 0x01,        // FDS (uses NES platform)
+		[RomFormat.Nsf] = 0x01,        // NSF (uses NES)
+		[RomFormat.Unif] = 0x01,       // UNIF (NES)
+		[RomFormat.VsSystem] = 0x01,   // VS System (NES)
+		[RomFormat.VsDualSystem] = 0x01, // VS Dual System (NES)
+		[RomFormat.StudyBox] = 0x01,   // StudyBox (NES)
+		[RomFormat.Sfc] = 0x02,        // SNES
+		[RomFormat.Spc] = 0x0c,        // SPC700
+		[RomFormat.Gb] = 0x03,         // Game Boy
+		[RomFormat.Gbs] = 0x03,        // GBS
+		[RomFormat.Gba] = 0x04,        // GBA
+		[RomFormat.Genesis] = 0x05,    // Sega Genesis / Mega Drive
+		[RomFormat.Sms] = 0x06,        // SMS
+		[RomFormat.GameGear] = 0x16,   // Game Gear (separate from SMS in spec)
+		[RomFormat.Sg] = 0x06,         // SG-1000 (SMS compatible)
+		[RomFormat.ColecoVision] = 0x13, // ColecoVision
+		[RomFormat.Pce] = 0x07,        // PC Engine
+		[RomFormat.PceCdRom] = 0x07,   // PC Engine CD-ROM
+		[RomFormat.PceHes] = 0x07,     // PC Engine HES
+		[RomFormat.Ws] = 0x0a,         // WonderSwan
+		[RomFormat.Lynx] = 0x09,       // Atari Lynx
+		[RomFormat.Atari2600] = 0x08,  // Atari 2600
+		[RomFormat.ChannelF] = 0x1f,   // Fairchild Channel F
 	}.ToFrozenDictionary();
 
 	/// <summary>
@@ -810,6 +818,22 @@ public static class PansyExporter {
 				regions.Add((0x1000, 0x1FFF, "Cart_ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.Atari2600PrgRom));
 				break;
 
+			case ConsoleType.Genesis:
+				// Sega Genesis / Mega Drive Memory Map (M68000, 24-bit address bus)
+				regions.Add((0x000000, 0x3FFFFF, "ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.GenesisPrgRom));
+				regions.Add((0xA00000, 0xA0FFFF, "Z80_Address_Space", PansyMemoryRegionType.RAM, (byte)MemoryType.GenesisMemory));
+				regions.Add((0xA10000, 0xA1001F, "IO_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.GenesisMemory));
+				regions.Add((0xC00000, 0xC0001F, "VDP_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.GenesisMemory));
+				regions.Add((0xFF0000, 0xFFFFFF, "Work_RAM", PansyMemoryRegionType.WRAM, (byte)MemoryType.GenesisWorkRam));
+				break;
+
+			case ConsoleType.Ws:
+				// WonderSwan Memory Map (V30MZ, 20-bit segmented addressing)
+				regions.Add((0x00000, 0x03FFF, "RAM", PansyMemoryRegionType.RAM, (byte)MemoryType.WsWorkRam));
+				regions.Add((0x00000, 0x000FF, "IO_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.WsMemory));
+				regions.Add((0x20000, 0xFFFFF, "ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.WsPrgRom));
+				break;
+
 			case ConsoleType.ChannelF:
 				// Fairchild Channel F Memory Map
 				regions.Add((0x0000, 0x17ff, "Cartridge_ROM", PansyMemoryRegionType.ROM, (byte)MemoryType.None));
@@ -818,7 +842,6 @@ public static class PansyExporter {
 				regions.Add((0x3800, 0x38ff, "IO_Registers", PansyMemoryRegionType.IO, (byte)MemoryType.None));
 				break;
 
-			// Add more console types as needed
 			default:
 				break;
 		}
@@ -1168,6 +1191,12 @@ public static class PansyExporter {
 			// Game Boy (Z80-like): JR cc, nn
 			CpuType.Gameboy => opcode is 0x18 or 0x20 or 0x28 or 0x30 or 0x38,
 
+			// Genesis (M68000): Bcc opcodes - high nibble 0x6 with condition
+			CpuType.Genesis => byteCode.Length >= 2 && (opcode & 0xF0) == 0x60 && opcode != 0x60,
+
+			// WonderSwan (V30MZ): Jcc short (0x70-0x7F), Jcc near (0x0F 0x80-0x8F)
+			CpuType.Ws => opcode is >= 0x70 and <= 0x7F || (opcode == 0x0F && byteCode.Length >= 2 && byteCode[1] is >= 0x80 and <= 0x8F),
+
 			// GBA (ARM/THUMB): Would need more complex detection
 			_ => false
 		};
@@ -1191,6 +1220,14 @@ public static class PansyExporter {
 
 			// Game Boy: LD (address), reg
 			CpuType.Gameboy => opcode is 0x02 or 0x12 or 0x22 or 0x32 or 0x70 or 0x71 or 0x72 or 0x73 or 0x74 or 0x75 or 0x77 or 0xE0 or 0xE2 or 0xEA,
+
+			// Genesis (M68000): MOVE to memory addressing modes
+			// MOVEa.x has opcodes where bits 8-6 indicate destination mode
+			// Simplified: any MOVE with destination mode >= 2 (memory) is a write
+			CpuType.Genesis => false, // M68000 MOVE encoding too complex for single-byte detection
+
+			// WonderSwan (V30MZ): MOV [mem], reg patterns (0x88, 0x89, 0xA2, 0xA3)
+			CpuType.Ws => opcode is 0x88 or 0x89 or 0xA2 or 0xA3,
 
 			_ => false
 		};
