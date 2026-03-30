@@ -3,6 +3,59 @@
 #include "WS/WsTypes.h"
 
 namespace WsStateBehaviorHelpers {
+	struct WsControllerSnapshot {
+		bool Up;
+		bool Right;
+		bool Down;
+		bool Left;
+		bool Up2;
+		bool Right2;
+		bool Down2;
+		bool Left2;
+		bool Start;
+		bool A;
+		bool B;
+		bool Sound;
+	};
+
+	static uint8_t ApplyInputSelectMask(uint8_t value) {
+		return value & 0x70;
+	}
+
+	static uint8_t ReadControllerPort(uint8_t inputSelect, const WsControllerSnapshot& pad) {
+		uint8_t result = inputSelect;
+
+		if (inputSelect & 0x10) {
+			result |= pad.Up2 ? 0x01 : 0;
+			result |= pad.Right2 ? 0x02 : 0;
+			result |= pad.Down2 ? 0x04 : 0;
+			result |= pad.Left2 ? 0x08 : 0;
+		}
+
+		if (inputSelect & 0x20) {
+			result |= pad.Up ? 0x01 : 0;
+			result |= pad.Right ? 0x02 : 0;
+			result |= pad.Down ? 0x04 : 0;
+			result |= pad.Left ? 0x08 : 0;
+		}
+
+		if (inputSelect & 0x40) {
+			result |= pad.Start ? 0x02 : 0;
+			result |= pad.A ? 0x04 : 0;
+			result |= pad.B ? 0x08 : 0;
+		}
+
+		return result;
+	}
+
+	static bool ShouldTriggerKeyIrq(uint8_t previousInput, uint8_t newInput) {
+		return (previousInput | newInput) > previousInput;
+	}
+
+	static bool IsSoundEdgePressed(bool previousSound, bool currentSound) {
+		return currentSound && !previousSound;
+	}
+
 	static WsEepromCommand DecodeEepromCommand(uint16_t rawCommand, WsEepromSize size) {
 		uint16_t command = rawCommand;
 		if (size != WsEepromSize::Size128) {
@@ -195,6 +248,39 @@ TEST(WsStateMemoryBehaviorTest, WordBusSelectionByAddressRegion) {
 	EXPECT_FALSE(WsStateBehaviorHelpers::IsWordBusBehavior(0x10000, true));
 	EXPECT_FALSE(WsStateBehaviorHelpers::IsWordBusBehavior(0x20000, false));
 	EXPECT_TRUE(WsStateBehaviorHelpers::IsWordBusBehavior(0x20000, true));
+}
+
+TEST(WsStateControllerBehaviorTest, WriteMasksInputSelectToSelectionBits) {
+	EXPECT_EQ(WsStateBehaviorHelpers::ApplyInputSelectMask(0xff), 0x70);
+	EXPECT_EQ(WsStateBehaviorHelpers::ApplyInputSelectMask(0x00), 0x00);
+	EXPECT_EQ(WsStateBehaviorHelpers::ApplyInputSelectMask(0x2f), 0x20);
+}
+
+TEST(WsStateControllerBehaviorTest, ReadControllerPort_RespectsSelectedGroups) {
+	WsStateBehaviorHelpers::WsControllerSnapshot pad = {};
+	pad.Up = true;
+	pad.Right = true;
+	pad.A = true;
+	pad.B = true;
+	pad.Start = false;
+
+	EXPECT_EQ(WsStateBehaviorHelpers::ReadControllerPort(0x20, pad), 0x23);
+	EXPECT_EQ(WsStateBehaviorHelpers::ReadControllerPort(0x40, pad), 0x4c);
+	EXPECT_EQ(WsStateBehaviorHelpers::ReadControllerPort(0x00, pad), 0x00);
+	EXPECT_EQ(WsStateBehaviorHelpers::ReadControllerPort(0x60, pad), 0x6f);
+}
+
+TEST(WsStateControllerBehaviorTest, KeyIrqTriggersOnlyOnNewPressedBits) {
+	EXPECT_TRUE(WsStateBehaviorHelpers::ShouldTriggerKeyIrq(0x20, 0x23));
+	EXPECT_FALSE(WsStateBehaviorHelpers::ShouldTriggerKeyIrq(0x23, 0x20));
+	EXPECT_FALSE(WsStateBehaviorHelpers::ShouldTriggerKeyIrq(0x23, 0x23));
+}
+
+TEST(WsStateControllerBehaviorTest, SoundEdgeDetectionIsRisingEdgeOnly) {
+	EXPECT_TRUE(WsStateBehaviorHelpers::IsSoundEdgePressed(false, true));
+	EXPECT_FALSE(WsStateBehaviorHelpers::IsSoundEdgePressed(true, true));
+	EXPECT_FALSE(WsStateBehaviorHelpers::IsSoundEdgePressed(true, false));
+	EXPECT_FALSE(WsStateBehaviorHelpers::IsSoundEdgePressed(false, false));
 }
 
 TEST(WsStateCpuFlagsTest, GetSetRoundTripPreservesDefinedFlags) {

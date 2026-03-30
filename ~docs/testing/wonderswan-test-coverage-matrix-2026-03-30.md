@@ -19,7 +19,7 @@ Track WonderSwan automated and manual test coverage across CPU, memory, APU, tim
 | APU channel/timing behavior | No dedicated `WsApu` behavior suite | Gap |
 | DMA and timer interactions | No dedicated `WsDmaController`/`WsTimer` suite | Gap |
 | EEPROM behavior and timing | No dedicated `WsEeprom` suite | Gap |
-| Controller runtime integration | No dedicated WS runtime controller integration suite | Gap |
+| Controller runtime integration | `Core.Tests/WS/WsStateTests.cpp` controller behavior helpers (input-select masks, lane decoding, key IRQ edge detection, sound-edge detection) | Partial |
 | Integration smoke workflows | No WS end-to-end integration harness in `Core.Tests/WS/` | Gap |
 
 ## Quality Gates
