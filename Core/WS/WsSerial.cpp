@@ -25,6 +25,33 @@ uint8_t WsSerial::Read(uint16_t port) {
 	return 0;
 }
 
+uint8_t WsSerial::Peek(uint16_t port) const {
+	switch (port) {
+		case 0xB1:
+			return _state.ReceiveBuffer;
+
+		case 0xB3: {
+			bool hasSendData = _state.HasSendData;
+			if (hasSendData) {
+				int cyclesPerByte = _state.HighSpeed ? 800 : 3200;
+				uint64_t cyclesElapsed = _console->GetMasterClock() - _state.SendClock;
+				if (cyclesElapsed > (uint64_t)cyclesPerByte) {
+					hasSendData = false;
+				}
+			}
+
+			return (
+			    (_state.HasReceiveData ? 0x01 : 0) |
+			    (_state.ReceiveOverflow ? 0x02 : 0) |
+			    ((!_state.Enabled || hasSendData) ? 0 : 0x04) |
+			    (_state.HighSpeed ? 0x40 : 0) |
+			    (_state.Enabled ? 0x80 : 0));
+		}
+	}
+
+	return 0;
+}
+
 void WsSerial::Write(uint16_t port, uint8_t value) {
 	switch (port) {
 		case 0xB1:

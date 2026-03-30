@@ -205,8 +205,10 @@ T WsMemoryManager::DebugReadPort(uint16_t port) {
 		}
 
 		if (port == 0xB1 || port == 0xB3 || port == 0xB5) {
-			// TODOWS implement peek to avoid side-effects for these ports
-			return 0;
+			if (port == 0xB5) {
+				return _controlManager->Peek();
+			}
+			return _serial->Peek(port);
 		}
 
 		return InternalReadPort(port, false);
