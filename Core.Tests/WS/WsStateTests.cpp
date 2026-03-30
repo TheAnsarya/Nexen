@@ -158,10 +158,23 @@ TEST(WsStateEepromBehaviorTest, DecodeCommandAcrossSizes) {
 	EXPECT_EQ(WsStateBehaviorHelpers::DecodeEepromCommand(0x0000, WsEepromSize::Size2kb), WsEepromCommand::Unknown);
 }
 
+TEST(WsStateEepromBehaviorTest, DecodeControlCommandsAcrossSizes) {
+	EXPECT_EQ(WsStateBehaviorHelpers::DecodeEepromCommand(0x0100, WsEepromSize::Size128), WsEepromCommand::WriteDisable);
+	EXPECT_EQ(WsStateBehaviorHelpers::DecodeEepromCommand(0x0110, WsEepromSize::Size128), WsEepromCommand::WriteAll);
+	EXPECT_EQ(WsStateBehaviorHelpers::DecodeEepromCommand(0x0120, WsEepromSize::Size128), WsEepromCommand::EraseAll);
+	EXPECT_EQ(WsStateBehaviorHelpers::DecodeEepromCommand(0x0130, WsEepromSize::Size128), WsEepromCommand::WriteEnable);
+
+	EXPECT_EQ(WsStateBehaviorHelpers::DecodeEepromCommand(0x1000, WsEepromSize::Size1kb), WsEepromCommand::WriteDisable);
+	EXPECT_EQ(WsStateBehaviorHelpers::DecodeEepromCommand(0x1100, WsEepromSize::Size1kb), WsEepromCommand::WriteAll);
+	EXPECT_EQ(WsStateBehaviorHelpers::DecodeEepromCommand(0x1200, WsEepromSize::Size1kb), WsEepromCommand::EraseAll);
+	EXPECT_EQ(WsStateBehaviorHelpers::DecodeEepromCommand(0x1300, WsEepromSize::Size1kb), WsEepromCommand::WriteEnable);
+}
+
 TEST(WsStateEepromBehaviorTest, CommandAddressMaskMatchesSize) {
 	EXPECT_EQ(WsStateBehaviorHelpers::GetEepromCommandAddress(0xffff, WsEepromSize::Size128), 0x003f);
 	EXPECT_EQ(WsStateBehaviorHelpers::GetEepromCommandAddress(0xffff, WsEepromSize::Size1kb), 0x01ff);
 	EXPECT_EQ(WsStateBehaviorHelpers::GetEepromCommandAddress(0xffff, WsEepromSize::Size2kb), 0x03ff);
+	EXPECT_EQ(WsStateBehaviorHelpers::GetEepromCommandAddress(0xffff, WsEepromSize::Size0), 0x0000);
 }
 
 TEST(WsStateEepromBehaviorTest, CommandDelayBuckets) {
@@ -249,6 +262,26 @@ TEST(WsStatePpuHelpersTest, WindowLatchAndInsideWindowUseLatchedBounds) {
 	EXPECT_TRUE(window.IsInsideWindow(20, 40));
 	EXPECT_FALSE(window.IsInsideWindow(9, 30));
 	EXPECT_FALSE(window.IsInsideWindow(10, 41));
+}
+
+TEST(WsStatePpuHelpersTest, WindowLatchSnapshotsBeforeLiveMutations) {
+	WsWindow window = {};
+	window.Enabled = true;
+	window.Left = 8;
+	window.Right = 16;
+	window.Top = 24;
+	window.Bottom = 32;
+	window.Latch();
+
+	window.Left = 0;
+	window.Right = 0;
+	window.Top = 0;
+	window.Bottom = 0;
+
+	EXPECT_TRUE(window.IsInsideWindow(8, 24));
+	EXPECT_TRUE(window.IsInsideWindow(16, 32));
+	EXPECT_FALSE(window.IsInsideWindow(7, 24));
+	EXPECT_FALSE(window.IsInsideWindow(16, 33));
 }
 
 TEST(WsStateCpuHelpersTest, ParityTableMatchesEvenParityDefinition) {

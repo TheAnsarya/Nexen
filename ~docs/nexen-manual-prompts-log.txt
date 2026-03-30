@@ -964,9 +964,13 @@ run another batch; continue;
 
 run another batch; continue;
 
+2, and change the rules and stop asking, these are are mostly just formatting changes; continue with another batch;
 
+continue; [Nexen] work through as many issues as you can, like 20 of them, as fast as you can, updating epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; continue;
 
+yes, do 2, 1, 3; continue; [Nexen] work through as many issues as you can, like 20 of them, as fast as you can, updating epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; continue;
 
+(#1105) You do have access to lots of roms, our rom reference folder is at `C:\~reference-roms\` and there are all the goodsets in rar archives in `C:\~reference-roms\roms\`; continue;
 
 
 
