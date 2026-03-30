@@ -184,6 +184,82 @@ TEST(WsStateMemoryBehaviorTest, WordBusSelectionByAddressRegion) {
 	EXPECT_TRUE(WsStateBehaviorHelpers::IsWordBusBehavior(0x20000, true));
 }
 
+TEST(WsStateCpuFlagsTest, GetSetRoundTripPreservesDefinedFlags) {
+	WsCpuFlags flags = {};
+	flags.Carry = true;
+	flags.Parity = true;
+	flags.AuxCarry = false;
+	flags.Zero = true;
+	flags.Sign = false;
+	flags.Trap = true;
+	flags.Irq = true;
+	flags.Direction = false;
+	flags.Overflow = true;
+	flags.Mode = true;
+
+	uint16_t packed = flags.Get();
+	EXPECT_EQ((packed & 0x01), 0x01);
+	EXPECT_EQ((packed & 0x04), 0x04);
+	EXPECT_EQ((packed & 0x40), 0x40);
+	EXPECT_EQ((packed & 0x100), 0x100);
+	EXPECT_EQ((packed & 0x200), 0x200);
+	EXPECT_EQ((packed & 0x800), 0x800);
+	EXPECT_EQ((packed & 0x8000), 0x8000);
+
+	WsCpuFlags roundTrip = {};
+	roundTrip.Set(packed);
+	EXPECT_TRUE(roundTrip.Carry);
+	EXPECT_TRUE(roundTrip.Parity);
+	EXPECT_FALSE(roundTrip.AuxCarry);
+	EXPECT_TRUE(roundTrip.Zero);
+	EXPECT_FALSE(roundTrip.Sign);
+	EXPECT_TRUE(roundTrip.Trap);
+	EXPECT_TRUE(roundTrip.Irq);
+	EXPECT_FALSE(roundTrip.Direction);
+	EXPECT_TRUE(roundTrip.Overflow);
+	EXPECT_TRUE(roundTrip.Mode);
+}
+
+TEST(WsStatePpuHelpersTest, BgLayerLatchCopiesLiveValues) {
+	WsBgLayer layer = {};
+	layer.Enabled = true;
+	layer.ScrollX = 0x12;
+	layer.ScrollY = 0x34;
+	layer.MapAddress = 0x5678;
+
+	layer.Latch();
+
+	EXPECT_TRUE(layer.EnabledLatch);
+	EXPECT_EQ(layer.ScrollXLatch, 0x12);
+	EXPECT_EQ(layer.ScrollYLatch, 0x34);
+	EXPECT_EQ(layer.MapAddressLatch, 0x5678);
+}
+
+TEST(WsStatePpuHelpersTest, WindowLatchAndInsideWindowUseLatchedBounds) {
+	WsWindow window = {};
+	window.Enabled = true;
+	window.Left = 10;
+	window.Right = 20;
+	window.Top = 30;
+	window.Bottom = 40;
+	window.Latch();
+
+	EXPECT_TRUE(window.EnabledLatch);
+	EXPECT_TRUE(window.IsInsideWindow(10, 30));
+	EXPECT_TRUE(window.IsInsideWindow(20, 40));
+	EXPECT_FALSE(window.IsInsideWindow(9, 30));
+	EXPECT_FALSE(window.IsInsideWindow(10, 41));
+}
+
+TEST(WsStateCpuHelpersTest, ParityTableMatchesEvenParityDefinition) {
+	WsCpuParityTable table;
+	EXPECT_TRUE(table.CheckParity(0x00)); // 0 set bits (even)
+	EXPECT_FALSE(table.CheckParity(0x01)); // 1 set bit (odd)
+	EXPECT_TRUE(table.CheckParity(0x03)); // 2 set bits (even)
+	EXPECT_FALSE(table.CheckParity(0x07)); // 3 set bits (odd)
+	EXPECT_TRUE(table.CheckParity(0xff)); // 8 set bits (even)
+}
+
 TEST(WsStateBaseApuTest, SetVolume_SplitsNibblesCorrectly) {
 	BaseWsApuState state = {};
 	state.SetVolume(0xab);
