@@ -1014,8 +1014,11 @@ No! you are stuck on "working" don't do that go;
 
 [Nexen] I said to "release version 1.4.11 to github and make a good readme file"  but you only made `https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.11` but didn't actually build any assets, there are no Actions, so build an release the version and update the readme with updates, including the list of supported systems; continue;
 
+you failed on `Write-Error: Missing required Windows runtime assets: build\publish\libSkiaSharp.dll build\publish\libHarfBuzzSharp.dll Error: Process completed with exit code 1.` so the release build failed, but fix the release build, sucess just happened we built and released yesterday with the CI so look at recent CI build changes and fix it; release a build on every platform; fix all the errors and then release the version 1.4.11; continue;
 
+[Nexen] update the readme file with all the new progress and list 1.4.11 version downloads instead of 1.4.9; continue updating docs;
 
+Hey! 1.4.11 does not open! Make a real build that fucking works, and then after we test that the thing works, build it and release it as 1.4.12
 
 
 

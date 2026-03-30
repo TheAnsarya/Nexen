@@ -5,6 +5,13 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.12] - 2026-03-30
+
+### Fixed
+
+- **Critical: Updated Dependencies.zip with fresh NexenCore.dll** — v1.4.11 shipped with a stale NexenCore.dll that was missing the `SetAtari2600Config` entry point, causing `EntryPointNotFoundException` on startup and preventing the application from functioning correctly
+- **Updated release documentation** — Refreshed RELEASE.md and docs/README.md with current platform support and CI workflow details
+
 ## [1.4.11] - 2026-03-30
 
 ### Added
