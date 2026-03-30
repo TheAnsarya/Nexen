@@ -29,7 +29,7 @@
 					<c:KeyBindingButton KeyBinding="{Binding Mapping.D}" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Width="80" Height="40" HorizontalAlignment="Center" />
 				</Grid>
 			</Panel>
-			
+
 			<Panel Canvas.Top="220" Canvas.Left="5">
 				<Ellipse Width="200" Height="200" Stroke="{StaticResource NexenGrayBorderColor}" StrokeThickness="2" />
 				<Grid ColumnDefinitions="*,*" RowDefinitions="*,*,*" Width="200" Height="200">
@@ -45,22 +45,22 @@
 					<TextBlock Text="B" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 0" />
 					<c:KeyBindingButton KeyBinding="{Binding Mapping.B}" Width="60" Height="40" />
 					<c:KeyBindingButton KeyBinding="{Binding Mapping.TurboB}" Width="60" Height="20" />
-					<TextBlock Text="Turbo B" FontSize="14" HorizontalAlignment="Center" />
+					<TextBlock Text="{l:Translate lblTurboB}" FontSize="14" HorizontalAlignment="Center" />
 				</StackPanel>
 				<StackPanel Margin="85 0 0 0">
 					<TextBlock Text="A" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 0" />
 					<c:KeyBindingButton KeyBinding="{Binding Mapping.A}" Width="60" Height="40" />
 					<c:KeyBindingButton KeyBinding="{Binding Mapping.TurboA}" Width="60" Height="20" />
-					<TextBlock Text="Turbo A" FontSize="14" HorizontalAlignment="Center" />
+					<TextBlock Text="{l:Translate lblTurboA}" FontSize="14" HorizontalAlignment="Center" />
 				</StackPanel>
 			</Panel>
 
 			<Grid ColumnDefinitions="*,Auto,5,Auto,*" RowDefinitions="Auto,Auto" Width="606" Canvas.Bottom="30">
 				<c:KeyBindingButton KeyBinding="{Binding Mapping.GenericKey1}" Grid.Column="1" Width="80" />
-				<TextBlock Grid.Column="1" Grid.Row="1" Text="Sound" FontSize="14" HorizontalAlignment="Center" />
-				
+				<TextBlock Grid.Column="1" Grid.Row="1" Text="{l:Translate lblSound}" FontSize="14" HorizontalAlignment="Center" />
+
 				<c:KeyBindingButton KeyBinding="{Binding Mapping.Start}" Grid.Column="3" Width="80" />
-				<TextBlock Grid.Column="3" Grid.Row="1" Text="Start" FontSize="14" HorizontalAlignment="Center" />
+				<TextBlock Grid.Column="3" Grid.Row="1" Text="{l:Translate lblStart}" FontSize="14" HorizontalAlignment="Center" />
 			</Grid>
 		</Canvas>
 	</Border>

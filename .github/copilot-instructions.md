@@ -111,6 +111,7 @@ This provides:
 ### Indentation
 - **TABS for indentation** - enforced by `.editorconfig`
 - **Tab width: 4 spaces** - ALWAYS use 4-space-equivalent tabs
+- **Applies to all file types** - C++, C#, JSON, YAML, Markdown, scripts, and config files
 - NEVER use spaces for indentation - only tabs
 - Inside code blocks in markdown, use spaces for alignment of ASCII art/diagrams
 

@@ -613,6 +613,7 @@
 
 		<Form ID="WsConfigView">
 			<Control ID="tpgGeneral">General</Control>
+			<Control ID="lblWsGeneralHint">Select the target WonderSwan model and baseline behavior used for emulation startup.</Control>
 			<Control ID="lblModel">Model:</Control>
 
 			<Control ID="tpgEmulation">Emulation</Control>
@@ -642,9 +643,26 @@
 
 			<Control ID="tpgInput">Input</Control>
 			<Control ID="grpControllers">Controllers</Control>
+			<Control ID="lblWsInputHint">Configure both horizontal and vertical handheld layouts to avoid orientation-specific input surprises.</Control>
 			<Control ID="lblPlayer1Horizontal">Controller (Horizontal)</Control>
 			<Control ID="lblPlayer1Vertical">Controller (Vertical)</Control>
 			<Control ID="btnSetup">Setup</Control>
+
+			<Control ID="lblWsVideoHint">Adjust LCD blending and layer visibility options for gameplay tuning and graphics debugging.</Control>
+		</Form>
+
+		<Form ID="WsControllerView">
+			<Control ID="lblTurboA">Turbo A</Control>
+			<Control ID="lblTurboB">Turbo B</Control>
+			<Control ID="lblSound">Sound</Control>
+			<Control ID="lblStart">Start</Control>
+		</Form>
+
+		<Form ID="WsControllerVerticalView">
+			<Control ID="lblTurboA">Turbo A</Control>
+			<Control ID="lblTurboB">Turbo B</Control>
+			<Control ID="lblSound">Sound</Control>
+			<Control ID="lblStart">Start</Control>
 		</Form>
 
 		<Form ID="Atari2600ConfigView">

@@ -948,6 +948,12 @@ yes, continue for a long time;
 --- steer
 Include nexen-manual-prompts-log.txt as-is whenever it appears
 
+yes do this: `I can now check #1056 status and close it immediately if the latest validating build evidence is green.` and `I can continue on #1044 next for another fast closure slice.` and then complete as many Nexen issues as you can, foc on the wonderswan changes; continue;
+
+use TABS NOT SPACES for all files, make sure the copilot instructions for all repos mentions that; then continue working as many issues as you can, as fast as you can, updating epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; continue;
+
+stop bothering me about "files you didn't make" if they're not artifacts or other ignorable files, just add them to the git commit, who cares, if they have real changes then push them; why not; continue; continue working wonderswan issues; continue;
+
 
 
 
