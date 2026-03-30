@@ -8,7 +8,7 @@ This document describes how to prepare, build, and publish releases of Nexen for
 | ---------- | -------------- | -------- | ------- |
 | Windows | x64 | Portable EXE | Single-file, AoT available |
 | Linux | x64, ARM64 | AppImage, Binary | Static linking |
-| macOS | x64 (Intel), ARM64 (Apple Silicon) | .app bundle | Code-signed |
+| macOS | ARM64 (Apple Silicon) | .app bundle | Code-signed |
 
 ## Build Configurations
 
@@ -16,9 +16,8 @@ This document describes how to prepare, build, and publish releases of Nexen for
 
 | Configuration | Framework | Type | Use Case |
 | --------------- | ----------- | ------ | ---------- |
-| Standard | .NET 8 | Single-file | Most users |
-| AoT | .NET 8 | Native AOT | Maximum performance |
-| Legacy | .NET 6 | Single-file | Compatibility |
+| Standard | .NET 10 | Single-file | Most users |
+| AoT | .NET 10 | Native AOT | Faster startup |
 
 ### Linux Builds
 
@@ -32,9 +31,8 @@ This document describes how to prepare, build, and publish releases of Nexen for
 
 | Configuration | Architecture | Type | Notes |
 | --------------- | -------------- | ------ | ------- |
-| Intel | x64 | .app | macOS 13+ |
 | Apple Silicon | ARM64 | .app | macOS 14+ |
-| AoT | Both | .app | Native compilation |
+| ~~AoT~~ | ~~ARM64~~ | ~~.app~~ | Disabled (.NET 10 ILC bug) |
 
 ## Pre-Release Checklist
 
@@ -105,11 +103,11 @@ make -j$(sysctl -n hw.logicalcpu)
 
 ## GitHub Actions CI/CD
 
-All builds are automated via GitHub Actions. The workflow:
+All builds are automated via GitHub Actions using `workflow_dispatch`. The workflow:
 
-1. **Push to branch** → Triggers `build.yml`
-2. **Build artifacts** → Uploaded for each platform
-3. **Release tag** → Triggers release workflow
+1. **Manual dispatch** → Triggers `build.yml` with `run_release` and `release_tag` inputs
+2. **Build artifacts** → All platform binaries uploaded as CI artifacts
+3. **Release job** → Downloads all artifacts, renames with version, uploads to GitHub Release
 
 ### Creating a Release
 
@@ -120,35 +118,40 @@ All builds are automated via GitHub Actions. The workflow:
    git push origin v1.0.0
    ```
 
-2. **GitHub Actions builds** all platform binaries automatically
+2. **Dispatch the build workflow** with release inputs:
 
-3. **Create GitHub Release:**
-   - Go to Releases → Draft new release
-   - Select the tag
-   - Add release notes from CHANGELOG
-   - Download artifacts from Actions and attach
-   - Publish release
+   ```powershell
+   gh workflow run build.yml --ref <branch-or-tag> -f run_release=true -f release_tag=vX.Y.Z
+   ```
+
+3. **CI automatically:**
+   - Builds all platform binaries (Windows, Linux, macOS)
+   - Creates tarballs for Linux binaries
+   - Uploads all assets to the GitHub Release via `softprops/action-gh-release@v2`
+   - Uses `overwrite_files: true` to update existing releases
 
 ### Artifact Naming Convention
 
-| Platform | Artifact Name |
-| ---------- | --------------- |
-| Windows (standard) | `Nexen (Windows - net8.0)` |
-| Windows (AoT) | `Nexen (Windows - net8.0 - AoT)` |
-| Linux x64 (Clang) | `Nexen (Linux - ubuntu-22.04 - clang)` |
-| Linux ARM64 | `Nexen (Linux - ubuntu-22.04-arm - gcc)` |
-| Linux AppImage x64 | `Nexen (Linux x64 - AppImage)` |
-| Linux AppImage ARM64 | `Nexen (Linux ARM64 - AppImage)` |
-| macOS Intel | `Nexen (macOS - macos-13 - clang)` |
-| macOS Apple Silicon | `Nexen (macOS - macos-14 - clang)` |
+| Platform | CI Artifact Name | Release Asset Name |
+| ---------- | --------------- | --------------- |
+| Windows (standard) | `Nexen (Windows)` | `Nexen-Windows-x64-vX.Y.Z.exe` |
+| Windows (AoT) | `Nexen (Windows - AoT)` | `Nexen-Windows-x64-AoT-vX.Y.Z.exe` |
+| Linux x64 (Clang) | `Nexen (Linux - ubuntu-22.04 - clang)` | `Nexen-Linux-x64-vX.Y.Z.tar.gz` |
+| Linux x64 (GCC) | `Nexen (Linux - ubuntu-22.04 - gcc)` | `Nexen-Linux-x64-gcc-vX.Y.Z.tar.gz` |
+| Linux ARM64 (Clang) | `Nexen (Linux - ubuntu-22.04-arm - clang)` | `Nexen-Linux-ARM64-vX.Y.Z.tar.gz` |
+| Linux ARM64 (GCC) | `Nexen (Linux - ubuntu-22.04-arm - gcc)` | `Nexen-Linux-ARM64-gcc-vX.Y.Z.tar.gz` |
+| Linux AoT x64 | `Nexen (Linux - ubuntu-22.04 - clang_aot)` | `Nexen-Linux-x64-AoT-vX.Y.Z.tar.gz` |
+| Linux AppImage x64 | `Nexen (Linux x64 - AppImage)` | `Nexen-Linux-x64-vX.Y.Z.AppImage` |
+| Linux AppImage ARM64 | `Nexen (Linux ARM64 - AppImage)` | `Nexen-Linux-ARM64-vX.Y.Z.AppImage` |
+| macOS Apple Silicon | `Nexen (macOS - macos-14 - clang)` | `Nexen-macOS-ARM64-vX.Y.Z.zip` |
 
 ## Platform-Specific Notes
 
 ### Windows
 
-- **Runtime:** .NET 8+ required unless using AoT build
-- **Single-file:** Extracts to temp folder on first run
-- **AoT:** Larger binary but no .NET runtime needed
+- **Runtime:** .NET 10+ required unless using AoT build
+- **Single-file:** Native DLLs bundled via `IncludeNativeLibrariesForSelfExtract`
+- **AoT:** Faster startup, no .NET runtime needed
 
 ### Linux
 
@@ -161,7 +164,8 @@ All builds are automated via GitHub Actions. The workflow:
 - **Code signing:** Required for Gatekeeper
 - **Entitlements:** JIT compilation, network access
 - **Notarization:** Recommended for distribution
-- **Universal binary:** Not currently built (separate Intel/ARM)
+- **Apple Silicon only:** Intel (x64) builds are no longer provided
+- **AoT disabled:** Due to .NET 10 ILC compiler crash (see [#238](https://github.com/TheAnsarya/Nexen/issues/238))
 
 ## Version Numbering
 
@@ -208,10 +212,11 @@ Release date: YYYY-MM-DD
 
 | Platform | Download |
 | -------- | -------- |
-| Windows | [Nexen-vX.Y.Z-win-x64.zip]() |
-| Linux (AppImage) | [Nexen-vX.Y.Z-x86_64.AppImage]() |
-| macOS (Intel) | [Nexen-vX.Y.Z-macos-x64.zip]() |
-| macOS (Apple Silicon) | [Nexen-vX.Y.Z-macos-arm64.zip]() |
+| Windows | `Nexen-Windows-x64-vX.Y.Z.exe` |
+| Windows (AoT) | `Nexen-Windows-x64-AoT-vX.Y.Z.exe` |
+| Linux (AppImage x64) | `Nexen-Linux-x64-vX.Y.Z.AppImage` |
+| Linux (AppImage ARM64) | `Nexen-Linux-ARM64-vX.Y.Z.AppImage` |
+| macOS (Apple Silicon) | `Nexen-macOS-ARM64-vX.Y.Z.zip` |
 ```
 
 ## Troubleshooting

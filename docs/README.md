@@ -78,6 +78,9 @@ This directory contains user-facing documentation for Nexen.
 | [PCE](systems/PCE.md) | PC Engine and TurboGrafx-16 usage and platform overview |
 | [WS](systems/WS.md) | WonderSwan and WonderSwan Color usage and platform overview |
 | [Lynx](systems/Lynx.md) | Atari Lynx landing page and deep links |
+| [ChannelF](systems/ChannelF.md) | Fairchild Channel F usage, TAS, and debugging overview |
+| Genesis / Mega Drive | *Coming soon* |
+| Atari 2600 | *Coming soon* |
 | [Channel F](systems/ChannelF.md) | Fairchild Channel F landing page and deep links |
 
 ## Lynx Deep-Dive Documents
