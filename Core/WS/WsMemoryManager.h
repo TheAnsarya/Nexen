@@ -157,6 +157,17 @@ public:
 	}
 
 	/// <summary>
+	/// Reads a byte for instruction prefetch and reports the bus read to debugger tools.
+	/// </summary>
+	/// <param name="addr">20-bit address.</param>
+	/// <returns>Byte value from memory/open bus.</returns>
+	__forceinline uint8_t InternalReadForPrefetch(uint32_t addr) {
+		uint8_t value = InternalRead(addr);
+		_emu->ProcessMemoryRead<CpuType::Ws, 1>(addr, value, MemoryOperationType::DummyRead);
+		return value;
+	}
+
+	/// <summary>
 	/// Writes a byte to memory (internal, no side effects).
 	/// </summary>
 	/// <param name="addr">20-bit address.</param>

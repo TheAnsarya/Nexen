@@ -954,6 +954,25 @@ use TABS NOT SPACES for all files, make sure the copilot instructions for all re
 
 stop bothering me about "files you didn't make" if they're not artifacts or other ignorable files, just add them to the git commit, who cares, if they have real changes then push them; why not; continue; continue working wonderswan issues; continue;
 
+[Nexen] work through as many issues as you can, as fast as you can, updating epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; continue;
+
+[Nexen] work through as many issues as you can, like 20 of them, as fast as you can, updating epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
