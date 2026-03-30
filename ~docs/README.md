@@ -117,6 +117,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Epic 22 Stability and Modernization Plan](plans/epic-22-stability-modernization-plan-2026-03-28.md) | Execution plan for crash/segfault mitigation, runtime compatibility, warning hardening, and modernization gates (#1048-#1055) |
 | [Modern Library Baseline and Upgrade Policy (2026-03-29)](plans/modern-library-baseline-policy-2026-03-29.md) | Dependency baseline snapshot, upgrade cadence, and rollback criteria for #1050 |
 | [Epic 22 Validation Pack](testing/epic-22-validation-pack-2026-03-28.md) | Build/test/benchmark/runtime evidence snapshot for the 2026-03-28 stabilization pass |
+| [CI and Release Pipeline Fixes (v1.4.5 to v1.4.8)](testing/ci-release-pipeline-fixes-v1.4.5-v1.4.8.md) | Consolidated timeline and root-cause/fix record for Epic 22 CI-release stabilization (#1066) |
 | [Linux Runtime Crash Matrix](testing/linux-runtime-crash-matrix-2026-03-28.md) | Distro-by-distro crash/segfault signature matrix with current mitigation status for #1049 |
 | [Linux Crash Hardening Fix Order](plans/linux-crash-hardening-order-2026-03-28.md) | Ordered stabilization sequence for runtime dependencies, warnings, and cross-distro validation (#1049, #1051, #1054) |
 | [Platform Parity Source Index](research/platform-parity/source-index.md) | External hardware and emulator code references used by research docs |
