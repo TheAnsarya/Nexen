@@ -132,6 +132,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [UI Settings Responsiveness Benchmarks (2026-03-30)](testing/ui-settings-responsiveness-benchmarks-2026-03-30.md) | Startup-adjacent and settings-navigation responsiveness benchmark checkpoint for #1046 |
 | [Epic 23 Menu, TAS, and Input Validation Matrix (2026-03-29)](testing/epic-23-menu-tas-input-validation-matrix-2026-03-29.md) | Consolidated validation matrix and evidence index for #1071-#1075 |
 | [Input Mapping Coverage Checkpoint (2026-03-30)](testing/input-mapping-coverage-checkpoint-2026-03-30.md) | Focused per-system controller mapping decode coverage checkpoint and validation evidence for #1073 |
+| [UI Quality Modernization Checkpoint (2026-03-30)](testing/ui-quality-modernization-checkpoint-2026-03-30.md) | Measurable UI consistency and menu/dialog no-regression checkpoint for #1074 |
 | [User Future Work Index](../docs/FUTURE-WORK.md) | Public roadmap entry for active and upcoming tracks |
 | [User Tutorials Index](../docs/TUTORIALS.md) | Step-by-step user and contributor workflow tutorials |
 

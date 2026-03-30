@@ -56,6 +56,7 @@ This index unifies all testing and manual validation documentation.
 | [tas-release-hardening-2026-03-25.md](tas-release-hardening-2026-03-25.md) | Epic 23 TAS stability hardening status, evidence, and next steps |
 | [epic-23-menu-tas-input-validation-matrix-2026-03-29.md](epic-23-menu-tas-input-validation-matrix-2026-03-29.md) | Consolidated Epic 23 validation matrix for menu reliability, TAS stability, and input mapping coverage |
 | [input-mapping-coverage-checkpoint-2026-03-30.md](input-mapping-coverage-checkpoint-2026-03-30.md) | Focused per-system controller mapping decode coverage checkpoint and validation evidence for #1073 |
+| [ui-quality-modernization-checkpoint-2026-03-30.md](ui-quality-modernization-checkpoint-2026-03-30.md) | Measurable UI consistency and menu/dialog no-regression checkpoint for #1074 |
 | [wonderswan-test-coverage-matrix-2026-03-30.md](wonderswan-test-coverage-matrix-2026-03-30.md) | WonderSwan subsystem coverage snapshot and incremental execution plan |
 | [ci-release-pipeline-fixes-v1.4.5-v1.4.8.md](ci-release-pipeline-fixes-v1.4.5-v1.4.8.md) | CI and release stabilization timeline with root-cause and fix mapping for Epic 22 |
 | [ui-settings-responsiveness-benchmarks-2026-03-30.md](ui-settings-responsiveness-benchmarks-2026-03-30.md) | Focused startup-adjacent and settings-navigation responsiveness benchmark checkpoint for #1046 |
