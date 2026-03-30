@@ -42,12 +42,22 @@
 
 1. CI now checks Linux publish runtime config and ICU native assets in both Linux matrix and AppImage jobs.
 
+2. CI now captures runtime dependency/file reports for Windows publish, Linux publish, AppImage publish, and macOS publish artifacts.
+
+3. CI now enforces required native runtime asset presence on all primary publish surfaces.
+
 2. Expected assertions.
 
 - `System.Globalization.AppLocalIcu` must be `72.1.0.3`.
 - Publish output must contain `libicudata.so.72.1.0.3`.
 - Publish output must contain `libicui18n.so.72.1.0.3`.
 - Publish output must contain `libicuuc.so.72.1.0.3`.
+
+3. Cross-platform required native asset assertions.
+
+- Windows publish must contain `Nexen.exe`, `libSkiaSharp.dll`, `libHarfBuzzSharp.dll`.
+- Linux/AppImage publish must include ICU app-local assets plus graphics natives already validated in prior steps.
+- macOS app bundle must contain `Nexen` binary, `libSkiaSharp*.dylib`, and `libHarfBuzzSharp*.dylib`.
 
 ## CI Regression Gate Expansion (#1055)
 
@@ -83,4 +93,5 @@
 1. Remaining risk.
 
 - Linux-specific runtime behavior still requires cross-distro runtime validation on real targets.
+- Runtime dependency checks are now CI-enforced across publish platforms, but distro-specific driver/runtime stacks still require field validation.
 - Warning fail gate defaults to disabled until baseline values are tuned from real CI history.
