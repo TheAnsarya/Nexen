@@ -972,7 +972,62 @@ yes, do 2, 1, 3; continue; [Nexen] work through as many issues as you can, like 
 
 (#1105) You do have access to lots of roms, our rom reference folder is at `C:\~reference-roms\` and there are all the goodsets in rar archives in `C:\~reference-roms\roms\`; continue;
 
+--- claude opus 4.6
+[Nexen] make sure there is a stable working build, and release version 1.4.10; and then continue working through issues so we can close the backlog;
 
+what are you doing? nothing is happening, or you're not reporting it
+
+--- restart computer
+[Nexen] make sure there is a stable working build, and release version 1.4.10; and then continue working through issues so we can close the backlog;
+
+why are you taking so long with no response? what are you doing?
+
+stop, focus, stop spiraling, you're frozen, release the version 1.4.11 don't freak out, do your job; continue;
+
+OH MY GOD, you've given me no output like an hour, what is wrong? release 1.4.11!
+
+--- no output, garbage
+
+--- chatgpt-codex-5.3
+[Nexen] make sure there is a stable working build, and release version 1.4.10; and then continue working through issues so we can close the backlog;
+
+--- new chat
+[Nexen] make sure there is a stable working build, and release version 1.4.10; and then continue working through issues so we can close the backlog;
+--- rate limit
+[Nexen] release version 1.4.10;
+
+--- a bunch of different agents, all limited, so nothing
+
+[Nexen] release version 1.4.11;
+
+what are you doing? nothing seems to be happening except you're using up my tokens
+
+what do you mean by "working"? stop spiraling and make concrete progress; continue making release 1.4.11; continue;
+
+No! you are stuck on "working" don't do that go;
+
+--- restart everything
+
+[Nexen] build the app and show me errors and warnings and etc;
+
+[Nexen] release version 1.4.11 to github and make a good readme file;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Nexen] Research a way we can run a rom and possibly a nexen-movie file or lua script for input and then take screenshots (or read directly from RAM to see which tests passed/failed) from the emulator so we can make automated tests for system functionality and edge cases using the testing roms like: `https://github.com/astrobleem/SNES-HiRomGsuTest`, `https://github.com/100thCoin/AccuracyCoin`, `https://www.nesdev.org/wiki/Emulator_tests`, `https://github.com/frederic-mahe/Hardware-Target-Game-Database`, `https://github.com/gilyon/snes-tests`, `https://snes.nesdev.org/wiki/Emulator_tests`, `https://tasvideos.org/EmulatorResources/SNESAccuracyTests`, `https://github.com/PeterLemon/SNES/tree/master`; find other testing roms for all the systems and for future systems; document all references you use, including these and make documentation for all the testing roms and make a folder in the `c:\reference-roms\` folder and put all the testing roms in a hierarchy by system; These testing roms test specific code paths and functionality and we need them all to pass to ensure the most accurate emulator; make plans for making in-house testing roms for each of our systems based on all the examples/research and testing roms and internet research and make docs with instructions to create epics and issues with full descriptions of the work, and research documents and all that so this is future development; use peony and poppy and pansy and game garden and Nexen to disassemble current test roms, run everything through pansy files, and make assembly to test all kinds of emulator behaviour and ensure our emulator is the most correct/accurate/performant/bugfree/easy-to-use emulator, and poppy compile it all, making instructions so a human could reproduce it, step by step, so the pipeline commands should all be documented;
 
 
 
@@ -991,113 +1046,25 @@ yes, do 2, 1, 3; continue; [Nexen] work through as many issues as you can, like 
 [Nexen] fix as many issues as you can as fast as you can and continue working on them for awhile as many issues as you can, let's work on clear this backlog out; continue and continue;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 [Nexen, peony, pansy, poppy] git commit everything (except artifacts), fix as many warnings as you can in the repos, starting with the dotnet c# project warnings; continue; then work issues making new issues when new work is found, and update docs/plans/epics/issues/benchmarks/tests/code-session-logs/etc; continue;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 fix as many warnings as you can; continue;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 [Nexen] work through all the Channel F issues, make a working complete comprehensive correct accurate emulator and supporting infrastructure (input controller UI, debugging UI and wire-up, TAS/movie support from core to UI, savestates, debug viewers like vram and memory and registers); update all of the Channel F documentation; continue; [poppy, pansy, peony] continue;
 
 
-
 [Nexen] Make sure the emulator core for Atari Lynx is correct, accurate, and complete for emulating a game from start to finish, with all memory and banking and vram, and sprites and music and debugging tools and all of the UI and TAS/movie functionality, and controller input UI and everything else, etc; continue; make issues and epics and docs and plans and chat/session logs and tests and benchmarks; make performance improvements as you find them from benchmarks or analysis; continue;
-
-
-
-
-
-5226-2660=2566
-
 
 
 Update all four projects (Nexen, poppy, pansy, peony) to dotnet 11 and c#15 and update github CI/CD config to install the sdk (see instructions listed at: https://copilot.microsoft.com/chats/Rkj5Q5ydHbfRjVV36XhGr) 
 
 
-
 [Nexen] git commit everything, and then release another version of Nexen to github, updating the patch version number; Make an announcement `discord` post ***with formatting*** for this Nexen release, with all the differences since we forked from Mesen and why we did and save it in an `md` documentation file and show me this file; continue;
 
 
-
 fix as many warnings as you can; continue;
-
 
 
 [Nexen] Make more Tests (correctness of everything! reference external Lynx technical docs) and performance Benchmarks (speed and memory and allocation!) and create countless documentation sections (and update `readme.md`) and update chat/session logs and todos, and make the Atari Lynx emulator super accurate and fully tested and with no problems, fix issues and everything and analyze both Core and UI for problems with the Lynx code, does Movie/TAS work with Lynx? Are all Atari Lynx joypad buttons represented in the TAS/Movie input file? fix it!; continue;
@@ -1105,29 +1072,9 @@ fix as many warnings as you can; continue;
 
 
 
-
-
-
-
-
-
-
-
-
-
 [Nexen] SUPER GIGANTIC EFFORT: `Add Atari Jaguar emulation to Core and UI and debugger, etc`; plan it comprehensively over multiple sessions! make a few epics and a ton of sub-issues and sub-sub-issues and todolists, and plans and documents and do research to create a giant plan to add Jaguar emulation and work effort to implement Atari Jaguar emulation and debugging and pansy creation and save states and labels and everything else, make it a first class emulation option; Find source code for other atari Jaguar emulators and atari Jaguar documentation and make a big plan for how we can add a system to Nexen: we need an emulation core framework that we can make run Atari Jaguar, add required interfaces, add lua integration, add UI file opening/savestates/etc, add movie/tas support (that's an epic itself), Add input configuration (joypad button mapping), add debugging and code views, emulate all versions of the console with their differences, document like crazy, document document document, work for a very long time to create this plan, multiple sessions of planning and research and code prototyping with a bunch of code-plans for each sub-effort, and a full testing coverage and benchmarking for the emulation/ui/tools/debugging/etc; We need to prove we are a separate emulator from our predecessor (Mesen), now that we've added the Atari Lynx, let's add a second one so we are going to add a whole new system; make sure to focus on accuracy and performance, but always accuracy and timing first; don't get distracted, focus on making practical researched changes in chunks, keep issues and docs and logs updated; continue; There should be a new features branch (maybe `features-atari-jaguar` off of the atari-lynx branch) for all of this work, don't make changes directly in the master branch; Continue planning for Atari Jaguar implementation of emulation debugging, movie recording and playing, save states, sram saving/loading, metadata (hashes, etc), UI usage, input button mapping, debugging; plan and figure out how you are going to implement this work effort (make documents and a big "prompts" file where you generate a series of prompts for me to run in order to implement the giant feature (again, make sure all work is in a new feature branch)); continue; implement after all planning and todo and issue creation is done; continue;
 
 [Nexen] Create a root level `*.md` document and link to it from the readme for primary developer tasks showing what I should be doing (adding reference roms? approving icons? manually testing a feature (give me a link to the manual testing doc!)? adding screenshots to documentation (make a plan!)? or what?) what features are we in the middle of? give me a handful of prompts that would advance the project in a meaningful way, let me know how to support the atari-2600/sega-genesis testing code examples and what folders and files I need to create; after letting me know what to do, continue working on genesis and atari 2600 emulation and add a ton of more issues for that emulation work based on the docs and benchmarks and tests and go for very long time, working for a half hour or so would be ok;
-
-
-
-
-
-
-
-
-
-
 
 
 

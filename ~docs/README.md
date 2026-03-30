@@ -70,6 +70,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Lynx Cart Shift Register Addressing Audit (2026-03-30)](research/lynx-cart-shift-register-addressing-audit-2026-03-30.md) | Audit findings and follow-up plan for Lynx cart shift-register bank addressing (#956) |
 | [Lynx Commercial Bank-Addressing Validation Matrix (2026-03-30)](research/lynx-commercial-bank-addressing-validation-matrix-2026-03-30.md) | Commercial-title empirical validation matrix scaffold for Lynx bank/page addressing follow-up (#1105) |
 | [Lynx Commercial Bank-Addressing ROM Manifest (2026-03-30)](research/lynx-commercial-bank-addressing-rom-manifest-2026-03-30.md) | Canonical selected GoodLynx ROM identities and checksums used by the #1105 validation matrix |
+| [Lynx Commercial Bank-Addressing Headless Boot Smoke (2026-03-30)](research/lynx-commercial-bank-addressing-headless-boot-smoke-2026-03-30.md) | Headless test-runner smoke execution summary for the #1105 selected commercial corpus |
 | [Atari 2600 Breakdown](research/platform-parity/atari-2600/README.md) | Subsystem-by-subsystem Atari 2600 documentation |
 | [Genesis Breakdown](research/platform-parity/genesis/README.md) | Comparative Genesis emulator architecture research |
 | [Compatibility Path](research/platform-parity/compatibility/sonic1-jurassic-park.md) | Sonic 1 and Jurassic Park execution milestones |
