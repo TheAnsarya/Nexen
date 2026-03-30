@@ -5,6 +5,35 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.11] - 2026-03-30
+
+### Added
+
+- **Pansy SOURCE_MAP section export** — Peony/Nexen pipeline now exports source location mapping to Pansy files (#1069)
+- **Channel F TAS gesture lanes** — Full TAS editor support with gesture-based input lanes for Channel F controllers (#1012)
+- **WonderSwan test coverage expansion** — Comprehensive state helper, controller behavior, and type-contract test suites (#1096)
+- **Lynx commercial ROM validation matrix** — Scaffold for systematic validation against commercial Lynx titles (#1105)
+- **UI config/menu regression tests** — Automated regressions for configuration and menu paths (#1043, #1045)
+
+### Fixed
+
+- **WonderSwan EEPROM accuracy** — Implemented cart EEPROM abort control behavior and command-specific timing delays (#1090, #1091)
+- **WonderSwan I/O correctness** — Enforced SystemTest port write-only semantics, latched open bus for unmapped memory/ports, side-effect-free debug peeks for serial/input (#1087, #1088, #1089)
+- **WonderSwan debugger tracing** — Exposed prefetch reads to debugger trace output (#1094)
+- **WonderSwan turbo button support** — Completed turbo button path and clamped speed to valid range (#1095)
+- **WonderSwan APU SoundTest** — Documented force-output semantics (#1086)
+- **AppImage hardening** — Hardened single-file runtime assets and clang flags for Linux AppImage builds (#1102)
+- **CI improvements** — Manual-only Build Nexen workflow with serialized runs (#1101), calibrated warning baselines with strict regression gate (#1056), expanded runtime dependency validation (#1054)
+
+### Documentation
+
+- Channel F readiness, troubleshooting, and preset documentation (#1014, #1020, #1021, #1022, #1023)
+- Lynx cart shift-register addressing audit (#956)
+- Epic closure checkpoints for modernization and UI quality (#1040, #1070, #1073, #1074)
+- Modernization baseline policy and gap closure (#1050)
+
+---
+
 ## [1.4.9] - 2026-03-29
 
 ### Added

@@ -5,7 +5,8 @@
 </p>
 
 <p align="center">
-  <strong>A powerful multi-system emulator for Windows, Linux, and macOS</strong>
+  <strong>A powerful multi-system emulator for Windows, Linux, and macOS</strong><br/>
+  <em>High-accuracy emulation &bull; TAS editing &bull; Advanced debugging &bull; Pansy metadata export</em>
 </p>
 
 <p align="center">
@@ -19,6 +20,12 @@
 
 ---
 
+## Overview
+
+Nexen is a multi-system emulator based on [Mesen2](https://github.com/SourMesen/Mesen2) with significant enhancements: a full-featured TAS editor with undo/redo and greenzone support, an infinite save state system with visual picker, a ZIP-based movie format with multi-format import/export, 🌼 Pansy metadata export for integration with the Flower Toolchain disassembly pipeline, and Fairchild Channel F support.
+
+---
+
 ## 📥 Downloads
 
 Download pre-built binaries from the [Releases page](https://github.com/TheAnsarya/Nexen/releases/latest).
@@ -27,206 +34,154 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **Standard** | [Nexen-Windows-x64-v1.4.9.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.9/Nexen-Windows-x64-v1.4.9.exe) | Single-file, recommended |
-| **Native AOT** | [Nexen-Windows-x64-AoT-v1.4.9.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.9/Nexen-Windows-x64-AoT-v1.4.9.exe) | Faster startup |
+| **Standard** | [Nexen-Windows-x64-v1.4.11.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.11/Nexen-Windows-x64-v1.4.11.exe) | Single-file, recommended |
+| **Native AOT** | [Nexen-Windows-x64-AoT-v1.4.11.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.11/Nexen-Windows-x64-AoT-v1.4.11.exe) | Faster startup |
 
 ### Linux
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **AppImage x64** | [Nexen-Linux-x64-v1.4.9.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.9/Nexen-Linux-x64-v1.4.9.AppImage) | Recommended |
-| **AppImage ARM64** | [Nexen-Linux-ARM64-v1.4.9.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.9/Nexen-Linux-ARM64-v1.4.9.AppImage) | Raspberry Pi, etc. |
-| Binary x64 (clang) | [Nexen-Linux-x64-v1.4.9.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.9/Nexen-Linux-x64-v1.4.9.tar.gz) | Tarball, requires SDL2 |
-| Binary x64 (gcc) | [Nexen-Linux-x64-gcc-v1.4.9.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.9/Nexen-Linux-x64-gcc-v1.4.9.tar.gz) | Tarball, requires SDL2 |
-| Binary ARM64 (clang) | [Nexen-Linux-ARM64-v1.4.9.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.9/Nexen-Linux-ARM64-v1.4.9.tar.gz) | Tarball, requires SDL2 |
-| Binary ARM64 (gcc) | [Nexen-Linux-ARM64-gcc-v1.4.9.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.9/Nexen-Linux-ARM64-gcc-v1.4.9.tar.gz) | Tarball, requires SDL2 |
-| Native AOT x64 | [Nexen-Linux-x64-AoT-v1.4.9.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.9/Nexen-Linux-x64-AoT-v1.4.9.tar.gz) | Faster startup |
+| **AppImage x64** | [Nexen-Linux-x64-v1.4.11.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.11/Nexen-Linux-x64-v1.4.11.AppImage) | Recommended |
+| **AppImage ARM64** | [Nexen-Linux-ARM64-v1.4.11.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.11/Nexen-Linux-ARM64-v1.4.11.AppImage) | Raspberry Pi, etc. |
+| Binary x64 (clang) | [Nexen-Linux-x64-v1.4.11.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.11/Nexen-Linux-x64-v1.4.11.tar.gz) | Tarball, requires SDL2 |
+| Binary x64 (gcc) | [Nexen-Linux-x64-gcc-v1.4.11.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.11/Nexen-Linux-x64-gcc-v1.4.11.tar.gz) | Tarball, requires SDL2 |
+| Binary ARM64 (clang) | [Nexen-Linux-ARM64-v1.4.11.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.11/Nexen-Linux-ARM64-v1.4.11.tar.gz) | Tarball, requires SDL2 |
+| Binary ARM64 (gcc) | [Nexen-Linux-ARM64-gcc-v1.4.11.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.11/Nexen-Linux-ARM64-gcc-v1.4.11.tar.gz) | Tarball, requires SDL2 |
+| Native AOT x64 | [Nexen-Linux-x64-AoT-v1.4.11.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.11/Nexen-Linux-x64-AoT-v1.4.11.tar.gz) | Faster startup |
 
 ### macOS (Apple Silicon)
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **Standard** | [Nexen-macOS-ARM64-v1.4.9.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.9/Nexen-macOS-ARM64-v1.4.9.zip) | App bundle |
+| **Standard** | [Nexen-macOS-ARM64-v1.4.11.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.11/Nexen-macOS-ARM64-v1.4.11.zip) | App bundle |
 | ~~Native AOT~~ | *Temporarily unavailable* | .NET 10 ILC compiler bug |
 
-> ℹ️ **Notes:**
+> **Notes:**
 >
 > - Linux requires SDL2 (`sudo apt install libsdl2-2.0-0`)
 > - macOS: Right-click → Open on first launch to bypass Gatekeeper
 > - macOS Intel (x64) builds are no longer provided
 > - macOS Native AOT is disabled due to a [.NET 10 ILC compiler crash](https://github.com/TheAnsarya/Nexen/issues/238)
-> - **Download links point to v1.4.9** — Updated on each release
 
 ---
 
 ## 🎮 Supported Systems
 
 | System | CPU | Status |
-| -------- | ----- | -------- |
-| NES / Famicom | 6502 | ✅ Full |
-| SNES / Super Famicom | 65816 | ✅ Full |
-| Game Boy / Game Boy Color | LR35902 | ✅ Full |
+|--------|-----|--------|
+| NES / Famicom | MOS 6502 | ✅ Full |
+| SNES / Super Famicom | WDC 65816 | ✅ Full |
+| Game Boy / Game Boy Color | Sharp LR35902 | ✅ Full |
 | Game Boy Advance | ARM7TDMI | ✅ Full |
-| Sega Master System / Game Gear | Z80 | ✅ Full |
+| Sega Master System / Game Gear | Zilog Z80 | ✅ Full |
 | PC Engine / TurboGrafx-16 | HuC6280 | ✅ Full |
-| WonderSwan / WonderSwan Color | V30MZ | ✅ Full |
-| Atari Lynx | 65SC02 | ✅ Full |
+| WonderSwan / WonderSwan Color | NEC V30MZ | ✅ Full |
+| Atari Lynx | WDC 65SC02 | ✅ Full |
+| Fairchild Channel F | Fairchild F8 | 🔄 In Progress |
 
-## ✨ Key Features
+---
 
-### 🕹️ Emulation
+## ✨ Features
 
-- High-accuracy emulation across all supported systems
-- Cycle-accurate CPU and PPU emulation
-- Full coprocessor support (Super FX, SA-1, DSP, etc.)
-- Comprehensive mapper/chip support
-- Netplay multiplayer support
+### Emulation
 
-### 💾 Save States
+- **High-accuracy** cycle-accurate CPU and PPU emulation across all systems
+- Full coprocessor support (Super FX, SA-1, DSP, Cx4, SDD-1, OBC-1, S-RTC, BS-X)
+- Comprehensive mapper and memory controller support
+- Netplay multiplayer with rollback
 
-- **Infinite Save States** - Unlimited timestamped saves per game
-- **Visual Picker** - Grid view with screenshots and timestamps (Shift+F1)
-- **Quick Save** - F1 to save, Shift+F1 to browse
-- **Designated Slot** - F4 to load, Shift+F4 to save
-- **Auto-Save** - Periodic quick saves and recent play saves
-- **Per-Game Organization** - Saves organized by ROM
+### Save States
 
-### 🎬 Movie System
+| Feature | Description |
+|---------|-------------|
+| **Infinite Saves** | Unlimited timestamped saves per game |
+| **Visual Picker** | Grid view with screenshots and timestamps (Shift+F1) |
+| **Quick Save** | F1 to save, Shift+F1 to browse |
+| **Designated Slot** | F4 to load, Shift+F4 to save |
+| **Auto-Save** | Periodic quick saves and recent play saves |
+| **Per-Game** | Saves organized by ROM hash |
 
-- **Nexen Movie Format (.nexen-movie)** - ZIP-based format with JSON metadata, input log, savestate, and SRAM
-- **Movie Recording & Playback** - Record/replay inputs frame-by-frame with rerecording support
-- **Multi-Format Import/Export** - BK2 (BizHawk), FM2 (FCEUX), SMV (Snes9x), LSMV (lsnes), VBM (VisualBoyAdvance), GMV (Gens)
-- **Multi-System TAS** - Full TAS support for NES, SNES, GB, GBA, SMS, PCE, WS, and Lynx
+### Movie System
 
-### 🎮 TAS Editor
+- **Nexen Movie Format (.nexen-movie)** — ZIP-based with JSON metadata, input log, savestate, and SRAM
+- **Recording & Playback** — Frame-by-frame with rerecording support
+- **Multi-Format Import/Export** — BK2 (BizHawk), FM2 (FCEUX), SMV (Snes9x), LSMV (lsnes), VBM (VBA), GMV (Gens)
+- **Multi-System TAS** — Full TAS support for all emulated systems including Channel F
 
-- **Piano Roll View** - Visual timeline for frame-by-frame editing with batch paint
-- **Full Undo/Redo** - Every operation (toggle, paint, insert, delete, clear, fork) is undoable
-- **Greenzone System** - Instant seeking with automatic savestates
-- **Fast Timeline Refresh** - Smooth frame navigation during long movies
-- **Input Recording** - Capture, insert, and overwrite modes with branch support
-- **Branches** - Fork, compare, and load alternate strategies
-- **Lua Scripting** - Automate TAS workflows with full undo integration
+### TAS Editor
 
-### 🔧 Debugging
+- **Piano Roll** — Visual timeline for frame-by-frame editing with batch paint
+- **Full Undo/Redo** — Every operation (toggle, paint, insert, delete, clear, fork) is undoable
+- **Greenzone** — Instant seeking with automatic savestates
+- **Input Recording** — Capture, insert, and overwrite modes
+- **Branches** — Fork, compare, and load alternate strategies
+- **Lua Scripting** — Automate TAS workflows with full undo integration
 
-- **Disassembler** - Full CPU disassembly with labels
-- **Memory Viewer** - Hex editor with search
-- **Breakpoints** - Execution, read, and write breakpoints
-- **Trace Logger** - CPU execution logging
-- **Code/Data Logger (CDL)** - Track ROM usage
-- **🌼 Pansy Export** - Export metadata to universal format
+### Debugging
 
-### 🎨 Video
+| Tool | Description |
+|------|-------------|
+| **Disassembler** | Full CPU disassembly with labels and navigation |
+| **Memory Viewer** | Hex editor with search and watch |
+| **Breakpoints** | Execution, read, and write breakpoints |
+| **Trace Logger** | CPU execution logging with filtering |
+| **Code/Data Logger** | Track ROM coverage (CDL) |
+| **Profiler** | Callstack-based CPU profiling |
+| **🌼 Pansy Export** | Export symbols, CDL, cross-refs, and source maps to universal metadata format |
 
-- Multiple shader/filter options
+### Video & Audio
+
+- Multiple shader and filter options (NTSC, PAL, HQ2x, etc.)
 - Integer scaling and aspect ratio correction
-- NTSC and PAL filters
-- HUD overlays for debugging
-
-### 🔊 Audio
-
-- High-quality audio resampling
 - Per-channel volume control
-- Audio recording (WAV)
+- HUD overlays for debugging
+- Audio and video recording
 
-## 🧭 Using Nexen
-
-| Guide | Description |
-|---|---|
-| [Save States Guide](docs/Save-States.md) | Quick save, designated slots, and visual picker workflows |
-| [Rewind Guide](docs/Rewind.md) | Rewind usage and route iteration workflows |
-| [Movie System Guide](docs/Movie-System.md) | Record, playback, import/export, and deterministic playback workflows |
-| [TAS Editor Manual](docs/TAS-Editor-Manual.md) | Complete frame-by-frame TAS editing workflow |
-| [Debugging Guide](docs/Debugging.md) | Disassembler, memory viewer, breakpoints, trace, and CDL usage |
-| [Video and Audio Guide](docs/Video-Audio.md) | Rendering and audio configuration workflows |
+---
 
 ## Quick Start
 
 ### Windows
 
-1. Download `Nexen-Windows-x64-v1.4.9.exe` from [Releases](https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.9)
+1. Download [Nexen-Windows-x64-v1.4.11.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.11/Nexen-Windows-x64-v1.4.11.exe)
 2. Run the executable (no installation needed)
 3. **File → Open** to load a ROM
 
 ### Linux
 
-1. Download `Nexen-Linux-x64-v1.4.9.AppImage`
-2. Make executable: `chmod +x Nexen-Linux-x64-v1.4.9.AppImage`
-3. Run: `./Nexen-Linux-x64-v1.4.9.AppImage`
+1. Download [Nexen-Linux-x64-v1.4.11.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.11/Nexen-Linux-x64-v1.4.11.AppImage)
+2. `chmod +x Nexen-Linux-x64-v1.4.11.AppImage`
+3. `./Nexen-Linux-x64-v1.4.11.AppImage`
 
 > For non-AppImage builds, install SDL2 first: `sudo apt install libsdl2-2.0-0`
 
 ### macOS
 
-1. Download `Nexen-macOS-ARM64-v1.4.9.zip`
+1. Download [Nexen-macOS-ARM64-v1.4.11.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.11/Nexen-macOS-ARM64-v1.4.11.zip)
 2. Extract and move `Nexen.app` to Applications
 3. Right-click → Open (first launch only, to bypass Gatekeeper)
 
-## 📖 Documentation
+---
 
-| Document | Description |
-|---|---|
-| [Documentation Index](docs/README.md) | Entry point for user-facing docs |
-| [Manual Testing Hub](docs/manual-testing/README.md) | Ranked manual release validation workflows |
-| [Compiling](COMPILING.md) | Build from source |
-| [Performance Guide](docs/PERFORMANCE.md) | Centralized performance strategy and references |
-| [Release Guide](docs/RELEASE.md) | Creating releases |
-| [API Documentation](docs/README.md) | Generated API docs |
+## 🧭 User Guides
 
-### Systems Documentation
+| Guide | Description |
+|-------|-------------|
+| [Save States Guide](docs/Save-States.md) | Quick save, designated slots, and visual picker workflows |
+| [Rewind Guide](docs/Rewind.md) | Rewind usage and route iteration workflows |
+| [Movie System Guide](docs/Movie-System.md) | Record, playback, import/export, and deterministic playback |
+| [TAS Editor Manual](docs/TAS-Editor-Manual.md) | Complete frame-by-frame TAS editing workflow |
+| [Debugging Guide](docs/Debugging.md) | Disassembler, memory viewer, breakpoints, trace, and CDL |
+| [Video and Audio Guide](docs/Video-Audio.md) | Rendering and audio configuration |
 
-| System | Guide |
-|---|---|
-| All systems (index) | [Systems Index](docs/systems/README.md) |
-| NES / Famicom | [NES Guide](docs/systems/NES.md) |
-| SNES / Super Famicom | [SNES Guide](docs/systems/SNES.md) |
-| Game Boy / Game Boy Color | [GB Guide](docs/systems/GB.md) |
-| Game Boy Advance | [GBA Guide](docs/systems/GBA.md) |
-| Sega Master System / Game Gear | [SMS Guide](docs/systems/SMS.md) |
-| PC Engine / TurboGrafx-16 | [PCE Guide](docs/systems/PCE.md) |
-| WonderSwan / WonderSwan Color | [WS Guide](docs/systems/WS.md) |
-| Atari Lynx | [Lynx Guide](docs/systems/Lynx.md) |
-
-### Developer Documentation
-
-| Document | Description |
-|---|---|
-| [Architecture Overview](~docs/ARCHITECTURE-OVERVIEW.md) | System design |
-| [C++ Development Guide](~docs/CPP-DEVELOPMENT-GUIDE.md) | Coding standards |
-| [Developer Tasks and Priorities](DEVELOPER-TASKS.md) | What to work on next, with Atari/Genesis support checklist |
-| [Code Documentation Style](~docs/CODE-DOCUMENTATION-STYLE.md) | C++ documentation style guide |
-| [Build and Run](~docs/BUILD-AND-RUN.md) | Building and running Nexen |
-| [Profiling Guide](~docs/PROFILING-GUIDE.md) | Performance profiling |
-| [ASan Guide](~docs/ASAN-GUIDE.md) | AddressSanitizer configuration |
-| [Movie & TAS Subsystem](~docs/MOVIE-TAS.md) | Movie recording and TAS internals |
-| [TAS Algorithm Reference](~docs/algorithms/tas-algorithms.md) | TAS data structure and undo system design |
-| [Audio Subsystem](~docs/AUDIO-SUBSYSTEM.md) | Audio processing and resampling |
-| [Video Rendering](~docs/VIDEO-RENDERING.md) | Video rendering pipeline |
-| [Input Subsystem](~docs/INPUT-SUBSYSTEM.md) | Input and controller handling |
-| [Debugger Subsystem](~docs/DEBUGGER.md) | Debugger internals |
-| [Utilities Library](~docs/UTILITIES-LIBRARY.md) | Shared utility library |
-| [Pansy Integration](~docs/pansy-export-index.md) | Metadata export system |
-| [Channel F Master Program Plan](~docs/plans/channel-f-master-program-plan.md) | Multi-epic roadmap for first-class Fairchild Channel F support |
-| [Channel F Implementation Prompts](~docs/plans/channel-f-implementation-prompts.md) | Ordered multi-session execution prompt pack |
-| [Channel F Source Index](~docs/research/channel-f-source-index.md) | External references mapped to implementation work |
-
-### Emulation Core Documentation
-
-| Document | Description |
-|---|---|
-| [NES Core](~docs/NES-CORE.md) | NES/Famicom emulation core internals |
-| [SNES Core](~docs/SNES-CORE.md) | SNES/Super Famicom emulation core internals |
-| [GB/GBA Core](~docs/GB-GBA-CORE.md) | Game Boy and GBA emulation core internals |
-| [SMS/PCE/WS Core](~docs/SMS-PCE-WS-CORE.md) | SMS, PCE, and WS core internals |
-| [Lynx Core](~docs/LYNX-CORE.md) | Atari Lynx core internals |
+---
 
 ## ⌨️ Keyboard Shortcuts
 
 ### General
 
 | Shortcut | Action |
-| ---------- | -------- |
+|----------|--------|
 | F1 | Quick Save (Timestamped) |
 | Shift+F1 | Browse Save States |
 | F4 | Load Designated Slot |
@@ -243,7 +198,7 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 ### TAS Editor
 
 | Shortcut | Action |
-| ---------- | -------- |
+|----------|--------|
 | Escape | Pause/Resume Playback |
 | \` (backtick) | Frame Advance |
 | Backspace | Frame Rewind |
@@ -254,28 +209,87 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 | Ctrl+G | Go to Frame |
 | Ctrl+B | Create Branch |
 
-## 🌷 Integrated Pipeline
+---
 
-Nexen is the **play & debug** stage of the **Flower Toolchain** — an integrated pipeline for playing, debugging, disassembling, editing, and rebuilding retro games:
+## 🌷 Flower Toolchain Integration
 
-| Stage | Tool | Nexen Role |
-|-------|------|------------|
-| 1. Play & Debug | **Nexen** | Run games, export CDL + symbols + CPU state via Pansy |
-| 2. Disassemble | [Peony](https://github.com/TheAnsarya/peony) | — |
-| 3. Edit & Document | Editor + [Pansy](https://github.com/TheAnsarya/pansy) UI | — |
-| 4. Build | [Poppy](https://github.com/TheAnsarya/poppy) | — |
-| 5. Verify | [Game Garden](https://github.com/TheAnsarya/game-garden) | Roundtrip byte-identical rebuild |
+Nexen is the **play & debug** stage of the Flower Toolchain — an integrated pipeline for playing, debugging, disassembling, editing, and rebuilding retro games:
 
-See the [Integrated Pipeline Master Plan](https://github.com/TheAnsarya/pansy/blob/main/~Plans/integrated-pipeline-master-plan.md) for architecture details.
+```
+🎮 Play & Debug (Nexen) → 🌺 Disassemble (Peony) → ✏️ Edit (Pansy UI) → 🌸 Build (Poppy) → ✅ Verify (Game Garden)
+```
 
-## 🔗 Related Projects
+| Stage | Tool | Purpose |
+|-------|------|---------|
+| 1. Play & Debug | **Nexen** | Run games, export CDL + symbols + source maps via 🌼 Pansy |
+| 2. Disassemble | [🌺 Peony](https://github.com/TheAnsarya/peony) | ROM → annotated `.pasm` source code |
+| 3. Edit & Document | [🌼 Pansy](https://github.com/TheAnsarya/pansy) UI | View and edit disassembly metadata |
+| 4. Build | [🌸 Poppy](https://github.com/TheAnsarya/poppy) | `.pasm` source → ROM |
+| 5. Verify | [🌱 Game Garden](https://github.com/TheAnsarya/game-garden) | Roundtrip byte-identical rebuild verification |
 
-| Project | Description |
-| --------- | ------------- |
-| [🌼 Pansy](https://github.com/TheAnsarya/pansy) | Universal disassembly metadata format |
-| [🌺 Peony](https://github.com/TheAnsarya/peony) | Multi-system disassembler |
-| [🌸 Poppy](https://github.com/TheAnsarya/poppy) | Multi-system assembler |
-| [🌱 Game Garden](https://github.com/TheAnsarya/game-garden) | Games disassembly & recompilation |
+---
+
+## 📖 Documentation
+
+### User Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Documentation Index](docs/README.md) | Entry point for all user-facing docs |
+| [Manual Testing Hub](docs/manual-testing/README.md) | Ranked manual release validation workflows |
+| [Compiling](COMPILING.md) | Build from source |
+| [Performance Guide](docs/PERFORMANCE.md) | Performance strategy and references |
+| [Release Guide](docs/RELEASE.md) | Creating releases |
+| [Changelog](CHANGELOG.md) | Version history |
+
+### Systems Documentation
+
+| System | Guide |
+|--------|-------|
+| All Systems | [Systems Index](docs/systems/README.md) |
+| NES / Famicom | [NES Guide](docs/systems/NES.md) |
+| SNES / Super Famicom | [SNES Guide](docs/systems/SNES.md) |
+| Game Boy / GBC | [GB Guide](docs/systems/GB.md) |
+| Game Boy Advance | [GBA Guide](docs/systems/GBA.md) |
+| Sega Master System / GG | [SMS Guide](docs/systems/SMS.md) |
+| PC Engine / TG-16 | [PCE Guide](docs/systems/PCE.md) |
+| WonderSwan / WSC | [WS Guide](docs/systems/WS.md) |
+| Atari Lynx | [Lynx Guide](docs/systems/Lynx.md) |
+
+### Developer Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Architecture Overview](~docs/ARCHITECTURE-OVERVIEW.md) | System design |
+| [C++ Development Guide](~docs/CPP-DEVELOPMENT-GUIDE.md) | Coding standards |
+| [Developer Tasks](DEVELOPER-TASKS.md) | What to work on next |
+| [Code Documentation Style](~docs/CODE-DOCUMENTATION-STYLE.md) | C++ documentation style guide |
+| [Build and Run](~docs/BUILD-AND-RUN.md) | Building and running Nexen |
+| [Profiling Guide](~docs/PROFILING-GUIDE.md) | Performance profiling |
+| [ASan Guide](~docs/ASAN-GUIDE.md) | AddressSanitizer configuration |
+| [Movie & TAS Subsystem](~docs/MOVIE-TAS.md) | Movie recording and TAS internals |
+| [TAS Algorithm Reference](~docs/algorithms/tas-algorithms.md) | TAS data structure and undo system design |
+| [Audio Subsystem](~docs/AUDIO-SUBSYSTEM.md) | Audio processing and resampling |
+| [Video Rendering](~docs/VIDEO-RENDERING.md) | Video rendering pipeline |
+| [Input Subsystem](~docs/INPUT-SUBSYSTEM.md) | Input and controller handling |
+| [Debugger Subsystem](~docs/DEBUGGER.md) | Debugger internals |
+| [Utilities Library](~docs/UTILITIES-LIBRARY.md) | Shared utility library |
+| [Pansy Integration](~docs/pansy-export-index.md) | Metadata export system |
+| [Channel F Master Plan](~docs/plans/channel-f-master-program-plan.md) | Fairchild Channel F roadmap |
+| [Channel F Implementation Prompts](~docs/plans/channel-f-implementation-prompts.md) | Ordered multi-session execution prompt pack |
+| [Channel F Source Index](~docs/research/channel-f-source-index.md) | External references mapped to implementation work |
+
+### Emulation Core Internals
+
+| Document | Description |
+|----------|-------------|
+| [NES Core](~docs/NES-CORE.md) | NES/Famicom emulation core |
+| [SNES Core](~docs/SNES-CORE.md) | SNES/Super Famicom emulation core |
+| [GB/GBA Core](~docs/GB-GBA-CORE.md) | Game Boy and GBA emulation core |
+| [SMS/PCE/WS Core](~docs/SMS-PCE-WS-CORE.md) | SMS, PCE, and WS core |
+| [Lynx Core](~docs/LYNX-CORE.md) | Atari Lynx core |
+
+---
 
 ## 🏗️ Building from Source
 
@@ -283,7 +297,7 @@ See the [Integrated Pipeline Master Plan](https://github.com/TheAnsarya/pansy/bl
 
 | Component | Version | Notes |
 |-----------|---------|-------|
-| **C++ Compiler** | C++23 (MSVC 19.40+, Clang 18+, GCC 13+) | `stdcpplatest` |
+| **C++ Compiler** | C++23 (MSVC v145+, Clang 18+, GCC 13+) | `/std:c++latest` |
 | **.NET SDK** | 10.0+ | [Download](https://dotnet.microsoft.com/download) |
 | **SDL2** | 2.0+ | Linux/macOS only |
 
@@ -305,6 +319,8 @@ dotnet publish -c Release UI/UI.csproj
 
 See [COMPILING.md](COMPILING.md) for detailed instructions.
 
+---
+
 ## Markdown Quality Automation
 
 Use these scripts to validate and benchmark markdown structure policy checks (`MD022`, `MD031`, `MD032`, `MD047`):
@@ -319,6 +335,19 @@ pwsh -File scripts/test-markdown-policy.ps1
 pwsh -File scripts/benchmark-markdown-policy.ps1 -Runs 5
 ```
 
+---
+
+## 🔗 Related Projects
+
+| Project | Description |
+|---------|-------------|
+| [🌼 Pansy](https://github.com/TheAnsarya/pansy) | Universal disassembly metadata format and toolkit |
+| [🌺 Peony](https://github.com/TheAnsarya/peony) | Multi-system disassembler (ROM → `.pasm` source) |
+| [🌸 Poppy](https://github.com/TheAnsarya/poppy) | Multi-system assembler (`.pasm` → ROM) |
+| [🌱 Game Garden](https://github.com/TheAnsarya/game-garden) | Games disassembly, editing, and recompilation |
+
+---
+
 ## 📜 License
 
 Nexen is dual-licensed:
@@ -328,11 +357,13 @@ Nexen is dual-licensed:
 
 See [LICENSE](LICENSE) for full details.
 
+---
+
 ## 🙏 Acknowledgments
 
 Nexen builds upon the excellent work of:
 
-- **[Mesen](https://github.com/SourMesen/Mesen2)** by Sour - The original emulator codebase
+- **[Mesen](https://github.com/SourMesen/Mesen2)** by Sour — The original emulator codebase
 - The emulation community for documentation and research
 - Contributors and testers
 
