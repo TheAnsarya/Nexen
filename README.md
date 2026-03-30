@@ -22,7 +22,7 @@
 
 ## Overview
 
-Nexen is a multi-system emulator based on [Mesen2](https://github.com/SourMesen/Mesen2) with significant enhancements: a full-featured TAS editor with undo/redo and greenzone support, an infinite save state system with visual picker, a ZIP-based movie format with multi-format import/export, 🌼 Pansy metadata export for integration with the Flower Toolchain disassembly pipeline, and Fairchild Channel F support.
+Nexen is a multi-system emulator based on [Mesen2](https://github.com/SourMesen/Mesen2) with significant enhancements: a full-featured TAS editor with undo/redo and greenzone support, an infinite save state system with visual picker, a ZIP-based movie format with multi-format import/export, 🌼 Pansy metadata export for integration with the Flower Toolchain disassembly pipeline, and active development of Sega Genesis, Atari 2600, and Fairchild Channel F support.
 
 ---
 
@@ -74,8 +74,10 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 | Game Boy / Game Boy Color | Sharp LR35902 | ✅ Full |
 | Game Boy Advance | ARM7TDMI | ✅ Full |
 | Sega Master System / Game Gear | Zilog Z80 | ✅ Full |
+| Sega Genesis / Mega Drive | Motorola 68000 | 🔄 In Progress |
 | PC Engine / TurboGrafx-16 | HuC6280 | ✅ Full |
 | WonderSwan / WonderSwan Color | NEC V30MZ | ✅ Full |
+| Atari 2600 | MOS 6507 | 🔄 In Progress |
 | Atari Lynx | WDC 65SC02 | ✅ Full |
 | Fairchild Channel F | Fairchild F8 | 🔄 In Progress |
 
@@ -252,9 +254,12 @@ Nexen is the **play & debug** stage of the Flower Toolchain — an integrated pi
 | Game Boy / GBC | [GB Guide](docs/systems/GB.md) |
 | Game Boy Advance | [GBA Guide](docs/systems/GBA.md) |
 | Sega Master System / GG | [SMS Guide](docs/systems/SMS.md) |
+| Sega Genesis / Mega Drive | *Coming soon* |
 | PC Engine / TG-16 | [PCE Guide](docs/systems/PCE.md) |
 | WonderSwan / WSC | [WS Guide](docs/systems/WS.md) |
+| Atari 2600 | *Coming soon* |
 | Atari Lynx | [Lynx Guide](docs/systems/Lynx.md) |
+| Fairchild Channel F | [Channel F Guide](docs/systems/ChannelF.md) |
 
 ### Developer Documentation
 
