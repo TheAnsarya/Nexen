@@ -1012,6 +1012,7 @@ No! you are stuck on "working" don't do that go;
 
 [Nexen] release version 1.4.11 to github and make a good readme file;
 
+[Nexen] I said to "release version 1.4.11 to github and make a good readme file"  but you only made `https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.11` but didn't actually build any assets, there are no Actions, so build an release the version and update the readme with updates, including the list of supported systems; continue;
 
 
 
