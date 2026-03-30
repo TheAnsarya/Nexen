@@ -114,4 +114,4 @@
 
 - Linux-specific runtime behavior still requires cross-distro runtime validation on real targets.
 - Runtime dependency checks are now CI-enforced across publish platforms, but distro-specific driver/runtime stacks still require field validation.
-- Warning fail gate defaults to disabled until baseline values are tuned from real CI history.
+- Warning fail gate is now enabled with calibrated baselines; future warning reductions should be followed by baseline tightening.

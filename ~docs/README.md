@@ -115,6 +115,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Atari 2600 + Genesis Parity Tracker](plans/atari2600-genesis-parity-tracker.md) | Active multi-phase checklist, issue linkage, and closure criteria for parity execution (#750) |
 | [UI Settings Completeness Plan](plans/ui-settings-completeness-epic-18.md) | Epic #1040 execution plan for cross-platform settings/input/movie/savestate UX completeness |
 | [Epic 22 Stability and Modernization Plan](plans/epic-22-stability-modernization-plan-2026-03-28.md) | Execution plan for crash/segfault mitigation, runtime compatibility, warning hardening, and modernization gates (#1048-#1055) |
+| [Modern Library Baseline and Upgrade Policy (2026-03-29)](plans/modern-library-baseline-policy-2026-03-29.md) | Dependency baseline snapshot, upgrade cadence, and rollback criteria for #1050 |
 | [Epic 22 Validation Pack](testing/epic-22-validation-pack-2026-03-28.md) | Build/test/benchmark/runtime evidence snapshot for the 2026-03-28 stabilization pass |
 | [Linux Runtime Crash Matrix](testing/linux-runtime-crash-matrix-2026-03-28.md) | Distro-by-distro crash/segfault signature matrix with current mitigation status for #1049 |
 | [Linux Crash Hardening Fix Order](plans/linux-crash-hardening-order-2026-03-28.md) | Ordered stabilization sequence for runtime dependencies, warnings, and cross-distro validation (#1049, #1051, #1054) |
