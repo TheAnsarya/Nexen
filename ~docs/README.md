@@ -78,6 +78,8 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Channel F Master Program Plan](plans/channel-f-master-program-plan.md) | End-to-end multi-epic roadmap and quality gates |
 | [Channel F Implementation Architecture](plans/channel-f-implementation-architecture.md) | Core and integration design for CPU/bus/video/audio/input/tooling |
 | [Channel F Testing and Benchmark Plan](plans/channel-f-testing-and-benchmark-plan.md) | Correctness, performance, and memory validation framework |
+| [Channel F Production Readiness Matrix](testing/channelf-production-readiness-matrix.md) | Go/no-go checklist and evidence gates for first-class Channel F release readiness |
+| [Channel F Troubleshooting Playbook](testing/channelf-troubleshooting-known-issues-playbook.md) | Known issues, triage workflow, and issue reporting template for Channel F |
 | [Channel F Ordered Prompt Pack](plans/channel-f-implementation-prompts.md) | Session-by-session execution prompts |
 | [Channel F Source Index](research/channel-f-source-index.md) | External technical references and mapping to issue tree |
 | [Channel F Origin Prompt](plans/channel-f-origin-prompt.md) | Canonical request tracked on all related issues |
