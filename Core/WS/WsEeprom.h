@@ -28,6 +28,7 @@ private:
 	[[nodiscard]] WsEepromCommand GetCommand();
 	[[nodiscard]] WsEepromSize GetSize();
 	[[nodiscard]] uint16_t GetCommandAddress();
+	[[nodiscard]] uint32_t GetCommandDelay(WsEepromCommand cmd) const;
 
 	void WriteValue(uint16_t addr, uint16_t value);
 
