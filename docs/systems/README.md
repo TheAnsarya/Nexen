@@ -14,6 +14,7 @@ This section groups user-facing documentation for each emulated platform.
 | PC Engine / TurboGrafx-16 | [PCE](PCE.md) |
 | WonderSwan / WonderSwan Color | [WS](WS.md) |
 | Atari Lynx | [Lynx](Lynx.md) |
+| Fairchild Channel F | [ChannelF](ChannelF.md) |
 
 ## Related Documentation
 

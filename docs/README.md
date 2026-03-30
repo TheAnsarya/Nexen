@@ -16,6 +16,7 @@ This directory contains user-facing documentation for Nexen.
 | [Future Work Index](FUTURE-WORK.md) | Active roadmap tracks and planned improvement programs |
 | [TAS Developer Guide](TAS-Developer-Guide.md) | Technical internals for TAS extensions |
 | [TAS Architecture](TAS_ARCHITECTURE.md) | TAS and movie system architecture |
+| [Channel F Architecture](CHANNELF-ARCHITECTURE.md) | Channel F core, debugger, TAS, and persistence integration overview |
 | [Movie Format Spec](NEXEN_MOVIE_FORMAT.md) | .nexen-movie file format specification |
 | [Manual Testing Hub](manual-testing/README.md) | Ranked and repeatable manual release validation workflows |
 | [Performance Guide](PERFORMANCE.md) | Consolidated performance references and validation workflow |
@@ -27,6 +28,7 @@ This directory contains user-facing documentation for Nexen.
 |---|---|
 | [Manual Testing Hub](manual-testing/README.md) | Starting manual instructions and execution order |
 | [Atari 2600 Debug and TAS Manual Test](manual-testing/atari2600-debug-and-tas-manual-test.md) | End-to-end debugger, TAS, and movie validation workflow |
+| [Channel F Debug and TAS Manual Test](manual-testing/channelf-debug-and-tas-manual-test.md) | End-to-end Channel F debugger, TAS, movie, and persistence validation workflow |
 | [Manual Step Priority Ranking](manual-testing/manual-step-priority-ranking.md) | Release impact ranking for manual validation steps |
 | [Developer Testing and Manual Validation Index](../~docs/testing/README.md) | Full manual and automated testing tree |
 
@@ -76,6 +78,7 @@ This directory contains user-facing documentation for Nexen.
 | [PCE](systems/PCE.md) | PC Engine and TurboGrafx-16 usage and platform overview |
 | [WS](systems/WS.md) | WonderSwan and WonderSwan Color usage and platform overview |
 | [Lynx](systems/Lynx.md) | Atari Lynx landing page and deep links |
+| [Channel F](systems/ChannelF.md) | Fairchild Channel F landing page and deep links |
 
 ## Lynx Deep-Dive Documents
 

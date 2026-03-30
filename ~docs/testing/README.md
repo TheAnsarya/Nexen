@@ -16,6 +16,13 @@ This index unifies all testing and manual validation documentation.
 | [atari2600-tas-ui-coverage-audit.md](atari2600-tas-ui-coverage-audit.md) | Automated and manual TAS/movie UI coverage assessment |
 | [docs/manual-testing/atari2600-debug-and-tas-manual-test.md](../../docs/manual-testing/atari2600-debug-and-tas-manual-test.md) | Operator checklist for debugger UI and TAS/movie workflows |
 
+## Channel F Release Validation
+
+| Document | Purpose |
+|---|---|
+| [channelf-test-strategy-matrix-2026-03-30.md](channelf-test-strategy-matrix-2026-03-30.md) | Consolidated quality gates across Channel F core, UI, debugger, TAS/movie, and persistence |
+| [docs/manual-testing/channelf-debug-and-tas-manual-test.md](../../docs/manual-testing/channelf-debug-and-tas-manual-test.md) | Operator checklist for Channel F runtime, debugger, TAS, and movie workflows |
+
 ## Atari Lynx Release Validation
 
 | Document | Purpose |
