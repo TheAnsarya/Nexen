@@ -43,10 +43,10 @@ This matrix consolidates validation evidence for Epic 23:
 
 | Platform Group | Validation Focus | Current Status | Evidence |
 |---|---|---|---|
-| NES/SNES/GB/GBA/SMS/PCE | Controller mapping UI complete and persisted | Complete | UI settings coverage matrix |
-| Atari 2600 | Port subtype mapping and console switch mapping correctness | Partial | `docs/manual-testing/atari2600-debug-and-tas-manual-test.md` |
-| Lynx | Debugger and TAS input mapping reliability | Partial | `docs/manual-testing/lynx-debug-and-tas-manual-test.md` |
-| Channel F | Full button mapping and UI discoverability | Partial | #1073 and latest Channel F updates |
+| NES/SNES/GB/GBA/SMS/PCE | Controller mapping coverage and decode behavior | Complete | `InputApiDecoderTests` checkpoint (`input-mapping-coverage-checkpoint-2026-03-30.md`) |
+| Atari 2600 | Port subtype mapping and decode correctness (joystick/driving/booster/keypad) | Complete | `InputApiDecoderTests` checkpoint (`input-mapping-coverage-checkpoint-2026-03-30.md`) |
+| Lynx | Input mapping decode reliability for core button lanes | Complete | `InputApiDecoderTests` checkpoint (`input-mapping-coverage-checkpoint-2026-03-30.md`) |
+| Channel F | Full button mapping and UI discoverability | Partial | #1073 follow-up for Channel F-specific mapping surface parity |
 
 ## Benchmark and Regression Signals
 
