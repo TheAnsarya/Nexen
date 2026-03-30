@@ -8,6 +8,7 @@ This directory contains deep-dive research artifacts used to drive long-term pla
 |---|---|
 | [Platform Parity Program](platform-parity/README.md) | Multi-session research and execution documents for Atari 2600 and Sega Genesis/Mega Drive |
 | [Lynx Cart Shift Register Addressing Audit (2026-03-30)](lynx-cart-shift-register-addressing-audit-2026-03-30.md) | Audit of Lynx cart shift-register address-bit counting and bank/page mapping behavior for #956 |
+| [Lynx Commercial Bank-Addressing Validation Matrix (2026-03-30)](lynx-commercial-bank-addressing-validation-matrix-2026-03-30.md) | Commercial-title validation matrix scaffold for empirical bank/page verification and anomaly triage for #1105 |
 
 ## Related Developer Indexes
 
