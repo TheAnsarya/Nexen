@@ -260,6 +260,37 @@ TEST(WsStateCpuHelpersTest, ParityTableMatchesEvenParityDefinition) {
 	EXPECT_TRUE(table.CheckParity(0xff)); // 8 set bits (even)
 }
 
+TEST(WsStateTypeContractTest, SegmentEnumValuesStable) {
+	EXPECT_EQ(static_cast<uint8_t>(WsSegment::Default), 0u);
+	EXPECT_EQ(static_cast<uint8_t>(WsSegment::ES), 1u);
+	EXPECT_EQ(static_cast<uint8_t>(WsSegment::SS), 2u);
+	EXPECT_EQ(static_cast<uint8_t>(WsSegment::CS), 3u);
+	EXPECT_EQ(static_cast<uint8_t>(WsSegment::DS), 4u);
+}
+
+TEST(WsStateTypeContractTest, IrqSourceMasksMatchBitLayout) {
+	EXPECT_EQ(static_cast<uint8_t>(WsIrqSource::UartSendReady), 0x01u);
+	EXPECT_EQ(static_cast<uint8_t>(WsIrqSource::KeyPressed), 0x02u);
+	EXPECT_EQ(static_cast<uint8_t>(WsIrqSource::Cart), 0x04u);
+	EXPECT_EQ(static_cast<uint8_t>(WsIrqSource::UartRecvReady), 0x08u);
+	EXPECT_EQ(static_cast<uint8_t>(WsIrqSource::Scanline), 0x10u);
+	EXPECT_EQ(static_cast<uint8_t>(WsIrqSource::VerticalBlankTimer), 0x20u);
+	EXPECT_EQ(static_cast<uint8_t>(WsIrqSource::VerticalBlank), 0x40u);
+	EXPECT_EQ(static_cast<uint8_t>(WsIrqSource::HorizontalBlankTimer), 0x80u);
+}
+
+TEST(WsStateBaseApuTest, VolumeRoundTripPreservesNibbles) {
+	BaseWsApuState state = {};
+	state.SetVolume(0x9e);
+	EXPECT_EQ(state.GetVolume(), 0x9e);
+
+	state.SetVolume(0x00);
+	EXPECT_EQ(state.GetVolume(), 0x00);
+
+	state.SetVolume(0xff);
+	EXPECT_EQ(state.GetVolume(), 0xff);
+}
+
 TEST(WsStateBaseApuTest, SetVolume_SplitsNibblesCorrectly) {
 	BaseWsApuState state = {};
 	state.SetVolume(0xab);
