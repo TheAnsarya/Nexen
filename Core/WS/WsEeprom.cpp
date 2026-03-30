@@ -212,9 +212,14 @@ void WsEeprom::WritePort(uint8_t port, uint8_t value) {
 				return;
 			}
 
-			// TODOWS abort (cart eeprom)
-			if (writeProtect && _isInternal) {
-				_state.InternalEepromWriteProtected = true;
+			if (writeProtect) {
+				if (_isInternal) {
+					_state.InternalEepromWriteProtected = true;
+				} else {
+					// Cartridge EEPROM abort command (0x001f): cancel in-flight operation.
+					_state.CmdStartClock = 0;
+					_state.Idle = true;
+				}
 				return;
 			}
 
