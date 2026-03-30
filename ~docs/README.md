@@ -87,6 +87,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Channel F Golden ROM Corpus Inventory](testing/channelf-golden-rom-corpus-inventory.md) | Canonical ROM corpus inventory and checksum metadata contract for deterministic validation |
 | [Channel F Troubleshooting Playbook](testing/channelf-troubleshooting-known-issues-playbook.md) | Known issues, triage workflow, and issue reporting template for Channel F |
 | [Channel F TAS Gesture Widget Triage (2026-03-30)](testing/channelf-tas-gesture-widget-triage-2026-03-30.md) | #1012 readiness/blocker checkpoint for Channel F twist/pull/push TAS lane visualization |
+| [Channel F TAS Gesture Widget Checkpoint (2026-03-30)](testing/channelf-tas-gesture-widget-checkpoint-2026-03-30.md) | #1012 implementation and test-evidence checkpoint for Channel F TAS gesture lanes |
 | [Channel F Ordered Prompt Pack](plans/channel-f-implementation-prompts.md) | Session-by-session execution prompts |
 | [Channel F Source Index](research/channel-f-source-index.md) | External technical references and mapping to issue tree |
 | [Channel F Origin Prompt](plans/channel-f-origin-prompt.md) | Canonical request tracked on all related issues |
