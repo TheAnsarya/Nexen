@@ -135,11 +135,15 @@ jobs:
       - name: Validate required runtime assets (Windows publish)
         shell: pwsh
         run: |
-          $required = @(
-            "build\publish\Nexen.exe",
-            "build\publish\libSkiaSharp.dll",
-            "build\publish\libHarfBuzzSharp.dll"
-          )
+          # When IncludeNativeLibrariesForSelfExtract is true (standard single-file build),
+          # native DLLs are bundled inside Nexen.exe and won't exist as separate files.
+          # Only require the exe itself; native libs are separate only in AoT builds.
+          $required = @("build\publish\Nexen.exe")
+
+          if ("${{ matrix.platform.aot }}" -eq "true") {
+            $required += "build\publish\libSkiaSharp.dll"
+            $required += "build\publish\libHarfBuzzSharp.dll"
+          }
 
           $missing = @()
           foreach ($path in $required) {
