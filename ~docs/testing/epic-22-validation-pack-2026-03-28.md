@@ -69,8 +69,28 @@
 
 1. Gate behavior.
 
-- `WARNING_FAIL_ON_REGRESSION=0` keeps telemetry-only mode.
-- `WARNING_FAIL_ON_REGRESSION=1` fails jobs when warning delta is positive.
+- `WARNING_FAIL_ON_REGRESSION=1` is now enabled in `build.yml`.
+- Jobs fail when warning delta is positive.
+
+2. Baseline calibration source runs (#1056).
+
+- 23720620324 (master)
+- 23720623170 (v1.4.9)
+- 23720627204 (feature/channel-f-remaining)
+- 23721111328 (feature/channel-f-remaining)
+- 23721114532 (master)
+
+3. Baseline values applied.
+
+- `WARNING_BASELINE_WINDOWS=0`
+- `WARNING_BASELINE_LINUX=4063`
+- `WARNING_BASELINE_APPIMAGE=145`
+
+4. Rationale.
+
+- Linux baseline uses the observed max from gcc matrix runs to avoid false-positive failures while still detecting warning regressions above known current levels.
+- AppImage baseline uses stable repeated count observed across x64/ARM64 jobs.
+- Windows baseline remains zero from repeated scans.
 
 1. Linux crash smoke checks now run for Linux publish binary (`Nexen`) and AppImage artifact (`Nexen.AppImage`).
 
