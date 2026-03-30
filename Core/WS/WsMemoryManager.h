@@ -144,15 +144,15 @@ public:
 	/// Reads a byte from memory without side effects for debugging.
 	/// </summary>
 	/// <param name="addr">20-bit address.</param>
-	/// <returns>Byte value or open bus ($90).</returns>
+	/// <returns>Byte value or latched open bus value.</returns>
 	__forceinline uint8_t InternalRead(uint32_t addr) {
 		uint8_t* handler = _reads[addr >> 12];
-		uint8_t value = 0x90;  // Open bus default
+		uint8_t value = _state.OpenBus;
 		if (handler) {
 			value = handler[addr & 0xFFF];
+			_state.OpenBus = value;
 		}
 
-		// TODOWS open bus
 		return value;
 	}
 
@@ -162,7 +162,7 @@ public:
 	/// <param name="addr">20-bit address.</param>
 	/// <param name="value">Byte value.</param>
 	__forceinline void InternalWrite(uint32_t addr, uint8_t value) {
-		// TODOWS open bus
+		_state.OpenBus = value;
 		uint8_t* handler = _writes[addr >> 12];
 		if (handler) {
 			handler[addr & 0xFFF] = value;

@@ -150,6 +150,7 @@ T WsMemoryManager::ReadPort(uint16_t port) {
 				uint8_t hi = InternalReadPort(port + 1, true);
 				value = lo | (hi << 8);
 			}
+			_state.OpenBus = (uint8_t)(value >> 8);
 
 			_emu->ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Read>(port, value);
 			return value;
@@ -158,6 +159,7 @@ T WsMemoryManager::ReadPort(uint16_t port) {
 		Exec();
 
 		uint8_t value = IsUnmappedPort(port) ? GetUnmappedPort() : InternalReadPort(port, false);
+		_state.OpenBus = value;
 		_emu->ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Read>(port, value);
 		return value;
 	}
@@ -173,6 +175,7 @@ void WsMemoryManager::WritePort(uint16_t port, T value) {
 		} else {
 			Exec();
 			_emu->ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Write>(port, value);
+			_state.OpenBus = (uint8_t)(value >> 8);
 
 			if (!IsUnmappedPort(port)) {
 				InternalWritePort(port, value, true);
@@ -182,6 +185,7 @@ void WsMemoryManager::WritePort(uint16_t port, T value) {
 	} else {
 		Exec();
 		_emu->ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Write>(port, value);
+		_state.OpenBus = value;
 
 		if (!IsUnmappedPort(port)) {
 			InternalWritePort(port, value, false);
@@ -214,7 +218,7 @@ bool WsMemoryManager::IsUnmappedPort(uint16_t port) {
 }
 
 uint8_t WsMemoryManager::GetUnmappedPort() {
-	return _console->GetModel() == WsModel::Monochrome ? 0x90 : 0;
+	return _state.OpenBus;
 }
 
 uint8_t WsMemoryManager::InternalReadPort(uint16_t port, bool isWordAccess) {
@@ -495,6 +499,7 @@ void WsMemoryManager::Serialize(Serializer& s) {
 	SV(_state.ActiveIrqs);
 	SV(_state.EnabledIrqs);
 	SV(_state.IrqVectorOffset);
+	SV(_state.OpenBus);
 	SV(_state.SystemControl2);
 	SV(_state.SystemTest);
 	SV(_state.ColorEnabled);

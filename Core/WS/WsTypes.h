@@ -261,6 +261,7 @@ struct WsMemoryManagerState {
 	uint8_t ActiveIrqs;           ///< Currently pending IRQ flags
 	uint8_t EnabledIrqs;          ///< IRQ enable mask
 	uint8_t IrqVectorOffset;      ///< IRQ vector table offset
+	uint8_t OpenBus;              ///< Last latched data bus value for open-bus reads
 
 	uint8_t SystemControl2;       ///< System control register 2
 	uint8_t SystemTest;           ///< System test register
