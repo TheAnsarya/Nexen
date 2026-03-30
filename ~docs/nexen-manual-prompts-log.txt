@@ -937,12 +937,16 @@ I don't understand the error `SkiaSharp/HarfBuzzSharp DLLs not found in NuGet ca
 
 [Nexen] expand the open file dialog with channel f files (chf, bin); make sure cdl and pansy and project export is turned on by default; continue; [Nexen] (CI/CD, github actions, linux, performance) the `clang` and `AoT` Linux builds are dogshit slow (see comment `https://github.com/TheAnsarya/Nexen/issues/1039#issuecomment-4150100847`) so make performance better for those builds, am I using SDL wrong? research what the problem is and fix it; always use the most modern standards and practices and most modern code and most recent and modern libraries and frameworks; always create/update epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; continue;
 
+[Nexen] work through as many issues as you can, as fast as you can, updating epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; continue;
 
+immediately continue with the next fastest open backlog items (likely #1056 or #1054) and keep closing in the same style.
 
+yes, continue for a long time;
 
+[Nexen] don't make a build for every code change; I am tired of looking at github actions and seeing 5 different builds happening at once and no release is happening; stop that shit; only make a github build when there is a github release and only release when I tell you to; sure I guess run a build when testing CI changes, but only run one build at a time; continue;
 
-
-
+--- steer
+Include nexen-manual-prompts-log.txt as-is whenever it appears
 
 
 

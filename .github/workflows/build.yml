@@ -1,9 +1,21 @@
 name: Build Nexen
 
 on:
-  push:
-    branches: ['**']
-    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      run_release:
+        description: 'Create/update GitHub release after build'
+        required: true
+        default: false
+        type: boolean
+      release_tag:
+        description: 'Release tag (required when run_release=true), e.g. v1.5.0'
+        required: false
+        type: string
+
+concurrency:
+  group: build-nexen-single
+  cancel-in-progress: true
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -771,17 +783,32 @@ jobs:
           path: bin/osx-${{ matrix.platform.arch }}/Release/Nexen.app.zip
 
 
-  # Create GitHub Release with artifacts when a version tag is pushed
-  # Use always() so the release still runs even if some platform builds fail
-  # (e.g., if macOS fails, Windows/Linux artifacts are still released)
+  # Create GitHub Release only when explicitly requested via workflow_dispatch input.
+  # Use always() so release can still run if some platform jobs fail and partial assets exist.
   release:
-    if: always() && startsWith(github.ref, 'refs/tags/v')
+    if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.run_release }}
     needs: [windows, linux, appimage, macos]
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
+      - name: Validate release input
+        run: |
+          VERSION="${{ inputs.release_tag }}"
+
+          if [ -z "$VERSION" ]; then
+            echo "release_tag input is required when run_release=true"
+            exit 1
+          fi
+
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "release_tag must match vX.Y.Z (got: $VERSION)"
+            exit 1
+          fi
+
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -792,8 +819,8 @@ jobs:
           mkdir -p release-assets
           mkdir -p tarball-staging
 
-          # Extract version from tag (e.g., v1.1.4)
-          VERSION="${GITHUB_REF_NAME}"
+          # Use explicit manual release tag input (e.g., v1.1.4)
+          VERSION="${VERSION}"
 
           # Windows builds
           cp "artifacts/Nexen (Windows)/Nexen.exe" "release-assets/Nexen-Windows-x64-${VERSION}.exe" || true
@@ -844,6 +871,9 @@ jobs:
       - name: Create or update release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.VERSION }}
+          name: Nexen ${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
           files: release-assets/*
           fail_on_unmatched_files: false
           generate_release_notes: false
