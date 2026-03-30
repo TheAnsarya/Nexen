@@ -11,7 +11,13 @@ class WsController : public BaseControlDevice {
 private:
 	WsConsole* _console = nullptr;
 	vector<KeyMapping> _verticalMappings;
-	uint32_t _turboSpeed = 0;
+	uint32_t _horizontalTurboSpeed = 0;
+	uint32_t _verticalTurboSpeed = 0;
+
+	static uint32_t GetClampedTurboSpeed(uint32_t turboSpeed) {
+		// Turbo cadence supports values in the [0, 4] range.
+		return std::min(turboSpeed, static_cast<uint32_t>(4));
+	}
 
 protected:
 	string GetKeyNames() override {
@@ -19,7 +25,9 @@ protected:
 	}
 
 	void InternalSetStateFromInput() override {
-		vector<KeyMapping>& keyMappings = _console->IsVerticalMode() ? _verticalMappings : _keyMappings;
+		bool isVerticalMode = _console->IsVerticalMode();
+		vector<KeyMapping>& keyMappings = isVerticalMode ? _verticalMappings : _keyMappings;
+		uint32_t turboSpeed = isVerticalMode ? _verticalTurboSpeed : _horizontalTurboSpeed;
 		for (KeyMapping& keyMapping : keyMappings) {
 			SetPressedState(Buttons::A, keyMapping.A);
 			SetPressedState(Buttons::B, keyMapping.B);
@@ -35,7 +43,7 @@ protected:
 			SetPressedState(Buttons::Left2, keyMapping.L);
 			SetPressedState(Buttons::Right2, keyMapping.R);
 
-			uint8_t turboFreq = 1 << (4 - _turboSpeed);
+			uint8_t turboFreq = 1 << (4 - turboSpeed);
 			bool turboOn = (uint8_t)(_emu->GetFrameCount() % turboFreq) < turboFreq / 2;
 			if (turboOn) {
 				SetPressedState(Buttons::A, keyMapping.TurboA);
@@ -61,10 +69,10 @@ public:
 		           A };
 
 	WsController(Emulator* emu, WsConsole* console, uint8_t port, KeyMappingSet horizontalMappings, KeyMappingSet verticalMappings) : BaseControlDevice(emu, ControllerType::WsController, port, horizontalMappings) {
-		// TODOWS turbo support
 		_verticalMappings = verticalMappings.GetKeyMappingArray();
 		_console = console;
-		_turboSpeed = horizontalMappings.TurboSpeed;
+		_horizontalTurboSpeed = GetClampedTurboSpeed(horizontalMappings.TurboSpeed);
+		_verticalTurboSpeed = GetClampedTurboSpeed(verticalMappings.TurboSpeed);
 	}
 
 	uint8_t ReadRam(uint16_t addr) override {
