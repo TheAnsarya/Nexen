@@ -1,5 +1,79 @@
 #include "pch.h"
+#include "WS/WsEeprom.h"
 #include "WS/WsTypes.h"
+
+namespace WsStateBehaviorHelpers {
+	static WsEepromCommand DecodeEepromCommand(uint16_t rawCommand, WsEepromSize size) {
+		uint16_t command = rawCommand;
+		if (size != WsEepromSize::Size128) {
+			command >>= 4;
+		}
+
+		switch (command & 0xffc0) {
+			case 0x0180:
+				return WsEepromCommand::Read;
+			case 0x0140:
+				return WsEepromCommand::Write;
+			case 0x01c0:
+				return WsEepromCommand::Erase;
+			case 0x0100:
+				switch ((command >> 4) & 0x03) {
+					case 0x00: return WsEepromCommand::WriteDisable;
+					case 0x01: return WsEepromCommand::WriteAll;
+					case 0x02: return WsEepromCommand::EraseAll;
+					case 0x03: return WsEepromCommand::WriteEnable;
+				}
+				break;
+		}
+
+		return WsEepromCommand::Unknown;
+	}
+
+	static uint16_t GetEepromCommandAddress(uint16_t rawCommand, WsEepromSize size) {
+		switch (size) {
+			case WsEepromSize::Size128:
+				return rawCommand & 0x003f;
+			case WsEepromSize::Size1kb:
+				return rawCommand & 0x01ff;
+			case WsEepromSize::Size2kb:
+				return rawCommand & 0x03ff;
+			default:
+				return 0;
+		}
+	}
+
+	static uint32_t GetEepromCommandDelay(WsEepromCommand cmd) {
+		switch (cmd) {
+			case WsEepromCommand::Read:
+				return 6;
+			case WsEepromCommand::Write:
+			case WsEepromCommand::Erase:
+				return 10;
+			case WsEepromCommand::WriteAll:
+			case WsEepromCommand::EraseAll:
+				return 20;
+			default:
+				return 10;
+		}
+	}
+
+	static uint8_t ReadSystemTestPortBehavior(uint8_t openBusValue, uint8_t systemTestValue) {
+		(void)systemTestValue;
+		// Port 0xA3 is write-only and reads as open bus.
+		return openBusValue;
+	}
+
+	static bool IsWordBusBehavior(uint32_t addr, bool cartWordBus) {
+		switch (addr >> 16) {
+			case 0:
+				return true;
+			case 1:
+				return false;
+			default:
+				return cartWordBus;
+		}
+	}
+}
 
 // =============================================================================
 // WonderSwan Core State Tests
@@ -76,6 +150,38 @@ TEST(WsStateEepromSizeTest, EnumValues) {
 	EXPECT_EQ(static_cast<uint16_t>(WsEepromSize::Size128), 0x0080);
 	EXPECT_EQ(static_cast<uint16_t>(WsEepromSize::Size1kb), 0x0400);
 	EXPECT_EQ(static_cast<uint16_t>(WsEepromSize::Size2kb), 0x0800);
+}
+
+TEST(WsStateEepromBehaviorTest, DecodeCommandAcrossSizes) {
+	EXPECT_EQ(WsStateBehaviorHelpers::DecodeEepromCommand(0x0180, WsEepromSize::Size128), WsEepromCommand::Read);
+	EXPECT_EQ(WsStateBehaviorHelpers::DecodeEepromCommand(0x1400, WsEepromSize::Size1kb), WsEepromCommand::Write);
+	EXPECT_EQ(WsStateBehaviorHelpers::DecodeEepromCommand(0x0000, WsEepromSize::Size2kb), WsEepromCommand::Unknown);
+}
+
+TEST(WsStateEepromBehaviorTest, CommandAddressMaskMatchesSize) {
+	EXPECT_EQ(WsStateBehaviorHelpers::GetEepromCommandAddress(0xffff, WsEepromSize::Size128), 0x003f);
+	EXPECT_EQ(WsStateBehaviorHelpers::GetEepromCommandAddress(0xffff, WsEepromSize::Size1kb), 0x01ff);
+	EXPECT_EQ(WsStateBehaviorHelpers::GetEepromCommandAddress(0xffff, WsEepromSize::Size2kb), 0x03ff);
+}
+
+TEST(WsStateEepromBehaviorTest, CommandDelayBuckets) {
+	EXPECT_EQ(WsStateBehaviorHelpers::GetEepromCommandDelay(WsEepromCommand::Read), 6u);
+	EXPECT_EQ(WsStateBehaviorHelpers::GetEepromCommandDelay(WsEepromCommand::Write), 10u);
+	EXPECT_EQ(WsStateBehaviorHelpers::GetEepromCommandDelay(WsEepromCommand::Erase), 10u);
+	EXPECT_EQ(WsStateBehaviorHelpers::GetEepromCommandDelay(WsEepromCommand::WriteAll), 20u);
+	EXPECT_EQ(WsStateBehaviorHelpers::GetEepromCommandDelay(WsEepromCommand::EraseAll), 20u);
+}
+
+TEST(WsStateMemoryBehaviorTest, SystemTestReadUsesOpenBus) {
+	EXPECT_EQ(WsStateBehaviorHelpers::ReadSystemTestPortBehavior(0x5a, 0x0f), 0x5a);
+	EXPECT_EQ(WsStateBehaviorHelpers::ReadSystemTestPortBehavior(0x00, 0x07), 0x00);
+}
+
+TEST(WsStateMemoryBehaviorTest, WordBusSelectionByAddressRegion) {
+	EXPECT_TRUE(WsStateBehaviorHelpers::IsWordBusBehavior(0x00000, false));
+	EXPECT_FALSE(WsStateBehaviorHelpers::IsWordBusBehavior(0x10000, true));
+	EXPECT_FALSE(WsStateBehaviorHelpers::IsWordBusBehavior(0x20000, false));
+	EXPECT_TRUE(WsStateBehaviorHelpers::IsWordBusBehavior(0x20000, true));
 }
 
 TEST(WsStateBaseApuTest, SetVolume_SplitsNibblesCorrectly) {
