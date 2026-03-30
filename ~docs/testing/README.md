@@ -22,6 +22,9 @@ This index unifies all testing and manual validation documentation.
 |---|---|
 | [channelf-test-strategy-matrix-2026-03-30.md](channelf-test-strategy-matrix-2026-03-30.md) | Consolidated quality gates across Channel F core, UI, debugger, TAS/movie, and persistence |
 | [channelf-production-readiness-matrix.md](channelf-production-readiness-matrix.md) | Go/no-go readiness checklist and required evidence gates for first-class Channel F support |
+| [channelf-benchmark-suite-matrix.md](channelf-benchmark-suite-matrix.md) | Channel F benchmark inventory, CI smoke coverage, and local full-run evidence protocol |
+| [channelf-memory-budget-and-regression-budgets.md](channelf-memory-budget-and-regression-budgets.md) | Channel F memory budget baselines, alert thresholds, and regression triage policy |
+| [channelf-golden-rom-corpus-inventory.md](channelf-golden-rom-corpus-inventory.md) | Golden ROM corpus inventory, metadata schema, and checksum verification contract |
 | [channelf-troubleshooting-known-issues-playbook.md](channelf-troubleshooting-known-issues-playbook.md) | Practical known-issues matrix and triage playbook for Channel F runtime/debugger/TAS workflows |
 | [docs/manual-testing/channelf-debug-and-tas-manual-test.md](../../docs/manual-testing/channelf-debug-and-tas-manual-test.md) | Operator checklist for Channel F runtime, debugger, TAS, and movie workflows |
 | [docs/manual-testing/channelf-controller-profile-presets.md](../../docs/manual-testing/channelf-controller-profile-presets.md) | Standard and accessibility-oriented controller profile presets for Channel F |

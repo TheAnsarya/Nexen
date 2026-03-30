@@ -134,7 +134,7 @@ jobs:
             # causing false non-zero exits for the native benchmark process.
             # Full benchmark runs should be done manually or in scheduled workflows.
             $benchLog = "benchmark-quick.log"
-            & $benchExe --benchmark_format=console --benchmark_min_time=0.01s --benchmark_filter="BM_(NesCpu|SnesCpu|GbCpu)_.*" *> $benchLog
+            & $benchExe --benchmark_format=console --benchmark_min_time=0.01s --benchmark_filter="BM_(NesCpu|SnesCpu|GbCpu|ChannelFCore)_.*" *> $benchLog
             $exitCode = $LASTEXITCODE
 
             if (Test-Path $benchLog) {
