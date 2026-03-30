@@ -67,7 +67,7 @@ void WsApu::WriteDma(bool forHyperVoice, uint8_t sampleValue) {
 }
 
 uint8_t WsApu::ReadSample(uint8_t ch, uint8_t pos) {
-	// TODOWS review once the exact behavior for these 2 flags is understood
+	// SoundTest force-output mode: override wavetable nibble source with fixed values.
 	if (_state.ForceOutput4) {
 		return 4;
 	} else if (_state.ForceOutput2) {
@@ -408,7 +408,7 @@ void WsApu::Write(uint16_t port, uint8_t value) {
 			_state.HoldChannels = value & 0x01;
 			_state.Ch3.UseSweepCpuClock = value & 0x02;
 			_state.Ch4.HoldLfsr = (value & 0x0C) >> 2;
-			// todows bit 4?
+			// Bit 4 remains reserved/unknown on current hardware references.
 			_state.ForceOutputCh2Voice = value & 0x20;
 			_state.ForceOutput2 = value & 0x40;
 			_state.ForceOutput4 = value & 0x80;
