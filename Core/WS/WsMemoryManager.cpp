@@ -269,7 +269,8 @@ uint8_t WsMemoryManager::InternalReadPort(uint16_t port, bool isWordAccess) {
 				);
 
 			case 0xA3:
-				return _state.SystemTest;
+				// SystemTest is a write-only factory register.
+				return GetUnmappedPort();
 			case 0xB0:
 				return GetIrqVector();
 			case 0xB1:
@@ -357,7 +358,6 @@ void WsMemoryManager::InternalWritePort(uint16_t port, uint8_t value, bool isWor
 				break;
 
 			case 0xA3:
-				// TODOWS SystemTest is not implemented
 				if (!isWordAccess) {
 					_state.SystemTest = value & 0x0F;
 				}
