@@ -26,6 +26,7 @@ This index unifies all testing and manual validation documentation.
 | [channelf-memory-budget-and-regression-budgets.md](channelf-memory-budget-and-regression-budgets.md) | Channel F memory budget baselines, alert thresholds, and regression triage policy |
 | [channelf-golden-rom-corpus-inventory.md](channelf-golden-rom-corpus-inventory.md) | Golden ROM corpus inventory, metadata schema, and checksum verification contract |
 | [channelf-troubleshooting-known-issues-playbook.md](channelf-troubleshooting-known-issues-playbook.md) | Practical known-issues matrix and triage playbook for Channel F runtime/debugger/TAS workflows |
+| [channelf-tas-gesture-widget-triage-2026-03-30.md](channelf-tas-gesture-widget-triage-2026-03-30.md) | #1012 triage checkpoint for Channel F TAS gesture widget/timeline readiness and blockers |
 | [docs/manual-testing/channelf-debug-and-tas-manual-test.md](../../docs/manual-testing/channelf-debug-and-tas-manual-test.md) | Operator checklist for Channel F runtime, debugger, TAS, and movie workflows |
 | [docs/manual-testing/channelf-controller-profile-presets.md](../../docs/manual-testing/channelf-controller-profile-presets.md) | Standard and accessibility-oriented controller profile presets for Channel F |
 
