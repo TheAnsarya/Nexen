@@ -11,6 +11,34 @@ namespace Nexen.Tests.Debugger.ViewModels;
 /// </summary>
 public class UiConfigAndMenuRegressionTests {
 	[Fact]
+	public void Atari2600Config_Clone_IsDeepCopy() {
+		var original = new Atari2600Config {
+			P0DifficultyB = false,
+			ColorMode = false,
+			Channel0Vol = 55,
+			HidePlayer0 = true
+		};
+
+		Atari2600Config clone = original.Clone();
+
+		Assert.NotSame(original, clone);
+		Assert.False(clone.P0DifficultyB);
+		Assert.False(clone.ColorMode);
+		Assert.Equal((uint)55, clone.Channel0Vol);
+		Assert.True(clone.HidePlayer0);
+
+		clone.P0DifficultyB = true;
+		clone.ColorMode = true;
+		clone.Channel0Vol = 90;
+		clone.HidePlayer0 = false;
+
+		Assert.False(original.P0DifficultyB);
+		Assert.False(original.ColorMode);
+		Assert.Equal((uint)55, original.Channel0Vol);
+		Assert.True(original.HidePlayer0);
+	}
+
+	[Fact]
 	public void LynxConfig_Clone_IsDeepCopy() {
 		var original = new LynxConfig {
 			UseBootRom = true,
@@ -42,6 +70,17 @@ public class UiConfigAndMenuRegressionTests {
 		Assert.True(a.IsIdentical(b));
 
 		b.BlendFrames = !b.BlendFrames;
+		Assert.False(a.IsIdentical(b));
+	}
+
+	[Fact]
+	public void Atari2600Config_IsIdentical_ReflectsMutations() {
+		var a = new Atari2600Config();
+		var b = a.Clone();
+
+		Assert.True(a.IsIdentical(b));
+
+		b.HideBall = !b.HideBall;
 		Assert.False(a.IsIdentical(b));
 	}
 
