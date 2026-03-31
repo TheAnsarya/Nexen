@@ -1,0 +1,92 @@
+﻿[
+    {
+        "Title":  "California Games",
+        "RomFile":  "California Games (1991).lnx",
+        "RomPath":  "C:\\~reference-roms\\extracted\\GoodLynx-v2.01\\Selected1105\\California Games (1991)\\California Games (1991).lnx",
+        "ExitCode":  -1,
+        "BootResult":  "Fail",
+        "TimestampUtc":  "2026-03-30T16:35:00.1931797Z",
+        "Notes":  "Headless testrunner + Lua boot smoke"
+    },
+    {
+        "Title":  "Chip\u0027s Challenge",
+        "RomFile":  "Chip\u0027s Challenge (1989).lnx",
+        "RomPath":  "C:\\~reference-roms\\extracted\\GoodLynx-v2.01\\Selected1105\\Chip\u0027s Challenge (1989)\\Chip\u0027s Challenge (1989).lnx",
+        "ExitCode":  -1,
+        "BootResult":  "Fail",
+        "TimestampUtc":  "2026-03-30T16:35:03.6509363Z",
+        "Notes":  "Headless testrunner + Lua boot smoke"
+    },
+    {
+        "Title":  "Klax",
+        "RomFile":  "Klax (1990).lnx",
+        "RomPath":  "C:\\~reference-roms\\extracted\\GoodLynx-v2.01\\Selected1105\\Klax (1990)\\Klax (1990).lnx",
+        "ExitCode":  -1,
+        "BootResult":  "Fail",
+        "TimestampUtc":  "2026-03-30T16:35:08.2516371Z",
+        "Notes":  "Headless testrunner + Lua boot smoke"
+    },
+    {
+        "Title":  "Awesome Golf",
+        "RomFile":  "Awesome Golf (1991).lnx",
+        "RomPath":  "C:\\~reference-roms\\extracted\\GoodLynx-v2.01\\Selected1105\\Awesome Golf (1991)\\Awesome Golf (1991).lnx",
+        "ExitCode":  -1,
+        "BootResult":  "Fail",
+        "TimestampUtc":  "2026-03-30T16:35:11.7802053Z",
+        "Notes":  "Headless testrunner + Lua boot smoke"
+    },
+    {
+        "Title":  "Warbirds",
+        "RomFile":  "Warbirds (1990).lnx",
+        "RomPath":  "C:\\~reference-roms\\extracted\\GoodLynx-v2.01\\Selected1105\\Warbirds (1990)\\Warbirds (1990).lnx",
+        "ExitCode":  -1,
+        "BootResult":  "Fail",
+        "TimestampUtc":  "2026-03-30T16:35:15.2878271Z",
+        "Notes":  "Headless testrunner + Lua boot smoke"
+    },
+    {
+        "Title":  "Electrocop",
+        "RomFile":  "Electrocop (1989).lnx",
+        "RomPath":  "C:\\~reference-roms\\extracted\\GoodLynx-v2.01\\Selected1105\\Electrocop (1989)\\Electrocop (1989).lnx",
+        "ExitCode":  -1,
+        "BootResult":  "Fail",
+        "TimestampUtc":  "2026-03-30T16:35:18.8383358Z",
+        "Notes":  "Headless testrunner + Lua boot smoke"
+    },
+    {
+        "Title":  "Zarlor Mercenary",
+        "RomFile":  "Zarlor Mercenary (1990).lnx",
+        "RomPath":  "C:\\~reference-roms\\extracted\\GoodLynx-v2.01\\Selected1105\\Zarlor Mercenary (1990)\\Zarlor Mercenary (1990).lnx",
+        "ExitCode":  -1,
+        "BootResult":  "Fail",
+        "TimestampUtc":  "2026-03-30T16:35:22.4758050Z",
+        "Notes":  "Headless testrunner + Lua boot smoke"
+    },
+    {
+        "Title":  "Blue Lightning",
+        "RomFile":  "Blue Lightning (1989).lnx",
+        "RomPath":  "C:\\~reference-roms\\extracted\\GoodLynx-v2.01\\Selected1105\\Blue Lightning (1989)\\Blue Lightning (1989).lnx",
+        "ExitCode":  -1,
+        "BootResult":  "Fail",
+        "TimestampUtc":  "2026-03-30T16:35:27.4429216Z",
+        "Notes":  "Headless testrunner + Lua boot smoke"
+    },
+    {
+        "Title":  "Ninja Gaiden",
+        "RomFile":  "Ninja Gaiden (1990).lnx",
+        "RomPath":  "C:\\~reference-roms\\extracted\\GoodLynx-v2.01\\Selected1105\\Ninja Gaiden (1990)\\Ninja Gaiden (1990).lnx",
+        "ExitCode":  -1,
+        "BootResult":  "Fail",
+        "TimestampUtc":  "2026-03-30T16:35:31.1934600Z",
+        "Notes":  "Headless testrunner + Lua boot smoke"
+    },
+    {
+        "Title":  "Gauntlet: The Third Encounter",
+        "RomFile":  "Gauntlet - The Third Encounter (1990).lnx",
+        "RomPath":  "C:\\~reference-roms\\extracted\\GoodLynx-v2.01\\Selected1105\\Gauntlet - The Third Encounter (1990)\\Gauntlet - The Third Encounter (1990).lnx",
+        "ExitCode":  -1,
+        "BootResult":  "Fail",
+        "TimestampUtc":  "2026-03-30T16:35:34.8515806Z",
+        "Notes":  "Headless testrunner + Lua boot smoke"
+    }
+]
