@@ -204,6 +204,9 @@
 		<ClCompile Include="ChannelF\ChannelFVideoAudioInputTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="ChannelF\ChannelFMemoryMapTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Atari2600\Atari2600RiotPhaseATests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
