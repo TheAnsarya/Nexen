@@ -127,9 +127,6 @@
 	<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
 	<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
 	<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.5" />
-	<PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
-	<PackageReference Include="Microsoft.ICU.ICU4C.Runtime.linux-x64" Version="72.1.0.3" Condition="'$(RuntimeIdentifier)'=='linux-x64'" />
-	<PackageReference Include="Microsoft.ICU.ICU4C.Runtime.linux-arm64" Version="72.1.0.3" Condition="'$(RuntimeIdentifier)'=='linux-arm64'" />
 	<PackageReference Include="StreamHash" Version="1.11.2" />
    </ItemGroup>
    <ItemGroup>

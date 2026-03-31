@@ -25,7 +25,26 @@ class Program {
 	public static string OriginalFolder { get; private set; }
 	public static string[] CommandLineArgs { get; private set; } = [];
 
-	public static string ExePath => Process.GetCurrentProcess().MainModule?.FileName ?? Path.Join(Path.GetDirectoryName(AppContext.BaseDirectory), "Nexen.exe");
+	public static string ExePath {
+		get {
+			// On Linux, Process.MainModule triggers procfs parsing which requires ICU/globalization
+			// to be initialized. Use Environment.ProcessPath first (available since .NET 6) as it
+			// reads /proc/self/exe directly without globalization dependencies.
+			if (Environment.ProcessPath is { Length: > 0 } processPath) {
+				return processPath;
+			}
+
+			try {
+				if (Process.GetCurrentProcess().MainModule?.FileName is { Length: > 0 } mainModule) {
+					return mainModule;
+				}
+			} catch {
+				// Swallow — MainModule can throw on Linux if globalization is misconfigured
+			}
+
+			return Path.Join(Path.GetDirectoryName(AppContext.BaseDirectory), RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Nexen.exe" : "Nexen");
+		}
+	}
 
 	static Program() {
 		try {
