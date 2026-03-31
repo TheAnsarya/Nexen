@@ -8,8 +8,11 @@ curl -SL https://github.com/AppImage/AppImageKit/releases/download/continuous/ap
 
 mkdir -p AppDir/usr/bin
 cp bin/linux-arm64/Release/linux-arm64/publish/Nexen AppDir/usr/bin
+# Copy any native libraries that weren't bundled into the single-file executable
+cp bin/linux-arm64/Release/linux-arm64/publish/*.so* AppDir/usr/bin/ 2>/dev/null || true
 chmod +x AppDir/usr/bin
-ln -sr AppDir/usr/bin/Nexen AppDir/AppRun
+cp Linux/appimage/AppRun.sh AppDir/AppRun
+chmod +x AppDir/AppRun
 
 cp Linux/appimage/Nexen.48x48.png AppDir/Nexen.png
 cp Linux/appimage/Nexen.desktop AppDir/Nexen.desktop
