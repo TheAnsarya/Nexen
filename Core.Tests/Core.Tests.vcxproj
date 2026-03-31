@@ -168,6 +168,15 @@
 		<ClCompile Include="SMS\SmsCpuTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="SMS\SmsVdpTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="SMS\SmsPsgTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="SMS\SmsCartTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Atari2600\Atari2600MapperPhaseATests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
