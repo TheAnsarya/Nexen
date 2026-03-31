@@ -7,7 +7,9 @@
 	"MD004": {
 		"style": "dash"
 	},
-	"MD007": false,
+	"MD007": {
+		"indent": 4
+	},
 	"MD009": {
 		"br_spaces": 2,
 		"strict": false
@@ -30,17 +32,37 @@
 	"MD029": {
 		"style": "ordered"
 	},
-	"MD033": false,
-	"MD060": false,
+	"MD031": true,
+	"MD032": true,
+	"MD033": {
+		"allowed_elements": [
+			"details",
+			"summary",
+			"kbd",
+			"br",
+			"sup",
+			"sub",
+			"img"
+		]
+	},
 	"MD035": {
 		"style": "---"
 	},
 	"MD036": false,
+	"MD040": true,
 	"MD041": false,
 	"MD046": {
 		"style": "fenced"
 	},
 	"MD048": {
 		"style": "backtick"
-	}
+	},
+	"MD049": {
+		"style": "underscore"
+	},
+	"MD050": {
+		"style": "asterisk"
+	},
+	"MD058": true,
+	"MD060": false
 }
