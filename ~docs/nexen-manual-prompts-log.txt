@@ -1024,6 +1024,10 @@ Hey! 1.4.11 does not open! Make a real build that fucking works, and then after 
 
 [Nexen] work through as many issues as you can, like 20 of them, as fast as you can, updating epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; focus on wonderswan and lynx and channel f, ignoring genesis issues (that's why they're marked as deffered); continue;
 
+[Nexen] work through as many issues as you can, like 20 of them, as fast as you can, updating epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; focus on issues #955 to #1106; continue;
+
+
+
 
 
 
