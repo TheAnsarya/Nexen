@@ -91,10 +91,6 @@ public:
 
 	static int GetCdlData(lua_State* lua);
 
-	static int StartDiztinguishServer(lua_State *lua);
-	static int StopDiztinguishServer(lua_State *lua);
-	static int GetDiztinguishServerStatus(lua_State *lua);
-
 private:
 	static FrameInfo InternalGetScreenSize();
 

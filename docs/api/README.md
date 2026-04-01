@@ -134,33 +134,6 @@ Each system has a corresponding state structure:
 
 ---
 
-## Integration Points
-
-### For DiztinGUIsh Integration
-
-**CDL Export:**
-```csharp
-// Proposed API
-byte[] cdlData = DebugApi.GetCodeDataLog(ConsoleType.Snes);
-File.WriteAllBytes("output.cdl", cdlData);
-```
-
-**Label Export:**
-```csharp
-// Existing API (to be documented)
-// See: UI/Debugger/Labels/LabelManager.cs
-LabelManager.Export("labels.mlb");
-```
-
-**Trace Logging:**
-```csharp
-// Existing API (to be enhanced)
-// See: UI/Debugger/ViewModels/TraceLoggerViewModel.cs
-TraceLogger.StartLogging("trace.txt");
-```
-
----
-
 ## Extension Points
 
 ### Adding New Import Formats
@@ -252,7 +225,6 @@ Planned documentation:
 ## Related Documentation
 
 - [Main Project README](../README.md)
-- [DiztinGUIsh Integration](../diztinguish/README.md)
 - [Debugger Guide](../debugger/README.md)
 - [Build Instructions](../../COMPILING.md)
 

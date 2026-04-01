@@ -2090,7 +2090,6 @@ E
 			<Value ID="PowerOff">Power Off</Value>
 			<Value ID="Exit">Exit</Value>
 			<Value ID="TakeScreenshot">Take Screenshot</Value>
-			<Value ID="DiztinGUIshServer">DiztinGUIsh Server</Value>
 			<Value ID="MoveToNextStateSlot">Select Next Save Slot</Value>
 			<Value ID="MoveToPreviousStateSlot">Select Previous Save Slot</Value>
 			<Value ID="SaveState">Save State</Value>
@@ -3767,7 +3766,6 @@ E
 			<Value ID="InstallHdPack">Install HD Pack</Value>
 			<Value ID="HdPackBuilder">HD Pack Builder</Value>
 			<Value ID="TakeScreenshot">Take Screenshot</Value>
-			<Value ID="DiztinGUIshServer">DiztinGUIsh Server</Value>
 
 			<Value ID="OnlineHelp">Online Help</Value>
 			<Value ID="CommandLineHelp">Command-line options</Value>
