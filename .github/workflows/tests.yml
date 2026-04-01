@@ -54,6 +54,8 @@ jobs:
 
       - name: Build Core.Tests
         run: |
+          $env:INCLUDE = "${{ github.workspace }}\\vcpkg\\installed\\x64-windows\\include;$env:INCLUDE"
+          $env:LIB = "${{ github.workspace }}\\vcpkg\\installed\\x64-windows\\lib;${{ github.workspace }}\\vcpkg\\installed\\x64-windows\\lib\\manual-link;$env:LIB"
           msbuild Core.Tests\Core.Tests.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=false /m
 
       - name: Run Unit Tests
@@ -128,6 +130,8 @@ jobs:
 
       - name: Build Core.Benchmarks
         run: |
+          $env:INCLUDE = "${{ github.workspace }}\\vcpkg\\installed\\x64-windows\\include;$env:INCLUDE"
+          $env:LIB = "${{ github.workspace }}\\vcpkg\\installed\\x64-windows\\lib;${{ github.workspace }}\\vcpkg\\installed\\x64-windows\\lib\\manual-link;$env:LIB"
           msbuild Core.Benchmarks\Core.Benchmarks.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=false /m
 
       - name: Run Benchmarks (Quick)
