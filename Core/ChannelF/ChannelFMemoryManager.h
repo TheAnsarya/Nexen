@@ -21,6 +21,16 @@
 /// </summary>
 class ChannelFMemoryManager {
 public:
+	enum class CartBoardType {
+		StandardRom,
+		BankedRom,
+		RomWithRam
+	};
+
+	static constexpr uint16_t CartRamStartAddr = 0x2800;
+	static constexpr uint16_t CartRamEndAddr = 0x2bff;
+	static constexpr uint32_t CartRamSize = (uint32_t)(CartRamEndAddr - CartRamStartAddr + 1);
+
 	static constexpr uint32_t BiosSize = ChannelFConstants::BiosSize;
 	static constexpr uint32_t MaxCartSize = ChannelFConstants::MaxCartSize;
 	static constexpr uint32_t VramSize = ChannelFConstants::VramSize;
@@ -32,7 +42,10 @@ private:
 	// ROM storage
 	vector<uint8_t> _biosRom;
 	vector<uint8_t> _cartRom;
+	vector<uint8_t> _cartRam;
 	uint32_t _cartSize = 0;
+	CartBoardType _cartBoardType = CartBoardType::StandardRom;
+	uint8_t _activeCartBank = 0;
 
 	// Video RAM (one byte per pixel: 2-bit color index)
 	uint8_t _vram[ChannelFConstants::VramSize] = {};
@@ -97,4 +110,9 @@ public:
 	[[nodiscard]] uint32_t GetBiosSize() const { return (uint32_t)_biosRom.size(); }
 	[[nodiscard]] const uint8_t* GetCartData() const { return _cartRom.data(); }
 	[[nodiscard]] uint32_t GetCartSize() const { return _cartSize; }
+	[[nodiscard]] const uint8_t* GetCartRamData() const { return _cartRam.data(); }
+	[[nodiscard]] uint32_t GetCartRamSize() const { return (uint32_t)_cartRam.size(); }
+	[[nodiscard]] bool HasCartRam() const { return _cartBoardType == CartBoardType::RomWithRam; }
+	[[nodiscard]] CartBoardType GetCartBoardType() const { return _cartBoardType; }
+	[[nodiscard]] uint8_t GetActiveCartBank() const { return _activeCartBank; }
 };

@@ -1,9 +1,48 @@
 #include "pch.h"
 #include "ChannelF/ChannelFMemoryManager.h"
+#include <algorithm>
+
+namespace {
+	constexpr uint32_t CartBankWindowSize = 0x2000;
+
+	bool HasSignature(const uint8_t* data, uint32_t size, const char* signature) {
+		if (data == nullptr || signature == nullptr) {
+			return false;
+		}
+
+		uint32_t sigLen = (uint32_t)strlen(signature);
+		if (sigLen == 0 || size < sigLen) {
+			return false;
+		}
+
+		for (uint32_t i = 0; i + sigLen <= size; i++) {
+			if (memcmp(data + i, signature, sigLen) == 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	ChannelFMemoryManager::CartBoardType DetectBoardType(const uint8_t* data, uint32_t size) {
+		if (size > CartBankWindowSize) {
+			return ChannelFMemoryManager::CartBoardType::BankedRom;
+		}
+
+		if (HasSignature(data, size, "SCHACH")
+			|| HasSignature(data, size, "CHESS")
+			|| HasSignature(data, size, "VIDEOCART-10")
+			|| HasSignature(data, size, "MAZE")) {
+			return ChannelFMemoryManager::CartBoardType::RomWithRam;
+		}
+
+		return ChannelFMemoryManager::CartBoardType::StandardRom;
+	}
+}
 
 ChannelFMemoryManager::ChannelFMemoryManager()
 	: _biosRom(BiosSize, 0xff),
-	  _cartRom(MaxCartSize, 0xff) {
+	  _cartRom(MaxCartSize, 0xff),
+	  _cartRam(CartRamSize, 0x00) {
 }
 
 void ChannelFMemoryManager::LoadBios(const uint8_t* data, uint32_t size) {
@@ -20,6 +59,12 @@ void ChannelFMemoryManager::LoadCart(const uint8_t* data, uint32_t size) {
 	}
 	memset(_cartRom.data(), 0xff, MaxCartSize);
 	memcpy(_cartRom.data(), data, _cartSize);
+
+	_cartBoardType = DetectBoardType(data, _cartSize);
+	_activeCartBank = 0;
+	if (_cartBoardType != CartBoardType::RomWithRam) {
+		memset(_cartRam.data(), 0x00, _cartRam.size());
+	}
 }
 
 void ChannelFMemoryManager::Reset() {
@@ -33,24 +78,45 @@ void ChannelFMemoryManager::Reset() {
 	_audioBuffer.clear();
 	_audioCounter = 0;
 	_audioOutput = false;
+	_activeCartBank = 0;
 	_controller1 = 0xff;
 	_controller2 = 0xff;
 	_consoleButtons = 0xff;
+	if (_cartBoardType == CartBoardType::RomWithRam) {
+		memset(_cartRam.data(), 0x00, _cartRam.size());
+	}
 }
 
 uint8_t ChannelFMemoryManager::ReadMemory(uint16_t addr) const {
+	if (_cartBoardType == CartBoardType::RomWithRam && addr >= CartRamStartAddr && addr <= CartRamEndAddr) {
+		return _cartRam[addr - CartRamStartAddr];
+	}
+
 	if (addr < BiosSize) {
 		return _biosRom[addr];
 	}
 	// Cartridge ROM at $0800+
 	uint32_t cartAddr = addr - BiosSize;
+	if (_cartBoardType == CartBoardType::BankedRom && cartAddr < CartBankWindowSize) {
+		uint32_t bankedOffset = (uint32_t)_activeCartBank * CartBankWindowSize + cartAddr;
+		if (bankedOffset < _cartSize) {
+			return _cartRom[bankedOffset];
+		}
+		return 0xff;
+	}
+
 	if (cartAddr < _cartSize) {
 		return _cartRom[cartAddr];
 	}
 	return 0xff;
 }
 
-void ChannelFMemoryManager::WriteMemory([[maybe_unused]] uint16_t addr, [[maybe_unused]] uint8_t value) {
+void ChannelFMemoryManager::WriteMemory(uint16_t addr, uint8_t value) {
+	if (_cartBoardType == CartBoardType::RomWithRam && addr >= CartRamStartAddr && addr <= CartRamEndAddr) {
+		_cartRam[addr - CartRamStartAddr] = value;
+		return;
+	}
+
 	// Channel F has no writable program memory in the standard configuration.
 	// Some cartridge mappers might add RAM, but for now this is a no-op.
 }
@@ -78,6 +144,21 @@ void ChannelFMemoryManager::WritePort(uint8_t port, uint8_t value) {
 	_portLatch[port] = value;
 
 	switch (port) {
+		case 0x20:
+		case 0x21:
+		case 0x22:
+		case 0x23:
+		case 0x24:
+		case 0x25:
+		case 0x26:
+		case 0x27:
+			if (_cartBoardType == CartBoardType::BankedRom) {
+				uint8_t requestedBank = (uint8_t)(port - 0x20);
+				uint8_t maxBank = (uint8_t)std::max(1u, (_cartSize + CartBankWindowSize - 1) / CartBankWindowSize);
+				_activeCartBank = (uint8_t)(requestedBank % maxBank);
+			}
+			break;
+
 		case 0:
 			// Port 0 write: bits 0-1 = color, bit 5 = sound tone, bit 6 = sound freq
 			_videoColor = value & 0x03;

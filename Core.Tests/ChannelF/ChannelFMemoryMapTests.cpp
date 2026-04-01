@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ChannelF/ChannelFTypes.h"
 #include "ChannelF/ChannelFBiosDatabase.h"
+#include "ChannelF/ChannelFMemoryManager.h"
 
 // =============================================================================
 // Channel F Memory Map + Port I/O Tests
@@ -353,4 +354,78 @@ TEST(ChfBiosVariantTest, EnumValues) {
 	EXPECT_NE(static_cast<int>(ChannelFBiosVariant::SystemII), 0);
 	EXPECT_NE(static_cast<int>(ChannelFBiosVariant::SystemI),
 		static_cast<int>(ChannelFBiosVariant::SystemII));
+}
+
+// =============================================================================
+// Cartridge Board + RAM Mapping
+// =============================================================================
+
+TEST(ChfCartBoardTest, SmallCart_DetectsStandardRom) {
+	ChannelFMemoryManager mm;
+	vector<uint8_t> rom(0x1000, 0xea);
+	mm.LoadCart(rom.data(), (uint32_t)rom.size());
+
+	EXPECT_EQ(mm.GetCartBoardType(), ChannelFMemoryManager::CartBoardType::StandardRom);
+	EXPECT_FALSE(mm.HasCartRam());
+}
+
+TEST(ChfCartBoardTest, LargeCart_DetectsBankedRom) {
+	ChannelFMemoryManager mm;
+	vector<uint8_t> rom(0x6000, 0xaa);
+	mm.LoadCart(rom.data(), (uint32_t)rom.size());
+
+	EXPECT_EQ(mm.GetCartBoardType(), ChannelFMemoryManager::CartBoardType::BankedRom);
+	EXPECT_FALSE(mm.HasCartRam());
+}
+
+TEST(ChfCartBoardTest, SignatureCart_DetectsRamBoard) {
+	ChannelFMemoryManager mm;
+	vector<uint8_t> rom(0x1000, 0xff);
+	const char* sig = "VIDEOCART-10";
+	memcpy(rom.data() + 0x20, sig, strlen(sig));
+	mm.LoadCart(rom.data(), (uint32_t)rom.size());
+
+	EXPECT_EQ(mm.GetCartBoardType(), ChannelFMemoryManager::CartBoardType::RomWithRam);
+	EXPECT_TRUE(mm.HasCartRam());
+}
+
+TEST(ChfCartBoardTest, BankSwitchPorts_SelectExpectedBankWindow) {
+	ChannelFMemoryManager mm;
+	vector<uint8_t> rom(0x6000, 0xff);
+	rom[0x0000] = 0x11;
+	rom[0x2000] = 0x22;
+	rom[0x4000] = 0x33;
+	mm.LoadCart(rom.data(), (uint32_t)rom.size());
+
+	EXPECT_EQ(mm.GetCartBoardType(), ChannelFMemoryManager::CartBoardType::BankedRom);
+	EXPECT_EQ(mm.ReadMemory(0x0800), 0x11);
+
+	mm.WritePort(0x21, 0x00);
+	EXPECT_EQ(mm.GetActiveCartBank(), 1);
+	EXPECT_EQ(mm.ReadMemory(0x0800), 0x22);
+
+	mm.WritePort(0x22, 0x00);
+	EXPECT_EQ(mm.GetActiveCartBank(), 2);
+	EXPECT_EQ(mm.ReadMemory(0x0800), 0x33);
+
+	mm.WritePort(0x27, 0x00);
+	EXPECT_EQ(mm.GetActiveCartBank(), 1);
+	EXPECT_EQ(mm.ReadMemory(0x0800), 0x22);
+}
+
+TEST(ChfCartBoardTest, RamBoard_WritesAndReadsCartRamRange) {
+	ChannelFMemoryManager mm;
+	vector<uint8_t> rom(0x1000, 0xff);
+	const char* sig = "MAZE";
+	memcpy(rom.data() + 0x10, sig, strlen(sig));
+	mm.LoadCart(rom.data(), (uint32_t)rom.size());
+
+	ASSERT_TRUE(mm.HasCartRam());
+	EXPECT_EQ(mm.GetCartRamSize(), ChannelFMemoryManager::CartRamSize);
+
+	mm.WriteMemory(ChannelFMemoryManager::CartRamStartAddr, 0x5a);
+	mm.WriteMemory(ChannelFMemoryManager::CartRamEndAddr, 0xa5);
+
+	EXPECT_EQ(mm.ReadMemory(ChannelFMemoryManager::CartRamStartAddr), 0x5a);
+	EXPECT_EQ(mm.ReadMemory(ChannelFMemoryManager::CartRamEndAddr), 0xa5);
 }
