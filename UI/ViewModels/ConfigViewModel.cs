@@ -79,10 +79,9 @@ public sealed class ConfigViewModel : DisposableViewModel {
 	/// <param name="selectedTab">The initial tab to display.</param>
 	public ConfigViewModel(ConfigWindowTab selectedTab) {
 		AlwaysOnTop = ConfigManager.Config.Preferences.AlwaysOnTop;
-		SelectedIndex = selectedTab;
-		CaptureCurrentAsOriginal();
-
 		AddDisposable(this.WhenAnyValue(x => x.SelectedIndex).Subscribe((tab) => this.SelectTab(tab)));
+		SelectTab(selectedTab);
+		CaptureCurrentAsOriginal();
 	}
 
 	private void CaptureCurrentAsOriginal() {

@@ -55,7 +55,9 @@ public static class ApplicationHelper {
 
 				return wnd;
 			} else {
-				wnd.BringToFront();
+				if(!wnd.IsActive) {
+					wnd.BringToFront();
+				}
 				return wnd;
 			}
 		}

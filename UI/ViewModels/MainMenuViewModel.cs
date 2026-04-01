@@ -865,12 +865,16 @@ public sealed class MainMenuViewModel : ViewModelBase {
 	}
 
 	private SimpleMenuAction GetMoviesMenu(MainWindow wnd) {
+		bool HasLoadedRom() => EmulatorState.Instance.IsRomLoaded || !string.IsNullOrWhiteSpace(EmuApi.GetRomInfo().RomPath);
+		bool SupportsMovieTools() => HasLoadedRom() && EmuApi.GetRomInfo().ConsoleType.SupportsMovieTools();
+
 		return new SimpleMenuAction() {
 			ActionType = ActionType.Movies,
+			IsEnabled = () => SupportsMovieTools(),
 			SubActions = [
 				new SimpleMenuAction() {
 					ActionType = ActionType.Play,
-					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && MainWindow.RomInfo.ConsoleType.SupportsMovieTools() && !RecordApi.MovieRecording() && !RecordApi.MoviePlaying(),
+					IsEnabled = () => SupportsMovieTools() && !RecordApi.MovieRecording() && !RecordApi.MoviePlaying(),
 					OnClick = async () => {
 						string? filename = await FileDialogHelper.OpenFile(ConfigManager.MovieFolder, wnd, FileDialogHelper.NexenMovieExt, FileDialogHelper.MesenMovieExt);
 						if(filename is not null) {
@@ -880,19 +884,40 @@ public sealed class MainMenuViewModel : ViewModelBase {
 				},
 				new SimpleMenuAction() {
 					ActionType = ActionType.Record,
-					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && MainWindow.RomInfo.ConsoleType.SupportsMovieTools() && !RecordApi.MovieRecording() && !RecordApi.MoviePlaying(),
+					IsEnabled = () => SupportsMovieTools() && !RecordApi.MovieRecording() && !RecordApi.MoviePlaying(),
 					OnClick = () => new MovieRecordWindow() {
 							DataContext = new MovieRecordConfigViewModel()
 						}.ShowCenteredDialog((Control)wnd)                },
 				new SimpleMenuAction() {
 					ActionType = ActionType.Stop,
-					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && MainWindow.RomInfo.ConsoleType.SupportsMovieTools() && (RecordApi.MovieRecording() || RecordApi.MoviePlaying()),
+					IsEnabled = () => SupportsMovieTools() && (RecordApi.MovieRecording() || RecordApi.MoviePlaying()),
 					OnClick = () => RecordApi.MovieStop()                  }
 			]
 		};
 	}
 
+	private static TasEditorWindow OpenTasEditorWindow(MainWindow wnd) {
+		return ApplicationHelper.GetOrCreateUniqueWindow(wnd, () => new TasEditorWindow());
+	}
+
+	private static void CreateNewTasMovie(MainWindow wnd) {
+		TasEditorWindow tasWindow = OpenTasEditorWindow(wnd);
+		if(tasWindow.DataContext is TasEditorViewModel vm) {
+			vm.CreateNewMovieFromMenu();
+		}
+	}
+
+	private static void StartTasRecording(MainWindow wnd) {
+		TasEditorWindow tasWindow = OpenTasEditorWindow(wnd);
+		if(tasWindow.DataContext is TasEditorViewModel vm) {
+			vm.StartRecording();
+		}
+	}
+
 	private void InitToolMenu(MainWindow wnd) {
+		bool HasLoadedRom() => EmulatorState.Instance.IsRomLoaded || !string.IsNullOrWhiteSpace(EmuApi.GetRomInfo().RomPath);
+		bool SupportsTasEditor() => HasLoadedRom() && EmuApi.GetRomInfo().ConsoleType.SupportsTasEditor();
+
 		ToolsMenuItems = [
 			new SimpleMenuAction() {
 				ActionType = ActionType.Cheats,
@@ -906,8 +931,27 @@ public sealed class MainMenuViewModel : ViewModelBase {
 
 			new SimpleMenuAction() {
 				ActionType = ActionType.TasEditor,
-				IsEnabled = () => EmulatorState.Instance.IsRomLoaded && MainWindow.RomInfo.ConsoleType.SupportsTasEditor(),
-				OnClick = () => ApplicationHelper.GetOrCreateUniqueWindow(wnd, () => new TasEditorWindow())                },
+				IsEnabled = () => SupportsTasEditor(),
+				OnClick = () => OpenTasEditorWindow(wnd),
+				SubActions = [
+					new SimpleMenuAction() {
+						ActionType = ActionType.Open,
+						IsEnabled = () => SupportsTasEditor(),
+						OnClick = () => OpenTasEditorWindow(wnd)
+					},
+					new SimpleMenuAction() {
+						ActionType = ActionType.Custom,
+						CustomText = "Create New Movie",
+						IsEnabled = () => SupportsTasEditor(),
+						OnClick = () => CreateNewTasMovie(wnd)
+					},
+					new SimpleMenuAction() {
+						ActionType = ActionType.Record,
+						IsEnabled = () => SupportsTasEditor(),
+						OnClick = () => StartTasRecording(wnd)
+					}
+				]
+			},
 
 			GetMoviesMenu(wnd),
 			GetNetPlayMenu(wnd),
@@ -960,30 +1004,36 @@ public sealed class MainMenuViewModel : ViewModelBase {
 	}
 
 	private SimpleMenuAction GetVideoRecorderMenu(MainWindow wnd) {
+		bool HasLoadedRom() => EmulatorState.Instance.IsRomLoaded || !string.IsNullOrWhiteSpace(EmuApi.GetRomInfo().RomPath);
+
 		return new SimpleMenuAction() {
 			ActionType = ActionType.VideoRecorder,
+			IsEnabled = () => HasLoadedRom(),
 			SubActions = [
 				new SimpleMenuAction() {
 					ActionType = ActionType.Record,
-					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && !RecordApi.AviIsRecording(),
+					IsEnabled = () => HasLoadedRom() && !RecordApi.AviIsRecording(),
 					OnClick = () => new VideoRecordWindow() {
 							DataContext = new VideoRecordConfigViewModel()
 						}.ShowCenteredDialog((Control)wnd)                },
 				new SimpleMenuAction() {
 					ActionType = ActionType.Stop,
-					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && RecordApi.AviIsRecording(),
+					IsEnabled = () => HasLoadedRom() && RecordApi.AviIsRecording(),
 					OnClick = () => RecordApi.AviStop()              }
 			]
 		};
 	}
 
 	private SimpleMenuAction GetSoundRecorderMenu(MainWindow wnd) {
+		bool HasLoadedRom() => EmulatorState.Instance.IsRomLoaded || !string.IsNullOrWhiteSpace(EmuApi.GetRomInfo().RomPath);
+
 		return new SimpleMenuAction() {
 			ActionType = ActionType.SoundRecorder,
+			IsEnabled = () => HasLoadedRom(),
 			SubActions = [
 				new SimpleMenuAction() {
 					ActionType = ActionType.Record,
-					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && !RecordApi.WaveIsRecording(),
+					IsEnabled = () => HasLoadedRom() && !RecordApi.WaveIsRecording(),
 					OnClick = async () => {
 						string? filename = await FileDialogHelper.SaveFile(ConfigManager.WaveFolder, EmuApi.GetRomInfo().GetRomName() + ".wav", wnd, FileDialogHelper.WaveExt);
 						if(filename is not null) {
@@ -993,7 +1043,7 @@ public sealed class MainMenuViewModel : ViewModelBase {
 				},
 				new SimpleMenuAction() {
 					ActionType = ActionType.Stop,
-					IsEnabled = () => EmulatorState.Instance.IsRomLoaded && RecordApi.WaveIsRecording(),
+					IsEnabled = () => HasLoadedRom() && RecordApi.WaveIsRecording(),
 					OnClick = () => RecordApi.WaveStop()                    }
 			]
 		};

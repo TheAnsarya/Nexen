@@ -2705,6 +2705,10 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		Recorder.StartRecording(RecordMode, SelectedFrameIndex);
 	}
 
+	public void CreateNewMovieFromMenu() {
+		CreateNewMovie();
+	}
+
 	private void CreateNewMovie() {
 		if (!EmulatorState.Instance.IsRomLoaded) {
 			StatusMessage = "Load a ROM before creating a movie";
