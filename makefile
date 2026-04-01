@@ -132,7 +132,7 @@ endif
 ifeq ($(USE_AOT),true)
 	PUBLISHFLAGS ?=  -r $(NEXENPLATFORM) -p:PublishSingleFile=false -p:PublishAot=true -p:SelfContained=true
 else
-	PUBLISHFLAGS ?=  -r $(NEXENPLATFORM) --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+	PUBLISHFLAGS ?=  -r $(NEXENPLATFORM) --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false
 endif
 
 

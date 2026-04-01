@@ -455,7 +455,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Nexen (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
-          path: bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish/Nexen
+          path: |
+            bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish/Nexen
+            bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish/*.so*
 
   appimage:
     strategy:
@@ -835,10 +837,16 @@ jobs:
             local artifact_path="$1"
             local tarball_name="$2"
             if [ -f "$artifact_path" ]; then
+              local artifact_dir="$(dirname "$artifact_path")"
               local staging_dir="tarball-staging/${tarball_name%.tar.gz}"
               mkdir -p "$staging_dir"
               cp "$artifact_path" "$staging_dir/Nexen"
               chmod +x "$staging_dir/Nexen"
+              # Copy bundled native libraries (.so) alongside the binary
+              cp "$artifact_dir"/*.so* "$staging_dir/" 2>/dev/null || true
+              # Include launcher script that sets LD_LIBRARY_PATH
+              cp Linux/Nexen.sh "$staging_dir/" || true
+              chmod +x "$staging_dir/Nexen.sh" 2>/dev/null || true
               cp LICENSE "$staging_dir/" || true
               tar -czvf "release-assets/${tarball_name}" -C tarball-staging "$(basename "$staging_dir")"
               rm -rf "$staging_dir"
