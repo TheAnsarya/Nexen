@@ -47,15 +47,21 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           $vcpkgRoot = "${{ github.workspace }}/vcpkg"
+          $installDir = $env:VCPKG_INSTALLED_DIR
+          if ([string]::IsNullOrWhiteSpace($installDir)) {
+            $installDir = "$vcpkgRoot/installed"
+          }
           $env:VCPKG_ROOT = $vcpkgRoot
           "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          vcpkg install --triplet x64-windows --x-manifest-root=${{ github.workspace }} --clean-after-build
+          "VCPKG_INSTALLED_DIR=$installDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          vcpkg install --triplet x64-windows --x-manifest-root=${{ github.workspace }} --x-install-root=$installDir --clean-after-build
 
       - name: Build Core.Tests
         run: |
-          $env:INCLUDE = "${{ github.workspace }}\\vcpkg\\installed\\x64-windows\\include;$env:INCLUDE"
-          $env:LIB = "${{ github.workspace }}\\vcpkg\\installed\\x64-windows\\lib;${{ github.workspace }}\\vcpkg\\installed\\x64-windows\\lib\\manual-link;$env:LIB"
-          msbuild Core.Tests\Core.Tests.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /m
+          $tripletRoot = "$env:VCPKG_INSTALLED_DIR\\x64-windows"
+          $env:INCLUDE = "$tripletRoot\\include;$env:INCLUDE"
+          $env:LIB = "$tripletRoot\\lib;$tripletRoot\\lib\\manual-link;$env:LIB"
+          msbuild Core.Tests\Core.Tests.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /p:VcpkgInstalledDir=$env:VCPKG_INSTALLED_DIR /m
 
       - name: Run Unit Tests
         working-directory: ${{ github.workspace }}
@@ -122,15 +128,21 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           $vcpkgRoot = "${{ github.workspace }}/vcpkg"
+          $installDir = $env:VCPKG_INSTALLED_DIR
+          if ([string]::IsNullOrWhiteSpace($installDir)) {
+            $installDir = "$vcpkgRoot/installed"
+          }
           $env:VCPKG_ROOT = $vcpkgRoot
           "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          vcpkg install --triplet x64-windows --x-manifest-root=${{ github.workspace }} --clean-after-build
+          "VCPKG_INSTALLED_DIR=$installDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          vcpkg install --triplet x64-windows --x-manifest-root=${{ github.workspace }} --x-install-root=$installDir --clean-after-build
 
       - name: Build Core.Benchmarks
         run: |
-          $env:INCLUDE = "${{ github.workspace }}\\vcpkg\\installed\\x64-windows\\include;$env:INCLUDE"
-          $env:LIB = "${{ github.workspace }}\\vcpkg\\installed\\x64-windows\\lib;${{ github.workspace }}\\vcpkg\\installed\\x64-windows\\lib\\manual-link;$env:LIB"
-          msbuild Core.Benchmarks\Core.Benchmarks.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /m
+          $tripletRoot = "$env:VCPKG_INSTALLED_DIR\\x64-windows"
+          $env:INCLUDE = "$tripletRoot\\include;$env:INCLUDE"
+          $env:LIB = "$tripletRoot\\lib;$tripletRoot\\lib\\manual-link;$env:LIB"
+          msbuild Core.Benchmarks\Core.Benchmarks.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /p:VcpkgInstalledDir=$env:VCPKG_INSTALLED_DIR /m
 
       - name: Run Benchmarks (Quick)
         working-directory: ${{ github.workspace }}
