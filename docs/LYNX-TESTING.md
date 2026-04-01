@@ -204,3 +204,13 @@ As of the latest build:
 | All passing | ✅ Yes |
 | Total Lynx benchmarks | 119 |
 | Allocation benchmarks | 25 |
+
+## Current Priority Validation Work
+
+The next Lynx validation pass should focus on commercial-title bank-addressing behavior and ComLynx reliability:
+
+- Bank-switch/address-bit validation matrix across known problematic commercial titles
+- Repro-backed regression tests for any confirmed addressing anomalies
+- Multiplayer transport stability checks for ComLynx paths
+
+When adding performance optimizations in these areas, maintain accuracy first and verify behavior equivalence before/after any change.

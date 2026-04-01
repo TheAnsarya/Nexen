@@ -1047,6 +1047,49 @@ we have new problems with the Linux build, find and fix these issues: `https://g
 
 2
 
+build and push and run the app so we validate that tilemap viewer, etc works;
+
+&&&
+Yes! These things now work! SNES TileMap Viewer and sprite viewer and the rest of them look good; There is a bunch of flashing on other windows opening like Trace Logger[Nexen] (TAS/Movie) the `Tools->Movies` menu is disabled, but shouldn't be when a rom is open; `Tools->TAS Editor` does not have "create" menus for functionality and it does not seem to have "record" which is the most important feature;  and in the "settings" dialogs if you close the window from the top-right X it will ask "Save Changes?" (yes/no/cancel) even though no changes have been made; sound recorder and video recorder are also disabled, fix that so we can record video/sound; continue;
+&&&
+
+[Nexen] The last release (1.4.13) did not build correctly, look at this action `https://github.com/TheAnsarya/Nexen/actions/runs/23862356166` and fix the problems and re-release; continue;
+
+sorry to stop, continue;
+
+
+we had working CI/CD build/trelease scripts when we release 1.4.12, so compare to those; continue;
+
+--- steer
+update the copilot rules, stop asking me about commiting files, just do it, don't ask me; continue;
+
+definitely wait for release/build complition and also distiztinguish code should only be exporting a diztinguish file from a pansy file, which should  be in the pansy repos and code library, not Nexen, remove alll diztinguish from Nexen since we're not interfacing with it anymore and the DiztinGUIsh UI is not needed anymore; continue; what's happening with the build?
+
+https://github.com/TheAnsarya/Nexen/actions/runs/23866742202
+
+`https://github.com/TheAnsarya/Nexen/actions/runs/23866742202` and `https://github.com/TheAnsarya/Nexen/actions/runs/23866738101` and `https://github.com/TheAnsarya/Nexen/actions/runs/23866737870`; continue;
+
+[Nexen] modern all CI/CD scripts and releases and code and just always run the modern modern libraries etc and most modern standards and practices unless something would change emulation behaviour in an unfavorable way; make sure issues (974, 976, 977, 979, 1001, 1006, 1007, 1011, 1017) are done; while we wait for `https://github.com/TheAnsarya/Nexen/actions/runs/23866742202` to finish working; continue; I can keep live-polling the Build Nexen run and report final per-job pass/fail as soon as it completes. I can immediately patch the C++ Tests workflow to ensure gtest and benchmark headers are available on Windows, then commit/push.
+
+make everything work while not removing progress; run through issues and fix them; continue;
+
+make everything work while not removing progress; run through issues and fix them; continue;
+
+[Nexen] Fix issue #1112, fix all the other issues, focus on WS and Lynx issues; make sure issues (974, 976, 977, 979, 1001, 1006, 1007, 1011, 1017) are done; continue;
+
+[Nexen] Fix issue #1112, fix all the other issues, focus on WS and Lynx issues; make sure issues (974, 976, 977, 979, 1001, 1006, 1007, 1011, 1017) are done; don't spiral, stop circling around build instructions, keep everything working and fix as find solutions but focus on making code changes, focus on code and docs; continue;
+
+[Nexen] update issues #1076, #1039, and #1106 adding comments describing progress and referencing 1.4.14; look at the failed actions `https://github.com/TheAnsarya/Nexen/actions` and fix the problems that cause those failures; focus on fixing issues, especially newer issues and then create a new release `1.4.15` after making sure you have a stable build with no errors; work all issues forever until there are no more (non-deferred) issues left (work for a very long time, fixing like 20 issues) and then make `1.4.16` after several more issues are fixed, we want them finished as fast as possible; continue;
+
+
+
+
+
+
+
+
+
+
 
 
 
