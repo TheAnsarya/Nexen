@@ -49,6 +49,17 @@ private:
 	bool _connectionError = false;     ///< Connection error flag
 	int32_t _UPnPPort = -1;            ///< UPnP mapped port (-1 if none)
 
+	vector<char> _sendBuffer;
+	std::mutex _sendBufferMutex;
+	static constexpr size_t _maxBufferSize = 8192;
+
+	uint64_t _bytesSent = 0;
+	uint64_t _bytesReceived = 0;
+	uint64_t _messagesSent = 0;
+	uint64_t _messagesReceived = 0;
+	std::chrono::steady_clock::time_point _connectionStart;
+	std::chrono::steady_clock::time_point _lastActivity;
+
 public:
 	/// <summary>Construct new socket and initialize platform networking</summary>
 	Socket();
@@ -128,4 +139,15 @@ public:
 	/// <param name="flags">Socket flags</param>
 	/// <returns>Number of bytes received, 0 on disconnect, -1 on error</returns>
 	int Recv(char* buf, int len, int flags);
+
+	int BlockingRecv(char* buf, int len, int timeoutSeconds);
+
+	double GetConnectionDurationSeconds() const;
+	double GetBandwidthKBps() const;
+	bool IsHealthy() const;
+
+	void ResetStatistics();
+	size_t GetBufferedBytes() const;
+	bool ShouldFlush() const;
+	void FlushIfNeeded();
 };

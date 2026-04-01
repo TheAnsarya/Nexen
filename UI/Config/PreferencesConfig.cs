@@ -61,6 +61,8 @@ public sealed class PreferencesConfig : BaseConfig<PreferencesConfig> {
 	[Reactive] public bool ShowFrameCounter { get; set; } = false;
 	[Reactive] public bool ShowGameTimer { get; set; } = false;
 	[Reactive] public bool ShowLagCounter { get; set; } = false;
+	[Reactive] public bool ShowRerecordCounter { get; set; } = false;
+	[Reactive] public bool ShowLagFrameIndicator { get; set; } = false;
 	[Reactive] public bool ShowTitleBarInfo { get; set; } = false;
 	[Reactive] public bool ShowDebugInfo { get; set; } = false;
 	[Reactive] public bool DisableOsd { get; set; } = false;
@@ -224,6 +226,8 @@ public sealed class PreferencesConfig : BaseConfig<PreferencesConfig> {
 			ShowGameTimer = ShowGameTimer,
 			ShowDebugInfo = ShowDebugInfo,
 			ShowLagCounter = ShowLagCounter,
+			ShowRerecordCounter = ShowRerecordCounter,
+			ShowLagFrameIndicator = ShowLagFrameIndicator,
 			DisableOsd = DisableOsd,
 			AllowBackgroundInput = AllowBackgroundInput,
 			PauseOnMovieEnd = PauseOnMovieEnd,
@@ -267,6 +271,8 @@ public struct InteropPreferencesConfig {
 	[MarshalAs(UnmanagedType.I1)] public bool ShowFrameCounter;
 	[MarshalAs(UnmanagedType.I1)] public bool ShowGameTimer;
 	[MarshalAs(UnmanagedType.I1)] public bool ShowLagCounter;
+	[MarshalAs(UnmanagedType.I1)] public bool ShowRerecordCounter;
+	[MarshalAs(UnmanagedType.I1)] public bool ShowLagFrameIndicator;
 	[MarshalAs(UnmanagedType.I1)] public bool ShowDebugInfo;
 	[MarshalAs(UnmanagedType.I1)] public bool DisableOsd;
 	[MarshalAs(UnmanagedType.I1)] public bool AllowBackgroundInput;

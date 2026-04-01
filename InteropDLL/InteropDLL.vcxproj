@@ -206,7 +206,6 @@
   <ItemGroup>
     <ClCompile Include="ConfigApiWrapper.cpp" />
     <ClCompile Include="DebugApiWrapper.cpp" />
-    <ClCompile Include="DiztinguishApiWrapper.cpp" />
     <ClCompile Include="EmuApiWrapper.cpp" />
     <ClCompile Include="HistoryApiWrapper.cpp" />
     <ClCompile Include="InputApiWrapper.cpp" />

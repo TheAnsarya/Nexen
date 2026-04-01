@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ChannelF/ChannelFConsole.h"
 #include "Shared/Emulator.h"
+#include "Shared/EmuSettings.h"
 
 TEST(ChannelFConsole, SupportedExtensionsContainChfAndBin) {
 	vector<string> ext = ChannelFConsole::GetSupportedExtensions();

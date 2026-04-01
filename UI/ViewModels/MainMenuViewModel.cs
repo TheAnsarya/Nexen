@@ -1309,57 +1309,6 @@ public sealed class MainMenuViewModel : ViewModelBase {
 		} catch (Exception ex) {
 			await NexenMsgBox.Show(wnd, "GamePackageExportError", MessageBoxButtons.OK, MessageBoxIcon.Error, ex.Message);
 		}
-
-		private async Task<string?> ConvertMovieToMesen(string sourceFile, Window wnd)
-		{
-			try
-			{
-				// Create output path in the Movies folder with .mmo extension
-				string outputPath = Path.Combine(
-					ConfigManager.MovieFolder, 
-					Path.GetFileNameWithoutExtension(sourceFile) + "_converted.mmo"
-				);
-
-				// Use the MovieConverter library directly
-				var result = await Task.Run(() => {
-					var inputFormat = MovieConverter.MovieConverterRegistry.DetectFormat(sourceFile);
-					var outputFormat = MovieConverter.MovieFormat.Mesen;
-
-					if(inputFormat == MovieConverter.MovieFormat.Unknown) {
-						return (false, $"Unknown input format: {Path.GetExtension(sourceFile)}");
-					}
-
-					var reader = MovieConverter.MovieConverterRegistry.GetConverter(inputFormat);
-					var writer = MovieConverter.MovieConverterRegistry.GetConverter(outputFormat);
-
-					if(reader == null || !reader.CanRead) {
-						return (false, $"Cannot read {inputFormat} format");
-					}
-
-					if(writer == null || !writer.CanWrite) {
-						return (false, $"Cannot write Mesen format");
-					}
-
-					// Read and convert
-					var movie = reader.Read(sourceFile);
-					writer.Write(movie, outputPath);
-					return (true, "");
-				});
-
-				if(result.Item1 && File.Exists(outputPath)) {
-					return outputPath;
-				} else {
-					string message = string.IsNullOrEmpty(result.Item2) ? "Movie conversion failed" : result.Item2;
-					await MessageBox.Show(wnd, message, "Mesen", MessageBoxButtons.OK, MessageBoxIcon.Error);
-					return null;
-				}
-			}
-			catch(Exception ex)
-			{
-				await MessageBox.Show(wnd, ex.Message, "Mesen", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return null;
-			}
-		}
 	}
 
 	private async void InstallHdPack(Window wnd) {

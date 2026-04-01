@@ -36,10 +36,6 @@ bool MovieRecorder::Record(const RecordMovieOptions& options) {
 	_inputData = stringstream();
 	_saveStateData = stringstream();
 	_hasSaveState = false;
-	_rerecordCount = 0;
-	_frameCount = 0;
-	_inputLines.clear();
-	_tasMode = true; // Enable TAS mode by default for new recordings
 
 	if (!_writer->Initialize(_filename)) {
 		MessageManager::DisplayMessage("Movies", "CouldNotWriteToFile", FolderUtilities::GetFilename(_filename, true));
@@ -82,7 +78,6 @@ void MovieRecorder::GetGameSettings(stringstream& out) {
 	EmuSettings* settings = _emu->GetSettings();
 	WriteString(out, MovieKeys::NexenVersion, settings->GetVersionString());
 	WriteInt(out, MovieKeys::MovieFormatVersion, MovieRecorder::MovieFormatVersion);
-	WriteInt(out, MovieKeys::RerecordCount, _rerecordCount);
 
 	VirtualFile romFile = _emu->GetRomInfo().RomFile;
 	WriteString(out, MovieKeys::GameFile, romFile.GetFileName());

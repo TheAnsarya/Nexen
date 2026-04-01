@@ -220,6 +220,28 @@ void SystemHud::DrawRecordIcon(DebugHud* hud) const {
 	hud->DrawRectangle(x + 1, y + 3, 8, 4, color, true, 1);
 }
 
+void SystemHud::DrawTasReadWriteIndicator(DebugHud* hud, int xOffset) const {
+	int x = 24 + xOffset;
+	hud->DrawString(x, 11, "R/W", 0xE0E0E0, 0xFF000000, 1);
+}
+
+void SystemHud::ShowRerecordCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const {
+	int yPos = 10 + 10 * lineNumber;
+	string rerecordText = MessageManager::Localize("Rerecord") + ": 0";
+	uint32_t length = DrawStringCommand::MeasureString(rerecordText).X;
+	DrawString(hud, screenWidth, rerecordText, screenWidth - 8 - length, yPos);
+}
+
+void SystemHud::DrawLagFrameIndicator(DebugHud* hud, uint32_t screenWidth, uint32_t screenHeight) const {
+	if (_emu->GetLagCounter() == 0) {
+		return;
+	}
+
+	int x = (int)screenWidth - 12;
+	int y = (int)screenHeight - 12;
+	hud->DrawRectangle(x, y, 6, 6, 0xFFFF00, true, 1);
+}
+
 void SystemHud::DrawTurboRewindIcon(DebugHud* hud, bool forRewind, int xOffset) const {
 	int x = 12 + xOffset;
 	int y = 12;
