@@ -368,7 +368,7 @@ void Socket::SendBuffer()
 	int ready = select((int)_socket + 1, nullptr, &writeSockets, nullptr, &timeout);
 	if(ready <= 0) {
 		// Timeout or error - don't set connection error, just skip this send
-		std::cout << "[DiztinGUIsh] Socket not ready to send (select returned " << ready << "), skipping flush" << std::endl;
+		std::cout << "[Socket] Not ready to send (select returned " << ready << "), skipping flush" << std::endl;
 		return;
 	}
 	

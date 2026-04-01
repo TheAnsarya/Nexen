@@ -1079,14 +1079,11 @@ make everything work while not removing progress; run through issues and fix the
 
 [Nexen] Fix issue #1112, fix all the other issues, focus on WS and Lynx issues; make sure issues (974, 976, 977, 979, 1001, 1006, 1007, 1011, 1017) are done; don't spiral, stop circling around build instructions, keep everything working and fix as find solutions but focus on making code changes, focus on code and docs; continue;
 
+update the instructions, do not ask me about commiting files, just always commit them, I don't want to be delayed by being asked about commits; continue;
+
 [Nexen] update issues #1076, #1039, and #1106 adding comments describing progress and referencing 1.4.14; look at the failed actions `https://github.com/TheAnsarya/Nexen/actions` and fix the problems that cause those failures; focus on fixing issues, especially newer issues and then create a new release `1.4.15` after making sure you have a stable build with no errors; work all issues forever until there are no more (non-deferred) issues left (work for a very long time, fixing like 20 issues) and then make `1.4.16` after several more issues are fixed, we want them finished as fast as possible; continue;
 
-
-
-
-
-
-
+[Nexen] work all issues forever until there are no more (non-deferred) issues left (work for a very long time, fixing like 20 issues) and then make `1.4.16` after several more issues are fixed, we want as many as possible issues finished as fast as possible; continue; make the release work, because releases recently have worked; continue;
 
 
 
