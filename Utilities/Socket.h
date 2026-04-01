@@ -1,6 +1,9 @@
 #pragma once
 
 #include "pch.h"
+#include <mutex>
+#include <chrono>
+#include <atomic>
 
 /// <summary>
 /// Cross-platform socket wrapper for TCP/IP networking.

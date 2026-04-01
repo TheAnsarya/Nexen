@@ -10,6 +10,8 @@
 #include "Shared/Movies/MovieManager.h"
 #include "Shared/RenderedFrame.h"
 #include "Shared/EventType.h"
+#include "Shared/Interfaces/IConsole.h"
+#include "Shared/BaseControlManager.h"
 #include "Debugger/Debugger.h"
 #include "Netplay/GameClient.h"
 #include "Shared/Video/VideoDecoder.h"

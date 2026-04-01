@@ -1,6 +1,9 @@
 #include "pch.h"
 #include <cstring>
 #include <thread>
+#include <mutex>
+#include <chrono>
+#include <algorithm>
 #include "Utilities/Socket.h"
 #include "Utilities/UPnPPortMapper.h"
 using namespace std;
@@ -52,6 +55,9 @@ Socket::Socket() {
 	} else {
 		SetSocketOptions();
 	}
+	
+	// Initialize advanced features
+	ResetStatistics();
 }
 
 Socket::Socket(uintptr_t socket) {
@@ -62,6 +68,9 @@ Socket::Socket(uintptr_t socket) {
 	} else {
 		SetSocketOptions();
 	}
+	
+	// Initialize advanced features
+	ResetStatistics();
 }
 
 Socket::~Socket() {
@@ -244,7 +253,197 @@ int Socket::Recv(char* buf, int len, int flags) {
 		// Socket closed
 		std::cout << "Socket closed by peer." << std::endl;
 		Close();
+	} else if(returnVal > 0) {
+		// Update statistics for successful receive
+		_bytesReceived += returnVal;
+		_messagesReceived++;
+		_lastActivity = std::chrono::steady_clock::now();
 	}
 
 	return returnVal;
+}
+
+int Socket::BlockingRecv(char *buf, int len, int timeoutSeconds)
+{
+	// For non-blocking sockets, use select() to wait for data
+	int totalReceived = 0;
+	
+	while(totalReceived < len) {
+		fd_set readSockets;
+		#ifdef _WIN32
+			readSockets.fd_count = 1;
+			readSockets.fd_array[0] = _socket;
+		#else
+			FD_ZERO(&readSockets);
+			FD_SET(_socket, &readSockets);
+		#endif
+		
+		TIMEVAL timeout;
+		timeout.tv_sec = timeoutSeconds;
+		timeout.tv_usec = 0;
+		
+		int ready = select((int)_socket + 1, &readSockets, nullptr, nullptr, &timeout);
+		
+		if(ready <= 0) {
+			// Timeout or error
+			if(ready == 0) {
+				std::cout << "BlockingRecv: Timeout waiting for data" << std::endl;
+			} else {
+				std::cout << "BlockingRecv: Select error" << std::endl;
+			}
+			return totalReceived > 0 ? totalReceived : -1;
+		}
+		
+		// Socket has data available
+		int received = recv(_socket, buf + totalReceived, len - totalReceived, 0);
+		
+		if(received > 0) {
+			totalReceived += received;
+			_bytesReceived += received;
+			_lastActivity = std::chrono::steady_clock::now();
+		} else if(received == 0) {
+			// Connection closed
+			std::cout << "BlockingRecv: Connection closed by peer" << std::endl;
+			Close();
+			return totalReceived > 0 ? totalReceived : 0;
+		} else {
+			// Error
+			int nError = WSAGetLastError();
+			if(!WouldBlock(nError)) {
+				std::cout << "BlockingRecv: Recv error " << nError << std::endl;
+				SetConnectionErrorFlag();
+				return totalReceived > 0 ? totalReceived : -1;
+			}
+			// WouldBlock shouldn't happen after select() says data is ready, but retry
+		}
+	}
+	
+	return totalReceived;
+}
+
+void Socket::BufferedSend(char *buf, int len)
+{
+	if(_connectionError || _socket == INVALID_SOCKET) {
+		return;
+	}
+
+	std::lock_guard<std::mutex> lock(_sendBufferMutex);
+	_sendBuffer.insert(_sendBuffer.end(), buf, buf + len);
+	// Note: Statistics are updated in SendBuffer() when actually sent
+}
+
+void Socket::SendBuffer()
+{
+	if(_connectionError || _socket == INVALID_SOCKET) {
+		return;
+	}
+
+	std::lock_guard<std::mutex> lock(_sendBufferMutex);
+	
+	if(_sendBuffer.empty()) {
+		return;
+	}
+
+	int totalSent = 0;
+	int bufferSize = (int)_sendBuffer.size();
+	
+	// Update activity timestamp
+	_lastActivity = std::chrono::steady_clock::now();
+	
+	// Wait for socket to be ready to send (non-blocking mode)
+	fd_set writeSockets;
+	#ifdef _WIN32
+		writeSockets.fd_count = 1;
+		writeSockets.fd_array[0] = _socket;
+	#else
+		FD_ZERO(&writeSockets);
+		FD_SET(_socket, &writeSockets);
+	#endif
+
+	timeval timeout;
+	timeout.tv_sec = 5;  // 5 second timeout
+	timeout.tv_usec = 0;
+
+	// Check if socket is ready to send
+	int ready = select((int)_socket + 1, nullptr, &writeSockets, nullptr, &timeout);
+	if(ready <= 0) {
+		// Timeout or error - don't set connection error, just skip this send
+		std::cout << "[DiztinGUIsh] Socket not ready to send (select returned " << ready << "), skipping flush" << std::endl;
+		return;
+	}
+	
+	while(totalSent < bufferSize) {
+		int sent = Send(_sendBuffer.data() + totalSent, bufferSize - totalSent, 0);
+		if(sent <= 0) {
+			// Error or connection closed
+			SetConnectionErrorFlag();
+			break;
+		}
+		totalSent += sent;
+	}
+
+	// Update statistics
+	_bytesSent += totalSent;
+	_messagesSent++;
+
+	// Clear the buffer after sending (or on error)
+	_sendBuffer.clear();
+}
+
+// Advanced Socket Features Implementation
+
+double Socket::GetConnectionDurationSeconds() const
+{
+	auto now = std::chrono::steady_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(now - _connectionStart);
+	return duration.count() / 1000.0;
+}
+
+double Socket::GetBandwidthKBps() const
+{
+	double duration = GetConnectionDurationSeconds();
+	if(duration <= 0) return 0.0;
+	
+	uint64_t totalBytes = _bytesSent + _bytesReceived;
+	return (totalBytes / 1024.0) / duration; // KB per second
+}
+
+bool Socket::IsHealthy() const
+{
+	if(_connectionError || _socket == INVALID_SOCKET) {
+		return false;
+	}
+	
+	// Check if connection has been inactive for too long (30 seconds)
+	auto now = std::chrono::steady_clock::now();
+	auto timeSinceActivity = std::chrono::duration_cast<std::chrono::seconds>(now - _lastActivity);
+	return timeSinceActivity.count() < 30;
+}
+
+void Socket::ResetStatistics()
+{
+	_bytesSent = 0;
+	_bytesReceived = 0;
+	_messagesSent = 0;
+	_messagesReceived = 0;
+	_connectionStart = std::chrono::steady_clock::now();
+	_lastActivity = _connectionStart;
+}
+
+size_t Socket::GetBufferedBytes() const
+{
+	std::lock_guard<std::mutex> lock(const_cast<std::mutex&>(_sendBufferMutex));
+	return _sendBuffer.size();
+}
+
+bool Socket::ShouldFlush() const
+{
+	return _sendBuffer.size() >= _maxBufferSize;
+}
+
+void Socket::FlushIfNeeded()
+{
+	if(ShouldFlush()) {
+		SendBuffer();
+	}
 }

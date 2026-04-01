@@ -1,0 +1,53 @@
+<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:m="clr-namespace:Mesen"
+	xmlns:c="using:Mesen.Controls"
+	xmlns:i="using:Mesen.Interop"
+	xmlns:cfg="using:Mesen.Config"
+	xmlns:vm="using:Mesen.ViewModels"
+	xmlns:l="using:Mesen.Localization"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="180"
+	x:Class="Mesen.Windows.MovieExportWindow"
+	Width="500" Height="180"
+	x:DataType="vm:MovieExportViewModel"
+	Title="{l:Translate wndTitle}"
+>
+	<DockPanel Margin="5">
+		<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right">
+			<c:ButtonWithIcon Icon="Assets/Export.png" MinWidth="70" Click="Ok_OnClick" Text="{l:Translate btnExport}" IsEnabled="{Binding CanExport}" />
+			<Button MinWidth="70" HorizontalContentAlignment="Center" IsCancel="True" Click="Cancel_OnClick" Content="{l:Translate btnCancel}" />
+		</StackPanel>
+
+		<Grid ColumnDefinitions="Auto,1*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" Margin="0,0,0,10">
+			<TextBlock Text="{l:Translate lblSourceMovie}" VerticalAlignment="Center" />
+			<TextBox Grid.Column="1" IsReadOnly="True" Text="{Binding SourcePath}" Margin="5,2" />
+			<Button Grid.Column="2" Content="{l:Translate btnBrowse}" Click="OnBrowseSourceClick" />
+
+			<TextBlock Grid.Row="1" Text="{l:Translate lblTargetFormat}" VerticalAlignment="Center" Margin="0,10,0,0" />
+			<ComboBox
+				Grid.Row="1"
+				Grid.Column="1"
+				Grid.ColumnSpan="2"
+				Margin="5,12,0,0"
+				ItemsSource="{Binding AvailableFormats}"
+				SelectedItem="{Binding SelectedFormat}"
+			/>
+
+			<TextBlock Grid.Row="2" Text="{l:Translate lblSaveTo}" VerticalAlignment="Center" Margin="0,10,0,0" />
+			<TextBox Grid.Row="2" Grid.Column="1" IsReadOnly="True" Text="{Binding ExportPath}" Margin="5,12,5,0" />
+			<Button Grid.Row="2" Grid.Column="2" Content="{l:Translate btnBrowse}" Click="OnBrowseExportClick" Margin="0,10,0,0" />
+
+			<TextBlock
+				Grid.Row="3"
+				Grid.ColumnSpan="3"
+				Text="{Binding StatusMessage}"
+				Foreground="{Binding StatusColor}"
+				Margin="0,10,0,0"
+				TextWrapping="Wrap"
+			/>
+		</Grid>
+	</DockPanel>
+</Window>

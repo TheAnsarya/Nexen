@@ -1,0 +1,514 @@
+
+
+Add all markdown documentation to `\docs\` and subfolders based on category and document our changes and API here starting with a `README.md`; create session logs in `\~docs\session_logs\` and chat logs in `\~docs\chat_logs\`; research and analyze the project and create todo lists, documentation, and github hub issues for implementing a connection to DiztinGUIsh `https://github.com/IsoFrieze/DiztinGUIsh` which is also a local project at `C:\Users\me\source\repos\DiztinGUIsh\`
+git commit with descriptions and git push; All github Issues should be connected to the github Project `https://github.com/users/TheAnsarya/projects/4` which is our primary work orgnanization for this repository; All work should be associated with an Issue with a todolist and be updated as work is completed/commited; git commit with descriptions and git push when you think appropriate; make sure to create real issues in github;  part of the diztinguish connection is a streaming of all emulated code and data and state so check the diztinguish code and documentation to add further plans for diztinguish interacting with mesen and streaming the code back as diztinguish requires through a socket connection as well as other api connections between them;
+
+Do this first: *** git commit with descriptions and git push ***; make sure you are creating and updating session and chat logs; Add all markdown documentation to `\docs\` and subfolders based on category and document our changes and API here starting with a `README.md`; create session logs in `\~docs\session_logs\` and chat logs in `\~docs\chat_logs\`; research and analyze the project and create todo lists, documentation, and github hub issues for implementing a connection to DiztinGUIsh `https://github.com/IsoFrieze/DiztinGUIsh` which is also a local project at `C:\Users\me\source\repos\DiztinGUIsh\`; git commit with descriptions and git push; All github Issues should be connected to the github Project `https://github.com/users/TheAnsarya/projects/4` which is our primary work orgnanization for this repository; All work should be associated with an Issue with a todolist and be updated as work is completed/commited; git commit with descriptions and git push when you think appropriate; make sure to create real issues in github so figure out how to add issues to github; continue on connecting diztinguish and mesen so we can use mesen for live tracing in diztinguish
+github issues enabled; continue
+continue
+Great work, continue
+---- try again
+make sure you are creating and updating session and chat logs; *** continue ***; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space;
+continue
+can I add a second project folder to this chat so you can make the changes to Diztinguish while keeping the context of this effort?
+ok, continue
+I have added the diztinguish folder to the workspace
+make sure to update session/chat logs; update the `Mesen2` giuthub issues with our progress and then continue work on remaining issues
+make git commits with good descriptions for all of our changes and then push them; update all of the github issues at `https://github.com/TheAnsarya/Mesen2/issues` and then after updating todo-lists, figure out your work to do and update or create issues for that work; Big issue is that Mesen 2 won't compile so we want to fix those problems in the `Core` namespace: 3 errors in `Mesen2\Core\Debugger\LuaApi.cpp` with `'Debugger::GetDebugger': no matching overloaded function found`, and one error in `Mesen2\Core\SNES\Debugger\SnesDebugger.cpp` with `'Log': identifier not found`; did we make these errors? fix them so we can compile, and then build and manually test our debug-streaming process;
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+make sure to commit the changes to the Diztinguish projects as well with proper descriptions; In the `Mesen2` repos, in the the `InteropDLL` cs-project there are a bunch of build errors, fix them; the error list dump is: Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error	C2039	'function': is not a member of 'std'	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	11		
+Error	C2039	'function': is not a member of 'std'	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
+Error	C2065	'function': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	11		
+Error	C2065	'snesDebugger': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	11		
+Error	C2065	'func': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	11		
+Error	C2065	'function': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
+Error	C2065	'snesDebugger': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
+Error	C2065	'func': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
+Error	C2182	'WrapSnesDebuggerCall': this use of 'void' is not valid	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
+Error	C2275	'SnesDebugger': expected an expression instead of a type	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	11		
+Error	C2275	'SnesDebugger': expected an expression instead of a type	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
+Error	C2371	'WrapSnesDebuggerCall': redefinition; different basic types	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
+Error	C2447	'{': missing function header (old-style formal list?)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	12		
+Error	C2447	'{': missing function header (old-style formal list?)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	25		
+Error	C7532	'WrapSnesDebuggerCall': a specialization of variable template cannot have type 'void'	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.cpp	45		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+make sure to commit the changes to the Diztinguish projects as well with proper descriptions; there shouldn't be any git changes that haven't been commited and pushed; make sure to update session/chat logs; and then continue
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error	LNK2019	unresolved external symbol "public: bool __cdecl DiztinguishBridge::StartServer(unsigned short)" (?StartServer@DiztinguishBridge@@QEAA_NG@Z) referenced in function "public: __cdecl <lambda_f6b6fb6b8b153c11c3b1c0cd2a5392b3>::operator()(class SnesDebugger *)const " (??R<lambda_f6b6fb6b8b153c11c3b1c0cd2a5392b3>@@QEBA@PEAVSnesDebugger@@@Z)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.obj	1		
+Error	LNK2001	unresolved external symbol "public: bool __cdecl DiztinguishBridge::StartServer(unsigned short)" (?StartServer@DiztinguishBridge@@QEAA_NG@Z)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
+Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::StopServer(void)" (?StopServer@DiztinguishBridge@@QEAAXXZ) referenced in function "public: __cdecl <lambda_cc94df3853a5c3cf5d50b57bc03fcbfe>::operator()(class SnesDebugger *)const " (??R<lambda_cc94df3853a5c3cf5d50b57bc03fcbfe>@@QEBA@PEAVSnesDebugger@@@Z)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.obj	1		
+Error	LNK2001	unresolved external symbol "public: void __cdecl DiztinguishBridge::StopServer(void)" (?StopServer@DiztinguishBridge@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
+Error	LNK2019	unresolved external symbol "public: unsigned __int64 __cdecl DiztinguishBridge::GetConnectionDuration(void)const " (?GetConnectionDuration@DiztinguishBridge@@QEBA_KXZ) referenced in function "public: __cdecl <lambda_8c7d386c057ba96e485d95bf13caa000>::operator()(class SnesDebugger *)const " (??R<lambda_8c7d386c057ba96e485d95bf13caa000>@@QEBA@PEAVSnesDebugger@@@Z)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.obj	1		
+Error	LNK2019	unresolved external symbol "public: double __cdecl DiztinguishBridge::GetBandwidthKBps(void)const " (?GetBandwidthKBps@DiztinguishBridge@@QEBANXZ) referenced in function "public: __cdecl <lambda_363ff498d1cc0982fff4c914da5f02ba>::operator()(class SnesDebugger *)const " (??R<lambda_363ff498d1cc0982fff4c914da5f02ba>@@QEBA@PEAVSnesDebugger@@@Z)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\DiztinguishApiWrapper.obj	1		
+Error	LNK2019	unresolved external symbol "public: __cdecl DiztinguishBridge::DiztinguishBridge(class SnesConsole *,class SnesDebugger *)" (??0DiztinguishBridge@@QEAA@PEAVSnesConsole@@PEAVSnesDebugger@@@Z) referenced in function "public: __cdecl SnesDebugger::SnesDebugger(class Debugger *,enum CpuType)" (??0SnesDebugger@@QEAA@PEAVDebugger@@W4CpuType@@@Z)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
+Error	LNK2019	unresolved external symbol "public: __cdecl DiztinguishBridge::~DiztinguishBridge(void)" (??1DiztinguishBridge@@QEAA@XZ) referenced in function "public: void * __cdecl DiztinguishBridge::`scalar deleting destructor'(unsigned int)" (??_GDiztinguishBridge@@QEAAPEAXI@Z)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
+Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::OnFrameStart(unsigned int)" (?OnFrameStart@DiztinguishBridge@@QEAAXI@Z) referenced in function "public: void __cdecl SnesDebugger::ProcessInstruction(void)" (?ProcessInstruction@SnesDebugger@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
+Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::OnFrameEnd(void)" (?OnFrameEnd@DiztinguishBridge@@QEAAXXZ) referenced in function "public: void __cdecl SnesDebugger::ProcessInstruction(void)" (?ProcessInstruction@SnesDebugger@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
+Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::OnCpuExec(unsigned int,unsigned char,bool,bool,unsigned char,unsigned short,unsigned int)" (?OnCpuExec@DiztinguishBridge@@QEAAXIE_N0EGI@Z) referenced in function "public: void __cdecl SnesDebugger::ProcessInstruction(void)" (?ProcessInstruction@SnesDebugger@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
+Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::OnCdlChanged(unsigned int,unsigned char)" (?OnCdlChanged@DiztinguishBridge@@QEAAXIE@Z) referenced in function "public: void __cdecl SnesDebugger::ProcessInstruction(void)" (?ProcessInstruction@SnesDebugger@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
+Error	LNK1120	10 unresolved externals	InteropDLL	C:\Users\me\source\repos\Mesen2\bin\win-x64\Debug\MesenCore.dll	1		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Create the git commits with descriptions and documentation for all of the `DiztinGUIsh` github git repos and commit them and then push, there shouldn't be any uncommitted files; then continue updating and working github issues; `dotnet build` does not compile the `*.cpp` files so you can't check for compile errors using that command; 
+don't commit to the original github repos, we don't have permission, only commit to my forks using the github account `TheAnsarya`; if a sub-github project is at stake, fork it and pull it to local and update that;
+https://github.com/TheAnsarya/Diz.Ui.Winforms.git
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error	C2039	'Log': is not a member of 'SnesDebugger'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	474		
+Error	C3861	'Log': identifier not found	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	480		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error	C2039	'Log': is not a member of 'SnesDebugger'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	454		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+hey, `dotnet build` doesn't build the `*.cpp` files, and for C++ projects use `msbuild` or whatever to get the errors and verify the build
+dont downgrade from 145 to 142, use 145 as before
+
+^^^^^^^^^^^^^^^^^^^^^^
+use msbuild using the VS2026 version at `C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin` and fix this error: `Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error	C2039	'Log': is not a member of 'SnesDebugger'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	452		`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error	LNK2019	unresolved external symbol "public: void __cdecl Socket::SendBuffer(void)" (?SendBuffer@Socket@@QEAAXXZ) referenced in function "private: void __cdecl DiztinguishBridge::FlushOutgoingMessages(void)" (?FlushOutgoingMessages@DiztinguishBridge@@AEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\Core.lib(DiztinguishBridge.obj)	1		
+Error	LNK2019	unresolved external symbol "public: void __cdecl Socket::BufferedSend(char *,int)" (?BufferedSend@Socket@@QEAAXPEADH@Z) referenced in function "private: void __cdecl DiztinguishBridge::FlushOutgoingMessages(void)" (?FlushOutgoingMessages@DiztinguishBridge@@AEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Mesen2\InteropDLL\Core.lib(DiztinguishBridge.obj)	1		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Create the git commits with descriptions and documentation and push; continue working the github issues, while updating them and creating new issues for new work; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space;
+
+update the github issues and close any completed ones; continue working the issues!
+Your working project is: `https://github.com/TheAnsarya/Mesen2`; make a new `Integration Testing and Documentation` issue since you closed the last one; update all of the github Issues like `https://github.com/TheAnsarya/Mesen2/issues/9` and close the ones have all their work completed; make new issues with work to be done; make github Issues and todo-lists for all of the manual testing I need to do to verify the Diz-Mesen cionnection; and continue! update the github issues and close any completed ones; continue working the issues!
+
+`dotnet build` does not compile the `*.cpp` files so you can't check for c++ compile errors using that command; use msbuild using the VS2026 version at `C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin`; 
+continue working the issues!
+make sure to add new github issues for all new work and update the current issues as you complete work; continue working the issues!
+make sure you're updating the session logs and chat logs; make sure to add new github issues for all new work and update the current issues as you complete work; finish the `Mesen` gui changes and finish cleaning up `DistinGUIsh` and finish any work there; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space; Find stubs like `// TODO: Implement` and fix them; 
+4>C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp(526,85): warning C4305: 'argument': truncation from 'int' to 'bool'
+------ it builds now, all mesen projects
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The namespace 'Diz.Core.Interfaces' already contains a definition for 'IMesen2StreamingClientFactory'
+Type 'IMesen2StreamingClientFactory' already defines a member called 'CreateClient' with the same parameter types
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+make sure you're updating the session logs and chat logs; Create the git commits with descriptions and commit them and then push; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space; make sure to add new github issues for all new work and update the current issues as you complete work; continue working the issues!
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error (active)	CS1069	The type name 'AppSettingsSection' could not be found in the namespace 'System.Configuration'. This type has been forwarded to assembly 'System.Configuration.ConfigurationManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' Consider adding a reference to that assembly.	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2Configuration.cs	41		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error (active)	CS0117	'Mesen2TraceEntry' does not contain a definition for 'ProgramCounter'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs	433		
+Error (active)	CS0117	'Mesen2TraceEntry' does not contain a definition for 'Opcode'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs	434		
+Error (active)	CS0117	'Mesen2TraceEntry' does not contain a definition for 'OperandLow'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs	435		
+Error (active)	CS0117	'Mesen2TraceEntry' does not contain a definition for 'OperandHigh'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs	436		
+Error (active)	CS0117	'Mesen2TraceEntry' does not contain a definition for 'Accumulator'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs	437		
+Error (active)	CS0117	'Mesen2TraceEntry' does not contain a definition for 'XRegister'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs	438		
+Error (active)	CS0117	'Mesen2TraceEntry' does not contain a definition for 'YRegister'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs	439		
+Error (active)	CS0117	'Mesen2TraceEntry' does not contain a definition for 'StackPointer'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs	440		
+Error (active)	CS0117	'Mesen2TraceEntry' does not contain a definition for 'DirectPage'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs	441		
+Error (active)	CS0117	'Mesen2TraceEntry' does not contain a definition for 'DataBank'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs	442		
+Error (active)	CS0117	'Mesen2TraceEntry' does not contain a definition for 'ProcessorStatus'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs	443		
+Error (active)	CS0117	'Mesen2TraceEntry' does not contain a definition for 'EmulationMode'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs	444		
+Error (active)	CS0117	'Mesen2TraceEntry' does not contain a definition for 'CycleCount'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs	445		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error (active)	CS0246	The type or namespace name 'ArgumentNullException' could not be found (are you missing a using directive or an assembly reference?)	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClientFactory.cs	14		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error (active)	CS0246	The type or namespace name 'Mesen2IntegrationController' could not be found (are you missing a using directive or an assembly reference?)	Diz.Controllers	C:\Users\me\source\repos\DiztinGUIsh\Diz.Controllers\Diz.Controllers\src\services\Registration.cs	24		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+continue
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Message	lnt-uninitialized-local	Local variable is not initialized.	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	402		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+I cannot see the text in the terminal window, reset the text colors;
+continue, starting with issue #14 `[DOCS] User Documentation and Troubleshooting Guides` and do the rest of the issues; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space;
+make sure you're updating the session logs and chat logs; Create the multiple git commits for all projects with descriptions and commit them and then push; then continue updating the documentation in smaller batches
+make git commits for the `Diz.Ui.WinForms` project and push them; don't just copy code in the documentation, instead describe what happens and reference the code; continue;
+update all of the github issues and todo lists and close the issues, then continue work on the github issues; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space;
+What ?!? I said don't just copy code for ducmentation. Replace all of this documentation that you made just showing code with actual descriptions of what happens and what we need to know about it. NOT code copy-pasta.
+Blockchain? what the FUCK is this?
+fix IDE issue: Settings.json Configuration Error - Opening a Solution file is no longer required to work with projects in C# Dev Kit. dotnet.defaultSolution in your settings.json conflicts with this new experience. Remove it, save, and reload VS Code to continue.
+there is no `defaultSolution` in the `settings.json` file. Is there a cache to clear?
+sorry, try the reload again
+fix IDE issue: `Settings.json Configuration Error - Opening a Solution file is no longer required to work with projects in C# Dev Kit. dotnet.defaultSolution in your settings.json conflicts with this new experience. Remove it, save`
+continue
+
+^^^^^^^^^^
+what the fuck is this nonsense? please remove this crazy unrelated shit from the project and remove stupid crap from the github issues and the todo-lists, this is like that like blockchain nonsens eyou tried to add; stop doing that shit! 
+This project is to allow Diztinguish to replace bsnes+ with Mesen as an alternative emulator for debugging, and add the UI and documentation to support that. Everything else is non-essential and extraneous.
+^^^^^^^^^^^^^
+
+Make the most complete and comprehensive documentation for step by step fully MANUALLY testing the Mesen<->DiztinGUIsh connection, from building the projects, running the applications, and setting up the connection with a rom and new Diz project playing a game and seeing the disassembly be generated as we progress.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+An exception of type 'System.ArgumentOutOfRangeException' occurred in System.Windows.Forms.dll but was not handled in user code
+Value of '9998' is not valid for 'Value'. 'Value' should be between 'Minimum' and 'Maximum'.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+git commit and push all projects; In DiztinGUIsh the Mesen server for live streaming connects and immediately completes without doing anything, fix this, it needs to stream until it is turned off;
+try again and continue
+
+Fix this issue by concentrating on Mesen and making sure the diz-connection server is properly implemented and is actually turned on correctly by the UI, by checking the code. The UI code I know is incorrect (see screenshot) so maybe it's implementation code is incorect too
+---- Copy-Item -Path "C:\Users\me\AppData\Roaming\Code\User\workspaceStorage\vscode-chat-images\image-1763731124031.png" -Destination "C:\Users\me\source\repos\Mesen2\~docs\manual prompts log screenshot - 2025-11-21 0819.png"
+
+OK, so the handahke exists now? (retest) then fix the issue where no data streams, and fix the MEsen UI for the Diz server window (see previous screenshot)
+
+Fix the UI display issues first; There is already a ROM loaded in Mesen, there has been the whole time. Make sure the emulation code is actually calling the live-streaming code
+
+format files, git commit and push all projects at the end of each session or big effort; I am tired of hearing about `handshake` errors; you designed the Mesen-DiztinGUIsh bridge and live streaming, so fucking fix it; reconsider the entire mesen-diz live stream bridge and make sure it is implemented correctly from Mesen toi diztinguish and make sure they match, Diztinguish comsumption obviously being the primary goal so start with the current diz consumption of bsnes+ and adapt it to the Mesen interface. I just need this to work;
+
+OK, you found a way to tap into the bsnes pipeline (add an option in Mesen and the UI for which interface to use), but our goal is to create a better pipeline for Mesen that doesn't crash as much so fix the Mesen-Diz bridge and create code in Diz that is similar to the bsnes pipeline (ignore top-level specifics, but call the "add to diz file" stuff) but is for Mesen as we tried before;
+
+test Mesen/DiztinGUIsh intregration through the secondary modern pipeline for live streaming the executed code and state; and continue fixing it; also, the Diztinguish Mesen integration UI is just a bunch of placeholders, implement them;
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Message (active)	IDE0044	Make field readonly	UI	C:\Users\me\source\repos\Mesen2\UI\Windows\DiztinGUIshServerWindow.axaml.cs	17		
+Error	C2065	'Socket': undeclared identifier	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	20		
+Error	C2923	'std::unique_ptr': 'Socket' is not a valid template type argument for parameter '_Ty'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	20		
+Error	C2976	'std::unique_ptr': too few template arguments	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	20		
+Error	C2955	'std::unique_ptr': use of class template requires template argument list	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	20		
+Error	C2065	'Socket': undeclared identifier	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	21		
+Error	C2923	'std::unique_ptr': 'Socket' is not a valid template type argument for parameter '_Ty'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	21		
+Error	C2976	'std::unique_ptr': too few template arguments	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	21		
+Error	C2955	'std::unique_ptr': use of class template requires template argument list	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	21		
+Error	C2039	'mutex': is not a member of 'std'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	34		
+Error	C3646	'_socketMutex': unknown override specifier	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	34		
+Error	C4430	missing type specifier - int assumed. Note: C++ does not support default-int	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.h	34		
+Error	C1083	Cannot open include file: '../Debugger/SnesDebugger.h': No such file or directory	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBinaryBridge.cpp	4		
+Warning	C4305	'argument': truncation from 'int' to 'bool'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	701		
+Warning	C4305	'argument': truncation from 'int' to 'bool'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	702		
+Warning	C4305	'argument': truncation from 'int' to 'bool'	Core	C:\Users\me\source\repos\Mesen2\Core\Debugger\DiztinguishBridge.cpp	702		
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+git commit all updated and new files in all projects with descriptions and broken into batches by intent or purpose
+
+use msbuild using the VS2026 version at `C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin`; fix the mesen build errors; fix an complete and fill out the diztinguish UI screens for the Mesen integreation;
+
+The Mesen `DiztinGUIsh Server` UI is borked, fix it (see screenshot #1); The DiztinGUIsh UI for Mesen integration is a bunch of placeholders (see other screen shots), replace them with actual code and UI;
+
+git commit ***ALL** updated and new files in all projects with descriptions and broken into batches by intent or purpose
+
+connecting live streaming from Diz to Mesen, does not transfer any information; review the code and fix it so Mesen actually sends information to Diz and the connection is not closed immediately; and don't just crash when the connection is closed;
+Fix this god-damned UI is Mesen!
+---- image-1763757035405.png
+the window title and the close button title are both garbage referencing their code-behind, fix that
+move the log statement earlier in the shutdown sequence before closing sockets/threads AND ALSO make the logging conditional
+
+No, no no, it's just that the window height is too low! make the wundow height automatically showing all of the content!
+
+Thank you for finally fixing that UI issue! By looking at a different way, we finally found the issue, so take a different perspective look at the Mesen-Diz connection and figure out why we aren't actually streaming  the point is: a ROM should emulate and be played in Mesen, the emulated instructions and state should be pushed out of a socket, Diz should have a socket that consumes the Mesen stuff, and the Diz instance should consume the data and update the `*.diz` file just like it streams data from bsnes+ only with a better inferface;;
+The connection didn't work, see screenshots of attempted usage, connecting to the server errors out, trying to stream closes immediately; we have tried a bunch of times to make live streaming work, so go crazy and try different shit, just make it work;
+git commit all updated and new files in all projects with descriptions and broken into batches by intent or purpose; where are the Mesen Debugger log files? I need to read them; Is the GUI connecting to the socket only for the the lifespan of the GUI command? does it need a worker thread holding the connection reference or something? (which can then be contacted to pause or end the connection or whatever)
+
+Hey, examine this code! `ProjectController.cs:393-426`; The finally block closes the connection, this is the connection we want this is why the connection closes immediately between diz and mesen; Store this connection somewhere with a long lifespan but available for us to call pause and stop and cleanup etc; store it in like a worker thread or someting, do the normal thing to keep a socket alive and make a descructor and document everything, etc;
+
+there are errors in the Diz prject:Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error (active)	CS0426	The type name 'TraceLogImporterStats' does not exist in the type 'BsnesTraceLogImporter'	Diz.Controllers	C:\Users\me\source\repos\DiztinGUIsh\Diz.Controllers\Diz.Controllers\src\controllers\ProjectController.cs	543		Error (active)	CS0535	'ProjectController' does not implement interface member 'ITraceLogImporters.ImportMesenTraceLive(string, int, CancellationToken)'	Diz.Controllers	C:\Users\me\source\repos\DiztinGUIsh\Diz.Controllers\Diz.Controllers\src\controllers\ProjectController.cs	37		
+
+Severity	Code	Description	Project	File	Line	Suppression State	Details
+Error (active)	CS0426	The type name 'ImportStats' does not exist in the type 'MesenTraceLogImporter'	Diz.Controllers	C:\Users\me\source\repos\DiztinGUIsh\Diz.Controllers\Diz.Controllers\src\controllers\ProjectController.cs	543		
+Error (active)	CS1501	No overload for method 'ImportMesenTraceLive' takes 3 arguments	Diz.Ui.Winforms	C:\Users\me\source\repos\DiztinGUIsh\Diz.Ui.Winforms\Diz.Ui.Winforms\window\MainWindow.Importers.cs	155		
+
+The connection showed up and sustained in both Mesen and DiztinGUIsh! Great job! but therte was no data transfered; Focus in Diztinguish and make sure incomming data is being processed; and also focus on mesen: make sure you're sending trace logging;
+continue
+
+open the folder for `The diagnostic logs`; the apps are both running and connected; diagnose the current connection and why data is not being sent/and-or/received;
+
+git commit all updated and new files in all projects with descriptions and broken into batches by intent or purpose; 
+
+I don't see any data being passed, or at least I don't see any data being saved in the Diz file; is all data sent being saved? is all data being sent?;
+They are both open and the diz file is not being updated, figure out why;
+no dat transfered now, 
+
+It is running right now, Diz is connected to Mesen, but I see nothing happening in Diz; is Diz receiving data and just not recording it? Or is Mesen saying that it is sending data but isn't?
+Track the lifetime of the TCP connection from Diz to Mesen and trace why it is closing/destructing. The connection has to be kept alive so the data can flow into the existing Diz data collection infrastructure.
+open the Diz logs so I can see them! Also there is nothing being done still, where does the connection close?
+
+open files to exactly where the tcp connection is created so I can review the code; the connection is closed too early make sure it stays in scope by creating a background process or setting it to a static property or something
+
+ also log to actual files, configure logging to use actual files and roll over and delete after 30 days, etc,; trap the tcp connection and keep it alive! return it and put into a static variable or a long-living class object or put it in a background task; ***** I want dat from Mesen to end up in DiztinGUIsh **** that is our entire purpose ;
+Logs are at `%LOCALAPPDATA%\DiztinGUIsh\Logs\` nothing is happening, fix it
+
+In Mesen2, I am starting the Diztinguish server from the Window menu items, `Tools->DiztinGUIsh Server` and starting it. does this not start the server? Does the lua script do someting differernt? Make sure the menu item and window gui actually start and hold the diztinguish server object reference so it does not go out of scope, and find a way to get Mesen to send the exactly correctly formatted data to DiztinG?UIsh so Diz will record it;
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=============================================================
+DiztinGUIsh Mesen2 Connection Logger Initialized
+Session started: 2025-11-23 15:56:45.803
+Log directory: C:\Users\me\AppData\Local\DiztinGUIsh\Logs
+=============================================================
+[2025-11-23 15:56:45.804] [CONTROLLER] *** ImportMesenTraceLive CALLED: localhost:9998 ***
+[2025-11-23 15:56:45.808] [CONNECTION_MANAGER] *** CREATING NEW IMPORTER (STATIC) FOR localhost:9998 ***
+[2025-11-23 15:56:45.811] [CONNECTION_MANAGER] Calling ConnectAsync(localhost, 9998)...
+[2025-11-23 15:56:45.817] [CLIENT]  ConnectAsync starting - Host: localhost, Port: 9998, Timeout: 3000ms
+[2025-11-23 15:56:45.821] [CLIENT]  TcpClient created, attempting connection...
+[2025-11-23 15:56:47.950] [CLIENT]  Connection successful! Getting network stream...
+[2025-11-23 15:56:47.951] [CLIENT]  Starting receive loop...
+[2025-11-23 15:56:47.952] [CLIENT]  *** RECEIVE LOOP STARTED ***
+[2025-11-23 15:56:47.954] [CLIENT]  *** READ FAILED: Expected 5 bytes, got 0 bytes, then 0 (connection closed by remote) ***
+[2025-11-23 15:56:47.954] [CLIENT]  *** CONNECTION CLOSED: ReadAsync returned 0 bytes (peer disconnected) ***
+[2025-11-23 15:56:47.954] [CLIENT]  *** RECEIVE LOOP ENDED ***
+[2025-11-23 15:56:47.955] [CLIENT]  *** CALLING DISCONNECT FROM RECEIVE LOOP ***
+[2025-11-23 15:56:47.955] [CLIENT]  *** DISCONNECT CALLED ***
+[2025-11-23 15:56:48.045] [CLIENT]  Stack trace:    at System.Environment.get_StackTrace()
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.Disconnect() in C:\Users\me\source\repos\DiztinGUIsh\Diz.Import\src\mesen\tracelog\MesenLiveTraceClient.cs:line 107
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.ReceiveLoopAsync(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.ReceiveLoopAsync(CancellationToken cancellationToken)
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.ConnectAsync(String host, Int32 port) in C:\Users\me\source\repos\DiztinGUIsh\Diz.Import\src\mesen\tracelog\MesenLiveTraceClient.cs:line 82
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+   at System.Runtime.CompilerServices.TaskAwaiter.<>c.<OutputWaitEtwEvents>b__12_0(Action innerContinuation, Task innerTask)
+   at System.Windows.Forms.Control.InvokeMarshaledCallbackHelper(Object obj)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Windows.Forms.Control.InvokeMarshaledCallbacks()
+   at System.Windows.Forms.Control.WndProc(Message& m)
+   at System.Windows.Forms.NativeWindow.Callback(HWND hWnd, MessageId msg, WPARAM wparam, LPARAM lparam)
+   at Windows.Win32.PInvoke.CallWindowProc( lpPrevWndFunc, HWND hWnd, UInt32 Msg, WPARAM wParam, LPARAM lParam)
+   at Windows.Win32.PInvoke.CallWindowProc( lpPrevWndFunc, HWND hWnd, UInt32 Msg, WPARAM wParam, LPARAM lParam)
+   at System.Windows.Forms.NativeWindow.DefWndProc(Message& m)
+   at System.Windows.Forms.Form.DefWndProc(Message& m)
+   at System.Windows.Forms.Control.WndProc(Message& m)
+   at System.Windows.Forms.ContainerControl.WndProc(Message& m)
+   at System.Windows.Forms.Form.WndProc(Message& m)
+   at System.Windows.Forms.NativeWindow.Callback(HWND hWnd, MessageId msg, WPARAM wparam, LPARAM lparam)
+   at Windows.Win32.PInvoke.CallWindowProc( lpPrevWndFunc, HWND hWnd, UInt32 Msg, WPARAM wParam, LPARAM lParam)
+   at Windows.Win32.PInvoke.CallWindowProc( lpPrevWndFunc, HWND hWnd, UInt32 Msg, WPARAM wParam, LPARAM lParam)
+   at System.Windows.Forms.NativeWindow.DefWndProc(Message& m)
+   at System.Windows.Forms.Form.DefWndProc(Message& m)
+   at System.Windows.Forms.Control.WndProc(Message& m)
+   at System.Windows.Forms.ContainerControl.WndProc(Message& m)
+   at System.Windows.Forms.Form.WndProc(Message& m)
+   at System.Windows.Forms.NativeWindow.Callback(HWND hWnd, MessageId msg, WPARAM wparam, LPARAM lparam)
+   at Windows.Win32.PInvoke.DispatchMessage(MSG* lpMsg)
+   at System.Windows.Forms.Application.LightThreadContext.FPushMessageLoop(msoloop uReason)
+   at System.Windows.Forms.Application.LightThreadContext.RunMessageLoop(msoloop reason, Boolean fullModal)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoopInner(msoloop reason, ApplicationContext context)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoop(msoloop reason, ApplicationContext context)
+   at Diz.Ui.Winforms.DizWinformsApp.Run(String initialProjectFileToOpen) in C:\Users\me\source\repos\DiztinGUIsh\Diz.Ui.Winforms\Diz.Ui.Winforms\DizWinformsApp.cs:line 20
+   at Diz.App.Common.DizAppCommon.StartApp(IServiceFactory serviceFactory, String[] args) in C:\Users\me\source\repos\DiztinGUIsh\Diz.App.Common\Main.cs:line 17
+   at Diz.App.Winforms.Program.Main(String[] args) in C:\Users\me\source\repos\DiztinGUIsh\Diz.App.Winforms\Program.cs:line 35
+[2025-11-23 15:56:48.047] [CLIENT]  ConnectAsync completed successfully!
+[2025-11-23 15:56:48.047] [CLIENT]  *** CONNECTION ESTABLISHED: localhost:9998 ***
+[2025-11-23 15:56:48.048] [CONNECTION_MANAGER] ConnectAsync returned: True
+[2025-11-23 15:56:48.048] [CONNECTION_MANAGER] Starting background monitoring task (STATIC)...
+[2025-11-23 15:56:48.049] [CONNECTION_MANAGER] *** CONNECTION ESTABLISHED AND STORED IN STATIC FIELD ***
+[2025-11-23 15:56:48.049] [CONTROLLER] *** ImportMesenTraceLive COMPLETE - Connection stored in STATIC manager ***
+[2025-11-23 15:56:48.049] [CONNECTION_MANAGER] *** BACKGROUND TASK STARTED (STATIC) ***
+[2025-11-23 15:56:48.050] [CONNECTION_MANAGER] *** BACKGROUND TASK EXITING: Cancelled=False, IsConnected=False ***
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Everything is closed now; The critical insight from the log you posted shows Mesen2 IS sending the Handshake - the connection establishes successfully (line 7: Connection successful!) but then immediately reads 0 bytes (line 10: got 0 bytes, then 0 (connection closed by remote)), which means Mesen2 sent a 0-length handshake message OR closed the connection immediately after accepting it.
+
+This is the smoking gun - we need to see what the handshake handler does when it receives that message.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Check the actual real code, and open up the file for probable problems so I can see it, when looking for why the connection closes in 4ms and isn't held in a long scope; and build and start diz and mesen if you want to test it and then open a rom and run a ps1 testing script if you want;
+[2025-11-23 16:18:11.073] [CLIENT] *** READ FAILED: Expected 5 bytes, got 0 bytes, then 0 (connection closed by remote) ***
+Fix what is sent by Mesen
+Still nothing; MesenS should send the exact packets that Diz needs, and DiztinGUIsh should update the `*.diz` file with the code and data it is told about
+"This is happening because Mesen2 is sending romSize=0," then Mesen should send the real size; fix it so Mesen sends the real size;
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+=============================================================
+DiztinGUIsh Mesen2 Connection Logger Initialized
+Session started: 2025-11-23 16:40:54.972
+Log directory: C:\Users\me\AppData\Local\DiztinGUIsh\Logs
+=============================================================
+[2025-11-23 16:40:54.973] [CONTROLLER] *** ImportMesenTraceLive CALLED: localhost:9998 ***
+[2025-11-23 16:40:54.975] [CONNECTION_MANAGER] *** CREATING NEW IMPORTER (STATIC) FOR localhost:9998 ***
+[2025-11-23 16:40:54.976] [CONNECTION_MANAGER] Calling ConnectAsync(localhost, 9998)...
+[2025-11-23 16:40:54.978] [CLIENT]  ConnectAsync starting - Host: localhost, Port: 9998, Timeout: 3000ms
+[2025-11-23 16:40:54.980] [CLIENT]  TcpClient created, attempting connection...
+[2025-11-23 16:40:57.020] [CLIENT]  Connection successful! Getting network stream...
+[2025-11-23 16:40:57.021] [CLIENT]  Starting receive loop...
+[2025-11-23 16:40:57.022] [CLIENT]  *** RECEIVE LOOP STARTED ***
+[2025-11-23 16:40:57.025] [IMPORTER]  *** HANDSHAKE RECEIVED: Protocol=1.0, ROM='Test ROM', Size=0 ***
+[2025-11-23 16:40:57.025] [IMPORTER]  Handshake validation: Protocol compatible=True, ROM compatible=False
+[2025-11-23 16:40:57.026] [CLIENT]  *** READ FAILED: Expected 5 bytes, got 0 bytes, then 0 (connection closed by remote) ***
+[2025-11-23 16:40:57.026] [CLIENT]  *** CONNECTION CLOSED: ReadAsync returned 0 bytes (peer disconnected) ***
+[2025-11-23 16:40:57.026] [CLIENT]  *** RECEIVE LOOP ENDED ***
+[2025-11-23 16:40:57.026] [IMPORTER]  Sending HandshakeAck (accepted=False)...
+[2025-11-23 16:40:57.026] [CLIENT]  *** CALLING DISCONNECT FROM RECEIVE LOOP ***
+[2025-11-23 16:40:57.027] [CLIENT]  *** DISCONNECT CALLED ***
+[2025-11-23 16:40:57.027] [CLIENT]  Sending HandshakeAck: accepted=False, clientName='DiztinGUIsh v2.0'
+[2025-11-23 16:40:57.028] [CLIENT]  HandshakeAck sent successfully (74 bytes total)
+[2025-11-23 16:40:57.029] [IMPORTER]  !!! HANDSHAKE REJECTED - INCOMPATIBLE VERSION/ROM !!!
+[2025-11-23 16:40:57.045] [CLIENT]  Stack trace:    at System.Environment.get_StackTrace()
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.Disconnect() in C:\Users\me\source\repos\DiztinGUIsh\Diz.Import\src\mesen\tracelog\MesenLiveTraceClient.cs:line 107
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.ReceiveLoopAsync(CancellationToken cancellationToken)
+   at System.Runtime.CompilerServices.AsyncMethodBuilderCore.Start[TStateMachine](TStateMachine& stateMachine)
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.ReceiveLoopAsync(CancellationToken cancellationToken)
+   at Diz.Import.mesen.tracelog.MesenLiveTraceClient.ConnectAsync(String host, Int32 port) in C:\Users\me\source\repos\DiztinGUIsh\Diz.Import\src\mesen\tracelog\MesenLiveTraceClient.cs:line 82
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Runtime.CompilerServices.AsyncTaskMethodBuilder`1.AsyncStateMachineBox`1.MoveNext(Thread threadPoolThread)
+   at System.Windows.Forms.Control.InvokeMarshaledCallbackHelper(Object obj)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Windows.Forms.Control.InvokeMarshaledCallbacks()
+   at System.Windows.Forms.Control.WndProc(Message& m)
+   at System.Windows.Forms.NativeWindow.Callback(HWND hWnd, MessageId msg, WPARAM wparam, LPARAM lparam)
+   at Windows.Win32.PInvoke.DispatchMessage(MSG* lpMsg)
+   at System.Windows.Forms.Application.LightThreadContext.FPushMessageLoop(msoloop uReason)
+   at System.Windows.Forms.Application.LightThreadContext.RunMessageLoop(msoloop reason, Boolean fullModal)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoopInner(msoloop reason, ApplicationContext context)
+   at System.Windows.Forms.Application.ThreadContext.RunMessageLoop(msoloop reason, ApplicationContext context)
+   at Diz.Ui.Winforms.DizWinformsApp.Run(String initialProjectFileToOpen) in C:\Users\me\source\repos\DiztinGUIsh\Diz.Ui.Winforms\Diz.Ui.Winforms\DizWinformsApp.cs:line 20
+   at Diz.App.Common.DizAppCommon.StartApp(IServiceFactory serviceFactory, String[] args) in C:\Users\me\source\repos\DiztinGUIsh\Diz.App.Common\Main.cs:line 17
+   at Diz.App.Winforms.Program.Main(String[] args) in C:\Users\me\source\repos\DiztinGUIsh\Diz.App.Winforms\Program.cs:line 35
+[2025-11-23 16:40:57.046] [CLIENT]  ConnectAsync completed successfully!
+[2025-11-23 16:40:57.046] [CLIENT]  *** CONNECTION ESTABLISHED: localhost:9998 ***
+[2025-11-23 16:40:57.046] [CONNECTION_MANAGER] ConnectAsync returned: True
+[2025-11-23 16:40:57.046] [CONNECTION_MANAGER] Starting background monitoring task (STATIC)...
+[2025-11-23 16:40:57.047] [CONNECTION_MANAGER] *** CONNECTION ESTABLISHED AND STORED IN STATIC FIELD ***
+[2025-11-23 16:40:57.047] [CONTROLLER] *** ImportMesenTraceLive COMPLETE - Connection stored in STATIC manager ***
+[2025-11-23 16:40:57.047] [CONNECTION_MANAGER] *** BACKGROUND TASK STARTED (STATIC) ***
+[2025-11-23 16:40:57.048] [CONNECTION_MANAGER] *** BACKGROUND TASK EXITING: Cancelled=False, IsConnected=False ***
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ok
+They are loaded and running and the ROM is loaded and the sevrer is running and i've cfonnected vis Diz; make all this shit work and take as lobng as you can to make it work;
+
+analyze the code and track tracing from Mesen to Diz, step by step;
+There is still nothing being saved to the diz file
+keep attacking the problem, make sure the connection is kept alive on both sides, the Mesen connection has to stay open waiting to be connected to Diz, and then data has to flow; make it work, please oh dear god, make it work;
+Mesen has to open a socket, and then keep that socket open for a long time (several minutes?) until we can connect to it from Diz;
+use msbuild using the VS2026 version at `C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin`
+_stream is null, fix it
+
+git comment everything and push;
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+make a git branch off of the [git commit from when I forked this repos], named `mesen-record-and-play-gameplay` and then create todos and github-issues for adding the ability that other emulators have (search the internet and look) the `record/replay` functionality, sometimes they're called movies, so look at other emulators' code, and use standardized formats, for recording and replaying;
+
+add the movie conversion stuff, maybe make a secondary dll/console app to convert between all the movie record formats, and add TAS stuff;
+
+do github issues and todo-list stuff (create/update), add everything needed for full TAS integration (make issues and todolists for this work);
+***continue!***; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space;
+
+Is the TAS epic complete? If not, update the todo-lists and github issues, and continue work and documentation (make sure you're updating chat logs and session logs)
+
+work on the TAS epic issues and todolists
+
+The CLI tool `MesenMovieConverter.exe` should be a bonus for external tools to use, the actual conversion stuff should be in a dll (class library) that the cli-tool and Mesen both use for their conversion needs, don't call the exe from Mesen itself, use the class library;
+
+finish off the TAS epic as best you can
+
+use msbuild using the VS2026 version at `C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin`; and then continue
+
+Is this TAS epic over? clean up, finish any remaining work, and make sure all documentation is robust; make a manual verification task list and comprehensive instructions to make sure this epic is properly implemented and matches expectations; make all the docs and formatting and clean up so we can close the chapter on TAS implementation; make sure the code changes are commented as well;
+
+git comment everything in logical batches and push; make sure there is a direct conversion for the different TAS formats, so every format has a conversion method to every other TAS format, so we're not losing data just because the Mesen format doesn't have it;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+
+
+
+
+
+
+
+
+Find stubs like `// TODO: Implement` and fix them; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

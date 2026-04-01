@@ -19,6 +19,12 @@ SystemHud::~SystemHud() {
 void SystemHud::Draw(DebugHud* hud, uint32_t width, uint32_t height) const {
 	DrawCounters(hud, width);
 	DrawMessages(hud, width, height);
+	
+	// Draw lag frame visual indicator if enabled
+	PreferencesConfig cfg = _emu->GetSettings()->GetPreferences();
+	if(cfg.ShowLagFrameIndicator) {
+		DrawLagFrameIndicator(hud, width, height);
+	}
 
 	if (_emu->IsRunning()) {
 		EmuSettings* settings = _emu->GetSettings();
@@ -32,6 +38,8 @@ void SystemHud::Draw(DebugHud* hud, uint32_t width, uint32_t height) const {
 		} else if (showMovieIcons && _emu->GetMovieManager()->Recording()) {
 			DrawRecordIcon(hud);
 			xOffset += 12;
+			// Show R/W indicator for TAS mode
+			DrawTasReadWriteIndicator(hud, xOffset);
 		}
 
 		bool showTurboRewindIcons = settings->GetPreferences().ShowTurboRewindIcons;
@@ -127,6 +135,9 @@ void SystemHud::DrawCounters(DebugHud* hud, uint32_t screenWidth) const {
 		}
 		if (cfg.ShowLagCounter) {
 			ShowLagCounter(hud, screenWidth, lineNumber++);
+		}
+		if(cfg.ShowRerecordCounter) {
+			ShowRerecordCounter(hud, screenWidth, lineNumber++);
 		}
 	}
 }

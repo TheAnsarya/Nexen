@@ -31,6 +31,7 @@ private:
 	void DrawPlayIcon(DebugHud* hud) const;
 	void DrawRecordIcon(DebugHud* hud) const;
 	void DrawTurboRewindIcon(DebugHud* hud, bool forRewind, int xOffset) const;
+	void DrawTasReadWriteIndicator(DebugHud* hud, int xOffset) const;
 	void DrawMessage(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight, int& lastHeight) const;
 	void DrawString(DebugHud* hud, uint32_t screenWidth, const string& msg, int x, int y, uint8_t opacity = 255) const;
 	void DisplayMessage(const string& title, const string& message) override;
@@ -39,6 +40,9 @@ private:
 	void ShowFrameCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
 	void ShowLagCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
 	void ShowGameTimer(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
+	void ShowRerecordCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
+	void ShowInputDisplay(DebugHud* hud, uint32_t screenWidth, uint32_t screenHeight) const;
+	void DrawLagFrameIndicator(DebugHud* hud, uint32_t screenWidth, uint32_t screenHeight) const;
 
 	void DrawCounters(DebugHud* hud, uint32_t screenWidth) const;
 

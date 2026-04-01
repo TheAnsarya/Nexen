@@ -3,6 +3,7 @@
 #include "Core/Shared/Video/VideoRenderer.h"
 #include "Core/Shared/Audio/SoundMixer.h"
 #include "Core/Shared/Movies/MovieManager.h"
+#include "Core/Shared/Movies/MovieTypes.h"
 
 extern unique_ptr<Emulator> _emu;
 

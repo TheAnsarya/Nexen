@@ -17,6 +17,8 @@
 #include "SNES/Debugger/TraceLogger/SnesCpuTraceLogger.h"
 #include "SNES/Debugger/SnesPpuTools.h"
 #include "Debugger/CdlManager.h"
+#include "Debugger/DiztinguishBridge.h"
+#include "Debugger/DiztinguishBinaryBridge.h"
 #include "Debugger/DebugTypes.h"
 #include "Debugger/DisassemblyInfo.h"
 #include "Debugger/Disassembler.h"
@@ -204,6 +206,40 @@ void SnesDebugger::ProcessInstruction() {
 	}
 
 	_debugger->ProcessBreakConditions(_cpuType, *_step.get(), _breakpointManager.get(), operation, addressInfo);
+
+	// DiztinGUIsh streaming: Send execution trace
+	if(_diztinguishBridge && _diztinguishBridge->IsClientConnected()) {
+		// Extract M and X flags from processor status
+		bool mFlag = (state.PS & ProcFlags::MemoryMode8) != 0;
+		bool xFlag = (state.PS & ProcFlags::IndexMode8) != 0;
+		
+		// Calculate effective address (for now, use 0 - will be enhanced later)
+		uint32_t effectiveAddr = 0;
+		
+		_diztinguishBridge->OnCpuExec(pc, opCode, mFlag, xFlag, state.DBR, state.D, effectiveAddr);
+	}
+
+	// DiztinGUIsh binary streaming: Send BSNES-compatible binary packet
+	if(_diztinguishBinaryBridge && _diztinguishBinaryBridge->IsClientConnected()) {
+		// Get instruction length and operands
+		uint8_t cpuFlags = state.PS & (ProcFlags::IndexMode8 | ProcFlags::MemoryMode8);
+		uint8_t opcodeLen = SnesDisUtils::GetOpSize(opCode, cpuFlags);
+		
+		// Peek ahead to get operand bytes (without consuming them from execution)
+		uint8_t operands[3] = {0, 0, 0};
+		for(int i = 1; i < opcodeLen && i <= 3; i++) {
+			operands[i-1] = _memoryMappings->Peek(pc + i);
+		}
+		
+		// Extract M and X flags from processor status
+		bool mFlag = (state.PS & ProcFlags::MemoryMode8) != 0;
+		bool xFlag = (state.PS & ProcFlags::IndexMode8) != 0;
+		
+		// Send to binary bridge with all required CPU register state
+		_diztinguishBinaryBridge->OnCpuExec(pc, opCode, opcodeLen, operands, 
+			mFlag, xFlag, state.DBR, state.D, state.A, state.X, 
+			state.Y, state.SP, state.EmulationMode);
+	}
 }
 
 void SnesDebugger::ProcessRead(uint32_t addr, uint8_t value, MemoryOperationType type) {
@@ -584,4 +620,80 @@ void SnesDebugger::ProcessInputOverrides(DebugControllerState inputOverrides[8])
 		}
 	}
 	controlManager->RefreshHubState();
+}
+
+// DiztinGUIsh streaming integration API
+DiztinguishBridge* SnesDebugger::GetDiztinguishBridge()
+{
+	return _diztinguishBridge.get();
+}
+
+bool SnesDebugger::StartDiztinguishServer(uint16_t port)
+{
+	if(!_diztinguishBridge) {
+		_debugger->Log("[SnesDebugger] DiztinGUIsh bridge not available (SA-1 debugger?)");
+		return false;
+	}
+
+	return _diztinguishBridge->StartServer(port);
+}
+
+void SnesDebugger::StopDiztinguishServer()
+{
+	if(_diztinguishBridge) {
+		_diztinguishBridge->StopServer();
+	}
+}
+
+bool SnesDebugger::IsDiztinguishServerRunning() const
+{
+	return _diztinguishBridge && _diztinguishBridge->IsServerRunning();
+}
+
+uint16_t SnesDebugger::GetDiztinguishServerPort() const
+{
+	return _diztinguishBridge ? _diztinguishBridge->GetServerPort() : 0;
+}
+
+bool SnesDebugger::IsDiztinguishClientConnected() const
+{
+	return _diztinguishBridge && _diztinguishBridge->IsClientConnected();
+}
+
+// DiztinGUIsh binary streaming integration API
+DiztinguishBinaryBridge* SnesDebugger::GetDiztinguishBinaryBridge()
+{
+	return _diztinguishBinaryBridge.get();
+}
+
+bool SnesDebugger::StartDiztinguishBinaryServer(uint16_t port)
+{
+	if(!_diztinguishBinaryBridge) {
+		_debugger->Log("[SnesDebugger] DiztinGUIsh binary bridge not available (SA-1 debugger?)");
+		return false;
+	}
+
+	return _diztinguishBinaryBridge->StartServer(port);
+}
+
+void SnesDebugger::StopDiztinguishBinaryServer()
+{
+	if(_diztinguishBinaryBridge) {
+		_diztinguishBinaryBridge->StopServer();
+	}
+}
+
+bool SnesDebugger::IsDiztinguishBinaryServerRunning() const
+{
+	return _diztinguishBinaryBridge && _diztinguishBinaryBridge->IsServerRunning();
+}
+
+uint16_t SnesDebugger::GetDiztinguishBinaryServerPort() const
+{
+	return _diztinguishBinaryBridge ? _diztinguishBinaryBridge->GetServerPort() : 0;
+}
+
+bool SnesDebugger::IsDiztinguishBinaryClientConnected() const
+{
+	return _diztinguishBinaryBridge && _diztinguishBinaryBridge->IsClientConnected();
 }

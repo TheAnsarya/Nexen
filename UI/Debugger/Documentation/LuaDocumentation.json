@@ -357,6 +357,30 @@
 	]
 },
 {
+	"name": "getTasState",
+	"category": "Input",
+	"description": "Returns the current TAS (Tool-Assisted Speedrun) state including movie status, frame count, and rerecord count.",
+	"returnValue": { "type": "Table", "description": "{ frameCount = int, rerecordCount = int, lagFrameCount = int, isRecording = bool, isPlaying = bool, isReadOnly = bool }" }
+},
+{
+	"name": "isMoviePlaying",
+	"category": "Input",
+	"description": "Returns true if a movie is currently being played back.",
+	"returnValue": { "type": "Bool", "description": "True if a movie is playing" }
+},
+{
+	"name": "isMovieRecording",
+	"category": "Input",
+	"description": "Returns true if a movie is currently being recorded.",
+	"returnValue": { "type": "Bool", "description": "True if a movie is being recorded" }
+},
+{
+	"name": "getRerecordCount",
+	"category": "Input",
+	"description": "Returns the current rerecord count for the active movie recording session.",
+	"returnValue": { "type": "Int", "description": "Number of times the movie has been rerecorded" }
+},
+{
 	"name": "setScreenBuffer",
 	"category": "Drawing",
 	"description": "Replaces the current frame with the contents of the specified array.",

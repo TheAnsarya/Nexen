@@ -27,6 +27,8 @@ class SnesAssembler;
 class SnesPpuTools;
 class PpuTools;
 class DummySnesCpu;
+class DiztinguishBridge;
+class DiztinguishBinaryBridge;
 enum class MemoryOperationType;
 
 class SnesDebugger final : public IDebugger {
@@ -53,6 +55,8 @@ class SnesDebugger final : public IDebugger {
 	unique_ptr<SnesCpuTraceLogger> _traceLogger;
 	unique_ptr<SnesPpuTools> _ppuTools;
 	unique_ptr<DummySnesCpu> _dummyCpu;
+	unique_ptr<DiztinguishBridge> _diztinguishBridge;
+	unique_ptr<DiztinguishBinaryBridge> _diztinguishBinaryBridge;
 
 	ITraceLogger* _spcTraceLogger = nullptr;
 	ITraceLogger* _dspTraceLogger = nullptr;

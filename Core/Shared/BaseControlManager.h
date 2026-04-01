@@ -126,6 +126,7 @@ public:
 
 	/// <summary>Reset lag frame counter</summary>
 	void ResetLagCounter();
+	bool WasLastFrameLag();
 
 	/// <summary>
 	/// Check if controller type connected.

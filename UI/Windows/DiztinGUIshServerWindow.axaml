@@ -1,0 +1,156 @@
+<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:m="clr-namespace:Mesen"
+	xmlns:vm="using:Mesen.ViewModels"
+	xmlns:dc="using:Mesen.Debugger.Controls"
+	xmlns:v="using:Mesen.Views"
+	xmlns:l="using:Mesen.Localization"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="550"
+	x:Class="Mesen.Windows.DiztinGUIshServerWindow"
+	Width="450" SizeToContent="Height"
+	MinWidth="400" MinHeight="500"
+	MaxWidth="800" MaxHeight="800"
+	Icon="/Assets/Network.png"
+	Title="DiztinGUIsh Server"
+	Name="root"
+>
+	<Grid Margin="10">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="10" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+
+		<!-- Server Control Section -->
+		<Border Grid.Row="0" BorderThickness="1" BorderBrush="{StaticResource MesenGrayBorderColor}" Padding="10" Margin="0,0,0,5">
+			<StackPanel>
+				<TextBlock Text="Server Control" FontWeight="Bold" Margin="0,0,0,10" />
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="50" />
+						<ColumnDefinition Width="100" />
+						<ColumnDefinition Width="20" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="10" />
+						<RowDefinition Height="Auto" />
+					</Grid.RowDefinitions>
+
+					<TextBlock Grid.Row="0" Grid.Column="0" Text="Port:" VerticalAlignment="Center" />
+					<TextBox Grid.Row="0" Grid.Column="1" Name="txtPort" Text="9998" VerticalAlignment="Center" />
+					
+					<Button Grid.Row="0" Grid.Column="3" Name="btnStartStop" Content="Start Server" 
+							Click="StartStop_OnClick" HorizontalAlignment="Left" MinWidth="120" />
+
+					<TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Name="lblStatus" 
+							   Text="Server stopped" FontWeight="Bold" Foreground="Gray" />
+				</Grid>
+			</StackPanel>
+		</Border>
+
+		<!-- Connection Status Section -->
+		<Border Grid.Row="1" BorderThickness="1" BorderBrush="{StaticResource MesenGrayBorderColor}" Padding="10" Margin="0,0,0,5">
+			<StackPanel>
+				<TextBlock Text="Connection Status" FontWeight="Bold" Margin="0,0,0,10" />
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="150" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="5" />
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="5" />
+						<RowDefinition Height="Auto" />
+					</Grid.RowDefinitions>
+
+					<TextBlock Grid.Row="0" Grid.Column="0" Text="Client Connected:" VerticalAlignment="Center" />
+					<TextBlock Grid.Row="0" Grid.Column="1" Name="lblClientConnected" Text="No" FontWeight="Bold" VerticalAlignment="Center" />
+
+					<TextBlock Grid.Row="2" Grid.Column="0" Text="Connection Duration:" VerticalAlignment="Center" />
+					<TextBlock Grid.Row="2" Grid.Column="1" Name="lblConnectionDuration" Text="--" VerticalAlignment="Center" />
+
+					<TextBlock Grid.Row="4" Grid.Column="0" Text="Bandwidth:" VerticalAlignment="Center" />
+					<TextBlock Grid.Row="4" Grid.Column="1" Name="lblBandwidth" Text="--" VerticalAlignment="Center" />
+				</Grid>
+			</StackPanel>
+		</Border>
+
+		<!-- Statistics Section -->
+		<Border Grid.Row="4" BorderThickness="1" BorderBrush="{StaticResource MesenGrayBorderColor}" Padding="10" Margin="0,5,0,5">
+			<StackPanel>
+				<TextBlock Text="Statistics" FontWeight="Bold" Margin="0,0,0,10" />
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="120" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="5" />
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="5" />
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="5" />
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="10" />
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="10" />
+						<RowDefinition Height="Auto" />
+					</Grid.RowDefinitions>
+
+					<TextBlock Grid.Row="0" Grid.Column="0" Text="Messages Sent:" VerticalAlignment="Center" />
+					<TextBlock Grid.Row="0" Grid.Column="1" Name="lblMessagesSent" Text="0" VerticalAlignment="Center" />
+
+					<TextBlock Grid.Row="2" Grid.Column="0" Text="Bytes Sent:" VerticalAlignment="Center" />
+					<TextBlock Grid.Row="2" Grid.Column="1" Name="lblBytesSent" Text="0" VerticalAlignment="Center" />
+
+					<TextBlock Grid.Row="4" Grid.Column="0" Text="Messages Received:" VerticalAlignment="Center" />
+					<TextBlock Grid.Row="4" Grid.Column="1" Name="lblMessagesReceived" Text="0" VerticalAlignment="Center" />
+
+					<TextBlock Grid.Row="6" Grid.Column="0" Text="Bytes Received:" VerticalAlignment="Center" />
+					<TextBlock Grid.Row="6" Grid.Column="1" Name="lblBytesReceived" Text="0" VerticalAlignment="Center" />
+
+					<TextBlock Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" 
+							   Text="Note: Statistics update only when client is connected" 
+							   FontStyle="Italic" FontSize="11" />
+
+					<Button Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" Name="btnReset" 
+							Content="Reset Statistics" Click="Reset_OnClick" HorizontalAlignment="Center" MinWidth="120" />
+				</Grid>
+			</StackPanel>
+		</Border>
+
+		<!-- Instructions Section -->
+		<Border Grid.Row="5" BorderThickness="1" BorderBrush="{StaticResource MesenGrayBorderColor}" Padding="10" Margin="0,0,0,5">
+			<StackPanel>
+				<TextBlock Text="Instructions" FontWeight="Bold" Margin="0,0,0,10" />
+				<TextBlock TextWrapping="Wrap" FontSize="11">
+					1. Start the server using the button above
+					<LineBreak />
+					2. In DiztinGUIsh, go to Tools → Connect to Mesen2
+					<LineBreak />
+					3. Enter this server's IP and port to establish connection
+					<LineBreak />
+					4. Load the same ROM in both applications for synchronized analysis
+				</TextBlock>
+			</StackPanel>
+		</Border>
+
+		<!-- Close Button -->
+		<StackPanel Grid.Row="6" HorizontalAlignment="Right" Margin="0,10,0,0">
+			<Button MinWidth="70" HorizontalContentAlignment="Center" IsCancel="True" 
+					Click="Close_OnClick" Content="Close" />
+		</StackPanel>
+	</Grid>
+</Window>

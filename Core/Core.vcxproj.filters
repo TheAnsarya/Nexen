@@ -55,6 +55,12 @@
     <ClInclude Include="Debugger\DebugUtilities.h">
       <Filter>Debugger</Filter>
     </ClInclude>
+    <ClCompile Include="Debugger\DiztinguishBridge.cpp">
+      <Filter>Debugger</Filter>
+    </ClCompile>
+    <ClInclude Include="Debugger\DiztinguishBridge.h">
+      <Filter>Debugger</Filter>
+    </ClInclude>
     <ClCompile Include="Debugger\Disassembler.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>

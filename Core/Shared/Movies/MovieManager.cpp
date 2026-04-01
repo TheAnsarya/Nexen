@@ -65,3 +65,50 @@ bool MovieManager::Playing() {
 bool MovieManager::Recording() {
 	return _recorder != nullptr;
 }
+
+void MovieManager::IncrementRerecordCount()
+{
+	MovieRecorder* recorder = _recorder.get();
+	if(recorder) {
+		recorder->IncrementRerecordCount();
+	}
+}
+
+TasState MovieManager::GetTasState()
+{
+	TasState state = {};
+	state.IsRecording = Recording();
+	state.IsPlaying = Playing();
+	state.IsReadOnly = _readOnlyMode;
+	
+	MovieRecorder* recorder = _recorder.get();
+	if(recorder) {
+		state.FrameCount = recorder->GetFrameCount();
+		state.RerecordCount = recorder->GetRerecordCount();
+	}
+	
+	return state;
+}
+
+bool MovieManager::HandleRerecord(uint32_t frameNumber)
+{
+	MovieRecorder* recorder = _recorder.get();
+	if(recorder && recorder->IsTasMode()) {
+		return recorder->HandleRerecord(frameNumber);
+	}
+	return false;
+}
+
+bool MovieManager::IsTasMode()
+{
+	MovieRecorder* recorder = _recorder.get();
+	return recorder ? recorder->IsTasMode() : false;
+}
+
+void MovieManager::SetTasMode(bool enabled)
+{
+	MovieRecorder* recorder = _recorder.get();
+	if(recorder) {
+		recorder->SetTasMode(enabled);
+	}
+}

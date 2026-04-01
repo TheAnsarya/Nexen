@@ -26,9 +26,13 @@
 #include "Shared/Interfaces/IKeyManager.h"
 #include "Shared/ControllerHub.h"
 #include "Shared/BaseControlManager.h"
+#include "Shared/Movies/MovieManager.h"
+#include "Shared/Movies/MovieTypes.h"
 #include "Utilities/HexUtilities.h"
 #include "Utilities/FolderUtilities.h"
 #include "Utilities/magic_enum.hpp"
+#include "SNES/Debugger/SnesDebugger.h"
+#include "SNES/SnesConsole.h"
 #include "Shared/MemoryOperationType.h"
 
 #ifdef _MSC_VER

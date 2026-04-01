@@ -4,7 +4,7 @@
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
-    </ProjectConfiguration>	 
+    </ProjectConfiguration>
     <ProjectConfiguration Include="PGO Optimize|x64">
       <Configuration>PGO Optimize</Configuration>
       <Platform>x64</Platform>
