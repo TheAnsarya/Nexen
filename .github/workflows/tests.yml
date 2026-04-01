@@ -66,6 +66,10 @@ jobs:
       - name: Run Unit Tests
         working-directory: ${{ github.workspace }}
         run: |
+          $tripletBin = "$env:VCPKG_INSTALLED_DIR\x64-windows\bin"
+          if (Test-Path $tripletBin) {
+            $env:PATH = "$tripletBin;$env:PATH"
+          }
           $testExe = "bin\win-x64\Release\Core.Tests.exe"
           if (Test-Path $testExe) {
             & $testExe --gtest_output=xml:test-results.xml
@@ -147,6 +151,10 @@ jobs:
       - name: Run Benchmarks (Quick)
         working-directory: ${{ github.workspace }}
         run: |
+          $tripletBin = "$env:VCPKG_INSTALLED_DIR\x64-windows\bin"
+          if (Test-Path $tripletBin) {
+            $env:PATH = "$tripletBin;$env:PATH"
+          }
           $benchExe = "bin\win-x64\Release\Core.Benchmarks.exe"
           if (Test-Path $benchExe) {
             # Run with minimal iterations just to verify benchmarks work.
