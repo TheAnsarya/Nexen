@@ -19,7 +19,7 @@ SystemHud::~SystemHud() {
 void SystemHud::Draw(DebugHud* hud, uint32_t width, uint32_t height) const {
 	DrawCounters(hud, width);
 	DrawMessages(hud, width, height);
-	
+
 	// Draw lag frame visual indicator if enabled
 	PreferencesConfig cfg = _emu->GetSettings()->GetPreferences();
 	if(cfg.ShowLagFrameIndicator) {

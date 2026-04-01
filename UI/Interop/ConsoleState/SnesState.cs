@@ -66,24 +66,36 @@ public struct SnesCpuState : BaseState {
 }
 
 public struct SnesPpuState : BaseState {
-	public UInt16 Cycle;
-	public UInt16 Scanline;
-	public UInt16 HClock;
-	public UInt32 FrameCount;
-
-	[MarshalAs(UnmanagedType.I1)] public bool ForcedBlank;
-	public byte ScreenBrightness;
-
-	public Mode7Config Mode7;
-
 	public byte BgMode;
-	[MarshalAs(UnmanagedType.I1)] public bool Mode1Bg3Priority;
-
+	[MarshalAs(UnmanagedType.I1)] public bool ForcedBlank;
 	public byte MainScreenLayers;
 	public byte SubScreenLayers;
+	public byte ScreenBrightness;
+	public byte ColorMathEnabled;
+	public byte MosaicSize;
+	public byte MosaicEnabled;
+	[MarshalAs(UnmanagedType.I1)] public bool HiResMode;
+	[MarshalAs(UnmanagedType.I1)] public bool ScreenInterlace;
+	[MarshalAs(UnmanagedType.I1)] public bool ObjInterlace;
+	[MarshalAs(UnmanagedType.I1)] public bool Mode1Bg3Priority;
+	[MarshalAs(UnmanagedType.I1)] public bool ExtBgEnabled;
+	[MarshalAs(UnmanagedType.I1)] public bool OverscanMode;
+	[MarshalAs(UnmanagedType.I1)] public bool DirectColorMode;
+
+	public byte OamMode;
+
+	public ColorWindowMode ColorMathClipMode;
+	public ColorWindowMode ColorMathPreventMode;
+
+	[MarshalAs(UnmanagedType.I1)] public bool ColorMathAddSubscreen;
+	[MarshalAs(UnmanagedType.I1)] public bool ColorMathSubtractMode;
+	[MarshalAs(UnmanagedType.I1)] public bool ColorMathHalveResult;
+	public UInt16 FixedColor;
 
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
 	public LayerConfig[] Layers;
+
+	public Mode7Config Mode7;
 
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
 	public WindowConfig[] Window;
@@ -96,6 +108,12 @@ public struct SnesPpuState : BaseState {
 
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
 	public byte[] WindowMaskSub;
+
+	public UInt16 OamBaseAddress;
+	public UInt16 OamAddressOffset;
+	public UInt16 OamRamAddress;
+	public UInt16 InternalOamRamAddress;
+	[MarshalAs(UnmanagedType.I1)] public bool EnableOamPriority;
 
 	public UInt16 VramAddress;
 	public byte VramIncrementValue;
@@ -111,32 +129,10 @@ public struct SnesPpuState : BaseState {
 	public byte CgramWriteBuffer;
 	[MarshalAs(UnmanagedType.I1)] public bool CgramAddressLatch;
 
-	public byte MosaicSize;
-	public byte MosaicEnabled;
-
-	public UInt16 OamRamAddress;
-	public UInt16 InternalOamRamAddress;
-
-	public byte OamMode;
-	public UInt16 OamBaseAddress;
-	public UInt16 OamAddressOffset;
-	[MarshalAs(UnmanagedType.I1)] public bool EnableOamPriority;
-
-	[MarshalAs(UnmanagedType.I1)] public bool ExtBgEnabled;
-	[MarshalAs(UnmanagedType.I1)] public bool HiResMode;
-	[MarshalAs(UnmanagedType.I1)] public bool ScreenInterlace;
-	[MarshalAs(UnmanagedType.I1)] public bool ObjInterlace;
-	[MarshalAs(UnmanagedType.I1)] public bool OverscanMode;
-	[MarshalAs(UnmanagedType.I1)] public bool DirectColorMode;
-
-	public ColorWindowMode ColorMathClipMode;
-	public ColorWindowMode ColorMathPreventMode;
-
-	[MarshalAs(UnmanagedType.I1)] public bool ColorMathAddSubscreen;
-	public byte ColorMathEnabled;
-	[MarshalAs(UnmanagedType.I1)] public bool ColorMathSubtractMode;
-	[MarshalAs(UnmanagedType.I1)] public bool ColorMathHalveResult;
-	public UInt16 FixedColor;
+	public UInt16 Cycle;
+	public UInt16 Scanline;
+	public UInt16 HClock;
+	public UInt32 FrameCount;
 }
 
 public struct LayerConfig {

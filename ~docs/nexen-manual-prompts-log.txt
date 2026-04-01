@@ -1045,6 +1045,8 @@ we have new problems with the Linux build, find and fix these issues: `https://g
 
 [Nexen] git commit everything; update/close issues we worked on; merge branch into main and close it. merge all other branches into main and close them; build everything and make sure there are no errors and fix warnings; we are getting ready for a release before we get back to work; update plans and docs; run the Nexen app so I can verify it doesn't crash; then make a new release `1.4.13`; then continue working issues 974-1017; continue;
 
+2
+
 
 
 
