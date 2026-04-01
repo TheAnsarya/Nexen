@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "DiztinguishConfig.h"
 #include <fstream>
-#include <json/json.h>  // Note: May need to include JSON library for config files
 #include <iostream>
 
 // Global configuration instance
