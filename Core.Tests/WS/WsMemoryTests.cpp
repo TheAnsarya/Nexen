@@ -1089,3 +1089,221 @@ TEST(WsCartBankingTest, BankSwitch_FullRange) {
 		}
 	}
 }
+
+// =============================================================================
+// Serial Port — Register Behavior Tests
+// =============================================================================
+// Tests replicate the bit-level behavior of WsSerial port $B1 (data) and
+// $B3 (status/control) without needing a live console instance.
+
+namespace WsSerialTestHelpers {
+
+	/// <summary>
+	/// Encodes serial status register ($B3) read value from state fields.
+	/// Bit 0: HasReceiveData
+	/// Bit 1: ReceiveOverflow
+	/// Bit 2: Send buffer empty (enabled AND !hasSendData)
+	/// Bit 6: HighSpeed
+	/// Bit 7: Enabled
+	/// </summary>
+	static uint8_t EncodeSerialStatus(const WsSerialState& state) {
+		return (state.HasReceiveData ? 0x01 : 0) |
+			(state.ReceiveOverflow ? 0x02 : 0) |
+			((!state.Enabled || state.HasSendData) ? 0 : 0x04) |
+			(state.HighSpeed ? 0x40 : 0) |
+			(state.Enabled ? 0x80 : 0);
+	}
+
+	/// <summary>
+	/// Applies serial control write ($B3) to state.
+	/// Bit 7: Enabled, Bit 6: HighSpeed, Bit 5: Clear ReceiveOverflow.
+	/// </summary>
+	static void WriteSerialControl(WsSerialState& state, uint8_t value) {
+		state.Enabled = (value & 0x80) != 0;
+		state.HighSpeed = (value & 0x40) != 0;
+		if (value & 0x20) {
+			state.ReceiveOverflow = false;
+		}
+	}
+
+	/// <summary>
+	/// HasSendIrq: Returns true when serial is enabled and send buffer is empty.
+	/// </summary>
+	static bool HasSendIrq(const WsSerialState& state) {
+		return state.Enabled && !state.HasSendData;
+	}
+
+	/// <summary>
+	/// Baud rate cycles: 9600 baud = 3200 master clocks/byte,
+	/// 38400 (high speed) = 800 master clocks/byte.
+	/// </summary>
+	static int GetCyclesPerByte(bool highSpeed) {
+		return highSpeed ? 800 : 3200;
+	}
+}
+
+TEST(WsSerialStatusTest, DefaultState_AllClear) {
+	WsSerialState state = {};
+	uint8_t status = WsSerialTestHelpers::EncodeSerialStatus(state);
+	// Disabled + no data + no overflow = 0
+	EXPECT_EQ(status, 0x00);
+}
+
+TEST(WsSerialStatusTest, EnabledOnly_SendBufferEmpty) {
+	WsSerialState state = {};
+	state.Enabled = true;
+	uint8_t status = WsSerialTestHelpers::EncodeSerialStatus(state);
+	// Enabled (0x80) + SendEmpty (0x04) = 0x84
+	EXPECT_EQ(status, 0x84);
+}
+
+TEST(WsSerialStatusTest, Enabled_HasSendData_NoSendEmpty) {
+	WsSerialState state = {};
+	state.Enabled = true;
+	state.HasSendData = true;
+	uint8_t status = WsSerialTestHelpers::EncodeSerialStatus(state);
+	// Enabled (0x80) only, send buffer NOT empty
+	EXPECT_EQ(status, 0x80);
+}
+
+TEST(WsSerialStatusTest, HasReceiveData) {
+	WsSerialState state = {};
+	state.Enabled = true;
+	state.HasReceiveData = true;
+	uint8_t status = WsSerialTestHelpers::EncodeSerialStatus(state);
+	// Enabled (0x80) + SendEmpty (0x04) + HasReceive (0x01) = 0x85
+	EXPECT_EQ(status, 0x85);
+}
+
+TEST(WsSerialStatusTest, ReceiveOverflow) {
+	WsSerialState state = {};
+	state.Enabled = true;
+	state.ReceiveOverflow = true;
+	uint8_t status = WsSerialTestHelpers::EncodeSerialStatus(state);
+	// Enabled (0x80) + SendEmpty (0x04) + Overflow (0x02) = 0x86
+	EXPECT_EQ(status, 0x86);
+}
+
+TEST(WsSerialStatusTest, HighSpeed) {
+	WsSerialState state = {};
+	state.Enabled = true;
+	state.HighSpeed = true;
+	uint8_t status = WsSerialTestHelpers::EncodeSerialStatus(state);
+	// Enabled (0x80) + HighSpeed (0x40) + SendEmpty (0x04) = 0xc4
+	EXPECT_EQ(status, 0xc4);
+}
+
+TEST(WsSerialStatusTest, AllFlags_SendPending) {
+	WsSerialState state = {};
+	state.Enabled = true;
+	state.HighSpeed = true;
+	state.HasReceiveData = true;
+	state.ReceiveOverflow = true;
+	state.HasSendData = true;
+	uint8_t status = WsSerialTestHelpers::EncodeSerialStatus(state);
+	// 0x80 + 0x40 + 0x01 + 0x02 = 0xc3 (no 0x04 because HasSendData)
+	EXPECT_EQ(status, 0xc3);
+}
+
+TEST(WsSerialStatusTest, DisabledWithSendData_NoSendEmptyBit) {
+	WsSerialState state = {};
+	state.Enabled = false;
+	state.HasSendData = false;
+	uint8_t status = WsSerialTestHelpers::EncodeSerialStatus(state);
+	// Disabled → send empty bit (0x04) is NOT set regardless
+	EXPECT_EQ(status & 0x04, 0);
+}
+
+TEST(WsSerialControlTest, EnableSerial) {
+	WsSerialState state = {};
+	WsSerialTestHelpers::WriteSerialControl(state, 0x80);
+	EXPECT_TRUE(state.Enabled);
+	EXPECT_FALSE(state.HighSpeed);
+}
+
+TEST(WsSerialControlTest, EnableHighSpeed) {
+	WsSerialState state = {};
+	WsSerialTestHelpers::WriteSerialControl(state, 0xc0);
+	EXPECT_TRUE(state.Enabled);
+	EXPECT_TRUE(state.HighSpeed);
+}
+
+TEST(WsSerialControlTest, DisableSerial) {
+	WsSerialState state = {};
+	state.Enabled = true;
+	WsSerialTestHelpers::WriteSerialControl(state, 0x00);
+	EXPECT_FALSE(state.Enabled);
+}
+
+TEST(WsSerialControlTest, ClearOverflow_Bit5) {
+	WsSerialState state = {};
+	state.ReceiveOverflow = true;
+	WsSerialTestHelpers::WriteSerialControl(state, 0x20);
+	EXPECT_FALSE(state.ReceiveOverflow);
+}
+
+TEST(WsSerialControlTest, NoClearOverflow_WithoutBit5) {
+	WsSerialState state = {};
+	state.ReceiveOverflow = true;
+	WsSerialTestHelpers::WriteSerialControl(state, 0x80);
+	EXPECT_TRUE(state.ReceiveOverflow); // Bit 5 not set, overflow preserved
+}
+
+TEST(WsSerialIrqTest, HasSendIrq_EnabledAndEmpty) {
+	WsSerialState state = {};
+	state.Enabled = true;
+	state.HasSendData = false;
+	EXPECT_TRUE(WsSerialTestHelpers::HasSendIrq(state));
+}
+
+TEST(WsSerialIrqTest, NoSendIrq_Disabled) {
+	WsSerialState state = {};
+	state.Enabled = false;
+	state.HasSendData = false;
+	EXPECT_FALSE(WsSerialTestHelpers::HasSendIrq(state));
+}
+
+TEST(WsSerialIrqTest, NoSendIrq_HasSendData) {
+	WsSerialState state = {};
+	state.Enabled = true;
+	state.HasSendData = true;
+	EXPECT_FALSE(WsSerialTestHelpers::HasSendIrq(state));
+}
+
+TEST(WsSerialTimingTest, BaudRate_Normal_3200Cycles) {
+	EXPECT_EQ(WsSerialTestHelpers::GetCyclesPerByte(false), 3200);
+}
+
+TEST(WsSerialTimingTest, BaudRate_HighSpeed_800Cycles) {
+	EXPECT_EQ(WsSerialTestHelpers::GetCyclesPerByte(true), 800);
+}
+
+TEST(WsSerialTimingTest, BaudRatio_4x) {
+	// High speed is exactly 4x faster
+	EXPECT_EQ(WsSerialTestHelpers::GetCyclesPerByte(false) / WsSerialTestHelpers::GetCyclesPerByte(true), 4);
+}
+
+TEST(WsSerialDataTest, SendBuffer_FullRange) {
+	WsSerialState state = {};
+	for (int v = 0; v < 256; v++) {
+		state.SendBuffer = (uint8_t)v;
+		EXPECT_EQ(state.SendBuffer, (uint8_t)v);
+	}
+}
+
+TEST(WsSerialDataTest, ReceiveBuffer_FullRange) {
+	WsSerialState state = {};
+	for (int v = 0; v < 256; v++) {
+		state.ReceiveBuffer = (uint8_t)v;
+		EXPECT_EQ(state.ReceiveBuffer, (uint8_t)v);
+	}
+}
+
+TEST(WsSerialDataTest, SendAndReceive_Independent) {
+	WsSerialState state = {};
+	state.SendBuffer = 0xaa;
+	state.ReceiveBuffer = 0x55;
+	EXPECT_EQ(state.SendBuffer, 0xaa);
+	EXPECT_EQ(state.ReceiveBuffer, 0x55);
+	EXPECT_NE(state.SendBuffer, state.ReceiveBuffer);
+}
