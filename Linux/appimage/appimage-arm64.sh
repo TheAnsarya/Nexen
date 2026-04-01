@@ -5,6 +5,7 @@ export PUBLISHFLAGS="-r linux-arm64 --self-contained true -p:PublishSingleFile=t
 make -j$(nproc) -O LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++"
 
 curl -SL https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -o appimagetool
+chmod +x appimagetool
 
 mkdir -p AppDir/usr/bin
 cp bin/linux-arm64/Release/linux-arm64/publish/Nexen AppDir/usr/bin

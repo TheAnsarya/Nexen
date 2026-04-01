@@ -106,6 +106,16 @@ This provides:
 - **History** - Track AI-assisted development workflow
 - **Lineage** - Track parent/child relationships for sub-issues
 
+### ⚠️ MANDATORY: Commit/Push Autonomy
+
+When the user asks to implement, fix, continue, or ship work, do not ask for commit confirmation.
+
+- Stage only files relevant to the requested task
+- Commit immediately with an issue reference
+- Push immediately after commit
+- Do not pause to ask "should I commit" or "which files should I include" unless the user explicitly asked to review first
+- Exclude clearly unrelated modified files from the commit unless the user explicitly requests including them
+
 ## Coding Standards
 
 ### Indentation

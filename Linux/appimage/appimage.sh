@@ -5,6 +5,7 @@ export PUBLISHFLAGS="-r linux-x64 --self-contained true -p:PublishSingleFile=tru
 make -j$(nproc) -O LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++"
 
 curl -SL https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -o appimagetool
+chmod +x appimagetool
 
 mkdir -p AppDir/usr/bin
 cp bin/linux-x64/Release/linux-x64/publish/Nexen AppDir/usr/bin
