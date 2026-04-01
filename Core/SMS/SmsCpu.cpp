@@ -3119,6 +3119,7 @@ void SmsCpu::InitPostBiosState() {
 }
 
 void SmsCpu::Serialize(Serializer& s) {
+	SV(_cbAddress);
 	SV(_state.CycleCount);
 	SV(_state.PC);
 	SV(_state.SP);
