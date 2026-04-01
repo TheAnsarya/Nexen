@@ -5,7 +5,35 @@
 #include "Shared/MemoryType.h"
 #include "Shared/FirmwareHelper.h"
 #include "Shared/Audio/SoundMixer.h"
+#include "Shared/EmuSettings.h"
 #include "Utilities/VirtualFile.h"
+
+namespace {
+	ChannelFBiosVariant MapConfiguredVariant(ChannelFConsoleVariant variant, ChannelFBiosVariant detectedVariant) {
+		switch (variant) {
+			case ChannelFConsoleVariant::SystemI: return ChannelFBiosVariant::SystemI;
+			case ChannelFConsoleVariant::SystemII:
+			case ChannelFConsoleVariant::SystemII_Luxor:
+			case ChannelFConsoleVariant::Clone: return ChannelFBiosVariant::SystemII;
+			case ChannelFConsoleVariant::Auto:
+			default:
+				return detectedVariant == ChannelFBiosVariant::Unknown ? ChannelFBiosVariant::SystemI : detectedVariant;
+		}
+	}
+
+	ConsoleRegion MapConfiguredRegion(const ChannelFConfig& config) {
+		if (config.Region != ConsoleRegion::Auto) {
+			return config.Region;
+		}
+
+		// Known Luxor and clone profiles default to PAL timing in auto mode.
+		if (config.ConsoleVariant == ChannelFConsoleVariant::SystemII_Luxor || config.ConsoleVariant == ChannelFConsoleVariant::Clone) {
+			return ConsoleRegion::Pal;
+		}
+
+		return ConsoleRegion::Ntsc;
+	}
+}
 
 ChannelFConsole::ChannelFConsole(Emulator* emu)
 	: _emu(emu),
@@ -44,6 +72,9 @@ LoadRomResult ChannelFConsole::LoadRom(VirtualFile& romFile) {
 
 	_romSha1 = romFile.GetSha1Hash();
 	_core.DetectVariantFromHashes(_romSha1, "");
+	ChannelFConfig& config = _emu->GetSettings()->GetChannelFConfig();
+	_activeVariant = MapConfiguredVariant(config.ConsoleVariant, _core.GetVariant());
+	_activeRegion = MapConfiguredRegion(config);
 	_romFormat = RomFormat::ChannelF;
 
 	// Load BIOS firmware
@@ -93,7 +124,8 @@ void ChannelFConsole::RunFrame() {
 
 		// Execute CPU for one frame's worth of cycles, stepping audio per cycle
 		uint32_t cyclesRun = 0;
-		while (cyclesRun < CyclesPerFrame) {
+		uint32_t cyclesPerFrame = GetCyclesPerFrame();
+		while (cyclesRun < cyclesPerFrame) {
 			uint8_t instrCycles = _cpu->StepOne();
 			for (uint8_t i = 0; i < instrCycles; i++) {
 				_memoryManager->StepAudio();
@@ -145,7 +177,7 @@ BaseControlManager* ChannelFConsole::GetControlManager() {
 }
 
 ConsoleRegion ChannelFConsole::GetRegion() {
-	return ConsoleRegion::Ntsc;
+	return _activeRegion;
 }
 
 ConsoleType ChannelFConsole::GetConsoleType() {
@@ -162,11 +194,11 @@ uint64_t ChannelFConsole::GetMasterClock() {
 }
 
 uint32_t ChannelFConsole::GetMasterClockRate() {
-	return CpuClockHz;
+	return _activeRegion == ConsoleRegion::Pal ? PalCpuClockHz : NtscCpuClockHz;
 }
 
 double ChannelFConsole::GetFps() {
-	return Fps;
+	return _activeRegion == ConsoleRegion::Pal ? PalFps : NtscFps;
 }
 
 BaseVideoFilter* ChannelFConsole::GetVideoFilter([[maybe_unused]] bool getDefaultFilter) {
@@ -180,9 +212,9 @@ PpuFrameInfo ChannelFConsole::GetPpuFrame() {
 	frame.Height = ScreenHeight;
 	frame.FrameBufferSize = (uint32_t)(_frameBuffer.size() * sizeof(uint16_t));
 	frame.FrameCount = _frameCount;
-	frame.ScanlineCount = ScreenHeight;
+	frame.ScanlineCount = _activeRegion == ConsoleRegion::Pal ? PalScanlineCount : NtscScanlineCount;
 	frame.FirstScanline = 0;
-	frame.CycleCount = CyclesPerFrame;
+	frame.CycleCount = GetCyclesPerFrame();
 	return frame;
 }
 
@@ -388,4 +420,10 @@ void ChannelFConsole::DebugRenderFrame() {
 
 uint32_t ChannelFConsole::GetFrameCount() {
 	return _frameCount;
+}
+
+uint32_t ChannelFConsole::GetCyclesPerFrame() const {
+	double fps = _activeRegion == ConsoleRegion::Pal ? PalFps : NtscFps;
+	uint32_t clockRate = _activeRegion == ConsoleRegion::Pal ? PalCpuClockHz : NtscCpuClockHz;
+	return (uint32_t)(clockRate / fps);
 }

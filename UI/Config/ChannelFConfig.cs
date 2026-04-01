@@ -9,6 +9,8 @@ public sealed class ChannelFConfig : BaseConfig<ChannelFConfig> {
 	[Reactive] public ConsoleOverrideConfig ConfigOverrides { get; set; } = new();
 	[Reactive] public ControllerConfig Controller { get; set; } = new();
 	[Reactive] public ControllerConfig ConsolePanel { get; set; } = new();
+	[Reactive] public ChannelFConsoleVariant ConsoleVariant { get; set; } = ChannelFConsoleVariant.Auto;
+	[Reactive] public ConsoleRegion Region { get; set; } = ConsoleRegion.Auto;
 
 	[Reactive] public RamState RamPowerOnState { get; set; } = RamState.AllZeros;
 
@@ -20,6 +22,8 @@ public sealed class ChannelFConfig : BaseConfig<ChannelFConfig> {
 		ConfigApi.SetChannelFConfig(new InteropChannelFConfig() {
 			Controller = Controller.ToInterop(),
 			ConsolePanel = ConsolePanel.ToInterop(),
+			ConsoleVariant = ConsoleVariant,
+			Region = Region,
 			RamPowerOnState = RamPowerOnState,
 			AudioVol = AudioVol,
 		});
@@ -34,6 +38,16 @@ public sealed class ChannelFConfig : BaseConfig<ChannelFConfig> {
 public struct InteropChannelFConfig {
 	public InteropControllerConfig Controller;
 	public InteropControllerConfig ConsolePanel;
+	public ChannelFConsoleVariant ConsoleVariant;
+	public ConsoleRegion Region;
 	public RamState RamPowerOnState;
 	public UInt32 AudioVol;
+}
+
+public enum ChannelFConsoleVariant {
+	Auto,
+	SystemI,
+	SystemII,
+	SystemII_Luxor,
+	Clone
 }

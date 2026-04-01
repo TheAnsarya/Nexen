@@ -233,10 +233,11 @@ void ChannelFDebugger::Step(int32_t stepCount, StepType type) {
 }
 
 StepBackConfig ChannelFDebugger::GetStepBackConfig() {
+	uint32_t cyclesPerFrame = (uint32_t)(_console->GetMasterClockRate() / _console->GetFps());
 	return {
 		_cachedState.CycleCount,
 		128,                                     // Cycles per "scanline" (arbitrary for Channel F)
-		ChannelFConsole::CyclesPerFrame          // Cycles per frame
+		cyclesPerFrame                           // Cycles per frame
 	};
 }
 

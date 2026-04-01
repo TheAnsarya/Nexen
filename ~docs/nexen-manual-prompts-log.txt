@@ -1026,6 +1026,33 @@ Hey! 1.4.11 does not open! Make a real build that fucking works, and then after 
 
 [Nexen] work through as many issues as you can, like 20 of them, as fast as you can, updating epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; focus on issues #955 to #1106; continue;
 
+[Nexen] close issues that have been completed; then [Nexen] work through as many issues as you can, like 20 of them, as fast as you can, updating epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; focus on issues #955 to #1106; [pansy,peony,poppy] complete issues doing work and updating epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; continue;
+
+Don't focus on closing, make code and tests and benchmarks and docs and issues and plans etc, work though as much as you can from #955+ or whatever; go!; continue;
+
+we have new problems with the Linux build, find and fix these issues: `https://github.com/TheAnsarya/Nexen/issues/1039#issuecomment-4158557930`; [nexen,pansy,peony,poppy] complete issues doing work and updating epics/issues/doc/plans/chat-session-logs/benchmarks/tests/readmes/etc; continue;
+
+[nexen,pansy,peony,poppy] update markdown lint configuration for all the repos, and editor config, and gotpilot instructions, ignore `MD010/no-hard-tabs` because we always use tabs not spaces, I don't care about the file standards, because they support tabs, so we're using tabs; continue;
+
+[Nexen] fix issues `https://github.com/TheAnsarya/Nexen/issues/1076` and `https://github.com/TheAnsarya/Nexen/issues/1039` and `https://github.com/TheAnsarya/Nexen/issues/1106`; read comments on 1039 to see new issues for linux buillds and fix them, and fix the others, cover those code areas, make doc and issue coverage as you fix things; continue working issues from `https://github.com/TheAnsarya/Nexen/issues`, working from most recent to oldest; continue;
+
+[Nexen] Make sure issues #1076, #1039, and #1106 have been fully researched; continue;
+
+[Nexen] Make sure issues #1076, #1039, and #1106 have been fully completed, or lay out plans for finishing them; continue;
+
+--- chatgpt-codex-5.3
+[Nexen] (Channel F) work issues 974, 976, 977, 979, 1001, 1006, 1007, 1011, 1017; continue;
+
+
+
+
+
+
+
+
+
+
+
 
 
 
