@@ -1041,8 +1041,9 @@ we have new problems with the Linux build, find and fix these issues: `https://g
 [Nexen] Make sure issues #1076, #1039, and #1106 have been fully completed, or lay out plans for finishing them; continue;
 
 --- chatgpt-codex-5.3
-[Nexen] (Channel F) work issues 974, 976, 977, 979, 1001, 1006, 1007, 1011, 1017; continue;
+[Nexen] (Channel F) work issues 974, 976, 977, 979, 1001, 1006, 1007, 1011, 1017; close issues when done; continue;
 
+[Nexen] git commit everything; update/close issues we worked on; merge branch into main and close it. merge all other branches into main and close them; build everything and make sure there are no errors and fix warnings; we are getting ready for a release before we get back to work; update plans and docs; run the Nexen app so I can verify it doesn't crash; then make a new release `1.4.13`; then continue working issues 974-1017; continue;
 
 
 
