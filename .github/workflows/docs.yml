@@ -32,6 +32,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      pages_enabled: ${{ steps.pages.outputs.enabled || 'false' }}
     
     steps:
     - name: Checkout repository
@@ -56,19 +58,33 @@ jobs:
           WARN_COUNT=$(wc -l < docs/doxygen-warnings.log)
           echo "Total warnings: $WARN_COUNT"
         fi
+
+    - name: Detect Pages enablement
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      id: pages
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        if gh api repos/${{ github.repository }}/pages >/dev/null 2>&1; then
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+          echo "GitHub Pages is enabled."
+        else
+          echo "enabled=false" >> "$GITHUB_OUTPUT"
+          echo "GitHub Pages is disabled; skipping publish steps."
+        fi
         
     - name: Setup Pages
-      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master' && steps.pages.outputs.enabled == 'true'
       uses: actions/configure-pages@v4
       
     - name: Upload artifact
-      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master' && steps.pages.outputs.enabled == 'true'
       uses: actions/upload-pages-artifact@v3
       with:
         path: './docs/api/html'
 
   deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.build.outputs.pages_enabled == 'true'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
