@@ -557,6 +557,8 @@ void SmsMemoryManager::Serialize(Serializer& s) {
 		SV(_biosMapper);
 	}
 
+	SV(_state.OpenBus);
+
 	SV(_state.ExpEnabled);
 	SV(_state.CartridgeEnabled);
 	SV(_state.CardEnabled);

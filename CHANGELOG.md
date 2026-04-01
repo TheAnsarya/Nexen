@@ -5,15 +5,56 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.12] - 2026-03-30
+
+### Fixed
+
+- **Critical: Updated Dependencies.zip with fresh NexenCore.dll** — v1.4.11 shipped with a stale NexenCore.dll that was missing the `SetAtari2600Config` entry point, causing `EntryPointNotFoundException` on startup and preventing the application from functioning correctly
+- **Updated release documentation** — Refreshed RELEASE.md and docs/README.md with current platform support and CI workflow details
+
+## [1.4.11] - 2026-03-30
+
+### Added
+
+- **Pansy SOURCE_MAP section export** — Peony/Nexen pipeline now exports source location mapping to Pansy files (#1069)
+- **Channel F TAS gesture lanes** — Full TAS editor support with gesture-based input lanes for Channel F controllers (#1012)
+- **WonderSwan test coverage expansion** — Comprehensive state helper, controller behavior, and type-contract test suites (#1096)
+- **Lynx commercial ROM validation matrix** — Scaffold for systematic validation against commercial Lynx titles (#1105)
+- **UI config/menu regression tests** — Automated regressions for configuration and menu paths (#1043, #1045)
+
+### Fixed
+
+- **WonderSwan EEPROM accuracy** — Implemented cart EEPROM abort control behavior and command-specific timing delays (#1090, #1091)
+- **WonderSwan I/O correctness** — Enforced SystemTest port write-only semantics, latched open bus for unmapped memory/ports, side-effect-free debug peeks for serial/input (#1087, #1088, #1089)
+- **WonderSwan debugger tracing** — Exposed prefetch reads to debugger trace output (#1094)
+- **WonderSwan turbo button support** — Completed turbo button path and clamped speed to valid range (#1095)
+- **WonderSwan APU SoundTest** — Documented force-output semantics (#1086)
+- **AppImage hardening** — Hardened single-file runtime assets and clang flags for Linux AppImage builds (#1102)
+- **CI improvements** — Manual-only Build Nexen workflow with serialized runs (#1101), calibrated warning baselines with strict regression gate (#1056), expanded runtime dependency validation (#1054)
+
+### Documentation
+
+- Channel F readiness, troubleshooting, and preset documentation (#1014, #1020, #1021, #1022, #1023)
+- Lynx cart shift-register addressing audit (#956)
+- Epic closure checkpoints for modernization and UI quality (#1040, #1070, #1073, #1074)
+- Modernization baseline policy and gap closure (#1050)
+
+---
+
 ## [1.4.9] - 2026-03-29
 
 ### Added
 
 - **WonderSwan issue tracking** — Created 11 WonderSwan/WSC issues for accuracy, cart features, test coverage (#1086-#1096)
 - **Channel F PansyImporter support** — Added Channel F (0x1f) and missing platform mappings to PansyImporter (#1008)
+- **Channel F file dialog** — Added `.chf` and `.bin` extensions to open ROM dialog with dedicated "Channel F ROM files" filter (#1098)
+- **CDL/Pansy defaults enabled** — `AutoLoadCdlFiles` and `BackgroundCdlRecording` now enabled by default (#1098)
 
 ### Fixed
 
+- **Linux clang/AoT performance** — Fixed critical build bug where CI command-line `NEXENFLAGS` override stripped `-O3`, `-flto=thin`, and `-m64` flags from clang builds. Introduced `EXTRA_CXXFLAGS` variable to pass `-stdlib=libc++` without overriding internal optimization flags (#1097)
+- **C++ benchmark CI stability** — Fixed benchmark smoke step false-failure mode by capturing benchmark output to log file before truncation preview, preserving true process exit codes (#1099)
+- **Benchmark smoke scope hardening** — Restricted benchmark smoke filter to stable CPU subset (`BM_(NesCpu|SnesCpu|GbCpu)_.*`) to avoid crash-prone full-suite execution in push CI (#1100)
 - **Cross-platform build fix** — Replaced MSVC-only `strncpy_s` with cross-platform `snprintf` in LynxConsole (fixed Linux/macOS/AppImage build failures)
 - **CI workflow fixes** — Fixed vcpkg manifest mode in C++ Tests workflow, improved native lib copy step in build workflow to eliminate confusing error messages
 - **First-party compiler warnings eliminated** — Removed unused variables (ChannelFEventManager, EmuApiWrapper), added `(void)` casts for `[[nodiscard]]` returns in Emulator and MovieRecorder

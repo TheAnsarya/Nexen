@@ -85,7 +85,7 @@ cpp_space_around_ternary_operator = insert
 cpp_wrap_preserve_blocks = one_liners
 
 # Assembly files - 8-space tabs for alignment
-[*.{asm,s,inc}]
+[*.{asm,pasm,s,inc}]
 indent_style = tab
 indent_size = 8
 tab_width = 8

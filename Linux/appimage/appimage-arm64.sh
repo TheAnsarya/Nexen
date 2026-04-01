@@ -1,15 +1,18 @@
 #!/bin/bash
 
-export PUBLISHFLAGS="-r linux-arm64 --self-contained true -p:PublishSingleFile=true -p:PublishReadyToRun=true"
+export PUBLISHFLAGS="-r linux-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishReadyToRun=true"
 # Use clang-18 for C++23 support on ubuntu-22.04 with libc++ for <format>
-make -j$(nproc) -O LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 NEXENFLAGS="-stdlib=libc++"
+make -j$(nproc) -O LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++"
 
 curl -SL https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -o appimagetool
 
 mkdir -p AppDir/usr/bin
 cp bin/linux-arm64/Release/linux-arm64/publish/Nexen AppDir/usr/bin
+# Copy any native libraries that weren't bundled into the single-file executable
+cp bin/linux-arm64/Release/linux-arm64/publish/*.so* AppDir/usr/bin/ 2>/dev/null || true
 chmod +x AppDir/usr/bin
-ln -sr AppDir/usr/bin/Nexen AppDir/AppRun
+cp Linux/appimage/AppRun.sh AppDir/AppRun
+chmod +x AppDir/AppRun
 
 cp Linux/appimage/Nexen.48x48.png AppDir/Nexen.png
 cp Linux/appimage/Nexen.desktop AppDir/Nexen.desktop

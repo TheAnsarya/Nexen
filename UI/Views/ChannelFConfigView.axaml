@@ -44,6 +44,18 @@
 		<TabItem Header="{l:Translate tpgEmulation}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
+					<c:OptionSection Header="{l:Translate lblConsoleType}" Margin="0">
+						<StackPanel Orientation="Horizontal">
+							<TextBlock Text="{l:Translate lblConsoleType}" />
+							<c:EnumComboBox SelectedItem="{Binding Config.ConsoleVariant}" Width="200" />
+						</StackPanel>
+
+						<StackPanel Orientation="Horizontal" Margin="0 6 0 0">
+							<TextBlock Text="{l:Translate lblRegion}" />
+							<c:EnumComboBox SelectedItem="{Binding Config.Region}" Width="200" />
+						</StackPanel>
+					</c:OptionSection>
+
 					<c:OptionSection Header="{l:Translate lblDeveloperSettings}" Margin="0">
 						<TextBlock Margin="0 0 0 8" Foreground="Gray" TextWrapping="Wrap" Text="{l:Translate lblChannelFDeveloperSettingsHint}" />
 						<StackPanel Orientation="Horizontal">

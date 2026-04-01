@@ -42,12 +42,22 @@
 
 1. CI now checks Linux publish runtime config and ICU native assets in both Linux matrix and AppImage jobs.
 
+2. CI now captures runtime dependency/file reports for Windows publish, Linux publish, AppImage publish, and macOS publish artifacts.
+
+3. CI now enforces required native runtime asset presence on all primary publish surfaces.
+
 2. Expected assertions.
 
 - `System.Globalization.AppLocalIcu` must be `72.1.0.3`.
 - Publish output must contain `libicudata.so.72.1.0.3`.
 - Publish output must contain `libicui18n.so.72.1.0.3`.
 - Publish output must contain `libicuuc.so.72.1.0.3`.
+
+3. Cross-platform required native asset assertions.
+
+- Windows publish must contain `Nexen.exe`, `libSkiaSharp.dll`, `libHarfBuzzSharp.dll`.
+- Linux/AppImage publish must include ICU app-local assets plus graphics natives already validated in prior steps.
+- macOS app bundle must contain `Nexen` binary, `libSkiaSharp*.dylib`, and `libHarfBuzzSharp*.dylib`.
 
 ## CI Regression Gate Expansion (#1055)
 
@@ -59,8 +69,28 @@
 
 1. Gate behavior.
 
-- `WARNING_FAIL_ON_REGRESSION=0` keeps telemetry-only mode.
-- `WARNING_FAIL_ON_REGRESSION=1` fails jobs when warning delta is positive.
+- `WARNING_FAIL_ON_REGRESSION=1` is now enabled in `build.yml`.
+- Jobs fail when warning delta is positive.
+
+2. Baseline calibration source runs (#1056).
+
+- 23720620324 (master)
+- 23720623170 (v1.4.9)
+- 23720627204 (feature/channel-f-remaining)
+- 23721111328 (feature/channel-f-remaining)
+- 23721114532 (master)
+
+3. Baseline values applied.
+
+- `WARNING_BASELINE_WINDOWS=0`
+- `WARNING_BASELINE_LINUX=4063`
+- `WARNING_BASELINE_APPIMAGE=145`
+
+4. Rationale.
+
+- Linux baseline uses the observed max from gcc matrix runs to avoid false-positive failures while still detecting warning regressions above known current levels.
+- AppImage baseline uses stable repeated count observed across x64/ARM64 jobs.
+- Windows baseline remains zero from repeated scans.
 
 1. Linux crash smoke checks now run for Linux publish binary (`Nexen`) and AppImage artifact (`Nexen.AppImage`).
 
@@ -83,4 +113,5 @@
 1. Remaining risk.
 
 - Linux-specific runtime behavior still requires cross-distro runtime validation on real targets.
-- Warning fail gate defaults to disabled until baseline values are tuned from real CI history.
+- Runtime dependency checks are now CI-enforced across publish platforms, but distro-specific driver/runtime stacks still require field validation.
+- Warning fail gate is now enabled with calibrated baselines; future warning reductions should be followed by baseline tightening.

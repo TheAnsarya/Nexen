@@ -1,0 +1,9 @@
+# Ignore node_modules
+node_modules/
+**/node_modules/
+
+# Ignore internal documentation folders (chat logs, session logs)
+~docs/
+~plans/
+~reference-files/
+~manual-testing/

@@ -77,6 +77,26 @@ uint16_t WsEeprom::GetCommandAddress() {
 	return 0;
 }
 
+uint32_t WsEeprom::GetCommandDelay(WsEepromCommand cmd) const {
+	// Use operation-class buckets instead of a single hardcoded delay.
+	// Read commands are shortest, write/erase medium, and bulk operations longest.
+	switch (cmd) {
+		case WsEepromCommand::Read:
+			return 6;
+
+		case WsEepromCommand::Write:
+		case WsEepromCommand::Erase:
+			return 10;
+
+		case WsEepromCommand::WriteAll:
+		case WsEepromCommand::EraseAll:
+			return 20;
+
+		default:
+			return 10;
+	}
+}
+
 void WsEeprom::WriteValue(uint16_t addr, uint16_t value) {
 	if (!_state.WriteDisabled && (!_state.InternalEepromWriteProtected || addr < 0x30)) {
 		if (_isInternal) {
@@ -128,7 +148,7 @@ void WsEeprom::Run() {
 
 	if (_state.CmdStartClock) {
 		WsEepromCommand cmd = GetCommand();
-		int cmdDelay = 10; // TODOWS timing
+		uint32_t cmdDelay = GetCommandDelay(cmd);
 		if (_console->GetMasterClock() - _state.CmdStartClock > cmdDelay) {
 			uint16_t addr = GetCommandAddress();
 
@@ -192,9 +212,14 @@ void WsEeprom::WritePort(uint8_t port, uint8_t value) {
 				return;
 			}
 
-			// TODOWS abort (cart eeprom)
-			if (writeProtect && _isInternal) {
-				_state.InternalEepromWriteProtected = true;
+			if (writeProtect) {
+				if (_isInternal) {
+					_state.InternalEepromWriteProtected = true;
+				} else {
+					// Cartridge EEPROM abort command (0x001f): cancel in-flight operation.
+					_state.CmdStartClock = 0;
+					_state.Idle = true;
+				}
 				return;
 			}
 

@@ -64,6 +64,7 @@ public sealed class FileDialogHelper {
 						"*.pce", "*.sgx", "*.cue", "*.hes",
 						"*.sms", "*.gg", "*.sg", "*.col",
 						"*.gba",
+						"*.chf", "*.bin",
 						"*.lnx", "*.lyx", "*.o", "*.atari-lynx",
 						"*.ws", "*.wsc",
 						"*.zip", "*.7z",
@@ -80,6 +81,7 @@ public sealed class FileDialogHelper {
 					filter.Add(new FilePickerFileType("ColecoVision ROM files") { Patterns = new List<string>() { "*.col" } });
 					filter.Add(new FilePickerFileType("Lynx ROM files") { Patterns = new List<string>() { "*.lnx", "*.lyx", "*.o", "*.atari-lynx" } });
 					filter.Add(new FilePickerFileType("WonderSwan ROM files") { Patterns = new List<string>() { "*.ws", "*.wsc" } });
+					filter.Add(new FilePickerFileType("Channel F ROM files") { Patterns = new List<string>() { "*.chf", "*.bin" } });
 					filter.Add(new FilePickerFileType("Patch files (IPS/BPS)") { Patterns = new List<string>() { "*.ips", "*.bps" } });
 				} else if (ext == FileDialogHelper.FirmwareExt) {
 					filter.Add(new FilePickerFileType("All firmware files") { Patterns = new List<string>() { "*.sfc", "*.pce", "*.nes", "*.bin", "*.rom", "*.col", "*.sms", "*.gg", "*.gba" } });

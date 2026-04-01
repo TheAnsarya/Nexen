@@ -802,9 +802,19 @@ struct Atari2600Config {
 	bool HideBall = false;
 };
 
+enum class ChannelFConsoleVariant {
+	Auto,
+	SystemI,
+	SystemII,
+	SystemII_Luxor,
+	Clone
+};
+
 struct ChannelFConfig {
 	ControllerConfig Controller;
 	ControllerConfig ConsolePanel;
+	ChannelFConsoleVariant ConsoleVariant = ChannelFConsoleVariant::Auto;
+	ConsoleRegion Region = ConsoleRegion::Auto;
 
 	RamState RamPowerOnState = RamState::AllZeros;
 

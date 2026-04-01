@@ -16,6 +16,8 @@ This section is the starting point for manual release validation in Nexen.
 | [Manual Step Priority Ranking](manual-step-priority-ranking.md) | Rank each manual test by release impact and failure severity |
 | [Atari 2600 Debug and TAS Manual Test](atari2600-debug-and-tas-manual-test.md) | Atari 2600 end-to-end debugger UI, TAS UI, and movie workflows |
 | [Atari Lynx Debug and TAS Manual Test](lynx-debug-and-tas-manual-test.md) | Atari Lynx end-to-end ROM loading, debugger, TAS, save states, and audio |
+| [Channel F Debug and TAS Manual Test](channelf-debug-and-tas-manual-test.md) | Fairchild Channel F end-to-end debugger, TAS, movie, and persistence workflows |
+| [Channel F Controller Profile Presets](channelf-controller-profile-presets.md) | Baseline and accessibility-oriented mapping profiles for Channel F controls |
 
 ## Full Testing Tree
 

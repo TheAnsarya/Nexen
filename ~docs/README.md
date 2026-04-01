@@ -67,6 +67,10 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | ---------- | ------------- |
 | [Research Home](research/README.md) | Entry point for deep research artifacts |
 | [Platform Parity Program Index](research/platform-parity/README.md) | Atari 2600 and Genesis research tree with source links |
+| [Lynx Cart Shift Register Addressing Audit (2026-03-30)](research/lynx-cart-shift-register-addressing-audit-2026-03-30.md) | Audit findings and follow-up plan for Lynx cart shift-register bank addressing (#956) |
+| [Lynx Commercial Bank-Addressing Validation Matrix (2026-03-30)](research/lynx-commercial-bank-addressing-validation-matrix-2026-03-30.md) | Commercial-title empirical validation matrix scaffold for Lynx bank/page addressing follow-up (#1105) |
+| [Lynx Commercial Bank-Addressing ROM Manifest (2026-03-30)](research/lynx-commercial-bank-addressing-rom-manifest-2026-03-30.md) | Canonical selected GoodLynx ROM identities and checksums used by the #1105 validation matrix |
+| [Lynx Commercial Bank-Addressing Headless Boot Smoke (2026-03-30)](research/lynx-commercial-bank-addressing-headless-boot-smoke-2026-03-30.md) | Headless test-runner smoke execution summary for the #1105 selected commercial corpus |
 | [Atari 2600 Breakdown](research/platform-parity/atari-2600/README.md) | Subsystem-by-subsystem Atari 2600 documentation |
 | [Genesis Breakdown](research/platform-parity/genesis/README.md) | Comparative Genesis emulator architecture research |
 | [Compatibility Path](research/platform-parity/compatibility/sonic1-jurassic-park.md) | Sonic 1 and Jurassic Park execution milestones |
@@ -78,6 +82,13 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Channel F Master Program Plan](plans/channel-f-master-program-plan.md) | End-to-end multi-epic roadmap and quality gates |
 | [Channel F Implementation Architecture](plans/channel-f-implementation-architecture.md) | Core and integration design for CPU/bus/video/audio/input/tooling |
 | [Channel F Testing and Benchmark Plan](plans/channel-f-testing-and-benchmark-plan.md) | Correctness, performance, and memory validation framework |
+| [Channel F Production Readiness Matrix](testing/channelf-production-readiness-matrix.md) | Go/no-go checklist and evidence gates for first-class Channel F release readiness |
+| [Channel F Benchmark Suite Matrix](testing/channelf-benchmark-suite-matrix.md) | Benchmark inventory and CI/local execution gates for Channel F smoke and full runs |
+| [Channel F Memory Budget and Regression Budgets](testing/channelf-memory-budget-and-regression-budgets.md) | Memory baseline, budget thresholds, and regression response policy for Channel F |
+| [Channel F Golden ROM Corpus Inventory](testing/channelf-golden-rom-corpus-inventory.md) | Canonical ROM corpus inventory and checksum metadata contract for deterministic validation |
+| [Channel F Troubleshooting Playbook](testing/channelf-troubleshooting-known-issues-playbook.md) | Known issues, triage workflow, and issue reporting template for Channel F |
+| [Channel F TAS Gesture Widget Triage (2026-03-30)](testing/channelf-tas-gesture-widget-triage-2026-03-30.md) | #1012 readiness/blocker checkpoint for Channel F twist/pull/push TAS lane visualization |
+| [Channel F TAS Gesture Widget Checkpoint (2026-03-30)](testing/channelf-tas-gesture-widget-checkpoint-2026-03-30.md) | #1012 implementation and test-evidence checkpoint for Channel F TAS gesture lanes |
 | [Channel F Ordered Prompt Pack](plans/channel-f-implementation-prompts.md) | Session-by-session execution prompts |
 | [Channel F Source Index](research/channel-f-source-index.md) | External technical references and mapping to issue tree |
 | [Channel F Origin Prompt](plans/channel-f-origin-prompt.md) | Canonical request tracked on all related issues |
@@ -115,12 +126,18 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Atari 2600 + Genesis Parity Tracker](plans/atari2600-genesis-parity-tracker.md) | Active multi-phase checklist, issue linkage, and closure criteria for parity execution (#750) |
 | [UI Settings Completeness Plan](plans/ui-settings-completeness-epic-18.md) | Epic #1040 execution plan for cross-platform settings/input/movie/savestate UX completeness |
 | [Epic 22 Stability and Modernization Plan](plans/epic-22-stability-modernization-plan-2026-03-28.md) | Execution plan for crash/segfault mitigation, runtime compatibility, warning hardening, and modernization gates (#1048-#1055) |
+| [Modern Library Baseline and Upgrade Policy (2026-03-29)](plans/modern-library-baseline-policy-2026-03-29.md) | Dependency baseline snapshot, upgrade cadence, and rollback criteria for #1050 |
 | [Epic 22 Validation Pack](testing/epic-22-validation-pack-2026-03-28.md) | Build/test/benchmark/runtime evidence snapshot for the 2026-03-28 stabilization pass |
+| [CI and Release Pipeline Fixes (v1.4.5 to v1.4.8)](testing/ci-release-pipeline-fixes-v1.4.5-v1.4.8.md) | Consolidated timeline and root-cause/fix record for Epic 22 CI-release stabilization (#1066) |
 | [Linux Runtime Crash Matrix](testing/linux-runtime-crash-matrix-2026-03-28.md) | Distro-by-distro crash/segfault signature matrix with current mitigation status for #1049 |
 | [Linux Crash Hardening Fix Order](plans/linux-crash-hardening-order-2026-03-28.md) | Ordered stabilization sequence for runtime dependencies, warnings, and cross-distro validation (#1049, #1051, #1054) |
 | [Platform Parity Source Index](research/platform-parity/source-index.md) | External hardware and emulator code references used by research docs |
 | [Atari 2600 TAS and Movie UI Coverage Audit](testing/atari2600-tas-ui-coverage-audit.md) | Automated and manual validation status for Atari 2600 TAS and movie UI release readiness |
 | [UI Settings Coverage Matrix (2026-03-28)](testing/ui-settings-coverage-matrix-2026-03-28.md) | Initial cross-platform settings/config/input/movie/savestate UI gap matrix and action checklist |
+| [UI Settings Responsiveness Benchmarks (2026-03-30)](testing/ui-settings-responsiveness-benchmarks-2026-03-30.md) | Startup-adjacent and settings-navigation responsiveness benchmark checkpoint for #1046 |
+| [Epic 23 Menu, TAS, and Input Validation Matrix (2026-03-29)](testing/epic-23-menu-tas-input-validation-matrix-2026-03-29.md) | Consolidated validation matrix and evidence index for #1071-#1075 |
+| [Input Mapping Coverage Checkpoint (2026-03-30)](testing/input-mapping-coverage-checkpoint-2026-03-30.md) | Focused per-system controller mapping decode coverage checkpoint and validation evidence for #1073 |
+| [UI Quality Modernization Checkpoint (2026-03-30)](testing/ui-quality-modernization-checkpoint-2026-03-30.md) | Measurable UI consistency and menu/dialog no-regression checkpoint for #1074 |
 | [User Future Work Index](../docs/FUTURE-WORK.md) | Public roadmap entry for active and upcoming tracks |
 | [User Tutorials Index](../docs/TUTORIALS.md) | Step-by-step user and contributor workflow tutorials |
 

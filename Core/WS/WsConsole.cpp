@@ -336,6 +336,7 @@ void WsConsole::InitPostBootRomState() {
 	WsMemoryManagerState& mm = _memoryManager->GetState();
 	mm.BootRomDisabled = true;
 	mm.CartWordBus = true;
+	mm.OpenBus = _model == WsModel::Monochrome ? 0x90 : 0x00;
 	if (_model != WsModel::Monochrome) {
 		mm.SlowSram = true;
 		mm.SlowPort = true;

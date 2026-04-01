@@ -5,6 +5,7 @@
 #Run "make" to build, "make run" to run
 
 NEXENFLAGS=
+EXTRA_CXXFLAGS ?=
 
 ifeq ($(USE_GCC),true)
 	CXX := g++
@@ -110,9 +111,9 @@ ifeq ($(NEXENOS),osx)
 	LINKOPTIONS += -framework Foundation -framework Cocoa -framework GameController -framework CoreHaptics -Wl,-rpath,/opt/local/lib
 endif
 
-CXXFLAGS = -fPIC -Wall --std=c++23 $(NEXENFLAGS) $(SDL2INC) -I $(realpath ./) -I $(realpath ./Core) -I $(realpath ./Utilities) -I $(realpath ./Sdl) -I $(realpath ./Linux) -I $(realpath ./MacOS)
+CXXFLAGS = -fPIC -Wall --std=c++23 $(NEXENFLAGS) $(EXTRA_CXXFLAGS) $(SDL2INC) -I $(realpath ./) -I $(realpath ./Core) -I $(realpath ./Utilities) -I $(realpath ./Sdl) -I $(realpath ./Linux) -I $(realpath ./MacOS)
 OBJCXXFLAGS = $(CXXFLAGS)
-CFLAGS = -fPIC -Wall $(NEXENFLAGS)
+CFLAGS = -fPIC -Wall $(NEXENFLAGS) $(EXTRA_CXXFLAGS)
 
 OBJFOLDER := obj.$(NEXENPLATFORM)
 DEBUGFOLDER := bin/$(NEXENPLATFORM)/Debug

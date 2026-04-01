@@ -37,10 +37,10 @@ void WsCpuPrefetch::Prefetch() {
 
 	bool isWordBus = _memoryManager->IsWordBus(addr);
 
-	// TODOWS debugger can't see these reads
-	PushByte(_memoryManager->InternalRead(addr));
+	PushByte(_memoryManager->InternalReadForPrefetch(addr));
 	if (!IsFull() && isWordBus && (_fetchIp & 0x01)) {
-		PushByte(_memoryManager->InternalRead(((_fetchCs << 4) + _fetchIp)) & 0xFFFFF);
+		uint32_t nextAddr = ((_fetchCs << 4) + _fetchIp) & 0xFFFFF;
+		PushByte(_memoryManager->InternalReadForPrefetch(nextAddr));
 	}
 }
 

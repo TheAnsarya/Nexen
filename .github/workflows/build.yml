@@ -1,17 +1,31 @@
 name: Build Nexen
 
 on:
-  push:
-    branches: ['**']
-    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      run_release:
+        description: 'Create/update GitHub release after build'
+        required: true
+        default: false
+        type: boolean
+      release_tag:
+        description: 'Release tag (required when run_release=true), e.g. v1.5.0'
+        required: false
+        type: string
+
+concurrency:
+  group: build-nexen-single
+  cancel-in-progress: true
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  # Calibrated from warning-delta artifacts across successful runs:
+  # 23720620324, 23720623170, 23720627204, 23721111328, 23721114532
   WARNING_BASELINE_WINDOWS: 0
-  WARNING_BASELINE_LINUX: 0
-  WARNING_BASELINE_APPIMAGE: 0
-  WARNING_FAIL_ON_REGRESSION: 0
+  WARNING_BASELINE_LINUX: 4063
+  WARNING_BASELINE_APPIMAGE: 145
+  WARNING_FAIL_ON_REGRESSION: 1
 
 jobs:
   windows:
@@ -95,6 +109,64 @@ jobs:
 
       - name: Publish Nexen
         run: dotnet publish --no-restore -c Release -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained=true -p:PublishSingleFile="${{ matrix.platform.singleFile }}" -p:IncludeNativeLibrariesForSelfExtract="${{ matrix.platform.singleFile }}" -p:OptimizeUi="true" -r win-x64 -o build/publish UI/UI.csproj
+
+      - name: Capture runtime dependency report (Windows publish)
+        if: always()
+        shell: pwsh
+        run: |
+          $publishExe = "build\publish\Nexen.exe"
+          $depsOut = "runtime-deps-windows.txt"
+          $filesOut = "runtime-files-windows.txt"
+
+          if (Test-Path $publishExe) {
+            $dumpbinCmd = (Get-Command dumpbin.exe -ErrorAction SilentlyContinue)
+            if ($dumpbinCmd) {
+              & $dumpbinCmd.Source /dependents $publishExe | Out-File -FilePath $depsOut -Encoding utf8
+            } else {
+              "dumpbin.exe not found; dependency tree unavailable." | Out-File -FilePath $depsOut -Encoding utf8
+            }
+
+            Get-ChildItem "build\publish" -File | Select-Object Name, Length | Format-Table -AutoSize | Out-String | Out-File -FilePath $filesOut -Encoding utf8
+          } else {
+            "Publish binary missing: $publishExe" | Out-File -FilePath $depsOut -Encoding utf8
+            "Publish binary missing: $publishExe" | Out-File -FilePath $filesOut -Encoding utf8
+          }
+
+      - name: Validate required runtime assets (Windows publish)
+        shell: pwsh
+        run: |
+          # When IncludeNativeLibrariesForSelfExtract is true (standard single-file build),
+          # native DLLs are bundled inside Nexen.exe and won't exist as separate files.
+          # Only require the exe itself; native libs are separate only in AoT builds.
+          $required = @("build\publish\Nexen.exe")
+
+          if ("${{ matrix.platform.aot }}" -eq "true") {
+            $required += "build\publish\libSkiaSharp.dll"
+            $required += "build\publish\libHarfBuzzSharp.dll"
+          }
+
+          $missing = @()
+          foreach ($path in $required) {
+            if (!(Test-Path $path)) {
+              $missing += $path
+            }
+          }
+
+          if ($missing.Count -gt 0) {
+            Write-Error "Missing required Windows runtime assets:`n$($missing -join "`n")"
+            exit 1
+          }
+
+          Write-Host "Windows runtime asset validation passed."
+
+      - name: Upload runtime dependency report (Windows publish)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Runtime Dependencies (Windows${{ matrix.platform.aotString }})
+          path: |
+            runtime-deps-windows.txt
+            runtime-files-windows.txt
 
       - name: Generate warning report (Windows)
         continue-on-error: true
@@ -247,7 +319,7 @@ jobs:
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
             make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=gcc-13 CXX=g++-13 2>&1 | tee build-linux.log
           else
-            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 NEXENFLAGS="-stdlib=libc++" 2>&1 | tee build-linux.log
+            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++" 2>&1 | tee build-linux.log
           fi
 
       - name: Capture Linux runtime dependency report
@@ -626,10 +698,10 @@ jobs:
           export CC="${LLVM_PREFIX}/bin/clang"
           export CXX="${LLVM_PREFIX}/bin/clang++"
           # Pass linker flags to use Homebrew's libc++ instead of system libc++
-          # NEXENFLAGS is used for both compile and link in the makefile
+          # EXTRA_CXXFLAGS is appended to CXXFLAGS/CFLAGS alongside NEXENFLAGS in the makefile
           LIBCXX_FLAGS="-stdlib=libc++ -nostdinc++ -isystem ${LLVM_PREFIX}/include/c++/v1"
           LINK_FLAGS="-L${LLVM_PREFIX}/lib/c++ -Wl,-rpath,${LLVM_PREFIX}/lib/c++ -lc++ -lc++abi"
-          make CC="$CC" CXX="$CXX" NEXENFLAGS="${LIBCXX_FLAGS} ${LINK_FLAGS}" ${{ matrix.make_flags }} -j$(sysctl -n hw.logicalcpu)
+          make CC="$CC" CXX="$CXX" EXTRA_CXXFLAGS="${LIBCXX_FLAGS} ${LINK_FLAGS}" ${{ matrix.make_flags }} -j$(sysctl -n hw.logicalcpu)
 
       - name: Sign binary
         env:
@@ -666,6 +738,48 @@ jobs:
         run: |
           ditto -c -k --sequesterRsrc --keepParent bin/osx-${{ matrix.platform.arch }}/Release/osx-${{ matrix.platform.arch }}/publish/Nexen.app bin/osx-${{ matrix.platform.arch }}/Release/Nexen.app.zip
 
+      - name: Capture runtime dependency report (macOS publish)
+        if: always()
+        run: |
+          app_dir="bin/osx-${{ matrix.platform.arch }}/Release/osx-${{ matrix.platform.arch }}/publish/Nexen.app"
+          app_bin="$app_dir/Contents/MacOS/Nexen"
+
+          if [ -f "$app_bin" ]; then
+            otool -L "$app_bin" > runtime-deps-macos.txt || true
+            find "$app_dir" -type f | sort > runtime-files-macos.txt || true
+          else
+            echo "Publish app binary missing: $app_bin" > runtime-deps-macos.txt
+            echo "Publish app binary missing: $app_bin" > runtime-files-macos.txt
+          fi
+
+      - name: Validate required runtime assets (macOS publish)
+        run: |
+          app_dir="bin/osx-${{ matrix.platform.arch }}/Release/osx-${{ matrix.platform.arch }}/publish/Nexen.app"
+          app_bin="$app_dir/Contents/MacOS/Nexen"
+
+          test -f "$app_bin" || { echo "Missing app binary: $app_bin"; exit 1; }
+
+          skia_count=$(find "$app_dir" -type f -name "libSkiaSharp*.dylib" | wc -l | tr -d ' ')
+          harfbuzz_count=$(find "$app_dir" -type f -name "libHarfBuzzSharp*.dylib" | wc -l | tr -d ' ')
+
+          if [ "$skia_count" -eq 0 ] || [ "$harfbuzz_count" -eq 0 ]; then
+            echo "Missing required macOS runtime assets in app bundle."
+            echo "libSkiaSharp*.dylib count: $skia_count"
+            echo "libHarfBuzzSharp*.dylib count: $harfbuzz_count"
+            exit 1
+          fi
+
+          echo "macOS runtime asset validation passed."
+
+      - name: Upload runtime dependency report (macOS publish)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Runtime Dependencies (macOS - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: |
+            runtime-deps-macos.txt
+            runtime-files-macos.txt
+
       - name: Upload Nexen
         uses: actions/upload-artifact@v4
         with:
@@ -673,17 +787,32 @@ jobs:
           path: bin/osx-${{ matrix.platform.arch }}/Release/Nexen.app.zip
 
 
-  # Create GitHub Release with artifacts when a version tag is pushed
-  # Use always() so the release still runs even if some platform builds fail
-  # (e.g., if macOS fails, Windows/Linux artifacts are still released)
+  # Create GitHub Release only when explicitly requested via workflow_dispatch input.
+  # Use always() so release can still run if some platform jobs fail and partial assets exist.
   release:
-    if: always() && startsWith(github.ref, 'refs/tags/v')
+    if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.run_release }}
     needs: [windows, linux, appimage, macos]
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
+      - name: Validate release input
+        run: |
+          VERSION="${{ inputs.release_tag }}"
+
+          if [ -z "$VERSION" ]; then
+            echo "release_tag input is required when run_release=true"
+            exit 1
+          fi
+
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "release_tag must match vX.Y.Z (got: $VERSION)"
+            exit 1
+          fi
+
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -694,8 +823,8 @@ jobs:
           mkdir -p release-assets
           mkdir -p tarball-staging
 
-          # Extract version from tag (e.g., v1.1.4)
-          VERSION="${GITHUB_REF_NAME}"
+          # Use explicit manual release tag input (e.g., v1.1.4)
+          VERSION="${VERSION}"
 
           # Windows builds
           cp "artifacts/Nexen (Windows)/Nexen.exe" "release-assets/Nexen-Windows-x64-${VERSION}.exe" || true
@@ -746,6 +875,9 @@ jobs:
       - name: Create or update release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.VERSION }}
+          name: Nexen ${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
           files: release-assets/*
           fail_on_unmatched_files: false
           generate_release_notes: false

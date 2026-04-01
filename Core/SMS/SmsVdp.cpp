@@ -1485,6 +1485,8 @@ void SmsVdp::Serialize(Serializer& s) {
 	SV(_state.ScanlineIrqPending);
 	SV(_state.SpriteOverflow);
 	SV(_state.SpriteCollision);
+	SV(_state.SpriteOverflowIndex);
+	SV(_state.PaletteLatch);
 	SV(_state.SpriteTableAddress);
 	SV(_state.SpritePatternSelector);
 	SV(_state.NametableHeight);

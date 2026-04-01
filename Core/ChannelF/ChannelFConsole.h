@@ -13,9 +13,12 @@ class ChannelFConsole final : public IConsole {
 public:
 	static constexpr uint32_t ScreenWidth = 128;
 	static constexpr uint32_t ScreenHeight = 64;
-	static constexpr uint32_t CpuClockHz = 1789773;
-	static constexpr double Fps = 60.0;
-	static constexpr uint32_t CyclesPerFrame = CpuClockHz / (uint32_t)Fps;
+	static constexpr uint32_t NtscCpuClockHz = 1789773;
+	static constexpr uint32_t PalCpuClockHz = 1773447;
+	static constexpr double NtscFps = 60.0;
+	static constexpr double PalFps = 50.0;
+	static constexpr uint32_t NtscScanlineCount = 262;
+	static constexpr uint32_t PalScanlineCount = 312;
 
 private:
 	Emulator* _emu = nullptr;
@@ -28,9 +31,13 @@ private:
 	RomFormat _romFormat = RomFormat::Unknown;
 	string _romSha1;
 	bool _romLoaded = false;
+	ChannelFBiosVariant _activeVariant = ChannelFBiosVariant::Unknown;
+	ConsoleRegion _activeRegion = ConsoleRegion::Ntsc;
+
+	[[nodiscard]] uint32_t GetCyclesPerFrame() const;
 
 public:
-	[[nodiscard]] static vector<string> GetSupportedExtensions() { return {".chf"}; }
+	[[nodiscard]] static vector<string> GetSupportedExtensions() { return {".chf", ".bin"}; }
 	[[nodiscard]] static vector<string> GetSupportedSignatures() { return {}; }
 
 	explicit ChannelFConsole(Emulator* emu);

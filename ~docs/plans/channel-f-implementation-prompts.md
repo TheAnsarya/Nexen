@@ -97,3 +97,13 @@ This file provides an ordered sequence of prompts for multi-session execution. R
 ```text
 [Nexen][Channel F] Run full correctness/performance/memory regression sweep, fix blockers, close ready issues, and prepare release-readiness signoff for #1023.
 ```
+
+## Delivery Checklist (Issue #1022)
+
+Use this checklist at the end of each prompt execution session:
+
+1. Issue state updated with concrete evidence links (build/test logs, docs, or benchmarks).
+2. Session log updated with completed steps, blockers, and next prompt number.
+3. New docs linked from indexes (`~docs/README.md`, `~docs/testing/README.md`, or `docs/manual-testing/README.md`).
+4. Build and targeted test commands executed and summarized in issue comments.
+5. Any deferred work split into follow-up issues with parent linkage.

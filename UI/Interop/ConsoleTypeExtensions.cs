@@ -31,7 +31,7 @@ public static class ConsoleTypeExtensions {
 
 	public static bool SupportsTasEditor(this ConsoleType type) {
 		return type switch {
-			ConsoleType.ChannelF => false,
+			ConsoleType.ChannelF => true,
 			_ => true
 		};
 	}

@@ -23,6 +23,16 @@ class DependencyHelper {
 						continue;
 					}
 
+					// Skip directory entries — they have no data and cause crashes on Linux
+					// when ExtractToFile tries to open a directory path as a file.
+					if (entry.FullName.EndsWith('/') || entry.FullName.EndsWith('\\')) {
+						string dirPath = Path.Combine(dest, entry.FullName);
+						if (!Directory.Exists(dirPath)) {
+							Directory.CreateDirectory(dirPath);
+						}
+						continue;
+					}
+
 					string path = Path.Combine(dest, entry.FullName);
 					string extension = Path.GetExtension(path)?.ToLowerInvariant() ?? string.Empty;
 					entry.ExternalAttributes = 0;

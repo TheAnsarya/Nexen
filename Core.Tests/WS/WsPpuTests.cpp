@@ -581,6 +581,7 @@ TEST(WsMemoryManagerStateTest, DefaultState) {
 	WsMemoryManagerState state = {};
 	EXPECT_EQ(state.ActiveIrqs, 0);
 	EXPECT_EQ(state.EnabledIrqs, 0);
+	EXPECT_EQ(state.OpenBus, 0);
 	EXPECT_FALSE(state.ColorEnabled);
 	EXPECT_FALSE(state.Enable4bpp);
 	EXPECT_FALSE(state.Enable4bppPacked);

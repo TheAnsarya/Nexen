@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Nexen.Config;
+using Nexen.Debugger.Integration;
 using Nexen.Debugger.Labels;
 using Nexen.Debugger.Utilities;
 using Nexen.Interop;
@@ -279,6 +280,18 @@ public static class PansyExporter {
 				});
 				sectionData.Add(data);
 			}
+		}
+
+		// Section 7: SOURCE_MAP (address -> source file/line mapping)
+		var sourceMapBytes = BuildSourceMapSection(memoryType);
+		if (sourceMapBytes.Length > 0) {
+			var data = options.UseCompression ? CompressData(sourceMapBytes) : sourceMapBytes;
+			sections.Add(new SectionInfo {
+				Type = SECTION_SOURCE_MAP,
+				CompressedSize = (uint)data.Length,
+				UncompressedSize = (uint)sourceMapBytes.Length
+			});
+			sectionData.Add(data);
 		}
 
 		// Section 8: METADATA
@@ -937,6 +950,82 @@ public static class PansyExporter {
 		}
 
 		return count > 0 ? ms.ToArray() : [];
+	}
+
+	/// <summary>
+	/// Build source map section (0x0007) from the active symbol provider.
+	///
+	/// Format (Nexen extension while SOURCE_MAP is reserved in base spec):
+	/// - FileCount (u32)
+	/// - Repeated files: NameLen (u16) + NameUtf8
+	/// - EntryCount (u32)
+	/// - Repeated entries: Address (u32) + FileIndex (u16) + LineStart (u32) + LineEndExclusive (u32)
+	/// </summary>
+	private static byte[] BuildSourceMapSection(MemoryType memoryType) {
+		try {
+			var provider = DebugWorkspaceManager.SymbolProvider;
+			if (provider is null || provider.SourceFiles.Count == 0) {
+				return [];
+			}
+
+			var files = provider.SourceFiles;
+			var entries = new List<(uint Address, ushort FileIndex, uint LineStart, uint LineEndExclusive)>();
+
+			for (int fileIndex = 0; fileIndex < files.Count; fileIndex++) {
+				var file = files[fileIndex];
+				var lines = file.Data;
+
+				for (int lineIndex = 0; lineIndex < lines.Length; lineIndex++) {
+					var start = provider.GetLineAddress(file, lineIndex);
+					if (start is null || start.Value.Type != memoryType || start.Value.Address < 0) {
+						continue;
+					}
+
+					var end = provider.GetLineEndAddress(file, lineIndex);
+					uint startAddress = (uint)start.Value.Address;
+					uint endAddressExclusive = end is not null && end.Value.Type == memoryType && end.Value.Address > start.Value.Address
+						? (uint)end.Value.Address
+						: startAddress + 1;
+
+					entries.Add((
+						Address: startAddress,
+						FileIndex: (ushort)fileIndex,
+						LineStart: (uint)(lineIndex + 1),
+						LineEndExclusive: (uint)(lineIndex + 2)
+					));
+				}
+			}
+
+			return SerializeSourceMapSection(files, entries);
+		} catch {
+			return [];
+		}
+	}
+
+	private static byte[] SerializeSourceMapSection(IReadOnlyList<SourceFileInfo> files, List<(uint Address, ushort FileIndex, uint LineStart, uint LineEndExclusive)> entries) {
+		if (files.Count == 0 || entries.Count == 0) {
+			return [];
+		}
+
+		using var ms = new MemoryStream(entries.Count * 14 + files.Count * 32);
+		using var writer = new BinaryWriter(ms);
+
+		writer.Write((uint)files.Count);
+		for (int i = 0; i < files.Count; i++) {
+			byte[] nameBytes = Encoding.UTF8.GetBytes(files[i].Name);
+			writer.Write((ushort)nameBytes.Length);
+			writer.Write(nameBytes);
+		}
+
+		writer.Write((uint)entries.Count);
+		foreach (var entry in entries.OrderBy(e => e.Address).ThenBy(e => e.FileIndex).ThenBy(e => e.LineStart)) {
+			writer.Write(entry.Address);
+			writer.Write(entry.FileIndex);
+			writer.Write(entry.LineStart);
+			writer.Write(entry.LineEndExclusive);
+		}
+
+		return ms.ToArray();
 	}
 
 

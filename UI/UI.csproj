@@ -8,8 +8,8 @@
 	<AssemblyName>Nexen</AssemblyName>
 	<RootNamespace>Nexen</RootNamespace>
 	<StartupObject>Nexen.Program</StartupObject>
-	<Version>1.4.9</Version>
-	<FileVersion>1.4.9</FileVersion>
+	<Version>1.4.12</Version>
+	<FileVersion>1.4.12</FileVersion>
 	<Copyright>(C) 2026 TheAnsarya</Copyright>
   </PropertyGroup>
 	<PropertyGroup>
@@ -47,8 +47,8 @@
 		<CFBundleName>Nexen</CFBundleName> <!-- Also defines .app file name -->
 		<CFBundleDisplayName>Nexen</CFBundleDisplayName>
 		<CFBundleIdentifier>com.nexen</CFBundleIdentifier>
-		<CFBundleVersion>1.4.9</CFBundleVersion>
-		<CFBundleShortVersionString>1.4.9</CFBundleShortVersionString>
+		<CFBundleVersion>1.4.12</CFBundleVersion>
+		<CFBundleShortVersionString>1.4.12</CFBundleShortVersionString>
 		<CFBundlePackageType>APPL</CFBundlePackageType>
 		<CFBundleSignature>????</CFBundleSignature>
 		<CFBundleExecutable>Nexen</CFBundleExecutable>
@@ -127,9 +127,6 @@
 	<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
 	<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
 	<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.5" />
-	<PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
-	<PackageReference Include="Microsoft.ICU.ICU4C.Runtime.linux-x64" Version="72.1.0.3" Condition="'$(RuntimeIdentifier)'=='linux-x64'" />
-	<PackageReference Include="Microsoft.ICU.ICU4C.Runtime.linux-arm64" Version="72.1.0.3" Condition="'$(RuntimeIdentifier)'=='linux-arm64'" />
 	<PackageReference Include="StreamHash" Version="1.11.2" />
    </ItemGroup>
    <ItemGroup>

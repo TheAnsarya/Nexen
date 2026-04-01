@@ -2,7 +2,11 @@ using Xunit;
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Reflection;
 using System.Text;
+using Nexen.Debugger.Integration;
+using Nexen.Debugger.Labels;
+using Nexen.Interop;
 using Nexen.Utilities;
 
 namespace Nexen.Tests.Debugger.Labels;
@@ -263,6 +267,39 @@ public class PansyExporterTests
 		Assert.Equal(1u, BitConverter.ToUInt32(bytes, 0)); // 1 comment
 	}
 
+	[Fact]
+	public void SerializeSourceMapSection_WithEntries_WritesFileTableAndEntryCount()
+	{
+		var files = new List<SourceFileInfo> {
+			new SourceFileInfo("main.pasm", true, new TestFileDataProvider(["lda #$01", "sta $2000"]))
+		};
+
+		var entries = new List<(uint Address, ushort FileIndex, uint LineStart, uint LineEndExclusive)> {
+			(0x8000u, 0, 1, 2),
+			(0x8002u, 0, 2, 3)
+		};
+
+		var method = typeof(PansyExporter).GetMethod("SerializeSourceMapSection", BindingFlags.NonPublic | BindingFlags.Static);
+		Assert.NotNull(method);
+
+		var result = method!.Invoke(null, [files, entries]) as byte[];
+		Assert.NotNull(result);
+		Assert.True(result!.Length > 0);
+
+		using var ms = new MemoryStream(result);
+		using var reader = new BinaryReader(ms, Encoding.UTF8, leaveOpen: true);
+
+		uint fileCount = reader.ReadUInt32();
+		Assert.Equal(1u, fileCount);
+
+		ushort fileNameLength = reader.ReadUInt16();
+		string fileName = Encoding.UTF8.GetString(reader.ReadBytes(fileNameLength));
+		Assert.Equal("main.pasm", fileName);
+
+		uint entryCount = reader.ReadUInt32();
+		Assert.Equal(2u, entryCount);
+	}
+
 	#endregion
 
 	#region File Path Tests
@@ -381,6 +418,16 @@ public class PansyExporterTests
 		public string Comment { get; set; } = "";
 		public byte MemoryType { get; set; }
 		public uint Length { get; set; } = 1;
+	}
+
+	private sealed class TestFileDataProvider : IFileDataProvider
+	{
+		public string[] Data { get; }
+
+		public TestFileDataProvider(string[] data)
+		{
+			Data = data;
+		}
 	}
 
 	private static byte[] BuildSymbolSection(List<TestLabel> labels)

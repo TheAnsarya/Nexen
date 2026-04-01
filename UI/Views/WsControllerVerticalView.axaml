@@ -45,22 +45,22 @@
 					<TextBlock Text="A" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 0" />
 					<c:KeyBindingButton KeyBinding="{Binding Mapping.A}" Width="60" Height="40" />
 					<c:KeyBindingButton KeyBinding="{Binding Mapping.TurboA}" Width="60" Height="20" />
-					<TextBlock Text="Turbo A" FontSize="14" HorizontalAlignment="Center" />
+					<TextBlock Text="{l:Translate lblTurboA}" FontSize="14" HorizontalAlignment="Center" />
 				</StackPanel>
 				<StackPanel VerticalAlignment="Top" Margin="0 30 0 0" HorizontalAlignment="Right">
 					<TextBlock Text="B" FontSize="18" HorizontalAlignment="Center" Margin="0 0 0 0" />
 					<c:KeyBindingButton KeyBinding="{Binding Mapping.B}" Width="60" Height="40" />
 					<c:KeyBindingButton KeyBinding="{Binding Mapping.TurboB}" Width="60" Height="20" />
-					<TextBlock Text="Turbo B" FontSize="14" HorizontalAlignment="Center" />
+					<TextBlock Text="{l:Translate lblTurboB}" FontSize="14" HorizontalAlignment="Center" />
 				</StackPanel>
 			</Panel>
 
 			<Grid ColumnDefinitions="*,Auto,*" RowDefinitions="Auto,Auto,15,Auto,Auto" Canvas.Top="100" Width="496">
 				<c:KeyBindingButton KeyBinding="{Binding Mapping.Start}" Grid.Column="1" Width="80" Grid.Row="0" />
-				<TextBlock Grid.Column="1" Grid.Row="1" Text="Start" FontSize="14" HorizontalAlignment="Center" />
+				<TextBlock Grid.Column="1" Grid.Row="1" Text="{l:Translate lblStart}" FontSize="14" HorizontalAlignment="Center" />
 
 				<c:KeyBindingButton KeyBinding="{Binding Mapping.GenericKey1}" Grid.Column="1" Grid.Row="3" Width="80" />
-				<TextBlock Grid.Column="1" Grid.Row="4" Text="Sound" FontSize="14" HorizontalAlignment="Center" />
+				<TextBlock Grid.Column="1" Grid.Row="4" Text="{l:Translate lblSound}" FontSize="14" HorizontalAlignment="Center" />
 			</Grid>
 		</Canvas>
 	</Border>

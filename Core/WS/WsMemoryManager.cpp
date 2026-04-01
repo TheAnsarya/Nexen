@@ -150,6 +150,7 @@ T WsMemoryManager::ReadPort(uint16_t port) {
 				uint8_t hi = InternalReadPort(port + 1, true);
 				value = lo | (hi << 8);
 			}
+			_state.OpenBus = (uint8_t)(value >> 8);
 
 			_emu->ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Read>(port, value);
 			return value;
@@ -158,6 +159,7 @@ T WsMemoryManager::ReadPort(uint16_t port) {
 		Exec();
 
 		uint8_t value = IsUnmappedPort(port) ? GetUnmappedPort() : InternalReadPort(port, false);
+		_state.OpenBus = value;
 		_emu->ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Read>(port, value);
 		return value;
 	}
@@ -173,6 +175,7 @@ void WsMemoryManager::WritePort(uint16_t port, T value) {
 		} else {
 			Exec();
 			_emu->ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Write>(port, value);
+			_state.OpenBus = (uint8_t)(value >> 8);
 
 			if (!IsUnmappedPort(port)) {
 				InternalWritePort(port, value, true);
@@ -182,6 +185,7 @@ void WsMemoryManager::WritePort(uint16_t port, T value) {
 	} else {
 		Exec();
 		_emu->ProcessMemoryAccess<CpuType::Ws, MemoryType::WsPort, MemoryOperationType::Write>(port, value);
+		_state.OpenBus = value;
 
 		if (!IsUnmappedPort(port)) {
 			InternalWritePort(port, value, false);
@@ -201,8 +205,10 @@ T WsMemoryManager::DebugReadPort(uint16_t port) {
 		}
 
 		if (port == 0xB1 || port == 0xB3 || port == 0xB5) {
-			// TODOWS implement peek to avoid side-effects for these ports
-			return 0;
+			if (port == 0xB5) {
+				return _controlManager->Peek();
+			}
+			return _serial->Peek(port);
 		}
 
 		return InternalReadPort(port, false);
@@ -214,7 +220,7 @@ bool WsMemoryManager::IsUnmappedPort(uint16_t port) {
 }
 
 uint8_t WsMemoryManager::GetUnmappedPort() {
-	return _console->GetModel() == WsModel::Monochrome ? 0x90 : 0;
+	return _state.OpenBus;
 }
 
 uint8_t WsMemoryManager::InternalReadPort(uint16_t port, bool isWordAccess) {
@@ -263,7 +269,8 @@ uint8_t WsMemoryManager::InternalReadPort(uint16_t port, bool isWordAccess) {
 				);
 
 			case 0xA3:
-				return _state.SystemTest;
+				// SystemTest is a write-only factory register.
+				return GetUnmappedPort();
 			case 0xB0:
 				return GetIrqVector();
 			case 0xB1:
@@ -351,7 +358,6 @@ void WsMemoryManager::InternalWritePort(uint16_t port, uint8_t value, bool isWor
 				break;
 
 			case 0xA3:
-				// TODOWS SystemTest is not implemented
 				if (!isWordAccess) {
 					_state.SystemTest = value & 0x0F;
 				}
@@ -495,6 +501,7 @@ void WsMemoryManager::Serialize(Serializer& s) {
 	SV(_state.ActiveIrqs);
 	SV(_state.EnabledIrqs);
 	SV(_state.IrqVectorOffset);
+	SV(_state.OpenBus);
 	SV(_state.SystemControl2);
 	SV(_state.SystemTest);
 	SV(_state.ColorEnabled);
