@@ -44,6 +44,15 @@ public sealed class ChannelFGestureWidgetTests {
 		Assert.Contains("TWISTCW", ids);
 		Assert.Contains("PULL", ids);
 		Assert.Contains("PUSH", ids);
+
+		Assert.Contains(buttons, b => b.ButtonId == "RIGHT" && b.Label == "Right");
+		Assert.Contains(buttons, b => b.ButtonId == "LEFT" && b.Label == "Left");
+		Assert.Contains(buttons, b => b.ButtonId == "BACK" && b.Label == "Back");
+		Assert.Contains(buttons, b => b.ButtonId == "FORWARD" && b.Label == "Fwd");
+		Assert.Contains(buttons, b => b.ButtonId == "TWISTCCW" && b.Label == "TwL");
+		Assert.Contains(buttons, b => b.ButtonId == "TWISTCW" && b.Label == "TwR");
+		Assert.Contains(buttons, b => b.ButtonId == "PULL" && b.Label == "Pull");
+		Assert.Contains(buttons, b => b.ButtonId == "PUSH" && b.Label == "Push");
 	}
 
 	[Fact]
@@ -56,10 +65,18 @@ public sealed class ChannelFGestureWidgetTests {
 	[Theory]
 	[InlineData("↺", "TWISTCCW")]
 	[InlineData("↻", "TWISTCW")]
+	[InlineData("TwL", "TWISTCCW")]
+	[InlineData("TwR", "TWISTCW")]
 	[InlineData("PL", "PULL")]
+	[InlineData("Pull", "PULL")]
 	[InlineData("PS", "PUSH")]
+	[InlineData("Push", "PUSH")]
 	[InlineData("BK", "BACK")]
+	[InlineData("Back", "BACK")]
 	[InlineData("FW", "FORWARD")]
+	[InlineData("Fwd", "FORWARD")]
+	[InlineData("Right", "RIGHT")]
+	[InlineData("Left", "LEFT")]
 	public void MapButtonLabelToName_ChannelFGesturesResolve(string label, string expected) {
 		Assert.Equal(expected, InvokeMapButtonLabelToName(label));
 	}

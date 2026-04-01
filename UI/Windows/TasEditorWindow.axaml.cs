@@ -754,22 +754,33 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 		new[] { "A", "B", "X", "Y", "L", "R", "↑", "↓", "←", "→", "ST", "SE" };
 
 	private static string MapButtonLabelToName(string label) {
-		return label.ToUpperInvariant() switch {
+		string normalized = label.Trim().ToUpperInvariant();
+
+		return normalized switch {
 			"↑" => "UP",
 			"↓" => "DOWN",
 			"←" => "LEFT",
 			"→" => "RIGHT",
+			"LEFT" => "LEFT",
+			"RIGHT" => "RIGHT",
 			"ST" => "START",
 			"SE" => "SELECT",
 			"*" => "STAR",
 			"#" => "POUND",
 			"BK" => "BACK",
+			"BACK" => "BACK",
 			"FW" => "FORWARD",
+			"FWD" => "FORWARD",
+			"FORWARD" => "FORWARD",
 			"↺" => "TWISTCCW",
 			"↻" => "TWISTCW",
+			"TWL" => "TWISTCCW",
+			"TWR" => "TWISTCW",
 			"PL" => "PULL",
+			"PULL" => "PULL",
 			"PS" => "PUSH",
-			_ => label.ToUpperInvariant()
+			"PUSH" => "PUSH",
+			_ => normalized
 		};
 	}
 

@@ -115,6 +115,8 @@ When the user asks to implement, fix, continue, or ship work, do not ask for com
 - Push immediately after commit
 - Do not pause to ask "should I commit" or "which files should I include" unless the user explicitly asked to review first
 - Exclude clearly unrelated modified files from the commit unless the user explicitly requests including them
+- Do not pause due to a dirty working tree; stage the relevant files and continue
+- Do not interrupt execution to ask about unrelated local modifications; leave them untouched and keep shipping requested work
 
 ## Coding Standards
 

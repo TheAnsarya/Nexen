@@ -3535,14 +3535,14 @@ tas.finishSearch(true) -- Load best result</pre>
 	};
 
 	private static List<ControllerButtonInfo> GetChannelFButtons() => new() {
-		new("RIGHT", "→", 0, 0),
-		new("LEFT", "←", 1, 0),
-		new("BACK", "Bk", 2, 0),
-		new("FORWARD", "Fw", 3, 0),
-		new("TWISTCCW", "↺", 0, 1),
-		new("TWISTCW", "↻", 1, 1),
-		new("PULL", "Pl", 2, 1),
-		new("PUSH", "Ps", 3, 1),
+		new("RIGHT", "Right", 0, 0),
+		new("LEFT", "Left", 1, 0),
+		new("BACK", "Back", 2, 0),
+		new("FORWARD", "Fwd", 3, 0),
+		new("TWISTCCW", "TwL", 0, 1),
+		new("TWISTCW", "TwR", 1, 1),
+		new("PULL", "Pull", 2, 1),
+		new("PUSH", "Push", 3, 1),
 	};
 
 	#endregion
