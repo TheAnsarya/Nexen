@@ -635,7 +635,7 @@ public class MemoryToolsWindow : NexenWindow, INotificationHandler {
 				break;
 
 			case ConsoleNotificationType.PpuFrameDone:
-				if (!ToolRefreshHelper.LimitFps(this, 80)) {
+				if (!ToolRefreshHelper.LimitFps(this, 30)) {
 					Dispatcher.UIThread.Post(() => _editor.InvalidateVisual());
 				}
 

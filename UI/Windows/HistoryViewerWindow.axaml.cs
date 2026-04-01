@@ -52,7 +52,7 @@ public class HistoryViewerWindow : NexenWindow {
 		_mainMenu = this.GetControl<Menu>("ActionMenu");
 		_timer = new DispatcherTimer(TimeSpan.FromMilliseconds(50), DispatcherPriority.Normal, (s, e) => _model.Update());
 
-		_mouseTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(15), DispatcherPriority.Normal, (s, e) => UpdateMouse());
+		_mouseTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(33), DispatcherPriority.Normal, (s, e) => UpdateMouse());
 
 		ConfigManager.Config.HistoryViewer.LoadWindowSettings(this);
 	}

@@ -25,7 +25,7 @@ public class ActionToolbar : UserControl {
 
 	public ActionToolbar() {
 		InitializeComponent();
-		_timer = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.Normal, (s, e) => UpdateToolbar());
+		_timer = new DispatcherTimer(TimeSpan.FromMilliseconds(250), DispatcherPriority.Normal, (s, e) => UpdateToolbar());
 	}
 
 	private void InitializeComponent() {
