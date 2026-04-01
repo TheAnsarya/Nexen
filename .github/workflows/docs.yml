@@ -34,21 +34,21 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       pages_enabled: ${{ steps.pages.outputs.enabled || 'false' }}
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+
     - name: Install Doxygen
       run: |
         sudo apt-get update
         sudo apt-get install -y doxygen graphviz
         doxygen --version
-        
+
     - name: Generate Documentation
       run: |
         doxygen Doxyfile
-        
+
     - name: Check for warnings
       run: |
         if [ -f docs/doxygen-warnings.log ]; then
@@ -72,11 +72,11 @@ jobs:
           echo "enabled=false" >> "$GITHUB_OUTPUT"
           echo "GitHub Pages is disabled; skipping publish steps."
         fi
-        
+
     - name: Setup Pages
       if: github.event_name == 'push' && github.ref == 'refs/heads/master' && steps.pages.outputs.enabled == 'true'
       uses: actions/configure-pages@v4
-      
+
     - name: Upload artifact
       if: github.event_name == 'push' && github.ref == 'refs/heads/master' && steps.pages.outputs.enabled == 'true'
       uses: actions/upload-pages-artifact@v3
@@ -90,7 +90,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
-    
+
     steps:
     - name: Deploy to GitHub Pages
       id: deployment
