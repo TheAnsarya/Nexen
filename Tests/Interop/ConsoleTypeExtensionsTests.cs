@@ -14,7 +14,7 @@ public sealed class ConsoleTypeExtensionsTests {
 	}
 
 	[Theory]
-	[InlineData(ConsoleType.ChannelF, false)]
+	[InlineData(ConsoleType.ChannelF, true)]
 	[InlineData(ConsoleType.Nes, true)]
 	[InlineData(ConsoleType.Snes, true)]
 	[InlineData(ConsoleType.Gameboy, true)]

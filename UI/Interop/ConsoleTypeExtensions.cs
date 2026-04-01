@@ -38,7 +38,7 @@ public static class ConsoleTypeExtensions {
 
 	public static bool SupportsMovieTools(this ConsoleType type) {
 		return type switch {
-			ConsoleType.ChannelF => false,
+			ConsoleType.ChannelF => true,
 			_ => true
 		};
 	}

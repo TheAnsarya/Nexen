@@ -13,6 +13,10 @@ using Avalonia.VisualTree;
 namespace Nexen.Utilities; 
 static class WindowExtensions {
 	public static void CenterWindow(Window child, Visual parent) {
+		if (TryCenterWindowImmediately(child, parent)) {
+			return;
+		}
+
 		EventHandler? handler = null;
 		handler = (s, e) => {
 			//This logic is inside the Opened event because running it immediately
@@ -38,6 +42,32 @@ static class WindowExtensions {
 			child.Opened -= handler;
 		};
 		child.Opened += handler;
+	}
+
+	private static bool TryCenterWindowImmediately(Window child, Visual parent) {
+		if (parent.GetVisualRoot() is not WindowBase parentWnd) {
+			return false;
+		}
+
+		double width = child.Width;
+		double height = child.Height;
+		if (double.IsNaN(width) || width <= 0 || double.IsNaN(height) || height <= 0) {
+			return false;
+		}
+
+		child.WindowStartupLocation = WindowStartupLocation.Manual;
+
+		Screen? screen = parentWnd.Screens.ScreenFromVisual(parent);
+		double scale = LayoutHelper.GetLayoutScale(parentWnd);
+		Size wndCenter = new Size(parent.Bounds.Width / 2, parent.Bounds.Height / 2) * scale;
+		int childWidth = (int)(width * scale);
+		int childHeight = (int)(height * scale);
+		PixelPoint controlPosition = parent.PointToScreen(new Point(0, 0));
+		PixelPoint screenCenter = new PixelPoint(controlPosition.X + (int)wndCenter.Width, controlPosition.Y + (int)wndCenter.Height);
+		PixelPoint startPosition = new PixelPoint(screenCenter.X - (childWidth / 2), screenCenter.Y - (childHeight / 2));
+
+		child.Position = FitToScreenBounds(screen, childWidth, childHeight, startPosition);
+		return true;
 	}
 
 	private static PixelPoint FitToScreenBounds(Screen? screen, int childWidth, int childHeight, PixelPoint startPosition) {

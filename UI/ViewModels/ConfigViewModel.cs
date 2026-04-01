@@ -11,6 +11,8 @@ namespace Nexen.ViewModels;
 /// Lazily loads child ViewModels for each configuration tab and manages save/revert operations.
 /// </summary>
 public sealed class ConfigViewModel : DisposableViewModel {
+	private Configuration _originalConfig = new();
+
 	/// <summary>Gets or sets the audio configuration ViewModel.</summary>
 	[Reactive] public AudioConfigViewModel? Audio { get; set; }
 
@@ -78,8 +80,13 @@ public sealed class ConfigViewModel : DisposableViewModel {
 	public ConfigViewModel(ConfigWindowTab selectedTab) {
 		AlwaysOnTop = ConfigManager.Config.Preferences.AlwaysOnTop;
 		SelectedIndex = selectedTab;
+		CaptureCurrentAsOriginal();
 
 		AddDisposable(this.WhenAnyValue(x => x.SelectedIndex).Subscribe((tab) => this.SelectTab(tab)));
+	}
+
+	private void CaptureCurrentAsOriginal() {
+		_originalConfig = JsonHelper.Clone<Configuration>(ConfigManager.Config);
 	}
 
 	/// <summary>
@@ -124,6 +131,7 @@ public sealed class ConfigViewModel : DisposableViewModel {
 		ConfigManager.Config.ApplyConfig();
 		ConfigManager.Config.Save();
 		ConfigManager.Config.Preferences.UpdateFileAssociations();
+		CaptureCurrentAsOriginal();
 	}
 
 	/// <summary>
@@ -148,6 +156,7 @@ public sealed class ConfigViewModel : DisposableViewModel {
 		ConfigManager.Config.Cv = OtherConsoles?.CvOriginalConfig ?? ConfigManager.Config.Cv;
 		ConfigManager.Config.ApplyConfig();
 		ConfigManager.Config.Save();
+		CaptureCurrentAsOriginal();
 	}
 
 	/// <summary>
@@ -156,22 +165,22 @@ public sealed class ConfigViewModel : DisposableViewModel {
 	/// <returns>True if any configuration differs from original values.</returns>
 	public bool IsDirty() {
 		return
-			Audio?.OriginalConfig.IsIdentical(ConfigManager.Config.Audio) == false ||
-			Input?.OriginalConfig.IsIdentical(ConfigManager.Config.Input) == false ||
-			Video?.OriginalConfig.IsIdentical(ConfigManager.Config.Video) == false ||
-			Preferences?.OriginalConfig.IsIdentical(ConfigManager.Config.Preferences) == false ||
-			Emulation?.OriginalConfig.IsIdentical(ConfigManager.Config.Emulation) == false ||
-			Nes?.OriginalConfig.IsIdentical(ConfigManager.Config.Nes) == false ||
-			Snes?.OriginalConfig.IsIdentical(ConfigManager.Config.Snes) == false ||
-			Gameboy?.OriginalConfig.IsIdentical(ConfigManager.Config.Gameboy) == false ||
-			Gba?.OriginalConfig.IsIdentical(ConfigManager.Config.Gba) == false ||
-			PcEngine?.OriginalConfig.IsIdentical(ConfigManager.Config.PcEngine) == false ||
-			Sms?.OriginalConfig.IsIdentical(ConfigManager.Config.Sms) == false ||
-			Ws?.OriginalConfig.IsIdentical(ConfigManager.Config.Ws) == false ||
-			Lynx?.OriginalConfig.IsIdentical(ConfigManager.Config.Lynx) == false ||
-			Atari2600?.OriginalConfig.IsIdentical(ConfigManager.Config.Atari2600) == false ||
-			ChannelF?.OriginalConfig.IsIdentical(ConfigManager.Config.ChannelF) == false ||
-			OtherConsoles?.CvOriginalConfig.IsIdentical(ConfigManager.Config.Cv) == false
+			!_originalConfig.Audio.IsIdentical(ConfigManager.Config.Audio) ||
+			!_originalConfig.Input.IsIdentical(ConfigManager.Config.Input) ||
+			!_originalConfig.Video.IsIdentical(ConfigManager.Config.Video) ||
+			!_originalConfig.Preferences.IsIdentical(ConfigManager.Config.Preferences) ||
+			!_originalConfig.Emulation.IsIdentical(ConfigManager.Config.Emulation) ||
+			!_originalConfig.Nes.IsIdentical(ConfigManager.Config.Nes) ||
+			!_originalConfig.Snes.IsIdentical(ConfigManager.Config.Snes) ||
+			!_originalConfig.Gameboy.IsIdentical(ConfigManager.Config.Gameboy) ||
+			!_originalConfig.Gba.IsIdentical(ConfigManager.Config.Gba) ||
+			!_originalConfig.PcEngine.IsIdentical(ConfigManager.Config.PcEngine) ||
+			!_originalConfig.Sms.IsIdentical(ConfigManager.Config.Sms) ||
+			!_originalConfig.Ws.IsIdentical(ConfigManager.Config.Ws) ||
+			!_originalConfig.Lynx.IsIdentical(ConfigManager.Config.Lynx) ||
+			!_originalConfig.Atari2600.IsIdentical(ConfigManager.Config.Atari2600) ||
+			!_originalConfig.ChannelF.IsIdentical(ConfigManager.Config.ChannelF) ||
+			!_originalConfig.Cv.IsIdentical(ConfigManager.Config.Cv)
 		;
 	}
 }

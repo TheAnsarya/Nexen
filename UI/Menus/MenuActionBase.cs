@@ -233,6 +233,16 @@ public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 	/// Called when the submenu opens.
 	/// </summary>
 	public virtual void Update() {
+		if (_subActions is not null) {
+			foreach (object subAction in _subActions) {
+				if (subAction is IMenuAction action) {
+					action.Update();
+				} else if (subAction is BaseMenuAction legacyAction) {
+					legacyAction.Update();
+				}
+			}
+		}
+
 		ActionName = ComputeName();
 		ShortcutText = ComputeShortcutText();
 		TooltipText = ShortcutText.Length > 0 ? $"{ActionName} ({ShortcutText})" : ActionName;

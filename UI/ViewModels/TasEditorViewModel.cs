@@ -16,6 +16,7 @@ using Nexen.Debugger.Windows;
 using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.MovieConverter;
+using Nexen.Services;
 using Nexen.TAS;
 using Nexen.Utilities;
 using Nexen.Windows;
@@ -523,6 +524,11 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		_window = wnd;
 
 		FileMenuItems = new List<object>() {
+			new ContextMenuAction() {
+				ActionType = ActionType.Custom,
+				CustomText = "Create New",
+				OnClick = CreateNewMovie
+			},
 			new ContextMenuAction() {
 				ActionType = ActionType.Custom,
 				CustomText = "Open",
@@ -2683,12 +2689,70 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Starts input recording.
 	/// </summary>
 	public void StartRecording() {
-		if (Movie is null || IsRecording) {
+		if (IsRecording) {
+			return;
+		}
+
+		if (Movie is null) {
+			CreateNewMovie();
+		}
+
+		if (Movie is null) {
 			return;
 		}
 
 		PopulatePortTypesFromRuntime();
 		Recorder.StartRecording(RecordMode, SelectedFrameIndex);
+	}
+
+	private void CreateNewMovie() {
+		if (!EmulatorState.Instance.IsRomLoaded) {
+			StatusMessage = "Load a ROM before creating a movie";
+			return;
+		}
+
+		var romInfo = EmuApi.GetRomInfo();
+		Movie = new MovieData() {
+			SourceFormat = MovieFormat.Nexen,
+			SystemType = MapConsoleToSystemType(romInfo.ConsoleType),
+			Region = RegionType.NTSC,
+			GameName = romInfo.GetRomName(),
+			RomFileName = Path.GetFileName(romInfo.RomPath),
+			CreatedDate = DateTime.UtcNow,
+			ModifiedDate = DateTime.UtcNow,
+			ControllerCount = Math.Max(1, InputApi.GetControllerStates().Length)
+		};
+
+		FilePath = null;
+		_currentConverter = MovieConverterRegistry.GetConverter(MovieFormat.Nexen);
+		SelectedFrameIndex = -1;
+		PlaybackFrame = 0;
+		HasUnsavedChanges = true;
+		StatusMessage = "Created new movie";
+
+		PopulatePortTypesFromRuntime();
+		UpdateFrames();
+		UpdateActivePortCount();
+		UpdateControllerButtons();
+		RefreshMarkerEntries();
+		RefreshSelectedFramePreview();
+	}
+
+	private static SystemType MapConsoleToSystemType(ConsoleType consoleType) {
+		return consoleType switch {
+			ConsoleType.Nes => SystemType.Nes,
+			ConsoleType.Snes => SystemType.Snes,
+			ConsoleType.Gameboy => SystemType.Gb,
+			ConsoleType.Gba => SystemType.Gba,
+			ConsoleType.Sms => SystemType.Sms,
+			ConsoleType.PcEngine => SystemType.Pce,
+			ConsoleType.Ws => SystemType.Ws,
+			ConsoleType.Lynx => SystemType.Lynx,
+			ConsoleType.Atari2600 => SystemType.A2600,
+			ConsoleType.Genesis => SystemType.Genesis,
+			ConsoleType.ChannelF => SystemType.ChannelF,
+			_ => SystemType.Other,
+		};
 	}
 
 	/// <summary>
