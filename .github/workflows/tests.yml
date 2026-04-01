@@ -46,12 +46,14 @@ jobs:
       - name: Install vcpkg dependencies
         working-directory: ${{ github.workspace }}
         run: |
-          $env:VCPKG_ROOT = "${{ github.workspace }}/vcpkg"
-          vcpkg install --triplet x64-windows
+          $vcpkgRoot = "${{ github.workspace }}/vcpkg"
+          $env:VCPKG_ROOT = $vcpkgRoot
+          "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          vcpkg install gtest benchmark --triplet x64-windows --clean-after-build
 
       - name: Build Core.Tests
         run: |
-          msbuild Core.Tests\Core.Tests.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=false /m
+          msbuild Core.Tests\Core.Tests.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=false /p:VcpkgRoot=${{ github.workspace }}\vcpkg /m
 
       - name: Run Unit Tests
         working-directory: ${{ github.workspace }}
@@ -117,12 +119,14 @@ jobs:
       - name: Install vcpkg dependencies
         working-directory: ${{ github.workspace }}
         run: |
-          $env:VCPKG_ROOT = "${{ github.workspace }}/vcpkg"
-          vcpkg install --triplet x64-windows
+          $vcpkgRoot = "${{ github.workspace }}/vcpkg"
+          $env:VCPKG_ROOT = $vcpkgRoot
+          "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          vcpkg install gtest benchmark --triplet x64-windows --clean-after-build
 
       - name: Build Core.Benchmarks
         run: |
-          msbuild Core.Benchmarks\Core.Benchmarks.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=false /m
+          msbuild Core.Benchmarks\Core.Benchmarks.vcxproj /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=false /p:VcpkgRoot=${{ github.workspace }}\vcpkg /m
 
       - name: Run Benchmarks (Quick)
         working-directory: ${{ github.workspace }}
