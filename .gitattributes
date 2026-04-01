@@ -61,3 +61,8 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+###############################################################################
+# Force LF line endings for shell scripts (required for Linux/macOS execution)
+###############################################################################
+*.sh text eol=lf
