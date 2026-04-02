@@ -187,9 +187,12 @@ uint8_t ChannelFCpu::ExecuteInstruction() {
 		case 0x1e: // LR J,W — r9←W
 			SetScratchpad(RegJ, _w);
 			return 4;
-		case 0x1f: // INC — DC0++
-			_dc0++;
+		case 0x1f: { // INC — Increment accumulator
+			uint16_t result = (uint16_t)(_a + 1);
+			SetFlagsWithCarryOverflow(result, _a, 1);
+			_a = (uint8_t)result;
 			return 4;
+		}
 
 		// ===== $20-$27: 2-byte immediate operations =====
 		case 0x20: { // LI imm8 — A←immediate

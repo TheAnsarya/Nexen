@@ -218,13 +218,13 @@ TEST_F(F8CpuTestFixture, XDC_SwapsDataCounters) {
 	EXPECT_EQ(cpu.GetDc1(), 0x1234);
 }
 
-TEST_F(F8CpuTestFixture, INC_IncrementsDataCounter) {
-	memory[0] = 0x2a; memory[1] = 0x00; memory[2] = 0xff; // DCI $00ff
-	memory[3] = 0x1f; // INC
-	cpu.StepCycles(3);
-	EXPECT_EQ(cpu.GetDc0(), 0x00ff);
-	cpu.StepCycles(1);
-	EXPECT_EQ(cpu.GetDc0(), 0x0100);
+TEST_F(F8CpuTestFixture, INC_IncrementsAccumulator) {
+	memory[0] = 0x20; memory[1] = 0x42; // LI $42 → A=0x42
+	memory[2] = 0x1f; // INC → A=0x43
+	cpu.StepCycles(1); // LI
+	EXPECT_EQ(cpu.GetA(), 0x42);
+	cpu.StepCycles(1); // INC
+	EXPECT_EQ(cpu.GetA(), 0x43);
 }
 
 // ========== Memory Operations (LM / ST) ==========
