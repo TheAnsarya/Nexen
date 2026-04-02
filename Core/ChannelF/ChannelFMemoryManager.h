@@ -111,6 +111,7 @@ public:
 	[[nodiscard]] const uint8_t* GetCartData() const { return _cartRom.data(); }
 	[[nodiscard]] uint32_t GetCartSize() const { return _cartSize; }
 	[[nodiscard]] const uint8_t* GetCartRamData() const { return _cartRam.data(); }
+	[[nodiscard]] uint8_t* GetCartRamMutable() { return _cartRam.data(); }
 	[[nodiscard]] uint32_t GetCartRamSize() const { return (uint32_t)_cartRam.size(); }
 	[[nodiscard]] bool HasCartRam() const { return _cartBoardType == CartBoardType::RomWithRam; }
 	[[nodiscard]] CartBoardType GetCartBoardType() const { return _cartBoardType; }

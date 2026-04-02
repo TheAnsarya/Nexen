@@ -6,6 +6,7 @@
 #include "Shared/FirmwareHelper.h"
 #include "Shared/Audio/SoundMixer.h"
 #include "Shared/EmuSettings.h"
+#include "Shared/BatteryManager.h"
 #include "Utilities/VirtualFile.h"
 
 namespace {
@@ -102,6 +103,13 @@ LoadRomResult ChannelFConsole::LoadRom(VirtualFile& romFile) {
 		ChannelFMemoryManager::VramSize);
 
 	_romLoaded = true;
+
+	// Load battery-backed cart RAM (for Schach/Chess/Videocart-10 boards)
+	if (_memoryManager->HasCartRam()) {
+		_emu->GetBatteryManager()->LoadBattery(".sav",
+			std::span<uint8_t>(_memoryManager->GetCartRamMutable(), _memoryManager->GetCartRamSize()));
+	}
+
 	Reset();
 	return LoadRomResult::Success;
 }
@@ -170,6 +178,10 @@ void ChannelFConsole::Reset() {
 }
 
 void ChannelFConsole::SaveBattery() {
+	if (_memoryManager && _memoryManager->HasCartRam()) {
+		_emu->GetBatteryManager()->SaveBattery(".sav",
+			std::span<const uint8_t>(_memoryManager->GetCartRamData(), _memoryManager->GetCartRamSize()));
+	}
 }
 
 BaseControlManager* ChannelFConsole::GetControlManager() {
