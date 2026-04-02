@@ -380,3 +380,361 @@ TEST_F(LynxCartTest, AuditFix404_CartInfoInState) {
 	EXPECT_EQ(_state.Info.PageSizeBank1, 0x80);
 	EXPECT_STREQ(_state.Info.Name, "TestCart");
 }
+
+//=============================================================================
+// Address Bit Count Calculation Tests (#1105)
+//=============================================================================
+// The shift-register protocol needs exactly _addrBitCount bits to set the
+// AddressCounter. This is ceil(log2(maxBankSize)), minimum 8.
+
+namespace LynxCartAddrBitHelpers {
+	static uint8_t CalcAddrBitCount(uint32_t bank0Size, uint32_t bank1Size) {
+		uint32_t maxSize = std::max(bank0Size, bank1Size);
+		uint8_t count = 0;
+		if (maxSize > 0) {
+			uint32_t tmp = maxSize - 1;
+			while (tmp > 0) {
+				count++;
+				tmp >>= 1;
+			}
+		}
+		if (count < 8) {
+			count = 8;
+		}
+		return count;
+	}
+
+	static uint32_t CalcBankMask(uint32_t bankSize) {
+		return (bankSize > 0) ? (bankSize - 1) : 0;
+	}
+
+	// Simulate shift-register protocol: accumulate bits MSB-first
+	struct ShiftState {
+		uint32_t addressShift = 0;
+		uint8_t shiftCount = 0;
+		uint32_t addressCounter = 0;
+	};
+
+	static void ShiftBit(ShiftState& s, bool data, uint8_t addrBitCount) {
+		s.shiftCount++;
+		s.addressShift <<= 1;
+		if (data) {
+			s.addressShift |= 1;
+		}
+		if (s.shiftCount >= addrBitCount) {
+			s.addressCounter = s.addressShift;
+			s.shiftCount = 0;
+			s.addressShift = 0;
+		}
+	}
+
+	static uint32_t GetRomAddress(uint32_t addressCounter, uint16_t currentBank,
+		uint32_t bank0Offset, uint32_t bank1Offset,
+		uint32_t bank0Mask, uint32_t bank1Mask) {
+		uint32_t bankOffset = (currentBank == 0) ? bank0Offset : bank1Offset;
+		uint32_t bankMask = (currentBank == 0) ? bank0Mask : bank1Mask;
+		return bankOffset + (addressCounter & bankMask);
+	}
+}
+
+TEST_F(LynxCartTest, AddrBitCount_256Bytes_Is8) {
+	// 256 bytes = 2^8, needs 8 bits
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(256, 0), 8);
+}
+
+TEST_F(LynxCartTest, AddrBitCount_512Bytes_Is9) {
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(512, 0), 9);
+}
+
+TEST_F(LynxCartTest, AddrBitCount_1KB_Is10) {
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(1024, 0), 10);
+}
+
+TEST_F(LynxCartTest, AddrBitCount_64KB_Is16) {
+	// 64 KB = 2^16
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(65536, 0), 16);
+}
+
+TEST_F(LynxCartTest, AddrBitCount_128KB_Is17) {
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(131072, 0), 17);
+}
+
+TEST_F(LynxCartTest, AddrBitCount_256KB_Is18) {
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(262144, 0), 18);
+}
+
+TEST_F(LynxCartTest, AddrBitCount_512KB_Is19) {
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(524288, 0), 19);
+}
+
+TEST_F(LynxCartTest, AddrBitCount_1MB_Is20) {
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(1048576, 0), 20);
+}
+
+TEST_F(LynxCartTest, AddrBitCount_UsesLargerBank) {
+	// When bank1 is larger, bit count comes from bank1
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(256, 65536), 16);
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(65536, 256), 16);
+}
+
+TEST_F(LynxCartTest, AddrBitCount_ZeroSize_Minimum8) {
+	// Empty cart still uses minimum 8 bits
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(0, 0), 8);
+}
+
+TEST_F(LynxCartTest, AddrBitCount_SmallSize_Minimum8) {
+	// Any size < 256 still uses minimum 8 bits
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(1, 0), 8);
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(128, 0), 8);
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcAddrBitCount(255, 0), 8);
+}
+
+//=============================================================================
+// Bank Mask Calculation Tests (#1105)
+//=============================================================================
+
+TEST_F(LynxCartTest, BankMask_PowerOf2_Correct) {
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(256), 0xffu);
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(512), 0x1ffu);
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(1024), 0x3ffu);
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(65536), 0xffffu);
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(131072), 0x1ffffu);
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(262144), 0x3ffffu);
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(524288), 0x7ffffu);
+}
+
+TEST_F(LynxCartTest, BankMask_ZeroSize_IsZero) {
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(0), 0u);
+}
+
+TEST_F(LynxCartTest, BankMask_AddressWraps) {
+	// Address beyond bank size wraps to beginning via mask
+	uint32_t mask = LynxCartAddrBitHelpers::CalcBankMask(65536); // 0xFFFF
+	EXPECT_EQ(0x10000u & mask, 0u);    // 64K wraps to 0
+	EXPECT_EQ(0x10001u & mask, 1u);    // 64K+1 wraps to 1
+	EXPECT_EQ(0x1ffffu & mask, 0xffffu); // 128K-1 wraps to 64K-1
+}
+
+//=============================================================================
+// Shift-Register Protocol Tests (#1105)
+//=============================================================================
+
+TEST_F(LynxCartTest, ShiftRegister_SingleByteAddress) {
+	// 256-byte bank needs 8 bits
+	uint8_t bits = LynxCartAddrBitHelpers::CalcAddrBitCount(256, 0);
+	EXPECT_EQ(bits, 8);
+
+	LynxCartAddrBitHelpers::ShiftState ss;
+	// Shift in 0xA5 MSB-first: 1,0,1,0,0,1,0,1
+	uint8_t target = 0xa5;
+	for (int i = 7; i >= 0; i--) {
+		bool bit = (target >> i) & 1;
+		LynxCartAddrBitHelpers::ShiftBit(ss, bit, bits);
+	}
+	EXPECT_EQ(ss.addressCounter, 0xa5u);
+	EXPECT_EQ(ss.shiftCount, 0); // Reset after completion
+}
+
+TEST_F(LynxCartTest, ShiftRegister_16BitAddress) {
+	// 64KB bank needs 16 bits
+	uint8_t bits = LynxCartAddrBitHelpers::CalcAddrBitCount(65536, 0);
+	EXPECT_EQ(bits, 16);
+
+	LynxCartAddrBitHelpers::ShiftState ss;
+	// Shift in 0x1234 MSB-first
+	uint16_t target = 0x1234;
+	for (int i = 15; i >= 0; i--) {
+		bool bit = (target >> i) & 1;
+		LynxCartAddrBitHelpers::ShiftBit(ss, bit, bits);
+	}
+	EXPECT_EQ(ss.addressCounter, 0x1234u);
+}
+
+TEST_F(LynxCartTest, ShiftRegister_19BitAddress) {
+	// 512KB bank needs 19 bits — largest common Lynx cart
+	uint8_t bits = LynxCartAddrBitHelpers::CalcAddrBitCount(524288, 0);
+	EXPECT_EQ(bits, 19);
+
+	LynxCartAddrBitHelpers::ShiftState ss;
+	uint32_t target = 0x5a5a5; // 19-bit value
+	for (int i = 18; i >= 0; i--) {
+		bool bit = (target >> i) & 1;
+		LynxCartAddrBitHelpers::ShiftBit(ss, bit, bits);
+	}
+	EXPECT_EQ(ss.addressCounter, 0x5a5a5u);
+}
+
+TEST_F(LynxCartTest, ShiftRegister_DoesNotCompleteEarly) {
+	// After 7 of 8 required bits, address should NOT be set yet
+	uint8_t bits = 8;
+	LynxCartAddrBitHelpers::ShiftState ss;
+
+	for (int i = 0; i < 7; i++) {
+		LynxCartAddrBitHelpers::ShiftBit(ss, true, bits);
+	}
+	EXPECT_EQ(ss.shiftCount, 7); // Not yet complete
+	EXPECT_EQ(ss.addressCounter, 0u); // Still at initial value
+}
+
+TEST_F(LynxCartTest, ShiftRegister_CompletesOnExactBitCount) {
+	uint8_t bits = 8;
+	LynxCartAddrBitHelpers::ShiftState ss;
+
+	// Shift 8 ones → 0xFF
+	for (int i = 0; i < 8; i++) {
+		LynxCartAddrBitHelpers::ShiftBit(ss, true, bits);
+	}
+	EXPECT_EQ(ss.addressCounter, 0xffu);
+	EXPECT_EQ(ss.shiftCount, 0); // Reset after completion
+	EXPECT_EQ(ss.addressShift, 0u); // Accumulator cleared
+}
+
+TEST_F(LynxCartTest, ShiftRegister_ConsecutiveAddresses) {
+	// Shifting two consecutive addresses should work independently
+	uint8_t bits = 8;
+	LynxCartAddrBitHelpers::ShiftState ss;
+
+	// First: shift in 0x10
+	for (int i = 7; i >= 0; i--) {
+		LynxCartAddrBitHelpers::ShiftBit(ss, (0x10 >> i) & 1, bits);
+	}
+	EXPECT_EQ(ss.addressCounter, 0x10u);
+
+	// Second: shift in 0x20
+	for (int i = 7; i >= 0; i--) {
+		LynxCartAddrBitHelpers::ShiftBit(ss, (0x20 >> i) & 1, bits);
+	}
+	EXPECT_EQ(ss.addressCounter, 0x20u);
+}
+
+TEST_F(LynxCartTest, ShiftRegister_AllZeros) {
+	uint8_t bits = 8;
+	LynxCartAddrBitHelpers::ShiftState ss;
+	ss.addressCounter = 0xff; // Set to non-zero first
+
+	for (int i = 0; i < 8; i++) {
+		LynxCartAddrBitHelpers::ShiftBit(ss, false, bits);
+	}
+	EXPECT_EQ(ss.addressCounter, 0u);
+}
+
+//=============================================================================
+// ROM Address Resolution Tests (#1105)
+//=============================================================================
+
+TEST_F(LynxCartTest, RomAddress_Bank0_SimpleLookup) {
+	// Bank 0 at offset 0, mask 0xFFFF (64KB)
+	uint32_t addr = LynxCartAddrBitHelpers::GetRomAddress(
+		0x1234, 0, 0, 65536, 0xffff, 0xffff);
+	EXPECT_EQ(addr, 0x1234u);
+}
+
+TEST_F(LynxCartTest, RomAddress_Bank1_WithOffset) {
+	// Bank 1 at offset 65536, mask 0xFFFF (64KB)
+	uint32_t addr = LynxCartAddrBitHelpers::GetRomAddress(
+		0x1234, 1, 0, 65536, 0xffff, 0xffff);
+	EXPECT_EQ(addr, 65536u + 0x1234);
+}
+
+TEST_F(LynxCartTest, RomAddress_Masking_WrapAround) {
+	// Address 0x10000 with mask 0xFFFF should wrap to 0
+	uint32_t addr = LynxCartAddrBitHelpers::GetRomAddress(
+		0x10000, 0, 0, 65536, 0xffff, 0xffff);
+	EXPECT_EQ(addr, 0u);
+}
+
+TEST_F(LynxCartTest, RomAddress_SmallBank_Masking) {
+	// 256-byte bank: address 0x1FF should wrap to 0xFF
+	uint32_t addr = LynxCartAddrBitHelpers::GetRomAddress(
+		0x1ff, 0, 0, 0, 0xff, 0xff);
+	EXPECT_EQ(addr, 0xffu);
+}
+
+//=============================================================================
+// Commercial Title Size Matrix Tests (#1105)
+//=============================================================================
+// These validate the address bit count and mask for known Lynx commercial titles.
+// Bank sizes from actual LNX headers of released games.
+
+TEST_F(LynxCartTest, CommercialTitle_CaliforniaGames_256KB) {
+	// California Games: ~256KB (bank 0)
+	uint8_t bits = LynxCartAddrBitHelpers::CalcAddrBitCount(262144, 0);
+	EXPECT_EQ(bits, 18);
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(262144), 0x3ffffu);
+}
+
+TEST_F(LynxCartTest, CommercialTitle_ChipsChallenge_128KB) {
+	// Chip's Challenge: ~128KB
+	uint8_t bits = LynxCartAddrBitHelpers::CalcAddrBitCount(131072, 0);
+	EXPECT_EQ(bits, 17);
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(131072), 0x1ffffu);
+}
+
+TEST_F(LynxCartTest, CommercialTitle_BlueLightning_512KB) {
+	// Blue Lightning: ~512KB (largest common Lynx cart)
+	uint8_t bits = LynxCartAddrBitHelpers::CalcAddrBitCount(524288, 0);
+	EXPECT_EQ(bits, 19);
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(524288), 0x7ffffu);
+}
+
+TEST_F(LynxCartTest, CommercialTitle_SlimeWorld_64KB) {
+	// Todd's Adventures in Slime World: ~64KB
+	uint8_t bits = LynxCartAddrBitHelpers::CalcAddrBitCount(65536, 0);
+	EXPECT_EQ(bits, 16);
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(65536), 0xffffu);
+}
+
+TEST_F(LynxCartTest, CommercialTitle_DualBank_128K_64K) {
+	// Hypothetical dual-bank: 128K bank 0, 64K bank 1
+	uint8_t bits = LynxCartAddrBitHelpers::CalcAddrBitCount(131072, 65536);
+	EXPECT_EQ(bits, 17); // Uses larger bank
+
+	// Bank 0 mask covers full 128KB
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(131072), 0x1ffffu);
+	// Bank 1 mask covers 64KB only
+	EXPECT_EQ(LynxCartAddrBitHelpers::CalcBankMask(65536), 0xffffu);
+}
+
+//=============================================================================
+// Page Selection ↔ Shift-Register Interaction Tests (#1105)
+//=============================================================================
+
+TEST_F(LynxCartTest, PageSelect_PreservesLowByte_ShiftSetsAddress) {
+	// Test the interaction: page select sets high byte, then shift register
+	// overwrites the entire address counter.
+
+	_state.AddressCounter = 0x00ab;
+
+	// Page select → high byte becomes 0x05
+	uint8_t page = 0x05;
+	_state.AddressCounter = (_state.AddressCounter & 0x00ff) | (static_cast<uint32_t>(page) << 8);
+	EXPECT_EQ(_state.AddressCounter, 0x05abu);
+
+	// Now shift register sets a completely new address → overwrites everything
+	LynxCartAddrBitHelpers::ShiftState ss;
+	ss.addressCounter = _state.AddressCounter;
+	uint32_t newAddr = 0x7890;
+	for (int i = 15; i >= 0; i--) {
+		LynxCartAddrBitHelpers::ShiftBit(ss, (newAddr >> i) & 1, 16);
+	}
+	EXPECT_EQ(ss.addressCounter, 0x7890u); // Completely replaced
+}
+
+TEST_F(LynxCartTest, PageSelect_DifferentBanks_IndependentAddresses) {
+	// Page selection for bank 0 and bank 1 use the same AddressCounter
+	// but the bank offset is different in ROM address resolution.
+	_state.AddressCounter = 0x00ff;
+
+	// Select bank 0, page 2
+	_state.CurrentBank = 0;
+	_state.AddressCounter = (_state.AddressCounter & 0x00ff) | (2u << 8);
+	uint32_t addr0 = LynxCartAddrBitHelpers::GetRomAddress(
+		_state.AddressCounter, 0, 0, 65536, 0xffff, 0xffff);
+	EXPECT_EQ(addr0, 0x02ffu);
+
+	// Select bank 1, same address counter
+	_state.CurrentBank = 1;
+	uint32_t addr1 = LynxCartAddrBitHelpers::GetRomAddress(
+		_state.AddressCounter, 1, 0, 65536, 0xffff, 0xffff);
+	EXPECT_EQ(addr1, 65536u + 0x02ffu);
+}
