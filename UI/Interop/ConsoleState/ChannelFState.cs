@@ -43,10 +43,8 @@ public struct ChannelFVideoState : BaseState {
 /// <summary>Channel F audio state for debugger interop.</summary>
 /// <remarks>Matches memory layout of ChannelFAudioState in Core/ChannelF/ChannelFTypes.h.</remarks>
 public struct ChannelFAudioState : BaseState {
-	/// <summary>Tone control value.</summary>
-	public byte Tone;
-	/// <summary>Frequency control value.</summary>
-	public byte Frequency;
+	/// <summary>2-bit tone select (port 0 bits 5-6): 0=silence, 1=~1kHz, 2=~500Hz, 3=~120Hz.</summary>
+	public byte ToneSelect;
 	/// <summary>Whether sound output is enabled.</summary>
 	[MarshalAs(UnmanagedType.I1)] public bool SoundEnabled;
 }

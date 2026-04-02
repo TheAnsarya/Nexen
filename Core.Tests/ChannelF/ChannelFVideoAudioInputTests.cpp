@@ -35,8 +35,7 @@ TEST(ChannelFVideoStateTest, Position_FullRange) {
 
 TEST(ChannelFAudioStateTest, DefaultState_ZeroInitialized) {
 	ChannelFAudioState audio = {};
-	EXPECT_EQ(audio.Tone, 0);
-	EXPECT_EQ(audio.Frequency, 0);
+	EXPECT_EQ(audio.ToneSelect, 0);
 	EXPECT_FALSE(audio.SoundEnabled);
 }
 
@@ -48,12 +47,13 @@ TEST(ChannelFAudioStateTest, SoundEnabled_Toggle) {
 	EXPECT_FALSE(audio.SoundEnabled);
 }
 
-TEST(ChannelFAudioStateTest, ToneAndFreq_FullByteRange) {
+TEST(ChannelFAudioStateTest, ToneSelect_ValidRange) {
 	ChannelFAudioState audio = {};
-	audio.Tone = 0xff;
-	audio.Frequency = 0xff;
-	EXPECT_EQ(audio.Tone, 0xff);
-	EXPECT_EQ(audio.Frequency, 0xff);
+	// ToneSelect is 2-bit: 0=silence, 1=~1kHz, 2=~500Hz, 3=~120Hz
+	for (uint8_t i = 0; i < 4; i++) {
+		audio.ToneSelect = i;
+		EXPECT_EQ(audio.ToneSelect, i);
+	}
 }
 
 // --- ChannelFPortState ---
@@ -154,7 +154,7 @@ TEST(ChannelFStateTest, DefaultState_AllSubstatesZero) {
 	ChannelFState state = {};
 	EXPECT_EQ(state.Cpu.PC0, 0);
 	EXPECT_EQ(state.Video.Color, 0);
-	EXPECT_EQ(state.Audio.Tone, 0);
+	EXPECT_EQ(state.Audio.ToneSelect, 0);
 	EXPECT_EQ(state.Ports.Port4, 0xff);
 	EXPECT_EQ(state.Ports.Port5, 0xff);
 }

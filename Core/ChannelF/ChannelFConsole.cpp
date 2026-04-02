@@ -365,8 +365,7 @@ void ChannelFConsole::Serialize(Serializer& s) {
 	SV(videoState.Y);
 
 	// Audio state
-	SV(audioState.Tone);
-	SV(audioState.Frequency);
+	SV(audioState.ToneSelect);
 	SV(audioState.SoundEnabled);
 
 	// Port state

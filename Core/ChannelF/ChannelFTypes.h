@@ -36,8 +36,7 @@ struct ChannelFVideoState : BaseState {
 };
 
 struct ChannelFAudioState : BaseState {
-	uint8_t Tone = 0;         // Tone control
-	uint8_t Frequency = 0;    // Frequency control
+	uint8_t ToneSelect = 0;   // 2-bit tone select (port 0 bits 5-6): 0=silence, 1=1kHz, 2=500Hz, 3=120Hz
 	bool SoundEnabled = false;
 };
 

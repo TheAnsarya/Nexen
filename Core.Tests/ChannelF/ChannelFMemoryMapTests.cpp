@@ -323,8 +323,7 @@ TEST(ChfStateDefaultsTest, VideoState) {
 
 TEST(ChfStateDefaultsTest, AudioState) {
 	ChannelFAudioState state = {};
-	EXPECT_EQ(state.Tone, 0);
-	EXPECT_EQ(state.Frequency, 0);
+	EXPECT_EQ(state.ToneSelect, 0);
 	EXPECT_FALSE(state.SoundEnabled);
 }
 

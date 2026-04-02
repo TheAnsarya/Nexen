@@ -73,8 +73,7 @@ void ChannelFMemoryManager::Reset() {
 	_videoColor = 0;
 	_videoX = 0;
 	_videoY = 0;
-	_soundTone = 0;
-	_soundFreq = 0;
+	_soundToneSelect = 0;
 	_audioBuffer.clear();
 	_audioCounter = 0;
 	_audioOutput = false;
@@ -160,10 +159,10 @@ void ChannelFMemoryManager::WritePort(uint8_t port, uint8_t value) {
 			break;
 
 		case 0:
-			// Port 0 write: bits 0-1 = color, bit 5 = sound tone, bit 6 = sound freq
+			// Port 0 write: bits 0-1 = color, bits 5-6 = tone select
+			// Tone select: 0=silence, 1=~1kHz, 2=~500Hz, 3=~120Hz
 			_videoColor = value & 0x03;
-			_soundTone = (value >> 5) & 0x01;
-			_soundFreq = (value >> 6) & 0x03;
+			_soundToneSelect = (value >> 5) & 0x03;
 			break;
 
 		case 1: {
@@ -186,8 +185,7 @@ void ChannelFMemoryManager::WritePort(uint8_t port, uint8_t value) {
 			break;
 
 		case 5:
-			// Port 5 write: sound output
-			_soundTone = value & 0x3f;
+			// Port 5: controller/peripheral I/O (not sound on real hardware)
 			break;
 
 		default:
@@ -211,9 +209,8 @@ ChannelFVideoState ChannelFMemoryManager::GetVideoState() const {
 
 ChannelFAudioState ChannelFMemoryManager::GetAudioState() const {
 	ChannelFAudioState state = {};
-	state.Tone = _soundTone;
-	state.Frequency = _soundFreq;
-	state.SoundEnabled = (_soundTone != 0);
+	state.ToneSelect = _soundToneSelect;
+	state.SoundEnabled = (_soundToneSelect != 0);
 	return state;
 }
 
@@ -233,8 +230,7 @@ void ChannelFMemoryManager::SetVideoState(const ChannelFVideoState& state) {
 }
 
 void ChannelFMemoryManager::SetAudioState(const ChannelFAudioState& state) {
-	_soundTone = state.Tone;
-	_soundFreq = state.Frequency;
+	_soundToneSelect = state.ToneSelect;
 }
 
 void ChannelFMemoryManager::SetPortState(const ChannelFPortState& state) {
@@ -249,14 +245,20 @@ void ChannelFMemoryManager::BeginFrameCapture() {
 }
 
 void ChannelFMemoryManager::StepAudio() {
-	// Channel F PSG: single-channel square wave
-	// _soundTone (6-bit from port 5 bits 0-5) controls the period divider
-	// When _soundTone == 0: silence
-	// When _soundTone > 0: square wave with period = _soundTone * 2 CPU cycles
+	// Channel F PSG: 4 discrete tones from port 0 bits 5-6
+	// _soundToneSelect: 0=silence, 1=~1kHz, 2=~500Hz, 3=~120Hz
+	// Fixed half-periods in CPU cycles (based on ~1.79MHz master clock)
+	static constexpr uint32_t halfPeriods[4] = {
+		0,      // silence (unused)
+		895,    // ~1000Hz: 1789773 / (2*1000)
+		1790,   // ~500Hz:  1789773 / (2*500)
+		7457    // ~120Hz:  1789773 / (2*120)
+	};
+
 	int16_t sample = 0;
-	if (_soundTone != 0) {
+	if (_soundToneSelect != 0) {
 		_audioCounter++;
-		if (_audioCounter >= _soundTone) {
+		if (_audioCounter >= halfPeriods[_soundToneSelect]) {
 			_audioCounter = 0;
 			_audioOutput = !_audioOutput;
 		}

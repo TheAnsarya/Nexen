@@ -58,9 +58,8 @@ private:
 	uint8_t _videoX = 0;
 	uint8_t _videoY = 0;
 
-	// Audio state
-	uint8_t _soundTone = 0;
-	uint8_t _soundFreq = 0;
+	// Audio state — port 0 bits 5-6 select one of 4 discrete tones
+	uint8_t _soundToneSelect = 0;  // 0=silence, 1=~1kHz, 2=~500Hz, 3=~120Hz
 
 	// Audio synthesis
 	vector<int16_t> _audioBuffer;
