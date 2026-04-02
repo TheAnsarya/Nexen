@@ -238,12 +238,14 @@ uint8_t ChannelFCpu::ExecuteInstruction() {
 		}
 		case 0x25: { // CI imm8 — Compare A with immediate
 			uint8_t imm = FetchByte();
-			uint16_t result = (uint16_t)(imm - _a);
-			// CI sets flags based on (immediate - accumulator)
+			// CI: flags from (~A + imm + 1), matching F8 hardware
+			uint16_t result = (uint16_t)((uint8_t)(~_a) + imm + 1);
+			uint8_t r = (uint8_t)result;
 			_w &= ~FlagsMask;
-			if ((uint8_t)result == 0) _w |= FlagZero;
-			if (result & 0x80) _w |= FlagSign;
+			if (r == 0) _w |= FlagZero;
+			if (~r & 0x80) _w |= FlagSign;
 			if (result > 0xff) _w |= FlagCarry;
+			if ((((uint8_t)(~_a) ^ r) & (imm ^ r) & 0x80) != 0) _w |= FlagOverflow;
 			return 10;
 		}
 		case 0x26: { // IN imm8 — A←port[immediate]
@@ -406,7 +408,7 @@ uint8_t ChannelFCpu::ExecuteInstruction() {
 			_w &= ~FlagsMask;
 			uint8_t r = (uint8_t)result;
 			if (r == 0) _w |= FlagZero;
-			if (r & 0x80) _w |= FlagSign;
+			if (~r & 0x80) _w |= FlagSign; // complementary
 			if (result > 0xff) _w |= FlagCarry;
 			_a = r;
 			_dc0++;
@@ -432,11 +434,14 @@ uint8_t ChannelFCpu::ExecuteInstruction() {
 		}
 		case 0x8d: { // CM — Compare memory
 			uint8_t mem = Read(_dc0);
-			uint16_t result = (uint16_t)(mem - _a);
+			// CM: flags from (~A + mem + 1), matching F8 hardware
+			uint16_t result = (uint16_t)((uint8_t)(~_a) + mem + 1);
+			uint8_t r = (uint8_t)result;
 			_w &= ~FlagsMask;
-			if ((uint8_t)result == 0) _w |= FlagZero;
-			if (result & 0x80) _w |= FlagSign;
+			if (r == 0) _w |= FlagZero;
+			if (~r & 0x80) _w |= FlagSign;
 			if (result > 0xff) _w |= FlagCarry;
+			if ((((uint8_t)(~_a) ^ r) & (mem ^ r) & 0x80) != 0) _w |= FlagOverflow;
 			_dc0++;
 			return 10;
 		}
@@ -580,7 +585,7 @@ uint8_t ChannelFCpu::ExecuteInstruction() {
 			_w &= ~FlagsMask;
 			uint8_t r = (uint8_t)result;
 			if (r == 0) _w |= FlagZero;
-			if (r & 0x80) _w |= FlagSign;
+			if (~r & 0x80) _w |= FlagSign; // complementary
 			if (result > 0xff) _w |= FlagCarry;
 			_a = r;
 			if ((opcode & 0x0f) == 0x0d) {

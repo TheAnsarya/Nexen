@@ -145,8 +145,8 @@ TEST_F(F8CpuTestFixture, AI_SetsCarryOnOverflow) {
 	cpu.StepCycles(2);
 	cpu.StepCycles(2);
 	EXPECT_EQ(cpu.GetA(), 0x00);
-	EXPECT_TRUE(cpu.GetW() & 0x04); // Carry set
-	EXPECT_TRUE(cpu.GetW() & 0x02); // Zero set
+	EXPECT_TRUE(cpu.GetW() & 0x02); // Carry set (bit 1)
+	EXPECT_TRUE(cpu.GetW() & 0x04); // Zero set (bit 2)
 }
 
 TEST_F(F8CpuTestFixture, NI_AndsImmediate) {
@@ -329,24 +329,19 @@ TEST_F(F8CpuTestFixture, BR_UnconditionalBranch) {
 }
 
 TEST_F(F8CpuTestFixture, BF_BranchOnFalseZero) {
-	// W = 0 (zero flag clear), BF 2 should branch (mask=2, zero bit, (W & 2)==0)
-	memory[0] = 0x92; memory[1] = 0x10; // BF 2 (zero), +16
+	// W = 0 (zero flag clear), BF 4 should branch (mask=4, zero bit 2, (W & 4)==0)
+	memory[0] = 0x94; memory[1] = 0x10; // BF 4 (zero), +16
 	cpu.StepCycles(2);
 	EXPECT_EQ(cpu.GetPc(), 18); // 2 + 16
 }
 
 TEST_F(F8CpuTestFixture, BF_DoesNotBranchWhenFlagSet) {
-	// Set zero flag by computing 0
-	memory[0] = 0x70; // CLR → A = 0
-	memory[1] = 0x18; // COM → A = $ff, W gets sign set
-	memory[2] = 0x92; memory[3] = 0x10; // BF 2, +16 (branch if zero clear)
-	cpu.StepCycles(1); // CLR
-	cpu.StepCycles(1); // COM sets sign flag (bit 3) in W, zero is clear
-	// W should have sign set (bit 3=0x08) since result $ff has bit 7 set
-	// Zero bit (0x02) should NOT be set since result != 0
-	// So BF 2 (zero) should branch (because zero is not set)
-	cpu.StepCycles(2);
-	EXPECT_EQ(cpu.GetPc(), 20); // 4 + 16
+	// NI $00 forces A=0 and calls SetFlags → Zero flag set (bit 2)
+	memory[0] = 0x21; memory[1] = 0x00; // NI $00 → A=0, Zero+Sign set
+	memory[2] = 0x94; memory[3] = 0x10; // BF 4 (zero), +16
+	cpu.StepCycles(2); // NI — sets Zero (A==0) and Sign (complementary: positive/zero)
+	cpu.StepCycles(2); // BF 4 — Zero is set, so BF does NOT branch
+	EXPECT_EQ(cpu.GetPc(), 4); // Falls through (2 NI + 2 BF bytes)
 }
 
 TEST_F(F8CpuTestFixture, BR7_BranchesWhenIsarLowNot7) {
@@ -472,7 +467,7 @@ TEST_F(F8CpuTestFixture, LNK_AddsCarryToA) {
 	memory[4] = 0x19; // LNK
 	cpu.StepCycles(2); // LI
 	cpu.StepCycles(2); // AI → A=0, carry set
-	EXPECT_TRUE(cpu.GetW() & 0x04); // Carry
+	EXPECT_TRUE(cpu.GetW() & 0x02); // Carry (bit 1)
 	cpu.StepCycles(1); // LNK → A += carry → A = 1
 	EXPECT_EQ(cpu.GetA(), 1);
 }
@@ -533,9 +528,9 @@ TEST_F(F8CpuTestFixture, SetFlagsPreservesICB) {
 	memory[1] = 0x18; // COM → SetFlags called, A = ~0 = 0xff
 	cpu.StepCycles(1); // EI
 	EXPECT_EQ(cpu.GetW() & 0x10, 0x10);
-	cpu.StepCycles(1); // COM
-	EXPECT_EQ(cpu.GetW() & 0x10, 0x10); // ICB still set
-	EXPECT_EQ(cpu.GetW() & 0x08, 0x08); // Sign flag set (A=0xff)
+	cpu.StepCycles(1); // COM → A=$ff; complementary sign NOT set (negative), zero NOT set
+	EXPECT_EQ(cpu.GetW() & 0x10, 0x10); // ICB still set after SetFlags
+	EXPECT_EQ(cpu.GetW() & 0x0f, 0x00); // No status flags: $ff is negative (sign clear) and non-zero
 }
 
 TEST_F(F8CpuTestFixture, InterruptDeliveredWhenICBAndIRQ) {

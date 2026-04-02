@@ -90,12 +90,12 @@ namespace ChfMemoryHelpers {
 
 	/// <summary>
 	/// F8 CPU W register (status) flag extraction.
-	/// Bit 0: Overflow, Bit 1: Zero, Bit 2: Carry, Bit 3: Sign
+	/// Bit 0: Sign (complementary), Bit 1: Carry, Bit 2: Zero, Bit 3: Overflow
 	/// </summary>
-	static bool WFlagSign(uint8_t w) { return (w & 0x08) != 0; }
-	static bool WFlagCarry(uint8_t w) { return (w & 0x04) != 0; }
-	static bool WFlagZero(uint8_t w) { return (w & 0x02) != 0; }
-	static bool WFlagOverflow(uint8_t w) { return (w & 0x01) != 0; }
+	static bool WFlagSign(uint8_t w) { return (w & 0x01) != 0; }
+	static bool WFlagCarry(uint8_t w) { return (w & 0x02) != 0; }
+	static bool WFlagZero(uint8_t w) { return (w & 0x04) != 0; }
+	static bool WFlagOverflow(uint8_t w) { return (w & 0x08) != 0; }
 
 	/// <summary>
 	/// F8 scratchpad register named aliases.
@@ -207,20 +207,20 @@ TEST(ChfWFlagsTest, AllClear) {
 }
 
 TEST(ChfWFlagsTest, SignFlag) {
-	EXPECT_TRUE(ChfMemoryHelpers::WFlagSign(0x08));
-	EXPECT_FALSE(ChfMemoryHelpers::WFlagSign(0x07));
+	EXPECT_TRUE(ChfMemoryHelpers::WFlagSign(0x01));
+	EXPECT_FALSE(ChfMemoryHelpers::WFlagSign(0x0e));
 }
 
 TEST(ChfWFlagsTest, CarryFlag) {
-	EXPECT_TRUE(ChfMemoryHelpers::WFlagCarry(0x04));
+	EXPECT_TRUE(ChfMemoryHelpers::WFlagCarry(0x02));
 }
 
 TEST(ChfWFlagsTest, ZeroFlag) {
-	EXPECT_TRUE(ChfMemoryHelpers::WFlagZero(0x02));
+	EXPECT_TRUE(ChfMemoryHelpers::WFlagZero(0x04));
 }
 
 TEST(ChfWFlagsTest, OverflowFlag) {
-	EXPECT_TRUE(ChfMemoryHelpers::WFlagOverflow(0x01));
+	EXPECT_TRUE(ChfMemoryHelpers::WFlagOverflow(0x08));
 }
 
 TEST(ChfWFlagsTest, AllSet) {

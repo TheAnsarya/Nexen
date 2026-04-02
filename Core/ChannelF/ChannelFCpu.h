@@ -37,11 +37,11 @@ private:
 
 	uint64_t _cycleCount = 0;
 
-	// W register flag bits
-	static constexpr uint8_t FlagSign     = 0x08; // Bit 3: Sign (negative)
-	static constexpr uint8_t FlagCarry    = 0x04; // Bit 2: Carry/Link
-	static constexpr uint8_t FlagZero     = 0x02; // Bit 1: Zero
-	static constexpr uint8_t FlagOverflow = 0x01; // Bit 0: Overflow
+	// W register flag bits (matches F8 hardware: S=bit0, C=bit1, Z=bit2, O=bit3)
+	static constexpr uint8_t FlagSign     = 0x01; // Bit 0: Sign (complementary: set when positive)
+	static constexpr uint8_t FlagCarry    = 0x02; // Bit 1: Carry/Link
+	static constexpr uint8_t FlagZero     = 0x04; // Bit 2: Zero
+	static constexpr uint8_t FlagOverflow = 0x08; // Bit 3: Overflow
 	static constexpr uint8_t FlagICB      = 0x10; // Bit 4: Interrupt Control Bit
 	static constexpr uint8_t FlagsMask    = 0x0f; // Status flags only (bits 0-3)
 
@@ -83,14 +83,14 @@ private:
 	void SetFlags(uint8_t result) {
 		_w &= ~FlagsMask;
 		if (result == 0) _w |= FlagZero;
-		if (result & 0x80) _w |= FlagSign;
+		if (~result & 0x80) _w |= FlagSign; // complementary: set when positive
 	}
 
 	void SetFlagsWithCarryOverflow(uint16_t fullResult, uint8_t left, uint8_t right) {
 		uint8_t result = (uint8_t)fullResult;
 		_w &= ~FlagsMask;
 		if (result == 0) _w |= FlagZero;
-		if (result & 0x80) _w |= FlagSign;
+		if (~result & 0x80) _w |= FlagSign; // complementary: set when positive
 		if (fullResult > 0xff) _w |= FlagCarry;
 		if (((left ^ result) & (right ^ result) & 0x80) != 0) _w |= FlagOverflow;
 	}
