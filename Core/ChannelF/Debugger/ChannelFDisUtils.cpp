@@ -10,8 +10,8 @@
 #include "Shared/MemoryType.h"
 
 // === Opcode size table (256 entries) ===
-// 1 byte: $00-$1F, $2B-$2F, $30-$7F, $A0-$FF
-// 2 bytes: $20-$27, $80-$9F
+// 1 byte: $00-$1F, $2B-$2F, $30-$7F, $88-$8E, $A0-$FF
+// 2 bytes: $20-$27, $80-$87, $8F-$9F
 // 3 bytes: $28-$2A
 static constexpr uint8_t _opSize[256] = {
 	// $00-$0F: Register transfers (1 byte)
@@ -30,8 +30,8 @@ static constexpr uint8_t _opSize[256] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	// $70-$7F: LIS n (1 byte)
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	// $80-$8F: BT cond,disp (2 bytes)
-	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	// $80-$87: BT cond,disp (2 bytes), $88-$8E: memory ALU (1 byte), $8F: BR7 (2 bytes)
+	2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2,
 	// $90-$9F: BF cond,disp / BR (2 bytes)
 	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 	// $A0-$AF: INS p (1 byte)
@@ -74,9 +74,9 @@ static constexpr const char* _opName[256] = {
 	// $70-$7F
 	"LIS", "LIS", "LIS", "LIS", "LIS", "LIS", "LIS", "LIS",
 	"LIS", "LIS", "LIS", "LIS", "LIS", "LIS", "LIS", "LIS",
-	// $80-$8F
+	// $80-$87: BT, $88-$8E: memory ALU, $8F: BR7
 	"BT",  "BT",  "BT",  "BT",  "BT",  "BT",  "BT",  "BT",
-	"BT",  "BT",  "BT",  "BT",  "BT",  "BT",  "BT",  "BT",
+	"AM",  "AMD", "NM",  "OM",  "XM",  "CM",  "ADC", "BR7",
 	// $90-$9F (BF 0 = BR unconditional)
 	"BR",  "BF",  "BF",  "BF",  "BF",  "BF",  "BF",  "BF",
 	"BF",  "BF",  "BF",  "BF",  "BF",  "BF",  "BF",  "BF",
@@ -127,9 +127,9 @@ static constexpr ChannelFAddrMode _opMode[256] = {
 	// $70-$7F: LIS n
 	M::Imm4, M::Imm4, M::Imm4, M::Imm4, M::Imm4, M::Imm4, M::Imm4, M::Imm4,
 	M::Imm4, M::Imm4, M::Imm4, M::Imm4, M::Imm4, M::Imm4, M::Imm4, M::Imm4,
-	// $80-$8F: BT cond,disp
+	// $80-$87: BT cond,disp (Rel), $88-$8E: memory ALU (Imp), $8F: BR7 (Rel)
 	M::Rel, M::Rel, M::Rel, M::Rel, M::Rel, M::Rel, M::Rel, M::Rel,
-	M::Rel, M::Rel, M::Rel, M::Rel, M::Rel, M::Rel, M::Rel, M::Rel,
+	M::Imp, M::Imp, M::Imp, M::Imp, M::Imp, M::Imp, M::Imp, M::Rel,
 	// $90-$9F: BF cond,disp / BR
 	M::Rel, M::Rel, M::Rel, M::Rel, M::Rel, M::Rel, M::Rel, M::Rel,
 	M::Rel, M::Rel, M::Rel, M::Rel, M::Rel, M::Rel, M::Rel, M::Rel,
@@ -276,7 +276,7 @@ void ChannelFDisUtils::GetDisassembly(DisassemblyInfo& info, string& out, uint32
 		}
 
 		case ChannelFAddrMode::Rel: {
-			// Branch with displacement (BT/BF/BR)
+			// Branch with displacement (BT/BF/BR/BR7)
 			// Target = PC + 1 (past disp byte) + signed displacement
 			// But PC already points past the opcode, so target = memoryAddr + 2 + (int8_t)disp
 			// Actually for F8: branch target = (PC after fetching instruction) + displacement
@@ -284,14 +284,15 @@ void ChannelFDisUtils::GetDisassembly(DisassemblyInfo& info, string& out, uint32
 			int32_t target = (int32_t)(memoryAddr + 1) + (int8_t)byteCode[1];
 			target &= 0xffff;
 
-			// For BT, show condition bits
-			if (opCode >= 0x80 && opCode <= 0x8f && opCode != 0x80) {
-				uint8_t cond = opCode & 0x0f;
+			// For BT $81-$87, show condition bits
+			if (opCode >= 0x81 && opCode <= 0x87) {
+				uint8_t cond = opCode & 0x07;
 				str.WriteAll(' ', std::to_string(cond), ",");
 			} else if (opCode >= 0x91 && opCode <= 0x9f) {
 				uint8_t cond = opCode & 0x0f;
 				str.WriteAll(' ', std::to_string(cond), ",");
 			} else {
+				// BR ($90) and BR7 ($8F) — no condition number
 				str.Write(' ');
 			}
 
@@ -360,8 +361,11 @@ bool ChannelFDisUtils::IsUnconditionalJump(uint8_t opCode) {
 }
 
 bool ChannelFDisUtils::IsConditionalJump(uint8_t opCode) {
-	// BT $81-$8F (conditional branch true, excluding $80 which never branches)
-	if (opCode >= 0x81 && opCode <= 0x8f) return true;
+	// BT $81-$87 (conditional branch true, excluding $80 which never branches)
+	// Note: $88-$8E are memory ALU ops (AM/AMD/NM/OM/XM/CM/ADC), not branches
+	if (opCode >= 0x81 && opCode <= 0x87) return true;
+	// BR7 $8F (branch if ISAR lower 3 bits != 7)
+	if (opCode == 0x8f) return true;
 	// BF $91-$9F (conditional branch false)
 	if (opCode >= 0x91 && opCode <= 0x9f) return true;
 	return false;

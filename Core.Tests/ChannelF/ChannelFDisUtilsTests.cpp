@@ -9,7 +9,7 @@
 ///   - GetOpName: opcode mnemonic lookup
 ///   - GetOpMode: addressing mode classification
 ///   - IsUnconditionalJump: PI/JMP/POP/LR P,K/PK/BR
-///   - IsConditionalJump: BT $81-$8F, BF $91-$9F
+///   - IsConditionalJump: BT $81-$87, BR7 $8F, BF $91-$9F
 ///   - IsJumpToSub: PI ($28) only
 ///   - IsReturnInstruction: POP/LR P,K/PK
 ///   - GetOpFlags: CDL SubEntryPoint for PI
@@ -117,6 +117,39 @@ TEST_F(ChannelFDisUtilsOpSizeTest, LIS_0x70_Size1) {
 // 2-byte branch instructions ($80-$9F)
 TEST_F(ChannelFDisUtilsOpSizeTest, BT_0x81_Size2) {
 	EXPECT_EQ(ChannelFDisUtils::GetOpSize(0x81), 2);
+}
+
+TEST_F(ChannelFDisUtilsOpSizeTest, BT_0x87_Size2) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpSize(0x87), 2);
+}
+
+// 1-byte memory ALU instructions ($88-$8E)
+TEST_F(ChannelFDisUtilsOpSizeTest, AM_0x88_Size1) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpSize(0x88), 1);
+}
+
+TEST_F(ChannelFDisUtilsOpSizeTest, AMD_0x89_Size1) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpSize(0x89), 1);
+}
+
+TEST_F(ChannelFDisUtilsOpSizeTest, NM_0x8a_Size1) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpSize(0x8a), 1);
+}
+
+TEST_F(ChannelFDisUtilsOpSizeTest, OM_0x8b_Size1) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpSize(0x8b), 1);
+}
+
+TEST_F(ChannelFDisUtilsOpSizeTest, XM_0x8c_Size1) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpSize(0x8c), 1);
+}
+
+TEST_F(ChannelFDisUtilsOpSizeTest, CM_0x8d_Size1) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpSize(0x8d), 1);
+}
+
+TEST_F(ChannelFDisUtilsOpSizeTest, ADC_0x8e_Size1) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpSize(0x8e), 1);
 }
 
 TEST_F(ChannelFDisUtilsOpSizeTest, BR7_0x8f_Size2) {
@@ -317,9 +350,38 @@ TEST_F(ChannelFDisUtilsGetOpNameTest, BT_0x81) {
 	EXPECT_STREQ(ChannelFDisUtils::GetOpName(0x81), "BT");
 }
 
-TEST_F(ChannelFDisUtilsGetOpNameTest, BT_0x8f) {
-	// $8F is BT in the DisUtils name table (BR7 in OpcodeTable)
-	EXPECT_STREQ(ChannelFDisUtils::GetOpName(0x8f), "BT");
+// Memory ALU opcodes $88-$8E
+TEST_F(ChannelFDisUtilsGetOpNameTest, AM_0x88) {
+	EXPECT_STREQ(ChannelFDisUtils::GetOpName(0x88), "AM");
+}
+
+TEST_F(ChannelFDisUtilsGetOpNameTest, AMD_0x89) {
+	EXPECT_STREQ(ChannelFDisUtils::GetOpName(0x89), "AMD");
+}
+
+TEST_F(ChannelFDisUtilsGetOpNameTest, NM_0x8a) {
+	EXPECT_STREQ(ChannelFDisUtils::GetOpName(0x8a), "NM");
+}
+
+TEST_F(ChannelFDisUtilsGetOpNameTest, OM_0x8b) {
+	EXPECT_STREQ(ChannelFDisUtils::GetOpName(0x8b), "OM");
+}
+
+TEST_F(ChannelFDisUtilsGetOpNameTest, XM_0x8c) {
+	EXPECT_STREQ(ChannelFDisUtils::GetOpName(0x8c), "XM");
+}
+
+TEST_F(ChannelFDisUtilsGetOpNameTest, CM_0x8d) {
+	EXPECT_STREQ(ChannelFDisUtils::GetOpName(0x8d), "CM");
+}
+
+TEST_F(ChannelFDisUtilsGetOpNameTest, ADC_0x8e) {
+	EXPECT_STREQ(ChannelFDisUtils::GetOpName(0x8e), "ADC");
+}
+
+TEST_F(ChannelFDisUtilsGetOpNameTest, BR7_0x8f) {
+	// $8F is BR7 (branch if ISAR lower 3 bits != 7)
+	EXPECT_STREQ(ChannelFDisUtils::GetOpName(0x8f), "BR7");
 }
 
 TEST_F(ChannelFDisUtilsGetOpNameTest, BR_0x90) {
@@ -464,9 +526,46 @@ TEST_F(ChannelFDisUtilsGetOpModeTest, LIS_0x7f_Imm4) {
 	EXPECT_EQ(ChannelFDisUtils::GetOpMode(0x7f), ChannelFAddrMode::Imm4);
 }
 
-// Relative mode ($80-$9F branches)
+// Relative mode ($80-$87 BT branches, $8F BR7, $90-$9F BF/BR)
 TEST_F(ChannelFDisUtilsGetOpModeTest, BT_0x80_Rel) {
 	EXPECT_EQ(ChannelFDisUtils::GetOpMode(0x80), ChannelFAddrMode::Rel);
+}
+
+TEST_F(ChannelFDisUtilsGetOpModeTest, BT_0x87_Rel) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpMode(0x87), ChannelFAddrMode::Rel);
+}
+
+// Memory ALU opcodes $88-$8E are Implied (operate via DC0, no operand)
+TEST_F(ChannelFDisUtilsGetOpModeTest, AM_0x88_Imp) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpMode(0x88), ChannelFAddrMode::Imp);
+}
+
+TEST_F(ChannelFDisUtilsGetOpModeTest, AMD_0x89_Imp) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpMode(0x89), ChannelFAddrMode::Imp);
+}
+
+TEST_F(ChannelFDisUtilsGetOpModeTest, NM_0x8a_Imp) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpMode(0x8a), ChannelFAddrMode::Imp);
+}
+
+TEST_F(ChannelFDisUtilsGetOpModeTest, OM_0x8b_Imp) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpMode(0x8b), ChannelFAddrMode::Imp);
+}
+
+TEST_F(ChannelFDisUtilsGetOpModeTest, XM_0x8c_Imp) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpMode(0x8c), ChannelFAddrMode::Imp);
+}
+
+TEST_F(ChannelFDisUtilsGetOpModeTest, CM_0x8d_Imp) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpMode(0x8d), ChannelFAddrMode::Imp);
+}
+
+TEST_F(ChannelFDisUtilsGetOpModeTest, ADC_0x8e_Imp) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpMode(0x8e), ChannelFAddrMode::Imp);
+}
+
+TEST_F(ChannelFDisUtilsGetOpModeTest, BR7_0x8f_Rel) {
+	EXPECT_EQ(ChannelFDisUtils::GetOpMode(0x8f), ChannelFAddrMode::Rel);
 }
 
 TEST_F(ChannelFDisUtilsGetOpModeTest, BR_0x90_Rel) {
@@ -538,7 +637,7 @@ TEST_F(ChannelFDisUtilsUnconditionalJumpTest, INS_NotUnconditional) {
 
 class ChannelFDisUtilsConditionalJumpTest : public ::testing::Test {};
 
-// BT $81-$8E are conditional
+// BT $81-$87 are conditional
 TEST_F(ChannelFDisUtilsConditionalJumpTest, BT_0x81) {
 	EXPECT_TRUE(ChannelFDisUtils::IsConditionalJump(0x81));
 }
@@ -547,11 +646,20 @@ TEST_F(ChannelFDisUtilsConditionalJumpTest, BT_0x84) {
 	EXPECT_TRUE(ChannelFDisUtils::IsConditionalJump(0x84));
 }
 
-TEST_F(ChannelFDisUtilsConditionalJumpTest, BT_0x8e) {
-	EXPECT_TRUE(ChannelFDisUtils::IsConditionalJump(0x8e));
+TEST_F(ChannelFDisUtilsConditionalJumpTest, BT_0x87) {
+	EXPECT_TRUE(ChannelFDisUtils::IsConditionalJump(0x87));
 }
 
-// BR7 ($8F) is also conditional
+// Memory ALU $88-$8E are NOT conditional jumps
+TEST_F(ChannelFDisUtilsConditionalJumpTest, AM_0x88_NotConditional) {
+	EXPECT_FALSE(ChannelFDisUtils::IsConditionalJump(0x88));
+}
+
+TEST_F(ChannelFDisUtilsConditionalJumpTest, ADC_0x8e_NotConditional) {
+	EXPECT_FALSE(ChannelFDisUtils::IsConditionalJump(0x8e));
+}
+
+// BR7 ($8F) is conditional
 TEST_F(ChannelFDisUtilsConditionalJumpTest, BR7_0x8f) {
 	EXPECT_TRUE(ChannelFDisUtils::IsConditionalJump(0x8f));
 }
@@ -591,11 +699,20 @@ TEST_F(ChannelFDisUtilsConditionalJumpTest, NOP_NotConditional) {
 	EXPECT_FALSE(ChannelFDisUtils::IsConditionalJump(0x2b));
 }
 
-// Exhaustive: all BT $81-$8F and BF $91-$9F are conditional
-TEST_F(ChannelFDisUtilsConditionalJumpTest, AllBT_81_to_8F_AreConditional) {
-	for (int op = 0x81; op <= 0x8f; op++) {
+// Exhaustive: BT $81-$87 and BR7 $8F are conditional, $88-$8E (memory ALU) are NOT
+TEST_F(ChannelFDisUtilsConditionalJumpTest, AllBT_81_to_87_AreConditional) {
+	for (int op = 0x81; op <= 0x87; op++) {
 		EXPECT_TRUE(ChannelFDisUtils::IsConditionalJump((uint8_t)op))
 			<< "BT $" << std::hex << op;
+	}
+	// BR7 $8F is also conditional
+	EXPECT_TRUE(ChannelFDisUtils::IsConditionalJump(0x8f));
+}
+
+TEST_F(ChannelFDisUtilsConditionalJumpTest, MemoryALU_88_to_8E_NotConditional) {
+	for (int op = 0x88; op <= 0x8e; op++) {
+		EXPECT_FALSE(ChannelFDisUtils::IsConditionalJump((uint8_t)op))
+			<< "Memory ALU $" << std::hex << op << " should NOT be conditional";
 	}
 }
 
