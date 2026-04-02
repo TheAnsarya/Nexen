@@ -515,6 +515,14 @@ public sealed class CpuDebugWorkspace {
 	/// A list of <see cref="Breakpoint"/> instances defining execution/read/write break conditions.
 	/// </value>
 	public List<Breakpoint> Breakpoints { get; set; } = new();
+
+	/// <summary>
+	/// Gets or sets the bookmarks configured for this CPU.
+	/// </summary>
+	/// <value>
+	/// A list of <see cref="Bookmark"/> instances for quick address navigation.
+	/// </value>
+	public List<Bookmark> Bookmarks { get; set; } = new();
 }
 
 /// <summary>
@@ -576,6 +584,7 @@ public sealed class DebugWorkspace {
 
 		LabelManager.ResetLabels();
 		BreakpointManager.ClearBreakpoints();
+		BookmarkManager.ClearBookmarks();
 		WatchManager.ClearEntries();
 
 		if (dbgWorkspace.WorkspaceByCpu.Count == 0) {
@@ -585,6 +594,7 @@ public sealed class DebugWorkspace {
 				WatchManager.GetWatchManager(cpuType).WatchEntries = workspace.WatchEntries;
 				LabelManager.SetLabels(workspace.Labels);
 				BreakpointManager.AddBreakpoints(workspace.Breakpoints);
+				BookmarkManager.AddBookmarks(workspace.Bookmarks);
 			}
 		}
 
@@ -607,6 +617,7 @@ public sealed class DebugWorkspace {
 			workspace.WatchEntries = WatchManager.GetWatchManager(cpuType).WatchEntries;
 			workspace.Labels = LabelManager.GetLabels(cpuType);
 			workspace.Breakpoints = BreakpointManager.GetBreakpoints(cpuType);
+			workspace.Bookmarks = BookmarkManager.GetBookmarks(cpuType);
 			WorkspaceByCpu[cpuType] = workspace;
 		}
 
@@ -624,11 +635,13 @@ public sealed class DebugWorkspace {
 		foreach ((CpuType cpuType, CpuDebugWorkspace workspace) in WorkspaceByCpu) {
 			WatchManager.GetWatchManager(cpuType).WatchEntries = new();
 			workspace.Breakpoints.Clear();
+			workspace.Bookmarks.Clear();
 			workspace.Labels.Clear();
 			workspace.WatchEntries.Clear();
 		}
 
 		BreakpointManager.ClearBreakpoints();
+		BookmarkManager.ClearBookmarks();
 		LabelManager.ResetLabels();
 		DefaultLabelHelper.SetDefaultLabels();
 		LabelManager.RefreshLabels(true);

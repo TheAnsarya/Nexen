@@ -69,6 +69,7 @@ public static class PansyExporter {
 	private const uint SECTION_SOURCE_MAP = 0x0007;    // Reserved in spec
 	private const uint SECTION_METADATA = 0x0008;
 	private const uint SECTION_CPU_STATE = 0x0009;
+	private const uint SECTION_BOOKMARKS = 0x000a;
 
 	// CDL flag bits for SNES-specific CPU state
 	private const byte CDL_INDEX_MODE_8 = 0x10;  // SNES: X flag set (8-bit index)
@@ -314,6 +315,18 @@ public static class PansyExporter {
 				Type = SECTION_CPU_STATE,
 				CompressedSize = (uint)data.Length,
 				UncompressedSize = (uint)cpuStateBytes.Length
+			});
+			sectionData.Add(data);
+		}
+
+		// Section 10: BOOKMARKS
+		var bookmarkBytes = BuildBookmarksSection(cpuType);
+		if (bookmarkBytes.Length > 0) {
+			var data = options.UseCompression ? CompressData(bookmarkBytes) : bookmarkBytes;
+			sections.Add(new SectionInfo {
+				Type = SECTION_BOOKMARKS,
+				CompressedSize = (uint)data.Length,
+				UncompressedSize = (uint)bookmarkBytes.Length
 			});
 			sectionData.Add(data);
 		}
@@ -1348,5 +1361,25 @@ public static class PansyExporter {
 		public uint Offset;
 		public uint CompressedSize;
 		public uint UncompressedSize;
+	}
+
+	/// <summary>
+	/// Build Pansy BOOKMARKS section (0x000a) from BookmarkManager data.
+	/// Format per entry: Address(u32) + Color(u8) + Name(u16 len + UTF-8 bytes)
+	/// </summary>
+	private static byte[] BuildBookmarksSection(CpuType cpuType) {
+		var bookmarks = BookmarkManager.GetBookmarks(cpuType);
+		if (bookmarks.Count == 0) return [];
+
+		using var ms = new MemoryStream();
+		using var bw = new BinaryWriter(ms);
+		foreach (var bm in bookmarks) {
+			bw.Write(bm.Address);
+			bw.Write(bm.Color);
+			byte[] nameBytes = Encoding.UTF8.GetBytes(bm.Name ?? "");
+			bw.Write((ushort)nameBytes.Length);
+			bw.Write(nameBytes);
+		}
+		return ms.ToArray();
 	}
 }

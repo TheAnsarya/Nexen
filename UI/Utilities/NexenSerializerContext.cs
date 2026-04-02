@@ -25,6 +25,7 @@ using Nexen.ViewModels;
 /// </remarks>
 [JsonSerializable(typeof(Configuration))]
 [JsonSerializable(typeof(Breakpoint))]
+[JsonSerializable(typeof(Bookmark))]
 [JsonSerializable(typeof(CodeLabel))]
 [JsonSerializable(typeof(GameDipSwitches))]
 [JsonSerializable(typeof(CheatCodes))]
