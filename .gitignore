@@ -202,7 +202,7 @@ MovieConverter.Benchmarks/BenchmarkDotNet.Artifacts/
 # Generated validation artifacts
 artifacts/
 
-# Temp build/benchmark/test output files
+# Temp build/benchmark/test output files (use artifacts/ folder instead of root)
 bench-*.json
 bench-*.txt
 build-*.log
@@ -212,4 +212,8 @@ build-err*.txt
 rebuild-*.txt
 warnings-to-fix.txt
 test-*.log
+test-*.txt
 terminal-*.txt
+all-*.txt
+chf-*.txt
+windows-*.txt
