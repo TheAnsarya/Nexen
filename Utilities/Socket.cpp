@@ -55,7 +55,7 @@ Socket::Socket() {
 	} else {
 		SetSocketOptions();
 	}
-	
+
 	// Initialize advanced features
 	ResetStatistics();
 }
@@ -68,7 +68,7 @@ Socket::Socket(uintptr_t socket) {
 	} else {
 		SetSocketOptions();
 	}
-	
+
 	// Initialize advanced features
 	ResetStatistics();
 }
@@ -267,7 +267,7 @@ int Socket::BlockingRecv(char *buf, int len, int timeoutSeconds)
 {
 	// For non-blocking sockets, use select() to wait for data
 	int totalReceived = 0;
-	
+
 	while(totalReceived < len) {
 		fd_set readSockets;
 		#ifdef _WIN32
@@ -277,13 +277,13 @@ int Socket::BlockingRecv(char *buf, int len, int timeoutSeconds)
 			FD_ZERO(&readSockets);
 			FD_SET(_socket, &readSockets);
 		#endif
-		
+
 		TIMEVAL timeout;
 		timeout.tv_sec = timeoutSeconds;
 		timeout.tv_usec = 0;
-		
+
 		int ready = select((int)_socket + 1, &readSockets, nullptr, nullptr, &timeout);
-		
+
 		if(ready <= 0) {
 			// Timeout or error
 			if(ready == 0) {
@@ -293,10 +293,10 @@ int Socket::BlockingRecv(char *buf, int len, int timeoutSeconds)
 			}
 			return totalReceived > 0 ? totalReceived : -1;
 		}
-		
+
 		// Socket has data available
 		int received = recv(_socket, buf + totalReceived, len - totalReceived, 0);
-		
+
 		if(received > 0) {
 			totalReceived += received;
 			_bytesReceived += received;
@@ -317,7 +317,7 @@ int Socket::BlockingRecv(char *buf, int len, int timeoutSeconds)
 			// WouldBlock shouldn't happen after select() says data is ready, but retry
 		}
 	}
-	
+
 	return totalReceived;
 }
 
@@ -339,17 +339,17 @@ void Socket::SendBuffer()
 	}
 
 	std::lock_guard<std::mutex> lock(_sendBufferMutex);
-	
+
 	if(_sendBuffer.empty()) {
 		return;
 	}
 
 	int totalSent = 0;
 	int bufferSize = (int)_sendBuffer.size();
-	
+
 	// Update activity timestamp
 	_lastActivity = std::chrono::steady_clock::now();
-	
+
 	// Wait for socket to be ready to send (non-blocking mode)
 	fd_set writeSockets;
 	#ifdef _WIN32
@@ -371,7 +371,7 @@ void Socket::SendBuffer()
 		std::cout << "[Socket] Not ready to send (select returned " << ready << "), skipping flush" << std::endl;
 		return;
 	}
-	
+
 	while(totalSent < bufferSize) {
 		int sent = Send(_sendBuffer.data() + totalSent, bufferSize - totalSent, 0);
 		if(sent <= 0) {
@@ -403,7 +403,7 @@ double Socket::GetBandwidthKBps() const
 {
 	double duration = GetConnectionDurationSeconds();
 	if(duration <= 0) return 0.0;
-	
+
 	uint64_t totalBytes = _bytesSent + _bytesReceived;
 	return (totalBytes / 1024.0) / duration; // KB per second
 }
@@ -413,7 +413,7 @@ bool Socket::IsHealthy() const
 	if(_connectionError || _socket == INVALID_SOCKET) {
 		return false;
 	}
-	
+
 	// Check if connection has been inactive for too long (30 seconds)
 	auto now = std::chrono::steady_clock::now();
 	auto timeSinceActivity = std::chrono::duration_cast<std::chrono::seconds>(now - _lastActivity);

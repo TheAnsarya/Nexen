@@ -14,7 +14,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 
-namespace Nexen.Windows; 
+namespace Nexen.Windows;
 public class HistoryViewerWindow : NexenWindow {
 	private HistoryViewerViewModel _model;
 	private DispatcherTimer _timer;

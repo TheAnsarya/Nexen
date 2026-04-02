@@ -19,7 +19,7 @@ using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Windows; 
+namespace Nexen.Debugger.Windows;
 public class MemoryToolsWindow : NexenWindow, INotificationHandler {
 	private HexEditor _editor;
 	private MemoryToolsViewModel _model;
