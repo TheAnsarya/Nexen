@@ -150,10 +150,17 @@ void ChannelFConsole::RunFrame() {
 				GetMasterClockRate());
 		}
 
-		// Convert VRAM (2-bit color indices) to frame buffer (palette indices)
+		// Convert VRAM to frame buffer with per-row palette selection
+		// VRAM columns 125 and 126 select which of 4 palettes to use per row
 		const uint8_t* vram = _memoryManager->GetVram();
-		for (uint32_t i = 0; i < ScreenWidth * ScreenHeight; i++) {
-			_frameBuffer[i] = vram[i] & 0x03;
+		for (uint32_t y = 0; y < ScreenHeight; y++) {
+			uint32_t rowBase = y * ScreenWidth;
+			uint8_t reg1 = vram[rowBase + 125] & 0x03;
+			uint8_t reg2 = vram[rowBase + 126] & 0x03;
+			uint16_t paletteOffset = static_cast<uint16_t>(((reg2 & 0x02) | (reg1 >> 1)) << 2);
+			for (uint32_t x = 0; x < ScreenWidth; x++) {
+				_frameBuffer[rowBase + x] = paletteOffset + (vram[rowBase + x] & 0x03);
+			}
 		}
 	} else {
 		// Scaffold mode when no ROM loaded

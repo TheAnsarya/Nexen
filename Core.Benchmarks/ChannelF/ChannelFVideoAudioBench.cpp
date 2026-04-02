@@ -8,7 +8,7 @@
 
 static void BM_ChannelFVideo_PaletteLookup_Single(benchmark::State& state) {
 	for (auto _ : state) {
-		uint32_t color = ChannelFDefaultVideoFilter::ChannelFPalette[2];
+		uint32_t color = ChannelFDefaultVideoFilter::ChannelFColormap[6]; // RED in palette 1
 		benchmark::DoNotOptimize(color);
 	}
 	state.SetItemsProcessed(state.iterations());
@@ -17,10 +17,10 @@ BENCHMARK(BM_ChannelFVideo_PaletteLookup_Single);
 
 static void BM_ChannelFVideo_PaletteLookup_AllFour(benchmark::State& state) {
 	for (auto _ : state) {
-		uint32_t c0 = ChannelFDefaultVideoFilter::ChannelFPalette[0];
-		uint32_t c1 = ChannelFDefaultVideoFilter::ChannelFPalette[1];
-		uint32_t c2 = ChannelFDefaultVideoFilter::ChannelFPalette[2];
-		uint32_t c3 = ChannelFDefaultVideoFilter::ChannelFPalette[3];
+		uint32_t c0 = ChannelFDefaultVideoFilter::ChannelFColormap[0];
+		uint32_t c1 = ChannelFDefaultVideoFilter::ChannelFColormap[1];
+		uint32_t c2 = ChannelFDefaultVideoFilter::ChannelFColormap[2];
+		uint32_t c3 = ChannelFDefaultVideoFilter::ChannelFColormap[3];
 		benchmark::DoNotOptimize(c0 ^ c1 ^ c2 ^ c3);
 	}
 	state.SetItemsProcessed(state.iterations() * 4);
@@ -42,7 +42,7 @@ static void BM_ChannelFVideo_FullFrameConvert(benchmark::State& state) {
 
 	for (auto _ : state) {
 		for (uint32_t i = 0; i < 128 * 64; i++) {
-			output[i] = ChannelFDefaultVideoFilter::ChannelFPalette[vram[i] & 0x03];
+			output[i] = ChannelFDefaultVideoFilter::ChannelFColormap[vram[i] & 0x0f];
 		}
 		benchmark::DoNotOptimize(output[0]);
 		benchmark::ClobberMemory();

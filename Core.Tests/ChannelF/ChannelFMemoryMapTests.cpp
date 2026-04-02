@@ -283,7 +283,7 @@ TEST(ChfConstantsTest, CpuClockHz) {
 }
 
 TEST(ChfConstantsTest, NumColors) {
-	EXPECT_EQ(ChannelFConstants::NumColors, 4);
+	EXPECT_EQ(ChannelFConstants::NumColors, 8);
 }
 
 TEST(ChfConstantsTest, ScratchpadSize) {

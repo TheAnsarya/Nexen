@@ -105,8 +105,8 @@ void ChannelFEventManager::DrawScreen(uint32_t* buffer) {
 	for (uint32_t y = 0; y < h * 2; y++) {
 		for (uint32_t x = 0; x < w * 2; x++) {
 			int srcOffset = (y >> 1) * w + (x >> 1);
-			uint16_t paletteIndex = src[srcOffset] & 0x03;
-			uint32_t color = ChannelFDefaultVideoFilter::ChannelFPalette[paletteIndex];
+			uint16_t colormapIndex = src[srcOffset] & 0x0f;
+			uint32_t color = ChannelFDefaultVideoFilter::ChannelFColormap[colormapIndex];
 			buffer[y * ScanlineWidth + x] = color;
 		}
 	}

@@ -12,7 +12,7 @@ namespace ChannelFConstants {
 	static constexpr uint32_t BiosSize = 0x0800;
 	static constexpr uint32_t MaxCartSize = 0x10000;
 	static constexpr uint32_t VramSize = ScreenWidth * ScreenHeight;
-	static constexpr uint8_t NumColors = 4;
+	static constexpr uint8_t NumColors = 8;
 	static constexpr uint32_t ScratchpadSize = 64;
 }
 

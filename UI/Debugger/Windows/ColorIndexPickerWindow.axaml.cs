@@ -154,10 +154,14 @@ public class ColorIndexPickerWindow : NexenWindow {
 
 	private static UInt32[] GenerateChannelFPalette() {
 		return new UInt32[] {
-			0xff101010,
-			0xff1cdf1c,
-			0xff3131fd,
-			0xfffdfdfd
+			0xff101010, // BLACK
+			0xfffdfdfd, // WHITE
+			0xffff3153, // RED
+			0xff02cc5d, // GREEN
+			0xff4b3ff3, // BLUE
+			0xffe0e0e0, // LTGRAY
+			0xff91ffa6, // LTGREEN
+			0xffced0ff  // LTBLUE
 		};
 	}
 

@@ -193,35 +193,70 @@ TEST(ChannelFConstantsTest, MemorySizes) {
 	EXPECT_EQ(ChannelFConstants::MaxCartSize, 0x10000u);
 	EXPECT_EQ(ChannelFConstants::VramSize, 128u * 64u);
 	EXPECT_EQ(ChannelFConstants::ScratchpadSize, 64u);
-	EXPECT_EQ(ChannelFConstants::NumColors, 4);
+	EXPECT_EQ(ChannelFConstants::NumColors, 8);
 }
 
 // ============================================================================
 // VideoFilter palette tests
 // ============================================================================
 
-TEST(ChannelFVideoFilterTest, Palette_FourColors) {
-	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFPalette[0], 0xff101010u); // black
-	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFPalette[1], 0xff1cdf1cu); // green
-	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFPalette[2], 0xff3131fdu); // blue
-	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFPalette[3], 0xfffdfdfdu); // white/gray
+TEST(ChannelFVideoFilterTest, Colors_EightHardwareColors) {
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColors[0], 0xff101010u); // BLACK
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColors[1], 0xfffdfdfdu); // WHITE
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColors[2], 0xffff3153u); // RED
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColors[3], 0xff02cc5du); // GREEN
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColors[4], 0xff4b3ff3u); // BLUE
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColors[5], 0xffe0e0e0u); // LTGRAY
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColors[6], 0xff91ffa6u); // LTGREEN
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColors[7], 0xffced0ffu); // LTBLUE
 }
 
-TEST(ChannelFVideoFilterTest, Palette_AllOpaque) {
-	for (int i = 0; i < 4; i++) {
-		uint32_t alpha = ChannelFDefaultVideoFilter::ChannelFPalette[i] >> 24;
-		// Alpha should be 0xfd or 0xff (fully opaque)
-		EXPECT_GE(alpha, 0xfdu);
+TEST(ChannelFVideoFilterTest, Colors_AllOpaque) {
+	for (int i = 0; i < 8; i++) {
+		uint32_t alpha = ChannelFDefaultVideoFilter::ChannelFColors[i] >> 24;
+		EXPECT_EQ(alpha, 0xffu);
 	}
 }
 
-TEST(ChannelFVideoFilterTest, Palette_ColorMasking) {
-	// Verify 2-bit color index works with mask
+TEST(ChannelFVideoFilterTest, Colormap_Palette0_MonochromeWhite) {
+	// Palette 0: BLACK, WHITE, WHITE, WHITE
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[0], 0xff101010u); // BLACK
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[1], 0xfffdfdfdu); // WHITE
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[2], 0xfffdfdfdu); // WHITE
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[3], 0xfffdfdfdu); // WHITE
+}
+
+TEST(ChannelFVideoFilterTest, Colormap_Palette1_LtblueBG) {
+	// Palette 1: LTBLUE, BLUE, RED, GREEN
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[4], 0xffced0ffu); // LTBLUE
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[5], 0xff4b3ff3u); // BLUE
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[6], 0xffff3153u); // RED
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[7], 0xff02cc5du); // GREEN
+}
+
+TEST(ChannelFVideoFilterTest, Colormap_Palette2_LtgrayBG) {
+	// Palette 2: LTGRAY, BLUE, RED, GREEN
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[8], 0xffe0e0e0u);  // LTGRAY
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[9], 0xff4b3ff3u);  // BLUE
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[10], 0xffff3153u); // RED
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[11], 0xff02cc5du); // GREEN
+}
+
+TEST(ChannelFVideoFilterTest, Colormap_Palette3_LtgreenBG) {
+	// Palette 3: LTGREEN, BLUE, RED, GREEN
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[12], 0xff91ffa6u); // LTGREEN
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[13], 0xff4b3ff3u); // BLUE
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[14], 0xffff3153u); // RED
+	EXPECT_EQ(ChannelFDefaultVideoFilter::ChannelFColormap[15], 0xff02cc5du); // GREEN
+}
+
+TEST(ChannelFVideoFilterTest, Colormap_IndexMasking) {
+	// Verify 4-bit index works with mask (0x0f)
 	for (uint16_t raw = 0; raw < 256; raw++) {
-		uint8_t colorIdx = raw & 0x03;
-		EXPECT_LT(colorIdx, 4);
-		uint32_t color = ChannelFDefaultVideoFilter::ChannelFPalette[colorIdx];
-		EXPECT_NE(color, 0u); // All palette entries are non-zero (have alpha)
+		uint8_t idx = raw & 0x0f;
+		EXPECT_LT(idx, 16);
+		uint32_t color = ChannelFDefaultVideoFilter::ChannelFColormap[idx];
+		EXPECT_NE(color, 0u); // All colormap entries have alpha
 	}
 }
 
