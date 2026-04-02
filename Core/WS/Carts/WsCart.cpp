@@ -2,6 +2,7 @@
 #include "WS/Carts/WsCart.h"
 #include "WS/WsMemoryManager.h"
 #include "WS/WsEeprom.h"
+#include "WS/WsRtc.h"
 #include "Shared/Emulator.h"
 #include "Utilities/Serializer.h"
 
@@ -20,13 +21,20 @@ WsCart::WsCart() {
 	_state.SelectedBanks[3] = 0xFF;
 }
 
-void WsCart::Init(Emulator* emu, WsMemoryManager* memoryManager, WsEeprom* cartEeprom, uint8_t* prgRom, uint32_t prgRomSize, bool hasFlash) {
+WsCart::~WsCart() {
+}
+
+void WsCart::Init(Emulator* emu, WsMemoryManager* memoryManager, WsEeprom* cartEeprom, uint8_t* prgRom, uint32_t prgRomSize, bool hasFlash, bool hasRtc) {
 	_emu = emu;
 	_memoryManager = memoryManager;
 	_cartEeprom = cartEeprom;
 	_prgRom = prgRom;
 	_prgRomSize = prgRomSize;
 	_state.HasFlash = hasFlash;
+
+	if (hasRtc) {
+		_rtc = std::make_unique<WsRtc>(emu);
+	}
 }
 
 void WsCart::RefreshMappings() {
@@ -41,6 +49,8 @@ uint8_t WsCart::ReadPort(uint16_t port) {
 		return _state.SelectedBanks[port - 0xC0];
 	} else if (port < 0xC9 && _cartEeprom) {
 		return _cartEeprom->ReadPort(port - 0xC4);
+	} else if (port == 0xCA && _rtc) {
+		return _rtc->Read();
 	}
 
 	return _memoryManager->GetUnmappedPort();
@@ -52,6 +62,8 @@ void WsCart::WritePort(uint16_t port, uint8_t value) {
 		_memoryManager->RefreshMappings();
 	} else if (port < 0xC9 && _cartEeprom) {
 		_cartEeprom->WritePort(port - 0xC4, value);
+	} else if (port == 0xCA && _rtc) {
+		_rtc->Write(value);
 	}
 }
 
@@ -166,4 +178,8 @@ void WsCart::Serialize(Serializer& s) {
 	SV(_state.FlashCycle);
 	SV(_state.FlashSoftwareId);
 	SV(_state.HasFlash);
+
+	if (_rtc) {
+		SV(_rtc);
+	}
 }

@@ -7,8 +7,7 @@
 class Emulator;
 class WsMemoryManager;
 class WsEeprom;
-
-// TODOWS RTC
+class WsRtc;
 
 class WsCart final : public ISerializable {
 protected:
@@ -17,6 +16,7 @@ protected:
 	Emulator* _emu = nullptr;
 	WsMemoryManager* _memoryManager = nullptr;
 	WsEeprom* _cartEeprom = nullptr;
+	unique_ptr<WsRtc> _rtc;
 
 	uint8_t* _prgRom = nullptr;
 	uint32_t _prgRomSize = 0;
@@ -26,13 +26,14 @@ protected:
 
 public:
 	WsCart();
-	virtual ~WsCart() {}
+	virtual ~WsCart();
 
-	void Init(Emulator* emu, WsMemoryManager* memoryManager, WsEeprom* cartEeprom, uint8_t* prgRom, uint32_t prgRomSize, bool hasFlash);
+	void Init(Emulator* emu, WsMemoryManager* memoryManager, WsEeprom* cartEeprom, uint8_t* prgRom, uint32_t prgRomSize, bool hasFlash, bool hasRtc);
 	void RefreshMappings();
 
 	WsCartState& GetState() { return _state; }
 	WsEeprom* GetEeprom() { return _cartEeprom; }
+	WsRtc* GetRtc() { return _rtc.get(); }
 
 	virtual uint8_t ReadPort(uint16_t port);
 	virtual void WritePort(uint16_t port, uint8_t value);

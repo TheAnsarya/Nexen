@@ -4,6 +4,7 @@
 #include "WS/WsPpu.h"
 #include "WS/WsTimer.h"
 #include "WS/Carts/WsCart.h"
+#include "WS/WsRtc.h"
 #include "WS/WsControlManager.h"
 #include "WS/WsMemoryManager.h"
 #include "WS/WsDmaController.h"
@@ -91,11 +92,13 @@ LoadRomResult WsConsole::LoadRom(VirtualFile& romFile) {
 
 	bool hasColorSupport = (_prgRom[_prgRomSize - 9] & 0x01) || romFile.GetFileExtension() == ".wsc";
 	uint8_t mapperType = _prgRom[_prgRomSize - 3];
+	bool hasRtc = (_prgRom[_prgRomSize - 4] & 0x01) != 0;
 
 	MessageManager::Log(string("Color supported: ") + (hasColorSupport ? "Yes" : "No"));
 	MessageManager::Log(std::format("Save RAM size: {} KB", _saveRamSize / 1024));
 	MessageManager::Log(std::format("Cart EEPROM size: {} bytes", _cartEepromSize));
 	MessageManager::Log(std::format("Mapper: {}", mapperType == 0 ? "Bandai 2001 / KARNAK" : (mapperType == 1 ? "Bandai 2003" : std::format("Unknown: {}", mapperType))));
+	MessageManager::Log(string("RTC: ") + (hasRtc ? "Yes" : "No"));
 
 	MessageManager::Log("------------------------------");
 
@@ -148,7 +151,7 @@ LoadRomResult WsConsole::LoadRom(VirtualFile& romFile) {
 	_cart = std::make_unique<WsCart>();
 
 	bool hasFlash = _emu->GetSettings()->GetWsConfig().ForceFlash;
-	_cart->Init(_emu, _memoryManager.get(), _cartEeprom.get(), _prgRom, _prgRomSize, hasFlash);
+	_cart->Init(_emu, _memoryManager.get(), _cartEeprom.get(), _prgRom, _prgRomSize, hasFlash, hasRtc);
 	_memoryManager->Init(_emu, this, _cpu.get(), _ppu.get(), _controlManager.get(), _cart.get(), _timer.get(), _dmaController.get(), _internalEeprom.get(), _apu.get(), _serial.get());
 	_timer->Init(_memoryManager.get());
 	_dmaController->Init(_memoryManager.get(), _apu.get());
@@ -384,6 +387,10 @@ void WsConsole::LoadBattery() {
 	if (_cart->HasFlash()) {
 		_emu->GetBatteryManager()->LoadBattery(".flash", std::span<uint8_t>(_prgRom, _prgRomSize));
 	}
+
+	if (_cart->GetRtc()) {
+		_cart->GetRtc()->LoadBattery();
+	}
 }
 
 void WsConsole::SaveBattery() {
@@ -398,6 +405,10 @@ void WsConsole::SaveBattery() {
 
 	if (_cart->HasFlash()) {
 		_emu->GetBatteryManager()->SaveBattery(".flash", std::span<const uint8_t>(_prgRom, _prgRomSize));
+	}
+
+	if (_cart->GetRtc()) {
+		_cart->GetRtc()->SaveBattery();
 	}
 }
 

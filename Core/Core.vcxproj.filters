@@ -2886,6 +2886,9 @@
     <ClInclude Include="WS\Carts\WsCart.h">
       <Filter>WS\Carts</Filter>
     </ClInclude>
+    <ClInclude Include="WS\WsRtc.h">
+      <Filter>WS</Filter>
+    </ClInclude>
     <ClInclude Include="WS\WsTimer.h">
       <Filter>WS</Filter>
     </ClInclude>
@@ -3295,6 +3298,9 @@
     </ClCompile>
     <ClCompile Include="WS\Carts\WsCart.cpp">
       <Filter>WS\Carts</Filter>
+    </ClCompile>
+    <ClCompile Include="WS\WsRtc.cpp">
+      <Filter>WS</Filter>
     </ClCompile>
     <ClCompile Include="WS\WsTimer.cpp">
       <Filter>WS</Filter>
