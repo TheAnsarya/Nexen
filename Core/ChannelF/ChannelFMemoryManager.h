@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "ChannelF/ChannelFTypes.h"
+#include <functional>
 
 /// <summary>
 /// Memory bus for the Fairchild Channel F system.
@@ -58,6 +59,11 @@ private:
 	uint8_t _videoX = 0;
 	uint8_t _videoY = 0;
 
+	// 3853 SMI interrupt vector (ports $22-$23)
+	uint8_t _interruptVectorHigh = 0;
+	uint8_t _interruptVectorLow = 0;
+	std::function<void(uint16_t)> _onInterruptVectorChanged;
+
 	// Audio state — port 0 bits 5-6 select one of 4 discrete tones
 	uint8_t _soundToneSelect = 0;  // 0=silence, 1=~1kHz, 2=~500Hz, 3=~120Hz
 
@@ -88,6 +94,10 @@ public:
 
 	// Controller input (set by control manager each frame)
 	void SetControllerState(uint8_t ctrl1, uint8_t ctrl2, uint8_t console);
+
+	// 3853 SMI interrupt vector
+	void SetInterruptVectorCallback(std::function<void(uint16_t)> callback) { _onInterruptVectorChanged = std::move(callback); }
+	[[nodiscard]] uint16_t GetInterruptVector() const { return (uint16_t)((_interruptVectorHigh << 8) | _interruptVectorLow); }
 
 	// State accessors for GetConsoleState and serialization
 	[[nodiscard]] ChannelFVideoState GetVideoState() const;

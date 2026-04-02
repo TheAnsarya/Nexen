@@ -60,6 +60,11 @@ ChannelFConsole::ChannelFConsole(Emulator* emu)
 		_emu->ProcessMemoryAccess<CpuType::ChannelF, MemoryType::ChannelFMemory, MemoryOperationType::Write>(port, value);
 		_memoryManager->WritePort(port, value);
 	});
+
+	// Wire 3853 SMI interrupt vector updates from memory manager to CPU
+	_memoryManager->SetInterruptVectorCallback([this](uint16_t vector) {
+		_cpu->SetInterruptVector(vector);
+	});
 }
 
 ChannelFConsole::~ChannelFConsole() {
@@ -133,6 +138,10 @@ void ChannelFConsole::RunFrame() {
 		// Execute CPU for one frame's worth of cycles, stepping audio per cycle
 		uint32_t cyclesRun = 0;
 		uint32_t cyclesPerFrame = GetCyclesPerFrame();
+
+		// Assert VBLANK interrupt at start of frame (cleared by CPU on delivery)
+		_cpu->SetIrqLine(true);
+
 		while (cyclesRun < cyclesPerFrame) {
 			uint8_t instrCycles = _cpu->StepOne();
 			for (uint8_t i = 0; i < instrCycles; i++) {
@@ -312,6 +321,8 @@ void ChannelFConsole::GetConsoleState([[maybe_unused]] BaseState& state, [[maybe
 			s.Cpu.CycleCount, s.Cpu.InterruptsEnabled, scratchpad
 		);
 		memcpy(s.Cpu.Scratchpad, scratchpad, 64);
+		s.Cpu.IrqLine = _cpu->GetIrqLine();
+		s.Cpu.InterruptVector = _cpu->GetInterruptVector();
 	}
 
 	// Fill video/audio/port state from memory manager
@@ -340,6 +351,8 @@ void ChannelFConsole::Serialize(Serializer& s) {
 	uint16_t pc0 = 0, pc1 = 0, dc0 = 0, dc1 = 0;
 	uint64_t cycleCount = 0;
 	bool interruptsEnabled = false;
+	bool irqLine = false;
+	uint16_t interruptVector = 0;
 	uint8_t scratchpad[64] = {};
 
 	// Video/Audio/Port state
@@ -351,6 +364,8 @@ void ChannelFConsole::Serialize(Serializer& s) {
 	if (s.IsSaving()) {
 		if (_cpu) {
 			_cpu->ExportState(a, w, isar, pc0, pc1, dc0, dc1, cycleCount, interruptsEnabled, scratchpad);
+			irqLine = _cpu->GetIrqLine();
+			interruptVector = _cpu->GetInterruptVector();
 		}
 		if (_memoryManager) {
 			videoState = _memoryManager->GetVideoState();
@@ -364,6 +379,7 @@ void ChannelFConsole::Serialize(Serializer& s) {
 	SV(a); SV(w); SV(isar);
 	SV(pc0); SV(pc1); SV(dc0); SV(dc1);
 	SV(cycleCount); SV(interruptsEnabled);
+	SV(irqLine); SV(interruptVector);
 	s.StreamArray(scratchpad, 64, "scratchpad");
 
 	// Video state
@@ -387,6 +403,8 @@ void ChannelFConsole::Serialize(Serializer& s) {
 	if (!s.IsSaving()) {
 		if (_cpu) {
 			_cpu->ImportState(a, w, isar, pc0, pc1, dc0, dc1, cycleCount, interruptsEnabled, scratchpad);
+			_cpu->SetIrqLine(irqLine);
+			_cpu->SetInterruptVector(interruptVector);
 		}
 		if (_memoryManager) {
 			_memoryManager->SetVideoState(videoState);
@@ -405,6 +423,8 @@ ChannelFCpuState ChannelFConsole::GetCpuState() {
 			state.PC0, state.PC1, state.DC0, state.DC1,
 			state.CycleCount, state.InterruptsEnabled, state.Scratchpad
 		);
+		state.IrqLine = _cpu->GetIrqLine();
+		state.InterruptVector = _cpu->GetInterruptVector();
 	}
 	return state;
 }
@@ -416,6 +436,8 @@ void ChannelFConsole::SetCpuState(ChannelFCpuState& state) {
 			state.PC0, state.PC1, state.DC0, state.DC1,
 			state.CycleCount, state.InterruptsEnabled, state.Scratchpad
 		);
+		_cpu->SetIrqLine(state.IrqLine);
+		_cpu->SetInterruptVector(state.InterruptVector);
 	}
 }
 

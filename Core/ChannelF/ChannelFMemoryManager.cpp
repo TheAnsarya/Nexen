@@ -81,6 +81,8 @@ void ChannelFMemoryManager::Reset() {
 	_controller1 = 0xff;
 	_controller2 = 0xff;
 	_consoleButtons = 0xff;
+	_interruptVectorHigh = 0;
+	_interruptVectorLow = 0;
 	if (_cartBoardType == CartBoardType::RomWithRam) {
 		memset(_cartRam.data(), 0x00, _cartRam.size());
 	}
@@ -155,6 +157,25 @@ void ChannelFMemoryManager::WritePort(uint8_t port, uint8_t value) {
 				uint8_t requestedBank = (uint8_t)(port - 0x20);
 				uint8_t maxBank = (uint8_t)std::max(1u, (_cartSize + CartBankWindowSize - 1) / CartBankWindowSize);
 				_activeCartBank = (uint8_t)(requestedBank % maxBank);
+			} else {
+				// 3853 SMI ports: $20-$21 = timer, $22-$23 = interrupt vector
+				switch (port) {
+					case 0x22:
+						_interruptVectorHigh = value;
+						if (_onInterruptVectorChanged) {
+							_onInterruptVectorChanged(GetInterruptVector());
+						}
+						break;
+					case 0x23:
+						_interruptVectorLow = value;
+						if (_onInterruptVectorChanged) {
+							_onInterruptVectorChanged(GetInterruptVector());
+						}
+						break;
+					// $20-$21: timer (not yet implemented)
+					default:
+						break;
+				}
 			}
 			break;
 

@@ -31,6 +31,9 @@ private:
 	uint16_t _dc1 = 0;       // Data Counter 1 (backup)
 	uint8_t _scratchpad[64] = {}; // Internal scratchpad RAM (R0-R63)
 	bool _interruptsEnabled = false;
+	bool _irqLine = false;             // External interrupt request line
+	uint16_t _interruptVector = 0;     // Interrupt vector address (set by 3853 SMI)
+	uint8_t _lastOpcode = 0;           // Last executed opcode (for privileged check)
 
 	uint64_t _cycleCount = 0;
 
@@ -39,6 +42,8 @@ private:
 	static constexpr uint8_t FlagCarry    = 0x04; // Bit 2: Carry/Link
 	static constexpr uint8_t FlagZero     = 0x02; // Bit 1: Zero
 	static constexpr uint8_t FlagOverflow = 0x01; // Bit 0: Overflow
+	static constexpr uint8_t FlagICB      = 0x10; // Bit 4: Interrupt Control Bit
+	static constexpr uint8_t FlagsMask    = 0x0f; // Status flags only (bits 0-3)
 
 	// Named scratchpad aliases
 	static constexpr uint8_t RegJ  = 9;   // J register (flags backup)
@@ -76,14 +81,14 @@ private:
 	}
 
 	void SetFlags(uint8_t result) {
-		_w = 0;
+		_w &= ~FlagsMask;
 		if (result == 0) _w |= FlagZero;
 		if (result & 0x80) _w |= FlagSign;
 	}
 
 	void SetFlagsWithCarryOverflow(uint16_t fullResult, uint8_t left, uint8_t right) {
 		uint8_t result = (uint8_t)fullResult;
-		_w = 0;
+		_w &= ~FlagsMask;
 		if (result == 0) _w |= FlagZero;
 		if (result & 0x80) _w |= FlagSign;
 		if (fullResult > 0xff) _w |= FlagCarry;
@@ -106,6 +111,8 @@ private:
 		_scratchpad[_isar & 0x3f] = value;
 	}
 
+	[[nodiscard]] static bool IsPrivilegedOpcode(uint8_t opcode);
+	uint8_t DeliverInterrupt();
 	[[nodiscard]] uint8_t ExecuteInstruction();
 
 public:
@@ -135,6 +142,10 @@ public:
 		const uint8_t* scratchpadIn
 	);
 
+	// Interrupt control
+	void SetIrqLine(bool level) { _irqLine = level; }
+	void SetInterruptVector(uint16_t vector) { _interruptVector = vector; }
+
 	// Accessors for debugger / tests
 	[[nodiscard]] uint16_t GetPc() const { return _pc0; }
 	[[nodiscard]] uint8_t GetA() const { return _a; }
@@ -145,4 +156,6 @@ public:
 	[[nodiscard]] uint16_t GetDc1() const { return _dc1; }
 	[[nodiscard]] uint64_t GetCycleCount() const { return _cycleCount; }
 	[[nodiscard]] const uint8_t* GetScratchpadData() const { return _scratchpad; }
+	[[nodiscard]] bool GetIrqLine() const { return _irqLine; }
+	[[nodiscard]] uint16_t GetInterruptVector() const { return _interruptVector; }
 };

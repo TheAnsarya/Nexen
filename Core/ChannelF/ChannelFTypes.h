@@ -22,10 +22,12 @@ struct ChannelFCpuState : BaseState {
 	uint16_t PC1 = 0;        // Backup/stack program counter
 	uint16_t DC0 = 0;        // Active data counter
 	uint16_t DC1 = 0;        // Backup data counter
+	uint16_t InterruptVector = 0; // 3853 SMI interrupt vector
 	uint8_t A = 0;            // Accumulator
-	uint8_t W = 0;            // Status register (flags)
+	uint8_t W = 0;            // Status register (flags + ICB)
 	uint8_t ISAR = 0;         // Indirect Scratchpad Address Register
 	bool InterruptsEnabled = false;
+	bool IrqLine = false;     // External interrupt request
 	uint8_t Scratchpad[64] = {};  // Internal scratchpad RAM
 };
 

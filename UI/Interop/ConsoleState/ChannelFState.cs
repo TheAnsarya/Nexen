@@ -16,14 +16,18 @@ public struct ChannelFCpuState : BaseState {
 	public UInt16 DC0;
 	/// <summary>Data Counter 1 (backup).</summary>
 	public UInt16 DC1;
+	/// <summary>3853 SMI interrupt vector address.</summary>
+	public UInt16 InterruptVector;
 	/// <summary>Accumulator register.</summary>
 	public byte A;
-	/// <summary>Status register (W) — flags: Sign(3), Carry(2), Zero(1), Overflow(0).</summary>
+	/// <summary>Status register (W) — flags: ICB(4), Sign(3), Carry(2), Zero(1), Overflow(0).</summary>
 	public byte W;
 	/// <summary>Indirect Scratchpad Address Register (6-bit).</summary>
 	public byte ISAR;
-	/// <summary>Interrupts enabled flag.</summary>
+	/// <summary>Interrupts enabled flag (ICB in W bit 4).</summary>
 	[MarshalAs(UnmanagedType.I1)] public bool InterruptsEnabled;
+	/// <summary>External interrupt request line.</summary>
+	[MarshalAs(UnmanagedType.I1)] public bool IrqLine;
 	/// <summary>64-byte internal scratchpad RAM (R0-R63).</summary>
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 64)]
 	public byte[] Scratchpad;

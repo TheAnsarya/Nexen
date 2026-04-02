@@ -506,3 +506,128 @@ TEST_F(F8CpuTestFixture, ExportImportStateRoundtrip) {
 	EXPECT_EQ(cpu.GetDc0(), 0xabcd);
 	EXPECT_EQ(cpu.GetPc(), 5);
 }
+
+// ========== Interrupt Delivery ==========
+
+TEST_F(F8CpuTestFixture, EI_SetsICBInW) {
+	// EI ($1B) should set ICB (bit 4) in W and enable interrupts
+	memory[0] = 0x1b; // EI
+	cpu.StepCycles(1);
+	EXPECT_EQ(cpu.GetW() & 0x10, 0x10); // ICB set
+}
+
+TEST_F(F8CpuTestFixture, DI_ClearsICBInW) {
+	// First enable interrupts, then disable
+	memory[0] = 0x1b; // EI
+	memory[1] = 0x1a; // DI
+	cpu.StepCycles(1); // EI
+	EXPECT_EQ(cpu.GetW() & 0x10, 0x10);
+	cpu.StepCycles(1); // DI
+	EXPECT_EQ(cpu.GetW() & 0x10, 0x00); // ICB cleared
+}
+
+TEST_F(F8CpuTestFixture, SetFlagsPreservesICB) {
+	// Enable interrupts (sets ICB), then run an instruction that calls SetFlags
+	// COM ($18) complements A and calls SetFlags — ICB should survive
+	memory[0] = 0x1b; // EI → ICB set
+	memory[1] = 0x18; // COM → SetFlags called, A = ~0 = 0xff
+	cpu.StepCycles(1); // EI
+	EXPECT_EQ(cpu.GetW() & 0x10, 0x10);
+	cpu.StepCycles(1); // COM
+	EXPECT_EQ(cpu.GetW() & 0x10, 0x10); // ICB still set
+	EXPECT_EQ(cpu.GetW() & 0x08, 0x08); // Sign flag set (A=0xff)
+}
+
+TEST_F(F8CpuTestFixture, InterruptDeliveredWhenICBAndIRQ) {
+	// Set up interrupt vector at $0200, enable interrupts, assert IRQ
+	// Next non-privileged instruction should trigger interrupt delivery
+	cpu.SetInterruptVector(0x0200);
+	cpu.SetIrqLine(true);
+
+	memory[0] = 0x1b; // EI (privileged — no interrupt check)
+	memory[1] = 0x2b; // NOP (non-privileged — interrupt delivered after)
+
+	// ISR at $0200: simple NOP
+	memory[0x200] = 0x2b; // NOP
+
+	cpu.StepCycles(1); // EI — privileged, no interrupt check
+	EXPECT_EQ(cpu.GetW() & 0x10, 0x10); // ICB set
+	EXPECT_TRUE(cpu.GetIrqLine());
+
+	uint16_t pcBeforeNop = cpu.GetPc(); // Should be 1 (after EI)
+	EXPECT_EQ(pcBeforeNop, 1);
+
+	cpu.StepOne(); // NOP at $01, then interrupt delivered
+	// After NOP + interrupt: PC1 = return address ($02), PC0 = vector ($0200)
+	EXPECT_EQ(cpu.GetPc(), 0x0200); // Jumped to ISR
+	EXPECT_EQ(cpu.GetPc1(), 0x0002); // Return address saved
+	EXPECT_EQ(cpu.GetW() & 0x10, 0x00); // ICB cleared
+	EXPECT_FALSE(cpu.GetIrqLine()); // IRQ acknowledged
+}
+
+TEST_F(F8CpuTestFixture, NoInterruptWhenICBClear) {
+	// IRQ asserted but ICB clear — no interrupt delivery
+	cpu.SetInterruptVector(0x0200);
+	cpu.SetIrqLine(true);
+	// Don't enable interrupts (ICB=0)
+
+	memory[0] = 0x2b; // NOP
+	cpu.StepCycles(1);
+	EXPECT_EQ(cpu.GetPc(), 1); // NOP executed normally, no interrupt
+	EXPECT_TRUE(cpu.GetIrqLine()); // IRQ still asserted (not acknowledged)
+}
+
+TEST_F(F8CpuTestFixture, NoInterruptWhenIRQClear) {
+	// ICB set but no IRQ — no interrupt delivery
+	memory[0] = 0x1b; // EI
+	memory[1] = 0x2b; // NOP
+	cpu.StepCycles(1); // EI
+	cpu.StepCycles(1); // NOP
+	EXPECT_EQ(cpu.GetPc(), 2); // Normal execution
+}
+
+TEST_F(F8CpuTestFixture, InterruptDeliveryCosts24Cycles) {
+	// Interrupt delivery adds 24 cycles to the instruction
+	cpu.SetInterruptVector(0x0200);
+	cpu.SetIrqLine(true);
+
+	memory[0] = 0x1b; // EI (8 cycles, privileged)
+	memory[1] = 0x2b; // NOP (4 cycles + 24 interrupt delivery = 28 total)
+	memory[0x200] = 0x2b; // NOP at ISR
+
+	cpu.StepOne(); // EI: 8 cycles
+	uint64_t cyclesAfterEI = cpu.GetCycleCount();
+	uint8_t nopCycles = cpu.StepOne(); // NOP + interrupt delivery
+	EXPECT_EQ(nopCycles, 28); // 4 (NOP) + 24 (interrupt delivery)
+	EXPECT_EQ(cpu.GetCycleCount() - cyclesAfterEI, 28);
+}
+
+TEST_F(F8CpuTestFixture, PrivilegedInstructionsSkipInterruptCheck) {
+	// PI ($28) is privileged — interrupt should NOT fire after it
+	cpu.SetInterruptVector(0x0400);
+	cpu.SetIrqLine(true);
+
+	memory[0] = 0x1b; // EI
+	memory[1] = 0x28; memory[2] = 0x03; memory[3] = 0x00; // PI $0300
+	// PI is privileged: even with ICB+IRQ, no interrupt after PI
+	// Execution continues at $0300
+
+	cpu.StepCycles(1); // EI
+	cpu.StepOne(); // PI $0300 — privileged, no interrupt
+	EXPECT_EQ(cpu.GetPc(), 0x0300); // Jumped to call target, not interrupt vector
+	EXPECT_TRUE(cpu.GetIrqLine()); // IRQ still pending
+	EXPECT_EQ(cpu.GetW() & 0x10, 0x10); // ICB still set
+}
+
+TEST_F(F8CpuTestFixture, LR_WJ_SyncsInterruptsEnabled) {
+	// LR W,J ($1D) loads W from R9. If bit 4 (ICB) is set, interrupts become enabled
+	// Store 0x10 (ICB set) into R9 (J register)
+	memory[0] = 0x20; memory[1] = 0x10; // LI $10
+	memory[2] = 0x59; // LR 9,A — store $10 into R9
+	memory[3] = 0x1d; // LR W,J — load W from R9
+
+	cpu.StepCycles(1); // LI
+	cpu.StepCycles(1); // LR 9,A
+	cpu.StepCycles(1); // LR W,J
+	EXPECT_EQ(cpu.GetW() & 0x10, 0x10); // ICB set in W
+}

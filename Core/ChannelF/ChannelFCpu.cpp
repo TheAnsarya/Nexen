@@ -10,6 +10,9 @@ void ChannelFCpu::Reset() {
 	_dc0 = 0;
 	_dc1 = 0;
 	_interruptsEnabled = false;
+	_irqLine = false;
+	_interruptVector = 0;
+	_lastOpcode = 0;
 	_cycleCount = 0;
 	memset(_scratchpad, 0, sizeof(_scratchpad));
 }
@@ -25,6 +28,14 @@ void ChannelFCpu::StepCycles(uint32_t targetCycles) {
 uint8_t ChannelFCpu::StepOne() {
 	uint8_t cycles = ExecuteInstruction();
 	_cycleCount += cycles;
+
+	// Check for interrupt after non-privileged instructions
+	if ((_w & FlagICB) && _irqLine && !IsPrivilegedOpcode(_lastOpcode)) {
+		uint8_t irqCycles = DeliverInterrupt();
+		_cycleCount += irqCycles;
+		cycles += irqCycles;
+	}
+
 	return cycles;
 }
 
@@ -66,6 +77,7 @@ void ChannelFCpu::ImportState(
 
 uint8_t ChannelFCpu::ExecuteInstruction() {
 	uint8_t opcode = FetchByte();
+	_lastOpcode = opcode;
 
 	switch (opcode) {
 		// ===== $00-$07: LR register transfers =====
@@ -174,15 +186,18 @@ uint8_t ChannelFCpu::ExecuteInstruction() {
 		}
 		case 0x1a: // DI — Disable interrupts
 			_interruptsEnabled = false;
+			_w &= ~FlagICB;
 			return 8;
 		case 0x1b: // EI — Enable interrupts
 			_interruptsEnabled = true;
+			_w |= FlagICB;
 			return 8;
 		case 0x1c: // POP — PC0←PC1 (return)
 			_pc0 = _pc1;
 			return 8;
 		case 0x1d: // LR W,J — W←r9
 			_w = GetScratchpad(RegJ);
+			_interruptsEnabled = (_w & FlagICB) != 0;
 			return 8;
 		case 0x1e: // LR J,W — r9←W
 			SetScratchpad(RegJ, _w);
@@ -225,7 +240,7 @@ uint8_t ChannelFCpu::ExecuteInstruction() {
 			uint8_t imm = FetchByte();
 			uint16_t result = (uint16_t)(imm - _a);
 			// CI sets flags based on (immediate - accumulator)
-			_w = 0;
+			_w &= ~FlagsMask;
 			if ((uint8_t)result == 0) _w |= FlagZero;
 			if (result & 0x80) _w |= FlagSign;
 			if (result > 0xff) _w |= FlagCarry;
@@ -388,7 +403,7 @@ uint8_t ChannelFCpu::ExecuteInstruction() {
 				result += 0x60;
 			}
 
-			_w = 0;
+			_w &= ~FlagsMask;
 			uint8_t r = (uint8_t)result;
 			if (r == 0) _w |= FlagZero;
 			if (r & 0x80) _w |= FlagSign;
@@ -418,7 +433,7 @@ uint8_t ChannelFCpu::ExecuteInstruction() {
 		case 0x8d: { // CM — Compare memory
 			uint8_t mem = Read(_dc0);
 			uint16_t result = (uint16_t)(mem - _a);
-			_w = 0;
+			_w &= ~FlagsMask;
 			if ((uint8_t)result == 0) _w |= FlagZero;
 			if (result & 0x80) _w |= FlagSign;
 			if (result > 0xff) _w |= FlagCarry;
@@ -562,7 +577,7 @@ uint8_t ChannelFCpu::ExecuteInstruction() {
 			if (result > 0x99) {
 				result += 0x60;
 			}
-			_w = 0;
+			_w &= ~FlagsMask;
 			uint8_t r = (uint8_t)result;
 			if (r == 0) _w |= FlagZero;
 			if (r & 0x80) _w |= FlagSign;
@@ -633,4 +648,37 @@ uint8_t ChannelFCpu::ExecuteInstruction() {
 		default:
 			return 4;
 	}
+}
+
+bool ChannelFCpu::IsPrivilegedOpcode(uint8_t opcode) {
+	// Privileged instructions skip the post-instruction interrupt check.
+	// From F8 specification: PK, EI, POP, LR W,J, OUT, PI, JMP, OUTS
+	switch (opcode) {
+		case 0x0c: // PK — Push K (PC1←PC0, PC0←(KU,KL))
+		case 0x1b: // EI — Enable Interrupts
+		case 0x1c: // POP — PC0←PC1
+		case 0x1d: // LR W,J — Restore W from J
+		case 0x27: // OUT — Output to port
+		case 0x28: // PI — Push and Jump immediate
+		case 0x29: // JMP — Jump immediate
+			return true;
+		default:
+			// $B4-$BF: OUTS — Output scratchpad to port (ISAR variants)
+			return (opcode >= 0xb4 && opcode <= 0xbf);
+	}
+}
+
+uint8_t ChannelFCpu::DeliverInterrupt() {
+	// F8 interrupt delivery sequence (MAME: ROMC_10 + ROMC_1C + ROMC_0F + ROMC_13)
+	// Total: 24 cycles (4 ROMC cycles × 6 clocks each)
+	// 1. Push: PC1 ← PC0 (save return address)
+	_pc1 = _pc0;
+	// 2. Jump: PC0 ← interrupt vector (from 3853 SMI)
+	_pc0 = _interruptVector;
+	// 3. Clear ICB (disable further interrupts until re-enabled)
+	_w &= ~FlagICB;
+	_interruptsEnabled = false;
+	// 4. Acknowledge: clear IRQ line
+	_irqLine = false;
+	return 24;
 }
