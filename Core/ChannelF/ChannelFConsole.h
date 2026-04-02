@@ -34,7 +34,13 @@ private:
 	ChannelFBiosVariant _activeVariant = ChannelFBiosVariant::Unknown;
 	ConsoleRegion _activeRegion = ConsoleRegion::Ntsc;
 
+	// Scanline timing state
+	uint16_t _scanline = 0;
+	uint16_t _scanlineCycle = 0;
+
 	[[nodiscard]] uint32_t GetCyclesPerFrame() const;
+	[[nodiscard]] uint32_t GetScanlineCount() const;
+	void RenderScanline(uint16_t line);
 
 public:
 	[[nodiscard]] static vector<string> GetSupportedExtensions() { return {".chf", ".bin"}; }

@@ -290,6 +290,19 @@ TEST(ChfConstantsTest, ScratchpadSize) {
 	EXPECT_EQ(ChannelFConstants::ScratchpadSize, 64u);
 }
 
+TEST(ChfConstantsTest, ScanlineTimingNtsc) {
+	EXPECT_EQ(ChannelFConstants::NtscScanlineCount, 262u);
+	EXPECT_EQ(ChannelFConstants::CyclesPerScanline, 114u);
+	EXPECT_EQ(ChannelFConstants::VblankStartLine, 64u);
+	// 262 scanlines × 114 cycles = 29868 ≈ CyclesPerFrame (29829)
+	EXPECT_NEAR(ChannelFConstants::NtscScanlineCount * ChannelFConstants::CyclesPerScanline,
+		ChannelFConstants::CyclesPerFrame, 100u);
+}
+
+TEST(ChfConstantsTest, ScanlineTimingPal) {
+	EXPECT_EQ(ChannelFConstants::PalScanlineCount, 312u);
+}
+
 // =============================================================================
 // Channel F State Defaults
 // =============================================================================
@@ -319,6 +332,8 @@ TEST(ChfStateDefaultsTest, VideoState) {
 	EXPECT_EQ(state.Color, 0);
 	EXPECT_EQ(state.X, 0);
 	EXPECT_EQ(state.Y, 0);
+	EXPECT_EQ(state.Scanline, 0);
+	EXPECT_EQ(state.Cycle, 0);
 }
 
 TEST(ChfStateDefaultsTest, AudioState) {

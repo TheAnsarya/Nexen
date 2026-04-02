@@ -128,20 +128,34 @@ void ChannelFConsole::RunFrame() {
 		// Clear audio buffer for this frame
 		_memoryManager->BeginFrameCapture();
 
-		// Execute CPU for one frame's worth of cycles, stepping audio per cycle
-		uint32_t cyclesRun = 0;
-		uint32_t cyclesPerFrame = GetCyclesPerFrame();
+		uint32_t totalScanlines = GetScanlineCount();
 
-		// Assert VBLANK interrupt at start of frame (cleared by CPU on delivery)
-		_cpu->SetIrqLine(true);
-
-		while (cyclesRun < cyclesPerFrame) {
-			uint8_t instrCycles = _cpu->StepOne();
-			for (uint8_t i = 0; i < instrCycles; i++) {
-				_memoryManager->StepAudio();
+		// Run CPU scanline-by-scanline for accurate timing
+		for (_scanline = 0; _scanline < totalScanlines; _scanline++) {
+			// Assert VBLANK interrupt when visible area ends (line 64)
+			if (_scanline == ChannelFConstants::VblankStartLine) {
+				_cpu->SetIrqLine(true);
 			}
-			cyclesRun += instrCycles;
+
+			// Execute CPU cycles for this scanline
+			_scanlineCycle = 0;
+			while (_scanlineCycle < ChannelFConstants::CyclesPerScanline) {
+				uint8_t instrCycles = _cpu->StepOne();
+				for (uint8_t i = 0; i < instrCycles; i++) {
+					_memoryManager->StepAudio();
+				}
+				_scanlineCycle += instrCycles;
+			}
+
+			// Render visible scanlines as they complete (captures mid-frame palette changes)
+			if (_scanline < ChannelFConstants::ScreenHeight) {
+				RenderScanline(_scanline);
+			}
 		}
+
+		// Reset scanline state for debugger queries between frames
+		_scanline = 0;
+		_scanlineCycle = 0;
 
 		// Send audio buffer to SoundMixer for playback
 		const vector<int16_t>& audioBuffer = _memoryManager->GetAudioBuffer();
@@ -150,19 +164,6 @@ void ChannelFConsole::RunFrame() {
 				const_cast<int16_t*>(audioBuffer.data()),
 				(uint32_t)audioBuffer.size() / 2,
 				GetMasterClockRate());
-		}
-
-		// Convert VRAM to frame buffer with per-row palette selection
-		// VRAM columns 125 and 126 select which of 4 palettes to use per row
-		const uint8_t* vram = _memoryManager->GetVram();
-		for (uint32_t y = 0; y < ScreenHeight; y++) {
-			uint32_t rowBase = y * ScreenWidth;
-			uint8_t reg1 = vram[rowBase + 125] & 0x03;
-			uint8_t reg2 = vram[rowBase + 126] & 0x03;
-			uint16_t paletteOffset = static_cast<uint16_t>(((reg2 & 0x02) | (reg1 >> 1)) << 2);
-			for (uint32_t x = 0; x < ScreenWidth; x++) {
-				_frameBuffer[rowBase + x] = paletteOffset + (vram[rowBase + x] & 0x03);
-			}
 		}
 	} else {
 		// Scaffold mode when no ROM loaded
@@ -183,6 +184,8 @@ void ChannelFConsole::Reset() {
 	if (_cpu) _cpu->Reset();
 	if (_memoryManager) _memoryManager->Reset();
 	_frameCount = 0;
+	_scanline = 0;
+	_scanlineCycle = 0;
 	std::fill(_frameBuffer.begin(), _frameBuffer.end(), uint16_t{0});
 }
 
@@ -318,6 +321,8 @@ void ChannelFConsole::GetConsoleState([[maybe_unused]] BaseState& state, [[maybe
 	// Fill video/audio/port state from memory manager
 	if (_memoryManager) {
 		s.Video = _memoryManager->GetVideoState();
+		s.Video.Scanline = _scanline;
+		s.Video.Cycle = _scanlineCycle;
 		s.Audio = _memoryManager->GetAudioState();
 		s.Ports = _memoryManager->GetPortState();
 	}
@@ -359,6 +364,8 @@ void ChannelFConsole::Serialize(Serializer& s) {
 		}
 		if (_memoryManager) {
 			videoState = _memoryManager->GetVideoState();
+			videoState.Scanline = _scanline;
+			videoState.Cycle = _scanlineCycle;
 			audioState = _memoryManager->GetAudioState();
 			portState = _memoryManager->GetPortState();
 			memcpy(vram, _memoryManager->GetVram(), ChannelFConstants::VramSize);
@@ -376,6 +383,8 @@ void ChannelFConsole::Serialize(Serializer& s) {
 	SV(videoState.Color);
 	SV(videoState.X);
 	SV(videoState.Y);
+	SV(videoState.Scanline);
+	SV(videoState.Cycle);
 
 	// Audio state
 	SV(audioState.ToneSelect);
@@ -402,6 +411,8 @@ void ChannelFConsole::Serialize(Serializer& s) {
 			_memoryManager->SetPortState(portState);
 			memcpy(_memoryManager->GetVramData(), vram, ChannelFConstants::VramSize);
 		}
+		_scanline = videoState.Scanline;
+		_scanlineCycle = videoState.Cycle;
 	}
 }
 
@@ -456,4 +467,21 @@ uint32_t ChannelFConsole::GetCyclesPerFrame() const {
 	double fps = _activeRegion == ConsoleRegion::Pal ? PalFps : NtscFps;
 	uint32_t clockRate = _activeRegion == ConsoleRegion::Pal ? PalCpuClockHz : NtscCpuClockHz;
 	return (uint32_t)(clockRate / fps);
+}
+
+uint32_t ChannelFConsole::GetScanlineCount() const {
+	return _activeRegion == ConsoleRegion::Pal ? PalScanlineCount : NtscScanlineCount;
+}
+
+void ChannelFConsole::RenderScanline(uint16_t line) {
+	if (!_memoryManager || line >= ScreenHeight) return;
+
+	const uint8_t* vram = _memoryManager->GetVram();
+	uint32_t rowBase = line * ScreenWidth;
+	uint8_t reg1 = vram[rowBase + 125] & 0x03;
+	uint8_t reg2 = vram[rowBase + 126] & 0x03;
+	uint16_t paletteOffset = static_cast<uint16_t>(((reg2 & 0x02) | (reg1 >> 1)) << 2);
+	for (uint32_t x = 0; x < ScreenWidth; x++) {
+		_frameBuffer[rowBase + x] = paletteOffset + (vram[rowBase + x] & 0x03);
+	}
 }

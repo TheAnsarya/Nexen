@@ -14,6 +14,13 @@ namespace ChannelFConstants {
 	static constexpr uint32_t VramSize = ScreenWidth * ScreenHeight;
 	static constexpr uint8_t NumColors = 8;
 	static constexpr uint32_t ScratchpadSize = 64;
+
+	// Scanline timing (NTSC: 262 lines, PAL: 312 lines)
+	static constexpr uint32_t NtscScanlineCount = 262;
+	static constexpr uint32_t PalScanlineCount = 312;
+	static constexpr uint32_t CyclesPerScanline = 114;
+	// VBLANK starts after the 64 visible lines
+	static constexpr uint32_t VblankStartLine = ScreenHeight; // line 64
 }
 
 struct ChannelFCpuState : BaseState {
@@ -35,6 +42,8 @@ struct ChannelFVideoState : BaseState {
 	uint8_t Color = 0;        // Current drawing color (2 bits)
 	uint8_t X = 0;            // Current X position
 	uint8_t Y = 0;            // Current Y position
+	uint16_t Scanline = 0;    // Current scanline (0-261 NTSC, 0-311 PAL)
+	uint16_t Cycle = 0;       // Cycle within current scanline (0-113)
 };
 
 struct ChannelFAudioState : BaseState {
