@@ -218,6 +218,9 @@
 		<ClCompile Include="WS\WsCpuTimerApuBench.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="WS\WsFlashRtcBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Core.vcxproj">
