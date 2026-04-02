@@ -1085,6 +1085,33 @@ update the instructions, do not ask me about commiting files, just always commit
 
 [Nexen] work all issues forever until there are no more (non-deferred) issues left (work for a very long time, fixing like 20 issues) and then make `1.4.16` after several more issues are fixed, we want as many as possible issues finished as fast as possible; continue; make the release work, because releases recently have worked; continue;
 
+[Nexen] work all issues forever until there are no more (non-deferred) issues left (work for a very long time, fixing like 20 issues); we want as many as possible issues finished as fast as possible; continue;
+
+continue working issues, make sure the CI/CD build/release works and the last realease worked or the next one; implement as many issues as you can;
+
+implement more Nexen issues, focus on code implementation as well as docs and benchmarks and tests;
+
+[Nexen] focus on Nexen issues; work all issues forever until there are no more (non-deferred) issues left (work for a very long time, fixing like 20 issues); we want as many as possible issues finished as fast as possible; continue;
+
+what the hell are disutils? tell me; focus on Nexen issues of functionality, `These Channel F issues are fairly high-level feature work.` break then down into sub issues and work through them; continue;
+
+(((
+There's no battery save on the Channel F, did you just implement it anyways? Why? check the internet to make sure and don't add features the original console does not have; continue;
+)))
+
+The `Nexen v1.4.16` release has no builds, build them and update the source packages too; continue;
+
+There's no battery save on the Channel F, did you just implement it anyways? Why? check the internet to make sure and don't add features the original console does not have; rip out battery save from channel f because it doesn't have it (do not revert code, never revert code, con fix the code and move forward, don't go backwards because we might accidently remove other code that needs to stay; continue;
+
+`all-err.txt` etc are atrifacts made by testing/running processes so don't put them into the root folder, they should be in `/artifacts/` so update the rules to not write temp files to the root, we want them in `artifacts` folder so they are gitignored; also get rid of them if we're not using them; continue;
+
+
+
+
+
+
+
+[Nexen] (Fairchild Channel F) Focus on fixing code and going for a complete Channel F implementation so everything works and we can declare this system as working; start by focusing on issues #979 `[18.5] Channel F audio generation and timing coupling`, #977 `[18.4] Channel F video pipeline and scanline timing model`, #976 `[18.3.1] Cartridge board types and on-cart RAM behavior` and then working on others, close these issues after compleletely implementing them; continue;
 
 
 
@@ -1094,19 +1121,7 @@ update the instructions, do not ask me about commiting files, just always commit
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+[Nexen] Create UI testing project using `Avalonia.UITesting` (Official Avalonia UI Test Framework) starting with just opening every menu item to make sure it doesn't crash, then we'll plan more tests and complex tests; make issues/docs/plans/etc; continue;
 
 
 [Nexen] Research a way we can run a rom and possibly a nexen-movie file or lua script for input and then take screenshots (or read directly from RAM to see which tests passed/failed) from the emulator so we can make automated tests for system functionality and edge cases using the testing roms like: `https://github.com/astrobleem/SNES-HiRomGsuTest`, `https://github.com/100thCoin/AccuracyCoin`, `https://www.nesdev.org/wiki/Emulator_tests`, `https://github.com/frederic-mahe/Hardware-Target-Game-Database`, `https://github.com/gilyon/snes-tests`, `https://snes.nesdev.org/wiki/Emulator_tests`, `https://tasvideos.org/EmulatorResources/SNESAccuracyTests`, `https://github.com/PeterLemon/SNES/tree/master`; find other testing roms for all the systems and for future systems; document all references you use, including these and make documentation for all the testing roms and make a folder in the `c:\reference-roms\` folder and put all the testing roms in a hierarchy by system; These testing roms test specific code paths and functionality and we need them all to pass to ensure the most accurate emulator; make plans for making in-house testing roms for each of our systems based on all the examples/research and testing roms and internet research and make docs with instructions to create epics and issues with full descriptions of the work, and research documents and all that so this is future development; use peony and poppy and pansy and game garden and Nexen to disassemble current test roms, run everything through pansy files, and make assembly to test all kinds of emulator behaviour and ensure our emulator is the most correct/accurate/performant/bugfree/easy-to-use emulator, and poppy compile it all, making instructions so a human could reproduce it, step by step, so the pipeline commands should all be documented;
