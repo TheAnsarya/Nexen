@@ -147,7 +147,8 @@ LoadRomResult WsConsole::LoadRom(VirtualFile& romFile) {
 	_apu = std::make_unique<WsApu>(_emu, this, _memoryManager.get(), _dmaController.get());
 	_cart = std::make_unique<WsCart>();
 
-	_cart->Init(_memoryManager.get(), _cartEeprom.get());
+	bool hasFlash = _emu->GetSettings()->GetWsConfig().ForceFlash;
+	_cart->Init(_emu, _memoryManager.get(), _cartEeprom.get(), _prgRom, _prgRomSize, hasFlash);
 	_memoryManager->Init(_emu, this, _cpu.get(), _ppu.get(), _controlManager.get(), _cart.get(), _timer.get(), _dmaController.get(), _internalEeprom.get(), _apu.get(), _serial.get());
 	_timer->Init(_memoryManager.get());
 	_dmaController->Init(_memoryManager.get(), _apu.get());
@@ -379,6 +380,10 @@ void WsConsole::LoadBattery() {
 	if (_saveRam) {
 		_emu->GetBatteryManager()->LoadBattery(".sav", std::span<uint8_t>(_saveRam, _saveRamSize));
 	}
+
+	if (_cart->HasFlash()) {
+		_emu->GetBatteryManager()->LoadBattery(".flash", std::span<uint8_t>(_prgRom, _prgRomSize));
+	}
 }
 
 void WsConsole::SaveBattery() {
@@ -389,6 +394,10 @@ void WsConsole::SaveBattery() {
 
 	if (_saveRam) {
 		_emu->GetBatteryManager()->SaveBattery(".sav", std::span<const uint8_t>(_saveRam, _saveRamSize));
+	}
+
+	if (_cart->HasFlash()) {
+		_emu->GetBatteryManager()->SaveBattery(".flash", std::span<const uint8_t>(_prgRom, _prgRomSize));
 	}
 }
 

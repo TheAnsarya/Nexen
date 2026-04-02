@@ -9,11 +9,12 @@
 class WsConsole;
 class WsTimer;
 class WsControlManager;
-class WsCart;
 class WsSerial;
 class WsDmaController;
 class WsEeprom;
 class Emulator;
+
+#include "WS/Carts/WsCart.h"
 
 /// <summary>
 /// WonderSwan / WonderSwan Color memory manager implementation.
@@ -153,6 +154,11 @@ public:
 			_state.OpenBus = value;
 		}
 
+		if (_cart->IsFlashSoftwareId() && addr >= 0x20000) [[unlikely]] {
+			value = _cart->FlashRead(addr);
+			_state.OpenBus = value;
+		}
+
 		return value;
 	}
 
@@ -177,6 +183,8 @@ public:
 		uint8_t* handler = _writes[addr >> 12];
 		if (handler) {
 			handler[addr & 0xFFF] = value;
+		} else if (_cart->HasFlash() && addr >= 0x20000) [[unlikely]] {
+			_cart->FlashWrite(addr, value);
 		}
 	}
 

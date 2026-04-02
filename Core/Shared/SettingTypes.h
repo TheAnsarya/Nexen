@@ -742,6 +742,7 @@ struct WsConfig {
 
 	bool HideBgLayers[2] = {};
 	bool DisableSprites = false;
+	bool ForceFlash = false;
 
 	WsAudioMode AudioMode = WsAudioMode::Headphones;
 	uint32_t Channel1Vol = 100;

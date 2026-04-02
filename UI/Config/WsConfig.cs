@@ -27,6 +27,7 @@ public sealed class WsConfig : BaseConfig<WsConfig> {
 	[Reactive] public bool HideBgLayer1 { get; set; } = false;
 	[Reactive] public bool HideBgLayer2 { get; set; } = false;
 	[Reactive] public bool DisableSprites { get; set; } = false;
+	[Reactive] public bool ForceFlash { get; set; } = false;
 
 	[Reactive] public WsAudioMode AudioMode { get; set; } = WsAudioMode.Headphones;
 	[Reactive][MinMax(0, 100)] public UInt32 Channel1Vol { get; set; } = 100;
@@ -57,6 +58,7 @@ public sealed class WsConfig : BaseConfig<WsConfig> {
 			HideBgLayer1 = HideBgLayer1,
 			HideBgLayer2 = HideBgLayer2,
 			DisableSprites = DisableSprites,
+			ForceFlash = ForceFlash,
 
 			AudioMode = AudioMode,
 			Channel1Vol = Channel1Vol,
@@ -90,6 +92,7 @@ public struct InteropWsConfig {
 	[MarshalAs(UnmanagedType.I1)] public bool HideBgLayer1;
 	[MarshalAs(UnmanagedType.I1)] public bool HideBgLayer2;
 	[MarshalAs(UnmanagedType.I1)] public bool DisableSprites;
+	[MarshalAs(UnmanagedType.I1)] public bool ForceFlash;
 
 	public WsAudioMode AudioMode;
 	public UInt32 Channel1Vol;

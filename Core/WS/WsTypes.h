@@ -516,11 +516,24 @@ struct WsEepromState {
 	bool InternalEepromWriteProtected; ///< Internal EEPROM protected
 };
 
+/// <summary>Flash command state machine modes.</summary>
+enum class WsFlashMode : uint8_t {
+	Idle,             ///< Waiting for command sequence
+	WriteByte,        ///< Single byte program mode
+	Erase             ///< Erase mode (waiting for erase type)
+};
+
 /// <summary>
-/// Cartridge state with ROM bank selection.
+/// Cartridge state with ROM bank selection and Flash state.
 /// </summary>
 struct WsCartState {
 	uint8_t SelectedBanks[4];     ///< Selected ROM banks for each slot
+
+	// Flash state
+	WsFlashMode FlashMode = WsFlashMode::Idle; ///< Flash command state machine
+	uint8_t FlashCycle = 0;       ///< Command sequence cycle counter
+	bool FlashSoftwareId = false; ///< True when in Software ID mode
+	bool HasFlash = false;        ///< True if cart has Flash ROM
 };
 
 /// <summary>

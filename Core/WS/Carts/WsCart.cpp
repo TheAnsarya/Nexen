@@ -2,6 +2,7 @@
 #include "WS/Carts/WsCart.h"
 #include "WS/WsMemoryManager.h"
 #include "WS/WsEeprom.h"
+#include "Shared/Emulator.h"
 #include "Utilities/Serializer.h"
 
 void WsCart::Map(uint32_t start, uint32_t end, MemoryType type, uint32_t offset, bool readonly) {
@@ -19,9 +20,13 @@ WsCart::WsCart() {
 	_state.SelectedBanks[3] = 0xFF;
 }
 
-void WsCart::Init(WsMemoryManager* memoryManager, WsEeprom* cartEeprom) {
+void WsCart::Init(Emulator* emu, WsMemoryManager* memoryManager, WsEeprom* cartEeprom, uint8_t* prgRom, uint32_t prgRomSize, bool hasFlash) {
+	_emu = emu;
 	_memoryManager = memoryManager;
 	_cartEeprom = cartEeprom;
+	_prgRom = prgRom;
+	_prgRomSize = prgRomSize;
+	_state.HasFlash = hasFlash;
 }
 
 void WsCart::RefreshMappings() {
@@ -50,6 +55,115 @@ void WsCart::WritePort(uint16_t port, uint8_t value) {
 	}
 }
 
+uint8_t WsCart::FlashRead(uint32_t addr) {
+	if (_state.FlashSoftwareId) {
+		// Software ID mode: return manufacturer/device ID
+		uint32_t offset = addr & 0x01;
+		if (offset == 0) {
+			return 0xbf; // SST manufacturer ID
+		} else {
+			return 0xb5; // SST39VF040 device ID (512KB)
+		}
+	}
+
+	// Normal read: return ROM data
+	if (addr < _prgRomSize) {
+		return _prgRom[addr];
+	}
+	return 0xff;
+}
+
+void WsCart::FlashWrite(uint32_t addr, uint8_t value) {
+	if (_state.FlashMode == WsFlashMode::WriteByte) {
+		// Program a single byte (can only clear bits, not set)
+		if (addr < _prgRomSize) {
+			_prgRom[addr] &= value;
+		}
+		_state.FlashMode = WsFlashMode::Idle;
+		_state.FlashCycle = 0;
+		return;
+	}
+
+	if (_state.FlashMode == WsFlashMode::Erase) {
+		if (_state.FlashCycle == 3) {
+			if ((addr & 0xffff) == 0x5555 && value == 0xaa) {
+				_state.FlashCycle++;
+			} else {
+				_state.FlashMode = WsFlashMode::Idle;
+				_state.FlashCycle = 0;
+			}
+		} else if (_state.FlashCycle == 4) {
+			if ((addr & 0xffff) == 0x2aaa && value == 0x55) {
+				_state.FlashCycle++;
+			} else {
+				_state.FlashMode = WsFlashMode::Idle;
+				_state.FlashCycle = 0;
+			}
+		} else if (_state.FlashCycle == 5) {
+			if ((addr & 0xffff) == 0x5555 && value == 0x10) {
+				// Chip erase
+				memset(_prgRom, 0xff, _prgRomSize);
+			} else if (value == 0x30) {
+				// Sector erase (4KB)
+				uint32_t sectorBase = addr & ~0xfff;
+				if (sectorBase + 0x1000 <= _prgRomSize) {
+					memset(_prgRom + sectorBase, 0xff, 0x1000);
+				}
+			}
+			_state.FlashMode = WsFlashMode::Idle;
+			_state.FlashCycle = 0;
+		}
+		return;
+	}
+
+	// Idle — process command sequence
+	if (_state.FlashCycle == 0) {
+		if ((addr & 0xffff) == 0x5555 && value == 0xaa) {
+			_state.FlashCycle++;
+		} else if (value == 0xf0) {
+			// Exit Software ID
+			_state.FlashSoftwareId = false;
+			_state.FlashCycle = 0;
+		}
+	} else if (_state.FlashCycle == 1) {
+		if ((addr & 0xffff) == 0x2aaa && value == 0x55) {
+			_state.FlashCycle++;
+		} else {
+			_state.FlashCycle = 0;
+		}
+	} else if (_state.FlashCycle == 2) {
+		if ((addr & 0xffff) == 0x5555) {
+			switch (value) {
+				case 0x80:
+					_state.FlashMode = WsFlashMode::Erase;
+					_state.FlashCycle = 3;
+					break;
+				case 0x90:
+					_state.FlashSoftwareId = true;
+					_state.FlashCycle = 0;
+					break;
+				case 0xa0:
+					_state.FlashMode = WsFlashMode::WriteByte;
+					_state.FlashCycle = 0;
+					break;
+				case 0xf0:
+					_state.FlashSoftwareId = false;
+					_state.FlashCycle = 0;
+					break;
+				default:
+					_state.FlashCycle = 0;
+					break;
+			}
+		} else {
+			_state.FlashCycle = 0;
+		}
+	}
+}
+
 void WsCart::Serialize(Serializer& s) {
 	SVArray(_state.SelectedBanks, 4);
+	SV(_state.FlashMode);
+	SV(_state.FlashCycle);
+	SV(_state.FlashSoftwareId);
+	SV(_state.HasFlash);
 }
