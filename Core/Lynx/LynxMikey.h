@@ -208,6 +208,8 @@ public:
 	/// When non-null, TX loopback also broadcasts to connected units.
 	/// Pass nullptr to disconnect from cable.</summary>
 	void SetComLynxCable(ComLynxCable* cable) { _comLynxCable = cable; }
+	[[nodiscard]] bool HasComLynxCable() const { return _comLynxCable != nullptr; }
+	[[nodiscard]] const void* GetComLynxCablePtr() const { return _comLynxCable; }
 
 	/// <summary>Read a Mikey register.
 	/// Handles timers ($FD00–$FD1F), audio ($FD20–$FD4F), interrupts ($FD80–$FD81),

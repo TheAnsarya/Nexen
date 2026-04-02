@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "Lynx/LynxTypes.h"
+#include "Lynx/ComLynxCable.h"
+#include "Lynx/LynxMikey.h"
 
 /// <summary>
 /// Test suite for ComLynx virtual cable — multi-instance serial communication.
@@ -332,6 +334,37 @@ TEST_F(ComLynxCableTest, Break_PropagatesAcrossCable) {
 	// Both should see break code
 	EXPECT_TRUE(_unitA.UartRxData & UartBreakCode);
 	EXPECT_TRUE(_unitB.UartRxData & UartBreakCode);
+}
+
+TEST(ComLynxRuntimeWiringTest, MikeyStoresCablePointer) {
+	ComLynxCable cable;
+	LynxMikey mikey;
+
+	EXPECT_FALSE(mikey.HasComLynxCable());
+	mikey.SetComLynxCable(&cable);
+	EXPECT_TRUE(mikey.HasComLynxCable());
+	EXPECT_EQ(mikey.GetComLynxCablePtr(), &cable);
+
+	mikey.SetComLynxCable(nullptr);
+	EXPECT_FALSE(mikey.HasComLynxCable());
+}
+
+TEST(ComLynxRuntimeWiringTest, CableConnectDisconnectTracksLiveMikeyUnits) {
+	ComLynxCable cable;
+	LynxMikey mikeyA;
+	LynxMikey mikeyB;
+
+	EXPECT_EQ(cable.GetConnectedCount(), 0u);
+	cable.Connect(&mikeyA);
+	cable.Connect(&mikeyB);
+	EXPECT_TRUE(cable.IsConnected(&mikeyA));
+	EXPECT_TRUE(cable.IsConnected(&mikeyB));
+	EXPECT_EQ(cable.GetConnectedCount(), 2u);
+
+	cable.Disconnect(&mikeyA);
+	EXPECT_FALSE(cable.IsConnected(&mikeyA));
+	EXPECT_TRUE(cable.IsConnected(&mikeyB));
+	EXPECT_EQ(cable.GetConnectedCount(), 1u);
 }
 
 // =============================================================================

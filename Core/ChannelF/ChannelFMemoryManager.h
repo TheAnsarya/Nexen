@@ -74,6 +74,11 @@ private:
 	uint8_t _interruptVectorHigh = 0;
 	uint8_t _interruptVectorLow = 0;
 	std::function<void(uint16_t)> _onInterruptVectorChanged;
+	std::function<void(bool)> _onSmiIrqLineChanged;
+	uint8_t _smiTimerLatch = 0;
+	uint8_t _smiTimerCounter = 0;
+	uint8_t _smiTimerControl = 0;
+	bool _smiTimerEnabled = false;
 
 	// Audio state — port 0 bits 5-6 select one of 4 discrete tones
 	uint8_t _soundToneSelect = 0;  // 0=silence, 1=~1kHz, 2=~500Hz, 3=~120Hz
@@ -111,7 +116,9 @@ public:
 
 	// 3853 SMI interrupt vector
 	void SetInterruptVectorCallback(std::function<void(uint16_t)> callback) { _onInterruptVectorChanged = std::move(callback); }
+	void SetSmiIrqCallback(std::function<void(bool)> callback) { _onSmiIrqLineChanged = std::move(callback); }
 	[[nodiscard]] uint16_t GetInterruptVector() const { return (uint16_t)((_interruptVectorHigh << 8) | _interruptVectorLow); }
+	[[nodiscard]] uint8_t GetSmiTimerCounter() const { return _smiTimerCounter; }
 
 	// State accessors for GetConsoleState and serialization
 	[[nodiscard]] ChannelFVideoState GetVideoState() const;

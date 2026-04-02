@@ -94,6 +94,13 @@ void ChannelFMemoryManager::Reset() {
 	_consoleButtons = 0xff;
 	_interruptVectorHigh = 0;
 	_interruptVectorLow = 0;
+	_smiTimerLatch = 0;
+	_smiTimerCounter = 0;
+	_smiTimerControl = 0;
+	_smiTimerEnabled = false;
+	if (_onSmiIrqLineChanged) {
+		_onSmiIrqLineChanged(false);
+	}
 	if (_cartBoardType == CartBoardType::RomWithRam) {
 		memset(_cartRam.data(), 0x00, _cartRam.size());
 	}
@@ -141,6 +148,10 @@ uint8_t ChannelFMemoryManager::ReadPort(uint8_t port) const {
 		case 1:
 			// Port 1: Video/misc status
 			return _portLatch[1];
+			case 0x20:
+				return _smiTimerCounter;
+			case 0x21:
+				return _smiTimerControl;
 		case 4:
 			// Port 4: Right controller
 			return _controller2;
@@ -171,6 +182,23 @@ void ChannelFMemoryManager::WritePort(uint8_t port, uint8_t value) {
 			} else {
 				// 3853 SMI ports: $20-$21 = timer, $22-$23 = interrupt vector
 				switch (port) {
+					case 0x20:
+						_smiTimerLatch = value;
+						if ((_smiTimerControl & 0x01) != 0) {
+							_smiTimerCounter = _smiTimerLatch;
+						}
+						break;
+					case 0x21:
+						// bit0: enable, bit1: auto-reload
+						_smiTimerControl = value;
+						_smiTimerEnabled = (value & 0x01) != 0;
+						if (_smiTimerEnabled) {
+							_smiTimerCounter = _smiTimerLatch;
+							if (_onSmiIrqLineChanged) {
+								_onSmiIrqLineChanged(false);
+							}
+						}
+						break;
 					case 0x22:
 						_interruptVectorHigh = value;
 						if (_onInterruptVectorChanged) {
@@ -299,6 +327,20 @@ void ChannelFMemoryManager::BeginFrameCapture() {
 void ChannelFMemoryManager::StepAudio() {
 	_videoCycle++;
 	ApplyDeferredVideoWrites();
+
+	if (_smiTimerEnabled && _smiTimerCounter > 0) {
+		_smiTimerCounter--;
+		if (_smiTimerCounter == 0) {
+			if (_onSmiIrqLineChanged) {
+				_onSmiIrqLineChanged(true);
+			}
+			if ((_smiTimerControl & 0x02) != 0) {
+				_smiTimerCounter = _smiTimerLatch;
+			} else {
+				_smiTimerEnabled = false;
+			}
+		}
+	}
 
 	// Channel F PSG: 4 discrete tones from port 0 bits 5-6
 	// _soundToneSelect: 0=silence, 1=~1kHz, 2=~500Hz, 3=~120Hz

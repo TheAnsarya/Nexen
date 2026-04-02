@@ -64,6 +64,9 @@ ChannelFConsole::ChannelFConsole(Emulator* emu)
 	_memoryManager->SetInterruptVectorCallback([this](uint16_t vector) {
 		_cpu->SetInterruptVector(vector);
 	});
+	_memoryManager->SetSmiIrqCallback([this](bool asserted) {
+		_cpu->SetIrqLine(asserted);
+	});
 }
 
 ChannelFConsole::~ChannelFConsole() {

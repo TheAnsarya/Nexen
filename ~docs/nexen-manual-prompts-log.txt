@@ -1105,13 +1105,31 @@ There's no battery save on the Channel F, did you just implement it anyways? Why
 
 `all-err.txt` etc are atrifacts made by testing/running processes so don't put them into the root folder, they should be in `/artifacts/` so update the rules to not write temp files to the root, we want them in `artifacts` folder so they are gitignored; also get rid of them if we're not using them; continue;
 
-
-
-
-
-
-
 [Nexen] (Fairchild Channel F) Focus on fixing code and going for a complete Channel F implementation so everything works and we can declare this system as working; start by focusing on issues #979 `[18.5] Channel F audio generation and timing coupling`, #977 `[18.4] Channel F video pipeline and scanline timing model`, #976 `[18.3.1] Cartridge board types and on-cart RAM behavior` and then working on others, close these issues after compleletely implementing them; continue;
+
+stop fucking asking me about unrelated files, I dealt with them, continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

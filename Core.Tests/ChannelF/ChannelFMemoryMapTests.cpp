@@ -508,3 +508,43 @@ TEST(ChfAudioTimingTest, VolumeFromPort5ScalesOutputAmplitude) {
 	EXPECT_EQ(muted, 0);
 	EXPECT_NE(loud, 0);
 }
+
+TEST(ChfSmiTimerTest, OneShotTimerAssertsIrqAtZero) {
+	ChannelFMemoryManager mm;
+	bool irqAsserted = false;
+	mm.SetSmiIrqCallback([&irqAsserted](bool level) {
+		irqAsserted = level;
+	});
+	mm.Reset();
+
+	mm.WritePort(0x20, 3);    // latch = 3 ticks
+	mm.WritePort(0x21, 0x01); // enable one-shot
+	EXPECT_EQ(mm.ReadPort(0x20), 3);
+
+	mm.StepAudio();
+	EXPECT_FALSE(irqAsserted);
+	mm.StepAudio();
+	EXPECT_FALSE(irqAsserted);
+	mm.StepAudio();
+	EXPECT_TRUE(irqAsserted);
+}
+
+TEST(ChfSmiTimerTest, AutoReloadTimerRepeatsAfterLatch) {
+	ChannelFMemoryManager mm;
+	int irqCount = 0;
+	mm.SetSmiIrqCallback([&irqCount](bool level) {
+		if (level) {
+			irqCount++;
+		}
+	});
+	mm.Reset();
+
+	mm.WritePort(0x20, 2);    // latch = 2 ticks
+	mm.WritePort(0x21, 0x03); // enable + auto-reload
+
+	for (int i = 0; i < 5; i++) {
+		mm.StepAudio();
+	}
+
+	EXPECT_GE(irqCount, 2);
+}

@@ -10,6 +10,7 @@
 #include "Lynx/LynxApu.h"
 #include "Lynx/LynxEeprom.h"
 #include "Lynx/LynxGameDatabase.h"
+#include "Lynx/ComLynxCable.h"
 #include "Lynx/AtariLynxFormat.h"
 #include "Utilities/CRC32.h"
 #include "Shared/Emulator.h"
@@ -22,11 +23,19 @@
 
 // EEPROM CRC32 lookup now handled by LynxGameDatabase
 
+namespace {
+	ComLynxCable g_sharedComLynxCable;
+}
+
 LynxConsole::LynxConsole(Emulator* emu) {
 	_emu = emu;
 }
 
 LynxConsole::~LynxConsole() {
+	if (_mikey) {
+		g_sharedComLynxCable.Disconnect(_mikey.get());
+		_mikey->SetComLynxCable(nullptr);
+	}
 }
 
 LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
@@ -253,6 +262,8 @@ LoadRomResult LynxConsole::LoadRom(VirtualFile& romFile) {
 	// Initialize Mikey (timers, display, IRQs) — needs CPU reference for IRQ line
 	// MUST be called before HLE boot state, as Init() zeroes all Mikey state
 	_mikey->Init(_emu, this, _cpu.get(), _memoryManager.get());
+	_mikey->SetComLynxCable(&g_sharedComLynxCable);
+	g_sharedComLynxCable.Connect(_mikey.get());
 
 	// Wire cart to Mikey for SYSCTL1 bank strobe
 	_mikey->SetCart(_cart.get());
