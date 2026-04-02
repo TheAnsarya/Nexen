@@ -3,6 +3,7 @@
 #include "ChannelF/ChannelFTypes.h"
 #include <functional>
 
+
 /// <summary>
 /// Memory bus for the Fairchild Channel F system.
 ///
@@ -40,6 +41,13 @@ public:
 	static constexpr uint8_t NumColors = ChannelFConstants::NumColors;
 
 private:
+	struct DeferredVideoWrite {
+		uint16_t X = 0;
+		uint16_t Y = 0;
+		uint8_t Color = 0;
+		uint64_t ApplyCycle = 0;
+	};
+
 	// ROM storage
 	vector<uint8_t> _biosRom;
 	vector<uint8_t> _cartRom;
@@ -56,8 +64,11 @@ private:
 
 	// Video state
 	uint8_t _videoColor = 0;
+	uint8_t _backgroundColor = 0;
 	uint8_t _videoX = 0;
 	uint8_t _videoY = 0;
+	vector<DeferredVideoWrite> _pendingVideoWrites;
+	uint64_t _videoCycle = 0;
 
 	// 3853 SMI interrupt vector (ports $22-$23)
 	uint8_t _interruptVectorHigh = 0;
@@ -66,6 +77,8 @@ private:
 
 	// Audio state — port 0 bits 5-6 select one of 4 discrete tones
 	uint8_t _soundToneSelect = 0;  // 0=silence, 1=~1kHz, 2=~500Hz, 3=~120Hz
+	uint8_t _soundVolume = 0x0f;
+	uint32_t _masterClockHz = ChannelFConstants::CpuClockHz;
 
 	// Audio synthesis
 	vector<int16_t> _audioBuffer;
@@ -94,6 +107,7 @@ public:
 
 	// Controller input (set by control manager each frame)
 	void SetControllerState(uint8_t ctrl1, uint8_t ctrl2, uint8_t console);
+	void SetMasterClockRate(uint32_t masterClockHz) { _masterClockHz = masterClockHz; }
 
 	// 3853 SMI interrupt vector
 	void SetInterruptVectorCallback(std::function<void(uint16_t)> callback) { _onInterruptVectorChanged = std::move(callback); }
@@ -125,4 +139,7 @@ public:
 	[[nodiscard]] bool HasCartRam() const { return _cartBoardType == CartBoardType::RomWithRam; }
 	[[nodiscard]] CartBoardType GetCartBoardType() const { return _cartBoardType; }
 	[[nodiscard]] uint8_t GetActiveCartBank() const { return _activeCartBank; }
+
+private:
+	void ApplyDeferredVideoWrites();
 };

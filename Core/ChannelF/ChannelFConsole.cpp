@@ -94,6 +94,7 @@ LoadRomResult ChannelFConsole::LoadRom(VirtualFile& romFile) {
 
 	// Load cartridge ROM into memory manager
 	_memoryManager->LoadCart(romData.data(), (uint32_t)romData.size());
+	_memoryManager->SetMasterClockRate(GetMasterClockRate());
 
 	// Register memory regions with the emulator for debugger
 	_emu->RegisterMemory(MemoryType::ChannelFBiosRom,
@@ -182,7 +183,10 @@ void ChannelFConsole::RunFrame() {
 void ChannelFConsole::Reset() {
 	_core.Reset();
 	if (_cpu) _cpu->Reset();
-	if (_memoryManager) _memoryManager->Reset();
+	if (_memoryManager) {
+		_memoryManager->Reset();
+		_memoryManager->SetMasterClockRate(GetMasterClockRate());
+	}
 	_frameCount = 0;
 	_scanline = 0;
 	_scanlineCycle = 0;
@@ -355,6 +359,7 @@ void ChannelFConsole::Serialize(Serializer& s) {
 	ChannelFAudioState audioState = {};
 	ChannelFPortState portState = {};
 	uint8_t vram[ChannelFConstants::VramSize] = {};
+	uint8_t cartRam[ChannelFMemoryManager::CartRamSize] = {};
 
 	if (s.IsSaving()) {
 		if (_cpu) {
@@ -369,6 +374,9 @@ void ChannelFConsole::Serialize(Serializer& s) {
 			audioState = _memoryManager->GetAudioState();
 			portState = _memoryManager->GetPortState();
 			memcpy(vram, _memoryManager->GetVram(), ChannelFConstants::VramSize);
+			if (_memoryManager->HasCartRam()) {
+				memcpy(cartRam, _memoryManager->GetCartRamData(), ChannelFMemoryManager::CartRamSize);
+			}
 		}
 	}
 
@@ -383,12 +391,18 @@ void ChannelFConsole::Serialize(Serializer& s) {
 	SV(videoState.Color);
 	SV(videoState.X);
 	SV(videoState.Y);
+	SV(videoState.BackgroundColor);
 	SV(videoState.Scanline);
 	SV(videoState.Cycle);
+	SV(videoState.PendingWrites);
 
 	// Audio state
 	SV(audioState.ToneSelect);
+	SV(audioState.Volume);
 	SV(audioState.SoundEnabled);
+	SV(audioState.HalfPeriodCycles);
+	SV(audioState.CycleCounter);
+	SV(audioState.OutputHigh);
 
 	// Port state
 	SV(portState.Port0);
@@ -398,6 +412,7 @@ void ChannelFConsole::Serialize(Serializer& s) {
 
 	// VRAM
 	s.StreamArray(vram, ChannelFConstants::VramSize, "vram");
+	s.StreamArray(cartRam, ChannelFMemoryManager::CartRamSize, "cartRam");
 
 	if (!s.IsSaving()) {
 		if (_cpu) {
@@ -410,6 +425,9 @@ void ChannelFConsole::Serialize(Serializer& s) {
 			_memoryManager->SetAudioState(audioState);
 			_memoryManager->SetPortState(portState);
 			memcpy(_memoryManager->GetVramData(), vram, ChannelFConstants::VramSize);
+			if (_memoryManager->HasCartRam()) {
+				memcpy(_memoryManager->GetCartRamMutable(), cartRam, ChannelFMemoryManager::CartRamSize);
+			}
 		}
 		_scanline = videoState.Scanline;
 		_scanlineCycle = videoState.Cycle;
@@ -477,11 +495,14 @@ void ChannelFConsole::RenderScanline(uint16_t line) {
 	if (!_memoryManager || line >= ScreenHeight) return;
 
 	const uint8_t* vram = _memoryManager->GetVram();
+	ChannelFVideoState videoState = _memoryManager->GetVideoState();
 	uint32_t rowBase = line * ScreenWidth;
 	uint8_t reg1 = vram[rowBase + 125] & 0x03;
 	uint8_t reg2 = vram[rowBase + 126] & 0x03;
 	uint16_t paletteOffset = static_cast<uint16_t>(((reg2 & 0x02) | (reg1 >> 1)) << 2);
+	uint16_t backgroundColor = static_cast<uint16_t>((videoState.BackgroundColor & 0x03) << 2);
 	for (uint32_t x = 0; x < ScreenWidth; x++) {
-		_frameBuffer[rowBase + x] = paletteOffset + (vram[rowBase + x] & 0x03);
+		uint16_t color = (uint16_t)(vram[rowBase + x] & 0x03);
+		_frameBuffer[rowBase + x] = color == 0 ? backgroundColor : (uint16_t)(paletteOffset + color);
 	}
 }

@@ -13,6 +13,8 @@ TEST(ChannelFVideoStateTest, DefaultState_ZeroInitialized) {
 	EXPECT_EQ(video.Color, 0);
 	EXPECT_EQ(video.X, 0);
 	EXPECT_EQ(video.Y, 0);
+	EXPECT_EQ(video.BackgroundColor, 0);
+	EXPECT_EQ(video.PendingWrites, 0);
 }
 
 TEST(ChannelFVideoStateTest, ColorField_TwoBitRange) {
@@ -36,7 +38,11 @@ TEST(ChannelFVideoStateTest, Position_FullRange) {
 TEST(ChannelFAudioStateTest, DefaultState_ZeroInitialized) {
 	ChannelFAudioState audio = {};
 	EXPECT_EQ(audio.ToneSelect, 0);
+	EXPECT_EQ(audio.Volume, 0x0f);
 	EXPECT_FALSE(audio.SoundEnabled);
+	EXPECT_EQ(audio.HalfPeriodCycles, 0u);
+	EXPECT_EQ(audio.CycleCounter, 0u);
+	EXPECT_FALSE(audio.OutputHigh);
 }
 
 TEST(ChannelFAudioStateTest, SoundEnabled_Toggle) {
@@ -140,12 +146,12 @@ TEST(ChannelFCpuStateTest, ISAR_SixBitRange) {
 
 TEST(ChannelFCpuStateTest, StatusRegisterW_FlagBits) {
 	ChannelFCpuState cpu = {};
-	// W register: bit 0 = carry, bit 1 = zero, bit 2 = overflow, bit 3 = sign
+	// W register: bit 0 = sign (complementary), bit 1 = carry, bit 2 = zero, bit 3 = overflow
 	cpu.W = 0x0f;
-	EXPECT_EQ(cpu.W & 0x01, 1); // carry
-	EXPECT_EQ(cpu.W & 0x02, 2); // zero
-	EXPECT_EQ(cpu.W & 0x04, 4); // overflow
-	EXPECT_EQ(cpu.W & 0x08, 8); // sign
+	EXPECT_EQ(cpu.W & 0x01, 1); // sign
+	EXPECT_EQ(cpu.W & 0x02, 2); // carry
+	EXPECT_EQ(cpu.W & 0x04, 4); // zero
+	EXPECT_EQ(cpu.W & 0x08, 8); // overflow
 }
 
 // --- ChannelFState (aggregate) ---

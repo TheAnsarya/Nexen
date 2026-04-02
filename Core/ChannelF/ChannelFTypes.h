@@ -42,13 +42,19 @@ struct ChannelFVideoState : BaseState {
 	uint8_t Color = 0;        // Current drawing color (2 bits)
 	uint8_t X = 0;            // Current X position
 	uint8_t Y = 0;            // Current Y position
+	uint8_t BackgroundColor = 0; // Background palette select from port 0 bits 0-1
 	uint16_t Scanline = 0;    // Current scanline (0-261 NTSC, 0-311 PAL)
 	uint16_t Cycle = 0;       // Cycle within current scanline (0-113)
+	uint16_t PendingWrites = 0; // Deferred video writes queued for timing-accurate commit
 };
 
 struct ChannelFAudioState : BaseState {
 	uint8_t ToneSelect = 0;   // 2-bit tone select (port 0 bits 5-6): 0=silence, 1=1kHz, 2=500Hz, 3=120Hz
+	uint8_t Volume = 0x0f;    // 4-bit output volume from port 5 (default full scale)
 	bool SoundEnabled = false;
+	uint32_t HalfPeriodCycles = 0;
+	uint32_t CycleCounter = 0;
+	bool OutputHigh = false;
 };
 
 struct ChannelFPortState : BaseState {

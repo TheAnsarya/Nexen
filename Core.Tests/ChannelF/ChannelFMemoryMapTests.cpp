@@ -443,3 +443,68 @@ TEST(ChfCartBoardTest, RamBoard_WritesAndReadsCartRamRange) {
 	EXPECT_EQ(mm.ReadMemory(ChannelFMemoryManager::CartRamStartAddr), 0x5a);
 	EXPECT_EQ(mm.ReadMemory(ChannelFMemoryManager::CartRamEndAddr), 0xa5);
 }
+
+TEST(ChfVideoTimingTest, PortWriteIsDeferredByOneCycle) {
+	ChannelFMemoryManager mm;
+	mm.Reset();
+
+	mm.WritePort(4, 0x00);   // Y = 0
+	mm.WritePort(0, 0x03);   // color = 3
+	mm.WritePort(1, 0x82);   // write-enable + X = 2
+
+	const uint8_t* vram = mm.GetVram();
+	EXPECT_EQ(vram[2], 0x00) << "Write should not be visible until next cycle";
+
+	mm.StepAudio();
+	EXPECT_EQ(vram[2], 0x03);
+}
+
+TEST(ChfVideoTimingTest, Port1WithoutWriteEnableDoesNotModifyVram) {
+	ChannelFMemoryManager mm;
+	mm.Reset();
+
+	mm.WritePort(4, 0x00);
+	mm.WritePort(0, 0x02);
+	mm.WritePort(1, 0x7f); // no bit 7 write-enable
+	mm.StepAudio();
+
+	const uint8_t* vram = mm.GetVram();
+	for (uint32_t x = 0; x < ChannelFConstants::ScreenWidth; x++) {
+		EXPECT_EQ(vram[x], 0x00);
+	}
+}
+
+TEST(ChfAudioTimingTest, HalfPeriodTracksMasterClock) {
+	ChannelFMemoryManager mm;
+	mm.Reset();
+
+	mm.SetMasterClockRate(1789773);
+	mm.WritePort(0, 0x20); // tone 1 (~1kHz)
+	ChannelFAudioState ntscState = mm.GetAudioState();
+
+	mm.SetMasterClockRate(1773447);
+	ChannelFAudioState palState = mm.GetAudioState();
+
+	EXPECT_NE(ntscState.HalfPeriodCycles, 0u);
+	EXPECT_NE(palState.HalfPeriodCycles, 0u);
+	EXPECT_NE(ntscState.HalfPeriodCycles, palState.HalfPeriodCycles);
+}
+
+TEST(ChfAudioTimingTest, VolumeFromPort5ScalesOutputAmplitude) {
+	ChannelFMemoryManager mm;
+	mm.Reset();
+	mm.SetMasterClockRate(1789773);
+	mm.WritePort(0, 0x20); // tone 1
+
+	mm.WritePort(5, 0x00); // mute
+	mm.StepAudio();
+	int16_t muted = mm.GetAudioBuffer()[0];
+
+	mm.BeginFrameCapture();
+	mm.WritePort(5, 0x0f); // max volume
+	mm.StepAudio();
+	int16_t loud = mm.GetAudioBuffer()[0];
+
+	EXPECT_EQ(muted, 0);
+	EXPECT_NE(loud, 0);
+}

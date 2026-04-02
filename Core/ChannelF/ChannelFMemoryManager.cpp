@@ -1,9 +1,16 @@
 #include "pch.h"
 #include "ChannelF/ChannelFMemoryManager.h"
 #include <algorithm>
+#include <limits>
 
 namespace {
 	constexpr uint32_t CartBankWindowSize = 0x2000;
+	constexpr uint32_t ToneFrequencies[4] = {
+		0,
+		1000,
+		500,
+		120
+	};
 
 	bool HasSignature(const uint8_t* data, uint32_t size, const char* signature) {
 		if (data == nullptr || signature == nullptr) {
@@ -71,9 +78,13 @@ void ChannelFMemoryManager::Reset() {
 	memset(_vram, 0, sizeof(_vram));
 	memset(_portLatch, 0, sizeof(_portLatch));
 	_videoColor = 0;
+	_backgroundColor = 0;
 	_videoX = 0;
 	_videoY = 0;
+	_pendingVideoWrites.clear();
+	_videoCycle = 0;
 	_soundToneSelect = 0;
+	_soundVolume = 0x0f;
 	_audioBuffer.clear();
 	_audioCounter = 0;
 	_audioOutput = false;
@@ -183,6 +194,7 @@ void ChannelFMemoryManager::WritePort(uint8_t port, uint8_t value) {
 			// Port 0 write: bits 0-1 = color, bits 5-6 = tone select
 			// Tone select: 0=silence, 1=~1kHz, 2=~500Hz, 3=~120Hz
 			_videoColor = value & 0x03;
+			_backgroundColor = value & 0x03;
 			_soundToneSelect = (value >> 5) & 0x03;
 			break;
 
@@ -191,9 +203,14 @@ void ChannelFMemoryManager::WritePort(uint8_t port, uint8_t value) {
 			// Bits 0-6 = column (X), bit 7 = write-enable
 			uint8_t col = value & 0x7f;
 			if (value & 0x80) {
-				// Write pixel at current (col, _videoY) with _videoColor
+				// Queue the write to land on the next cycle to model port-write video latency.
 				if (col < ScreenWidth && _videoY < ScreenHeight) {
-					_vram[(uint32_t)_videoY * ScreenWidth + col] = _videoColor;
+					_pendingVideoWrites.push_back({
+						(uint16_t)col,
+						_videoY,
+						(uint8_t)(_videoColor & 0x03),
+						_videoCycle + 1
+					});
 				}
 			}
 			_videoX = col;
@@ -206,7 +223,8 @@ void ChannelFMemoryManager::WritePort(uint8_t port, uint8_t value) {
 			break;
 
 		case 5:
-			// Port 5: controller/peripheral I/O (not sound on real hardware)
+			// Port 5: controller/peripheral I/O (not tone select), low nibble used as output volume.
+			_soundVolume = value & 0x0f;
 			break;
 
 		default:
@@ -225,13 +243,22 @@ ChannelFVideoState ChannelFMemoryManager::GetVideoState() const {
 	state.Color = _videoColor;
 	state.X = _videoX;
 	state.Y = _videoY;
+	state.BackgroundColor = _backgroundColor;
+	state.PendingWrites = (uint16_t)std::min<size_t>(_pendingVideoWrites.size(), std::numeric_limits<uint16_t>::max());
 	return state;
 }
 
 ChannelFAudioState ChannelFMemoryManager::GetAudioState() const {
 	ChannelFAudioState state = {};
 	state.ToneSelect = _soundToneSelect;
+	state.Volume = _soundVolume;
 	state.SoundEnabled = (_soundToneSelect != 0);
+	if (_soundToneSelect != 0) {
+		uint32_t freq = ToneFrequencies[_soundToneSelect];
+		state.HalfPeriodCycles = std::max(1u, _masterClockHz / (2u * freq));
+	}
+	state.CycleCounter = _audioCounter;
+	state.OutputHigh = _audioOutput;
 	return state;
 }
 
@@ -248,10 +275,14 @@ void ChannelFMemoryManager::SetVideoState(const ChannelFVideoState& state) {
 	_videoColor = state.Color;
 	_videoX = state.X;
 	_videoY = state.Y;
+	_backgroundColor = state.BackgroundColor;
 }
 
 void ChannelFMemoryManager::SetAudioState(const ChannelFAudioState& state) {
 	_soundToneSelect = state.ToneSelect;
+	_soundVolume = state.Volume;
+	_audioCounter = state.CycleCounter;
+	_audioOutput = state.OutputHigh;
 }
 
 void ChannelFMemoryManager::SetPortState(const ChannelFPortState& state) {
@@ -266,25 +297,24 @@ void ChannelFMemoryManager::BeginFrameCapture() {
 }
 
 void ChannelFMemoryManager::StepAudio() {
+	_videoCycle++;
+	ApplyDeferredVideoWrites();
+
 	// Channel F PSG: 4 discrete tones from port 0 bits 5-6
 	// _soundToneSelect: 0=silence, 1=~1kHz, 2=~500Hz, 3=~120Hz
-	// Fixed half-periods in CPU cycles (based on ~1.79MHz master clock)
-	static constexpr uint32_t halfPeriods[4] = {
-		0,      // silence (unused)
-		895,    // ~1000Hz: 1789773 / (2*1000)
-		1790,   // ~500Hz:  1789773 / (2*500)
-		7457    // ~120Hz:  1789773 / (2*120)
-	};
+	// Half period is derived from active console clock (NTSC/PAL), coupling audio to frame timing.
 
 	int16_t sample = 0;
 	if (_soundToneSelect != 0) {
+		uint32_t freq = ToneFrequencies[_soundToneSelect];
+		uint32_t halfPeriod = std::max(1u, _masterClockHz / (2u * freq));
 		_audioCounter++;
-		if (_audioCounter >= halfPeriods[_soundToneSelect]) {
+		if (_audioCounter >= halfPeriod) {
 			_audioCounter = 0;
 			_audioOutput = !_audioOutput;
 		}
-		// Square wave: +/- amplitude (~25% of int16_t range for reasonable volume)
-		sample = _audioOutput ? (int16_t)8192 : (int16_t)-8192;
+		int16_t amplitude = (int16_t)((8192 * _soundVolume) / 15);
+		sample = _audioOutput ? amplitude : (int16_t)-amplitude;
 	} else {
 		_audioCounter = 0;
 		_audioOutput = false;
@@ -292,4 +322,27 @@ void ChannelFMemoryManager::StepAudio() {
 	// Stereo: push left + right (mono duplicated)
 	_audioBuffer.push_back(sample);
 	_audioBuffer.push_back(sample);
+}
+
+void ChannelFMemoryManager::ApplyDeferredVideoWrites() {
+	if (_pendingVideoWrites.empty()) {
+		return;
+	}
+
+	size_t writeIndex = 0;
+	while (writeIndex < _pendingVideoWrites.size()) {
+		const DeferredVideoWrite& write = _pendingVideoWrites[writeIndex];
+		if (write.ApplyCycle > _videoCycle) {
+			break;
+		}
+
+		if (write.X < ScreenWidth && write.Y < ScreenHeight) {
+			_vram[(uint32_t)write.Y * ScreenWidth + write.X] = write.Color;
+		}
+		writeIndex++;
+	}
+
+	if (writeIndex > 0) {
+		_pendingVideoWrites.erase(_pendingVideoWrites.begin(), _pendingVideoWrites.begin() + (ptrdiff_t)writeIndex);
+	}
 }
