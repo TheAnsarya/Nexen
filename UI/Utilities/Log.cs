@@ -25,7 +25,9 @@ public static class Log {
 	);
 
 	/// <summary>
-	/// Initializes the logging system. Safe to call multiple times.
+	/// Initializes console-only logging for the pre-wizard phase.
+	/// Does not access ConfigManager.HomeFolder, so no directories are created.
+	/// Call <see cref="InitializeFileLogging"/> after the home folder is determined.
 	/// </summary>
 	public static void Initialize() {
 		if (_initialized) return;
@@ -34,19 +36,47 @@ public static class Log {
 			if (_initialized) return;
 
 			try {
+				_loggerFactory = LoggerFactory.Create(builder => {
+					builder
+						.SetMinimumLevel(LogLevel.Debug)
+						.AddConsole(options => {
+							options.FormatterName = "simple";
+						});
+				});
+
+				_logger = _loggerFactory.CreateLogger("Nexen");
+				_initialized = true;
+				Info("=== Nexen logging initialized (console) ===");
+			} catch (Exception ex) {
+				System.Diagnostics.Debug.WriteLine($"Failed to initialize logging: {ex}");
+			}
+		}
+	}
+
+	/// <summary>
+	/// Upgrades logging to also write to the log file in the home folder.
+	/// Safe to call multiple times; only the first call adds the file provider.
+	/// </summary>
+	public static void InitializeFileLogging() {
+		if (_fileWriter is not null) return;
+
+		lock (_lock) {
+			if (_fileWriter is not null) return;
+
+			try {
 				string logPath = LogFilePath;
 
-				// Ensure directory exists
 				string? dir = Path.GetDirectoryName(logPath);
 				if (dir is not null) {
 					Directory.CreateDirectory(dir);
 				}
 
-				// Open log file for append
 				_fileWriter = new StreamWriter(logPath, append: true) {
 					AutoFlush = true
 				};
 
+				// Rebuild the logger factory with both console and file providers
+				_loggerFactory?.Dispose();
 				_loggerFactory = LoggerFactory.Create(builder => {
 					builder
 						.SetMinimumLevel(LogLevel.Debug)
@@ -57,12 +87,9 @@ public static class Log {
 				});
 
 				_logger = _loggerFactory.CreateLogger("Nexen");
-				_initialized = true;
-				Info("=== Nexen logging initialized ===");
 				Info($"Log file: {logPath}");
 			} catch (Exception ex) {
-				// If logging fails to initialize, write to debug output
-				System.Diagnostics.Debug.WriteLine($"Failed to initialize logging: {ex}");
+				System.Diagnostics.Debug.WriteLine($"Failed to initialize file logging: {ex}");
 			}
 		}
 	}

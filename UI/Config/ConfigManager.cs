@@ -100,6 +100,8 @@ public static partial class ConfigManager {
 		string homeFolder = portable ? DefaultPortableFolder : DefaultDocumentsFolder;
 		DependencyHelper.ExtractNativeDependencies(homeFolder);
 		HomeFolder = homeFolder;
+		// Now that HomeFolder is set, enable file logging
+		Log.InitializeFileLogging();
 		Config.Save();
 	}
 

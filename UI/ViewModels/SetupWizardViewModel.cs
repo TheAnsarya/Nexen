@@ -41,11 +41,19 @@ public sealed class SetupWizardViewModel : ViewModelBase {
 	/// <summary>Gets whether the current platform is macOS.</summary>
 	[Reactive] public bool IsOsx { get; set; } = OperatingSystem.IsMacOS();
 
+	/// <summary>Gets whether portable mode is available (disabled for AppImage on Linux).</summary>
+	[Reactive] public bool CanUsePortableMode { get; set; } = !IsRunningInAppImage();
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="SetupWizardViewModel"/> class.
 	/// </summary>
 	public SetupWizardViewModel() {
 		InstallLocation = ConfigManager.DefaultDocumentsFolder;
+
+		// AppImage mounts to a read-only temp directory — portable mode cannot work.
+		if (!CanUsePortableMode) {
+			StoreInUserProfile = true;
+		}
 
 		this.WhenAnyValue(x => x.StoreInUserProfile).Subscribe(x => InstallLocation = StoreInUserProfile ? ConfigManager.DefaultDocumentsFolder : ConfigManager.DefaultPortableFolder);
 
@@ -133,5 +141,13 @@ public sealed class SetupWizardViewModel : ViewModelBase {
 			FileAssociationHelper.CreateLinuxShortcutFile(shortcutFile);
 			Process.Start("chmod", "744 " + shortcutFile);
 		}
+	}
+
+	/// <summary>
+	/// Detects whether the application is running inside a Linux AppImage.
+	/// AppImages mount to a read-only temp directory, so portable/"same folder" mode cannot work.
+	/// </summary>
+	private static bool IsRunningInAppImage() {
+		return !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPIMAGE"));
 	}
 }

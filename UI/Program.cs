@@ -56,7 +56,7 @@ class Program {
 
 	[STAThread]
 	public static int Main(string[] args) {
-		// Initialize logging first thing
+		// Initialize console-only logging first (no HomeFolder access, no files created)
 		Log.Initialize();
 		Log.Info($"Nexen starting with args: {string.Join(" ", args)}");
 
@@ -83,14 +83,18 @@ class Program {
 				return 0;
 			}
 
-			Log.Info($"Home folder: {ConfigManager.HomeFolder}");
-			Environment.CurrentDirectory = ConfigManager.HomeFolder;
+			// Check for first-run WITHOUT triggering HomeFolder creation.
+			// HomeFolder auto-detection creates ~/.config/Nexen/ and we don't want that
+			// before the setup wizard lets the user choose their preferred location.
+			string portableConfig = Path.Combine(ConfigManager.DefaultPortableFolder, "settings.json");
+			string documentsConfig = Path.Combine(ConfigManager.DefaultDocumentsFolder, "settings.json");
+			bool isFirstRun = !File.Exists(portableConfig) && !File.Exists(documentsConfig);
 
-			if (!File.Exists(ConfigManager.GetConfigFile())) {
+			if (isFirstRun) {
 				Log.Info("No config file found, showing setup wizard");
-				//Could not find configuration file, show wizard
-				DependencyHelper.ExtractNativeDependencies(ConfigManager.HomeFolder);
-				SyncNativeDependenciesFromAppBase();
+				// First-run: DO NOT access ConfigManager.HomeFolder or extract dependencies.
+				// Native libs are available from the app's own directory (AppContext.BaseDirectory)
+				// via the DllImportResolver, so the wizard UI can render without extracting deps.
 				App.ShowConfigWindow = true;
 				BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
 				if (File.Exists(ConfigManager.GetConfigFile())) {
@@ -101,6 +105,11 @@ class Program {
 
 				return 0;
 			}
+
+			// Not first-run: HomeFolder is determined from existing settings.json
+			Log.InitializeFileLogging();
+			Log.Info($"Home folder: {ConfigManager.HomeFolder}");
+			Environment.CurrentDirectory = ConfigManager.HomeFolder;
 
 			Log.Info("Loading configuration...");
 			//Start loading config file in a separate thread
@@ -163,15 +172,31 @@ class Program {
 				return NativeLibrary.Load(localPath);
 			}
 
-			string homePath = Path.Combine(ConfigManager.HomeFolder, libraryName);
-			LogNativeLibraryLoad(libraryName, homePath);
-			return NativeLibrary.Load(homePath);
+			// Only fall back to HomeFolder if it's already been initialized
+			// (avoids creating ~/.config/Nexen during the setup wizard).
+			try {
+				string homePath = Path.Combine(ConfigManager.HomeFolder, libraryName);
+				if (File.Exists(homePath)) {
+					LogNativeLibraryLoad(libraryName, homePath);
+					return NativeLibrary.Load(homePath);
+				}
+			} catch {
+				// HomeFolder may not be usable yet during first-run
+			}
 		}
 
 		return IntPtr.Zero;
 	}
 
 	private static void SyncNativeDependenciesFromAppBase() {
+		// Skip when HomeFolder IS the app base directory (portable mode) — copying a file
+		// onto itself is a no-op at best, and on Linux can corrupt mmap'd .so files.
+		string appBase = Path.GetFullPath(AppContext.BaseDirectory).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		string home = Path.GetFullPath(ConfigManager.HomeFolder).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		if (string.Equals(appBase, home, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)) {
+			return;
+		}
+
 		string[] nativeFiles = OperatingSystem.IsWindows()
 			? ["NexenCore.dll", "libSkiaSharp.dll", "libHarfBuzzSharp.dll"]
 			: OperatingSystem.IsLinux()

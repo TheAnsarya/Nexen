@@ -62,7 +62,7 @@
 					<TextBlock Text="{l:Translate lblStorageHint}" />
 					<StackPanel Margin="5 5 0 0">
 						<RadioButton Content="{l:Translate radStorageDocuments}" IsChecked="{Binding StoreInUserProfile}" />
-						<RadioButton Content="{l:Translate radStoragePortable}" IsChecked="{Binding !StoreInUserProfile}" />
+						<RadioButton Content="{l:Translate radStoragePortable}" IsChecked="{Binding !StoreInUserProfile}" IsEnabled="{Binding CanUsePortableMode}" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal" Margin="0 10 0 10">
 						<TextBlock Text="{l:Translate lblDataLocation}" />

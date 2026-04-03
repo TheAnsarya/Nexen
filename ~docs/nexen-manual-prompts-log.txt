@@ -1117,6 +1117,7 @@ well, that was quick, nothing happened, go back and run that last prompt only ac
 
 you froze; go back to finishing off all the non-deferred Nexen issues then realease a new build when you're stable (1.4.17?); continue;
 
+[Nexen] Continue working on rew reports in issue #1039 https://github.com/TheAnsarya/Nexen/issues/1039
 
 
 

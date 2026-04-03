@@ -11,6 +11,15 @@ namespace Nexen.Utilities;
 
 class DependencyHelper {
 	public static void ExtractNativeDependencies(string dest) {
+		// When extracting to the app's own directory (portable mode), skip overwriting
+		// native libraries that are already loaded in memory. On Linux, overwriting a
+		// .so file while it's mmap'd causes segfaults in the dynamic linker.
+		bool isAppBaseDir = string.Equals(
+			Path.GetFullPath(dest).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+			Path.GetFullPath(AppContext.BaseDirectory).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+			OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+		);
+
 		using (Stream? depStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Nexen.Dependencies.zip")) {
 			if (depStream is null) {
 				throw new Exception("Missing dependencies.zip");
@@ -36,6 +45,11 @@ class DependencyHelper {
 					string path = Path.Combine(dest, entry.FullName);
 					string extension = Path.GetExtension(path)?.ToLowerInvariant() ?? string.Empty;
 					entry.ExternalAttributes = 0;
+				// In portable mode (dest == app dir), never overwrite native libs that may
+				// be loaded in memory — they were published with the app and are current.
+				if (isAppBaseDir && extension is ".dll" or ".so" or ".dylib" or ".exe") {
+					continue;
+				}
 					if (File.Exists(path)) {
 						if (extension is ".dll" or ".so" or ".dylib" or ".exe") {
 							// Always overwrite native/runtime binaries to avoid stale entry-point mismatches.
