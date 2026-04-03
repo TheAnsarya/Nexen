@@ -58,14 +58,39 @@ foreach ($entry in $romSet) {
 
 	$romPath = $romMatch.FullName
 	$romFile = $romMatch.Name
+	$stdoutFile = [System.IO.Path]::GetTempFileName()
+	$stderrFile = [System.IO.Path]::GetTempFileName()
 
 	Write-Host "Running Lynx boot smoke: $($entry.Title)"
+	$argumentString = '--testrunner --lynx.usebootrom=false --timeout={0} "{1}" "{2}"' -f $TimeoutSeconds, $LuaScript, $romPath
 	$process = Start-Process -FilePath $NexenExe `
-		-ArgumentList @("--testrunner", "--lynx.usebootrom=false", "--timeout=$TimeoutSeconds", $LuaScript, $romPath) `
+		-ArgumentList $argumentString `
+		-RedirectStandardOutput $stdoutFile -RedirectStandardError $stderrFile `
 		-Wait -PassThru -NoNewWindow
 	$exitCode = [int]$process.ExitCode
+	$stdoutText = ""
+	$stderrText = ""
+	if (Test-Path -LiteralPath $stdoutFile) {
+		$stdoutText = [string](Get-Content -LiteralPath $stdoutFile -Raw -ErrorAction SilentlyContinue)
+		Remove-Item -LiteralPath $stdoutFile -ErrorAction SilentlyContinue
+	}
+	if (Test-Path -LiteralPath $stderrFile) {
+		$stderrText = [string](Get-Content -LiteralPath $stderrFile -Raw -ErrorAction SilentlyContinue)
+		Remove-Item -LiteralPath $stderrFile -ErrorAction SilentlyContinue
+	}
 
 	$bootResult = if ($exitCode -eq 0) { "Pass" } else { "Fail" }
+	$diag = @()
+	if (($stderrText ?? "").Trim().Length -gt 0) {
+		$diag += "stderr: " + ($stderrText.Trim() -replace "\r?\n", " | ")
+	}
+	if (($stdoutText ?? "").Trim().Length -gt 0) {
+		$diag += "stdout: " + ($stdoutText.Trim() -replace "\r?\n", " | ")
+	}
+	$notes = "Headless testrunner + Lua boot smoke"
+	if ($diag.Count -gt 0) {
+		$notes = $notes + " ; " + ($diag -join " ; ")
+	}
 	$results.Add([pscustomobject]@{
 		Title = $entry.Title
 		RomFile = $romFile
@@ -73,7 +98,7 @@ foreach ($entry in $romSet) {
 		ExitCode = $exitCode
 		BootResult = $bootResult
 		TimestampUtc = [DateTime]::UtcNow.ToString("o")
-		Notes = "Headless testrunner + Lua boot smoke"
+		Notes = $notes
 	})
 }
 

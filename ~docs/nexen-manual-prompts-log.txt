@@ -1109,10 +1109,13 @@ There's no battery save on the Channel F, did you just implement it anyways? Why
 
 stop fucking asking me about unrelated files, I dealt with them, continue;
 
+[Nexen] Focus on fixing code and going for a complete Channel F, and an Atari Lynx implementation so everything works and we can declare these systems as working; start by focusing on issues #955 `[950.5] ComLynx Multi-Player Not Implemented`, #1105 `[950.6.1] Lynx commercial-title bank-addressing validation matrix`, #974 `[18.2.2] F8 PSU/SMI/DMI external interface behavior emulation`, and #1011 `[20.2] TAS Editor integration and UX for Channel F`, etc; continue;
 
+well, that was quick, nothing happened, go back and run that last prompt only actually fix code this time
 
+[Nexen] Focus on fixing code and going for a complete Channel F, and an Atari Lynx implementation so everything works and we can declare these systems as working; start by making sure issues #955, #1105, #974, andare done and continue working on Nexen issues like #1001 `[19.3.2] Debug memory/code/data panes for Channel F maps`, #969 `[Epic 19] Fairchild Channel F Platform Integration (UI, Debugger, Lua, Pansy)`, #968 `[Epic 18] Fairchild Channel F Core Emulation Bring-Up`, and #968 `[Epic 18] Fairchild Channel F Core Emulation Bring-Up`, etc; continue;
 
-
+you froze; go back to finishing off all the non-deferred Nexen issues then realease a new build when you're stable (1.4.17?); continue;
 
 
 

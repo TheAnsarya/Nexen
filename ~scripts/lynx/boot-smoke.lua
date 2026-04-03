@@ -37,7 +37,7 @@ local function sampleScreen()
 	if uniqueCount > maxUniqueColors then
 		maxUniqueColors = uniqueCount
 	end
-	
+
 	sampleCount = sampleCount + 1
 end
 
@@ -58,7 +58,7 @@ local function finalizeAndStop()
 	local consoleType = state["consoleType"]
 	if consoleType ~= "Lynx" then
 		emu.log("boot-smoke: non-Lynx console detected: " .. tostring(consoleType))
-		emu.stop(90)
+		emu.exit(90)
 		return
 	end
 
@@ -68,13 +68,13 @@ local function finalizeAndStop()
 			.. " nonZeroMax=" .. tostring(maxNonZeroSamples)
 			.. " uniqueColorsMax=" .. tostring(maxUniqueColors)
 			.. " samples=" .. tostring(sampleCount))
-		emu.stop(0)
+		emu.exit(0)
 	else
 		emu.log("boot-smoke: FAIL frame=" .. tostring(frameCounter)
 			.. " nonZeroMax=" .. tostring(maxNonZeroSamples)
 			.. " uniqueColorsMax=" .. tostring(maxUniqueColors)
 			.. " samples=" .. tostring(sampleCount))
-		emu.stop(2)
+		emu.exit(2)
 	end
 end
 
