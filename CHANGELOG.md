@@ -5,6 +5,29 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.17] - 2026-03-31
+
+### Added
+
+- **Channel F complete emulation core** — Scanline-based frame execution with per-line rendering, correct VBLANK timing, 8-color palette with per-row selection, accurate 4-tone audio model, F8 interrupt delivery with ICB/VBLANK/SMI vector ports (#977, #979, #976, #1125)
+- **Channel F SMI timer and IRQ** — PSU/SMI/DMI timer state with ports 0x20/0x21 (#974)
+- **Channel F TAS editor integration** — Full TAS editor layout tests for Channel F (#1011)
+- **Channel F DisUtils test coverage** — 159 opcode disassembly tests (#1118)
+- **Lynx ComLynx multiplayer wiring** — Shared ComLynx cable lifecycle and runtime wiring tests (#955)
+- **Lynx bank-addressing validation tests** — Commercial ROM validation matrix (#1105)
+- **WonderSwan Flash/RTC test coverage** — Expanded test coverage and benchmarks (#1116)
+- **LightweightCdlRecorder + BitUtilities tests** — Additional test coverage and benchmarks (#1117)
+- **TestRunner diagnostic improvements** — Named error constants, stderr diagnostics, resource cleanup (#1105)
+
+### Fixed
+
+- **Channel F F8 CPU cycle timing** — Return clock cycles not byte lengths (#1123)
+- **Channel F INC opcode** — Now correctly increments accumulator, not DC0 (#1124)
+- **Channel F F8 flag bit layout** — Complementary sign and CI/CM carry polarity (#1128)
+- **Channel F DisUtils opcode tables** — Corrected $88-$8E memory ALU and $8F BR7 (#1119)
+- **Channel F battery save removal** — Console has no battery-backed SRAM
+- **Lynx boot-smoke Lua tooling** — Fixed emu.stop() → emu.exit() for proper test-runner integration
+
 ## [1.4.12] - 2026-03-30
 
 ### Fixed
