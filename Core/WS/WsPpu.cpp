@@ -54,6 +54,9 @@ void WsPpu::ProcessHblank() {
 	_timer->TickHorizontalTimer();
 	if (_state.Scanline < WsConstants::ScreenHeight) {
 		// VTOTAL values below 143 repeat rendered scanlines until line 143.
+		// Store the original scanline's row buffer index BEFORE modulo swap,
+		// so the double-buffer index matches what Exec() uses for output.
+		_renderRowIndex = _state.Scanline & 0x01;
 		uint8_t scanline = _state.Scanline;
 		uint8_t visibleScanlineCount = (uint8_t)std::min<uint16_t>((uint16_t)_state.LastScanline + 1, WsConstants::ScreenHeight);
 		if (visibleScanlineCount > 0 && visibleScanlineCount < WsConstants::ScreenHeight) {
@@ -111,7 +114,7 @@ void WsPpu::ProcessEndOfScanline() {
 
 template <WsVideoMode mode>
 void WsPpu::DrawScanline() {
-	uint8_t rowIndex = _state.Scanline & 0x01;
+	uint8_t rowIndex = _renderRowIndex;
 	memset(_rowData[rowIndex], 0, sizeof(PixelData) * WsConstants::ScreenWidth);
 
 	DrawSprites<mode>();
@@ -127,7 +130,7 @@ void WsPpu::DrawSprites() {
 	}
 
 	uint16_t scanline = _state.Scanline;
-	uint8_t rowIndex = _state.Scanline & 0x01;
+	uint8_t rowIndex = _renderRowIndex;
 
 	constexpr int tileSize = mode >= WsVideoMode::Color4bpp ? 32 : 16;
 	constexpr int tileBytesPerRow = mode >= WsVideoMode::Color4bpp ? 4 : 2;
@@ -196,7 +199,7 @@ void WsPpu::DrawBackground() {
 	constexpr int bank1Addr = mode >= WsVideoMode::Color4bpp ? 0x8000 : 0x4000;
 
 	WsConfig& cfg = _emu->GetSettings()->GetWsConfig();
-	uint8_t rowIndex = _state.Scanline & 0x01;
+	uint8_t rowIndex = _renderRowIndex;
 	WsBgLayer& layer = _state.BgLayers[layerIndex];
 	if (cfg.HideBgLayers[layerIndex] || !layer.EnabledLatch) {
 		return;

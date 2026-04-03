@@ -12,6 +12,16 @@ Key features and focus areas:
 4. **C++ Modernization** - C++20/23 features
 5. **Performance Improvements** - Hot path optimization
 
+### ⚠️ CRITICAL: Nexen Is NOT Mesen2
+
+**Nexen is its own emulator.** While it originated from Mesen2, it has diverged significantly. Do NOT treat upstream Mesen2 as authoritative.
+
+- **Never adopt upstream Mesen2 code to "fix" emulation bugs** — if a bug exists in both Mesen2 AND Nexen, upstream code is by definition not the fix
+- **Never revert Nexen-specific changes** to match upstream — only move forward
+- **Mesen2 is an occasional reference only** — use it to understand original intent, not as a source of correctness
+- **For emulation accuracy fixes**, research hardware documentation and other emulators (ares, mednafen, MAME, etc.) that have independent implementations
+- **When fixing emulation bugs**, prefer: (1) hardware test results, (2) ares/mednafen reference, (3) WSdev/NESDev documentation, (4) Mesen2 as last resort context only
+
 ## GitHub Issue Management
 
 ### ⚠️ CRITICAL: Always Create Issues on GitHub Directly
