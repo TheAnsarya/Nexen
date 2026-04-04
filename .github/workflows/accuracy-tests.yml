@@ -1,6 +1,10 @@
 name: Accuracy Tests
 
 on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
   workflow_dispatch:
     inputs:
       system:
@@ -15,11 +19,97 @@ on:
     # Nightly at 3 AM UTC
     - cron: '0 3 * * *'
 
+# Smoke tests run on push/PR; full suite on nightly/manual dispatch
 jobs:
+  smoke-tests:
+    name: Smoke Tests (NES blargg)
+    runs-on: windows-2025-vs2026
+    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+          vs-prerelease: true
+
+      - name: Setup and install vcpkg
+        working-directory: ${{ github.workspace }}
+        run: |
+          $vcpkgRoot = "${{ github.workspace }}/vcpkg"
+          git clone https://github.com/microsoft/vcpkg.git $vcpkgRoot
+          Push-Location $vcpkgRoot
+          git checkout c3867e714dd3a51c272826eea77267876517ed99
+          .\bootstrap-vcpkg.bat
+          Pop-Location
+          $installDir = "$vcpkgRoot/installed"
+          $env:VCPKG_ROOT = $vcpkgRoot
+          "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "VCPKG_INSTALLED_DIR=$installDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          vcpkg install --triplet x64-windows --x-manifest-root=${{ github.workspace }} --x-install-root=$installDir --clean-after-build
+
+      - name: Build Nexen (Release x64)
+        run: |
+          $tripletRoot = "$env:VCPKG_INSTALLED_DIR\\x64-windows"
+          $env:INCLUDE = "$tripletRoot\\include;$env:INCLUDE"
+          $env:LIB = "$tripletRoot\\lib;$tripletRoot\\lib\\manual-link;$env:LIB"
+          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /p:VcpkgInstalledDir=$env:VCPKG_INSTALLED_DIR /m /nologo /v:m
+
+      - name: Download NES test ROMs
+        run: |
+          $romRoot = "${{ github.workspace }}\test-roms"
+          & "${{ github.workspace }}\~scripts\download-nes-test-roms.ps1" -RomRoot $romRoot
+          "ROM_ROOT=$romRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Run NES smoke tests
+        run: |
+          & "${{ github.workspace }}\~scripts\run-accuracy-tests.ps1" `
+            -System nes `
+            -Tag critical `
+            -NexenPath "${{ github.workspace }}\bin\win-x64\Release\Nexen.exe" `
+            -RomRoot $env:ROM_ROOT `
+            -ResultsPath "${{ github.workspace }}\smoke-results.json"
+
+      - name: Upload smoke results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-results
+          path: smoke-results.json
+          retention-days: 7
+
+      - name: Smoke test summary
+        if: always()
+        run: |
+          $resultsFile = "${{ github.workspace }}\smoke-results.json"
+          if (Test-Path $resultsFile) {
+            $results = Get-Content $resultsFile -Raw | ConvertFrom-Json
+            $s = $results.summary
+            @"
+          ## Smoke Test Results (NES)
+
+          | Metric | Count |
+          |--------|-------|
+          | Passed | $($s.passed) |
+          | Failed | $($s.failed) |
+          | Timeout | $($s.timeout) |
+          | Skipped | $($s.skipped) |
+          | **Total** | **$($s.total)** |
+          | Duration | $($s.durationSeconds)s |
+          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          } else {
+            "No results file found." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          }
+
   accuracy-tests:
     name: Accuracy Test Suite
     runs-on: windows-2025-vs2026
-    if: ${{ github.repository == 'TheAnsarya/Nexen' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: Checkout repo
@@ -58,13 +148,19 @@ jobs:
       - name: Download test ROMs
         run: |
           $romRoot = "${{ github.workspace }}\test-roms"
-          New-Item -ItemType Directory -Path $romRoot -Force | Out-Null
+          $scripts = "${{ github.workspace }}\~scripts"
 
-          # NES - blargg cpu_instrs (public domain)
-          $nesDir = "$romRoot\nes\blargg\cpu_instrs\individual"
-          New-Item -ItemType Directory -Path $nesDir -Force | Out-Null
-          # Download blargg test ROMs from well-known mirrors
-          # These will be populated as sub-issues #1142-1147 are completed
+          # Download ROMs for all systems using the dedicated scripts
+          $systems = @("nes", "snes", "gb", "gba", "genesis", "sms", "pce", "ws")
+          foreach ($sys in $systems) {
+            $script = "$scripts\download-$sys-test-roms.ps1"
+            if (Test-Path $script) {
+              Write-Host "--- Downloading $sys test ROMs ---"
+              & $script -RomRoot $romRoot
+            } else {
+              Write-Host "No download script for $sys, skipping"
+            }
+          }
 
           "ROM_ROOT=$romRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
