@@ -8,7 +8,7 @@ using Nexen.Windows;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.ViewModels; 
+namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the first-run setup wizard.
 /// Handles initial configuration of storage location, controller mappings, and shortcuts.

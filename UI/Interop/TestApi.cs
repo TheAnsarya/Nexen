@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Nexen.Interop; 
+namespace Nexen.Interop;
 class TestApi {
 	private const string DllPath = EmuApi.DllName;
 
