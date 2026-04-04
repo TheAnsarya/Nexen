@@ -40,7 +40,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -49,7 +49,7 @@ jobs:
         run: git clone --depth 1 https://github.com/TheAnsarya/pansy.git "$GITHUB_WORKSPACE/../pansy"
 
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.x
 
@@ -161,7 +161,7 @@ jobs:
 
       - name: Upload runtime dependency report (Windows publish)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Runtime Dependencies (Windows${{ matrix.platform.aotString }})
           path: |
@@ -180,7 +180,7 @@ jobs:
 
       - name: Upload warning report (Windows)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Warning Report (Windows${{ matrix.platform.aotString }})
           path: build-warning-report.txt
@@ -205,7 +205,7 @@ jobs:
 
       - name: Upload warning delta summary (Windows)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Warning Delta (Windows${{ matrix.platform.aotString }})
           path: build-warning-delta-windows.txt
@@ -234,7 +234,7 @@ jobs:
           Write-Host "Warning regression gate passed for Windows (delta=$delta)."
 
       - name: Upload Nexen
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Nexen (Windows${{ matrix.platform.aotString }})
           path: |
@@ -265,7 +265,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -274,7 +274,7 @@ jobs:
         run: git clone --depth 1 https://github.com/TheAnsarya/pansy.git "$GITHUB_WORKSPACE/../pansy"
 
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.x
 
@@ -336,7 +336,7 @@ jobs:
 
       - name: Upload runtime dependency report (Linux)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Runtime Dependencies (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
           path: |
@@ -356,7 +356,7 @@ jobs:
 
       - name: Upload warning report (Linux)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Warning Report (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
           path: build-warning-report-linux.txt
@@ -379,7 +379,7 @@ jobs:
 
       - name: Upload warning delta summary (Linux)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Warning Delta (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
           path: build-warning-delta-linux.txt
@@ -446,13 +446,13 @@ jobs:
 
       - name: Upload Linux smoke log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Linux Smoke Log (${{ matrix.platform.os }} - ${{ matrix.compiler }})
           path: smoke-linux.log
 
       - name: Upload Nexen
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Nexen (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
           path: |
@@ -472,7 +472,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -481,7 +481,7 @@ jobs:
         run: git clone --depth 1 https://github.com/TheAnsarya/pansy.git "$GITHUB_WORKSPACE/../pansy"
 
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.x
 
@@ -530,7 +530,7 @@ jobs:
 
       - name: Upload runtime dependency report (AppImage publish)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Runtime Dependencies (AppImage - ${{ matrix.platform.name }})
           path: |
@@ -550,7 +550,7 @@ jobs:
 
       - name: Upload warning report (AppImage)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Warning Report (AppImage - ${{ matrix.platform.name }})
           path: build-warning-report-appimage.txt
@@ -573,7 +573,7 @@ jobs:
 
       - name: Upload warning delta summary (AppImage)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Warning Delta (AppImage - ${{ matrix.platform.name }})
           path: build-warning-delta-appimage.txt
@@ -637,13 +637,13 @@ jobs:
 
       - name: Upload AppImage smoke log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: AppImage Smoke Log (${{ matrix.platform.name }})
           path: smoke-appimage.log
 
       - name: Upload Nexen (AppImage)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Nexen (Linux ${{ matrix.platform.name }} - AppImage)
           path: Nexen.AppImage
@@ -666,7 +666,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -675,7 +675,7 @@ jobs:
         run: git clone --depth 1 https://github.com/TheAnsarya/pansy.git "$GITHUB_WORKSPACE/../pansy"
 
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.x
 
@@ -775,7 +775,7 @@ jobs:
 
       - name: Upload runtime dependency report (macOS publish)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Runtime Dependencies (macOS - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
           path: |
@@ -783,7 +783,7 @@ jobs:
             runtime-files-macos.txt
 
       - name: Upload Nexen
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Nexen (macOS - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
           path: bin/osx-${{ matrix.platform.arch }}/Release/Nexen.app.zip
@@ -816,7 +816,7 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: artifacts
 
