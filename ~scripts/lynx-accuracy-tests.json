@@ -1,0 +1,18 @@
+{
+	"$schema": "./test-manifest.schema.json",
+	"version": 1,
+	"tests": [
+		{
+			"name": "lynx-boot-smoke",
+			"system": "lynx",
+			"rom": "custom/lynx/lynx-boot-smoke.lnx",
+			"strategy": "memory-read",
+			"address": "0x0000",
+			"memType": "LynxMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 600,
+			"tags": ["cpu", "65sc02", "critical", "custom"]
+		}
+	]
+}

@@ -3,6 +3,18 @@
 	"version": 1,
 	"tests": [
 		{
+			"name": "ws-boot-smoke",
+			"system": "ws",
+			"rom": "custom/ws/ws-boot-smoke.ws",
+			"strategy": "memory-read",
+			"address": "0x0000",
+			"memType": "WsMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 600,
+			"tags": ["cpu", "v30mz", "critical", "custom"]
+		},
+		{
 			"name": "ws-test-suite-cpu",
 			"system": "ws",
 			"rom": "ws/ws-test-suite/cpu/cpu_test.ws",
