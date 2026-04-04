@@ -37,20 +37,16 @@ jobs:
           msbuild-architecture: x64
           vs-prerelease: true
 
-      - name: Setup vcpkg
-        uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgGitCommitId: 'c3867e714dd3a51c272826eea77267876517ed99'
-          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-
-      - name: Install vcpkg dependencies
+      - name: Setup and install vcpkg
         working-directory: ${{ github.workspace }}
         run: |
           $vcpkgRoot = "${{ github.workspace }}/vcpkg"
-          $installDir = $env:VCPKG_INSTALLED_DIR
-          if ([string]::IsNullOrWhiteSpace($installDir)) {
-            $installDir = "$vcpkgRoot/installed"
-          }
+          git clone https://github.com/microsoft/vcpkg.git $vcpkgRoot
+          Push-Location $vcpkgRoot
+          git checkout c3867e714dd3a51c272826eea77267876517ed99
+          .\bootstrap-vcpkg.bat
+          Pop-Location
+          $installDir = "$vcpkgRoot/installed"
           $env:VCPKG_ROOT = $vcpkgRoot
           "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "VCPKG_INSTALLED_DIR=$installDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -122,20 +118,16 @@ jobs:
           msbuild-architecture: x64
           vs-prerelease: true
 
-      - name: Setup vcpkg
-        uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgGitCommitId: 'c3867e714dd3a51c272826eea77267876517ed99'
-          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-
-      - name: Install vcpkg dependencies
+      - name: Setup and install vcpkg
         working-directory: ${{ github.workspace }}
         run: |
           $vcpkgRoot = "${{ github.workspace }}/vcpkg"
-          $installDir = $env:VCPKG_INSTALLED_DIR
-          if ([string]::IsNullOrWhiteSpace($installDir)) {
-            $installDir = "$vcpkgRoot/installed"
-          }
+          git clone https://github.com/microsoft/vcpkg.git $vcpkgRoot
+          Push-Location $vcpkgRoot
+          git checkout c3867e714dd3a51c272826eea77267876517ed99
+          .\bootstrap-vcpkg.bat
+          Pop-Location
+          $installDir = "$vcpkgRoot/installed"
           $env:VCPKG_ROOT = $vcpkgRoot
           "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "VCPKG_INSTALLED_DIR=$installDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
