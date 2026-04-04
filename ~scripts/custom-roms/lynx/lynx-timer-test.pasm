@@ -82,12 +82,12 @@ test3:
 	bne fail3
 
 ; ---- Test 4: Mikey Palette Register ----
-; Green palette at $fe80-$fe9f (16 entries)
+; Green palette at $fda0-$fdaf (16 entries, Mikey register space)
 test4:
 	lda #$f0		; green value
-	sta $fe80		; write palette entry 0 (green)
+	sta $fda0		; write palette entry 0 (green)
 	lda #$00
-	lda $fe80		; read palette entry 0
+	lda $fda0		; read palette entry 0
 	cmp #$f0
 	bne fail4
 

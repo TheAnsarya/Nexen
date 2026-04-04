@@ -1150,22 +1150,21 @@ what the hell! there is no new chat/session log, make one ***everytime***, make 
 
 [Nexen/poppy] continue working on our test rom architecture, work on issues; continue;
 
+[all] Update the editorconfig and other formatting files for: assembly files like `*.pasm` and `*.asm` and `*.src` we should be using tabs not spaces, and a tab width of 4 not 8, update the formatting for vscode and poppy's vscode extension as well; make plans and epics and  issues and docs for bringing poppy's vscode extension up to date and making another release;
 
+[poppy] work through poppy vscode extension issues (the epic #218) and the [Nexen/poppy] continue working on our test rom architecture, work on issues; continue;
 
+[Nexen,poppy] work through poppy vscode extension issues (the epic #218) and the Nexen/poppy test rom architecture, work on issues; do poppy #187 issues for V30MZ; continue;
 
+[Nexen,poppy] work through issues; continue;
 
+[all] ignore markdownlint formatting issue `MD007/ul-indent: Unordered list indentation [Expected: 4; Actual: 1]` because we are using tabs (which is one character) instead of spaces (which is 4 characters); continue;
 
+[poppy] there should be a framework for assembly and compilation and asset intregration as the core of poppy, but there should be separate compilers for each system or language so SNES assembly isn't mixed up with TG-16 assembly or GBC-assembly or whatever, make research epics and issues for the architecture of poppy to create common code and workflow, but separate each type of code/system so we don't have these code size problems and command confusion and mixups on memory layout etc; continue;
 
+[poppy] work on the framework issues and separation of systems; continue;
 
-
-[Nexen] you're not making session logs! do that! always do that! ; fix all of the CI verson node 20/24 problems: `Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: lukka/run-vcpkg@v11`; continue; [Nexen/poppy] continue working on our test rom architecture, work on issues; continue;
-
-
-
-
-
-
-
+[Nexen, poppy, pansy, peony] implement all issues, continue making plans and docs and such; [poppy] continue working on the poppy vscode extension, make tests and benchmarks and epics and issues and sub-issues and docs and chat/session logs and etc.; implement everything; find performance issues and fix them; continue; continue for a while!; continue;
 
 
 
@@ -1196,19 +1195,6 @@ what the hell! there is no new chat/session log, make one ***everytime***, make 
 
 
 [Nexen] Create UI testing project using `Avalonia.UITesting` (Official Avalonia UI Test Framework) starting with just opening every menu item to make sure it doesn't crash, then we'll plan more tests and complex tests; make issues/docs/plans/etc; continue;
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
