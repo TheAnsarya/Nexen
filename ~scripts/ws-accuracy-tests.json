@@ -1,0 +1,30 @@
+{
+	"$schema": "./test-manifest.schema.json",
+	"version": 1,
+	"tests": [
+		{
+			"name": "ws-test-suite-cpu",
+			"system": "ws",
+			"rom": "ws/ws-test-suite/cpu/cpu_test.ws",
+			"strategy": "memory-read",
+			"address": "0x0000",
+			"memType": "WsMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 36000,
+			"tags": ["cpu", "v30mz", "critical"]
+		},
+		{
+			"name": "ws-test-suite-timer",
+			"system": "ws",
+			"rom": "ws/ws-test-suite/timer/timer_test.ws",
+			"strategy": "memory-read",
+			"address": "0x0000",
+			"memType": "WsMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 36000,
+			"tags": ["timer"]
+		}
+	]
+}

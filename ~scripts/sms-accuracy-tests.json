@@ -1,0 +1,42 @@
+{
+	"$schema": "./test-manifest.schema.json",
+	"version": 1,
+	"tests": [
+		{
+			"name": "zexall-z80",
+			"system": "sms",
+			"rom": "sms/zexall/zexall.sms",
+			"strategy": "memory-read",
+			"address": "0xc000",
+			"memType": "SmsMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 108000,
+			"tags": ["cpu", "z80", "critical"]
+		},
+		{
+			"name": "flubba-vdp-test",
+			"system": "sms",
+			"rom": "sms/flubba-vdp/vdp_test.sms",
+			"strategy": "memory-read",
+			"address": "0xc000",
+			"memType": "SmsMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 36000,
+			"tags": ["vdp", "critical"]
+		},
+		{
+			"name": "peterlemon-cpu-test",
+			"system": "sms",
+			"rom": "sms/peterlemon-sms/CPUTest/CPUTest.sms",
+			"strategy": "memory-read",
+			"address": "0xc000",
+			"memType": "SmsMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 18000,
+			"tags": ["cpu", "z80"]
+		}
+	]
+}

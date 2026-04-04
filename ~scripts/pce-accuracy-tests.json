@@ -1,0 +1,30 @@
+{
+	"$schema": "./test-manifest.schema.json",
+	"version": 1,
+	"tests": [
+		{
+			"name": "peterlemon-cpu-test",
+			"system": "pce",
+			"rom": "pce/peterlemon-pce/CPUTest/CPUTest.pce",
+			"strategy": "memory-read",
+			"address": "0x2000",
+			"memType": "PceMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 18000,
+			"tags": ["cpu", "huc6280"]
+		},
+		{
+			"name": "peterlemon-vdc-test",
+			"system": "pce",
+			"rom": "pce/peterlemon-pce/VDCTest/VDCTest.pce",
+			"strategy": "memory-read",
+			"address": "0x2000",
+			"memType": "PceMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 18000,
+			"tags": ["vdc", "graphics"]
+		}
+	]
+}
