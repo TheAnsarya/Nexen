@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.4.18] - 2026-04-03
 
+### Added
+
+- **Splash screen minimum 2-second display** — Splash screen now shows for at least 2 seconds so branding is visible (#1160)
+- **Automated accuracy test infrastructure** — Batch test runner, Lua test scripts (blargg NES/SNES/GB, mooneye GB, generic memory-poll), test manifests, ROM download scripts, CI workflow (#1131, #1133, #1134, #1136, #1137, #1138)
+- **RunTest configurable frame count and early exit** — `RunTest` C++/C# interop now accepts `frameCount` and `earlyExitByte` parameters (#1152, #1153, #1155, #1154)
+
 ### Fixed
 
 - **WonderSwan PPU double-buffer row index mismatch** — Fixed row index mismatch with low VTOTAL modulo (#1076)
