@@ -3,6 +3,18 @@
 	"version": 1,
 	"tests": [
 		{
+			"name": "pce-boot-smoke",
+			"system": "pce",
+			"rom": "custom/pce/pce-boot-smoke.pce",
+			"strategy": "memory-read",
+			"address": "0x2000",
+			"memType": "PceMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 600,
+			"tags": ["cpu", "huc6280", "critical", "custom"]
+		},
+		{
 			"name": "peterlemon-cpu-test",
 			"system": "pce",
 			"rom": "pce/peterlemon-pce/CPUTest/CPUTest.pce",

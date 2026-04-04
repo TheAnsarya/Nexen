@@ -1117,7 +1117,59 @@ well, that was quick, nothing happened, go back and run that last prompt only ac
 
 you froze; go back to finishing off all the non-deferred Nexen issues then realease a new build when you're stable (1.4.17?); continue;
 
-[Nexen] Continue working on rew reports in issue #1039 https://github.com/TheAnsarya/Nexen/issues/1039
+[Nexen] Continue working on new reports in issue #1039 https://github.com/TheAnsarya/Nexen/issues/1039
+
+[Nexen] Continue working on issue #1076 https://github.com/TheAnsarya/Nexen/issues/1076 and see what else needs to be tested and changed and make issues and implement;
+
+issue #1076 - Hey what is this fix? The original issue report confirms that Mesen2 also has this same issue, you should not use upstream to fix this, I think you just undid our earlier changes! Don't do that! ; Research how other emulators handle this and fix it that way, probably starting by putting our fix back (that we don't know if it works yet even); So, add to copilot instructions: do not use Mesen2 except as an occassional reference (we are not Mesen!); do not revert code only move forward but put my code changes back since the old way was why it was broken in the first place; look at the other emulators and fix this issue and test these hardware issues! make my code work!; continue;
+
+Continue to verify the WonderSwan core by looking at several emulators, not just Ares, like MESS; continue;
+
+[Nexen] Research a way we can run a rom and possibly a nexen-movie file or lua script for input and then take screenshots (or read directly from RAM to see which tests passed/failed) from the emulator so we can make automated tests for system functionality and edge cases using the testing roms like: `https://github.com/astrobleem/SNES-HiRomGsuTest`, `https://github.com/100thCoin/AccuracyCoin`, `https://www.nesdev.org/wiki/Emulator_tests`, `https://github.com/frederic-mahe/Hardware-Target-Game-Database`, `https://github.com/gilyon/snes-tests`, `https://snes.nesdev.org/wiki/Emulator_tests`, `https://tasvideos.org/EmulatorResources/SNESAccuracyTests`, `https://github.com/PeterLemon/SNES/tree/master`; find other testing roms for all the systems and for future systems; document all references you use, including these and make documentation for all the testing roms and make a folder in the `c:\reference-roms\` folder and put all the testing roms in a hierarchy by system; These testing roms test specific code paths and functionality and we need them all to pass to ensure the most accurate emulator; make plans for making in-house testing roms for each of our systems based on all the examples/research and testing roms and internet research and make docs with instructions to create epics and issues with full descriptions of the work, and research documents and all that so this is future development; use peony and poppy and pansy and game garden and Nexen to disassemble current test roms, run everything through pansy files, and make assembly to test all kinds of emulator behaviour and ensure our emulator is the most correct/accurate/performant/bugfree/easy-to-use emulator, and poppy compile it all, making instructions so a human could reproduce it, step by step, so the pipeline commands should all be documented;
+
+[Nexen] continue working on our test rom architecture, work on issues and make sub-issues of those issues; [poppy] "V30MZ (WS) and HuC6280 (PCE) architecture support in Poppy are blockers for custom test ROM development on those platforms"; make plans and issues and docs for this work; continue; [all] I don't see new chat/session logs for the past few days, add to copilot-instructions to always add a session log in `/~docs/session-logs/`; continue;
+
+&&&
+[Nexen] Fix the CI/CD version issues, update the actions; make an issue for this work and then implement it; use the most modern standards and practices, always keep things up to date; continue;
+Warning is: `Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/`
+&&&
+
+[Nexen/poppy] continue working on our test rom architecture, work on issues; continue;
+
+[Nexen] Release a new version v1.4.18, update the readmes and docs and such; make a release issue implement it and close it; continue;
+
+[Nexen] you're not making session logs! do that! always do that! ; fix all of the CI verson node 20/24 problems: `Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: lukka/run-vcpkg@v11`; continue; [Nexen/poppy] continue working on our test rom architecture, work on issues; continue;
+
+[Nexen] Make the Nexen loading splash screen show for at least 2 seconds so you can see it; You did not make a release for 1.4.18 or build the artifacts, do that now, release 1.4.18 and build artifacts, send the tag to github so it builds; [Nexen/poppy] continue working on our test rom architecture, work on issues; continue;
+
+what the hell! there is no new chat/session log, make one ***everytime***, make one now! [Nexen] Make the Nexen loading splash screen show for at least 2 seconds so you can see it; You did not make a release for 1.4.18 or build the artifacts, do that now, release 1.4.18 and build artifacts, send the tag to github so it builds; [Nexen/poppy] continue working on our test rom architecture, work on issues; continue;
+
+[Nexen/poppy] continue working on our test rom architecture, work on issues; continue;
+
+--- crash
+
+[Nexen/poppy] continue working on our test rom architecture, work on issues; continue;
+
+
+
+
+
+
+
+
+
+[Nexen] you're not making session logs! do that! always do that! ; fix all of the CI verson node 20/24 problems: `Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: lukka/run-vcpkg@v11`; continue; [Nexen/poppy] continue working on our test rom architecture, work on issues; continue;
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1146,7 +1198,7 @@ you froze; go back to finishing off all the non-deferred Nexen issues then reale
 [Nexen] Create UI testing project using `Avalonia.UITesting` (Official Avalonia UI Test Framework) starting with just opening every menu item to make sure it doesn't crash, then we'll plan more tests and complex tests; make issues/docs/plans/etc; continue;
 
 
-[Nexen] Research a way we can run a rom and possibly a nexen-movie file or lua script for input and then take screenshots (or read directly from RAM to see which tests passed/failed) from the emulator so we can make automated tests for system functionality and edge cases using the testing roms like: `https://github.com/astrobleem/SNES-HiRomGsuTest`, `https://github.com/100thCoin/AccuracyCoin`, `https://www.nesdev.org/wiki/Emulator_tests`, `https://github.com/frederic-mahe/Hardware-Target-Game-Database`, `https://github.com/gilyon/snes-tests`, `https://snes.nesdev.org/wiki/Emulator_tests`, `https://tasvideos.org/EmulatorResources/SNESAccuracyTests`, `https://github.com/PeterLemon/SNES/tree/master`; find other testing roms for all the systems and for future systems; document all references you use, including these and make documentation for all the testing roms and make a folder in the `c:\reference-roms\` folder and put all the testing roms in a hierarchy by system; These testing roms test specific code paths and functionality and we need them all to pass to ensure the most accurate emulator; make plans for making in-house testing roms for each of our systems based on all the examples/research and testing roms and internet research and make docs with instructions to create epics and issues with full descriptions of the work, and research documents and all that so this is future development; use peony and poppy and pansy and game garden and Nexen to disassemble current test roms, run everything through pansy files, and make assembly to test all kinds of emulator behaviour and ensure our emulator is the most correct/accurate/performant/bugfree/easy-to-use emulator, and poppy compile it all, making instructions so a human could reproduce it, step by step, so the pipeline commands should all be documented;
+
 
 
 
