@@ -22,7 +22,7 @@ DllExport RomTestResult __stdcall RunRecordedTest(char* filename, bool inBackgro
 	}
 }
 
-DllExport uint64_t __stdcall RunTest(char* filename, uint32_t address, MemoryType memType) {
+DllExport uint64_t __stdcall RunTest(char* filename, uint32_t address, MemoryType memType, uint32_t frameCount, int32_t earlyExitByte) {
 	unique_ptr<Emulator> emu(new Emulator());
 	emu->Initialize();
 	emu->GetSettings()->SetFlag(EmulationFlags::TestMode);
@@ -31,8 +31,19 @@ DllExport uint64_t __stdcall RunTest(char* filename, uint32_t address, MemoryTyp
 	(void)emu->LoadRom((VirtualFile)filename, VirtualFile());
 	emu->GetSettings()->SetFlag(EmulationFlags::MaximumSpeed);
 
-	while (emu->GetFrameCount() < 500) {
+	bool checkEarlyExit = (earlyExitByte >= 0);
+	uint32_t maxFrames = (frameCount > 0) ? frameCount : 500;
+
+	while(emu->GetFrameCount() < maxFrames) {
 		std::this_thread::sleep_for(std::chrono::duration<int, std::milli>(10));
+
+		if(checkEarlyExit && emu->GetFrameCount() > 0) {
+			ConsoleMemoryInfo earlyMemInfo = emu->GetMemory(memType);
+			uint8_t* earlyBuffer = (uint8_t*)earlyMemInfo.Memory;
+			if(address < earlyMemInfo.Size && earlyBuffer[address] != (uint8_t)earlyExitByte) {
+				break;
+			}
+		}
 	}
 
 	ConsoleMemoryInfo memInfo = emu->GetMemory(memType);
