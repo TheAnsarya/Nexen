@@ -58,7 +58,7 @@ local function finalizeAndStop()
 	local consoleType = state["consoleType"]
 	if consoleType ~= "Lynx" then
 		emu.log("boot-smoke: non-Lynx console detected: " .. tostring(consoleType))
-		emu.exit(90)
+		emu.stop(90)
 		return
 	end
 
@@ -68,13 +68,13 @@ local function finalizeAndStop()
 			.. " nonZeroMax=" .. tostring(maxNonZeroSamples)
 			.. " uniqueColorsMax=" .. tostring(maxUniqueColors)
 			.. " samples=" .. tostring(sampleCount))
-		emu.exit(0)
+		emu.stop(0)
 	else
 		emu.log("boot-smoke: FAIL frame=" .. tostring(frameCounter)
 			.. " nonZeroMax=" .. tostring(maxNonZeroSamples)
 			.. " uniqueColorsMax=" .. tostring(maxUniqueColors)
 			.. " samples=" .. tostring(sampleCount))
-		emu.exit(2)
+		emu.stop(2)
 	end
 end
 

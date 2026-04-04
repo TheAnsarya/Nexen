@@ -1,0 +1,74 @@
+{
+	"$schema": "./test-manifest.schema.json",
+	"version": 1,
+	"tests": [
+		{
+			"name": "mooneye-acceptance-timer",
+			"system": "gb",
+			"rom": "gb/mooneye/acceptance/timer/div_write.gb",
+			"strategy": "lua-script",
+			"script": "gb/mooneye-test.lua",
+			"maxFrames": 18000,
+			"tags": ["timer", "critical", "mooneye"]
+		},
+		{
+			"name": "mooneye-acceptance-ei-sequence",
+			"system": "gb",
+			"rom": "gb/mooneye/acceptance/ei_sequence.gb",
+			"strategy": "lua-script",
+			"script": "gb/mooneye-test.lua",
+			"maxFrames": 18000,
+			"tags": ["cpu", "interrupt", "mooneye"]
+		},
+		{
+			"name": "mooneye-acceptance-di-timing",
+			"system": "gb",
+			"rom": "gb/mooneye/acceptance/di_timing-gs.gb",
+			"strategy": "lua-script",
+			"script": "gb/mooneye-test.lua",
+			"maxFrames": 18000,
+			"tags": ["cpu", "interrupt", "mooneye"]
+		},
+		{
+			"name": "mooneye-acceptance-halt-ime0-ei",
+			"system": "gb",
+			"rom": "gb/mooneye/acceptance/halt_ime0_ei.gb",
+			"strategy": "lua-script",
+			"script": "gb/mooneye-test.lua",
+			"maxFrames": 18000,
+			"tags": ["cpu", "halt", "mooneye"]
+		},
+		{
+			"name": "mooneye-acceptance-oam-dma",
+			"system": "gb",
+			"rom": "gb/mooneye/acceptance/oam_dma/basic.gb",
+			"strategy": "lua-script",
+			"script": "gb/mooneye-test.lua",
+			"maxFrames": 18000,
+			"tags": ["dma", "mooneye"]
+		},
+		{
+			"name": "gbmicrotest-sample",
+			"system": "gb",
+			"rom": "gb/gbmicrotest/sample.gb",
+			"strategy": "memory-read",
+			"address": "0x02",
+			"memType": "GbHighRam",
+			"passValue": "0x01",
+			"failValue": "0xff",
+			"maxFrames": 500,
+			"tags": ["micro", "gbmicrotest"]
+		},
+		{
+			"name": "gambatte-sample",
+			"system": "gb",
+			"rom": "gb/gambatte-tests/sample.gb",
+			"strategy": "memory-read",
+			"address": "0x1800",
+			"memType": "GbVideoRam",
+			"passValue": "0x00",
+			"maxFrames": 500,
+			"tags": ["gambatte"]
+		}
+	]
+}

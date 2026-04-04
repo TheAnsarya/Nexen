@@ -1,0 +1,112 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "Nexen Accuracy Test Manifest",
+	"description": "Declarative specification for automated accuracy tests",
+	"type": "object",
+	"required": ["version", "tests"],
+	"properties": {
+		"version": {
+			"type": "integer",
+			"const": 1,
+			"description": "Manifest format version"
+		},
+		"tests": {
+			"type": "array",
+			"items": {
+				"$ref": "#/definitions/test"
+			}
+		}
+	},
+	"definitions": {
+		"test": {
+			"type": "object",
+			"required": ["name", "system", "rom", "strategy"],
+			"properties": {
+				"name": {
+					"type": "string",
+					"description": "Unique test identifier"
+				},
+				"system": {
+					"type": "string",
+					"enum": ["nes", "snes", "gb", "gbc", "gba", "genesis", "sms", "pce", "ws", "lynx"],
+					"description": "Target system"
+				},
+				"rom": {
+					"type": "string",
+					"description": "ROM path relative to reference-roms directory"
+				},
+				"strategy": {
+					"type": "string",
+					"enum": ["memory-read", "lua-script", "recorded-test", "screenshot"],
+					"description": "Test execution strategy"
+				},
+				"address": {
+					"type": "string",
+					"pattern": "^0x[0-9a-f]+$",
+					"description": "Memory address to poll (hex, for memory-read strategy)"
+				},
+				"memType": {
+					"type": "string",
+					"description": "Memory type enum name (e.g. NesMemory, GbHighRam, GbVideoRam)"
+				},
+				"passValue": {
+					"type": "string",
+					"pattern": "^0x[0-9a-f]+$",
+					"description": "Expected pass value at address (hex)"
+				},
+				"failValue": {
+					"type": "string",
+					"pattern": "^0x[0-9a-f]+$",
+					"description": "Expected fail value at address (hex)"
+				},
+				"runningValue": {
+					"type": "string",
+					"pattern": "^0x[0-9a-f]+$",
+					"description": "Value indicating test still running (hex, for early exit)"
+				},
+				"maxFrames": {
+					"type": "integer",
+					"minimum": 1,
+					"default": 500,
+					"description": "Frame budget before timeout"
+				},
+				"script": {
+					"type": "string",
+					"description": "Lua script path relative to ~scripts/ (for lua-script strategy)"
+				},
+				"tags": {
+					"type": "array",
+					"items": { "type": "string" },
+					"description": "Filtering tags for selective test runs"
+				},
+				"enabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "Whether this test is enabled"
+				},
+				"notes": {
+					"type": "string",
+					"description": "Human-readable notes about the test"
+				}
+			},
+			"allOf": [
+				{
+					"if": {
+						"properties": { "strategy": { "const": "memory-read" } }
+					},
+					"then": {
+						"required": ["address", "memType", "passValue"]
+					}
+				},
+				{
+					"if": {
+						"properties": { "strategy": { "const": "lua-script" } }
+					},
+					"then": {
+						"required": ["script"]
+					}
+				}
+			]
+		}
+	}
+}
