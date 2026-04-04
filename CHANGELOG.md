@@ -5,6 +5,24 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.18] - 2026-04-03
+
+### Fixed
+
+- **WonderSwan PPU double-buffer row index mismatch** — Fixed row index mismatch with low VTOTAL modulo (#1076)
+- **Setup wizard deferred HomeFolder creation** — Prevents .so overwrites in portable mode, disables AppImage portable option (#1039)
+
+### Changed
+
+- **GitHub Actions Node.js 24 migration** — Updated all CI actions to Node.js 24-compatible versions, replaced unmaintained write-file-action with shell command (#1156)
+
+### Documentation
+
+- Automated accuracy testing infrastructure plan and session documentation (#1131)
+- WonderSwan PPU cross-emulator verification analysis (#1076, #1130)
+
+---
+
 ## [1.4.17] - 2026-03-31
 
 ### Added
