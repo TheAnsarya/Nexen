@@ -1,6 +1,8 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -41,11 +43,12 @@ public class App : Application {
 			} else {
 				// Show splash screen while the main window initializes
 				var splash = new SplashWindow();
+				var splashTimer = Stopwatch.StartNew();
 				splash.Show();
 
 				// Use InvokeAsync so the splash window renders before we do heavy init
 				Dispatcher.UIThread.InvokeAsync(() => {
-					InitializeMainWindow(desktop, splash);
+					InitializeMainWindow(desktop, splash, splashTimer);
 				}, DispatcherPriority.Background);
 			}
 		}
@@ -53,7 +56,7 @@ public class App : Application {
 		base.OnFrameworkInitializationCompleted();
 	}
 
-	private static void InitializeMainWindow(IClassicDesktopStyleApplicationLifetime desktop, SplashWindow splash) {
+	private static void InitializeMainWindow(IClassicDesktopStyleApplicationLifetime desktop, SplashWindow splash, Stopwatch splashTimer) {
 		//Test if the core can be loaded, and display an error message popup if not
 		try {
 			EmuApi.TestDll();
@@ -82,8 +85,13 @@ public class App : Application {
 			mainWindow = new MainWindow();
 		}
 
-		// Close the splash screen once the main window has opened
-		mainWindow.Opened += (_, _) => {
+		// Close the splash screen once the main window has opened (minimum 2 seconds)
+		mainWindow.Opened += async (_, _) => {
+			splashTimer.Stop();
+			int remaining = 2000 - (int)splashTimer.ElapsedMilliseconds;
+			if (remaining > 0) {
+				await Task.Delay(remaining);
+			}
 			splash.Close();
 		};
 
