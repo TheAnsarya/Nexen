@@ -13,6 +13,30 @@
 			"runningValue": "0x80",
 			"maxFrames": 600,
 			"tags": ["cpu", "65sc02", "critical", "custom"]
+		},
+		{
+			"name": "lynx-cpu-65sc02",
+			"system": "lynx",
+			"rom": "custom/lynx/lynx-cpu-65sc02.lnx",
+			"strategy": "memory-read",
+			"address": "0x0000",
+			"memType": "LynxMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 600,
+			"tags": ["cpu", "65sc02", "custom"]
+		},
+		{
+			"name": "lynx-timer-test",
+			"system": "lynx",
+			"rom": "custom/lynx/lynx-timer-test.lnx",
+			"strategy": "memory-read",
+			"address": "0x0000",
+			"memType": "LynxMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 600,
+			"tags": ["hardware", "mikey", "suzy", "custom"]
 		}
 	]
 }

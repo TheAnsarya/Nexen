@@ -15,6 +15,30 @@
 			"tags": ["cpu", "v30mz", "critical", "custom"]
 		},
 		{
+			"name": "ws-cpu-arith",
+			"system": "ws",
+			"rom": "custom/ws/ws-cpu-arith.ws",
+			"strategy": "memory-read",
+			"address": "0x0000",
+			"memType": "WsMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 600,
+			"tags": ["cpu", "v30mz", "custom"]
+		},
+		{
+			"name": "ws-display-test",
+			"system": "ws",
+			"rom": "custom/ws/ws-display-test.ws",
+			"strategy": "memory-read",
+			"address": "0x0000",
+			"memType": "WsMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 600,
+			"tags": ["display", "lcd", "custom"]
+		},
+		{
 			"name": "ws-test-suite-cpu",
 			"system": "ws",
 			"rom": "ws/ws-test-suite/cpu/cpu_test.ws",

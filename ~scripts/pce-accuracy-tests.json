@@ -15,6 +15,30 @@
 			"tags": ["cpu", "huc6280", "critical", "custom"]
 		},
 		{
+			"name": "pce-cpu-huc6280",
+			"system": "pce",
+			"rom": "custom/pce/pce-cpu-huc6280.pce",
+			"strategy": "memory-read",
+			"address": "0x2000",
+			"memType": "PceMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 600,
+			"tags": ["cpu", "huc6280", "custom"]
+		},
+		{
+			"name": "pce-vdc-test",
+			"system": "pce",
+			"rom": "custom/pce/pce-vdc-test.pce",
+			"strategy": "memory-read",
+			"address": "0x2000",
+			"memType": "PceMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 600,
+			"tags": ["vdc", "display", "custom"]
+		},
+		{
 			"name": "peterlemon-cpu-test",
 			"system": "pce",
 			"rom": "pce/peterlemon-pce/CPUTest/CPUTest.pce",
