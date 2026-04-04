@@ -7,9 +7,7 @@
 	"MD004": {
 		"style": "dash"
 	},
-	"MD007": {
-		"indent": 4
-	},
+	"MD007": false,
 	"MD009": {
 		"br_spaces": 2,
 		"strict": false
