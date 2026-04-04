@@ -1,0 +1,33 @@
+{
+	"$schema": "./test-manifest.schema.json",
+	"version": 1,
+	"tests": [
+		{
+			"name": "snes-blargg-cpu-instrs",
+			"system": "snes",
+			"rom": "snes/blargg/cpu_instrs/cpu_instrs.sfc",
+			"strategy": "lua-script",
+			"script": "snes/blargg-test.lua",
+			"maxFrames": 36000,
+			"tags": ["cpu", "critical", "blargg"]
+		},
+		{
+			"name": "snes-blargg-spc-timer",
+			"system": "snes",
+			"rom": "snes/blargg/spc/spc_timer.sfc",
+			"strategy": "lua-script",
+			"script": "snes/blargg-test.lua",
+			"maxFrames": 18000,
+			"tags": ["spc", "blargg"]
+		},
+		{
+			"name": "snes-blargg-ppu-vram-access",
+			"system": "snes",
+			"rom": "snes/blargg/ppu/vram_access.sfc",
+			"strategy": "lua-script",
+			"script": "snes/blargg-test.lua",
+			"maxFrames": 18000,
+			"tags": ["ppu", "blargg"]
+		}
+	]
+}
