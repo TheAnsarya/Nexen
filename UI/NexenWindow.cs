@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Nexen.Config;
+using Nexen.Utilities;
 
 namespace Nexen;
 
@@ -24,7 +25,23 @@ public class NexenWindow : Window {
 	}
 
 	private static void SetTextRenderingMode(Visual v) {
-		switch (ConfigManager.Config.Preferences.FontAntialiasing) {
+		// During the setup wizard, Config may not be available yet — the user hasn't
+		// chosen a home folder, so accessing ConfigManager.Config would prematurely
+		// create ~/.config/Nexen/ (Linux) or trigger a TypeInitializationException
+		// if the file system isn't ready. Default to SubPixelAntialias in that case.
+		FontAntialiasing antialiasing;
+		try {
+			if (App.ShowConfigWindow) {
+				antialiasing = FontAntialiasing.SubPixelAntialias;
+			} else {
+				antialiasing = ConfigManager.Config.Preferences.FontAntialiasing;
+			}
+		} catch (Exception ex) {
+			Log.Error(ex, "[NexenWindow] Failed to read FontAntialiasing preference, using default");
+			antialiasing = FontAntialiasing.SubPixelAntialias;
+		}
+
+		switch (antialiasing) {
 			case FontAntialiasing.Disabled:
 				RenderOptions.SetTextRenderingMode(v, TextRenderingMode.Alias);
 				break;
@@ -38,8 +55,6 @@ public class NexenWindow : Window {
 				RenderOptions.SetTextRenderingMode(v, TextRenderingMode.SubpixelAntialias);
 				break;
 		}
-
-		;
 	}
 
 	protected override void OnClosed(EventArgs e) {

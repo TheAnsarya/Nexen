@@ -1166,16 +1166,11 @@ what the hell! there is no new chat/session log, make one ***everytime***, make 
 
 [Nexen, poppy, pansy, peony] implement all issues, continue making plans and docs and such; [poppy] continue working on the poppy vscode extension, make tests and benchmarks and epics and issues and sub-issues and docs and chat/session logs and etc.; implement everything; find performance issues and fix them; continue; continue for a while!; continue;
 
+Dear god, why are there 806 changes? soo what all this stuff is and clean it up or gitignore, or something, and tell me why 
 
+[Nexen] fix the problems in the latest comments of issues 1076 and 103, make sure 1.4.18 release works; research, fix, document, update; continue;
 
-
-
-
-
-
-
-
-
+1039 and 1076; continue
 
 
 

@@ -22,9 +22,15 @@ public class App : Application {
 	public static bool ShowConfigWindow { get; set; }
 
 	public override void Initialize() {
-		RequestedThemeVariant = Design.IsDesignMode || ShowConfigWindow
-			? ThemeVariant.Light
-			: ConfigManager.Config.Preferences.Theme == NexenTheme.Dark ? ThemeVariant.Dark : ThemeVariant.Light;
+		ThemeVariant theme = ThemeVariant.Light;
+		if (!Design.IsDesignMode && !ShowConfigWindow) {
+			try {
+				theme = ConfigManager.Config.Preferences.Theme == NexenTheme.Dark ? ThemeVariant.Dark : ThemeVariant.Light;
+			} catch (Exception ex) {
+				Log.Error(ex, "[App] Failed to read theme preference, defaulting to Light");
+			}
+		}
+		RequestedThemeVariant = theme;
 
 		Dispatcher.UIThread.UnhandledException += (s, e) => {
 			NexenMsgBox.ShowException(e.Exception);

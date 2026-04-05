@@ -97,7 +97,11 @@ class Program {
 				// via the DllImportResolver, so the wizard UI can render without extracting deps.
 				App.ShowConfigWindow = true;
 				BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
-				if (File.Exists(ConfigManager.GetConfigFile())) {
+
+				// Check if the wizard created a config file by checking both locations
+				// directly — do NOT call GetConfigFile() which accesses HomeFolder and
+				// would create ~/.config/Nexen/ if the wizard was cancelled.
+				if (File.Exists(portableConfig) || File.Exists(documentsConfig)) {
 					//Configuration done, restart process
 					Log.Info("Configuration complete, restarting");
 					Process.Start(Program.ExePath);
@@ -137,6 +141,12 @@ class Program {
 
 			Log.Info("Nexen shutting down normally");
 			return 0;
+		} catch (TypeInitializationException ex) {
+			// TypeInitializationException wraps the real cause — the inner exception has
+			// the actual stack trace and error.  Log both so users can report useful info.
+			Log.Fatal(ex.InnerException ?? ex, $"Fatal TypeInitializationException in Main (type: {ex.TypeName})");
+			Log.Fatal(ex, "Full TypeInitializationException details");
+			throw;
 		} catch (Exception ex) {
 			Log.Fatal(ex, "Fatal exception in Main");
 			throw;
@@ -147,6 +157,7 @@ class Program {
 
 	private static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath) {
 		if (libraryName.Contains("Nexen") || libraryName.Contains("SkiaSharp") || libraryName.Contains("HarfBuzz")) {
+			string originalName = libraryName;
 			if (libraryName.EndsWith(".dll")) {
 				libraryName = libraryName.Substring(0, libraryName.Length - 4);
 			}
@@ -174,15 +185,21 @@ class Program {
 
 			// Only fall back to HomeFolder if it's already been initialized
 			// (avoids creating ~/.config/Nexen during the setup wizard).
-			try {
-				string homePath = Path.Combine(ConfigManager.HomeFolder, libraryName);
-				if (File.Exists(homePath)) {
-					LogNativeLibraryLoad(libraryName, homePath);
-					return NativeLibrary.Load(homePath);
+			if (!App.ShowConfigWindow) {
+				try {
+					string homePath = Path.Combine(ConfigManager.HomeFolder, libraryName);
+					if (File.Exists(homePath)) {
+						LogNativeLibraryLoad(libraryName, homePath);
+						return NativeLibrary.Load(homePath);
+					}
+				} catch {
+					// HomeFolder may not be usable yet during first-run
 				}
-			} catch {
-				// HomeFolder may not be usable yet during first-run
 			}
+
+			// Library not found — log diagnostic info so users can report the issue
+			Log.Error($"[DllImportResolver] Native library not found: '{originalName}' (resolved to '{libraryName}'). " +
+				$"Searched: AppBase='{AppContext.BaseDirectory}', exists={File.Exists(localPath)}");
 		}
 
 		return IntPtr.Zero;
