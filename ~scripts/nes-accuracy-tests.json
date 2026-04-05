@@ -203,6 +203,66 @@
 			"maxFrames": 36000,
 			"tags": ["cpu", "blargg", "lua"],
 			"notes": "Alternative: run blargg via Lua script instead of memory-read"
+		},
+		{
+			"name": "blargg-cpu-timing",
+			"system": "nes",
+			"rom": "nes/blargg/cpu_timing_test6/cpu_timing_test.nes",
+			"strategy": "memory-read",
+			"address": "0x6000",
+			"memType": "NesMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 18000,
+			"tags": ["cpu", "timing", "critical", "blargg"]
+		},
+		{
+			"name": "blargg-instr-misc",
+			"system": "nes",
+			"rom": "nes/blargg/instr_misc/instr_misc.nes",
+			"strategy": "memory-read",
+			"address": "0x6000",
+			"memType": "NesMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 18000,
+			"tags": ["cpu", "blargg"]
+		},
+		{
+			"name": "blargg-ppu-read-buffer",
+			"system": "nes",
+			"rom": "nes/blargg/ppu_read_buffer/ppu_read_buffer.nes",
+			"strategy": "memory-read",
+			"address": "0x6000",
+			"memType": "NesMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 18000,
+			"tags": ["ppu", "blargg"]
+		},
+		{
+			"name": "blargg-oam-read",
+			"system": "nes",
+			"rom": "nes/blargg/oam_read/oam_read.nes",
+			"strategy": "memory-read",
+			"address": "0x6000",
+			"memType": "NesMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 18000,
+			"tags": ["ppu", "oam", "blargg"]
+		},
+		{
+			"name": "blargg-oam-stress",
+			"system": "nes",
+			"rom": "nes/blargg/oam_stress/oam_stress.nes",
+			"strategy": "memory-read",
+			"address": "0x6000",
+			"memType": "NesMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 18000,
+			"tags": ["ppu", "oam", "blargg"]
 		}
 	]
 }

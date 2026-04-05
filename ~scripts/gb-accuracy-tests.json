@@ -69,6 +69,51 @@
 			"passValue": "0x00",
 			"maxFrames": 500,
 			"tags": ["gambatte"]
+		},
+		{
+			"name": "mooneye-acceptance-timer-tma-write",
+			"system": "gb",
+			"rom": "gb/mooneye/acceptance/timer/tma_write_reloading.gb",
+			"strategy": "lua-script",
+			"script": "gb/mooneye-test.lua",
+			"maxFrames": 18000,
+			"tags": ["timer", "mooneye"]
+		},
+		{
+			"name": "mooneye-acceptance-timer-tim00",
+			"system": "gb",
+			"rom": "gb/mooneye/acceptance/timer/tim00.gb",
+			"strategy": "lua-script",
+			"script": "gb/mooneye-test.lua",
+			"maxFrames": 18000,
+			"tags": ["timer", "mooneye"]
+		},
+		{
+			"name": "mooneye-acceptance-timer-tim01",
+			"system": "gb",
+			"rom": "gb/mooneye/acceptance/timer/tim01.gb",
+			"strategy": "lua-script",
+			"script": "gb/mooneye-test.lua",
+			"maxFrames": 18000,
+			"tags": ["timer", "mooneye"]
+		},
+		{
+			"name": "mooneye-acceptance-if-ie-registers",
+			"system": "gb",
+			"rom": "gb/mooneye/acceptance/if_ie_registers.gb",
+			"strategy": "lua-script",
+			"script": "gb/mooneye-test.lua",
+			"maxFrames": 18000,
+			"tags": ["cpu", "interrupt", "mooneye"]
+		},
+		{
+			"name": "mooneye-acceptance-serial-boot",
+			"system": "gb",
+			"rom": "gb/mooneye/acceptance/serial/boot_sclk_align-dmgABCmgb.gb",
+			"strategy": "lua-script",
+			"script": "gb/mooneye-test.lua",
+			"maxFrames": 18000,
+			"tags": ["serial", "mooneye"]
 		}
 	]
 }

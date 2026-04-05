@@ -1,0 +1,27 @@
+{
+	"$schema": "./test-manifest.schema.json",
+	"version": 1,
+	"tests": [
+		{
+			"name": "channelf-boot-smoke",
+			"system": "channelf",
+			"rom": "custom/channelf/channelf-boot-smoke.chf",
+			"strategy": "lua-script",
+			"script": "channelf/boot-smoke.lua",
+			"maxFrames": 600,
+			"tags": ["boot", "critical", "custom"]
+		},
+		{
+			"name": "channelf-cpu-basic",
+			"system": "channelf",
+			"rom": "custom/channelf/channelf-cpu-basic.chf",
+			"strategy": "memory-read",
+			"address": "0x0800",
+			"memType": "ChannelFMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 600,
+			"tags": ["cpu", "f8", "custom"]
+		}
+	]
+}
