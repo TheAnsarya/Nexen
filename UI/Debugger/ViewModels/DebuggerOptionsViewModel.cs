@@ -15,6 +15,7 @@ public sealed class DebuggerOptionsViewModel : ViewModelBase {
 	public bool IsGba { get; }
 	public bool IsWs { get; }
 	public bool IsLynx { get; }
+	public bool IsAtari2600 { get; }
 	public bool IsChannelF { get; }
 
 	public bool HasSpecificBreakOptions { get; }
@@ -32,8 +33,9 @@ public sealed class DebuggerOptionsViewModel : ViewModelBase {
 		IsGba = cpuType == CpuType.Gba;
 		IsWs = cpuType == CpuType.Ws;
 		IsLynx = cpuType == CpuType.Lynx;
+		IsAtari2600 = cpuType == CpuType.Atari2600;
 		IsChannelF = cpuType == CpuType.ChannelF;
 
-		HasSpecificBreakOptions = IsSnes || IsSpc || IsNes || IsGameboy || IsPce || IsSms || IsGba || IsWs || IsLynx || IsChannelF;
+		HasSpecificBreakOptions = IsSnes || IsSpc || IsNes || IsGameboy || IsPce || IsSms || IsGba || IsWs || IsLynx || IsAtari2600 || IsChannelF;
 	}
 }

@@ -31,6 +31,9 @@ public sealed class DebuggerConfig : BaseWindowConfig<DebuggerConfig> {
 	[Reactive] public PceDebuggerConfig Pce { get; set; } = new();
 	[Reactive] public SmsDebuggerConfig Sms { get; set; } = new();
 	[Reactive] public WsDebuggerConfig Ws { get; set; } = new();
+	[Reactive] public LynxDebuggerConfig Lynx { get; set; } = new();
+	[Reactive] public Atari2600DebuggerConfig Atari2600 { get; set; } = new();
+	[Reactive] public ChannelFDebuggerConfig ChannelF { get; set; } = new();
 
 	[Reactive] public bool BreakOnUninitRead { get; set; } = false;
 	[Reactive] public bool BreakOnOpen { get; set; } = true;

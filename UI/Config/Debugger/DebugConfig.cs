@@ -97,6 +97,10 @@ public sealed class DebugConfig {
 
 			WsBreakOnUndefinedOpCode = Debugger.Ws.BreakOnUndefinedOpCode,
 
+			LynxBreakOnBrk = Debugger.Lynx.BreakOnBrk,
+
+			Atari2600BreakOnBrk = Debugger.Atari2600.BreakOnBrk,
+
 			ScriptAllowIoOsAccess = ScriptWindow.AllowIoOsAccess,
 			ScriptAllowNetworkAccess = ScriptWindow.AllowNetworkAccess,
 			ScriptTimeout = ScriptWindow.ScriptTimeout
@@ -167,6 +171,10 @@ public struct InteropDebugConfig {
 	public GbaDisassemblyMode GbaDisMode;
 
 	[MarshalAs(UnmanagedType.I1)] public bool WsBreakOnUndefinedOpCode;
+
+	[MarshalAs(UnmanagedType.I1)] public bool LynxBreakOnBrk;
+
+	[MarshalAs(UnmanagedType.I1)] public bool Atari2600BreakOnBrk;
 
 	[MarshalAs(UnmanagedType.I1)] public bool ScriptAllowIoOsAccess;
 	[MarshalAs(UnmanagedType.I1)] public bool ScriptAllowNetworkAccess;

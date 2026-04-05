@@ -254,6 +254,18 @@
 					Content="{l:Translate chkBreakOnUndefinedOpCode}"
 				/>
 			</StackPanel>
+			<StackPanel IsVisible="{Binding IsLynx}">
+				<CheckBox
+					IsChecked="{Binding Config.Lynx.BreakOnBrk}"
+					Content="{l:Translate chkBreakOnBrk}"
+				/>
+			</StackPanel>
+			<StackPanel IsVisible="{Binding IsAtari2600}">
+				<CheckBox
+					IsChecked="{Binding Config.Atari2600.BreakOnBrk}"
+					Content="{l:Translate chkBreakOnBrk}"
+				/>
+			</StackPanel>
 			<Rectangle  IsVisible="{Binding HasSpecificBreakOptions}" Stroke="#AAA" Height="1" StrokeThickness="1" HorizontalAlignment="Stretch" Margin="0 2" />
 			<CheckBox
 				IsChecked="{Binding Config.BreakOnUninitRead}"
