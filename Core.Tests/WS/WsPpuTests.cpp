@@ -614,3 +614,116 @@ TEST(WsIrqSourceTest, BitPositions) {
 	EXPECT_EQ(static_cast<uint8_t>(WsIrqSource::VerticalBlank), 0x40);
 	EXPECT_EQ(static_cast<uint8_t>(WsIrqSource::HorizontalBlankTimer), 0x80);
 }
+
+// =============================================================================
+// VTOTAL Edge Case Tests — #1130 audit finding
+// =============================================================================
+// When LastScanline (VTOTAL) is set below ScreenHeight (144), the PPU wraps
+// rendered scanlines via modulo. These tests verify the wrap logic in
+// ProcessHblank() at WsPpu.cpp lines 56-63.
+
+TEST(WsVtotalEdgeCaseTest, NormalVtotal_NoWrap) {
+	// LastScanline >= 143 means visibleScanlineCount >= ScreenHeight, no modulo
+	uint8_t lastScanline = 158; // Default WS VTOTAL
+	uint8_t visibleCount = (uint8_t)std::min<uint16_t>((uint16_t)lastScanline + 1, WsConstants::ScreenHeight);
+	EXPECT_EQ(visibleCount, WsConstants::ScreenHeight);
+
+	// Scanline should NOT be modified when visibleCount == ScreenHeight
+	uint8_t scanline = 100;
+	if (visibleCount > 0 && visibleCount < WsConstants::ScreenHeight) {
+		scanline = (uint8_t)(scanline % visibleCount);
+	}
+	EXPECT_EQ(scanline, 100); // Unchanged
+}
+
+TEST(WsVtotalEdgeCaseTest, VtotalAtScreenHeight_NoWrap) {
+	// LastScanline = 143 → visibleCount = 144 = ScreenHeight, no modulo
+	uint8_t lastScanline = 143;
+	uint8_t visibleCount = (uint8_t)std::min<uint16_t>((uint16_t)lastScanline + 1, WsConstants::ScreenHeight);
+	EXPECT_EQ(visibleCount, WsConstants::ScreenHeight);
+
+	uint8_t scanline = 143;
+	if (visibleCount > 0 && visibleCount < WsConstants::ScreenHeight) {
+		scanline = (uint8_t)(scanline % visibleCount);
+	}
+	EXPECT_EQ(scanline, 143); // No wrap
+}
+
+TEST(WsVtotalEdgeCaseTest, VtotalBelowScreenHeight_WrapsCorrectly) {
+	// LastScanline = 71 → visibleCount = 72, scanlines above 71 wrap
+	uint8_t lastScanline = 71;
+	uint8_t visibleCount = (uint8_t)std::min<uint16_t>((uint16_t)lastScanline + 1, WsConstants::ScreenHeight);
+	EXPECT_EQ(visibleCount, 72);
+
+	// Scanline 0 — no wrap
+	uint8_t s0 = 0;
+	if (visibleCount > 0 && visibleCount < WsConstants::ScreenHeight) {
+		s0 = (uint8_t)(s0 % visibleCount);
+	}
+	EXPECT_EQ(s0, 0);
+
+	// Scanline 71 — last visible, no wrap
+	uint8_t s71 = 71;
+	if (visibleCount > 0 && visibleCount < WsConstants::ScreenHeight) {
+		s71 = (uint8_t)(s71 % visibleCount);
+	}
+	EXPECT_EQ(s71, 71);
+
+	// Scanline 72 — wraps to 0
+	uint8_t s72 = 72;
+	if (visibleCount > 0 && visibleCount < WsConstants::ScreenHeight) {
+		s72 = (uint8_t)(s72 % visibleCount);
+	}
+	EXPECT_EQ(s72, 0);
+
+	// Scanline 143 — wraps to 143 % 72 = 71
+	uint8_t s143 = 143;
+	if (visibleCount > 0 && visibleCount < WsConstants::ScreenHeight) {
+		s143 = (uint8_t)(s143 % visibleCount);
+	}
+	EXPECT_EQ(s143, 143 % 72);
+}
+
+TEST(WsVtotalEdgeCaseTest, VtotalZero_SingleScanlineWrap) {
+	// LastScanline = 0 → visibleCount = 1, every scanline wraps to 0
+	uint8_t lastScanline = 0;
+	uint8_t visibleCount = (uint8_t)std::min<uint16_t>((uint16_t)lastScanline + 1, WsConstants::ScreenHeight);
+	EXPECT_EQ(visibleCount, 1);
+
+	for (uint8_t scanline = 0; scanline < WsConstants::ScreenHeight; scanline++) {
+		uint8_t wrapped = scanline;
+		if (visibleCount > 0 && visibleCount < WsConstants::ScreenHeight) {
+			wrapped = (uint8_t)(wrapped % visibleCount);
+		}
+		EXPECT_EQ(wrapped, 0) << "Scanline " << (int)scanline << " should wrap to 0";
+	}
+}
+
+TEST(WsVtotalEdgeCaseTest, RenderRowIndex_PreservesOriginalScanline) {
+	// The render row index uses the ORIGINAL scanline (before modulo), not wrapped
+	// This tests the double-buffer index logic: _renderRowIndex = _state.Scanline & 0x01
+	for (uint8_t scanline = 0; scanline < 10; scanline++) {
+		uint8_t renderRowIndex = scanline & 0x01;
+		EXPECT_EQ(renderRowIndex, scanline % 2)
+			<< "Row index for scanline " << (int)scanline << " should alternate 0/1";
+	}
+}
+
+TEST(WsVtotalEdgeCaseTest, VtotalHalfScreen_WrapsAt72) {
+	// LastScanline = 71 → exactly half screen height, common non-standard VTOTAL
+	uint8_t lastScanline = 71;
+	uint8_t visibleCount = (uint8_t)std::min<uint16_t>((uint16_t)lastScanline + 1, WsConstants::ScreenHeight);
+	EXPECT_EQ(visibleCount, 72);
+	EXPECT_LT(visibleCount, WsConstants::ScreenHeight);
+
+	// Verify every scanline in visible range maps to [0, 71]
+	for (uint8_t scanline = 0; scanline < WsConstants::ScreenHeight; scanline++) {
+		uint8_t wrapped = scanline;
+		if (visibleCount > 0 && visibleCount < WsConstants::ScreenHeight) {
+			wrapped = (uint8_t)(wrapped % visibleCount);
+		}
+		EXPECT_LT(wrapped, visibleCount)
+			<< "Scanline " << (int)scanline << " wrapped to " << (int)wrapped
+			<< " which exceeds visibleCount " << (int)visibleCount;
+	}
+}

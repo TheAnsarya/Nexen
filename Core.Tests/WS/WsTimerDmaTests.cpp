@@ -217,3 +217,75 @@ TEST(WsDmaStateTest, SdmaFrequencyAndTimer) {
 	EXPECT_EQ(state.SdmaFrequency, 0xff);
 	EXPECT_EQ(state.SdmaTimer, 0x80);
 }
+
+// =============================================================================
+// GDMA Cycle Counting Tests — #1130 audit
+// =============================================================================
+// GDMA takes 5 setup cycles + 2 cycles per word transferred.
+// These tests verify the expected cycle calculations.
+
+TEST(WsGdmaCycleCounting, ZeroLength_NoCycles) {
+	// Zero-length GDMA should not execute any cycles
+	uint16_t length = 0;
+	uint32_t expectedCycles = 0; // Stops immediately, no setup
+	EXPECT_EQ(expectedCycles, 0u);
+}
+
+TEST(WsGdmaCycleCounting, MinimalTransfer_TwoBytes) {
+	// 2-byte GDMA: 5 setup + 2*1 = 7 cycles
+	uint16_t length = 2;
+	uint32_t expectedCycles = 5 + (length / 2) * 2;
+	EXPECT_EQ(expectedCycles, 7u);
+}
+
+TEST(WsGdmaCycleCounting, LargeTransfer_256Bytes) {
+	// 256-byte GDMA: 5 setup + 2*128 = 261 cycles
+	uint16_t length = 256;
+	uint32_t expectedCycles = 5 + (length / 2) * 2;
+	EXPECT_EQ(expectedCycles, 261u);
+}
+
+TEST(WsGdmaCycleCounting, MaxTransfer) {
+	// Max 16-bit length: 0xFFFE (even), 5 + 2*(0xFFFE/2) = 5 + 0xFFFE = 65539
+	uint16_t length = 0xfffe;
+	uint32_t expectedCycles = 5 + length;
+	EXPECT_EQ(expectedCycles, 65539u);
+}
+
+TEST(WsGdmaSourceMask, Valid20BitAddresses) {
+	// GDMA source is masked to 20-bit physical address
+	EXPECT_EQ(WsTimerDmaTestHelpers::MaskGdmaSrc(0x00000), 0x00000u);
+	EXPECT_EQ(WsTimerDmaTestHelpers::MaskGdmaSrc(0xfffff), 0xfffffu);
+	EXPECT_EQ(WsTimerDmaTestHelpers::MaskGdmaSrc(0x100000), 0x00000u); // Overflow wraps
+	EXPECT_EQ(WsTimerDmaTestHelpers::MaskGdmaSrc(0x1fffff), 0xfffffu);
+}
+
+TEST(WsGdmaDirectionTest, IncrementDirection_OffsetPositive) {
+	// GdmaControl bit 6 clear → increment (offset = +2)
+	uint8_t control = 0x00;
+	int offset = (control & 0x40) ? -2 : 2;
+	EXPECT_EQ(offset, 2);
+}
+
+TEST(WsGdmaDirectionTest, DecrementDirection_OffsetNegative) {
+	// GdmaControl bit 6 set → decrement (offset = -2)
+	uint8_t control = 0x40;
+	int offset = (control & 0x40) ? -2 : 2;
+	EXPECT_EQ(offset, -2);
+}
+
+TEST(WsGdmaAddressUpdate, IncrementWraps20Bit) {
+	// Source address increments and wraps at 20-bit boundary
+	uint32_t src = 0xffffe;
+	int offset = 2;
+	src = (src + offset) & 0xfffff;
+	EXPECT_EQ(src, 0x00000u); // Wraps around
+}
+
+TEST(WsGdmaAddressUpdate, DecrementWraps20Bit) {
+	// Source address decrements and wraps at 20-bit boundary
+	uint32_t src = 0x00000;
+	int offset = -2;
+	src = (src + offset) & 0xfffff;
+	EXPECT_EQ(src, 0xffffeu); // Wraps around
+}

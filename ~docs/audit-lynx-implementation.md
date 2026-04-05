@@ -1,8 +1,15 @@
 # Atari Lynx Implementation — Comprehensive Audit Report
 
 > **Scope:** All Lynx-related code in the Nexen project (Mesen2 fork)
-> **Date:** 2026-02-16
+> **Date:** 2026-02-16 | **Last re-audit:** 2026-04-05
 > **Files audited:** ~70 files across `Core/Lynx/`, `Core.Tests/Lynx/`, `Core.Benchmarks/Lynx/`, `UI/Interop/`, `MovieConverter.Tests/`
+
+## Status Update — 2026-04-05
+
+- **Re-audited all Lynx subsystems** — no new TODOs, stubs, or gaps found since initial audit
+- **Debugger config gap fixed** (#1163, commit `076eba11`): Added `LynxDebuggerConfig.cs`, wired `LynxBreakOnBrk` in `InteropDebugConfig` struct and Debugger Options UI panel
+- **InteropDebugConfig struct alignment fixed**: `LynxBreakOnBrk` and `Atari2600BreakOnBrk` fields were missing from the C# struct, causing silent memory layout corruption of all fields after `WsBreakOnUndefinedOpCode`
+- **Verdict: PRODUCTION COMPLETE** — all 7 TODOs from §16 remain valid low-priority enhancements, none are blocking
 
 ---
 
