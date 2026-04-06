@@ -5,6 +5,41 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **WonderSwan GetAudioTrackInfo** — Live APU channel state reporting: CH1-CH4 frequency/volume, HyperVoice, PCM, sweep, noise status (#1168)
+- **SMS GetAudioTrackInfo** — Live PSG state reporting: 3 tone channels + noise + FM audio detection; GameTitle varies by SMS model
+- **GBA GetAudioTrackInfo** — Reports 6 audio channels: SQ1, SQ2, WAV, NOI (PSG) + DMA-A, DMA-B with frequency/volume/mode details
+- **GBA RefreshRamCheats** — Cheat engine now applies RAM cheats for GBA (was a stub)
+- **Lynx debugger ProcessMemoryAccess** — Wired central memory access tracking for register event logging in the Lynx debugger
+- **WS settings serialization** — WonderSwan Model and controller types now saved/restored in settings
+- **GBA internal memory control register** — Register 0x04000800 writes now handled (no-op, documented)
+- **Atari 2600 Lua test scripts** — `memory-poll.lua` (blargg-style) and `boot-smoke.lua` (RIOT timer verification)
+- **Channel F boot-smoke test** — Lua test script for Channel F system verification
+- **Expanded test manifests** — 73 tests across 11 platforms (NES 22, GB 12, GBA 9, SNES 7, PCE 5, WS 5, A2600 3, SMS 3, Lynx 3, Genesis 2, Channel F 2)
+- **WonderSwan VTOTAL edge-case tests** — 6 PPU VTOTAL + 9 GDMA cycle-counting tests (#1169)
+- **InteropDebugConfig Lynx/A2600/ChannelF support** — Added missing Break-on fields and per-system debugger configs (#1163)
+
+### Fixed
+
+- **GBA debugger register writes** — DebugWrite for I/O registers now explicitly skips writes to prevent side effects (matches GB pattern)
+- **ST018 dead code removal** — Removed leftover `GbaCpu::StaticInit()` call and unused include in ST018 coprocessor
+- **SMS SegaCart field documentation** — Clarified that `_bankShift` and `_romWriteEnabled` are set from $FFFC but not yet consumed
+- **SMS DebugWrite documentation** — Clarified raw-byte-only semantics matching GB pattern
+- **GBA KEYINPUT unused bits** — Documented bits 10-15 behavior (read as 0)
+- **Trailing whitespace** — Removed trailing whitespace in DebugConfig.cs, DebuggerConfig.cs
+
+### Closed Issues
+
+- #1168 — WS: Implement GetAudioTrackInfo / ProcessAudioPlayerAction
+- #1164, #1165 — Duplicates of #1166 (WS IN timing)
+- #1167 — Duplicate of #1168 (WS audio stubs)
+- #1163 — InteropDebugConfig C# struct field alignment
+
+---
+
 ## [1.4.18] - 2026-04-03
 
 ### Added
