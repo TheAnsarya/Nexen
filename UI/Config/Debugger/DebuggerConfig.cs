@@ -9,7 +9,7 @@ using Nexen.Interop;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Config; 
+namespace Nexen.Config;
 public sealed class DebuggerConfig : BaseWindowConfig<DebuggerConfig> {
 	public DockEntryDefinition? SavedDockLayout { get; set; } = null;
 

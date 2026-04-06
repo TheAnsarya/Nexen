@@ -1172,6 +1172,28 @@ Dear god, why are there 806 changes? soo what all this stuff is and clean it up 
 
 1039 and 1076; continue
 
+[Nexen] make sure we're adding chat/session logs! ; continue analyzing the issues in case there are additional issues cause problems; but start by building Nexen and running it so I can see it work;
+
+[Nexen] continue working on performance and testing improvements ans work through all issues, making sure that channel f is done and documenting/planning for whatever is left with atari Lynx emulation; continue for a very long time; continue;
+
+[Nexen] continue working! go as long as you can fixing things!; continue;
+
+--- try again
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

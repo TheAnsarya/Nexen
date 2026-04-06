@@ -10,7 +10,7 @@ using System.Xml.Serialization;
 using Nexen.Debugger;
 using Nexen.Interop;
 
-namespace Nexen.Config; 
+namespace Nexen.Config;
 public sealed class DebugConfig {
 	public DebuggerShortcutsConfig Shortcuts { get; set; } = new();
 	public TraceLoggerConfig TraceLogger { get; set; } = new();
