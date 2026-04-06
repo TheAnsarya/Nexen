@@ -151,7 +151,9 @@ void EmuSettings::Serialize(Serializer& s) {
 			break;
 
 		case ConsoleType::Ws:
-			// TODOWS
+			SV(_ws.Model);
+			SV(_ws.ControllerHorizontal.Type);
+			SV(_ws.ControllerVertical.Type);
 			break;
 
 		case ConsoleType::Lynx:

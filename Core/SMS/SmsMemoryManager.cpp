@@ -283,7 +283,7 @@ void SmsMemoryManager::Write(uint16_t addr, uint8_t value) {
 }
 
 void SmsMemoryManager::DebugWrite(uint16_t addr, uint8_t value) {
-	// TODOSMS - allow side-effects for debugger
+	// Write raw bytes only — no mapper/register side effects (matches GB pattern)
 	uint8_t* data = _writes[addr >> 8];
 	if (data) {
 		data[(uint8_t)addr] = value;

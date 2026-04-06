@@ -679,7 +679,9 @@ void GbaMemoryManager::WriteRegister(GbaAccessModeVal mode, uint32_t addr, uint8
 			}
 			break;
 
-			// TODOGBA case 0x800: break;
+		case 0x800: case 0x801: case 0x802: case 0x803:
+			// Internal memory control (EWRAM wait states) — writes ignored for now
+			break;
 
 		default:
 			if (addr < 0x60) {

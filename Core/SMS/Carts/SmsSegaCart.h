@@ -10,7 +10,7 @@ private:
 	bool _ramEnabled[2] = {};
 	uint8_t _ramBank = 0;
 
-	// TODOSMS unused
+	// Written from $FFFC register but not yet consumed by bank/write logic
 	uint8_t _bankShift = 0;
 	bool _romWriteEnabled = false;
 

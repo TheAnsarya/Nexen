@@ -63,7 +63,7 @@ uint8_t GbaControlManager::ReadController(uint32_t addr) {
 	for (shared_ptr<BaseControlDevice>& controller : _controlDevices) {
 		if (controller->GetPort() == 0 && controller->GetControllerType() == ControllerType::GbaController) {
 			if (addr & 0x01) {
-				// TODOGBA other bits are 0 or 1?
+				// Bits 2-7 (KEYINPUT bits 10-15) are unused, read as 0
 				return (
 				    (controller->IsPressed(GbaController::R) ? 0 : (1 << 0)) |
 				    (controller->IsPressed(GbaController::L) ? 0 : (1 << 1)));
