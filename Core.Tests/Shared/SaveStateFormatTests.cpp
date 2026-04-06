@@ -10,8 +10,8 @@
 // Tests for save state format versioning, file header magic, and slot constants.
 // Tracks: #921 (SaveState EmuApi integration tests)
 
-TEST(SaveStateFormatTests, FileFormatVersionIsV4) {
-	EXPECT_EQ(SaveStateManager::FileFormatVersion, 4u);
+TEST(SaveStateFormatTests, FileFormatVersionIsV5) {
+	EXPECT_EQ(SaveStateManager::FileFormatVersion, 5u);
 }
 
 TEST(SaveStateFormatTests, MinimumSupportedVersionIsV3) {

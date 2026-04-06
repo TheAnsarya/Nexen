@@ -61,6 +61,7 @@ struct SaveStateSnapshot {
 	string romName;               ///< ROM filename without path
 	string filepath;              ///< Target save state file path
 	bool showSuccessMessage = false; ///< Display success message after write
+	bool isPaused = false;        ///< Whether emulator was paused at time of capture
 };
 
 /// <summary>
@@ -197,7 +198,7 @@ private:
 	[[nodiscard]] uint32_t ReadValue(istream& stream);
 
 public:
-	static constexpr uint32_t FileFormatVersion = 4;       ///< Current save state version
+	static constexpr uint32_t FileFormatVersion = 5;       ///< Current save state version
 	static constexpr uint32_t MinimumSupportedVersion = 3; ///< Oldest loadable version
 	static constexpr uint32_t AutoSaveStateIndex = 11;     ///< Auto-save slot index
 

@@ -5,6 +5,12 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Save state pause persistence** — Save states now preserve the emulator pause state; loading a save state taken while paused restores the paused state, and vice versa (save state format v5) (#1039)
+
 ## [1.4.19] - 2026-04-06
 
 ### Added

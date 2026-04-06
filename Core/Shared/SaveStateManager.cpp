@@ -158,6 +158,10 @@ void SaveStateManager::GetSaveStateHeader(ostream& stream) {
 void SaveStateManager::SaveState(ostream& stream) {
 	GetSaveStateHeader(stream);
 	_emu->Serialize(stream, false);
+
+	// v5+: write pause state after compressed state data
+	char pauseByte = _emu->IsPaused() ? 1 : 0;
+	stream.put(pauseByte);
 }
 
 bool SaveStateManager::SaveState(const string& filepath, bool showSuccessMessage) {
@@ -190,6 +194,7 @@ bool SaveStateManager::SaveState(const string& filepath, bool showSuccessMessage
 		snapshot.consoleType = (uint32_t)_emu->GetConsoleType();
 		RomInfo romInfo = _emu->GetRomInfo();
 		snapshot.romName = FolderUtilities::GetFilename(romInfo.RomFile.GetFileName(), true);
+		snapshot.isPaused = _emu->IsPaused();
 
 		_emu->ProcessEvent(EventType::StateSaved);
 	}
@@ -319,6 +324,18 @@ bool SaveStateManager::LoadState(istream& stream) {
 			// Stop any movie that might have been playing/recording if a state is loaded
 			//(Note: Loading a state is disabled in the UI while a movie is playing/recording)
 			_emu->GetMovieManager()->Stop();
+
+			// v5+: restore pause state from save state
+			if (fileFormatVersion >= 5) {
+				char pauseByte = 0;
+				if (stream.get(pauseByte)) {
+					if (pauseByte) {
+						_emu->Pause();
+					} else {
+						_emu->Resume();
+					}
+				}
+			}
 
 			if (_emu->IsPaused() && !_emu->GetVideoRenderer()->IsRecording()) {
 				// Only send the saved frame if the emulation is paused and no avi recording is in progress
@@ -794,6 +811,10 @@ void SaveStateManager::WriteSnapshotToDisk(SaveStateSnapshot& snapshot) {
 	file.write((char*)&originalSize, sizeof(uint32_t));
 	file.write((char*)&compSize, sizeof(uint32_t));
 	file.write((char*)_bgCompressStateBuffer.data(), compSize);
+
+	// v5+: write pause state after compressed state data
+	char pauseByte = snapshot.isPaused ? 1 : 0;
+	file.put(pauseByte);
 
 	file.close();
 
