@@ -8,7 +8,6 @@
 #include "SNES/Debugger/DummyArmV3Cpu.h"
 #include "Shared/Emulator.h"
 #include "Shared/FirmwareHelper.h"
-#include "GBA/GbaCpu.h"
 
 St018::St018(SnesConsole* console) {
 	_emu = console->GetEmulator();
@@ -19,7 +18,6 @@ St018::St018(SnesConsole* console) {
 
 	ArmV3Cpu::StaticInit();
 	DummyArmV3Cpu::StaticInit();
-	GbaCpu::StaticInit(); // todo remove
 
 	_prgRom = std::make_unique<uint8_t[]>(St018::PrgRomSize);
 	_dataRom = std::make_unique<uint8_t[]>(St018::DataRomSize);

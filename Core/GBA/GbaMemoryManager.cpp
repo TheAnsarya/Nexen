@@ -854,7 +854,7 @@ void GbaMemoryManager::DebugWrite(uint32_t addr, uint8_t value) {
 			break;
 
 		case 0x04:
-			// todogba debugger - allow writing to registers
+			// Do not write to registers via debug tools (side effects: IRQ, DMA, timers, halt)
 			break;
 
 		case 0x05:

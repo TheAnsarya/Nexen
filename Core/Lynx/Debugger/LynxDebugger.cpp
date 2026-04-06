@@ -421,3 +421,14 @@ void LynxDebugger::ProcessInputOverrides(DebugControllerState inputOverrides[8])
 	}
 	controlManager->RefreshHubState();
 }
+
+template <MemoryOperationType opType>
+void LynxDebugger::ProcessMemoryAccess(uint32_t addr, uint8_t value, MemoryType memType) {
+	MemoryOperationInfo operation(addr, value, opType, memType);
+	if (IsRegister(addr)) {
+		_eventManager->AddEvent(DebugEventType::Register, operation);
+	}
+}
+
+template void LynxDebugger::ProcessMemoryAccess<MemoryOperationType::Read>(uint32_t addr, uint8_t value, MemoryType memType);
+template void LynxDebugger::ProcessMemoryAccess<MemoryOperationType::Write>(uint32_t addr, uint8_t value, MemoryType memType);

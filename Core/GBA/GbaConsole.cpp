@@ -418,12 +418,50 @@ RomFormat GbaConsole::GetRomFormat() {
 }
 
 AudioTrackInfo GbaConsole::GetAudioTrackInfo() {
-	// TODOGBA
-	return {};
+	GbaApuDebugState apu = _apu->GetState();
+
+	int activeChannels = 0;
+	string channelInfo;
+
+	if (apu.Square1.Enabled) {
+		activeChannels++;
+		channelInfo += "SQ1(f=" + std::to_string(apu.Square1.Frequency) + ",v=" + std::to_string(apu.Square1.Volume) + ") ";
+	}
+	if (apu.Square2.Enabled) {
+		activeChannels++;
+		channelInfo += "SQ2(f=" + std::to_string(apu.Square2.Frequency) + ",v=" + std::to_string(apu.Square2.Volume) + ") ";
+	}
+	if (apu.Wave.Enabled && apu.Wave.DacEnabled) {
+		activeChannels++;
+		channelInfo += "WAV(f=" + std::to_string(apu.Wave.Frequency) + ") ";
+	}
+	if (apu.Noise.Enabled) {
+		activeChannels++;
+		channelInfo += string("NOI(") + (apu.Noise.ShortWidthMode ? "7bit" : "15bit") + ",v=" + std::to_string(apu.Noise.Volume) + ") ";
+	}
+	if (apu.Common.EnableLeftA || apu.Common.EnableRightA) {
+		activeChannels++;
+		channelInfo += "DMA-A ";
+	}
+	if (apu.Common.EnableLeftB || apu.Common.EnableRightB) {
+		activeChannels++;
+		channelInfo += "DMA-B ";
+	}
+
+	AudioTrackInfo info = {};
+	info.GameTitle = "Game Boy Advance";
+	info.SongTitle = std::to_string(activeChannels) + " active channel" + (activeChannels != 1 ? "s" : "");
+	info.Comment = channelInfo.empty() ? "silent" : channelInfo;
+	info.Position = _ppu->GetFrameCount() / GetFps();
+	info.Length = 0;
+	info.FadeLength = 0;
+	info.TrackNumber = 1;
+	info.TrackCount = 1;
+	return info;
 }
 
 void GbaConsole::ProcessAudioPlayerAction(AudioPlayerActionParams p) {
-	// TODOGBA
+	// GBA has no multi-track audio format; no-op
 }
 
 void GbaConsole::ClearCpuSequentialFlag() {
@@ -443,7 +481,9 @@ ConsoleRegion GbaConsole::GetRegion() {
 }
 
 void GbaConsole::RefreshRamCheats() {
-	// TODOGBA
+	for (InternalCheatCode& code : _emu->GetCheatManager()->GetRamRefreshCheats(CpuType::Gba)) {
+		_memoryManager->DebugWrite(code.Address, code.Value);
+	}
 }
 
 void GbaConsole::InitializeRam(void* data, uint32_t length) {

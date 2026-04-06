@@ -502,7 +502,7 @@ void Debugger::ProcessMemoryAccess(uint32_t addr, T& value) {
 			GetDebugger<CpuType::Ws, WsDebugger>()->ProcessMemoryAccess<opType, T>(addr, value, memType);
 			break;
 		case CpuType::Lynx:
-			// TODO: Wire ProcessMemoryAccess when LynxDebugger supports it
+			GetDebugger<CpuType::Lynx, LynxDebugger>()->ProcessMemoryAccess<opType>(addr, value, memType);
 			break;
 		case CpuType::Atari2600:
 			GetDebugger<CpuType::Atari2600, Atari2600Debugger>()->ProcessMemoryAccess<opType>(addr, value, memType);

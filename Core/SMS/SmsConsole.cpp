@@ -288,12 +288,51 @@ RomFormat SmsConsole::GetRomFormat() {
 }
 
 AudioTrackInfo SmsConsole::GetAudioTrackInfo() {
-	// TODOSMS audio player
-	return AudioTrackInfo();
+	SmsPsgState& psg = _psg->GetState();
+
+	int activeChannels = 0;
+	string channelInfo;
+
+	for (int i = 0; i < 3; i++) {
+		if (psg.Tone[i].Volume < 15) {
+			activeChannels++;
+			channelInfo += "T" + std::to_string(i + 1) + "(f=" + std::to_string(psg.Tone[i].ReloadValue) + ",v=" + std::to_string(15 - psg.Tone[i].Volume) + ") ";
+		}
+	}
+
+	if (psg.Noise.Volume < 15) {
+		activeChannels++;
+		uint8_t mode = (psg.Noise.Control >> 2) & 1;
+		uint8_t rate = psg.Noise.Control & 3;
+		channelInfo += string("N(") + (mode ? "white" : "periodic") + ",r=" + std::to_string(rate) + ",v=" + std::to_string(15 - psg.Noise.Volume) + ") ";
+	}
+
+	if (_fmAudio && _fmAudio->IsPsgAudioMuted()) {
+		channelInfo += "[FM active] ";
+	}
+
+	string modelName;
+	switch (_model) {
+		case SmsModel::GameGear: modelName = "Game Gear"; break;
+		case SmsModel::Sg: modelName = "SG-1000"; break;
+		case SmsModel::ColecoVision: modelName = "ColecoVision"; break;
+		default: modelName = "Master System"; break;
+	}
+
+	AudioTrackInfo info = {};
+	info.GameTitle = modelName;
+	info.SongTitle = std::to_string(activeChannels) + " active channel" + (activeChannels != 1 ? "s" : "");
+	info.Comment = channelInfo.empty() ? "silent" : channelInfo;
+	info.Position = _vdp->GetFrameCount() / GetFps();
+	info.Length = 0;
+	info.FadeLength = 0;
+	info.TrackNumber = 1;
+	info.TrackCount = 1;
+	return info;
 }
 
 void SmsConsole::ProcessAudioPlayerAction(AudioPlayerActionParams p) {
-	// TODOSMS audio player
+	// SMS has no multi-track audio format; no-op
 }
 
 void SmsConsole::RefreshRamCheats() {
