@@ -28,7 +28,7 @@
 				},
 				"system": {
 					"type": "string",
-					"enum": ["nes", "snes", "gb", "gbc", "gba", "genesis", "sms", "pce", "ws", "lynx"],
+					"enum": ["nes", "snes", "gb", "gbc", "gba", "genesis", "sms", "pce", "ws", "lynx", "atari2600", "channelf"],
 					"description": "Target system"
 				},
 				"rom": {
