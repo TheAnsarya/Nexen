@@ -475,12 +475,50 @@ RomFormat WsConsole::GetRomFormat() {
 }
 
 AudioTrackInfo WsConsole::GetAudioTrackInfo() {
-	// TODOWS
-	return AudioTrackInfo();
+	WsApuState& apu = _apu->GetState();
+
+	int activeChannels = 0;
+	string channelInfo;
+
+	if (apu.Ch1.Enabled) {
+		activeChannels++;
+		channelInfo += "CH1(f=" + std::to_string(apu.Ch1.Frequency) + ") ";
+	}
+	if (apu.Ch2.Enabled) {
+		activeChannels++;
+		channelInfo += apu.Ch2.PcmEnabled ? "CH2(PCM) " : "CH2(f=" + std::to_string(apu.Ch2.Frequency) + ") ";
+	}
+	if (apu.Ch3.Enabled) {
+		activeChannels++;
+		channelInfo += "CH3(f=" + std::to_string(apu.Ch3.Frequency);
+		if (apu.Ch3.SweepEnabled) {
+			channelInfo += ",sweep=" + std::to_string(apu.Ch3.SweepValue);
+		}
+		channelInfo += ") ";
+	}
+	if (apu.Ch4.Enabled) {
+		activeChannels++;
+		channelInfo += apu.Ch4.NoiseEnabled ? "CH4(noise) " : "CH4(f=" + std::to_string(apu.Ch4.Frequency) + ") ";
+	}
+	if (apu.Voice.Enabled) {
+		activeChannels++;
+		channelInfo += "HyperVoice ";
+	}
+
+	AudioTrackInfo info = {};
+	info.GameTitle = _model == WsModel::Monochrome ? "WonderSwan" : "WonderSwan Color";
+	info.SongTitle = std::to_string(activeChannels) + " active channel" + (activeChannels != 1 ? "s" : "");
+	info.Comment = channelInfo.empty() ? "silent" : channelInfo;
+	info.Position = _ppu->GetFrameCount() / GetFps();
+	info.Length = 0;
+	info.FadeLength = 0;
+	info.TrackNumber = 1;
+	info.TrackCount = 1;
+	return info;
 }
 
 void WsConsole::ProcessAudioPlayerAction(AudioPlayerActionParams p) {
-	// TODOWS
+	// WonderSwan has no multi-track audio format; no-op
 }
 
 AddressInfo WsConsole::GetAbsoluteAddress(uint32_t relAddress) {
