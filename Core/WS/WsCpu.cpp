@@ -1607,11 +1607,12 @@ void WsCpu::InStoreAx(uint16_t port) {
 		_state.AX = (_state.AX & 0xFF00) | ReadPort<uint8_t>(port);
 	}
 
-	// TODOWS
-	// The gdma_timing test seems to imply that IN instruciton might potentially
-	// be reading the port a cycle early and then spends an extra cycle
-	// on something else (e.g potentially updating AX?), but this needs more
-	// research/testing. This allows the gdma_timing test to pass.
+	// Post-read idle cycle for IN instructions. Corroborated by ares V30MZ
+	// (instructions-misc.cpp: instructionIn/instructionInDW both have wait(1)
+	// after in<size>()). The exact hardware reason is unknown — ares marks it
+	// with the same uncertainty — but both implementations agree on the timing,
+	// and the gdma_timing test validates it. OUT instructions do not have this
+	// extra cycle, matching ares behavior.
 	Idle();
 }
 
