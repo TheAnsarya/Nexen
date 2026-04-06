@@ -1180,6 +1180,9 @@ Dear god, why are there 806 changes? soo what all this stuff is and clean it up 
 
 --- try again
 
+[Nexen] Clean up and update docs and readmes showing all systems and progress, preparing for release 1.4.19; prepare the code and projects for `1.4.19` and then build an Nexen so I can verify it runs, and if that works then push the release to github and push the tag that starts the release actions; continue;
+
+git commit everything; Yes, Nexen ran correctly! We are a GO for release! :) continue!
 
 
 

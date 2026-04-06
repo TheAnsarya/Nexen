@@ -5,7 +5,7 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.4.19] - 2026-04-06
 
 ### Added
 
@@ -21,22 +21,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Expanded test manifests** — 73 tests across 11 platforms (NES 22, GB 12, GBA 9, SNES 7, PCE 5, WS 5, A2600 3, SMS 3, Lynx 3, Genesis 2, Channel F 2)
 - **WonderSwan VTOTAL edge-case tests** — 6 PPU VTOTAL + 9 GDMA cycle-counting tests (#1169)
 - **InteropDebugConfig Lynx/A2600/ChannelF support** — Added missing Break-on fields and per-system debugger configs (#1163)
+- **Accuracy testing CI workflow** — Nightly and manual dispatch CI with ROM download scripts for 11 platforms (#1131, #1138)
+- **CPU/hardware test ROMs** — Custom boot smoke ROMs for WS, Lynx, and PCE (#1139, #1140, #1141)
+- **Genesis/SMS/PCE/WS test ROM download scripts** — Automated acquisition for accuracy test suites (#1147)
 
 ### Fixed
 
+- **Startup crash hardening** — Fixed TypeInitializationException and premature HomeFolder creation on startup (#1076, #1039)
 - **GBA debugger register writes** — DebugWrite for I/O registers now explicitly skips writes to prevent side effects (matches GB pattern)
 - **ST018 dead code removal** — Removed leftover `GbaCpu::StaticInit()` call and unused include in ST018 coprocessor
+- **Lynx palette register address** — Corrected timer test ROM palette register (#1140)
 - **SMS SegaCart field documentation** — Clarified that `_bankShift` and `_romWriteEnabled` are set from $FFFC but not yet consumed
 - **SMS DebugWrite documentation** — Clarified raw-byte-only semantics matching GB pattern
 - **GBA KEYINPUT unused bits** — Documented bits 10-15 behavior (read as 0)
-- **Trailing whitespace** — Removed trailing whitespace in DebugConfig.cs, DebuggerConfig.cs
+- **Trailing whitespace** — Removed trailing whitespace in DebugConfig.cs, DebuggerConfig.cs, namespace declarations
+
+### Changed
+
+- **EditorConfig** — Assembly tab width corrected from 8 to 4
+- **Markdownlint** — Disabled MD007 rule (tab indentation is 1 char, not 4)
 
 ### Closed Issues
 
 - #1168 — WS: Implement GetAudioTrackInfo / ProcessAudioPlayerAction
-- #1164, #1165 — Duplicates of #1166 (WS IN timing)
-- #1167 — Duplicate of #1168 (WS audio stubs)
 - #1163 — InteropDebugConfig C# struct field alignment
+- #1169 — WS: Add VTOTAL edge-case and GDMA cycle-counting tests
+- #1164, #1165, #1167 — Closed as duplicates
 
 ---
 
