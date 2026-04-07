@@ -276,24 +276,24 @@ public sealed class RecentGameInfo {
 	public void Load() {
 		if (IsTimestampedSave) {
 			// Load timestamped save by filepath
+			// Note: SaveStateManager::LoadState() restores pause state from the save data
 			Task.Run(() => {
 				EmuApi.LoadStateFile(FileName);
-				EmuApi.Resume();
 			});
 		} else if (StateIndex > 0) {
 			Task.Run(() => {
 				//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side
 				if (SaveMode) {
 					EmuApi.SaveState((uint)StateIndex);
+					// OnCloseClick handles resuming when the dialog closes via NeedResume
 				} else {
+					// SaveStateManager::LoadState() restores pause state from the save data
 					EmuApi.LoadState((uint)StateIndex);
 				}
-
-				EmuApi.Resume();
 			});
 		} else {
+			// LoadRecentGame loads the ROM + state; pause state is restored by the C++ layer
 			LoadRomHelper.LoadRecentGame(FileName, false);
-			EmuApi.Resume();
 		}
 	}
 }
