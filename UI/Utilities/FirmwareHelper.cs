@@ -17,9 +17,49 @@ public static class FirmwareHelper {
 		return hashes.Sha256;
 	}
 
+	/// <summary>
+	/// Scans the firmware folder for any file that matches one of the expected firmware hashes.
+	/// Returns the path to the matching file, or null if no match is found.
+	/// </summary>
+	private static string? FindMatchingFirmwareInFolder(FirmwareFiles knownFirmwares) {
+		string firmwareFolder = ConfigManager.FirmwareFolder;
+		if (!Directory.Exists(firmwareFolder)) {
+			return null;
+		}
+
+		foreach (string file in Directory.EnumerateFiles(firmwareFolder)) {
+			try {
+				long fileSize = new FileInfo(file).Length;
+				foreach (FirmwareFileInfo knownFirmware in knownFirmwares) {
+					if (knownFirmware.Size == fileSize) {
+						string hash = GetFileHash(file);
+						if (Array.IndexOf(knownFirmware.Hashes, hash) >= 0) {
+							return file;
+						}
+					}
+				}
+			} catch {
+				// Skip files we can't read
+			}
+		}
+
+		return null;
+	}
+
 	public static async Task RequestFirmwareFile(MissingFirmwareMessage msg) {
 		string filename = Marshal.PtrToStringUTF8(msg.Filename) ?? "";
 		Window? wnd = ApplicationHelper.GetMainWindow();
+
+		// Try to auto-find a matching firmware file in the firmware folder
+		FirmwareFiles knownFirmwares = msg.Firmware.GetFirmwareInfo();
+		string? autoMatch = FindMatchingFirmwareInFolder(knownFirmwares);
+		if (autoMatch is not null) {
+			string destination = Path.Combine(ConfigManager.FirmwareFolder, knownFirmwares.Names[0]);
+			if (autoMatch != destination) {
+				File.Copy(autoMatch, destination, true);
+			}
+			return;
+		}
 
 		if (await NexenMsgBox.Show(wnd, "FirmwareNotFound", MessageBoxButtons.OKCancel, MessageBoxIcon.Question, ResourceHelper.GetEnumText(msg.Firmware), filename, msg.Size.ToString()) == DialogResult.OK) {
 			while (true) {

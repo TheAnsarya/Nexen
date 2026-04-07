@@ -132,28 +132,38 @@ void Emulator::Run() {
 	_lastFrameTimer.Reset();
 
 	while (!_stopFlag) {
-		uint32_t emulationSpeed = _settings->GetEmulationSpeed();
-		bool useRunAhead = _settings->GetEmulationConfig().RunAheadFrames > 0 && !_debugger && !_audioPlayerHud && !_rewindManager->IsRewinding() && emulationSpeed > 0 && emulationSpeed <= 100;
-		if (useRunAhead) {
-			RunFrameWithRunAhead();
-		} else {
-			_console->RunFrame();
-			_rewindManager->ProcessEndOfFrame();
-			_historyViewer->ProcessEndOfFrame();
-			ProcessSystemActions();
-		}
+		try {
+			uint32_t emulationSpeed = _settings->GetEmulationSpeed();
+			bool useRunAhead = _settings->GetEmulationConfig().RunAheadFrames > 0 && !_debugger && !_audioPlayerHud && !_rewindManager->IsRewinding() && emulationSpeed > 0 && emulationSpeed <= 100;
+			if (useRunAhead) {
+				RunFrameWithRunAhead();
+			} else {
+				_console->RunFrame();
+				_rewindManager->ProcessEndOfFrame();
+				_historyViewer->ProcessEndOfFrame();
+				ProcessSystemActions();
+			}
 
-		ProcessAutoSaveState();
+			ProcessAutoSaveState();
 
-		WaitForLock();
+			WaitForLock();
 
-		if (_pauseOnNextFrame) {
-			_pauseOnNextFrame = false;
-			_paused = true;
-		}
+			if (_pauseOnNextFrame) {
+				_pauseOnNextFrame = false;
+				_paused = true;
+			}
 
-		if (_paused && !_stopFlag && !_debugger) {
-			WaitForPauseEnd();
+			if (_paused && !_stopFlag && !_debugger) {
+				WaitForPauseEnd();
+			}
+		} catch (std::exception& ex) {
+			MessageManager::Log(std::string("[Emulation] Fatal error during emulation: ") + ex.what());
+			MessageManager::DisplayMessage("Error", "UnexpectedError", ex.what());
+			_stopFlag = true;
+		} catch (...) {
+			MessageManager::Log("[Emulation] Fatal unknown error during emulation");
+			MessageManager::DisplayMessage("Error", "UnexpectedError", "Unknown emulation error");
+			_stopFlag = true;
 		}
 	}
 
