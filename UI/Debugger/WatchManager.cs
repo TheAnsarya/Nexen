@@ -11,7 +11,7 @@ using Nexen.Interop;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Debugger; 
+namespace Nexen.Debugger;
 /// <summary>
 /// Manages watch expressions for monitoring values during debugging.
 /// </summary>

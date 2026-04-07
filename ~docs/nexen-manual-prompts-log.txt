@@ -1204,6 +1204,17 @@ open the file with the `plan` for splitting all systems/platforms into different
 
 [poppy] continue working issues and make more; continue;
 
+[poppy] continue working issues and make more; continue;
+
+[Nexen] add benchmarks and tests and issues and find performance improvements and work issues and do as much work as possible, and then release v1.4.20; push the code to git, push the tags that start the release then run the release command;
+
+[poppy] continue working and making new epics and issues and documents and plans and benchmarks and tests and implement the issues for continuning separation and cooperation and previous issues too; continue;
+
+[poppy] continue working issues and make more; continue; [Nexen] find new work items and implement them; continue;
+
+continue working issues;
+
+[Nexen] git commit everything from all the repos to clear house then: ***Focus all your efforts*** on fixing issue #1176 `https://github.com/TheAnsarya/Nexen/issues/1176`; start by opening the latest release as a fresh install for me to test the issue, then figure put why nothing happens after initial setup, and fix the problem where nothing happens if you try to open Nexen when it is already running (I thought we fixed it already?) maybe with a dialog saying "Nexen is already running and would you like me to close it and then continue?" with buttons named `Close and Restart Nexen` and `Leave Current Version Running` (or better labels); create epics/issues/chat-session-logs/docs/plans/benchmarks/tests/readmes/etc and implement everything and prepare a version for me to test; continue;
 
 
 
@@ -1211,6 +1222,10 @@ open the file with the `plan` for splitting all systems/platforms into different
 
 
 
+91 + 781 + 506 + 922 + 742 + 532 + 748 + 776 = 5098
+533 × 5 = 2665
+2433
+370
 
 
 
