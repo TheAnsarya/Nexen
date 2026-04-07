@@ -248,23 +248,23 @@ public:
 	[[nodiscard]] uint32_t GetExecutionTrace(TraceRow output[], uint32_t startOffset, uint32_t maxLineCount);
 
 	[[nodiscard]] CpuType GetMainCpuType() { return _mainCpuType; }
-	IDebugger* GetMainDebugger();
+	[[nodiscard]] IDebugger* GetMainDebugger();
 
-	TraceLogFileSaver* GetTraceLogFileSaver() { return _traceLogSaver.get(); }
-	MemoryDumper* GetMemoryDumper() { return _memoryDumper.get(); }
-	MemoryAccessCounter* GetMemoryAccessCounter() { return _memoryAccessCounter.get(); }
-	Disassembler* GetDisassembler() { return _disassembler.get(); }
-	DisassemblySearch* GetDisassemblySearch() { return _disassemblySearch.get(); }
-	LabelManager* GetLabelManager() { return _labelManager.get(); }
-	CdlManager* GetCdlManager() { return _cdlManager.get(); }
-	ScriptManager* GetScriptManager() { return _scriptManager.get(); }
-	IConsole* GetConsole() { return _console; }
-	Emulator* GetEmulator() { return _emu; }
+	[[nodiscard]] TraceLogFileSaver* GetTraceLogFileSaver() { return _traceLogSaver.get(); }
+	[[nodiscard]] MemoryDumper* GetMemoryDumper() { return _memoryDumper.get(); }
+	[[nodiscard]] MemoryAccessCounter* GetMemoryAccessCounter() { return _memoryAccessCounter.get(); }
+	[[nodiscard]] Disassembler* GetDisassembler() { return _disassembler.get(); }
+	[[nodiscard]] DisassemblySearch* GetDisassemblySearch() { return _disassemblySearch.get(); }
+	[[nodiscard]] LabelManager* GetLabelManager() { return _labelManager.get(); }
+	[[nodiscard]] CdlManager* GetCdlManager() { return _cdlManager.get(); }
+	[[nodiscard]] ScriptManager* GetScriptManager() { return _scriptManager.get(); }
+	[[nodiscard]] IConsole* GetConsole() { return _console; }
+	[[nodiscard]] Emulator* GetEmulator() { return _emu; }
 
-	FrozenAddressManager* GetFrozenAddressManager(CpuType cpuType);
-	ITraceLogger* GetTraceLogger(CpuType cpuType);
-	PpuTools* GetPpuTools(CpuType cpuType);
-	BaseEventManager* GetEventManager(CpuType cpuType);
-	CallstackManager* GetCallstackManager(CpuType cpuType);
-	IAssembler* GetAssembler(CpuType cpuType);
+	[[nodiscard]] FrozenAddressManager* GetFrozenAddressManager(CpuType cpuType);
+	[[nodiscard]] ITraceLogger* GetTraceLogger(CpuType cpuType);
+	[[nodiscard]] PpuTools* GetPpuTools(CpuType cpuType);
+	[[nodiscard]] BaseEventManager* GetEventManager(CpuType cpuType);
+	[[nodiscard]] CallstackManager* GetCallstackManager(CpuType cpuType);
+	[[nodiscard]] IAssembler* GetAssembler(CpuType cpuType);
 };

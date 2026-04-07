@@ -87,19 +87,19 @@ public:
 	/// Get raw CDL data buffer.
 	/// </summary>
 	/// <returns>CDL data pointer</returns>
-	uint8_t* GetRawData();
+	[[nodiscard]] uint8_t* GetRawData();
 
 	/// <summary>
 	/// Get CDL data size.
 	/// </summary>
 	/// <returns>Size in bytes</returns>
-	uint32_t GetSize();
+	[[nodiscard]] uint32_t GetSize();
 
 	/// <summary>
 	/// Get memory type being tracked.
 	/// </summary>
 	/// <returns>Memory type</returns>
-	MemoryType GetMemoryType();
+	[[nodiscard]] MemoryType GetMemoryType();
 
 	/// <summary>
 	/// Load CDL file from disk.
@@ -107,14 +107,14 @@ public:
 	/// <param name="cdlFilepath">CDL file path</param>
 	/// <param name="autoResetCdl">True to reset CDL before loading</param>
 	/// <returns>True if loaded successfully</returns>
-	bool LoadCdlFile(const string& cdlFilepath, bool autoResetCdl);
+	[[nodiscard]] bool LoadCdlFile(const string& cdlFilepath, bool autoResetCdl);
 
 	/// <summary>
 	/// Save CDL file to disk.
 	/// </summary>
 	/// <param name="cdlFilepath">CDL file path</param>
 	/// <returns>True if saved successfully</returns>
-	bool SaveCdlFile(const string& cdlFilepath);
+	[[nodiscard]] bool SaveCdlFile(const string& cdlFilepath);
 
 	/// <summary>
 	/// Get default CDL file path for ROM.
@@ -228,7 +228,7 @@ public:
 	/// </summary>
 	/// <param name="addr">Address</param>
 	/// <returns>CDL flags byte</returns>
-	uint8_t GetFlags(uint32_t addr);
+	[[nodiscard]] uint8_t GetFlags(uint32_t addr);
 
 	/// <summary>
 	/// Get all subroutine entry points.
@@ -236,7 +236,7 @@ public:
 	/// <param name="functions">Output function addresses</param>
 	/// <param name="maxSize">Maximum array size</param>
 	/// <returns>Number of functions found</returns>
-	uint32_t GetFunctions(uint32_t functions[], uint32_t maxSize);
+	[[nodiscard]] uint32_t GetFunctions(uint32_t functions[], uint32_t maxSize);
 
 	/// <summary>
 	/// Mark address range with flags.

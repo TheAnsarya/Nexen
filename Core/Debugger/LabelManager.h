@@ -164,7 +164,7 @@ public:
 	/// </summary>
 	/// <param name="absAddress">Absolute address info</param>
 	/// <returns>Comment string or empty if no comment</returns>
-	const string& GetComment(AddressInfo absAddress);
+	[[nodiscard]] const string& GetComment(AddressInfo absAddress);
 
 	/// <summary>
 	/// Get both label and comment for address.
