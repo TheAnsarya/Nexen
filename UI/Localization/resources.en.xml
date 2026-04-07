@@ -2018,6 +2018,12 @@ E
 		<Message ID="UnableToStartMissingSdl">Nexen could not launch because SDL2 could not be found. Install SDL2 using your package manager and try again.&#xA;&#xA;Error details:&#xA;{0}</Message>
 		<Message ID="UnableToStartMissingDependencies">Nexen could not launch because of missing dependencies.&#xA;&#xA;Error details:&#xA;{0}</Message>
 		<Message ID="UnableToStartMissingFiles">Nexen was unable to start due to missing files.&#xA;&#xA;Error: NexenCore.dll is missing.</Message>
+
+		<Message ID="AlreadyRunningTitle">Nexen Already Running</Message>
+		<Message ID="AlreadyRunningMessage">Nexen is already running. Would you like to close the existing instance and restart?</Message>
+		<Message ID="AlreadyRunningRestart">Close and Restart Nexen</Message>
+		<Message ID="AlreadyRunningLeave">Leave Current Version Running</Message>
+
 		<Message ID="UnexpectedError">An unexpected error has occurred.&#xA;&#xA;Error details:&#xA;{0}</Message>
 		<Message ID="UpdateDownloadFailed">Download failed - the file appears to be corrupted. Please visit the Nexen website to download the latest version manually.</Message>
 		<Message ID="UpgradeSuccess">Upgrade completed successfully.</Message>

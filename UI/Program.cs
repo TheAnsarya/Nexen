@@ -104,7 +104,11 @@ class Program {
 				if (File.Exists(portableConfig) || File.Exists(documentsConfig)) {
 					//Configuration done, restart process
 					Log.Info("Configuration complete, restarting");
-					Process.Start(Program.ExePath);
+					try {
+						Process.Start(new ProcessStartInfo(Program.ExePath) { UseShellExecute = true });
+					} catch (Exception ex) {
+						Log.Error(ex, "Failed to restart Nexen after setup wizard");
+					}
 				}
 
 				return 0;
@@ -136,7 +140,21 @@ class Program {
 				Program.CommandLineArgs = (string[])args.Clone();
 				BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
 			} else {
-				Log.Info("Another instance is already running");
+				Log.Info("Another instance is already running, showing dialog");
+				App.ShowAlreadyRunningDialog = true;
+				BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
+
+				if (App.AlreadyRunningCloseAndRestart) {
+					Log.Info("User chose to close and restart Nexen");
+					KillExistingInstances();
+					try {
+						Process.Start(new ProcessStartInfo(Program.ExePath) { UseShellExecute = true });
+					} catch (Exception ex) {
+						Log.Error(ex, "Failed to restart Nexen after closing existing instance");
+					}
+				} else {
+					Log.Info("User chose to leave existing instance running");
+				}
 			}
 
 			Log.Info("Nexen shutting down normally");
@@ -152,6 +170,27 @@ class Program {
 			throw;
 		} finally {
 			Log.CloseAndFlush();
+		}
+	}
+
+	private static void KillExistingInstances() {
+		string currentProcessName = Process.GetCurrentProcess().ProcessName;
+		int currentPid = Environment.ProcessId;
+
+		foreach (Process process in Process.GetProcessesByName(currentProcessName)) {
+			if (process.Id != currentPid) {
+				try {
+					Log.Info($"Killing existing Nexen process (PID {process.Id})");
+					process.Kill();
+					process.WaitForExit(5000);
+				} catch (Exception ex) {
+					Log.Error(ex, $"Failed to kill Nexen process (PID {process.Id})");
+				} finally {
+					process.Dispose();
+				}
+			} else {
+				process.Dispose();
+			}
 		}
 	}
 

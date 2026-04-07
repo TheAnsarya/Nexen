@@ -20,6 +20,8 @@ using Nexen.Windows;
 namespace Nexen;
 public class App : Application {
 	public static bool ShowConfigWindow { get; set; }
+	public static bool ShowAlreadyRunningDialog { get; set; }
+	public static bool AlreadyRunningCloseAndRestart { get; set; }
 
 	public override void Initialize() {
 		ThemeVariant theme = ThemeVariant.Light;
@@ -43,7 +45,37 @@ public class App : Application {
 
 	public override void OnFrameworkInitializationCompleted() {
 		if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
-			if (ShowConfigWindow) {
+			if (ShowAlreadyRunningDialog) {
+				string message = ResourceHelper.GetMessage("AlreadyRunningMessage");
+				string title = ResourceHelper.GetMessage("AlreadyRunningTitle");
+
+				MessageBox msgbox = new MessageBox() { Title = title };
+				msgbox.GetControl<TextBlock>("Text").Text = message;
+				msgbox.GetControl<Image>("imgQuestion").IsVisible = true;
+
+				StackPanel buttonPanel = msgbox.GetControl<StackPanel>("pnlButtons");
+
+				Button restartBtn = new Button {
+					Content = ResourceHelper.GetMessage("AlreadyRunningRestart"),
+					Width = double.NaN,
+					Padding = new Thickness(12, 5),
+					Margin = new Thickness(5)
+				};
+				restartBtn.Click += (_, _) => { AlreadyRunningCloseAndRestart = true; msgbox.Close(); };
+				buttonPanel.Children.Add(restartBtn);
+
+				Button leaveBtn = new Button {
+					Content = ResourceHelper.GetMessage("AlreadyRunningLeave"),
+					Width = double.NaN,
+					Padding = new Thickness(12, 5),
+					Margin = new Thickness(5),
+					IsCancel = true
+				};
+				leaveBtn.Click += (_, _) => { AlreadyRunningCloseAndRestart = false; msgbox.Close(); };
+				buttonPanel.Children.Add(leaveBtn);
+
+				desktop.MainWindow = msgbox;
+			} else if (ShowConfigWindow) {
 				new PreferencesConfig().InitializeFontDefaults();
 				desktop.MainWindow = new SetupWizardWindow();
 			} else {
