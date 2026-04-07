@@ -123,10 +123,10 @@ public class App : Application {
 			mainWindow = new MainWindow();
 		}
 
-		// Close the splash screen once the main window has opened (minimum 2 seconds)
+		// Close the splash screen once the main window has opened (minimum 2.5 seconds)
 		mainWindow.Opened += async (_, _) => {
 			splashTimer.Stop();
-			int remaining = 2000 - (int)splashTimer.ElapsedMilliseconds;
+			int remaining = 2500 - (int)splashTimer.ElapsedMilliseconds;
 			if (remaining > 0) {
 				await Task.Delay(remaining);
 			}

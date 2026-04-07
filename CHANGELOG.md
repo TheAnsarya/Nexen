@@ -10,10 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Games no longer start paused with debugger open** — Fresh game loads now auto-resume instead of staying paused; `BreakOnPowerCycleReset` only applies to actual power cycles, not new game loads (#1184)
+- **Save states now respect pause state on load** — Removed C# UI layer's unconditional resume that was overriding the saved pause state from the C++ layer (#1185)
 - **Already Running dialog** — Shows a dialog with "Close and Restart" or "Leave Current Version Running" options when a second instance is launched, instead of silently exiting (#1180)
 - **Setup wizard restart reliability** — Uses `ProcessStartInfo` with `UseShellExecute` and error handling for reliable restarts (#1181)
 - **Firmware auto-selection** — Automatically scans firmware folder for files matching expected SHA-256 hash before showing file picker dialog (#1182)
 - **UI freeze on emulation crash** — Added exception handling around the main emulation loop to prevent UI lockup on fatal errors (#1183)
+
+### Changed
+
+- **Splash screen minimum display** — Increased minimum splash screen time from 2.0s to 2.5s; no maximum (waits for init to complete)
 
 ## [1.4.20] - 2026-04-06
 
