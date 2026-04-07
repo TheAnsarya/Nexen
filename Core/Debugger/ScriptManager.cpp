@@ -23,7 +23,7 @@ int ScriptManager::LoadScript(const string& name, const string& path, const stri
 	auto lock = _scriptLock.AcquireSafe();
 
 	if (scriptId < 0) {
-		unique_ptr<ScriptHost> script(new ScriptHost(_nextScriptId++));
+		auto script = std::make_unique<ScriptHost>(_nextScriptId++);
 		script->LoadScript(name, path, content, _debugger);
 		scriptId = script->GetScriptId();
 		_scripts.push_back(std::move(script));

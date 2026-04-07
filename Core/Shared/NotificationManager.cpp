@@ -1,17 +1,11 @@
 #include "pch.h"
-#include <algorithm>
 #include "Shared/NotificationManager.h"
 
 void NotificationManager::RegisterNotificationListener(shared_ptr<INotificationListener> notificationListener) {
 	auto lock = _lock.AcquireSafe();
 
 	// Cleanup expired listeners while lock is held to avoid lock re-entry in hot registration paths.
-	_listeners.erase(
-		std::remove_if(
-			_listeners.begin(),
-			_listeners.end(),
-			[](const weak_ptr<INotificationListener>& ptr) { return ptr.expired(); }),
-		_listeners.end());
+	std::erase_if(_listeners, [](const weak_ptr<INotificationListener>& ptr) { return ptr.expired(); });
 
 	for (const weak_ptr<INotificationListener>& listener : _listeners) {
 		shared_ptr<INotificationListener> existing = listener.lock();
@@ -28,12 +22,7 @@ void NotificationManager::CleanupNotificationListeners() {
 	auto lock = _lock.AcquireSafe();
 
 	// Remove expired listeners
-	_listeners.erase(
-	    std::remove_if(
-	        _listeners.begin(),
-	        _listeners.end(),
-	        [](const weak_ptr<INotificationListener>& ptr) { return ptr.expired(); }),
-	    _listeners.end());
+	std::erase_if(_listeners, [](const weak_ptr<INotificationListener>& ptr) { return ptr.expired(); });
 }
 
 void NotificationManager::SendNotification(ConsoleNotificationType type, void* parameter) {

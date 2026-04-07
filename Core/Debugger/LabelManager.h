@@ -136,7 +136,7 @@ public:
 	/// </summary>
 	/// <param name="label">Label to lookup</param>
 	/// <returns>Address info or invalid address if not found</returns>
-	AddressInfo GetLabelAbsoluteAddress(const string& label);
+	[[nodiscard]] AddressInfo GetLabelAbsoluteAddress(const string& label);
 
 	/// <summary>
 	/// Get CPU-relative address for label.
@@ -144,7 +144,7 @@ public:
 	/// <param name="label">Label to lookup</param>
 	/// <param name="cpuType">Target CPU type</param>
 	/// <returns>Relative address or -1 if not found</returns>
-	int32_t GetLabelRelativeAddress(const string& label, CpuType cpuType);
+	[[nodiscard]] int32_t GetLabelRelativeAddress(const string& label, CpuType cpuType);
 
 	/// <summary>
 	/// Get label for address.
@@ -157,7 +157,7 @@ public:
 	/// - Special labels for CPU registers ($2000 = "PPUCTRL", etc.)
 	/// - Platform-specific (NES registers, SNES registers, etc.)
 	/// </remarks>
-	string GetLabel(AddressInfo address, bool checkRegisterLabels = true);
+	[[nodiscard]] string GetLabel(AddressInfo address, bool checkRegisterLabels = true);
 
 	/// <summary>
 	/// Get comment for address.

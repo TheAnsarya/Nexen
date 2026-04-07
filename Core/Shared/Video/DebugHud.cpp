@@ -76,17 +76,17 @@ bool DebugHud::Draw(uint32_t* argbBuffer, FrameInfo frameInfo, OverscanDimension
 }
 
 void DebugHud::DrawPixel(int x, int y, int color, int frameCount, int startFrame) {
-	AddCommand(unique_ptr<DrawCommand>(new DrawPixelCommand(x, y, color, frameCount, startFrame)));
+	AddCommand(std::make_unique<DrawPixelCommand>(x, y, color, frameCount, startFrame));
 }
 
 void DebugHud::DrawLine(int x, int y, int x2, int y2, int color, int frameCount, int startFrame) {
-	AddCommand(unique_ptr<DrawCommand>(new DrawLineCommand(x, y, x2, y2, color, frameCount, startFrame)));
+	AddCommand(std::make_unique<DrawLineCommand>(x, y, x2, y2, color, frameCount, startFrame));
 }
 
 void DebugHud::DrawRectangle(int x, int y, int width, int height, int color, bool fill, int frameCount, int startFrame) {
-	AddCommand(unique_ptr<DrawCommand>(new DrawRectangleCommand(x, y, width, height, color, fill, frameCount, startFrame)));
+	AddCommand(std::make_unique<DrawRectangleCommand>(x, y, width, height, color, fill, frameCount, startFrame));
 }
 
 void DebugHud::DrawString(int x, int y, const string& text, int color, int backColor, int frameCount, int startFrame, int maxWidth, bool overwritePixels) {
-	AddCommand(unique_ptr<DrawCommand>(new DrawStringCommand(x, y, text, color, backColor, frameCount, startFrame, maxWidth, overwritePixels)));
+	AddCommand(std::make_unique<DrawStringCommand>(x, y, text, color, backColor, frameCount, startFrame, maxWidth, overwritePixels));
 }

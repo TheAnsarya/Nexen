@@ -135,7 +135,7 @@ bool HistoryViewer::SaveMovie(const string& movieFile, uint32_t startPosition, u
 	_emu->Serialize(state, true, false);
 
 	// Convert the rewind data to a .nexen-movie file
-	unique_ptr<MovieRecorder> recorder(new MovieRecorder(_emu));
+	auto recorder = std::make_unique<MovieRecorder>(_emu);
 	bool result = recorder->CreateMovie(movieFile, _history, startPosition, endPosition, _mainEmu->GetBatteryManager()->HasBattery());
 
 	// Resume the state and resume

@@ -353,20 +353,20 @@ void HdPackBuilder::SaveHdPack() {
 		}
 	}
 
-	for (auto& bgmInfo : _hdData.BgmFilesById) {
-		ss << "<bgm>" << std::to_string(bgmInfo.first >> 8) << "," << std::to_string(bgmInfo.first & 0xFF) << "," << VirtualFile(bgmInfo.second.Filename).GetFileName();
-		if (bgmInfo.second.LoopPosition > 0) {
-			ss << "," << std::to_string(bgmInfo.second.LoopPosition);
+	for (auto& [id, info] : _hdData.BgmFilesById) {
+		ss << "<bgm>" << std::to_string(id >> 8) << "," << std::to_string(id & 0xFF) << "," << VirtualFile(info.Filename).GetFileName();
+		if (info.LoopPosition > 0) {
+			ss << "," << std::to_string(info.LoopPosition);
 		}
 		ss << '\n';
 	}
 
-	for (auto& sfxInfo : _hdData.SfxFilesById) {
-		ss << "<sfx>" << std::to_string(sfxInfo.first >> 8) << "," << std::to_string(sfxInfo.first & 0xFF) << "," << VirtualFile(sfxInfo.second).GetFileName() << '\n';
+	for (auto& [id, filename] : _hdData.SfxFilesById) {
+		ss << "<sfx>" << std::to_string(id >> 8) << "," << std::to_string(id & 0xFF) << "," << VirtualFile(filename).GetFileName() << '\n';
 	}
 
-	for (auto& patchInfo : _hdData.PatchesByHash) {
-		ss << "<patch>" << VirtualFile(patchInfo.second).GetFileName() << "," << patchInfo.first << '\n';
+	for (auto& [hash, path] : _hdData.PatchesByHash) {
+		ss << "<patch>" << VirtualFile(path).GetFileName() << "," << hash << '\n';
 	}
 
 	if (_hdData.OptionFlags != 0) {

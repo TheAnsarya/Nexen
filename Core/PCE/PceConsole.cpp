@@ -274,7 +274,7 @@ RomFormat PceConsole::GetRomFormat() {
 }
 
 bool PceConsole::LoadHesFile(VirtualFile& hesFile) {
-	unique_ptr<HesFileData> hesData(new HesFileData());
+	auto hesData = std::make_unique<HesFileData>();
 	if (!hesData->LoadFile(hesFile)) {
 		return false;
 	}

@@ -690,7 +690,7 @@ int LuaApi::SetScreenBuffer(lua_State* lua) {
 	FrameInfo size = InternalGetScreenSize();
 
 	int startFrame = _emu->GetFrameCount();
-	unique_ptr<DrawScreenBufferCommand> cmd(new DrawScreenBufferCommand(size.Width, size.Height, startFrame));
+	auto cmd = std::make_unique<DrawScreenBufferCommand>(size.Width, size.Height, startFrame);
 
 	luaL_checktype(lua, 1, LUA_TTABLE);
 	for (int i = 0, len = size.Height * size.Width; i < len; i++) {

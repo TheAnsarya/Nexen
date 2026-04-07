@@ -166,7 +166,7 @@ void BaseVideoFilter::TakeScreenshot(VideoFilterType filterType, string filename
 	uint32_t screenRotation = _emu->GetSettings()->GetVideoConfig().ScreenRotation;
 	_emu->GetScreenRotationOverride(screenRotation);
 
-	unique_ptr<RotateFilter> rotateFilter(new RotateFilter(screenRotation));
+	auto rotateFilter = std::make_unique<RotateFilter>(screenRotation);
 	if (screenRotation != 0) {
 		pngBuffer = rotateFilter->ApplyFilter(pngBuffer, frameInfo.Width, frameInfo.Height);
 		frameInfo = rotateFilter->GetFrameInfo(frameInfo);

@@ -44,7 +44,7 @@ BaseCartridge::~BaseCartridge() {
 // Handles multiple ROM formats: SNES, BS-X, Sufami Turbo, SPC, Game Boy (SGB)
 unique_ptr<BaseCartridge> BaseCartridge::CreateCartridge(SnesConsole* console, VirtualFile& romFile) {
 	if (romFile.IsValid()) {
-		unique_ptr<BaseCartridge> cart(new BaseCartridge());
+		auto cart = std::make_unique<BaseCartridge>();
 
 		vector<uint8_t> romData;
 		(void)romFile.ReadFile(romData);

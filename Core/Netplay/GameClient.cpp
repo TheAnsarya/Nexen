@@ -24,7 +24,7 @@ void GameClient::Connect(ClientConnectionData& connectionData) {
 	Disconnect();
 
 	_stop = false;
-	unique_ptr<Socket> socket(new Socket());
+	auto socket = std::make_unique<Socket>();
 	if (socket->Connect(connectionData.Host.c_str(), connectionData.Port)) {
 		_connection = std::make_unique<GameClientConnection>(_emu, std::move(socket), connectionData);
 		_connected = true;
