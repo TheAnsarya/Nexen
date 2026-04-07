@@ -1184,11 +1184,42 @@ Dear god, why are there 806 changes? soo what all this stuff is and clean it up 
 
 git commit everything; Yes, Nexen ran correctly! We are a GO for release! :) continue!
 
+You're building test projects but not the actual release versions of Nexen on github actions! this happens every time, actually also build my windows/macos/linux releases of Nexen for 1.4.19!; continue;
+
+I'm also not seeing a 1.4.19 release at all on github? continue;
+
+[Nexen] What is happening with issue #1130 `[1076.2] WS: Investigate remaining upstream Mesen2 behavioral differences` ? We DO NOT use Mesen2 as an authoritative source for anything; if we are looking at several emulators for behavioral differences that's fine, but don't defer to Mesen2; fix these issues and work; continue;
+
+[Nexen] `https://github.com/TheAnsarya/Nexen/issues/1039#issuecomment-4188739084` "sometimes the game is paused when you load it first or restore the save state, and sometimes don't. As I'm cycling between builds I don't know If it's depending the build, but I don't see consistency about when happens or not." fix this "paused or not" issue by saving the paused state in the savestate when it is saved so you can have a paused save state for debugging and an unpaused statestate for playing; continue;
+
+[poppy] work on issues for as long as you can; complete as much work as you can; make everything work, research additional work needed, make epics and issues and sub-issues and documentation and plans and chat/session logs and benchmarks and tests, etc; continue; implement as many issues as you can continue!
+
+[poppy] continue working! go as long as you can fixing things!; continue;
+
+[poppy] continue working! go as long as you can fixing things!; continue;
+
+open the file with the `plan` for splitting all systems/platforms into different components, I can't find it; split by platform, but a system that has more than one language is common and they often work together (like gba and the ARM and THUMB assembly languages) so decide if it makes sense to have ARM&THUMB in different components that work tother or to keep them in one component. are the components languages or systems? ; continue working and making new epics and issues and documents and plans and benchmarks and tests and implement the issues for continuning separation and cooperation and previous issues too; continue;
+
+--- try again
+
+[poppy] continue working issues and make more; continue;
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+[poppy] there should be a framework for assembly and compilation and asset intregration as the core of poppy, but there should be separate compilers for each system or language so SNES assembly isn't mixed up with TG-16 assembly or GBC-assembly or whatever, make research epics and issues for the architecture of poppy to create common code and workflow, but separate each type of code/system so we don't have these code size problems and command confusion and mixups on memory layout etc; continue;
+
+[poppy] work on the framework issues and separation of systems; continue;
 
 
 
