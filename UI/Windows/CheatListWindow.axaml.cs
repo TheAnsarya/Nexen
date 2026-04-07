@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -61,8 +60,16 @@ public class CheatListWindow : NexenWindow {
 
 	private void OnCellClick(object? sender, DataGridCellClickRoutedEventArgs e) {
 		if (e.RowItem is CheatCode && e.Column?.SortMemberPath == "Enabled") {
-			bool newValue = !_model.Selection.SelectedItems.Any(cheat => cheat?.Enabled == true);
-			foreach (CheatCode? cheat in _model.Selection.SelectedItems) {
+			var selectedItems = _model.Selection.SelectedItems;
+			bool anyEnabled = false;
+			foreach (CheatCode? cheat in selectedItems) {
+				if (cheat?.Enabled == true) {
+					anyEnabled = true;
+					break;
+				}
+			}
+			bool newValue = !anyEnabled;
+			foreach (CheatCode? cheat in selectedItems) {
 				if (cheat != null) {
 					cheat.Enabled = newValue;
 				}

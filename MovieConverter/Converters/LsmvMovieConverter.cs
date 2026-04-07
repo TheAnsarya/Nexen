@@ -435,17 +435,24 @@ public sealed class LsmvMovieConverter : MovieConverterBase {
 	}
 
 	private static void WriteSubtitles(ZipArchive archive, MovieData movie) {
-		if (movie.Markers is null) return;
+		if (movie.Markers is null || movie.Markers.Count == 0) return;
 
-		var subtitles = movie.Markers.Where(m => m.Type == MarkerType.Subtitle).ToList();
-		if (subtitles.Count == 0) return;
+		bool hasSubtitles = false;
+		foreach (var marker in movie.Markers) {
+			if (marker.Type == MarkerType.Subtitle) {
+				hasSubtitles = true;
+				break;
+			}
+		}
+		if (!hasSubtitles) return;
 
 		var entry = archive.CreateEntry("subtitles");
 		using var writer = new StreamWriter(entry.Open(), Encoding.UTF8);
 
-		foreach (var marker in subtitles) {
-			// Frame duration text
-			writer.WriteLine($"{marker.FrameNumber} 120 {marker.Label}");
+		foreach (var marker in movie.Markers) {
+			if (marker.Type == MarkerType.Subtitle) {
+				writer.WriteLine($"{marker.FrameNumber} 120 {marker.Label}");
+			}
 		}
 	}
 }

@@ -146,7 +146,7 @@ public class SelectRomViewModel : DisposableViewModel {
 		_entries = entries;
 		FilteredEntries = entries;
 		AddDisposable(this.WhenAnyValue(x => x.SearchString).Subscribe(x => {
-			FilteredEntries = string.IsNullOrWhiteSpace(x) ? _entries : _entries.Where(e => e.Filename.Contains(x, StringComparison.OrdinalIgnoreCase));
+			FilteredEntries = string.IsNullOrWhiteSpace(x) ? _entries : _entries.Where(e => e.Filename.Contains(x, StringComparison.OrdinalIgnoreCase)).ToList();
 
 			SelectedEntry = FilteredEntries.FirstOrDefault();
 		}));
