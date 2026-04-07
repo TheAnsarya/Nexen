@@ -5,6 +5,16 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.21] - 2026-04-07
+
+### Fixed
+
+- **Games no longer start paused with debugger open** — Fresh game loads now auto-resume instead of staying paused; `BreakOnPowerCycleReset` only applies to actual power cycles, not new game loads (#1184)
+- **Already Running dialog** — Shows a dialog with "Close and Restart" or "Leave Current Version Running" options when a second instance is launched, instead of silently exiting (#1180)
+- **Setup wizard restart reliability** — Uses `ProcessStartInfo` with `UseShellExecute` and error handling for reliable restarts (#1181)
+- **Firmware auto-selection** — Automatically scans firmware folder for files matching expected SHA-256 hash before showing file picker dialog (#1182)
+- **UI freeze on emulation crash** — Added exception handling around the main emulation loop to prevent UI lockup on fatal errors (#1183)
+
 ## [1.4.20] - 2026-04-06
 
 ### Added

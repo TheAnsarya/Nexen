@@ -1216,6 +1216,12 @@ continue working issues;
 
 [Nexen] git commit everything from all the repos to clear house then: ***Focus all your efforts*** on fixing issue #1176 `https://github.com/TheAnsarya/Nexen/issues/1176`; start by opening the latest release as a fresh install for me to test the issue, then figure put why nothing happens after initial setup, and fix the problem where nothing happens if you try to open Nexen when it is already running (I thought we fixed it already?) maybe with a dialog saying "Nexen is already running and would you like me to close it and then continue?" with buttons named `Close and Restart Nexen` and `Leave Current Version Running` (or better labels); create epics/issues/chat-session-logs/docs/plans/benchmarks/tests/readmes/etc and implement everything and prepare a version for me to test; continue;
 
+[Nexen] I chose the wrong firmware for a Lynx game (according to the message box) it seems to know by hash which one should work so why doesn't it just chose one itself? and when I said "run anyway" everything crashed and froze up , even the UI, the UI should not freeze when the emulation isn't working; continue;
+
+[Nexen] Has issue #1176 `https://github.com/TheAnsarya/Nexen/issues/1176` been fixed? Has the Lynx firmware issue been fixed?; continue;
+
+[Nexen] Do not start a game paused (make an issue, research, find, and implement the fix); prepare for a new release updating the patch number (1.4.21, readmes and code and docs); build for a release and then run Nexen so I can verify it starts, and works; then release v1.4.21; push the code to git, push the tags that start the release then run the release command; continue;
+
 
 
 

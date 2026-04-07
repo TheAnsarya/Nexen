@@ -187,8 +187,8 @@ public class DebuggerWindow : NexenWindow, INotificationHandler {
 					//If not already paused, pause on load to ensure UI can load labels, breakpoints, etc.
 					EmuApi.Pause();
 
-					if (!_model.Config.BreakOnPowerCycleReset) {
-						//If the option to break on power cycle is turned off, auto-resume after the first break is processed
+					if (!evtParams.IsPowerCycle || !_model.Config.BreakOnPowerCycleReset) {
+						//Auto-resume for fresh game loads; for power cycles, only stay paused if BreakOnPowerCycleReset is on
 						_autoResumePending = true;
 					}
 				}

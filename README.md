@@ -34,26 +34,26 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **Standard** | [Nexen-Windows-x64-v1.4.20.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.20/Nexen-Windows-x64-v1.4.20.exe) | Single-file, recommended |
-| **Native AOT** | [Nexen-Windows-x64-AoT-v1.4.20.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.20/Nexen-Windows-x64-AoT-v1.4.20.exe) | Faster startup |
+| **Standard** | [Nexen-Windows-x64-v1.4.21.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.21/Nexen-Windows-x64-v1.4.21.exe) | Single-file, recommended |
+| **Native AOT** | [Nexen-Windows-x64-AoT-v1.4.21.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.21/Nexen-Windows-x64-AoT-v1.4.21.exe) | Faster startup |
 
 ### Linux
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **AppImage x64** | [Nexen-Linux-x64-v1.4.20.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.20/Nexen-Linux-x64-v1.4.20.AppImage) | Recommended |
-| **AppImage ARM64** | [Nexen-Linux-ARM64-v1.4.20.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.20/Nexen-Linux-ARM64-v1.4.20.AppImage) | Raspberry Pi, etc. |
-| Binary x64 (clang) | [Nexen-Linux-x64-v1.4.20.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.20/Nexen-Linux-x64-v1.4.20.tar.gz) | Tarball, requires SDL2 |
-| Binary x64 (gcc) | [Nexen-Linux-x64-gcc-v1.4.20.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.20/Nexen-Linux-x64-gcc-v1.4.20.tar.gz) | Tarball, requires SDL2 |
-| Binary ARM64 (clang) | [Nexen-Linux-ARM64-v1.4.20.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.20/Nexen-Linux-ARM64-v1.4.20.tar.gz) | Tarball, requires SDL2 |
-| Binary ARM64 (gcc) | [Nexen-Linux-ARM64-gcc-v1.4.20.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.20/Nexen-Linux-ARM64-gcc-v1.4.20.tar.gz) | Tarball, requires SDL2 |
-| Native AOT x64 | [Nexen-Linux-x64-AoT-v1.4.20.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.20/Nexen-Linux-x64-AoT-v1.4.20.tar.gz) | Faster startup |
+| **AppImage x64** | [Nexen-Linux-x64-v1.4.21.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.21/Nexen-Linux-x64-v1.4.21.AppImage) | Recommended |
+| **AppImage ARM64** | [Nexen-Linux-ARM64-v1.4.21.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.21/Nexen-Linux-ARM64-v1.4.21.AppImage) | Raspberry Pi, etc. |
+| Binary x64 (clang) | [Nexen-Linux-x64-v1.4.21.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.21/Nexen-Linux-x64-v1.4.21.tar.gz) | Tarball, requires SDL2 |
+| Binary x64 (gcc) | [Nexen-Linux-x64-gcc-v1.4.21.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.21/Nexen-Linux-x64-gcc-v1.4.21.tar.gz) | Tarball, requires SDL2 |
+| Binary ARM64 (clang) | [Nexen-Linux-ARM64-v1.4.21.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.21/Nexen-Linux-ARM64-v1.4.21.tar.gz) | Tarball, requires SDL2 |
+| Binary ARM64 (gcc) | [Nexen-Linux-ARM64-gcc-v1.4.21.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.21/Nexen-Linux-ARM64-gcc-v1.4.21.tar.gz) | Tarball, requires SDL2 |
+| Native AOT x64 | [Nexen-Linux-x64-AoT-v1.4.21.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.21/Nexen-Linux-x64-AoT-v1.4.21.tar.gz) | Faster startup |
 
 ### macOS (Apple Silicon)
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **Standard** | [Nexen-macOS-ARM64-v1.4.20.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.20/Nexen-macOS-ARM64-v1.4.20.zip) | App bundle |
+| **Standard** | [Nexen-macOS-ARM64-v1.4.21.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.21/Nexen-macOS-ARM64-v1.4.21.zip) | App bundle |
 | ~~Native AOT~~ | *Temporarily unavailable* | .NET 10 ILC compiler bug |
 
 > **Notes:**
@@ -145,21 +145,21 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 
 ### Windows
 
-1. Download [Nexen-Windows-x64-v1.4.20.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.20/Nexen-Windows-x64-v1.4.20.exe)
+1. Download [Nexen-Windows-x64-v1.4.21.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.21/Nexen-Windows-x64-v1.4.21.exe)
 2. Run the executable (no installation needed)
 3. **File → Open** to load a ROM
 
 ### Linux
 
-1. Download [Nexen-Linux-x64-v1.4.20.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.20/Nexen-Linux-x64-v1.4.20.AppImage)
-2. `chmod +x Nexen-Linux-x64-v1.4.20.AppImage`
-3. `./Nexen-Linux-x64-v1.4.20.AppImage`
+1. Download [Nexen-Linux-x64-v1.4.21.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.21/Nexen-Linux-x64-v1.4.21.AppImage)
+2. `chmod +x Nexen-Linux-x64-v1.4.21.AppImage`
+3. `./Nexen-Linux-x64-v1.4.21.AppImage`
 
 > For non-AppImage builds, install SDL2 first: `sudo apt install libsdl2-2.0-0`
 
 ### macOS
 
-1. Download [Nexen-macOS-ARM64-v1.4.20.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.20/Nexen-macOS-ARM64-v1.4.20.zip)
+1. Download [Nexen-macOS-ARM64-v1.4.21.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.21/Nexen-macOS-ARM64-v1.4.21.zip)
 2. Extract and move `Nexen.app` to Applications
 3. Right-click → Open (first launch only, to bypass Gatekeeper)
 
