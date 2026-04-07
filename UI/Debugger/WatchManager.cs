@@ -222,7 +222,7 @@ public sealed class WatchManager {
 	private string FormatValue(Int64 value, WatchFormatStyle style, int byteLength) {
 		switch (style) {
 			case WatchFormatStyle.Unsigned: return ((UInt32)value).ToString();
-			case WatchFormatStyle.Hex: return "$" + value.ToString("X" + (byteLength * 2));
+			case WatchFormatStyle.Hex: return $"${value.ToString("x" + (byteLength * 2))}";
 			case WatchFormatStyle.Binary:
 				string binary = Convert.ToString(value, 2).PadLeft(byteLength * 8, '0');
 				for (int i = binary.Length - 4; i > 0; i -= 4) {
@@ -388,7 +388,11 @@ public sealed class WatchManager {
 	/// <param name="indexes">The indexes of entries to remove.</param>
 	public void RemoveWatch(params int[] indexes) {
 		HashSet<int> set = new HashSet<int>(indexes);
-		_watchEntries = _watchEntries.Where((el, index) => !set.Contains(index)).ToList();
+		for (int i = _watchEntries.Count - 1; i >= 0; i--) {
+			if (set.Contains(i)) {
+				_watchEntries.RemoveAt(i);
+			}
+		}
 		WatchChanged?.Invoke(true);
 		DebugWorkspaceManager.AutoSave();
 	}

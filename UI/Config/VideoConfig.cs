@@ -238,11 +238,36 @@ public enum FullscreenResolution {
 }
 
 public static class FullscreenResolutionExtensions {
+	private static readonly Dictionary<FullscreenResolution, (int Width, int Height)> _resolutionMap = new() {
+		[FullscreenResolution.Default] = (0, 0),
+		[FullscreenResolution._3840x2160] = (3840, 2160),
+		[FullscreenResolution._2560x1440] = (2560, 1440),
+		[FullscreenResolution._2160x1200] = (2160, 1200),
+		[FullscreenResolution._1920x1440] = (1920, 1440),
+		[FullscreenResolution._1920x1200] = (1920, 1200),
+		[FullscreenResolution._1920x1080] = (1920, 1080),
+		[FullscreenResolution._1680x1050] = (1680, 1050),
+		[FullscreenResolution._1600x1200] = (1600, 1200),
+		[FullscreenResolution._1600x1024] = (1600, 1024),
+		[FullscreenResolution._1600x900] = (1600, 900),
+		[FullscreenResolution._1366x768] = (1366, 768),
+		[FullscreenResolution._1360x768] = (1360, 768),
+		[FullscreenResolution._1280x1024] = (1280, 1024),
+		[FullscreenResolution._1280x960] = (1280, 960),
+		[FullscreenResolution._1280x800] = (1280, 800),
+		[FullscreenResolution._1280x768] = (1280, 768),
+		[FullscreenResolution._1280x720] = (1280, 720),
+		[FullscreenResolution._1152x864] = (1152, 864),
+		[FullscreenResolution._1024x768] = (1024, 768),
+		[FullscreenResolution._800x600] = (800, 600),
+		[FullscreenResolution._640x480] = (640, 480),
+	};
+
 	public static int GetWidth(this FullscreenResolution res) {
-		return Int32.Parse(res.ToString().Substring(1, res.ToString().IndexOf("x") - 1));
+		return _resolutionMap[res].Width;
 	}
 
 	public static int GetHeight(this FullscreenResolution res) {
-		return Int32.Parse(res.ToString().Substring(res.ToString().IndexOf("x") + 1));
+		return _resolutionMap[res].Height;
 	}
 }

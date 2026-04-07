@@ -5,11 +5,20 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.4.20] - 2026-04-06
 
 ### Added
 
 - **Save state pause persistence** — Save states now preserve the emulator pause state; loading a save state taken while paused restores the paused state, and vice versa (save state format v5) (#1039)
+- **FullscreenResolution benchmarks** — New BenchmarkDotNet suite comparing dictionary lookup vs string parsing for resolution methods
+- **WatchFormat benchmarks** — New BenchmarkDotNet suite for hex formatting and watch removal patterns
+- **FullscreenResolution tests** — 14 new xUnit tests validating all resolution values, ordering, and edge cases
+
+### Changed
+
+- **FullscreenResolution lookup optimization** — Replaced string parsing (ToString + Substring + Int32.Parse) with static dictionary lookup for GetWidth/GetHeight; eliminates all string allocations (#1170)
+- **WatchManager hex format** — Fixed hex format specifier from uppercase to lowercase per coding standards; uses string interpolation instead of concatenation (#1170)
+- **WatchManager.RemoveWatch optimization** — Replaced LINQ `.Where().ToList()` with in-place backward `RemoveAt` loop; eliminates intermediate list allocation (#1170)
 
 ## [1.4.19] - 2026-04-06
 
