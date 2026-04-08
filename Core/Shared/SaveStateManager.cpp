@@ -112,6 +112,9 @@ time_t SaveStateManager::ParseTimestampFromFilename(const string& filename) {
 		return 0;
 	}
 
+	// Let mktime auto-detect DST; zero-init (tm_isdst=0) assumes standard time,
+	// which produces a 1-hour offset when the timestamp was created during DST
+	tm.tm_isdst = -1;
 	return std::mktime(&tm);
 }
 
@@ -337,10 +340,11 @@ bool SaveStateManager::LoadState(istream& stream) {
 				}
 			}
 
-			if (_emu->IsPaused() && !_emu->GetVideoRenderer()->IsRecording()) {
-				// Only send the saved frame if the emulation is paused and no avi recording is in progress
-				// Otherwise the avi recorder will receive an extra frame that has no sound, which will
-				// create a video vs audio desync in the avi file.
+			if (!_emu->GetVideoRenderer()->IsRecording()) {
+				// Always push the saved frame to the renderer after a successful state load.
+				// If running, the emulation loop overwrites on the next frame (harmless).
+				// If paused, this ensures the loaded state's frame is displayed immediately.
+				// Skip only during AVI recording to avoid audio desync from the extra soundless frame.
 				_emu->GetVideoDecoder()->UpdateFrame(frame, true, false);
 			}
 			return true;
