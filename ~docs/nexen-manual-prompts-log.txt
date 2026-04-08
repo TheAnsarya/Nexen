@@ -1262,6 +1262,7 @@ run nexen
 
 [peony] do what poppy did and split the systems into individual components so peony provides a very strong framework and driver, with common code libraries  but separate components for each system because they are all different with different languages and ram/cpus/layouts/etc; create epics/issues/chat-session-logs/docs/plans/benchmarks/tests/readmes/etc and implement everything; architect the application; and then focus on SNES disassembly into pasm source code and asset extractions, we're going to make one system work from start to finish in (nexen,pansyt,poppy,peony) so make SNES work perfectly in peony (use pansy files where helpful) but don't need them. (And never bother with statistical disassembly nonsense); continue;
 
+[peony] git commit everything and update readmes and documentation and epics and issues and make new issues and continue fixing issues and make progress on separating systems/platforms and consolidating peony framework and common code and the disassembly driver; continue;
 
 
 
