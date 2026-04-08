@@ -117,9 +117,9 @@ class Program {
 			// Not first-run: HomeFolder is determined from existing settings.json
 			Log.InitializeFileLogging();
 			Log.Info($"Home folder: {ConfigManager.HomeFolder}");
-			Environment.CurrentDirectory = ConfigManager.HomeFolder;
-
-			Log.Info("Loading configuration...");
+			Log.Info($"OS: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})");
+			Log.Info($".NET: {RuntimeInformation.FrameworkDescription}");
+			Log.Info($"App base: {AppContext.BaseDirectory}");
 			//Start loading config file in a separate thread
 			Task.Run(() => ConfigManager.LoadConfig());
 

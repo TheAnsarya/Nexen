@@ -1230,7 +1230,9 @@ continue working issues;
 
 The build failed, see why fix the problems and re-release
 
+"Browse Save States" menu should have a keyboard shortcut of `Shift+F1` and also it crashes the aplication; fix that issue so I can test the pause save state restoration feature which wasn't working before
 
+[Nexen] Did you fix the application crash and menu item shortcut display and pause-save-state feature? Also, add a yellow pause icon on the save states that are paused in the visual savestate browser so we can tell; then ***Focus all your efforts*** on fixing issue #1176 `https://github.com/TheAnsarya/Nexen/issues/1176` read the new comments and make sure there isn't a problem with the user's computer setup or something different about windows 11 or something they need to install, we are self sufficient, right?; continue;
 
 
 

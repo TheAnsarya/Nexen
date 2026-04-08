@@ -81,7 +81,12 @@ public class MainWindow : NexenWindow {
 		DataContext = _model;
 		InitGlobalShortcuts();
 
-		EmuApi.InitDll();
+		try {
+			EmuApi.InitDll();
+		} catch (Exception ex) {
+			Utilities.Log.Fatal(ex, "[MainWindow] EmuApi.InitDll() failed — NexenCore.dll may be missing, corrupted, or incompatible");
+			throw;
+		}
 
 		Directory.CreateDirectory(ConfigManager.HomeFolder);
 		Directory.SetCurrentDirectory(ConfigManager.HomeFolder);

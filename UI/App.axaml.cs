@@ -35,7 +35,12 @@ public class App : Application {
 		RequestedThemeVariant = theme;
 
 		Dispatcher.UIThread.UnhandledException += (s, e) => {
-			NexenMsgBox.ShowException(e.Exception);
+			Log.Error(e.Exception, "Unhandled UI thread exception");
+			try {
+				NexenMsgBox.ShowException(e.Exception);
+			} catch (Exception dialogEx) {
+				Log.Fatal(dialogEx, "Failed to display unhandled exception dialog");
+			}
 			e.Handled = true;
 		};
 
@@ -116,11 +121,19 @@ public class App : Application {
 		MainWindow mainWindow;
 		try {
 			mainWindow = new MainWindow();
-		} catch {
+		} catch (Exception ex) {
+			Log.Error(ex, "[Startup] MainWindow creation failed, resetting settings and retrying");
 			// Settings file might be invalid/broken, try to reset them
 			Configuration.BackupSettings(ConfigManager.ConfigFile);
 			ConfigManager.ResetSettings(false);
-			mainWindow = new MainWindow();
+			try {
+				mainWindow = new MainWindow();
+			} catch (Exception ex2) {
+				Log.Fatal(ex2, "[Startup] MainWindow creation failed after settings reset — cannot start");
+				splash.Close();
+				ShowFatalStartupError(desktop, ex2);
+				return;
+			}
 		}
 
 		// Close the splash screen once the main window has opened (minimum 2.5 seconds)
@@ -135,5 +148,50 @@ public class App : Application {
 
 		desktop.MainWindow = mainWindow;
 		mainWindow.Show();
+	}
+
+	/// <summary>
+	/// Displays a fatal startup error dialog and ensures the application exits cleanly.
+	/// Falls back to a native OS message box if Avalonia rendering is broken.
+	/// </summary>
+	private static void ShowFatalStartupError(IClassicDesktopStyleApplicationLifetime desktop, Exception ex) {
+		string logPath = Log.LogFilePath;
+		string message = $"Nexen failed to initialize.\n\n" +
+			$"Error: {ex.Message}\n\n" +
+			$"This may be caused by:\n" +
+			$"  \u2022 Missing Visual C++ Redistributable\n" +
+			$"  \u2022 Incompatible or missing GPU drivers\n" +
+			$"  \u2022 Corrupted installation files\n" +
+			$"  \u2022 Antivirus blocking NexenCore.dll\n\n" +
+			$"Log file: {logPath}\n\n" +
+			$"Technical details:\n{ex.GetType().Name}: {ex.Message}";
+
+		try {
+			MessageBox.Show(null, message, "Nexen - Startup Error", MessageBoxButtons.OK, MessageBoxIcon.Error, out MessageBox msgbox);
+			desktop.MainWindow = msgbox;
+		} catch (Exception dialogEx) {
+			// Avalonia rendering is broken — try native fallback
+			Log.Fatal(dialogEx, "[Startup] Failed to display Avalonia error dialog, trying native fallback");
+
+			if (OperatingSystem.IsWindows()) {
+				try {
+					ShowWin32MessageBox(message);
+				} catch {
+					// Truly nothing left to try — error is in the log file
+				}
+			}
+
+			Log.CloseAndFlush();
+			Environment.Exit(1);
+		}
+	}
+
+	[System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+	private static extern int MessageBoxW(IntPtr hWnd, string text, string caption, uint type);
+
+	[System.Runtime.Versioning.SupportedOSPlatform("windows")]
+	private static void ShowWin32MessageBox(string message) {
+		// Win32 MessageBox as absolute fallback when Avalonia rendering is completely broken
+		MessageBoxW(IntPtr.Zero, message, "Nexen - Startup Error", 0x00000010); // MB_ICONERROR
 	}
 }
