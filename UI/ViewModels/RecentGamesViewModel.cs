@@ -23,7 +23,7 @@ public sealed class RecentGamesViewModel : ViewModelBase {
 	[Reactive] public bool Visible { get; set; }
 
 	/// <summary>Gets or sets whether emulation should resume when the screen is closed.</summary>
-	[Reactive] public bool NeedResume { get; private set; }
+	[Reactive] public bool NeedResume { get; set; }
 
 	/// <summary>Gets or sets the screen title text.</summary>
 	[Reactive] public string Title { get; private set; } = "";

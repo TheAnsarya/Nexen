@@ -10,6 +10,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.Utilities;
@@ -111,6 +112,12 @@ public class StateGridEntry : UserControl {
 		}
 
 		Entry.Load();
+
+		// Close the picker after loading — SaveStateManager::LoadState() handles pause state restoration
+		if (this.FindAncestorOfType<StateGrid>() is { DataContext: RecentGamesViewModel model }) {
+			model.NeedResume = false;
+			model.Visible = false;
+		}
 	}
 
 	public void Init() {

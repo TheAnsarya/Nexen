@@ -86,6 +86,10 @@ public class StateGrid : UserControl {
 	}
 
 	private void UpdateSelectedEntry() {
+		if (ElementsPerPage == 0) {
+			return;
+		}
+
 		if (SelectedIndex < SelectedPage * ElementsPerPage || SelectedIndex >= (SelectedPage + 1) * ElementsPerPage) {
 			//Change page
 			SelectedPage = SelectedIndex / ElementsPerPage;
@@ -348,6 +352,12 @@ public class StateGrid : UserControl {
 			RecentGameInfo entry = Entries[SelectedIndex % Entries.Count];
 			if (entry.IsEnabled() == true) {
 				entry.Load();
+
+				// Close the picker after loading — SaveStateManager::LoadState() handles pause state restoration
+				if (DataContext is RecentGamesViewModel model) {
+					model.NeedResume = false;
+					model.Visible = false;
+				}
 			}
 
 			_loadRequested = false;

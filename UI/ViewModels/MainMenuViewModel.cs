@@ -227,6 +227,7 @@ public sealed class MainMenuViewModel : ViewModelBase {
 			// Browse Save States - Shift+F1 opens the picker to view/load all saves
 			new SimpleMenuAction(ActionType.OpenSaveStatePicker) {
 				IsEnabled = () => EmulatorState.Instance.IsRomLoaded && EmuApi.GetSaveStateCount() > 0,
+				CustomShortcutText = () => EmulatorShortcut.OpenSaveStatePicker.GetShortcutKeys()?.ToString() ?? "",
 				OnClick = () => {
 					Log.Info("[MainMenu] OpenSaveStatePicker clicked - opening picker");
 					MainWindow.RecentGames.Init(GameScreenMode.SaveStatePicker);

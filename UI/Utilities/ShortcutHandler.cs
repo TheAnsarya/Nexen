@@ -9,6 +9,7 @@ using Nexen.Config;
 using Nexen.Config.Shortcuts;
 using Nexen.Interop;
 using Nexen.Localization;
+using Nexen.Services;
 using Nexen.ViewModels;
 using Nexen.Windows;
 
@@ -126,7 +127,11 @@ public sealed class ShortcutHandler {
 
 			case EmulatorShortcut.OpenSaveStatePicker:
 				// Open the save state picker to browse all timestamped saves
-				Log.Info("[ShortcutHandler] F1 pressed - OpenSaveStatePicker");
+				if (!EmulatorState.Instance.IsRomLoaded) {
+					break;
+				}
+
+				Log.Info("[ShortcutHandler] Shift+F1 pressed - OpenSaveStatePicker");
 				if (isFullscreen) {
 					_mainWindow.ToggleFullscreen();
 				}
