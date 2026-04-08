@@ -14,7 +14,7 @@ namespace WsCpuTestHelpers {
 	}
 
 	// Compute 16-bit flags from individual bits (mirrors WsCpuFlags::Get)
-	static uint16_t PackFlags(bool carry, bool parity, bool auxCarry, bool zero,
+	[[maybe_unused]] static uint16_t PackFlags(bool carry, bool parity, bool auxCarry, bool zero,
 		bool sign, bool trap, bool irq, bool direction, bool overflow, bool mode) {
 		return (
 			(uint8_t)carry |

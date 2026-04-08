@@ -431,7 +431,7 @@ static void BM_MessageManager_ConstexprSortedArray(benchmark::State& state) {
 				[](const auto& pair, const std::string& k) { return pair.first < k; }
 			);
 			if (it != resources.end() && it->first == key) {
-				benchmark::DoNotOptimize(it->second);
+				auto val = it->second; benchmark::DoNotOptimize(val);
 			}
 		}
 	}

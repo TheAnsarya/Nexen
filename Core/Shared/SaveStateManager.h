@@ -173,12 +173,6 @@ private:
 	/// <returns>Full path for the Auto Save state</returns>
 	[[nodiscard]] string GetAutoSaveFilepath();
 
-	/// <summary>
-	/// Parse timestamp from a timestamped save state filename.
-	/// </summary>
-	/// <param name="filename">Filename (without path) to parse</param>
-	/// <returns>Unix timestamp, or 0 if parsing failed</returns>
-	[[nodiscard]] time_t ParseTimestampFromFilename(const string& filename);
 
 	/// <summary>Save screenshot to stream (PNG compressed)</summary>
 	void SaveVideoData(ostream& stream);
@@ -202,6 +196,13 @@ public:
 	static constexpr uint32_t FileFormatVersion = 5;       ///< Current save state version
 	static constexpr uint32_t MinimumSupportedVersion = 3; ///< Oldest loadable version
 	static constexpr uint32_t AutoSaveStateIndex = 11;     ///< Auto-save slot index
+
+	/// <summary>
+	/// Parse timestamp from a timestamped save state filename.
+	/// </summary>
+	/// <param name="filename">Filename (without path) to parse</param>
+	/// <returns>Unix timestamp, or 0 if parsing failed</returns>
+	[[nodiscard]] static time_t ParseTimestampFromFilename(const string& filename);
 
 	/// <summary>Construct save state manager for emulator</summary>
 	SaveStateManager(Emulator* emu);

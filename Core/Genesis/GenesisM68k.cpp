@@ -370,7 +370,6 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 		case 0x2: // MOVE.L
 		case 0x3: // MOVE.W
 		{
-			uint8_t dstReg = (opcode >> 9) & 7;
 			uint8_t dstMode = (opcode >> 6) & 7;
 			if (dstMode == 1 && group != 1) {
 				Op_MOVEA(opcode);
@@ -1214,7 +1213,6 @@ void GenesisM68k::Op_ROd(uint16_t opcode) {
 	uint8_t size = (opcode >> 6) & 3;
 	uint32_t mask = SizeMask(size);
 	uint32_t msb = SignBit(size);
-	uint8_t bits = (size == 0) ? 8 : ((size == 1) ? 16 : 32);
 
 	uint8_t reg = opcode & 7;
 	uint8_t count;

@@ -552,7 +552,7 @@ TEST_F(F8CpuTestFixture, InterruptDeliveredWhenICBAndIRQ) {
 	uint16_t pcBeforeNop = cpu.GetPc(); // Should be 1 (after EI)
 	EXPECT_EQ(pcBeforeNop, 1);
 
-	cpu.StepOne(); // NOP at $01, then interrupt delivered
+	(void)cpu.StepOne(); // NOP at $01, then interrupt delivered
 	// After NOP + interrupt: PC1 = return address ($02), PC0 = vector ($0200)
 	EXPECT_EQ(cpu.GetPc(), 0x0200); // Jumped to ISR
 	EXPECT_EQ(cpu.GetPc1(), 0x0002); // Return address saved
@@ -590,7 +590,7 @@ TEST_F(F8CpuTestFixture, InterruptDeliveryCosts24Cycles) {
 	memory[1] = 0x2b; // NOP (4 cycles + 24 interrupt delivery = 28 total)
 	memory[0x200] = 0x2b; // NOP at ISR
 
-	cpu.StepOne(); // EI: 8 cycles
+	(void)cpu.StepOne(); // EI: 8 cycles
 	uint64_t cyclesAfterEI = cpu.GetCycleCount();
 	uint8_t nopCycles = cpu.StepOne(); // NOP + interrupt delivery
 	EXPECT_EQ(nopCycles, 28); // 4 (NOP) + 24 (interrupt delivery)
@@ -608,7 +608,7 @@ TEST_F(F8CpuTestFixture, PrivilegedInstructionsSkipInterruptCheck) {
 	// Execution continues at $0300
 
 	cpu.StepCycles(1); // EI
-	cpu.StepOne(); // PI $0300 — privileged, no interrupt
+	(void)cpu.StepOne(); // PI $0300 — privileged, no interrupt
 	EXPECT_EQ(cpu.GetPc(), 0x0300); // Jumped to call target, not interrupt vector
 	EXPECT_TRUE(cpu.GetIrqLine()); // IRQ still pending
 	EXPECT_EQ(cpu.GetW() & 0x10, 0x10); // ICB still set

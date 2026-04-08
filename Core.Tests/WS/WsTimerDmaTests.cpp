@@ -226,7 +226,6 @@ TEST(WsDmaStateTest, SdmaFrequencyAndTimer) {
 
 TEST(WsGdmaCycleCounting, ZeroLength_NoCycles) {
 	// Zero-length GDMA should not execute any cycles
-	uint16_t length = 0;
 	uint32_t expectedCycles = 0; // Stops immediately, no setup
 	EXPECT_EQ(expectedCycles, 0u);
 }

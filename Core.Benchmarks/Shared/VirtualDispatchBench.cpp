@@ -44,7 +44,7 @@ class MockRomHandler final : public IMockHandler {
 public:
 	MockRomHandler(const uint8_t* rom, uint32_t mask) : _rom(rom), _mask(mask) {}
 	uint8_t Read(uint32_t addr) override { return _rom[addr & _mask]; }
-	void Write(uint32_t addr, uint8_t value) override { /* ROM: no-op */ }
+	void Write([[maybe_unused]] uint32_t addr, [[maybe_unused]] uint8_t value) override { /* ROM: no-op */ }
 };
 
 // Simulates RegisterHandler (SNES) - more complex read/write

@@ -57,7 +57,6 @@ constexpr void ExtractPaletteRegs(uint32_t argb, uint8_t& palBR, uint8_t& palGre
 static int DecodeSpriteLine(const uint8_t* vram, uint16_t dataAddr, uint16_t endAddr,
 	int bpp, bool literal, uint8_t* outPixels, int maxPixels) {
 	int pixelCount = 0;
-	int bitPos = 0;
 	uint16_t shift = 0;
 	int bitsAvail = 0;
 

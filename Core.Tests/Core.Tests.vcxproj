@@ -167,6 +167,9 @@
 		<ClCompile Include="Shared\SaveStateFormatTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="Shared\SaveStateTimestampTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Shared\VideoRecordingFormatTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>

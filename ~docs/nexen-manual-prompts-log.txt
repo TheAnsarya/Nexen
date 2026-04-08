@@ -1234,6 +1234,51 @@ The build failed, see why fix the problems and re-release
 
 [Nexen] Did you fix the application crash and menu item shortcut display and pause-save-state feature? Also, add a yellow pause icon on the save states that are paused in the visual savestate browser so we can tell; then ***Focus all your efforts*** on fixing issue #1176 `https://github.com/TheAnsarya/Nexen/issues/1176` read the new comments and make sure there isn't a problem with the user's computer setup or something different about windows 11 or something they need to install, we are self sufficient, right?; continue;
 
+run Nexen so I can test it
+
+Nope, `Shift+F1` crashes the application, figure that issue out and fix it; check out the nexen logs `C:\Users\me\Documents\Nexen\nexen-log.txt`; make issues and docs and benchmarks and tests etc.; continue;
+
+--- steer
+not all the save states have a "paused" state saved, even if it does make sure reading the state doesn't crash the app;
+
+investigate why the recent_01 file is only 3391 bytes, we're making a save as soon as we open but is the system ready to be saved? continue working on the Browse Save States crash and other issues; continue;
+
+run Nexen so I can test fixes
+
+[Nexen] after loading a paused save state the screen does not update so it still shows the old state instead of the loaded paused state. fix that error please. redraw the screen after state loading; fix the pause icon on the save state viewer, they should be basic yellow double-bars not a yellow badge with a blue square and white square bars; continue fixing issue #1176; continue;
+
+--- steer
+run nexen
+
+run nexen
+
+[Nexen] the datetimes on the save states are wrong, saving a state with `F1` is showing "3:08 pm" when it is "2:08 pm" make that time correct; after loading a paused save state the screen does not update so it still shows the old state instead of the loaded paused state. fix that error please. redraw the screen after state loading; fix the pause icon on the save state viewer, they should be basic yellow double-bars not a yellow badge with a blue square and white square bars; continue fixing issue #1176; continue;
+
+[Nexen] Fix as many warnings as you can;find any performance or test oppotunities for benchmarks and tests and code fixes; continue;
+
+[Nexen] create a 1.4.22 release and build all the artifacts; and update the readmes and documentation; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1246,7 +1291,7 @@ The build failed, see why fix the problems and re-release
 
 91 + 781 + 506 + 922 + 742 + 532 + 748 + 776 = 5098
 533 × 5 = 2665
-2433
+5098 - 2665 = 2433
 370
 
 

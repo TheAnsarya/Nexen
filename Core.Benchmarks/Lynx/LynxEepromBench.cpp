@@ -290,7 +290,6 @@ static void BM_LynxEeprom_FullReadCycle(benchmark::State& state) {
 	for (auto _ : state) {
 		// Simulate: receive 3-bit opcode (READ=10b) + 7-bit address
 		uint16_t shiftReg = 0x2A5; // READ + address 0x25
-		uint8_t opcode = (shiftReg >> 7) & 0x03;
 		uint8_t address = shiftReg & 0x7F;
 
 		// Read data word

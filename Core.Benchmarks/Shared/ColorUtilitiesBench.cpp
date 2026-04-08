@@ -28,9 +28,9 @@ static void BM_ColorUtilities_Rgb555ToArgb_Constexpr(benchmark::State& state) {
 		constexpr uint32_t black = ColorUtilities::Rgb555ToArgb(0x0000);
 		constexpr uint32_t white = ColorUtilities::Rgb555ToArgb(0x7FFF);
 		constexpr uint32_t red = ColorUtilities::Rgb555ToArgb(0x001F);
-		benchmark::DoNotOptimize(black);
-		benchmark::DoNotOptimize(white);
-		benchmark::DoNotOptimize(red);
+		auto b = black; benchmark::DoNotOptimize(b);
+		auto w = white; benchmark::DoNotOptimize(w);
+		auto r = red; benchmark::DoNotOptimize(r);
 	}
 }
 BENCHMARK(BM_ColorUtilities_Rgb555ToArgb_Constexpr);

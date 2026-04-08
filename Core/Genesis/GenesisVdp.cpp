@@ -200,7 +200,6 @@ void GenesisVdp::RenderBackground(uint16_t* lineBuffer, uint8_t planeIndex) {
 		bool hFlip = (ntEntry >> 11) & 1;
 		bool vFlip = (ntEntry >> 12) & 1;
 		uint8_t palette = (ntEntry >> 13) & 3;
-		bool priority = (ntEntry >> 15) & 1;
 
 		// Get pixel within tile
 		uint8_t tileX = px & 7;
