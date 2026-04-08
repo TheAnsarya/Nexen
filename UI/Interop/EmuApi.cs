@@ -562,6 +562,7 @@ public struct InteropSaveStateInfo {
 	public Int64 Timestamp;
 	public UInt32 FileSize;
 	public SaveStateOrigin Origin;
+	public byte IsPaused;
 }
 
 /// <summary>
@@ -583,6 +584,9 @@ public sealed class SaveStateInfo {
 	/// <summary>Origin category (Auto/Save/Recent/Lua)</summary>
 	public SaveStateOrigin Origin { get; set; }
 
+	/// <summary>Whether the emulator was paused when this state was saved</summary>
+	public bool IsPaused { get; set; }
+
 	public SaveStateInfo() { }
 
 	public SaveStateInfo(InteropSaveStateInfo interop) {
@@ -591,6 +595,7 @@ public sealed class SaveStateInfo {
 		Timestamp = DateTimeOffset.FromUnixTimeSeconds(interop.Timestamp).LocalDateTime;
 		FileSize = interop.FileSize;
 		Origin = interop.Origin;
+		IsPaused = interop.IsPaused != 0;
 	}
 
 	/// <summary>

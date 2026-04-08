@@ -30,6 +30,7 @@ public class StateGridEntry : UserControl {
 	public static readonly StyledProperty<string> BadgeTextProperty = AvaloniaProperty.Register<StateGridEntry, string>(nameof(BadgeText), "");
 	public static readonly StyledProperty<IBrush> BadgeBackgroundProperty = AvaloniaProperty.Register<StateGridEntry, IBrush>(nameof(BadgeBackground), Brushes.Transparent);
 	public static readonly StyledProperty<bool> ShowBadgeProperty = AvaloniaProperty.Register<StateGridEntry, bool>(nameof(ShowBadge), false);
+	public static readonly StyledProperty<bool> ShowPauseBadgeProperty = AvaloniaProperty.Register<StateGridEntry, bool>(nameof(ShowPauseBadge), false);
 
 	public RecentGameInfo Entry {
 		get { return GetValue(EntryProperty); }
@@ -79,6 +80,11 @@ public class StateGridEntry : UserControl {
 	public bool ShowBadge {
 		get { return GetValue(ShowBadgeProperty); }
 		set { SetValue(ShowBadgeProperty, value); }
+	}
+
+	public bool ShowPauseBadge {
+		get { return GetValue(ShowPauseBadgeProperty); }
+		set { SetValue(ShowPauseBadgeProperty, value); }
 	}
 
 	// Badge colors for different save state origins (Bootstrap-style)
@@ -158,6 +164,9 @@ public class StateGridEntry : UserControl {
 		} else {
 			ShowBadge = false;
 		}
+
+		// Show pause badge for paused save states
+		ShowPauseBadge = game.IsPaused;
 
 		Enabled = fileExists || game.SaveMode;
 		Image = StateGridEntry.EmptyImage;

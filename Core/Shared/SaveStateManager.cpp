@@ -603,6 +603,22 @@ vector<SaveStateInfo> SaveStateManager::GetSaveStateList() {
 				info.timestamp = std::chrono::system_clock::to_time_t(sctp);
 			}
 
+			// v5+: read pause byte (last byte of file) to detect paused save states
+			if (info.fileSize > 0) {
+				try {
+					ifstream file(info.filepath, ios::binary | ios::ate);
+					if (file.good() && file.tellg() > 0) {
+						file.seekg(-1, ios::end);
+						char pauseByte = 0;
+						if (file.get(pauseByte)) {
+							info.isPaused = (pauseByte != 0);
+						}
+					}
+				} catch (...) {
+					// Ignore — isPaused defaults to false
+				}
+			}
+
 			states.push_back(info);
 		}
 	} catch (const std::exception&) {

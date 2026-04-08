@@ -43,6 +43,7 @@ struct SaveStateInfo {
 	time_t timestamp;       ///< Unix timestamp when save was created (from filename)
 	uint32_t fileSize;      ///< File size in bytes
 	SaveStateOrigin origin; ///< Origin category (Auto/Save/Recent/Lua)
+	bool isPaused = false;  ///< Whether the emulator was paused when this state was saved (v5+)
 };
 
 /// <summary>

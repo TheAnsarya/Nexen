@@ -116,7 +116,8 @@ public sealed class RecentGamesViewModel : ViewModelBase {
 					SaveStateTimestamp = state.Timestamp,
 					FriendlyTimestamp = state.GetFriendlyTimestamp(),
 					IsTimestampedSave = true,
-					Origin = state.Origin
+					Origin = state.Origin,
+					IsPaused = state.IsPaused
 				});
 			}
 
@@ -261,6 +262,11 @@ public sealed class RecentGameInfo {
 	/// Origin category for save states (Auto/Save/Recent/Lua)
 	/// </summary>
 	public SaveStateOrigin Origin { get; set; } = SaveStateOrigin.Save;
+
+	/// <summary>
+	/// Whether the emulator was paused when this state was saved
+	/// </summary>
+	public bool IsPaused { get; set; } = false;
 
 	/// <summary>
 	/// Checks if the entry is enabled (file exists for loading, or save mode).
