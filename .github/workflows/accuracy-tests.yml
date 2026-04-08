@@ -19,6 +19,10 @@ on:
     # Nightly at 3 AM UTC
     - cron: '0 3 * * *'
 
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+
 # Smoke tests run on push/PR; full suite on nightly/manual dispatch
 jobs:
   smoke-tests:
@@ -31,6 +35,11 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v3
@@ -52,6 +61,9 @@ jobs:
           "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "VCPKG_INSTALLED_DIR=$installDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           vcpkg install --triplet x64-windows --x-manifest-root=${{ github.workspace }} --x-install-root=$installDir --clean-after-build
+
+      - name: Restore .NET packages
+        run: dotnet restore -r win-x64
 
       - name: Build Nexen (Release x64)
         run: |
@@ -117,6 +129,11 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v3
         with:
@@ -137,6 +154,9 @@ jobs:
           "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "VCPKG_INSTALLED_DIR=$installDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           vcpkg install --triplet x64-windows --x-manifest-root=${{ github.workspace }} --x-install-root=$installDir --clean-after-build
+
+      - name: Restore .NET packages
+        run: dotnet restore -r win-x64
 
       - name: Build Nexen (Release x64)
         run: |
