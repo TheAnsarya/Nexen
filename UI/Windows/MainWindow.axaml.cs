@@ -375,6 +375,10 @@ public class MainWindow : NexenWindow {
 				// Start background CDL recording if enabled
 				Dispatcher.UIThread.Post(() => BackgroundPansyExporter.OnRomLoaded(romInfo));
 
+				// Reset recent play timer so the first auto-save happens 5 minutes after load,
+				// not immediately (constructor initializes _lastRecentPlayTime to epoch 0)
+				EmuApi.ResetRecentPlayTimer();
+
 				LoadRomHelper.ResetReloadCounter();
 				break;
 
