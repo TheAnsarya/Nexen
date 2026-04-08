@@ -176,6 +176,7 @@ void NesPpu<T>::UpdateTimings(ConsoleRegion region, bool overclockAllowed) {
 			break;
 
 		case ConsoleRegion::Ntsc:
+		case ConsoleRegion::NtscJapan:
 			_nmiScanline = 241;
 			_vblankEnd = 260;
 			_standardNmiScanline = 241;

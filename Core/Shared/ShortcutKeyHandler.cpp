@@ -235,6 +235,9 @@ bool ShortcutKeyHandler::IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t s
 
 			return false;
 		}
+
+		default:
+			break;
 	}
 
 	ShortcutState state = _emu->IsShortcutAllowed(shortcut, shortcutParam);
@@ -379,6 +382,9 @@ void ShortcutKeyHandler::ProcessShortcutReleased(EmulatorShortcut shortcut, uint
 		case EmulatorShortcut::RunSingleFrame:
 			_repeatStarted = false;
 			_needRepeat = false;
+			break;
+
+		default:
 			break;
 	}
 }

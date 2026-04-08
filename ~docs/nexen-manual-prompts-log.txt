@@ -1222,6 +1222,20 @@ continue working issues;
 
 [Nexen] Do not start a game paused (make an issue, research, find, and implement the fix); prepare for a new release updating the patch number (1.4.21, readmes and code and docs); build for a release and then run Nexen so I can verify it starts, and works; then release v1.4.21; push the code to git, push the tags that start the release then run the release command; continue;
 
+[Nexen] Save states are not respecting their pause state; make sure every save-state method is logging the pause state, and make sure the loading code for all savestate loads are setting the pause state according to the saved data; continue;
+
+[Nexen] make sure that the loading splash screen has a minimum time of 2.5 seconds but does not disappear until the load is done (no maximum); then build, document, git push, and then release v1.4.21, for real this time; push the code to git, push the tags that start the release then run the release command that starts the release actions; continue;
+
+[Nexen] There are no build/release actions running; does the current code even build? Clean up and fix remaining problems so we can have a stable issue release; continue; prepare for release, and if ready, do an actual release with actions building artifacts; continue;
+
+The build failed, see why fix the problems and re-release
+
+
+
+
+
+
+
 
 
 

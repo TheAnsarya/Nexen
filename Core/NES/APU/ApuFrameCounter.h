@@ -155,6 +155,7 @@ public:
 				break;
 
 			case ConsoleRegion::Ntsc:
+			case ConsoleRegion::NtscJapan:
 			case ConsoleRegion::Dendy:
 				memcpy(_stepCycles, _stepCyclesNtsc, sizeof(_stepCycles));
 				break;

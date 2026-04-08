@@ -107,14 +107,14 @@ public:
 	/// <param name="cdlFilepath">CDL file path</param>
 	/// <param name="autoResetCdl">True to reset CDL before loading</param>
 	/// <returns>True if loaded successfully</returns>
-	[[nodiscard]] bool LoadCdlFile(const string& cdlFilepath, bool autoResetCdl);
+	bool LoadCdlFile(const string& cdlFilepath, bool autoResetCdl);
 
 	/// <summary>
 	/// Save CDL file to disk.
 	/// </summary>
 	/// <param name="cdlFilepath">CDL file path</param>
 	/// <returns>True if saved successfully</returns>
-	[[nodiscard]] bool SaveCdlFile(const string& cdlFilepath);
+	bool SaveCdlFile(const string& cdlFilepath);
 
 	/// <summary>
 	/// Get default CDL file path for ROM.

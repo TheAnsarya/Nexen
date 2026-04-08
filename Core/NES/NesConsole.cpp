@@ -414,6 +414,9 @@ ShortcutState NesConsole::IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t 
 		case EmulatorShortcut::VsInsertCoin4:
 		case EmulatorShortcut::VsServiceButton2:
 			return (ShortcutState)(isRunning && !isNetplayClient && !isMoviePlaying && romFormat == RomFormat::VsDualSystem);
+
+		default:
+			break;
 	}
 
 	return ShortcutState::Default;
