@@ -491,6 +491,13 @@ int32_t SaveStateManager::GetSaveStatePreview(const string& saveStatePath, uint8
 			PNGHelper::WritePNG(pngStream, filter->GetOutputBuffer(), frameInfo.Width, frameInfo.Height);
 
 			auto pngView = pngStream.view();
+
+			// Safety bounds check — buffer is 512*478*4 = 978944 bytes on the managed side
+			constexpr size_t maxBufferSize = 512 * 478 * 4;
+			if (pngView.size() > maxBufferSize) {
+				return -1;
+			}
+
 			memcpy(pngData, pngView.data(), pngView.size());
 
 			return (int32_t)pngView.size();
@@ -604,14 +611,26 @@ vector<SaveStateInfo> SaveStateManager::GetSaveStateList() {
 			}
 
 			// v5+: read pause byte (last byte of file) to detect paused save states
+			// Only v5+ saves have the pause byte appended — older formats' last byte is compressed data
 			if (info.fileSize > 0) {
 				try {
-					ifstream file(info.filepath, ios::binary | ios::ate);
-					if (file.good() && file.tellg() > 0) {
-						file.seekg(-1, ios::end);
-						char pauseByte = 0;
-						if (file.get(pauseByte)) {
-							info.isPaused = (pauseByte != 0);
+					ifstream file(info.filepath, ios::binary);
+					if (file.good()) {
+						// Read header to check format version
+						char hdr[3] = {};
+						file.read(hdr, 3);
+						if (memcmp(hdr, "MSS", 3) == 0) {
+							// Skip emuVersion (4 bytes)
+							file.seekg(4, ios::cur);
+							uint32_t fileFormatVersion = ReadValue(file);
+							if (fileFormatVersion >= 5) {
+								// Seek to last byte for pause flag
+								file.seekg(-1, ios::end);
+								char pauseByte = 0;
+								if (file.get(pauseByte)) {
+									info.isPaused = (pauseByte != 0);
+								}
+							}
 						}
 					}
 				} catch (...) {

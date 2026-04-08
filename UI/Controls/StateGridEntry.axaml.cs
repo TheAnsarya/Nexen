@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -88,6 +89,9 @@ public class StateGridEntry : UserControl {
 	}
 
 	// Badge colors for different save state origins (Bootstrap-style)
+	// Serialize native GetSaveStatePreview calls — C++ video filter is not thread-safe
+	private static readonly SemaphoreSlim _previewLock = new(1, 1);
+
 	private static readonly IBrush BadgeBlue = new SolidColorBrush(Color.Parse("#0d6efd"));    // Auto save
 	private static readonly IBrush BadgeGreen = new SolidColorBrush(Color.Parse("#198754"));   // User save
 	private static readonly IBrush BadgeRed = new SolidColorBrush(Color.Parse("#dc3545"));     // Recent play
@@ -172,13 +176,19 @@ public class StateGridEntry : UserControl {
 		Image = StateGridEntry.EmptyImage;
 
 		if (fileExists) {
-			Task.Run(() => {
+			Task.Run(async () => {
 				Bitmap? img = null;
 				double aspectRatio = 0;
 				try {
 					string ext = Path.GetExtension(game.FileName);
 					if (ext is ("." + FileDialogHelper.NexenSaveStateExt) or ("." + FileDialogHelper.MesenSaveStateExt)) {
-						img = EmuApi.GetSaveStatePreview(game.FileName);
+						// Serialize native calls — C++ video filter is not thread-safe
+						await _previewLock.WaitAsync();
+						try {
+							img = EmuApi.GetSaveStatePreview(game.FileName);
+						} finally {
+							_previewLock.Release();
+						}
 					} else {
 						using FileStream? fs = FileHelper.OpenRead(game.FileName);
 						if (fs != null) {

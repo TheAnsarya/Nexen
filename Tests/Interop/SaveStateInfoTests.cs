@@ -39,6 +39,7 @@ public class SaveStateInfoTests {
 		Assert.Equal(default(DateTime), info.Timestamp);
 		Assert.Equal(0u, info.FileSize);
 		Assert.Equal(SaveStateOrigin.Auto, info.Origin);
+		Assert.False(info.IsPaused);
 	}
 
 	#endregion
@@ -274,7 +275,8 @@ public class SaveStateInfoTests {
 			RomName = "Test ROM",
 			Timestamp = new DateTime(2026, 6, 15),
 			FileSize = 42000,
-			Origin = SaveStateOrigin.Lua
+			Origin = SaveStateOrigin.Lua,
+			IsPaused = true
 		};
 
 		Assert.Equal(@"C:\test\save.nexen-save", info.Filepath);
@@ -282,6 +284,64 @@ public class SaveStateInfoTests {
 		Assert.Equal(new DateTime(2026, 6, 15), info.Timestamp);
 		Assert.Equal(42000u, info.FileSize);
 		Assert.Equal(SaveStateOrigin.Lua, info.Origin);
+		Assert.True(info.IsPaused);
+	}
+
+	#endregion
+
+	#region IsPaused Marshaling
+
+	[Fact]
+	public void InteropConstructor_IsPausedTrue_WhenByteNonZero() {
+		var interop = CreateInteropInfo(
+			filepath: @"C:\saves\game.nexen-save",
+			romName: "TestRom",
+			timestamp: 1736956200,
+			fileSize: 65536,
+			origin: SaveStateOrigin.Save);
+		interop.IsPaused = 1;
+
+		var info = new SaveStateInfo(interop);
+
+		Assert.True(info.IsPaused);
+	}
+
+	[Fact]
+	public void InteropConstructor_IsPausedFalse_WhenByteZero() {
+		var interop = CreateInteropInfo(
+			filepath: @"C:\saves\game.nexen-save",
+			romName: "TestRom",
+			timestamp: 1736956200,
+			fileSize: 65536,
+			origin: SaveStateOrigin.Save);
+		interop.IsPaused = 0;
+
+		var info = new SaveStateInfo(interop);
+
+		Assert.False(info.IsPaused);
+	}
+
+	[Fact]
+	public void InteropConstructor_IsPausedTrue_WhenByteIs255() {
+		var interop = CreateInteropInfo(
+			filepath: @"C:\saves\game.nexen-save",
+			romName: "TestRom",
+			timestamp: 1736956200,
+			fileSize: 65536,
+			origin: SaveStateOrigin.Save);
+		interop.IsPaused = 0xff;
+
+		var info = new SaveStateInfo(interop);
+
+		Assert.True(info.IsPaused);
+	}
+
+	[Fact]
+	public void InteropSaveStateInfo_StructLayout_IncludesIsPaused() {
+		// Verify the struct has the expected size with IsPaused field
+		int size = Marshal.SizeOf<InteropSaveStateInfo>();
+		// 2000 + 256 + 8 + 4 + 1 (origin) + 1 (isPaused) + 2 padding = 2272
+		Assert.Equal(2272, size);
 	}
 
 	#endregion
