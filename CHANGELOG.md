@@ -5,6 +5,27 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.22] - 2026-04-08
+
+### Fixed
+
+- **Save state timestamp DST offset** — Timestamps displayed 1 hour off during Daylight Saving Time; fixed `ParseTimestampFromFilename()` to use `tm_isdst = -1` for auto-detection instead of assuming standard time (#1188)
+- **Screen not updating after loading paused save state** — Loading a save state taken while paused now always pushes the frame to the video decoder, regardless of current pause state (#1188)
+- **Pause icon rendering** — Replaced Unicode ⏸ character (rendered inconsistently across fonts) with two drawn Border rectangles for pixel-perfect pause indicator (#1188)
+- **Recent Play save fires immediately on ROM load** — First Recent Play auto-save no longer triggers ~100ms after launch; timer initializes to current time instead of Unix epoch, and resets on game load (#1187)
+- **Save state picker crash** — Serialized preview loading and added pause byte version validation to prevent crashes from corrupted save states (#1186)
+
+### Added
+
+- **Yellow pause badge** — Paused save states now show a yellow "PAUSED" badge in the visual save state browser (#1176)
+- **Save state timestamp parsing tests** — 20 new tests covering valid formats, DST regression, malformed inputs, and edge cases (#1189)
+- **Save state timestamp parsing benchmarks** — 4 new benchmarks for single parse, legacy format, invalid early-exit, and batch scan (#1189)
+
+### Changed
+
+- **Eliminated all Nexen-owned compiler warnings** — Fixed 13 warnings across Core, Core.Tests, and Core.Benchmarks (unused variables, deprecated API usage, discarded `[[nodiscard]]` returns) (#1189)
+- **`ParseTimestampFromFilename` made static** — Pure function with no instance state, enabling direct unit testing
+
 ## [1.4.21] - 2026-04-07
 
 ### Fixed
