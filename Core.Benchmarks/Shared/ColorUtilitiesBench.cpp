@@ -55,7 +55,7 @@ static void BM_ColorUtilities_Rgb555ToArgb_Varying(benchmark::State& state) {
 	for (uint16_t i = 0; i < 256; i++) {
 		colors.push_back(static_cast<uint16_t>(i * 128));
 	}
-	
+
 	size_t index = 0;
 	for (auto _ : state) {
 		benchmark::DoNotOptimize(ColorUtilities::Rgb555ToArgb(colors[index % colors.size()]));

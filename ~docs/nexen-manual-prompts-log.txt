@@ -1258,8 +1258,9 @@ run nexen
 
 [Nexen] create a 1.4.22 release and build all the artifacts; and update the readmes and documentation; continue;
 
+[Nexen] Update issue #1176 with info that 1.4.22 is released and everything works in my testing and if there is still a crash please attach his `nexen-log.txt` file and thank him for submitting test issues and problems so I can fix them; continue;
 
-
+[peony] do what poppy did and split the systems into individual components so peony provides a very strong framework and driver, with common code libraries  but separate components for each system because they are all different with different languages and ram/cpus/layouts/etc; create epics/issues/chat-session-logs/docs/plans/benchmarks/tests/readmes/etc and implement everything; architect the application; and then focus on SNES disassembly into pasm source code and asset extractions, we're going to make one system work from start to finish in (nexen,pansyt,poppy,peony) so make SNES work perfectly in peony (use pansy files where helpful) but don't need them. (And never bother with statistical disassembly nonsense); continue;
 
 
 

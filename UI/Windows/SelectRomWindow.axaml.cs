@@ -18,7 +18,7 @@ using Nexen.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
-namespace Nexen.Windows; 
+namespace Nexen.Windows;
 public partial class SelectRomWindow : NexenWindow {
 	private ListBox _listBox;
 	private TextBox _searchBox;
