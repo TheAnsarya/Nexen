@@ -122,6 +122,15 @@ public sealed class RecentGamesViewModel : ViewModelBase {
 				});
 			}
 
+			// Mark the most recent save per designated slot as "current"
+			var slotGroups = entries
+				.Where(e => e.Origin == SaveStateOrigin.Designated && e.SlotNumber > 0)
+				.GroupBy(e => e.SlotNumber);
+			foreach (var group in slotGroups) {
+				var newest = group.OrderByDescending(e => e.SaveStateTimestamp).First();
+				newest.IsCurrentSlot = true;
+			}
+
 			// If no timestamped saves exist, show message
 			if (entries.Count == 0) {
 				// Just close the picker - nothing to show
@@ -273,6 +282,12 @@ public sealed class RecentGameInfo {
 	/// Slot number for Designated saves (1-3), 0 for non-slot saves
 	/// </summary>
 	public int SlotNumber { get; set; } = 0;
+
+	/// <summary>
+	/// Whether this is the most recent (current) save for its designated slot.
+	/// Only meaningful when Origin == Designated and SlotNumber > 0.
+	/// </summary>
+	public bool IsCurrentSlot { get; set; } = false;
 
 	/// <summary>
 	/// Checks if the entry is enabled (file exists for loading, or save mode).
