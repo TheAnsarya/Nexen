@@ -8,8 +8,8 @@
 	<AssemblyName>Nexen</AssemblyName>
 	<RootNamespace>Nexen</RootNamespace>
 	<StartupObject>Nexen.Program</StartupObject>
-	<Version>1.4.22</Version>
-	<FileVersion>1.4.22</FileVersion>
+	<Version>1.4.23</Version>
+	<FileVersion>1.4.23</FileVersion>
 	<Copyright>(C) 2026 TheAnsarya</Copyright>
   </PropertyGroup>
 	<PropertyGroup>
@@ -47,8 +47,8 @@
 		<CFBundleName>Nexen</CFBundleName> <!-- Also defines .app file name -->
 		<CFBundleDisplayName>Nexen</CFBundleDisplayName>
 		<CFBundleIdentifier>com.nexen</CFBundleIdentifier>
-		<CFBundleVersion>1.4.22</CFBundleVersion>
-		<CFBundleShortVersionString>1.4.22</CFBundleShortVersionString>
+		<CFBundleVersion>1.4.23</CFBundleVersion>
+		<CFBundleShortVersionString>1.4.23</CFBundleShortVersionString>
 		<CFBundlePackageType>APPL</CFBundlePackageType>
 		<CFBundleSignature>????</CFBundleSignature>
 		<CFBundleExecutable>Nexen</CFBundleExecutable>
@@ -128,6 +128,8 @@
 	<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
 	<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.5" />
 	<PackageReference Include="StreamHash" Version="1.11.2" />
+	<!-- Pin Tmds.DBus.Protocol to fix GHSA-xrw6-gwf8-vvr9 (transitive from Avalonia on Linux) -->
+	<PackageReference Include="Tmds.DBus.Protocol" Version="0.92.0" />
    </ItemGroup>
    <ItemGroup>
 	<ProjectReference Include="..\MovieConverter\MovieConverter.csproj" />

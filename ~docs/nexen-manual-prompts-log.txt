@@ -1280,6 +1280,28 @@ continue working;
 
 [Nexen] We have reports of errors still occuring that we thought we fixed: Issues #1176 `https://github.com/TheAnsarya/Nexen/issues/1176`, #1194 `https://github.com/TheAnsarya/Nexen/issues/1194`, and #1039 `https://github.com/TheAnsarya/Nexen/issues/1039` track down and fix these crashes; continue;
 
+[Nexen] make sure that we fixed: Issues #1176 `https://github.com/TheAnsarya/Nexen/issues/1176`, #1194 `https://github.com/TheAnsarya/Nexen/issues/1194`, and #1039 `https://github.com/TheAnsarya/Nexen/issues/1039` ; continue;
+
+We're already working on fixes, so see if you can track the error down and fix it: "Not addressed (low priority): AoT TaskCanceledException on Linux exit — an Avalonia/DBus cleanup race condition"; continue, update docs and plans and iossues and benchmarks and tests and session logs and such; continue;
+
+[Nexen] research and fix the keyboard shortcut re-assigning problem from issue #1193 `https://github.com/TheAnsarya/Nexen/issues/1193` and update the designated save slot feature to have 3 save slots as requested, are F3 and F2 available still? so F1 is infinite saves, F2-F4 are designated slots? also add a new colored badge on the Browse Save States viewer for designated slots; continue;
+
+[Nexen] add a datetime stamp to the save slot save state file names at the end, and change the save method so designated slots saves remain in the history so you can still access them after the slot was replaced. As in, you save to slot 3, making state #A. then you save slot 3 again, making save #B. Should save #A be put into the history so you can still load it later; continue;
+
+[Nexen] instead of `{RomName}_designated_{1-3}_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save` save the slot files as `{RomName}_[slot{01-03}]_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save`; fix the save and load and savestate viewer and the code that loads the slot; and when it is replaced with a new slot save, add it to the the other save states as a historical save but still known as slot saves; make sure the save slot states are identifiable for the menu options; continue;
+
+[Nexen] git commit everything; and push to git; Build and run Nexen so I can do a sanity check on the application (that it runs, emulation happens, menus open, added functionality exists) and prepare for a release (1.4.23) by cleaning up, fixing warnings, making sure everything compiles and doesn't crash, updating readmes and documentation, etc; continue;
+
+[Nexen] in the "Browse Save States" viewer, badges for "slot" saves that are not the current save slot file should have a badge that is a darker purple to indicate they're not current; continue;
+
+
+
+
+
+
+
+
+[Nexen] Prepare for a new release and Create a release (1.4.23) and push and run the build actions to create the artifacts; continue;
 
 
 

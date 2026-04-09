@@ -5,6 +5,30 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.23] - 2026-04-09
+
+### Fixed
+
+- **Fresh install crash (Windows/Linux portable)** — `DependencyHelper.ExtractNativeDependencies()` unconditionally skipped extracting `.dll`/`.so` files in portable mode even on fresh installs; now only skips when the file already exists at the destination (#1176, #1194, #1039)
+- **FormatException on empty CRC32** — `RomHashInfo.Crc32Value` used `uint.Parse()` on empty string during ROM unload; changed to `TryParse` with 0 fallback (#1039)
+- **Linux AoT exit crash** — `TaskCanceledException` from `Tmds.DBus.Protocol` during Avalonia dispatcher cleanup on Linux exit; added `Environment.Exit(0)` after normal shutdown and defensive `UnhandledException` handler (#1195)
+- **Designated slot shortcuts not configurable** — Designated slot shortcuts were missing from `PreferencesConfigViewModel.displayOrder`, making them invisible in Preferences (#1193)
+- **Accuracy test CI restore** — Added `dotnet restore` step to accuracy test CI workflow (#1192)
+- **Whitespace inconsistencies** — Fixed namespace declaration whitespace across multiple files
+
+### Added
+
+- **3 designated save slots (F2-F4)** — Expanded from 1 to 3 designated quick-access save slots with timestamped filenames, history preservation, and slot-specific purple badges showing "Slot 01"-"Slot 03" (#1196)
+- **Slot save history** — Designated slot saves now create new timestamped files (`{RomName}_[slot{NN}]_{timestamp}.nexen-save`) instead of overwriting; old saves remain browsable with slot badges in the save state viewer (#1196)
+- **Slot number in interop** — Added `slotNumber` field through the full C++ → C# interop pipeline for first-class slot identity in the UI
+
+### Changed
+
+- **Designated save filename format** — Changed from `_designated_{N}_` to `_[slot{NN}]_` for clearer identification; legacy filenames still recognized (#1196)
+- **Default slot hotkeys** — F2/Shift+F2 (slot 1), F3/Shift+F3 (slot 2), F4/Shift+F4 (slot 3); F1 remains infinite saves
+
+---
+
 ## [1.4.22] - 2026-04-08
 
 ### Fixed
