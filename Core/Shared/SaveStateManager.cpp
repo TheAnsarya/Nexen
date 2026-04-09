@@ -594,6 +594,7 @@ vector<SaveStateInfo> SaveStateManager::GetSaveStateList() {
 			// {RomName}_auto.nexen-save -> Auto
 			// {RomName}_recent_{NN}.nexen-save -> Recent
 			// {RomName}_lua_{timestamp}.nexen-save -> Lua
+			// {RomName}_designated_{N}.nexen-save -> Designated
 			// {RomName}_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save -> Save
 			if (filename.find("_auto.") != string::npos) {
 				info.origin = SaveStateOrigin::Auto;
@@ -601,6 +602,8 @@ vector<SaveStateInfo> SaveStateManager::GetSaveStateList() {
 				info.origin = SaveStateOrigin::Recent;
 			} else if (filename.find("_lua_") != string::npos) {
 				info.origin = SaveStateOrigin::Lua;
+			} else if (filename.find("_designated_") != string::npos) {
+				info.origin = SaveStateOrigin::Designated;
 			} else {
 				info.origin = SaveStateOrigin::Save;
 			}
@@ -743,40 +746,74 @@ vector<SaveStateInfo> SaveStateManager::GetRecentPlayStates() {
 
 // ========== Designated Save Implementation ==========
 
-void SaveStateManager::SetDesignatedSave(const string& filepath) {
-	namespace fs = std::filesystem;
+string SaveStateManager::GetDesignatedSaveFilepath(uint32_t slot) {
+	string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
+	string folder = GetRomSaveStateDirectory();
+	string filename = romName + "_designated_" + std::to_string(slot + 1) + ".nexen-save";
+	return FolderUtilities::CombinePath(folder, filename);
+}
 
-	// Validate the file exists
-	if (!filepath.empty() && fs::exists(filepath) && fs::is_regular_file(filepath)) {
-		_designatedSavePath = filepath;
-		MessageManager::DisplayMessage("SaveStates", "DesignatedSaveSet");
-	} else {
-		MessageManager::DisplayMessage("SaveStates", "DesignatedSaveInvalid");
+void SaveStateManager::SaveDesignatedState(uint32_t slot) {
+	if (slot >= DesignatedSlotCount) {
+		return;
+	}
+
+	string filepath = GetDesignatedSaveFilepath(slot);
+	if (SaveState(filepath, false)) {
+		MessageManager::DisplayMessage("SaveStates", "SaveStateSaved", "Designated " + std::to_string(slot + 1));
 	}
 }
 
-string SaveStateManager::GetDesignatedSave() const {
-	return _designatedSavePath;
-}
+bool SaveStateManager::LoadDesignatedState(uint32_t slot) {
+	if (slot >= DesignatedSlotCount) {
+		return false;
+	}
 
-bool SaveStateManager::LoadDesignatedState() {
-	if (!HasDesignatedSave()) {
+	if (!HasDesignatedSave(slot)) {
 		MessageManager::DisplayMessage("SaveStates", "NoDesignatedSave");
 		return false;
 	}
 
-	return LoadState(_designatedSavePath, true);
+	string filepath = GetDesignatedSaveFilepath(slot);
+	return LoadState(filepath, true);
 }
 
-bool SaveStateManager::HasDesignatedSave() const {
+bool SaveStateManager::HasDesignatedSave(uint32_t slot) const {
+	if (slot >= DesignatedSlotCount) {
+		return false;
+	}
+
+	// Build the filepath inline (const method, can't call non-const GetDesignatedSaveFilepath)
+	string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
+	string folder = _perRomSaveStateDir.empty()
+		? FolderUtilities::CombinePath(FolderUtilities::GetSaveStateFolder(), romName)
+		: _perRomSaveStateDir;
+	string filename = romName + "_designated_" + std::to_string(slot + 1) + ".nexen-save";
+	string filepath = FolderUtilities::CombinePath(folder, filename);
+
 	namespace fs = std::filesystem;
-	return !_designatedSavePath.empty() &&
-	       fs::exists(_designatedSavePath) &&
-	       fs::is_regular_file(_designatedSavePath);
+	return fs::exists(filepath) && fs::is_regular_file(filepath);
+}
+
+void SaveStateManager::SetDesignatedSave(const string& filepath) {
+	// Legacy compatibility — ignored, designated slots now use file-based system
+	(void)filepath;
+}
+
+string SaveStateManager::GetDesignatedSave() const {
+	// Legacy compatibility — return slot 0 path if it exists
+	if (HasDesignatedSave(0)) {
+		string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
+		string folder = _perRomSaveStateDir.empty()
+			? FolderUtilities::CombinePath(FolderUtilities::GetSaveStateFolder(), romName)
+			: _perRomSaveStateDir;
+		string filename = romName + "_designated_1.nexen-save";
+		return FolderUtilities::CombinePath(folder, filename);
+	}
+	return "";
 }
 
 void SaveStateManager::ClearDesignatedSave() {
-	_designatedSavePath.clear();
 	MessageManager::DisplayMessage("SaveStates", "DesignatedSaveCleared");
 }
 

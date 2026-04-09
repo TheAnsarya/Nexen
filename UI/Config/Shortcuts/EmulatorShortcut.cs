@@ -134,14 +134,34 @@ public enum EmulatorShortcut {
 	OpenSaveStatePicker,
 
 	/// <summary>
-	/// Save to the single designated slot (F4 quick access)
+	/// Save to designated slot 1 (Shift-F2 quick access)
 	/// </summary>
 	SaveDesignatedSlot,
 
 	/// <summary>
-	/// Load from the single designated slot (Shift-F4 quick access)
+	/// Load from designated slot 1 (F2 quick access)
 	/// </summary>
 	LoadDesignatedSlot,
+
+	/// <summary>
+	/// Save to designated slot 2 (Shift-F3 quick access)
+	/// </summary>
+	SaveDesignatedSlot2,
+
+	/// <summary>
+	/// Load from designated slot 2 (F3 quick access)
+	/// </summary>
+	LoadDesignatedSlot2,
+
+	/// <summary>
+	/// Save to designated slot 3 (Shift-F4 quick access)
+	/// </summary>
+	SaveDesignatedSlot3,
+
+	/// <summary>
+	/// Load from designated slot 3 (F4 quick access)
+	/// </summary>
+	LoadDesignatedSlot3,
 
 	OpenFile,
 

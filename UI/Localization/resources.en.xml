@@ -2189,6 +2189,13 @@ E
 			<Value ID="SelectSaveSlot9">Select Save Slot 9</Value>
 			<Value ID="SelectSaveSlot10">Select Save Slot 10</Value>
 
+			<Value ID="SaveDesignatedSlot">Save Designated Slot 1</Value>
+			<Value ID="LoadDesignatedSlot">Load Designated Slot 1</Value>
+			<Value ID="SaveDesignatedSlot2">Save Designated Slot 2</Value>
+			<Value ID="LoadDesignatedSlot2">Load Designated Slot 2</Value>
+			<Value ID="SaveDesignatedSlot3">Save Designated Slot 3</Value>
+			<Value ID="LoadDesignatedSlot3">Load Designated Slot 3</Value>
+
 			<Value ID="OpenFile">Open File</Value>
 
 			<Value ID="FdsSwitchDiskSide">FDS - Switch Disk Side</Value>

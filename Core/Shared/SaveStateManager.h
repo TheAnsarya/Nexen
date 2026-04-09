@@ -19,18 +19,21 @@ struct RenderedFrame;
 /// - Save (1): Green - User-initiated saves (Quick Save with Ctrl+S)
 /// - Recent (2): Red - Recent play checkpoints (automatic 5-min interval queue)
 /// - Lua (3): Yellow - Script-created saves
+/// - Designated (4): Purple - Designated quick-access slots (F2-F4)
 ///
 /// File naming:
 /// - Auto: {RomName}_auto.nexen-save
 /// - Save: {RomName}_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
 /// - Recent: {RomName}_recent_{01-12}.nexen-save
 /// - Lua: {RomName}_lua_{timestamp}.nexen-save
+/// - Designated: {RomName}_designated_{1-3}.nexen-save
 /// </remarks>
 enum class SaveStateOrigin : uint8_t {
-	Auto = 0,    ///< Auto-save (blue badge) - periodic background saves
-	Save = 1,    ///< User save (green badge) - Quick Save (Ctrl+S)
-	Recent = 2,  ///< Recent play (red badge) - 5-min interval queue
-	Lua = 3      ///< Lua script (yellow badge) - script-created saves
+	Auto = 0,        ///< Auto-save (blue badge) - periodic background saves
+	Save = 1,        ///< User save (green badge) - Quick Save (Ctrl+S)
+	Recent = 2,      ///< Recent play (red badge) - 5-min interval queue
+	Lua = 3,         ///< Lua script (yellow badge) - script-created saves
+	Designated = 4   ///< Designated slot (purple badge) - quick-access F2-F4 saves
 };
 
 /// <summary>
@@ -106,9 +109,10 @@ private:
 	atomic<uint32_t> _lastIndex;      ///< Last used save state slot [LEGACY]
 	atomic<uint32_t> _recentPlaySlot; ///< Current Recent Play slot (0-11, wraps)
 	time_t _lastRecentPlayTime;       ///< Last Recent Play save timestamp
-	string _designatedSavePath;       ///< Path to user-designated quick-load save
 	string _perRomSaveStateDir;       ///< Per-ROM save state directory (set by C# GameDataManager)
 	Emulator* _emu;                   ///< Emulator instance
+
+	static constexpr uint32_t DesignatedSlotCount = 3; ///< Number of designated save slots (F2-F4)
 
 	/// <summary>Persistent compression buffer for SaveVideoData (avoids ~150KB alloc per save)</summary>
 	vector<uint8_t> _compressBuffer;
@@ -349,32 +353,49 @@ public:
 	// ========== Designated Save Methods ==========
 
 	/// <summary>
-	/// Set the designated save state for quick loading (F4).
-	/// The save state at the given path becomes the "quick load" target.
+	/// Get the filepath for a designated save slot.
+	/// Format: {SaveStateDirectory}/{RomName}_designated_{slot+1}.nexen-save
+	/// </summary>
+	/// <param name="slot">Slot index (0-2)</param>
+	/// <returns>Full path for the designated save slot</returns>
+	[[nodiscard]] string GetDesignatedSaveFilepath(uint32_t slot);
+
+	/// <summary>
+	/// Save state to a designated slot (F2-F4 action).
+	/// Creates/overwrites the designated slot file.
+	/// </summary>
+	/// <param name="slot">Slot index (0-2)</param>
+	void SaveDesignatedState(uint32_t slot);
+
+	/// <summary>
+	/// Load the designated save state for a slot (F2-F4 action).
+	/// </summary>
+	/// <param name="slot">Slot index (0-2), defaults to 0</param>
+	/// <returns>True if load succeeded</returns>
+	[[nodiscard]] bool LoadDesignatedState(uint32_t slot = 0);
+
+	/// <summary>
+	/// Check if a designated save slot has a valid save file.
+	/// </summary>
+	/// <param name="slot">Slot index (0-2), defaults to 0</param>
+	/// <returns>True if designated save exists and file is valid</returns>
+	[[nodiscard]] bool HasDesignatedSave(uint32_t slot = 0) const;
+
+	/// <summary>
+	/// Set the designated save state for quick loading (legacy compatibility).
+	/// The save state at the given path becomes the "quick load" target for slot 0.
 	/// </summary>
 	/// <param name="filepath">Path to save state to designate</param>
 	void SetDesignatedSave(const string& filepath);
 
 	/// <summary>
-	/// Get the current designated save path.
+	/// Get the current designated save path for slot 0 (legacy compatibility).
 	/// </summary>
 	/// <returns>Path to designated save, or empty if none set</returns>
 	[[nodiscard]] string GetDesignatedSave() const;
 
 	/// <summary>
-	/// Load the designated save state (F4 action).
-	/// </summary>
-	/// <returns>True if load succeeded</returns>
-	[[nodiscard]] bool LoadDesignatedState();
-
-	/// <summary>
-	/// Check if a designated save is set and valid.
-	/// </summary>
-	/// <returns>True if designated save exists and file is valid</returns>
-	[[nodiscard]] bool HasDesignatedSave() const;
-
-	/// <summary>
-	/// Clear the designated save (unset).
+	/// Clear all designated saves.
 	/// </summary>
 	void ClearDesignatedSave();
 

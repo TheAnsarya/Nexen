@@ -538,6 +538,7 @@ public struct SoftwareRendererFrame {
 /// - Save (1): Green - User-initiated saves (Quick Save with Ctrl+S)
 /// - Recent (2): Red - Recent play checkpoints (automatic 5-min interval queue)
 /// - Lua (3): Yellow - Script-created saves
+/// - Designated (4): Purple - Designated quick-access slots (F2-F4)
 /// </remarks>
 public enum SaveStateOrigin : byte {
 	/// <summary>Auto-save (blue badge) - periodic background saves</summary>
@@ -547,7 +548,9 @@ public enum SaveStateOrigin : byte {
 	/// <summary>Recent play (red badge) - 5-min interval queue</summary>
 	Recent = 2,
 	/// <summary>Lua script (yellow badge) - script-created saves</summary>
-	Lua = 3
+	Lua = 3,
+	/// <summary>Designated slot (purple badge) - quick-access F2-F4 saves</summary>
+	Designated = 4
 }
 
 /// <summary>
@@ -624,11 +627,12 @@ public sealed class SaveStateInfo {
 	/// </summary>
 	/// <returns>Hex color code (without #)</returns>
 	public string GetBadgeColor() => Origin switch {
-		SaveStateOrigin.Auto => "4a90d9",    // Blue
-		SaveStateOrigin.Save => "5cb85c",    // Green
-		SaveStateOrigin.Recent => "d9534f",  // Red
-		SaveStateOrigin.Lua => "f0ad4e",     // Yellow
-		_ => "777777"                         // Gray fallback
+		SaveStateOrigin.Auto => "4a90d9",        // Blue
+		SaveStateOrigin.Save => "5cb85c",        // Green
+		SaveStateOrigin.Recent => "d9534f",      // Red
+		SaveStateOrigin.Lua => "f0ad4e",         // Yellow
+		SaveStateOrigin.Designated => "9b59b6",  // Purple
+		_ => "777777"                             // Gray fallback
 	};
 
 	/// <summary>
@@ -639,6 +643,7 @@ public sealed class SaveStateInfo {
 		SaveStateOrigin.Save => "Save",
 		SaveStateOrigin.Recent => "Recent",
 		SaveStateOrigin.Lua => "Lua",
+		SaveStateOrigin.Designated => "Slot",
 		_ => "Unknown"
 	};
 }

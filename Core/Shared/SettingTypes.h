@@ -1063,9 +1063,13 @@ enum class EmulatorShortcut {
 	QuickSaveTimestamped,
 	OpenSaveStatePicker,
 
-	// Designated slot - single slot for quick F4/Shift-F4 access
+	// Designated slots - 3 slots for quick F2-F4/Shift-F2-F4 access
 	SaveDesignatedSlot,
 	LoadDesignatedSlot,
+	SaveDesignatedSlot2,
+	LoadDesignatedSlot2,
+	SaveDesignatedSlot3,
+	LoadDesignatedSlot3,
 
 	OpenFile,
 

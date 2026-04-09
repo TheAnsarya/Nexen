@@ -112,6 +112,12 @@ public sealed class PreferencesConfigViewModel : DisposableViewModel {
 			// Infinite save state system (replaces slot-based system)
 			EmulatorShortcut.QuickSaveTimestamped,
 			EmulatorShortcut.OpenSaveStatePicker,
+			EmulatorShortcut.SaveDesignatedSlot,
+			EmulatorShortcut.LoadDesignatedSlot,
+			EmulatorShortcut.SaveDesignatedSlot2,
+			EmulatorShortcut.LoadDesignatedSlot2,
+			EmulatorShortcut.SaveDesignatedSlot3,
+			EmulatorShortcut.LoadDesignatedSlot3,
 			EmulatorShortcut.SaveStateToFile,
 			EmulatorShortcut.SaveStateDialog,
 			EmulatorShortcut.LoadStateFromFile,

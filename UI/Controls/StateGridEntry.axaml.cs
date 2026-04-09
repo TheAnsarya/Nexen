@@ -96,6 +96,7 @@ public class StateGridEntry : UserControl {
 	private static readonly IBrush BadgeGreen = new SolidColorBrush(Color.Parse("#198754"));   // User save
 	private static readonly IBrush BadgeRed = new SolidColorBrush(Color.Parse("#dc3545"));     // Recent play
 	private static readonly IBrush BadgeYellow = new SolidColorBrush(Color.Parse("#ffc107"));  // Lua save
+	private static readonly IBrush BadgePurple = new SolidColorBrush(Color.Parse("#9b59b6"));  // Designated slot
 
 	static StateGridEntry() {
 		//Make empty image black
@@ -163,6 +164,7 @@ public class StateGridEntry : UserControl {
 				SaveStateOrigin.Auto => ("Auto", BadgeBlue),
 				SaveStateOrigin.Recent => ("Recent", BadgeRed),
 				SaveStateOrigin.Lua => ("Lua", BadgeYellow),
+				SaveStateOrigin.Designated => ("Slot", BadgePurple),
 				_ => ("Save", BadgeGreen) // Default to Save
 			};
 		} else {
