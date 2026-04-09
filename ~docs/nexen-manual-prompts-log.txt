@@ -1264,8 +1264,21 @@ run nexen
 
 [peony] git commit everything and update readmes and documentation and epics and issues and make new issues and continue fixing issues and make progress on separating systems/platforms and consolidating peony framework and common code and the disassembly driver; continue;
 
+[peony] git commit everything and update readmes and documentation and epics and issues and ***make new issues*** and continue fixing issues and make progress on separating systems/platforms and consolidating peony framework and common code and the disassembly driver; continue working issues and problems; continue;
 
+[peony] continue working issues and making new plans and epics and issues and documentation and benchmarks and tests and readmes and fix issues and continue separaing systems and making the disassembly pipeline work with the changes in peony, performance, tests, correctness; continue;
 
+you barfed on `Program.cs` fix it and make sure you didn't barf anywhere else.
+
+you barfed on `Program.cs` fix it and make sure you didn't barf anywhere else.; by "barf" I mean overwrote a bunch of code in program.cs and added new code ending in the middle of a method. don't screw up existing working code with new stuff; continue;
+
+Ignore my issue with program.cs, it's been fixed. You're fine, sorry, continue and work on peony make it awesome and update issues as you go 
+
+[peony] make sure all systems have components or projects or whatever for disassembly that fit in the framework; continue; work issues! make issues!; continue;
+
+continue working;
+
+[Nexen] We have reports of errors still occuring that we thought we fixed: Issues #1176 `https://github.com/TheAnsarya/Nexen/issues/1176`, #1194 `https://github.com/TheAnsarya/Nexen/issues/1194`, and #1039 `https://github.com/TheAnsarya/Nexen/issues/1039` track down and fix these crashes; continue;
 
 
 
