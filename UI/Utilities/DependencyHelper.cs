@@ -45,33 +45,34 @@ class DependencyHelper {
 					string path = Path.Combine(dest, entry.FullName);
 					string extension = Path.GetExtension(path)?.ToLowerInvariant() ?? string.Empty;
 					entry.ExternalAttributes = 0;
-					// In portable mode (dest == app dir), skip native libs that are already
-					// present — they may be loaded in memory, and overwriting mmap'd .so
-					// files on Linux causes segfaults in the dynamic linker. But DO extract
-					// them if they're missing (fresh install scenario).
-					if (isAppBaseDir && extension is ".dll" or ".so" or ".dylib" or ".exe" && File.Exists(path)) {
-						continue;
-					}
-					if (File.Exists(path)) {
-						if (extension is ".dll" or ".so" or ".dylib" or ".exe") {
-							// Always overwrite native/runtime binaries to avoid stale entry-point mismatches.
-							entry.ExtractToFile(path, true);
-							continue;
-						}
 
-						if (Path.GetExtension(path)?.ToLower() == ".bin") {
-							//Don't overwrite BS-X bin files if they already exist on the disk
+					if (File.Exists(path)) {
+						if (extension == ".bin") {
+							// Don't overwrite BS-X bin files if they already exist on the disk
 							continue;
 						}
 
 						FileInfo fileInfo = new(path);
-						if (fileInfo.LastWriteTime != entry.LastWriteTime || fileInfo.Length != entry.Length) {
+						if (fileInfo.LastWriteTime == entry.LastWriteTime && fileInfo.Length == entry.Length) {
+							// File unchanged — skip regardless of type
+							continue;
+						}
+
+						bool isNativeLib = extension is ".dll" or ".so" or ".dylib" or ".exe";
+						if (isNativeLib && isAppBaseDir && !OperatingSystem.IsWindows()) {
+							// On Linux/macOS in portable mode, directly overwriting a mmap'd
+							// shared library causes segfaults in the dynamic linker. Delete
+							// first so the kernel keeps the old inode alive for the running
+							// process, then extract to a fresh inode.
+							File.Delete(path);
+							entry.ExtractToFile(path, false);
+						} else {
 							entry.ExtractToFile(path, true);
 						}
 					} else {
 						string? folderName = Path.GetDirectoryName(path);
 						if (folderName is not null && !Directory.Exists(folderName)) {
-							//Create any missing directory (e.g Satellaview)
+							// Create any missing directory (e.g Satellaview)
 							Directory.CreateDirectory(folderName);
 						}
 
