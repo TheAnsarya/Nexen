@@ -118,6 +118,74 @@ time_t SaveStateManager::ParseTimestampFromFilename(const string& filename) {
 	return std::mktime(&tm);
 }
 
+string SaveStateManager::FormatSaveStateOsd(const string& badge) {
+	auto now = std::chrono::system_clock::now();
+	auto time = std::chrono::system_clock::to_time_t(now);
+	std::tm tm;
+#ifdef _WIN32
+	localtime_s(&tm, &time);
+#else
+	localtime_r(&time, &tm);
+#endif
+	return std::format("{}\n{:04d}-{:02d}-{:02d}\n{:02d}:{:02d}:{:02d}",
+		badge, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+		tm.tm_hour, tm.tm_min, tm.tm_sec);
+}
+
+string SaveStateManager::FormatSaveStateOsdFromFile(const string& filepath, const string& action) {
+	string filename = FolderUtilities::GetFilename(filepath, true);
+
+	// Determine badge from filename pattern
+	string badge;
+	if (filename.find("_auto.") != string::npos || filename.find("_auto_") != string::npos) {
+		badge = "Auto " + action;
+	} else if (size_t pos = filename.find("_[slot"); pos != string::npos) {
+		size_t end = filename.find(']', pos);
+		if (end != string::npos) {
+			string slotStr = filename.substr(pos + 6, end - pos - 6);
+			badge = "Slot " + slotStr + " " + action;
+		} else {
+			badge = action;
+		}
+	} else {
+		badge = action;
+	}
+
+	// Try to extract timestamp from filename
+	time_t fileTime = ParseTimestampFromFilename(filepath);
+	if (fileTime > 0) {
+		std::tm tm;
+#ifdef _WIN32
+		localtime_s(&tm, &fileTime);
+#else
+		localtime_r(&fileTime, &tm);
+#endif
+		return std::format("{}\n{:04d}-{:02d}-{:02d}\n{:02d}:{:02d}:{:02d}",
+			badge, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+			tm.tm_hour, tm.tm_min, tm.tm_sec);
+	}
+
+	// Fallback: use file modification time
+	try {
+		auto modTime = std::filesystem::last_write_time(filepath);
+		auto sctp = std::chrono::clock_cast<std::chrono::system_clock>(modTime);
+		auto tt = std::chrono::system_clock::to_time_t(sctp);
+		std::tm tm;
+#ifdef _WIN32
+		localtime_s(&tm, &tt);
+#else
+		localtime_r(&tt, &tm);
+#endif
+		return std::format("{}\n{:04d}-{:02d}-{:02d}\n{:02d}:{:02d}:{:02d}",
+			badge, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+			tm.tm_hour, tm.tm_min, tm.tm_sec);
+	} catch (...) {
+	}
+
+	// Last fallback: current time
+	return FormatSaveStateOsd(badge);
+}
+
 void SaveStateManager::SelectSaveSlot(int slotIndex) {
 	_lastIndex = slotIndex;
 	MessageManager::DisplayMessage("SaveStates", "SaveStateSlotSelected", std::to_string(_lastIndex));
@@ -226,7 +294,8 @@ void SaveStateManager::SaveState(int stateIndex, bool displayMessage) {
 
 	if (SaveState(filepath, false)) {
 		if (displayMessage) {
-			MessageManager::DisplayMessage("SaveStates", "SaveStateSaved", std::to_string(stateIndex));
+			string badge = (stateIndex == AutoSaveStateIndex) ? "Auto Saved" : "#" + std::to_string(stateIndex) + " Saved";
+			MessageManager::DisplayMessage("SaveStates", FormatSaveStateOsd(badge));
 		}
 	}
 }
@@ -373,7 +442,7 @@ bool SaveStateManager::LoadState(const string& filepath, bool showSuccessMessage
 
 		if (result) {
 			if (showSuccessMessage) {
-				MessageManager::DisplayMessage("SaveStates", "SaveStateLoadedFile", filepath);
+				MessageManager::DisplayMessage("SaveStates", FormatSaveStateOsdFromFile(filepath, "Loaded"));
 			}
 		}
 	} else {
@@ -386,7 +455,7 @@ bool SaveStateManager::LoadState(const string& filepath, bool showSuccessMessage
 bool SaveStateManager::LoadState(int stateIndex) {
 	string filepath = SaveStateManager::GetStateFilepath(stateIndex);
 	if (LoadState(filepath, false)) {
-		MessageManager::DisplayMessage("SaveStates", "SaveStateLoaded", std::to_string(stateIndex));
+		MessageManager::DisplayMessage("SaveStates", FormatSaveStateOsdFromFile(filepath, "Loaded"));
 		return true;
 	}
 	return false;
@@ -534,18 +603,7 @@ string SaveStateManager::SaveTimestampedState() {
 	string filepath = GetTimestampedFilepath();
 
 	if (SaveState(filepath, false)) {
-		// Extract just the time portion for the message
-		auto now = std::chrono::system_clock::now();
-		auto time = std::chrono::system_clock::to_time_t(now);
-		std::tm tm;
-#ifdef _WIN32
-		localtime_s(&tm, &time);
-#else
-		localtime_r(&time, &tm);
-#endif
-
-		MessageManager::DisplayMessage("SaveStates", "SaveStateSavedTime",
-			std::format("{:02d}:{:02d}:{:02d}", tm.tm_hour, tm.tm_min, tm.tm_sec));
+		MessageManager::DisplayMessage("SaveStates", FormatSaveStateOsd("Saved"));
 		return filepath;
 	}
 
@@ -860,7 +918,7 @@ void SaveStateManager::SaveDesignatedState(uint32_t slot) {
 
 	string filepath = GetDesignatedSaveFilepath(slot);
 	if (SaveState(filepath, false)) {
-		MessageManager::DisplayMessage("SaveStates", "SaveStateSaved", "Slot " + std::format("{:02d}", slot + 1));
+		MessageManager::DisplayMessage("SaveStates", FormatSaveStateOsd("Slot " + std::format("{:02d}", slot + 1) + " Saved"));
 	}
 }
 
@@ -978,7 +1036,7 @@ void SaveStateManager::WriteSnapshotToDisk(SaveStateSnapshot& snapshot) {
 	file.close();
 
 	if (snapshot.showSuccessMessage) {
-		MessageManager::DisplayMessage("SaveStates", "SaveStateSavedFile", snapshot.filepath);
+		MessageManager::DisplayMessage("SaveStates", FormatSaveStateOsdFromFile(snapshot.filepath, "Saved"));
 	}
 }
 

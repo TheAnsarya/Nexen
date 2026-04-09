@@ -209,6 +209,12 @@ public:
 	/// <returns>Unix timestamp, or 0 if parsing failed</returns>
 	[[nodiscard]] static time_t ParseTimestampFromFilename(const string& filename);
 
+	/// <summary>Format OSD notification string with badge and current time</summary>
+	[[nodiscard]] static string FormatSaveStateOsd(const string& badge);
+
+	/// <summary>Format OSD notification string with badge and time parsed from filepath</summary>
+	[[nodiscard]] string FormatSaveStateOsdFromFile(const string& filepath, const string& action);
+
 	/// <summary>Construct save state manager for emulator</summary>
 	SaveStateManager(Emulator* emu);
 
