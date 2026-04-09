@@ -16,7 +16,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 
@@ -24,41 +24,41 @@ namespace Nexen.Debugger.ViewModels;
 /// ViewModel for the tile editor window.
 /// Provides pixel-level editing of individual tiles with palette selection and undo/redo support.
 /// </summary>
-public sealed class TileEditorViewModel : DisposableViewModel {
+public sealed partial class TileEditorViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets or sets the bitmap displaying the tile being edited.
 	/// </summary>
-	[Reactive] public DynamicBitmap ViewerBitmap { get; private set; }
+	[Reactive] public partial DynamicBitmap ViewerBitmap { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the array of RGB palette colors for display.
 	/// </summary>
-	[Reactive] public UInt32[] PaletteColors { get; set; } = [];
+	[Reactive] public partial UInt32[] PaletteColors { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets the raw palette values for indexed formats.
 	/// </summary>
-	[Reactive] public UInt32[] RawPalette { get; set; } = [];
+	[Reactive] public partial UInt32[] RawPalette { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets the raw palette format.
 	/// </summary>
-	[Reactive] public RawPaletteFormat RawFormat { get; set; }
+	[Reactive] public partial RawPaletteFormat RawFormat { get; set; }
 
 	/// <summary>
 	/// Gets the number of columns in the palette grid.
 	/// </summary>
-	[Reactive] public int PaletteColumnCount { get; private set; } = 16;
+	[Reactive] public partial int PaletteColumnCount { get; private set; } = 16;
 
 	/// <summary>
 	/// Gets or sets the currently selected color index in the palette.
 	/// </summary>
-	[Reactive] public int SelectedColor { get; set; } = 0;
+	[Reactive] public partial int SelectedColor { get; set; } = 0;
 
 	/// <summary>
 	/// Gets or sets custom grid overlay definitions for the tile view.
 	/// </summary>
-	[Reactive] public List<GridDefinition>? CustomGrids { get; set; } = null;
+	[Reactive] public partial List<GridDefinition>? CustomGrids { get; set; } = null;
 
 	/// <summary>
 	/// Gets the tile editor configuration settings.

@@ -11,7 +11,7 @@ using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels; 
 /// <summary>
@@ -31,11 +31,11 @@ namespace Nexen.Debugger.ViewModels;
 /// Uses ReactiveUI observables to track property changes and update validation state.
 /// </para>
 /// </remarks>
-public sealed class BreakpointEditViewModel : DisposableViewModel {
+public sealed partial class BreakpointEditViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets or sets the breakpoint being edited.
 	/// </summary>
-	[Reactive] public Breakpoint Breakpoint { get; set; }
+	[Reactive] public partial Breakpoint Breakpoint { get; set; }
 
 	/// <summary>
 	/// Gets the help tooltip control for the condition expression editor.
@@ -50,27 +50,27 @@ public sealed class BreakpointEditViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets whether the current condition expression is valid.
 	/// </summary>
-	[Reactive] public bool IsConditionValid { get; private set; }
+	[Reactive] public partial bool IsConditionValid { get; private set; }
 
 	/// <summary>
 	/// Gets whether the OK button should be enabled (all validation passed).
 	/// </summary>
-	[Reactive] public bool OkEnabled { get; private set; }
+	[Reactive] public partial bool OkEnabled { get; private set; }
 
 	/// <summary>
 	/// Gets the maximum address display string for the current memory type.
 	/// </summary>
-	[Reactive] public string MaxAddress { get; private set; } = "";
+	[Reactive] public partial string MaxAddress { get; private set; } = "";
 
 	/// <summary>
 	/// Gets whether execution breakpoints are supported for the current memory type.
 	/// </summary>
-	[Reactive] public bool CanExec { get; private set; } = false;
+	[Reactive] public partial bool CanExec { get; private set; } = false;
 
 	/// <summary>
 	/// Gets whether the CPU supports dummy operations (affects UI visibility).
 	/// </summary>
-	[Reactive] public bool HasDummyOperations { get; private set; } = false;
+	[Reactive] public partial bool HasDummyOperations { get; private set; } = false;
 
 	/// <summary>
 	/// Gets the array of memory types available for breakpoints on this CPU.

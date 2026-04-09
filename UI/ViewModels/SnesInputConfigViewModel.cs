@@ -3,14 +3,14 @@ using System.Linq;
 using System.Reactive.Linq;
 using Nexen.Config;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class SnesInputConfigViewModel : DisposableViewModel {
-	[Reactive] public SnesConfig Config { get; set; }
+public sealed partial class SnesInputConfigViewModel : DisposableViewModel {
+	[Reactive] public partial SnesConfig Config { get; set; }
 
-	[ObservableAsProperty] public bool HasMultitap1 { get; }
-	[ObservableAsProperty] public bool HasMultitap2 { get; }
+	[ObservableAsProperty] private bool _hasMultitap1;
+	[ObservableAsProperty] private bool _hasMultitap2;
 
 	public Enum[] AvailableControllerTypesP1 => new Enum[] {
 		ControllerType.None,
@@ -42,12 +42,12 @@ public sealed class SnesInputConfigViewModel : DisposableViewModel {
 	public SnesInputConfigViewModel(SnesConfig config) {
 		Config = config;
 
-		AddDisposable(this.WhenAnyValue(x => x.Config.Port1.Type)
+		AddDisposable(_hasMultitap1Helper = this.WhenAnyValue(x => x.Config.Port1.Type)
 			.Select(x => x == ControllerType.Multitap)
-			.ToPropertyEx(this, x => x.HasMultitap1));
+			.ToProperty(this, _ => _.HasMultitap1));
 
-		AddDisposable(this.WhenAnyValue(x => x.Config.Port2.Type)
+		AddDisposable(_hasMultitap2Helper = this.WhenAnyValue(x => x.Config.Port2.Type)
 			.Select(x => x == ControllerType.Multitap)
-			.ToPropertyEx(this, x => x.HasMultitap2));
+			.ToProperty(this, _ => _.HasMultitap2));
 	}
 }

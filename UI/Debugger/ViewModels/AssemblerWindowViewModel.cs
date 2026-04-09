@@ -14,7 +14,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using Nexen.Windows;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels; 
 /// <summary>
@@ -34,45 +34,45 @@ namespace Nexen.Debugger.ViewModels;
 /// Supports editing existing code (with size warnings) or assembling new code at any address.
 /// </para>
 /// </remarks>
-public sealed class AssemblerWindowViewModel : DisposableViewModel {
+public sealed partial class AssemblerWindowViewModel : DisposableViewModel {
 	/// <summary>Gets the assembler configuration settings.</summary>
 	public AssemblerConfig Config { get; }
 
 	/// <summary>Gets or sets the assembly source code text.</summary>
-	[Reactive] public string Code { get; set; } = "";
+	[Reactive] public partial string Code { get; set; } = "";
 
 	/// <summary>Gets or sets the compiled byte code preview display.</summary>
-	[Reactive] public string ByteCodeView { get; set; } = "";
+	[Reactive] public partial string ByteCodeView { get; set; } = "";
 
 	/// <summary>Gets or sets the target starting address for the assembled code.</summary>
-	[Reactive] public int StartAddress { get; set; }
+	[Reactive] public partial int StartAddress { get; set; }
 
 	/// <summary>Gets or sets the number of bytes produced by the current assembly.</summary>
-	[Reactive] public int BytesUsed { get; set; }
+	[Reactive] public partial int BytesUsed { get; set; }
 
 	/// <summary>Gets or sets whether there are warnings to display.</summary>
-	[Reactive] public bool HasWarning { get; set; }
+	[Reactive] public partial bool HasWarning { get; set; }
 
 	/// <summary>Gets or sets whether the assembled code is identical to the original.</summary>
-	[Reactive] public bool IsIdentical { get; set; }
+	[Reactive] public partial bool IsIdentical { get; set; }
 
 	/// <summary>Gets or sets whether the new code exceeds the original code size.</summary>
-	[Reactive] public bool OriginalSizeExceeded { get; set; }
+	[Reactive] public partial bool OriginalSizeExceeded { get; set; }
 
 	/// <summary>Gets or sets whether the new code exceeds available memory space.</summary>
-	[Reactive] public bool MaxSizeExceeded { get; set; }
+	[Reactive] public partial bool MaxSizeExceeded { get; set; }
 
 	/// <summary>Gets or sets whether the OK/Apply button should be enabled.</summary>
-	[Reactive] public bool OkEnabled { get; set; } = false;
+	[Reactive] public partial bool OkEnabled { get; set; } = false;
 
 	/// <summary>Gets or sets the list of assembly errors from compilation.</summary>
-	[Reactive] public List<AssemblerError> Errors { get; set; } = [];
+	[Reactive] public partial List<AssemblerError> Errors { get; set; } = [];
 
 	/// <summary>Gets or sets the File menu actions.</summary>
-	[Reactive] public List<ContextMenuAction> FileMenuActions { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> FileMenuActions { get; private set; } = new();
 
 	/// <summary>Gets or sets the Options menu actions.</summary>
-	[Reactive] public List<ContextMenuAction> OptionsMenuActions { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> OptionsMenuActions { get; private set; } = new();
 
 	/// <summary>Gets the CPU type being assembled for.</summary>
 	public CpuType CpuType { get; }
@@ -86,7 +86,7 @@ public sealed class AssemblerWindowViewModel : DisposableViewModel {
 	private byte[] _originalCode = [];
 
 	/// <summary>Gets or sets the original byte count when editing existing code.</summary>
-	[Reactive] public int OriginalByteCount { get; private set; } = 0;
+	[Reactive] public partial int OriginalByteCount { get; private set; } = 0;
 
 	/// <summary>
 	/// Designer-only constructor. Do not use in code.
@@ -355,7 +355,7 @@ public sealed class AssemblerWindowViewModel : DisposableViewModel {
 /// <summary>
 /// Represents an assembly error at a specific line.
 /// </summary>
-public sealed class AssemblerError {
+public sealed partial class AssemblerError {
 	/// <summary>Gets or sets the error message description.</summary>
 	public string Message { get; set; } = "";
 

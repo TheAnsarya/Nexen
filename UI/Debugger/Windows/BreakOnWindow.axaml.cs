@@ -6,7 +6,7 @@ using Avalonia.Markup.Xaml;
 using Nexen.Controls;
 using Nexen.Interop;
 using Nexen.Utilities;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.Windows; 
 public partial class BreakOnWindow : NexenWindow {

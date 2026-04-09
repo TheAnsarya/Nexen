@@ -2,19 +2,19 @@ using System;
 using System.Text.Json.Serialization;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger;
 
 /// <summary>
 /// Represents a debugger bookmark for quick navigation to a specific address.
 /// </summary>
-public sealed class Bookmark : ReactiveObject {
-	[Reactive] public CpuType CpuType { get; set; }
-	[Reactive] public MemoryType MemoryType { get; set; }
-	[Reactive] public uint Address { get; set; }
-	[Reactive] public string Name { get; set; } = "";
-	[Reactive] public byte Color { get; set; }
+public sealed partial class Bookmark : ReactiveObject {
+	[Reactive] public partial CpuType CpuType { get; set; }
+	[Reactive] public partial MemoryType MemoryType { get; set; }
+	[Reactive] public partial uint Address { get; set; }
+	[Reactive] public partial string Name { get; set; } = "";
+	[Reactive] public partial byte Color { get; set; }
 
 	[JsonIgnore]
 	public string DisplayAddress => $"${Address:x4}";

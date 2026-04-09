@@ -16,7 +16,7 @@ using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Windows;
 public partial class SelectRomWindow : NexenWindow {
@@ -137,10 +137,10 @@ public partial class SelectRomWindow : NexenWindow {
 
 public partial class SelectRomViewModel : DisposableViewModel {
 	private readonly List<ArchiveRomEntry> _entries;
-	[Reactive] public IEnumerable<ArchiveRomEntry> FilteredEntries { get; set; }
-	[Reactive] public string SearchString { get; set; } = "";
-	[Reactive] public ArchiveRomEntry? SelectedEntry { get; set; }
-	[Reactive] public bool Cancelled { get; set; } = true;
+	[Reactive] public partial IEnumerable<ArchiveRomEntry> FilteredEntries { get; set; }
+	[Reactive] public partial string SearchString { get; set; } = "";
+	[Reactive] public partial ArchiveRomEntry? SelectedEntry { get; set; }
+	[Reactive] public partial bool Cancelled { get; set; } = true;
 
 	public SelectRomViewModel(List<ArchiveRomEntry> entries) {
 		_entries = entries;

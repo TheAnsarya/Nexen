@@ -5,7 +5,7 @@ using Avalonia.Platform;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -25,87 +25,87 @@ namespace Nexen.Debugger.ViewModels;
 /// Supports sprite wrapping for consoles that wrap sprites around screen edges (SNES, GBA).
 /// </para>
 /// </remarks>
-public sealed class SpritePreviewModel : ViewModelBase {
+public sealed partial class SpritePreviewModel : ViewModelBase {
 	/// <summary>Gets or sets the sprite's index in the OAM table.</summary>
-	[Reactive] public int SpriteIndex { get; set; }
+	[Reactive] public partial int SpriteIndex { get; set; }
 
 	/// <summary>Gets or sets the sprite's X position on screen.</summary>
-	[Reactive] public int X { get; set; }
+	[Reactive] public partial int X { get; set; }
 
 	/// <summary>Gets or sets the sprite's Y position on screen.</summary>
-	[Reactive] public int Y { get; set; }
+	[Reactive] public partial int Y { get; set; }
 
 	/// <summary>Gets or sets the raw X value from OAM (before interpretation).</summary>
-	[Reactive] public int RawX { get; set; }
+	[Reactive] public partial int RawX { get; set; }
 
 	/// <summary>Gets or sets the raw Y value from OAM (before interpretation).</summary>
-	[Reactive] public int RawY { get; set; }
+	[Reactive] public partial int RawY { get; set; }
 
 	/// <summary>Gets or sets the X position for preview rendering (with coordinate offset).</summary>
-	[Reactive] public int PreviewX { get; set; }
+	[Reactive] public partial int PreviewX { get; set; }
 
 	/// <summary>Gets or sets the Y position for preview rendering (with coordinate offset).</summary>
-	[Reactive] public int PreviewY { get; set; }
+	[Reactive] public partial int PreviewY { get; set; }
 
 	/// <summary>Gets or sets the sprite width in pixels.</summary>
-	[Reactive] public int Width { get; set; }
+	[Reactive] public partial int Width { get; set; }
 
 	/// <summary>Gets or sets the sprite height in pixels.</summary>
-	[Reactive] public int Height { get; set; }
+	[Reactive] public partial int Height { get; set; }
 
 	/// <summary>Gets or sets the base tile index in VRAM.</summary>
-	[Reactive] public int TileIndex { get; set; }
+	[Reactive] public partial int TileIndex { get; set; }
 
 	/// <summary>Gets or sets the tile data address in VRAM.</summary>
-	[Reactive] public int TileAddress { get; set; }
+	[Reactive] public partial int TileAddress { get; set; }
 
 	/// <summary>Gets or sets the sprite's rendering priority.</summary>
-	[Reactive] public DebugSpritePriority Priority { get; set; }
+	[Reactive] public partial DebugSpritePriority Priority { get; set; }
 
 	/// <summary>Gets or sets the sprite rendering mode (normal, blending, window).</summary>
-	[Reactive] public DebugSpriteMode Mode { get; set; }
+	[Reactive] public partial DebugSpriteMode Mode { get; set; }
 
 	/// <summary>Gets or sets the bits per pixel for this sprite.</summary>
-	[Reactive] public int Bpp { get; set; }
+	[Reactive] public partial int Bpp { get; set; }
 
 	/// <summary>Gets or sets the tile format.</summary>
-	[Reactive] public TileFormat Format { get; set; }
+	[Reactive] public partial TileFormat Format { get; set; }
 
 	/// <summary>Gets or sets the palette index.</summary>
-	[Reactive] public int Palette { get; set; }
+	[Reactive] public partial int Palette { get; set; }
 
 	/// <summary>Gets or sets the palette data address.</summary>
-	[Reactive] public int PaletteAddress { get; set; }
+	[Reactive] public partial int PaletteAddress { get; set; }
 
 	/// <summary>Gets or sets the sprite's visibility state.</summary>
-	[Reactive] public SpriteVisibility Visibility { get; set; }
+	[Reactive] public partial SpriteVisibility Visibility { get; set; }
 
 	/// <summary>Gets or sets the flag summary string (H=mirror, V=flip, etc.).</summary>
-	[Reactive] public string? Flags { get; set; }
+	[Reactive] public partial string? Flags { get; set; }
 
 	/// <summary>Gets or sets whether horizontal mirroring is enabled.</summary>
-	[Reactive] public NullableBoolean HorizontalMirror { get; set; }
+	[Reactive] public partial NullableBoolean HorizontalMirror { get; set; }
 
 	/// <summary>Gets or sets whether vertical mirroring is enabled.</summary>
-	[Reactive] public NullableBoolean VerticalMirror { get; set; }
+	[Reactive] public partial NullableBoolean VerticalMirror { get; set; }
 
 	/// <summary>Gets or sets whether mosaic effect is enabled.</summary>
-	[Reactive] public NullableBoolean MosaicEnabled { get; set; }
+	[Reactive] public partial NullableBoolean MosaicEnabled { get; set; }
 
 	/// <summary>Gets or sets whether affine transformation is enabled (GBA).</summary>
-	[Reactive] public NullableBoolean TransformEnabled { get; set; }
+	[Reactive] public partial NullableBoolean TransformEnabled { get; set; }
 
 	/// <summary>Gets or sets whether double-size mode is enabled for transforms (GBA).</summary>
-	[Reactive] public NullableBoolean DoubleSize { get; set; }
+	[Reactive] public partial NullableBoolean DoubleSize { get; set; }
 
 	/// <summary>Gets or sets the affine transform parameter group index.</summary>
-	[Reactive] public sbyte TransformParamIndex { get; set; }
+	[Reactive] public partial sbyte TransformParamIndex { get; set; }
 
 	/// <summary>Gets or sets whether the sprite uses extended VRAM (GBA).</summary>
-	[Reactive] public bool UseExtendedVram { get; set; }
+	[Reactive] public partial bool UseExtendedVram { get; set; }
 
 	/// <summary>Gets or sets whether the sprite uses the second name table.</summary>
-	[Reactive] public NullableBoolean UseSecondTable { get; set; }
+	[Reactive] public partial NullableBoolean UseSecondTable { get; set; }
 
 	/// <summary>Gets the number of tiles that make up this sprite.</summary>
 	public UInt32 TileCount { get; set; }
@@ -120,24 +120,24 @@ public sealed class SpritePreviewModel : ViewModelBase {
 	public UInt32[] TileAddresses { get; set; } = [];
 
 	/// <summary>Gets or sets the SCB chain address (Lynx only, -1 if unused).</summary>
-	[Reactive] public int ScbAddress { get; set; }
+	[Reactive] public partial int ScbAddress { get; set; }
 
 	/// <summary>Gets or sets the SCBNEXT pointer (Lynx only, -1 if unused).</summary>
-	[Reactive] public int ScbNext { get; set; }
+	[Reactive] public partial int ScbNext { get; set; }
 
 	/// <summary>Gets or sets the SPRCOLL collision number (Lynx only, -1 if unused).</summary>
-	[Reactive] public int CollisionNumber { get; set; }
+	[Reactive] public partial int CollisionNumber { get; set; }
 
 	private UInt32[] _rawPreview = new UInt32[128 * 128];
 
 	/// <summary>Gets or sets the sprite preview bitmap.</summary>
-	[Reactive] public DynamicBitmap? SpritePreview { get; set; }
+	[Reactive] public partial DynamicBitmap? SpritePreview { get; set; }
 
 	/// <summary>Gets or sets the zoom factor for preview display.</summary>
-	[Reactive] public double SpritePreviewZoom { get; set; }
+	[Reactive] public partial double SpritePreviewZoom { get; set; }
 
 	/// <summary>Gets or sets whether to fade the preview (sprite not visible).</summary>
-	[Reactive] public bool FadePreview { get; set; }
+	[Reactive] public partial bool FadePreview { get; set; }
 
 	/// <summary>Gets the actual width accounting for double-size mode.</summary>
 	public int RealWidth => Width / (DoubleSize == NullableBoolean.True ? 2 : 1);

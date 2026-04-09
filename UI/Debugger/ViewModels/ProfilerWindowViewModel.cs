@@ -17,7 +17,7 @@ using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -25,16 +25,16 @@ namespace Nexen.Debugger.ViewModels;
 /// Displays function call profiling data including call counts, execution times, and percentages
 /// for performance analysis of emulated code.
 /// </summary>
-public sealed class ProfilerWindowViewModel : DisposableViewModel {
+public sealed partial class ProfilerWindowViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets or sets the list of profiler tabs, one per supported CPU type.
 	/// </summary>
-	[Reactive] public List<ProfilerTab> ProfilerTabs { get; set; } = [];
+	[Reactive] public partial List<ProfilerTab> ProfilerTabs { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets the currently selected profiler tab.
 	/// </summary>
-	[Reactive] public ProfilerTab? SelectedTab { get; set; } = null;
+	[Reactive] public partial ProfilerTab? SelectedTab { get; set; } = null;
 
 	/// <summary>
 	/// Gets the menu actions for the File menu.
@@ -161,31 +161,31 @@ public sealed class ProfilerWindowViewModel : DisposableViewModel {
 /// Represents a profiler tab for a specific CPU type.
 /// Contains profiler data grid and sorting functionality for that CPU's profiled functions.
 /// </summary>
-public sealed class ProfilerTab : ReactiveObject {
+public sealed partial class ProfilerTab : ReactiveObject {
 	/// <summary>
 	/// Gets or sets the display name for this tab (typically the CPU type name).
 	/// </summary>
-	[Reactive] public string TabName { get; set; } = "";
+	[Reactive] public partial string TabName { get; set; } = "";
 
 	/// <summary>
 	/// Gets or sets the CPU type this tab displays profiling data for.
 	/// </summary>
-	[Reactive] public CpuType CpuType { get; set; } = CpuType.Snes;
+	[Reactive] public partial CpuType CpuType { get; set; } = CpuType.Snes;
 
 	/// <summary>
 	/// Gets or sets the list of profiled function view models for data grid binding.
 	/// </summary>
-	[Reactive] public NexenList<ProfiledFunctionViewModel> GridData { get; private set; } = new();
+	[Reactive] public partial NexenList<ProfiledFunctionViewModel> GridData { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the selection model for the data grid.
 	/// </summary>
-	[Reactive] public SelectionModel<ProfiledFunctionViewModel> Selection { get; set; } = new();
+	[Reactive] public partial SelectionModel<ProfiledFunctionViewModel> Selection { get; set; } = new();
 
 	/// <summary>
 	/// Gets or sets the current sort state for the data grid.
 	/// </summary>
-	[Reactive] public SortState SortState { get; set; } = new();
+	[Reactive] public partial SortState SortState { get; set; } = new();
 
 	/// <summary>
 	/// Gets the profiler configuration settings.
@@ -329,7 +329,7 @@ public sealed class ProfilerTab : ReactiveObject {
 /// <summary>
 /// Extension methods for <see cref="ProfiledFunction"/> to provide display formatting.
 /// </summary>
-public static class ProfiledFunctionExtensions {
+public static partial class ProfiledFunctionExtensions {
 	/// <summary>
 	/// Gets a display-friendly name for a profiled function, including its label, address, and flags.
 	/// </summary>
@@ -365,7 +365,7 @@ public static class ProfiledFunctionExtensions {
 /// ViewModel for a single profiled function row in the profiler data grid.
 /// Provides formatted display properties for function statistics.
 /// </summary>
-public sealed class ProfiledFunctionViewModel : INotifyPropertyChanged {
+public sealed partial class ProfiledFunctionViewModel : INotifyPropertyChanged {
 	/// <summary>
 	/// Event raised when a property value changes.
 	/// </summary>

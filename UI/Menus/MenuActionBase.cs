@@ -12,7 +12,7 @@ using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Menus;
 
@@ -26,7 +26,7 @@ namespace Nexen.Menus;
 /// - Evaluates IsEnabled during construction, not just on Update()
 /// - Has clear categories for enable logic (AlwaysEnabled, RequiresRom, Custom)
 /// </remarks>
-public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
+public abstract partial class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 	private static readonly FrozenDictionary<ActionType, string?> IconCache;
 
 	static MenuActionBase() {
@@ -72,22 +72,22 @@ public abstract class MenuActionBase : ViewModelBase, IMenuAction, IDisposable {
 	// ========================================
 
 	/// <summary>The display name shown in the menu.</summary>
-	[Reactive] public string ActionName { get; protected set; } = "";
+	[Reactive] public partial string ActionName { get; protected set; } = "";
 
 	/// <summary>The shortcut key text shown in the menu.</summary>
-	[Reactive] public string ShortcutText { get; protected set; } = "";
+	[Reactive] public partial string ShortcutText { get; protected set; } = "";
 
 	/// <summary>Tooltip text (Name + ShortcutText).</summary>
-	[Reactive] public string TooltipText { get; protected set; } = "";
+	[Reactive] public partial string TooltipText { get; protected set; } = "";
 
 	/// <summary>The icon shown in the menu.</summary>
-	[Reactive] public Image? ActionIcon { get; protected set; }
+	[Reactive] public partial Image? ActionIcon { get; protected set; }
 
 	/// <summary>Whether the menu item is enabled. Defaults to true.</summary>
-	[Reactive] public bool Enabled { get; protected set; } = true;
+	[Reactive] public partial bool Enabled { get; protected set; } = true;
 
 	/// <summary>Whether the menu item is visible. Defaults to true.</summary>
-	[Reactive] public bool Visible { get; protected set; } = true;
+	[Reactive] public partial bool Visible { get; protected set; } = true;
 
 	/// <summary>The command to execute when clicked.</summary>
 	public ICommand? ClickCommand { get; protected set; }

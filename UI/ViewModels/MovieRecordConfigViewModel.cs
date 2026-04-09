@@ -5,12 +5,12 @@ using Nexen.Config;
 using Nexen.Interop;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
-public sealed class MovieRecordConfigViewModel : ViewModelBase {
-	[Reactive] public string SavePath { get; set; }
-	[Reactive] public MovieRecordConfig Config { get; set; }
+public sealed partial class MovieRecordConfigViewModel : ViewModelBase {
+	[Reactive] public partial string SavePath { get; set; }
+	[Reactive] public partial MovieRecordConfig Config { get; set; }
 	public bool CanRecord => !string.IsNullOrWhiteSpace(SavePath);
 
 	public MovieRecordConfigViewModel() {

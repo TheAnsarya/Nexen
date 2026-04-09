@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.StatusViews;
 
@@ -15,43 +15,43 @@ namespace Nexen.Debugger.StatusViews;
 /// scratchpad preview, and video state.
 /// W flags: Sign(bit 3), Carry(bit 2), Zero(bit 1), Overflow(bit 0).
 /// </remarks>
-public sealed class ChannelFStatusViewModel : BaseConsoleStatusViewModel {
+public sealed partial class ChannelFStatusViewModel : BaseConsoleStatusViewModel {
 	/// <summary>Accumulator register.</summary>
-	[Reactive] public byte RegA { get; set; }
+	[Reactive] public partial byte RegA { get; set; }
 	/// <summary>Status register (W) — flags.</summary>
-	[Reactive] public byte RegW { get; set; }
+	[Reactive] public partial byte RegW { get; set; }
 	/// <summary>Indirect Scratchpad Address Register (6-bit).</summary>
-	[Reactive] public byte RegISAR { get; set; }
+	[Reactive] public partial byte RegISAR { get; set; }
 	/// <summary>Program Counter 0 (active).</summary>
-	[Reactive] public UInt16 RegPC0 { get; set; }
+	[Reactive] public partial UInt16 RegPC0 { get; set; }
 	/// <summary>Program Counter 1 (backup/stack).</summary>
-	[Reactive] public UInt16 RegPC1 { get; set; }
+	[Reactive] public partial UInt16 RegPC1 { get; set; }
 	/// <summary>Data Counter 0 (active).</summary>
-	[Reactive] public UInt16 RegDC0 { get; set; }
+	[Reactive] public partial UInt16 RegDC0 { get; set; }
 	/// <summary>Data Counter 1 (backup).</summary>
-	[Reactive] public UInt16 RegDC1 { get; set; }
+	[Reactive] public partial UInt16 RegDC1 { get; set; }
 
 	/// <summary>Sign flag (bit 3 of W).</summary>
-	[Reactive] public bool FlagS { get; set; }
+	[Reactive] public partial bool FlagS { get; set; }
 	/// <summary>Carry/Link flag (bit 2 of W).</summary>
-	[Reactive] public bool FlagC { get; set; }
+	[Reactive] public partial bool FlagC { get; set; }
 	/// <summary>Zero flag (bit 1 of W).</summary>
-	[Reactive] public bool FlagZ { get; set; }
+	[Reactive] public partial bool FlagZ { get; set; }
 	/// <summary>Overflow flag (bit 0 of W).</summary>
-	[Reactive] public bool FlagO { get; set; }
+	[Reactive] public partial bool FlagO { get; set; }
 
 	/// <summary>Interrupts enabled flag.</summary>
-	[Reactive] public bool InterruptsEnabled { get; set; }
+	[Reactive] public partial bool InterruptsEnabled { get; set; }
 
 	/// <summary>Video: current drawing color.</summary>
-	[Reactive] public byte VideoColor { get; private set; }
+	[Reactive] public partial byte VideoColor { get; private set; }
 	/// <summary>Video: current X position.</summary>
-	[Reactive] public byte VideoX { get; private set; }
+	[Reactive] public partial byte VideoX { get; private set; }
 	/// <summary>Video: current Y position.</summary>
-	[Reactive] public byte VideoY { get; private set; }
+	[Reactive] public partial byte VideoY { get; private set; }
 
 	/// <summary>Hex dump of scratchpad registers pointed to by ISAR.</summary>
-	[Reactive] public string ScratchpadPreview { get; private set; } = "";
+	[Reactive] public partial string ScratchpadPreview { get; private set; } = "";
 
 	public ChannelFStatusViewModel() {
 		// Sync individual flags → W register

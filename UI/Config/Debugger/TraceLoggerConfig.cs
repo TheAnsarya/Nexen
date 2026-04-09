@@ -11,30 +11,30 @@ using Avalonia.Media;
 using Nexen.Debugger;
 using Nexen.Interop;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
-public sealed class TraceLoggerConfig : BaseWindowConfig<TraceLoggerConfig> {
-	[Reactive] public bool AutoRefresh { get; set; } = true;
-	[Reactive] public bool RefreshOnBreakPause { get; set; } = true;
-	[Reactive] public bool ShowToolbar { get; set; } = true;
+public sealed partial class TraceLoggerConfig : BaseWindowConfig<TraceLoggerConfig> {
+	[Reactive] public partial bool AutoRefresh { get; set; } = true;
+	[Reactive] public partial bool RefreshOnBreakPause { get; set; } = true;
+	[Reactive] public partial bool ShowToolbar { get; set; } = true;
 
-	[Reactive] public TraceLoggerCpuConfig SnesConfig { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig SpcConfig { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig NecDspConfig { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig Sa1Config { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig GsuConfig { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig Cx4Config { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig St018Config { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig GbConfig { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig NesConfig { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig PceConfig { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig SmsConfig { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig GbaConfig { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig WsConfig { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig LynxConfig { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig ChannelFConfig { get; set; } = new();
-	[Reactive] public TraceLoggerCpuConfig Atari2600Config { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig SnesConfig { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig SpcConfig { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig NecDspConfig { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig Sa1Config { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig GsuConfig { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig Cx4Config { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig St018Config { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig GbConfig { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig NesConfig { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig PceConfig { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig SmsConfig { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig GbaConfig { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig WsConfig { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig LynxConfig { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig ChannelFConfig { get; set; } = new();
+	[Reactive] public partial TraceLoggerCpuConfig Atari2600Config { get; set; } = new();
 
 	public TraceLoggerConfig() {
 	}

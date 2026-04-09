@@ -1,7 +1,7 @@
 using System;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Services;
 
@@ -14,7 +14,7 @@ namespace Nexen.Services;
 /// throughout menu item definitions. It provides a single source of truth and
 /// enables reactive updates when state changes.
 /// </remarks>
-public sealed class EmulatorState : ReactiveObject {
+public sealed partial class EmulatorState : ReactiveObject {
 	/// <summary>Singleton instance for global access.</summary>
 	public static EmulatorState Instance { get; } = new();
 
@@ -27,39 +27,39 @@ public sealed class EmulatorState : ReactiveObject {
 	// ========================================
 
 	/// <summary>Gets whether a ROM is currently loaded (format is known).</summary>
-	[Reactive] public bool IsRomLoaded { get; private set; }
+	[Reactive] public partial bool IsRomLoaded { get; private set; }
 
 	/// <summary>Gets whether the emulator is actively running (not paused, ROM loaded).</summary>
-	[Reactive] public bool IsRunning { get; private set; }
+	[Reactive] public partial bool IsRunning { get; private set; }
 
 	/// <summary>Gets whether the emulator is paused.</summary>
-	[Reactive] public bool IsPaused { get; private set; }
+	[Reactive] public partial bool IsPaused { get; private set; }
 
 	// ========================================
 	// Recording/Playback State
 	// ========================================
 
 	/// <summary>Gets whether a movie is currently playing.</summary>
-	[Reactive] public bool IsMoviePlaying { get; private set; }
+	[Reactive] public partial bool IsMoviePlaying { get; private set; }
 
 	/// <summary>Gets whether a movie is currently being recorded.</summary>
-	[Reactive] public bool IsMovieRecording { get; private set; }
+	[Reactive] public partial bool IsMovieRecording { get; private set; }
 
 	/// <summary>Gets whether AVI video is being recorded.</summary>
-	[Reactive] public bool IsAviRecording { get; private set; }
+	[Reactive] public partial bool IsAviRecording { get; private set; }
 
 	/// <summary>Gets whether WAV audio is being recorded.</summary>
-	[Reactive] public bool IsWaveRecording { get; private set; }
+	[Reactive] public partial bool IsWaveRecording { get; private set; }
 
 	// ========================================
 	// Netplay State
 	// ========================================
 
 	/// <summary>Gets whether connected to a netplay server as client.</summary>
-	[Reactive] public bool IsNetplayClient { get; private set; }
+	[Reactive] public partial bool IsNetplayClient { get; private set; }
 
 	/// <summary>Gets whether running as a netplay server.</summary>
-	[Reactive] public bool IsNetplayServer { get; private set; }
+	[Reactive] public partial bool IsNetplayServer { get; private set; }
 
 	/// <summary>Gets whether any netplay session is active (client or server).</summary>
 	public bool IsNetplayActive => IsNetplayClient || IsNetplayServer;
@@ -69,20 +69,20 @@ public sealed class EmulatorState : ReactiveObject {
 	// ========================================
 
 	/// <summary>Gets whether any save states exist for the current ROM.</summary>
-	[Reactive] public bool HasSaveStates { get; private set; }
+	[Reactive] public partial bool HasSaveStates { get; private set; }
 
 	/// <summary>Gets whether the recent files list has entries.</summary>
-	[Reactive] public bool HasRecentFiles { get; private set; }
+	[Reactive] public partial bool HasRecentFiles { get; private set; }
 
 	// ========================================
 	// ROM-Specific Info
 	// ========================================
 
 	/// <summary>Gets the console type of the loaded ROM.</summary>
-	[Reactive] public ConsoleType ConsoleType { get; private set; }
+	[Reactive] public partial ConsoleType ConsoleType { get; private set; }
 
 	/// <summary>Gets the format of the loaded ROM.</summary>
-	[Reactive] public RomFormat RomFormat { get; private set; }
+	[Reactive] public partial RomFormat RomFormat { get; private set; }
 
 	// ========================================
 	// Computed Properties for Common Checks

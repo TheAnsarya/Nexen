@@ -11,18 +11,18 @@ using Nexen.Debugger.Utilities;
 using Nexen.Interop;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for the register viewer window.
 /// Displays hardware register values for the emulated console, organized into tabs by subsystem.
 /// </summary>
-public sealed class RegisterViewerWindowViewModel : DisposableViewModel, ICpuTypeModel {
+public sealed partial class RegisterViewerWindowViewModel : DisposableViewModel, ICpuTypeModel {
 	/// <summary>
 	/// Gets or sets the list of register viewer tabs, one per hardware subsystem.
 	/// </summary>
-	[Reactive] public List<RegisterViewerTab> Tabs { get; set; } = [];
+	[Reactive] public partial List<RegisterViewerTab> Tabs { get; set; } = [];
 
 	/// <summary>
 	/// Gets the configuration settings for the register viewer.
@@ -37,12 +37,12 @@ public sealed class RegisterViewerWindowViewModel : DisposableViewModel, ICpuTyp
 	/// <summary>
 	/// Gets or sets the menu actions for the File menu.
 	/// </summary>
-	[Reactive] public List<object> FileMenuActions { get; private set; } = new();
+	[Reactive] public partial List<object> FileMenuActions { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the menu actions for the View menu.
 	/// </summary>
-	[Reactive] public List<object> ViewMenuActions { get; private set; } = new();
+	[Reactive] public partial List<object> ViewMenuActions { get; private set; } = new();
 
 	/// <summary>Cached console state from the emulator core.</summary>
 	private BaseState? _state = null;
@@ -214,7 +214,7 @@ public sealed class RegisterViewerWindowViewModel : DisposableViewModel, ICpuTyp
 /// <summary>
 /// Represents a tab in the register viewer containing registers for a specific hardware subsystem.
 /// </summary>
-public sealed class RegisterViewerTab : ReactiveObject {
+public sealed partial class RegisterViewerTab : ReactiveObject {
 	/// <summary>Backing field for <see cref="TabName"/>.</summary>
 	private string _name;
 
@@ -283,7 +283,7 @@ public sealed class RegisterViewerTab : ReactiveObject {
 /// Represents a single register entry in the register viewer.
 /// Contains address, name, value, and hex value with support for headers and various value formats.
 /// </summary>
-public sealed class RegEntry : INotifyPropertyChanged {
+public sealed partial class RegEntry : INotifyPropertyChanged {
 	/// <summary>Background brush used for header rows.</summary>
 	private static ISolidColorBrush HeaderBgBrush = new SolidColorBrush(0x40B0B0B0);
 

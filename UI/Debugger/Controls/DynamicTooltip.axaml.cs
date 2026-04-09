@@ -14,7 +14,7 @@ using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.Controls; 
 public partial class DynamicTooltip : UserControl {
@@ -80,9 +80,9 @@ public partial class DynamicTooltip : UserControl {
 }
 
 public partial class TooltipEntry : ReactiveObject {
-	[Reactive] public string Name { get; set; } = "";
-	[Reactive] public object Value { get; set; } = "";
-	[Reactive] public bool UseMonoFont { get; set; } = false;
+	[Reactive] public partial string Name { get; set; } = "";
+	[Reactive] public partial object Value { get; set; } = "";
+	[Reactive] public partial bool UseMonoFont { get; set; } = false;
 
 	public virtual VerticalAlignment VerticalAlignment => Value is bool ? VerticalAlignment.Center : VerticalAlignment.Top;
 
@@ -99,7 +99,7 @@ public partial class CustomTooltipEntry : TooltipEntry {
 }
 
 public partial class TooltipSeparator : TooltipEntry {
-	[Reactive] public bool Hidden { get; set; } = false;
+	[Reactive] public partial bool Hidden { get; set; } = false;
 
 	public TooltipSeparator(string name) : base(name, false, false) {
 	}
@@ -217,9 +217,9 @@ public partial class TooltipEntries : List<TooltipEntry>, INotifyCollectionChang
 }
 
 public partial class TooltipPictureEntry : ReactiveObject {
-	[Reactive] public IImage Source { get; set; }
-	[Reactive] public double Zoom { get; set; }
-	[Reactive] public PixelRect? CropRect { get; set; }
+	[Reactive] public partial IImage Source { get; set; }
+	[Reactive] public partial double Zoom { get; set; }
+	[Reactive] public partial PixelRect? CropRect { get; set; }
 	public IImage OriginalSource { get; }
 
 	public TooltipPictureEntry(IImage src, double zoom, PixelRect? cropRect) {
@@ -231,7 +231,7 @@ public partial class TooltipPictureEntry : ReactiveObject {
 }
 
 public partial class TooltipColorEntry : ReactiveObject {
-	[Reactive] public UInt32[] Color { get; set; }
+	[Reactive] public partial UInt32[] Color { get; set; }
 
 	public TooltipColorEntry(UInt32 color) {
 		Color = new UInt32[1];
@@ -240,9 +240,9 @@ public partial class TooltipColorEntry : ReactiveObject {
 }
 
 public partial class TooltipPaletteEntry : ReactiveObject {
-	[Reactive] public UInt32[] RgbPalette { get; set; }
-	[Reactive] public UInt32[] RawPalette { get; set; }
-	[Reactive] public RawPaletteFormat RawFormat { get; set; }
+	[Reactive] public partial UInt32[] RgbPalette { get; set; }
+	[Reactive] public partial UInt32[] RawPalette { get; set; }
+	[Reactive] public partial RawPaletteFormat RawFormat { get; set; }
 
 	public TooltipPaletteEntry(UInt32[] rgbPalette, UInt32[] rawPalette, RawPaletteFormat rawFormat) {
 		RgbPalette = rgbPalette;

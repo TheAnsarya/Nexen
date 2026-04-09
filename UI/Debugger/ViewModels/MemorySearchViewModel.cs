@@ -17,7 +17,7 @@ using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 
@@ -39,66 +39,66 @@ namespace Nexen.Debugger.ViewModels;
 /// Maintains search history for undo functionality and supports sorting by various columns.
 /// </para>
 /// </remarks>
-public sealed class MemorySearchViewModel : DisposableViewModel {
+public sealed partial class MemorySearchViewModel : DisposableViewModel {
 	/// <summary>Gets the memory search configuration.</summary>
 	public MemorySearchConfig Config { get; }
 
 	/// <summary>Gets or sets the available memory types for the current console.</summary>
-	[Reactive] public Enum[] AvailableMemoryTypes { get; set; } = [];
+	[Reactive] public partial Enum[] AvailableMemoryTypes { get; set; } = [];
 
 	/// <summary>Gets or sets the currently selected memory type to search.</summary>
-	[Reactive] public MemoryType MemoryType { get; set; } = MemoryType.SnesMemory;
+	[Reactive] public partial MemoryType MemoryType { get; set; } = MemoryType.SnesMemory;
 
 	/// <summary>Gets or sets the display format for values.</summary>
-	[Reactive] public MemorySearchFormat Format { get; set; } = MemorySearchFormat.Hex;
+	[Reactive] public partial MemorySearchFormat Format { get; set; } = MemorySearchFormat.Hex;
 
 	/// <summary>Gets or sets the size of values to search for.</summary>
-	[Reactive] public MemorySearchValueSize ValueSize { get; set; } = MemorySearchValueSize.Byte;
+	[Reactive] public partial MemorySearchValueSize ValueSize { get; set; } = MemorySearchValueSize.Byte;
 
 	/// <summary>Gets or sets what to compare values against.</summary>
-	[Reactive] public MemorySearchCompareTo CompareTo { get; set; } = MemorySearchCompareTo.PreviousRefreshValue;
+	[Reactive] public partial MemorySearchCompareTo CompareTo { get; set; } = MemorySearchCompareTo.PreviousRefreshValue;
 
 	/// <summary>Gets or sets the comparison operator.</summary>
-	[Reactive] public MemorySearchOperator Operator { get; set; } = MemorySearchOperator.Equal;
+	[Reactive] public partial MemorySearchOperator Operator { get; set; } = MemorySearchOperator.Equal;
 
 	/// <summary>Gets or sets the list of address ViewModels for display.</summary>
-	[Reactive] public NexenList<MemoryAddressViewModel> ListData { get; private set; } = new();
+	[Reactive] public partial NexenList<MemoryAddressViewModel> ListData { get; private set; } = new();
 
 	/// <summary>Gets or sets the selection model for the list.</summary>
-	[Reactive] public SelectionModel<MemoryAddressViewModel> Selection { get; set; } = new();
+	[Reactive] public partial SelectionModel<MemoryAddressViewModel> Selection { get; set; } = new();
 
 	/// <summary>Gets or sets the current sort state.</summary>
-	[Reactive] public SortState SortState { get; set; } = new();
+	[Reactive] public partial SortState SortState { get; set; } = new();
 
 	/// <summary>Gets the column widths from configuration.</summary>
 	public List<int> ColumnWidths { get; } = ConfigManager.Config.Debug.MemorySearch.ColumnWidths;
 
 	/// <summary>Gets or sets the specific address to compare against.</summary>
-	[Reactive] public int SpecificAddress { get; set; } = 0;
+	[Reactive] public partial int SpecificAddress { get; set; } = 0;
 
 	/// <summary>Gets or sets the specific value to compare against.</summary>
-	[Reactive] public int SpecificValue { get; set; } = 0;
+	[Reactive] public partial int SpecificValue { get; set; } = 0;
 
 	/// <summary>Gets or sets whether values are displayed in hex format.</summary>
-	[Reactive] public bool IsValueHex { get; set; }
+	[Reactive] public partial bool IsValueHex { get; set; }
 
 	/// <summary>Gets or sets the minimum valid value for the current format/size.</summary>
-	[Reactive] public string MinValue { get; set; } = "";
+	[Reactive] public partial string MinValue { get; set; } = "";
 
 	/// <summary>Gets or sets the maximum valid value for the current format/size.</summary>
-	[Reactive] public string MaxValue { get; set; } = "";
+	[Reactive] public partial string MaxValue { get; set; } = "";
 
 	/// <summary>Gets or sets the maximum address in the current memory region.</summary>
-	[Reactive] public int MaxAddress { get; set; } = 0;
+	[Reactive] public partial int MaxAddress { get; set; } = 0;
 
 	/// <summary>Gets or sets whether undo is available.</summary>
-	[Reactive] public bool IsUndoEnabled { get; set; } = false;
+	[Reactive] public partial bool IsUndoEnabled { get; set; } = false;
 
 	/// <summary>Gets or sets whether the specific value field is enabled.</summary>
-	[Reactive] public bool IsSpecificValueEnabled { get; set; } = false;
+	[Reactive] public partial bool IsSpecificValueEnabled { get; set; } = false;
 
 	/// <summary>Gets or sets whether the specific address field is enabled.</summary>
-	[Reactive] public bool IsSpecificAddressEnabled { get; set; } = false;
+	[Reactive] public partial bool IsSpecificAddressEnabled { get; set; } = false;
 
 	/// <summary>Gets the lookup table mapping visible row indices to actual addresses.</summary>
 	public int[] AddressLookup { get; private set; } = [];
@@ -503,7 +503,7 @@ public sealed class MemorySearchViewModel : DisposableViewModel {
 /// Displays current value, previous value, and memory access statistics for a single address.
 /// Uses property change notification to efficiently update only changed fields.
 /// </remarks>
-public sealed class MemoryAddressViewModel : INotifyPropertyChanged {
+public sealed partial class MemoryAddressViewModel : INotifyPropertyChanged {
 	/// <summary>
 	/// Event raised when a property value changes.
 	/// </summary>

@@ -1,10 +1,11 @@
 using System;
 using Nexen.Config;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 
-public sealed class ChannelFInputConfigViewModel : DisposableViewModel {
-	[ReactiveUI.Fody.Helpers.Reactive] public ChannelFConfig Config { get; set; }
+public sealed partial class ChannelFInputConfigViewModel : DisposableViewModel {
+	[Reactive] public partial ChannelFConfig Config { get; set; }
 
 	public Enum[] AvailableControllerTypes => new Enum[] {
 		ControllerType.None,

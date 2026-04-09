@@ -5,17 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Nexen.Interop;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
 
-public sealed class ConsoleOverrideConfig : BaseConfig<GameConfig> {
-	[Reactive] public bool OverrideVideoFilter { get; set; } = false;
-	[Reactive] public VideoFilterType VideoFilter { get; set; } = VideoFilterType.None;
+public sealed partial class ConsoleOverrideConfig : BaseConfig<GameConfig> {
+	[Reactive] public partial bool OverrideVideoFilter { get; set; } = false;
+	[Reactive] public partial VideoFilterType VideoFilter { get; set; } = VideoFilterType.None;
 
-	[Reactive] public bool OverrideAspectRatio { get; set; } = false;
-	[Reactive] public VideoAspectRatio AspectRatio { get; set; } = VideoAspectRatio.NoStretching;
-	[Reactive][MinMax(0.1, 5.0)] public double CustomAspectRatio { get; set; } = 1.0;
+	[Reactive] public partial bool OverrideAspectRatio { get; set; } = false;
+	[Reactive] public partial VideoAspectRatio AspectRatio { get; set; } = VideoAspectRatio.NoStretching;
+	[Reactive][MinMax(0.1, 5.0)] public partial double CustomAspectRatio { get; set; } = 1.0;
 
 	public static ConsoleOverrideConfig? GetActiveOverride() {
 		if (MainWindowViewModel.Instance is null) {

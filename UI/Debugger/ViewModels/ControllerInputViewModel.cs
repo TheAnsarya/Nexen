@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -24,51 +24,51 @@ namespace Nexen.Debugger.ViewModels;
 /// NES/GB (no shoulder buttons), SMS (limited buttons), WonderSwan (rotated D-pad).
 /// </para>
 /// </remarks>
-public sealed class ControllerInputViewModel : ViewModelBase {
+public sealed partial class ControllerInputViewModel : ViewModelBase {
 	/// <summary>Gets or sets the view height in pixels for the controller display.</summary>
-	[Reactive] public int ViewHeight { get; set; }
+	[Reactive] public partial int ViewHeight { get; set; }
 
 	/// <summary>Gets or sets whether the A button is pressed.</summary>
-	[Reactive] public bool ButtonA { get; set; }
+	[Reactive] public partial bool ButtonA { get; set; }
 
 	/// <summary>Gets or sets whether the B button is pressed.</summary>
-	[Reactive] public bool ButtonB { get; set; }
+	[Reactive] public partial bool ButtonB { get; set; }
 
 	/// <summary>Gets or sets whether the X button is pressed (SNES/GBA only).</summary>
-	[Reactive] public bool ButtonX { get; set; }
+	[Reactive] public partial bool ButtonX { get; set; }
 
 	/// <summary>Gets or sets whether the Y button is pressed (SNES/GBA only).</summary>
-	[Reactive] public bool ButtonY { get; set; }
+	[Reactive] public partial bool ButtonY { get; set; }
 
 	/// <summary>Gets or sets whether the L shoulder button is pressed.</summary>
-	[Reactive] public bool ButtonL { get; set; }
+	[Reactive] public partial bool ButtonL { get; set; }
 
 	/// <summary>Gets or sets whether the R shoulder button is pressed.</summary>
-	[Reactive] public bool ButtonR { get; set; }
+	[Reactive] public partial bool ButtonR { get; set; }
 
 	/// <summary>Gets or sets whether the secondary U button is pressed (WonderSwan Y-pad).</summary>
-	[Reactive] public bool ButtonU { get; set; }
+	[Reactive] public partial bool ButtonU { get; set; }
 
 	/// <summary>Gets or sets whether the secondary D button is pressed (WonderSwan Y-pad).</summary>
-	[Reactive] public bool ButtonD { get; set; }
+	[Reactive] public partial bool ButtonD { get; set; }
 
 	/// <summary>Gets or sets whether D-pad Up is pressed.</summary>
-	[Reactive] public bool ButtonUp { get; set; }
+	[Reactive] public partial bool ButtonUp { get; set; }
 
 	/// <summary>Gets or sets whether D-pad Down is pressed.</summary>
-	[Reactive] public bool ButtonDown { get; set; }
+	[Reactive] public partial bool ButtonDown { get; set; }
 
 	/// <summary>Gets or sets whether D-pad Left is pressed.</summary>
-	[Reactive] public bool ButtonLeft { get; set; }
+	[Reactive] public partial bool ButtonLeft { get; set; }
 
 	/// <summary>Gets or sets whether D-pad Right is pressed.</summary>
-	[Reactive] public bool ButtonRight { get; set; }
+	[Reactive] public partial bool ButtonRight { get; set; }
 
 	/// <summary>Gets or sets whether the Select button is pressed.</summary>
-	[Reactive] public bool ButtonSelect { get; set; }
+	[Reactive] public partial bool ButtonSelect { get; set; }
 
 	/// <summary>Gets or sets whether the Start button is pressed.</summary>
-	[Reactive] public bool ButtonStart { get; set; }
+	[Reactive] public partial bool ButtonStart { get; set; }
 
 	/// <summary>Gets the 1-based controller port index.</summary>
 	public int ControllerIndex { get; }

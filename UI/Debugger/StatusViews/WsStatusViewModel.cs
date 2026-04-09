@@ -3,47 +3,47 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.StatusViews;
 
-public sealed class WsStatusViewModel : BaseConsoleStatusViewModel {
-	[Reactive] public UInt16 RegAX { get; set; }
-	[Reactive] public UInt16 RegBX { get; set; }
-	[Reactive] public UInt16 RegCX { get; set; }
-	[Reactive] public UInt16 RegDX { get; set; }
-	[Reactive] public UInt16 RegFlags { get; set; }
+public sealed partial class WsStatusViewModel : BaseConsoleStatusViewModel {
+	[Reactive] public partial UInt16 RegAX { get; set; }
+	[Reactive] public partial UInt16 RegBX { get; set; }
+	[Reactive] public partial UInt16 RegCX { get; set; }
+	[Reactive] public partial UInt16 RegDX { get; set; }
+	[Reactive] public partial UInt16 RegFlags { get; set; }
 
-	[Reactive] public UInt16 RegSS { get; set; }
-	[Reactive] public UInt16 RegDS { get; set; }
-	[Reactive] public UInt16 RegES { get; set; }
+	[Reactive] public partial UInt16 RegSS { get; set; }
+	[Reactive] public partial UInt16 RegDS { get; set; }
+	[Reactive] public partial UInt16 RegES { get; set; }
 
-	[Reactive] public UInt16 RegCS { get; set; }
-	[Reactive] public UInt16 RegIP { get; set; }
+	[Reactive] public partial UInt16 RegCS { get; set; }
+	[Reactive] public partial UInt16 RegIP { get; set; }
 
-	[Reactive] public UInt16 RegDI { get; set; }
-	[Reactive] public UInt16 RegSI { get; set; }
+	[Reactive] public partial UInt16 RegDI { get; set; }
+	[Reactive] public partial UInt16 RegSI { get; set; }
 
-	[Reactive] public UInt16 RegSP { get; set; }
-	[Reactive] public UInt16 RegBP { get; set; }
+	[Reactive] public partial UInt16 RegSP { get; set; }
+	[Reactive] public partial UInt16 RegBP { get; set; }
 
-	[Reactive] public UInt16 Scanline { get; set; }
-	[Reactive] public UInt16 Cycle { get; set; }
+	[Reactive] public partial UInt16 Scanline { get; set; }
+	[Reactive] public partial UInt16 Cycle { get; set; }
 
-	[Reactive] public bool FlagCarry { get; set; }
-	[Reactive] public bool FlagAuxCarry { get; set; }
-	[Reactive] public bool FlagParity { get; set; }
-	[Reactive] public bool FlagSign { get; set; }
-	[Reactive] public bool FlagZero { get; set; }
-	[Reactive] public bool FlagOverflow { get; set; }
-	[Reactive] public bool FlagTrap { get; set; }
-	[Reactive] public bool FlagIrq { get; set; }
-	[Reactive] public bool FlagDirection { get; set; }
-	[Reactive] public bool FlagMode { get; set; }
+	[Reactive] public partial bool FlagCarry { get; set; }
+	[Reactive] public partial bool FlagAuxCarry { get; set; }
+	[Reactive] public partial bool FlagParity { get; set; }
+	[Reactive] public partial bool FlagSign { get; set; }
+	[Reactive] public partial bool FlagZero { get; set; }
+	[Reactive] public partial bool FlagOverflow { get; set; }
+	[Reactive] public partial bool FlagTrap { get; set; }
+	[Reactive] public partial bool FlagIrq { get; set; }
+	[Reactive] public partial bool FlagDirection { get; set; }
+	[Reactive] public partial bool FlagMode { get; set; }
 
-	[Reactive] public bool FlagHalted { get; set; }
+	[Reactive] public partial bool FlagHalted { get; set; }
 
-	[Reactive] public string StackPreview { get; private set; } = "";
+	[Reactive] public partial string StackPreview { get; private set; } = "";
 
 	public WsStatusViewModel() {
 		this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagSign, x => x.FlagOverflow).Subscribe(x => UpdateFlags());

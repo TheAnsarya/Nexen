@@ -7,7 +7,7 @@ using Nexen.Debugger.Labels;
 using Nexen.Interop;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger; 
 /// <summary>
@@ -33,16 +33,16 @@ namespace Nexen.Debugger;
 /// This class uses ReactiveUI with Fody weaving for automatic property change notifications.
 /// </para>
 /// </remarks>
-public sealed class Breakpoint : ReactiveObject {
+public sealed partial class Breakpoint : ReactiveObject {
 	/// <summary>
 	/// Gets or sets whether to break when the address is read from.
 	/// </summary>
-	[Reactive] public bool BreakOnRead { get; set; }
+	[Reactive] public partial bool BreakOnRead { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether to break when the address is written to.
 	/// </summary>
-	[Reactive] public bool BreakOnWrite { get; set; }
+	[Reactive] public partial bool BreakOnWrite { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether to break when code at the address is executed.
@@ -50,7 +50,7 @@ public sealed class Breakpoint : ReactiveObject {
 	/// <remarks>
 	/// Only applicable if <see cref="SupportsExec"/> is <c>true</c> for the memory type.
 	/// </remarks>
-	[Reactive] public bool BreakOnExec { get; set; }
+	[Reactive] public partial bool BreakOnExec { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether this is a "forbid" breakpoint that prevents access.
@@ -58,13 +58,13 @@ public sealed class Breakpoint : ReactiveObject {
 	/// <remarks>
 	/// Forbid breakpoints always break when accessed, useful for detecting unexpected access.
 	/// </remarks>
-	[Reactive] public bool Forbid { get; set; }
+	[Reactive] public partial bool Forbid { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether the breakpoint is currently enabled.
 	/// </summary>
 	/// <value>Default is <c>true</c>.</value>
-	[Reactive] public bool Enabled { get; set; } = true;
+	[Reactive] public partial bool Enabled { get; set; } = true;
 
 	/// <summary>
 	/// Gets or sets whether to mark this access as an event in the event viewer.
@@ -73,7 +73,7 @@ public sealed class Breakpoint : ReactiveObject {
 	/// When enabled, accesses to this address are highlighted in the event viewer
 	/// without necessarily pausing execution.
 	/// </remarks>
-	[Reactive] public bool MarkEvent { get; set; }
+	[Reactive] public partial bool MarkEvent { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether to ignore dummy read/write operations.
@@ -83,7 +83,7 @@ public sealed class Breakpoint : ReactiveObject {
 	/// Some CPU instructions perform dummy reads/writes that don't represent real data access.
 	/// Setting this to <c>true</c> skips triggering on these operations.
 	/// </remarks>
-	[Reactive] public bool IgnoreDummyOperations { get; set; } = true;
+	[Reactive] public partial bool IgnoreDummyOperations { get; set; } = true;
 
 	/// <summary>
 	/// Gets or sets the memory type this breakpoint applies to.
@@ -91,12 +91,12 @@ public sealed class Breakpoint : ReactiveObject {
 	/// <remarks>
 	/// Examples: CpuMemory, PrgRom, WorkRam, SaveRam, etc.
 	/// </remarks>
-	[Reactive] public MemoryType MemoryType { get; set; }
+	[Reactive] public partial MemoryType MemoryType { get; set; }
 
 	/// <summary>
 	/// Gets or sets the start address of the breakpoint range (inclusive).
 	/// </summary>
-	[Reactive] public UInt32 StartAddress { get; set; }
+	[Reactive] public partial UInt32 StartAddress { get; set; }
 
 	/// <summary>
 	/// Gets or sets the end address of the breakpoint range (inclusive).
@@ -104,7 +104,7 @@ public sealed class Breakpoint : ReactiveObject {
 	/// <remarks>
 	/// For single-address breakpoints, this equals <see cref="StartAddress"/>.
 	/// </remarks>
-	[Reactive] public UInt32 EndAddress { get; set; }
+	[Reactive] public partial UInt32 EndAddress { get; set; }
 
 	/// <summary>
 	/// Gets or sets the CPU type this breakpoint applies to.
@@ -112,13 +112,13 @@ public sealed class Breakpoint : ReactiveObject {
 	/// <remarks>
 	/// Multi-CPU systems (e.g., SNES with SA-1) require specifying which CPU.
 	/// </remarks>
-	[Reactive] public CpuType CpuType { get; set; }
+	[Reactive] public partial CpuType CpuType { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether this breakpoint applies to any address.
 	/// </summary>
 	/// <value>Default is <c>false</c>.</value>
-	[Reactive] public bool AnyAddress { get; set; } = false;
+	[Reactive] public partial bool AnyAddress { get; set; } = false;
 
 	/// <summary>
 	/// Gets or sets whether this breakpoint is an assertion.
@@ -128,7 +128,7 @@ public sealed class Breakpoint : ReactiveObject {
 	/// Assert breakpoints trigger when their condition is violated, useful for
 	/// detecting invariant violations during development.
 	/// </remarks>
-	[Reactive] public bool IsAssert { get; set; } = false;
+	[Reactive] public partial bool IsAssert { get; set; } = false;
 
 	/// <summary>
 	/// Gets or sets the conditional expression for this breakpoint.
@@ -137,7 +137,7 @@ public sealed class Breakpoint : ReactiveObject {
 	/// <remarks>
 	/// Supports expressions like "A == $80", "[PlayerHP] &lt; 10", etc.
 	/// </remarks>
-	[Reactive] public string Condition { get; set; } = "";
+	[Reactive] public partial string Condition { get; set; } = "";
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Breakpoint"/> class.

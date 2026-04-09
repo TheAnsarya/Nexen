@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Nexen.Interop;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
 
@@ -16,12 +16,12 @@ namespace Nexen.Config;
 /// - Sprite/background layer toggles (debugging)
 /// - Per-channel audio volume (0-100%)
 /// </remarks>
-public sealed class LynxConfig : BaseConfig<LynxConfig> {
+public sealed partial class LynxConfig : BaseConfig<LynxConfig> {
 	/// <summary>Console-specific overrides (video, speed, etc.).</summary>
-	[Reactive] public ConsoleOverrideConfig ConfigOverrides { get; set; } = new();
+	[Reactive] public partial ConsoleOverrideConfig ConfigOverrides { get; set; } = new();
 
 	/// <summary>Controller configuration (key mappings, turbo).</summary>
-	[Reactive] public ControllerConfig Controller { get; set; } = new();
+	[Reactive] public partial ControllerConfig Controller { get; set; } = new();
 
 	/// <summary>Use boot ROM for startup (512-byte Atari boot sequence).</summary>
 	/// <remarks>
@@ -29,7 +29,7 @@ public sealed class LynxConfig : BaseConfig<LynxConfig> {
 	/// the Atari logo and performs hardware initialization. Most games
 	/// work without it via HLE boot, but some require the authentic boot.
 	/// </remarks>
-	[Reactive] public bool UseBootRom { get; set; } = false;
+	[Reactive] public partial bool UseBootRom { get; set; } = false;
 
 	/// <summary>Auto-detect screen rotation from LNX header.</summary>
 	/// <remarks>
@@ -37,7 +37,7 @@ public sealed class LynxConfig : BaseConfig<LynxConfig> {
 	/// and applies 90° left/right rotation automatically. Some games like
 	/// Gauntlet: The Third Encounter are designed for portrait mode.
 	/// </remarks>
-	[Reactive] public bool AutoRotate { get; set; } = true;
+	[Reactive] public partial bool AutoRotate { get; set; } = true;
 
 	/// <summary>Blend consecutive frames to reduce LCD ghosting.</summary>
 	/// <remarks>
@@ -45,25 +45,25 @@ public sealed class LynxConfig : BaseConfig<LynxConfig> {
 	/// on moving objects. Some games designed around this effect may
 	/// look better with blending enabled.
 	/// </remarks>
-	[Reactive] public bool BlendFrames { get; set; } = false;
+	[Reactive] public partial bool BlendFrames { get; set; } = false;
 
 	/// <summary>Disable sprite rendering (debugging feature).</summary>
-	[Reactive] public bool DisableSprites { get; set; } = false;
+	[Reactive] public partial bool DisableSprites { get; set; } = false;
 
 	/// <summary>Disable background rendering (debugging feature).</summary>
-	[Reactive] public bool DisableBackground { get; set; } = false;
+	[Reactive] public partial bool DisableBackground { get; set; } = false;
 
 	/// <summary>Audio channel 1 volume (0-100%).</summary>
-	[Reactive][MinMax(0, 100)] public UInt32 Channel1Vol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Channel1Vol { get; set; } = 100;
 
 	/// <summary>Audio channel 2 volume (0-100%).</summary>
-	[Reactive][MinMax(0, 100)] public UInt32 Channel2Vol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Channel2Vol { get; set; } = 100;
 
 	/// <summary>Audio channel 3 volume (0-100%).</summary>
-	[Reactive][MinMax(0, 100)] public UInt32 Channel3Vol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Channel3Vol { get; set; } = 100;
 
 	/// <summary>Audio channel 4 volume (0-100%).</summary>
-	[Reactive][MinMax(0, 100)] public UInt32 Channel4Vol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Channel4Vol { get; set; } = 100;
 
 	/// <summary>Apply current configuration to the emulator core.</summary>
 	public void ApplyConfig() {

@@ -21,7 +21,7 @@ using Nexen.TAS;
 using Nexen.Utilities;
 using Nexen.Windows;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 
@@ -30,21 +30,21 @@ namespace Nexen.ViewModels;
 /// Provides frame-by-frame editing of movie files with greenzone support,
 /// input recording, and piano roll visualization.
 /// </summary>
-public sealed class TasEditorViewModel : DisposableViewModel {
+public sealed partial class TasEditorViewModel : DisposableViewModel {
 	/// <summary>Gets the currently loaded movie data.</summary>
-	[Reactive] public MovieData? Movie { get; private set; }
+	[Reactive] public partial MovieData? Movie { get; private set; }
 
 	/// <summary>Gets or sets the current file path.</summary>
-	[Reactive] public string? FilePath { get; set; }
+	[Reactive] public partial string? FilePath { get; set; }
 
 	/// <summary>Gets or sets whether the movie has unsaved changes.</summary>
-	[Reactive] public bool HasUnsavedChanges { get; set; }
+	[Reactive] public partial bool HasUnsavedChanges { get; set; }
 
 	/// <summary>Gets or sets the currently selected frame index.</summary>
-	[Reactive] public int SelectedFrameIndex { get; set; } = -1;
+	[Reactive] public partial int SelectedFrameIndex { get; set; } = -1;
 
 	/// <summary>Gets or sets the list of selected frame indices for multi-selection.</summary>
-	[Reactive] public List<int> SelectedFrameIndices { get; set; } = new();
+	[Reactive] public partial List<int> SelectedFrameIndices { get; set; } = new();
 
 	/// <summary>Gets whether multiple frames are selected.</summary>
 	public bool HasMultipleSelection => SelectedFrameIndices.Count > 1;
@@ -60,91 +60,91 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	public ObservableCollection<TasFrameViewModel> Frames { get; } = new();
 
 	/// <summary>Gets or sets the status message.</summary>
-	[Reactive] public string StatusMessage { get; set; } = "No movie loaded";
+	[Reactive] public partial string StatusMessage { get; set; } = "No movie loaded";
 
 	/// <summary>Gets or sets whether greenzone (rerecord safe zone) is enabled.</summary>
-	[Reactive] public bool IsGreenzoneEnabled { get; set; } = true;
+	[Reactive] public partial bool IsGreenzoneEnabled { get; set; } = true;
 
 	/// <summary>Gets or sets the greenzone start frame.</summary>
-	[Reactive] public int GreenzoneStart { get; set; }
+	[Reactive] public partial int GreenzoneStart { get; set; }
 
 	/// <summary>Gets the window title.</summary>
-	[Reactive] public string WindowTitle { get; private set; } = "TAS Editor";
+	[Reactive] public partial string WindowTitle { get; private set; } = "TAS Editor";
 
 	/// <summary>Gets the file menu items.</summary>
-	[Reactive] public List<object> FileMenuItems { get; private set; } = new();
+	[Reactive] public partial List<object> FileMenuItems { get; private set; } = new();
 
 	/// <summary>Gets the edit menu items.</summary>
-	[Reactive] public List<object> EditMenuItems { get; private set; } = new();
+	[Reactive] public partial List<object> EditMenuItems { get; private set; } = new();
 
 	/// <summary>Gets the view menu items.</summary>
-	[Reactive] public List<object> ViewMenuItems { get; private set; } = new();
+	[Reactive] public partial List<object> ViewMenuItems { get; private set; } = new();
 
 	/// <summary>Gets the playback menu items.</summary>
-	[Reactive] public List<object> PlaybackMenuItems { get; private set; } = new();
+	[Reactive] public partial List<object> PlaybackMenuItems { get; private set; } = new();
 
 	/// <summary>Gets the recording menu items.</summary>
-	[Reactive] public List<object> RecordingMenuItems { get; private set; } = new();
+	[Reactive] public partial List<object> RecordingMenuItems { get; private set; } = new();
 
 	/// <summary>Gets whether undo is available.</summary>
-	[Reactive] public bool CanUndo { get; private set; }
+	[Reactive] public partial bool CanUndo { get; private set; }
 
 	/// <summary>Gets whether redo is available.</summary>
-	[Reactive] public bool CanRedo { get; private set; }
+	[Reactive] public partial bool CanRedo { get; private set; }
 
 	/// <summary>Gets whether clipboard has content.</summary>
-	[Reactive] public bool HasClipboard { get; private set; }
+	[Reactive] public partial bool HasClipboard { get; private set; }
 
 	/// <summary>Gets or sets whether playback is active.</summary>
-	[Reactive] public bool IsPlaying { get; set; }
+	[Reactive] public partial bool IsPlaying { get; set; }
 
 	/// <summary>Gets or sets whether TAS auto-save is enabled.</summary>
-	[Reactive] public bool AutoSaveEnabled { get; set; } = true;
+	[Reactive] public partial bool AutoSaveEnabled { get; set; } = true;
 
 	/// <summary>Gets or sets the TAS auto-save interval in minutes.</summary>
-	[Reactive] public int AutoSaveIntervalMinutes { get; set; } = 5;
+	[Reactive] public partial int AutoSaveIntervalMinutes { get; set; } = 5;
 
 	/// <summary>Gets or sets the current playback frame.</summary>
-	[Reactive] public int PlaybackFrame { get; set; }
+	[Reactive] public partial int PlaybackFrame { get; set; }
 
 	/// <summary>Gets or sets the playback speed (1.0 = normal).</summary>
-	[Reactive] public double PlaybackSpeed { get; set; } = 1.0;
+	[Reactive] public partial double PlaybackSpeed { get; set; } = 1.0;
 
 	/// <summary>Gets or sets the current controller layout.</summary>
-	[Reactive] public ControllerLayout CurrentLayout { get; set; } = ControllerLayout.Snes;
+	[Reactive] public partial ControllerLayout CurrentLayout { get; set; } = ControllerLayout.Snes;
 
 	/// <summary>Gets the controller buttons for the current layout.</summary>
-	[Reactive] public List<ControllerButtonInfo> ControllerButtons { get; private set; } = new();
+	[Reactive] public partial List<ControllerButtonInfo> ControllerButtons { get; private set; } = new();
 
 	/// <summary>Gets a raw hex dump of the selected frame's controller bytes.</summary>
-	[Reactive] public string SelectedFrameHexPreview { get; private set; } = "No frame selected";
+	[Reactive] public partial string SelectedFrameHexPreview { get; private set; } = "No frame selected";
 
 	/// <summary>Gets the visual input preview buttons for the selected frame.</summary>
 	public ObservableCollection<ControllerButtonPreviewViewModel> InputPreviewButtons { get; } = new();
 
 	/// <summary>Gets the grid column count for the visual input preview.</summary>
-	[Reactive] public int InputPreviewColumns { get; private set; } = 4;
+	[Reactive] public partial int InputPreviewColumns { get; private set; } = 4;
 
 	/// <summary>Gets whether paddle coordinate editing is visible for the selected frame/controller.</summary>
-	[Reactive] public bool IsPaddleCoordinateEditorVisible { get; private set; }
+	[Reactive] public partial bool IsPaddleCoordinateEditorVisible { get; private set; }
 
 	/// <summary>Gets or sets the selected paddle position (0-255) for the selected port on the selected frame.</summary>
-	[Reactive] public int SelectedPaddlePosition { get; set; }
+	[Reactive] public partial int SelectedPaddlePosition { get; set; }
 
 	/// <summary>Gets whether the console switch panel is visible (Atari 2600 only).</summary>
-	[Reactive] public bool IsConsoleSwitchPanelVisible { get; private set; }
+	[Reactive] public partial bool IsConsoleSwitchPanelVisible { get; private set; }
 
 	/// <summary>Gets whether the Select console switch is active on the selected frame.</summary>
-	[Reactive] public bool IsSelectedFrameSelectActive { get; private set; }
+	[Reactive] public partial bool IsSelectedFrameSelectActive { get; private set; }
 
 	/// <summary>Gets whether the Reset console switch is active on the selected frame.</summary>
-	[Reactive] public bool IsSelectedFrameResetActive { get; private set; }
+	[Reactive] public partial bool IsSelectedFrameResetActive { get; private set; }
 
 	/// <summary>Gets or sets the currently selected controller port for editing (0-based).</summary>
-	[Reactive] public int SelectedEditPort { get; set; }
+	[Reactive] public partial int SelectedEditPort { get; set; }
 
 	/// <summary>Gets the number of active controller ports in the current movie.</summary>
-	[Reactive] public int ActivePortCount { get; private set; } = 1;
+	[Reactive] public partial int ActivePortCount { get; private set; } = 1;
 
 	/// <summary>Gets whether the port selector should be visible (more than one active port).</summary>
 	public bool IsPortSelectorVisible => ActivePortCount > 1;
@@ -165,37 +165,37 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 		Enum.GetValues<FrameSearchMode>();
 
 	/// <summary>Gets or sets whether recording is active.</summary>
-	[Reactive] public bool IsRecording { get; set; }
+	[Reactive] public partial bool IsRecording { get; set; }
 
 	/// <summary>Gets or sets the current recording mode.</summary>
-	[Reactive] public RecordingMode RecordMode { get; set; } = RecordingMode.Append;
+	[Reactive] public partial RecordingMode RecordMode { get; set; } = RecordingMode.Append;
 
 	/// <summary>Gets the greenzone savestate count.</summary>
-	[Reactive] public int SavestateCount { get; private set; }
+	[Reactive] public partial int SavestateCount { get; private set; }
 
 	/// <summary>Gets the greenzone memory usage in MB.</summary>
-	[Reactive] public double GreenzoneMemoryMB { get; private set; }
+	[Reactive] public partial double GreenzoneMemoryMB { get; private set; }
 
 	/// <summary>Gets or sets whether piano roll view is visible.</summary>
-	[Reactive] public bool ShowPianoRoll { get; set; }
+	[Reactive] public partial bool ShowPianoRoll { get; set; }
 
 	/// <summary>Gets the rerecord count for the current movie.</summary>
-	[Reactive] public int RerecordCount { get; private set; }
+	[Reactive] public partial int RerecordCount { get; private set; }
 
 	/// <summary>Gets the list of saved branches.</summary>
 	public ObservableCollection<BranchData> Branches { get; } = new();
 
 	/// <summary>Gets the script menu items.</summary>
-	[Reactive] public List<object> ScriptMenuItems { get; private set; } = new();
+	[Reactive] public partial List<object> ScriptMenuItems { get; private set; } = new();
 
 	/// <summary>Gets the Lua API for TAS scripting.</summary>
 	public TasLuaApi LuaApi { get; }
 
 	/// <summary>Gets or sets the current Lua script path.</summary>
-	[Reactive] public string? CurrentScriptPath { get; set; }
+	[Reactive] public partial string? CurrentScriptPath { get; set; }
 
 	/// <summary>Gets or sets whether a script is running.</summary>
-	[Reactive] public bool IsScriptRunning { get; set; }
+	[Reactive] public partial bool IsScriptRunning { get; set; }
 
 	/// <summary>The ID of the currently loaded script (-1 if none).</summary>
 	private int _currentScriptId = -1;
@@ -218,19 +218,19 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	public InputRecorder Recorder { get; }
 
 	/// <summary>Gets or sets whether the search bar is visible.</summary>
-	[Reactive] public bool IsSearchVisible { get; set; }
+	[Reactive] public partial bool IsSearchVisible { get; set; }
 
 	/// <summary>Gets or sets the search query text.</summary>
-	[Reactive] public string SearchText { get; set; } = "";
+	[Reactive] public partial string SearchText { get; set; } = "";
 
 	/// <summary>Gets or sets the search mode.</summary>
-	[Reactive] public FrameSearchMode SearchMode { get; set; } = FrameSearchMode.Comment;
+	[Reactive] public partial FrameSearchMode SearchMode { get; set; } = FrameSearchMode.Comment;
 
 	/// <summary>Gets the search results (matching frame indices).</summary>
-	[Reactive] public List<int> SearchResults { get; private set; } = new();
+	[Reactive] public partial List<int> SearchResults { get; private set; } = new();
 
 	/// <summary>Gets the current search result index within SearchResults.</summary>
-	[Reactive] public int SearchResultIndex { get; set; } = -1;
+	[Reactive] public partial int SearchResultIndex { get; set; } = -1;
 
 	/// <summary>Gets the search results summary text.</summary>
 	public string SearchSummary =>
@@ -242,10 +242,10 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	public ObservableCollection<TasMarkerEntryViewModel> MarkerEntries { get; } = new();
 
 	/// <summary>Gets or sets the selected marker/comment entry.</summary>
-	[Reactive] public TasMarkerEntryViewModel? SelectedMarkerEntry { get; set; }
+	[Reactive] public partial TasMarkerEntryViewModel? SelectedMarkerEntry { get; set; }
 
 	/// <summary>Gets or sets the marker entry filter mode.</summary>
-	[Reactive] public MarkerEntryFilterType MarkerEntryFilter { get; set; } = MarkerEntryFilterType.All;
+	[Reactive] public partial MarkerEntryFilterType MarkerEntryFilter { get; set; } = MarkerEntryFilterType.All;
 
 	/// <summary>Gets the available marker entry filters.</summary>
 	public static IReadOnlyList<MarkerEntryFilterType> MarkerEntryFilters { get; } =
@@ -2528,7 +2528,7 @@ public sealed class TasEditorViewModel : DisposableViewModel {
 	/// Whether playback interrupt detection is enabled.
 	/// When enabled, user input during movie playback triggers an interrupt dialog.
 	/// </summary>
-	[Reactive] public bool InterruptOnInput { get; set; } = true;
+	[Reactive] public partial bool InterruptOnInput { get; set; } = true;
 
 	/// <summary>
 	/// Checks if user input differs from the movie's expected input at the current frame.
@@ -3574,7 +3574,7 @@ tas.finishSearch(true) -- Load best result</pre>
 /// <summary>
 /// ViewModel representing a single frame in the TAS editor.
 /// </summary>
-public sealed class TasFrameViewModel : ViewModelBase {
+public sealed partial class TasFrameViewModel : ViewModelBase {
 	private int _frameNumber;
 	private bool _isGreenzone;
 
@@ -3644,7 +3644,7 @@ public sealed class TasFrameViewModel : ViewModelBase {
 /// <summary>
 /// Base class for undoable actions in the TAS editor.
 /// </summary>
-public abstract class UndoableAction {
+public abstract partial class UndoableAction {
 	/// <summary>Gets a description of this action.</summary>
 	public abstract string Description { get; }
 
@@ -3658,7 +3658,7 @@ public abstract class UndoableAction {
 /// <summary>
 /// Action that groups multiple undoable actions into a single undo/redo step.
 /// </summary>
-public sealed class BulkUndoableAction : UndoableAction {
+public sealed partial class BulkUndoableAction : UndoableAction {
 	private readonly List<UndoableAction> _actions;
 	private readonly string _description;
 
@@ -3687,7 +3687,7 @@ public sealed class BulkUndoableAction : UndoableAction {
 /// <summary>
 /// Action for inserting frames.
 /// </summary>
-public sealed class InsertFramesAction : UndoableAction {
+public sealed partial class InsertFramesAction : UndoableAction {
 	private readonly MovieData _movie;
 	private readonly int _index;
 	private readonly List<InputFrame> _frames;
@@ -3715,7 +3715,7 @@ public sealed class InsertFramesAction : UndoableAction {
 /// <summary>
 /// Action for deleting frames.
 /// </summary>
-public sealed class DeleteFramesAction : UndoableAction {
+public sealed partial class DeleteFramesAction : UndoableAction {
 	private readonly MovieData _movie;
 	private readonly int _index;
 	private readonly List<InputFrame> _deletedFrames;
@@ -3743,7 +3743,7 @@ public sealed class DeleteFramesAction : UndoableAction {
 /// <summary>
 /// Action for modifying controller input.
 /// </summary>
-public sealed class ModifyInputAction : UndoableAction {
+public sealed partial class ModifyInputAction : UndoableAction {
 	private readonly InputFrame _frame;
 	private readonly int _frameIndex;
 	private readonly int _port;
@@ -3776,7 +3776,7 @@ public sealed class ModifyInputAction : UndoableAction {
 /// Action for modifying FrameCommand flags on one or more frames.
 /// Used for toggling console switches (Atari 2600 Select/Reset).
 /// </summary>
-public sealed class ModifyCommandAction : UndoableAction {
+public sealed partial class ModifyCommandAction : UndoableAction {
 	private readonly List<(InputFrame Frame, FrameCommand OldCommand)> _frames;
 	private readonly FrameCommand _flag;
 	private readonly bool _newState;
@@ -3812,7 +3812,7 @@ public sealed class ModifyCommandAction : UndoableAction {
 /// <summary>
 /// Action for clearing all controller inputs on a frame.
 /// </summary>
-public sealed class ClearInputAction : UndoableAction {
+public sealed partial class ClearInputAction : UndoableAction {
 	private readonly InputFrame _frame;
 	private readonly int _frameIndex;
 	private readonly ControllerInput[] _oldInputs;
@@ -3846,7 +3846,7 @@ public sealed class ClearInputAction : UndoableAction {
 /// <summary>
 /// Action for batch-painting a button across multiple frames.
 /// </summary>
-public sealed class PaintInputAction : UndoableAction {
+public sealed partial class PaintInputAction : UndoableAction {
 	private readonly MovieData _movie;
 	private readonly List<int> _frameIndices;
 	private readonly int _port;
@@ -3925,7 +3925,7 @@ public enum ControllerLayout {
 /// <summary>
 /// Information about a controller button for UI display.
 /// </summary>
-public sealed class ControllerButtonInfo {
+public sealed partial class ControllerButtonInfo {
 	/// <summary>Gets the button identifier used in ControllerInput.</summary>
 	public string ButtonId { get; }
 
@@ -3949,7 +3949,7 @@ public sealed class ControllerButtonInfo {
 /// <summary>
 /// View model item for the selected-frame controller diagram preview.
 /// </summary>
-public sealed class ControllerButtonPreviewViewModel {
+public sealed partial class ControllerButtonPreviewViewModel {
 	/// <summary>Gets the button identifier used in ControllerInput.</summary>
 	public string ButtonId { get; }
 
@@ -4023,7 +4023,7 @@ public enum MarkerEntryFilterType {
 /// <summary>
 /// View model item for marker/comment panel rows.
 /// </summary>
-public sealed class TasMarkerEntryViewModel {
+public sealed partial class TasMarkerEntryViewModel {
 	public int FrameIndex { get; }
 	public string Comment { get; }
 	public MarkerEntryType Type { get; }

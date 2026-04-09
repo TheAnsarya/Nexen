@@ -8,13 +8,13 @@ using Nexen.Config;
 using Nexen.Controls;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class OtherConsolesConfigViewModel : DisposableViewModel {
-	[Reactive] public CvConfig CvConfig { get; set; }
-	[Reactive] public CvConfig CvOriginalConfig { get; set; }
-	[Reactive] public OtherConsolesConfigTab SelectedTab { get; set; } = 0;
+public sealed partial class OtherConsolesConfigViewModel : DisposableViewModel {
+	[Reactive] public partial CvConfig CvConfig { get; set; }
+	[Reactive] public partial CvConfig CvOriginalConfig { get; set; }
+	[Reactive] public partial OtherConsolesConfigTab SelectedTab { get; set; } = 0;
 
 	public CvInputConfigViewModel CvInput { get; private set; }
 

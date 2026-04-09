@@ -1,14 +1,14 @@
 using System;
 using Dock.Model.Mvvm.Controls;
 using Nexen.Debugger.Utilities;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels.DebuggerDock;
 /// <summary>
 /// Base class for tool container ViewModels in the debugger dock.
 /// Provides help tooltip support and selection notification.
 /// </summary>
-public class BaseToolContainerViewModel : Tool {
+public partial class BaseToolContainerViewModel : Tool {
 	/// <summary>
 	/// Gets the help content to display when hovering over the tool.
 	/// Override in derived classes to provide contextual help.
@@ -33,7 +33,7 @@ public class BaseToolContainerViewModel : Tool {
 /// Used to host tool panels in the debugger dock system.
 /// </summary>
 /// <typeparam name="T">The type of the model contained in this tool.</typeparam>
-public sealed class ToolContainerViewModel<T> : BaseToolContainerViewModel {
+public sealed partial class ToolContainerViewModel<T> : BaseToolContainerViewModel {
 	/// <summary>
 	/// Gets or sets the model instance contained in this tool.
 	/// </summary>

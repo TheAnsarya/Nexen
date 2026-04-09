@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Controls;
 using Nexen.Interop;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels; 
 /// <summary>
@@ -19,7 +19,7 @@ namespace Nexen.Debugger.ViewModels;
 /// which is useful for testing game behavior with specific inputs or for automation.
 /// </para>
 /// </remarks>
-public sealed class ControllerListViewModel : ViewModelBase {
+public sealed partial class ControllerListViewModel : ViewModelBase {
 	/// <summary>
 	/// Gets or sets the list of controller input ViewModels.
 	/// </summary>
@@ -27,7 +27,7 @@ public sealed class ControllerListViewModel : ViewModelBase {
 	/// Each item represents one controller port that supports input overrides.
 	/// The list is populated automatically based on which controller ports are available.
 	/// </remarks>
-	[Reactive] public List<ControllerInputViewModel> Controllers { get; set; } = new();
+	[Reactive] public partial List<ControllerInputViewModel> Controllers { get; set; } = new();
 
 	/// <summary>
 	/// Designer-only constructor. Do not use in code.

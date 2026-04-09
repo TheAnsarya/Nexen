@@ -10,14 +10,14 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class GameConfig : BaseConfig<GameConfig> {
-	[Reactive] public UInt32 DipSwitches { get; set; } = 0;
+public sealed partial class GameConfig : BaseConfig<GameConfig> {
+	[Reactive] public partial UInt32 DipSwitches { get; set; } = 0;
 
-	[Reactive] public bool OverrideOverscan { get; set; } = false;
-	[Reactive] public OverscanConfig Overscan { get; set; } = new();
+	[Reactive] public partial bool OverrideOverscan { get; set; } = false;
+	[Reactive] public partial OverscanConfig Overscan { get; set; } = new();
 
 	public void ApplyConfig() {
 		ConfigApi.SetGameConfig(new InteropGameConfig() {

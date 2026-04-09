@@ -1,11 +1,11 @@
 using Avalonia.Media;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the color picker dialog.
 /// </summary>
-public sealed class ColorPickerViewModel : ViewModelBase {
+public sealed partial class ColorPickerViewModel : ViewModelBase {
 	/// <summary>Gets or sets the selected color.</summary>
-	[Reactive] public Color Color { get; set; }
+	[Reactive] public partial Color Color { get; set; }
 }

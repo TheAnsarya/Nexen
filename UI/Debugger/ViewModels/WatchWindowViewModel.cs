@@ -13,23 +13,23 @@ using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for the watch expression window.
 /// Manages watch tabs for each CPU type to monitor expressions and variables during debugging.
 /// </summary>
-public sealed class WatchWindowViewModel : ViewModelBase {
+public sealed partial class WatchWindowViewModel : ViewModelBase {
 	/// <summary>
 	/// Gets or sets the list of watch tabs, one per available CPU type.
 	/// </summary>
-	[Reactive] public List<WatchTab> WatchTabs { get; set; } = [];
+	[Reactive] public partial List<WatchTab> WatchTabs { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets the currently selected watch tab.
 	/// </summary>
-	[Reactive] public WatchTab SelectedTab { get; set; } = null!;
+	[Reactive] public partial WatchTab SelectedTab { get; set; } = null!;
 
 	/// <summary>
 	/// Gets the watch window configuration settings.
@@ -86,7 +86,7 @@ public sealed class WatchWindowViewModel : ViewModelBase {
 /// Represents a single watch tab for a specific CPU type.
 /// Contains the watch list for monitoring expressions.
 /// </summary>
-public sealed class WatchTab : DisposableViewModel {
+public sealed partial class WatchTab : DisposableViewModel {
 	/// <summary>
 	/// Gets the display name of the tab (CPU type name).
 	/// </summary>

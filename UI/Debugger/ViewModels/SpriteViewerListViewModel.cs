@@ -9,43 +9,43 @@ using Nexen.Config;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for the sprite viewer list view panel.
 /// Displays sprites in a sortable data grid with selection synchronization to the main sprite viewer.
 /// </summary>
-public sealed class SpriteViewerListViewModel : DisposableViewModel {
+public sealed partial class SpriteViewerListViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets or sets whether the list view is visible.
 	/// </summary>
-	[Reactive] public bool ShowListView { get; set; }
+	[Reactive] public partial bool ShowListView { get; set; }
 
 	/// <summary>
 	/// Gets or sets the minimum height for the list view panel.
 	/// </summary>
-	[Reactive] public double MinListViewHeight { get; set; }
+	[Reactive] public partial double MinListViewHeight { get; set; }
 
 	/// <summary>
 	/// Gets or sets the current height of the list view panel.
 	/// </summary>
-	[Reactive] public double ListViewHeight { get; set; }
+	[Reactive] public partial double ListViewHeight { get; set; }
 
 	/// <summary>
 	/// Gets or sets the list of sprite preview models for data grid binding.
 	/// </summary>
-	[Reactive] public List<SpritePreviewModel>? SpritePreviews { get; set; } = null;
+	[Reactive] public partial List<SpritePreviewModel>? SpritePreviews { get; set; } = null;
 
 	/// <summary>
 	/// Gets or sets the selection model for the data grid.
 	/// </summary>
-	[Reactive] public SelectionModel<SpritePreviewModel?> Selection { get; set; } = new();
+	[Reactive] public partial SelectionModel<SpritePreviewModel?> Selection { get; set; } = new();
 
 	/// <summary>
 	/// Gets or sets the current sort state for the data grid columns.
 	/// </summary>
-	[Reactive] public SortState SortState { get; set; } = new();
+	[Reactive] public partial SortState SortState { get; set; } = new();
 
 	/// <summary>
 	/// Gets the list of column widths for grid persistence.

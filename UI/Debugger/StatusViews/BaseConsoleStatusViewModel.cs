@@ -1,13 +1,13 @@
 using System;
 using System.ComponentModel;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.StatusViews; 
-public abstract class BaseConsoleStatusViewModel : ViewModelBase {
-	[Reactive] public bool EditAllowed { get; set; }
-	[Reactive] public UInt64 ElapsedCycles { get; set; }
-	[Reactive] public UInt64 CycleCount { get; set; }
+public abstract partial class BaseConsoleStatusViewModel : ViewModelBase {
+	[Reactive] public partial bool EditAllowed { get; set; }
+	[Reactive] public partial UInt64 ElapsedCycles { get; set; }
+	[Reactive] public partial UInt64 CycleCount { get; set; }
 
 	private bool _isUpdatingUi = false;
 	private bool _needUpdate = false;

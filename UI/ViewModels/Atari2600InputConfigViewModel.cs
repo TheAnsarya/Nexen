@@ -1,10 +1,11 @@
 using System;
 using Nexen.Config;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 
-public sealed class Atari2600InputConfigViewModel : DisposableViewModel {
-	[ReactiveUI.Fody.Helpers.Reactive] public Atari2600Config Config { get; set; }
+public sealed partial class Atari2600InputConfigViewModel : DisposableViewModel {
+	[Reactive] public partial Atari2600Config Config { get; set; }
 
 	public Enum[] AvailableControllerTypesP12 => new Enum[] {
 		ControllerType.None,

@@ -5,43 +5,43 @@ using Avalonia.Controls;
 using Nexen.Interop;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.StatusViews; 
-public sealed class SnesStatusViewModel : BaseConsoleStatusViewModel {
-	[Reactive] public UInt16 RegA { get; set; }
-	[Reactive] public UInt16 RegX { get; set; }
-	[Reactive] public UInt16 RegY { get; set; }
-	[Reactive] public UInt16 RegSP { get; set; }
-	[Reactive] public UInt16 RegD { get; set; }
-	[Reactive] public UInt32 RegPC { get; set; }
-	[Reactive] public byte RegDBR { get; set; }
-	[Reactive] public byte RegPS { get; set; }
+public sealed partial class SnesStatusViewModel : BaseConsoleStatusViewModel {
+	[Reactive] public partial UInt16 RegA { get; set; }
+	[Reactive] public partial UInt16 RegX { get; set; }
+	[Reactive] public partial UInt16 RegY { get; set; }
+	[Reactive] public partial UInt16 RegSP { get; set; }
+	[Reactive] public partial UInt16 RegD { get; set; }
+	[Reactive] public partial UInt32 RegPC { get; set; }
+	[Reactive] public partial byte RegDBR { get; set; }
+	[Reactive] public partial byte RegPS { get; set; }
 
-	[Reactive] public bool FlagN { get; set; }
-	[Reactive] public bool FlagV { get; set; }
-	[Reactive] public bool FlagM { get; set; }
-	[Reactive] public bool FlagX { get; set; }
-	[Reactive] public bool FlagD { get; set; }
-	[Reactive] public bool FlagI { get; set; }
-	[Reactive] public bool FlagZ { get; set; }
-	[Reactive] public bool FlagC { get; set; }
+	[Reactive] public partial bool FlagN { get; set; }
+	[Reactive] public partial bool FlagV { get; set; }
+	[Reactive] public partial bool FlagM { get; set; }
+	[Reactive] public partial bool FlagX { get; set; }
+	[Reactive] public partial bool FlagD { get; set; }
+	[Reactive] public partial bool FlagI { get; set; }
+	[Reactive] public partial bool FlagZ { get; set; }
+	[Reactive] public partial bool FlagC { get; set; }
 
-	[Reactive] public bool FlagE { get; set; }
+	[Reactive] public partial bool FlagE { get; set; }
 
-	[Reactive] public bool FlagNmi { get; set; }
-	[Reactive] public bool FlagIrqHvCounters { get; set; }
-	[Reactive] public bool FlagIrqCoprocessor { get; set; }
+	[Reactive] public partial bool FlagNmi { get; set; }
+	[Reactive] public partial bool FlagIrqHvCounters { get; set; }
+	[Reactive] public partial bool FlagIrqCoprocessor { get; set; }
 
-	[Reactive] public int Cycle { get; private set; }
-	[Reactive] public int Scanline { get; private set; }
-	[Reactive] public int HClock { get; private set; }
+	[Reactive] public partial int Cycle { get; private set; }
+	[Reactive] public partial int Scanline { get; private set; }
+	[Reactive] public partial int HClock { get; private set; }
 
-	[Reactive] public int VramAddress { get; private set; }
-	[Reactive] public int OamAddress { get; private set; }
-	[Reactive] public int CgRamAddress { get; private set; }
+	[Reactive] public partial int VramAddress { get; private set; }
+	[Reactive] public partial int OamAddress { get; private set; }
+	[Reactive] public partial int CgRamAddress { get; private set; }
 
-	[Reactive] public string StackPreview { get; set; } = "";
+	[Reactive] public partial string StackPreview { get; set; } = "";
 
 	private CpuType _cpuType;
 

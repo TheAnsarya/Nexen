@@ -7,13 +7,13 @@ using Nexen.Config;
 using Nexen.Utilities;
 using Nexen.Windows;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class GameboyConfigViewModel : DisposableViewModel {
-	[Reactive] public GameboyConfig Config { get; set; }
-	[Reactive] public GameboyConfig OriginalConfig { get; set; }
-	[Reactive] public GameboyConfigTab SelectedTab { get; set; } = 0;
+public sealed partial class GameboyConfigViewModel : DisposableViewModel {
+	[Reactive] public partial GameboyConfig Config { get; set; }
+	[Reactive] public partial GameboyConfig OriginalConfig { get; set; }
+	[Reactive] public partial GameboyConfigTab SelectedTab { get; set; } = 0;
 
 	public ReactiveCommand<Button, Unit> SetupPlayer { get; }
 

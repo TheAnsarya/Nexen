@@ -8,13 +8,13 @@ using Nexen.Config;
 using Nexen.Controls;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class SmsConfigViewModel : DisposableViewModel {
-	[Reactive] public SmsConfig Config { get; set; }
-	[Reactive] public SmsConfig OriginalConfig { get; set; }
-	[Reactive] public SmsConfigTab SelectedTab { get; set; } = 0;
+public sealed partial class SmsConfigViewModel : DisposableViewModel {
+	[Reactive] public partial SmsConfig Config { get; set; }
+	[Reactive] public partial SmsConfig OriginalConfig { get; set; }
+	[Reactive] public partial SmsConfigTab SelectedTab { get; set; } = 0;
 
 	public SmsInputConfigViewModel Input { get; private set; }
 

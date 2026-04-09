@@ -6,22 +6,22 @@ using System.Text;
 using System.Threading.Tasks;
 using Nexen.Config;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public class ControllerConfigViewModel : ViewModelBase {
+public partial class ControllerConfigViewModel : ViewModelBase {
 	public ControllerConfig Config { get; }
 	public ControllerConfig OriginalConfig { get; }
 	public ControllerType Type { get; }
 
-	[Reactive] public KeyMappingViewModel KeyMapping1 { get; set; }
-	[Reactive] public KeyMappingViewModel KeyMapping2 { get; set; }
-	[Reactive] public KeyMappingViewModel KeyMapping3 { get; set; }
-	[Reactive] public KeyMappingViewModel KeyMapping4 { get; set; }
+	[Reactive] public partial KeyMappingViewModel KeyMapping1 { get; set; }
+	[Reactive] public partial KeyMappingViewModel KeyMapping2 { get; set; }
+	[Reactive] public partial KeyMappingViewModel KeyMapping3 { get; set; }
+	[Reactive] public partial KeyMappingViewModel KeyMapping4 { get; set; }
 
-	[Reactive] public bool ShowPresets { get; set; } = false;
-	[Reactive] public bool IsTwoButtonController { get; set; } = false;
-	[Reactive] public bool ShowTurbo { get; set; } = false;
+	[Reactive] public partial bool ShowPresets { get; set; } = false;
+	[Reactive] public partial bool IsTwoButtonController { get; set; } = false;
+	[Reactive] public partial bool ShowTurbo { get; set; } = false;
 
 	[Obsolete("For designer only")]
 	public ControllerConfigViewModel() : this(ControllerType.SnesController, new ControllerConfig(), new ControllerConfig(), 0) { }
@@ -42,11 +42,11 @@ public class ControllerConfigViewModel : ViewModelBase {
 	}
 }
 
-public class KeyMappingViewModel : ViewModelBase {
-	[Reactive] public ControllerType Type { get; set; }
-	[Reactive] public KeyMapping Mapping { get; set; }
-	[Reactive] public int Port { get; set; }
-	[Reactive] public List<CustomKeyMapping> CustomKeys { get; set; } = new();
+public partial class KeyMappingViewModel : ViewModelBase {
+	[Reactive] public partial ControllerType Type { get; set; }
+	[Reactive] public partial KeyMapping Mapping { get; set; }
+	[Reactive] public partial int Port { get; set; }
+	[Reactive] public partial List<CustomKeyMapping> CustomKeys { get; set; } = new();
 
 	private int _mappingIndex = 0;
 
@@ -67,11 +67,11 @@ public class KeyMappingViewModel : ViewModelBase {
 	}
 }
 
-public sealed class CustomKeyMapping : ViewModelBase {
+public sealed partial class CustomKeyMapping : ViewModelBase {
 	public string Name { get; set; }
 	public UInt16[] Mappings { get; set; }
 	public int Index { get; set; }
-	[Reactive] public UInt16 KeyMapping { get; set; }
+	[Reactive] public partial UInt16 KeyMapping { get; set; }
 
 	public CustomKeyMapping(string name, UInt16[] mappings, int index) {
 		Name = name;

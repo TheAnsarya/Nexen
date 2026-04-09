@@ -10,7 +10,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 
@@ -36,7 +36,7 @@ namespace Nexen.Debugger.ViewModels;
 /// </list>
 /// </para>
 /// </remarks>
-public sealed class NesHeaderEditViewModel : DisposableViewModel {
+public sealed partial class NesHeaderEditViewModel : DisposableViewModel {
 	/// <summary>Gets the header data being edited.</summary>
 	public NesHeader Header { get; }
 
@@ -44,27 +44,27 @@ public sealed class NesHeaderEditViewModel : DisposableViewModel {
 	/// <remarks>
 	/// Disabled when SaveRam or ChrRamBattery sizes are set, as those imply battery backup.
 	/// </remarks>
-	[Reactive] public bool IsBatteryCheckboxEnabled { get; private set; }
+	[Reactive] public partial bool IsBatteryCheckboxEnabled { get; private set; }
 
 	/// <summary>Gets whether VS System options should be visible.</summary>
-	[Reactive] public bool IsVsSystemVisible { get; private set; }
+	[Reactive] public partial bool IsVsSystemVisible { get; private set; }
 
 	/// <summary>Gets whether the header is in NES 2.0 format.</summary>
-	[Reactive] public bool IsNes20 { get; private set; }
+	[Reactive] public partial bool IsNes20 { get; private set; }
 
 	/// <summary>Gets the available system types for selection.</summary>
 	/// <remarks>Null for NES 2.0 (shows all), limited set for iNES.</remarks>
-	[Reactive] public Enum[]? AvailableSystemTypes { get; private set; } = null;
+	[Reactive] public partial Enum[]? AvailableSystemTypes { get; private set; } = null;
 
 	/// <summary>Gets the available timing options for selection.</summary>
 	/// <remarks>Null for NES 2.0 (shows all), limited set for iNES.</remarks>
-	[Reactive] public Enum[]? AvailableTimings { get; private set; } = null;
+	[Reactive] public partial Enum[]? AvailableTimings { get; private set; } = null;
 
 	/// <summary>Gets the 16-byte header preview as hex string.</summary>
-	[Reactive] public string HeaderBytes { get; private set; } = "";
+	[Reactive] public partial string HeaderBytes { get; private set; } = "";
 
 	/// <summary>Gets any validation error message.</summary>
-	[Reactive] public string ErrorMessage { get; private set; } = "";
+	[Reactive] public partial string ErrorMessage { get; private set; } = "";
 
 	/// <summary>The ROM information for the current file.</summary>
 	private RomInfo _romInfo;
@@ -265,7 +265,7 @@ public sealed class NesHeaderEditViewModel : DisposableViewModel {
 	/// </list>
 	/// </para>
 	/// </remarks>
-	public sealed class NesHeader : ViewModelBase {
+	public sealed partial class NesHeader : ViewModelBase {
 		/// <summary>
 		/// Maps NES 2.0 exponent-based sizes to their encoded byte values.
 		/// </summary>
@@ -276,55 +276,55 @@ public sealed class NesHeaderEditViewModel : DisposableViewModel {
 		private static Dictionary<UInt64, int> _validSizeValues = new Dictionary<UInt64, int>();
 
 		/// <summary>Gets or sets the header format type (iNES or NES 2.0).</summary>
-		[Reactive] public NesFileType FileType { get; set; }
+		[Reactive] public partial NesFileType FileType { get; set; }
 
 		/// <summary>Gets or sets the mapper ID (0-255 for iNES, 0-4095 for NES 2.0).</summary>
-		[Reactive] public uint MapperId { get; set; }
+		[Reactive] public partial uint MapperId { get; set; }
 
 		/// <summary>Gets or sets the submapper ID (NES 2.0 only, 0-15).</summary>
-		[Reactive] public uint SubmapperId { get; set; }
+		[Reactive] public partial uint SubmapperId { get; set; }
 
 		/// <summary>Gets or sets the PRG ROM size in KB.</summary>
-		[Reactive] public UInt64 PrgRom { get; set; }
+		[Reactive] public partial UInt64 PrgRom { get; set; }
 
 		/// <summary>Gets or sets the CHR ROM size in KB (0 for CHR RAM games).</summary>
-		[Reactive] public UInt64 ChrRom { get; set; }
+		[Reactive] public partial UInt64 ChrRom { get; set; }
 
 		/// <summary>Gets or sets the nametable mirroring type.</summary>
-		[Reactive] public iNesMirroringType Mirroring { get; set; }
+		[Reactive] public partial iNesMirroringType Mirroring { get; set; }
 
 		/// <summary>Gets or sets the frame timing (NTSC/PAL/Dendy).</summary>
-		[Reactive] public FrameTiming Timing { get; set; }
+		[Reactive] public partial FrameTiming Timing { get; set; }
 
 		/// <summary>Gets or sets the TV/console system type.</summary>
-		[Reactive] public TvSystem System { get; set; }
+		[Reactive] public partial TvSystem System { get; set; }
 
 		/// <summary>Gets or sets whether a 512-byte trainer is present.</summary>
-		[Reactive] public bool HasTrainer { get; set; }
+		[Reactive] public partial bool HasTrainer { get; set; }
 
 		/// <summary>Gets or sets whether the cartridge has battery-backed memory.</summary>
-		[Reactive] public bool HasBattery { get; set; }
+		[Reactive] public partial bool HasBattery { get; set; }
 
 		/// <summary>Gets or sets the VS System PPU type.</summary>
-		[Reactive] public VsPpuType VsPpu { get; set; }
+		[Reactive] public partial VsPpuType VsPpu { get; set; }
 
 		/// <summary>Gets or sets the VS System protection type.</summary>
-		[Reactive] public VsSystemType VsSystem { get; set; }
+		[Reactive] public partial VsSystemType VsSystem { get; set; }
 
 		/// <summary>Gets or sets the input device type.</summary>
-		[Reactive] public GameInputType InputType { get; set; }
+		[Reactive] public partial GameInputType InputType { get; set; }
 
 		/// <summary>Gets or sets the work RAM size (NES 2.0 only).</summary>
-		[Reactive] public MemorySizes WorkRam { get; set; } = MemorySizes.None;
+		[Reactive] public partial MemorySizes WorkRam { get; set; } = MemorySizes.None;
 
 		/// <summary>Gets or sets the battery-backed save RAM size (NES 2.0 only).</summary>
-		[Reactive] public MemorySizes SaveRam { get; set; } = MemorySizes.None;
+		[Reactive] public partial MemorySizes SaveRam { get; set; } = MemorySizes.None;
 
 		/// <summary>Gets or sets the CHR RAM size (NES 2.0 only).</summary>
-		[Reactive] public MemorySizes ChrRam { get; set; } = MemorySizes.None;
+		[Reactive] public partial MemorySizes ChrRam { get; set; } = MemorySizes.None;
 
 		/// <summary>Gets or sets the battery-backed CHR RAM size (NES 2.0 only).</summary>
-		[Reactive] public MemorySizes ChrRamBattery { get; set; } = MemorySizes.None;
+		[Reactive] public partial MemorySizes ChrRamBattery { get; set; } = MemorySizes.None;
 
 		/// <summary>
 		/// Static constructor that initializes the valid size lookup table.

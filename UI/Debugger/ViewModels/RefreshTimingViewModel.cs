@@ -4,7 +4,7 @@ using Nexen.Config;
 using Nexen.Interop;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -26,18 +26,18 @@ namespace Nexen.Debugger.ViewModels;
 /// </list>
 /// </para>
 /// </remarks>
-public sealed class RefreshTimingViewModel : ViewModelBase {
+public sealed partial class RefreshTimingViewModel : ViewModelBase {
 	/// <summary>Gets the refresh timing configuration being edited.</summary>
 	public RefreshTimingConfig Config { get; }
 
 	/// <summary>Gets the minimum valid scanline number for this console.</summary>
-	[Reactive] public int MinScanline { get; private set; }
+	[Reactive] public partial int MinScanline { get; private set; }
 
 	/// <summary>Gets the maximum valid scanline number for this console.</summary>
-	[Reactive] public int MaxScanline { get; private set; }
+	[Reactive] public partial int MaxScanline { get; private set; }
 
 	/// <summary>Gets the maximum valid cycle number for this console.</summary>
-	[Reactive] public int MaxCycle { get; private set; }
+	[Reactive] public partial int MaxCycle { get; private set; }
 
 	/// <summary>Gets the command to reset timing to default values.</summary>
 	public ReactiveCommand<Unit, Unit> ResetCommand { get; }

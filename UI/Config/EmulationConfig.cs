@@ -6,15 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class EmulationConfig : BaseConfig<EmulationConfig> {
-	[Reactive][MinMax(0, 5000)] public UInt32 EmulationSpeed { get; set; } = 100;
-	[Reactive][MinMax(0, 5000)] public UInt32 TurboSpeed { get; set; } = 300;
-	[Reactive][MinMax(0, 5000)] public UInt32 RewindSpeed { get; set; } = 100;
+public sealed partial class EmulationConfig : BaseConfig<EmulationConfig> {
+	[Reactive][MinMax(0, 5000)] public partial UInt32 EmulationSpeed { get; set; } = 100;
+	[Reactive][MinMax(0, 5000)] public partial UInt32 TurboSpeed { get; set; } = 300;
+	[Reactive][MinMax(0, 5000)] public partial UInt32 RewindSpeed { get; set; } = 100;
 
-	[Reactive][MinMax(0, 10)] public UInt32 RunAheadFrames { get; set; } = 0;
+	[Reactive][MinMax(0, 10)] public partial UInt32 RunAheadFrames { get; set; } = 0;
 
 	public void ApplyConfig() {
 		ConfigApi.SetEmulationConfig(new InteropEmulationConfig() {

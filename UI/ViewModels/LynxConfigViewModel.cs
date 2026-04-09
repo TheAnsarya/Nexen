@@ -7,7 +7,7 @@ using Nexen.Config;
 using Nexen.Utilities;
 using Nexen.Windows;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 
@@ -22,13 +22,13 @@ namespace Nexen.ViewModels;
 /// - Input (controller mapping)
 /// - Video (filter settings)
 /// </remarks>
-public sealed class LynxConfigViewModel : DisposableViewModel {
+public sealed partial class LynxConfigViewModel : DisposableViewModel {
 	/// <summary>Current Lynx configuration being edited.</summary>
-	[Reactive] public LynxConfig Config { get; set; }
+	[Reactive] public partial LynxConfig Config { get; set; }
 	/// <summary>Original configuration for cancel/revert.</summary>
-	[Reactive] public LynxConfig OriginalConfig { get; set; }
+	[Reactive] public partial LynxConfig OriginalConfig { get; set; }
 	/// <summary>Currently selected configuration tab.</summary>
-	[Reactive] public LynxConfigTab SelectedTab { get; set; } = 0;
+	[Reactive] public partial LynxConfigTab SelectedTab { get; set; } = 0;
 
 	/// <summary>Command to open controller setup dialog.</summary>
 	public ReactiveCommand<Button, Unit> SetupPlayer { get; }

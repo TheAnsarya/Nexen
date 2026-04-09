@@ -1,15 +1,15 @@
 using Avalonia;
 using Avalonia.Media;
 using Nexen.Interop;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class DebuggerFontConfig : BaseConfig<DebuggerFontConfig> {
-	[Reactive] public FontConfig DisassemblyFont { get; set; } = new() { FontFamily = "Consolas", FontSize = 14 };
-	[Reactive] public FontConfig MemoryViewerFont { get; set; } = new() { FontFamily = "Consolas", FontSize = 14 };
-	[Reactive] public FontConfig AssemblerFont { get; set; } = new() { FontFamily = "Consolas", FontSize = 14 };
-	[Reactive] public FontConfig ScriptWindowFont { get; set; } = new() { FontFamily = "Consolas", FontSize = 14 };
-	[Reactive] public FontConfig OtherMonoFont { get; set; } = new() { FontFamily = "Consolas", FontSize = 12 };
+public sealed partial class DebuggerFontConfig : BaseConfig<DebuggerFontConfig> {
+	[Reactive] public partial FontConfig DisassemblyFont { get; set; } = new() { FontFamily = "Consolas", FontSize = 14 };
+	[Reactive] public partial FontConfig MemoryViewerFont { get; set; } = new() { FontFamily = "Consolas", FontSize = 14 };
+	[Reactive] public partial FontConfig AssemblerFont { get; set; } = new() { FontFamily = "Consolas", FontSize = 14 };
+	[Reactive] public partial FontConfig ScriptWindowFont { get; set; } = new() { FontFamily = "Consolas", FontSize = 14 };
+	[Reactive] public partial FontConfig OtherMonoFont { get; set; } = new() { FontFamily = "Consolas", FontSize = 12 };
 
 	public void ApplyConfig() {
 		if (Application.Current is Application app) {

@@ -1,9 +1,9 @@
 using Nexen.Interop;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class TileEditorConfig : BaseWindowConfig<TileEditorConfig> {
-	[Reactive] public double ImageScale { get; set; } = 8;
-	[Reactive] public bool ShowGrid { get; set; } = false;
-	[Reactive] public TileBackground Background { get; set; } = TileBackground.Transparent;
+public sealed partial class TileEditorConfig : BaseWindowConfig<TileEditorConfig> {
+	[Reactive] public partial double ImageScale { get; set; } = 8;
+	[Reactive] public partial bool ShowGrid { get; set; } = false;
+	[Reactive] public partial TileBackground Background { get; set; } = TileBackground.Transparent;
 }

@@ -14,43 +14,43 @@ using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.Windows;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
 /// <summary>
 /// Primary ViewModel for the main application window.
 /// Manages the menu, ROM state, rendering, and recent games display.
 /// </summary>
-public sealed class MainWindowViewModel : ViewModelBase {
+public sealed partial class MainWindowViewModel : ViewModelBase {
 	/// <summary>Gets the singleton instance of the main window ViewModel.</summary>
 	public static MainWindowViewModel Instance { get; private set; } = null!;
 
 	/// <summary>Gets or sets the main menu ViewModel.</summary>
-	[Reactive] public MainMenuViewModel MainMenu { get; set; }
+	[Reactive] public partial MainMenuViewModel MainMenu { get; set; }
 
 	/// <summary>Gets or sets the currently loaded ROM information.</summary>
-	[Reactive] public RomInfo RomInfo { get; set; }
+	[Reactive] public partial RomInfo RomInfo { get; set; }
 
 	/// <summary>Gets or sets the audio player ViewModel for music formats (NSF, SPC, etc.).</summary>
-	[Reactive] public AudioPlayerViewModel? AudioPlayer { get; private set; }
+	[Reactive] public partial AudioPlayerViewModel? AudioPlayer { get; private set; }
 
 	/// <summary>Gets or sets the recent games selection screen ViewModel.</summary>
-	[Reactive] public RecentGamesViewModel RecentGames { get; private set; }
+	[Reactive] public partial RecentGamesViewModel RecentGames { get; private set; }
 
 	/// <summary>Gets or sets the window title bar text.</summary>
-	[Reactive] public string WindowTitle { get; private set; } = "Nexen";
+	[Reactive] public partial string WindowTitle { get; private set; } = "Nexen";
 
 	/// <summary>Gets or sets the current render surface size.</summary>
-	[Reactive] public Size RendererSize { get; set; }
+	[Reactive] public partial Size RendererSize { get; set; }
 
 	/// <summary>Gets or sets whether the main menu is visible.</summary>
-	[Reactive] public bool IsMenuVisible { get; set; }
+	[Reactive] public partial bool IsMenuVisible { get; set; }
 
 	/// <summary>Gets or sets whether the native (GPU) renderer is visible.</summary>
-	[Reactive] public bool IsNativeRendererVisible { get; set; }
+	[Reactive] public partial bool IsNativeRendererVisible { get; set; }
 
 	/// <summary>Gets or sets whether the software renderer is visible.</summary>
-	[Reactive] public bool IsSoftwareRendererVisible { get; set; }
+	[Reactive] public partial bool IsSoftwareRendererVisible { get; set; }
 
 	/// <summary>Gets the software renderer ViewModel.</summary>
 	public SoftwareRendererViewModel SoftwareRenderer { get; } = new();

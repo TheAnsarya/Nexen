@@ -10,14 +10,14 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class OverscanConfig : BaseConfig<OverscanConfig> {
-	[Reactive][MinMax(0, 100)] public UInt32 Left { get; set; } = 0;
-	[Reactive][MinMax(0, 100)] public UInt32 Right { get; set; } = 0;
-	[Reactive][MinMax(0, 95)] public UInt32 Top { get; set; } = 0;
-	[Reactive][MinMax(0, 95)] public UInt32 Bottom { get; set; } = 0;
+public sealed partial class OverscanConfig : BaseConfig<OverscanConfig> {
+	[Reactive][MinMax(0, 100)] public partial UInt32 Left { get; set; } = 0;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Right { get; set; } = 0;
+	[Reactive][MinMax(0, 95)] public partial UInt32 Top { get; set; } = 0;
+	[Reactive][MinMax(0, 95)] public partial UInt32 Bottom { get; set; } = 0;
 
 	public InteropOverscanDimensions ToInterop() {
 		return new InteropOverscanDimensions() {

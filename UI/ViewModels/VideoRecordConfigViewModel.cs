@@ -4,21 +4,21 @@ using System.Reactive.Linq;
 using Nexen.Config;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class VideoRecordConfigViewModel : DisposableViewModel {
-	[Reactive] public string SavePath { get; set; }
-	[Reactive] public VideoRecordConfig Config { get; set; }
+public sealed partial class VideoRecordConfigViewModel : DisposableViewModel {
+	[Reactive] public partial string SavePath { get; set; }
+	[Reactive] public partial VideoRecordConfig Config { get; set; }
 
-	[ObservableAsProperty] public bool CompressionAvailable { get; set; }
+	[ObservableAsProperty] private bool _compressionAvailable;
 
 	public VideoRecordConfigViewModel() {
 		Config = ConfigManager.Config.VideoRecord.Clone();
 
 		SavePath = Path.Join(ConfigManager.AviFolder, EmuApi.GetRomInfo().GetRomName() + (Config.Codec == VideoCodec.GIF ? ".gif" : ".avi"));
 
-		AddDisposable(this.WhenAnyValue(x => x.Config.Codec).Select(x => x is VideoCodec.ZMBV or VideoCodec.CSCD).ToPropertyEx(this, x => x.CompressionAvailable));
+		AddDisposable(_compressionAvailableHelper = this.WhenAnyValue(x => x.Config.Codec).Select(x => x is VideoCodec.ZMBV or VideoCodec.CSCD).ToProperty(this, _ => _.CompressionAvailable));
 		AddDisposable(this.WhenAnyValue(x => x.Config.Codec).Subscribe((codec) => {
 			if (codec == VideoCodec.GIF && Path.GetExtension(SavePath).ToLowerInvariant() != ".gif") {
 				SavePath = Path.ChangeExtension(SavePath, ".gif");

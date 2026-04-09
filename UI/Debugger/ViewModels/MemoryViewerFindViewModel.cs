@@ -9,7 +9,7 @@ using Nexen.Config;
 using Nexen.Debugger.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 
@@ -18,97 +18,97 @@ namespace Nexen.Debugger.ViewModels;
 /// Provides search functionality within memory viewer with support for hex, string, and integer searches,
 /// along with various filtering options based on memory access patterns and data types.
 /// </summary>
-public sealed class MemoryViewerFindViewModel : DisposableViewModel {
+public sealed partial class MemoryViewerFindViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets or sets the type of data being searched for (hex bytes, string, or integer).
 	/// </summary>
-	[Reactive] public SearchDataType DataType { get; set; }
+	[Reactive] public partial SearchDataType DataType { get; set; }
 
 	/// <summary>
 	/// Gets or sets the integer size type when searching for integers (auto-detect, 8-bit, 16-bit, or 32-bit).
 	/// </summary>
-	[Reactive] public SearchIntType IntType { get; set; }
+	[Reactive] public partial SearchIntType IntType { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether string searches should be case-sensitive.
 	/// </summary>
-	[Reactive] public bool CaseSensitive { get; set; }
+	[Reactive] public partial bool CaseSensitive { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether to use TBL (table) mappings for string encoding conversion.
 	/// When enabled, string searches use the loaded TBL file for character mapping.
 	/// </summary>
-	[Reactive] public bool UseTblMappings { get; set; }
+	[Reactive] public partial bool UseTblMappings { get; set; }
 
 	/// <summary>
 	/// Gets or sets the filter for memory locations that have not been accessed.
 	/// </summary>
-	[Reactive] public bool FilterNotAccessed { get; set; }
+	[Reactive] public partial bool FilterNotAccessed { get; set; }
 
 	/// <summary>
 	/// Gets or sets the filter for memory locations that have been read.
 	/// </summary>
-	[Reactive] public bool FilterRead { get; set; }
+	[Reactive] public partial bool FilterRead { get; set; }
 
 	/// <summary>
 	/// Gets or sets the filter for memory locations that have been written.
 	/// </summary>
-	[Reactive] public bool FilterWrite { get; set; }
+	[Reactive] public partial bool FilterWrite { get; set; }
 
 	/// <summary>
 	/// Gets or sets the filter for memory locations that have been executed.
 	/// </summary>
-	[Reactive] public bool FilterExec { get; set; }
+	[Reactive] public partial bool FilterExec { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether the time span filter is enabled for access filtering.
 	/// </summary>
-	[Reactive] public bool FilterTimeSpanEnabled { get; set; }
+	[Reactive] public partial bool FilterTimeSpanEnabled { get; set; }
 
 	/// <summary>
 	/// Gets or sets the time span in frames for access filtering.
 	/// </summary>
-	[Reactive] public int FilterTimeSpan { get; set; }
+	[Reactive] public partial int FilterTimeSpan { get; set; }
 
 	/// <summary>
 	/// Gets or sets the filter for memory identified as code.
 	/// </summary>
-	[Reactive] public bool FilterCode { get; set; }
+	[Reactive] public partial bool FilterCode { get; set; }
 
 	/// <summary>
 	/// Gets or sets the filter for memory identified as data.
 	/// </summary>
-	[Reactive] public bool FilterData { get; set; }
+	[Reactive] public partial bool FilterData { get; set; }
 
 	/// <summary>
 	/// Gets or sets the filter for unidentified memory regions.
 	/// </summary>
-	[Reactive] public bool FilterUnidentified { get; set; }
+	[Reactive] public partial bool FilterUnidentified { get; set; }
 
 	/// <summary>
 	/// Gets whether the current data type is integer (for UI binding).
 	/// </summary>
-	[Reactive] public bool IsInteger { get; private set; }
+	[Reactive] public partial bool IsInteger { get; private set; }
 
 	/// <summary>
 	/// Gets whether the current data type is string (for UI binding).
 	/// </summary>
-	[Reactive] public bool IsString { get; private set; }
+	[Reactive] public partial bool IsString { get; private set; }
 
 	/// <summary>
 	/// Gets whether the current search input is valid and can be executed.
 	/// </summary>
-	[Reactive] public bool IsValid { get; private set; } = false;
+	[Reactive] public partial bool IsValid { get; private set; } = false;
 
 	/// <summary>
 	/// Gets or sets whether to show the "not found" error message.
 	/// </summary>
-	[Reactive] public bool ShowNotFoundError { get; set; }
+	[Reactive] public partial bool ShowNotFoundError { get; set; }
 
 	/// <summary>
 	/// Gets or sets the search string entered by the user.
 	/// </summary>
-	[Reactive] public string SearchString { get; set; } = "";
+	[Reactive] public partial string SearchString { get; set; } = "";
 
 	/// <summary>
 	/// Reference to the parent memory tools view model for TBL converter access.
@@ -270,7 +270,7 @@ public sealed class MemoryViewerFindViewModel : DisposableViewModel {
 /// Represents the data pattern to search for in memory.
 /// Supports exact byte matching and case-insensitive string matching via alternate patterns.
 /// </summary>
-public sealed class SearchData {
+public sealed partial class SearchData {
 	/// <summary>
 	/// The primary byte pattern to search for. Values 0-255 are literal bytes, -1 is a wildcard.
 	/// </summary>

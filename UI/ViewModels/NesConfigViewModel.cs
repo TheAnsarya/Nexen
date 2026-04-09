@@ -10,22 +10,22 @@ using Nexen.Controls;
 using Nexen.Interop;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class NesConfigViewModel : DisposableViewModel {
+public sealed partial class NesConfigViewModel : DisposableViewModel {
 	private NotificationListener? _listener = null;
 
-	[Reactive] public NesConfig Config { get; set; }
-	[Reactive] public NesConfig OriginalConfig { get; set; }
+	[Reactive] public partial NesConfig Config { get; set; }
+	[Reactive] public partial NesConfig OriginalConfig { get; set; }
 
-	[Reactive] public bool ShowExpansionVolume { get; set; }
-	[Reactive] public bool ShowColorIndexes { get; set; }
-	[Reactive] public NesConfigTab SelectedTab { get; set; } = 0;
+	[Reactive] public partial bool ShowExpansionVolume { get; set; }
+	[Reactive] public partial bool ShowColorIndexes { get; set; }
+	[Reactive] public partial NesConfigTab SelectedTab { get; set; } = 0;
 
-	[ObservableAsProperty] public bool IsDelayStereoEffect { get; }
-	[ObservableAsProperty] public bool IsPanningStereoEffect { get; }
-	[ObservableAsProperty] public bool IsCombStereoEffect { get; }
+	[ObservableAsProperty] private bool _isDelayStereoEffect;
+	[ObservableAsProperty] private bool _isPanningStereoEffect;
+	[ObservableAsProperty] private bool _isCombStereoEffect;
 
 	public Enum[] AvailableRegions => new Enum[] {
 		ConsoleRegion.Auto,
@@ -65,9 +65,9 @@ public sealed class NesConfigViewModel : DisposableViewModel {
 
 		AddDisposable(Input);
 		AddDisposable(ReactiveHelper.RegisterRecursiveObserver(Config, (s, e) => Config.ApplyConfig()));
-		AddDisposable(this.WhenAnyValue(x => x.Config.StereoFilter).Select(x => x == StereoFilter.Delay).ToPropertyEx(this, x => x.IsDelayStereoEffect));
-		AddDisposable(this.WhenAnyValue(x => x.Config.StereoFilter).Select(x => x == StereoFilter.Panning).ToPropertyEx(this, x => x.IsPanningStereoEffect));
-		AddDisposable(this.WhenAnyValue(x => x.Config.StereoFilter).Select(x => x == StereoFilter.CombFilter).ToPropertyEx(this, x => x.IsCombStereoEffect));
+		AddDisposable(_isDelayStereoEffectHelper = this.WhenAnyValue(x => x.Config.StereoFilter).Select(x => x == StereoFilter.Delay).ToProperty(this, _ => _.IsDelayStereoEffect));
+		AddDisposable(_isPanningStereoEffectHelper = this.WhenAnyValue(x => x.Config.StereoFilter).Select(x => x == StereoFilter.Panning).ToProperty(this, _ => _.IsPanningStereoEffect));
+		AddDisposable(_isCombStereoEffectHelper = this.WhenAnyValue(x => x.Config.StereoFilter).Select(x => x == StereoFilter.CombFilter).ToProperty(this, _ => _.IsCombStereoEffect));
 	}
 
 	private void listener_OnNotification(NotificationEventArgs e) {

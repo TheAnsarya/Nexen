@@ -6,24 +6,24 @@ using Nexen.Config;
 using Nexen.Interop;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the audio configuration tab.
 /// </summary>
-public sealed class AudioConfigViewModel : DisposableViewModel {
+public sealed partial class AudioConfigViewModel : DisposableViewModel {
 	/// <summary>Gets or sets the current audio configuration.</summary>
-	[Reactive] public AudioConfig Config { get; set; }
+	[Reactive] public partial AudioConfig Config { get; set; }
 
 	/// <summary>Gets or sets the original audio configuration for revert.</summary>
-	[Reactive] public AudioConfig OriginalConfig { get; set; }
+	[Reactive] public partial AudioConfig OriginalConfig { get; set; }
 
 	/// <summary>Gets or sets the list of available audio devices.</summary>
-	[Reactive] public List<string> AudioDevices { get; set; } = new();
+	[Reactive] public partial List<string> AudioDevices { get; set; } = new();
 
 	/// <summary>Gets or sets whether to show the latency warning.</summary>
-	[Reactive] public bool ShowLatencyWarning { get; set; } = false;
+	[Reactive] public partial bool ShowLatencyWarning { get; set; } = false;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AudioConfigViewModel"/> class.

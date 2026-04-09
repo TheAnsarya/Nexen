@@ -3,11 +3,11 @@ using System.Reactive.Linq;
 using Avalonia.Threading;
 using Nexen.Config;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class CvInputConfigViewModel : DisposableViewModel {
-	[Reactive] public CvConfig Config { get; set; }
+public sealed partial class CvInputConfigViewModel : DisposableViewModel {
+	[Reactive] public partial CvConfig Config { get; set; }
 
 	public Enum[] AvailableControllerTypesP12 => new Enum[] {
 		ControllerType.None,

@@ -13,7 +13,7 @@ using Nexen.Debugger.Windows;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -29,7 +29,7 @@ namespace Nexen.Debugger.ViewModels;
 ///
 /// Supports navigation to any stack frame location and label editing.
 /// </remarks>
-public sealed class CallStackViewModel : DisposableViewModel {
+public sealed partial class CallStackViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets the CPU type this call stack is associated with.
 	/// </summary>
@@ -43,12 +43,12 @@ public sealed class CallStackViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets or sets the observable collection of call stack entries.
 	/// </summary>
-	[Reactive] public NexenList<StackInfo> CallStackContent { get; private set; } = new();
+	[Reactive] public partial NexenList<StackInfo> CallStackContent { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the selection model for the call stack list.
 	/// </summary>
-	[Reactive] public SelectionModel<StackInfo?> Selection { get; set; } = new();
+	[Reactive] public partial SelectionModel<StackInfo?> Selection { get; set; } = new();
 
 	/// <summary>
 	/// Gets the column widths from user configuration.
@@ -211,7 +211,7 @@ public sealed class CallStackViewModel : DisposableViewModel {
 /// Represents a single entry in the call stack display.
 /// Contains both display-formatted strings and raw address data.
 /// </summary>
-public sealed class StackInfo {
+public sealed partial class StackInfo {
 	/// <summary>
 	/// Gets or sets the entry point label or address for this stack frame.
 	/// </summary>

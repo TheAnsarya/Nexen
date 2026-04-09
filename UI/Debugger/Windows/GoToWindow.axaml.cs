@@ -11,7 +11,7 @@ using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.Views;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.Windows; 
 public partial class GoToWindow : NexenWindow {

@@ -1,31 +1,31 @@
 using System;
 using System.Runtime.InteropServices;
 using Nexen.Interop;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
 
-public sealed class Atari2600Config : BaseConfig<Atari2600Config> {
-	[Reactive] public ConsoleOverrideConfig ConfigOverrides { get; set; } = new();
+public sealed partial class Atari2600Config : BaseConfig<Atari2600Config> {
+	[Reactive] public partial ConsoleOverrideConfig ConfigOverrides { get; set; } = new();
 
-	[Reactive] public ControllerConfig Port1 { get; set; } = new();
-	[Reactive] public ControllerConfig Port2 { get; set; } = new();
+	[Reactive] public partial ControllerConfig Port1 { get; set; } = new();
+	[Reactive] public partial ControllerConfig Port2 { get; set; } = new();
 
-	[Reactive] public bool P0DifficultyB { get; set; } = true;
-	[Reactive] public bool P1DifficultyB { get; set; } = true;
-	[Reactive] public bool ColorMode { get; set; } = true;
+	[Reactive] public partial bool P0DifficultyB { get; set; } = true;
+	[Reactive] public partial bool P1DifficultyB { get; set; } = true;
+	[Reactive] public partial bool ColorMode { get; set; } = true;
 
-	[Reactive] public RamState RamPowerOnState { get; set; } = RamState.AllZeros;
+	[Reactive] public partial RamState RamPowerOnState { get; set; } = RamState.AllZeros;
 
-	[Reactive][MinMax(0, 100)] public UInt32 Channel0Vol { get; set; } = 100;
-	[Reactive][MinMax(0, 100)] public UInt32 Channel1Vol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Channel0Vol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Channel1Vol { get; set; } = 100;
 
-	[Reactive] public bool HidePlayfield { get; set; } = false;
-	[Reactive] public bool HidePlayer0 { get; set; } = false;
-	[Reactive] public bool HidePlayer1 { get; set; } = false;
-	[Reactive] public bool HideMissile0 { get; set; } = false;
-	[Reactive] public bool HideMissile1 { get; set; } = false;
-	[Reactive] public bool HideBall { get; set; } = false;
+	[Reactive] public partial bool HidePlayfield { get; set; } = false;
+	[Reactive] public partial bool HidePlayer0 { get; set; } = false;
+	[Reactive] public partial bool HidePlayer1 { get; set; } = false;
+	[Reactive] public partial bool HideMissile0 { get; set; } = false;
+	[Reactive] public partial bool HideMissile1 { get; set; } = false;
+	[Reactive] public partial bool HideBall { get; set; } = false;
 
 	public void ApplyConfig() {
 		ConfigManager.Config.Video.ApplyConfig();

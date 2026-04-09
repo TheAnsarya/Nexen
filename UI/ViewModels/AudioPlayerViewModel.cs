@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 using Nexen.Config;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the audio player control displayed when playing audio files (NSF, SPC, GBS, HES).
 /// </summary>
-public sealed class AudioPlayerViewModel : ViewModelBase {
+public sealed partial class AudioPlayerViewModel : ViewModelBase {
 	/// <summary>Gets or sets the audio player configuration.</summary>
-	[Reactive] public AudioPlayerConfig Config { get; set; }
+	[Reactive] public partial AudioPlayerConfig Config { get; set; }
 
 	/// <summary>Gets or sets whether playback is currently paused.</summary>
-	[Reactive] public bool IsPaused { get; set; }
+	[Reactive] public partial bool IsPaused { get; set; }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="AudioPlayerViewModel"/> class.

@@ -19,7 +19,7 @@ using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -27,7 +27,7 @@ namespace Nexen.Debugger.ViewModels;
 /// Displays all sprites currently in OAM (Object Attribute Memory) with selection,
 /// preview panels, and support for editing tile graphics.
 /// </summary>
-public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, IMouseOverViewerModel {
+public sealed partial class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, IMouseOverViewerModel {
 	/// <summary>
 	/// Gets the configuration settings for the sprite viewer.
 	/// </summary>
@@ -46,72 +46,72 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 	/// <summary>
 	/// Gets or sets the currently selected sprite preview model.
 	/// </summary>
-	[Reactive] public SpritePreviewModel? SelectedSprite { get; set; }
+	[Reactive] public partial SpritePreviewModel? SelectedSprite { get; set; }
 
 	/// <summary>
 	/// Gets or sets the tooltip panel showing selected sprite details.
 	/// </summary>
-	[Reactive] public DynamicTooltip? SelectedPreviewPanel { get; set; }
+	[Reactive] public partial DynamicTooltip? SelectedPreviewPanel { get; set; }
 
 	/// <summary>
 	/// Gets or sets the tooltip for the preview panel area.
 	/// </summary>
-	[Reactive] public DynamicTooltip? PreviewPanelTooltip { get; set; }
+	[Reactive] public partial DynamicTooltip? PreviewPanelTooltip { get; set; }
 
 	/// <summary>
 	/// Gets or sets the sprite being displayed in the preview panel tooltip.
 	/// </summary>
-	[Reactive] public SpritePreviewModel? PreviewPanelSprite { get; set; }
+	[Reactive] public partial SpritePreviewModel? PreviewPanelSprite { get; set; }
 
 	/// <summary>
 	/// Gets or sets the tooltip shown when hovering over the sprite viewer.
 	/// </summary>
-	[Reactive] public DynamicTooltip? ViewerTooltip { get; set; }
+	[Reactive] public partial DynamicTooltip? ViewerTooltip { get; set; }
 
 	/// <summary>
 	/// Gets or sets the mouse position over the viewer, or null if not hovering.
 	/// </summary>
-	[Reactive] public PixelPoint? ViewerMousePos { get; set; }
+	[Reactive] public partial PixelPoint? ViewerMousePos { get; set; }
 
 	/// <summary>
 	/// Gets or sets the bitmap displaying all sprites.
 	/// </summary>
-	[Reactive] public DynamicBitmap ViewerBitmap { get; private set; }
+	[Reactive] public partial DynamicBitmap ViewerBitmap { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the selection rectangle for the currently selected sprite.
 	/// </summary>
-	[Reactive] public Rect SelectionRect { get; set; }
+	[Reactive] public partial Rect SelectionRect { get; set; }
 
 	/// <summary>
 	/// Gets or sets the rectangle highlighting the sprite under the mouse, or null.
 	/// </summary>
-	[Reactive] public Rect? MouseOverRect { get; set; }
+	[Reactive] public partial Rect? MouseOverRect { get; set; }
 
 	/// <summary>
 	/// Gets or sets the top clipping region size for off-screen sprite filtering.
 	/// </summary>
-	[Reactive] public int TopClipSize { get; set; }
+	[Reactive] public partial int TopClipSize { get; set; }
 
 	/// <summary>
 	/// Gets or sets the bottom clipping region size for off-screen sprite filtering.
 	/// </summary>
-	[Reactive] public int BottomClipSize { get; set; }
+	[Reactive] public partial int BottomClipSize { get; set; }
 
 	/// <summary>
 	/// Gets or sets the left clipping region size for off-screen sprite filtering.
 	/// </summary>
-	[Reactive] public int LeftClipSize { get; set; }
+	[Reactive] public partial int LeftClipSize { get; set; }
 
 	/// <summary>
 	/// Gets or sets the right clipping region size for off-screen sprite filtering.
 	/// </summary>
-	[Reactive] public int RightClipSize { get; set; }
+	[Reactive] public partial int RightClipSize { get; set; }
 
 	/// <summary>
 	/// Gets or sets the list of sprite preview models for all sprites in OAM.
 	/// </summary>
-	[Reactive] public List<SpritePreviewModel> SpritePreviews { get; set; } = new();
+	[Reactive] public partial List<SpritePreviewModel> SpritePreviews { get; set; } = new();
 
 	/// <summary>
 	/// Gets the view model for the sprite list panel.
@@ -121,7 +121,7 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 	/// <summary>
 	/// Gets or sets the maximum source offset for the sprite viewer.
 	/// </summary>
-	[Reactive] public int MaxSourceOffset { get; set; } = 0;
+	[Reactive] public partial int MaxSourceOffset { get; set; } = 0;
 
 	/// <summary>
 	/// Gets the menu actions for the File menu.
@@ -772,7 +772,7 @@ public sealed class SpriteViewerViewModel : DisposableViewModel, ICpuTypeModel, 
 	}
 }
 
-public sealed class SpriteViewerData {
+public sealed partial class SpriteViewerData {
 	public BaseState? PpuState;
 	public BaseState? PpuToolsState;
 	public byte[] SpriteRam = [];

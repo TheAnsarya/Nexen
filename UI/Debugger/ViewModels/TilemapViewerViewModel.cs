@@ -16,7 +16,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -24,16 +24,16 @@ namespace Nexen.Debugger.ViewModels;
 /// Displays background layer tilemaps from VRAM with support for multiple layers,
 /// scroll position overlays, and tile editing.
 /// </summary>
-public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel, IMouseOverViewerModel {
+public sealed partial class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel, IMouseOverViewerModel {
 	/// <summary>
 	/// Gets or sets the CPU type for this tilemap viewer instance.
 	/// </summary>
-	[Reactive] public CpuType CpuType { get; set; }
+	[Reactive] public partial CpuType CpuType { get; set; }
 
 	/// <summary>
 	/// Gets whether the current platform is NES (affects available features).
 	/// </summary>
-	[Reactive] public bool IsNes { get; private set; }
+	[Reactive] public partial bool IsNes { get; private set; }
 
 	/// <summary>
 	/// Gets the configuration settings for the tilemap viewer.
@@ -48,82 +48,82 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 	/// <summary>
 	/// Gets or sets the selection rectangle for the currently selected tile.
 	/// </summary>
-	[Reactive] public Rect SelectionRect { get; set; }
+	[Reactive] public partial Rect SelectionRect { get; set; }
 
 	/// <summary>
 	/// Gets or sets the horizontal grid size for tile snapping.
 	/// </summary>
-	[Reactive] public int GridSizeX { get; set; } = 8;
+	[Reactive] public partial int GridSizeX { get; set; } = 8;
 
 	/// <summary>
 	/// Gets or sets the vertical grid size for tile snapping.
 	/// </summary>
-	[Reactive] public int GridSizeY { get; set; } = 8;
+	[Reactive] public partial int GridSizeY { get; set; } = 8;
 
 	/// <summary>
 	/// Gets or sets custom grid overlay definitions, if any.
 	/// </summary>
-	[Reactive] public List<GridDefinition>? CustomGrids { get; set; } = null;
+	[Reactive] public partial List<GridDefinition>? CustomGrids { get; set; } = null;
 
 	/// <summary>
 	/// Gets or sets the bitmap displaying the tilemap.
 	/// </summary>
-	[Reactive] public DynamicBitmap ViewerBitmap { get; private set; }
+	[Reactive] public partial DynamicBitmap ViewerBitmap { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the tooltip panel showing selected tile information.
 	/// </summary>
-	[Reactive] public DynamicTooltip TilemapInfoPanel { get; private set; } = new DynamicTooltip();
+	[Reactive] public partial DynamicTooltip TilemapInfoPanel { get; private set; } = new DynamicTooltip();
 
 	/// <summary>
 	/// Gets whether the tilemap info panel is visible.
 	/// </summary>
-	[Reactive] public bool IsTilemapInfoVisible { get; private set; }
+	[Reactive] public partial bool IsTilemapInfoVisible { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the preview panel for tile details.
 	/// </summary>
-	[Reactive] public DynamicTooltip? PreviewPanel { get; private set; }
+	[Reactive] public partial DynamicTooltip? PreviewPanel { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the tooltip shown when hovering over the tilemap viewer.
 	/// </summary>
-	[Reactive] public DynamicTooltip? ViewerTooltip { get; set; }
+	[Reactive] public partial DynamicTooltip? ViewerTooltip { get; set; }
 
 	/// <summary>
 	/// Gets or sets the mouse position over the viewer, or null if not hovering.
 	/// </summary>
-	[Reactive] public PixelPoint? ViewerMousePos { get; set; }
+	[Reactive] public partial PixelPoint? ViewerMousePos { get; set; }
 
 	/// <summary>
 	/// Gets or sets the list of tilemap layer tabs.
 	/// </summary>
-	[Reactive] public List<TilemapViewerTab> Tabs { get; private set; } = [];
+	[Reactive] public partial List<TilemapViewerTab> Tabs { get; private set; } = [];
 
 	/// <summary>
 	/// Gets whether the layer tabs should be visible (more than one layer available).
 	/// </summary>
-	[Reactive] public bool ShowTabs { get; private set; }
+	[Reactive] public partial bool ShowTabs { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the currently selected tilemap layer tab.
 	/// </summary>
-	[Reactive] public TilemapViewerTab SelectedTab { get; set; }
+	[Reactive] public partial TilemapViewerTab SelectedTab { get; set; }
 
 	/// <summary>
 	/// Gets or sets the rectangle showing the current scroll position on the tilemap.
 	/// </summary>
-	[Reactive] public Rect ScrollOverlayRect { get; private set; }
+	[Reactive] public partial Rect ScrollOverlayRect { get; private set; }
 
 	/// <summary>
 	/// Gets or sets lines for scroll overlay rendering.
 	/// </summary>
-	[Reactive] public List<PictureViewerLine>? OverlayLines { get; private set; } = null;
+	[Reactive] public partial List<PictureViewerLine>? OverlayLines { get; private set; } = null;
 
 	/// <summary>
 	/// Gets or sets the available display modes for the tilemap viewer.
 	/// </summary>
-	[Reactive] public Enum[] AvailableDisplayModes { get; set; } = [];
+	[Reactive] public partial Enum[] AvailableDisplayModes { get; set; } = [];
 
 	/// <summary>
 	/// Gets the menu actions for the File menu.
@@ -903,14 +903,14 @@ public sealed class TilemapViewerViewModel : DisposableViewModel, ICpuTypeModel,
 	}
 }
 
-public sealed class TilemapViewerTab : ViewModelBase {
-	[Reactive] public string Title { get; set; } = "";
-	[Reactive] public int Layer { get; set; } = 0;
-	[Reactive] public MemoryType? VramMemoryType { get; set; }
-	[Reactive] public bool Enabled { get; set; } = true;
+public sealed partial class TilemapViewerTab : ViewModelBase {
+	[Reactive] public partial string Title { get; set; } = "";
+	[Reactive] public partial int Layer { get; set; } = 0;
+	[Reactive] public partial MemoryType? VramMemoryType { get; set; }
+	[Reactive] public partial bool Enabled { get; set; } = true;
 }
 
-public sealed class TilemapViewerData {
+public sealed partial class TilemapViewerData {
 	public DebugTilemapInfo TilemapInfo;
 	public UInt64 MasterClock;
 	public BaseState? PpuState;

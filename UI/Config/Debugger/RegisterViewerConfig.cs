@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class RegisterViewerConfig : BaseWindowConfig<RegisterViewerConfig> {
-	[Reactive] public RefreshTimingConfig RefreshTiming { get; set; } = new();
-	[Reactive] public List<int> ColumnWidths { get; set; } = new();
+public sealed partial class RegisterViewerConfig : BaseWindowConfig<RegisterViewerConfig> {
+	[Reactive] public partial RefreshTimingConfig RefreshTiming { get; set; } = new();
+	[Reactive] public partial List<int> ColumnWidths { get; set; } = new();
 }

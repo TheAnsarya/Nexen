@@ -14,7 +14,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -36,7 +36,7 @@ namespace Nexen.Debugger.ViewModels;
 /// Implements <see cref="ISelectableModel"/> for row selection support.
 /// </para>
 /// </remarks>
-public sealed class DisassemblyViewModel : DisposableViewModel, ISelectableModel {
+public sealed partial class DisassemblyViewModel : DisposableViewModel, ISelectableModel {
 	/// <summary>Gets the code data provider for fetching disassembly lines.</summary>
 	public ICodeDataProvider DataProvider { get; }
 
@@ -50,31 +50,31 @@ public sealed class DisassemblyViewModel : DisposableViewModel, ISelectableModel
 	public DisassemblyViewStyleProvider StyleProvider { get; }
 
 	/// <summary>Gets or sets the current scroll position (0 to MaxScrollPosition).</summary>
-	[Reactive] public int ScrollPosition { get; set; } = 0;
+	[Reactive] public partial int ScrollPosition { get; set; } = 0;
 
 	/// <summary>Gets or sets the maximum scroll position.</summary>
-	[Reactive] public int MaxScrollPosition { get; private set; } = 1000000000;
+	[Reactive] public partial int MaxScrollPosition { get; private set; } = 1000000000;
 
 	/// <summary>Gets or sets the address at the top of the visible area.</summary>
-	[Reactive] public int TopAddress { get; private set; } = 0;
+	[Reactive] public partial int TopAddress { get; private set; } = 0;
 
 	/// <summary>Gets or sets the currently visible disassembly lines.</summary>
-	[Reactive] public CodeLineData[] Lines { get; private set; } = [];
+	[Reactive] public partial CodeLineData[] Lines { get; private set; } = [];
 
 	/// <summary>Gets or sets the active address (program counter), or null if not paused.</summary>
-	[Reactive] public int? ActiveAddress { get; set; }
+	[Reactive] public partial int? ActiveAddress { get; set; }
 
 	/// <summary>Gets or sets the address of the currently selected row.</summary>
-	[Reactive] public int SelectedRowAddress { get; set; }
+	[Reactive] public partial int SelectedRowAddress { get; set; }
 
 	/// <summary>Gets or sets the anchor point for range selection.</summary>
-	[Reactive] public int SelectionAnchor { get; set; }
+	[Reactive] public partial int SelectionAnchor { get; set; }
 
 	/// <summary>Gets or sets the start address of the current selection range.</summary>
-	[Reactive] public int SelectionStart { get; set; }
+	[Reactive] public partial int SelectionStart { get; set; }
 
 	/// <summary>Gets or sets the end address of the current selection range.</summary>
-	[Reactive] public int SelectionEnd { get; set; }
+	[Reactive] public partial int SelectionEnd { get; set; }
 
 	/// <summary>Gets the quick search ViewModel for find functionality.</summary>
 	public QuickSearchViewModel QuickSearch { get; } = new QuickSearchViewModel();

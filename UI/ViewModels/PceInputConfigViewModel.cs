@@ -3,12 +3,12 @@ using System.Reactive.Linq;
 using Avalonia.Threading;
 using Nexen.Config;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class PceInputConfigViewModel : DisposableViewModel {
-	[Reactive] public PcEngineConfig Config { get; set; }
-	[Reactive] public bool HasTurboTap { get; private set; }
+public sealed partial class PceInputConfigViewModel : DisposableViewModel {
+	[Reactive] public partial PcEngineConfig Config { get; set; }
+	[Reactive] public partial bool HasTurboTap { get; private set; }
 
 	public Enum[] AvailableControllerTypesP1 => new Enum[] {
 		ControllerType.None,

@@ -15,7 +15,7 @@ using Nexen.Debugger.Utilities;
 using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 using Nexen.Utilities;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.Windows; 
 public partial class GoToAllWindow : NexenWindow {

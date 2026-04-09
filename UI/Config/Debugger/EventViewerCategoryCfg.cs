@@ -2,12 +2,12 @@ using System;
 using Avalonia.Media;
 using Nexen.Interop;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class EventViewerCategoryCfg : ViewModelBase {
-	[Reactive] public bool Visible { get; set; } = true;
-	[Reactive] public UInt32 Color { get; set; }
+public sealed partial class EventViewerCategoryCfg : ViewModelBase {
+	[Reactive] public partial bool Visible { get; set; } = true;
+	[Reactive] public partial UInt32 Color { get; set; }
 
 	public EventViewerCategoryCfg() { }
 

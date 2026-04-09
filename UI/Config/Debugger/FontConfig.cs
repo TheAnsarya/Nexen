@@ -2,10 +2,10 @@ using System;
 using Avalonia.Media;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class FontConfig : BaseConfig<FontConfig> {
-	[Reactive] public string FontFamily { get; set; } = "";
-	[Reactive] public double FontSize { get; set; } = 12;
+public sealed partial class FontConfig : BaseConfig<FontConfig> {
+	[Reactive] public partial string FontFamily { get; set; } = "";
+	[Reactive] public partial double FontSize { get; set; } = 12;
 }

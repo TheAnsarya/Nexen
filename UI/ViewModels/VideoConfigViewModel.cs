@@ -6,24 +6,24 @@ using Avalonia.Controls;
 using Nexen.Config;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the video configuration tab.
 /// </summary>
-public sealed class VideoConfigViewModel : DisposableViewModel {
+public sealed partial class VideoConfigViewModel : DisposableViewModel {
 	/// <summary>Gets whether to show custom aspect ratio options.</summary>
-	[ObservableAsProperty] public bool ShowCustomRatio { get; }
+	[ObservableAsProperty] private bool _showCustomRatio;
 
 	/// <summary>Gets whether to show NTSC Blargg filter settings.</summary>
-	[ObservableAsProperty] public bool ShowNtscBlarggSettings { get; }
+	[ObservableAsProperty] private bool _showNtscBlarggSettings;
 
 	/// <summary>Gets whether to show NTSC Bisqwit filter settings.</summary>
-	[ObservableAsProperty] public bool ShowNtscBisqwitSettings { get; }
+	[ObservableAsProperty] private bool _showNtscBisqwitSettings;
 
 	/// <summary>Gets whether to show LCD grid filter settings.</summary>
-	[ObservableAsProperty] public bool ShowLcdGridSettings { get; }
+	[ObservableAsProperty] private bool _showLcdGridSettings;
 
 	/// <summary>Gets whether the current platform is Windows.</summary>
 	public bool IsWindows { get; }
@@ -47,10 +47,10 @@ public sealed class VideoConfigViewModel : DisposableViewModel {
 	public ReactiveCommand<Unit, Unit> ResetPictureSettingsCommand { get; }
 
 	/// <summary>Gets or sets the current video configuration.</summary>
-	[Reactive] public VideoConfig Config { get; set; }
+	[Reactive] public partial VideoConfig Config { get; set; }
 
 	/// <summary>Gets or sets the original video configuration for revert.</summary>
-	[Reactive] public VideoConfig OriginalConfig { get; set; }
+	[Reactive] public partial VideoConfig OriginalConfig { get; set; }
 
 	/// <summary>Gets the available refresh rates for selection.</summary>
 	public UInt32[] AvailableRefreshRates { get; } = new UInt32[] { 50, 60, 75, 100, 120, 144, 200, 240, 360 };
@@ -68,10 +68,10 @@ public sealed class VideoConfigViewModel : DisposableViewModel {
 		PresetMonochromeCommand = ReactiveCommand.Create(() => SetNtscPreset(0, -100, 0, 0, 20, 0, 70, -20, -20, -10, 15, false));
 		ResetPictureSettingsCommand = ReactiveCommand.Create(() => ResetPictureSettings());
 
-		AddDisposable(this.WhenAnyValue(_ => _.Config.AspectRatio).Select(_ => _ == VideoAspectRatio.Custom).ToPropertyEx(this, _ => _.ShowCustomRatio));
-		AddDisposable(this.WhenAnyValue(_ => _.Config.VideoFilter).Select(_ => _ == VideoFilterType.NtscBlargg).ToPropertyEx(this, _ => _.ShowNtscBlarggSettings));
-		AddDisposable(this.WhenAnyValue(_ => _.Config.VideoFilter).Select(_ => _ == VideoFilterType.NtscBisqwit).ToPropertyEx(this, _ => _.ShowNtscBisqwitSettings));
-		AddDisposable(this.WhenAnyValue(_ => _.Config.VideoFilter).Select(_ => _ == VideoFilterType.LcdGrid).ToPropertyEx(this, _ => _.ShowLcdGridSettings));
+		AddDisposable(_showCustomRatioHelper = this.WhenAnyValue(_ => _.Config.AspectRatio).Select(_ => _ == VideoAspectRatio.Custom).ToProperty(this, _ => _.ShowCustomRatio));
+		AddDisposable(_showNtscBlarggSettingsHelper = this.WhenAnyValue(_ => _.Config.VideoFilter).Select(_ => _ == VideoFilterType.NtscBlargg).ToProperty(this, _ => _.ShowNtscBlarggSettings));
+		AddDisposable(_showNtscBisqwitSettingsHelper = this.WhenAnyValue(_ => _.Config.VideoFilter).Select(_ => _ == VideoFilterType.NtscBisqwit).ToProperty(this, _ => _.ShowNtscBisqwitSettings));
+		AddDisposable(_showLcdGridSettingsHelper = this.WhenAnyValue(_ => _.Config.VideoFilter).Select(_ => _ == VideoFilterType.LcdGrid).ToProperty(this, _ => _.ShowLcdGridSettings));
 		AddDisposable(this.WhenAnyValue(_ => _.Config.UseSoftwareRenderer).Subscribe(softwareRenderer => {
 			if (softwareRenderer) {
 				//Not supported

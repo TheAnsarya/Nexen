@@ -19,7 +19,7 @@ using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -42,41 +42,41 @@ namespace Nexen.Debugger.ViewModels;
 /// </list>
 /// </para>
 /// </remarks>
-public sealed class EventViewerViewModel : DisposableViewModel {
+public sealed partial class EventViewerViewModel : DisposableViewModel {
 	/// <summary>
 	/// Flag value OR'd with DMA channel number to indicate HDMA (horizontal DMA) on SNES.
 	/// </summary>
 	public const int HdmaChannelFlag = 0x40;
 
 	/// <summary>Gets or sets the CPU type being debugged.</summary>
-	[Reactive] public CpuType CpuType { get; set; }
+	[Reactive] public partial CpuType CpuType { get; set; }
 
 	/// <summary>Gets or sets the bitmap displaying the event viewer visualization.</summary>
-	[Reactive] public DynamicBitmap ViewerBitmap { get; private set; }
+	[Reactive] public partial DynamicBitmap ViewerBitmap { get; private set; }
 
 	/// <summary>Gets or sets the console-specific configuration for the event viewer.</summary>
-	[Reactive] public ViewModelBase ConsoleConfig { get; set; }
+	[Reactive] public partial ViewModelBase ConsoleConfig { get; set; }
 
 	/// <summary>Gets or sets the grid highlight position for row/column indication.</summary>
-	[Reactive] public GridRowColumn? GridHighlightPoint { get; set; }
+	[Reactive] public partial GridRowColumn? GridHighlightPoint { get; set; }
 
 	/// <summary>Gets or sets whether the list view is visible.</summary>
-	[Reactive] public bool ShowListView { get; set; }
+	[Reactive] public partial bool ShowListView { get; set; }
 
 	/// <summary>Gets or sets the minimum height of the list view panel.</summary>
-	[Reactive] public double MinListViewHeight { get; set; }
+	[Reactive] public partial double MinListViewHeight { get; set; }
 
 	/// <summary>Gets or sets the current height of the list view panel.</summary>
-	[Reactive] public double ListViewHeight { get; set; }
+	[Reactive] public partial double ListViewHeight { get; set; }
 
 	/// <summary>Tracks the last time the list view was refreshed to throttle updates.</summary>
 	private DateTime _lastListRefresh = DateTime.MinValue;
 
 	/// <summary>Gets or sets the currently selected debug event.</summary>
-	[Reactive] public DebugEventInfo? SelectedEvent { get; set; }
+	[Reactive] public partial DebugEventInfo? SelectedEvent { get; set; }
 
 	/// <summary>Gets or sets the selection rectangle for highlighting the selected event.</summary>
-	[Reactive] public Rect SelectionRect { get; set; }
+	[Reactive] public partial Rect SelectionRect { get; set; }
 
 	/// <summary>Gets the list view ViewModel for tabular event display.</summary>
 	public EventViewerListViewModel ListView { get; }
@@ -85,16 +85,16 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 	public EventViewerConfig Config { get; }
 
 	/// <summary>Gets or sets the File menu items.</summary>
-	[Reactive] public List<object> FileMenuItems { get; private set; } = new();
+	[Reactive] public partial List<object> FileMenuItems { get; private set; } = new();
 
 	/// <summary>Gets or sets the Debug menu items (step actions).</summary>
-	[Reactive] public List<ContextMenuAction> DebugMenuItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> DebugMenuItems { get; private set; } = new();
 
 	/// <summary>Gets or sets the View menu items.</summary>
-	[Reactive] public List<object> ViewMenuItems { get; private set; } = new();
+	[Reactive] public partial List<object> ViewMenuItems { get; private set; } = new();
 
 	/// <summary>Gets or sets the toolbar items.</summary>
-	[Reactive] public List<ContextMenuAction> ToolbarItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> ToolbarItems { get; private set; } = new();
 
 	/// <summary>The picture viewer control for zoom functionality.</summary>
 	private PictureViewer _picViewer;
@@ -683,7 +683,7 @@ public sealed class EventViewerViewModel : DisposableViewModel {
 /// triggers <see cref="UpdateFields"/> to format all display strings.
 /// </para>
 /// </remarks>
-public sealed class DebugEventViewModel : INotifyPropertyChanged {
+public sealed partial class DebugEventViewModel : INotifyPropertyChanged {
 	/// <summary>The array of events this ViewModel draws from.</summary>
 	private DebugEventInfo[] _events = [];
 

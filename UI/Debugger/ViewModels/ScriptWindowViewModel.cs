@@ -18,7 +18,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using Nexen.Windows;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 
@@ -26,7 +26,7 @@ namespace Nexen.Debugger.ViewModels;
 /// ViewModel for the Lua script editor window.
 /// Provides functionality for editing, running, and managing Lua scripts for emulator automation.
 /// </summary>
-public sealed class ScriptWindowViewModel : ViewModelBase {
+public sealed partial class ScriptWindowViewModel : ViewModelBase {
 	/// <summary>
 	/// Gets the configuration settings for the script window.
 	/// </summary>
@@ -35,32 +35,32 @@ public sealed class ScriptWindowViewModel : ViewModelBase {
 	/// <summary>
 	/// Gets or sets the Lua script source code.
 	/// </summary>
-	[Reactive] public string Code { get; set; } = "";
+	[Reactive] public partial string Code { get; set; } = "";
 
 	/// <summary>
 	/// Gets or sets the file path of the currently loaded script, or empty for unsaved scripts.
 	/// </summary>
-	[Reactive] public string FilePath { get; set; } = "";
+	[Reactive] public partial string FilePath { get; set; } = "";
 
 	/// <summary>
 	/// Gets or sets the ID of the currently running script, or -1 if no script is running.
 	/// </summary>
-	[Reactive] public int ScriptId { get; set; } = -1;
+	[Reactive] public partial int ScriptId { get; set; } = -1;
 
 	/// <summary>
 	/// Gets or sets the script execution log output.
 	/// </summary>
-	[Reactive] public string Log { get; set; } = "";
+	[Reactive] public partial string Log { get; set; } = "";
 
 	/// <summary>
 	/// Gets or sets the display name for the script.
 	/// </summary>
-	[Reactive] public string ScriptName { get; set; } = "";
+	[Reactive] public partial string ScriptName { get; set; } = "";
 
 	/// <summary>
 	/// Gets the window title including the script name.
 	/// </summary>
-	[ObservableAsProperty] public string WindowTitle { get; } = "";
+	[ObservableAsProperty] private string _windowTitle = "";
 
 	/// <summary>Original script text for detecting unsaved changes.</summary>
 	private string _originalText = "";
@@ -77,22 +77,22 @@ public sealed class ScriptWindowViewModel : ViewModelBase {
 	/// <summary>
 	/// Gets or sets the menu actions for the File menu.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> FileMenuActions { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> FileMenuActions { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the menu actions for the Script menu.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> ScriptMenuActions { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> ScriptMenuActions { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the menu actions for the Help menu.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> HelpMenuActions { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> HelpMenuActions { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the toolbar button actions.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> ToolbarActions { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> ToolbarActions { get; private set; } = new();
 
 	/// <summary>
 	/// Designer-only constructor. Do not use in production code.
@@ -105,14 +105,14 @@ public sealed class ScriptWindowViewModel : ViewModelBase {
 	/// </summary>
 	/// <param name="behavior">The startup behavior, or null to use config default.</param>
 	public ScriptWindowViewModel(ScriptStartupBehavior? behavior) {
-		this.WhenAnyValue(x => x.ScriptName).Select(x => {
+		_windowTitleHelper = this.WhenAnyValue(x => x.ScriptName).Select(x => {
 			string wndTitle = ResourceHelper.GetViewLabel(nameof(ScriptWindow), "wndTitle");
 			if (!string.IsNullOrWhiteSpace(x)) {
 				return wndTitle + " - " + x;
 			}
 
 			return wndTitle;
-		}).ToPropertyEx(this, x => x.WindowTitle);
+		}).ToProperty(this, _ => _.WindowTitle);
 
 		switch (behavior ?? Config.ScriptStartupBehavior) {
 			case ScriptStartupBehavior.ShowBlankWindow: break;

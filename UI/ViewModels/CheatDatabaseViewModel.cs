@@ -13,15 +13,15 @@ using Nexen.Config;
 using Nexen.Interop;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class CheatDatabaseViewModel : DisposableViewModel {
+public sealed partial class CheatDatabaseViewModel : DisposableViewModel {
 	private List<CheatDbGameEntry> _entries;
 
-	[Reactive] public IEnumerable<CheatDbGameEntry> FilteredEntries { get; set; }
-	[Reactive] public SelectionModel<CheatDbGameEntry?> SelectionModel { get; set; } = new();
-	[Reactive] public string SearchString { get; set; } = "";
+	[Reactive] public partial IEnumerable<CheatDbGameEntry> FilteredEntries { get; set; }
+	[Reactive] public partial SelectionModel<CheatDbGameEntry?> SelectionModel { get; set; } = new();
+	[Reactive] public partial string SearchString { get; set; } = "";
 
 	[Obsolete("For designer only")]
 	public CheatDatabaseViewModel() : this(ConsoleType.Snes) { }

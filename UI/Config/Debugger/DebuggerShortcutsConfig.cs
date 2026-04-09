@@ -4,10 +4,10 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Avalonia.Input;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class DebuggerShortcutsConfig : BaseConfig<DebuggerShortcutsConfig>, IJsonOnDeserialized {
+public sealed partial class DebuggerShortcutsConfig : BaseConfig<DebuggerShortcutsConfig>, IJsonOnDeserialized {
 	private Dictionary<DebuggerShortcut, DebuggerShortcutInfo> _lookup = new();
 
 	public DebuggerShortcutsConfig() {
@@ -469,12 +469,12 @@ public enum DebuggerShortcut {
 	SyncPansyFolder,
 }
 
-public sealed class DebuggerShortcutInfo : ViewModelBase {
-	[Reactive] public DebuggerShortcut Shortcut { get; set; }
-	[Reactive] public DbgShortKeys KeyBinding { get; set; } = new();
+public sealed partial class DebuggerShortcutInfo : ViewModelBase {
+	[Reactive] public partial DebuggerShortcut Shortcut { get; set; }
+	[Reactive] public partial DbgShortKeys KeyBinding { get; set; } = new();
 }
 
-public sealed class DbgShortKeys {
+public sealed partial class DbgShortKeys {
 	private static Regex _numberKeyRegex = new Regex("D[0-9]", RegexOptions.Compiled);
 
 	public KeyModifiers Modifiers { get; set; }

@@ -6,10 +6,10 @@ using System.Text.Json;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class CheatCodes {
+public sealed partial class CheatCodes {
 	private static string FilePath { get { return Path.Combine(ConfigManager.CheatFolder, EmuApi.GetRomInfo().GetRomName() + ".json"); } }
 
 	public List<CheatCode> Cheats { get; set; } = [];
@@ -63,11 +63,11 @@ public sealed class CheatCodes {
 	}
 }
 
-public sealed class CheatCode : ViewModelBase {
-	[Reactive] public string Description { get; set; } = "";
-	[Reactive] public CheatType Type { get; set; }
-	[Reactive] public bool Enabled { get; set; } = true;
-	[Reactive] public string Codes { get; set; } = "";
+public sealed partial class CheatCode : ViewModelBase {
+	[Reactive] public partial string Description { get; set; } = "";
+	[Reactive] public partial CheatType Type { get; set; }
+	[Reactive] public partial bool Enabled { get; set; } = true;
+	[Reactive] public partial string Codes { get; set; } = "";
 
 	public List<InteropCheatCode> ToInteropCheats() {
 		List<InteropCheatCode> encodedCheats = [];

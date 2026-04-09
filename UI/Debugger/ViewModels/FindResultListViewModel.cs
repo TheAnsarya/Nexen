@@ -20,7 +20,7 @@ using Nexen.Debugger.Windows;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 
@@ -37,15 +37,15 @@ namespace Nexen.Debugger.ViewModels;
 /// for adding watches and toggling breakpoints.
 /// </para>
 /// </remarks>
-public sealed class FindResultListViewModel : DisposableViewModel {
+public sealed partial class FindResultListViewModel : DisposableViewModel {
 	/// <summary>Gets or sets the list of find results.</summary>
-	[Reactive] public NexenList<FindResultViewModel> FindResults { get; private set; } = new();
+	[Reactive] public partial NexenList<FindResultViewModel> FindResults { get; private set; } = new();
 
 	/// <summary>Gets or sets the selection model for multi-select support.</summary>
-	[Reactive] public SelectionModel<FindResultViewModel?> Selection { get; set; } = new() { SingleSelect = false };
+	[Reactive] public partial SelectionModel<FindResultViewModel?> Selection { get; set; } = new() { SingleSelect = false };
 
 	/// <summary>Gets or sets the current sort state for the results list.</summary>
-	[Reactive] public SortState SortState { get; set; } = new();
+	[Reactive] public partial SortState SortState { get; set; } = new();
 
 	/// <summary>Gets the column widths from configuration.</summary>
 	public List<int> ColumnWidths { get; } = ConfigManager.Config.Debug.Debugger.FindResultColumnWidths;
@@ -177,7 +177,7 @@ public sealed class FindResultListViewModel : DisposableViewModel {
 /// <summary>
 /// Represents a single search result with location and display information.
 /// </summary>
-public sealed class FindResultViewModel {
+public sealed partial class FindResultViewModel {
 	/// <summary>Gets the location information for navigation.</summary>
 	public LocationInfo Location { get; }
 

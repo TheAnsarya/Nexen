@@ -5,11 +5,11 @@ using Microsoft.VisualBasic;
 using Nexen.Config;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class GameConfigViewModel : DisposableViewModel {
-	[Reactive] public GameConfig Config { get; set; }
+public sealed partial class GameConfigViewModel : DisposableViewModel {
+	[Reactive] public partial GameConfig Config { get; set; }
 	public GameDipSwitches DipSwitches { get; }
 
 	public GameConfigViewModel() {

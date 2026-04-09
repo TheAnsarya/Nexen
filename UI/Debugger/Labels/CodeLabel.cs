@@ -5,7 +5,7 @@ using System.Text;
 using Nexen.Interop;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.Labels;
 /// <summary>
@@ -26,7 +26,7 @@ namespace Nexen.Debugger.Labels;
 /// Example: "NesPrgRom:8000-80FF:ResetVector:Entry point after reset"
 /// </para>
 /// </remarks>
-public sealed class CodeLabel {
+public sealed partial class CodeLabel {
 	/// <summary>
 	/// Gets or sets the absolute address within the memory type.
 	/// </summary>

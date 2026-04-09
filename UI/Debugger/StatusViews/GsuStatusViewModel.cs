@@ -3,59 +3,59 @@ using System.Text;
 using Avalonia.Collections;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.StatusViews; 
-public sealed class GsuStatusViewModel : BaseConsoleStatusViewModel {
-	[Reactive] public UInt16 Reg0 { get; set; }
-	[Reactive] public UInt16 Reg1 { get; set; }
-	[Reactive] public UInt16 Reg2 { get; set; }
-	[Reactive] public UInt16 Reg3 { get; set; }
-	[Reactive] public UInt16 Reg4 { get; set; }
-	[Reactive] public UInt16 Reg5 { get; set; }
-	[Reactive] public UInt16 Reg6 { get; set; }
-	[Reactive] public UInt16 Reg7 { get; set; }
-	[Reactive] public UInt16 Reg8 { get; set; }
-	[Reactive] public UInt16 Reg9 { get; set; }
-	[Reactive] public UInt16 Reg10 { get; set; }
-	[Reactive] public UInt16 Reg11 { get; set; }
-	[Reactive] public UInt16 Reg12 { get; set; }
-	[Reactive] public UInt16 Reg13 { get; set; }
-	[Reactive] public UInt16 Reg14 { get; set; }
-	[Reactive] public UInt16 Reg15 { get; set; }
+public sealed partial class GsuStatusViewModel : BaseConsoleStatusViewModel {
+	[Reactive] public partial UInt16 Reg0 { get; set; }
+	[Reactive] public partial UInt16 Reg1 { get; set; }
+	[Reactive] public partial UInt16 Reg2 { get; set; }
+	[Reactive] public partial UInt16 Reg3 { get; set; }
+	[Reactive] public partial UInt16 Reg4 { get; set; }
+	[Reactive] public partial UInt16 Reg5 { get; set; }
+	[Reactive] public partial UInt16 Reg6 { get; set; }
+	[Reactive] public partial UInt16 Reg7 { get; set; }
+	[Reactive] public partial UInt16 Reg8 { get; set; }
+	[Reactive] public partial UInt16 Reg9 { get; set; }
+	[Reactive] public partial UInt16 Reg10 { get; set; }
+	[Reactive] public partial UInt16 Reg11 { get; set; }
+	[Reactive] public partial UInt16 Reg12 { get; set; }
+	[Reactive] public partial UInt16 Reg13 { get; set; }
+	[Reactive] public partial UInt16 Reg14 { get; set; }
+	[Reactive] public partial UInt16 Reg15 { get; set; }
 
-	[Reactive] public UInt16 RegSfr { get; set; }
-	[Reactive] public UInt16 RamAddrCache { get; set; }
+	[Reactive] public partial UInt16 RegSfr { get; set; }
+	[Reactive] public partial UInt16 RamAddrCache { get; set; }
 
-	[Reactive] public byte RegSrc { get; set; }
-	[Reactive] public byte RegDst { get; set; }
-	[Reactive] public byte RegColor { get; set; }
-	[Reactive] public byte RegPor { get; set; }
+	[Reactive] public partial byte RegSrc { get; set; }
+	[Reactive] public partial byte RegDst { get; set; }
+	[Reactive] public partial byte RegColor { get; set; }
+	[Reactive] public partial byte RegPor { get; set; }
 
-	[Reactive] public byte RegPbr { get; set; }
-	[Reactive] public byte RomBank { get; set; }
-	[Reactive] public byte RamBank { get; set; }
+	[Reactive] public partial byte RegPbr { get; set; }
+	[Reactive] public partial byte RomBank { get; set; }
+	[Reactive] public partial byte RamBank { get; set; }
 
-	[Reactive] public bool FlagZero { get; set; }
-	[Reactive] public bool FlagCarry { get; set; }
-	[Reactive] public bool FlagSign { get; set; }
-	[Reactive] public bool FlagOverflow { get; set; }
+	[Reactive] public partial bool FlagZero { get; set; }
+	[Reactive] public partial bool FlagCarry { get; set; }
+	[Reactive] public partial bool FlagSign { get; set; }
+	[Reactive] public partial bool FlagOverflow { get; set; }
 
-	[Reactive] public bool FlagAlt1 { get; set; }
-	[Reactive] public bool FlagAlt2 { get; set; }
-	[Reactive] public bool FlagIrq { get; set; }
-	[Reactive] public bool FlagRomReadPending { get; set; }
+	[Reactive] public partial bool FlagAlt1 { get; set; }
+	[Reactive] public partial bool FlagAlt2 { get; set; }
+	[Reactive] public partial bool FlagIrq { get; set; }
+	[Reactive] public partial bool FlagRomReadPending { get; set; }
 
-	[Reactive] public bool FlagRunning { get; set; }
-	[Reactive] public bool FlagImmLow { get; set; }
-	[Reactive] public bool FlagImmHigh { get; set; }
-	[Reactive] public bool FlagPrefix { get; set; }
+	[Reactive] public partial bool FlagRunning { get; set; }
+	[Reactive] public partial bool FlagImmLow { get; set; }
+	[Reactive] public partial bool FlagImmHigh { get; set; }
+	[Reactive] public partial bool FlagPrefix { get; set; }
 
-	[Reactive] public bool FlagPlotTransparent { get; set; }
-	[Reactive] public bool FlagPlotDither { get; set; }
-	[Reactive] public bool FlagColorHighNibble { get; set; }
-	[Reactive] public bool FlagColorFreezeHigh { get; set; }
-	[Reactive] public bool FlagObjMode { get; set; }
+	[Reactive] public partial bool FlagPlotTransparent { get; set; }
+	[Reactive] public partial bool FlagPlotDither { get; set; }
+	[Reactive] public partial bool FlagColorHighNibble { get; set; }
+	[Reactive] public partial bool FlagColorFreezeHigh { get; set; }
+	[Reactive] public partial bool FlagObjMode { get; set; }
 
 	public GsuStatusViewModel() {
 		this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagSign, x => x.FlagOverflow).Subscribe(x => UpdateSfrValue());

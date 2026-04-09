@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Nexen.Interop;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class MemorySearchConfig : BaseWindowConfig<MemorySearchConfig> {
-	[Reactive] public List<int> ColumnWidths { get; set; } = new();
+public sealed partial class MemorySearchConfig : BaseWindowConfig<MemorySearchConfig> {
+	[Reactive] public partial List<int> ColumnWidths { get; set; } = new();
 }

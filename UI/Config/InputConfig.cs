@@ -7,25 +7,25 @@ using System.Threading.Tasks;
 using Nexen.Interop;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
-public sealed class InputConfig : BaseConfig<InputConfig> {
-	[Reactive][MinMax(0, 4)] public UInt32 ControllerDeadzoneSize { get; set; } = 2;
-	[Reactive][MinMax(0, 9)] public UInt32 MouseSensitivity { get; set; } = 5;
-	[Reactive] public bool HidePointerForLightGuns { get; set; } = false;
-	[Reactive][MinMax(0, 10)] public UInt32 ForceFeedbackIntensity { get; set; } = 5;
+public sealed partial class InputConfig : BaseConfig<InputConfig> {
+	[Reactive][MinMax(0, 4)] public partial UInt32 ControllerDeadzoneSize { get; set; } = 2;
+	[Reactive][MinMax(0, 9)] public partial UInt32 MouseSensitivity { get; set; } = 5;
+	[Reactive] public partial bool HidePointerForLightGuns { get; set; } = false;
+	[Reactive][MinMax(0, 10)] public partial UInt32 ForceFeedbackIntensity { get; set; } = 5;
 
-	[Reactive] public InputDisplayPosition DisplayInputPosition { get; set; } = InputDisplayPosition.BottomRight;
-	[Reactive] public bool DisplayInputPort1 { get; set; } = false;
-	[Reactive] public bool DisplayInputPort2 { get; set; } = false;
-	[Reactive] public bool DisplayInputPort3 { get; set; } = false;
-	[Reactive] public bool DisplayInputPort4 { get; set; } = false;
-	[Reactive] public bool DisplayInputPort5 { get; set; } = false;
-	[Reactive] public bool DisplayInputPort6 { get; set; } = false;
-	[Reactive] public bool DisplayInputPort7 { get; set; } = false;
-	[Reactive] public bool DisplayInputPort8 { get; set; } = false;
-	[Reactive] public bool DisplayInputHorizontally { get; set; } = true;
+	[Reactive] public partial InputDisplayPosition DisplayInputPosition { get; set; } = InputDisplayPosition.BottomRight;
+	[Reactive] public partial bool DisplayInputPort1 { get; set; } = false;
+	[Reactive] public partial bool DisplayInputPort2 { get; set; } = false;
+	[Reactive] public partial bool DisplayInputPort3 { get; set; } = false;
+	[Reactive] public partial bool DisplayInputPort4 { get; set; } = false;
+	[Reactive] public partial bool DisplayInputPort5 { get; set; } = false;
+	[Reactive] public partial bool DisplayInputPort6 { get; set; } = false;
+	[Reactive] public partial bool DisplayInputPort7 { get; set; } = false;
+	[Reactive] public partial bool DisplayInputPort8 { get; set; } = false;
+	[Reactive] public partial bool DisplayInputHorizontally { get; set; } = true;
 
 	public InputConfig() {
 	}
@@ -49,32 +49,32 @@ public sealed class InputConfig : BaseConfig<InputConfig> {
 	}
 }
 
-public class KeyMapping : ReactiveObject {
-	[Reactive] public UInt16 A { get; set; }
-	[Reactive] public UInt16 B { get; set; }
-	[Reactive] public UInt16 X { get; set; }
-	[Reactive] public UInt16 Y { get; set; }
-	[Reactive] public UInt16 L { get; set; }
-	[Reactive] public UInt16 R { get; set; }
-	[Reactive] public UInt16 Up { get; set; }
-	[Reactive] public UInt16 Down { get; set; }
-	[Reactive] public UInt16 Left { get; set; }
-	[Reactive] public UInt16 Right { get; set; }
-	[Reactive] public UInt16 Start { get; set; }
-	[Reactive] public UInt16 Select { get; set; }
-	[Reactive] public UInt16 U { get; set; }
-	[Reactive] public UInt16 D { get; set; }
+public partial class KeyMapping : ReactiveObject {
+	[Reactive] public partial UInt16 A { get; set; }
+	[Reactive] public partial UInt16 B { get; set; }
+	[Reactive] public partial UInt16 X { get; set; }
+	[Reactive] public partial UInt16 Y { get; set; }
+	[Reactive] public partial UInt16 L { get; set; }
+	[Reactive] public partial UInt16 R { get; set; }
+	[Reactive] public partial UInt16 Up { get; set; }
+	[Reactive] public partial UInt16 Down { get; set; }
+	[Reactive] public partial UInt16 Left { get; set; }
+	[Reactive] public partial UInt16 Right { get; set; }
+	[Reactive] public partial UInt16 Start { get; set; }
+	[Reactive] public partial UInt16 Select { get; set; }
+	[Reactive] public partial UInt16 U { get; set; }
+	[Reactive] public partial UInt16 D { get; set; }
 
-	[Reactive] public UInt16 TurboA { get; set; }
-	[Reactive] public UInt16 TurboB { get; set; }
-	[Reactive] public UInt16 TurboX { get; set; }
-	[Reactive] public UInt16 TurboY { get; set; }
-	[Reactive] public UInt16 TurboL { get; set; }
-	[Reactive] public UInt16 TurboR { get; set; }
-	[Reactive] public UInt16 TurboSelect { get; set; }
-	[Reactive] public UInt16 TurboStart { get; set; }
+	[Reactive] public partial UInt16 TurboA { get; set; }
+	[Reactive] public partial UInt16 TurboB { get; set; }
+	[Reactive] public partial UInt16 TurboX { get; set; }
+	[Reactive] public partial UInt16 TurboY { get; set; }
+	[Reactive] public partial UInt16 TurboL { get; set; }
+	[Reactive] public partial UInt16 TurboR { get; set; }
+	[Reactive] public partial UInt16 TurboSelect { get; set; }
+	[Reactive] public partial UInt16 TurboStart { get; set; }
 
-	[Reactive] public UInt16 GenericKey1 { get; set; }
+	[Reactive] public partial UInt16 GenericKey1 { get; set; }
 
 	public virtual InteropKeyMapping ToInterop(ControllerType type, int mappingIndex) {
 		InteropKeyMapping mappings = new InteropKeyMapping() {
@@ -187,7 +187,7 @@ public enum KeyPresetType {
 	ArrowKeys
 }
 
-public class ControllerConfig : BaseConfig<ControllerConfig> {
+public partial class ControllerConfig : BaseConfig<ControllerConfig> {
 	protected KeyMapping _mapping1 = new();
 	protected KeyMapping _mapping2 = new();
 	protected KeyMapping _mapping3 = new();
@@ -197,8 +197,8 @@ public class ControllerConfig : BaseConfig<ControllerConfig> {
 	public KeyMapping Mapping2 { get => _mapping2; set => _mapping2 = value; }
 	public KeyMapping Mapping3 { get => _mapping3; set => _mapping3 = value; }
 	public KeyMapping Mapping4 { get => _mapping4; set => _mapping4 = value; }
-	[Reactive] public UInt32 TurboSpeed { get; set; } = 0;
-	[Reactive] public ControllerType Type { get; set; } = ControllerType.None;
+	[Reactive] public partial UInt32 TurboSpeed { get; set; } = 0;
+	[Reactive] public partial ControllerType Type { get; set; } = ControllerType.None;
 
 	public void InitDefaults(DefaultKeyMappingType defaultMappings, ControllerType type) {
 		InitDefaults<KeyMapping>(defaultMappings, type);
@@ -411,7 +411,7 @@ public enum ControllerType {
 	ChannelFConsolePanel,
 }
 
-public static class ControllerTypeExtensions {
+public static partial class ControllerTypeExtensions {
 	public static bool HasPresets(this ControllerType type) {
 		switch (type) {
 			case ControllerType.SnesController:

@@ -6,18 +6,18 @@ using Avalonia.Styling;
 using Nexen.Config;
 using Nexen.Config.Shortcuts;
 using Nexen.Utilities;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the preferences configuration tab.
 /// </summary>
-public sealed class PreferencesConfigViewModel : DisposableViewModel {
+public sealed partial class PreferencesConfigViewModel : DisposableViewModel {
 	/// <summary>Gets or sets the current preferences configuration.</summary>
-	[Reactive] public PreferencesConfig Config { get; set; }
+	[Reactive] public partial PreferencesConfig Config { get; set; }
 
 	/// <summary>Gets or sets the original preferences configuration for revert.</summary>
-	[Reactive] public PreferencesConfig OriginalConfig { get; set; }
+	[Reactive] public partial PreferencesConfig OriginalConfig { get; set; }
 
 	/// <summary>Gets the data storage location path.</summary>
 	public string DataStorageLocation { get; }

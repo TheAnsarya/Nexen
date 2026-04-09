@@ -13,14 +13,14 @@ using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for the memory tools display options panel.
 /// Controls display preferences for the hex editor including column widths and platform-specific visualization options.
 /// </summary>
-public sealed class MemoryToolsDisplayOptionsViewModel : DisposableViewModel {
+public sealed partial class MemoryToolsDisplayOptionsViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets the hex editor configuration containing display settings.
 	/// </summary>
@@ -40,19 +40,19 @@ public sealed class MemoryToolsDisplayOptionsViewModel : DisposableViewModel {
 	/// Gets or sets whether the "Show Frozen Addresses" option should be visible.
 	/// Only applicable for memory types that support address freezing.
 	/// </summary>
-	[Reactive] public bool ShowFrozenAddressesOption { get; set; }
+	[Reactive] public partial bool ShowFrozenAddressesOption { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether the "Show NES PCM Data" visualization option should be visible.
 	/// Only applicable when viewing NES memory types.
 	/// </summary>
-	[Reactive] public bool ShowNesPcmDataOption { get; set; }
+	[Reactive] public partial bool ShowNesPcmDataOption { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether the "Show NES Drawn CHR ROM" option should be visible.
 	/// Only applicable for NES games with CHR ROM (not CHR RAM).
 	/// </summary>
-	[Reactive] public bool ShowNesDrawnChrRomOption { get; set; }
+	[Reactive] public partial bool ShowNesDrawnChrRomOption { get; set; }
 
 	/// <summary>
 	/// Designer-only constructor. Do not use in production code.

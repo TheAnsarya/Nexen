@@ -1,6 +1,6 @@
-﻿using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using Nexen.ViewModels;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
-public sealed class ChannelFDebuggerConfig : ViewModelBase {
+public sealed partial class ChannelFDebuggerConfig : ViewModelBase {
 }

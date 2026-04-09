@@ -2,36 +2,36 @@ using System;
 using System.Text;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.StatusViews; 
-public sealed class GbStatusViewModel : BaseConsoleStatusViewModel {
-	[Reactive] public byte RegA { get; set; }
-	[Reactive] public byte RegB { get; set; }
-	[Reactive] public byte RegC { get; set; }
-	[Reactive] public byte RegD { get; set; }
-	[Reactive] public byte RegE { get; set; }
-	[Reactive] public byte RegFlags { get; set; }
+public sealed partial class GbStatusViewModel : BaseConsoleStatusViewModel {
+	[Reactive] public partial byte RegA { get; set; }
+	[Reactive] public partial byte RegB { get; set; }
+	[Reactive] public partial byte RegC { get; set; }
+	[Reactive] public partial byte RegD { get; set; }
+	[Reactive] public partial byte RegE { get; set; }
+	[Reactive] public partial byte RegFlags { get; set; }
 
-	[Reactive] public byte RegH { get; set; }
-	[Reactive] public byte RegL { get; set; }
+	[Reactive] public partial byte RegH { get; set; }
+	[Reactive] public partial byte RegL { get; set; }
 
-	[Reactive] public UInt16 RegSP { get; set; }
-	[Reactive] public UInt16 RegPC { get; set; }
+	[Reactive] public partial UInt16 RegSP { get; set; }
+	[Reactive] public partial UInt16 RegPC { get; set; }
 
-	[Reactive] public UInt16 Scanline { get; set; }
-	[Reactive] public UInt16 Cycle { get; set; }
+	[Reactive] public partial UInt16 Scanline { get; set; }
+	[Reactive] public partial UInt16 Cycle { get; set; }
 
-	[Reactive] public bool FlagCarry { get; set; }
-	[Reactive] public bool FlagHalf { get; set; }
-	[Reactive] public bool FlagAddSub { get; set; }
-	[Reactive] public bool FlagZero { get; set; }
+	[Reactive] public partial bool FlagCarry { get; set; }
+	[Reactive] public partial bool FlagHalf { get; set; }
+	[Reactive] public partial bool FlagAddSub { get; set; }
+	[Reactive] public partial bool FlagZero { get; set; }
 
-	[Reactive] public bool FlagHalted { get; set; }
-	[Reactive] public bool FlagEiPending { get; set; }
-	[Reactive] public bool FlagIme { get; set; }
+	[Reactive] public partial bool FlagHalted { get; set; }
+	[Reactive] public partial bool FlagEiPending { get; set; }
+	[Reactive] public partial bool FlagIme { get; set; }
 
-	[Reactive] public string StackPreview { get; private set; } = "";
+	[Reactive] public partial string StackPreview { get; private set; } = "";
 
 	public GbStatusViewModel() {
 		this.WhenAnyValue(x => x.FlagCarry, x => x.FlagHalf, x => x.FlagAddSub, x => x.FlagZero).Subscribe(x => UpdateFlagsValue());

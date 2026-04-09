@@ -5,7 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Nexen.Controls;
 using Nexen.Utilities;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.Windows; 
 public partial class FindAllOccurrencesWindow : NexenWindow {

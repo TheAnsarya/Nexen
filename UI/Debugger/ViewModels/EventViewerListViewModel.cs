@@ -12,7 +12,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels; 
 /// <summary>
@@ -28,7 +28,7 @@ namespace Nexen.Debugger.ViewModels;
 /// graphical event viewer display.
 /// </para>
 /// </remarks>
-public sealed class EventViewerListViewModel : DisposableViewModel {
+public sealed partial class EventViewerListViewModel : DisposableViewModel {
 	/// <summary>Gets the raw debug event data from the emulator.</summary>
 	public DebugEventInfo[] RawDebugEvents { get; private set; } = [];
 
@@ -42,7 +42,7 @@ public sealed class EventViewerListViewModel : DisposableViewModel {
 	public EventViewerViewModel EventViewer { get; }
 
 	/// <summary>Gets or sets the current sort state.</summary>
-	[Reactive] public SortState SortState { get; set; } = new();
+	[Reactive] public partial SortState SortState { get; set; } = new();
 
 	/// <summary>Gets the column widths from configuration.</summary>
 	public List<int> ColumnWidths { get; } = ConfigManager.Config.Debug.EventViewer.ColumnWidths;

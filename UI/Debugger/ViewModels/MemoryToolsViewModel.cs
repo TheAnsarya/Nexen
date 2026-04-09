@@ -15,29 +15,29 @@ using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels; 
-public sealed class MemoryToolsViewModel : DisposableViewModel {
-	[Reactive] public HexEditorConfig Config { get; set; }
-	[Reactive] public int ScrollPosition { get; set; }
-	[Reactive] public HexEditorDataProvider? DataProvider { get; set; }
-	[Reactive] public TblByteCharConverter? TblConverter { get; set; }
+public sealed partial class MemoryToolsViewModel : DisposableViewModel {
+	[Reactive] public partial HexEditorConfig Config { get; set; }
+	[Reactive] public partial int ScrollPosition { get; set; }
+	[Reactive] public partial HexEditorDataProvider? DataProvider { get; set; }
+	[Reactive] public partial TblByteCharConverter? TblConverter { get; set; }
 
-	[Reactive] public Enum[] AvailableMemoryTypes { get; set; } = [];
+	[Reactive] public partial Enum[] AvailableMemoryTypes { get; set; } = [];
 
-	[Reactive] public int SelectionStart { get; set; }
-	[Reactive] public int SelectionLength { get; set; }
+	[Reactive] public partial int SelectionStart { get; set; }
+	[Reactive] public partial int SelectionLength { get; set; }
 
-	[Reactive] public string LocationText { get; private set; } = "";
-	[Reactive] public string LengthText { get; private set; } = "";
+	[Reactive] public partial string LocationText { get; private set; } = "";
+	[Reactive] public partial string LengthText { get; private set; } = "";
 
-	[Reactive] public List<ContextMenuAction> FileMenuItems { get; set; } = new();
-	[Reactive] public List<ContextMenuAction> ViewMenuItems { get; set; } = new();
-	[Reactive] public List<ContextMenuAction> SearchMenuItems { get; set; } = new();
-	[Reactive] public List<ContextMenuAction> ToolbarItems { get; set; } = new();
+	[Reactive] public partial List<ContextMenuAction> FileMenuItems { get; set; } = new();
+	[Reactive] public partial List<ContextMenuAction> ViewMenuItems { get; set; } = new();
+	[Reactive] public partial List<ContextMenuAction> SearchMenuItems { get; set; } = new();
+	[Reactive] public partial List<ContextMenuAction> ToolbarItems { get; set; } = new();
 
-	[Reactive] public int MaxScrollValue { get; private set; }
+	[Reactive] public partial int MaxScrollValue { get; private set; }
 
 	private HexEditor _editor;
 	public MemoryToolsDisplayOptionsViewModel Options { get; }

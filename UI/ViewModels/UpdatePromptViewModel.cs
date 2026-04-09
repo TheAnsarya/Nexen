@@ -15,14 +15,14 @@ using Nexen.Config;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.Windows;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the update prompt dialog.
 /// Handles checking for updates, downloading, and installing new versions.
 /// </summary>
-public sealed class UpdatePromptViewModel : ViewModelBase {
+public sealed partial class UpdatePromptViewModel : ViewModelBase {
 	/// <summary>Gets the latest available version.</summary>
 	public Version LatestVersion { get; }
 
@@ -33,10 +33,10 @@ public sealed class UpdatePromptViewModel : ViewModelBase {
 	public string Changelog { get; }
 
 	/// <summary>Gets or sets whether an update is currently in progress.</summary>
-	[Reactive] public bool IsUpdating { get; internal set; }
+	[Reactive] public partial bool IsUpdating { get; internal set; }
 
 	/// <summary>Gets or sets the download progress percentage (0-100).</summary>
-	[Reactive] public int Progress { get; internal set; }
+	[Reactive] public partial int Progress { get; internal set; }
 
 	/// <summary>Gets the file information for the platform-specific update.</summary>
 	public UpdateFileInfo? FileInfo { get; }
@@ -190,13 +190,13 @@ public sealed class UpdatePromptViewModel : ViewModelBase {
 	}
 }
 
-public sealed class UpdateFileInfo {
+public sealed partial class UpdateFileInfo {
 	public string[] Platform { get; set; } = [];
 	public string DownloadUrl { get; set; } = "";
 	public string Hash { get; set; } = "";
 }
 
-public sealed class UpdateInfo {
+public sealed partial class UpdateInfo {
 	public Version LatestVersion { get; set; } = new();
 	public string ReleaseNotes { get; set; } = "";
 	public UpdateFileInfo[] Files { get; set; } = [];
@@ -205,7 +205,7 @@ public sealed class UpdateInfo {
 /// <summary>
 /// Represents a GitHub release from the API.
 /// </summary>
-public sealed class GitHubRelease {
+public sealed partial class GitHubRelease {
 	[JsonPropertyName("tag_name")]
 	public string? TagName { get; set; }
 
@@ -225,7 +225,7 @@ public sealed class GitHubRelease {
 /// <summary>
 /// Represents a GitHub release asset (downloadable file).
 /// </summary>
-public sealed class GitHubAsset {
+public sealed partial class GitHubAsset {
 	[JsonPropertyName("name")]
 	public string? Name { get; set; }
 

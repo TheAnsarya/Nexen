@@ -6,13 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class AudioPlayerConfig : BaseConfig<AudioPlayerConfig> {
-	[Reactive] public UInt32 Volume { get; set; } = 100;
-	[Reactive] public bool Repeat { get; set; } = false;
-	[Reactive] public bool Shuffle { get; set; } = false;
+public sealed partial class AudioPlayerConfig : BaseConfig<AudioPlayerConfig> {
+	[Reactive] public partial UInt32 Volume { get; set; } = 100;
+	[Reactive] public partial bool Repeat { get; set; } = false;
+	[Reactive] public partial bool Shuffle { get; set; } = false;
 
 	public void ApplyConfig() {
 		ConfigApi.SetAudioPlayerConfig(new InteropAudioPlayerConfig() {

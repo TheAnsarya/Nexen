@@ -15,16 +15,16 @@ using Nexen.Debugger.Utilities;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.Windows;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
-public sealed class CheatListWindowViewModel : DisposableViewModel {
-	[Reactive] public NexenList<CheatCode> Cheats { get; private set; } = new();
-	[Reactive] public List<ContextMenuAction> ToolbarActions { get; private set; } = new();
-	[Reactive] public bool DisableAllCheats { get; set; } = false;
+public sealed partial class CheatListWindowViewModel : DisposableViewModel {
+	[Reactive] public partial NexenList<CheatCode> Cheats { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> ToolbarActions { get; private set; } = new();
+	[Reactive] public partial bool DisableAllCheats { get; set; } = false;
 
-	[Reactive] public SelectionModel<CheatCode> Selection { get; set; } = new();
-	[Reactive] public SortState SortState { get; set; } = new();
+	[Reactive] public partial SelectionModel<CheatCode> Selection { get; set; } = new();
+	[Reactive] public partial SortState SortState { get; set; } = new();
 
 	public CheatWindowConfig Config { get; }
 

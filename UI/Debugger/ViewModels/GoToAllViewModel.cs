@@ -8,7 +8,7 @@ using Nexen.Debugger.Utilities;
 using Nexen.Interop;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 
@@ -29,21 +29,21 @@ namespace Nexen.Debugger.ViewModels;
 /// Results are filtered and sorted by relevance as the user types.
 /// </para>
 /// </remarks>
-public sealed class GoToAllViewModel : DisposableViewModel {
+public sealed partial class GoToAllViewModel : DisposableViewModel {
 	/// <summary>Gets or sets the current search string.</summary>
-	[Reactive] public string SearchString { get; set; } = "";
+	[Reactive] public partial string SearchString { get; set; } = "";
 
 	/// <summary>Gets or sets the list of search results.</summary>
-	[Reactive] public List<SearchResultInfo> SearchResults { get; set; } = new();
+	[Reactive] public partial List<SearchResultInfo> SearchResults { get; set; } = new();
 
 	/// <summary>Gets or sets the selection model for the results list.</summary>
-	[Reactive] public SelectionModel<SearchResultInfo?> SelectionModel { get; set; } = new();
+	[Reactive] public partial SelectionModel<SearchResultInfo?> SelectionModel { get; set; } = new();
 
 	/// <summary>Gets or sets the currently selected search result.</summary>
-	[Reactive] public SearchResultInfo? SelectedItem { get; set; } = null;
+	[Reactive] public partial SearchResultInfo? SelectedItem { get; set; } = null;
 
 	/// <summary>Gets or sets whether a valid item is selected (enabling the Go button).</summary>
-	[Reactive] public bool CanSelect { get; set; } = false;
+	[Reactive] public partial bool CanSelect { get; set; } = false;
 
 	/// <summary>
 	/// Designer-only constructor. Do not use in code.

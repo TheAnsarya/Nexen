@@ -10,10 +10,10 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels; 
-public sealed class DebuggerConfigWindowViewModel : DisposableViewModel {
+public sealed partial class DebuggerConfigWindowViewModel : DisposableViewModel {
 	public DebuggerFontConfig Fonts { get; set; }
 	public DebuggerConfig Debugger { get; set; }
 	public ScriptWindowConfig Script { get; set; }
@@ -21,7 +21,7 @@ public sealed class DebuggerConfigWindowViewModel : DisposableViewModel {
 
 	public List<object> CpuTypeList { get; set; } = new();
 
-	[Reactive] public DebugConfigWindowTab SelectedIndex { get; set; }
+	[Reactive] public partial DebugConfigWindowTab SelectedIndex { get; set; }
 
 	public List<DebuggerShortcutInfo> SharedShortcuts { get; set; } = new();
 	public List<DebuggerShortcutInfo> MemoryToolsShortcuts { get; set; } = new();

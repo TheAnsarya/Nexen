@@ -8,7 +8,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.Windows; 
 public partial class NesHeaderEditWindow : NexenWindow {

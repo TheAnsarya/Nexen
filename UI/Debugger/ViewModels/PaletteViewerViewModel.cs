@@ -14,14 +14,14 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using Nexen.Windows;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
 /// ViewModel for the palette viewer window.
 /// Displays and allows editing of color palettes used by the emulated system's PPU.
 /// </summary>
-public sealed class PaletteViewerViewModel : DisposableViewModel, ICpuTypeModel {
+public sealed partial class PaletteViewerViewModel : DisposableViewModel, ICpuTypeModel {
 	/// <summary>
 	/// Gets or sets the CPU type for this palette viewer instance.
 	/// </summary>
@@ -40,53 +40,53 @@ public sealed class PaletteViewerViewModel : DisposableViewModel, ICpuTypeModel 
 	/// <summary>
 	/// Gets or sets the array of RGB palette colors for display.
 	/// </summary>
-	[Reactive] public UInt32[] PaletteColors { get; set; } = [];
+	[Reactive] public partial UInt32[] PaletteColors { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets the raw palette values (for indexed palette formats).
 	/// Null for non-indexed formats like RGB555.
 	/// </summary>
-	[Reactive] public UInt32[]? PaletteValues { get; set; } = null;
+	[Reactive] public partial UInt32[]? PaletteValues { get; set; } = null;
 
 	/// <summary>
 	/// Gets the number of columns to display in the palette grid (colors per row/palette).
 	/// </summary>
-	[Reactive] public int PaletteColumnCount { get; private set; } = 16;
+	[Reactive] public partial int PaletteColumnCount { get; private set; } = 16;
 
 	/// <summary>
 	/// Gets or sets the tooltip panel showing selected color details.
 	/// </summary>
-	[Reactive] public DynamicTooltip? PreviewPanel { get; private set; }
+	[Reactive] public partial DynamicTooltip? PreviewPanel { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the index of the currently selected palette entry.
 	/// </summary>
-	[Reactive] public int SelectedPalette { get; set; } = 0;
+	[Reactive] public partial int SelectedPalette { get; set; } = 0;
 
 	/// <summary>
 	/// Gets or sets the display block size for each palette entry in pixels.
 	/// </summary>
-	[Reactive] public int BlockSize { get; set; } = 8;
+	[Reactive] public partial int BlockSize { get; set; } = 8;
 
 	/// <summary>
 	/// Gets or sets the tooltip shown when hovering over the palette viewer.
 	/// </summary>
-	[Reactive] public DynamicTooltip? ViewerTooltip { get; set; }
+	[Reactive] public partial DynamicTooltip? ViewerTooltip { get; set; }
 
 	/// <summary>
 	/// Gets or sets the palette index currently under the mouse pointer, or -1 if none.
 	/// </summary>
-	[Reactive] public int ViewerMouseOverPalette { get; set; } = -1;
+	[Reactive] public partial int ViewerMouseOverPalette { get; set; } = -1;
 
 	/// <summary>
 	/// Gets or sets the menu actions for the File menu.
 	/// </summary>
-	[Reactive] public List<object> FileMenuActions { get; private set; } = new();
+	[Reactive] public partial List<object> FileMenuActions { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the menu actions for the View menu.
 	/// </summary>
-	[Reactive] public List<object> ViewMenuActions { get; private set; } = new();
+	[Reactive] public partial List<object> ViewMenuActions { get; private set; } = new();
 
 	/// <summary>
 	/// Cached palette information from the emulator core.

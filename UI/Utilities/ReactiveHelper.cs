@@ -5,11 +5,11 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Utilities;
 
-public static class ReactiveHelper {
+public static partial class ReactiveHelper {
 	[RequiresUnreferencedCode("Uses reflection to access properties dynamically")]
 	public static IDisposable RegisterRecursiveObserver(ReactiveObject target, PropertyChangedEventHandler handler) {
 		Dictionary<string, ReactiveObject> observableObjects = new();
@@ -76,7 +76,7 @@ public static class ReactiveHelper {
 	}
 }
 
-public sealed class RecursiveObserver : IDisposable {
+public sealed partial class RecursiveObserver : IDisposable {
 	private readonly ReactiveObject _target;
 	private readonly PropertyChangedEventHandler _handler;
 

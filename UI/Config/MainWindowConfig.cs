@@ -1,6 +1,6 @@
 using System;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class MainWindowConfig : BaseWindowConfig<MainWindowConfig> {
+public sealed partial class MainWindowConfig : BaseWindowConfig<MainWindowConfig> {
 }

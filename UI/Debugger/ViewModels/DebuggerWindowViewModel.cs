@@ -25,7 +25,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using Nexen.Windows;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -46,141 +46,141 @@ namespace Nexen.Debugger.ViewModels;
 /// Supports multiple CPU types including main CPUs and coprocessors.
 /// Uses a dockable panel layout that can be customized and saved.
 /// </remarks>
-public sealed class DebuggerWindowViewModel : DisposableViewModel {
+public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets the window title, customized for coprocessor debuggers.
 	/// </summary>
-	[Reactive] public string Title { get; private set; } = "Debugger";
+	[Reactive] public partial string Title { get; private set; } = "Debugger";
 
 	/// <summary>
 	/// Gets the window icon, varies by CPU type.
 	/// </summary>
-	[Reactive] public WindowIcon? Icon { get; private set; } = null;
+	[Reactive] public partial WindowIcon? Icon { get; private set; } = null;
 
 	/// <summary>
 	/// Gets whether this is the main CPU debugger (vs coprocessor).
 	/// </summary>
-	[Reactive] public bool IsMainCpuDebugger { get; private set; } = true;
+	[Reactive] public partial bool IsMainCpuDebugger { get; private set; } = true;
 
 	/// <summary>
 	/// Gets the debugger configuration settings.
 	/// </summary>
-	[Reactive] public DebuggerConfig Config { get; private set; }
+	[Reactive] public partial DebuggerConfig Config { get; private set; }
 
 	/// <summary>
 	/// Gets the debugger options view model for the settings panel.
 	/// </summary>
-	[Reactive] public DebuggerOptionsViewModel Options { get; private set; }
+	[Reactive] public partial DebuggerOptionsViewModel Options { get; private set; }
 
 	/// <summary>
 	/// Gets the disassembly view model for code display.
 	/// </summary>
-	[Reactive] public DisassemblyViewModel Disassembly { get; private set; }
+	[Reactive] public partial DisassemblyViewModel Disassembly { get; private set; }
 
 	/// <summary>
 	/// Gets the breakpoint list view model.
 	/// </summary>
-	[Reactive] public BreakpointListViewModel BreakpointList { get; private set; }
+	[Reactive] public partial BreakpointListViewModel BreakpointList { get; private set; }
 
 	/// <summary>
 	/// Gets the watch list view model.
 	/// </summary>
-	[Reactive] public WatchListViewModel WatchList { get; private set; }
+	[Reactive] public partial WatchListViewModel WatchList { get; private set; }
 
 	/// <summary>
 	/// Gets the console status view model for CPU registers.
 	/// </summary>
-	[Reactive] public BaseConsoleStatusViewModel? ConsoleStatus { get; private set; }
+	[Reactive] public partial BaseConsoleStatusViewModel? ConsoleStatus { get; private set; }
 
 	/// <summary>
 	/// Gets the label list view model.
 	/// </summary>
-	[Reactive] public LabelListViewModel LabelList { get; private set; }
+	[Reactive] public partial LabelListViewModel LabelList { get; private set; }
 
 	/// <summary>
 	/// Gets the function list view model (null for CPUs without function support).
 	/// </summary>
-	[Reactive] public FunctionListViewModel? FunctionList { get; private set; }
+	[Reactive] public partial FunctionListViewModel? FunctionList { get; private set; }
 
 	/// <summary>
 	/// Gets the call stack view model.
 	/// </summary>
-	[Reactive] public CallStackViewModel CallStack { get; private set; }
+	[Reactive] public partial CallStackViewModel CallStack { get; private set; }
 
 	/// <summary>
 	/// Gets the source view model (null when no symbol provider available).
 	/// </summary>
-	[Reactive] public SourceViewViewModel? SourceView { get; private set; }
+	[Reactive] public partial SourceViewViewModel? SourceView { get; private set; }
 
 	/// <summary>
 	/// Gets the memory mappings view model (null for unsupported CPUs).
 	/// </summary>
-	[Reactive] public MemoryMappingViewModel? MemoryMappings { get; private set; }
+	[Reactive] public partial MemoryMappingViewModel? MemoryMappings { get; private set; }
 
 	/// <summary>
 	/// Gets the find results list view model.
 	/// </summary>
-	[Reactive] public FindResultListViewModel FindResultList { get; private set; }
+	[Reactive] public partial FindResultListViewModel FindResultList { get; private set; }
 
 	/// <summary>
 	/// Gets the controller input list view model.
 	/// </summary>
-	[Reactive] public ControllerListViewModel ControllerList { get; private set; }
+	[Reactive] public partial ControllerListViewModel ControllerList { get; private set; }
 
 	/// <summary>
 	/// Gets the dock panel factory for layout management.
 	/// </summary>
-	[Reactive] public DebuggerDockFactory DockFactory { get; private set; }
+	[Reactive] public partial DebuggerDockFactory DockFactory { get; private set; }
 
 	/// <summary>
 	/// Gets the root dock layout for the window.
 	/// </summary>
-	[Reactive] public IRootDock DockLayout { get; private set; }
+	[Reactive] public partial IRootDock DockLayout { get; private set; }
 
 	/// <summary>
 	/// Gets the reason for the current break (empty if not broken).
 	/// </summary>
-	[Reactive] public string BreakReason { get; private set; } = "";
+	[Reactive] public partial string BreakReason { get; private set; } = "";
 
 	/// <summary>
 	/// Gets the elapsed cycles since last break as a formatted string.
 	/// </summary>
-	[Reactive] public string BreakElapsedCycles { get; private set; } = "";
+	[Reactive] public partial string BreakElapsedCycles { get; private set; } = "";
 
 	/// <summary>
 	/// Gets the tooltip for elapsed cycles with full precision.
 	/// </summary>
-	[Reactive] public string BreakElapsedCyclesTooltip { get; private set; } = "";
+	[Reactive] public partial string BreakElapsedCyclesTooltip { get; private set; } = "";
 
 	/// <summary>
 	/// Gets the CDL (Code/Data Logger) statistics string.
 	/// </summary>
-	[Reactive] public string CdlStats { get; private set; } = "";
+	[Reactive] public partial string CdlStats { get; private set; } = "";
 
 	/// <summary>
 	/// Gets the toolbar context menu actions.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> ToolbarItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> ToolbarItems { get; private set; } = new();
 
 	/// <summary>
 	/// Gets the File menu items.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> FileMenuItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> FileMenuItems { get; private set; } = new();
 
 	/// <summary>
 	/// Gets the Debug menu items.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> DebugMenuItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> DebugMenuItems { get; private set; } = new();
 
 	/// <summary>
 	/// Gets the Search menu items.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> SearchMenuItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> SearchMenuItems { get; private set; } = new();
 
 	/// <summary>
 	/// Gets the Options menu items.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> OptionMenuItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> OptionMenuItems { get; private set; } = new();
 
 	/// <summary>
 	/// Gets the CPU type being debugged.

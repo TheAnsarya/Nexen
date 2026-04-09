@@ -1,9 +1,9 @@
 using Nexen.Interop;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class MovieRecordConfig : BaseConfig<MovieRecordConfig> {
-	[Reactive] public RecordMovieFrom RecordFrom { get; set; } = RecordMovieFrom.CurrentState;
-	[Reactive] public string Author { get; set; } = "";
-	[Reactive] public string Description { get; set; } = "";
+public sealed partial class MovieRecordConfig : BaseConfig<MovieRecordConfig> {
+	[Reactive] public partial RecordMovieFrom RecordFrom { get; set; } = RecordMovieFrom.CurrentState;
+	[Reactive] public partial string Author { get; set; } = "";
+	[Reactive] public partial string Description { get; set; } = "";
 }

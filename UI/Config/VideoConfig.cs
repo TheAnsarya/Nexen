@@ -7,51 +7,51 @@ using System.Threading.Tasks;
 using Nexen.Interop;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
-public sealed class VideoConfig : BaseConfig<VideoConfig> {
-	[Reactive][MinMax(0.1, 5.0)] public double CustomAspectRatio { get; set; } = 1.0;
-	[Reactive] public VideoFilterType VideoFilter { get; set; } = VideoFilterType.None;
-	[Reactive] public VideoAspectRatio AspectRatio { get; set; } = VideoAspectRatio.NoStretching;
+public sealed partial class VideoConfig : BaseConfig<VideoConfig> {
+	[Reactive][MinMax(0.1, 5.0)] public partial double CustomAspectRatio { get; set; } = 1.0;
+	[Reactive] public partial VideoFilterType VideoFilter { get; set; } = VideoFilterType.None;
+	[Reactive] public partial VideoAspectRatio AspectRatio { get; set; } = VideoAspectRatio.NoStretching;
 
-	[Reactive] public bool UseBilinearInterpolation { get; set; } = false;
-	[Reactive] public bool UseSoftwareRenderer { get; set; } = false;
-	[Reactive] public bool UseSrgbTextureFormat { get; set; } = false;
-	[Reactive] public bool VerticalSync { get; set; } = false;
-	[Reactive] public bool IntegerFpsMode { get; set; } = false;
+	[Reactive] public partial bool UseBilinearInterpolation { get; set; } = false;
+	[Reactive] public partial bool UseSoftwareRenderer { get; set; } = false;
+	[Reactive] public partial bool UseSrgbTextureFormat { get; set; } = false;
+	[Reactive] public partial bool VerticalSync { get; set; } = false;
+	[Reactive] public partial bool IntegerFpsMode { get; set; } = false;
 
-	[Reactive][MinMax(-100, 100)] public int Brightness { get; set; } = 0;
-	[Reactive][MinMax(-100, 100)] public int Contrast { get; set; } = 0;
-	[Reactive][MinMax(-100, 100)] public int Hue { get; set; } = 0;
-	[Reactive][MinMax(-100, 100)] public int Saturation { get; set; } = 0;
-	[Reactive][MinMax(0, 100)] public int ScanlineIntensity { get; set; } = 0;
+	[Reactive][MinMax(-100, 100)] public partial int Brightness { get; set; } = 0;
+	[Reactive][MinMax(-100, 100)] public partial int Contrast { get; set; } = 0;
+	[Reactive][MinMax(-100, 100)] public partial int Hue { get; set; } = 0;
+	[Reactive][MinMax(-100, 100)] public partial int Saturation { get; set; } = 0;
+	[Reactive][MinMax(0, 100)] public partial int ScanlineIntensity { get; set; } = 0;
 
-	[Reactive][MinMax(0, 100)] public int LcdGridTopLeftBrightness { get; set; } = 100;
-	[Reactive][MinMax(0, 100)] public int LcdGridTopRightBrightness { get; set; } = 85;
-	[Reactive][MinMax(0, 100)] public int LcdGridBottomLeftBrightness { get; set; } = 85;
-	[Reactive][MinMax(0, 100)] public int LcdGridBottomRightBrightness { get; set; } = 85;
+	[Reactive][MinMax(0, 100)] public partial int LcdGridTopLeftBrightness { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial int LcdGridTopRightBrightness { get; set; } = 85;
+	[Reactive][MinMax(0, 100)] public partial int LcdGridBottomLeftBrightness { get; set; } = 85;
+	[Reactive][MinMax(0, 100)] public partial int LcdGridBottomRightBrightness { get; set; } = 85;
 
-	[Reactive][MinMax(-100, 100)] public int NtscArtifacts { get; set; } = 0;
-	[Reactive][MinMax(-100, 100)] public int NtscBleed { get; set; } = 0;
-	[Reactive][MinMax(-100, 100)] public int NtscFringing { get; set; } = 0;
-	[Reactive][MinMax(-100, 100)] public int NtscGamma { get; set; } = 0;
-	[Reactive][MinMax(-100, 100)] public int NtscResolution { get; set; } = 0;
-	[Reactive][MinMax(-100, 100)] public int NtscSharpness { get; set; } = 0;
-	[Reactive] public bool NtscMergeFields { get; set; } = false;
+	[Reactive][MinMax(-100, 100)] public partial int NtscArtifacts { get; set; } = 0;
+	[Reactive][MinMax(-100, 100)] public partial int NtscBleed { get; set; } = 0;
+	[Reactive][MinMax(-100, 100)] public partial int NtscFringing { get; set; } = 0;
+	[Reactive][MinMax(-100, 100)] public partial int NtscGamma { get; set; } = 0;
+	[Reactive][MinMax(-100, 100)] public partial int NtscResolution { get; set; } = 0;
+	[Reactive][MinMax(-100, 100)] public partial int NtscSharpness { get; set; } = 0;
+	[Reactive] public partial bool NtscMergeFields { get; set; } = false;
 
-	[Reactive] public NtscBisqwitFilterScale NtscScale { get; set; } = NtscBisqwitFilterScale._2x;
-	[Reactive][MinMax(-50, 400)] public Int32 NtscYFilterLength { get; set; } = 0;
-	[Reactive][MinMax(0, 400)] public Int32 NtscIFilterLength { get; set; } = 50;
-	[Reactive][MinMax(0, 400)] public Int32 NtscQFilterLength { get; set; } = 50;
+	[Reactive] public partial NtscBisqwitFilterScale NtscScale { get; set; } = NtscBisqwitFilterScale._2x;
+	[Reactive][MinMax(-50, 400)] public partial Int32 NtscYFilterLength { get; set; } = 0;
+	[Reactive][MinMax(0, 400)] public partial Int32 NtscIFilterLength { get; set; } = 50;
+	[Reactive][MinMax(0, 400)] public partial Int32 NtscQFilterLength { get; set; } = 50;
 
-	[Reactive] public bool FullscreenForceIntegerScale { get; set; } = false;
-	[Reactive] public bool UseExclusiveFullscreen { get; set; } = false;
-	[Reactive] public UInt32 ExclusiveFullscreenRefreshRateNtsc { get; set; } = 60;
-	[Reactive] public UInt32 ExclusiveFullscreenRefreshRatePal { get; set; } = 50;
-	[Reactive] public FullscreenResolution ExclusiveFullscreenResolution { get; set; } = 0;
+	[Reactive] public partial bool FullscreenForceIntegerScale { get; set; } = false;
+	[Reactive] public partial bool UseExclusiveFullscreen { get; set; } = false;
+	[Reactive] public partial UInt32 ExclusiveFullscreenRefreshRateNtsc { get; set; } = 60;
+	[Reactive] public partial UInt32 ExclusiveFullscreenRefreshRatePal { get; set; } = 50;
+	[Reactive] public partial FullscreenResolution ExclusiveFullscreenResolution { get; set; } = 0;
 
-	[Reactive] public ScreenRotation ScreenRotation { get; set; } = ScreenRotation.None;
+	[Reactive] public partial ScreenRotation ScreenRotation { get; set; } = ScreenRotation.None;
 
 	public VideoConfig() {
 	}
@@ -237,7 +237,7 @@ public enum FullscreenResolution {
 	_640x480
 }
 
-public static class FullscreenResolutionExtensions {
+public static partial class FullscreenResolutionExtensions {
 	private static readonly Dictionary<FullscreenResolution, (int Width, int Height)> _resolutionMap = new() {
 		[FullscreenResolution.Default] = (0, 0),
 		[FullscreenResolution._3840x2160] = (3840, 2160),

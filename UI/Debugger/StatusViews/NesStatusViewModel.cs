@@ -2,61 +2,61 @@ using System;
 using System.Text;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.StatusViews; 
-public sealed class NesStatusViewModel : BaseConsoleStatusViewModel {
-	[Reactive] public byte RegA { get; set; }
-	[Reactive] public byte RegX { get; set; }
-	[Reactive] public byte RegY { get; set; }
-	[Reactive] public byte RegSP { get; set; }
-	[Reactive] public UInt16 RegPC { get; set; }
-	[Reactive] public byte RegPS { get; set; }
+public sealed partial class NesStatusViewModel : BaseConsoleStatusViewModel {
+	[Reactive] public partial byte RegA { get; set; }
+	[Reactive] public partial byte RegX { get; set; }
+	[Reactive] public partial byte RegY { get; set; }
+	[Reactive] public partial byte RegSP { get; set; }
+	[Reactive] public partial UInt16 RegPC { get; set; }
+	[Reactive] public partial byte RegPS { get; set; }
 
-	[Reactive] public bool FlagN { get; set; }
-	[Reactive] public bool FlagV { get; set; }
-	[Reactive] public bool FlagD { get; set; }
-	[Reactive] public bool FlagI { get; set; }
-	[Reactive] public bool FlagZ { get; set; }
-	[Reactive] public bool FlagC { get; set; }
+	[Reactive] public partial bool FlagN { get; set; }
+	[Reactive] public partial bool FlagV { get; set; }
+	[Reactive] public partial bool FlagD { get; set; }
+	[Reactive] public partial bool FlagI { get; set; }
+	[Reactive] public partial bool FlagZ { get; set; }
+	[Reactive] public partial bool FlagC { get; set; }
 
-	[Reactive] public bool FlagNmi { get; set; }
+	[Reactive] public partial bool FlagNmi { get; set; }
 
-	[Reactive] public bool FlagIrqExternal { get; set; }
-	[Reactive] public bool FlagIrqFrameCount { get; set; }
-	[Reactive] public bool FlagIrqDmc { get; set; }
-	[Reactive] public bool FlagIrqFdsDisk { get; set; }
+	[Reactive] public partial bool FlagIrqExternal { get; set; }
+	[Reactive] public partial bool FlagIrqFrameCount { get; set; }
+	[Reactive] public partial bool FlagIrqDmc { get; set; }
+	[Reactive] public partial bool FlagIrqFdsDisk { get; set; }
 
-	[Reactive] public uint Cycle { get; private set; }
-	[Reactive] public int Scanline { get; private set; }
-	[Reactive] public UInt32 FrameCount { get; private set; }
-	[Reactive] public UInt16 VramAddr { get; set; }
-	[Reactive] public UInt16 TmpVramAddr { get; set; }
-	[Reactive] public UInt16 BusAddr { get; set; }
-	[Reactive] public byte ScrollX { get; set; }
-	[Reactive] public bool Sprite0Hit { get; set; }
-	[Reactive] public bool SpriteOverflow { get; set; }
-	[Reactive] public bool VerticalBlank { get; set; }
-	[Reactive] public bool WriteToggle { get; set; }
+	[Reactive] public partial uint Cycle { get; private set; }
+	[Reactive] public partial int Scanline { get; private set; }
+	[Reactive] public partial UInt32 FrameCount { get; private set; }
+	[Reactive] public partial UInt16 VramAddr { get; set; }
+	[Reactive] public partial UInt16 TmpVramAddr { get; set; }
+	[Reactive] public partial UInt16 BusAddr { get; set; }
+	[Reactive] public partial byte ScrollX { get; set; }
+	[Reactive] public partial bool Sprite0Hit { get; set; }
+	[Reactive] public partial bool SpriteOverflow { get; set; }
+	[Reactive] public partial bool VerticalBlank { get; set; }
+	[Reactive] public partial bool WriteToggle { get; set; }
 
 	//Mask
-	[Reactive] public bool BgEnabled { get; set; }
-	[Reactive] public bool SpritesEnabled { get; set; }
-	[Reactive] public bool BgMaskLeft { get; set; }
-	[Reactive] public bool SpriteMaskLeft { get; set; }
-	[Reactive] public bool Grayscale { get; set; }
-	[Reactive] public bool IntensifyRed { get; set; }
-	[Reactive] public bool IntensifyGreen { get; set; }
-	[Reactive] public bool IntensifyBlue { get; set; }
+	[Reactive] public partial bool BgEnabled { get; set; }
+	[Reactive] public partial bool SpritesEnabled { get; set; }
+	[Reactive] public partial bool BgMaskLeft { get; set; }
+	[Reactive] public partial bool SpriteMaskLeft { get; set; }
+	[Reactive] public partial bool Grayscale { get; set; }
+	[Reactive] public partial bool IntensifyRed { get; set; }
+	[Reactive] public partial bool IntensifyGreen { get; set; }
+	[Reactive] public partial bool IntensifyBlue { get; set; }
 
 	//Control
-	[Reactive] public bool LargeSprites { get; set; }
-	[Reactive] public bool NmiOnVBlank { get; set; }
-	[Reactive] public bool VerticalWrite { get; set; }
-	[Reactive] public bool BgAt1000 { get; set; }
-	[Reactive] public bool SpritesAt1000 { get; set; }
+	[Reactive] public partial bool LargeSprites { get; set; }
+	[Reactive] public partial bool NmiOnVBlank { get; set; }
+	[Reactive] public partial bool VerticalWrite { get; set; }
+	[Reactive] public partial bool BgAt1000 { get; set; }
+	[Reactive] public partial bool SpritesAt1000 { get; set; }
 
-	[Reactive] public string StackPreview { get; private set; } = "";
+	[Reactive] public partial string StackPreview { get; private set; } = "";
 
 	public NesStatusViewModel() {
 		this.WhenAnyValue(x => x.FlagC, x => x.FlagD, x => x.FlagI, x => x.FlagN, x => x.FlagV, x => x.FlagZ).Subscribe(x => RegPS = (byte)(

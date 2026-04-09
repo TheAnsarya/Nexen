@@ -15,7 +15,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 
@@ -24,7 +24,7 @@ namespace Nexen.Debugger.ViewModels;
 /// Displays assembly source files from symbol providers with syntax highlighting,
 /// breakpoint integration, and navigation support.
 /// </summary>
-public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel {
+public sealed partial class SourceViewViewModel : DisposableViewModel, ISelectableModel {
 	/// <summary>
 	/// Gets or sets the symbol provider for source file information.
 	/// </summary>
@@ -58,52 +58,52 @@ public sealed class SourceViewViewModel : DisposableViewModel, ISelectableModel 
 	/// <summary>
 	/// Gets or sets the currently selected source file to display.
 	/// </summary>
-	[Reactive] public SourceFileInfo? SelectedFile { get; set; }
+	[Reactive] public partial SourceFileInfo? SelectedFile { get; set; }
 
 	/// <summary>
 	/// Gets the maximum scroll position based on file line count.
 	/// </summary>
-	[Reactive] public int MaxScrollPosition { get; private set; }
+	[Reactive] public partial int MaxScrollPosition { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the current scroll position (first visible line).
 	/// </summary>
-	[Reactive] public int ScrollPosition { get; set; }
+	[Reactive] public partial int ScrollPosition { get; set; }
 
 	/// <summary>
 	/// Gets or sets the array of visible code lines for display.
 	/// </summary>
-	[Reactive] public CodeLineData[] Lines { get; private set; } = [];
+	[Reactive] public partial CodeLineData[] Lines { get; private set; } = [];
 
 	/// <summary>
 	/// Gets or sets the active address (current execution point), or null.
 	/// </summary>
-	[Reactive] public int? ActiveAddress { get; set; }
+	[Reactive] public partial int? ActiveAddress { get; set; }
 
 	/// <summary>
 	/// Gets or sets the currently selected row index.
 	/// </summary>
-	[Reactive] public int SelectedRow { get; set; }
+	[Reactive] public partial int SelectedRow { get; set; }
 
 	/// <summary>
 	/// Gets or sets the anchor row for range selection.
 	/// </summary>
-	[Reactive] public int SelectionAnchor { get; set; }
+	[Reactive] public partial int SelectionAnchor { get; set; }
 
 	/// <summary>
 	/// Gets or sets the start row of the current selection.
 	/// </summary>
-	[Reactive] public int SelectionStart { get; set; }
+	[Reactive] public partial int SelectionStart { get; set; }
 
 	/// <summary>
 	/// Gets or sets the end row of the current selection.
 	/// </summary>
-	[Reactive] public int SelectionEnd { get; set; }
+	[Reactive] public partial int SelectionEnd { get; set; }
 
 	/// <summary>
 	/// Gets or sets the number of visible rows in the view.
 	/// </summary>
-	[Reactive] public int VisibleRowCount { get; set; } = 100;
+	[Reactive] public partial int VisibleRowCount { get; set; } = 100;
 
 	/// <summary>
 	/// Gets the parent debugger window view model.

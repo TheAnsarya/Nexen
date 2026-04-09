@@ -5,54 +5,54 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Nexen.Interop;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
-public sealed class IntegrationConfig : BaseConfig<IntegrationConfig> {
-	[Reactive] public bool AutoLoadDbgFiles { get; set; } = true;
-	[Reactive] public bool AutoLoadLabelFiles { get; set; } = true;
-	[Reactive] public bool AutoLoadCdlFiles { get; set; } = true;
-	[Reactive] public bool AutoLoadSymFiles { get; set; } = true;
-	[Reactive] public bool AutoLoadCdbFiles { get; set; } = true;
-	[Reactive] public bool AutoLoadElfFiles { get; set; } = true;
-	[Reactive] public bool AutoLoadFnsFiles { get; set; } = true;
+public sealed partial class IntegrationConfig : BaseConfig<IntegrationConfig> {
+	[Reactive] public partial bool AutoLoadDbgFiles { get; set; } = true;
+	[Reactive] public partial bool AutoLoadLabelFiles { get; set; } = true;
+	[Reactive] public partial bool AutoLoadCdlFiles { get; set; } = true;
+	[Reactive] public partial bool AutoLoadSymFiles { get; set; } = true;
+	[Reactive] public partial bool AutoLoadCdbFiles { get; set; } = true;
+	[Reactive] public partial bool AutoLoadElfFiles { get; set; } = true;
+	[Reactive] public partial bool AutoLoadFnsFiles { get; set; } = true;
 
-	[Reactive] public bool AutoExportPansy { get; set; } = true;
+	[Reactive] public partial bool AutoExportPansy { get; set; } = true;
 
 	// Background CDL recording settings
-	[Reactive] public bool BackgroundCdlRecording { get; set; } = true;
-	[Reactive] public int AutoSaveIntervalMinutes { get; set; } = 5;
-	[Reactive] public bool SavePansyOnRomUnload { get; set; } = true;
+	[Reactive] public partial bool BackgroundCdlRecording { get; set; } = true;
+	[Reactive] public partial int AutoSaveIntervalMinutes { get; set; } = 5;
+	[Reactive] public partial bool SavePansyOnRomUnload { get; set; } = true;
 
 	// Phase 3: Enhanced Pansy export options
-	[Reactive] public bool PansyIncludeMemoryRegions { get; set; } = true;
-	[Reactive] public bool PansyIncludeCrossReferences { get; set; } = true;
-	[Reactive] public bool PansyIncludeDataBlocks { get; set; } = true;
+	[Reactive] public partial bool PansyIncludeMemoryRegions { get; set; } = true;
+	[Reactive] public partial bool PansyIncludeCrossReferences { get; set; } = true;
+	[Reactive] public partial bool PansyIncludeDataBlocks { get; set; } = true;
 
 	// Phase 4: Compression options
-	[Reactive] public bool PansyUseCompression { get; set; } = false;
+	[Reactive] public partial bool PansyUseCompression { get; set; } = false;
 
 	// Phase 7.5: Folder-based storage options
-	[Reactive] public bool UseFolderStorage { get; set; } = true;
-	[Reactive] public bool SyncLabelFiles { get; set; } = true;
-	[Reactive] public bool SyncCdlFiles { get; set; } = true;
-	[Reactive] public bool KeepVersionHistory { get; set; } = false;
-	[Reactive] public int MaxHistoryEntries { get; set; } = 10;
-	[Reactive] public string DebugFolderPath { get; set; } = "";
+	[Reactive] public partial bool UseFolderStorage { get; set; } = true;
+	[Reactive] public partial bool SyncLabelFiles { get; set; } = true;
+	[Reactive] public partial bool SyncCdlFiles { get; set; } = true;
+	[Reactive] public partial bool KeepVersionHistory { get; set; } = false;
+	[Reactive] public partial int MaxHistoryEntries { get; set; } = 10;
+	[Reactive] public partial string DebugFolderPath { get; set; } = "";
 
 	// Phase 7.5e: Sync manager options
-	[Reactive] public bool EnableFileWatching { get; set; } = false;
-	[Reactive] public bool AutoReloadOnExternalChange { get; set; } = true;
+	[Reactive] public partial bool EnableFileWatching { get; set; } = false;
+	[Reactive] public partial bool AutoReloadOnExternalChange { get; set; } = true;
 
-	[Reactive] public bool ResetLabelsOnImport { get; set; } = true;
+	[Reactive] public partial bool ResetLabelsOnImport { get; set; } = true;
 
-	[Reactive] public bool ImportPrgRomLabels { get; set; } = true;
-	[Reactive] public bool ImportWorkRamLabels { get; set; } = true;
-	[Reactive] public bool ImportSaveRamLabels { get; set; } = true;
-	[Reactive] public bool ImportOtherLabels { get; set; } = true;
-	[Reactive] public bool ImportComments { get; set; } = true;
+	[Reactive] public partial bool ImportPrgRomLabels { get; set; } = true;
+	[Reactive] public partial bool ImportWorkRamLabels { get; set; } = true;
+	[Reactive] public partial bool ImportSaveRamLabels { get; set; } = true;
+	[Reactive] public partial bool ImportOtherLabels { get; set; } = true;
+	[Reactive] public partial bool ImportComments { get; set; } = true;
 
-	[Reactive] public int TabSize { get; set; } = 4;
+	[Reactive] public partial int TabSize { get; set; } = 4;
 
 	public bool IsMemoryTypeImportEnabled(MemoryType memType) {
 		switch (memType) {

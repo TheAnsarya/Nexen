@@ -11,7 +11,7 @@ using Avalonia.Threading;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 
@@ -32,15 +32,15 @@ namespace Nexen.Debugger.ViewModels;
 /// Search is performed asynchronously to avoid blocking the UI during large searches.
 /// </para>
 /// </remarks>
-public sealed class QuickSearchViewModel : ViewModelBase {
+public sealed partial class QuickSearchViewModel : ViewModelBase {
 	/// <summary>Gets or sets whether the search box is visible.</summary>
-	[Reactive] public bool IsSearchBoxVisible { get; set; }
+	[Reactive] public partial bool IsSearchBoxVisible { get; set; }
 
 	/// <summary>Gets or sets the current search string.</summary>
-	[Reactive] public string SearchString { get; set; } = "";
+	[Reactive] public partial string SearchString { get; set; } = "";
 
 	/// <summary>Gets or sets whether the error indicator is visible (no match found).</summary>
-	[Reactive] public bool IsErrorVisible { get; set; } = false;
+	[Reactive] public partial bool IsErrorVisible { get; set; } = false;
 
 	/// <summary>
 	/// Event handler delegate for find operations.
@@ -178,7 +178,7 @@ public sealed class QuickSearchViewModel : ViewModelBase {
 /// <summary>
 /// Event arguments for find operations in quick search.
 /// </summary>
-public sealed class OnFindEventArgs : EventArgs {
+public sealed partial class OnFindEventArgs : EventArgs {
 	/// <summary>Gets the search string to find.</summary>
 	public string SearchString { get; init; } = "";
 

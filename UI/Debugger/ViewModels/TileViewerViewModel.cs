@@ -18,7 +18,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -38,7 +38,7 @@ namespace Nexen.Debugger.ViewModels;
 /// - Export to PNG
 /// - CDL-based filtering
 /// </remarks>
-public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IMouseOverViewerModel {
+public sealed partial class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IMouseOverViewerModel {
 	/// <summary>
 	/// Gets or sets the CPU type for this viewer.
 	/// </summary>
@@ -57,112 +57,112 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 	/// <summary>
 	/// Gets or sets the bitmap displaying the tile data.
 	/// </summary>
-	[Reactive] public DynamicBitmap ViewerBitmap { get; private set; }
+	[Reactive] public partial DynamicBitmap ViewerBitmap { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the preview panel for selected tiles.
 	/// </summary>
-	[Reactive] public DynamicTooltip? PreviewPanel { get; private set; }
+	[Reactive] public partial DynamicTooltip? PreviewPanel { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the tooltip displayed when hovering over the viewer.
 	/// </summary>
-	[Reactive] public DynamicTooltip? ViewerTooltip { get; set; }
+	[Reactive] public partial DynamicTooltip? ViewerTooltip { get; set; }
 
 	/// <summary>
 	/// Gets or sets the current mouse position over the viewer.
 	/// </summary>
-	[Reactive] public PixelPoint? ViewerMousePos { get; set; }
+	[Reactive] public partial PixelPoint? ViewerMousePos { get; set; }
 
 	/// <summary>
 	/// Gets or sets the processed palette colors for display.
 	/// </summary>
-	[Reactive] public UInt32[] PaletteColors { get; set; } = [];
+	[Reactive] public partial UInt32[] PaletteColors { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets the raw palette data from memory.
 	/// </summary>
-	[Reactive] public UInt32[] RawPalette { get; set; } = [];
+	[Reactive] public partial UInt32[] RawPalette { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets the format of the raw palette data.
 	/// </summary>
-	[Reactive] public RawPaletteFormat RawFormat { get; set; }
+	[Reactive] public partial RawPaletteFormat RawFormat { get; set; }
 
 	/// <summary>
 	/// Gets or sets the palette selection mode based on bits per pixel.
 	/// </summary>
-	[Reactive] public PaletteSelectionMode PaletteSelectionMode { get; private set; }
+	[Reactive] public partial PaletteSelectionMode PaletteSelectionMode { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the number of columns in the palette display.
 	/// </summary>
-	[Reactive] public int PaletteColumnCount { get; private set; } = 16;
+	[Reactive] public partial int PaletteColumnCount { get; private set; } = 16;
 
 	/// <summary>
 	/// Gets or sets the currently selected palette index.
 	/// </summary>
-	[Reactive] public int SelectedPalette { get; set; } = 0;
+	[Reactive] public partial int SelectedPalette { get; set; } = 0;
 
 	/// <summary>
 	/// Gets the address increment per page based on format and grid size.
 	/// </summary>
-	[Reactive] public int AddressIncrement { get; private set; }
+	[Reactive] public partial int AddressIncrement { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the maximum address for the current memory source.
 	/// </summary>
-	[Reactive] public int MaximumAddress { get; private set; } = int.MaxValue;
+	[Reactive] public partial int MaximumAddress { get; private set; } = int.MaxValue;
 
 	/// <summary>
 	/// Gets or sets the horizontal grid size in pixels.
 	/// </summary>
-	[Reactive] public int GridSizeX { get; set; } = 8;
+	[Reactive] public partial int GridSizeX { get; set; } = 8;
 
 	/// <summary>
 	/// Gets or sets the vertical grid size in pixels.
 	/// </summary>
-	[Reactive] public int GridSizeY { get; set; } = 8;
+	[Reactive] public partial int GridSizeY { get; set; } = 8;
 
 	/// <summary>
 	/// Gets or sets the current selection rectangle.
 	/// </summary>
-	[Reactive] public Rect SelectionRect { get; set; }
+	[Reactive] public partial Rect SelectionRect { get; set; }
 
 	/// <summary>
 	/// Gets or sets the page delimiter lines for visual separation.
 	/// </summary>
-	[Reactive] public List<PictureViewerLine>? PageDelimiters { get; set; }
+	[Reactive] public partial List<PictureViewerLine>? PageDelimiters { get; set; }
 
 	/// <summary>
 	/// Gets or sets the available memory types for the current console.
 	/// </summary>
-	[Reactive] public Enum[] AvailableMemoryTypes { get; set; } = [];
+	[Reactive] public partial Enum[] AvailableMemoryTypes { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets the available tile formats for the current CPU type.
 	/// </summary>
-	[Reactive] public Enum[] AvailableFormats { get; set; } = [];
+	[Reactive] public partial Enum[] AvailableFormats { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets whether to show the format dropdown (multiple formats available).
 	/// </summary>
-	[Reactive] public bool ShowFormatDropdown { get; set; }
+	[Reactive] public partial bool ShowFormatDropdown { get; set; }
 
 	/// <summary>
 	/// Gets or sets whether to show the CDL filter dropdown.
 	/// </summary>
-	[Reactive] public bool ShowFilterDropdown { get; set; }
+	[Reactive] public partial bool ShowFilterDropdown { get; set; }
 
 	/// <summary>
 	/// Gets or sets the preset configuration rows for the UI.
 	/// </summary>
-	[Reactive] public List<List<ConfigPreset>> ConfigPresetRows { get; set; } = new() { new(), new(), new() };
+	[Reactive] public partial List<List<ConfigPreset>> ConfigPresetRows { get; set; } = new() { new(), new(), new() };
 
 	/// <summary>
 	/// Gets or sets the list of available configuration presets.
 	/// </summary>
-	[Reactive] public List<ConfigPreset> ConfigPresets { get; set; } = [];
+	[Reactive] public partial List<ConfigPreset> ConfigPresets { get; set; } = [];
 
 	/// <summary>
 	/// Gets the File menu actions.
@@ -1326,13 +1326,13 @@ public sealed class TileViewerViewModel : DisposableViewModel, ICpuTypeModel, IM
 	}
 }
 
-public sealed class ConfigPreset : ViewModelBase {
+public sealed partial class ConfigPreset : ViewModelBase {
 	public string Name { get; }
 	public Func<PresetValues?> GetPresetValues { get; }
 	public ReactiveCommand<Unit, Unit> ClickCommand { get; }
 	public Action ApplyPreset { get; }
 
-	[Reactive] public bool Selected { get; set; }
+	[Reactive] public partial bool Selected { get; set; }
 
 	public ConfigPreset(string name, Func<PresetValues?> getPresetValues, Action applyPreset) {
 		Name = name;
@@ -1342,7 +1342,7 @@ public sealed class ConfigPreset : ViewModelBase {
 	}
 }
 
-public sealed class PresetValues {
+public sealed partial class PresetValues {
 	public MemoryType? Source { get; set; }
 	public TileFormat? Format { get; set; }
 	public TileLayout? Layout { get; set; }

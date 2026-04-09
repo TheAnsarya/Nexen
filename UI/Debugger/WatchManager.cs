@@ -9,7 +9,7 @@ using Nexen.Debugger.Labels;
 using Nexen.Debugger.Utilities;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger;
 /// <summary>
@@ -36,7 +36,7 @@ namespace Nexen.Debugger;
 /// </list>
 /// </para>
 /// </remarks>
-public sealed class WatchManager {
+public sealed partial class WatchManager {
 	/// <summary>
 	/// Delegate for handling watch list changes.
 	/// </summary>
@@ -482,16 +482,16 @@ public sealed class WatchManager {
 /// <remarks>
 /// Used for data binding in the watch list UI. Uses ReactiveUI for property notifications.
 /// </remarks>
-public sealed class WatchValueInfo : ReactiveObject {
+public sealed partial class WatchValueInfo : ReactiveObject {
 	/// <summary>
 	/// Gets or sets the formatted string representation of the value.
 	/// </summary>
-	[Reactive] public string Value { get; set; } = "";
+	[Reactive] public partial string Value { get; set; } = "";
 
 	/// <summary>
 	/// Gets or sets the original watch expression.
 	/// </summary>
-	[Reactive] public string Expression { get; set; } = "";
+	[Reactive] public partial string Expression { get; set; } = "";
 
 	/// <summary>
 	/// Gets or sets whether the value changed since the last evaluation.
@@ -499,7 +499,7 @@ public sealed class WatchValueInfo : ReactiveObject {
 	/// <remarks>
 	/// Used to highlight changed values in the UI.
 	/// </remarks>
-	[Reactive] public bool IsChanged { get; set; } = false;
+	[Reactive] public partial bool IsChanged { get; set; } = false;
 
 	/// <summary>
 	/// Gets or sets the raw numeric value of the expression, or -1 if invalid/non-numeric.

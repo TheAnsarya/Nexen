@@ -19,7 +19,7 @@ using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -31,7 +31,7 @@ namespace Nexen.Debugger.ViewModels;
 /// for systems with coprocessors (SNES SA-1, GSU, etc.) and can log to files.
 /// Features include searching, selection, copying, and configurable display options.
 /// </remarks>
-public sealed class TraceLoggerViewModel : DisposableViewModel, ISelectableModel {
+public sealed partial class TraceLoggerViewModel : DisposableViewModel, ISelectableModel {
 	/// <summary>
 	/// Gets the trace logger configuration settings.
 	/// </summary>
@@ -40,112 +40,112 @@ public sealed class TraceLoggerViewModel : DisposableViewModel, ISelectableModel
 	/// <summary>
 	/// Gets or sets the style provider for rendering trace log lines.
 	/// </summary>
-	[Reactive] public TraceLoggerStyleProvider StyleProvider { get; set; }
+	[Reactive] public partial TraceLoggerStyleProvider StyleProvider { get; set; }
 
 	/// <summary>
 	/// Gets or sets the array of trace log lines to display.
 	/// </summary>
-	[Reactive] public CodeLineData[] TraceLogLines { get; set; } = [];
+	[Reactive] public partial CodeLineData[] TraceLogLines { get; set; } = [];
 
 	/// <summary>
 	/// Gets or sets the number of visible rows in the view.
 	/// </summary>
-	[Reactive] public int VisibleRowCount { get; set; } = 100;
+	[Reactive] public partial int VisibleRowCount { get; set; } = 100;
 
 	/// <summary>
 	/// Gets or sets the current scroll position in the trace buffer.
 	/// </summary>
-	[Reactive] public int ScrollPosition { get; set; } = 0;
+	[Reactive] public partial int ScrollPosition { get; set; } = 0;
 
 	/// <summary>
 	/// Gets or sets the minimum scroll position (based on trace buffer size).
 	/// </summary>
-	[Reactive] public int MinScrollPosition { get; set; } = 0;
+	[Reactive] public partial int MinScrollPosition { get; set; } = 0;
 
 	/// <summary>
 	/// Gets or sets the maximum scroll position (trace buffer size).
 	/// </summary>
-	[Reactive] public int MaxScrollPosition { get; set; } = DebugApi.TraceLogBufferSize;
+	[Reactive] public partial int MaxScrollPosition { get; set; } = DebugApi.TraceLogBufferSize;
 
 	/// <summary>
 	/// Gets or sets whether logging to a file is currently active.
 	/// </summary>
-	[Reactive] public bool IsLoggingToFile { get; set; } = false;
+	[Reactive] public partial bool IsLoggingToFile { get; set; } = false;
 
 	/// <summary>
 	/// Gets or sets the list of option tabs for each CPU type.
 	/// </summary>
-	[Reactive] public List<TraceLoggerOptionTab> Tabs { get; set; } = new();
+	[Reactive] public partial List<TraceLoggerOptionTab> Tabs { get; set; } = new();
 
 	/// <summary>
 	/// Gets or sets the currently selected CPU option tab.
 	/// </summary>
-	[Reactive] public TraceLoggerOptionTab SelectedTab { get; set; } = null!;
+	[Reactive] public partial TraceLoggerOptionTab SelectedTab { get; set; } = null!;
 
 	/// <summary>
 	/// Gets or sets the path to the trace log file.
 	/// </summary>
-	[Reactive] public string? TraceFile { get; set; } = null;
+	[Reactive] public partial string? TraceFile { get; set; } = null;
 
 	/// <summary>
 	/// Gets whether the user can open the trace file (not currently logging).
 	/// </summary>
-	[Reactive] public bool AllowOpenTraceFile { get; private set; } = false;
+	[Reactive] public partial bool AllowOpenTraceFile { get; private set; } = false;
 
 	/// <summary>
 	/// Gets or sets whether the start logging button is enabled.
 	/// </summary>
-	[Reactive] public bool IsStartLoggingEnabled { get; set; }
+	[Reactive] public partial bool IsStartLoggingEnabled { get; set; }
 
 	/// <summary>
 	/// Gets whether byte code display is enabled for any CPU.
 	/// </summary>
-	[Reactive] public bool ShowByteCode { get; private set; }
+	[Reactive] public partial bool ShowByteCode { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the start row of the current selection.
 	/// </summary>
-	[Reactive] public int SelectionStart { get; private set; }
+	[Reactive] public partial int SelectionStart { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the end row of the current selection.
 	/// </summary>
-	[Reactive] public int SelectionEnd { get; private set; }
+	[Reactive] public partial int SelectionEnd { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the anchor point for extending selections.
 	/// </summary>
-	[Reactive] public int SelectionAnchor { get; private set; }
+	[Reactive] public partial int SelectionAnchor { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the currently selected row number.
 	/// </summary>
-	[Reactive] public int SelectedRow { get; private set; }
+	[Reactive] public partial int SelectedRow { get; private set; }
 
 	/// <summary>
 	/// Gets or sets the toolbar context menu items.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> ToolbarItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> ToolbarItems { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the File menu items.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> FileMenuItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> FileMenuItems { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the Debug menu items.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> DebugMenuItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> DebugMenuItems { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the Search menu items.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> SearchMenuItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> SearchMenuItems { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the View menu items.
 	/// </summary>
-	[Reactive] public List<ContextMenuAction> ViewMenuItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> ViewMenuItems { get; private set; } = new();
 
 	/// <summary>
 	/// Gets the quick search view model for finding text in the trace log.
@@ -626,7 +626,7 @@ public sealed class TraceLoggerViewModel : DisposableViewModel, ISelectableModel
 /// Each tab controls the logging options for a specific CPU type,
 /// including format customization, register display, and condition filters.
 /// </remarks>
-public sealed class TraceLoggerOptionTab : DisposableViewModel {
+public sealed partial class TraceLoggerOptionTab : DisposableViewModel {
 	/// <summary>
 	/// Gets or sets the display name for the tab.
 	/// </summary>
@@ -675,12 +675,12 @@ public sealed class TraceLoggerOptionTab : DisposableViewModel {
 	/// <summary>
 	/// Gets or sets the current format string (auto-generated or custom).
 	/// </summary>
-	[Reactive] public string Format { get; set; } = "";
+	[Reactive] public partial string Format { get; set; } = "";
 
 	/// <summary>
 	/// Gets or sets whether the condition expression is valid.
 	/// </summary>
-	[Reactive] public bool IsConditionValid { get; set; } = true;
+	[Reactive] public partial bool IsConditionValid { get; set; } = true;
 
 	/// <summary>
 	/// Reference to the parent trace logger view model.
@@ -989,7 +989,7 @@ public sealed class TraceLoggerOptionTab : DisposableViewModel {
 /// Main CPU uses default colors, secondary CPUs and coprocessors use
 /// distinct colors for easy identification.
 /// </remarks>
-public sealed class TraceLoggerStyleProvider : ILineStyleProvider {
+public sealed partial class TraceLoggerStyleProvider : ILineStyleProvider {
 	/// <summary>
 	/// The console type for determining main CPU.
 	/// </summary>

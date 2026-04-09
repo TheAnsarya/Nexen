@@ -1,20 +1,20 @@
 using System;
 using System.Runtime.InteropServices;
 using Nexen.Interop;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
 
-public sealed class ChannelFConfig : BaseConfig<ChannelFConfig> {
-	[Reactive] public ConsoleOverrideConfig ConfigOverrides { get; set; } = new();
-	[Reactive] public ControllerConfig Controller { get; set; } = new();
-	[Reactive] public ControllerConfig ConsolePanel { get; set; } = new();
-	[Reactive] public ChannelFConsoleVariant ConsoleVariant { get; set; } = ChannelFConsoleVariant.Auto;
-	[Reactive] public ConsoleRegion Region { get; set; } = ConsoleRegion.Auto;
+public sealed partial class ChannelFConfig : BaseConfig<ChannelFConfig> {
+	[Reactive] public partial ConsoleOverrideConfig ConfigOverrides { get; set; } = new();
+	[Reactive] public partial ControllerConfig Controller { get; set; } = new();
+	[Reactive] public partial ControllerConfig ConsolePanel { get; set; } = new();
+	[Reactive] public partial ChannelFConsoleVariant ConsoleVariant { get; set; } = ChannelFConsoleVariant.Auto;
+	[Reactive] public partial ConsoleRegion Region { get; set; } = ConsoleRegion.Auto;
 
-	[Reactive] public RamState RamPowerOnState { get; set; } = RamState.AllZeros;
+	[Reactive] public partial RamState RamPowerOnState { get; set; } = RamState.AllZeros;
 
-	[Reactive][MinMax(0, 100)] public UInt32 AudioVol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 AudioVol { get; set; } = 100;
 
 	public void ApplyConfig() {
 		ConfigManager.Config.Video.ApplyConfig();

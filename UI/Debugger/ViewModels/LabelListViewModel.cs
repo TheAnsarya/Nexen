@@ -16,7 +16,7 @@ using Nexen.Debugger.Windows;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -31,21 +31,21 @@ namespace Nexen.Debugger.ViewModels;
 /// - Context menu with add, edit, delete, and navigation actions
 /// - Integration with breakpoints and watch expressions
 /// </remarks>
-public sealed class LabelListViewModel : DisposableViewModel {
+public sealed partial class LabelListViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets or sets the observable collection of label view models.
 	/// </summary>
-	[Reactive] public NexenList<LabelViewModel> Labels { get; private set; } = new();
+	[Reactive] public partial NexenList<LabelViewModel> Labels { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the selection model for multi-select support.
 	/// </summary>
-	[Reactive] public SelectionModel<LabelViewModel?> Selection { get; set; } = new() { SingleSelect = false };
+	[Reactive] public partial SelectionModel<LabelViewModel?> Selection { get; set; } = new() { SingleSelect = false };
 
 	/// <summary>
 	/// Gets or sets the current sort state for column ordering.
 	/// </summary>
-	[Reactive] public SortState SortState { get; set; } = new();
+	[Reactive] public partial SortState SortState { get; set; } = new();
 
 	/// <summary>
 	/// Gets the column widths from user configuration.
@@ -238,7 +238,7 @@ public sealed class LabelListViewModel : DisposableViewModel {
 /// ViewModel wrapper for a single code label, providing display-friendly properties.
 /// Implements <see cref="INotifyPropertyChanged"/> for UI data binding.
 /// </summary>
-public sealed class LabelViewModel : INotifyPropertyChanged {
+public sealed partial class LabelViewModel : INotifyPropertyChanged {
 	/// <summary>
 	/// Indicates whether the label's memory type is an unmapped type (e.g., PRG ROM).
 	/// </summary>

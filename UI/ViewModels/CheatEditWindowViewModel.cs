@@ -9,17 +9,17 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.Windows;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class CheatEditWindowViewModel : DisposableViewModel {
+public sealed partial class CheatEditWindowViewModel : DisposableViewModel {
 	public CheatCode Cheat { get; }
 
-	[ObservableAsProperty] public string ConvertedCodes { get; } = "";
-	[Reactive] public bool ShowInvalidCodeHint { get; private set; } = false;
-	[Reactive] public bool OkButtonEnabled { get; private set; } = false;
+	[ObservableAsProperty] private string _convertedCodes = "";
+	[Reactive] public partial bool ShowInvalidCodeHint { get; private set; } = false;
+	[Reactive] public partial bool OkButtonEnabled { get; private set; } = false;
 
-	[Reactive] public Enum[] AvailableCheatTypes { get; private set; } = [];
+	[Reactive] public partial Enum[] AvailableCheatTypes { get; private set; } = [];
 
 	private MainWindowViewModel MainWndModel { get; }
 
@@ -30,7 +30,7 @@ public sealed class CheatEditWindowViewModel : DisposableViewModel {
 		Cheat = cheat;
 		MainWndModel = MainWindowViewModel.Instance;
 
-		AddDisposable(this.WhenAnyValue(x => x.Cheat.Codes, x => x.Cheat.Type).Select(x => {
+		AddDisposable(_convertedCodesHelper = this.WhenAnyValue(x => x.Cheat.Codes, x => x.Cheat.Type).Select(x => {
 			string[] codes = cheat.Codes.Split(Environment.NewLine);
 			StringBuilder sb = new StringBuilder();
 			bool hasInvalidCode = false;
@@ -65,7 +65,7 @@ public sealed class CheatEditWindowViewModel : DisposableViewModel {
 			OkButtonEnabled = hasValidCode && !hasInvalidCode;
 
 			return sb.ToString();
-		}).ToPropertyEx(this, x => x.ConvertedCodes));
+		}).ToProperty(this, _ => _.ConvertedCodes));
 
 		if (Design.IsDesignMode) {
 			return;

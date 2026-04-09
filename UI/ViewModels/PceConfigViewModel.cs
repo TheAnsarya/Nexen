@@ -8,13 +8,13 @@ using Nexen.Config;
 using Nexen.Controls;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class PceConfigViewModel : DisposableViewModel {
-	[Reactive] public PcEngineConfig Config { get; set; }
-	[Reactive] public PcEngineConfig OriginalConfig { get; set; }
-	[Reactive] public PceConfigTab SelectedTab { get; set; } = 0;
+public sealed partial class PceConfigViewModel : DisposableViewModel {
+	[Reactive] public partial PcEngineConfig Config { get; set; }
+	[Reactive] public partial PcEngineConfig OriginalConfig { get; set; }
+	[Reactive] public partial PceConfigTab SelectedTab { get; set; } = 0;
 
 	public PceInputConfigViewModel Input { get; private set; }
 

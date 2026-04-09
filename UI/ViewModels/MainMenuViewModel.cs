@@ -25,34 +25,34 @@ using Nexen.Services;
 using Nexen.Utilities;
 using Nexen.Windows;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the main application menu.
 /// Manages all menu items for File, Game, Options, Tools, Debug, and Help menus.
 /// </summary>
-public sealed class MainMenuViewModel : ViewModelBase {
+public sealed partial class MainMenuViewModel : ViewModelBase {
 	/// <summary>Gets or sets the parent main window ViewModel.</summary>
 	public MainWindowViewModel MainWindow { get; set; }
 
 	/// <summary>Gets or sets the File menu items.</summary>
-	[Reactive] public List<object> FileMenuItems { get; set; } = new();
+	[Reactive] public partial List<object> FileMenuItems { get; set; } = new();
 
 	/// <summary>Gets or sets the Game menu items.</summary>
-	[Reactive] public List<object> GameMenuItems { get; set; } = new();
+	[Reactive] public partial List<object> GameMenuItems { get; set; } = new();
 
 	/// <summary>Gets or sets the Options menu items.</summary>
-	[Reactive] public List<object> OptionsMenuItems { get; set; } = new();
+	[Reactive] public partial List<object> OptionsMenuItems { get; set; } = new();
 
 	/// <summary>Gets or sets the Tools menu items.</summary>
-	[Reactive] public List<object> ToolsMenuItems { get; set; } = [];
+	[Reactive] public partial List<object> ToolsMenuItems { get; set; } = [];
 
 	/// <summary>Gets or sets the Debug menu items.</summary>
-	[Reactive] public List<object> DebugMenuItems { get; set; } = [];
+	[Reactive] public partial List<object> DebugMenuItems { get; set; } = [];
 
 	/// <summary>Gets or sets the Help menu items.</summary>
-	[Reactive] public List<object> HelpMenuItems { get; set; } = [];
+	[Reactive] public partial List<object> HelpMenuItems { get; set; } = [];
 
 	/// <summary>NetPlay controller selection items.</summary>
 	[Reactive] private List<object> _netPlayControllers { get; set; } = new();

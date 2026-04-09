@@ -1,57 +1,57 @@
 using Nexen.Interop;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
 
-public sealed class WsEventViewerConfig : ViewModelBase {
-	[Reactive] public EventViewerCategoryCfg PpuPaletteRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[0]);
-	[Reactive] public EventViewerCategoryCfg PpuPaletteWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[1]);
+public sealed partial class WsEventViewerConfig : ViewModelBase {
+	[Reactive] public partial EventViewerCategoryCfg PpuPaletteRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[0]);
+	[Reactive] public partial EventViewerCategoryCfg PpuPaletteWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[1]);
 
-	[Reactive] public EventViewerCategoryCfg PpuVramRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[2]);
-	[Reactive] public EventViewerCategoryCfg PpuVramWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[3]);
+	[Reactive] public partial EventViewerCategoryCfg PpuVramRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[2]);
+	[Reactive] public partial EventViewerCategoryCfg PpuVramWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[3]);
 
-	[Reactive] public EventViewerCategoryCfg PpuScrollRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[4]);
-	[Reactive] public EventViewerCategoryCfg PpuScrollWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[5]);
-	[Reactive] public EventViewerCategoryCfg PpuWindowRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[6]);
-	[Reactive] public EventViewerCategoryCfg PpuWindowWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[7]);
-	[Reactive] public EventViewerCategoryCfg PpuOtherRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[8]);
-	[Reactive] public EventViewerCategoryCfg PpuOtherWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[9]);
+	[Reactive] public partial EventViewerCategoryCfg PpuScrollRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[4]);
+	[Reactive] public partial EventViewerCategoryCfg PpuScrollWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[5]);
+	[Reactive] public partial EventViewerCategoryCfg PpuWindowRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[6]);
+	[Reactive] public partial EventViewerCategoryCfg PpuWindowWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[7]);
+	[Reactive] public partial EventViewerCategoryCfg PpuOtherRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[8]);
+	[Reactive] public partial EventViewerCategoryCfg PpuOtherWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[9]);
 
-	[Reactive] public EventViewerCategoryCfg AudioRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[10]);
-	[Reactive] public EventViewerCategoryCfg AudioWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[11]);
+	[Reactive] public partial EventViewerCategoryCfg AudioRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[10]);
+	[Reactive] public partial EventViewerCategoryCfg AudioWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[11]);
 
-	[Reactive] public EventViewerCategoryCfg SerialRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[12]);
-	[Reactive] public EventViewerCategoryCfg SerialWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[13]);
+	[Reactive] public partial EventViewerCategoryCfg SerialRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[12]);
+	[Reactive] public partial EventViewerCategoryCfg SerialWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[13]);
 
-	[Reactive] public EventViewerCategoryCfg DmaRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[14]);
-	[Reactive] public EventViewerCategoryCfg DmaWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[15]);
+	[Reactive] public partial EventViewerCategoryCfg DmaRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[14]);
+	[Reactive] public partial EventViewerCategoryCfg DmaWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[15]);
 
-	[Reactive] public EventViewerCategoryCfg InputRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[16]);
-	[Reactive] public EventViewerCategoryCfg InputWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[17]);
+	[Reactive] public partial EventViewerCategoryCfg InputRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[16]);
+	[Reactive] public partial EventViewerCategoryCfg InputWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[17]);
 
-	[Reactive] public EventViewerCategoryCfg IrqRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[18]);
-	[Reactive] public EventViewerCategoryCfg IrqWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[19]);
+	[Reactive] public partial EventViewerCategoryCfg IrqRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[18]);
+	[Reactive] public partial EventViewerCategoryCfg IrqWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[19]);
 
-	[Reactive] public EventViewerCategoryCfg TimerRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[20]);
-	[Reactive] public EventViewerCategoryCfg TimerWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[21]);
+	[Reactive] public partial EventViewerCategoryCfg TimerRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[20]);
+	[Reactive] public partial EventViewerCategoryCfg TimerWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[21]);
 
-	[Reactive] public EventViewerCategoryCfg EepromRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[22]);
-	[Reactive] public EventViewerCategoryCfg EepromWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[23]);
+	[Reactive] public partial EventViewerCategoryCfg EepromRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[22]);
+	[Reactive] public partial EventViewerCategoryCfg EepromWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[23]);
 
-	[Reactive] public EventViewerCategoryCfg CartRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[24]);
-	[Reactive] public EventViewerCategoryCfg CartWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[25]);
+	[Reactive] public partial EventViewerCategoryCfg CartRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[24]);
+	[Reactive] public partial EventViewerCategoryCfg CartWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[25]);
 
-	[Reactive] public EventViewerCategoryCfg OtherRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[26]);
-	[Reactive] public EventViewerCategoryCfg OtherWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[27]);
+	[Reactive] public partial EventViewerCategoryCfg OtherRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[26]);
+	[Reactive] public partial EventViewerCategoryCfg OtherWrite { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[27]);
 
-	[Reactive] public EventViewerCategoryCfg PpuVCounterRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[28]);
+	[Reactive] public partial EventViewerCategoryCfg PpuVCounterRead { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[28]);
 
-	[Reactive] public EventViewerCategoryCfg Irq { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[29]);
+	[Reactive] public partial EventViewerCategoryCfg Irq { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[29]);
 
-	[Reactive] public EventViewerCategoryCfg MarkedBreakpoints { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[30]);
+	[Reactive] public partial EventViewerCategoryCfg MarkedBreakpoints { get; set; } = new EventViewerCategoryCfg(EventViewerColors.Colors[30]);
 
-	[Reactive] public bool ShowPreviousFrameEvents { get; set; } = true;
+	[Reactive] public partial bool ShowPreviousFrameEvents { get; set; } = true;
 
 	public InteropWsEventViewerConfig ToInterop() {
 		return new InteropWsEventViewerConfig() {

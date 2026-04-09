@@ -7,25 +7,25 @@ using Nexen.Config;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the storage folder selection dialog.
 /// Handles migrating configuration between portable and user profile storage.
 /// </summary>
-public sealed class SelectStorageFolderViewModel : ViewModelBase {
+public sealed partial class SelectStorageFolderViewModel : ViewModelBase {
 	/// <summary>Gets or sets whether to store in the user profile folder.</summary>
-	[Reactive] public bool StoreInUserProfile { get; set; }
+	[Reactive] public partial bool StoreInUserProfile { get; set; }
 
 	/// <summary>Gets or sets whether a file copy operation is in progress.</summary>
-	[Reactive] public bool IsCopying { get; set; }
+	[Reactive] public partial bool IsCopying { get; set; }
 
 	/// <summary>Gets or sets the copy operation progress percentage.</summary>
-	[Reactive] public int CopyProgress { get; set; }
+	[Reactive] public partial int CopyProgress { get; set; }
 
 	/// <summary>Gets the destination folder path based on current selection.</summary>
-	[Reactive] public string DestinationFolder { get; private set; } = "";
+	[Reactive] public partial string DestinationFolder { get; private set; } = "";
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="SelectStorageFolderViewModel"/> class.

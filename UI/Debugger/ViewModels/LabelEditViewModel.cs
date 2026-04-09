@@ -9,7 +9,7 @@ using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels; 
 /// <summary>
@@ -29,26 +29,26 @@ namespace Nexen.Debugger.ViewModels;
 /// Uses ReactiveUI observables to provide real-time validation feedback as the user types.
 /// </para>
 /// </remarks>
-public sealed class LabelEditViewModel : DisposableViewModel {
+public sealed partial class LabelEditViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets or sets the reactive code label being edited.
 	/// </summary>
-	[Reactive] public ReactiveCodeLabel Label { get; set; }
+	[Reactive] public partial ReactiveCodeLabel Label { get; set; }
 
 	/// <summary>
 	/// Gets whether the OK button should be enabled (all validation passed).
 	/// </summary>
-	[ObservableAsProperty] public bool OkEnabled { get; }
+	[ObservableAsProperty] private bool _okEnabled;
 
 	/// <summary>
 	/// Gets the maximum address display string for the current memory type.
 	/// </summary>
-	[ObservableAsProperty] public string MaxAddress { get; } = "";
+	[ObservableAsProperty] private string _maxAddress = "";
 
 	/// <summary>
 	/// Gets or sets the current validation error message, or empty string if valid.
 	/// </summary>
-	[Reactive] public string ErrorMessage { get; private set; } = "";
+	[Reactive] public partial string ErrorMessage { get; private set; } = "";
 
 	/// <summary>
 	/// Gets whether the delete button should be shown (editing existing label).
@@ -101,17 +101,17 @@ public sealed class LabelEditViewModel : DisposableViewModel {
 		}
 
 		// Update max address display when memory type changes
-		AddDisposable(this.WhenAnyValue(x => x.Label.MemoryType, (memoryType) => {
+		AddDisposable(_maxAddressHelper = this.WhenAnyValue(x => x.Label.MemoryType, (memoryType) => {
 			int maxAddress = DebugApi.GetMemorySize(memoryType) - 1;
 			if (maxAddress <= 0) {
 				return "(unavailable)";
 			} else {
 				return "(Max: $" + maxAddress.ToString("X4") + ")";
 			}
-		}).ToPropertyEx(this, x => x.MaxAddress));
+		}).ToProperty(this, _ => _.MaxAddress));
 
 		// Comprehensive validation when any relevant property changes
-		AddDisposable(this.WhenAnyValue(x => x.Label.Label, x => x.Label.Comment, x => x.Label.Length, x => x.Label.MemoryType, x => x.Label.Address, (label, comment, length, memoryType, address) => {
+		AddDisposable(_okEnabledHelper = this.WhenAnyValue(x => x.Label.Label, x => x.Label.Comment, x => x.Label.Length, x => x.Label.MemoryType, x => x.Label.Address, (label, comment, length, memoryType, address) => {
 			CodeLabel? sameLabel = LabelManager.GetLabel(label);
 			int maxAddress = DebugApi.GetMemorySize(memoryType) - 1;
 
@@ -159,7 +159,7 @@ public sealed class LabelEditViewModel : DisposableViewModel {
 			}
 
 			return false;
-		}).ToPropertyEx(this, x => x.OkEnabled));
+		}).ToProperty(this, _ => _.OkEnabled));
 	}
 
 	/// <summary>
@@ -193,7 +193,7 @@ public sealed class LabelEditViewModel : DisposableViewModel {
 	/// Call <see cref="Commit"/> to save changes back to the original label.
 	/// </para>
 	/// </remarks>
-	public sealed class ReactiveCodeLabel : ReactiveObject {
+	public sealed partial class ReactiveCodeLabel : ReactiveObject {
 		private CodeLabel _originalLabel;
 
 		/// <summary>
@@ -224,21 +224,21 @@ public sealed class LabelEditViewModel : DisposableViewModel {
 		}
 
 		/// <summary>Gets or sets the memory address of the label.</summary>
-		[Reactive] public UInt32 Address { get; set; }
+		[Reactive] public partial UInt32 Address { get; set; }
 
 		/// <summary>Gets or sets the memory type where the label resides.</summary>
-		[Reactive] public MemoryType MemoryType { get; set; }
+		[Reactive] public partial MemoryType MemoryType { get; set; }
 
 		/// <summary>Gets or sets the label name (must be a valid identifier).</summary>
-		[Reactive] public string Label { get; set; } = "";
+		[Reactive] public partial string Label { get; set; } = "";
 
 		/// <summary>Gets or sets the comment text associated with the label.</summary>
-		[Reactive] public string Comment { get; set; } = "";
+		[Reactive] public partial string Comment { get; set; } = "";
 
 		/// <summary>Gets or sets the label flags (function start, auto-generated, etc.).</summary>
-		[Reactive] public CodeLabelFlags Flags { get; set; }
+		[Reactive] public partial CodeLabelFlags Flags { get; set; }
 
 		/// <summary>Gets or sets the length in bytes covered by this label (for data tables).</summary>
-		[Reactive] public UInt32 Length { get; set; } = 1;
+		[Reactive] public partial UInt32 Length { get; set; } = 1;
 	}
 }

@@ -3,66 +3,66 @@ using System.Reactive.Linq;
 using Nexen.Config;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the configuration window.
 /// Lazily loads child ViewModels for each configuration tab and manages save/revert operations.
 /// </summary>
-public sealed class ConfigViewModel : DisposableViewModel {
+public sealed partial class ConfigViewModel : DisposableViewModel {
 	private Configuration _originalConfig = new();
 
 	/// <summary>Gets or sets the audio configuration ViewModel.</summary>
-	[Reactive] public AudioConfigViewModel? Audio { get; set; }
+	[Reactive] public partial AudioConfigViewModel? Audio { get; set; }
 
 	/// <summary>Gets or sets the input configuration ViewModel.</summary>
-	[Reactive] public InputConfigViewModel? Input { get; set; }
+	[Reactive] public partial InputConfigViewModel? Input { get; set; }
 
 	/// <summary>Gets or sets the video configuration ViewModel.</summary>
-	[Reactive] public VideoConfigViewModel? Video { get; set; }
+	[Reactive] public partial VideoConfigViewModel? Video { get; set; }
 
 	/// <summary>Gets or sets the preferences configuration ViewModel.</summary>
-	[Reactive] public PreferencesConfigViewModel? Preferences { get; set; }
+	[Reactive] public partial PreferencesConfigViewModel? Preferences { get; set; }
 
 	/// <summary>Gets or sets the emulation configuration ViewModel.</summary>
-	[Reactive] public EmulationConfigViewModel? Emulation { get; set; }
+	[Reactive] public partial EmulationConfigViewModel? Emulation { get; set; }
 
 	/// <summary>Gets or sets the SNES configuration ViewModel.</summary>
-	[Reactive] public SnesConfigViewModel? Snes { get; set; }
+	[Reactive] public partial SnesConfigViewModel? Snes { get; set; }
 
 	/// <summary>Gets or sets the NES configuration ViewModel.</summary>
-	[Reactive] public NesConfigViewModel? Nes { get; set; }
+	[Reactive] public partial NesConfigViewModel? Nes { get; set; }
 
 	/// <summary>Gets or sets the Game Boy configuration ViewModel.</summary>
-	[Reactive] public GameboyConfigViewModel? Gameboy { get; set; }
+	[Reactive] public partial GameboyConfigViewModel? Gameboy { get; set; }
 
 	/// <summary>Gets or sets the GBA configuration ViewModel.</summary>
-	[Reactive] public GbaConfigViewModel? Gba { get; set; }
+	[Reactive] public partial GbaConfigViewModel? Gba { get; set; }
 
 	/// <summary>Gets or sets the PC Engine configuration ViewModel.</summary>
-	[Reactive] public PceConfigViewModel? PcEngine { get; set; }
+	[Reactive] public partial PceConfigViewModel? PcEngine { get; set; }
 
 	/// <summary>Gets or sets the Sega Master System configuration ViewModel.</summary>
-	[Reactive] public SmsConfigViewModel? Sms { get; set; }
+	[Reactive] public partial SmsConfigViewModel? Sms { get; set; }
 
 	/// <summary>Gets or sets the WonderSwan configuration ViewModel.</summary>
-	[Reactive] public WsConfigViewModel? Ws { get; set; }
+	[Reactive] public partial WsConfigViewModel? Ws { get; set; }
 
 	/// <summary>Gets or sets the Lynx configuration ViewModel.</summary>
-	[Reactive] public LynxConfigViewModel? Lynx { get; set; }
+	[Reactive] public partial LynxConfigViewModel? Lynx { get; set; }
 
 	/// <summary>Gets or sets the Atari 2600 configuration ViewModel.</summary>
-	[Reactive] public Atari2600ConfigViewModel? Atari2600 { get; set; }
+	[Reactive] public partial Atari2600ConfigViewModel? Atari2600 { get; set; }
 
 	/// <summary>Gets or sets the Channel F configuration ViewModel.</summary>
-	[Reactive] public ChannelFConfigViewModel? ChannelF { get; set; }
+	[Reactive] public partial ChannelFConfigViewModel? ChannelF { get; set; }
 
 	/// <summary>Gets or sets the other consoles configuration ViewModel.</summary>
-	[Reactive] public OtherConsolesConfigViewModel? OtherConsoles { get; set; }
+	[Reactive] public partial OtherConsolesConfigViewModel? OtherConsoles { get; set; }
 
 	/// <summary>Gets or sets the currently selected tab index.</summary>
-	[Reactive] public ConfigWindowTab SelectedIndex { get; set; }
+	[Reactive] public partial ConfigWindowTab SelectedIndex { get; set; }
 
 	/// <summary>Gets whether the window should always be on top.</summary>
 	public bool AlwaysOnTop { get; }

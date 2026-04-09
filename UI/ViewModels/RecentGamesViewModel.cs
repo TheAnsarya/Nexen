@@ -11,28 +11,28 @@ using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the recent games and save state selection screens.
 /// Handles displaying recent games, loading save states, and save state management.
 /// </summary>
-public sealed class RecentGamesViewModel : ViewModelBase {
+public sealed partial class RecentGamesViewModel : ViewModelBase {
 	/// <summary>Gets or sets whether the recent games screen is visible.</summary>
-	[Reactive] public bool Visible { get; set; }
+	[Reactive] public partial bool Visible { get; set; }
 
 	/// <summary>Gets or sets whether emulation should resume when the screen is closed.</summary>
-	[Reactive] public bool NeedResume { get; set; }
+	[Reactive] public partial bool NeedResume { get; set; }
 
 	/// <summary>Gets or sets the screen title text.</summary>
-	[Reactive] public string Title { get; private set; } = "";
+	[Reactive] public partial string Title { get; private set; } = "";
 
 	/// <summary>Gets or sets the current display mode.</summary>
-	[Reactive] public GameScreenMode Mode { get; private set; }
+	[Reactive] public partial GameScreenMode Mode { get; private set; }
 
 	/// <summary>Gets or sets the list of game entries to display.</summary>
-	[Reactive] public List<RecentGameInfo> GameEntries { get; private set; } = [];
+	[Reactive] public partial List<RecentGameInfo> GameEntries { get; private set; } = [];
 
 	/// <summary>
 	/// Whether the current mode supports deleting entries (e.g., SaveStatePicker)
@@ -240,7 +240,7 @@ public enum GameScreenMode {
 /// <summary>
 /// Represents a single entry in the recent games or save state list.
 /// </summary>
-public sealed class RecentGameInfo {
+public sealed partial class RecentGameInfo {
 	/// <summary>Gets or sets the file path to the game or save state.</summary>
 	public string FileName { get; set; } = "";
 

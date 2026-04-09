@@ -16,10 +16,10 @@ using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.Utilities;
-public abstract class BaseMenuAction : ViewModelBase, IDisposable {
+public abstract partial class BaseMenuAction : ViewModelBase, IDisposable {
 	private static Dictionary<ActionType, string?> _iconCache = new();
 
 	public ActionType ActionType;
@@ -110,13 +110,13 @@ public abstract class BaseMenuAction : ViewModelBase, IDisposable {
 
 	protected abstract string InternalShortcutText { get; }
 
-	[Reactive] public string ShortcutText { get; set; } = "";
-	[Reactive] public string ActionName { get; set; } = "";
-	[Reactive] public Image? ActionIcon { get; set; }
-	[Reactive] public bool Enabled { get; set; } = true;  // Default to enabled
-	[Reactive] public bool Visible { get; set; } = true;
+	[Reactive] public partial string ShortcutText { get; set; } = "";
+	[Reactive] public partial string ActionName { get; set; } = "";
+	[Reactive] public partial Image? ActionIcon { get; set; }
+	[Reactive] public partial bool Enabled { get; set; } = true;  // Default to enabled
+	[Reactive] public partial bool Visible { get; set; } = true;
 
-	[Reactive] public string TooltipText { get; set; } = "";
+	[Reactive] public partial string TooltipText { get; set; } = "";
 
 	private static SimpleCommand _emptyCommand = new SimpleCommand(() => { });
 
@@ -184,7 +184,7 @@ public abstract class BaseMenuAction : ViewModelBase, IDisposable {
 	}
 }
 
-public sealed class MainMenuAction : BaseMenuAction {
+public sealed partial class MainMenuAction : BaseMenuAction {
 	/// <summary>
 	/// Shortcuts that should always be enabled regardless of emulator state.
 	/// </summary>
@@ -228,7 +228,7 @@ public sealed class MainMenuAction : BaseMenuAction {
 
 }
 
-public class ContextMenuAction : BaseMenuAction {
+public partial class ContextMenuAction : BaseMenuAction {
 	public Func<DbgShortKeys>? Shortcut { get; set; }
 	protected override string InternalShortcutText => Shortcut?.Invoke().ToString() ?? "";
 
@@ -238,7 +238,7 @@ public class ContextMenuAction : BaseMenuAction {
 	}
 }
 
-public sealed class ContextMenuSeparator : ContextMenuAction {
+public sealed partial class ContextMenuSeparator : ContextMenuAction {
 	public override string Name => "-";
 
 	public ContextMenuSeparator() {
@@ -246,7 +246,7 @@ public sealed class ContextMenuSeparator : ContextMenuAction {
 	}
 }
 
-public sealed class SimpleCommand : ICommand {
+public sealed partial class SimpleCommand : ICommand {
 	private Action _commandAction;
 
 #pragma warning disable CS0067 // The event 'SimpleCommand.CanExecuteChanged' is never used

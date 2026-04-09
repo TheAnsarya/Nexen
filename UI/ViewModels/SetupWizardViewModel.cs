@@ -6,43 +6,43 @@ using Nexen.Config;
 using Nexen.Utilities;
 using Nexen.Windows;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the first-run setup wizard.
 /// Handles initial configuration of storage location, controller mappings, and shortcuts.
 /// </summary>
-public sealed class SetupWizardViewModel : ViewModelBase {
+public sealed partial class SetupWizardViewModel : ViewModelBase {
 	/// <summary>Gets or sets whether to store configuration in the user profile folder.</summary>
-	[Reactive] public bool StoreInUserProfile { get; set; } = true;
+	[Reactive] public partial bool StoreInUserProfile { get; set; } = true;
 
 	/// <summary>Gets or sets whether to enable default Xbox controller mappings.</summary>
-	[Reactive] public bool EnableXboxMappings { get; set; } = true;
+	[Reactive] public partial bool EnableXboxMappings { get; set; } = true;
 
 	/// <summary>Gets or sets whether to enable default PlayStation controller mappings.</summary>
-	[Reactive] public bool EnablePsMappings { get; set; }
+	[Reactive] public partial bool EnablePsMappings { get; set; }
 
 	/// <summary>Gets or sets whether to enable WASD keyboard mappings.</summary>
-	[Reactive] public bool EnableWasdMappings { get; set; }
+	[Reactive] public partial bool EnableWasdMappings { get; set; }
 
 	/// <summary>Gets or sets whether to enable arrow key mappings.</summary>
-	[Reactive] public bool EnableArrowMappings { get; set; } = true;
+	[Reactive] public partial bool EnableArrowMappings { get; set; } = true;
 
 	/// <summary>Gets or sets the install/configuration folder location.</summary>
-	[Reactive] public string InstallLocation { get; set; }
+	[Reactive] public partial string InstallLocation { get; set; }
 
 	/// <summary>Gets or sets whether to create a desktop shortcut.</summary>
-	[Reactive] public bool CreateShortcut { get; set; } = true;
+	[Reactive] public partial bool CreateShortcut { get; set; } = true;
 
 	/// <summary>Gets or sets whether to enable automatic update checks.</summary>
-	[Reactive] public bool CheckForUpdates { get; set; } = true;
+	[Reactive] public partial bool CheckForUpdates { get; set; } = true;
 
 	/// <summary>Gets whether the current platform is macOS.</summary>
-	[Reactive] public bool IsOsx { get; set; } = OperatingSystem.IsMacOS();
+	[Reactive] public partial bool IsOsx { get; set; } = OperatingSystem.IsMacOS();
 
 	/// <summary>Gets whether portable mode is available (disabled for AppImage on Linux).</summary>
-	[Reactive] public bool CanUsePortableMode { get; set; } = !IsRunningInAppImage();
+	[Reactive] public partial bool CanUsePortableMode { get; set; } = !IsRunningInAppImage();
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="SetupWizardViewModel"/> class.

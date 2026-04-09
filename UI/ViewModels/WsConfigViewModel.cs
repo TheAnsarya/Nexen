@@ -7,13 +7,13 @@ using Nexen.Config;
 using Nexen.Utilities;
 using Nexen.Windows;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class WsConfigViewModel : DisposableViewModel {
-	[Reactive] public WsConfig Config { get; set; }
-	[Reactive] public WsConfig OriginalConfig { get; set; }
-	[Reactive] public WsConfigTab SelectedTab { get; set; } = 0;
+public sealed partial class WsConfigViewModel : DisposableViewModel {
+	[Reactive] public partial WsConfig Config { get; set; }
+	[Reactive] public partial WsConfig OriginalConfig { get; set; }
+	[Reactive] public partial WsConfigTab SelectedTab { get; set; } = 0;
 
 	public ReactiveCommand<Button, Unit> SetupPlayerHorizontal { get; }
 	public ReactiveCommand<Button, Unit> SetupPlayerVertical { get; }

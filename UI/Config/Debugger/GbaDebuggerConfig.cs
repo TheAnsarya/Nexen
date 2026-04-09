@@ -1,14 +1,14 @@
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
 
-public sealed class GbaDebuggerConfig : ViewModelBase {
-	[Reactive] public bool BreakOnInvalidOpCode { get; set; } = false;
-	[Reactive] public bool BreakOnNopLoad { get; set; } = false;
-	[Reactive] public bool BreakOnUnalignedMemAccess { get; set; } = false;
+public sealed partial class GbaDebuggerConfig : ViewModelBase {
+	[Reactive] public partial bool BreakOnInvalidOpCode { get; set; } = false;
+	[Reactive] public partial bool BreakOnNopLoad { get; set; } = false;
+	[Reactive] public partial bool BreakOnUnalignedMemAccess { get; set; } = false;
 
-	[Reactive] public GbaDisassemblyMode DisassemblyMode { get; set; } = GbaDisassemblyMode.Default;
+	[Reactive] public partial GbaDisassemblyMode DisassemblyMode { get; set; } = GbaDisassemblyMode.Default;
 }
 
 public enum GbaDisassemblyMode : byte {

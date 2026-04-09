@@ -15,7 +15,7 @@ using Nexen.Debugger.Windows;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -29,22 +29,22 @@ namespace Nexen.Debugger.ViewModels;
 /// - Sortable columns (Enabled, Marked, Type, Address, Condition)
 /// - Context menu with add, edit, delete, enable/disable, and navigation actions
 /// </remarks>
-public sealed class BreakpointListViewModel : DisposableViewModel {
+public sealed partial class BreakpointListViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets or sets the observable collection of breakpoint view models displayed in the list.
 	/// </summary>
-	[Reactive] public NexenList<BreakpointViewModel> Breakpoints { get; private set; } = new();
+	[Reactive] public partial NexenList<BreakpointViewModel> Breakpoints { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the selection model for tracking selected breakpoints.
 	/// Supports multiple selection for bulk operations.
 	/// </summary>
-	[Reactive] public SelectionModel<BreakpointViewModel?> Selection { get; set; } = new() { SingleSelect = false };
+	[Reactive] public partial SelectionModel<BreakpointViewModel?> Selection { get; set; } = new() { SingleSelect = false };
 
 	/// <summary>
 	/// Gets or sets the current sort state for column ordering.
 	/// </summary>
-	[Reactive] public SortState SortState { get; set; } = new();
+	[Reactive] public partial SortState SortState { get; set; } = new();
 
 	/// <summary>
 	/// Gets the column widths from user configuration.
@@ -235,7 +235,7 @@ public sealed class BreakpointListViewModel : DisposableViewModel {
 /// ViewModel wrapper for a single breakpoint, providing display-friendly properties.
 /// Implements <see cref="INotifyPropertyChanged"/> for UI data binding.
 /// </summary>
-public sealed class BreakpointViewModel : INotifyPropertyChanged {
+public sealed partial class BreakpointViewModel : INotifyPropertyChanged {
 	/// <summary>
 	/// Gets or sets the underlying breakpoint model.
 	/// </summary>

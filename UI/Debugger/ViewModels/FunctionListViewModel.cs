@@ -17,7 +17,7 @@ using Nexen.Debugger.Windows;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -31,21 +31,21 @@ namespace Nexen.Debugger.ViewModels;
 /// - Label editing for unnamed functions
 /// - Breakpoint and navigation support
 /// </remarks>
-public sealed class FunctionListViewModel : DisposableViewModel {
+public sealed partial class FunctionListViewModel : DisposableViewModel {
 	/// <summary>
 	/// Gets or sets the observable collection of function view models.
 	/// </summary>
-	[Reactive] public NexenList<FunctionViewModel> Functions { get; private set; } = new();
+	[Reactive] public partial NexenList<FunctionViewModel> Functions { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the selection model for multi-select support.
 	/// </summary>
-	[Reactive] public SelectionModel<FunctionViewModel?> Selection { get; set; } = new() { SingleSelect = false };
+	[Reactive] public partial SelectionModel<FunctionViewModel?> Selection { get; set; } = new() { SingleSelect = false };
 
 	/// <summary>
 	/// Gets or sets the current sort state for column ordering.
 	/// </summary>
-	[Reactive] public SortState SortState { get; set; } = new();
+	[Reactive] public partial SortState SortState { get; set; } = new();
 
 	/// <summary>
 	/// Gets the column widths from user configuration.
@@ -194,7 +194,7 @@ public sealed class FunctionListViewModel : DisposableViewModel {
 /// ViewModel wrapper for a single function entry point.
 /// Implements <see cref="INotifyPropertyChanged"/> for UI data binding.
 /// </summary>
-public sealed class FunctionViewModel : INotifyPropertyChanged {
+public sealed partial class FunctionViewModel : INotifyPropertyChanged {
 	/// <summary>
 	/// Format string for address display based on CPU address size.
 	/// </summary>

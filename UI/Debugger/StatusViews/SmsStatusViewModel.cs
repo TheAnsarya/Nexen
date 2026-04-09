@@ -2,56 +2,56 @@ using System;
 using System.Text;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.StatusViews; 
-public sealed class SmsStatusViewModel : BaseConsoleStatusViewModel {
-	[Reactive] public byte RegA { get; set; }
-	[Reactive] public byte RegB { get; set; }
-	[Reactive] public byte RegC { get; set; }
-	[Reactive] public byte RegD { get; set; }
-	[Reactive] public byte RegE { get; set; }
-	[Reactive] public byte RegFlags { get; set; }
+public sealed partial class SmsStatusViewModel : BaseConsoleStatusViewModel {
+	[Reactive] public partial byte RegA { get; set; }
+	[Reactive] public partial byte RegB { get; set; }
+	[Reactive] public partial byte RegC { get; set; }
+	[Reactive] public partial byte RegD { get; set; }
+	[Reactive] public partial byte RegE { get; set; }
+	[Reactive] public partial byte RegFlags { get; set; }
 
-	[Reactive] public byte RegH { get; set; }
-	[Reactive] public byte RegL { get; set; }
+	[Reactive] public partial byte RegH { get; set; }
+	[Reactive] public partial byte RegL { get; set; }
 
-	[Reactive] public UInt16 RegIX { get; set; }
-	[Reactive] public UInt16 RegIY { get; set; }
+	[Reactive] public partial UInt16 RegIX { get; set; }
+	[Reactive] public partial UInt16 RegIY { get; set; }
 
-	[Reactive] public byte RegR { get; set; }
-	[Reactive] public byte RegI { get; set; }
+	[Reactive] public partial byte RegR { get; set; }
+	[Reactive] public partial byte RegI { get; set; }
 
-	[Reactive] public byte RegAltA { get; set; }
-	[Reactive] public byte RegAltFlags { get; set; }
-	[Reactive] public byte RegAltB { get; set; }
-	[Reactive] public byte RegAltC { get; set; }
-	[Reactive] public byte RegAltD { get; set; }
-	[Reactive] public byte RegAltE { get; set; }
-	[Reactive] public byte RegAltH { get; set; }
-	[Reactive] public byte RegAltL { get; set; }
+	[Reactive] public partial byte RegAltA { get; set; }
+	[Reactive] public partial byte RegAltFlags { get; set; }
+	[Reactive] public partial byte RegAltB { get; set; }
+	[Reactive] public partial byte RegAltC { get; set; }
+	[Reactive] public partial byte RegAltD { get; set; }
+	[Reactive] public partial byte RegAltE { get; set; }
+	[Reactive] public partial byte RegAltH { get; set; }
+	[Reactive] public partial byte RegAltL { get; set; }
 
-	[Reactive] public UInt16 RegSP { get; set; }
-	[Reactive] public UInt16 RegPC { get; set; }
+	[Reactive] public partial UInt16 RegSP { get; set; }
+	[Reactive] public partial UInt16 RegPC { get; set; }
 
-	[Reactive] public UInt16 Scanline { get; set; }
-	[Reactive] public UInt16 Cycle { get; set; }
+	[Reactive] public partial UInt16 Scanline { get; set; }
+	[Reactive] public partial UInt16 Cycle { get; set; }
 
-	[Reactive] public bool FlagCarry { get; set; }
-	[Reactive] public bool FlagAddSub { get; set; }
-	[Reactive] public bool FlagParity { get; set; }
-	[Reactive] public bool FlagF3 { get; set; }
-	[Reactive] public bool FlagHalf { get; set; }
-	[Reactive] public bool FlagF5 { get; set; }
-	[Reactive] public bool FlagZero { get; set; }
-	[Reactive] public bool FlagSign { get; set; }
+	[Reactive] public partial bool FlagCarry { get; set; }
+	[Reactive] public partial bool FlagAddSub { get; set; }
+	[Reactive] public partial bool FlagParity { get; set; }
+	[Reactive] public partial bool FlagF3 { get; set; }
+	[Reactive] public partial bool FlagHalf { get; set; }
+	[Reactive] public partial bool FlagF5 { get; set; }
+	[Reactive] public partial bool FlagZero { get; set; }
+	[Reactive] public partial bool FlagSign { get; set; }
 
-	[Reactive] public bool FlagIFF1 { get; set; }
-	[Reactive] public bool FlagIFF2 { get; set; }
-	[Reactive] public bool FlagHalted { get; set; }
-	[Reactive] public byte IM { get; set; }
+	[Reactive] public partial bool FlagIFF1 { get; set; }
+	[Reactive] public partial bool FlagIFF2 { get; set; }
+	[Reactive] public partial bool FlagHalted { get; set; }
+	[Reactive] public partial byte IM { get; set; }
 
-	[Reactive] public string StackPreview { get; private set; } = "";
+	[Reactive] public partial string StackPreview { get; private set; } = "";
 
 	public SmsStatusViewModel() {
 		this.WhenAnyValue(x => x.FlagCarry, x => x.FlagHalf, x => x.FlagAddSub, x => x.FlagZero).Subscribe(x => UpdateFlagsValue());

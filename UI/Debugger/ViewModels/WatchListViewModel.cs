@@ -16,7 +16,7 @@ using Nexen.Debugger.Windows;
 using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels;
 /// <summary>
@@ -32,7 +32,7 @@ namespace Nexen.Debugger.ViewModels;
 /// Supports multiple display formats (hex, decimal, binary, signed/unsigned)
 /// with configurable byte lengths (8, 16, 24, 32 bits).
 /// </remarks>
-public sealed class WatchListViewModel : DisposableViewModel, IToolHelpTooltip {
+public sealed partial class WatchListViewModel : DisposableViewModel, IToolHelpTooltip {
 	/// <summary>
 	/// Regex pattern for matching watch expressions that are addresses or labels.
 	/// Matches formats like [$FFFF], {123}, [LabelName], etc.
@@ -42,12 +42,12 @@ public sealed class WatchListViewModel : DisposableViewModel, IToolHelpTooltip {
 	/// <summary>
 	/// Gets or sets the observable collection of watch entries.
 	/// </summary>
-	[Reactive] public NexenList<WatchValueInfo> WatchEntries { get; private set; } = new();
+	[Reactive] public partial NexenList<WatchValueInfo> WatchEntries { get; private set; } = new();
 
 	/// <summary>
 	/// Gets or sets the selection model for multi-select support.
 	/// </summary>
-	[Reactive] public SelectionModel<WatchValueInfo> Selection { get; set; } = new() { SingleSelect = false };
+	[Reactive] public partial SelectionModel<WatchValueInfo> Selection { get; set; } = new() { SingleSelect = false };
 
 	/// <summary>
 	/// Gets the column widths from user configuration.

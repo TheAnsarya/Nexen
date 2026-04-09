@@ -5,7 +5,7 @@ using Avalonia.Media;
 using Nexen.Debugger.Controls;
 using Nexen.Interop;
 using Nexen.ViewModels;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.ViewModels; 
 /// <summary>
@@ -26,14 +26,14 @@ namespace Nexen.Debugger.ViewModels;
 /// </list>
 /// </para>
 /// </remarks>
-public sealed class MemoryMappingViewModel : ViewModelBase {
+public sealed partial class MemoryMappingViewModel : ViewModelBase {
 	private CpuType _cpuType;
 
 	/// <summary>Gets or sets the CPU memory mapping blocks.</summary>
-	[Reactive] public List<MemoryMappingBlock> CpuMappings { get; private set; } = new();
+	[Reactive] public partial List<MemoryMappingBlock> CpuMappings { get; private set; } = new();
 
 	/// <summary>Gets or sets the PPU memory mapping blocks (NES only, null for other consoles).</summary>
-	[Reactive] public List<MemoryMappingBlock>? PpuMappings { get; private set; } = null;
+	[Reactive] public partial List<MemoryMappingBlock>? PpuMappings { get; private set; } = null;
 
 	/// <summary>Gets the CPU memory type for this console.</summary>
 	public MemoryType CpuMemType { get; }

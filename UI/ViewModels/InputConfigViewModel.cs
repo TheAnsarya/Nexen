@@ -1,18 +1,18 @@
 using Avalonia.Controls;
 using Nexen.Config;
 using Nexen.Utilities;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 /// <summary>
 /// ViewModel for the input configuration tab.
 /// </summary>
-public sealed class InputConfigViewModel : DisposableViewModel {
+public sealed partial class InputConfigViewModel : DisposableViewModel {
 	/// <summary>Gets or sets the current input configuration.</summary>
-	[Reactive] public InputConfig Config { get; set; }
+	[Reactive] public partial InputConfig Config { get; set; }
 
 	/// <summary>Gets or sets the original input configuration for revert.</summary>
-	[Reactive] public InputConfig OriginalConfig { get; set; }
+	[Reactive] public partial InputConfig OriginalConfig { get; set; }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="InputConfigViewModel"/> class.

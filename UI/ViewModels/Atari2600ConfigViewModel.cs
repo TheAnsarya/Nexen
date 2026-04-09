@@ -3,14 +3,14 @@ using Avalonia.Controls;
 using Nexen.Config;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels;
 
-public sealed class Atari2600ConfigViewModel : DisposableViewModel {
-	[Reactive] public Atari2600Config Config { get; set; }
-	[Reactive] public Atari2600Config OriginalConfig { get; set; }
-	[Reactive] public Atari2600ConfigTab SelectedTab { get; set; } = 0;
+public sealed partial class Atari2600ConfigViewModel : DisposableViewModel {
+	[Reactive] public partial Atari2600Config Config { get; set; }
+	[Reactive] public partial Atari2600Config OriginalConfig { get; set; }
+	[Reactive] public partial Atari2600ConfigTab SelectedTab { get; set; } = 0;
 
 	public Atari2600InputConfigViewModel Input { get; private set; }
 

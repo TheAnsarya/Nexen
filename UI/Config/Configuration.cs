@@ -12,7 +12,7 @@ using Nexen.Config.Shortcuts;
 using Nexen.Interop;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
 public partial class Configuration : ReactiveObject {
@@ -21,32 +21,32 @@ public partial class Configuration : ReactiveObject {
 	public string Version { get; set; } = "2.1.1";
 	public int ConfigUpgrade { get; set; } = 0;
 
-	[Reactive] public VideoConfig Video { get; set; } = new();
-	[Reactive] public AudioConfig Audio { get; set; } = new();
-	[Reactive] public InputConfig Input { get; set; } = new();
-	[Reactive] public EmulationConfig Emulation { get; set; } = new();
-	[Reactive] public SnesConfig Snes { get; set; } = new();
-	[Reactive] public NesConfig Nes { get; set; } = new();
-	[Reactive] public GameboyConfig Gameboy { get; set; } = new();
-	[Reactive] public PcEngineConfig PcEngine { get; set; } = new();
-	[Reactive] public SmsConfig Sms { get; set; } = new();
-	[Reactive] public CvConfig Cv { get; set; } = new();
-	[Reactive] public GbaConfig Gba { get; set; } = new();
-	[Reactive] public WsConfig Ws { get; set; } = new();
-	[Reactive] public LynxConfig Lynx { get; set; } = new();
-	[Reactive] public Atari2600Config Atari2600 { get; set; } = new();
-	[Reactive] public ChannelFConfig ChannelF { get; set; } = new();
-	[Reactive] public PreferencesConfig Preferences { get; set; } = new();
-	[Reactive] public AudioPlayerConfig AudioPlayer { get; set; } = new();
-	[Reactive] public DebugConfig Debug { get; set; } = new();
-	[Reactive] public RecentItems RecentFiles { get; set; } = new();
-	[Reactive] public VideoRecordConfig VideoRecord { get; set; } = new();
-	[Reactive] public MovieRecordConfig MovieRecord { get; set; } = new();
-	[Reactive] public HdPackBuilderConfig HdPackBuilder { get; set; } = new();
-	[Reactive] public CheatWindowConfig Cheats { get; set; } = new();
-	[Reactive] public NetplayConfig Netplay { get; set; } = new();
-	[Reactive] public HistoryViewerConfig HistoryViewer { get; set; } = new();
-	[Reactive] public MainWindowConfig MainWindow { get; set; } = new();
+	[Reactive] public partial VideoConfig Video { get; set; } = new();
+	[Reactive] public partial AudioConfig Audio { get; set; } = new();
+	[Reactive] public partial InputConfig Input { get; set; } = new();
+	[Reactive] public partial EmulationConfig Emulation { get; set; } = new();
+	[Reactive] public partial SnesConfig Snes { get; set; } = new();
+	[Reactive] public partial NesConfig Nes { get; set; } = new();
+	[Reactive] public partial GameboyConfig Gameboy { get; set; } = new();
+	[Reactive] public partial PcEngineConfig PcEngine { get; set; } = new();
+	[Reactive] public partial SmsConfig Sms { get; set; } = new();
+	[Reactive] public partial CvConfig Cv { get; set; } = new();
+	[Reactive] public partial GbaConfig Gba { get; set; } = new();
+	[Reactive] public partial WsConfig Ws { get; set; } = new();
+	[Reactive] public partial LynxConfig Lynx { get; set; } = new();
+	[Reactive] public partial Atari2600Config Atari2600 { get; set; } = new();
+	[Reactive] public partial ChannelFConfig ChannelF { get; set; } = new();
+	[Reactive] public partial PreferencesConfig Preferences { get; set; } = new();
+	[Reactive] public partial AudioPlayerConfig AudioPlayer { get; set; } = new();
+	[Reactive] public partial DebugConfig Debug { get; set; } = new();
+	[Reactive] public partial RecentItems RecentFiles { get; set; } = new();
+	[Reactive] public partial VideoRecordConfig VideoRecord { get; set; } = new();
+	[Reactive] public partial MovieRecordConfig MovieRecord { get; set; } = new();
+	[Reactive] public partial HdPackBuilderConfig HdPackBuilder { get; set; } = new();
+	[Reactive] public partial CheatWindowConfig Cheats { get; set; } = new();
+	[Reactive] public partial NetplayConfig Netplay { get; set; } = new();
+	[Reactive] public partial HistoryViewerConfig HistoryViewer { get; set; } = new();
+	[Reactive] public partial MainWindowConfig MainWindow { get; set; } = new();
 
 	public DefaultKeyMappingType DefaultKeyMappings { get; set; } = DefaultKeyMappingType.Xbox | DefaultKeyMappingType.ArrowKeys;
 

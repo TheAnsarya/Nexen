@@ -4,18 +4,18 @@ using Nexen.Config;
 using Nexen.Localization;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class SnesConfigViewModel : DisposableViewModel {
-	[Reactive] public SnesConfig Config { get; set; }
-	[Reactive] public SnesConfig OriginalConfig { get; set; }
-	[Reactive] public SnesConfigTab SelectedTab { get; set; } = 0;
+public sealed partial class SnesConfigViewModel : DisposableViewModel {
+	[Reactive] public partial SnesConfig Config { get; set; }
+	[Reactive] public partial SnesConfig OriginalConfig { get; set; }
+	[Reactive] public partial SnesConfigTab SelectedTab { get; set; } = 0;
 
 	public SnesInputConfigViewModel Input { get; private set; }
 
-	[Reactive] public bool IsDefaultSpcClockSpeed { get; set; } = true;
-	[Reactive] public string SpcEffectiveClockSpeed { get; set; } = "";
+	[Reactive] public partial bool IsDefaultSpcClockSpeed { get; set; } = true;
+	[Reactive] public partial string SpcEffectiveClockSpeed { get; set; } = "";
 
 	public Enum[] AvailableRegions => new Enum[] {
 		ConsoleRegion.Auto,

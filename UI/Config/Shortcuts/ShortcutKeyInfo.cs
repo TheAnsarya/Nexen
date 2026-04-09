@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config.Shortcuts; 
-public sealed class ShortcutKeyInfo : ReactiveObject {
-	[Reactive] public EmulatorShortcut Shortcut { get; set; }
-	[Reactive] public KeyCombination KeyCombination { get; set; } = new KeyCombination();
-	[Reactive] public KeyCombination KeyCombination2 { get; set; } = new KeyCombination();
+public sealed partial class ShortcutKeyInfo : ReactiveObject {
+	[Reactive] public partial EmulatorShortcut Shortcut { get; set; }
+	[Reactive] public partial KeyCombination KeyCombination { get; set; } = new KeyCombination();
+	[Reactive] public partial KeyCombination KeyCombination2 { get; set; } = new KeyCombination();
 }

@@ -5,36 +5,36 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Nexen.Interop;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
 
-public sealed class WsConfig : BaseConfig<WsConfig> {
-	[Reactive] public ConsoleOverrideConfig ConfigOverrides { get; set; } = new();
+public sealed partial class WsConfig : BaseConfig<WsConfig> {
+	[Reactive] public partial ConsoleOverrideConfig ConfigOverrides { get; set; } = new();
 
-	[Reactive] public ControllerConfig ControllerHorizontal { get; set; } = new();
-	[Reactive] public ControllerConfig ControllerVertical { get; set; } = new();
+	[Reactive] public partial ControllerConfig ControllerHorizontal { get; set; } = new();
+	[Reactive] public partial ControllerConfig ControllerVertical { get; set; } = new();
 
-	[Reactive] public WsModel Model { get; set; } = WsModel.Auto;
-	[Reactive] public bool UseBootRom { get; set; } = false;
+	[Reactive] public partial WsModel Model { get; set; } = WsModel.Auto;
+	[Reactive] public partial bool UseBootRom { get; set; } = false;
 
-	[Reactive] public bool AutoRotate { get; set; } = true;
+	[Reactive] public partial bool AutoRotate { get; set; } = true;
 
-	[Reactive] public bool BlendFrames { get; set; } = true;
-	[Reactive] public bool LcdAdjustColors { get; set; } = true;
-	[Reactive] public bool LcdShowIcons { get; set; } = true;
+	[Reactive] public partial bool BlendFrames { get; set; } = true;
+	[Reactive] public partial bool LcdAdjustColors { get; set; } = true;
+	[Reactive] public partial bool LcdShowIcons { get; set; } = true;
 
-	[Reactive] public bool HideBgLayer1 { get; set; } = false;
-	[Reactive] public bool HideBgLayer2 { get; set; } = false;
-	[Reactive] public bool DisableSprites { get; set; } = false;
-	[Reactive] public bool ForceFlash { get; set; } = false;
+	[Reactive] public partial bool HideBgLayer1 { get; set; } = false;
+	[Reactive] public partial bool HideBgLayer2 { get; set; } = false;
+	[Reactive] public partial bool DisableSprites { get; set; } = false;
+	[Reactive] public partial bool ForceFlash { get; set; } = false;
 
-	[Reactive] public WsAudioMode AudioMode { get; set; } = WsAudioMode.Headphones;
-	[Reactive][MinMax(0, 100)] public UInt32 Channel1Vol { get; set; } = 100;
-	[Reactive][MinMax(0, 100)] public UInt32 Channel2Vol { get; set; } = 100;
-	[Reactive][MinMax(0, 100)] public UInt32 Channel3Vol { get; set; } = 100;
-	[Reactive][MinMax(0, 100)] public UInt32 Channel4Vol { get; set; } = 100;
-	[Reactive][MinMax(0, 100)] public UInt32 Channel5Vol { get; set; } = 100;
+	[Reactive] public partial WsAudioMode AudioMode { get; set; } = WsAudioMode.Headphones;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Channel1Vol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Channel2Vol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Channel3Vol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Channel4Vol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Channel5Vol { get; set; } = 100;
 
 	public void ApplyConfig() {
 		ControllerHorizontal.Type = ControllerType.WsController;

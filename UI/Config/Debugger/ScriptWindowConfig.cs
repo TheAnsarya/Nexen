@@ -6,30 +6,30 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media;
 using Nexen.Interop;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class ScriptWindowConfig : BaseWindowConfig<ScriptWindowConfig> {
+public sealed partial class ScriptWindowConfig : BaseWindowConfig<ScriptWindowConfig> {
 	private const int MaxRecentScripts = 10;
 
-	[Reactive] public List<string> RecentScripts { get; set; } = [];
+	[Reactive] public partial List<string> RecentScripts { get; set; } = [];
 
-	[Reactive] public int Zoom { get; set; } = 100;
+	[Reactive] public partial int Zoom { get; set; } = 100;
 
-	[Reactive] public double LogWindowHeight { get; set; } = 100;
+	[Reactive] public partial double LogWindowHeight { get; set; } = 100;
 
-	[Reactive] public ScriptStartupBehavior ScriptStartupBehavior { get; set; } = ScriptStartupBehavior.ShowTutorial;
-	[Reactive] public bool SaveScriptBeforeRun { get; set; } = true;
-	[Reactive] public bool AutoStartScriptOnLoad { get; set; } = true;
-	[Reactive] public bool AutoReloadScriptWhenFileChanges { get; set; } = true;
-	[Reactive] public bool AutoRestartScriptAfterPowerCycle { get; set; } = true;
+	[Reactive] public partial ScriptStartupBehavior ScriptStartupBehavior { get; set; } = ScriptStartupBehavior.ShowTutorial;
+	[Reactive] public partial bool SaveScriptBeforeRun { get; set; } = true;
+	[Reactive] public partial bool AutoStartScriptOnLoad { get; set; } = true;
+	[Reactive] public partial bool AutoReloadScriptWhenFileChanges { get; set; } = true;
+	[Reactive] public partial bool AutoRestartScriptAfterPowerCycle { get; set; } = true;
 
-	[Reactive] public bool AllowIoOsAccess { get; set; } = false;
-	[Reactive] public bool AllowNetworkAccess { get; set; } = false;
+	[Reactive] public partial bool AllowIoOsAccess { get; set; } = false;
+	[Reactive] public partial bool AllowNetworkAccess { get; set; } = false;
 
-	[Reactive] public bool ShowLineNumbers { get; set; } = false;
+	[Reactive] public partial bool ShowLineNumbers { get; set; } = false;
 
-	[Reactive] public UInt32 ScriptTimeout { get; set; } = 1;
+	[Reactive] public partial UInt32 ScriptTimeout { get; set; } = 1;
 
 	public void AddRecentScript(string scriptFile) {
 		string? existingItem = RecentScripts.Where((file) => file == scriptFile).FirstOrDefault();

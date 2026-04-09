@@ -8,7 +8,7 @@ using Nexen.Config;
 using Nexen.Debugger.Controls;
 using Nexen.Interop;
 using Nexen.Utilities;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.Windows;
 public partial class ColorIndexPickerWindow : NexenWindow {

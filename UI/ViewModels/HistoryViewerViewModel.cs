@@ -15,27 +15,27 @@ using Nexen.Localization;
 using Nexen.Utilities;
 using Nexen.Windows;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class HistoryViewerViewModel : DisposableViewModel {
+public sealed partial class HistoryViewerViewModel : DisposableViewModel {
 	public HistoryViewerConfig Config { get; init; }
 
-	[Reactive] public bool IsPaused { get; set; }
+	[Reactive] public partial bool IsPaused { get; set; }
 
-	[Reactive] public string TotalTimeText { get; set; } = "00:00";
-	[Reactive] public string CurrentTimeText { get; set; } = "00:00";
+	[Reactive] public partial string TotalTimeText { get; set; } = "00:00";
+	[Reactive] public partial string CurrentTimeText { get; set; } = "00:00";
 
-	[Reactive] public uint MaxPosition { get; set; }
-	[Reactive] public uint CurrentPosition { get; set; }
+	[Reactive] public partial uint MaxPosition { get; set; }
+	[Reactive] public partial uint CurrentPosition { get; set; }
 
-	[Reactive] public Size RendererSize { get; set; }
+	[Reactive] public partial Size RendererSize { get; set; }
 
-	[Reactive] public List<ContextMenuAction> FileMenuItems { get; private set; } = new();
-	[Reactive] public List<ContextMenuAction> OptionsMenuItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> FileMenuItems { get; private set; } = new();
+	[Reactive] public partial List<ContextMenuAction> OptionsMenuItems { get; private set; } = new();
 
 	public SoftwareRendererViewModel SoftwareRenderer { get; } = new();
-	[Reactive] public bool IsSoftwareRendererVisible { get; set; } = false;
+	[Reactive] public partial bool IsSoftwareRendererVisible { get; set; } = false;
 
 	private bool _blockCoreUpdates = false;
 	private uint[] _segments = [];

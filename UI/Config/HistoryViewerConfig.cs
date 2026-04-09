@@ -1,7 +1,7 @@
 using System;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config; 
-public sealed class HistoryViewerConfig : BaseWindowConfig<HistoryViewerConfig> {
-	[Reactive] public int Volume { get; set; } = 100;
+public sealed partial class HistoryViewerConfig : BaseWindowConfig<HistoryViewerConfig> {
+	[Reactive] public partial int Volume { get; set; } = 100;
 }

@@ -13,19 +13,19 @@ using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.Utilities;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.ViewModels; 
-public sealed class HdPackBuilderViewModel : DisposableViewModel {
-	[Reactive] public string SaveFolder { get; set; }
-	[Reactive] public bool IsRecording { get; set; }
-	[Reactive] public bool IsBankSizeVisible { get; set; }
-	[Reactive] public bool IsOpenFolderEnabled { get; set; }
-	[Reactive] public HdPackBuilderConfig Config { get; set; }
-	[Reactive] public FilterInfo? SelectedFilter { get; set; }
-	[Reactive] public BankSizeInfo SelectedBankSize { get; set; }
+public sealed partial class HdPackBuilderViewModel : DisposableViewModel {
+	[Reactive] public partial string SaveFolder { get; set; }
+	[Reactive] public partial bool IsRecording { get; set; }
+	[Reactive] public partial bool IsBankSizeVisible { get; set; }
+	[Reactive] public partial bool IsOpenFolderEnabled { get; set; }
+	[Reactive] public partial HdPackBuilderConfig Config { get; set; }
+	[Reactive] public partial FilterInfo? SelectedFilter { get; set; }
+	[Reactive] public partial BankSizeInfo SelectedBankSize { get; set; }
 
-	[Reactive] public FilterInfo[] Filters { get; private set; } = [];
+	[Reactive] public partial FilterInfo[] Filters { get; private set; } = [];
 
 	public BankSizeInfo[] BankSizes { get; } = {
 		new BankSizeInfo() { Name = "1 KB", BankSize = 0x400 },
@@ -131,7 +131,7 @@ public sealed class HdPackBuilderViewModel : DisposableViewModel {
 		}
 	}
 
-	public sealed class FilterInfo {
+	public sealed partial class FilterInfo {
 		public string Name { get; set; } = "";
 		public ScaleFilterType FilterType { get; set; }
 		public UInt32 Scale { get; set; }
@@ -141,7 +141,7 @@ public sealed class HdPackBuilderViewModel : DisposableViewModel {
 		}
 	}
 
-	public sealed class BankSizeInfo {
+	public sealed partial class BankSizeInfo {
 		public string Name { get; set; } = "";
 		public UInt32 BankSize { get; set; }
 

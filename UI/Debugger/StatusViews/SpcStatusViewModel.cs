@@ -2,27 +2,27 @@ using System;
 using System.Text;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.StatusViews; 
-public sealed class SpcStatusViewModel : BaseConsoleStatusViewModel {
-	[Reactive] public byte RegA { get; set; }
-	[Reactive] public byte RegX { get; set; }
-	[Reactive] public byte RegY { get; set; }
-	[Reactive] public byte RegSP { get; set; }
-	[Reactive] public UInt16 RegPC { get; set; }
-	[Reactive] public byte RegPS { get; set; }
+public sealed partial class SpcStatusViewModel : BaseConsoleStatusViewModel {
+	[Reactive] public partial byte RegA { get; set; }
+	[Reactive] public partial byte RegX { get; set; }
+	[Reactive] public partial byte RegY { get; set; }
+	[Reactive] public partial byte RegSP { get; set; }
+	[Reactive] public partial UInt16 RegPC { get; set; }
+	[Reactive] public partial byte RegPS { get; set; }
 
-	[Reactive] public bool FlagN { get; set; }
-	[Reactive] public bool FlagV { get; set; }
-	[Reactive] public bool FlagP { get; set; }
-	[Reactive] public bool FlagB { get; set; }
-	[Reactive] public bool FlagH { get; set; }
-	[Reactive] public bool FlagI { get; set; }
-	[Reactive] public bool FlagZ { get; set; }
-	[Reactive] public bool FlagC { get; set; }
+	[Reactive] public partial bool FlagN { get; set; }
+	[Reactive] public partial bool FlagV { get; set; }
+	[Reactive] public partial bool FlagP { get; set; }
+	[Reactive] public partial bool FlagB { get; set; }
+	[Reactive] public partial bool FlagH { get; set; }
+	[Reactive] public partial bool FlagI { get; set; }
+	[Reactive] public partial bool FlagZ { get; set; }
+	[Reactive] public partial bool FlagC { get; set; }
 
-	[Reactive] public string StackPreview { get; private set; } = "";
+	[Reactive] public partial string StackPreview { get; private set; } = "";
 
 	public SpcStatusViewModel() {
 		this.WhenAnyValue(x => x.FlagC, x => x.FlagP, x => x.FlagB, x => x.FlagH).Subscribe(x => UpdatePsValue());

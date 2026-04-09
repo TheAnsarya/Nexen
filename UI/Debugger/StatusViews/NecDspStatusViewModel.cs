@@ -2,39 +2,39 @@ using System;
 using System.Text;
 using Nexen.Interop;
 using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Debugger.StatusViews; 
-public sealed class NecDspStatusViewModel : BaseConsoleStatusViewModel {
-	[Reactive] public UInt16 RegTR { get; set; }
-	[Reactive] public UInt16 RegTRB { get; set; }
-	[Reactive] public UInt16 RegRP { get; set; }
-	[Reactive] public UInt16 RegDP { get; set; }
-	[Reactive] public UInt16 RegPC { get; set; }
-	[Reactive] public byte RegSP { get; set; }
+public sealed partial class NecDspStatusViewModel : BaseConsoleStatusViewModel {
+	[Reactive] public partial UInt16 RegTR { get; set; }
+	[Reactive] public partial UInt16 RegTRB { get; set; }
+	[Reactive] public partial UInt16 RegRP { get; set; }
+	[Reactive] public partial UInt16 RegDP { get; set; }
+	[Reactive] public partial UInt16 RegPC { get; set; }
+	[Reactive] public partial byte RegSP { get; set; }
 
-	[Reactive] public UInt16 RegDR { get; set; }
-	[Reactive] public UInt16 RegSR { get; set; }
-	[Reactive] public UInt16 RegK { get; set; }
-	[Reactive] public UInt16 RegL { get; set; }
-	[Reactive] public UInt16 RegM { get; set; }
-	[Reactive] public UInt16 RegN { get; set; }
-	[Reactive] public UInt16 RegA { get; set; }
-	[Reactive] public UInt16 RegB { get; set; }
+	[Reactive] public partial UInt16 RegDR { get; set; }
+	[Reactive] public partial UInt16 RegSR { get; set; }
+	[Reactive] public partial UInt16 RegK { get; set; }
+	[Reactive] public partial UInt16 RegL { get; set; }
+	[Reactive] public partial UInt16 RegM { get; set; }
+	[Reactive] public partial UInt16 RegN { get; set; }
+	[Reactive] public partial UInt16 RegA { get; set; }
+	[Reactive] public partial UInt16 RegB { get; set; }
 
-	[Reactive] public bool RegA_C { get; set; }
-	[Reactive] public bool RegA_Z { get; set; }
-	[Reactive] public bool RegA_V0 { get; set; }
-	[Reactive] public bool RegA_V1 { get; set; }
-	[Reactive] public bool RegA_S0 { get; set; }
-	[Reactive] public bool RegA_S1 { get; set; }
+	[Reactive] public partial bool RegA_C { get; set; }
+	[Reactive] public partial bool RegA_Z { get; set; }
+	[Reactive] public partial bool RegA_V0 { get; set; }
+	[Reactive] public partial bool RegA_V1 { get; set; }
+	[Reactive] public partial bool RegA_S0 { get; set; }
+	[Reactive] public partial bool RegA_S1 { get; set; }
 
-	[Reactive] public bool RegB_C { get; set; }
-	[Reactive] public bool RegB_Z { get; set; }
-	[Reactive] public bool RegB_V0 { get; set; }
-	[Reactive] public bool RegB_V1 { get; set; }
-	[Reactive] public bool RegB_S0 { get; set; }
-	[Reactive] public bool RegB_S1 { get; set; }
+	[Reactive] public partial bool RegB_C { get; set; }
+	[Reactive] public partial bool RegB_Z { get; set; }
+	[Reactive] public partial bool RegB_V0 { get; set; }
+	[Reactive] public partial bool RegB_V1 { get; set; }
+	[Reactive] public partial bool RegB_S0 { get; set; }
+	[Reactive] public partial bool RegB_S1 { get; set; }
 
 	public NecDspStatusViewModel() {
 	}
