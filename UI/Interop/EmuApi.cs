@@ -566,6 +566,7 @@ public struct InteropSaveStateInfo {
 	public UInt32 FileSize;
 	public SaveStateOrigin Origin;
 	public byte IsPaused;
+	public byte SlotNumber;
 }
 
 /// <summary>
@@ -584,11 +585,14 @@ public sealed class SaveStateInfo {
 	/// <summary>File size in bytes</summary>
 	public uint FileSize { get; set; }
 
-	/// <summary>Origin category (Auto/Save/Recent/Lua)</summary>
+	/// <summary>Origin category (Auto/Save/Recent/Lua/Designated)</summary>
 	public SaveStateOrigin Origin { get; set; }
 
 	/// <summary>Whether the emulator was paused when this state was saved</summary>
 	public bool IsPaused { get; set; }
+
+	/// <summary>Slot number for Designated saves (1-3), 0 for non-slot saves</summary>
+	public int SlotNumber { get; set; }
 
 	public SaveStateInfo() { }
 
@@ -599,6 +603,7 @@ public sealed class SaveStateInfo {
 		FileSize = interop.FileSize;
 		Origin = interop.Origin;
 		IsPaused = interop.IsPaused != 0;
+		SlotNumber = interop.SlotNumber;
 	}
 
 	/// <summary>
@@ -643,7 +648,7 @@ public sealed class SaveStateInfo {
 		SaveStateOrigin.Save => "Save",
 		SaveStateOrigin.Recent => "Recent",
 		SaveStateOrigin.Lua => "Lua",
-		SaveStateOrigin.Designated => "Slot",
+		SaveStateOrigin.Designated => SlotNumber > 0 ? $"Slot {SlotNumber:d2}" : "Slot",
 		_ => "Unknown"
 	};
 }

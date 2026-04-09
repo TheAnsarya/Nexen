@@ -356,6 +356,7 @@ struct InteropSaveStateInfo {
 	uint32_t fileSize;      ///< File size in bytes
 	uint8_t origin;         ///< SaveStateOrigin enum value
 	uint8_t isPaused;       ///< Whether emulator was paused when state was saved
+	uint8_t slotNumber;     ///< Slot number for Designated saves (1-3), 0 for non-slot saves
 };
 
 DllExport void __stdcall SaveTimestampedState(char* outFilepath, int32_t maxLength) {
@@ -375,6 +376,7 @@ DllExport uint32_t __stdcall GetSaveStateList(InteropSaveStateInfo* outInfoArray
 		outInfoArray[i].fileSize = states[i].fileSize;
 		outInfoArray[i].origin = static_cast<uint8_t>(states[i].origin);
 		outInfoArray[i].isPaused = states[i].isPaused ? 1 : 0;
+		outInfoArray[i].slotNumber = states[i].slotNumber;
 	}
 
 	return count;
@@ -415,6 +417,7 @@ DllExport uint32_t __stdcall GetRecentPlayStates(InteropSaveStateInfo* outInfoAr
 		outInfoArray[i].fileSize = states[i].fileSize;
 		outInfoArray[i].origin = static_cast<uint8_t>(states[i].origin);
 		outInfoArray[i].isPaused = states[i].isPaused ? 1 : 0;
+		outInfoArray[i].slotNumber = states[i].slotNumber;
 	}
 
 	return count;

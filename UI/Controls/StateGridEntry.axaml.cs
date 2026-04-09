@@ -164,7 +164,7 @@ public class StateGridEntry : UserControl {
 				SaveStateOrigin.Auto => ("Auto", BadgeBlue),
 				SaveStateOrigin.Recent => ("Recent", BadgeRed),
 				SaveStateOrigin.Lua => ("Lua", BadgeYellow),
-				SaveStateOrigin.Designated => ("Slot", BadgePurple),
+				SaveStateOrigin.Designated => (game.SlotNumber > 0 ? $"Slot {game.SlotNumber:d2}" : "Slot", BadgePurple),
 				_ => ("Save", BadgeGreen) // Default to Save
 			};
 		} else {

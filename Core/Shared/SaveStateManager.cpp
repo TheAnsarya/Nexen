@@ -594,7 +594,8 @@ vector<SaveStateInfo> SaveStateManager::GetSaveStateList() {
 			// {RomName}_auto.nexen-save -> Auto
 			// {RomName}_recent_{NN}.nexen-save -> Recent
 			// {RomName}_lua_{timestamp}.nexen-save -> Lua
-			// {RomName}_designated_{N}.nexen-save -> Designated
+			// {RomName}_[slot{NN}]_{timestamp}.nexen-save -> Designated (new format)
+			// {RomName}_designated_{N}_{timestamp}.nexen-save -> Designated (legacy)
 			// {RomName}_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save -> Save
 			if (filename.find("_auto.") != string::npos) {
 				info.origin = SaveStateOrigin::Auto;
@@ -602,8 +603,27 @@ vector<SaveStateInfo> SaveStateManager::GetSaveStateList() {
 				info.origin = SaveStateOrigin::Recent;
 			} else if (filename.find("_lua_") != string::npos) {
 				info.origin = SaveStateOrigin::Lua;
+			} else if (auto pos = filename.find("_[slot"); pos != string::npos) {
+				info.origin = SaveStateOrigin::Designated;
+				// Extract slot number from _[slotNN]_
+				auto numStart = pos + 6; // skip "_[slot"
+				auto endBracket = filename.find(']', numStart);
+				if (endBracket != string::npos && endBracket > numStart) {
+					try {
+						info.slotNumber = static_cast<uint8_t>(std::stoi(filename.substr(numStart, endBracket - numStart)));
+					} catch (...) {}
+				}
 			} else if (filename.find("_designated_") != string::npos) {
 				info.origin = SaveStateOrigin::Designated;
+				// Extract slot number from _designated_N_ or _designated_N.
+				auto numStart = filename.find("_designated_") + 12;
+				auto numEnd = numStart;
+				while (numEnd < filename.size() && filename[numEnd] >= '0' && filename[numEnd] <= '9') numEnd++;
+				if (numEnd > numStart) {
+					try {
+						info.slotNumber = static_cast<uint8_t>(std::stoi(filename.substr(numStart, numEnd - numStart)));
+					} catch (...) {}
+				}
 			} else {
 				info.origin = SaveStateOrigin::Save;
 			}
@@ -760,7 +780,7 @@ string SaveStateManager::GetDesignatedSaveFilepath(uint32_t slot) {
 	localtime_r(&time, &tm);
 #endif
 
-	string filename = std::format("{}_designated_{}_{:04d}-{:02d}-{:02d}_{:02d}-{:02d}-{:02d}.nexen-save",
+	string filename = std::format("{}_[slot{:02d}]_{:04d}-{:02d}-{:02d}_{:02d}-{:02d}-{:02d}.nexen-save",
 		romName, slot + 1, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 		tm.tm_hour, tm.tm_min, tm.tm_sec);
 
@@ -773,11 +793,14 @@ string SaveStateManager::FindLatestDesignatedSave(uint32_t slot) const {
 		? FolderUtilities::CombinePath(FolderUtilities::GetSaveStateFolder(), romName)
 		: _perRomSaveStateDir;
 
-	// Match both new timestamped format: {RomName}_designated_{N}_{timestamp}.nexen-save
+	// Match new [slotNN] format: {RomName}_[slot{NN}]_{timestamp}.nexen-save
+	// and legacy designated format: {RomName}_designated_{N}_{timestamp}.nexen-save
 	// and legacy fixed format: {RomName}_designated_{N}.nexen-save
-	string slotStr = std::to_string(slot + 1);
-	string newPrefix = romName + "_designated_" + slotStr + "_";
-	string legacyExact = romName + "_designated_" + slotStr + ".nexen-save";
+	string slotStr = std::format("{:02d}", slot + 1);
+	string newPrefix = romName + "_[slot" + slotStr + "]_";
+	string legacySlotStr = std::to_string(slot + 1);
+	string legacyPrefix = romName + "_designated_" + legacySlotStr + "_";
+	string legacyExact = romName + "_designated_" + legacySlotStr + ".nexen-save";
 
 	namespace fs = std::filesystem;
 	string latestPath;
@@ -802,6 +825,8 @@ string SaveStateManager::FindLatestDesignatedSave(uint32_t slot) const {
 			if (filename == legacyExact) {
 				isMatch = true;
 			} else if (filename.starts_with(newPrefix)) {
+				isMatch = true;
+			} else if (filename.starts_with(legacyPrefix)) {
 				isMatch = true;
 			}
 
@@ -835,7 +860,7 @@ void SaveStateManager::SaveDesignatedState(uint32_t slot) {
 
 	string filepath = GetDesignatedSaveFilepath(slot);
 	if (SaveState(filepath, false)) {
-		MessageManager::DisplayMessage("SaveStates", "SaveStateSaved", "Designated " + std::to_string(slot + 1));
+		MessageManager::DisplayMessage("SaveStates", "SaveStateSaved", "Slot " + std::format("{:02d}", slot + 1));
 	}
 }
 

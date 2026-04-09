@@ -117,7 +117,8 @@ public sealed class RecentGamesViewModel : ViewModelBase {
 					FriendlyTimestamp = state.GetFriendlyTimestamp(),
 					IsTimestampedSave = true,
 					Origin = state.Origin,
-					IsPaused = state.IsPaused
+					IsPaused = state.IsPaused,
+					SlotNumber = state.SlotNumber
 				});
 			}
 
@@ -267,6 +268,11 @@ public sealed class RecentGameInfo {
 	/// Whether the emulator was paused when this state was saved
 	/// </summary>
 	public bool IsPaused { get; set; } = false;
+
+	/// <summary>
+	/// Slot number for Designated saves (1-3), 0 for non-slot saves
+	/// </summary>
+	public int SlotNumber { get; set; } = 0;
 
 	/// <summary>
 	/// Checks if the entry is enabled (file exists for loading, or save mode).

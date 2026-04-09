@@ -26,7 +26,7 @@ struct RenderedFrame;
 /// - Save: {RomName}_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
 /// - Recent: {RomName}_recent_{01-12}.nexen-save
 /// - Lua: {RomName}_lua_{timestamp}.nexen-save
-/// - Designated: {RomName}_designated_{1-3}_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
+/// - Designated: {RomName}_[slot{01-03}]_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
 /// </remarks>
 enum class SaveStateOrigin : uint8_t {
 	Auto = 0,        ///< Auto-save (blue badge) - periodic background saves
@@ -46,6 +46,7 @@ struct SaveStateInfo {
 	time_t timestamp;       ///< Unix timestamp when save was created (from filename)
 	uint32_t fileSize;      ///< File size in bytes
 	SaveStateOrigin origin; ///< Origin category (Auto/Save/Recent/Lua)
+	uint8_t slotNumber = 0; ///< Slot number for Designated saves (1-3), 0 for non-slot saves
 	bool isPaused = false;  ///< Whether the emulator was paused when this state was saved (v5+)
 };
 
@@ -354,7 +355,7 @@ public:
 
 	/// <summary>
 	/// Get a new timestamped filepath for a designated save slot.
-	/// Format: {SaveStateDirectory}/{RomName}_designated_{slot+1}_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
+	/// Format: {SaveStateDirectory}/{RomName}_[slot{NN}]_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
 	/// Each save creates a new file; old saves remain as history.
 	/// </summary>
 	/// <param name="slot">Slot index (0-2)</param>
@@ -363,8 +364,8 @@ public:
 
 	/// <summary>
 	/// Find the latest (most recent) designated save for a slot.
-	/// Searches the save directory for files matching the designated pattern
-	/// and returns the one with the newest timestamp.
+	/// Searches the save directory for files matching the [slotNN] pattern
+	/// (and legacy _designated_N pattern) and returns the one with the newest timestamp.
 	/// </summary>
 	/// <param name="slot">Slot index (0-2)</param>
 	/// <returns>Path to latest designated save, or empty if none found</returns>
