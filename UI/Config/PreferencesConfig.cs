@@ -146,13 +146,13 @@ public sealed class PreferencesConfig : BaseConfig<PreferencesConfig> {
 		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.SaveStateToFile, KeyCombination = new KeyCombination() { Key1 = ctrl, Key2 = shift, Key3 = InputApi.GetKeyCode("S") } });
 		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.LoadStateFromFile, KeyCombination = new KeyCombination() { Key1 = ctrl, Key2 = InputApi.GetKeyCode("L") } });
 
-		// Designated slots - F2-F4 for 3 quick save/load slots
-		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.LoadDesignatedSlot, KeyCombination = new KeyCombination() { Key1 = InputApi.GetKeyCode("F2") } });
-		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.SaveDesignatedSlot, KeyCombination = new KeyCombination() { Key1 = shift, Key2 = InputApi.GetKeyCode("F2") } });
-		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.LoadDesignatedSlot2, KeyCombination = new KeyCombination() { Key1 = InputApi.GetKeyCode("F3") } });
-		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.SaveDesignatedSlot2, KeyCombination = new KeyCombination() { Key1 = shift, Key2 = InputApi.GetKeyCode("F3") } });
-		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.LoadDesignatedSlot3, KeyCombination = new KeyCombination() { Key1 = InputApi.GetKeyCode("F4") } });
-		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.SaveDesignatedSlot3, KeyCombination = new KeyCombination() { Key1 = shift, Key2 = InputApi.GetKeyCode("F4") } });
+		// Designated slots - F2-F4 for 3 quick save/load slots (F = save, Shift+F = load, matching F1 pattern)
+		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.SaveDesignatedSlot, KeyCombination = new KeyCombination() { Key1 = InputApi.GetKeyCode("F2") } });
+		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.LoadDesignatedSlot, KeyCombination = new KeyCombination() { Key1 = shift, Key2 = InputApi.GetKeyCode("F2") } });
+		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.SaveDesignatedSlot2, KeyCombination = new KeyCombination() { Key1 = InputApi.GetKeyCode("F3") } });
+		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.LoadDesignatedSlot2, KeyCombination = new KeyCombination() { Key1 = shift, Key2 = InputApi.GetKeyCode("F3") } });
+		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.SaveDesignatedSlot3, KeyCombination = new KeyCombination() { Key1 = InputApi.GetKeyCode("F4") } });
+		AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.LoadDesignatedSlot3, KeyCombination = new KeyCombination() { Key1 = shift, Key2 = InputApi.GetKeyCode("F4") } });
 
 		foreach (EmulatorShortcut value in Enum.GetValues<EmulatorShortcut>()) {
 			if (value < EmulatorShortcut.LastValidValue) {

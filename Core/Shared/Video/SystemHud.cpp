@@ -54,6 +54,12 @@ void SystemHud::Draw(DebugHud* hud, uint32_t width, uint32_t height) const {
 }
 
 void SystemHud::DrawMessage(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight, int& lastHeight) const {
+	// Save state notifications use centered box display
+	if (msg.GetTitle() == MessageManager::Localize("SaveStates") && msg.GetMessage().find('\n') != string::npos) {
+		DrawSaveStateNotification(hud, msg, screenWidth, screenHeight);
+		return;
+	}
+
 	// Get opacity for fade in/out effect
 	uint8_t opacity = (uint8_t)(msg.GetOpacity() * 255);
 	int textLeftMargin = 4;
@@ -75,6 +81,105 @@ void SystemHud::DrawString(DebugHud* hud, uint32_t screenWidth, const string& te
 		}
 	}
 	hud->DrawString(x, y, text, 0xFFFFFF | (opacity << 24), 0xFF000000, 1, -1, maxWidth, true);
+}
+
+void SystemHud::DrawColoredString(DebugHud* hud, uint32_t screenWidth, const string& text, int x, int y, uint32_t color, uint8_t opacity) const {
+	int maxWidth = screenWidth - x;
+	uint8_t fadeOp = 255 - opacity;
+	for (int i = -1; i <= 1; i++) {
+		for (int j = -1; j <= 1; j++) {
+			hud->DrawString(x + i, y + j, text, (int)(fadeOp << 24), (int)0xFF000000, 1, -1, maxWidth, true);
+		}
+	}
+	hud->DrawString(x, y, text, (int)((color & 0xFFFFFF) | (fadeOp << 24)), (int)0xFF000000, 1, -1, maxWidth, true);
+}
+
+uint32_t SystemHud::GetSaveStateBadgeColor(const string& badge) {
+	if (badge.find("Auto") != string::npos) return 0x5DADE2;    // Blue
+	if (badge.find("Slot") != string::npos) return 0xAF7AC5;    // Purple
+	if (badge.find("Recent") != string::npos) return 0xEC7063;  // Red
+	if (badge.find("Lua") != string::npos) return 0xF7DC6F;     // Yellow
+	if (badge.find('#') != string::npos) return 0x85C1E9;       // Light blue
+	return 0x58D68D; // Green (Save)
+}
+
+void SystemHud::DrawSaveStateNotification(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight) const {
+	uint8_t opacity = (uint8_t)(msg.GetOpacity() * 255);
+	uint8_t fadeOp = 255 - opacity;
+
+	string message = msg.GetMessage();
+
+	// Parse "badge\ndate\ntime"
+	size_t firstNl = message.find('\n');
+	size_t secondNl = (firstNl != string::npos) ? message.find('\n', firstNl + 1) : string::npos;
+
+	string badge, dateStr, timeStr;
+	if (firstNl != string::npos && secondNl != string::npos) {
+		badge = message.substr(0, firstNl);
+		dateStr = message.substr(firstNl + 1, secondNl - firstNl - 1);
+		timeStr = message.substr(secondNl + 1);
+	} else if (firstNl != string::npos) {
+		badge = message.substr(0, firstNl);
+		dateStr = message.substr(firstNl + 1);
+	} else {
+		badge = message;
+	}
+
+	// Measure text widths
+	TextSize badgeSize = DrawStringCommand::MeasureString(badge);
+	TextSize dateSize = !dateStr.empty() ? DrawStringCommand::MeasureString(dateStr) : TextSize{0, 0};
+	TextSize timeSize = !timeStr.empty() ? DrawStringCommand::MeasureString(timeStr) : TextSize{0, 0};
+
+	int padding = 6;
+	int lineSpacing = 11;
+	int maxTextWidth = (int)badgeSize.X;
+	int numLines = 1;
+
+	if (!dateStr.empty()) {
+		maxTextWidth = std::max(maxTextWidth, (int)dateSize.X);
+		numLines++;
+	}
+	if (!timeStr.empty()) {
+		maxTextWidth = std::max(maxTextWidth, (int)timeSize.X);
+		numLines++;
+	}
+
+	int boxWidth = maxTextWidth + padding * 2;
+	int boxHeight = numLines * lineSpacing + padding * 2 - 2;
+
+	int boxX = ((int)screenWidth - boxWidth) / 2;
+	int boxY = ((int)screenHeight - boxHeight) / 2;
+
+	// Semi-transparent background box
+	uint8_t boxAlpha = (uint8_t)std::min((int)0x40 + (int)fadeOp, 255);
+	uint32_t bgColor = (uint32_t)boxAlpha << 24;
+	hud->DrawRectangle(boxX, boxY, boxWidth, boxHeight, bgColor, true, 1);
+
+	// Subtle border
+	uint8_t borderAlpha = (uint8_t)std::min((int)0x20 + (int)fadeOp, 255);
+	uint32_t borderColor = ((uint32_t)borderAlpha << 24) | 0x666666;
+	hud->DrawRectangle(boxX - 1, boxY - 1, boxWidth + 2, boxHeight + 2, borderColor, false, 1);
+
+	int yPos = boxY + padding;
+
+	// Badge line (colored, centered)
+	uint32_t badgeColor = GetSaveStateBadgeColor(badge);
+	int badgeX = boxX + (boxWidth - (int)badgeSize.X) / 2;
+	DrawColoredString(hud, screenWidth, badge, badgeX, yPos, badgeColor, opacity);
+	yPos += lineSpacing;
+
+	// Date (white, centered)
+	if (!dateStr.empty()) {
+		int dateX = boxX + (boxWidth - (int)dateSize.X) / 2;
+		DrawString(hud, screenWidth, dateStr, dateX, yPos, opacity);
+		yPos += lineSpacing;
+	}
+
+	// Time (white, centered)
+	if (!timeStr.empty()) {
+		int timeX = boxX + (boxWidth - (int)timeSize.X) / 2;
+		DrawString(hud, screenWidth, timeStr, timeX, yPos, opacity);
+	}
 }
 
 void SystemHud::ShowFpsCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const {
