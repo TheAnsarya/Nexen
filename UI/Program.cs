@@ -237,8 +237,9 @@ class Program {
 			}
 
 			// Library not found — log diagnostic info so users can report the issue
+			string homeInfo = App.ShowConfigWindow ? "HomeFolder=<skipped during setup>" : $"HomeFolder='{ConfigManager.HomeFolder}'";
 			Log.Error($"[DllImportResolver] Native library not found: '{originalName}' (resolved to '{libraryName}'). " +
-				$"Searched: AppBase='{AppContext.BaseDirectory}', exists={File.Exists(localPath)}");
+				$"Searched: AppBase='{AppContext.BaseDirectory}' (exists={File.Exists(localPath)}), {homeInfo}");
 		}
 
 		return IntPtr.Zero;

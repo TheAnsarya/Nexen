@@ -19,7 +19,7 @@ public record RomHashInfo(
 	/// <summary>
 	/// CRC32 as a 32-bit unsigned integer.
 	/// </summary>
-	public uint Crc32Value => uint.Parse(Crc32, System.Globalization.NumberStyles.HexNumber);
+	public uint Crc32Value => uint.TryParse(Crc32, System.Globalization.NumberStyles.HexNumber, null, out uint value) ? value : 0;
 
 	/// <summary>
 	/// Returns an empty hash info with all values set to empty strings.

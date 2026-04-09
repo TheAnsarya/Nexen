@@ -45,9 +45,11 @@ class DependencyHelper {
 					string path = Path.Combine(dest, entry.FullName);
 					string extension = Path.GetExtension(path)?.ToLowerInvariant() ?? string.Empty;
 					entry.ExternalAttributes = 0;
-				// In portable mode (dest == app dir), never overwrite native libs that may
-				// be loaded in memory — they were published with the app and are current.
-				if (isAppBaseDir && extension is ".dll" or ".so" or ".dylib" or ".exe") {
+				// In portable mode (dest == app dir), skip native libs that are already
+				// present — they may be loaded in memory, and overwriting mmap'd .so
+				// files on Linux causes segfaults in the dynamic linker. But DO extract
+				// them if they're missing (fresh install scenario).
+				if (isAppBaseDir && extension is ".dll" or ".so" or ".dylib" or ".exe" && File.Exists(path)) {
 					continue;
 				}
 					if (File.Exists(path)) {
