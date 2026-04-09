@@ -26,7 +26,7 @@ struct RenderedFrame;
 /// - Save: {RomName}_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
 /// - Recent: {RomName}_recent_{01-12}.nexen-save
 /// - Lua: {RomName}_lua_{timestamp}.nexen-save
-/// - Designated: {RomName}_designated_{1-3}.nexen-save
+/// - Designated: {RomName}_designated_{1-3}_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
 /// </remarks>
 enum class SaveStateOrigin : uint8_t {
 	Auto = 0,        ///< Auto-save (blue badge) - periodic background saves
@@ -353,32 +353,42 @@ public:
 	// ========== Designated Save Methods ==========
 
 	/// <summary>
-	/// Get the filepath for a designated save slot.
-	/// Format: {SaveStateDirectory}/{RomName}_designated_{slot+1}.nexen-save
+	/// Get a new timestamped filepath for a designated save slot.
+	/// Format: {SaveStateDirectory}/{RomName}_designated_{slot+1}_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
+	/// Each save creates a new file; old saves remain as history.
 	/// </summary>
 	/// <param name="slot">Slot index (0-2)</param>
-	/// <returns>Full path for the designated save slot</returns>
+	/// <returns>Full path for a new designated save</returns>
 	[[nodiscard]] string GetDesignatedSaveFilepath(uint32_t slot);
 
 	/// <summary>
+	/// Find the latest (most recent) designated save for a slot.
+	/// Searches the save directory for files matching the designated pattern
+	/// and returns the one with the newest timestamp.
+	/// </summary>
+	/// <param name="slot">Slot index (0-2)</param>
+	/// <returns>Path to latest designated save, or empty if none found</returns>
+	[[nodiscard]] string FindLatestDesignatedSave(uint32_t slot) const;
+
+	/// <summary>
 	/// Save state to a designated slot (F2-F4 action).
-	/// Creates/overwrites the designated slot file.
+	/// Creates a new timestamped file; previous saves remain accessible in history.
 	/// </summary>
 	/// <param name="slot">Slot index (0-2)</param>
 	void SaveDesignatedState(uint32_t slot);
 
 	/// <summary>
-	/// Load the designated save state for a slot (F2-F4 action).
+	/// Load the most recent designated save state for a slot (F2-F4 action).
 	/// </summary>
 	/// <param name="slot">Slot index (0-2), defaults to 0</param>
 	/// <returns>True if load succeeded</returns>
 	[[nodiscard]] bool LoadDesignatedState(uint32_t slot = 0);
 
 	/// <summary>
-	/// Check if a designated save slot has a valid save file.
+	/// Check if a designated save slot has any valid save files.
 	/// </summary>
 	/// <param name="slot">Slot index (0-2), defaults to 0</param>
-	/// <returns>True if designated save exists and file is valid</returns>
+	/// <returns>True if at least one designated save exists for this slot</returns>
 	[[nodiscard]] bool HasDesignatedSave(uint32_t slot = 0) const;
 
 	/// <summary>

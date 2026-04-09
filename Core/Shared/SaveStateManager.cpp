@@ -749,8 +749,83 @@ vector<SaveStateInfo> SaveStateManager::GetRecentPlayStates() {
 string SaveStateManager::GetDesignatedSaveFilepath(uint32_t slot) {
 	string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
 	string folder = GetRomSaveStateDirectory();
-	string filename = romName + "_designated_" + std::to_string(slot + 1) + ".nexen-save";
+
+	// Generate timestamp: YYYY-MM-DD_HH-mm-ss
+	auto now = std::chrono::system_clock::now();
+	auto time = std::chrono::system_clock::to_time_t(now);
+	std::tm tm;
+#ifdef _WIN32
+	localtime_s(&tm, &time);
+#else
+	localtime_r(&time, &tm);
+#endif
+
+	string filename = std::format("{}_designated_{}_{:04d}-{:02d}-{:02d}_{:02d}-{:02d}-{:02d}.nexen-save",
+		romName, slot + 1, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+		tm.tm_hour, tm.tm_min, tm.tm_sec);
+
 	return FolderUtilities::CombinePath(folder, filename);
+}
+
+string SaveStateManager::FindLatestDesignatedSave(uint32_t slot) const {
+	string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
+	string folder = _perRomSaveStateDir.empty()
+		? FolderUtilities::CombinePath(FolderUtilities::GetSaveStateFolder(), romName)
+		: _perRomSaveStateDir;
+
+	// Match both new timestamped format: {RomName}_designated_{N}_{timestamp}.nexen-save
+	// and legacy fixed format: {RomName}_designated_{N}.nexen-save
+	string slotStr = std::to_string(slot + 1);
+	string newPrefix = romName + "_designated_" + slotStr + "_";
+	string legacyExact = romName + "_designated_" + slotStr + ".nexen-save";
+
+	namespace fs = std::filesystem;
+	string latestPath;
+	time_t latestTime = 0;
+
+	try {
+		if (!fs::exists(folder)) {
+			return "";
+		}
+
+		for (const auto& entry : fs::directory_iterator(folder)) {
+			if (!entry.is_regular_file()) {
+				continue;
+			}
+
+			string filename = entry.path().filename().string();
+			if (!filename.ends_with(".nexen-save")) {
+				continue;
+			}
+
+			bool isMatch = false;
+			if (filename == legacyExact) {
+				isMatch = true;
+			} else if (filename.starts_with(newPrefix)) {
+				isMatch = true;
+			}
+
+			if (isMatch) {
+				time_t ts = ParseTimestampFromFilename(filename);
+				// For legacy files without timestamp, use file modification time
+				if (ts == 0) {
+					auto ftime = fs::last_write_time(entry);
+					auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+						ftime - fs::file_time_type::clock::now() + std::chrono::system_clock::now()
+					);
+					ts = std::chrono::system_clock::to_time_t(sctp);
+				}
+
+				if (ts > latestTime) {
+					latestTime = ts;
+					latestPath = entry.path().string();
+				}
+			}
+		}
+	} catch (...) {
+	}
+
+	return latestPath;
 }
 
 void SaveStateManager::SaveDesignatedState(uint32_t slot) {
@@ -769,12 +844,12 @@ bool SaveStateManager::LoadDesignatedState(uint32_t slot) {
 		return false;
 	}
 
-	if (!HasDesignatedSave(slot)) {
+	string filepath = FindLatestDesignatedSave(slot);
+	if (filepath.empty()) {
 		MessageManager::DisplayMessage("SaveStates", "NoDesignatedSave");
 		return false;
 	}
 
-	string filepath = GetDesignatedSaveFilepath(slot);
 	return LoadState(filepath, true);
 }
 
@@ -783,16 +858,7 @@ bool SaveStateManager::HasDesignatedSave(uint32_t slot) const {
 		return false;
 	}
 
-	// Build the filepath inline (const method, can't call non-const GetDesignatedSaveFilepath)
-	string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
-	string folder = _perRomSaveStateDir.empty()
-		? FolderUtilities::CombinePath(FolderUtilities::GetSaveStateFolder(), romName)
-		: _perRomSaveStateDir;
-	string filename = romName + "_designated_" + std::to_string(slot + 1) + ".nexen-save";
-	string filepath = FolderUtilities::CombinePath(folder, filename);
-
-	namespace fs = std::filesystem;
-	return fs::exists(filepath) && fs::is_regular_file(filepath);
+	return !FindLatestDesignatedSave(slot).empty();
 }
 
 void SaveStateManager::SetDesignatedSave(const string& filepath) {
@@ -801,16 +867,8 @@ void SaveStateManager::SetDesignatedSave(const string& filepath) {
 }
 
 string SaveStateManager::GetDesignatedSave() const {
-	// Legacy compatibility — return slot 0 path if it exists
-	if (HasDesignatedSave(0)) {
-		string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
-		string folder = _perRomSaveStateDir.empty()
-			? FolderUtilities::CombinePath(FolderUtilities::GetSaveStateFolder(), romName)
-			: _perRomSaveStateDir;
-		string filename = romName + "_designated_1.nexen-save";
-		return FolderUtilities::CombinePath(folder, filename);
-	}
-	return "";
+	// Legacy compatibility — return latest slot 0 path if any exist
+	return FindLatestDesignatedSave(0);
 }
 
 void SaveStateManager::ClearDesignatedSave() {
