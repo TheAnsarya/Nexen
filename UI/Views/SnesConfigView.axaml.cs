@@ -8,7 +8,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 
 namespace Nexen.Views; 
-public class SnesConfigView : UserControl {
+public partial class SnesConfigView : UserControl {
 	public SnesConfigView() {
 		InitializeComponent();
 	}

@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Views; 
-public class CvConfigView : UserControl {
+public partial class CvConfigView : UserControl {
 	public CvConfigView() {
 		InitializeComponent();
 	}

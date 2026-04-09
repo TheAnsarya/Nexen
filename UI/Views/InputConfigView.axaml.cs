@@ -5,7 +5,7 @@ using Nexen.Config;
 using Nexen.Utilities;
 
 namespace Nexen.Views; 
-public class InputConfigView : UserControl {
+public partial class InputConfigView : UserControl {
 	public InputConfigView() {
 		InitializeComponent();
 	}

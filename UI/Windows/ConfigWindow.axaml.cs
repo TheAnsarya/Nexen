@@ -13,7 +13,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows; 
-public class ConfigWindow : NexenWindow {
+public partial class ConfigWindow : NexenWindow {
 	private ConfigViewModel _model;
 	private bool _promptToSave = true;
 
@@ -23,7 +23,7 @@ public class ConfigWindow : NexenWindow {
 	public ConfigWindow(ConfigWindowTab tab) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		_model = new ConfigViewModel(tab);

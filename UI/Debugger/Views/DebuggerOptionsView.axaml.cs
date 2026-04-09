@@ -9,7 +9,7 @@ using Nexen.Config;
 using Nexen.Interop;
 
 namespace Nexen.Debugger.Views; 
-public class DebuggerOptionsView : UserControl {
+public partial class DebuggerOptionsView : UserControl {
 	public DebuggerOptionsView() {
 		InitializeComponent();
 	}

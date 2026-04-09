@@ -20,7 +20,7 @@ public partial class TasSelectRangeDialog : NexenWindow {
 	public TasSelectRangeDialog() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

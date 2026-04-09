@@ -28,7 +28,7 @@ public partial class PlaybackInterruptDialog : NexenWindow {
 	public PlaybackInterruptDialog() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

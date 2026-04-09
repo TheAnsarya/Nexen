@@ -12,7 +12,7 @@ using Nexen.Utilities;
 using Nexen.Windows;
 
 namespace Nexen.Views; 
-public class FontOptionsView : UserControl {
+public partial class FontOptionsView : UserControl {
 	public static readonly StyledProperty<bool> PreferMonospaceProperty = AvaloniaProperty.Register<FontOptionsView, bool>(nameof(PreferMonospace), false);
 	public static readonly StyledProperty<bool> ShowWarningProperty = AvaloniaProperty.Register<FontOptionsView, bool>(nameof(ShowWarning), false);
 	public static readonly StyledProperty<bool> ShowErrorProperty = AvaloniaProperty.Register<FontOptionsView, bool>(nameof(ShowError), false);

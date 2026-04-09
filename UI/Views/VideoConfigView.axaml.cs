@@ -6,7 +6,7 @@ using Nexen.Config;
 using Nexen.Utilities;
 
 namespace Nexen.Views; 
-public class VideoConfigView : UserControl {
+public partial class VideoConfigView : UserControl {
 	public VideoConfigView() {
 		InitializeComponent();
 	}

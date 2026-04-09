@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Debugger.Views.DebuggerDock; 
-public class ToolContainerView : UserControl {
+public partial class ToolContainerView : UserControl {
 	public ToolContainerView() {
 		InitializeComponent();
 	}

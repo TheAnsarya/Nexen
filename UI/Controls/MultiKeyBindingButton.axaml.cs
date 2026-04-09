@@ -10,7 +10,7 @@ using Nexen.Utilities;
 using Nexen.Windows;
 
 namespace Nexen.Controls; 
-public class MultiKeyBindingButton : Button {
+public partial class MultiKeyBindingButton : Button {
 	protected override Type StyleKeyOverride => typeof(Button);
 
 	public static readonly StyledProperty<KeyCombination> KeyBindingProperty = AvaloniaProperty.Register<KeyBindingButton, KeyCombination>(nameof(KeyBinding), new KeyCombination(), false, Avalonia.Data.BindingMode.TwoWay);
@@ -41,7 +41,7 @@ public class MultiKeyBindingButton : Button {
 		GetKeyWindow wnd = new GetKeyWindow(false);
 		wnd.SingleKeyMode = false;
 		wnd.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-		await wnd.ShowCenteredDialog(this.GetVisualRoot() as Visual);
+		await wnd.ShowCenteredDialog(TopLevel.GetTopLevel(this) as Visual);
 		this.KeyBinding = wnd.ShortcutKey;
 	}
 

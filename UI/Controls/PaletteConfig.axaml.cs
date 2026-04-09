@@ -19,7 +19,7 @@ using Nexen.Windows;
 using ReactiveUI;
 
 namespace Nexen.Controls; 
-public class PaletteConfig : UserControl {
+public partial class PaletteConfig : UserControl {
 	public static readonly StyledProperty<UInt32[]> PaletteProperty = AvaloniaProperty.Register<PaletteConfig, UInt32[]>(nameof(Palette), [], defaultBindingMode: BindingMode.TwoWay);
 	public static readonly StyledProperty<List<PalettePreset>> PalettePresetsProperty = AvaloniaProperty.Register<PaletteConfig, List<PalettePreset>>(nameof(PalettePresets), new List<PalettePreset>());
 	public static readonly StyledProperty<int> ColumnCountProperty = AvaloniaProperty.Register<PaletteConfig, int>(nameof(ColumnCount), 16);
@@ -79,7 +79,7 @@ public class PaletteConfig : UserControl {
 		ColorPickerViewModel model = new ColorPickerViewModel() { Color = e.Color };
 		ColorPickerWindow wnd = new ColorPickerWindow() { DataContext = model };
 
-		bool success = await wnd.ShowCenteredDialog<bool>(this.GetVisualRoot() as Visual);
+		bool success = await wnd.ShowCenteredDialog<bool>(TopLevel.GetTopLevel(this) as Visual);
 		if (success) {
 			UInt32[] colors = (UInt32[])Palette.Clone();
 			colors[e.ColorIndex] = model.Color.ToUInt32();
@@ -88,14 +88,14 @@ public class PaletteConfig : UserControl {
 	}
 
 	private async void btnLoadPalFile_OnClick(object sender, RoutedEventArgs e) {
-		string? filename = await FileDialogHelper.OpenFile(null, this.GetVisualRoot(), FileDialogHelper.PaletteExt);
+		string? filename = await FileDialogHelper.OpenFile(null, TopLevel.GetTopLevel(this), FileDialogHelper.PaletteExt);
 		if (filename != null) {
 			LoadPaletteFile(filename);
 		}
 	}
 
 	private async void btnExportPalette_OnClick(object sender, RoutedEventArgs e) {
-		string? filename = await FileDialogHelper.SaveFile(null, null, this.GetVisualRoot(), FileDialogHelper.PaletteExt);
+		string? filename = await FileDialogHelper.SaveFile(null, null, TopLevel.GetTopLevel(this), FileDialogHelper.PaletteExt);
 		if (filename != null) {
 			ExportPalette(filename);
 		}
@@ -139,7 +139,7 @@ public class PaletteConfig : UserControl {
 	}
 }
 
-public class PalettePreset {
+public partial class PalettePreset {
 	public string Name { get; set; } = "";
 	public UInt32[] Palette { get; set; } = [];
 }

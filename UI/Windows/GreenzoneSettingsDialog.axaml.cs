@@ -12,7 +12,7 @@ namespace Nexen.Windows;
 /// <summary>
 /// Settings for the greenzone savestate manager.
 /// </summary>
-public sealed class GreenzoneSettings {
+public sealed partial class GreenzoneSettings {
 	public int CaptureInterval { get; set; } = 60;
 	public int MaxSavestates { get; set; } = 1000;
 	public long MaxMemoryMB { get; set; } = 256;
@@ -38,7 +38,7 @@ public partial class GreenzoneSettingsDialog : NexenWindow {
 	public GreenzoneSettingsDialog() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

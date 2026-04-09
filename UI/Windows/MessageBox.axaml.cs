@@ -11,7 +11,7 @@ public partial class MessageBox : NexenWindow {
 	public MessageBox() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

@@ -19,7 +19,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Views; 
-public class DisassemblyView : NexenUserControl {
+public partial class DisassemblyView : NexenUserControl {
 	private DisassemblyViewModel Model => _model!;
 	private CpuType CpuType => Model.CpuType;
 	private LocationInfo ActionLocation => _selectionHandler?.ActionLocation ?? new LocationInfo();

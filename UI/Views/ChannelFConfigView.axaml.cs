@@ -4,7 +4,7 @@ using Avalonia.Markup.Xaml;
 
 namespace Nexen.Views;
 
-public class ChannelFConfigView : UserControl {
+public partial class ChannelFConfigView : UserControl {
 	public ChannelFConfigView() {
 		InitializeComponent();
 	}

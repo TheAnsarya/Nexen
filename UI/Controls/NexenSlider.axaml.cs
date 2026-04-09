@@ -5,7 +5,7 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Controls; 
-public class NexenSlider : UserControl {
+public partial class NexenSlider : UserControl {
 	public static readonly StyledProperty<int> MinimumProperty = AvaloniaProperty.Register<NexenSlider, int>(nameof(Minimum));
 	public static readonly StyledProperty<int> MaximumProperty = AvaloniaProperty.Register<NexenSlider, int>(nameof(Maximum));
 	public static readonly StyledProperty<int> ValueProperty = AvaloniaProperty.Register<NexenSlider, int>(nameof(Value), 0, false, Avalonia.Data.BindingMode.TwoWay);

@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Nexen.Config;
 using Nexen.Debugger.Utilities;
@@ -383,9 +384,7 @@ public partial class HexEditor : Control {
 	public async void PasteSelection() {
 		var clipboard = ApplicationHelper.GetMainWindow()?.Clipboard;
 		if (clipboard is not null) {
-#pragma warning disable CS0618 // Type or member is obsolete
-			string? text = await clipboard.GetTextAsync();
-#pragma warning restore CS0618
+			string? text = await clipboard.TryGetTextAsync();
 			if (text is not null) {
 				text = text.Replace("\n", "").Replace("\r", "");
 				if (Regex.IsMatch(text, "^[ a-f0-9]+$", RegexOptions.IgnoreCase)) {

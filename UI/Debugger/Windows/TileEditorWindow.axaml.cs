@@ -16,7 +16,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Windows; 
-public class TileEditorWindow : NexenWindow, INotificationHandler {
+public partial class TileEditorWindow : NexenWindow, INotificationHandler {
 	private TileEditorViewModel _model;
 	private PictureViewer _picViewer;
 	private DynamicTooltip? _tileColorTooltip;
@@ -28,7 +28,7 @@ public class TileEditorWindow : NexenWindow, INotificationHandler {
 	public TileEditorWindow(TileEditorViewModel model) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		_picViewer = this.GetControl<ScrollPictureViewer>("picViewer").InnerViewer;

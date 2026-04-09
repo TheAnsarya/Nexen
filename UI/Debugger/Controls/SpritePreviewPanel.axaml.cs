@@ -10,7 +10,7 @@ using Nexen.Utilities;
 using ReactiveUI;
 
 namespace Nexen.Debugger.Controls; 
-public class SpritePreviewPanel : NexenUserControl {
+public partial class SpritePreviewPanel : NexenUserControl {
 	public static readonly StyledProperty<double> InnerHeightProperty = AvaloniaProperty.Register<SpritePreviewPanel, double>(nameof(InnerHeight), 0);
 	public static readonly StyledProperty<double> InnerWidthProperty = AvaloniaProperty.Register<SpritePreviewPanel, double>(nameof(InnerWidth), 0);
 	public static readonly StyledProperty<bool> FadePreviewProperty = AvaloniaProperty.Register<SpritePreviewPanel, bool>(nameof(FadePreview), false);

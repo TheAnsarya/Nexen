@@ -22,7 +22,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Views; 
-public class SourceViewView : NexenUserControl {
+public partial class SourceViewView : NexenUserControl {
 	private SourceViewViewModel Model => (SourceViewViewModel)DataContext!;
 	private LocationInfo ActionLocation => _selectionHandler?.ActionLocation ?? new LocationInfo();
 	private bool IsMarginClick => _selectionHandler?.IsMarginClick ?? false;

@@ -14,7 +14,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 
 namespace Nexen.Windows;
-public class AboutWindow : NexenWindow {
+public partial class AboutWindow : NexenWindow {
 	public string Version { get; }
 	public string BuildDate { get; }
 	public string RuntimeVersion { get; }
@@ -115,7 +115,7 @@ public class AboutWindow : NexenWindow {
 	}
 }
 
-public class AboutListEntry {
+public partial class AboutListEntry {
 	public AboutListEntry(string name, string author, string note, string url) {
 		Name = name;
 		Author = author;

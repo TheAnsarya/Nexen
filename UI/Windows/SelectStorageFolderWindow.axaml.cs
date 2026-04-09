@@ -10,7 +10,7 @@ using Nexen.Config;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows; 
-public class SelectStorageFolderWindow : NexenWindow {
+public partial class SelectStorageFolderWindow : NexenWindow {
 	private SelectStorageFolderViewModel _model;
 
 	public SelectStorageFolderWindow() {
@@ -19,7 +19,7 @@ public class SelectStorageFolderWindow : NexenWindow {
 
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

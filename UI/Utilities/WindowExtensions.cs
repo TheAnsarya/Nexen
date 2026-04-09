@@ -24,7 +24,7 @@ static class WindowExtensions {
 
 			Screen? screen = null;
 			double scale = 1;
-			if (parent.GetVisualRoot() is WindowBase parentWnd) {
+			if (TopLevel.GetTopLevel(parent) is WindowBase parentWnd) {
 				screen = parentWnd.Screens.ScreenFromVisual(parent);
 				scale = LayoutHelper.GetLayoutScale(parentWnd);
 			}
@@ -45,7 +45,7 @@ static class WindowExtensions {
 	}
 
 	private static bool TryCenterWindowImmediately(Window child, Visual parent) {
-		if (parent.GetVisualRoot() is not WindowBase parentWnd) {
+		if (TopLevel.GetTopLevel(parent) is not WindowBase parentWnd) {
 			return false;
 		}
 
@@ -126,7 +126,7 @@ static class WindowExtensions {
 
 		EventHandler? handler = null;
 		handler = (s, e) => {
-			if (parent?.GetVisualRoot() is WindowBase parentWnd && parent is not null) {
+			if (TopLevel.GetTopLevel(parent) is WindowBase parentWnd && parent is not null) {
 				Screen? screen = parentWnd.Screens.ScreenFromVisual(parent);
 				double scale = LayoutHelper.GetLayoutScale(parentWnd);
 

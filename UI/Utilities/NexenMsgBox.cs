@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Rendering;
 using Nexen.Localization;
 using Nexen.Windows;
 
@@ -14,7 +14,7 @@ public sealed class NexenMsgBox {
 		return NexenMsgBox.Show(null, "UnexpectedError", MessageBoxButtons.OK, MessageBoxIcon.Error, ex.Message + Environment.NewLine + ex.StackTrace);
 	}
 
-	public static Task<DialogResult> Show(IRenderRoot? parent, string text, MessageBoxButtons buttons, MessageBoxIcon icon, params string[] args) {
+	public static Task<DialogResult> Show(Visual? parent, string text, MessageBoxButtons buttons, MessageBoxIcon icon, params string[] args) {
 		Window? wnd = parent as Window;
 		if (parent is not null && wnd is null) {
 			throw new Exception("Invalid parent window");

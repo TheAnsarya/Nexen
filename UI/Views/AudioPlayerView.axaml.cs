@@ -8,7 +8,7 @@ using Nexen.Interop;
 using Nexen.ViewModels;
 
 namespace Nexen.Views; 
-public class AudioPlayerView : UserControl {
+public partial class AudioPlayerView : UserControl {
 	private DispatcherTimer? _timer;
 
 	public AudioPlayerView() {

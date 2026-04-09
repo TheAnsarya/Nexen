@@ -9,7 +9,7 @@ using Avalonia.Platform;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows; 
-public class SetupWizardWindow : NexenWindow {
+public partial class SetupWizardWindow : NexenWindow {
 	private SetupWizardViewModel _model;
 
 	public SetupWizardWindow() {
@@ -18,7 +18,7 @@ public class SetupWizardWindow : NexenWindow {
 		InitializeComponent();
 
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

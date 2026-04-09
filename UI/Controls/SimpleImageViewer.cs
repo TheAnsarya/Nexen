@@ -82,8 +82,14 @@ public sealed class SimpleImageViewer : Control {
 
 				using SKPaint paint = new();
 				paint.Color = new SKColor(255, 255, 255, 255);
-#pragma warning disable CS0618 // SKPaint.FilterQuality is obsolete (TODO: migrate to SKSamplingOptions)
-				paint.FilterQuality = _interpolationMode.ToSKFilterQuality();
+#pragma warning disable CS0618 // SKPaint.FilterQuality is obsolete
+				paint.FilterQuality = _interpolationMode switch {
+					BitmapInterpolationMode.None => SKFilterQuality.None,
+					BitmapInterpolationMode.LowQuality => SKFilterQuality.Low,
+					BitmapInterpolationMode.MediumQuality => SKFilterQuality.Medium,
+					BitmapInterpolationMode.HighQuality => SKFilterQuality.High,
+					_ => SKFilterQuality.Low,
+				};
 #pragma warning restore CS0618
 
 				using (_source.Lock(true)) {

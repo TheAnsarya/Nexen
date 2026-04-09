@@ -8,7 +8,7 @@ using Nexen.Utilities;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Debugger.Windows; 
-public class FindAllOccurrencesWindow : NexenWindow {
+public partial class FindAllOccurrencesWindow : NexenWindow {
 	private static string _lastSearch { get; set; } = "";
 	private static bool _lastMatchCase { get; set; } = false;
 	private static bool _lastMatchWholeWord { get; set; } = false;
@@ -24,7 +24,7 @@ public class FindAllOccurrencesWindow : NexenWindow {
 
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

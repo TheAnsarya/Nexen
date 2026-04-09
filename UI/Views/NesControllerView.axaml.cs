@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Views; 
-public class NesControllerView : UserControl {
+public partial class NesControllerView : UserControl {
 	public bool ShowMicrophoneButton { get; }
 
 	public NesControllerView() : this(false) {

@@ -7,7 +7,7 @@ using Nexen.ViewModels;
 
 namespace Nexen.Views;
 
-public class SmsConfigView : UserControl {
+public partial class SmsConfigView : UserControl {
 	private SmsConfigViewModel _model = null!;
 
 	public SmsConfigView() {

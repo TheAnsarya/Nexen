@@ -12,7 +12,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 
 namespace Nexen.Debugger.Windows;
-public class WatchWindow : NexenWindow, INotificationHandler {
+public partial class WatchWindow : NexenWindow, INotificationHandler {
 	private WatchWindowViewModel _model;
 
 	[Obsolete("For designer only")]
@@ -21,7 +21,7 @@ public class WatchWindow : NexenWindow, INotificationHandler {
 	public WatchWindow(WatchWindowViewModel model) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		_model = model;

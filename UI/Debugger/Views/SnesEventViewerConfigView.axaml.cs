@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Debugger.Views; 
-public class SnesEventViewerConfigView : UserControl {
+public partial class SnesEventViewerConfigView : UserControl {
 	public SnesEventViewerConfigView() {
 		InitializeComponent();
 	}

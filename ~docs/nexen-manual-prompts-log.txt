@@ -1292,7 +1292,31 @@ We're already working on fixes, so see if you can track the error down and fix i
 
 [Nexen] git commit everything; and push to git; Build and run Nexen so I can do a sanity check on the application (that it runs, emulation happens, menus open, added functionality exists) and prepare for a release (1.4.23) by cleaning up, fixing warnings, making sure everything compiles and doesn't crash, updating readmes and documentation, etc; continue;
 
-[Nexen] in the "Browse Save States" viewer, badges for "slot" saves that are not the current save slot file should have a badge that is a darker purple to indicate they're not current; continue;
+[Nexen] in the "Browse Save States" viewer, badges for "slot" saves that are not the current save slot file should have a badge that is a darker purple to indicate they're not current; make sure we're using the most recent versions of all the libraries and packages and everything is modern standards and practices; continue;
+
+[Nexen] Make issues for the modernization work but don't do it yet; Prepare for a new release and Create a release (1.4.23) and push and run the build actions to create the artifacts; continue;
+
+update the 1.4.23 release with a full description of the release;
+
+update the 1.4.23 release with a full description of the release;
+
+[Nexen] update issues #1176 `https://github.com/TheAnsarya/Nexen/issues/1176`, #1194 `https://github.com/TheAnsarya/Nexen/issues/1194`, and #1039 `https://github.com/TheAnsarya/Nexen/issues/1039` that we've fixed the problems (hopefully) and let us know if you have more problems and link to release 1.4.23 that has the fixes and I've tested it and everything works for me; continue;
+
+Also update https://github.com/TheAnsarya/Nexen/issues/1193
+
+[Nexen] When a save state is loaded it shows text on the screen (see attached image), but it's too much garbage, can't understand it. We don't need the folder or game name, we know what game we just opened a save state for. just show show the date and time `yyyy-mm-dd` `HH:MM:ss` on two lines in the middle of the screen in a little box, maybe show the badge for what kind of save it is at the top too?; continue;
+
+Oh, and for default keyboard bindings I'm doing F1 == save and Shift+F1 == load, but I'm doing the opposite (F3 == load, Shift+F3 == save) for the Designated Slots since that was how the old slots worked. Although I don't like it. reverse those so they match F1, you're remapping the keys anyways, consistent UI is key.
+
+[Nexen] in the "Browse Save States" viewer, badges for "slot" saves are not different enough between current and old the purple and dark purple look a lot alike; what colors are there and what do the mean?; use a darker purple for old slot saves and or find a better way to differentiate them; continue;
+
+What's the difference between "Auto" and "Recent" ?
+
+[Nexen] git commit everything in all repos; Modernize the whole project again! make sure all packages and libraries are the most modern version (is Avalonia at v12? ) and all the code is using the most modern standards and practices. Update and fix all project changes and library changes to accomodate api changes; if anything is depreciated code then we are failing; is c#15 and dotnet 11 available yet? don't change to those C#/dotnet versions yet until we can successfully build using those versions during github CI/CD build actions; fix as many warnings and problems as you can across the whole codebase format all files and then fix all the format issues like markdownlint and then find performance issues and make benchmarks and find test opportunities and make tests and update docs and code and implement everything; git commit; make epics/issues/plans/documentation/benchmarks/session-logs/tests/todos/etc; continue;
+
+[Nexen] You fixed an issue with "Fresh install / portable mode native dependency extraction — DependencyHelper.ExtractNativeDependencies() was skipping file extraction even when files didn't exist at the destination. Now only skips when the file already exists." But we want to make sure the dlls are always the most recent version from our install file, so replace the files when it is appropriate, don't leave an older version there when getting setup and started just because it already exists; continue;
+
+[Nexen] Prepare for a new release and Create a release (1.4.24) and push and run the build actions to create the artifacts; update the 1.4.24 release with a full description of the release; continue;
 
 
 
@@ -1301,7 +1325,27 @@ We're already working on fixes, so see if you can track the error down and fix i
 
 
 
-[Nexen] Prepare for a new release and Create a release (1.4.23) and push and run the build actions to create the artifacts; continue;
+[Nexen] finish working on the modernization, make sure everything is up to date; git commit; make epics/issues/plans/documentation/benchmarks/session-logs/tests/todos/etc; make sure avalona 12 works everywhere and all api changes have been handled; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

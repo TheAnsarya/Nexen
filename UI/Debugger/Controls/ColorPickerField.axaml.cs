@@ -8,7 +8,7 @@ using Nexen.ViewModels;
 using Nexen.Windows;
 
 namespace Nexen.Debugger.Controls; 
-public class ColorPickerField : UserControl {
+public partial class ColorPickerField : UserControl {
 	public static readonly StyledProperty<string> TextProperty = AvaloniaProperty.Register<ColorPickerField, string>(nameof(Text), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 	public static readonly StyledProperty<UInt32> ColorProperty = AvaloniaProperty.Register<ColorPickerField, UInt32>(nameof(Color), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 

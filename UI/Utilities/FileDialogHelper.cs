@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
-using Avalonia.Rendering;
 
 namespace Nexen.Utilities;
 public sealed class FileDialogHelper {
@@ -47,7 +47,7 @@ public sealed class FileDialogHelper {
 	public const string NesExt = "nes";
 	public const string SufamiTurboExt = "st";
 
-	public static async Task<string?> OpenFile(string? initialFolder, IRenderRoot? parent, params string[] extensions) {
+	public static async Task<string?> OpenFile(string? initialFolder, Visual? parent, params string[] extensions) {
 		if ((parent ?? ApplicationHelper.GetMainWindow()) is not Window wnd) {
 			throw new Exception("Invalid parent window");
 		}
@@ -110,7 +110,7 @@ public sealed class FileDialogHelper {
 		return null;
 	}
 
-	public static async Task<string?> SaveFile(string? initialFolder, string? initialFile, IRenderRoot? parent, params string[] extensions) {
+	public static async Task<string?> SaveFile(string? initialFolder, string? initialFile, Visual? parent, params string[] extensions) {
 		if ((parent ?? ApplicationHelper.GetMainWindow()) is not Window wnd) {
 			throw new Exception("Invalid parent window");
 		}
@@ -147,7 +147,7 @@ public sealed class FileDialogHelper {
 		return null;
 	}
 
-	public static async Task<string?> OpenFolder(IRenderRoot? parent) {
+	public static async Task<string?> OpenFolder(Visual? parent) {
 		if ((parent ?? ApplicationHelper.GetMainWindow()) is not Window wnd) {
 			throw new Exception("Invalid parent window");
 		}

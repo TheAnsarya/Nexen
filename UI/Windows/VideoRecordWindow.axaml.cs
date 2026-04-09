@@ -9,11 +9,11 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows; 
-public class VideoRecordWindow : NexenWindow {
+public partial class VideoRecordWindow : NexenWindow {
 	public VideoRecordWindow() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

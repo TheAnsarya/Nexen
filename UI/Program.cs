@@ -10,7 +10,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
-using Avalonia.ReactiveUI;
+using ReactiveUI.Avalonia;
 using Nexen.Config;
 using Nexen.Interop;
 using Nexen.Utilities;
@@ -328,10 +328,10 @@ class Program {
 	// Avalonia configuration, don't remove; also used by visual designer.
 	public static AppBuilder BuildAvaloniaApp() {
 		// Ensure SVG support assembly is preserved by the trimmer/AOT
-		GC.KeepAlive(typeof(Avalonia.Svg.Skia.SvgImageExtension).Assembly);
+		GC.KeepAlive(typeof(Svg.Skia.SKSvg).Assembly);
 
 		return AppBuilder.Configure<App>()
-				.UseReactiveUI()
+				.UseReactiveUI(_ => { })
 				.UsePlatformDetect()
 				.With(new Win32PlatformOptions { })
 				.With(new X11PlatformOptions {

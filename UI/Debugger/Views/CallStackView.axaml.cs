@@ -8,7 +8,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 
 namespace Nexen.Debugger.Views;
-public class CallStackView : UserControl {
+public partial class CallStackView : UserControl {
 	public CallStackView() {
 		InitializeComponent();
 

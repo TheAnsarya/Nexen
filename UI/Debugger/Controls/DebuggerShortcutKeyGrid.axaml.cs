@@ -6,7 +6,7 @@ using Nexen.Config;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Controls; 
-public class DebuggerShortcutKeyGrid : UserControl {
+public partial class DebuggerShortcutKeyGrid : UserControl {
 	public static readonly StyledProperty<List<DebuggerShortcutInfo>> ShortcutsProperty = AvaloniaProperty.Register<DebuggerShortcutKeyGrid, List<DebuggerShortcutInfo>>(nameof(Shortcuts));
 
 	public List<DebuggerShortcutInfo> Shortcuts {

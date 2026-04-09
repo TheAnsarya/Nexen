@@ -20,7 +20,7 @@ using Nexen.Localization;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Windows;
-public class MemoryToolsWindow : NexenWindow, INotificationHandler {
+public partial class MemoryToolsWindow : NexenWindow, INotificationHandler {
 	private HexEditor _editor;
 	private MemoryToolsViewModel _model;
 	private MemoryViewerFindWindow? _searchWnd;
@@ -31,7 +31,7 @@ public class MemoryToolsWindow : NexenWindow, INotificationHandler {
 	public MemoryToolsWindow() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		_editor = this.GetControl<HexEditor>("Hex");
@@ -72,7 +72,7 @@ public class MemoryToolsWindow : NexenWindow, INotificationHandler {
 		_editor.Focus();
 	}
 
-	protected override void OnGotFocus(GotFocusEventArgs e) {
+	protected override void OnGotFocus(FocusChangedEventArgs e) {
 		base.OnGotFocus(e);
 		if (FocusManager?.GetFocusedElement() == this) {
 			//Focus on editor whenever the window itself is focused

@@ -14,7 +14,7 @@ using Nexen.Views;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Debugger.Windows; 
-public class GoToWindow : NexenWindow {
+public partial class GoToWindow : NexenWindow {
 	public static readonly StyledProperty<string> AddressProperty = AvaloniaProperty.Register<GoToWindow, string>(nameof(Address), "");
 
 	public string Address {
@@ -40,7 +40,7 @@ public class GoToWindow : NexenWindow {
 
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

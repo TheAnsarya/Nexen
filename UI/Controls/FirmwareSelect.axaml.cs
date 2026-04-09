@@ -15,7 +15,7 @@ using Nexen.Windows;
 
 namespace Nexen.Controls;
 
-public class FirmwareSelect : UserControl {
+public partial class FirmwareSelect : UserControl {
 	public static readonly StyledProperty<FirmwareType> FirmwareTypeProperty = AvaloniaProperty.Register<FirmwareSelect, FirmwareType>(nameof(FirmwareType));
 	public static readonly StyledProperty<string> FilenameProperty = AvaloniaProperty.Register<FirmwareSelect, string>(nameof(Filename), "");
 	public static readonly StyledProperty<string> WarningMessageProperty = AvaloniaProperty.Register<FirmwareSelect, string>(nameof(WarningMessage), "");

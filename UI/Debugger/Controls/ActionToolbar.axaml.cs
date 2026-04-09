@@ -5,6 +5,7 @@ using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -14,7 +15,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Localization;
 
 namespace Nexen.Debugger.Controls;
-public class ActionToolbar : UserControl {
+public partial class ActionToolbar : UserControl {
 	public static readonly StyledProperty<List<ContextMenuAction>> ItemsProperty = AvaloniaProperty.Register<ActionToolbar, List<ContextMenuAction>>(nameof(Items));
 	private DispatcherTimer _timer;
 

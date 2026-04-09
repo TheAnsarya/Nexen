@@ -13,7 +13,7 @@ using Nexen.ViewModels;
 using Nexen.Windows;
 
 namespace Nexen.Controls; 
-public class SystemSpecificSettings : UserControl {
+public partial class SystemSpecificSettings : UserControl {
 	public static readonly StyledProperty<ConfigType> ConfigTypeProperty = AvaloniaProperty.Register<SystemSpecificSettings, ConfigType>(nameof(ConfigType));
 
 	public ConfigType ConfigType {

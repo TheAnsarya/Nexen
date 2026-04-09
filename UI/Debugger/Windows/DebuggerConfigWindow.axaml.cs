@@ -5,7 +5,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Rendering;
 using Avalonia.Threading;
 using Nexen.Config;
 using Nexen.Debugger.ViewModels;
@@ -14,7 +13,7 @@ using Nexen.ViewModels;
 using Nexen.Windows;
 
 namespace Nexen.Debugger.Windows; 
-public class DebuggerConfigWindow : NexenWindow {
+public partial class DebuggerConfigWindow : NexenWindow {
 	private DebuggerConfigWindowViewModel _model;
 	private bool _promptToSave = true;
 
@@ -25,14 +24,14 @@ public class DebuggerConfigWindow : NexenWindow {
 	public DebuggerConfigWindow(DebuggerConfigWindowViewModel model) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		_model = model;
 		DataContext = model;
 	}
 
-	public static void Open(DebugConfigWindowTab tab, IRenderRoot? parent) {
+	public static void Open(DebugConfigWindowTab tab, Visual? parent) {
 		new DebuggerConfigWindow(new DebuggerConfigWindowViewModel(tab)).ShowCenteredDialog(parent as Visual);
 	}
 

@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Views; 
-public class GbaControllerView : UserControl {
+public partial class GbaControllerView : UserControl {
 	public GbaControllerView() {
 		InitializeComponent();
 	}

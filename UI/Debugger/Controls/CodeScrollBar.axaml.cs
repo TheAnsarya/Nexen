@@ -12,7 +12,7 @@ using Nexen.Utilities;
 using Nexen.Windows;
 
 namespace Nexen.Debugger.Controls; 
-public class CodeScrollBar : UserControl {
+public partial class CodeScrollBar : UserControl {
 	public static readonly StyledProperty<int> ValueProperty = AvaloniaProperty.Register<CodeScrollBar, int>(nameof(Value), 0, defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 	public static readonly StyledProperty<int> MaximumProperty = AvaloniaProperty.Register<CodeScrollBar, int>(nameof(Maximum), 0);
 

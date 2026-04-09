@@ -3,7 +3,7 @@ using Avalonia.Markup.Xaml;
 using Nexen.Interop;
 
 namespace Nexen.Views; 
-public class AudioConfigView : UserControl {
+public partial class AudioConfigView : UserControl {
 	public AudioConfigView() {
 		InitializeComponent();
 	}

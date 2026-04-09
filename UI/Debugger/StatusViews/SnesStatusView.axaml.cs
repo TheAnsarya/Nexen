@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Debugger.StatusViews; 
-public class SnesStatusView : UserControl {
+public partial class SnesStatusView : UserControl {
 	public SnesStatusView() {
 		InitializeComponent();
 	}

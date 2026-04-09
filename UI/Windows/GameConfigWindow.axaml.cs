@@ -13,7 +13,7 @@ using Nexen.ViewModels;
 
 namespace Nexen.Windows;
 
-public class GameConfigWindow : NexenWindow {
+public partial class GameConfigWindow : NexenWindow {
 	private GameConfigViewModel _model;
 
 	public GameConfigWindow() {

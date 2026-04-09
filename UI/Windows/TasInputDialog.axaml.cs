@@ -24,7 +24,7 @@ public partial class TasInputDialog : NexenWindow {
 	public TasInputDialog() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 
@@ -90,7 +90,7 @@ public partial class TasInputDialog : NexenWindow {
 		dialog.Title = title;
 		dialog._txtPrompt.Text = prompt;
 		dialog._txtInput.Text = defaultValue.ToString();
-		dialog._txtInput.Watermark = $"{minValue:N0} - {maxValue:N0}";
+		dialog._txtInput.PlaceholderText = $"{minValue:N0} - {maxValue:N0}";
 		dialog._numericOnly = true;
 		dialog._minValue = minValue;
 		dialog._maxValue = maxValue;

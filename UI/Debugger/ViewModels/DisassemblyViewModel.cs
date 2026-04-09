@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using Nexen.Config;
 using Nexen.Debugger.Controls;

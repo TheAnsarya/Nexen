@@ -6,7 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Metadata;
 
 namespace Nexen.Debugger.Controls; 
-public class HexInput : UserControl {
+public partial class HexInput : UserControl {
 	public static readonly StyledProperty<int> ValueProperty = AvaloniaProperty.Register<HexInput, int>(nameof(Value), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 	public static readonly StyledProperty<int?> MaximumProperty = AvaloniaProperty.Register<HexInput, int?>(nameof(Maximum));
 	public static readonly StyledProperty<int?> MinimumProperty = AvaloniaProperty.Register<HexInput, int?>(nameof(Minimum));

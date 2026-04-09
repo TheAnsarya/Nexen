@@ -14,7 +14,7 @@ using Nexen.ViewModels;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Controls;
-public class SoftwareRendererView : UserControl {
+public partial class SoftwareRendererView : UserControl {
 	private SimpleImageViewer _frame;
 	private SimpleImageViewer _emuHud;
 	private SimpleImageViewer _scriptHud;
@@ -84,7 +84,7 @@ public class SoftwareRendererView : UserControl {
 	}
 }
 
-public class SoftwareRendererViewModel : ViewModelBase {
+public partial class SoftwareRendererViewModel : ViewModelBase {
 	[Reactive] public DynamicBitmap? FrameSurface { get; set; }
 	[Reactive] public DynamicBitmap? EmuHudSurface { get; set; }
 	[Reactive] public DynamicBitmap? ScriptHudSurface { get; set; }

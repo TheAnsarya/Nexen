@@ -15,7 +15,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows;
-public class HistoryViewerWindow : NexenWindow {
+public partial class HistoryViewerWindow : NexenWindow {
 	private HistoryViewerViewModel _model;
 	private DispatcherTimer _timer;
 	private DispatcherTimer _mouseTimer;
@@ -40,7 +40,7 @@ public class HistoryViewerWindow : NexenWindow {
 
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		_renderer = this.GetControl<NativeRenderer>("Renderer");

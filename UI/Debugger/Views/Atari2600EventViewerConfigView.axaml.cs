@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Debugger.Views;
-public class Atari2600EventViewerConfigView : UserControl {
+public partial class Atari2600EventViewerConfigView : UserControl {
 	public Atari2600EventViewerConfigView() {
 		InitializeComponent();
 	}

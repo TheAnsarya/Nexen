@@ -20,7 +20,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Windows; 
-public class DebuggerWindow : NexenWindow, INotificationHandler {
+public partial class DebuggerWindow : NexenWindow, INotificationHandler {
 	private DebuggerWindowViewModel _model;
 
 	public CpuType CpuType => _model.CpuType;
@@ -34,7 +34,7 @@ public class DebuggerWindow : NexenWindow, INotificationHandler {
 	public DebuggerWindow(CpuType? cpuType, int? scrollToAddress = null) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		_model = new DebuggerWindowViewModel(cpuType);
@@ -221,9 +221,7 @@ public class DebuggerWindow : NexenWindow, INotificationHandler {
 	}
 
 	private void OnDrop(object? sender, DragEventArgs e) {
-#pragma warning disable CS0618 // Type or member is obsolete
-		string? filename = e.Data.GetFiles()?.FirstOrDefault()?.Path.LocalPath;
-#pragma warning restore CS0618
+		string? filename = e.DataTransfer.TryGetFiles()?.FirstOrDefault()?.Path.LocalPath;
 		if (filename != null && File.Exists(filename)) {
 			Activate();
 			DebugWorkspaceManager.LoadSupportedFile(filename, true);

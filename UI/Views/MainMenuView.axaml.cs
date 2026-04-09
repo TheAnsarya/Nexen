@@ -6,7 +6,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 
 namespace Nexen.Views; 
-public class MainMenuView : UserControl {
+public partial class MainMenuView : UserControl {
 	public Menu MainMenu { get; }
 
 	public MainMenuView() {

@@ -11,7 +11,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 
 namespace Nexen.Debugger.Windows; 
-public class TileViewerWindow : NexenWindow, INotificationHandler {
+public partial class TileViewerWindow : NexenWindow, INotificationHandler {
 	private TileViewerViewModel _model;
 
 	[Obsolete("For designer only")]
@@ -20,7 +20,7 @@ public class TileViewerWindow : NexenWindow, INotificationHandler {
 	public TileViewerWindow(CpuType cpuType) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		ScrollPictureViewer scrollViewer = this.GetControl<ScrollPictureViewer>("picViewer");

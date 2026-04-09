@@ -17,7 +17,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Windows; 
-public class TraceLoggerWindow : NexenWindow, INotificationHandler {
+public partial class TraceLoggerWindow : NexenWindow, INotificationHandler {
 	private TraceLoggerViewModel _model;
 	private CodeViewerSelectionHandler _selectionHandler;
 
@@ -27,7 +27,7 @@ public class TraceLoggerWindow : NexenWindow, INotificationHandler {
 	public TraceLoggerWindow(TraceLoggerViewModel model) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		_model = model;

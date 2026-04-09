@@ -5,7 +5,7 @@ using Avalonia.Media;
 using Nexen.Utilities;
 
 namespace Nexen.Controls;
-public class OptionSection : ItemsControl {
+public partial class OptionSection : ItemsControl {
 	public static readonly StyledProperty<string> HeaderProperty = AvaloniaProperty.Register<OptionSection, string>(nameof(Header));
 	public static readonly StyledProperty<string> IconProperty = AvaloniaProperty.Register<OptionSection, string>(nameof(Icon), "");
 	public static readonly StyledProperty<IImage?> IconSourceProperty = AvaloniaProperty.Register<OptionSection, IImage?>(nameof(IconSource));

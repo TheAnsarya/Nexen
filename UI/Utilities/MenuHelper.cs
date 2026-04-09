@@ -19,7 +19,7 @@ internal sealed class MenuHelper {
 					if (IsPointerInItem(subItem)) {
 						return true;
 					} else if (checkPopup) {
-						if (subItem.GetVisualRoot() is PopupRoot root) {
+						if (TopLevel.GetTopLevel(subItem) is PopupRoot root) {
 							if (root.IsPointerOver) {
 								return true;
 							}
@@ -60,7 +60,7 @@ internal sealed class MenuHelper {
 					if (IsFocusInItem(subItem)) {
 						return true;
 					} else if (checkPopup) {
-						if (subItem.GetVisualRoot() is PopupRoot root) {
+						if (TopLevel.GetTopLevel(subItem) is PopupRoot root) {
 							if (root.IsKeyboardFocusWithin) {
 								return true;
 							}

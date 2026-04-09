@@ -18,7 +18,7 @@ using Nexen.Utilities;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Debugger.Windows; 
-public class GoToAllWindow : NexenWindow {
+public partial class GoToAllWindow : NexenWindow {
 	private GoToAllViewModel _model;
 
 	[Obsolete("For designer only")]
@@ -30,7 +30,7 @@ public class GoToAllWindow : NexenWindow {
 
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

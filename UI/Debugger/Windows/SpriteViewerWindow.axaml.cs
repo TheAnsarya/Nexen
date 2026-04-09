@@ -12,7 +12,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 
 namespace Nexen.Debugger.Windows;
-public class SpriteViewerWindow : NexenWindow, INotificationHandler {
+public partial class SpriteViewerWindow : NexenWindow, INotificationHandler {
 	private SpriteViewerViewModel _model;
 
 	[Obsolete("For designer only")]
@@ -21,7 +21,7 @@ public class SpriteViewerWindow : NexenWindow, INotificationHandler {
 	public SpriteViewerWindow(CpuType cpuType) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		ScrollPictureViewer scrollViewer = this.GetControl<ScrollPictureViewer>("picViewer");

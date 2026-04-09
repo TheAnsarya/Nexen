@@ -4,7 +4,7 @@ using Avalonia.Markup.Xaml;
 
 namespace Nexen.Views;
 
-public class Atari2600ConfigView : UserControl {
+public partial class Atari2600ConfigView : UserControl {
 	public Atari2600ConfigView() {
 		InitializeComponent();
 	}

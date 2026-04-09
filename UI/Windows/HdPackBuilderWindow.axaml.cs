@@ -9,7 +9,7 @@ using Avalonia.Markup.Xaml;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows; 
-public class HdPackBuilderWindow : NexenWindow {
+public partial class HdPackBuilderWindow : NexenWindow {
 	private HdPackBuilderViewModel _model;
 
 	public HdPackBuilderWindow() {
@@ -18,7 +18,7 @@ public class HdPackBuilderWindow : NexenWindow {
 
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

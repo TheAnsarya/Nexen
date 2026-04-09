@@ -11,7 +11,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows; 
-public class CheatEditWindow : NexenWindow {
+public partial class CheatEditWindow : NexenWindow {
 	private CheatEditWindowViewModel _model;
 
 	[Obsolete("For designer only")]
@@ -20,7 +20,7 @@ public class CheatEditWindow : NexenWindow {
 	public CheatEditWindow(CheatCode cheat) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		_model = new CheatEditWindowViewModel(cheat);

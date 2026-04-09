@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Views; 
-public class PceControllerView : UserControl {
+public partial class PceControllerView : UserControl {
 	public PceControllerView() {
 		InitializeComponent();
 	}

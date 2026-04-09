@@ -10,7 +10,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Windows; 
-public class CommentEditWindow : NexenWindow {
+public partial class CommentEditWindow : NexenWindow {
 	private CommentEditViewModel _model;
 
 	[Obsolete("For designer only")]
@@ -25,7 +25,7 @@ public class CommentEditWindow : NexenWindow {
 		AddHandler(CommentEditWindow.KeyDownEvent, this.KeyDownHandler, RoutingStrategies.Tunnel);
 
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

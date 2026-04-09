@@ -17,11 +17,10 @@ using Nexen.Localization;
 using Nexen.Utilities;
 
 namespace Nexen.Windows; 
-public class GetKeyWindow : NexenWindow {
+public partial class GetKeyWindow : NexenWindow {
 	private DispatcherTimer _timer;
 
 	private List<UInt16> _prevScanCodes = [];
-	private TextBlock lblCurrentKey;
 	private bool _allowKeyboardOnly;
 
 	private Stopwatch _stopWatch = Stopwatch.StartNew();
@@ -44,8 +43,6 @@ public class GetKeyWindow : NexenWindow {
 		this.Focusable = true;
 
 		InitializeComponent();
-
-		lblCurrentKey = this.GetControl<TextBlock>("lblCurrentKey");
 
 		_timer = new DispatcherTimer(TimeSpan.FromMilliseconds(25), DispatcherPriority.Normal, (s, e) => UpdateKeyDisplay());
 		_timer.Start();

@@ -10,7 +10,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Windows; 
-public class LabelEditWindow : NexenWindow {
+public partial class LabelEditWindow : NexenWindow {
 	private LabelEditViewModel _model;
 
 	[Obsolete("For designer only")]
@@ -23,7 +23,7 @@ public class LabelEditWindow : NexenWindow {
 		_model = model;
 
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

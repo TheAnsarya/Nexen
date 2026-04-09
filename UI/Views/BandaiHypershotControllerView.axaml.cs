@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Views; 
-public class BandaiHypershotControllerView : UserControl {
+public partial class BandaiHypershotControllerView : UserControl {
 	public BandaiHypershotControllerView() {
 		InitializeComponent();
 	}

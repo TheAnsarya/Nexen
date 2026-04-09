@@ -6,7 +6,7 @@ using Avalonia.Markup.Xaml;
 using Nexen.Utilities;
 
 namespace Nexen.Controls; 
-public class PathSelector : UserControl {
+public partial class PathSelector : UserControl {
 	public static readonly StyledProperty<string> DisabledPathProperty = AvaloniaProperty.Register<PathSelector, string>(nameof(DisabledPath));
 	public static readonly StyledProperty<string> PathProperty = AvaloniaProperty.Register<PathSelector, string>(nameof(Path), "", false, Avalonia.Data.BindingMode.TwoWay);
 	public static readonly StyledProperty<bool> EditableProperty = AvaloniaProperty.Register<PathSelector, bool>(nameof(Editable));

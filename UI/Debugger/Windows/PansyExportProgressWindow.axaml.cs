@@ -163,7 +163,7 @@ public partial class PansyExportProgressWindow : NexenWindow {
 /// <summary>
 /// Progress information for export operations.
 /// </summary>
-public class ExportProgress {
+public partial class ExportProgress {
 	public int OverallPercent { get; set; }
 	public string StatusMessage { get; set; } = "";
 	public string? CurrentOperation { get; set; }
@@ -174,7 +174,7 @@ public class ExportProgress {
 /// <summary>
 /// Statistics from a completed export operation.
 /// </summary>
-public class ExportStatistics {
+public partial class ExportStatistics {
 	public int SymbolCount { get; set; }
 	public int CommentCount { get; set; }
 	public long CodeBytes { get; set; }

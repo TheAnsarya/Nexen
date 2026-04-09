@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Views; 
-public class OtherConsolesConfigView : UserControl {
+public partial class OtherConsolesConfigView : UserControl {
 	public OtherConsolesConfigView() {
 		InitializeComponent();
 	}

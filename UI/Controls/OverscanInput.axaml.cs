@@ -11,7 +11,7 @@ using Nexen.Config;
 using Nexen.Localization;
 
 namespace Nexen.Controls; 
-public class OverscanInput : UserControl {
+public partial class OverscanInput : UserControl {
 	public static readonly StyledProperty<OverscanConfig> OverscanProperty = AvaloniaProperty.Register<OverscanInput, OverscanConfig>(nameof(Overscan), new OverscanConfig(), defaultBindingMode: BindingMode.TwoWay);
 
 	public OverscanConfig Overscan {

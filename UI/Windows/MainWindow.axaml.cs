@@ -28,7 +28,7 @@ using Nexen.ViewModels;
 using Nexen.Views;
 
 namespace Nexen.Windows;
-public class MainWindow : NexenWindow {
+public partial class MainWindow : NexenWindow {
 	private DispatcherTimer _timerBackgroundFlag = new DispatcherTimer();
 	private MainWindowViewModel _model = null!;
 
@@ -113,7 +113,7 @@ public class MainWindow : NexenWindow {
 		Console.CancelKeyPress += Console_CancelKeyPress;
 
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 
@@ -190,9 +190,7 @@ public class MainWindow : NexenWindow {
 	}
 
 	private void OnDrop(object? sender, DragEventArgs e) {
-#pragma warning disable CS0618 // Type or member is obsolete
-		string? filename = e.Data.GetFiles()?.FirstOrDefault()?.Path.LocalPath;
-#pragma warning restore CS0618
+		string? filename = e.DataTransfer.TryGetFiles()?.FirstOrDefault()?.Path.LocalPath;
 		if (filename != null) {
 			if (File.Exists(filename)) {
 				LoadRomHelper.LoadFile(filename);
@@ -633,7 +631,7 @@ public class MainWindow : NexenWindow {
 		}
 	}
 
-	protected override void OnLostFocus(RoutedEventArgs e) {
+	protected override void OnLostFocus(FocusChangedEventArgs e) {
 		base.OnLostFocus(e);
 		if (WindowState == WindowState.FullScreen && ConfigManager.Config.Video.UseExclusiveFullscreen) {
 			ToggleFullscreen();

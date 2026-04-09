@@ -56,7 +56,7 @@ public sealed class LynxConfigViewModel : DisposableViewModel {
 		ControllerConfig cfg = Config.Controller.Clone();
 		wnd.DataContext = new ControllerConfigViewModel(ControllerType.LynxController, cfg, orgCfg, port);
 
-		if (await wnd.ShowDialogAtPosition<bool>(btn.GetVisualRoot() as Visual, startPosition)) {
+		if (await wnd.ShowDialogAtPosition<bool>(TopLevel.GetTopLevel(btn) as Visual, startPosition)) {
 			Config.Controller = cfg;
 		}
 	}

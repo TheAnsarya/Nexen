@@ -15,7 +15,7 @@ using Nexen.ViewModels;
 using Nexen.Windows;
 
 namespace Nexen.Views; 
-public class GameboyConfigView : UserControl {
+public partial class GameboyConfigView : UserControl {
 	private GameboyConfigViewModel _model;
 
 	public GameboyConfigView() {
@@ -36,7 +36,7 @@ public class GameboyConfigView : UserControl {
 		ColorPickerViewModel model = new ColorPickerViewModel() { Color = color };
 		ColorPickerWindow wnd = new ColorPickerWindow() { DataContext = model };
 
-		bool success = await wnd.ShowCenteredDialog<bool>(this.GetVisualRoot() as Visual);
+		bool success = await wnd.ShowCenteredDialog<bool>(TopLevel.GetTopLevel(this) as Visual);
 		if (success) {
 			return model.Color;
 		}

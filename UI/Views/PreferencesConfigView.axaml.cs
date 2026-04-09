@@ -15,7 +15,7 @@ using Nexen.Utilities;
 using Nexen.Windows;
 
 namespace Nexen.Views;
-public class PreferencesConfigView : UserControl {
+public partial class PreferencesConfigView : UserControl {
 	public PreferencesConfigView() {
 		InitializeComponent();
 		UpdateMigrationStatus();
@@ -35,8 +35,8 @@ public class PreferencesConfigView : UserControl {
 
 	private async void ShowSelectFolderWindow() {
 		SelectStorageFolderWindow wnd = new();
-		if (await wnd.ShowCenteredDialog<bool>(this.GetVisualRoot() as Visual)) {
-			(this.GetVisualRoot() as Window)?.Close();
+		if (await wnd.ShowCenteredDialog<bool>(TopLevel.GetTopLevel(this) as Visual)) {
+			(TopLevel.GetTopLevel(this) as Window)?.Close();
 			ApplicationHelper.GetMainWindow()?.Close();
 			ConfigManager.RestartNexen();
 		}
@@ -58,7 +58,7 @@ public class PreferencesConfigView : UserControl {
 		var (legacyFiles, gameCount) = GameDataManager.GetCleanupStatus();
 		if (legacyFiles == 0) {
 			await NexenMsgBox.Show(
-				this.GetVisualRoot() as Window,
+				TopLevel.GetTopLevel(this) as Window,
 				"NoLegacyFilesToCleanup",
 				MessageBoxButtons.OK,
 				MessageBoxIcon.Info
@@ -67,7 +67,7 @@ public class PreferencesConfigView : UserControl {
 		}
 
 		var result = await NexenMsgBox.Show(
-			this.GetVisualRoot() as Window,
+			TopLevel.GetTopLevel(this) as Window,
 			"ConfirmCleanupLegacyData",
 			MessageBoxButtons.OKCancel,
 			MessageBoxIcon.Warning,
@@ -80,7 +80,7 @@ public class PreferencesConfigView : UserControl {
 			UpdateMigrationStatus();
 
 			await NexenMsgBox.Show(
-				this.GetVisualRoot() as Window,
+				TopLevel.GetTopLevel(this) as Window,
 				"CleanupComplete",
 				MessageBoxButtons.OK,
 				MessageBoxIcon.Info,

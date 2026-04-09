@@ -9,7 +9,7 @@ using Nexen.Utilities;
 
 namespace Nexen.Debugger.Controls;
 
-public class NavButton : UserControl {
+public partial class NavButton : UserControl {
 	public static readonly StyledProperty<NavType> NavProperty = AvaloniaProperty.Register<NavButton, NavType>(nameof(NavProperty));
 	public static readonly StyledProperty<string> TooltipTextProperty = AvaloniaProperty.Register<NavButton, string>(nameof(TooltipText), "");
 	public static readonly StyledProperty<IImage?> IconProperty = AvaloniaProperty.Register<NavButton, IImage?>(nameof(Icon));

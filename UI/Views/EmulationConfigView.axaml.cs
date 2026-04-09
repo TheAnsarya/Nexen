@@ -5,7 +5,7 @@ using Nexen.Config;
 using Nexen.Utilities;
 
 namespace Nexen.Views; 
-public class EmulationConfigView : UserControl {
+public partial class EmulationConfigView : UserControl {
 	public EmulationConfigView() {
 		InitializeComponent();
 	}

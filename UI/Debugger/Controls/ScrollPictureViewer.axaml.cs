@@ -14,7 +14,7 @@ using Avalonia.Threading;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Controls; 
-public class ScrollPictureViewer : UserControl {
+public partial class ScrollPictureViewer : UserControl {
 	public static readonly StyledProperty<Vector> ScrollOffsetProperty = AvaloniaProperty.Register<ScrollPictureViewer, Vector>(nameof(ScrollOffset), defaultBindingMode: BindingMode.TwoWay);
 
 	public static readonly StyledProperty<IImage> SourceProperty = AvaloniaProperty.Register<ScrollPictureViewer, IImage>(nameof(Source));

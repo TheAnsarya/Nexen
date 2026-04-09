@@ -8,7 +8,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows; 
-public class ControllerConfigWindow : NexenWindow {
+public partial class ControllerConfigWindow : NexenWindow {
 	private ControllerConfigViewModel Model => (ControllerConfigViewModel)DataContext!;
 	private bool _promptToSave = true;
 

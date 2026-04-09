@@ -18,7 +18,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 
 namespace Nexen.Controls;
-public class StateGridEntry : UserControl {
+public partial class StateGridEntry : UserControl {
 	private static readonly WriteableBitmap EmptyImage = new WriteableBitmap(new PixelSize(256, 240), new Vector(96, 96), Avalonia.Platform.PixelFormat.Rgba8888, Avalonia.Platform.AlphaFormat.Opaque);
 
 	public static readonly StyledProperty<RecentGameInfo> EntryProperty = AvaloniaProperty.Register<StateGridEntry, RecentGameInfo>(nameof(Entry));

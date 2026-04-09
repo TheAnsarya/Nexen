@@ -10,11 +10,11 @@ using Nexen.Interop;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows; 
-public class NetplayConnectWindow : NexenWindow {
+public partial class NetplayConnectWindow : NexenWindow {
 	public NetplayConnectWindow() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

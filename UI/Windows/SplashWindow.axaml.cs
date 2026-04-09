@@ -8,7 +8,7 @@ namespace Nexen.Windows;
 /// Splash screen window displayed during application startup while the main window initializes.
 /// Shows the Nexen logo with a loading indicator.
 /// </summary>
-public class SplashWindow : Window {
+public partial class SplashWindow : Window {
 	public SplashWindow() {
 		InitializeComponent();
 	}

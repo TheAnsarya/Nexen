@@ -16,7 +16,7 @@ namespace Nexen.Controls;
 /// A combo box that automatically populates itself with values from an enum type,
 /// with localized display text from resource files.
 /// </summary>
-public class EnumComboBox : UserControl {
+public partial class EnumComboBox : UserControl {
 	public static readonly StyledProperty<Enum[]?> AvailableValuesProperty = AvaloniaProperty.Register<EnumComboBox, Enum[]?>(nameof(AvailableValues), null);
 	public static readonly StyledProperty<Enum?> SelectedItemProperty = AvaloniaProperty.Register<EnumComboBox, Enum?>(nameof(SelectedItem), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 

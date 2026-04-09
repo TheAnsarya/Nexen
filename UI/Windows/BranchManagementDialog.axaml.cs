@@ -12,7 +12,7 @@ namespace Nexen.Windows;
 /// <summary>
 /// Result of branch management dialog operations.
 /// </summary>
-public sealed class BranchManagementResult {
+public sealed partial class BranchManagementResult {
 	public BranchData? LoadedBranch { get; set; }
 	public bool Changed { get; set; }
 }
@@ -29,7 +29,7 @@ public partial class BranchManagementDialog : NexenWindow {
 	public BranchManagementDialog() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

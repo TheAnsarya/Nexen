@@ -8,11 +8,11 @@ using Nexen.Interop;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows; 
-public class NetplayStartServerWindow : NexenWindow {
+public partial class NetplayStartServerWindow : NexenWindow {
 	public NetplayStartServerWindow() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

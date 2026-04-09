@@ -20,7 +20,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Windows;
-public class AssemblerWindow : NexenWindow, INotificationHandler {
+public partial class AssemblerWindow : NexenWindow, INotificationHandler {
 	private static XshdSyntaxDefinition _syntaxDef;
 	private IHighlightingDefinition _highlighting;
 	private NexenTextEditor _textEditor;
@@ -38,7 +38,7 @@ public class AssemblerWindow : NexenWindow, INotificationHandler {
 	public AssemblerWindow(AssemblerWindowViewModel model) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		UpdateSyntaxDef();

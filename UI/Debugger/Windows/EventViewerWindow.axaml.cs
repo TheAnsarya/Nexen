@@ -18,7 +18,7 @@ using Nexen.Localization;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Windows;
-public class EventViewerWindow : NexenWindow, INotificationHandler {
+public partial class EventViewerWindow : NexenWindow, INotificationHandler {
 	private EventViewerViewModel _model;
 	private PixelPoint? _prevMousePos = null;
 
@@ -28,7 +28,7 @@ public class EventViewerWindow : NexenWindow, INotificationHandler {
 	public EventViewerWindow(CpuType cpuType) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		ScrollPictureViewer? scrollViewer = this.FindControl<ScrollPictureViewer>("picViewer");

@@ -9,6 +9,6 @@ using Avalonia.VisualTree;
 namespace Nexen.Utilities; 
 static class ControlExtensions {
 	public static bool IsParentWindowFocused(this Control ctrl) {
-		return ctrl.GetVisualRoot() is WindowBase { IsKeyboardFocusWithin: true };
+		return TopLevel.GetTopLevel(ctrl) is WindowBase { IsKeyboardFocusWithin: true };
 	}
 }

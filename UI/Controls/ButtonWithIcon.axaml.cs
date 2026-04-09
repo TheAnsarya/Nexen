@@ -9,7 +9,7 @@ using Nexen.Utilities;
 using Nexen.Windows;
 
 namespace Nexen.Controls;
-public class ButtonWithIcon : Button {
+public partial class ButtonWithIcon : Button {
 	protected override Type StyleKeyOverride => typeof(Button);
 
 	public static readonly StyledProperty<string> TextProperty = AvaloniaProperty.Register<ButtonWithIcon, string>(nameof(Text), "");

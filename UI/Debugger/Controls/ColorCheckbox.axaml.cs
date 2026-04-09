@@ -9,7 +9,7 @@ using Nexen.ViewModels;
 using Nexen.Windows;
 
 namespace Nexen.Debugger.Controls; 
-public class ColorCheckbox : UserControl {
+public partial class ColorCheckbox : UserControl {
 	public static readonly StyledProperty<string> TextProperty = AvaloniaProperty.Register<ColorCheckbox, string>(nameof(Text), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 	public static readonly StyledProperty<bool> CheckedProperty = AvaloniaProperty.Register<ColorCheckbox, bool>(nameof(Checked), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 	public static readonly StyledProperty<Color> ColorProperty = AvaloniaProperty.Register<ColorCheckbox, Color>(nameof(Color), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);

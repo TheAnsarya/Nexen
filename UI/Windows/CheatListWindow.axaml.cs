@@ -14,7 +14,7 @@ using Nexen.Interop;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows;
-public class CheatListWindow : NexenWindow {
+public partial class CheatListWindow : NexenWindow {
 	private CheatListWindowViewModel _model;
 	private NotificationListener _listener;
 
@@ -107,7 +107,7 @@ public class CheatListWindow : NexenWindow {
 	}
 }
 
-public class CodeStringConverter : IValueConverter {
+public partial class CodeStringConverter : IValueConverter {
 	public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) {
 		if (targetType == typeof(string) && value is string str) {
 			return string.Join(", ", str.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));

@@ -13,13 +13,13 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 
 namespace Nexen.Debugger.Windows;
-public class ProfilerWindow : NexenWindow, INotificationHandler {
+public partial class ProfilerWindow : NexenWindow, INotificationHandler {
 	private ProfilerWindowViewModel _model;
 
 	public ProfilerWindow() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		// Subscribe to DataGrid CellDoubleClick routed event (bubbles from DataTemplate)

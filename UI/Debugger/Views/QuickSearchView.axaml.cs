@@ -7,7 +7,7 @@ using Avalonia.Threading;
 using Nexen.Debugger.ViewModels;
 
 namespace Nexen.Debugger.Views; 
-public class QuickSearchView : UserControl {
+public partial class QuickSearchView : UserControl {
 	private QuickSearchViewModel? _model;
 	private TextBox _txtSearch;
 

@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Debugger.StatusViews; 
-public class St018StatusView : UserControl {
+public partial class St018StatusView : UserControl {
 	public St018StatusView() {
 		InitializeComponent();
 	}

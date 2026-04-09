@@ -37,7 +37,7 @@ public sealed class GameboyConfigViewModel : DisposableViewModel {
 		ControllerConfig cfg = Config.Controller.Clone();
 		wnd.DataContext = new ControllerConfigViewModel(ControllerType.GameboyController, cfg, Config.Controller, 0);
 
-		if (await wnd.ShowDialogAtPosition<bool>(btn.GetVisualRoot() as Visual, startPosition)) {
+		if (await wnd.ShowDialogAtPosition<bool>(TopLevel.GetTopLevel(btn) as Visual, startPosition)) {
 			Config.Controller = cfg;
 		}
 	}

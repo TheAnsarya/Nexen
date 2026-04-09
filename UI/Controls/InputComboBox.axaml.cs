@@ -11,7 +11,7 @@ using Nexen.ViewModels;
 using Nexen.Windows;
 
 namespace Nexen.Controls; 
-public class InputComboBox : UserControl {
+public partial class InputComboBox : UserControl {
 	public static readonly StyledProperty<ControllerType> ControllerTypeProperty = AvaloniaProperty.Register<InputComboBox, ControllerType>(nameof(ControllerType), defaultBindingMode: BindingMode.TwoWay);
 	public static readonly StyledProperty<ControllerConfig> ConfigProperty = AvaloniaProperty.Register<InputComboBox, ControllerConfig>(nameof(Config), defaultBindingMode: BindingMode.TwoWay);
 	public static readonly StyledProperty<int> PortProperty = AvaloniaProperty.Register<InputComboBox, int>(nameof(Port), 0);
@@ -65,7 +65,7 @@ public class InputComboBox : UserControl {
 		ControllerConfig cfg = Config.Clone();
 		wnd.DataContext = new ControllerConfigViewModel(ControllerType, cfg, Config, Port);
 
-		if (await wnd.ShowDialogAtPosition<bool>(btn.GetVisualRoot() as Visual, startPosition)) {
+		if (await wnd.ShowDialogAtPosition<bool>(TopLevel.GetTopLevel(btn) as Visual, startPosition)) {
 			Config = cfg;
 		}
 	}

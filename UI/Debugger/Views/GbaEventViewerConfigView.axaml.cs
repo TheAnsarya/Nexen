@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Debugger.Views; 
-public class GbaEventViewerConfigView : UserControl {
+public partial class GbaEventViewerConfigView : UserControl {
 	public GbaEventViewerConfigView() {
 		InitializeComponent();
 	}

@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Views; 
-public class DefaultControllerView : UserControl {
+public partial class DefaultControllerView : UserControl {
 	public DefaultControllerView() {
 		InitializeComponent();
 	}

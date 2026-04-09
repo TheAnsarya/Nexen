@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
+using Avalonia.Input.Platform;
 using Nexen.Interop;
 using Nexen.Utilities;
 

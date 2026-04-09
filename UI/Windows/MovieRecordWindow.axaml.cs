@@ -10,11 +10,11 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows;
-public class MovieRecordWindow : NexenWindow {
+public partial class MovieRecordWindow : NexenWindow {
 	public MovieRecordWindow() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

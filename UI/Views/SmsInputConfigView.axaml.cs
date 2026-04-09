@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Views; 
-public class SmsInputConfigView : UserControl {
+public partial class SmsInputConfigView : UserControl {
 	public SmsInputConfigView() {
 		InitializeComponent();
 	}

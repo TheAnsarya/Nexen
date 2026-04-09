@@ -11,7 +11,7 @@ using Nexen.Debugger.Controls;
 using Nexen.Interop;
 
 namespace Nexen.Windows; 
-public class LogWindow : NexenWindow {
+public partial class LogWindow : NexenWindow {
 	private DispatcherTimer _timer;
 
 	public static readonly StyledProperty<string> LogContentProperty = AvaloniaProperty.Register<LogWindow, string>(nameof(LogContent), "", defaultBindingMode: BindingMode.OneWayToSource);

@@ -28,7 +28,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Windows;
-public class ScriptWindow : NexenWindow, INotificationHandler {
+public partial class ScriptWindow : NexenWindow, INotificationHandler {
 	private static XshdSyntaxDefinition _syntaxDef;
 	private IHighlightingDefinition _highlighting;
 	private NexenTextEditor _textEditor;
@@ -48,7 +48,7 @@ public class ScriptWindow : NexenWindow, INotificationHandler {
 	public ScriptWindow(ScriptWindowViewModel model) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		UpdateSyntaxDef();
@@ -315,7 +315,7 @@ public class ScriptWindow : NexenWindow, INotificationHandler {
 		}
 	}
 
-	public class MyCompletionData : ICompletionData {
+	public partial class MyCompletionData : ICompletionData {
 		private string? _enumName;
 		private int _insertOffset;
 

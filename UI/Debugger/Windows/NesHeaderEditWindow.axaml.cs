@@ -11,7 +11,7 @@ using Nexen.ViewModels;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Debugger.Windows; 
-public class NesHeaderEditWindow : NexenWindow {
+public partial class NesHeaderEditWindow : NexenWindow {
 	NesHeaderEditViewModel _model;
 
 	public NesHeaderEditWindow() {
@@ -21,7 +21,7 @@ public class NesHeaderEditWindow : NexenWindow {
 		InitializeComponent();
 
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

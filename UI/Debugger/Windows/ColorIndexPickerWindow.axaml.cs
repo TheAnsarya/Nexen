@@ -11,7 +11,7 @@ using Nexen.Utilities;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Debugger.Windows;
-public class ColorIndexPickerWindow : NexenWindow {
+public partial class ColorIndexPickerWindow : NexenWindow {
 	public UInt32[] Palette { get; set; } = [];
 	public int SelectedPalette { get; set; }
 	public int BlockSize { get; set; } = 24;
@@ -71,7 +71,7 @@ public class ColorIndexPickerWindow : NexenWindow {
 
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

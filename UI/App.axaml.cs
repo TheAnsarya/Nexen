@@ -18,7 +18,7 @@ using Nexen.ViewModels;
 using Nexen.Windows;
 
 namespace Nexen;
-public class App : Application {
+public partial class App : Application {
 	public static bool ShowConfigWindow { get; set; }
 	public static bool ShowAlreadyRunningDialog { get; set; }
 	public static bool AlreadyRunningCloseAndRestart { get; set; }

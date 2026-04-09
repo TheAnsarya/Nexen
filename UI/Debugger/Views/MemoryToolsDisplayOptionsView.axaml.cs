@@ -7,7 +7,7 @@ using Avalonia.Media;
 using Nexen.Config;
 
 namespace Nexen.Debugger.Views; 
-public class MemoryToolsDisplayOptionsView : UserControl {
+public partial class MemoryToolsDisplayOptionsView : UserControl {
 	public MemoryToolsDisplayOptionsView() {
 		InitializeComponent();
 	}

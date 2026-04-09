@@ -26,7 +26,7 @@ public partial class SelectRomWindow : NexenWindow {
 	public SelectRomWindow() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		_searchBox = this.GetControl<TextBox>("Search");
@@ -135,7 +135,7 @@ public partial class SelectRomWindow : NexenWindow {
 	}
 }
 
-public class SelectRomViewModel : DisposableViewModel {
+public partial class SelectRomViewModel : DisposableViewModel {
 	private readonly List<ArchiveRomEntry> _entries;
 	[Reactive] public IEnumerable<ArchiveRomEntry> FilteredEntries { get; set; }
 	[Reactive] public string SearchString { get; set; } = "";

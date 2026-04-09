@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Rendering;
 using Nexen.Config;
 using Nexen.Interop;
 using Nexen.Localization;
@@ -79,7 +79,7 @@ public static class FirmwareHelper {
 		}
 	}
 
-	public static async Task<bool> SelectFirmwareFile(FirmwareType type, string selectedFile, IRenderRoot? wnd) {
+	public static async Task<bool> SelectFirmwareFile(FirmwareType type, string selectedFile, Visual? wnd) {
 		FirmwareFiles knownFirmwares = type.GetFirmwareInfo();
 
 		long fileSize = new FileInfo(selectedFile).Length;

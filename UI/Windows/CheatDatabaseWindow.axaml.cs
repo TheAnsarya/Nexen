@@ -16,7 +16,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows; 
-public class CheatDatabaseWindow : NexenWindow {
+public partial class CheatDatabaseWindow : NexenWindow {
 	private CheatDatabaseViewModel _model;
 	private bool _cancelled = true;
 	private ListBox _listBox;

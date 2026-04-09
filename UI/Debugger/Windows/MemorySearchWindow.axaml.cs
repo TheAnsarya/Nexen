@@ -12,7 +12,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 
 namespace Nexen.Debugger.Windows;
-public class MemorySearchWindow : NexenWindow, INotificationHandler {
+public partial class MemorySearchWindow : NexenWindow, INotificationHandler {
 	private MemorySearchViewModel _model;
 
 	public MemorySearchWindow() {
@@ -21,7 +21,7 @@ public class MemorySearchWindow : NexenWindow, INotificationHandler {
 
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		if (Design.IsDesignMode) {

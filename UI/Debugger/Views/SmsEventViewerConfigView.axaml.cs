@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Debugger.Views; 
-public class SmsEventViewerConfigView : UserControl {
+public partial class SmsEventViewerConfigView : UserControl {
 	public SmsEventViewerConfigView() {
 		InitializeComponent();
 	}

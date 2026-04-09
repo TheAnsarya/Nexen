@@ -10,7 +10,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 
 namespace Nexen.Debugger.Windows; 
-public class RegisterViewerWindow : NexenWindow, INotificationHandler {
+public partial class RegisterViewerWindow : NexenWindow, INotificationHandler {
 	private RegisterViewerWindowViewModel _model;
 
 	[Obsolete("For designer only")]
@@ -19,7 +19,7 @@ public class RegisterViewerWindow : NexenWindow, INotificationHandler {
 	public RegisterViewerWindow(RegisterViewerWindowViewModel model) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		_model = model;

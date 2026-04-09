@@ -10,7 +10,7 @@ using Nexen.Controls;
 using Nexen.Utilities;
 
 namespace Nexen.Windows; 
-public class InputBarcodeWindow : NexenWindow {
+public partial class InputBarcodeWindow : NexenWindow {
 	private static string _lastBarcode { get; set; } = "";
 
 	public static readonly StyledProperty<string> BarcodeProperty = AvaloniaProperty.Register<InputBarcodeWindow, string>(nameof(Barcode), "");

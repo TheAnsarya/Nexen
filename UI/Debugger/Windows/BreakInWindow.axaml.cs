@@ -9,7 +9,7 @@ using Nexen.Utilities;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Debugger.Windows; 
-public class BreakInWindow : NexenWindow {
+public partial class BreakInWindow : NexenWindow {
 	public static int _lastValue { get; set; } = 0;
 	public static StepType _lastStepType { get; set; } = StepType.Step;
 
@@ -47,7 +47,7 @@ public class BreakInWindow : NexenWindow {
 
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

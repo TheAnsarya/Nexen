@@ -9,7 +9,7 @@ using Nexen.ViewModels;
 using Nexen.Windows;
 
 namespace Nexen.Debugger.Views; 
-public class ControllerListView : UserControl {
+public partial class ControllerListView : UserControl {
 	public ControllerListView() {
 		InitializeComponent();
 	}

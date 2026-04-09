@@ -14,7 +14,7 @@ using Nexen.Utilities;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Debugger.Windows; 
-public class MemoryViewerFindWindow : NexenWindow {
+public partial class MemoryViewerFindWindow : NexenWindow {
 	private MemoryViewerFindViewModel _model;
 	private MemoryToolsViewModel _viewerModel;
 
@@ -32,7 +32,7 @@ public class MemoryViewerFindWindow : NexenWindow {
 
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

@@ -38,7 +38,7 @@ public sealed class DebuggerKeyBindingButton : Button {
 		GetKeyWindow wnd = new GetKeyWindow(true);
 		wnd.SingleKeyMode = false;
 		wnd.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-		await wnd.ShowCenteredDialog(this.GetVisualRoot() as Visual);
+		await wnd.ShowCenteredDialog(TopLevel.GetTopLevel(this) as Visual);
 		this.KeyBinding = wnd.DbgShortcutKey;
 	}
 

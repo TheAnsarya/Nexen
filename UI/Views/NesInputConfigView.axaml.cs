@@ -2,7 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Views; 
-public class NesInputConfigView : UserControl {
+public partial class NesInputConfigView : UserControl {
 	public NesInputConfigView() {
 		InitializeComponent();
 	}

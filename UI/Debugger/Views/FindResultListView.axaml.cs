@@ -14,7 +14,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 
 namespace Nexen.Debugger.Views;
-public class FindResultListView : UserControl {
+public partial class FindResultListView : UserControl {
 	public FindResultListView() {
 		InitializeComponent();
 

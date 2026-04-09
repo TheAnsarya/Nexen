@@ -17,7 +17,7 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Debugger.Controls; 
-public class DynamicTooltip : UserControl {
+public partial class DynamicTooltip : UserControl {
 	public static readonly StyledProperty<TooltipEntries> ItemsProperty = AvaloniaProperty.Register<DynamicTooltip, TooltipEntries>(nameof(Items));
 	public static readonly StyledProperty<int> FirstColumnWidthProperty = AvaloniaProperty.Register<DynamicTooltip, int>(nameof(FirstColumnWidth));
 
@@ -79,7 +79,7 @@ public class DynamicTooltip : UserControl {
 	}
 }
 
-public class TooltipEntry : ReactiveObject {
+public partial class TooltipEntry : ReactiveObject {
 	[Reactive] public string Name { get; set; } = "";
 	[Reactive] public object Value { get; set; } = "";
 	[Reactive] public bool UseMonoFont { get; set; } = false;
@@ -93,19 +93,19 @@ public class TooltipEntry : ReactiveObject {
 	}
 }
 
-public class CustomTooltipEntry : TooltipEntry {
+public partial class CustomTooltipEntry : TooltipEntry {
 	public CustomTooltipEntry(string name, object value, bool useMonoFont = false) : base(name, value, useMonoFont) {
 	}
 }
 
-public class TooltipSeparator : TooltipEntry {
+public partial class TooltipSeparator : TooltipEntry {
 	[Reactive] public bool Hidden { get; set; } = false;
 
 	public TooltipSeparator(string name) : base(name, false, false) {
 	}
 }
 
-public class TooltipEntries : List<TooltipEntry>, INotifyCollectionChanged {
+public partial class TooltipEntries : List<TooltipEntry>, INotifyCollectionChanged {
 	private Dictionary<string, TooltipEntry> _entries = new();
 	private HashSet<string> _updatedKeys = new();
 
@@ -216,7 +216,7 @@ public class TooltipEntries : List<TooltipEntry>, INotifyCollectionChanged {
 	}
 }
 
-public class TooltipPictureEntry : ReactiveObject {
+public partial class TooltipPictureEntry : ReactiveObject {
 	[Reactive] public IImage Source { get; set; }
 	[Reactive] public double Zoom { get; set; }
 	[Reactive] public PixelRect? CropRect { get; set; }
@@ -230,7 +230,7 @@ public class TooltipPictureEntry : ReactiveObject {
 	}
 }
 
-public class TooltipColorEntry : ReactiveObject {
+public partial class TooltipColorEntry : ReactiveObject {
 	[Reactive] public UInt32[] Color { get; set; }
 
 	public TooltipColorEntry(UInt32 color) {
@@ -239,7 +239,7 @@ public class TooltipColorEntry : ReactiveObject {
 	}
 }
 
-public class TooltipPaletteEntry : ReactiveObject {
+public partial class TooltipPaletteEntry : ReactiveObject {
 	[Reactive] public UInt32[] RgbPalette { get; set; }
 	[Reactive] public UInt32[] RawPalette { get; set; }
 	[Reactive] public RawPaletteFormat RawFormat { get; set; }

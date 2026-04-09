@@ -4,11 +4,11 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Windows; 
-public class ColorPickerWindow : NexenWindow {
+public partial class ColorPickerWindow : NexenWindow {
 	public ColorPickerWindow() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

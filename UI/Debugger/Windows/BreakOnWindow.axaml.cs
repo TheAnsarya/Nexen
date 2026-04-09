@@ -9,7 +9,7 @@ using Nexen.Utilities;
 using ReactiveUI.Fody.Helpers;
 
 namespace Nexen.Debugger.Windows; 
-public class BreakOnWindow : NexenWindow {
+public partial class BreakOnWindow : NexenWindow {
 	public static int _lastValue { get; set; } = 0;
 
 	public static readonly StyledProperty<int> ValueProperty = AvaloniaProperty.Register<BreakInWindow, int>(nameof(Value));
@@ -48,7 +48,7 @@ public class BreakOnWindow : NexenWindow {
 
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 

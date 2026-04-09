@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
 namespace Nexen.Views;
-public class LynxConfigView : UserControl {
+public partial class LynxConfigView : UserControl {
 	public LynxConfigView() {
 		InitializeComponent();
 	}

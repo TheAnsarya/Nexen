@@ -13,7 +13,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Windows; 
-public class PaletteViewerWindow : NexenWindow, INotificationHandler {
+public partial class PaletteViewerWindow : NexenWindow, INotificationHandler {
 	private PaletteViewerViewModel _model;
 	private PaletteSelector _palSelector;
 
@@ -23,7 +23,7 @@ public class PaletteViewerWindow : NexenWindow, INotificationHandler {
 	public PaletteViewerWindow(CpuType cpuType) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		PaletteSelector palSelector = this.GetControl<PaletteSelector>("palSelector");

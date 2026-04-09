@@ -12,7 +12,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 
 namespace Nexen.Debugger.Windows; 
-public class TilemapViewerWindow : NexenWindow, INotificationHandler {
+public partial class TilemapViewerWindow : NexenWindow, INotificationHandler {
 	private TilemapViewerViewModel _model;
 	private PictureViewer _picViewer;
 
@@ -22,7 +22,7 @@ public class TilemapViewerWindow : NexenWindow, INotificationHandler {
 	public TilemapViewerWindow(CpuType cpuType) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
 		ScrollPictureViewer scrollViewer = this.GetControl<ScrollPictureViewer>("picViewer");

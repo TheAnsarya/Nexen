@@ -14,7 +14,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Views;
-public class WatchListView : UserControl {
+public partial class WatchListView : UserControl {
 	public WatchListViewModel Model => (WatchListViewModel)DataContext!;
 
 	private DataGrid _grid;
@@ -134,7 +134,7 @@ public class WatchListView : UserControl {
 	}
 }
 
-public class WatchListTextBox : TextBox {
+public partial class WatchListTextBox : TextBox {
 	protected override Type StyleKeyOverride => typeof(TextBox);
 
 	private WatchListView? _listView;
@@ -145,7 +145,7 @@ public class WatchListTextBox : TextBox {
 		_listView = this.FindLogicalAncestorOfType<WatchListView>();
 	}
 
-	protected override void OnGotFocus(GotFocusEventArgs e) {
+	protected override void OnGotFocus(FocusChangedEventArgs e) {
 		base.OnGotFocus(e);
 
 		if (_inOnGotFocus) {

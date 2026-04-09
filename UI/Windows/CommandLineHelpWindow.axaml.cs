@@ -12,7 +12,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 
 namespace Nexen.Windows; 
-public class CommandLineHelpWindow : NexenWindow {
+public partial class CommandLineHelpWindow : NexenWindow {
 	public List<CommandLineTabEntry> HelpTabs { get; } = new();
 
 	public CommandLineHelpWindow() {
@@ -33,7 +33,7 @@ public class CommandLineHelpWindow : NexenWindow {
 	}
 }
 
-public class CommandLineTabEntry {
+public partial class CommandLineTabEntry {
 	public string Name { get; set; } = "";
 	public string Content { get; set; } = "";
 }

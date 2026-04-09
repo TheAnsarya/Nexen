@@ -15,7 +15,7 @@ namespace Nexen.Windows;
 /// <summary>
 /// TAS Editor window for frame-by-frame movie editing.
 /// </summary>
-public class TasEditorWindow : NexenWindow, IDisposable {
+public partial class TasEditorWindow : NexenWindow, IDisposable {
 	private ListBox _frameList = null!;
 	private PianoRollControl _pianoRoll = null!;
 	private NotificationListener? _notificationListener;
@@ -25,7 +25,7 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 	public TasEditorWindow() {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 		DataContext = new TasEditorViewModel();
 
@@ -40,7 +40,7 @@ public class TasEditorWindow : NexenWindow, IDisposable {
 	public TasEditorWindow(TasEditorViewModel viewModel) {
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 		DataContext = viewModel;
 		viewModel.InitActions(this);

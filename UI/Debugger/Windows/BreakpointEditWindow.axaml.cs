@@ -10,7 +10,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Utilities;
 
 namespace Nexen.Debugger.Windows; 
-public class BreakpointEditWindow : NexenWindow {
+public partial class BreakpointEditWindow : NexenWindow {
 	[Obsolete("For designer only")]
 	public BreakpointEditWindow() : this(new BreakpointEditViewModel()) { }
 
@@ -18,7 +18,7 @@ public class BreakpointEditWindow : NexenWindow {
 		DataContext = model;
 		InitializeComponent();
 #if DEBUG
-		this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 	}
 
