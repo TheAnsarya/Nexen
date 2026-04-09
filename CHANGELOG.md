@@ -26,6 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Designated save filename format** — Changed from `_designated_{N}_` to `_[slot{NN}]_` for clearer identification; legacy filenames still recognized (#1196)
 - **Default slot hotkeys** — F2/Shift+F2 (slot 1), F3/Shift+F3 (slot 2), F4/Shift+F4 (slot 3); F1 remains infinite saves
+- **Dark purple badge for non-current slot saves** — Historical slot saves (superseded by a newer save in the same slot) now show a darker purple badge; current (newest) save per slot keeps bright purple
+- **NuGet package updates** — Avalonia 11.3.11→11.3.13, Dock.* 11.3.11.7→11.3.11.22, SkiaSharp.NativeAssets.Linux 3.116.1→3.119.2, StreamHash 1.11.2→1.11.3
+
+### Security
+
+- **Tmds.DBus.Protocol pinned** — Pinned from transitive 0.21.2 to direct 0.92.0 to resolve GHSA-xrw6-gwf8-vvr9
 
 ---
 
