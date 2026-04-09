@@ -62,6 +62,17 @@ class Program {
 
 		// Set up global exception handlers
 		AppDomain.CurrentDomain.UnhandledException += (sender, e) => {
+			// On Linux, Tmds.DBus.Protocol's background handler can race against the
+			// already-disposed Avalonia dispatcher during exit, throwing TaskCanceledException.
+			// This is benign — log it as a warning and exit cleanly instead of aborting.
+			if (e.ExceptionObject is TaskCanceledException tce &&
+				tce.StackTrace?.Contains("Tmds.DBus") == true) {
+				Log.Warn("Suppressing TaskCanceledException during shutdown (Avalonia/DBus cleanup race)");
+				Log.CloseAndFlush();
+				Environment.Exit(0);
+				return;
+			}
+
 			Log.Fatal(e.ExceptionObject as Exception ?? new Exception($"Non-Exception thrown: {e.ExceptionObject}"), "Unhandled exception in AppDomain");
 			Log.CloseAndFlush();
 		};
@@ -158,6 +169,15 @@ class Program {
 			}
 
 			Log.Info("Nexen shutting down normally");
+
+			// On Linux, Tmds.DBus.Protocol's background handler can race against
+			// the already-disposed Avalonia dispatcher, causing TaskCanceledException.
+			// Exit cleanly here before that cleanup runs.
+			if (OperatingSystem.IsLinux()) {
+				Log.CloseAndFlush();
+				Environment.Exit(0);
+			}
+
 			return 0;
 		} catch (TypeInitializationException ex) {
 			// TypeInitializationException wraps the real cause — the inner exception has
