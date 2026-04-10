@@ -465,7 +465,7 @@ public class RealFileConversionTests {
 		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.Fm2MovieConverter();
-		MovieData movie = await converter.ReadAsync(filePath);
+		MovieData movie = await converter.ReadAsync(filePath, TestContext.Current.CancellationToken);
 
 		Assert.Equal(MovieFormat.Fm2, movie.SourceFormat);
 		Assert.True(movie.TotalFrames > 0);
@@ -479,7 +479,7 @@ public class RealFileConversionTests {
 		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.Bk2MovieConverter();
-		MovieData movie = await converter.ReadAsync(filePath);
+		MovieData movie = await converter.ReadAsync(filePath, TestContext.Current.CancellationToken);
 
 		Assert.Equal(MovieFormat.Bk2, movie.SourceFormat);
 	}

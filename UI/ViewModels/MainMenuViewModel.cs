@@ -55,7 +55,7 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 	[Reactive] public partial List<object> HelpMenuItems { get; set; } = [];
 
 	/// <summary>NetPlay controller selection items.</summary>
-	[Reactive] private List<object> _netPlayControllers { get; set; } = new();
+	[Reactive] private partial List<object> _netPlayControllers { get; set; } = new();
 
 	/// <summary>Gets the current ROM information.</summary>
 	private RomInfo RomInfo => MainWindow.RomInfo;

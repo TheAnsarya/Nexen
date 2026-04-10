@@ -1,3 +1,5 @@
+// CS8618: Source-generated ObservableAsProperty helpers assigned after Design.IsDesignMode guard
+#pragma warning disable CS8618
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
