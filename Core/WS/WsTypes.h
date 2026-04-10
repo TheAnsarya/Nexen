@@ -534,6 +534,7 @@ struct WsCartState {
 	uint8_t FlashCycle = 0;       ///< Command sequence cycle counter
 	bool FlashSoftwareId = false; ///< True when in Software ID mode
 	bool HasFlash = false;        ///< True if cart has Flash ROM
+	bool FlashDirty = false;      ///< True if flash contents changed since last battery save/load
 };
 
 /// <summary>

@@ -89,7 +89,11 @@ void WsCart::FlashWrite(uint32_t addr, uint8_t value) {
 	if (_state.FlashMode == WsFlashMode::WriteByte) {
 		// Program a single byte (can only clear bits, not set)
 		if (addr < _prgRomSize) {
-			_prgRom[addr] &= value;
+			uint8_t newValue = _prgRom[addr] & value;
+			if (newValue != _prgRom[addr]) {
+				_prgRom[addr] = newValue;
+				_state.FlashDirty = true;
+			}
 		}
 		_state.FlashMode = WsFlashMode::Idle;
 		_state.FlashCycle = 0;
@@ -115,11 +119,13 @@ void WsCart::FlashWrite(uint32_t addr, uint8_t value) {
 			if ((addr & 0xffff) == 0x5555 && value == 0x10) {
 				// Chip erase
 				memset(_prgRom, 0xff, _prgRomSize);
+				_state.FlashDirty = true;
 			} else if (value == 0x30) {
 				// Sector erase (4KB)
 				uint32_t sectorBase = addr & ~0xfff;
 				if (sectorBase + 0x1000 <= _prgRomSize) {
 					memset(_prgRom + sectorBase, 0xff, 0x1000);
+					_state.FlashDirty = true;
 				}
 			}
 			_state.FlashMode = WsFlashMode::Idle;
@@ -178,6 +184,7 @@ void WsCart::Serialize(Serializer& s) {
 	SV(_state.FlashCycle);
 	SV(_state.FlashSoftwareId);
 	SV(_state.HasFlash);
+	SV(_state.FlashDirty);
 
 	if (_rtc) {
 		SV(_rtc);

@@ -43,30 +43,11 @@ ChannelFConsole::ChannelFConsole(Emulator* emu)
 	  _frameBuffer(ScreenWidth * ScreenHeight, 0) {
 	_controlManager = std::make_unique<ChannelFControlManager>(emu);
 
-	// Wire CPU callbacks to memory manager
-	_cpu->SetReadCallback([this](uint16_t addr) {
-		return _memoryManager->ReadMemory(addr);
-	});
-	_cpu->SetWriteCallback([this](uint16_t addr, uint8_t value) {
-		_memoryManager->WriteMemory(addr, value);
-	});
-	_cpu->SetReadPortCallback([this](uint8_t port) {
-		uint8_t value = _memoryManager->ReadPort(port);
-		_emu->ProcessMemoryAccess<CpuType::ChannelF, MemoryType::ChannelFMemory, MemoryOperationType::Read>(port, value);
-		return value;
-	});
-	_cpu->SetWritePortCallback([this](uint8_t port, uint8_t value) {
-		_emu->ProcessMemoryAccess<CpuType::ChannelF, MemoryType::ChannelFMemory, MemoryOperationType::Write>(port, value);
-		_memoryManager->WritePort(port, value);
-	});
+	// Wire CPU directly to memory manager (no std::function overhead)
+	_cpu->Init(_memoryManager.get(), _emu);
 
 	// Wire 3853 SMI interrupt vector updates from memory manager to CPU
-	_memoryManager->SetInterruptVectorCallback([this](uint16_t vector) {
-		_cpu->SetInterruptVector(vector);
-	});
-	_memoryManager->SetSmiIrqCallback([this](bool asserted) {
-		_cpu->SetIrqLine(asserted);
-	});
+	_memoryManager->SetCpu(_cpu.get());
 }
 
 ChannelFConsole::~ChannelFConsole() {

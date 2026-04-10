@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ChannelF/ChannelFMemoryManager.h"
+#include "ChannelF/ChannelFCpu.h"
 #include <algorithm>
 #include <limits>
 
@@ -98,8 +99,8 @@ void ChannelFMemoryManager::Reset() {
 	_smiTimerCounter = 0;
 	_smiTimerControl = 0;
 	_smiTimerEnabled = false;
-	if (_onSmiIrqLineChanged) {
-		_onSmiIrqLineChanged(false);
+	if (_cpu) {
+		_cpu->SetIrqLine(false);
 	}
 	if (_cartBoardType == CartBoardType::RomWithRam) {
 		memset(_cartRam.data(), 0x00, _cartRam.size());
@@ -194,21 +195,21 @@ void ChannelFMemoryManager::WritePort(uint8_t port, uint8_t value) {
 						_smiTimerEnabled = (value & 0x01) != 0;
 						if (_smiTimerEnabled) {
 							_smiTimerCounter = _smiTimerLatch;
-							if (_onSmiIrqLineChanged) {
-								_onSmiIrqLineChanged(false);
+							if (_cpu) {
+								_cpu->SetIrqLine(false);
 							}
 						}
 						break;
 					case 0x22:
 						_interruptVectorHigh = value;
-						if (_onInterruptVectorChanged) {
-							_onInterruptVectorChanged(GetInterruptVector());
+						if (_cpu) {
+							_cpu->SetInterruptVector(GetInterruptVector());
 						}
 						break;
 					case 0x23:
 						_interruptVectorLow = value;
-						if (_onInterruptVectorChanged) {
-							_onInterruptVectorChanged(GetInterruptVector());
+						if (_cpu) {
+							_cpu->SetInterruptVector(GetInterruptVector());
 						}
 						break;
 					// $20-$21: timer (not yet implemented)
@@ -331,8 +332,8 @@ void ChannelFMemoryManager::StepAudio() {
 	if (_smiTimerEnabled && _smiTimerCounter > 0) {
 		_smiTimerCounter--;
 		if (_smiTimerCounter == 0) {
-			if (_onSmiIrqLineChanged) {
-				_onSmiIrqLineChanged(true);
+			if (_cpu) {
+				_cpu->SetIrqLine(true);
 			}
 			if ((_smiTimerControl & 0x02) != 0) {
 				_smiTimerCounter = _smiTimerLatch;

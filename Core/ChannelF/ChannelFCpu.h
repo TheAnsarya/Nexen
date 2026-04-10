@@ -1,6 +1,8 @@
 #pragma once
 #include "pch.h"
-#include <functional>
+#include "ChannelF/ChannelFMemoryManager.h"
+
+class Emulator;
 
 /// <summary>
 /// Fairchild F8 CPU core for Channel F emulation.
@@ -16,10 +18,12 @@
 /// </summary>
 class ChannelFCpu {
 private:
-	std::function<uint8_t(uint16_t)> _read;
-	std::function<void(uint16_t, uint8_t)> _write;
-	std::function<uint8_t(uint8_t)> _readPort;
-	std::function<void(uint8_t, uint8_t)> _writePort;
+	ChannelFMemoryManager* _memoryManager = nullptr;
+	Emulator* _emu = nullptr;
+
+	// Test-only: raw memory pointers for unit tests without full emulator
+	uint8_t* _testMemory = nullptr;
+	uint8_t* _testPorts = nullptr;
 
 	// Registers
 	uint8_t _a = 0;          // Accumulator
@@ -55,24 +59,22 @@ private:
 	static constexpr uint8_t RegQL = 15;  // Q lower (DC0 copy low)
 
 	[[nodiscard]] uint8_t Read(uint16_t addr) const {
-		return _read ? _read(addr) : 0xff;
+		if (_memoryManager) [[likely]] {
+			return _memoryManager->ReadMemory(addr);
+		}
+		return _testMemory[addr];
 	}
 
 	void Write(uint16_t addr, uint8_t value) const {
-		if (_write) {
-			_write(addr, value);
+		if (_memoryManager) [[likely]] {
+			_memoryManager->WriteMemory(addr, value);
+			return;
 		}
+		_testMemory[addr] = value;
 	}
 
-	[[nodiscard]] uint8_t ReadPort(uint8_t port) const {
-		return _readPort ? _readPort(port) : 0xff;
-	}
-
-	void WritePort(uint8_t port, uint8_t value) const {
-		if (_writePort) {
-			_writePort(port, value);
-		}
-	}
+	[[nodiscard]] uint8_t ReadPort(uint8_t port) const;
+	void WritePort(uint8_t port, uint8_t value) const;
 
 	[[nodiscard]] uint8_t FetchByte() {
 		uint8_t value = Read(_pc0);
@@ -118,10 +120,8 @@ private:
 public:
 	ChannelFCpu() = default;
 
-	void SetReadCallback(std::function<uint8_t(uint16_t)> read) { _read = std::move(read); }
-	void SetWriteCallback(std::function<void(uint16_t, uint8_t)> write) { _write = std::move(write); }
-	void SetReadPortCallback(std::function<uint8_t(uint8_t)> readPort) { _readPort = std::move(readPort); }
-	void SetWritePortCallback(std::function<void(uint8_t, uint8_t)> writePort) { _writePort = std::move(writePort); }
+	void Init(ChannelFMemoryManager* memMgr, Emulator* emu) { _memoryManager = memMgr; _emu = emu; }
+	void InitTestMode(uint8_t* memory, uint8_t* ports) { _testMemory = memory; _testPorts = ports; }
 
 	void Reset();
 	void StepCycles(uint32_t targetCycles);

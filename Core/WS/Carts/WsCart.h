@@ -41,6 +41,8 @@ public:
 	uint8_t FlashRead(uint32_t addr);
 	void FlashWrite(uint32_t addr, uint8_t value);
 	bool HasFlash() const { return _state.HasFlash; }
+	bool IsFlashDirty() const { return _state.FlashDirty; }
+	void ClearFlashDirty() { _state.FlashDirty = false; }
 	bool IsFlashSoftwareId() const { return _state.FlashSoftwareId; }
 
 	void Serialize(Serializer& s) override;

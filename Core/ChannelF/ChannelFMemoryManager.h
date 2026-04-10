@@ -1,7 +1,8 @@
 #pragma once
 #include "pch.h"
 #include "ChannelF/ChannelFTypes.h"
-#include <functional>
+
+class ChannelFCpu;
 
 
 /// <summary>
@@ -73,8 +74,7 @@ private:
 	// 3853 SMI interrupt vector (ports $22-$23)
 	uint8_t _interruptVectorHigh = 0;
 	uint8_t _interruptVectorLow = 0;
-	std::function<void(uint16_t)> _onInterruptVectorChanged;
-	std::function<void(bool)> _onSmiIrqLineChanged;
+	ChannelFCpu* _cpu = nullptr;
 	uint8_t _smiTimerLatch = 0;
 	uint8_t _smiTimerCounter = 0;
 	uint8_t _smiTimerControl = 0;
@@ -115,8 +115,7 @@ public:
 	void SetMasterClockRate(uint32_t masterClockHz) { _masterClockHz = masterClockHz; }
 
 	// 3853 SMI interrupt vector
-	void SetInterruptVectorCallback(std::function<void(uint16_t)> callback) { _onInterruptVectorChanged = std::move(callback); }
-	void SetSmiIrqCallback(std::function<void(bool)> callback) { _onSmiIrqLineChanged = std::move(callback); }
+	void SetCpu(ChannelFCpu* cpu) { _cpu = cpu; }
 	[[nodiscard]] uint16_t GetInterruptVector() const { return (uint16_t)((_interruptVectorHigh << 8) | _interruptVectorLow); }
 	[[nodiscard]] uint8_t GetSmiTimerCounter() const { return _smiTimerCounter; }
 

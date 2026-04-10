@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ChannelF/ChannelFTypes.h"
 #include "ChannelF/ChannelFBiosDatabase.h"
+#include "ChannelF/ChannelFCpu.h"
 #include "ChannelF/ChannelFMemoryManager.h"
 
 // =============================================================================
@@ -511,10 +512,11 @@ TEST(ChfAudioTimingTest, VolumeFromPort5ScalesOutputAmplitude) {
 
 TEST(ChfSmiTimerTest, OneShotTimerAssertsIrqAtZero) {
 	ChannelFMemoryManager mm;
-	bool irqAsserted = false;
-	mm.SetSmiIrqCallback([&irqAsserted](bool level) {
-		irqAsserted = level;
-	});
+	ChannelFCpu cpu;
+	uint8_t mem[0x10000] = {};
+	uint8_t ports[256] = {};
+	cpu.InitTestMode(mem, ports);
+	mm.SetCpu(&cpu);
 	mm.Reset();
 
 	mm.WritePort(0x20, 3);    // latch = 3 ticks
@@ -522,28 +524,32 @@ TEST(ChfSmiTimerTest, OneShotTimerAssertsIrqAtZero) {
 	EXPECT_EQ(mm.ReadPort(0x20), 3);
 
 	mm.StepAudio();
-	EXPECT_FALSE(irqAsserted);
+	EXPECT_FALSE(cpu.GetIrqLine());
 	mm.StepAudio();
-	EXPECT_FALSE(irqAsserted);
+	EXPECT_FALSE(cpu.GetIrqLine());
 	mm.StepAudio();
-	EXPECT_TRUE(irqAsserted);
+	EXPECT_TRUE(cpu.GetIrqLine());
 }
 
 TEST(ChfSmiTimerTest, AutoReloadTimerRepeatsAfterLatch) {
 	ChannelFMemoryManager mm;
-	int irqCount = 0;
-	mm.SetSmiIrqCallback([&irqCount](bool level) {
-		if (level) {
-			irqCount++;
-		}
-	});
+	ChannelFCpu cpu;
+	uint8_t mem[0x10000] = {};
+	uint8_t ports[256] = {};
+	cpu.InitTestMode(mem, ports);
+	mm.SetCpu(&cpu);
 	mm.Reset();
 
 	mm.WritePort(0x20, 2);    // latch = 2 ticks
 	mm.WritePort(0x21, 0x03); // enable + auto-reload
 
+	int irqCount = 0;
 	for (int i = 0; i < 5; i++) {
 		mm.StepAudio();
+		if (cpu.GetIrqLine()) {
+			irqCount++;
+			cpu.SetIrqLine(false);
+		}
 	}
 
 	EXPECT_GE(irqCount, 2);

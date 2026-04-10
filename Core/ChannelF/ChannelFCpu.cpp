@@ -1,5 +1,24 @@
 #include "pch.h"
 #include "ChannelF/ChannelFCpu.h"
+#include "Shared/Emulator.h"
+
+uint8_t ChannelFCpu::ReadPort(uint8_t port) const {
+	if (_memoryManager) [[likely]] {
+		uint8_t value = _memoryManager->ReadPort(port);
+		_emu->ProcessMemoryAccess<CpuType::ChannelF, MemoryType::ChannelFMemory, MemoryOperationType::Read>(port, value);
+		return value;
+	}
+	return _testPorts[port];
+}
+
+void ChannelFCpu::WritePort(uint8_t port, uint8_t value) const {
+	if (_memoryManager) [[likely]] {
+		_emu->ProcessMemoryAccess<CpuType::ChannelF, MemoryType::ChannelFMemory, MemoryOperationType::Write>(port, value);
+		_memoryManager->WritePort(port, value);
+		return;
+	}
+	_testPorts[port] = value;
+}
 
 void ChannelFCpu::Reset() {
 	_a = 0;

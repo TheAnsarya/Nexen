@@ -386,6 +386,7 @@ void WsConsole::LoadBattery() {
 
 	if (_cart->HasFlash()) {
 		_emu->GetBatteryManager()->LoadBattery(".flash", std::span<uint8_t>(_prgRom, _prgRomSize));
+		_cart->ClearFlashDirty();
 	}
 
 	if (_cart->GetRtc()) {
@@ -403,8 +404,9 @@ void WsConsole::SaveBattery() {
 		_emu->GetBatteryManager()->SaveBattery(".sav", std::span<const uint8_t>(_saveRam, _saveRamSize));
 	}
 
-	if (_cart->HasFlash()) {
+	if (_cart->HasFlash() && _cart->IsFlashDirty()) {
 		_emu->GetBatteryManager()->SaveBattery(".flash", std::span<const uint8_t>(_prgRom, _prgRomSize));
+		_cart->ClearFlashDirty();
 	}
 
 	if (_cart->GetRtc()) {

@@ -12,18 +12,7 @@ protected:
 		memset(memory, 0, sizeof(memory));
 		memset(ports, 0, sizeof(ports));
 
-		cpu.SetReadCallback([this](uint16_t addr) -> uint8_t {
-			return memory[addr];
-		});
-		cpu.SetWriteCallback([this](uint16_t addr, uint8_t value) {
-			memory[addr] = value;
-		});
-		cpu.SetReadPortCallback([this](uint8_t port) -> uint8_t {
-			return ports[port];
-		});
-		cpu.SetWritePortCallback([this](uint8_t port, uint8_t value) {
-			ports[port] = value;
-		});
+		cpu.InitTestMode(memory, ports);
 
 		cpu.Reset();
 	}
