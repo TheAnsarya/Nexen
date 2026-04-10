@@ -886,6 +886,7 @@ jobs:
         with:
           tag_name: ${{ env.VERSION }}
           name: Nexen ${{ env.VERSION }}
+          body_path: .github/release-notes/latest.md
           target_commitish: ${{ github.sha }}
           files: release-assets/*
           fail_on_unmatched_files: false
