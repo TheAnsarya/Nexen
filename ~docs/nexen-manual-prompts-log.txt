@@ -1342,9 +1342,13 @@ run nexen so I can test that it doesn't crash
 --- steer
 And nothing runs in the emulator
 
+[Nexen] It works now. Update, fix, and close all Nexen issues #1190+; continue;
 
+Continue! "I can now move on to the remaining local modernization/performance backlog in the working tree (ChannelF/WS tasks) and ship that as the next batch."; continue working fixes and issues; continue;
 
+[Nexen] continue working issuesand problems; did we fix all those issues we closed? (#1190 through #1214) or did we just close them? if we didn't finish the task, reopen the issue and fix it and then only close issues when they are done; continue; make performance improvments with benchmarks, make all the emulator cpu hotpaths efficient; continue;
 
+yes, do the next step thing: "Build real emulator-path benchmarks for the specific memory-manager hotpaths (not synthetic CPU-state rows), then either ship or discard the pending branch-hint patch based on stable measured deltas."; continue performance improvements; continue;
 
 
 
