@@ -800,6 +800,9 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout (for release notes body_path)
+        uses: actions/checkout@v4
+
       - name: Validate release input
         run: |
           VERSION="${{ inputs.release_tag }}"
