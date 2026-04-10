@@ -14,6 +14,7 @@ class GbDmaController;
 class EmuSettings;
 class Emulator;
 class GbControlManager;
+class CheatManager;
 
 enum class MemoryOperationType;
 
@@ -30,6 +31,8 @@ private:
 	GbPpu* _ppu = nullptr;
 	GbTimer* _timer = nullptr;
 	GbDmaController* _dmaController = nullptr;
+
+	CheatManager* _cheatManager = nullptr;
 
 	uint8_t* _highRam = nullptr;
 

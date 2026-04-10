@@ -227,11 +227,11 @@ __forceinline uint8_t PceMemoryManager::Read(uint16_t addr, MemoryOperationType 
 		value = ReadRegister(addr & 0x1FFF);
 	}
 
-	if (_mapper && _mapper->IsBankMapped(bank)) {
+	if (_mapper && _mapper->IsBankMapped(bank)) [[unlikely]] {
 		value = _mapper->Read(bank, addr, value);
 	}
 
-	if (_cheatManager->HasCheats<CpuType::Pce>()) {
+	if (_cheatManager->HasCheats<CpuType::Pce>()) [[unlikely]] {
 		_cheatManager->ApplyCheat<CpuType::Pce>((bank << 13) | (addr & 0x1FFF), value);
 	}
 	_emu->ProcessMemoryRead<CpuType::Pce>(addr, value, type);
@@ -241,7 +241,7 @@ __forceinline uint8_t PceMemoryManager::Read(uint16_t addr, MemoryOperationType 
 __forceinline void PceMemoryManager::Write(uint16_t addr, uint8_t value, MemoryOperationType type) {
 	if (_emu->ProcessMemoryWrite<CpuType::Pce>(addr, value, type)) {
 		uint8_t bank = _state.Mpr[(addr & 0xE000) >> 13];
-		if (_mapper && _mapper->IsBankMapped(bank)) {
+		if (_mapper && _mapper->IsBankMapped(bank)) [[unlikely]] {
 			_mapper->Write(bank, addr, value);
 		}
 

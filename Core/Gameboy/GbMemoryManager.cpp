@@ -35,6 +35,7 @@ void GbMemoryManager::Init(Emulator* emu, Gameboy* gameboy, GbCart* cart, GbPpu*
 	_dmaController = dmaController;
 	_controlManager = (GbControlManager*)gameboy->GetControlManager();
 	_settings = _emu->GetSettings();
+	_cheatManager = _emu->GetCheatManager();
 
 	// Clear memory mapping tables
 	memset(_reads, 0, sizeof(_reads));
@@ -181,8 +182,8 @@ uint8_t GbMemoryManager::Read(uint16_t addr) {
 		value = _reads[addr >> 8][(uint8_t)addr];
 	}
 
-	if (_emu->GetCheatManager()->HasCheats<CpuType::Gameboy>()) [[unlikely]] {
-		_emu->GetCheatManager()->ApplyCheat<CpuType::Gameboy>(addr, value);
+	if (_cheatManager->HasCheats<CpuType::Gameboy>()) [[unlikely]] {
+		_cheatManager->ApplyCheat<CpuType::Gameboy>(addr, value);
 	}
 	_emu->ProcessMemoryRead<CpuType::Gameboy>(addr, value, opType);
 	return value;

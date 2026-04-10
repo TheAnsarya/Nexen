@@ -80,6 +80,9 @@ private:
 	/// <summary>FM audio (YM2413).</summary>
 	SmsFmAudio* _fmAudio = nullptr;
 
+	/// <summary>Cached cheat manager pointer (avoids double-dereference per read).</summary>
+	CheatManager* _cheatManager = nullptr;
+
 	/// <summary>BIOS mapper (optional).</summary>
 	unique_ptr<SmsBiosMapper> _biosMapper;
 
@@ -206,15 +209,15 @@ public:
 	/// <summary>Reads from memory.</summary>
 	__forceinline uint8_t Read(uint16_t addr, MemoryOperationType opType) {
 		uint8_t value;
-		if (_state.IsReadRegister[addr >> 8]) {
+		if (_state.IsReadRegister[addr >> 8]) [[unlikely]] {
 			value = _cart->ReadRegister(addr);
-		} else if (_reads[addr >> 8]) {
+		} else if (_reads[addr >> 8]) [[likely]] {
 			value = _reads[addr >> 8][(uint8_t)addr];
 		} else {
 			value = GetOpenBus();
 		}
-		if (_emu->GetCheatManager()->HasCheats<CpuType::Sms>()) {
-			_emu->GetCheatManager()->ApplyCheat<CpuType::Sms>(addr, value);
+		if (_cheatManager->HasCheats<CpuType::Sms>()) [[unlikely]] {
+			_cheatManager->ApplyCheat<CpuType::Sms>(addr, value);
 		}
 		_state.OpenBus = value;
 		_emu->ProcessMemoryRead<CpuType::Sms>(addr, value, opType);

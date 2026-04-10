@@ -31,47 +31,42 @@ void LynxMemoryManager::UpdateMapctl(uint8_t value) {
 	_state.VectorSpaceVisible = !(value & 0x08); // Bit 3: Vector disable ($FFFA-$FFFF)
 }
 
-uint8_t LynxMemoryManager::Read(uint16_t addr, MemoryOperationType opType) {
+uint8_t LynxMemoryManager::ReadSlow(uint16_t addr, MemoryOperationType opType) {
 	uint8_t value = 0;
 
-	if (addr >= 0xfc00) [[unlikely]] {
-		// High memory — check overlays in priority order
-		if (addr == 0xfff9) {
-			// MAPCTL register — always readable
-			value = _state.Mapctl;
-		} else if (_state.SuzySpaceVisible && addr >= LynxConstants::SuzyBase && addr <= LynxConstants::SuzyEnd) {
-			// Suzy register read — _suzy always initialized via Init()
-			value = _suzy->ReadRegister(addr & 0xff);
-		} else if (_state.MikeySpaceVisible && addr >= LynxConstants::MikeyBase && addr <= LynxConstants::MikeyEnd) {
-			// Mikey register read — _mikey always initialized via Init()
-			value = _mikey->ReadRegister(addr & 0xff);
-		} else if (_state.VectorSpaceVisible && addr >= 0xfffa) {
-			// Vector space — read from boot ROM
-			if (_bootRom && _bootRomSize > 0) {
-				uint16_t romOffset = addr - LynxConstants::BootRomBase;
-				if (romOffset < _bootRomSize) {
-					value = _bootRom[romOffset];
-				}
-			} else {
-				// No boot ROM — fall through to RAM
-				value = _workRam[addr];
-			}
-		} else if (_state.RomSpaceVisible && addr >= LynxConstants::BootRomBase && addr <= 0xfff7) {
-			// ROM space — read from boot ROM
-			if (_bootRom && _bootRomSize > 0) {
-				uint16_t romOffset = addr - LynxConstants::BootRomBase;
-				if (romOffset < _bootRomSize) {
-					value = _bootRom[romOffset];
-				}
-			} else {
-				value = _workRam[addr];
+	// addr >= 0xfc00 — check overlays in priority order
+	if (addr == 0xfff9) {
+		// MAPCTL register — always readable
+		value = _state.Mapctl;
+	} else if (_state.SuzySpaceVisible && addr >= LynxConstants::SuzyBase && addr <= LynxConstants::SuzyEnd) {
+		// Suzy register read — _suzy always initialized via Init()
+		value = _suzy->ReadRegister(addr & 0xff);
+	} else if (_state.MikeySpaceVisible && addr >= LynxConstants::MikeyBase && addr <= LynxConstants::MikeyEnd) {
+		// Mikey register read — _mikey always initialized via Init()
+		value = _mikey->ReadRegister(addr & 0xff);
+	} else if (_state.VectorSpaceVisible && addr >= 0xfffa) {
+		// Vector space — read from boot ROM
+		if (_bootRom && _bootRomSize > 0) {
+			uint16_t romOffset = addr - LynxConstants::BootRomBase;
+			if (romOffset < _bootRomSize) {
+				value = _bootRom[romOffset];
 			}
 		} else {
-			// Overlay not active — read from RAM
+			// No boot ROM — fall through to RAM
+			value = _workRam[addr];
+		}
+	} else if (_state.RomSpaceVisible && addr >= LynxConstants::BootRomBase && addr <= 0xfff7) {
+		// ROM space — read from boot ROM
+		if (_bootRom && _bootRomSize > 0) {
+			uint16_t romOffset = addr - LynxConstants::BootRomBase;
+			if (romOffset < _bootRomSize) {
+				value = _bootRom[romOffset];
+			}
+		} else {
 			value = _workRam[addr];
 		}
 	} else {
-		// $0000-$FBFF — always RAM
+		// Overlay not active — read from RAM
 		value = _workRam[addr];
 	}
 
@@ -79,49 +74,44 @@ uint8_t LynxMemoryManager::Read(uint16_t addr, MemoryOperationType opType) {
 	return value;
 }
 
-void LynxMemoryManager::Write(uint16_t addr, uint8_t value, MemoryOperationType opType) {
-	if (!_emu->ProcessMemoryWrite<CpuType::Lynx>(addr, value, opType)) {
+void LynxMemoryManager::WriteSlow(uint16_t addr, uint8_t value) {
+	// addr >= 0xfc00 — check overlays in priority order
+	if (addr == 0xfff9) {
+		// MAPCTL register write — hardware register only, not backed by RAM
+		UpdateMapctl(value);
 		return;
 	}
 
-	if (addr >= 0xfc00) [[unlikely]] {
-		if (addr == 0xfff9) {
-			// MAPCTL register write — hardware register only, not backed by RAM
-			UpdateMapctl(value);
-			return;
-		}
-
-		if (_state.SuzySpaceVisible && addr >= LynxConstants::SuzyBase && addr <= LynxConstants::SuzyEnd) {
-			// Suzy register write — _suzy always initialized via Init()
-			_suzy->WriteRegister(addr & 0xff, value);
-			return;
-		}
-
-		if (_state.MikeySpaceVisible && addr >= LynxConstants::MikeyBase && addr <= LynxConstants::MikeyEnd) {
-			// Mikey register write — _mikey always initialized via Init()
-			_mikey->WriteRegister(addr & 0xff, value);
-			return;
-		}
-
-		// Vector space ($FFFA-$FFFF) — writes blocked when overlay is active.
-		// Must be checked separately from ROM space: when VectorSpaceVisible=true
-		// but RomSpaceVisible=false, these addresses are still ROM vectors (read-only).
-		// Fix for #391: previously only the ROM check below caught this, missing the
-		// case where vectors are visible but ROM space is disabled.
-		if (_state.VectorSpaceVisible && addr >= 0xfffa) {
-			// Read-only ROM vectors — ignore writes
-			return;
-		}
-
-		if (_state.RomSpaceVisible && addr >= LynxConstants::BootRomBase && addr <= 0xfff7) {
-			// ROM space ($FE00-$FFF7) — writes are ignored (read-only).
-			// Note: upper bound excludes $FFF8 (reserved) and $FFF9 (MAPCTL, handled above)
-			// and $FFFA-$FFFF (vector space, handled above).
-			return;
-		}
+	if (_state.SuzySpaceVisible && addr >= LynxConstants::SuzyBase && addr <= LynxConstants::SuzyEnd) {
+		// Suzy register write — _suzy always initialized via Init()
+		_suzy->WriteRegister(addr & 0xff, value);
+		return;
 	}
 
-	// Write to RAM (covers $0000-$FBFF and any overlay-disabled high areas)
+	if (_state.MikeySpaceVisible && addr >= LynxConstants::MikeyBase && addr <= LynxConstants::MikeyEnd) {
+		// Mikey register write — _mikey always initialized via Init()
+		_mikey->WriteRegister(addr & 0xff, value);
+		return;
+	}
+
+	// Vector space ($FFFA-$FFFF) — writes blocked when overlay is active.
+	// Must be checked separately from ROM space: when VectorSpaceVisible=true
+	// but RomSpaceVisible=false, these addresses are still ROM vectors (read-only).
+	// Fix for #391: previously only the ROM check below caught this, missing the
+	// case where vectors are visible but ROM space is disabled.
+	if (_state.VectorSpaceVisible && addr >= 0xfffa) {
+		// Read-only ROM vectors — ignore writes
+		return;
+	}
+
+	if (_state.RomSpaceVisible && addr >= LynxConstants::BootRomBase && addr <= 0xfff7) {
+		// ROM space ($FE00-$FFF7) — writes are ignored (read-only).
+		// Note: upper bound excludes $FFF8 (reserved) and $FFF9 (MAPCTL, handled above)
+		// and $FFFA-$FFFF (vector space, handled above).
+		return;
+	}
+
+	// Write to RAM (overlay-disabled high areas)
 	_workRam[addr] = value;
 }
 

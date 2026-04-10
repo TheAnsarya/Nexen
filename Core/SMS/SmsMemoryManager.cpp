@@ -33,6 +33,7 @@ void SmsMemoryManager::Init(Emulator* emu, SmsConsole* console, vector<uint8_t>&
 	_controlManager = controlManager;
 	_cart = cart;
 	_fmAudio = fmAudio;  // FM audio unit (Sega Master System Japanese, optional)
+	_cheatManager = _emu->GetCheatManager();
 
 	// Copy ROM data to internal buffer
 	_prgRom = new uint8_t[romData.size()];

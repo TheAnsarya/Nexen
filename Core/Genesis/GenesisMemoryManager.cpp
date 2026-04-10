@@ -142,14 +142,14 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
 
-	if (TryGetSramOffset(addr, sramOffset)) {
+	if (TryGetSramOffset(addr, sramOffset)) [[unlikely]] {
 		uint8_t value = _saveRam[sramOffset];
 		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, value, MemoryOperationType::Read);
 		_openBus = value;
 		return value;
 	}
 
-	if (addr < 0x400000) {
+	if (addr < 0x400000) [[likely]] {
 		// Cartridge ROM
 		if (addr < _prgRomSize) {
 			uint8_t value = _prgRom[addr];
@@ -160,7 +160,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		return _openBus;
 	}
 
-	if (addr >= 0xFF0000) {
+	if (addr >= 0xFF0000) [[likely]] {
 		// Work RAM
 		uint32_t offset = addr & 0xFFFF;
 		uint8_t value = _workRam[offset];
@@ -169,14 +169,14 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		return value;
 	}
 
-	if (addr >= 0xC00000 && addr <= 0xC0001F) {
+	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		// VDP ports (byte access from word port)
 		uint16_t word = ReadVdpPort(addr);
 		if (addr & 1) return (uint8_t)(word & 0xFF);
 		return (uint8_t)(word >> 8);
 	}
 
-	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
+	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		// Z80 address space
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
@@ -185,11 +185,11 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		return _openBus;
 	}
 
-	if (addr >= 0xA10000 && addr <= 0xA1001F) {
+	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
 		return ReadIo(addr);
 	}
 
-	if (addr == 0xA11100) {
+	if (addr == 0xA11100) [[unlikely]] {
 		// Z80 bus request — bit 0 indicates bus granted
 		return _z80BusRequest ? 0x00 : 0x01;
 	}
@@ -199,13 +199,13 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	addr &= 0xFFFFFE;
-	if (HasSaveRam() && addr >= _sramStart && addr <= _sramEnd) {
+	if (HasSaveRam() && addr >= _sramStart && addr <= _sramEnd) [[unlikely]] {
 		uint8_t hi = Read8(addr);
 		uint8_t lo = Read8(addr + 1);
 		return ((uint16_t)hi << 8) | lo;
 	}
 
-	if (addr < 0x400000) {
+	if (addr < 0x400000) [[likely]] {
 		if (addr + 1 < _prgRomSize) {
 			uint16_t value = ((uint16_t)_prgRom[addr] << 8) | _prgRom[addr + 1];
 			_emu->ProcessMemoryRead<CpuType::Genesis>(addr, _prgRom[addr], MemoryOperationType::Read);
@@ -215,7 +215,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		return (_openBus << 8) | _openBus;
 	}
 
-	if (addr >= 0xFF0000) {
+	if (addr >= 0xFF0000) [[likely]] {
 		uint32_t offset = addr & 0xFFFF;
 		uint16_t value = ((uint16_t)_workRam[offset] << 8) | _workRam[offset + 1];
 		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, _workRam[offset], MemoryOperationType::Read);
@@ -223,11 +223,11 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		return value;
 	}
 
-	if (addr >= 0xC00000 && addr <= 0xC0001F) {
+	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		return ReadVdpPort(addr);
 	}
 
-	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
+	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
 			return ((uint16_t)_z80Ram[z80Addr] << 8) | _z80Ram[z80Addr];
@@ -235,13 +235,13 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		return (_openBus << 8) | _openBus;
 	}
 
-	if (addr >= 0xA10000 && addr <= 0xA1001F) {
+	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
 		uint8_t hi = ReadIo(addr);
 		uint8_t lo = ReadIo(addr + 1);
 		return ((uint16_t)hi << 8) | lo;
 	}
 
-	if (addr == 0xA11100) {
+	if (addr == 0xA11100) [[unlikely]] {
 		return _z80BusRequest ? 0x0000 : 0x0100;
 	}
 
@@ -252,26 +252,26 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
 
-	if (TryGetSramOffset(addr, sramOffset)) {
+	if (TryGetSramOffset(addr, sramOffset)) [[unlikely]] {
 		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, value, MemoryOperationType::Write);
 		_saveRam[sramOffset] = value;
 		return;
 	}
 
-	if (addr >= 0xFF0000) {
+	if (addr >= 0xFF0000) [[likely]] {
 		uint32_t offset = addr & 0xFFFF;
 		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, value, MemoryOperationType::Write);
 		_workRam[offset] = value;
 		return;
 	}
 
-	if (addr >= 0xC00000 && addr <= 0xC0001F) {
+	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		// VDP byte write - promote to word write
 		WriteVdpPort(addr, (uint16_t)value | ((uint16_t)value << 8));
 		return;
 	}
 
-	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
+	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
 			_z80Ram[z80Addr] = value;
@@ -279,17 +279,17 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		return;
 	}
 
-	if (addr >= 0xA10000 && addr <= 0xA1001F) {
+	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
 		WriteIo(addr, value);
 		return;
 	}
 
-	if (addr == 0xA11100 || addr == 0xA11101) {
+	if (addr == 0xA11100 || addr == 0xA11101) [[unlikely]] {
 		_z80BusRequest = (value & 0x01) != 0;
 		return;
 	}
 
-	if (addr == 0xA11200 || addr == 0xA11201) {
+	if (addr == 0xA11200 || addr == 0xA11201) [[unlikely]] {
 		_z80Reset = !(value & 0x01);
 		return;
 	}
@@ -299,13 +299,13 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 
 void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	addr &= 0xFFFFFE;
-	if (HasSaveRam() && addr >= _sramStart && addr <= _sramEnd) {
+	if (HasSaveRam() && addr >= _sramStart && addr <= _sramEnd) [[unlikely]] {
 		Write8(addr, (uint8_t)(value >> 8));
 		Write8(addr + 1, (uint8_t)(value & 0xFF));
 		return;
 	}
 
-	if (addr >= 0xFF0000) {
+	if (addr >= 0xFF0000) [[likely]] {
 		uint32_t offset = addr & 0xFFFF;
 		uint8_t highByte = (uint8_t)(value >> 8);
 		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, highByte, MemoryOperationType::Write);
@@ -314,12 +314,12 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		return;
 	}
 
-	if (addr >= 0xC00000 && addr <= 0xC0001F) {
+	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		WriteVdpPort(addr, value);
 		return;
 	}
 
-	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
+	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
 			_z80Ram[z80Addr] = (uint8_t)(value >> 8);
@@ -327,17 +327,17 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		return;
 	}
 
-	if (addr >= 0xA10000 && addr <= 0xA1001F) {
+	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
 		WriteIo(addr, (uint8_t)(value >> 8));
 		return;
 	}
 
-	if (addr == 0xA11100) {
+	if (addr == 0xA11100) [[unlikely]] {
 		_z80BusRequest = (value & 0x0100) != 0;
 		return;
 	}
 
-	if (addr == 0xA11200) {
+	if (addr == 0xA11200) [[unlikely]] {
 		_z80Reset = !(value & 0x0100);
 		return;
 	}

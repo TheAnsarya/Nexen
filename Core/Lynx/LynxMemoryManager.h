@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "Lynx/LynxTypes.h"
 #include "Debugger/AddressInfo.h"
+#include "Shared/Emulator.h"
 #include "Shared/MemoryOperationType.h"
 #include "Utilities/ISerializable.h"
 
@@ -59,11 +60,27 @@ public:
 
 	[[nodiscard]] LynxMemoryManagerState& GetState() { return _state; }
 
-	/// <summary>CPU read — dispatches through MAPCTL overlays</summary>
-	[[nodiscard]] uint8_t Read(uint16_t addr, MemoryOperationType opType = MemoryOperationType::Read);
+	/// <summary>CPU read — fast path for RAM, slow path for overlays</summary>
+	__forceinline [[nodiscard]] uint8_t Read(uint16_t addr, MemoryOperationType opType = MemoryOperationType::Read) {
+		if (addr < 0xfc00) [[likely]] {
+			uint8_t value = _workRam[addr];
+			_emu->ProcessMemoryRead<CpuType::Lynx>(addr, value, opType);
+			return value;
+		}
+		return ReadSlow(addr, opType);
+	}
 
-	/// <summary>CPU write — dispatches through MAPCTL overlays</summary>
-	void Write(uint16_t addr, uint8_t value, MemoryOperationType opType = MemoryOperationType::Write);
+	/// <summary>CPU write — fast path for RAM, slow path for overlays</summary>
+	__forceinline void Write(uint16_t addr, uint8_t value, MemoryOperationType opType = MemoryOperationType::Write) {
+		if (!_emu->ProcessMemoryWrite<CpuType::Lynx>(addr, value, opType)) {
+			return;
+		}
+		if (addr < 0xfc00) [[likely]] {
+			_workRam[addr] = value;
+			return;
+		}
+		WriteSlow(addr, value);
+	}
 
 	/// <summary>Debug read — no side effects</summary>
 	[[nodiscard]] uint8_t DebugRead(uint16_t addr);
@@ -85,4 +102,10 @@ public:
 private:
 	/// <summary>Update derived MAPCTL state from raw register value</summary>
 	void UpdateMapctl(uint8_t value);
+
+	/// <summary>Slow path for reads to overlay region ($FC00+)</summary>
+	[[nodiscard]] uint8_t ReadSlow(uint16_t addr, MemoryOperationType opType);
+
+	/// <summary>Slow path for writes to overlay region ($FC00+)</summary>
+	void WriteSlow(uint16_t addr, uint8_t value);
 };
