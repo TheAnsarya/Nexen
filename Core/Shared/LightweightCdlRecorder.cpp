@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Shared/LightweightCdlRecorder.h"
 #include "Shared/Interfaces/IConsole.h"
+#include "Debugger/DebugUtilities.h"
 #include "Utilities/VirtualFile.h"
 #include "Utilities/FolderUtilities.h"
 #include "Shared/MessageManager.h"
@@ -11,9 +12,11 @@ LightweightCdlRecorder::LightweightCdlRecorder(IConsole* console, MemoryType prg
 	_prgRomType = prgRomType;
 	_cdlSize = prgRomSize;
 	_cpuType = cpuType;
+	_cpuMemType = DebugUtilities::GetCpuMemoryType(cpuType);
 	_romCrc32 = romCrc32;
 	_cdlData = std::make_unique<uint8_t[]>(prgRomSize);
 	Reset();
+	BuildPageCache();
 }
 
 LightweightCdlRecorder::~LightweightCdlRecorder() = default;
@@ -106,4 +109,67 @@ uint8_t LightweightCdlRecorder::GetFlags(uint32_t addr) {
 		return _cdlData[addr];
 	}
 	return 0;
+}
+
+uint32_t LightweightCdlRecorder::GetAddressSpaceSize(CpuType type) {
+	int hexDigits = DebugUtilities::GetProgramCounterSize(type);
+	switch (hexDigits) {
+		case 4: return 0x10000;       // 16-bit: 64KB (NES, GB, SMS, Lynx, Atari2600, ChannelF)
+		case 5: return 0x100000;      // 20-bit: 1MB (WS)
+		case 6: return 0x1000000;     // 24-bit: 16MB (SNES, SA1, GSU, Genesis, PCE, NecDsp, Cx4)
+		case 8: return 0x1000000;     // 32-bit: cap at 16MB for page cache (GBA, ST018)
+		default: return 0;
+	}
+}
+
+void LightweightCdlRecorder::BuildPageCache() {
+	if (!_console) {
+		_pageCacheSize = 0;
+		return;
+	}
+
+	uint32_t addressSpaceSize = GetAddressSpaceSize(_cpuType);
+	if (addressSpaceSize == 0) {
+		_pageCacheSize = 0;
+		return;
+	}
+
+	uint32_t pageCount = addressSpaceSize >> PageShift;
+	if (pageCount > MaxCacheablePages) {
+		pageCount = MaxCacheablePages;
+	}
+
+	_pageCache = std::make_unique<CdlPageEntry[]>(pageCount);
+	_pageCacheSize = pageCount;
+
+	for (uint32_t page = 0; page < pageCount; page++) {
+		uint32_t pageAddr = page << PageShift;
+		AddressInfo relAddr = { (int32_t)pageAddr, _cpuMemType };
+		AddressInfo absAddr = _console->GetAbsoluteAddress(relAddr);
+
+		if (absAddr.Address >= 0 && absAddr.Type == _prgRomType) {
+			// Verify linear mapping: check that the last byte of the page
+			// maps to baseOffset + PageMask (i.e., the page is contiguous in ROM)
+			uint32_t lastAddr = pageAddr | PageMask;
+			AddressInfo lastRel = { (int32_t)lastAddr, _cpuMemType };
+			AddressInfo lastAbs = _console->GetAbsoluteAddress(lastRel);
+
+			if (lastAbs.Type == _prgRomType &&
+				lastAbs.Address == absAddr.Address + (int32_t)PageMask) {
+				// Linear mapping confirmed — cache it
+				_pageCache[page].baseOffset = absAddr.Address;
+			} else {
+				// Non-linear mapping — fall back to virtual call for this page
+				_pageCache[page].baseOffset = -1;
+			}
+		} else {
+			_pageCache[page].baseOffset = -1;
+		}
+	}
+
+	MessageManager::Log("[LightweightCDL] Page cache built: " + std::to_string(pageCount) + " pages");
+}
+
+void LightweightCdlRecorder::RebuildPageCache() {
+	BuildPageCache();
 }

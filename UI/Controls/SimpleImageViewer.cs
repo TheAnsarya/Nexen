@@ -45,27 +45,15 @@ public sealed class SimpleImageViewer : Control {
 		public Rect Bounds { get; private set; }
 
 		private DynamicBitmap _source;
-		private SKBitmap _bitmap;
 		private BitmapInterpolationMode _interpolationMode;
 
 		public DrawOperation(SimpleImageViewer viewer) {
 			Bounds = viewer.Bounds;
 			_interpolationMode = viewer.UseBilinearInterpolation ? BitmapInterpolationMode.HighQuality : BitmapInterpolationMode.None;
 			_source = (DynamicBitmap)viewer.Source;
-			using (var lockedBuffer = ((WriteableBitmap)_source).Lock()) {
-				var info = new SKImageInfo(
-					lockedBuffer.Size.Width,
-					lockedBuffer.Size.Height,
-					lockedBuffer.Format.ToSkColorType(),
-					SKAlphaType.Premul
-				);
-				_bitmap = new SKBitmap();
-				_bitmap.InstallPixels(info, lockedBuffer.Address);
-			}
 		}
 
 		public void Dispose() {
-			_bitmap.Dispose();
 		}
 
 		public bool Equals(ICustomDrawOperation? other) => false;
@@ -77,8 +65,20 @@ public sealed class SimpleImageViewer : Control {
 				using var lease = leaseFeature.Lease();
 				var canvas = lease.SkCanvas;
 
-				int width = (int)_source.Size.Width;
-				int height = (int)_source.Size.Height;
+				// Single lock covers both InstallPixels and DrawBitmap — eliminates
+				// the double-lock pattern (constructor + Render) that could cause
+				// contention with UpdateSurface on the emulation thread
+				using var bitmapLock = _source.Lock(true);
+				var fb = bitmapLock.FrameBuffer;
+				var info = new SKImageInfo(
+					fb.Size.Width,
+					fb.Size.Height,
+					fb.Format.ToSkColorType(),
+					SKAlphaType.Premul
+				);
+
+				using var bitmap = new SKBitmap();
+				bitmap.InstallPixels(info, fb.Address);
 
 				using SKPaint paint = new();
 				paint.Color = new SKColor(255, 255, 255, 255);
@@ -92,13 +92,11 @@ public sealed class SimpleImageViewer : Control {
 				};
 #pragma warning restore CS0618
 
-				using (_source.Lock(true)) {
-					canvas.DrawBitmap(_bitmap,
-						new SKRect(0, 0, (int)_source.Size.Width, (int)_source.Size.Height),
-						new SKRect(0, 0, (float)Bounds.Width, (float)Bounds.Height),
-						paint
-					);
-				}
+				canvas.DrawBitmap(bitmap,
+					new SKRect(0, 0, info.Width, info.Height),
+					new SKRect(0, 0, (float)Bounds.Width, (float)Bounds.Height),
+					paint
+				);
 			}
 		}
 	}

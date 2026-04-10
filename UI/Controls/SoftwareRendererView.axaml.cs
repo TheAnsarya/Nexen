@@ -80,7 +80,7 @@ public partial class SoftwareRendererView : UserControl {
 			if (scriptHudDirty) {
 				_scriptHud.InvalidateVisual();
 			}
-		}, DispatcherPriority.MaxValue);
+		}, DispatcherPriority.Render);
 	}
 }
 
