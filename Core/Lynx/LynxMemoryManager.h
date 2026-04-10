@@ -61,7 +61,7 @@ public:
 	[[nodiscard]] LynxMemoryManagerState& GetState() { return _state; }
 
 	/// <summary>CPU read — fast path for RAM, slow path for overlays</summary>
-	__forceinline [[nodiscard]] uint8_t Read(uint16_t addr, MemoryOperationType opType = MemoryOperationType::Read) {
+	[[nodiscard]] __forceinline uint8_t Read(uint16_t addr, MemoryOperationType opType = MemoryOperationType::Read) {
 		if (addr < 0xfc00) [[likely]] {
 			uint8_t value = _workRam[addr];
 			_emu->ProcessMemoryRead<CpuType::Lynx>(addr, value, opType);
