@@ -115,6 +115,8 @@ uint32_t BsxMemoryPack::DebugGetMemoryPackSize() {
 BsxMemoryPack::BsxMemoryPackHandler::BsxMemoryPackHandler(BsxMemoryPack* memPack, uint32_t offset) : RamHandler(memPack->_data.get(), offset, memPack->_dataSize, MemoryType::BsxMemoryPack) {
 	_memPack = memPack;
 	_page = offset / 0x10000;
+	_directReadPtr = nullptr;
+	_directWritePtr = nullptr;
 }
 
 uint8_t BsxMemoryPack::BsxMemoryPackHandler::Read(uint32_t addr) {

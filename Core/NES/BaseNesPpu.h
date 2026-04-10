@@ -95,6 +95,7 @@ protected:
 	Emulator* _emu = nullptr;
 	EmuSettings* _settings = nullptr;
 	std::array<std::unique_ptr<uint16_t[]>, 2> _outputBuffers;
+	std::unique_ptr<uint16_t[]> _vsDualMergedBuffer;
 
 	ConsoleRegion _region = {};
 	uint16_t _standardVblankEnd = 0;

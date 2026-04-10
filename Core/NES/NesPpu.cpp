@@ -1258,11 +1258,13 @@ void NesPpu<T>::SendFrameVsDualSystem() {
 		_emu->GetVideoDecoder()->UpdateFrame(frame, forRewind, forRewind);
 	} else if (cfg.VsDualVideoOutput == VsDualOutputOption::Both) {
 		if (_console->IsVsMainConsole()) {
-			auto mergedBuffer = std::make_unique<uint16_t[]>(NesConstants::ScreenWidth * NesConstants::ScreenHeight * 2);
+			if (!_vsDualMergedBuffer) {
+				_vsDualMergedBuffer = std::make_unique<uint16_t[]>(NesConstants::ScreenWidth * NesConstants::ScreenHeight * 2);
+			}
 
 			uint16_t* in1 = _currentOutputBuffer;
 			uint16_t* in2 = ((NesPpu<T>*)_console->GetVsSubConsole()->GetPpu())->_currentOutputBuffer;
-			uint16_t* out = mergedBuffer.get();
+			uint16_t* out = _vsDualMergedBuffer.get();
 			for (int i = 0; i < NesConstants::ScreenHeight; i++) {
 				memcpy(out, in1, NesConstants::ScreenWidth * sizeof(uint16_t));
 				out += NesConstants::ScreenWidth;
@@ -1272,7 +1274,7 @@ void NesPpu<T>::SendFrameVsDualSystem() {
 				in2 += NesConstants::ScreenWidth;
 			}
 
-			RenderedFrame mergedFrame(mergedBuffer.get(), NesConstants::ScreenWidth * 2, NesConstants::ScreenHeight, 1.0, _frameCount, _console->GetControlManager()->GetPortStates());
+			RenderedFrame mergedFrame(_vsDualMergedBuffer.get(), NesConstants::ScreenWidth * 2, NesConstants::ScreenHeight, 1.0, _frameCount, _console->GetControlManager()->GetPortStates());
 			_emu->GetVideoDecoder()->UpdateFrame(mergedFrame, true, forRewind);
 		}
 	}

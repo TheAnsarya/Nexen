@@ -22,6 +22,10 @@ public:
 			_mask = 0xFFF;
 		}
 		_memoryType = memoryType;
+
+		_directReadPtr = _ram;
+		_directWritePtr = _ram;
+		_directMask = _mask;
 	}
 
 	uint8_t Read(uint32_t addr) override {
