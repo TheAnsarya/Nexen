@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Linux/macOS build failure** — `std::chrono::clock_cast` is a C++23 feature unavailable in clang + libstdc++ on Ubuntu 22.04 / macOS 14; all Linux (clang, gcc, AoT, AppImage) and macOS builds were failing; replaced with portable `time_point_cast` arithmetic already used elsewhere in the same file (`SaveStateManager.cpp`) (#1219)
+- **clang `[[nodiscard]]` placement error in `LynxMemoryManager`** — `[[nodiscard]]` placed after `__forceinline` was parsed by clang as an attribute on the return type rather than on the function, causing all Linux/clang CI jobs to fail with `'nodiscard' attribute cannot be applied to types`; moved `[[nodiscard]]` before `__forceinline` (#1220)
 - **Accuracy test CI always failing** — `accuracy-tests.yml` builds the full `Nexen.sln` including `UI.csproj`, which has a `ProjectReference` to `Pansy.Core`; the pansy repo was never cloned in CI causing `CS0246: The type or namespace name 'Pansy' could not be found` on every run; added pansy checkout to both `smoke-tests` and `accuracy-tests` jobs (#1219)
 - **C++ tests CI missing pansy checkout** — Same pansy reference issue affected `tests.yml`; added checkout there as well (#1219)
 - **Accuracy tests running on every push** — `accuracy-tests.yml` `smoke-tests` job ran on every push to master, failing constantly; removed `push`/`pull_request` triggers so the workflow only runs on `workflow_dispatch` (manual) and on the nightly schedule (#1219)
