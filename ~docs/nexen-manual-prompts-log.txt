@@ -1320,17 +1320,18 @@ What's the difference between "Auto" and "Recent" ?
 
 [Nexen] finish working on the modernization, make sure everything is up to date; git commit; make epics/issues/plans/documentation/benchmarks/session-logs/tests/todos/etc; make sure avalona 12 works everywhere and all api changes have been handled; continue;
 
-
-
-
-
-
-
-
-
-
-
 [Nexen] Prepare for a new release and Create a release (1.4.24) and push and run the build actions to create the artifacts; update the 1.4.24 release with a full description of the release; continue;
+
+[Nexen] There are majpr erformance problems when I tested with the SNES it emulated very slow. so, two things 1) search for performance bottle necks and test with benchmarks to find what is causing this slowdown, and 2) check to see how much pansy logging is slowing us down. We need pansy suppport but it needs to be faster; continue;
+
+[Nexen] continue finding optimizations a performance fixes we want this as fast as possible while still maintaining emulation accuracy; continue;
+
+[Nexen] continue finding optimizations a performance fixes we want this as fast as possible while still maintaining emulation accuracy; continue;
+
+[Nexen] continue finding optimizations a performance fixes we want this as fast as possible while still maintaining emulation accuracy; continue;
+
+--- chatgpt codex 5.3
+[Nexen] The Avalonia 12 upgrade has broken the application, see `https://github.com/TheAnsarya/Nexen/issues/1205` and so research the modernization and libray/package update problems and make issues and documentation and implement all the fixes you can find; continue;
 
 
 
