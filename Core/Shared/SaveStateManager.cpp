@@ -168,7 +168,9 @@ string SaveStateManager::FormatSaveStateOsdFromFile(const string& filepath, cons
 	// Fallback: use file modification time
 	try {
 		auto modTime = std::filesystem::last_write_time(filepath);
-		auto sctp = std::chrono::clock_cast<std::chrono::system_clock>(modTime);
+		auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+			modTime - std::filesystem::file_time_type::clock::now() + std::chrono::system_clock::now()
+		);
 		auto tt = std::chrono::system_clock::to_time_t(sctp);
 		std::tm tm;
 #ifdef _WIN32

@@ -5,6 +5,21 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.25] - 2026-04-10
+
+### Fixed
+
+- **Linux/macOS build failure** — `std::chrono::clock_cast` is not available in clang + libstdc++ on Ubuntu 22.04 / macOS 14; replaced with portable `time_point_cast` arithmetic in `SaveStateManager.cpp` (#1219)
+- **Accuracy test CI always failing** — Added missing pansy repo checkout to both `smoke-tests` and `accuracy-tests` jobs in `accuracy-tests.yml`; Pansy.Core reference was unresolvable without it (#1219)
+- **C++ tests CI missing pansy checkout** — Added pansy checkout to `tests.yml` so `UI` project references resolve during full builds (#1219)
+
+### Performance
+
+- **GBA/NES memory-manager hotpath benchmarks** — Added real emulator-path microbenchmarks for GBA `ProcessDma`, `ProcessInternalCycle` (0%/5%/50% pending-update distributions), and NES `BaseMapper::ReadVram`; evaluated and discarded `[[likely]]`/`[[unlikely]]` branch hints that caused +14.7% regression (#1217, #1218)
+- **Repeatable benchmark script** — Added `~scripts/run-memory-hotpath-benchmarks.ps1` for consistent hotpath perf audits with labeled timestamped JSON output (#1218)
+
+---
+
 ## [1.4.24] - 2026-04-09
 
 ### Changed

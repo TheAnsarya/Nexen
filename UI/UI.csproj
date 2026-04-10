@@ -8,8 +8,8 @@
 	<AssemblyName>Nexen</AssemblyName>
 	<RootNamespace>Nexen</RootNamespace>
 	<StartupObject>Nexen.Program</StartupObject>
-	<Version>1.4.24</Version>
-	<FileVersion>1.4.24</FileVersion>
+	<Version>1.4.25</Version>
+	<FileVersion>1.4.25</FileVersion>
 	<Copyright>(C) 2026 TheAnsarya</Copyright>
   </PropertyGroup>
 	<PropertyGroup>
@@ -47,8 +47,8 @@
 		<CFBundleName>Nexen</CFBundleName> <!-- Also defines .app file name -->
 		<CFBundleDisplayName>Nexen</CFBundleDisplayName>
 		<CFBundleIdentifier>com.nexen</CFBundleIdentifier>
-		<CFBundleVersion>1.4.24</CFBundleVersion>
-		<CFBundleShortVersionString>1.4.24</CFBundleShortVersionString>
+		<CFBundleVersion>1.4.25</CFBundleVersion>
+		<CFBundleShortVersionString>1.4.25</CFBundleShortVersionString>
 		<CFBundlePackageType>APPL</CFBundlePackageType>
 		<CFBundleSignature>????</CFBundleSignature>
 		<CFBundleExecutable>Nexen</CFBundleExecutable>
