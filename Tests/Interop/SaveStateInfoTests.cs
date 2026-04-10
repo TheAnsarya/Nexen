@@ -21,9 +21,9 @@ public class SaveStateInfoTests {
 	}
 
 	[Fact]
-	public void SaveStateOrigin_HasFourMembers() {
+	public void SaveStateOrigin_HasFiveMembers() {
 		var values = Enum.GetValues<SaveStateOrigin>();
-		Assert.Equal(4, values.Length);
+		Assert.Equal(5, values.Length);
 	}
 
 	#endregion

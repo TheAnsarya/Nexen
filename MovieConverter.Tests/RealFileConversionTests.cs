@@ -19,12 +19,12 @@ public class RealFileConversionTests {
 
 	#region FM2 Tests (FCEUX - NES)
 
-	[SkippableFact]
+	[Fact]
 	public void Fm2_ReadRealFile_ParsesCorrectly() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "chamale-northandsouth.fm2");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.Fm2MovieConverter();
 		MovieData movie = converter.Read(filePath);
@@ -35,12 +35,12 @@ public class RealFileConversionTests {
 		Assert.True(movie.TotalFrames > 0, "Should have parsed input frames");
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void Fm2_ConvertToNexen_PreservesData() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "chamale-northandsouth.fm2");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var fm2Converter = new Converters.Fm2MovieConverter();
 		var nexenConverter = new Converters.NexenMovieConverter();
@@ -74,12 +74,12 @@ public class RealFileConversionTests {
 
 	#region BK2 Tests (BizHawk - Multi-system)
 
-	[SkippableFact]
+	[Fact]
 	public void Bk2_ReadRealFile_ParsesCorrectly() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "alyosha-halo2600.bk2");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.Bk2MovieConverter();
 		MovieData movie = converter.Read(filePath);
@@ -89,12 +89,12 @@ public class RealFileConversionTests {
 		Assert.True(movie.TotalFrames >= 0, "Should have parsed input frames");
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void Bk2_RoundTrip_PreservesData() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "alyosha-halo2600.bk2");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.Bk2MovieConverter();
 
@@ -114,12 +114,12 @@ public class RealFileConversionTests {
 		Assert.Equal(original.SystemType, roundTripped.SystemType);
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void Bk2_ConvertToNexen_PreservesData() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "alyosha-halo2600.bk2");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var bk2Converter = new Converters.Bk2MovieConverter();
 		var nexenConverter = new Converters.NexenMovieConverter();
@@ -144,12 +144,12 @@ public class RealFileConversionTests {
 
 	#region SMV Tests (Snes9x - SNES)
 
-	[SkippableFact]
+	[Fact]
 	public void Smv_ReadRealFile_ParsesCorrectly() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "cpadolf2-contra3.smv");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.SmvMovieConverter();
 		MovieData movie = converter.Read(filePath);
@@ -160,12 +160,12 @@ public class RealFileConversionTests {
 		Assert.True(movie.TotalFrames > 0, "Should have parsed input frames");
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void Smv_RoundTrip_PreservesData() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "cpadolf2-contra3.smv");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.SmvMovieConverter();
 
@@ -185,12 +185,12 @@ public class RealFileConversionTests {
 		Assert.Equal(original.SystemType, roundTripped.SystemType);
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void Smv_ConvertToNexen_PreservesData() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "cpadolf2-contra3.smv");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var smvConverter = new Converters.SmvMovieConverter();
 		var nexenConverter = new Converters.NexenMovieConverter();
@@ -215,12 +215,12 @@ public class RealFileConversionTests {
 
 	#region LSMV Tests (lsnes - SNES)
 
-	[SkippableFact]
+	[Fact]
 	public void Lsmv_ReadRealFile_ParsesCorrectly() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "pirohikov1-earthbound-glitched.lsmv");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.LsmvMovieConverter();
 		MovieData movie = converter.Read(filePath);
@@ -231,12 +231,12 @@ public class RealFileConversionTests {
 		Assert.True(movie.TotalFrames > 0, "Should have parsed input frames");
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void Lsmv_RoundTrip_PreservesData() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "pirohikov1-earthbound-glitched.lsmv");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.LsmvMovieConverter();
 
@@ -256,12 +256,12 @@ public class RealFileConversionTests {
 		Assert.Equal(original.SystemType, roundTripped.SystemType);
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void Lsmv_ConvertToNexen_PreservesData() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "pirohikov1-earthbound-glitched.lsmv");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var lsmvConverter = new Converters.LsmvMovieConverter();
 		var nexenConverter = new Converters.NexenMovieConverter();
@@ -286,12 +286,12 @@ public class RealFileConversionTests {
 
 	#region VBM Tests (VisualBoyAdvance - GBA/GB)
 
-	[SkippableFact]
+	[Fact]
 	public void Vbm_ReadRealFile_ParsesCorrectly() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "akheon-xenawarriorprincess.vbm");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.VbmMovieConverter();
 		MovieData movie = converter.Read(filePath);
@@ -303,19 +303,19 @@ public class RealFileConversionTests {
 		Assert.True(movie.TotalFrames > 0, "Should have parsed input frames");
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void Vbm_IsReadOnly() {
 		var converter = new Converters.VbmMovieConverter();
 		Assert.True(converter.CanRead);
 		Assert.False(converter.CanWrite);
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void Vbm_ConvertToNexen_PreservesData() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "akheon-xenawarriorprincess.vbm");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var vbmConverter = new Converters.VbmMovieConverter();
 		var nexenConverter = new Converters.NexenMovieConverter();
@@ -340,12 +340,12 @@ public class RealFileConversionTests {
 
 	#region GMV Tests (Gens - Genesis)
 
-	[SkippableFact]
+	[Fact]
 	public void Gmv_ReadRealFile_ParsesCorrectly() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "fuzzerd,sonikkustar,upthorn,aglar-sonic2.gmv");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.GmvMovieConverter();
 		MovieData movie = converter.Read(filePath);
@@ -356,19 +356,19 @@ public class RealFileConversionTests {
 		Assert.True(movie.TotalFrames > 0, "Should have parsed input frames");
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void Gmv_IsReadOnly() {
 		var converter = new Converters.GmvMovieConverter();
 		Assert.True(converter.CanRead);
 		Assert.False(converter.CanWrite);
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void Gmv_ConvertToNexen_PreservesData() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "fuzzerd,sonikkustar,upthorn,aglar-sonic2.gmv");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var gmvConverter = new Converters.GmvMovieConverter();
 		var nexenConverter = new Converters.NexenMovieConverter();
@@ -393,12 +393,12 @@ public class RealFileConversionTests {
 
 	#region Cross-Format Conversion Tests
 
-	[SkippableFact]
+	[Fact]
 	public void CrossConversion_Fm2ToBk2ViaCommon_PreservesFrameCount() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string fm2Path = Path.Combine(TestFilesBasePath, "chamale-northandsouth.fm2");
-		Skip.IfNot(File.Exists(fm2Path), $"Test file not found: {fm2Path}");
+		Assert.SkipUnless(File.Exists(fm2Path), $"Test file not found: {fm2Path}");
 
 		var fm2Converter = new Converters.Fm2MovieConverter();
 		var nexenConverter = new Converters.NexenMovieConverter();
@@ -415,9 +415,9 @@ public class RealFileConversionTests {
 		Assert.Equal(originalFrames, nexenMovie.TotalFrames);
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void CrossConversion_AllFormatsToNexen_Succeed() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		var testFiles = new Dictionary<string, Type> {
 			["chamale-northandsouth.fm2"] = typeof(Converters.Fm2MovieConverter),
@@ -457,12 +457,12 @@ public class RealFileConversionTests {
 
 	#region Async Read Tests
 
-	[SkippableFact]
+	[Fact]
 	public async Task Fm2_ReadAsync_WorksCorrectly() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "chamale-northandsouth.fm2");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.Fm2MovieConverter();
 		MovieData movie = await converter.ReadAsync(filePath);
@@ -471,12 +471,12 @@ public class RealFileConversionTests {
 		Assert.True(movie.TotalFrames > 0);
 	}
 
-	[SkippableFact]
+	[Fact]
 	public async Task Bk2_ReadAsync_WorksCorrectly() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "alyosha-halo2600.bk2");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.Bk2MovieConverter();
 		MovieData movie = await converter.ReadAsync(filePath);
@@ -488,12 +488,12 @@ public class RealFileConversionTests {
 
 	#region Input Data Verification
 
-	[SkippableFact]
+	[Fact]
 	public void Fm2_VerifyInputData_HasButtonPresses() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "chamale-northandsouth.fm2");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.Fm2MovieConverter();
 		MovieData movie = converter.Read(filePath);
@@ -505,12 +505,12 @@ public class RealFileConversionTests {
 		Assert.True(hasAnyInput, "Real TAS file should have input data");
 	}
 
-	[SkippableFact]
+	[Fact]
 	public void Smv_VerifyInputData_HasButtonPresses() {
-		Skip.IfNot(TestFilesAvailable, "Test files not available");
+		Assert.SkipUnless(TestFilesAvailable, "Test files not available");
 
 		string filePath = Path.Combine(TestFilesBasePath, "cpadolf2-contra3.smv");
-		Skip.IfNot(File.Exists(filePath), $"Test file not found: {filePath}");
+		Assert.SkipUnless(File.Exists(filePath), $"Test file not found: {filePath}");
 
 		var converter = new Converters.SmvMovieConverter();
 		MovieData movie = converter.Read(filePath);

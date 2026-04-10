@@ -1316,6 +1316,20 @@ What's the difference between "Auto" and "Recent" ?
 
 [Nexen] You fixed an issue with "Fresh install / portable mode native dependency extraction — DependencyHelper.ExtractNativeDependencies() was skipping file extraction even when files didn't exist at the destination. Now only skips when the file already exists." But we want to make sure the dlls are always the most recent version from our install file, so replace the files when it is appropriate, don't leave an older version there when getting setup and started just because it already exists; continue;
 
+[Nexen] Review current issues, close completed work, implement all issues #1197+; work hard; Modernize with issues #1201 `ReactiveUI.Fody → SourceGenerators` and #1202 `xunit v2 → v3`; continue working;
+
+[Nexen] finish working on the modernization, make sure everything is up to date; git commit; make epics/issues/plans/documentation/benchmarks/session-logs/tests/todos/etc; make sure avalona 12 works everywhere and all api changes have been handled; continue;
+
+
+
+
+
+
+
+
+
+
+
 [Nexen] Prepare for a new release and Create a release (1.4.24) and push and run the build actions to create the artifacts; update the 1.4.24 release with a full description of the release; continue;
 
 
@@ -1324,8 +1338,6 @@ What's the difference between "Auto" and "Recent" ?
 
 
 
-
-[Nexen] finish working on the modernization, make sure everything is up to date; git commit; make epics/issues/plans/documentation/benchmarks/session-logs/tests/todos/etc; make sure avalona 12 works everywhere and all api changes have been handled; continue;
 
 
 
