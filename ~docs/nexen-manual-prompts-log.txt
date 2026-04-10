@@ -1333,8 +1333,9 @@ What's the difference between "Auto" and "Recent" ?
 --- chatgpt codex 5.3
 [Nexen] The Avalonia 12 upgrade has broken the application, see `https://github.com/TheAnsarya/Nexen/issues/1205` and so research the modernization and libray/package update problems and make issues and documentation and implement all the fixes you can find; continue;
 
+mitagation? fallback? no! fix the svg loading problems; find the Avalonia guide for upgrading from v11 to v12 on the internet and follow it to fix all the api changes and architecture reorganizations and code changes; and check the versions on other packages/libraries/etc and upgrade to the most recent version and make fixes for any api changes there; continue;
 
-
+Continue modernizing the application and making sure Avalonia v12 upgrade is complete, we don't want to leave any Avalonia v11 style code behind; continue;
 
 
 
