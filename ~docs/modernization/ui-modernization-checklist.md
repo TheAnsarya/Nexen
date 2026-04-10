@@ -221,3 +221,31 @@ All are valid and don't need x:DataType.
 - [ ] Style guide complete
 - [ ] Control usage documented
 - [ ] Migration notes for future reference
+
+---
+
+## Avalonia 12 Post-Upgrade Stabilization (Issue #1205)
+
+### Findings ✅
+
+- [x] Reproduced startup/menu crash from user log: `System.ArgumentException: Unable to load bitmap from provided data`
+- [x] Identified failing path: `ImageUtilities.LoadImageCore` via menu icon initialization
+- [x] Verified package constraint: no stable `Avalonia.ReactiveUI` `12.x` release on NuGet (nightly only)
+
+### Implemented Fix ✅
+
+- [x] Hardened `ImageUtilities.LoadImageCore` with try/catch safety
+- [x] Added `.svg` decode fallback to `.png` when SVG construction fails
+- [x] Added non-throwing empty-image fallback to prevent UI thread crash from bad icon assets
+- [x] Added explicit error logging with asset path for diagnostics
+
+### Validation ✅
+
+- [x] `MSBuild` full solution build succeeds
+- [x] `Core.Tests.exe --gtest_brief=1` passes (3675 tests)
+- [x] `dotnet test MovieConverter.Tests --no-build -c Release` passes (587 tests)
+
+### Follow-up Issues
+
+- [x] #1212 - Fix Avalonia 12 menu icon loading crash
+- [x] #1213 - Align Avalonia/ReactiveUI package versions for Avalonia 12

@@ -15,6 +15,7 @@ namespace Nexen.Utilities;
 public static class ImageUtilities {
 	private static readonly ConcurrentDictionary<string, IImage> _imageCache = new(StringComparer.OrdinalIgnoreCase);
 	private static readonly ConcurrentDictionary<string, string> _preferredPathCache = new(StringComparer.OrdinalIgnoreCase);
+	private static readonly IImage _emptyImage = new WriteableBitmap(new PixelSize(1, 1), new Vector(96, 96), PixelFormat.Rgba8888, AlphaFormat.Premul);
 
 	public static Image FromAsset(string source) {
 		return new Image() { Source = ImageFromAsset(source) };
@@ -50,12 +51,24 @@ public static class ImageUtilities {
 	}
 
 	private static IImage LoadImageCore(string source) {
-		Uri uri = ToAssetUri(source);
-		if (source.EndsWith(".svg", StringComparison.OrdinalIgnoreCase) && TryCreateSvgImage(uri, out IImage? svgImage)) {
-			return svgImage!;
-		}
+		try {
+			Uri uri = ToAssetUri(source);
+			if (source.EndsWith(".svg", StringComparison.OrdinalIgnoreCase)) {
+				if (TryCreateSvgImage(uri, out IImage? svgImage)) {
+					return svgImage!;
+				}
 
-		return new Bitmap(AssetLoader.Open(uri));
+				string pngFallback = source[..^4] + ".png";
+				if (AssetExists(pngFallback)) {
+					return new Bitmap(AssetLoader.Open(ToAssetUri(pngFallback)));
+				}
+			}
+
+			return new Bitmap(AssetLoader.Open(uri));
+		} catch (Exception ex) {
+			Log.Error(ex, $"[ImageUtilities] Failed to load image asset '{source}', using empty image fallback");
+			return _emptyImage;
+		}
 	}
 
 	private static bool TryCreateSvgImage(Uri uri, out IImage? image) {
