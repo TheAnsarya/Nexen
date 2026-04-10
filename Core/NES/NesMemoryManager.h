@@ -51,6 +51,8 @@ private:
 
 	std::unique_ptr<uint8_t[]> _internalRam;  ///< Internal work RAM
 	uint32_t _internalRamSize = 0;            ///< RAM size (2KB or 8KB)
+	uint8_t* _internalRamPtr = nullptr;       ///< Direct pointer for fast-path reads
+	uint16_t _internalRamMask = 0;            ///< Address mask (0x7FF or 0x1FFF)
 
 	OpenBusHandler _openBusHandler = {};  ///< Handler for unmapped addresses
 	unique_ptr<INesMemoryHandler> _internalRamHandler;  ///< Handler for $0000-$1FFF

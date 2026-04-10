@@ -25,13 +25,16 @@ NesMemoryManager::NesMemoryManager(NesConsole* console, BaseMapper* mapper) {
 		// Standard NES: 2KB RAM mirrored at $0000-$07FF
 		_internalRamHandler = std::make_unique<InternalRamHandler<0x7FF>>();
 		((InternalRamHandler<0x7FF>*)_internalRamHandler.get())->SetInternalRam(_internalRam.get());
+		_internalRamMask = 0x7FF;
 	} else if (_internalRamSize == NesMemoryManager::FamicomBoxInternalRamSize) {
 		// FamicomBox: 8KB RAM at $0000-$1FFF
 		_internalRamHandler = std::make_unique<InternalRamHandler<0x1FFF>>();
 		((InternalRamHandler<0x1FFF>*)_internalRamHandler.get())->SetInternalRam(_internalRam.get());
+		_internalRamMask = 0x1FFF;
 	} else [[unlikely]] {
 		throw std::runtime_error("unsupported memory size");
 	}
+	_internalRamPtr = _internalRam.get();
 
 	// Allocate read/write handler arrays (64KB address space)
 	_ramReadHandlers = std::make_unique<INesMemoryHandler*[]>(NesMemoryManager::CpuMemorySize);
@@ -122,6 +125,9 @@ uint8_t NesMemoryManager::Read(uint16_t addr, MemoryOperationType operationType)
 		// Fast path: ~60% of reads hit the mapper (PRG ROM).
 		// ReadRamFast inlines the page table lookup, avoiding virtual dispatch.
 		value = _mapper->ReadRamFast(addr);
+	} else if (handler == _internalRamHandler.get()) [[likely]] {
+		// Fast path: ~30% of reads hit internal RAM ($0000-$1FFF).
+		value = _internalRamPtr[addr & _internalRamMask];
 	} else {
 		value = handler->ReadRam(addr);
 	}
@@ -138,7 +144,12 @@ uint8_t NesMemoryManager::Read(uint16_t addr, MemoryOperationType operationType)
 
 void NesMemoryManager::Write(uint16_t addr, uint8_t value, MemoryOperationType operationType) {
 	if (_emu->ProcessMemoryWrite<CpuType::Nes>(addr, value, operationType)) {
-		_ramWriteHandlers[addr]->WriteRam(addr, value);
+		INesMemoryHandler* handler = _ramWriteHandlers[addr];
+		if (handler == _internalRamHandler.get()) [[likely]] {
+			_internalRamPtr[addr & _internalRamMask] = value;
+		} else {
+			handler->WriteRam(addr, value);
+		}
 		_openBusHandler.SetOpenBus(value, false);
 	}
 }

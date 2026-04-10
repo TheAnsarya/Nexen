@@ -1,11 +1,10 @@
 #pragma once
 #include "pch.h"
-#include <functional>
+#include "Atari2600/Atari2600Bus.h"
 
 class Atari2600CpuAdapter {
 private:
-	std::function<uint8_t(uint16_t)> _read;
-	std::function<void(uint16_t, uint8_t)> _write;
+	Atari2600Bus* _bus = nullptr;
 	uint16_t _pc = 0x1000;
 	uint64_t _cycleCount = 0;
 	uint8_t _a = 0;
@@ -25,12 +24,12 @@ private:
 	static constexpr uint8_t FlagNegative = 0x80;
 
 	[[nodiscard]] uint8_t Read(uint16_t addr) const {
-		return _read ? _read(addr & 0x1FFF) : 0xFF;
+		return _bus ? _bus->Read(addr & 0x1FFF) : 0xFF;
 	}
 
 	void Write(uint16_t addr, uint8_t value) const {
-		if (_write) {
-			_write(addr & 0x1FFF, value);
+		if (_bus) {
+			_bus->Write(addr & 0x1FFF, value);
 		}
 	}
 
@@ -505,12 +504,8 @@ public:
 		_instructionCyclesRemaining = 0;
 	}
 
-	void SetReadCallback(std::function<uint8_t(uint16_t)> cb) {
-		_read = std::move(cb);
-	}
-
-	void SetWriteCallback(std::function<void(uint16_t, uint8_t)> cb) {
-		_write = std::move(cb);
+	void SetBus(Atari2600Bus* bus) {
+		_bus = bus;
 	}
 
 	void StepCycles(uint32_t cycles) {

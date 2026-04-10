@@ -24,12 +24,7 @@ Atari2600Console::Atari2600Console(Emulator* emu)
 	  _frameBuffer(ScreenWidth * ScreenHeight, 0) {
 	_controlManager = std::make_unique<Atari2600ControlManager>(emu);
 	_bus->Attach(_riot.get(), _tia.get(), _mapper.get());
-	_cpu->SetReadCallback([this](uint16_t addr) {
-		return _bus->Read(addr);
-	});
-	_cpu->SetWriteCallback([this](uint16_t addr, uint8_t value) {
-		_bus->Write(addr, value);
-	});
+	_cpu->SetBus(_bus.get());
 }
 
 Atari2600Console::~Atari2600Console() {
