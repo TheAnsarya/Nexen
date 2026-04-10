@@ -116,6 +116,7 @@
 	<PackageReference Include="Avalonia.Controls.ColorPicker" Version="12.0.0" />
 	<PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.0" Condition="'$(OptimizeUi)'!='true'" />
 	<PackageReference Include="ReactiveUI" Version="23.2.1" />
+	<PackageReference Include="ReactiveUI.Avalonia" Version="11.4.12" />
 	<PackageReference Include="Svg.Controls.Skia.Avalonia" Version="12.0.0.1" />
 	<PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.3-preview.1.1" />
 	<PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.0" />

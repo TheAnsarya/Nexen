@@ -1337,7 +1337,10 @@ mitagation? fallback? no! fix the svg loading problems; find the Avalonia guide 
 
 Continue modernizing the application and making sure Avalonia v12 upgrade is complete, we don't want to leave any Avalonia v11 style code behind; continue;
 
+run nexen so I can test that it doesn't crash
 
+--- steer
+And nothing runs in the emulator
 
 
 
