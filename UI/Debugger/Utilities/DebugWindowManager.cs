@@ -31,13 +31,14 @@ public static class DebugWindowManager {
 
 	private static void OnClosedHandler(object? sender, EventArgs e) {
 		if (sender is Window window) {
+			window.Closed -= OnClosedHandler;
+
 			if (window.DataContext is IDisposable disposable) {
 				disposable.Dispose();
 			}
 
 			CloseDebugWindow(window);
 			ConfigManager.Config.Save();
-			window.Closed -= OnClosedHandler;
 		}
 	}
 

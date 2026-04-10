@@ -73,6 +73,10 @@ public partial class SpriteViewerWindow : NexenWindow, INotificationHandler {
 	}
 
 	public void ProcessNotification(NotificationEventArgs e) {
+		if (_model.Disposed) {
+			return;
+		}
+
 		if (e.NotificationType is ConsoleNotificationType.CodeBreak or ConsoleNotificationType.StateLoaded) {
 			_model.ListView.ForceRefresh();
 		}

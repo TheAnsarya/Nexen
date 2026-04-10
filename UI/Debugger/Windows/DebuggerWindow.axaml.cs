@@ -123,6 +123,7 @@ public partial class DebuggerWindow : NexenWindow, INotificationHandler {
 			case ConsoleNotificationType.CodeBreak:
 				BreakEvent evt = Marshal.PtrToStructure<BreakEvent>(e.Parameter);
 				Dispatcher.UIThread.Post(() => {
+					if (_model.Disposed) return;
 					BreakpointManager.ClearTemporaryBreakpoints();
 
 					_model.UpdateDebugger(true, evt);
@@ -146,8 +147,13 @@ public partial class DebuggerWindow : NexenWindow, INotificationHandler {
 				break;
 
 			case ConsoleNotificationType.DebuggerResumed:
-				_model.UpdateConsoleState();
-				Dispatcher.UIThread.Post(() => _model.ProcessResumeEvent(this));
+				if (!_model.Disposed) {
+					_model.UpdateConsoleState();
+				}
+				Dispatcher.UIThread.Post(() => {
+					if (_model.Disposed) return;
+					_model.ProcessResumeEvent(this);
+				});
 				break;
 
 			case ConsoleNotificationType.GameReset:
@@ -199,6 +205,7 @@ public partial class DebuggerWindow : NexenWindow, INotificationHandler {
 			case ConsoleNotificationType.PpuFrameDone:
 				if (_model.Config.RefreshWhileRunning) {
 					Dispatcher.UIThread.Post(() => {
+						if (_model.Disposed) return;
 						if (!ToolRefreshHelper.LimitFps(this, 20)) {
 							//Prevent watch update when user is typing a new watch entry
 							bool updatingWatchEntry = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() is TextBox txt && txt.FindAncestorOfType<WatchListView>() != null;
@@ -210,8 +217,11 @@ public partial class DebuggerWindow : NexenWindow, INotificationHandler {
 				break;
 
 			case ConsoleNotificationType.StateLoaded:
-				Dispatcher.UIThread.Post(() =>                    //Update UI after loading a state (to update highlighted statement, etc.)
-					_model.UpdateDebugger(true, null));
+				Dispatcher.UIThread.Post(() => {
+					if (_model.Disposed) return;
+					//Update UI after loading a state (to update highlighted statement, etc.)
+					_model.UpdateDebugger(true, null);
+				});
 				break;
 		}
 	}

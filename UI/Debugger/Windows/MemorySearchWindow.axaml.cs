@@ -37,9 +37,16 @@ public partial class MemorySearchWindow : NexenWindow, INotificationHandler {
 	}
 
 	public void ProcessNotification(NotificationEventArgs e) {
+		if (_model.Disposed) {
+			return;
+		}
+
 		switch (e.NotificationType) {
 			case ConsoleNotificationType.GameLoaded:
-				Dispatcher.UIThread.Post(() => _model.OnGameLoaded());
+				Dispatcher.UIThread.Post(() => {
+					if (_model.Disposed) return;
+					_model.OnGameLoaded();
+				});
 				break;
 
 			case ConsoleNotificationType.PpuFrameDone:

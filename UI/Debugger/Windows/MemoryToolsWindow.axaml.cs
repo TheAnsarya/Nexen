@@ -631,18 +631,27 @@ public partial class MemoryToolsWindow : NexenWindow, INotificationHandler {
 		switch (e.NotificationType) {
 			case ConsoleNotificationType.CodeBreak:
 			case ConsoleNotificationType.StateLoaded:
-				Dispatcher.UIThread.Post(() => _editor.InvalidateVisual());
+				Dispatcher.UIThread.Post(() => {
+					if (_model.Disposed) return;
+					_editor.InvalidateVisual();
+				});
 				break;
 
 			case ConsoleNotificationType.PpuFrameDone:
 				if (!ToolRefreshHelper.LimitFps(this, 30)) {
-					Dispatcher.UIThread.Post(() => _editor.InvalidateVisual());
+					Dispatcher.UIThread.Post(() => {
+						if (_model.Disposed) return;
+						_editor.InvalidateVisual();
+					});
 				}
 
 				break;
 
 			case ConsoleNotificationType.GameLoaded:
-				Dispatcher.UIThread.Post(() => _model.UpdateAvailableMemoryTypes());
+				Dispatcher.UIThread.Post(() => {
+					if (_model.Disposed) return;
+					_model.UpdateAvailableMemoryTypes();
+				});
 				break;
 		}
 	}

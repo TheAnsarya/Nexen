@@ -159,11 +159,18 @@ public partial class TraceLoggerWindow : NexenWindow, INotificationHandler {
 	}
 
 	public void ProcessNotification(NotificationEventArgs e) {
+		if (_model.Disposed) {
+			return;
+		}
+
 		switch (e.NotificationType) {
 			case ConsoleNotificationType.GameLoaded:
 				_model.UpdateCoreOptions();
 
-				Dispatcher.UIThread.Post(() => _model.UpdateAvailableTabs());
+				Dispatcher.UIThread.Post(() => {
+					if (_model.Disposed) return;
+					_model.UpdateAvailableTabs();
+				});
 				break;
 
 			case ConsoleNotificationType.CodeBreak: {

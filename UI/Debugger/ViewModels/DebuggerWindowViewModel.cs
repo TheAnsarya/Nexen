@@ -360,7 +360,11 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 	/// Disposes the view and saves the dock layout.
 	/// </summary>
 	protected override void DisposeView() {
-		Config.SavedDockLayout = DockFactory.ToDockDefinition(DockLayout);
+		try {
+			Config.SavedDockLayout = DockFactory.ToDockDefinition(DockLayout);
+		} catch (Exception ex) {
+			System.Diagnostics.Debug.WriteLine($"[DebuggerWindowViewModel] Failed to save dock layout during dispose: {ex.Message}");
+		}
 
 		DebugWorkspaceManager.SymbolProviderChanged -= DebugWorkspaceManager_SymbolProviderChanged;
 		LabelManager.OnLabelUpdated -= LabelManager_OnLabelUpdated;

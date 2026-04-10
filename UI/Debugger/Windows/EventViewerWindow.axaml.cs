@@ -159,12 +159,17 @@ public partial class EventViewerWindow : NexenWindow, INotificationHandler {
 	}
 
 	public void ProcessNotification(NotificationEventArgs e) {
+		if (_model.Disposed) {
+			return;
+		}
+
 		switch (e.NotificationType) {
 			case ConsoleNotificationType.GameLoaded:
 				RomInfo romInfo = EmuApi.GetRomInfo();
 				if (!romInfo.CpuTypes.Contains(_model.CpuType)) {
 					_model.CpuType = romInfo.ConsoleType.GetMainCpuType();
 					Dispatcher.UIThread.Post(() => {
+						if (_model.Disposed) return;
 						if (DebugWindowManager.GetDebugWindow<EventViewerWindow>(x => x._model.CpuType == _model.CpuType) != this) {
 							//Found another window for the same CPU type, close this one (can happen when opening event viewers with SGB on both SNES & GB)
 							Close();
@@ -173,7 +178,10 @@ public partial class EventViewerWindow : NexenWindow, INotificationHandler {
 						}
 					});
 				} else {
-					Dispatcher.UIThread.Post(() => _model.UpdateConfig());
+					Dispatcher.UIThread.Post(() => {
+						if (_model.Disposed) return;
+						_model.UpdateConfig();
+					});
 				}
 
 				break;
