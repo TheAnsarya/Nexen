@@ -9,14 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Linux/macOS build failure** — `std::chrono::clock_cast` is not available in clang + libstdc++ on Ubuntu 22.04 / macOS 14; replaced with portable `time_point_cast` arithmetic in `SaveStateManager.cpp` (#1219)
-- **Accuracy test CI always failing** — Added missing pansy repo checkout to both `smoke-tests` and `accuracy-tests` jobs in `accuracy-tests.yml`; Pansy.Core reference was unresolvable without it (#1219)
-- **C++ tests CI missing pansy checkout** — Added pansy checkout to `tests.yml` so `UI` project references resolve during full builds (#1219)
+- **Linux/macOS build failure** — `std::chrono::clock_cast` is a C++23 feature unavailable in clang + libstdc++ on Ubuntu 22.04 / macOS 14; all Linux (clang, gcc, AoT, AppImage) and macOS builds were failing; replaced with portable `time_point_cast` arithmetic already used elsewhere in the same file (`SaveStateManager.cpp`) (#1219)
+- **Accuracy test CI always failing** — `accuracy-tests.yml` builds the full `Nexen.sln` including `UI.csproj`, which has a `ProjectReference` to `Pansy.Core`; the pansy repo was never cloned in CI causing `CS0246: The type or namespace name 'Pansy' could not be found` on every run; added pansy checkout to both `smoke-tests` and `accuracy-tests` jobs (#1219)
+- **C++ tests CI missing pansy checkout** — Same pansy reference issue affected `tests.yml`; added checkout there as well (#1219)
+- **Accuracy tests running on every push** — `accuracy-tests.yml` `smoke-tests` job ran on every push to master, failing constantly; removed `push`/`pull_request` triggers so the workflow only runs on `workflow_dispatch` (manual) and on the nightly schedule (#1219)
+- **Avalonia 12 menu icon loading crash** — `ImageUtilities` threw an unhandled `ArgumentException` on Avalonia 12 when SVG assets failed to decode; hardened the icon load path with SVG → PNG fallback and a non-throwing empty-image fallback to prevent UI-thread crashes (#1212)
+- **ReactiveUI Avalonia runtime initialization** — Startup crash regression introduced by Avalonia 12 migration when `UseReactiveUI()` was removed from the builder; restored correct `ReactiveUI.Avalonia` runtime initialization (#1205)
+- **Avalonia SVG image loading pipeline** — Avalonia 12 changed the SVG loading API; replaced the old load path with the `Svg.Controls.Skia.Avalonia` pipeline so SVG assets render correctly without relying on PNG fallback masking (#1214)
 
 ### Performance
 
-- **GBA/NES memory-manager hotpath benchmarks** — Added real emulator-path microbenchmarks for GBA `ProcessDma`, `ProcessInternalCycle` (0%/5%/50% pending-update distributions), and NES `BaseMapper::ReadVram`; evaluated and discarded `[[likely]]`/`[[unlikely]]` branch hints that caused +14.7% regression (#1217, #1218)
-- **Repeatable benchmark script** — Added `~scripts/run-memory-hotpath-benchmarks.ps1` for consistent hotpath perf audits with labeled timestamped JSON output (#1218)
+- **CDL recording page cache — ~75–80% CDL overhead reduction** — SNES (and other platforms) emulation ran significantly slower with CDL recording active because every memory read triggered 2 virtual calls + a switch statement per read (~10–15 ns × 3–4M reads/sec); replaced with a flat 4 KB page cache mapping CPU-space addresses directly to absolute ROM offsets, eliminating all virtual calls from the `RecordRead` hot path; `RebuildPageCache` keeps the cache coherent for consoles with dynamic mapping (#1207)
+- **Avalonia rendering pipeline lock reduction** — Consolidated `DrawOperation` from 2 separate bitmap lock/unlock pairs to 1, reducing per-frame bitmap lock count from 3 to 2; lowered `DispatcherPriority` from `MaxValue` to `Render` (#1207)
+- **SNES memory handler devirtualization** — Every SNES CPU memory access (~3.58M/sec) went through `IMemoryHandler::Read()/Write()` virtual dispatch; for the common case (`RamHandler`/`RomHandler`) this resolved to a trivial array access; added direct-access pointer fields (`_directReadPtr`, `_directWritePtr`, `_directMask`) to `IMemoryHandler` with RAM/ROM handlers opting in at construction time, enabling `SnesMemoryManager` to bypass virtual dispatch with an inline array access for the dominant code paths (#1208)
+- **NES VS Dual per-frame allocation eliminated** — `NesPpu::SendFrameVsDualSystem()` allocated `make_unique<uint16_t[]>` (240 KB) on every frame; moved to lazy member allocation (#1208)
+- **NES internal RAM fast path** — NES CPU reads to internal RAM (~30% of all CPU reads) went through virtual dispatch via `INesMemoryHandler::ReadRam()`; added `_internalRamPtr`/`_internalRamMask` fields in `NesMemoryManager` so `Read()`/`Write()` bypass virtual dispatch for this case, bringing ~90% of all NES CPU memory accesses through a devirtualized fast path (60% mapper + 30% internal RAM) (#1209)
+- **Atari 2600 `std::function` elimination** — Replaced `std::function<uint8_t(uint16_t)>` read/write bus callbacks with a direct `Atari2600Bus*` pointer, eliminating the type-erasure overhead and enabling inlining on every CPU memory access (#1209)
+- **Multi-system memory dispatch optimization** — Targeted SMS, Game Boy, PCE, Genesis, and Lynx memory managers with a combination of cached `CheatManager*` pointers (eliminating double-dereference per read), `[[likely]]`/`[[unlikely]]` branch annotations on the dominant paths, and Lynx fast-path/slow-path split (inline header fast path for `addr < 0xfc00` → direct RAM; `.cpp` slow path for overlay dispatch) (#1211)
+- **ChannelF CPU callback removal** — Finalized removal of callback-based dispatch in the ChannelF CPU/memory-manager path, replacing with direct calls (#1215)
+- **WonderSwan flash dirty-state caching** — Added dirty-flag caching to the WonderSwan flash save-state path to avoid unnecessary I/O on unmodified flash banks (#1215)
+- **GBA/NES hotpath benchmarks — `[[likely]]`/`[[unlikely]]` branch hints discarded** — Real emulator-path microbenchmarks for GBA `ProcessDma`, `ProcessInternalCycle` (0%/5%/50% pending-update distributions), and NES `BaseMapper::ReadVram`; measured and discarded `[[likely]]`/`[[unlikely]]` annotations that caused a +14.7% regression on the measured hot paths (#1217, #1218)
+- **Repeatable benchmark script** — Added `~scripts/run-memory-hotpath-benchmarks.ps1` for consistent hotpath perf audits with labeled, timestamped JSON output stored under `BenchmarkDotNet.Artifacts/results/hotpath/` (#1218)
 
 ---
 
