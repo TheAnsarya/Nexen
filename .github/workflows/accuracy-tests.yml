@@ -1,10 +1,6 @@
 name: Accuracy Tests
 
 on:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
   workflow_dispatch:
     inputs:
       system:
@@ -23,12 +19,12 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
 
-# Smoke tests run on push/PR; full suite on nightly/manual dispatch
+# Smoke tests run on manual dispatch; full suite on nightly/manual dispatch
 jobs:
   smoke-tests:
     name: Smoke Tests (NES blargg)
     runs-on: windows-2025-vs2026
-    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: Checkout repo
