@@ -5,6 +5,26 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.24] - 2026-04-09
+
+### Changed
+
+- **Avalonia 12.0.0 migration** — Full migration from Avalonia 11.x to 12.0.0, including all API changes, builder pattern updates, and package alignment (#1200)
+- **Full dependency modernization** — Updated all NuGet packages to latest versions: Avalonia 12.0.0, Dock.Avalonia 12.0.0.2, ReactiveUI.Avalonia 11.4.12, SkiaSharp.NativeAssets.Linux 3.119.2, xunit.v3 3.2.2, and more (#1200)
+- **ReactiveUI.Fody → SourceGenerators** — Migrated from ReactiveUI.Fody (189 files) to ReactiveUI.SourceGenerators 2.6.1 for compile-time property generation (#1201)
+- **xUnit v2 → v3** — Migrated test projects from xunit 2.9.3 to xunit.v3 3.2.2 with updated assertions, `CancellationToken` patterns, and `IAsyncLifetime` changes (#1202)
+
+### Added
+
+- **Save state OSD redesign** — Centered badge/date/time box layout for save state on-screen display with improved visual hierarchy (#1199)
+
+### Fixed
+
+- **Native libs always updated in portable mode** — `DependencyHelper` now always updates native libraries to latest version in portable mode, not just on fresh installs (#1200)
+- **Post-migration build warnings** — Resolved all CS8618, RXUISG0020, and xUnit1051 warnings from the modernization migration (#1204)
+
+---
+
 ## [1.4.23] - 2026-04-09
 
 ### Fixed
