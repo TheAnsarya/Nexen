@@ -329,6 +329,8 @@ class Program {
 	public static AppBuilder BuildAvaloniaApp() {
 		// Ensure SVG support assembly is preserved by the trimmer/AOT
 		GC.KeepAlive(typeof(Svg.Skia.SKSvg).Assembly);
+		GC.KeepAlive(typeof(Avalonia.Svg.Skia.SvgImageExtension).Assembly);
+		GC.KeepAlive(typeof(Avalonia.Svg.Skia.Svg).Assembly);
 
 		return AppBuilder.Configure<App>()
 				.UseReactiveUI(_ => { })

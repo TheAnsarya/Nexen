@@ -1,21 +1,18 @@
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Svg.Skia;
 
 namespace Nexen.Utilities;
 
 public static class ImageUtilities {
 	private static readonly ConcurrentDictionary<string, IImage> _imageCache = new(StringComparer.OrdinalIgnoreCase);
 	private static readonly ConcurrentDictionary<string, string> _preferredPathCache = new(StringComparer.OrdinalIgnoreCase);
-	private static readonly IImage _emptyImage = new WriteableBitmap(new PixelSize(1, 1), new Vector(96, 96), PixelFormat.Rgba8888, AlphaFormat.Premul);
 
 	public static Image FromAsset(string source) {
 		return new Image() { Source = ImageFromAsset(source) };
@@ -51,104 +48,14 @@ public static class ImageUtilities {
 	}
 
 	private static IImage LoadImageCore(string source) {
-		try {
-			Uri uri = ToAssetUri(source);
-			if (source.EndsWith(".svg", StringComparison.OrdinalIgnoreCase)) {
-				if (TryCreateSvgImage(uri, out IImage? svgImage)) {
-					return svgImage!;
-				}
-
-				string pngFallback = source[..^4] + ".png";
-				if (AssetExists(pngFallback)) {
-					return new Bitmap(AssetLoader.Open(ToAssetUri(pngFallback)));
-				}
-			}
-
-			return new Bitmap(AssetLoader.Open(uri));
-		} catch (Exception ex) {
-			Log.Error(ex, $"[ImageUtilities] Failed to load image asset '{source}', using empty image fallback");
-			return _emptyImage;
-		}
-	}
-
-	private static bool TryCreateSvgImage(Uri uri, out IImage? image) {
-		image = null;
-
-		try {
-			Type? svgImageType = Type.GetType("Avalonia.Svg.Skia.SvgImage, Avalonia.Svg.Skia", throwOnError: false);
-			Type? svgSourceType = Type.GetType("Avalonia.Svg.Skia.SvgSource, Avalonia.Svg.Skia", throwOnError: false);
-			if (svgImageType is null || svgSourceType is null) {
-				return false;
-			}
-
-			object? svgSource = CreateSvgSource(svgSourceType, uri);
-			if (svgSource is null) {
-				return false;
-			}
-
-			object? svgImage = Activator.CreateInstance(svgImageType);
-			PropertyInfo? sourceProperty = svgImageType.GetProperty("Source", BindingFlags.Public | BindingFlags.Instance);
-			if (svgImage is null || sourceProperty is null) {
-				return false;
-			}
-
-			sourceProperty.SetValue(svgImage, svgSource);
-			image = svgImage as IImage;
-			return image is not null;
-		} catch {
-			image = null;
-			return false;
-		}
-	}
-
-	private static object? CreateSvgSource([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type svgSourceType, Uri uri) {
-		MethodInfo[] loadMethods = svgSourceType
-			.GetMethods(BindingFlags.Public | BindingFlags.Static)
-			.Where(x => x.ReturnType == svgSourceType && x.Name.StartsWith("Load", StringComparison.Ordinal))
-			.ToArray();
-
-		foreach (MethodInfo method in loadMethods) {
-			if (TryInvokeSvgLoadMethod(method, uri, out object? result)) {
-				return result;
-			}
+		Uri uri = ToAssetUri(source);
+		if (source.EndsWith(".svg", StringComparison.OrdinalIgnoreCase)) {
+			using Stream stream = AssetLoader.Open(uri);
+			SvgSource svgSource = SvgSource.LoadFromStream(stream);
+			return new SvgImage { Source = svgSource };
 		}
 
-		return null;
-	}
-
-	private static bool TryInvokeSvgLoadMethod(MethodInfo method, Uri uri, out object? result) {
-		result = null;
-		Stream? stream = null;
-
-		try {
-			ParameterInfo[] parameters = method.GetParameters();
-			object?[] args = new object?[parameters.Length];
-			for (int i = 0; i < parameters.Length; i++) {
-				Type parameterType = parameters[i].ParameterType;
-				if (typeof(Uri).IsAssignableFrom(parameterType)) {
-					args[i] = uri;
-				} else if (parameterType == typeof(string)) {
-					args[i] = uri.ToString();
-				} else if (typeof(Stream).IsAssignableFrom(parameterType)) {
-					stream ??= AssetLoader.Open(uri);
-					args[i] = stream;
-				} else if (parameters[i].HasDefaultValue) {
-					args[i] = parameters[i].DefaultValue;
-				} else if (!parameterType.IsValueType || Nullable.GetUnderlyingType(parameterType) is not null) {
-					args[i] = null;
-				} else {
-					return false;
-				}
-			}
-
-			result = method.Invoke(null, args);
-			return result is not null;
-		} catch {
-			result = null;
-			return false;
-		} finally {
-			stream?.Dispose();
-		}
+		return new Bitmap(AssetLoader.Open(uri));
 	}
 
 	private static bool AssetExists(string source) {
