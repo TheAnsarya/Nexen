@@ -10,7 +10,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
-using ReactiveUI.Avalonia;
+using ReactiveUI.Builder;
 using Nexen.Config;
 using Nexen.Interop;
 using Nexen.Utilities;
@@ -333,7 +333,11 @@ class Program {
 		GC.KeepAlive(typeof(Avalonia.Svg.Skia.Svg).Assembly);
 
 		return AppBuilder.Configure<App>()
-				.UseReactiveUI(_ => { })
+				.AfterSetup(_ => {
+					RxAppBuilder.CreateReactiveUIBuilder()
+						.WithMainThreadScheduler(AvaloniaDispatcherScheduler.Instance)
+						.BuildApp();
+				})
 				.UsePlatformDetect()
 				.With(new Win32PlatformOptions { })
 				.With(new X11PlatformOptions {
