@@ -8,7 +8,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using ReactiveUI.SourceGenerators;
 
-namespace Nexen.Debugger.Windows; 
+namespace Nexen.Debugger.Windows;
 public partial class BreakOnWindow : NexenWindow {
 	public static int _lastValue { get; set; } = 0;
 
