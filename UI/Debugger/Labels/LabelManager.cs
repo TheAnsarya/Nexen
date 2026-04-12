@@ -177,7 +177,13 @@ public sealed class LabelManager {
 	/// <param name="cpu">The CPU type to filter by.</param>
 	/// <returns>A list of labels the CPU can access.</returns>
 	public static List<CodeLabel> GetLabels(CpuType cpu) {
-		return _labels.Where((lbl) => lbl.Matches(cpu)).ToList<CodeLabel>();
+		List<CodeLabel> result = new();
+		foreach (var lbl in _labels) {
+			if (lbl.Matches(cpu)) {
+				result.Add(lbl);
+			}
+		}
+		return result;
 	}
 
 	/// <summary>

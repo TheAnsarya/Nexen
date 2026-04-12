@@ -184,7 +184,12 @@ public sealed class DisassemblyViewer : Control {
 					if (lineData is not null) {
 						_textFragments.TryGetValue(lineData, out fragments);
 						if (fragments is not null) {
-							fragment = fragments.Where(frag => p.X >= frag.XPosition && p.X < frag.XPosition + frag.Width).FirstOrDefault();
+							foreach (var frag in fragments) {
+								if (p.X >= frag.XPosition && p.X < frag.XPosition + frag.Width) {
+									fragment = frag;
+									break;
+								}
+							}
 						}
 					}
 

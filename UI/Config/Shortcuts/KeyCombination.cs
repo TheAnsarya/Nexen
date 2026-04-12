@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Nexen.Interop;
@@ -37,29 +36,25 @@ public sealed class KeyCombination {
 	}
 
 	private string GetKeyNames() {
-		List<UInt16> scanCodes = new List<UInt16>() { Key1, Key2, Key3 };
-		List<string> keyNames = scanCodes.Select((UInt16 scanCode) => InputApi.GetKeyName(scanCode)).Where((keyName) => !string.IsNullOrWhiteSpace(keyName)).ToList();
+		UInt16[] scanCodes = [Key1, Key2, Key3];
+		List<string> keyNames = new List<string>(3);
+		foreach (var scanCode in scanCodes) {
+			string keyName = InputApi.GetKeyName(scanCode);
+			if (!string.IsNullOrWhiteSpace(keyName)) {
+				keyNames.Add(keyName);
+			}
+		}
 
 		if (keyNames.Count > 1) {
 			//Merge left/right ctrl/alt/shift for key combinations
-			keyNames = keyNames.Select(key => {
-				switch (key) {
-					case "Left Ctrl":
-					case "Right Ctrl":
-						return "Ctrl";
-
-					case "Left Alt":
-					case "Right Alt":
-						return "Alt";
-
-					case "Left Shift":
-					case "Right Shift":
-						return "Shift";
-
-					default:
-						return key;
-				}
-			}).ToList();
+			for (int i = 0; i < keyNames.Count; i++) {
+				keyNames[i] = keyNames[i] switch {
+					"Left Ctrl" or "Right Ctrl" => "Ctrl",
+					"Left Alt" or "Right Alt" => "Alt",
+					"Left Shift" or "Right Shift" => "Shift",
+					_ => keyNames[i]
+				};
+			}
 		}
 
 		keyNames.Sort((string a, string b) => {

@@ -269,12 +269,23 @@ public static class BreakpointManager {
 	/// Searches both relative and absolute address representations to find matches.
 	/// </remarks>
 	private static Breakpoint? GetMatchingBreakpoint(AddressInfo info, CpuType cpuType, Func<Breakpoint, bool> predicate) {
-		Breakpoint? bp = Breakpoints.Where((bp) => predicate(bp) && bp.Matches((UInt32)info.Address, info.Type, cpuType)).FirstOrDefault();
+		Breakpoint? bp = null;
+		foreach (var candidate in Breakpoints) {
+			if (predicate(candidate) && candidate.Matches((UInt32)info.Address, info.Type, cpuType)) {
+				bp = candidate;
+				break;
+			}
+		}
 
 		if (bp is null) {
 			AddressInfo altAddr = info.Type.IsRelativeMemory() ? DebugApi.GetAbsoluteAddress(info) : DebugApi.GetRelativeAddress(info, cpuType);
 			if (altAddr.Address >= 0) {
-				bp = Breakpoints.Where((bp) => predicate(bp) && bp.Matches((UInt32)altAddr.Address, altAddr.Type, cpuType)).FirstOrDefault();
+				foreach (var candidate in Breakpoints) {
+					if (predicate(candidate) && candidate.Matches((UInt32)altAddr.Address, altAddr.Type, cpuType)) {
+						bp = candidate;
+						break;
+					}
+				}
 			}
 		}
 
