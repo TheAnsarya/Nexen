@@ -12,6 +12,7 @@ using Nexen.Config;
 using Nexen.Debugger.ViewModels;
 using Nexen.Debugger.Windows;
 using Nexen.Interop;
+using Nexen.Utilities;
 
 namespace Nexen.Debugger.Utilities; 
 public static class ToolRefreshHelper {
@@ -48,8 +49,9 @@ public static class ToolRefreshHelper {
 			switch (e.NotificationType) {
 				case ConsoleNotificationType.ViewerRefresh:
 					if (e.Parameter.ToInt32() == viewerId) {
-						lock (callback) {
+						lock (lockObject) {
 							if (!done) {
+								done = true;
 								Task.Run(() =>                                    //DebugApi.RemoveViewerId() must not be called inside the notification callback (which is
 																				  //the same thread as the emulation thread). Otherwise, the viewer timing collection the
 																				  //debugger is iterating on will be modified, causing a crash.
@@ -57,8 +59,11 @@ public static class ToolRefreshHelper {
 
 								listener.Dispose();
 								listener = null;
-								callback();
-								done = true;
+								try {
+									callback();
+								} catch (Exception ex) {
+									Log.Error(ex, "[ToolRefreshHelper] Exception in refresh callback (notification)");
+								}
 							}
 						}
 					}
@@ -72,13 +77,17 @@ public static class ToolRefreshHelper {
 		Task.Run(async () => {
 			await Task.Delay(300);
 			if (listener is not null) {
-				lock (callback) {
+				lock (lockObject) {
 					if (!done) {
 						//Give up after 300ms and call the callback
-						DebugApi.RemoveViewerId(viewerId, cpuType);
-						callback();
-						listener.Dispose();
 						done = true;
+						DebugApi.RemoveViewerId(viewerId, cpuType);
+						try {
+							callback();
+						} catch (Exception ex) {
+							Log.Error(ex, "[ToolRefreshHelper] Exception in refresh callback (fallback)");
+						}
+						listener.Dispose();
 					}
 				}
 			}
