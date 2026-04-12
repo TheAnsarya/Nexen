@@ -72,16 +72,10 @@ public partial class PansyExportProgressWindow : NexenWindow {
 	}
 
 	private void SetRomName(string romName) {
-		this.FindControl<TextBlock>("txtRomName")!.Text = romName;
+		txtRomName.Text = romName;
 	}
 
 	private void UpdateProgress(ExportProgress progress) {
-		var progressMain = this.FindControl<ProgressBar>("progressMain")!;
-		var txtProgressPercent = this.FindControl<TextBlock>("txtProgressPercent")!;
-		var txtStatus = this.FindControl<TextBlock>("txtStatus")!;
-		var txtCurrentOp = this.FindControl<TextBlock>("txtCurrentOp")!;
-		var progressDetail = this.FindControl<ProgressBar>("progressDetail")!;
-
 		progressMain.Value = progress.OverallPercent;
 		txtProgressPercent.Text = $"{progress.OverallPercent}%";
 		txtStatus.Text = progress.StatusMessage;
@@ -96,16 +90,6 @@ public partial class PansyExportProgressWindow : NexenWindow {
 	}
 
 	private void ShowCompletion(ExportStatistics stats) {
-		var txtTitle = this.FindControl<TextBlock>("txtTitle")!;
-		var txtStatus = this.FindControl<TextBlock>("txtStatus")!;
-		var progressMain = this.FindControl<ProgressBar>("progressMain")!;
-		var txtProgressPercent = this.FindControl<TextBlock>("txtProgressPercent")!;
-		var progressDetail = this.FindControl<ProgressBar>("progressDetail")!;
-		var txtCurrentOp = this.FindControl<TextBlock>("txtCurrentOp")!;
-		var pnlStats = this.FindControl<Border>("pnlStats")!;
-		var btnCancel = this.FindControl<Button>("btnCancel")!;
-		var btnClose = this.FindControl<Button>("btnClose")!;
-
 		txtTitle.Text = ResourceHelper.GetMessage("lblExportComplete");
 		txtStatus.Text = ResourceHelper.GetMessage("lblExportSuccessful");
 		progressMain.Value = 100;
@@ -115,12 +99,12 @@ public partial class PansyExportProgressWindow : NexenWindow {
 
 		// Show statistics
 		pnlStats.IsVisible = true;
-		this.FindControl<TextBlock>("txtSymbolCount")!.Text = stats.SymbolCount.ToString("N0");
-		this.FindControl<TextBlock>("txtCommentCount")!.Text = stats.CommentCount.ToString("N0");
-		this.FindControl<TextBlock>("txtCodeBytes")!.Text = FormatBytes(stats.CodeBytes);
-		this.FindControl<TextBlock>("txtDataBytes")!.Text = FormatBytes(stats.DataBytes);
-		this.FindControl<TextBlock>("txtFileSize")!.Text = FormatBytes(stats.FileSize);
-		this.FindControl<TextBlock>("txtExportTime")!.Text = $"{_stopwatch.ElapsedMilliseconds}ms";
+		txtSymbolCount.Text = stats.SymbolCount.ToString("N0");
+		txtCommentCount.Text = stats.CommentCount.ToString("N0");
+		txtCodeBytes.Text = FormatBytes(stats.CodeBytes);
+		txtDataBytes.Text = FormatBytes(stats.DataBytes);
+		txtFileSize.Text = FormatBytes(stats.FileSize);
+		txtExportTime.Text = $"{_stopwatch.ElapsedMilliseconds}ms";
 
 		// Swap buttons
 		btnCancel.IsVisible = false;
@@ -128,12 +112,6 @@ public partial class PansyExportProgressWindow : NexenWindow {
 	}
 
 	private void ShowError(string message) {
-		var txtTitle = this.FindControl<TextBlock>("txtTitle")!;
-		var txtStatus = this.FindControl<TextBlock>("txtStatus")!;
-		var progressDetail = this.FindControl<ProgressBar>("progressDetail")!;
-		var btnCancel = this.FindControl<Button>("btnCancel")!;
-		var btnClose = this.FindControl<Button>("btnClose")!;
-
 		txtTitle.Text = ResourceHelper.GetMessage("lblExportFailed");
 		txtStatus.Text = message;
 		progressDetail.IsVisible = false;

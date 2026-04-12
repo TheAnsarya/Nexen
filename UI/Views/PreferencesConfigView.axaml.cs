@@ -44,12 +44,11 @@ public partial class PreferencesConfigView : UserControl {
 
 	private void UpdateMigrationStatus() {
 		var (legacyFiles, gameCount) = GameDataManager.GetCleanupStatus();
-		var statusLabel = this.FindControl<TextBlock>("lblMigrationStatus");
-		if (statusLabel is not null) {
+		if (lblMigrationStatus is not null) {
 			if (legacyFiles > 0) {
-				statusLabel.Text = $"{legacyFiles} legacy file(s) from {gameCount} game(s) can be cleaned up";
+				lblMigrationStatus.Text = $"{legacyFiles} legacy file(s) from {gameCount} game(s) can be cleaned up";
 			} else {
-				statusLabel.Text = "No legacy files to clean up";
+				lblMigrationStatus.Text = "No legacy files to clean up";
 			}
 		}
 	}

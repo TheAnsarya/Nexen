@@ -21,8 +21,6 @@ public partial class SplashWindow : Window {
 	/// Updates the status text displayed below the loading indicator.
 	/// </summary>
 	public void SetStatus(string text) {
-		if (this.FindControl<TextBlock>("StatusText") is { } statusText) {
-			statusText.Text = text;
-		}
+		StatusText.Text = text;
 	}
 }

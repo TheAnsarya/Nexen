@@ -31,14 +31,12 @@ public partial class EventViewerWindow : NexenWindow, INotificationHandler {
 		this.AttachDeveloperTools();
 #endif
 
-		ScrollPictureViewer? scrollViewer = this.FindControl<ScrollPictureViewer>("picViewer");
-		DataGrid? listView = this.FindControl<DataGrid>("lstEvents");
-		PictureViewer? viewer = scrollViewer?.InnerViewer;
-		if (viewer == null || listView == null) {
+		PictureViewer? viewer = picViewer?.InnerViewer;
+		if (viewer == null || lstEvents == null) {
 			throw new InvalidOperationException("Event viewer controls failed to initialize.");
 		}
 
-		_model = new EventViewerViewModel(cpuType, viewer, listView, this);
+		_model = new EventViewerViewModel(cpuType, viewer, lstEvents, this);
 		_model.Config.LoadWindowSettings(this);
 		DataContext = _model;
 

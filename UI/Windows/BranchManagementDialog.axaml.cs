@@ -21,7 +21,7 @@ public sealed partial class BranchManagementResult {
 /// Dialog for managing TAS branches — load, rename, and delete.
 /// </summary>
 public partial class BranchManagementDialog : NexenWindow {
-	private ListBox _lstBranches = null!;
+	
 	private ObservableCollection<BranchData> _branches = null!;
 	private BranchData? _loadedBranch;
 	private bool _changed;
@@ -35,7 +35,7 @@ public partial class BranchManagementDialog : NexenWindow {
 
 	private void InitializeComponent() {
 		AvaloniaXamlLoader.Load(this);
-		_lstBranches = this.FindControl<ListBox>("lstBranches")!;
+		// Named controls populated by AvaloniaXamlLoader
 	}
 
 	private void OnCloseClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
@@ -43,14 +43,14 @@ public partial class BranchManagementDialog : NexenWindow {
 	}
 
 	private void OnLoadClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
-		if (_lstBranches.SelectedItem is BranchData branch) {
+		if (lstBranches.SelectedItem is BranchData branch) {
 			_loadedBranch = branch;
 			Close();
 		}
 	}
 
 	private async void OnRenameClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
-		if (_lstBranches.SelectedItem is not BranchData branch) {
+		if (lstBranches.SelectedItem is not BranchData branch) {
 			return;
 		}
 
@@ -64,15 +64,15 @@ public partial class BranchManagementDialog : NexenWindow {
 			branch.Name = newName;
 			_changed = true;
 			// Refresh the list display
-			int idx = _lstBranches.SelectedIndex;
-			_lstBranches.ItemsSource = null;
-			_lstBranches.ItemsSource = _branches;
-			_lstBranches.SelectedIndex = idx;
+			int idx = lstBranches.SelectedIndex;
+			lstBranches.ItemsSource = null;
+			lstBranches.ItemsSource = _branches;
+			lstBranches.SelectedIndex = idx;
 		}
 	}
 
 	private async void OnDeleteClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
-		if (_lstBranches.SelectedItem is not BranchData branch) {
+		if (lstBranches.SelectedItem is not BranchData branch) {
 			return;
 		}
 
@@ -98,7 +98,7 @@ public partial class BranchManagementDialog : NexenWindow {
 	public static Task<BranchManagementResult> ShowAsync(Window? parent, ObservableCollection<BranchData> branches) {
 		var dialog = new BranchManagementDialog();
 		dialog._branches = branches;
-		dialog._lstBranches.ItemsSource = branches;
+		dialog.lstBranches.ItemsSource = branches;
 
 		var tcs = new TaskCompletionSource<BranchManagementResult>();
 		dialog.Closed += (_, _) => {

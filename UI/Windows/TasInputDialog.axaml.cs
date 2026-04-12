@@ -13,9 +13,6 @@ namespace Nexen.Windows;
 /// Supports numeric frame input and text input modes.
 /// </summary>
 public partial class TasInputDialog : NexenWindow {
-	private TextBox _txtInput = null!;
-	private TextBlock _txtPrompt = null!;
-	private TextBlock _txtError = null!;
 	private bool _cancelled = true;
 	private bool _numericOnly;
 	private int _minValue;
@@ -30,15 +27,12 @@ public partial class TasInputDialog : NexenWindow {
 
 	private void InitializeComponent() {
 		AvaloniaXamlLoader.Load(this);
-		_txtInput = this.FindControl<TextBox>("txtInput")!;
-		_txtPrompt = this.FindControl<TextBlock>("txtPrompt")!;
-		_txtError = this.FindControl<TextBlock>("txtError")!;
 	}
 
 	protected override void OnOpened(EventArgs e) {
 		base.OnOpened(e);
-		_txtInput.Focus();
-		_txtInput.SelectAll();
+		txtInput.Focus();
+		txtInput.SelectAll();
 	}
 
 	private void OnOkClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
@@ -58,20 +52,20 @@ public partial class TasInputDialog : NexenWindow {
 			return true;
 		}
 
-		string text = _txtInput.Text?.Trim() ?? "";
+		string text = txtInput.Text?.Trim() ?? "";
 		if (!int.TryParse(text, out int value)) {
-			_txtError.Text = "Please enter a valid number.";
-			_txtError.IsVisible = true;
+			txtError.Text = "Please enter a valid number.";
+			txtError.IsVisible = true;
 			return false;
 		}
 
 		if (value < _minValue || value > _maxValue) {
-			_txtError.Text = $"Value must be between {_minValue:N0} and {_maxValue:N0}.";
-			_txtError.IsVisible = true;
+			txtError.Text = $"Value must be between {_minValue:N0} and {_maxValue:N0}.";
+			txtError.IsVisible = true;
 			return false;
 		}
 
-		_txtError.IsVisible = false;
+		txtError.IsVisible = false;
 		return true;
 	}
 
@@ -88,9 +82,9 @@ public partial class TasInputDialog : NexenWindow {
 	public static Task<int?> ShowNumericAsync(Window? parent, string title, string prompt, int defaultValue, int minValue, int maxValue) {
 		var dialog = new TasInputDialog();
 		dialog.Title = title;
-		dialog._txtPrompt.Text = prompt;
-		dialog._txtInput.Text = defaultValue.ToString();
-		dialog._txtInput.PlaceholderText = $"{minValue:N0} - {maxValue:N0}";
+		dialog.txtPrompt.Text = prompt;
+		dialog.txtInput.Text = defaultValue.ToString();
+		dialog.txtInput.PlaceholderText = $"{minValue:N0} - {maxValue:N0}";
 		dialog._numericOnly = true;
 		dialog._minValue = minValue;
 		dialog._maxValue = maxValue;
@@ -100,7 +94,7 @@ public partial class TasInputDialog : NexenWindow {
 			if (dialog._cancelled) {
 				tcs.TrySetResult(null);
 			} else {
-				int.TryParse(dialog._txtInput.Text?.Trim(), out int result);
+				int.TryParse(dialog.txtInput.Text?.Trim(), out int result);
 				tcs.TrySetResult(result);
 			}
 		};
@@ -127,8 +121,8 @@ public partial class TasInputDialog : NexenWindow {
 	public static Task<string?> ShowTextAsync(Window? parent, string title, string prompt, string defaultValue = "") {
 		var dialog = new TasInputDialog();
 		dialog.Title = title;
-		dialog._txtPrompt.Text = prompt;
-		dialog._txtInput.Text = defaultValue;
+		dialog.txtPrompt.Text = prompt;
+		dialog.txtInput.Text = defaultValue;
 		dialog._numericOnly = false;
 
 		var tcs = new TaskCompletionSource<string?>();
@@ -136,7 +130,7 @@ public partial class TasInputDialog : NexenWindow {
 			if (dialog._cancelled) {
 				tcs.TrySetResult(null);
 			} else {
-				tcs.TrySetResult(dialog._txtInput.Text?.Trim() ?? "");
+				tcs.TrySetResult(dialog.txtInput.Text?.Trim() ?? "");
 			}
 		};
 

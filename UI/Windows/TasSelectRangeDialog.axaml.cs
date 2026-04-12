@@ -11,9 +11,6 @@ namespace Nexen.Windows;
 /// Dialog for selecting an inclusive frame range.
 /// </summary>
 public partial class TasSelectRangeDialog : NexenWindow {
-	private TextBox _txtFrom = null!;
-	private TextBox _txtTo = null!;
-	private TextBlock _txtError = null!;
 	private bool _cancelled = true;
 	private int _maxFrame;
 
@@ -26,15 +23,12 @@ public partial class TasSelectRangeDialog : NexenWindow {
 
 	private void InitializeComponent() {
 		AvaloniaXamlLoader.Load(this);
-		_txtFrom = this.FindControl<TextBox>("txtFrom")!;
-		_txtTo = this.FindControl<TextBox>("txtTo")!;
-		_txtError = this.FindControl<TextBlock>("txtError")!;
 	}
 
 	protected override void OnOpened(EventArgs e) {
 		base.OnOpened(e);
-		_txtFrom.Focus();
-		_txtFrom.SelectAll();
+		txtFrom.Focus();
+		txtFrom.SelectAll();
 	}
 
 	private void OnOkClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
@@ -50,25 +44,25 @@ public partial class TasSelectRangeDialog : NexenWindow {
 	}
 
 	private bool Validate() {
-		if (!int.TryParse(_txtFrom.Text?.Trim(), out int fromFrame)) {
-			_txtError.Text = "Please enter a valid start frame.";
-			_txtError.IsVisible = true;
+		if (!int.TryParse(txtFrom.Text?.Trim(), out int fromFrame)) {
+			txtError.Text = "Please enter a valid start frame.";
+			txtError.IsVisible = true;
 			return false;
 		}
 
-		if (!int.TryParse(_txtTo.Text?.Trim(), out int toFrame)) {
-			_txtError.Text = "Please enter a valid end frame.";
-			_txtError.IsVisible = true;
+		if (!int.TryParse(txtTo.Text?.Trim(), out int toFrame)) {
+			txtError.Text = "Please enter a valid end frame.";
+			txtError.IsVisible = true;
 			return false;
 		}
 
 		if (fromFrame < 0 || fromFrame > _maxFrame || toFrame < 0 || toFrame > _maxFrame) {
-			_txtError.Text = $"Frames must be between 0 and {_maxFrame:N0}.";
-			_txtError.IsVisible = true;
+			txtError.Text = $"Frames must be between 0 and {_maxFrame:N0}.";
+			txtError.IsVisible = true;
 			return false;
 		}
 
-		_txtError.IsVisible = false;
+		txtError.IsVisible = false;
 		return true;
 	}
 
@@ -80,8 +74,8 @@ public partial class TasSelectRangeDialog : NexenWindow {
 			_maxFrame = Math.Max(0, maxFrame)
 		};
 
-		dialog._txtFrom.Text = Math.Clamp(defaultFrom, 0, dialog._maxFrame).ToString();
-		dialog._txtTo.Text = Math.Clamp(defaultTo, 0, dialog._maxFrame).ToString();
+		dialog.txtFrom.Text = Math.Clamp(defaultFrom, 0, dialog._maxFrame).ToString();
+		dialog.txtTo.Text = Math.Clamp(defaultTo, 0, dialog._maxFrame).ToString();
 
 		var tcs = new TaskCompletionSource<(int FromFrame, int ToFrame)?>();
 		dialog.Closed += (_, _) => {
@@ -90,8 +84,8 @@ public partial class TasSelectRangeDialog : NexenWindow {
 				return;
 			}
 
-			int.TryParse(dialog._txtFrom.Text?.Trim(), out int fromFrame);
-			int.TryParse(dialog._txtTo.Text?.Trim(), out int toFrame);
+			int.TryParse(dialog.txtFrom.Text?.Trim(), out int fromFrame);
+			int.TryParse(dialog.txtTo.Text?.Trim(), out int toFrame);
 			tcs.TrySetResult((fromFrame, toFrame));
 		};
 

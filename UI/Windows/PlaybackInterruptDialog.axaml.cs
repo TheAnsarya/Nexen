@@ -48,10 +48,7 @@ public partial class PlaybackInterruptDialog : NexenWindow {
 	}
 
 	private void UpdateFrameInfo() {
-		TextBlock? txtFrameInfo = this.FindControl<TextBlock>("txtFrameInfo");
-		if (txtFrameInfo != null) {
-			txtFrameInfo.Text = $"Frame {InterruptFrame + 1:N0} of {TotalFrames:N0}";
-		}
+		txtFrameInfo.Text = $"Frame {InterruptFrame + 1:N0} of {TotalFrames:N0}";
 	}
 
 	protected override void OnKeyDown(KeyEventArgs e) {
