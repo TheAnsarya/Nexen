@@ -9,7 +9,7 @@ using Nexen.Config.Shortcuts;
 using Nexen.Utilities;
 using Nexen.Windows;
 
-namespace Nexen.Controls; 
+namespace Nexen.Controls;
 public partial class MultiKeyBindingButton : Button {
 	protected override Type StyleKeyOverride => typeof(Button);
 
