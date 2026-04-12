@@ -18,10 +18,9 @@ namespace Nexen.TAS;
 public sealed class GreenzoneManager : IDisposable {
 	private readonly ConcurrentDictionary<int, SavestateData> _savestates = new();
 	private readonly SortedSet<int> _frameIndex = new();
-	private readonly object _indexLock = new();
+	private readonly object _stateLock = new();
 	private long _totalMemoryUsage;
 	private readonly SemaphoreSlim _compressionSemaphore = new(1, 1);
-	private readonly object _ringBufferLock = new();
 	private readonly Queue<int> _ringBuffer = new();
 	private CancellationTokenSource? _seekCts;
 	private readonly object _seekLock = new();
@@ -50,7 +49,7 @@ public sealed class GreenzoneManager : IDisposable {
 	/// <summary>Gets the current frame with the latest savestate. O(log n) via SortedSet.</summary>
 	public int LatestFrame {
 		get {
-			lock (_indexLock) {
+			lock (_stateLock) {
 				return _frameIndex.Count > 0 ? _frameIndex.Max : -1;
 			}
 		}
@@ -59,7 +58,7 @@ public sealed class GreenzoneManager : IDisposable {
 	/// <summary>Gets the earliest frame with a savestate. O(log n) via SortedSet.</summary>
 	public int EarliestFrame {
 		get {
-			lock (_indexLock) {
+			lock (_stateLock) {
 				return _frameIndex.Count > 0 ? _frameIndex.Min : -1;
 			}
 		}
@@ -112,7 +111,7 @@ public sealed class GreenzoneManager : IDisposable {
 
 		_savestates[frame] = savestate;
 
-		lock (_indexLock) {
+		lock (_stateLock) {
 			_frameIndex.Add(frame);
 		}
 
@@ -202,7 +201,7 @@ public sealed class GreenzoneManager : IDisposable {
 	/// <param name="targetFrame">The target frame.</param>
 	/// <returns>The nearest frame with a savestate, or -1 if none exists.</returns>
 	public int GetNearestStateFrame(int targetFrame) {
-		lock (_indexLock) {
+		lock (_stateLock) {
 			if (_frameIndex.Count == 0) {
 				return -1;
 			}
@@ -292,7 +291,7 @@ public sealed class GreenzoneManager : IDisposable {
 	public void InvalidateFrom(int fromFrame) {
 		List<int> framesToRemove;
 
-		lock (_indexLock) {
+		lock (_stateLock) {
 			if (_frameIndex.Count == 0 || _frameIndex.Max < fromFrame) {
 				framesToRemove = [];
 			} else {
@@ -306,22 +305,20 @@ public sealed class GreenzoneManager : IDisposable {
 			foreach (var frame in framesToRemove) {
 				_frameIndex.Remove(frame);
 			}
-		}
 
-		foreach (var frame in framesToRemove) {
-			if (_savestates.TryRemove(frame, out var state)) {
-				Interlocked.Add(ref _totalMemoryUsage, -(state.Data?.LongLength ?? 0));
-			}
-		}
-
-		// Also clear ring buffer entries — rebuild in-place to avoid allocation
-		lock (_ringBufferLock) {
+			// Also clear ring buffer entries — rebuild in-place to avoid allocation
 			int count = _ringBuffer.Count;
 			for (int i = 0; i < count; i++) {
 				int f = _ringBuffer.Dequeue();
 				if (f < fromFrame) {
 					_ringBuffer.Enqueue(f);
 				}
+			}
+		}
+
+		foreach (var frame in framesToRemove) {
+			if (_savestates.TryRemove(frame, out var state)) {
+				Interlocked.Add(ref _totalMemoryUsage, -(state.Data?.LongLength ?? 0));
 			}
 		}
 	}
@@ -332,15 +329,12 @@ public sealed class GreenzoneManager : IDisposable {
 	public void Clear() {
 		_savestates.Clear();
 
-		lock (_indexLock) {
+		lock (_stateLock) {
 			_frameIndex.Clear();
+			_ringBuffer.Clear();
 		}
 
 		Interlocked.Exchange(ref _totalMemoryUsage, 0);
-
-		lock (_ringBufferLock) {
-			_ringBuffer.Clear();
-		}
 	}
 
 	/// <summary>
@@ -367,18 +361,14 @@ public sealed class GreenzoneManager : IDisposable {
 	public bool HasState(int frame) => _savestates.ContainsKey(frame);
 
 	private void AddToRingBuffer(int frame) {
-		lock (_ringBufferLock) {
-			// Add to ring buffer if within recent range
+		lock (_stateLock) {
 			if (_ringBuffer.Count >= RingBufferSize) {
 				int oldestFrame = _ringBuffer.Dequeue();
 
 				// Don't remove from main storage if it's at an interval
 				if (oldestFrame % CaptureInterval != 0) {
 					if (_savestates.TryRemove(oldestFrame, out var removed)) {
-						lock (_indexLock) {
-							_frameIndex.Remove(oldestFrame);
-						}
-
+						_frameIndex.Remove(oldestFrame);
 						Interlocked.Add(ref _totalMemoryUsage, -(removed.Data?.LongLength ?? 0));
 					}
 				}
@@ -431,7 +421,7 @@ public sealed class GreenzoneManager : IDisposable {
 			// Reuse the buffer to avoid allocation on every prune call
 			_pruneBuffer.Clear();
 
-			lock (_indexLock) {
+			lock (_stateLock) {
 				foreach (int frame in _frameIndex) {
 					// Skip interval-aligned frames (preserve keyframes)
 					if (frame % CaptureInterval == 0) {
@@ -452,7 +442,7 @@ public sealed class GreenzoneManager : IDisposable {
 
 			foreach (int frame in _pruneBuffer) {
 				if (_savestates.TryRemove(frame, out var state)) {
-					lock (_indexLock) {
+					lock (_stateLock) {
 						_frameIndex.Remove(frame);
 					}
 
@@ -544,7 +534,7 @@ public sealed class GreenzoneManager : IDisposable {
 
 		_savestates.Clear();
 
-		lock (_indexLock) {
+		lock (_stateLock) {
 			_frameIndex.Clear();
 		}
 
