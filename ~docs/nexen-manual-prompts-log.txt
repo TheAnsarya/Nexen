@@ -1356,6 +1356,23 @@ ok, do #2 `I can also move benchmark JSON artifacts into a stable benchmark arti
 
 stop spiraling, clean up, build and make the 1.4.25 release with full documentation on the release; and after the release go back to fixing the other CI actions; continue;
 
+--- steer
+nothing has happened to create the release for 1.4.25, what happened? do it! start with the build and release and then do the other work; continue;
+
+[Nexen] update documentation for 1.4.25 release with all the issues we've fixed for this release including the signifigant efforts in the cdl and pansy recording performance; there are a lot more changes than are listed; continue;
+
+[Nexen] the build action for the 1.4.25 release failed majorly `https://github.com/TheAnsarya/Nexen/actions/runs/24262580696` so figure out why, fix the issues, and re-release; continue;
+
+--- steer
+[Nexen] Where did the description on the 1.4.25 release page go? find the big description you created and re-add it; continue;
+
+Just saying that `https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.25` has no description worth anything; continue working the release; continue;
+
+[Nexen] If you open the Debugger menu window and then close it, the app crashes, if you open other debug menus the main window's menu items are un usable, and keyboard shortcuts don't work; research and fix this problem; make issues and logs and docs etc; continue;
+
+Keep looking for Avalonia and modernization upgrade issues and performance improvements;
+
+continue working issues;
 
 
 
@@ -1369,6 +1386,18 @@ stop spiraling, clean up, build and make the 1.4.25 release with full documentat
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+[Nexen] update all these issues (#1039, #1205, #1076, #1193, #1194, #1176) with a link to the 1.4.26 release page and a message saying this release should fix your problem, please let us know if there's still an error; continue;
 
 
 

@@ -10,7 +10,7 @@ using Nexen.Debugger.Windows;
 using Nexen.Interop;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Utilities; 
+namespace Nexen.Debugger.Utilities;
 public static class DebugWindowManager {
 	private static int _debugWindowCounter = 0;
 	private static ConcurrentDictionary<Window, bool> _openedWindows = new();

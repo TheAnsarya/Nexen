@@ -19,7 +19,7 @@ using Nexen.Debugger.Views;
 using Nexen.Interop;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Windows; 
+namespace Nexen.Debugger.Windows;
 public partial class DebuggerWindow : NexenWindow, INotificationHandler {
 	private DebuggerWindowViewModel _model;
 

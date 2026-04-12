@@ -7,7 +7,7 @@ using Nexen.ViewModels;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
-namespace Nexen.Debugger.StatusViews; 
+namespace Nexen.Debugger.StatusViews;
 public sealed partial class SnesStatusViewModel : BaseConsoleStatusViewModel {
 	[Reactive] public partial UInt16 RegA { get; set; }
 	[Reactive] public partial UInt16 RegX { get; set; }

@@ -3,7 +3,7 @@ using System.ComponentModel;
 using Nexen.ViewModels;
 using ReactiveUI.SourceGenerators;
 
-namespace Nexen.Debugger.StatusViews; 
+namespace Nexen.Debugger.StatusViews;
 public abstract partial class BaseConsoleStatusViewModel : DisposableViewModel {
 	[Reactive] public partial bool EditAllowed { get; set; }
 	[Reactive] public partial UInt64 ElapsedCycles { get; set; }

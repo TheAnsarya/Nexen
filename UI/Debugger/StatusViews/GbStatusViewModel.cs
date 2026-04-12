@@ -4,7 +4,7 @@ using Nexen.Interop;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
-namespace Nexen.Debugger.StatusViews; 
+namespace Nexen.Debugger.StatusViews;
 public sealed partial class GbStatusViewModel : BaseConsoleStatusViewModel {
 	[Reactive] public partial byte RegA { get; set; }
 	[Reactive] public partial byte RegB { get; set; }

@@ -11,7 +11,7 @@ using Nexen.Interop;
 using Nexen.ViewModels;
 using Nexen.Windows;
 
-namespace Nexen.Debugger.Labels; 
+namespace Nexen.Debugger.Labels;
 /// <summary>
 /// Central manager for debugger labels (symbols).
 /// Handles label storage, lookup, import/export, and synchronization with the C++ core.
