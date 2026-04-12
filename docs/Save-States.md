@@ -4,6 +4,11 @@
 
 Nexen supports quick save workflows, Open Save State Picker navigation, designated slots, and per-game organization.
 
+It also maintains two background save streams:
+
+- Recent Play checkpoints every 5 minutes in a rolling 36-slot window (about 3 hours)
+- Auto Save progress log entries every configured interval (timestamped, not overwritten)
+
 ## Common Workflows
 
 ### Quick Save and Quick Load
@@ -12,10 +17,10 @@ Nexen supports quick save workflows, Open Save State Picker navigation, designat
 2. Press `Shift+F1` to run Open Save State Picker.
 3. Select a state thumbnail and load it.
 
-### Designated Slot
+### Designated Slots
 
-1. Press `Shift+F4` to save to the designated slot.
-2. Press `F4` to load the designated slot.
+1. Press `Shift+F2`, `Shift+F3`, or `Shift+F4` to save to designated slots 1-3.
+2. Press `F2`, `F3`, or `F4` to load designated slots 1-3.
 
 ### File-Based States
 
@@ -45,8 +50,8 @@ Nexen supports quick save workflows, Open Save State Picker navigation, designat
 
 ### Walkthrough B: Designated Slot Workflow
 
-1. Press `Shift+F4` from gameplay to store current state in the designated slot. Expected result: the designated slot updates to the current frame/state.
-2. Continue play, then press `F4` to load the designated slot. Expected result: the ROM state reloads from the designated slot.
+1. Press `Shift+F2`/`Shift+F3`/`Shift+F4` from gameplay to store current state in the selected designated slot. Expected result: that slot updates to the current frame/state.
+2. Continue play, then press `F2`/`F3`/`F4` to load the selected designated slot. Expected result: the ROM state reloads from that slot.
 3. Verify game state returns to the exact checkpoint. Expected result: position, timer, and immediate game context match the saved checkpoint.
 
 | Step | Panel | Screenshot Anchor ID | Capture Target |

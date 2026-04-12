@@ -5,6 +5,19 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.26] - 2026-04-12
+
+### Fixed
+
+- **Menu crash: Debug -> Event Viewer** — Event Viewer window initialization could fail because a required control field was null during XAML-backed control setup; switched the grid control to `x:Name` and hardened constructor lookup to resolve controls by name before creating the ViewModel (#1245)
+- **Menu crash: Tools -> TAS Editor -> Open/Create New Movie/Record** — TAS Editor window initialization could throw `NullReferenceException` during control wiring when named controls were not initialized as expected; switched key controls (`SearchBox`, `FrameList`, `PianoRoll`) to `x:Name` for reliable code-behind binding (#1245)
+
+### Changed
+
+- **Recent Play retention expanded** — increased rolling Recent Play checkpoint capacity from 12 to 36 slots (5-minute cadence, about 3 hours of history) (#1241)
+- **Auto Save behavior upgraded to persistent log** — Auto Saves now use timestamped `_auto_` filenames and are no longer single-file overwrite snapshots; save list origin detection supports both legacy and new naming patterns (#1241)
+- **Debugger close path hardening** — moved final debugger workspace save/release work off the UI thread and resumed execution before debugger release to reduce close-path deadlock risk when closing the last debugger window (#1242)
+
 ## [1.4.25] - 2026-04-10
 
 ### Fixed

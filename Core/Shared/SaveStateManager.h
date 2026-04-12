@@ -22,9 +22,9 @@ struct RenderedFrame;
 /// - Designated (4): Purple - Designated quick-access slots (F2-F4)
 ///
 /// File naming:
-/// - Auto: {RomName}_auto.nexen-save
+/// - Auto: {RomName}_auto_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
 /// - Save: {RomName}_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
-/// - Recent: {RomName}_recent_{01-12}.nexen-save
+/// - Recent: {RomName}_recent_{01-36}.nexen-save
 /// - Lua: {RomName}_lua_{timestamp}.nexen-save
 /// - Designated: {RomName}_[slot{01-03}]_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
 /// </remarks>

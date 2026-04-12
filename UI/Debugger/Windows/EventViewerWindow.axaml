@@ -124,7 +124,7 @@
 
 			<Border BorderBrush="Gray" BorderThickness="1" Grid.Row="2">
 				<DataGrid
-					Name="lstEvents"
+					x:Name="lstEvents"
 					ItemsSource="{Binding ListView.DebugEvents}"
 					SelectedItem="{Binding ListView.Selection.SelectedItem}"
 					IsReadOnly="True"

@@ -86,7 +86,7 @@
 		<Border DockPanel.Dock="Top" IsVisible="{Binding IsSearchVisible}" BorderBrush="Gray" BorderThickness="0 0 0 1" Padding="5" Background="#1a1a2e">
 			<StackPanel Orientation="Horizontal" Spacing="5">
 				<TextBlock Text="Find:" VerticalAlignment="Center" />
-				<TextBox Name="SearchBox" Text="{Binding SearchText}" Width="200" PlaceholderText="Search frames..." />
+				<TextBox x:Name="SearchBox" Text="{Binding SearchText}" Width="200" PlaceholderText="Search frames..." />
 				<ComboBox SelectedItem="{Binding SearchMode}" ItemsSource="{Binding Source={x:Static vm:TasEditorViewModel.SearchModes}}" Width="120" />
 				<Button Content="🔍" ToolTip.Tip="Search (Enter)" Width="30" Click="OnSearchClick" />
 				<Button Content="▼" ToolTip.Tip="Next (F3)" Width="30" Click="OnSearchNextClick" />
@@ -112,7 +112,7 @@
 			<!-- Frame List (ListBox) -->
 			<Border Grid.Row="0" Grid.Column="0" BorderBrush="Gray" BorderThickness="1">
 				<ListBox
-					Name="FrameList"
+					x:Name="FrameList"
 					ItemsSource="{Binding Frames}"
 					SelectedIndex="{Binding SelectedFrameIndex}"
 					SelectionMode="Multiple"
@@ -394,7 +394,7 @@
 			<Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
 				BorderBrush="Gray" BorderThickness="1" IsVisible="{Binding ShowPianoRoll}">
 				<c:PianoRollControl
-					Name="PianoRoll"
+					x:Name="PianoRoll"
 					Frames="{Binding Movie.InputFrames}"
 					SelectedFrame="{Binding SelectedFrameIndex}"
 					PlaybackFrame="{Binding PlaybackFrame}"

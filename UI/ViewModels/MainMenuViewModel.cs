@@ -75,13 +75,13 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 	/// <summary>Gets the list of recent files.</summary>
 	private List<RecentItem> RecentItems => ConfigManager.Config.RecentFiles.Items;
 
-	/// <summary>Checks if there are any Recent Play saves (5-min auto-saves).</summary>
+	/// <summary>Checks if there are any Recent Play saves (5-minute checkpoints, 36-slot rolling window).</summary>
 	private bool HasRecentPlaySaves() {
 		var states = EmuApi.GetSaveStateList();
 		return states.Any(s => s.Origin == SaveStateOrigin.Recent);
 	}
 
-	/// <summary>Checks if there are any Auto Saves (20-min interval).</summary>
+	/// <summary>Checks if there are any Auto Saves (periodic timestamped progress log entries).</summary>
 	private bool HasAutoSaves() {
 		var states = EmuApi.GetSaveStateList();
 		return states.Any(s => s.Origin == SaveStateOrigin.Auto);

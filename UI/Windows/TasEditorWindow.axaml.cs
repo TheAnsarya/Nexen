@@ -19,6 +19,9 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 	private NotificationListener? _notificationListener;
 	private bool _disposed;
 	private bool _showingInterruptDialog;
+	private ListBox _frameList = null!;
+	private PianoRollControl _pianoRoll = null!;
+	private TextBox _searchBox = null!;
 
 	public TasEditorWindow() {
 		InitializeComponent();
@@ -50,16 +53,23 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 	private void InitializeComponent() {
 		AvaloniaXamlLoader.Load(this);
 
-		FrameList.SelectionChanged += OnFrameListSelectionChanged;
+		_frameList = FrameList ?? this.FindControl<ListBox>("FrameList")
+			?? throw new InvalidOperationException("TAS editor FrameList control failed to initialize.");
+		_pianoRoll = PianoRoll ?? this.FindControl<PianoRollControl>("PianoRoll")
+			?? throw new InvalidOperationException("TAS editor PianoRoll control failed to initialize.");
+		_searchBox = SearchBox ?? this.FindControl<TextBox>("SearchBox")
+			?? throw new InvalidOperationException("TAS editor SearchBox control failed to initialize.");
+
+		_frameList.SelectionChanged += OnFrameListSelectionChanged;
 	}
 
 	/// <summary>
 	/// Sets up event handlers for the piano roll control.
 	/// </summary>
 	private void SetupPianoRollEvents() {
-		PianoRoll.CellClicked += OnPianoRollCellClicked;
-		PianoRoll.CellsPainted += OnPianoRollCellsPainted;
-		PianoRoll.SelectionChanged += OnPianoRollSelectionChanged;
+		_pianoRoll.CellClicked += OnPianoRollCellClicked;
+		_pianoRoll.CellsPainted += OnPianoRollCellsPainted;
+		_pianoRoll.SelectionChanged += OnPianoRollSelectionChanged;
 	}
 
 	/// <summary>
@@ -330,7 +340,7 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 						// Toggle search bar
 						ViewModel.ToggleSearch();
 						if (ViewModel.IsSearchVisible) {
-							SearchBox.Focus();
+							_searchBox.Focus();
 						}
 						e.Handled = true;
 						return;
@@ -353,7 +363,7 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 			}
 
 			// Frame navigation with arrow keys when ListBox doesn't have focus
-			if (!FrameList.IsFocused) {
+			if (!_frameList.IsFocused) {
 				switch (e.Key) {
 					case Avalonia.Input.Key.PageUp:
 						ViewModel.SelectedFrameIndex = Math.Max(0, ViewModel.SelectedFrameIndex - 10);
@@ -501,8 +511,8 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 		if (ViewModel is null) return;
 
 		var indices = new List<int>();
-		foreach (var item in FrameList.SelectedItems!) {
-			int idx = FrameList.ItemsSource is System.Collections.IList list ? list.IndexOf(item) : -1;
+		foreach (var item in _frameList.SelectedItems!) {
+			int idx = _frameList.ItemsSource is System.Collections.IList list ? list.IndexOf(item) : -1;
 			if (idx >= 0) {
 				indices.Add(idx);
 			}
@@ -511,18 +521,18 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 	}
 
 	private void ApplySelectionFromViewModel() {
-		if (ViewModel is null || FrameList.ItemsSource is not System.Collections.IList items || FrameList.SelectedItems is null) {
+		if (ViewModel is null || _frameList.ItemsSource is not System.Collections.IList items || _frameList.SelectedItems is null) {
 			return;
 		}
 
-		FrameList.SelectedItems.Clear();
+		_frameList.SelectedItems.Clear();
 		foreach (int idx in ViewModel.SelectedFrameIndices) {
 			if (idx >= 0 && idx < items.Count) {
-				FrameList.SelectedItems.Add(items[idx]);
+				_frameList.SelectedItems.Add(items[idx]);
 			}
 		}
 
-		FrameList.SelectedIndex = ViewModel.SelectedFrameIndex;
+		_frameList.SelectedIndex = ViewModel.SelectedFrameIndex;
 	}
 
 	private void SelectAllFramesFromUi() {
@@ -594,7 +604,7 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 
 	private void OnSelectRangeToHereClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
 		if (ViewModel is null) return;
-		int target = FrameList.SelectedIndex;
+		int target = _frameList.SelectedIndex;
 		ViewModel.SelectRangeTo(target);
 		ApplySelectionFromViewModel();
 	}
@@ -719,7 +729,7 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 		}
 
 		// Map button index to button name and toggle at the specific frame
-		var buttonLabels = PianoRoll.ButtonLabels ?? GetDefaultButtonLabels();
+		var buttonLabels = _pianoRoll.ButtonLabels ?? GetDefaultButtonLabels();
 		if (e.ButtonIndex >= 0 && e.ButtonIndex < buttonLabels.Count) {
 			string buttonName = MapButtonLabelToName(buttonLabels[e.ButtonIndex]);
 			ViewModel.ToggleButtonAtFrame(e.Frame, ViewModel.SelectedEditPort, buttonName, e.NewState);
@@ -731,7 +741,7 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 			return;
 		}
 
-		var buttonLabels = PianoRoll.ButtonLabels ?? GetDefaultButtonLabels();
+		var buttonLabels = _pianoRoll.ButtonLabels ?? GetDefaultButtonLabels();
 		if (e.ButtonIndex >= 0 && e.ButtonIndex < buttonLabels.Count) {
 			string buttonName = MapButtonLabelToName(buttonLabels[e.ButtonIndex]);
 			ViewModel.PaintButton(e.Frames, ViewModel.SelectedEditPort, buttonName, e.PaintValue);

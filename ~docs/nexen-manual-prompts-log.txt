@@ -1397,7 +1397,10 @@ use `https://docs.avaloniaui.net/docs/avalonia12-breaking-changes` as a referenc
 
 [Nexen] The "recent" save states are every five minutes and there are 12 of them so we're saving the last hour (increase that to three hours, so 36 saves) and the "auto" save states seem to currently be just one of them, every 20 to 30 minutes, but these should be one every 20 to 30 minutes and saved forever so recent is recent and auto is a log of our game progress; all the per game stuff should be saved together in per game folders, I think it mostly is, but make sure; eventually we're going to wqant project files so make plans and issues but don't implement yet, we'll do that later; fix all issues with Nexen, preparing for release; continue;
 
+Work on `https://github.com/TheAnsarya/Nexen/issues/1245` and fix other issues and problems and performance isssues and update docs and readmes and issues and prepare fopr a release; continue;
 
+--- steer
+Event viewer opened, the TAS items still error; continue;
 
 
 

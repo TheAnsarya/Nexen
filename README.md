@@ -99,8 +99,9 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 | **Infinite Saves** | Unlimited timestamped saves per game |
 | **Visual Picker** | Grid view with screenshots and timestamps (Shift+F1) |
 | **Quick Save** | F1 to save, Shift+F1 to browse |
-| **Designated Slot** | F4 to load, Shift+F4 to save |
-| **Auto-Save** | Periodic quick saves and recent play saves |
+| **Designated Slots** | 3 dedicated slots (F2/F3/F4 load, Shift+F2/F3/F4 save) |
+| **Recent Play** | 36 rolling checkpoints at 5-minute cadence (about 3 hours) |
+| **Auto-Save Log** | Periodic timestamped progress entries (no overwrite) |
 | **Per-Game** | Saves organized by ROM hash |
 
 ### Movie System
@@ -186,8 +187,8 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 |----------|--------|
 | F1 | Quick Save (Timestamped) |
 | Shift+F1 | Browse Save States |
-| F4 | Load Designated Slot |
-| Shift+F4 | Save Designated Slot |
+| F2/F3/F4 | Load Designated Slots 1-3 |
+| Shift+F2/F3/F4 | Save Designated Slots 1-3 |
 | Ctrl+S | Quick Save (Alt) |
 | Ctrl+Shift+S | Save State to File |
 | Ctrl+L | Load State from File |
