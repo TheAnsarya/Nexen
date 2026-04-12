@@ -213,6 +213,7 @@ public sealed class PictureViewer : Control {
 	protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) {
 		base.OnDetachedFromVisualTree(e);
 		_timer.Stop();
+		_timer.Tick -= timer_Tick;
 	}
 
 	protected override void OnPointerWheelChanged(PointerWheelEventArgs e) {
