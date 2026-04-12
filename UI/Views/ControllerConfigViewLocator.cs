@@ -8,7 +8,7 @@ using Avalonia.Controls.Templates;
 using Nexen.Config;
 using Nexen.ViewModels;
 
-namespace Nexen.Views; 
+namespace Nexen.Views;
 public sealed class ControllerConfigViewLocator : IDataTemplate {
 	public Control Build(object? data) {
 		if (data is KeyMappingViewModel mappings) {

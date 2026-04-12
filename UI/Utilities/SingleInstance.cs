@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Nexen.Config;
 
-namespace Nexen.Utilities; 
+namespace Nexen.Utilities;
 public sealed class SingleInstance : IDisposable {
 	public static SingleInstance Instance { get; private set; } = new SingleInstance();
 
