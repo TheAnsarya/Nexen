@@ -12,7 +12,7 @@ namespace Nexen.Controls;
 public partial class IconButton : Button {
 	protected override Type StyleKeyOverride => typeof(Button);
 
-	public static readonly StyledProperty<string> IconProperty = AvaloniaProperty.Register<KeyBindingButton, string>(nameof(Icon), "");
+	public static readonly StyledProperty<string> IconProperty = AvaloniaProperty.Register<IconButton, string>(nameof(Icon), "");
 
 	public string Icon {
 		get { return GetValue(IconProperty); }
