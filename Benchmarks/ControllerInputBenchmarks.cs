@@ -12,7 +12,7 @@ namespace Nexen.Benchmarks;
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
-public class ControllerInputBenchmarks {
+public sealed class ControllerInputBenchmarks {
 	private ControllerInput _inputA = null!;
 	private ControllerInput _inputB = null!;
 	private Queue<int> _ringBuffer = null!;

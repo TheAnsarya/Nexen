@@ -13,7 +13,7 @@ namespace Nexen.Benchmarks;
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class Utf8UtilitiesBenchmarks
+public sealed class Utf8UtilitiesBenchmarks
 {
 	private byte[][] _shortStrings = null!;
 	private byte[][] _longStrings = null!;

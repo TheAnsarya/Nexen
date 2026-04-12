@@ -16,7 +16,7 @@ namespace Nexen.Benchmarks;
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
-public class PansyExportBenchmarks {
+public sealed class PansyExportBenchmarks {
 	// Test data sizes
 	private byte[] _smallCdlData = null!;   // 32KB - typical small ROM
 	private byte[] _mediumCdlData = null!;   // 512KB - typical NES/SNES

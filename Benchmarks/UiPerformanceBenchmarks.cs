@@ -12,7 +12,7 @@ namespace Nexen.Benchmarks;
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class UiPerformanceBenchmarks {
+public sealed class UiPerformanceBenchmarks {
 	private Color[] _testColors = null!;
 	private readonly Random _random = new(42);
 

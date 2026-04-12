@@ -9,7 +9,7 @@ namespace Nexen.Benchmarks;
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class WatchFormatBenchmarks {
+public sealed class WatchFormatBenchmarks {
 	private static readonly Int64[] _testValues = [0, 1, 0x0f, 0xff, 0x00ff, 0xffff, 0x00ffffff, 0x7fffffff];
 	private static readonly int[] _byteLengths = [1, 2, 3, 4];
 

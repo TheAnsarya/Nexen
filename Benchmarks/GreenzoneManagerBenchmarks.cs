@@ -12,7 +12,7 @@ namespace Nexen.Benchmarks;
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
-public class GreenzoneManagerBenchmarks {
+public sealed class GreenzoneManagerBenchmarks {
 	private GreenzoneManager _greenzone = null!;
 	private byte[] _stateData = null!;
 	private byte[] _largeStateData = null!;

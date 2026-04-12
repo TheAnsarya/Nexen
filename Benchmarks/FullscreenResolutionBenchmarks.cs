@@ -10,7 +10,7 @@ namespace Nexen.Benchmarks;
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class FullscreenResolutionBenchmarks {
+public sealed class FullscreenResolutionBenchmarks {
 	private static readonly FullscreenResolution[] _allResolutions = Enum.GetValues<FullscreenResolution>()
 		.Where(r => r != FullscreenResolution.Default)
 		.ToArray();

@@ -9,7 +9,7 @@ using Nexen.Config;
 using Nexen.ViewModels;
 
 namespace Nexen.Views; 
-public class ControllerConfigViewLocator : IDataTemplate {
+public sealed class ControllerConfigViewLocator : IDataTemplate {
 	public Control Build(object? data) {
 		if (data is KeyMappingViewModel mappings) {
 			return mappings.Type switch {

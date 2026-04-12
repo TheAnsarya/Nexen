@@ -13,7 +13,7 @@ namespace Nexen.Benchmarks;
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class CollectionPatternBenchmarks {
+public sealed class CollectionPatternBenchmarks {
 	// --- Frozen vs Mutable data ---
 	private Dictionary<int, string> _mutableDict = null!;
 	private FrozenDictionary<int, string> _frozenDict = null!;

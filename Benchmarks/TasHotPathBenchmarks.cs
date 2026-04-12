@@ -13,7 +13,7 @@ namespace Nexen.Benchmarks;
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
-public class TasHotPathBenchmarks {
+public sealed class TasHotPathBenchmarks {
 	// Test data
 	private MovieData _smallMovie = null!;   // 1,000 frames
 	private MovieData _mediumMovie = null!;  // 60,000 frames (~16 min at 60fps)

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Nexen.Config;
 
 namespace Nexen.Utilities; 
-public class SingleInstance : IDisposable {
+public sealed class SingleInstance : IDisposable {
 	public static SingleInstance Instance { get; private set; } = new SingleInstance();
 
 	private static Guid _identifier = new Guid("{A46696B7-2D1C-4CC5-A52F-43BCAF094AEF}");
@@ -100,7 +100,7 @@ public class SingleInstance : IDisposable {
 
 	#region IDisposable
 
-	protected virtual void Dispose(bool disposing) {
+	private void Dispose(bool disposing) {
 		if (!_disposed) {
 			if (_mutex is not null) {
 				if (_firstInstance) {

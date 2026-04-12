@@ -3,7 +3,7 @@ using BenchmarkDotNet.Running;
 
 namespace Nexen.Benchmarks;
 
-public class Program {
+public sealed class Program {
 	public static void Main(string[] args) {
 		var config = DefaultConfig.Instance
 			.WithOptions(ConfigOptions.JoinSummary);

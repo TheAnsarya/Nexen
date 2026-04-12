@@ -17,7 +17,7 @@ namespace Nexen.Benchmarks;
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
-public class ColorConversionBenchmarks
+public sealed class ColorConversionBenchmarks
 {
 	private Color[] _testColors = null!;
 	private HslColor[] _hslColors = null!;

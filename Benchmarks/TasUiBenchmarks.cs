@@ -12,7 +12,7 @@ namespace Nexen.Benchmarks;
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
-public class TasUiBenchmarks {
+public sealed class TasUiBenchmarks {
 	private MovieData _movie = null!;
 	private List<InputFrame> _clipboard = null!;
 	private List<int> _selectedIndices = null!;

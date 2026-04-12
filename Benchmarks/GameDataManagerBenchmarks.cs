@@ -12,7 +12,7 @@ namespace Nexen.Benchmarks;
 /// </summary>
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-public class GameDataManagerBenchmarks
+public sealed class GameDataManagerBenchmarks
 {
 	private string[] _romNames = null!;
 	private string[] _pathSegments = null!;
