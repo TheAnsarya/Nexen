@@ -1383,6 +1383,41 @@ Keep looking for Avalonia and modernization upgrade issues and performance impro
 --- steer
 use `https://docs.avaloniaui.net/docs/avalonia12-breaking-changes` as a reference for avalonia 12 upgrade and continue; continue;
 
+[Nexen] Focus on the two user-reported issues #1223 `https://github.com/TheAnsarya/Nexen/issues/1223` and #1224 `https://github.com/TheAnsarya/Nexen/issues/1224` and make plans/epics/issues/docs/session-logs/benchmarks/tests/etc and implement the changes and fixes and fix anything related; continue; work on correctness, erros, and performance; continue;
+
+[Nexen] Make sure the two user-reported issues #1223 `https://github.com/TheAnsarya/Nexen/issues/1223` and #1224 `https://github.com/TheAnsarya/Nexen/issues/1224` are fully fix, check adjacent code and architecture; continue; work on correctness, errors, and performance; continue;
+
+[Nexen] Make sure the two user-reported issues #1223 `https://github.com/TheAnsarya/Nexen/issues/1223` and #1224 `https://github.com/TheAnsarya/Nexen/issues/1224` are fully fixed, check adjacent code and architecture; continue; work on correctness, errors, and performance; continue;
+
+[Nexen] continue working issues while looking for correctness and performance fixes; make a fully working error free version of Nexen and then build and tun it for me so I can test it;
+
+[Nexen] Nexen crashes and stops during opening the app, it's stuck on the splash screen after a crash, see `C:\Users\me\Documents\Nexen\nexen-log.txt`; fix this problem and look for other problems like this, make Nexen correctly upgraded and working with all known user-issues fixed and I'm tired of making builds and releases with problems. Fix this stuff; We want to make a release soon, but we have to be able to open and run and the emulator needs to be fast and accurate; continue!;
+
+[Nexen] The app opens now. Games run. There is a major problem: Open the Debugger window, close the debugger window, nothing on the app is now clickable, not even the close button (X) on the window itself; continue; fix this problem! evaluate all the debugger stuff to make sure no problems mess up the app; continue;
+
+[Nexen] The "recent" save states are every five minutes and there are 12 of them so we're saving the last hour (increase that to three hours, so 36 saves) and the "auto" save states seem to currently be just one of them, every 20 to 30 minutes, but these should be one every 20 to 30 minutes and saved forever so recent is recent and auto is a log of our game progress; all the per game stuff should be saved together in per game folders, I think it mostly is, but make sure; eventually we're going to wqant project files so make plans and issues but don't implement yet, we'll do that later; fix all issues with Nexen, preparing for release; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

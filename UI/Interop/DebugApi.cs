@@ -18,6 +18,7 @@ public sealed class DebugApi {
 	private const string DllPath = EmuApi.DllName;
 	[DllImport(DllPath)] public static extern void InitializeDebugger();
 	[DllImport(DllPath)] public static extern void ReleaseDebugger();
+	[DllImport(DllPath)] [return: MarshalAs(UnmanagedType.I1)] public static extern bool IsDebuggerRunning();
 
 	// Lightweight CDL recording (no debugger overhead, ~15ns vs ~200-700ns per instruction)
 	[DllImport(DllPath)] public static extern void StartLightweightCdl();

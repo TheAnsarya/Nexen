@@ -140,9 +140,9 @@ TEST(SaveStateHeaderTests, HeaderMagicIsMSS) {
 
 // --- Recent Play constants ---
 
-TEST(SaveStateRecentPlayTests, MaxSlotsIs12) {
+TEST(SaveStateRecentPlayTests, MaxSlotsIs36) {
 	// RecentPlayMaxSlots is private, but we can verify the documented behavior:
-	// Recent play uses slots 1-12 (0-indexed: 0-11)
+	// Recent play uses slots 1-36 (0-indexed: 0-35)
 	// SaveStateOrigin::Recent is the origin for these saves
 	EXPECT_EQ(static_cast<uint8_t>(SaveStateOrigin::Recent), 2);
 }

@@ -651,13 +651,14 @@ vector<SaveStateInfo> SaveStateManager::GetSaveStateList() {
 			info.fileSize = static_cast<uint32_t>(entry.file_size());
 
 			// Detect origin from filename pattern
-			// {RomName}_auto.nexen-save -> Auto
+			// {RomName}_auto.nexen-save -> Auto (legacy)
+			// {RomName}_auto_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save -> Auto
 			// {RomName}_recent_{NN}.nexen-save -> Recent
 			// {RomName}_lua_{timestamp}.nexen-save -> Lua
 			// {RomName}_[slot{NN}]_{timestamp}.nexen-save -> Designated (new format)
 			// {RomName}_designated_{N}_{timestamp}.nexen-save -> Designated (legacy)
 			// {RomName}_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save -> Save
-			if (filename.find("_auto.") != string::npos) {
+			if (filename.find("_auto.") != string::npos || filename.find("_auto_") != string::npos) {
 				info.origin = SaveStateOrigin::Auto;
 			} else if (filename.find("_recent_") != string::npos) {
 				info.origin = SaveStateOrigin::Recent;
@@ -761,7 +762,7 @@ string SaveStateManager::GetRecentPlayFilepath(uint32_t slotIndex) {
 	string folder = GetRomSaveStateDirectory();
 	string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
 
-	// Format slot as 2-digit (01-12)
+	// Format slot as 2-digit (01-36)
 	string filename = std::format("{}_recent_{:02d}.nexen-save", romName, slotIndex + 1);
 
 	return FolderUtilities::CombinePath(folder, filename);
@@ -771,7 +772,21 @@ string SaveStateManager::GetAutoSaveFilepath() {
 	string folder = GetRomSaveStateDirectory();
 	string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
 
-	return FolderUtilities::CombinePath(folder, romName + "_auto.nexen-save");
+	// Keep Auto saves as a persistent timestamped progress log.
+	auto now = std::chrono::system_clock::now();
+	auto time = std::chrono::system_clock::to_time_t(now);
+	std::tm tm;
+#ifdef _WIN32
+	localtime_s(&tm, &time);
+#else
+	localtime_r(&time, &tm);
+#endif
+
+	string filename = std::format("{}_auto_{:04d}-{:02d}-{:02d}_{:02d}-{:02d}-{:02d}.nexen-save",
+		romName, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+		tm.tm_hour, tm.tm_min, tm.tm_sec);
+
+	return FolderUtilities::CombinePath(folder, filename);
 }
 
 string SaveStateManager::SaveRecentPlayState() {
@@ -787,7 +802,7 @@ string SaveStateManager::SaveRecentPlayState() {
 		// Update timestamp
 		_lastRecentPlayTime = std::time(nullptr);
 
-		// Advance to next slot (wraps 0-11)
+		// Advance to next slot (wraps 0-35)
 		_recentPlaySlot = (_recentPlaySlot + 1) % RecentPlayMaxSlots;
 
 		return filepath;

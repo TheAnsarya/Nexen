@@ -17,6 +17,12 @@ TEST(SaveStateTimestampTests, ValidNexenSave_ReturnsNonZero) {
 	EXPECT_NE(result, 0);
 }
 
+TEST(SaveStateTimestampTests, ValidAutoLogSave_ReturnsNonZero) {
+	time_t result = SaveStateManager::ParseTimestampFromFilename(
+		"TestRom_auto_2026-04-08_14-30-00.nexen-save");
+	EXPECT_NE(result, 0);
+}
+
 TEST(SaveStateTimestampTests, ValidNexenSave_ParsesCorrectDate) {
 	time_t result = SaveStateManager::ParseTimestampFromFilename(
 		"TestRom_2026-01-15_12-00-00.nexen-save");

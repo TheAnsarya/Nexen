@@ -104,11 +104,11 @@ private:
 	static constexpr uint32_t MaxIndex = 10; ///< Maximum slot index (0-9) [LEGACY]
 
 	// Recent Play Queue constants
-	static constexpr uint32_t RecentPlayMaxSlots = 12;      ///< Maximum Recent Play saves
+	static constexpr uint32_t RecentPlayMaxSlots = 36;      ///< Maximum Recent Play saves (3 hours @ 5-minute cadence)
 	static constexpr uint32_t RecentPlayIntervalSec = 300;  ///< 5 minutes between saves
 
 	atomic<uint32_t> _lastIndex;      ///< Last used save state slot [LEGACY]
-	atomic<uint32_t> _recentPlaySlot; ///< Current Recent Play slot (0-11, wraps)
+	atomic<uint32_t> _recentPlaySlot; ///< Current Recent Play slot (0-35, wraps)
 	time_t _lastRecentPlayTime;       ///< Last Recent Play save timestamp
 	string _perRomSaveStateDir;       ///< Per-ROM save state directory (set by C# GameDataManager)
 	Emulator* _emu;                   ///< Emulator instance
@@ -165,17 +165,17 @@ private:
 
 	/// <summary>
 	/// Generate filepath for a Recent Play slot.
-	/// Format: {SaveStateFolder}/{RomName}/{RomName}_recent_{01-12}.nexen-save
+	/// Format: {SaveStateFolder}/{RomName}/{RomName}_recent_{01-36}.nexen-save
 	/// </summary>
-	/// <param name="slotIndex">Slot index (0-11)</param>
+	/// <param name="slotIndex">Slot index (0-35)</param>
 	/// <returns>Full path for the Recent Play slot</returns>
 	[[nodiscard]] string GetRecentPlayFilepath(uint32_t slotIndex);
 
 	/// <summary>
 	/// Generate filepath for the Auto Save state.
-	/// Format: {SaveStateFolder}/{RomName}/{RomName}_auto.nexen-save
+	/// Format: {SaveStateFolder}/{RomName}/{RomName}_auto_{YYYY-MM-DD}_{HH-mm-ss}.nexen-save
 	/// </summary>
-	/// <returns>Full path for the Auto Save state</returns>
+	/// <returns>Full path for a timestamped Auto Save log entry</returns>
 	[[nodiscard]] string GetAutoSaveFilepath();
 
 

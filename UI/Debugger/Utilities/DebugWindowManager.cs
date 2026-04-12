@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Nexen.Config;
@@ -16,6 +17,7 @@ public static class DebugWindowManager {
 	private static ConcurrentDictionary<Window, bool> _openedWindows = new();
 	private static ReaderWriterLockSlim _windowNotifLock = new();
 	private static bool _loadingGame = false;
+	private static int _closeInProgress = 0;
 
 	public static T CreateDebugWindow<T>(Func<T> createWindow) where T : NexenWindow {
 		if (Interlocked.Increment(ref _debugWindowCounter) == 1) {
@@ -74,6 +76,10 @@ public static class DebugWindowManager {
 		_openedWindows.TryRemove(wnd, out _);
 
 		if (Interlocked.Decrement(ref _debugWindowCounter) == 0) {
+			if (Interlocked.Exchange(ref _closeInProgress, 1) == 1) {
+				return;
+			}
+
 			//Closed the last debug window, save the workspace and turn off the debugger
 			//Run any jobs pending on the UI thread, to ensure the debugger
 			//doesn't get restarted by a pending job from the window that was closed
@@ -86,8 +92,22 @@ public static class DebugWindowManager {
 				_windowNotifLock.ExitWriteLock();
 			}
 
-			DebugWorkspaceManager.Save(true);
-			DebugApi.ReleaseDebugger();
+			_ = Task.Run(() => {
+				try {
+					DebugWorkspaceManager.Save(true);
+
+					// Ensure break-wait loops are released before shutting down debugger internals.
+					if (DebugApi.IsDebuggerRunning()) {
+						DebugApi.ResumeExecution();
+					}
+
+					DebugApi.ReleaseDebugger();
+				} catch (Exception ex) {
+					Log.Error(ex, "[DebugWindowManager] Failed to close debugger cleanly");
+				} finally {
+					Interlocked.Exchange(ref _closeInProgress, 0);
+				}
+			});
 		}
 	}
 
