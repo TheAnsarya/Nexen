@@ -66,7 +66,7 @@ public:
 	/// <remarks>
 	/// Inline for performance - called frequently to skip logging.
 	/// </remarks>
-	__forceinline bool IsEnabled() { return _enabled; }
+	[[nodiscard]] __forceinline bool IsEnabled() { return _enabled; }
 
 	/// <summary>
 	/// Log entry with buffering.

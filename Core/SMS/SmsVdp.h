@@ -281,7 +281,7 @@ private:
 	__forceinline void ProcessForcedBlankVblank();
 
 	/// <summary>Gets visible pixel index.</summary>
-	int GetVisiblePixelIndex();
+	[[nodiscard]] int GetVisiblePixelIndex();
 
 	/// <summary>Loads background tiles (Mode 4).</summary>
 	__forceinline void LoadBgTilesSms();

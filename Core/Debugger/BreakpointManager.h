@@ -126,7 +126,7 @@ public:
 	/// Check if any breakpoints exist.
 	/// </summary>
 	/// <returns>True if at least one breakpoint enabled</returns>
-	__forceinline bool HasBreakpoints() { return _hasBreakpoint; }
+	[[nodiscard]] __forceinline bool HasBreakpoints() { return _hasBreakpoint; }
 
 	/// <summary>
 	/// Check if breakpoints exist for operation type.

@@ -33,7 +33,7 @@ struct WsCpuFlags {
 	bool Mode;      ///< Mode flag (0x8000)
 
 	/// <summary>Pack all flags into a 16-bit value.</summary>
-	uint16_t Get() {
+	[[nodiscard]] uint16_t Get() {
 		return (
 			(uint8_t)Carry |
 			((uint8_t)Parity << 2) |

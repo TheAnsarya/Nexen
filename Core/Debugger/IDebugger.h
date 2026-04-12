@@ -79,12 +79,12 @@ public:
 	/// Check if step-back should trigger.
 	/// </summary>
 	/// <returns>True if step-back requested and available</returns>
-	bool CheckStepBack() { return _stepBackManager->CheckStepBack(); }
+	[[nodiscard]] bool CheckStepBack() { return _stepBackManager->CheckStepBack(); }
 
 	/// <summary>
 	/// Check if currently rewinding (step-back in progress).
 	/// </summary>
-	bool IsStepBack() { return _stepBackManager->IsRewinding(); }
+	[[nodiscard]] bool IsStepBack() { return _stepBackManager->IsRewinding(); }
 
 	/// <summary>
 	/// Clear step-back history cache.
@@ -101,12 +101,12 @@ public:
 	/// Get configuration for step-back feature.
 	/// </summary>
 	/// <returns>Step-back config with cycle count and cache settings</returns>
-	virtual StepBackConfig GetStepBackConfig() { return {GetCpuCycleCount(), 0, 0}; }
+	[[nodiscard]] virtual StepBackConfig GetStepBackConfig() { return {GetCpuCycleCount(), 0, 0}; }
 
 	/// <summary>
 	/// Get frozen address manager.
 	/// </summary>
-	FrozenAddressManager& GetFrozenAddressManager() { return _frozenAddressManager; }
+	[[nodiscard]] FrozenAddressManager& GetFrozenAddressManager() { return _frozenAddressManager; }
 
 	/// <summary>
 	/// Reset previous opcode tracker (for instruction history).
@@ -168,13 +168,13 @@ public:
 	/// <summary>
 	/// Get supported debugger features for this CPU.
 	/// </summary>
-	virtual DebuggerFeatures GetSupportedFeatures() { return {}; }
+	[[nodiscard]] virtual DebuggerFeatures GetSupportedFeatures() { return {}; }
 
 	/// <summary>
 	/// Get CPU cycle count since power-on.
 	/// </summary>
 	/// <param name="forProfiler">True for profiler (may use different clock)</param>
-	virtual uint64_t GetCpuCycleCount(bool forProfiler = false) { return 0; }
+	[[nodiscard]] virtual uint64_t GetCpuCycleCount(bool forProfiler = false) { return 0; }
 
 	/// <summary>
 	/// Get program counter value.
@@ -194,37 +194,37 @@ public:
 	/// </summary>
 	/// <param name="addr">Memory address</param>
 	/// <returns>CPU flags byte</returns>
-	virtual uint8_t GetCpuFlags(uint32_t addr) { return 0; }
+	[[nodiscard]] virtual uint8_t GetCpuFlags(uint32_t addr) { return 0; }
 
 	/// <summary>
 	/// Get breakpoint manager.
 	/// </summary>
-	virtual BreakpointManager* GetBreakpointManager() = 0;
+	[[nodiscard]] virtual BreakpointManager* GetBreakpointManager() = 0;
 
 	/// <summary>
 	/// Get callstack manager.
 	/// </summary>
-	virtual CallstackManager* GetCallstackManager() = 0;
+	[[nodiscard]] virtual CallstackManager* GetCallstackManager() = 0;
 
 	/// <summary>
 	/// Get CPU-specific assembler.
 	/// </summary>
-	virtual IAssembler* GetAssembler() = 0;
+	[[nodiscard]] virtual IAssembler* GetAssembler() = 0;
 
 	/// <summary>
 	/// Get event manager (for PPU/APU events).
 	/// </summary>
-	virtual BaseEventManager* GetEventManager() = 0;
+	[[nodiscard]] virtual BaseEventManager* GetEventManager() = 0;
 
 	/// <summary>
 	/// Get trace logger.
 	/// </summary>
-	virtual ITraceLogger* GetTraceLogger() = 0;
+	[[nodiscard]] virtual ITraceLogger* GetTraceLogger() = 0;
 
 	/// <summary>
 	/// Get PPU tools (if available for this platform).
 	/// </summary>
-	virtual PpuTools* GetPpuTools() { return nullptr; }
+	[[nodiscard]] virtual PpuTools* GetPpuTools() { return nullptr; }
 
 	/// <summary>
 	/// Get ROM header data.

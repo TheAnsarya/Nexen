@@ -131,7 +131,7 @@ private:
 	__forceinline uint16_t GetPixelColor(uint16_t tileAddr, uint8_t column);
 
 	/// <summary>Gets the current background color.</summary>
-	__forceinline uint16_t GetBgColor() {
+	[[nodiscard]] __forceinline uint16_t GetBgColor() {
 		if (_state.Mode == WsVideoMode::Monochrome) {
 			// Monochrome: Use shade LUT
 			uint8_t bgBrightness = _state.BwShades[_state.BgColor & 0x07] ^ 0x0F;

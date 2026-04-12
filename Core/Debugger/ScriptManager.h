@@ -84,7 +84,7 @@ public:
 	/// <remarks>
 	/// Inline for performance - called frequently to check if callbacks needed.
 	/// </remarks>
-	__forceinline bool HasScript() { return _hasScript; }
+	[[nodiscard]] __forceinline bool HasScript() { return _hasScript; }
 
 	/// <summary>
 	/// Load and execute Lua script.
