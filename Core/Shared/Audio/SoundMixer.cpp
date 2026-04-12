@@ -139,14 +139,13 @@ void SoundMixer::PlayAudioBuffer(int16_t* samples, uint32_t sampleCount, uint32_
 					// Recording/rewind already captured the audio above
 					_audioDevice->ProcessEndOfFrame();
 				} else {
-					if (emulationSpeed != 100) {
-						// Adjust audio rate to match emulation speed
-						// < 100%: stretch samples (slow motion), > 100%: compress samples (fast forward)
-						// This prevents buffer overflow at turbo speed and underflow at slow speed
+					if (emulationSpeed < 100) {
+						// Slow down playback when playing at less than 100% speed
+						// Do NOT pitch-adjust at fast speeds (>100%) — let audio play at normal pitch
 						_pitchAdjust.SetSampleRates(targetRate, targetRate * 100.0 / emulationSpeed);
 						count = _pitchAdjust.Resample<false>(_sampleBuffer.get(), count, _pitchAdjustBuffer.get(), 0x8000 / 2);
 						if (count >= 0x4000) {
-							// Mute when buffer overflow from extreme speed differential
+							// Mute sound when playing so slowly that the buffer overflows
 							memset(_pitchAdjustBuffer.get(), 0, 0x8000 * sizeof(int16_t));
 						}
 						out = _pitchAdjustBuffer.get();
