@@ -28,7 +28,7 @@ public sealed partial class PceStatusViewModel : BaseConsoleStatusViewModel {
 	[Reactive] public partial string StackPreview { get; private set; } = "";
 
 	public PceStatusViewModel() {
-		this.WhenAnyValue(x => x.FlagC, x => x.FlagD, x => x.FlagI, x => x.FlagN, x => x.FlagV, x => x.FlagZ, x => x.FlagT).Subscribe(x => RegPS = (byte)(
+		AddDisposable(this.WhenAnyValue(x => x.FlagC, x => x.FlagD, x => x.FlagI, x => x.FlagN, x => x.FlagV, x => x.FlagZ, x => x.FlagT).Subscribe(x => RegPS = (byte)(
 				(FlagN ? (byte)PceCpuFlags.Negative : 0) |
 				(FlagV ? (byte)PceCpuFlags.Overflow : 0) |
 				(FlagT ? (byte)PceCpuFlags.Memory : 0) |
@@ -36,9 +36,9 @@ public sealed partial class PceStatusViewModel : BaseConsoleStatusViewModel {
 				(FlagI ? (byte)PceCpuFlags.IrqDisable : 0) |
 				(FlagZ ? (byte)PceCpuFlags.Zero : 0) |
 				(FlagC ? (byte)PceCpuFlags.Carry : 0)
-			));
+			)));
 
-		this.WhenAnyValue(x => x.RegPS).Subscribe(x => {
+		AddDisposable(this.WhenAnyValue(x => x.RegPS).Subscribe(x => {
 			using var delayNotifs = DelayChangeNotifications(); //don't reupdate PS while updating the flags
 			FlagN = (x & (byte)PceCpuFlags.Negative) != 0;
 			FlagV = (x & (byte)PceCpuFlags.Overflow) != 0;
@@ -47,7 +47,7 @@ public sealed partial class PceStatusViewModel : BaseConsoleStatusViewModel {
 			FlagI = (x & (byte)PceCpuFlags.IrqDisable) != 0;
 			FlagZ = (x & (byte)PceCpuFlags.Zero) != 0;
 			FlagC = (x & (byte)PceCpuFlags.Carry) != 0;
-		});
+		}));
 	}
 
 	protected override void InternalUpdateUiState() {

@@ -55,22 +55,22 @@ public sealed partial class ChannelFStatusViewModel : BaseConsoleStatusViewModel
 
 	public ChannelFStatusViewModel() {
 		// Sync individual flags → W register
-		this.WhenAnyValue(x => x.FlagS, x => x.FlagC, x => x.FlagZ, x => x.FlagO)
+		AddDisposable(this.WhenAnyValue(x => x.FlagS, x => x.FlagC, x => x.FlagZ, x => x.FlagO)
 			.Subscribe(x => RegW = (byte)(
 				(FlagS ? 0x08 : 0) |
 				(FlagC ? 0x04 : 0) |
 				(FlagZ ? 0x02 : 0) |
 				(FlagO ? 0x01 : 0)
-			));
+			)));
 
 		// Sync W register → individual flags
-		this.WhenAnyValue(x => x.RegW).Subscribe(x => {
+		AddDisposable(this.WhenAnyValue(x => x.RegW).Subscribe(x => {
 			using var delayNotifs = DelayChangeNotifications();
 			FlagS = (x & 0x08) != 0;
 			FlagC = (x & 0x04) != 0;
 			FlagZ = (x & 0x02) != 0;
 			FlagO = (x & 0x01) != 0;
-		});
+		}));
 	}
 
 	/// <summary>Update UI state from emulator core.</summary>

@@ -55,7 +55,7 @@ public sealed partial class LynxStatusViewModel : BaseConsoleStatusViewModel {
 
 	/// <summary>Create a new Lynx status view model.</summary>
 	public LynxStatusViewModel() {
-		this.WhenAnyValue(x => x.FlagC, x => x.FlagD, x => x.FlagI, x => x.FlagN, x => x.FlagV, x => x.FlagZ).Subscribe(x => RegPS = (byte)(
+		AddDisposable(this.WhenAnyValue(x => x.FlagC, x => x.FlagD, x => x.FlagI, x => x.FlagN, x => x.FlagV, x => x.FlagZ).Subscribe(x => RegPS = (byte)(
 			(FlagN ? 0x80 : 0) |
 			(FlagV ? 0x40 : 0) |
 			0x20 | // unused bit always set
@@ -63,9 +63,9 @@ public sealed partial class LynxStatusViewModel : BaseConsoleStatusViewModel {
 			(FlagI ? 0x04 : 0) |
 			(FlagZ ? 0x02 : 0) |
 			(FlagC ? 0x01 : 0)
-		));
+		)));
 
-		this.WhenAnyValue(x => x.RegPS).Subscribe(x => {
+		AddDisposable(this.WhenAnyValue(x => x.RegPS).Subscribe(x => {
 			using var delayNotifs = DelayChangeNotifications();
 			FlagN = (x & 0x80) != 0;
 			FlagV = (x & 0x40) != 0;
@@ -73,7 +73,7 @@ public sealed partial class LynxStatusViewModel : BaseConsoleStatusViewModel {
 			FlagI = (x & 0x04) != 0;
 			FlagZ = (x & 0x02) != 0;
 			FlagC = (x & 0x01) != 0;
-		});
+		}));
 	}
 
 	/// <summary>Update UI state from emulator core.</summary>

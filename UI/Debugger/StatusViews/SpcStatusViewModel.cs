@@ -25,10 +25,10 @@ public sealed partial class SpcStatusViewModel : BaseConsoleStatusViewModel {
 	[Reactive] public partial string StackPreview { get; private set; } = "";
 
 	public SpcStatusViewModel() {
-		this.WhenAnyValue(x => x.FlagC, x => x.FlagP, x => x.FlagB, x => x.FlagH).Subscribe(x => UpdatePsValue());
-		this.WhenAnyValue(x => x.FlagI, x => x.FlagN, x => x.FlagV, x => x.FlagZ).Subscribe(x => UpdatePsValue());
+		AddDisposable(this.WhenAnyValue(x => x.FlagC, x => x.FlagP, x => x.FlagB, x => x.FlagH).Subscribe(x => UpdatePsValue()));
+		AddDisposable(this.WhenAnyValue(x => x.FlagI, x => x.FlagN, x => x.FlagV, x => x.FlagZ).Subscribe(x => UpdatePsValue()));
 
-		this.WhenAnyValue(x => x.RegPS).Subscribe(x => {
+		AddDisposable(this.WhenAnyValue(x => x.RegPS).Subscribe(x => {
 			using var delayNotifs = DelayChangeNotifications(); //don't reupdate PS while updating the flags
 			FlagN = (x & (byte)SpcFlags.Negative) != 0;
 			FlagV = (x & (byte)SpcFlags.Overflow) != 0;
@@ -38,7 +38,7 @@ public sealed partial class SpcStatusViewModel : BaseConsoleStatusViewModel {
 			FlagI = (x & (byte)SpcFlags.IrqEnable) != 0;
 			FlagZ = (x & (byte)SpcFlags.Zero) != 0;
 			FlagC = (x & (byte)SpcFlags.Carry) != 0;
-		});
+		}));
 	}
 
 	private void UpdatePsValue() {

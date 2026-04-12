@@ -44,8 +44,8 @@ public sealed partial class GbaStatusViewModel : BaseConsoleStatusViewModel {
 	[Reactive] public partial UInt16 Cycle { get; set; }
 
 	public GbaStatusViewModel() {
-		this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagNegative, x => x.FlagOverflow).Subscribe(x => UpdateFlags());
-		this.WhenAnyValue(x => x.FlagThumb, x => x.FlagIrqDisable, x => x.FlagFiqDisable, x => x.Mode).Subscribe(x => UpdateFlags());
+		AddDisposable(this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagNegative, x => x.FlagOverflow).Subscribe(x => UpdateFlags()));
+		AddDisposable(this.WhenAnyValue(x => x.FlagThumb, x => x.FlagIrqDisable, x => x.FlagFiqDisable, x => x.Mode).Subscribe(x => UpdateFlags()));
 	}
 
 	private void UpdateFlags() {

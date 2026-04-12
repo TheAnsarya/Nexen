@@ -54,9 +54,9 @@ public sealed partial class SmsStatusViewModel : BaseConsoleStatusViewModel {
 	[Reactive] public partial string StackPreview { get; private set; } = "";
 
 	public SmsStatusViewModel() {
-		this.WhenAnyValue(x => x.FlagCarry, x => x.FlagHalf, x => x.FlagAddSub, x => x.FlagZero).Subscribe(x => UpdateFlagsValue());
+		AddDisposable(this.WhenAnyValue(x => x.FlagCarry, x => x.FlagHalf, x => x.FlagAddSub, x => x.FlagZero).Subscribe(x => UpdateFlagsValue()));
 
-		this.WhenAnyValue(x => x.RegFlags).Subscribe(x => {
+		AddDisposable(this.WhenAnyValue(x => x.RegFlags).Subscribe(x => {
 			using var delayNotifs = DelayChangeNotifications(); //don't reupdate RegFlags while updating the flags
 			FlagCarry = (x & (byte)SmsCpuFlags.Carry) != 0;
 			FlagAddSub = (x & (byte)SmsCpuFlags.AddSub) != 0;
@@ -66,7 +66,7 @@ public sealed partial class SmsStatusViewModel : BaseConsoleStatusViewModel {
 			FlagF5 = (x & (byte)SmsCpuFlags.F5) != 0;
 			FlagZero = (x & (byte)SmsCpuFlags.Zero) != 0;
 			FlagSign = (x & (byte)SmsCpuFlags.Sign) != 0;
-		});
+		}));
 	}
 
 	private void UpdateFlagsValue() {

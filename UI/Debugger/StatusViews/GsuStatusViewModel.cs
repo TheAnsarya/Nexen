@@ -58,12 +58,12 @@ public sealed partial class GsuStatusViewModel : BaseConsoleStatusViewModel {
 	[Reactive] public partial bool FlagObjMode { get; set; }
 
 	public GsuStatusViewModel() {
-		this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagSign, x => x.FlagOverflow).Subscribe(x => UpdateSfrValue());
-		this.WhenAnyValue(x => x.FlagAlt1, x => x.FlagAlt2, x => x.FlagIrq, x => x.FlagRomReadPending).Subscribe(x => UpdateSfrValue());
-		this.WhenAnyValue(x => x.FlagRunning, x => x.FlagImmLow, x => x.FlagImmHigh, x => x.FlagPrefix).Subscribe(x => UpdateSfrValue());
+		AddDisposable(this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagSign, x => x.FlagOverflow).Subscribe(x => UpdateSfrValue()));
+		AddDisposable(this.WhenAnyValue(x => x.FlagAlt1, x => x.FlagAlt2, x => x.FlagIrq, x => x.FlagRomReadPending).Subscribe(x => UpdateSfrValue()));
+		AddDisposable(this.WhenAnyValue(x => x.FlagRunning, x => x.FlagImmLow, x => x.FlagImmHigh, x => x.FlagPrefix).Subscribe(x => UpdateSfrValue()));
 
-		this.WhenAnyValue(x => x.FlagPlotTransparent, x => x.FlagPlotDither, x => x.FlagColorHighNibble).Subscribe(x => UpdatePorValue());
-		this.WhenAnyValue(x => x.FlagColorFreezeHigh, x => x.FlagObjMode).Subscribe(x => UpdatePorValue());
+		AddDisposable(this.WhenAnyValue(x => x.FlagPlotTransparent, x => x.FlagPlotDither, x => x.FlagColorHighNibble).Subscribe(x => UpdatePorValue()));
+		AddDisposable(this.WhenAnyValue(x => x.FlagColorFreezeHigh, x => x.FlagObjMode).Subscribe(x => UpdatePorValue()));
 	}
 
 	private void UpdateSfrValue() {

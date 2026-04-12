@@ -41,8 +41,8 @@ public sealed partial class St018StatusViewModel : BaseConsoleStatusViewModel {
 	[Reactive] public partial string StackPreview { get; set; } = "";
 
 	public St018StatusViewModel() {
-		this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagNegative, x => x.FlagOverflow).Subscribe(x => UpdateFlags());
-		this.WhenAnyValue(x => x.FlagIrqDisable, x => x.FlagFiqDisable).Subscribe(x => UpdateFlags());
+		AddDisposable(this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagNegative, x => x.FlagOverflow).Subscribe(x => UpdateFlags()));
+		AddDisposable(this.WhenAnyValue(x => x.FlagIrqDisable, x => x.FlagFiqDisable).Subscribe(x => UpdateFlags()));
 	}
 
 	private void UpdateFlags() {

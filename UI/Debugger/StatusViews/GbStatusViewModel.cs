@@ -34,15 +34,15 @@ public sealed partial class GbStatusViewModel : BaseConsoleStatusViewModel {
 	[Reactive] public partial string StackPreview { get; private set; } = "";
 
 	public GbStatusViewModel() {
-		this.WhenAnyValue(x => x.FlagCarry, x => x.FlagHalf, x => x.FlagAddSub, x => x.FlagZero).Subscribe(x => UpdateFlagsValue());
+		AddDisposable(this.WhenAnyValue(x => x.FlagCarry, x => x.FlagHalf, x => x.FlagAddSub, x => x.FlagZero).Subscribe(x => UpdateFlagsValue()));
 
-		this.WhenAnyValue(x => x.RegFlags).Subscribe(x => {
+		AddDisposable(this.WhenAnyValue(x => x.RegFlags).Subscribe(x => {
 			using var delayNotifs = DelayChangeNotifications(); //don't reupdate RegFlags while updating the flags
 			FlagCarry = (x & (byte)GameboyFlags.Carry) != 0;
 			FlagHalf = (x & (byte)GameboyFlags.HalfCarry) != 0;
 			FlagAddSub = (x & (byte)GameboyFlags.AddSub) != 0;
 			FlagZero = (x & (byte)GameboyFlags.Zero) != 0;
-		});
+		}));
 	}
 
 	private void UpdateFlagsValue() {

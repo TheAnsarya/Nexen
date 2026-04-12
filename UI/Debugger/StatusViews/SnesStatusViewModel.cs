@@ -51,10 +51,10 @@ public sealed partial class SnesStatusViewModel : BaseConsoleStatusViewModel {
 	public SnesStatusViewModel(CpuType cpuType) {
 		_cpuType = cpuType;
 
-		this.WhenAnyValue(x => x.FlagC, x => x.FlagD, x => x.FlagI, x => x.FlagN).Subscribe(x => UpdatePsValue());
-		this.WhenAnyValue(x => x.FlagV, x => x.FlagZ, x => x.FlagM, x => x.FlagX).Subscribe(x => UpdatePsValue());
+		AddDisposable(this.WhenAnyValue(x => x.FlagC, x => x.FlagD, x => x.FlagI, x => x.FlagN).Subscribe(x => UpdatePsValue()));
+		AddDisposable(this.WhenAnyValue(x => x.FlagV, x => x.FlagZ, x => x.FlagM, x => x.FlagX).Subscribe(x => UpdatePsValue()));
 
-		this.WhenAnyValue(x => x.RegPS).Subscribe(x => {
+		AddDisposable(this.WhenAnyValue(x => x.RegPS).Subscribe(x => {
 			using var delayNotifs = DelayChangeNotifications(); //don't reupdate PS while updating the flags
 			FlagN = (x & (byte)SnesCpuFlags.Negative) != 0;
 			FlagV = (x & (byte)SnesCpuFlags.Overflow) != 0;
@@ -64,7 +64,7 @@ public sealed partial class SnesStatusViewModel : BaseConsoleStatusViewModel {
 			FlagC = (x & (byte)SnesCpuFlags.Carry) != 0;
 			FlagX = (x & (byte)SnesCpuFlags.IndexMode8) != 0;
 			FlagM = (x & (byte)SnesCpuFlags.MemoryMode8) != 0;
-		});
+		}));
 	}
 
 	private void UpdatePsValue() {

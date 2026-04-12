@@ -59,16 +59,16 @@ public sealed partial class NesStatusViewModel : BaseConsoleStatusViewModel {
 	[Reactive] public partial string StackPreview { get; private set; } = "";
 
 	public NesStatusViewModel() {
-		this.WhenAnyValue(x => x.FlagC, x => x.FlagD, x => x.FlagI, x => x.FlagN, x => x.FlagV, x => x.FlagZ).Subscribe(x => RegPS = (byte)(
+		AddDisposable(this.WhenAnyValue(x => x.FlagC, x => x.FlagD, x => x.FlagI, x => x.FlagN, x => x.FlagV, x => x.FlagZ).Subscribe(x => RegPS = (byte)(
 				(FlagN ? (byte)NesCpuFlags.Negative : 0) |
 				(FlagV ? (byte)NesCpuFlags.Overflow : 0) |
 				(FlagD ? (byte)NesCpuFlags.Decimal : 0) |
 				(FlagI ? (byte)NesCpuFlags.IrqDisable : 0) |
 				(FlagZ ? (byte)NesCpuFlags.Zero : 0) |
 				(FlagC ? (byte)NesCpuFlags.Carry : 0)
-			));
+			)));
 
-		this.WhenAnyValue(x => x.RegPS).Subscribe(x => {
+		AddDisposable(this.WhenAnyValue(x => x.RegPS).Subscribe(x => {
 			using var delayNotifs = DelayChangeNotifications(); //don't reupdate PS while updating the flags
 			FlagN = (x & (byte)NesCpuFlags.Negative) != 0;
 			FlagV = (x & (byte)NesCpuFlags.Overflow) != 0;
@@ -76,7 +76,7 @@ public sealed partial class NesStatusViewModel : BaseConsoleStatusViewModel {
 			FlagI = (x & (byte)NesCpuFlags.IrqDisable) != 0;
 			FlagZ = (x & (byte)NesCpuFlags.Zero) != 0;
 			FlagC = (x & (byte)NesCpuFlags.Carry) != 0;
-		});
+		}));
 	}
 
 	protected override void InternalUpdateUiState() {

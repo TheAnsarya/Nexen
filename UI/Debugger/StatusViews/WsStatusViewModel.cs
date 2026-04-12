@@ -46,11 +46,11 @@ public sealed partial class WsStatusViewModel : BaseConsoleStatusViewModel {
 	[Reactive] public partial string StackPreview { get; private set; } = "";
 
 	public WsStatusViewModel() {
-		this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagSign, x => x.FlagOverflow).Subscribe(x => UpdateFlags());
-		this.WhenAnyValue(x => x.FlagParity, x => x.FlagIrq, x => x.FlagTrap, x => x.FlagMode).Subscribe(x => UpdateFlags());
-		this.WhenAnyValue(x => x.FlagAuxCarry, x => x.FlagDirection).Subscribe(x => UpdateFlags());
+		AddDisposable(this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagSign, x => x.FlagOverflow).Subscribe(x => UpdateFlags()));
+		AddDisposable(this.WhenAnyValue(x => x.FlagParity, x => x.FlagIrq, x => x.FlagTrap, x => x.FlagMode).Subscribe(x => UpdateFlags()));
+		AddDisposable(this.WhenAnyValue(x => x.FlagAuxCarry, x => x.FlagDirection).Subscribe(x => UpdateFlags()));
 
-		this.WhenAnyValue(x => x.RegFlags).Subscribe(f => {
+		AddDisposable(this.WhenAnyValue(x => x.RegFlags).Subscribe(f => {
 			using var delayNotifs = DelayChangeNotifications(); //don't reupdate RegFlags while updating the flags
 			FlagCarry = (f & 0x01) != 0;
 			FlagParity = (f & 0x04) != 0;
@@ -62,7 +62,7 @@ public sealed partial class WsStatusViewModel : BaseConsoleStatusViewModel {
 			FlagDirection = (f & 0x400) != 0;
 			FlagOverflow = (f & 0x800) != 0;
 			FlagMode = (f & 0x8000) != 0;
-		});
+		}));
 	}
 
 	private void UpdateFlags() {
