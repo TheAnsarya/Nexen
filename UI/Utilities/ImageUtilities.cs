@@ -18,9 +18,14 @@ public static class ImageUtilities {
 		return new Image() { Source = ImageFromAsset(source) };
 	}
 
-	public static IImage ImageFromAsset(string source) {
+	public static IImage? ImageFromAsset(string source) {
 		string preferredPath = ResolvePreferredAssetPath(source);
-		return _imageCache.GetOrAdd(preferredPath, LoadImageCore);
+		try {
+			return _imageCache.GetOrAdd(preferredPath, LoadImageCore);
+		} catch (Exception ex) {
+			Log.Warn($"[ImageUtilities] Failed to load image asset '{source}': {ex.Message}");
+			return null;
+		}
 	}
 
 	public static Bitmap BitmapFromAsset(string source) {

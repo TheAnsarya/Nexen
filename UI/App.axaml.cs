@@ -100,6 +100,16 @@ public partial class App : Application {
 	}
 
 	private static void InitializeMainWindow(IClassicDesktopStyleApplicationLifetime desktop, SplashWindow splash, Stopwatch splashTimer) {
+		try {
+			InitializeMainWindowCore(desktop, splash, splashTimer);
+		} catch (Exception ex) {
+			Log.Error(ex, "[Startup] Unexpected failure during main window initialization");
+			try { splash.Close(); } catch { /* splash may already be closed */ }
+			ShowFatalStartupError(desktop, ex);
+		}
+	}
+
+	private static void InitializeMainWindowCore(IClassicDesktopStyleApplicationLifetime desktop, SplashWindow splash, Stopwatch splashTimer) {
 		//Test if the core can be loaded, and display an error message popup if not
 		try {
 			EmuApi.TestDll();
