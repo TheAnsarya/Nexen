@@ -33,10 +33,10 @@ public sealed class ShortcutHandler {
 		bool isFullscreen = _mainWindow.WindowState == WindowState.FullScreen && ConfigManager.Config.Video.UseExclusiveFullscreen;
 
 		switch (shortcut) {
-			case EmulatorShortcut.Reset: Reset(); break;
-			case EmulatorShortcut.PowerCycle: PowerCycle(); break;
-				case EmulatorShortcut.ReloadRom: ReloadRom(); break;
-				case EmulatorShortcut.PowerOff: PowerOff(); break;
+			case EmulatorShortcut.Reset: _ = Reset(); break;
+			case EmulatorShortcut.PowerCycle: _ = PowerCycle(); break;
+				case EmulatorShortcut.ReloadRom: _ = ReloadRom(); break;
+				case EmulatorShortcut.PowerOff: _ = PowerOff(); break;
 			case EmulatorShortcut.Exit: _mainWindow.Close(); break;
 
 			case EmulatorShortcut.ToggleAudio: ToggleAudio(); break;
@@ -545,25 +545,25 @@ public sealed class ShortcutHandler {
 		ConfigManager.Config.Preferences.ApplyConfig();
 	}
 
-	public static async void Reset() {
+	public static async Task Reset() {
 		if (!ConfigManager.Config.Preferences.ConfirmExitResetPower || await NexenMsgBox.Show(null, "ConfirmReset", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) {
 			LoadRomHelper.Reset();
 		}
 	}
 
-	public static async void PowerCycle() {
+	public static async Task PowerCycle() {
 		if (!ConfigManager.Config.Preferences.ConfirmExitResetPower || await NexenMsgBox.Show(null, "ConfirmPowerCycle", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) {
 			LoadRomHelper.PowerCycle();
 		}
 	}
 
-	public static async void ReloadRom() {
+	public static async Task ReloadRom() {
 		if (!ConfigManager.Config.Preferences.ConfirmExitResetPower || await NexenMsgBox.Show(null, "ConfirmReloadRom", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) {
 			LoadRomHelper.ReloadRom();
 		}
 	}
 
-	public static async void PowerOff() {
+	public static async Task PowerOff() {
 		if (!ConfigManager.Config.Preferences.ConfirmExitResetPower || await NexenMsgBox.Show(null, "ConfirmPowerOff", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) {
 			LoadRomHelper.PowerOff();
 		}

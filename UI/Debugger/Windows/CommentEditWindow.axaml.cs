@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -56,7 +57,7 @@ public partial class CommentEditWindow : NexenWindow {
 		base.OnKeyDown(e);
 	}
 
-	public static async void EditComment(Control parent, CodeLabel label) {
+	public static async Task EditComment(Control parent, CodeLabel label) {
 		CommentEditViewModel model;
 		CodeLabel? copy = null;
 		if (LabelManager.ContainsLabel(label)) {

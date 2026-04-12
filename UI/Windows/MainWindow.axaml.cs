@@ -648,7 +648,7 @@ public partial class MainWindow : NexenWindow {
 
 			return true;
 		} else if (key == Key.F2) {
-			RomTestHelper.RunTest();
+			_ = RomTestHelper.RunTest();
 			return true;
 		} else if (key == Key.F3) {
 			RomTestHelper.RunAllTests();

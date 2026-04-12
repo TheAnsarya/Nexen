@@ -310,7 +310,7 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 			IsVisible = () => index < RecentItems.Count,
 			OnClick = () => {
 				if (index < RecentItems.Count) {
-					LoadRomHelper.LoadRom(RecentItems[index].RomFile, RecentItems[index].PatchFile);
+					_ = LoadRomHelper.LoadRom(RecentItems[index].RomFile, RecentItems[index].PatchFile);
 				}
 			}
 		};

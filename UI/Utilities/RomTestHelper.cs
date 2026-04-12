@@ -16,7 +16,7 @@ using Nexen.Windows;
 
 namespace Nexen.Utilities; 
 public static class RomTestHelper {
-	public static async void RunTest() {
+	public static async Task RunTest() {
 		string? filename = await FileDialogHelper.OpenFile(ConfigManager.TestFolder, null, "mtp");
 		if (filename is not null) {
 			MainWindowViewModel.Instance.RecentGames.Visible = false;

@@ -968,17 +968,17 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 				new ContextMenuAction() {
 					ActionType = ActionType.Reset,
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.Reset),
-					OnClick = () => ShortcutHandler.Reset()
+					OnClick = () => _ = ShortcutHandler.Reset()
 				},
 				new ContextMenuAction() {
 					ActionType = ActionType.PowerCycle,
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.PowerCycle),
-					OnClick = () => ShortcutHandler.PowerCycle()
+					OnClick = () => _ = ShortcutHandler.PowerCycle()
 				},
 				new ContextMenuAction() {
 					ActionType = ActionType.ReloadRom,
 					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.ReloadRom),
-					OnClick = () => ShortcutHandler.ReloadRom()
+					OnClick = () => _ = ShortcutHandler.ReloadRom()
 				}
 			});
 		}

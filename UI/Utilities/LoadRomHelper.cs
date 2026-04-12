@@ -16,7 +16,7 @@ using Nexen.Windows;
 
 namespace Nexen.Utilities;
 public static class LoadRomHelper {
-	public static async void LoadRom(ResourcePath romPath, ResourcePath? patchPath = null) {
+	public static async Task LoadRom(ResourcePath romPath, ResourcePath? patchPath = null) {
 		Log.Info($"[LoadRomHelper] LoadRom called with: {romPath}");
 
 		if (FolderHelper.IsArchiveFile(romPath)) {
@@ -99,7 +99,7 @@ public static class LoadRomHelper {
 		}
 	}
 
-	public static async void LoadPatchFile(string patchFile) {
+	public static async Task LoadPatchFile(string patchFile) {
 		string? patchFolder = Path.GetDirectoryName(patchFile);
 		if (patchFolder is null) {
 			return;
@@ -114,7 +114,7 @@ public static class LoadRomHelper {
 
 		if (romsInFolder.Count == 1) {
 			//There is a single rom in the same folder as the IPS/BPS patch, use it automatically
-			LoadRom(romsInFolder[0], patchFile);
+			await LoadRom(romsInFolder[0], patchFile);
 		} else {
 			Window? wnd = ApplicationHelper.GetMainWindow();
 			if (!EmuApi.IsRunning()) {
@@ -122,12 +122,12 @@ public static class LoadRomHelper {
 				if (await NexenMsgBox.Show(wnd, "SelectRomIps", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK) {
 					string? filename = await FileDialogHelper.OpenFile(null, wnd, FileDialogHelper.RomExt);
 					if (filename is not null) {
-						LoadRom(filename, patchFile);
+						await LoadRom(filename, patchFile);
 					}
 				}
 			} else if (await NexenMsgBox.Show(wnd, "PatchAndReset", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK) {
 				//Confirm that the user wants to patch the current rom and reset
-				LoadRom(EmuApi.GetRomInfo().RomPath, patchFile);
+				await LoadRom(EmuApi.GetRomInfo().RomPath, patchFile);
 			}
 		}
 	}
@@ -157,7 +157,7 @@ public static class LoadRomHelper {
 
 			if (IsPatchFile(filename)) {
 				Log.Info($"[LoadRomHelper] Detected patch file, calling LoadPatchFile");
-				LoadPatchFile(filename);
+				_ = LoadPatchFile(filename);
 			} else if (ext is ("." + FileDialogHelper.NexenSaveStateExt) or ("." + FileDialogHelper.MesenSaveStateExt)) {
 				Log.Info($"[LoadRomHelper] Detected save state, calling LoadStateFile");
 				EmuApi.LoadStateFile(filename);
@@ -166,7 +166,7 @@ public static class LoadRomHelper {
 				RecordApi.MoviePlay(filename);
 			} else {
 				Log.Info($"[LoadRomHelper] Treating as ROM file, calling LoadRom");
-				LoadRom(filename);
+				_ = LoadRom(filename);
 			}
 		} else {
 			Log.Error($"[LoadRomHelper] ERROR: File not found: {filename}");

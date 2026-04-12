@@ -160,11 +160,11 @@ public partial class DisassemblyView : NexenUserControl {
 					LocationInfo loc = ActionLocation;
 					CodeLabel? label = loc.Label ?? (loc.AbsAddress.HasValue ? LabelManager.GetLabel(loc.AbsAddress.Value) : null);
 					if(label != null) {
-						CommentEditWindow.EditComment(this, label);
+						_ = CommentEditWindow.EditComment(this, label);
 					} else if(loc.AbsAddress != null) {
-						CommentEditWindow.EditComment(this, new CodeLabel(loc.AbsAddress.Value));
+						_ = CommentEditWindow.EditComment(this, new CodeLabel(loc.AbsAddress.Value));
 					}else if(loc.RelAddress != null) {
-						CommentEditWindow.EditComment(this, new CodeLabel(loc.RelAddress.Value));
+						_ = CommentEditWindow.EditComment(this, new CodeLabel(loc.RelAddress.Value));
 					}
 				}
 			},
