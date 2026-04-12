@@ -1378,6 +1378,12 @@ continue working issues;
 
 continue working issues;
 
+Keep looking for Avalonia and modernization upgrade issues and performance improvements;
+
+--- steer
+use `https://docs.avaloniaui.net/docs/avalonia12-breaking-changes` as a reference for avalonia 12 upgrade and continue; continue;
+
+
 
 
 
