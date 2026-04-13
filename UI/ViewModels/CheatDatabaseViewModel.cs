@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -33,7 +34,9 @@ public sealed partial class CheatDatabaseViewModel : DisposableViewModel {
 			if (dbContent is not null) {
 				cheatDb = (CheatDatabase?)JsonSerializer.Deserialize(dbContent, typeof(CheatDatabase), NexenCamelCaseSerializerContext.Default) ?? new CheatDatabase();
 			}
-		} catch { }
+		} catch (Exception ex) {
+			Debug.WriteLine($"Failed to deserialize cheat database: {ex.Message}");
+		}
 
 		_entries = cheatDb.Games;
 		FilteredEntries = _entries;

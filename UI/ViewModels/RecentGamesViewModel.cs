@@ -127,8 +127,10 @@ public sealed partial class RecentGamesViewModel : ViewModelBase {
 				.Where(e => e.Origin == SaveStateOrigin.Designated && e.SlotNumber > 0)
 				.GroupBy(e => e.SlotNumber);
 			foreach (var group in slotGroups) {
-				var newest = group.OrderByDescending(e => e.SaveStateTimestamp).First();
-				newest.IsCurrentSlot = true;
+				var newest = group.OrderByDescending(e => e.SaveStateTimestamp).FirstOrDefault();
+				if (newest != null) {
+					newest.IsCurrentSlot = true;
+				}
 			}
 
 			// If no timestamped saves exist, show message

@@ -144,8 +144,8 @@ public static class DataGridTypeAheadBehavior {
 					grid.ScrollIntoView(item, null);
 					return true;
 				}
-			} catch {
-				// Skip items where property lookup fails
+			} catch (Exception ex) {
+				Debug.WriteLine($"TypeAhead property lookup failed: {ex.Message}");
 			}
 			index++;
 		}

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -1466,8 +1467,9 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 					LoadRomHelper.PowerCycle();
 				}
 			}
-		} catch {
+		} catch (Exception ex) {
 			//Invalid file (file missing, not a zip file, etc.)
+			Debug.WriteLine($"HD Pack install failed: {ex.Message}");
 			await NexenMsgBox.Show(wnd, "InstallHdPackInvalidZipFile", MessageBoxButtons.OK, MessageBoxIcon.Error);
 		}
 	}

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
@@ -20,7 +21,11 @@ public static class DataGridClipboardExtensions {
 
 		var topLevel = TopLevel.GetTopLevel(grid);
 		if (topLevel?.Clipboard is { } clipboard) {
-			await clipboard.SetTextAsync(text);
+			try {
+				await clipboard.SetTextAsync(text);
+			} catch (Exception ex) {
+				Debug.WriteLine($"Failed to copy to clipboard: {ex.Message}");
+			}
 		}
 	}
 
@@ -72,7 +77,8 @@ public static class DataGridClipboardExtensions {
 				try {
 					var prop = item.GetType().GetProperty(path);
 					return prop?.GetValue(item)?.ToString() ?? "";
-				} catch {
+				} catch (Exception ex) {
+					Debug.WriteLine($"Failed to get cell value via binding path '{path}': {ex.Message}");
 					return "";
 				}
 			}
@@ -85,7 +91,8 @@ public static class DataGridClipboardExtensions {
 				try {
 					var prop = item.GetType().GetProperty(path);
 					return prop?.GetValue(item)?.ToString() ?? "";
-				} catch {
+				} catch (Exception ex) {
+					Debug.WriteLine($"Failed to get cell value via clipboard binding '{path}': {ex.Message}");
 					return "";
 				}
 			}

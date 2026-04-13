@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Reflection;
 using System.Windows.Input;
 using Avalonia;
@@ -200,8 +201,9 @@ public static class DataGridSortBehavior {
 				"CurrentSortingState", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public);
 
 			_sortingStateProperty?.SetValue(headerCell, direction);
-		} catch {
-			// Silently fail if Avalonia internals change — sort still works, just no visual indicator
+		} catch (Exception ex) {
+			// Sort still works, just no visual indicator if Avalonia internals change
+			Debug.WriteLine($"Sort indicator update failed: {ex.Message}");
 		}
 	}
 }

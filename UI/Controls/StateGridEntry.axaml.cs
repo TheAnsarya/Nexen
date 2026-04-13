@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -224,7 +225,9 @@ public partial class StateGridEntry : UserControl {
 							}
 						}
 					}
-				} catch { }
+				} catch (Exception ex) {
+					Debug.WriteLine($"Failed to load save state preview: {ex.Message}");
+				}
 
 				Dispatcher.UIThread.Post(() => {
 					Image = img ?? StateGridEntry.EmptyImage;
