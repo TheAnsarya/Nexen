@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 #include <thread>
@@ -14,6 +15,7 @@ class LinuxKeyManager : public IKeyManager
 private:
 	Emulator* _emu;
 	std::vector<shared_ptr<LinuxGameController>> _controllers;
+	std::mutex _controllerMutex;
 
 	vector<KeyDefinition> _keyDefinitions;
 	bool _keyState[0x205];
