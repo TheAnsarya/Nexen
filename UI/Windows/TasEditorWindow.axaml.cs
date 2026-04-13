@@ -497,9 +497,9 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 		}
 
 		if (ViewModel.IsRecording) {
-			ViewModel.StartRecording();
-		} else {
 			ViewModel.StopRecording();
+		} else {
+			ViewModel.StartRecording();
 		}
 	}
 

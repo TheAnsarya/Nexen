@@ -1427,6 +1427,11 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			return;
 		}
 
+		if (port < 0 || port >= Movie.InputFrames[start].Controllers.Length) {
+			StatusMessage = $"Invalid port {port} for pattern fill";
+			return;
+		}
+
 		int patternLength = Math.Min(intervalFrames, end - start + 1);
 		var pattern = new List<ControllerInput>(patternLength);
 		for (int i = 0; i < patternLength; i++) {
@@ -1585,14 +1590,16 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 
 	/// <summary>
 	/// Rebuilds the marker/comment list from current movie data.
+	/// Builds a temporary list first to minimize ObservableCollection change notifications.
 	/// </summary>
 	public void RefreshMarkerEntries() {
-		MarkerEntries.Clear();
 		if (Movie is null) {
+			MarkerEntries.Clear();
 			SelectedMarkerEntry = null;
 			return;
 		}
 
+		var entries = new List<TasMarkerEntryViewModel>();
 		for (int i = 0; i < Movie.InputFrames.Count; i++) {
 			string? comment = Movie.InputFrames[i].Comment;
 			if (string.IsNullOrWhiteSpace(comment)) {
@@ -1604,11 +1611,17 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 				continue;
 			}
 
-			MarkerEntries.Add(new TasMarkerEntryViewModel(i, comment, type));
+			entries.Add(new TasMarkerEntryViewModel(i, comment, type));
 		}
 
-		if (SelectedMarkerEntry is not null) {
-			SelectedMarkerEntry = MarkerEntries.FirstOrDefault(e => e.FrameIndex == SelectedMarkerEntry.FrameIndex);
+		int? selectedFrame = SelectedMarkerEntry?.FrameIndex;
+		MarkerEntries.Clear();
+		foreach (var entry in entries) {
+			MarkerEntries.Add(entry);
+		}
+
+		if (selectedFrame is not null) {
+			SelectedMarkerEntry = MarkerEntries.FirstOrDefault(e => e.FrameIndex == selectedFrame.Value);
 		}
 	}
 
@@ -1817,7 +1830,8 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	/// Executes a search with the current search text and mode.
 	/// </summary>
 	public void ExecuteSearch() {
-		if (Movie is null || string.IsNullOrWhiteSpace(SearchText) && SearchMode != FrameSearchMode.LagFrame && SearchMode != FrameSearchMode.Marker) {
+		bool needsText = SearchMode != FrameSearchMode.LagFrame && SearchMode != FrameSearchMode.Marker;
+		if (Movie is null || (needsText && string.IsNullOrWhiteSpace(SearchText))) {
 			SearchResults = new();
 			SearchResultIndex = -1;
 			return;
@@ -2715,7 +2729,16 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			return;
 		}
 
-		var romInfo = EmuApi.GetRomInfo();
+		RomInfo romInfo;
+		int controllerCount;
+		try {
+			romInfo = EmuApi.GetRomInfo();
+			controllerCount = Math.Max(1, InputApi.GetControllerStates().Length);
+		} catch (DllNotFoundException) {
+			StatusMessage = "Cannot create movie — emulator core not available";
+			return;
+		}
+
 		Movie = new MovieData() {
 			SourceFormat = MovieFormat.Nexen,
 			SystemType = MapConsoleToSystemType(romInfo.ConsoleType),
@@ -2724,7 +2747,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			RomFileName = Path.GetFileName(romInfo.RomPath),
 			CreatedDate = DateTime.UtcNow,
 			ModifiedDate = DateTime.UtcNow,
-			ControllerCount = Math.Max(1, InputApi.GetControllerStates().Length)
+			ControllerCount = controllerCount
 		};
 
 		FilePath = null;

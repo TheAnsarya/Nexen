@@ -13,7 +13,7 @@ namespace Nexen.Benchmarks;
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
-public sealed class TasOptimizationBenchmarks {
+public class TasOptimizationBenchmarks {
 	private List<InputFrame> _frames = null!;
 	private List<InputFrame> _insertFrames = null!;
 	private ConcurrentDictionary<int, byte[]> _savestates = null!;
