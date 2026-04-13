@@ -1,12 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nexen.Interop;
-class TestApi {
+sealed class TestApi {
 	private const string DllPath = EmuApi.DllName;
 
 	[DllImport(DllPath)] public static extern RomTestResult RunRecordedTest([MarshalAs(UnmanagedType.LPUTF8Str)] string filename, [MarshalAs(UnmanagedType.I1)] bool inBackground);

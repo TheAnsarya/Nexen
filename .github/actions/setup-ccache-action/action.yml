@@ -1,6 +1,8 @@
 name: 'Setup CCache'
+description: 'Setup CCache compiler cache for Linux/macOS builds'
 inputs:
-  ccache-path:  # id of input
+  ccache-path:
+    description: 'Path to ccache binaries'
     required: true
     default: '/usr/lib/ccache'
 runs:

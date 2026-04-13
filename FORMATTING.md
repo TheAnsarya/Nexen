@@ -21,9 +21,8 @@ The formatting rules are defined in [.clang-format](.clang-format).
 ### Brace Style (K&R)
 
 ```cpp
-// Functions - brace on next line
-void Function()
-{
+// Functions - brace on same line (K&R style)
+void Function() {
 	// code
 }
 

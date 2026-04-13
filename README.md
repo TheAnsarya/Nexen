@@ -34,27 +34,27 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **Standard** | [Nexen-Windows-x64-v1.4.25.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.25/Nexen-Windows-x64-v1.4.25.exe) | Single-file, recommended |
-| **Native AOT** | [Nexen-Windows-x64-AoT-v1.4.25.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.25/Nexen-Windows-x64-AoT-v1.4.25.exe) | Faster startup |
+| **Standard** | [Nexen-Windows-x64-v1.4.26.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.26/Nexen-Windows-x64-v1.4.26.exe) | Single-file, recommended |
+| **Native AOT** | [Nexen-Windows-x64-AoT-v1.4.26.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.26/Nexen-Windows-x64-AoT-v1.4.26.exe) | Faster startup |
 
 ### Linux
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **AppImage x64** | [Nexen-Linux-x64-v1.4.25.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.25/Nexen-Linux-x64-v1.4.25.AppImage) | Recommended |
-| **AppImage ARM64** | [Nexen-Linux-ARM64-v1.4.25.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.25/Nexen-Linux-ARM64-v1.4.25.AppImage) | Raspberry Pi, etc. |
-| Binary x64 (clang) | [Nexen-Linux-x64-v1.4.25.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.25/Nexen-Linux-x64-v1.4.25.tar.gz) | Tarball, requires SDL2 |
-| Binary x64 (gcc) | [Nexen-Linux-x64-gcc-v1.4.25.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.25/Nexen-Linux-x64-gcc-v1.4.25.tar.gz) | Tarball, requires SDL2 |
-| Binary ARM64 (clang) | [Nexen-Linux-ARM64-v1.4.25.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.25/Nexen-Linux-ARM64-v1.4.25.tar.gz) | Tarball, requires SDL2 |
-| Binary ARM64 (gcc) | [Nexen-Linux-ARM64-gcc-v1.4.25.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.25/Nexen-Linux-ARM64-gcc-v1.4.25.tar.gz) | Tarball, requires SDL2 |
-| Native AOT x64 | [Nexen-Linux-x64-AoT-v1.4.25.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.25/Nexen-Linux-x64-AoT-v1.4.25.tar.gz) | Faster startup |
+| **AppImage x64** | [Nexen-Linux-x64-v1.4.26.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.26/Nexen-Linux-x64-v1.4.26.AppImage) | Recommended |
+| **AppImage ARM64** | [Nexen-Linux-ARM64-v1.4.26.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.26/Nexen-Linux-ARM64-v1.4.26.AppImage) | Raspberry Pi, etc. |
+| Binary x64 (clang) | [Nexen-Linux-x64-v1.4.26.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.26/Nexen-Linux-x64-v1.4.26.tar.gz) | Tarball, requires SDL2 |
+| Binary x64 (gcc) | [Nexen-Linux-x64-gcc-v1.4.26.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.26/Nexen-Linux-x64-gcc-v1.4.26.tar.gz) | Tarball, requires SDL2 |
+| Binary ARM64 (clang) | [Nexen-Linux-ARM64-v1.4.26.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.26/Nexen-Linux-ARM64-v1.4.26.tar.gz) | Tarball, requires SDL2 |
+| Binary ARM64 (gcc) | [Nexen-Linux-ARM64-gcc-v1.4.26.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.26/Nexen-Linux-ARM64-gcc-v1.4.26.tar.gz) | Tarball, requires SDL2 |
+| Native AOT x64 | [Nexen-Linux-x64-AoT-v1.4.26.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.26/Nexen-Linux-x64-AoT-v1.4.26.tar.gz) | Faster startup |
 
 ### macOS (Apple Silicon)
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **Standard** | [Nexen-macOS-ARM64-v1.4.25.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.25/Nexen-macOS-ARM64-v1.4.25.zip) | App bundle |
-| ~~Native AOT~~ | *Temporarily unavailable* | .NET 10 ILC compiler bug |
+| **Standard** | [Nexen-macOS-ARM64-v1.4.26.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.26/Nexen-macOS-ARM64-v1.4.26.zip) | App bundle |
+| ~~Native AOT~~ | _Temporarily unavailable_ | .NET 10 ILC compiler bug |
 
 > **Notes:**
 >
@@ -146,21 +146,21 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 
 ### Windows
 
-1. Download [Nexen-Windows-x64-v1.4.25.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.25/Nexen-Windows-x64-v1.4.25.exe)
+1. Download [Nexen-Windows-x64-v1.4.26.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.26/Nexen-Windows-x64-v1.4.26.exe)
 2. Run the executable (no installation needed)
 3. **File → Open** to load a ROM
 
 ### Linux
 
-1. Download [Nexen-Linux-x64-v1.4.25.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.25/Nexen-Linux-x64-v1.4.25.AppImage)
-2. `chmod +x Nexen-Linux-x64-v1.4.25.AppImage`
-3. `./Nexen-Linux-x64-v1.4.25.AppImage`
+1. Download [Nexen-Linux-x64-v1.4.26.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.26/Nexen-Linux-x64-v1.4.26.AppImage)
+2. `chmod +x Nexen-Linux-x64-v1.4.26.AppImage`
+3. `./Nexen-Linux-x64-v1.4.26.AppImage`
 
 > For non-AppImage builds, install SDL2 first: `sudo apt install libsdl2-2.0-0`
 
 ### macOS
 
-1. Download [Nexen-macOS-ARM64-v1.4.25.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.25/Nexen-macOS-ARM64-v1.4.25.zip)
+1. Download [Nexen-macOS-ARM64-v1.4.26.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.26/Nexen-macOS-ARM64-v1.4.26.zip)
 2. Extract and move `Nexen.app` to Applications
 3. Right-click → Open (first launch only, to bypass Gatekeeper)
 
@@ -218,7 +218,7 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 
 Nexen is the **play & debug** stage of the Flower Toolchain — an integrated pipeline for playing, debugging, disassembling, editing, and rebuilding retro games:
 
-```
+```text
 🎮 Play & Debug (Nexen) → 🌺 Disassemble (Peony) → ✏️ Edit (Pansy UI) → 🌸 Build (Poppy) → ✅ Verify (Game Garden)
 ```
 
@@ -255,10 +255,10 @@ Nexen is the **play & debug** stage of the Flower Toolchain — an integrated pi
 | Game Boy / GBC | [GB Guide](docs/systems/GB.md) |
 | Game Boy Advance | [GBA Guide](docs/systems/GBA.md) |
 | Sega Master System / GG | [SMS Guide](docs/systems/SMS.md) |
-| Sega Genesis / Mega Drive | *Coming soon* |
+| Sega Genesis / Mega Drive | _Coming soon_ |
 | PC Engine / TG-16 | [PCE Guide](docs/systems/PCE.md) |
 | WonderSwan / WSC | [WS Guide](docs/systems/WS.md) |
-| Atari 2600 | *Coming soon* |
+| Atari 2600 | _Coming soon_ |
 | Atari Lynx | [Lynx Guide](docs/systems/Lynx.md) |
 | Fairchild Channel F | [Channel F Guide](docs/systems/ChannelF.md) |
 
@@ -378,6 +378,4 @@ Nexen builds upon the excellent work of:
 <p align="center">
   Made with ❤️ for the retro gaming community
 </p>
-
-
 

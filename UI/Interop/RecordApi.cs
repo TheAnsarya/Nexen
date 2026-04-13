@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using Nexen.Config;
 
-namespace Nexen.Interop; 
-class RecordApi {
+namespace Nexen.Interop;
+sealed class RecordApi {
 	private const string DllPath = EmuApi.DllName;
 
 	[DllImport(DllPath)] public static extern void AviRecord([MarshalAs(UnmanagedType.LPUTF8Str)] string filename, RecordAviOptions options);

@@ -1,4 +1,5 @@
 name: 'Write commit SHA1 to file'
+description: 'Write the current commit SHA1 to a build file for version identification'
 runs:
   using: "composite"
   steps:
