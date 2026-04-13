@@ -101,6 +101,9 @@ public partial class PaletteViewerWindow : NexenWindow, INotificationHandler {
 		base.OnClosing(e);
 		_model.Config.SaveWindowSettings(this);
 		ConfigManager.Config.Debug.PaletteViewer = _model.Config;
+		_palSelector.PointerMoved -= PalSelector_PointerMoved;
+		_palSelector.PointerExited -= PalSelector_PointerExited;
+		PointerWheelChanged -= Window_PointerWheelChanged;
 	}
 
 	private void OnSettingsClick(object sender, RoutedEventArgs e) {

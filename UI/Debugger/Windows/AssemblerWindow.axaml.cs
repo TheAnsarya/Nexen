@@ -89,6 +89,8 @@ public partial class AssemblerWindow : NexenWindow, INotificationHandler {
 	protected override void OnClosing(WindowClosingEventArgs e) {
 		base.OnClosing(e);
 		_model.Config.SaveWindowSettings(this);
+		_hexView.ScrollChanged -= hexView_ScrollChanged;
+		_textEditor.ScrollChanged -= textEditor_ScrollChanged;
 	}
 
 	private void hexView_TemplateApplied(object? sender, Avalonia.Controls.Primitives.TemplateAppliedEventArgs e) {
