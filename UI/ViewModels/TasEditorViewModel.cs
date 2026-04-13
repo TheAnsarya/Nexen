@@ -153,8 +153,8 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	public int MaxEditPort => Math.Max(0, ActivePortCount - 1);
 
 	/// <summary>Gets the piano roll button labels derived from the current controller layout.</summary>
-	public IReadOnlyList<string> PianoRollButtonLabels =>
-		ControllerButtons.Select(b => b.Label).ToList();
+	public IReadOnlyList<string> PianoRollButtonLabels => _pianoRollButtonLabelsCache ??= ControllerButtons.Select(b => b.Label).ToList();
+	private IReadOnlyList<string>? _pianoRollButtonLabelsCache;
 
 	/// <summary>Gets the available controller layouts.</summary>
 	public static IReadOnlyList<ControllerLayout> AvailableLayouts { get; } =
@@ -964,8 +964,8 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	private async void OnAutoSaveTimerTick(object? sender, EventArgs e) {
 		try {
 			await TryAutoSaveAsync();
-		} catch {
-			// Keep timer alive even if one auto-save attempt fails.
+		} catch (Exception ex) {
+			System.Diagnostics.Debug.WriteLine($"Auto-save timer tick failed: {ex.Message}");
 		}
 	}
 
@@ -2293,14 +2293,11 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 
 		// Cap undo history to prevent unbounded memory growth
 		if (_undoStack.Count > MaxUndoHistory) {
-			var temp = new Stack<UndoableAction>(MaxUndoHistory);
-			foreach (var item in _undoStack.Take(MaxUndoHistory).Reverse()) {
-				temp.Push(item);
-			}
-
+			var items = _undoStack.ToArray();
 			_undoStack.Clear();
-			foreach (var item in temp.Reverse()) {
-				_undoStack.Push(item);
+			// items[0] is the top (most recent); keep the first MaxUndoHistory items
+			for (int i = Math.Min(items.Length, MaxUndoHistory) - 1; i >= 0; i--) {
+				_undoStack.Push(items[i]);
 			}
 		}
 
@@ -2832,8 +2829,10 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			}
 
 			UpdateActivePortCount();
-		} catch {
-			// Runtime polling may fail if emulator is not running — keep existing values
+		} catch (DllNotFoundException) {
+			// Expected when emulator core is not loaded
+		} catch (Exception ex) {
+			System.Diagnostics.Debug.WriteLine($"PopulatePortTypesFromRuntime failed: {ex.Message}");
 		}
 	}
 
@@ -3177,7 +3176,8 @@ emu.displayMessage(""TAS"", ""Script active"")
 				FileName = docPath,
 				UseShellExecute = true
 			});
-		} catch {
+		} catch (Exception ex) {
+			System.Diagnostics.Debug.WriteLine($"Failed to open API documentation: {ex.Message}");
 			StatusMessage = "Could not open API documentation";
 		}
 	}
@@ -3345,7 +3345,8 @@ tas.finishSearch(true) -- Load best result</pre>
 				FileName = scriptFolder,
 				UseShellExecute = true
 			});
-		} catch {
+		} catch (Exception ex) {
+			System.Diagnostics.Debug.WriteLine($"Failed to open script folder: {ex.Message}");
 			StatusMessage = "Could not open script folder";
 		}
 	}
@@ -3407,6 +3408,7 @@ tas.finishSearch(true) -- Load best result</pre>
 			ControllerLayout.ChannelF => GetChannelFButtons(),
 			_ => GetSnesButtons()
 		};
+		_pianoRollButtonLabelsCache = null;
 		this.RaisePropertyChanged(nameof(PianoRollButtonLabels));
 	}
 
