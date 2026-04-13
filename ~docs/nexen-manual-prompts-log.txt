@@ -1424,6 +1424,8 @@ Fix the TAS Reactive UI issue, can we update ReactiveUI to working Avalonia v12 
 [Nexen] Continue working issues, fix problems, and improve performance and do the normal (epics/issues/docs/plans/session-logs/benchmarks/tests/etc) stuff; continue;
 
 [Nexen] git commit everything; work on issue #1251 `https://github.com/TheAnsarya/Nexen/issues/1251` plans/issues/docs/etc and fix the crashing after 30 minutes problem (there is an attached `nexen-crash.txt`); Continue working on this audit process and fix issues and problems and performance issues (epics/issues/docs/plans/session-logs/benchmarks/tests/etc) stuff; continue;
+--- run same prompt 2 times
+
 
 
 

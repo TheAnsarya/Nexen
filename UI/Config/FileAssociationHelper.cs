@@ -9,7 +9,7 @@ using Microsoft.Win32;
 using Nexen.Interop;
 using Nexen.Utilities;
 
-namespace Nexen.Config; 
+namespace Nexen.Config;
 class FileAssociationHelper {
 	static private string CreateMimeType(string mimeType, string extension, string description, List<string> mimeTypes, bool addType) {
 		string baseFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "mime", "packages");

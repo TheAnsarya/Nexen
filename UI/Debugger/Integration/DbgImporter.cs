@@ -13,7 +13,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.Windows;
 
-namespace Nexen.Debugger.Integration; 
+namespace Nexen.Debugger.Integration;
 public abstract class DbgImporter : ISymbolProvider {
 	private static Regex _segmentRegex = new Regex("^seg\tid=([0-9]+),.*start=0x([0-9a-fA-F]+),.*size=0x([0-9A-Fa-f]+)", RegexOptions.Compiled);
 	private static Regex _segmentPrgRomRegex = new Regex("^seg\tid=([0-9]+),.*start=0x([0-9a-fA-F]+),.*size=0x([0-9A-Fa-f]+),.*ooffs=([0-9]+)", RegexOptions.Compiled);

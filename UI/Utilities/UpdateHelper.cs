@@ -10,7 +10,7 @@ using Nexen.Config;
 using Nexen.Interop;
 using Nexen.Windows;
 
-namespace Nexen.Utilities; 
+namespace Nexen.Utilities;
 public static class UpdateHelper {
 	public static string? GetCommitHash() {
 		return DependencyHelper.GetFileContent("BuildSha.txt");
