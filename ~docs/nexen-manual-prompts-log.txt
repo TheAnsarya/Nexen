@@ -1428,6 +1428,34 @@ Fix the TAS Reactive UI issue, can we update ReactiveUI to working Avalonia v12 
 
 [Nexen] show me a table of problems you know about and their priority and risk; build & run Nexen for a sanity check so I can check the menus; continue working the audit and making issues and docs an plans and session logs and benchmarks and tests etc; continue;
 
+[Nexen] What does the "File"->"Load Last Session" menu-item do? "File"->"Recent Files" is disabled, it shouldn't be; These actions are still just spewing text at the bottom of the screen when run, instead make a simplified action notification in a box like the load/save state message only don't display the filename or time, just a message saying what we're doing, like "Recording Audio" or "Stoppped audio recording" or for export say "Exported <game name>" for the menu items `Tools->Audio Recording->Record` `Tools->Audio Recording->Stop` `Tools->Video Recording->Record` `Tools->Video Recording->Stop` `Tools->Take Screen Shot  F12` `Tools->Export Game Package`; fix all the 15 problems in the table from the last prompt; continue;
+
+--- steer
+this is how the messages should be displayed (see attached image for loading a save state)
+
+[Nexen] build & run Nexen for a sanity check; prepare for a release, and clean up and update documentation and fix as many warnings as you can; create issues and fix as many issues as you can; continue;
+
+
+
+
+
+
+
+
+
+
+[Nexen] build & run Nexen for a sanity check; prepare for a release, and clean up and update documentation and fix as many warnings as you can; update docs and readmes for a new release `1.4.26`; 
+
+prepare for a release, and clean up and update documentation and fix as many warnings as you can; create
+
+update issues #1251, #1205, #1224, #1223, #1039, #1076, #1193, #1194, #1176 with a comment about the new release and how it should fix their issue and thank you for testing and please continue testing,
+
+
+
+
+
+
+
 
 
 

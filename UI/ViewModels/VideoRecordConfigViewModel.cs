@@ -6,7 +6,7 @@ using Nexen.Interop;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
-namespace Nexen.ViewModels; 
+namespace Nexen.ViewModels;
 public sealed partial class VideoRecordConfigViewModel : DisposableViewModel {
 	[Reactive] public partial string SavePath { get; set; }
 	[Reactive] public partial VideoRecordConfig Config { get; set; }

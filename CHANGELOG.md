@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **HexEditor per-frame allocation removed** — `HexEditorDataProvider.Prepare()` called `.ToArray()` on every frame to produce a byte array from an existing byte array; eliminated the redundant copy (#1263)
 - **BreakpointManager LINQ → manual loop** — `GetMatchingBreakpoint()` replaced LINQ `.FirstOrDefault()` with a manual `foreach` loop on the hot path (#1263)
 
+### Added
+
+- **Recording filename timestamps** — Sound and video recorder default filenames now include `yyyy-MM-dd_HH-mm-ss` timestamps to prevent silent overwrites of previous recordings (#1265)
+- **Event subscription cleanup** — AssemblerWindow and PaletteViewerWindow now properly unsubscribe from events in `OnClosing` to prevent memory leaks (#1235)
+
 ## [1.4.25] - 2026-04-10
 
 ### Fixed
