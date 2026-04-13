@@ -83,10 +83,6 @@ private:
 	/// <summary>Scanline pixel data for 2 layers.</summary>
 	PixelData _rowData[2][224];
 
-	/// <summary>Row buffer index (0/1) based on the original scanline, not modulo.
-	/// Ensures the double-buffer index matches what Exec() expects for output.</summary>
-	uint8_t _renderRowIndex = 0;
-
 	/// <summary>Rendered screen height (varies by model).</summary>
 	uint16_t _screenHeight = 0;
 
