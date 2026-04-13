@@ -94,8 +94,12 @@ public sealed class InputRecorder : IDisposable {
 		FramesRecorded = 0;
 
 		// Resume emulation if paused
-		if (EmuApi.IsRunning() && EmuApi.IsPaused()) {
-			EmuApi.Resume();
+		try {
+			if (EmuApi.IsRunning() && EmuApi.IsPaused()) {
+				EmuApi.Resume();
+			}
+		} catch (DllNotFoundException) {
+			// Emulator core not available — continue recording without resuming
 		}
 
 		RecordingStarted?.Invoke(this, new RecordingEventArgs(_recordStartFrame, mode));
@@ -112,8 +116,12 @@ public sealed class InputRecorder : IDisposable {
 		_isRecording = false;
 
 		// Pause emulation
-		if (EmuApi.IsRunning() && !EmuApi.IsPaused()) {
-			EmuApi.Pause();
+		try {
+			if (EmuApi.IsRunning() && !EmuApi.IsPaused()) {
+				EmuApi.Pause();
+			}
+		} catch (DllNotFoundException) {
+			// Emulator core not available — continue stopping without pausing
 		}
 
 		RecordingStopped?.Invoke(this, new RecordingEventArgs(_recordStartFrame, _mode, FramesRecorded));
@@ -205,8 +213,13 @@ public sealed class InputRecorder : IDisposable {
 				return false;
 			}
 
-			_greenzone.LoadState(nearestFrame);
-			// Would need to advance frames here...
+			if (!_greenzone.LoadState(nearestFrame)) {
+				return false;
+			}
+
+			// Cannot advance frames from nearest state to target in this context;
+			// truncate from the nearest frame instead to maintain consistency
+			frame = nearestFrame;
 		}
 
 		// Truncate movie if requested

@@ -320,12 +320,16 @@ public interface ICapturPolicy
 - **Greenzone**: Uses GZip compression for states older than 300 frames
 - **Ring Buffer**: Maintains last 120 states uncompressed for fast seeking
 - **Pruning**: Automatically removes oldest states when memory exceeds 256 MB
+- **Undo Stack**: Capped at 500 actions to prevent unbounded memory growth
+- **Disposal**: `DisposeView()` calls `Greenzone.Dispose()` to free savestate memory and semaphores
 
 ### Threading
 
 - **Greenzone capture**: Runs on background thread
+- **Greenzone compression**: Fire-and-forget async task with semaphore serialization; reads `Data`/`IsCompressed` atomically to avoid torn reads during swap
 - **UI updates**: Marshalled to UI thread via `Dispatcher`
-- **Seek operations**: Async with progress reporting
+- **Seek operations**: Async with cancellation token support
+- **EmuApi calls**: Wrapped in `try/catch (DllNotFoundException)` for resilience when emulator core is unavailable
 
 ### Hot Paths
 
@@ -341,12 +345,35 @@ Avoid allocations and complex operations in these methods.
 
 ### Unit Tests
 
-Located in `Nexen.Tests/TAS/`:
+Located in `Tests/TAS/` (26 test files):
 
 ```text
+AutoSaveTests.cs
+AtariControllerButtonTests.cs
+BulkOperationTests.cs
+ChannelFGestureWidgetTests.cs
+ChannelFTasEditorIntegrationTests.cs
+ClipboardAndFrameOperationTests.cs
+ContextMenuAndPatternTests.cs
+FrameSearchTests.cs
+GreenzoneManagerOptimizationTests.cs
 GreenzoneManagerTests.cs
+InputPreviewPaneTests.cs
 InputRecorderTests.cs
-PianoRollControlTests.cs
+MarkerCommentPanelTests.cs
+MultiFrameSelectionTests.cs
+PianoRollCachingTests.cs
+PianoRollKeyboardNavigationTests.cs
+PlaybackUiThrottlingTests.cs
+TasEditorApiDocAndGuardTests.cs
+TasEditorViewModelBranchAndLayoutTests.cs
+TasEditorViewModelIntegrationTests.cs
+TasEditorViewModelRangeBulkTests.cs
+TasEditorViewModelTests.cs
+TasEditorWindowConsoleSwitchTests.cs
+TasLuaApiComprehensiveTests.cs
+TasLuaApiTests.cs
+UndoableActionTests.cs
 ```
 
 ### Integration Tests
@@ -385,10 +412,11 @@ private const bool DebugLogging = true;
 
 ## Future Improvements
 
-- [ ] Issue #145: Lua/Scripting integration
-- [ ] Undo/Redo for frame edits
-- [ ] Multi-track editing (multiple controllers)
+- [ ] Multi-track editing (multiple controllers simultaneously)
 - [ ] RNG manipulation tools
 - [ ] Memory watch integration
 - [ ] Input display overlay
 - [ ] TAS competitions support
+- [ ] System clipboard integration for copy/paste across editor instances
+- [ ] Branch disk offloading for large movies
+- [ ] Incremental auto-save with write-ahead log

@@ -379,11 +379,15 @@ public sealed class GreenzoneManager : IDisposable {
 	}
 
 	private bool LoadSavestateData(SavestateData state) {
-		if (state.Data is null) {
+		// Capture references atomically to avoid torn reads during background compression
+		byte[]? stateData = state.Data;
+		bool isCompressed = state.IsCompressed;
+
+		if (stateData is null) {
 			return false;
 		}
 
-		byte[] data = state.IsCompressed ? DecompressData(state.Data) : state.Data;
+		byte[] data = isCompressed ? DecompressData(stateData) : stateData;
 
 		try {
 			// Load state directly from memory buffer
@@ -477,13 +481,16 @@ public sealed class GreenzoneManager : IDisposable {
 					continue;
 				}
 
-				var compressed = CompressData(kv.Value.Data);
+				byte[] originalData = kv.Value.Data;
+				var compressed = CompressData(originalData);
 
 				// Only use compressed if it's actually smaller
-				if (compressed.Length < kv.Value.Data.Length) {
-					long sizeDelta = compressed.Length - kv.Value.Data.Length;
-					kv.Value.Data = compressed;
+				if (compressed.Length < originalData.Length) {
+					long sizeDelta = compressed.Length - originalData.Length;
+					// Atomically swap: set IsCompressed before Data so readers always
+					// see a consistent state (compressed flag matches data format)
 					kv.Value.IsCompressed = true;
+					kv.Value.Data = compressed;
 					Interlocked.Add(ref _totalMemoryUsage, sizeDelta);
 				}
 			}

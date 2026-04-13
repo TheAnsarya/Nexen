@@ -200,6 +200,9 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	/// <summary>The ID of the currently loaded script (-1 if none).</summary>
 	private int _currentScriptId = -1;
 
+	/// <summary>Maximum number of undo actions retained before oldest entries are discarded.</summary>
+	private const int MaxUndoHistory = 500;
+
 	private readonly Stack<UndoableAction> _undoStack = new();
 	private readonly Stack<UndoableAction> _redoStack = new();
 	private List<InputFrame>? _clipboard;
@@ -2288,6 +2291,19 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		_undoStack.Push(action);
 		_redoStack.Clear(); // Clear redo stack on new action
 
+		// Cap undo history to prevent unbounded memory growth
+		if (_undoStack.Count > MaxUndoHistory) {
+			var temp = new Stack<UndoableAction>(MaxUndoHistory);
+			foreach (var item in _undoStack.Take(MaxUndoHistory).Reverse()) {
+				temp.Push(item);
+			}
+
+			_undoStack.Clear();
+			foreach (var item in temp.Reverse()) {
+				_undoStack.Push(item);
+			}
+		}
+
 		ApplyIncrementalUpdate(action, isUndo: false);
 		UpdateUndoRedoState();
 		HasUnsavedChanges = true;
@@ -2960,6 +2976,13 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			string scriptContent = await File.ReadAllTextAsync(path);
 			_currentScriptId = DebugApi.LoadScript(Path.GetFileName(path), path, scriptContent, -1);
 
+			if (_currentScriptId < 0) {
+				IsScriptRunning = false;
+				CurrentScriptPath = null;
+				StatusMessage = "Failed to load script";
+				return;
+			}
+
 			StatusMessage = $"Script loaded: {Path.GetFileName(path)}";
 		} catch (Exception ex) {
 			IsScriptRunning = false;
@@ -2974,12 +2997,13 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	public void StopScript() {
 		if (!IsScriptRunning || _currentScriptId < 0) return;
 
+		int scriptId = _currentScriptId;
+		_currentScriptId = -1;
+		IsScriptRunning = false;
+		CurrentScriptPath = null;
+
 		try {
-			// Stop the script through the debugger API
-			DebugApi.RemoveScript(_currentScriptId);
-			_currentScriptId = -1;
-			IsScriptRunning = false;
-			CurrentScriptPath = null;
+			DebugApi.RemoveScript(scriptId);
 			StatusMessage = "Script stopped";
 		} catch (Exception ex) {
 			StatusMessage = $"Error stopping script: {ex.Message}";
@@ -3577,6 +3601,7 @@ tas.finishSearch(true) -- Load best result</pre>
 		}
 
 		Greenzone.CancelSeek();
+		Greenzone.Dispose();
 	}
 
 	private void UpdateWindowTitle() {

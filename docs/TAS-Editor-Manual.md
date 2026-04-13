@@ -498,6 +498,8 @@ When opening a movie, the editor auto-detects the correct layout from:
 | High memory usage | Increase greenzone interval |
 | Slow seeking | Enable greenzone compression |
 | Wrong buttons | Check controller layout matches system |
+| Undo history lost | Undo stack is capped at 500 actions to limit memory; save frequently |
+| Branch loading loses undo | Branch loading is a destructive operation; create a branch backup first |
 
 ---
 
