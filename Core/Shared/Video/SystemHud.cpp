@@ -60,6 +60,12 @@ void SystemHud::DrawMessage(DebugHud* hud, MessageInfo& msg, uint32_t screenWidt
 		return;
 	}
 
+	// Action notifications (recording, screenshot, export) use centered box display
+	if (IsActionNotification(msg.GetTitle())) {
+		DrawActionNotification(hud, msg, screenWidth, screenHeight);
+		return;
+	}
+
 	// Get opacity for fade in/out effect
 	uint8_t opacity = (uint8_t)(msg.GetOpacity() * 255);
 	int textLeftMargin = 4;
@@ -180,6 +186,45 @@ void SystemHud::DrawSaveStateNotification(DebugHud* hud, MessageInfo& msg, uint3
 		int timeX = boxX + (boxWidth - (int)timeSize.X) / 2;
 		DrawString(hud, screenWidth, timeStr, timeX, yPos, opacity);
 	}
+}
+
+bool SystemHud::IsActionNotification(const string& title) {
+	return title == MessageManager::Localize("SoundRecorder") ||
+		title == MessageManager::Localize("VideoRecorder") ||
+		title == MessageManager::Localize("ScreenshotSaved") ||
+		title == "Tools";
+}
+
+void SystemHud::DrawActionNotification(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight) const {
+	uint8_t opacity = (uint8_t)(msg.GetOpacity() * 255);
+	uint8_t fadeOp = 255 - opacity;
+
+	// Show message if non-empty, otherwise show title
+	string text = msg.GetMessage().empty() ? msg.GetTitle() : msg.GetMessage();
+
+	TextSize textSize = DrawStringCommand::MeasureString(text);
+
+	int padding = 6;
+	int boxWidth = (int)textSize.X + padding * 2;
+	int boxHeight = 11 + padding * 2 - 2;
+
+	int boxX = ((int)screenWidth - boxWidth) / 2;
+	int boxY = ((int)screenHeight - boxHeight) / 2;
+
+	// Semi-transparent background box
+	uint8_t boxAlpha = (uint8_t)std::min((int)0x40 + (int)fadeOp, 255);
+	uint32_t bgColor = (uint32_t)boxAlpha << 24;
+	hud->DrawRectangle(boxX, boxY, boxWidth, boxHeight, bgColor, true, 1);
+
+	// Subtle border
+	uint8_t borderAlpha = (uint8_t)std::min((int)0x20 + (int)fadeOp, 255);
+	uint32_t borderColor = ((uint32_t)borderAlpha << 24) | 0x666666;
+	hud->DrawRectangle(boxX - 1, boxY - 1, boxWidth + 2, boxHeight + 2, borderColor, false, 1);
+
+	// Centered text
+	int textX = boxX + (boxWidth - (int)textSize.X) / 2;
+	int textY = boxY + padding;
+	DrawString(hud, screenWidth, text, textX, textY, opacity);
 }
 
 void SystemHud::ShowFpsCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const {

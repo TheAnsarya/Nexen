@@ -34,9 +34,11 @@ private:
 	void DrawTasReadWriteIndicator(DebugHud* hud, int xOffset) const;
 	void DrawMessage(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight, int& lastHeight) const;
 	void DrawSaveStateNotification(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight) const;
+	void DrawActionNotification(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight) const;
 	void DrawString(DebugHud* hud, uint32_t screenWidth, const string& msg, int x, int y, uint8_t opacity = 255) const;
 	void DrawColoredString(DebugHud* hud, uint32_t screenWidth, const string& text, int x, int y, uint32_t color, uint8_t opacity = 255) const;
 	static uint32_t GetSaveStateBadgeColor(const string& badge);
+	static bool IsActionNotification(const string& title);
 	void DisplayMessage(const string& title, const string& message) override;
 
 	void ShowFpsCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;

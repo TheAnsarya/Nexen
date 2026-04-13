@@ -274,10 +274,15 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 
 			new MenuSeparator(),
 
-			// Recent Files submenu - always visible, enabled when there are recent files
+			// Recent Files submenu - always enabled, shows "(empty)" when no recent files
 			new SimpleMenuAction(ActionType.RecentFiles) {
-				IsEnabled = () => ConfigManager.Config.RecentFiles.Items.Count > 0,
 				SubActions = [
+					new SimpleMenuAction {
+						ActionType = ActionType.Custom,
+						DynamicText = () => "(empty)",
+						IsVisible = () => ConfigManager.Config.RecentFiles.Items.Count == 0,
+						IsEnabled = () => false,
+					},
 					CreateRecentMenuItem(0),
 					CreateRecentMenuItem(1),
 					CreateRecentMenuItem(2),
@@ -1357,8 +1362,8 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 		try {
 			string? outputPath = await GamePackageExporter.ExportAsync();
 			if (outputPath is not null) {
-				string filename = Path.GetFileName(outputPath);
-				DisplayMessageHelper.DisplayMessage("Tools", ResourceHelper.GetMessage("GamePackageExported", filename));
+				string gameName = EmuApi.GetRomInfo().GetRomName();
+				DisplayMessageHelper.DisplayMessage("Tools", $"Exported {gameName}");
 			} else {
 				await NexenMsgBox.Show(wnd, "GamePackageExportFailed", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}

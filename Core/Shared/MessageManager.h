@@ -126,16 +126,16 @@ private:
 		{"ScreenshotSaved",               "Screenshot Saved"},
 		{"ServerStarted",                 "Server started (Port: %1)"},
 		{"ServerStopped",                 "Server stopped"},
-		{"SoundRecorder",                 "Sound Recorder"},
-		{"SoundRecorderStarted",          "Recording to: %1"},
-		{"SoundRecorderStopped",          "Recording saved to: %1"},
+		{"SoundRecorder",                 "Audio"},
+		{"SoundRecorderStarted",          "Recording Audio"},
+		{"SoundRecorderStopped",          "Stopped Audio Recording"},
 		{"Test",                          "Test"},
 		{"TestFileSavedTo",               "Test file saved to: %1"},
 		{"UnexpectedError",               "Unexpected error: %1"},
 		{"UnsupportedMapper",             "Unsupported mapper (%1), cannot load game."},
-		{"VideoRecorder",                 "Video Recorder"},
-		{"VideoRecorderStarted",          "Recording to: %1"},
-		{"VideoRecorderStopped",          "Recording saved to: %1"},
+		{"VideoRecorder",                 "Video"},
+		{"VideoRecorderStarted",          "Recording Video"},
+		{"VideoRecorderStopped",          "Stopped Video Recording"},
 	}};
 
 	static bool _osdEnabled;        ///< OSD messages enabled flag

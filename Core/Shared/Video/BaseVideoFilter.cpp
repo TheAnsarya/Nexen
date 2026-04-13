@@ -211,5 +211,5 @@ void BaseVideoFilter::TakeScreenshot(const string& romName, VideoFilterType filt
 
 	TakeScreenshot(filterType, ssFilename);
 
-	MessageManager::DisplayMessage("ScreenshotSaved", FolderUtilities::GetFilename(ssFilename, true));
+	MessageManager::DisplayMessage("ScreenshotSaved", "");
 }
