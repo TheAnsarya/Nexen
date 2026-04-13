@@ -53,10 +53,14 @@ public static class UpdateHelper {
 						if (process.MainModule?.FileName == destFile) {
 							process.Kill();
 						}
-					} catch { }
+					} catch (Exception ex) {
+						Debug.WriteLine($"Could not inspect/kill process: {ex.Message}");
+					}
 				}
 			}
-		} catch { }
+		} catch (Exception ex) {
+			Debug.WriteLine($"Error enumerating processes during update: {ex.Message}");
+		}
 
 		int retryCount = 0;
 		while (retryCount < 10) {
@@ -64,7 +68,8 @@ public static class UpdateHelper {
 				using (FileStream file = File.Open(destFile, FileMode.Open, FileAccess.ReadWrite, FileShare.Delete | FileShare.ReadWrite)) { }
 
 				break;
-			} catch {
+			} catch (Exception ex) {
+				Debug.WriteLine($"File lock check retry {retryCount + 1}/10: {ex.Message}");
 				retryCount++;
 				System.Threading.Thread.Sleep(200);
 			}
@@ -79,7 +84,8 @@ public static class UpdateHelper {
 
 			//Start new version
 			Process.Start(destFile);
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"Update copy/start failed: {ex.Message}");
 			try {
 				//Something failed, try again with admin rights (if we aren't already running as an admin)
 				if (!isAdmin) {
@@ -91,7 +97,8 @@ public static class UpdateHelper {
 					proc.Verb = "runas";
 					Process.Start(proc);
 				}
-			} catch {
+			} catch (Exception innerEx) {
+				Debug.WriteLine($"Admin retry also failed: {innerEx.Message}");
 			}
 		}
 	}

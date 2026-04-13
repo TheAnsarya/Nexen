@@ -225,7 +225,7 @@ public partial class Configuration : ReactiveObject {
 			}
 		}
 
-		return _installedFonts.First();
+		return _installedFonts.FirstOrDefault() ?? "Monospace";
 	}
 
 	public static FontConfig GetDefaultFont() {
@@ -265,11 +265,14 @@ public partial class Configuration : ReactiveObject {
 			string fileData = File.ReadAllText(configFile);
 			config = (Configuration?)JsonSerializer.Deserialize(fileData, typeof(Configuration), NexenSerializerContext.Default) ?? Configuration.CreateConfig();
 			config._fileData = fileData;
-		} catch {
+		} catch (Exception ex) {
+			System.Diagnostics.Debug.WriteLine($"Failed to deserialize configuration: {ex.Message}");
 			try {
 				//File exists but couldn't be loaded, make a backup of the old settings before we overwrite them
 				BackupSettings(configFile);
-			} catch { }
+			} catch (Exception backupEx) {
+				System.Diagnostics.Debug.WriteLine($"Failed to backup settings: {backupEx.Message}");
+			}
 
 			config = Configuration.CreateConfig();
 		}
@@ -292,8 +295,9 @@ public partial class Configuration : ReactiveObject {
 				FileHelper.WriteAllText(configFile, cfgData);
 				_fileData = cfgData;
 			}
-		} catch {
+		} catch (Exception ex) {
 			//This can sometimes fail due to the file being used by another Nexen instance, etc.
+			System.Diagnostics.Debug.WriteLine($"Failed to serialize configuration: {ex.Message}");
 		}
 	}
 
