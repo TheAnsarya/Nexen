@@ -9,7 +9,7 @@ using Nexen.Interop;
 using Nexen.Utilities;
 using Nexen.ViewModels;
 
-namespace Nexen.Windows; 
+namespace Nexen.Windows;
 public partial class VideoRecordWindow : NexenWindow {
 	public VideoRecordWindow() {
 		InitializeComponent();

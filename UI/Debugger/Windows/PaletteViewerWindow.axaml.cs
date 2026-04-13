@@ -12,7 +12,7 @@ using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Windows; 
+namespace Nexen.Debugger.Windows;
 public partial class PaletteViewerWindow : NexenWindow, INotificationHandler {
 	private PaletteViewerViewModel _model;
 	private PaletteSelector _palSelector;

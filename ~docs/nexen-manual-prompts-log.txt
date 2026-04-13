@@ -1435,6 +1435,13 @@ this is how the messages should be displayed (see attached image for loading a s
 
 [Nexen] build & run Nexen for a sanity check; prepare for a release, and clean up and update documentation and fix as many warnings as you can; create issues and fix as many issues as you can; continue;
 
+`Tools->Sound Recorder->Record` add a datetime stamp to the end of the filename; `Tools->Video Recorder->Record` add a datetime stamp to the end of the filename but it currently doesn't yell about replacing the file with the same file name, so is it actually saving the file? fix it; continue working issues; continue;
+
+Inspect and commit all three as-is, and I thought I already ordered the copilot instructions to be updated, I don't want to be asked about these files; don't stop working because you don't know where a file update came from; continue!; 
+
+[Nexen] build & run Nexen for a sanity check; prepare for a release, and clean up and update documentation and fix as many warnings as you can; update docs and readmes for a new release `1.4.30`; get ready and then create a new release `1.4.30` and kick off the actions that will build everything (artifacts) and make a full description and title and such for the release; continue;
+
+--- try again
 
 
 
@@ -1444,45 +1451,52 @@ this is how the messages should be displayed (see attached image for loading a s
 
 
 
-[Nexen] build & run Nexen for a sanity check; prepare for a release, and clean up and update documentation and fix as many warnings as you can; update docs and readmes for a new release `1.4.26`; 
+
+
+
+
+
+
+
+
+
+
+[Nexen] update issues #1251, #1205, #1224, #1223, #1039, #1076, #1193, #1194, #1176 with a comment about the new release and how it should fix their issue and thank you for testing and please continue testing, and there are still other issues we're fixing but they shouldn't cause any play issues, keep 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 prepare for a release, and clean up and update documentation and fix as many warnings as you can; create
-
-update issues #1251, #1205, #1224, #1223, #1039, #1076, #1193, #1194, #1176 with a comment about the new release and how it should fix their issue and thank you for testing and please continue testing,
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
