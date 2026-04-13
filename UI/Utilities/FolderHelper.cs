@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Nexen.Config;
 
-namespace Nexen.Utilities; 
+namespace Nexen.Utilities;
 public static class FolderHelper {
 	private static HashSet<string> _romExtensions = [
 			".sfc", ".smc", ".fig", ".swc", ".bs", ".st",

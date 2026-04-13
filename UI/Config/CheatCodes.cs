@@ -9,7 +9,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using ReactiveUI.SourceGenerators;
 
-namespace Nexen.Config; 
+namespace Nexen.Config;
 public sealed partial class CheatCodes {
 	private static string FilePath { get { return Path.Combine(ConfigManager.CheatFolder, EmuApi.GetRomInfo().GetRomName() + ".json"); } }
 

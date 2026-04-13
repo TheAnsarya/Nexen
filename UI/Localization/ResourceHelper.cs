@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Xml;
 using Nexen.Interop;
 
-namespace Nexen.Localization; 
+namespace Nexen.Localization;
 class ResourceHelper {
 	private static XmlDocument _resources = new XmlDocument();
 
