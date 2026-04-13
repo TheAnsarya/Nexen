@@ -62,6 +62,12 @@ public partial class TasSelectRangeDialog : NexenWindow {
 			return false;
 		}
 
+		if (fromFrame > toFrame) {
+			txtError.Text = "Start frame must be less than or equal to end frame.";
+			txtError.IsVisible = true;
+			return false;
+		}
+
 		txtError.IsVisible = false;
 		return true;
 	}
@@ -95,6 +101,8 @@ public partial class TasSelectRangeDialog : NexenWindow {
 				dialog.Opened += (_, _) => WindowExtensions.CenterWindow(dialog, parent);
 			}
 			dialog.ShowDialog(parent);
+		} else {
+			tcs.TrySetResult(null);
 		}
 
 		return tcs.Task;

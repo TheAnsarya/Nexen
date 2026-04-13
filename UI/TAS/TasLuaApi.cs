@@ -21,10 +21,9 @@ public sealed class TasLuaApi {
 	private Dictionary<string, object> _searchState = new();
 
 	/// <summary>
-	/// Cached dictionary for <see cref="GetFrameInput"/> to avoid per-call allocation.
-	/// Callers must not hold a reference across calls.
+	/// Expected capacity for frame input dictionaries (12 standard buttons).
 	/// </summary>
-	private readonly Dictionary<string, bool> _frameInputCache = new(12);
+	private const int FrameInputButtonCount = 12;
 
 	/// <summary>Shortcut to the greenzone manager.</summary>
 	private GreenzoneManager Greenzone => _viewModel.Greenzone;
@@ -157,20 +156,20 @@ public sealed class TasLuaApi {
 
 		var input = frameData.Controllers[controller];
 
-		_frameInputCache.Clear();
-		_frameInputCache["a"] = input.A;
-		_frameInputCache["b"] = input.B;
-		_frameInputCache["x"] = input.X;
-		_frameInputCache["y"] = input.Y;
-		_frameInputCache["l"] = input.L;
-		_frameInputCache["r"] = input.R;
-		_frameInputCache["select"] = input.Select;
-		_frameInputCache["start"] = input.Start;
-		_frameInputCache["up"] = input.Up;
-		_frameInputCache["down"] = input.Down;
-		_frameInputCache["left"] = input.Left;
-		_frameInputCache["right"] = input.Right;
-		return _frameInputCache;
+		return new Dictionary<string, bool>(FrameInputButtonCount) {
+			["a"] = input.A,
+			["b"] = input.B,
+			["x"] = input.X,
+			["y"] = input.Y,
+			["l"] = input.L,
+			["r"] = input.R,
+			["select"] = input.Select,
+			["start"] = input.Start,
+			["up"] = input.Up,
+			["down"] = input.Down,
+			["left"] = input.Left,
+			["right"] = input.Right,
+		};
 	}
 
 	/// <summary>

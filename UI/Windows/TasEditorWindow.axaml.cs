@@ -363,7 +363,9 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 			}
 
 			// Frame navigation with arrow keys when ListBox doesn't have focus
-			if (!_frameList.IsFocused) {
+			// Skip single-key shortcuts when a TextBox has focus (e.g., SearchBox)
+			bool isTextBoxFocused = TopLevel.GetTopLevel(this)?.FocusManager?.GetFocusedElement() is TextBox;
+			if (!_frameList.IsFocused && !isTextBoxFocused) {
 				switch (e.Key) {
 					case Avalonia.Input.Key.PageUp:
 						ViewModel.SelectedFrameIndex = Math.Max(0, ViewModel.SelectedFrameIndex - 10);

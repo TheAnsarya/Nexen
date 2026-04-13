@@ -903,15 +903,19 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 
 	private static void CreateNewTasMovie(MainWindow wnd) {
 		TasEditorWindow tasWindow = OpenTasEditorWindow(wnd);
-		if(tasWindow.DataContext is TasEditorViewModel vm) {
+		if (tasWindow.DataContext is TasEditorViewModel vm) {
 			vm.CreateNewMovieFromMenu();
+		} else {
+			DisplayMessageHelper.DisplayMessage("TAS Editor", "Failed to initialize TAS Editor.");
 		}
 	}
 
 	private static void StartTasRecording(MainWindow wnd) {
 		TasEditorWindow tasWindow = OpenTasEditorWindow(wnd);
-		if(tasWindow.DataContext is TasEditorViewModel vm) {
+		if (tasWindow.DataContext is TasEditorViewModel vm) {
 			vm.StartRecording();
+		} else {
+			DisplayMessageHelper.DisplayMessage("TAS Editor", "Failed to initialize TAS Editor.");
 		}
 	}
 

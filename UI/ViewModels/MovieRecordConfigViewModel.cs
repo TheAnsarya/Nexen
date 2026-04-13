@@ -16,7 +16,16 @@ public sealed partial class MovieRecordConfigViewModel : ViewModelBase {
 	public MovieRecordConfigViewModel() {
 		Config = ConfigManager.Config.MovieRecord.Clone();
 
-		SavePath = Path.Join(ConfigManager.MovieFolder, EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.NexenMovieExt);
+		string romName = "";
+		try {
+			romName = EmuApi.GetRomInfo().GetRomName();
+		} catch (DllNotFoundException) {
+			// Core not loaded
+		}
+		if (string.IsNullOrWhiteSpace(romName)) {
+			romName = "untitled";
+		}
+		SavePath = Path.Join(ConfigManager.MovieFolder, romName + "." + FileDialogHelper.NexenMovieExt);
 
 		this.WhenAnyValue(x => x.SavePath).Subscribe(_ => {
 			this.RaisePropertyChanged(nameof(CanRecord));

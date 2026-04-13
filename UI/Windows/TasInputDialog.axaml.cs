@@ -105,6 +105,8 @@ public partial class TasInputDialog : NexenWindow {
 				dialog.Opened += (_, _) => WindowExtensions.CenterWindow(dialog, parent);
 			}
 			dialog.ShowDialog(parent);
+		} else {
+			tcs.TrySetResult(null);
 		}
 
 		return tcs.Task;
@@ -140,6 +142,8 @@ public partial class TasInputDialog : NexenWindow {
 				dialog.Opened += (_, _) => WindowExtensions.CenterWindow(dialog, parent);
 			}
 			dialog.ShowDialog(parent);
+		} else {
+			tcs.TrySetResult(null);
 		}
 
 		return tcs.Task;
