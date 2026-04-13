@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -90,8 +91,9 @@ public static class GamePackageExporter {
 		// Trigger a Pansy export before packaging so the file is up to date
 		try {
 			BackgroundPansyExporter.ForceExport();
-		} catch {
+		} catch (Exception ex) {
 			// Non-fatal — continue without fresh Pansy export
+			Debug.WriteLine($"GamePackageExporter: Pansy export failed: {ex.Message}");
 		}
 
 		// Collect all files on a background thread to avoid blocking UI
@@ -115,19 +117,23 @@ public static class GamePackageExporter {
 						if (File.Exists(sourcePath)) {
 							archive.CreateEntryFromFile(sourcePath, archivePrefix + archivePath, CompressionLevel.Optimal);
 						}
-					} catch {
+					} catch (Exception ex) {
 						// Skip individual files that can't be read (e.g., locked)
+						Debug.WriteLine($"GamePackageExporter: Skipping file '{sourcePath}': {ex.Message}");
 					}
 				}
 
 				return outputPath;
-			} catch {
+			} catch (Exception ex) {
 				// Clean up partial file on failure
+				Debug.WriteLine($"GamePackageExporter: Export failed: {ex.Message}");
 				try {
 					if (File.Exists(outputPath)) {
 						File.Delete(outputPath);
 					}
-				} catch { }
+				} catch (Exception cleanupEx) {
+					Debug.WriteLine($"GamePackageExporter: Cleanup failed: {cleanupEx.Message}");
+				}
 				return null;
 			}
 		});
@@ -234,8 +240,9 @@ public static class GamePackageExporter {
 			foreach (string file in Directory.GetFiles(folderPath, pattern, SearchOption.TopDirectoryOnly)) {
 				files.Add((file, archiveSubfolder + Path.GetFileName(file)));
 			}
-		} catch {
-			// Folder access error — skip silently
+		} catch (Exception ex) {
+			// Folder access error
+			Debug.WriteLine($"GamePackageExporter.CollectFromFolder: Failed reading '{folderPath}': {ex.Message}");
 		}
 	}
 
@@ -253,8 +260,8 @@ public static class GamePackageExporter {
 			foreach (string file in Directory.GetFiles(folderPath, pattern, SearchOption.TopDirectoryOnly)) {
 				files.Add((file, archiveSubfolder + Path.GetFileName(file)));
 			}
-		} catch {
-			// Skip silently
+		} catch (Exception ex) {
+			Debug.WriteLine($"GamePackageExporter.CollectMatchingFiles: Failed reading '{folderPath}': {ex.Message}");
 		}
 	}
 

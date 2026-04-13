@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -20,7 +21,8 @@ public static class TooltipHelper {
 			ToolTip.SetHorizontalOffset(target, horizontalOffset);
 
 			ToolTip.SetIsOpen(target, true);
-		} catch (Exception) {
+		} catch (Exception ex) {
+			Debug.WriteLine($"TooltipHelper.ShowTooltip failed: {ex.Message}");
 			HideTooltip(target);
 		}
 	}
@@ -29,6 +31,8 @@ public static class TooltipHelper {
 		try {
 			ToolTip.SetTip(target, null);
 			ToolTip.SetIsOpen(target, false);
-		} catch (Exception) { }
+		} catch (Exception ex) {
+			Debug.WriteLine($"TooltipHelper.HideTooltip failed: {ex.Message}");
+		}
 	}
 }

@@ -35,7 +35,9 @@ class FileAssociationHelper {
 		} else if (File.Exists(filename)) {
 			try {
 				File.Delete(filename);
-			} catch { }
+			} catch (Exception ex) {
+				Debug.WriteLine($"FileAssociationHelper: Failed to delete mime type file '{filename}': {ex.Message}");
+			}
 		}
 
 		return mimeType;
@@ -109,10 +111,13 @@ class FileAssociationHelper {
 		try {
 			Process.Start("update-mime-database", mimeFolder).WaitForExit();
 			Process.Start("update-desktop-database", desktopFolder);
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"FileAssociationHelper: Failed to update databases: {ex.Message}");
 			try {
 				EmuApi.WriteLogEntry("An error occurred while updating file associations");
-			} catch { }
+			} catch (Exception logEx) {
+				Debug.WriteLine($"FileAssociationHelper: Failed to log error: {logEx.Message}");
+			}
 		}
 	}
 

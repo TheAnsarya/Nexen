@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -133,7 +134,9 @@ public abstract class DbgImporter : ISymbolProvider {
 					output += file.Data[line.LineNumber];
 					return output;
 				}
-			} catch { }
+			} catch (Exception ex) {
+				Debug.WriteLine($"DbgImporter.GetSourceCodeLine failed for address {prgRomAddress}: {ex.Message}");
+			}
 		}
 
 		return null;
@@ -254,7 +257,9 @@ public abstract class DbgImporter : ISymbolProvider {
 					}
 				}
 			}
-		} catch { }
+		} catch (Exception ex) {
+			Debug.WriteLine($"DbgImporter.GetSymbol failed for '{word}': {ex.Message}");
+		}
 
 		return null;
 	}
@@ -604,7 +609,8 @@ public abstract class DbgImporter : ISymbolProvider {
 						}
 					}
 				}
-			} catch {
+			} catch (Exception ex) {
+				Debug.WriteLine($"DbgImporter.LoadLabels failed for symbol '{kvp.Value.Name}': {ex.Message}");
 				_errorCount++;
 			}
 		}
@@ -634,7 +640,9 @@ public abstract class DbgImporter : ISymbolProvider {
 						aliases[addr.Value.Address] = aliasList;
 					}
 				}
-			} catch { }
+			} catch (Exception ex) {
+				Debug.WriteLine($"DbgImporter.GatherLabelAliases failed for symbol '{kvp.Value.Name}': {ex.Message}");
+			}
 		}
 
 		return labelAliases;
@@ -705,7 +713,8 @@ public abstract class DbgImporter : ISymbolProvider {
 						}
 					}
 				}
-			} catch {
+			} catch (Exception ex) {
+				Debug.WriteLine($"DbgImporter.LoadComments failed for line {kvp.Key}: {ex.Message}");
 				_errorCount++;
 			}
 		}
@@ -788,7 +797,8 @@ public abstract class DbgImporter : ISymbolProvider {
 					if (File.Exists(sourceFile)) {
 						file.SetSourceFile(sourceFile);
 					}
-				} catch {
+				} catch (Exception ex) {
+					Debug.WriteLine($"DbgImporter.LoadFileData failed for file '{file.Name}': {ex.Message}");
 					_errorCount++;
 				}
 			}
@@ -911,7 +921,8 @@ public abstract class DbgImporter : ISymbolProvider {
 					case "fil": LoadFiles(row, basePath); break;
 					case "seg": LoadSegments(row); break;
 				}
-			} catch {
+			} catch (Exception ex) {
+				Debug.WriteLine($"DbgImporter.Import failed parsing row: {ex.Message}");
 				_errorCount++;
 			}
 		}

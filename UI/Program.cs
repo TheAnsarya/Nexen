@@ -38,8 +38,9 @@ class Program {
 				if (Process.GetCurrentProcess().MainModule?.FileName is { Length: > 0 } mainModule) {
 					return mainModule;
 				}
-			} catch {
-				// Swallow — MainModule can throw on Linux if globalization is misconfigured
+			} catch (Exception ex) {
+				// MainModule can throw on Linux if globalization is misconfigured
+				Debug.WriteLine($"Program.ExePath: MainModule access failed: {ex.Message}");
 			}
 
 			return Path.Join(Path.GetDirectoryName(AppContext.BaseDirectory), RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Nexen.exe" : "Nexen");
@@ -49,7 +50,8 @@ class Program {
 	static Program() {
 		try {
 			Program.OriginalFolder = Environment.CurrentDirectory;
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"Program static ctor: CurrentDirectory access failed: {ex.Message}");
 			Program.OriginalFolder = Path.GetDirectoryName(ExePath) ?? "";
 		}
 	}
@@ -251,8 +253,9 @@ class Program {
 						LogNativeLibraryLoad(libraryName, homePath);
 						return NativeLibrary.Load(homePath);
 					}
-				} catch {
+				} catch (Exception ex) {
 					// HomeFolder may not be usable yet during first-run
+					Debug.WriteLine($"Program.DllImportResolver: HomeFolder access failed for '{libraryName}': {ex.Message}");
 				}
 			}
 
