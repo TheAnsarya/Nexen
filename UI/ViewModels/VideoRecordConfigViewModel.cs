@@ -16,7 +16,9 @@ public sealed partial class VideoRecordConfigViewModel : DisposableViewModel {
 	public VideoRecordConfigViewModel() {
 		Config = ConfigManager.Config.VideoRecord.Clone();
 
-		SavePath = Path.Join(ConfigManager.AviFolder, EmuApi.GetRomInfo().GetRomName() + (Config.Codec == VideoCodec.GIF ? ".gif" : ".avi"));
+		string romName = EmuApi.GetRomInfo().GetRomName();
+		string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+		SavePath = Path.Join(ConfigManager.AviFolder, $"{romName}_{timestamp}" + (Config.Codec == VideoCodec.GIF ? ".gif" : ".avi"));
 
 		AddDisposable(_compressionAvailableHelper = this.WhenAnyValue(x => x.Config.Codec).Select(x => x is VideoCodec.ZMBV or VideoCodec.CSCD).ToProperty(this, _ => _.CompressionAvailable));
 		AddDisposable(this.WhenAnyValue(x => x.Config.Codec).Subscribe((codec) => {

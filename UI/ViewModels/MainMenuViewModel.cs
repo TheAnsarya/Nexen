@@ -1046,7 +1046,9 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 					ActionType = ActionType.Record,
 					IsEnabled = () => HasLoadedRom() && !RecordApi.WaveIsRecording(),
 					OnClick = async () => {
-						string? filename = await FileDialogHelper.SaveFile(ConfigManager.WaveFolder, EmuApi.GetRomInfo().GetRomName() + ".wav", wnd, FileDialogHelper.WaveExt);
+						string romName = EmuApi.GetRomInfo().GetRomName();
+						string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+						string? filename = await FileDialogHelper.SaveFile(ConfigManager.WaveFolder, $"{romName}_{timestamp}.wav", wnd, FileDialogHelper.WaveExt);
 						if(filename is not null) {
 							RecordApi.WaveRecord(filename);
 						}

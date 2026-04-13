@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
@@ -25,7 +26,9 @@ public partial class VideoRecordWindow : NexenWindow {
 		VideoRecordConfigViewModel model = (VideoRecordConfigViewModel)DataContext!;
 		bool isGif = model.Config.Codec == VideoCodec.GIF;
 
-		string initFilename = EmuApi.GetRomInfo().GetRomName() + (isGif ? ".gif" : ".avi");
+		string romName = EmuApi.GetRomInfo().GetRomName();
+		string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+		string initFilename = $"{romName}_{timestamp}" + (isGif ? ".gif" : ".avi");
 		string? filename = await FileDialogHelper.SaveFile(ConfigManager.AviFolder, initFilename, VisualRoot, isGif ? FileDialogHelper.GifExt : FileDialogHelper.AviExt);
 
 		if (filename != null) {
