@@ -292,7 +292,7 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 		base.OnInitialized();
 
 		// Set up keyboard shortcuts
-		KeyDown += (s, e) => {
+		KeyDown += async (s, e) => {
 			if (ViewModel == null) {
 				return;
 			}
@@ -309,11 +309,11 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 						e.Handled = true;
 						return;
 					case Avalonia.Input.Key.S:
-						_ = ViewModel.SaveFileAsync();
+						await ViewModel.SaveFileAsync();
 						e.Handled = true;
 						return;
 					case Avalonia.Input.Key.O:
-						_ = ViewModel.OpenFileAsync();
+						await ViewModel.OpenFileAsync();
 						e.Handled = true;
 						return;
 					case Avalonia.Input.Key.C:
@@ -345,7 +345,7 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 						e.Handled = true;
 						return;
 					case Avalonia.Input.Key.G:
-						_ = ViewModel.GoToFrameAsync();
+						await ViewModel.GoToFrameAsync();
 						e.Handled = true;
 						return;
 				}

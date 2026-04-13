@@ -67,7 +67,7 @@ public sealed class HexEditorDataProvider : IHexEditorDataProvider {
 		int visibleByteCount = (int)(lastByteIndex - firstByteIndex + 1);
 
 		if (_cfg.HighlightBreakpoints) {
-			Breakpoint[] breakpoints = BreakpointManager.Breakpoints.ToArray();
+			var breakpoints = BreakpointManager.Breakpoints;
 			_breakpointTypes = new BreakpointTypeFlags[visibleByteCount];
 
 			for (int i = 0; i < visibleByteCount; i++) {

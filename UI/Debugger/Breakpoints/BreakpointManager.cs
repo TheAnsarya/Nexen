@@ -323,10 +323,12 @@ public static class BreakpointManager {
 	/// <param name="memoryType">The memory type to match.</param>
 	/// <returns>The first matching breakpoint, or <c>null</c> if none found.</returns>
 	public static Breakpoint? GetMatchingBreakpoint(UInt32 startAddress, UInt32 endAddress, MemoryType memoryType) {
-		return Breakpoints.Where((bp) =>
-				bp.MemoryType == memoryType &&
-				bp.StartAddress == startAddress && bp.EndAddress == endAddress
-			).FirstOrDefault();
+		foreach (var bp in Breakpoints) {
+			if (bp.MemoryType == memoryType && bp.StartAddress == startAddress && bp.EndAddress == endAddress) {
+				return bp;
+			}
+		}
+		return null;
 	}
 
 	/// <summary>
