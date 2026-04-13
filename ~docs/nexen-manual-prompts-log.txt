@@ -1402,9 +1402,17 @@ Work on `https://github.com/TheAnsarya/Nexen/issues/1245` and fix other issues a
 --- steer
 Event viewer opened, the TAS items still error; continue;
 
+Analyze the TAS/movie code menu items, windows, components, and functionality. Make everything TAS work and test it, search for any performance improvements and implement and benchmark them; update all documentation with correct info and fix edge cases and menus and windows and crashes; and just always focus on making everything work as expected; continue;
 
+--- claude 4.6 opus
 
+Analyze the TAS/movie code menu items, windows, components, and functionality. Make everything TAS work and test it, search for any performance improvements and implement and benchmark them; update all documentation with correct info and fix edge cases and menus and windows and crashes; and just always focus on making everything work as expected; continue;
 
+--- claude 4.6 sonnet
+
+Analyze the TAS/movie code menu items, windows, components, and functionality. Make everything TAS work and test it, search for any performance improvements and implement and benchmark them; update all documentation with correct info and fix edge cases and menus and windows and crashes; and just always focus on making everything work as expected; continue;
+
+--- rate limited on all three, 75 minute wait
 
 
 

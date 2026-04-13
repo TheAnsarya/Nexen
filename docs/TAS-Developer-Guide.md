@@ -420,3 +420,29 @@ private const bool DebugLogging = true;
 - [ ] System clipboard integration for copy/paste across editor instances
 - [ ] Branch disk offloading for large movies
 - [ ] Incremental auto-save with write-ahead log
+
+## Phase 3 UI Layer Fixes (Issue #1256)
+
+### TasLuaApi GetFrameInput
+
+`GetFrameInput()` previously returned a shared mutable `_frameInputCache` dictionary. Sequential calls overwrote previous results, breaking Lua scripts that held references. Now returns a new `Dictionary<string, bool>` per call.
+
+### Keyboard Shortcut Guard
+
+Single-key shortcuts (Space, F, R) are now suppressed when a `TextBox` has focus (e.g., SearchBox), preventing interference with text input. The guard uses `FocusManager.GetFocusedElement() is TextBox`.
+
+### Dialog Deadlock Prevention
+
+`TasInputDialog` and `TasSelectRangeDialog` now resolve their `TaskCompletionSource` with `null` when no parent window is available, instead of leaving the caller awaiting indefinitely.
+
+### TasSelectRangeDialog Validation
+
+Added `fromFrame > toFrame` validation — reversed ranges are now rejected with a user-friendly error message.
+
+### MainMenuViewModel Error Feedback
+
+`CreateNewTasMovie` and `StartTasRecording` now show a `DisplayMessageHelper` error if the TAS editor's DataContext check fails, instead of silently doing nothing.
+
+### MovieRecordConfigViewModel Safe Init
+
+Constructor now wraps `EmuApi.GetRomInfo().GetRomName()` in a try/catch with fallback to `"untitled"`, preventing crashes when no ROM is loaded.
