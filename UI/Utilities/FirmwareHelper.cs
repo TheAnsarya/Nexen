@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -38,8 +39,9 @@ public static class FirmwareHelper {
 						}
 					}
 				}
-			} catch {
+			} catch (Exception ex) {
 				// Skip files we can't read
+				Debug.WriteLine($"FirmwareHelper: Skipping file '{file}': {ex.Message}");
 			}
 		}
 

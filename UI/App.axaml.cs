@@ -186,8 +186,9 @@ public partial class App : Application {
 			if (OperatingSystem.IsWindows()) {
 				try {
 					ShowWin32MessageBox(message);
-				} catch {
+				} catch (Exception win32Ex) {
 					// Truly nothing left to try — error is in the log file
+					Debug.WriteLine($"App: Win32 MessageBox fallback failed: {win32Ex.Message}");
 				}
 			}
 

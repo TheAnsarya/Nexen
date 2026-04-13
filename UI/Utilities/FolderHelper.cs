@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -36,7 +37,8 @@ public static class FolderHelper {
 				}
 
 				Directory.CreateDirectory(folder);
-			} catch {
+			} catch (Exception ex) {
+				Debug.WriteLine($"FolderHelper.CheckFolderPermissions: Create failed for '{folder}': {ex.Message}");
 				return false;
 			}
 		}
@@ -46,7 +48,8 @@ public static class FolderHelper {
 				string fileName = Guid.NewGuid().ToString() + ".txt";
 				File.WriteAllText(Path.Combine(folder, fileName), "");
 				File.Delete(Path.Combine(folder, fileName));
-			} catch {
+			} catch (Exception ex) {
+				Debug.WriteLine($"FolderHelper.CheckFolderPermissions: Write check failed for '{folder}': {ex.Message}");
 				return false;
 			}
 		}

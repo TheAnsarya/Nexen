@@ -227,8 +227,9 @@ internal sealed class FileLogger : ILogger {
 			if (exception is not null) {
 				_writer.WriteLine(exception.ToString());
 			}
-		} catch {
-			// Silently ignore write failures
+		} catch (Exception writeEx) {
+			// Avoid recursive logging — write to debug output only
+			System.Diagnostics.Debug.WriteLine($"Log write failure: {writeEx.Message}");
 		}
 	}
 }

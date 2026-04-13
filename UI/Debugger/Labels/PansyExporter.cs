@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -537,7 +538,8 @@ public static class PansyExporter {
 			sourceBytes.CopyTo(result);
 
 			return result;
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"PansyExporter.GetCdlData failed: {ex.Message}");
 			return null;
 		}
 	}
@@ -545,7 +547,8 @@ public static class PansyExporter {
 	private static uint[] GetFunctions(MemoryType memoryType) {
 		try {
 			return DebugApi.GetCdlFunctions(memoryType);
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"PansyExporter.GetFunctions failed: {ex.Message}");
 			return [];
 		}
 	}
@@ -580,7 +583,8 @@ public static class PansyExporter {
 			}
 
 			return targets;
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"PansyExporter.GetJumpTargets failed: {ex.Message}");
 			return [];
 		}
 	}
@@ -1010,7 +1014,8 @@ public static class PansyExporter {
 			}
 
 			return SerializeSourceMapSection(files, entries);
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"PansyExporter.GenerateSourceMapSection failed: {ex.Message}");
 			return [];
 		}
 	}
@@ -1127,8 +1132,8 @@ public static class PansyExporter {
 						i += line.OpSize - 1;
 					}
 				}
-			} catch {
-				// Skip addresses that fail to disassemble
+			} catch (Exception ex) {
+				Debug.WriteLine($"PansyExporter: Skipping address that failed to disassemble: {ex.Message}");
 			}
 		}
 

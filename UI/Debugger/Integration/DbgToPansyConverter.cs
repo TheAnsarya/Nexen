@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -155,7 +156,8 @@ public static class DbgToPansyConverter {
 
 			// Default to WLA-DX if unclear
 			return DebugFormat.WlaDx;
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"DbgToPansyConverter.DetectFormat failed: {ex.Message}");
 			return DebugFormat.Unknown;
 		}
 	}

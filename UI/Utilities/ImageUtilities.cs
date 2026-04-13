@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using Avalonia;
 using Avalonia.Controls;
@@ -67,7 +68,8 @@ public static class ImageUtilities {
 		try {
 			using Stream stream = AssetLoader.Open(ToAssetUri(source));
 			return stream is not null;
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"ImageUtilities.AssetExists: Asset '{source}' not found: {ex.Message}");
 			return false;
 		}
 	}

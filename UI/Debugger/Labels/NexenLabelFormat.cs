@@ -1,6 +1,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.IO.Hashing;
@@ -243,7 +244,8 @@ public static class NexenLabelFormat {
 				return true; // Unknown CRC, allow loading
 			}
 			return header.RomCrc32 == GetRomCrc32(romInfo);
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"NexenLabelFormat.ValidateRomMatch failed: {ex.Message}");
 			return false;
 		}
 	}
@@ -260,7 +262,8 @@ public static class NexenLabelFormat {
 			byte[] magic = new byte[8];
 			fs.ReadExactly(magic);
 			return magic.AsSpan().SequenceEqual(Magic);
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"NexenLabelFormat.IsNexenLabelFile failed for '{path}': {ex.Message}");
 			return false;
 		}
 	}
@@ -328,7 +331,8 @@ public static class NexenLabelFormat {
 	private static uint GetRomCrc32(RomInfo romInfo) {
 		try {
 			return RomHashService.ComputeRomHashes(romInfo).Crc32Value;
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"NexenLabelFormat.GetRomCrc32 failed: {ex.Message}");
 			return 0;
 		}
 	}

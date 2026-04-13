@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -468,7 +469,8 @@ public partial class HexEditor : Control {
 					}
 
 					return new GridPoint { X = column, Y = row, LastNibble = false, InStringView = true };
-				} catch {
+				} catch (Exception ex) {
+					Debug.WriteLine($"HexEditor.GetGridPointFromPosition: String view calculation failed: {ex.Message}");
 					return null;
 				}
 			} else {

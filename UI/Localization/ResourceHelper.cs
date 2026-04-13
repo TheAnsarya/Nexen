@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -51,7 +52,8 @@ class ResourceHelper {
 					}
 				}
 			}
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"ResourceHelper: Failed to load localization resources: {ex.Message}");
 		}
 	}
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -33,7 +34,8 @@ public sealed class TblLoader {
 			}
 
 			return new TblByteCharConverter(dict);
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"TblLoader.Load failed: {ex.Message}");
 			return null;
 		}
 	}

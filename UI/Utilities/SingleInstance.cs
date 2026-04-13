@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
@@ -29,7 +30,8 @@ public sealed class SingleInstance : IDisposable {
 				_lockFileStream = File.Open(Path.Combine(ConfigManager.HomeFolder, "nexen.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
 				_lockFileStream.Lock(0, 0);
 				_firstInstance = true;
-			} catch {
+			} catch (Exception ex) {
+				Debug.WriteLine($"SingleInstance: File lock failed: {ex.Message}");
 				_firstInstance = false;
 			}
 		} else {

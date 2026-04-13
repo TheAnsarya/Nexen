@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -578,7 +579,8 @@ public sealed class DebugWorkspace {
 			try {
 				string fileData = File.ReadAllText(path);
 				dbgWorkspace = (DebugWorkspace?)JsonSerializer.Deserialize(fileData, typeof(DebugWorkspace), NexenSerializerContext.Default) ?? new DebugWorkspace();
-			} catch {
+			} catch (Exception ex) {
+				Debug.WriteLine($"DebugWorkspaceManager.Load failed for '{path}': {ex.Message}");
 			}
 		}
 

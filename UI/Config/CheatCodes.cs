@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -24,7 +25,9 @@ public sealed partial class CheatCodes {
 		if (File.Exists(path)) {
 			try {
 				cheats = (CheatCodes?)JsonSerializer.Deserialize(File.ReadAllText(path), typeof(CheatCodes), NexenSerializerContext.Default) ?? new CheatCodes();
-			} catch { }
+			} catch (Exception ex) {
+				Debug.WriteLine($"CheatCodes.Deserialize failed for '{path}': {ex.Message}");
+			}
 		}
 
 		return cheats;
@@ -39,7 +42,8 @@ public sealed partial class CheatCodes {
 					File.Delete(CheatCodes.FilePath);
 				}
 			}
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"CheatCodes.Save failed: {ex.Message}");
 		}
 	}
 

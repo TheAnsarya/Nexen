@@ -193,7 +193,8 @@ public static partial class ConfigManager {
 					return false;
 				}
 			}
-		} catch {
+		} catch (Exception ex) {
+			Debug.WriteLine($"ConfigManager.ApplySetting failed for property '{property.Name}': {ex.Message}");
 			return false;
 		}
 
@@ -293,8 +294,9 @@ public static partial class ConfigManager {
 			if (!Directory.Exists(folder)) {
 				Directory.CreateDirectory(folder);
 			}
-		} catch {
+		} catch (Exception ex) {
 			//If the folder doesn't exist and we couldn't create it, use the default folder
+			Debug.WriteLine($"ConfigManager.GetFolder: Failed to create '{folder}': {ex.Message}");
 			EmuApi.WriteLogEntry("[UI] Folder could not be created: " + folder);
 			folder = defaultFolderName;
 		}

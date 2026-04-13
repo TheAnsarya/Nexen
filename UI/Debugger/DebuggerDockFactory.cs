@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Dock.Avalonia.Controls;
 using Dock.Model.Controls;
