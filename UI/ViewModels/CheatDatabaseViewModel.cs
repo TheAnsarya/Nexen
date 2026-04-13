@@ -16,7 +16,7 @@ using Nexen.Utilities;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
-namespace Nexen.ViewModels; 
+namespace Nexen.ViewModels;
 public sealed partial class CheatDatabaseViewModel : DisposableViewModel {
 	private List<CheatDbGameEntry> _entries;
 
