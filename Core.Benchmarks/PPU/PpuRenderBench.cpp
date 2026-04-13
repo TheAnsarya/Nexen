@@ -717,3 +717,341 @@ static void BM_SnesConvertToHiRes_CachedPixel(benchmark::State& state) {
 	state.SetItemsProcessed(state.iterations() * 240 * 256);
 }
 BENCHMARK(BM_SnesConvertToHiRes_CachedPixel);
+
+// =============================================================================
+// NES PPU Sprite Evaluation Loop
+// =============================================================================
+// The NES PPU evaluates all 64 OAM sprites every scanline to find the 8
+// visible sprites for the next scanline. This is a tight state-machine loop
+// called on cycles 65-256 (192 cycles per scanline).
+//
+// The evaluation logic in NesPpu<T>::ProcessSpriteEvaluation():
+//   - Cycles 1-64: Clear secondary OAM (32 bytes)
+//   - Cycles 65-256: Walk all 64 sprites, copy Y+tile+attr+X for visible ones
+//   - Each visible sprite requires 4 bytes copied to secondary OAM
+//   - Sprite overflow flag set if more than 8 are visible
+//
+// This benchmark simulates the core evaluation loop without PPU state machine
+// complexity, measuring the Y-range check + copy throughput.
+// =============================================================================
+
+namespace {
+	// Sprite Y-range check (the hot path in ProcessSpriteEvaluation even cycles)
+	inline bool SpriteInRange(uint8_t spriteY, uint8_t scanline, bool largeSprites) {
+		return scanline >= spriteY && scanline < spriteY + (largeSprites ? 16u : 8u);
+	}
+} // anonymous namespace
+
+// Benchmark: NES sprite evaluation — all 64 sprites, zero visible (best case)
+// This is the "idle" cost when the scanline has no sprites.
+static void BM_NesPpu_SpriteEval_NoneVisible(benchmark::State& state) {
+	// 64 sprites all at Y=0xFF (off-screen, below scanline 239)
+	alignas(64) uint8_t oam[256];
+	for (int i = 0; i < 64; i++) {
+		oam[i * 4 + 0] = 0xFF; // Y: below visible range
+		oam[i * 4 + 1] = static_cast<uint8_t>(i); // Tile
+		oam[i * 4 + 2] = 0x00; // Attributes
+		oam[i * 4 + 3] = static_cast<uint8_t>(i * 4); // X
+	}
+
+	alignas(64) uint8_t secondaryOam[32];
+	memset(secondaryOam, 0xFF, sizeof(secondaryOam));
+
+	uint8_t scanline = 100;
+
+	for (auto _ : state) {
+		int spriteCount = 0;
+		for (int i = 0; i < 64; i++) {
+			uint8_t spriteY = oam[i * 4];
+			if (SpriteInRange(spriteY, scanline, false)) {
+				if (spriteCount < 8) {
+					memcpy(&secondaryOam[spriteCount * 4], &oam[i * 4], 4);
+					spriteCount++;
+				} else {
+					break; // Overflow: NES stops evaluating after 8 sprites
+				}
+			}
+		}
+		benchmark::DoNotOptimize(spriteCount);
+		scanline = (scanline + 1) % 240;
+	}
+	state.SetItemsProcessed(state.iterations() * 64); // All 64 sprites scanned
+}
+BENCHMARK(BM_NesPpu_SpriteEval_NoneVisible);
+
+// Benchmark: NES sprite evaluation — 8 sprites visible (full secondary OAM fill)
+// This is the common case in typical NES games.
+static void BM_NesPpu_SpriteEval_8Visible(benchmark::State& state) {
+	// Place 8 sprites on scanline 100, rest off-screen
+	alignas(64) uint8_t oam[256];
+	memset(oam, 0xFF, sizeof(oam));
+	for (int i = 0; i < 8; i++) {
+		oam[i * 4 + 0] = 96;  // Y=96: visible on scanlines 96-103
+		oam[i * 4 + 1] = static_cast<uint8_t>(i * 16); // Tile
+		oam[i * 4 + 2] = 0x00; // Attributes
+		oam[i * 4 + 3] = static_cast<uint8_t>(i * 30); // X
+	}
+
+	alignas(64) uint8_t secondaryOam[32];
+
+	for (auto _ : state) {
+		memset(secondaryOam, 0xFF, 32); // Clear secondary OAM first
+		int spriteCount = 0;
+		for (int i = 0; i < 64; i++) {
+			uint8_t spriteY = oam[i * 4];
+			if (SpriteInRange(spriteY, 100, false)) {
+				if (spriteCount < 8) {
+					memcpy(&secondaryOam[spriteCount * 4], &oam[i * 4], 4);
+					spriteCount++;
+				} else {
+					break;
+				}
+			}
+		}
+		benchmark::DoNotOptimize(spriteCount);
+	}
+	state.SetItemsProcessed(state.iterations() * 64);
+}
+BENCHMARK(BM_NesPpu_SpriteEval_8Visible);
+
+// Benchmark: NES sprite evaluation — max density (64 sprites across screen)
+// Worst case: many sprites visible, forces full 64-sprite scan every scanline.
+static void BM_NesPpu_SpriteEval_MaxDensity(benchmark::State& state) {
+	// Spread 64 sprites evenly: Y values 0, 4, 8, ... 252 (8-pixel separation)
+	alignas(64) uint8_t oam[256];
+	for (int i = 0; i < 64; i++) {
+		oam[i * 4 + 0] = static_cast<uint8_t>(i * 4);  // Y: 0..252
+		oam[i * 4 + 1] = static_cast<uint8_t>(i);       // Tile
+		oam[i * 4 + 2] = 0x00;                          // Attributes
+		oam[i * 4 + 3] = static_cast<uint8_t>(i * 4);  // X
+	}
+
+	alignas(64) uint8_t secondaryOam[32];
+	uint8_t scanline = 0;
+
+	for (auto _ : state) {
+		memset(secondaryOam, 0xFF, 32);
+		int spriteCount = 0;
+		bool overflow = false;
+		for (int i = 0; i < 64; i++) {
+			uint8_t spriteY = oam[i * 4];
+			if (SpriteInRange(spriteY, scanline, false)) {
+				if (spriteCount < 8) {
+					memcpy(&secondaryOam[spriteCount * 4], &oam[i * 4], 4);
+					spriteCount++;
+				} else {
+					overflow = true;
+					break;
+				}
+			}
+		}
+		benchmark::DoNotOptimize(spriteCount);
+		benchmark::DoNotOptimize(overflow);
+		scanline = (scanline + 1) % 240;
+	}
+	state.SetItemsProcessed(state.iterations() * 64);
+}
+BENCHMARK(BM_NesPpu_SpriteEval_MaxDensity);
+
+// Benchmark: NES sprite evaluation with large sprites (8×16) — harder range check
+static void BM_NesPpu_SpriteEval_LargeSprites_8x16(benchmark::State& state) {
+	alignas(64) uint8_t oam[256];
+	// 8 large (8×16) sprites covering half the screen
+	memset(oam, 0xFF, sizeof(oam));
+	for (int i = 0; i < 8; i++) {
+		oam[i * 4 + 0] = static_cast<uint8_t>(i * 20); // Y: 0,20,40,...140
+		oam[i * 4 + 1] = static_cast<uint8_t>(i * 2);  // Tile
+		oam[i * 4 + 2] = 0x00;
+		oam[i * 4 + 3] = static_cast<uint8_t>(i * 28);
+	}
+
+	alignas(64) uint8_t secondaryOam[32];
+	uint8_t scanline = 50;
+
+	for (auto _ : state) {
+		memset(secondaryOam, 0xFF, 32);
+		int spriteCount = 0;
+		for (int i = 0; i < 64; i++) {
+			uint8_t spriteY = oam[i * 4];
+			if (SpriteInRange(spriteY, scanline, true)) { // 8×16 sprites
+				if (spriteCount < 8) {
+					memcpy(&secondaryOam[spriteCount * 4], &oam[i * 4], 4);
+					spriteCount++;
+				} else {
+					break;
+				}
+			}
+		}
+		benchmark::DoNotOptimize(spriteCount);
+		scanline = (scanline + 1) % 240;
+	}
+	state.SetItemsProcessed(state.iterations() * 64);
+}
+BENCHMARK(BM_NesPpu_SpriteEval_LargeSprites_8x16);
+
+// =============================================================================
+// NES PPU GetPixelColor — Per-Pixel Priority Resolution
+// =============================================================================
+// GetPixelColor() is called 256 times per visible scanline (61,440/frame).
+// For each pixel it:
+//   1. Reads background shift registers to get BG color
+//   2. Scans up to 8 sprite tiles to find the first covering this pixel
+//   3. Checks sprite priority vs BG priority
+//   4. Sets sprite-0 hit flag if applicable
+//
+// The hot path has [[unlikely]] on sprite checks but still scans up to 8 sprites.
+// =============================================================================
+
+// Benchmark: GetPixelColor with 0 sprites (BG-only path — fastest)
+static void BM_NesPpu_PixelColor_BgOnly(benchmark::State& state) {
+	// Simulate shift register state for BG tiles
+	uint16_t lowBitShift  = 0xA5A5;
+	uint16_t highBitShift = 0x5A5A;
+	uint8_t  xScroll = 3;
+
+	for (auto _ : state) {
+		uint8_t offset = xScroll;
+		// Simulate reading BG color bits from shift registers
+		uint8_t bgColor = (uint8_t)(
+			(((lowBitShift  << offset) & 0x8000) >> 15) |
+			(((highBitShift << offset) & 0x8000) >> 14));
+
+		benchmark::DoNotOptimize(bgColor);
+		lowBitShift  = (lowBitShift  << 1) | (lowBitShift  >> 15);
+		highBitShift = (highBitShift << 1) | (highBitShift >> 15);
+		xScroll = (xScroll + 1) & 7;
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesPpu_PixelColor_BgOnly);
+
+// Benchmark: GetPixelColor with 8 sprites — worst-case sprite scan per pixel
+// Simulates the full sprite priority loop from NesPpu<T>::GetPixelColor()
+static void BM_NesPpu_PixelColor_8Sprites_PriorityResolution(benchmark::State& state) {
+	// Set up 8 sprite tiles at various X positions
+	// Uses NesSpriteInfo-compatible layout
+	struct SpriteTileData {
+		bool HorizontalMirror = false;
+		bool BackgroundPriority = false;
+		uint8_t SpriteX = 0;
+		uint8_t LowByte = 0;
+		uint8_t HighByte = 0;
+		uint8_t PaletteOffset = 16;
+	};
+
+	std::array<SpriteTileData, 8> spriteTiles{};
+	for (int i = 0; i < 8; i++) {
+		spriteTiles[i].SpriteX        = static_cast<uint8_t>(i * 32);
+		spriteTiles[i].LowByte        = static_cast<uint8_t>(0xAA >> i);
+		spriteTiles[i].HighByte       = static_cast<uint8_t>(0x55 << i);
+		spriteTiles[i].BackgroundPriority = (i % 3 == 0);
+		spriteTiles[i].HorizontalMirror   = (i % 2 == 0);
+		spriteTiles[i].PaletteOffset      = static_cast<uint8_t>(16 + i * 4);
+	}
+
+	uint16_t lowBitShift  = 0xA5A5;
+	uint16_t highBitShift = 0x5A5A;
+	uint8_t xScroll = 0;
+	int cycle = 1;
+
+	for (auto _ : state) {
+		uint8_t offset = xScroll;
+		// BG color
+		uint8_t bgColor = (uint8_t)(
+			(((lowBitShift  << offset) & 0x8000) >> 15) |
+			(((highBitShift << offset) & 0x8000) >> 14));
+
+		// Sprite scan (mirrors GetPixelColor inner loop)
+		uint8_t resultColor = bgColor;
+		bool sprite0Hit = false;
+		for (int i = 0; i < 8; i++) {
+			int32_t shift = cycle - (int32_t)spriteTiles[i].SpriteX - 1;
+			if (shift >= 0 && shift < 8) {
+				uint8_t spriteColor;
+				if (spriteTiles[i].HorizontalMirror) {
+					spriteColor = ((spriteTiles[i].LowByte >> shift) & 0x01) |
+					              (((spriteTiles[i].HighByte >> shift) & 0x01) << 1);
+				} else {
+					spriteColor = (((spriteTiles[i].LowByte << shift) & 0x80) >> 7) |
+					              (((spriteTiles[i].HighByte << shift) & 0x80) >> 6);
+				}
+				if (spriteColor != 0) {
+					if (i == 0 && bgColor != 0) [[unlikely]] {
+						sprite0Hit = true;
+					}
+					if (bgColor == 0 || !spriteTiles[i].BackgroundPriority) {
+						resultColor = spriteTiles[i].PaletteOffset + spriteColor;
+					}
+					break;
+				}
+			}
+		}
+		benchmark::DoNotOptimize(resultColor);
+		benchmark::DoNotOptimize(sprite0Hit);
+		cycle++;
+		if (cycle > 256) cycle = 1;
+		lowBitShift = (lowBitShift << 1) | (lowBitShift >> 15);
+		highBitShift = (highBitShift << 1) | (highBitShift >> 15);
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+BENCHMARK(BM_NesPpu_PixelColor_8Sprites_PriorityResolution);
+
+// Benchmark: Full 256-pixel scanline with 8 sprites (57,344 iterations/frame)
+static void BM_NesPpu_PixelColor_FullScanline_8Sprites(benchmark::State& state) {
+	struct SpriteTile {
+		bool HorizontalMirror;
+		bool BackgroundPriority;
+		uint8_t SpriteX;
+		uint8_t LowByte;
+		uint8_t HighByte;
+		uint8_t PaletteOffset;
+	};
+
+	std::array<SpriteTile, 8> sprites{};
+	for (int i = 0; i < 8; i++) {
+		sprites[i] = {
+			.HorizontalMirror  = (i % 2 == 0),
+			.BackgroundPriority = (i % 3 == 0),
+			.SpriteX           = static_cast<uint8_t>(i * 30 + 8),
+			.LowByte           = static_cast<uint8_t>(0b10110101),
+			.HighByte          = static_cast<uint8_t>(0b01001010),
+			.PaletteOffset     = static_cast<uint8_t>(16 + i * 4)
+		};
+	}
+
+	alignas(64) uint8_t scanlineOutput[256] = {};
+	uint16_t lowBitShift  = 0xC3C3;
+	uint16_t highBitShift = 0x3C3C;
+
+	for (auto _ : state) {
+		for (int cycle = 1; cycle <= 256; cycle++) {
+			uint8_t offset = 0; // xScroll = 0 for bench
+			uint8_t bgColor = (uint8_t)(
+				(((lowBitShift  << offset) & 0x8000) >> 15) |
+				(((highBitShift << offset) & 0x8000) >> 14));
+			lowBitShift  <<= 1;
+			highBitShift <<= 1;
+
+			uint8_t resultColor = bgColor;
+			for (int i = 0; i < 8; i++) {
+				int32_t shift = cycle - (int32_t)sprites[i].SpriteX - 1;
+				if (shift >= 0 && shift < 8) {
+					uint8_t sc = sprites[i].HorizontalMirror
+						? ((sprites[i].LowByte >> shift) & 1) | (((sprites[i].HighByte >> shift) & 1) << 1)
+						: (((sprites[i].LowByte << shift) & 0x80) >> 7) | (((sprites[i].HighByte << shift) & 0x80) >> 6);
+					if (sc != 0) {
+						if (bgColor == 0 || !sprites[i].BackgroundPriority) {
+							resultColor = sprites[i].PaletteOffset + sc;
+						}
+						break;
+					}
+				}
+			}
+			scanlineOutput[cycle - 1] = resultColor;
+		}
+		benchmark::DoNotOptimize(scanlineOutput[0]);
+	}
+	state.SetItemsProcessed(state.iterations() * 256);
+}
+BENCHMARK(BM_NesPpu_PixelColor_FullScanline_8Sprites);

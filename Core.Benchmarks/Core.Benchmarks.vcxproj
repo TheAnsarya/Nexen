@@ -230,6 +230,21 @@
 		<ClCompile Include="Shared\CdlBitUtilsBench.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="SNES\SnesPpuBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Genesis\GenesisVdpBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Debugger\DebuggerRefreshBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="GBA\GbaDmaBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
+		<ClCompile Include="Shared\SaveStateCompressionBench.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Core.vcxproj">
