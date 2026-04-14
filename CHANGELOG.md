@@ -313,7 +313,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.4.5] - 2026-07-25
+## [1.4.5] - 2026-03-28
 
 ### Added
 
@@ -344,7 +344,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 	- App-local ICU configured via `runtimeconfig.template.json` with `System.Globalization.AppLocalIcu`
 	- Full internationalization/multi-language support preserved (not using InvariantGlobalization)
 
-## [1.4.0] - 2026-07-24
+## [1.4.0] - 2026-03-07
 
 ### Added
 
@@ -422,7 +422,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.3.0] - 2026-07-23
+## [1.3.0] - 2026-03-03
 
 ### Performance
 
