@@ -1443,6 +1443,27 @@ Inspect and commit all three as-is, and I thought I already ordered the copilot 
 
 --- try again
 
+[Nexen] update issues #1251, #1205, #1224, #1223, #1039, #1076, #1193, #1194, #1176 with a comment about the new release and how it should fix their issue and thank you for testing and please continue testing, and there are still other issues we're fixing but they shouldn't cause any play issues; continue;
+
+--- stopped by limit
+
+continue adding comments but include a link to the release, and edit the comments you already made with a linkl continue;
+
+Continue working on `https://github.com/TheAnsarya/Nexen/issues/1076` and fix the PPU error or whatever the error is.; continue;
+--- stopped by limit
+
+I have a big budget still so I am not out of budget, stop hitting a rate limit, I am paying for it, work and continue;
+--- stopped by limit
+
+[Nexen,poppy,pansy,peony] Continue working issues and finding problems and creating/updating epics/issues/benchmarks/tests/plans/documentation/session-logs/git-commit/etc/readmes; work for a very long time, continue work, work, go, continue; for a long time; continue;
+
+[Nexen] Fix issues 1223 `https://github.com/TheAnsarya/Nexen/issues/1223` (which was supposed to be fixed already) and 1278 `https://github.com/TheAnsarya/Nexen/issues/1278` and 1279 `https://github.com/TheAnsarya/Nexen/issues/1279`. This was supposed to be already fixed, you said it was. Make issues and plans and docs and find the problem and fix it and then run Nexen so I can test it; continue;
+
+[Nexen] What the hell happened? The Settings->Input window no longer has a way to set controller input settings, the controller layouts are gone, the button settings are gone, the whole thing is a mess; DO NOT git restore, but instead manually restore all the controller input stuff. We can't play an emulator without controller input. I don't know why it disappeared; fix it!; continue;
+
+OK, I think the problem is that the system specific buttons are not working, so you can't get to the controller binding layouts
+
+[Nexen] git commit everything (for all repos); Review issues 1223, 1278, and 1279 and fix any remaining problems and code issues and update the issues (and docs and plans and tests and benchmarks, etc) and implement all fixes and performance increases and correctness fixes; Issue `https://github.com/TheAnsarya/Nexen/issues/1076` is still not correct check other emulators (not just Ares) and figure out why this is happening, and fix it, research and add (epics/issues/benchmarks/tests/plans/documentation/session-logs/readmes/etc) and implement any issues you find; make long-term research plans and manual testing instructions so we can wriggle out the real error causing this problem; continue;
 
 
 
@@ -1453,15 +1474,6 @@ Inspect and commit all three as-is, and I thought I already ordered the copilot 
 
 
 
-
-
-
-
-
-
-
-
-[Nexen] update issues #1251, #1205, #1224, #1223, #1039, #1076, #1193, #1194, #1176 with a comment about the new release and how it should fix their issue and thank you for testing and please continue testing, and there are still other issues we're fixing but they shouldn't cause any play issues, keep 
 
 
 
