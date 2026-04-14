@@ -22,10 +22,8 @@ public sealed partial class WsConfigViewModel : DisposableViewModel {
 		Config = ConfigManager.Config.Ws;
 		OriginalConfig = Config.Clone();
 
-		IObservable<bool> button1Enabled = this.WhenAnyValue(x => x.Config.ControllerHorizontal.Type, x => x.CanConfigure());
-		IObservable<bool> button2Enabled = this.WhenAnyValue(x => x.Config.ControllerVertical.Type, x => x.CanConfigure());
-		SetupPlayerHorizontal = ReactiveCommand.Create<Button>(btn => this.OpenSetup(btn, 0), button1Enabled);
-		SetupPlayerVertical = ReactiveCommand.Create<Button>(btn => this.OpenSetup(btn, 1), button2Enabled);
+		SetupPlayerHorizontal = ReactiveCommand.Create<Button>(btn => this.OpenSetup(btn, 0));
+		SetupPlayerVertical = ReactiveCommand.Create<Button>(btn => this.OpenSetup(btn, 1));
 
 		if (Design.IsDesignMode) {
 			return;
@@ -39,6 +37,7 @@ public sealed partial class WsConfigViewModel : DisposableViewModel {
 		ControllerConfigWindow wnd = new ControllerConfigWindow();
 		ControllerConfig orgCfg = port == 0 ? Config.ControllerHorizontal : Config.ControllerVertical;
 		ControllerConfig cfg = port == 0 ? Config.ControllerHorizontal.Clone() : Config.ControllerVertical.Clone();
+		cfg.Type = port == 0 ? ControllerType.WsController : ControllerType.WsControllerVertical;
 		wnd.DataContext = new ControllerConfigViewModel(port == 0 ? ControllerType.WsController : ControllerType.WsControllerVertical, cfg, orgCfg, port);
 
 		if (await wnd.ShowDialogAtPosition<bool>(TopLevel.GetTopLevel(btn) as Visual, startPosition)) {

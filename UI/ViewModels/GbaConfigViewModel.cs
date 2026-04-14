@@ -21,8 +21,7 @@ public sealed partial class GbaConfigViewModel : DisposableViewModel {
 		Config = ConfigManager.Config.Gba;
 		OriginalConfig = Config.Clone();
 
-		IObservable<bool> button1Enabled = this.WhenAnyValue(x => x.Config.Controller.Type, x => x.CanConfigure());
-		SetupPlayer = ReactiveCommand.Create<Button>(btn => this.OpenSetup(btn, 0), button1Enabled);
+		SetupPlayer = ReactiveCommand.Create<Button>(btn => this.OpenSetup(btn, 0));
 
 		if (Design.IsDesignMode) {
 			return;
@@ -35,6 +34,7 @@ public sealed partial class GbaConfigViewModel : DisposableViewModel {
 		PixelPoint startPosition = btn.PointToScreen(new Point(-7, btn.Bounds.Height));
 		ControllerConfigWindow wnd = new ControllerConfigWindow();
 		ControllerConfig cfg = Config.Controller.Clone();
+		cfg.Type = ControllerType.GbaController;
 		wnd.DataContext = new ControllerConfigViewModel(ControllerType.GbaController, cfg, Config.Controller, 0);
 
 		if (await wnd.ShowDialogAtPosition<bool>(TopLevel.GetTopLevel(btn) as Visual, startPosition)) {

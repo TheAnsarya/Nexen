@@ -36,6 +36,8 @@ public sealed partial class GameboyConfig : BaseConfig<GameboyConfig> {
 	[Reactive][MinMax(0, 100)] public partial UInt32 WaveVol { get; set; } = 100;
 
 	public void ApplyConfig() {
+		Controller.Type = ControllerType.GameboyController;
+
 		ConfigManager.Config.Video.ApplyConfig();
 
 		ConfigApi.SetGameboyConfig(new InteropGameboyConfig() {

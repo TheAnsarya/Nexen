@@ -39,6 +39,8 @@ public sealed partial class GbaConfig : BaseConfig<GbaConfig> {
 	[Reactive][MinMax(0, 100)] public partial UInt32 ChannelBVol { get; set; } = 100;
 
 	public void ApplyConfig() {
+		Controller.Type = ControllerType.GbaController;
+
 		ConfigManager.Config.Video.ApplyConfig();
 
 		ConfigApi.SetGbaConfig(new InteropGbaConfig() {

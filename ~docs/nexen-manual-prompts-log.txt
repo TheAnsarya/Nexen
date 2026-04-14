@@ -1483,10 +1483,9 @@ resume deep work on #1076 [Nexen] Fix issue 1076, Ignore `VTOTAL`, research from
 
 [Nexen] This is an example but not the only one by far, `https://github.com/TheAnsarya/Nexen/issues/1076#issuecomment-4245731081`, you've used "\n" but it wasn't translated into a newline, fix how you are adding these comments so crlf are part of the comment instead of a literal "\n"; continue; resume deep work on #1076, find correctness problems and performance problems, and benchmark and test and document them and go!; and do your next suggestion "Add a one-command workflow script that runs ROM build + trace export + compare against a checked-in reference trace and returns CI-friendly pass/fail for #1076 regression gating."; continue;
 
+yes, set up an issue to do that later, then focus on getting snes performance better. My test machine is slow, but it runs pcsx2 fine, so it should run snes and pansy/cdl find ways to make all of that faster, make pansy logging super extra fast so emulation isn't slowed down.; continue;
 
-
-
-
+[Nexen] We've got more input controller errors, including issue #1286 `https://github.com/TheAnsarya/Nexen/issues/1286` fix this issue and also work on the other systems and tabs and make sure everything works; continue;
 
 
 

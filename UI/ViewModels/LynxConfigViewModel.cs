@@ -38,8 +38,7 @@ public sealed partial class LynxConfigViewModel : DisposableViewModel {
 		Config = ConfigManager.Config.Lynx;
 		OriginalConfig = Config.Clone();
 
-		IObservable<bool> buttonEnabled = this.WhenAnyValue(x => x.Config.Controller.Type, x => x.CanConfigure());
-		SetupPlayer = ReactiveCommand.Create<Button>(btn => this.OpenSetup(btn, 0), buttonEnabled);
+		SetupPlayer = ReactiveCommand.Create<Button>(btn => this.OpenSetup(btn, 0));
 
 		if (Design.IsDesignMode) {
 			return;
@@ -54,6 +53,7 @@ public sealed partial class LynxConfigViewModel : DisposableViewModel {
 		ControllerConfigWindow wnd = new ControllerConfigWindow();
 		ControllerConfig orgCfg = Config.Controller;
 		ControllerConfig cfg = Config.Controller.Clone();
+		cfg.Type = ControllerType.LynxController;
 		wnd.DataContext = new ControllerConfigViewModel(ControllerType.LynxController, cfg, orgCfg, port);
 
 		if (await wnd.ShowDialogAtPosition<bool>(TopLevel.GetTopLevel(btn) as Visual, startPosition)) {
