@@ -763,8 +763,8 @@ constexpr auto calculate_cases(std::size_t Page) noexcept {
   auto fill = result.begin();
   {
     auto first = values.begin() + static_cast<std::ptrdiff_t>(Page);
-    auto last = values.begin() + static_cast<std::ptrdiff_t>(Page + values_to);
-    while (first != last) {
+    auto end_it = values.begin() + static_cast<std::ptrdiff_t>(Page + values_to);
+    while (first != end_it) {
       *fill++ = hash_v<Hash>(*first++);
     }
   }

@@ -423,7 +423,7 @@ BENCHMARK(BM_GbaDma_AddrMode_Increment);
 // Benchmark: Fixed destination (audio FIFO — destination never increments)
 static void BM_GbaDma_AddrMode_FixedDst(benchmark::State& state) {
 	uint32_t src = 0x02000000;
-	constexpr uint32_t dst = 0x040000B0; // FIFO_A: fixed
+	uint32_t dst = 0x040000B0; // FIFO_A: fixed
 	constexpr uint32_t step = 4;
 
 	for (auto _ : state) {
