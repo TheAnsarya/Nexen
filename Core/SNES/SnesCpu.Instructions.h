@@ -302,18 +302,18 @@ Compare instructions
 void SnesCpu::Compare(uint16_t reg, bool eightBitMode) {
 	if (eightBitMode) {
 		uint8_t value = GetByteValue();
-		ClearFlags(ProcFlags::Carry | ProcFlags::Negative | ProcFlags::Zero);
 		uint8_t result = (uint8_t)reg - value;
-		_state.PS |= ((uint8_t)reg >= value) ? ProcFlags::Carry : 0;
-		_state.PS |= (result == 0) ? ProcFlags::Zero : 0;
-		_state.PS |= (result & 0x80);
+		uint8_t flags = (uint8_t)((uint8_t)reg >= value);
+		flags |= (uint8_t)((result == 0) << 1);
+		flags |= (result & ProcFlags::Negative);
+		_state.PS = (_state.PS & ~(ProcFlags::Carry | ProcFlags::Negative | ProcFlags::Zero)) | flags;
 	} else {
 		uint16_t value = GetWordValue();
-		ClearFlags(ProcFlags::Carry | ProcFlags::Negative | ProcFlags::Zero);
 		uint16_t result = reg - value;
-		_state.PS |= (reg >= value) ? ProcFlags::Carry : 0;
-		_state.PS |= (result == 0) ? ProcFlags::Zero : 0;
-		_state.PS |= (result >> 8) & 0x80;
+		uint8_t flags = (uint8_t)(reg >= value);
+		flags |= (uint8_t)((result == 0) << 1);
+		flags |= (uint8_t)((result >> 8) & ProcFlags::Negative);
+		_state.PS = (_state.PS & ~(ProcFlags::Carry | ProcFlags::Negative | ProcFlags::Zero)) | flags;
 	}
 }
 
