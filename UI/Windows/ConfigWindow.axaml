@@ -1,4 +1,4 @@
-<Window
+﻿<Window
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -81,7 +81,7 @@
 			</Grid>
 		</Panel>
 
-		<TabControl TabStripPlacement="Left" Background="#20888888" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" Padding="0">
+		<TabControl TabStripPlacement="Left" Background="#20888888" SelectedIndex="{ReflectionBinding SelectedIndex, Mode=TwoWay}" Padding="0">
 			<TabItem Content="{Binding Audio}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">

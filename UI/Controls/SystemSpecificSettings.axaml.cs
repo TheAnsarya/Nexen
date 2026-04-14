@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -9,10 +9,11 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Nexen.Config;
 using Nexen.Localization;
+using Avalonia.VisualTree;
 using Nexen.ViewModels;
 using Nexen.Windows;
 
-namespace Nexen.Controls; 
+namespace Nexen.Controls;
 public partial class SystemSpecificSettings : UserControl {
 	public static readonly StyledProperty<ConfigType> ConfigTypeProperty = AvaloniaProperty.Register<SystemSpecificSettings, ConfigType>(nameof(ConfigType));
 
@@ -62,7 +63,8 @@ public partial class SystemSpecificSettings : UserControl {
 	}
 
 	private void NavigateTo(ConfigWindowTab console) {
-		if (VisualRoot is ConfigWindow wnd && wnd.DataContext is ConfigViewModel cfg) {
+		ConfigWindow? wnd = VisualRoot as ConfigWindow ?? this.FindAncestorOfType<ConfigWindow>();
+		if (wnd?.DataContext is ConfigViewModel cfg) {
 			cfg.SelectTab(console);
 
 			switch (console) {
