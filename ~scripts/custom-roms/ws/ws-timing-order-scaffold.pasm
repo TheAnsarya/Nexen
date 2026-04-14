@@ -1,4 +1,4 @@
-; ============================================================================
+﻿; ============================================================================
 ; ws-timing-order-scaffold.pasm - WonderSwan timing trace scaffold
 ; First scaffold ROM for #1285: emits a compact trace buffer in WS RAM.
 ; Assembled with Poppy (Flower Toolchain)

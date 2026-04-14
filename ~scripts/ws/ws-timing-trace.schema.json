@@ -1,4 +1,4 @@
-{
+﻿{
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"title": "WonderSwan Timing Trace Line",
 	"description": "Single-line JSON record emitted by ws-timing-trace.lua",

@@ -1479,6 +1479,8 @@ resume deep work on #1076 [Nexen] Fix issue 1076, Ignore `VTOTAL`, research from
 
 [Nexen] immediately start implementing #1285 next with: a first WS timing test ROM scaffold, a minimal trace format for PPU/timer/IRQ ordering, a comparer script workflow for Nexen vs reference traces; continue;
 
+[Nexen] git commit everything, resume deep work on #1076, find correctness problems and performance problems, and benchmark and test and document them and go!; and do your next suggestion "Extend the scaffold ROM and Lua exporter to include explicit IRQ source/timer status bytes so the comparer can assert line-compare IRQ and timer-order behavior directly against reference traces."; continue;
+
 
 
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 # Run WS timing trace Lua script and export ws-trace-json lines to a JSONL file.
 #
 # Usage:

@@ -1,4 +1,4 @@
-{
+﻿{
 	"$schema": "./test-manifest.schema.json",
 	"version": 1,
 	"tests": [

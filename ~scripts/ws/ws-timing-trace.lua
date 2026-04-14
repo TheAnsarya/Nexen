@@ -1,4 +1,4 @@
--- WonderSwan timing trace dumper for #1285 scaffold ROM.
+﻿-- WonderSwan timing trace dumper for #1285 scaffold ROM.
 -- Reads compact trace entries from WS RAM and emits JSON lines via emu.log.
 --
 -- Exit codes:

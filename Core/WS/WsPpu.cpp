@@ -51,7 +51,6 @@ void WsPpu::SetVideoMode(WsVideoMode mode) {
 }
 
 void WsPpu::ProcessHblank() {
-	_timer->TickHorizontalTimer();
 	if (_state.Scanline < WsConstants::ScreenHeight) {
 		// Compute wrapped rendering Y — matches ares: y = vcounter % (vtotal + 1)
 		// When VTOTAL < 144, this causes the image to repeat
@@ -101,19 +100,32 @@ void WsPpu::ProcessEndOfScanline() {
 		_emu->ProcessEvent(EventType::StartFrame, CpuType::Ws);
 		_currentBuffer = _currentBuffer == _outputBuffers[0].get() ? _outputBuffers[1].get() : _outputBuffers[0].get();
 		_showIcons = _emu->GetSettings()->GetWsConfig().LcdShowIcons;
-	} else if (_state.Scanline == 145) [[unlikely]] {
+
+		// Start-of-frame scanline-0 boundary events.
+		if (_state.Scanline == _state.IrqScanline) {
+			_console->GetMemoryManager()->SetIrqSource(WsIrqSource::Scanline);
+		}
+		_timer->TickHorizontalTimer();
+		return;
+	}
+
+	// ares-compatible start-of-scanline timing: line-compare and HBlank timer
+	// are evaluated at the scanline boundary before render/vblank-phase events.
+	if (_state.Scanline == _state.IrqScanline) {
+		_console->GetMemoryManager()->SetIrqSource(WsIrqSource::Scanline);
+	}
+
+	_timer->TickHorizontalTimer();
+
+	if (_state.Scanline == 145) [[unlikely]] {
 		SendFrame();
 	} else if (_state.Scanline == 144) [[unlikely]] {
 		// VBlank only fires when VTOTAL >= 144 — matches ares (vtotal<143 inhibits vblank)
 		if (_state.LastScanline >= WsConstants::ScreenHeight) {
+			_console->GetMemoryManager()->SetIrqSource(WsIrqSource::VerticalBlank);
 			_timer->TickVerticalTimer();
 			((WsControlManager*)_console->GetControlManager())->TriggerKeyIrq();
-			_console->GetMemoryManager()->SetIrqSource(WsIrqSource::VerticalBlank);
 		}
-	}
-
-	if (_state.Scanline == _state.IrqScanline) {
-		_console->GetMemoryManager()->SetIrqSource(WsIrqSource::Scanline);
 	}
 }
 
