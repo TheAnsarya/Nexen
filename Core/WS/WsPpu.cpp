@@ -90,9 +90,9 @@ void WsPpu::ProcessEndOfScanline() {
 	// When VTOTAL < 144: frame still runs to 144 scanlines (with rendering Y wrapping),
 	// but VBlank and sprite copy are inhibited. This prevents short frames that disrupt
 	// game timing (fixes FF2 fire magic video instability).
-	uint16_t effectiveLastScanline = std::max<uint16_t>(WsConstants::ScreenHeight, (uint16_t)_state.LastScanline);
+	uint16_t frameEndScanline = std::max<uint16_t>(WsConstants::ScreenHeight, (uint16_t)_state.LastScanline + 1);
 
-	if (_state.Scanline > effectiveLastScanline) [[unlikely]] {
+	if (_state.Scanline >= frameEndScanline) [[unlikely]] {
 		if (_state.Scanline <= 145) {
 			SendFrame();
 		}
@@ -508,9 +508,6 @@ void WsPpu::SendFrame() {
 	if (_state.SleepEnabled || !_state.LcdEnabled || _state.LastScanline == 255 || _console->IsPowerOff()) {
 		// Screen should be white when in sleep mode, or if the last scanline is set to 255
 		std::fill(_currentBuffer, _currentBuffer + WsConstants::MaxPixelCount, 0xFFF);
-	} else if (_state.LastScanline < 144) {
-		// Clear everything after the last scanline (results in less than 144 visible scanlines)
-		std::fill(_currentBuffer + _state.LastScanline * _screenWidth, _currentBuffer + WsConstants::MaxPixelCount, 0xFFF);
 	}
 
 	if (_showIcons) {

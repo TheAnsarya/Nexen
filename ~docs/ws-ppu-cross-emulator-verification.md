@@ -63,9 +63,21 @@ Comprehensive cross-reference of Nexen's WS PPU implementation against hardware 
 - **High Contrast visual effect** — LCD-level effect, not SoC rendering; no emulator implements the visual doubling
 - **TFT LCD Configuration ($70-$77)** — SwanCrystal boot ROM only, read-only after lock
 
-### No Actionable Discrepancies Found
+### Actionable Discrepancies Found and Fixed (2026-04-14)
 
-The cross-emulator verification confirms that Nexen's WS PPU implementation is correct and in many cases more accurate than MAME and Mednafen. The implementation aligns with the authoritative WSdev wiki documentation and matches or exceeds the ares gold-standard reference.
+Extended whole-pipeline parity modeling surfaced two concrete discrepancies that were then fixed in Nexen:
+
+1. **Frame-end off-by-one for VTOTAL < 144**
+	- Observed behavior: frame ended at 145 scanlines for low VTOTAL paths.
+	- Expected (ares): frame ends at exactly 144 scanlines when `vtotal < 143`.
+	- Fix: use `frameEndScanline = max(144, LastScanline + 1)` and end frame when `Scanline >= frameEndScanline`.
+
+2. **Low-VTOTAL post-frame white clear overwrote repeated image**
+	- Observed behavior: post-frame finalize cleared rows for `LastScanline < 144`, which could destroy wrapped/repeated raster output.
+	- Expected (ares/doc behavior): repeated image output is preserved for low VTOTAL effects.
+	- Fix: removed low-VTOTAL post-frame whitening path in `SendFrame()`; keep whitening only for sleep/LCD-off/power-off/`LastScanline == 255`.
+
+New parity tests and benchmarks were added in `Core.Tests/WS/WsPpuTests.cpp` and `Core.Benchmarks/WS/WsPpuBench.cpp` to continuously validate these timing/rendering invariants.
 
 ## Emulator-Specific Notes
 

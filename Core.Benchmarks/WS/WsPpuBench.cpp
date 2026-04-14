@@ -1,6 +1,7 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <benchmark/benchmark.h>
 #include <array>
+#include <algorithm>
 #include <cstring>
 #include "WS/WsTypes.h"
 
@@ -52,6 +53,16 @@ namespace {
 	bool IsInsideWindow(uint8_t x, uint8_t y,
 		uint8_t left, uint8_t right, uint8_t top, uint8_t bottom) {
 		return x >= left && x <= right && y >= top && y <= bottom;
+	}
+
+	// ares-compatible frame end scanline count
+	uint16_t GetFrameEndScanlineAres(uint8_t vtotal) {
+		return std::max<uint16_t>(WsConstants::ScreenHeight, static_cast<uint16_t>(vtotal) + 1);
+	}
+
+	// Nexen current render-Y wrapping model for line rendering
+	uint8_t GetRenderYWrapped(uint16_t scanline, uint8_t vtotal) {
+		return static_cast<uint8_t>(scanline % (static_cast<uint16_t>(vtotal) + 1));
 	}
 } // anonymous namespace
 
@@ -227,6 +238,31 @@ static void BM_WsPpu_WindowCheck_SmallWindow(benchmark::State& state) {
 	state.SetItemsProcessed(state.iterations() * 224 * 144);
 }
 BENCHMARK(BM_WsPpu_WindowCheck_SmallWindow);
+
+// =============================================================================
+// Frame Timing / Wrap Benchmarks (Issue #1076 parity work)
+// =============================================================================
+
+static void BM_WsPpu_FrameEndScanline_AresModel(benchmark::State& state) {
+	for (auto _ : state) {
+		for (uint16_t vtotal = 0; vtotal <= 255; vtotal++) {
+			benchmark::DoNotOptimize(GetFrameEndScanlineAres(static_cast<uint8_t>(vtotal)));
+		}
+	}
+	state.SetItemsProcessed(state.iterations() * 256);
+}
+BENCHMARK(BM_WsPpu_FrameEndScanline_AresModel);
+
+static void BM_WsPpu_RenderYWrap_LowVtotal(benchmark::State& state) {
+	constexpr uint8_t vtotal = 49;
+	for (auto _ : state) {
+		for (uint16_t scanline = 0; scanline < WsConstants::ScreenHeight; scanline++) {
+			benchmark::DoNotOptimize(GetRenderYWrapped(scanline, vtotal));
+		}
+	}
+	state.SetItemsProcessed(state.iterations() * WsConstants::ScreenHeight);
+}
+BENCHMARK(BM_WsPpu_RenderYWrap_LowVtotal);
 
 // =============================================================================
 // Combined Scanline: Pixel Extract + Palette Lookup (mono)
