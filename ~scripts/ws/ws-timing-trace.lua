@@ -13,14 +13,16 @@ local POLL_INTERVAL = 1
 local RESULT_ADDR = 0x0000
 local TRACE_COUNT_ADDR = 0x0001
 local TRACE_BASE_ADDR = 0x0100
-local TRACE_STRIDE = 4
+local TRACE_STRIDE = 6
 
-local function emitTraceLine(index, eventId, scanline, data0, data1)
+local function emitTraceLine(index, eventId, scanline, irqActive, irqEnabled, hTimer, vTimer)
 	emu.log("ws-trace-json:{\"index\":" .. tostring(index)
 		.. ",\"eventId\":" .. tostring(eventId)
 		.. ",\"scanline\":" .. tostring(scanline)
-		.. ",\"data0\":" .. tostring(data0)
-		.. ",\"data1\":" .. tostring(data1)
+		.. ",\"irqActive\":" .. tostring(irqActive)
+		.. ",\"irqEnabled\":" .. tostring(irqEnabled)
+		.. ",\"hTimer\":" .. tostring(hTimer)
+		.. ",\"vTimer\":" .. tostring(vTimer)
 		.. "}")
 end
 
@@ -32,9 +34,11 @@ local function dumpTrace(frameCount)
 		local base = TRACE_BASE_ADDR + (i * TRACE_STRIDE)
 		local eventId = emu.read(base + 0, emu.memType.wsMemory)
 		local scanline = emu.read(base + 1, emu.memType.wsMemory)
-		local data0 = emu.read(base + 2, emu.memType.wsMemory)
-		local data1 = emu.read(base + 3, emu.memType.wsMemory)
-		emitTraceLine(i, eventId, scanline, data0, data1)
+		local irqActive = emu.read(base + 2, emu.memType.wsMemory)
+		local irqEnabled = emu.read(base + 3, emu.memType.wsMemory)
+		local hTimer = emu.read(base + 4, emu.memType.wsMemory)
+		local vTimer = emu.read(base + 5, emu.memType.wsMemory)
+		emitTraceLine(i, eventId, scanline, irqActive, irqEnabled, hTimer, vTimer)
 	end
 end
 

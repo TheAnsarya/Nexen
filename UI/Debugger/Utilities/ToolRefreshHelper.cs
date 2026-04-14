@@ -14,7 +14,7 @@ using Nexen.Debugger.Windows;
 using Nexen.Interop;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Utilities; 
+namespace Nexen.Debugger.Utilities;
 public static class ToolRefreshHelper {
 	class ToolInfo {
 		internal int ViewerId { get; set; } = 0;

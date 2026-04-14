@@ -14,7 +14,7 @@ using Nexen.Interop;
 using Nexen.ViewModels;
 using Nexen.Windows;
 
-namespace Nexen.Utilities; 
+namespace Nexen.Utilities;
 public static class RomTestHelper {
 	public static async Task RunTest() {
 		string? filename = await FileDialogHelper.OpenFile(ConfigManager.TestFolder, null, "mtp");

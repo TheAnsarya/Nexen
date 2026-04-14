@@ -970,3 +970,18 @@ TEST(WsVtotalEdgeCaseTest, VtotalHalfScreen_WrapsAt72) {
 			<< " which exceeds visibleCount " << (int)visibleCount;
 	}
 }
+
+TEST(WsVtotalEdgeCaseTest, OptimizedRenderY_MatchesModuloModel) {
+	for (uint16_t lastScanline = 0; lastScanline <= 255; lastScanline++) {
+		uint16_t visibleCount = lastScanline + 1;
+		for (uint16_t scanline = 0; scanline < WsConstants::ScreenHeight; scanline++) {
+			uint8_t expected = (uint8_t)(scanline % visibleCount);
+			uint8_t optimized = visibleCount >= WsConstants::ScreenHeight
+				? (uint8_t)scanline
+				: (uint8_t)(scanline % visibleCount);
+
+			EXPECT_EQ(optimized, expected)
+				<< "lastScanline=" << lastScanline << " scanline=" << scanline;
+		}
+	}
+}

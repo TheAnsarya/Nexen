@@ -18,7 +18,7 @@ using Nexen.Debugger.Windows;
 using Nexen.Interop;
 using Nexen.Utilities;
 
-namespace Nexen.Debugger.Views; 
+namespace Nexen.Debugger.Views;
 public partial class DisassemblyView : NexenUserControl {
 	private DisassemblyViewModel Model => _model!;
 	private CpuType CpuType => Model.CpuType;

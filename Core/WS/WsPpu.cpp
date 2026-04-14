@@ -52,9 +52,12 @@ void WsPpu::SetVideoMode(WsVideoMode mode) {
 
 void WsPpu::ProcessHblank() {
 	if (_state.Scanline < WsConstants::ScreenHeight) {
-		// Compute wrapped rendering Y — matches ares: y = vcounter % (vtotal + 1)
-		// When VTOTAL < 144, this causes the image to repeat
-		uint8_t renderY = _state.Scanline % ((uint16_t)_state.LastScanline + 1);
+		// Common case optimization: when VTOTAL >= 143, visible scanlines map 1:1 and
+		// modulo is unnecessary (scanline is already < 144).
+		uint16_t visibleScanlineCount = (uint16_t)_state.LastScanline + 1;
+		uint8_t renderY = visibleScanlineCount >= WsConstants::ScreenHeight
+			? (uint8_t)_state.Scanline
+			: (uint8_t)(_state.Scanline % visibleScanlineCount);
 		_prevRenderY = renderY;
 
 		switch (_state.Mode) {

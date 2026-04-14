@@ -52,16 +52,27 @@ for ($i = 0; $i -lt $count; $i++) {
 	$n = $nexen[$i]
 	$r = $reference[$i]
 
+	$nIrqActive = if ($null -ne $n.PSObject.Properties['irqActive']) { $n.irqActive } else { $n.data0 }
+	$rIrqActive = if ($null -ne $r.PSObject.Properties['irqActive']) { $r.irqActive } else { $r.data0 }
+	$nIrqEnabled = if ($null -ne $n.PSObject.Properties['irqEnabled']) { $n.irqEnabled } else { 0 }
+	$rIrqEnabled = if ($null -ne $r.PSObject.Properties['irqEnabled']) { $r.irqEnabled } else { 0 }
+	$nHtimer = if ($null -ne $n.PSObject.Properties['hTimer']) { $n.hTimer } else { $n.data1 }
+	$rHtimer = if ($null -ne $r.PSObject.Properties['hTimer']) { $r.hTimer } else { $r.data1 }
+	$nVtimer = if ($null -ne $n.PSObject.Properties['vTimer']) { $n.vTimer } else { 0 }
+	$rVtimer = if ($null -ne $r.PSObject.Properties['vTimer']) { $r.vTimer } else { 0 }
+
 	$matched = ($n.eventId -eq $r.eventId) -and
 		($n.scanline -eq $r.scanline) -and
-		($n.data0 -eq $r.data0) -and
-		($n.data1 -eq $r.data1)
+		($nIrqActive -eq $rIrqActive) -and
+		($nIrqEnabled -eq $rIrqEnabled) -and
+		($nHtimer -eq $rHtimer) -and
+		($nVtimer -eq $rVtimer)
 
 	if (-not $matched) {
 		$mismatchCount++
 		if ($mismatchCount -le $MaxMismatchReports) {
-			Write-Host ("Mismatch[{0}] idx={1}: nexen(e={2}, l={3}, d0={4}, d1={5}) ref(e={6}, l={7}, d0={8}, d1={9})" -f `
-				$mismatchCount, $i, $n.eventId, $n.scanline, $n.data0, $n.data1, $r.eventId, $r.scanline, $r.data0, $r.data1) -ForegroundColor Red
+			Write-Host ("Mismatch[{0}] idx={1}: nexen(e={2}, l={3}, ia={4}, ie={5}, ht={6}, vt={7}) ref(e={8}, l={9}, ia={10}, ie={11}, ht={12}, vt={13})" -f `
+				$mismatchCount, $i, $n.eventId, $n.scanline, $nIrqActive, $nIrqEnabled, $nHtimer, $nVtimer, $r.eventId, $r.scanline, $rIrqActive, $rIrqEnabled, $rHtimer, $rVtimer) -ForegroundColor Red
 		}
 	}
 }

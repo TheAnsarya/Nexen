@@ -7,8 +7,10 @@
 		"index",
 		"eventId",
 		"scanline",
-		"data0",
-		"data1"
+		"irqActive",
+		"irqEnabled",
+		"hTimer",
+		"vTimer"
 	],
 	"properties": {
 		"index": {
@@ -25,12 +27,22 @@
 			"minimum": 0,
 			"maximum": 255
 		},
-		"data0": {
+		"irqActive": {
 			"type": "integer",
 			"minimum": 0,
 			"maximum": 255
 		},
-		"data1": {
+		"irqEnabled": {
+			"type": "integer",
+			"minimum": 0,
+			"maximum": 255
+		},
+		"hTimer": {
+			"type": "integer",
+			"minimum": 0,
+			"maximum": 255
+		},
+		"vTimer": {
 			"type": "integer",
 			"minimum": 0,
 			"maximum": 255

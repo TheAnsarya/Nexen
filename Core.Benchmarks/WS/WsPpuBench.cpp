@@ -62,7 +62,10 @@ namespace {
 
 	// Nexen current render-Y wrapping model for line rendering
 	uint8_t GetRenderYWrapped(uint16_t scanline, uint8_t vtotal) {
-		return static_cast<uint8_t>(scanline % (static_cast<uint16_t>(vtotal) + 1));
+		uint16_t visibleCount = static_cast<uint16_t>(vtotal) + 1;
+		return visibleCount >= WsConstants::ScreenHeight
+			? static_cast<uint8_t>(scanline)
+			: static_cast<uint8_t>(scanline % visibleCount);
 	}
 } // anonymous namespace
 
