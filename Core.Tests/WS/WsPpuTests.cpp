@@ -303,22 +303,45 @@ protected:
 };
 
 namespace WsPpuPipelineModels {
+	enum class EventTypeModel {
+		LineCompare,
+		HblankTimerTick,
+		Vblank,
+		VblankTimerTick,
+		FrameStart
+	};
+
+	struct TimedEventModel {
+		uint16_t Scanline = 0;
+		EventTypeModel Type = EventTypeModel::LineCompare;
+	};
+
 	struct FrameSummary {
 		uint16_t FrameEndScanlineCount = 0;
 		bool VblankTriggered = false;
 		bool SpriteCopyTriggered = false;
 		std::array<uint8_t, WsConstants::ScreenHeight> RenderY = {};
 		bool PreservesRepeatedImageAfterFinalize = true;
+		std::vector<TimedEventModel> EventOrder = {};
 	};
 
 	static FrameSummary SimulateAresModel(uint8_t vtotal) {
 		FrameSummary s = {};
 		uint16_t vcounter = 0;
+		constexpr uint8_t irqScanline = 42;
 
 		while (true) {
+			if (vcounter == irqScanline) {
+				s.EventOrder.push_back({vcounter, EventTypeModel::LineCompare});
+			}
+
+			s.EventOrder.push_back({vcounter, EventTypeModel::HblankTimerTick});
+
 			if (vcounter < WsConstants::ScreenHeight) {
 				s.RenderY[vcounter] = static_cast<uint8_t>(vcounter % (static_cast<uint16_t>(vtotal) + 1));
 			} else if (vcounter == WsConstants::ScreenHeight) {
+				s.EventOrder.push_back({vcounter, EventTypeModel::Vblank});
+				s.EventOrder.push_back({vcounter, EventTypeModel::VblankTimerTick});
 				s.VblankTriggered = true;
 				s.SpriteCopyTriggered = true;
 			}
@@ -326,6 +349,7 @@ namespace WsPpuPipelineModels {
 			vcounter++;
 			if (vcounter >= std::max<uint16_t>(WsConstants::ScreenHeight, static_cast<uint16_t>(vtotal) + 1)) {
 				s.FrameEndScanlineCount = vcounter;
+				s.EventOrder.push_back({0, EventTypeModel::FrameStart});
 				break;
 			}
 		}
@@ -339,6 +363,7 @@ namespace WsPpuPipelineModels {
 		FrameSummary s = {};
 		uint16_t scanline = 0;
 		uint16_t frameEndScanline = std::max<uint16_t>(WsConstants::ScreenHeight, static_cast<uint16_t>(lastScanline) + 1);
+		constexpr uint8_t irqScanline = 42;
 
 		while (true) {
 			if (scanline < WsConstants::ScreenHeight) {
@@ -351,13 +376,26 @@ namespace WsPpuPipelineModels {
 
 			scanline++;
 
-			if (scanline == WsConstants::ScreenHeight && lastScanline >= WsConstants::ScreenHeight) {
-				s.VblankTriggered = true;
-			}
-
 			if (scanline >= frameEndScanline) {
 				s.FrameEndScanlineCount = scanline;
+				if (0 == irqScanline) {
+					s.EventOrder.push_back({0, EventTypeModel::LineCompare});
+				}
+				s.EventOrder.push_back({0, EventTypeModel::HblankTimerTick});
+				s.EventOrder.push_back({0, EventTypeModel::FrameStart});
 				break;
+			}
+
+			if (scanline == irqScanline) {
+				s.EventOrder.push_back({scanline, EventTypeModel::LineCompare});
+			}
+
+			s.EventOrder.push_back({scanline, EventTypeModel::HblankTimerTick});
+
+			if (scanline == WsConstants::ScreenHeight && lastScanline >= WsConstants::ScreenHeight) {
+				s.EventOrder.push_back({scanline, EventTypeModel::Vblank});
+				s.EventOrder.push_back({scanline, EventTypeModel::VblankTimerTick});
+				s.VblankTriggered = true;
 			}
 		}
 
@@ -510,6 +548,65 @@ TEST(WsPpuCrossEmulatorParityTest, MednafenKnownDifference_SpriteCopyLine) {
 	// Coverage note: Mednafen performs copy on line 142 in current core;
 	// Nexen and ares model line 144 semantics.
 	SUCCEED();
+}
+
+TEST(WsPpuCrossEmulatorParityTest, EventOrdering_NormalVtotal_ScanlineLocalInvariants) {
+	auto ares = WsPpuPipelineModels::SimulateAresModel(158);
+	auto nexen = WsPpuPipelineModels::SimulateNexenModel(158);
+
+	auto findEventIndex = [](const std::vector<WsPpuPipelineModels::TimedEventModel>& events, uint16_t scanline, WsPpuPipelineModels::EventTypeModel type) -> int {
+		for (size_t i = 0; i < events.size(); i++) {
+			if (events[i].Scanline == scanline && events[i].Type == type) {
+				return static_cast<int>(i);
+			}
+		}
+		return -1;
+	};
+
+	// Line-compare must be evaluated before HBlank timer on the same scanline.
+	int aresLineCmp = findEventIndex(ares.EventOrder, 42, WsPpuPipelineModels::EventTypeModel::LineCompare);
+	int aresHblank = findEventIndex(ares.EventOrder, 42, WsPpuPipelineModels::EventTypeModel::HblankTimerTick);
+	ASSERT_GE(aresLineCmp, 0);
+	ASSERT_GE(aresHblank, 0);
+	EXPECT_LT(aresLineCmp, aresHblank);
+
+	int nexenLineCmp = findEventIndex(nexen.EventOrder, 42, WsPpuPipelineModels::EventTypeModel::LineCompare);
+	int nexenHblank = findEventIndex(nexen.EventOrder, 42, WsPpuPipelineModels::EventTypeModel::HblankTimerTick);
+	ASSERT_GE(nexenLineCmp, 0);
+	ASSERT_GE(nexenHblank, 0);
+	EXPECT_LT(nexenLineCmp, nexenHblank);
+
+	// On line 144 (when present), HBlank timer tick must happen before VBlank and VBlank timer.
+	int aresHblank144 = findEventIndex(ares.EventOrder, 144, WsPpuPipelineModels::EventTypeModel::HblankTimerTick);
+	int aresVblank144 = findEventIndex(ares.EventOrder, 144, WsPpuPipelineModels::EventTypeModel::Vblank);
+	int aresVblankTimer144 = findEventIndex(ares.EventOrder, 144, WsPpuPipelineModels::EventTypeModel::VblankTimerTick);
+	ASSERT_GE(aresHblank144, 0);
+	ASSERT_GE(aresVblank144, 0);
+	ASSERT_GE(aresVblankTimer144, 0);
+	EXPECT_LT(aresHblank144, aresVblank144);
+	EXPECT_LT(aresVblank144, aresVblankTimer144);
+
+	int nexenHblank144 = findEventIndex(nexen.EventOrder, 144, WsPpuPipelineModels::EventTypeModel::HblankTimerTick);
+	int nexenVblank144 = findEventIndex(nexen.EventOrder, 144, WsPpuPipelineModels::EventTypeModel::Vblank);
+	int nexenVblankTimer144 = findEventIndex(nexen.EventOrder, 144, WsPpuPipelineModels::EventTypeModel::VblankTimerTick);
+	ASSERT_GE(nexenHblank144, 0);
+	ASSERT_GE(nexenVblank144, 0);
+	ASSERT_GE(nexenVblankTimer144, 0);
+	EXPECT_LT(nexenHblank144, nexenVblank144);
+	EXPECT_LT(nexenVblank144, nexenVblankTimer144);
+}
+
+TEST(WsPpuCrossEmulatorParityTest, EventOrdering_ShortFrame_NoLine144Events) {
+	auto ares = WsPpuPipelineModels::SimulateAresModel(0);
+	auto nexen = WsPpuPipelineModels::SimulateNexenModel(0);
+
+	for (const auto& e : ares.EventOrder) {
+		EXPECT_FALSE(e.Scanline == 144 && (e.Type == WsPpuPipelineModels::EventTypeModel::Vblank || e.Type == WsPpuPipelineModels::EventTypeModel::VblankTimerTick));
+	}
+
+	for (const auto& e : nexen.EventOrder) {
+		EXPECT_FALSE(e.Scanline == 144 && (e.Type == WsPpuPipelineModels::EventTypeModel::Vblank || e.Type == WsPpuPipelineModels::EventTypeModel::VblankTimerTick));
+	}
 }
 
 // =============================================================================
