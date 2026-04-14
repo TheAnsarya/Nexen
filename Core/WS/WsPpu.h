@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include <memory>
 #include <array>
@@ -83,6 +83,13 @@ private:
 	/// <summary>Scanline pixel data for 2 layers.</summary>
 	PixelData _rowData[2][224];
 
+	/// <summary>
+	/// Rendering Y from the previous scanline's ProcessHblank, used by Exec
+	/// for framebuffer output position. When VTOTAL (LastScanline) is less than 144,
+	/// renderY wraps via modulo to repeat the displayed image (matching ares behavior).
+	/// </summary>
+	uint8_t _prevRenderY = 0;
+
 	/// <summary>Rendered screen height (varies by model).</summary>
 	uint16_t _screenHeight = 0;
 
@@ -112,15 +119,15 @@ private:
 
 	/// <summary>Draws one scanline in the specified video mode.</summary>
 	template <WsVideoMode mode>
-	void DrawScanline();
+	void DrawScanline(uint8_t renderY);
 
 	/// <summary>Draws sprites for the current scanline.</summary>
 	template <WsVideoMode mode>
-	void DrawSprites();
+	void DrawSprites(uint8_t renderY);
 
 	/// <summary>Draws a background layer for the current scanline.</summary>
 	template <WsVideoMode mode, int layerIndex>
-	void DrawBackground();
+	void DrawBackground(uint8_t renderY);
 
 	/// <summary>Gets pixel color from tile data.</summary>
 	template <WsVideoMode mode>
@@ -167,7 +174,8 @@ public:
 	~WsPpu();
 
 	__forceinline void Exec() {
-		if (_state.Scanline == WsConstants::ScreenHeight) [[unlikely]] {
+		// Sprite copy at scanline 144 only when VTOTAL >= 144 (ares: no VBlank/sprite copy for short VTOTAL)
+		if (_state.Scanline == WsConstants::ScreenHeight && _state.LastScanline >= WsConstants::ScreenHeight) [[unlikely]] {
 			ProcessSpriteCopy();
 		}
 
@@ -177,7 +185,8 @@ public:
 				uint8_t rowIndex = (_state.Scanline & 0x01) ^ 1;
 				PixelData& data = _rowData[rowIndex][_state.Cycle];
 				uint16_t screenWidth = _showIcons ? _screenWidth : WsConstants::ScreenWidth;
-				uint16_t offset = (_state.Scanline - 1) * screenWidth + _state.Cycle;
+				// Use _prevRenderY for framebuffer position — handles VTOTAL wrapping
+				uint16_t offset = _prevRenderY * screenWidth + _state.Cycle;
 				_currentBuffer[offset] = data.Priority == 0 ? GetBgColor() : GetPixelRgbColor(_state.Mode, data.Color, data.Palette);
 			}
 		} else {

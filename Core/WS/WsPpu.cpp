@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "WS/WsConsole.h"
 #include "WS/WsTimer.h"
 #include "WS/WsControlManager.h"
@@ -53,18 +53,23 @@ void WsPpu::SetVideoMode(WsVideoMode mode) {
 void WsPpu::ProcessHblank() {
 	_timer->TickHorizontalTimer();
 	if (_state.Scanline < WsConstants::ScreenHeight) {
+		// Compute wrapped rendering Y — matches ares: y = vcounter % (vtotal + 1)
+		// When VTOTAL < 144, this causes the image to repeat
+		uint8_t renderY = _state.Scanline % ((uint16_t)_state.LastScanline + 1);
+		_prevRenderY = renderY;
+
 		switch (_state.Mode) {
 			case WsVideoMode::Monochrome:
-				DrawScanline<WsVideoMode::Monochrome>();
+				DrawScanline<WsVideoMode::Monochrome>(renderY);
 				break;
 			case WsVideoMode::Color2bpp:
-				DrawScanline<WsVideoMode::Color2bpp>();
+				DrawScanline<WsVideoMode::Color2bpp>(renderY);
 				break;
 			case WsVideoMode::Color4bpp:
-				DrawScanline<WsVideoMode::Color4bpp>();
+				DrawScanline<WsVideoMode::Color4bpp>(renderY);
 				break;
 			case WsVideoMode::Color4bppPacked:
-				DrawScanline<WsVideoMode::Color4bppPacked>();
+				DrawScanline<WsVideoMode::Color4bppPacked>(renderY);
 				break;
 		}
 	}
@@ -81,7 +86,13 @@ void WsPpu::ProcessEndOfScanline() {
 	_state.SpritesEnabledLatch = _state.SpritesEnabled;
 	_state.DrawOutsideBgWindowLatch = _state.DrawOutsideBgWindow;
 
-	if (_state.Scanline > _state.LastScanline) [[unlikely]] {
+	// Frame runs to max(ScreenHeight, LastScanline + 1) scanlines — matches ares behavior.
+	// When VTOTAL < 144: frame still runs to 144 scanlines (with rendering Y wrapping),
+	// but VBlank and sprite copy are inhibited. This prevents short frames that disrupt
+	// game timing (fixes FF2 fire magic video instability).
+	uint16_t effectiveLastScanline = std::max<uint16_t>(WsConstants::ScreenHeight, (uint16_t)_state.LastScanline);
+
+	if (_state.Scanline > effectiveLastScanline) [[unlikely]] {
 		if (_state.Scanline <= 145) {
 			SendFrame();
 		}
@@ -93,9 +104,12 @@ void WsPpu::ProcessEndOfScanline() {
 	} else if (_state.Scanline == 145) [[unlikely]] {
 		SendFrame();
 	} else if (_state.Scanline == 144) [[unlikely]] {
-		_timer->TickVerticalTimer();
-		((WsControlManager*)_console->GetControlManager())->TriggerKeyIrq();
-		_console->GetMemoryManager()->SetIrqSource(WsIrqSource::VerticalBlank);
+		// VBlank only fires when VTOTAL >= 144 — matches ares (vtotal<143 inhibits vblank)
+		if (_state.LastScanline >= WsConstants::ScreenHeight) {
+			_timer->TickVerticalTimer();
+			((WsControlManager*)_console->GetControlManager())->TriggerKeyIrq();
+			_console->GetMemoryManager()->SetIrqSource(WsIrqSource::VerticalBlank);
+		}
 	}
 
 	if (_state.Scanline == _state.IrqScanline) {
@@ -104,23 +118,23 @@ void WsPpu::ProcessEndOfScanline() {
 }
 
 template <WsVideoMode mode>
-void WsPpu::DrawScanline() {
+void WsPpu::DrawScanline(uint8_t renderY) {
 	uint8_t rowIndex = _state.Scanline & 0x01;
 	memset(_rowData[rowIndex], 0, sizeof(PixelData) * WsConstants::ScreenWidth);
 
-	DrawSprites<mode>();
-	DrawBackground<mode, 0>();
-	DrawBackground<mode, 1>();
+	DrawSprites<mode>(renderY);
+	DrawBackground<mode, 0>(renderY);
+	DrawBackground<mode, 1>(renderY);
 }
 
 template <WsVideoMode mode>
-void WsPpu::DrawSprites() {
+void WsPpu::DrawSprites(uint8_t renderY) {
 	WsConfig& cfg = _emu->GetSettings()->GetWsConfig();
 	if (!_state.SpritesEnabled || cfg.DisableSprites) {
 		return;
 	}
 
-	uint16_t scanline = _state.Scanline;
+	uint16_t scanline = renderY;
 	uint8_t rowIndex = _state.Scanline & 0x01;
 
 	constexpr int tileSize = mode >= WsVideoMode::Color4bpp ? 32 : 16;
@@ -183,7 +197,7 @@ void WsPpu::DrawSprites() {
 }
 
 template <WsVideoMode mode, int layerIndex>
-void WsPpu::DrawBackground() {
+void WsPpu::DrawBackground(uint8_t renderY) {
 	constexpr int tileSize = mode >= WsVideoMode::Color4bpp ? 32 : 16;
 	constexpr int tileBytesPerRow = mode >= WsVideoMode::Color4bpp ? 4 : 2;
 	constexpr int bank0Addr = mode >= WsVideoMode::Color4bpp ? 0x4000 : 0x2000;
@@ -196,7 +210,7 @@ void WsPpu::DrawBackground() {
 		return;
 	}
 
-	uint16_t scanline = _state.Scanline;
+	uint16_t scanline = renderY;
 	uint16_t layerAddr = (uint16_t)(layer.MapAddressLatch & (_console->GetModel() == WsModel::Monochrome ? 0x3FFF : 0x7FFF));
 
 	for (int cycle = 0; cycle < WsConstants::ScreenWidth; cycle++) {

@@ -1,4 +1,4 @@
-# WonderSwan PPU Cross-Emulator Verification
+﻿# WonderSwan PPU Cross-Emulator Verification
 
 ## Overview
 
@@ -17,8 +17,8 @@ Comprehensive cross-reference of Nexen's WS PPU implementation against hardware 
 | Feature | WSdev Wiki | ares | Nexen | MAME | Mednafen |
 |---------|-----------|------|-------|------|----------|
 | VTOTAL register ($16) | Default 158, 159 lines/frame | `io.vtotal = 158` | `LastScanline = 158` | Hardcoded `% 159` | `LCDVtotal` default 158 |
-| Frame boundary | vtotal+1 lines | `max(144, vtotal+1)` | `max(144, LastScanline+1)` | `% 159` fixed | `MAX(144, LCDVtotal)+1` |
-| Scanline modulo (low VTOTAL) | Implied by line counter restart | `y = vcounter % (vtotal+1)` | `Scanline % visibleScanlineCount` | ❌ Not implemented | ❌ Not implemented |
+| Frame boundary | vtotal+1 lines | `max(144, vtotal+1)` | `max(144, LastScanline+1)` ✅ | `% 159` fixed | `MAX(144, LCDVtotal)+1` |
+| Scanline modulo (low VTOTAL) | Implied by line counter restart | `y = vcounter % (vtotal+1)` | `renderY = Scanline % (LastScanline+1)` ✅ | ❌ Not implemented | ❌ Not implemented |
 | Sprite table copy line | **Line 144** (explicit) | Line 144 | Line 144 | Line 144 | Line **142** ❌ |
 | Sprite copy volume | 256 words over 256 clocks | `min(128, count)` entries | 512 bytes (full table) | `memcpy` full table | Partial copy |
 | VBlank IRQ | Line 144 | Line 144 | Line 144 | Line 144 | Line 144 |
@@ -40,16 +40,17 @@ Comprehensive cross-reference of Nexen's WS PPU implementation against hardware 
 
 ### Nexen Gets Right (Validated)
 
-1. **VTOTAL / Frame boundary** — `max(144, LastScanline+1)` matches ares and WSdev wiki exactly
-2. **Scanline modulo for low VTOTAL** — Only Nexen and ares implement this; MAME and Mednafen don't
-3. **Sprite table copy at line 144** — Confirmed by WSdev wiki, ares, and MAME; Mednafen's line 142 is wrong
-4. **Full sprite table copy** — WSdev wiki explicitly says "256 words over 256 clocks" = 512 bytes; Nexen matches this better than ares (which optimizes to `min(128, count)`)
-5. **Per-scanline register latching** — Matches ares approach for scroll, windows, sprite enable
-6. **One-line display delay** — `Scanline-1` output offset + live palette lookups correctly implement the wiki's described behavior
-7. **Back Porch register** — WSC-only (excludes SwanCrystal), default 155, matches wiki and ares
-8. **Palette transparency rules** — Opaque/transparent palette groups handled correctly for 2bpp and 4bpp modes
-9. **Sprite Y wrapping** — `uint8_t tileRow = scanline - y` naturally handles Y=252 wrapping to cover lines 0-3
-10. **`_renderRowIndex` fix** — Ensures double-buffer index consistency between render and DAC phases
+1. **VTOTAL / Frame boundary** — `max(144, LastScanline+1)` matches ares and WSdev wiki exactly. Frame always runs to at least 144 scanlines, preventing short frame timing disruption.
+2. **Scanline modulo for low VTOTAL** — `renderY = Scanline % (LastScanline + 1)` repeats the displayed image when VTOTAL < 144. Only Nexen and ares implement this; MAME and Mednafen don't.
+3. **VBlank inhibit for short VTOTAL** — VBlank IRQ only fires when `LastScanline >= 144`, matching ares behavior where `vcounter == 144` is never processed for `vtotal < 143`.
+4. **Sprite table copy at line 144** — Only when `LastScanline >= 144`. Confirmed by WSdev wiki, ares, and MAME; Mednafen's line 142 is wrong.
+5. **Full sprite table copy** — WSdev wiki explicitly says "256 words over 256 clocks" = 512 bytes; Nexen matches this better than ares (which optimizes to `min(128, count)`)
+6. **Per-scanline register latching** — Matches ares approach for scroll, windows, sprite enable
+7. **One-line display delay** — `Scanline-1` output offset + live palette lookups correctly implement the wiki's described behavior
+8. **Back Porch register** — WSC-only (excludes SwanCrystal), default 155, matches wiki and ares
+9. **Palette transparency rules** — Opaque/transparent palette groups handled correctly for 2bpp and 4bpp modes
+10. **Sprite Y wrapping** — `uint8_t tileRow = scanline - y` naturally handles Y=252 wrapping to cover lines 0-3
+11. **Framebuffer wrapping** — When VTOTAL < 144, `_prevRenderY` is used for framebuffer output position so that repeated scanlines overwrite the correct rows, matching ares DAC behavior
 
 ### Areas Where Nexen Exceeds Other Emulators
 
@@ -99,4 +100,4 @@ Analysis performed against:
 - MAME: `src/mame/bandai/wswan_v.cpp` (current)
 - Mednafen: beetle-wswan-libretro `mednafen/wswan/gfx.c`
 - WSdev Wiki: `ws.nesdev.org/wiki/Display` (Jan 2025 snapshot)
-- Nexen: commit d7c892ba (post-`_renderRowIndex` fix)
+- Nexen: current master (post-VTOTAL frame boundary fix)

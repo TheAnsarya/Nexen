@@ -1465,6 +1465,8 @@ OK, I think the problem is that the system specific buttons are not working, so 
 
 [Nexen] git commit everything (for all repos); Review issues 1223, 1278, and 1279 and fix any remaining problems and code issues and update the issues (and docs and plans and tests and benchmarks, etc) and implement all fixes and performance increases and correctness fixes; Issue `https://github.com/TheAnsarya/Nexen/issues/1076` is still not correct check other emulators (not just Ares) and figure out why this is happening, and fix it, research and add (epics/issues/benchmarks/tests/plans/documentation/session-logs/readmes/etc) and implement any issues you find; make long-term research plans and manual testing instructions so we can wriggle out the real error causing this problem; continue;
 
+--- gpt-5.3-codex
+continue working on `https://github.com/TheAnsarya/Nexen/issues/1076`
 
 
 

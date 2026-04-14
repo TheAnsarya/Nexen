@@ -11,6 +11,7 @@ This directory contains deep-dive research artifacts used to drive long-term pla
 | [Lynx Commercial Bank-Addressing Validation Matrix (2026-03-30)](lynx-commercial-bank-addressing-validation-matrix-2026-03-30.md) | Execution-ready commercial-title matrix with concrete rows, evidence-capture fields, and closure gates for #1105 |
 | [Lynx Commercial Bank-Addressing ROM Manifest (2026-03-30)](lynx-commercial-bank-addressing-rom-manifest-2026-03-30.md) | Canonical selected GoodLynx ROM identities (SHA-256) used by the #1105 matrix |
 | [Lynx Commercial Bank-Addressing Headless Boot Smoke (2026-03-30)](lynx-commercial-bank-addressing-headless-boot-smoke-2026-03-30.md) | Headless test-runner boot-smoke summary and follow-up notes for #1105 |
+| [WonderSwan FF2 Fire Magic Manual Testing (2026-04-14)](ws-ff2-fire-magic-testing.md) | Manual validation scenarios, expected behavior, and debugging checkpoints for issue #1076 |
 
 ## Related Developer Indexes
 
