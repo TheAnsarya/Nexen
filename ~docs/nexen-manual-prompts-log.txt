@@ -1477,6 +1477,7 @@ resume deep work on #1076
 --- steer
 resume deep work on #1076 [Nexen] Fix issue 1076, Ignore `VTOTAL`, research from internet docs on WonderSwanColor and local docs and verify emulation and rendering; implement fixes for all researched corner cases and exact timing, work on the timing and exact effects for the ROM that tests the system, we need a system test rom so continue adding issues; continue;
 
+[Nexen] immediately start implementing #1285 next with: a first WS timing test ROM scaffold, a minimal trace format for PPU/timer/IRQ ordering, a comparer script workflow for Nexen vs reference traces; continue;
 
 
 

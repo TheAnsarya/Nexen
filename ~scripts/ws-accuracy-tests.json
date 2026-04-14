@@ -61,6 +61,16 @@
 			"runningValue": "0x80",
 			"maxFrames": 36000,
 			"tags": ["timer"]
+		},
+		{
+			"name": "ws-timing-order-scaffold-trace",
+			"system": "ws",
+			"rom": "custom/ws/ws-timing-order-scaffold.ws",
+			"strategy": "lua-script",
+			"script": "ws/ws-timing-trace.lua",
+			"maxFrames": 6000,
+			"tags": ["timing", "ppu", "irq", "hblank", "vblank", "custom", "trace"],
+			"notes": "Scaffold trace ROM for #1285. Emits ws-trace-json records for comparer workflow."
 		}
 	]
 }
