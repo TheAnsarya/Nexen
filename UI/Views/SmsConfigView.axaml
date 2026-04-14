@@ -72,7 +72,7 @@
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
-		
+
 		<TabItem Header="{l:Translate tpgEmulation}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
@@ -95,7 +95,7 @@
 		<TabItem Header="{l:Translate tpgInput}">
 			<v:SmsInputConfigView DataContext="{Binding Input}" />
 		</TabItem>
-		
+
 		<TabItem Header="{l:Translate tpgVideo}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
@@ -116,7 +116,7 @@
 						<c:CheckBoxWarning IsChecked="{Binding Config.DisableBackground}" Text="{l:Translate chkDisableBackground}" />
 						<c:CheckBoxWarning IsChecked="{Binding Config.DisableSprites}" Text="{l:Translate chkDisableSprites}" />
 					</c:OptionSection>
-					
+
 					<c:OptionSection Header="{l:Translate lblOverscan}" HorizontalAlignment="Left">
 						<Border BorderBrush="{StaticResource NexenGrayBorderColor}" BorderThickness="1" Margin="0 0 0 5">
 							<TabControl>

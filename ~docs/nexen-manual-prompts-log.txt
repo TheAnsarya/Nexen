@@ -1472,12 +1472,12 @@ You've tried that `VTOTAL` stuff before and it didn't work, continue looking for
 
 [Nexen] We will pick back up on 1076 right after this; Have we fixed 1223, 1278, and 1279? if so, then stablize and fix as many warnings as possible, and create a working build and release version 1.4.31 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes and make a good title for the release and then prepare for working on 1076 again; continue;
 
+resume deep work on #1076
+
+--- steer
+resume deep work on #1076 [Nexen] Fix issue 1076, Ignore `VTOTAL`, research from internet docs on WonderSwanColor and local docs and verify emulation and rendering; implement fixes for all researched corner cases and exact timing, work on the timing and exact effects for the ROM that tests the system, we need a system test rom so continue adding issues; continue;
 
 
-
-
-
-[Nexen] Fix issue 1076, Ignore `VTOTAL`, research from internet docs on WonderSwanColor and local docs and verify emulation and rendering; implement fixes for all researched corner cases and exact timing, work on the timing and exact effects for the ROM that tests the system, we need a system test rom so  continue;
 
 
 

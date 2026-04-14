@@ -1,4 +1,4 @@
-# Research Documentation
+﻿# Research Documentation
 
 This directory contains deep-dive research artifacts used to drive long-term platform parity work.
 
