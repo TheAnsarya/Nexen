@@ -136,8 +136,12 @@ public:
 	/// </remarks>
 	template <uint8_t flags = 0, uint8_t accessWidth = 1>
 	void SetCode(int32_t absoluteAddr) {
+		constexpr uint8_t codeMask = CdlFlags::Code | flags;
 		for (int i = 0; i < accessWidth; i++) {
-			_cdlData[absoluteAddr + i] |= CdlFlags::Code | flags;
+			uint8_t& entry = _cdlData[absoluteAddr + i];
+			if ((entry & codeMask) != codeMask) {
+				entry |= codeMask;
+			}
 		}
 	}
 
@@ -153,10 +157,18 @@ public:
 	/// </remarks>
 	template <uint8_t accessWidth = 1>
 	void SetCode(int32_t absoluteAddr, uint8_t flags) {
-		_cdlData[absoluteAddr] |= CdlFlags::Code | flags; // only sets extra flags on first byte
+		uint8_t& firstByte = _cdlData[absoluteAddr];
+		uint8_t firstByteMask = CdlFlags::Code | flags;
+		if ((firstByte & firstByteMask) != firstByteMask) {
+			firstByte |= firstByteMask;
+		}
 		if constexpr (accessWidth > 1) {
+			constexpr uint8_t codeOnlyMask = CdlFlags::Code;
 			for (int i = 1; i < accessWidth; i++) {
-				_cdlData[absoluteAddr + i] |= CdlFlags::Code;
+				uint8_t& entry = _cdlData[absoluteAddr + i];
+				if ((entry & codeOnlyMask) != codeOnlyMask) {
+					entry |= codeOnlyMask;
+				}
 			}
 		}
 	}
@@ -169,8 +181,12 @@ public:
 	/// <param name="absoluteAddr">Absolute address</param>
 	template <uint8_t flags = 0, uint8_t accessWidth = 1>
 	void SetData(int32_t absoluteAddr) {
+		constexpr uint8_t dataMask = CdlFlags::Data | flags;
 		for (int i = 0; i < accessWidth; i++) {
-			_cdlData[absoluteAddr + i] |= CdlFlags::Data | flags;
+			uint8_t& entry = _cdlData[absoluteAddr + i];
+			if ((entry & dataMask) != dataMask) {
+				entry |= dataMask;
+			}
 		}
 	}
 

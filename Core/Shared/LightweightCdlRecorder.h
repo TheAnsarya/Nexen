@@ -80,7 +80,10 @@ public:
 	__forceinline void RecordInstruction() {
 		AddressInfo absAddr = GetPcAbsoluteAddress();
 		if (absAddr.Address >= 0 && absAddr.Type == _prgRomType) {
-			_cdlData[absAddr.Address] |= CdlFlags::Code;
+			uint8_t& entry = _cdlData[absAddr.Address];
+			if ((entry & CdlFlags::Code) != CdlFlags::Code) {
+				entry |= CdlFlags::Code;
+			}
 		}
 	}
 
@@ -107,7 +110,10 @@ public:
 			if (baseOffset >= 0) {
 				uint32_t offset = (uint32_t)baseOffset + (relAddr & PageMask);
 				if (offset < _cdlSize) {
-					_cdlData[offset] |= flag;
+					uint8_t& entry = _cdlData[offset];
+					if ((entry & flag) != flag) {
+						entry |= flag;
+					}
 				}
 			}
 			return;
@@ -117,7 +123,10 @@ public:
 		AddressInfo addrInfo = { (int32_t)relAddr, memType };
 		AddressInfo absAddr = _console->GetAbsoluteAddress(addrInfo);
 		if (absAddr.Address >= 0 && absAddr.Type == _prgRomType) {
-			_cdlData[absAddr.Address] |= flag;
+			uint8_t& entry = _cdlData[absAddr.Address];
+			if ((entry & flag) != flag) {
+				entry |= flag;
+			}
 		}
 	}
 
