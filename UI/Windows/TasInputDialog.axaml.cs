@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -23,10 +23,6 @@ public partial class TasInputDialog : NexenWindow {
 #if DEBUG
 		this.AttachDeveloperTools();
 #endif
-	}
-
-	private void InitializeComponent() {
-		AvaloniaXamlLoader.Load(this);
 	}
 
 	protected override void OnOpened(EventArgs e) {

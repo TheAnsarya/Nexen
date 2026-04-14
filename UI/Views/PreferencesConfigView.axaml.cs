@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -19,10 +19,6 @@ public partial class PreferencesConfigView : UserControl {
 	public PreferencesConfigView() {
 		InitializeComponent();
 		UpdateMigrationStatus();
-	}
-
-	private void InitializeComponent() {
-		AvaloniaXamlLoader.Load(this);
 	}
 
 	private void btnResetLagCounter_OnClick(object sender, RoutedEventArgs e) {

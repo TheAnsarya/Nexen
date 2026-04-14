@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -34,10 +34,6 @@ public partial class GreenzoneSettingsDialog : NexenWindow {
 #if DEBUG
 		this.AttachDeveloperTools();
 #endif
-	}
-
-	private void InitializeComponent() {
-		AvaloniaXamlLoader.Load(this);
 	}
 
 	private void OnOkClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {

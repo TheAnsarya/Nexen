@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
@@ -25,6 +25,7 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 
 	public TasEditorWindow() {
 		InitializeComponent();
+		SetupNamedControls();
 #if DEBUG
 		this.AttachDeveloperTools();
 #endif
@@ -40,6 +41,7 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 
 	public TasEditorWindow(TasEditorViewModel viewModel) {
 		InitializeComponent();
+		SetupNamedControls();
 #if DEBUG
 		this.AttachDeveloperTools();
 #endif
@@ -50,9 +52,7 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 		SetupNotificationListener();
 	}
 
-	private void InitializeComponent() {
-		AvaloniaXamlLoader.Load(this);
-
+	private void SetupNamedControls() {
 		_frameList = FrameList ?? this.FindControl<ListBox>("FrameList")
 			?? throw new InvalidOperationException("TAS editor FrameList control failed to initialize.");
 		_pianoRoll = PianoRoll ?? this.FindControl<PianoRollControl>("PianoRoll")

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -41,10 +41,6 @@ public partial class PlaybackInterruptDialog : NexenWindow {
 		InterruptFrame = interruptFrame;
 		TotalFrames = totalFrames;
 		UpdateFrameInfo();
-	}
-
-	private void InitializeComponent() {
-		AvaloniaXamlLoader.Load(this);
 	}
 
 	private void UpdateFrameInfo() {

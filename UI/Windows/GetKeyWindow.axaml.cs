@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -16,7 +16,7 @@ using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.Utilities;
 
-namespace Nexen.Windows; 
+namespace Nexen.Windows;
 public partial class GetKeyWindow : NexenWindow {
 	private DispatcherTimer _timer;
 
@@ -55,10 +55,6 @@ public partial class GetKeyWindow : NexenWindow {
 	protected override void OnClosed(EventArgs e) {
 		_timer?.Stop();
 		base.OnClosed(e);
-	}
-
-	private void InitializeComponent() {
-		AvaloniaXamlLoader.Load(this);
 	}
 
 	private void OnPreviewKeyDown(object? sender, KeyEventArgs e) {

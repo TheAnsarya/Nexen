@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,10 +22,6 @@ public partial class PansyExportProgressWindow : NexenWindow {
 
 	public PansyExportProgressWindow() {
 		InitializeComponent();
-	}
-
-	private void InitializeComponent() {
-		AvaloniaXamlLoader.Load(this);
 	}
 
 	/// <summary>

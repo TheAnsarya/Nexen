@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Avalonia;
@@ -21,7 +21,7 @@ public sealed partial class BranchManagementResult {
 /// Dialog for managing TAS branches — load, rename, and delete.
 /// </summary>
 public partial class BranchManagementDialog : NexenWindow {
-	
+
 	private ObservableCollection<BranchData> _branches = null!;
 	private BranchData? _loadedBranch;
 	private bool _changed;
@@ -31,11 +31,6 @@ public partial class BranchManagementDialog : NexenWindow {
 #if DEBUG
 		this.AttachDeveloperTools();
 #endif
-	}
-
-	private void InitializeComponent() {
-		AvaloniaXamlLoader.Load(this);
-		// Named controls populated by AvaloniaXamlLoader
 	}
 
 	private void OnCloseClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e) {
