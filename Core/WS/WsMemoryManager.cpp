@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "WS/WsMemoryManager.h"
 #include "WS/WsConsole.h"
 #include "WS/WsDmaController.h"
@@ -429,7 +429,7 @@ void WsMemoryManager::SetIrqSource(WsIrqSource src) {
 }
 
 void WsMemoryManager::ClearIrqSource(WsIrqSource src) {
-	_state.ActiveIrqs &= (uint8_t)src;
+	_state.ActiveIrqs &= ~(uint8_t)src;
 }
 
 uint8_t WsMemoryManager::GetActiveIrqs() {

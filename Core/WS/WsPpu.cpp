@@ -92,7 +92,10 @@ void WsPpu::ProcessEndOfScanline() {
 	// When VTOTAL < 144: frame still runs to 144 scanlines (with rendering Y wrapping),
 	// but VBlank and sprite copy are inhibited. This prevents short frames that disrupt
 	// game timing (fixes FF2 fire magic video instability).
-	uint16_t frameEndScanline = std::max<uint16_t>(WsConstants::ScreenHeight, (uint16_t)_state.LastScanline + 1);
+	uint16_t visibleScanlineCount = (uint16_t)_state.LastScanline + 1;
+	uint16_t frameEndScanline = visibleScanlineCount >= WsConstants::ScreenHeight
+		? visibleScanlineCount
+		: WsConstants::ScreenHeight;
 
 	if (_state.Scanline >= frameEndScanline) [[unlikely]] {
 		if (_state.Scanline <= 145) {

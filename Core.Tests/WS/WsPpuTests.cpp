@@ -985,3 +985,15 @@ TEST(WsVtotalEdgeCaseTest, OptimizedRenderY_MatchesModuloModel) {
 		}
 	}
 }
+
+TEST(WsVtotalEdgeCaseTest, OptimizedFrameEndScanline_MatchesMaxModel) {
+	for (uint16_t lastScanline = 0; lastScanline <= 255; lastScanline++) {
+		uint16_t expected = std::max<uint16_t>(WsConstants::ScreenHeight, lastScanline + 1);
+		uint16_t visibleCount = lastScanline + 1;
+		uint16_t optimized = visibleCount >= WsConstants::ScreenHeight
+			? visibleCount
+			: WsConstants::ScreenHeight;
+
+		EXPECT_EQ(optimized, expected) << "lastScanline=" << lastScanline;
+	}
+}

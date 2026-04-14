@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "WS/WsTypes.h"
 
 // =============================================================================
@@ -27,6 +27,14 @@ namespace WsMemoryTestHelpers {
 		if (state.EnabledIrqs & (uint8_t)src) {
 			state.ActiveIrqs |= (uint8_t)src;
 		}
+	}
+
+	/// <summary>
+	/// ClearIrqSource: clears only the requested source bit.
+	/// ActiveIrqs &= ~src.
+	/// </summary>
+	static void ClearIrqSource(WsMemoryManagerState& state, WsIrqSource src) {
+		state.ActiveIrqs &= ~(uint8_t)src;
 	}
 
 	/// <summary>
@@ -319,6 +327,27 @@ TEST(WsIrqDispatchTest, AcknowledgeIrqs_ClearZero_NoEffect) {
 	WsMemoryTestHelpers::AcknowledgeIrqs(state, 0);
 
 	EXPECT_EQ(state.ActiveIrqs, 0xff);
+}
+
+TEST(WsIrqDispatchTest, ClearIrqSource_ClearsOnlyRequestedBit) {
+	WsMemoryManagerState state = {};
+	state.ActiveIrqs = (uint8_t)WsIrqSource::Scanline |
+		(uint8_t)WsIrqSource::VerticalBlank |
+		(uint8_t)WsIrqSource::HorizontalBlankTimer;
+
+	WsMemoryTestHelpers::ClearIrqSource(state, WsIrqSource::VerticalBlank);
+
+	EXPECT_EQ(state.ActiveIrqs,
+		(uint8_t)WsIrqSource::Scanline | (uint8_t)WsIrqSource::HorizontalBlankTimer);
+}
+
+TEST(WsIrqDispatchTest, ClearIrqSource_MissingBit_NoEffect) {
+	WsMemoryManagerState state = {};
+	state.ActiveIrqs = (uint8_t)WsIrqSource::Scanline;
+
+	WsMemoryTestHelpers::ClearIrqSource(state, WsIrqSource::VerticalBlank);
+
+	EXPECT_EQ(state.ActiveIrqs, (uint8_t)WsIrqSource::Scanline);
 }
 
 TEST(WsIrqDispatchTest, HasPendingIrq_NoneActive) {

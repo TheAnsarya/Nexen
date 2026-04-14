@@ -57,7 +57,8 @@ namespace {
 
 	// ares-compatible frame end scanline count
 	uint16_t GetFrameEndScanlineAres(uint8_t vtotal) {
-		return std::max<uint16_t>(WsConstants::ScreenHeight, static_cast<uint16_t>(vtotal) + 1);
+		uint16_t visibleCount = static_cast<uint16_t>(vtotal) + 1;
+		return visibleCount >= WsConstants::ScreenHeight ? visibleCount : WsConstants::ScreenHeight;
 	}
 
 	// Nexen current render-Y wrapping model for line rendering
