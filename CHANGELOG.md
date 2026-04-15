@@ -5,6 +5,33 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.33] - 2026-04-15
+
+### Fixed
+
+- **Per-game data migration now requires user confirmation** — ROM load checks for pending save state and battery save migrations and displays a confirmation dialog before moving files (#1274)
+- **Menu/config pause suppressed during ROM load** — auto-pause in menu/config dialogs no longer fires during ROM load transitions (#1290, #1300)
+- **Pansy.Core package-only enforcement in CI** — CI validates Pansy.Core is consumed as a NuGet package with UI resource prep step (#1298, #1302)
+- **UTF-8 stream compatibility and test warning noise** — restored UTF-8 stream compatibility and reduced StringUtilities assertion noise (#1297)
+- **GitHub comment formatting** — fixed escaped newline sequences appearing as literal `\n` in published issue comments (#1297)
+
+### Changed
+
+- **GitHub Actions Node 24 runtime** — all CI workflows now force Node 24 runtime, eliminating deprecated Node.js 16/20 warnings (#1303)
+- **TODOv2 → issue-scoped TODO triage** — all 20 files with stale `TODOv2` markers converted to `TODO(#issue)` format (#1281)
+- **SteamOS guide rewrite** — complete rewrite of `SteamOS.md` with Nexen-specific instructions, linked from README (#1282, #1283)
+- **First-party warning reduction** — batch reduction of first-party compiler warnings with CI gating on first-party signal (#1297)
+
+### Added
+
+- **WonderSwan timing gate hardening** — multi-event ordering assertions in WS timing gate tests (#1285, #1287, #1076)
+- **Hotpath benchmark stabilization** — repeatable benchmark script with labeled, timestamped JSON output (#1218)
+- **Per-game migration count API** — `GetPendingMigrationCount()` and `ConfirmGameDataMigration` dialog (#1274)
+
+### Performance
+
+- **Hotpath branch-prediction triage** — real GBA/NES memory hotpath microbenchmarks tested and discarded non-improving `[[likely]]`/`[[unlikely]]` hints (#1216)
+
 ## [1.4.32] - 2026-04-15
 
 ### Fixed

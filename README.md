@@ -1,4 +1,4 @@
-﻿# Nexen
+# Nexen
 
 <p align="center">
   <img src="~assets/Nexen%20icon.png" alt="Nexen" width="128"/>
@@ -34,26 +34,26 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **Standard** | [Nexen-Windows-x64-v1.4.32.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.32/Nexen-Windows-x64-v1.4.32.exe) | Single-file, recommended |
-| **Native AOT** | [Nexen-Windows-x64-AoT-v1.4.32.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.32/Nexen-Windows-x64-AoT-v1.4.32.exe) | Faster startup |
+| **Standard** | [Nexen-Windows-x64-v1.4.33.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.33/Nexen-Windows-x64-v1.4.33.exe) | Single-file, recommended |
+| **Native AOT** | [Nexen-Windows-x64-AoT-v1.4.33.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.33/Nexen-Windows-x64-AoT-v1.4.33.exe) | Faster startup |
 
 ### Linux
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **AppImage x64** | [Nexen-Linux-x64-v1.4.32.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.32/Nexen-Linux-x64-v1.4.32.AppImage) | Recommended |
-| **AppImage ARM64** | [Nexen-Linux-ARM64-v1.4.32.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.32/Nexen-Linux-ARM64-v1.4.32.AppImage) | Raspberry Pi, etc. |
-| Binary x64 (clang) | [Nexen-Linux-x64-v1.4.32.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.32/Nexen-Linux-x64-v1.4.32.tar.gz) | Tarball, requires SDL2 |
-| Binary x64 (gcc) | [Nexen-Linux-x64-gcc-v1.4.32.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.32/Nexen-Linux-x64-gcc-v1.4.32.tar.gz) | Tarball, requires SDL2 |
-| Binary ARM64 (clang) | [Nexen-Linux-ARM64-v1.4.32.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.32/Nexen-Linux-ARM64-v1.4.32.tar.gz) | Tarball, requires SDL2 |
-| Binary ARM64 (gcc) | [Nexen-Linux-ARM64-gcc-v1.4.32.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.32/Nexen-Linux-ARM64-gcc-v1.4.32.tar.gz) | Tarball, requires SDL2 |
-| Native AOT x64 | [Nexen-Linux-x64-AoT-v1.4.32.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.32/Nexen-Linux-x64-AoT-v1.4.32.tar.gz) | Faster startup |
+| **AppImage x64** | [Nexen-Linux-x64-v1.4.33.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.33/Nexen-Linux-x64-v1.4.33.AppImage) | Recommended |
+| **AppImage ARM64** | [Nexen-Linux-ARM64-v1.4.33.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.33/Nexen-Linux-ARM64-v1.4.33.AppImage) | Raspberry Pi, etc. |
+| Binary x64 (clang) | [Nexen-Linux-x64-v1.4.33.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.33/Nexen-Linux-x64-v1.4.33.tar.gz) | Tarball, requires SDL2 |
+| Binary x64 (gcc) | [Nexen-Linux-x64-gcc-v1.4.33.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.33/Nexen-Linux-x64-gcc-v1.4.33.tar.gz) | Tarball, requires SDL2 |
+| Binary ARM64 (clang) | [Nexen-Linux-ARM64-v1.4.33.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.33/Nexen-Linux-ARM64-v1.4.33.tar.gz) | Tarball, requires SDL2 |
+| Binary ARM64 (gcc) | [Nexen-Linux-ARM64-gcc-v1.4.33.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.33/Nexen-Linux-ARM64-gcc-v1.4.33.tar.gz) | Tarball, requires SDL2 |
+| Native AOT x64 | [Nexen-Linux-x64-AoT-v1.4.33.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.33/Nexen-Linux-x64-AoT-v1.4.33.tar.gz) | Faster startup |
 
 ### macOS (Apple Silicon)
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **Standard** | [Nexen-macOS-ARM64-v1.4.32.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.32/Nexen-macOS-ARM64-v1.4.32.zip) | App bundle |
+| **Standard** | [Nexen-macOS-ARM64-v1.4.33.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.33/Nexen-macOS-ARM64-v1.4.33.zip) | App bundle |
 | ~~Native AOT~~ | _Temporarily unavailable_ | .NET 10 ILC compiler bug |
 
 > **Notes:**
@@ -146,21 +146,21 @@ Download pre-built binaries from the [Releases page](https://github.com/TheAnsar
 
 ### Windows
 
-1. Download [Nexen-Windows-x64-v1.4.32.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.32/Nexen-Windows-x64-v1.4.32.exe)
+1. Download [Nexen-Windows-x64-v1.4.33.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.33/Nexen-Windows-x64-v1.4.33.exe)
 2. Run the executable (no installation needed)
 3. **File → Open** to load a ROM
 
 ### Linux
 
-1. Download [Nexen-Linux-x64-v1.4.32.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.32/Nexen-Linux-x64-v1.4.32.AppImage)
-2. `chmod +x Nexen-Linux-x64-v1.4.32.AppImage`
-3. `./Nexen-Linux-x64-v1.4.32.AppImage`
+1. Download [Nexen-Linux-x64-v1.4.33.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.33/Nexen-Linux-x64-v1.4.33.AppImage)
+2. `chmod +x Nexen-Linux-x64-v1.4.33.AppImage`
+3. `./Nexen-Linux-x64-v1.4.33.AppImage`
 
 > For non-AppImage builds, install SDL2 first: `sudo apt install libsdl2-2.0-0`
 
 ### macOS
 
-1. Download [Nexen-macOS-ARM64-v1.4.32.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.32/Nexen-macOS-ARM64-v1.4.32.zip)
+1. Download [Nexen-macOS-ARM64-v1.4.33.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.33/Nexen-macOS-ARM64-v1.4.33.zip)
 2. Extract and move `Nexen.app` to Applications
 3. Right-click → Open (first launch only, to bypass Gatekeeper)
 

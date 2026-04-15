@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
 	<OutputType>WinExe</OutputType>
 	<TargetFramework>net10.0</TargetFramework>
@@ -8,8 +8,8 @@
 	<AssemblyName>Nexen</AssemblyName>
 	<RootNamespace>Nexen</RootNamespace>
 	<StartupObject>Nexen.Program</StartupObject>
-	<Version>1.4.32</Version>
-	<FileVersion>1.4.32</FileVersion>
+	<Version>1.4.33</Version>
+	<FileVersion>1.4.33</FileVersion>
 	<Copyright>(C) 2026 TheAnsarya</Copyright>
   </PropertyGroup>
 	<PropertyGroup>
@@ -47,8 +47,8 @@
 		<CFBundleName>Nexen</CFBundleName> <!-- Also defines .app file name -->
 		<CFBundleDisplayName>Nexen</CFBundleDisplayName>
 		<CFBundleIdentifier>com.nexen</CFBundleIdentifier>
-		<CFBundleVersion>1.4.32</CFBundleVersion>
-		<CFBundleShortVersionString>1.4.32</CFBundleShortVersionString>
+		<CFBundleVersion>1.4.33</CFBundleVersion>
+		<CFBundleShortVersionString>1.4.33</CFBundleShortVersionString>
 		<CFBundlePackageType>APPL</CFBundlePackageType>
 		<CFBundleSignature>????</CFBundleSignature>
 		<CFBundleExecutable>Nexen</CFBundleExecutable>
