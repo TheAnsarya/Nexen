@@ -312,7 +312,7 @@ public abstract class DbgImporter : ISymbolProvider {
 				isRam = false;
 
 				if (row.Contains("type=rw")) {
-					//TODOv2 fix this
+					//TODO(#1281) fix this
 					//Assume a RW segment inside the .sfc file is SPC code
 					isRam = true;
 					memType = MemoryType.SpcRam;

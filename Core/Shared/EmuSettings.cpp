@@ -43,8 +43,8 @@ void EmuSettings::CopySettings(EmuSettings& src) {
 
 void EmuSettings::Serialize(Serializer& s) {
 	// Save/load settings that have an impact on emulation (for movies), netplay, etc.)
-	// TODOv2: These should probably not be loaded except for movie playback and netplay clients
-	// TODOv2: Desyncs are possible when random state options are turned on
+	// TODO(#1281): These should probably not be loaded except for movie playback and netplay clients
+	// TODO(#1281): Desyncs are possible when random state options are turned on
 	SV(_video.IntegerFpsMode);
 	SV(_emulation.RunAheadFrames);
 	SV(_game.DipSwitches);

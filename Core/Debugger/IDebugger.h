@@ -49,7 +49,7 @@ enum class MemoryOperationType;
 /// - Step() may block until breakpoint hit
 /// - StepBack() rewinds emulation state
 /// </remarks>
-// TODOv2 rename/refactor to BaseDebugger
+// TODO(#1281) rename/refactor to BaseDebugger
 class IDebugger {
 protected:
 	unique_ptr<StepRequest> _step;                ///< Active step request (step into/over/out)

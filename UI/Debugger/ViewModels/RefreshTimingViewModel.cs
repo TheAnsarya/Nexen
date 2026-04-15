@@ -71,7 +71,7 @@ public sealed partial class RefreshTimingViewModel : ViewModelBase {
 			ConsoleType.Snes => 240,
 			ConsoleType.Nes => 241,
 			ConsoleType.Gameboy => 144,
-			ConsoleType.PcEngine => 240, //TODOv2
+			ConsoleType.PcEngine => 240, //TODO(#1281)
 			ConsoleType.Sms => 192,
 			ConsoleType.Gba => 160,
 			ConsoleType.Ws => 144,

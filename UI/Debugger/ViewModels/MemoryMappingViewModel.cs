@@ -399,7 +399,7 @@ public sealed partial class MemoryMappingViewModel : ViewModelBase {
 	}
 
 	private List<MemoryMappingBlock> GetPceCpuMappings(PceMemoryManagerState state) {
-		//TODOv2 improve/complete logic for save ram, etc.
+		//TODO(#1281) improve/complete logic for save ram, etc.
 		List<MemoryMappingBlock> mappings = new();
 
 		Dictionary<MemoryType, Color> mainColors = new() {

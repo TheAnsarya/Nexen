@@ -37,7 +37,7 @@ MemoryDumper::MemoryDumper(Debugger* debugger) {
 	_emu = debugger->GetEmulator();
 
 	IConsole* console = _debugger->GetConsole();
-	// TODOv2 - generic code? (or at least rename SNES-specific members)
+	// TODO(#1281) - generic code? (or at least rename SNES-specific members)
 	if (SnesConsole* snes = dynamic_cast<SnesConsole*>(console)) {
 		_spc = snes->GetSpc();
 		_memoryManager = snes->GetMemoryManager();
@@ -345,7 +345,7 @@ void MemoryDumper::InternalSetMemoryValues(MemoryType originalMemoryType, uint32
 						undoEntry.OriginalData.push_back(originalValue);
 					}
 
-					// TODOv2 find a cleaner way to implement this
+					// TODO(#1281) find a cleaner way to implement this
 					// Prevent invalid memory values
 					switch (memoryType) {
 						case MemoryType::SnesCgRam:

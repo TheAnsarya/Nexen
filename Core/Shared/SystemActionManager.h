@@ -37,7 +37,7 @@ public:
 		_needPowerCycle = false;
 		_needReset = false;
 
-		// TODOv2 review this - prevents NES from power cycling 2x in a row
+		// TODO(#1281) review this - prevents NES from power cycling 2x in a row
 		ClearBit(SystemActionManager::Buttons::ResetButton);
 		ClearBit(SystemActionManager::Buttons::PowerButton);
 	}

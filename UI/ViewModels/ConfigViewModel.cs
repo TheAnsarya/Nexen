@@ -101,7 +101,7 @@ public sealed partial class ConfigViewModel : DisposableViewModel {
 			case ConfigWindowTab.Video: Video ??= AddDisposable(new VideoConfigViewModel()); break;
 
 			case ConfigWindowTab.Nes:
-				//TODOv2 fix this patch
+				//TODO(#1281) fix this patch
 				Preferences ??= AddDisposable(new PreferencesConfigViewModel());
 				Nes ??= AddDisposable(new NesConfigViewModel(Preferences.Config));
 				break;

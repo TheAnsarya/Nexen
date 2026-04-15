@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -510,7 +510,7 @@ public partial class MainWindow : NexenWindow {
 			scale = 1;
 		}
 
-		//TODOv2 - Calling this twice seems to fix what might be an issue in Avalonia?
+		//TODO(#1281) - Calling this twice seems to fix what might be an issue in Avalonia?
 		//On the first call, when DPI > 100%, sometimes _rendererPanel's bounds are incorrect
 		InternalSetScale(scale);
 		InternalSetScale(scale);

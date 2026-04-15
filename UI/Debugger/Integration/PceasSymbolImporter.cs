@@ -73,7 +73,7 @@ public sealed class PceasSymbolImporter : ISymbolProvider {
 	private SourceSymbol? InternalGetSymbol(string word, int scopeStart, int scopeEnd, bool retry) {
 		foreach (SymbolInfo symbol in _symbols) {
 			if (symbol.Name == word) {
-				//TODOv2 SCOPE
+				//TODO(#1281) SCOPE
 				return symbol.SourceSymbol;
 			}
 		}

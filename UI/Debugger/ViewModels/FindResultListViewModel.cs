@@ -89,7 +89,7 @@ public sealed partial class FindResultListViewModel : DisposableViewModel {
 		Selection.Clear();
 		UpdateResults(results);
 		Selection.SelectedIndex = 0;
-		Dispatcher.UIThread.Post(() =>        //TODOv2 - run this in a post to bypass a bug that might be fixed in the latest Avalonia preview, to re-test after upgrading
+		Dispatcher.UIThread.Post(() =>        //TODO(#1281) - run this in a post to bypass a bug that might be fixed in the latest Avalonia preview, to re-test after upgrading
 			Debugger.OpenTool(Debugger.DockFactory.FindResultListTool));
 	}
 

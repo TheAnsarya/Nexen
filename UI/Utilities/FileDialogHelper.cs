@@ -125,7 +125,7 @@ public sealed class FileDialogHelper {
 
 			IStorageFolder? startLocation = initialFolder is not null ? await wnd.StorageProvider.TryGetFolderFromPathAsync(initialFolder) : null;
 			if (OperatingSystem.IsLinux()) {
-				//TODOv2 - setting a start location appears to cause crashes on Linux (dbus crash), force it to null for now
+				//TODO(#1281) - setting a start location appears to cause crashes on Linux (dbus crash), force it to null for now
 				startLocation = null;
 			}
 

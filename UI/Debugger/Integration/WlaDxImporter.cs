@@ -61,7 +61,7 @@ public abstract class WlaDxImporter : ISymbolProvider {
 	public SourceSymbol? GetSymbol(string word, int scopeStart, int scopeEnd) {
 		foreach (SymbolInfo symbol in _symbols) {
 			if (symbol.Name == word) {
-				//TODOv2 SCOPE
+				//TODO(#1281) SCOPE
 				return symbol.SourceSymbol;
 			}
 		}

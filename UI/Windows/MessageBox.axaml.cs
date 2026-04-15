@@ -117,7 +117,7 @@ public partial class MessageBox : NexenWindow {
 
 		if (parent != null) {
 			if (!OperatingSystem.IsWindows()) {
-				//TODOv2 - This fixes Avalonia apparently not working properly with CenterOwner on X11 with SizeToContent="WidthAndHeight"
+				//TODO(#1281) - This fixes Avalonia apparently not working properly with CenterOwner on X11 with SizeToContent="WidthAndHeight"
 				msgbox.Opened += (_, _) => WindowExtensions.CenterWindow(msgbox, parent);
 			}
 

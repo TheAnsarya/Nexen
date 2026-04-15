@@ -77,7 +77,7 @@ public abstract class SdccSymbolImporter : ISymbolProvider {
 	public SourceSymbol? GetSymbol(string word, int scopeStart, int scopeEnd) {
 		foreach (SymbolInfo symbol in _symbols.Values) {
 			if (symbol.Name == word) {
-				//TODOv2 SCOPE
+				//TODO(#1281) SCOPE
 				return symbol.SourceSymbol;
 			}
 		}

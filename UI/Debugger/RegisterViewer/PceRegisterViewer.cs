@@ -100,7 +100,7 @@ public sealed class PceRegisterViewer {
 			new RegEntry("$00.3", "SATB Transfer Completed", vdc.SatbTransferDone),
 			new RegEntry("$00.4", "VRAM Transfer Completed", vdc.VramTransferDone),
 			new RegEntry("$00.5", "Vertical Blank", vdc.VerticalBlank),
-			//TODOv2
+			//TODO(#1281)
 			//new RegEntry("$00.6", "Busy", ...),
 
 			new RegEntry("", "VRAM Address/Data"),

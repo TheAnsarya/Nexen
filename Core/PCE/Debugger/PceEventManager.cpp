@@ -46,7 +46,7 @@ void PceEventManager::AddEvent(DebugEventType type, MemoryOperationInfo& operati
 			if ((operation.Address & 0x1A) == 2) {
 				evt.RegisterId = _vdc->GetState().CurrentReg; // VDC reg
 			} else {
-				// TODOv2 - supergrafx VPC writes, not VDC
+				// TODO(#1281) - supergrafx VPC writes, not VDC
 			}
 		} else {
 			if ((operation.Address & 0x03) >= 2) {

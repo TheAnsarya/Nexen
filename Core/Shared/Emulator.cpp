@@ -688,7 +688,7 @@ uint32_t Emulator::GetMasterClockRate() {
 	}
 #endif
 
-	// TODOv2 this is not accurate when overclocking options are turned on
+	// TODO(#1281) this is not accurate when overclocking options are turned on
 	return _console->GetMasterClockRate();
 }
 
