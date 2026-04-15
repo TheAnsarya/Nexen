@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <array>
 #include <cstring>
 #include "Lynx/LynxTypes.h"

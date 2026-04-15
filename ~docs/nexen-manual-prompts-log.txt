@@ -1515,7 +1515,9 @@ yes continue "If you want, I’ll continue Batch A now by targeting the next fir
 
 I just told you, remove from the copilot instructions "asking about git commit files" so don't ask me if you find an "unexpected file" STOP ASKING ME, just commit them, who cares.; continue;
 
+[Nexen] when you create githib issue comments, you're posting "`\n" instead of new lines, see `https://github.com/TheAnsarya/Nexen/issues/1297#issuecomment-4252453417` for reference, redo that comment (edit) so that it has real newlines (and maybe some other recent comments? fix them so they don't have literal "\n"s in the commenr), and update copilot-instructions so new comments use true newlines, you're posting them wrong in the format); continue;
 
+[Nexen] git commit everything; continue working on Nexen issues; continue;
 
 
 

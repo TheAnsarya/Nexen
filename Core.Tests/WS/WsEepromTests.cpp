@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "WS/WsEeprom.h"
 #include "WS/WsTypes.h"
 

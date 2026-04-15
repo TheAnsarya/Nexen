@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Lynx/LynxTypes.h"
 
 #ifdef _MSC_VER

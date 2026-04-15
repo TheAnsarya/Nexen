@@ -116,6 +116,14 @@ This provides:
 - **History** - Track AI-assisted development workflow
 - **Lineage** - Track parent/child relationships for sub-issues
 
+### ⚠️ MANDATORY: GitHub Comment Formatting
+
+When posting issue/PR comments with `gh` CLI, always use real newline characters in the comment body.
+
+- Do **NOT** post escaped literal sequences like ``\n`` in published comments
+- Prefer multiline body input so GitHub renders proper paragraphs and lists
+- If a malformed comment with literal ``\n`` is posted, edit it immediately to replace literals with true newlines
+
 ### ⚠️ MANDATORY: Commit/Push Autonomy
 
 When the user asks to implement, fix, continue, or ship work, do not ask for commit confirmation.
