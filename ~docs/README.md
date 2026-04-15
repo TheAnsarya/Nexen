@@ -1,4 +1,4 @@
-# Nexen Developer Documentation
+﻿# Nexen Developer Documentation
 
 This directory contains internal development documentation for Nexen contributors and maintainers.
 
@@ -139,6 +139,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Input Mapping Coverage Checkpoint (2026-03-30)](testing/input-mapping-coverage-checkpoint-2026-03-30.md) | Focused per-system controller mapping decode coverage checkpoint and validation evidence for #1073 |
 | [UI Quality Modernization Checkpoint (2026-03-30)](testing/ui-quality-modernization-checkpoint-2026-03-30.md) | Measurable UI consistency and menu/dialog no-regression checkpoint for #1074 |
 | [Issue #1291 Settings Persistence Root Cause + Plan (2026-04-15)](plans/2026-04-15-issue-1291-settings-persistence-root-cause.md) | Root-cause analysis and implemented fix plan for settings not being persisted after exit/relaunch |
+| [Issue #1295 Writable Config Fallback And Migration Plan (2026-04-15)](plans/2026-04-15-issue-1295-writable-config-fallback-and-migration.md) | Startup fallback and settings migration strategy when portable config path is not writable |
 | [User Future Work Index](../docs/FUTURE-WORK.md) | Public roadmap entry for active and upcoming tracks |
 | [User Tutorials Index](../docs/TUTORIALS.md) | Step-by-step user and contributor workflow tutorials |
 

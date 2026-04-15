@@ -254,6 +254,73 @@ public static partial class ConfigManager {
 		HomeFolder = null!;
 	}
 
+	internal static bool IsFolderWritable(string folder) {
+		try {
+			Directory.CreateDirectory(folder);
+			string probe = Path.Combine(folder, $".nexen-write-probe-{Guid.NewGuid():N}.tmp");
+			using(FileStream stream = File.Open(probe, FileMode.CreateNew, FileAccess.Write, FileShare.None)) {
+				stream.WriteByte(0);
+			}
+
+			File.Delete(probe);
+			return true;
+		} catch (Exception ex) {
+			Debug.WriteLine($"ConfigManager.IsFolderWritable: '{folder}' is not writable: {ex.Message}");
+			return false;
+		}
+	}
+
+	internal static bool TryMigrateSettingsFile(string sourceConfigFile, string destinationConfigFile) {
+		try {
+			string? destinationFolder = Path.GetDirectoryName(destinationConfigFile);
+			if (destinationFolder is null) {
+				return false;
+			}
+
+			Directory.CreateDirectory(destinationFolder);
+			File.Copy(sourceConfigFile, destinationConfigFile, false);
+			return true;
+		} catch (Exception ex) {
+			Debug.WriteLine($"ConfigManager.TryMigrateSettingsFile failed: {ex.Message}");
+			return false;
+		}
+	}
+
+	internal static string ResolveHomeFolderPath(
+		string portableFolder,
+		string documentsFolder,
+		Func<string, bool>? isFolderWritable = null,
+		Func<string, string, bool>? migrateSettingsFile = null
+	) {
+		isFolderWritable ??= IsFolderWritable;
+		migrateSettingsFile ??= TryMigrateSettingsFile;
+
+		string portableConfig = Path.Combine(portableFolder, "settings.json");
+		string documentsConfig = Path.Combine(documentsFolder, "settings.json");
+
+		if (!File.Exists(portableConfig)) {
+			return documentsFolder;
+		}
+
+		if (isFolderWritable(portableFolder)) {
+			return portableFolder;
+		}
+
+		if (!isFolderWritable(documentsFolder)) {
+			Debug.WriteLine($"ConfigManager.ResolveHomeFolderPath: portable and documents folders are not writable, using portable: {portableFolder}");
+			return portableFolder;
+		}
+
+		if (!File.Exists(documentsConfig)) {
+			bool migrated = migrateSettingsFile(portableConfig, documentsConfig);
+			if (!migrated) {
+				Debug.WriteLine($"ConfigManager.ResolveHomeFolderPath: failed to migrate settings from '{portableConfig}' to '{documentsConfig}'");
+			}
+		}
+
+		return documentsFolder;
+	}
+
 	/// <summary>
 	/// Gets or sets the home folder path where all Nexen data is stored.
 	/// Auto-detects portable vs documents mode on first access based on presence of settings.json.
@@ -268,11 +335,19 @@ public static partial class ConfigManager {
 			if (field is null) {
 				string portableFolder = DefaultPortableFolder;
 				string documentsFolder = DefaultDocumentsFolder;
+				field = ResolveHomeFolderPath(portableFolder, documentsFolder);
 
-				string portableConfig = Path.Combine(portableFolder, "settings.json");
-				field = File.Exists(portableConfig) ? portableFolder : documentsFolder;
-
-				Directory.CreateDirectory(field);
+				try {
+					Directory.CreateDirectory(field);
+				} catch (Exception ex) {
+					Debug.WriteLine($"ConfigManager.HomeFolder: Failed to create '{field}': {ex.Message}");
+					if (!string.Equals(field, documentsFolder, StringComparison.OrdinalIgnoreCase)) {
+						field = documentsFolder;
+						Directory.CreateDirectory(field);
+					} else {
+						throw;
+					}
+				}
 			}
 
 			return field;
