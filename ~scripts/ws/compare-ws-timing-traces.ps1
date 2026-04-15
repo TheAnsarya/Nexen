@@ -15,6 +15,40 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Assert-Ordering {
+	param(
+		[object[]]$Trace,
+		[string]$Label
+	)
+
+	if ($Trace.Count -lt 2) {
+		throw "$Label trace has fewer than 2 entries; multi-event timeline required."
+	}
+
+	$wrapCount = 0
+	for ($i = 0; $i -lt $Trace.Count; $i++) {
+		$entry = $Trace[$i]
+		if ($entry.index -ne $i) {
+			throw "$Label trace index ordering invalid at position $i (entry.index=$($entry.index))."
+		}
+
+		if ($entry.eventId -eq 0xff) {
+			throw "$Label trace uses fallback eventId 0xff; expected deterministic multi-event timeline."
+		}
+
+		if ($i -gt 0) {
+			$prev = $Trace[$i - 1]
+			if ($entry.scanline -lt $prev.scanline) {
+				$wrapCount++
+			}
+		}
+	}
+
+	if ($wrapCount -gt 1) {
+		throw "$Label trace scanline ordering invalid (more than one wrap detected)."
+	}
+}
+
 function Read-TraceJsonl {
 	param([string]$Path)
 	if (-not (Test-Path $Path)) {
@@ -41,6 +75,9 @@ function Read-TraceJsonl {
 
 $nexen = Read-TraceJsonl -Path $NexenTracePath
 $reference = Read-TraceJsonl -Path $ReferenceTracePath
+
+Assert-Ordering -Trace $nexen -Label "Nexen"
+Assert-Ordering -Trace $reference -Label "Reference"
 
 Write-Host "Nexen trace entries: $($nexen.Count)" -ForegroundColor Cyan
 Write-Host "Reference entries: $($reference.Count)" -ForegroundColor Cyan

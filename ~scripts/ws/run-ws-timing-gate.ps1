@@ -79,6 +79,12 @@ if ($LASTEXITCODE -ne 0) {
 	exit 1
 }
 
+$traceLineCount = @(Get-Content -Path $traceOut | Where-Object { $_.Trim().Length -gt 0 }).Count
+if ($traceLineCount -lt 2) {
+	Write-Error "Exported trace has fewer than 2 entries ($traceLineCount). Multi-event timeline required."
+	exit 1
+}
+
 if ($UpdateReference) {
 	$refDir = Split-Path -Parent $ReferenceTracePath
 	New-Item -ItemType Directory -Path $refDir -Force | Out-Null

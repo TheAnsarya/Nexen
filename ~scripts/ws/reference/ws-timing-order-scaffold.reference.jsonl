@@ -1,1 +1,2 @@
-{"index":0,"eventId":255,"scanline":145,"irqActive":192,"irqEnabled":240,"hTimer":3,"vTimer":1}
+{"index":0,"eventId":64,"scanline":145,"irqActive":192,"irqEnabled":240,"hTimer":3,"vTimer":1}
+{"index":1,"eventId":69,"scanline":145,"irqActive":192,"irqEnabled":240,"hTimer":3,"vTimer":1}

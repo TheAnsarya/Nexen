@@ -1544,6 +1544,7 @@ Are all those updated Actions in the correct new file formats? continue;
 
 [Nexen] Review the issues and see if any are completed (close them if so) and work through all the issues, get into the meat of it, I mean really fix this work all the issues, start with `https://github.com/TheAnsarya/Nexen/issues/1290` and make sure it's done, fix it, fix them all and up them and update docs, and close them; continue;
 
+yes! zero pause! just keep working issues and finsih as many as you can!; continue;
 
 
 

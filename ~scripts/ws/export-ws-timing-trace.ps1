@@ -65,6 +65,11 @@ if ($logDir -and -not (Test-Path $logDir)) {
 $oldEnv = $env:NEXEN_WS_TRACE_OUTPUT
 $resolvedTracePath = (Resolve-Path $outputDir).Path
 $resolvedTracePath = Join-Path $resolvedTracePath (Split-Path -Leaf $OutputTracePath)
+
+if (Test-Path $resolvedTracePath) {
+	Remove-Item -Path $resolvedTracePath -Force
+}
+
 $env:NEXEN_WS_TRACE_OUTPUT = $resolvedTracePath
 try {
 	$tmpStdout = Join-Path $env:TEMP ("nexen-ws-trace-stdout-" + [Guid]::NewGuid().ToString("N") + ".log")
