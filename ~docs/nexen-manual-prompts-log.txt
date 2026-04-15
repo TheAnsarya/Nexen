@@ -1550,7 +1550,8 @@ continue working issues; plan and implement as much as you can; continue;
 
 fucking commit them, I told you to stop asking, there is no "repo saftety rule"
 
-
+--- claude-4.6-opus
+[Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.33 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes and make a good title for the release; the continue working on Nexen issues; continue;
 
 
 
