@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "GBA/GbaTypes.h"
 #include "GBA/GbaPpu.h"
