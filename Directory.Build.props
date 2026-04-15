@@ -1,9 +1,11 @@
-<Project>
+﻿<Project>
 	<PropertyGroup>
 		<!-- Enable vcpkg manifest mode for all C/C++ projects in the solution.
 		     The root vcpkg.json declares dependencies (gtest, benchmark, etc.)
 		     and vcpkg-configuration.json pins the baseline. -->
 		<VcpkgEnableManifest>true</VcpkgEnableManifest>
+		<!-- Canonical Pansy.Core package version used when local sibling source is not present. -->
+		<PansyCorePackageVersion>1.0.0</PansyCorePackageVersion>
 	</PropertyGroup>
 
 	<!-- Suppress NETSDK1233: GitHub Actions windows-latest has VS 2022 17.14 which

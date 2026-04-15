@@ -1,4 +1,4 @@
-# Compiling Nexen
+﻿# Compiling Nexen
 
 Nexen uses modern C++23 and .NET 10 for improved performance and code quality.
 
@@ -15,22 +15,15 @@ Nexen uses modern C++23 and .NET 10 for improved performance and code quality.
 
 Nexen uses `Pansy.Core` for debugger metadata integration.
 
-- If `..\..\pansy\src\Pansy.Core\Pansy.Core.csproj` exists relative to `UI\UI.csproj`, Nexen uses a local `ProjectReference` automatically.
-- If the sibling Pansy repo is missing, Nexen falls back to `PackageReference Include="Pansy.Core" Version="1.0.0"`.
+- Nexen now consumes `Pansy.Core` from NuGet in all environments (local and CI).
+- A sibling `pansy` repository is **not** required to build Nexen.
+- Package version is centralized in `Directory.Build.props` as `PansyCorePackageVersion`.
 
-If you do not have a published `Pansy.Core` package available in your NuGet sources yet, either:
-
-1. Clone the sibling `pansy` repository next to Nexen, or
-2. Build and consume a local package feed:
+If your environment has stale NuGet cache entries, clear cache and restore:
 
 ```powershell
-# From pansy repository root
-dotnet pack .\src\Pansy.Core\Pansy.Core.csproj -c Release -o .\artifacts\nupkg
-
-# Add local feed (example path)
-dotnet nuget add source "C:\path\to\pansy\artifacts\nupkg" --name pansy-local
-
-# Then restore/build Nexen
+dotnet nuget locals all --clear
+dotnet restore Nexen.sln
 ```
 
 ## Windows

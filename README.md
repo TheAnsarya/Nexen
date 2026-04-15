@@ -307,6 +307,8 @@ Nexen is the **play & debug** stage of the Flower Toolchain — an integrated pi
 | **.NET SDK** | 10.0+ | [Download](https://dotnet.microsoft.com/download) |
 | **SDL2** | 2.0+ | Linux/macOS only |
 
+Nexen resolves `Pansy.Core` from NuGet; you do not need a sibling `pansy` repo checked out next to Nexen.
+
 ### Windows
 
 1. Install Visual Studio 2026 with "Desktop development with C++" workload

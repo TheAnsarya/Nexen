@@ -32,10 +32,6 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Checkout Pansy (for Pansy.Core reference)
-        shell: bash
-        run: git clone --depth 1 https://github.com/TheAnsarya/pansy.git "$GITHUB_WORKSPACE/../pansy"
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
@@ -128,10 +124,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 1
-
-      - name: Checkout Pansy (for Pansy.Core reference)
-        shell: bash
-        run: git clone --depth 1 https://github.com/TheAnsarya/pansy.git "$GITHUB_WORKSPACE/../pansy"
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5

@@ -1519,14 +1519,22 @@ I just told you, remove from the copilot instructions "asking about git commit f
 
 [Nexen] git commit everything; continue working on Nexen issues; Work on issue #1299 `https://github.com/TheAnsarya/Nexen/issues/1299` figure out why this is happening, and fix it, research and add (epics/issues/benchmarks/tests/plans/documentation/session-logs/readmes/etc); and Work on issue #1298 `https://github.com/TheAnsarya/Nexen/issues/1298` figure out why this is happening, and fix it, research and add (epics/issues/benchmarks/tests/plans/documentation/session-logs/readmes/etc) and maybe build pansy and create a project for and release a nuget package whose version matches the pansy version and import that package into Nexen and use that instead for pansy integration so the pansy project is not required for building Nexen, make plans and epics and issues and docs, chat/session logs, benchmarks, tests, etc. then implement all of the fixes, find anything that causes an error and fix it; continue;
 
+Implement #1301 CI lane to enforce no-sibling Pansy build validation in automation.; Execute #1300 package publication/version policy so package-only path works without local feed
 
+-- steer
+Pansy should have a nuget package but I don't see it; create, build and publish it; continue;
 
+[Nexen] Am I correct that if there is a local pansy build, that is used but if not the nuget package is used or is the nuget package always used?
 
+[Pansy] For the nuget package, add an api key to nuget for this package, research `trustedpublishing` so I don't have to worry about keys, and fix all of this so we can publish, and give me manual instructions for the parts you can't do so we can publish to nuget from pansy; continue;
 
+I did what I could, try to publish the nuget package for pansy, and tell me what I still need to do
 
+I made the changes you said to do, rerun workflow and if there is still something I need to do let me know, but with very easy directions; continue;
 
+[Nexen] Work on issue #1298 `https://github.com/TheAnsarya/Nexen/issues/1298` and add (epics/issues/benchmarks/tests/plans/documentation/session-logs/readmes/etc) and use the Pansy.Core nuget package instead of having the repos next to Nexen, allow Nexen to compile with the nuget package; continue;
 
-
+[Nexen] Work on issue #1290 `https://github.com/TheAnsarya/Nexen/issues/1290` and add (epics/issues/benchmarks/tests/plans/documentation/session-logs/readmes/etc) and make sure that no mnatter what, when you load a rom, it is not paused, the game is playing immediately; continue;
 
 
 

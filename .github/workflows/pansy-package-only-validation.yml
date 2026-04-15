@@ -1,0 +1,80 @@
+name: Pansy Package-Only Validation
+
+on:
+  push:
+    branches: [ master, cpp-modernization, pansy-export ]
+    paths:
+      - 'UI/**'
+      - 'Tests/**'
+      - 'Directory.Build.props'
+      - '.github/workflows/pansy-package-only-validation.yml'
+      - '.github/workflows/build.yml'
+      - '.github/workflows/accuracy-tests.yml'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'UI/**'
+      - 'Tests/**'
+      - 'Directory.Build.props'
+      - '.github/workflows/pansy-package-only-validation.yml'
+      - '.github/workflows/build.yml'
+      - '.github/workflows/accuracy-tests.yml'
+  workflow_dispatch:
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+
+jobs:
+  package-only-managed:
+    name: Package-Only Managed Validation
+    runs-on: windows-2025-vs2026
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.x
+
+      - name: Ensure no sibling pansy checkout
+        shell: pwsh
+        run: |
+          $siblingPansy = Join-Path $env:GITHUB_WORKSPACE '..\pansy'
+          if (Test-Path $siblingPansy) {
+            Write-Error "Unexpected sibling pansy folder found at $siblingPansy"
+            exit 1
+          }
+
+          Write-Host "No sibling pansy folder detected. Package-only assumption validated."
+
+      - name: Restore UI project
+        run: dotnet restore UI/UI.csproj -r win-x64 --nologo
+
+      - name: Build UI project
+        run: dotnet build UI/UI.csproj -c Release -r win-x64 --no-restore --nologo -v m
+
+      - name: Run managed tests
+        run: dotnet test Tests/Nexen.Tests.csproj -c Release --nologo -v q
+
+      - name: Record timing checkpoint
+        shell: pwsh
+        run: |
+          $timing = @(
+            "restore_ui=completed"
+            "build_ui=completed"
+            "tests_managed=completed"
+          )
+
+          $timing | Out-File -FilePath package-only-validation-timing.txt -Encoding utf8
+
+      - name: Upload timing checkpoint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Package-Only Validation Timing
+          path: package-only-validation-timing.txt

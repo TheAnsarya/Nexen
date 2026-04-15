@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
@@ -8,16 +8,12 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
-		<PansyCoreProjectPath>..\..\pansy\src\Pansy.Core\Pansy.Core.csproj</PansyCoreProjectPath>
-		<PansyCorePackageVersion>1.0.0</PansyCorePackageVersion>
-		<UseLocalPansyProject Condition="Exists('$(PansyCoreProjectPath)')">true</UseLocalPansyProject>
-		<UseLocalPansyProject Condition="'$(UseLocalPansyProject)'==''">false</UseLocalPansyProject>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
 		<PackageReference Include="ReactiveUI" Version="23.2.1" />
-		<PackageReference Include="Pansy.Core" Version="$(PansyCorePackageVersion)" Condition="'$(UseLocalPansyProject)'!='true'" />
+		<PackageReference Include="Pansy.Core" Version="$(PansyCorePackageVersion)" />
 		<PackageReference Include="xunit.v3" Version="3.2.2" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -31,10 +27,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\UI\UI.csproj" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(UseLocalPansyProject)'=='true'">
-		<ProjectReference Include="$(PansyCoreProjectPath)" />
 	</ItemGroup>
 
 </Project>

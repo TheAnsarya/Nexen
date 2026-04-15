@@ -100,12 +100,6 @@
 			https://nuget-feed-nightly.avaloniaui.net/v3/index.json;https://api.nuget.org/v3/index.json
 		</RestoreSources>
 	</PropertyGroup>
-	<PropertyGroup>
-		<PansyCoreProjectPath>..\..\pansy\src\Pansy.Core\Pansy.Core.csproj</PansyCoreProjectPath>
-		<PansyCorePackageVersion>1.0.0</PansyCorePackageVersion>
-		<UseLocalPansyProject Condition="Exists('$(PansyCoreProjectPath)')">true</UseLocalPansyProject>
-		<UseLocalPansyProject Condition="'$(UseLocalPansyProject)'==''">false</UseLocalPansyProject>
-	</PropertyGroup>
 	<ItemGroup>
 		<TrimmerRootAssembly Include="Nexen" />
 		<TrimmerRootAssembly Include="AvaloniaEdit" />
@@ -134,15 +128,12 @@
 	<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
 	<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.5" />
 	<PackageReference Include="StreamHash" Version="1.11.3" />
-		<PackageReference Include="Pansy.Core" Version="$(PansyCorePackageVersion)" Condition="'$(UseLocalPansyProject)'!='true'" />
+		<PackageReference Include="Pansy.Core" Version="$(PansyCorePackageVersion)" />
 	<!-- Pin Tmds.DBus.Protocol (transitive from Avalonia on Linux) -->
 	<PackageReference Include="Tmds.DBus.Protocol" Version="0.92.0" />
    </ItemGroup>
 	<ItemGroup>
 	<ProjectReference Include="..\MovieConverter\MovieConverter.csproj" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(UseLocalPansyProject)'=='true'">
-		<ProjectReference Include="$(PansyCoreProjectPath)" />
 	</ItemGroup>
   <ItemGroup>
 	<Compile Update="Controls\ButtonWithIcon.axaml.cs">
