@@ -1,4 +1,4 @@
-name: Pansy Package-Only Validation
+﻿name: Pansy Package-Only Validation
 
 on:
   push:
@@ -54,6 +54,15 @@ jobs:
 
       - name: Restore UI project
         run: dotnet restore UI/UI.csproj -r win-x64 --nologo
+
+      - name: Prepare managed-only Dependencies.zip placeholder
+        shell: pwsh
+        run: |
+          if (!(Test-Path "UI/Dependencies.zip")) {
+            Add-Type -AssemblyName System.IO.Compression.FileSystem
+            $zip = [System.IO.Compression.ZipFile]::Open("UI/Dependencies.zip", [System.IO.Compression.ZipArchiveMode]::Create)
+            $zip.Dispose()
+          }
 
       - name: Build UI project
         run: dotnet build UI/UI.csproj -c Release -r win-x64 --no-restore --nologo -v m
