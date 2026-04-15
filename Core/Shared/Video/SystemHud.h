@@ -12,6 +12,9 @@ class MessageInfo;
 
 class SystemHud final : public IMessageManager {
 private:
+	static constexpr int NotificationLeftMargin = 10;
+	static constexpr int NotificationBottomMargin = 14;
+
 	Emulator* _emu = nullptr;
 
 	SimpleLock _msgLock;
@@ -54,6 +57,8 @@ private:
 public:
 	SystemHud(Emulator* emu);
 	~SystemHud();
+
+	static std::pair<int, int> GetBottomLeftBoxPosition(uint32_t screenWidth, uint32_t screenHeight, int boxWidth, int boxHeight, int leftMargin = NotificationLeftMargin, int bottomMargin = NotificationBottomMargin);
 
 	void Draw(DebugHud* hud, uint32_t width, uint32_t height) const;
 	void UpdateHud();

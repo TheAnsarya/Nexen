@@ -16,6 +16,18 @@ SystemHud::~SystemHud() {
 	MessageManager::UnregisterMessageManager(this);
 }
 
+std::pair<int, int> SystemHud::GetBottomLeftBoxPosition(uint32_t screenWidth, uint32_t screenHeight, int boxWidth, int boxHeight, int leftMargin, int bottomMargin) {
+	int x = std::max(0, leftMargin);
+	if (x + boxWidth > (int)screenWidth) {
+		x = std::max(0, (int)screenWidth - boxWidth);
+	}
+
+	int y = (int)screenHeight - boxHeight - std::max(0, bottomMargin);
+	y = std::max(0, y);
+
+	return { x, y };
+}
+
 void SystemHud::Draw(DebugHud* hud, uint32_t width, uint32_t height) const {
 	DrawCounters(hud, width);
 	DrawMessages(hud, width, height);
@@ -153,8 +165,9 @@ void SystemHud::DrawSaveStateNotification(DebugHud* hud, MessageInfo& msg, uint3
 	int boxWidth = maxTextWidth + padding * 2;
 	int boxHeight = numLines * lineSpacing + padding * 2 - 2;
 
-	int boxX = ((int)screenWidth - boxWidth) / 2;
-	int boxY = ((int)screenHeight - boxHeight) / 2;
+	auto position = GetBottomLeftBoxPosition(screenWidth, screenHeight, boxWidth, boxHeight);
+	int boxX = position.first;
+	int boxY = position.second;
 
 	// Semi-transparent background box
 	uint8_t boxAlpha = (uint8_t)std::min((int)0x40 + (int)fadeOp, 255);
@@ -208,8 +221,9 @@ void SystemHud::DrawActionNotification(DebugHud* hud, MessageInfo& msg, uint32_t
 	int boxWidth = (int)textSize.X + padding * 2;
 	int boxHeight = 11 + padding * 2 - 2;
 
-	int boxX = ((int)screenWidth - boxWidth) / 2;
-	int boxY = ((int)screenHeight - boxHeight) / 2;
+	auto position = GetBottomLeftBoxPosition(screenWidth, screenHeight, boxWidth, boxHeight);
+	int boxX = position.first;
+	int boxY = position.second;
 
 	// Semi-transparent background box
 	uint8_t boxAlpha = (uint8_t)std::min((int)0x40 + (int)fadeOp, 255);
