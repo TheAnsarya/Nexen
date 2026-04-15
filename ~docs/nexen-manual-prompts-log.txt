@@ -1489,6 +1489,7 @@ yes, set up an issue to do that later, then focus on getting snes performance be
 
 git commit everything; "If you want, I can run a second controlled SNES benchmark pass (same filter, fixed affinity/power mode) to reduce run-to-run variance and get cleaner deltas."
 
+continue;
 
 
 
