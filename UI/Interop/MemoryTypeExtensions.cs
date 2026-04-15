@@ -127,6 +127,13 @@ public static class MemoryTypeExtensions {
 			case MemoryType.LynxSaveRam:
 				return CpuType.Lynx;
 
+			case MemoryType.GenesisMemory:
+			case MemoryType.GenesisPrgRom:
+			case MemoryType.GenesisWorkRam:
+			case MemoryType.GenesisVideoRam:
+			case MemoryType.GenesisPaletteRam:
+				return CpuType.Genesis;
+
 			case MemoryType.Atari2600Memory:
 			case MemoryType.Atari2600PrgRom:
 			case MemoryType.Atari2600Ram:

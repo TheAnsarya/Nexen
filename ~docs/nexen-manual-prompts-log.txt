@@ -1517,7 +1517,29 @@ I just told you, remove from the copilot instructions "asking about git commit f
 
 [Nexen] when you create githib issue comments, you're posting "`\n" instead of new lines, see `https://github.com/TheAnsarya/Nexen/issues/1297#issuecomment-4252453417` for reference, redo that comment (edit) so that it has real newlines (and maybe some other recent comments? fix them so they don't have literal "\n"s in the commenr), and update copilot-instructions so new comments use true newlines, you're posting them wrong in the format); continue;
 
-[Nexen] git commit everything; continue working on Nexen issues; continue;
+[Nexen] git commit everything; continue working on Nexen issues; Work on issue #1299 `https://github.com/TheAnsarya/Nexen/issues/1299` figure out why this is happening, and fix it, research and add (epics/issues/benchmarks/tests/plans/documentation/session-logs/readmes/etc); and Work on issue #1298 `https://github.com/TheAnsarya/Nexen/issues/1298` figure out why this is happening, and fix it, research and add (epics/issues/benchmarks/tests/plans/documentation/session-logs/readmes/etc) and maybe build pansy and create a project for and release a nuget package whose version matches the pansy version and import that package into Nexen and use that instead for pansy integration so the pansy project is not required for building Nexen, make plans and epics and issues and docs, chat/session logs, benchmarks, tests, etc. then implement all of the fixes, find anything that causes an error and fix it; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
