@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reactive;
 using Avalonia;
 using Avalonia.Controls;
@@ -9,7 +9,7 @@ using Nexen.Windows;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
-namespace Nexen.ViewModels; 
+namespace Nexen.ViewModels;
 public sealed partial class WsConfigViewModel : DisposableViewModel {
 	[Reactive] public partial WsConfig Config { get; set; }
 	[Reactive] public partial WsConfig OriginalConfig { get; set; }

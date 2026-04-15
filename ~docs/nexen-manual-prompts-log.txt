@@ -1487,6 +1487,7 @@ yes, set up an issue to do that later, then focus on getting snes performance be
 
 [Nexen] We've got more input controller errors, including issue #1286 `https://github.com/TheAnsarya/Nexen/issues/1286` fix this issue and also work on the other systems and tabs and make sure everything works; continue;
 
+git commit everything; "If you want, I can run a second controlled SNES benchmark pass (same filter, fixed affinity/power mode) to reduce run-to-run variance and get cleaner deltas."
 
 
 

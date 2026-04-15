@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Reactive;
 using Avalonia;
 using Avalonia.Controls;
@@ -9,7 +9,7 @@ using Nexen.Windows;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
-namespace Nexen.ViewModels; 
+namespace Nexen.ViewModels;
 public sealed partial class GbaConfigViewModel : DisposableViewModel {
 	[Reactive] public partial GbaConfig Config { get; set; }
 	[Reactive] public partial GbaConfig OriginalConfig { get; set; }

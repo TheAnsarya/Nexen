@@ -1,4 +1,4 @@
-/************************
+﻿/************************
 Add/subtract operations
 *************************/
 void SnesCpu::Add8(uint8_t value) {

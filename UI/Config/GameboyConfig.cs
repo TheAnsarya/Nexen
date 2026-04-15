@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Nexen.Interop;
 using ReactiveUI.SourceGenerators;
 
-namespace Nexen.Config; 
+namespace Nexen.Config;
 public sealed partial class GameboyConfig : BaseConfig<GameboyConfig> {
 	[Reactive] public partial ConsoleOverrideConfig ConfigOverrides { get; set; } = new();
 
