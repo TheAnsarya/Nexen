@@ -19,6 +19,19 @@ Nexen uses `Pansy.Core` for debugger metadata integration.
 - A sibling `pansy` repository is **not** required to build Nexen.
 - Package version is centralized in `Directory.Build.props` as `PansyCorePackageVersion`.
 
+### Compatibility Matrix
+
+| Nexen Branch | `PansyCorePackageVersion` Source | Policy |
+| ----------- | ----------- | ------- |
+| `master` | `Directory.Build.props` (`PansyCorePackageVersion`) | Must point to a published NuGet `Pansy.Core` version validated by package-only CI lane |
+| Feature branches | `Directory.Build.props` (`PansyCorePackageVersion`) | May temporarily pin a newer prerelease/stable package, but must pass package-only validation before merge |
+
+Upgrade cadence:
+
+- Bump `PansyCorePackageVersion` only after package publication is successful.
+- Validate with `.github/workflows/pansy-package-only-validation.yml` before merge.
+- Keep `build.yml` and `accuracy-tests.yml` free of sibling `pansy` checkout assumptions.
+
 If your environment has stale NuGet cache entries, clear cache and restore:
 
 ```powershell

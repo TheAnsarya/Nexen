@@ -16,6 +16,10 @@ using Nexen.Windows;
 
 namespace Nexen.Utilities;
 public static class LoadRomHelper {
+	private static int _romLoadInProgress;
+
+	public static bool IsRomLoadInProgress => Interlocked.CompareExchange(ref _romLoadInProgress, 0, 0) != 0;
+
 	public static async Task LoadRom(ResourcePath romPath, ResourcePath? patchPath = null) {
 		Log.Info($"[LoadRomHelper] LoadRom called with: {romPath}");
 
@@ -52,6 +56,8 @@ public static class LoadRomHelper {
 		//Temporarily hide selection screen to allow displaying error messages
 		MainWindowViewModel.Instance.RecentGames.Visible = false;
 
+		Interlocked.Exchange(ref _romLoadInProgress, 1);
+
 		Task.Run(() => {
 			try {
 				Log.Info($"[LoadRomHelper] Calling EmuApi.LoadRom...");
@@ -68,6 +74,8 @@ public static class LoadRomHelper {
 				}
 			} catch (Exception ex) {
 				Log.Error(ex, $"[LoadRomHelper] EXCEPTION in LoadRom");
+			} finally {
+				Interlocked.Exchange(ref _romLoadInProgress, 0);
 			}
 
 			ShowSelectionOnScreenAfterError();

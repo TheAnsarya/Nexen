@@ -9,6 +9,7 @@ public sealed class MainWindowPauseBehaviorTests {
 		bool result = MainWindow.ShouldPauseInMenusAndConfig(
 			pauseWhenInMenusAndConfig: false,
 			isGameRunning: true,
+			isRomLoadInProgress: false,
 			isConfigWindow: true,
 			isMainMenuOpen: true
 		);
@@ -21,6 +22,7 @@ public sealed class MainWindowPauseBehaviorTests {
 		bool result = MainWindow.ShouldPauseInMenusAndConfig(
 			pauseWhenInMenusAndConfig: true,
 			isGameRunning: false,
+			isRomLoadInProgress: false,
 			isConfigWindow: false,
 			isMainMenuOpen: true
 		);
@@ -33,6 +35,7 @@ public sealed class MainWindowPauseBehaviorTests {
 		bool result = MainWindow.ShouldPauseInMenusAndConfig(
 			pauseWhenInMenusAndConfig: true,
 			isGameRunning: false,
+			isRomLoadInProgress: false,
 			isConfigWindow: true,
 			isMainMenuOpen: false
 		);
@@ -45,6 +48,7 @@ public sealed class MainWindowPauseBehaviorTests {
 		bool result = MainWindow.ShouldPauseInMenusAndConfig(
 			pauseWhenInMenusAndConfig: true,
 			isGameRunning: true,
+			isRomLoadInProgress: false,
 			isConfigWindow: false,
 			isMainMenuOpen: true
 		);
@@ -57,10 +61,26 @@ public sealed class MainWindowPauseBehaviorTests {
 		bool result = MainWindow.ShouldPauseInMenusAndConfig(
 			pauseWhenInMenusAndConfig: true,
 			isGameRunning: true,
+			isRomLoadInProgress: false,
 			isConfigWindow: true,
 			isMainMenuOpen: false
 		);
 
 		Assert.True(result);
+	}
+
+	[Theory]
+	[InlineData(true, false)]
+	[InlineData(false, true)]
+	public void ShouldPauseInMenusAndConfig_RomLoadInProgress_ReturnsFalse(bool isConfigWindow, bool isMainMenuOpen) {
+		bool result = MainWindow.ShouldPauseInMenusAndConfig(
+			pauseWhenInMenusAndConfig: true,
+			isGameRunning: true,
+			isRomLoadInProgress: true,
+			isConfigWindow: isConfigWindow,
+			isMainMenuOpen: isMainMenuOpen
+		);
+
+		Assert.False(result);
 	}
 }

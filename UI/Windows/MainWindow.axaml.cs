@@ -757,7 +757,7 @@ public partial class MainWindow : NexenWindow {
 		bool needPause = activeWindow == null && cfg.PauseWhenInBackground;
 		if (activeWindow != null) {
 			bool isConfigWindow = (activeWindow != this) && !DebugWindowManager.IsDebugWindow(activeWindow);
-			needPause |= ShouldPauseInMenusAndConfig(cfg.PauseWhenInMenusAndConfig, isGameRunning, isConfigWindow, _mainMenu.MainMenu.IsOpen);
+			needPause |= ShouldPauseInMenusAndConfig(cfg.PauseWhenInMenusAndConfig, isGameRunning, LoadRomHelper.IsRomLoadInProgress, isConfigWindow, _mainMenu.MainMenu.IsOpen);
 		}
 
 		if (needPause) {
@@ -786,8 +786,8 @@ public partial class MainWindow : NexenWindow {
 		}
 	}
 
-	internal static bool ShouldPauseInMenusAndConfig(bool pauseWhenInMenusAndConfig, bool isGameRunning, bool isConfigWindow, bool isMainMenuOpen) {
-		if (!pauseWhenInMenusAndConfig || !isGameRunning) {
+	internal static bool ShouldPauseInMenusAndConfig(bool pauseWhenInMenusAndConfig, bool isGameRunning, bool isRomLoadInProgress, bool isConfigWindow, bool isMainMenuOpen) {
+		if (!pauseWhenInMenusAndConfig || !isGameRunning || isRomLoadInProgress) {
 			return false;
 		}
 
