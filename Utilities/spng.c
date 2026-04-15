@@ -1730,8 +1730,8 @@ static int read_non_idat_chunks(spng_ctx *ctx)
             if(ctx->state == SPNG_STATE_AFTER_IDAT) return SPNG_ECHUNK_POS;
             if(ctx->file.bkgd) return SPNG_EDUP_BKGD;
 
-            uint16_t mask = ~0;
-            if(ctx->ihdr.bit_depth < 16) mask = (1 << ctx->ihdr.bit_depth) - 1;
+            uint16_t mask = UINT16_MAX;
+            if(ctx->ihdr.bit_depth < 16) mask = (uint16_t)((1u << ctx->ihdr.bit_depth) - 1u);
 
             if(ctx->ihdr.color_type == 0 || ctx->ihdr.color_type == 4)
             {
@@ -1765,8 +1765,8 @@ static int read_non_idat_chunks(spng_ctx *ctx)
             if(ctx->file.trns) return SPNG_EDUP_TRNS;
             if(!chunk.length) return SPNG_ECHUNK_SIZE;
 
-            uint16_t mask = ~0;
-            if(ctx->ihdr.bit_depth < 16) mask = (1 << ctx->ihdr.bit_depth) - 1;
+            uint16_t mask = UINT16_MAX;
+            if(ctx->ihdr.bit_depth < 16) mask = (uint16_t)((1u << ctx->ihdr.bit_depth) - 1u);
 
             if(ctx->ihdr.color_type == 0)
             {
@@ -2034,11 +2034,11 @@ static int read_non_idat_chunks(spng_ctx *ctx)
 
                     translated_keyword_offset = term - data + 1;
 
-                    const unsigned char *zlib_stream = memchr(data + translated_keyword_offset, 0, peek_bytes - translated_keyword_offset);
-                    if(zlib_stream == NULL) return SPNG_EITXT;
-                    if(zlib_stream == peek_end) return SPNG_EITXT;
+                    const unsigned char *zlib_stream_term = memchr(data + translated_keyword_offset, 0, peek_bytes - translated_keyword_offset);
+                    if(zlib_stream_term == NULL) return SPNG_EITXT;
+                    if(zlib_stream_term == peek_end) return SPNG_EITXT;
 
-                    text_offset = zlib_stream - data + 1;
+                    text_offset = zlib_stream_term - data + 1;
                     text->text_length = chunk.length - text_offset;
                 }
                 else return SPNG_EINTERNAL;
@@ -2631,7 +2631,7 @@ int spng_decode_scanline(spng_ctx *ctx, void *out, size_t len)
 
             if(ctx->cur_chunk_bytes_left) /* zlib stream ended before an IDAT chunk boundary */
             {/* Discard the rest of the chunk */
-                int ret = discard_chunk_bytes(ctx, ctx->cur_chunk_bytes_left);
+                ret = discard_chunk_bytes(ctx, ctx->cur_chunk_bytes_left);
                 if(ret) return decode_err(ctx, ret);
             }
 
@@ -3593,8 +3593,8 @@ int spng_set_trns(spng_ctx *ctx, struct spng_trns *trns)
 
     if(!ctx->stored.ihdr) return 1;
 
-    uint16_t mask = ~0;
-    if(ctx->ihdr.bit_depth < 16) mask = (1 << ctx->ihdr.bit_depth) - 1;
+    uint16_t mask = UINT16_MAX;
+    if(ctx->ihdr.bit_depth < 16) mask = (uint16_t)((1u << ctx->ihdr.bit_depth) - 1u);
 
     if(ctx->ihdr.color_type == 0)
     {
@@ -3783,9 +3783,9 @@ int spng_set_bkgd(spng_ctx *ctx, struct spng_bkgd *bkgd)
 
     if(!ctx->stored.ihdr)  return 1;
 
-    uint16_t mask = ~0;
+    uint16_t mask = UINT16_MAX;
 
-    if(ctx->ihdr.bit_depth < 16) mask = (1 << ctx->ihdr.bit_depth) - 1;
+    if(ctx->ihdr.bit_depth < 16) mask = (uint16_t)((1u << ctx->ihdr.bit_depth) - 1u);
 
     if(ctx->ihdr.color_type == 0 || ctx->ihdr.color_type == 4)
     {

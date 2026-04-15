@@ -1,4 +1,4 @@
-using Nexen.Windows;
+﻿using Nexen.Windows;
 using Xunit;
 
 namespace Nexen.Tests.Windows;

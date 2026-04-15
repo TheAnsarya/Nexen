@@ -1,4 +1,4 @@
-# Issue #1289 Notification Box Bottom-Left Layout Plan
+﻿# Issue #1289 Notification Box Bottom-Left Layout Plan
 
 ## Context
 

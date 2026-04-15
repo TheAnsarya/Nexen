@@ -1503,6 +1503,8 @@ do #1) Implement #1295 (auto fallback/migration when portable config path is not
 
 [Nexen] Work on issue #1290 `https://github.com/TheAnsarya/Nexen/issues/1290` figure out why this is happening, and fix it, research and add (epics/issues/benchmarks/tests/plans/documentation/session-logs/readmes/etc); continue;
 
+[Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.32 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes and make a good title for the release; the continue working on Nexen issues; continue;
+
 
 
 

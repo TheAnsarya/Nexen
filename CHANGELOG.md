@@ -5,6 +5,25 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.32] - 2026-04-15
+
+### Fixed
+
+- **Settings persistence loss on write failure** — hardening in config save flow now prevents in-memory settings state from being updated when disk writes fail, avoiding silent settings loss across restart (#1291)
+- **Startup settings path fallback for read-only portable folders** — when portable config exists but is not writable, startup now automatically falls back to a writable user documents path and migrates `settings.json` when needed (#1295)
+- **Menu/config pause triggering during ROM load transitions** — `Pause when in menu and config dialogs` now only pauses while a game is actively running; ROM startup no longer auto-pauses unexpectedly (#1290)
+
+### Changed
+
+- **Save/action notification placement** — boxed save/action notifications are now anchored to the bottom-left with explicit margins to reduce gameplay-center obstruction (#1289)
+- **Version metadata and release links** — version identifiers and download links updated to v1.4.32 across release-facing metadata
+
+### Added
+
+- **HUD layout regression coverage** — added deterministic C++ tests for bottom-left notification positioning and viewport clamping in `SystemHudLayoutTests` (#1289)
+- **Pause decision regression coverage** — added managed tests for `MainWindow` menu/config pause gating behavior (`MainWindowPauseBehaviorTests`) (#1290)
+- **Config home-folder fallback tests** — expanded managed tests for writable path fallback and migration behavior in `ConfigManagerHomeFolderTests` (#1295)
+
 ## [1.4.30] - 2026-04-13
 
 ### Fixed

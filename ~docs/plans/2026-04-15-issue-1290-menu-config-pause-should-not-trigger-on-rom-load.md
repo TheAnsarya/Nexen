@@ -1,4 +1,4 @@
-# Issue #1290 Menu/Config Pause Should Not Trigger On ROM Load
+﻿# Issue #1290 Menu/Config Pause Should Not Trigger On ROM Load
 
 ## Context
 

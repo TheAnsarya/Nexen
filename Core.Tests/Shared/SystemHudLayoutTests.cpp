@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Shared/Video/SystemHud.h"
 
 TEST(SystemHudLayoutTests, BottomLeftPosition_UsesConfiguredMargins) {

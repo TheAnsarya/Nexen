@@ -1,4 +1,4 @@
-# Issue #1295 Writable Config Fallback And Migration Plan
+﻿# Issue #1295 Writable Config Fallback And Migration Plan
 
 ## Context
 
