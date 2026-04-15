@@ -321,7 +321,6 @@ static void BM_LuaHook_EmulatorGuard_NoScript(benchmark::State& state) {
 	// Simulate: hasMemReadHooks = false (no script loaded)
 	// The emulator calls: if (hasMemReadHooks) { DispatchHook(...); }
 	bool hasMemReadHooks  = false;
-	bool hasMemWriteHooks = false;
 	bool hasExecHooks     = false;
 	uint32_t addr = 0;
 	uint8_t  value = 0;
