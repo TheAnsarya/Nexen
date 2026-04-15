@@ -303,14 +303,14 @@ void SnesCpu::Compare(uint16_t reg, bool eightBitMode) {
 	if (eightBitMode) {
 		uint8_t value = GetByteValue();
 		uint8_t result = (uint8_t)reg - value;
-		uint8_t flags = (uint8_t)((uint8_t)reg >= value);
+		uint8_t flags = (uint8_t)(result <= (uint8_t)reg);
 		flags |= (uint8_t)((result == 0) << 1);
 		flags |= (result & ProcFlags::Negative);
 		_state.PS = (_state.PS & ~(ProcFlags::Carry | ProcFlags::Negative | ProcFlags::Zero)) | flags;
 	} else {
 		uint16_t value = GetWordValue();
 		uint16_t result = reg - value;
-		uint8_t flags = (uint8_t)(reg >= value);
+		uint8_t flags = (uint8_t)(result <= reg);
 		flags |= (uint8_t)((result == 0) << 1);
 		flags |= (uint8_t)((result >> 8) & ProcFlags::Negative);
 		_state.PS = (_state.PS & ~(ProcFlags::Carry | ProcFlags::Negative | ProcFlags::Zero)) | flags;
