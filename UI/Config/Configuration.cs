@@ -292,12 +292,18 @@ public partial class Configuration : ReactiveObject {
 		try {
 			string cfgData = JsonSerializer.Serialize(this, typeof(Configuration), NexenSerializerContext.Default);
 			if (_fileData != cfgData && !Design.IsDesignMode) {
-				FileHelper.WriteAllText(configFile, cfgData);
-				_fileData = cfgData;
+				bool writeSucceeded = FileHelper.WriteAllText(configFile, cfgData);
+				if (writeSucceeded) {
+					_fileData = cfgData;
+				} else {
+					System.Diagnostics.Debug.WriteLine($"Failed to write configuration file: {configFile}");
+					EmuApi.WriteLogEntry("[UI] Failed to save settings to disk: " + configFile);
+				}
 			}
 		} catch (Exception ex) {
 			//This can sometimes fail due to the file being used by another Nexen instance, etc.
 			System.Diagnostics.Debug.WriteLine($"Failed to serialize configuration: {ex.Message}");
+			EmuApi.WriteLogEntry("[UI] Failed to serialize settings: " + ex.Message);
 		}
 	}
 

@@ -1493,6 +1493,10 @@ continue;
 
 continue;
 
+I can cleanly resolve the stray SnesCpu.Shared.h diff in a tiny follow-up pass and verify the tree is clean again.
+
+[Nexen] Work on issue #1291 `https://github.com/TheAnsarya/Nexen/issues/1291` figure out why this is happening, and fix it, research and add (epics/issues/benchmarks/tests/plans/documentation/session-logs/readmes/etc); continue;
+
 
 
 
