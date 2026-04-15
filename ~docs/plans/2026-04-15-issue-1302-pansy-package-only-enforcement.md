@@ -1,4 +1,4 @@
-# Issue #1302 Pansy Package-Only Enforcement Plan (2026-04-15)
+﻿# Issue #1302 Pansy Package-Only Enforcement Plan (2026-04-15)
 
 ## Context
 

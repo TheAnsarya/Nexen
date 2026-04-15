@@ -1,4 +1,4 @@
-# Nexen on SteamOS / Steam Deck
+﻿# Nexen on SteamOS / Steam Deck
 
 This guide covers running Nexen on SteamOS in both Desktop Mode and Game Mode.
 

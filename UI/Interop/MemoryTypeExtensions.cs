@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Nexen.Interop;
 public static class MemoryTypeExtensions {

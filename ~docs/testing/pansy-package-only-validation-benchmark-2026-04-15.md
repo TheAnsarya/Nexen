@@ -1,4 +1,4 @@
-# Pansy Package-Only Validation Benchmark (2026-04-15)
+﻿# Pansy Package-Only Validation Benchmark (2026-04-15)
 
 ## Scope
 

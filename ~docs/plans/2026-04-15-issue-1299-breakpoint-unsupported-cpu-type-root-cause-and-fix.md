@@ -1,4 +1,4 @@
-# Issue #1299 Root Cause and Fix Plan
+﻿# Issue #1299 Root Cause and Fix Plan
 
 ## Issue
 

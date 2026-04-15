@@ -1,4 +1,4 @@
-# Issue #1298 Pansy Dependency Decoupling Plan
+﻿# Issue #1298 Pansy Dependency Decoupling Plan
 
 ## Issue
 

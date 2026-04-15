@@ -1546,7 +1546,9 @@ Are all those updated Actions in the correct new file formats? continue;
 
 yes! zero pause! just keep working issues and finsih as many as you can!; continue;
 
+continue working issues; plan and implement as much as you can; continue;
 
+fucking commit them, I told you to stop asking, there is no "repo saftety rule"
 
 
 

@@ -1,4 +1,4 @@
-# Generate and Deploy Doxygen Documentation
+﻿# Generate and Deploy Doxygen Documentation
 name: Documentation
 
 on:
