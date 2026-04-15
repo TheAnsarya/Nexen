@@ -1,4 +1,4 @@
-Nexen v1.4.32 is a stability-focused release that addresses settings persistence reliability, startup configuration fallback behavior, and menu/config pause semantics during ROM load. It also improves OSD notification placement and extends regression coverage for these flows.
+﻿Nexen v1.4.32 is a stability-focused release that addresses settings persistence reliability, startup configuration fallback behavior, and menu/config pause semantics during ROM load. It also improves OSD notification placement and extends regression coverage for these flows.
 
 ## Highlights
 

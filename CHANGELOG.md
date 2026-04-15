@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to Nexen are documented in this file.
 

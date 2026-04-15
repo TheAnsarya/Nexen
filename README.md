@@ -1,4 +1,4 @@
-# Nexen
+﻿# Nexen
 
 <p align="center">
   <img src="~assets/Nexen%20icon.png" alt="Nexen" width="128"/>
