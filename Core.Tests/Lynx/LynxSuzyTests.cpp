@@ -450,7 +450,7 @@ TEST_F(LynxSuzyMathTest, UnsignedDivide_ExactDivision) {
 TEST_F(LynxSuzyMathTest, Collision_CollisionNumber_InSpriteControl) {
 	// Collision number is in SpriteControl1 bits 3:0
 	_state.SpriteControl1 = 0x05; // collNum=5
-	EXPECT_EQ(_state.SpriteControl1 & 0x0f, 5u);
+	EXPECT_EQ(_state.SpriteControl1 & 0x0f, 5);
 }
 
 //=============================================================================

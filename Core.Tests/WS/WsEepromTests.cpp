@@ -275,7 +275,7 @@ TEST(WsAggregateStateTest, AllSubStatesAccessible) {
 	WsState state = {};
 	// Verify all substates are zero-initialized and independently accessible
 	EXPECT_EQ(state.Cpu.AX, 0);
-	EXPECT_EQ(state.Ppu.FrameCount, 0);
+	EXPECT_EQ(state.Ppu.FrameCount, 0u);
 	EXPECT_FALSE(state.Apu.SpeakerEnabled);
 	EXPECT_EQ(state.MemoryManager.ActiveIrqs, 0);
 	EXPECT_EQ(state.ControlManager.InputSelect, 0);

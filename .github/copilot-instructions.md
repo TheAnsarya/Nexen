@@ -1,4 +1,4 @@
-# Nexen - AI Copilot Directives
+﻿# Nexen - AI Copilot Directives
 
 ## Project Overview
 
@@ -127,6 +127,7 @@ When the user asks to implement, fix, continue, or ship work, do not ask for com
 - Exclude clearly unrelated modified files from the commit unless the user explicitly requests including them
 - Do not pause due to a dirty working tree; stage the relevant files and continue
 - Do not interrupt execution to ask about unrelated local modifications; leave them untouched and keep shipping requested work
+- If the user explicitly says to stop asking about commit file selection or unexpected modified files, include those modified files and continue shipping without additional confirmation prompts
 
 ## Coding Standards
 

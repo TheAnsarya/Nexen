@@ -193,14 +193,14 @@ TEST_F(LynxHardwareRefTest, Memory_SuzyAddressRange) {
 	// Ref: "Suzy registers at $FC00-$FCFF" — Epyx Dev Guide §5
 	EXPECT_EQ(LynxConstants::SuzyBase, 0xFC00u);
 	EXPECT_EQ(LynxConstants::SuzyEnd, 0xFCFFu);
-	EXPECT_EQ(LynxConstants::SuzyEnd - LynxConstants::SuzyBase + 1, 256u);
+	EXPECT_EQ(LynxConstants::SuzyEnd - LynxConstants::SuzyBase + 1u, 256u);
 }
 
 TEST_F(LynxHardwareRefTest, Memory_MikeyAddressRange) {
 	// Ref: "Mikey registers at $FD00-$FDFF" — Epyx Dev Guide §5
 	EXPECT_EQ(LynxConstants::MikeyBase, 0xFD00u);
 	EXPECT_EQ(LynxConstants::MikeyEnd, 0xFDFFu);
-	EXPECT_EQ(LynxConstants::MikeyEnd - LynxConstants::MikeyBase + 1, 256u);
+	EXPECT_EQ(LynxConstants::MikeyEnd - LynxConstants::MikeyBase + 1u, 256u);
 }
 
 TEST_F(LynxHardwareRefTest, Memory_BootRomBase) {

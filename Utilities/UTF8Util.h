@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <fstream>
 
@@ -13,16 +13,20 @@ public:
 #ifdef _WIN32
 class ifstream : public std::ifstream {
 public:
-	ifstream(const std::string& _Str, ios_base::openmode _Mode = ios_base::in, int _Prot = (int)ios_base::_Openprot) : std::ifstream(utf8::decode(_Str), _Mode, _Prot) {}
+	ifstream(const std::string& _Str, ios_base::openmode _Mode = ios_base::in) : std::ifstream(utf8::decode(_Str), _Mode) {}
+	ifstream(const std::string& _Str, ios_base::openmode _Mode, int _Prot) : std::ifstream(utf8::decode(_Str), _Mode) { (void)_Prot; }
 	ifstream() : std::ifstream() {}
-	void open(const std::string& _Str, ios_base::openmode _Mode = ios_base::in, int _Prot = (int)ios_base::_Openprot) { std::ifstream::open(utf8::decode(_Str), _Mode, _Prot); }
+	void open(const std::string& _Str, ios_base::openmode _Mode = ios_base::in) { std::ifstream::open(utf8::decode(_Str), _Mode); }
+	void open(const std::string& _Str, ios_base::openmode _Mode, int _Prot) { (void)_Prot; std::ifstream::open(utf8::decode(_Str), _Mode); }
 };
 
 class ofstream : public std::ofstream {
 public:
-	ofstream(const std::string& _Str, ios_base::openmode _Mode = ios_base::in, int _Prot = (int)ios_base::_Openprot) : std::ofstream(utf8::decode(_Str), _Mode, _Prot) {}
+	ofstream(const std::string& _Str, ios_base::openmode _Mode = ios_base::in) : std::ofstream(utf8::decode(_Str), _Mode) {}
+	ofstream(const std::string& _Str, ios_base::openmode _Mode, int _Prot) : std::ofstream(utf8::decode(_Str), _Mode) { (void)_Prot; }
 	ofstream() : std::ofstream() {}
-	void open(const std::string& _Str, ios_base::openmode _Mode = ios_base::in, int _Prot = (int)ios_base::_Openprot) { std::ofstream::open(utf8::decode(_Str), _Mode, _Prot); }
+	void open(const std::string& _Str, ios_base::openmode _Mode = ios_base::in) { std::ofstream::open(utf8::decode(_Str), _Mode); }
+	void open(const std::string& _Str, ios_base::openmode _Mode, int _Prot) { (void)_Prot; std::ofstream::open(utf8::decode(_Str), _Mode); }
 };
 #else
 using std::ifstream;

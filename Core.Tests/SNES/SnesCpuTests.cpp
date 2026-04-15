@@ -480,7 +480,7 @@ TEST_F(SnesCpuTypesTest, FullAddress_BankAndOffset) {
 
 	// Full 24-bit address = (K << 16) | PC
 	uint32_t fullAddress = ((uint32_t)_state.K << 16) | _state.PC;
-	EXPECT_EQ(fullAddress, 0x801234);
+	EXPECT_EQ(fullAddress, 0x801234u);
 }
 
 TEST_F(SnesCpuTypesTest, DataAddress_DBRAndOffset) {
@@ -489,7 +489,7 @@ TEST_F(SnesCpuTypesTest, DataAddress_DBRAndOffset) {
 
 	// Data address = (DBR << 16) | offset
 	uint32_t dataAddress = ((uint32_t)_state.DBR << 16) | offset;
-	EXPECT_EQ(dataAddress, 0x7E2000);
+	EXPECT_EQ(dataAddress, 0x7e2000u);
 }
 
 TEST_F(SnesCpuTypesTest, DirectPageAddress_DPlusOffset) {

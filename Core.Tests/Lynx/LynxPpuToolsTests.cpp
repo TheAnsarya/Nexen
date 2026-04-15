@@ -188,9 +188,9 @@ TEST_F(LynxPpuToolsPaletteTest, Rgb444ToArgb_White) {
 
 TEST_F(LynxPpuToolsPaletteTest, Rgb444ToArgb_Red) {
 	uint32_t result = Rgb444ToArgb(0xf00);
-	EXPECT_EQ((result >> 16) & 0xff, 0xff); // R channel
-	EXPECT_EQ((result >> 8) & 0xff, 0x00);  // G channel
-	EXPECT_EQ(result & 0xff, 0x00);          // B channel
+	EXPECT_EQ((result >> 16) & 0xff, 0xffu); // R channel
+	EXPECT_EQ((result >> 8) & 0xff, 0x00u);  // G channel
+	EXPECT_EQ(result & 0xff, 0x00u);         // B channel
 }
 
 TEST_F(LynxPpuToolsPaletteTest, Rgb444ToArgb_AlphaAlwaysOpaque) {

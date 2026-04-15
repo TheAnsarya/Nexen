@@ -486,9 +486,9 @@ TEST(RegisterAccessTest, ReadWriteIsCombination) {
 //=============================================================================
 
 TEST(GbConstantsTest, ScreenDimensions) {
-	EXPECT_EQ(GbConstants::ScreenWidth, 160);
-	EXPECT_EQ(GbConstants::ScreenHeight, 144);
-	EXPECT_EQ(GbConstants::PixelCount, 160 * 144);
+	EXPECT_EQ(GbConstants::ScreenWidth, 160u);
+	EXPECT_EQ(GbConstants::ScreenHeight, 144u);
+	EXPECT_EQ(GbConstants::PixelCount, 160u * 144u);
 }
 
 //=============================================================================

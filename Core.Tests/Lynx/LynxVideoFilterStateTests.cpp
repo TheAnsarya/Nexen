@@ -353,7 +353,7 @@ TEST(LynxTimerStateTest, DefaultValues) {
 
 TEST(LynxAudioChannelStateTest, DefaultValues) {
 	LynxAudioChannelState ch = {};
-	EXPECT_EQ(ch.Volume, 0u);
+	EXPECT_EQ(ch.Volume, 0);
 	EXPECT_EQ(ch.Output, 0);
 }
 

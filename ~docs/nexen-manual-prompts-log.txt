@@ -1509,10 +1509,11 @@ do #1) Implement #1295 (auto fallback/migration when portable config path is not
 
 If you want, I can continue immediately with #1297 Batch A and target additional first-party warning fixes that do not depend on changing vendored third-party sources.
 
+yes continue "If you want, I’ll continue Batch A now by targeting the next first-party warning candidates in Core.Tests test code paths and keep landing small, low-risk commits on #1297."
 
+1, but remove this rule! I do not want to be be asked every time there is an odd file in the git commit tree; continue;
 
-
-
+I just told you, remove from the copilot instructions "asking about git commit files" so don't ask me if you find an "unexpected file" STOP ASKING ME, just commit them, who cares.; continue;
 
 
 

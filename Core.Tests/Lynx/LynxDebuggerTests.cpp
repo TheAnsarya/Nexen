@@ -66,7 +66,7 @@ TEST_F(LynxDebuggerTest, Step_SingleInstruction) {
 	uint32_t prevPc = 0x0200;
 	uint32_t instrSize = 2; // e.g., LDA #$xx
 	uint32_t nextPc = prevPc + instrSize;
-	EXPECT_EQ(nextPc, 0x0202);
+	EXPECT_EQ(nextPc, 0x0202u);
 }
 
 TEST_F(LynxDebuggerTest, StepOver_JSR_SkipsSubroutine) {
@@ -93,7 +93,7 @@ TEST_F(LynxDebuggerTest, StepOut_FindsRTS) {
 TEST_F(LynxDebuggerTest, Breakpoint_ExecutionAddress) {
 	// Execution breakpoint at specific address
 	uint32_t breakAddr = 0x0200;
-	EXPECT_EQ(breakAddr, 0x0200);
+	EXPECT_EQ(breakAddr, 0x0200u);
 }
 
 TEST_F(LynxDebuggerTest, Breakpoint_ReadWatch) {
@@ -129,8 +129,8 @@ TEST_F(LynxDebuggerTest, Callstack_PushOnJSR) {
 	uint32_t subrAddr = 0x0300;
 	uint32_t returnAddr = 0x0203; // PC after JSR
 	EXPECT_EQ(jsrOpcode, 0x20);
-	EXPECT_EQ(subrAddr, 0x0300);
-	EXPECT_GT(returnAddr, 0);
+	EXPECT_EQ(subrAddr, 0x0300u);
+	EXPECT_GT(returnAddr, 0u);
 }
 
 TEST_F(LynxDebuggerTest, Callstack_PopOnRTS) {

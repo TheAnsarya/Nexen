@@ -199,13 +199,13 @@ TEST_F(LynxCartTest, AddressCounter_Wrap) {
 TEST_F(LynxCartTest, AddressCounter_SetLowByte) {
 	_state.AddressCounter = 0x1234;
 	_state.AddressCounter = (_state.AddressCounter & 0xff00) | 0x56;
-	EXPECT_EQ(_state.AddressCounter & 0xff, 0x56);
+	EXPECT_EQ(_state.AddressCounter & 0xff, 0x56u);
 }
 
 TEST_F(LynxCartTest, AddressCounter_SetHighByte) {
 	_state.AddressCounter = 0x1234;
 	_state.AddressCounter = (_state.AddressCounter & 0x00ff) | (0x78 << 8);
-	EXPECT_EQ((_state.AddressCounter >> 8) & 0xff, 0x78);
+	EXPECT_EQ((_state.AddressCounter >> 8) & 0xff, 0x78u);
 }
 
 //=============================================================================

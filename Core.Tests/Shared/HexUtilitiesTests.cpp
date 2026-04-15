@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Utilities/HexUtilities.h"
 
 // Test fixture for HexUtilities
@@ -134,13 +134,13 @@ TEST_F(HexUtilitiesTest, ToHex_Vector_SingleByte) {
 // ===== FromHex Tests =====
 
 TEST_F(HexUtilitiesTest, FromHex_Uppercase) {
-	EXPECT_EQ(HexUtilities::FromHex("FF"), 0xFF);
-	EXPECT_EQ(HexUtilities::FromHex("DEADBEEF"), 0xDEADBEEF);
+	EXPECT_EQ(HexUtilities::FromHex("FF"), 0xff);
+	EXPECT_EQ(HexUtilities::FromHex("DEADBEEF"), 0xdeadbeef);
 }
 
 TEST_F(HexUtilitiesTest, FromHex_Lowercase) {
-	EXPECT_EQ(HexUtilities::FromHex("ff"), 0xFF);
-	EXPECT_EQ(HexUtilities::FromHex("abcd"), 0xABCD);
+	EXPECT_EQ(HexUtilities::FromHex("ff"), 0xff);
+	EXPECT_EQ(HexUtilities::FromHex("abcd"), 0xabcd);
 }
 
 TEST_F(HexUtilitiesTest, FromHex_MixedCase) {
