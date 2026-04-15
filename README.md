@@ -241,6 +241,7 @@ Nexen is the **play & debug** stage of the Flower Toolchain — an integrated pi
 | [Documentation Index](docs/README.md) | Entry point for all user-facing docs |
 | [Manual Testing Hub](docs/manual-testing/README.md) | Ranked manual release validation workflows |
 | [Compiling](COMPILING.md) | Build from source |
+| [SteamOS / Steam Deck](SteamOS.md) | Running Nexen on SteamOS and Game Mode |
 | [Performance Guide](docs/PERFORMANCE.md) | Performance strategy and references |
 | [Release Guide](docs/RELEASE.md) | Creating releases |
 | [Changelog](CHANGELOG.md) | Version history |
