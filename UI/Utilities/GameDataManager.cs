@@ -27,6 +27,7 @@ public static class GameDataManager {
 	private const string SaveStatesFolderName = "SaveStates";
 	private const string DebugFolderName = "Debug";
 	private const string SavesFolderName = "Saves";
+	private static readonly HashSet<string> BatteryExtensions = [".sav", ".srm", ".rtc", ".eeprom", ".ieeprom", ".bs"];
 
 	/// <summary>
 	/// Maximum length for sanitized ROM names in folder names.
@@ -303,9 +304,6 @@ public static class GameDataManager {
 			string newFolder = GetSavesFolder(romInfo);
 			int migrated = 0;
 
-			// Battery save extensions used across all console cores
-			HashSet<string> batteryExtensions = [".sav", ".srm", ".rtc", ".eeprom", ".ieeprom", ".bs"];
-
 			foreach (string sourceFile in Directory.GetFiles(legacyFolder)) {
 				string fileName = Path.GetFileName(sourceFile);
 
@@ -316,7 +314,7 @@ public static class GameDataManager {
 
 				if (fileName.StartsWith(romName, StringComparison.OrdinalIgnoreCase)) {
 					ext = fileName[romName.Length..].ToLowerInvariant();
-					matchesRom = batteryExtensions.Contains(ext) || ext == ".chr.sav";
+					matchesRom = BatteryExtensions.Contains(ext) || ext == ".chr.sav";
 				}
 
 				if (!matchesRom)
@@ -343,6 +341,69 @@ public static class GameDataManager {
 			Log.Warn($"[GameDataManager] Battery save migration failed: {ex.Message}");
 			return 0;
 		}
+	}
+
+	/// <summary>
+	/// Gets the number of legacy files for this ROM that can be migrated to per-game folders.
+	/// This only counts files that are not already present in the destination.
+	/// </summary>
+	/// <param name="romInfo">ROM information for the currently loaded game.</param>
+	/// <returns>Pending migration file count.</returns>
+	public static int GetPendingMigrationCount(RomInfo romInfo) {
+		try {
+			return GetPendingSaveStateMigrationCount(romInfo) + GetPendingBatteryMigrationCount(romInfo);
+		} catch (Exception ex) {
+			Log.Warn($"[GameDataManager] Failed to compute pending migration count: {ex.Message}");
+			return 0;
+		}
+	}
+
+	private static int GetPendingSaveStateMigrationCount(RomInfo romInfo) {
+		string romName = romInfo.GetRomName();
+		string legacyFolder = Path.Combine(ConfigManager.HomeFolder, "SaveStates", romName);
+		if (!Directory.Exists(legacyFolder))
+			return 0;
+
+		string newFolder = GetSaveStatesFolder(romInfo);
+		int pending = 0;
+
+		foreach (string sourceFile in Directory.GetFiles(legacyFolder)) {
+			string ext = Path.GetExtension(sourceFile).ToLowerInvariant();
+			if (ext is not ".nexen-save" and not ".mss")
+				continue;
+
+			string destFile = Path.Combine(newFolder, Path.GetFileName(sourceFile));
+			if (!File.Exists(destFile))
+				pending++;
+		}
+
+		return pending;
+	}
+
+	private static int GetPendingBatteryMigrationCount(RomInfo romInfo) {
+		string romName = romInfo.GetRomName();
+		string legacyFolder = Path.Combine(ConfigManager.HomeFolder, "Saves");
+		if (!Directory.Exists(legacyFolder))
+			return 0;
+
+		string newFolder = GetSavesFolder(romInfo);
+		int pending = 0;
+
+		foreach (string sourceFile in Directory.GetFiles(legacyFolder)) {
+			string fileName = Path.GetFileName(sourceFile);
+			if (!fileName.StartsWith(romName, StringComparison.OrdinalIgnoreCase))
+				continue;
+
+			string ext = fileName[romName.Length..].ToLowerInvariant();
+			if (!BatteryExtensions.Contains(ext) && ext != ".chr.sav")
+				continue;
+
+			string destFile = Path.Combine(newFolder, fileName);
+			if (!File.Exists(destFile))
+				pending++;
+		}
+
+		return pending;
 	}
 
 	/// <summary>
@@ -395,14 +456,13 @@ public static class GameDataManager {
 					// Check legacy Saves folder for battery files
 					string legacySaves = Path.Combine(ConfigManager.HomeFolder, "Saves");
 					if (Directory.Exists(legacySaves)) {
-						HashSet<string> batteryExtensions = [".sav", ".srm", ".rtc", ".eeprom", ".ieeprom", ".bs"];
 						string newSaves = Path.Combine(gameDir, SavesFolderName);
 						if (Directory.Exists(newSaves)) {
 							foreach (string file in Directory.GetFiles(legacySaves)) {
 								string fileName = Path.GetFileName(file);
 								if (fileName.StartsWith(romName, StringComparison.OrdinalIgnoreCase)) {
 									string ext = fileName[romName.Length..].ToLowerInvariant();
-									if (batteryExtensions.Contains(ext) || ext == ".chr.sav") {
+									if (BatteryExtensions.Contains(ext) || ext == ".chr.sav") {
 										string destFile = Path.Combine(newSaves, fileName);
 										if (File.Exists(destFile)) {
 											legacyFiles++;
@@ -482,7 +542,6 @@ public static class GameDataManager {
 					// Clean up legacy battery saves
 					string legacySaves = Path.Combine(ConfigManager.HomeFolder, "Saves");
 					if (Directory.Exists(legacySaves)) {
-						HashSet<string> batteryExtensions = [".sav", ".srm", ".rtc", ".eeprom", ".ieeprom", ".bs"];
 						string newSaves = Path.Combine(gameDir, SavesFolderName);
 						if (Directory.Exists(newSaves)) {
 							foreach (string file in Directory.GetFiles(legacySaves)) {
@@ -491,7 +550,7 @@ public static class GameDataManager {
 									continue;
 
 								string ext = fileName[romName.Length..].ToLowerInvariant();
-								if (!batteryExtensions.Contains(ext) && ext != ".chr.sav")
+								if (!BatteryExtensions.Contains(ext) && ext != ".chr.sav")
 									continue;
 
 								string destFile = Path.Combine(newSaves, fileName);

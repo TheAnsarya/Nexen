@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -310,16 +310,29 @@ public partial class MainWindow : NexenWindow {
 				string savesPath = GameDataManager.GetSavesFolder(romInfo);
 				EmuApi.SetPerRomSaveDirectory(savesPath);
 
-				// Migrate any legacy save states to the new per-game folder
-				int migratedStates = GameDataManager.MigrateSaveStates(romInfo);
+				int pendingMigrationCount = GameDataManager.GetPendingMigrationCount(romInfo);
+				if (pendingMigrationCount > 0) {
+					Dispatcher.UIThread.Post(async () => {
+						DialogResult result = await NexenMsgBox.Show(
+							this,
+							"ConfirmGameDataMigration",
+							MessageBoxButtons.YesNo,
+							MessageBoxIcon.Question,
+							pendingMigrationCount.ToString()
+						);
 
-				// Migrate any legacy battery saves to the new per-game folder
-				int migratedSaves = GameDataManager.MigrateBatterySaves(romInfo);
+						if (result != DialogResult.Yes)
+							return;
 
-				// Show OSD notification if files were migrated
-				int totalMigrated = migratedStates + migratedSaves;
-				if (totalMigrated > 0) {
-					DisplayMessageHelper.DisplayMessage("Migration", $"Migrated {totalMigrated} file(s) to per-game folder");
+						// Copy-only migration keeps legacy files in place as fallback.
+						int migratedStates = GameDataManager.MigrateSaveStates(romInfo);
+						int migratedSaves = GameDataManager.MigrateBatterySaves(romInfo);
+
+						int totalMigrated = migratedStates + migratedSaves;
+						if (totalMigrated > 0) {
+							DisplayMessageHelper.DisplayMessage("Migration", $"Migrated {totalMigrated} file(s) to per-game folder");
+						}
+					});
 				}
 
 				// Update global emulator state for menu enable/disable
