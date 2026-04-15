@@ -745,6 +745,7 @@ public partial class MainWindow : NexenWindow {
 		Window? activeWindow = ApplicationHelper.GetActiveWindow();
 
 		PreferencesConfig cfg = ConfigManager.Config.Preferences;
+		bool isGameRunning = EmuApi.IsRunning();
 
 		bool focusInMenu = MenuHelper.IsFocusInMenu(_mainMenu.MainMenu);
 		if (focusInMenu && !_focusInMenu) {
@@ -756,8 +757,7 @@ public partial class MainWindow : NexenWindow {
 		bool needPause = activeWindow == null && cfg.PauseWhenInBackground;
 		if (activeWindow != null) {
 			bool isConfigWindow = (activeWindow != this) && !DebugWindowManager.IsDebugWindow(activeWindow);
-			needPause |= cfg.PauseWhenInMenusAndConfig && !isConfigWindow && _mainMenu.MainMenu.IsOpen; //in main menu
-			needPause |= cfg.PauseWhenInMenusAndConfig && isConfigWindow; //in a window that's neither the main window nor a debug tool
+			needPause |= ShouldPauseInMenusAndConfig(cfg.PauseWhenInMenusAndConfig, isGameRunning, isConfigWindow, _mainMenu.MainMenu.IsOpen);
 		}
 
 		if (needPause) {
@@ -784,5 +784,15 @@ public partial class MainWindow : NexenWindow {
 		if (EmuApi.IsRunning() && EmuApi.ShouldSaveRecentPlay()) {
 			EmuApi.SaveRecentPlayState();
 		}
+	}
+
+	internal static bool ShouldPauseInMenusAndConfig(bool pauseWhenInMenusAndConfig, bool isGameRunning, bool isConfigWindow, bool isMainMenuOpen) {
+		if (!pauseWhenInMenusAndConfig || !isGameRunning) {
+			return false;
+		}
+
+		// Pause only while an active game is running and either a config dialog is opened
+		// or the main menu is currently opened in the main window.
+		return isConfigWindow || isMainMenuOpen;
 	}
 }

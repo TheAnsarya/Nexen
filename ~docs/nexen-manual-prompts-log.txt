@@ -1499,8 +1499,9 @@ I can cleanly resolve the stray SnesCpu.Shared.h diff in a tiny follow-up pass a
 
 do #1) Implement #1295 (auto fallback/migration when portable config path is not writable), with tests and docs in the same workflow.
 
-[Nexen] Work on issue #1291 `https://github.com/TheAnsarya/Nexen/issues/1289` Move the message box and the other ones like it to the bottom left of the screen with some bottom and left margins and add (epics/issues/benchmarks/tests/plans/documentation/session-logs/readmes/etc); continue;
+[Nexen] Work on issue #1289 `https://github.com/TheAnsarya/Nexen/issues/1289` Move the message box and the other ones like it to the bottom left of the screen with some bottom and left margins and add (epics/issues/benchmarks/tests/plans/documentation/session-logs/readmes/etc); continue;
 
+[Nexen] Work on issue #1290 `https://github.com/TheAnsarya/Nexen/issues/1290` figure out why this is happening, and fix it, research and add (epics/issues/benchmarks/tests/plans/documentation/session-logs/readmes/etc); continue;
 
 
 
