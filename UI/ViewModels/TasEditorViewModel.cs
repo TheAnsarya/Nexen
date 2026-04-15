@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -2611,7 +2611,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	/// <summary>
 	/// Handles the user's choice from the interrupt dialog.
 	/// </summary>
-	internal async System.Threading.Tasks.Task HandleInterruptActionAsync(PlaybackInterruptAction action, int frame) {
+	internal System.Threading.Tasks.Task HandleInterruptActionAsync(PlaybackInterruptAction action, int frame) {
 		switch (action) {
 			case PlaybackInterruptAction.Fork:
 				// Create a branch from current state and start recording
@@ -2658,6 +2658,8 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 				StatusMessage = $"Continuing playback at frame {frame + 1}";
 				break;
 		}
+
+		return System.Threading.Tasks.Task.CompletedTask;
 	}
 
 	#endregion

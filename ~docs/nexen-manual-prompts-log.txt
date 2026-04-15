@@ -1507,6 +1507,7 @@ do #1) Implement #1295 (auto fallback/migration when portable config path is not
 
 [Nexen] git commit everything; continue working on Nexen issues; continue;
 
+If you want, I can continue immediately with #1297 Batch A and target additional first-party warning fixes that do not depend on changing vendored third-party sources.
 
 
 

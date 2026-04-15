@@ -1,4 +1,4 @@
-# Issue #1297 Warning Inventory And CI Gate Strategy
+﻿# Issue #1297 Warning Inventory And CI Gate Strategy
 
 ## Context
 
@@ -39,8 +39,18 @@ Recommended strategy for #1297 execution:
 3. Prefer low-risk fixes in first-party files first; avoid invasive algorithmic edits in vendored code without dedicated validation passes.
 4. For stubborn vendored warning clusters, evaluate per-file suppression or compile options scoped to those files only, with documentation and rationale.
 
+### Implemented In This Batch
+
+- Windows warning workflow now produces both:
+	- full warning report (`build-warning-report.txt`)
+	- first-party filtered warning report (`build-warning-report-firstparty.txt`)
+- Windows warning delta/regression gate now counts filtered first-party warnings.
+- Vendor-heavy warning paths are excluded from gate counting (while retained in full diagnostics artifact).
+
+This keeps regression enforcement strict for first-party code while preventing unrelated third-party warning churn from masking useful signal.
+
 ## Next Batches
 
-- Batch A: First-party warning sweep (`Core.Benchmarks`, `Core.Tests`, `UI`) for unused locals and narrow conversion casts.
+- Batch A: Continue first-party warning sweep (`Core.Benchmarks`, `Core.Tests`, `UI`) for unused locals and narrow conversion casts.
 - Batch B: Third-party policy pass (decide suppress vs patch) for `stb_vorbis`, `ymfm`, and gtest warnings.
 - Batch C: Re-run warning baselines and update CI baseline constants only when justified and documented.

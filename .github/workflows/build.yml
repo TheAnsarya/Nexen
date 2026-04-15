@@ -174,9 +174,26 @@ jobs:
         shell: pwsh
         run: |
           $warningLog = "build-warning-report.txt"
+          $firstPartyWarningLog = "build-warning-report-firstparty.txt"
           msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /m /nologo /clp:WarningsOnly 2>&1 | Tee-Object -FilePath $warningLog
           if (!(Test-Path $warningLog) -or (Get-Item $warningLog).Length -eq 0) {
             "No warnings detected (WarningsOnly output was empty)." | Out-File -FilePath $warningLog -Encoding utf8
+          }
+
+          # Keep the full warning report for diagnostics, but generate a first-party
+          # warning view used by regression gating to avoid vendor-noise churn.
+          $vendorPathRegex = "\\vcpkg_installed\\|\\Utilities\\Audio\\stb_vorbis\.cpp|\\Utilities\\Audio\\ymfm\\|\\Utilities\\NTSC\\|\\Utilities\\spng\.c|\\Utilities\\xBRZ\\xbrz\.cpp|\\SevenZip\\Precomp\.c"
+
+          $firstPartyWarnings = Get-Content $warningLog | Where-Object {
+            $_ -match "\bwarning\b" -and
+            $_ -notmatch "^No warnings detected" -and
+            $_ -notmatch $vendorPathRegex
+          }
+
+          if ($firstPartyWarnings.Count -eq 0) {
+            "No first-party warnings detected after vendor filtering." | Out-File -FilePath $firstPartyWarningLog -Encoding utf8
+          } else {
+            $firstPartyWarnings | Out-File -FilePath $firstPartyWarningLog -Encoding utf8
           }
 
       - name: Upload warning report (Windows)
@@ -184,7 +201,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: Warning Report (Windows${{ matrix.platform.aotString }})
-          path: build-warning-report.txt
+          path: |
+            build-warning-report.txt
+            build-warning-report-firstparty.txt
 
       - name: Generate warning delta summary (Windows)
         if: always()
@@ -192,8 +211,8 @@ jobs:
         run: |
           $baseline = [int]$env:WARNING_BASELINE_WINDOWS
           $count = 0
-          if (Test-Path "build-warning-report.txt") {
-            $count = (Get-Content "build-warning-report.txt" | Where-Object { $_ -match "\bwarning\b" -and $_ -notmatch "^No warnings detected" }).Count
+          if (Test-Path "build-warning-report-firstparty.txt") {
+            $count = (Get-Content "build-warning-report-firstparty.txt" | Where-Object { $_ -match "\bwarning\b" -and $_ -notmatch "^No first-party warnings detected" }).Count
           }
 
           $delta = $count - $baseline
