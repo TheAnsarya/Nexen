@@ -20,6 +20,7 @@ concurrency:
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   # Calibrated from warning-delta artifacts across successful runs:
   # 23720620324, 23720623170, 23720627204, 23721111328, 23721114532
   # 24030184964 (v1.4.19): gcc x64 reported 4078, gcc arm64 similar
@@ -804,7 +805,7 @@ jobs:
 
     steps:
       - name: Checkout (for release notes body_path)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Validate release input
         run: |

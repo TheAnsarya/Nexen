@@ -19,6 +19,7 @@ on:
 
 env:
   VCPKG_DEFAULT_TRIPLET: x64-windows
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   test-windows:

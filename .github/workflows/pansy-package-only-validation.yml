@@ -24,6 +24,7 @@ on:
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   package-only-managed:
@@ -83,7 +84,7 @@ jobs:
 
       - name: Upload timing checkpoint
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Package-Only Validation Timing
           path: package-only-validation-timing.txt
