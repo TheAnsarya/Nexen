@@ -1,3 +1,4 @@
+using System.IO.Hashing;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -10,27 +11,6 @@ namespace Nexen.MovieConverter;
 /// Designed to be a superset of all supported format features.
 /// </summary>
 public sealed class MovieData {
-	private static readonly uint[] Crc32Table = CreateCrc32Table();
-
-	private static uint[] CreateCrc32Table() {
-		var table = new uint[256];
-		for (uint i = 0; i < table.Length; i++) {
-			uint value = i;
-			for (int bit = 0; bit < 8; bit++) {
-				value = (value & 1) != 0
-					? (value >> 1) ^ 0xedb88320u
-					: value >> 1;
-			}
-			table[i] = value;
-		}
-		return table;
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static uint UpdateCrc32(uint crc, byte value) {
-		return (crc >> 8) ^ Crc32Table[(crc ^ value) & 0xff];
-	}
-
 	// ========== Metadata ==========
 
 	/// <summary>Author(s) of the TAS</summary>
@@ -296,20 +276,23 @@ public sealed class MovieData {
 	}
 
 	/// <summary>
-	/// Calculate the CRC32 of the input data (for verification)
+	/// Calculate the CRC32 of the input data (for verification).
+	/// Uses hardware-accelerated CRC32 via System.IO.Hashing when available.
 	/// </summary>
 	public uint CalculateInputCrc32() {
-		uint crc = 0xffffffffu;
+		var crc = new Crc32();
+		Span<byte> buffer = stackalloc byte[2];
 
 		foreach (InputFrame frame in InputFrames) {
 			for (int i = 0; i < ControllerCount; i++) {
 				ushort smv = frame.Controllers[i].ToSmvFormat();
-				crc = UpdateCrc32(crc, (byte)(smv & 0xff));
-				crc = UpdateCrc32(crc, (byte)(smv >> 8));
+				buffer[0] = (byte)(smv & 0xff);
+				buffer[1] = (byte)(smv >> 8);
+				crc.Append(buffer);
 			}
 		}
 
-		return ~crc;
+		return crc.GetCurrentHashAsUInt32();
 	}
 
 	/// <summary>
@@ -447,21 +430,21 @@ public sealed class MovieData {
 			clone.InputFrames.Add(frame.Clone());
 		}
 
-		// Clone state data
+		// Clone state data (use direct array copy to avoid spread intermediary)
 		if (InitialState != null) {
-			clone.InitialState = [.. InitialState];
+			clone.InitialState = (byte[])InitialState.Clone();
 		}
 
 		if (InitialSram != null) {
-			clone.InitialSram = [.. InitialSram];
+			clone.InitialSram = (byte[])InitialSram.Clone();
 		}
 
 		if (InitialRtc != null) {
-			clone.InitialRtc = [.. InitialRtc];
+			clone.InitialRtc = (byte[])InitialRtc.Clone();
 		}
 
 		if (InitialMemoryCard != null) {
-			clone.InitialMemoryCard = [.. InitialMemoryCard];
+			clone.InitialMemoryCard = (byte[])InitialMemoryCard.Clone();
 		}
 
 		// Clone collections
