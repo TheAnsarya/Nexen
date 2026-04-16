@@ -1,6 +1,6 @@
 # Developer Tasks and Current Priorities
 
-Issue linkage: [#775](https://github.com/TheAnsarya/Nexen/issues/775)
+Issue linkage: [#1305](https://github.com/TheAnsarya/Nexen/issues/1305)
 
 ## Why this file exists
 
@@ -9,19 +9,27 @@ It is focused on practical tasks that move Nexen forward now.
 
 ## Current active feature tracks
 
-These are the major tracks currently in progress:
+These are the open issues and active tracks:
 
-- Atari 2600 + Sega Genesis parity hardening: [Epic #740](https://github.com/TheAnsarya/Nexen/issues/740)
-- Atari/Genesis parity tracker and closure checklist: [#750](https://github.com/TheAnsarya/Nexen/issues/750)
-- Atari/Genesis benchmark suite expansion: [#741](https://github.com/TheAnsarya/Nexen/issues/741)
-- Debugger refresh-path performance audit: [#749](https://github.com/TheAnsarya/Nexen/issues/749)
+- WSC Final Fantasy II video instability (high-priority investigation): [#1076](https://github.com/TheAnsarya/Nexen/issues/1076)
+- Cross-emulator differential testing harness: [#1017](https://github.com/TheAnsarya/Nexen/issues/1017)
+- Sega Genesis / Mega Drive implementation: [Epic #801](https://github.com/TheAnsarya/Nexen/issues/801)
+- Sega Genesis emulation hardening: [Epic #754](https://github.com/TheAnsarya/Nexen/issues/754)
+- Replace Mesen icons with Nexen graphics: [#169](https://github.com/TheAnsarya/Nexen/issues/169)
 - Future-work index (program-level map): [docs/FUTURE-WORK.md](docs/FUTURE-WORK.md)
+
+### Completed tracks (archived)
+
+- ~~Atari 2600 + Sega Genesis parity hardening: [Epic #740](https://github.com/TheAnsarya/Nexen/issues/740)~~ ✅
+- ~~Atari/Genesis parity tracker: [#750](https://github.com/TheAnsarya/Nexen/issues/750)~~ ✅
+- ~~Atari/Genesis benchmark suite: [#741](https://github.com/TheAnsarya/Nexen/issues/741)~~ ✅
+- ~~Debugger refresh-path performance audit: [#749](https://github.com/TheAnsarya/Nexen/issues/749)~~ ✅
 
 ## Primary developer tasks (what to do first)
 
 If you only have 30-60 minutes, do these in order:
 
-1. Run focused Atari/Genesis validation pack and confirm all exit codes are zero.
+1. Run the full test suite (`Core.Tests.exe` + `dotnet test`) and confirm all tests pass.
 2. Do one manual testing pass for the feature you changed and record notes.
 3. Add or update one benchmark/test around the code you touched.
 4. Capture screenshots for any user-visible behavior changes.
