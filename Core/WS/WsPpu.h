@@ -174,8 +174,9 @@ public:
 	~WsPpu();
 
 	__forceinline void Exec() {
-		// Sprite copy at scanline 144 only when VTOTAL >= 144 (ares: no VBlank/sprite copy for short VTOTAL)
-		if (_state.Scanline == WsConstants::ScreenHeight && _state.LastScanline >= WsConstants::ScreenHeight) [[unlikely]] {
+		// Sprite copy at scanline 144 unconditionally — matches ares behavior.
+		// ares fires sprite.oamSyncScanline() at vcounter==144 regardless of vtotal.
+		if (_state.Scanline == WsConstants::ScreenHeight) [[unlikely]] {
 			ProcessSpriteCopy();
 		}
 

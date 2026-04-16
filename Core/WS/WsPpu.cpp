@@ -89,9 +89,9 @@ void WsPpu::ProcessEndOfScanline() {
 	_state.DrawOutsideBgWindowLatch = _state.DrawOutsideBgWindow;
 
 	// Frame runs to max(ScreenHeight, LastScanline + 1) scanlines — matches ares behavior.
-	// When VTOTAL < 144: frame still runs to 144 scanlines (with rendering Y wrapping),
-	// but VBlank and sprite copy are inhibited. This prevents short frames that disrupt
-	// game timing (fixes FF2 fire magic video instability).
+	// When VTOTAL < 144: frame still runs to 144 scanlines (with rendering Y wrapping).
+	// VBlank and sprite copy fire unconditionally at scanline 144 — ares does not
+	// inhibit these when vtotal < 143 despite its source comment suggesting otherwise.
 	uint16_t visibleScanlineCount = (uint16_t)_state.LastScanline + 1;
 	uint16_t frameEndScanline = visibleScanlineCount >= WsConstants::ScreenHeight
 		? visibleScanlineCount
@@ -126,12 +126,11 @@ void WsPpu::ProcessEndOfScanline() {
 	if (_state.Scanline == 145) [[unlikely]] {
 		SendFrame();
 	} else if (_state.Scanline == 144) [[unlikely]] {
-		// VBlank only fires when VTOTAL >= 144 — matches ares (vtotal<143 inhibits vblank)
-		if (_state.LastScanline >= WsConstants::ScreenHeight) {
-			_console->GetMemoryManager()->SetIrqSource(WsIrqSource::VerticalBlank);
-			_timer->TickVerticalTimer();
-			((WsControlManager*)_console->GetControlManager())->TriggerKeyIrq();
-		}
+		// VBlank fires unconditionally at scanline 144 — matches ares actual code.
+		// ares: cpu.raise(CPU::Interrupt::Vblank) at vcounter==144 regardless of vtotal.
+		_console->GetMemoryManager()->SetIrqSource(WsIrqSource::VerticalBlank);
+		_timer->TickVerticalTimer();
+		((WsControlManager*)_console->GetControlManager())->TriggerKeyIrq();
 	}
 }
 
