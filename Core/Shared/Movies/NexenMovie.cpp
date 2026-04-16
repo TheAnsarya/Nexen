@@ -243,7 +243,7 @@ bool NexenMovie::ApplySettings(istream& settingsData) {
 	return true;
 }
 
-uint32_t NexenMovie::LoadInt(std::unordered_map<string, string>& settings, const string& name, uint32_t defaultValue) {
+uint32_t NexenMovie::LoadInt(SettingsMap& settings, std::string_view name, uint32_t defaultValue) {
 	auto result = settings.find(name);
 	if (result != settings.end()) {
 		uint32_t value;
@@ -251,14 +251,14 @@ uint32_t NexenMovie::LoadInt(std::unordered_map<string, string>& settings, const
 		if (ec == std::errc()) {
 			return value;
 		}
-		MessageManager::Log("[Movies] Invalid value for tag: " + name);
+		MessageManager::Log("[Movies] Invalid value for tag: " + string(name));
 		return defaultValue;
 	} else {
 		return defaultValue;
 	}
 }
 
-bool NexenMovie::LoadBool(std::unordered_map<string, string>& settings, const string& name) {
+bool NexenMovie::LoadBool(SettingsMap& settings, std::string_view name) {
 	auto result = settings.find(name);
 	if (result != settings.end()) {
 		if (result->second == "true") {
@@ -266,7 +266,7 @@ bool NexenMovie::LoadBool(std::unordered_map<string, string>& settings, const st
 		} else if (result->second == "false") {
 			return false;
 		} else {
-			MessageManager::Log("[Movies] Invalid value for tag: " + name);
+			MessageManager::Log("[Movies] Invalid value for tag: " + string(name));
 			return false;
 		}
 	} else {
@@ -274,7 +274,7 @@ bool NexenMovie::LoadBool(std::unordered_map<string, string>& settings, const st
 	}
 }
 
-string NexenMovie::LoadString(std::unordered_map<string, string>& settings, const string& name) {
+string NexenMovie::LoadString(SettingsMap& settings, std::string_view name) {
 	auto result = settings.find(name);
 	if (result != settings.end()) {
 		return result->second;

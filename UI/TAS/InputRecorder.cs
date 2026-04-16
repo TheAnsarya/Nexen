@@ -29,6 +29,12 @@ public sealed class InputRecorder : IDisposable {
 			}
 
 			_movie = value;
+
+			// Initialize rerecord count from the loaded movie so we don't
+			// reset it to zero on the first RerecordFrom call.
+			if (_movie is not null) {
+				RerecordCount = (int)Math.Min(_movie.RerecordCount, int.MaxValue);
+			}
 		}
 	}
 

@@ -134,7 +134,6 @@ public sealed class InputApi {
 				break;
 
 			case ControllerType.GameboyController:
-			case ControllerType.GbaController:
 				// GB: A=0, B=1, Select=2, Start=3, Right=4, Left=5, Up=6, Down=7
 				input.A = (buttons & (1 << 0)) != 0;
 				input.B = (buttons & (1 << 1)) != 0;
@@ -144,6 +143,20 @@ public sealed class InputApi {
 				input.Left = (buttons & (1 << 5)) != 0;
 				input.Up = (buttons & (1 << 6)) != 0;
 				input.Down = (buttons & (1 << 7)) != 0;
+				break;
+
+			case ControllerType.GbaController:
+				// GBA: A=0, B=1, Select=2, Start=3, Right=4, Left=5, Up=6, Down=7, L=8, R=9
+				input.A = (buttons & (1 << 0)) != 0;
+				input.B = (buttons & (1 << 1)) != 0;
+				input.Select = (buttons & (1 << 2)) != 0;
+				input.Start = (buttons & (1 << 3)) != 0;
+				input.Right = (buttons & (1 << 4)) != 0;
+				input.Left = (buttons & (1 << 5)) != 0;
+				input.Up = (buttons & (1 << 6)) != 0;
+				input.Down = (buttons & (1 << 7)) != 0;
+				input.L = (buttons & (1 << 8)) != 0;
+				input.R = (buttons & (1 << 9)) != 0;
 				break;
 
 			case ControllerType.SmsController:

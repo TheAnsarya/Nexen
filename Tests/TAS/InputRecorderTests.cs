@@ -331,4 +331,77 @@ public class InputRecorderTests {
 	}
 
 	#endregion
+
+	#region RerecordCount Initialization Tests
+
+	[Fact]
+	public void RerecordCount_InitializesFromLoadedMovie() {
+		// Arrange — movie has an existing rerecord count
+		var movie = CreateTestMovie(10);
+		movie.RerecordCount = 42;
+
+		var greenzone = new GreenzoneManager();
+		var recorder = new InputRecorder(greenzone);
+
+		// Act — set the movie
+		recorder.Movie = movie;
+
+		// Assert — rerecord count is initialized from the movie
+		Assert.Equal(42, recorder.RerecordCount);
+	}
+
+	[Fact]
+	public void RerecordCount_ZeroForNewMovie() {
+		// Arrange — fresh movie with no rerecord count
+		var movie = CreateTestMovie(10);
+		movie.RerecordCount = 0;
+
+		var greenzone = new GreenzoneManager();
+		var recorder = new InputRecorder(greenzone);
+
+		// Act
+		recorder.Movie = movie;
+
+		// Assert
+		Assert.Equal(0, recorder.RerecordCount);
+	}
+
+	[Fact]
+	public void RerecordCount_ClampsLargeValues() {
+		// Arrange — movie with a very large rerecord count
+		var movie = CreateTestMovie(10);
+		movie.RerecordCount = (ulong)int.MaxValue + 100;
+
+		var greenzone = new GreenzoneManager();
+		var recorder = new InputRecorder(greenzone);
+
+		// Act
+		recorder.Movie = movie;
+
+		// Assert — clamped to int.MaxValue
+		Assert.Equal(int.MaxValue, recorder.RerecordCount);
+	}
+
+	[Fact]
+	public void RerecordCount_UpdatesWhenMovieChanges() {
+		// Arrange
+		var movie1 = CreateTestMovie(5);
+		movie1.RerecordCount = 10;
+
+		var movie2 = CreateTestMovie(5);
+		movie2.RerecordCount = 99;
+
+		var greenzone = new GreenzoneManager();
+		var recorder = new InputRecorder(greenzone);
+
+		// Act — set first movie
+		recorder.Movie = movie1;
+		Assert.Equal(10, recorder.RerecordCount);
+
+		// Act — switch to second movie
+		recorder.Movie = movie2;
+		Assert.Equal(99, recorder.RerecordCount);
+	}
+
+	#endregion
 }

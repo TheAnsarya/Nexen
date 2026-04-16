@@ -243,6 +243,71 @@ public class InputApiDecoderTests {
 		Assert.False(result.A);
 	}
 
+	[Fact]
+	public void Decode_GbaController_ShoulderButtons() {
+		// GBA: L=8, R=9 (bits in second byte)
+		var state = CreateState(ControllerType.GbaController, 0x00, 0x03); // bits 8-9 set
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.L);
+		Assert.True(result.R);
+		Assert.False(result.A);
+		Assert.False(result.B);
+		Assert.False(result.Up);
+	}
+
+	[Fact]
+	public void Decode_GbaController_AllButtons() {
+		// GBA: A=0, B=1, Select=2, Start=3, Right=4, Left=5, Up=6, Down=7, L=8, R=9
+		var state = CreateState(ControllerType.GbaController, 0xFF, 0x03); // all 10 bits set
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.A);
+		Assert.True(result.B);
+		Assert.True(result.Select);
+		Assert.True(result.Start);
+		Assert.True(result.Right);
+		Assert.True(result.Left);
+		Assert.True(result.Up);
+		Assert.True(result.Down);
+		Assert.True(result.L);
+		Assert.True(result.R);
+	}
+
+	[Fact]
+	public void Decode_GbaController_LOnly() {
+		// GBA: L=8 only
+		var state = CreateState(ControllerType.GbaController, 0x00, 0x01); // bit 8 only
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.L);
+		Assert.False(result.R);
+		Assert.False(result.A);
+	}
+
+	[Fact]
+	public void Decode_GbaController_ROnly() {
+		// GBA: R=9 only
+		var state = CreateState(ControllerType.GbaController, 0x00, 0x02); // bit 9 only
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.False(result.L);
+		Assert.True(result.R);
+		Assert.False(result.A);
+	}
+
+	[Fact]
+	public void Decode_GameboyController_NoShoulderButtons() {
+		// GB controller should NOT have L/R even with bits 8-9 set
+		// (GB has no shoulder buttons — only 8 bits of state)
+		var state = CreateState(ControllerType.GameboyController, 0xFF);
+		var result = InputApi.DecodeControllerState(state);
+
+		// GB only decodes 8 bits; L and R should remain false
+		Assert.False(result.L);
+		Assert.False(result.R);
+	}
+
 	#endregion
 
 	#region SMS Controller Tests

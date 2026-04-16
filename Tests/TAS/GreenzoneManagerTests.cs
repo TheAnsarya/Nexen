@@ -1,8 +1,10 @@
-using Xunit;
+﻿using Xunit;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Nexen.TAS;
 
 namespace Nexen.Tests.TAS;
 
@@ -313,6 +315,109 @@ public class GreenzoneManagerTests {
 		// After invalidation, nearest must be within the remaining states
 		Assert.True(nearest <= lastValidFrame || nearest == -1,
 			$"nearest={nearest} must be <= lastValidFrame={lastValidFrame} or -1");
+	}
+
+	#endregion
+
+	#region SavestatePayload Atomicity Tests
+
+	[Fact]
+	public void SavestatePayload_IsImmutable() {
+		// Payload data and compression flag can only be set at construction
+		var data = new byte[] { 1, 2, 3, 4 };
+		var payload = new SavestatePayload(data, isCompressed: false);
+
+		Assert.Equal(data, payload.Data);
+		Assert.False(payload.IsCompressed);
+
+		// Cannot change after construction — no setters exposed
+		var compressedPayload = new SavestatePayload(new byte[] { 5, 6 }, isCompressed: true);
+		Assert.True(compressedPayload.IsCompressed);
+		Assert.Equal(2, compressedPayload.Data.Length);
+	}
+
+	[Fact]
+	public void SavestateData_PayloadSwapIsAtomic() {
+		// Verify that readers always see a consistent (Data, IsCompressed) pair
+		var original = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+		var compressed = new byte[] { 9, 10 };
+
+		var state = new SavestateData {
+			Frame = 100,
+			CaptureTime = DateTime.UtcNow,
+			Payload = new SavestatePayload(original, isCompressed: false)
+		};
+
+		// Simulate background compression swapping the payload
+		state.Payload = new SavestatePayload(compressed, isCompressed: true);
+
+		// Reader always sees consistent pair
+		var snapshot = state.Payload!;
+		Assert.True(snapshot.IsCompressed);
+		Assert.Equal(compressed, snapshot.Data);
+	}
+
+	[Fact]
+	public void SavestateData_ConcurrentPayloadReads_AlwaysConsistent() {
+		// Stress test: writer swaps payload while readers read — no torn state
+		var uncompressed = new byte[1024];
+		Array.Fill(uncompressed, (byte)0xAA);
+		var compressedData = new byte[64];
+		Array.Fill(compressedData, (byte)0xBB);
+
+		var state = new SavestateData {
+			Frame = 42,
+			CaptureTime = DateTime.UtcNow,
+			Payload = new SavestatePayload(uncompressed, isCompressed: false)
+		};
+
+		bool inconsistencyDetected = false;
+		var barrier = new Barrier(3); // 1 writer + 2 readers
+
+		// Writer thread: toggle between uncompressed and compressed payloads
+		var writer = new Thread(() => {
+			barrier.SignalAndWait();
+			for (int i = 0; i < 100_000; i++) {
+				if (i % 2 == 0) {
+					state.Payload = new SavestatePayload(compressedData, isCompressed: true);
+				} else {
+					state.Payload = new SavestatePayload(uncompressed, isCompressed: false);
+				}
+			}
+		});
+
+		// Reader threads: verify consistency of each snapshot
+		void ReaderWork() {
+			barrier.SignalAndWait();
+			for (int i = 0; i < 200_000; i++) {
+				var snapshot = state.Payload;
+				if (snapshot is null) {
+					continue;
+				}
+
+				// If compressed, data must be the short array; if not, the long array
+				if (snapshot.IsCompressed && snapshot.Data.Length != 64) {
+					inconsistencyDetected = true;
+				}
+
+				if (!snapshot.IsCompressed && snapshot.Data.Length != 1024) {
+					inconsistencyDetected = true;
+				}
+			}
+		}
+
+		var reader1 = new Thread(ReaderWork);
+		var reader2 = new Thread(ReaderWork);
+
+		writer.Start();
+		reader1.Start();
+		reader2.Start();
+
+		writer.Join();
+		reader1.Join();
+		reader2.Join();
+
+		Assert.False(inconsistencyDetected, "Readers observed a torn (Data, IsCompressed) pair");
 	}
 
 	#endregion

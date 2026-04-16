@@ -13,6 +13,16 @@ struct CheatCode;
 
 class NexenMovie final : public IMovie, public INotificationListener, public IBatteryProvider, public std::enable_shared_from_this<NexenMovie> {
 private:
+	/// <summary>Transparent hash enabling string_view lookup on string-keyed maps.</summary>
+	struct StringHash {
+		using is_transparent = void;
+		size_t operator()(std::string_view sv) const noexcept {
+			return std::hash<std::string_view>{}(sv);
+		}
+	};
+
+	using SettingsMap = std::unordered_map<std::string, std::string, StringHash, std::equal_to<>>;
+
 	Emulator* _emu = nullptr;
 
 	BaseControlManager* _controlManager = nullptr;
@@ -26,7 +36,7 @@ private:
 	size_t _deviceCount = 0;	vector<string> _cheats;
 	vector<CheatCode> _originalCheats;
 	stringstream _emuSettingsBackup;
-	unordered_map<string, string> _settings;
+	SettingsMap _settings;
 	string _filename;
 	bool _forTest = false;
 
@@ -34,9 +44,9 @@ private:
 	void ParseSettings(stringstream& data);
 	bool ApplySettings(istream& settingsData);
 
-	[[nodiscard]] uint32_t LoadInt(std::unordered_map<string, string>& settings, const string& name, uint32_t defaultValue = 0);
-	[[nodiscard]] bool LoadBool(std::unordered_map<string, string>& settings, const string& name);
-	[[nodiscard]] string LoadString(std::unordered_map<string, string>& settings, const string& name);
+	[[nodiscard]] uint32_t LoadInt(SettingsMap& settings, std::string_view name, uint32_t defaultValue = 0);
+	[[nodiscard]] bool LoadBool(SettingsMap& settings, std::string_view name);
+	[[nodiscard]] string LoadString(SettingsMap& settings, std::string_view name);
 
 	void LoadCheats();
 	bool LoadCheat(const string& cheatData, CheatCode& code);

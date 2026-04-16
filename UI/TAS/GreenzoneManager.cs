@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -99,14 +99,13 @@ public sealed class GreenzoneManager : IDisposable {
 
 		var savestate = new SavestateData {
 			Frame = frame,
-			Data = data,
+			Payload = new SavestatePayload(data, isCompressed: false),
 			CaptureTime = DateTime.UtcNow,
-			IsCompressed = false
 		};
 
 		// Track memory: subtract old state if replacing, add new
 		if (_savestates.TryGetValue(frame, out var existing)) {
-			Interlocked.Add(ref _totalMemoryUsage, -(existing.Data?.LongLength ?? 0));
+			Interlocked.Add(ref _totalMemoryUsage, -(existing.Payload?.Data.LongLength ?? 0));
 		}
 
 		_savestates[frame] = savestate;
@@ -318,7 +317,7 @@ public sealed class GreenzoneManager : IDisposable {
 
 		foreach (var frame in framesToRemove) {
 			if (_savestates.TryRemove(frame, out var state)) {
-				Interlocked.Add(ref _totalMemoryUsage, -(state.Data?.LongLength ?? 0));
+				Interlocked.Add(ref _totalMemoryUsage, -(state.Payload?.Data.LongLength ?? 0));
 			}
 		}
 	}
@@ -343,11 +342,14 @@ public sealed class GreenzoneManager : IDisposable {
 	/// <returns>List of savestate information.</returns>
 	public List<SavestateInfo> GetSavestateInfo() {
 		return _savestates.Values
-			.Select(s => new SavestateInfo {
-				Frame = s.Frame,
-				Size = s.Data?.Length ?? 0,
-				IsCompressed = s.IsCompressed,
-				CaptureTime = s.CaptureTime
+			.Select(s => {
+				var p = s.Payload;
+				return new SavestateInfo {
+					Frame = s.Frame,
+					Size = p?.Data.Length ?? 0,
+					IsCompressed = p?.IsCompressed ?? false,
+					CaptureTime = s.CaptureTime
+				};
 			})
 			.OrderBy(s => s.Frame)
 			.ToList();
@@ -369,7 +371,7 @@ public sealed class GreenzoneManager : IDisposable {
 				if (oldestFrame % CaptureInterval != 0) {
 					if (_savestates.TryRemove(oldestFrame, out var removed)) {
 						_frameIndex.Remove(oldestFrame);
-						Interlocked.Add(ref _totalMemoryUsage, -(removed.Data?.LongLength ?? 0));
+						Interlocked.Add(ref _totalMemoryUsage, -(removed.Payload?.Data.LongLength ?? 0));
 					}
 				}
 			}
@@ -379,15 +381,14 @@ public sealed class GreenzoneManager : IDisposable {
 	}
 
 	private bool LoadSavestateData(SavestateData state) {
-		// Capture references atomically to avoid torn reads during background compression
-		byte[]? stateData = state.Data;
-		bool isCompressed = state.IsCompressed;
+		// Read the immutable payload snapshot atomically — no torn reads possible
+		var payload = state.Payload;
 
-		if (stateData is null) {
+		if (payload is null) {
 			return false;
 		}
 
-		byte[] data = isCompressed ? DecompressData(stateData) : stateData;
+		byte[] data = payload.IsCompressed ? DecompressData(payload.Data) : payload.Data;
 
 		try {
 			// Load state directly from memory buffer
@@ -450,7 +451,7 @@ public sealed class GreenzoneManager : IDisposable {
 						_frameIndex.Remove(frame);
 					}
 
-					long size = state.Data?.LongLength ?? 0;
+					long size = state.Payload?.Data.LongLength ?? 0;
 					prunedCount++;
 					freedMemory += size;
 					Interlocked.Add(ref _totalMemoryUsage, -size);
@@ -473,7 +474,9 @@ public sealed class GreenzoneManager : IDisposable {
 			int latestFrame = LatestFrame;
 
 			foreach (var kv in _savestates) {
-				if (kv.Value.IsCompressed || kv.Value.Data is null) {
+				var payload = kv.Value.Payload;
+
+				if (payload is null || payload.IsCompressed) {
 					continue;
 				}
 
@@ -481,16 +484,15 @@ public sealed class GreenzoneManager : IDisposable {
 					continue;
 				}
 
-				byte[] originalData = kv.Value.Data;
+				byte[] originalData = payload.Data;
 				var compressed = CompressData(originalData);
 
 				// Only use compressed if it's actually smaller
 				if (compressed.Length < originalData.Length) {
 					long sizeDelta = compressed.Length - originalData.Length;
-					// Atomically swap: set IsCompressed before Data so readers always
-					// see a consistent state (compressed flag matches data format)
-					kv.Value.IsCompressed = true;
-					kv.Value.Data = compressed;
+					// Atomically swap the entire payload — readers always see
+					// a consistent (Data, IsCompressed) pair
+					kv.Value.Payload = new SavestatePayload(compressed, isCompressed: true);
 					Interlocked.Add(ref _totalMemoryUsage, sizeDelta);
 				}
 			}
@@ -551,13 +553,37 @@ public sealed class GreenzoneManager : IDisposable {
 }
 
 /// <summary>
+/// Immutable snapshot of savestate payload, enabling atomic swap of (Data, IsCompressed).
+/// </summary>
+internal sealed class SavestatePayload {
+	public byte[] Data { get; }
+	public bool IsCompressed { get; }
+
+	public SavestatePayload(byte[] data, bool isCompressed) {
+		Data = data;
+		IsCompressed = isCompressed;
+	}
+}
+
+/// <summary>
 /// Internal class to store savestate data.
+/// The <see cref="Payload"/> field is swapped atomically to avoid torn reads
+/// during background compression.
 /// </summary>
 internal sealed class SavestateData {
 	public int Frame { get; set; }
-	public byte[]? Data { get; set; }
 	public DateTime CaptureTime { get; set; }
-	public bool IsCompressed { get; set; }
+
+	/// <summary>
+	/// Atomic payload: read via <see cref="Volatile.Read{T}(ref T)"/>,
+	/// written via <see cref="Volatile.Write{T}(ref T, T)"/>.
+	/// </summary>
+	private SavestatePayload? _payload;
+
+	public SavestatePayload? Payload {
+		get => Volatile.Read(ref _payload);
+		set => Volatile.Write(ref _payload, value);
+	}
 }
 
 /// <summary>
