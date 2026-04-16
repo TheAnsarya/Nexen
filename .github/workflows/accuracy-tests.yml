@@ -62,12 +62,43 @@ jobs:
       - name: Restore .NET packages
         run: dotnet restore -r win-x64
 
-      - name: Build Nexen (Release x64)
+      - name: Build C++ core (InteropDLL)
         run: |
           $tripletRoot = "$env:VCPKG_INSTALLED_DIR\\x64-windows"
           $env:INCLUDE = "$tripletRoot\\include;$env:INCLUDE"
           $env:LIB = "$tripletRoot\\lib;$tripletRoot\\lib\\manual-link;$env:LIB"
-          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /p:VcpkgInstalledDir=$env:VCPKG_INSTALLED_DIR /m /nologo /v:m
+          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /p:VcpkgInstalledDir=$env:VCPKG_INSTALLED_DIR /m /nologo /v:m -t:InteropDLL
+
+      - name: Copy native libs from NuGet cache
+        shell: pwsh
+        run: |
+          $outDir = "bin\win-x64\Release"
+          New-Item -ItemType Directory -Path $outDir -Force | Out-Null
+          $nugetCache = Join-Path $env:USERPROFILE ".nuget\packages"
+          $libs = @(
+            @{ Name = "libSkiaSharp.dll";     Pattern = "skiasharp.nativeassets.win32\*\runtimes\win-x64\native\libSkiaSharp.dll" },
+            @{ Name = "libHarfBuzzSharp.dll"; Pattern = "harfbuzzsharp.nativeassets.win32\*\runtimes\win-x64\native\libHarfBuzzSharp.dll" }
+          )
+          foreach ($lib in $libs) {
+            $found = Get-ChildItem -Path (Join-Path $nugetCache $lib.Pattern) -ErrorAction SilentlyContinue | Select-Object -Last 1
+            if ($found) {
+              Copy-Item $found.FullName -Destination $outDir -Force
+              Write-Host "OK: $($lib.Name) copied from $($found.FullName)"
+            } else {
+              Write-Host "::warning::$($lib.Name) not found in NuGet cache"
+            }
+          }
+
+      - name: Package Dependencies.zip
+        run: ./scripts/package-dependencies.ps1 -Configuration Release
+        shell: pwsh
+
+      - name: Build UI
+        run: |
+          $tripletRoot = "$env:VCPKG_INSTALLED_DIR\\x64-windows"
+          $env:INCLUDE = "$tripletRoot\\include;$env:INCLUDE"
+          $env:LIB = "$tripletRoot\\lib;$tripletRoot\\lib\\manual-link;$env:LIB"
+          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /p:VcpkgInstalledDir=$env:VCPKG_INSTALLED_DIR /m /nologo /v:m -t:UI
 
       - name: Download NES test ROMs
         run: |
@@ -155,12 +186,43 @@ jobs:
       - name: Restore .NET packages
         run: dotnet restore -r win-x64
 
-      - name: Build Nexen (Release x64)
+      - name: Build C++ core (InteropDLL)
         run: |
           $tripletRoot = "$env:VCPKG_INSTALLED_DIR\\x64-windows"
           $env:INCLUDE = "$tripletRoot\\include;$env:INCLUDE"
           $env:LIB = "$tripletRoot\\lib;$tripletRoot\\lib\\manual-link;$env:LIB"
-          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /p:VcpkgInstalledDir=$env:VCPKG_INSTALLED_DIR /m /nologo /v:m
+          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /p:VcpkgInstalledDir=$env:VCPKG_INSTALLED_DIR /m /nologo /v:m -t:InteropDLL
+
+      - name: Copy native libs from NuGet cache
+        shell: pwsh
+        run: |
+          $outDir = "bin\win-x64\Release"
+          New-Item -ItemType Directory -Path $outDir -Force | Out-Null
+          $nugetCache = Join-Path $env:USERPROFILE ".nuget\packages"
+          $libs = @(
+            @{ Name = "libSkiaSharp.dll";     Pattern = "skiasharp.nativeassets.win32\*\runtimes\win-x64\native\libSkiaSharp.dll" },
+            @{ Name = "libHarfBuzzSharp.dll"; Pattern = "harfbuzzsharp.nativeassets.win32\*\runtimes\win-x64\native\libHarfBuzzSharp.dll" }
+          )
+          foreach ($lib in $libs) {
+            $found = Get-ChildItem -Path (Join-Path $nugetCache $lib.Pattern) -ErrorAction SilentlyContinue | Select-Object -Last 1
+            if ($found) {
+              Copy-Item $found.FullName -Destination $outDir -Force
+              Write-Host "OK: $($lib.Name) copied from $($found.FullName)"
+            } else {
+              Write-Host "::warning::$($lib.Name) not found in NuGet cache"
+            }
+          }
+
+      - name: Package Dependencies.zip
+        run: ./scripts/package-dependencies.ps1 -Configuration Release
+        shell: pwsh
+
+      - name: Build UI
+        run: |
+          $tripletRoot = "$env:VCPKG_INSTALLED_DIR\\x64-windows"
+          $env:INCLUDE = "$tripletRoot\\include;$env:INCLUDE"
+          $env:LIB = "$tripletRoot\\lib;$tripletRoot\\lib\\manual-link;$env:LIB"
+          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /p:VcpkgInstalledDir=$env:VCPKG_INSTALLED_DIR /m /nologo /v:m -t:UI
 
       - name: Download test ROMs
         run: |
