@@ -32,13 +32,26 @@ private:
 	bool _playing = false;
 	size_t _deviceIndex = 0;
 	uint32_t _lastPollCounter = 0;
-	vector<string> _inputData;
+	/// Contiguous buffer holding all frame input strings, separated by '\n'.
+	string _inputBuffer;
+	/// Byte offset into _inputBuffer for each frame's start position.
+	vector<uint32_t> _inputOffsets;
 	size_t _deviceCount = 0;	vector<string> _cheats;
 	vector<CheatCode> _originalCheats;
 	stringstream _emuSettingsBackup;
 	SettingsMap _settings;
 	string _filename;
 	bool _silent = false;
+
+	/// Returns a string_view of the frame data at the given index.
+	[[nodiscard]] string_view GetFrameData(size_t index) const {
+		uint32_t start = _inputOffsets[index];
+		uint32_t end = (index + 1 < _inputOffsets.size()) ? _inputOffsets[index + 1] - 1 : static_cast<uint32_t>(_inputBuffer.size());
+		return string_view(_inputBuffer).substr(start, end - start);
+	}
+
+	/// Returns the total number of input frames.
+	[[nodiscard]] size_t GetFrameCount() const { return _inputOffsets.size(); }
 
 private:
 	void ParseSettings(stringstream& data);

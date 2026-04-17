@@ -30,7 +30,7 @@ NexenMovie::~NexenMovie() {
 
 void NexenMovie::Stop() {
 	if (_playing) {
-		bool isEndOfMovie = _lastPollCounter >= _inputData.size();
+		bool isEndOfMovie = _lastPollCounter >= GetFrameCount();
 
 		if (!_silent) {
 			MessageManager::DisplayMessage("Movies", isEndOfMovie ? "MovieEnded" : "MovieStopped");
@@ -63,8 +63,8 @@ bool NexenMovie::SetInput(BaseControlDevice* device) {
 		_deviceIndex = 0;
 	}
 
-	if (_inputData.size() > inputRowIndex && _deviceCount > _deviceIndex) {
-		device->SetTextState(StringUtilities::GetNthSegmentView(_inputData[inputRowIndex], '|', _deviceIndex));
+	if (GetFrameCount() > inputRowIndex && _deviceCount > _deviceIndex) {
+		device->SetTextState(StringUtilities::GetNthSegmentView(GetFrameData(inputRowIndex), '|', _deviceIndex));
 
 		_deviceIndex++;
 		if (_deviceIndex >= _deviceCount) {
@@ -117,24 +117,33 @@ bool NexenMovie::Play(VirtualFile& file) {
 		return false;
 	}
 
-	// Pre-allocate using fast newline count from raw data (avoids double-pass getline)
+	// Build contiguous input buffer: all frame strings packed with '\n' separators.
+	// This eliminates per-frame std::string overhead (32 bytes each on MSVC x64).
 	{
 		const string& rawInput = inputData.str();
 		size_t lineEstimate = std::ranges::count(rawInput, '\n') + 1;
-		_inputData.reserve(lineEstimate);
+		_inputOffsets.reserve(lineEstimate);
+		_inputBuffer.reserve(rawInput.size());
 	}
 
 	string line;
 	while (std::getline(inputData, line)) {
 		if (line.starts_with("|")) {
-			// Store the frame line (minus leading '|') as a single flat string:
+			// Store the frame line (minus leading '|') into the contiguous buffer:
 			// e.g. "UDLRSsBA|UDLRSsBA" for a 2-controller NES game
 			string_view frameData = string_view(line).substr(1);
 			if (_deviceCount == 0) {
 				_deviceCount = StringUtilities::CountSegments(frameData, '|');
 			}
-			_inputData.emplace_back(frameData);
+			_inputOffsets.push_back(static_cast<uint32_t>(_inputBuffer.size()));
+			_inputBuffer.append(frameData);
+			_inputBuffer.push_back('\n');
 		}
+	}
+
+	// Trim trailing separator
+	if (!_inputBuffer.empty() && _inputBuffer.back() == '\n') {
+		_inputBuffer.pop_back();
 	}
 
 	_deviceIndex = 0;

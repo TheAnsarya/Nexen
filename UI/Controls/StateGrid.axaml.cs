@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +15,7 @@ using Nexen.ViewModels;
 using Nexen.Windows;
 using ReactiveUI;
 
-namespace Nexen.Controls; 
+namespace Nexen.Controls;
 public partial class StateGrid : UserControl {
 	public static readonly StyledProperty<List<RecentGameInfo>> EntriesProperty = AvaloniaProperty.Register<StateGrid, List<RecentGameInfo>>(nameof(Entries));
 
