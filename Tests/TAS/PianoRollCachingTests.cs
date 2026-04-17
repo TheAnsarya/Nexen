@@ -241,6 +241,43 @@ public class PianoRollCachingTests {
 
 	#region Button Label Caching Tests
 
+	[Theory]
+	[InlineData("A", 1)]
+	[InlineData("B", 2)]
+	[InlineData("X", 3)]
+	[InlineData("Y", 4)]
+	[InlineData("L", 5)]
+	[InlineData("R", 6)]
+	[InlineData("UP", 7)]
+	[InlineData("DOWN", 8)]
+	[InlineData("LEFT", 9)]
+	[InlineData("RIGHT", 10)]
+	[InlineData("START", 11)]
+	[InlineData("SELECT", 12)]
+	public void GetButtonCode_KnownMappings_ReturnExpectedCode(string button, int expectedCode) {
+		Assert.Equal(expectedCode, PianoRollControl.GetButtonCode(button));
+	}
+
+	[Fact]
+	public void GetButtonCode_Unknown_ReturnsZero() {
+		Assert.Equal(0, PianoRollControl.GetButtonCode("UNKNOWN"));
+	}
+
+	[Fact]
+	public void GetButtonStateByCode_ReadsExpectedButtonFlags() {
+		var input = new MovieConverter.ControllerInput {
+			A = true,
+			Down = true,
+			Start = true
+		};
+
+		Assert.True(PianoRollControl.GetButtonStateByCode(input, 1));
+		Assert.True(PianoRollControl.GetButtonStateByCode(input, 8));
+		Assert.True(PianoRollControl.GetButtonStateByCode(input, 11));
+		Assert.False(PianoRollControl.GetButtonStateByCode(input, 2));
+		Assert.False(PianoRollControl.GetButtonStateByCode(input, 12));
+	}
+
 	[Fact]
 	public void ButtonLabelCache_ShouldCacheSameLabels() {
 		// Arrange

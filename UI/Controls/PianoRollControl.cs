@@ -153,6 +153,8 @@ public sealed class PianoRollControl : Control {
 	private int _keyboardButton;
 	private readonly HashSet<int> _paintedFrames = new();
 	private readonly List<int> _paintFrameBuffer = new();
+	private IReadOnlyList<string>? _cachedButtonLabelSource;
+	private int[]? _cachedButtonCodes;
 
 	#endregion
 
@@ -498,6 +500,8 @@ public sealed class PianoRollControl : Control {
 			return;
 		}
 
+		int[] buttonCodes = GetButtonCodes(buttons);
+
 		var (start, endExclusive) = ComputeVisibleFrameRange(bounds.Width, LaneHeaderWidth, cellWidth, ScrollOffset, frames.Count);
 
 		for (int frameIndex = start; frameIndex < endExclusive; frameIndex++) {
@@ -524,7 +528,7 @@ public sealed class PianoRollControl : Control {
 
 				// Check if button is pressed
 				if (frame.Controllers.Length > 0) {
-					bool isPressed = GetButtonState(frame.Controllers[0], j, buttons);
+					bool isPressed = GetButtonStateByCode(frame.Controllers[0], buttonCodes[j]);
 
 					if (isPressed) {
 						var innerRect = rect.Deflate(2);
@@ -596,21 +600,61 @@ public sealed class PianoRollControl : Control {
 			return false;
 		}
 
-		string button = buttons[buttonIndex];
+		return GetButtonStateByCode(input, GetButtonCode(buttons[buttonIndex]));
+	}
 
-		return button switch {
-			"A" => input.A,
-			"B" => input.B,
-			"X" => input.X,
-			"Y" => input.Y,
-			"L" => input.L,
-			"R" => input.R,
-			"↑" or "UP" => input.Up,
-			"↓" or "DOWN" => input.Down,
-			"←" or "LEFT" => input.Left,
-			"→" or "RIGHT" => input.Right,
-			"ST" or "START" => input.Start,
-			"SE" or "SELECT" => input.Select,
+	private int[] GetButtonCodes(IReadOnlyList<string> buttons) {
+		if (ReferenceEquals(_cachedButtonLabelSource, buttons) && _cachedButtonCodes is not null && _cachedButtonCodes.Length == buttons.Count) {
+			return _cachedButtonCodes;
+		}
+
+		var codes = new int[buttons.Count];
+		for (int i = 0; i < buttons.Count; i++) {
+			codes[i] = GetButtonCode(buttons[i]);
+		}
+
+		_cachedButtonLabelSource = buttons;
+		_cachedButtonCodes = codes;
+		return codes;
+	}
+
+	internal static int GetButtonCode(string button) {
+		if (string.IsNullOrWhiteSpace(button)) {
+			return 0;
+		}
+
+		string normalized = button.Trim().ToUpperInvariant();
+		return normalized switch {
+			"A" => 1,
+			"B" => 2,
+			"X" => 3,
+			"Y" => 4,
+			"L" => 5,
+			"R" => 6,
+			"↑" or "UP" => 7,
+			"↓" or "DOWN" => 8,
+			"←" or "LEFT" => 9,
+			"→" or "RIGHT" => 10,
+			"ST" or "START" => 11,
+			"SE" or "SELECT" => 12,
+			_ => 0
+		};
+	}
+
+	internal static bool GetButtonStateByCode(ControllerInput input, int buttonCode) {
+		return buttonCode switch {
+			1 => input.A,
+			2 => input.B,
+			3 => input.X,
+			4 => input.Y,
+			5 => input.L,
+			6 => input.R,
+			7 => input.Up,
+			8 => input.Down,
+			9 => input.Left,
+			10 => input.Right,
+			11 => input.Start,
+			12 => input.Select,
 			_ => false
 		};
 	}
