@@ -3812,6 +3812,9 @@ tas.finishSearch(true) -- Load best result</pre>
 public sealed partial class TasFrameViewModel : ViewModelBase {
 	private int _frameNumber;
 	private bool _isGreenzone;
+	private string _p1Input;
+	private string _p2Input;
+	private IBrush _background;
 
 	/// <summary>Gets the underlying frame.</summary>
 	public InputFrame Frame { get; }
@@ -3828,6 +3831,7 @@ public sealed partial class TasFrameViewModel : ViewModelBase {
 		set {
 			if (_isGreenzone != value) {
 				_isGreenzone = value;
+				_background = ComputeBackground();
 				this.RaisePropertyChanged();
 				this.RaisePropertyChanged(nameof(Background));
 			}
@@ -3835,15 +3839,13 @@ public sealed partial class TasFrameViewModel : ViewModelBase {
 	}
 
 	/// <summary>Gets the background color based on frame state.</summary>
-	public IBrush Background => IsGreenzone ? Brushes.LightGreen
-		: Frame.IsLagFrame ? Brushes.LightCoral
-		: Brushes.Transparent;
+	public IBrush Background => _background;
 
 	/// <summary>Gets the formatted input string for player 1.</summary>
-	public string P1Input => Frame.Controllers[0].ToNexenFormat();
+	public string P1Input => _p1Input;
 
 	/// <summary>Gets the formatted input string for player 2.</summary>
-	public string P2Input => Frame.Controllers.Length > 1 ? Frame.Controllers[1].ToNexenFormat() : "";
+	public string P2Input => _p2Input;
 
 	/// <summary>Gets the marker text (using Comment as marker).</summary>
 	public string MarkerText => Frame.Comment ?? "";
@@ -3861,7 +3863,14 @@ public sealed partial class TasFrameViewModel : ViewModelBase {
 		Frame = frame;
 		_frameNumber = index + 1; // 1-based display
 		_isGreenzone = isGreenzone;
+		_p1Input = Frame.Controllers[0].ToNexenFormat();
+		_p2Input = Frame.Controllers.Length > 1 ? Frame.Controllers[1].ToNexenFormat() : "";
+		_background = ComputeBackground();
 	}
+
+	private IBrush ComputeBackground() => _isGreenzone ? Brushes.LightGreen
+		: Frame.IsLagFrame ? Brushes.LightCoral
+		: Brushes.Transparent;
 
 	/// <summary>
 	/// Raises property changed for all computed properties that depend on the underlying frame data.
@@ -3870,6 +3879,9 @@ public sealed partial class TasFrameViewModel : ViewModelBase {
 	/// instead of 7 separate RaisePropertyChanged calls.
 	/// </summary>
 	public void RefreshFromFrame() {
+		_p1Input = Frame.Controllers[0].ToNexenFormat();
+		_p2Input = Frame.Controllers.Length > 1 ? Frame.Controllers[1].ToNexenFormat() : "";
+		_background = ComputeBackground();
 		this.RaisePropertyChanged(string.Empty);
 	}
 }
