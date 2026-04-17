@@ -1321,10 +1321,21 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 				return;
 			}
 
-			var actions = new List<UndoableAction>(sorted.Count);
-			foreach (int idx in sorted) {
-				actions.Add(new DeleteFramesAction(Movie, idx, 1));
+			// Coalesce consecutive indices into contiguous ranges (sorted descending).
+			// E.g. [9,8,7,3,2] → ranges [(7,3), (2,2)] — far fewer list operations.
+			var actions = new List<UndoableAction>();
+			int rangeEnd = sorted[0];
+			int rangeStart = rangeEnd;
+			for (int i = 1; i < sorted.Count; i++) {
+				if (sorted[i] == rangeStart - 1) {
+					rangeStart = sorted[i];
+				} else {
+					actions.Add(new DeleteFramesAction(Movie, rangeStart, rangeEnd - rangeStart + 1));
+					rangeEnd = sorted[i];
+					rangeStart = rangeEnd;
+				}
 			}
+			actions.Add(new DeleteFramesAction(Movie, rangeStart, rangeEnd - rangeStart + 1));
 
 			ExecuteAction(new BulkUndoableAction($"Delete {sorted.Count} frame(s)", actions));
 

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using Nexen.MovieConverter;
 using Nexen.ViewModels;
 using Xunit;
@@ -901,6 +901,79 @@ public class TasEditorViewModelTests {
 		// Undo insert
 		insertAction.Undo();
 		Assert.Equal(10, movie.InputFrames.Count);
+	}
+
+	/// <summary>
+	/// Tests that BulkUndoableAction with coalesced contiguous range deletes
+	/// correctly removes frames and undoes back to original state.
+	/// </summary>
+	[Fact]
+	public void BulkDelete_CoalescedRanges_DeletesAndUndoes() {
+		var movie = CreateTestMovieData(10);
+		var original = movie.InputFrames.Select(f => f.FrameNumber).ToList();
+
+		// Simulate coalesced delete of indices [8,7,6, 3,2] → ranges (6,3) and (2,2)
+		// Sorted descending ranges: first remove 6..8, then 2..3
+		var actions = new List<UndoableAction> {
+			new DeleteFramesAction(movie, 6, 3),
+			new DeleteFramesAction(movie, 2, 2),
+		};
+		var bulk = new BulkUndoableAction("Delete 5 frame(s)", actions);
+		bulk.Execute();
+
+		Assert.Equal(5, movie.InputFrames.Count);
+		// Remaining should be original indices 0,1,4,5,9 → frame numbers 0,1,4,5,9
+		Assert.Equal(0, movie.InputFrames[0].FrameNumber);
+		Assert.Equal(1, movie.InputFrames[1].FrameNumber);
+		Assert.Equal(4, movie.InputFrames[2].FrameNumber);
+		Assert.Equal(5, movie.InputFrames[3].FrameNumber);
+		Assert.Equal(9, movie.InputFrames[4].FrameNumber);
+
+		// Undo should restore all 10 frames in original order
+		bulk.Undo();
+		Assert.Equal(10, movie.InputFrames.Count);
+		for (int i = 0; i < 10; i++) {
+			Assert.Equal(original[i], movie.InputFrames[i].FrameNumber);
+		}
+	}
+
+	/// <summary>
+	/// Tests that a single contiguous selection (e.g. Select All → Delete) produces
+	/// exactly one DeleteFramesAction when coalesced (no per-frame overhead).
+	/// </summary>
+	[Fact]
+	public void BulkDelete_FullyContiguous_SingleAction() {
+		var movie = CreateTestMovieData(20);
+
+		// Simulate what coalescing does for fully contiguous descending [19,18,...,0]
+		// Should coalesce to a single DeleteFramesAction(movie, 0, 20)
+		var sorted = Enumerable.Range(0, 20).Reverse().ToList();
+		var actions = new List<UndoableAction>();
+		int rangeEnd = sorted[0];
+		int rangeStart = rangeEnd;
+		for (int i = 1; i < sorted.Count; i++) {
+			if (sorted[i] == rangeStart - 1) {
+				rangeStart = sorted[i];
+			} else {
+				actions.Add(new DeleteFramesAction(movie, rangeStart, rangeEnd - rangeStart + 1));
+				rangeEnd = sorted[i];
+				rangeStart = rangeEnd;
+			}
+		}
+		actions.Add(new DeleteFramesAction(movie, rangeStart, rangeEnd - rangeStart + 1));
+
+		// Fully contiguous → exactly 1 action covering all 20 frames
+		Assert.Single(actions);
+		var deleteAction = (DeleteFramesAction)actions[0];
+		Assert.Equal(0, deleteAction.Index);
+		Assert.Equal(20, deleteAction.Count);
+
+		var bulk = new BulkUndoableAction("Delete 20 frame(s)", actions);
+		bulk.Execute();
+		Assert.Empty(movie.InputFrames);
+
+		bulk.Undo();
+		Assert.Equal(20, movie.InputFrames.Count);
 	}
 
 	#endregion
