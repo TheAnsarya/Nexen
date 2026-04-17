@@ -179,12 +179,14 @@ public static class BackgroundPansyExporter {
 	}
 
 	/// <summary>
-	/// Stop the periodic auto-save timer.
+	/// Stop the periodic auto-save timer. Waits for any in-flight callback to complete.
 	/// </summary>
 	private static void StopAutoSaveTimer(long parentOperationId) {
 		if (_autoSaveTimer is not null) {
 			Log.Info($"[BackgroundPansy] Stopping auto-save timer (parent op#{parentOperationId})");
-			_autoSaveTimer.Dispose();
+			using ManualResetEvent timerDone = new(false);
+			_autoSaveTimer.Dispose(timerDone);
+			timerDone.WaitOne(TimeSpan.FromSeconds(5));
 			_autoSaveTimer = null;
 		}
 	}

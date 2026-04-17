@@ -283,16 +283,18 @@ void Emulator::Stop(bool sendNotification, bool preventRecentGameSave, bool save
 
 	_notificationManager->SendNotification(ConsoleNotificationType::BeforeGameUnload);
 
-	// Stop lightweight CDL recording before destroying console
-	if (_cdlRecorder) {
-		StopLightweightCdl();
-	}
-
 	ResetDebugger();
 
 	if (_emuThread) {
 		_emuThread->join();
 		_emuThread.release();
+	}
+
+	// Stop lightweight CDL recording AFTER emulation thread has fully stopped.
+	// ProcessInstruction/ProcessMemoryRead dereference _cdlRecorder on the emu
+	// thread without locking, so the recorder must outlive the thread.
+	if (_cdlRecorder) {
+		StopLightweightCdl();
 	}
 
 	if (_console && saveBattery) {
@@ -1056,9 +1058,16 @@ void Emulator::ResetDebugger(bool startDebugger) {
 
 void Emulator::InitDebugger() {
 	if (!_debugger) {
-		// Stop lightweight CDL if active — full debugger handles CDL
+		// Stop lightweight CDL if active — full debugger handles CDL.
+		// Must pause emulation thread first since ProcessInstruction/ProcessMemoryRead
+		// dereference _cdlRecorder without locking.
 		if (_cdlRecorder) {
-			StopLightweightCdl();
+			if (!IsEmulationThread()) {
+				auto emuLock = AcquireLock();
+				StopLightweightCdl();
+			} else {
+				StopLightweightCdl();
+			}
 		}
 
 		// Lock to make sure we don't try to start debuggers in 2 separate threads at once
