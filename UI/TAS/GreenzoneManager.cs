@@ -26,6 +26,7 @@ public sealed class GreenzoneManager : IDisposable {
 	private readonly object _seekLock = new();
 	private readonly object _pruneLock = new();
 	private readonly List<int> _pruneBuffer = new();
+	private int _capturesSinceLastCompression;
 	private bool _disposed;
 
 	/// <summary>Gets or sets the interval between automatic greenzone captures.</summary>
@@ -39,6 +40,9 @@ public sealed class GreenzoneManager : IDisposable {
 
 	/// <summary>Gets or sets whether compression is enabled for older states.</summary>
 	public bool CompressionEnabled { get; set; } = true;
+
+	/// <summary>Gets or sets how many captures between compression sweeps (debounce). Default 10.</summary>
+	public int CompressionDebounceInterval { get; set; } = 10;
 
 	/// <summary>Gets or sets the frame threshold after which states get compressed.</summary>
 	public int CompressionThreshold { get; set; } = 300; // 5 seconds
@@ -120,8 +124,9 @@ public sealed class GreenzoneManager : IDisposable {
 			PruneSavestates();
 		}
 
-		// Compress old states in background
-		if (CompressionEnabled) {
+		// Compress old states in background (debounced to avoid firing on every single capture)
+		if (CompressionEnabled && ++_capturesSinceLastCompression >= CompressionDebounceInterval) {
+			_capturesSinceLastCompression = 0;
 			_ = CompressOldStatesAsync();
 		}
 

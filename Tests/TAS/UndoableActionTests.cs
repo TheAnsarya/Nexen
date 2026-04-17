@@ -1,4 +1,5 @@
-using Nexen.MovieConverter;
+﻿using Nexen.MovieConverter;
+using Nexen.TAS;
 using Nexen.ViewModels;
 using Xunit;
 
@@ -815,6 +816,260 @@ public class UndoableActionTests {
 
 		// Verify modified state
 		Assert.Equal(originalCount + 1 - 2, movie.InputFrames.Count);
+	}
+
+	#endregion
+
+	#region RecordingUndoAction Tests
+
+	[Fact]
+	public void RecordingUndoAction_AppendMode_UndoRemovesAppendedFrames() {
+		var movie = CreateTestMovie(10);
+		int startIndex = movie.InputFrames.Count;
+
+		// Simulate recording 5 frames in append mode
+		for (int i = 0; i < 5; i++) {
+			movie.InputFrames.Add(new InputFrame(100 + i) { Comment = $"Recorded{i}" });
+		}
+
+		Assert.Equal(15, movie.InputFrames.Count);
+
+		var action = new RecordingUndoAction(movie, RecordingMode.Append, startIndex, 5);
+		action.Undo();
+
+		Assert.Equal(10, movie.InputFrames.Count);
+	}
+
+	[Fact]
+	public void RecordingUndoAction_InsertMode_UndoRemovesInsertedFrames() {
+		var movie = CreateTestMovie(10);
+		int insertAt = 5;
+
+		// Simulate recording 3 frames in insert mode
+		for (int i = 0; i < 3; i++) {
+			movie.InputFrames.Insert(insertAt + i, new InputFrame(100 + i) { Comment = $"Inserted{i}" });
+		}
+
+		Assert.Equal(13, movie.InputFrames.Count);
+
+		var action = new RecordingUndoAction(movie, RecordingMode.Insert, insertAt, 3);
+		action.Undo();
+
+		Assert.Equal(10, movie.InputFrames.Count);
+	}
+
+	[Fact]
+	public void RecordingUndoAction_OverwriteMode_UndoRestoresOriginalFrames() {
+		var movie = CreateTestMovie(10);
+		int overwriteAt = 3;
+
+		// Clone original frames before overwrite
+		var originals = new List<InputFrame>();
+		for (int i = overwriteAt; i < overwriteAt + 3 && i < movie.InputFrames.Count; i++) {
+			originals.Add(movie.InputFrames[i].Clone());
+		}
+
+		// Simulate overwriting 3 frames
+		for (int i = 0; i < 3; i++) {
+			movie.InputFrames[overwriteAt + i] = new InputFrame(200 + i) { Comment = $"Overwritten{i}" };
+		}
+
+		Assert.Equal("Overwritten0", movie.InputFrames[3].Comment);
+
+		var action = new RecordingUndoAction(movie, RecordingMode.Overwrite, overwriteAt, 3, originals);
+		action.Undo();
+
+		Assert.Equal(10, movie.InputFrames.Count);
+		Assert.Equal(originals[0].Controllers[0].A, movie.InputFrames[3].Controllers[0].A);
+		Assert.Null(movie.InputFrames[3].Comment);
+	}
+
+	[Fact]
+	public void RecordingUndoAction_OverwriteExtendsPastEnd_UndoTrimsToo() {
+		var movie = CreateTestMovie(10);
+		int overwriteAt = 8;
+
+		// Clone the 2 frames that exist
+		var originals = new List<InputFrame> {
+			movie.InputFrames[8].Clone(),
+			movie.InputFrames[9].Clone()
+		};
+
+		// Overwrite the 2 existing + append 1 extra
+		movie.InputFrames[8] = new InputFrame(200) { Comment = "OW1" };
+		movie.InputFrames[9] = new InputFrame(201) { Comment = "OW2" };
+		movie.InputFrames.Add(new InputFrame(202) { Comment = "OW3" });
+
+		Assert.Equal(11, movie.InputFrames.Count);
+
+		var action = new RecordingUndoAction(movie, RecordingMode.Overwrite, overwriteAt, 3, originals);
+		action.Undo();
+
+		Assert.Equal(10, movie.InputFrames.Count);
+		Assert.Null(movie.InputFrames[8].Comment);
+		Assert.Null(movie.InputFrames[9].Comment);
+	}
+
+	[Fact]
+	public void RecordingUndoAction_Description_IncludesModeAndCount() {
+		var movie = CreateTestMovie(5);
+		var action = new RecordingUndoAction(movie, RecordingMode.Append, 5, 10);
+		Assert.Equal("Record 10 frame(s) (Append)", action.Description);
+
+		var action2 = new RecordingUndoAction(movie, RecordingMode.Insert, 3, 2);
+		Assert.Equal("Record 2 frame(s) (Insert)", action2.Description);
+	}
+
+	[Fact]
+	public void RecordingUndoAction_ZeroFrames_NoChange() {
+		var movie = CreateTestMovie(10);
+		var action = new RecordingUndoAction(movie, RecordingMode.Append, 10, 0);
+
+		action.Undo();
+		Assert.Equal(10, movie.InputFrames.Count);
+	}
+
+	#endregion
+
+	#region RerecordUndoAction Tests
+
+	[Fact]
+	public void RerecordUndoAction_Execute_TruncatesMovie() {
+		var movie = CreateTestMovie(10);
+		int truncateFrom = 5;
+		var removedFrames = movie.InputFrames.GetRange(truncateFrom, 5).ToList();
+
+		// Simulate the truncation (already done by RerecordFrom)
+		movie.InputFrames.RemoveRange(truncateFrom, 5);
+		Assert.Equal(5, movie.InputFrames.Count);
+
+		var action = new RerecordUndoAction(movie, truncateFrom, removedFrames);
+
+		// Undo restores
+		action.Undo();
+		Assert.Equal(10, movie.InputFrames.Count);
+
+		// Redo (Execute) truncates again
+		action.Execute();
+		Assert.Equal(5, movie.InputFrames.Count);
+	}
+
+	[Fact]
+	public void RerecordUndoAction_Undo_RestoresRemovedFrames() {
+		var movie = CreateTestMovie(10);
+		int truncateFrom = 3;
+		var removedFrames = movie.InputFrames.GetRange(truncateFrom, 7).ToList();
+
+		movie.InputFrames.RemoveRange(truncateFrom, 7);
+		Assert.Equal(3, movie.InputFrames.Count);
+
+		var action = new RerecordUndoAction(movie, truncateFrom, removedFrames);
+		action.Undo();
+
+		Assert.Equal(10, movie.InputFrames.Count);
+		for (int i = 0; i < removedFrames.Count; i++) {
+			Assert.Same(removedFrames[i], movie.InputFrames[truncateFrom + i]);
+		}
+	}
+
+	[Fact]
+	public void RerecordUndoAction_UndoRedo_Roundtrips() {
+		var movie = CreateTestMovie(10);
+		int truncateFrom = 6;
+		var removedFrames = movie.InputFrames.GetRange(truncateFrom, 4).ToList();
+
+		movie.InputFrames.RemoveRange(truncateFrom, 4);
+		Assert.Equal(6, movie.InputFrames.Count);
+
+		var action = new RerecordUndoAction(movie, truncateFrom, removedFrames);
+
+		action.Undo();
+		Assert.Equal(10, movie.InputFrames.Count);
+
+		action.Execute();
+		Assert.Equal(6, movie.InputFrames.Count);
+
+		action.Undo();
+		Assert.Equal(10, movie.InputFrames.Count);
+	}
+
+	[Fact]
+	public void RerecordUndoAction_Description_IncludesDetails() {
+		var movie = CreateTestMovie(10);
+		var removedFrames = movie.InputFrames.GetRange(5, 5).ToList();
+		var action = new RerecordUndoAction(movie, 5, removedFrames);
+		Assert.Equal("Rerecord from frame 5 (removed 5 frame(s))", action.Description);
+	}
+
+	[Fact]
+	public void RerecordUndoAction_TruncateAll_RestoresAll() {
+		var movie = CreateTestMovie(10);
+		var removedFrames = movie.InputFrames.GetRange(0, 10).ToList();
+
+		movie.InputFrames.RemoveRange(0, 10);
+		Assert.Empty(movie.InputFrames);
+
+		var action = new RerecordUndoAction(movie, 0, removedFrames);
+		action.Undo();
+
+		Assert.Equal(10, movie.InputFrames.Count);
+	}
+
+	#endregion
+
+	#region GetEarliestAffectedFrame Tests for New Actions
+
+	[Fact]
+	public void GetEarliestAffectedFrame_RecordingUndoAction_ReturnsStartIndex() {
+		var movie = CreateTestMovie(10);
+		var action = new RecordingUndoAction(movie, RecordingMode.Append, 7, 3);
+		Assert.Equal(7, TasEditorViewModel.GetEarliestAffectedFrame(action));
+	}
+
+	[Fact]
+	public void GetEarliestAffectedFrame_RerecordUndoAction_ReturnsTruncateFrame() {
+		var movie = CreateTestMovie(10);
+		var removedFrames = movie.InputFrames.GetRange(4, 6).ToList();
+		var action = new RerecordUndoAction(movie, 4, removedFrames);
+		Assert.Equal(4, TasEditorViewModel.GetEarliestAffectedFrame(action));
+	}
+
+	#endregion
+
+	#region Thread Safety Guard Tests
+
+	private static void SetMovieOnViewModel(TasEditorViewModel vm, MovieData movie) {
+		var prop = typeof(TasEditorViewModel).GetProperty(nameof(TasEditorViewModel.Movie));
+		prop!.SetValue(vm, movie);
+		vm.Recorder.Movie = movie;
+	}
+
+	[Fact]
+	public void ExecuteAction_WhenRecording_BlocksEditing() {
+		var vm = new TasEditorViewModel();
+		SetMovieOnViewModel(vm, CreateTestMovie(10));
+		vm.IsRecording = true;
+
+		int originalCount = vm.Movie!.InputFrames.Count;
+		var insertAction = new InsertFramesAction(vm.Movie, 0, [new InputFrame(99)]);
+
+		vm.ExecuteAction(insertAction);
+
+		// Should be blocked — frame count unchanged
+		Assert.Equal(originalCount, vm.Movie.InputFrames.Count);
+	}
+
+	[Fact]
+	public void ExecuteAction_WhenNotRecording_AllowsEditing() {
+		var vm = new TasEditorViewModel();
+		SetMovieOnViewModel(vm, CreateTestMovie(10));
+		vm.IsRecording = false;
+
+		var insertAction = new InsertFramesAction(vm.Movie!, 0, [new InputFrame(99)]);
+
+		vm.ExecuteAction(insertAction);
+
+		Assert.Equal(11, vm.Movie!.InputFrames.Count);
 	}
 
 	#endregion

@@ -502,4 +502,45 @@ public class GreenzoneManagerOptimizationTests : IDisposable {
 	}
 
 	#endregion
+
+	#region Compression Debounce Tests
+
+	[Fact]
+	public void CompressionDebounceInterval_DefaultIsTen() {
+		Assert.Equal(10, _greenzone.CompressionDebounceInterval);
+	}
+
+	[Fact]
+	public void CompressionDebounceInterval_IsSettable() {
+		_greenzone.CompressionDebounceInterval = 5;
+		Assert.Equal(5, _greenzone.CompressionDebounceInterval);
+	}
+
+	[Fact]
+	public void CaptureState_BelowDebounceInterval_DoesNotThrow() {
+		_greenzone.CompressionEnabled = true;
+		_greenzone.CompressionDebounceInterval = 5;
+
+		// Capture fewer states than debounce interval — should not throw
+		for (int i = 0; i < 4; i++) {
+			_greenzone.CaptureState(i * 60, new byte[64], forceCapture: true);
+		}
+
+		Assert.Equal(4, _greenzone.SavestateCount);
+	}
+
+	[Fact]
+	public void CaptureState_AtDebounceInterval_DoesNotThrow() {
+		_greenzone.CompressionEnabled = true;
+		_greenzone.CompressionDebounceInterval = 3;
+
+		// Capture exactly at and past debounce interval — should trigger compression without errors
+		for (int i = 0; i < 10; i++) {
+			_greenzone.CaptureState(i * 60, new byte[64], forceCapture: true);
+		}
+
+		Assert.Equal(10, _greenzone.SavestateCount);
+	}
+
+	#endregion
 }

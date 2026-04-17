@@ -19,6 +19,9 @@ public sealed class InputRecorder : IDisposable {
 	private int _recordStartFrame;
 	private RecordingMode _mode = RecordingMode.Append;
 	private int _insertPosition;
+	private List<InputFrame>? _overwrittenFrames;
+	private List<InputFrame>? _lastTruncatedFrames;
+	private int _lastTruncateFrame;
 
 	/// <summary>Gets or sets the movie being recorded to.</summary>
 	public MovieData? Movie {
@@ -58,6 +61,15 @@ public sealed class InputRecorder : IDisposable {
 
 	/// <summary>Gets or sets whether to capture savestates during recording.</summary>
 	public bool CaptureSavestates { get; set; } = true;
+
+	/// <summary>Gets the frames that were overwritten during an Overwrite-mode recording session. Null for other modes.</summary>
+	public List<InputFrame>? OverwrittenFrames => _overwrittenFrames;
+
+	/// <summary>Gets the frames that were truncated during the most recent RerecordFrom. Null if none.</summary>
+	public List<InputFrame>? LastTruncatedFrames => _lastTruncatedFrames;
+
+	/// <summary>Gets the frame index where the most recent RerecordFrom truncation started.</summary>
+	public int LastTruncateFrame => _lastTruncateFrame;
 
 	/// <summary>Occurs when recording starts.</summary>
 	public event EventHandler<RecordingEventArgs>? RecordingStarted;
@@ -99,6 +111,18 @@ public sealed class InputRecorder : IDisposable {
 		_isRecording = true;
 		FramesRecorded = 0;
 
+		// For Overwrite mode, capture the frames that will be overwritten so they can be restored on undo
+		_overwrittenFrames = null;
+		if (mode == RecordingMode.Overwrite && _insertPosition < _movie.InputFrames.Count) {
+			// We don't know how many frames will be recorded yet, so capture from insertPosition to end.
+			// StopRecording will trim this to just the actually-overwritten count.
+			int availableFrames = _movie.InputFrames.Count - _insertPosition;
+			_overwrittenFrames = new List<InputFrame>(availableFrames);
+			for (int i = _insertPosition; i < _movie.InputFrames.Count; i++) {
+				_overwrittenFrames.Add(_movie.InputFrames[i].Clone());
+			}
+		}
+
 		// Resume emulation if paused
 		try {
 			if (EmuApi.IsRunning() && EmuApi.IsPaused()) {
@@ -120,6 +144,11 @@ public sealed class InputRecorder : IDisposable {
 		}
 
 		_isRecording = false;
+
+		// Trim overwritten frames list to actual recorded count
+		if (_overwrittenFrames is not null && FramesRecorded < _overwrittenFrames.Count) {
+			_overwrittenFrames.RemoveRange(FramesRecorded, _overwrittenFrames.Count - FramesRecorded);
+		}
 
 		// Pause emulation
 		try {
@@ -232,11 +261,18 @@ public sealed class InputRecorder : IDisposable {
 		if (truncate && frame < _movie.InputFrames.Count) {
 			int removeCount = _movie.InputFrames.Count - frame;
 
+			// Capture removed frames for undo support
+			_lastTruncatedFrames = _movie.InputFrames.GetRange(frame, removeCount);
+			_lastTruncateFrame = frame;
+
 			// Use RemoveRange for O(n) instead of O(n²)
 			_movie.InputFrames.RemoveRange(frame, removeCount);
 
 			// Invalidate greenzone from this point
 			_greenzone.InvalidateFrom(frame);
+		} else {
+			_lastTruncatedFrames = null;
+			_lastTruncateFrame = frame;
 		}
 
 		// Update rerecord count
