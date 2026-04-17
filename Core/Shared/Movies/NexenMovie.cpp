@@ -19,9 +19,9 @@
 #include "Utilities/magic_enum.hpp"
 #include "Utilities/Serializer.h"
 
-NexenMovie::NexenMovie(Emulator* emu, bool forTest) {
+NexenMovie::NexenMovie(Emulator* emu, bool silent) {
 	_emu = emu;
-	_forTest = forTest;
+	_silent = silent;
 }
 
 NexenMovie::~NexenMovie() {
@@ -32,7 +32,7 @@ void NexenMovie::Stop() {
 	if (_playing) {
 		bool isEndOfMovie = _lastPollCounter >= _inputData.size();
 
-		if (!_forTest) {
+		if (!_silent) {
 			MessageManager::DisplayMessage("Movies", isEndOfMovie ? "MovieEnded" : "MovieStopped");
 		}
 

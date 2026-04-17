@@ -382,7 +382,7 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 		FrameCommand command = FrameCommand.None;
 		fdsDiskNumber = null;
 		fdsDiskSide = null;
-		Span<Range> ranges = stackalloc Range[16];
+		Span<Range> ranges = stackalloc Range[24];
 		int count = commandStr.Split(ranges, ',');
 
 		for (int i = 0; i < count; i++) {
@@ -414,8 +414,12 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 				command |= FrameCommand.HardReset;
 			} else if (trimmed.Equals("FDS_INSERT", StringComparison.OrdinalIgnoreCase)) {
 				command |= FrameCommand.FdsInsert;
+				fdsDiskNumber ??= 0;
+				fdsDiskSide ??= 0;
 			} else if (trimmed.Equals("FDS_SELECT", StringComparison.OrdinalIgnoreCase)) {
 				command |= FrameCommand.FdsSelect;
+				fdsDiskNumber ??= 0;
+				fdsDiskSide ??= 0;
 			} else if (trimmed.Equals("VS_COIN", StringComparison.OrdinalIgnoreCase)) {
 				command |= FrameCommand.VsInsertCoin;
 			} else if (trimmed.Equals("VS_SERVICE", StringComparison.OrdinalIgnoreCase)) {

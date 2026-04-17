@@ -235,8 +235,9 @@ public class InputFrameTests {
 		var frame = InputFrame.FromNexenLogLine("CMD:FDS_INSERT", 0);
 
 		Assert.Equal(FrameCommand.FdsInsert, frame.Command);
-		Assert.Null(frame.FdsDiskNumber);
-		Assert.Null(frame.FdsDiskSide);
+		// Bare FDS_INSERT defaults to disk 0, side 0 for roundtrip consistency
+		Assert.Equal((byte)0, frame.FdsDiskNumber);
+		Assert.Equal((byte)0, frame.FdsDiskSide);
 	}
 
 	[Fact]

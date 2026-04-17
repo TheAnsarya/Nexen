@@ -38,7 +38,7 @@ private:
 	stringstream _emuSettingsBackup;
 	SettingsMap _settings;
 	string _filename;
-	bool _forTest = false;
+	bool _silent = false;
 
 private:
 	void ParseSettings(stringstream& data);

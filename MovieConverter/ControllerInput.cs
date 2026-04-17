@@ -126,6 +126,8 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 		get => A || B || X || Y || L || R || Start || Select ||
 			   Up || Down || Left || Right || C || Z || Mode ||
 			   MouseButton1 == true || MouseButton2 == true || MouseButton3 == true ||
+			   MouseX.HasValue || MouseY.HasValue ||
+			   MouseDeltaX.HasValue || MouseDeltaY.HasValue ||
 			   AnalogX.HasValue || AnalogY.HasValue ||
 			   AnalogRX.HasValue || AnalogRY.HasValue ||
 			   TriggerL.HasValue || TriggerR.HasValue ||

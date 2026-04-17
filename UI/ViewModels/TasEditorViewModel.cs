@@ -2395,14 +2395,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		// Cap undo history to prevent unbounded memory growth.
 		// Uses hysteresis: only trim when exceeding max, trim to a lower target
 		// so the O(n) rebuild doesn't fire on every single action past the cap.
-		if (_undoStack.Count > MaxUndoHistory) {
-			var items = _undoStack.ToArray();
-			_undoStack.Clear();
-			// items[0] is the top (most recent); keep the first UndoTrimTarget items
-			for (int i = Math.Min(items.Length, UndoTrimTarget) - 1; i >= 0; i--) {
-				_undoStack.Push(items[i]);
-			}
-		}
+		TrimUndoHistory();
 
 		ApplyIncrementalUpdate(action, isUndo: false);
 		UpdateUndoRedoState();
@@ -2424,13 +2417,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		}
 
 		// Cap undo history (same hysteresis as ExecuteAction)
-		if (_undoStack.Count > MaxUndoHistory) {
-			var items = _undoStack.ToArray();
-			_undoStack.Clear();
-			for (int i = Math.Min(items.Length, UndoTrimTarget) - 1; i >= 0; i--) {
-				_undoStack.Push(items[i]);
-			}
-		}
+		TrimUndoHistory();
 
 		UpdateFrames();
 		UpdateUndoRedoState();
@@ -2460,6 +2447,24 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	private void UpdateUndoRedoState() {
 		CanUndo = _undoStack.Count > 0;
 		CanRedo = _redoStack.Count > 0;
+	}
+
+	/// <summary>
+	/// Trims the undo stack when it exceeds MaxUndoHistory.
+	/// Uses hysteresis: trims to UndoTrimTarget so the O(n) rebuild
+	/// doesn't fire on every single action past the cap.
+	/// </summary>
+	private void TrimUndoHistory() {
+		if (_undoStack.Count <= MaxUndoHistory) {
+			return;
+		}
+
+		var items = _undoStack.ToArray();
+		_undoStack.Clear();
+		// items[0] is the top (most recent); keep the first UndoTrimTarget items
+		for (int i = Math.Min(items.Length, UndoTrimTarget) - 1; i >= 0; i--) {
+			_undoStack.Push(items[i]);
+		}
 	}
 
 	#endregion
