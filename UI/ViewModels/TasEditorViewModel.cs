@@ -2228,6 +2228,11 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		action.Undo();
 		_redoStack.Push(action);
 
+		int earliest = GetEarliestAffectedFrame(action);
+		if (earliest >= 0) {
+			Greenzone.InvalidateFrom(earliest);
+		}
+
 		UpdateUndoRedoState();
 		ApplyIncrementalUpdate(action, isUndo: true);
 		RefreshSelectedFramePreview();
@@ -2246,6 +2251,11 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		var action = _redoStack.Pop();
 		action.Execute();
 		_undoStack.Push(action);
+
+		int earliest = GetEarliestAffectedFrame(action);
+		if (earliest >= 0) {
+			Greenzone.InvalidateFrom(earliest);
+		}
 
 		UpdateUndoRedoState();
 		ApplyIncrementalUpdate(action, isUndo: false);
@@ -2318,6 +2328,14 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		_undoStack.Push(action);
 		_redoStack.Clear(); // Clear redo stack on new action
 
+		// Invalidate greenzone savestates from the earliest affected frame onwards.
+		// After an edit, cached savestates past that point assumed the old inputs
+		// and are no longer valid.
+		int earliest = GetEarliestAffectedFrame(action);
+		if (earliest >= 0) {
+			Greenzone.InvalidateFrom(earliest);
+		}
+
 		// Cap undo history to prevent unbounded memory growth.
 		// Uses hysteresis: only trim when exceeding max, trim to a lower target
 		// so the O(n) rebuild doesn't fire on every single action past the cap.
@@ -2334,6 +2352,22 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		UpdateUndoRedoState();
 		HasUnsavedChanges = true;
 	}
+
+	/// <summary>
+	/// Returns the earliest frame index affected by an action, for greenzone invalidation.
+	/// Returns -1 if the affected frame cannot be determined (falls back to no invalidation).
+	/// </summary>
+	internal static int GetEarliestAffectedFrame(UndoableAction action) => action switch {
+		InsertFramesAction insert => insert.Index,
+		DeleteFramesAction delete => delete.Index,
+		ModifyInputAction modify => modify.FrameIndex,
+		ClearInputAction clear => clear.FrameIndex,
+		PaintInputAction paint => paint.FrameIndices.Count > 0 ? paint.FrameIndices.Min() : -1,
+		BulkUndoableAction bulk => bulk.Actions.Count > 0
+			? bulk.Actions.Min(a => GetEarliestAffectedFrame(a))
+			: -1,
+		_ => 0, // Unknown action type — conservatively invalidate everything
+	};
 
 	private void UpdateUndoRedoState() {
 		CanUndo = _undoStack.Count > 0;
@@ -2410,6 +2444,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 
 		ExecuteAction(new InsertFramesAction(Movie, insertAt, clonedFrames));
 		SelectedFrameIndex = insertAt;
+		SelectedFrameIndices = Enumerable.Range(insertAt, clonedFrames.Count).ToList();
 
 		StatusMessage = $"Pasted {clonedFrames.Count} frame(s) at {insertAt + 1}";
 	}
@@ -2658,9 +2693,9 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 					}
 				}
 
-				// Start recording in overwrite mode from this frame
+				// Start recording in append mode from this frame (movie was truncated above)
 				Recorder.Movie = Movie;
-				Recorder.StartRecording(RecordingMode.Overwrite, frame);
+				Recorder.StartRecording(RecordingMode.Append, frame);
 				IsRecording = true;
 
 				// Resume emulation
@@ -2911,6 +2946,14 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		}
 
 		Recorder.LoadBranch(branch);
+
+		// Loading a branch replaces all frames — stacked undo/redo actions reference
+		// stale frame data and indices, so clear both stacks to prevent corruption.
+		_undoStack.Clear();
+		_redoStack.Clear();
+		UpdateUndoRedoState();
+
+		Greenzone.InvalidateFrom(0);
 		UpdateFrames();
 		HasUnsavedChanges = true;
 		StatusMessage = $"Loaded branch: {branch.Name}";

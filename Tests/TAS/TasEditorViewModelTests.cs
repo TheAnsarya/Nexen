@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using Nexen.MovieConverter;
+using Nexen.TAS;
 using Nexen.ViewModels;
 using Xunit;
 
@@ -974,6 +975,119 @@ public class TasEditorViewModelTests {
 
 		bulk.Undo();
 		Assert.Equal(20, movie.InputFrames.Count);
+	}
+
+	#endregion
+
+	#region GetEarliestAffectedFrame Tests
+
+	[Fact]
+	public void GetEarliestAffectedFrame_InsertFramesAction_ReturnsIndex() {
+		var movie = CreateTestMovieData(10);
+		var frames = new List<InputFrame> { new(0) { Controllers = [new ControllerInput()] } };
+		var action = new InsertFramesAction(movie, 5, frames);
+		Assert.Equal(5, TasEditorViewModel.GetEarliestAffectedFrame(action));
+	}
+
+	[Fact]
+	public void GetEarliestAffectedFrame_DeleteFramesAction_ReturnsIndex() {
+		var movie = CreateTestMovieData(10);
+		var action = new DeleteFramesAction(movie, 3, 2);
+		Assert.Equal(3, TasEditorViewModel.GetEarliestAffectedFrame(action));
+	}
+
+	[Fact]
+	public void GetEarliestAffectedFrame_ModifyInputAction_ReturnsFrameIndex() {
+		var movie = CreateTestMovieData(10);
+		var frame = movie.InputFrames[7];
+		var action = new ModifyInputAction(frame, 7, 0, new ControllerInput { B = true });
+		Assert.Equal(7, TasEditorViewModel.GetEarliestAffectedFrame(action));
+	}
+
+	[Fact]
+	public void GetEarliestAffectedFrame_ClearInputAction_ReturnsFrameIndex() {
+		var movie = CreateTestMovieData(10);
+		var action = new ClearInputAction(movie.InputFrames[4], 4);
+		Assert.Equal(4, TasEditorViewModel.GetEarliestAffectedFrame(action));
+	}
+
+	[Fact]
+	public void GetEarliestAffectedFrame_PaintInputAction_ReturnsMinIndex() {
+		var movie = CreateTestMovieData(10);
+		var indices = new List<int> { 3, 7, 5 };
+		var oldInputs = indices.Select(i => movie.InputFrames[i].Controllers[0].Clone()).ToList();
+		var action = new PaintInputAction(movie, indices, 0, "A", true, oldInputs);
+		Assert.Equal(3, TasEditorViewModel.GetEarliestAffectedFrame(action));
+	}
+
+	[Fact]
+	public void GetEarliestAffectedFrame_BulkAction_ReturnsMinOfChildren() {
+		var movie = CreateTestMovieData(10);
+		var actions = new List<UndoableAction> {
+			new ModifyInputAction(movie.InputFrames[8], 8, 0, new ControllerInput()),
+			new ClearInputAction(movie.InputFrames[2], 2),
+			new ModifyInputAction(movie.InputFrames[5], 5, 0, new ControllerInput()),
+		};
+		var bulk = new BulkUndoableAction("Test bulk", actions);
+		Assert.Equal(2, TasEditorViewModel.GetEarliestAffectedFrame(bulk));
+	}
+
+	#endregion
+
+	#region Greenzone Ring Buffer Tests
+
+	[Fact]
+	public void GreenzoneManager_NonIntervalFrame_DoesNotAddToRingBuffer() {
+		// Verify that calling CaptureState with a non-interval frame doesn't store it
+		var gm = new GreenzoneManager();
+		gm.CaptureInterval = 10;
+
+		// Capture at non-interval frame (frame 3)
+		gm.CaptureState(3, new byte[16]);
+
+		// Frame 3 should NOT have a savestate
+		Assert.False(gm.HasState(3));
+		Assert.Equal(0, gm.SavestateCount);
+	}
+
+	[Fact]
+	public void GreenzoneManager_IntervalFrame_StoresState() {
+		var gm = new GreenzoneManager();
+		gm.CaptureInterval = 10;
+
+		// Capture at interval frame
+		gm.CaptureState(10, new byte[16]);
+
+		Assert.True(gm.HasState(10));
+		Assert.Equal(1, gm.SavestateCount);
+	}
+
+	[Fact]
+	public void GreenzoneManager_ForceCapture_StoresNonIntervalFrame() {
+		var gm = new GreenzoneManager();
+		gm.CaptureInterval = 10;
+
+		// Force capture at non-interval frame
+		gm.CaptureState(3, new byte[16], forceCapture: true);
+
+		Assert.True(gm.HasState(3));
+		Assert.Equal(1, gm.SavestateCount);
+	}
+
+	[Fact]
+	public void GreenzoneManager_InvalidateFrom_RemovesStatesAtAndAfter() {
+		var gm = new GreenzoneManager();
+		gm.CaptureInterval = 10;
+
+		gm.CaptureState(10, new byte[16]);
+		gm.CaptureState(20, new byte[16]);
+		gm.CaptureState(30, new byte[16]);
+
+		gm.InvalidateFrom(20);
+
+		Assert.True(gm.HasState(10));
+		Assert.False(gm.HasState(20));
+		Assert.False(gm.HasState(30));
 	}
 
 	#endregion

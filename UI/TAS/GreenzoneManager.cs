@@ -92,8 +92,6 @@ public sealed class GreenzoneManager : IDisposable {
 
 		// Check if we should capture based on interval
 		if (!forceCapture && frame % CaptureInterval != 0) {
-			// Still add to ring buffer for recent frames
-			AddToRingBuffer(frame);
 			return;
 		}
 
