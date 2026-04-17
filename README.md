@@ -18,6 +18,10 @@
   </a>
 </p>
 
+<p align="center">
+  💬 We've started using <a href="https://github.com/TheAnsarya/Nexen/discussions"><strong>GitHub Discussions</strong></a> — join us to discuss progress, share ideas, and suggest changes!
+</p>
+
 ---
 
 ## Overview
