@@ -57,7 +57,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		Movie.InputFrames[SelectedFrameIndex].IsLagFrame;
 
 	/// <summary>Gets the observable collection of frame view models.</summary>
-	public ObservableCollection<TasFrameViewModel> Frames { get; } = new();
+	public RangeObservableCollection<TasFrameViewModel> Frames { get; } = new();
 
 	/// <summary>Gets or sets the status message.</summary>
 	[Reactive] public partial string StatusMessage { get; set; } = "No movie loaded";
@@ -2026,9 +2026,9 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	}
 
 	private void UpdateFrames() {
-		Frames.Clear();
-
 		if (Movie is null) {
+			Frames.Clear();
+
 			if (SelectedFrameIndex != -1) {
 				SelectedFrameIndex = -1;
 			}
@@ -2042,9 +2042,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			return;
 		}
 
-		for (int i = 0; i < Movie.InputFrames.Count; i++) {
-			Frames.Add(new TasFrameViewModel(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart));
-		}
+		Frames.ReplaceAll(GenerateFrameViewModels());
 
 		if (Movie.InputFrames.Count == 0) {
 			if (SelectedFrameIndex != -1) {
@@ -2076,6 +2074,15 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 
 		RefreshMarkerEntries();
 		RefreshSelectedFramePreview();
+	}
+
+	/// <summary>
+	/// Generates frame view models for all input frames. Used by <see cref="UpdateFrames"/> for batch replacement.
+	/// </summary>
+	private IEnumerable<TasFrameViewModel> GenerateFrameViewModels() {
+		for (int i = 0; i < Movie!.InputFrames.Count; i++) {
+			yield return new TasFrameViewModel(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart);
+		}
 	}
 
 	/// <summary>
@@ -2143,11 +2150,13 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			return;
 		}
 
+		var viewModels = new List<TasFrameViewModel>(count);
 		for (int j = 0; j < count; j++) {
 			int idx = startIndex + j;
-			var vm = new TasFrameViewModel(Movie.InputFrames[idx], idx, IsGreenzoneEnabled && idx >= GreenzoneStart);
-			Frames.Insert(idx, vm);
+			viewModels.Add(new TasFrameViewModel(Movie.InputFrames[idx], idx, IsGreenzoneEnabled && idx >= GreenzoneStart));
 		}
+
+		Frames.InsertRange(startIndex, viewModels);
 
 		// Renumber everything after the inserted block
 		for (int i = startIndex + count; i < Frames.Count; i++) {
@@ -2163,10 +2172,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			return;
 		}
 
-		// Remove from end of range backward to avoid shifting during removal
-		for (int i = startIndex + count - 1; i >= startIndex; i--) {
-			Frames.RemoveAt(i);
-		}
+		Frames.RemoveRange(startIndex, count);
 
 		// Renumber everything after the removed block
 		for (int i = startIndex; i < Frames.Count; i++) {
@@ -2182,10 +2188,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			return;
 		}
 
-		// Remove from end to avoid shifting (each RemoveAt at last index is O(1))
-		for (int i = Frames.Count - 1; i >= startIndex; i--) {
-			Frames.RemoveAt(i);
-		}
+		Frames.RemoveRange(startIndex, Frames.Count - startIndex);
 	}
 
 	/// <summary>
@@ -2197,11 +2200,18 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			return;
 		}
 
-		// Append any frames that exist in Movie but not in Frames
-		while (Frames.Count < Movie.InputFrames.Count) {
-			int i = Frames.Count;
-			Frames.Add(new TasFrameViewModel(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart));
+		int start = Frames.Count;
+		int newCount = Movie.InputFrames.Count - start;
+		if (newCount <= 0) {
+			return;
 		}
+
+		var viewModels = new List<TasFrameViewModel>(newCount);
+		for (int i = start; i < Movie.InputFrames.Count; i++) {
+			viewModels.Add(new TasFrameViewModel(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart));
+		}
+
+		Frames.AddRange(viewModels);
 	}
 
 	#region Undo/Redo
