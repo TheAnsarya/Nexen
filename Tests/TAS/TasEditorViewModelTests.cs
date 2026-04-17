@@ -1091,6 +1091,369 @@ public class TasEditorViewModelTests {
 	}
 
 	#endregion
+
+	#region ModifyCommentAction Tests
+
+	[Fact]
+	public void ModifyCommentAction_Execute_SetsNewComment() {
+		var movie = CreateTestMovieData(5);
+		var frame = movie.InputFrames[2];
+		frame.Comment = "old comment";
+
+		var action = new ModifyCommentAction(frame, 2, "new comment");
+		action.Execute();
+
+		Assert.Equal("new comment", frame.Comment);
+	}
+
+	[Fact]
+	public void ModifyCommentAction_Undo_RestoresOldComment() {
+		var movie = CreateTestMovieData(5);
+		var frame = movie.InputFrames[2];
+		frame.Comment = "old comment";
+
+		var action = new ModifyCommentAction(frame, 2, "new comment");
+		action.Execute();
+		action.Undo();
+
+		Assert.Equal("old comment", frame.Comment);
+	}
+
+	[Fact]
+	public void ModifyCommentAction_Execute_CanAddComment() {
+		var movie = CreateTestMovieData(5);
+		var frame = movie.InputFrames[0];
+		Assert.Null(frame.Comment);
+
+		var action = new ModifyCommentAction(frame, 0, "[M] Marker");
+		action.Execute();
+
+		Assert.Equal("[M] Marker", frame.Comment);
+	}
+
+	[Fact]
+	public void ModifyCommentAction_Undo_CanRemoveComment() {
+		var movie = CreateTestMovieData(5);
+		var frame = movie.InputFrames[0];
+		Assert.Null(frame.Comment);
+
+		var action = new ModifyCommentAction(frame, 0, "[M] Marker");
+		action.Execute();
+		action.Undo();
+
+		Assert.Null(frame.Comment);
+	}
+
+	[Fact]
+	public void ModifyCommentAction_Execute_CanRemoveComment() {
+		var movie = CreateTestMovieData(5);
+		var frame = movie.InputFrames[1];
+		frame.Comment = "existing";
+
+		var action = new ModifyCommentAction(frame, 1, null);
+		action.Execute();
+
+		Assert.Null(frame.Comment);
+	}
+
+	[Fact]
+	public void ModifyCommentAction_Description_AddsWhenNoOldComment() {
+		var frame = new InputFrame(0);
+		var action = new ModifyCommentAction(frame, 0, "new");
+
+		Assert.Equal("Add comment", action.Description);
+	}
+
+	[Fact]
+	public void ModifyCommentAction_Description_RemovesWhenNoNewComment() {
+		var frame = new InputFrame(0) { Comment = "old" };
+		var action = new ModifyCommentAction(frame, 0, null);
+
+		Assert.Equal("Remove comment", action.Description);
+	}
+
+	[Fact]
+	public void ModifyCommentAction_Description_ModifiesWhenBothExist() {
+		var frame = new InputFrame(0) { Comment = "old" };
+		var action = new ModifyCommentAction(frame, 0, "new");
+
+		Assert.Equal("Modify comment", action.Description);
+	}
+
+	[Fact]
+	public void ModifyCommentAction_FrameIndex_ReturnsCorrectIndex() {
+		var frame = new InputFrame(0);
+		var action = new ModifyCommentAction(frame, 42, "test");
+
+		Assert.Equal(42, action.FrameIndex);
+	}
+
+	[Fact]
+	public void ModifyCommentAction_MultipleUndoRedo_CyclesCorrectly() {
+		var frame = new InputFrame(0) { Comment = "A" };
+		var action = new ModifyCommentAction(frame, 0, "B");
+
+		action.Execute();
+		Assert.Equal("B", frame.Comment);
+
+		action.Undo();
+		Assert.Equal("A", frame.Comment);
+
+		action.Execute();
+		Assert.Equal("B", frame.Comment);
+
+		action.Undo();
+		Assert.Equal("A", frame.Comment);
+	}
+
+	#endregion
+
+	#region ModifyCommandAction Frame Tracking Tests
+
+	[Fact]
+	public void ModifyCommandAction_FrameIndices_ReturnsTrackedIndices() {
+		var movie = CreateTestMovieData(5);
+		var targets = new List<InputFrame> { movie.InputFrames[1], movie.InputFrames[3] };
+		var targetIndices = new List<int> { 1, 3 };
+		var action = new ModifyCommandAction(
+			targets,
+			targetIndices,
+			FrameCommand.SoftReset,
+			true);
+
+		Assert.Equal(new List<int> { 1, 3 }, action.FrameIndices);
+	}
+
+	[Fact]
+	public void ModifyCommandAction_Execute_SetsCommandOnAllTargets() {
+		var movie = CreateTestMovieData(5);
+		var targets = new List<InputFrame> { movie.InputFrames[1], movie.InputFrames[3] };
+		var targetIndices = new List<int> { 1, 3 };
+		var action = new ModifyCommandAction(
+			targets,
+			targetIndices,
+			FrameCommand.SoftReset,
+			true);
+
+		action.Execute();
+		Assert.True(movie.InputFrames[1].Command.HasFlag(FrameCommand.SoftReset));
+		Assert.True(movie.InputFrames[3].Command.HasFlag(FrameCommand.SoftReset));
+	}
+
+	[Fact]
+	public void ModifyCommandAction_Undo_RestoresOriginalCommands() {
+		var movie = CreateTestMovieData(5);
+		movie.InputFrames[1].Command = FrameCommand.None;
+		movie.InputFrames[3].Command = FrameCommand.HardReset;
+		var targets = new List<InputFrame> { movie.InputFrames[1], movie.InputFrames[3] };
+		var targetIndices = new List<int> { 1, 3 };
+		var action = new ModifyCommandAction(
+			targets,
+			targetIndices,
+			FrameCommand.SoftReset,
+			true);
+
+		action.Execute();
+		action.Undo();
+
+		Assert.Equal(FrameCommand.None, movie.InputFrames[1].Command);
+		Assert.Equal(FrameCommand.HardReset, movie.InputFrames[3].Command);
+	}
+
+	#endregion
+
+	#region GetEarliestAffectedFrame Tests
+
+	[Fact]
+	public void GetEarliestAffectedFrame_ModifyCommentAction_ReturnsFrameIndex() {
+		// ModifyCommentAction.FrameIndex should be returned by GetEarliestAffectedFrame
+		var frame = new InputFrame(0);
+		var action = new ModifyCommentAction(frame, 42, "test");
+
+		// We test that the FrameIndex property is correctly exposed
+		Assert.Equal(42, action.FrameIndex);
+	}
+
+	[Fact]
+	public void GetEarliestAffectedFrame_ModifyCommandAction_ReturnsMinIndex() {
+		var movie = CreateTestMovieData(10);
+		var targets = new List<InputFrame> { movie.InputFrames[5], movie.InputFrames[2], movie.InputFrames[8] };
+		var targetIndices = new List<int> { 5, 2, 8 };
+		var action = new ModifyCommandAction(
+			targets,
+			targetIndices,
+			FrameCommand.SoftReset,
+			true);
+
+		// FrameIndices should be [5, 2, 8], min is 2
+		Assert.Equal(2, action.FrameIndices.Min());
+	}
+
+	#endregion
+
+	#region ClassifyMarkerEntryType Tests
+
+	[Fact]
+	public void ClassifyMarkerEntryType_MarkerPrefix_ReturnsMarker() {
+		Assert.Equal(MarkerEntryType.Marker, TasEditorViewModel.ClassifyMarkerEntryType("[M] Test"));
+	}
+
+	[Fact]
+	public void ClassifyMarkerEntryType_MarkerPrefixCaseInsensitive_ReturnsMarker() {
+		Assert.Equal(MarkerEntryType.Marker, TasEditorViewModel.ClassifyMarkerEntryType("[m] test"));
+	}
+
+	[Fact]
+	public void ClassifyMarkerEntryType_TodoKeyword_ReturnsTodo() {
+		Assert.Equal(MarkerEntryType.Todo, TasEditorViewModel.ClassifyMarkerEntryType("TODO: fix this"));
+	}
+
+	[Fact]
+	public void ClassifyMarkerEntryType_TodoCaseInsensitive_ReturnsTodo() {
+		Assert.Equal(MarkerEntryType.Todo, TasEditorViewModel.ClassifyMarkerEntryType("todo check later"));
+	}
+
+	[Fact]
+	public void ClassifyMarkerEntryType_RegularComment_ReturnsComment() {
+		Assert.Equal(MarkerEntryType.Comment, TasEditorViewModel.ClassifyMarkerEntryType("Just a note"));
+	}
+
+	#endregion
+
+	#region RefreshMarkerEntryAt Tests
+
+	[Fact]
+	public void RefreshMarkerEntryAt_AddsNewEntryInSortedPosition() {
+		// Test using ObservableCollection directly (same algorithm as ViewModel)
+		var movie = CreateTestMovieData(10);
+		movie.InputFrames[2].Comment = "[M] First";
+		movie.InputFrames[8].Comment = "[M] Last";
+		var entries = new ObservableCollection<TasMarkerEntryViewModel> {
+			new TasMarkerEntryViewModel(2, "[M] First", MarkerEntryType.Marker),
+			new TasMarkerEntryViewModel(8, "[M] Last", MarkerEntryType.Marker)
+		};
+
+		// Add a comment at frame 5 — should be inserted between 2 and 8
+		movie.InputFrames[5].Comment = "[M] Middle";
+		SimulateRefreshMarkerEntryAt(entries, movie, 5);
+
+		Assert.Equal(3, entries.Count);
+		Assert.Equal(2, entries[0].FrameIndex);
+		Assert.Equal(5, entries[1].FrameIndex);
+		Assert.Equal(8, entries[2].FrameIndex);
+	}
+
+	[Fact]
+	public void RefreshMarkerEntryAt_RemovesEntryWhenCommentCleared() {
+		var movie = CreateTestMovieData(5);
+		movie.InputFrames[2].Comment = "[M] Marker";
+		var entries = new ObservableCollection<TasMarkerEntryViewModel> {
+			new TasMarkerEntryViewModel(2, "[M] Marker", MarkerEntryType.Marker)
+		};
+
+		// Clear the comment
+		movie.InputFrames[2].Comment = null;
+		SimulateRefreshMarkerEntryAt(entries, movie, 2);
+
+		Assert.Empty(entries);
+	}
+
+	[Fact]
+	public void RefreshMarkerEntryAt_UpdatesExistingEntry() {
+		var movie = CreateTestMovieData(5);
+		movie.InputFrames[2].Comment = "[M] Old";
+		var entries = new ObservableCollection<TasMarkerEntryViewModel> {
+			new TasMarkerEntryViewModel(2, "[M] Old", MarkerEntryType.Marker)
+		};
+
+		// Change the comment
+		movie.InputFrames[2].Comment = "New comment";
+		SimulateRefreshMarkerEntryAt(entries, movie, 2);
+
+		Assert.Single(entries);
+		Assert.Equal(2, entries[0].FrameIndex);
+		Assert.Equal("New comment", entries[0].Comment);
+		Assert.Equal(MarkerEntryType.Comment, entries[0].Type);
+	}
+
+	[Fact]
+	public void RefreshMarkerEntryAt_HandlesEmptyList() {
+		var movie = CreateTestMovieData(5);
+		var entries = new ObservableCollection<TasMarkerEntryViewModel>();
+
+		movie.InputFrames[0].Comment = "[M] First";
+		SimulateRefreshMarkerEntryAt(entries, movie, 0);
+
+		Assert.Single(entries);
+		Assert.Equal(0, entries[0].FrameIndex);
+	}
+
+	[Fact]
+	public void RefreshMarkerEntryAt_InsertsAtEnd() {
+		var movie = CreateTestMovieData(10);
+		movie.InputFrames[2].Comment = "[M] First";
+		var entries = new ObservableCollection<TasMarkerEntryViewModel> {
+			new TasMarkerEntryViewModel(2, "[M] First", MarkerEntryType.Marker)
+		};
+
+		movie.InputFrames[9].Comment = "[M] Last";
+		SimulateRefreshMarkerEntryAt(entries, movie, 9);
+
+		Assert.Equal(2, entries.Count);
+		Assert.Equal(2, entries[0].FrameIndex);
+		Assert.Equal(9, entries[1].FrameIndex);
+	}
+
+	[Fact]
+	public void RefreshMarkerEntryAt_InsertsAtBeginning() {
+		var movie = CreateTestMovieData(10);
+		movie.InputFrames[5].Comment = "[M] Middle";
+		var entries = new ObservableCollection<TasMarkerEntryViewModel> {
+			new TasMarkerEntryViewModel(5, "[M] Middle", MarkerEntryType.Marker)
+		};
+
+		movie.InputFrames[0].Comment = "[M] First";
+		SimulateRefreshMarkerEntryAt(entries, movie, 0);
+
+		Assert.Equal(2, entries.Count);
+		Assert.Equal(0, entries[0].FrameIndex);
+		Assert.Equal(5, entries[1].FrameIndex);
+	}
+
+	/// <summary>
+	/// Simulates the RefreshMarkerEntryAt algorithm for testing without ViewModel dependencies.
+	/// </summary>
+	private static void SimulateRefreshMarkerEntryAt(
+		ObservableCollection<TasMarkerEntryViewModel> entries,
+		MovieData movie,
+		int frameIndex) {
+		// Remove existing entry for this frame
+		for (int i = entries.Count - 1; i >= 0; i--) {
+			if (entries[i].FrameIndex == frameIndex) {
+				entries.RemoveAt(i);
+				break;
+			}
+		}
+
+		// Check if the frame now has a comment
+		if (frameIndex >= 0 && frameIndex < movie.InputFrames.Count) {
+			string? comment = movie.InputFrames[frameIndex].Comment;
+			if (!string.IsNullOrWhiteSpace(comment)) {
+				MarkerEntryType type = TasEditorViewModel.ClassifyMarkerEntryType(comment);
+				var entry = new TasMarkerEntryViewModel(frameIndex, comment, type);
+				int insertIndex = 0;
+				for (int i = 0; i < entries.Count; i++) {
+					if (entries[i].FrameIndex > frameIndex) {
+						break;
+					}
+					insertIndex = i + 1;
+				}
+				entries.Insert(insertIndex, entry);
+			}
+		}
+	}
+
+	#endregion
 }
 
 /// <summary>

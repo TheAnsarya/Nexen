@@ -1565,6 +1565,30 @@ continue; Review/analyze the Movie/TAS feature in Nexen for correctness and perf
 
 continue; Review/analyze the Movie/TAS feature in Nexen for correctness and performance and find improvements and make tests and benchmarks and fix issues; continue;
 
+continue;
+
+continue;
+
+continue;
+
+ObservableCollection batching (needs RangeObservableCollection)
+
+continue;
+
+[Nexen] continue by focusing on one of those "medium/architectural efforts" and make epics, issues, docs, benchmarks, plans, tests, etc. research and then implement the changes you make (while making tests and benchmarks as well); continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

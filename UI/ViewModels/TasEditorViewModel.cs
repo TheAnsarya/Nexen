@@ -1276,19 +1276,18 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		}
 
 		var frame = Movie.InputFrames[SelectedFrameIndex];
+		string? newComment;
 		if (frame.Comment is not null && frame.Comment.StartsWith("[M]")) {
 			// Remove marker
 			string remaining = frame.Comment.Length > 3 ? frame.Comment[3..].TrimStart() : "";
-			frame.Comment = string.IsNullOrWhiteSpace(remaining) ? null : remaining;
+			newComment = string.IsNullOrWhiteSpace(remaining) ? null : remaining;
 			StatusMessage = $"Removed marker from frame {SelectedFrameIndex}";
 		} else {
 			// Add marker
-			frame.Comment = frame.Comment is not null ? $"[M] {frame.Comment}" : "[M]";
+			newComment = frame.Comment is not null ? $"[M] {frame.Comment}" : "[M]";
 			StatusMessage = $"Set marker on frame {SelectedFrameIndex}";
 		}
-		RefreshFrameAt(SelectedFrameIndex);
-		HasUnsavedChanges = true;
-		RefreshMarkerEntries();
+		ExecuteAction(new ModifyCommentAction(frame, SelectedFrameIndex, newComment));
 	}
 
 	/// <summary>
@@ -1601,11 +1600,9 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			return; // cancelled
 		}
 
-		frame.Comment = string.IsNullOrWhiteSpace(result) ? null : result;
-		RefreshFrameAt(SelectedFrameIndex);
-		HasUnsavedChanges = true;
-		RefreshMarkerEntries();
-		StatusMessage = frame.Comment is not null ? $"Set comment on frame {SelectedFrameIndex}" : $"Removed comment from frame {SelectedFrameIndex}";
+		string? newComment = string.IsNullOrWhiteSpace(result) ? null : result;
+		ExecuteAction(new ModifyCommentAction(frame, SelectedFrameIndex, newComment));
+		StatusMessage = newComment is not null ? $"Set comment on frame {SelectedFrameIndex}" : $"Removed comment from frame {SelectedFrameIndex}";
 	}
 
 	/// <summary>
@@ -1646,6 +1643,44 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	}
 
 	/// <summary>
+	/// Incrementally updates the marker entries list for a single frame change.
+	/// O(k) where k = marker count, instead of O(n) where n = total frames.
+	/// </summary>
+	internal void RefreshMarkerEntryAt(int frameIndex) {
+		if (Movie is null) {
+			return;
+		}
+
+		// Remove existing entry for this frame (if any)
+		for (int i = MarkerEntries.Count - 1; i >= 0; i--) {
+			if (MarkerEntries[i].FrameIndex == frameIndex) {
+				MarkerEntries.RemoveAt(i);
+				break; // At most one entry per frame
+			}
+		}
+
+		// Check if the frame now has a comment that passes the filter
+		if (frameIndex >= 0 && frameIndex < Movie.InputFrames.Count) {
+			string? comment = Movie.InputFrames[frameIndex].Comment;
+			if (!string.IsNullOrWhiteSpace(comment)) {
+				MarkerEntryType type = ClassifyMarkerEntryType(comment);
+				if (MatchesMarkerFilter(type)) {
+					var entry = new TasMarkerEntryViewModel(frameIndex, comment, type);
+					// Insert in sorted position (entries sorted by FrameIndex)
+					int insertIndex = 0;
+					for (int i = 0; i < MarkerEntries.Count; i++) {
+						if (MarkerEntries[i].FrameIndex > frameIndex) {
+							break;
+						}
+						insertIndex = i + 1;
+					}
+					MarkerEntries.Insert(insertIndex, entry);
+				}
+			}
+		}
+	}
+
+	/// <summary>
 	/// Navigates to the frame of the selected marker entry.
 	/// </summary>
 	public void NavigateToMarkerEntry(TasMarkerEntryViewModel? entry) {
@@ -1670,10 +1705,8 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			return false;
 		}
 
-		Movie.InputFrames[frameIndex].Comment = string.IsNullOrWhiteSpace(text) ? null : text.Trim();
-		RefreshFrameAt(frameIndex);
-		HasUnsavedChanges = true;
-		RefreshMarkerEntries();
+		string? newComment = string.IsNullOrWhiteSpace(text) ? null : text.Trim();
+		ExecuteAction(new ModifyCommentAction(Movie.InputFrames[frameIndex], frameIndex, newComment));
 		return true;
 	}
 
@@ -1947,14 +1980,17 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 
 		// Collect target frames from multi-selection or single selection
 		List<InputFrame> targets = new();
+		List<int> targetIndices = new();
 		if (SelectedFrameIndices.Count > 1) {
 			foreach (int idx in SelectedFrameIndices) {
 				if (idx >= 0 && idx < Movie.InputFrames.Count) {
 					targets.Add(Movie.InputFrames[idx]);
+					targetIndices.Add(idx);
 				}
 			}
 		} else if (SelectedFrameIndex >= 0 && SelectedFrameIndex < Movie.InputFrames.Count) {
 			targets.Add(Movie.InputFrames[SelectedFrameIndex]);
+			targetIndices.Add(SelectedFrameIndex);
 		}
 
 		if (targets.Count == 0) {
@@ -1963,7 +1999,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 
 		// Toggle based on first frame's current state
 		bool currentState = targets[0].Command.HasFlag(flag);
-		ExecuteAction(new ModifyCommandAction(targets, flag, !currentState));
+		ExecuteAction(new ModifyCommandAction(targets, targetIndices, flag, !currentState));
 		RefreshSelectedFramePreview();
 	}
 
@@ -2231,6 +2267,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		int earliest = GetEarliestAffectedFrame(action);
 		if (earliest >= 0) {
 			Greenzone.InvalidateFrom(earliest);
+			GreenzoneStart = earliest;
 		}
 
 		UpdateUndoRedoState();
@@ -2255,6 +2292,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		int earliest = GetEarliestAffectedFrame(action);
 		if (earliest >= 0) {
 			Greenzone.InvalidateFrom(earliest);
+			GreenzoneStart = earliest;
 		}
 
 		UpdateUndoRedoState();
@@ -2313,6 +2351,17 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 					RefreshFrameAt(idx);
 				}
 				break;
+			case ModifyCommentAction comment:
+				// Comment change — O(1) frame refresh + incremental marker update
+				RefreshFrameAt(comment.FrameIndex);
+				RefreshMarkerEntryAt(comment.FrameIndex);
+				break;
+			case ModifyCommandAction command:
+				// Command flag change — O(k) refresh for affected frames
+				foreach (int idx in command.FrameIndices) {
+					RefreshFrameAt(idx);
+				}
+				break;
 			default:
 				// Unknown action type — fall back to full rebuild
 				UpdateFrames();
@@ -2334,6 +2383,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		int earliest = GetEarliestAffectedFrame(action);
 		if (earliest >= 0) {
 			Greenzone.InvalidateFrom(earliest);
+			GreenzoneStart = earliest;
 		}
 
 		// Cap undo history to prevent unbounded memory growth.
@@ -2363,6 +2413,8 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		ModifyInputAction modify => modify.FrameIndex,
 		ClearInputAction clear => clear.FrameIndex,
 		PaintInputAction paint => paint.FrameIndices.Count > 0 ? paint.FrameIndices.Min() : -1,
+		ModifyCommentAction comment => comment.FrameIndex,
+		ModifyCommandAction command => command.FrameIndices.Count > 0 ? command.FrameIndices.Min() : -1,
 		BulkUndoableAction bulk => bulk.Actions.Count > 0
 			? bulk.Actions.Min(a => GetEarliestAffectedFrame(a))
 			: -1,
@@ -3901,23 +3953,25 @@ public sealed partial class ModifyInputAction : UndoableAction {
 /// Used for toggling console switches (Atari 2600 Select/Reset).
 /// </summary>
 public sealed partial class ModifyCommandAction : UndoableAction {
-	private readonly List<(InputFrame Frame, FrameCommand OldCommand)> _frames;
+	private readonly List<(InputFrame Frame, int FrameIndex, FrameCommand OldCommand)> _frames;
 	private readonly FrameCommand _flag;
 	private readonly bool _newState;
 
+	public IReadOnlyList<int> FrameIndices => _frames.Select(f => f.FrameIndex).ToList();
+
 	public override string Description => $"Toggle {_flag}";
 
-	public ModifyCommandAction(IReadOnlyList<InputFrame> frames, FrameCommand flag, bool newState) {
+	public ModifyCommandAction(IReadOnlyList<InputFrame> frames, IReadOnlyList<int> frameIndices, FrameCommand flag, bool newState) {
 		_flag = flag;
 		_newState = newState;
 		_frames = new(frames.Count);
-		foreach (var f in frames) {
-			_frames.Add((f, f.Command));
+		for (int i = 0; i < frames.Count; i++) {
+			_frames.Add((frames[i], frameIndices[i], frames[i].Command));
 		}
 	}
 
 	public override void Execute() {
-		foreach (var (frame, _) in _frames) {
+		foreach (var (frame, _, _) in _frames) {
 			if (_newState) {
 				frame.Command |= _flag;
 			} else {
@@ -3927,7 +3981,7 @@ public sealed partial class ModifyCommandAction : UndoableAction {
 	}
 
 	public override void Undo() {
-		foreach (var (frame, oldCommand) in _frames) {
+		foreach (var (frame, _, oldCommand) in _frames) {
 			frame.Command = oldCommand;
 		}
 	}
@@ -4001,6 +4055,42 @@ public sealed partial class PaintInputAction : UndoableAction {
 		for (int i = 0; i < _frameIndices.Count; i++) {
 			_movie.InputFrames[_frameIndices[i]].Controllers[_port] = _oldInputs[i];
 		}
+	}
+}
+
+/// <summary>
+/// Action for modifying a frame's comment/marker text. Undoable.
+/// Used by ToggleMarker, SetComment, and UpsertMarkerEntry.
+/// </summary>
+public sealed partial class ModifyCommentAction : UndoableAction {
+	private readonly InputFrame _frame;
+	private readonly int _frameIndex;
+	private readonly string? _oldComment;
+	private readonly string? _newComment;
+
+	public int FrameIndex => _frameIndex;
+
+	public override string Description {
+		get {
+			if (_newComment is not null && _oldComment is null) return "Add comment";
+			if (_newComment is null && _oldComment is not null) return "Remove comment";
+			return "Modify comment";
+		}
+	}
+
+	public ModifyCommentAction(InputFrame frame, int frameIndex, string? newComment) {
+		_frame = frame;
+		_frameIndex = frameIndex;
+		_oldComment = frame.Comment;
+		_newComment = newComment;
+	}
+
+	public override void Execute() {
+		_frame.Comment = _newComment;
+	}
+
+	public override void Undo() {
+		_frame.Comment = _oldComment;
 	}
 }
 
