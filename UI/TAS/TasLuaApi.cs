@@ -480,6 +480,14 @@ public sealed class TasLuaApi {
 	/// </summary>
 	public void MarkBestResult() {
 		_searchBestFrame = _viewModel.PlaybackFrame;
+
+		// Remove previous Best_ branch to avoid unbounded accumulation
+		for (int i = _viewModel.Branches.Count - 1; i >= 0; i--) {
+			if (_viewModel.Branches[i].Name.StartsWith("Best_")) {
+				_viewModel.Branches.RemoveAt(i);
+			}
+		}
+
 		var branch = Recorder.CreateBranch($"Best_{DateTime.Now:HHmmss}");
 		if (branch is not null) {
 			_viewModel.Branches.Add(branch);
@@ -493,12 +501,15 @@ public sealed class TasLuaApi {
 		_isSearching = false;
 
 		if (loadBest && _viewModel.Branches.Count > 0) {
-			// Find the "Best_" branch
+			// Find the last "Best_" branch (most recent result)
+			BranchData? lastBest = null;
 			foreach (var branch in _viewModel.Branches) {
 				if (branch.Name.StartsWith("Best_")) {
-					Recorder.LoadBranch(branch);
-					break;
+					lastBest = branch;
 				}
+			}
+			if (lastBest is not null) {
+				_viewModel.LoadBranch(lastBest);
 			}
 		}
 	}
@@ -556,6 +567,9 @@ public sealed class TasLuaApi {
 	/// Reads a 16-bit value from memory.
 	/// </summary>
 	public int ReadMemory16(int address, int memType = 0) {
+		if (address < 0) {
+			throw new ArgumentOutOfRangeException(nameof(address), "Address must be non-negative.");
+		}
 		int low = ReadMemory(address, memType);
 		int high = ReadMemory(address + 1, memType);
 		return low | (high << 8);

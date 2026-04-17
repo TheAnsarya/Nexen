@@ -297,6 +297,10 @@ public sealed class InputRecorder : IDisposable {
 			_movie.InputFrames.Add(frame.Clone());
 		}
 
+		// Restore rerecord count from branch
+		RerecordCount = branch.RerecordCount;
+		_movie.RerecordCount = (ulong)RerecordCount;
+
 		// Clear greenzone since movie changed
 		_greenzone.Clear();
 	}

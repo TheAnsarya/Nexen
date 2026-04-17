@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Nexen.MovieConverter;
 using Nexen.TAS;
 using Nexen.ViewModels;
@@ -824,6 +824,63 @@ public class TasLuaApiComprehensiveTests : IDisposable {
 		readBack = _api.GetFrameInput(0);
 		Assert.NotNull(readBack);
 		Assert.True(readBack["start"]);
+	}
+
+	#endregion
+
+	#region Pass 9 — FinishSearch, MarkBestResult, LoadBranch, ReadMemory16
+
+	[Fact]
+	public void MarkBestResult_MultipleCalls_OnlyOneBestBranch() {
+		SetMovie(CreateTestMovie(10));
+		_api.BeginSearch();
+
+		_api.MarkBestResult();
+		_api.MarkBestResult();
+		_api.MarkBestResult();
+
+		var bestBranches = _api.GetBranches().Where(b => b.StartsWith("Best_")).ToList();
+		Assert.Single(bestBranches);
+	}
+
+	[Fact]
+	public void FinishSearch_LoadsBestBranch_ClearsUndoStacks() {
+		SetMovie(CreateTestMovie(10));
+		_api.BeginSearch();
+		_api.MarkBestResult();
+		_api.FinishSearch(loadBest: true);
+
+		// After finishing with loadBest, undo should be cleared (LoadBranch clears stacks)
+		Assert.False(_vm.CanUndo);
+		Assert.False(_vm.CanRedo);
+	}
+
+	[Fact]
+	public void LoadBranch_RestoresRerecordCount() {
+		var movie = CreateTestMovie(10);
+		SetMovie(movie);
+
+		// Set a known rerecord count
+		_vm.Recorder.Movie!.RerecordCount = 5;
+		var prop = typeof(InputRecorder).GetProperty(nameof(InputRecorder.RerecordCount));
+		prop!.SetValue(_vm.Recorder, 5);
+
+		// Create a branch at this count
+		_api.CreateBranch("snapshot");
+
+		// Increment count
+		prop!.SetValue(_vm.Recorder, 42);
+		_vm.Recorder.Movie!.RerecordCount = 42;
+
+		// Load branch — should restore rerecord count to 5
+		_api.LoadBranch("snapshot");
+		Assert.Equal(5, _vm.Recorder.RerecordCount);
+	}
+
+	[Fact]
+	public void ReadMemory16_NegativeAddress_Throws() {
+		SetMovie(CreateTestMovie(10));
+		Assert.Throws<ArgumentOutOfRangeException>(() => _api.ReadMemory16(-1));
 	}
 
 	#endregion

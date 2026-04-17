@@ -666,7 +666,7 @@ public sealed class PianoRollControl : Control {
 				_paintFrameBuffer.Add(frame);
 			}
 			CellsPainted?.Invoke(this, new PianoRollPaintEventArgs(
-				_paintFrameBuffer,
+				_paintFrameBuffer.ToList(),
 				_paintButton,
 				_paintValue
 			));
