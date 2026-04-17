@@ -43,8 +43,8 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	/// <summary>Gets or sets the currently selected frame index.</summary>
 	[Reactive] public partial int SelectedFrameIndex { get; set; } = -1;
 
-	/// <summary>Gets or sets the list of selected frame indices for multi-selection.</summary>
-	[Reactive] public partial List<int> SelectedFrameIndices { get; set; } = new();
+	/// <summary>Gets or sets the sorted set of selected frame indices for multi-selection.</summary>
+	[Reactive] public partial SortedSet<int> SelectedFrameIndices { get; set; } = new();
 
 	/// <summary>Gets whether multiple frames are selected.</summary>
 	public bool HasMultipleSelection => SelectedFrameIndices.Count > 1;
@@ -1152,7 +1152,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 
 		ExecuteAction(new InsertFramesAction(Movie, insertAt, frames));
 		SelectedFrameIndex = insertAt;
-		SelectedFrameIndices = Enumerable.Range(insertAt, count).ToList();
+		SelectedFrameIndices = new SortedSet<int>(Enumerable.Range(insertAt, count));
 		StatusMessage = count == 1
 			? $"Inserted frame at {insertAt}"
 			: $"Inserted {count} frames at {insertAt}";
@@ -1192,7 +1192,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			return;
 		}
 
-		SelectedFrameIndices = Enumerable.Range(0, Movie.InputFrames.Count).ToList();
+		SelectedFrameIndices = new SortedSet<int>(Enumerable.Range(0, Movie.InputFrames.Count));
 		SelectedFrameIndex = 0;
 		StatusMessage = $"Selected all {SelectedFrameIndices.Count} frames";
 	}
@@ -1201,7 +1201,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	/// Clears the current frame selection.
 	/// </summary>
 	public void SelectNoFrames() {
-		SelectedFrameIndices = new();
+		SelectedFrameIndices = new SortedSet<int>();
 		SelectedFrameIndex = -1;
 		StatusMessage = "Selection cleared";
 	}
@@ -1217,7 +1217,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		int start = Math.Clamp(Math.Min(fromFrame, toFrame), 0, Movie.InputFrames.Count - 1);
 		int end = Math.Clamp(Math.Max(fromFrame, toFrame), 0, Movie.InputFrames.Count - 1);
 
-		SelectedFrameIndices = Enumerable.Range(start, end - start + 1).ToList();
+		SelectedFrameIndices = new SortedSet<int>(Enumerable.Range(start, end - start + 1));
 		SelectedFrameIndex = start;
 		StatusMessage = $"Selected range {start} to {end} ({SelectedFrameIndices.Count} frames)";
 	}
@@ -1232,7 +1232,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 
 		int maxFrame = Movie.InputFrames.Count - 1;
 		int defaultFrom = SelectedFrameIndex >= 0 ? SelectedFrameIndex : 0;
-		int defaultTo = SelectedFrameIndices.Count > 0 ? SelectedFrameIndices.Max() : defaultFrom;
+		int defaultTo = SelectedFrameIndices.Count > 0 ? SelectedFrameIndices.Max : defaultFrom;
 		var range = await Windows.TasSelectRangeDialog.ShowAsync(_window, maxFrame, defaultFrom, defaultTo);
 		if (!range.HasValue) {
 			return;
@@ -1312,8 +1312,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		if (SelectedFrameIndices.Count > 1) {
 			var sorted = SelectedFrameIndices
 				.Where(i => i >= 0 && i < Movie.InputFrames.Count)
-				.Distinct()
-				.OrderByDescending(i => i)
+				.Reverse()
 				.ToList();
 
 			if (sorted.Count == 0) {
@@ -1374,8 +1373,6 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		if (SelectedFrameIndices.Count > 1) {
 			var targets = SelectedFrameIndices
 				.Where(i => i >= 0 && i < Movie.InputFrames.Count)
-				.Distinct()
-				.OrderBy(i => i)
 				.ToList();
 
 			if (targets.Count == 0) {
@@ -1465,7 +1462,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 
 		ExecuteAction(new BulkUndoableAction($"Pattern fill {end - start + 1} frame(s)", actions));
 		SelectedFrameIndex = start;
-		SelectedFrameIndices = Enumerable.Range(start, end - start + 1).ToList();
+		SelectedFrameIndices = new SortedSet<int>(Enumerable.Range(start, end - start + 1));
 		StatusMessage = $"Pattern fill applied from frame {start} to {end} with interval {patternLength}";
 	}
 
@@ -1523,8 +1520,6 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		if (SelectedFrameIndices.Count > 0) {
 			return SelectedFrameIndices
 				.Where(i => i >= 0 && i < Movie.InputFrames.Count)
-				.Distinct()
-				.OrderBy(i => i)
 				.ToList();
 		}
 
@@ -1693,7 +1688,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		}
 
 		SelectedFrameIndex = entry.FrameIndex;
-		SelectedFrameIndices = new List<int> { entry.FrameIndex };
+		SelectedFrameIndices = new SortedSet<int> { entry.FrameIndex };
 		StatusMessage = $"Navigated to frame {entry.FrameIndex}";
 	}
 
@@ -2495,7 +2490,6 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		if (SelectedFrameIndices.Count > 1) {
 			var sorted = SelectedFrameIndices
 				.Where(i => i >= 0 && i < Movie.InputFrames.Count)
-				.OrderBy(i => i)
 				.ToList();
 
 			if (sorted.Count == 0) return;
@@ -2537,7 +2531,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 
 		ExecuteAction(new InsertFramesAction(Movie, insertAt, clonedFrames));
 		SelectedFrameIndex = insertAt;
-		SelectedFrameIndices = Enumerable.Range(insertAt, clonedFrames.Count).ToList();
+		SelectedFrameIndices = new SortedSet<int>(Enumerable.Range(insertAt, clonedFrames.Count));
 
 		StatusMessage = $"Pasted {clonedFrames.Count} frame(s) at {insertAt + 1}";
 	}

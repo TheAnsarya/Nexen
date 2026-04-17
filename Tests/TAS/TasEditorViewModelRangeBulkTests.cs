@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Linq;
 using Nexen.MovieConverter;
 using Nexen.ViewModels;
@@ -59,8 +59,8 @@ public class TasEditorViewModelRangeBulkTests : IDisposable {
 		_vm.SelectAllFrames();
 
 		Assert.Equal(12, _vm.SelectedFrameIndices.Count);
-		Assert.Equal(0, _vm.SelectedFrameIndices[0]);
-		Assert.Equal(11, _vm.SelectedFrameIndices[^1]);
+		Assert.Equal(0, _vm.SelectedFrameIndices.Min);
+		Assert.Equal(11, _vm.SelectedFrameIndices.Max);
 		Assert.Equal(0, _vm.SelectedFrameIndex);
 	}
 
@@ -82,8 +82,8 @@ public class TasEditorViewModelRangeBulkTests : IDisposable {
 		_vm.SelectFrameRange(3, 9);
 
 		Assert.Equal(7, _vm.SelectedFrameIndices.Count);
-		Assert.Equal(3, _vm.SelectedFrameIndices[0]);
-		Assert.Equal(9, _vm.SelectedFrameIndices[^1]);
+		Assert.Equal(3, _vm.SelectedFrameIndices.Min);
+		Assert.Equal(9, _vm.SelectedFrameIndices.Max);
 	}
 
 	[Fact]
@@ -93,8 +93,8 @@ public class TasEditorViewModelRangeBulkTests : IDisposable {
 		_vm.SelectFrameRange(14, 5);
 
 		Assert.Equal(10, _vm.SelectedFrameIndices.Count);
-		Assert.Equal(5, _vm.SelectedFrameIndices[0]);
-		Assert.Equal(14, _vm.SelectedFrameIndices[^1]);
+		Assert.Equal(5, _vm.SelectedFrameIndices.Min);
+		Assert.Equal(14, _vm.SelectedFrameIndices.Max);
 	}
 
 	[Fact]
@@ -104,8 +104,8 @@ public class TasEditorViewModelRangeBulkTests : IDisposable {
 		_vm.SelectFrameRange(-5, 50);
 
 		Assert.Equal(6, _vm.SelectedFrameIndices.Count);
-		Assert.Equal(0, _vm.SelectedFrameIndices[0]);
-		Assert.Equal(5, _vm.SelectedFrameIndices[^1]);
+		Assert.Equal(0, _vm.SelectedFrameIndices.Min);
+		Assert.Equal(5, _vm.SelectedFrameIndices.Max);
 	}
 
 	[Fact]
@@ -152,7 +152,7 @@ public class TasEditorViewModelRangeBulkTests : IDisposable {
 	[Fact]
 	public void DeleteFrames_WithMultiSelection_DeletesDistinctFrames() {
 		SetMovie(CreateTestMovie(10));
-		_vm.SelectedFrameIndices = new List<int> { 2, 4, 4, 7 };
+		_vm.SelectedFrameIndices = new SortedSet<int> { 2, 4, 7 };
 		_vm.SelectedFrameIndex = 7;
 
 		_vm.DeleteFrames();
@@ -164,7 +164,7 @@ public class TasEditorViewModelRangeBulkTests : IDisposable {
 	[Fact]
 	public void DeleteFrames_WithMultiSelection_UndoRestoresAll() {
 		SetMovie(CreateTestMovie(10));
-		_vm.SelectedFrameIndices = new List<int> { 1, 3, 5 };
+		_vm.SelectedFrameIndices = new SortedSet<int> { 1, 3, 5 };
 		_vm.SelectedFrameIndex = 5;
 
 		_vm.DeleteFrames();
@@ -181,7 +181,7 @@ public class TasEditorViewModelRangeBulkTests : IDisposable {
 		movie.InputFrames[2].Controllers[0].A = true;
 		movie.InputFrames[3].Controllers[0].A = true;
 		SetMovie(movie);
-		_vm.SelectedFrameIndices = new List<int> { 1, 3 };
+		_vm.SelectedFrameIndices = new SortedSet<int> { 1, 3 };
 		_vm.SelectedFrameIndex = 3;
 
 		_vm.ClearSelectedInput();
@@ -197,7 +197,7 @@ public class TasEditorViewModelRangeBulkTests : IDisposable {
 		movie.InputFrames[0].Controllers[0].B = true;
 		movie.InputFrames[2].Controllers[0].B = true;
 		SetMovie(movie);
-		_vm.SelectedFrameIndices = new List<int> { 0, 2 };
+		_vm.SelectedFrameIndices = new SortedSet<int> { 0, 2 };
 		_vm.SelectedFrameIndex = 2;
 
 		_vm.ClearSelectedInput();
@@ -259,7 +259,7 @@ public class TasEditorViewModelRangeBulkTests : IDisposable {
 		var movie = CreateTestMovie(4);
 		SetMovie(movie);
 		_vm.SelectedFrameIndex = 2;
-		_vm.SelectedFrameIndices = new List<int>();
+		_vm.SelectedFrameIndices = new SortedSet<int>();
 
 		_vm.SetButtonOnSelectedFrames(0, "A", true);
 

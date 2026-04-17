@@ -512,7 +512,7 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 	private void OnFrameListSelectionChanged(object? sender, SelectionChangedEventArgs e) {
 		if (ViewModel is null) return;
 
-		var indices = new List<int>();
+		var indices = new SortedSet<int>();
 		foreach (var item in _frameList.SelectedItems!) {
 			int idx = _frameList.ItemsSource is System.Collections.IList list ? list.IndexOf(item) : -1;
 			if (idx >= 0) {
