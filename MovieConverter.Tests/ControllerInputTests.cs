@@ -1,4 +1,4 @@
-namespace Nexen.MovieConverter.Tests;
+﻿namespace Nexen.MovieConverter.Tests;
 
 /// <summary>
 /// Tests for ControllerInput class

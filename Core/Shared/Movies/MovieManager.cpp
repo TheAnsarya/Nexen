@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <algorithm>
 #include "Utilities/FolderUtilities.h"
 #include "Utilities/VirtualFile.h"

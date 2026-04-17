@@ -1,4 +1,4 @@
-using Nexen.TAS;
+﻿using Nexen.TAS;
 using Xunit;
 
 namespace Nexen.Tests.TAS;

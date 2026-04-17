@@ -137,6 +137,22 @@ When the user asks to implement, fix, continue, or ship work, do not ask for com
 - Do not interrupt execution to ask about unrelated local modifications; leave them untouched and keep shipping requested work
 - If the user explicitly says to stop asking about commit file selection or unexpected modified files, include those modified files and continue shipping without additional confirmation prompts
 
+### ⚠️ MANDATORY: Stray File Commit Handling
+
+If the user indicates that stray/unrelated modified files should be included, do not ask follow-up questions about file selection.
+
+- Stage those modified files as requested and continue
+- Commit and push without pausing for confirmation about stray files
+- Assume these are intentional workspace changes unless the user says otherwise
+
+### ⚠️ MANDATORY: "Run Nexen" Means Launch Executable
+
+When the user asks to "run nexen", "open nexen", or equivalent, launch the actual Nexen application executable (`Nexen.exe`).
+
+- Do not open a web browser or documentation page for this request
+- Prefer existing built executable paths under `bin/` or build output locations
+- If no executable exists yet, build first, then launch `Nexen.exe`
+
 ## Coding Standards
 
 ### Indentation

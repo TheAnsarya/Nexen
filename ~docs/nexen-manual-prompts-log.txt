@@ -1577,7 +1577,13 @@ continue;
 
 [Nexen] continue by focusing on one of those "medium/architectural efforts" and make epics, issues, docs, benchmarks, plans, tests, etc. research and then implement the changes you make (while making tests and benchmarks as well); continue;
 
+[Nexen] continue by focusing on one of those "medium/architectural efforts" and make epics, issues, docs, benchmarks, plans, tests, etc. research and then implement the changes you make (while making tests and benchmarks as well); continue;
 
+[Nexen] Add a little blurb/link to github discussions in the main readme near the top that says we've started to use the discussions feature/tab and please join us to discuss progress and ideas for changes; continue;
+
+[Nexen] Open nexen for me to check and then continue working on all the issues and work efforts we started; continue;
+
+Add to copilot instructions and implement in the current session: Do not ask me about stray files in git commit, just commit them and move on, they're mostly just format document fixes; Also, "run nexen" doesn't involve a web browser, run the nexen.exe app; continue;
 
 
 
