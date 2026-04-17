@@ -1,5 +1,4 @@
-using System.Globalization;
-using System.Runtime.CompilerServices;
+﻿using System.Globalization;
 using System.Text;
 
 namespace Nexen.MovieConverter.Converters;
@@ -199,7 +198,6 @@ public sealed class Fm2MovieConverter : MovieConverterBase {
 	/// <summary>
 	/// Parse FM2 input line
 	/// </summary>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static InputFrame ParseFm2InputLine(string line, int frameNumber) {
 		var frame = new InputFrame {
 			FrameNumber = frameNumber

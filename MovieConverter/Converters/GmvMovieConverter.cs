@@ -125,8 +125,8 @@ public sealed class GmvMovieConverter : MovieConverterBase {
 		movie.SourceFormatVersion = "1";
 
 		// Frame data starts at offset 0x40
-		// Each frame: 3 bytes per controller for 3-button, 6 bytes for 6-button
-		int bytesPerController = is3Button ? 3 : 3; // Both are 3 bytes in GMV
+		// Each frame: 3 bytes per controller (both 3-button and 6-button modes use 3 bytes in GMV)
+		int bytesPerController = 3;
 		int bytesPerFrame = bytesPerController * movie.ControllerCount;
 
 		// Calculate frame count from remaining data

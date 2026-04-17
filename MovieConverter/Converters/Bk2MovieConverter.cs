@@ -1,6 +1,5 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO.Compression;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 
@@ -265,7 +264,6 @@ public sealed class Bk2MovieConverter : MovieConverterBase {
 	/// <summary>
 	/// Parse a single BK2 input line
 	/// </summary>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static InputFrame ParseBk2InputLine(string line, int frameNumber, SystemType system, ControllerType[]? portTypes, out bool isLag) {
 		var frame = new InputFrame {
 			FrameNumber = frameNumber
