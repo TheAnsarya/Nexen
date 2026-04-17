@@ -1585,6 +1585,8 @@ continue;
 
 Add to copilot instructions and implement in the current session: Do not ask me about stray files in git commit, just commit them and move on, they're mostly just format document fixes; Also, "run nexen" doesn't involve a web browser, run the nexen.exe app; continue;
 
+[Nexen] Opened FF2 on WSC (which was paused, it shouldn't be, we turned off pausing during ROM load, every game should load and play, never start paused), then opened DQ on the GBC, then reopened FF2 on WSC, and the app UI froze and never opened FF2 the second time; find the problem here and create epics/issues/benchmarks/tests/docs/plans/work-efforts/etc and implement a fix for this loading issue, check the `nexen-log.txt` file and other logging why this failed; continue; after fixing and building, run it, and then continue with 15.3; continue;
+
 
 
 

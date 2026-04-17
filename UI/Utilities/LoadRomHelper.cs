@@ -20,6 +20,42 @@ public static class LoadRomHelper {
 
 	public static bool IsRomLoadInProgress => Interlocked.CompareExchange(ref _romLoadInProgress, 0, 0) != 0;
 
+	private sealed class RomLoadOperationToken : IDisposable {
+		private int _disposed;
+		private readonly string _operationName;
+
+		public RomLoadOperationToken(string operationName) {
+			_operationName = operationName;
+		}
+
+		public void Dispose() {
+			if (Interlocked.Exchange(ref _disposed, 1) != 0) {
+				return;
+			}
+
+			int count = Interlocked.Decrement(ref _romLoadInProgress);
+			Log.Info($"[LoadRomHelper] {_operationName} end (in-progress count: {count})");
+		}
+	}
+
+	private static IDisposable BeginRomLoadOperation(string operationName) {
+		int count = Interlocked.Increment(ref _romLoadInProgress);
+		Log.Info($"[LoadRomHelper] {operationName} begin (in-progress count: {count})");
+		return new RomLoadOperationToken(operationName);
+	}
+
+	internal static IDisposable BeginRomLoadOperationForTests(string operationName) {
+		return BeginRomLoadOperation(operationName);
+	}
+
+	internal static int GetRomLoadInProgressCountForTests() {
+		return Interlocked.CompareExchange(ref _romLoadInProgress, 0, 0);
+	}
+
+	internal static void ResetRomLoadInProgressForTests() {
+		Interlocked.Exchange(ref _romLoadInProgress, 0);
+	}
+
 	public static async Task LoadRom(ResourcePath romPath, ResourcePath? patchPath = null) {
 		Log.Info($"[LoadRomHelper] LoadRom called with: {romPath}");
 
@@ -55,8 +91,7 @@ public static class LoadRomHelper {
 
 		//Temporarily hide selection screen to allow displaying error messages
 		MainWindowViewModel.Instance.RecentGames.Visible = false;
-
-		Interlocked.Exchange(ref _romLoadInProgress, 1);
+		IDisposable loadOpToken = BeginRomLoadOperation("LoadRom");
 
 		Task.Run(() => {
 			try {
@@ -75,7 +110,7 @@ public static class LoadRomHelper {
 			} catch (Exception ex) {
 				Log.Error(ex, $"[LoadRomHelper] EXCEPTION in LoadRom");
 			} finally {
-				Interlocked.Exchange(ref _romLoadInProgress, 0);
+				loadOpToken.Dispose();
 			}
 
 			ShowSelectionOnScreenAfterError();
@@ -83,13 +118,25 @@ public static class LoadRomHelper {
 	}
 
 	public static void LoadRecentGame(string filename, bool forceLoadState) {
+		Log.Info($"[LoadRomHelper] LoadRecentGame called with: {filename}, forceLoadState: {forceLoadState}");
 		//Temporarily hide selection screen to allow displaying error messages
 		MainWindowViewModel.Instance.RecentGames.Visible = false;
+		IDisposable loadOpToken = BeginRomLoadOperation("LoadRecentGame");
 
 		Task.Run(() => {
-			//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side
-			if (File.Exists(filename)) {
-				EmuApi.LoadRecentGame(filename, !forceLoadState && ConfigManager.Config.Preferences.GameSelectionScreenMode == GameSelectionMode.PowerOn);
+			try {
+				//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side
+				if (File.Exists(filename)) {
+					bool resetGame = !forceLoadState && ConfigManager.Config.Preferences.GameSelectionScreenMode == GameSelectionMode.PowerOn;
+					Log.Info($"[LoadRomHelper] Calling EmuApi.LoadRecentGame (resetGame: {resetGame})");
+					EmuApi.LoadRecentGame(filename, resetGame);
+				} else {
+					Log.Error($"[LoadRomHelper] ERROR: Recent game file not found: {filename}");
+				}
+			} catch (Exception ex) {
+				Log.Error(ex, "[LoadRomHelper] EXCEPTION in LoadRecentGame");
+			} finally {
+				loadOpToken.Dispose();
 			}
 
 			ShowSelectionOnScreenAfterError();

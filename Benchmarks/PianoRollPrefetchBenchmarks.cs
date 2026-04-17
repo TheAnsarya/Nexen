@@ -1,4 +1,4 @@
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using Nexen.Controls;
 
 namespace Nexen.Benchmarks;
