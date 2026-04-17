@@ -11,7 +11,7 @@ public class MovieDataBenchmarks {
 	private MovieData _movie = null!;
 	private InputFrame _frameToAdd = null!;
 
-	[Params(100, 1000, 10000)]
+	[Params(100, 1000, 10000, 60000, 300000)]
 	public int FrameCount { get; set; }
 
 	[GlobalSetup]
