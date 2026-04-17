@@ -1,4 +1,4 @@
-using Xunit;
+﻿using Xunit;
 using System;
 using System.Collections.Generic;
 using Avalonia.Media;
@@ -193,6 +193,48 @@ public class PianoRollCachingTests {
 		);
 
 		Assert.True(shouldQueue);
+	}
+
+	[Fact]
+	public void ComputeVisibleFrameRange_ClampsScrollAndEnd() {
+		var range = PianoRollControl.ComputeVisibleFrameRange(
+			boundsWidth: 450,
+			laneHeaderWidth: 50,
+			cellWidth: 20,
+			scrollOffset: 95,
+			totalFrames: 100
+		);
+
+		Assert.Equal(95, range.Start);
+		Assert.Equal(100, range.EndExclusive);
+	}
+
+	[Fact]
+	public void ComputeVisibleFrameRange_InvalidGeometry_ReturnsEmpty() {
+		var range = PianoRollControl.ComputeVisibleFrameRange(
+			boundsWidth: 40,
+			laneHeaderWidth: 50,
+			cellWidth: 20,
+			scrollOffset: 0,
+			totalFrames: 100
+		);
+
+		Assert.Equal(0, range.Start);
+		Assert.Equal(0, range.EndExclusive);
+	}
+
+	[Fact]
+	public void ComputeVisibleFrameRange_ProducesExpectedVisibleCount() {
+		var range = PianoRollControl.ComputeVisibleFrameRange(
+			boundsWidth: 370,
+			laneHeaderWidth: 50,
+			cellWidth: 16,
+			scrollOffset: 10,
+			totalFrames: 1000
+		);
+
+		Assert.Equal(10, range.Start);
+		Assert.Equal(31, range.EndExclusive);
 	}
 
 	#endregion

@@ -283,11 +283,14 @@ public sealed class PianoRollControl : Control {
 	private void DrawFrameHeaders(DrawingContext context, Rect bounds, int cellWidth) {
 		var textBrush = Brushes.Black;
 		var cache = GetOrCreateFrameNumberCache(ZoomLevel);
+		var frames = Frames;
 
-		int visibleFrames = (int)((bounds.Width - LaneHeaderWidth) / cellWidth) + 1;
+		int totalFrames = frames?.Count ?? int.MaxValue;
+		var (start, endExclusive) = ComputeVisibleFrameRange(bounds.Width, LaneHeaderWidth, cellWidth, ScrollOffset, totalFrames);
+		int visibleFrames = endExclusive - start;
 
-		for (int i = 0; i < visibleFrames; i++) {
-			int frame = ScrollOffset + i;
+		for (int frame = start; frame < endExclusive; frame++) {
+			int i = frame - ScrollOffset;
 			var rect = new Rect(LaneHeaderWidth + i * cellWidth, 0, cellWidth, HeaderHeight);
 
 			var bgBrush = frame >= GreenzoneStart ? GreenzoneBrush : HeaderBrush;
@@ -318,7 +321,7 @@ public sealed class PianoRollControl : Control {
 			}
 		}
 
-		QueueFrameTextPrefetch(ScrollOffset, visibleFrames, ZoomLevel);
+		QueueFrameTextPrefetch(start, visibleFrames, ZoomLevel);
 	}
 
 	private void QueueFrameTextPrefetch(int scrollOffset, int visibleFrames, double zoom) {
@@ -348,6 +351,17 @@ public sealed class PianoRollControl : Control {
 
 	internal static bool ShouldQueueFrameTextPrefetch(int lastStart, int lastEnd, double lastZoomKey, int start, int end, double zoomKey) {
 		return lastStart != start || lastEnd != end || !lastZoomKey.Equals(zoomKey);
+	}
+
+	internal static (int Start, int EndExclusive) ComputeVisibleFrameRange(double boundsWidth, int laneHeaderWidth, int cellWidth, int scrollOffset, int totalFrames) {
+		if (totalFrames <= 0 || cellWidth <= 0 || boundsWidth <= laneHeaderWidth) {
+			return (0, 0);
+		}
+
+		int visibleFrames = (int)((boundsWidth - laneHeaderWidth) / cellWidth) + 1;
+		int start = Math.Clamp(scrollOffset, 0, totalFrames);
+		int endExclusive = Math.Clamp(start + visibleFrames, start, totalFrames);
+		return (start, endExclusive);
 	}
 
 	private void PrefetchFrameText(int token, int start, int end, double zoom) {
@@ -484,14 +498,10 @@ public sealed class PianoRollControl : Control {
 			return;
 		}
 
-		int visibleFrames = (int)((bounds.Width - LaneHeaderWidth) / cellWidth) + 1;
+		var (start, endExclusive) = ComputeVisibleFrameRange(bounds.Width, LaneHeaderWidth, cellWidth, ScrollOffset, frames.Count);
 
-		for (int i = 0; i < visibleFrames; i++) {
-			int frameIndex = ScrollOffset + i;
-
-			if (frameIndex >= frames.Count) {
-				break;
-			}
+		for (int frameIndex = start; frameIndex < endExclusive; frameIndex++) {
+			int i = frameIndex - ScrollOffset;
 
 			var frame = frames[frameIndex];
 			bool isGreenzone = frameIndex >= GreenzoneStart;
@@ -567,14 +577,10 @@ public sealed class PianoRollControl : Control {
 		}
 
 		var markerBrush = Brushes.Orange;
-		int visibleFrames = (int)((bounds.Width - LaneHeaderWidth) / cellWidth) + 1;
+		var (start, endExclusive) = ComputeVisibleFrameRange(bounds.Width, LaneHeaderWidth, cellWidth, ScrollOffset, frames.Count);
 
-		for (int i = 0; i < visibleFrames; i++) {
-			int frameIndex = ScrollOffset + i;
-
-			if (frameIndex >= frames.Count) {
-				break;
-			}
+		for (int frameIndex = start; frameIndex < endExclusive; frameIndex++) {
+			int i = frameIndex - ScrollOffset;
 
 			var frame = frames[frameIndex];
 
