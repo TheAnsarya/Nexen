@@ -151,7 +151,7 @@ public sealed class PianoRollControl : Control {
 	private int _paintStartFrame;
 	private int _keyboardFrame = -1;
 	private int _keyboardButton;
-	private readonly HashSet<(int frame, int button)> _paintedCells = new();
+	private readonly HashSet<int> _paintedFrames = new();
 	private readonly List<int> _paintFrameBuffer = new();
 
 	#endregion
@@ -185,6 +185,9 @@ public sealed class PianoRollControl : Control {
 	private readonly Dictionary<double, LinkedListNode<double>> _frameNumberZoomNodes = new();
 	private readonly object _frameNumberCacheLock = new();
 	private int _framePrefetchToken;
+	private int _lastPrefetchStart = -1;
+	private int _lastPrefetchEnd = -1;
+	private double _lastPrefetchZoomKey = double.NaN;
 
 	private const int MaxFrameNumberCacheSize = 200;
 	private const int MaxZoomCacheSize = 3;
@@ -330,8 +333,21 @@ public sealed class PianoRollControl : Control {
 			return;
 		}
 
+		double zoomKey = NormalizeZoom(zoom);
+		if (!ShouldQueueFrameTextPrefetch(_lastPrefetchStart, _lastPrefetchEnd, _lastPrefetchZoomKey, start, end, zoomKey)) {
+			return;
+		}
+
+		_lastPrefetchStart = start;
+		_lastPrefetchEnd = end;
+		_lastPrefetchZoomKey = zoomKey;
+
 		int token = Interlocked.Increment(ref _framePrefetchToken);
 		Task.Run(() => PrefetchFrameText(token, start, end, zoom));
+	}
+
+	internal static bool ShouldQueueFrameTextPrefetch(int lastStart, int lastEnd, double lastZoomKey, int start, int end, double zoomKey) {
+		return lastStart != start || lastEnd != end || !lastZoomKey.Equals(zoomKey);
 	}
 
 	private void PrefetchFrameText(int token, int start, int end, double zoom) {
@@ -615,11 +631,11 @@ public sealed class PianoRollControl : Control {
 			_paintButton = button;
 			_keyboardFrame = frame;
 			_keyboardButton = button;
-			_paintedCells.Clear();
+			_paintedFrames.Clear();
 
 			// Determine paint value (toggle current state)
 			_paintValue = !GetCurrentButtonState(frame, button);
-			_paintedCells.Add((frame, button));
+			_paintedFrames.Add(frame);
 
 			// Raise click event
 			CellClicked?.Invoke(this, new PianoRollCellEventArgs(frame, button, _paintValue));
@@ -650,8 +666,8 @@ public sealed class PianoRollControl : Control {
 		}
 
 		// Paint along the same button lane
-		if (button == _paintButton && !_paintedCells.Contains((frame, button))) {
-			_paintedCells.Add((frame, button));
+		if (button == _paintButton && !_paintedFrames.Contains(frame)) {
+			_paintedFrames.Add(frame);
 			CellClicked?.Invoke(this, new PianoRollCellEventArgs(frame, button, _paintValue));
 		}
 	}
@@ -659,10 +675,10 @@ public sealed class PianoRollControl : Control {
 	protected override void OnPointerReleased(PointerReleasedEventArgs e) {
 		base.OnPointerReleased(e);
 
-		if (_isPainting && _paintedCells.Count > 1) {
+		if (_isPainting && _paintedFrames.Count > 1) {
 			// Raise paint event for multiple cells
 			_paintFrameBuffer.Clear();
-			foreach (var (frame, _) in _paintedCells) {
+			foreach (int frame in _paintedFrames) {
 				_paintFrameBuffer.Add(frame);
 			}
 			CellsPainted?.Invoke(this, new PianoRollPaintEventArgs(
@@ -673,7 +689,7 @@ public sealed class PianoRollControl : Control {
 		}
 
 		_isPainting = false;
-		_paintedCells.Clear();
+		_paintedFrames.Clear();
 	}
 
 	protected override void OnPointerWheelChanged(PointerWheelEventArgs e) {

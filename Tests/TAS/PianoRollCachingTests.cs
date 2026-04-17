@@ -2,6 +2,7 @@ using Xunit;
 using System;
 using System.Collections.Generic;
 using Avalonia.Media;
+using Nexen.Controls;
 
 namespace Nexen.Tests.TAS;
 
@@ -132,6 +133,66 @@ public class PianoRollCachingTests {
 		// Assert
 		Assert.Equal(3, hitCount); // 3 cache hits
 		Assert.Equal(3, cache.Count); // 3 unique entries
+	}
+
+	#endregion
+
+	#region Prefetch Debounce Tests
+
+	[Fact]
+	public void ShouldQueueFrameTextPrefetch_FirstCall_ReturnsTrue() {
+		bool shouldQueue = PianoRollControl.ShouldQueueFrameTextPrefetch(
+			lastStart: -1,
+			lastEnd: -1,
+			lastZoomKey: double.NaN,
+			start: 0,
+			end: 120,
+			zoomKey: 1.0
+		);
+
+		Assert.True(shouldQueue);
+	}
+
+	[Fact]
+	public void ShouldQueueFrameTextPrefetch_UnchangedViewport_ReturnsFalse() {
+		bool shouldQueue = PianoRollControl.ShouldQueueFrameTextPrefetch(
+			lastStart: 50,
+			lastEnd: 180,
+			lastZoomKey: 1.0,
+			start: 50,
+			end: 180,
+			zoomKey: 1.0
+		);
+
+		Assert.False(shouldQueue);
+	}
+
+	[Fact]
+	public void ShouldQueueFrameTextPrefetch_ViewportChanged_ReturnsTrue() {
+		bool shouldQueue = PianoRollControl.ShouldQueueFrameTextPrefetch(
+			lastStart: 50,
+			lastEnd: 180,
+			lastZoomKey: 1.0,
+			start: 60,
+			end: 190,
+			zoomKey: 1.0
+		);
+
+		Assert.True(shouldQueue);
+	}
+
+	[Fact]
+	public void ShouldQueueFrameTextPrefetch_ZoomChanged_ReturnsTrue() {
+		bool shouldQueue = PianoRollControl.ShouldQueueFrameTextPrefetch(
+			lastStart: 50,
+			lastEnd: 180,
+			lastZoomKey: 1.0,
+			start: 50,
+			end: 180,
+			zoomKey: 1.25
+		);
+
+		Assert.True(shouldQueue);
 	}
 
 	#endregion
