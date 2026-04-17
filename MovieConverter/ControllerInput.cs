@@ -126,7 +126,11 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 		get => A || B || X || Y || L || R || Start || Select ||
 			   Up || Down || Left || Right || C || Z || Mode ||
 			   MouseButton1 == true || MouseButton2 == true || MouseButton3 == true ||
-			   AnalogX.HasValue || AnalogY.HasValue;
+			   AnalogX.HasValue || AnalogY.HasValue ||
+			   AnalogRX.HasValue || AnalogRY.HasValue ||
+			   TriggerL.HasValue || TriggerR.HasValue ||
+			   PaddlePosition.HasValue || PowerPadButtons.HasValue ||
+			   KeyboardData is { Length: > 0 };
 	}
 
 	/// <summary>
@@ -721,6 +725,9 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 		hash.Add(MouseY);
 		hash.Add(MouseDeltaX);
 		hash.Add(MouseDeltaY);
+		hash.Add(MouseButton1);
+		hash.Add(MouseButton2);
+		hash.Add(MouseButton3);
 		hash.Add(AnalogX);
 		hash.Add(AnalogY);
 		hash.Add(AnalogRX);
@@ -729,6 +736,11 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 		hash.Add(TriggerR);
 		hash.Add(PaddlePosition);
 		hash.Add(PowerPadButtons);
+		if (KeyboardData is { Length: > 0 }) {
+			foreach (byte b in KeyboardData) {
+				hash.Add(b);
+			}
+		}
 		return hash.ToHashCode();
 	}
 

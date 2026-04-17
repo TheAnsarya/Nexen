@@ -1,4 +1,4 @@
-namespace Nexen.MovieConverter.Tests;
+﻿namespace Nexen.MovieConverter.Tests;
 
 /// <summary>
 /// Edge case tests for MovieData methods: TruncateAt boundaries,

@@ -1553,9 +1553,17 @@ fucking commit them, I told you to stop asking, there is no "repo saftety rule"
 --- claude-4.6-opus
 [Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.33 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes and make a good title for the release; the continue working on Nexen issues; continue;
 
+[Nexen] Continue working issues
 
+[Nexen] Continue working issues
 
+Continue;
 
+continue; Review/analyze the Movie/TAS feature in Nexen for correctness and performance and find improvements and make tests and benchmarks and fix issues; continue;
+
+continue; Review/analyze the Movie/TAS feature in Nexen for correctness and performance and find improvements and make tests and benchmarks and fix issues; continue;
+
+continue; Review/analyze the Movie/TAS feature in Nexen for correctness and performance and find improvements and make tests and benchmarks and fix issues; continue;
 
 
 

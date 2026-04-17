@@ -1,4 +1,4 @@
-# Developer Tasks and Current Priorities
+﻿# Developer Tasks and Current Priorities
 
 Issue linkage: [#1305](https://github.com/TheAnsarya/Nexen/issues/1305)
 

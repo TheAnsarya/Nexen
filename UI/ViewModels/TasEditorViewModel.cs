@@ -203,6 +203,12 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	/// <summary>Maximum number of undo actions retained before oldest entries are discarded.</summary>
 	private const int MaxUndoHistory = 500;
 
+	/// <summary>
+	/// When the undo stack exceeds MaxUndoHistory, trim to this size.
+	/// This hysteresis avoids O(n) rebuild on every single action past the cap.
+	/// </summary>
+	private const int UndoTrimTarget = 400;
+
 	private readonly Stack<UndoableAction> _undoStack = new();
 	private readonly Stack<UndoableAction> _redoStack = new();
 	private List<InputFrame>? _clipboard;
@@ -2291,12 +2297,14 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		_undoStack.Push(action);
 		_redoStack.Clear(); // Clear redo stack on new action
 
-		// Cap undo history to prevent unbounded memory growth
+		// Cap undo history to prevent unbounded memory growth.
+		// Uses hysteresis: only trim when exceeding max, trim to a lower target
+		// so the O(n) rebuild doesn't fire on every single action past the cap.
 		if (_undoStack.Count > MaxUndoHistory) {
 			var items = _undoStack.ToArray();
 			_undoStack.Clear();
-			// items[0] is the top (most recent); keep the first MaxUndoHistory items
-			for (int i = Math.Min(items.Length, MaxUndoHistory) - 1; i >= 0; i--) {
+			// items[0] is the top (most recent); keep the first UndoTrimTarget items
+			for (int i = Math.Min(items.Length, UndoTrimTarget) - 1; i >= 0; i--) {
 				_undoStack.Push(items[i]);
 			}
 		}

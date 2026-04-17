@@ -1,4 +1,4 @@
-using Xunit;
+﻿using Xunit;
 using Nexen.Interop;
 using Nexen.MovieConverter;
 using ControllerType = Nexen.Config.ControllerType;

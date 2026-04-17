@@ -22,7 +22,7 @@ void MovieManager::Record(RecordMovieOptions options) {
 	}
 }
 
-void MovieManager::Play(VirtualFile file, bool forTest) {
+void MovieManager::Play(VirtualFile file, bool silent) {
 	vector<uint8_t> fileData;
 	if (file.IsValid() && file.ReadFile(fileData)) {
 		shared_ptr<IMovie> player;
@@ -33,7 +33,7 @@ void MovieManager::Play(VirtualFile file, bool forTest) {
 
 			vector<string> files = reader.GetFileList();
 			if (std::ranges::contains(files, string_view{"GameSettings.txt"})) {
-				player = std::make_unique<NexenMovie>(_emu, forTest);
+				player = std::make_unique<NexenMovie>(_emu, silent);
 			}
 		}
 
@@ -42,7 +42,7 @@ void MovieManager::Play(VirtualFile file, bool forTest) {
 
 		if (player && player->Play(file)) {
 			_player.reset(player);
-			if (!forTest) {
+			if (!silent) {
 				MessageManager::DisplayMessage("Movies", "MoviePlaying", file.GetFileName());
 			}
 		}

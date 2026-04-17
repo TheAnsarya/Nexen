@@ -465,4 +465,82 @@ public class ControllerInputTests {
 	}
 
 	#endregion
+
+	#region HasInput extended coverage
+
+	[Fact]
+	public void HasInput_ReturnsTrueForPaddlePosition() {
+		var input = new ControllerInput { PaddlePosition = 128 };
+		Assert.True(input.HasInput);
+	}
+
+	[Fact]
+	public void HasInput_ReturnsTrueForPowerPadButtons() {
+		var input = new ControllerInput { PowerPadButtons = 0x0001 };
+		Assert.True(input.HasInput);
+	}
+
+	[Fact]
+	public void HasInput_ReturnsTrueForKeyboardData() {
+		var input = new ControllerInput { KeyboardData = new byte[] { 0x42 } };
+		Assert.True(input.HasInput);
+	}
+
+	[Fact]
+	public void HasInput_ReturnsFalseForEmptyKeyboardData() {
+		var input = new ControllerInput { KeyboardData = [] };
+		Assert.False(input.HasInput);
+	}
+
+	[Fact]
+	public void HasInput_ReturnsTrueForAnalogRX() {
+		var input = new ControllerInput { AnalogRX = 10 };
+		Assert.True(input.HasInput);
+	}
+
+	[Fact]
+	public void HasInput_ReturnsTrueForAnalogRY() {
+		var input = new ControllerInput { AnalogRY = -5 };
+		Assert.True(input.HasInput);
+	}
+
+	[Fact]
+	public void HasInput_ReturnsTrueForTriggerL() {
+		var input = new ControllerInput { TriggerL = 200 };
+		Assert.True(input.HasInput);
+	}
+
+	[Fact]
+	public void HasInput_ReturnsTrueForTriggerR() {
+		var input = new ControllerInput { TriggerR = 50 };
+		Assert.True(input.HasInput);
+	}
+
+	#endregion
+
+	#region GetHashCode consistency
+
+	[Fact]
+	public void GetHashCode_IncludesMouseButtons() {
+		var a = new ControllerInput { MouseButton1 = true };
+		var b = new ControllerInput { MouseButton1 = false };
+		// Different mouse button state should typically produce different hashes
+		Assert.NotEqual(a.GetHashCode(), b.GetHashCode());
+	}
+
+	[Fact]
+	public void GetHashCode_IncludesKeyboardData() {
+		var a = new ControllerInput { KeyboardData = new byte[] { 0x01 } };
+		var b = new ControllerInput { KeyboardData = new byte[] { 0x02 } };
+		Assert.NotEqual(a.GetHashCode(), b.GetHashCode());
+	}
+
+	[Fact]
+	public void GetHashCode_EqualInputsHaveEqualHash() {
+		var a = new ControllerInput { A = true, MouseButton1 = true, PaddlePosition = 42 };
+		var b = new ControllerInput { A = true, MouseButton1 = true, PaddlePosition = 42 };
+		Assert.Equal(a.GetHashCode(), b.GetHashCode());
+	}
+
+	#endregion
 }

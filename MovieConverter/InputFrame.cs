@@ -163,8 +163,9 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 		}
 
 		// Split by pipe using span-based parsing to avoid string[] allocation
+		// Buffer sized for worst case: 1 CMD + 8 ports + 8 paddle + 1 LAG + 1 comment + margin
 		ReadOnlySpan<char> span = line.AsSpan();
-		Span<Range> ranges = stackalloc Range[16];
+		Span<Range> ranges = stackalloc Range[24];
 		int count = span.Split(ranges, '|');
 		int portIndex = 0;
 
@@ -189,8 +190,10 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 			}
 
 			if (part.StartsWith("CMD:", StringComparison.Ordinal)) {
-				// Command
-				frame.Command = ParseCommand(part[4..]);
+				// Command — also parses FDS disk number/side if present
+				frame.Command = ParseCommand(part[4..], out byte? fdsDisk, out byte? fdsSide);
+				if (fdsDisk.HasValue) frame.FdsDiskNumber = fdsDisk;
+				if (fdsSide.HasValue) frame.FdsDiskSide = fdsSide;
 				continue;
 			}
 
@@ -375,8 +378,10 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 		return sb.ToString();
 	}
 
-	private static FrameCommand ParseCommand(ReadOnlySpan<char> commandStr) {
+	private static FrameCommand ParseCommand(ReadOnlySpan<char> commandStr, out byte? fdsDiskNumber, out byte? fdsDiskSide) {
 		FrameCommand command = FrameCommand.None;
+		fdsDiskNumber = null;
+		fdsDiskSide = null;
 		Span<Range> ranges = stackalloc Range[16];
 		int count = commandStr.Split(ranges, ',');
 
@@ -384,9 +389,22 @@ public sealed class InputFrame : IEquatable<InputFrame> {
 			ReadOnlySpan<char> trimmed = commandStr[ranges[i]].Trim();
 			if (trimmed.StartsWith("FDS_INSERT:", StringComparison.OrdinalIgnoreCase) ||
 				trimmed.StartsWith("FDS_SELECT:", StringComparison.OrdinalIgnoreCase)) {
-				command |= trimmed.StartsWith("FDS_INSERT", StringComparison.OrdinalIgnoreCase)
-					? FrameCommand.FdsInsert
-					: FrameCommand.FdsSelect;
+				bool isInsert = trimmed.StartsWith("FDS_INSERT", StringComparison.OrdinalIgnoreCase);
+				command |= isInsert ? FrameCommand.FdsInsert : FrameCommand.FdsSelect;
+				// Parse disk number and side from "FDS_INSERT:N:S" or "FDS_SELECT:N:S"
+				int prefixLen = isInsert ? "FDS_INSERT:".Length : "FDS_SELECT:".Length;
+				ReadOnlySpan<char> args = trimmed[prefixLen..];
+				int colonIdx = args.IndexOf(':');
+				if (colonIdx >= 0) {
+					if (byte.TryParse(args[..colonIdx], out byte disk)) {
+						fdsDiskNumber = disk;
+					}
+					if (byte.TryParse(args[(colonIdx + 1)..], out byte side)) {
+						fdsDiskSide = side;
+					}
+				} else if (byte.TryParse(args, out byte diskOnly)) {
+					fdsDiskNumber = diskOnly;
+				}
 				continue;
 			}
 

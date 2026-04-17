@@ -171,4 +171,84 @@ public class InputFrameTests {
 		Assert.True(frame1.Equals(frame2));
 		Assert.False(frame1.Equals(frame3));
 	}
+
+	#region stackalloc Range buffer and FDS roundtrip tests
+
+	[Fact]
+	public void FromNexenLogLine_ParsesManySegments_NoDataTruncation() {
+		// Worst case: CMD + 8 ports + 8 paddles + LAG + comment = 20 segments
+		var sb = new System.Text.StringBuilder();
+		sb.Append("CMD:SOFT_RESET");
+		for (int i = 0; i < 8; i++) {
+			sb.Append("|...............");
+		}
+		for (int i = 0; i < 8; i++) {
+			sb.Append($"|P{i + 1}X:128");
+		}
+		sb.Append("|LAG");
+		sb.Append("|# test comment");
+
+		var frame = InputFrame.FromNexenLogLine(sb.ToString(), 0);
+
+		Assert.Equal(FrameCommand.SoftReset, frame.Command);
+		Assert.True(frame.IsLagFrame);
+		Assert.Equal("test comment", frame.Comment);
+		for (int i = 0; i < 8; i++) {
+			Assert.Equal((byte)128, frame.Controllers[i].PaddlePosition);
+		}
+	}
+
+	[Fact]
+	public void FromNexenLogLine_FdsInsertWithDiskAndSide_Roundtrips() {
+		var frame = new InputFrame(5) {
+			Command = FrameCommand.FdsInsert,
+			FdsDiskNumber = 2,
+			FdsDiskSide = 1,
+		};
+
+		string line = frame.ToNexenLogLine();
+		var parsed = InputFrame.FromNexenLogLine(line, 5);
+
+		Assert.Equal(FrameCommand.FdsInsert, parsed.Command);
+		Assert.Equal((byte)2, parsed.FdsDiskNumber);
+		Assert.Equal((byte)1, parsed.FdsDiskSide);
+	}
+
+	[Fact]
+	public void FromNexenLogLine_FdsSelectWithDiskAndSide_Roundtrips() {
+		var frame = new InputFrame(10) {
+			Command = FrameCommand.FdsSelect,
+			FdsDiskNumber = 0,
+			FdsDiskSide = 0,
+		};
+
+		string line = frame.ToNexenLogLine();
+		var parsed = InputFrame.FromNexenLogLine(line, 10);
+
+		Assert.Equal(FrameCommand.FdsSelect, parsed.Command);
+		Assert.Equal((byte)0, parsed.FdsDiskNumber);
+		Assert.Equal((byte)0, parsed.FdsDiskSide);
+	}
+
+	[Fact]
+	public void FromNexenLogLine_FdsInsertWithoutArgs_ParsesFlagOnly() {
+		var frame = InputFrame.FromNexenLogLine("CMD:FDS_INSERT", 0);
+
+		Assert.Equal(FrameCommand.FdsInsert, frame.Command);
+		Assert.Null(frame.FdsDiskNumber);
+		Assert.Null(frame.FdsDiskSide);
+	}
+
+	[Fact]
+	public void FromNexenLogLine_MultipleCommandsIncludingFds_AllParsed() {
+		string line = "CMD:SOFT_RESET,FDS_INSERT:1:0";
+		var frame = InputFrame.FromNexenLogLine(line, 0);
+
+		Assert.True(frame.Command.HasFlag(FrameCommand.SoftReset));
+		Assert.True(frame.Command.HasFlag(FrameCommand.FdsInsert));
+		Assert.Equal((byte)1, frame.FdsDiskNumber);
+		Assert.Equal((byte)0, frame.FdsDiskSide);
+	}
+
+	#endregion
 }
