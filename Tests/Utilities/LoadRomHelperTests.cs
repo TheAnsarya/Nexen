@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Threading.Tasks;
 using Nexen.Utilities;
 using Xunit;
 
@@ -49,5 +50,35 @@ public sealed class LoadRomHelperTests {
 
 		Assert.Equal(0, LoadRomHelper.GetRomLoadInProgressCountForTests());
 		Assert.False(LoadRomHelper.IsRomLoadInProgress);
+	}
+
+	[Fact]
+	public async Task AcquireSerializedLoadGateForTests_BlocksSecondAcquireUntilRelease() {
+		Assert.Equal(1, LoadRomHelper.GetSerializedLoadGateCountForTests());
+
+		using IDisposable firstGate = await LoadRomHelper.AcquireSerializedLoadGateForTests("FirstAcquire");
+		Assert.Equal(0, LoadRomHelper.GetSerializedLoadGateCountForTests());
+
+		Task<IDisposable> secondAcquireTask = LoadRomHelper.AcquireSerializedLoadGateForTests("SecondAcquire");
+		await Task.Delay(50);
+		Assert.False(secondAcquireTask.IsCompleted);
+
+		firstGate.Dispose();
+		using IDisposable secondGate = await secondAcquireTask.WaitAsync(TimeSpan.FromSeconds(2));
+		Assert.Equal(0, LoadRomHelper.GetSerializedLoadGateCountForTests());
+	}
+
+	[Fact]
+	public async Task AcquireSerializedLoadGateForTests_DoubleDisposeToken_DoesNotOverRelease() {
+		Assert.Equal(1, LoadRomHelper.GetSerializedLoadGateCountForTests());
+
+		IDisposable gate = await LoadRomHelper.AcquireSerializedLoadGateForTests("DoubleDisposeGate");
+		Assert.Equal(0, LoadRomHelper.GetSerializedLoadGateCountForTests());
+
+		gate.Dispose();
+		Assert.Equal(1, LoadRomHelper.GetSerializedLoadGateCountForTests());
+
+		gate.Dispose();
+		Assert.Equal(1, LoadRomHelper.GetSerializedLoadGateCountForTests());
 	}
 }

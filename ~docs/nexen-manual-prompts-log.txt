@@ -1587,6 +1587,7 @@ Add to copilot instructions and implement in the current session: Do not ask me 
 
 [Nexen] Opened FF2 on WSC (which was paused, it shouldn't be, we turned off pausing during ROM load, every game should load and play, never start paused), then opened DQ on the GBC, then reopened FF2 on WSC, and the app UI froze and never opened FF2 the second time; find the problem here and create epics/issues/benchmarks/tests/docs/plans/work-efforts/etc and implement a fix for this loading issue, check the `nexen-log.txt` file and other logging why this failed; continue; after fixing and building, run it, and then continue with 15.3; continue;
 
+[Nexen] I loaded a couple games (from `C:\~reference-roms`), FF2 (WSC) and then DQ1 (GBC) so far so good, then Donkey Kong (GBC) all the graphics are wrong, FF2 (WSC) crashed, last game still emulating, although wrong, check logs and figure out why emulation is wrong and why it crashes, UI freezes, if you can't figure it out, add more logging and try again; continue;
 
 
 

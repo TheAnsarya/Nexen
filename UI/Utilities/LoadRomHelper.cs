@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Nexen.Config;
@@ -17,6 +18,8 @@ using Nexen.Windows;
 namespace Nexen.Utilities;
 public static class LoadRomHelper {
 	private static int _romLoadInProgress;
+	private static readonly SemaphoreSlim _serializedLoadGate = new(1, 1);
+	private static long _loadOperationIdCounter;
 
 	public static bool IsRomLoadInProgress => Interlocked.CompareExchange(ref _romLoadInProgress, 0, 0) != 0;
 
@@ -38,10 +41,45 @@ public static class LoadRomHelper {
 		}
 	}
 
+	private sealed class SerializedLoadGateToken : IDisposable {
+		private int _disposed;
+		private readonly long _operationId;
+		private readonly string _operationName;
+		private readonly string _target;
+		private readonly long _acquiredAtTicks;
+
+		public SerializedLoadGateToken(long operationId, string operationName, string target) {
+			_operationId = operationId;
+			_operationName = operationName;
+			_target = target;
+			_acquiredAtTicks = Stopwatch.GetTimestamp();
+		}
+
+		public void Dispose() {
+			if (Interlocked.Exchange(ref _disposed, 1) != 0) {
+				return;
+			}
+
+			double heldMs = (Stopwatch.GetTimestamp() - _acquiredAtTicks) * 1000.0 / Stopwatch.Frequency;
+			Log.Info($"[LoadRomHelper] serialized load gate releasing op#{_operationId} ({_operationName}, target: {_target}, thread: {Environment.CurrentManagedThreadId}, held: {heldMs:0.000}ms)");
+			_serializedLoadGate.Release();
+		}
+	}
+
 	private static IDisposable BeginRomLoadOperation(string operationName) {
 		int count = Interlocked.Increment(ref _romLoadInProgress);
 		Log.Info($"[LoadRomHelper] {operationName} begin (in-progress count: {count})");
 		return new RomLoadOperationToken(operationName);
+	}
+
+	private static async Task<IDisposable> EnterSerializedLoadGateAsync(string operationName, string target) {
+		long operationId = Interlocked.Increment(ref _loadOperationIdCounter);
+		long waitStartedTicks = Stopwatch.GetTimestamp();
+		Log.Info($"[LoadRomHelper] waiting for serialized load gate op#{operationId} ({operationName}, target: {target}, thread: {Environment.CurrentManagedThreadId})");
+		await _serializedLoadGate.WaitAsync().ConfigureAwait(false);
+		double waitMs = (Stopwatch.GetTimestamp() - waitStartedTicks) * 1000.0 / Stopwatch.Frequency;
+		Log.Info($"[LoadRomHelper] acquired serialized load gate op#{operationId} ({operationName}, target: {target}, thread: {Environment.CurrentManagedThreadId}, wait: {waitMs:0.000}ms)");
+		return new SerializedLoadGateToken(operationId, operationName, target);
 	}
 
 	internal static IDisposable BeginRomLoadOperationForTests(string operationName) {
@@ -54,6 +92,14 @@ public static class LoadRomHelper {
 
 	internal static void ResetRomLoadInProgressForTests() {
 		Interlocked.Exchange(ref _romLoadInProgress, 0);
+	}
+
+	internal static int GetSerializedLoadGateCountForTests() {
+		return _serializedLoadGate.CurrentCount;
+	}
+
+	internal static async Task<IDisposable> AcquireSerializedLoadGateForTests(string operationName) {
+		return await EnterSerializedLoadGateAsync(operationName, "test").ConfigureAwait(false);
 	}
 
 	public static async Task LoadRom(ResourcePath romPath, ResourcePath? patchPath = null) {
@@ -93,8 +139,10 @@ public static class LoadRomHelper {
 		MainWindowViewModel.Instance.RecentGames.Visible = false;
 		IDisposable loadOpToken = BeginRomLoadOperation("LoadRom");
 
-		Task.Run(() => {
+		Task.Run(async () => {
+			IDisposable? serializedGateToken = null;
 			try {
+				serializedGateToken = await EnterSerializedLoadGateAsync("LoadRom", romPath.ToString()).ConfigureAwait(false);
 				Log.Info($"[LoadRomHelper] Calling EmuApi.LoadRom...");
 				//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side
 				bool success = EmuApi.LoadRom(romPath, patchPath);
@@ -110,6 +158,7 @@ public static class LoadRomHelper {
 			} catch (Exception ex) {
 				Log.Error(ex, $"[LoadRomHelper] EXCEPTION in LoadRom");
 			} finally {
+				serializedGateToken?.Dispose();
 				loadOpToken.Dispose();
 			}
 
@@ -123,8 +172,10 @@ public static class LoadRomHelper {
 		MainWindowViewModel.Instance.RecentGames.Visible = false;
 		IDisposable loadOpToken = BeginRomLoadOperation("LoadRecentGame");
 
-		Task.Run(() => {
+		Task.Run(async () => {
+			IDisposable? serializedGateToken = null;
 			try {
+				serializedGateToken = await EnterSerializedLoadGateAsync("LoadRecentGame", filename).ConfigureAwait(false);
 				//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side
 				if (File.Exists(filename)) {
 					bool resetGame = !forceLoadState && ConfigManager.Config.Preferences.GameSelectionScreenMode == GameSelectionMode.PowerOn;
@@ -136,6 +187,7 @@ public static class LoadRomHelper {
 			} catch (Exception ex) {
 				Log.Error(ex, "[LoadRomHelper] EXCEPTION in LoadRecentGame");
 			} finally {
+				serializedGateToken?.Dispose();
 				loadOpToken.Dispose();
 			}
 

@@ -1,4 +1,4 @@
-# Epic 16 Plan - Cross-Console Load Freeze & Paused-Start Regression
+﻿# Epic 16 Plan - Cross-Console Load Freeze & Paused-Start Regression
 
 ## Problem Statement
 
