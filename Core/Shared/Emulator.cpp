@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <assert.h>
 #include "Shared/Emulator.h"
 #include "Shared/NotificationManager.h"
@@ -444,6 +444,21 @@ bool Emulator::InternalLoadRom(VirtualFile romFile, VirtualFile patchFile, bool 
 		_movieManager->Stop();
 	}
 
+	// Save recent game state BEFORE TryLoadRom zeroes _consoleMemory,
+	// otherwise SaveState inside SaveRecentGame would serialize empty memory.
+	if (_console && !_settings->GetPreferences().DisableGameSelectionScreen && !_audioPlayerHud) {
+		bool gameChanged = (string)_rom.RomFile != (string)romFile || (string)_rom.PatchFile != (string)patchFile;
+		if (gameChanged) {
+			RomInfo romInfo = GetRomInfo();
+			_saveStateManager->SaveRecentGame(romInfo.RomFile.GetFileName(), romInfo.RomFile, romInfo.PatchFile);
+		}
+	}
+
+	// Save recent play state while console memory is still valid
+	if (_console) {
+		(void)_saveStateManager->SaveRecentPlayState();
+	}
+
 	// Keep copy of current memory types, to allow keeping ROM changes when power cycling
 	ConsoleMemoryInfo originalConsoleMemory[DebugUtilities::GetMemoryTypeCount()] = {};
 	memcpy(originalConsoleMemory, _consoleMemory, sizeof(_consoleMemory));
@@ -472,9 +487,9 @@ bool Emulator::InternalLoadRom(VirtualFile romFile, VirtualFile patchFile, bool 
 	}
 
 	if (stopRom) {
-		// Only update the recent game entry if the game that was loaded is a different game
-		bool gameChanged = (string)_rom.RomFile != (string)romFile || (string)_rom.PatchFile != (string)patchFile;
-		Stop(false, !gameChanged, false);
+		// Recent game state was already saved above (before TryLoadRom zeroed _consoleMemory),
+		// so always pass preventRecentGameSave=true to avoid double-save with invalid memory.
+		Stop(false, true, false);
 		memset(originalConsoleMemory, 0, sizeof(originalConsoleMemory));
 	}
 

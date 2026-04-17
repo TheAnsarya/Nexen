@@ -5,6 +5,13 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.34] - 2026-04-17
+
+### Fixed
+
+- **Game loading crash/freeze when loading multiple ROMs** — SaveRecentGame and SaveRecentPlayState were being called after TryLoadRom zeroed `_consoleMemory`, causing serialization of empty/invalid memory state. Moved state saves before TryLoadRom while console memory is still valid (#1353)
+- **Game selection screen only showing one game** — screen now shows all recently opened ROMs from the RecentFiles list, not just games with .rgd session data. Grid layout updated to use full 4×3 grid in RecentGames mode (#1354)
+
 ## [1.4.33] - 2026-04-15
 
 ### Fixed

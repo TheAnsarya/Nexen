@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -78,9 +78,30 @@ public sealed partial class RecentGamesViewModel : ViewModelBase {
 			NeedResume = false;
 			Title = string.Empty;
 
+			// Load games with .rgd session data
 			List<string> files = Directory.GetFiles(ConfigManager.RecentGamesFolder, "*.rgd").OrderByDescending((file) => new FileInfo(file).LastWriteTime).ToList();
+			HashSet<string> rgdNames = new(StringComparer.OrdinalIgnoreCase);
 			for (int i = 0; i < files.Count && entries.Count < 72; i++) {
-				entries.Add(new RecentGameInfo() { FileName = files[i], Name = Path.GetFileNameWithoutExtension(files[i]) });
+				string name = Path.GetFileNameWithoutExtension(files[i]);
+				entries.Add(new RecentGameInfo() { FileName = files[i], Name = name });
+				rgdNames.Add(name);
+			}
+
+			// Also include recent ROMs that don't have .rgd files yet
+			foreach (RecentItem item in ConfigManager.Config.RecentFiles.Items) {
+				if (entries.Count >= 72) {
+					break;
+				}
+
+				string romName = Path.GetFileNameWithoutExtension(item.RomFile.ReadablePath);
+				if (!rgdNames.Contains(romName) && File.Exists(item.RomFile)) {
+					entries.Add(new RecentGameInfo() {
+						FileName = item.RomFile,
+						Name = romName,
+						IsRecentRomFile = true
+					});
+					rgdNames.Add(romName);
+				}
 			}
 		} else if (mode == GameScreenMode.SaveStatePicker || mode == GameScreenMode.RecentPlayPicker || mode == GameScreenMode.AutoSavePicker) {
 			// Timestamped save state picker modes (with optional filtering)
@@ -292,6 +313,11 @@ public sealed partial class RecentGameInfo {
 	public bool IsCurrentSlot { get; set; } = false;
 
 	/// <summary>
+	/// Whether this entry is a recent ROM file (not a .rgd session save).
+	/// </summary>
+	public bool IsRecentRomFile { get; set; } = false;
+
+	/// <summary>
 	/// Checks if the entry is enabled (file exists for loading, or save mode).
 	/// </summary>
 	/// <returns>True if the entry can be selected.</returns>
@@ -309,6 +335,9 @@ public sealed partial class RecentGameInfo {
 			Task.Run(() => {
 				EmuApi.LoadStateFile(FileName);
 			});
+		} else if (IsRecentRomFile) {
+			// Load ROM file directly (no .rgd session data)
+			_ = LoadRomHelper.LoadRom(FileName);
 		} else if (StateIndex > 0) {
 			Task.Run(() => {
 				//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side

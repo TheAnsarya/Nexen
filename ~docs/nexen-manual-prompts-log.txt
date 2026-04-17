@@ -1591,8 +1591,19 @@ Add to copilot instructions and implement in the current session: Do not ask me 
 
 still crashes, keep researching, add more logging, continue;
 
+[Nexen] First rom runs (although the game selection screen at the start is only showing one game, instead it should show all recent games, separate issue, make an issue for it and fix it soon) and second rom runs but with bad graphics/etc, so the memory is not being cleared between roms, and the third rom loaded crashed and freezes; make sure a game/rom/emulation/exit-saving-of-files all completes and everything is cleared before loading the new rom; check logs, add more logging if you need it or it seems useful; figure out why loading m,ultiple games crashes everything; continue working on other issues too incase it's a weird corner case; continue;
 
+are you frozen? work;
 
+[Nexen] remove redundant/copied issues; git commit everything; continue working issues; create a stable build and then a new release 1.4.34 and update docs/readmes/issues/etc and build and push a new release including running actions to make artifacts; and make a full description for the release and an inclusive title that describes the release; update docs and readmes!; continue; and continue figuring out why loading a game crashes/freezes the app, take a different approach and don't spiral; fix the game selection screen, it shouldn't just show one game, it should show many of the the most recent open roms; continue;
+
+-- rate limited, but doesn't say so
+
+--- add to queue:
+continue working
+
+fix issues and continue work-efforts; continue;
+--- ^^^
 
 
 

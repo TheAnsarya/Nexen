@@ -216,7 +216,11 @@ public partial class StateGrid : UserControl {
 		int colCount = Math.Min(4, Math.Max(1, (int)(size.Width / 205)));
 		int rowCount = Math.Min(3, Math.Max(1, (int)(size.Height / 200)));
 
-		if (Entries.Count <= 1) {
+		if (Mode == GameScreenMode.RecentGames) {
+			// Recent games screen: use full grid, with arrows for pagination
+			colCount = Math.Min(4, Math.Max(1, colCount));
+			rowCount = Math.Min(3, Math.Max(1, rowCount));
+		} else if (Entries.Count <= 1) {
 			colCount = 1;
 			rowCount = 1;
 		} else if (Entries.Count <= 4) {
