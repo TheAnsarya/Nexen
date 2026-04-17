@@ -1589,6 +1589,22 @@ Add to copilot instructions and implement in the current session: Do not ask me 
 
 [Nexen] I loaded a couple games (from `C:\~reference-roms`), FF2 (WSC) and then DQ1 (GBC) so far so good, then Donkey Kong (GBC) all the graphics are wrong, FF2 (WSC) crashed, last game still emulating, although wrong, check logs and figure out why emulation is wrong and why it crashes, UI freezes, if you can't figure it out, add more logging and try again; continue;
 
+still crashes, keep researching, add more logging, continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

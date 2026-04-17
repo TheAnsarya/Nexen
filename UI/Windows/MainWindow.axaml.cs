@@ -66,6 +66,7 @@ public partial class MainWindow : NexenWindow {
 	private Stopwatch _stopWatch = Stopwatch.StartNew();
 	private Dictionary<Key, long> _keyPressedStamp = new();
 	private bool _focusInMenu;
+	private static long _notificationTraceSequence;
 
 	static MainWindow() {
 		WindowStateProperty.Changed.AddClassHandler<MainWindow>((x, e) => x.OnWindowStateChanged());
@@ -295,9 +296,24 @@ public partial class MainWindow : NexenWindow {
 	}
 
 	private void OnNotification(NotificationEventArgs e) {
+		bool traceLifecycleNotification = e.NotificationType is ConsoleNotificationType.BeforeGameLoad
+			or ConsoleNotificationType.GameLoaded
+			or ConsoleNotificationType.GameLoadFailed
+			or ConsoleNotificationType.BeforeEmulationStop
+			or ConsoleNotificationType.EmulationStopped;
+
+		long traceId = 0;
+		long traceStart = 0;
+		if (traceLifecycleNotification) {
+			traceId = Interlocked.Increment(ref _notificationTraceSequence);
+			traceStart = Stopwatch.GetTimestamp();
+			Log.Info($"[MainWindow] Notification start #{traceId}: {e.NotificationType} (thread: {Environment.CurrentManagedThreadId}, param: 0x{e.Parameter.ToInt64():x})");
+		}
+
 		DebugWindowManager.ProcessNotification(e);
 
-		switch (e.NotificationType) {
+		try {
+			switch (e.NotificationType) {
 			case ConsoleNotificationType.GameLoaded:
 				CheatCodes.ApplyCheats();
 				RomInfo romInfo = EmuApi.GetRomInfo();
@@ -477,6 +493,12 @@ public partial class MainWindow : NexenWindow {
 				SoftwareRendererFrame frame = Marshal.PtrToStructure<SoftwareRendererFrame>(e.Parameter);
 				_softwareRenderer.UpdateSoftwareRenderer(frame);
 				break;
+			}
+		} finally {
+			if (traceLifecycleNotification) {
+				double elapsedMs = (Stopwatch.GetTimestamp() - traceStart) * 1000.0 / Stopwatch.Frequency;
+				Log.Info($"[MainWindow] Notification end #{traceId}: {e.NotificationType} (elapsed: {elapsedMs:0.000}ms)");
+			}
 		}
 	}
 
