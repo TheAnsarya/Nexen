@@ -730,6 +730,19 @@ public class TasLuaApiComprehensiveTests : IDisposable {
 		}
 	}
 
+	[Fact]
+	public void GenerateInputCombinations_TooManyButtons_Throws() {
+		var buttons = Enumerable.Range(0, 17).Select(i => $"btn{i}").ToList();
+		Assert.Throws<ArgumentException>(() => _api.GenerateInputCombinations(buttons));
+	}
+
+	[Fact]
+	public void GenerateInputCombinations_16Buttons_Succeeds() {
+		var buttons = Enumerable.Range(0, 16).Select(i => $"btn{i}").ToList();
+		var combos = _api.GenerateInputCombinations(buttons);
+		Assert.Equal(65536, combos.Count);
+	}
+
 	#endregion
 
 	#region Combined Workflows

@@ -519,6 +519,11 @@ public sealed class TasLuaApi {
 	public List<Dictionary<string, bool>> GenerateInputCombinations(List<string>? buttons = null) {
 		buttons ??= new List<string> { "a", "b", "up", "down", "left", "right" };
 
+		// Cap at 16 buttons to prevent exponential allocation (2^16 = 65536 entries max)
+		if (buttons.Count > 16) {
+			throw new ArgumentException($"Too many buttons ({buttons.Count}). Maximum is 16 to prevent excessive memory allocation.");
+		}
+
 		var combinations = new List<Dictionary<string, bool>>();
 		int totalCombinations = 1 << buttons.Count; // 2^n combinations
 
