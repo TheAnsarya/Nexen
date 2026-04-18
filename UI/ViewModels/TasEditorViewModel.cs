@@ -248,7 +248,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			: "No results";
 
 	/// <summary>Gets marker/comment entries for the marker panel.</summary>
-	public ObservableCollection<TasMarkerEntryViewModel> MarkerEntries { get; } = new();
+	public RangeObservableCollection<TasMarkerEntryViewModel> MarkerEntries { get; } = new();
 
 	/// <summary>Gets or sets the selected marker/comment entry.</summary>
 	[Reactive] public partial TasMarkerEntryViewModel? SelectedMarkerEntry { get; set; }
@@ -1649,9 +1649,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 
 		int? selectedFrame = SelectedMarkerEntry?.FrameIndex;
 		MarkerEntries.Clear();
-		foreach (var entry in entries) {
-			MarkerEntries.Add(entry);
-		}
+		MarkerEntries.AddRange(entries);
 
 		if (selectedFrame is not null) {
 			SelectedMarkerEntry = MarkerEntries.FirstOrDefault(e => e.FrameIndex == selectedFrame.Value);
