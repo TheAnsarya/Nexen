@@ -343,7 +343,6 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	private void RefreshSelectedFramePreview() {
 		SelectedFrameHexPreview = BuildFrameHexPreview(Movie, SelectedFrameIndex);
 
-		InputPreviewButtons.Clear();
 		int port = SelectedEditPort;
 		ControllerInput? selectedController = GetSelectedControllerInput(port);
 		IsPaddleCoordinateEditorVisible = CurrentLayout == ControllerLayout.Atari2600
@@ -367,9 +366,13 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			IsSelectedFrameResetActive = false;
 		}
 
-		List<ControllerButtonPreviewViewModel> previewButtons = BuildInputPreviewButtons(ControllerButtons, selectedController);
-		foreach (ControllerButtonPreviewViewModel previewButton in previewButtons) {
-			InputPreviewButtons.Add(previewButton);
+		// Reuse existing button VMs when the layout hasn't changed (just update IsPressed)
+		if (!TryUpdateInputPreviewButtonsInPlace(selectedController)) {
+			InputPreviewButtons.Clear();
+			List<ControllerButtonPreviewViewModel> previewButtons = BuildInputPreviewButtons(ControllerButtons, selectedController);
+			foreach (ControllerButtonPreviewViewModel previewButton in previewButtons) {
+				InputPreviewButtons.Add(previewButton);
+			}
 		}
 
 		InputPreviewColumns = Math.Max(1, ControllerButtons.Count > 0
@@ -474,43 +477,45 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	}
 
 	internal static byte[] BuildControllerPreviewBytes(ControllerInput input) {
-		var bytes = new List<byte>(16);
+		// Use stackalloc + single allocation instead of List<byte> + [..bytes] double alloc
+		Span<byte> buffer = stackalloc byte[18]; // max: 2 buttons + 4 analog + 2 triggers + 8 keyboard
+		int pos = 0;
 		ushort buttonBits = input.ButtonBits;
-		bytes.Add((byte)(buttonBits & 0xff));
-		bytes.Add((byte)(buttonBits >> 8));
+		buffer[pos++] = (byte)(buttonBits & 0xff);
+		buffer[pos++] = (byte)(buttonBits >> 8);
 
 		if (input.AnalogX.HasValue) {
-			bytes.Add(unchecked((byte)input.AnalogX.Value));
+			buffer[pos++] = unchecked((byte)input.AnalogX.Value);
 		}
 
 		if (input.AnalogY.HasValue) {
-			bytes.Add(unchecked((byte)input.AnalogY.Value));
+			buffer[pos++] = unchecked((byte)input.AnalogY.Value);
 		}
 
 		if (input.AnalogRX.HasValue) {
-			bytes.Add(unchecked((byte)input.AnalogRX.Value));
+			buffer[pos++] = unchecked((byte)input.AnalogRX.Value);
 		}
 
 		if (input.AnalogRY.HasValue) {
-			bytes.Add(unchecked((byte)input.AnalogRY.Value));
+			buffer[pos++] = unchecked((byte)input.AnalogRY.Value);
 		}
 
 		if (input.TriggerL.HasValue) {
-			bytes.Add(input.TriggerL.Value);
+			buffer[pos++] = input.TriggerL.Value;
 		}
 
 		if (input.TriggerR.HasValue) {
-			bytes.Add(input.TriggerR.Value);
+			buffer[pos++] = input.TriggerR.Value;
 		}
 
 		if (input.KeyboardData is { Length: > 0 }) {
 			int len = Math.Min(8, input.KeyboardData.Length);
 			for (int i = 0; i < len; i++) {
-				bytes.Add(input.KeyboardData[i]);
+				buffer[pos++] = input.KeyboardData[i];
 			}
 		}
 
-		return [.. bytes];
+		return buffer[..pos].ToArray();
 	}
 
 	internal static List<ControllerButtonPreviewViewModel> BuildInputPreviewButtons(IReadOnlyList<ControllerButtonInfo> layoutButtons, ControllerInput? input) {
@@ -524,6 +529,22 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 				button.Row,
 				input?.GetButton(button.ButtonId) == true))
 			.ToList();
+	}
+
+	/// <summary>
+	/// Updates existing InputPreviewButtons in-place when the button layout hasn't changed.
+	/// Returns true if in-place update succeeded, false if a full rebuild is needed.
+	/// </summary>
+	private bool TryUpdateInputPreviewButtonsInPlace(ControllerInput? input) {
+		if (InputPreviewButtons.Count == 0 || InputPreviewButtons.Count != ControllerButtons.Count) {
+			return false;
+		}
+
+		for (int i = 0; i < InputPreviewButtons.Count; i++) {
+			InputPreviewButtons[i].IsPressed = input?.GetButton(InputPreviewButtons[i].ButtonId) == true;
+		}
+
+		return true;
 	}
 
 	/// <summary>
@@ -3837,12 +3858,16 @@ tas.finishSearch(true) -- Load best result</pre>
 
 /// <summary>
 /// ViewModel representing a single frame in the TAS editor.
+/// Input strings (P1Input/P2Input) are computed lazily on first access to avoid
+/// O(n) string allocations during SyncFrameViewModels — only the ~30 visible rows
+/// in the ListBox virtualizer actually trigger the computation.
 /// </summary>
 public sealed partial class TasFrameViewModel : ViewModelBase {
 	private int _frameNumber;
 	private bool _isGreenzone;
-	private string _p1Input;
-	private string _p2Input;
+	private string? _p1Input;
+	private string? _p2Input;
+	private bool _inputDirty = true;
 	private IBrush _background;
 
 	/// <summary>Gets or sets the underlying frame.</summary>
@@ -3870,11 +3895,25 @@ public sealed partial class TasFrameViewModel : ViewModelBase {
 	/// <summary>Gets the background color based on frame state.</summary>
 	public IBrush Background => _background;
 
-	/// <summary>Gets the formatted input string for player 1.</summary>
-	public string P1Input => _p1Input;
+	/// <summary>Gets the formatted input string for player 1 (lazy).</summary>
+	public string P1Input {
+		get {
+			if (_inputDirty) {
+				MaterializeInputStrings();
+			}
+			return _p1Input!;
+		}
+	}
 
-	/// <summary>Gets the formatted input string for player 2.</summary>
-	public string P2Input => _p2Input;
+	/// <summary>Gets the formatted input string for player 2 (lazy).</summary>
+	public string P2Input {
+		get {
+			if (_inputDirty) {
+				MaterializeInputStrings();
+			}
+			return _p2Input!;
+		}
+	}
 
 	/// <summary>Gets the marker text (using Comment as marker).</summary>
 	public string MarkerText => Frame.Comment ?? "";
@@ -3892,9 +3931,14 @@ public sealed partial class TasFrameViewModel : ViewModelBase {
 		Frame = frame;
 		_frameNumber = index + 1; // 1-based display
 		_isGreenzone = isGreenzone;
+		_inputDirty = true;
+		_background = ComputeBackground();
+	}
+
+	private void MaterializeInputStrings() {
 		_p1Input = Frame.Controllers[0].ToNexenFormat();
 		_p2Input = Frame.Controllers.Length > 1 ? Frame.Controllers[1].ToNexenFormat() : "";
-		_background = ComputeBackground();
+		_inputDirty = false;
 	}
 
 	private IBrush ComputeBackground() => _isGreenzone ? Brushes.LightGreen
@@ -3903,15 +3947,18 @@ public sealed partial class TasFrameViewModel : ViewModelBase {
 
 	/// <summary>
 	/// Updates this VM to represent a different frame, reusing the object to avoid GC pressure.
+	/// Skips property notifications when the underlying data hasn't changed.
 	/// </summary>
 	public void Update(InputFrame frame, int index, bool isGreenzone) {
+		bool changed = !ReferenceEquals(Frame, frame) || _frameNumber != index + 1 || _isGreenzone != isGreenzone;
 		Frame = frame;
 		_frameNumber = index + 1;
 		_isGreenzone = isGreenzone;
-		_p1Input = Frame.Controllers[0].ToNexenFormat();
-		_p2Input = Frame.Controllers.Length > 1 ? Frame.Controllers[1].ToNexenFormat() : "";
+		_inputDirty = true;
 		_background = ComputeBackground();
-		this.RaisePropertyChanged(string.Empty);
+		if (changed) {
+			this.RaisePropertyChanged(string.Empty);
+		}
 	}
 
 	/// <summary>
@@ -3921,8 +3968,7 @@ public sealed partial class TasFrameViewModel : ViewModelBase {
 	/// instead of 7 separate RaisePropertyChanged calls.
 	/// </summary>
 	public void RefreshFromFrame() {
-		_p1Input = Frame.Controllers[0].ToNexenFormat();
-		_p2Input = Frame.Controllers.Length > 1 ? Frame.Controllers[1].ToNexenFormat() : "";
+		_inputDirty = true;
 		_background = ComputeBackground();
 		this.RaisePropertyChanged(string.Empty);
 	}
@@ -4398,7 +4444,7 @@ public sealed partial class ControllerButtonInfo {
 /// <summary>
 /// View model item for the selected-frame controller diagram preview.
 /// </summary>
-public sealed partial class ControllerButtonPreviewViewModel {
+public sealed partial class ControllerButtonPreviewViewModel : ViewModelBase {
 	/// <summary>Gets the button identifier used in ControllerInput.</summary>
 	public string ButtonId { get; }
 
@@ -4411,8 +4457,18 @@ public sealed partial class ControllerButtonPreviewViewModel {
 	/// <summary>Gets the row position for layout-aware ordering.</summary>
 	public int Row { get; }
 
-	/// <summary>Gets whether this button is currently pressed.</summary>
-	public bool IsPressed { get; }
+	/// <summary>Gets or sets whether this button is currently pressed.</summary>
+	private bool _isPressed;
+	public bool IsPressed {
+		get => _isPressed;
+		set {
+			if (_isPressed != value) {
+				_isPressed = value;
+				this.RaisePropertyChanged();
+				this.RaisePropertyChanged(nameof(Background));
+			}
+		}
+	}
 
 	/// <summary>Gets the preview background brush based on press state.</summary>
 	public IBrush Background => IsPressed ? Brushes.ForestGreen : Brushes.DimGray;
@@ -4425,7 +4481,7 @@ public sealed partial class ControllerButtonPreviewViewModel {
 		Label = label;
 		Column = column;
 		Row = row;
-		IsPressed = isPressed;
+		_isPressed = isPressed;
 	}
 }
 
