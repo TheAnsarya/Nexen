@@ -726,13 +726,13 @@ public sealed class PianoRollControl : Control {
 		base.OnPointerReleased(e);
 
 		if (_isPainting && _paintedFrames.Count > 1) {
-			// Raise paint event for multiple cells
+			// Raise paint event for multiple cells — reuse _paintFrameBuffer without copying
 			_paintFrameBuffer.Clear();
 			foreach (int frame in _paintedFrames) {
 				_paintFrameBuffer.Add(frame);
 			}
 			CellsPainted?.Invoke(this, new PianoRollPaintEventArgs(
-				_paintFrameBuffer.ToList(),
+				_paintFrameBuffer,
 				_paintButton,
 				_paintValue
 			));

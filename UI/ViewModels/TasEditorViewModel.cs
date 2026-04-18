@@ -2146,35 +2146,6 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	}
 
 	/// <summary>
-	/// Synchronizes the Frames collection with the current movie data by reusing
-	/// existing TasFrameViewModels in-place. Only allocates/removes VMs when the
-	/// frame count changes. For the common case (same count), this is O(n) updates
-	/// with zero allocations vs O(n) allocations in the old ReplaceAll path.
-	/// </summary>
-	private void SyncFrameViewModels() {
-		int movieCount = Movie!.InputFrames.Count;
-		int vmCount = Frames.Count;
-		int reuse = Math.Min(movieCount, vmCount);
-
-		// Update existing VMs in-place (no allocation)
-		for (int i = 0; i < reuse; i++) {
-			Frames[i].Update(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart);
-		}
-
-		if (movieCount > vmCount) {
-			// Append new VMs for added frames
-			var newVms = new List<TasFrameViewModel>(movieCount - vmCount);
-			for (int i = vmCount; i < movieCount; i++) {
-				newVms.Add(new TasFrameViewModel(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart));
-			}
-			Frames.AddRange(newVms);
-		} else if (movieCount < vmCount) {
-			// Remove excess VMs from the end
-			Frames.RemoveRange(movieCount, vmCount - movieCount);
-		}
-	}
-
-	/// <summary>
 	/// Refreshes a single frame's display without full rebuild. O(1) instead of O(n).
 	/// </summary>
 	private void RefreshFrameAt(int index) {
