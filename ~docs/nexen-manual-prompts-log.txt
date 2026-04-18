@@ -1605,11 +1605,15 @@ continue working
 fix issues and continue work-efforts; continue;
 --- ^^^
 
+fix issues and continue work-efforts; continue;
 
+fix issues and continue work-efforts; continue;
 
+[Nexen] Hey! 1.4.34 never got artifacts built and pushed to the release! fix it!; continue;
 
+fix issues and continue work-efforts; continue;
 
-
+[Nexen] The description for release 1.4.34 has a bunch of unicode errors with incorrect encoding like `Γ£¿`, fix them and update the description; continue;
 
 
 
