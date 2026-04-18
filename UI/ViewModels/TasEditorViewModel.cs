@@ -2073,7 +2073,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			return;
 		}
 
-		Frames.ReplaceAll(GenerateFrameViewModels());
+		SyncFrameViewModels();
 
 		if (Movie.InputFrames.Count == 0) {
 			if (SelectedFrameIndex != -1) {
@@ -2113,6 +2113,64 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	private IEnumerable<TasFrameViewModel> GenerateFrameViewModels() {
 		for (int i = 0; i < Movie!.InputFrames.Count; i++) {
 			yield return new TasFrameViewModel(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart);
+		}
+	}
+
+	/// <summary>
+	/// Synchronizes the Frames collection with the current movie data by reusing
+	/// existing TasFrameViewModels in-place. Only allocates/removes VMs when the
+	/// frame count changes. For the common case (same count), this is O(n) updates
+	/// with zero allocations vs O(n) allocations in the old ReplaceAll path.
+	/// </summary>
+	private void SyncFrameViewModels() {
+		int movieCount = Movie!.InputFrames.Count;
+		int vmCount = Frames.Count;
+		int reuse = Math.Min(movieCount, vmCount);
+
+		// Update existing VMs in-place (no allocation)
+		for (int i = 0; i < reuse; i++) {
+			Frames[i].Update(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart);
+		}
+
+		if (movieCount > vmCount) {
+			// Append new VMs for added frames
+			var newVms = new List<TasFrameViewModel>(movieCount - vmCount);
+			for (int i = vmCount; i < movieCount; i++) {
+				newVms.Add(new TasFrameViewModel(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart));
+			}
+			Frames.AddRange(newVms);
+		} else if (movieCount < vmCount) {
+			// Remove excess VMs from the end
+			Frames.RemoveRange(movieCount, vmCount - movieCount);
+		}
+	}
+
+	/// <summary>
+	/// Synchronizes the Frames collection with the current movie data by reusing
+	/// existing TasFrameViewModels in-place. Only allocates/removes VMs when the
+	/// frame count changes. For the common case (same count), this is O(n) updates
+	/// with zero allocations vs O(n) allocations in the old ReplaceAll path.
+	/// </summary>
+	private void SyncFrameViewModels() {
+		int movieCount = Movie!.InputFrames.Count;
+		int vmCount = Frames.Count;
+		int reuse = Math.Min(movieCount, vmCount);
+
+		// Update existing VMs in-place (no allocation)
+		for (int i = 0; i < reuse; i++) {
+			Frames[i].Update(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart);
+		}
+
+		if (movieCount > vmCount) {
+			// Append new VMs for added frames
+			var newVms = new List<TasFrameViewModel>(movieCount - vmCount);
+			for (int i = vmCount; i < movieCount; i++) {
+				newVms.Add(new TasFrameViewModel(Movie.InputFrames[i], i, IsGreenzoneEnabled && i >= GreenzoneStart));
+			}
+			Frames.AddRange(newVms);
+		} else if (movieCount < vmCount) {
+			// Remove excess VMs from the end
+			Frames.RemoveRange(movieCount, vmCount - movieCount);
 		}
 	}
 
@@ -3816,8 +3874,8 @@ public sealed partial class TasFrameViewModel : ViewModelBase {
 	private string _p2Input;
 	private IBrush _background;
 
-	/// <summary>Gets the underlying frame.</summary>
-	public InputFrame Frame { get; }
+	/// <summary>Gets or sets the underlying frame.</summary>
+	public InputFrame Frame { get; private set; }
 
 	/// <summary>Gets or sets the frame number (1-based for display).</summary>
 	public int FrameNumber {
@@ -3871,6 +3929,19 @@ public sealed partial class TasFrameViewModel : ViewModelBase {
 	private IBrush ComputeBackground() => _isGreenzone ? Brushes.LightGreen
 		: Frame.IsLagFrame ? Brushes.LightCoral
 		: Brushes.Transparent;
+
+	/// <summary>
+	/// Updates this VM to represent a different frame, reusing the object to avoid GC pressure.
+	/// </summary>
+	public void Update(InputFrame frame, int index, bool isGreenzone) {
+		Frame = frame;
+		_frameNumber = index + 1;
+		_isGreenzone = isGreenzone;
+		_p1Input = Frame.Controllers[0].ToNexenFormat();
+		_p2Input = Frame.Controllers.Length > 1 ? Frame.Controllers[1].ToNexenFormat() : "";
+		_background = ComputeBackground();
+		this.RaisePropertyChanged(string.Empty);
+	}
 
 	/// <summary>
 	/// Raises property changed for all computed properties that depend on the underlying frame data.
