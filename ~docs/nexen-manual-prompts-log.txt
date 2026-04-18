@@ -1615,6 +1615,7 @@ fix issues and continue work-efforts; continue;
 
 [Nexen] The description for release 1.4.34 has a bunch of unicode errors with incorrect encoding like `Γ£¿`, fix them and update the description; continue;
 
+Continue working on the full pipeline (Nexen->pansy->peony->poppy->Nexen) for the disassembly/reassembly of FFMQ (SNES); continue;
 
 
 
