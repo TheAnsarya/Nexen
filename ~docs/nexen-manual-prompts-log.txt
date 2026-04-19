@@ -1635,6 +1635,38 @@ continue;
 [Nexen] Focus on the SNES emulator and look for performance improvements that won't affect accuracy, we want it running as fast as possible without sacrificing correctness; make epics, issues, benchmarks, plans, tests, docs, readmes, etc and implement changes to improve this feature; continue;
 -- run x2 times
 
+continue;
+
+continue;
+
+git commit everything; Create a Game Garden entry for Zelda 3 on the SNES `C:\~reference-roms\Legend of Zelda, The - A Link to the Past (1992)(Nintendo)(US).smc` and peony disassembly and asset extraction and poppy reassembly; make sure the pipeline is converting the editable assets back into binary data or `.db` commands that are `.inc` included in the disassembly, if we can identify a group of real data (like not a jump table) like a set of monster graphics or dialog or anything else that is an asset, or a csv of monster stats, then peony should extract them and poppy should convert them back into usable includable files; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
