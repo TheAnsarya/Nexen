@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "SNES/SnesMemoryManager.h"
 #include "SNES/SnesConsole.h"
 #include "SNES/BaseCartridge.h"
@@ -23,7 +23,6 @@ void SnesMemoryManager::Initialize(SnesConsole* console) {
 	_openBus = 0;
 
 	_cpuSpeed = 8;  // Default CPU speed (8 master cycles per operation)
-	UpdateExecCallbacks();
 
 	_console = console;
 	_emu = console->GetEmulator();
@@ -442,29 +441,7 @@ uint8_t SnesMemoryManager::GetCpuSpeed() {
 }
 
 void SnesMemoryManager::SetCpuSpeed(uint8_t speed) {
-	if (_cpuSpeed != speed) {
-		_cpuSpeed = speed;
-		UpdateExecCallbacks();
-	}
-}
-
-void SnesMemoryManager::UpdateExecCallbacks() {
-	switch (_cpuSpeed) {
-		case 6:
-			_execRead = &SnesMemoryManager::IncMasterClock<2>;
-			_execWrite = &SnesMemoryManager::IncMasterClock<6>;
-			break;
-
-		case 8:
-			_execRead = &SnesMemoryManager::IncMasterClock<4>;
-			_execWrite = &SnesMemoryManager::IncMasterClock<8>;
-			break;
-
-		case 12:
-			_execRead = &SnesMemoryManager::IncMasterClock<8>;
-			_execWrite = &SnesMemoryManager::IncMasterClock<12>;
-			break;
-	}
+	_cpuSpeed = speed;
 }
 
 MemoryType SnesMemoryManager::GetMemoryTypeBusA() {
@@ -496,8 +473,4 @@ void SnesMemoryManager::Serialize(Serializer& s) {
 	SV(_nextEventClock);
 	SVArray(_workRam.get(), SnesMemoryManager::WorkRamSize);
 	SV(_registerHandlerB);
-
-	if (!s.IsSaving()) {
-		UpdateExecCallbacks();
-	}
 }

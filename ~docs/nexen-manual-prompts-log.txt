@@ -1633,6 +1633,7 @@ git commit everything; FF2's assets are all garbage, research how peony can bett
 continue;
 
 [Nexen] Focus on the SNES emulator and look for performance improvements that won't affect accuracy, we want it running as fast as possible without sacrificing correctness; make epics, issues, benchmarks, plans, tests, docs, readmes, etc and implement changes to improve this feature; continue;
+-- run x2 times
 
 
 

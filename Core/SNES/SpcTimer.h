@@ -106,7 +106,7 @@ public:
 	/// <param name="step">Number of SPC clock cycles elapsed.</param>
 	void Run(uint8_t step) {
 		_stage0 += step;
-		if (_stage0 >= rate) {
+		if (_stage0 >= rate) [[unlikely]] {
 			_stage1 ^= 0x01;
 			_stage0 -= rate;
 

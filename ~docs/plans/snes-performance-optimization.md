@@ -1,4 +1,4 @@
-# SNES Emulation Performance Optimization Plan
+﻿# SNES Emulation Performance Optimization Plan
 
 > Epic: [#1361](https://github.com/TheAnsarya/Nexen/issues/1361)
 

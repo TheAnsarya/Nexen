@@ -148,7 +148,7 @@ void InternalRegisters::ProcessIrqCounters() {
 	//  -IRQs can't trigger on V=261 H=339 (reg values), because V gets reset to 0 at H=2 at the same time as H increments to 339. This might mean that an IRQ at
 	//   V=0 and H=339 triggers both on scanline 0 and scanline 1 (at H=2)? (unverified)
 	// See CPU schematics here: https://github.com/rgalland/SNES_S-CPU_Schematics/
-	if (_needIrq > 0) {
+	if (_needIrq > 0) [[unlikely]] {
 		_needIrq--;
 		if (_needIrq == 1) {
 			SetIrqFlag(true);
@@ -163,9 +163,15 @@ void InternalRegisters::ProcessIrqCounters() {
 
 	uint16_t hClock = _memoryManager->GetHClock();
 
-	if (hClock > 10) {
+	// Fast path: hClock > 10 is the overwhelmingly common case (~97% of calls).
+	// Only hClock values 2, 6, 10 trigger special behavior (once per scanline each).
+	if (hClock > 10) [[likely]] {
 		_hCounter++;
-	} else if (hClock == 10) {
+		UpdateIrqLevel();
+		return;
+	}
+
+	if (hClock == 10) {
 		_hCounter = 0;
 	} else if (hClock == 6) {
 		_hCounter = 0;

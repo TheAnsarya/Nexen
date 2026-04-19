@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include <memory>
 #include "SNES/MemoryMappings.h"
@@ -135,25 +135,12 @@ private:
 	/// <summary>Master clock timing lookup table.</summary>
 	uint8_t _masterClockTable[0x800] = {};
 
-	/// <summary>Execution function pointer type.</summary>
-	typedef void (SnesMemoryManager::*Func)();
-
-	/// <summary>Read execution callback.</summary>
-	Func _execRead = nullptr;
-
-	/// <summary>Write execution callback.</summary>
-	Func _execWrite = nullptr;
-
 	/// <summary>Increments master clock by template cycles.</summary>
 	template <uint8_t clocks>
 	void IncMasterClock();
 
-	/// <summary>Updates execution callbacks (legacy, kept for SetCpuSpeed).</summary>
-	void UpdateExecCallbacks();
-
-	/// <summary>Inline read timing dispatch — replaces function pointer call.</summary>
+	/// <summary>Inline read timing dispatch — direct switch on _cpuSpeed.</summary>
 	/// <remarks>
-	/// Replaces (this->*_execRead)() with a direct switch on _cpuSpeed.
 	/// The switch has only 3 cases (6, 8, 12) and _cpuSpeed rarely changes,
 	/// so branch prediction is nearly perfect. Each case directly calls the
 	/// appropriate IncMasterClock template, allowing the compiler to inline.

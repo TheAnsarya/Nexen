@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "SNES/SnesPpu.h"
 #include "SNES/SnesConsole.h"
 #include "SNES/SnesMemoryManager.h"
@@ -1033,6 +1033,10 @@ void SnesPpu::RenderSprites(const uint8_t priority[4]) {
 		return;
 	}
 
+	if (_spriteCount == 0) [[unlikely]] {
+		return;
+	}
+
 	bool drawMain = (bool)(((_state.MainScreenLayers & _configVisibleLayers) >> SnesPpu::SpriteLayerIndex) & 0x01);
 	bool drawSub = (bool)(((_state.SubScreenLayers & _configVisibleLayers) >> SnesPpu::SpriteLayerIndex) & 0x01);
 
@@ -1351,33 +1355,51 @@ void SnesPpu::ApplyColorMath() {
 	bool hiResMode = _state.HiResMode || _state.BgMode == 5 || _state.BgMode == 6;
 
 	if (hiResMode) {
-		for (int x = _drawStartX; x <= _drawEndX; x++) {
-			bool isInsideWindow = _windowMask[SnesPpu::ColorWindowIndex][x];
-
-			// Keep original subscreen color, which is used to apply color math to the main screen after
-			uint16_t subPixel = _subScreenBuffer[x];
-			// Apply the color math based on the previous main pixel
-			uint16_t prevMainPixel = x > 0 ? _mainScreenBuffer[x - 1] : 0;
-			int prevX = x > 0 ? x - 1 : 0;
-			ApplyColorMathToPixel(_subScreenBuffer[x], prevMainPixel, prevX, isInsideWindow,
-				clipMode, preventMode, subtractMode, addSubscreen, fixedColor, baseHalfShift);
-
-			ApplyColorMathToPixel(_mainScreenBuffer[x], subPixel, x, isInsideWindow,
-				clipMode, preventMode, subtractMode, addSubscreen, fixedColor, baseHalfShift);
+		if (subtractMode) {
+			for (int x = _drawStartX; x <= _drawEndX; x++) {
+				bool isInsideWindow = _windowMask[SnesPpu::ColorWindowIndex][x];
+				uint16_t subPixel = _subScreenBuffer[x];
+				uint16_t prevMainPixel = x > 0 ? _mainScreenBuffer[x - 1] : 0;
+				int prevX = x > 0 ? x - 1 : 0;
+				ApplyColorMathToPixel<true>(_subScreenBuffer[x], prevMainPixel, prevX, isInsideWindow,
+					clipMode, preventMode, addSubscreen, fixedColor, baseHalfShift);
+				ApplyColorMathToPixel<true>(_mainScreenBuffer[x], subPixel, x, isInsideWindow,
+					clipMode, preventMode, addSubscreen, fixedColor, baseHalfShift);
+			}
+		} else {
+			for (int x = _drawStartX; x <= _drawEndX; x++) {
+				bool isInsideWindow = _windowMask[SnesPpu::ColorWindowIndex][x];
+				uint16_t subPixel = _subScreenBuffer[x];
+				uint16_t prevMainPixel = x > 0 ? _mainScreenBuffer[x - 1] : 0;
+				int prevX = x > 0 ? x - 1 : 0;
+				ApplyColorMathToPixel<false>(_subScreenBuffer[x], prevMainPixel, prevX, isInsideWindow,
+					clipMode, preventMode, addSubscreen, fixedColor, baseHalfShift);
+				ApplyColorMathToPixel<false>(_mainScreenBuffer[x], subPixel, x, isInsideWindow,
+					clipMode, preventMode, addSubscreen, fixedColor, baseHalfShift);
+			}
 		}
 	} else {
-		for (int x = _drawStartX; x <= _drawEndX; x++) {
-			bool isInsideWindow = _windowMask[SnesPpu::ColorWindowIndex][x];
-			ApplyColorMathToPixel(_mainScreenBuffer[x], _subScreenBuffer[x], x, isInsideWindow,
-				clipMode, preventMode, subtractMode, addSubscreen, fixedColor, baseHalfShift);
+		if (subtractMode) {
+			for (int x = _drawStartX; x <= _drawEndX; x++) {
+				bool isInsideWindow = _windowMask[SnesPpu::ColorWindowIndex][x];
+				ApplyColorMathToPixel<true>(_mainScreenBuffer[x], _subScreenBuffer[x], x, isInsideWindow,
+					clipMode, preventMode, addSubscreen, fixedColor, baseHalfShift);
+			}
+		} else {
+			for (int x = _drawStartX; x <= _drawEndX; x++) {
+				bool isInsideWindow = _windowMask[SnesPpu::ColorWindowIndex][x];
+				ApplyColorMathToPixel<false>(_mainScreenBuffer[x], _subScreenBuffer[x], x, isInsideWindow,
+					clipMode, preventMode, addSubscreen, fixedColor, baseHalfShift);
+			}
 		}
 	}
 }
 
+template <bool subtractMode>
 void SnesPpu::ApplyColorMathToPixel(
 	uint16_t& pixelA, uint16_t pixelB, int x, bool isInsideWindow,
 	ColorWindowMode clipMode, ColorWindowMode preventMode,
-	bool subtractMode, bool addSubscreen, uint16_t fixedColor, uint8_t baseHalfShift) {
+	bool addSubscreen, uint16_t fixedColor, uint8_t baseHalfShift) {
 
 	uint8_t halfShift = baseHalfShift;
 
@@ -1447,7 +1469,7 @@ void SnesPpu::ApplyColorMathToPixel(
 	}
 
 	constexpr unsigned int mask = 0x1F;
-	if (subtractMode) {
+	if constexpr (subtractMode) {
 		uint16_t r = std::max((int)((pixelA & mask) - (otherPixel & mask)), 0) >> halfShift;
 		uint16_t g = std::max((int)(((pixelA >> 5U) & mask) - ((otherPixel >> 5U) & mask)), 0) >> halfShift;
 		uint16_t b = std::max((int)(((pixelA >> 10U) & mask) - ((otherPixel >> 10U) & mask)), 0) >> halfShift;
