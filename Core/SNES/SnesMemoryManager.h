@@ -148,8 +148,32 @@ private:
 	template <uint8_t clocks>
 	void IncMasterClock();
 
-	/// <summary>Updates execution callbacks.</summary>
+	/// <summary>Updates execution callbacks (legacy, kept for SetCpuSpeed).</summary>
 	void UpdateExecCallbacks();
+
+	/// <summary>Inline read timing dispatch — replaces function pointer call.</summary>
+	/// <remarks>
+	/// Replaces (this->*_execRead)() with a direct switch on _cpuSpeed.
+	/// The switch has only 3 cases (6, 8, 12) and _cpuSpeed rarely changes,
+	/// so branch prediction is nearly perfect. Each case directly calls the
+	/// appropriate IncMasterClock template, allowing the compiler to inline.
+	/// </remarks>
+	__forceinline void ExecReadTiming() {
+		switch (_cpuSpeed) {
+			case 8: [[likely]] IncMasterClock<4>(); break;
+			case 6: IncMasterClock<2>(); break;
+			case 12: IncMasterClock<8>(); break;
+		}
+	}
+
+	/// <summary>Inline write timing dispatch — replaces function pointer call.</summary>
+	__forceinline void ExecWriteTiming() {
+		switch (_cpuSpeed) {
+			case 8: [[likely]] IncMasterClock<8>(); break;
+			case 6: IncMasterClock<6>(); break;
+			case 12: IncMasterClock<12>(); break;
+		}
+	}
 
 	/// <summary>Executes one memory cycle.</summary>
 	__forceinline void Exec();

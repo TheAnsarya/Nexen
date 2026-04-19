@@ -285,7 +285,7 @@ void SnesMemoryManager::ProcessEvent() {
 }
 
 uint8_t SnesMemoryManager::Read(uint32_t addr, MemoryOperationType type) {
-	(this->*_execRead)();
+	ExecReadTiming();
 
 	uint8_t value;
 	IMemoryHandler* handler = _mappings.GetHandler(addr);
@@ -366,7 +366,7 @@ void SnesMemoryManager::PeekBlock(uint32_t addr, uint8_t* dest) {
 }
 
 void SnesMemoryManager::Write(uint32_t addr, uint8_t value, MemoryOperationType type) {
-	(this->*_execWrite)();
+	ExecWriteTiming();
 
 	if (_emu->ProcessMemoryWrite<CpuType::Snes>(addr, value, type)) {
 		IMemoryHandler* handler = _mappings.GetHandler(addr);

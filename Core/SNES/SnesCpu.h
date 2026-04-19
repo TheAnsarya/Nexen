@@ -91,7 +91,7 @@ private:
 	uint16_t GetDirectAddressIndirectWordWithPageWrap(uint16_t offset);
 	uint32_t GetDirectAddressIndirectLong(uint16_t offset);
 
-	uint8_t GetOpCode();       ///< Fetch opcode at PC
+	[[nodiscard]] uint8_t GetOpCode();       ///< Fetch opcode at PC
 	uint16_t GetResetVector(); ///< Get reset vector based on mode
 
 	void ProcessCpuCycle();  ///< Called each master clock cycle
@@ -119,12 +119,12 @@ private:
 	void SetRegister(uint8_t& reg, uint8_t value);                    ///< Set 8-bit register
 	void SetRegister(uint16_t& reg, uint16_t value, bool eightBitMode); ///< Set 16-bit register
 
-	void SetZeroNegativeFlags(uint16_t value);
-	void SetZeroNegativeFlags(uint8_t value);
+	__forceinline void SetZeroNegativeFlags(uint16_t value);
+	__forceinline void SetZeroNegativeFlags(uint8_t value);
 
-	void ClearFlags(uint8_t flags);
-	void SetFlags(uint8_t flags);
-	bool CheckFlag(uint8_t flag);
+	__forceinline void ClearFlags(uint8_t flags);
+	__forceinline void SetFlags(uint8_t flags);
+	[[nodiscard]] __forceinline bool CheckFlag(uint8_t flag);
 
 	uint8_t ReadCode(uint16_t addr, MemoryOperationType type = MemoryOperationType::Read);
 	uint16_t ReadCodeWord(uint16_t addr, MemoryOperationType type = MemoryOperationType::Read);
@@ -137,9 +137,9 @@ private:
 	void WriteWord(uint32_t addr, uint16_t value, MemoryOperationType type = MemoryOperationType::Write);
 	void WriteWordRmw(uint32_t addr, uint16_t value, MemoryOperationType type = MemoryOperationType::Write);
 
-	uint8_t GetByteValue();
+	[[nodiscard]] uint8_t GetByteValue();
 
-	uint16_t GetWordValue();
+	[[nodiscard]] uint16_t GetWordValue();
 
 	void PushByte(uint8_t value, bool allowEmulationMode = true);
 	uint8_t PopByte(bool allowEmulationMode = true);

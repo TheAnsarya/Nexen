@@ -1616,6 +1616,23 @@ fix issues and continue work-efforts; continue;
 [Nexen] The description for release 1.4.34 has a bunch of unicode errors with incorrect encoding like `Γ£¿`, fix them and update the description; continue;
 
 Continue working on the full pipeline (Nexen->pansy->peony->poppy->Nexen) for the disassembly/reassembly of FFMQ (SNES); continue;
+-- run x3 times
+
+where did you disassemble and re-assemble ffmq during this session? where is the evidence?
+
+Uh, no, the entire peony disassembly just `.db` commands, the entire rom is treated a data. Where is my disassembled code? go back to peony and make it actually disassemble into code
+
+Yes do that; And are you using a CDL or pansy file? We want to be able to disassemble without them; and there is a huge amount of code now, great job, but there is still a lot of data, are we sure all this data is data? and also add default labels for snes header data stuff like the crc and name and options, etc, research that and or other default SNES labels for hardware like make and use default labels for all the registers used to manipulate the system and the initial code entry etc and the $42** stuff and other consistant and always present and standard SNES labels; continue;
+
+Start working on the full pipeline (Nexen->pansy->peony->poppy->Nexen) for the disassembly/reassembly of FF2 (SNES) which has a reference rom at `C:\~reference-roms\Final Fantasy II (U) (V1.1).smc` so make a game garden entry and use peony, pansy, and poppy to disassemble and extract assets for FF2 and then create a code/data plan and run the game through the pipeline; continue;
+
+Continue immediately with mismatch triage from offset 0x02800b and iterate until byte-identical.
+
+git commit everything; FF2's assets are all garbage, research how peony can better extract assets that are useful and actually as used in the game; make epics, issues, benchmarks, plans, tests, docs, readmes, etc and implement changes to improve this feature (asset identification and extraction); also image assets (editable) should be `*.png` files not `*.bmp`; continue;
+
+continue;
+
+[Nexen] Focus on the SNES emulator and look for performance improvements that won't affect accuracy, we want it running as fast as possible without sacrificing correctness; make epics, issues, benchmarks, plans, tests, docs, readmes, etc and implement changes to improve this feature; continue;
 
 
 
@@ -1640,8 +1657,22 @@ Continue working on the full pipeline (Nexen->pansy->peony->poppy->Nexen) for th
 
 
 
+*********************************************************************************************************************************
+*********************************************************************************************************************************
+*********************************************************************************************************************************
 
 
+
+
+[Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.35 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
+
+
+
+
+
+*********************************************************************************************************************************
+*********************************************************************************************************************************
+*********************************************************************************************************************************
 
 
 
@@ -1652,28 +1683,6 @@ prepare for a release, and clean up and update documentation and fix as many war
 
 
 [Nexen] update all these issues (#1039, #1205, #1076, #1193, #1194, #1176) with a link to the 1.4.26 release page and a message saying this release should fix your problem, please let us know if there's still an error; continue;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1695,30 +1704,7 @@ prepare for a release, and clean up and update documentation and fix as many war
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 [Nexen] Create UI testing project using `Avalonia.UITesting` (Official Avalonia UI Test Framework) starting with just opening every menu item to make sure it doesn't crash, then we'll plan more tests and complex tests; make issues/docs/plans/etc; continue;
-
-
 
 
 
