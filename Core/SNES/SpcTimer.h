@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "Utilities/Serializer.h"
 
@@ -10,7 +10,7 @@
 /// The SPC700 has three timers:
 /// - Timer 0 and 1: 8KHz base rate (128 divider from ~1MHz master clock)
 /// - Timer 2: 64KHz base rate (16 divider)
-/// 
+///
 /// Each timer has a programmable target value (1-256, where 0=256).
 /// The output counter increments each time the internal counter reaches the target,
 /// wrapping at 15 (4-bit counter). Reading the output resets it to 0.

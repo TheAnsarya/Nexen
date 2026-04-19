@@ -533,9 +533,16 @@ bool SnesPpu::ProcessEndOfScanline(uint16_t& hClock) {
 
 			memset(_hasSpritePriority, 0, sizeof(_hasSpritePriority));
 			memcpy(_spritePriority, _spritePriorityCopy, sizeof(_spritePriority));
-			for (int i = 0; i < 255; i++) {
-				if (_spritePriority[i] < 4) {
-					_hasSpritePriority[_spritePriority[i]] = true;
+			{
+				uint8_t found = 0;
+				for (int i = 0; i < 255; i++) {
+					uint8_t p = _spritePriority[i];
+					if (p < 4) {
+						if (!_hasSpritePriority[p]) {
+							_hasSpritePriority[p] = true;
+							if (++found == 4) break;
+						}
+					}
 				}
 			}
 
@@ -1015,16 +1022,21 @@ void SnesPpu::RenderScanline() {
 void SnesPpu::RenderBgColor() {
 	uint8_t pixelFlags = (_state.ColorMathEnabled & 0x20) ? PixelFlags::AllowColorMath : 0;
 	uint16_t bgColor = _cgram[0];
+	bool hasBgPixel = false;
 	for (int x = _drawStartX; x <= _drawEndX; x++) {
 		if ((_mainScreenFlags[x] & 0x0F) == 0) {
-			_state.InternalCgramAddress = 0;
+			hasBgPixel = true;
 			_mainScreenBuffer[x] = bgColor;
 			_mainScreenFlags[x] = pixelFlags;
 		}
 		if (_subScreenPriority[x] == 0) {
-			_state.InternalCgramAddress = 0;
+			hasBgPixel = true;
 			_subScreenBuffer[x] = bgColor;
 		}
+	}
+	// Set InternalCgramAddress once after the loop — BG color is always CGRAM[0]
+	if (hasBgPixel) {
+		_state.InternalCgramAddress = 0;
 	}
 }
 
@@ -1620,7 +1632,13 @@ void SnesPpu::PrecomputeWindowMasks() {
 		// Precompute mask for the full 256-pixel range
 		// Only compute if any window is active for this layer
 		if (activeCount == 0) {
-			memset(_windowMask[layer], 0, 256);
+			// Layers 0-4: skip memset when no windows active — mask is never read
+			// due to short-circuit (_mainWindowCount[layer] && _windowMask[layer][x])
+			// Layer 5 (ColorWindowIndex): ApplyColorMath reads mask unconditionally
+			if (layer == SnesPpu::ColorWindowIndex) {
+				memset(_windowMask[layer], 0, 256);
+			}
+			continue;
 		} else if (activeCount == 1) {
 			// Single window active
 			if (_state.Window[0].ActiveLayers[layer]) {

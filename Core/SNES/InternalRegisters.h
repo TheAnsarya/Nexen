@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "SNES/AluMulDiv.h"
 #include "SNES/SnesCpu.h"
