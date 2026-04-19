@@ -1641,63 +1641,66 @@ continue;
 
 git commit everything; Create a Game Garden entry for Zelda 3 on the SNES `C:\~reference-roms\Legend of Zelda, The - A Link to the Past (1992)(Nintendo)(US).smc` and peony disassembly and asset extraction and poppy reassembly; make sure the pipeline is converting the editable assets back into binary data or `.db` commands that are `.inc` included in the disassembly, if we can identify a group of real data (like not a jump table) like a set of monster graphics or dialog or anything else that is an asset, or a csv of monster stats, then peony should extract them and poppy should convert them back into usable includable files; continue;
 
+fix poppy!; continue;
 
+fix poppy!; don't convert png to inc, instead convert to `*.inc-graphics`, use a system of `*.inc-<purpose>` file extensions for the included files replacing `<purpose>` with `graphics` or `maps` or `dialog` or `events` or `stats` etc.; continue;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*********************************************************************************************************************************
-*********************************************************************************************************************************
-*********************************************************************************************************************************
-
-
-
+--- chatgpt-5.3-codex
+fix poppy!; don't convert png to inc, instead convert to `*.inc-graphics`, use a system of `*.inc-<purpose>` file extensions for the included files replacing `<purpose>` with `graphics` or `maps` or `dialog` or `events` or `stats` etc.; continue;
 
 [Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.35 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*********************************************************************************************************************************
+*********************************************************************************************************************************
+*********************************************************************************************************************************
+
+
+
+
+[Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.36 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
 
 
 
