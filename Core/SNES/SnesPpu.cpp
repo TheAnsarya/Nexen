@@ -1366,10 +1366,13 @@ void SnesPpu::ApplyColorMath() {
 
 	bool hiResMode = _state.HiResMode || _state.BgMode == 5 || _state.BgMode == 6;
 
+	// Hoist window mask pointer — constant for entire scanline, avoids double-dereference per pixel
+	const bool* colorWindowMask = _windowMask[SnesPpu::ColorWindowIndex];
+
 	if (hiResMode) {
 		if (subtractMode) {
 			for (int x = _drawStartX; x <= _drawEndX; x++) {
-				bool isInsideWindow = _windowMask[SnesPpu::ColorWindowIndex][x];
+				bool isInsideWindow = colorWindowMask[x];
 				uint16_t subPixel = _subScreenBuffer[x];
 				uint16_t prevMainPixel = x > 0 ? _mainScreenBuffer[x - 1] : 0;
 				int prevX = x > 0 ? x - 1 : 0;
@@ -1380,7 +1383,7 @@ void SnesPpu::ApplyColorMath() {
 			}
 		} else {
 			for (int x = _drawStartX; x <= _drawEndX; x++) {
-				bool isInsideWindow = _windowMask[SnesPpu::ColorWindowIndex][x];
+				bool isInsideWindow = colorWindowMask[x];
 				uint16_t subPixel = _subScreenBuffer[x];
 				uint16_t prevMainPixel = x > 0 ? _mainScreenBuffer[x - 1] : 0;
 				int prevX = x > 0 ? x - 1 : 0;
@@ -1390,16 +1393,16 @@ void SnesPpu::ApplyColorMath() {
 					clipMode, preventMode, addSubscreen, fixedColor, baseHalfShift);
 			}
 		}
-	} else {
+	} else [[likely]] {
 		if (subtractMode) {
 			for (int x = _drawStartX; x <= _drawEndX; x++) {
-				bool isInsideWindow = _windowMask[SnesPpu::ColorWindowIndex][x];
+				bool isInsideWindow = colorWindowMask[x];
 				ApplyColorMathToPixel<true>(_mainScreenBuffer[x], _subScreenBuffer[x], x, isInsideWindow,
 					clipMode, preventMode, addSubscreen, fixedColor, baseHalfShift);
 			}
 		} else {
 			for (int x = _drawStartX; x <= _drawEndX; x++) {
-				bool isInsideWindow = _windowMask[SnesPpu::ColorWindowIndex][x];
+				bool isInsideWindow = colorWindowMask[x];
 				ApplyColorMathToPixel<false>(_mainScreenBuffer[x], _subScreenBuffer[x], x, isInsideWindow,
 					clipMode, preventMode, addSubscreen, fixedColor, baseHalfShift);
 			}
@@ -1543,10 +1546,11 @@ void SnesPpu::ConvertToHiRes() {
 		uint16_t* src = _currentBuffer + (scanline << 8);
 		uint16_t* dst = _currentBuffer + (scanline << 10);
 		for (int x = 0; x < _drawStartX; x++) {
-			uint16_t pixel = src[x];
-			dst[x << 1] = pixel;
-			dst[(x << 1) + 1] = pixel;
+			uint16_t pixel = *src++;
+			*dst++ = pixel;
+			*dst++ = pixel;
 		}
+		dst = _currentBuffer + (scanline << 10);
 		memcpy(dst + 512, dst, 512 * sizeof(uint16_t));
 	}
 
@@ -1554,10 +1558,11 @@ void SnesPpu::ConvertToHiRes() {
 		uint16_t* src = _currentBuffer + (i << 8);
 		uint16_t* dst = _currentBuffer + (i << 10);
 		for (int x = 0; x < 256; x++) {
-			uint16_t pixel = src[x];
-			dst[x << 1] = pixel;
-			dst[(x << 1) + 1] = pixel;
+			uint16_t pixel = *src++;
+			*dst++ = pixel;
+			*dst++ = pixel;
 		}
+		dst = _currentBuffer + (i << 10);
 		memcpy(dst + 512, dst, 512 * sizeof(uint16_t));
 	}
 }
@@ -1651,25 +1656,30 @@ void SnesPpu::PrecomputeWindowMasks() {
 				}
 			}
 		} else {
-			// Both windows active — apply mask logic
-			for (int x = _drawStartX; x <= _drawEndX; x++) {
-				bool w0 = _state.Window[0].PixelNeedsMasking(layer, x);
-				bool w1 = _state.Window[1].PixelNeedsMasking(layer, x);
-				switch (_state.MaskLogic[layer]) {
-					default:
-					case WindowMaskLogic::Or:
-						_windowMask[layer][x] = w0 | w1;
-						break;
-					case WindowMaskLogic::And:
-						_windowMask[layer][x] = w0 & w1;
-						break;
-					case WindowMaskLogic::Xor:
-						_windowMask[layer][x] = w0 ^ w1;
-						break;
-					case WindowMaskLogic::Xnor:
-						_windowMask[layer][x] = !(w0 ^ w1);
-						break;
-				}
+			// Both windows active — hoist MaskLogic switch outside the per-pixel loop
+			// MaskLogic is constant per layer per scanline, eliminates branch per pixel
+			switch (_state.MaskLogic[layer]) {
+				default:
+				case WindowMaskLogic::Or:
+					for (int x = _drawStartX; x <= _drawEndX; x++) {
+						_windowMask[layer][x] = _state.Window[0].PixelNeedsMasking(layer, x) | _state.Window[1].PixelNeedsMasking(layer, x);
+					}
+					break;
+				case WindowMaskLogic::And:
+					for (int x = _drawStartX; x <= _drawEndX; x++) {
+						_windowMask[layer][x] = _state.Window[0].PixelNeedsMasking(layer, x) & _state.Window[1].PixelNeedsMasking(layer, x);
+					}
+					break;
+				case WindowMaskLogic::Xor:
+					for (int x = _drawStartX; x <= _drawEndX; x++) {
+						_windowMask[layer][x] = _state.Window[0].PixelNeedsMasking(layer, x) ^ _state.Window[1].PixelNeedsMasking(layer, x);
+					}
+					break;
+				case WindowMaskLogic::Xnor:
+					for (int x = _drawStartX; x <= _drawEndX; x++) {
+						_windowMask[layer][x] = !(_state.Window[0].PixelNeedsMasking(layer, x) ^ _state.Window[1].PixelNeedsMasking(layer, x));
+					}
+					break;
 			}
 		}
 	}
