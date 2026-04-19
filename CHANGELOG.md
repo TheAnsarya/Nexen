@@ -5,6 +5,27 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.35] - 2026-04-19
+
+### Performance
+
+- **SNES PPU Phase 4 optimizations** — ApplyColorMath pointer hoist + `[[likely]]`, PrecomputeWindowMasks switch hoist, ConvertToHiRes pointer arithmetic (#1381)
+- **SNES PPU Phase 3 optimizations** — PrecomputeWindowMasks skip memset, RenderBgColor hoist, sprite priority early-exit (#1376)
+- **SNES Phase 2 optimizations** — multiple hot-path SNES performance improvements (#1366)
+- **SNES memory dispatch optimization** — CPU method inlining for faster memory access dispatch (#1361)
+- **TAS editor batch MarkerEntries updates** — use RangeObservableCollection.AddRange for batch marker insertion (#1340)
+- **TAS editor ViewModel allocation reduction** — lazy strings, dirty-check, button reuse, stackalloc (#1340)
+- **TAS editor CellsPainted optimization** — remove unnecessary ToList() + fix duplicate SyncFrameViewModels (#1340)
+- **TAS editor frame ViewModel reuse** — reuse TasFrameViewModels in UpdateFrames via SyncFrameViewModels (#1360)
+- **TAS editor ViewModel caching** — cache P1Input/P2Input/Background in TasFrameViewModel (#1359)
+- **Movie input data contiguous buffer** — replace vector\<string\> with contiguous buffer for movie input data (#1358)
+- **Movie/TAS benchmark suite** — add 60K/300K frame benchmarks for Movie/TAS operations (#1308)
+
+### Fixed
+
+- **Movie/TAS Pass 3 fixes** — InputFrame buffer, FDS roundtrip, HasInput, undo helper, NexenMovie param (#1312)
+- **CDL recorder use-after-free race** — fix race condition in CDL recorder Stop() and InitDebugger() (#1356)
+
 ## [1.4.34] - 2026-04-17
 
 ### Fixed
