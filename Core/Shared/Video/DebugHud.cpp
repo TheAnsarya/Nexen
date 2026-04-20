@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <algorithm>
 #include "Shared/Video/DebugHud.h"
 #include "Shared/Video/DrawCommand.h"
@@ -87,6 +87,6 @@ void DebugHud::DrawRectangle(int x, int y, int width, int height, int color, boo
 	AddCommand(std::make_unique<DrawRectangleCommand>(x, y, width, height, color, fill, frameCount, startFrame));
 }
 
-void DebugHud::DrawString(int x, int y, const string& text, int color, int backColor, int frameCount, int startFrame, int maxWidth, bool overwritePixels) {
-	AddCommand(std::make_unique<DrawStringCommand>(x, y, text, color, backColor, frameCount, startFrame, maxWidth, overwritePixels));
+void DebugHud::DrawString(int x, int y, const string& text, int color, int backColor, int frameCount, int startFrame, int maxWidth, bool overwritePixels, int fontScale) {
+	AddCommand(std::make_unique<DrawStringCommand>(x, y, text, color, backColor, frameCount, startFrame, maxWidth, overwritePixels, fontScale));
 }

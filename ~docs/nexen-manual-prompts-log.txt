@@ -1650,9 +1650,7 @@ fix poppy!; don't convert png to inc, instead convert to `*.inc-graphics`, use a
 
 [Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.35 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
 
-
-
-
+[Nexen] The "game saved" and "game loaded" etc messages need to be larger when the screen is bigger (like zoomed in (settings->video size->5x) or maximize the window). they are tiny, make an issue and fix the problem so they are easily visible; also, show savestate saved message when the automatic saves happen (recent-save and auto-save) continue; fix the "pick a game" selection screen because it isn't always showing all recent games and there isn't an easy way to select another rom (maybe a big 64x64 button with icon and label) for open rom file, and another big button for select from verified games and work on a verfied games module using the seedlists project; also work on snes performance; issues, epics, benchmarks, tests, plans, docs, etc; continue;
 
 
 

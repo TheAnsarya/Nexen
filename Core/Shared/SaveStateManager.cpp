@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Utilities/FolderUtilities.h"
 #include "Utilities/ZipWriter.h"
 #include "Utilities/ZipReader.h"
@@ -798,7 +798,8 @@ string SaveStateManager::SaveRecentPlayState() {
 	string filepath = GetRecentPlayFilepath(_recentPlaySlot);
 
 	// Save state to file
-	if (SaveState(filepath, false)) {
+	bool showNotification = _emu->GetSettings()->GetPreferences().ShowRecentPlayNotifications;
+	if (SaveState(filepath, showNotification)) {
 		// Update timestamp
 		_lastRecentPlayTime = std::time(nullptr);
 

@@ -66,6 +66,8 @@ void SystemHud::Draw(DebugHud* hud, uint32_t width, uint32_t height) const {
 }
 
 void SystemHud::DrawMessage(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight, int& lastHeight) const {
+	int fontScale = GetFontScale(screenHeight);
+
 	// Save state notifications use centered box display
 	if (msg.GetTitle() == MessageManager::Localize("SaveStates") && msg.GetMessage().find('\n') != string::npos) {
 		DrawSaveStateNotification(hud, msg, screenWidth, screenHeight);
@@ -80,36 +82,47 @@ void SystemHud::DrawMessage(DebugHud* hud, MessageInfo& msg, uint32_t screenWidt
 
 	// Get opacity for fade in/out effect
 	uint8_t opacity = (uint8_t)(msg.GetOpacity() * 255);
-	int textLeftMargin = 4;
+	int textLeftMargin = 4 * fontScale;
 
 	string text = "[" + msg.GetTitle() + "] " + msg.GetMessage();
 
 	int maxWidth = screenWidth - textLeftMargin;
-	TextSize size = DrawStringCommand::MeasureString(text, maxWidth);
+	TextSize size = DrawStringCommand::MeasureString(text, maxWidth, fontScale);
 	lastHeight += size.Y;
-	DrawString(hud, screenWidth, text, textLeftMargin, screenHeight - lastHeight, opacity);
+	DrawString(hud, screenWidth, text, textLeftMargin, screenHeight - lastHeight, opacity, fontScale);
 }
 
-void SystemHud::DrawString(DebugHud* hud, uint32_t screenWidth, const string& text, int x, int y, uint8_t opacity) const {
+int SystemHud::GetFontScale(uint32_t screenHeight) {
+	// Scale font based on HUD buffer height relative to base console height (240px)
+	// At 1x (240), scale=1. At 480+, scale=2. At 720+, scale=3. Capped at 4.
+	if (screenHeight >= 960) return 4;
+	if (screenHeight >= 720) return 3;
+	if (screenHeight >= 480) return 2;
+	return 1;
+}
+
+void SystemHud::DrawString(DebugHud* hud, uint32_t screenWidth, const string& text, int x, int y, uint8_t opacity, int fontScale) const {
 	int maxWidth = screenWidth - x;
 	opacity = 255 - opacity;
-	for (int i = -1; i <= 1; i++) {
-		for (int j = -1; j <= 1; j++) {
-			hud->DrawString(x + i, y + j, text, 0 | (opacity << 24), 0xFF000000, 1, -1, maxWidth, true);
+	int shadowOffset = std::max(1, fontScale);
+	for (int i = -shadowOffset; i <= shadowOffset; i += shadowOffset) {
+		for (int j = -shadowOffset; j <= shadowOffset; j += shadowOffset) {
+			hud->DrawString(x + i, y + j, text, 0 | (opacity << 24), 0xFF000000, 1, -1, maxWidth, true, fontScale);
 		}
 	}
-	hud->DrawString(x, y, text, 0xFFFFFF | (opacity << 24), 0xFF000000, 1, -1, maxWidth, true);
+	hud->DrawString(x, y, text, 0xFFFFFF | (opacity << 24), 0xFF000000, 1, -1, maxWidth, true, fontScale);
 }
 
-void SystemHud::DrawColoredString(DebugHud* hud, uint32_t screenWidth, const string& text, int x, int y, uint32_t color, uint8_t opacity) const {
+void SystemHud::DrawColoredString(DebugHud* hud, uint32_t screenWidth, const string& text, int x, int y, uint32_t color, uint8_t opacity, int fontScale) const {
 	int maxWidth = screenWidth - x;
 	uint8_t fadeOp = 255 - opacity;
-	for (int i = -1; i <= 1; i++) {
-		for (int j = -1; j <= 1; j++) {
-			hud->DrawString(x + i, y + j, text, (int)(fadeOp << 24), (int)0xFF000000, 1, -1, maxWidth, true);
+	int shadowOffset = std::max(1, fontScale);
+	for (int i = -shadowOffset; i <= shadowOffset; i += shadowOffset) {
+		for (int j = -shadowOffset; j <= shadowOffset; j += shadowOffset) {
+			hud->DrawString(x + i, y + j, text, (int)(fadeOp << 24), (int)0xFF000000, 1, -1, maxWidth, true, fontScale);
 		}
 	}
-	hud->DrawString(x, y, text, (int)((color & 0xFFFFFF) | (fadeOp << 24)), (int)0xFF000000, 1, -1, maxWidth, true);
+	hud->DrawString(x, y, text, (int)((color & 0xFFFFFF) | (fadeOp << 24)), (int)0xFF000000, 1, -1, maxWidth, true, fontScale);
 }
 
 uint32_t SystemHud::GetSaveStateBadgeColor(const string& badge) {
@@ -124,6 +137,7 @@ uint32_t SystemHud::GetSaveStateBadgeColor(const string& badge) {
 void SystemHud::DrawSaveStateNotification(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight) const {
 	uint8_t opacity = (uint8_t)(msg.GetOpacity() * 255);
 	uint8_t fadeOp = 255 - opacity;
+	int fontScale = GetFontScale(screenHeight);
 
 	string message = msg.GetMessage();
 
@@ -143,13 +157,13 @@ void SystemHud::DrawSaveStateNotification(DebugHud* hud, MessageInfo& msg, uint3
 		badge = message;
 	}
 
-	// Measure text widths
-	TextSize badgeSize = DrawStringCommand::MeasureString(badge);
-	TextSize dateSize = !dateStr.empty() ? DrawStringCommand::MeasureString(dateStr) : TextSize{0, 0};
-	TextSize timeSize = !timeStr.empty() ? DrawStringCommand::MeasureString(timeStr) : TextSize{0, 0};
+	// Measure text widths (with font scale)
+	TextSize badgeSize = DrawStringCommand::MeasureString(badge, 0, fontScale);
+	TextSize dateSize = !dateStr.empty() ? DrawStringCommand::MeasureString(dateStr, 0, fontScale) : TextSize{0, 0};
+	TextSize timeSize = !timeStr.empty() ? DrawStringCommand::MeasureString(timeStr, 0, fontScale) : TextSize{0, 0};
 
-	int padding = 6;
-	int lineSpacing = 11;
+	int padding = 6 * fontScale;
+	int lineSpacing = 11 * fontScale;
 	int maxTextWidth = (int)badgeSize.X;
 	int numLines = 1;
 
@@ -163,9 +177,11 @@ void SystemHud::DrawSaveStateNotification(DebugHud* hud, MessageInfo& msg, uint3
 	}
 
 	int boxWidth = maxTextWidth + padding * 2;
-	int boxHeight = numLines * lineSpacing + padding * 2 - 2;
+	int boxHeight = numLines * lineSpacing + padding * 2 - 2 * fontScale;
 
-	auto position = GetBottomLeftBoxPosition(screenWidth, screenHeight, boxWidth, boxHeight);
+	int leftMargin = NotificationLeftMargin * fontScale;
+	int bottomMargin = NotificationBottomMargin * fontScale;
+	auto position = GetBottomLeftBoxPosition(screenWidth, screenHeight, boxWidth, boxHeight, leftMargin, bottomMargin);
 	int boxX = position.first;
 	int boxY = position.second;
 
@@ -184,20 +200,20 @@ void SystemHud::DrawSaveStateNotification(DebugHud* hud, MessageInfo& msg, uint3
 	// Badge line (colored, centered)
 	uint32_t badgeColor = GetSaveStateBadgeColor(badge);
 	int badgeX = boxX + (boxWidth - (int)badgeSize.X) / 2;
-	DrawColoredString(hud, screenWidth, badge, badgeX, yPos, badgeColor, opacity);
+	DrawColoredString(hud, screenWidth, badge, badgeX, yPos, badgeColor, opacity, fontScale);
 	yPos += lineSpacing;
 
 	// Date (white, centered)
 	if (!dateStr.empty()) {
 		int dateX = boxX + (boxWidth - (int)dateSize.X) / 2;
-		DrawString(hud, screenWidth, dateStr, dateX, yPos, opacity);
+		DrawString(hud, screenWidth, dateStr, dateX, yPos, opacity, fontScale);
 		yPos += lineSpacing;
 	}
 
 	// Time (white, centered)
 	if (!timeStr.empty()) {
 		int timeX = boxX + (boxWidth - (int)timeSize.X) / 2;
-		DrawString(hud, screenWidth, timeStr, timeX, yPos, opacity);
+		DrawString(hud, screenWidth, timeStr, timeX, yPos, opacity, fontScale);
 	}
 }
 
@@ -211,17 +227,20 @@ bool SystemHud::IsActionNotification(const string& title) {
 void SystemHud::DrawActionNotification(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight) const {
 	uint8_t opacity = (uint8_t)(msg.GetOpacity() * 255);
 	uint8_t fadeOp = 255 - opacity;
+	int fontScale = GetFontScale(screenHeight);
 
 	// Show message if non-empty, otherwise show title
 	string text = msg.GetMessage().empty() ? msg.GetTitle() : msg.GetMessage();
 
-	TextSize textSize = DrawStringCommand::MeasureString(text);
+	TextSize textSize = DrawStringCommand::MeasureString(text, 0, fontScale);
 
-	int padding = 6;
+	int padding = 6 * fontScale;
 	int boxWidth = (int)textSize.X + padding * 2;
-	int boxHeight = 11 + padding * 2 - 2;
+	int boxHeight = 11 * fontScale + padding * 2 - 2 * fontScale;
 
-	auto position = GetBottomLeftBoxPosition(screenWidth, screenHeight, boxWidth, boxHeight);
+	int leftMargin = NotificationLeftMargin * fontScale;
+	int bottomMargin = NotificationBottomMargin * fontScale;
+	auto position = GetBottomLeftBoxPosition(screenWidth, screenHeight, boxWidth, boxHeight, leftMargin, bottomMargin);
 	int boxX = position.first;
 	int boxY = position.second;
 
@@ -238,7 +257,7 @@ void SystemHud::DrawActionNotification(DebugHud* hud, MessageInfo& msg, uint32_t
 	// Centered text
 	int textX = boxX + (boxWidth - (int)textSize.X) / 2;
 	int textY = boxY + padding;
-	DrawString(hud, screenWidth, text, textX, textY, opacity);
+	DrawString(hud, screenWidth, text, textX, textY, opacity, fontScale);
 }
 
 void SystemHud::ShowFpsCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const {

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include <algorithm>
 
@@ -930,6 +930,8 @@ struct PreferencesConfig {
 	HudDisplaySize HudSize = HudDisplaySize::Fixed;
 
 	uint32_t AutoSaveStateDelay = 20;
+	bool ShowAutoSaveNotifications = true;
+	bool ShowRecentPlayNotifications = false;
 	uint32_t RewindBufferSize = 300;
 
 	const char* SaveFolderOverride = nullptr;

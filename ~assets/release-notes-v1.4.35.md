@@ -1,4 +1,4 @@
-# Nexen v1.4.35 — SNES Performance Blitz & TAS Editor Optimization
+﻿# Nexen v1.4.35 — SNES Performance Blitz & TAS Editor Optimization
 
 > **22 commits** | **13+ issues addressed** | **4,313 tests passing** (3,690 C++ + 623 .NET) | **Zero warnings**
 

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "Utilities/SimpleLock.h"
 #include "Shared/SettingTypes.h"
@@ -30,7 +30,7 @@ public:
 	void DrawPixel(int x, int y, int color, int frameCount, int startFrame = -1);
 	void DrawLine(int x, int y, int x2, int y2, int color, int frameCount, int startFrame = -1);
 	void DrawRectangle(int x, int y, int width, int height, int color, bool fill, int frameCount, int startFrame = -1);
-	void DrawString(int x, int y, const string& text, int color, int backColor, int frameCount, int startFrame = -1, int maxWidth = 0, bool overwritePixels = false);
+	void DrawString(int x, int y, const string& text, int color, int backColor, int frameCount, int startFrame = -1, int maxWidth = 0, bool overwritePixels = false, int fontScale = 1);
 
 	__forceinline void AddCommand(unique_ptr<DrawCommand> cmd) {
 		auto lock = _commandLock.AcquireSafe();

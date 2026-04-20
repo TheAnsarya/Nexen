@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -212,6 +212,8 @@
 							<c:NexenNumericUpDown Value="{Binding Config.AutoSaveStateDelay}" Margin="5 0" Minimum="1" Maximum="60" IsEnabled="{Binding Config.EnableAutoSaveState}" />
 							<TextBlock Text="{l:Translate lblSaveStateMinutes}" />
 						</StackPanel>
+						<CheckBox Content="{l:Translate chkShowAutoSaveNotifications}" IsChecked="{Binding Config.ShowAutoSaveNotifications}" IsEnabled="{Binding Config.EnableAutoSaveState}" Margin="20 0 0 0" />
+						<CheckBox Content="{l:Translate chkShowRecentPlayNotifications}" IsChecked="{Binding Config.ShowRecentPlayNotifications}" Margin="20 0 0 0" />
 						<StackPanel Orientation="Horizontal">
 							<CheckBox Content="{l:Translate lblRewind}" IsChecked="{Binding Config.EnableRewind}" />
 							<c:NexenNumericUpDown Value="{Binding Config.RewindBufferSize}" Margin="5 0" Minimum="0" Maximum="999" IsEnabled="{Binding Config.EnableRewind}" />

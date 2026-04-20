@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include <array>
 #include "Shared/Video/DrawCommand.h"
@@ -7,6 +7,7 @@ class DrawStringCommand : public DrawCommand {
 private:
 	int _x, _y, _color, _backColor;
 	int _maxWidth = 0;
+	int _fontScale = 1;
 	string _text;
 
 	// Taken from FCEUX's LUA code
@@ -802,17 +803,19 @@ private:
 
 protected:
 	void InternalDraw() {
+		int scale = std::max(1, _fontScale);
 		int startX = (int)(_x * _xScale / std::floor(_xScale));
 		int lineWidth = 0;
 		int x = startX;
 		int y = _y;
-		int lineHeight = 9;
+		int baseLineHeight = 9;
+		int lineHeight = baseLineHeight * scale;
 
-		auto newLine = [&lineWidth, &x, &y, &lineHeight, startX]() {
+		auto newLine = [&lineWidth, &x, &y, &lineHeight, startX, scale, baseLineHeight]() {
 			lineWidth = 0;
 			x = startX;
 			y += lineHeight;
-			lineHeight = 9;
+			lineHeight = baseLineHeight * scale;
 		};
 
 		for (int i = 0; i < _text.size(); i++) {
@@ -820,7 +823,7 @@ protected:
 			if (c == '\n') {
 				newLine();
 			} else if (c == '\t') {
-				int tabWidth = (_tabSpace - (((x - startX) / 8) % _tabSpace)) * 8;
+				int tabWidth = (_tabSpace - (((x - startX) / (8 * scale)) % _tabSpace)) * 8 * scale;
 				x += tabWidth;
 				lineWidth += tabWidth;
 				if (_maxWidth > 0 && lineWidth > _maxWidth) {
@@ -828,18 +831,19 @@ protected:
 				}
 			} else if (c == 0x20) {
 				// Space (ignore spaces at the start of a new line, when text wrapping is enabled)
+				int spaceWidth = 6 * scale;
 				if (lineWidth > 0 || _maxWidth == 0) {
 					if (_backColor & 0xFF000000) {
 						// Draw bg color for spaces (when bg color is set)
 						for (int row = 0; row < lineHeight; row++) {
-							for (int column = 0; column < 6; column++) {
-								DrawPixel(x + column, y + row - 1, _backColor);
+							for (int column = 0; column < spaceWidth; column++) {
+								DrawPixel(x + column, y + row - scale, _backColor);
 							}
 						}
 					}
 
-					lineWidth += 6;
-					x += 6;
+					lineWidth += spaceWidth;
+					x += spaceWidth;
 				}
 			} else if (c >= 0x80) {
 				// 8x12 UTF-8 font for Japanese
@@ -853,10 +857,11 @@ protected:
 						[](const auto& pair, int k) { return pair.first < k; }
 					);
 					if (res != _jpFont.end() && res->first == code) {
-						lineWidth += 8;
+						int charWidth = 8 * scale;
+						lineWidth += charWidth;
 						if (_maxWidth > 0 && lineWidth > _maxWidth) {
 							newLine();
-							lineWidth += 8;
+							lineWidth += charWidth;
 						}
 
 						uint8_t* charDef = (uint8_t*)res->second;
@@ -865,23 +870,29 @@ protected:
 							uint8_t rowData = charDef[row];
 							for (int column = 0; column < 8; column++) {
 								int drawFg = (rowData >> (7 - column)) & 0x01;
-								DrawPixel(x + column, y + row - 2, drawFg ? _color : _backColor);
+								int color = drawFg ? _color : _backColor;
+								for (int sy = 0; sy < scale; sy++) {
+									for (int sx = 0; sx < scale; sx++) {
+										DrawPixel(x + column * scale + sx, y + row * scale + sy - 2 * scale, color);
+									}
+								}
 							}
 						}
 						i += 2;
-						x += 8;
-						lineHeight = 12;
+						x += 8 * scale;
+						lineHeight = 12 * scale;
 					}
 				}
 			} else {
 				// Variable size font for standard ASCII
 				int ch = GetCharNumber(c);
 				int width = GetCharWidth(c);
+				int scaledWidth = width * scale;
 
-				lineWidth += width;
+				lineWidth += scaledWidth;
 				if (_maxWidth > 0 && lineWidth > _maxWidth) {
 					newLine();
-					lineWidth += width;
+					lineWidth += scaledWidth;
 				}
 
 				int rowOffset = (c == 'y' || c == 'g' || c == 'p' || c == 'q') ? 1 : 0;
@@ -889,36 +900,44 @@ protected:
 					uint8_t rowData = ((row == 7 && rowOffset == 0) || (row == 0 && rowOffset == 1)) ? 0 : _font[ch * 8 + 1 + row - rowOffset];
 					for (int col = 0; col < width; col++) {
 						int drawFg = (rowData >> (7 - col)) & 0x01;
-						DrawPixel(x + col, y + row, drawFg ? _color : _backColor);
+						int color = drawFg ? _color : _backColor;
+						for (int sy = 0; sy < scale; sy++) {
+							for (int sx = 0; sx < scale; sx++) {
+								DrawPixel(x + col * scale + sx, y + row * scale + sy, color);
+							}
+						}
 					}
 				}
 				for (int col = 0; col < width; col++) {
-					DrawPixel(x + col, y - 1, _backColor);
+					for (int sx = 0; sx < scale; sx++) {
+						DrawPixel(x + col * scale + sx, y - scale, _backColor);
+					}
 				}
-				x += width;
+				x += scaledWidth;
 			}
 		}
 	}
 
 public:
-	DrawStringCommand(int x, int y, string text, int color, int backColor, int frameCount, int startFrame, int maxWidth = 0, bool overwritePixels = false) : DrawCommand(startFrame, frameCount, true), _x(x), _y(y), _color(color), _backColor(backColor), _maxWidth(maxWidth), _text(std::move(text)) {
+	DrawStringCommand(int x, int y, string text, int color, int backColor, int frameCount, int startFrame, int maxWidth = 0, bool overwritePixels = false, int fontScale = 1) : DrawCommand(startFrame, frameCount, true), _x(x), _y(y), _color(color), _backColor(backColor), _maxWidth(maxWidth), _fontScale(std::max(1, fontScale)), _text(std::move(text)) {
 		// Invert alpha byte - 0 = opaque, 255 = transparent (this way, no need to specifiy alpha channel all the time)
 		_overwritePixels = overwritePixels;
 		_color = (~color & 0xFF000000) | (color & 0xFFFFFF);
 		_backColor = (~backColor & 0xFF000000) | (backColor & 0xFFFFFF);
 	}
 
-	static TextSize MeasureString(string& text, uint32_t maxWidth = 0) {
+	static TextSize MeasureString(string& text, uint32_t maxWidth = 0, int fontScale = 1) {
+		int scale = std::max(1, fontScale);
 		uint32_t maxX = 0;
 		uint32_t x = 0;
 		uint32_t y = 0;
-		uint32_t lineHeight = 9;
+		uint32_t lineHeight = 9 * scale;
 
 		auto newLine = [&]() {
 			maxX = std::max(x, maxX);
 			x = 0;
 			y += lineHeight;
-			lineHeight = 9;
+			lineHeight = 9 * scale;
 		};
 
 		for (int i = 0; i < text.size(); i++) {
@@ -926,16 +945,17 @@ public:
 			if (c == '\n') {
 				maxX = std::max(x, maxX);
 				x = 0;
-				y += 9;
+				y += 9 * scale;
 			} else if (c == '\t') {
-				x += _tabSpace - (((x / 8) % _tabSpace)) * 8;
+				x += (_tabSpace - (((x / (8 * scale)) % _tabSpace))) * 8 * scale;
 			} else if (c == 0x20) {
 				// Space (ignore spaces at the start of a new line, when text wrapping is enabled)
+				uint32_t spaceWidth = 6 * scale;
 				if (x > 0 || maxWidth == 0) {
-					if (maxWidth > 0 && x + 6 > maxWidth) {
+					if (maxWidth > 0 && x + spaceWidth > maxWidth) {
 						newLine();
 					}
-					x += 6;
+					x += spaceWidth;
 				}
 			} else if (c >= 0x80) {
 				// 8x12 UTF-8 font for Japanese
@@ -948,18 +968,19 @@ public:
 						[](const auto& pair, int k) { return pair.first < k; }
 					);
 					if (res != _jpFont.end() && res->first == code) {
-						if (maxWidth > 0 && x + 8 > maxWidth) {
+						uint32_t charWidth = 8 * scale;
+						if (maxWidth > 0 && x + charWidth > maxWidth) {
 							newLine();
 						}
 
 						i += 2;
-						x += 8;
-						lineHeight = 12;
+						x += charWidth;
+						lineHeight = 12 * scale;
 					}
 				}
 			} else {
 				// Variable size font for standard ASCII
-				int charWidth = GetCharWidth(c);
+				uint32_t charWidth = GetCharWidth(c) * scale;
 				if (maxWidth > 0 && x + charWidth > maxWidth) {
 					newLine();
 				}

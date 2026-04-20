@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -49,6 +49,8 @@ public sealed partial class PreferencesConfig : BaseConfig<PreferencesConfig> {
 
 	[Reactive] public partial bool EnableAutoSaveState { get; set; } = true;
 	[Reactive] public partial UInt32 AutoSaveStateDelay { get; set; } = 20;
+	[Reactive] public partial bool ShowAutoSaveNotifications { get; set; } = true;
+	[Reactive] public partial bool ShowRecentPlayNotifications { get; set; } = false;
 
 	[Reactive] public partial bool EnableRewind { get; set; } = true;
 	[Reactive] public partial UInt32 RewindBufferSize { get; set; } = 300;
@@ -243,7 +245,9 @@ public sealed partial class PreferencesConfig : BaseConfig<PreferencesConfig> {
 			SaveStateFolderOverride = OverrideSaveStateFolder ? SaveStateFolder : "",
 			ScreenshotFolderOverride = OverrideScreenshotFolder ? ScreenshotFolder : "",
 			RewindBufferSize = EnableRewind ? RewindBufferSize : 0,
-			AutoSaveStateDelay = EnableAutoSaveState ? AutoSaveStateDelay : 0
+			AutoSaveStateDelay = EnableAutoSaveState ? AutoSaveStateDelay : 0,
+			ShowAutoSaveNotifications = ShowAutoSaveNotifications,
+			ShowRecentPlayNotifications = ShowRecentPlayNotifications
 		});
 	}
 }
@@ -288,6 +292,8 @@ public struct InteropPreferencesConfig {
 	public HudDisplaySize HudSize;
 
 	public UInt32 AutoSaveStateDelay;
+	[MarshalAs(UnmanagedType.I1)] public bool ShowAutoSaveNotifications;
+	[MarshalAs(UnmanagedType.I1)] public bool ShowRecentPlayNotifications;
 	public UInt32 RewindBufferSize;
 
 	public string SaveFolderOverride;
