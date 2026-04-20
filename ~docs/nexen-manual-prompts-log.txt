@@ -1654,6 +1654,36 @@ fix poppy!; don't convert png to inc, instead convert to `*.inc-graphics`, use a
 
 continue;
 
+continue;
+
+continue;
+
+We have data from FFMQ, about 3/4 of the way through the game to work with through an Exported Game Package from Nexen at `C:\Users\me\Downloads\Final Fantasy - Mystic Quest (U) (V1.1) (2026-04-20-12-25-56).nexen-pack.zip`, this file contains CDL and pansy files for FFMQ, copy these to the appropriate place for the game garden and rerun the peony disassembler and make epics, issues, benchmarks, tests, docs, plans, etc for identifying and fixing issues with peony/poppy using the pansy and cdl files; continue;
+
+Continue working issues #181 → #182 → #180 → #184 → #183 → #185 → #186 and identifying and fixing issues with peony/poppy using the pansy and cdl files; continue;
+
+continue working on this epic and research why CDL and pansy aren't lining up. Note that the pansy file generation is still in development as well and you may need to make changes to the pansy format or creation if you find problems or errors with it or how Nexen collects the data for pansy. Also why does the game package have 2 cdl files? they're different too which isn't a good sign; continue;
+
+pansy file is supposed to have jump targets and we want it to track code that is a jump target (this code is called from elsewhere) and we want pansy to have the drawn flag and other flags pansy filesa should contain everything we need to properly disassemble a rom, make sure we actually logging all the data we need and have planned in the pansy format and that we are properly using it and that we are not overwritting flags with platform specific data, save that data elsewhere in the file; I don't care if our Nexen cdl files match the Mesen version, we are a separate ecosystem; continue;
+
+Create epics, issues, docs, benchmarks, tests, plans, etc for this pansy update work in peony, pansy, and Nexen; Originally, pansy was supposed to track all the jump targets from the jump points, so every jump knew where they jumped to (especially when the address was loaded from the rom so it had multiple jump destinations), are we doing that? would that slow everything down or take too much memory? make issues and research this; continue working;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Nexen] Clicking elsewhere in the window does not close a menu that is open. Sometimes clicking a menu does not close the current menu, but reopens it (like open setting, then open tools, and the settings menu just reloads, not the tools menu); also menu labels and menu menu items need to larger with larger text, they are very small;
+
 
 
 
