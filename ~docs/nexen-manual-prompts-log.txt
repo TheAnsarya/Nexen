@@ -1652,6 +1652,7 @@ fix poppy!; don't convert png to inc, instead convert to `*.inc-graphics`, use a
 
 [Nexen] The "game saved" and "game loaded" etc messages need to be larger when the screen is bigger (like zoomed in (settings->video size->5x) or maximize the window). they are tiny, make an issue and fix the problem so they are easily visible; also, show savestate saved message when the automatic saves happen (recent-save and auto-save) continue; fix the "pick a game" selection screen because it isn't always showing all recent games and there isn't an easy way to select another rom (maybe a big 64x64 button with icon and label) for open rom file, and another big button for select from verified games and work on a verfied games module using the seedlists project; also work on snes performance; issues, epics, benchmarks, tests, plans, docs, etc; continue;
 
+continue;
 
 
 
@@ -1660,6 +1661,13 @@ fix poppy!; don't convert png to inc, instead convert to `*.inc-graphics`, use a
 
 
 
+
+
+
+
+
+
+We've got partial pansy and cdl files for FFMQ (SNES) and so rerun peony and poppy and the pipeline, including asset extraction, using these files, and make check all this code and 
 
 
 

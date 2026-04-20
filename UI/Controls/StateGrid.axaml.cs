@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -23,6 +24,7 @@ public partial class StateGrid : UserControl {
 	public static readonly StyledProperty<int> SelectedPageProperty = AvaloniaProperty.Register<StateGrid, int>(nameof(SelectedPage));
 	public static readonly StyledProperty<bool> ShowArrowsProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(ShowArrows));
 	public static readonly StyledProperty<bool> ShowCloseProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(ShowClose));
+	public static readonly StyledProperty<bool> ShowActionButtonsProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(ShowActionButtons));
 	public static readonly StyledProperty<GameScreenMode> ModeProperty = AvaloniaProperty.Register<StateGrid, GameScreenMode>(nameof(Mode));
 	public static readonly StyledProperty<int> SelectedIndexProperty = AvaloniaProperty.Register<StateGrid, int>(nameof(SelectedIndex));
 
@@ -49,6 +51,11 @@ public partial class StateGrid : UserControl {
 	public bool ShowClose {
 		get { return GetValue(ShowCloseProperty); }
 		set { SetValue(ShowCloseProperty, value); }
+	}
+
+	public bool ShowActionButtons {
+		get { return GetValue(ShowActionButtonsProperty); }
+		set { SetValue(ShowActionButtonsProperty, value); }
 	}
 
 	public GameScreenMode Mode {
@@ -135,6 +142,23 @@ public partial class StateGrid : UserControl {
 
 			model.Visible = false;
 		}
+	}
+
+	private async void OnOpenRomClick(object sender, RoutedEventArgs e) {
+		if (VisualRoot is MainWindow wnd) {
+			string? initialFolder = ConfigManager.Config.Preferences.OverrideGameFolder && Directory.Exists(ConfigManager.Config.Preferences.GameFolder)
+				? ConfigManager.Config.Preferences.GameFolder
+				: ConfigManager.Config.RecentFiles.Items.Count > 0 ? ConfigManager.Config.RecentFiles.Items[0].RomFile.Folder : null;
+
+			string? filename = await FileDialogHelper.OpenFile(initialFolder, wnd, FileDialogHelper.RomExt);
+			if (filename is not null) {
+				LoadRomHelper.LoadFile(filename);
+			}
+		}
+	}
+
+	private void OnVerifiedGamesClick(object sender, RoutedEventArgs e) {
+		// Placeholder — will be connected to verified games / seedlists browser
 	}
 
 	/// <summary>
@@ -267,6 +291,7 @@ public partial class StateGrid : UserControl {
 
 		ShowArrows = Entries.Count > elementsPerPage;
 		ShowClose = Mode != GameScreenMode.RecentGames;
+		ShowActionButtons = Mode == GameScreenMode.RecentGames;
 
 		List<StateGridEntry> entries = new();
 		for (int row = 0; row < rowCount; row++) {

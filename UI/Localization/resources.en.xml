@@ -1915,6 +1915,8 @@
 		<Message ID="SaveStateDialog">Save State Menu</Message>
 		<Message ID="RecentPlaySaves">Recent Play Saves</Message>
 		<Message ID="AutoSaves">Auto Saves</Message>
+		<Message ID="OpenRomButton">Open ROM</Message>
+		<Message ID="VerifiedGamesButton">Verified Games</Message>
 
 		<Message ID="LoadFromFile">Load from file...</Message>
 		<Message ID="SaveToFile">Save to file...</Message>
