@@ -164,4 +164,77 @@ public class MarkerCommentPanelTests {
 		vm.RefreshMarkerEntries();
 		Assert.Empty(vm.MarkerEntries);
 	}
+
+	[Fact]
+	public void FilterChange_AfterRefresh_FiltersFromCache() {
+		using var vm = new TasEditorViewModel();
+		SetMovie(vm, CreateMovieWithComments());
+		vm.MarkerEntryFilter = MarkerEntryFilterType.All;
+		vm.RefreshMarkerEntries();
+
+		Assert.Equal(4, vm.MarkerEntries.Count);
+
+		// Switch filter — should use cached markers, not rescan frames
+		vm.MarkerEntryFilter = MarkerEntryFilterType.Marker;
+		// The WhenAnyValue subscription fires ApplyMarkerFilter automatically,
+		// but in test we call RefreshMarkerEntries to simulate. The cache is already built.
+		vm.RefreshMarkerEntries();
+
+		Assert.Equal(2, vm.MarkerEntries.Count);
+		Assert.All(vm.MarkerEntries, e => Assert.Equal(MarkerEntryType.Marker, e.Type));
+
+		// Switch to Todo
+		vm.MarkerEntryFilter = MarkerEntryFilterType.Todo;
+		vm.RefreshMarkerEntries();
+
+		Assert.Single(vm.MarkerEntries);
+		Assert.Equal(MarkerEntryType.Todo, vm.MarkerEntries[0].Type);
+
+		// Switch back to All
+		vm.MarkerEntryFilter = MarkerEntryFilterType.All;
+		vm.RefreshMarkerEntries();
+
+		Assert.Equal(4, vm.MarkerEntries.Count);
+	}
+
+	[Fact]
+	public void RefreshMarkerEntryAt_UpdatesCache() {
+		using var vm = new TasEditorViewModel();
+		var movie = CreateMovieWithComments();
+		SetMovie(vm, movie);
+		vm.MarkerEntryFilter = MarkerEntryFilterType.All;
+		vm.RefreshMarkerEntries();
+
+		Assert.Equal(4, vm.MarkerEntries.Count);
+
+		// Add a comment incrementally
+		movie.InputFrames[9].Comment = "[M] New marker";
+		vm.RefreshMarkerEntryAt(9);
+
+		Assert.Equal(5, vm.MarkerEntries.Count);
+
+		// Switch filter — the new marker should appear in Marker filter
+		vm.MarkerEntryFilter = MarkerEntryFilterType.Marker;
+		vm.RefreshMarkerEntries();
+
+		Assert.Equal(3, vm.MarkerEntries.Count);
+		Assert.Contains(vm.MarkerEntries, e => e.FrameIndex == 9);
+	}
+
+	[Fact]
+	public void SelectedMarkerEntry_PreservedAfterFilterChange() {
+		using var vm = new TasEditorViewModel();
+		SetMovie(vm, CreateMovieWithComments());
+		vm.MarkerEntryFilter = MarkerEntryFilterType.All;
+		vm.RefreshMarkerEntries();
+
+		// Select a marker entry
+		vm.SelectedMarkerEntry = vm.MarkerEntries.First(e => e.FrameIndex == 3);
+
+		// Refresh with same filter — selection should be preserved via binary search
+		vm.RefreshMarkerEntries();
+
+		Assert.NotNull(vm.SelectedMarkerEntry);
+		Assert.Equal(3, vm.SelectedMarkerEntry!.FrameIndex);
+	}
 }

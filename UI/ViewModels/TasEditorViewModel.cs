@@ -250,6 +250,9 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	/// <summary>Gets marker/comment entries for the marker panel.</summary>
 	public RangeObservableCollection<TasMarkerEntryViewModel> MarkerEntries { get; } = new();
 
+	/// <summary>Cached unfiltered marker entries — rebuilt on structural changes, filtered on display.</summary>
+	private List<TasMarkerEntryViewModel> _cachedAllMarkers = new();
+
 	/// <summary>Gets or sets the selected marker/comment entry.</summary>
 	[Reactive] public partial TasMarkerEntryViewModel? SelectedMarkerEntry { get; set; }
 
@@ -326,7 +329,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		}));
 		AddDisposable(this.WhenAnyValue(x => x.SelectedPaddlePosition).Subscribe(ApplySelectedPaddlePosition));
 		AddDisposable(this.WhenAnyValue(x => x.AutoSaveEnabled).Subscribe(_ => RestartAutoSaveTimer()));
-		AddDisposable(this.WhenAnyValue(x => x.MarkerEntryFilter).Subscribe(_ => RefreshMarkerEntries()));
+		AddDisposable(this.WhenAnyValue(x => x.MarkerEntryFilter).Subscribe(_ => ApplyMarkerFilter()));
 		AddDisposable(this.WhenAnyValue(x => x.AutoSaveIntervalMinutes).Subscribe(minutes => {
 			int clamped = Math.Clamp(minutes, 1, 60);
 			if (minutes != clamped) {
@@ -1622,11 +1625,12 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 	}
 
 	/// <summary>
-	/// Rebuilds the marker/comment list from current movie data.
-	/// Builds a temporary list first to minimize ObservableCollection change notifications.
+	/// Rebuilds the marker/comment cache from current movie data, then applies the active filter.
+	/// O(n) scan where n = total frames. Called on structural changes (load, insert, delete, undo/redo).
 	/// </summary>
 	public void RefreshMarkerEntries() {
 		if (Movie is null) {
+			_cachedAllMarkers.Clear();
 			MarkerEntries.Clear();
 			SelectedMarkerEntry = null;
 			return;
@@ -1640,32 +1644,65 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			}
 
 			MarkerEntryType type = ClassifyMarkerEntryType(comment);
-			if (!MatchesMarkerFilter(type)) {
-				continue;
-			}
-
 			entries.Add(new TasMarkerEntryViewModel(i, comment, type));
 		}
 
+		_cachedAllMarkers = entries;
+		ApplyMarkerFilter();
+	}
+
+	/// <summary>
+	/// Applies the current filter to the cached marker list and updates the displayed MarkerEntries.
+	/// O(k) where k = total marker count. Called on filter change — avoids rescanning all frames.
+	/// </summary>
+	private void ApplyMarkerFilter() {
+		var filtered = MarkerEntryFilter == MarkerEntryFilterType.All
+			? new List<TasMarkerEntryViewModel>(_cachedAllMarkers)
+			: _cachedAllMarkers.Where(e => MatchesMarkerFilter(e.Type)).ToList();
+
 		int? selectedFrame = SelectedMarkerEntry?.FrameIndex;
 		MarkerEntries.Clear();
-		MarkerEntries.AddRange(entries);
+		MarkerEntries.AddRange(filtered);
 
 		if (selectedFrame is not null) {
-			SelectedMarkerEntry = MarkerEntries.FirstOrDefault(e => e.FrameIndex == selectedFrame.Value);
+			// Binary search — entries are sorted by FrameIndex
+			int lo = 0, hi = MarkerEntries.Count - 1;
+			TasMarkerEntryViewModel? found = null;
+			while (lo <= hi) {
+				int mid = lo + (hi - lo) / 2;
+				int cmp = MarkerEntries[mid].FrameIndex.CompareTo(selectedFrame.Value);
+				if (cmp == 0) {
+					found = MarkerEntries[mid];
+					break;
+				} else if (cmp < 0) {
+					lo = mid + 1;
+				} else {
+					hi = mid - 1;
+				}
+			}
+			SelectedMarkerEntry = found;
 		}
 	}
 
 	/// <summary>
 	/// Incrementally updates the marker entries list for a single frame change.
 	/// O(k) where k = marker count, instead of O(n) where n = total frames.
+	/// Updates both the cached marker list and the filtered display list.
 	/// </summary>
 	internal void RefreshMarkerEntryAt(int frameIndex) {
 		if (Movie is null) {
 			return;
 		}
 
-		// Remove existing entry for this frame (if any)
+		// Remove existing entry from cache
+		for (int i = _cachedAllMarkers.Count - 1; i >= 0; i--) {
+			if (_cachedAllMarkers[i].FrameIndex == frameIndex) {
+				_cachedAllMarkers.RemoveAt(i);
+				break;
+			}
+		}
+
+		// Remove existing entry from display
 		for (int i = MarkerEntries.Count - 1; i >= 0; i--) {
 			if (MarkerEntries[i].FrameIndex == frameIndex) {
 				MarkerEntries.RemoveAt(i);
@@ -1673,14 +1710,25 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			}
 		}
 
-		// Check if the frame now has a comment that passes the filter
+		// Check if the frame now has a comment
 		if (frameIndex >= 0 && frameIndex < Movie.InputFrames.Count) {
 			string? comment = Movie.InputFrames[frameIndex].Comment;
 			if (!string.IsNullOrWhiteSpace(comment)) {
 				MarkerEntryType type = ClassifyMarkerEntryType(comment);
+				var entry = new TasMarkerEntryViewModel(frameIndex, comment, type);
+
+				// Insert in sorted position in cache (always)
+				int cacheInsert = 0;
+				for (int i = 0; i < _cachedAllMarkers.Count; i++) {
+					if (_cachedAllMarkers[i].FrameIndex > frameIndex) {
+						break;
+					}
+					cacheInsert = i + 1;
+				}
+				_cachedAllMarkers.Insert(cacheInsert, entry);
+
+				// Insert in sorted position in display (only if passes filter)
 				if (MatchesMarkerFilter(type)) {
-					var entry = new TasMarkerEntryViewModel(frameIndex, comment, type);
-					// Insert in sorted position (entries sorted by FrameIndex)
 					int insertIndex = 0;
 					for (int i = 0; i < MarkerEntries.Count; i++) {
 						if (MarkerEntries[i].FrameIndex > frameIndex) {
