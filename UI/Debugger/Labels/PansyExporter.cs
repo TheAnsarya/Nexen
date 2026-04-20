@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Buffers;
 using System.Collections.Frozen;
 using System.Collections.Generic;
@@ -1069,6 +1069,8 @@ public static class PansyExporter {
 	/// <summary>
 	/// Build enhanced cross-references section by analyzing CDL and disassembly.
 	/// Phase 3: Extracts actual cross-references from code analysis.
+	/// Also emits fallthrough edges for conditional branches (taken + not-taken paths)
+	/// to represent one-source-many-target control flow when statically resolvable.
 	/// Optimized: Uses OPCODE flag (0x10) filtering to skip operand bytes, OpSize-based
 	/// instruction skip to avoid redundant interop calls, and HashSet for O(1) deduplication.
 	/// </summary>
@@ -1142,6 +1144,18 @@ public static class PansyExporter {
 						var key = ((uint)i, targetAddr);
 						if (seenXrefs.Add(key)) {
 							xrefs.Add((key.Item1, key.Item2, xrefType, (byte)memType, (byte)line.EffectiveAddressType));
+						}
+					}
+
+					// Conditional branches have two control-flow successors:
+					// taken target and fallthrough (next instruction).
+					if (line.OpSize > 0 && IsConditionalBranchInstruction(line.ByteCode, cpuType)) {
+						uint fallthroughAddr = (uint)i + line.OpSize;
+						if (fallthroughAddr < (uint)cdlSpan.Length) {
+							var fallthroughKey = ((uint)i, fallthroughAddr);
+							if (seenXrefs.Add(fallthroughKey)) {
+								xrefs.Add((fallthroughKey.Item1, fallthroughKey.Item2, PansyCrossRefType.Branch, (byte)memType, (byte)memType));
+							}
 						}
 					}
 
@@ -1344,6 +1358,31 @@ public static class PansyExporter {
 			CpuType.Ws => opcode is >= 0x70 and <= 0x7F || (opcode == 0x0F && byteCode.Length >= 2 && byteCode[1] is >= 0x80 and <= 0x8F),
 
 			// GBA (ARM/THUMB): Would need more complex detection
+			_ => false
+		};
+	}
+
+	/// <summary>
+	/// Check if the bytecode represents a conditional branch (has fallthrough path).
+	/// </summary>
+	private static bool IsConditionalBranchInstruction(byte[] byteCode, CpuType cpuType) {
+		if (byteCode is null or { Length: 0 }) return false;
+
+		byte opcode = byteCode[0];
+
+		return cpuType switch {
+			// 6502/65816/65SC02: conditional branches only (exclude BRA/BRL)
+			CpuType.Nes or CpuType.Snes or CpuType.Lynx => opcode is 0x10 or 0x30 or 0x50 or 0x70 or 0x90 or 0xB0 or 0xD0 or 0xF0,
+
+			// Game Boy: JR cc, nn (exclude unconditional JR)
+			CpuType.Gameboy => opcode is 0x20 or 0x28 or 0x30 or 0x38,
+
+			// Genesis: Bcc where cc != always (BRA)
+			CpuType.Genesis => byteCode.Length >= 2 && (opcode & 0xF0) == 0x60 && opcode != 0x60,
+
+			// WonderSwan conditional branches
+			CpuType.Ws => opcode is >= 0x70 and <= 0x7F || (opcode == 0x0F && byteCode.Length >= 2 && byteCode[1] is >= 0x80 and <= 0x8F),
+
 			_ => false
 		};
 	}

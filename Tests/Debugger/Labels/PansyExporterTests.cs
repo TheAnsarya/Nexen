@@ -1,4 +1,4 @@
-using Xunit;
+﻿using Xunit;
 using System;
 using System.IO;
 using System.IO.Compression;
@@ -742,6 +742,17 @@ public class PansyExporterTests
 		Assert.Equal(CDL_SUB_ENTRY, result[6]);
 	}
 
+	[Theory]
+	[InlineData(CpuType.Snes, 0xD0, true)]  // BNE
+	[InlineData(CpuType.Snes, 0x80, false)] // BRA (unconditional)
+	[InlineData(CpuType.Snes, 0x82, false)] // BRL (unconditional)
+	[InlineData(CpuType.Gameboy, 0x20, true)] // JR NZ
+	[InlineData(CpuType.Gameboy, 0x18, false)] // JR (unconditional)
+	public void IsConditionalBranchInstruction_DetectsConditionalVsUnconditional(CpuType cpuType, byte opcode, bool expected) {
+		bool result = IsConditionalBranchInstructionTest(new byte[] { opcode, 0x00 }, cpuType);
+		Assert.Equal(expected, result);
+	}
+
 	#endregion
 
 	#region CPU State Section Tests
@@ -1047,6 +1058,18 @@ public class PansyExporterTests
 		var result = method!.Invoke(null, [cdlData, jumpTargets, functions, preserveUpperNibbleFlags]);
 		Assert.NotNull(result);
 		return Assert.IsType<byte[]>(result);
+	}
+
+	/// <summary>
+	/// Calls private IsConditionalBranchInstruction via reflection.
+	/// </summary>
+	private static bool IsConditionalBranchInstructionTest(byte[] byteCode, CpuType cpuType) {
+		var method = typeof(PansyExporter).GetMethod("IsConditionalBranchInstruction", BindingFlags.NonPublic | BindingFlags.Static);
+		Assert.NotNull(method);
+
+		var result = method!.Invoke(null, [byteCode, cpuType]);
+		Assert.NotNull(result);
+		return Assert.IsType<bool>(result);
 	}
 
 	/// <summary>
