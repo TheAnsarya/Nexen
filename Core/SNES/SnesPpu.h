@@ -252,6 +252,9 @@ private:
 	__forceinline void RenderTilemapMode7();
 
 	template <uint8_t layerIndex, uint8_t normalPriority, uint8_t highPriority, bool applyMosaic, bool directColorMode>
+	__forceinline void RenderTilemapMode7();
+
+	template <uint8_t layerIndex, uint8_t normalPriority, uint8_t highPriority, bool applyMosaic, bool directColorMode, bool largeMap>
 	void RenderTilemapMode7();
 
 	/// <summary>Draws a pixel to the main screen buffer with priority check.</summary>

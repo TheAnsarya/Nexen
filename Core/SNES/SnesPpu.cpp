@@ -1052,16 +1052,21 @@ void SnesPpu::RenderSprites(const uint8_t priority[4]) {
 	bool drawMain = (bool)(((_state.MainScreenLayers & _configVisibleLayers) >> SnesPpu::SpriteLayerIndex) & 0x01);
 	bool drawSub = (bool)(((_state.SubScreenLayers & _configVisibleLayers) >> SnesPpu::SpriteLayerIndex) & 0x01);
 
+	// Hoist window mask data to locals — constant for the entire scanline
+	uint8_t sprMainWinCount = _mainWindowCount[SnesPpu::SpriteLayerIndex];
+	uint8_t sprSubWinCount = _subWindowCount[SnesPpu::SpriteLayerIndex];
+	const bool* sprWinMask = _windowMask[SnesPpu::SpriteLayerIndex];
+
 	for (int x = _drawStartX; x <= _drawEndX; x++) {
 		if (_spritePriority[x] <= 3) {
 			uint8_t spritePrio = priority[_spritePriority[x]];
-			if (drawMain && ((_mainScreenFlags[x] & 0x0F) < spritePrio) && !(_mainWindowCount[SnesPpu::SpriteLayerIndex] && _windowMask[SnesPpu::SpriteLayerIndex][x])) {
+			if (drawMain && ((_mainScreenFlags[x] & 0x0F) < spritePrio) && !(sprMainWinCount && sprWinMask[x])) {
 				uint16_t paletteRamOffset = 128 + (_spritePalette[x] << 4) + _spriteColors[x];
 				_mainScreenBuffer[x] = _cgram[paletteRamOffset];
 				_mainScreenFlags[x] = spritePrio | (((_state.ColorMathEnabled & 0x10) && _spritePalette[x] > 3) ? PixelFlags::AllowColorMath : 0);
 			}
 
-			if (drawSub && (_subScreenPriority[x] < spritePrio) && !(_subWindowCount[SnesPpu::SpriteLayerIndex] && _windowMask[SnesPpu::SpriteLayerIndex][x])) {
+			if (drawSub && (_subScreenPriority[x] < spritePrio) && !(sprSubWinCount && sprWinMask[x])) {
 				uint16_t paletteRamOffset = 128 + (_spritePalette[x] << 4) + _spriteColors[x];
 				_subScreenBuffer[x] = _cgram[paletteRamOffset];
 				_subScreenPriority[x] = spritePrio;
@@ -1086,6 +1091,11 @@ void SnesPpu::RenderTilemap() {
 	uint8_t chrDataOffset;
 	uint8_t hiresSubColor;
 	uint8_t pixelFlags = (((_state.ColorMathEnabled >> layerIndex) & 0x01) ? PixelFlags::AllowColorMath : 0);
+
+	// Hoist window mask data to locals — constant for the entire scanline
+	uint8_t mainWinCount = _mainWindowCount[layerIndex];
+	uint8_t subWinCount = _subWindowCount[layerIndex];
+	const bool* winMask = _windowMask[layerIndex];
 
 	for (int x = _drawStartX; x <= _drawEndX; x++) {
 		if constexpr (hiResMode) {
@@ -1141,18 +1151,18 @@ void SnesPpu::RenderTilemap() {
 
 		if (color > 0) {
 			uint16_t rgbColor = GetRgbColor<bpp, directColorMode, basePaletteOffset>(paletteIndex, color);
-			if (drawMain && (_mainScreenFlags[x] & 0x0F) < priority && !(_mainWindowCount[layerIndex] && _windowMask[layerIndex][x])) {
+			if (drawMain && (_mainScreenFlags[x] & 0x0F) < priority && !(mainWinCount && winMask[x])) {
 				DrawMainPixel(x, rgbColor, priority | pixelFlags);
 			}
 			if constexpr (!hiResMode) {
-				if (drawSub && _subScreenPriority[x] < priority && !(_subWindowCount[layerIndex] && _windowMask[layerIndex][x])) {
+				if (drawSub && _subScreenPriority[x] < priority && !(subWinCount && winMask[x])) {
 					DrawSubPixel(x, rgbColor, priority);
 				}
 			}
 		}
 
 		if constexpr (hiResMode) {
-			if (hiresSubColor > 0 && drawSub && _subScreenPriority[x] < priority && !(_subWindowCount[layerIndex] && _windowMask[layerIndex][x])) {
+			if (hiresSubColor > 0 && drawSub && _subScreenPriority[x] < priority && !(subWinCount && winMask[x])) {
 				uint16_t hiresSubRgbColor = GetRgbColor<bpp, directColorMode, basePaletteOffset>(paletteIndex, hiresSubColor);
 				DrawSubPixel(x, hiresSubRgbColor, priority);
 			}
@@ -1214,7 +1224,7 @@ uint8_t SnesPpu::GetTilePixelColor(const uint16_t chrData[4], const uint8_t shif
 	return color;
 }
 
-template <uint8_t layerIndex, uint8_t normalPriority, uint8_t highPriority, bool applyMosaic, bool directColorMode>
+template <uint8_t layerIndex, uint8_t normalPriority, uint8_t highPriority, bool applyMosaic, bool directColorMode, bool largeMap>
 void SnesPpu::RenderTilemapMode7() {
 	bool drawMain = (bool)(((_state.MainScreenLayers & _configVisibleLayers) >> layerIndex) & 0x01);
 	bool drawSub = (bool)(((_state.SubScreenLayers & _configVisibleLayers) >> layerIndex) & 0x01);
@@ -1272,6 +1282,11 @@ void SnesPpu::RenderTilemapMode7() {
 
 	uint8_t pixelFlags = ((_state.ColorMathEnabled >> layerIndex) & 0x01) ? PixelFlags::AllowColorMath : 0;
 
+	// Hoist window mask data to locals — constant for the entire scanline
+	uint8_t mainWinCount = _mainWindowCount[layerIndex];
+	uint8_t subWinCount = _subWindowCount[layerIndex];
+	const bool* winMask = _windowMask[layerIndex];
+
 	for (int x = _drawStartX; x <= _drawEndX; x++) {
 		int32_t xOffset = xValue >> 8;
 		int32_t yOffset = yValue >> 8;
@@ -1279,7 +1294,7 @@ void SnesPpu::RenderTilemapMode7() {
 		yValue += yStep;
 
 		uint8_t tileIndex;
-		if (!_state.Mode7.LargeMap) {
+		if constexpr (!largeMap) {
 			yOffset &= 0x3FF;
 			xOffset &= 0x3FF;
 			tileIndex = (uint8_t)_vram[((yOffset & ~0x07) << 4) | (xOffset >> 3)];
@@ -1329,11 +1344,11 @@ void SnesPpu::RenderTilemapMode7() {
 				paletteColor = _cgram[colorIndex];
 			}
 
-			if (drawMain && (_mainScreenFlags[x] & 0x0F) < priority && !(_mainWindowCount[layerIndex] && _windowMask[layerIndex][x])) {
+			if (drawMain && (_mainScreenFlags[x] & 0x0F) < priority && !(mainWinCount && winMask[x])) {
 				DrawMainPixel(x, paletteColor, priority | pixelFlags);
 			}
 
-			if (drawSub && _subScreenPriority[x] < priority && !(_subWindowCount[layerIndex] && _windowMask[layerIndex][x])) {
+			if (drawSub && _subScreenPriority[x] < priority && !(subWinCount && winMask[x])) {
 				DrawSubPixel(x, paletteColor, priority);
 			}
 		}
@@ -2766,5 +2781,14 @@ void SnesPpu::RenderTilemapMode7() {
 		RenderTilemapMode7<layerIndex, normalPriority, highPriority, applyMosaic, true>();
 	} else {
 		RenderTilemapMode7<layerIndex, normalPriority, highPriority, applyMosaic, false>();
+	}
+}
+
+template <uint8_t layerIndex, uint8_t normalPriority, uint8_t highPriority, bool applyMosaic, bool directColorMode>
+void SnesPpu::RenderTilemapMode7() {
+	if (_state.Mode7.LargeMap) {
+		RenderTilemapMode7<layerIndex, normalPriority, highPriority, applyMosaic, directColorMode, true>();
+	} else {
+		RenderTilemapMode7<layerIndex, normalPriority, highPriority, applyMosaic, directColorMode, false>();
 	}
 }

@@ -232,7 +232,7 @@ void SnesMemoryManager::Exec() {
 		ProcessEvent();
 	}
 
-	if ((_hClock & 0x03) == 0) {
+	if ((_hClock & 0x03) == 0) [[likely]] {
 		_emu->ProcessPpuCycle<CpuType::Snes>();
 	} else if (_hClock & 0x02) {
 		_regs->ProcessIrqCounters();
