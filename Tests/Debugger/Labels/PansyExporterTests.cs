@@ -697,11 +697,64 @@ public class PansyExporterTests
 
 	#endregion
 
+	#region CDM Mapping Tests
+
+	[Fact]
+	public void MapCdlToPansyFlags_PreserveUpperNibble_MapsOpcodeDrawnReadIndirect() {
+		byte[] cdl = [
+			(byte)(CDL_CODE | CDL_OPCODE),
+			(byte)(CDL_DATA | CDL_DRAWN),
+			(byte)(CDL_DATA | CDL_READ),
+			(byte)(CDL_CODE | CDL_INDIRECT),
+		];
+
+		var result = MapCdlToPansyFlagsTest(cdl, [], [], preserveUpperNibbleFlags: true);
+
+		Assert.Equal((byte)(CDL_CODE | CDL_OPCODE), result[0]);
+		Assert.Equal((byte)(CDL_DATA | CDL_DRAWN | CDL_READ), result[1]); // DATA implies READ
+		Assert.Equal((byte)(CDL_DATA | CDL_READ), result[2]);
+		Assert.Equal((byte)(CDL_CODE | CDL_INDIRECT), result[3]);
+	}
+
+	[Fact]
+	public void MapCdlToPansyFlags_MaskUpperNibble_DropsOpcodeDrawnOverlayBits() {
+		byte[] cdl = [
+			(byte)(CDL_CODE | CDL_SNES_INDEX_MODE_8),
+			(byte)(CDL_DATA | CDL_SNES_MEMORY_MODE_8),
+		];
+
+		var result = MapCdlToPansyFlagsTest(cdl, [], [], preserveUpperNibbleFlags: false);
+
+		Assert.Equal(CDL_CODE, result[0]);
+		Assert.Equal((byte)(CDL_DATA | CDL_READ), result[1]);
+	}
+
+	[Fact]
+	public void MapCdlToPansyFlags_ExplicitJumpAndFunctionSets_AreApplied() {
+		byte[] cdl = new byte[8];
+		var jumpTargets = new uint[] { 2, 4 };
+		var functions = new uint[] { 4, 6 };
+
+		var result = MapCdlToPansyFlagsTest(cdl, jumpTargets, functions, preserveUpperNibbleFlags: true);
+
+		Assert.Equal(CDL_JUMP_TARGET, result[2]);
+		Assert.Equal((byte)(CDL_JUMP_TARGET | CDL_SUB_ENTRY), result[4]);
+		Assert.Equal(CDL_SUB_ENTRY, result[6]);
+	}
+
+	#endregion
+
 	#region CPU State Section Tests
 
 	// CDL flag constants (must match PansyExporter)
 	private const byte CDL_CODE = 0x01;
 	private const byte CDL_DATA = 0x02;
+	private const byte CDL_JUMP_TARGET = 0x04;
+	private const byte CDL_SUB_ENTRY = 0x08;
+	private const byte CDL_OPCODE = 0x10;
+	private const byte CDL_DRAWN = 0x20;
+	private const byte CDL_READ = 0x40;
+	private const byte CDL_INDIRECT = 0x80;
 	private const byte CDL_SNES_INDEX_MODE_8 = 0x10;
 	private const byte CDL_SNES_MEMORY_MODE_8 = 0x20;
 	private const byte CDL_GBA_THUMB = 0x20;
@@ -982,6 +1035,18 @@ public class PansyExporterTests
 		var result = BuildCpuStateSectionTest(cdl, isSnes: true, isGba: false);
 		Assert.Equal(9, result.Length);
 		Assert.Equal(CPU_STATE_ENTRY_SIZE, result.Length);
+	}
+
+	/// <summary>
+	/// Calls private MapCdlToPansyFlags via reflection.
+	/// </summary>
+	private static byte[] MapCdlToPansyFlagsTest(byte[] cdlData, uint[] jumpTargets, uint[] functions, bool preserveUpperNibbleFlags) {
+		var method = typeof(PansyExporter).GetMethod("MapCdlToPansyFlags", BindingFlags.NonPublic | BindingFlags.Static);
+		Assert.NotNull(method);
+
+		var result = method!.Invoke(null, [cdlData, jumpTargets, functions, preserveUpperNibbleFlags]);
+		Assert.NotNull(result);
+		return Assert.IsType<byte[]>(result);
 	}
 
 	/// <summary>

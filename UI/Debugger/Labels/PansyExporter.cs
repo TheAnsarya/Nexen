@@ -207,7 +207,8 @@ public static class PansyExporter {
 		// Section 1: CODE_DATA_MAP (CDL data with Pansy flag mapping)
 		if (cdlData is { Length: > 0 }) {
 			// Map CDL flags to Pansy spec flags and incorporate jump targets/functions
-			var pansyCdl = MapCdlToPansyFlags(cdlData, jumpTargets, functions);
+			bool hasCpuStateOverlay = romInfo.Format is RomFormat.Sfc or RomFormat.Spc or RomFormat.Gba;
+			var pansyCdl = MapCdlToPansyFlags(cdlData, jumpTargets, functions, preserveUpperNibbleFlags: !hasCpuStateOverlay);
 			var data = options.UseCompression ? CompressData(pansyCdl) : pansyCdl;
 			sections.Add(new SectionInfo {
 				Type = SECTION_CODE_DATA_MAP,
@@ -594,11 +595,10 @@ public static class PansyExporter {
 	/// Pansy flags: CODE(0x01), DATA(0x02), JUMP_TARGET(0x04), SUB_ENTRY(0x08),
 	///              OPCODE(0x10), DRAWN(0x20), READ(0x40), INDIRECT(0x80).
 	/// Nexen CDL: Code(0x01), Data(0x02), JumpTarget(0x04), SubEntryPoint(0x08).
-	/// SNES has IndexMode8(0x10)/MemoryMode8(0x20) in bits 4-5 which must be masked.
+	/// SNES/GBA may overlay bits 4-5 for CPU mode state, so upper nibble can be conditionally ignored.
 	/// </summary>
-	private static byte[] MapCdlToPansyFlags(byte[] cdlData, uint[] jumpTargets, uint[] functions) {
+	private static byte[] MapCdlToPansyFlags(byte[] cdlData, uint[] jumpTargets, uint[] functions, bool preserveUpperNibbleFlags) {
 		var result = new byte[cdlData.Length];
-		var functionSet = new HashSet<uint>(functions);
 
 		for (int i = 0; i < cdlData.Length; i++) {
 			byte cdl = cdlData[i];
@@ -606,24 +606,42 @@ public static class PansyExporter {
 			// Map basic flags (bits 0-3 match between CDL and Pansy spec)
 			byte pansyFlags = (byte)(cdl & 0x0f); // CODE, DATA, JUMP_TARGET, SUB_ENTRY
 
-			// Bit 4 (OPCODE, 0x10): Set for the first byte of each instruction
-			// In CDL, Code flag means "executed as code" - the first byte is the opcode
-			// Note: We mask off SNES IndexMode8 (0x10) since it collides with OPCODE
-			// For now, we don't have per-byte opcode tracking, so OPCODE stays unset
+			// Bits 4-5 can represent standard flags (OPCODE/DRAWN) on platforms
+			// that don't overlay them for CPU mode state.
+			if (preserveUpperNibbleFlags) {
+				if ((cdl & 0x10) != 0) {
+					pansyFlags |= 0x10; // OPCODE
+				}
+				if ((cdl & 0x20) != 0) {
+					pansyFlags |= 0x20; // DRAWN
+				}
+			}
 
-			// Bit 5 (DRAWN, 0x20): For NES CHR data drawn by PPU
-			// CDL uses a separate CHR CDL with NesChrDrawn flag
-			// Mask off SNES MemoryMode8 (0x20) to avoid collision
-
-			// Bit 6 (READ, 0x40): Data read by CPU - set when DATA flag is present
-			if ((cdl & 0x02) != 0) { // DATA flag
+			// Bit 6 (READ, 0x40): Preserve explicit read flag and keep legacy DATA->READ behavior.
+			if ((cdl & 0x40) != 0 || (cdl & 0x02) != 0) {
 				pansyFlags |= 0x40; // READ
 			}
 
-			// Bit 7 (INDIRECT, 0x80): Indirect addressing access
-			// Not currently tracked in Nexen CDL
+			// Bit 7 (INDIRECT, 0x80): Preserve when present.
+			if ((cdl & 0x80) != 0) {
+				pansyFlags |= 0x80;
+			}
 
 			result[i] = pansyFlags;
+		}
+
+		// Explicit jump/subroutine sets should always be represented in CDM, even if
+		// source CDL bytes were partial or transformed by platform-specific overlays.
+		foreach (uint target in jumpTargets) {
+			if (target < (uint)result.Length) {
+				result[target] |= 0x04;
+			}
+		}
+
+		foreach (uint function in functions) {
+			if (function < (uint)result.Length) {
+				result[function] |= 0x08;
+			}
 		}
 
 		return result;
