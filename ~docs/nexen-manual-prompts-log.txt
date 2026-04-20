@@ -1672,21 +1672,30 @@ continue;
 
 continue;
 
-[Nexen/pansy/peony] implement true one-source-many-target export, what's the problem, YOU CONTROL THE FORMAT, you don't need heuristics, when an address of a jump adds a second target, add another link or covert the link to a multi link or whatever; this code is all ours, you aren't limited by what's there, if something is in your way, then setup an issue and modify the code to fit our needs; continue;
+git commit everything; [Nexen/pansy/peony] implement true one-source-many-target export, what's the problem, YOU CONTROL THE FORMAT, you don't need heuristics, when an address of a jump adds a second target, add another link or covert the link to a multi link or whatever; this code is all ours, you aren't limited by what's there, if something is in your way, then setup an issue and modify the code to fit our needs; continue;
+
+continue;
+
+continue;
+
+[Nexen] Clicking elsewhere in the window does not close a menu that is open. Sometimes clicking a menu does not close the current menu, but reopens it (like open setting, then open tools, and the settings menu just reloads, not the tools menu); also menu labels and menu menu items need to larger with larger text, they are very small; continue working on getting FFMQ through the Nexen->pansy->peony->poppy->Nexen pipeline with asset extraction/insertion, and documentation creation especially datastructures, and label gathering/discovery/creation, and technical descriptions in a clean datastructure format so we can generate editors for the data from these meta files; continue;
+
+yes! do that! and make sure you are tracking X and M flags for register size per rom byte for the SNES in the pansy file, not the cdl file?, but don't overwrite other flags, store it elsewhere; continue working on this problem, make new epics, issues, plans, docs, tests, benchmarks, etc; continue;
+
+continue;
+
+continue;
+
+[Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.36 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
+
+continue;
+
+continue;
 
 
 
 
 
-
-
-
-
-
-
-
-
-[Nexen] Clicking elsewhere in the window does not close a menu that is open. Sometimes clicking a menu does not close the current menu, but reopens it (like open setting, then open tools, and the settings menu just reloads, not the tools menu); also menu labels and menu menu items need to larger with larger text, they are very small;
 
 
 
@@ -1740,7 +1749,7 @@ We've got partial pansy and cdl files for FFMQ (SNES) and so rerun peony and pop
 
 
 
-[Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.36 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
+[Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.37 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
 
 
 

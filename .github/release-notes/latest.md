@@ -1,8 +1,8 @@
-# Nexen v1.4.35 -- SNES Performance Blitz & TAS Editor Optimization
+# Nexen v1.4.36 -- SNES Performance Blitz & TAS Editor Optimization
 
 > **22 commits** | **13+ issues addressed** | **4,313 tests passing** (3,690 C++ + 623 .NET) | **Zero warnings**
 
-Nexen v1.4.35 is a deep performance optimization release targeting the SNES emulation core and TAS editor. Four phases of SNES PPU optimizations deliver faster rendering through pointer hoisting, early exits, and attribute hints. The TAS editor receives major allocation reduction, frame ViewModel reuse, and a contiguous memory buffer for movie input data. A critical CDL recorder race condition fix rounds out the stability improvements.
+Nexen v1.4.36 is a deep performance optimization release targeting the SNES emulation core and TAS editor. Four phases of SNES PPU optimizations deliver faster rendering through pointer hoisting, early exits, and attribute hints. The TAS editor receives major allocation reduction, frame ViewModel reuse, and a contiguous memory buffer for movie input data. A critical CDL recorder race condition fix rounds out the stability improvements.
 
 ---
 
@@ -92,16 +92,100 @@ Nexen v1.4.35 is a deep performance optimization release targeting the SNES emul
 | Issue | Description | Type |
 |-------|-------------|------|
 | #1381 | SNES PPU Phase 4 optimizations | perf |
-| #1376 | SNES PPU Phase 3 optimizations | perf |
-| #1366 | SNES Phase 2 optimizations | perf |
-| #1361 | SNES memory dispatch + CPU inlining | perf |
-| #1360 | TAS frame ViewModel reuse | perf |
-| #1359 | TAS ViewModel caching | perf |
-| #1358 | Movie input contiguous buffer | perf |
-| #1340 | TAS editor allocation reduction + batch updates | perf |
-| #1312 | Movie/TAS Pass 3 fixes | fix |
-| #1308 | Movie/TAS benchmark suite | perf |
-| #1356 | CDL recorder use-after-free race | fix |
+# Nexen v1.4.36 -- Pansy Jump Graph, OSD Improvements & SNES Performance
+
+> **11 commits** | **8 issues addressed** | **4,313 tests passing** (3,690 C++ + 623 .NET) | **Zero warnings**
+
+Nexen v1.4.36 ships the Pansy Jump Graph export suite, bringing true one-source-many-target cross-reference serialization and conditional branch fallthrough edges to the `.pansy` metadata format. The UI gains Open ROM and Verified Games shortcut buttons on the game selection screen, and the OSD now scales its font with the HUD buffer and shows notifications for auto-save and recent-play saves. Two targeted performance improvements cover the TAS editor marker refresh and SNES Mode7 rendering.
+
+---
+
+## Highlights
+
+| Feature | Details |
+|---------|---------|
+| :globe_with_meridians: **Multi-Target Pansy XRefs** | One source address serializes 2+ targets; backward compatible with existing Pansy readers |
+| :twisted_rightwards_arrows: **Branch Fallthrough XRefs** | Conditional branch fallthrough edges added to the Pansy jump graph |
+| :bug: **Pansy CDM Flags Fix** | JumpTarget/SubEntry/Opcode/Drawn/Read/Indirect bits no longer collide with platform-specific flags |
+| :card_index_dividers: **Game Selection Buttons** | Open ROM and Verified Games action buttons added to the game selection screen |
+| :capital_abcd: **OSD Font Scaling** | Bitmap OSD font now scales with the HUD buffer size |
+| :bell: **OSD Save Notifications** | Notifications shown on OSD for auto-save and recent-play saves |
+| :zap: **SNES Mode7 LargeMap** | Mode7 LargeMap templating + window mask hoisting + `[[likely]]` on Exec hot path |
+| :zap: **RefreshMarkerEntries** | Cache-and-filter optimization skips unchanged TAS editor marker entries |
+
+---
+
+## :globe_with_meridians: Pansy Jump Graph Export
+
+### Multi-Target XRef Export - #1399
+
+- True one-source-many-target Pansy export contract implemented end-to-end
+- A single source address can now serialize 2 or more outgoing targets without heuristic guessing
+- Both the legacy `CrossReference` section and the grouped `MultiTargetCrossReference` section are written, maintaining full backward compatibility
+- New tests pass in Nexen, Pansy, and Peony
+
+### Conditional Branch Fallthrough XRefs - #1396
+
+- Explicit source-to-target jump graph entries written for indirect and multi-target control flows
+- Conditional branch fallthrough edges included alongside taken-branch edges
+- Deduplication ensures deterministic output
+
+### Pansy CDM Flag Fix - #1395
+
+- `CODE_DATA_MAP` flag bits (`JumpTarget`, `SubEntry`, `Opcode`, `Drawn`, `Read`, `Indirect`) are now correctly preserved
+- Platform-specific bits (SNES/GBA mode state) stored in `SECTION_CPU_STATE` only and no longer collide with standard CDM bits
+- Roundtrip mapping tests verify all standard flags survive a full write-read cycle
+
+---
+
+## :card_index_dividers: UI Improvements
+
+### Game Selection Screen Action Buttons - #1390
+
+- **Open ROM** button added directly to the game selection screen for quick access
+- **Verified Games** button added for browsing the curated verified game list
+- Both buttons are positioned for easy access without navigating menus
+
+### OSD Font Scaling - #1388
+
+- The bitmap OSD font now scales proportionally with the HUD buffer size
+- Ensures readability across different output resolutions and window sizes
+
+### OSD Save Notifications - #1389
+
+- Auto-save events now display an OSD notification message
+- Recent-play save events also display an OSD notification
+- Notifications use the scaled OSD font
+
+---
+
+## :rocket: Performance
+
+### RefreshMarkerEntries Cache-and-Filter - #1392
+
+- Cache the current marker set and skip entries that have not changed
+- Reduces redundant UI update work in the TAS editor piano roll on every marker refresh
+
+### SNES Mode7 LargeMap Templating - #1391
+
+- Template the Mode7 LargeMap rendering path to eliminate branching in the inner loop
+- Window mask computation hoisted out of per-pixel work
+- `[[likely]]` attribute added to the `Exec` hot path for better branch prediction hints
+
+---
+
+## :clipboard: Issues Addressed
+
+| Issue | Description | Type |
+|-------|-------------|------|
+| #1399 | Multi-target Pansy XRef export contract | feat |
+| #1396 | Conditional branch fallthrough XRefs | feat |
+| #1395 | Pansy CDM flag mapping fix | fix |
+| #1392 | RefreshMarkerEntries cache-and-filter | perf |
+| #1391 | SNES Mode7 LargeMap + window mask hoist | perf |
+| #1390 | Game selection screen action buttons | feat |
+| #1388 | OSD font scaling | feat |
+| #1389 | OSD save notifications | feat |
 
 ---
 
@@ -122,27 +206,27 @@ Nexen v1.4.35 is a deep performance optimization release targeting the SNES emul
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **Standard** | [Nexen-Windows-x64-v1.4.35.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.35/Nexen-Windows-x64-v1.4.35.exe) | Single-file, recommended |
-| **Native AOT** | [Nexen-Windows-x64-AoT-v1.4.35.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.35/Nexen-Windows-x64-AoT-v1.4.35.exe) | Faster startup |
+| **Standard** | [Nexen-Windows-x64-v1.4.36.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.36/Nexen-Windows-x64-v1.4.36.exe) | Single-file, recommended |
+| **Native AOT** | [Nexen-Windows-x64-AoT-v1.4.36.exe](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.36/Nexen-Windows-x64-AoT-v1.4.36.exe) | Faster startup |
 
 ### Linux
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **AppImage x64** | [Nexen-Linux-x64-v1.4.35.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.35/Nexen-Linux-x64-v1.4.35.AppImage) | Recommended |
-| **AppImage ARM64** | [Nexen-Linux-ARM64-v1.4.35.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.35/Nexen-Linux-ARM64-v1.4.35.AppImage) | Raspberry Pi 4/5 |
-| Binary x64 (clang) | [Nexen-Linux-x64-v1.4.35.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.35/Nexen-Linux-x64-v1.4.35.tar.gz) | Requires SDL2 |
-| Binary x64 (gcc) | [Nexen-Linux-x64-gcc-v1.4.35.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.35/Nexen-Linux-x64-gcc-v1.4.35.tar.gz) | Requires SDL2 |
-| Binary ARM64 (clang) | [Nexen-Linux-ARM64-v1.4.35.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.35/Nexen-Linux-ARM64-v1.4.35.tar.gz) | Requires SDL2 |
-| Binary ARM64 (gcc) | [Nexen-Linux-ARM64-gcc-v1.4.35.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.35/Nexen-Linux-ARM64-gcc-v1.4.35.tar.gz) | Requires SDL2 |
-| Native AOT x64 | [Nexen-Linux-x64-AoT-v1.4.35.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.35/Nexen-Linux-x64-AoT-v1.4.35.tar.gz) | Faster startup |
+| **AppImage x64** | [Nexen-Linux-x64-v1.4.36.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.36/Nexen-Linux-x64-v1.4.36.AppImage) | Recommended |
+| **AppImage ARM64** | [Nexen-Linux-ARM64-v1.4.36.AppImage](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.36/Nexen-Linux-ARM64-v1.4.36.AppImage) | Raspberry Pi 4/5 |
+| Binary x64 (clang) | [Nexen-Linux-x64-v1.4.36.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.36/Nexen-Linux-x64-v1.4.36.tar.gz) | Requires SDL2 |
+| Binary x64 (gcc) | [Nexen-Linux-x64-gcc-v1.4.36.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.36/Nexen-Linux-x64-gcc-v1.4.36.tar.gz) | Requires SDL2 |
+| Binary ARM64 (clang) | [Nexen-Linux-ARM64-v1.4.36.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.36/Nexen-Linux-ARM64-v1.4.36.tar.gz) | Requires SDL2 |
+| Binary ARM64 (gcc) | [Nexen-Linux-ARM64-gcc-v1.4.36.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.36/Nexen-Linux-ARM64-gcc-v1.4.36.tar.gz) | Requires SDL2 |
+| Native AOT x64 | [Nexen-Linux-x64-AoT-v1.4.36.tar.gz](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.36/Nexen-Linux-x64-AoT-v1.4.36.tar.gz) | Faster startup |
 
 ### macOS (Apple Silicon)
 
 | Build | Download | Notes |
 |-------|----------|-------|
-| **Standard** | [Nexen-macOS-ARM64-v1.4.35.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.35/Nexen-macOS-ARM64-v1.4.35.zip) | App bundle |
+| **Standard** | [Nexen-macOS-ARM64-v1.4.36.zip](https://github.com/TheAnsarya/Nexen/releases/download/v1.4.36/Nexen-macOS-ARM64-v1.4.36.zip) | App bundle |
 
 ---
 
-**Full Changelog:** https://github.com/TheAnsarya/Nexen/compare/v1.4.34...v1.4.35
+**Full Changelog:** https://github.com/TheAnsarya/Nexen/compare/v1.4.35...v1.4.36

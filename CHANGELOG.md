@@ -5,6 +5,25 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.36] - 2026-04-20
+
+### Added
+
+- **Pansy multi-target jump export** — true one-source-many-target export contract; serialize 2+ targets per source address, backward compatible with existing readers (#1399)
+- **Conditional branch fallthrough xrefs** — explicit source→target jump graph for indirect and multi-target flows (#1396)
+- **Open ROM and Verified Games buttons** — action buttons on game selection screen (#1390)
+- **OSD font scaling** — bitmap font scales with HUD buffer size (#1388)
+- **OSD save notifications** — auto-save and recent-play save notifications displayed on OSD (#1389)
+
+### Fixed
+
+- **Pansy CDM flag mapping** — JumpTarget/SubEntry/Opcode/Drawn/Read/Indirect flags preserved without collision from platform-specific bits (#1395)
+
+### Performance
+
+- **RefreshMarkerEntries cache-and-filter** — cache marker set and skip unchanged entries for faster TAS editor marker refresh (#1392)
+- **SNES Mode7 LargeMap templating** — template Mode7 LargeMap, hoist window masks, add `[[likely]]` to Exec hot path (#1391)
+
 ## [1.4.35] - 2026-04-19
 
 ### Performance
