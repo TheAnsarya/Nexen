@@ -71,6 +71,7 @@ public static class PansyExporter {
 	private const uint SECTION_METADATA = 0x0008;
 	private const uint SECTION_CPU_STATE = 0x0009;
 	private const uint SECTION_BOOKMARKS = 0x000a;
+	private const uint SECTION_MULTI_TARGET_CROSS_REFS = 0x000b;
 
 	// CDL flag bits for SNES-specific CPU state
 	private const byte CDL_INDEX_MODE_8 = 0x10;  // SNES: X flag set (8-bit index)
@@ -280,6 +281,17 @@ public static class PansyExporter {
 					Type = SECTION_CROSS_REFS,
 					CompressedSize = (uint)data.Length,
 					UncompressedSize = (uint)crossRefs.Length
+				});
+				sectionData.Add(data);
+			}
+
+			var multiTargetCrossRefs = BuildMultiTargetCrossRefsSection(labels, cdlData, functions, jumpTargets, cpuType, memoryType);
+			if (multiTargetCrossRefs.Length > 0) {
+				var data = options.UseCompression ? CompressData(multiTargetCrossRefs) : multiTargetCrossRefs;
+				sections.Add(new SectionInfo {
+					Type = SECTION_MULTI_TARGET_CROSS_REFS,
+					CompressedSize = (uint)data.Length,
+					UncompressedSize = (uint)multiTargetCrossRefs.Length
 				});
 				sectionData.Add(data);
 			}
@@ -1075,8 +1087,29 @@ public static class PansyExporter {
 	/// instruction skip to avoid redundant interop calls, and HashSet for O(1) deduplication.
 	/// </summary>
 	private static byte[] BuildEnhancedCrossRefsSection(List<CodeLabel> labels, byte[]? cdlData, uint[] functions, uint[] jumpTargets, CpuType cpuType, MemoryType memType) {
+		var xrefs = CollectEnhancedCrossRefs(cdlData, functions, jumpTargets, cpuType, memType);
+
+		// Write xrefs - already deduplicated
+		// Pansy spec: No count prefix. Per xref: From(4)+To(4)+Type(1) = 9 bytes each
+		using var ms = new MemoryStream(xrefs.Count * 9);
+		using var writer = new BinaryWriter(ms);
+
+		foreach (var xref in xrefs) {
+			writer.Write(xref.From);               // Source address (4 bytes)
+			writer.Write(xref.To);                 // Target address (4 bytes)
+			writer.Write((byte)xref.Type);         // Type (1 byte) - CrossRefType
+		}
+
+		return ms.ToArray();
+	}
+
+	private static byte[] BuildMultiTargetCrossRefsSection(List<CodeLabel> labels, byte[]? cdlData, uint[] functions, uint[] jumpTargets, CpuType cpuType, MemoryType memType) {
+		var xrefs = CollectEnhancedCrossRefs(cdlData, functions, jumpTargets, cpuType, memType);
+		return SerializeMultiTargetCrossRefsSection(xrefs);
+	}
+
+	private static List<(uint From, uint To, PansyCrossRefType Type, byte MemTypeFrom, byte MemTypeTo)> CollectEnhancedCrossRefs(byte[]? cdlData, uint[] functions, uint[] jumpTargets, CpuType cpuType, MemoryType memType) {
 		if (cdlData is null or { Length: 0 }) {
-			// Return empty section (no count prefix per Pansy spec)
 			return [];
 		}
 
@@ -1169,15 +1202,41 @@ public static class PansyExporter {
 			}
 		}
 
-		// Write xrefs - already deduplicated
-		// Pansy spec: No count prefix. Per xref: From(4)+To(4)+Type(1) = 9 bytes each
-		using var ms = new MemoryStream(xrefs.Count * 9);
+		return xrefs;
+	}
+
+	private static byte[] SerializeMultiTargetCrossRefsSection(List<(uint From, uint To, PansyCrossRefType Type, byte MemTypeFrom, byte MemTypeTo)> xrefs) {
+		if (xrefs.Count == 0) {
+			return [];
+		}
+
+		// Record format: From(4) + Type(1) + TargetCount(2) + Targets(TargetCount * 4)
+		using var ms = new MemoryStream(Math.Max(64, xrefs.Count * 7));
 		using var writer = new BinaryWriter(ms);
 
-		foreach (var xref in xrefs) {
-			writer.Write(xref.From);               // Source address (4 bytes)
-			writer.Write(xref.To);                 // Target address (4 bytes)
-			writer.Write((byte)xref.Type);         // Type (1 byte) - CrossRefType
+		var grouped = xrefs
+			.GroupBy(x => (x.From, x.Type))
+			.Select(g => new {
+				From = g.Key.From,
+				Type = g.Key.Type,
+				Targets = g.Select(x => x.To).Distinct().OrderBy(x => x).ToArray()
+			})
+			.Where(g => g.Targets.Length > 1)
+			.OrderBy(g => g.From)
+			.ThenBy(g => g.Type)
+			.ToList();
+
+		if (grouped.Count == 0) {
+			return [];
+		}
+
+		foreach (var group in grouped) {
+			writer.Write(group.From);
+			writer.Write((byte)group.Type);
+			writer.Write((ushort)group.Targets.Length);
+			foreach (var target in group.Targets) {
+				writer.Write(target);
+			}
 		}
 
 		return ms.ToArray();

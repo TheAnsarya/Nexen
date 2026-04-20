@@ -1,4 +1,4 @@
-# Epic 18 Plan - Pansy Jump Graph and Flag Fidelity (2026-04-20)
+﻿# Epic 18 Plan - Pansy Jump Graph and Flag Fidelity (2026-04-20)
 
 ## Context
 

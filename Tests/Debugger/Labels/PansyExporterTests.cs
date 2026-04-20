@@ -753,6 +753,37 @@ public class PansyExporterTests
 		Assert.Equal(expected, result);
 	}
 
+	[Fact]
+	public void SerializeMultiTargetCrossRefsSection_OneSourceTwoTargets_WritesGroupedRecord() {
+		var xrefs = new List<(uint From, uint To, Pansy.Core.CrossRefType Type, byte MemTypeFrom, byte MemTypeTo)> {
+			(0x1000, 0x1010, Pansy.Core.CrossRefType.Branch, 0, 0),
+			(0x1000, 0x1020, Pansy.Core.CrossRefType.Branch, 0, 0),
+			(0x2000, 0x2010, Pansy.Core.CrossRefType.Jmp, 0, 0),
+		};
+
+		var bytes = SerializeMultiTargetCrossRefsSectionTest(xrefs);
+
+		// Only source 0x1000 has 2 targets, so exactly one grouped record:
+		// From(4) + Type(1) + Count(2) + Targets(8) = 15 bytes
+		Assert.Equal(15, bytes.Length);
+		Assert.Equal(0x1000u, BitConverter.ToUInt32(bytes, 0));
+		Assert.Equal((byte)Pansy.Core.CrossRefType.Branch, bytes[4]);
+		Assert.Equal((ushort)2, BitConverter.ToUInt16(bytes, 5));
+		Assert.Equal(0x1010u, BitConverter.ToUInt32(bytes, 7));
+		Assert.Equal(0x1020u, BitConverter.ToUInt32(bytes, 11));
+	}
+
+	[Fact]
+	public void SerializeMultiTargetCrossRefsSection_NoMultiTargetSources_ReturnsEmpty() {
+		var xrefs = new List<(uint From, uint To, Pansy.Core.CrossRefType Type, byte MemTypeFrom, byte MemTypeTo)> {
+			(0x1000, 0x1010, Pansy.Core.CrossRefType.Jmp, 0, 0),
+			(0x2000, 0x2010, Pansy.Core.CrossRefType.Jmp, 0, 0),
+		};
+
+		var bytes = SerializeMultiTargetCrossRefsSectionTest(xrefs);
+		Assert.Empty(bytes);
+	}
+
 	#endregion
 
 	#region CPU State Section Tests
@@ -1070,6 +1101,18 @@ public class PansyExporterTests
 		var result = method!.Invoke(null, [byteCode, cpuType]);
 		Assert.NotNull(result);
 		return Assert.IsType<bool>(result);
+	}
+
+	/// <summary>
+	/// Calls private SerializeMultiTargetCrossRefsSection via reflection.
+	/// </summary>
+	private static byte[] SerializeMultiTargetCrossRefsSectionTest(List<(uint From, uint To, Pansy.Core.CrossRefType Type, byte MemTypeFrom, byte MemTypeTo)> xrefs) {
+		var method = typeof(PansyExporter).GetMethod("SerializeMultiTargetCrossRefsSection", BindingFlags.NonPublic | BindingFlags.Static);
+		Assert.NotNull(method);
+
+		var result = method!.Invoke(null, [xrefs]);
+		Assert.NotNull(result);
+		return Assert.IsType<byte[]>(result);
 	}
 
 	/// <summary>
