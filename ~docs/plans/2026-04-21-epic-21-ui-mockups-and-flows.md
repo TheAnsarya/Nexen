@@ -1,4 +1,4 @@
-# Epic 21 UI Mockups and Interaction Flows (2026-04-21)
+﻿# Epic 21 UI Mockups and Interaction Flows (2026-04-21)
 
 ## Mockup A: Onboarding Step 1 (Usage Profile)
 

@@ -1,4 +1,4 @@
-# Epic 21 UI Benchmark and Test Plan (2026-04-21)
+﻿# Epic 21 UI Benchmark and Test Plan (2026-04-21)
 
 ## Purpose
 

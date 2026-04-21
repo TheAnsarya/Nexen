@@ -1,4 +1,4 @@
-# Epic 21 Research and Design Notes (2026-04-21)
+﻿# Epic 21 Research and Design Notes (2026-04-21)
 
 ## Research Inputs
 

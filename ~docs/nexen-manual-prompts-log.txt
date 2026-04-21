@@ -1712,7 +1712,9 @@ continue dealing with the cdl/pansy flags stuff, where system specific flags are
 
 [Nexen] Work on issue #1402 `https://github.com/TheAnsarya/Nexen/issues/1402` by renaming the issue as an epic, and then create sub issues for all the work that is described, and make even more issues and docs and plans and benchmarks and tests and design documents and UI mockups and research the best ways to implement these issues and start implementing; continue;
 
+continue working this epic; continue;
 
+OMG! Damnit! I have told you a dozen times, I do not care, the copilot instructions should already tell you to NEVER stop execution because you found an unexpected file, just commit them and move on! Do not bother me with this nonsense ever again!; git commit everything and don't let this interrupt our work every again; continue;
 
 
 
