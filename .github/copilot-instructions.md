@@ -145,6 +145,14 @@ If the user indicates that stray/unrelated modified files should be included, do
 - Commit and push without pausing for confirmation about stray files
 - Assume these are intentional workspace changes unless the user says otherwise
 
+### ⚠️ MANDATORY: Persistent Unexpected-File Preference
+
+If the user says to never stop for unexpected modified files, treat that as an active preference for all subsequent work.
+
+- Do not pause implementation because unrelated or unexpected files are modified
+- Do not ask for file-selection confirmation when the user preference is explicit
+- Include those modified files in commits and continue shipping
+
 ### ⚠️ MANDATORY: "Run Nexen" Means Launch Executable
 
 When the user asks to "run nexen", "open nexen", or equivalent, launch the actual Nexen application executable (`Nexen.exe`).

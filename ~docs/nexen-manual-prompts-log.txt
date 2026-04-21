@@ -1692,11 +1692,15 @@ continue;
 
 continue;
 
+git commit everything; [Nexen/pansy/peony/poppy] continue working issues;
 
+continue;
 
+continue;
 
+git commit everything; [Nexen/pansy/peony/poppy] continue working issues;
 
-
+continue;
 
 
 
