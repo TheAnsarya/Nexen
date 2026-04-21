@@ -1702,8 +1702,9 @@ git commit everything; [Nexen/pansy/peony/poppy] continue working issues;
 
 continue;
 
+NEVER stop just because there are unexpected files! Add that to the copilot instructions for all repos. Don't ask me about them, just commit them and continue
 
-
+git commit everything; [Nexen/pansy/peony/poppy] continue working issues;
 
 
 
