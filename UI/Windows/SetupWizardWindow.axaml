@@ -74,12 +74,16 @@
 						<TextBlock Text="{l:Translate lblStorageHint}" />
 						<StackPanel Margin="5 5 0 0">
 							<RadioButton Content="{l:Translate radStorageDocuments}" IsChecked="{Binding StoreInUserProfile}" />
+							<TextBlock Text="{l:Translate lblStorageDocumentsHint}" Margin="24 2 0 8" TextWrapping="Wrap" Opacity="0.8" />
 							<RadioButton Content="{l:Translate radStoragePortable}" IsChecked="{Binding !StoreInUserProfile}" IsEnabled="{Binding CanUsePortableMode}" />
+							<TextBlock Text="{l:Translate lblStoragePortableHint}" Margin="24 2 0 0" TextWrapping="Wrap" Opacity="0.8" IsEnabled="{Binding CanUsePortableMode}" />
+							<TextBlock Text="{l:Translate lblStoragePortableUnavailableHint}" Margin="24 6 0 0" TextWrapping="Wrap" Opacity="0.8" Foreground="DarkOrange" IsVisible="{Binding !CanUsePortableMode}" />
 						</StackPanel>
-						<StackPanel Orientation="Horizontal" Margin="0 10 0 10">
+						<StackPanel Orientation="Horizontal" Margin="0 10 0 4">
 							<TextBlock Text="{l:Translate lblDataLocation}" />
 							<TextBlock Foreground="CornflowerBlue" Margin="5 0 0 0" Text="{Binding InstallLocation}" />
 						</StackPanel>
+						<Button HorizontalAlignment="Left" Click="ResetStorageToRecommended_OnClick" Content="{l:Translate btnStorageResetRecommended}" />
 					</c:OptionSection>
 
 					<c:OptionSection Header="{l:Translate lblInputMappings}">

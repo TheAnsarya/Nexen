@@ -126,9 +126,17 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 		return false;
 	}
 
+	/// <summary>
+	/// Resets storage selection to the recommended user-profile option.
+	/// </summary>
+	public void ResetStorageToRecommended() {
+		StoreInUserProfile = true;
+	}
+
 	private void InitializeConfig() {
 		ConfigManager.CreateConfig(!StoreInUserProfile);
 		SetupUsageProfileDefaults.Apply(ConfigManager.Config, PrimaryUsageProfile);
+		SetupStorageDefaults.Apply(ConfigManager.Config, StoreInUserProfile);
 		DefaultKeyMappingType mappingType = DefaultKeyMappingType.None;
 		if (EnableXboxMappings) {
 			mappingType |= DefaultKeyMappingType.Xbox;

@@ -66,4 +66,8 @@ public partial class SetupWizardWindow : NexenWindow {
 	private void ArrowIcon_Tapped(object? sender, TappedEventArgs e) {
 		_model.EnableArrowMappings = !_model.EnableArrowMappings;
 	}
+
+	private void ResetStorageToRecommended_OnClick(object? sender, RoutedEventArgs e) {
+		_model.ResetStorageToRecommended();
+	}
 }

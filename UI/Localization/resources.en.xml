@@ -1019,8 +1019,12 @@
 			<Control ID="lblStorageLocation">Data Storage Location</Control>
 			<Control ID="lblStorageHint">Select where you want to store Nexen's data:</Control>
 			<Control ID="radStorageDocuments">Store the data in my user profile</Control>
+			<Control ID="lblStorageDocumentsHint">Recommended for most users. Settings and saves stay with your account and survive app upgrades.</Control>
 			<Control ID="radStoragePortable">Store the data in the same folder as the application</Control>
+			<Control ID="lblStoragePortableHint">Best for portable installs on writable folders. Data may be lost if the app folder is replaced.</Control>
+			<Control ID="lblStoragePortableUnavailableHint">Portable mode is unavailable in this environment. Use user profile storage for reliable writes.</Control>
 			<Control ID="lblDataLocation">Folder:</Control>
+			<Control ID="btnStorageResetRecommended">Use recommended location</Control>
 			<Control ID="lblInputMappings">Input Mappings</Control>
 			<Control ID="lblInputHint">Select your preferred input methods:</Control>
 			<Control ID="lblMiscOptions">Other Options</Control>
