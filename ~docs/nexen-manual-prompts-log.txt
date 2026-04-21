@@ -1706,7 +1706,9 @@ NEVER stop just because there are unexpected files! Add that to the copilot inst
 
 git commit everything; [Nexen/pansy/peony/poppy] continue working issues;
 
+[Nexen] work issues #1393 and #1394; continue;
 
+continue dealing with the cdl/pansy flags stuff, where system specific flags are still tracked and used, just stored separately from the CDL bytes so that we still have OPCODE and DRAWN, etc; continue;
 
 
 

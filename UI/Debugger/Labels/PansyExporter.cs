@@ -207,9 +207,13 @@ public static class PansyExporter {
 
 		// Section 1: CODE_DATA_MAP (CDL data with Pansy flag mapping)
 		if (cdlData is { Length: > 0 }) {
-			// Map CDL flags to Pansy spec flags and incorporate jump targets/functions
+			// SNES/GBA use upper nibble bits for CPU-state overlays; keep those out of CDM
+			// and recover opcode starts from disassembly so OPCODE flags remain meaningful.
 			bool hasCpuStateOverlay = romInfo.Format is RomFormat.Sfc or RomFormat.Spc or RomFormat.Gba;
-			var pansyCdl = MapCdlToPansyFlags(cdlData, jumpTargets, functions, preserveUpperNibbleFlags: !hasCpuStateOverlay);
+			uint[] opcodeStarts = hasCpuStateOverlay
+				? CollectOpcodeStarts(cdlData, cpuType, memoryType)
+				: [];
+			var pansyCdl = MapCdlToPansyFlags(cdlData, jumpTargets, functions, preserveUpperNibbleFlags: !hasCpuStateOverlay, opcodeStarts);
 			var data = options.UseCompression ? CompressData(pansyCdl) : pansyCdl;
 			sections.Add(new SectionInfo {
 				Type = SECTION_CODE_DATA_MAP,
@@ -608,12 +612,15 @@ public static class PansyExporter {
 	///              OPCODE(0x10), DRAWN(0x20), READ(0x40), INDIRECT(0x80).
 	/// Nexen CDL: Code(0x01), Data(0x02), JumpTarget(0x04), SubEntryPoint(0x08).
 	/// SNES/GBA may overlay bits 4-5 for CPU mode state, so upper nibble can be conditionally ignored.
+	/// For overlay platforms, opcode starts can be provided explicitly from disassembly.
 	/// </summary>
-	private static byte[] MapCdlToPansyFlags(byte[] cdlData, uint[] jumpTargets, uint[] functions, bool preserveUpperNibbleFlags) {
+	private static byte[] MapCdlToPansyFlags(byte[] cdlData, uint[] jumpTargets, uint[] functions, bool preserveUpperNibbleFlags, uint[]? opcodeStarts = null) {
 		var result = new byte[cdlData.Length];
+		HashSet<uint>? opcodeStartSet = opcodeStarts is { Length: > 0 } ? new HashSet<uint>(opcodeStarts) : null;
 
 		for (int i = 0; i < cdlData.Length; i++) {
 			byte cdl = cdlData[i];
+			bool isCodeByte = (cdl & 0x01) != 0;
 
 			// Map basic flags (bits 0-3 match between CDL and Pansy spec)
 			byte pansyFlags = (byte)(cdl & 0x0f); // CODE, DATA, JUMP_TARGET, SUB_ENTRY
@@ -627,6 +634,12 @@ public static class PansyExporter {
 				if ((cdl & 0x20) != 0) {
 					pansyFlags |= 0x20; // DRAWN
 				}
+			} else {
+				// On overlay platforms, bit 0x20 carries CPU-state for code bytes, but it can
+				// still legitimately represent DRAWN for non-code bytes. Preserve that case.
+				if (!isCodeByte && (cdl & 0x20) != 0) {
+					pansyFlags |= 0x20; // DRAWN (safe to preserve for non-code bytes)
+				}
 			}
 
 			// Bit 6 (READ, 0x40): Preserve explicit read flag and keep legacy DATA->READ behavior.
@@ -637,6 +650,10 @@ public static class PansyExporter {
 			// Bit 7 (INDIRECT, 0x80): Preserve when present.
 			if ((cdl & 0x80) != 0) {
 				pansyFlags |= 0x80;
+			}
+
+			if (opcodeStartSet?.Contains((uint)i) == true) {
+				pansyFlags |= 0x10; // OPCODE (recovered from disassembly for overlay platforms)
 			}
 
 			result[i] = pansyFlags;
@@ -657,6 +674,45 @@ public static class PansyExporter {
 		}
 
 		return result;
+	}
+
+	/// <summary>
+	/// Collect opcode start addresses from disassembly for platforms where CDL upper bits
+	/// are overlaid with CPU-state data (SNES M/X and GBA THUMB state).
+	/// </summary>
+	private static uint[] CollectOpcodeStarts(byte[]? cdlData, CpuType cpuType, MemoryType memType) {
+		if (cdlData is null or { Length: 0 }) {
+			return [];
+		}
+
+		var starts = new List<uint>(Math.Max(32, cdlData.Length / 4));
+
+		for (int i = 0; i < cdlData.Length; i++) {
+			if ((cdlData[i] & 0x01) == 0) {
+				continue;
+			}
+
+			try {
+				var output = DebugApi.GetDisassemblyOutput(cpuType, (uint)i, 1);
+				if (output.Length == 0) {
+					continue;
+				}
+
+				var line = output[0];
+				if (line.OpSize <= 0) {
+					continue;
+				}
+
+				starts.Add((uint)i);
+				if (line.OpSize > 1) {
+					i += line.OpSize - 1;
+				}
+			} catch (Exception ex) {
+				Debug.WriteLine($"PansyExporter: Failed to collect opcode start at {i:X}: {ex.Message}");
+			}
+		}
+
+		return [.. starts];
 	}
 
 	private static byte[] BuildSymbolSection(List<CodeLabel> labels, uint[] functions, byte platformId) {
@@ -1127,11 +1183,14 @@ public static class PansyExporter {
 		// Pre-scan: check if CDL has OPCODE flags (0x10) for instruction-start filtering.
 		// If present, we only process opcode start bytes instead of every code byte,
 		// dramatically reducing the number of GetDisassemblyOutput interop calls.
+		// SNES/GBA overlay bit 0x10 for CPU-state metadata, so never treat it as opcode there.
 		bool useOpcodeFilter = false;
-		for (int i = 0; i < cdlSpan.Length; i++) {
-			if ((cdlSpan[i] & 0x10) != 0) {
-				useOpcodeFilter = true;
-				break;
+		if (cpuType is not CpuType.Snes and not CpuType.Gba) {
+			for (int i = 0; i < cdlSpan.Length; i++) {
+				if ((cdlSpan[i] & 0x10) != 0) {
+					useOpcodeFilter = true;
+					break;
+				}
 			}
 		}
 

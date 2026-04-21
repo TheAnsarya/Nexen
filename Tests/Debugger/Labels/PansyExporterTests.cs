@@ -726,7 +726,37 @@ public class PansyExporterTests
 		var result = MapCdlToPansyFlagsTest(cdl, [], [], preserveUpperNibbleFlags: false);
 
 		Assert.Equal(CDL_CODE, result[0]);
-		Assert.Equal((byte)(CDL_DATA | CDL_READ), result[1]);
+		Assert.Equal((byte)(CDL_DATA | CDL_DRAWN | CDL_READ), result[1]);
+	}
+
+	[Fact]
+	public void MapCdlToPansyFlags_MaskUpperNibble_PreservesDrawnOnNonCodeBytes() {
+		byte[] cdl = [
+			(byte)(CDL_CODE | CDL_SNES_MEMORY_MODE_8),
+			(byte)(CDL_DATA | CDL_DRAWN),
+			CDL_DRAWN,
+		];
+
+		var result = MapCdlToPansyFlagsTest(cdl, [], [], preserveUpperNibbleFlags: false);
+
+		Assert.Equal(CDL_CODE, result[0]);
+		Assert.Equal((byte)(CDL_DATA | CDL_DRAWN | CDL_READ), result[1]);
+		Assert.Equal(CDL_DRAWN, result[2]);
+	}
+
+	[Fact]
+	public void MapCdlToPansyFlags_MaskUpperNibble_WithOpcodeStarts_RestoresOpcodeBit() {
+		byte[] cdl = [
+			(byte)(CDL_CODE | CDL_SNES_INDEX_MODE_8),
+			(byte)(CDL_DATA | CDL_SNES_MEMORY_MODE_8),
+			CDL_CODE,
+		];
+
+		var result = MapCdlToPansyFlagsTest(cdl, [], [], preserveUpperNibbleFlags: false, opcodeStarts: [0, 2]);
+
+		Assert.Equal((byte)(CDL_CODE | CDL_OPCODE), result[0]);
+		Assert.Equal((byte)(CDL_DATA | CDL_DRAWN | CDL_READ), result[1]);
+		Assert.Equal((byte)(CDL_CODE | CDL_OPCODE), result[2]);
 	}
 
 	[Fact]
@@ -1082,11 +1112,11 @@ public class PansyExporterTests
 	/// <summary>
 	/// Calls private MapCdlToPansyFlags via reflection.
 	/// </summary>
-	private static byte[] MapCdlToPansyFlagsTest(byte[] cdlData, uint[] jumpTargets, uint[] functions, bool preserveUpperNibbleFlags) {
+	private static byte[] MapCdlToPansyFlagsTest(byte[] cdlData, uint[] jumpTargets, uint[] functions, bool preserveUpperNibbleFlags, uint[]? opcodeStarts = null) {
 		var method = typeof(PansyExporter).GetMethod("MapCdlToPansyFlags", BindingFlags.NonPublic | BindingFlags.Static);
 		Assert.NotNull(method);
 
-		var result = method!.Invoke(null, [cdlData, jumpTargets, functions, preserveUpperNibbleFlags]);
+		var result = method!.Invoke(null, [cdlData, jumpTargets, functions, preserveUpperNibbleFlags, opcodeStarts]);
 		Assert.NotNull(result);
 		return Assert.IsType<byte[]>(result);
 	}
