@@ -13,7 +13,9 @@
 	mc:Ignorable="d" d:DesignWidth="620" d:DesignHeight="500"
 	x:DataType="dvm:DebuggerConfigWindowViewModel"
 	x:Class="Nexen.Debugger.Windows.DebuggerConfigWindow"
-	Width="620" Height="500"
+	Width="760" Height="620"
+	MinWidth="700" MinHeight="560"
+	CanResize="True"
 	Title="{l:Translate wndTitle}"
 >
 	<Design.DataContext>
@@ -23,8 +25,8 @@
 	<DockPanel>
 		<Panel DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Background="#2888">
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="5 3">
-				<Button MinWidth="70" HorizontalContentAlignment="Center" Click="Ok_OnClick" Content="{l:Translate btnOK}" />
-				<Button MinWidth="70" HorizontalContentAlignment="Center" Click="Cancel_OnClick" Content="{l:Translate btnCancel}" />
+				<Button MinWidth="70" MinHeight="36" Margin="0 0 8 0" HorizontalContentAlignment="Center" Click="Ok_OnClick" Content="{l:Translate btnOK}" />
+				<Button MinWidth="70" MinHeight="36" HorizontalContentAlignment="Center" Click="Cancel_OnClick" Content="{l:Translate btnCancel}" />
 			</StackPanel>
 		</Panel>
 

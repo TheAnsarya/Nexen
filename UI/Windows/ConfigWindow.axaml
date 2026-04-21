@@ -11,7 +11,9 @@
 	mc:Ignorable="d" d:DesignWidth="620" d:DesignHeight="500"
 	x:DataType="vm:ConfigViewModel"
 	x:Class="Nexen.Windows.ConfigWindow"
-	Width="620" Height="500"
+	Width="760" Height="620"
+	MinWidth="700" MinHeight="560"
+	CanResize="True"
 	Topmost="{Binding AlwaysOnTop}"
 	Title="{l:Translate wndTitle}"
 >
@@ -73,11 +75,11 @@
 	<DockPanel>
 		<Panel DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Background="#2888">
 			<Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" RowDefinitions="Auto" Margin="5 3">
-				<c:ButtonWithIcon Grid.Column="0" Click="OpenNexenFolder" Icon="Assets/Folder.png" Text="{l:Translate btnOpenNexenFolder}" />
-				<c:ButtonWithIcon Grid.Column="1" Click="ResetAllSettings" Icon="Assets/ResetSettings.png" Text="{l:Translate btnResetSettings}" />
+				<c:ButtonWithIcon Grid.Column="0" MinHeight="36" Margin="0 0 8 0" Click="OpenNexenFolder" Icon="Assets/Folder.png" Text="{l:Translate btnOpenNexenFolder}" />
+				<c:ButtonWithIcon Grid.Column="1" MinHeight="36" Click="ResetAllSettings" Icon="Assets/ResetSettings.png" Text="{l:Translate btnResetSettings}" />
 
-				<Button Grid.Column="3" MinWidth="70" HorizontalContentAlignment="Center" Click="Ok_OnClick" Content="{l:Translate btnOK}" />
-				<Button Grid.Column="4" MinWidth="70" HorizontalContentAlignment="Center" Click="Cancel_OnClick" Content="{l:Translate btnCancel}" />
+				<Button Grid.Column="3" MinWidth="70" MinHeight="36" Margin="8 0 0 0" HorizontalContentAlignment="Center" Click="Ok_OnClick" Content="{l:Translate btnOK}" />
+				<Button Grid.Column="4" MinWidth="70" MinHeight="36" Margin="8 0 0 0" HorizontalContentAlignment="Center" Click="Cancel_OnClick" Content="{l:Translate btnCancel}" />
 			</Grid>
 		</Panel>
 

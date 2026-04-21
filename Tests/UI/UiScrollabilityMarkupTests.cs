@@ -34,6 +34,34 @@ public sealed class UiScrollabilityMarkupTests {
 		Assert.Contains("MinHeight=\"560\"", markup);
 	}
 
+	[Fact]
+	public void ConfigWindow_IsResizableAndUsesLargerTouchTargets() {
+		string repoRoot = GetRepositoryRoot();
+		string fullPath = Path.Combine(repoRoot, "UI", "Windows", "ConfigWindow.axaml");
+
+		Assert.True(File.Exists(fullPath), $"Expected markup file to exist: {fullPath}");
+
+		string markup = File.ReadAllText(fullPath);
+		Assert.Contains("CanResize=\"True\"", markup);
+		Assert.Contains("MinWidth=\"700\"", markup);
+		Assert.Contains("MinHeight=\"560\"", markup);
+		Assert.Contains("MinHeight=\"36\"", markup);
+	}
+
+	[Fact]
+	public void DebuggerConfigWindow_IsResizableAndUsesLargerTouchTargets() {
+		string repoRoot = GetRepositoryRoot();
+		string fullPath = Path.Combine(repoRoot, "UI", "Debugger", "Windows", "DebuggerConfigWindow.axaml");
+
+		Assert.True(File.Exists(fullPath), $"Expected markup file to exist: {fullPath}");
+
+		string markup = File.ReadAllText(fullPath);
+		Assert.Contains("CanResize=\"True\"", markup);
+		Assert.Contains("MinWidth=\"700\"", markup);
+		Assert.Contains("MinHeight=\"560\"", markup);
+		Assert.Contains("MinHeight=\"36\"", markup);
+	}
+
 	private static string GetRepositoryRoot() {
 		string? current = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
 
