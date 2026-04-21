@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using Avalonia.Controls;
@@ -14,6 +14,29 @@ namespace Nexen.ViewModels;
 /// Handles initial configuration of storage location, controller mappings, and shortcuts.
 /// </summary>
 public sealed partial class SetupWizardViewModel : ViewModelBase {
+	/// <summary>Gets or sets the user's primary usage intent for first-run defaults.</summary>
+	[Reactive] public partial PrimaryUsageProfile PrimaryUsageProfile { get; set; } = PrimaryUsageProfile.Playing;
+
+	/// <summary>Gets or sets whether the playing profile is selected in the setup wizard.</summary>
+	public bool UsePlayingProfile {
+		get => PrimaryUsageProfile == PrimaryUsageProfile.Playing;
+		set {
+			if (value) {
+				PrimaryUsageProfile = PrimaryUsageProfile.Playing;
+			}
+		}
+	}
+
+	/// <summary>Gets or sets whether the debugging profile is selected in the setup wizard.</summary>
+	public bool UseDebuggingProfile {
+		get => PrimaryUsageProfile == PrimaryUsageProfile.Debugging;
+		set {
+			if (value) {
+				PrimaryUsageProfile = PrimaryUsageProfile.Debugging;
+			}
+		}
+	}
+
 	/// <summary>Gets or sets whether to store configuration in the user profile folder.</summary>
 	[Reactive] public partial bool StoreInUserProfile { get; set; } = true;
 
@@ -56,6 +79,11 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 		}
 
 		this.WhenAnyValue(x => x.StoreInUserProfile).Subscribe(x => InstallLocation = StoreInUserProfile ? ConfigManager.DefaultDocumentsFolder : ConfigManager.DefaultPortableFolder);
+
+		this.WhenAnyValue(x => x.PrimaryUsageProfile).Subscribe(_ => {
+			this.RaisePropertyChanged(nameof(UsePlayingProfile));
+			this.RaisePropertyChanged(nameof(UseDebuggingProfile));
+		});
 
 		this.WhenAnyValue(x => x.EnableWasdMappings).Subscribe(x => {
 			if (x) {
@@ -100,6 +128,7 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 
 	private void InitializeConfig() {
 		ConfigManager.CreateConfig(!StoreInUserProfile);
+		SetupUsageProfileDefaults.Apply(ConfigManager.Config, PrimaryUsageProfile);
 		DefaultKeyMappingType mappingType = DefaultKeyMappingType.None;
 		if (EnableXboxMappings) {
 			mappingType |= DefaultKeyMappingType.Xbox;

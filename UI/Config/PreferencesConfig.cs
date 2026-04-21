@@ -19,6 +19,7 @@ using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
 public sealed partial class PreferencesConfig : BaseConfig<PreferencesConfig> {
+	[Reactive] public partial PrimaryUsageProfile PrimaryUsageProfile { get; set; } = PrimaryUsageProfile.Playing;
 	[Reactive] public partial NexenTheme Theme { get; set; } = NexenTheme.Light;
 	[Reactive] public partial bool AutomaticallyCheckForUpdates { get; set; } = true;
 	[Reactive] public partial bool SingleInstance { get; set; } = true;
@@ -255,6 +256,11 @@ public sealed partial class PreferencesConfig : BaseConfig<PreferencesConfig> {
 public enum NexenTheme {
 	Light = 0,
 	Dark = 1
+}
+
+public enum PrimaryUsageProfile {
+	Playing = 0,
+	Debugging = 1
 }
 
 public enum FontAntialiasing {

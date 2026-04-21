@@ -1010,6 +1010,12 @@
 			<Control ID="lblNexen">Nexen - Emulator</Control>
 			<Control ID="lblConfigWizard">Configuration</Control>
 			<Control ID="lblInitialSetup">Please take a moment to perform Nexen's initial setup.</Control>
+			<Control ID="lblPrimaryUsage">Primary Usage</Control>
+			<Control ID="lblPrimaryUsageHint">Choose the default setup that best matches how you plan to use Nexen.</Control>
+			<Control ID="radPrimaryUsagePlaying">Mostly playing games</Control>
+			<Control ID="lblPrimaryUsagePlayingHint">Keeps background CDL and automatic Pansy export disabled by default to reduce overhead during normal play.</Control>
+			<Control ID="radPrimaryUsageDebugging">Mostly debugging and reverse engineering</Control>
+			<Control ID="lblPrimaryUsageDebuggingHint">Turns on background CDL recording, automatic Pansy export, and related debugging-friendly defaults immediately.</Control>
 			<Control ID="lblStorageLocation">Data Storage Location</Control>
 			<Control ID="lblStorageHint">Select where you want to store Nexen's data:</Control>
 			<Control ID="radStorageDocuments">Store the data in my user profile</Control>

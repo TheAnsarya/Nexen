@@ -60,6 +60,16 @@
 				<StackPanel>
 					<TextBlock Text="{l:Translate lblInitialSetup}" />
 
+					<c:OptionSection Header="{l:Translate lblPrimaryUsage}" Margin="0 18 0 0">
+						<TextBlock Text="{l:Translate lblPrimaryUsageHint}" />
+						<StackPanel Margin="5 8 0 0">
+							<RadioButton Content="{l:Translate radPrimaryUsagePlaying}" IsChecked="{Binding UsePlayingProfile}" />
+							<TextBlock Text="{l:Translate lblPrimaryUsagePlayingHint}" Margin="24 2 0 8" TextWrapping="Wrap" Opacity="0.8" />
+							<RadioButton Content="{l:Translate radPrimaryUsageDebugging}" IsChecked="{Binding UseDebuggingProfile}" />
+							<TextBlock Text="{l:Translate lblPrimaryUsageDebuggingHint}" Margin="24 2 0 0" TextWrapping="Wrap" Opacity="0.8" />
+						</StackPanel>
+					</c:OptionSection>
+
 					<c:OptionSection Header="{l:Translate lblStorageLocation}">
 						<TextBlock Text="{l:Translate lblStorageHint}" />
 						<StackPanel Margin="5 5 0 0">
