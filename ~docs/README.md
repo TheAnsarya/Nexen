@@ -142,6 +142,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Epic 21 Storage Migration Notes (2026-04-21)](plans/2026-04-21-epic-21-storage-migration-notes.md) | Migration-safe strategy for storage preference persistence and explicit future relocation flow for #1405 |
 | [Epic 21 UI Benchmark and Test Plan (2026-04-21)](testing/2026-04-21-epic-21-ui-benchmark-and-test-plan.md) | UX benchmark definitions and automated/manual regression matrix for #1414 and #1415 |
 | [Epic 21 UI Test Strategy Matrix (2026-04-21)](testing/2026-04-21-epic-21-ui-test-strategy-matrix.md) | Functional and visual regression matrix with runnable workflow and task list for #1415 |
+| [Epic 21 UI Design System and Component Spec (2026-04-21)](plans/2026-04-21-epic-21-ui-design-system-spec.md) | Design tokens, component anatomy, Avalonia implementation mapping, and sign-off checklist for #1416 |
 | [Epic 23 Menu, TAS, and Input Validation Matrix (2026-03-29)](testing/epic-23-menu-tas-input-validation-matrix-2026-03-29.md) | Consolidated validation matrix and evidence index for #1071-#1075 |
 | [Input Mapping Coverage Checkpoint (2026-03-30)](testing/input-mapping-coverage-checkpoint-2026-03-30.md) | Focused per-system controller mapping decode coverage checkpoint and validation evidence for #1073 |
 | [UI Quality Modernization Checkpoint (2026-03-30)](testing/ui-quality-modernization-checkpoint-2026-03-30.md) | Measurable UI consistency and menu/dialog no-regression checkpoint for #1074 |
