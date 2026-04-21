@@ -23,52 +23,84 @@
 
 	<Window.DataTemplates>
 		<DataTemplate DataType="{x:Type vm:AudioConfigViewModel}">
-			<v:AudioConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:AudioConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:EmulationConfigViewModel}">
-			<v:EmulationConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:EmulationConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:InputConfigViewModel}">
-			<v:InputConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:InputConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:VideoConfigViewModel}">
-			<v:VideoConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:VideoConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:NesConfigViewModel}">
-			<v:NesConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:NesConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:SnesConfigViewModel}">
-			<v:SnesConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:SnesConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:GameboyConfigViewModel}">
-			<v:GameboyConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:GameboyConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:GbaConfigViewModel}">
-			<v:GbaConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:GbaConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:PceConfigViewModel}">
-			<v:PceConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:PceConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:SmsConfigViewModel}">
-			<v:SmsConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:SmsConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:WsConfigViewModel}">
-			<v:WsConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:WsConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:LynxConfigViewModel}">
-			<v:LynxConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:LynxConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:Atari2600ConfigViewModel}">
-			<v:Atari2600ConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:Atari2600ConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:ChannelFConfigViewModel}">
-			<v:ChannelFConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:ChannelFConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:OtherConsolesConfigViewModel}">
-			<v:OtherConsolesConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:OtherConsolesConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:PreferencesConfigViewModel}">
-			<v:PreferencesConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:PreferencesConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 	</Window.DataTemplates>
 

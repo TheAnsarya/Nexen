@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text.RegularExpressions;
 using Xunit;
 
 namespace Nexen.Tests.UI;
@@ -90,6 +91,18 @@ public sealed class UiScrollabilityMarkupTests {
 		Assert.Contains("ConfigManager.Config.Debug.DebuggerConfigWindow.SaveWindowSettings(this);", source);
 		Assert.Contains("CompactTabBreakpointWidth = 900", source);
 		Assert.Contains("TabStripPlacement = ClientSize.Width < CompactTabBreakpointWidth ? Avalonia.Controls.Dock.Top : Avalonia.Controls.Dock.Left;", source);
+	}
+
+	[Fact]
+	public void ConfigWindow_DataTemplatesUseExplicitScrollViewers() {
+		string repoRoot = GetRepositoryRoot();
+		string fullPath = Path.Combine(repoRoot, "UI", "Windows", "ConfigWindow.axaml");
+
+		Assert.True(File.Exists(fullPath), $"Expected markup file to exist: {fullPath}");
+
+		string markup = File.ReadAllText(fullPath);
+		int scrollViewerCount = Regex.Matches(markup, "<ScrollViewer AllowAutoHide=\"False\" HorizontalScrollBarVisibility=\"Auto\" Padding=\"0 0 2 0\">").Count;
+		Assert.True(scrollViewerCount >= 16, $"Expected at least 16 standardized ScrollViewer wrappers, found {scrollViewerCount}.");
 	}
 
 	private static string GetRepositoryRoot() {
