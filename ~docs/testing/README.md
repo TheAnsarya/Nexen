@@ -64,6 +64,7 @@ This index unifies all testing and manual validation documentation.
 | [ui-settings-responsiveness-benchmarks-2026-03-30.md](ui-settings-responsiveness-benchmarks-2026-03-30.md) | Focused startup-adjacent and settings-navigation responsiveness benchmark checkpoint for #1046 |
 | [2026-04-21-epic-21-ui-benchmark-and-test-plan.md](2026-04-21-epic-21-ui-benchmark-and-test-plan.md) | Reproducible telemetry + benchmark harness, baseline evidence, and regression thresholds for #1414 |
 | [2026-04-21-epic-21-icon-coverage-audit.md](2026-04-21-epic-21-icon-coverage-audit.md) | Icon inventory, resolved coverage gaps, and UI QA checklist integration for #1413 |
+| [2026-04-21-epic-21-ui-test-strategy-matrix.md](2026-04-21-epic-21-ui-test-strategy-matrix.md) | Functional and visual regression matrix with runnable workflow for #1415 |
 
 ## Machine-Readable Testing Assets
 

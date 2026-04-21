@@ -145,6 +145,18 @@ public sealed class UiScrollabilityMarkupTests {
 		Assert.DoesNotContain("<TabItem.Header>\r\n\t\t\t\t\t<TextBlock", debuggerMarkup);
 	}
 
+	[Fact]
+	public void PreferencesView_ContainsThemeSelector() {
+		string repoRoot = GetRepositoryRoot();
+		string fullPath = Path.Combine(repoRoot, "UI", "Views", "PreferencesConfigView.axaml");
+
+		Assert.True(File.Exists(fullPath), $"Expected markup file to exist: {fullPath}");
+
+		string markup = File.ReadAllText(fullPath);
+		Assert.Contains("Text=\"{l:Translate lblTheme}\"", markup);
+		Assert.Contains("SelectedItem=\"{Binding Config.Theme}\"", markup);
+	}
+
 	private static string GetRepositoryRoot() {
 		string? current = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
 
