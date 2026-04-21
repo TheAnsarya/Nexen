@@ -1,4 +1,4 @@
-using System.Buffers;
+﻿using System.Buffers;
 using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -16,11 +16,13 @@ namespace Nexen.Benchmarks;
 [MemoryDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
-public sealed class PansyExportBenchmarks {
+public class PansyExportBenchmarks {
 	// Test data sizes
 	private byte[] _smallCdlData = null!;   // 32KB - typical small ROM
 	private byte[] _mediumCdlData = null!;   // 512KB - typical NES/SNES
 	private byte[] _largeCdlData = null!;   // 4MB - large SNES/GBA ROM
+	private byte[] _sparseJumpCdlData = null!; // 4MB - sparse jump graph
+	private byte[] _denseJumpCdlData = null!;  // 4MB - dense jump graph
 
 	// SNES CDL data with IndexMode8/MemoryMode8 flags in upper nibble
 	private byte[] _snesMediumCdlData = null!;  // 512KB - SNES with mode flags
@@ -44,6 +46,8 @@ public sealed class PansyExportBenchmarks {
 		_smallCdlData = GenerateCdlData(32 * 1024, random);
 		_mediumCdlData = GenerateCdlData(512 * 1024, random);
 		_largeCdlData = GenerateCdlData(4 * 1024 * 1024, random);
+		_sparseJumpCdlData = GenerateJumpGraphCdlData(4 * 1024 * 1024, jumpStride: 128);
+		_denseJumpCdlData = GenerateJumpGraphCdlData(4 * 1024 * 1024, jumpStride: 8);
 
 		// Generate SNES CDL data with platform-specific upper nibble flags
 		_snesMediumCdlData = GenerateSnesCdlData(512 * 1024, random);
@@ -106,6 +110,23 @@ public sealed class PansyExportBenchmarks {
 		}
 
 		return labels;
+	}
+
+	/// <summary>
+	/// Generates deterministic CDL for sparse/dense jump-graph benchmarking.
+	/// </summary>
+	private static byte[] GenerateJumpGraphCdlData(int size, int jumpStride) {
+		var data = new byte[size];
+		for (int i = 0; i < size; i++) {
+			byte flags = (i % 4 == 0) ? (byte)0x01 : (byte)0x02;
+			if (i % jumpStride == 0) {
+				flags |= 0x04;
+			}
+
+			data[i] = flags;
+		}
+
+		return data;
 	}
 
 	/// <summary>
@@ -295,6 +316,30 @@ public sealed class PansyExportBenchmarks {
 	[BenchmarkCategory("JumpTargets")]
 	public uint[] JumpTargets_Simd_Medium() {
 		return ExtractFlagsSimd(_mediumCdlData, 0x04);
+	}
+
+	[Benchmark]
+	[BenchmarkCategory("JumpTargets", "SparseDense")]
+	public List<uint> JumpTargets_Original_SparseLarge() {
+		return ExtractJumpTargetsOriginal(_sparseJumpCdlData);
+	}
+
+	[Benchmark]
+	[BenchmarkCategory("JumpTargets", "SparseDense")]
+	public uint[] JumpTargets_Optimized_SparseLarge() {
+		return ExtractJumpTargetsOptimized(_sparseJumpCdlData);
+	}
+
+	[Benchmark]
+	[BenchmarkCategory("JumpTargets", "SparseDense")]
+	public List<uint> JumpTargets_Original_DenseLarge() {
+		return ExtractJumpTargetsOriginal(_denseJumpCdlData);
+	}
+
+	[Benchmark]
+	[BenchmarkCategory("JumpTargets", "SparseDense")]
+	public uint[] JumpTargets_Optimized_DenseLarge() {
+		return ExtractJumpTargetsOptimized(_denseJumpCdlData);
 	}
 
 	private static uint[] ExtractFlagsSimd(byte[] data, byte flag) {
