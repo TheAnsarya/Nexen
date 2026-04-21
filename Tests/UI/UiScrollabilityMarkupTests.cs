@@ -119,6 +119,32 @@ public sealed class UiScrollabilityMarkupTests {
 		Assert.True(scrollViewerCount >= 16, $"Expected at least 16 standardized ScrollViewer wrappers, found {scrollViewerCount}.");
 	}
 
+	[Fact]
+	public void SettingsWindows_TabHeadersKeepIconCoverage() {
+		string repoRoot = GetRepositoryRoot();
+		string configPath = Path.Combine(repoRoot, "UI", "Windows", "ConfigWindow.axaml");
+		string debuggerPath = Path.Combine(repoRoot, "UI", "Debugger", "Windows", "DebuggerConfigWindow.axaml");
+
+		Assert.True(File.Exists(configPath), $"Expected markup file to exist: {configPath}");
+		Assert.True(File.Exists(debuggerPath), $"Expected markup file to exist: {debuggerPath}");
+
+		string configMarkup = File.ReadAllText(configPath);
+		string debuggerMarkup = File.ReadAllText(debuggerPath);
+
+		int configHeaderCount = Regex.Matches(configMarkup, "<TabItem.Header>").Count;
+		int configHeaderImages = Regex.Matches(configMarkup, "<TabItem.Header>[\\s\\S]*?<Image ").Count;
+		int debuggerHeaderCount = Regex.Matches(debuggerMarkup, "<TabItem.Header>").Count;
+		int debuggerHeaderImages = Regex.Matches(debuggerMarkup, "<TabItem.Header>[\\s\\S]*?<Image ").Count;
+
+		Assert.True(configHeaderCount >= 18, $"Expected at least 18 ConfigWindow tab headers, found {configHeaderCount}.");
+		Assert.True(configHeaderImages >= 16, $"Expected at least 16 ConfigWindow iconized headers, found {configHeaderImages}.");
+		Assert.True(debuggerHeaderCount >= 7, $"Expected at least 7 DebuggerConfigWindow tab headers, found {debuggerHeaderCount}.");
+		Assert.True(debuggerHeaderImages >= 5, $"Expected at least 5 DebuggerConfigWindow iconized headers, found {debuggerHeaderImages}.");
+
+		Assert.DoesNotContain("<TabItem.Header>\r\n\t\t\t\t\t<TextBlock", configMarkup);
+		Assert.DoesNotContain("<TabItem.Header>\r\n\t\t\t\t\t<TextBlock", debuggerMarkup);
+	}
+
 	private static string GetRepositoryRoot() {
 		string? current = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
 

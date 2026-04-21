@@ -37,3 +37,11 @@ Regression intent covered by this run:
 ## Compatibility Constraint
 
 No theme or platform-specific behavior changes were introduced in this checkpoint; validation was executed against existing UI/config/test pipelines without compatibility overrides.
+
+## Epic 21 UI QA Addendum
+
+Icon consistency checklist for #1413 is now tracked in:
+
+- [2026-04-21-epic-21-icon-coverage-audit.md](2026-04-21-epic-21-icon-coverage-audit.md)
+
+Apply that checklist during menu-focused UI QA alongside the existing modernization checks.
