@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
+using Nexen.Config;
 using Nexen.ViewModels;
 
 namespace Nexen.Windows;
@@ -29,6 +30,7 @@ public partial class SetupWizardWindow : NexenWindow {
 
 	protected override void OnOpened(EventArgs e) {
 		base.OnOpened(e);
+		SetupWizardMetricsStore.RecordLaunch(_model.HasResumedDraft);
 
 		//Manually center the window (Avalonia on Linux doesn't seem to
 		//work with "CenterScreen" as startup location
@@ -44,6 +46,7 @@ public partial class SetupWizardWindow : NexenWindow {
 
 	private void btnOk_OnClick(object? sender, RoutedEventArgs e) {
 		if (_model.Confirm(this)) {
+			SetupWizardMetricsStore.RecordCompletion(_model.GetBacktrackCount());
 			_setupCompleted = true;
 			Close();
 		}
@@ -55,6 +58,7 @@ public partial class SetupWizardWindow : NexenWindow {
 
 	protected override void OnClosing(WindowClosingEventArgs e) {
 		if (!_setupCompleted) {
+			SetupWizardMetricsStore.RecordCancel(_model.GetBacktrackCount());
 			_model.SaveResumeState();
 		}
 
@@ -82,6 +86,7 @@ public partial class SetupWizardWindow : NexenWindow {
 	}
 
 	private void StartFresh_OnClick(object? sender, RoutedEventArgs e) {
+		SetupWizardMetricsStore.RecordStartFresh();
 		_model.DiscardResumeStateAndReset();
 	}
 }

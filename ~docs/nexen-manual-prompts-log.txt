@@ -1722,6 +1722,39 @@ continue working this epic; continue;
 
 continue working this epic; continue;
 
+continue working this epic; continue;
+
+[Nexen] fix the icon, the background of the icon inside of the border should not be transparent, it should be brown, our brown (ansarya.com background color), although outside of the border it should stay transparent; could you fix that for me or make and open instructions to fix it?; don't change the logo, just fill the background color; make an issue for this and show me the logo next to the original before you replace it; work on issue #1394 `https://github.com/TheAnsarya/Nexen/issues/1394` and then return to work on epic 21 issues for the UI work starting with #1408; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

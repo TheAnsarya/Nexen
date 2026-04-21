@@ -38,3 +38,11 @@ This update documents the latest first-run flow simplification pass.
 
 - Existing deterministic default key mappings remain unchanged when customization is skipped.
 - This keeps first-run choices focused on intent and storage, reducing low-value decision points.
+
+## Measurability
+
+- Wizard telemetry is persisted in `setup-wizard-metrics.json` under the default documents root.
+- Launches are tracked with resumed/non-resumed separation.
+- Completion and cancel actions both accumulate total backtrack count.
+- Start-fresh usage is tracked explicitly.
+- Profile/storage/customize toggles are tracked to support future conversion analysis.

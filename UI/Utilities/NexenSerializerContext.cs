@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Nexen.Config;
 using Nexen.Debugger;
 using Nexen.Debugger.Labels;
@@ -31,6 +31,7 @@ using Nexen.ViewModels;
 [JsonSerializable(typeof(CheatCodes))]
 [JsonSerializable(typeof(GameConfig))]
 [JsonSerializable(typeof(SetupWizardResumeState))]
+[JsonSerializable(typeof(SetupWizardMetrics))]
 [JsonSerializable(typeof(DebugWorkspace))]
 [JsonSerializable(typeof(UpdateInfo))]
 [JsonSerializable(typeof(GitHubRelease))]

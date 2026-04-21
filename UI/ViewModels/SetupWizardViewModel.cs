@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reactive.Linq;
 using Avalonia.Controls;
 using Nexen.Config;
 using Nexen.Utilities;
@@ -14,6 +15,10 @@ namespace Nexen.ViewModels;
 /// Handles initial configuration of storage location, controller mappings, and shortcuts.
 /// </summary>
 public sealed partial class SetupWizardViewModel : ViewModelBase {
+	private int _primaryUsageChangeCount;
+	private int _storageChangeCount;
+	private bool _suppressTracking;
+
 	[Reactive] public partial bool HasResumedDraft { get; set; }
 
 	/// <summary>Gets or sets the user's primary usage intent for first-run defaults.</summary>
@@ -92,6 +97,32 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 			this.RaisePropertyChanged(nameof(UseDebuggingProfile));
 		});
 
+		this.WhenAnyValue(x => x.PrimaryUsageProfile).Skip(1).Subscribe(_ => {
+			if (_suppressTracking) {
+				return;
+			}
+
+			_primaryUsageChangeCount++;
+			SetupWizardMetricsStore.RecordProfileToggle();
+		});
+
+		this.WhenAnyValue(x => x.StoreInUserProfile).Skip(1).Subscribe(_ => {
+			if (_suppressTracking) {
+				return;
+			}
+
+			_storageChangeCount++;
+			SetupWizardMetricsStore.RecordStorageToggle();
+		});
+
+		this.WhenAnyValue(x => x.CustomizeInputMappingsNow).Skip(1).Subscribe(_ => {
+			if (_suppressTracking) {
+				return;
+			}
+
+			SetupWizardMetricsStore.RecordCustomizeToggle();
+		});
+
 		this.WhenAnyValue(x => x.EnableWasdMappings).Subscribe(x => {
 			if (x) {
 				EnableArrowMappings = false;
@@ -167,6 +198,13 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 		if (!CanUsePortableMode) {
 			StoreInUserProfile = true;
 		}
+		ResetBacktrackCounters();
+	}
+
+	public int GetBacktrackCount() {
+		int primaryUsageBacktracks = Math.Max(0, _primaryUsageChangeCount);
+		int storageBacktracks = Math.Max(0, _storageChangeCount);
+		return primaryUsageBacktracks + storageBacktracks;
 	}
 
 	private void InitializeConfig() {
@@ -196,6 +234,7 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 	}
 
 	private void ApplyDefaultSelections() {
+		_suppressTracking = true;
 		PrimaryUsageProfile = PrimaryUsageProfile.Playing;
 		StoreInUserProfile = true;
 		CustomizeInputMappingsNow = false;
@@ -205,14 +244,17 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 		EnableArrowMappings = true;
 		CreateShortcut = true;
 		CheckForUpdates = true;
+		_suppressTracking = false;
 	}
 
 	private void TryRestoreDraftState() {
 		SetupWizardResumeState? state = SetupWizardResumeStateStore.Load();
 		if (state is null) {
+			ResetBacktrackCounters();
 			return;
 		}
 
+		_suppressTracking = true;
 		PrimaryUsageProfile = state.PrimaryUsageProfile;
 		StoreInUserProfile = CanUsePortableMode ? state.StoreInUserProfile : true;
 		CustomizeInputMappingsNow = state.CustomizeInputMappingsNow;
@@ -223,6 +265,13 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 		CreateShortcut = state.CreateShortcut;
 		CheckForUpdates = state.CheckForUpdates;
 		HasResumedDraft = true;
+		_suppressTracking = false;
+		ResetBacktrackCounters();
+	}
+
+	private void ResetBacktrackCounters() {
+		_primaryUsageChangeCount = 0;
+		_storageChangeCount = 0;
 	}
 
 	private void CreateShortcutFile() {
