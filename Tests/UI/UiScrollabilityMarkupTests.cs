@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using Xunit;
 
 namespace Nexen.Tests.UI;
@@ -19,6 +19,19 @@ public sealed class UiScrollabilityMarkupTests {
 
 		string markup = File.ReadAllText(fullPath);
 		Assert.Contains("<ScrollViewer", markup);
+	}
+
+	[Fact]
+	public void SetupWizardWindow_IsResizableAndHasMinimumSize() {
+		string repoRoot = GetRepositoryRoot();
+		string fullPath = Path.Combine(repoRoot, "UI", "Windows", "SetupWizardWindow.axaml");
+
+		Assert.True(File.Exists(fullPath), $"Expected markup file to exist: {fullPath}");
+
+		string markup = File.ReadAllText(fullPath);
+		Assert.Contains("CanResize=\"True\"", markup);
+		Assert.Contains("MinWidth=\"460\"", markup);
+		Assert.Contains("MinHeight=\"560\"", markup);
 	}
 
 	private static string GetRepositoryRoot() {
