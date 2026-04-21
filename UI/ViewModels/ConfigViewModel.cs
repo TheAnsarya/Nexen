@@ -1,6 +1,7 @@
 using System;
 using System.Reactive.Linq;
 using Nexen.Config;
+using Nexen.Interop;
 using Nexen.Utilities;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
@@ -80,8 +81,40 @@ public sealed partial class ConfigViewModel : DisposableViewModel {
 	public ConfigViewModel(ConfigWindowTab selectedTab) {
 		AlwaysOnTop = ConfigManager.Config.Preferences.AlwaysOnTop;
 		AddDisposable(this.WhenAnyValue(x => x.SelectedIndex).Subscribe((tab) => this.SelectTab(tab)));
-		SelectTab(selectedTab);
+		if (selectedTab == ConfigWindowTab.Input) {
+			var romInfo = EmuApi.GetRomInfo();
+			bool hasLoadedRom = !string.IsNullOrWhiteSpace(romInfo.RomPath);
+			ConfigWindowTab landingTab = ResolveInputLandingTab(hasLoadedRom, romInfo.ConsoleType);
+			SelectTab(landingTab);
+			ApplyInputSubtabSelection(landingTab);
+		} else {
+			SelectTab(selectedTab);
+		}
 		CaptureCurrentAsOriginal();
+	}
+
+	/// <summary>
+	/// Resolves the initial tab to open when the user requests the generic Input settings entry point.
+	/// If a ROM is loaded, this prefers the active system's config tab; otherwise it falls back to the generic Input tab.
+	/// </summary>
+	public static ConfigWindowTab ResolveInputLandingTab(bool hasLoadedRom, ConsoleType consoleType) {
+		if (!hasLoadedRom) {
+			return ConfigWindowTab.Input;
+		}
+
+		return consoleType switch {
+			ConsoleType.Nes => ConfigWindowTab.Nes,
+			ConsoleType.Snes => ConfigWindowTab.Snes,
+			ConsoleType.Gameboy => ConfigWindowTab.Gameboy,
+			ConsoleType.Gba => ConfigWindowTab.Gba,
+			ConsoleType.PcEngine => ConfigWindowTab.PcEngine,
+			ConsoleType.Sms => ConfigWindowTab.Sms,
+			ConsoleType.Ws => ConfigWindowTab.Ws,
+			ConsoleType.Lynx => ConfigWindowTab.Lynx,
+			ConsoleType.Atari2600 => ConfigWindowTab.Atari2600,
+			ConsoleType.ChannelF => ConfigWindowTab.ChannelF,
+			_ => ConfigWindowTab.Input,
+		};
 	}
 
 	private void CaptureCurrentAsOriginal() {
@@ -121,6 +154,61 @@ public sealed partial class ConfigViewModel : DisposableViewModel {
 		}
 
 		SelectedIndex = tab;
+	}
+
+	private void ApplyInputSubtabSelection(ConfigWindowTab tab) {
+		switch (tab) {
+			case ConfigWindowTab.Nes:
+				if (Nes != null) {
+					Nes.SelectedTab = NesConfigTab.Input;
+				}
+				break;
+			case ConfigWindowTab.Snes:
+				if (Snes != null) {
+					Snes.SelectedTab = SnesConfigTab.Input;
+				}
+				break;
+			case ConfigWindowTab.Gameboy:
+				if (Gameboy != null) {
+					Gameboy.SelectedTab = GameboyConfigTab.Input;
+				}
+				break;
+			case ConfigWindowTab.Gba:
+				if (Gba != null) {
+					Gba.SelectedTab = GbaConfigTab.Input;
+				}
+				break;
+			case ConfigWindowTab.PcEngine:
+				if (PcEngine != null) {
+					PcEngine.SelectedTab = PceConfigTab.Input;
+				}
+				break;
+			case ConfigWindowTab.Sms:
+				if (Sms != null) {
+					Sms.SelectedTab = SmsConfigTab.Input;
+				}
+				break;
+			case ConfigWindowTab.Ws:
+				if (Ws != null) {
+					Ws.SelectedTab = WsConfigTab.Input;
+				}
+				break;
+			case ConfigWindowTab.Lynx:
+				if (Lynx != null) {
+					Lynx.SelectedTab = LynxConfigTab.Input;
+				}
+				break;
+			case ConfigWindowTab.Atari2600:
+				if (Atari2600 != null) {
+					Atari2600.SelectedTab = Atari2600ConfigTab.Input;
+				}
+				break;
+			case ConfigWindowTab.ChannelF:
+				if (ChannelF != null) {
+					ChannelF.SelectedTab = ChannelFConfigTab.Input;
+				}
+				break;
+		}
 	}
 
 	/// <summary>

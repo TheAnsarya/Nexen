@@ -1716,6 +1716,9 @@ continue working this epic; continue;
 
 OMG! Damnit! I have told you a dozen times, I do not care, the copilot instructions should already tell you to NEVER stop execution because you found an unexpected file, just commit them and move on! Do not bother me with this nonsense ever again!; git commit everything and don't let this interrupt our work every again; continue;
 
+continue working this epic; continue;
+
+
 
 
 
