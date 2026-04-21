@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
@@ -35,7 +35,10 @@ public class Atari2600PansyExportTests {
 	private const byte CDL_DATA = 0x02;
 	private const byte CDL_JUMP_TARGET = 0x04;
 	private const byte CDL_SUB_ENTRY = 0x08;
+	private const byte CDL_OPCODE = 0x10;
+	private const byte CDL_DRAWN = 0x20;
 	private const byte CDL_READ = 0x40;
+	private const byte CDL_INDIRECT = 0x80;
 
 	// Atari 2600 memory map constants
 	private const uint TIA_START = 0x0000;
@@ -303,6 +306,26 @@ public class Atari2600PansyExportTests {
 			var loader = PansyLoader.Load(tempPath);
 			Assert.True(loader.DataOffsets.Contains(50));
 			Assert.True(loader.ReadOffsets.Contains(50));
+		} finally {
+			CleanupTemp(tempPath);
+		}
+	}
+
+	[Fact]
+	public void CdlFlags_OpcodeDrawnReadIndirect_RoundtripFromFixture() {
+		byte[] cdl = BuildCdlFlagCoverageFixture(4096);
+		var pansyFile = BuildMinimalPansyFile(cdl, SECTION_CODE_DATA_MAP, PLATFORM_ATARI_2600, romSize: 4096);
+		var tempPath = WriteTempPansy(pansyFile);
+		try {
+			var loader = PansyLoader.Load(tempPath);
+			Assert.True(loader.OpcodeOffsets.Contains(0x20));
+			Assert.True(loader.DrawnOffsets.Contains(0x21));
+			Assert.True(loader.ReadOffsets.Contains(0x22));
+			Assert.True(loader.IndirectOffsets.Contains(0x23));
+			Assert.Single(loader.OpcodeOffsets);
+			Assert.Single(loader.DrawnOffsets);
+			Assert.Single(loader.ReadOffsets);
+			Assert.Single(loader.IndirectOffsets);
 		} finally {
 			CleanupTemp(tempPath);
 		}
@@ -587,6 +610,39 @@ public class Atari2600PansyExportTests {
 		}
 	}
 
+	[Fact]
+	public void CrossRefs_MultiTargetFixture_RoundtripCountAndTypes() {
+		var xrefs = BuildCrossRefEdgeFixture();
+		var xrefData = BuildCrossRefSection(xrefs);
+		var cdl = BuildCdlFlagCoverageFixture(4096);
+		var pansyFile = BuildFullPansyFile(
+			PLATFORM_ATARI_2600,
+			4096,
+			0x22446688,
+			cdl,
+			[],
+			[],
+			BuildAtari2600MemoryRegions(),
+			xrefData);
+		var tempPath = WriteTempPansy(pansyFile);
+		try {
+			var loader = PansyLoader.Load(tempPath);
+
+			Assert.Equal(4, loader.CrossReferences.Count);
+			Assert.Equal(2, loader.CrossReferences.Count(x => x.From == 0x1200 && x.Type == CrossRefType.Branch));
+			Assert.Single(loader.CrossReferences, x => x.Type == CrossRefType.Jmp);
+			Assert.Single(loader.CrossReferences, x => x.Type == CrossRefType.Read);
+
+			Assert.True(loader.JumpTargets.Contains(0x20));
+			Assert.True(loader.OpcodeOffsets.Contains(0x20));
+			Assert.True(loader.DrawnOffsets.Contains(0x21));
+			Assert.True(loader.ReadOffsets.Contains(0x22));
+			Assert.True(loader.IndirectOffsets.Contains(0x23));
+		} finally {
+			CleanupTemp(tempPath);
+		}
+	}
+
 	#endregion
 
 	#region Header Validation Tests
@@ -803,6 +859,30 @@ public class Atari2600PansyExportTests {
 	#endregion
 
 	#region Helper Methods
+
+	/// <summary>
+	/// Fixture-like CDL map used by integration tests to validate flag roundtrip behavior.
+	/// </summary>
+	private static byte[] BuildCdlFlagCoverageFixture(int length) {
+		var cdl = new byte[length];
+		cdl[0x20] = (byte)(CDL_CODE | CDL_JUMP_TARGET | CDL_OPCODE);
+		cdl[0x21] = (byte)(CDL_DATA | CDL_DRAWN);
+		cdl[0x22] = (byte)(CDL_DATA | CDL_READ);
+		cdl[0x23] = (byte)(CDL_CODE | CDL_INDIRECT);
+		return cdl;
+	}
+
+	/// <summary>
+	/// Fixture-like cross-reference edges that include a multi-target source.
+	/// </summary>
+	private static List<(uint From, uint To, CrossRefType Type)> BuildCrossRefEdgeFixture() {
+		return [
+			(0x1200, 0x1210, CrossRefType.Branch),
+			(0x1200, 0x1220, CrossRefType.Branch),
+			(0x1300, 0x1400, CrossRefType.Jmp),
+			(0x1310, 0x0080, CrossRefType.Read),
+		];
+	}
 
 	/// <summary>
 	/// Build Atari 2600 memory regions matching PansyExporter output format.
