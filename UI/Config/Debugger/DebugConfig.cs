@@ -17,6 +17,7 @@ public sealed class DebugConfig {
 	public HexEditorConfig HexEditor { get; set; } = new();
 	public EventViewerConfig EventViewer { get; set; } = new();
 	public DebuggerConfig Debugger { get; set; } = new();
+	public DebuggerConfigWindowConfig DebuggerConfigWindow { get; set; } = new();
 	public TilemapViewerConfig TilemapViewer { get; set; } = new();
 	public TileViewerConfig TileViewer { get; set; } = new();
 	public PaletteViewerConfig PaletteViewer { get; set; } = new();

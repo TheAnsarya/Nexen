@@ -29,6 +29,7 @@ public partial class DebuggerConfigWindow : NexenWindow {
 
 		_model = model;
 		DataContext = model;
+		ConfigManager.Config.Debug.DebuggerConfigWindow.LoadWindowSettings(this);
 	}
 
 	public static void Open(DebugConfigWindowTab tab, Visual? parent) {
@@ -82,5 +83,7 @@ public partial class DebuggerConfigWindow : NexenWindow {
 			DisplaySaveChangesPrompt();
 			return;
 		}
+
+		ConfigManager.Config.Debug.DebuggerConfigWindow.SaveWindowSettings(this);
 	}
 }

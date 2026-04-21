@@ -28,6 +28,7 @@ public partial class ConfigWindow : NexenWindow {
 
 		_model = new ConfigViewModel(tab);
 		DataContext = _model;
+		ConfigManager.Config.ConfigWindow.LoadWindowSettings(this);
 	}
 
 	private void InitializeComponent() {
@@ -89,6 +90,8 @@ public partial class ConfigWindow : NexenWindow {
 			DisplaySaveChangesPrompt();
 			return;
 		}
+
+		ConfigManager.Config.ConfigWindow.SaveWindowSettings(this);
 
 		ConfigManager.Config.ApplyConfig();
 		_model.Dispose();

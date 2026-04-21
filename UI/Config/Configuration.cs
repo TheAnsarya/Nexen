@@ -46,6 +46,7 @@ public partial class Configuration : ReactiveObject {
 	[Reactive] public partial CheatWindowConfig Cheats { get; set; } = new();
 	[Reactive] public partial NetplayConfig Netplay { get; set; } = new();
 	[Reactive] public partial HistoryViewerConfig HistoryViewer { get; set; } = new();
+	[Reactive] public partial ConfigWindowConfig ConfigWindow { get; set; } = new();
 	[Reactive] public partial MainWindowConfig MainWindow { get; set; } = new();
 
 	public DefaultKeyMappingType DefaultKeyMappings { get; set; } = DefaultKeyMappingType.Xbox | DefaultKeyMappingType.ArrowKeys;

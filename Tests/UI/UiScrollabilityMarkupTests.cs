@@ -62,6 +62,30 @@ public sealed class UiScrollabilityMarkupTests {
 		Assert.Contains("MinHeight=\"36\"", markup);
 	}
 
+	[Fact]
+	public void ConfigWindow_WiresResizePersistence() {
+		string repoRoot = GetRepositoryRoot();
+		string fullPath = Path.Combine(repoRoot, "UI", "Windows", "ConfigWindow.axaml.cs");
+
+		Assert.True(File.Exists(fullPath), $"Expected code-behind file to exist: {fullPath}");
+
+		string source = File.ReadAllText(fullPath);
+		Assert.Contains("ConfigManager.Config.ConfigWindow.LoadWindowSettings(this);", source);
+		Assert.Contains("ConfigManager.Config.ConfigWindow.SaveWindowSettings(this);", source);
+	}
+
+	[Fact]
+	public void DebuggerConfigWindow_WiresResizePersistence() {
+		string repoRoot = GetRepositoryRoot();
+		string fullPath = Path.Combine(repoRoot, "UI", "Debugger", "Windows", "DebuggerConfigWindow.axaml.cs");
+
+		Assert.True(File.Exists(fullPath), $"Expected code-behind file to exist: {fullPath}");
+
+		string source = File.ReadAllText(fullPath);
+		Assert.Contains("ConfigManager.Config.Debug.DebuggerConfigWindow.LoadWindowSettings(this);", source);
+		Assert.Contains("ConfigManager.Config.Debug.DebuggerConfigWindow.SaveWindowSettings(this);", source);
+	}
+
 	private static string GetRepositoryRoot() {
 		string? current = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
 
