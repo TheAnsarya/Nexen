@@ -59,6 +59,12 @@
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0" Margin="0 30 0 0">
 				<StackPanel>
 					<TextBlock Text="{l:Translate lblInitialSetup}" />
+					<Border IsVisible="{Binding HasResumedDraft}" Background="#22b7d3ff" BorderBrush="#66b7d3ff" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0 10 0 0">
+						<StackPanel>
+							<TextBlock Text="{l:Translate lblResumeDraftLoaded}" TextWrapping="Wrap" />
+							<Button HorizontalAlignment="Left" Margin="0 8 0 0" Click="StartFresh_OnClick" Content="{l:Translate btnStartFresh}" />
+						</StackPanel>
+					</Border>
 
 					<c:OptionSection Header="{l:Translate lblPrimaryUsage}" Margin="0 18 0 0">
 						<TextBlock Text="{l:Translate lblPrimaryUsageHint}" />

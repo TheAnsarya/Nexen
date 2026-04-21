@@ -14,6 +14,8 @@ namespace Nexen.ViewModels;
 /// Handles initial configuration of storage location, controller mappings, and shortcuts.
 /// </summary>
 public sealed partial class SetupWizardViewModel : ViewModelBase {
+	[Reactive] public partial bool HasResumedDraft { get; set; }
+
 	/// <summary>Gets or sets the user's primary usage intent for first-run defaults.</summary>
 	[Reactive] public partial PrimaryUsageProfile PrimaryUsageProfile { get; set; } = PrimaryUsageProfile.Playing;
 
@@ -74,6 +76,8 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 	/// Initializes a new instance of the <see cref="SetupWizardViewModel"/> class.
 	/// </summary>
 	public SetupWizardViewModel() {
+		ApplyDefaultSelections();
+
 		InstallLocation = ConfigManager.DefaultDocumentsFolder;
 
 		// AppImage mounts to a read-only temp directory — portable mode cannot work.
@@ -99,6 +103,8 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 				EnableWasdMappings = false;
 			}
 		});
+
+		TryRestoreDraftState();
 	}
 
 	/// <summary>
@@ -117,6 +123,8 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 			File.WriteAllText(testFile, "test");
 			File.Delete(testFile);
 			InitializeConfig();
+			SetupWizardResumeStateStore.Clear();
+			HasResumedDraft = false;
 			if (CreateShortcut) {
 				CreateShortcutFile();
 			}
@@ -134,6 +142,31 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 	/// </summary>
 	public void ResetStorageToRecommended() {
 		StoreInUserProfile = true;
+	}
+
+	public void SaveResumeState() {
+		var state = new SetupWizardResumeState {
+			PrimaryUsageProfile = PrimaryUsageProfile,
+			StoreInUserProfile = StoreInUserProfile,
+			CustomizeInputMappingsNow = CustomizeInputMappingsNow,
+			EnableXboxMappings = EnableXboxMappings,
+			EnablePsMappings = EnablePsMappings,
+			EnableWasdMappings = EnableWasdMappings,
+			EnableArrowMappings = EnableArrowMappings,
+			CreateShortcut = CreateShortcut,
+			CheckForUpdates = CheckForUpdates,
+		};
+
+		SetupWizardResumeStateStore.Save(state);
+	}
+
+	public void DiscardResumeStateAndReset() {
+		SetupWizardResumeStateStore.Clear();
+		HasResumedDraft = false;
+		ApplyDefaultSelections();
+		if (!CanUsePortableMode) {
+			StoreInUserProfile = true;
+		}
 	}
 
 	private void InitializeConfig() {
@@ -160,6 +193,36 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 		ConfigManager.Config.DefaultKeyMappings = mappingType;
 		ConfigManager.Config.Preferences.AutomaticallyCheckForUpdates = CheckForUpdates;
 		ConfigManager.Config.Save();
+	}
+
+	private void ApplyDefaultSelections() {
+		PrimaryUsageProfile = PrimaryUsageProfile.Playing;
+		StoreInUserProfile = true;
+		CustomizeInputMappingsNow = false;
+		EnableXboxMappings = true;
+		EnablePsMappings = false;
+		EnableWasdMappings = false;
+		EnableArrowMappings = true;
+		CreateShortcut = true;
+		CheckForUpdates = true;
+	}
+
+	private void TryRestoreDraftState() {
+		SetupWizardResumeState? state = SetupWizardResumeStateStore.Load();
+		if (state is null) {
+			return;
+		}
+
+		PrimaryUsageProfile = state.PrimaryUsageProfile;
+		StoreInUserProfile = CanUsePortableMode ? state.StoreInUserProfile : true;
+		CustomizeInputMappingsNow = state.CustomizeInputMappingsNow;
+		EnableXboxMappings = state.EnableXboxMappings;
+		EnablePsMappings = state.EnablePsMappings;
+		EnableWasdMappings = state.EnableWasdMappings;
+		EnableArrowMappings = state.EnableArrowMappings;
+		CreateShortcut = state.CreateShortcut;
+		CheckForUpdates = state.CheckForUpdates;
+		HasResumedDraft = true;
 	}
 
 	private void CreateShortcutFile() {

@@ -1010,6 +1010,8 @@
 			<Control ID="lblNexen">Nexen - Emulator</Control>
 			<Control ID="lblConfigWizard">Configuration</Control>
 			<Control ID="lblInitialSetup">Please take a moment to perform Nexen's initial setup.</Control>
+			<Control ID="lblResumeDraftLoaded">Your previous setup choices were restored so you can continue where you left off.</Control>
+			<Control ID="btnStartFresh">Start fresh</Control>
 			<Control ID="lblPrimaryUsage">Primary Usage</Control>
 			<Control ID="lblPrimaryUsageHint">Choose the default setup that best matches how you plan to use Nexen.</Control>
 			<Control ID="radPrimaryUsagePlaying">Mostly playing games</Control>

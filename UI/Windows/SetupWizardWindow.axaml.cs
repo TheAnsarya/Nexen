@@ -11,6 +11,7 @@ using Nexen.ViewModels;
 namespace Nexen.Windows;
 public partial class SetupWizardWindow : NexenWindow {
 	private SetupWizardViewModel _model;
+	private bool _setupCompleted;
 
 	public SetupWizardWindow() {
 		_model = new SetupWizardViewModel();
@@ -43,12 +44,21 @@ public partial class SetupWizardWindow : NexenWindow {
 
 	private void btnOk_OnClick(object? sender, RoutedEventArgs e) {
 		if (_model.Confirm(this)) {
+			_setupCompleted = true;
 			Close();
 		}
 	}
 
 	private void lblCancel_Tapped(object? sender, TappedEventArgs e) {
 		Close();
+	}
+
+	protected override void OnClosing(WindowClosingEventArgs e) {
+		if (!_setupCompleted) {
+			_model.SaveResumeState();
+		}
+
+		base.OnClosing(e);
 	}
 
 	private void XboxIcon_Tapped(object? sender, TappedEventArgs e) {
@@ -69,5 +79,9 @@ public partial class SetupWizardWindow : NexenWindow {
 
 	private void ResetStorageToRecommended_OnClick(object? sender, RoutedEventArgs e) {
 		_model.ResetStorageToRecommended();
+	}
+
+	private void StartFresh_OnClick(object? sender, RoutedEventArgs e) {
+		_model.DiscardResumeStateAndReset();
 	}
 }

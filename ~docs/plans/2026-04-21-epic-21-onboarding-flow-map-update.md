@@ -1,4 +1,4 @@
-# Epic 21 Onboarding Flow Map Update
+﻿# Epic 21 Onboarding Flow Map Update
 
 ## Scope
 
@@ -14,6 +14,19 @@ This update documents the latest first-run flow simplification pass.
 3. Input mappings: optional customization toggle (off by default)
 4. Misc options (shortcut, update checks)
 5. Confirm and write config
+
+## Onboarding State Model
+
+- New install state:
+	- No `settings.json` in portable or documents location.
+	- Setup wizard opens with default selections.
+- Cancel/resume state:
+	- Closing setup without confirming writes `setup-wizard-state.json` draft state.
+	- Next setup launch restores saved selections and shows a resume notice.
+	- `Start fresh` clears draft state and restores defaults.
+- Migrated settings state:
+	- Existing installs bypass setup wizard and continue directly to main window.
+	- Migration-specific setting moves remain explicit future work (no implicit file moves during onboarding).
 
 ## UX Changes in This Slice
 

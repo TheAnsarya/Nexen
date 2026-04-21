@@ -30,6 +30,7 @@ using Nexen.ViewModels;
 [JsonSerializable(typeof(GameDipSwitches))]
 [JsonSerializable(typeof(CheatCodes))]
 [JsonSerializable(typeof(GameConfig))]
+[JsonSerializable(typeof(SetupWizardResumeState))]
 [JsonSerializable(typeof(DebugWorkspace))]
 [JsonSerializable(typeof(UpdateInfo))]
 [JsonSerializable(typeof(GitHubRelease))]
