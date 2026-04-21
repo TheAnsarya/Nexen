@@ -1026,7 +1026,9 @@
 			<Control ID="lblDataLocation">Folder:</Control>
 			<Control ID="btnStorageResetRecommended">Use recommended location</Control>
 			<Control ID="lblInputMappings">Input Mappings</Control>
-			<Control ID="lblInputHint">Select your preferred input methods:</Control>
+			<Control ID="lblInputHint">Input defaults are ready to use. Customize only if you want to override them now.</Control>
+			<Control ID="chkCustomizeInputMappingsNow">Customize input mappings now (optional)</Control>
+			<Control ID="lblInputDefaultsHint">You can always change controller mappings later from Input settings for the active system.</Control>
 			<Control ID="lblMiscOptions">Other Options</Control>
 			<Control ID="chkCreateShortcut">Create a shortcut on my desktop</Control>
 			<Control ID="chkCheckForUpdates">Automatically check for updates when launched</Control>

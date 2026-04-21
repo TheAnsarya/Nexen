@@ -6,6 +6,35 @@ namespace Nexen.Tests.ViewModels;
 
 public sealed class SetupWizardViewModelTests {
 	[Fact]
+	public void CustomizeInputMappingsNow_DefaultsToFalse() {
+		var vm = new SetupWizardViewModel();
+
+		Assert.False(vm.CustomizeInputMappingsNow);
+	}
+
+	[Fact]
+	public void UsePlayingProfile_SelectsPlayingProfile() {
+		var vm = new SetupWizardViewModel {
+			PrimaryUsageProfile = PrimaryUsageProfile.Debugging
+		};
+
+		vm.UsePlayingProfile = true;
+
+		Assert.Equal(PrimaryUsageProfile.Playing, vm.PrimaryUsageProfile);
+	}
+
+	[Fact]
+	public void UseDebuggingProfile_SelectsDebuggingProfile() {
+		var vm = new SetupWizardViewModel {
+			PrimaryUsageProfile = PrimaryUsageProfile.Playing
+		};
+
+		vm.UseDebuggingProfile = true;
+
+		Assert.Equal(PrimaryUsageProfile.Debugging, vm.PrimaryUsageProfile);
+	}
+
+	[Fact]
 	public void ResetStorageToRecommended_ForcesUserProfileStorage() {
 		var vm = new SetupWizardViewModel {
 			StoreInUserProfile = false

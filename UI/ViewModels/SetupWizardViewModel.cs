@@ -43,6 +43,9 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 	/// <summary>Gets or sets whether to enable default Xbox controller mappings.</summary>
 	[Reactive] public partial bool EnableXboxMappings { get; set; } = true;
 
+	/// <summary>Gets or sets whether to show optional controller customization during onboarding.</summary>
+	[Reactive] public partial bool CustomizeInputMappingsNow { get; set; }
+
 	/// <summary>Gets or sets whether to enable default PlayStation controller mappings.</summary>
 	[Reactive] public partial bool EnablePsMappings { get; set; }
 

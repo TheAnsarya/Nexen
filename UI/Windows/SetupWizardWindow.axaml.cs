@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -8,7 +8,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
 using Nexen.ViewModels;
 
-namespace Nexen.Windows; 
+namespace Nexen.Windows;
 public partial class SetupWizardWindow : NexenWindow {
 	private SetupWizardViewModel _model;
 
