@@ -37,44 +37,46 @@
 					</StackPanel>
 				</TabItem.Header>
 
-				<StackPanel Margin="5">
-					<c:OptionSection Header="{l:Translate lblGeneralSettings}" Margin="0">
-						<CheckBox
-							IsChecked="{Binding Debugger.AutoResetCdl}"
-							Content="{l:Translate chkAutoResetCdl}"
-						/>
-						<CheckBox
-							IsChecked="{Binding Debugger.DisableDefaultLabels}"
-							Content="{l:Translate chkDisableDefaultLabels}"
-						/>
-					</c:OptionSection>
+				<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+					<StackPanel Margin="5">
+						<c:OptionSection Header="{l:Translate lblGeneralSettings}" Margin="0">
+							<CheckBox
+								IsChecked="{Binding Debugger.AutoResetCdl}"
+								Content="{l:Translate chkAutoResetCdl}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Debugger.DisableDefaultLabels}"
+								Content="{l:Translate chkDisableDefaultLabels}"
+							/>
+						</c:OptionSection>
 
-					<c:OptionSection Header="{l:Translate lblDisassemblySettings}">
-						<CheckBox
-							IsChecked="{Binding Debugger.KeepActiveStatementInCenter}"
-							Content="{l:Translate chkKeepActiveStatementInCenter}"
-						/>
-					</c:OptionSection>
+						<c:OptionSection Header="{l:Translate lblDisassemblySettings}">
+							<CheckBox
+								IsChecked="{Binding Debugger.KeepActiveStatementInCenter}"
+								Content="{l:Translate chkKeepActiveStatementInCenter}"
+							/>
+						</c:OptionSection>
 
-					<c:OptionSection Header="{l:Translate lblCopyCodeSettings}">
-						<CheckBox
-							IsChecked="{Binding Debugger.CopyAddresses}"
-							Content="{l:Translate chkCopyAddresses}"
-						/>
-						<CheckBox
-							IsChecked="{Binding Debugger.CopyBlockHeaders}"
-							Content="{l:Translate chkCopyBlockHeaders}"
-						/>
-						<CheckBox
-							IsChecked="{Binding Debugger.CopyByteCode}"
-							Content="{l:Translate chkCopyByteCode}"
-						/>
-						<CheckBox
-							IsChecked="{Binding Debugger.CopyComments}"
-							Content="{l:Translate chkCopyComments}"
-						/>
-					</c:OptionSection>
-				</StackPanel>
+						<c:OptionSection Header="{l:Translate lblCopyCodeSettings}">
+							<CheckBox
+								IsChecked="{Binding Debugger.CopyAddresses}"
+								Content="{l:Translate chkCopyAddresses}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Debugger.CopyBlockHeaders}"
+								Content="{l:Translate chkCopyBlockHeaders}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Debugger.CopyByteCode}"
+								Content="{l:Translate chkCopyByteCode}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Debugger.CopyComments}"
+								Content="{l:Translate chkCopyComments}"
+							/>
+						</c:OptionSection>
+					</StackPanel>
+				</ScrollViewer>
 			</TabItem>
 			<TabItem>
 				<TabItem.Header>
@@ -84,7 +86,8 @@
 					</StackPanel>
 				</TabItem.Header>
 
-				<StackPanel Margin="5">
+				<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+					<StackPanel Margin="5">
 					<c:OptionSection Header="{l:Translate lblGeneralSettings}" Margin="0">
 						<WrapPanel>
 							<TextBlock Text="{l:Translate lblScriptStartupBehavior}" VerticalAlignment="Center" />
@@ -118,7 +121,8 @@
 							Content="{l:Translate chkAllowNetworkAccess}"
 						/>
 					</c:OptionSection>
-				</StackPanel>
+					</StackPanel>
+				</ScrollViewer>
 			</TabItem>
 
 			<TabItem IsEnabled="False" MinHeight="10">
@@ -135,7 +139,8 @@
 					</StackPanel>
 				</TabItem.Header>
 
-				<StackPanel Margin="5">
+				<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+					<StackPanel Margin="5">
 					<c:OptionSection Header="{l:Translate lblFontSettings}" Margin="0">
 						<Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
 							<TextBlock Text="{l:Translate lblDisassemblyFont}" />
@@ -184,7 +189,8 @@
 							</StackPanel>
 						</StackPanel>
 					</c:OptionSection>
-				</StackPanel>
+					</StackPanel>
+				</ScrollViewer>
 			</TabItem>
 
 			<TabItem>
@@ -195,7 +201,8 @@
 					</StackPanel>
 				</TabItem.Header>
 
-				<StackPanel Margin="5">
+				<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+					<StackPanel Margin="5">
 					<c:OptionSection Header="{l:Translate lblIntegrationSettings}" Margin="0">
 						<CheckBox
 							IsChecked="{Binding Integration.ResetLabelsOnImport}"
@@ -361,7 +368,8 @@
 							<c:NexenNumericUpDown Value="{Binding Integration.TabSize}" Minimum="1" Maximum="16" />
 						</StackPanel>
 					</c:OptionSection>
-				</StackPanel>
+					</StackPanel>
+				</ScrollViewer>
 			</TabItem>
 
 			<TabItem IsEnabled="False" MinHeight="10">

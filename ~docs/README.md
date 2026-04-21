@@ -135,6 +135,10 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Atari 2600 TAS and Movie UI Coverage Audit](testing/atari2600-tas-ui-coverage-audit.md) | Automated and manual validation status for Atari 2600 TAS and movie UI release readiness |
 | [UI Settings Coverage Matrix (2026-03-28)](testing/ui-settings-coverage-matrix-2026-03-28.md) | Initial cross-platform settings/config/input/movie/savestate UI gap matrix and action checklist |
 | [UI Settings Responsiveness Benchmarks (2026-03-30)](testing/ui-settings-responsiveness-benchmarks-2026-03-30.md) | Startup-adjacent and settings-navigation responsiveness benchmark checkpoint for #1046 |
+| [Epic 21 UI and UX Master Plan (2026-04-21)](plans/2026-04-21-epic-21-ui-ux-master-plan.md) | Program-level roadmap, risk register, milestones, and execution strategy for #1402 |
+| [Epic 21 Research and Design Notes (2026-04-21)](plans/2026-04-21-epic-21-research-and-design.md) | Research summary, IA direction, metrics, and decision log for UI modernization |
+| [Epic 21 UI Mockups and Interaction Flows (2026-04-21)](plans/2026-04-21-epic-21-ui-mockups-and-flows.md) | Text-wireframe mockups and core interaction flows for onboarding/settings improvements |
+| [Epic 21 UI Benchmark and Test Plan (2026-04-21)](testing/2026-04-21-epic-21-ui-benchmark-and-test-plan.md) | UX benchmark definitions and automated/manual regression matrix for #1414 and #1415 |
 | [Epic 23 Menu, TAS, and Input Validation Matrix (2026-03-29)](testing/epic-23-menu-tas-input-validation-matrix-2026-03-29.md) | Consolidated validation matrix and evidence index for #1071-#1075 |
 | [Input Mapping Coverage Checkpoint (2026-03-30)](testing/input-mapping-coverage-checkpoint-2026-03-30.md) | Focused per-system controller mapping decode coverage checkpoint and validation evidence for #1073 |
 | [UI Quality Modernization Checkpoint (2026-03-30)](testing/ui-quality-modernization-checkpoint-2026-03-30.md) | Measurable UI consistency and menu/dialog no-regression checkpoint for #1074 |

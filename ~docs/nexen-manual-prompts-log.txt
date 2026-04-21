@@ -1710,6 +1710,20 @@ git commit everything; [Nexen/pansy/peony/poppy] continue working issues;
 
 continue dealing with the cdl/pansy flags stuff, where system specific flags are still tracked and used, just stored separately from the CDL bytes so that we still have OPCODE and DRAWN, etc; continue;
 
+[Nexen] Work on issue #1402 `https://github.com/TheAnsarya/Nexen/issues/1402` by renaming the issue as an epic, and then create sub issues for all the work that is described, and make even more issues and docs and plans and benchmarks and tests and design documents and UI mockups and research the best ways to implement these issues and start implementing; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
