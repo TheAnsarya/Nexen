@@ -10,6 +10,7 @@ public sealed class SetupUsageProfileDefaultsTests {
 		config.Debug.Integration.BackgroundCdlRecording = true;
 		config.Debug.Integration.AutoExportPansy = true;
 		config.Debug.Integration.SavePansyOnRomUnload = true;
+		config.Debug.Integration.PansyUseCompression = true;
 		config.Debug.Integration.EnableFileWatching = true;
 		config.Debug.Integration.AutoReloadOnExternalChange = true;
 		config.Preferences.ShowDebugInfo = true;
@@ -20,6 +21,7 @@ public sealed class SetupUsageProfileDefaultsTests {
 		Assert.False(config.Debug.Integration.BackgroundCdlRecording);
 		Assert.False(config.Debug.Integration.AutoExportPansy);
 		Assert.False(config.Debug.Integration.SavePansyOnRomUnload);
+		Assert.False(config.Debug.Integration.PansyUseCompression);
 		Assert.False(config.Debug.Integration.EnableFileWatching);
 		Assert.False(config.Debug.Integration.AutoReloadOnExternalChange);
 		Assert.False(config.Preferences.ShowDebugInfo);
@@ -31,6 +33,7 @@ public sealed class SetupUsageProfileDefaultsTests {
 		config.Debug.Integration.BackgroundCdlRecording = false;
 		config.Debug.Integration.AutoExportPansy = false;
 		config.Debug.Integration.SavePansyOnRomUnload = false;
+		config.Debug.Integration.PansyUseCompression = true;
 		config.Debug.Integration.EnableFileWatching = false;
 		config.Debug.Integration.AutoReloadOnExternalChange = false;
 		config.Preferences.ShowDebugInfo = false;
@@ -41,6 +44,7 @@ public sealed class SetupUsageProfileDefaultsTests {
 		Assert.True(config.Debug.Integration.BackgroundCdlRecording);
 		Assert.True(config.Debug.Integration.AutoExportPansy);
 		Assert.True(config.Debug.Integration.SavePansyOnRomUnload);
+		Assert.False(config.Debug.Integration.PansyUseCompression);
 		Assert.True(config.Debug.Integration.EnableFileWatching);
 		Assert.True(config.Debug.Integration.AutoReloadOnExternalChange);
 		Assert.True(config.Preferences.ShowDebugInfo);

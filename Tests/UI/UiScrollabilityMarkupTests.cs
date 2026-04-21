@@ -94,6 +94,20 @@ public sealed class UiScrollabilityMarkupTests {
 	}
 
 	[Fact]
+	public void DebuggerConfigWindow_IntegrationTabContainsClarificationHints() {
+		string repoRoot = GetRepositoryRoot();
+		string fullPath = Path.Combine(repoRoot, "UI", "Debugger", "Windows", "DebuggerConfigWindow.axaml");
+
+		Assert.True(File.Exists(fullPath), $"Expected markup file to exist: {fullPath}");
+
+		string markup = File.ReadAllText(fullPath);
+		Assert.Contains("{l:Translate lblIntegrationDefaultsHint}", markup);
+		Assert.Contains("{l:Translate lblAutoExportHint}", markup);
+		Assert.Contains("{l:Translate lblPansyLifecycleHint}", markup);
+		Assert.Contains("{l:Translate lblPansyCompressionHint}", markup);
+	}
+
+	[Fact]
 	public void ConfigWindow_DataTemplatesUseExplicitScrollViewers() {
 		string repoRoot = GetRepositoryRoot();
 		string fullPath = Path.Combine(repoRoot, "UI", "Windows", "ConfigWindow.axaml");

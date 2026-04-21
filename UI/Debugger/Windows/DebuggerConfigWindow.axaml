@@ -204,16 +204,17 @@
 				</TabItem.Header>
 
 				<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
-					<StackPanel Margin="5">
+					<StackPanel Margin="5" Spacing="8">
 					<c:OptionSection Header="{l:Translate lblIntegrationSettings}" Margin="0">
 						<CheckBox
 							IsChecked="{Binding Integration.ResetLabelsOnImport}"
 							Content="{l:Translate chkResetLabelsOnImport}"
 						/>
+						<TextBlock Text="{l:Translate lblIntegrationDefaultsHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
 					</c:OptionSection>
 					<c:OptionSection Header="{l:Translate lblAutoLoadSettings}">
 						<TextBlock Text="{l:Translate lblAutoLoadHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
-						<StackPanel Margin="10 5 0 0">
+						<StackPanel Margin="12 5 0 0" Spacing="4">
 							<CheckBox
 								IsChecked="{Binding Integration.AutoLoadDbgFiles}"
 								Content="{l:Translate chkAutoLoadDbgFiles}"
@@ -254,6 +255,7 @@
 							Content="{l:Translate chkBackgroundCdlRecording}"
 							Margin="0 5 0 0"
 						/>
+						<TextBlock Text="{l:Translate lblAutoExportHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
 						<StackPanel Orientation="Horizontal" Margin="20 5 0 0" IsEnabled="{Binding Integration.BackgroundCdlRecording}">
 							<TextBlock Text="{l:Translate lblAutoSaveInterval}" VerticalAlignment="Center" />
 							<NumericUpDown
@@ -270,8 +272,9 @@
 							Content="{l:Translate chkSavePansyOnRomUnload}"
 							Margin="0 5 0 0"
 						/>
+						<TextBlock Text="{l:Translate lblPansyLifecycleHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
 						<TextBlock Text="{l:Translate lblPansyExportOptions}" FontWeight="SemiBold" Margin="0 10 0 5" />
-						<StackPanel Margin="10 0 0 0">
+						<StackPanel Margin="12 0 0 0" Spacing="4">
 							<CheckBox
 								IsChecked="{Binding Integration.PansyIncludeMemoryRegions}"
 								Content="{l:Translate chkPansyIncludeMemoryRegions}"
@@ -290,8 +293,9 @@
 								Margin="0 5 0 0"
 							/>
 						</StackPanel>
+						<TextBlock Text="{l:Translate lblPansyCompressionHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
 						<TextBlock Text="{l:Translate lblPansySyncSettings}" FontWeight="SemiBold" Margin="0 10 0 5" />
-						<StackPanel Margin="10 0 0 0">
+						<StackPanel Margin="12 0 0 0" Spacing="4">
 							<CheckBox
 								IsChecked="{Binding Integration.UseFolderStorage}"
 								Content="{l:Translate chkUseFolderStorage}"
@@ -340,7 +344,7 @@
 					</c:OptionSection>
 					<c:OptionSection Header="{l:Translate lblImportFilters}">
 						<TextBlock Text="{l:Translate lblImportFiltersHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
-						<StackPanel Margin="10 5 0 0">
+						<StackPanel Margin="12 5 0 0" Spacing="4">
 							<CheckBox
 								IsChecked="{Binding Integration.ImportPrgRomLabels}"
 								Content="{l:Translate chkImportPrgRomLabels}"

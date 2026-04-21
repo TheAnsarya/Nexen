@@ -24,6 +24,7 @@ public static class SetupUsageProfileDefaults {
 		config.Debug.Integration.BackgroundCdlRecording = false;
 		config.Debug.Integration.AutoExportPansy = false;
 		config.Debug.Integration.SavePansyOnRomUnload = false;
+		config.Debug.Integration.PansyUseCompression = false;
 		config.Debug.Integration.EnableFileWatching = false;
 		config.Debug.Integration.AutoReloadOnExternalChange = false;
 		config.Preferences.ShowDebugInfo = false;
@@ -33,6 +34,7 @@ public static class SetupUsageProfileDefaults {
 		config.Debug.Integration.BackgroundCdlRecording = true;
 		config.Debug.Integration.AutoExportPansy = true;
 		config.Debug.Integration.SavePansyOnRomUnload = true;
+		config.Debug.Integration.PansyUseCompression = false;
 		config.Debug.Integration.EnableFileWatching = true;
 		config.Debug.Integration.AutoReloadOnExternalChange = true;
 		config.Preferences.ShowDebugInfo = true;
