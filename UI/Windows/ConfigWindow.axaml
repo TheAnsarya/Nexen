@@ -83,7 +83,7 @@
 			</Grid>
 		</Panel>
 
-		<TabControl TabStripPlacement="Left" Background="#20888888" SelectedIndex="{ReflectionBinding SelectedIndex, Mode=TwoWay}" Padding="0">
+		<TabControl Name="SettingsTabControl" TabStripPlacement="Left" Background="#20888888" SelectedIndex="{ReflectionBinding SelectedIndex, Mode=TwoWay}" Padding="0">
 			<TabItem Content="{Binding Audio}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">

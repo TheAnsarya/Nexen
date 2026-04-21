@@ -1,6 +1,7 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.IO;
+using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -14,6 +15,8 @@ using Nexen.ViewModels;
 
 namespace Nexen.Windows; 
 public partial class ConfigWindow : NexenWindow {
+	private const double CompactTabBreakpointWidth = 900;
+	private readonly TabControl _settingsTabControl;
 	private ConfigViewModel _model;
 	private bool _promptToSave = true;
 
@@ -29,6 +32,9 @@ public partial class ConfigWindow : NexenWindow {
 		_model = new ConfigViewModel(tab);
 		DataContext = _model;
 		ConfigManager.Config.ConfigWindow.LoadWindowSettings(this);
+		_settingsTabControl = this.GetControl<TabControl>("SettingsTabControl");
+		this.GetPropertyChangedObservable(ClientSizeProperty).Subscribe(_ => UpdateResponsiveTabPlacement());
+		UpdateResponsiveTabPlacement();
 	}
 
 	private void InitializeComponent() {
@@ -100,5 +106,9 @@ public partial class ConfigWindow : NexenWindow {
 
 		//Ensure config isn't modified by the UI while closing
 		DataContext = null;
+	}
+
+	private void UpdateResponsiveTabPlacement() {
+		_settingsTabControl.TabStripPlacement = ClientSize.Width < CompactTabBreakpointWidth ? Avalonia.Controls.Dock.Top : Avalonia.Controls.Dock.Left;
 	}
 }

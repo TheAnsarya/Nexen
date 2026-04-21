@@ -46,6 +46,7 @@ public sealed class UiScrollabilityMarkupTests {
 		Assert.Contains("MinWidth=\"700\"", markup);
 		Assert.Contains("MinHeight=\"560\"", markup);
 		Assert.Contains("MinHeight=\"36\"", markup);
+		Assert.Contains("Name=\"SettingsTabControl\"", markup);
 	}
 
 	[Fact]
@@ -60,6 +61,7 @@ public sealed class UiScrollabilityMarkupTests {
 		Assert.Contains("MinWidth=\"700\"", markup);
 		Assert.Contains("MinHeight=\"560\"", markup);
 		Assert.Contains("MinHeight=\"36\"", markup);
+		Assert.Contains("Name=\"SettingsTabControl\"", markup);
 	}
 
 	[Fact]
@@ -72,6 +74,8 @@ public sealed class UiScrollabilityMarkupTests {
 		string source = File.ReadAllText(fullPath);
 		Assert.Contains("ConfigManager.Config.ConfigWindow.LoadWindowSettings(this);", source);
 		Assert.Contains("ConfigManager.Config.ConfigWindow.SaveWindowSettings(this);", source);
+		Assert.Contains("CompactTabBreakpointWidth = 900", source);
+		Assert.Contains("TabStripPlacement = ClientSize.Width < CompactTabBreakpointWidth ? Avalonia.Controls.Dock.Top : Avalonia.Controls.Dock.Left;", source);
 	}
 
 	[Fact]
@@ -84,6 +88,8 @@ public sealed class UiScrollabilityMarkupTests {
 		string source = File.ReadAllText(fullPath);
 		Assert.Contains("ConfigManager.Config.Debug.DebuggerConfigWindow.LoadWindowSettings(this);", source);
 		Assert.Contains("ConfigManager.Config.Debug.DebuggerConfigWindow.SaveWindowSettings(this);", source);
+		Assert.Contains("CompactTabBreakpointWidth = 900", source);
+		Assert.Contains("TabStripPlacement = ClientSize.Width < CompactTabBreakpointWidth ? Avalonia.Controls.Dock.Top : Avalonia.Controls.Dock.Left;", source);
 	}
 
 	private static string GetRepositoryRoot() {

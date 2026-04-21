@@ -30,7 +30,7 @@
 			</StackPanel>
 		</Panel>
 
-		<TabControl TabStripPlacement="Left" Background="#20888888" SelectedIndex="{ReflectionBinding SelectedIndex, Mode=TwoWay}" Padding="0">
+		<TabControl Name="SettingsTabControl" TabStripPlacement="Left" Background="#20888888" SelectedIndex="{ReflectionBinding SelectedIndex, Mode=TwoWay}" Padding="0">
 			<TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
