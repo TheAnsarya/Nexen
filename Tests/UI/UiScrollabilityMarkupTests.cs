@@ -33,6 +33,8 @@ public sealed class UiScrollabilityMarkupTests {
 		Assert.Contains("CanResize=\"True\"", markup);
 		Assert.Contains("MinWidth=\"460\"", markup);
 		Assert.Contains("MinHeight=\"560\"", markup);
+		int minHeightTouchTargetCount = Regex.Matches(markup, "MinHeight=\"36\"").Count;
+		Assert.True(minHeightTouchTargetCount >= 3, $"Expected at least 3 touch-target controls with MinHeight=36, found {minHeightTouchTargetCount}.");
 	}
 
 	[Fact]

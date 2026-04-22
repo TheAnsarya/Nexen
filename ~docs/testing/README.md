@@ -65,6 +65,7 @@ This index unifies all testing and manual validation documentation.
 | [2026-04-21-epic-21-ui-benchmark-and-test-plan.md](2026-04-21-epic-21-ui-benchmark-and-test-plan.md) | Reproducible telemetry + benchmark harness, baseline evidence, and regression thresholds for #1414 |
 | [2026-04-21-epic-21-icon-coverage-audit.md](2026-04-21-epic-21-icon-coverage-audit.md) | Icon inventory, resolved coverage gaps, and UI QA checklist integration for #1413 |
 | [2026-04-21-epic-21-ui-test-strategy-matrix.md](2026-04-21-epic-21-ui-test-strategy-matrix.md) | Functional and visual regression matrix with runnable workflow for #1415 |
+| [2026-04-21-epic-21-settings-visual-snapshot-baseline.md](2026-04-21-epic-21-settings-visual-snapshot-baseline.md) | Baseline capture set, storage paths, and comparison workflow for settings-window visual snapshots in #1408 |
 
 ## Machine-Readable Testing Assets
 
