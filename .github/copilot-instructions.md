@@ -372,6 +372,15 @@ When publishing a new release (e.g., `v1.2.0`), you **MUST** update `README.md` 
    - Download filenames (e.g., `Nexen-Linux-x64-v1.1.4.AppImage`)
    - Release page links
 
+### ⚠️ MANDATORY: Release Notes File on Every Release Build
+
+Every time a release build is prepared or published, a release-notes file **must** be created in `~docs/release-notes/`.
+
+- Required file pattern: `~docs/release-notes/release-notes-vX.Y.Z.md`
+- The file must contain a complete release description suitable for GitHub release notes
+- The file must be committed with the release changes
+- If the release is a test/unstable build, include a clear warning at the top of the file
+
 ### Release Checklist
 
 ```powershell

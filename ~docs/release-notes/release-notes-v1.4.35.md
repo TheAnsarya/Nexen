@@ -145,4 +145,4 @@ Nexen v1.4.35 is a deep performance optimization release targeting the SNES emul
 
 ---
 
-**Full Changelog:** https://github.com/TheAnsarya/Nexen/compare/v1.4.34...v1.4.35
+**Full Changelog:** [v1.4.34...v1.4.35](https://github.com/TheAnsarya/Nexen/compare/v1.4.34...v1.4.35)

@@ -1745,11 +1745,12 @@ continue working this epic; continue;
 
 [Nexen] Are we really using SevenZip? Is there a reason we're using raw sourcecode in an embedded project and not a nuget package? What are we using for our zip file creation and does that do 7z as well?; research, plan, make an issue, implement, test/benchmark, update documentation, git commit; continue;
 
+--- auto
+[Nexen] Get the background fill brown color from inside the border from `C:\Users\me\source\repos\Nexen\UI\Assets\NexenIcon.png` and then fix other assets by filling the background inside the box borders for `C:\Users\me\source\repos\Nexen\~assets\big-logo.png`, `C:\Users\me\source\repos\Nexen\~assets\big-logo-2.png`, `C:\Users\me\source\repos\Nexen\~assets\big-logo - Copy.png`, `C:\Users\me\source\repos\Nexen\~assets\Nexen icon.png`
 
 
 
-
-
+[Nexen] add to copilot instructions that everytime you release a build, add a release-notes files to `\~docs\release-notes\`; [Nexen] git commit everything; stablize and fix as many warnings as possible, and update docs and readmes, and create a working build and release version 1.4.37 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and add at the top of the release notes add a warning that this release is a bad release for testing and not to be used yet, watch out for 1.5.0, and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
 
 
 
@@ -1813,6 +1814,7 @@ We've got partial pansy and cdl files for FFMQ (SNES) and so rerun peony and pop
 
 
 
+
 *********************************************************************************************************************************
 *********************************************************************************************************************************
 *********************************************************************************************************************************
@@ -1820,7 +1822,7 @@ We've got partial pansy and cdl files for FFMQ (SNES) and so rerun peony and pop
 
 
 
-[Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.37 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
+[Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.38 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
 
 
 

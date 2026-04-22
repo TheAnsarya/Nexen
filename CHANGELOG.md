@@ -5,6 +5,20 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.37] - 2026-04-22
+
+### Changed
+
+- **Release process policy hardening** — added explicit Copilot workflow rule requiring release-notes files under `~docs/release-notes/` for every release build
+- **Release metadata update** — README download and quick-start links updated to v1.4.37 asset references
+- **Release notes publication** — added comprehensive testing-release notes for v1.4.37 with caution banner and compare links
+
+### Fixed
+
+- **Archive stack migration** — removed vendored SevenZip source tree/project wiring and native `SZReader` path; UI ZIP/7z listing and extraction now use SharpCompress package-based flow (#1419)
+- **Archive documentation and CI alignment** — archive stack documentation added/updated and stale SevenZip warning path filters removed from CI pipeline (#1419)
+- **Asset interior fill consistency** — updated app icon and big-logo interior background fills for visual consistency (#1418)
+
 ## [1.4.36] - 2026-04-20
 
 ### Added
@@ -738,7 +752,7 @@ Major performance optimization pass across all CPU emulation cores and UI render
   - SMS VDP DrawPixel: cached buffer offset
 
 - **Utility Library**
-  - HexUtilities: constexpr nibble LUT for FromHex, eliminated 256-entry vector<string>
+  - HexUtilities: constexpr nibble LUT for FromHex, eliminated 256-entry `vector<string>`
   - StringUtilities: string_view for Split, const ref for Trim/CopyToBuffer
   - Equalizer: vector→std::array+span (10.1x faster)
 
@@ -753,7 +767,7 @@ Eliminated thousands of per-frame GC allocations in debugger UI:
 - PianoRollControl: 17 per-frame brush/pen/typeface → static readonly
 - HexEditor: pre-allocated string[256] hex lookup table
 - HexEditorDataProvider: static string[128] printable ASCII cache
-- Utf8Utilities: Marshal.PtrToStringUTF8 + ArrayPool<byte>
+- Utf8Utilities: Marshal.PtrToStringUTF8 + `ArrayPool<byte>`
 - GetScriptLog: pooled buffer
 - GetSaveStatePreview: ArrayPool
 - PictureViewer: cached Pen/Brush/Typeface

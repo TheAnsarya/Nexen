@@ -114,4 +114,4 @@ NES, SNES, Game Boy / GBC, Game Boy Advance, Sega Master System / Game Gear, PC 
 
 > **Note:** Linux tarball builds require SDL2 (`sudo apt install libsdl2-2.0-0`). macOS: Right-click then Open on first launch.
 
-**Full Changelog:** https://github.com/TheAnsarya/Nexen/compare/v1.4.0...v1.4.1
+**Full Changelog:** [v1.4.0...v1.4.1](https://github.com/TheAnsarya/Nexen/compare/v1.4.0...v1.4.1)

@@ -182,4 +182,4 @@ Coalesced multi-delete operations into contiguous ranges — O(r*n) instead of O
 
 ---
 
-**Full Changelog:** https://github.com/TheAnsarya/Nexen/compare/v1.4.33...v1.4.34
+**Full Changelog:** [v1.4.33...v1.4.34](https://github.com/TheAnsarya/Nexen/compare/v1.4.33...v1.4.34)
