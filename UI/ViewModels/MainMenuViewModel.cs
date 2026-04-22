@@ -90,6 +90,7 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 
 	/// <summary>Reference to the configuration window if open.</summary>
 	private ConfigWindow? _cfgWindow = null;
+	private SpeedSliderPrototypeWindow? _speedSliderPrototypeWindow;
 
 	/// <summary>Action for controller selection menu.</summary>
 	private SimpleMenuAction _selectControllerAction = new();
@@ -133,6 +134,16 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 			MainWindow.RecentGames.Visible = false;
 		} else if (ConfigManager.Config.Preferences.GameSelectionScreenMode != GameSelectionMode.Disabled && !IsGameRunning) {
 			MainWindow.RecentGames.Init(GameScreenMode.RecentGames);
+		}
+	}
+
+	private void OpenSpeedSliderPrototype(MainWindow wnd) {
+		if (_speedSliderPrototypeWindow is null) {
+			_speedSliderPrototypeWindow = new SpeedSliderPrototypeWindow();
+			_speedSliderPrototypeWindow.Closed += (_, _) => _speedSliderPrototypeWindow = null;
+			_speedSliderPrototypeWindow.ShowCentered((Control)wnd);
+		} else {
+			_speedSliderPrototypeWindow.BringToFront();
 		}
 	}
 
@@ -449,6 +460,10 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 				ActionType = ActionType.Speed,
 				SubActions = [
 					GetSpeedMenuItem(ActionType.NormalSpeed, 100),
+					new SimpleMenuAction(ActionType.Custom) {
+						CustomText = "Speed Slider Prototype...",
+						OnClick = () => OpenSpeedSliderPrototype(wnd)
+					},
 					new MenuSeparator(),
 					new ShortcutMenuAction(EmulatorShortcut.IncreaseSpeed) {
 						ActionType = ActionType.IncreaseSpeed

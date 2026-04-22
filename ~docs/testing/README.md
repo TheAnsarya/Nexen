@@ -67,6 +67,7 @@ This index unifies all testing and manual validation documentation.
 | [2026-04-21-epic-21-ui-test-strategy-matrix.md](2026-04-21-epic-21-ui-test-strategy-matrix.md) | Functional and visual regression matrix with runnable workflow for #1415 |
 | [2026-04-21-epic-21-settings-visual-snapshot-baseline.md](2026-04-21-epic-21-settings-visual-snapshot-baseline.md) | Baseline capture set, storage paths, and comparison workflow for settings-window visual snapshots in #1408 |
 | [2026-04-21-epic-21-theme-tab-refresh-checkpoint.md](2026-04-21-epic-21-theme-tab-refresh-checkpoint.md) | Theme-tokenized tab-strip chrome and affordance checkpoint for #1409 |
+| [2026-04-21-epic-21-speed-slider-prototype-checkpoint.md](2026-04-21-epic-21-speed-slider-prototype-checkpoint.md) | Speed-slider prototype UX notes, precision checks, latency benchmarks, and ship/no-ship decision for #1410 |
 
 ## Machine-Readable Testing Assets
 

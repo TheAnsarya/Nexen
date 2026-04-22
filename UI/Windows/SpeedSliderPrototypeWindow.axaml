@@ -1,0 +1,35 @@
+﻿<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	d:DesignWidth="560"
+	d:DesignHeight="260"
+	x:Class="Nexen.Windows.SpeedSliderPrototypeWindow"
+	Width="560"
+	MinWidth="520"
+	MinHeight="240"
+	CanResize="True"
+	WindowStartupLocation="CenterOwner"
+	Title="Speed Slider Prototype"
+>
+	<StackPanel Margin="16" Spacing="10">
+		<TextBlock Text="Prototype: speed slider for the Settings -> Speed menu." FontWeight="Bold" />
+		<TextBlock Text="Semantics: Pause, presets (25/50/100/200/300), and Maximum." TextWrapping="Wrap" />
+
+		<Slider Name="SpeedSlider" Minimum="0" Maximum="6" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="OnSpeedSliderChanged" />
+
+		<Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto" ColumnSpacing="8">
+			<TextBlock Grid.Column="0" Text="Current selection:" VerticalAlignment="Center" />
+			<TextBlock Grid.Column="1" Name="CurrentSelectionLabel" Text="100%" FontWeight="Bold" VerticalAlignment="Center" />
+			<TextBlock Grid.Column="2" Name="RiskHintLabel" Text="Apply is manual to reduce accidental speed changes." HorizontalAlignment="Right" Opacity="0.8" />
+		</Grid>
+
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0 8 0 0">
+			<Button Name="ApplyButton" MinHeight="36" MinWidth="90" Content="Apply" Click="OnApplyClick" />
+			<Button Name="ApplyAndCloseButton" MinHeight="36" MinWidth="130" Content="Apply &amp; Close" Click="OnApplyAndCloseClick" />
+			<Button Name="CancelButton" MinHeight="36" MinWidth="90" Content="Close" Click="OnCloseClick" />
+		</StackPanel>
+	</StackPanel>
+</Window>

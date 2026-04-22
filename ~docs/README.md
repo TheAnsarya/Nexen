@@ -144,6 +144,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Epic 21 UI Test Strategy Matrix (2026-04-21)](testing/2026-04-21-epic-21-ui-test-strategy-matrix.md) | Functional and visual regression matrix with runnable workflow and task list for #1415 |
 | [Epic 21 Settings Visual Snapshot Baseline (2026-04-21)](testing/2026-04-21-epic-21-settings-visual-snapshot-baseline.md) | Baseline capture inventory and visual comparison workflow for #1408 settings-window snapshots |
 | [Epic 21 Theme and Tab Refresh Checkpoint (2026-04-21)](testing/2026-04-21-epic-21-theme-tab-refresh-checkpoint.md) | Theme-tokenized tab-strip styling and affordance validation checkpoint for #1409 |
+| [Epic 21 Speed Slider Prototype Checkpoint (2026-04-21)](testing/2026-04-21-epic-21-speed-slider-prototype-checkpoint.md) | Speed-slider prototype evidence pack, benchmark results, and ship/no-ship decision for #1410 |
 | [Epic 21 UI Design System and Component Spec (2026-04-21)](plans/2026-04-21-epic-21-ui-design-system-spec.md) | Design tokens, component anatomy, Avalonia implementation mapping, and sign-off checklist for #1416 |
 | [Epic 23 Menu, TAS, and Input Validation Matrix (2026-03-29)](testing/epic-23-menu-tas-input-validation-matrix-2026-03-29.md) | Consolidated validation matrix and evidence index for #1071-#1075 |
 | [Input Mapping Coverage Checkpoint (2026-03-30)](testing/input-mapping-coverage-checkpoint-2026-03-30.md) | Focused per-system controller mapping decode coverage checkpoint and validation evidence for #1073 |
