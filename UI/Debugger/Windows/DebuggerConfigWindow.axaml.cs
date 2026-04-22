@@ -13,7 +13,7 @@ using Nexen.Utilities;
 using Nexen.ViewModels;
 using Nexen.Windows;
 
-namespace Nexen.Debugger.Windows; 
+namespace Nexen.Debugger.Windows;
 public partial class DebuggerConfigWindow : NexenWindow {
 	private const double CompactTabBreakpointWidth = 900;
 	private readonly TabControl _settingsTabControl;

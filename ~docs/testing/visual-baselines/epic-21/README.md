@@ -1,4 +1,4 @@
-# Epic 21 Visual Baselines
+﻿# Epic 21 Visual Baselines
 
 This folder stores screenshot baselines and candidate captures used by the Epic 21 visual comparison workflow.
 

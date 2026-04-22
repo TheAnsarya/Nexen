@@ -1,4 +1,4 @@
-# UI Quality Modernization Checkpoint (2026-03-30)
+﻿# UI Quality Modernization Checkpoint (2026-03-30)
 
 ## Scope
 

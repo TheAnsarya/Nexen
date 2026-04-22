@@ -1,4 +1,4 @@
-# Epic 21 Speed Menu Slider Prototype Checkpoint (2026-04-21)
+﻿# Epic 21 Speed Menu Slider Prototype Checkpoint (2026-04-21)
 
 ## Scope
 

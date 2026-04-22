@@ -1,4 +1,4 @@
-# Epic 21 Icon Coverage Audit (2026-04-21)
+﻿# Epic 21 Icon Coverage Audit (2026-04-21)
 
 ## Scope
 

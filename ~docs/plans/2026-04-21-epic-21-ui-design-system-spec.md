@@ -1,4 +1,4 @@
-# Epic 21 UI Design System and Component Spec (2026-04-21)
+﻿# Epic 21 UI Design System and Component Spec (2026-04-21)
 
 ## Scope
 

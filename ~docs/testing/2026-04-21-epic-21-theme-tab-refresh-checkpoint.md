@@ -1,4 +1,4 @@
-# Epic 21 Theme and Tab Refresh Checkpoint (2026-04-21)
+﻿# Epic 21 Theme and Tab Refresh Checkpoint (2026-04-21)
 
 ## Scope
 

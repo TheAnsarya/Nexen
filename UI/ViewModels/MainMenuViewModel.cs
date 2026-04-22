@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -123,6 +123,13 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 			(_cfgWindow.DataContext as ConfigViewModel)!.SelectTab(tab);
 			_cfgWindow.BringToFront();
 		}
+	}
+
+	private void OpenConfigRoute(MainWindow wnd, string routeId) {
+		var romInfo = EmuApi.GetRomInfo();
+		bool hasLoadedRom = !string.IsNullOrWhiteSpace(romInfo.RomPath);
+		ConfigWindowTab tab = ConfigViewModel.ResolveRoute(routeId, hasLoadedRom, romInfo.ConsoleType);
+		OpenConfig(wnd, tab);
 	}
 
 	/// <summary>
@@ -611,54 +618,54 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 
 			new SimpleMenuAction() {
 				ActionType = ActionType.Audio,
-				OnClick = () => OpenConfig(wnd, ConfigWindowTab.Audio)
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.Audio)
 			},
 			new SimpleMenuAction() {
 				ActionType = ActionType.Emulation,
-				OnClick = () => OpenConfig(wnd, ConfigWindowTab.Emulation)
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.Emulation)
 			},
 			new SimpleMenuAction() {
 				ActionType = ActionType.Input,
-				OnClick = () => OpenConfig(wnd, ConfigWindowTab.Input)
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.InputActiveSystem)
 			},
 			new SimpleMenuAction() {
 				ActionType = ActionType.Video,
-				OnClick = () => OpenConfig(wnd, ConfigWindowTab.Video)
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.Video)
 			},
 
 			new MenuSeparator(),
 
 			new SimpleMenuAction() {
 				ActionType = ActionType.Nes,
-				OnClick = () => OpenConfig(wnd, ConfigWindowTab.Nes)
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.Nes)
 			},
 			new SimpleMenuAction() {
 				ActionType = ActionType.Snes,
-				OnClick = () => OpenConfig(wnd, ConfigWindowTab.Snes)
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.Snes)
 			},
 			new SimpleMenuAction() {
 				ActionType = ActionType.Gameboy,
-				OnClick = () => OpenConfig(wnd, ConfigWindowTab.Gameboy)
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.Gameboy)
 			},
 			new SimpleMenuAction() {
 				ActionType = ActionType.Gba,
-				OnClick = () => OpenConfig(wnd, ConfigWindowTab.Gba)
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.Gba)
 			},
 			new SimpleMenuAction() {
 				ActionType = ActionType.PcEngine,
-				OnClick = () => OpenConfig(wnd, ConfigWindowTab.PcEngine)
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.PcEngine)
 			},
 			new SimpleMenuAction() {
 				ActionType = ActionType.Sms,
-				OnClick = () => OpenConfig(wnd, ConfigWindowTab.Sms)
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.Sms)
 			},
 			new SimpleMenuAction() {
 				ActionType = ActionType.Ws,
-				OnClick = () => OpenConfig(wnd, ConfigWindowTab.Ws)
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.Ws)
 			},
 			new SimpleMenuAction() {
 				ActionType = ActionType.OtherConsoles,
-				OnClick = () => OpenConfig(wnd, ConfigWindowTab.OtherConsoles)
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.OtherConsoles)
 			},
 			new MenuSeparator(),
 
@@ -694,7 +701,7 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 
 			new SimpleMenuAction() {
 				ActionType = ActionType.Preferences,
-				OnClick = () => OpenConfig(wnd, ConfigWindowTab.Preferences)
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.Preferences)
 			}
 		];
 	}

@@ -1,4 +1,4 @@
-# Epic 21 UI Test Strategy Matrix (2026-04-21)
+﻿# Epic 21 UI Test Strategy Matrix (2026-04-21)
 
 ## Scope
 

@@ -1,4 +1,4 @@
-# Epic 21 Settings Visual Snapshot Baseline (2026-04-21)
+﻿# Epic 21 Settings Visual Snapshot Baseline (2026-04-21)
 
 ## Scope
 

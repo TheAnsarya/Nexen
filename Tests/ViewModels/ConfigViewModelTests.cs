@@ -22,4 +22,45 @@ public sealed class ConfigViewModelTests {
 		var actual = ConfigViewModel.ResolveInputLandingTab(hasLoadedRom, consoleType);
 		Assert.Equal(expected, actual);
 	}
+
+	[Theory]
+	[InlineData(ConfigRouteIds.Audio, ConfigWindowTab.Audio)]
+	[InlineData(ConfigRouteIds.Emulation, ConfigWindowTab.Emulation)]
+	[InlineData(ConfigRouteIds.Input, ConfigWindowTab.Input)]
+	[InlineData(ConfigRouteIds.Video, ConfigWindowTab.Video)]
+	[InlineData(ConfigRouteIds.Nes, ConfigWindowTab.Nes)]
+	[InlineData(ConfigRouteIds.Snes, ConfigWindowTab.Snes)]
+	[InlineData(ConfigRouteIds.Gameboy, ConfigWindowTab.Gameboy)]
+	[InlineData(ConfigRouteIds.Gba, ConfigWindowTab.Gba)]
+	[InlineData(ConfigRouteIds.PcEngine, ConfigWindowTab.PcEngine)]
+	[InlineData(ConfigRouteIds.Sms, ConfigWindowTab.Sms)]
+	[InlineData(ConfigRouteIds.Ws, ConfigWindowTab.Ws)]
+	[InlineData(ConfigRouteIds.Lynx, ConfigWindowTab.Lynx)]
+	[InlineData(ConfigRouteIds.Atari2600, ConfigWindowTab.Atari2600)]
+	[InlineData(ConfigRouteIds.ChannelF, ConfigWindowTab.ChannelF)]
+	[InlineData(ConfigRouteIds.OtherConsoles, ConfigWindowTab.OtherConsoles)]
+	[InlineData(ConfigRouteIds.Preferences, ConfigWindowTab.Preferences)]
+	public void TryResolveRoute_MapsStableRouteIds(string routeId, ConfigWindowTab expectedTab) {
+		bool resolved = ConfigViewModel.TryResolveRoute(routeId, out ConfigWindowTab actualTab);
+		Assert.True(resolved);
+		Assert.Equal(expectedTab, actualTab);
+	}
+
+	[Fact]
+	public void ResolveRoute_InputActiveSystem_UsesCurrentConsole() {
+		ConfigWindowTab noRom = ConfigViewModel.ResolveRoute(ConfigRouteIds.InputActiveSystem, false, ConsoleType.Snes);
+		ConfigWindowTab snes = ConfigViewModel.ResolveRoute(ConfigRouteIds.InputActiveSystem, true, ConsoleType.Snes);
+
+		Assert.Equal(ConfigWindowTab.Input, noRom);
+		Assert.Equal(ConfigWindowTab.Snes, snes);
+	}
+
+	[Theory]
+	[InlineData(ConfigWindowTab.Audio, ConfigRouteIds.Audio)]
+	[InlineData(ConfigWindowTab.Input, ConfigRouteIds.Input)]
+	[InlineData(ConfigWindowTab.Preferences, ConfigRouteIds.Preferences)]
+	public void GetRouteId_ReturnsExpectedStableId(ConfigWindowTab tab, string expectedRouteId) {
+		string routeId = ConfigViewModel.GetRouteId(tab);
+		Assert.Equal(expectedRouteId, routeId);
+	}
 }

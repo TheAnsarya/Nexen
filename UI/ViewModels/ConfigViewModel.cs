@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 using Nexen.Config;
 using Nexen.Interop;
@@ -12,6 +13,44 @@ namespace Nexen.ViewModels;
 /// Lazily loads child ViewModels for each configuration tab and manages save/revert operations.
 /// </summary>
 public sealed partial class ConfigViewModel : DisposableViewModel {
+	private static readonly Dictionary<string, ConfigWindowTab> RouteToTab = new(StringComparer.OrdinalIgnoreCase) {
+		[ConfigRouteIds.Audio] = ConfigWindowTab.Audio,
+		[ConfigRouteIds.Emulation] = ConfigWindowTab.Emulation,
+		[ConfigRouteIds.Input] = ConfigWindowTab.Input,
+		[ConfigRouteIds.Video] = ConfigWindowTab.Video,
+		[ConfigRouteIds.Nes] = ConfigWindowTab.Nes,
+		[ConfigRouteIds.Snes] = ConfigWindowTab.Snes,
+		[ConfigRouteIds.Gameboy] = ConfigWindowTab.Gameboy,
+		[ConfigRouteIds.Gba] = ConfigWindowTab.Gba,
+		[ConfigRouteIds.PcEngine] = ConfigWindowTab.PcEngine,
+		[ConfigRouteIds.Sms] = ConfigWindowTab.Sms,
+		[ConfigRouteIds.Ws] = ConfigWindowTab.Ws,
+		[ConfigRouteIds.Lynx] = ConfigWindowTab.Lynx,
+		[ConfigRouteIds.Atari2600] = ConfigWindowTab.Atari2600,
+		[ConfigRouteIds.ChannelF] = ConfigWindowTab.ChannelF,
+		[ConfigRouteIds.OtherConsoles] = ConfigWindowTab.OtherConsoles,
+		[ConfigRouteIds.Preferences] = ConfigWindowTab.Preferences,
+	};
+
+	private static readonly Dictionary<ConfigWindowTab, string> TabToRoute = new() {
+		[ConfigWindowTab.Audio] = ConfigRouteIds.Audio,
+		[ConfigWindowTab.Emulation] = ConfigRouteIds.Emulation,
+		[ConfigWindowTab.Input] = ConfigRouteIds.Input,
+		[ConfigWindowTab.Video] = ConfigRouteIds.Video,
+		[ConfigWindowTab.Nes] = ConfigRouteIds.Nes,
+		[ConfigWindowTab.Snes] = ConfigRouteIds.Snes,
+		[ConfigWindowTab.Gameboy] = ConfigRouteIds.Gameboy,
+		[ConfigWindowTab.Gba] = ConfigRouteIds.Gba,
+		[ConfigWindowTab.PcEngine] = ConfigRouteIds.PcEngine,
+		[ConfigWindowTab.Sms] = ConfigRouteIds.Sms,
+		[ConfigWindowTab.Ws] = ConfigRouteIds.Ws,
+		[ConfigWindowTab.Lynx] = ConfigRouteIds.Lynx,
+		[ConfigWindowTab.Atari2600] = ConfigRouteIds.Atari2600,
+		[ConfigWindowTab.ChannelF] = ConfigRouteIds.ChannelF,
+		[ConfigWindowTab.OtherConsoles] = ConfigRouteIds.OtherConsoles,
+		[ConfigWindowTab.Preferences] = ConfigRouteIds.Preferences,
+	};
+
 	private Configuration _originalConfig = new();
 
 	/// <summary>Gets or sets the audio configuration ViewModel.</summary>
@@ -115,6 +154,22 @@ public sealed partial class ConfigViewModel : DisposableViewModel {
 			ConsoleType.ChannelF => ConfigWindowTab.ChannelF,
 			_ => ConfigWindowTab.Input,
 		};
+	}
+
+	public static bool TryResolveRoute(string routeId, out ConfigWindowTab tab) {
+		return RouteToTab.TryGetValue(routeId, out tab);
+	}
+
+	public static string GetRouteId(ConfigWindowTab tab) {
+		return TabToRoute.TryGetValue(tab, out string? routeId) ? routeId : ConfigRouteIds.Audio;
+	}
+
+	public static ConfigWindowTab ResolveRoute(string routeId, bool hasLoadedRom, ConsoleType consoleType) {
+		if (string.Equals(routeId, ConfigRouteIds.InputActiveSystem, StringComparison.OrdinalIgnoreCase)) {
+			return ResolveInputLandingTab(hasLoadedRom, consoleType);
+		}
+
+		return TryResolveRoute(routeId, out ConfigWindowTab tab) ? tab : ConfigWindowTab.Audio;
 	}
 
 	private void CaptureCurrentAsOriginal() {
@@ -270,6 +325,26 @@ public sealed partial class ConfigViewModel : DisposableViewModel {
 			!_originalConfig.Cv.IsIdentical(ConfigManager.Config.Cv)
 		;
 	}
+}
+
+public static class ConfigRouteIds {
+	public const string Audio = "settings.audio";
+	public const string Emulation = "settings.emulation";
+	public const string Input = "settings.input";
+	public const string InputActiveSystem = "settings.input.active-system";
+	public const string Video = "settings.video";
+	public const string Nes = "settings.system.nes";
+	public const string Snes = "settings.system.snes";
+	public const string Gameboy = "settings.system.gameboy";
+	public const string Gba = "settings.system.gba";
+	public const string PcEngine = "settings.system.pce";
+	public const string Sms = "settings.system.sms";
+	public const string Ws = "settings.system.ws";
+	public const string Lynx = "settings.system.lynx";
+	public const string Atari2600 = "settings.system.atari2600";
+	public const string ChannelF = "settings.system.channelf";
+	public const string OtherConsoles = "settings.system.other";
+	public const string Preferences = "settings.preferences";
 }
 
 /// <summary>
