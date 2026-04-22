@@ -179,7 +179,7 @@ jobs:
 
           # Keep the full warning report for diagnostics, but generate a first-party
           # warning view used by regression gating to avoid vendor-noise churn.
-          $vendorPathRegex = "\\vcpkg_installed\\|\\Utilities\\Audio\\stb_vorbis\.cpp|\\Utilities\\Audio\\ymfm\\|\\Utilities\\NTSC\\|\\Utilities\\spng\.c|\\Utilities\\xBRZ\\xbrz\.cpp|\\SevenZip\\Precomp\.c"
+          $vendorPathRegex = "\\vcpkg_installed\\|\\Utilities\\Audio\\stb_vorbis\.cpp|\\Utilities\\Audio\\ymfm\\|\\Utilities\\NTSC\\|\\Utilities\\spng\.c|\\Utilities\\xBRZ\\xbrz\.cpp"
 
           $firstPartyWarnings = Get-Content $warningLog | Where-Object {
             $_ -match "\bwarning\b" -and

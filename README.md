@@ -1,4 +1,4 @@
-# Nexen
+﻿# Nexen
 
 <p align="center">
   <img src="~assets/Nexen%20icon.png" alt="Nexen" width="128"/>
@@ -247,6 +247,7 @@ Nexen is the **play & debug** stage of the Flower Toolchain — an integrated pi
 | [Compiling](COMPILING.md) | Build from source |
 | [SteamOS / Steam Deck](SteamOS.md) | Running Nexen on SteamOS and Game Mode |
 | [Performance Guide](docs/PERFORMANCE.md) | Performance strategy and references |
+| [Archive Stack](docs/ARCHIVE-STACK.md) | ZIP/7z read-write support matrix and packaging behavior |
 | [Release Guide](docs/RELEASE.md) | Creating releases |
 | [Changelog](CHANGELOG.md) | Version history |
 

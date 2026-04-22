@@ -39,6 +39,28 @@ dotnet nuget locals all --clear
 dotnet restore Nexen.sln
 ```
 
+## Archive Tooling
+
+Nexen uses two separate archive paths:
+
+- Runtime ROM loading: ZIP and 7z are supported for reading.
+- Build/package embedding: `Dependencies.zip` is the embedded dependency archive consumed by `UI/UI.csproj`.
+
+Windows dependency packaging is done by `scripts/package-dependencies.ps1`.
+
+```powershell
+# Default: build the embedded ZIP archive used by UI
+.\scripts\package-dependencies.ps1 -Configuration Release -ArchiveFormat zip
+
+# Optional: build both ZIP and 7z archives (requires 7z/7zz/7za on PATH)
+.\scripts\package-dependencies.ps1 -Configuration Release -ArchiveFormat both
+
+# Optional: build only 7z (not used by UI embedding)
+.\scripts\package-dependencies.ps1 -Configuration Release -ArchiveFormat 7z
+```
+
+For architecture details and rationale, see `docs/ARCHIVE-STACK.md`.
+
 ## Windows
 
 ### Requirements

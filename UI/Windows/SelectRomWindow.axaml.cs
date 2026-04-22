@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
@@ -76,7 +76,7 @@ public partial class SelectRomWindow : NexenWindow {
 		if (entries.Count == 0) {
 			return file;
 		} else if (entries.Count == 1) {
-			return new ResourcePath() { Path = file, InnerFile = entries[0].Filename, InnerFileIndex = entries[0].IsUtf8 ? 0 : 1 };
+			return new ResourcePath() { Path = file, InnerFile = entries[0].ArchiveKey, InnerFileIndex = 0 };
 		}
 
 		SelectRomViewModel model = new(entries) { SelectedEntry = entries[0] };
@@ -94,12 +94,7 @@ public partial class SelectRomWindow : NexenWindow {
 			return null;
 		}
 
-		int innerFileIndex = 0;
-		if (!model.SelectedEntry.IsUtf8) {
-			innerFileIndex = entries.IndexOf(model.SelectedEntry) + 1;
-		}
-
-		return new ResourcePath() { Path = file, InnerFile = model.SelectedEntry.Filename, InnerFileIndex = innerFileIndex };
+		return new ResourcePath() { Path = file, InnerFile = model.SelectedEntry.ArchiveKey, InnerFileIndex = 0 };
 	}
 
 	private void OnOkClick(object sender, RoutedEventArgs e) {

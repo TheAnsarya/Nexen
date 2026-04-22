@@ -10,6 +10,7 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using Nexen.Config;
 using Nexen.Config.Shortcuts;
+using Nexen.GUI.Utilities;
 using Nexen.Interop;
 using Nexen.Localization;
 using Nexen.ViewModels;
@@ -143,9 +144,23 @@ public static class LoadRomHelper {
 			IDisposable? serializedGateToken = null;
 			try {
 				serializedGateToken = await EnterSerializedLoadGateAsync("LoadRom", romPath.ToString()).ConfigureAwait(false);
+
+				ResourcePath romPathForCore = romPath;
+				if (FolderHelper.IsArchiveFile(romPath.Path) && romPath.Compressed) {
+					string? extractedPath = ArchiveHelper.ExtractArchiveEntryToTempFile(romPath);
+					if (string.IsNullOrWhiteSpace(extractedPath) || !File.Exists(extractedPath)) {
+						Log.Error($"[LoadRomHelper] Failed to extract archive entry: {romPath}");
+						DisplayMessageHelper.DisplayMessage("Error", ResourceHelper.GetMessage("FileNotFound", romPath.ToString()));
+						return;
+					}
+
+					romPathForCore = extractedPath;
+					Log.Info($"[LoadRomHelper] Extracted archive entry to temp file: {romPathForCore}");
+				}
+
 				Log.Info($"[LoadRomHelper] Calling EmuApi.LoadRom...");
 				//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side
-				bool success = EmuApi.LoadRom(romPath, patchPath);
+				bool success = EmuApi.LoadRom(romPathForCore, patchPath);
 				Log.Info($"[LoadRomHelper] EmuApi.LoadRom returned: {success}");
 
 				if (success) {

@@ -1,14 +1,13 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 
 /// <summary>
-/// Abstract base class for reading compressed archive formats (ZIP, 7z, etc.).
+/// Abstract base class for reading compressed archive formats.
 /// Provides unified interface for loading ROMs and data files from archives.
 /// </summary>
 /// <remarks>
 /// Concrete implementations:
 /// - ZipReader: ZIP archive support
-/// - SevenZipReader: 7z archive support
 ///
 /// Factory pattern: Use GetReader() to auto-detect format and create appropriate reader.
 ///
@@ -92,7 +91,7 @@ public:
 	/// </summary>
 	/// <param name="in">Input stream positioned at archive start</param>
 	/// <returns>ArchiveReader instance or nullptr if format not supported</returns>
-	/// <remarks>Detects ZIP, 7z, and other supported formats by magic bytes</remarks>
+	/// <remarks>Detects ZIP and other supported formats by magic bytes</remarks>
 	static unique_ptr<ArchiveReader> GetReader(std::istream& in);
 
 	/// <summary>Factory method: create reader from file path</summary>

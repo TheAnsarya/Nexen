@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "ArchiveReader.h"
 #include <cctype>
 #include <string.h>
@@ -7,7 +7,6 @@
 #include <ranges>
 #include "FolderUtilities.h"
 #include "ZipReader.h"
-#include "SZReader.h"
 
 ArchiveReader::~ArchiveReader() {
 	_buffer.reset();
@@ -90,8 +89,6 @@ unique_ptr<ArchiveReader> ArchiveReader::GetReader(std::istream& in) {
 	unique_ptr<ArchiveReader> reader;
 	if (memcmp(header, "PK", 2) == 0) {
 		reader = std::make_unique<ZipReader>();
-	} else if (memcmp(header, "7z", 2) == 0) {
-		reader = std::make_unique<SZReader>();
 	}
 
 	if (reader) {

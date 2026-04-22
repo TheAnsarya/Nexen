@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -219,9 +219,6 @@
     </ProjectReference>
     <ProjectReference Include="..\Lua\Lua.vcxproj">
       <Project>{b609e0a0-5050-4871-91d6-e760633bcdd1}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\SevenZip\SevenZip.vcxproj">
-      <Project>{52c4ba3a-e699-4305-b23f-c9083fd07ab6}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Utilities\Utilities.vcxproj">
       <Project>{b5330148-e8c7-46ba-b54e-69be59ea337d}</Project>

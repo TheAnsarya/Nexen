@@ -1,4 +1,4 @@
-# Nexen Documentation
+﻿# Nexen Documentation
 
 This directory contains user-facing documentation for Nexen.
 
@@ -20,6 +20,7 @@ This directory contains user-facing documentation for Nexen.
 | [Movie Format Spec](NEXEN_MOVIE_FORMAT.md) | .nexen-movie file format specification |
 | [Manual Testing Hub](manual-testing/README.md) | Ranked and repeatable manual release validation workflows |
 | [Performance Guide](PERFORMANCE.md) | Consolidated performance references and validation workflow |
+| [Archive Stack](ARCHIVE-STACK.md) | Runtime/archive tooling matrix for ZIP and 7z support |
 | [Release Guide](RELEASE.md) | Release and publishing workflow |
 
 ## Manual Testing
