@@ -1,4 +1,4 @@
-# Shared/Utilities Library Documentation
+﻿# Shared/Utilities Library Documentation
 
 The Utilities library provides foundational infrastructure for Nexen, including serialization, file I/O, string handling, compression, and platform abstraction.
 
@@ -19,7 +19,7 @@ Utilities/
 │   ├── ArchiveReader.h/cpp   - Archive extraction base
 │   ├── ZipReader.h/cpp	   - ZIP file reading
 │   ├── ZipWriter.h/cpp	   - ZIP file writing
-│   └── SZReader.h/cpp		- 7-Zip archive reading
+│   └── (UI managed path)      - ZIP/7z runtime archive read via SharpCompress
 │
 ├── Compression
 │   ├── CompressionHelper.h   - Compression API wrapper
@@ -183,8 +183,8 @@ file.ReadAllBytes(data);
 ### Archive Support
 
 - **ZipReader/ZipWriter** - ZIP file handling (miniz-based)
-- **SZReader** - 7-Zip archive extraction
-- **ArchiveReader** - Common base class
+- **ArchiveReader** - Native archive abstraction for ZIP-oriented utility paths
+- **UI managed archive path** - ZIP/7z entry listing and extraction handled by `UI/Utilities/ArchiveHelper.cs` (SharpCompress)
 
 ## Hashing
 

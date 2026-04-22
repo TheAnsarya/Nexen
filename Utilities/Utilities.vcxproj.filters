@@ -149,7 +149,6 @@
     </ClInclude>
     <ClInclude Include="ArchiveReader.h" />
     <ClInclude Include="miniz.h" />
-    <ClInclude Include="SZReader.h" />
     <ClInclude Include="ZipReader.h" />
     <ClInclude Include="ZipWriter.h" />
     <ClInclude Include="AutoResetEvent.h" />
@@ -313,7 +312,6 @@
     </ClCompile>
     <ClCompile Include="ArchiveReader.cpp" />
     <ClCompile Include="miniz.cpp" />
-    <ClCompile Include="SZReader.cpp" />
     <ClCompile Include="ZipReader.cpp" />
     <ClCompile Include="ZipWriter.cpp" />
     <ClCompile Include="AutoResetEvent.cpp" />
