@@ -1752,6 +1752,46 @@ continue working this epic; continue;
 
 [Nexen] The 1.4.37 release has a description for 1.4.36, so instead create a full description for the release version 1.4.37 with all of the changes (using emojis and avoiding mojibake); update the release with the generated release description; continue;
 
+[poppy] Continue working issues, fix problems, and improve performance and do the normal (epics/issues/docs/plans/session-logs/benchmarks/tests/etc) stuff; Evaluate all the assemblers to see if they are complete, like GameBoy and 2600 and nes and add benchmarks and tests and make sure that compilation is correct and make sure we are converting assets like png and json back to data that is included; we need pasm commands and directives for including/converting assets back into data or a metafile with all the desctiptions of how to parse and convert assets before the assembly step; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
