@@ -1741,6 +1741,7 @@ continue working this epic; continue;
 
 Commit all remaining modified files now as a cleanup checkpoint, then continue. Start the next open epic in Nexen backlog and ship the first sub-issue.
 
+continue working this epic; continue;
 
 
 
