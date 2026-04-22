@@ -89,7 +89,9 @@
 					<Color x:Key="NexenMenuBackgroundHighlight">#B5D7F3</Color>
 					<Color x:Key="NexenMenuBorderHighlight">#0078D7</Color>
 					<Color x:Key="NexenMenuSeparatorBackground">#BDBDBD</Color>
+					<Color x:Key="SettingsTabStripBackgroundColor">#f0f4f8</Color>
 					<Color x:Key="MenuFlyoutSubItemChevron">#000000</Color>
+					<SolidColorBrush x:Key="SettingsTabStripBackgroundBrush" Color="{DynamicResource SettingsTabStripBackgroundColor}" />
 
 					<Color x:Key="NexenMenuMarginStartColor">#fcfcfc</Color>
 					<Color x:Key="NexenMenuMarginEndColor">#f1f1f1</Color>

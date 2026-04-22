@@ -70,7 +70,9 @@
 					<Color x:Key="NexenMenuBackground">#00000000</Color>
 					<Color x:Key="NexenMenuBackgroundHighlight">#40808080</Color>
 					<Color x:Key="NexenMenuBorderHighlight">#80808080</Color>
+					<Color x:Key="SettingsTabStripBackgroundColor">#243038</Color>
 					<Color x:Key="MenuFlyoutSubItemChevron">#FFFFFF</Color>
+					<SolidColorBrush x:Key="SettingsTabStripBackgroundBrush" Color="{DynamicResource SettingsTabStripBackgroundColor}" />
 
 					<SolidColorBrush x:Key="TextBoxSelectionBrush" Color="#2A509F" />
 

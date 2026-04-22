@@ -50,6 +50,8 @@ public sealed class UiScrollabilityMarkupTests {
 		Assert.Contains("MinHeight=\"560\"", markup);
 		Assert.Contains("MinHeight=\"36\"", markup);
 		Assert.Contains("Name=\"SettingsTabControl\"", markup);
+		Assert.Contains("Background=\"{DynamicResource SettingsTabStripBackgroundBrush}\"", markup);
+		Assert.DoesNotContain("Background=\"#20888888\"", markup);
 	}
 
 	[Fact]
@@ -65,6 +67,26 @@ public sealed class UiScrollabilityMarkupTests {
 		Assert.Contains("MinHeight=\"560\"", markup);
 		Assert.Contains("MinHeight=\"36\"", markup);
 		Assert.Contains("Name=\"SettingsTabControl\"", markup);
+		Assert.Contains("Background=\"{DynamicResource SettingsTabStripBackgroundBrush}\"", markup);
+		Assert.DoesNotContain("Background=\"#20888888\"", markup);
+	}
+
+	[Fact]
+	public void ThemeStyles_DefineSettingsTabStripBackgroundToken() {
+		string repoRoot = GetRepositoryRoot();
+		string lightPath = Path.Combine(repoRoot, "UI", "Styles", "NexenStyles.Light.xaml");
+		string darkPath = Path.Combine(repoRoot, "UI", "Styles", "NexenStyles.Dark.xaml");
+
+		Assert.True(File.Exists(lightPath), $"Expected style file to exist: {lightPath}");
+		Assert.True(File.Exists(darkPath), $"Expected style file to exist: {darkPath}");
+
+		string lightMarkup = File.ReadAllText(lightPath);
+		string darkMarkup = File.ReadAllText(darkPath);
+
+		Assert.Contains("SettingsTabStripBackgroundColor", lightMarkup);
+		Assert.Contains("SettingsTabStripBackgroundBrush", lightMarkup);
+		Assert.Contains("SettingsTabStripBackgroundColor", darkMarkup);
+		Assert.Contains("SettingsTabStripBackgroundBrush", darkMarkup);
 	}
 
 	[Fact]
