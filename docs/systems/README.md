@@ -1,4 +1,4 @@
-# System Documentation
+﻿# System Documentation
 
 This section groups user-facing documentation for each emulated platform.
 

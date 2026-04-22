@@ -1,98 +1,62 @@
-﻿# Nexen v1.4.37 — Archive Stack Migration, UI Stability, and Release Pipeline Consolidation
+﻿# Nexen v1.4.37 🚧 Testing Release: Archive Stack Migration and Integration Checkpoint
 
-> ⚠️ **WARNING — TESTING RELEASE ONLY**
-> This is a **bad release for testing** and is **not recommended for normal users yet**.
-> Please wait for **v1.5.0** for the intended stable milestone.
-> **38 commits since v1.4.36** | **Issue-first release workflow** | **Release artifacts built via GitHub Actions**
+> ⚠️ **WARNING - TESTING RELEASE ONLY**
+> This is a **bad release for testing** and is **not intended for production use**.
+> Please wait for **v1.5.0** for the target stabilization milestone.
+> **38 commits since v1.4.36** | **Cross-platform artifacts built by GitHub Actions**
 
-Nexen v1.4.37 consolidates a large set of in-flight platform, UI, onboarding, docs, and tooling updates into a single validation release. The most visible technical change is a full archive-stack migration away from vendored SevenZip source toward package/framework tooling for UI archive handling. This release also includes Epic 21 settings/onboarding work, route/index documentation checkpoints, benchmark/test matrix additions, and release-process hardening.
+Nexen v1.4.37 is a broad integration checkpoint that combines archive-system modernization, Epic 21 settings/onboarding UX progress, testing and benchmark infrastructure updates, and release-process hardening. This tag is intentionally published as a high-churn validation build to verify packaging, runtime dependencies, and platform artifact generation end-to-end.
 
----
+## 🔥 What Changed In v1.4.37
 
-## 🚨 Release Intent
-
-This release exists to validate broad integration and pipeline behavior across many merged workstreams.
-
-- Treat this version as a high-churn verification snapshot.
-- Do not treat this as the long-term stable baseline.
-- Watch for v1.5.0 as the stabilization target.
-
----
-
-## 🌟 Highlights
-
-| Area | What changed |
+| Area | Summary |
 |---|---|
-| 📦 Archive stack | Removed vendored SevenZip source and native `SZReader`; migrated UI ZIP/7z listing+extraction to SharpCompress package path |
-| 🧭 Settings UX | Continued Epic 21 improvements: routing/indexing checkpoints, responsive settings breakpoints, scrollability and touch target work |
-| 🛠️ Release process | Added mandatory release-notes policy in Copilot instructions and aligned release metadata/docs for v1.4.37 |
-| 🎨 Assets | Unified interior background treatment for key brand assets using sampled app-icon interior brown |
-| 🧪 Validation infrastructure | Added/updated UI benchmark and test strategy documents, telemetry harness checkpoints, and QA artifacts |
+| 📦 Archive stack | Removed vendored SevenZip source and native SZReader flow from active UI extraction path; moved archive listing/extraction to managed package tooling |
+| 🧭 Settings and onboarding | Continued Epic 21 work: routing/deeplink behavior, responsive layout refinements, scrollability/touch-target improvements, and setup flow progression |
+| 🧪 Quality and observability | Added benchmark/test strategy artifacts, regression fixtures, telemetry harness checkpoints, and validation docs |
+| 🎨 Visual consistency | Updated key logo/icon assets with consistent interior fill treatment |
+| 🛠️ Release governance | Added mandatory release-notes-per-release policy and aligned docs/changelog/release metadata for v1.4.37 |
 
----
+## 📦 Archive Stack Migration Details
 
-## 📦 Archive Stack Migration (Key Technical Change)
+### ✅ Removed
 
-### Removed
+- Vendored SevenZip project and related solution wiring.
+- Native Utilities/SZReader integration path.
 
-- Vendored `SevenZip/` source project from solution and project references.
-- Native `Utilities/SZReader` integration and related files.
+### ✅ Added and Refined
 
-### Added / Updated
+- Managed archive handling via SharpCompress in the UI stack.
+- Archive enumeration and extraction flow updates in UI archive helper/loading paths.
+- Archive-selection and temp-extract behavior alignment for ROM loading UX.
 
-- UI archive read/extract now uses `SharpCompress` via `UI/UI.csproj`.
-- `UI/Utilities/ArchiveHelper.cs` now performs managed archive enumeration/extraction.
-- `UI/Utilities/LoadRomHelper.cs` + `UI/Windows/SelectRomWindow.axaml.cs` updated for managed archive key + temp extraction flow.
-- `Utilities/ArchiveReader` remains ZIP-focused on native side.
+### ✅ Docs and Pipeline Alignment
 
-### Documentation / CI Alignment
+- Archive stack documentation added/updated to reflect package/framework direction.
+- CI warning filtering and release workflow expectations aligned with the no-vendored-source architecture.
 
-- Added `docs/ARCHIVE-STACK.md` and linked from README/docs indexes.
-- Updated CI warning-path filter to remove stale SevenZip vendor-path suppression.
-- Updated dependency packaging script behavior clarity (`zip`, optional `7z`, `both`).
+## 🧭 Epic 21 Progress Included In This Tag
 
----
+v1.4.37 includes merged Epic 21 progress items such as:
 
-## 🧭 Epic 21 / UI & UX Progress Included
+- Settings responsiveness and settings-tab breakpoint improvements.
+- Scroll-container and touch-target upgrades for usability.
+- Onboarding setup flow evolution (profile, storage, cancellation/resume, customization simplification).
+- Input routing improvements toward active system configuration behavior.
 
-This release bundles multiple Epic 21 deliverables already merged to `master`, including:
+## 🧪 Validation And Build Status
 
-- Settings window responsiveness and route/deeplink stabilization artifacts.
-- Onboarding flow refinements, usage-profile and storage-location UX progression.
-- Theme/token tab refresh and settings touch-target/sizing updates.
-- UI telemetry/benchmark harness and regression strategy documents.
+- ✅ Local release build and test gates were executed during release prep.
+- ✅ GitHub Actions release workflow completed successfully for this tag.
+- ✅ Cross-platform artifact matrix completed (Windows, Linux, Linux AoT, AppImage, macOS ARM64).
 
----
+## 📥 Release Assets
 
-## 🎨 Asset and Visual Consistency Updates
-
-Updated key logo/icon assets to use a consistent interior background fill sampled from `UI/Assets/NexenIcon.png` inner area:
-
-- `~assets/big-logo.png`
-- `~assets/big-logo-2.png`
-- `~assets/big-logo - Copy.png`
-- `~assets/Nexen icon.png`
-
----
-
-## 🧪 Validation Snapshot
-
-- Release x64 local build: ✅
-- Native tests (`Core.Tests.exe --gtest_brief=1`): expected in release workflow validation set
-- Managed tests (`dotnet test --no-build -c Release`): expected in release workflow validation set
-- Release artifacts: generated by GitHub Actions release pipeline for tag `v1.4.37`
-
-> Note: This release is intentionally positioned for integration/testing and artifact validation, not end-user stability assurance.
-
----
-
-## 📥 Downloads
-
-Artifacts are published on the GitHub release page for tag `v1.4.37`:
+Assets for tag v1.4.37 are attached on the release page:
 
 - [Nexen v1.4.37 release](https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.37)
 
-Expected asset naming pattern:
+Expected asset set includes:
 
 - `Nexen-Windows-x64-v1.4.37.exe`
 - `Nexen-Windows-x64-AoT-v1.4.37.exe`
@@ -105,10 +69,6 @@ Expected asset naming pattern:
 - `Nexen-Linux-x64-AoT-v1.4.37.tar.gz`
 - `Nexen-macOS-ARM64-v1.4.37.zip`
 
----
-
 ## 🔁 Compare
-
-Full changelog diff:
 
 - [Compare v1.4.36...v1.4.37](https://github.com/TheAnsarya/Nexen/compare/v1.4.36...v1.4.37)

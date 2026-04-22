@@ -1748,9 +1748,9 @@ continue working this epic; continue;
 --- auto
 [Nexen] Get the background fill brown color from inside the border from `C:\Users\me\source\repos\Nexen\UI\Assets\NexenIcon.png` and then fix other assets by filling the background inside the box borders for `C:\Users\me\source\repos\Nexen\~assets\big-logo.png`, `C:\Users\me\source\repos\Nexen\~assets\big-logo-2.png`, `C:\Users\me\source\repos\Nexen\~assets\big-logo - Copy.png`, `C:\Users\me\source\repos\Nexen\~assets\Nexen icon.png`
 
-
-
 [Nexen] add to copilot instructions that everytime you release a build, add a release-notes files to `\~docs\release-notes\`; [Nexen] git commit everything; stablize and fix as many warnings as possible, and update docs and readmes, and create a working build and release version 1.4.37 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and add at the top of the release notes add a warning that this release is a bad release for testing and not to be used yet, watch out for 1.5.0, and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
+
+[Nexen] The 1.4.37 release has a description for 1.4.36, so instead create a full description for the release version 1.4.37 with all of the changes (using emojis and avoiding mojibake); update the release with the generated release description; continue;
 
 
 
@@ -1840,15 +1840,10 @@ prepare for a release, and clean up and update documentation and fix as many war
 
 
 
-[Nexen] update all these issues (#1039, #1205, #1076, #1193, #1194, #1176) with a link to the 1.4.26 release page and a message saying this release should fix your problem, please let us know if there's still an error; continue;
-
-
-
-
-91 + 781 + 506 + 922 + 742 + 532 + 748 + 776 = 5098
+0+0+619+365+0+770+577+345+631+643=3950
 533 × 5 = 2665
-5098 - 2665 = 2433
-370
+3950 - 2665 = 1285
+106
 
 
 
@@ -1900,38 +1895,6 @@ fix as many warnings as you can; continue;
 [Nexen] Create a root level `*.md` document and link to it from the readme for primary developer tasks showing what I should be doing (adding reference roms? approving icons? manually testing a feature (give me a link to the manual testing doc!)? adding screenshots to documentation (make a plan!)? or what?) what features are we in the middle of? give me a handful of prompts that would advance the project in a meaningful way, let me know how to support the atari-2600/sega-genesis testing code examples and what folders and files I need to create; after letting me know what to do, continue working on genesis and atari 2600 emulation and add a ton of more issues for that emulation work based on the docs and benchmarks and tests and go for very long time, working for a half hour or so would be ok;
 
 
-
-
-
-
----------------------- Discord post
-Hey guys, I shouldn't discuss it quite yet, since it's not fully tested yet, but am so excited and could use other testers (also if I get hit by a bus today, I'd like someone to know it's there) and I am hoping to do a real public release in a couple weeks after finishing my giant todolist of manual testing, plus some others so:
-Since @Sour has stopped updating `Mesen2` or communicating at all and I had several ideas, and I've been working on a new assembler `Poppy` and an auto-disassembler `Peony` and a CDL/DiztinGUIsh replacement `Pansy`, I have forked `Mesen2` and made a bunch of updates. 
-The "new" emulator is called Nexen (https://github.com/TheAnsarya/Nexen):
-* This is all pre-release and big updates are made often!
-  * Like I haven't tested and updated the TAS stuff much because I was focused on making sure emulator core performance updates didn't mess up emulation
-* Windows, Linux, and MacOS versions in the project releases
-* Updated to all the newest stuff
-  * C++ updated to C++23
-  * C# updated to C#14 and dotnet 10.0
-  * nuget packages and c++ libraries, all modernized
-  * modern coding standards and practices and c#14 pattern constructs/etc.
-* Comprehensive C# and C++ testing (664 tests) and C#/C++ benchmarking (391 performance benchmarks)
-  * Performance improvements (with testing to show it didn't change function) across the entire codebase
-    * focused on both hotpaths in the emulator core (for every system) and also UI and render code, whole system
-  * Large memory/allocation and code speed improvements
-* Savestate overhaul
-  * Instead of 10 save slots which are annoying and never enough, we have switched to an infinite save-state solution
-    * So every time you hit `F1` it saves a timestamped new savestate (organized into folders by system/RomName_CRC32/)
-    * When you hit `Shift-F1` it opens a graphical UI for you to select the 
-* `Pansy` format auto export (https://github.com/TheAnsarya/pansy)
-  * Again, these are are all still beta/alpha and being cleaned up
-  * Every five minutes it auto exports a file for full debugging information that is more than CDL, more than DiztinGUIsh (which is where I got this idea, but after getting the Mesen<->DiztinGUIsh streaming socket working, it had the same problems Diz has now with with `bsnesplus` so I removed all that, made a new format, and embeded the fromat into the emulator)
-* TAS/Movie format (`*.nexen-movie`) for the recording and replaying of movies
-  * Auto-conversion from/to several TAS/movie file formats like BizHawk `.bk2`, lsnes `.lsmv`, FCEUX `.fm2`, Snes9x `.smv`, VisualBoyAdvance `.vbm`, Gens `.gmv`
-  * All of the movie record/replay code is working and testing well, but the UI is totally, f'ed up, we'll fix that in the next couple days
-  * But basically movie files and TAS editing is close and will be completed before the public release  
-This thing is not ready for release but 
 
 
 
