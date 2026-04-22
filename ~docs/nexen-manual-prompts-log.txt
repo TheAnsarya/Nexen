@@ -1733,11 +1733,13 @@ continue working this epic; continue;
 
 1 then 2
 
+git commit everything then continue working this epic; continue;
 
+Did we actually complete all of the Epic 21 issues or just close them? recheck; continue;
 
+continue working this epic; continue;
 
-
-
+Commit all remaining modified files now as a cleanup checkpoint, then continue. Start the next open epic in Nexen backlog and ship the first sub-issue.
 
 
 

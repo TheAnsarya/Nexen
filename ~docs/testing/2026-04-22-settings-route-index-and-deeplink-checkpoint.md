@@ -1,4 +1,4 @@
-# Settings Route Index and Deep-Link Checkpoint (2026-04-22)
+﻿# Settings Route Index and Deep-Link Checkpoint (2026-04-22)
 
 ## Purpose
 

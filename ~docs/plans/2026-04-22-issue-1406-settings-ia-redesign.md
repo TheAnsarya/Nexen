@@ -1,4 +1,4 @@
-# Issue #1406 Settings Information Architecture Redesign (2026-04-22)
+﻿# Issue #1406 Settings Information Architecture Redesign (2026-04-22)
 
 ## Scope
 
