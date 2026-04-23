@@ -128,30 +128,12 @@ When posting issue/PR comments with `gh` CLI, always use real newline characters
 
 When the user asks to implement, fix, continue, or ship work, do not ask for commit confirmation.
 
-- Stage only files relevant to the requested task
+- Stage all modified and untracked files in the repository
 - Commit immediately with an issue reference
 - Push immediately after commit
-- Do not pause to ask "should I commit" or "which files should I include" unless the user explicitly asked to review first
-- Exclude clearly unrelated modified files from the commit unless the user explicitly requests including them
-- Do not pause due to a dirty working tree; stage the relevant files and continue
-- Do not interrupt execution to ask about unrelated local modifications; leave them untouched and keep shipping requested work
-- If the user explicitly says to stop asking about commit file selection or unexpected modified files, include those modified files and continue shipping without additional confirmation prompts
-
-### ⚠️ MANDATORY: Stray File Commit Handling
-
-If the user indicates that stray/unrelated modified files should be included, do not ask follow-up questions about file selection.
-
-- Stage those modified files as requested and continue
-- Commit and push without pausing for confirmation about stray files
-- Assume these are intentional workspace changes unless the user says otherwise
-
-### ⚠️ MANDATORY: Persistent Unexpected-File Preference
-
-If the user says to never stop for unexpected modified files, treat that as an active preference for all subsequent work.
-
-- Do not pause implementation because unrelated or unexpected files are modified
-- Do not ask for file-selection confirmation when the user preference is explicit
-- Include those modified files in commits and continue shipping
+- Do not pause to ask "should I commit" or "which files should I include"
+- Do not pause due to a dirty working tree
+- Do not interrupt execution to ask about unrelated or unexpected local modifications
 
 ### ⚠️ MANDATORY: "Run Nexen" Means Launch Executable
 

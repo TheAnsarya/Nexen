@@ -1758,12 +1758,21 @@ continue
 
 git commit everything and continue working on the audit
 
+sure, whatever, do that and log that work effort in an issue; continue; [poppy] make sure every system has a comprehensive WORKING version of pasm and make sure all of the systems can be fully and correctly compiled from source against a model of the systems; update all of the documentation for how each system's assembly code syntax and commands work; continue;
 
+continue!
 
+--- Ugh! Update to Copilot Pro+
 
+continue what you were doing;
 
+Start implementing #343 now (ARM instruction encoding coverage + byte-verified ARM tests + docs update).; continue;
 
+Yes, please continue with the next slice of work! But as you continue make sure to create/update epics/issues/benchmarks/tests/docs/plans/readmes/logs/etc for the scheduled work and also research and look for new work and investigative possibilities as you go (find problems and schedule them to be fixed) ; continue;
 
+Yes, continue working through this epic! Work issues #345, #346, and #347 in order and then continue working (find problems or needed work); Start #345 now: bracketed and register-offset ARM memory operand forms with byte-verified tests; Start #346 now: condition-suffix parser hardening plus ambiguity regression tests; Start #347 now: ARM special-emission BenchmarkDotNet suite and benchmark docs; continue working multiple issues; continue;
+
+Git commit everything; Please review the copilot instructions in every repos and remove any instructions that say we should pause and ask or ignore unexpected/untracked files in the git tree or as you said "I intentionally left unrelated pre-existing modified files untouched", the copilot-instructions should already all say that we just commit them and don't stop work or bother me, but there might be statements from the old instructions leftover so we need to remove them, don't stop, just commit and go; Take the Next natural step: Continue forward by opening and implementing the next ARM parity slice (for example, remaining conditional variants beyond the multiply family) and ship it in the same issue-first workflow.; continue working issues and making new ones; continue;
 
 
 
