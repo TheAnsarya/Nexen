@@ -151,6 +151,8 @@ public sealed partial class RegisterViewerWindowViewModel : DisposableViewModel,
 			_state = DebugApi.GetConsoleState<LynxState>(ConsoleType.Lynx);
 		} else if (_romInfo.ConsoleType == ConsoleType.Atari2600) {
 			_state = DebugApi.GetConsoleState<Atari2600State>(ConsoleType.Atari2600);
+		} else if (_romInfo.ConsoleType == ConsoleType.Genesis) {
+			_state = DebugApi.GetConsoleState<GenesisState>(ConsoleType.Genesis);
 		}
 
 		Dispatcher.UIThread.Post(() => RefreshTabs());
@@ -186,6 +188,8 @@ public sealed partial class RegisterViewerWindowViewModel : DisposableViewModel,
 			tabs = LynxRegisterViewer.GetTabs(ref lynxState);
 		} else if (lastState is Atari2600State a2600State) {
 			tabs = Atari2600RegisterViewer.GetTabs(ref a2600State);
+		} else if (lastState is GenesisState genesisState) {
+			tabs = GenesisRegisterViewer.GetTabs(ref genesisState);
 		}
 
 		foreach (RegisterViewerTab tab in tabs) {
