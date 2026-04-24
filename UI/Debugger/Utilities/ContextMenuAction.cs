@@ -644,6 +644,8 @@ public enum ActionType {
 	PcEngine,
 	[IconFile("SmsIcon")]
 	Sms,
+	[IconFile("SmsIcon")]
+	Genesis,
 	[IconFile("WsIcon")]
 	Ws,
 	[IconFile("Drive")]

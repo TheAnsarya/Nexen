@@ -1,0 +1,44 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:c="using:Nexen.Controls"
+	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
+	VerticalAlignment="Stretch"
+	HorizontalAlignment="Stretch"
+	x:DataType="vm:GenesisInputConfigViewModel"
+	x:Class="Nexen.Views.GenesisInputConfigView"
+>
+	<Design.DataContext>
+		<vm:GenesisInputConfigViewModel />
+	</Design.DataContext>
+
+	<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+		<StackPanel>
+			<c:OptionSection Header="{l:Translate grpControllers}" Margin="0">
+				<Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" HorizontalAlignment="Left">
+					<TextBlock Grid.Row="0" Grid.Column="0" Text="{l:Translate lblController1}" />
+					<c:InputComboBox
+						Grid.Row="0" Grid.Column="1"
+						Port="0"
+						Config="{Binding Config.Port1}"
+						ControllerType="{Binding Config.Port1.Type}"
+						AvailableValues="{Binding AvailableControllerTypesP12}"
+					/>
+
+					<TextBlock Grid.Row="1" Grid.Column="0" Text="{l:Translate lblController2}" />
+					<c:InputComboBox
+						Grid.Row="1" Grid.Column="1"
+						Port="1"
+						Config="{Binding Config.Port2}"
+						ControllerType="{Binding Config.Port2.Type}"
+						AvailableValues="{Binding AvailableControllerTypesP12}"
+					/>
+				</Grid>
+			</c:OptionSection>
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

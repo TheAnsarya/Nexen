@@ -54,6 +54,10 @@ public partial class SystemSpecificSettings : UserControl {
 		NavigateTo(ConfigWindowTab.Sms);
 	}
 
+	private void OnClickGenesis(object sender, RoutedEventArgs e) {
+		NavigateTo(ConfigWindowTab.Genesis);
+	}
+
 	private void OnClickWs(object sender, RoutedEventArgs e) {
 		NavigateTo(ConfigWindowTab.Ws);
 	}
@@ -135,6 +139,18 @@ public partial class SystemSpecificSettings : UserControl {
 							ConfigType.Emulation => SmsConfigTab.Emulation,
 							ConfigType.Input => SmsConfigTab.Input,
 							_ or ConfigType.Video => SmsConfigTab.Video,
+						};
+					}
+
+					break;
+
+				case ConfigWindowTab.Genesis:
+					if (cfg.Genesis != null) {
+						cfg.Genesis.SelectedTab = ConfigType switch {
+							ConfigType.Audio => GenesisConfigTab.General,
+							ConfigType.Emulation => GenesisConfigTab.Emulation,
+							ConfigType.Input => GenesisConfigTab.Input,
+							_ => GenesisConfigTab.Video,
 						};
 					}
 

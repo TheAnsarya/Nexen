@@ -13,11 +13,11 @@ public sealed class ConfigViewModelTests {
 	[InlineData(true, ConsoleType.Gba, ConfigWindowTab.Gba)]
 	[InlineData(true, ConsoleType.PcEngine, ConfigWindowTab.PcEngine)]
 	[InlineData(true, ConsoleType.Sms, ConfigWindowTab.Sms)]
+	[InlineData(true, ConsoleType.Genesis, ConfigWindowTab.Genesis)]
 	[InlineData(true, ConsoleType.Ws, ConfigWindowTab.Ws)]
 	[InlineData(true, ConsoleType.Lynx, ConfigWindowTab.Lynx)]
 	[InlineData(true, ConsoleType.Atari2600, ConfigWindowTab.Atari2600)]
 	[InlineData(true, ConsoleType.ChannelF, ConfigWindowTab.ChannelF)]
-	[InlineData(true, ConsoleType.Genesis, ConfigWindowTab.Input)]
 	public void ResolveInputLandingTab_UsesExpectedConfigTab(bool hasLoadedRom, ConsoleType consoleType, ConfigWindowTab expected) {
 		var actual = ConfigViewModel.ResolveInputLandingTab(hasLoadedRom, consoleType);
 		Assert.Equal(expected, actual);
@@ -34,6 +34,7 @@ public sealed class ConfigViewModelTests {
 	[InlineData(ConfigRouteIds.Gba, ConfigWindowTab.Gba)]
 	[InlineData(ConfigRouteIds.PcEngine, ConfigWindowTab.PcEngine)]
 	[InlineData(ConfigRouteIds.Sms, ConfigWindowTab.Sms)]
+	[InlineData(ConfigRouteIds.Genesis, ConfigWindowTab.Genesis)]
 	[InlineData(ConfigRouteIds.Ws, ConfigWindowTab.Ws)]
 	[InlineData(ConfigRouteIds.Lynx, ConfigWindowTab.Lynx)]
 	[InlineData(ConfigRouteIds.Atari2600, ConfigWindowTab.Atari2600)]

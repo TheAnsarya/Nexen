@@ -24,6 +24,7 @@ public sealed partial class ConfigViewModel : DisposableViewModel {
 		[ConfigRouteIds.Gba] = ConfigWindowTab.Gba,
 		[ConfigRouteIds.PcEngine] = ConfigWindowTab.PcEngine,
 		[ConfigRouteIds.Sms] = ConfigWindowTab.Sms,
+		[ConfigRouteIds.Genesis] = ConfigWindowTab.Genesis,
 		[ConfigRouteIds.Ws] = ConfigWindowTab.Ws,
 		[ConfigRouteIds.Lynx] = ConfigWindowTab.Lynx,
 		[ConfigRouteIds.Atari2600] = ConfigWindowTab.Atari2600,
@@ -43,6 +44,7 @@ public sealed partial class ConfigViewModel : DisposableViewModel {
 		[ConfigWindowTab.Gba] = ConfigRouteIds.Gba,
 		[ConfigWindowTab.PcEngine] = ConfigRouteIds.PcEngine,
 		[ConfigWindowTab.Sms] = ConfigRouteIds.Sms,
+		[ConfigWindowTab.Genesis] = ConfigRouteIds.Genesis,
 		[ConfigWindowTab.Ws] = ConfigRouteIds.Ws,
 		[ConfigWindowTab.Lynx] = ConfigRouteIds.Lynx,
 		[ConfigWindowTab.Atari2600] = ConfigRouteIds.Atari2600,
@@ -85,6 +87,9 @@ public sealed partial class ConfigViewModel : DisposableViewModel {
 
 	/// <summary>Gets or sets the Sega Master System configuration ViewModel.</summary>
 	[Reactive] public partial SmsConfigViewModel? Sms { get; set; }
+
+	/// <summary>Gets or sets the Sega Genesis configuration ViewModel.</summary>
+	[Reactive] public partial GenesisConfigViewModel? Genesis { get; set; }
 
 	/// <summary>Gets or sets the WonderSwan configuration ViewModel.</summary>
 	[Reactive] public partial WsConfigViewModel? Ws { get; set; }
@@ -148,6 +153,7 @@ public sealed partial class ConfigViewModel : DisposableViewModel {
 			ConsoleType.Gba => ConfigWindowTab.Gba,
 			ConsoleType.PcEngine => ConfigWindowTab.PcEngine,
 			ConsoleType.Sms => ConfigWindowTab.Sms,
+			ConsoleType.Genesis => ConfigWindowTab.Genesis,
 			ConsoleType.Ws => ConfigWindowTab.Ws,
 			ConsoleType.Lynx => ConfigWindowTab.Lynx,
 			ConsoleType.Atari2600 => ConfigWindowTab.Atari2600,
@@ -199,6 +205,7 @@ public sealed partial class ConfigViewModel : DisposableViewModel {
 			case ConfigWindowTab.Gba: Gba ??= AddDisposable(new GbaConfigViewModel()); break;
 			case ConfigWindowTab.PcEngine: PcEngine ??= AddDisposable(new PceConfigViewModel()); break;
 			case ConfigWindowTab.Sms: Sms ??= AddDisposable(new SmsConfigViewModel()); break;
+			case ConfigWindowTab.Genesis: Genesis ??= AddDisposable(new GenesisConfigViewModel()); break;
 			case ConfigWindowTab.Ws: Ws ??= AddDisposable(new WsConfigViewModel()); break;
 			case ConfigWindowTab.Lynx: Lynx ??= AddDisposable(new LynxConfigViewModel()); break;
 			case ConfigWindowTab.Atari2600: Atari2600 ??= AddDisposable(new Atari2600ConfigViewModel()); break;
@@ -241,6 +248,11 @@ public sealed partial class ConfigViewModel : DisposableViewModel {
 			case ConfigWindowTab.Sms:
 				if (Sms != null) {
 					Sms.SelectedTab = SmsConfigTab.Input;
+				}
+				break;
+			case ConfigWindowTab.Genesis:
+				if (Genesis != null) {
+					Genesis.SelectedTab = GenesisConfigTab.Input;
 				}
 				break;
 			case ConfigWindowTab.Ws:
@@ -291,6 +303,7 @@ public sealed partial class ConfigViewModel : DisposableViewModel {
 		ConfigManager.Config.Gba = Gba?.OriginalConfig ?? ConfigManager.Config.Gba;
 		ConfigManager.Config.PcEngine = PcEngine?.OriginalConfig ?? ConfigManager.Config.PcEngine;
 		ConfigManager.Config.Sms = Sms?.OriginalConfig ?? ConfigManager.Config.Sms;
+		ConfigManager.Config.Genesis = Genesis?.OriginalConfig ?? ConfigManager.Config.Genesis;
 		ConfigManager.Config.Ws = Ws?.OriginalConfig ?? ConfigManager.Config.Ws;
 		ConfigManager.Config.Lynx = Lynx?.OriginalConfig ?? ConfigManager.Config.Lynx;
 		ConfigManager.Config.Atari2600 = Atari2600?.OriginalConfig ?? ConfigManager.Config.Atari2600;
@@ -318,6 +331,7 @@ public sealed partial class ConfigViewModel : DisposableViewModel {
 			!_originalConfig.Gba.IsIdentical(ConfigManager.Config.Gba) ||
 			!_originalConfig.PcEngine.IsIdentical(ConfigManager.Config.PcEngine) ||
 			!_originalConfig.Sms.IsIdentical(ConfigManager.Config.Sms) ||
+			!_originalConfig.Genesis.IsIdentical(ConfigManager.Config.Genesis) ||
 			!_originalConfig.Ws.IsIdentical(ConfigManager.Config.Ws) ||
 			!_originalConfig.Lynx.IsIdentical(ConfigManager.Config.Lynx) ||
 			!_originalConfig.Atari2600.IsIdentical(ConfigManager.Config.Atari2600) ||
@@ -339,6 +353,7 @@ public static class ConfigRouteIds {
 	public const string Gba = "settings.system.gba";
 	public const string PcEngine = "settings.system.pce";
 	public const string Sms = "settings.system.sms";
+	public const string Genesis = "settings.system.genesis";
 	public const string Ws = "settings.system.ws";
 	public const string Lynx = "settings.system.lynx";
 	public const string Atari2600 = "settings.system.atari2600";
@@ -372,17 +387,19 @@ public enum ConfigWindowTab {
 	PcEngine = 9,
 	/// <summary>Sega Master System-specific settings tab.</summary>
 	Sms = 10,
+	/// <summary>Sega Genesis-specific settings tab.</summary>
+	Genesis = 11,
 	/// <summary>WonderSwan-specific settings tab.</summary>
-	Ws = 11,
+	Ws = 12,
 	/// <summary>Lynx-specific settings tab.</summary>
-	Lynx = 12,
+	Lynx = 13,
 	/// <summary>Atari 2600-specific settings tab.</summary>
-	Atari2600 = 13,
+	Atari2600 = 14,
 	/// <summary>Channel F-specific settings tab.</summary>
-	ChannelF = 14,
+	ChannelF = 15,
 	/// <summary>Other consoles settings tab.</summary>
-	OtherConsoles = 15,
+	OtherConsoles = 16,
 	//separator
 	/// <summary>General preferences tab.</summary>
-	Preferences = 17
+	Preferences = 18
 }

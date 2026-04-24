@@ -1776,6 +1776,34 @@ Git commit everything; Please review the copilot instructions in every repos and
 
 Git commit everything; please continue with the next slice of work! But as you continue make sure to create/update epics/issues/benchmarks/tests/docs/plans/readmes/logs/etc for the scheduled work and also research and look for new work and investigative possibilities as you go (find problems and schedule them to be fixed) ; continue;
 
+continue to work, fixing issues, but also make new issues for anything you find that needs coverage; continue;
+
+[poppy] you should have just changed copilot instructions to ignore unexpected files and just commit them, so why are you asking me, you updated the instructions, so run those instructions so you stop asking me about these nonsense file decisions; continue to work, fixing issues, but also make new issues for anything you find that needs coverage; continue;
+
+work several issues in a row; make new issues if we find work; don't pause or stop, just keep going working until several are done; continue;
+
+yes, do that
+
+--- run a second pass to see if it catches anything
+[poppy] Continue working issues, fix problems, and improve performance and do the normal (epics/issues/docs/plans/session-logs/benchmarks/tests/etc) stuff; Evaluate all the assemblers to see if they are complete, like GameBoy and 2600 and nes and add benchmarks and tests and make sure that compilation is correct and make sure we are converting assets like png and json back to data that is included; we need pasm commands and directives for including/converting assets back into data or a metafile with all the desctiptions of how to parse and convert assets before the assembly step; continue;
+
+Yes, we want all three of those things, either do them or add to plan for doing each one after another: Add byte-verified completeness vectors for SNES, Z80/SMS, and HuC6280 in the same integration style.; Add roundtrip asset fixture tests from editable JSON/PNG samples to emitted binary blobs per platform profile.; Add architecture-specific benchmark scenarios for asset-heavy compile workloads (per target, same manifest) to compare conversion overhead directly.; continue;
+
+continue;
+
+continue, making sure all systems are covered including a fully functional Sega Genesis assembly pipeline infrastructure and a tested and benchmarked complete correct Genesis compiler/assembler; continue;
+
+Next continuation can target Genesis operand families beyond implied instructions so instruction completeness moves from stable core control ops to broader effective-address forms.
+
+[poppy] continue working to make Sega Genesis/Megadrive compiler and assembler complete and correct with proper asset integrations (description, conversion, inclusion), and update the Sega Genesis pasm file source code format and instructions and commands and documentation/readmes of this system; [pansy] make a review and plans for changes/updates for the Sega Genesis/Megadrive researching the internet resources as well, making a system specific section if it needs one like the SNES's X/y and A register size flags; update documentation as you implement these issues (make issues, epics, benchmarks, tests, docs, plans, logs, etc); continue;
+
+continue working making the Sega Genesis pipeline work and be complete and correct (tests) create a bunch of issues for this work effort we just researched (and epics and plans and logs and docs and benchmarks and tests and etc) and implement; we want poppy and pansy to have the most complete and correct implementations so we can work on peony and Nexen to complete the Megadrive/GEnesis pipeline; continue;
+
+Next natural continuation option: implement Poppy #371 (M68000 effective-address family expansion with deterministic tests); Next natural continuation option: implement Pansy #114 (CLI/analyzer Genesis CPU_STATE interpretation); continue;
+
+[poppy] Make sure all Genesis architectures and chips are covered: 68000, Z80, VDP, Sound chips (YM2612, PSG); continue; Next continuation option: implement Poppy #374 to finish deterministic move/movea emission plus unsupported-shape diagnostics.; Next continuation option: implement Pansy #115 (CPU_STATE mixed-mode performance benchmarks).; continue;
+
+Option #1 obviously, but There are no safety restrainsts, we removed them from the cop-pilot instructions, always just commit unexpected files, they're usually just formatting or leftovers from an interupted effort,so just commit them and work eith them. "DO NOT STOP WORK DUE TO UNEXPECTED FILES" this should already be cannon in the copilot instructions files in every repos, make sure that is true; Never stop for an unexpected file. USe them, commit them, etc. who cares; continue working on the Segas Genesis, the last prompt, like adding documentation to how to program the YM2612, etc; continue;
 
 
 
@@ -1800,6 +1828,10 @@ Git commit everything; please continue with the next slice of work! But as you c
 
 
 
+
+
+
+work several issues in a row; make new issues if we find work; don't pause or stop, just keep going working until several are done; continue;
 
 
 

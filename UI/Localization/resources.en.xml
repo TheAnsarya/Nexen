@@ -780,6 +780,7 @@
 			<Control ID="tabGba">GBA</Control>
 			<Control ID="tabPcEngine">PC Engine</Control>
 			<Control ID="tabSms">SMS</Control>
+			<Control ID="tabGenesis">Genesis</Control>
 			<Control ID="tabWs">WonderSwan</Control>
 			<Control ID="tabLynx">Lynx</Control>
 			<Control ID="tabAtari2600">Atari 2600</Control>
@@ -1184,8 +1185,13 @@
 			<Control ID="lblGba">GBA</Control>
 			<Control ID="lblPcEngine">PC Engine</Control>
 			<Control ID="lblSms">SMS</Control>
+			<Control ID="lblGenesis">Genesis</Control>
 			<Control ID="lblWs">WonderSwan</Control>
 			<Control ID="lblLynx">Lynx</Control>
+		</Form>
+
+		<Form ID="GenesisConfigView">
+			<Control ID="lblGenesisOverrides">Genesis - Global Config Overrides</Control>
 		</Form>
 
 		<Form ID="AudioPlayerView">
@@ -3004,6 +3010,7 @@ E
 			<Value ID="Nes">NES</Value>
 			<Value ID="Pce">PC Engine</Value>
 			<Value ID="Sms">SMS</Value>
+			<Value ID="Genesis">Genesis</Value>
 			<Value ID="Gba">GBA</Value>
 			<Value ID="Ws">WS</Value>
 		</Enum>
@@ -3836,6 +3843,7 @@ E
 			<Value ID="Gba">GBA</Value>
 			<Value ID="PcEngine">PC Engine</Value>
 			<Value ID="Sms">SMS</Value>
+			<Value ID="Genesis">Genesis</Value>
 			<Value ID="Ws">WonderSwan</Value>
 			<Value ID="OtherConsoles">Other systems</Value>
 

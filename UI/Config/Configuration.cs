@@ -30,6 +30,7 @@ public partial class Configuration : ReactiveObject {
 	[Reactive] public partial GameboyConfig Gameboy { get; set; } = new();
 	[Reactive] public partial PcEngineConfig PcEngine { get; set; } = new();
 	[Reactive] public partial SmsConfig Sms { get; set; } = new();
+	[Reactive] public partial GenesisConfig Genesis { get; set; } = new();
 	[Reactive] public partial CvConfig Cv { get; set; } = new();
 	[Reactive] public partial GbaConfig Gba { get; set; } = new();
 	[Reactive] public partial WsConfig Ws { get; set; } = new();
@@ -86,6 +87,7 @@ public partial class Configuration : ReactiveObject {
 		Nes.ApplyConfig();
 		Snes.ApplyConfig();
 		Sms.ApplyConfig();
+		Genesis.ApplyConfig();
 		Cv.ApplyConfig();
 		Ws.ApplyConfig();
 		Lynx.ApplyConfig();
@@ -141,6 +143,10 @@ public partial class Configuration : ReactiveObject {
 			ChannelF.InitializeDefaults(DefaultKeyMappings);
 		}
 
+		if (ConfigUpgrade < (int)ConfigUpgradeHint.GenesisInput) {
+			Genesis.InitializeDefaults(DefaultKeyMappings);
+		}
+
 		ConfigUpgrade = (int)ConfigUpgradeHint.NextValue - 1;
 		Version = EmuApi.GetNexenVersion().ToString(3);
 	}
@@ -153,6 +159,7 @@ public partial class Configuration : ReactiveObject {
 			Gba.InitializeDefaults(DefaultKeyMappings);
 			PcEngine.InitializeDefaults(DefaultKeyMappings);
 			Sms.InitializeDefaults(DefaultKeyMappings);
+			Genesis.InitializeDefaults(DefaultKeyMappings);
 			Cv.InitializeDefaults(DefaultKeyMappings);
 			Ws.InitializeDefaults(DefaultKeyMappings);
 			Lynx.InitializeDefaults(DefaultKeyMappings);
@@ -337,5 +344,6 @@ public enum ConfigUpgradeHint {
 	BackgroundCdlRecording,
 	LynxInput,
 	ChannelFInput,
+	GenesisInput,
 	NextValue,
 }

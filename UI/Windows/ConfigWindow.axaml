@@ -72,6 +72,11 @@
 				<v:SmsConfigView />
 			</ScrollViewer>
 		</DataTemplate>
+		<DataTemplate DataType="{x:Type vm:GenesisConfigViewModel}">
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:GenesisConfigView />
+			</ScrollViewer>
+		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:WsConfigViewModel}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<v:WsConfigView />
@@ -205,6 +210,15 @@
 					<StackPanel Orientation="Horizontal">
 						<Image Source="{SvgImage /Assets/SmsIcon.svg}" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabSms}" />
+					</StackPanel>
+				</TabItem.Header>
+			</TabItem>
+
+			<TabItem Content="{Binding Genesis}">
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<Image Source="{SvgImage /Assets/SmsIcon.svg}" Margin="0 0 10 0" />
+						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabGenesis}" />
 					</StackPanel>
 				</TabItem.Header>
 			</TabItem>

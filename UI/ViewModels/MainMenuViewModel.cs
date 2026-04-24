@@ -660,6 +660,10 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.Sms)
 			},
 			new SimpleMenuAction() {
+				ActionType = ActionType.Genesis,
+				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.Genesis)
+			},
+			new SimpleMenuAction() {
 				ActionType = ActionType.Ws,
 				OnClick = () => OpenConfigRoute(wnd, ConfigRouteIds.Ws)
 			},
