@@ -12,6 +12,7 @@ public static class ConsoleTypeExtensions {
 			ConsoleType.Gba => CpuType.Gba,
 			ConsoleType.Ws => CpuType.Ws,
 			ConsoleType.Lynx => CpuType.Lynx,
+			ConsoleType.Genesis => CpuType.Genesis,
 			ConsoleType.Atari2600 => CpuType.Atari2600,
 			ConsoleType.ChannelF => CpuType.ChannelF,
 			_ => throw new Exception("Invalid type")
