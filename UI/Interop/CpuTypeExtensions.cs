@@ -18,6 +18,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => MemoryType.GbaMemory,
 			CpuType.Ws => MemoryType.WsMemory,
 			CpuType.Lynx => MemoryType.LynxMemory,
+			CpuType.Genesis => MemoryType.GenesisMemory,
 			CpuType.Atari2600 => MemoryType.Atari2600Memory,
 			CpuType.ChannelF => MemoryType.ChannelFMemory,
 			_ => throw new Exception("Invalid CPU type"),
@@ -34,6 +35,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => MemoryType.GbaVideoRam,
 			CpuType.Ws => MemoryType.WsWorkRam,
 			CpuType.Lynx => MemoryType.LynxWorkRam,
+			CpuType.Genesis => MemoryType.GenesisVideoRam,
 			CpuType.Atari2600 => MemoryType.Atari2600TiaRegisters,
 			CpuType.ChannelF => MemoryType.ChannelFVideoRam,
 			_ => throw new Exception("Invalid CPU type"),
@@ -50,6 +52,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => MemoryType.GbaSpriteRam,
 			CpuType.Ws => MemoryType.None,
 			CpuType.Lynx => MemoryType.None,
+			CpuType.Genesis => MemoryType.None,
 			CpuType.Atari2600 => MemoryType.None,
 			CpuType.ChannelF => MemoryType.None,
 			_ => throw new Exception("Invalid CPU type"),
@@ -72,6 +75,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => MemoryType.GbaPrgRom,
 			CpuType.Ws => MemoryType.WsPrgRom,
 			CpuType.Lynx => MemoryType.LynxPrgRom,
+			CpuType.Genesis => MemoryType.GenesisPrgRom,
 			CpuType.Atari2600 => MemoryType.Atari2600PrgRom,
 			CpuType.ChannelF => MemoryType.ChannelFCartRom,
 			_ => throw new Exception("Invalid CPU type"),
@@ -94,6 +98,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => MemoryType.GbaIntWorkRam,
 			CpuType.Ws => MemoryType.WsWorkRam,
 			CpuType.Lynx => MemoryType.LynxWorkRam,
+			CpuType.Genesis => MemoryType.GenesisWorkRam,
 			CpuType.Atari2600 => MemoryType.Atari2600Ram,
 			CpuType.ChannelF => MemoryType.ChannelFVideoRam,
 			_ => throw new Exception("Invalid CPU type"),
@@ -116,6 +121,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => 7,
 			CpuType.Ws => 5,
 			CpuType.Lynx => 4,
+			CpuType.Genesis => 6,
 			CpuType.Atari2600 => 4,
 			CpuType.ChannelF => 4,
 			_ => throw new Exception("Invalid CPU type"),
@@ -138,6 +144,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => 4,
 			CpuType.Ws => 4,
 			CpuType.Lynx => 3,
+			CpuType.Genesis => 4,
 			CpuType.Atari2600 => 3,
 			CpuType.ChannelF => 3,
 			_ => throw new Exception("Invalid CPU type"),
@@ -182,6 +189,7 @@ public static class CpuTypeExtensions {
 			CpuType.Gba => ConsoleType.Gba,
 			CpuType.Ws => ConsoleType.Ws,
 			CpuType.Lynx => ConsoleType.Lynx,
+			CpuType.Genesis => ConsoleType.Genesis,
 			CpuType.Atari2600 => ConsoleType.Atari2600,
 			CpuType.ChannelF => ConsoleType.ChannelF,
 			_ => throw new Exception("Invalid CPU type"),
@@ -195,6 +203,7 @@ public static class CpuTypeExtensions {
 			case CpuType.Nes:
 			case CpuType.Pce:
 			case CpuType.Sms:
+			case CpuType.Genesis:
 			case CpuType.Lynx:
 			case CpuType.Atari2600:
 			case CpuType.ChannelF:
@@ -218,6 +227,7 @@ public static class CpuTypeExtensions {
 			case CpuType.Gba:
 			case CpuType.Ws:
 			case CpuType.Lynx:
+			case CpuType.Genesis:
 			case CpuType.Atari2600:
 			case CpuType.ChannelF:
 				return true;
@@ -249,6 +259,7 @@ public static class CpuTypeExtensions {
 			case CpuType.Sms:
 			case CpuType.Ws:
 			case CpuType.Lynx:
+			case CpuType.Genesis:
 			case CpuType.ChannelF:
 				return true;
 

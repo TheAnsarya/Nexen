@@ -122,6 +122,7 @@ public sealed class DebugApi {
 			CpuType.Gba => GetPpuState<GbaPpuState>(cpuType),
 			CpuType.Ws => GetPpuState<WsPpuState>(cpuType),
 			CpuType.Lynx => GetPpuState<LynxPpuState>(cpuType),
+			CpuType.Genesis => GetPpuState<GenesisVdpState>(cpuType),
 			CpuType.Atari2600 => GetPpuState<Atari2600TiaState>(cpuType),
 			CpuType.ChannelF => GetPpuState<ChannelFVideoState>(cpuType),
 			_ => throw new Exception("Unsupported cpu type")
@@ -563,7 +564,9 @@ public sealed class DebugApi {
 			ConsoleType.Gba => state is GbaPpuState,
 			ConsoleType.Ws => state is WsPpuState,
 			ConsoleType.Lynx => state is LynxPpuState,
+			ConsoleType.Genesis => state is GenesisVdpState,
 			ConsoleType.Atari2600 => state is Atari2600TiaState,
+			ConsoleType.ChannelF => state is ChannelFVideoState,
 			_ => false
 		};
 	}
