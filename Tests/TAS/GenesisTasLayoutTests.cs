@@ -59,6 +59,35 @@ public sealed class GenesisTasLayoutTests {
 		Assert.Equal(ids.Count, ids.Distinct().Count());
 	}
 
+	[Fact]
+	public void GetGenesisButtons_MatchesExpectedLanePositions() {
+		var buttons = InvokeGenesisButtons();
+
+		var expected = new Dictionary<string, (int Column, int Row, string Label)> {
+			["A"] = (0, 0, "A"),
+			["B"] = (1, 0, "B"),
+			["C"] = (2, 0, "C"),
+			["MODE"] = (3, 0, "MOD"),
+			["X"] = (0, 1, "X"),
+			["Y"] = (1, 1, "Y"),
+			["Z"] = (2, 1, "Z"),
+			["START"] = (3, 1, "STA"),
+			["UP"] = (0, 2, "↑"),
+			["DOWN"] = (1, 2, "↓"),
+			["LEFT"] = (2, 2, "←"),
+			["RIGHT"] = (3, 2, "→")
+		};
+
+		Assert.Equal(expected.Count, buttons.Count);
+
+		foreach (var button in buttons) {
+			Assert.True(expected.TryGetValue(button.ButtonId, out var lane), $"Unexpected button id: {button.ButtonId}");
+			Assert.Equal(lane.Column, button.Column);
+			Assert.Equal(lane.Row, button.Row);
+			Assert.Equal(lane.Label, button.Label);
+		}
+	}
+
 	[Theory]
 	[InlineData("MOD", "MODE")]
 	[InlineData("mode", "MODE")]
