@@ -49,6 +49,14 @@ static void BM_Genesis_AudioBusWriteAndMix(benchmark::State& state) {
 		scaffold.GetBus().WriteByte(0xC00011, 0x90);
 		scaffold.GetBus().WriteByte(0xC00011, 0x08);
 		scaffold.StepFrameScaffold(144u * 4u);
+		if (scaffold.GetBus().GetMixedSampleCount() == 0) {
+			state.SkipWithError("Audio bus write benchmark misconfigured: expected non-zero mixed sample count");
+			return;
+		}
+		if (scaffold.GetBus().GetMixedDigest().empty()) {
+			state.SkipWithError("Audio bus write benchmark misconfigured: expected non-empty mixed digest");
+			return;
+		}
 		benchmark::DoNotOptimize(scaffold.GetBus().GetMixedSampleCount());
 		benchmark::DoNotOptimize(scaffold.GetBus().GetMixedDigest().data());
 	}

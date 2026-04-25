@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
 
 namespace {
@@ -80,6 +80,20 @@ namespace {
 		EXPECT_EQ(scaffoldA.GetBus().GetMixedSampleCount(), scaffoldB.GetBus().GetMixedSampleCount());
 		EXPECT_EQ(scaffoldA.GetBus().GetMixedLastSample(), scaffoldB.GetBus().GetMixedLastSample());
 		EXPECT_EQ(scaffoldA.GetBus().GetMixedDigest(), scaffoldB.GetBus().GetMixedDigest());
+	}
+
+	TEST(GenesisPsgMixedAudioTests, BenchmarkAlignedAudioBusWriteScenarioProducesMixedOutput) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+
+		scaffold.GetBus().WriteByte(0xA04000, 0x22);
+		scaffold.GetBus().WriteByte(0xA04001, 0x10);
+		scaffold.GetBus().WriteByte(0xC00011, 0x90);
+		scaffold.GetBus().WriteByte(0xC00011, 0x08);
+		scaffold.StepFrameScaffold(144u * 4u);
+
+		EXPECT_GT(scaffold.GetBus().GetMixedSampleCount(), 0u);
+		EXPECT_FALSE(scaffold.GetBus().GetMixedDigest().empty());
 	}
 
 	TEST(GenesisPsgMixedAudioTests, AlternatingYmAndPsgCadenceStaysDeterministicAcrossRuns) {
