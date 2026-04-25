@@ -413,7 +413,7 @@ public class TasEditorViewModelBranchAndLayoutTests : IDisposable {
 	[InlineData(ControllerLayout.Snes, 12)]
 	[InlineData(ControllerLayout.GameBoy, 8)]
 	[InlineData(ControllerLayout.Gba, 10)]
-	[InlineData(ControllerLayout.Genesis, 11)]
+	[InlineData(ControllerLayout.Genesis, 12)]
 	[InlineData(ControllerLayout.MasterSystem, 6)]
 	[InlineData(ControllerLayout.PcEngine, 8)]
 	[InlineData(ControllerLayout.WonderSwan, 11)]
@@ -462,6 +462,7 @@ public class TasEditorViewModelBranchAndLayoutTests : IDisposable {
 		Assert.Contains("X", ids);
 		Assert.Contains("Y", ids);
 		Assert.Contains("Z", ids);
+		Assert.Contains("MODE", ids);
 	}
 
 	[Fact]
@@ -506,8 +507,8 @@ public class TasEditorViewModelBranchAndLayoutTests : IDisposable {
 	public void ControllerButtons_SettingMovieUpdatesButtons() {
 		SetMovie(CreateTestMovie(1, SystemType.Genesis));
 
-		// Setting a Genesis movie should give us 11 buttons
-		Assert.Equal(11, _vm.ControllerButtons.Count);
+		// Setting a Genesis movie should give us 12 buttons including MODE.
+		Assert.Equal(12, _vm.ControllerButtons.Count);
 	}
 
 	#endregion

@@ -11,7 +11,7 @@ This section groups user-facing documentation for each emulated platform.
 | Game Boy / Game Boy Color | [GB](GB.md) |
 | Game Boy Advance | [GBA](GBA.md) |
 | Sega Master System / Game Gear | [SMS](SMS.md) |
-| Sega Genesis / Mega Drive | _Coming soon_ |
+| Sega Genesis / Mega Drive | [Genesis](Genesis.md) |
 | PC Engine / TurboGrafx-16 | [PCE](PCE.md) |
 | WonderSwan / WonderSwan Color | [WS](WS.md) |
 | Atari 2600 | _Coming soon_ |

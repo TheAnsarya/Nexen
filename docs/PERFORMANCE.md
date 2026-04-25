@@ -26,6 +26,26 @@ This page centralizes performance strategy and optimization references so user-f
 4. Compare baseline and candidate results.
 5. Keep only semantics-preserving wins.
 
+## Genesis Benchmark Commands
+
+Run a focused Genesis benchmark command (verified):
+
+```powershell
+.\bin\win-x64\Release\Core.Benchmarks.exe --benchmark_filter="BM_Genesis_StepFrameScaffold_OneScanline" --benchmark_min_time=0.01s --benchmark_repetitions=1
+```
+
+Run Genesis-only benchmark families (broader filter):
+
+```powershell
+.\bin\win-x64\Release\Core.Benchmarks.exe --benchmark_filter="BM_Genesis" --benchmark_min_time=0.01s --benchmark_repetitions=1
+```
+
+Run Genesis parity test suites before/after performance work:
+
+```powershell
+dotnet test Tests\Nexen.Tests.csproj -c Release --filter "FullyQualifiedName~TasEditorViewModelBranchAndLayoutTests|FullyQualifiedName~GenesisTasLayoutTests|FullyQualifiedName~TasInputOverrideMappingParityTests|FullyQualifiedName~InputApiDecoderTests"
+```
+
 ## Related Links
 
 - [Documentation Index](README.md)
