@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Shared/Emulator.h"
 #include "Shared/EmuSettings.h"
 #include "Genesis/GenesisConsole.h"

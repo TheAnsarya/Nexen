@@ -1,4 +1,4 @@
-# Sega Genesis Architecture and Incremental Plan
+﻿# Sega Genesis Architecture and Incremental Plan
 
 Parent issues: [#673](https://github.com/TheAnsarya/Nexen/issues/673), [#696](https://github.com/TheAnsarya/Nexen/issues/696)
 
@@ -151,6 +151,7 @@ Strategic child issues:
 | 2026-04-25 | Controller Routing | `ControllerHub` switch did not include `ControllerType::GenesisController`, causing incomplete type coverage and GCC switch warnings in CI artifacts. | Fixed in active slice; regression tests added. | [#1471](https://github.com/TheAnsarya/Nexen/issues/1471) |
 | 2026-04-25 | Controller Identity | `GenesisController` instances were constructed with `ControllerType::None`, making `HasControllerType(GenesisController)` checks fail. | Fixed in active slice; regression tests added. | [#1471](https://github.com/TheAnsarya/Nexen/issues/1471) |
 | 2026-04-25 | Strategic Planning | Full-stack Genesis roadmap for 32X/Sega CD/Power Base/controllers/UX existed only as scattered notes. | Epic and child planning issues created; this document promoted to living roadmap. | [#1467](https://github.com/TheAnsarya/Nexen/issues/1467), [#1473](https://github.com/TheAnsarya/Nexen/issues/1473) |
+| 2026-04-25 | Cheat UX parity | `CheatEditWindowViewModel` assumed at least one CPU-compatible cheat type and could index an empty array for Genesis ROMs. | Fixed in active slice; regression tests added. | [#1482](https://github.com/TheAnsarya/Nexen/issues/1482) |
 
 ### Maintenance Rules for This Document
 
@@ -158,3 +159,80 @@ Strategic child issues:
 2. Link every promoted backlog item to a concrete GitHub issue before implementation.
 3. Preserve closed/completed entries for traceability; do not rewrite history.
 4. Update milestone status as slices ship so this file remains the canonical roadmap view.
+
+## 32X Architecture and Deterministic Test Matrix (Issue #1468)
+
+Tracking issues:
+
+- [#1478](https://github.com/TheAnsarya/Nexen/issues/1478) - concrete architecture and matrix document scope
+- [#1479](https://github.com/TheAnsarya/Nexen/issues/1479) - first scaffold split issue set
+
+### Architecture Boundaries
+
+| Area | Host Genesis Responsibility | 32X Responsibility | Boundary Contract |
+|---|---|---|---|
+| Cartridge and bus decode | Route base cartridge windows and baseline 68k map | Overlay 32X mapped ranges and SH2-visible windows | Deterministic decode order and ownership markers per access |
+| CPU scheduling | Drive base 68k/Z80 cadence | Drive dual SH2 cadence and interrupt lanes | Fixed scheduler checkpoints at frame/scanline boundaries |
+| Video composition | Base VDP frame generation | 32X layer composition and priority path | Explicit blend/composition order with deterministic digest checks |
+| Audio | YM2612 + PSG base timing | PWM path timing and mix contribution | Stable mixer ordering with frame-level checksum gates |
+| State serialization | Base Genesis save-state data | SH2/32X overlay state and latch state | Replay equivalence checks across save/load boundaries |
+
+### Deterministic Gate Matrix
+
+| Gate ID | Focus | Required Evidence |
+|---|---|---|
+| 32x-g1 | Bus ownership determinism | Repeated run digest for access-owner trace must match |
+| 32x-g2 | Dual SH2 scheduler determinism | Repeated frame checkpoint counters and interrupt sequence must match |
+| 32x-g3 | Composition determinism | Frame composition digest stable across repeated runs |
+| 32x-g4 | Audio determinism | Mixed-output checksum stable across repeated runs |
+| 32x-g5 | Save-state replay determinism | State snapshot + replay digest identical over N frames |
+
+### First Scaffold Split (Issue #1479)
+
+| Child | Workstream | Dependency |
+|---|---|---|
+| [#1479](https://github.com/TheAnsarya/Nexen/issues/1479) | Workstream umbrella (bus/SH2/composition/gates split) | [#1468](https://github.com/TheAnsarya/Nexen/issues/1468) |
+| [#1478](https://github.com/TheAnsarya/Nexen/issues/1478) | Architecture and matrix documentation baseline | [#1468](https://github.com/TheAnsarya/Nexen/issues/1468) |
+| [#1484](https://github.com/TheAnsarya/Nexen/issues/1484) | First implementation-ready bus ownership/digest scaffold issue | [#1479](https://github.com/TheAnsarya/Nexen/issues/1479) |
+
+## Sega CD Synchronization Boundary Plan and Deterministic Gates (Issue #1469)
+
+Tracking issues:
+
+- [#1480](https://github.com/TheAnsarya/Nexen/issues/1480) - synchronization boundary and gate definitions
+- [#1481](https://github.com/TheAnsarya/Nexen/issues/1481) - first workstream split issue set
+
+### Synchronization Boundary Table
+
+| Boundary | Primary Concern | Deterministic Rule |
+|---|---|---|
+| 68k (host) <-> sub-CPU cadence | Cross-CPU timing drift | Shared checkpoint cadence must produce stable per-frame digest |
+| CD command lane | Command/response ordering | Response queue and completion order must be deterministic |
+| CD transport cadence | Data-ready timing and blocking behavior | Fixed transition states per scheduler checkpoint |
+| PCM/CDDA mixer lane | Audio-source ordering and sync | Source ordering and mixed checksum must be stable |
+| Save-state and replay | Mid-transfer and mixed-audio resume consistency | Snapshot-resume digest must match continuous-run digest |
+
+### Deterministic Gate Definitions
+
+| Gate ID | Focus | Required Evidence |
+|---|---|---|
+| scd-g1 | CPU cadence sync | Multi-run cadence checkpoint digest equality |
+| scd-g2 | Command/response determinism | Command lane transcript equivalence across runs |
+| scd-g3 | Transport state determinism | Repeated transfer-state timeline equivalence |
+| scd-g4 | Mixer determinism | PCM/CDDA mixed checksum equality across runs |
+| scd-g5 | Save-state replay | Snapshot-resume digest equals continuous-run digest |
+
+### First Workstream Split (Issue #1481)
+
+| Child | Workstream | Dependency |
+|---|---|---|
+| [#1481](https://github.com/TheAnsarya/Nexen/issues/1481) | Workstream umbrella (timing/transport/audio/state split) | [#1469](https://github.com/TheAnsarya/Nexen/issues/1469) |
+| [#1480](https://github.com/TheAnsarya/Nexen/issues/1480) | Sync boundary and gate definition baseline | [#1469](https://github.com/TheAnsarya/Nexen/issues/1469) |
+| [#1485](https://github.com/TheAnsarya/Nexen/issues/1485) | First implementation-ready cadence transcript harness issue | [#1481](https://github.com/TheAnsarya/Nexen/issues/1481) |
+
+## UI/TAS/Cheat/Debugger Active Slice Queue (Issue #1472)
+
+Tracking issues:
+
+- [#1482](https://github.com/TheAnsarya/Nexen/issues/1482) - first implementation slice (cheat editor crash-proofing)
+- [#1483](https://github.com/TheAnsarya/Nexen/issues/1483) - Genesis cheat pipeline backlog and parser/UX planning

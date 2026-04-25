@@ -72,9 +72,16 @@ public sealed partial class CheatEditWindowViewModel : DisposableViewModel {
 		}
 
 		AddDisposable(this.WhenAnyValue(x => x.MainWndModel.RomInfo).Subscribe(romInfo => {
-			AvailableCheatTypes = Enum.GetValues<CheatType>().Where(e => romInfo.CpuTypes.Contains(e.ToCpuType())).Cast<Enum>().ToArray();
-			if (!AvailableCheatTypes.Contains(Cheat.Type)) {
-				Cheat.Type = (CheatType)AvailableCheatTypes[0];
+			Enum[] compatibleCheatTypes = Enum.GetValues<CheatType>().Where(e => romInfo.CpuTypes.Contains(e.ToCpuType())).Cast<Enum>().ToArray();
+			AvailableCheatTypes = compatibleCheatTypes;
+
+			if (compatibleCheatTypes.Length == 0) {
+				OkButtonEnabled = false;
+				return;
+			}
+
+			if (!compatibleCheatTypes.Contains(Cheat.Type)) {
+				Cheat.Type = (CheatType)compatibleCheatTypes[0];
 			}
 		}));
 	}
