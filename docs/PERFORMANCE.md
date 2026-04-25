@@ -52,6 +52,12 @@ Run Genesis parity test suites before/after performance work:
 dotnet test Tests\Nexen.Tests.csproj -c Release --filter "FullyQualifiedName~TasEditorViewModelBranchAndLayoutTests|FullyQualifiedName~GenesisTasLayoutTests|FullyQualifiedName~TasInputOverrideMappingParityTests|FullyQualifiedName~InputApiDecoderTests"
 ```
 
+Run Genesis C++ core suite recheck:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Genesis* --gtest_brief=1
+```
+
 ## Related Links
 
 - [Documentation Index](README.md)

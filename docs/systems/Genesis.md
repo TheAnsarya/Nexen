@@ -30,6 +30,12 @@ Run targeted Genesis TAS parity tests:
 dotnet test Tests\Nexen.Tests.csproj -c Release --filter "FullyQualifiedName~TasEditorViewModelBranchAndLayoutTests|FullyQualifiedName~GenesisTasLayoutTests|FullyQualifiedName~TasInputOverrideMappingParityTests|FullyQualifiedName~InputApiDecoderTests"
 ```
 
+Run Genesis C++ core test suite:
+
+```powershell
+.\bin\win-x64\Release\Core.Tests.exe --gtest_filter=Genesis* --gtest_brief=1
+```
+
 Run a focused Genesis benchmark (verified command):
 
 ```powershell

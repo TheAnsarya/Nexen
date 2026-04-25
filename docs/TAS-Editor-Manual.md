@@ -1,4 +1,4 @@
-# 🎮 TAS Editor User Manual
+﻿# 🎮 TAS Editor User Manual
 
 Welcome to the Nexen TAS (Tool-Assisted Speedrun/Superplay) Editor! This comprehensive guide will help you create, edit, and perfect your TAS movies.
 
