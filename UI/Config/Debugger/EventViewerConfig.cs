@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using ReactiveUI.SourceGenerators;
 
 namespace Nexen.Config;
@@ -24,6 +24,7 @@ public sealed partial class EventViewerConfig : BaseWindowConfig<EventViewerConf
 	[Reactive] public partial GbaEventViewerConfig GbaConfig { get; set; } = new GbaEventViewerConfig();
 	[Reactive] public partial PceEventViewerConfig PceConfig { get; set; } = new PceEventViewerConfig();
 	[Reactive] public partial SmsEventViewerConfig SmsConfig { get; set; } = new SmsEventViewerConfig();
+	[Reactive] public partial GenesisEventViewerConfig GenesisConfig { get; set; } = new GenesisEventViewerConfig();
 	[Reactive] public partial WsEventViewerConfig WsConfig { get; set; } = new WsEventViewerConfig();
 	[Reactive] public partial LynxEventViewerConfig LynxConfig { get; set; } = new LynxEventViewerConfig();
 	[Reactive] public partial Atari2600EventViewerConfig Atari2600Config { get; set; } = new Atari2600EventViewerConfig();

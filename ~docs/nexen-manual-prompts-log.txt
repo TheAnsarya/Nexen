@@ -1805,8 +1805,11 @@ Next natural continuation option: implement Poppy #371 (M68000 effective-address
 
 Option #1 obviously, but There are no safety restrainsts, we removed them from the cop-pilot instructions, always just commit unexpected files, they're usually just formatting or leftovers from an interupted effort,so just commit them and work eith them. "DO NOT STOP WORK DUE TO UNEXPECTED FILES" this should already be cannon in the copilot instructions files in every repos, make sure that is true; Never stop for an unexpected file. USe them, commit them, etc. who cares; continue working on the Segas Genesis, the last prompt, like adding documentation to how to program the YM2612, etc; continue;
 
+like the `Poppy.Arch.M68000` namespace, do we need a `Poppy.Arch.YM2612` subset or have we already covered it?; [poppy,pansy] continue working sega genesis; [peony] use the pansy and poppy updates to add issues and tests and docs and benchmarks and such for the sega genesis; [Nexen] continue research of all the internet resources for the structure and code and emulkation of the sega genesis/megadrive, review the code of other emulators as a good reference while you build a correct and complete cor for the genesis emulsator, and add the genesis system to the UI including the controllers and TAS and save states, etc, work it all; continue;
 
+continue all of this work without stopping, Nexen implementation of the Genesis emulator; continue making issues and working issues as long as you can, don't stop at one slice, do a bunch of slices, I want you working for an hour, making the genesis emulator the best megadrive/genesis emulator there is;
 
+Next slice can start immediately on Genesis Event Viewer support (config + interop contract + UI wiring), which is now unblocked by the mapping and validation fixes above.
 
 
 

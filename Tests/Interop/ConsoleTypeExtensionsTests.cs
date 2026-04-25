@@ -1,4 +1,4 @@
-using Nexen.Interop;
+﻿using Nexen.Interop;
 using Xunit;
 
 namespace Nexen.Tests.Interop;

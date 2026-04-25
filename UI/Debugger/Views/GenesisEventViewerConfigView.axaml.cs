@@ -1,10 +1,10 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace Nexen.Views;
+namespace Nexen.Debugger.Views;
 
-public partial class GenesisConfigView : UserControl {
-	public GenesisConfigView() {
+public partial class GenesisEventViewerConfigView : UserControl {
+	public GenesisEventViewerConfigView() {
 		InitializeComponent();
 	}
 

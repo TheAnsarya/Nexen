@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -406,6 +406,7 @@ public sealed class DebugApi {
 	[DllImport(DllPath)] public static extern void SetEventViewerConfig(CpuType cpuType, InteropGbaEventViewerConfig config);
 	[DllImport(DllPath)] public static extern void SetEventViewerConfig(CpuType cpuType, InteropPceEventViewerConfig config);
 	[DllImport(DllPath)] public static extern void SetEventViewerConfig(CpuType cpuType, InteropSmsEventViewerConfig config);
+	[DllImport(DllPath)] public static extern void SetEventViewerConfig(CpuType cpuType, InteropGenesisEventViewerConfig config);
 	[DllImport(DllPath)] public static extern void SetEventViewerConfig(CpuType cpuType, InteropWsEventViewerConfig config);
 	[DllImport(DllPath)] public static extern void SetEventViewerConfig(CpuType cpuType, InteropLynxEventViewerConfig config);
 	[DllImport(DllPath)] public static extern void SetEventViewerConfig(CpuType cpuType, InteropAtari2600EventViewerConfig config);
@@ -1008,6 +1009,25 @@ public sealed class InteropSmsEventViewerConfig {
 
 	public InteropEventViewerCategoryCfg GameGearPortWrite;
 	public InteropEventViewerCategoryCfg GameGearPortRead;
+
+	[MarshalAs(UnmanagedType.I1)] public bool ShowPreviousFrameEvents;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+public sealed class InteropGenesisEventViewerConfig {
+	public InteropEventViewerCategoryCfg Irq;
+	public InteropEventViewerCategoryCfg Nmi;
+	public InteropEventViewerCategoryCfg MarkedBreakpoints;
+
+	public InteropEventViewerCategoryCfg VdpControlWrite;
+	public InteropEventViewerCategoryCfg VdpControlRead;
+	public InteropEventViewerCategoryCfg VdpDataWrite;
+	public InteropEventViewerCategoryCfg VdpDataRead;
+	public InteropEventViewerCategoryCfg VdpHvcounterRead;
+
+	public InteropEventViewerCategoryCfg PsgWrite;
+	public InteropEventViewerCategoryCfg IoWrite;
+	public InteropEventViewerCategoryCfg IoRead;
 
 	[MarshalAs(UnmanagedType.I1)] public bool ShowPreviousFrameEvents;
 }
