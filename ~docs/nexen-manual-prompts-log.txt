@@ -1811,6 +1811,7 @@ continue all of this work without stopping, Nexen implementation of the Genesis 
 
 Next slice can start immediately on Genesis Event Viewer support (config + interop contract + UI wiring), which is now unblocked by the mapping and validation fixes above.
 
+continue working on Genesis
 
 
 

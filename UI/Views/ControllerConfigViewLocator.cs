@@ -24,6 +24,7 @@ public sealed class ControllerConfigViewLocator : IDataTemplate {
 				ControllerType.PceController => new PceControllerView(),
 				ControllerType.PceAvenuePad6 => new PceAvenuePad6View(),
 				ControllerType.SmsController => new SmsControllerView(),
+				ControllerType.GenesisController => new GenesisControllerView(),
 				ControllerType.WsController => new WsControllerView(),
 				ControllerType.WsControllerVertical => new WsControllerVerticalView(),
 				_ => new DefaultControllerView()

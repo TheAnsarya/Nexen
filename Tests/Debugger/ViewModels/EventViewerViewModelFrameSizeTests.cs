@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 using Xunit;
