@@ -73,6 +73,19 @@ static void BM_Genesis_AudioCadence_AlternatingYmPsg(benchmark::State& state) {
 		scaffold.GetBus().WriteByte(0xC00011, (uint8_t)(0x04 + (phase & 0x07)));
 		scaffold.StepFrameScaffold(128u + (phase % 5u));
 		phase++;
+		// Allow a short warmup for sample counters, then enforce steady-state assumptions.
+		if (phase > 4) {
+			if (scaffold.GetBus().GetYmSampleCount() == 0
+				|| scaffold.GetBus().GetPsgSampleCount() == 0
+				|| scaffold.GetBus().GetMixedSampleCount() == 0) {
+				state.SkipWithError("Audio cadence benchmark misconfigured: expected non-zero YM/PSG/mixed sample counts after warmup");
+				return;
+			}
+			if (scaffold.GetBus().GetMixedDigest().empty()) {
+				state.SkipWithError("Audio cadence benchmark misconfigured: expected non-empty mixed digest after warmup");
+				return;
+			}
+		}
 		benchmark::DoNotOptimize(scaffold.GetBus().GetYmSampleCount());
 		benchmark::DoNotOptimize(scaffold.GetBus().GetPsgSampleCount());
 		benchmark::DoNotOptimize(scaffold.GetBus().GetMixedDigest().data());

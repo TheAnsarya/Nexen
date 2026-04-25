@@ -96,6 +96,15 @@ namespace {
 		EXPECT_EQ(runA, runB);
 	}
 
+	TEST(GenesisPsgMixedAudioTests, BenchmarkAlignedAlternatingCadenceAssumptionsHold) {
+		GenesisMixedAudioSnapshot run = RunAlternatingAudioCadenceScenario();
+
+		EXPECT_GT(run.YmSamples, 0u);
+		EXPECT_GT(run.PsgSamples, 0u);
+		EXPECT_GT(run.MixedSamples, 0u);
+		EXPECT_FALSE(run.MixedDigest.empty());
+	}
+
 	TEST(GenesisPsgMixedAudioTests, SaveStateReplayKeepsMixedAudioDigestsStable) {
 		GenesisM68kBoundaryScaffold scaffold;
 		scaffold.Startup();
