@@ -524,6 +524,14 @@ static void BM_GenesisVdp_Object_Run_OneScanline(benchmark::State& state) {
 	constexpr uint64_t kClocksPerScanline = 488;
 	uint64_t cycle = kClocksPerScanline;
 
+	// Preflight guard: this benchmark uses null dependencies, so interrupt paths that
+	// dereference _cpu must stay disabled in setup.
+	GenesisVdpState preflightBefore = vdp.GetState();
+	if ((preflightBefore.Registers[1] & 0x20) != 0 || (preflightBefore.Registers[0] & 0x10) != 0) {
+		state.SkipWithError("VDP run preflight misconfigured: interrupt bits must remain disabled for null CPU benchmark setup");
+		return;
+	}
+
 	for (auto _ : state) {
 		vdp.Run(cycle);
 		benchmark::DoNotOptimize(vdp.GetState());
