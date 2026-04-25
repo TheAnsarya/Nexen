@@ -1,7 +1,10 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
 
 namespace {
+	static constexpr uint64_t FnvOffsetBasis = 1469598103934665603ull;
+	static constexpr uint64_t FnvPrime = 1099511628211ull;
+
 	string ToHexDigest(uint64_t value) {
 		return std::format("{:016x}", value);
 	}
@@ -41,6 +44,23 @@ GenesisBusOwner GenesisPlatformBusStub::DecodeOwner(uint32_t address) const {
 	}
 
 	return GenesisBusOwner::OpenBus;
+}
+
+void GenesisPlatformBusStub::AppendOwnershipTrace(uint32_t address, GenesisBusOwner owner, bool isWrite, uint8_t value) {
+	uint64_t hash = _ownershipTraceDigest.empty() ? FnvOffsetBasis : std::stoull(_ownershipTraceDigest, nullptr, 16);
+	uint64_t token = ((uint64_t)(address & 0xFFFFFF) << 16) |
+		((uint64_t)(uint8_t)owner << 8) |
+		((uint64_t)(isWrite ? 1u : 0u) << 7) |
+		(uint64_t)value;
+	hash ^= token;
+	hash *= FnvPrime;
+	_ownershipTraceDigest = ToHexDigest(hash);
+	_ownershipTraceCount++;
+}
+
+void GenesisPlatformBusStub::ClearOwnershipTrace() {
+	_ownershipTraceCount = 0;
+	_ownershipTraceDigest.clear();
 }
 
 void GenesisPlatformBusStub::ApplyVdpControlWord(uint16_t controlWord) {
@@ -307,6 +327,8 @@ void GenesisPlatformBusStub::Reset() {
 	_openBusWriteCount = 0;
 	_lastVdpAddress = 0;
 	_lastVdpValue = 0;
+	_ownershipTraceCount = 0;
+	_ownershipTraceDigest.clear();
 }
 
 GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
@@ -378,6 +400,8 @@ GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
 	state.OpenBusWriteCount = _openBusWriteCount;
 	state.LastVdpAddress = _lastVdpAddress;
 	state.LastVdpValue = _lastVdpValue;
+	state.OwnershipTraceCount = _ownershipTraceCount;
+	state.OwnershipTraceDigest = _ownershipTraceDigest;
 	return state;
 }
 
@@ -449,6 +473,8 @@ void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state)
 	_openBusWriteCount = state.OpenBusWriteCount;
 	_lastVdpAddress = state.LastVdpAddress;
 	_lastVdpValue = state.LastVdpValue;
+	_ownershipTraceCount = state.OwnershipTraceCount;
+	_ownershipTraceDigest = state.OwnershipTraceDigest;
 }
 
 uint8_t GenesisPlatformBusStub::ComposeRenderPixel() const {
@@ -517,45 +543,57 @@ uint8_t GenesisPlatformBusStub::GetRenderLinePixel(uint32_t index) const {
 uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 	address &= 0xFFFFFF;
 	GenesisBusOwner owner = DecodeOwner(address);
+	uint8_t result = 0xFF;
 
 	switch (owner) {
 		case GenesisBusOwner::Rom:
 			_romReadCount++;
 			if (_rom.empty()) {
-				return 0xFF;
+				result = 0xFF;
+				break;
 			}
-			return _rom[address % _rom.size()];
+			result = _rom[address % _rom.size()];
+			break;
 
 		case GenesisBusOwner::Z80:
 			_z80WindowAccessed = true;
 			_z80ReadCount++;
 			if (_z80Running && !_z80BusRequested) {
-				return 0xFF;
+				result = 0xFF;
+				break;
 			}
-			return 0;
+			result = 0;
+			break;
 
 		case GenesisBusOwner::Io:
 			_ioWindowAccessed = true;
 			_ioReadCount++;
 			if (address == 0xA04000) {
-				return _ym2612AddressPort0;
+				result = _ym2612AddressPort0;
+				break;
 			}
 			if (address == 0xA04001) {
-				return _ym2612Registers[_ym2612AddressPort0 & 0x1FF];
+				result = _ym2612Registers[_ym2612AddressPort0 & 0x1FF];
+				break;
 			}
 			if (address == 0xA04002) {
-				return _ym2612AddressPort1;
+				result = _ym2612AddressPort1;
+				break;
 			}
 			if (address == 0xA04003) {
-				return _ym2612Registers[(0x100 | _ym2612AddressPort1) & 0x1FF];
+				result = _ym2612Registers[(0x100 | _ym2612AddressPort1) & 0x1FF];
+				break;
 			}
 			if (address == 0xA11100) {
-				return _z80BusRequested ? 0x01 : 0x00;
+				result = _z80BusRequested ? 0x01 : 0x00;
+				break;
 			}
 			if (address == 0xA11200) {
-				return _z80Running ? 0x01 : 0x00;
+				result = _z80Running ? 0x01 : 0x00;
+				break;
 			}
-			return _io[address & 0x1F];
+			result = _io[address & 0x1F];
+			break;
 
 		case GenesisBusOwner::Vdp:
 			_vdpWindowAccessed = true;
@@ -569,22 +607,29 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 					_vdpStatus = (uint16_t)(_vdpStatus & ~0x8000);
 				}
 			}
-			return _lastVdpValue;
+			result = _lastVdpValue;
+			break;
 
 		case GenesisBusOwner::WorkRam:
 			_workRamReadCount++;
-			return _workRam[address & 0xFFFF];
+			result = _workRam[address & 0xFFFF];
+			break;
 
 		case GenesisBusOwner::OpenBus:
 		default:
 			_openBusReadCount++;
-			return 0xFF;
+			result = 0xFF;
+			break;
 	}
+
+	AppendOwnershipTrace(address, owner, false, result);
+	return result;
 }
 
 void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 	address &= 0xFFFFFF;
 	GenesisBusOwner owner = DecodeOwner(address);
+	AppendOwnershipTrace(address, owner, true, value);
 
 	switch (owner) {
 		case GenesisBusOwner::Rom:

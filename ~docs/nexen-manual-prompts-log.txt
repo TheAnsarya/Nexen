@@ -1839,6 +1839,10 @@ Yes continue working slices, also make sure you are continuing to update the Nex
 
 yes! please continue on these Next Steps: Start #1468 with a concrete 32X architecture/test matrix doc + first scaffold issue split; Start #1469 with Sega CD synchronization boundary plan and deterministic gate definitions; Start #1472 with the first UI/TAS/Cheat/Debugger parity implementation slice; work on several Genesis slices in a row without stopping; make more issues as you go and recognize work efforts; make more issues based on the plans; continue;
 
+[Nexen] Please take a quick aside to fix the Nexen logo, the `~assets/Nexen icon.png` image include a bunch of transparent dots, and transparent outline of the `N` in the logo and the inside border but these should all be brown, fix the logo, and then check the other asset logos for nexen and make sure they're not messed up too. after fixing these logos completely, open the icons to compare and verify them and then reutnr to working on Sega Genesis and related components and work; continue;
+
+[Nexen] Nope! you fucked up the logo updates, the main logo has been eaten into with pixels removed and made brown and the bottom-left and bottom-right corners outside now borwn as well, this should just be a big version of a lo-res logo so only a handful of colors with straight crisp lines; continue;
+
 
 
 

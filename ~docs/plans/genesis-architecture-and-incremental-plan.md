@@ -195,6 +195,12 @@ Tracking issues:
 | [#1478](https://github.com/TheAnsarya/Nexen/issues/1478) | Architecture and matrix documentation baseline | [#1468](https://github.com/TheAnsarya/Nexen/issues/1468) |
 | [#1484](https://github.com/TheAnsarya/Nexen/issues/1484) | First implementation-ready bus ownership/digest scaffold issue | [#1479](https://github.com/TheAnsarya/Nexen/issues/1479) |
 
+Implementation update (2026-04-25):
+
+- Implemented ownership-trace digest hooks in `GenesisPlatformBusStub` for deterministic owner/read/write hashing.
+- Added save/load persistence and explicit trace reset API for replay harness usage.
+- Added `Genesis32xBusOwnershipDigestScaffoldTests` as the first executable gate for 32x-g1 scaffolding.
+
 ## Sega CD Synchronization Boundary Plan and Deterministic Gates (Issue #1469)
 
 Tracking issues:

@@ -91,6 +91,8 @@ struct GenesisPlatformBusSaveState {
 	uint32_t OpenBusWriteCount = 0;
 	uint32_t LastVdpAddress = 0;
 	uint8_t LastVdpValue = 0;
+	uint32_t OwnershipTraceCount = 0;
+	string OwnershipTraceDigest;
 
 	bool operator==(const GenesisPlatformBusSaveState&) const = default;
 };
@@ -194,8 +196,11 @@ private:
 	uint32_t _openBusWriteCount = 0;
 	uint32_t _lastVdpAddress = 0;
 	uint8_t _lastVdpValue = 0;
+	uint32_t _ownershipTraceCount = 0;
+	string _ownershipTraceDigest;
 
 	[[nodiscard]] GenesisBusOwner DecodeOwner(uint32_t address) const;
+	void AppendOwnershipTrace(uint32_t address, GenesisBusOwner owner, bool isWrite, uint8_t value);
 	void ApplyVdpControlWord(uint16_t controlWord);
 	[[nodiscard]] uint8_t ComposeRenderPixel() const;
 	[[nodiscard]] GenesisVdpDmaMode DecodeDmaModeFromControl(uint8_t registerValue) const;
@@ -225,6 +230,8 @@ public:
 	[[nodiscard]] uint32_t GetOpenBusWriteCount() const { return _openBusWriteCount; }
 	[[nodiscard]] uint32_t GetLastVdpAddress() const { return _lastVdpAddress; }
 	[[nodiscard]] uint8_t GetLastVdpValue() const { return _lastVdpValue; }
+	[[nodiscard]] uint32_t GetOwnershipTraceCount() const { return _ownershipTraceCount; }
+	[[nodiscard]] const string& GetOwnershipTraceDigest() const { return _ownershipTraceDigest; }
 	[[nodiscard]] uint32_t GetWorkRamSize() const { return (uint32_t)_workRam.size(); }
 	[[nodiscard]] GenesisBusOwner GetOwnerForAddress(uint32_t address) const { return DecodeOwner(address); }
 	[[nodiscard]] uint8_t GetVdpRegister(uint8_t index) const { return _vdpRegisters[index & 0x1F]; }
@@ -271,6 +278,7 @@ public:
 	[[nodiscard]] int16_t GetMixedLastSample() const { return _mixedLastSample; }
 	[[nodiscard]] uint32_t GetMixedSampleCount() const { return _mixedSampleCount; }
 	[[nodiscard]] const string& GetMixedDigest() const { return _mixedDigest; }
+	void ClearOwnershipTrace();
 	[[nodiscard]] GenesisPlatformBusSaveState SaveState() const;
 	void LoadState(const GenesisPlatformBusSaveState& state);
 };

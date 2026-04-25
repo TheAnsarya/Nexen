@@ -302,6 +302,9 @@
 		<ClCompile Include="Genesis\GenesisMemoryMapOwnershipTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="Genesis\Genesis32xBusOwnershipDigestScaffoldTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Genesis\GenesisPsgMixedAudioTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>

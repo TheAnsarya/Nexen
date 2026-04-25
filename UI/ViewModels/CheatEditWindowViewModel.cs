@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
@@ -11,7 +11,7 @@ using Nexen.Windows;
 using ReactiveUI;
 using ReactiveUI.SourceGenerators;
 
-namespace Nexen.ViewModels; 
+namespace Nexen.ViewModels;
 public sealed partial class CheatEditWindowViewModel : DisposableViewModel {
 	public CheatCode Cheat { get; }
 
