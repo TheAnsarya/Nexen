@@ -236,6 +236,11 @@ Tracking issues:
 | [#1480](https://github.com/TheAnsarya/Nexen/issues/1480) | Sync boundary and gate definition baseline | [#1469](https://github.com/TheAnsarya/Nexen/issues/1469) |
 | [#1485](https://github.com/TheAnsarya/Nexen/issues/1485) | First implementation-ready cadence transcript harness issue | [#1481](https://github.com/TheAnsarya/Nexen/issues/1481) |
 
+Implementation update (2026-04-25):
+
+- Added first executable cadence transcript scaffold tests (`GenesisSegaCdCadenceTranscriptScaffoldTests`).
+- Established deterministic transcript digest checks across repeated runs and save/load replay.
+
 ## UI/TAS/Cheat/Debugger Active Slice Queue (Issue #1472)
 
 Tracking issues:
