@@ -545,6 +545,12 @@ static void BM_GenesisVdp_Object_DmaFill_ViaRegisters(benchmark::State& state) {
 	// DMA mode 2 (fill): reg 23 bit 7:6 = 10
 	vdp.WriteControlPort(0x9780); // reg 23 = 0x80 (fill mode, fill byte = 0)
 
+	GenesisVdpState setupState = vdp.GetState();
+	if (((setupState.Registers[23] >> 6) & 0x03) != 0x02) {
+		state.SkipWithError("VDP DMA mode misconfigured: expected fill mode via register 23");
+		return;
+	}
+
 	constexpr uint64_t kClocksPerScanline = 488;
 	uint64_t cycle = kClocksPerScanline;
 
