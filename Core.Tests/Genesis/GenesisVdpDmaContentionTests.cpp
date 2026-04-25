@@ -38,6 +38,31 @@ namespace {
 		EXPECT_GT(scaffold.GetBus().GetDmaContentionEvents(), 0u);
 	}
 
+	TEST(GenesisVdpDmaContentionTests, BenchmarkAlignedBurstTransfersLatchModeAndProduceContention) {
+		vector<uint8_t> rom(0x8000, 0x4e);
+		for (size_t i = 0; i + 1 < rom.size(); i += 2) {
+			rom[i] = 0x4e;
+			rom[i + 1] = 0x71;
+		}
+
+		auto runBurst = [&](GenesisVdpDmaMode mode) {
+			GenesisM68kBoundaryScaffold scaffold;
+			scaffold.LoadRom(rom);
+			scaffold.Startup();
+
+			scaffold.GetBus().BeginDmaTransfer(mode, 64);
+			EXPECT_EQ(scaffold.GetBus().GetDmaMode(), mode);
+
+			scaffold.StepFrameScaffold(512);
+			EXPECT_GT(scaffold.GetBus().GetDmaContentionCycles(), 0u);
+			EXPECT_GT(scaffold.GetBus().GetDmaContentionEvents(), 0u);
+			EXPECT_LT(scaffold.GetCpu().GetCycleCount(), 512u);
+		};
+
+		runBurst(GenesisVdpDmaMode::Copy);
+		runBurst(GenesisVdpDmaMode::Fill);
+	}
+
 	TEST(GenesisVdpDmaContentionTests, ContentionPenaltyIsDeterministicAcrossIdenticalRuns) {
 		vector<uint8_t> rom(0x400, 0x4E);
 		for (size_t i = 0; i + 1 < rom.size(); i += 2) {

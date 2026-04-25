@@ -121,7 +121,15 @@ static void BM_Genesis_DmaContention_CopyBurst(benchmark::State& state) {
 	for (auto _ : state) {
 		scaffold.Startup();
 		scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 64);
+		if (scaffold.GetBus().GetDmaMode() != GenesisVdpDmaMode::Copy) {
+			state.SkipWithError("DMA copy contention benchmark misconfigured: DMA mode did not latch to copy");
+			return;
+		}
 		scaffold.StepFrameScaffold(512);
+		if (scaffold.GetBus().GetDmaContentionCycles() == 0) {
+			state.SkipWithError("DMA copy contention benchmark misconfigured: expected non-zero contention cycles");
+			return;
+		}
 		benchmark::DoNotOptimize(scaffold.GetBus().GetDmaContentionCycles());
 		benchmark::DoNotOptimize(scaffold.GetCpu().GetCycleCount());
 	}
@@ -139,7 +147,15 @@ static void BM_Genesis_DmaContention_FillBurst(benchmark::State& state) {
 	for (auto _ : state) {
 		scaffold.Startup();
 		scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Fill, 64);
+		if (scaffold.GetBus().GetDmaMode() != GenesisVdpDmaMode::Fill) {
+			state.SkipWithError("DMA fill contention benchmark misconfigured: DMA mode did not latch to fill");
+			return;
+		}
 		scaffold.StepFrameScaffold(512);
+		if (scaffold.GetBus().GetDmaContentionCycles() == 0) {
+			state.SkipWithError("DMA fill contention benchmark misconfigured: expected non-zero contention cycles");
+			return;
+		}
 		benchmark::DoNotOptimize(scaffold.GetBus().GetDmaContentionCycles());
 		benchmark::DoNotOptimize(scaffold.GetCpu().GetCycleCount());
 	}
