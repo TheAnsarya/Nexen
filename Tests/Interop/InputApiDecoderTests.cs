@@ -458,6 +458,46 @@ public class InputApiDecoderTests {
 
 	#endregion
 
+	#region Genesis Controller Tests
+
+	[Fact]
+	public void Decode_GenesisController_ThreeButtonLayout() {
+		// Genesis: Up=0, Down=1, Left=2, Right=3, A=4, B=5, C=6, Start=7
+		var state = CreateState(ControllerType.GenesisController, 0xFF, 0x00);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.Up);
+		Assert.True(result.Down);
+		Assert.True(result.Left);
+		Assert.True(result.Right);
+		Assert.True(result.A);
+		Assert.True(result.B);
+		Assert.True(result.X); // C
+		Assert.True(result.Start);
+		Assert.False(result.Y);
+		Assert.False(result.L);
+		Assert.False(result.R);
+		Assert.False(result.Select);
+	}
+
+	[Fact]
+	public void Decode_GenesisController_SixButtonExtras() {
+		// Extras: X=8, Y=9, Z=10, Mode=11
+		var state = CreateState(ControllerType.GenesisController, 0x00, 0x0F);
+		var result = InputApi.DecodeControllerState(state);
+
+		Assert.True(result.Y);      // X
+		Assert.True(result.L);      // Y
+		Assert.True(result.R);      // Z
+		Assert.True(result.Select); // Mode
+		Assert.False(result.Up);
+		Assert.False(result.A);
+		Assert.False(result.X);
+		Assert.False(result.Start);
+	}
+
+	#endregion
+
 	#region Atari 2600 Controller Tests
 
 	[Fact]

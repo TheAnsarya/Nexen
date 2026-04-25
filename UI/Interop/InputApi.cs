@@ -259,6 +259,23 @@ public sealed class InputApi {
 				input.Start = (buttons & (1 << 8)) != 0; // Pause
 				break;
 
+			case ControllerType.GenesisController:
+				// Genesis: U=0, D=1, L=2, R=3, A=4, B=5, C=6, Start=7, X=8, Y=9, Z=10, Mode=11
+				// Map C to ControllerInput.X and 6-button extras to Y/L/R/Select.
+				input.Up = (buttons & (1 << 0)) != 0;
+				input.Down = (buttons & (1 << 1)) != 0;
+				input.Left = (buttons & (1 << 2)) != 0;
+				input.Right = (buttons & (1 << 3)) != 0;
+				input.A = (buttons & (1 << 4)) != 0;
+				input.B = (buttons & (1 << 5)) != 0;
+				input.X = (buttons & (1 << 6)) != 0; // C
+				input.Start = (buttons & (1 << 7)) != 0;
+				input.Y = (buttons & (1 << 8)) != 0; // X
+				input.L = (buttons & (1 << 9)) != 0; // Y
+				input.R = (buttons & (1 << 10)) != 0; // Z
+				input.Select = (buttons & (1 << 11)) != 0; // Mode
+				break;
+
 			default:
 				// Generic fallback - assume NES-like layout
 				input.Up = (buttons & (1 << 0)) != 0;
