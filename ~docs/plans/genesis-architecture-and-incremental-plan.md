@@ -88,3 +88,73 @@ Parent issues: [#673](https://github.com/TheAnsarya/Nexen/issues/673), [#696](ht
 - Architecture and risk plan is documented in this file.
 - Phased issue tree exists and is linked.
 - Benchmark and correctness gates are defined for each phase.
+
+## 2026-04-25 Strategic Expansion Track
+
+Parent epics:
+
+- [#1428](https://github.com/TheAnsarya/Nexen/issues/1428)
+- [#1467](https://github.com/TheAnsarya/Nexen/issues/1467)
+
+Strategic child issues:
+
+- [#1468](https://github.com/TheAnsarya/Nexen/issues/1468) - 32X architecture/timing/validation planning.
+- [#1469](https://github.com/TheAnsarya/Nexen/issues/1469) - Sega CD subsystem integration planning.
+- [#1470](https://github.com/TheAnsarya/Nexen/issues/1470) - Power Base Converter path via SMS prerequisites.
+- [#1471](https://github.com/TheAnsarya/Nexen/issues/1471) - Genesis-family controller and peripheral matrix.
+- [#1472](https://github.com/TheAnsarya/Nexen/issues/1472) - UI/TAS/Cheat/Debugger full integration backlog.
+- [#1473](https://github.com/TheAnsarya/Nexen/issues/1473) - Living roadmap/problem-log maintenance.
+
+### Multi-Track Milestones
+
+| Track | Goal | Phase 0 Output | Exit Gate |
+|---|---|---|---|
+| Genesis Core Hardening | Stabilize baseline and deterministic behavior | Incremental benchmark/test guard coverage and compatibility checkpoints | Genesis C++ suite and benchmark suites pass without new regressions |
+| 32X | Define host/base + add-on integration contract | SH2/bus/VDP composition architecture plan and test strategy | Issue-scoped validation matrix approved before implementation |
+| Sega CD | Define CD subsystem coupling model | Sub-CPU/CD block/memory overlay timing plan | Deterministic save-state and synchronization test strategy approved |
+| Power Base Converter | Sequence SMS prerequisites and adapter behavior | SMS compatibility gate list + adapter risk register | SMS prerequisites closed and adapter scope issue tree ready |
+| Controller/Peripheral Matrix | Reach full input hardware coverage | Matrix with implemented/missing/blocked states | Matrix-backed tests added for each promoted slice |
+| UI/TAS/Cheat/Debugger | Reach first-class Genesis-family tooling parity | Prioritized backlog linked to implementation slices | Feature-area tests and docs updated per delivered slice |
+
+### Living Future-Work Backlog
+
+#### Core and Hardware
+
+- Build cycle-documented bus arbitration traces for 68k/Z80/VDP interactions in edge DMA windows.
+- Add deterministic 32X integration harness design (dual-SH2 scheduling checkpoints + frame-composition checkpoints).
+- Add Sega CD integration harness design (sub-CPU cadence, command/response lanes, PCM/CDDA synchronization gates).
+- Define Power Base Converter adapter boundaries and hardware capability matrix tied to SMS readiness gates.
+
+#### Controller and Peripheral Matrix
+
+- Validate 3-button and 6-button behavior across native port paths and hub/multitap paths.
+- Add matrix coverage for multitap families and mode-switch/TH edge sequencing cases.
+- Expand peripheral matrix entries and mark each as implemented, planned, or blocked by hardware-model gaps.
+
+#### UX and Tooling
+
+- Expand Genesis-family configuration discoverability and status visibility in UI.
+- Add TAS editor affordances for Genesis-family controller variants and hardware-specific mappings.
+- Expand cheat UX + validation flow for Genesis-family systems.
+- Continue debugger/Event Viewer parity slices with Genesis-family system-specific state views.
+
+#### Validation and Operations
+
+- Keep benchmark guard assumptions paired with C++ tests for every new benchmark behavior requirement.
+- Maintain targeted + full-matrix validation commands in session logs for every slice.
+- Track flaky or environment-sensitive validation behavior separately from deterministic regressions.
+
+### Living Problem Log
+
+| Date | Area | Problem | Status | Tracking |
+|---|---|---|---|---|
+| 2026-04-25 | Controller Routing | `ControllerHub` switch did not include `ControllerType::GenesisController`, causing incomplete type coverage and GCC switch warnings in CI artifacts. | Fixed in active slice; regression tests added. | [#1471](https://github.com/TheAnsarya/Nexen/issues/1471) |
+| 2026-04-25 | Controller Identity | `GenesisController` instances were constructed with `ControllerType::None`, making `HasControllerType(GenesisController)` checks fail. | Fixed in active slice; regression tests added. | [#1471](https://github.com/TheAnsarya/Nexen/issues/1471) |
+| 2026-04-25 | Strategic Planning | Full-stack Genesis roadmap for 32X/Sega CD/Power Base/controllers/UX existed only as scattered notes. | Epic and child planning issues created; this document promoted to living roadmap. | [#1467](https://github.com/TheAnsarya/Nexen/issues/1467), [#1473](https://github.com/TheAnsarya/Nexen/issues/1473) |
+
+### Maintenance Rules for This Document
+
+1. Add newly discovered Genesis-family problems to the problem log table on discovery.
+2. Link every promoted backlog item to a concrete GitHub issue before implementation.
+3. Preserve closed/completed entries for traceability; do not rewrite history.
+4. Update milestone status as slices ship so this file remains the canonical roadmap view.

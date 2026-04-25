@@ -12,7 +12,7 @@ public:
 	};
 
 	GenesisController(Emulator* emu, uint8_t port, KeyMappingSet keyMappings)
-		: BaseControlDevice(emu, ControllerType::None, port, keyMappings) {
+		: BaseControlDevice(emu, ControllerType::GenesisController, port, keyMappings) {
 	}
 
 	uint8_t ReadRam(uint16_t addr) override { return 0; }

@@ -1833,6 +1833,14 @@ yes, do that next step: Start the next Genesis hardening audit slice focused on 
 
 work on several Genesis slices in a row without stopping; continue;
 
+Yes continue working slices, also make sure you are continuing to update the Nexen Sega Genesis/Megadrive emulation capability and integration, reaching for full sega genesis emulation including `32x` and `sega cd` and `Power Base Converter` (Probably need to add Sega Master System as a fully functional emulator component before adding Power Base support, add an epic and plans for future development) and full support all the controller types and other hardware (see for research: `https://copilot.microsoft.com/chats/gcSzZDYMeUG3MbvSfNj6g`) and reach towards a fully functional Sega Genesis emulator with full UI and TAS and Cheat and Debugger support, add epics and plans for future development, while implementing them; add/update a plan document that contains a big list of all the future work we want to do and every problem we find and keep it updated, if you find an issue, log it for future research and fixing; continue;
+
+***You crashed on the two tries to run the last prompt, so I restarted my computer, please don't crash again, figure out why it crashed and fix it or just avoid crashing, and re-run the last prompt:*** Yes continue working slices, also make sure you are continuing to update the Nexen Sega Genesis/Megadrive emulation capability and integration, reaching for full sega genesis emulation including `32x` and `sega cd` and `Power Base Converter` (Probably need to add Sega Master System as a fully functional emulator component before adding Power Base support, add an epic and plans for future development) and full support all the controller types and other hardware (see for research: `https://copilot.microsoft.com/chats/gcSzZDYMeUG3MbvSfNj6g`) and reach towards a fully functional Sega Genesis emulator with full UI and TAS and Cheat and Debugger support, add epics and plans for future development, while implementing them; add/update a plan document that contains a big list of all the future work we want to do and every problem we find and keep it updated, if you find an issue, log it for future research and fixing; continue;
+
+
+
+
+
 
 
 

@@ -79,4 +79,15 @@ namespace {
 		uint8_t readAfterFourthTransition = controlManager->ReadDataPort(0);
 		EXPECT_EQ(readAfterFourthTransition, 0x40u);
 	}
+
+	TEST(GenesisControlManagerTests, CreatedDeviceReportsGenesisControllerType) {
+		Emulator emu;
+		GenesisConsole console(&emu);
+		std::unique_ptr<GenesisControlManager> controlManager = CreateControlManager(emu, console);
+		ASSERT_NE(controlManager, nullptr);
+
+		auto device = controlManager->GetControlDevice(0);
+		ASSERT_NE(device, nullptr);
+		EXPECT_TRUE(device->HasControllerType(ControllerType::GenesisController));
+	}
 }

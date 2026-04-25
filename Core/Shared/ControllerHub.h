@@ -7,6 +7,7 @@
 #include "SNES/Input/SnesController.h"
 #include "SNES/Input/SnesMouse.h"
 #include "NES/Input/NesController.h"
+#include "Genesis/Input/GenesisController.h"
 #include "PCE/Input/PceController.h"
 #include "PCE/Input/PceAvenuePad6.h"
 #include "Utilities/Serializer.h"
@@ -128,6 +129,10 @@ public:
 
 				case ControllerType::PceAvenuePad6:
 					_ports[i] = std::make_unique<PceAvenuePad6>(emu, 0, controllers[i].Keys);
+					break;
+
+				case ControllerType::GenesisController:
+					_ports[i] = std::make_unique<GenesisController>(emu, 0, controllers[i].Keys);
 					break;
 			}
 		}

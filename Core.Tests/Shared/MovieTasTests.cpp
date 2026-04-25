@@ -56,6 +56,16 @@ private:
 	static inline ControllerConfig _emptyConfigs[HubPortCount] = {};
 };
 
+class ConfiguredHub2Port : public ControllerHub<2> {
+public:
+	ConfiguredHub2Port(ControllerConfig controllers[2]) : ControllerHub<2>(nullptr, ControllerType::None, 0, controllers) {
+	}
+
+	uint8_t ReadRam(uint16_t) override {
+		return 0;
+	}
+};
+
 // ===== ControllerHub GetTextState Consistency Tests =====
 // Verify that GetTextState() and GetTextState(string&) produce identical output
 
@@ -151,6 +161,15 @@ TEST_F(ControllerHubTextStateTest, BufferReuse_NoReallocation) {
 	}
 	// Buffer should not have reallocated (data pointer unchanged)
 	EXPECT_EQ(origData, buffer.data());
+}
+
+TEST(ControllerHubCreationTests, GenesisControllerSubPortIsDetectedByType) {
+	ControllerConfig controllers[2] = {};
+	controllers[0].Type = ControllerType::GenesisController;
+	controllers[1].Type = ControllerType::None;
+
+	ConfiguredHub2Port hub(controllers);
+	EXPECT_TRUE(hub.HasControllerType(ControllerType::GenesisController));
 }
 
 // ===== RewindData InputLog Tests =====
