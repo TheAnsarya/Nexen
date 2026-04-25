@@ -228,10 +228,7 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 			Left = input.Left,
 			Right = input.Right,
 			Select = input.Select,
-			Start = input.Start,
-			// Genesis buttons map to U/D
-			U = input.C,
-			D = input.Z
+			Start = input.Start
 		};
 
 		DebugApi.SetInputOverrides((uint)controllerIndex, state);
@@ -771,7 +768,9 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 			"LEFT" => "LEFT",
 			"RIGHT" => "RIGHT",
 			"ST" => "START",
+			"STA" => "START",
 			"SE" => "SELECT",
+			"SEL" => "SELECT",
 			"*" => "STAR",
 			"#" => "POUND",
 			"BK" => "BACK",

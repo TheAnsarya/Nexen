@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Nexen.ViewModels;
 using Nexen.Windows;
 using Xunit;
@@ -63,6 +63,10 @@ public sealed class GenesisTasLayoutTests {
 	[InlineData("MOD", "MODE")]
 	[InlineData("mode", "MODE")]
 	[InlineData("MODE", "MODE")]
+	[InlineData("STA", "START")]
+	[InlineData("sta", "START")]
+	[InlineData("SEL", "SELECT")]
+	[InlineData("sel", "SELECT")]
 	public void MapButtonLabelToName_GenesisModeAliasesResolve(string label, string expected) {
 		Assert.Equal(expected, InvokeMapButtonLabelToName(label));
 	}
