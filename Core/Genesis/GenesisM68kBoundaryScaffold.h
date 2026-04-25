@@ -93,6 +93,10 @@ struct GenesisPlatformBusSaveState {
 	uint8_t LastVdpValue = 0;
 	uint32_t OwnershipTraceCount = 0;
 	string OwnershipTraceDigest;
+	uint32_t CommandResponseSequence = 0;
+	uint32_t CommandResponseLaneCount = 0;
+	string CommandResponseLaneDigest;
+	vector<string> CommandResponseLane;
 
 	bool operator==(const GenesisPlatformBusSaveState&) const = default;
 };
@@ -198,9 +202,14 @@ private:
 	uint8_t _lastVdpValue = 0;
 	uint32_t _ownershipTraceCount = 0;
 	string _ownershipTraceDigest;
+	uint32_t _commandResponseSequence = 0;
+	uint32_t _commandResponseLaneCount = 0;
+	string _commandResponseLaneDigest;
+	vector<string> _commandResponseLane;
 
 	[[nodiscard]] GenesisBusOwner DecodeOwner(uint32_t address) const;
 	void AppendOwnershipTrace(uint32_t address, GenesisBusOwner owner, bool isWrite, uint8_t value);
+	void AppendCommandResponseLane(uint32_t address, bool isWrite, uint8_t value);
 	void ApplyVdpControlWord(uint16_t controlWord);
 	[[nodiscard]] uint8_t ComposeRenderPixel() const;
 	[[nodiscard]] GenesisVdpDmaMode DecodeDmaModeFromControl(uint8_t registerValue) const;
@@ -232,6 +241,9 @@ public:
 	[[nodiscard]] uint8_t GetLastVdpValue() const { return _lastVdpValue; }
 	[[nodiscard]] uint32_t GetOwnershipTraceCount() const { return _ownershipTraceCount; }
 	[[nodiscard]] const string& GetOwnershipTraceDigest() const { return _ownershipTraceDigest; }
+	[[nodiscard]] uint32_t GetCommandResponseLaneCount() const { return _commandResponseLaneCount; }
+	[[nodiscard]] const string& GetCommandResponseLaneDigest() const { return _commandResponseLaneDigest; }
+	[[nodiscard]] const vector<string>& GetCommandResponseLane() const { return _commandResponseLane; }
 	[[nodiscard]] uint32_t GetWorkRamSize() const { return (uint32_t)_workRam.size(); }
 	[[nodiscard]] GenesisBusOwner GetOwnerForAddress(uint32_t address) const { return DecodeOwner(address); }
 	[[nodiscard]] uint8_t GetVdpRegister(uint8_t index) const { return _vdpRegisters[index & 0x1F]; }
@@ -279,6 +291,7 @@ public:
 	[[nodiscard]] uint32_t GetMixedSampleCount() const { return _mixedSampleCount; }
 	[[nodiscard]] const string& GetMixedDigest() const { return _mixedDigest; }
 	void ClearOwnershipTrace();
+	void ClearCommandResponseLane();
 	[[nodiscard]] GenesisPlatformBusSaveState SaveState() const;
 	void LoadState(const GenesisPlatformBusSaveState& state);
 };

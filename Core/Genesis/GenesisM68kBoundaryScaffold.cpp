@@ -58,9 +58,35 @@ void GenesisPlatformBusStub::AppendOwnershipTrace(uint32_t address, GenesisBusOw
 	_ownershipTraceCount++;
 }
 
+void GenesisPlatformBusStub::AppendCommandResponseLane(uint32_t address, bool isWrite, uint8_t value) {
+	_commandResponseSequence++;
+	string laneEntry = std::format(
+		"SCD-LANE seq={} op={} addr={:06x} value={:02x}",
+		_commandResponseSequence,
+		isWrite ? "W" : "R",
+		address & 0xFFFFFF,
+		value);
+	_commandResponseLane.push_back(laneEntry);
+
+	uint64_t hash = _commandResponseLaneDigest.empty() ? FnvOffsetBasis : std::stoull(_commandResponseLaneDigest, nullptr, 16);
+	for (char ch : laneEntry) {
+		hash ^= (uint8_t)ch;
+		hash *= FnvPrime;
+	}
+	_commandResponseLaneDigest = ToHexDigest(hash);
+	_commandResponseLaneCount++;
+}
+
 void GenesisPlatformBusStub::ClearOwnershipTrace() {
 	_ownershipTraceCount = 0;
 	_ownershipTraceDigest.clear();
+}
+
+void GenesisPlatformBusStub::ClearCommandResponseLane() {
+	_commandResponseSequence = 0;
+	_commandResponseLaneCount = 0;
+	_commandResponseLaneDigest.clear();
+	_commandResponseLane.clear();
 }
 
 void GenesisPlatformBusStub::ApplyVdpControlWord(uint16_t controlWord) {
@@ -329,6 +355,10 @@ void GenesisPlatformBusStub::Reset() {
 	_lastVdpValue = 0;
 	_ownershipTraceCount = 0;
 	_ownershipTraceDigest.clear();
+	_commandResponseSequence = 0;
+	_commandResponseLaneCount = 0;
+	_commandResponseLaneDigest.clear();
+	_commandResponseLane.clear();
 }
 
 GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
@@ -402,6 +432,10 @@ GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
 	state.LastVdpValue = _lastVdpValue;
 	state.OwnershipTraceCount = _ownershipTraceCount;
 	state.OwnershipTraceDigest = _ownershipTraceDigest;
+	state.CommandResponseSequence = _commandResponseSequence;
+	state.CommandResponseLaneCount = _commandResponseLaneCount;
+	state.CommandResponseLaneDigest = _commandResponseLaneDigest;
+	state.CommandResponseLane = _commandResponseLane;
 	return state;
 }
 
@@ -475,6 +509,10 @@ void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state)
 	_lastVdpValue = state.LastVdpValue;
 	_ownershipTraceCount = state.OwnershipTraceCount;
 	_ownershipTraceDigest = state.OwnershipTraceDigest;
+	_commandResponseSequence = state.CommandResponseSequence;
+	_commandResponseLaneCount = state.CommandResponseLaneCount;
+	_commandResponseLaneDigest = state.CommandResponseLaneDigest;
+	_commandResponseLane = state.CommandResponseLane;
 }
 
 uint8_t GenesisPlatformBusStub::ComposeRenderPixel() const {
@@ -622,6 +660,10 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 			break;
 	}
 
+	if (owner == GenesisBusOwner::Io && address >= 0xA10000 && address <= 0xA1001F) {
+		AppendCommandResponseLane(address, false, result);
+	}
+
 	AppendOwnershipTrace(address, owner, false, result);
 	return result;
 }
@@ -647,6 +689,9 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 			_ioWindowAccessed = true;
 			_ioWriteCount++;
 			_io[address & 0x1F] = value;
+			if (address >= 0xA10000 && address <= 0xA1001F) {
+				AppendCommandResponseLane(address, true, value);
+			}
 			if (address == 0xA04000) {
 				YmWriteAddress(0, value);
 			}

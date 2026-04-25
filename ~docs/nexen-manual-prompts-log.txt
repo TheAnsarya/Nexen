@@ -1843,6 +1843,7 @@ yes! please continue on these Next Steps: Start #1468 with a concrete 32X archit
 
 [Nexen] Nope! you fucked up the logo updates, the main logo has been eaten into with pixels removed and made brown and the bottom-left and bottom-right corners outside now borwn as well, this should just be a big version of a lo-res logo so only a handful of colors with straight crisp lines; continue;
 
+[Nexen] work on Sega Genesis until we have a full complete and correct and benchmarked emulator with full UI integration and make the debugger fully represent and integrate with the system and Continue working issues, fix problems, and improve performance and do the normal (epics/issues/docs/plans/session-logs/benchmarks/tests/etc) stuff; continue; work for over an hour please, just keep going and fixing issues, never stopping and if you have an expected change, just commit it, and continue working Genesis slices for as long as you can possibly go; [peony] start working on a Sega Genesis/Megadrive disassembly pipeline like the others; Continue working issues, fix problems, and improve performance and do the normal (epics/issues/docs/plans/session-logs/benchmarks/tests/etc) stuff; continue; work for over an hour please, just keep going and fixing issues, never stopping and if you have an expected change, just commit it, and continue working Genesis slices for as long as you can possibly go; continue;
 
 
 
