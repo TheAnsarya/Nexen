@@ -321,7 +321,19 @@ public sealed partial class EventViewerViewModel : DisposableViewModel {
 	/// Initializes the bitmap using the current CPU type's display size.
 	/// </summary>
 	private void InitBitmap() {
-		InitBitmap(DebugApi.GetEventViewerDisplaySize(CpuType));
+		InitBitmap(NormalizeFrameSize(DebugApi.GetEventViewerDisplaySize(CpuType)));
+	}
+
+	private static FrameInfo NormalizeFrameSize(FrameInfo size) {
+		if (size.Width == 0) {
+			size.Width = 1;
+		}
+
+		if (size.Height == 0) {
+			size.Height = 1;
+		}
+
+		return size;
 	}
 
 	/// <summary>
