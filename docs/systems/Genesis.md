@@ -36,6 +36,12 @@ Run a focused Genesis benchmark (verified command):
 .\bin\win-x64\Release\Core.Benchmarks.exe --benchmark_filter="BM_Genesis_StepFrameScaffold_OneScanline" --benchmark_min_time=0.01s --benchmark_repetitions=1
 ```
 
+Run the Genesis VDP benchmark family:
+
+```powershell
+.\bin\win-x64\Release\Core.Benchmarks.exe --benchmark_filter="BM_GenesisVdp_.*" --benchmark_min_time=0.01s --benchmark_repetitions=1
+```
+
 ## Related Links
 
 - [Systems Index](README.md)

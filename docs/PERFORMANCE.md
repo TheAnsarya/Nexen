@@ -34,10 +34,16 @@ Run a focused Genesis benchmark command (verified):
 .\bin\win-x64\Release\Core.Benchmarks.exe --benchmark_filter="BM_Genesis_StepFrameScaffold_OneScanline" --benchmark_min_time=0.01s --benchmark_repetitions=1
 ```
 
-Run Genesis-only benchmark families (broader filter):
+Run Genesis scaffold/audio benchmark family:
 
 ```powershell
-.\bin\win-x64\Release\Core.Benchmarks.exe --benchmark_filter="BM_Genesis" --benchmark_min_time=0.01s --benchmark_repetitions=1
+.\bin\win-x64\Release\Core.Benchmarks.exe --benchmark_filter="BM_Genesis_.*" --benchmark_min_time=0.01s --benchmark_repetitions=1
+```
+
+Run Genesis VDP benchmark family:
+
+```powershell
+.\bin\win-x64\Release\Core.Benchmarks.exe --benchmark_filter="BM_GenesisVdp_.*" --benchmark_min_time=0.01s --benchmark_repetitions=1
 ```
 
 Run Genesis parity test suites before/after performance work:

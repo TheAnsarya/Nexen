@@ -543,7 +543,7 @@ static void BM_GenesisVdp_Object_DmaFill_ViaRegisters(benchmark::State& state) {
 	vdp.WriteControlPort(0x8110); // reg 1 = 0x10
 
 	// DMA mode 2 (fill): reg 23 bit 7:6 = 10
-	vdp.WriteControlPort(0x8780); // reg 7 = 0x80 (fill mode, fill byte = 0)
+	vdp.WriteControlPort(0x9780); // reg 23 = 0x80 (fill mode, fill byte = 0)
 
 	constexpr uint64_t kClocksPerScanline = 488;
 	uint64_t cycle = kClocksPerScanline;
