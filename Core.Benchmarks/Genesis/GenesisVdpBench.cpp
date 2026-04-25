@@ -570,3 +570,55 @@ static void BM_GenesisVdp_Object_DmaFill_ViaRegisters(benchmark::State& state) {
 	state.SetItemsProcessed(state.iterations() * 512);
 }
 BENCHMARK(BM_GenesisVdp_Object_DmaFill_ViaRegisters);
+
+// Benchmark: GenesisVdp DMA copy setup via WriteControlPort + Run (real DMA trigger path)
+// Configures DMA copy via register writes and runs one scanline to process DMA.
+static void BM_GenesisVdp_Object_DmaCopy_ViaRegisters(benchmark::State& state) {
+	GenesisVdp vdp;
+	vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+	// Enable DMA (reg 1 bit 4)
+	vdp.WriteControlPort(0x8110); // reg 1 = 0x10
+
+	// DMA mode 3 (VRAM copy): reg 23 bit 7:6 = 11
+	vdp.WriteControlPort(0x97c0); // reg 23 = 0xc0
+
+	GenesisVdpState setupState = vdp.GetState();
+	if ((setupState.Registers[1] & 0x10) == 0) {
+		state.SkipWithError("VDP DMA misconfigured: DMA enable bit in register 1 is not set");
+		return;
+	}
+	if (((setupState.Registers[23] >> 6) & 0x03) != 0x03) {
+		state.SkipWithError("VDP DMA mode misconfigured: expected copy mode via register 23");
+		return;
+	}
+
+	constexpr uint64_t kClocksPerScanline = 488;
+	uint64_t cycle = kClocksPerScanline;
+
+	for (auto _ : state) {
+		// DMA source (regs 21, 22): 0x0100
+		vdp.WriteControlPort(0x9500); // reg 21 = 0x00
+		vdp.WriteControlPort(0x9601); // reg 22 = 0x01
+
+		// DMA length (regs 19, 20): 256 units in this simplified model
+		vdp.WriteControlPort(0x9300); // reg 19 = 0x00
+		vdp.WriteControlPort(0x9401); // reg 20 = 0x01
+
+		// Trigger DMA with destination address 0x2000 (VRAM write + CD5 set)
+		vdp.WriteControlPort(0x6000); // First word: VRAM write, addr=0x2000
+		vdp.WriteControlPort(0x0080); // Second word: CD5=1 = DMA enable
+
+		GenesisVdpState preRunState = vdp.GetState();
+		if (!preRunState.DmaActive) {
+			state.SkipWithError("VDP DMA trigger failed: DmaActive was not asserted before Run()");
+			return;
+		}
+
+		vdp.Run(cycle);
+		benchmark::DoNotOptimize(vdp.GetState());
+		cycle += kClocksPerScanline;
+	}
+	state.SetItemsProcessed(state.iterations() * 256);
+}
+BENCHMARK(BM_GenesisVdp_Object_DmaCopy_ViaRegisters);

@@ -1829,6 +1829,7 @@ work on several Genesis slices in a row without stopping; continue working on sl
 
 work on several Genesis slices in a row without stopping; continue;
 
+yes, do that next step: Start the next Genesis hardening audit slice focused on additional benchmark safety guard coverage beyond the DMA-fill path.; work on several Genesis slices in a row without stopping; continue;
 
 
 
