@@ -252,6 +252,7 @@ public static class MemoryTypeExtensions {
 			case MemoryType.GbaMemory:
 			case MemoryType.WsMemory:
 			case MemoryType.LynxMemory:
+			case MemoryType.GenesisMemory:
 			case MemoryType.Atari2600Memory:
 			case MemoryType.ChannelFMemory:
 				return true;
@@ -341,6 +342,14 @@ public static class MemoryTypeExtensions {
 			case MemoryType.SmsPort:
 				return true;
 
+			//Genesis
+			case MemoryType.GenesisMemory:
+			case MemoryType.GenesisPrgRom:
+			case MemoryType.GenesisWorkRam:
+			case MemoryType.GenesisVideoRam:
+			case MemoryType.GenesisPaletteRam:
+				return true;
+
 			//GBA
 			case MemoryType.GbaMemory:
 			case MemoryType.GbaPrgRom:
@@ -403,6 +412,7 @@ public static class MemoryTypeExtensions {
 			case MemoryType.GbaMemory:
 			case MemoryType.WsMemory:
 			case MemoryType.LynxMemory:
+			case MemoryType.GenesisMemory:
 			case MemoryType.Atari2600Memory:
 			case MemoryType.ChannelFMemory:
 				return true;
@@ -434,6 +444,9 @@ public static class MemoryTypeExtensions {
 
 			case MemoryType.GbaMemory:
 			case MemoryType.GbaPrgRom:
+
+			case MemoryType.GenesisMemory:
+			case MemoryType.GenesisPrgRom:
 
 			case MemoryType.WsMemory:
 			case MemoryType.WsPrgRom:

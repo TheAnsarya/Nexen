@@ -33,4 +33,18 @@ public sealed class MemoryTypeExtensionsTests {
 			Assert.Null(ex);
 		}
 	}
+
+	[Fact]
+	public void GenesisMemoryTypes_SupportExpectedCapabilities() {
+		Assert.True(MemoryType.GenesisMemory.IsRelativeMemory());
+
+		Assert.True(MemoryType.GenesisMemory.SupportsLabels());
+		Assert.True(MemoryType.GenesisPrgRom.SupportsLabels());
+		Assert.True(MemoryType.GenesisWorkRam.SupportsLabels());
+
+		Assert.True(MemoryType.GenesisMemory.SupportsWatch());
+
+		Assert.True(MemoryType.GenesisMemory.SupportsCdl());
+		Assert.True(MemoryType.GenesisPrgRom.SupportsCdl());
+	}
 }
