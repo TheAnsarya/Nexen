@@ -38,4 +38,17 @@ namespace {
 		});
 		EXPECT_TRUE(hasFailContext);
 	}
+
+	TEST(GenesisCompatibilityHarnessTests, BenchmarkCorpusAssumptionsHoldForAllPassScenario) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus = BuildGenesisCompatibilityCorpus();
+
+		GenesisCompatibilityMatrixResult result = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+
+		ASSERT_FALSE(corpus.empty());
+		EXPECT_EQ((int)result.Entries.size(), (int)corpus.size());
+		EXPECT_EQ(result.PassCount + result.FailCount, (int)corpus.size());
+		EXPECT_EQ(result.FailCount, 0);
+		EXPECT_FALSE(result.Digest.empty());
+	}
 }

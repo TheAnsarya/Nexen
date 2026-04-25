@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
 #include "Genesis/GenesisSmokeHarness.h"
 
@@ -86,9 +86,29 @@ BENCHMARK(BM_Genesis_AudioCadence_AlternatingYmPsg);
 static void BM_Genesis_CompatibilityMatrix_Corpus(benchmark::State& state) {
 	GenesisM68kBoundaryScaffold scaffold;
 	vector<GenesisCompatibilityRomCase> corpus = BuildCompatibilityCorpus();
+	if (corpus.empty()) {
+		state.SkipWithError("Compatibility benchmark misconfigured: corpus must not be empty");
+		return;
+	}
 
 	for (auto _ : state) {
 		GenesisCompatibilityMatrixResult result = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+		if ((int)result.Entries.size() != (int)corpus.size()) {
+			state.SkipWithError("Compatibility benchmark misconfigured: result entry count mismatch");
+			return;
+		}
+		if (result.PassCount + result.FailCount != (int)corpus.size()) {
+			state.SkipWithError("Compatibility benchmark misconfigured: pass/fail totals do not match corpus size");
+			return;
+		}
+		if (result.FailCount != 0) {
+			state.SkipWithError("Compatibility benchmark scenario degraded: expected zero failures for benchmark corpus");
+			return;
+		}
+		if (result.Digest.empty()) {
+			state.SkipWithError("Compatibility benchmark misconfigured: deterministic digest is empty");
+			return;
+		}
 		benchmark::DoNotOptimize(result.PassCount);
 		benchmark::DoNotOptimize(result.Digest.data());
 	}
@@ -101,9 +121,29 @@ BENCHMARK(BM_Genesis_CompatibilityMatrix_Corpus);
 static void BM_Genesis_PerformanceGate_Corpus(benchmark::State& state) {
 	GenesisM68kBoundaryScaffold scaffold;
 	vector<GenesisCompatibilityRomCase> corpus = BuildCompatibilityCorpus();
+	if (corpus.empty()) {
+		state.SkipWithError("Performance gate benchmark misconfigured: corpus must not be empty");
+		return;
+	}
 
 	for (auto _ : state) {
 		GenesisPerformanceGateResult result = GenesisSmokeHarness::RunPerformanceGate(scaffold, corpus, 5000000);
+		if ((int)result.Entries.size() != (int)corpus.size()) {
+			state.SkipWithError("Performance gate benchmark misconfigured: result entry count mismatch");
+			return;
+		}
+		if (result.PassCount + result.FailCount != (int)corpus.size()) {
+			state.SkipWithError("Performance gate benchmark misconfigured: pass/fail totals do not match corpus size");
+			return;
+		}
+		if (result.FailCount != 0) {
+			state.SkipWithError("Performance gate benchmark scenario degraded: expected zero failures for benchmark corpus");
+			return;
+		}
+		if (result.Digest.empty()) {
+			state.SkipWithError("Performance gate benchmark misconfigured: deterministic digest is empty");
+			return;
+		}
 		benchmark::DoNotOptimize(result.PassCount);
 		benchmark::DoNotOptimize(result.Digest.data());
 	}
