@@ -787,6 +787,7 @@ public partial class TasEditorWindow : NexenWindow, IDisposable {
 			"PULL" => "PULL",
 			"PS" => "PUSH",
 			"PUSH" => "PUSH",
+			"MOD" => "MODE",
 			_ => normalized
 		};
 	}

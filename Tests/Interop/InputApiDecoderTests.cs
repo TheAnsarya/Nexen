@@ -472,12 +472,12 @@ public class InputApiDecoderTests {
 		Assert.True(result.Right);
 		Assert.True(result.A);
 		Assert.True(result.B);
-		Assert.True(result.X); // C
+		Assert.True(result.C);
 		Assert.True(result.Start);
+		Assert.False(result.X);
 		Assert.False(result.Y);
-		Assert.False(result.L);
-		Assert.False(result.R);
-		Assert.False(result.Select);
+		Assert.False(result.Z);
+		Assert.False(result.Mode);
 	}
 
 	[Fact]
@@ -486,13 +486,13 @@ public class InputApiDecoderTests {
 		var state = CreateState(ControllerType.GenesisController, 0x00, 0x0F);
 		var result = InputApi.DecodeControllerState(state);
 
-		Assert.True(result.Y);      // X
-		Assert.True(result.L);      // Y
-		Assert.True(result.R);      // Z
-		Assert.True(result.Select); // Mode
+		Assert.True(result.X);
+		Assert.True(result.Y);
+		Assert.True(result.Z);
+		Assert.True(result.Mode);
 		Assert.False(result.Up);
 		Assert.False(result.A);
-		Assert.False(result.X);
+		Assert.False(result.C);
 		Assert.False(result.Start);
 	}
 

@@ -3747,6 +3747,7 @@ tas.finishSearch(true) -- Load best result</pre>
 		new("A", "A", 0, 0),
 		new("B", "B", 1, 0),
 		new("C", "C", 2, 0),
+		new("MODE", "MOD", 3, 0),
 		new("X", "X", 0, 1),
 		new("Y", "Y", 1, 1),
 		new("Z", "Z", 2, 1),
