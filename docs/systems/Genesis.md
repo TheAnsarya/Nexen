@@ -1,4 +1,4 @@
-# Sega Genesis / Mega Drive
+﻿# Sega Genesis / Mega Drive
 
 ## Overview
 

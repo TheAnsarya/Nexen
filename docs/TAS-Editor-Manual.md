@@ -402,7 +402,7 @@ The TAS Editor supports all systems emulated by Nexen:
 | SNES | 12 buttons | A, B, X, Y, L, R, Select, Start, D-Pad |
 | Game Boy | 8 buttons | A, B, Select, Start, D-Pad |
 | GBA | 10 buttons | A, B, L, R, Select, Start, D-Pad |
-| Genesis | 11 buttons | A, B, C, X, Y, Z, Start, D-Pad |
+| Genesis | 12 buttons | A, B, C, X, Y, Z, Mode, Start, D-Pad |
 | Master System | 6 buttons | 1, 2, D-Pad |
 | PC Engine | 8 buttons | I, II, Select, Run, D-Pad |
 | WonderSwan | 11 buttons | A, B, Start, X1-X4, Y1-Y4 |

@@ -1,4 +1,4 @@
-# Performance Guide
+﻿# Performance Guide
 
 ## Purpose
 
