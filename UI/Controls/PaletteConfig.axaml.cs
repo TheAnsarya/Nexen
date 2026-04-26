@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,7 +18,7 @@ using Nexen.ViewModels;
 using Nexen.Windows;
 using ReactiveUI;
 
-namespace Nexen.Controls; 
+namespace Nexen.Controls;
 public partial class PaletteConfig : UserControl {
 	public static readonly StyledProperty<UInt32[]> PaletteProperty = AvaloniaProperty.Register<PaletteConfig, UInt32[]>(nameof(Palette), [], defaultBindingMode: BindingMode.TwoWay);
 	public static readonly StyledProperty<List<PalettePreset>> PalettePresetsProperty = AvaloniaProperty.Register<PaletteConfig, List<PalettePreset>>(nameof(PalettePresets), new List<PalettePreset>());

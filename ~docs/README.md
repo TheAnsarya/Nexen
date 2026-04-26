@@ -156,6 +156,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Issue #1291 Settings Persistence Root Cause + Plan (2026-04-15)](plans/2026-04-15-issue-1291-settings-persistence-root-cause.md) | Root-cause analysis and implemented fix plan for settings not being persisted after exit/relaunch |
 | [Issue #1295 Writable Config Fallback And Migration Plan (2026-04-15)](plans/2026-04-15-issue-1295-writable-config-fallback-and-migration.md) | Startup fallback and settings migration strategy when portable config path is not writable |
 | [Issue #1296 v1.4.32 Stabilization And Release Plan (2026-04-15)](plans/2026-04-15-issue-1296-v1.4.32-stabilization-and-release.md) | Release-stabilization plan for commit-all workflow, warning verification, and v1.4.32 publication |
+| [Release Notes v1.4.38](release-notes/release-notes-v1.4.38.md) | Stable-release notes and validation summary for v1.4.38 |
 | [Release Notes v1.4.37](release-notes/release-notes-v1.4.37.md) | Testing-release notes, caution banner, and full release description for v1.4.37 |
 | [Issue #1297 Warning Inventory And CI Gate Strategy (2026-04-15)](plans/2026-04-15-issue-1297-warning-inventory-and-ci-gate-strategy.md) | Warning hotspot inventory and staged CI gate strategy for first-party versus third-party warning debt |
 | [Issue #1298 Pansy Dependency Decoupling Plan (2026-04-15)](plans/2026-04-15-issue-1298-pansy-dependency-decoupling-plan.md) | Root-cause analysis and conditional ProjectReference/PackageReference strategy for removing hard sibling Pansy dependency |

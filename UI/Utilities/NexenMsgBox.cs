@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,7 @@ using Avalonia.Controls;
 using Nexen.Localization;
 using Nexen.Windows;
 
-namespace Nexen.Utilities; 
+namespace Nexen.Utilities;
 public sealed class NexenMsgBox {
 	public static Task ShowException(Exception ex) {
 		return NexenMsgBox.Show(null, "UnexpectedError", MessageBoxButtons.OK, MessageBoxIcon.Error, ex.Message + Environment.NewLine + ex.StackTrace);

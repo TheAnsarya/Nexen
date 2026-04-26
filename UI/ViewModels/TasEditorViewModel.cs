@@ -544,6 +544,12 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 		}
 
 		for (int i = 0; i < InputPreviewButtons.Count; i++) {
+			if (!string.Equals(InputPreviewButtons[i].ButtonId, ControllerButtons[i].ButtonId, StringComparison.Ordinal)) {
+				return false;
+			}
+		}
+
+		for (int i = 0; i < InputPreviewButtons.Count; i++) {
 			InputPreviewButtons[i].IsPressed = input?.GetButton(InputPreviewButtons[i].ButtonId) == true;
 		}
 

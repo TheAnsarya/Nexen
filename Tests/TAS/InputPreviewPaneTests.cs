@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Nexen.MovieConverter;
 using Nexen.ViewModels;
 using Xunit;

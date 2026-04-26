@@ -5,6 +5,25 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.38] - 2026-04-26
+
+### Fixed
+
+- **Linux/AppImage settings reset dialog parent crash** — reset flow now uses a valid owning window and robust parent-resolution fallback so `Invalid parent window` dialog failures no longer block settings reset workflows (#1423, #1489)
+- **Dialog/file-picker parent hardening sweep** — centralized parent-window resolution and removed invalid-parent throw paths in message box and file-dialog helpers; firmware and palette config call sites now pass valid owners (#1489)
+- **TAS input preview stale layout bug** — input preview no longer reuses stale SNES button IDs when switching to Genesis layouts with equal button counts; in-place updates now validate layout identity before state refresh (#1490)
+
+### Changed
+
+- **Release metadata update** — README download table and quick-start links updated to v1.4.38 asset references
+- **Release notes publication** — added v1.4.38 release-notes artifact and linked it from internal docs index
+
+### Validation
+
+- **Release build gate** — `Build Nexen Release x64` completed successfully
+- **C++ core test gate** — `Core.Tests.exe --gtest_brief=1` passed (3706/3706)
+- **.NET test gate** — `dotnet test Tests/Nexen.Tests.csproj -c Release --nologo` passed (1716/1716)
+
 ## [1.4.37] - 2026-04-22
 
 ### Changed
