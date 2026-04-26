@@ -125,6 +125,14 @@ public sealed class GenesisRegisterViewer {
 		entries.Add(new RegEntry("", "ThState[1]", io.ThState[1], Format.X8));
 
 		entries.Add(new RegEntry("", "Sega CD Transcript"));
+		entries.Add(new RegEntry("", "Flag Legend"));
+		entries.Add(new RegEntry("", "0x01", "Write operation bit", 0x01));
+		entries.Add(new RegEntry("", "0x02", "Response lane bit", 0x02));
+		entries.Add(new RegEntry("", "0x04", "Lane group G2", 0x04));
+		entries.Add(new RegEntry("", "0x08", "Lane group G3", 0x08));
+		entries.Add(new RegEntry("", "0x10", "Lane group G4", 0x10));
+		entries.Add(new RegEntry("", "0x20", "Lane group G5", 0x20));
+		entries.Add(new RegEntry("", "0x40", "Lane group G6", 0x40));
 		entries.Add(new RegEntry("", "LaneCount", io.TranscriptLaneCount));
 		entries.Add(new RegEntry("", "LaneDigestHi", (uint)(io.TranscriptLaneDigest >> 32), Format.X32));
 		entries.Add(new RegEntry("", "LaneDigestLo", (uint)(io.TranscriptLaneDigest & 0xFFFFFFFF), Format.X32));
