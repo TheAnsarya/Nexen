@@ -112,6 +112,32 @@ namespace {
 		EXPECT_NE(reference.LaneDigest, perturbed.LaneDigest);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeResetReadPathAccessesAreCapturedInTranscript) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA11200, 0x01);
+		memoryManager.Write8(0xA11100, 0x01);
+
+		uint32_t laneCountBefore = memoryManager.GetIoState().TranscriptLaneCount;
+		(void)memoryManager.Read8(0xA11200);
+		(void)memoryManager.Read16(0xA11200);
+
+		RuntimeTranscriptSnapshot snapshot = CaptureSnapshot(memoryManager);
+		EXPECT_EQ(snapshot.LaneCount, laneCountBefore + 2);
+
+		bool sawResetReadEntry = false;
+		for (uint32_t i = 0; i < 4; i++) {
+			if (snapshot.EntryAddress[i] == 0xA11200u) {
+				uint8_t flags = snapshot.EntryFlags[i];
+				sawResetReadEntry |= (flags & 0x86) == 0x86;
+			}
+		}
+
+		EXPECT_TRUE(sawResetReadEntry);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeTranscriptPreservesReplayAfterSerializeRoundtrip) {
 		Emulator emuA;
 		std::vector<uint8_t> romA(0x400000);

@@ -168,7 +168,7 @@ void GenesisMemoryManager::TrackSegaCdTranscript(uint32_t addr, bool isWrite, ui
 
 void GenesisMemoryManager::TrackSegaCdHandshakeTranscript(uint32_t addr, bool isWrite, uint8_t value) {
 	uint8_t roleFlags = 0x80;
-	if ((addr & 0x0100) != 0) {
+	if (addr >= 0xA11200 && addr <= 0xA11201) {
 		roleFlags |= 0x04;
 	}
 	if (!isWrite) {
@@ -313,6 +313,11 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		return value;
 	}
 
+	if (addr == 0xA11200 || addr == 0xA11201) [[unlikely]] {
+		TrackSegaCdHandshakeTranscript(addr, false, _openBus);
+		return _openBus;
+	}
+
 	return _openBus;
 }
 
@@ -372,6 +377,11 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		uint16_t value = _z80BusRequest ? 0x0000 : 0x0100;
 		TrackSegaCdHandshakeTranscript(addr, false, (uint8_t)(value >> 8));
 		return value;
+	}
+
+	if (addr == 0xA11200) [[unlikely]] {
+		TrackSegaCdHandshakeTranscript(addr, false, _openBus);
+		return (_openBus << 8) | _openBus;
 	}
 
 	return (_openBus << 8) | _openBus;
