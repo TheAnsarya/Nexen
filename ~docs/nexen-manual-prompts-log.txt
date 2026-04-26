@@ -1885,6 +1885,15 @@ Add a comment to `https://github.com/TheAnsarya/Nexen/issues/1423` explaining th
 
 Update the comment `https://github.com/TheAnsarya/Nexen/issues/1423#issuecomment-4322947195` to include a link to the release page for 1.4.38; continue;
 
+[peony,pansy,poppy,Nexen] continue working on Sega Genesis/MegaDrive/SegaCD/32x/PowerBase issues and create a powerful fully working emulator and pipeline and UI (disassembly, asset extraction and conversion and reinsertion, reassembly using assets); continue working slices and make work on Sega Genesis until we have a full complete and correct and benchmarked emulator with full UI integration and make the debugger fully represent and integrate with the system and Continue working issues, fix problems, and improve performance and do the normal (epics/issues/docs/plans/session-logs/benchmarks/tests/etc) stuff; continue; work for over an hour please, just keep going and fixing issues, never stopping and if you have an expected change, just commit it, and continue working Genesis slices for as long as you can possibly go; continue;
+
+
+
+
+
+
+
+
 
 
 
