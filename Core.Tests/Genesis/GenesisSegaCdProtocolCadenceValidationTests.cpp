@@ -46,9 +46,18 @@ namespace {
 			bus.WriteByte((uint32_t)(0xA13010 + (phase & 0x0F)), (uint8_t)(rsp + 1));
 			bus.WriteByte((uint32_t)(0xA14000 + (phase & 0x0F)), (uint8_t)(cmd + 2));
 			bus.WriteByte((uint32_t)(0xA14010 + (phase & 0x0F)), (uint8_t)(rsp + 2));
+			bus.WriteByte((uint32_t)(0xA15000 + (phase & 0x0F)), (uint8_t)(cmd + 3));
+			bus.WriteByte((uint32_t)(0xA15010 + (phase & 0x0F)), (uint8_t)(rsp + 3));
+			bus.WriteByte((uint32_t)(0xA16000 + (phase & 0x0F)), (uint8_t)(cmd + 4));
+			bus.WriteByte((uint32_t)(0xA16010 + (phase & 0x0F)), (uint8_t)(rsp + 4));
+			bus.WriteByte((uint32_t)(0xA18000 + (phase & 0x0F)), (uint8_t)(cmd + 5));
+			bus.WriteByte((uint32_t)(0xA18010 + (phase & 0x0F)), (uint8_t)(rsp + 5));
 			(void)bus.ReadByte((uint32_t)(0xA12010 + (phase & 0x0F)));
 			(void)bus.ReadByte((uint32_t)(0xA13010 + (phase & 0x0F)));
 			(void)bus.ReadByte((uint32_t)(0xA14010 + (phase & 0x0F)));
+			(void)bus.ReadByte((uint32_t)(0xA15010 + (phase & 0x0F)));
+			(void)bus.ReadByte((uint32_t)(0xA16010 + (phase & 0x0F)));
+			(void)bus.ReadByte((uint32_t)(0xA18010 + (phase & 0x0F)));
 		}
 	}
 
@@ -98,24 +107,33 @@ namespace {
 		EXPECT_EQ(replayLaneCount, baselineLaneCount);
 	}
 
-	TEST(GenesisSegaCdProtocolCadenceValidationTests, TranscriptPhaseOrderingCyclesThroughG1G2G3PerCadenceStep) {
+	TEST(GenesisSegaCdProtocolCadenceValidationTests, TranscriptPhaseOrderingCyclesThroughG1G6PerCadenceStep) {
 		GenesisM68kBoundaryScaffold scaffold;
 		RunProtocolCadenceScenario(scaffold);
 
 		const vector<string>& lane = scaffold.GetBus().GetCommandResponseLane();
-		ASSERT_EQ(lane.size(), 54u);
+		ASSERT_EQ(lane.size(), 108u);
 
 		for (uint32_t step = 0; step < 6; step++) {
-			uint32_t base = step * 9;
+			uint32_t base = step * 18;
 			EXPECT_NE(lane[base + 0].find("role=SCD-G1-CMD op=W"), string::npos);
 			EXPECT_NE(lane[base + 1].find("role=SCD-G1-RSP op=W"), string::npos);
 			EXPECT_NE(lane[base + 2].find("role=SCD-G2-CMD op=W"), string::npos);
 			EXPECT_NE(lane[base + 3].find("role=SCD-G2-RSP op=W"), string::npos);
 			EXPECT_NE(lane[base + 4].find("role=SCD-G3-CMD op=W"), string::npos);
 			EXPECT_NE(lane[base + 5].find("role=SCD-G3-RSP op=W"), string::npos);
-			EXPECT_NE(lane[base + 6].find("role=SCD-G1-RSP op=R"), string::npos);
-			EXPECT_NE(lane[base + 7].find("role=SCD-G2-RSP op=R"), string::npos);
-			EXPECT_NE(lane[base + 8].find("role=SCD-G3-RSP op=R"), string::npos);
+			EXPECT_NE(lane[base + 6].find("role=SCD-G4-CMD op=W"), string::npos);
+			EXPECT_NE(lane[base + 7].find("role=SCD-G4-RSP op=W"), string::npos);
+			EXPECT_NE(lane[base + 8].find("role=SCD-G5-CMD op=W"), string::npos);
+			EXPECT_NE(lane[base + 9].find("role=SCD-G5-RSP op=W"), string::npos);
+			EXPECT_NE(lane[base + 10].find("role=SCD-G6-CMD op=W"), string::npos);
+			EXPECT_NE(lane[base + 11].find("role=SCD-G6-RSP op=W"), string::npos);
+			EXPECT_NE(lane[base + 12].find("role=SCD-G1-RSP op=R"), string::npos);
+			EXPECT_NE(lane[base + 13].find("role=SCD-G2-RSP op=R"), string::npos);
+			EXPECT_NE(lane[base + 14].find("role=SCD-G3-RSP op=R"), string::npos);
+			EXPECT_NE(lane[base + 15].find("role=SCD-G4-RSP op=R"), string::npos);
+			EXPECT_NE(lane[base + 16].find("role=SCD-G5-RSP op=R"), string::npos);
+			EXPECT_NE(lane[base + 17].find("role=SCD-G6-RSP op=R"), string::npos);
 		}
 	}
 }
