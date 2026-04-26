@@ -1881,18 +1881,19 @@ continue;
 
 [Nexen] The 1.4.38 release has not been released and pushed to github even though all the artifacts built in `https://github.com/TheAnsarya/Nexen/actions/runs/24965841650` make the release with title and description, push tags, copy completed artifacts; continue;
 
-
-
-
-
-
-
-
-
-
-
-
 Add a comment to `https://github.com/TheAnsarya/Nexen/issues/1423` explaining that a **possible** fix is available in the intermediate TEST release of 1.4.38, but we are still in a high flux WIP state for the next week or so; continue;
+
+Update the comment `https://github.com/TheAnsarya/Nexen/issues/1423#issuecomment-4322947195` to include a link to the release page for 1.4.38; continue;
+
+
+
+
+
+
+
+
+
+
 
 
 
