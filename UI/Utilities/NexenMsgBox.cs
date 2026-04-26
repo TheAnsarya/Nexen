@@ -15,10 +15,7 @@ public sealed class NexenMsgBox {
 	}
 
 	public static Task<DialogResult> Show(Visual? parent, string text, MessageBoxButtons buttons, MessageBoxIcon icon, params string[] args) {
-		Window? wnd = parent as Window;
-		if (parent is not null && wnd is null) {
-			throw new Exception("Invalid parent window");
-		}
+		Window? wnd = ApplicationHelper.ResolveParentWindow(parent);
 
 		string resourceText = ResourceHelper.GetMessage(text, args);
 

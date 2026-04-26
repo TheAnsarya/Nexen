@@ -182,6 +182,42 @@ public sealed class UiScrollabilityMarkupTests {
 		Assert.Contains("SelectedItem=\"{Binding Config.Theme}\"", markup);
 	}
 
+	[Fact]
+	public void DialogUtilities_UseResolvedParentWindowAndDoNotThrowInvalidParent() {
+		string repoRoot = GetRepositoryRoot();
+		string msgBoxPath = Path.Combine(repoRoot, "UI", "Utilities", "NexenMsgBox.cs");
+		string fileDialogPath = Path.Combine(repoRoot, "UI", "Utilities", "FileDialogHelper.cs");
+
+		Assert.True(File.Exists(msgBoxPath), $"Expected source file to exist: {msgBoxPath}");
+		Assert.True(File.Exists(fileDialogPath), $"Expected source file to exist: {fileDialogPath}");
+
+		string msgBoxSource = File.ReadAllText(msgBoxPath);
+		string fileDialogSource = File.ReadAllText(fileDialogPath);
+
+		Assert.Contains("ApplicationHelper.ResolveParentWindow(parent)", msgBoxSource);
+		Assert.Contains("ApplicationHelper.ResolveParentWindow(parent)", fileDialogSource);
+		Assert.DoesNotContain("throw new Exception(\"Invalid parent window\")", msgBoxSource);
+		Assert.DoesNotContain("throw new Exception(\"Invalid parent window\")", fileDialogSource);
+	}
+
+	[Fact]
+	public void FirmwareAndPaletteControls_AvoidVisualRootForMessageDialogs() {
+		string repoRoot = GetRepositoryRoot();
+		string firmwarePath = Path.Combine(repoRoot, "UI", "Controls", "FirmwareSelect.axaml.cs");
+		string palettePath = Path.Combine(repoRoot, "UI", "Controls", "PaletteConfig.axaml.cs");
+
+		Assert.True(File.Exists(firmwarePath), $"Expected source file to exist: {firmwarePath}");
+		Assert.True(File.Exists(palettePath), $"Expected source file to exist: {palettePath}");
+
+		string firmwareSource = File.ReadAllText(firmwarePath);
+		string paletteSource = File.ReadAllText(palettePath);
+
+		Assert.Contains("NexenMsgBox.Show(this, \"PromptDeleteFirmware\"", firmwareSource);
+		Assert.DoesNotContain("NexenMsgBox.Show(VisualRoot, \"PromptDeleteFirmware\"", firmwareSource);
+		Assert.Contains("NexenMsgBox.Show(this, \"InvalidPaletteFile\"", paletteSource);
+		Assert.DoesNotContain("NexenMsgBox.Show(VisualRoot, \"InvalidPaletteFile\"", paletteSource);
+	}
+
 	private static string GetRepositoryRoot() {
 		string? current = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", ".."));
 

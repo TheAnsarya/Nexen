@@ -48,8 +48,9 @@ public sealed class FileDialogHelper {
 	public const string SufamiTurboExt = "st";
 
 	public static async Task<string?> OpenFile(string? initialFolder, Visual? parent, params string[] extensions) {
-		if ((parent ?? ApplicationHelper.GetMainWindow()) is not Window wnd) {
-			throw new Exception("Invalid parent window");
+		Window? wnd = ApplicationHelper.ResolveParentWindow(parent);
+		if (wnd is null) {
+			return null;
 		}
 
 		try {
@@ -111,8 +112,9 @@ public sealed class FileDialogHelper {
 	}
 
 	public static async Task<string?> SaveFile(string? initialFolder, string? initialFile, Visual? parent, params string[] extensions) {
-		if ((parent ?? ApplicationHelper.GetMainWindow()) is not Window wnd) {
-			throw new Exception("Invalid parent window");
+		Window? wnd = ApplicationHelper.ResolveParentWindow(parent);
+		if (wnd is null) {
+			return null;
 		}
 
 		try {
@@ -148,8 +150,9 @@ public sealed class FileDialogHelper {
 	}
 
 	public static async Task<string?> OpenFolder(Visual? parent) {
-		if ((parent ?? ApplicationHelper.GetMainWindow()) is not Window wnd) {
-			throw new Exception("Invalid parent window");
+		Window? wnd = ApplicationHelper.ResolveParentWindow(parent);
+		if (wnd is null) {
+			return null;
 		}
 
 		try {

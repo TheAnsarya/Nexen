@@ -1847,8 +1847,23 @@ yes! please continue on these Next Steps: Start #1468 with a concrete 32X archit
 
 [Nexen] research and see if we can fix issue 1423 `https://github.com/TheAnsarya/Nexen/issues/1423`
 
+&&&&&&
+There is a screenshot on the issue with this text I OCR'd: An unexpected error has occurred.
+Error details:
+Invalid parent window
+at Nexen.Utilities.NexenMsg30x.Show(Vtsual parent. String text,
+MessageBoxButtons buttons, MessageBoxlccn icon, String[l args)
+at Nexen. Wi ndows .ConfgWindowResetAllSettings(Object
+sender, RoutedEventArgs e)
+at
+System. Threading.Tasks.Task.e»c. eThrowAsync>b
+t state)
+at
+Avalonia. Threading.SendOrPostCallbackDispatcherOperation,lnvo
+keCore()
+&&&&&&&
 
-
+yes fix any other spots where this might be a problem, do a full sweep and find and fix them all
 
 
 

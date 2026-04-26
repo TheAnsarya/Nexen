@@ -121,7 +121,7 @@ public partial class PaletteConfig : UserControl {
 
 			Palette = paletteData;
 		} else {
-			NexenMsgBox.Show(VisualRoot, "InvalidPaletteFile", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			NexenMsgBox.Show(this, "InvalidPaletteFile", MessageBoxButtons.OK, MessageBoxIcon.Error);
 		}
 
 		paletteFile.Close();

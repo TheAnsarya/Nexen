@@ -11,6 +11,18 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Nexen.Utilities;
 public static class ApplicationHelper {
+	public static Window? ResolveParentWindow(Visual? parent) {
+		if (parent is Window wnd) {
+			return wnd;
+		}
+
+		if (parent is not null && TopLevel.GetTopLevel(parent) is Window topLevelWindow) {
+			return topLevelWindow;
+		}
+
+		return GetActiveOrMainWindow();
+	}
+
 	public static Window? GetMainWindow() {
 		if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is Window wnd) {
 			return wnd;
