@@ -101,6 +101,7 @@ public sealed class UiScrollabilityMarkupTests {
 		Assert.Contains("ConfigManager.Config.ConfigWindow.SaveWindowSettings(this);", source);
 		Assert.Contains("CompactTabBreakpointWidth = 700", source);
 		Assert.Contains("TabStripPlacement = ClientSize.Width < CompactTabBreakpointWidth ? Avalonia.Controls.Dock.Top : Avalonia.Controls.Dock.Left;", source);
+		Assert.Contains("NexenMsgBox.Show(this, \"ResetSettingsConfirmation\"", source);
 	}
 
 	[Fact]

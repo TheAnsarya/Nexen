@@ -71,7 +71,7 @@ public partial class ConfigWindow : NexenWindow {
 	}
 
 	private async void ResetAllSettings(object sender, RoutedEventArgs e) {
-		if (await NexenMsgBox.Show(VisualRoot, "ResetSettingsConfirmation", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK) {
+		if (await NexenMsgBox.Show(this, "ResetSettingsConfirmation", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK) {
 			ConfigManager.ResetSettings();
 			_promptToSave = false;
 			Close();
