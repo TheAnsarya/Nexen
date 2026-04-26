@@ -54,6 +54,9 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	memset(_segaCdBridgeA120, 0, sizeof(_segaCdBridgeA120));
 	memset(_segaCdBridgeA130, 0, sizeof(_segaCdBridgeA130));
 	memset(_segaCdBridgeA140, 0, sizeof(_segaCdBridgeA140));
+	memset(_segaCdBridgeA150, 0, sizeof(_segaCdBridgeA150));
+	memset(_segaCdBridgeA160, 0, sizeof(_segaCdBridgeA160));
+	memset(_segaCdBridgeA180, 0, sizeof(_segaCdBridgeA180));
 
 	_z80BusRequest = false;
 	_z80Reset = true;
@@ -122,6 +125,24 @@ bool GenesisMemoryManager::TryGetSegaCdBridgeSlot(uint32_t addr, uint8_t*& slot,
 		return true;
 	}
 
+	if (addr >= 0xA15000 && addr <= 0xA1501F) {
+		slot = &_segaCdBridgeA150[0];
+		slotIndex = addr & 0x1F;
+		return true;
+	}
+
+	if (addr >= 0xA16000 && addr <= 0xA1601F) {
+		slot = &_segaCdBridgeA160[0];
+		slotIndex = addr & 0x1F;
+		return true;
+	}
+
+	if (addr >= 0xA18000 && addr <= 0xA1801F) {
+		slot = &_segaCdBridgeA180[0];
+		slotIndex = addr & 0x1F;
+		return true;
+	}
+
 	return false;
 }
 
@@ -146,6 +167,12 @@ void GenesisMemoryManager::TrackSegaCdTranscript(uint32_t addr, bool isWrite, ui
 		roleFlags |= 0x04;
 	} else if (addr >= 0xA14000 && addr <= 0xA1401F) {
 		roleFlags |= 0x08;
+	} else if (addr >= 0xA15000 && addr <= 0xA1501F) {
+		roleFlags |= 0x10;
+	} else if (addr >= 0xA16000 && addr <= 0xA1601F) {
+		roleFlags |= 0x20;
+	} else if (addr >= 0xA18000 && addr <= 0xA1801F) {
+		roleFlags |= 0x40;
 	}
 	if (isWrite) {
 		roleFlags |= 0x01;
@@ -544,6 +571,9 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SVArray(_segaCdBridgeA120, (uint32_t)sizeof(_segaCdBridgeA120));
 	SVArray(_segaCdBridgeA130, (uint32_t)sizeof(_segaCdBridgeA130));
 	SVArray(_segaCdBridgeA140, (uint32_t)sizeof(_segaCdBridgeA140));
+	SVArray(_segaCdBridgeA150, (uint32_t)sizeof(_segaCdBridgeA150));
+	SVArray(_segaCdBridgeA160, (uint32_t)sizeof(_segaCdBridgeA160));
+	SVArray(_segaCdBridgeA180, (uint32_t)sizeof(_segaCdBridgeA180));
 	SV(_ioState.DataPort[0]); SV(_ioState.DataPort[1]); SV(_ioState.DataPort[2]);
 	SV(_ioState.CtrlPort[0]); SV(_ioState.CtrlPort[1]); SV(_ioState.CtrlPort[2]);
 	SV(_ioState.TranscriptLaneCount);

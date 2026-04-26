@@ -55,6 +55,9 @@ private:
 	uint8_t _segaCdBridgeA120[0x20] = {};
 	uint8_t _segaCdBridgeA130[0x20] = {};
 	uint8_t _segaCdBridgeA140[0x20] = {};
+	uint8_t _segaCdBridgeA150[0x20] = {};
+	uint8_t _segaCdBridgeA160[0x20] = {};
+	uint8_t _segaCdBridgeA180[0x20] = {};
 
 	bool IsSramAddress(uint32_t addr) const;
 	bool TryGetSramOffset(uint32_t addr, uint32_t& offset) const;

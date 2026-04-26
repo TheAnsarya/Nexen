@@ -51,6 +51,42 @@ namespace {
 		EXPECT_NE(lane[7].find("role=SCD-G3-RSP op=R addr=a14012 value=a2"), string::npos);
 	}
 
+	TEST(GenesisSegaCdTranscriptLaneTests, ExpandedBridgeWindowsA150A160A180AreTrackedDeterministically) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+		auto& bus = scaffold.GetBus();
+
+		bus.ClearCommandResponseLane();
+		bus.WriteByte(0xA15003, 0xB1);
+		bus.WriteByte(0xA15013, 0xC1);
+		bus.WriteByte(0xA16004, 0xB2);
+		bus.WriteByte(0xA16014, 0xC2);
+		bus.WriteByte(0xA18005, 0xB3);
+		bus.WriteByte(0xA18015, 0xC3);
+		EXPECT_EQ(bus.ReadByte(0xA15003), 0xB1u);
+		EXPECT_EQ(bus.ReadByte(0xA15013), 0xC1u);
+		EXPECT_EQ(bus.ReadByte(0xA16004), 0xB2u);
+		EXPECT_EQ(bus.ReadByte(0xA16014), 0xC2u);
+		EXPECT_EQ(bus.ReadByte(0xA18005), 0xB3u);
+		EXPECT_EQ(bus.ReadByte(0xA18015), 0xC3u);
+
+		const vector<string>& lane = bus.GetCommandResponseLane();
+		ASSERT_EQ(bus.GetCommandResponseLaneCount(), 12u);
+		ASSERT_EQ(lane.size(), 12u);
+		EXPECT_NE(lane[0].find("role=SCD-G4-CMD op=W addr=a15003 value=b1"), string::npos);
+		EXPECT_NE(lane[1].find("role=SCD-G4-RSP op=W addr=a15013 value=c1"), string::npos);
+		EXPECT_NE(lane[2].find("role=SCD-G5-CMD op=W addr=a16004 value=b2"), string::npos);
+		EXPECT_NE(lane[3].find("role=SCD-G5-RSP op=W addr=a16014 value=c2"), string::npos);
+		EXPECT_NE(lane[4].find("role=SCD-G6-CMD op=W addr=a18005 value=b3"), string::npos);
+		EXPECT_NE(lane[5].find("role=SCD-G6-RSP op=W addr=a18015 value=c3"), string::npos);
+		EXPECT_NE(lane[6].find("role=SCD-G4-CMD op=R addr=a15003 value=b1"), string::npos);
+		EXPECT_NE(lane[7].find("role=SCD-G4-RSP op=R addr=a15013 value=c1"), string::npos);
+		EXPECT_NE(lane[8].find("role=SCD-G5-CMD op=R addr=a16004 value=b2"), string::npos);
+		EXPECT_NE(lane[9].find("role=SCD-G5-RSP op=R addr=a16014 value=c2"), string::npos);
+		EXPECT_NE(lane[10].find("role=SCD-G6-CMD op=R addr=a18005 value=b3"), string::npos);
+		EXPECT_NE(lane[11].find("role=SCD-G6-RSP op=R addr=a18015 value=c3"), string::npos);
+	}
+
 	TEST(GenesisSegaCdTranscriptLaneTests, SegaCdTranscriptDigestIsDeterministicAcrossRuns) {
 		auto runScenario = []() {
 			GenesisM68kBoundaryScaffold scaffold;

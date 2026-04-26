@@ -13,7 +13,7 @@ namespace {
 GenesisPlatformBusStub::GenesisPlatformBusStub()
 	: _workRam(64 * 1024, 0),
 	  _io(0x20, 0),
-	  _expansionIo(0x60, 0),
+	  _expansionIo(0xC0, 0),
 	  _vdpIo(0x20, 0) {
 }
 
@@ -37,6 +37,18 @@ GenesisBusOwner GenesisPlatformBusStub::DecodeOwner(uint32_t address) const {
 	}
 
 	if (address >= 0xA14000 && address <= 0xA1401F) {
+		return GenesisBusOwner::Io;
+	}
+
+	if (address >= 0xA15000 && address <= 0xA1501F) {
+		return GenesisBusOwner::Io;
+	}
+
+	if (address >= 0xA16000 && address <= 0xA1601F) {
+		return GenesisBusOwner::Io;
+	}
+
+	if (address >= 0xA18000 && address <= 0xA1801F) {
 		return GenesisBusOwner::Io;
 	}
 
@@ -75,6 +87,21 @@ bool GenesisPlatformBusStub::TryGetExpansionIoOffset(uint32_t address, uint32_t&
 		return true;
 	}
 
+	if (address >= 0xA15000 && address <= 0xA1501F) {
+		offset = 0x60 + (address & 0x1F);
+		return true;
+	}
+
+	if (address >= 0xA16000 && address <= 0xA1601F) {
+		offset = 0x80 + (address & 0x1F);
+		return true;
+	}
+
+	if (address >= 0xA18000 && address <= 0xA1801F) {
+		offset = 0xA0 + (address & 0x1F);
+		return true;
+	}
+
 	return false;
 }
 
@@ -82,7 +109,10 @@ bool GenesisPlatformBusStub::IsCommandResponseLaneAddress(uint32_t address) cons
 	return (address >= 0xA10000 && address <= 0xA1001F)
 		|| (address >= 0xA12000 && address <= 0xA1201F)
 		|| (address >= 0xA13000 && address <= 0xA1301F)
-		|| (address >= 0xA14000 && address <= 0xA1401F);
+		|| (address >= 0xA14000 && address <= 0xA1401F)
+		|| (address >= 0xA15000 && address <= 0xA1501F)
+		|| (address >= 0xA16000 && address <= 0xA1601F)
+		|| (address >= 0xA18000 && address <= 0xA1801F);
 }
 
 const char* GenesisPlatformBusStub::GetCommandResponseLaneRole(uint32_t address) const {
@@ -108,6 +138,30 @@ const char* GenesisPlatformBusStub::GetCommandResponseLaneRole(uint32_t address)
 
 	if (address >= 0xA14010 && address <= 0xA1401F) {
 		return "SCD-G3-RSP";
+	}
+
+	if (address >= 0xA15000 && address <= 0xA1500F) {
+		return "SCD-G4-CMD";
+	}
+
+	if (address >= 0xA15010 && address <= 0xA1501F) {
+		return "SCD-G4-RSP";
+	}
+
+	if (address >= 0xA16000 && address <= 0xA1600F) {
+		return "SCD-G5-CMD";
+	}
+
+	if (address >= 0xA16010 && address <= 0xA1601F) {
+		return "SCD-G5-RSP";
+	}
+
+	if (address >= 0xA18000 && address <= 0xA1800F) {
+		return "SCD-G6-CMD";
+	}
+
+	if (address >= 0xA18010 && address <= 0xA1801F) {
+		return "SCD-G6-RSP";
 	}
 
 	return "GEN-IO";
@@ -515,8 +569,8 @@ void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state)
 	_workRam = state.WorkRam;
 	_io = state.Io;
 	_expansionIo = state.ExpansionIo;
-	if (_expansionIo.size() != 0x60) {
-		_expansionIo.resize(0x60, 0);
+	if (_expansionIo.size() != 0xC0) {
+		_expansionIo.resize(0xC0, 0);
 	}
 	_vdpIo = state.VdpIo;
 	_vdpRegisters = state.VdpRegisters;

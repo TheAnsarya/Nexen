@@ -8,9 +8,15 @@ namespace Nexen.Debugger.RegisterViewer;
 public sealed class GenesisRegisterViewer {
 	private static string DecodeTranscriptFlags(byte flags) {
 		string op = (flags & 0x01) != 0 ? "Write" : "Read";
-		string lane = (flags & 0x08) != 0
-			? "G3"
-			: ((flags & 0x04) != 0 ? "G2" : "G1");
+		string lane = (flags & 0x40) != 0
+			? "G6"
+			: ((flags & 0x20) != 0
+				? "G5"
+				: ((flags & 0x10) != 0
+					? "G4"
+					: ((flags & 0x08) != 0
+						? "G3"
+						: ((flags & 0x04) != 0 ? "G2" : "G1"))));
 		string role = (flags & 0x02) != 0 ? "Response" : "Command";
 		return op + " | " + lane + " | " + role;
 	}
