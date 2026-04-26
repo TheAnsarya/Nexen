@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Genesis/GenesisConsole.h"
 #include "Genesis/GenesisM68k.h"
@@ -51,6 +51,9 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_ioState.CtrlPort[0] = 0;
 	_ioState.CtrlPort[1] = 0;
 	_ioState.CtrlPort[2] = 0;
+	memset(_segaCdBridgeA120, 0, sizeof(_segaCdBridgeA120));
+	memset(_segaCdBridgeA130, 0, sizeof(_segaCdBridgeA130));
+	memset(_segaCdBridgeA140, 0, sizeof(_segaCdBridgeA140));
 
 	_z80BusRequest = false;
 	_z80Reset = true;
@@ -98,6 +101,61 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 			}
 		}
 	}
+}
+
+bool GenesisMemoryManager::TryGetSegaCdBridgeSlot(uint32_t addr, uint8_t*& slot, uint32_t& slotIndex) {
+	if (addr >= 0xA12000 && addr <= 0xA1201F) {
+		slot = &_segaCdBridgeA120[0];
+		slotIndex = addr & 0x1F;
+		return true;
+	}
+
+	if (addr >= 0xA13000 && addr <= 0xA1301F) {
+		slot = &_segaCdBridgeA130[0];
+		slotIndex = addr & 0x1F;
+		return true;
+	}
+
+	if (addr >= 0xA14000 && addr <= 0xA1401F) {
+		slot = &_segaCdBridgeA140[0];
+		slotIndex = addr & 0x1F;
+		return true;
+	}
+
+	return false;
+}
+
+void GenesisMemoryManager::TrackSegaCdTranscript(uint32_t addr, bool isWrite, uint8_t value) {
+	static constexpr uint64_t FnvOffsetBasis = 1469598103934665603ull;
+	static constexpr uint64_t FnvPrime = 1099511628211ull;
+
+	uint64_t hash = _ioState.TranscriptLaneDigest == 0 ? FnvOffsetBasis : _ioState.TranscriptLaneDigest;
+	hash ^= (addr & 0xFFFFFF);
+	hash *= FnvPrime;
+	hash ^= value;
+	hash *= FnvPrime;
+	hash ^= isWrite ? 1ull : 0ull;
+	hash *= FnvPrime;
+	_ioState.TranscriptLaneDigest = hash;
+
+	uint8_t roleFlags = 0;
+	if ((addr & 0x10) != 0) {
+		roleFlags |= 0x02;
+	}
+	if (addr >= 0xA13000 && addr <= 0xA1301F) {
+		roleFlags |= 0x04;
+	} else if (addr >= 0xA14000 && addr <= 0xA1401F) {
+		roleFlags |= 0x08;
+	}
+	if (isWrite) {
+		roleFlags |= 0x01;
+	}
+
+	uint32_t index = _ioState.TranscriptLaneCount % 4;
+	_ioState.TranscriptEntryAddress[index] = addr & 0xFFFFFF;
+	_ioState.TranscriptEntryValue[index] = value;
+	_ioState.TranscriptEntryFlags[index] = roleFlags;
+	_ioState.TranscriptLaneCount++;
 }
 
 bool GenesisMemoryManager::IsSramAddress(uint32_t addr) const {
@@ -189,6 +247,15 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		return ReadIo(addr);
 	}
 
+	uint8_t* bridgeSlot = nullptr;
+	uint32_t bridgeIndex = 0;
+	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
+		uint8_t value = bridgeSlot[bridgeIndex];
+		TrackSegaCdTranscript(addr, false, value);
+		_openBus = value;
+		return value;
+	}
+
 	if (addr == 0xA11100) [[unlikely]] {
 		// Z80 bus request — bit 0 indicates bus granted
 		return _z80BusRequest ? 0x00 : 0x01;
@@ -241,6 +308,14 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		return ((uint16_t)hi << 8) | lo;
 	}
 
+	uint8_t* bridgeSlot = nullptr;
+	uint32_t bridgeIndex = 0;
+	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
+		uint8_t hi = Read8(addr);
+		uint8_t lo = Read8(addr + 1);
+		return ((uint16_t)hi << 8) | lo;
+	}
+
 	if (addr == 0xA11100) [[unlikely]] {
 		return _z80BusRequest ? 0x0000 : 0x0100;
 	}
@@ -281,6 +356,14 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
 		WriteIo(addr, value);
+		return;
+	}
+
+	uint8_t* bridgeSlot = nullptr;
+	uint32_t bridgeIndex = 0;
+	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
+		bridgeSlot[bridgeIndex] = value;
+		TrackSegaCdTranscript(addr, true, value);
 		return;
 	}
 
@@ -329,6 +412,14 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
 		WriteIo(addr, (uint8_t)(value >> 8));
+		return;
+	}
+
+	uint8_t* bridgeSlot = nullptr;
+	uint32_t bridgeIndex = 0;
+	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
+		Write8(addr, (uint8_t)(value >> 8));
+		Write8(addr + 1, (uint8_t)(value & 0xFF));
 		return;
 	}
 
@@ -450,8 +541,18 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_z80Reset);
 	SV(_tmssEnabled);
 	SV(_tmssUnlocked);
+	SVArray(_segaCdBridgeA120, (uint32_t)sizeof(_segaCdBridgeA120));
+	SVArray(_segaCdBridgeA130, (uint32_t)sizeof(_segaCdBridgeA130));
+	SVArray(_segaCdBridgeA140, (uint32_t)sizeof(_segaCdBridgeA140));
 	SV(_ioState.DataPort[0]); SV(_ioState.DataPort[1]); SV(_ioState.DataPort[2]);
 	SV(_ioState.CtrlPort[0]); SV(_ioState.CtrlPort[1]); SV(_ioState.CtrlPort[2]);
+	SV(_ioState.TranscriptLaneCount);
+	SV(_ioState.TranscriptLaneDigest);
+	for (uint32_t i = 0; i < 4; i++) {
+		SV(_ioState.TranscriptEntryAddress[i]);
+		SV(_ioState.TranscriptEntryValue[i]);
+		SV(_ioState.TranscriptEntryFlags[i]);
+	}
 }
 
 void GenesisMemoryManager::LoadBattery() {

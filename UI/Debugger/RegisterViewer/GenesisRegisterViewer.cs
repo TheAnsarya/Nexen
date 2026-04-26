@@ -109,6 +109,20 @@ public sealed class GenesisRegisterViewer {
 		entries.Add(new RegEntry("", "ThState[0]", io.ThState[0], Format.X8));
 		entries.Add(new RegEntry("", "ThState[1]", io.ThState[1], Format.X8));
 
+		entries.Add(new RegEntry("", "Sega CD Transcript"));
+		entries.Add(new RegEntry("", "LaneCount", io.TranscriptLaneCount));
+		entries.Add(new RegEntry("", "LaneDigestHi", (uint)(io.TranscriptLaneDigest >> 32), Format.X32));
+		entries.Add(new RegEntry("", "LaneDigestLo", (uint)(io.TranscriptLaneDigest & 0xFFFFFFFF), Format.X32));
+
+		for (int i = 0; i < 4; i++) {
+			uint address = io.TranscriptEntryAddress[i];
+			byte value = io.TranscriptEntryValue[i];
+			byte flags = io.TranscriptEntryFlags[i];
+			entries.Add(new RegEntry("", "Entry[" + i + "] Addr", address, Format.X32));
+			entries.Add(new RegEntry("", "Entry[" + i + "] Value", value, Format.X8));
+			entries.Add(new RegEntry("", "Entry[" + i + "] Flags", flags, Format.X8));
+		}
+
 		return new RegisterViewerTab("I/O", entries, CpuType.Genesis);
 	}
 }

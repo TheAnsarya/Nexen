@@ -210,6 +210,7 @@ private:
 	vector<string> _commandResponseLane;
 
 	[[nodiscard]] GenesisBusOwner DecodeOwner(uint32_t address) const;
+	[[nodiscard]] bool TryGetExpansionIoOffset(uint32_t address, uint32_t& offset) const;
 	[[nodiscard]] bool IsCommandResponseLaneAddress(uint32_t address) const;
 	[[nodiscard]] const char* GetCommandResponseLaneRole(uint32_t address) const;
 	void AppendOwnershipTrace(uint32_t address, GenesisBusOwner owner, bool isWrite, uint8_t value);

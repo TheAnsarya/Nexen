@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "Genesis/GenesisTypes.h"
 #include "Genesis/GenesisVdp.h"
@@ -52,9 +52,14 @@ private:
 	// TMSS (Trademark Security System)
 	bool _tmssEnabled = false;
 	bool _tmssUnlocked = false;
+	uint8_t _segaCdBridgeA120[0x20] = {};
+	uint8_t _segaCdBridgeA130[0x20] = {};
+	uint8_t _segaCdBridgeA140[0x20] = {};
 
 	bool IsSramAddress(uint32_t addr) const;
 	bool TryGetSramOffset(uint32_t addr, uint32_t& offset) const;
+	bool TryGetSegaCdBridgeSlot(uint32_t addr, uint8_t*& slot, uint32_t& slotIndex);
+	void TrackSegaCdTranscript(uint32_t addr, bool isWrite, uint8_t value);
 
 public:
 	GenesisMemoryManager();

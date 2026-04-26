@@ -129,6 +129,12 @@ struct GenesisIoState {
 	uint8_t SCtrl[3] = {};
 	uint8_t ThCount[2] = {};    // TH transition count for 6-button
 	uint8_t ThState[2] = {};    // Current TH state
+
+	uint32_t TranscriptLaneCount = 0;
+	uint64_t TranscriptLaneDigest = 0;
+	uint32_t TranscriptEntryAddress[4] = {};
+	uint8_t TranscriptEntryValue[4] = {};
+	uint8_t TranscriptEntryFlags[4] = {};
 };
 
 // ===== PSG (SN76489) State =====

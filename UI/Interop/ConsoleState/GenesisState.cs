@@ -54,6 +54,14 @@ public struct GenesisIoState : BaseState {
 	public byte[] ThCount;
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
 	public byte[] ThState;
+	public UInt32 TranscriptLaneCount;
+	public UInt64 TranscriptLaneDigest;
+	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+	public UInt32[] TranscriptEntryAddress;
+	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+	public byte[] TranscriptEntryValue;
+	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+	public byte[] TranscriptEntryFlags;
 }
 
 public struct GenesisPsgChannelState {

@@ -16,11 +16,39 @@ namespace {
 		const vector<string>& lane = bus.GetCommandResponseLane();
 		ASSERT_EQ(bus.GetCommandResponseLaneCount(), 4u);
 		ASSERT_EQ(lane.size(), 4u);
-		EXPECT_NE(lane[0].find("seq=1 role=SCD-CMD op=W addr=a12002 value=34"), string::npos);
-		EXPECT_NE(lane[1].find("seq=2 role=SCD-RSP op=W addr=a12012 value=56"), string::npos);
-		EXPECT_NE(lane[2].find("seq=3 role=SCD-CMD op=R addr=a12002 value=34"), string::npos);
-		EXPECT_NE(lane[3].find("seq=4 role=SCD-RSP op=R addr=a12012 value=56"), string::npos);
+		EXPECT_NE(lane[0].find("seq=1 role=SCD-G1-CMD op=W addr=a12002 value=34"), string::npos);
+		EXPECT_NE(lane[1].find("seq=2 role=SCD-G1-RSP op=W addr=a12012 value=56"), string::npos);
+		EXPECT_NE(lane[2].find("seq=3 role=SCD-G1-CMD op=R addr=a12002 value=34"), string::npos);
+		EXPECT_NE(lane[3].find("seq=4 role=SCD-G1-RSP op=R addr=a12012 value=56"), string::npos);
 		EXPECT_FALSE(bus.GetCommandResponseLaneDigest().empty());
+	}
+
+	TEST(GenesisSegaCdTranscriptLaneTests, ExpandedBridgeWindowsA130AndA140AreTrackedDeterministically) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+		auto& bus = scaffold.GetBus();
+
+		bus.ClearCommandResponseLane();
+		bus.WriteByte(0xA13001, 0x91);
+		bus.WriteByte(0xA13011, 0xA1);
+		bus.WriteByte(0xA14002, 0x92);
+		bus.WriteByte(0xA14012, 0xA2);
+		EXPECT_EQ(bus.ReadByte(0xA13001), 0x91u);
+		EXPECT_EQ(bus.ReadByte(0xA13011), 0xA1u);
+		EXPECT_EQ(bus.ReadByte(0xA14002), 0x92u);
+		EXPECT_EQ(bus.ReadByte(0xA14012), 0xA2u);
+
+		const vector<string>& lane = bus.GetCommandResponseLane();
+		ASSERT_EQ(bus.GetCommandResponseLaneCount(), 8u);
+		ASSERT_EQ(lane.size(), 8u);
+		EXPECT_NE(lane[0].find("role=SCD-G2-CMD op=W addr=a13001 value=91"), string::npos);
+		EXPECT_NE(lane[1].find("role=SCD-G2-RSP op=W addr=a13011 value=a1"), string::npos);
+		EXPECT_NE(lane[2].find("role=SCD-G3-CMD op=W addr=a14002 value=92"), string::npos);
+		EXPECT_NE(lane[3].find("role=SCD-G3-RSP op=W addr=a14012 value=a2"), string::npos);
+		EXPECT_NE(lane[4].find("role=SCD-G2-CMD op=R addr=a13001 value=91"), string::npos);
+		EXPECT_NE(lane[5].find("role=SCD-G2-RSP op=R addr=a13011 value=a1"), string::npos);
+		EXPECT_NE(lane[6].find("role=SCD-G3-CMD op=R addr=a14002 value=92"), string::npos);
+		EXPECT_NE(lane[7].find("role=SCD-G3-RSP op=R addr=a14012 value=a2"), string::npos);
 	}
 
 	TEST(GenesisSegaCdTranscriptLaneTests, SegaCdTranscriptDigestIsDeterministicAcrossRuns) {

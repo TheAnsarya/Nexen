@@ -13,7 +13,7 @@ namespace {
 GenesisPlatformBusStub::GenesisPlatformBusStub()
 	: _workRam(64 * 1024, 0),
 	  _io(0x20, 0),
-	  _expansionIo(0x20, 0),
+	  _expansionIo(0x60, 0),
 	  _vdpIo(0x20, 0) {
 }
 
@@ -29,6 +29,14 @@ GenesisBusOwner GenesisPlatformBusStub::DecodeOwner(uint32_t address) const {
 	}
 
 	if (address >= 0xA12000 && address <= 0xA1201F) {
+		return GenesisBusOwner::Io;
+	}
+
+	if (address >= 0xA13000 && address <= 0xA1301F) {
+		return GenesisBusOwner::Io;
+	}
+
+	if (address >= 0xA14000 && address <= 0xA1401F) {
 		return GenesisBusOwner::Io;
 	}
 
@@ -51,18 +59,55 @@ GenesisBusOwner GenesisPlatformBusStub::DecodeOwner(uint32_t address) const {
 	return GenesisBusOwner::OpenBus;
 }
 
+bool GenesisPlatformBusStub::TryGetExpansionIoOffset(uint32_t address, uint32_t& offset) const {
+	if (address >= 0xA12000 && address <= 0xA1201F) {
+		offset = address & 0x1F;
+		return true;
+	}
+
+	if (address >= 0xA13000 && address <= 0xA1301F) {
+		offset = 0x20 + (address & 0x1F);
+		return true;
+	}
+
+	if (address >= 0xA14000 && address <= 0xA1401F) {
+		offset = 0x40 + (address & 0x1F);
+		return true;
+	}
+
+	return false;
+}
+
 bool GenesisPlatformBusStub::IsCommandResponseLaneAddress(uint32_t address) const {
 	return (address >= 0xA10000 && address <= 0xA1001F)
-		|| (address >= 0xA12000 && address <= 0xA1201F);
+		|| (address >= 0xA12000 && address <= 0xA1201F)
+		|| (address >= 0xA13000 && address <= 0xA1301F)
+		|| (address >= 0xA14000 && address <= 0xA1401F);
 }
 
 const char* GenesisPlatformBusStub::GetCommandResponseLaneRole(uint32_t address) const {
 	if (address >= 0xA12000 && address <= 0xA1200F) {
-		return "SCD-CMD";
+		return "SCD-G1-CMD";
 	}
 
 	if (address >= 0xA12010 && address <= 0xA1201F) {
-		return "SCD-RSP";
+		return "SCD-G1-RSP";
+	}
+
+	if (address >= 0xA13000 && address <= 0xA1300F) {
+		return "SCD-G2-CMD";
+	}
+
+	if (address >= 0xA13010 && address <= 0xA1301F) {
+		return "SCD-G2-RSP";
+	}
+
+	if (address >= 0xA14000 && address <= 0xA1400F) {
+		return "SCD-G3-CMD";
+	}
+
+	if (address >= 0xA14010 && address <= 0xA1401F) {
+		return "SCD-G3-RSP";
 	}
 
 	return "GEN-IO";
@@ -470,8 +515,8 @@ void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state)
 	_workRam = state.WorkRam;
 	_io = state.Io;
 	_expansionIo = state.ExpansionIo;
-	if (_expansionIo.size() != 0x20) {
-		_expansionIo.resize(0x20, 0);
+	if (_expansionIo.size() != 0x60) {
+		_expansionIo.resize(0x60, 0);
 	}
 	_vdpIo = state.VdpIo;
 	_vdpRegisters = state.VdpRegisters;
@@ -633,11 +678,12 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 			result = 0;
 			break;
 
-		case GenesisBusOwner::Io:
+		case GenesisBusOwner::Io: {
 			_ioWindowAccessed = true;
 			_ioReadCount++;
-			if (address >= 0xA12000 && address <= 0xA1201F) {
-				result = _expansionIo[address & 0x1F];
+			uint32_t expansionOffset = 0;
+			if (TryGetExpansionIoOffset(address, expansionOffset)) {
+				result = _expansionIo[expansionOffset];
 				break;
 			}
 			if (address == 0xA04000) {
@@ -666,6 +712,7 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 			}
 			result = _io[address & 0x1F];
 			break;
+		}
 
 		case GenesisBusOwner::Vdp:
 			_vdpWindowAccessed = true;
@@ -719,11 +766,12 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 			}
 			return;
 
-		case GenesisBusOwner::Io:
+		case GenesisBusOwner::Io: {
 			_ioWindowAccessed = true;
 			_ioWriteCount++;
-			if (address >= 0xA12000 && address <= 0xA1201F) {
-				_expansionIo[address & 0x1F] = value;
+			uint32_t expansionOffset = 0;
+			if (TryGetExpansionIoOffset(address, expansionOffset)) {
+				_expansionIo[expansionOffset] = value;
 			} else {
 				_io[address & 0x1F] = value;
 			}
@@ -753,6 +801,7 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 				}
 			}
 			return;
+		}
 
 		case GenesisBusOwner::Vdp:
 			_vdpWindowAccessed = true;
