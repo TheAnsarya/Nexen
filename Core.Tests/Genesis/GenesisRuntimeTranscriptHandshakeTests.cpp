@@ -74,6 +74,44 @@ namespace {
 		EXPECT_EQ(runA, runB);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeOrderingPerturbationChangesDigestWithSameLaneCount) {
+		auto runReferenceOrder = []() {
+			Emulator emu;
+			std::vector<uint8_t> romData(0x400000);
+			GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+			memoryManager.Write8(0xA11200, 0x01);
+			memoryManager.Write8(0xA11100, 0x01);
+			(void)memoryManager.Read8(0xA11100);
+			memoryManager.Write16(0xA11200, 0x0000);
+			memoryManager.Write16(0xA11100, 0x0000);
+			(void)memoryManager.Read16(0xA11100);
+
+			return CaptureSnapshot(memoryManager);
+		};
+
+		auto runPerturbedOrder = []() {
+			Emulator emu;
+			std::vector<uint8_t> romData(0x400000);
+			GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+			memoryManager.Write8(0xA11200, 0x01);
+			memoryManager.Write8(0xA11100, 0x01);
+			(void)memoryManager.Read8(0xA11100);
+			memoryManager.Write16(0xA11100, 0x0000);
+			memoryManager.Write16(0xA11200, 0x0000);
+			(void)memoryManager.Read16(0xA11100);
+
+			return CaptureSnapshot(memoryManager);
+		};
+
+		RuntimeTranscriptSnapshot reference = runReferenceOrder();
+		RuntimeTranscriptSnapshot perturbed = runPerturbedOrder();
+
+		EXPECT_EQ(reference.LaneCount, perturbed.LaneCount);
+		EXPECT_NE(reference.LaneDigest, perturbed.LaneDigest);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeTranscriptPreservesReplayAfterSerializeRoundtrip) {
 		Emulator emuA;
 		std::vector<uint8_t> romA(0x400000);
