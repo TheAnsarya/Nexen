@@ -7,6 +7,13 @@ namespace Nexen.Debugger.RegisterViewer;
 
 public sealed class GenesisRegisterViewer {
 	private static string DecodeTranscriptFlags(byte flags) {
+		if ((flags & 0x80) != 0) {
+			string op = (flags & 0x01) != 0 ? "Write" : "Read";
+			string channel = (flags & 0x04) != 0 ? "Z80-RESET" : "Z80-BUSREQ";
+			string role = (flags & 0x02) != 0 ? "State" : "Command";
+			return op + " | HS | " + channel + " | " + role;
+		}
+
 		string op = (flags & 0x01) != 0 ? "Write" : "Read";
 		string lane = (flags & 0x40) != 0
 			? "G6"
@@ -133,6 +140,7 @@ public sealed class GenesisRegisterViewer {
 		entries.Add(new RegEntry("", "0x10", "Lane group G4", 0x10));
 		entries.Add(new RegEntry("", "0x20", "Lane group G5", 0x20));
 		entries.Add(new RegEntry("", "0x40", "Lane group G6", 0x40));
+		entries.Add(new RegEntry("", "0x80", "Runtime handshake marker", 0x80));
 		entries.Add(new RegEntry("", "LaneCount", io.TranscriptLaneCount));
 		entries.Add(new RegEntry("", "LaneDigestHi", (uint)(io.TranscriptLaneDigest >> 32), Format.X32));
 		entries.Add(new RegEntry("", "LaneDigestLo", (uint)(io.TranscriptLaneDigest & 0xFFFFFFFF), Format.X32));
