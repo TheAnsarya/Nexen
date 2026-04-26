@@ -6,6 +6,15 @@ using static Nexen.Debugger.ViewModels.RegEntry;
 namespace Nexen.Debugger.RegisterViewer;
 
 public sealed class GenesisRegisterViewer {
+	private static string DecodeTranscriptFlags(byte flags) {
+		string op = (flags & 0x01) != 0 ? "Write" : "Read";
+		string lane = (flags & 0x08) != 0
+			? "G3"
+			: ((flags & 0x04) != 0 ? "G2" : "G1");
+		string role = (flags & 0x02) != 0 ? "Response" : "Command";
+		return op + " | " + lane + " | " + role;
+	}
+
 	public static List<RegisterViewerTab> GetTabs(ref GenesisState state) {
 		return new List<RegisterViewerTab>() {
 			GetCpuTab(ref state),
@@ -118,9 +127,11 @@ public sealed class GenesisRegisterViewer {
 			uint address = io.TranscriptEntryAddress[i];
 			byte value = io.TranscriptEntryValue[i];
 			byte flags = io.TranscriptEntryFlags[i];
+			string decodedFlags = DecodeTranscriptFlags(flags);
 			entries.Add(new RegEntry("", "Entry[" + i + "] Addr", address, Format.X32));
 			entries.Add(new RegEntry("", "Entry[" + i + "] Value", value, Format.X8));
 			entries.Add(new RegEntry("", "Entry[" + i + "] Flags", flags, Format.X8));
+			entries.Add(new RegEntry("", "Entry[" + i + "] Decoded", decodedFlags, flags));
 		}
 
 		return new RegisterViewerTab("I/O", entries, CpuType.Genesis);

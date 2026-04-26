@@ -97,4 +97,25 @@ namespace {
 		EXPECT_EQ(replayLaneDigest, baselineLaneDigest);
 		EXPECT_EQ(replayLaneCount, baselineLaneCount);
 	}
+
+	TEST(GenesisSegaCdProtocolCadenceValidationTests, TranscriptPhaseOrderingCyclesThroughG1G2G3PerCadenceStep) {
+		GenesisM68kBoundaryScaffold scaffold;
+		RunProtocolCadenceScenario(scaffold);
+
+		const vector<string>& lane = scaffold.GetBus().GetCommandResponseLane();
+		ASSERT_EQ(lane.size(), 54u);
+
+		for (uint32_t step = 0; step < 6; step++) {
+			uint32_t base = step * 9;
+			EXPECT_NE(lane[base + 0].find("role=SCD-G1-CMD op=W"), string::npos);
+			EXPECT_NE(lane[base + 1].find("role=SCD-G1-RSP op=W"), string::npos);
+			EXPECT_NE(lane[base + 2].find("role=SCD-G2-CMD op=W"), string::npos);
+			EXPECT_NE(lane[base + 3].find("role=SCD-G2-RSP op=W"), string::npos);
+			EXPECT_NE(lane[base + 4].find("role=SCD-G3-CMD op=W"), string::npos);
+			EXPECT_NE(lane[base + 5].find("role=SCD-G3-RSP op=W"), string::npos);
+			EXPECT_NE(lane[base + 6].find("role=SCD-G1-RSP op=R"), string::npos);
+			EXPECT_NE(lane[base + 7].find("role=SCD-G2-RSP op=R"), string::npos);
+			EXPECT_NE(lane[base + 8].find("role=SCD-G3-RSP op=R"), string::npos);
+		}
+	}
 }
