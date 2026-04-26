@@ -99,7 +99,7 @@ public sealed class UiScrollabilityMarkupTests {
 		string source = File.ReadAllText(fullPath);
 		Assert.Contains("ConfigManager.Config.ConfigWindow.LoadWindowSettings(this);", source);
 		Assert.Contains("ConfigManager.Config.ConfigWindow.SaveWindowSettings(this);", source);
-		Assert.Contains("CompactTabBreakpointWidth = 900", source);
+		Assert.Contains("CompactTabBreakpointWidth = 700", source);
 		Assert.Contains("TabStripPlacement = ClientSize.Width < CompactTabBreakpointWidth ? Avalonia.Controls.Dock.Top : Avalonia.Controls.Dock.Left;", source);
 	}
 

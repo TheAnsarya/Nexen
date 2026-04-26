@@ -15,7 +15,9 @@ using Nexen.ViewModels;
 
 namespace Nexen.Windows;
 public partial class ConfigWindow : NexenWindow {
-	private const double CompactTabBreakpointWidth = 900;
+	// Keep the default/min settings window in left-tab mode.
+	// On Linux, top-tab mode with many tabs can consume most vertical space.
+	private const double CompactTabBreakpointWidth = 700;
 	private readonly TabControl _settingsTabControl;
 	private ConfigViewModel _model;
 	private bool _promptToSave = true;
