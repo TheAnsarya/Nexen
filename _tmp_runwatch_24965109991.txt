@@ -1,0 +1,3426 @@
+Refreshing run status every 20 seconds. Press Ctrl+C to quit.
+
+* master Build Nexen ┬╖ 24965109991
+Triggered via workflow_dispatch about 13 minutes ago
+
+JOBS
+X macos (clang, macos-14, arm64) in 59s (ID 73098450012)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  X Build Nexen
+  - Sign binary
+  - Zip Nexen.app
+  Γ£ô Capture runtime dependency report (macOS publish)
+  - Validate required runtime assets (macOS publish)
+  Γ£ô Upload runtime dependency report (macOS publish)
+  - Upload Nexen
+  Γ£ô Post Setup CCache
+  - Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (true, false,  - AoT) in 12m41s (ID 73098450015)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04-arm, ARM64, Linux/appimage/appimage-arm64.sh) in 10m6s (ID 73098450017)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (false, true) in 10m23s (ID 73098450020)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04, x64, Linux/appimage/appimage.sh) in 12m38s (ID 73098450023)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+* linux (clang_aot, ubuntu-22.04, x64) (ID 73098450030)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  * Build Nexen
+  * Capture Linux runtime dependency report
+  * Upload runtime dependency report (Linux)
+  * Generate warning report (Linux)
+  * Upload warning report (Linux)
+  * Generate warning delta summary (Linux)
+  * Upload warning delta summary (Linux)
+  * Enforce warning regression gate (Linux)
+  * Linux publish smoke launch
+  * Upload Linux smoke log
+  * Upload Nexen
+  * Post Setup CCache
+  * Post Install .NET Core
+  * Post Checkout repo
+Γ£ô linux (clang, ubuntu-22.04, x64) in 10m48s (ID 73098450031)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04-arm, arm64) in 9m22s (ID 73098450032)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04, x64) in 8m56s (ID 73098450033)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04-arm, arm64) in 8m37s (ID 73098450037)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+
+ANNOTATIONS
+X Process completed with exit code 2.
+macos (clang, macos-14, arm64): .github#27
+
+X Process completed with exit code 1.
+windows (true, false,  - AoT): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (true, false,  - AoT): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (true, false,  - AoT): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#720
+
+! 'fs': unreferenced parameter
+windows (true, false,  - AoT): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (true, false,  - AoT): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (true, false,  - AoT): .github#55
+
+X Process completed with exit code 1.
+windows (false, true): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (false, true): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (false, true): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#720
+
+! 'fs': unreferenced parameter
+windows (false, true): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (false, true): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (false, true): .github#55
+
+Refreshing run status every 20 seconds. Press Ctrl+C to quit.
+
+* master Build Nexen ┬╖ 24965109991
+Triggered via workflow_dispatch about 13 minutes ago
+
+JOBS
+X macos (clang, macos-14, arm64) in 59s (ID 73098450012)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  X Build Nexen
+  - Sign binary
+  - Zip Nexen.app
+  Γ£ô Capture runtime dependency report (macOS publish)
+  - Validate required runtime assets (macOS publish)
+  Γ£ô Upload runtime dependency report (macOS publish)
+  - Upload Nexen
+  Γ£ô Post Setup CCache
+  - Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (true, false,  - AoT) in 12m41s (ID 73098450015)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04-arm, ARM64, Linux/appimage/appimage-arm64.sh) in 10m6s (ID 73098450017)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (false, true) in 10m23s (ID 73098450020)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04, x64, Linux/appimage/appimage.sh) in 12m38s (ID 73098450023)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+* linux (clang_aot, ubuntu-22.04, x64) (ID 73098450030)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  * Build Nexen
+  * Capture Linux runtime dependency report
+  * Upload runtime dependency report (Linux)
+  * Generate warning report (Linux)
+  * Upload warning report (Linux)
+  * Generate warning delta summary (Linux)
+  * Upload warning delta summary (Linux)
+  * Enforce warning regression gate (Linux)
+  * Linux publish smoke launch
+  * Upload Linux smoke log
+  * Upload Nexen
+  * Post Setup CCache
+  * Post Install .NET Core
+  * Post Checkout repo
+Γ£ô linux (clang, ubuntu-22.04, x64) in 10m48s (ID 73098450031)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04-arm, arm64) in 9m22s (ID 73098450032)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04, x64) in 8m56s (ID 73098450033)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04-arm, arm64) in 8m37s (ID 73098450037)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+
+ANNOTATIONS
+X Process completed with exit code 2.
+macos (clang, macos-14, arm64): .github#27
+
+X Process completed with exit code 1.
+windows (true, false,  - AoT): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (true, false,  - AoT): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (true, false,  - AoT): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#720
+
+! 'fs': unreferenced parameter
+windows (true, false,  - AoT): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (true, false,  - AoT): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (true, false,  - AoT): .github#55
+
+X Process completed with exit code 1.
+windows (false, true): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (false, true): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (false, true): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#720
+
+! 'fs': unreferenced parameter
+windows (false, true): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (false, true): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (false, true): .github#55
+
+Refreshing run status every 20 seconds. Press Ctrl+C to quit.
+
+* master Build Nexen ┬╖ 24965109991
+Triggered via workflow_dispatch about 14 minutes ago
+
+JOBS
+X macos (clang, macos-14, arm64) in 59s (ID 73098450012)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  X Build Nexen
+  - Sign binary
+  - Zip Nexen.app
+  Γ£ô Capture runtime dependency report (macOS publish)
+  - Validate required runtime assets (macOS publish)
+  Γ£ô Upload runtime dependency report (macOS publish)
+  - Upload Nexen
+  Γ£ô Post Setup CCache
+  - Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (true, false,  - AoT) in 12m41s (ID 73098450015)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04-arm, ARM64, Linux/appimage/appimage-arm64.sh) in 10m6s (ID 73098450017)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (false, true) in 10m23s (ID 73098450020)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04, x64, Linux/appimage/appimage.sh) in 12m38s (ID 73098450023)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+* linux (clang_aot, ubuntu-22.04, x64) (ID 73098450030)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  * Build Nexen
+  * Capture Linux runtime dependency report
+  * Upload runtime dependency report (Linux)
+  * Generate warning report (Linux)
+  * Upload warning report (Linux)
+  * Generate warning delta summary (Linux)
+  * Upload warning delta summary (Linux)
+  * Enforce warning regression gate (Linux)
+  * Linux publish smoke launch
+  * Upload Linux smoke log
+  * Upload Nexen
+  * Post Setup CCache
+  * Post Install .NET Core
+  * Post Checkout repo
+Γ£ô linux (clang, ubuntu-22.04, x64) in 10m48s (ID 73098450031)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04-arm, arm64) in 9m22s (ID 73098450032)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04, x64) in 8m56s (ID 73098450033)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04-arm, arm64) in 8m37s (ID 73098450037)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+
+ANNOTATIONS
+X Process completed with exit code 2.
+macos (clang, macos-14, arm64): .github#27
+
+X Process completed with exit code 1.
+windows (true, false,  - AoT): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (true, false,  - AoT): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (true, false,  - AoT): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#720
+
+! 'fs': unreferenced parameter
+windows (true, false,  - AoT): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (true, false,  - AoT): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (true, false,  - AoT): .github#55
+
+X Process completed with exit code 1.
+windows (false, true): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (false, true): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (false, true): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#720
+
+! 'fs': unreferenced parameter
+windows (false, true): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (false, true): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (false, true): .github#55
+
+Refreshing run status every 20 seconds. Press Ctrl+C to quit.
+
+* master Build Nexen ┬╖ 24965109991
+Triggered via workflow_dispatch about 14 minutes ago
+
+JOBS
+X macos (clang, macos-14, arm64) in 59s (ID 73098450012)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  X Build Nexen
+  - Sign binary
+  - Zip Nexen.app
+  Γ£ô Capture runtime dependency report (macOS publish)
+  - Validate required runtime assets (macOS publish)
+  Γ£ô Upload runtime dependency report (macOS publish)
+  - Upload Nexen
+  Γ£ô Post Setup CCache
+  - Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (true, false,  - AoT) in 12m41s (ID 73098450015)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04-arm, ARM64, Linux/appimage/appimage-arm64.sh) in 10m6s (ID 73098450017)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (false, true) in 10m23s (ID 73098450020)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04, x64, Linux/appimage/appimage.sh) in 12m38s (ID 73098450023)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+* linux (clang_aot, ubuntu-22.04, x64) (ID 73098450030)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  * Build Nexen
+  * Capture Linux runtime dependency report
+  * Upload runtime dependency report (Linux)
+  * Generate warning report (Linux)
+  * Upload warning report (Linux)
+  * Generate warning delta summary (Linux)
+  * Upload warning delta summary (Linux)
+  * Enforce warning regression gate (Linux)
+  * Linux publish smoke launch
+  * Upload Linux smoke log
+  * Upload Nexen
+  * Post Setup CCache
+  * Post Install .NET Core
+  * Post Checkout repo
+Γ£ô linux (clang, ubuntu-22.04, x64) in 10m48s (ID 73098450031)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04-arm, arm64) in 9m22s (ID 73098450032)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04, x64) in 8m56s (ID 73098450033)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04-arm, arm64) in 8m37s (ID 73098450037)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+
+ANNOTATIONS
+X Process completed with exit code 2.
+macos (clang, macos-14, arm64): .github#27
+
+X Process completed with exit code 1.
+windows (true, false,  - AoT): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (true, false,  - AoT): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (true, false,  - AoT): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#720
+
+! 'fs': unreferenced parameter
+windows (true, false,  - AoT): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (true, false,  - AoT): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (true, false,  - AoT): .github#55
+
+X Process completed with exit code 1.
+windows (false, true): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (false, true): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (false, true): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#720
+
+! 'fs': unreferenced parameter
+windows (false, true): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (false, true): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (false, true): .github#55
+
+Refreshing run status every 20 seconds. Press Ctrl+C to quit.
+
+* master Build Nexen ┬╖ 24965109991
+Triggered via workflow_dispatch about 14 minutes ago
+
+JOBS
+X macos (clang, macos-14, arm64) in 59s (ID 73098450012)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  X Build Nexen
+  - Sign binary
+  - Zip Nexen.app
+  Γ£ô Capture runtime dependency report (macOS publish)
+  - Validate required runtime assets (macOS publish)
+  Γ£ô Upload runtime dependency report (macOS publish)
+  - Upload Nexen
+  Γ£ô Post Setup CCache
+  - Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (true, false,  - AoT) in 12m41s (ID 73098450015)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04-arm, ARM64, Linux/appimage/appimage-arm64.sh) in 10m6s (ID 73098450017)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (false, true) in 10m23s (ID 73098450020)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04, x64, Linux/appimage/appimage.sh) in 12m38s (ID 73098450023)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+* linux (clang_aot, ubuntu-22.04, x64) (ID 73098450030)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  * Build Nexen
+  * Capture Linux runtime dependency report
+  * Upload runtime dependency report (Linux)
+  * Generate warning report (Linux)
+  * Upload warning report (Linux)
+  * Generate warning delta summary (Linux)
+  * Upload warning delta summary (Linux)
+  * Enforce warning regression gate (Linux)
+  * Linux publish smoke launch
+  * Upload Linux smoke log
+  * Upload Nexen
+  * Post Setup CCache
+  * Post Install .NET Core
+  * Post Checkout repo
+Γ£ô linux (clang, ubuntu-22.04, x64) in 10m48s (ID 73098450031)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04-arm, arm64) in 9m22s (ID 73098450032)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04, x64) in 8m56s (ID 73098450033)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04-arm, arm64) in 8m37s (ID 73098450037)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+
+ANNOTATIONS
+X Process completed with exit code 2.
+macos (clang, macos-14, arm64): .github#27
+
+X Process completed with exit code 1.
+windows (true, false,  - AoT): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (true, false,  - AoT): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (true, false,  - AoT): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#720
+
+! 'fs': unreferenced parameter
+windows (true, false,  - AoT): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (true, false,  - AoT): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (true, false,  - AoT): .github#55
+
+X Process completed with exit code 1.
+windows (false, true): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (false, true): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (false, true): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#720
+
+! 'fs': unreferenced parameter
+windows (false, true): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (false, true): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (false, true): .github#55
+
+Refreshing run status every 20 seconds. Press Ctrl+C to quit.
+
+* master Build Nexen ┬╖ 24965109991
+Triggered via workflow_dispatch about 15 minutes ago
+
+JOBS
+X macos (clang, macos-14, arm64) in 59s (ID 73098450012)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  X Build Nexen
+  - Sign binary
+  - Zip Nexen.app
+  Γ£ô Capture runtime dependency report (macOS publish)
+  - Validate required runtime assets (macOS publish)
+  Γ£ô Upload runtime dependency report (macOS publish)
+  - Upload Nexen
+  Γ£ô Post Setup CCache
+  - Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (true, false,  - AoT) in 12m41s (ID 73098450015)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04-arm, ARM64, Linux/appimage/appimage-arm64.sh) in 10m6s (ID 73098450017)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (false, true) in 10m23s (ID 73098450020)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04, x64, Linux/appimage/appimage.sh) in 12m38s (ID 73098450023)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+* linux (clang_aot, ubuntu-22.04, x64) (ID 73098450030)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  * Build Nexen
+  * Capture Linux runtime dependency report
+  * Upload runtime dependency report (Linux)
+  * Generate warning report (Linux)
+  * Upload warning report (Linux)
+  * Generate warning delta summary (Linux)
+  * Upload warning delta summary (Linux)
+  * Enforce warning regression gate (Linux)
+  * Linux publish smoke launch
+  * Upload Linux smoke log
+  * Upload Nexen
+  * Post Setup CCache
+  * Post Install .NET Core
+  * Post Checkout repo
+Γ£ô linux (clang, ubuntu-22.04, x64) in 10m48s (ID 73098450031)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04-arm, arm64) in 9m22s (ID 73098450032)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04, x64) in 8m56s (ID 73098450033)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04-arm, arm64) in 8m37s (ID 73098450037)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+
+ANNOTATIONS
+X Process completed with exit code 2.
+macos (clang, macos-14, arm64): .github#27
+
+X Process completed with exit code 1.
+windows (true, false,  - AoT): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (true, false,  - AoT): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (true, false,  - AoT): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#720
+
+! 'fs': unreferenced parameter
+windows (true, false,  - AoT): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (true, false,  - AoT): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (true, false,  - AoT): .github#55
+
+X Process completed with exit code 1.
+windows (false, true): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (false, true): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (false, true): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#720
+
+! 'fs': unreferenced parameter
+windows (false, true): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (false, true): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (false, true): .github#55
+
+Refreshing run status every 20 seconds. Press Ctrl+C to quit.
+
+* master Build Nexen ┬╖ 24965109991
+Triggered via workflow_dispatch about 15 minutes ago
+
+JOBS
+X macos (clang, macos-14, arm64) in 59s (ID 73098450012)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  X Build Nexen
+  - Sign binary
+  - Zip Nexen.app
+  Γ£ô Capture runtime dependency report (macOS publish)
+  - Validate required runtime assets (macOS publish)
+  Γ£ô Upload runtime dependency report (macOS publish)
+  - Upload Nexen
+  Γ£ô Post Setup CCache
+  - Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (true, false,  - AoT) in 12m41s (ID 73098450015)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04-arm, ARM64, Linux/appimage/appimage-arm64.sh) in 10m6s (ID 73098450017)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (false, true) in 10m23s (ID 73098450020)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04, x64, Linux/appimage/appimage.sh) in 12m38s (ID 73098450023)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+* linux (clang_aot, ubuntu-22.04, x64) (ID 73098450030)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  * Linux publish smoke launch
+  * Upload Linux smoke log
+  * Upload Nexen
+  * Post Setup CCache
+  * Post Install .NET Core
+  * Post Checkout repo
+Γ£ô linux (clang, ubuntu-22.04, x64) in 10m48s (ID 73098450031)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04-arm, arm64) in 9m22s (ID 73098450032)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04, x64) in 8m56s (ID 73098450033)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04-arm, arm64) in 8m37s (ID 73098450037)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+
+ANNOTATIONS
+X Process completed with exit code 2.
+macos (clang, macos-14, arm64): .github#27
+
+X Process completed with exit code 1.
+windows (true, false,  - AoT): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (true, false,  - AoT): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (true, false,  - AoT): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#720
+
+! 'fs': unreferenced parameter
+windows (true, false,  - AoT): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (true, false,  - AoT): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (true, false,  - AoT): .github#55
+
+X Process completed with exit code 1.
+windows (false, true): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (false, true): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (false, true): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#720
+
+! 'fs': unreferenced parameter
+windows (false, true): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (false, true): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (false, true): .github#55
+
+Refreshing run status every 20 seconds. Press Ctrl+C to quit.
+
+* master Build Nexen ┬╖ 24965109991
+Triggered via workflow_dispatch about 15 minutes ago
+
+JOBS
+X macos (clang, macos-14, arm64) in 59s (ID 73098450012)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  X Build Nexen
+  - Sign binary
+  - Zip Nexen.app
+  Γ£ô Capture runtime dependency report (macOS publish)
+  - Validate required runtime assets (macOS publish)
+  Γ£ô Upload runtime dependency report (macOS publish)
+  - Upload Nexen
+  Γ£ô Post Setup CCache
+  - Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (true, false,  - AoT) in 12m41s (ID 73098450015)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04-arm, ARM64, Linux/appimage/appimage-arm64.sh) in 10m6s (ID 73098450017)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (false, true) in 10m23s (ID 73098450020)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04, x64, Linux/appimage/appimage.sh) in 12m38s (ID 73098450023)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang_aot, ubuntu-22.04, x64) in 15m44s (ID 73098450030)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04, x64) in 10m48s (ID 73098450031)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04-arm, arm64) in 9m22s (ID 73098450032)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04, x64) in 8m56s (ID 73098450033)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04-arm, arm64) in 8m37s (ID 73098450037)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+* release (ID 73099269578)
+  Γ£ô Set up job
+  * Checkout (for release notes body_path)
+  * Validate release input
+  * Download all artifacts
+  * Prepare release assets
+  * Create or update release
+  * Post Checkout (for release notes body_path)
+
+ANNOTATIONS
+X Process completed with exit code 2.
+macos (clang, macos-14, arm64): .github#27
+
+X Process completed with exit code 1.
+windows (true, false,  - AoT): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (true, false,  - AoT): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (true, false,  - AoT): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#720
+
+! 'fs': unreferenced parameter
+windows (true, false,  - AoT): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (true, false,  - AoT): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (true, false,  - AoT): .github#55
+
+X Process completed with exit code 1.
+windows (false, true): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (false, true): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (false, true): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#720
+
+! 'fs': unreferenced parameter
+windows (false, true): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (false, true): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (false, true): .github#55
+
+Refreshing run status every 20 seconds. Press Ctrl+C to quit.
+
+* master Build Nexen ┬╖ 24965109991
+Triggered via workflow_dispatch about 16 minutes ago
+
+JOBS
+X macos (clang, macos-14, arm64) in 59s (ID 73098450012)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  X Build Nexen
+  - Sign binary
+  - Zip Nexen.app
+  Γ£ô Capture runtime dependency report (macOS publish)
+  - Validate required runtime assets (macOS publish)
+  Γ£ô Upload runtime dependency report (macOS publish)
+  - Upload Nexen
+  Γ£ô Post Setup CCache
+  - Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (true, false,  - AoT) in 12m41s (ID 73098450015)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04-arm, ARM64, Linux/appimage/appimage-arm64.sh) in 10m6s (ID 73098450017)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (false, true) in 10m23s (ID 73098450020)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04, x64, Linux/appimage/appimage.sh) in 12m38s (ID 73098450023)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang_aot, ubuntu-22.04, x64) in 15m44s (ID 73098450030)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04, x64) in 10m48s (ID 73098450031)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04-arm, arm64) in 9m22s (ID 73098450032)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04, x64) in 8m56s (ID 73098450033)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04-arm, arm64) in 8m37s (ID 73098450037)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+* release (ID 73099269578)
+  Γ£ô Set up job
+  Γ£ô Checkout (for release notes body_path)
+  Γ£ô Validate release input
+  Γ£ô Download all artifacts
+  * Prepare release assets
+  * Create or update release
+  * Post Checkout (for release notes body_path)
+
+ANNOTATIONS
+X Process completed with exit code 2.
+macos (clang, macos-14, arm64): .github#27
+
+X Process completed with exit code 1.
+windows (true, false,  - AoT): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (true, false,  - AoT): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (true, false,  - AoT): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#720
+
+! 'fs': unreferenced parameter
+windows (true, false,  - AoT): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (true, false,  - AoT): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (true, false,  - AoT): .github#55
+
+X Process completed with exit code 1.
+windows (false, true): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (false, true): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (false, true): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#720
+
+! 'fs': unreferenced parameter
+windows (false, true): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (false, true): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (false, true): .github#55
+
+Refreshing run status every 20 seconds. Press Ctrl+C to quit.
+
+* master Build Nexen ┬╖ 24965109991
+Triggered via workflow_dispatch about 16 minutes ago
+
+JOBS
+X macos (clang, macos-14, arm64) in 59s (ID 73098450012)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  X Build Nexen
+  - Sign binary
+  - Zip Nexen.app
+  Γ£ô Capture runtime dependency report (macOS publish)
+  - Validate required runtime assets (macOS publish)
+  Γ£ô Upload runtime dependency report (macOS publish)
+  - Upload Nexen
+  Γ£ô Post Setup CCache
+  - Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (true, false,  - AoT) in 12m41s (ID 73098450015)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04-arm, ARM64, Linux/appimage/appimage-arm64.sh) in 10m6s (ID 73098450017)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (false, true) in 10m23s (ID 73098450020)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04, x64, Linux/appimage/appimage.sh) in 12m38s (ID 73098450023)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang_aot, ubuntu-22.04, x64) in 15m44s (ID 73098450030)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04, x64) in 10m48s (ID 73098450031)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04-arm, arm64) in 9m22s (ID 73098450032)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04, x64) in 8m56s (ID 73098450033)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04-arm, arm64) in 8m37s (ID 73098450037)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+* release (ID 73099269578)
+  Γ£ô Set up job
+  Γ£ô Checkout (for release notes body_path)
+  Γ£ô Validate release input
+  Γ£ô Download all artifacts
+  Γ£ô Prepare release assets
+  * Create or update release
+  * Post Checkout (for release notes body_path)
+
+ANNOTATIONS
+X Process completed with exit code 2.
+macos (clang, macos-14, arm64): .github#27
+
+X Process completed with exit code 1.
+windows (true, false,  - AoT): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (true, false,  - AoT): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (true, false,  - AoT): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#720
+
+! 'fs': unreferenced parameter
+windows (true, false,  - AoT): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (true, false,  - AoT): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (true, false,  - AoT): .github#55
+
+X Process completed with exit code 1.
+windows (false, true): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (false, true): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (false, true): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#720
+
+! 'fs': unreferenced parameter
+windows (false, true): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (false, true): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (false, true): .github#55
+
+X master Build Nexen ┬╖ 24965109991
+Triggered via workflow_dispatch about 16 minutes ago
+
+JOBS
+X macos (clang, macos-14, arm64) in 59s (ID 73098450012)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  X Build Nexen
+  - Sign binary
+  - Zip Nexen.app
+  Γ£ô Capture runtime dependency report (macOS publish)
+  - Validate required runtime assets (macOS publish)
+  Γ£ô Upload runtime dependency report (macOS publish)
+  - Upload Nexen
+  Γ£ô Post Setup CCache
+  - Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (true, false,  - AoT) in 12m41s (ID 73098450015)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04-arm, ARM64, Linux/appimage/appimage-arm64.sh) in 10m6s (ID 73098450017)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô windows (false, true) in 10m23s (ID 73098450020)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Setup MSBuild.exe
+  Γ£ô Restore packages
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build C++ core (InteropDLL)
+  Γ£ô Copy native libs from NuGet cache
+  Γ£ô Package Dependencies.zip
+  Γ£ô Build UI
+  Γ£ô Publish Nexen
+  Γ£ô Capture runtime dependency report (Windows publish)
+  Γ£ô Validate required runtime assets (Windows publish)
+  Γ£ô Upload runtime dependency report (Windows publish)
+  Γ£ô Generate warning report (Windows)
+  Γ£ô Upload warning report (Windows)
+  Γ£ô Generate warning delta summary (Windows)
+  Γ£ô Upload warning delta summary (Windows)
+  Γ£ô Enforce warning regression gate (Windows)
+  Γ£ô Upload Nexen
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô appimage (clang_appimage, ubuntu-22.04, x64, Linux/appimage/appimage.sh) in 12m38s (ID 73098450023)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen (AppImage)
+  Γ£ô Capture runtime dependency report (AppImage publish)
+  Γ£ô Upload runtime dependency report (AppImage publish)
+  Γ£ô Generate warning report (AppImage)
+  Γ£ô Upload warning report (AppImage)
+  Γ£ô Generate warning delta summary (AppImage)
+  Γ£ô Upload warning delta summary (AppImage)
+  Γ£ô Enforce warning regression gate (AppImage)
+  Γ£ô AppImage smoke launch
+  Γ£ô Upload AppImage smoke log
+  Γ£ô Upload Nexen (AppImage)
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang_aot, ubuntu-22.04, x64) in 15m44s (ID 73098450030)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04, x64) in 10m48s (ID 73098450031)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (clang, ubuntu-22.04-arm, arm64) in 9m22s (ID 73098450032)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  - Install GCC 13
+  Γ£ô Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04, x64) in 8m56s (ID 73098450033)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô linux (gcc, ubuntu-22.04-arm, arm64) in 8m37s (ID 73098450037)
+  Γ£ô Set up job
+  Γ£ô Checkout repo
+  Γ£ô Install .NET Core
+  Γ£ô Install dependencies
+  Γ£ô Install GCC 13
+  - Install LLVM 18
+  Γ£ô Setup CCache
+  Γ£ô Write commit SHA1 to file
+  Γ£ô Build Nexen
+  Γ£ô Capture Linux runtime dependency report
+  Γ£ô Upload runtime dependency report (Linux)
+  Γ£ô Generate warning report (Linux)
+  Γ£ô Upload warning report (Linux)
+  Γ£ô Generate warning delta summary (Linux)
+  Γ£ô Upload warning delta summary (Linux)
+  Γ£ô Enforce warning regression gate (Linux)
+  Γ£ô Linux publish smoke launch
+  Γ£ô Upload Linux smoke log
+  Γ£ô Upload Nexen
+  Γ£ô Post Setup CCache
+  Γ£ô Post Install .NET Core
+  Γ£ô Post Checkout repo
+  Γ£ô Complete job
+Γ£ô release in 47s (ID 73099269578)
+  Γ£ô Set up job
+  Γ£ô Checkout (for release notes body_path)
+  Γ£ô Validate release input
+  Γ£ô Download all artifacts
+  Γ£ô Prepare release assets
+  Γ£ô Create or update release
+  Γ£ô Post Checkout (for release notes body_path)
+  Γ£ô Complete job
+
+ANNOTATIONS
+X Process completed with exit code 2.
+macos (clang, macos-14, arm64): .github#27
+
+X Process completed with exit code 1.
+windows (true, false,  - AoT): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (true, false,  - AoT): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (true, false,  - AoT): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (true, false,  - AoT): .github#720
+
+! 'fs': unreferenced parameter
+windows (true, false,  - AoT): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (true, false,  - AoT): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (true, false,  - AoT): .github#55
+
+X Process completed with exit code 1.
+windows (false, true): .github#35
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1222
+
+! 'return': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#1002
+
+! '=': conversion from 'unsigned int' to 'uint16', possible loss of data
+windows (false, true): .github#927
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#873
+
+! 'argument': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#857
+
+! '=': conversion from 'int' to 'int16', possible loss of data
+windows (false, true): .github#796
+
+! '=': conversion from 'int' to 'uint8', possible loss of data
+windows (false, true): .github#720
+
+! 'fs': unreferenced parameter
+windows (false, true): .github#959
+
+! '=': conversion from 'int' to 'short', possible loss of data
+windows (false, true): .github#216
+
+! operator '-': deprecated between enumerations of different types
+windows (false, true): .github#55
+
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: softprops/action-gh-release@v2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+release: .github#2
+

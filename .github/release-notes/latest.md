@@ -1,4 +1,4 @@
-# Nexen v1.4.38 - Test Flight Stabilization Pass
+﻿# Nexen v1.4.38 - Test Flight Stabilization Pass
 
 > ⚠️ Warning: This is a bad release for testing and validation only. Do not use this version as a daily build. Please watch for v1.5.0 for the recommended forward release.
 

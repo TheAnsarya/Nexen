@@ -1,0 +1,27 @@
+macos (clang, macos-14, arm64)	Build Nexen	﻿2026-04-26T19:47:45.1032210Z ##[group]Run LLVM_PREFIX="$(brew --prefix llvm)"
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1032680Z [36;1mLLVM_PREFIX="$(brew --prefix llvm)"[0m
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1032930Z [36;1mexport PATH="${LLVM_PREFIX}/bin:$PATH"[0m
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1033170Z [36;1mexport CC="${LLVM_PREFIX}/bin/clang"[0m
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1033470Z [36;1mexport CXX="${LLVM_PREFIX}/bin/clang++"[0m
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1033880Z [36;1m# Pass linker flags to use Homebrew's libc++ instead of system libc++[0m
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1034310Z [36;1m# EXTRA_CXXFLAGS is appended to CXXFLAGS/CFLAGS alongside NEXENFLAGS in the makefile[0m
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1034770Z [36;1mLIBCXX_FLAGS="-stdlib=libc++ -nostdinc++ -isystem ${LLVM_PREFIX}/include/c++/v1"[0m
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1035270Z [36;1mLINK_FLAGS="-L${LLVM_PREFIX}/lib/c++ -Wl,-rpath,${LLVM_PREFIX}/lib/c++ -lc++ -lc++abi"[0m
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1035770Z [36;1mmake CC="$CC" CXX="$CXX" EXTRA_CXXFLAGS="${LIBCXX_FLAGS} ${LINK_FLAGS}"  -j$(sysctl -n hw.logicalcpu)[0m
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1089950Z shell: /bin/bash -e {0}
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1090180Z env:
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1090330Z   DOTNET_CLI_TELEMETRY_OPTOUT: 1
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1090520Z   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1090760Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1090960Z   WARNING_BASELINE_WINDOWS: 0
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1091140Z   WARNING_BASELINE_LINUX: 4078
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1091330Z   WARNING_BASELINE_APPIMAGE: 145
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1091510Z   WARNING_FAIL_ON_REGRESSION: 1
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1091690Z   DOTNET_ROOT: /Users/runner/.dotnet
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1093290Z   PATH: /opt/homebrew/opt/ccache/libexec:/Users/runner/.dotnet:/opt/homebrew/lib/ruby/gems/3.3.0/bin:/opt/homebrew/opt/ruby@3.3/bin:/Users/runner/.local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/runner/.cargo/bin:/usr/local/opt/curl/bin:/usr/local/bin:/usr/local/sbin:/Users/runner/bin:/Users/runner/.yarn/bin:/Users/runner/Library/Android/sdk/tools:/Users/runner/Library/Android/sdk/platform-tools:/Library/Frameworks/Python.framework/Versions/Current/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/usr/bin:/bin:/usr/sbin:/sbin:/Users/runner/.dotnet/tools
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1095330Z   CCACHE_MAXSIZE: 500M
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1095490Z   CCACHE_DIR: /Users/runner/.cache/ccache
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1095710Z   CCACHE_BASEDIR: /Users/runner/work/Nexen/Nexen
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.1095960Z ##[endgroup]
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.7190460Z makefile:1: *** missing separator.  Stop.
+macos (clang, macos-14, arm64)	Build Nexen	2026-04-26T19:47:45.7200620Z ##[error]Process completed with exit code 2.
