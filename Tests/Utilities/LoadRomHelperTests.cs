@@ -54,17 +54,18 @@ public sealed class LoadRomHelperTests {
 
 	[Fact]
 	public async Task AcquireSerializedLoadGateForTests_BlocksSecondAcquireUntilRelease() {
+		CancellationToken cancellationToken = TestContext.Current.CancellationToken;
 		Assert.Equal(1, LoadRomHelper.GetSerializedLoadGateCountForTests());
 
 		using IDisposable firstGate = await LoadRomHelper.AcquireSerializedLoadGateForTests("FirstAcquire");
 		Assert.Equal(0, LoadRomHelper.GetSerializedLoadGateCountForTests());
 
 		Task<IDisposable> secondAcquireTask = LoadRomHelper.AcquireSerializedLoadGateForTests("SecondAcquire");
-		await Task.Delay(50);
+		await Task.Delay(50, cancellationToken);
 		Assert.False(secondAcquireTask.IsCompleted);
 
 		firstGate.Dispose();
-		using IDisposable secondGate = await secondAcquireTask.WaitAsync(TimeSpan.FromSeconds(2));
+		using IDisposable secondGate = await secondAcquireTask.WaitAsync(TimeSpan.FromSeconds(2), cancellationToken);
 		Assert.Equal(0, LoadRomHelper.GetSerializedLoadGateCountForTests());
 	}
 

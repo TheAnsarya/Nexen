@@ -1,4 +1,4 @@
-# Nexen v1.4.38 Stable Release: Dialog Parent Hardening and TAS Preview Fixes
+﻿# Nexen v1.4.38 Stable Release: Dialog Parent Hardening and TAS Preview Fixes
 
 Nexen v1.4.38 focuses on release stability and cross-platform dialog safety, with a targeted Linux/AppImage reset-flow fix, a full dialog-parent hardening sweep, and a TAS input-preview correctness fix discovered during release validation.
 
