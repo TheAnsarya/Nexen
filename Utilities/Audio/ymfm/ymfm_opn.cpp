@@ -327,6 +327,8 @@ void opn_registers_base<IsOpnA>::cache_operator_data(uint32_t choffs, uint32_t o
 
 template <bool IsOpnA>
 uint32_t opn_registers_base<IsOpnA>::compute_phase_step(uint32_t choffs, uint32_t opoffs, opdata_cache const& cache, int32_t lfo_raw_pm) {
+	(void)opoffs;
+
 	// OPN phase calculation has only a single detune parameter
 	// and uses FNUMs instead of keycodes
 

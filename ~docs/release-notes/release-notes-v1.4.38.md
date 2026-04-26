@@ -1,56 +1,61 @@
-﻿# Nexen v1.4.38 Stable Release: Dialog Parent Hardening and TAS Preview Fixes
+﻿# Nexen v1.4.38 Testing Release - Do Not Use In Production
 
-Nexen v1.4.38 focuses on release stability and cross-platform dialog safety, with a targeted Linux/AppImage reset-flow fix, a full dialog-parent hardening sweep, and a TAS input-preview correctness fix discovered during release validation.
+> ⚠️ Warning: This is a bad release for testing and validation only. Do not use this version as a daily build. Please watch for v1.5.0 for the recommended forward release.
 
-## What Changed In v1.4.38
+Nexen v1.4.38 is a stabilization checkpoint focused on cross-platform dialog ownership safety, TAS input preview correctness, and release-gate determinism. This release is intentionally published as a testing milestone so teams can validate behavior, packaging, and CI artifact integrity before the v1.5.0 rollout.
 
-| Area | Summary |
+## 🌟 Release Title
+
+Nexen v1.4.38 - Test Flight Stabilization Pass
+
+## 🧭 Scope Of This Build
+
+| Area | Outcome |
 |---|---|
-| Settings and dialogs | Fixed reset-flow invalid parent ownership and hardened parent resolution for dialogs/file pickers |
-| UI stability | Updated firmware/palette/config dialog call sites to pass valid owners |
-| TAS editor correctness | Fixed stale SNES button reuse in Genesis input preview when layouts share button counts |
-| Release readiness | Completed release build + C++ + .NET validation gates |
+| 🪟 Dialog ownership safety | Hardened parent window resolution for cross-platform dialogs and file pickers |
+| 🧩 UI callsite cleanup | Removed risky parent usage patterns in settings/firmware/palette workflows |
+| 🎮 TAS correctness | Fixed stale button-layout reuse during preview updates |
+| ✅ Release gates | Repeated release build and test validation passes with deterministic outcomes |
+| 📦 Artifact readiness | Release workflow prepared to emit multi-platform binaries for tag v1.4.38 |
 
-## Fix Highlights
+## 🔧 Fix Highlights
 
-### Linux/AppImage reset dialog stability
+### Linux/AppImage settings reset hardening
 
-- Fixed settings reset confirmation ownership to prevent `Invalid parent window` failures in Linux/AppImage flows.
-- Added robust owner resolution fallback in shared UI utilities to avoid invalid dialog/file picker parents.
+- Fixed reset confirmation ownership to avoid invalid parent window failures during settings reset flows.
+- Centralized owner resolution fallback so dialogs remain valid even when controls are detached or re-parented.
 
-### Full dialog-parent hardening sweep
+### Full parent-resolution sweep in UI surfaces
 
-- Centralized parent resolution in UI helper utilities.
-- Removed invalid-parent throw behavior from message-box and file-dialog wrappers.
-- Updated firmware and palette configuration surfaces to use safe parent references.
+- Hardened shared message-box and file-dialog helper behavior.
+- Updated control callsites to provide safe owners instead of fragile visual roots.
+- Reduced platform-specific dialog regressions in firmware and palette configuration paths.
 
-### TAS input preview correctness
+### TAS input preview determinism and correctness
 
-- Fixed in-place preview update logic to rebuild when layout identity changes, even if button counts match.
-- Prevents stale SNES button IDs from appearing in Genesis preview grids.
+- Corrected in-place update logic so layout identity is validated before button-state reuse.
+- Prevented stale SNES button IDs from persisting when switching to Genesis layouts with equal counts.
 
-## Validation Summary
+## 🧪 Validation Summary
 
-- Release build: `Build Nexen Release x64` passed.
-- C++ tests: `Core.Tests.exe --gtest_brief=1` passed (`3706/3706`).
-- .NET tests: `dotnet test Tests/Nexen.Tests.csproj -c Release --nologo` passed (`1716/1716`).
+- Release build gate passed for Release x64.
+- C++ gate passed: Core.Tests.exe --gtest_brief=1 => 3706/3706.
+- .NET gate passed: dotnet test Tests/Nexen.Tests.csproj -c Release --nologo => 1716/1716.
 
-## Release Assets
+## 📦 Expected Release Assets (v1.4.38)
 
-Assets for tag v1.4.38 are expected on the release page:
+- Nexen-Windows-x64-v1.4.38.exe
+- Nexen-Windows-x64-AoT-v1.4.38.exe
+- Nexen-Linux-x64-v1.4.38.AppImage
+- Nexen-Linux-ARM64-v1.4.38.AppImage
+- Nexen-Linux-x64-v1.4.38.tar.gz
+- Nexen-Linux-x64-gcc-v1.4.38.tar.gz
+- Nexen-Linux-ARM64-v1.4.38.tar.gz
+- Nexen-Linux-ARM64-gcc-v1.4.38.tar.gz
+- Nexen-Linux-x64-AoT-v1.4.38.tar.gz
+- Nexen-macOS-ARM64-v1.4.38.zip
 
-- `Nexen-Windows-x64-v1.4.38.exe`
-- `Nexen-Windows-x64-AoT-v1.4.38.exe`
-- `Nexen-Linux-x64-v1.4.38.AppImage`
-- `Nexen-Linux-ARM64-v1.4.38.AppImage`
-- `Nexen-Linux-x64-v1.4.38.tar.gz`
-- `Nexen-Linux-x64-gcc-v1.4.38.tar.gz`
-- `Nexen-Linux-ARM64-v1.4.38.tar.gz`
-- `Nexen-Linux-ARM64-gcc-v1.4.38.tar.gz`
-- `Nexen-Linux-x64-AoT-v1.4.38.tar.gz`
-- `Nexen-macOS-ARM64-v1.4.38.zip`
-
-## Links
+## 🔗 Links
 
 - Release tag: https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.38
 - Compare: https://github.com/TheAnsarya/Nexen/compare/v1.4.37...v1.4.38
