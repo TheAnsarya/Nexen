@@ -27,6 +27,7 @@ struct GenesisPlatformBusSaveState {
 	vector<uint8_t> Rom;
 	vector<uint8_t> WorkRam;
 	vector<uint8_t> Io;
+	vector<uint8_t> ExpansionIo;
 	vector<uint8_t> VdpIo;
 	std::array<uint8_t, 0x20> VdpRegisters = {};
 	uint16_t VdpStatus = 0;
@@ -136,6 +137,7 @@ private:
 	vector<uint8_t> _rom;
 	vector<uint8_t> _workRam;
 	vector<uint8_t> _io;
+	vector<uint8_t> _expansionIo;
 	vector<uint8_t> _vdpIo;
 	std::array<uint8_t, 0x20> _vdpRegisters = {};
 	uint16_t _vdpStatus = 0x0001;
@@ -208,6 +210,8 @@ private:
 	vector<string> _commandResponseLane;
 
 	[[nodiscard]] GenesisBusOwner DecodeOwner(uint32_t address) const;
+	[[nodiscard]] bool IsCommandResponseLaneAddress(uint32_t address) const;
+	[[nodiscard]] const char* GetCommandResponseLaneRole(uint32_t address) const;
 	void AppendOwnershipTrace(uint32_t address, GenesisBusOwner owner, bool isWrite, uint8_t value);
 	void AppendCommandResponseLane(uint32_t address, bool isWrite, uint8_t value);
 	void ApplyVdpControlWord(uint16_t controlWord);

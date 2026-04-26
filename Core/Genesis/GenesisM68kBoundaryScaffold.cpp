@@ -13,6 +13,7 @@ namespace {
 GenesisPlatformBusStub::GenesisPlatformBusStub()
 	: _workRam(64 * 1024, 0),
 	  _io(0x20, 0),
+	  _expansionIo(0x20, 0),
 	  _vdpIo(0x20, 0) {
 }
 
@@ -24,6 +25,10 @@ GenesisBusOwner GenesisPlatformBusStub::DecodeOwner(uint32_t address) const {
 	}
 
 	if (address >= 0xA04000 && address <= 0xA04003) {
+		return GenesisBusOwner::Io;
+	}
+
+	if (address >= 0xA12000 && address <= 0xA1201F) {
 		return GenesisBusOwner::Io;
 	}
 
@@ -46,6 +51,23 @@ GenesisBusOwner GenesisPlatformBusStub::DecodeOwner(uint32_t address) const {
 	return GenesisBusOwner::OpenBus;
 }
 
+bool GenesisPlatformBusStub::IsCommandResponseLaneAddress(uint32_t address) const {
+	return (address >= 0xA10000 && address <= 0xA1001F)
+		|| (address >= 0xA12000 && address <= 0xA1201F);
+}
+
+const char* GenesisPlatformBusStub::GetCommandResponseLaneRole(uint32_t address) const {
+	if (address >= 0xA12000 && address <= 0xA1200F) {
+		return "SCD-CMD";
+	}
+
+	if (address >= 0xA12010 && address <= 0xA1201F) {
+		return "SCD-RSP";
+	}
+
+	return "GEN-IO";
+}
+
 void GenesisPlatformBusStub::AppendOwnershipTrace(uint32_t address, GenesisBusOwner owner, bool isWrite, uint8_t value) {
 	uint64_t hash = _ownershipTraceDigest.empty() ? FnvOffsetBasis : std::stoull(_ownershipTraceDigest, nullptr, 16);
 	uint64_t token = ((uint64_t)(address & 0xFFFFFF) << 16) |
@@ -60,9 +82,11 @@ void GenesisPlatformBusStub::AppendOwnershipTrace(uint32_t address, GenesisBusOw
 
 void GenesisPlatformBusStub::AppendCommandResponseLane(uint32_t address, bool isWrite, uint8_t value) {
 	_commandResponseSequence++;
+	const char* role = GetCommandResponseLaneRole(address);
 	string laneEntry = std::format(
-		"SCD-LANE seq={} op={} addr={:06x} value={:02x}",
+		"SCD-LANE seq={} role={} op={} addr={:06x} value={:02x}",
 		_commandResponseSequence,
+		role,
 		isWrite ? "W" : "R",
 		address & 0xFFFFFF,
 		value);
@@ -289,6 +313,7 @@ void GenesisPlatformBusStub::LoadRom(const vector<uint8_t>& romData) {
 void GenesisPlatformBusStub::Reset() {
 	std::fill(_workRam.begin(), _workRam.end(), 0);
 	std::fill(_io.begin(), _io.end(), 0);
+	std::fill(_expansionIo.begin(), _expansionIo.end(), 0);
 	std::fill(_vdpIo.begin(), _vdpIo.end(), 0);
 	std::fill(_vdpRegisters.begin(), _vdpRegisters.end(), 0);
 	_vdpStatus = 0x0001;
@@ -366,6 +391,7 @@ GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
 	state.Rom = _rom;
 	state.WorkRam = _workRam;
 	state.Io = _io;
+	state.ExpansionIo = _expansionIo;
 	state.VdpIo = _vdpIo;
 	state.VdpRegisters = _vdpRegisters;
 	state.VdpStatus = _vdpStatus;
@@ -443,6 +469,10 @@ void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state)
 	_rom = state.Rom;
 	_workRam = state.WorkRam;
 	_io = state.Io;
+	_expansionIo = state.ExpansionIo;
+	if (_expansionIo.size() != 0x20) {
+		_expansionIo.resize(0x20, 0);
+	}
 	_vdpIo = state.VdpIo;
 	_vdpRegisters = state.VdpRegisters;
 	_vdpStatus = state.VdpStatus;
@@ -606,6 +636,10 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 		case GenesisBusOwner::Io:
 			_ioWindowAccessed = true;
 			_ioReadCount++;
+			if (address >= 0xA12000 && address <= 0xA1201F) {
+				result = _expansionIo[address & 0x1F];
+				break;
+			}
 			if (address == 0xA04000) {
 				result = _ym2612AddressPort0;
 				break;
@@ -660,7 +694,7 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 			break;
 	}
 
-	if (owner == GenesisBusOwner::Io && address >= 0xA10000 && address <= 0xA1001F) {
+	if (owner == GenesisBusOwner::Io && IsCommandResponseLaneAddress(address)) {
 		AppendCommandResponseLane(address, false, result);
 	}
 
@@ -688,8 +722,12 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 		case GenesisBusOwner::Io:
 			_ioWindowAccessed = true;
 			_ioWriteCount++;
-			_io[address & 0x1F] = value;
-			if (address >= 0xA10000 && address <= 0xA1001F) {
+			if (address >= 0xA12000 && address <= 0xA1201F) {
+				_expansionIo[address & 0x1F] = value;
+			} else {
+				_io[address & 0x1F] = value;
+			}
+			if (IsCommandResponseLaneAddress(address)) {
 				AppendCommandResponseLane(address, true, value);
 			}
 			if (address == 0xA04000) {
