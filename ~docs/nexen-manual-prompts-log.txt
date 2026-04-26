@@ -1879,6 +1879,7 @@ continue;
 
 [Nexen] for the 1.4.38 release, the `macos` artifact build failed, check the build for errors, fix those errors, and rebuild that release artifact; The 1.4.38 release itself was never pushed/released even though all the other artifacts built; fix all that, create the release, update the title and description, and add all the artifacts we have that work, then add the `macos` artifact when it builds correctly; continue;
 
+[Nexen] The 1.4.38 release has not been released and pushed to github even though all the artifacts built in `https://github.com/TheAnsarya/Nexen/actions/runs/24965841650` make the release with title and description, push tags, copy completed artifacts; continue;
 
 
 
