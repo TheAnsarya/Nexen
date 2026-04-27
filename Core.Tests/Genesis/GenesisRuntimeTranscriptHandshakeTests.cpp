@@ -545,6 +545,24 @@ namespace {
 		EXPECT_NE(std::get<4>(expected), 0ull);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, SegaCdToolingStatusExposesDebugLaneTelemetryBytes) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.DebugWrite8(0xA10009, 0x11);
+		memoryManager.DebugWrite8(0xA12012, 0x22);
+		(void)memoryManager.DebugRead8(0xA1201B);
+
+		RuntimeTranscriptSnapshot snapshot = CaptureSnapshot(memoryManager);
+		uint8_t laneCountStatus = memoryManager.Read8(0xA12018);
+		uint8_t laneDigestStatus = memoryManager.Read8(0xA12019);
+
+		EXPECT_EQ(laneCountStatus, (uint8_t)(snapshot.DebugLaneCount & 0xFF));
+		EXPECT_EQ(laneDigestStatus, (uint8_t)(snapshot.DebugLaneDigest & 0xFF));
+		EXPECT_NE(laneCountStatus, 0u);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugTranscriptLaneCapturesIoZ80VdpAndHandshakeTraffic) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);

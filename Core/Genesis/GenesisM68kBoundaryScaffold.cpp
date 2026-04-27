@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
+#include <charconv>
 
 namespace {
 	static constexpr uint64_t FnvOffsetBasis = 1469598103934665603ull;
@@ -14,7 +15,21 @@ namespace {
 	}
 
 	bool IsSegaCdToolingStatusAddress(uint32_t address) {
-		return address >= 0xA1201A && address <= 0xA1201F;
+		return address >= 0xA12018 && address <= 0xA1201F;
+	}
+
+	uint8_t GetDigestLowByte(const string& digestHex) {
+		if (digestHex.size() < 2) {
+			return 0;
+		}
+
+		uint32_t value = 0;
+		auto [ptr, ec] = std::from_chars(digestHex.data() + (digestHex.size() - 2), digestHex.data() + digestHex.size(), value, 16);
+		if (ec != std::errc() || ptr != digestHex.data() + digestHex.size()) {
+			return 0;
+		}
+
+		return (uint8_t)(value & 0xFF);
 	}
 
 	bool Is32xSh2ControlAddress(uint32_t address) {
@@ -901,7 +916,11 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 			_ioWindowAccessed = true;
 			_ioReadCount++;
 			if (IsSegaCdToolingStatusAddress(address)) {
-				if (address == 0xA1201A) {
+				if (address == 0xA12018) {
+					result = (uint8_t)(_commandResponseLaneCount & 0xFF);
+				} else if (address == 0xA12019) {
+					result = GetDigestLowByte(_commandResponseLaneDigest);
+				} else if (address == 0xA1201A) {
 					result = _segaCdToolingCapabilities;
 				} else if (address == 0xA1201B) {
 					result = _segaCdToolingDigest;

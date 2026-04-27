@@ -316,4 +316,28 @@ namespace {
 		EXPECT_EQ(p1Digest, 0x4Bu);
 		EXPECT_EQ(p2Digest, 0x7Bu);
 	}
+
+	TEST(Genesis32xBusOwnershipDigestScaffoldTests, SegaCdToolingTelemetryStatusBytesTrackCommandResponseLaneState) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+		auto& bus = scaffold.GetBus();
+
+		bus.ClearCommandResponseLane();
+		EXPECT_EQ(bus.ReadByte(0xA12018), 0u);
+
+		bus.WriteByte(0xA12012, 0x11);
+		bus.WriteByte(0xA12013, 0x22);
+		(void)bus.ReadByte(0xA1201B);
+
+		uint8_t expectedCountByte = (uint8_t)(bus.GetCommandResponseLaneCount() & 0xFF);
+		uint8_t laneCountStatus = bus.ReadByte(0xA12018);
+		EXPECT_EQ(laneCountStatus, expectedCountByte);
+
+		GenesisBoundaryScaffoldSaveState checkpoint = scaffold.SaveState();
+		uint8_t baselineDigest = bus.ReadByte(0xA12019);
+
+		scaffold.LoadState(checkpoint);
+		EXPECT_EQ(bus.ReadByte(0xA12019), baselineDigest);
+		EXPECT_NE(baselineDigest, 0u);
+	}
 }
