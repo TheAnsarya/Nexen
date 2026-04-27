@@ -238,6 +238,50 @@ namespace {
 		EXPECT_EQ(runA, runB);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshake16BitAccessesCaptureExpectedEntriesAndFlags) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write16(0xA11100, 0x0100);
+		memoryManager.Write16(0xA11200, 0x0000);
+		(void)memoryManager.Read16(0xA11100);
+		(void)memoryManager.Read16(0xA11200);
+
+		RuntimeTranscriptSnapshot snapshot = CaptureSnapshot(memoryManager);
+		ASSERT_EQ(snapshot.LaneCount, 4u);
+		EXPECT_EQ(snapshot.EntryAddress[0], 0xA11100u);
+		EXPECT_EQ(snapshot.EntryAddress[1], 0xA11200u);
+		EXPECT_EQ(snapshot.EntryAddress[2], 0xA11100u);
+		EXPECT_EQ(snapshot.EntryAddress[3], 0xA11200u);
+
+		EXPECT_EQ(snapshot.EntryFlags[0] & 0x81, 0x81);
+		EXPECT_EQ(snapshot.EntryFlags[1] & 0x85, 0x85);
+		EXPECT_EQ(snapshot.EntryFlags[2] & 0x82, 0x82);
+		EXPECT_EQ(snapshot.EntryFlags[3] & 0x86, 0x86);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshake16BitScenarioIsDeterministicAcrossRuns) {
+		auto run16BitScenario = []() {
+			Emulator emu;
+			std::vector<uint8_t> romData(0x400000);
+			GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+			memoryManager.Write16(0xA11100, 0x0000);
+			memoryManager.Write16(0xA11200, 0x0100);
+			(void)memoryManager.Read16(0xA11100);
+			(void)memoryManager.Read16(0xA11200);
+			memoryManager.Write16(0xA11100, 0x0100);
+			memoryManager.Write16(0xA11200, 0x0000);
+			return CaptureSnapshot(memoryManager);
+		};
+
+		RuntimeTranscriptSnapshot runA = run16BitScenario();
+		RuntimeTranscriptSnapshot runB = run16BitScenario();
+
+		EXPECT_EQ(runA, runB);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeTranscriptPreservesReplayAfterSerializeRoundtrip) {
 		Emulator emuA;
 		std::vector<uint8_t> romA(0x400000);
