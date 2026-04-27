@@ -122,6 +122,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Genesis M68000 Boundary and Bring-Up Plan](plans/genesis-m68000-boundary-and-bringup.md) | M68000 contract and phased bring-up scaffold (#700) |
 | [Genesis VDP DMA Milestone Plan](plans/genesis-vdp-dma-milestones-and-harness.md) | VDP timing and DMA checkpoint matrix for staged execution (#701) |
 | [Genesis Z80 Audio Integration Staging](plans/genesis-z80-audio-integration-staging.md) | Phased Z80/YM2612/SN76489 integration and risk controls (#702) |
+| [Issue #1426 Genesis Research Dossier (2026-04-27)](plans/2026-04-27-issue-1426-genesis-research-dossier.md) | Hardware reference baseline, comparative emulator module map, and validation corpus for Genesis fundamentals |
 | [Platform Parity Benchmark and Correctness Gates](plans/platform-parity-benchmark-and-correctness-gates.md) | Cross-phase quality gates and evidence framework (#703) |
 | [Atari 2600 + Genesis Parity Tracker](plans/atari2600-genesis-parity-tracker.md) | Active multi-phase checklist, issue linkage, and closure criteria for parity execution (#750) |
 | [UI Settings Completeness Plan](plans/ui-settings-completeness-epic-18.md) | Epic #1040 execution plan for cross-platform settings/input/movie/savestate UX completeness |

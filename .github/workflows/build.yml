@@ -46,6 +46,27 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Guard removed archive vendor-path references
+        shell: pwsh
+        run: |
+          $guardFiles = @(
+            "makefile",
+            "Nexen.sln",
+            "Utilities/Utilities.vcxproj",
+            "Utilities/Utilities.vcxproj.filters"
+          )
+
+          $forbiddenPattern = 'SEVENZIPSRC|SEVENZIPOBJ|SZReader\.h|SZReader\.cpp|SevenZip\.vcxproj|\bSevenZip/'
+          $matches = Select-String -Path $guardFiles -Pattern $forbiddenPattern -CaseSensitive
+
+          if ($matches) {
+            Write-Host "Found forbidden removed archive vendor-path references in active build metadata:"
+            $matches | ForEach-Object { Write-Host ("  {0}:{1}: {2}" -f $_.Path, $_.LineNumber, $_.Line.Trim()) }
+            throw "Archive vendor-path guard failed."
+          }
+
+          Write-Host "Archive vendor-path guard passed."
+
       - name: Install .NET Core
         uses: actions/setup-dotnet@v5
         with:

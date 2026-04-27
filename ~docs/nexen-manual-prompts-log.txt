@@ -1899,6 +1899,7 @@ yes, please do that
 
 immediately start rt9 next and keep shipping slice-by-slice with the same cadence.
 
+[Nexen] Continue working issues, go back to ealier issues, so start at issue #1422 and then do #1426 and so on in order so we're focusing on the Sega Genesis fundamentals for a while; work these slices and issues and update and cloase issues as you go, work for a long time; continue;
 
 
 
