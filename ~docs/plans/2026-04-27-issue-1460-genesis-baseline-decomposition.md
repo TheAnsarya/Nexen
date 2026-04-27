@@ -1,4 +1,4 @@
-# Issue #1460 - Genesis Baseline Completion Decomposition (2026-04-27)
+﻿# Issue #1460 - Genesis Baseline Completion Decomposition (2026-04-27)
 
 ## Summary
 

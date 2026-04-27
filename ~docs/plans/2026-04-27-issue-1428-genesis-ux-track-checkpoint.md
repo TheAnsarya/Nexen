@@ -1,4 +1,4 @@
-# Issue #1428 - Genesis UX, Controller, TAS, and Save-State Track Checkpoint
+﻿# Issue #1428 - Genesis UX, Controller, TAS, and Save-State Track Checkpoint
 
 ## Summary
 

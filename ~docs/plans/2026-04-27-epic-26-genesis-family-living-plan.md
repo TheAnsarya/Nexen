@@ -1,4 +1,4 @@
-# Epic 26 - Genesis Family Living Plan (2026-04-27)
+﻿# Epic 26 - Genesis Family Living Plan (2026-04-27)
 
 ## Purpose
 

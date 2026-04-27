@@ -1,4 +1,4 @@
-# Issue #1461 - SMS Maturity for PBC Foundation Decomposition (2026-04-27)
+﻿# Issue #1461 - SMS Maturity for PBC Foundation Decomposition (2026-04-27)
 
 ## Summary
 

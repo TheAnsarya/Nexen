@@ -1,4 +1,4 @@
-# Issue #1426 - Genesis Research Dossier
+﻿# Issue #1426 - Genesis Research Dossier
 
 ## Scope
 

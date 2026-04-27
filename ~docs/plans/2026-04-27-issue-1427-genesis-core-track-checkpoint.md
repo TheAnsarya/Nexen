@@ -1,4 +1,4 @@
-# Issue #1427 - Genesis Core Integration Checkpoint
+﻿# Issue #1427 - Genesis Core Integration Checkpoint
 
 ## Summary
 
