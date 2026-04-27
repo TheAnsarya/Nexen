@@ -50,6 +50,29 @@ namespace {
 		return CaptureSnapshot(memoryManager);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, WorkRamWrite16OnOddAddressAlignsToEvenWordBoundary) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write16(0xFFFFFF, 0x1234);
+
+		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0x12);
+		EXPECT_EQ(memoryManager.Read8(0xFFFFFF), 0x34);
+		EXPECT_EQ(memoryManager.Read16(0xFFFFFE), 0x1234);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, WorkRamRead16OnOddAddressReadsAlignedEvenWord) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xFFFFFE, 0xAB);
+		memoryManager.Write8(0xFFFFFF, 0xCD);
+
+		EXPECT_EQ(memoryManager.Read16(0xFFFFFF), 0xABCD);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeTrafficContributesToTranscriptDigest) {
 		RuntimeTranscriptSnapshot snapshot = RunHandshakeScenario();
 

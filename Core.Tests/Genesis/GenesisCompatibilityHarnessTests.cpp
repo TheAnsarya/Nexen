@@ -71,4 +71,42 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-HOST-MODE"));
 		}
 	}
+
+	TEST(GenesisCompatibilityHarnessTests, PbcHostModeScenarioDigestIsDeterministicAcrossRuns) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus;
+		corpus.push_back({"pbc-host-sms-boot.bin", vector<uint8_t>(0x8000, 0x4E)});
+		corpus.push_back({"pbc-host-sms-runtime.bin", vector<uint8_t>(0x10000, 0x4E)});
+
+		GenesisCompatibilityMatrixResult runA = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+		GenesisCompatibilityMatrixResult runB = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+
+		EXPECT_EQ(runA.PassCount, (int)corpus.size());
+		EXPECT_EQ(runA.FailCount, 0);
+		EXPECT_EQ(runA.Digest, runB.Digest);
+		EXPECT_EQ(runA.OutputLines, runB.OutputLines);
+	}
+
+	TEST(GenesisCompatibilityHarnessTests, PbcHostModeScenarioIncludesDeterministicCheckpointHooks) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus;
+		corpus.push_back({"pbc-host-sms-scenario.bin", vector<uint8_t>(0xC000, 0x4E)});
+
+		GenesisCompatibilityMatrixResult result = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+
+		ASSERT_EQ(result.PassCount, 1);
+		ASSERT_EQ(result.FailCount, 0);
+		ASSERT_EQ(result.Entries.size(), 1u);
+
+		const GenesisCompatibilityEntry& entry = result.Entries[0];
+		auto hasPassingCheckpoint = [&](const string& checkpointId) {
+			return std::any_of(entry.Checkpoints.begin(), entry.Checkpoints.end(), [&](const GenesisCompatibilityCheckpoint& checkpoint) {
+				return checkpoint.Id == checkpointId && checkpoint.Pass;
+			});
+		};
+
+		EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-HOST-MODE"));
+		EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE"));
+		EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DETERMINISM"));
+	}
 }

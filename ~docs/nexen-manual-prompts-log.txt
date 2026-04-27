@@ -1925,9 +1925,9 @@ yes, keep doing that: "I can keep burning down the remaining open [24.x] slices 
 
 Wait, are you actually updating code and benchmarks and tests? It looks like you're only making documentation
 
-Dear christ, you've just been making docs? NO! focus on making actual code implementations of features and tests/benchmarks, review all the work you only updated docs for implement code for these features, DO NOT waste my time with nonsense work that doesn't get us any where, OUR GOAL IS a fully working, fast, and correct Genesis/SegaCD/32X emulator and all the UI debugger/tas/etc features; continue;
+Dear christ, you've just been making docs? NO! focus on making actual code implementations of features and tests/benchmarks; you've been doing a bunch of ethereal vague formalized nonsense, focus on CONCRETE imp[lementation and actual progress in the code; review all the work you only updated docs for implement code for these features, DO NOT waste my time with nonsense work that doesn't get us any where, OUR GOAL IS a fully working, fast, and correct Genesis/SegaCD/32X emulator and all the UI debugger/tas/etc features; continue;
 
-
+[Nexen] I see Tests, and I see Smoke Harness, I don't see any actual work on the emulator itself, program the emulator and make it work, not just shim around it! MAKE REAL PROGRESS!!! ; continue;
 
 
 
@@ -2032,12 +2032,11 @@ prepare for a release, and clean up and update documentation and fix as many war
 
 
 
+0+0+602+347+0+754+565+315+619+626=3828
+587 * 5 = 2935
+3828 - 2935 = 893
+95
 
-
-0+0+619+365+0+770+577+345+631+643=3950
-533 × 5 = 2665
-3950 - 2665 = 1285
-106
 
 
 

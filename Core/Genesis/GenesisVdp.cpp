@@ -27,6 +27,7 @@ void GenesisVdp::Init(Emulator* emu, GenesisConsole* console, GenesisM68k* cpu, 
 	_state.Registers[0] = 0x04; // Mode register 1
 	_state.Registers[1] = 0x04; // Mode register 2 (display off)
 	_state.Registers[10] = 0xFF; // HBlank counter
+	_state.HIntCounter = _state.Registers[10];
 	_autoIncrement = 2;
 
 	_screenWidth = 320;
@@ -42,6 +43,11 @@ void GenesisVdp::Init(Emulator* emu, GenesisConsole* console, GenesisM68k* cpu, 
 void GenesisVdp::SetRegion(bool pal) {
 	_totalLines = pal ? 313 : 262;
 	_screenHeight = pal ? 240 : 224;
+	if (pal) {
+		_state.StatusRegister |= VdpStatus::PalMode;
+	} else {
+		_state.StatusRegister &= ~VdpStatus::PalMode;
+	}
 }
 
 // Run VDP forward to the target master clock cycle
@@ -98,13 +104,13 @@ void GenesisVdp::ProcessScanline() {
 
 	// HBlank interrupt
 	if (_scanline < _screenHeight && IsHBlankInterruptEnabled()) {
-		// HBlank counter
-		if (_state.Registers[10] == 0) {
-			_state.Registers[10] = _state.Registers[10]; // Reload
+		// HBlank counter (reload from R10 after underflow)
+		if (_state.HIntCounter == 0) {
+			_state.HIntCounter = _state.Registers[10];
 			_state.StatusRegister |= VdpStatus::HIntPending;
 			_cpu->SetInterrupt(4); // Level 4 — HBlank
 		} else {
-			_state.Registers[10]--;
+			_state.HIntCounter--;
 		}
 	}
 
@@ -410,6 +416,7 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 
 		// Auto-increment from register 15
 		if (reg == 15) _autoIncrement = data;
+		if (reg == VdpReg::HIntCounter) _state.HIntCounter = data;
 
 		// Update screen mode
 		if (reg == 12) {

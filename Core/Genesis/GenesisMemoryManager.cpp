@@ -341,9 +341,9 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 
 	if (addr >= 0xFF0000) [[likely]] {
 		uint32_t offset = addr & 0xFFFF;
-		uint16_t value = ((uint16_t)_workRam[offset] << 8) | _workRam[offset + 1];
+		uint16_t value = ((uint16_t)_workRam[offset] << 8) | _workRam[(offset + 1) & 0xFFFF];
 		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, _workRam[offset], MemoryOperationType::Read);
-		_openBus = _workRam[offset + 1];
+		_openBus = _workRam[(offset + 1) & 0xFFFF];
 		return value;
 	}
 
@@ -459,7 +459,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		uint8_t highByte = (uint8_t)(value >> 8);
 		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, highByte, MemoryOperationType::Write);
 		_workRam[offset] = (uint8_t)(value >> 8);
-		_workRam[offset + 1] = (uint8_t)(value & 0xFF);
+		_workRam[(offset + 1) & 0xFFFF] = (uint8_t)(value & 0xFF);
 		return;
 	}
 
