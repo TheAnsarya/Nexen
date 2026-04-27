@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisVdp.h"
 #include "Genesis/GenesisConsole.h"
 #include "Genesis/GenesisM68k.h"

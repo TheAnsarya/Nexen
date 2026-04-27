@@ -1941,6 +1941,7 @@ Dear christ, you've just been making docs? NO! focus on making actual code imple
 
 
 
+
 work several issues in a row; make new issues if we find work; don't pause or stop, just keep going working until several are done; continue;
 
 
@@ -2032,10 +2033,10 @@ prepare for a release, and clean up and update documentation and fix as many war
 
 
 
-0+0+602+347+0+754+565+315+619+626=3828
+0+0+597+347+0+754+565+315+619+626=3823
 587 * 5 = 2935
-3828 - 2935 = 893
-95
+3823 - 2935 = 890
+94
 
 
 
