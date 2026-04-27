@@ -1,4 +1,4 @@
-# Issue #1558 - Controller UX/Tooling Determinism Gate Pack Decomposition (2026-04-27)
+﻿# Issue #1558 - Controller UX/Tooling Determinism Gate Pack Decomposition (2026-04-27)
 
 ## Summary
 

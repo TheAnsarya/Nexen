@@ -1,4 +1,4 @@
-# Issue #1556 - 32X+Power Base Closure Evidence Decomposition (2026-04-27)
+﻿# Issue #1556 - 32X+Power Base Closure Evidence Decomposition (2026-04-27)
 
 ## Summary
 

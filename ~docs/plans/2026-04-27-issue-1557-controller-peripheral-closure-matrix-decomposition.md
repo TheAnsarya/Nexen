@@ -1,4 +1,4 @@
-# Issue #1557 - Controller/Peripheral Closure Matrix Decomposition (2026-04-27)
+﻿# Issue #1557 - Controller/Peripheral Closure Matrix Decomposition (2026-04-27)
 
 ## Summary
 
