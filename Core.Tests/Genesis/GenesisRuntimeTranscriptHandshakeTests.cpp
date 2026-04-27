@@ -265,6 +265,78 @@ namespace {
 		EXPECT_EQ(std::get<2>(expected), std::get<2>(replay));
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugBridgeWriteUpdatesSegaCdToolingStatusBytes) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.DebugWrite8(0xA12012, 0x11);
+		memoryManager.DebugWrite8(0xA12013, 0x22);
+		memoryManager.DebugWrite8(0xA12014, 0x33);
+		memoryManager.DebugWrite8(0xA12015, 0x44);
+
+		EXPECT_EQ(memoryManager.DebugRead8(0xA12012), 0x11u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA12013), 0x22u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA12014), 0x33u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA12015), 0x44u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1201A), 0x0Fu);
+		EXPECT_NE(memoryManager.DebugRead8(0xA1201B), 0x00u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugBridgeReadWriteParityIsDeterministicAcrossSerializeReplay) {
+		Emulator emuA;
+		std::vector<uint8_t> romA(0x400000);
+		GenesisMemoryManager original = CreateMemoryManager(emuA, romA);
+
+		auto runPrefix = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.DebugWrite8(0xA15012, 0x01);
+			memoryManager.DebugWrite8(0xA15013, 0x03);
+			memoryManager.DebugWrite8(0xA15016, 0x04);
+			memoryManager.DebugWrite8(0xA15017, 0x20);
+			(void)memoryManager.DebugRead8(0xA1501A);
+		};
+
+		auto runTail = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.DebugWrite8(0xA15014, 0x8A);
+			memoryManager.DebugWrite8(0xA15009, 0x41);
+			memoryManager.DebugWrite8(0xA1500B, 0x6D);
+			uint8_t sh2Status = memoryManager.DebugRead8(0xA1501A);
+			uint8_t sh2Digest = memoryManager.DebugRead8(0xA1501B);
+			uint8_t composeStatus = memoryManager.DebugRead8(0xA1501C);
+			uint8_t composeDigest = memoryManager.DebugRead8(0xA1501D);
+			uint8_t toolingCaps = memoryManager.DebugRead8(0xA1501E);
+			uint8_t toolingDigest = memoryManager.DebugRead8(0xA1501F);
+			return std::tuple<uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t>(
+				sh2Status,
+				sh2Digest,
+				composeStatus,
+				composeDigest,
+				toolingCaps,
+				toolingDigest);
+		};
+
+		runPrefix(original);
+		Serializer saver(1, true, SerializeFormat::Binary);
+		original.Serialize(saver);
+		std::stringstream state;
+		saver.SaveTo(state);
+		state.seekg(0);
+
+		auto expected = runTail(original);
+
+		Emulator emuB;
+		std::vector<uint8_t> romB(0x400000);
+		GenesisMemoryManager restored = CreateMemoryManager(emuB, romB);
+		Serializer loader(1, false, SerializeFormat::Binary);
+		ASSERT_TRUE(loader.LoadFrom(state));
+		restored.Serialize(loader);
+
+		auto replay = runTail(restored);
+
+		EXPECT_EQ(expected, replay);
+		EXPECT_EQ(std::get<4>(expected), 0x0Fu);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, M32xDualSh2StagingStatusReflectsControlAndSyncPhase) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);

@@ -887,14 +887,64 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 
 uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	addr &= 0xFFFFFF;
-	if (addr < _prgRomSize) return _prgRom[addr];
-	if (addr >= 0xFF0000) return _workRam[addr & 0xFFFF];
+	if (addr < _prgRomSize) {
+		return _prgRom[addr];
+	}
+	if (addr >= 0xFF0000) {
+		return _workRam[addr & 0xFFFF];
+	}
+
+	uint8_t* bridgeSlot = nullptr;
+	uint32_t bridgeIndex = 0;
+	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) {
+		if (IsSegaCdSubCpuControlAddress(addr)) {
+			return GetSegaCdSubCpuStatusByte();
+		}
+		if (IsSegaCdAudioStatusAddress(addr)) {
+			return GetSegaCdAudioStatusByte(addr);
+		}
+		if (IsSegaCdToolingStatusAddress(addr)) {
+			return GetSegaCdToolingStatusByte(addr);
+		}
+		if (Is32xSh2StatusAddress(addr)) {
+			return Get32xSh2StatusByte(addr);
+		}
+		if (Is32xCompositionStatusAddress(addr)) {
+			return Get32xCompositionStatusByte(addr);
+		}
+		if (Is32xToolingStatusAddress(addr)) {
+			return Get32xToolingStatusByte(addr);
+		}
+		return bridgeSlot[bridgeIndex];
+	}
 	return 0;
 }
 
 void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
-	if (addr >= 0xFF0000) _workRam[addr & 0xFFFF] = value;
+	if (addr >= 0xFF0000) {
+		_workRam[addr & 0xFFFF] = value;
+		return;
+	}
+
+	uint8_t* bridgeSlot = nullptr;
+	uint32_t bridgeIndex = 0;
+	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) {
+		bridgeSlot[bridgeIndex] = value;
+		if (IsSegaCdSubCpuControlAddress(addr)) {
+			UpdateSegaCdSubCpuControl(value);
+		} else if (IsSegaCdAudioDataAddress(addr)) {
+			UpdateSegaCdAudioPath(addr, value);
+		} else if (IsSegaCdToolingControlAddress(addr)) {
+			UpdateSegaCdToolingContract(addr, value);
+		} else if (Is32xSh2ControlAddress(addr)) {
+			Update32xSh2Staging(addr, value);
+		} else if (Is32xCompositionControlAddress(addr)) {
+			Update32xCompositionStaging(addr, value);
+		} else if (Is32xToolingControlAddress(addr)) {
+			Update32xToolingContract(addr, value);
+		}
+	}
 }
 
 AddressInfo GenesisMemoryManager::GetAbsoluteAddress(uint32_t addr) {

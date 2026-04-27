@@ -99,6 +99,30 @@ Core/Debugger/
     └── DebugBreakHelper.h        - Break helpers
 ```
 
+## Genesis Tooling Surfaces
+
+The Genesis debugger runtime now exposes deterministic bridge tooling surfaces through debug memory read/write paths in `GenesisMemoryManager`.
+
+### Bridge Windows
+
+- `$a12000-$a1201f` Sega CD bridge window (debug read/write supported)
+- `$a13000-$a1301f` Sega CD bridge lane 2 window (debug read/write supported)
+- `$a14000-$a1401f` Sega CD bridge lane 3 window (debug read/write supported)
+- `$a15000-$a1501f` 32X bridge window (debug read/write supported)
+- `$a16000-$a1601f` Sega CD bridge lane 5 window (debug read/write supported)
+- `$a18000-$a1801f` Sega CD bridge lane 6 window (debug read/write supported)
+
+### Deterministic Status Bytes
+
+- `$a1201a` Sega CD tooling capability byte
+- `$a1201b` Sega CD tooling digest byte
+- `$a1201c` Control port 1 deterministic capability byte
+- `$a1201d` Control port 1 deterministic digest byte
+- `$a1201e` Control port 2 deterministic capability byte
+- `$a1201f` Control port 2 deterministic digest byte
+
+These status bytes are intended for parity and regression checks in debugger-facing validation workflows and are replay-stable across save/load when the same write/read sequence is applied.
+
 ---
 
 ## Core Components
