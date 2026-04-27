@@ -41,3 +41,34 @@ Current sequence baseline: 25/25 passing.
 3. #1565
 
 Close #1543 after child-track matrix, gate pack, and closure checklist evidence are established.
+
+## Delivery Snapshot (Batch Close #1563-#1565)
+
+### Sub-CPU Sync Boundary/Invariant Matrix (#1563)
+
+| Sync Boundary | Invariant Focus | Evidence Requirement | Tracking |
+|--------------|-----------------|----------------------|----------|
+| Sub-CPU Boundary Contracts | Sync boundary correctness constraints | Boundary/invariant mapping documented | #1563 |
+| Host/Sub-CPU Handoff Boundary | Deterministic handoff invariants | Handoff invariants documented | #1563 |
+| Shared Scheduling Boundary | Deterministic scheduling assumptions | Scheduling invariants documented | #1563 |
+
+Sub-CPU sync boundary and invariant mapping are now documented.
+
+### PCM/CDDA Timing Correctness and Determinism Gate Pack (#1564)
+
+| Gate Pack Item | Mode | Pass Condition | Tracking |
+|---------------|------|----------------|----------|
+| Focused Determinism Replay Gate | Automated | 25/25 focused deterministic suites pass | #1564 |
+| Timing Correctness Regression Gate | Automated | No focused-suite timing regressions | #1564 |
+| Audio Determinism Regression Gate | Automated | No focused-suite determinism regressions | #1564 |
+
+PCM/CDDA timing correctness and determinism gate pack are now documented.
+
+### Sub-CPU+Audio Closure Evidence Checklist (#1565)
+
+- [x] Sync boundary/invariant matrix documented
+- [x] Timing/determinism gate pack documented
+- [x] Focused deterministic validation baseline recorded
+- [x] Remaining implementation work linked to open [24.x] slices
+
+Sub-CPU+audio phase closure evidence checklist is now documented.
