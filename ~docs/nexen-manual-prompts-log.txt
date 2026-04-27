@@ -1921,6 +1921,7 @@ Holy cow, you made a ton of new issues, are these all necessary, we need to work
 
 continue;
 
+yes, keep doing that: "I can keep burning down the remaining open [24.x] slices in the same 6-at-a-time closure pattern."
 
 
 

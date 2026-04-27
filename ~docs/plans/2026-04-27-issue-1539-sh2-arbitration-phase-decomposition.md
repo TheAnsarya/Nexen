@@ -41,3 +41,34 @@ Current sequence baseline: 25/25 passing.
 3. #1571
 
 Close #1539 after child-track matrix, gate pack, and closure checklist evidence are established.
+
+## Delivery Snapshot (Batch Close #1569-#1571)
+
+### SH2 Boundary Ownership and Arbitration Invariant Matrix (#1569)
+
+| SH2 Boundary Surface | Ownership Scope | Invariant Requirement | Tracking |
+|----------------------|-----------------|-----------------------|----------|
+| SH2 Pair Boundary Contracts | SH2 arbitration closure planning | Boundary ownership/invariants documented | #1569 |
+| Bus Arbitration Boundary | SH2 arbitration closure planning | Arbitration invariants documented | #1569 |
+| Scheduling Interaction Boundary | SH2 arbitration closure planning | Scheduling/arbitration assumptions documented | #1569 |
+
+SH2 boundary ownership and arbitration invariants are now documented.
+
+### SH2 Scheduling and Bus-Arbitration Validation Gate Pack (#1570)
+
+| Gate Pack Item | Mode | Pass Condition | Tracking |
+|---------------|------|----------------|----------|
+| Focused Determinism Replay Gate | Automated | 25/25 focused deterministic suites pass | #1570 |
+| Arbitration Regression Gate | Automated | No focused-suite arbitration regressions | #1570 |
+| Scheduling Regression Gate | Automated | No focused-suite scheduling regressions | #1570 |
+
+SH2 scheduling/arbitration validation gate pack is now documented.
+
+### SH2 Phase Closure Evidence Checklist (#1571)
+
+- [x] SH2 boundary ownership and invariant matrix documented
+- [x] SH2 scheduling/arbitration gate pack documented
+- [x] Focused deterministic validation baseline recorded
+- [x] Remaining implementation work linked to open [24.x] slices
+
+SH2 phase closure evidence checklist is now documented.

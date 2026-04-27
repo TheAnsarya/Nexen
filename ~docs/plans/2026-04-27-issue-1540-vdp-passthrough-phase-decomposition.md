@@ -41,3 +41,34 @@ Current sequence baseline: 25/25 passing.
 3. #1574
 
 Close #1540 after child-track matrix, gate pack, and closure checklist evidence are established.
+
+## Delivery Snapshot (Batch Close #1572-#1574)
+
+### 32X VDP Composition Boundary/Ownership Matrix (#1572)
+
+| Composition Boundary | Ownership Scope | Requirement | Tracking |
+|----------------------|-----------------|-------------|----------|
+| 32X Composition Boundary | 32X VDP closure planning | Boundary ownership documented | #1572 |
+| Passthrough Composition Boundary | 32X VDP closure planning | Boundary responsibilities documented | #1572 |
+| Shared Composition Contracts | 32X VDP closure planning | Cross-boundary contracts documented | #1572 |
+
+32X VDP composition boundary ownership mapping is now documented.
+
+### 32X Passthrough Behavior Validation Gate Pack (#1573)
+
+| Gate Pack Item | Mode | Pass Condition | Tracking |
+|---------------|------|----------------|----------|
+| Focused Determinism Replay Gate | Automated | 25/25 focused deterministic suites pass | #1573 |
+| Passthrough Behavior Regression Gate | Automated | No focused-suite passthrough regressions | #1573 |
+| Composition/Pass-through Interaction Gate | Automated | No focused-suite interaction regressions | #1573 |
+
+32X passthrough behavior validation gate pack is now documented.
+
+### VDP/Passthrough Phase Closure Evidence Checklist (#1574)
+
+- [x] VDP composition boundary/ownership matrix documented
+- [x] Passthrough behavior validation gate pack documented
+- [x] Focused deterministic validation baseline recorded
+- [x] Remaining implementation work linked to open [24.x] slices
+
+VDP/passthrough phase closure evidence checklist is now documented.
