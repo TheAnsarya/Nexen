@@ -135,6 +135,12 @@ struct GenesisIoState {
 	uint32_t TranscriptEntryAddress[4] = {};
 	uint8_t TranscriptEntryValue[4] = {};
 	uint8_t TranscriptEntryFlags[4] = {};
+
+	uint32_t DebugTranscriptLaneCount = 0;
+	uint64_t DebugTranscriptLaneDigest = 0;
+	uint32_t DebugTranscriptEntryAddress[4] = {};
+	uint8_t DebugTranscriptEntryValue[4] = {};
+	uint8_t DebugTranscriptEntryFlags[4] = {};
 };
 
 // ===== PSG (SN76489) State =====

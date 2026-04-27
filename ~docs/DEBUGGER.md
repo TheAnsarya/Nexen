@@ -142,6 +142,8 @@ Debug writes to controller control registers (`$a10009/$a1000b/$a1000d`) and han
 
 Debug-path bridge and handshake access now contributes transcript lane entries through the same deterministic tracking contracts used by runtime traffic, enabling regression-gate checks on debug-driven event sequences.
 
+Genesis runtime metadata also exposes a dedicated debug transcript lane (separate from the runtime lane) for debugger-driven bridge/handshake traffic, so acceptance gates can validate debug parity evidence independently.
+
 ---
 
 ## Core Components

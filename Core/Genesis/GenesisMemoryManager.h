@@ -118,6 +118,7 @@ private:
 	uint8_t Get32xCompositionStatusByte(uint32_t addr) const;
 	uint8_t Get32xToolingStatusByte(uint32_t addr) const;
 	void TrackTranscriptEntry(uint32_t addr, bool isWrite, uint8_t value, uint8_t roleFlags);
+	void TrackDebugTranscriptEntry(uint32_t addr, bool isWrite, uint8_t value, uint8_t roleFlags);
 	void TrackSegaCdTranscript(uint32_t addr, bool isWrite, uint8_t value);
 	void TrackSegaCdHandshakeTranscript(uint32_t addr, bool isWrite, uint8_t value);
 

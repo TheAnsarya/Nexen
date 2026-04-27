@@ -96,6 +96,13 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_hasSram = false;
 	_sramStart = 0;
 	_sramEnd = 0;
+	_ioState.DebugTranscriptLaneCount = 0;
+	_ioState.DebugTranscriptLaneDigest = 0;
+	for (int i = 0; i < 4; i++) {
+		_ioState.DebugTranscriptEntryAddress[i] = 0;
+		_ioState.DebugTranscriptEntryValue[i] = 0;
+		_ioState.DebugTranscriptEntryFlags[i] = 0;
+	}
 	_sramEvenBytes = true;
 	_sramOddBytes = true;
 	_saveRam = nullptr;
@@ -504,6 +511,31 @@ void GenesisMemoryManager::TrackTranscriptEntry(uint32_t addr, bool isWrite, uin
 	_ioState.TranscriptEntryValue[index] = value;
 	_ioState.TranscriptEntryFlags[index] = roleFlags;
 	_ioState.TranscriptLaneCount++;
+}
+
+void GenesisMemoryManager::TrackDebugTranscriptEntry(uint32_t addr, bool isWrite, uint8_t value, uint8_t roleFlags) {
+	static constexpr uint64_t FnvOffsetBasis = 1469598103934665603ull;
+	static constexpr uint64_t FnvPrime = 1099511628211ull;
+
+	if (isWrite) {
+		roleFlags |= 0x01;
+	}
+	roleFlags |= 0x40;
+
+	uint64_t hash = _ioState.DebugTranscriptLaneDigest == 0 ? FnvOffsetBasis : _ioState.DebugTranscriptLaneDigest;
+	hash ^= (addr & 0xFFFFFF);
+	hash *= FnvPrime;
+	hash ^= value;
+	hash *= FnvPrime;
+	hash ^= roleFlags;
+	hash *= FnvPrime;
+	_ioState.DebugTranscriptLaneDigest = hash;
+
+	uint32_t index = _ioState.DebugTranscriptLaneCount % 4;
+	_ioState.DebugTranscriptEntryAddress[index] = addr & 0xFFFFFF;
+	_ioState.DebugTranscriptEntryValue[index] = value;
+	_ioState.DebugTranscriptEntryFlags[index] = roleFlags;
+	_ioState.DebugTranscriptLaneCount++;
 }
 
 bool GenesisMemoryManager::IsSramAddress(uint32_t addr) const {
@@ -917,10 +949,12 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	if (addr == 0xA11100 || addr == 0xA11101) {
 		uint8_t value = _z80BusRequest ? 0x00 : 0x01;
 		TrackSegaCdHandshakeTranscript(addr, false, value);
+		TrackDebugTranscriptEntry(addr, false, value, 0x80);
 		return value;
 	}
 	if (addr == 0xA11200 || addr == 0xA11201) {
 		TrackSegaCdHandshakeTranscript(addr, false, _openBus);
+		TrackDebugTranscriptEntry(addr, false, _openBus, 0x84);
 		return _openBus;
 	}
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
@@ -946,35 +980,42 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		if (IsSegaCdSubCpuControlAddress(addr)) {
 			uint8_t value = GetSegaCdSubCpuStatusByte();
 			TrackSegaCdTranscript(addr, false, value);
+			TrackDebugTranscriptEntry(addr, false, value, 0x02);
 			return value;
 		}
 		if (IsSegaCdAudioStatusAddress(addr)) {
 			uint8_t value = GetSegaCdAudioStatusByte(addr);
 			TrackSegaCdTranscript(addr, false, value);
+			TrackDebugTranscriptEntry(addr, false, value, 0x02);
 			return value;
 		}
 		if (IsSegaCdToolingStatusAddress(addr)) {
 			uint8_t value = GetSegaCdToolingStatusByte(addr);
 			TrackSegaCdTranscript(addr, false, value);
+			TrackDebugTranscriptEntry(addr, false, value, 0x02);
 			return value;
 		}
 		if (Is32xSh2StatusAddress(addr)) {
 			uint8_t value = Get32xSh2StatusByte(addr);
 			TrackSegaCdTranscript(addr, false, value);
+			TrackDebugTranscriptEntry(addr, false, value, 0x02);
 			return value;
 		}
 		if (Is32xCompositionStatusAddress(addr)) {
 			uint8_t value = Get32xCompositionStatusByte(addr);
 			TrackSegaCdTranscript(addr, false, value);
+			TrackDebugTranscriptEntry(addr, false, value, 0x02);
 			return value;
 		}
 		if (Is32xToolingStatusAddress(addr)) {
 			uint8_t value = Get32xToolingStatusByte(addr);
 			TrackSegaCdTranscript(addr, false, value);
+			TrackDebugTranscriptEntry(addr, false, value, 0x02);
 			return value;
 		}
 		uint8_t value = bridgeSlot[bridgeIndex];
 		TrackSegaCdTranscript(addr, false, value);
+		TrackDebugTranscriptEntry(addr, false, value, 0x02);
 		return value;
 	}
 	return 0;
@@ -1015,11 +1056,13 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	if (addr == 0xA11100 || addr == 0xA11101) {
 		_z80BusRequest = (value & 0x01) != 0;
 		TrackSegaCdHandshakeTranscript(addr, true, value);
+		TrackDebugTranscriptEntry(addr, true, value, 0x80);
 		return;
 	}
 	if (addr == 0xA11200 || addr == 0xA11201) {
 		_z80Reset = !(value & 0x01);
 		TrackSegaCdHandshakeTranscript(addr, true, value);
+		TrackDebugTranscriptEntry(addr, true, value, 0x84);
 		return;
 	}
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
@@ -1053,6 +1096,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 			Update32xToolingContract(addr, value);
 		}
 		TrackSegaCdTranscript(addr, true, value);
+		TrackDebugTranscriptEntry(addr, true, value, 0x00);
 	}
 }
 
@@ -1144,6 +1188,13 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 		SV(_ioState.TranscriptEntryAddress[i]);
 		SV(_ioState.TranscriptEntryValue[i]);
 		SV(_ioState.TranscriptEntryFlags[i]);
+	}
+	SV(_ioState.DebugTranscriptLaneCount);
+	SV(_ioState.DebugTranscriptLaneDigest);
+	for (uint32_t i = 0; i < 4; i++) {
+		SV(_ioState.DebugTranscriptEntryAddress[i]);
+		SV(_ioState.DebugTranscriptEntryValue[i]);
+		SV(_ioState.DebugTranscriptEntryFlags[i]);
 	}
 }
 

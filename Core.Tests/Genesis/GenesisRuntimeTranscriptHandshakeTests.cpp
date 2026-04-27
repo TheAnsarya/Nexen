@@ -9,6 +9,11 @@ namespace {
 		std::array<uint32_t, 4> EntryAddress = {};
 		std::array<uint8_t, 4> EntryValue = {};
 		std::array<uint8_t, 4> EntryFlags = {};
+		uint32_t DebugLaneCount = 0;
+		uint64_t DebugLaneDigest = 0;
+		std::array<uint32_t, 4> DebugEntryAddress = {};
+		std::array<uint8_t, 4> DebugEntryValue = {};
+		std::array<uint8_t, 4> DebugEntryFlags = {};
 
 		bool operator==(const RuntimeTranscriptSnapshot&) const = default;
 	};
@@ -31,7 +36,12 @@ namespace {
 			snapshot.EntryAddress[i] = io.TranscriptEntryAddress[i];
 			snapshot.EntryValue[i] = io.TranscriptEntryValue[i];
 			snapshot.EntryFlags[i] = io.TranscriptEntryFlags[i];
+			snapshot.DebugEntryAddress[i] = io.DebugTranscriptEntryAddress[i];
+			snapshot.DebugEntryValue[i] = io.DebugTranscriptEntryValue[i];
+			snapshot.DebugEntryFlags[i] = io.DebugTranscriptEntryFlags[i];
 		}
+		snapshot.DebugLaneCount = io.DebugTranscriptLaneCount;
+		snapshot.DebugLaneDigest = io.DebugTranscriptLaneDigest;
 		return snapshot;
 	}
 
@@ -476,12 +486,17 @@ namespace {
 		RuntimeTranscriptSnapshot snapshot = CaptureSnapshot(memoryManager);
 		EXPECT_GE(snapshot.LaneCount, 5u);
 		EXPECT_NE(snapshot.LaneDigest, 0ull);
+		EXPECT_GE(snapshot.DebugLaneCount, 5u);
+		EXPECT_NE(snapshot.DebugLaneDigest, 0ull);
 
 		bool sawHandshakeMarker = false;
+		bool sawDebugLaneMarker = false;
 		for (uint32_t i = 0; i < 4; i++) {
 			sawHandshakeMarker |= (snapshot.EntryFlags[i] & 0x80) != 0;
+			sawDebugLaneMarker |= (snapshot.DebugEntryFlags[i] & 0x40) != 0;
 		}
 		EXPECT_TRUE(sawHandshakeMarker);
+		EXPECT_TRUE(sawDebugLaneMarker);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugBridgeTrafficTranscriptIsDeterministicAcrossSerializeReplay) {
@@ -500,7 +515,12 @@ namespace {
 			(void)memoryManager.DebugRead8(0xA1201B);
 			RuntimeTranscriptSnapshot snapshot = CaptureSnapshot(memoryManager);
 			uint8_t digest = memoryManager.DebugRead8(0xA1201B);
-			return std::tuple<uint8_t, uint32_t, uint64_t>(digest, snapshot.LaneCount, snapshot.LaneDigest);
+			return std::tuple<uint8_t, uint32_t, uint64_t, uint32_t, uint64_t>(
+				digest,
+				snapshot.LaneCount,
+				snapshot.LaneDigest,
+				snapshot.DebugLaneCount,
+				snapshot.DebugLaneDigest);
 		};
 
 		runPrefix(original);
@@ -522,6 +542,7 @@ namespace {
 		auto replay = runTail(restored);
 		EXPECT_EQ(expected, replay);
 		EXPECT_NE(std::get<0>(expected), 0u);
+		EXPECT_NE(std::get<4>(expected), 0ull);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, M32xDualSh2StagingStatusReflectsControlAndSyncPhase) {
