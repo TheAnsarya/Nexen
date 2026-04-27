@@ -103,6 +103,20 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 		scaffold.GetBus().WriteByte(0xA11100, 0x00);
 		addCheckpoint("GEN-COMPAT-BUS", scaffold.GetBus().GetZ80HandoffCount() >= 2, std::format("handoffCount={} running={}", scaffold.GetBus().GetZ80HandoffCount(), scaffold.GetBus().IsZ80Running() ? 1 : 0));
 
+		bool ownershipPass = scaffold.GetBus().GetOwnerForAddress(0x000100) == GenesisBusOwner::Rom
+			&& scaffold.GetBus().GetOwnerForAddress(0xA00010) == GenesisBusOwner::Z80
+			&& scaffold.GetBus().GetOwnerForAddress(0xA10004) == GenesisBusOwner::Io
+			&& scaffold.GetBus().GetOwnerForAddress(0xC00004) == GenesisBusOwner::Vdp
+			&& scaffold.GetBus().GetOwnerForAddress(0xFF1234) == GenesisBusOwner::WorkRam;
+		addCheckpoint("GEN-COMPAT-BUS-OWNERSHIP", ownershipPass, std::format("ownershipDigest={} count={}", scaffold.GetBus().GetOwnershipTraceDigest(), scaffold.GetBus().GetOwnershipTraceCount()));
+
+		size_t romSize = romCase.RomData.size();
+		uint8_t firstByte = scaffold.GetBus().ReadByte(0x000000);
+		uint8_t edgeByte = scaffold.GetBus().ReadByte((uint32_t)(romSize - 1));
+		uint8_t mirroredByte = scaffold.GetBus().ReadByte((uint32_t)romSize);
+		bool mapperEdgePass = edgeByte == romCase.RomData.back() && mirroredByte == firstByte;
+		addCheckpoint("GEN-COMPAT-MAPPER-EDGE", mapperEdgePass, std::format("romSize={} edge={:02x} mirrored={:02x} first={:02x}", romSize, edgeByte, mirroredByte, firstByte));
+
 		scaffold.GetBus().SetRenderCompositionInputs(0x18, true, 0x04, false, 0x00, false, false, 0x20, true);
 		scaffold.GetBus().SetScroll(2, 1);
 		scaffold.GetBus().RenderScaffoldLine(48);

@@ -51,4 +51,23 @@ namespace {
 		EXPECT_EQ(result.FailCount, 0);
 		EXPECT_FALSE(result.Digest.empty());
 	}
+
+	TEST(GenesisCompatibilityHarnessTests, MapperEdgeAndOwnershipCheckpointsArePresentAndPassing) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus = BuildGenesisCompatibilityCorpus();
+
+		GenesisCompatibilityMatrixResult result = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+
+		ASSERT_EQ((int)result.Entries.size(), (int)corpus.size());
+		for (const GenesisCompatibilityEntry& entry : result.Entries) {
+			auto hasPassingCheckpoint = [&](const string& checkpointId) {
+				return std::any_of(entry.Checkpoints.begin(), entry.Checkpoints.end(), [&](const GenesisCompatibilityCheckpoint& checkpoint) {
+					return checkpoint.Id == checkpointId && checkpoint.Pass;
+				});
+			};
+
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-BUS-OWNERSHIP"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE"));
+		}
+	}
 }
