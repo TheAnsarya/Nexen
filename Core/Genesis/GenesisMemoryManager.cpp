@@ -915,9 +915,12 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		}
 	}
 	if (addr == 0xA11100 || addr == 0xA11101) {
-		return _z80BusRequest ? 0x00 : 0x01;
+		uint8_t value = _z80BusRequest ? 0x00 : 0x01;
+		TrackSegaCdHandshakeTranscript(addr, false, value);
+		return value;
 	}
 	if (addr == 0xA11200 || addr == 0xA11201) {
+		TrackSegaCdHandshakeTranscript(addr, false, _openBus);
 		return _openBus;
 	}
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
@@ -941,24 +944,38 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) {
 		if (IsSegaCdSubCpuControlAddress(addr)) {
-			return GetSegaCdSubCpuStatusByte();
+			uint8_t value = GetSegaCdSubCpuStatusByte();
+			TrackSegaCdTranscript(addr, false, value);
+			return value;
 		}
 		if (IsSegaCdAudioStatusAddress(addr)) {
-			return GetSegaCdAudioStatusByte(addr);
+			uint8_t value = GetSegaCdAudioStatusByte(addr);
+			TrackSegaCdTranscript(addr, false, value);
+			return value;
 		}
 		if (IsSegaCdToolingStatusAddress(addr)) {
-			return GetSegaCdToolingStatusByte(addr);
+			uint8_t value = GetSegaCdToolingStatusByte(addr);
+			TrackSegaCdTranscript(addr, false, value);
+			return value;
 		}
 		if (Is32xSh2StatusAddress(addr)) {
-			return Get32xSh2StatusByte(addr);
+			uint8_t value = Get32xSh2StatusByte(addr);
+			TrackSegaCdTranscript(addr, false, value);
+			return value;
 		}
 		if (Is32xCompositionStatusAddress(addr)) {
-			return Get32xCompositionStatusByte(addr);
+			uint8_t value = Get32xCompositionStatusByte(addr);
+			TrackSegaCdTranscript(addr, false, value);
+			return value;
 		}
 		if (Is32xToolingStatusAddress(addr)) {
-			return Get32xToolingStatusByte(addr);
+			uint8_t value = Get32xToolingStatusByte(addr);
+			TrackSegaCdTranscript(addr, false, value);
+			return value;
 		}
-		return bridgeSlot[bridgeIndex];
+		uint8_t value = bridgeSlot[bridgeIndex];
+		TrackSegaCdTranscript(addr, false, value);
+		return value;
 	}
 	return 0;
 }
@@ -997,10 +1014,12 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	}
 	if (addr == 0xA11100 || addr == 0xA11101) {
 		_z80BusRequest = (value & 0x01) != 0;
+		TrackSegaCdHandshakeTranscript(addr, true, value);
 		return;
 	}
 	if (addr == 0xA11200 || addr == 0xA11201) {
 		_z80Reset = !(value & 0x01);
+		TrackSegaCdHandshakeTranscript(addr, true, value);
 		return;
 	}
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
@@ -1033,6 +1052,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		} else if (Is32xToolingControlAddress(addr)) {
 			Update32xToolingContract(addr, value);
 		}
+		TrackSegaCdTranscript(addr, true, value);
 	}
 }
 

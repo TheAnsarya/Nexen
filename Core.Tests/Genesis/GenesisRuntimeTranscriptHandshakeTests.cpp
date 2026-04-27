@@ -427,7 +427,8 @@ namespace {
 			uint8_t a = memoryManager.DebugRead8(0xA00000);
 			uint8_t b = memoryManager.DebugRead8(0xA00001);
 			uint8_t c = memoryManager.DebugRead8(0xA00002);
-			return std::tuple<uint8_t, uint8_t, uint8_t, RuntimeTranscriptSnapshot>(a, b, c, CaptureSnapshot(memoryManager));
+			RuntimeTranscriptSnapshot snapshot = CaptureSnapshot(memoryManager);
+			return std::tuple<uint8_t, uint8_t, uint8_t, uint32_t, uint64_t>(a, b, c, snapshot.LaneCount, snapshot.LaneDigest);
 		};
 
 		runPrefix(original);
@@ -459,6 +460,68 @@ namespace {
 		memoryManager.DebugWrite8(0xC00011, 0x90);
 		EXPECT_EQ(memoryManager.DebugRead8(0xC00004), baselineOpenBus);
 		EXPECT_EQ(memoryManager.DebugRead8(0xC00011), baselineOpenBus);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeTrafficContributesToTranscriptDigest) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.DebugWrite8(0xA11200, 0x01);
+		memoryManager.DebugWrite8(0xA11100, 0x01);
+		(void)memoryManager.DebugRead8(0xA11100);
+		memoryManager.DebugWrite8(0xA11100, 0x00);
+		(void)memoryManager.DebugRead8(0xA11200);
+
+		RuntimeTranscriptSnapshot snapshot = CaptureSnapshot(memoryManager);
+		EXPECT_GE(snapshot.LaneCount, 5u);
+		EXPECT_NE(snapshot.LaneDigest, 0ull);
+
+		bool sawHandshakeMarker = false;
+		for (uint32_t i = 0; i < 4; i++) {
+			sawHandshakeMarker |= (snapshot.EntryFlags[i] & 0x80) != 0;
+		}
+		EXPECT_TRUE(sawHandshakeMarker);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugBridgeTrafficTranscriptIsDeterministicAcrossSerializeReplay) {
+		Emulator emuA;
+		std::vector<uint8_t> romA(0x400000);
+		GenesisMemoryManager original = CreateMemoryManager(emuA, romA);
+
+		auto runPrefix = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.DebugWrite8(0xA12012, 0x11);
+			memoryManager.DebugWrite8(0xA12013, 0x22);
+			(void)memoryManager.DebugRead8(0xA1201A);
+		};
+
+		auto runTail = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.DebugWrite8(0xA12015, 0x55);
+			(void)memoryManager.DebugRead8(0xA1201B);
+			RuntimeTranscriptSnapshot snapshot = CaptureSnapshot(memoryManager);
+			uint8_t digest = memoryManager.DebugRead8(0xA1201B);
+			return std::tuple<uint8_t, uint32_t, uint64_t>(digest, snapshot.LaneCount, snapshot.LaneDigest);
+		};
+
+		runPrefix(original);
+		Serializer saver(1, true, SerializeFormat::Binary);
+		original.Serialize(saver);
+		std::stringstream state;
+		saver.SaveTo(state);
+		state.seekg(0);
+
+		auto expected = runTail(original);
+
+		Emulator emuB;
+		std::vector<uint8_t> romB(0x400000);
+		GenesisMemoryManager restored = CreateMemoryManager(emuB, romB);
+		Serializer loader(1, false, SerializeFormat::Binary);
+		ASSERT_TRUE(loader.LoadFrom(state));
+		restored.Serialize(loader);
+
+		auto replay = runTail(restored);
+		EXPECT_EQ(expected, replay);
+		EXPECT_NE(std::get<0>(expected), 0u);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, M32xDualSh2StagingStatusReflectsControlAndSyncPhase) {

@@ -140,6 +140,8 @@ Additional debugger parity windows are now exposed through Genesis debug memory 
 
 Debug writes to controller control registers (`$a10009/$a1000b/$a1000d`) and handshake control bytes are persisted through save/load and can be replay-validated in runtime transcript tests.
 
+Debug-path bridge and handshake access now contributes transcript lane entries through the same deterministic tracking contracts used by runtime traffic, enabling regression-gate checks on debug-driven event sequences.
+
 ---
 
 ## Core Components
