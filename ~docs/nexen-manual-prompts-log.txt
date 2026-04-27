@@ -1923,9 +1923,9 @@ continue;
 
 yes, keep doing that: "I can keep burning down the remaining open [24.x] slices in the same 6-at-a-time closure pattern."
 
+Wait, are you actually updating code and benchmarks and tests? It looks like you're only making documentation
 
-
-
+Dear christ, you've just been making docs? NO! focus on making actual code implementations of features and tests/benchmarks, review all the work you only updated docs for implement code for these features, DO NOT waste my time with nonsense work that doesn't get us any where, OUR GOAL IS a fully working, fast, and correct Genesis/SegaCD/32X emulator and all the UI debugger/tas/etc features; continue;
 
 
 

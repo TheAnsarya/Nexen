@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
 
 namespace {
@@ -163,5 +163,113 @@ namespace {
 		EXPECT_EQ(runA.MixedDigest, runB.MixedDigest);
 		EXPECT_EQ(runA.YmDigest, runB.YmDigest);
 		EXPECT_EQ(runA.PsgDigest, runB.PsgDigest);
+	}
+
+	TEST(GenesisCombinedInteractionTests, MixedCadenceBoundaryWindowsRemainDeterministic) {
+		auto runScenario = []() {
+			GenesisM68kBoundaryScaffold scaffold;
+			scaffold.LoadRom(BuildNopRom());
+			scaffold.Startup();
+			scaffold.ConfigureInterruptSchedule(true, 4, true);
+			scaffold.ClearTimingEvents();
+
+			auto& bus = scaffold.GetBus();
+			bus.WriteByte(0xA11200, 0x01);
+			bus.BeginDmaTransfer(GenesisVdpDmaMode::Copy, 56);
+
+			const std::array<uint32_t, 12> cadence = {
+				1, 487, 488, 489,
+				96, 244, 732, 977,
+				488, 1953, 120, 488
+			};
+
+			for (size_t step = 0; step < cadence.size(); step++) {
+				if (step == 2 || step == 8) {
+					bus.WriteByte(0xA11100, 0x01);
+				}
+				if (step == 4 || step == 10) {
+					bus.WriteByte(0xA11100, 0x00);
+				}
+
+				bus.WriteByte(0xA04000, (uint8_t)(0x20u + (uint8_t)step));
+				bus.WriteByte(0xA04001, (uint8_t)(0x30u + (uint8_t)step));
+				bus.WriteByte(0xC00011, (uint8_t)(0x80u | (uint8_t)step));
+
+				scaffold.StepFrameScaffold(cadence.at(step));
+			}
+
+			return std::tuple<uint64_t, uint32_t, uint32_t, uint32_t, uint32_t, uint64_t, string, string, string, vector<string>>(
+				scaffold.GetCpu().GetCycleCount(),
+				scaffold.GetHorizontalInterruptCount(),
+				scaffold.GetVerticalInterruptCount(),
+				bus.GetDmaContentionCycles(),
+				bus.GetDmaContentionEvents(),
+				bus.GetZ80ExecutedCycles(),
+				bus.GetMixedDigest(),
+				bus.GetYmDigest(),
+				bus.GetPsgDigest(),
+				scaffold.GetTimingEvents());
+		};
+
+		auto runA = runScenario();
+		auto runB = runScenario();
+
+		EXPECT_GT(std::get<1>(runA), 0u);
+		EXPECT_GT(std::get<3>(runA), 0u);
+		EXPECT_GT(std::get<5>(runA), 0u);
+		EXPECT_FALSE(std::get<6>(runA).empty());
+		EXPECT_FALSE(std::get<7>(runA).empty());
+		EXPECT_FALSE(std::get<8>(runA).empty());
+		EXPECT_EQ(runA, runB);
+	}
+
+	TEST(GenesisCombinedInteractionTests, SaveStateReplayAcrossCadenceEdgesKeepsDeterministicDigests) {
+		GenesisM68kBoundaryScaffold baseline;
+		baseline.LoadRom(BuildNopRom());
+		baseline.Startup();
+		baseline.ConfigureInterruptSchedule(true, 2, true);
+		baseline.ClearTimingEvents();
+
+		auto& baseBus = baseline.GetBus();
+		baseBus.WriteByte(0xA11200, 0x01);
+		baseBus.BeginDmaTransfer(GenesisVdpDmaMode::Fill, 40);
+
+		for (uint32_t i = 0; i < 6; i++) {
+			if (i == 2) {
+				baseBus.WriteByte(0xA11100, 0x01);
+			}
+			if (i == 4) {
+				baseBus.WriteByte(0xA11100, 0x00);
+			}
+			baseBus.WriteByte(0xA04000, (uint8_t)(0x40u + (uint8_t)i));
+			baseline.StepFrameScaffold((i % 2 == 0) ? 487 : 489);
+		}
+
+		GenesisBoundaryScaffoldSaveState checkpoint = baseline.SaveState();
+
+		for (uint32_t i = 0; i < 10; i++) {
+			baseBus.WriteByte(0xC00011, (uint8_t)(0x90u + (uint8_t)i));
+			baseline.StepFrameScaffold((i % 3 == 0) ? 488 : 244);
+		}
+
+		GenesisM68kBoundaryScaffold replay;
+		replay.LoadState(checkpoint);
+		auto& replayBus = replay.GetBus();
+
+		for (uint32_t i = 0; i < 10; i++) {
+			replayBus.WriteByte(0xC00011, (uint8_t)(0x90u + (uint8_t)i));
+			replay.StepFrameScaffold((i % 3 == 0) ? 488 : 244);
+		}
+
+		EXPECT_EQ(baseline.GetCpu().GetCycleCount(), replay.GetCpu().GetCycleCount());
+		EXPECT_EQ(baseline.GetHorizontalInterruptCount(), replay.GetHorizontalInterruptCount());
+		EXPECT_EQ(baseline.GetVerticalInterruptCount(), replay.GetVerticalInterruptCount());
+		EXPECT_EQ(baseBus.GetDmaContentionCycles(), replayBus.GetDmaContentionCycles());
+		EXPECT_EQ(baseBus.GetDmaContentionEvents(), replayBus.GetDmaContentionEvents());
+		EXPECT_EQ(baseBus.GetZ80ExecutedCycles(), replayBus.GetZ80ExecutedCycles());
+		EXPECT_EQ(baseBus.GetMixedDigest(), replayBus.GetMixedDigest());
+		EXPECT_EQ(baseBus.GetYmDigest(), replayBus.GetYmDigest());
+		EXPECT_EQ(baseBus.GetPsgDigest(), replayBus.GetPsgDigest());
+		EXPECT_EQ(baseline.GetTimingEvents(), replay.GetTimingEvents());
 	}
 }
