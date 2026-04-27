@@ -1,4 +1,4 @@
-# Issue #1540 - 32X VDP/Passthrough Phase Decomposition (2026-04-27)
+﻿# Issue #1540 - 32X VDP/Passthrough Phase Decomposition (2026-04-27)
 
 ## Summary
 
