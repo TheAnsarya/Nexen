@@ -340,4 +340,32 @@ namespace {
 		EXPECT_EQ(bus.ReadByte(0xA12019), baselineDigest);
 		EXPECT_NE(baselineDigest, 0u);
 	}
+
+	TEST(Genesis32xBusOwnershipDigestScaffoldTests, M32xToolingTelemetryStatusBytesTrackEventCountDeterministically) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+		auto& bus = scaffold.GetBus();
+
+		bus.ClearCommandResponseLane();
+		EXPECT_EQ(bus.ReadByte(0xA15018), 0u);
+		EXPECT_EQ(bus.ReadByte(0xA15019), 0u);
+
+		bus.WriteByte(0xA15008, 0x21);
+		bus.WriteByte(0xA15009, 0x32);
+		bus.WriteByte(0xA1500A, 0x43);
+		bus.WriteByte(0xA1500B, 0x54);
+
+		uint16_t eventCount = (uint16_t)bus.ReadByte(0xA15018)
+			| ((uint16_t)bus.ReadByte(0xA15019) << 8);
+		EXPECT_GE(eventCount, 4u);
+
+		GenesisBoundaryScaffoldSaveState checkpoint = scaffold.SaveState();
+		uint16_t baselineCount = (uint16_t)bus.ReadByte(0xA15018)
+			| ((uint16_t)bus.ReadByte(0xA15019) << 8);
+
+		scaffold.LoadState(checkpoint);
+		uint16_t replayCount = (uint16_t)bus.ReadByte(0xA15018)
+			| ((uint16_t)bus.ReadByte(0xA15019) << 8);
+		EXPECT_EQ(replayCount, baselineCount);
+	}
 }

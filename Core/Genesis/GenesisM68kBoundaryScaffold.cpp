@@ -53,7 +53,7 @@ namespace {
 	}
 
 	bool Is32xToolingStatusAddress(uint32_t address) {
-		return address == 0xA1501E || address == 0xA1501F;
+		return address >= 0xA15018 && address <= 0xA1501F;
 	}
 }
 
@@ -956,7 +956,11 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 				break;
 			}
 			if (Is32xToolingStatusAddress(address)) {
-				if (address == 0xA1501E) {
+				if (address == 0xA15018) {
+					result = (uint8_t)(_m32xToolingEventCount & 0xFF);
+				} else if (address == 0xA15019) {
+					result = (uint8_t)((_m32xToolingEventCount >> 8) & 0xFF);
+				} else if (address == 0xA1501E) {
 					result = 0x0F;
 				} else {
 					result = _m32xToolingDigest;

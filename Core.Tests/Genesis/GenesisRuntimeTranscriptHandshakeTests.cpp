@@ -842,6 +842,21 @@ namespace {
 		EXPECT_NE(memoryManager.Read8(0xA1501F), 0x00u);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, M32xToolingStatusExposesEventCountTelemetryBytes) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA15008, 0x21);
+		memoryManager.Write8(0xA15009, 0x32);
+		memoryManager.Write8(0xA1500A, 0x43);
+		memoryManager.Write8(0xA1500B, 0x54);
+
+		uint16_t eventCount = (uint16_t)memoryManager.Read8(0xA15018)
+			| ((uint16_t)memoryManager.Read8(0xA15019) << 8);
+		EXPECT_GE(eventCount, 4u);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, M32xToolingDigestIsDeterministicAcrossSerializeReplay) {
 		Emulator emuA;
 		std::vector<uint8_t> romA(0x400000);
@@ -858,9 +873,11 @@ namespace {
 		auto runTail = [](GenesisMemoryManager& memoryManager) {
 			memoryManager.Write8(0xA1500A, 0x33);
 			memoryManager.Write8(0xA1500B, 0x44);
+			uint16_t eventCount = (uint16_t)memoryManager.Read8(0xA15018)
+				| ((uint16_t)memoryManager.Read8(0xA15019) << 8);
 			uint8_t caps = memoryManager.Read8(0xA1501E);
 			uint8_t digest = memoryManager.Read8(0xA1501F);
-			return std::tuple<uint8_t, uint8_t, RuntimeTranscriptSnapshot>(caps, digest, CaptureSnapshot(memoryManager));
+			return std::tuple<uint16_t, uint8_t, uint8_t, RuntimeTranscriptSnapshot>(eventCount, caps, digest, CaptureSnapshot(memoryManager));
 		};
 
 		runPrefix(original);
@@ -883,6 +900,7 @@ namespace {
 		EXPECT_EQ(std::get<0>(expected), std::get<0>(replay));
 		EXPECT_EQ(std::get<1>(expected), std::get<1>(replay));
 		EXPECT_EQ(std::get<2>(expected), std::get<2>(replay));
+		EXPECT_EQ(std::get<3>(expected), std::get<3>(replay));
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, SegaCdToolingTasCheatSignalsAreDeterministicAcrossSerializeReplay) {

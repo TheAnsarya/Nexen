@@ -226,7 +226,7 @@ bool GenesisMemoryManager::Is32xToolingControlAddress(uint32_t addr) const {
 }
 
 bool GenesisMemoryManager::Is32xToolingStatusAddress(uint32_t addr) const {
-	return addr == 0xA1501E || addr == 0xA1501F;
+	return addr >= 0xA15018 && addr <= 0xA1501F;
 }
 
 void GenesisMemoryManager::UpdateSegaCdSubCpuControl(uint8_t value) {
@@ -454,6 +454,12 @@ void GenesisMemoryManager::Update32xToolingContract(uint32_t addr, uint8_t value
 }
 
 uint8_t GenesisMemoryManager::Get32xToolingStatusByte(uint32_t addr) const {
+	if (addr == 0xA15018) {
+		return (uint8_t)(_m32xToolingEventCount & 0xFF);
+	}
+	if (addr == 0xA15019) {
+		return (uint8_t)((_m32xToolingEventCount >> 8) & 0xFF);
+	}
 	if (addr == 0xA1501E) {
 		return 0x0F;
 	}
