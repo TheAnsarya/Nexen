@@ -536,4 +536,89 @@ namespace {
 		EXPECT_EQ(reference.LaneCount, perturbed.LaneCount);
 		EXPECT_NE(reference.LaneDigest, perturbed.LaneDigest);
 	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeMixedHandshakeNoOpControlReplayParityPersistsWithLaterCheckpointShift) {
+		auto runPrefixA = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.Write8(0xA11200, 0x01);
+			memoryManager.Write8(0xA11100, 0x01);
+			memoryManager.Write8(0xA11100, 0x01);
+		};
+
+		auto runPrefixB = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.Write16(0xA11100, 0x0100);
+			(void)memoryManager.Read8(0xA11101);
+			memoryManager.Write16(0xA11100, 0x0100);
+		};
+
+		auto runTail = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.Write16(0xA11200, 0x0000);
+			(void)memoryManager.Read16(0xA11100);
+			memoryManager.Write8(0xA11100, 0x00);
+			memoryManager.Write8(0xA11100, 0x00);
+			(void)memoryManager.Read16(0xA11200);
+		};
+
+		auto runFullSequence = [&](GenesisMemoryManager& memoryManager) {
+			runPrefixA(memoryManager);
+			runPrefixB(memoryManager);
+			runTail(memoryManager);
+		};
+
+		auto captureReplayAfterCheckpoint = [&](bool shiftCheckpointLater) {
+			Emulator emuA;
+			std::vector<uint8_t> romA(0x400000);
+			GenesisMemoryManager original = CreateMemoryManager(emuA, romA);
+
+			runPrefixA(original);
+			if (shiftCheckpointLater) {
+				runPrefixB(original);
+			}
+
+			Serializer saver(1, true, SerializeFormat::Binary);
+			original.Serialize(saver);
+			std::stringstream ss;
+			saver.SaveTo(ss);
+			ss.seekg(0);
+
+			if (!shiftCheckpointLater) {
+				runPrefixB(original);
+			}
+			runTail(original);
+			RuntimeTranscriptSnapshot expected = CaptureSnapshot(original);
+
+			Emulator emuB;
+			std::vector<uint8_t> romB(0x400000);
+			GenesisMemoryManager restored = CreateMemoryManager(emuB, romB);
+
+			Serializer loader(1, false, SerializeFormat::Binary);
+			EXPECT_TRUE(loader.LoadFrom(ss));
+			restored.Serialize(loader);
+
+			if (!shiftCheckpointLater) {
+				runPrefixB(restored);
+			}
+			runTail(restored);
+			RuntimeTranscriptSnapshot replay = CaptureSnapshot(restored);
+
+			EXPECT_EQ(expected.LaneCount, replay.LaneCount);
+			EXPECT_EQ(expected.LaneDigest, replay.LaneDigest);
+			return replay;
+		};
+
+		Emulator emuDirect;
+		std::vector<uint8_t> romDirect(0x400000);
+		GenesisMemoryManager direct = CreateMemoryManager(emuDirect, romDirect);
+		runFullSequence(direct);
+		RuntimeTranscriptSnapshot directSnapshot = CaptureSnapshot(direct);
+
+		RuntimeTranscriptSnapshot earlyCheckpointReplay = captureReplayAfterCheckpoint(false);
+		RuntimeTranscriptSnapshot lateCheckpointReplay = captureReplayAfterCheckpoint(true);
+
+		EXPECT_EQ(directSnapshot.LaneCount, earlyCheckpointReplay.LaneCount);
+		EXPECT_EQ(directSnapshot.LaneDigest, earlyCheckpointReplay.LaneDigest);
+		EXPECT_EQ(directSnapshot.LaneCount, lateCheckpointReplay.LaneCount);
+		EXPECT_EQ(directSnapshot.LaneDigest, lateCheckpointReplay.LaneDigest);
+		EXPECT_EQ(earlyCheckpointReplay.LaneCount, lateCheckpointReplay.LaneCount);
+		EXPECT_EQ(earlyCheckpointReplay.LaneDigest, lateCheckpointReplay.LaneDigest);
+	}
 }
