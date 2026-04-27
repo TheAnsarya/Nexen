@@ -214,6 +214,32 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 		bool tooling32xPass = toolingCaps == 0x0F && toolingCapsReplay == toolingCaps && tooling32xDigestReplay == tooling32xDigest;
 		addCheckpoint("GEN-COMPAT-32X-TOOLING", tooling32xPass, std::format("caps={:02x} digest={:02x} replayCaps={:02x} replayDigest={:02x}", toolingCaps, tooling32xDigest, toolingCapsReplay, tooling32xDigestReplay));
 
+		GenesisBoundaryScaffoldSaveState telemetryScenarioStart = scaffold.SaveState();
+		uint16_t toolingTelemetryCount = (uint16_t)scaffold.GetBus().ReadByte(0xA15018)
+			| ((uint16_t)scaffold.GetBus().ReadByte(0xA15019) << 8);
+		scaffold.GetBus().WriteByte(0xA15009, 0x55);
+		scaffold.GetBus().WriteByte(0xA1500B, 0x66);
+		uint16_t toolingTelemetryTail = (uint16_t)scaffold.GetBus().ReadByte(0xA15018)
+			| ((uint16_t)scaffold.GetBus().ReadByte(0xA15019) << 8);
+		GenesisBoundaryScaffoldSaveState telemetryBaseline = scaffold.SaveState();
+		scaffold.GetBus().WriteByte(0xA1500B, 0x7A);
+		scaffold.LoadState(telemetryBaseline);
+		uint16_t toolingTelemetryReplay = (uint16_t)scaffold.GetBus().ReadByte(0xA15018)
+			| ((uint16_t)scaffold.GetBus().ReadByte(0xA15019) << 8);
+
+		bool toolingTelemetryPass = toolingTelemetryCount > 0
+			&& toolingTelemetryTail >= toolingTelemetryCount
+			&& toolingTelemetryReplay == toolingTelemetryTail;
+		addCheckpoint(
+			"GEN-COMPAT-32X-TELEMETRY",
+			toolingTelemetryPass,
+			std::format(
+				"countNonZero={} replayMatch={} replayGteCount={}",
+				toolingTelemetryCount > 0 ? 1 : 0,
+				toolingTelemetryTail == toolingTelemetryReplay ? 1 : 0,
+				toolingTelemetryReplay >= toolingTelemetryCount ? 1 : 0));
+		scaffold.LoadState(telemetryScenarioStart);
+
 		GenesisBoundaryScaffoldSaveState debugLaneScenarioStart = scaffold.SaveState();
 		scaffold.GetBus().ClearCommandResponseLane();
 		scaffold.GetBus().WriteByte(0xA12012, 0x11);
