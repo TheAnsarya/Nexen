@@ -21,6 +21,9 @@ private:
 	// Controller button states
 	GenesisControllerState _padState[2] = {};
 
+	[[nodiscard]] uint8_t BuildDeterministicPortCapabilities(uint8_t port) const;
+	[[nodiscard]] uint8_t BuildDeterministicPortDigest(uint8_t port) const;
+
 public:
 	GenesisControlManager(Emulator* emu, GenesisConsole* console);
 
@@ -29,6 +32,8 @@ public:
 
 	uint8_t ReadDataPort(uint8_t port);
 	void WriteDataPort(uint8_t port, uint8_t value);
+	[[nodiscard]] uint8_t GetDeterministicPortCapabilities(uint8_t port) const;
+	[[nodiscard]] uint8_t GetDeterministicPortDigest(uint8_t port) const;
 
 	void Serialize(Serializer& s) override;
 };

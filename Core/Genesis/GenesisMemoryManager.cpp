@@ -195,7 +195,7 @@ bool GenesisMemoryManager::IsSegaCdToolingControlAddress(uint32_t addr) const {
 }
 
 bool GenesisMemoryManager::IsSegaCdToolingStatusAddress(uint32_t addr) const {
-	return addr == 0xA1201A || addr == 0xA1201B;
+	return addr >= 0xA1201A && addr <= 0xA1201F;
 }
 
 bool GenesisMemoryManager::Is32xSh2ControlAddress(uint32_t addr) const {
@@ -312,6 +312,18 @@ uint8_t GenesisMemoryManager::GetSegaCdToolingStatusByte(uint32_t addr) const {
 	}
 	if (addr == 0xA1201B) {
 		return _segaCdToolingDigest;
+	}
+	if (addr == 0xA1201C) {
+		return _controlManager ? _controlManager->GetDeterministicPortCapabilities(0) : 0;
+	}
+	if (addr == 0xA1201D) {
+		return _controlManager ? _controlManager->GetDeterministicPortDigest(0) : 0;
+	}
+	if (addr == 0xA1201E) {
+		return _controlManager ? _controlManager->GetDeterministicPortCapabilities(1) : 0;
+	}
+	if (addr == 0xA1201F) {
+		return _controlManager ? _controlManager->GetDeterministicPortDigest(1) : 0;
 	}
 	return 0;
 }

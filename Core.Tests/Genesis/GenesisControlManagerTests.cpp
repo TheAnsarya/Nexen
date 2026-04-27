@@ -210,4 +210,38 @@ namespace {
 		EXPECT_EQ(baselineBefore, 0x7Fu);
 		EXPECT_EQ(baselineAfter, replayAfter);
 	}
+
+	TEST(GenesisControlManagerTests, DeterministicPortCapabilitiesAndDigestAreReplayStable) {
+		Emulator emuA;
+		GenesisConsole consoleA(&emuA);
+		std::unique_ptr<GenesisControlManager> managerA = CreateControlManager(emuA, consoleA);
+		ASSERT_NE(managerA, nullptr);
+
+		managerA->WriteDataPort(0, 0x40);
+		managerA->WriteDataPort(0, 0x00);
+		managerA->WriteDataPort(0, 0x40);
+		managerA->WriteDataPort(0, 0x00);
+		managerA->WriteDataPort(0, 0x40);
+		managerA->WriteDataPort(1, 0x40);
+		managerA->WriteDataPort(1, 0x00);
+
+		uint8_t p1Caps = managerA->GetDeterministicPortCapabilities(0);
+		uint8_t p1Digest = managerA->GetDeterministicPortDigest(0);
+		uint8_t p2Caps = managerA->GetDeterministicPortCapabilities(1);
+		uint8_t p2Digest = managerA->GetDeterministicPortDigest(1);
+		std::string stateData = SaveManagerState(*managerA);
+
+		Emulator emuB;
+		GenesisConsole consoleB(&emuB);
+		std::unique_ptr<GenesisControlManager> managerB = CreateControlManager(emuB, consoleB);
+		ASSERT_NE(managerB, nullptr);
+		LoadManagerState(*managerB, stateData);
+
+		EXPECT_EQ(managerB->GetDeterministicPortCapabilities(0), p1Caps);
+		EXPECT_EQ(managerB->GetDeterministicPortDigest(0), p1Digest);
+		EXPECT_EQ(managerB->GetDeterministicPortCapabilities(1), p2Caps);
+		EXPECT_EQ(managerB->GetDeterministicPortDigest(1), p2Digest);
+		EXPECT_NE(p1Caps & 0x10u, 0u);
+		EXPECT_NE(p2Caps & 0x20u, 0u);
+	}
 }

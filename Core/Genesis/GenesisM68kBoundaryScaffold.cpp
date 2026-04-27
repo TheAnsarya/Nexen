@@ -14,7 +14,7 @@ namespace {
 	}
 
 	bool IsSegaCdToolingStatusAddress(uint32_t address) {
-		return address == 0xA1201A || address == 0xA1201B;
+		return address >= 0xA1201A && address <= 0xA1201F;
 	}
 
 	bool Is32xSh2ControlAddress(uint32_t address) {
@@ -232,6 +232,61 @@ void GenesisPlatformBusStub::AppendCommandResponseLane(uint32_t address, bool is
 	_commandResponseLaneCount++;
 }
 
+uint8_t GenesisPlatformBusStub::BuildControlPortCapabilities(uint8_t port) const {
+	if (port > 1) {
+		return 0;
+	}
+
+	uint8_t capabilities = (uint8_t)(port == 0 ? 0x10 : 0x20);
+	capabilities |= 0x01;
+	if (_controlThCount[port] >= 4) {
+		capabilities |= 0x02;
+	}
+	if ((_controlThState[port] & 0x40) != 0) {
+		capabilities |= 0x04;
+	}
+	if ((_controlDataPortWrite[port] & 0x40) != 0) {
+		capabilities |= 0x08;
+	}
+	return capabilities;
+}
+
+uint8_t GenesisPlatformBusStub::BuildControlPortDigest(uint8_t port) const {
+	if (port > 1) {
+		return 0;
+	}
+
+	uint8_t digest = 0x5a;
+	digest ^= BuildControlPortCapabilities(port);
+	digest ^= _controlDataPortWrite[port];
+	digest ^= (uint8_t)(_controlThState[port] >> 1);
+	digest ^= (uint8_t)(_controlThCount[port] * 13u);
+	return digest;
+}
+
+void GenesisPlatformBusStub::TrackControlDataPortWrite(uint32_t address, uint8_t value) {
+	uint8_t port = 0xFF;
+	if (address == 0xA10003) {
+		port = 0;
+	} else if (address == 0xA10005) {
+		port = 1;
+	}
+
+	if (port > 1) {
+		return;
+	}
+
+	uint8_t nextThState = (uint8_t)(value & 0x40);
+	if (nextThState != _controlThState[port]) {
+		_controlThState[port] = nextThState;
+		if (_controlThCount[port] < 0xFF) {
+			_controlThCount[port]++;
+		}
+	}
+
+	_controlDataPortWrite[port] = value;
+}
+
 void GenesisPlatformBusStub::ClearOwnershipTrace() {
 	_ownershipTraceCount = 0;
 	_ownershipTraceDigest.clear();
@@ -249,6 +304,12 @@ void GenesisPlatformBusStub::ClearCommandResponseLane() {
 	_segaCdToolingCheatSignal = 0;
 	_segaCdToolingDigest = 0;
 	_segaCdToolingEventCount = 0;
+	_controlDataPortWrite = {};
+	_controlThState = {};
+	_controlThCount = {};
+	_controlDataPortWrite = {};
+	_controlThState = {};
+	_controlThCount = {};
 	_m32xMasterSh2Running = false;
 	_m32xSlaveSh2Running = false;
 	_m32xSh2SyncPhase = 0;
@@ -623,6 +684,9 @@ GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
 	state.SegaCdToolingCheatSignal = _segaCdToolingCheatSignal;
 	state.SegaCdToolingDigest = _segaCdToolingDigest;
 	state.SegaCdToolingEventCount = _segaCdToolingEventCount;
+	state.ControlDataPortWrite = _controlDataPortWrite;
+	state.ControlThState = _controlThState;
+	state.ControlThCount = _controlThCount;
 	state.M32xMasterSh2Running = _m32xMasterSh2Running;
 	state.M32xSlaveSh2Running = _m32xSlaveSh2Running;
 	state.M32xSh2SyncPhase = _m32xSh2SyncPhase;
@@ -727,6 +791,9 @@ void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state)
 	_segaCdToolingCheatSignal = state.SegaCdToolingCheatSignal;
 	_segaCdToolingDigest = state.SegaCdToolingDigest;
 	_segaCdToolingEventCount = state.SegaCdToolingEventCount;
+	_controlDataPortWrite = state.ControlDataPortWrite;
+	_controlThState = state.ControlThState;
+	_controlThCount = state.ControlThCount;
 	_m32xMasterSh2Running = state.M32xMasterSh2Running;
 	_m32xSlaveSh2Running = state.M32xSlaveSh2Running;
 	_m32xSh2SyncPhase = state.M32xSh2SyncPhase;
@@ -839,8 +906,16 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 			if (IsSegaCdToolingStatusAddress(address)) {
 				if (address == 0xA1201A) {
 					result = _segaCdToolingCapabilities;
-				} else {
+				} else if (address == 0xA1201B) {
 					result = _segaCdToolingDigest;
+				} else if (address == 0xA1201C) {
+					result = BuildControlPortCapabilities(0);
+				} else if (address == 0xA1201D) {
+					result = BuildControlPortDigest(0);
+				} else if (address == 0xA1201E) {
+					result = BuildControlPortCapabilities(1);
+				} else {
+					result = BuildControlPortDigest(1);
 				}
 				break;
 			}
@@ -1065,6 +1140,7 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 				_expansionIo[expansionOffset] = value;
 			} else {
 				_io[address & 0x1F] = value;
+				TrackControlDataPortWrite(address, value);
 			}
 			if (IsCommandResponseLaneAddress(address)) {
 				AppendCommandResponseLane(address, true, value);

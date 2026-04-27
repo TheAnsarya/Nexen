@@ -11,6 +11,42 @@ GenesisControlManager::GenesisControlManager(Emulator* emu, GenesisConsole* cons
 	_console = console;
 }
 
+uint8_t GenesisControlManager::BuildDeterministicPortCapabilities(uint8_t port) const {
+	if (port > 1) {
+		return 0;
+	}
+
+	uint8_t capabilities = (uint8_t)(port == 0 ? 0x10 : 0x20);
+	shared_ptr<BaseControlDevice> device = const_cast<GenesisControlManager*>(this)->GetControlDevice(port);
+	if (device && device->IsConnected()) {
+		capabilities |= 0x01;
+	}
+	if (_thCount[port] >= 4) {
+		capabilities |= 0x02;
+	}
+	if ((_thState[port] & 0x40) != 0) {
+		capabilities |= 0x04;
+	}
+	if ((_dataPortWrite[port] & 0x40) != 0) {
+		capabilities |= 0x08;
+	}
+
+	return capabilities;
+}
+
+uint8_t GenesisControlManager::BuildDeterministicPortDigest(uint8_t port) const {
+	if (port > 1) {
+		return 0;
+	}
+
+	uint8_t digest = 0x5a;
+	digest ^= BuildDeterministicPortCapabilities(port);
+	digest ^= _dataPortWrite[port];
+	digest ^= (uint8_t)(_thState[port] >> 1);
+	digest ^= (uint8_t)(_thCount[port] * 13u);
+	return digest;
+}
+
 shared_ptr<BaseControlDevice> GenesisControlManager::CreateControllerDevice(ControllerType type, uint8_t port) {
 	shared_ptr<BaseControlDevice> device;
 
@@ -124,6 +160,14 @@ void GenesisControlManager::WriteDataPort(uint8_t port, uint8_t value) {
 	}
 
 	_dataPortWrite[port] = value;
+}
+
+uint8_t GenesisControlManager::GetDeterministicPortCapabilities(uint8_t port) const {
+	return BuildDeterministicPortCapabilities(port);
+}
+
+uint8_t GenesisControlManager::GetDeterministicPortDigest(uint8_t port) const {
+	return BuildDeterministicPortDigest(port);
 }
 
 void GenesisControlManager::Serialize(Serializer& s) {

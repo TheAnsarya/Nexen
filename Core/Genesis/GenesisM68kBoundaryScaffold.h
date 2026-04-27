@@ -105,6 +105,9 @@ struct GenesisPlatformBusSaveState {
 	uint8_t SegaCdToolingCheatSignal = 0;
 	uint8_t SegaCdToolingDigest = 0;
 	uint32_t SegaCdToolingEventCount = 0;
+	std::array<uint8_t, 2> ControlDataPortWrite = {};
+	std::array<uint8_t, 2> ControlThState = {};
+	std::array<uint8_t, 2> ControlThCount = {};
 	bool M32xMasterSh2Running = false;
 	bool M32xSlaveSh2Running = false;
 	uint8_t M32xSh2SyncPhase = 0;
@@ -238,6 +241,9 @@ private:
 	uint8_t _segaCdToolingCheatSignal = 0;
 	uint8_t _segaCdToolingDigest = 0;
 	uint32_t _segaCdToolingEventCount = 0;
+	std::array<uint8_t, 2> _controlDataPortWrite = {};
+	std::array<uint8_t, 2> _controlThState = {};
+	std::array<uint8_t, 2> _controlThCount = {};
 	bool _m32xMasterSh2Running = false;
 	bool _m32xSlaveSh2Running = false;
 	uint8_t _m32xSh2SyncPhase = 0;
@@ -261,6 +267,9 @@ private:
 	[[nodiscard]] const char* GetCommandResponseLaneRole(uint32_t address) const;
 	void AppendOwnershipTrace(uint32_t address, GenesisBusOwner owner, bool isWrite, uint8_t value);
 	void AppendCommandResponseLane(uint32_t address, bool isWrite, uint8_t value);
+	[[nodiscard]] uint8_t BuildControlPortCapabilities(uint8_t port) const;
+	[[nodiscard]] uint8_t BuildControlPortDigest(uint8_t port) const;
+	void TrackControlDataPortWrite(uint32_t address, uint8_t value);
 	void ApplyVdpControlWord(uint16_t controlWord);
 	[[nodiscard]] uint8_t ComposeRenderPixel() const;
 	[[nodiscard]] GenesisVdpDmaMode DecodeDmaModeFromControl(uint8_t registerValue) const;
