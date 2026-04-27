@@ -443,15 +443,19 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 
 		auto end = std::chrono::steady_clock::now();
 		entry.ElapsedMicros = (uint64_t)std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+		uint32_t scdLaneCount = firstRun.Bus.CommandResponseLaneCount;
+		uint32_t m32xToolingEventCount = firstRun.Bus.M32xToolingEventCount;
 
 		string deterministicInput = std::format(
-			"{}:{}:{}:{}:{}:{}",
+			"{}:{}:{}:{}:{}:{}:{}:{}",
 			entry.Name,
 			entry.TitleClass,
 			compatibilityDigest,
 			firstRun.Bus.MixedDigest,
 			replayRun.Bus.MixedDigest,
-			replayPass ? "1" : "0");
+			replayPass ? "1" : "0",
+			scdLaneCount,
+			m32xToolingEventCount);
 
 		uint64_t hash = 1469598103934665603ull;
 		for (uint8_t ch : deterministicInput) {
@@ -479,13 +483,15 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 		}
 
 		result.OutputLines.push_back(std::format(
-			"GEN_PERF_RESULT {} {} CLASS={} ELAPSED_US={} BUDGET_US={} CLASS_BUDGET_US={} DIGEST={}",
+			"GEN_PERF_RESULT {} {} CLASS={} ELAPSED_US={} BUDGET_US={} CLASS_BUDGET_US={} SCD_LANE_CT={} M32X_EVT_CT={} DIGEST={}",
 			entry.Name,
 			entry.Pass ? "PASS" : "FAIL",
 			entry.TitleClass,
 			entry.ElapsedMicros,
 			budgetMicros,
 			classBudgetMicros,
+			scdLaneCount,
+			m32xToolingEventCount,
 			entry.DeterministicDigest));
 		result.Entries.push_back(std::move(entry));
 	}

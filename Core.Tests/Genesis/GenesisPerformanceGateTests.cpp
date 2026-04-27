@@ -81,4 +81,21 @@ namespace {
 		EXPECT_TRUE(hasJurassicClass);
 		EXPECT_TRUE(hasGenericClass);
 	}
+
+	TEST(GenesisPerformanceGateTests, TelemetryEvidenceMarkersAreReportedInPerfResultLines) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus = BuildPerfCorpus();
+
+		GenesisPerformanceGateResult result = GenesisSmokeHarness::RunPerformanceGate(scaffold, corpus, 5000000);
+
+		bool hasSegaCdLaneMarker = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
+			return line.starts_with("GEN_PERF_RESULT ") && line.find("SCD_LANE_CT=") != string::npos;
+		});
+		bool hasM32xEventMarker = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
+			return line.starts_with("GEN_PERF_RESULT ") && line.find("M32X_EVT_CT=") != string::npos;
+		});
+
+		EXPECT_TRUE(hasSegaCdLaneMarker);
+		EXPECT_TRUE(hasM32xEventMarker);
+	}
 }

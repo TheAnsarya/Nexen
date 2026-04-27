@@ -156,6 +156,8 @@ Compatibility matrix checkpoints now include `GEN-COMPAT-DEBUG-LANE`, which enfo
 
 Compatibility matrix checkpoints also include `GEN-COMPAT-32X-TELEMETRY`, which validates deterministic replay parity for 32X tooling event telemetry bytes (`$a15018/$a15019`) in scaffold-based regression gates.
 
+Performance-gate result lines (`GEN_PERF_RESULT`) now include deterministic telemetry evidence markers (`SCD_LANE_CT` and `M32X_EVT_CT`) so gate summaries can be correlated with bridge/tooling activity surfaces.
+
 For scaffold-based gate workflows, `GenesisPlatformBusStub::ClearCommandResponseLane()` is the deterministic phase-reset primitive for command/response evidence and related tooling/control parity staging state.
 
 ---
