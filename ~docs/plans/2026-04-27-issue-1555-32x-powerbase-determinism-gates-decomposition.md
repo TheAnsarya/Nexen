@@ -1,4 +1,4 @@
-# Issue #1555 - 32X/Power Base Determinism Gate Pack Decomposition (2026-04-27)
+﻿# Issue #1555 - 32X/Power Base Determinism Gate Pack Decomposition (2026-04-27)
 
 ## Summary
 

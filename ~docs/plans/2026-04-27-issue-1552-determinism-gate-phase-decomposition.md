@@ -1,4 +1,4 @@
-# Issue #1552 - Determinism Gate Phase Decomposition (2026-04-27)
+﻿# Issue #1552 - Determinism Gate Phase Decomposition (2026-04-27)
 
 ## Summary
 

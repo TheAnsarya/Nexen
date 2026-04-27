@@ -1,4 +1,4 @@
-# Issue #1554 - 32X + Power Base Closure Matrix Decomposition (2026-04-27)
+﻿# Issue #1554 - 32X + Power Base Closure Matrix Decomposition (2026-04-27)
 
 ## Summary
 
