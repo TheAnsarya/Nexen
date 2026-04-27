@@ -1,4 +1,4 @@
-# Issue #1468 - 32X Architecture, Timing, and Validation Decomposition (2026-04-27)
+﻿# Issue #1468 - 32X Architecture, Timing, and Validation Decomposition (2026-04-27)
 
 ## Summary
 

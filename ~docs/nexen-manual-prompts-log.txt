@@ -1902,8 +1902,9 @@ immediately start rt9 next and keep shipping slice-by-slice with the same cadenc
 [Nexen] Continue working issues, go back to ealier issues, so start at issue #1422 and then do #1426 and so on in order so we're focusing on the Sega Genesis fundamentals for a while; work these slices and issues and update and cloase issues as you go, work for a long time; continue;
 
 continue;
---- run 2x
+--- run 3x
 
+Do #1! Always do #1 for this, as in always just commit the unexpected file edits; I don't care about it, just commit them and move on I do not want you to stop work for unexpected files. This is ALREADY in the copilot instructions;
 
 
 

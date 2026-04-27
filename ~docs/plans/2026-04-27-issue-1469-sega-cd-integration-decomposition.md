@@ -1,4 +1,4 @@
-# Issue #1469 - Sega CD Integration Program Decomposition (2026-04-27)
+﻿# Issue #1469 - Sega CD Integration Program Decomposition (2026-04-27)
 
 ## Summary
 
