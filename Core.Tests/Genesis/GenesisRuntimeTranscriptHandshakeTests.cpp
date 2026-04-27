@@ -442,4 +442,52 @@ namespace {
 		EXPECT_EQ(runA, runB);
 		EXPECT_NE(runA.LaneDigest, 0ull);
 	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeMixedHandshakeControlValueNoOpWritesPreserveReplayParityAfterSerialize) {
+		Emulator emuA;
+		std::vector<uint8_t> romA(0x400000);
+		GenesisMemoryManager original = CreateMemoryManager(emuA, romA);
+
+		auto runPrefix = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.Write8(0xA11200, 0x01);
+			memoryManager.Write8(0xA11100, 0x01);
+			memoryManager.Write8(0xA11100, 0x01);
+			memoryManager.Write16(0xA11100, 0x0100);
+			(void)memoryManager.Read8(0xA11101);
+		};
+
+		auto runTail = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.Write16(0xA11100, 0x0100);
+			memoryManager.Write16(0xA11200, 0x0000);
+			(void)memoryManager.Read16(0xA11100);
+			memoryManager.Write8(0xA11100, 0x00);
+			memoryManager.Write8(0xA11100, 0x00);
+			(void)memoryManager.Read16(0xA11200);
+		};
+
+		runPrefix(original);
+
+		Serializer saver(1, true, SerializeFormat::Binary);
+		original.Serialize(saver);
+		std::stringstream ss;
+		saver.SaveTo(ss);
+		ss.seekg(0);
+
+		runTail(original);
+		RuntimeTranscriptSnapshot expected = CaptureSnapshot(original);
+
+		Emulator emuB;
+		std::vector<uint8_t> romB(0x400000);
+		GenesisMemoryManager restored = CreateMemoryManager(emuB, romB);
+
+		Serializer loader(1, false, SerializeFormat::Binary);
+		ASSERT_TRUE(loader.LoadFrom(ss));
+		restored.Serialize(loader);
+
+		runTail(restored);
+		RuntimeTranscriptSnapshot replay = CaptureSnapshot(restored);
+
+		EXPECT_EQ(expected.LaneCount, replay.LaneCount);
+		EXPECT_EQ(expected.LaneDigest, replay.LaneDigest);
+	}
 }
