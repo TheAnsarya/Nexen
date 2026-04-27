@@ -1906,6 +1906,7 @@ continue;
 
 Do #1! Always do #1 for this, as in always just commit the unexpected file edits; I don't care about it, just commit them and move on I do not want you to stop work for unexpected files. This is ALREADY in the copilot instructions;
 
+[Nexen] Continue working issues for a while; work these slices and issues and update and close issues as you go, work for a long time; continue;
 
 
 

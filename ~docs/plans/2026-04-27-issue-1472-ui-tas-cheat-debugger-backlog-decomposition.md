@@ -1,4 +1,4 @@
-# Issue #1472 - Genesis UI/TAS/Cheat/Debugger Backlog Decomposition (2026-04-27)
+﻿# Issue #1472 - Genesis UI/TAS/Cheat/Debugger Backlog Decomposition (2026-04-27)
 
 ## Summary
 

@@ -1,4 +1,4 @@
-# Issue #1470 - Power Base Converter Prerequisite Decomposition (2026-04-27)
+﻿# Issue #1470 - Power Base Converter Prerequisite Decomposition (2026-04-27)
 
 ## Summary
 
