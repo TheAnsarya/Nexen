@@ -119,6 +119,26 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 		bool hostModePass = runningState == 0x01 && busHeldState == 0x01 && resumedState == 0x01 && scaffold.GetBus().GetZ80HandoffCount() >= 4;
 		addCheckpoint("GEN-COMPAT-HOST-MODE", hostModePass, std::format("run={} hold={} resume={} handoffCount={}", runningState, busHeldState, resumedState, scaffold.GetBus().GetZ80HandoffCount()));
 
+		scaffold.GetBus().WriteByte(0xA11200, 0x01);
+		scaffold.GetBus().WriteByte(0xA11100, 0x01);
+		scaffold.GetBus().WriteByte(0xA11100, 0x00);
+		uint8_t pbcBootRunning = scaffold.GetBus().ReadByte(0xA11200);
+		bool pbcBootPass = pbcBootRunning == 0x01 && scaffold.GetBus().GetZ80BootstrapCount() >= 1 && scaffold.GetBus().GetZ80HandoffCount() >= 6;
+		addCheckpoint("GEN-COMPAT-PBC-BOOT", pbcBootPass, std::format("bootRunning={} bootstrapCount={} handoffCount={}", pbcBootRunning, scaffold.GetBus().GetZ80BootstrapCount(), scaffold.GetBus().GetZ80HandoffCount()));
+
+		uint64_t cyclesBefore = scaffold.GetBus().GetZ80ExecutedCycles();
+		scaffold.StepFrameScaffold(144u * 8u);
+		uint64_t cyclesAfter = scaffold.GetBus().GetZ80ExecutedCycles();
+		uint64_t parityDeltaA = cyclesAfter > cyclesBefore ? cyclesAfter - cyclesBefore : 0;
+		GenesisBoundaryScaffoldSaveState pbcRuntimeBaseline = scaffold.SaveState();
+		scaffold.StepFrameScaffold(144u * 8u);
+		uint64_t parityDeltaB = scaffold.GetBus().GetZ80ExecutedCycles() - cyclesAfter;
+		scaffold.LoadState(pbcRuntimeBaseline);
+		scaffold.StepFrameScaffold(144u * 8u);
+		uint64_t parityReplayDelta = scaffold.GetBus().GetZ80ExecutedCycles() - cyclesAfter;
+		bool pbcRuntimePass = parityDeltaA > 0 && parityDeltaB == parityReplayDelta;
+		addCheckpoint("GEN-COMPAT-PBC-RUNTIME", pbcRuntimePass, std::format("deltaA={} deltaB={} replayDelta={} z80Digest={}", parityDeltaA, parityDeltaB, parityReplayDelta, scaffold.GetBus().GetOwnershipTraceDigest()));
+
 		size_t romSize = romCase.RomData.size();
 		uint8_t firstByte = scaffold.GetBus().ReadByte(0x000000);
 		uint8_t edgeByte = scaffold.GetBus().ReadByte((uint32_t)(romSize - 1));
