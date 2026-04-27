@@ -132,6 +132,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Issue #1463 Sega CD Integration Decomposition (2026-04-27)](plans/2026-04-27-issue-1463-sega-cd-integration-decomposition.md) | Child-slice decomposition for Sega CD staging, deterministic checkpoints, and tooling contracts |
 | [Issue #1464 32X Integration Decomposition (2026-04-27)](plans/2026-04-27-issue-1464-32x-integration-decomposition.md) | Child-slice decomposition for dual-SH2 staging, VDP composition sync, and tooling contracts |
 | [Issue #1465 Controller/Peripheral Matrix Decomposition (2026-04-27)](plans/2026-04-27-issue-1465-controller-peripheral-matrix-decomposition.md) | Child-slice decomposition for controller/peripheral matrix, deterministic TAS/input coverage, and UI parity |
+| [Issue #1466 Tooling and UX Parity Decomposition (2026-04-27)](plans/2026-04-27-issue-1466-tooling-ux-parity-decomposition.md) | Child-slice decomposition for debugger gaps, TAS/cheat deterministic parity targets, and UX/config parity |
 | [Platform Parity Benchmark and Correctness Gates](plans/platform-parity-benchmark-and-correctness-gates.md) | Cross-phase quality gates and evidence framework (#703) |
 | [Atari 2600 + Genesis Parity Tracker](plans/atari2600-genesis-parity-tracker.md) | Active multi-phase checklist, issue linkage, and closure criteria for parity execution (#750) |
 | [UI Settings Completeness Plan](plans/ui-settings-completeness-epic-18.md) | Epic #1040 execution plan for cross-platform settings/input/movie/savestate UX completeness |
