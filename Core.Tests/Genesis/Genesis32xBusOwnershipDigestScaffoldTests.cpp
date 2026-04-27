@@ -341,6 +341,34 @@ namespace {
 		EXPECT_NE(baselineDigest, 0u);
 	}
 
+	TEST(Genesis32xBusOwnershipDigestScaffoldTests, SegaCdToolingEventTelemetryBytesTrackEventCountDeterministically) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+		auto& bus = scaffold.GetBus();
+
+		bus.ClearCommandResponseLane();
+		EXPECT_EQ(bus.ReadByte(0xA12016), 0u);
+		EXPECT_EQ(bus.ReadByte(0xA12017), 0u);
+
+		bus.WriteByte(0xA12012, 0x11);
+		bus.WriteByte(0xA12013, 0x22);
+		bus.WriteByte(0xA12014, 0x33);
+		bus.WriteByte(0xA12015, 0x44);
+
+		uint16_t eventCount = (uint16_t)bus.ReadByte(0xA12016)
+			| ((uint16_t)bus.ReadByte(0xA12017) << 8);
+		EXPECT_GE(eventCount, 4u);
+
+		GenesisBoundaryScaffoldSaveState checkpoint = scaffold.SaveState();
+		uint16_t baselineCount = (uint16_t)bus.ReadByte(0xA12016)
+			| ((uint16_t)bus.ReadByte(0xA12017) << 8);
+
+		scaffold.LoadState(checkpoint);
+		uint16_t replayCount = (uint16_t)bus.ReadByte(0xA12016)
+			| ((uint16_t)bus.ReadByte(0xA12017) << 8);
+		EXPECT_EQ(replayCount, baselineCount);
+	}
+
 	TEST(Genesis32xBusOwnershipDigestScaffoldTests, M32xToolingTelemetryStatusBytesTrackEventCountDeterministically) {
 		GenesisM68kBoundaryScaffold scaffold;
 		scaffold.Startup();

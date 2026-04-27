@@ -114,6 +114,8 @@ The Genesis debugger runtime now exposes deterministic bridge tooling surfaces t
 
 ### Deterministic Status Bytes
 
+- `$a12016` Sega CD tooling event-count byte (low byte)
+- `$a12017` Sega CD tooling event-count byte (high byte)
 - `$a12018` Debug-lane telemetry count byte (low byte)
 - `$a12019` Debug-lane telemetry digest byte (low byte)
 - `$a15018` 32X tooling event-count byte (low byte)

@@ -202,7 +202,7 @@ bool GenesisMemoryManager::IsSegaCdToolingControlAddress(uint32_t addr) const {
 }
 
 bool GenesisMemoryManager::IsSegaCdToolingStatusAddress(uint32_t addr) const {
-	return addr >= 0xA12018 && addr <= 0xA1201F;
+	return addr >= 0xA12016 && addr <= 0xA1201F;
 }
 
 bool GenesisMemoryManager::Is32xSh2ControlAddress(uint32_t addr) const {
@@ -314,6 +314,12 @@ void GenesisMemoryManager::UpdateSegaCdToolingContract(uint32_t addr, uint8_t va
 }
 
 uint8_t GenesisMemoryManager::GetSegaCdToolingStatusByte(uint32_t addr) const {
+	if (addr == 0xA12016) {
+		return (uint8_t)(_segaCdToolingEventCount & 0xFF);
+	}
+	if (addr == 0xA12017) {
+		return (uint8_t)((_segaCdToolingEventCount >> 8) & 0xFF);
+	}
 	if (addr == 0xA12018) {
 		return (uint8_t)(_ioState.DebugTranscriptLaneCount & 0xFF);
 	}

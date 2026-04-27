@@ -15,7 +15,7 @@ namespace {
 	}
 
 	bool IsSegaCdToolingStatusAddress(uint32_t address) {
-		return address >= 0xA12018 && address <= 0xA1201F;
+		return address >= 0xA12016 && address <= 0xA1201F;
 	}
 
 	uint8_t GetDigestLowByte(const string& digestHex) {
@@ -916,7 +916,11 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 			_ioWindowAccessed = true;
 			_ioReadCount++;
 			if (IsSegaCdToolingStatusAddress(address)) {
-				if (address == 0xA12018) {
+				if (address == 0xA12016) {
+					result = (uint8_t)(_segaCdToolingEventCount & 0xFF);
+				} else if (address == 0xA12017) {
+					result = (uint8_t)((_segaCdToolingEventCount >> 8) & 0xFF);
+				} else if (address == 0xA12018) {
 					result = (uint8_t)(_commandResponseLaneCount & 0xFF);
 				} else if (address == 0xA12019) {
 					result = GetDigestLowByte(_commandResponseLaneDigest);

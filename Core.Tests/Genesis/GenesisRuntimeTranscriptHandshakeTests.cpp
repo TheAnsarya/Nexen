@@ -231,6 +231,21 @@ namespace {
 		EXPECT_NE(memoryManager.Read8(0xA1201B), 0x00u);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, SegaCdToolingStatusExposesEventCountTelemetryBytes) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA12012, 0x31);
+		memoryManager.Write8(0xA12013, 0x42);
+		memoryManager.Write8(0xA12014, 0x53);
+		memoryManager.Write8(0xA12015, 0x64);
+
+		uint16_t eventCount = (uint16_t)memoryManager.Read8(0xA12016)
+			| ((uint16_t)memoryManager.Read8(0xA12017) << 8);
+		EXPECT_GE(eventCount, 4u);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, SegaCdToolingContractStatusIsDeterministicAcrossSerializeReplay) {
 		Emulator emuA;
 		std::vector<uint8_t> romA(0x400000);
