@@ -8,6 +8,14 @@ namespace {
 	string ToHexDigest(uint64_t value) {
 		return std::format("{:016x}", value);
 	}
+
+	bool IsSegaCdToolingControlAddress(uint32_t address) {
+		return address >= 0xA12012 && address <= 0xA12015;
+	}
+
+	bool IsSegaCdToolingStatusAddress(uint32_t address) {
+		return address == 0xA1201A || address == 0xA1201B;
+	}
 }
 
 GenesisPlatformBusStub::GenesisPlatformBusStub()
@@ -210,6 +218,13 @@ void GenesisPlatformBusStub::ClearCommandResponseLane() {
 	_commandResponseLaneCount = 0;
 	_commandResponseLaneDigest.clear();
 	_commandResponseLane.clear();
+	_segaCdToolingCapabilities = 0x0F;
+	_segaCdToolingDebuggerSignal = 0;
+	_segaCdToolingTasSignal = 0;
+	_segaCdToolingSaveStateSignal = 0;
+	_segaCdToolingCheatSignal = 0;
+	_segaCdToolingDigest = 0;
+	_segaCdToolingEventCount = 0;
 }
 
 void GenesisPlatformBusStub::ApplyVdpControlWord(uint16_t controlWord) {
@@ -561,6 +576,13 @@ GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
 	state.CommandResponseLaneCount = _commandResponseLaneCount;
 	state.CommandResponseLaneDigest = _commandResponseLaneDigest;
 	state.CommandResponseLane = _commandResponseLane;
+	state.SegaCdToolingCapabilities = _segaCdToolingCapabilities;
+	state.SegaCdToolingDebuggerSignal = _segaCdToolingDebuggerSignal;
+	state.SegaCdToolingTasSignal = _segaCdToolingTasSignal;
+	state.SegaCdToolingSaveStateSignal = _segaCdToolingSaveStateSignal;
+	state.SegaCdToolingCheatSignal = _segaCdToolingCheatSignal;
+	state.SegaCdToolingDigest = _segaCdToolingDigest;
+	state.SegaCdToolingEventCount = _segaCdToolingEventCount;
 	return state;
 }
 
@@ -642,6 +664,13 @@ void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state)
 	_commandResponseLaneCount = state.CommandResponseLaneCount;
 	_commandResponseLaneDigest = state.CommandResponseLaneDigest;
 	_commandResponseLane = state.CommandResponseLane;
+	_segaCdToolingCapabilities = state.SegaCdToolingCapabilities;
+	_segaCdToolingDebuggerSignal = state.SegaCdToolingDebuggerSignal;
+	_segaCdToolingTasSignal = state.SegaCdToolingTasSignal;
+	_segaCdToolingSaveStateSignal = state.SegaCdToolingSaveStateSignal;
+	_segaCdToolingCheatSignal = state.SegaCdToolingCheatSignal;
+	_segaCdToolingDigest = state.SegaCdToolingDigest;
+	_segaCdToolingEventCount = state.SegaCdToolingEventCount;
 }
 
 uint8_t GenesisPlatformBusStub::ComposeRenderPixel() const {
@@ -735,6 +764,14 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 		case GenesisBusOwner::Io: {
 			_ioWindowAccessed = true;
 			_ioReadCount++;
+			if (IsSegaCdToolingStatusAddress(address)) {
+				if (address == 0xA1201A) {
+					result = _segaCdToolingCapabilities;
+				} else {
+					result = _segaCdToolingDigest;
+				}
+				break;
+			}
 			uint32_t expansionOffset = 0;
 			if (TryGetExpansionIoOffset(address, expansionOffset)) {
 				result = _expansionIo[expansionOffset];
@@ -823,6 +860,31 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 		case GenesisBusOwner::Io: {
 			_ioWindowAccessed = true;
 			_ioWriteCount++;
+			if (IsSegaCdToolingControlAddress(address)) {
+				uint8_t* target = nullptr;
+				if (address == 0xA12012) {
+					target = &_segaCdToolingDebuggerSignal;
+				} else if (address == 0xA12013) {
+					target = &_segaCdToolingTasSignal;
+				} else if (address == 0xA12014) {
+					target = &_segaCdToolingSaveStateSignal;
+				} else if (address == 0xA12015) {
+					target = &_segaCdToolingCheatSignal;
+				}
+
+				if (target && *target != value) {
+					*target = value;
+					_segaCdToolingEventCount++;
+				}
+
+				uint8_t digest = _segaCdToolingCapabilities;
+				digest ^= _segaCdToolingDebuggerSignal;
+				digest ^= (uint8_t)(_segaCdToolingTasSignal << 1);
+				digest ^= (uint8_t)(_segaCdToolingSaveStateSignal << 2);
+				digest ^= (uint8_t)(_segaCdToolingCheatSignal << 3);
+				digest ^= (uint8_t)(_segaCdToolingEventCount & 0xFF);
+				_segaCdToolingDigest = digest;
+			}
 			uint32_t expansionOffset = 0;
 			if (TryGetExpansionIoOffset(address, expansionOffset)) {
 				_expansionIo[expansionOffset] = value;

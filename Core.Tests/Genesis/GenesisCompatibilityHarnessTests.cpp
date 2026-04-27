@@ -69,6 +69,7 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-BUS-OWNERSHIP"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-HOST-MODE"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TOOLING-MATRIX"));
 		}
 	}
 

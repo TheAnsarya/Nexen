@@ -62,6 +62,12 @@ private:
 	uint8_t _segaCdMixedLeft = 0;
 	uint8_t _segaCdMixedRight = 0;
 	uint32_t _segaCdAudioCheckpointCount = 0;
+	uint8_t _segaCdToolingDebuggerSignal = 0;
+	uint8_t _segaCdToolingTasSignal = 0;
+	uint8_t _segaCdToolingSaveStateSignal = 0;
+	uint8_t _segaCdToolingCheatSignal = 0;
+	uint32_t _segaCdToolingEventCount = 0;
+	uint8_t _segaCdToolingDigest = 0;
 	uint8_t _segaCdBridgeA120[0x20] = {};
 	uint8_t _segaCdBridgeA130[0x20] = {};
 	uint8_t _segaCdBridgeA140[0x20] = {};
@@ -75,10 +81,14 @@ private:
 	bool IsSegaCdSubCpuControlAddress(uint32_t addr) const;
 	bool IsSegaCdAudioDataAddress(uint32_t addr) const;
 	bool IsSegaCdAudioStatusAddress(uint32_t addr) const;
+	bool IsSegaCdToolingControlAddress(uint32_t addr) const;
+	bool IsSegaCdToolingStatusAddress(uint32_t addr) const;
 	void UpdateSegaCdSubCpuControl(uint8_t value);
 	void UpdateSegaCdAudioPath(uint32_t addr, uint8_t value);
+	void UpdateSegaCdToolingContract(uint32_t addr, uint8_t value);
 	uint8_t GetSegaCdSubCpuStatusByte() const;
 	uint8_t GetSegaCdAudioStatusByte(uint32_t addr) const;
+	uint8_t GetSegaCdToolingStatusByte(uint32_t addr) const;
 	void TrackTranscriptEntry(uint32_t addr, bool isWrite, uint8_t value, uint8_t roleFlags);
 	void TrackSegaCdTranscript(uint32_t addr, bool isWrite, uint8_t value);
 	void TrackSegaCdHandshakeTranscript(uint32_t addr, bool isWrite, uint8_t value);

@@ -98,6 +98,13 @@ struct GenesisPlatformBusSaveState {
 	uint32_t CommandResponseLaneCount = 0;
 	string CommandResponseLaneDigest;
 	vector<string> CommandResponseLane;
+	uint8_t SegaCdToolingCapabilities = 0x0F;
+	uint8_t SegaCdToolingDebuggerSignal = 0;
+	uint8_t SegaCdToolingTasSignal = 0;
+	uint8_t SegaCdToolingSaveStateSignal = 0;
+	uint8_t SegaCdToolingCheatSignal = 0;
+	uint8_t SegaCdToolingDigest = 0;
+	uint32_t SegaCdToolingEventCount = 0;
 
 	bool operator==(const GenesisPlatformBusSaveState&) const = default;
 };
@@ -208,6 +215,13 @@ private:
 	uint32_t _commandResponseLaneCount = 0;
 	string _commandResponseLaneDigest;
 	vector<string> _commandResponseLane;
+	uint8_t _segaCdToolingCapabilities = 0x0F;
+	uint8_t _segaCdToolingDebuggerSignal = 0;
+	uint8_t _segaCdToolingTasSignal = 0;
+	uint8_t _segaCdToolingSaveStateSignal = 0;
+	uint8_t _segaCdToolingCheatSignal = 0;
+	uint8_t _segaCdToolingDigest = 0;
+	uint32_t _segaCdToolingEventCount = 0;
 
 	[[nodiscard]] GenesisBusOwner DecodeOwner(uint32_t address) const;
 	[[nodiscard]] bool TryGetExpansionIoOffset(uint32_t address, uint32_t& offset) const;

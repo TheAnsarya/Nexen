@@ -126,6 +126,20 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 		bool mapperEdgePass = edgeByte == romCase.RomData.back() && mirroredByte == firstByte;
 		addCheckpoint("GEN-COMPAT-MAPPER-EDGE", mapperEdgePass, std::format("romSize={} edge={:02x} mirrored={:02x} first={:02x}", romSize, edgeByte, mirroredByte, firstByte));
 
+		scaffold.GetBus().WriteByte(0xA12012, 0x11);
+		scaffold.GetBus().WriteByte(0xA12013, 0x22);
+		scaffold.GetBus().WriteByte(0xA12014, 0x33);
+		scaffold.GetBus().WriteByte(0xA12015, 0x44);
+		uint8_t toolingCapabilities = scaffold.GetBus().ReadByte(0xA1201A);
+		uint8_t toolingDigest = scaffold.GetBus().ReadByte(0xA1201B);
+		GenesisBoundaryScaffoldSaveState toolingBaseline = scaffold.SaveState();
+		scaffold.GetBus().WriteByte(0xA12015, 0x99);
+		scaffold.LoadState(toolingBaseline);
+		uint8_t toolingCapabilitiesReplay = scaffold.GetBus().ReadByte(0xA1201A);
+		uint8_t toolingDigestReplay = scaffold.GetBus().ReadByte(0xA1201B);
+		bool toolingPass = toolingCapabilities == 0x0F && toolingCapabilitiesReplay == toolingCapabilities && toolingDigestReplay == toolingDigest;
+		addCheckpoint("GEN-COMPAT-TOOLING-MATRIX", toolingPass, std::format("caps={:02x} digest={:02x} replayCaps={:02x} replayDigest={:02x}", toolingCapabilities, toolingDigest, toolingCapabilitiesReplay, toolingDigestReplay));
+
 		scaffold.GetBus().SetRenderCompositionInputs(0x18, true, 0x04, false, 0x00, false, false, 0x20, true);
 		scaffold.GetBus().SetScroll(2, 1);
 		scaffold.GetBus().RenderScaffoldLine(48);

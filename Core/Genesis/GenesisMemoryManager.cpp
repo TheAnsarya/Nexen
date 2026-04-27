@@ -70,6 +70,12 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_segaCdMixedLeft = 0;
 	_segaCdMixedRight = 0;
 	_segaCdAudioCheckpointCount = 0;
+	_segaCdToolingDebuggerSignal = 0;
+	_segaCdToolingTasSignal = 0;
+	_segaCdToolingSaveStateSignal = 0;
+	_segaCdToolingCheatSignal = 0;
+	_segaCdToolingEventCount = 0;
+	_segaCdToolingDigest = 0;
 
 	_hasSram = false;
 	_sramStart = 0;
@@ -168,6 +174,14 @@ bool GenesisMemoryManager::IsSegaCdAudioStatusAddress(uint32_t addr) const {
 	return addr == 0xA12010 || addr == 0xA12011;
 }
 
+bool GenesisMemoryManager::IsSegaCdToolingControlAddress(uint32_t addr) const {
+	return addr >= 0xA12012 && addr <= 0xA12015;
+}
+
+bool GenesisMemoryManager::IsSegaCdToolingStatusAddress(uint32_t addr) const {
+	return addr == 0xA1201A || addr == 0xA1201B;
+}
+
 void GenesisMemoryManager::UpdateSegaCdSubCpuControl(uint8_t value) {
 	bool running = (value & 0x01) != 0;
 	bool busRequest = (value & 0x02) != 0;
@@ -218,6 +232,46 @@ uint8_t GenesisMemoryManager::GetSegaCdAudioStatusByte(uint32_t addr) const {
 	}
 	if (addr == 0xA12011) {
 		return _segaCdMixedRight;
+	}
+	return 0;
+}
+
+void GenesisMemoryManager::UpdateSegaCdToolingContract(uint32_t addr, uint8_t value) {
+	uint8_t* target = nullptr;
+	if (addr == 0xA12012) {
+		target = &_segaCdToolingDebuggerSignal;
+	} else if (addr == 0xA12013) {
+		target = &_segaCdToolingTasSignal;
+	} else if (addr == 0xA12014) {
+		target = &_segaCdToolingSaveStateSignal;
+	} else if (addr == 0xA12015) {
+		target = &_segaCdToolingCheatSignal;
+	}
+
+	if (!target) {
+		return;
+	}
+
+	if (*target != value) {
+		*target = value;
+		_segaCdToolingEventCount++;
+	}
+
+	uint8_t digest = 0x0F;
+	digest ^= _segaCdToolingDebuggerSignal;
+	digest ^= (uint8_t)(_segaCdToolingTasSignal << 1);
+	digest ^= (uint8_t)(_segaCdToolingSaveStateSignal << 2);
+	digest ^= (uint8_t)(_segaCdToolingCheatSignal << 3);
+	digest ^= (uint8_t)(_segaCdToolingEventCount & 0xFF);
+	_segaCdToolingDigest = digest;
+}
+
+uint8_t GenesisMemoryManager::GetSegaCdToolingStatusByte(uint32_t addr) const {
+	if (addr == 0xA1201A) {
+		return 0x0F;
+	}
+	if (addr == 0xA1201B) {
+		return _segaCdToolingDigest;
 	}
 	return 0;
 }
@@ -375,6 +429,8 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			value = GetSegaCdSubCpuStatusByte();
 		} else if (IsSegaCdAudioStatusAddress(addr)) {
 			value = GetSegaCdAudioStatusByte(addr);
+		} else if (IsSegaCdToolingStatusAddress(addr)) {
+			value = GetSegaCdToolingStatusByte(addr);
 		}
 		TrackSegaCdTranscript(addr, false, value);
 		_openBus = value;
@@ -512,6 +568,8 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 			UpdateSegaCdSubCpuControl(value);
 		} else if (IsSegaCdAudioDataAddress(addr)) {
 			UpdateSegaCdAudioPath(addr, value);
+		} else if (IsSegaCdToolingControlAddress(addr)) {
+			UpdateSegaCdToolingContract(addr, value);
 		}
 		TrackSegaCdTranscript(addr, true, value);
 		return;
@@ -705,6 +763,12 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_segaCdMixedLeft);
 	SV(_segaCdMixedRight);
 	SV(_segaCdAudioCheckpointCount);
+	SV(_segaCdToolingDebuggerSignal);
+	SV(_segaCdToolingTasSignal);
+	SV(_segaCdToolingSaveStateSignal);
+	SV(_segaCdToolingCheatSignal);
+	SV(_segaCdToolingEventCount);
+	SV(_segaCdToolingDigest);
 	SVArray(_segaCdBridgeA120, (uint32_t)sizeof(_segaCdBridgeA120));
 	SVArray(_segaCdBridgeA130, (uint32_t)sizeof(_segaCdBridgeA130));
 	SVArray(_segaCdBridgeA140, (uint32_t)sizeof(_segaCdBridgeA140));
