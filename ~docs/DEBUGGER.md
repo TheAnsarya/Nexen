@@ -148,6 +148,8 @@ The dedicated debug transcript lane also captures debugger-driven IO (`$a100xx`)
 
 Debugger tooling can query dedicated lane metadata directly through `GenesisMemoryManager::GetDebugTranscriptLaneCount()` and `GenesisMemoryManager::GetDebugTranscriptLaneDigest()`, and can explicitly reset lane evidence between phases with `GenesisMemoryManager::ClearDebugTranscriptLane()`.
 
+Compatibility matrix checkpoints now include `GEN-COMPAT-DEBUG-LANE`, which enforces deterministic replay parity for debug-lane command/response evidence in scaffold-based regression gates.
+
 ---
 
 ## Core Components

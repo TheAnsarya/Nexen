@@ -214,6 +214,45 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 		bool tooling32xPass = toolingCaps == 0x0F && toolingCapsReplay == toolingCaps && tooling32xDigestReplay == tooling32xDigest;
 		addCheckpoint("GEN-COMPAT-32X-TOOLING", tooling32xPass, std::format("caps={:02x} digest={:02x} replayCaps={:02x} replayDigest={:02x}", toolingCaps, tooling32xDigest, toolingCapsReplay, tooling32xDigestReplay));
 
+		GenesisBoundaryScaffoldSaveState debugLaneScenarioStart = scaffold.SaveState();
+		scaffold.GetBus().ClearCommandResponseLane();
+		scaffold.GetBus().WriteByte(0xA12012, 0x11);
+		scaffold.GetBus().WriteByte(0xA12015, 0x44);
+		scaffold.GetBus().WriteByte(0xA15009, 0x22);
+		(void)scaffold.GetBus().ReadByte(0xA1201B);
+		uint32_t debugLanePrefixCount = scaffold.GetBus().GetCommandResponseLaneCount();
+		string debugLanePrefixDigest = scaffold.GetBus().GetCommandResponseLaneDigest();
+		GenesisBoundaryScaffoldSaveState debugLaneBaseline = scaffold.SaveState();
+
+		scaffold.GetBus().WriteByte(0xA12013, 0x2C);
+		scaffold.GetBus().WriteByte(0xA1500B, 0xE1);
+		(void)scaffold.GetBus().ReadByte(0xA1501F);
+		uint32_t debugLaneTailCount = scaffold.GetBus().GetCommandResponseLaneCount();
+		string debugLaneTailDigest = scaffold.GetBus().GetCommandResponseLaneDigest();
+
+		scaffold.LoadState(debugLaneBaseline);
+		scaffold.GetBus().WriteByte(0xA12013, 0x2C);
+		scaffold.GetBus().WriteByte(0xA1500B, 0xE1);
+		(void)scaffold.GetBus().ReadByte(0xA1501F);
+		uint32_t debugLaneReplayCount = scaffold.GetBus().GetCommandResponseLaneCount();
+		string debugLaneReplayDigest = scaffold.GetBus().GetCommandResponseLaneDigest();
+
+		bool debugLanePass = debugLanePrefixCount >= 4
+			&& !debugLanePrefixDigest.empty()
+			&& debugLaneReplayCount == debugLaneTailCount
+			&& debugLaneReplayDigest == debugLaneTailDigest;
+		addCheckpoint(
+			"GEN-COMPAT-DEBUG-LANE",
+			debugLanePass,
+			std::format(
+				"prefixCount={} prefixDigestNonEmpty={} tailCount={} replayCount={} digestReplayMatch={}",
+				debugLanePrefixCount,
+				!debugLanePrefixDigest.empty() ? 1 : 0,
+				debugLaneTailCount,
+				debugLaneReplayCount,
+				debugLaneReplayDigest == debugLaneTailDigest ? 1 : 0));
+		scaffold.LoadState(debugLaneScenarioStart);
+
 		GenesisBoundaryScaffoldSaveState preTasCheatState = scaffold.SaveState();
 		scaffold.GetBus().WriteByte(0xA10003, 0x40);
 		scaffold.GetBus().WriteByte(0xA10003, 0x00);

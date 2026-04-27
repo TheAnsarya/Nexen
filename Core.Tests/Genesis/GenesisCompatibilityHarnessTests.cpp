@@ -73,6 +73,7 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-32X-DUAL-SH2"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-32X-COMPOSE-SYNC"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-32X-TOOLING"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DEBUG-LANE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TAS-CHEAT"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-PBC-BOOT"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-PBC-RUNTIME"));
@@ -115,9 +116,38 @@ namespace {
 		EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-HOST-MODE"));
 		EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE"));
 		EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DETERMINISM"));
+		EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DEBUG-LANE"));
 		EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TAS-CHEAT"));
 		EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-PBC-BOOT"));
 		EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-PBC-RUNTIME"));
+	}
+
+	TEST(GenesisCompatibilityHarnessTests, DebugLaneCheckpointContextIsDeterministicAcrossRuns) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus;
+		corpus.push_back({"debug-lane-parity.bin", vector<uint8_t>(0x10000, 0x4E)});
+
+		auto readDebugLaneContext = [&](const GenesisCompatibilityMatrixResult& result) {
+			EXPECT_EQ(result.PassCount, 1);
+			EXPECT_EQ(result.FailCount, 0);
+			const GenesisCompatibilityEntry& entry = result.Entries[0];
+			auto it = std::find_if(entry.Checkpoints.begin(), entry.Checkpoints.end(), [](const GenesisCompatibilityCheckpoint& checkpoint) {
+				return checkpoint.Id == "GEN-COMPAT-DEBUG-LANE";
+			});
+			if (it == entry.Checkpoints.end()) {
+				ADD_FAILURE() << "Missing GEN-COMPAT-DEBUG-LANE checkpoint";
+				return string();
+			}
+			EXPECT_TRUE(it->Pass);
+			return it->Context;
+		};
+
+		GenesisCompatibilityMatrixResult runA = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+		GenesisCompatibilityMatrixResult runB = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+
+		string contextA = readDebugLaneContext(runA);
+		string contextB = readDebugLaneContext(runB);
+		EXPECT_EQ(contextA, contextB);
 	}
 
 	TEST(GenesisCompatibilityHarnessTests, TasCheatCheckpointContextIsDeterministicAcrossRuns) {
