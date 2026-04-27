@@ -1,4 +1,4 @@
-# Issue #1543 - Sega CD Sub-CPU and PCM/CDDA Determinism Decomposition (2026-04-27)
+﻿# Issue #1543 - Sega CD Sub-CPU and PCM/CDDA Determinism Decomposition (2026-04-27)
 
 ## Summary
 

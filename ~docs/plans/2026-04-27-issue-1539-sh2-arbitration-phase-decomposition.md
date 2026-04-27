@@ -1,4 +1,4 @@
-# Issue #1539 - SH2 Execution and Arbitration Phase Decomposition (2026-04-27)
+﻿# Issue #1539 - SH2 Execution and Arbitration Phase Decomposition (2026-04-27)
 
 ## Summary
 

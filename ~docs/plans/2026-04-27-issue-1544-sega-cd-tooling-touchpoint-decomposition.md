@@ -1,4 +1,4 @@
-# Issue #1544 - Sega CD Tooling Touchpoint Decomposition (2026-04-27)
+﻿# Issue #1544 - Sega CD Tooling Touchpoint Decomposition (2026-04-27)
 
 ## Summary
 
