@@ -140,6 +140,19 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 		bool toolingPass = toolingCapabilities == 0x0F && toolingCapabilitiesReplay == toolingCapabilities && toolingDigestReplay == toolingDigest;
 		addCheckpoint("GEN-COMPAT-TOOLING-MATRIX", toolingPass, std::format("caps={:02x} digest={:02x} replayCaps={:02x} replayDigest={:02x}", toolingCapabilities, toolingDigest, toolingCapabilitiesReplay, toolingDigestReplay));
 
+		scaffold.GetBus().WriteByte(0xA15012, 0x03);
+		scaffold.GetBus().WriteByte(0xA15013, 0x06);
+		scaffold.GetBus().WriteByte(0xA15014, 0xA5);
+		uint8_t sh2Status = scaffold.GetBus().ReadByte(0xA1501A);
+		uint8_t sh2Digest = scaffold.GetBus().ReadByte(0xA1501B);
+		GenesisBoundaryScaffoldSaveState sh2Baseline = scaffold.SaveState();
+		scaffold.GetBus().WriteByte(0xA15013, 0x02);
+		scaffold.LoadState(sh2Baseline);
+		uint8_t sh2StatusReplay = scaffold.GetBus().ReadByte(0xA1501A);
+		uint8_t sh2DigestReplay = scaffold.GetBus().ReadByte(0xA1501B);
+		bool sh2Pass = (sh2Status & 0x03) == 0x03 && sh2StatusReplay == sh2Status && sh2DigestReplay == sh2Digest;
+		addCheckpoint("GEN-COMPAT-32X-DUAL-SH2", sh2Pass, std::format("status={:02x} digest={:02x} replayStatus={:02x} replayDigest={:02x}", sh2Status, sh2Digest, sh2StatusReplay, sh2DigestReplay));
+
 		scaffold.GetBus().SetRenderCompositionInputs(0x18, true, 0x04, false, 0x00, false, false, 0x20, true);
 		scaffold.GetBus().SetScroll(2, 1);
 		scaffold.GetBus().RenderScaffoldLine(48);

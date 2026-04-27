@@ -105,6 +105,12 @@ struct GenesisPlatformBusSaveState {
 	uint8_t SegaCdToolingCheatSignal = 0;
 	uint8_t SegaCdToolingDigest = 0;
 	uint32_t SegaCdToolingEventCount = 0;
+	bool M32xMasterSh2Running = false;
+	bool M32xSlaveSh2Running = false;
+	uint8_t M32xSh2SyncPhase = 0;
+	uint8_t M32xSh2Milestone = 0;
+	uint32_t M32xSh2SyncEpoch = 0;
+	uint8_t M32xSh2Digest = 0;
 
 	bool operator==(const GenesisPlatformBusSaveState&) const = default;
 };
@@ -222,6 +228,12 @@ private:
 	uint8_t _segaCdToolingCheatSignal = 0;
 	uint8_t _segaCdToolingDigest = 0;
 	uint32_t _segaCdToolingEventCount = 0;
+	bool _m32xMasterSh2Running = false;
+	bool _m32xSlaveSh2Running = false;
+	uint8_t _m32xSh2SyncPhase = 0;
+	uint8_t _m32xSh2Milestone = 0;
+	uint32_t _m32xSh2SyncEpoch = 0;
+	uint8_t _m32xSh2Digest = 0;
 
 	[[nodiscard]] GenesisBusOwner DecodeOwner(uint32_t address) const;
 	[[nodiscard]] bool TryGetExpansionIoOffset(uint32_t address, uint32_t& offset) const;

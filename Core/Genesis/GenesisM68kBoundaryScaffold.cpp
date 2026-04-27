@@ -16,6 +16,14 @@ namespace {
 	bool IsSegaCdToolingStatusAddress(uint32_t address) {
 		return address == 0xA1201A || address == 0xA1201B;
 	}
+
+	bool Is32xSh2ControlAddress(uint32_t address) {
+		return address == 0xA15012 || address == 0xA15013 || address == 0xA15014;
+	}
+
+	bool Is32xSh2StatusAddress(uint32_t address) {
+		return address == 0xA1501A || address == 0xA1501B;
+	}
 }
 
 GenesisPlatformBusStub::GenesisPlatformBusStub()
@@ -225,6 +233,12 @@ void GenesisPlatformBusStub::ClearCommandResponseLane() {
 	_segaCdToolingCheatSignal = 0;
 	_segaCdToolingDigest = 0;
 	_segaCdToolingEventCount = 0;
+	_m32xMasterSh2Running = false;
+	_m32xSlaveSh2Running = false;
+	_m32xSh2SyncPhase = 0;
+	_m32xSh2Milestone = 0;
+	_m32xSh2SyncEpoch = 0;
+	_m32xSh2Digest = 0;
 }
 
 void GenesisPlatformBusStub::ApplyVdpControlWord(uint16_t controlWord) {
@@ -583,6 +597,12 @@ GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
 	state.SegaCdToolingCheatSignal = _segaCdToolingCheatSignal;
 	state.SegaCdToolingDigest = _segaCdToolingDigest;
 	state.SegaCdToolingEventCount = _segaCdToolingEventCount;
+	state.M32xMasterSh2Running = _m32xMasterSh2Running;
+	state.M32xSlaveSh2Running = _m32xSlaveSh2Running;
+	state.M32xSh2SyncPhase = _m32xSh2SyncPhase;
+	state.M32xSh2Milestone = _m32xSh2Milestone;
+	state.M32xSh2SyncEpoch = _m32xSh2SyncEpoch;
+	state.M32xSh2Digest = _m32xSh2Digest;
 	return state;
 }
 
@@ -671,6 +691,12 @@ void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state)
 	_segaCdToolingCheatSignal = state.SegaCdToolingCheatSignal;
 	_segaCdToolingDigest = state.SegaCdToolingDigest;
 	_segaCdToolingEventCount = state.SegaCdToolingEventCount;
+	_m32xMasterSh2Running = state.M32xMasterSh2Running;
+	_m32xSlaveSh2Running = state.M32xSlaveSh2Running;
+	_m32xSh2SyncPhase = state.M32xSh2SyncPhase;
+	_m32xSh2Milestone = state.M32xSh2Milestone;
+	_m32xSh2SyncEpoch = state.M32xSh2SyncEpoch;
+	_m32xSh2Digest = state.M32xSh2Digest;
 }
 
 uint8_t GenesisPlatformBusStub::ComposeRenderPixel() const {
@@ -769,6 +795,17 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 					result = _segaCdToolingCapabilities;
 				} else {
 					result = _segaCdToolingDigest;
+				}
+				break;
+			}
+			if (Is32xSh2StatusAddress(address)) {
+				if (address == 0xA1501A) {
+					result = 0;
+					result |= _m32xMasterSh2Running ? 0x01 : 0x00;
+					result |= _m32xSlaveSh2Running ? 0x02 : 0x00;
+					result |= (uint8_t)((_m32xSh2SyncPhase & 0x0F) << 2);
+				} else {
+					result = _m32xSh2Digest;
 				}
 				break;
 			}
@@ -884,6 +921,35 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 				digest ^= (uint8_t)(_segaCdToolingCheatSignal << 3);
 				digest ^= (uint8_t)(_segaCdToolingEventCount & 0xFF);
 				_segaCdToolingDigest = digest;
+			}
+			if (Is32xSh2ControlAddress(address)) {
+				bool changed = false;
+				if (address == 0xA15012) {
+					bool nextMaster = (value & 0x01) != 0;
+					bool nextSlave = (value & 0x02) != 0;
+					changed = nextMaster != _m32xMasterSh2Running || nextSlave != _m32xSlaveSh2Running;
+					_m32xMasterSh2Running = nextMaster;
+					_m32xSlaveSh2Running = nextSlave;
+				} else if (address == 0xA15013) {
+					uint8_t phase = (uint8_t)(value & 0x0F);
+					changed = phase != _m32xSh2SyncPhase;
+					_m32xSh2SyncPhase = phase;
+				} else if (address == 0xA15014) {
+					changed = value != _m32xSh2Milestone;
+					_m32xSh2Milestone = value;
+				}
+
+				if (changed) {
+					_m32xSh2SyncEpoch++;
+				}
+
+				uint8_t digest = 0;
+				digest |= _m32xMasterSh2Running ? 0x01 : 0x00;
+				digest |= _m32xSlaveSh2Running ? 0x02 : 0x00;
+				digest ^= (uint8_t)(_m32xSh2SyncPhase << 2);
+				digest ^= _m32xSh2Milestone;
+				digest ^= (uint8_t)(_m32xSh2SyncEpoch & 0xFF);
+				_m32xSh2Digest = digest;
 			}
 			uint32_t expansionOffset = 0;
 			if (TryGetExpansionIoOffset(address, expansionOffset)) {

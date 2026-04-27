@@ -70,6 +70,7 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-HOST-MODE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TOOLING-MATRIX"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-32X-DUAL-SH2"));
 		}
 	}
 

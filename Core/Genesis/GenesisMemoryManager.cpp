@@ -76,6 +76,12 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_segaCdToolingCheatSignal = 0;
 	_segaCdToolingEventCount = 0;
 	_segaCdToolingDigest = 0;
+	_m32xMasterSh2Running = false;
+	_m32xSlaveSh2Running = false;
+	_m32xSh2SyncPhase = 0;
+	_m32xSh2Milestone = 0;
+	_m32xSh2SyncEpoch = 0;
+	_m32xSh2Digest = 0;
 
 	_hasSram = false;
 	_sramStart = 0;
@@ -182,6 +188,14 @@ bool GenesisMemoryManager::IsSegaCdToolingStatusAddress(uint32_t addr) const {
 	return addr == 0xA1201A || addr == 0xA1201B;
 }
 
+bool GenesisMemoryManager::Is32xSh2ControlAddress(uint32_t addr) const {
+	return addr == 0xA15012 || addr == 0xA15013 || addr == 0xA15014;
+}
+
+bool GenesisMemoryManager::Is32xSh2StatusAddress(uint32_t addr) const {
+	return addr == 0xA1501A || addr == 0xA1501B;
+}
+
 void GenesisMemoryManager::UpdateSegaCdSubCpuControl(uint8_t value) {
 	bool running = (value & 0x01) != 0;
 	bool busRequest = (value & 0x02) != 0;
@@ -272,6 +286,54 @@ uint8_t GenesisMemoryManager::GetSegaCdToolingStatusByte(uint32_t addr) const {
 	}
 	if (addr == 0xA1201B) {
 		return _segaCdToolingDigest;
+	}
+	return 0;
+}
+
+void GenesisMemoryManager::Update32xSh2Staging(uint32_t addr, uint8_t value) {
+	bool changed = false;
+	if (addr == 0xA15012) {
+		bool nextMaster = (value & 0x01) != 0;
+		bool nextSlave = (value & 0x02) != 0;
+		changed = nextMaster != _m32xMasterSh2Running || nextSlave != _m32xSlaveSh2Running;
+		_m32xMasterSh2Running = nextMaster;
+		_m32xSlaveSh2Running = nextSlave;
+	} else if (addr == 0xA15013) {
+		uint8_t phase = (uint8_t)(value & 0x0F);
+		changed = phase != _m32xSh2SyncPhase;
+		_m32xSh2SyncPhase = phase;
+	} else if (addr == 0xA15014) {
+		changed = value != _m32xSh2Milestone;
+		_m32xSh2Milestone = value;
+	}
+
+	if (changed) {
+		_m32xSh2SyncEpoch++;
+	}
+
+	uint8_t digest = 0;
+	digest |= _m32xMasterSh2Running ? 0x01 : 0x00;
+	digest |= _m32xSlaveSh2Running ? 0x02 : 0x00;
+	digest ^= (uint8_t)(_m32xSh2SyncPhase << 2);
+	digest ^= _m32xSh2Milestone;
+	digest ^= (uint8_t)(_m32xSh2SyncEpoch & 0xFF);
+	_m32xSh2Digest = digest;
+}
+
+uint8_t GenesisMemoryManager::Get32xSh2StatusByte(uint32_t addr) const {
+	if (addr == 0xA1501A) {
+		uint8_t status = 0;
+		if (_m32xMasterSh2Running) {
+			status |= 0x01;
+		}
+		if (_m32xSlaveSh2Running) {
+			status |= 0x02;
+		}
+		status |= (uint8_t)((_m32xSh2SyncPhase & 0x0F) << 2);
+		return status;
+	}
+	if (addr == 0xA1501B) {
+		return _m32xSh2Digest;
 	}
 	return 0;
 }
@@ -431,6 +493,8 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			value = GetSegaCdAudioStatusByte(addr);
 		} else if (IsSegaCdToolingStatusAddress(addr)) {
 			value = GetSegaCdToolingStatusByte(addr);
+		} else if (Is32xSh2StatusAddress(addr)) {
+			value = Get32xSh2StatusByte(addr);
 		}
 		TrackSegaCdTranscript(addr, false, value);
 		_openBus = value;
@@ -570,6 +634,8 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 			UpdateSegaCdAudioPath(addr, value);
 		} else if (IsSegaCdToolingControlAddress(addr)) {
 			UpdateSegaCdToolingContract(addr, value);
+		} else if (Is32xSh2ControlAddress(addr)) {
+			Update32xSh2Staging(addr, value);
 		}
 		TrackSegaCdTranscript(addr, true, value);
 		return;
@@ -769,6 +835,12 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_segaCdToolingCheatSignal);
 	SV(_segaCdToolingEventCount);
 	SV(_segaCdToolingDigest);
+	SV(_m32xMasterSh2Running);
+	SV(_m32xSlaveSh2Running);
+	SV(_m32xSh2SyncPhase);
+	SV(_m32xSh2Milestone);
+	SV(_m32xSh2SyncEpoch);
+	SV(_m32xSh2Digest);
 	SVArray(_segaCdBridgeA120, (uint32_t)sizeof(_segaCdBridgeA120));
 	SVArray(_segaCdBridgeA130, (uint32_t)sizeof(_segaCdBridgeA130));
 	SVArray(_segaCdBridgeA140, (uint32_t)sizeof(_segaCdBridgeA140));
