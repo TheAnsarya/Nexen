@@ -41,3 +41,34 @@ Current sequence baseline: 25/25 passing.
 3. #1601
 
 Close #1552 after child-track matrix, checkpoint gate pack, and closure checklist evidence are established.
+
+## Delivery Snapshot (Batch Close #1599-#1601)
+
+### Determinism Gate Inventory and Ownership Matrix (#1599)
+
+| Gate | Owner | Readiness Criteria | Tracking |
+|------|-------|--------------------|----------|
+| Transcript Handshake Determinism | Genesis runtime transcript lane | Stable pass/fail in focused deterministic suite | #1599 |
+| Sega CD Lane Determinism | Sega CD transcript lane | Stable replay-equivalent lane output in focused deterministic suite | #1599 |
+| Protocol Cadence Determinism | Protocol cadence validation lane | Stable cadence semantics in focused deterministic suite | #1599 |
+
+Ownership and determinism readiness are now captured in one matrix; unresolved implementation work remains tracked in existing [24.x] child slices.
+
+### Replay/Regression Gate Pack Definition (#1600)
+
+| Gate Pack Item | Validation Mode | Pass Condition | Tracking |
+|----------------|-----------------|----------------|----------|
+| Focused Transcript Replay Gate | Automated | 25/25 pass in deterministic focused suites | #1600 |
+| Sega CD Lane Regression Gate | Automated | No focused-suite regressions across lane tests | #1600 |
+| Cadence Regression Gate | Automated | No focused-suite cadence regressions | #1600 |
+
+This gate pack is intentionally focused and repeatable for rapid multi-slice closure cadence.
+
+### Determinism Phase Closure Evidence Checklist (#1601)
+
+- [x] Determinism gate ownership matrix documented
+- [x] Replay/regression gate pack documented
+- [x] Deterministic validation baseline recorded
+- [x] Remaining implementation work linked to open [24.x] issue slices
+
+Phase closure evidence for this child trio is now documented in this file.

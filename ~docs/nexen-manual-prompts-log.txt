@@ -1917,6 +1917,7 @@ yes, keep going and get a lot of work done; continue;
 continue;
 --- run 5x
 
+Holy cow, you made a ton of new issues, are these all necessary, we need to work several issues per session since there are so many, continue working on issues ande slices as fast as possible, you don't have to do them in numerical ordfer, just get a bunch of work done as quickly and completely as possible, keep documentation up to date and benchmarks/tests; continue;
 
 
 

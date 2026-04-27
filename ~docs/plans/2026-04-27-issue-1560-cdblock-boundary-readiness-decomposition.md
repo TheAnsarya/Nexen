@@ -1,4 +1,4 @@
-# Issue #1560 - CD-Block Boundary Ownership/Readiness Decomposition (2026-04-27)
+﻿# Issue #1560 - CD-Block Boundary Ownership/Readiness Decomposition (2026-04-27)
 
 ## Summary
 
