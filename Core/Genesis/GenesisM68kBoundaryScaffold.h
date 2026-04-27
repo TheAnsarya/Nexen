@@ -111,6 +111,10 @@ struct GenesisPlatformBusSaveState {
 	uint8_t M32xSh2Milestone = 0;
 	uint32_t M32xSh2SyncEpoch = 0;
 	uint8_t M32xSh2Digest = 0;
+	uint8_t M32xCompositionBlend = 0;
+	uint8_t M32xFrameSyncMarker = 0;
+	uint32_t M32xFrameSyncEpoch = 0;
+	uint8_t M32xCompositionDigest = 0;
 
 	bool operator==(const GenesisPlatformBusSaveState&) const = default;
 };
@@ -234,6 +238,10 @@ private:
 	uint8_t _m32xSh2Milestone = 0;
 	uint32_t _m32xSh2SyncEpoch = 0;
 	uint8_t _m32xSh2Digest = 0;
+	uint8_t _m32xCompositionBlend = 0;
+	uint8_t _m32xFrameSyncMarker = 0;
+	uint32_t _m32xFrameSyncEpoch = 0;
+	uint8_t _m32xCompositionDigest = 0;
 
 	[[nodiscard]] GenesisBusOwner DecodeOwner(uint32_t address) const;
 	[[nodiscard]] bool TryGetExpansionIoOffset(uint32_t address, uint32_t& offset) const;

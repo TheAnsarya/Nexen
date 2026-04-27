@@ -24,6 +24,14 @@ namespace {
 	bool Is32xSh2StatusAddress(uint32_t address) {
 		return address == 0xA1501A || address == 0xA1501B;
 	}
+
+	bool Is32xCompositionControlAddress(uint32_t address) {
+		return address == 0xA15016 || address == 0xA15017;
+	}
+
+	bool Is32xCompositionStatusAddress(uint32_t address) {
+		return address == 0xA1501C || address == 0xA1501D;
+	}
 }
 
 GenesisPlatformBusStub::GenesisPlatformBusStub()
@@ -239,6 +247,10 @@ void GenesisPlatformBusStub::ClearCommandResponseLane() {
 	_m32xSh2Milestone = 0;
 	_m32xSh2SyncEpoch = 0;
 	_m32xSh2Digest = 0;
+	_m32xCompositionBlend = 0;
+	_m32xFrameSyncMarker = 0;
+	_m32xFrameSyncEpoch = 0;
+	_m32xCompositionDigest = 0;
 }
 
 void GenesisPlatformBusStub::ApplyVdpControlWord(uint16_t controlWord) {
@@ -603,6 +615,10 @@ GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
 	state.M32xSh2Milestone = _m32xSh2Milestone;
 	state.M32xSh2SyncEpoch = _m32xSh2SyncEpoch;
 	state.M32xSh2Digest = _m32xSh2Digest;
+	state.M32xCompositionBlend = _m32xCompositionBlend;
+	state.M32xFrameSyncMarker = _m32xFrameSyncMarker;
+	state.M32xFrameSyncEpoch = _m32xFrameSyncEpoch;
+	state.M32xCompositionDigest = _m32xCompositionDigest;
 	return state;
 }
 
@@ -697,6 +713,10 @@ void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state)
 	_m32xSh2Milestone = state.M32xSh2Milestone;
 	_m32xSh2SyncEpoch = state.M32xSh2SyncEpoch;
 	_m32xSh2Digest = state.M32xSh2Digest;
+	_m32xCompositionBlend = state.M32xCompositionBlend;
+	_m32xFrameSyncMarker = state.M32xFrameSyncMarker;
+	_m32xFrameSyncEpoch = state.M32xFrameSyncEpoch;
+	_m32xCompositionDigest = state.M32xCompositionDigest;
 }
 
 uint8_t GenesisPlatformBusStub::ComposeRenderPixel() const {
@@ -806,6 +826,15 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 					result |= (uint8_t)((_m32xSh2SyncPhase & 0x0F) << 2);
 				} else {
 					result = _m32xSh2Digest;
+				}
+				break;
+			}
+			if (Is32xCompositionStatusAddress(address)) {
+				if (address == 0xA1501C) {
+					result = (uint8_t)(_m32xCompositionBlend & 0x0F);
+					result |= (uint8_t)((_m32xFrameSyncEpoch & 0x03) << 6);
+				} else {
+					result = _m32xCompositionDigest;
 				}
 				break;
 			}
@@ -950,6 +979,27 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 				digest ^= _m32xSh2Milestone;
 				digest ^= (uint8_t)(_m32xSh2SyncEpoch & 0xFF);
 				_m32xSh2Digest = digest;
+			}
+			if (Is32xCompositionControlAddress(address)) {
+				bool changed = false;
+				if (address == 0xA15016) {
+					uint8_t blend = (uint8_t)(value & 0x0F);
+					changed = blend != _m32xCompositionBlend;
+					_m32xCompositionBlend = blend;
+				} else if (address == 0xA15017) {
+					changed = value != _m32xFrameSyncMarker;
+					_m32xFrameSyncMarker = value;
+				}
+
+				if (changed) {
+					_m32xFrameSyncEpoch++;
+				}
+
+				uint8_t digest = _m32xSh2Digest;
+				digest ^= (uint8_t)(_m32xCompositionBlend << 1);
+				digest ^= _m32xFrameSyncMarker;
+				digest ^= (uint8_t)(_m32xFrameSyncEpoch & 0xFF);
+				_m32xCompositionDigest = digest;
 			}
 			uint32_t expansionOffset = 0;
 			if (TryGetExpansionIoOffset(address, expansionOffset)) {

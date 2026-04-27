@@ -153,6 +153,33 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 		bool sh2Pass = (sh2Status & 0x03) == 0x03 && sh2StatusReplay == sh2Status && sh2DigestReplay == sh2Digest;
 		addCheckpoint("GEN-COMPAT-32X-DUAL-SH2", sh2Pass, std::format("status={:02x} digest={:02x} replayStatus={:02x} replayDigest={:02x}", sh2Status, sh2Digest, sh2StatusReplay, sh2DigestReplay));
 
+		scaffold.GetBus().WriteByte(0xA15016, 0x09);
+		scaffold.GetBus().WriteByte(0xA15017, 0x5C);
+		scaffold.GetBus().SetRenderCompositionInputs(0x1E, true, 0x08, false, 0x04, true, true, 0x20, true);
+		scaffold.GetBus().SetScroll(5, 3);
+		scaffold.GetBus().RenderScaffoldLine(64);
+		uint8_t composeStatus = scaffold.GetBus().ReadByte(0xA1501C);
+		uint8_t composeDigest = scaffold.GetBus().ReadByte(0xA1501D);
+		uint32_t frameBefore = scaffold.GetTimingFrame();
+		uint32_t vintBefore = scaffold.GetVerticalInterruptCount();
+		scaffold.StepFrameScaffold(488u * 262u + 64u);
+		uint32_t frameAfter = scaffold.GetTimingFrame();
+		uint32_t vintAfter = scaffold.GetVerticalInterruptCount();
+		GenesisBoundaryScaffoldSaveState composeBaseline = scaffold.SaveState();
+		scaffold.GetBus().WriteByte(0xA15017, 0x2A);
+		scaffold.GetBus().SetScroll(1, 1);
+		scaffold.LoadState(composeBaseline);
+		scaffold.GetBus().RenderScaffoldLine(64);
+		uint8_t composeStatusReplay = scaffold.GetBus().ReadByte(0xA1501C);
+		uint8_t composeDigestReplay = scaffold.GetBus().ReadByte(0xA1501D);
+		bool composePass = (composeStatus & 0x0F) == 0x09
+			&& composeStatusReplay == composeStatus
+			&& composeDigestReplay == composeDigest
+			&& frameAfter > frameBefore
+			&& vintAfter > vintBefore
+			&& !scaffold.GetBus().GetRenderLineDigest().empty();
+		addCheckpoint("GEN-COMPAT-32X-COMPOSE-SYNC", composePass, std::format("status={:02x} digest={:02x} replayStatus={:02x} replayDigest={:02x} frame={}->{} vint={}->{} renderDigest={}", composeStatus, composeDigest, composeStatusReplay, composeDigestReplay, frameBefore, frameAfter, vintBefore, vintAfter, scaffold.GetBus().GetRenderLineDigest()));
+
 		scaffold.GetBus().SetRenderCompositionInputs(0x18, true, 0x04, false, 0x00, false, false, 0x20, true);
 		scaffold.GetBus().SetScroll(2, 1);
 		scaffold.GetBus().RenderScaffoldLine(48);
