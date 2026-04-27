@@ -150,6 +150,8 @@ Debugger tooling can query dedicated lane metadata directly through `GenesisMemo
 
 Compatibility matrix checkpoints now include `GEN-COMPAT-DEBUG-LANE`, which enforces deterministic replay parity for debug-lane command/response evidence in scaffold-based regression gates.
 
+For scaffold-based gate workflows, `GenesisPlatformBusStub::ClearCommandResponseLane()` is the deterministic phase-reset primitive for command/response evidence and related tooling/control parity staging state.
+
 ---
 
 ## Core Components

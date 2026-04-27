@@ -307,9 +307,6 @@ void GenesisPlatformBusStub::ClearCommandResponseLane() {
 	_controlDataPortWrite = {};
 	_controlThState = {};
 	_controlThCount = {};
-	_controlDataPortWrite = {};
-	_controlThState = {};
-	_controlThCount = {};
 	_m32xMasterSh2Running = false;
 	_m32xSlaveSh2Running = false;
 	_m32xSh2SyncPhase = 0;

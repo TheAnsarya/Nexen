@@ -281,4 +281,39 @@ namespace {
 		EXPECT_NE(baselineP1Caps & 0x10u, 0u);
 		EXPECT_NE(baselineP2Caps & 0x20u, 0u);
 	}
+
+	TEST(Genesis32xBusOwnershipDigestScaffoldTests, ClearCommandResponseLaneResetsLaneAndToolingStateDeterministically) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+		auto& bus = scaffold.GetBus();
+
+		bus.WriteByte(0xA12012, 0x10);
+		bus.WriteByte(0xA12013, 0x20);
+		bus.WriteByte(0xA15009, 0x30);
+		bus.WriteByte(0xA1500B, 0x40);
+		(void)bus.ReadByte(0xA1201B);
+
+		EXPECT_GT(bus.GetCommandResponseLaneCount(), 0u);
+		EXPECT_FALSE(bus.GetCommandResponseLaneDigest().empty());
+		EXPECT_NE(bus.ReadByte(0xA1201B), 0u);
+		EXPECT_NE(bus.ReadByte(0xA1501F), 0u);
+
+		bus.ClearCommandResponseLane();
+
+		EXPECT_EQ(bus.GetCommandResponseLaneCount(), 0u);
+		EXPECT_TRUE(bus.GetCommandResponseLaneDigest().empty());
+		EXPECT_EQ(bus.ReadByte(0xA1201A), 0x0Fu);
+		EXPECT_EQ(bus.ReadByte(0xA1201B), 0x00u);
+		EXPECT_EQ(bus.ReadByte(0xA1501E), 0x0Fu);
+		EXPECT_EQ(bus.ReadByte(0xA1501F), 0x00u);
+
+		uint8_t p1Caps = bus.ReadByte(0xA1201C);
+		uint8_t p1Digest = bus.ReadByte(0xA1201D);
+		uint8_t p2Caps = bus.ReadByte(0xA1201E);
+		uint8_t p2Digest = bus.ReadByte(0xA1201F);
+		EXPECT_EQ(p1Caps, 0x11u);
+		EXPECT_EQ(p2Caps, 0x21u);
+		EXPECT_EQ(p1Digest, 0x4Bu);
+		EXPECT_EQ(p2Digest, 0x7Bu);
+	}
 }
