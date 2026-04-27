@@ -144,6 +144,8 @@ Debug-path bridge and handshake access now contributes transcript lane entries t
 
 Genesis runtime metadata also exposes a dedicated debug transcript lane (separate from the runtime lane) for debugger-driven bridge/handshake traffic, so acceptance gates can validate debug parity evidence independently.
 
+The dedicated debug transcript lane also captures debugger-driven IO (`$a100xx`), Z80 window (`$a000xx`), and VDP window (`$c000xx`) access pathways, providing a broader regression-gate evidence surface for debug memory activity.
+
 ---
 
 ## Core Components
