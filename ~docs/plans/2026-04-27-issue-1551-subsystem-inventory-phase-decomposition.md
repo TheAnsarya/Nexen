@@ -1,4 +1,4 @@
-# Issue #1551 - Subsystem Inventory Phase Decomposition (2026-04-27)
+﻿# Issue #1551 - Subsystem Inventory Phase Decomposition (2026-04-27)
 
 ## Summary
 
