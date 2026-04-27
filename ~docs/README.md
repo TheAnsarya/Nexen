@@ -126,6 +126,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Issue #1427 Genesis Core Integration Checkpoint (2026-04-27)](plans/2026-04-27-issue-1427-genesis-core-track-checkpoint.md) | Core integration coverage checkpoint with decomposition into active child implementation tracks |
 | [Issue #1428 Genesis UX Track Checkpoint (2026-04-27)](plans/2026-04-27-issue-1428-genesis-ux-track-checkpoint.md) | Controller, TAS, save-state, and UX integration checkpoint mapped to active backlog issues |
 | [Epic 26 Genesis Family Living Plan (2026-04-27)](plans/2026-04-27-epic-26-genesis-family-living-plan.md) | Living decomposition and measurable gate index for Mega Drive, 32X, Sega CD, and Power Base Converter tracks |
+| [Issue #1460 Genesis Baseline Decomposition (2026-04-27)](plans/2026-04-27-issue-1460-genesis-baseline-decomposition.md) | Child-slice decomposition and execution order for Genesis baseline completion work |
 | [Platform Parity Benchmark and Correctness Gates](plans/platform-parity-benchmark-and-correctness-gates.md) | Cross-phase quality gates and evidence framework (#703) |
 | [Atari 2600 + Genesis Parity Tracker](plans/atari2600-genesis-parity-tracker.md) | Active multi-phase checklist, issue linkage, and closure criteria for parity execution (#750) |
 | [UI Settings Completeness Plan](plans/ui-settings-completeness-epic-18.md) | Epic #1040 execution plan for cross-platform settings/input/movie/savestate UX completeness |
