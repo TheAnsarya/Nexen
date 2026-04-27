@@ -41,3 +41,35 @@ Current sequence baseline: 25/25 passing.
 3. #1610
 
 Close #1555 after child-track gate/checkpoint/publication slices are linked and documented.
+
+## Delivery Snapshot (Batch Close #1608-#1610)
+
+### Deterministic Gate Inventory and Ownership (#1608)
+
+| Determinism Gate | Owner Scope | Readiness Criteria | Tracking |
+|------------------|------------|--------------------|----------|
+| Transcript Handshake Determinism | Runtime transcript validation lane | Stable focused deterministic suite pass | #1608 |
+| Sega CD Lane Determinism | Sega CD transcript validation lane | Stable lane determinism in focused suites | #1608 |
+| Protocol Cadence Determinism | Cadence validation lane | Stable cadence semantics in focused suites | #1608 |
+
+Deterministic gate inventory and ownership are now documented.
+
+### Regression Checkpoint Matrix (#1609)
+
+| Checkpoint | Mode | Pass Condition | Tracking |
+|-----------|------|----------------|----------|
+| Transcript Replay Checkpoint | Automated | 25/25 focused deterministic suites passing | #1609 |
+| Lane Regression Checkpoint | Automated | No focused-suite lane regressions | #1609 |
+| Cadence Regression Checkpoint | Automated | No focused-suite cadence regressions | #1609 |
+
+Regression checkpoint matrix is now explicitly documented.
+
+### Validation Gate-Pack Publication (#1610)
+
+1. Publish deterministic gate inventory and regression checkpoint matrix in phase docs.
+2. Run focused deterministic suite as batch validation baseline.
+3. Record validation output in session log.
+4. Commit and push closure evidence updates.
+5. Close slice issues with commit-linked completion notes.
+
+Validation gate-pack publication path is now defined for rapid closure cadence.

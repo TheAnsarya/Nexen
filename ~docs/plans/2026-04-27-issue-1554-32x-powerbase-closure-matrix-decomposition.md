@@ -41,3 +41,35 @@ Current sequence baseline: 25/25 passing.
 3. #1607
 
 Close #1554 after child-track inventory/order/signoff slices are linked and documented.
+
+## Delivery Snapshot (Batch Close #1605-#1607)
+
+### Open Integration Inventory and Ownership Grid (#1605)
+
+| Integration Area | Ownership Scope | Dependency Tags | Tracking |
+|------------------|-----------------|-----------------|----------|
+| 32X Integration Surface | 32X parity closure planning | ordering, validation | #1605 |
+| Power Base Integration Surface | Power Base parity closure planning | ordering, validation | #1605 |
+| Shared Closure Surface | Combined 32X + Power Base closure planning | cross-surface | #1605 |
+
+Combined open-task inventory and ownership mapping are now documented in one grid.
+
+### Dependency Order and Milestone Gates (#1606)
+
+| Milestone Gate | Scope | Entry Condition | Tracking |
+|----------------|-------|-----------------|----------|
+| Gate 1 - Inventory Confirmed | Combined surface inventory | Ownership/dependency tags documented | #1606 |
+| Gate 2 - Ordering Confirmed | Execution sequencing | Dependency order documented | #1606 |
+| Gate 3 - Publication Ready | Closure packaging | Matrix/signoff path documented | #1606 |
+
+Dependency ordering and milestone gates are now explicitly documented.
+
+### Closure Matrix Publication and Signoff (#1607)
+
+1. Publish integration inventory and dependency gate structure in phase docs.
+2. Re-run focused deterministic validation suites.
+3. Record validation output in session log evidence.
+4. Commit and push closure updates.
+5. Close slice issues with commit-linked completion notes.
+
+Publication/signoff path for the closure matrix is now defined.
