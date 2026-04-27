@@ -55,6 +55,13 @@ private:
 	bool _segaCdSubCpuRunning = false;
 	bool _segaCdSubCpuBusRequest = false;
 	uint32_t _segaCdSubCpuTransitionCount = 0;
+	uint8_t _segaCdPcmLeft = 0;
+	uint8_t _segaCdPcmRight = 0;
+	uint8_t _segaCdCddaLeft = 0;
+	uint8_t _segaCdCddaRight = 0;
+	uint8_t _segaCdMixedLeft = 0;
+	uint8_t _segaCdMixedRight = 0;
+	uint32_t _segaCdAudioCheckpointCount = 0;
 	uint8_t _segaCdBridgeA120[0x20] = {};
 	uint8_t _segaCdBridgeA130[0x20] = {};
 	uint8_t _segaCdBridgeA140[0x20] = {};
@@ -66,8 +73,12 @@ private:
 	bool TryGetSramOffset(uint32_t addr, uint32_t& offset) const;
 	bool TryGetSegaCdBridgeSlot(uint32_t addr, uint8_t*& slot, uint32_t& slotIndex);
 	bool IsSegaCdSubCpuControlAddress(uint32_t addr) const;
+	bool IsSegaCdAudioDataAddress(uint32_t addr) const;
+	bool IsSegaCdAudioStatusAddress(uint32_t addr) const;
 	void UpdateSegaCdSubCpuControl(uint8_t value);
+	void UpdateSegaCdAudioPath(uint32_t addr, uint8_t value);
 	uint8_t GetSegaCdSubCpuStatusByte() const;
+	uint8_t GetSegaCdAudioStatusByte(uint32_t addr) const;
 	void TrackTranscriptEntry(uint32_t addr, bool isWrite, uint8_t value, uint8_t roleFlags);
 	void TrackSegaCdTranscript(uint32_t addr, bool isWrite, uint8_t value);
 	void TrackSegaCdHandshakeTranscript(uint32_t addr, bool isWrite, uint8_t value);
