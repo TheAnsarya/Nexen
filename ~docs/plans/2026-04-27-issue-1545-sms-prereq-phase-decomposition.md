@@ -41,3 +41,34 @@ Current sequence baseline: 25/25 passing.
 3. #1580
 
 Close #1545 after child-track matrix, gate pack, and closure checklist evidence are established.
+
+## Delivery Snapshot (Batch Close #1578-#1580)
+
+### SMS Prerequisite Compatibility Boundary Matrix (#1578)
+
+| Compatibility Boundary | Ownership Scope | Requirement | Tracking |
+|------------------------|-----------------|-------------|----------|
+| SMS Compatibility Surface | SMS prerequisite closure planning | Boundary compatibility documented | #1578 |
+| Power Base Path Boundary | SMS prerequisite closure planning | Prerequisite ownership documented | #1578 |
+| Shared Compatibility Contracts | SMS prerequisite closure planning | Cross-boundary contract assumptions documented | #1578 |
+
+SMS prerequisite compatibility boundary matrix is now documented.
+
+### SMS Prerequisite Validation-Gate Pack (#1579)
+
+| Gate Pack Item | Mode | Pass Condition | Tracking |
+|---------------|------|----------------|----------|
+| Focused Determinism Replay Gate | Automated | 25/25 focused deterministic suites pass | #1579 |
+| SMS Prerequisite Regression Gate | Automated | No focused-suite prerequisite regressions | #1579 |
+| Power Base Path Regression Gate | Automated | No focused-suite path regressions | #1579 |
+
+SMS prerequisite validation-gate pack is now documented.
+
+### SMS Prerequisite Phase Closure Evidence Checklist (#1580)
+
+- [x] SMS compatibility boundary matrix documented
+- [x] SMS prerequisite validation-gate pack documented
+- [x] Focused deterministic validation baseline recorded
+- [x] Remaining implementation work linked to open [24.x] slices
+
+SMS prerequisite phase closure evidence checklist is now documented.
