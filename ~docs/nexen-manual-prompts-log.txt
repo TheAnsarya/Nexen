@@ -1943,15 +1943,20 @@ keep going!
 
 1 always just commit them, stop asking me!
 
-[all] Add a copilot instructions line for always closing terminals as they've been used, VSCode ram usage is balooning so make sure to close extra programs after their work is done; continue;
+[all] Add a copilot instructions line for always closing terminals as they've been used, VSCode ram usage is balooning so make sure to close extra programs after their work is done; continue; keep going!
 
+[Nexen] I'm still seeing files named "Harness" and "Tests", I know we need to make these, but I always want to see actual emulator code updates too; continue;
 
+[Nexen] continue working on issues/slices for concrete changes and new code for the Genesis emulator although do update docs; continue;
 
+continue working slices and isssues for like an hour, we want to create as much code as we can for as long as we can; work the efforts forever! ; continue;
 
+--- crash, restart
 
+continue working slices and isssues for like an hour, we want to create as much code as we can for as long as we can; work the efforts forever! ; continue;
 
-
-
+continue working issues and slices; complete a bunch of them; keep going!
+--- queued/run 6x
 
 
 

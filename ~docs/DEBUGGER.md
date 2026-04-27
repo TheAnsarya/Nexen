@@ -131,6 +131,13 @@ The debug memory path also surfaces Genesis IO and Z80 handshake windows with de
 - `$a11100-$a11101` Z80 bus-request handshake window
 - `$a11200-$a11201` Z80 reset handshake window
 
+### Z80 and VDP Debug Windows
+
+Additional debugger parity windows are now exposed through Genesis debug memory access paths:
+
+- `$a00000-$a0ffff` Z80 memory window (ownership-aware debug parity)
+- `$c00000-$c0001f` VDP/PSG window (null-safe debug path when VDP backend is unavailable)
+
 Debug writes to controller control registers (`$a10009/$a1000b/$a1000d`) and handshake control bytes are persisted through save/load and can be replay-validated in runtime transcript tests.
 
 ---

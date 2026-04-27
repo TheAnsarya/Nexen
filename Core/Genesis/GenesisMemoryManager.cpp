@@ -920,6 +920,22 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	if (addr == 0xA11200 || addr == 0xA11201) {
 		return _openBus;
 	}
+	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
+		if (_z80BusRequest || _z80Reset) {
+			return _z80Ram[addr & 0x1FFF];
+		}
+		return _openBus;
+	}
+	if (addr >= 0xC00000 && addr <= 0xC0001F) {
+		if (_vdp) {
+			uint16_t word = ReadVdpPort(addr);
+			if (addr & 1) {
+				return (uint8_t)(word & 0xFF);
+			}
+			return (uint8_t)(word >> 8);
+		}
+		return _openBus;
+	}
 
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
@@ -985,6 +1001,18 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	}
 	if (addr == 0xA11200 || addr == 0xA11201) {
 		_z80Reset = !(value & 0x01);
+		return;
+	}
+	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
+		if (_z80BusRequest || _z80Reset) {
+			_z80Ram[addr & 0x1FFF] = value;
+		}
+		return;
+	}
+	if (addr >= 0xC00000 && addr <= 0xC0001F) {
+		if (_vdp) {
+			WriteVdpPort(addr, (uint16_t)value | ((uint16_t)value << 8));
+		}
 		return;
 	}
 
