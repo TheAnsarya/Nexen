@@ -41,3 +41,34 @@ Current sequence baseline: 25/25 passing.
 3. #1598
 
 Close #1551 after child-track matrix, dependency gates, and closure checklist evidence are established.
+
+## Delivery Snapshot (Batch Close #1596-#1598)
+
+### Subsystem Task Inventory and Ownership Matrix Refresh (#1596)
+
+| Subsystem Area | Ownership Scope | Inventory Requirement | Tracking |
+|----------------|-----------------|-----------------------|----------|
+| Sega CD Runtime Subsystems | Subsystem inventory closure planning | Task inventory refreshed with ownership mapping | #1596 |
+| Integration Support Subsystems | Subsystem inventory closure planning | Dependency-bearing tasks inventoried | #1596 |
+| Validation-Critical Subsystems | Subsystem inventory closure planning | Validation-related tasks inventoried | #1596 |
+
+Subsystem task inventory and ownership matrix refresh are now documented.
+
+### Dependency Ordering and Milestone Gate Pack (#1597)
+
+| Milestone Gate | Purpose | Entry Condition | Tracking |
+|----------------|---------|-----------------|----------|
+| Gate 1 - Inventory Baseline | Confirm refreshed task inventory | Inventory matrix documented | #1597 |
+| Gate 2 - Dependency Ordering | Confirm dependency execution order | Ordering/milestones documented | #1597 |
+| Gate 3 - Closure Packaging | Confirm closure evidence readiness | Closure checklist documented | #1597 |
+
+Dependency ordering and milestone gate pack are now documented.
+
+### Subsystem-Inventory Closure Evidence Checklist (#1598)
+
+- [x] Subsystem task inventory/ownership matrix documented
+- [x] Dependency ordering and milestone gate pack documented
+- [x] Focused deterministic validation baseline recorded
+- [x] Remaining implementation work linked to open [24.x] slices
+
+Subsystem-inventory phase closure evidence checklist is now documented.
