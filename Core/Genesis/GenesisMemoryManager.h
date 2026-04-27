@@ -52,6 +52,9 @@ private:
 	// TMSS (Trademark Security System)
 	bool _tmssEnabled = false;
 	bool _tmssUnlocked = false;
+	bool _segaCdSubCpuRunning = false;
+	bool _segaCdSubCpuBusRequest = false;
+	uint32_t _segaCdSubCpuTransitionCount = 0;
 	uint8_t _segaCdBridgeA120[0x20] = {};
 	uint8_t _segaCdBridgeA130[0x20] = {};
 	uint8_t _segaCdBridgeA140[0x20] = {};
@@ -62,6 +65,9 @@ private:
 	bool IsSramAddress(uint32_t addr) const;
 	bool TryGetSramOffset(uint32_t addr, uint32_t& offset) const;
 	bool TryGetSegaCdBridgeSlot(uint32_t addr, uint8_t*& slot, uint32_t& slotIndex);
+	bool IsSegaCdSubCpuControlAddress(uint32_t addr) const;
+	void UpdateSegaCdSubCpuControl(uint8_t value);
+	uint8_t GetSegaCdSubCpuStatusByte() const;
 	void TrackTranscriptEntry(uint32_t addr, bool isWrite, uint8_t value, uint8_t roleFlags);
 	void TrackSegaCdTranscript(uint32_t addr, bool isWrite, uint8_t value);
 	void TrackSegaCdHandshakeTranscript(uint32_t addr, bool isWrite, uint8_t value);

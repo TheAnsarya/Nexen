@@ -60,6 +60,9 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 
 	_z80BusRequest = false;
 	_z80Reset = true;
+	_segaCdSubCpuRunning = false;
+	_segaCdSubCpuBusRequest = false;
+	_segaCdSubCpuTransitionCount = 0;
 
 	_hasSram = false;
 	_sramStart = 0;
@@ -144,6 +147,32 @@ bool GenesisMemoryManager::TryGetSegaCdBridgeSlot(uint32_t addr, uint8_t*& slot,
 	}
 
 	return false;
+}
+
+bool GenesisMemoryManager::IsSegaCdSubCpuControlAddress(uint32_t addr) const {
+	return addr == 0xA12000 || addr == 0xA12001;
+}
+
+void GenesisMemoryManager::UpdateSegaCdSubCpuControl(uint8_t value) {
+	bool running = (value & 0x01) != 0;
+	bool busRequest = (value & 0x02) != 0;
+	if (running != _segaCdSubCpuRunning || busRequest != _segaCdSubCpuBusRequest) {
+		_segaCdSubCpuTransitionCount++;
+	}
+	_segaCdSubCpuRunning = running;
+	_segaCdSubCpuBusRequest = busRequest;
+}
+
+uint8_t GenesisMemoryManager::GetSegaCdSubCpuStatusByte() const {
+	uint8_t status = 0;
+	if (_segaCdSubCpuRunning) {
+		status |= 0x01;
+	}
+	if (_segaCdSubCpuBusRequest) {
+		status |= 0x02;
+	}
+	status |= (uint8_t)((_segaCdSubCpuTransitionCount & 0x0F) << 4);
+	return status;
 }
 
 void GenesisMemoryManager::TrackSegaCdTranscript(uint32_t addr, bool isWrite, uint8_t value) {
@@ -294,7 +323,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
-		uint8_t value = bridgeSlot[bridgeIndex];
+		uint8_t value = IsSegaCdSubCpuControlAddress(addr) ? GetSegaCdSubCpuStatusByte() : bridgeSlot[bridgeIndex];
 		TrackSegaCdTranscript(addr, false, value);
 		_openBus = value;
 		return value;
@@ -427,6 +456,9 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
 		bridgeSlot[bridgeIndex] = value;
+		if (IsSegaCdSubCpuControlAddress(addr)) {
+			UpdateSegaCdSubCpuControl(value);
+		}
 		TrackSegaCdTranscript(addr, true, value);
 		return;
 	}
@@ -609,6 +641,9 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_z80Reset);
 	SV(_tmssEnabled);
 	SV(_tmssUnlocked);
+	SV(_segaCdSubCpuRunning);
+	SV(_segaCdSubCpuBusRequest);
+	SV(_segaCdSubCpuTransitionCount);
 	SVArray(_segaCdBridgeA120, (uint32_t)sizeof(_segaCdBridgeA120));
 	SVArray(_segaCdBridgeA130, (uint32_t)sizeof(_segaCdBridgeA130));
 	SVArray(_segaCdBridgeA140, (uint32_t)sizeof(_segaCdBridgeA140));
