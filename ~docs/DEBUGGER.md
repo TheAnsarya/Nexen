@@ -146,6 +146,8 @@ Genesis runtime metadata also exposes a dedicated debug transcript lane (separat
 
 The dedicated debug transcript lane also captures debugger-driven IO (`$a100xx`), Z80 window (`$a000xx`), and VDP window (`$c000xx`) access pathways, providing a broader regression-gate evidence surface for debug memory activity.
 
+Debugger tooling can query dedicated lane metadata directly through `GenesisMemoryManager::GetDebugTranscriptLaneCount()` and `GenesisMemoryManager::GetDebugTranscriptLaneDigest()`, and can explicitly reset lane evidence between phases with `GenesisMemoryManager::ClearDebugTranscriptLane()`.
+
 ---
 
 ## Core Components

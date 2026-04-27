@@ -158,6 +158,9 @@ public:
 
 	uint64_t GetMasterClock() const { return _masterClock; }
 	GenesisIoState GetIoState() const { return _ioState; }
+	uint32_t GetDebugTranscriptLaneCount() const { return _ioState.DebugTranscriptLaneCount; }
+	uint64_t GetDebugTranscriptLaneDigest() const { return _ioState.DebugTranscriptLaneDigest; }
+	void ClearDebugTranscriptLane();
 	bool HasSaveRam() const { return _hasSram && _saveRam && _saveRamSize > 0; }
 
 	// Address info

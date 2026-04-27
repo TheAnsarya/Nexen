@@ -538,6 +538,16 @@ void GenesisMemoryManager::TrackDebugTranscriptEntry(uint32_t addr, bool isWrite
 	_ioState.DebugTranscriptLaneCount++;
 }
 
+void GenesisMemoryManager::ClearDebugTranscriptLane() {
+	_ioState.DebugTranscriptLaneCount = 0;
+	_ioState.DebugTranscriptLaneDigest = 0;
+	for (uint32_t i = 0; i < 4; i++) {
+		_ioState.DebugTranscriptEntryAddress[i] = 0;
+		_ioState.DebugTranscriptEntryValue[i] = 0;
+		_ioState.DebugTranscriptEntryFlags[i] = 0;
+	}
+}
+
 bool GenesisMemoryManager::IsSramAddress(uint32_t addr) const {
 	return HasSaveRam() && addr >= _sramStart && addr <= _sramEnd;
 }
