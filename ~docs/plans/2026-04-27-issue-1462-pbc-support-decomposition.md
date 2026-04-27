@@ -1,4 +1,4 @@
-# Issue #1462 - Power Base Converter Support Decomposition (2026-04-27)
+﻿# Issue #1462 - Power Base Converter Support Decomposition (2026-04-27)
 
 ## Summary
 

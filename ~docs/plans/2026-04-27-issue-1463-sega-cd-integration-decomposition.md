@@ -1,4 +1,4 @@
-# Issue #1463 - Sega CD Integration Track Decomposition (2026-04-27)
+﻿# Issue #1463 - Sega CD Integration Track Decomposition (2026-04-27)
 
 ## Summary
 
