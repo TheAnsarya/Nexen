@@ -1,4 +1,4 @@
-# Issue #1537 - 32X and Power Base Closure Track Decomposition (2026-04-27)
+﻿# Issue #1537 - 32X and Power Base Closure Track Decomposition (2026-04-27)
 
 ## Summary
 

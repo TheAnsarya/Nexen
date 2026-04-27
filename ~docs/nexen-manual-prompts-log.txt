@@ -1908,6 +1908,7 @@ Do #1! Always do #1 for this, as in always just commit the unexpected file edits
 
 [Nexen] Continue working issues for a while; work these slices and issues and update and close issues as you go, work for a long time; continue;
 
+continue working several slices and issues; continue;
 
 
 
