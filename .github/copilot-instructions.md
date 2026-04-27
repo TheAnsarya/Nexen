@@ -135,6 +135,14 @@ When the user asks to implement, fix, continue, or ship work, do not ask for com
 - Do not pause due to a dirty working tree
 - Do not interrupt execution to ask about unrelated or unexpected local modifications
 
+### ⚠️ MANDATORY: Terminal and Process Cleanup
+
+To reduce VS Code memory usage, always close terminals and extra background programs immediately after their related work is complete.
+
+- After each build/test/script step, stop the related process if it is still running
+- Close any no-longer-needed terminal sessions instead of leaving them open
+- Keep only the minimum terminals required for active work
+
 ### ⚠️ MANDATORY: "Run Nexen" Means Launch Executable
 
 When the user asks to "run nexen", "open nexen", or equivalent, launch the actual Nexen application executable (`Nexen.exe`).

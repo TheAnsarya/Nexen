@@ -1937,11 +1937,13 @@ continue;
 
 continue;
 
+continue working issues and slices; complete a bunch of them;
 
+keep going!
 
+1 always just commit them, stop asking me!
 
-
-
+[all] Add a copilot instructions line for always closing terminals as they've been used, VSCode ram usage is balooning so make sure to close extra programs after their work is done; continue;
 
 
 
