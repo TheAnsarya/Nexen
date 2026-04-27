@@ -1897,6 +1897,9 @@ keep working on slice after slice for a very long time, many slices one after an
 
 yes, please do that
 
+immediately start rt9 next and keep shipping slice-by-slice with the same cadence.
+
+
 
 
 

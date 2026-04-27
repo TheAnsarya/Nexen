@@ -414,4 +414,32 @@ namespace {
 		EXPECT_EQ(reference.LaneCount, perturbed.LaneCount);
 		EXPECT_NE(reference.LaneDigest, perturbed.LaneDigest);
 	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeMixedHandshakeControlValueNoOpWritesRemainDeterministic) {
+		auto runControlValueNoOpScenario = []() {
+			Emulator emu;
+			std::vector<uint8_t> romData(0x400000);
+			GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+			memoryManager.Write8(0xA11200, 0x01);
+			memoryManager.Write8(0xA11100, 0x01);
+			memoryManager.Write8(0xA11100, 0x01);
+			memoryManager.Write16(0xA11100, 0x0100);
+			(void)memoryManager.Read8(0xA11101);
+			memoryManager.Write16(0xA11100, 0x0100);
+			memoryManager.Write16(0xA11200, 0x0000);
+			(void)memoryManager.Read16(0xA11100);
+			memoryManager.Write8(0xA11100, 0x00);
+			memoryManager.Write8(0xA11100, 0x00);
+			(void)memoryManager.Read16(0xA11200);
+
+			return CaptureSnapshot(memoryManager);
+		};
+
+		RuntimeTranscriptSnapshot runA = runControlValueNoOpScenario();
+		RuntimeTranscriptSnapshot runB = runControlValueNoOpScenario();
+
+		EXPECT_EQ(runA, runB);
+		EXPECT_NE(runA.LaneDigest, 0ull);
+	}
 }
