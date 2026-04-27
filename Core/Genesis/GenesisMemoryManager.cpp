@@ -893,6 +893,33 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	if (addr >= 0xFF0000) {
 		return _workRam[addr & 0xFFFF];
 	}
+	if (addr >= 0xA10000 && addr <= 0xA1001F) {
+		uint32_t reg = addr & 0x1F;
+		switch (reg) {
+			case 0x01:
+				return 0xA0;
+			case 0x03:
+				return _controlManager ? _controlManager->ReadDataPort(0) : 0x7F;
+			case 0x05:
+				return _controlManager ? _controlManager->ReadDataPort(1) : 0x7F;
+			case 0x07:
+				return 0xFF;
+			case 0x09:
+				return _ioState.CtrlPort[0];
+			case 0x0B:
+				return _ioState.CtrlPort[1];
+			case 0x0D:
+				return _ioState.CtrlPort[2];
+			default:
+				return _openBus;
+		}
+	}
+	if (addr == 0xA11100 || addr == 0xA11101) {
+		return _z80BusRequest ? 0x00 : 0x01;
+	}
+	if (addr == 0xA11200 || addr == 0xA11201) {
+		return _openBus;
+	}
 
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
@@ -924,6 +951,40 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	if (addr >= 0xFF0000) {
 		_workRam[addr & 0xFFFF] = value;
+		return;
+	}
+	if (addr >= 0xA10000 && addr <= 0xA1001F) {
+		uint32_t reg = addr & 0x1F;
+		switch (reg) {
+			case 0x03:
+				if (_controlManager) {
+					_controlManager->WriteDataPort(0, value);
+				}
+				return;
+			case 0x05:
+				if (_controlManager) {
+					_controlManager->WriteDataPort(1, value);
+				}
+				return;
+			case 0x09:
+				_ioState.CtrlPort[0] = value;
+				return;
+			case 0x0B:
+				_ioState.CtrlPort[1] = value;
+				return;
+			case 0x0D:
+				_ioState.CtrlPort[2] = value;
+				return;
+			default:
+				return;
+		}
+	}
+	if (addr == 0xA11100 || addr == 0xA11101) {
+		_z80BusRequest = (value & 0x01) != 0;
+		return;
+	}
+	if (addr == 0xA11200 || addr == 0xA11201) {
+		_z80Reset = !(value & 0x01);
 		return;
 	}
 

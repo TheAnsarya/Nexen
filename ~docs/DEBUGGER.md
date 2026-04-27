@@ -1,4 +1,4 @@
-# Debugger Subsystem Documentation
+﻿# Debugger Subsystem Documentation
 
 This document covers Nexen's comprehensive debugging subsystem, which provides powerful tools for reverse engineering and development across all supported platforms.
 
@@ -122,6 +122,16 @@ The Genesis debugger runtime now exposes deterministic bridge tooling surfaces t
 - `$a1201f` Control port 2 deterministic digest byte
 
 These status bytes are intended for parity and regression checks in debugger-facing validation workflows and are replay-stable across save/load when the same write/read sequence is applied.
+
+### IO and Handshake Windows
+
+The debug memory path also surfaces Genesis IO and Z80 handshake windows with deterministic behavior for parity validation:
+
+- `$a10000-$a1001f` IO window (version/data/control/ext registers)
+- `$a11100-$a11101` Z80 bus-request handshake window
+- `$a11200-$a11201` Z80 reset handshake window
+
+Debug writes to controller control registers (`$a10009/$a1000b/$a1000d`) and handshake control bytes are persisted through save/load and can be replay-validated in runtime transcript tests.
 
 ---
 

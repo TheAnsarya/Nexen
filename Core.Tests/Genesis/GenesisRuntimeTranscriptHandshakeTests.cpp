@@ -337,6 +337,64 @@ namespace {
 		EXPECT_EQ(std::get<4>(expected), 0x0Fu);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugIoControlRegistersRoundTripThroughIoState) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.DebugWrite8(0xA10009, 0x12);
+		memoryManager.DebugWrite8(0xA1000B, 0x34);
+		memoryManager.DebugWrite8(0xA1000D, 0x56);
+
+		EXPECT_EQ(memoryManager.DebugRead8(0xA10009), 0x12u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1000B), 0x34u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1000D), 0x56u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA10001), 0xA0u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA10007), 0xFFu);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeWindowIsDeterministicAcrossSerializeReplay) {
+		Emulator emuA;
+		std::vector<uint8_t> romA(0x400000);
+		GenesisMemoryManager original = CreateMemoryManager(emuA, romA);
+
+		auto runPrefix = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.DebugWrite8(0xA11100, 0x01);
+			memoryManager.DebugWrite8(0xA11200, 0x01);
+			(void)memoryManager.DebugRead8(0xA11100);
+		};
+
+		auto runTail = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.DebugWrite8(0xA11100, 0x00);
+			memoryManager.DebugWrite8(0xA11200, 0x00);
+			uint8_t busReq = memoryManager.DebugRead8(0xA11100);
+			uint8_t resetRead = memoryManager.DebugRead8(0xA11200);
+			RuntimeTranscriptSnapshot snapshot = CaptureSnapshot(memoryManager);
+			return std::tuple<uint8_t, uint8_t, RuntimeTranscriptSnapshot>(busReq, resetRead, snapshot);
+		};
+
+		runPrefix(original);
+		Serializer saver(1, true, SerializeFormat::Binary);
+		original.Serialize(saver);
+		std::stringstream state;
+		saver.SaveTo(state);
+		state.seekg(0);
+
+		auto expected = runTail(original);
+
+		Emulator emuB;
+		std::vector<uint8_t> romB(0x400000);
+		GenesisMemoryManager restored = CreateMemoryManager(emuB, romB);
+		Serializer loader(1, false, SerializeFormat::Binary);
+		ASSERT_TRUE(loader.LoadFrom(state));
+		restored.Serialize(loader);
+
+		auto replay = runTail(restored);
+
+		EXPECT_EQ(expected, replay);
+		EXPECT_EQ(std::get<0>(expected), 0x01u);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, M32xDualSh2StagingStatusReflectsControlAndSyncPhase) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
