@@ -198,4 +198,57 @@ namespace {
 		EXPECT_EQ(bus.ReadByte(0xA1501E), baselineCaps);
 		EXPECT_EQ(bus.ReadByte(0xA1501F), baselineDigest);
 	}
+
+	TEST(Genesis32xBusOwnershipDigestScaffoldTests, SegaCdToolingTasCheatSignalsAreDeterministicAcrossSaveLoadReplay) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+		auto& bus = scaffold.GetBus();
+
+		bus.WriteByte(0xA12012, 0x10);
+		bus.WriteByte(0xA12014, 0x20);
+		uint8_t digestBefore = bus.ReadByte(0xA1201B);
+		GenesisBoundaryScaffoldSaveState checkpoint = scaffold.SaveState();
+
+		bus.WriteByte(0xA12013, 0x35);
+		bus.WriteByte(0xA12015, 0xA7);
+		uint8_t baselineTas = bus.ReadByte(0xA12013);
+		uint8_t baselineCheat = bus.ReadByte(0xA12015);
+		uint8_t baselineDigest = bus.ReadByte(0xA1201B);
+
+		scaffold.LoadState(checkpoint);
+		bus.WriteByte(0xA12013, 0x35);
+		bus.WriteByte(0xA12015, 0xA7);
+
+		EXPECT_EQ(bus.ReadByte(0xA12013), baselineTas);
+		EXPECT_EQ(bus.ReadByte(0xA12015), baselineCheat);
+		EXPECT_EQ(bus.ReadByte(0xA1201B), baselineDigest);
+		EXPECT_NE(baselineDigest, digestBefore);
+	}
+
+	TEST(Genesis32xBusOwnershipDigestScaffoldTests, M32xToolingTasCheatSignalsAreDeterministicAcrossSaveLoadReplay) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+		auto& bus = scaffold.GetBus();
+
+		bus.WriteByte(0xA15016, 0x03);
+		bus.WriteByte(0xA15017, 0x12);
+		bus.WriteByte(0xA15008, 0x14);
+		uint8_t digestBefore = bus.ReadByte(0xA1501F);
+		GenesisBoundaryScaffoldSaveState checkpoint = scaffold.SaveState();
+
+		bus.WriteByte(0xA15009, 0x4B);
+		bus.WriteByte(0xA1500B, 0x9C);
+		uint8_t baselineTas = bus.ReadByte(0xA15009);
+		uint8_t baselineCheat = bus.ReadByte(0xA1500B);
+		uint8_t baselineDigest = bus.ReadByte(0xA1501F);
+
+		scaffold.LoadState(checkpoint);
+		bus.WriteByte(0xA15009, 0x4B);
+		bus.WriteByte(0xA1500B, 0x9C);
+
+		EXPECT_EQ(bus.ReadByte(0xA15009), baselineTas);
+		EXPECT_EQ(bus.ReadByte(0xA1500B), baselineCheat);
+		EXPECT_EQ(bus.ReadByte(0xA1501F), baselineDigest);
+		EXPECT_NE(baselineDigest, digestBefore);
+	}
 }

@@ -443,6 +443,95 @@ namespace {
 		EXPECT_EQ(std::get<2>(expected), std::get<2>(replay));
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, SegaCdToolingTasCheatSignalsAreDeterministicAcrossSerializeReplay) {
+		Emulator emuA;
+		std::vector<uint8_t> romA(0x400000);
+		GenesisMemoryManager original = CreateMemoryManager(emuA, romA);
+
+		auto runPrefix = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.Write8(0xA12012, 0x18);
+			memoryManager.Write8(0xA12014, 0x2C);
+			return memoryManager.Read8(0xA1201B);
+		};
+
+		auto runTail = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.Write8(0xA12013, 0x5A);
+			memoryManager.Write8(0xA12015, 0xC3);
+			uint8_t tas = memoryManager.Read8(0xA12013);
+			uint8_t cheat = memoryManager.Read8(0xA12015);
+			uint8_t digest = memoryManager.Read8(0xA1201B);
+			return std::tuple<uint8_t, uint8_t, uint8_t, RuntimeTranscriptSnapshot>(tas, cheat, digest, CaptureSnapshot(memoryManager));
+		};
+
+		uint8_t digestBefore = runPrefix(original);
+		Serializer saver(1, true, SerializeFormat::Binary);
+		original.Serialize(saver);
+		std::stringstream state;
+		saver.SaveTo(state);
+		state.seekg(0);
+
+		auto expected = runTail(original);
+
+		Emulator emuB;
+		std::vector<uint8_t> romB(0x400000);
+		GenesisMemoryManager restored = CreateMemoryManager(emuB, romB);
+		Serializer loader(1, false, SerializeFormat::Binary);
+		ASSERT_TRUE(loader.LoadFrom(state));
+		restored.Serialize(loader);
+
+		auto replay = runTail(restored);
+		EXPECT_EQ(std::get<0>(expected), std::get<0>(replay));
+		EXPECT_EQ(std::get<1>(expected), std::get<1>(replay));
+		EXPECT_EQ(std::get<2>(expected), std::get<2>(replay));
+		EXPECT_EQ(std::get<3>(expected), std::get<3>(replay));
+		EXPECT_NE(std::get<2>(expected), digestBefore);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, M32xToolingTasCheatSignalsAreDeterministicAcrossSerializeReplay) {
+		Emulator emuA;
+		std::vector<uint8_t> romA(0x400000);
+		GenesisMemoryManager original = CreateMemoryManager(emuA, romA);
+
+		auto runPrefix = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.Write8(0xA15016, 0x04);
+			memoryManager.Write8(0xA15017, 0x22);
+			memoryManager.Write8(0xA15008, 0x0F);
+			return memoryManager.Read8(0xA1501F);
+		};
+
+		auto runTail = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.Write8(0xA15009, 0x61);
+			memoryManager.Write8(0xA1500B, 0x92);
+			uint8_t tas = memoryManager.Read8(0xA15009);
+			uint8_t cheat = memoryManager.Read8(0xA1500B);
+			uint8_t digest = memoryManager.Read8(0xA1501F);
+			return std::tuple<uint8_t, uint8_t, uint8_t, RuntimeTranscriptSnapshot>(tas, cheat, digest, CaptureSnapshot(memoryManager));
+		};
+
+		uint8_t digestBefore = runPrefix(original);
+		Serializer saver(1, true, SerializeFormat::Binary);
+		original.Serialize(saver);
+		std::stringstream state;
+		saver.SaveTo(state);
+		state.seekg(0);
+
+		auto expected = runTail(original);
+
+		Emulator emuB;
+		std::vector<uint8_t> romB(0x400000);
+		GenesisMemoryManager restored = CreateMemoryManager(emuB, romB);
+		Serializer loader(1, false, SerializeFormat::Binary);
+		ASSERT_TRUE(loader.LoadFrom(state));
+		restored.Serialize(loader);
+
+		auto replay = runTail(restored);
+		EXPECT_EQ(std::get<0>(expected), std::get<0>(replay));
+		EXPECT_EQ(std::get<1>(expected), std::get<1>(replay));
+		EXPECT_EQ(std::get<2>(expected), std::get<2>(replay));
+		EXPECT_EQ(std::get<3>(expected), std::get<3>(replay));
+		EXPECT_NE(std::get<2>(expected), digestBefore);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeTranscriptDigestIsDeterministicAcrossRuns) {
 		RuntimeTranscriptSnapshot runA = RunHandshakeScenario();
 		RuntimeTranscriptSnapshot runB = RunHandshakeScenario();

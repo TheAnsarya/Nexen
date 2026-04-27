@@ -214,6 +214,36 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 		bool tooling32xPass = toolingCaps == 0x0F && toolingCapsReplay == toolingCaps && tooling32xDigestReplay == tooling32xDigest;
 		addCheckpoint("GEN-COMPAT-32X-TOOLING", tooling32xPass, std::format("caps={:02x} digest={:02x} replayCaps={:02x} replayDigest={:02x}", toolingCaps, tooling32xDigest, toolingCapsReplay, tooling32xDigestReplay));
 
+		GenesisBoundaryScaffoldSaveState preTasCheatState = scaffold.SaveState();
+		scaffold.GetBus().WriteByte(0xA12013, 0x2C);
+		scaffold.GetBus().WriteByte(0xA12015, 0xA1);
+		uint8_t segaCdTasCheatDigest = scaffold.GetBus().ReadByte(0xA1201B);
+		scaffold.GetBus().WriteByte(0xA15009, 0x17);
+		scaffold.GetBus().WriteByte(0xA1500B, 0xE3);
+		uint8_t m32xTasCheatDigest = scaffold.GetBus().ReadByte(0xA1501F);
+
+		scaffold.LoadState(preTasCheatState);
+		scaffold.GetBus().WriteByte(0xA12013, 0x2C);
+		scaffold.GetBus().WriteByte(0xA12015, 0xA1);
+		uint8_t segaCdTasCheatReplay = scaffold.GetBus().ReadByte(0xA1201B);
+		scaffold.GetBus().WriteByte(0xA15009, 0x17);
+		scaffold.GetBus().WriteByte(0xA1500B, 0xE3);
+		uint8_t m32xTasCheatReplay = scaffold.GetBus().ReadByte(0xA1501F);
+		scaffold.LoadState(preTasCheatState);
+		bool tasCheatPass = segaCdTasCheatDigest != 0x00
+			&& m32xTasCheatDigest != 0x00
+			&& segaCdTasCheatReplay == segaCdTasCheatDigest
+			&& m32xTasCheatReplay == m32xTasCheatDigest;
+		addCheckpoint(
+			"GEN-COMPAT-TAS-CHEAT",
+			tasCheatPass,
+			std::format(
+				"cdMatch={} x32Match={} cdNonZero={} x32NonZero={}",
+				segaCdTasCheatReplay == segaCdTasCheatDigest ? 1 : 0,
+				m32xTasCheatReplay == m32xTasCheatDigest ? 1 : 0,
+				segaCdTasCheatDigest != 0x00 ? 1 : 0,
+				m32xTasCheatDigest != 0x00 ? 1 : 0));
+
 		scaffold.GetBus().SetRenderCompositionInputs(0x18, true, 0x04, false, 0x00, false, false, 0x20, true);
 		scaffold.GetBus().SetScroll(2, 1);
 		scaffold.GetBus().RenderScaffoldLine(48);
