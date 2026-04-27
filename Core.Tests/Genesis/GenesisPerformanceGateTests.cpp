@@ -55,4 +55,30 @@ namespace {
 		EXPECT_EQ(result.FailCount, 0);
 		EXPECT_FALSE(result.Digest.empty());
 	}
+
+	TEST(GenesisPerformanceGateTests, PerClassBudgetMarkersAreReportedForMeasurableGateCriteria) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus = BuildPerfCorpus();
+
+		GenesisPerformanceGateResult result = GenesisSmokeHarness::RunPerformanceGate(scaffold, corpus, 5000000);
+
+		bool hasClassBudgetInResultLine = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
+			return line.starts_with("GEN_PERF_RESULT ") && line.find("CLASS_BUDGET_US=") != string::npos;
+		});
+		EXPECT_TRUE(hasClassBudgetInResultLine);
+
+		bool hasSonicClass = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
+			return line.starts_with("GEN_PERF_RESULT ") && line.find("CLASS=sonic") != string::npos;
+		});
+		bool hasJurassicClass = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
+			return line.starts_with("GEN_PERF_RESULT ") && line.find("CLASS=jurassic") != string::npos;
+		});
+		bool hasGenericClass = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
+			return line.starts_with("GEN_PERF_RESULT ") && line.find("CLASS=generic") != string::npos;
+		});
+
+		EXPECT_TRUE(hasSonicClass);
+		EXPECT_TRUE(hasJurassicClass);
+		EXPECT_TRUE(hasGenericClass);
+	}
 }

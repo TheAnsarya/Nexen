@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisSmokeHarness.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
 #include <numeric>
@@ -187,11 +187,19 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 		entry.Name = romCase.Name;
 		entry.TitleClass = InferTitleClass(romCase.Name);
 
+		double classBudgetScale = 1.0;
+		if (entry.TitleClass == "sonic") {
+			classBudgetScale = 0.85;
+		} else if (entry.TitleClass == "jurassic") {
+			classBudgetScale = 0.90;
+		}
+		uint64_t classBudgetMicros = (uint64_t)std::max<int64_t>(1, (int64_t)std::llround((double)budgetMicros * classBudgetScale));
+
 		if (romCase.RomData.empty()) {
 			entry.Pass = false;
 			entry.DeterministicDigest = ToHex(0);
 			result.FailCount++;
-			result.OutputLines.push_back(std::format("GEN_PERF_RESULT {} FAIL CLASS={} ELAPSED_US=0 BUDGET_US={} DIGEST={}", entry.Name, entry.TitleClass, budgetMicros, entry.DeterministicDigest));
+			result.OutputLines.push_back(std::format("GEN_PERF_RESULT {} FAIL CLASS={} ELAPSED_US=0 BUDGET_US={} CLASS_BUDGET_US={} DIGEST={}", entry.Name, entry.TitleClass, budgetMicros, classBudgetMicros, entry.DeterministicDigest));
 			result.Entries.push_back(std::move(entry));
 			continue;
 		}
@@ -232,30 +240,32 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 		}
 		entry.DeterministicDigest = ToHex(hash);
 
-		entry.Pass = compatibilityPass && replayPass && entry.ElapsedMicros <= budgetMicros;
+		entry.Pass = compatibilityPass && replayPass && entry.ElapsedMicros <= classBudgetMicros;
 		if (entry.Pass) {
 			result.PassCount++;
 		} else {
 			result.FailCount++;
 			result.OutputLines.push_back(std::format(
-				"GEN_PERF_FAIL_CONTEXT {} class={} compatibility_pass={} replay_pass={} elapsed_us={} budget_us={} compat_digest={} mixed_digest={}",
+				"GEN_PERF_FAIL_CONTEXT {} class={} compatibility_pass={} replay_pass={} elapsed_us={} budget_us={} class_budget_us={} compat_digest={} mixed_digest={}",
 				entry.Name,
 				entry.TitleClass,
 				compatibilityPass ? 1 : 0,
 				replayPass ? 1 : 0,
 				entry.ElapsedMicros,
 				budgetMicros,
+				classBudgetMicros,
 				compatibilityDigest,
 				firstRun.Bus.MixedDigest));
 		}
 
 		result.OutputLines.push_back(std::format(
-			"GEN_PERF_RESULT {} {} CLASS={} ELAPSED_US={} BUDGET_US={} DIGEST={}",
+			"GEN_PERF_RESULT {} {} CLASS={} ELAPSED_US={} BUDGET_US={} CLASS_BUDGET_US={} DIGEST={}",
 			entry.Name,
 			entry.Pass ? "PASS" : "FAIL",
 			entry.TitleClass,
 			entry.ElapsedMicros,
 			budgetMicros,
+			classBudgetMicros,
 			entry.DeterministicDigest));
 		result.Entries.push_back(std::move(entry));
 	}
