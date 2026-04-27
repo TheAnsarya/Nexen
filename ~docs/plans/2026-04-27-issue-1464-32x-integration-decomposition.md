@@ -1,4 +1,4 @@
-# Issue #1464 - 32X Integration Track Decomposition (2026-04-27)
+﻿# Issue #1464 - 32X Integration Track Decomposition (2026-04-27)
 
 ## Summary
 

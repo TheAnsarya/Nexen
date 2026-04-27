@@ -1,4 +1,4 @@
-# Issue #1467 - Epic 24 Genesis Full-Stack Expansion Decomposition (2026-04-27)
+﻿# Issue #1467 - Epic 24 Genesis Full-Stack Expansion Decomposition (2026-04-27)
 
 ## Summary
 

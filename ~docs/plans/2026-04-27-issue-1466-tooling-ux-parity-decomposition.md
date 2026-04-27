@@ -1,4 +1,4 @@
-# Issue #1466 - Genesis-Family Tooling and UX Parity Decomposition (2026-04-27)
+﻿# Issue #1466 - Genesis-Family Tooling and UX Parity Decomposition (2026-04-27)
 
 ## Summary
 

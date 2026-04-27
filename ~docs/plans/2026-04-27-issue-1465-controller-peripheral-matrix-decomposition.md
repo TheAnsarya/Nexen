@@ -1,4 +1,4 @@
-# Issue #1465 - Genesis Controller/Peripheral Matrix Decomposition (2026-04-27)
+﻿# Issue #1465 - Genesis Controller/Peripheral Matrix Decomposition (2026-04-27)
 
 ## Summary
 
