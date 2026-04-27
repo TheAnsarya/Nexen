@@ -159,4 +159,43 @@ namespace {
 		EXPECT_EQ(bus.ReadByte(0xA1501C), baselineStatus);
 		EXPECT_EQ(bus.ReadByte(0xA1501D), baselineDigest);
 	}
+
+	TEST(Genesis32xBusOwnershipDigestScaffoldTests, ToolingStatusExposesCapabilitiesAndDeterministicDigest) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+		auto& bus = scaffold.GetBus();
+
+		bus.WriteByte(0xA15008, 0x10);
+		bus.WriteByte(0xA15009, 0x20);
+		bus.WriteByte(0xA1500A, 0x30);
+		bus.WriteByte(0xA1500B, 0x40);
+
+		EXPECT_EQ(bus.ReadByte(0xA1501E), 0x0Fu);
+		EXPECT_NE(bus.ReadByte(0xA1501F), 0x00u);
+	}
+
+	TEST(Genesis32xBusOwnershipDigestScaffoldTests, ToolingDigestIsDeterministicAcrossSaveLoadReplay) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+		auto& bus = scaffold.GetBus();
+
+		bus.WriteByte(0xA15016, 0x03);
+		bus.WriteByte(0xA15017, 0x12);
+		bus.WriteByte(0xA15008, 0x08);
+		GenesisBoundaryScaffoldSaveState checkpoint = scaffold.SaveState();
+
+		bus.WriteByte(0xA15009, 0x19);
+		bus.WriteByte(0xA1500A, 0x2A);
+		bus.WriteByte(0xA1500B, 0x3B);
+		uint8_t baselineCaps = bus.ReadByte(0xA1501E);
+		uint8_t baselineDigest = bus.ReadByte(0xA1501F);
+
+		scaffold.LoadState(checkpoint);
+		bus.WriteByte(0xA15009, 0x19);
+		bus.WriteByte(0xA1500A, 0x2A);
+		bus.WriteByte(0xA1500B, 0x3B);
+
+		EXPECT_EQ(bus.ReadByte(0xA1501E), baselineCaps);
+		EXPECT_EQ(bus.ReadByte(0xA1501F), baselineDigest);
+	}
 }

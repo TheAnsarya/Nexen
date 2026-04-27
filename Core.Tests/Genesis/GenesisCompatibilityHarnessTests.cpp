@@ -72,6 +72,7 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TOOLING-MATRIX"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-32X-DUAL-SH2"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-32X-COMPOSE-SYNC"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-32X-TOOLING"));
 		}
 	}
 

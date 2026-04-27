@@ -32,6 +32,14 @@ namespace {
 	bool Is32xCompositionStatusAddress(uint32_t address) {
 		return address == 0xA1501C || address == 0xA1501D;
 	}
+
+	bool Is32xToolingControlAddress(uint32_t address) {
+		return address >= 0xA15008 && address <= 0xA1500B;
+	}
+
+	bool Is32xToolingStatusAddress(uint32_t address) {
+		return address == 0xA1501E || address == 0xA1501F;
+	}
 }
 
 GenesisPlatformBusStub::GenesisPlatformBusStub()
@@ -251,6 +259,12 @@ void GenesisPlatformBusStub::ClearCommandResponseLane() {
 	_m32xFrameSyncMarker = 0;
 	_m32xFrameSyncEpoch = 0;
 	_m32xCompositionDigest = 0;
+	_m32xToolingDebuggerSignal = 0;
+	_m32xToolingTasSignal = 0;
+	_m32xToolingSaveStateSignal = 0;
+	_m32xToolingCheatSignal = 0;
+	_m32xToolingEventCount = 0;
+	_m32xToolingDigest = 0;
 }
 
 void GenesisPlatformBusStub::ApplyVdpControlWord(uint16_t controlWord) {
@@ -619,6 +633,12 @@ GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
 	state.M32xFrameSyncMarker = _m32xFrameSyncMarker;
 	state.M32xFrameSyncEpoch = _m32xFrameSyncEpoch;
 	state.M32xCompositionDigest = _m32xCompositionDigest;
+	state.M32xToolingDebuggerSignal = _m32xToolingDebuggerSignal;
+	state.M32xToolingTasSignal = _m32xToolingTasSignal;
+	state.M32xToolingSaveStateSignal = _m32xToolingSaveStateSignal;
+	state.M32xToolingCheatSignal = _m32xToolingCheatSignal;
+	state.M32xToolingEventCount = _m32xToolingEventCount;
+	state.M32xToolingDigest = _m32xToolingDigest;
 	return state;
 }
 
@@ -717,6 +737,12 @@ void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state)
 	_m32xFrameSyncMarker = state.M32xFrameSyncMarker;
 	_m32xFrameSyncEpoch = state.M32xFrameSyncEpoch;
 	_m32xCompositionDigest = state.M32xCompositionDigest;
+	_m32xToolingDebuggerSignal = state.M32xToolingDebuggerSignal;
+	_m32xToolingTasSignal = state.M32xToolingTasSignal;
+	_m32xToolingSaveStateSignal = state.M32xToolingSaveStateSignal;
+	_m32xToolingCheatSignal = state.M32xToolingCheatSignal;
+	_m32xToolingEventCount = state.M32xToolingEventCount;
+	_m32xToolingDigest = state.M32xToolingDigest;
 }
 
 uint8_t GenesisPlatformBusStub::ComposeRenderPixel() const {
@@ -835,6 +861,14 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 					result |= (uint8_t)((_m32xFrameSyncEpoch & 0x03) << 6);
 				} else {
 					result = _m32xCompositionDigest;
+				}
+				break;
+			}
+			if (Is32xToolingStatusAddress(address)) {
+				if (address == 0xA1501E) {
+					result = 0x0F;
+				} else {
+					result = _m32xToolingDigest;
 				}
 				break;
 			}
@@ -1000,6 +1034,31 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 				digest ^= _m32xFrameSyncMarker;
 				digest ^= (uint8_t)(_m32xFrameSyncEpoch & 0xFF);
 				_m32xCompositionDigest = digest;
+			}
+			if (Is32xToolingControlAddress(address)) {
+				uint8_t* target = nullptr;
+				if (address == 0xA15008) {
+					target = &_m32xToolingDebuggerSignal;
+				} else if (address == 0xA15009) {
+					target = &_m32xToolingTasSignal;
+				} else if (address == 0xA1500A) {
+					target = &_m32xToolingSaveStateSignal;
+				} else if (address == 0xA1500B) {
+					target = &_m32xToolingCheatSignal;
+				}
+
+				if (target && *target != value) {
+					*target = value;
+					_m32xToolingEventCount++;
+				}
+
+				uint8_t digest = _m32xCompositionDigest;
+				digest ^= _m32xToolingDebuggerSignal;
+				digest ^= (uint8_t)(_m32xToolingTasSignal << 1);
+				digest ^= (uint8_t)(_m32xToolingSaveStateSignal << 2);
+				digest ^= (uint8_t)(_m32xToolingCheatSignal << 3);
+				digest ^= (uint8_t)(_m32xToolingEventCount & 0xFF);
+				_m32xToolingDigest = digest;
 			}
 			uint32_t expansionOffset = 0;
 			if (TryGetExpansionIoOffset(address, expansionOffset)) {

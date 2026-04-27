@@ -180,6 +180,20 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& !scaffold.GetBus().GetRenderLineDigest().empty();
 		addCheckpoint("GEN-COMPAT-32X-COMPOSE-SYNC", composePass, std::format("status={:02x} digest={:02x} replayStatus={:02x} replayDigest={:02x} frame={}->{} vint={}->{} renderDigest={}", composeStatus, composeDigest, composeStatusReplay, composeDigestReplay, frameBefore, frameAfter, vintBefore, vintAfter, scaffold.GetBus().GetRenderLineDigest()));
 
+		scaffold.GetBus().WriteByte(0xA15008, 0x10);
+		scaffold.GetBus().WriteByte(0xA15009, 0x20);
+		scaffold.GetBus().WriteByte(0xA1500A, 0x30);
+		scaffold.GetBus().WriteByte(0xA1500B, 0x40);
+		uint8_t toolingCaps = scaffold.GetBus().ReadByte(0xA1501E);
+		uint8_t tooling32xDigest = scaffold.GetBus().ReadByte(0xA1501F);
+		GenesisBoundaryScaffoldSaveState tooling32xBaseline = scaffold.SaveState();
+		scaffold.GetBus().WriteByte(0xA1500B, 0x7F);
+		scaffold.LoadState(tooling32xBaseline);
+		uint8_t toolingCapsReplay = scaffold.GetBus().ReadByte(0xA1501E);
+		uint8_t tooling32xDigestReplay = scaffold.GetBus().ReadByte(0xA1501F);
+		bool tooling32xPass = toolingCaps == 0x0F && toolingCapsReplay == toolingCaps && tooling32xDigestReplay == tooling32xDigest;
+		addCheckpoint("GEN-COMPAT-32X-TOOLING", tooling32xPass, std::format("caps={:02x} digest={:02x} replayCaps={:02x} replayDigest={:02x}", toolingCaps, tooling32xDigest, toolingCapsReplay, tooling32xDigestReplay));
+
 		scaffold.GetBus().SetRenderCompositionInputs(0x18, true, 0x04, false, 0x00, false, false, 0x20, true);
 		scaffold.GetBus().SetScroll(2, 1);
 		scaffold.GetBus().RenderScaffoldLine(48);
