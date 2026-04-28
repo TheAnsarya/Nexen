@@ -1334,6 +1334,37 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xA00000), 0x5Au);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA111WritesAffectBusRequest) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA11120, 0x01);
+		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA1117F), 0x00u);
+
+		memoryManager.Write8(0xA111FE, 0x00);
+		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x01u);
+		EXPECT_EQ(memoryManager.Read8(0xA111FF), 0x01u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA112Write16HighLaneControlsReset) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA00000, 0x4Cu);
+		EXPECT_EQ(memoryManager.Read8(0xA00000), 0x4Cu);
+
+		// Release reset via mirrored control address high lane.
+		memoryManager.Write16(0xA11280, 0x0100);
+		EXPECT_EQ(memoryManager.Read8(0xA00000), 0x00u);
+
+		// Assert reset again via mirrored control address high lane.
+		memoryManager.Write16(0xA112E0, 0x0000);
+		EXPECT_EQ(memoryManager.Read8(0xA00000), 0x4Cu);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshake16BitScenarioIsDeterministicAcrossRuns) {
 		auto run16BitScenario = []() {
 			Emulator emu;

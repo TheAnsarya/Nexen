@@ -16,6 +16,14 @@ namespace {
 			| ((uint32_t)data[offset + 2] << 8)
 			| (uint32_t)data[offset + 3];
 	}
+
+	__forceinline bool IsZ80BusReqAddress(uint32_t addr) {
+		return (addr & 0xFFFF00) == 0xA11100;
+	}
+
+	__forceinline bool IsZ80ResetAddress(uint32_t addr) {
+		return (addr & 0xFFFF00) == 0xA11200;
+	}
 }
 
 GenesisMemoryManager::GenesisMemoryManager() {
@@ -677,20 +685,14 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		return value;
 	}
 
-	if (addr == 0xA11100) [[unlikely]] {
+	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		// Z80 bus request — bit 0 indicates bus granted
 		uint8_t value = _z80BusRequest ? 0x00 : 0x01;
 		TrackSegaCdHandshakeTranscript(addr, false, value);
 		return value;
 	}
 
-	if (addr == 0xA11101) [[unlikely]] {
-		uint8_t value = _z80BusRequest ? 0x00 : 0x01;
-		TrackSegaCdHandshakeTranscript(addr, false, value);
-		return value;
-	}
-
-	if (addr == 0xA11200 || addr == 0xA11201) [[unlikely]] {
+	if (IsZ80ResetAddress(addr)) [[unlikely]] {
 		TrackSegaCdHandshakeTranscript(addr, false, _openBus);
 		return _openBus;
 	}
@@ -750,13 +752,13 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		return ((uint16_t)hi << 8) | lo;
 	}
 
-	if (addr == 0xA11100) [[unlikely]] {
+	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		uint16_t value = _z80BusRequest ? 0x0000 : 0x0101;
 		TrackSegaCdHandshakeTranscript(addr, false, (uint8_t)(value >> 8));
 		return value;
 	}
 
-	if (addr == 0xA11200) [[unlikely]] {
+	if (IsZ80ResetAddress(addr)) [[unlikely]] {
 		TrackSegaCdHandshakeTranscript(addr, false, _openBus);
 		return (_openBus << 8) | _openBus;
 	}
@@ -821,13 +823,13 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		return;
 	}
 
-	if (addr == 0xA11100 || addr == 0xA11101) [[unlikely]] {
+	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		_z80BusRequest = (value & 0x01) != 0;
 		TrackSegaCdHandshakeTranscript(addr, true, value);
 		return;
 	}
 
-	if (addr == 0xA11200 || addr == 0xA11201) [[unlikely]] {
+	if (IsZ80ResetAddress(addr)) [[unlikely]] {
 		_z80Reset = !(value & 0x01);
 		TrackSegaCdHandshakeTranscript(addr, true, value);
 		return;
@@ -881,13 +883,13 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		return;
 	}
 
-	if (addr == 0xA11100) [[unlikely]] {
+	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		_z80BusRequest = (value & 0x0100) != 0;
 		TrackSegaCdHandshakeTranscript(addr, true, (uint8_t)(value >> 8));
 		return;
 	}
 
-	if (addr == 0xA11200) [[unlikely]] {
+	if (IsZ80ResetAddress(addr)) [[unlikely]] {
 		_z80Reset = !(value & 0x0100);
 		TrackSegaCdHandshakeTranscript(addr, true, (uint8_t)(value >> 8));
 		return;
@@ -987,12 +989,12 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		TrackDebugTranscriptEntry(addr, false, value, 0x10);
 		return value;
 	}
-	if (addr == 0xA11100 || addr == 0xA11101) {
+	if (IsZ80BusReqAddress(addr)) {
 		uint8_t value = _z80BusRequest ? 0x00 : 0x01;
 		TrackDebugTranscriptEntry(addr, false, value, 0x80);
 		return value;
 	}
-	if (addr == 0xA11200 || addr == 0xA11201) {
+	if (IsZ80ResetAddress(addr)) {
 		TrackDebugTranscriptEntry(addr, false, _openBus, 0x84);
 		return _openBus;
 	}
@@ -1096,12 +1098,12 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 				return;
 		}
 	}
-	if (addr == 0xA11100 || addr == 0xA11101) {
+	if (IsZ80BusReqAddress(addr)) {
 		_z80BusRequest = (value & 0x01) != 0;
 		TrackDebugTranscriptEntry(addr, true, value, 0x80);
 		return;
 	}
-	if (addr == 0xA11200 || addr == 0xA11201) {
+	if (IsZ80ResetAddress(addr)) {
 		_z80Reset = !(value & 0x01);
 		TrackDebugTranscriptEntry(addr, true, value, 0x84);
 		return;
