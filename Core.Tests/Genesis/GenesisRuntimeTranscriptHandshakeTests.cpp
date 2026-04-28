@@ -1711,6 +1711,32 @@ namespace {
 		EXPECT_EQ(memoryManager.DebugRead8(0xA00000), 0x5Au);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeA111OddByteWriteDoesNotChangeBusRequest) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.DebugWrite8(0xA11200, 0x01);
+		memoryManager.DebugWrite8(0xA11100, 0x00);
+		memoryManager.DebugWrite8(0xA11101, 0x01);
+
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11100), 0x01u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeA112OddByteWriteDoesNotChangeReset) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.DebugWrite8(0xA11100, 0x00);
+		memoryManager.DebugWrite8(0xA11200, 0x00);
+		memoryManager.DebugWrite8(0xA00000, 0x5A);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA00000), 0x5Au);
+
+		memoryManager.DebugWrite8(0xA11201, 0x01);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA00000), 0x5Au);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeA111EvenByteReadPreservesOpenBusUpperBits) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
