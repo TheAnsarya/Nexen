@@ -164,6 +164,8 @@ Performance-gate result lines (`GEN_PERF_RESULT`) now include deterministic repl
 
 Performance-gate summary lines (`GEN_PERF_GATE_SUMMARY`) now include aggregate tooling counters (`SCD_LANE_TOTAL`, `SCD_EVT_TOTAL`, and `M32X_EVT_TOTAL`) to provide one-line activity totals across the evaluated corpus.
 
+Performance-gate summary lines also include `AVG_SCD_LANE_PER_CASE` so one-line summaries expose average Sega CD command-response lane activity per evaluated case.
+
 Performance-gate summary lines also include `AVG_SCD_EVT_PER_CASE` so one-line summaries expose average Sega CD tooling event activity per evaluated case.
 
 Performance-gate summary lines also include `AVG_M32X_EVT_PER_CASE` so one-line summaries expose average 32X tooling event activity per evaluated case.
