@@ -170,6 +170,8 @@ Performance-gate summary lines also include `CLASS_BUDGET_TOTAL_US` so one-line 
 
 Performance-gate summary lines also include `CASE_TOTAL` so one-line summaries explicitly report the evaluated corpus size.
 
+Performance-gate summary lines also include `PASS_RATIO_PCT` so one-line summaries expose pass-rate quality as an integer percentage derived from summary pass/fail counts.
+
 Performance-gate summary lines also include `REPLAY_OK_TOTAL` and `REPLAY_FAIL_TOTAL` so one-line summaries expose aggregate replay-parity pass/fail counts across the evaluated corpus.
 
 For scaffold-based gate workflows, `GenesisPlatformBusStub::ClearCommandResponseLane()` is the deterministic phase-reset primitive for command/response evidence and related tooling/control parity staging state.
