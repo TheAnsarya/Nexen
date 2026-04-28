@@ -116,6 +116,7 @@ namespace {
 			return line.starts_with("GEN_PERF_GATE_SUMMARY ")
 				&& line.find("PASS_RATIO_PCT=") != string::npos
 				&& line.find("FAIL_RATIO_PCT=") != string::npos
+				&& line.find("REPLAY_MISMATCH_PCT=") != string::npos
 				&& line.find("CASE_TOTAL=") != string::npos
 				&& line.find("CLASS_BUDGET_TOTAL_US=") != string::npos
 				&& line.find("ELAPSED_TOTAL_US=") != string::npos
