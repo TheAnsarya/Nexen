@@ -731,7 +731,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
-			return ((uint16_t)_z80Ram[z80Addr] << 8) | _z80Ram[z80Addr];
+			return ((uint16_t)_z80Ram[z80Addr] << 8) | _z80Ram[(z80Addr + 1) & 0x1FFF];
 		}
 		return (_openBus << 8) | _openBus;
 	}
@@ -862,6 +862,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
 			_z80Ram[z80Addr] = (uint8_t)(value >> 8);
+			_z80Ram[(z80Addr + 1) & 0x1FFF] = (uint8_t)(value & 0xFF);
 		}
 		return;
 	}

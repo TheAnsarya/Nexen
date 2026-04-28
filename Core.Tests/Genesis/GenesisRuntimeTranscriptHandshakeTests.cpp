@@ -83,6 +83,31 @@ namespace {
 		EXPECT_EQ(memoryManager.Read16(0xFFFFFF), 0xABCD);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, Z80WindowRead16ReturnsConsecutiveBytesWhenBusGranted) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA11100, 0x01);
+		memoryManager.Write8(0xA00000, 0x12);
+		memoryManager.Write8(0xA00001, 0x34);
+
+		EXPECT_EQ(memoryManager.Read16(0xA00000), 0x1234);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, Z80WindowWrite16WritesBothBytesWhenBusGranted) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA11100, 0x01);
+		memoryManager.Write16(0xA00000, 0xABCD);
+
+		EXPECT_EQ(memoryManager.Read8(0xA00000), 0xABu);
+		EXPECT_EQ(memoryManager.Read8(0xA00001), 0xCDu);
+		EXPECT_EQ(memoryManager.Read16(0xA00000), 0xABCDu);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeTrafficContributesToTranscriptDigest) {
 		RuntimeTranscriptSnapshot snapshot = RunHandshakeScenario();
 
