@@ -105,4 +105,19 @@ namespace {
 
 		EXPECT_TRUE(allPerfResultsHaveEvidenceMarkers);
 	}
+
+	TEST(GenesisPerformanceGateTests, SummaryIncludesAggregateTelemetryMarkers) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus = BuildPerfCorpus();
+
+		GenesisPerformanceGateResult result = GenesisSmokeHarness::RunPerformanceGate(scaffold, corpus, 5000000);
+
+		bool hasAggregateTelemetrySummaryMarkers = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
+			return line.starts_with("GEN_PERF_GATE_SUMMARY ")
+				&& line.find("SCD_EVT_TOTAL=") != string::npos
+				&& line.find("M32X_EVT_TOTAL=") != string::npos;
+		});
+
+		EXPECT_TRUE(hasAggregateTelemetrySummaryMarkers);
+	}
 }

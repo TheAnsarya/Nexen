@@ -162,6 +162,8 @@ Compatibility matrix checkpoints also include `GEN-COMPAT-SCD-TELEMETRY`, which 
 
 Performance-gate result lines (`GEN_PERF_RESULT`) now include deterministic replay and telemetry evidence markers (`REPLAY_OK`, `SCD_LANE_CT`, `SCD_EVT_CT`, and `M32X_EVT_CT`) on every result line (including early-fail entries), so gate summaries can be correlated with replay stability and bridge/tooling activity surfaces.
 
+Performance-gate summary lines (`GEN_PERF_GATE_SUMMARY`) now include aggregate tooling counters (`SCD_EVT_TOTAL` and `M32X_EVT_TOTAL`) to provide one-line activity totals across the evaluated corpus.
+
 For scaffold-based gate workflows, `GenesisPlatformBusStub::ClearCommandResponseLane()` is the deterministic phase-reset primitive for command/response evidence and related tooling/control parity staging state.
 
 ---

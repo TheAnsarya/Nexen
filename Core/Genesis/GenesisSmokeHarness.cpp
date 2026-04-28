@@ -430,6 +430,8 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 	GenesisPerformanceGateResult result = {};
 	result.BudgetMicros = budgetMicros;
 	result.Entries.reserve(romSet.size());
+	uint64_t scdToolingEventTotal = 0;
+	uint64_t m32xToolingEventTotal = 0;
 
 	for (const GenesisCompatibilityRomCase& romCase : romSet) {
 		GenesisPerformanceGateEntry entry = {};
@@ -481,6 +483,8 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 		uint32_t scdLaneCount = firstRun.Bus.CommandResponseLaneCount;
 		uint32_t scdToolingEventCount = firstRun.Bus.SegaCdToolingEventCount;
 		uint32_t m32xToolingEventCount = firstRun.Bus.M32xToolingEventCount;
+		scdToolingEventTotal += scdToolingEventCount;
+		m32xToolingEventTotal += m32xToolingEventCount;
 
 		string deterministicInput = std::format(
 			"{}:{}:{}:{}:{}:{}:{}:{}:{}",
@@ -545,6 +549,13 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 	}
 
 	result.Digest = ToHex(gateHash);
-	result.OutputLines.push_back(std::format("GEN_PERF_GATE_SUMMARY PASS={} FAIL={} BUDGET_US={} DIGEST={}", result.PassCount, result.FailCount, result.BudgetMicros, result.Digest));
+	result.OutputLines.push_back(std::format(
+		"GEN_PERF_GATE_SUMMARY PASS={} FAIL={} BUDGET_US={} SCD_EVT_TOTAL={} M32X_EVT_TOTAL={} DIGEST={}",
+		result.PassCount,
+		result.FailCount,
+		result.BudgetMicros,
+		scdToolingEventTotal,
+		m32xToolingEventTotal,
+		result.Digest));
 	return result;
 }
