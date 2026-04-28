@@ -1305,6 +1305,33 @@ namespace {
 		EXPECT_EQ(memoryManager.Read16(0xA11100), 0x0000u);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeWrite16LowLaneCanRequestBus) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write16(0xA11100, 0x0001);
+
+		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x00u);
+		EXPECT_EQ(memoryManager.Read16(0xA11100), 0x0000u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeWrite16LowLaneCanReleaseReset) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA00000, 0x5Au);
+		EXPECT_EQ(memoryManager.Read8(0xA00000), 0x5Au);
+
+		memoryManager.Write8(0xA11100, 0x00);
+		memoryManager.Write16(0xA11200, 0x0001);
+
+		// With reset released and no bus request, Z80 window should read open bus instead of RAM.
+		EXPECT_EQ(memoryManager.Read8(0xA00000), 0x00u);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshake16BitScenarioIsDeterministicAcrossRuns) {
 		auto run16BitScenario = []() {
 			Emulator emu;
