@@ -1295,13 +1295,13 @@ namespace {
 		// Bus free: both byte lanes expose status bit.
 		memoryManager.Write8(0xA11100, 0x00);
 		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x01u);
-		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x01u);
+		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x00u);
 		EXPECT_EQ(memoryManager.Read16(0xA11100) & 0x0100u, 0x0100u);
 
 		// Bus requested while reset is asserted: BUSACK remains set.
 		memoryManager.Write8(0xA11100, 0x01);
 		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x01u);
-		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x01u);
+		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x00u);
 		EXPECT_EQ(memoryManager.Read16(0xA11100) & 0x0100u, 0x0100u);
 
 		// Releasing reset allows BUSREQ to clear BUSACK.
@@ -1320,7 +1320,7 @@ namespace {
 		memoryManager.Write16(0xA11100, 0x0001);
 
 		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x01u);
-		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x01u);
+		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x00u);
 		EXPECT_EQ(memoryManager.Read16(0xA11100) & 0x0100u, 0x0100u);
 	}
 
@@ -1354,7 +1354,7 @@ namespace {
 
 		memoryManager.Write8(0xA111FE, 0x00);
 		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x01u);
-		EXPECT_EQ(memoryManager.Read8(0xA111FF), 0x01u);
+		EXPECT_EQ(memoryManager.Read8(0xA111FF), 0x00u);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA112Write16HighLaneControlsReset) {
@@ -1372,6 +1372,47 @@ namespace {
 		// Assert reset again via mirrored control address high lane.
 		memoryManager.Write16(0xA112E0, 0x0000);
 		EXPECT_EQ(memoryManager.Read8(0xA00000), 0x4Cu);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA111OddByteReadReturnsOpenBus) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
+
+		memoryManager.Write8(0xA11200, 0x01);
+		memoryManager.Write8(0xA11100, 0x01);
+
+		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA11101), 0xA5u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA111OddByteWriteDoesNotChangeBusRequest) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA11200, 0x01);
+		memoryManager.Write8(0xA11100, 0x00);
+		memoryManager.Write8(0xA11101, 0x01);
+
+		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x01u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA112OddByteWriteDoesNotChangeReset) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA11100, 0x00);
+		memoryManager.Write8(0xA11200, 0x00);
+		memoryManager.Write8(0xA00000, 0x5A);
+		EXPECT_EQ(memoryManager.Read8(0xA00000), 0x5Au);
+
+		memoryManager.Write8(0xA11201, 0x01);
+		EXPECT_EQ(memoryManager.Read8(0xA00000), 0x5Au);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshake16BitScenarioIsDeterministicAcrossRuns) {
