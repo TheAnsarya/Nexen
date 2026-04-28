@@ -1228,6 +1228,70 @@ namespace {
 		EXPECT_EQ(resetFlags & 0x86, 0x86);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMarkersClassifyMirroredWriteChannels) {
+		auto runMirroredBusWrite = []() {
+			Emulator emu;
+			std::vector<uint8_t> romData(0x400000);
+			GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+			memoryManager.Write8(0xA11180, 0x01);
+			return CaptureSnapshot(memoryManager);
+		};
+
+		auto runMirroredResetWrite = []() {
+			Emulator emu;
+			std::vector<uint8_t> romData(0x400000);
+			GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+			memoryManager.Write8(0xA11280, 0x01);
+			return CaptureSnapshot(memoryManager);
+		};
+
+		RuntimeTranscriptSnapshot busWrite = runMirroredBusWrite();
+		RuntimeTranscriptSnapshot resetWrite = runMirroredResetWrite();
+
+		ASSERT_EQ(busWrite.LaneCount, 1u);
+		ASSERT_EQ(resetWrite.LaneCount, 1u);
+		EXPECT_EQ(busWrite.EntryAddress[0], 0xA11180u);
+		EXPECT_EQ(resetWrite.EntryAddress[0], 0xA11280u);
+
+		uint8_t busFlags = busWrite.EntryFlags[0];
+		uint8_t resetFlags = resetWrite.EntryFlags[0];
+		EXPECT_EQ(busFlags & 0x81, 0x81);
+		EXPECT_EQ(busFlags & 0x04, 0x00);
+		EXPECT_EQ(resetFlags & 0x85, 0x85);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMarkersClassifyMirroredReadChannels) {
+		auto runMirroredBusRead = []() {
+			Emulator emu;
+			std::vector<uint8_t> romData(0x400000);
+			GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+			(void)memoryManager.Read8(0xA11181);
+			return CaptureSnapshot(memoryManager);
+		};
+
+		auto runMirroredResetRead = []() {
+			Emulator emu;
+			std::vector<uint8_t> romData(0x400000);
+			GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+			(void)memoryManager.Read8(0xA11281);
+			return CaptureSnapshot(memoryManager);
+		};
+
+		RuntimeTranscriptSnapshot busRead = runMirroredBusRead();
+		RuntimeTranscriptSnapshot resetRead = runMirroredResetRead();
+
+		ASSERT_EQ(busRead.LaneCount, 1u);
+		ASSERT_EQ(resetRead.LaneCount, 1u);
+		EXPECT_EQ(busRead.EntryAddress[0], 0xA11181u);
+		EXPECT_EQ(resetRead.EntryAddress[0], 0xA11281u);
+
+		uint8_t busFlags = busRead.EntryFlags[0];
+		uint8_t resetFlags = resetRead.EntryFlags[0];
+		EXPECT_EQ(busFlags & 0x82, 0x82);
+		EXPECT_EQ(busFlags & 0x04, 0x00);
+		EXPECT_EQ(resetFlags & 0x86, 0x86);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeOddAddressReadsCaptureExpectedAddressAndFlags) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);

@@ -509,7 +509,7 @@ void GenesisMemoryManager::TrackSegaCdTranscript(uint32_t addr, bool isWrite, ui
 
 void GenesisMemoryManager::TrackSegaCdHandshakeTranscript(uint32_t addr, bool isWrite, uint8_t value) {
 	uint8_t roleFlags = 0x80;
-	if (addr >= 0xA11200 && addr <= 0xA11201) {
+	if (IsZ80ResetAddress(addr)) {
 		roleFlags |= 0x04;
 	}
 	if (!isWrite) {
