@@ -758,7 +758,12 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		uint8_t status = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
-		uint16_t value = (uint16_t)((status << 8) | status);
+		uint16_t value = (uint16_t)((_openBus << 8) | _openBus);
+		if (status) {
+			value |= 0x0100;
+		} else {
+			value &= (uint16_t)~0x0100;
+		}
 		TrackSegaCdHandshakeTranscript(addr, false, (uint8_t)(value >> 8));
 		return value;
 	}
