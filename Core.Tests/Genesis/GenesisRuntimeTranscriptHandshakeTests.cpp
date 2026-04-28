@@ -1415,6 +1415,29 @@ namespace {
 		EXPECT_EQ(snapshot.EntryFlags[3] & 0x86, 0x86);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirrored16BitAccessesCaptureExpectedEntriesAndFlags) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write16(0xA11180, 0x0100);
+		memoryManager.Write16(0xA11280, 0x0100);
+		(void)memoryManager.Read16(0xA11180);
+		(void)memoryManager.Read16(0xA11280);
+
+		RuntimeTranscriptSnapshot snapshot = CaptureSnapshot(memoryManager);
+		ASSERT_EQ(snapshot.LaneCount, 4u);
+		EXPECT_EQ(snapshot.EntryAddress[0], 0xA11180u);
+		EXPECT_EQ(snapshot.EntryAddress[1], 0xA11280u);
+		EXPECT_EQ(snapshot.EntryAddress[2], 0xA11180u);
+		EXPECT_EQ(snapshot.EntryAddress[3], 0xA11280u);
+
+		EXPECT_EQ(snapshot.EntryFlags[0] & 0x81, 0x81);
+		EXPECT_EQ(snapshot.EntryFlags[1] & 0x85, 0x85);
+		EXPECT_EQ(snapshot.EntryFlags[2] & 0x82, 0x82);
+		EXPECT_EQ(snapshot.EntryFlags[3] & 0x86, 0x86);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA11100Read16ExposesBusAckInBit8) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
