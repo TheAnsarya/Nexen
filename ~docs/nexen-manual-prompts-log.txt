@@ -1969,6 +1969,8 @@ continue working issues and slices; complete a bunch of them; keep going!
 
 tes, do that
 
+1
+
 
 
 
@@ -2090,8 +2092,8 @@ prepare for a release, and clean up and update documentation and fix as many war
 
 
 0+0+597+347+0+754+565+315+619+626=3823
-587 * 5 = 2935
-3823 - 2935 = 890
+625 * 5 = 3125
+3823 - 3125 = 698
 94
 
 

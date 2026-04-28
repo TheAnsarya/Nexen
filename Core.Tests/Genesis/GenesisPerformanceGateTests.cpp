@@ -119,6 +119,7 @@ namespace {
 				&& line.find("REPLAY_MISMATCH_PCT=") != string::npos
 				&& line.find("CASE_TOTAL=") != string::npos
 				&& line.find("CLASS_BUDGET_TOTAL_US=") != string::npos
+				&& line.find("AVG_CLASS_BUDGET_US=") != string::npos
 				&& line.find("ELAPSED_TOTAL_US=") != string::npos
 				&& line.find("AVG_ELAPSED_US=") != string::npos
 				&& line.find("REPLAY_FAIL_TOTAL=") != string::npos

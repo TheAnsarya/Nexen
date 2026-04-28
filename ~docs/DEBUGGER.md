@@ -170,6 +170,8 @@ Performance-gate summary lines also include `AVG_ELAPSED_US` so one-line summari
 
 Performance-gate summary lines also include `CLASS_BUDGET_TOTAL_US` so one-line summaries expose the aggregate class-adjusted budget envelope across the evaluated corpus.
 
+Performance-gate summary lines also include `AVG_CLASS_BUDGET_US` so one-line summaries expose average class-adjusted budget per evaluated case.
+
 Performance-gate summary lines also include `CASE_TOTAL` so one-line summaries explicitly report the evaluated corpus size.
 
 Performance-gate summary lines also include `PASS_RATIO_PCT` so one-line summaries expose pass-rate quality as an integer percentage derived from summary pass/fail counts.
