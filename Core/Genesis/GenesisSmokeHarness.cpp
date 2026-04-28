@@ -562,10 +562,12 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 	}
 
 	result.Digest = ToHex(gateHash);
+	uint64_t caseTotal = (uint64_t)result.Entries.size();
 	result.OutputLines.push_back(std::format(
-		"GEN_PERF_GATE_SUMMARY PASS={} FAIL={} BUDGET_US={} CLASS_BUDGET_TOTAL_US={} ELAPSED_TOTAL_US={} REPLAY_OK_TOTAL={} REPLAY_FAIL_TOTAL={} SCD_LANE_TOTAL={} SCD_EVT_TOTAL={} M32X_EVT_TOTAL={} DIGEST={}",
+		"GEN_PERF_GATE_SUMMARY PASS={} FAIL={} CASE_TOTAL={} BUDGET_US={} CLASS_BUDGET_TOTAL_US={} ELAPSED_TOTAL_US={} REPLAY_OK_TOTAL={} REPLAY_FAIL_TOTAL={} SCD_LANE_TOTAL={} SCD_EVT_TOTAL={} M32X_EVT_TOTAL={} DIGEST={}",
 		result.PassCount,
 		result.FailCount,
+		caseTotal,
 		result.BudgetMicros,
 		classBudgetTotalMicros,
 		elapsedTotalMicros,
