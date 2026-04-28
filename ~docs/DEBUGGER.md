@@ -166,6 +166,8 @@ Performance-gate summary lines (`GEN_PERF_GATE_SUMMARY`) now include aggregate t
 
 Performance-gate summary lines also include `AVG_SCD_EVT_PER_CASE` so one-line summaries expose average Sega CD tooling event activity per evaluated case.
 
+Performance-gate summary lines also include `AVG_M32X_EVT_PER_CASE` so one-line summaries expose average 32X tooling event activity per evaluated case.
+
 Performance-gate summary lines also include `ELAPSED_TOTAL_US` so one-line summaries expose aggregate measured elapsed microseconds across the evaluated corpus.
 
 Performance-gate summary lines also include `AVG_ELAPSED_US` so one-line summaries expose average measured elapsed microseconds per evaluated case.

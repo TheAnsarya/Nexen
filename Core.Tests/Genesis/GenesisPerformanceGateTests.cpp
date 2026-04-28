@@ -126,7 +126,8 @@ namespace {
 				&& line.find("SCD_LANE_TOTAL=") != string::npos
 				&& line.find("SCD_EVT_TOTAL=") != string::npos
 				&& line.find("AVG_SCD_EVT_PER_CASE=") != string::npos
-				&& line.find("M32X_EVT_TOTAL=") != string::npos;
+				&& line.find("M32X_EVT_TOTAL=") != string::npos
+				&& line.find("AVG_M32X_EVT_PER_CASE=") != string::npos;
 		});
 
 		EXPECT_TRUE(hasAggregateTelemetrySummaryMarkers);
