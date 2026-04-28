@@ -432,6 +432,7 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 	result.Entries.reserve(romSet.size());
 	uint64_t replayPassTotal = 0;
 	uint64_t replayFailTotal = 0;
+	uint64_t elapsedTotalMicros = 0;
 	uint64_t scdLaneTotal = 0;
 	uint64_t scdToolingEventTotal = 0;
 	uint64_t m32xToolingEventTotal = 0;
@@ -488,6 +489,7 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 
 		auto end = std::chrono::steady_clock::now();
 		entry.ElapsedMicros = (uint64_t)std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+		elapsedTotalMicros += entry.ElapsedMicros;
 		uint32_t scdLaneCount = firstRun.Bus.CommandResponseLaneCount;
 		uint32_t scdToolingEventCount = firstRun.Bus.SegaCdToolingEventCount;
 		uint32_t m32xToolingEventCount = firstRun.Bus.M32xToolingEventCount;
@@ -559,10 +561,11 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 
 	result.Digest = ToHex(gateHash);
 	result.OutputLines.push_back(std::format(
-		"GEN_PERF_GATE_SUMMARY PASS={} FAIL={} BUDGET_US={} REPLAY_OK_TOTAL={} REPLAY_FAIL_TOTAL={} SCD_LANE_TOTAL={} SCD_EVT_TOTAL={} M32X_EVT_TOTAL={} DIGEST={}",
+		"GEN_PERF_GATE_SUMMARY PASS={} FAIL={} BUDGET_US={} ELAPSED_TOTAL_US={} REPLAY_OK_TOTAL={} REPLAY_FAIL_TOTAL={} SCD_LANE_TOTAL={} SCD_EVT_TOTAL={} M32X_EVT_TOTAL={} DIGEST={}",
 		result.PassCount,
 		result.FailCount,
 		result.BudgetMicros,
+		elapsedTotalMicros,
 		replayPassTotal,
 		replayFailTotal,
 		scdLaneTotal,

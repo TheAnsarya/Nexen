@@ -114,6 +114,7 @@ namespace {
 
 		bool hasAggregateTelemetrySummaryMarkers = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
 			return line.starts_with("GEN_PERF_GATE_SUMMARY ")
+				&& line.find("ELAPSED_TOTAL_US=") != string::npos
 				&& line.find("REPLAY_FAIL_TOTAL=") != string::npos
 				&& line.find("SCD_LANE_TOTAL=") != string::npos
 				&& line.find("SCD_EVT_TOTAL=") != string::npos
