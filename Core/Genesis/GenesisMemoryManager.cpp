@@ -882,13 +882,13 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	}
 
 	if (addr == 0xA11100) [[unlikely]] {
-		_z80BusRequest = (value & 0x0101) != 0;
+		_z80BusRequest = (value & 0x0100) != 0;
 		TrackSegaCdHandshakeTranscript(addr, true, (uint8_t)(value >> 8));
 		return;
 	}
 
 	if (addr == 0xA11200) [[unlikely]] {
-		_z80Reset = !(value & 0x0101);
+		_z80Reset = !(value & 0x0100);
 		TrackSegaCdHandshakeTranscript(addr, true, (uint8_t)(value >> 8));
 		return;
 	}
