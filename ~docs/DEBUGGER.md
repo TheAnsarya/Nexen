@@ -178,6 +178,8 @@ Performance-gate summary lines also include `BUDGET_UTIL_PCT` so one-line summar
 
 Performance-gate summary lines also include `OVER_BUDGET_US_TOTAL` so one-line summaries expose aggregate elapsed microseconds beyond the aggregate class-adjusted budget envelope.
 
+Debugger memory probes now isolate transcript lanes: `DebugRead8`/`DebugWrite8` record into the debug transcript lane only and no longer mutate the runtime Sega CD/32X transcript lane count or digest.
+
 Performance-gate summary lines also include `CLASS_BUDGET_TOTAL_US` so one-line summaries expose the aggregate class-adjusted budget envelope across the evaluated corpus.
 
 Performance-gate summary lines also include `AVG_CLASS_BUDGET_US` so one-line summaries expose average class-adjusted budget per evaluated case.

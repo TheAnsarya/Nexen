@@ -1973,6 +1973,7 @@ tes, do that
 
 What's all this "perf-gate" stuff? I told you to focus on making actual emulation implementation code changes to make genesis/segacd/32x/etc all work correctly and fast; continue;
 
+continue;
 
 
 

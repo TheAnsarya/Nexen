@@ -362,6 +362,48 @@ namespace {
 		EXPECT_EQ(std::get<4>(expected), 0x0Fu);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugBridgeAccessDoesNotMutateRuntimeTranscriptLaneState) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA12012, 0xAA);
+		memoryManager.Write8(0xA12013, 0xBB);
+
+		RuntimeTranscriptSnapshot before = CaptureSnapshot(memoryManager);
+
+		memoryManager.DebugWrite8(0xA12014, 0x33);
+		(void)memoryManager.DebugRead8(0xA12014);
+		(void)memoryManager.DebugRead8(0xA1201B);
+
+		RuntimeTranscriptSnapshot after = CaptureSnapshot(memoryManager);
+
+		EXPECT_EQ(before.LaneCount, after.LaneCount);
+		EXPECT_EQ(before.LaneDigest, after.LaneDigest);
+		EXPECT_GT(after.DebugLaneCount, before.DebugLaneCount);
+		EXPECT_NE(after.DebugLaneDigest, before.DebugLaneDigest);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeAccessDoesNotMutateRuntimeTranscriptLaneState) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA11100, 0x01);
+		(void)memoryManager.Read8(0xA11100);
+
+		RuntimeTranscriptSnapshot before = CaptureSnapshot(memoryManager);
+
+		memoryManager.DebugWrite8(0xA11200, 0x01);
+		(void)memoryManager.DebugRead8(0xA11100);
+
+		RuntimeTranscriptSnapshot after = CaptureSnapshot(memoryManager);
+
+		EXPECT_EQ(before.LaneCount, after.LaneCount);
+		EXPECT_EQ(before.LaneDigest, after.LaneDigest);
+		EXPECT_GT(after.DebugLaneCount, before.DebugLaneCount);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugIoControlRegistersRoundTripThroughIoState) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
@@ -487,7 +529,7 @@ namespace {
 		EXPECT_EQ(memoryManager.DebugRead8(0xC00011), baselineOpenBus);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeTrafficContributesToTranscriptDigest) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeTrafficIsIsolatedToDebugTranscriptLane) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -499,18 +541,15 @@ namespace {
 		(void)memoryManager.DebugRead8(0xA11200);
 
 		RuntimeTranscriptSnapshot snapshot = CaptureSnapshot(memoryManager);
-		EXPECT_GE(snapshot.LaneCount, 5u);
-		EXPECT_NE(snapshot.LaneDigest, 0ull);
+		EXPECT_EQ(snapshot.LaneCount, 0u);
+		EXPECT_EQ(snapshot.LaneDigest, 0ull);
 		EXPECT_GE(snapshot.DebugLaneCount, 5u);
 		EXPECT_NE(snapshot.DebugLaneDigest, 0ull);
 
-		bool sawHandshakeMarker = false;
 		bool sawDebugLaneMarker = false;
 		for (uint32_t i = 0; i < 4; i++) {
-			sawHandshakeMarker |= (snapshot.EntryFlags[i] & 0x80) != 0;
 			sawDebugLaneMarker |= (snapshot.DebugEntryFlags[i] & 0x40) != 0;
 		}
-		EXPECT_TRUE(sawHandshakeMarker);
 		EXPECT_TRUE(sawDebugLaneMarker);
 	}
 
