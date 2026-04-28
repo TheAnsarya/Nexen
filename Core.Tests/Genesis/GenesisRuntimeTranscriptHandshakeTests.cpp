@@ -1298,8 +1298,14 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x01u);
 		EXPECT_EQ(memoryManager.Read16(0xA11100), 0x0101u);
 
-		// Bus requested: both lanes drop to zero.
+		// Bus requested while reset is asserted: BUSACK remains set.
 		memoryManager.Write8(0xA11100, 0x01);
+		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x01u);
+		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x01u);
+		EXPECT_EQ(memoryManager.Read16(0xA11100), 0x0101u);
+
+		// Releasing reset allows BUSREQ to clear BUSACK.
+		memoryManager.Write8(0xA11200, 0x01);
 		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x00u);
 		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x00u);
 		EXPECT_EQ(memoryManager.Read16(0xA11100), 0x0000u);
@@ -1338,6 +1344,9 @@ namespace {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		// BUSACK only drops when reset is released.
+		memoryManager.Write8(0xA11200, 0x01);
 
 		memoryManager.Write8(0xA11120, 0x01);
 		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x00u);
