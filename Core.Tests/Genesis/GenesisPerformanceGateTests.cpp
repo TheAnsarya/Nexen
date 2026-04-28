@@ -122,6 +122,7 @@ namespace {
 				&& line.find("AVG_CLASS_BUDGET_US=") != string::npos
 				&& line.find("ELAPSED_TOTAL_US=") != string::npos
 				&& line.find("AVG_ELAPSED_US=") != string::npos
+				&& line.find("BUDGET_UTIL_PCT=") != string::npos
 				&& line.find("REPLAY_FAIL_TOTAL=") != string::npos
 				&& line.find("SCD_LANE_TOTAL=") != string::npos
 				&& line.find("AVG_SCD_LANE_PER_CASE=") != string::npos

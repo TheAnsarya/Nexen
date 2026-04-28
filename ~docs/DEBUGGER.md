@@ -174,6 +174,8 @@ Performance-gate summary lines also include `ELAPSED_TOTAL_US` so one-line summa
 
 Performance-gate summary lines also include `AVG_ELAPSED_US` so one-line summaries expose average measured elapsed microseconds per evaluated case.
 
+Performance-gate summary lines also include `BUDGET_UTIL_PCT` so one-line summaries expose aggregate elapsed-vs-class-budget utilization as an integer percentage.
+
 Performance-gate summary lines also include `CLASS_BUDGET_TOTAL_US` so one-line summaries expose the aggregate class-adjusted budget envelope across the evaluated corpus.
 
 Performance-gate summary lines also include `AVG_CLASS_BUDGET_US` so one-line summaries expose average class-adjusted budget per evaluated case.
