@@ -160,7 +160,7 @@ Compatibility matrix checkpoints also include `GEN-COMPAT-32X-TELEMETRY`, which 
 
 Compatibility matrix checkpoints also include `GEN-COMPAT-SCD-TELEMETRY`, which validates deterministic replay parity for Sega CD tooling event telemetry bytes (`$a12016/$a12017`) in scaffold-based regression gates.
 
-Performance-gate result lines (`GEN_PERF_RESULT`) now include deterministic telemetry evidence markers (`SCD_LANE_CT`, `SCD_EVT_CT`, and `M32X_EVT_CT`) so gate summaries can be correlated with bridge/tooling activity surfaces.
+Performance-gate result lines (`GEN_PERF_RESULT`) now include deterministic replay and telemetry evidence markers (`REPLAY_OK`, `SCD_LANE_CT`, `SCD_EVT_CT`, and `M32X_EVT_CT`) so gate summaries can be correlated with replay stability and bridge/tooling activity surfaces.
 
 For scaffold-based gate workflows, `GenesisPlatformBusStub::ClearCommandResponseLane()` is the deterministic phase-reset primitive for command/response evidence and related tooling/control parity staging state.
 

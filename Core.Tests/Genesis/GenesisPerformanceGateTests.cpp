@@ -97,9 +97,13 @@ namespace {
 		bool hasSegaCdEventMarker = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
 			return line.starts_with("GEN_PERF_RESULT ") && line.find("SCD_EVT_CT=") != string::npos;
 		});
+		bool hasReplayParityMarker = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
+			return line.starts_with("GEN_PERF_RESULT ") && line.find("REPLAY_OK=") != string::npos;
+		});
 
 		EXPECT_TRUE(hasSegaCdLaneMarker);
 		EXPECT_TRUE(hasM32xEventMarker);
 		EXPECT_TRUE(hasSegaCdEventMarker);
+		EXPECT_TRUE(hasReplayParityMarker);
 	}
 }

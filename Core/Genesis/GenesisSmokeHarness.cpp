@@ -514,13 +514,14 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 		}
 
 		result.OutputLines.push_back(std::format(
-			"GEN_PERF_RESULT {} {} CLASS={} ELAPSED_US={} BUDGET_US={} CLASS_BUDGET_US={} SCD_LANE_CT={} SCD_EVT_CT={} M32X_EVT_CT={} DIGEST={}",
+			"GEN_PERF_RESULT {} {} CLASS={} ELAPSED_US={} BUDGET_US={} CLASS_BUDGET_US={} REPLAY_OK={} SCD_LANE_CT={} SCD_EVT_CT={} M32X_EVT_CT={} DIGEST={}",
 			entry.Name,
 			entry.Pass ? "PASS" : "FAIL",
 			entry.TitleClass,
 			entry.ElapsedMicros,
 			budgetMicros,
 			classBudgetMicros,
+			replayPass ? 1 : 0,
 			scdLaneCount,
 			scdToolingEventCount,
 			m32xToolingEventCount,
