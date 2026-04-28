@@ -567,8 +567,9 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 	uint64_t passRatioPct = summaryTotal == 0 ? 0 : ((uint64_t)result.PassCount * 100ull) / summaryTotal;
 	uint64_t failRatioPct = summaryTotal == 0 ? 0 : ((uint64_t)result.FailCount * 100ull) / summaryTotal;
 	uint64_t replayMismatchPct = summaryTotal == 0 ? 0 : (replayFailTotal * 100ull) / summaryTotal;
+	uint64_t avgElapsedMicros = caseTotal == 0 ? 0 : elapsedTotalMicros / caseTotal;
 	result.OutputLines.push_back(std::format(
-		"GEN_PERF_GATE_SUMMARY PASS={} FAIL={} PASS_RATIO_PCT={} FAIL_RATIO_PCT={} REPLAY_MISMATCH_PCT={} CASE_TOTAL={} BUDGET_US={} CLASS_BUDGET_TOTAL_US={} ELAPSED_TOTAL_US={} REPLAY_OK_TOTAL={} REPLAY_FAIL_TOTAL={} SCD_LANE_TOTAL={} SCD_EVT_TOTAL={} M32X_EVT_TOTAL={} DIGEST={}",
+		"GEN_PERF_GATE_SUMMARY PASS={} FAIL={} PASS_RATIO_PCT={} FAIL_RATIO_PCT={} REPLAY_MISMATCH_PCT={} CASE_TOTAL={} BUDGET_US={} CLASS_BUDGET_TOTAL_US={} ELAPSED_TOTAL_US={} AVG_ELAPSED_US={} REPLAY_OK_TOTAL={} REPLAY_FAIL_TOTAL={} SCD_LANE_TOTAL={} SCD_EVT_TOTAL={} M32X_EVT_TOTAL={} DIGEST={}",
 		result.PassCount,
 		result.FailCount,
 		passRatioPct,
@@ -578,6 +579,7 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 		result.BudgetMicros,
 		classBudgetTotalMicros,
 		elapsedTotalMicros,
+		avgElapsedMicros,
 		replayPassTotal,
 		replayFailTotal,
 		scdLaneTotal,

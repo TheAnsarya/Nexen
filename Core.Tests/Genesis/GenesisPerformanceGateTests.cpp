@@ -120,6 +120,7 @@ namespace {
 				&& line.find("CASE_TOTAL=") != string::npos
 				&& line.find("CLASS_BUDGET_TOTAL_US=") != string::npos
 				&& line.find("ELAPSED_TOTAL_US=") != string::npos
+				&& line.find("AVG_ELAPSED_US=") != string::npos
 				&& line.find("REPLAY_FAIL_TOTAL=") != string::npos
 				&& line.find("SCD_LANE_TOTAL=") != string::npos
 				&& line.find("SCD_EVT_TOTAL=") != string::npos
