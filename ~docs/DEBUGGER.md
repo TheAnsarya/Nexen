@@ -166,6 +166,8 @@ Performance-gate summary lines (`GEN_PERF_GATE_SUMMARY`) now include aggregate t
 
 Performance-gate summary lines also include `ELAPSED_TOTAL_US` so one-line summaries expose aggregate measured elapsed microseconds across the evaluated corpus.
 
+Performance-gate summary lines also include `CLASS_BUDGET_TOTAL_US` so one-line summaries expose the aggregate class-adjusted budget envelope across the evaluated corpus.
+
 Performance-gate summary lines also include `REPLAY_OK_TOTAL` and `REPLAY_FAIL_TOTAL` so one-line summaries expose aggregate replay-parity pass/fail counts across the evaluated corpus.
 
 For scaffold-based gate workflows, `GenesisPlatformBusStub::ClearCommandResponseLane()` is the deterministic phase-reset primitive for command/response evidence and related tooling/control parity staging state.
