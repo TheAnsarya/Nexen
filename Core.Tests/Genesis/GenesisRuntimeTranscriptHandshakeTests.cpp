@@ -1287,6 +1287,24 @@ namespace {
 		EXPECT_EQ(snapshot.EntryFlags[3] & 0x86, 0x86);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA11100Read16MatchesBoth8BitStatusLanes) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		// Bus free: both byte lanes expose status bit.
+		memoryManager.Write8(0xA11100, 0x00);
+		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x01u);
+		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x01u);
+		EXPECT_EQ(memoryManager.Read16(0xA11100), 0x0101u);
+
+		// Bus requested: both lanes drop to zero.
+		memoryManager.Write8(0xA11100, 0x01);
+		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x00u);
+		EXPECT_EQ(memoryManager.Read16(0xA11100), 0x0000u);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshake16BitScenarioIsDeterministicAcrossRuns) {
 		auto run16BitScenario = []() {
 			Emulator emu;
