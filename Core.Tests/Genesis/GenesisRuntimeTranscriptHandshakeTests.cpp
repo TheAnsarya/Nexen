@@ -1619,6 +1619,27 @@ namespace {
 		EXPECT_EQ(runA, runB);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirrored16BitScenarioIsDeterministicAcrossRuns) {
+		auto runMirrored16BitScenario = []() {
+			Emulator emu;
+			std::vector<uint8_t> romData(0x400000);
+			GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+			memoryManager.Write16(0xA11280, 0x0100);
+			memoryManager.Write16(0xA11180, 0x0100);
+			(void)memoryManager.Read16(0xA11180);
+			(void)memoryManager.Read16(0xA11280);
+			memoryManager.Write16(0xA112e0, 0x0000);
+			memoryManager.Write16(0xA111e0, 0x0000);
+			return CaptureSnapshot(memoryManager);
+		};
+
+		RuntimeTranscriptSnapshot runA = runMirrored16BitScenario();
+		RuntimeTranscriptSnapshot runB = runMirrored16BitScenario();
+
+		EXPECT_EQ(runA, runB);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeTranscriptPreservesReplayAfterSerializeRoundtrip) {
 		Emulator emuA;
 		std::vector<uint8_t> romA(0x400000);
@@ -1634,6 +1655,49 @@ namespace {
 			memoryManager.Write16(0xA11200, 0x0000);
 			memoryManager.Write16(0xA11100, 0x0000);
 			(void)memoryManager.Read16(0xA11100);
+		};
+
+		runPrefix(original);
+
+		Serializer saver(1, true, SerializeFormat::Binary);
+		original.Serialize(saver);
+		std::stringstream ss;
+		saver.SaveTo(ss);
+		ss.seekg(0);
+
+		runTail(original);
+		RuntimeTranscriptSnapshot expected = CaptureSnapshot(original);
+
+		Emulator emuB;
+		std::vector<uint8_t> romB(0x400000);
+		GenesisMemoryManager restored = CreateMemoryManager(emuB, romB);
+
+		Serializer loader(1, false, SerializeFormat::Binary);
+		ASSERT_TRUE(loader.LoadFrom(ss));
+		restored.Serialize(loader);
+
+		runTail(restored);
+		RuntimeTranscriptSnapshot replay = CaptureSnapshot(restored);
+
+		EXPECT_EQ(expected.LaneCount, replay.LaneCount);
+		EXPECT_EQ(expected.LaneDigest, replay.LaneDigest);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirrored16BitTranscriptPreservesReplayAfterSerializeRoundtrip) {
+		Emulator emuA;
+		std::vector<uint8_t> romA(0x400000);
+		GenesisMemoryManager original = CreateMemoryManager(emuA, romA);
+
+		auto runPrefix = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.Write16(0xA11280, 0x0100);
+			memoryManager.Write16(0xA11180, 0x0100);
+			(void)memoryManager.Read16(0xA11180);
+		};
+
+		auto runTail = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.Write16(0xA112e0, 0x0000);
+			memoryManager.Write16(0xA111e0, 0x0000);
+			(void)memoryManager.Read16(0xA111e0);
 		};
 
 		runPrefix(original);
