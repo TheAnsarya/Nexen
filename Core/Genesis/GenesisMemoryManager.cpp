@@ -869,6 +869,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
 		WriteIo(addr, (uint8_t)(value >> 8));
+		WriteIo(addr + 1, (uint8_t)(value & 0xFF));
 		return;
 	}
 

@@ -83,6 +83,28 @@ namespace {
 		EXPECT_EQ(memoryManager.Read16(0xFFFFFF), 0xABCD);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, IoWindowWrite16LowByteUpdatesController1ControlRegister) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write16(0xA10008, 0x12AB);
+
+		EXPECT_EQ(memoryManager.DebugRead8(0xA10009), 0xABu);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, IoWindowWrite16LowByteUpdatesController2AndExtControlRegisters) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write16(0xA1000A, 0x34CD);
+		memoryManager.Write16(0xA1000C, 0x56EF);
+
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1000B), 0xCDu);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1000D), 0xEFu);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, Z80WindowRead16ReturnsConsecutiveBytesWhenBusGranted) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
