@@ -695,8 +695,8 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			return _openBus;
 		}
 
-		// Z80 bus request — bit 0 indicates bus granted
-		uint8_t value = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
+		// Z80 bus request: bit 0 indicates bus grant, upper bits preserve open bus.
+		uint8_t value = (_openBus & 0xFE) | GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
 		TrackSegaCdHandshakeTranscript(addr, false, value);
 		return value;
 	}
@@ -1013,7 +1013,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 			TrackDebugTranscriptEntry(addr, false, _openBus, 0x80);
 			return _openBus;
 		}
-		uint8_t value = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
+		uint8_t value = (_openBus & 0xFE) | GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
 		TrackDebugTranscriptEntry(addr, false, value, 0x80);
 		return value;
 	}
