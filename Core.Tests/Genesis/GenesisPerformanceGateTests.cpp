@@ -120,4 +120,18 @@ namespace {
 
 		EXPECT_TRUE(hasAggregateTelemetrySummaryMarkers);
 	}
+
+	TEST(GenesisPerformanceGateTests, SummaryIncludesReplayAggregateMarker) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus = BuildPerfCorpus();
+
+		GenesisPerformanceGateResult result = GenesisSmokeHarness::RunPerformanceGate(scaffold, corpus, 5000000);
+
+		bool hasReplayAggregateSummaryMarker = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
+			return line.starts_with("GEN_PERF_GATE_SUMMARY ")
+				&& line.find("REPLAY_OK_TOTAL=") != string::npos;
+		});
+
+		EXPECT_TRUE(hasReplayAggregateSummaryMarker);
+	}
 }

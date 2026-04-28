@@ -430,6 +430,7 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 	GenesisPerformanceGateResult result = {};
 	result.BudgetMicros = budgetMicros;
 	result.Entries.reserve(romSet.size());
+	uint64_t replayPassTotal = 0;
 	uint64_t scdToolingEventTotal = 0;
 	uint64_t m32xToolingEventTotal = 0;
 
@@ -477,6 +478,9 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 		scaffold.StepFrameScaffold(1440);
 		GenesisBoundaryScaffoldSaveState replayRun = scaffold.SaveState();
 		bool replayPass = firstRun == replayRun;
+		if (replayPass) {
+			replayPassTotal++;
+		}
 
 		auto end = std::chrono::steady_clock::now();
 		entry.ElapsedMicros = (uint64_t)std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
@@ -550,10 +554,11 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 
 	result.Digest = ToHex(gateHash);
 	result.OutputLines.push_back(std::format(
-		"GEN_PERF_GATE_SUMMARY PASS={} FAIL={} BUDGET_US={} SCD_EVT_TOTAL={} M32X_EVT_TOTAL={} DIGEST={}",
+		"GEN_PERF_GATE_SUMMARY PASS={} FAIL={} BUDGET_US={} REPLAY_OK_TOTAL={} SCD_EVT_TOTAL={} M32X_EVT_TOTAL={} DIGEST={}",
 		result.PassCount,
 		result.FailCount,
 		result.BudgetMicros,
+		replayPassTotal,
 		scdToolingEventTotal,
 		m32xToolingEventTotal,
 		result.Digest));
