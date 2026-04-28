@@ -164,7 +164,7 @@ Performance-gate result lines (`GEN_PERF_RESULT`) now include deterministic repl
 
 Performance-gate summary lines (`GEN_PERF_GATE_SUMMARY`) now include aggregate tooling counters (`SCD_LANE_TOTAL`, `SCD_EVT_TOTAL`, and `M32X_EVT_TOTAL`) to provide one-line activity totals across the evaluated corpus.
 
-Performance-gate summary lines also include `REPLAY_OK_TOTAL` so one-line summaries expose aggregate replay-parity pass counts across the evaluated corpus.
+Performance-gate summary lines also include `REPLAY_OK_TOTAL` and `REPLAY_FAIL_TOTAL` so one-line summaries expose aggregate replay-parity pass/fail counts across the evaluated corpus.
 
 For scaffold-based gate workflows, `GenesisPlatformBusStub::ClearCommandResponseLane()` is the deterministic phase-reset primitive for command/response evidence and related tooling/control parity staging state.
 

@@ -431,6 +431,7 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 	result.BudgetMicros = budgetMicros;
 	result.Entries.reserve(romSet.size());
 	uint64_t replayPassTotal = 0;
+	uint64_t replayFailTotal = 0;
 	uint64_t scdLaneTotal = 0;
 	uint64_t scdToolingEventTotal = 0;
 	uint64_t m32xToolingEventTotal = 0;
@@ -481,6 +482,8 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 		bool replayPass = firstRun == replayRun;
 		if (replayPass) {
 			replayPassTotal++;
+		} else {
+			replayFailTotal++;
 		}
 
 		auto end = std::chrono::steady_clock::now();
@@ -556,11 +559,12 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 
 	result.Digest = ToHex(gateHash);
 	result.OutputLines.push_back(std::format(
-		"GEN_PERF_GATE_SUMMARY PASS={} FAIL={} BUDGET_US={} REPLAY_OK_TOTAL={} SCD_LANE_TOTAL={} SCD_EVT_TOTAL={} M32X_EVT_TOTAL={} DIGEST={}",
+		"GEN_PERF_GATE_SUMMARY PASS={} FAIL={} BUDGET_US={} REPLAY_OK_TOTAL={} REPLAY_FAIL_TOTAL={} SCD_LANE_TOTAL={} SCD_EVT_TOTAL={} M32X_EVT_TOTAL={} DIGEST={}",
 		result.PassCount,
 		result.FailCount,
 		result.BudgetMicros,
 		replayPassTotal,
+		replayFailTotal,
 		scdLaneTotal,
 		scdToolingEventTotal,
 		m32xToolingEventTotal,
