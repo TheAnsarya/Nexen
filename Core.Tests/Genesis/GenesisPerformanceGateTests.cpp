@@ -88,22 +88,21 @@ namespace {
 
 		GenesisPerformanceGateResult result = GenesisSmokeHarness::RunPerformanceGate(scaffold, corpus, 5000000);
 
-		bool hasSegaCdLaneMarker = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
-			return line.starts_with("GEN_PERF_RESULT ") && line.find("SCD_LANE_CT=") != string::npos;
-		});
-		bool hasM32xEventMarker = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
-			return line.starts_with("GEN_PERF_RESULT ") && line.find("M32X_EVT_CT=") != string::npos;
-		});
-		bool hasSegaCdEventMarker = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
-			return line.starts_with("GEN_PERF_RESULT ") && line.find("SCD_EVT_CT=") != string::npos;
-		});
-		bool hasReplayParityMarker = std::any_of(result.OutputLines.begin(), result.OutputLines.end(), [](const string& line) {
-			return line.starts_with("GEN_PERF_RESULT ") && line.find("REPLAY_OK=") != string::npos;
-		});
+		bool allPerfResultsHaveEvidenceMarkers = true;
+		for (const string& line : result.OutputLines) {
+			if (!line.starts_with("GEN_PERF_RESULT ")) {
+				continue;
+			}
 
-		EXPECT_TRUE(hasSegaCdLaneMarker);
-		EXPECT_TRUE(hasM32xEventMarker);
-		EXPECT_TRUE(hasSegaCdEventMarker);
-		EXPECT_TRUE(hasReplayParityMarker);
+			if (line.find("SCD_LANE_CT=") == string::npos
+				|| line.find("SCD_EVT_CT=") == string::npos
+				|| line.find("M32X_EVT_CT=") == string::npos
+				|| line.find("REPLAY_OK=") == string::npos) {
+				allPerfResultsHaveEvidenceMarkers = false;
+				break;
+			}
+		}
+
+		EXPECT_TRUE(allPerfResultsHaveEvidenceMarkers);
 	}
 }

@@ -448,7 +448,13 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 			entry.Pass = false;
 			entry.DeterministicDigest = ToHex(0);
 			result.FailCount++;
-			result.OutputLines.push_back(std::format("GEN_PERF_RESULT {} FAIL CLASS={} ELAPSED_US=0 BUDGET_US={} CLASS_BUDGET_US={} DIGEST={}", entry.Name, entry.TitleClass, budgetMicros, classBudgetMicros, entry.DeterministicDigest));
+				result.OutputLines.push_back(std::format(
+					"GEN_PERF_RESULT {} FAIL CLASS={} ELAPSED_US=0 BUDGET_US={} CLASS_BUDGET_US={} REPLAY_OK=0 SCD_LANE_CT=0 SCD_EVT_CT=0 M32X_EVT_CT=0 DIGEST={}",
+					entry.Name,
+					entry.TitleClass,
+					budgetMicros,
+					classBudgetMicros,
+					entry.DeterministicDigest));
 			result.Entries.push_back(std::move(entry));
 			continue;
 		}
