@@ -1010,15 +1010,15 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	}
 	if (IsZ80BusReqAddress(addr)) {
 		if (addr & 0x01) {
-			TrackDebugTranscriptEntry(addr, false, _openBus, 0x80);
+			TrackDebugTranscriptEntry(addr, false, _openBus, 0x82);
 			return _openBus;
 		}
 		uint8_t value = (_openBus & 0xFE) | GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
-		TrackDebugTranscriptEntry(addr, false, value, 0x80);
+		TrackDebugTranscriptEntry(addr, false, value, 0x82);
 		return value;
 	}
 	if (IsZ80ResetAddress(addr)) {
-		TrackDebugTranscriptEntry(addr, false, _openBus, 0x84);
+		TrackDebugTranscriptEntry(addr, false, _openBus, 0x86);
 		return _openBus;
 	}
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
