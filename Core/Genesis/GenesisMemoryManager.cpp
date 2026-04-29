@@ -1185,22 +1185,22 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	if (IsTmssAddress(addr)) {
-		uint8_t value = _segaCdBridgeA140[addr & 0x03];
-		_openBus = value;
-		TrackDebugTranscriptEntry(addr, false, value, 0x02);
-		return value;
+		uint8_t effectiveValue = _segaCdBridgeA140[addr & 0x03];
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+		return effectiveValue;
 	}
 	if (addr < _prgRomSize) {
-		uint8_t value = _prgRom[addr];
-		_openBus = value;
-		TrackDebugTranscriptEntry(addr, false, value, 0x01);
-		return value;
+		uint8_t effectiveValue = _prgRom[addr];
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x01);
+		return effectiveValue;
 	}
 	if (addr >= 0xFF0000) {
-		uint8_t value = _workRam[addr & 0xFFFF];
-		_openBus = value;
-		TrackDebugTranscriptEntry(addr, false, value, 0x04);
-		return value;
+		uint8_t effectiveValue = _workRam[addr & 0xFFFF];
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x04);
+		return effectiveValue;
 	}
 	if (addr >= 0xA10000 && addr <= 0xA1001F) {
 		uint32_t reg = addr & 0x1F;
@@ -1318,45 +1318,45 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) {
 		if (IsSegaCdSubCpuControlAddress(addr)) {
-			uint8_t value = GetSegaCdSubCpuStatusByte();
-			_openBus = value;
-			TrackDebugTranscriptEntry(addr, false, value, 0x02);
-			return value;
+			uint8_t effectiveValue = GetSegaCdSubCpuStatusByte();
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+			return effectiveValue;
 		}
 		if (IsSegaCdAudioStatusAddress(addr)) {
-			uint8_t value = GetSegaCdAudioStatusByte(addr);
-			_openBus = value;
-			TrackDebugTranscriptEntry(addr, false, value, 0x02);
-			return value;
+			uint8_t effectiveValue = GetSegaCdAudioStatusByte(addr);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+			return effectiveValue;
 		}
 		if (IsSegaCdToolingStatusAddress(addr)) {
-			uint8_t value = GetSegaCdToolingStatusByte(addr);
-			_openBus = value;
-			TrackDebugTranscriptEntry(addr, false, value, 0x02);
-			return value;
+			uint8_t effectiveValue = GetSegaCdToolingStatusByte(addr);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+			return effectiveValue;
 		}
 		if (Is32xSh2StatusAddress(addr)) {
-			uint8_t value = Get32xSh2StatusByte(addr);
-			_openBus = value;
-			TrackDebugTranscriptEntry(addr, false, value, 0x02);
-			return value;
+			uint8_t effectiveValue = Get32xSh2StatusByte(addr);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+			return effectiveValue;
 		}
 		if (Is32xCompositionStatusAddress(addr)) {
-			uint8_t value = Get32xCompositionStatusByte(addr);
-			_openBus = value;
-			TrackDebugTranscriptEntry(addr, false, value, 0x02);
-			return value;
+			uint8_t effectiveValue = Get32xCompositionStatusByte(addr);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+			return effectiveValue;
 		}
 		if (Is32xToolingStatusAddress(addr)) {
-			uint8_t value = Get32xToolingStatusByte(addr);
-			_openBus = value;
-			TrackDebugTranscriptEntry(addr, false, value, 0x02);
-			return value;
+			uint8_t effectiveValue = Get32xToolingStatusByte(addr);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+			return effectiveValue;
 		}
-		uint8_t value = bridgeSlot[bridgeIndex];
-		_openBus = value;
-		TrackDebugTranscriptEntry(addr, false, value, 0x02);
-		return value;
+		uint8_t effectiveValue = bridgeSlot[bridgeIndex];
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+		return effectiveValue;
 	}
 	uint8_t value = _openBus;
 	_openBus = value;
