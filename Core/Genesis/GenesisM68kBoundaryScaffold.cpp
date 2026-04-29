@@ -360,11 +360,6 @@ void GenesisPlatformBusStub::ApplyVdpControlWord(uint16_t controlWord) {
 				BeginDmaTransfer(_dmaMode, 16);
 			}
 		}
-	} else if ((controlWord & 0xC000) == 0x4000) {
-		// Model a deterministic status side effect for control-word command routing.
-		_vdpStatus |= VdpStatus::VInterrupt;
-		_vdpStatus &= (uint16_t)~VdpStatus::FifoEmpty;
-		_vdpStatus |= VdpStatus::DmaBusy;
 	}
 }
 
@@ -385,11 +380,13 @@ void GenesisPlatformBusStub::BeginDmaTransfer(GenesisVdpDmaMode mode, uint32_t t
 		_dmaTransferWords = 0;
 		_dmaActiveCyclesRemaining = 0;
 		_dmaRequested = false;
+		_vdpStatus &= (uint16_t)~VdpStatus::DmaBusy;
 		return;
 	}
 
 	_dmaMode = mode;
 	_dmaTransferWords = transferWords;
+	_vdpStatus |= VdpStatus::DmaBusy;
 	uint64_t totalCycles = (uint64_t)transferWords * 4ull;
 	if (totalCycles > std::numeric_limits<uint32_t>::max()) {
 		_dmaActiveCyclesRemaining = std::numeric_limits<uint32_t>::max();
@@ -417,6 +414,7 @@ uint32_t GenesisPlatformBusStub::ConsumeDmaContention(uint32_t requestedCycles) 
 
 	if (_dmaActiveCyclesRemaining == 0) {
 		_dmaMode = GenesisVdpDmaMode::None;
+		_vdpStatus &= (uint16_t)~VdpStatus::DmaBusy;
 	}
 
 	return penalty;
@@ -1204,8 +1202,6 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 				} else {
 					_vdpDataPortLatch = (uint16_t)((_vdpDataPortLatch & 0xFF00) | value);
 				}
-				_vdpStatus &= (uint16_t)~VdpStatus::DmaBusy;
-				_vdpStatus |= VdpStatus::FifoEmpty;
 			} else {
 				if ((address & 1) == 0) {
 					_vdpControlWordLatch = (uint16_t)((_vdpControlWordLatch & 0x00FF) | ((uint16_t)value << 8));

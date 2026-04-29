@@ -2025,8 +2025,10 @@ continue; keep going! as long as you can, complete several slices, like 10; cont
 
 continue; keep going! as long as you can, complete an endless series of slices, like 50; continue;
 
+continue working on slices, don't just do 3 at a time, work for the next hour or two, just work on a ton of  issues and 400 slices,; work and work and work;
 
-
+keep going! complete many slices in one batch; continue;
+--- queued/run 10x
 
 
 
