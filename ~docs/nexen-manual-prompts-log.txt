@@ -2041,6 +2041,7 @@ Hey, this work is just a bunch of variable renames and stupid crap! Focus on act
 
 continue working on real code changes;
 
+Add targeted scaffold tests for mapper save/load roundtrip and register window coverage.; Extend scaffold mapper handling for edge cartridge behaviors found in mapper-heavy boot flows.; Continue runtime/scaffold parity work around remaining Genesis bus corner cases that affect game startup.; continue;
 
 
 
