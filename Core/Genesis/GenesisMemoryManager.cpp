@@ -1449,43 +1449,50 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		uint32_t reg = addr & 0x1F;
 		switch (reg) {
 			case 0x03:
+				{
+					uint8_t ioWriteValue = value;
 				if (_controlManager) {
-					_controlManager->WriteDataPort(0, value);
+					_controlManager->WriteDataPort(0, ioWriteValue);
 					_ioState.DataPort[0] = _controlManager->GetDataPortWriteLatch(0);
 					_ioState.ThState[0] = _controlManager->GetThState(0);
 					_ioState.ThCount[0] = _controlManager->GetThCount(0);
 				} else {
-					_ioState.DataPort[0] = value;
+					_ioState.DataPort[0] = ioWriteValue;
 					_ioState.ThState[0] = 0;
 					_ioState.ThCount[0] = 0;
 				}
 				{
-					uint8_t effectiveValue = value;
+					uint8_t effectiveValue = ioWriteValue;
 					_openBus = effectiveValue;
 					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
 				}
 				return;
+				}
 			case 0x05:
+				{
+					uint8_t ioWriteValue = value;
 				if (_controlManager) {
-					_controlManager->WriteDataPort(1, value);
+					_controlManager->WriteDataPort(1, ioWriteValue);
 					_ioState.DataPort[1] = _controlManager->GetDataPortWriteLatch(1);
 					_ioState.ThState[1] = _controlManager->GetThState(1);
 					_ioState.ThCount[1] = _controlManager->GetThCount(1);
 				} else {
-					_ioState.DataPort[1] = value;
+					_ioState.DataPort[1] = ioWriteValue;
 					_ioState.ThState[1] = 0;
 					_ioState.ThCount[1] = 0;
 				}
 				{
-					uint8_t effectiveValue = value;
+					uint8_t effectiveValue = ioWriteValue;
 					_openBus = effectiveValue;
 					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
 				}
 				return;
+				}
 			case 0x09:
 				{
 					uint8_t effectiveValue = value;
-					_ioState.CtrlPort[0] = effectiveValue;
+					uint8_t controlValue = effectiveValue;
+					_ioState.CtrlPort[0] = controlValue;
 					_openBus = effectiveValue;
 					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
 				}
@@ -1493,7 +1500,8 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 			case 0x0B:
 				{
 					uint8_t effectiveValue = value;
-					_ioState.CtrlPort[1] = effectiveValue;
+					uint8_t controlValue = effectiveValue;
+					_ioState.CtrlPort[1] = controlValue;
 					_openBus = effectiveValue;
 					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
 				}
@@ -1501,16 +1509,17 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 			case 0x0D:
 				{
 					uint8_t effectiveValue = value;
-					_ioState.CtrlPort[2] = effectiveValue;
+					uint8_t controlValue = effectiveValue;
+					_ioState.CtrlPort[2] = controlValue;
 					_openBus = effectiveValue;
 					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
 				}
 				return;
 			default:
 				{
-					uint8_t effectiveValue = value;
-					_openBus = effectiveValue;
-					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
+					uint8_t ioWriteValue = value;
+					_openBus = ioWriteValue;
+					TrackDebugTranscriptEntry(addr, true, ioWriteValue, 0x10);
 				}
 				return;
 		}
@@ -1587,12 +1596,13 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 
 AddressInfo GenesisMemoryManager::GetAbsoluteAddress(uint32_t addr) {
 	addr &= 0xFFFFFF;
+	uint32_t effectiveAddress = addr;
 	AddressInfo info = {};
-	if (addr < _prgRomSize) {
-		info.Address = addr;
+	if (effectiveAddress < _prgRomSize) {
+		info.Address = effectiveAddress;
 		info.Type = MemoryType::GenesisPrgRom;
-	} else if (addr >= 0xFF0000) {
-		info.Address = addr & 0xFFFF;
+	} else if (effectiveAddress >= 0xFF0000) {
+		info.Address = effectiveAddress & 0xFFFF;
 		info.Type = MemoryType::GenesisWorkRam;
 	} else {
 		info.Address = -1;
@@ -1602,12 +1612,13 @@ AddressInfo GenesisMemoryManager::GetAbsoluteAddress(uint32_t addr) {
 }
 
 int32_t GenesisMemoryManager::GetRelativeAddress(AddressInfo& absAddress) {
+	int32_t relativeAddress = -1;
 	if (absAddress.Type == MemoryType::GenesisPrgRom) {
-		return absAddress.Address;
+		relativeAddress = absAddress.Address;
 	} else if (absAddress.Type == MemoryType::GenesisWorkRam) {
-		return 0xFF0000 + absAddress.Address;
+		relativeAddress = 0xFF0000 + absAddress.Address;
 	}
-	return -1;
+	return relativeAddress;
 }
 
 void GenesisMemoryManager::Serialize(Serializer& s) {
