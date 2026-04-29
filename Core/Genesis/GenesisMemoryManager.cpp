@@ -764,10 +764,10 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	addr &= 0xFFFFFE;
 	if (IsTmssAddress(addr)) [[unlikely]] {
-		uint16_t value = ((uint16_t)_segaCdBridgeA140[addr & 0x03] << 8)
+		uint16_t effectiveValue = ((uint16_t)_segaCdBridgeA140[addr & 0x03] << 8)
 			| (uint16_t)_segaCdBridgeA140[(addr + 1) & 0x03];
-		_openBus = (uint8_t)(value & 0xFF);
-		return value;
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return effectiveValue;
 	}
 	if (HasSaveRam() && addr >= _sramStart && addr <= _sramEnd) [[unlikely]] {
 		uint8_t hi = Read8(addr);
@@ -777,10 +777,12 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 
 	if (addr < 0x400000) [[likely]] {
 		if (addr + 1 < _prgRomSize) {
-			uint16_t value = ((uint16_t)_prgRom[addr] << 8) | _prgRom[addr + 1];
-			_emu->ProcessMemoryRead<CpuType::Genesis>(addr, _prgRom[addr], MemoryOperationType::Read);
-			_openBus = _prgRom[addr + 1];
-			return value;
+			uint8_t effectiveHighByte = _prgRom[addr];
+			uint8_t effectiveLowByte = _prgRom[addr + 1];
+			uint16_t effectiveValue = ((uint16_t)effectiveHighByte << 8) | effectiveLowByte;
+			_emu->ProcessMemoryRead<CpuType::Genesis>(addr, effectiveHighByte, MemoryOperationType::Read);
+			_openBus = effectiveLowByte;
+			return effectiveValue;
 		}
 		uint16_t value = (uint16_t)((_openBus << 8) | _openBus);
 		_openBus = (uint8_t)(value & 0xFF);
@@ -789,29 +791,33 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 
 	if (addr >= 0xFF0000) [[likely]] {
 		uint32_t offset = addr & 0xFFFF;
-		uint16_t value = ((uint16_t)_workRam[offset] << 8) | _workRam[(offset + 1) & 0xFFFF];
-		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, _workRam[offset], MemoryOperationType::Read);
-		_openBus = _workRam[(offset + 1) & 0xFFFF];
-		return value;
+		uint8_t effectiveHighByte = _workRam[offset];
+		uint8_t effectiveLowByte = _workRam[(offset + 1) & 0xFFFF];
+		uint16_t effectiveValue = ((uint16_t)effectiveHighByte << 8) | effectiveLowByte;
+		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, effectiveHighByte, MemoryOperationType::Read);
+		_openBus = effectiveLowByte;
+		return effectiveValue;
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		if (_tmssEnabled && !_tmssUnlocked) {
-			uint16_t value = (uint16_t)((_openBus << 8) | _openBus);
-			_openBus = (uint8_t)(value & 0xFF);
-			return value;
+			uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
+			_openBus = (uint8_t)(effectiveValue & 0xFF);
+			return effectiveValue;
 		}
-		uint16_t value = ReadVdpPort(addr);
-		_openBus = (uint8_t)(value & 0xFF);
-		return value;
+		uint16_t effectiveValue = ReadVdpPort(addr);
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return effectiveValue;
 	}
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
-			uint16_t value = (uint16_t)(((uint16_t)_z80Ram[z80Addr] << 8) | _z80Ram[(z80Addr + 1) & 0x1FFF]);
-			_openBus = (uint8_t)(value & 0xFF);
-			return value;
+			uint8_t effectiveHighByte = _z80Ram[z80Addr];
+			uint8_t effectiveLowByte = _z80Ram[(z80Addr + 1) & 0x1FFF];
+			uint16_t effectiveValue = (uint16_t)(((uint16_t)effectiveHighByte << 8) | effectiveLowByte);
+			_openBus = (uint8_t)(effectiveValue & 0xFF);
+			return effectiveValue;
 		}
 		uint16_t value = (uint16_t)((_openBus << 8) | _openBus);
 		_openBus = (uint8_t)(value & 0xFF);
@@ -819,17 +825,17 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	}
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
-		uint8_t hi = ReadIo(addr);
-		uint8_t lo = ReadIo(addr + 1);
-		return ((uint16_t)hi << 8) | lo;
+		uint8_t effectiveHi = ReadIo(addr);
+		uint8_t effectiveLo = ReadIo(addr + 1);
+		return ((uint16_t)effectiveHi << 8) | effectiveLo;
 	}
 
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
-		uint8_t hi = Read8(addr);
-		uint8_t lo = Read8(addr + 1);
-		return ((uint16_t)hi << 8) | lo;
+		uint8_t effectiveHi = Read8(addr);
+		uint8_t effectiveLo = Read8(addr + 1);
+		return ((uint16_t)effectiveHi << 8) | effectiveLo;
 	}
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
@@ -840,17 +846,17 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		} else {
 			value &= (uint16_t)~0x0100;
 		}
-		uint8_t highByte = (uint8_t)(value >> 8);
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
 		_openBus = (uint8_t)(value & 0xFF);
-		TrackSegaCdHandshakeTranscript(addr, false, highByte);
+		TrackSegaCdHandshakeTranscript(addr, false, effectiveHighByte);
 		return value;
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
 		uint16_t value = (uint16_t)((_openBus << 8) | _openBus);
-		uint8_t highByte = (uint8_t)(value >> 8);
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
 		_openBus = (uint8_t)(value & 0xFF);
-		TrackSegaCdHandshakeTranscript(addr, false, highByte);
+		TrackSegaCdHandshakeTranscript(addr, false, effectiveHighByte);
 		return value;
 	}
 
