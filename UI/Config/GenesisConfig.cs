@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using Nexen.Interop;
 using ReactiveUI.SourceGenerators;
@@ -19,6 +19,7 @@ public sealed partial class GenesisConfig : BaseConfig<GenesisConfig> {
 	[Reactive] public partial bool RemoveSpriteLimit { get; set; } = false;
 	[Reactive] public partial bool DisableSprites { get; set; } = false;
 	[Reactive] public partial bool DisableBackground { get; set; } = false;
+	[Reactive] public partial bool EnableTmss { get; set; } = false;
 
 	[Reactive] public partial OverscanConfig Overscan { get; set; } = new();
 
@@ -35,6 +36,7 @@ public sealed partial class GenesisConfig : BaseConfig<GenesisConfig> {
 			RemoveSpriteLimit = RemoveSpriteLimit,
 			DisableSprites = DisableSprites,
 			DisableBackground = DisableBackground,
+			EnableTmss = EnableTmss,
 
 			Overscan = Overscan.ToInterop(),
 		});
@@ -57,6 +59,7 @@ public struct InteropGenesisConfig {
 	[MarshalAs(UnmanagedType.I1)] public bool RemoveSpriteLimit;
 	[MarshalAs(UnmanagedType.I1)] public bool DisableSprites;
 	[MarshalAs(UnmanagedType.I1)] public bool DisableBackground;
+	[MarshalAs(UnmanagedType.I1)] public bool EnableTmss;
 
 	public InteropOverscanDimensions Overscan;
 }

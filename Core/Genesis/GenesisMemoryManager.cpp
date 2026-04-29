@@ -6,6 +6,7 @@
 #include "Genesis/GenesisControlManager.h"
 #include "Genesis/GenesisPsg.h"
 #include "Shared/Emulator.h"
+#include "Shared/EmuSettings.h"
 #include "Shared/BatteryManager.h"
 #include "Utilities/Serializer.h"
 
@@ -76,7 +77,7 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 
 	_z80BusRequest = false;
 	_z80Reset = true;
-	_tmssEnabled = true;
+	_tmssEnabled = _emu->GetSettings()->GetGenesisConfig().EnableTmss;
 	_tmssUnlocked = false;
 	_segaCdSubCpuRunning = false;
 	_segaCdSubCpuBusRequest = false;

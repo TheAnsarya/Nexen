@@ -778,6 +778,7 @@ struct GenesisConfig {
 	bool RemoveSpriteLimit = false;
 	bool DisableSprites = false;
 	bool DisableBackground = false;
+	bool EnableTmss = false;
 
 	OverscanDimensions Overscan = {};
 };

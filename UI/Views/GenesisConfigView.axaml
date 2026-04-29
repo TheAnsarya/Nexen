@@ -32,6 +32,10 @@
 		<TabItem Header="{l:Translate tpgEmulation}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
+					<c:OptionSection Header="TMSS" Margin="0">
+						<CheckBox IsChecked="{Binding Config.EnableTmss}" Content="Enable TMSS startup lock" />
+					</c:OptionSection>
+
 					<c:OptionSection Header="{l:Translate lblDeveloperSettings}" Margin="0">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="{l:Translate lblRamPowerOnState}" />
