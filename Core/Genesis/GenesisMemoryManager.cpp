@@ -1068,6 +1068,7 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 		case 0x0B: _ioState.CtrlPort[1] = value; break;
 		case 0x0D: _ioState.CtrlPort[2] = value; break;
 	}
+	_openBus = value;
 }
 
 uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
@@ -1089,10 +1090,16 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 				value = BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
 				break;
 			case 0x03:
-				value = _controlManager ? _controlManager->ReadDataPort(0) : 0x7F;
+				_ioState.DataPort[0] = _controlManager ? _controlManager->ReadDataPort(0) : 0x7F;
+				_ioState.ThState[0] = _controlManager ? _controlManager->GetThState(0) : 0;
+				_ioState.ThCount[0] = _controlManager ? _controlManager->GetThCount(0) : 0;
+				value = _ioState.DataPort[0];
 				break;
 			case 0x05:
-				value = _controlManager ? _controlManager->ReadDataPort(1) : 0x7F;
+				_ioState.DataPort[1] = _controlManager ? _controlManager->ReadDataPort(1) : 0x7F;
+				_ioState.ThState[1] = _controlManager ? _controlManager->GetThState(1) : 0;
+				_ioState.ThCount[1] = _controlManager ? _controlManager->GetThCount(1) : 0;
+				value = _ioState.DataPort[1];
 				break;
 			case 0x07:
 				value = 0xFF;
@@ -1216,28 +1223,48 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 			case 0x03:
 				if (_controlManager) {
 					_controlManager->WriteDataPort(0, value);
+					_ioState.DataPort[0] = _controlManager->GetDataPortWriteLatch(0);
+					_ioState.ThState[0] = _controlManager->GetThState(0);
+					_ioState.ThCount[0] = _controlManager->GetThCount(0);
+				} else {
+					_ioState.DataPort[0] = value;
+					_ioState.ThState[0] = 0;
+					_ioState.ThCount[0] = 0;
 				}
+				_openBus = value;
 				TrackDebugTranscriptEntry(addr, true, value, 0x10);
 				return;
 			case 0x05:
 				if (_controlManager) {
 					_controlManager->WriteDataPort(1, value);
+					_ioState.DataPort[1] = _controlManager->GetDataPortWriteLatch(1);
+					_ioState.ThState[1] = _controlManager->GetThState(1);
+					_ioState.ThCount[1] = _controlManager->GetThCount(1);
+				} else {
+					_ioState.DataPort[1] = value;
+					_ioState.ThState[1] = 0;
+					_ioState.ThCount[1] = 0;
 				}
+				_openBus = value;
 				TrackDebugTranscriptEntry(addr, true, value, 0x10);
 				return;
 			case 0x09:
 				_ioState.CtrlPort[0] = value;
+				_openBus = value;
 				TrackDebugTranscriptEntry(addr, true, value, 0x10);
 				return;
 			case 0x0B:
 				_ioState.CtrlPort[1] = value;
+				_openBus = value;
 				TrackDebugTranscriptEntry(addr, true, value, 0x10);
 				return;
 			case 0x0D:
 				_ioState.CtrlPort[2] = value;
+				_openBus = value;
 				TrackDebugTranscriptEntry(addr, true, value, 0x10);
 				return;
 			default:
+				_openBus = value;
 				TrackDebugTranscriptEntry(addr, true, value, 0x10);
 				return;
 		}
