@@ -1243,10 +1243,13 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	}
 	if (IsZ80BusReqAddress(addr)) {
 		if (addr & 0x01) {
-			TrackDebugTranscriptEntry(addr, false, _openBus, 0x82);
-			return _openBus;
+			uint8_t value = _openBus;
+			_openBus = value;
+			TrackDebugTranscriptEntry(addr, false, value, 0x82);
+			return value;
 		}
-		uint8_t value = (_openBus & 0xFE) | GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
+		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
+		uint8_t value = (uint8_t)((_openBus & 0xFE) | ackStatus);
 		_openBus = value;
 		TrackDebugTranscriptEntry(addr, false, value, 0x82);
 		return value;
@@ -1353,14 +1356,16 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		return;
 	}
 	if (addr < _prgRomSize) {
-		_openBus = value;
-		TrackDebugTranscriptEntry(addr, true, value, 0x01);
+		uint8_t effectiveValue = value;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x01);
 		return;
 	}
 	if (addr >= 0xFF0000) {
-		_workRam[addr & 0xFFFF] = value;
-		_openBus = value;
-		TrackDebugTranscriptEntry(addr, true, value, 0x04);
+		uint8_t effectiveValue = value;
+		_workRam[addr & 0xFFFF] = effectiveValue;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x04);
 		return;
 	}
 	if (addr >= 0xA10000 && addr <= 0xA1001F) {
@@ -1377,8 +1382,11 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 					_ioState.ThState[0] = 0;
 					_ioState.ThCount[0] = 0;
 				}
-				_openBus = value;
-				TrackDebugTranscriptEntry(addr, true, value, 0x10);
+				{
+					uint8_t effectiveValue = value;
+					_openBus = effectiveValue;
+					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
+				}
 				return;
 			case 0x05:
 				if (_controlManager) {
@@ -1391,27 +1399,42 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 					_ioState.ThState[1] = 0;
 					_ioState.ThCount[1] = 0;
 				}
-				_openBus = value;
-				TrackDebugTranscriptEntry(addr, true, value, 0x10);
+				{
+					uint8_t effectiveValue = value;
+					_openBus = effectiveValue;
+					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
+				}
 				return;
 			case 0x09:
-				_ioState.CtrlPort[0] = value;
-				_openBus = value;
-				TrackDebugTranscriptEntry(addr, true, value, 0x10);
+				{
+					uint8_t effectiveValue = value;
+					_ioState.CtrlPort[0] = effectiveValue;
+					_openBus = effectiveValue;
+					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
+				}
 				return;
 			case 0x0B:
-				_ioState.CtrlPort[1] = value;
-				_openBus = value;
-				TrackDebugTranscriptEntry(addr, true, value, 0x10);
+				{
+					uint8_t effectiveValue = value;
+					_ioState.CtrlPort[1] = effectiveValue;
+					_openBus = effectiveValue;
+					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
+				}
 				return;
 			case 0x0D:
-				_ioState.CtrlPort[2] = value;
-				_openBus = value;
-				TrackDebugTranscriptEntry(addr, true, value, 0x10);
+				{
+					uint8_t effectiveValue = value;
+					_ioState.CtrlPort[2] = effectiveValue;
+					_openBus = effectiveValue;
+					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
+				}
 				return;
 			default:
-				_openBus = value;
-				TrackDebugTranscriptEntry(addr, true, value, 0x10);
+				{
+					uint8_t effectiveValue = value;
+					_openBus = effectiveValue;
+					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
+				}
 				return;
 		}
 	}
