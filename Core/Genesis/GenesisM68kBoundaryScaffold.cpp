@@ -414,6 +414,8 @@ uint32_t GenesisPlatformBusStub::ConsumeDmaContention(uint32_t requestedCycles) 
 
 	if (_dmaActiveCyclesRemaining == 0) {
 		_dmaMode = GenesisVdpDmaMode::None;
+		_dmaTransferWords = 0;
+		_dmaRequested = false;
 		_vdpStatus &= (uint16_t)~VdpStatus::DmaBusy;
 	}
 
@@ -536,7 +538,7 @@ void GenesisPlatformBusStub::Reset() {
 	std::fill(_expansionIo.begin(), _expansionIo.end(), 0);
 	std::fill(_vdpIo.begin(), _vdpIo.end(), 0);
 	std::fill(_vdpRegisters.begin(), _vdpRegisters.end(), 0);
-	_vdpStatus = 0x0200;
+	_vdpStatus = VdpStatus::FifoEmpty;
 	_vdpDataPortLatch = 0;
 	_vdpControlWordLatch = 0;
 	_planeASample = 0;
