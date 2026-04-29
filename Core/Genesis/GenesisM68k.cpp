@@ -516,8 +516,16 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 			break;
 		}
 
-		case 0xa: // Line-A (unimplemented)
-		case 0xf: // Line-F (unimplemented)
+		case 0xa: // Line-A exception
+			_state.PC -= 2;
+			RaiseException(10);
+			break;
+
+		case 0xf: // Line-F exception
+			_state.PC -= 2;
+			RaiseException(11);
+			break;
+
 		default:
 			Op_ILLEGAL(opcode);
 			break;

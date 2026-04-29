@@ -29,11 +29,15 @@ void GenesisVdp::Init(Emulator* emu, GenesisConsole* console, GenesisM68k* cpu, 
 
 void GenesisVdp::Reset(bool hardReset) {
 	memset(_state.Registers, 0, sizeof(_state.Registers));
+	bool palMode = (_state.StatusRegister & VdpStatus::PalMode) != 0;
 	_state.Registers[0] = 0x04; // Mode register 1
 	_state.Registers[1] = 0x04; // Mode register 2 (display off)
 	_state.Registers[10] = 0xFF; // HBlank counter
 	_state.HIntCounter = _state.Registers[10];
-	_state.StatusRegister &= ~(VdpStatus::VBlankFlag | VdpStatus::VIntPending | VdpStatus::HIntPending);
+	_state.StatusRegister = VdpStatus::FifoEmpty | VdpStatus::FifoFull;
+	if (palMode) {
+		_state.StatusRegister |= VdpStatus::PalMode;
+	}
 	_state.DmaActive = false;
 	_state.DmaMode = 0;
 	_autoIncrement = 2;
@@ -544,6 +548,7 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_state.HIntCounter);
 	SV(_state.FrameCount);
 	SV(_state.DmaActive);
+	SV(_state.DmaMode);
 	for (int i = 0; i < 24; i++) {
 		SVI(_state.Registers[i]);
 	}
