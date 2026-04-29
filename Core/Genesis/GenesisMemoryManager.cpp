@@ -787,9 +787,9 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 			_openBus = effectiveLowByte;
 			return effectiveValue;
 		}
-		uint16_t value = (uint16_t)((_openBus << 8) | _openBus);
-		_openBus = (uint8_t)(value & 0xFF);
-		return value;
+		uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return effectiveValue;
 	}
 
 	if (addr >= 0xFF0000) [[likely]] {
@@ -822,9 +822,9 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 			_openBus = (uint8_t)(effectiveValue & 0xFF);
 			return effectiveValue;
 		}
-		uint16_t value = (uint16_t)((_openBus << 8) | _openBus);
-		_openBus = (uint8_t)(value & 0xFF);
-		return value;
+		uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return effectiveValue;
 	}
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
@@ -842,30 +842,30 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	}
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
-		uint8_t status = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
-		uint16_t value = (uint16_t)((_openBus << 8) | _openBus);
-		if (status) {
-			value |= 0x0100;
+		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
+		uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
+		if (ackStatus) {
+			effectiveValue |= 0x0100;
 		} else {
-			value &= (uint16_t)~0x0100;
+			effectiveValue &= (uint16_t)~0x0100;
 		}
-		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
-		_openBus = (uint8_t)(value & 0xFF);
+		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
 		TrackSegaCdHandshakeTranscript(addr, false, effectiveHighByte);
-		return value;
+		return effectiveValue;
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
-		uint16_t value = (uint16_t)((_openBus << 8) | _openBus);
-		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
-		_openBus = (uint8_t)(value & 0xFF);
+		uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
+		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
 		TrackSegaCdHandshakeTranscript(addr, false, effectiveHighByte);
-		return value;
+		return effectiveValue;
 	}
 
-	uint16_t value = (uint16_t)((_openBus << 8) | _openBus);
-	_openBus = (uint8_t)(value & 0xFF);
-	return value;
+	uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
+	_openBus = (uint8_t)(effectiveValue & 0xFF);
+	return effectiveValue;
 }
 
 void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
@@ -1122,9 +1122,9 @@ uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
 	switch (reg) {
 		case 0x01:
 			{
-				uint8_t value = BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
-				_openBus = value;
-				return value;
+				uint8_t effectiveValue = BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
+				_openBus = effectiveValue;
+				return effectiveValue;
 			}
 		case 0x03:
 			_ioState.DataPort[0] = _controlManager ? _controlManager->ReadDataPort(0) : 0x7F; // Controller 1 data
@@ -1153,27 +1153,27 @@ uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
 			}
 		case 0x09:
 			{
-				uint8_t value = _ioState.CtrlPort[0]; // Controller 1 ctrl
-				_openBus = value;
-				return value;
+				uint8_t effectiveValue = _ioState.CtrlPort[0]; // Controller 1 ctrl
+				_openBus = effectiveValue;
+				return effectiveValue;
 			}
 		case 0x0B:
 			{
-				uint8_t value = _ioState.CtrlPort[1]; // Controller 2 ctrl
-				_openBus = value;
-				return value;
+				uint8_t effectiveValue = _ioState.CtrlPort[1]; // Controller 2 ctrl
+				_openBus = effectiveValue;
+				return effectiveValue;
 			}
 		case 0x0D:
 			{
-				uint8_t value = _ioState.CtrlPort[2]; // EXT ctrl
-				_openBus = value;
-				return value;
+				uint8_t effectiveValue = _ioState.CtrlPort[2]; // EXT ctrl
+				_openBus = effectiveValue;
+				return effectiveValue;
 			}
 		default:
 			{
-				uint8_t value = _openBus;
-				_openBus = value;
-				return value;
+				uint8_t effectiveValue = _openBus;
+				_openBus = effectiveValue;
+				return effectiveValue;
 			}
 	}
 }
