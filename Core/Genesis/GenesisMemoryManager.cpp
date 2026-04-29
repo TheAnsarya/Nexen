@@ -1448,9 +1448,10 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 
 void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
-	if (IsTmssAddress(addr)) {
+	uint32_t effectiveAddr = addr;
+	if (IsTmssAddress(effectiveAddr)) {
 		uint8_t effectiveValue = value;
-		uint32_t slot = addr & 0x03;
+		uint32_t slot = effectiveAddr & 0x03;
 		_segaCdBridgeA140[slot] = effectiveValue;
 		_openBus = effectiveValue;
 		_tmssUnlocked = _segaCdBridgeA140[0] == 'S'
@@ -1459,24 +1460,24 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 			&& _segaCdBridgeA140[3] == 'A';
 		_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
 		_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
-		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x02);
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x02);
 		return;
 	}
-	if (addr < _prgRomSize) {
+	if (effectiveAddr < _prgRomSize) {
 		uint8_t effectiveValue = value;
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x01);
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x01);
 		return;
 	}
-	if (addr >= 0xFF0000) {
+	if (effectiveAddr >= 0xFF0000) {
 		uint8_t effectiveValue = value;
-		_workRam[addr & 0xFFFF] = effectiveValue;
+		_workRam[effectiveAddr & 0xFFFF] = effectiveValue;
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x04);
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x04);
 		return;
 	}
-	if (addr >= 0xA10000 && addr <= 0xA1001F) {
-		uint32_t reg = addr & 0x1F;
+	if (effectiveAddr >= 0xA10000 && effectiveAddr <= 0xA1001F) {
+		uint32_t reg = effectiveAddr & 0x1F;
 		switch (reg) {
 			case 0x03:
 				{
@@ -1494,7 +1495,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 				{
 					uint8_t effectiveValue = ioWriteValue;
 					_openBus = effectiveValue;
-					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
+					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
 				}
 				return;
 				}
@@ -1514,7 +1515,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 				{
 					uint8_t effectiveValue = ioWriteValue;
 					_openBus = effectiveValue;
-					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
+					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
 				}
 				return;
 				}
@@ -1524,7 +1525,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 					uint8_t controlValue = effectiveValue;
 					_ioState.CtrlPort[0] = controlValue;
 					_openBus = effectiveValue;
-					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
+					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
 				}
 				return;
 			case 0x0B:
@@ -1533,7 +1534,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 					uint8_t controlValue = effectiveValue;
 					_ioState.CtrlPort[1] = controlValue;
 					_openBus = effectiveValue;
-					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
+					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
 				}
 				return;
 			case 0x0D:
@@ -1542,14 +1543,14 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 					uint8_t controlValue = effectiveValue;
 					_ioState.CtrlPort[2] = controlValue;
 					_openBus = effectiveValue;
-					TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x10);
+					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
 				}
 				return;
 			default:
 				{
 					uint8_t ioWriteValue = value;
 					_openBus = ioWriteValue;
-					TrackDebugTranscriptEntry(addr, true, ioWriteValue, 0x10);
+					TrackDebugTranscriptEntry(effectiveAddr, true, ioWriteValue, 0x10);
 				}
 				return;
 		}
