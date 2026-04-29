@@ -23,8 +23,8 @@ Percentages are execution estimates based on current test coverage, implemented 
 | Audio (YM2612 + SN76489 base path) | 58% | Audio timing scaffold and mixed-audio test lanes available | Game-facing audio correctness and latency/perf tuning on base console path |
 | Controller/input core path | 70% | Input/tooling checkpoints and controller matrix decomposition work available | Base-console UX and per-device mapping closure for week target |
 | Save state determinism (base path) | 68% | Deterministic replay checkpoints across Genesis test scaffolds | Real gameplay save/load reliability checks for target games |
-| Debugger/readout reliability (base path) | 74% | Transcript lane parity and debug checkpoint determinism packs | Register/event confidence pass for game-debug workflows |
-| UI game-playability workflow | 57% | Existing settings/input/TAS UI foundations and parity checklists, Genesis region menu wiring and apply path implemented | End-to-end base-console launch/config/play loop polish for Sonic/Jurassic |
+| Debugger/readout reliability (base path) | 75% | Transcript lane parity and debug checkpoint determinism packs, TMSS status exposed in Genesis debugger viewer | Register/event confidence pass for game-debug workflows |
+| UI game-playability workflow | 58% | Existing settings/input/TAS UI foundations and parity checklists, Genesis region menu wiring/apply path and port2 default input initialization implemented | End-to-end base-console launch/config/play loop polish for Sonic/Jurassic |
 | Performance headroom (base path) | 52% | Performance gate scaffolds present in Genesis tests | Hot-path profiling and optimization for reliable full-speed gameplay on target hardware |
 
 ## Week Target Definition
@@ -71,6 +71,9 @@ By end of week, all items below should be true for base Genesis path:
 - Startup VBlank/HBlank interval tolerance checkpoint slice: #1710
 - Startup VDP status-transition checkpoint slice: #1711
 - Genesis region override emulator+UI wiring slice: #1712
+- TMSS runtime gating + debugger status slice: #1713
+- SMD deinterleave payload-tail fix slice: #1714
+- Genesis port2 default mapping initialization slice: #1715
 - Immediate implementation backlog buckets:
 	- #1696, #1697, #1700, #1701, #1702
 
