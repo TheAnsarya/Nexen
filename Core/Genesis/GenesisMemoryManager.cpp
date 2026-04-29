@@ -1011,13 +1011,21 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 uint16_t GenesisMemoryManager::ReadVdpPort(uint32_t addr) {
 	uint32_t port = addr & 0x1F;
 	if (port < 0x04) {
-		return _vdp->ReadDataPort();
+		uint16_t value = _vdp->ReadDataPort();
+		_openBus = (uint8_t)(value & 0xFF);
+		return value;
 	} else if (port < 0x08) {
-		return _vdp->ReadControlPort();
+		uint16_t value = _vdp->ReadControlPort();
+		_openBus = (uint8_t)(value & 0xFF);
+		return value;
 	} else if (port < 0x10) {
-		return _vdp->ReadHVCounter();
+		uint16_t value = _vdp->ReadHVCounter();
+		_openBus = (uint8_t)(value & 0xFF);
+		return value;
 	}
-	return _openBus;
+	uint16_t value = _openBus;
+	_openBus = (uint8_t)(value & 0xFF);
+	return value;
 }
 
 void GenesisMemoryManager::WriteVdpPort(uint32_t addr, uint16_t value) {
@@ -1032,6 +1040,7 @@ void GenesisMemoryManager::WriteVdpPort(uint32_t addr, uint16_t value) {
 			_psg->Write((uint8_t)(value >> 8));
 		}
 	}
+	_openBus = (uint8_t)(value & 0xFF);
 }
 
 // I/O registers ($A10001-$A1001F)
