@@ -18,13 +18,13 @@ Percentages are execution estimates based on current test coverage, implemented 
 | ---------- | ---------- | ---------- | ---------- |
 | 68000 CPU execution baseline | 79% | Boundary/scaffold harnesses, deterministic compatibility digest path, checkpoint infrastructure, synthesized base-core compatibility gate | ISA edge-case correctness expansion, cycle-sensitive corner validation against hardware-focused corpus |
 | Z80 handoff + bus arbitration (base path) | 72% | Handshake/read-write parity tests and transcript determinism gates | Additional real-game transition coverage and timing-sensitive conflict validation |
-| Memory map + mapper edge handling | 77% | Mapper edge checkpoints and ownership gates in compatibility harness, base-core compatibility checkpoint synthesis | Mapper-specific behavioral deltas for target-game bank behaviors |
+| Memory map + mapper edge handling | 79% | Mapper edge checkpoints and ownership gates in compatibility harness, base-core compatibility checkpoint synthesis, TMSS runtime gating/readback and region-aware version register behavior | Mapper-specific behavioral deltas for target-game bank behaviors |
 | VDP rendering + DMA core path | 69% | VDP/DMA scaffolding and regression test packs exist, startup VDP timing stability plus startup interrupt cadence, interval-tolerance, and VDP status-transition checkpoints added for Sonic/Jurassic startup paths | Pixel-accurate behavior and game-facing timing correctness for Sonic/Jurassic scenes |
 | Audio (YM2612 + SN76489 base path) | 58% | Audio timing scaffold and mixed-audio test lanes available | Game-facing audio correctness and latency/perf tuning on base console path |
 | Controller/input core path | 70% | Input/tooling checkpoints and controller matrix decomposition work available | Base-console UX and per-device mapping closure for week target |
 | Save state determinism (base path) | 68% | Deterministic replay checkpoints across Genesis test scaffolds | Real gameplay save/load reliability checks for target games |
 | Debugger/readout reliability (base path) | 75% | Transcript lane parity and debug checkpoint determinism packs, TMSS status exposed in Genesis debugger viewer | Register/event confidence pass for game-debug workflows |
-| UI game-playability workflow | 58% | Existing settings/input/TAS UI foundations and parity checklists, Genesis region menu wiring/apply path and port2 default input initialization implemented | End-to-end base-console launch/config/play loop polish for Sonic/Jurassic |
+| UI game-playability workflow | 59% | Existing settings/input/TAS UI foundations and parity checklists, Genesis region menu wiring/apply path, port2 default input initialization, and configurable TMSS toggle implemented | End-to-end base-console launch/config/play loop polish for Sonic/Jurassic |
 | Performance headroom (base path) | 52% | Performance gate scaffolds present in Genesis tests | Hot-path profiling and optimization for reliable full-speed gameplay on target hardware |
 
 ## Week Target Definition
@@ -74,6 +74,9 @@ By end of week, all items below should be true for base Genesis path:
 - TMSS runtime gating + debugger status slice: #1713
 - SMD deinterleave payload-tail fix slice: #1714
 - Genesis port2 default mapping initialization slice: #1715
+- Configurable Genesis TMSS toggle (core+UI): #1716
+- Region-aware Genesis version register runtime behavior: #1717
+- TMSS latched-byte readback implementation: #1718
 - Immediate implementation backlog buckets:
 	- #1696, #1697, #1700, #1701, #1702
 
