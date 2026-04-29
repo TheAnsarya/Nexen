@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Debugger/Debugger.h"
 #include "Debugger/DebugTypes.h"
 #include "Debugger/DisassemblyInfo.h"
@@ -50,6 +50,8 @@
 #include "Atari2600/Debugger/Atari2600Debugger.h"
 #include "ChannelF/ChannelFTypes.h"
 #include "ChannelF/Debugger/ChannelFDebugger.h"
+#include "Genesis/GenesisTypes.h"
+#include "Genesis/Debugger/GenesisDebugger.h"
 #include "Shared/BaseControlManager.h"
 #include "Shared/EmuSettings.h"
 #include "Shared/Audio/SoundMixer.h"
@@ -143,6 +145,9 @@ Debugger::Debugger(Emulator* emu, IConsole* console) {
 				break;
 			case CpuType::ChannelF:
 				debugger = std::make_unique<ChannelFDebugger>(this);
+				break;
+			case CpuType::Genesis:
+				debugger = std::make_unique<GenesisDebugger>(this);
 				break;
 			default:
 				[[unlikely]] throw std::runtime_error("Unsupported CPU type");
@@ -246,6 +251,8 @@ uint64_t Debugger::GetCpuCycleCount() {
 			return GetDebugger<type, Atari2600Debugger>()->GetCpuCycleCount();
 		case CpuType::ChannelF:
 			return GetDebugger<type, ChannelFDebugger>()->GetCpuCycleCount();
+		case CpuType::Genesis:
+			return GetDebugger<type, GenesisDebugger>()->GetCpuCycleCount();
 		default:
 			return 0;
 			break;
@@ -329,6 +336,9 @@ void Debugger::ProcessInstruction() {
 		case CpuType::ChannelF:
 			GetDebugger<type, ChannelFDebugger>()->ProcessInstruction();
 			break;
+		case CpuType::Genesis:
+			GetDebugger<type, GenesisDebugger>()->ProcessInstruction();
+			break;
 	}
 
 	debugger->AllowChangeProgramCounter = false;
@@ -399,6 +409,9 @@ void Debugger::ProcessMemoryRead(uint32_t addr, T& value, MemoryOperationType op
 		case CpuType::ChannelF:
 			GetDebugger<CpuType::ChannelF, ChannelFDebugger>()->ProcessRead(addr, value, opType);
 			break;
+		case CpuType::Genesis:
+			GetDebugger<CpuType::Genesis, GenesisDebugger>()->ProcessRead(addr, value, opType);
+			break;
 	}
 
 	if (_scriptManager->HasCpuMemoryCallbacks()) {
@@ -463,6 +476,9 @@ bool Debugger::ProcessMemoryWrite(uint32_t addr, T& value, MemoryOperationType o
 			break;
 		case CpuType::ChannelF:
 			GetDebugger<CpuType::ChannelF, ChannelFDebugger>()->ProcessWrite(addr, value, opType);
+			break;
+		case CpuType::Genesis:
+			GetDebugger<CpuType::Genesis, GenesisDebugger>()->ProcessWrite(addr, value, opType);
 			break;
 	}
 
@@ -1131,6 +1147,9 @@ void Debugger::GetCpuState(BaseState& dstState, CpuType cpuType) {
 		case CpuType::ChannelF:
 			memcpy(&dstState, &srcState, sizeof(ChannelFCpuState));
 			break;
+		case CpuType::Genesis:
+			memcpy(&dstState, &srcState, sizeof(GenesisM68kState));
+			break;
 	}
 }
 
@@ -1185,6 +1204,9 @@ void Debugger::SetCpuState(BaseState& srcState, CpuType cpuType) {
 			break;
 		case CpuType::ChannelF:
 			memcpy(&dstState, &srcState, sizeof(ChannelFCpuState));
+			break;
+		case CpuType::Genesis:
+			memcpy(&dstState, &srcState, sizeof(GenesisM68kState));
 			break;
 	}
 }
@@ -1532,6 +1554,7 @@ template void Debugger::ProcessInstruction<CpuType::Sms>();
 template void Debugger::ProcessInstruction<CpuType::Gba>();
 template void Debugger::ProcessInstruction<CpuType::Ws>();
 template void Debugger::ProcessInstruction<CpuType::Lynx>();
+template void Debugger::ProcessInstruction<CpuType::Genesis>();
 template void Debugger::ProcessInstruction<CpuType::Atari2600>();
 template void Debugger::ProcessInstruction<CpuType::ChannelF>();
 

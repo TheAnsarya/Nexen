@@ -132,7 +132,12 @@ private:
 
 	// ===== Instruction execution =====
 	void ExecuteInstruction(uint16_t opcode);
-	__forceinline void AddCycles(uint32_t cycles) { _state.CycleCount += cycles; }
+	__forceinline void AddCycles(uint32_t cycles) {
+		_state.CycleCount += cycles;
+		if (_memoryManager) {
+			_memoryManager->Exec(cycles);
+		}
+	}
 
 	// --- Data Movement ---
 	void Op_MOVE(uint16_t opcode);

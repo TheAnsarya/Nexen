@@ -1145,8 +1145,8 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 			new DebugMenuAction() {
 				ActionType = ActionType.OpenDebugger,
 				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.OpenDebugger),
-				IsEnabled = () => EmulatorState.Instance.IsRomLoaded && IsMainDebuggerAvailable(MainWindow.RomInfo.ConsoleType),
-				OnClick = OpenMainDebuggerSafely
+				IsEnabled = () => EmulatorState.Instance.IsRomLoaded,
+				OnClick = () => DebuggerWindow.GetOrOpenWindow(MainWindow.RomInfo.ConsoleType.GetMainCpuType())
 			},
 			new DebugMenuAction() {
 				ActionType = ActionType.OpenSpcDebugger,
@@ -1368,27 +1368,6 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 		];
 	}
 
-	private static bool IsMainDebuggerAvailable(ConsoleType consoleType) {
-		return consoleType switch {
-			// Genesis debugger backend is not wired in this build yet.
-			ConsoleType.Genesis => false,
-			_ => true
-		};
-	}
-
-	private void OpenMainDebuggerSafely() {
-		if (!EmulatorState.Instance.IsRomLoaded) {
-			return;
-		}
-
-		ConsoleType consoleType = MainWindow.RomInfo.ConsoleType;
-		if (!IsMainDebuggerAvailable(consoleType)) {
-			DisplayMessageHelper.DisplayMessage("Debugger", "Debugger is not yet available for Sega Genesis in this build.");
-			return;
-		}
-
-		DebuggerWindow.GetOrOpenWindow(consoleType.GetMainCpuType());
-	}
 
 	public void CheckForUpdate(Window mainWindow, bool silent) {
 		Task.Run(async () => {
