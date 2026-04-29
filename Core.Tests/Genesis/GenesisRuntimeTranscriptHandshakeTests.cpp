@@ -1631,6 +1631,88 @@ namespace {
 		EXPECT_EQ(memoryManager.Read16(0xA11100) & 0x0100u, 0x0000u);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA111Read16ExposesBusAckInBit8) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		// Bus free: both byte lanes expose status bit.
+		memoryManager.Write8(0xA11180, 0x00);
+		EXPECT_EQ(memoryManager.Read8(0xA11180), 0x01u);
+		EXPECT_EQ(memoryManager.Read8(0xA11181), 0x00u);
+		EXPECT_EQ(memoryManager.Read16(0xA11180) & 0x0100u, 0x0100u);
+
+		// Bus requested while reset is asserted: BUSACK remains set.
+		memoryManager.Write8(0xA11180, 0x01);
+		EXPECT_EQ(memoryManager.Read8(0xA11180), 0x01u);
+		EXPECT_EQ(memoryManager.Read8(0xA11181), 0x00u);
+		EXPECT_EQ(memoryManager.Read16(0xA11180) & 0x0100u, 0x0100u);
+
+		// Releasing reset allows BUSREQ to clear BUSACK.
+		memoryManager.Write8(0xA11280, 0x01);
+		EXPECT_EQ(memoryManager.Read8(0xA11180), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA11181), 0x00u);
+		EXPECT_EQ(memoryManager.Read16(0xA11180) & 0x0100u, 0x0000u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeA111Read16ExposesBusAckInBit8) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		auto debugRead16 = [&memoryManager](uint32_t addr) {
+			return ((uint16_t)memoryManager.DebugRead8(addr & 0xFFFFFE) << 8)
+				| memoryManager.DebugRead8((addr & 0xFFFFFE) + 1);
+		};
+
+		// Bus free: both byte lanes expose status bit.
+		memoryManager.DebugWrite8(0xA11100, 0x00);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11100), 0x01u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11101), 0x00u);
+		EXPECT_EQ(debugRead16(0xA11100) & 0x0100u, 0x0100u);
+
+		// Bus requested while reset is asserted: BUSACK remains set.
+		memoryManager.DebugWrite8(0xA11100, 0x01);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11100), 0x01u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11101), 0x00u);
+		EXPECT_EQ(debugRead16(0xA11100) & 0x0100u, 0x0100u);
+
+		// Releasing reset allows BUSREQ to clear BUSACK.
+		memoryManager.DebugWrite8(0xA11200, 0x01);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11100), 0x00u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11101), 0x00u);
+		EXPECT_EQ(debugRead16(0xA11100) & 0x0100u, 0x0000u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeMirroredA111Read16ExposesBusAckInBit8) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		auto debugRead16 = [&memoryManager](uint32_t addr) {
+			return ((uint16_t)memoryManager.DebugRead8(addr & 0xFFFFFE) << 8)
+				| memoryManager.DebugRead8((addr & 0xFFFFFE) + 1);
+		};
+
+		// Bus free: both byte lanes expose status bit.
+		memoryManager.DebugWrite8(0xA11180, 0x00);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11180), 0x01u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11181), 0x00u);
+		EXPECT_EQ(debugRead16(0xA11180) & 0x0100u, 0x0100u);
+
+		// Bus requested while reset is asserted: BUSACK remains set.
+		memoryManager.DebugWrite8(0xA11180, 0x01);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11180), 0x01u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11181), 0x00u);
+		EXPECT_EQ(debugRead16(0xA11180) & 0x0100u, 0x0100u);
+
+		// Releasing reset allows BUSREQ to clear BUSACK.
+		memoryManager.DebugWrite8(0xA11280, 0x01);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11180), 0x00u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11181), 0x00u);
+		EXPECT_EQ(debugRead16(0xA11180) & 0x0100u, 0x0000u);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeWrite16LowLaneDoesNotRequestBus) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
