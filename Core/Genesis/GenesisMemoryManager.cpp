@@ -876,70 +876,77 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	}
 
 	if (TryGetSramOffset(addr, sramOffset)) [[unlikely]] {
-		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, value, MemoryOperationType::Write);
-		_saveRam[sramOffset] = value;
-		_openBus = value;
+		uint8_t effectiveValue = value;
+		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Write);
+		_saveRam[sramOffset] = effectiveValue;
+		_openBus = effectiveValue;
 		return;
 	}
 
 	if (addr < _prgRomSize) [[likely]] {
-		_openBus = value;
-		TrackSegaCdTranscript(addr, true, value);
+		uint8_t effectiveValue = value;
+		_openBus = effectiveValue;
+		TrackSegaCdTranscript(addr, true, effectiveValue);
 		return;
 	}
 
 	if (addr >= 0xFF0000) [[likely]] {
 		uint32_t offset = addr & 0xFFFF;
-		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, value, MemoryOperationType::Write);
-		_workRam[offset] = value;
-		_openBus = value;
+		uint8_t effectiveValue = value;
+		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Write);
+		_workRam[offset] = effectiveValue;
+		_openBus = effectiveValue;
 		return;
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
+		uint8_t effectiveValue = value;
 		if (_tmssEnabled && !_tmssUnlocked) {
-			_openBus = value;
+			_openBus = effectiveValue;
 			return;
 		}
 		// VDP byte write - promote to word write
-		WriteVdpPort(addr, (uint16_t)value | ((uint16_t)value << 8));
-		_openBus = value;
+		WriteVdpPort(addr, (uint16_t)effectiveValue | ((uint16_t)effectiveValue << 8));
+		_openBus = effectiveValue;
 		return;
 	}
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
+		uint8_t effectiveValue = value;
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
-			_z80Ram[z80Addr] = value;
+			_z80Ram[z80Addr] = effectiveValue;
 		}
-		_openBus = value;
+		_openBus = effectiveValue;
 		return;
 	}
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
-		WriteIo(addr, value);
+		uint8_t writeValue = value;
+		WriteIo(addr, writeValue);
 		return;
 	}
 
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
-		bridgeSlot[bridgeIndex] = value;
-		_openBus = value;
+		uint8_t effectiveValue = value;
+		bridgeSlot[bridgeIndex] = effectiveValue;
+		_openBus = effectiveValue;
 		if (IsSegaCdSubCpuControlAddress(addr)) {
-			UpdateSegaCdSubCpuControl(value);
+			UpdateSegaCdSubCpuControl(effectiveValue);
 		} else if (IsSegaCdAudioDataAddress(addr)) {
-			UpdateSegaCdAudioPath(addr, value);
+			UpdateSegaCdAudioPath(addr, effectiveValue);
 		} else if (IsSegaCdToolingControlAddress(addr)) {
-			UpdateSegaCdToolingContract(addr, value);
+			UpdateSegaCdToolingContract(addr, effectiveValue);
 		} else if (Is32xSh2ControlAddress(addr)) {
-			Update32xSh2Staging(addr, value);
+			Update32xSh2Staging(addr, effectiveValue);
 		} else if (Is32xCompositionControlAddress(addr)) {
-			Update32xCompositionStaging(addr, value);
+			Update32xCompositionStaging(addr, effectiveValue);
 		} else if (Is32xToolingControlAddress(addr)) {
-			Update32xToolingContract(addr, value);
+			Update32xToolingContract(addr, effectiveValue);
 		}
-		TrackSegaCdTranscript(addr, true, value);
+		TrackSegaCdTranscript(addr, true, effectiveValue);
 		return;
 	}
 
