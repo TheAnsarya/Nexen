@@ -19,6 +19,8 @@ class GenesisMemoryManager final : public ISerializable {
 private:
 	static constexpr uint32_t WorkRamSize = 0x10000;   // 64KB work RAM
 	static constexpr uint32_t Z80RamSize = 0x2000;     // 8KB Z80 RAM
+	static constexpr uint32_t MapperWindowSize = 0x80000; // 512KB
+	static constexpr uint32_t MapperBankWindowCount = 7;  // $080000-$3FFFFF
 
 	Emulator* _emu = nullptr;
 	GenesisConsole* _console = nullptr;
@@ -48,6 +50,8 @@ private:
 	// Z80 bus
 	bool _z80BusRequest = false;
 	bool _z80Reset = true;
+	bool _romBankMapperEnabled = false;
+	uint8_t _romBankRegisters[MapperBankWindowCount] = {};
 
 	// TMSS (Trademark Security System)
 	bool _tmssEnabled = false;
@@ -121,6 +125,10 @@ private:
 	void TrackDebugTranscriptEntry(uint32_t addr, bool isWrite, uint8_t value, uint8_t roleFlags);
 	void TrackSegaCdTranscript(uint32_t addr, bool isWrite, uint8_t value);
 	void TrackSegaCdHandshakeTranscript(uint32_t addr, bool isWrite, uint8_t value);
+	void ResetRomBankMapper();
+	bool TryGetRomBankRegisterSlot(uint32_t addr, uint8_t& slot) const;
+	bool TryWriteRomBankRegister(uint32_t addr, uint8_t value);
+	uint32_t TranslateRomAddress(uint32_t addr) const;
 
 public:
 	GenesisMemoryManager();

@@ -2037,6 +2037,7 @@ keep going! complete many slices in one batch; continue;
 
 continue; keep going! as long as you can, do several 10-slice batches in a row, just chug along completing work until we have a fully working emulator; continue;
 
+Hey, this work is just a bunch of variable renames and stupid crap! Focus on actually implementing the emulator and making it able to run a game, the tetchy details can be cleaned up later; Do real work!
 
 
 

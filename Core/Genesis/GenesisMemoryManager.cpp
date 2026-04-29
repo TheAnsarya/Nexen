@@ -187,6 +187,68 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 			}
 		}
 	}
+
+	ResetRomBankMapper();
+}
+
+void GenesisMemoryManager::ResetRomBankMapper() {
+	uint32_t bankCount = (_prgRomSize + MapperWindowSize - 1) / MapperWindowSize;
+	if (bankCount == 0) {
+		bankCount = 1;
+	}
+
+	_romBankMapperEnabled = _prgRomSize > MapperWindowSize;
+	for (uint32_t i = 0; i < MapperBankWindowCount; i++) {
+		_romBankRegisters[i] = (uint8_t)((i + 1) % bankCount);
+	}
+}
+
+bool GenesisMemoryManager::TryGetRomBankRegisterSlot(uint32_t addr, uint8_t& slot) const {
+	if ((addr & 0x01) == 0) {
+		return false;
+	}
+
+	if (addr < 0xA130F3 || addr > 0xA130FF) {
+		return false;
+	}
+
+	slot = (uint8_t)((addr - 0xA130F3) >> 1);
+	return slot < MapperBankWindowCount;
+}
+
+bool GenesisMemoryManager::TryWriteRomBankRegister(uint32_t addr, uint8_t value) {
+	uint8_t slot = 0;
+	if (!TryGetRomBankRegisterSlot(addr, slot)) {
+		return false;
+	}
+
+	uint8_t effectiveValue = value;
+	_romBankRegisters[slot] = effectiveValue;
+	return true;
+}
+
+uint32_t GenesisMemoryManager::TranslateRomAddress(uint32_t addr) const {
+	if (_prgRomSize == 0) {
+		return 0;
+	}
+
+	uint32_t effectiveAddr = addr & 0x3FFFFF;
+	uint32_t bankCount = (_prgRomSize + MapperWindowSize - 1) / MapperWindowSize;
+	if (bankCount == 0) {
+		bankCount = 1;
+	}
+
+	if (_romBankMapperEnabled && effectiveAddr >= 0x080000 && effectiveAddr < 0x400000) {
+		uint32_t windowOffset = effectiveAddr - 0x080000;
+		uint32_t slot = windowOffset / MapperWindowSize;
+		if (slot < MapperBankWindowCount) {
+			uint32_t bank = _romBankRegisters[slot] % bankCount;
+			uint32_t mappedAddress = bank * MapperWindowSize + (windowOffset % MapperWindowSize);
+			return mappedAddress % _prgRomSize;
+		}
+	}
+
+	return effectiveAddr % _prgRomSize;
 }
 
 bool GenesisMemoryManager::TryGetSegaCdBridgeSlot(uint32_t addr, uint8_t*& slot, uint32_t& slotIndex) {
@@ -699,13 +761,9 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 	if (addr < 0x400000) [[likely]] {
 		// Cartridge ROM
-		if (addr < _prgRomSize) {
-			uint8_t effectiveValue = _prgRom[addr];
-			_emu->ProcessMemoryRead<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Read);
-			_openBus = effectiveValue;
-			return effectiveValue;
-		}
-		uint8_t effectiveValue = _openBus;
+		uint32_t mappedAddr = TranslateRomAddress(addr);
+		uint8_t effectiveValue = _prgRom[mappedAddr];
+		_emu->ProcessMemoryRead<CpuType::Genesis>(mappedAddr, effectiveValue, MemoryOperationType::Read);
 		_openBus = effectiveValue;
 		return effectiveValue;
 	}
@@ -747,6 +805,13 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
 		return ReadIo(addr);
+	}
+
+	uint8_t bankSlot = 0;
+	if (TryGetRomBankRegisterSlot(addr, bankSlot)) [[unlikely]] {
+		uint8_t effectiveValue = _romBankRegisters[bankSlot];
+		_openBus = effectiveValue;
+		return effectiveValue;
 	}
 
 	uint8_t* bridgeSlot = nullptr;
@@ -814,15 +879,12 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	}
 
 	if (addr < 0x400000) [[likely]] {
-		if (addr + 1 < _prgRomSize) {
-			uint8_t effectiveHighByte = _prgRom[addr];
-			uint8_t effectiveLowByte = _prgRom[addr + 1];
-			uint16_t effectiveValue = ((uint16_t)effectiveHighByte << 8) | effectiveLowByte;
-			_emu->ProcessMemoryRead<CpuType::Genesis>(addr, effectiveHighByte, MemoryOperationType::Read);
-			_openBus = effectiveLowByte;
-			return effectiveValue;
-		}
-		uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
+		uint32_t mappedAddrHi = TranslateRomAddress(addr);
+		uint32_t mappedAddrLo = TranslateRomAddress(addr + 1);
+		uint8_t effectiveHighByte = _prgRom[mappedAddrHi];
+		uint8_t effectiveLowByte = _prgRom[mappedAddrLo];
+		uint16_t effectiveValue = ((uint16_t)effectiveHighByte << 8) | effectiveLowByte;
+		_emu->ProcessMemoryRead<CpuType::Genesis>(mappedAddrHi, effectiveHighByte, MemoryOperationType::Read);
 		_openBus = (uint8_t)(effectiveValue & 0xFF);
 		return effectiveValue;
 	}
@@ -865,6 +927,12 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
 		uint8_t effectiveHi = ReadIo(addr);
 		uint8_t effectiveLo = ReadIo(addr + 1);
+		return ((uint16_t)effectiveHi << 8) | effectiveLo;
+	}
+
+	if (addr >= 0xA130F0 && addr <= 0xA130FE) [[unlikely]] {
+		uint8_t effectiveHi = Read8(addr);
+		uint8_t effectiveLo = Read8(addr + 1);
 		return ((uint16_t)effectiveHi << 8) | effectiveLo;
 	}
 
@@ -972,6 +1040,12 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		return;
 	}
 
+	if (TryWriteRomBankRegister(addr, value)) [[unlikely]] {
+		uint8_t effectiveValue = value;
+		_openBus = effectiveValue;
+		return;
+	}
+
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
@@ -1030,6 +1104,14 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		return;
 	}
 	if (HasSaveRam() && addr >= _sramStart && addr <= _sramEnd) [[unlikely]] {
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		Write8(addr, effectiveHighByte);
+		Write8(addr + 1, effectiveLowByte);
+		return;
+	}
+
+	if (addr >= 0xA130F0 && addr <= 0xA130FE) [[unlikely]] {
 		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
 		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
 		Write8(addr, effectiveHighByte);
@@ -1286,8 +1368,9 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
 		return effectiveValue;
 	}
-	if (effectiveAddr < _prgRomSize) {
-		uint8_t effectiveValue = _prgRom[effectiveAddr];
+	if (effectiveAddr < 0x400000) {
+		uint32_t mappedAddr = TranslateRomAddress(effectiveAddr);
+		uint8_t effectiveValue = _prgRom[mappedAddr];
 		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x01);
 		return effectiveValue;
@@ -1359,6 +1442,13 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		}
 		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x10);
+		return effectiveValue;
+	}
+	uint8_t bankSlot = 0;
+	if (TryGetRomBankRegisterSlot(effectiveAddr, bankSlot)) {
+		uint8_t effectiveValue = _romBankRegisters[bankSlot];
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x11);
 		return effectiveValue;
 	}
 	if (IsZ80BusReqAddress(effectiveAddr)) {
@@ -1569,6 +1659,12 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 				return;
 		}
 	}
+	if (TryWriteRomBankRegister(effectiveAddr, value)) {
+		uint8_t effectiveValue = value;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x11);
+		return;
+	}
 	if (IsZ80BusReqAddress(effectiveAddr)) {
 		uint8_t effectiveValue = value;
 		if (!(effectiveAddr & 0x01)) {
@@ -1643,8 +1739,8 @@ AddressInfo GenesisMemoryManager::GetAbsoluteAddress(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	uint32_t effectiveAddress = addr;
 	AddressInfo info = {};
-	if (effectiveAddress < _prgRomSize) {
-		info.Address = effectiveAddress;
+	if (effectiveAddress < 0x400000) {
+		info.Address = TranslateRomAddress(effectiveAddress);
 		info.Type = MemoryType::GenesisPrgRom;
 	} else if (effectiveAddress >= 0xFF0000) {
 		info.Address = effectiveAddress & 0xFFFF;
@@ -1681,6 +1777,8 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_openBus);
 	SV(_z80BusRequest);
 	SV(_z80Reset);
+	SV(_romBankMapperEnabled);
+	SVArray(_romBankRegisters, (uint32_t)sizeof(_romBankRegisters));
 	SV(_tmssEnabled);
 	SV(_tmssUnlocked);
 	SV(_segaCdSubCpuRunning);
@@ -1769,6 +1867,8 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	if (tmssEnabled) {
 		memset(_segaCdBridgeA140, 0, sizeof(_segaCdBridgeA140));
 	}
+
+	ResetRomBankMapper();
 
 	memset(_ioState.DataPort, 0, sizeof(_ioState.DataPort));
 	memset(_ioState.TxData, 0, sizeof(_ioState.TxData));
