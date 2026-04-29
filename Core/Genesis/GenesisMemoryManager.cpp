@@ -261,25 +261,25 @@ bool GenesisMemoryManager::Is32xToolingStatusAddress(uint32_t addr) const {
 }
 
 void GenesisMemoryManager::UpdateSegaCdSubCpuControl(uint8_t value) {
-	bool running = (value & 0x01) != 0;
-	bool busRequest = (value & 0x02) != 0;
-	if (running != _segaCdSubCpuRunning || busRequest != _segaCdSubCpuBusRequest) {
+	bool nextRunning = (value & 0x01) != 0;
+	bool nextBusRequest = (value & 0x02) != 0;
+	if (nextRunning != _segaCdSubCpuRunning || nextBusRequest != _segaCdSubCpuBusRequest) {
 		_segaCdSubCpuTransitionCount++;
 	}
-	_segaCdSubCpuRunning = running;
-	_segaCdSubCpuBusRequest = busRequest;
+	_segaCdSubCpuRunning = nextRunning;
+	_segaCdSubCpuBusRequest = nextBusRequest;
 }
 
 uint8_t GenesisMemoryManager::GetSegaCdSubCpuStatusByte() const {
-	uint8_t status = 0;
+	uint8_t statusByte = 0;
 	if (_segaCdSubCpuRunning) {
-		status |= 0x01;
+		statusByte |= 0x01;
 	}
 	if (_segaCdSubCpuBusRequest) {
-		status |= 0x02;
+		statusByte |= 0x02;
 	}
-	status |= (uint8_t)((_segaCdSubCpuTransitionCount & 0x0F) << 4);
-	return status;
+	statusByte |= (uint8_t)((_segaCdSubCpuTransitionCount & 0x0F) << 4);
+	return statusByte;
 }
 
 void GenesisMemoryManager::UpdateSegaCdAudioPath(uint32_t addr, uint8_t value) {
@@ -306,10 +306,12 @@ void GenesisMemoryManager::UpdateSegaCdAudioPath(uint32_t addr, uint8_t value) {
 
 uint8_t GenesisMemoryManager::GetSegaCdAudioStatusByte(uint32_t addr) const {
 	if (addr == 0xA12010) {
-		return _segaCdMixedLeft;
+		uint8_t statusByte = _segaCdMixedLeft;
+		return statusByte;
 	}
 	if (addr == 0xA12011) {
-		return _segaCdMixedRight;
+		uint8_t statusByte = _segaCdMixedRight;
+		return statusByte;
 	}
 	return 0;
 }
@@ -330,8 +332,9 @@ void GenesisMemoryManager::UpdateSegaCdToolingContract(uint32_t addr, uint8_t va
 		return;
 	}
 
-	if (*target != value) {
-		*target = value;
+	uint8_t effectiveValue = value;
+	if (*target != effectiveValue) {
+		*target = effectiveValue;
 		_segaCdToolingEventCount++;
 	}
 
@@ -358,7 +361,8 @@ uint8_t GenesisMemoryManager::GetSegaCdToolingStatusByte(uint32_t addr) const {
 		return (uint8_t)(_ioState.DebugTranscriptLaneDigest & 0xFF);
 	}
 	if (addr == 0xA1201A) {
-		return 0x0F;
+		uint8_t statusByte = 0x0F;
+		return statusByte;
 	}
 	if (addr == 0xA1201B) {
 		return _segaCdToolingDigest;
@@ -375,7 +379,8 @@ uint8_t GenesisMemoryManager::GetSegaCdToolingStatusByte(uint32_t addr) const {
 	if (addr == 0xA1201F) {
 		return _controlManager ? _controlManager->GetDeterministicPortDigest(1) : 0;
 	}
-	return 0;
+	uint8_t statusByte = 0;
+	return statusByte;
 }
 
 void GenesisMemoryManager::Update32xSh2Staging(uint32_t addr, uint8_t value) {
@@ -421,7 +426,8 @@ uint8_t GenesisMemoryManager::Get32xSh2StatusByte(uint32_t addr) const {
 		return status;
 	}
 	if (addr == 0xA1501B) {
-		return _m32xSh2Digest;
+		uint8_t statusByte = _m32xSh2Digest;
+		return statusByte;
 	}
 	return 0;
 }
@@ -433,8 +439,9 @@ void GenesisMemoryManager::Update32xCompositionStaging(uint32_t addr, uint8_t va
 		changed = blend != _m32xCompositionBlend;
 		_m32xCompositionBlend = blend;
 	} else if (addr == 0xA15017) {
-		changed = value != _m32xFrameSyncMarker;
-		_m32xFrameSyncMarker = value;
+		uint8_t nextMarker = value;
+		changed = nextMarker != _m32xFrameSyncMarker;
+		_m32xFrameSyncMarker = nextMarker;
 	}
 
 	if (changed) {
@@ -455,7 +462,8 @@ uint8_t GenesisMemoryManager::Get32xCompositionStatusByte(uint32_t addr) const {
 		return status;
 	}
 	if (addr == 0xA1501D) {
-		return _m32xCompositionDigest;
+		uint8_t statusByte = _m32xCompositionDigest;
+		return statusByte;
 	}
 	return 0;
 }
@@ -498,12 +506,15 @@ uint8_t GenesisMemoryManager::Get32xToolingStatusByte(uint32_t addr) const {
 		return (uint8_t)((_m32xToolingEventCount >> 8) & 0xFF);
 	}
 	if (addr == 0xA1501E) {
-		return 0x0F;
+		uint8_t statusByte = 0x0F;
+		return statusByte;
 	}
 	if (addr == 0xA1501F) {
-		return _m32xToolingDigest;
+		uint8_t statusByte = _m32xToolingDigest;
+		return statusByte;
 	}
-	return 0;
+	uint8_t statusByte = 0;
+	return statusByte;
 }
 
 void GenesisMemoryManager::TrackSegaCdTranscript(uint32_t addr, bool isWrite, uint8_t value) {
