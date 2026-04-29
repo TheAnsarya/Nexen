@@ -493,6 +493,60 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				interruptCadenceFirst.HInterruptCount,
 				interruptCadenceFirst.TimingEvents.size()));
 
+		auto runInterruptIntervalStartupPath = [&scaffold, &titleClass]() {
+			if (titleClass == "sonic") {
+				scaffold.StepFrameScaffold(488u * 2u + 80u);
+			} else if (titleClass == "jurassic") {
+				scaffold.StepFrameScaffold(488u * 2u + 120u);
+			} else {
+				scaffold.StepFrameScaffold(256u);
+			}
+		};
+
+		auto toAbsolute = [](int64_t value) {
+			return value < 0 ? -value : value;
+		};
+
+		GenesisBoundaryScaffoldSaveState interruptIntervalBaseline = scaffold.SaveState();
+		runInterruptIntervalStartupPath();
+		GenesisBoundaryScaffoldSaveState interruptIntervalFirst = scaffold.SaveState();
+		scaffold.LoadState(interruptIntervalBaseline);
+		runInterruptIntervalStartupPath();
+		GenesisBoundaryScaffoldSaveState interruptIntervalReplay = scaffold.SaveState();
+		scaffold.LoadState(interruptIntervalFirst);
+
+		int64_t scanlineDelta = (int64_t)interruptIntervalFirst.TimingScanline - (int64_t)interruptIntervalBaseline.TimingScanline;
+		int64_t hDelta = (int64_t)interruptIntervalFirst.HInterruptCount - (int64_t)interruptIntervalBaseline.HInterruptCount;
+		int64_t vDelta = (int64_t)interruptIntervalFirst.VInterruptCount - (int64_t)interruptIntervalBaseline.VInterruptCount;
+		int64_t replayHDelta = (int64_t)interruptIntervalReplay.HInterruptCount - (int64_t)interruptIntervalBaseline.HInterruptCount;
+		int64_t replayVDelta = (int64_t)interruptIntervalReplay.VInterruptCount - (int64_t)interruptIntervalBaseline.VInterruptCount;
+
+		int64_t hIntervalEstimate = hDelta > 0 ? (scanlineDelta / hDelta) : scanlineDelta;
+		int64_t vIntervalEstimate = vDelta > 0 ? (scanlineDelta / vDelta) : scanlineDelta;
+		bool hIntervalTolerancePass = hDelta == 0 || toAbsolute(hIntervalEstimate - 16) <= 16;
+		bool vIntervalTolerancePass = vDelta == 0 || toAbsolute(vIntervalEstimate - 262) <= 262;
+		bool intervalReplayParityPass = hDelta == replayHDelta && vDelta == replayVDelta;
+		bool intervalAdvancedPass = scanlineDelta > 0 && hDelta >= 0 && vDelta >= 0;
+		bool interruptIntervalStartupPass = !isTargetStartupClass || (intervalAdvancedPass && intervalReplayParityPass && hIntervalTolerancePass && vIntervalTolerancePass);
+		addCheckpoint(
+			"GEN-COMPAT-INTERRUPT-INTERVAL-STARTUP",
+			interruptIntervalStartupPass,
+			std::format(
+				"class={} target={} advanced={} replayParity={} hTol={} vTol={} scanDelta={} hDelta={} vDelta={} hReplay={} vReplay={} hEstimate={} vEstimate={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				intervalAdvancedPass ? 1 : 0,
+				intervalReplayParityPass ? 1 : 0,
+				hIntervalTolerancePass ? 1 : 0,
+				vIntervalTolerancePass ? 1 : 0,
+				scanlineDelta,
+				hDelta,
+				vDelta,
+				replayHDelta,
+				replayVDelta,
+				hIntervalEstimate,
+				vIntervalEstimate));
+
 		string digestA = BuildCheckpointDigest(entry.Checkpoints);
 		string digestB = BuildCheckpointDigest(entry.Checkpoints);
 		addCheckpoint("GEN-COMPAT-DETERMINISM", digestA == digestB, std::format("digestA={} digestB={}", digestA, digestB));
@@ -510,6 +564,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-TIMING-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-CADENCE-STARTUP")
+			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-INTERVAL-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-RENDER")
 			&& hasPassingCheckpoint("GEN-COMPAT-AUDIO")
 			&& hasPassingCheckpoint("GEN-COMPAT-DETERMINISM");
