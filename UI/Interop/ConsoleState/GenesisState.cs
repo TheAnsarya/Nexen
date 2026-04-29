@@ -54,6 +54,8 @@ public struct GenesisIoState : BaseState {
 	public byte[] ThCount;
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
 	public byte[] ThState;
+	public byte TmssEnabled;
+	public byte TmssUnlocked;
 	public UInt32 TranscriptLaneCount;
 	public UInt64 TranscriptLaneDigest;
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]

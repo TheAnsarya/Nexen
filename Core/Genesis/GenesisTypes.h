@@ -129,6 +129,8 @@ struct GenesisIoState {
 	uint8_t SCtrl[3] = {};
 	uint8_t ThCount[2] = {};    // TH transition count for 6-button
 	uint8_t ThState[2] = {};    // Current TH state
+	uint8_t TmssEnabled = 0;
+	uint8_t TmssUnlocked = 0;
 
 	uint32_t TranscriptLaneCount = 0;
 	uint64_t TranscriptLaneDigest = 0;

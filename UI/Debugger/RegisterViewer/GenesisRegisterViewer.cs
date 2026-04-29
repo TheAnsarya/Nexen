@@ -130,6 +130,9 @@ public sealed class GenesisRegisterViewer {
 		entries.Add(new RegEntry("", "ThCount[1]", io.ThCount[1], Format.X8));
 		entries.Add(new RegEntry("", "ThState[0]", io.ThState[0], Format.X8));
 		entries.Add(new RegEntry("", "ThState[1]", io.ThState[1], Format.X8));
+		entries.Add(new RegEntry("", "TMSS"));
+		entries.Add(new RegEntry("", "TmssEnabled", io.TmssEnabled, Format.X8));
+		entries.Add(new RegEntry("", "TmssUnlocked", io.TmssUnlocked, Format.X8));
 
 		entries.Add(new RegEntry("", "Sega CD Transcript"));
 		entries.Add(new RegEntry("", "Flag Legend"));

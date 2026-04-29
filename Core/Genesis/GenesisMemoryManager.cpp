@@ -28,6 +28,10 @@ namespace {
 	__forceinline uint8_t GetZ80BusAckStatusBit(bool busRequested, bool resetAsserted) {
 		return (busRequested && !resetAsserted) ? 0x00 : 0x01;
 	}
+
+	__forceinline bool IsTmssAddress(uint32_t addr) {
+		return addr >= 0xA14000 && addr <= 0xA14003;
+	}
 }
 
 GenesisMemoryManager::GenesisMemoryManager() {
@@ -72,6 +76,8 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 
 	_z80BusRequest = false;
 	_z80Reset = true;
+	_tmssEnabled = true;
+	_tmssUnlocked = false;
 	_segaCdSubCpuRunning = false;
 	_segaCdSubCpuBusRequest = false;
 	_segaCdSubCpuTransitionCount = 0;
@@ -110,6 +116,8 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_sramEnd = 0;
 	_ioState.DebugTranscriptLaneCount = 0;
 	_ioState.DebugTranscriptLaneDigest = 0;
+	_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
+	_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
 	for (int i = 0; i < 4; i++) {
 		_ioState.DebugTranscriptEntryAddress[i] = 0;
 		_ioState.DebugTranscriptEntryValue[i] = 0;
@@ -619,6 +627,11 @@ bool GenesisMemoryManager::TryGetSramOffset(uint32_t addr, uint32_t& offset) con
 uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
+	if (IsTmssAddress(addr)) [[unlikely]] {
+		uint8_t value = _tmssUnlocked ? 0x53 : 0x00;
+		_openBus = value;
+		return value;
+	}
 
 	if (TryGetSramOffset(addr, sramOffset)) [[unlikely]] {
 		uint8_t value = _saveRam[sramOffset];
@@ -648,6 +661,9 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
+		if (_tmssEnabled && !_tmssUnlocked) {
+			return _openBus;
+		}
 		// VDP ports (byte access from word port)
 		uint16_t word = ReadVdpPort(addr);
 		if (addr & 1) return (uint8_t)(word & 0xFF);
@@ -711,6 +727,11 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	addr &= 0xFFFFFE;
+	if (IsTmssAddress(addr)) [[unlikely]] {
+		uint16_t value = _tmssUnlocked ? 0x5345 : 0x0000;
+		_openBus = (uint8_t)(value & 0xFF);
+		return value;
+	}
 	if (HasSaveRam() && addr >= _sramStart && addr <= _sramEnd) [[unlikely]] {
 		uint8_t hi = Read8(addr);
 		uint8_t lo = Read8(addr + 1);
@@ -736,6 +757,9 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
+		if (_tmssEnabled && !_tmssUnlocked) {
+			return (_openBus << 8) | _openBus;
+		}
 		return ReadVdpPort(addr);
 	}
 
@@ -784,6 +808,17 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
+	if (IsTmssAddress(addr)) [[unlikely]] {
+		uint32_t slot = addr & 0x03;
+		_segaCdBridgeA140[slot] = value;
+		_tmssUnlocked = _segaCdBridgeA140[0] == 'S'
+			&& _segaCdBridgeA140[1] == 'E'
+			&& _segaCdBridgeA140[2] == 'G'
+			&& _segaCdBridgeA140[3] == 'A';
+		_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
+		_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
+		return;
+	}
 
 	if (TryGetSramOffset(addr, sramOffset)) [[unlikely]] {
 		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, value, MemoryOperationType::Write);
@@ -799,6 +834,9 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
+		if (_tmssEnabled && !_tmssUnlocked) {
+			return;
+		}
 		// VDP byte write - promote to word write
 		WriteVdpPort(addr, (uint16_t)value | ((uint16_t)value << 8));
 		return;
@@ -859,6 +897,11 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 
 void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	addr &= 0xFFFFFE;
+	if (IsTmssAddress(addr)) [[unlikely]] {
+		Write8(addr, (uint8_t)(value >> 8));
+		Write8(addr + 1, (uint8_t)(value & 0xFF));
+		return;
+	}
 	if (HasSaveRam() && addr >= _sramStart && addr <= _sramEnd) [[unlikely]] {
 		Write8(addr, (uint8_t)(value >> 8));
 		Write8(addr + 1, (uint8_t)(value & 0xFF));
@@ -875,6 +918,9 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
+		if (_tmssEnabled && !_tmssUnlocked) {
+			return;
+		}
 		WriteVdpPort(addr, value);
 		return;
 	}
@@ -970,6 +1016,9 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 
 uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	addr &= 0xFFFFFF;
+	if (IsTmssAddress(addr)) {
+		return _tmssUnlocked ? 0x53 : 0x00;
+	}
 	if (addr < _prgRomSize) {
 		return _prgRom[addr];
 	}
@@ -1030,6 +1079,10 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return value;
 	}
 	if (addr >= 0xC00000 && addr <= 0xC0001F) {
+		if (_tmssEnabled && !_tmssUnlocked) {
+			TrackDebugTranscriptEntry(addr, false, _openBus, 0x30);
+			return _openBus;
+		}
 		uint8_t value = _openBus;
 		if (_vdp) {
 			uint16_t word = ReadVdpPort(addr);
@@ -1085,6 +1138,18 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 
 void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
+	if (IsTmssAddress(addr)) {
+		uint32_t slot = addr & 0x03;
+		_segaCdBridgeA140[slot] = value;
+		_tmssUnlocked = _segaCdBridgeA140[0] == 'S'
+			&& _segaCdBridgeA140[1] == 'E'
+			&& _segaCdBridgeA140[2] == 'G'
+			&& _segaCdBridgeA140[3] == 'A';
+		_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
+		_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
+		TrackDebugTranscriptEntry(addr, true, value, 0x02);
+		return;
+	}
 	if (addr >= 0xFF0000) {
 		_workRam[addr & 0xFFFF] = value;
 		return;
@@ -1143,6 +1208,10 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		return;
 	}
 	if (addr >= 0xC00000 && addr <= 0xC0001F) {
+		if (_tmssEnabled && !_tmssUnlocked) {
+			TrackDebugTranscriptEntry(addr, true, value, 0x30);
+			return;
+		}
 		if (_vdp) {
 			WriteVdpPort(addr, (uint16_t)value | ((uint16_t)value << 8));
 		}
@@ -1253,6 +1322,8 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SVArray(_segaCdBridgeA180, (uint32_t)sizeof(_segaCdBridgeA180));
 	SV(_ioState.DataPort[0]); SV(_ioState.DataPort[1]); SV(_ioState.DataPort[2]);
 	SV(_ioState.CtrlPort[0]); SV(_ioState.CtrlPort[1]); SV(_ioState.CtrlPort[2]);
+	SV(_ioState.TmssEnabled);
+	SV(_ioState.TmssUnlocked);
 	SV(_ioState.TranscriptLaneCount);
 	SV(_ioState.TranscriptLaneDigest);
 	for (uint32_t i = 0; i < 4; i++) {
