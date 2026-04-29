@@ -28,27 +28,55 @@
 				</Grid>
 			</Panel>
 
-			<Panel Canvas.Top="70" Canvas.Right="5" Width="260" Height="120">
+			<Panel Canvas.Top="55" Canvas.Right="5" Width="260" Height="150">
 				<Rectangle Fill="{StaticResource NexenGrayBackgroundColor}" />
-				<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-					<c:ControllerButton
-						Margin="10 0 0 0"
-						Label="B"
-						KeyBinding="{Binding Mapping.B}"
-						TurboKeyBinding="{Binding Mapping.TurboB}"
-					/>
-					<c:ControllerButton
-						Margin="30 0 0 0"
-						Label="C"
-						KeyBinding="{Binding Mapping.X}"
-						TurboKeyBinding="{Binding Mapping.TurboX}"
-					/>
-					<c:ControllerButton
-						Margin="30 0 0 0"
-						Label="A"
-						KeyBinding="{Binding Mapping.A}"
-						TurboKeyBinding="{Binding Mapping.TurboA}"
-					/>
+				<StackPanel VerticalAlignment="Center" Spacing="8">
+					<StackPanel Orientation="Horizontal">
+						<c:ControllerButton
+							Margin="10 0 0 0"
+							Label="B"
+							KeyBinding="{Binding Mapping.B}"
+							TurboKeyBinding="{Binding Mapping.TurboB}"
+						/>
+						<c:ControllerButton
+							Margin="22 0 0 0"
+							Label="C"
+							KeyBinding="{Binding Mapping.X}"
+							TurboKeyBinding="{Binding Mapping.TurboX}"
+						/>
+						<c:ControllerButton
+							Margin="22 0 0 0"
+							Label="A"
+							KeyBinding="{Binding Mapping.A}"
+							TurboKeyBinding="{Binding Mapping.TurboA}"
+						/>
+					</StackPanel>
+
+					<StackPanel Orientation="Horizontal">
+						<c:ControllerButton
+							Margin="10 0 0 0"
+							Label="X"
+							KeyBinding="{Binding Mapping.Y}"
+							TurboKeyBinding="{Binding Mapping.TurboY}"
+						/>
+						<c:ControllerButton
+							Margin="22 0 0 0"
+							Label="Y"
+							KeyBinding="{Binding Mapping.L}"
+							TurboKeyBinding="{Binding Mapping.TurboL}"
+						/>
+						<c:ControllerButton
+							Margin="22 0 0 0"
+							Label="Z"
+							KeyBinding="{Binding Mapping.R}"
+							TurboKeyBinding="{Binding Mapping.TurboR}"
+						/>
+					</StackPanel>
+
+					<StackPanel Orientation="Horizontal" Margin="10 0 0 0">
+						<c:KeyBindingButton KeyBinding="{Binding Mapping.GenericKey1}" Width="90" />
+						<TextBlock Text="Mode" FontSize="14" VerticalAlignment="Center" Margin="8 0 0 0" />
+					</StackPanel>
 				</StackPanel>
 			</Panel>
 
