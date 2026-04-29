@@ -673,19 +673,24 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		if (_tmssEnabled && !_tmssUnlocked) {
-			return _openBus;
+			uint8_t value = _openBus;
+			_openBus = value;
+			return value;
 		}
 		// VDP ports (byte access from word port)
 		uint16_t word = ReadVdpPort(addr);
-		if (addr & 1) return (uint8_t)(word & 0xFF);
-		return (uint8_t)(word >> 8);
+		uint8_t value = (addr & 1) ? (uint8_t)(word & 0xFF) : (uint8_t)(word >> 8);
+		_openBus = value;
+		return value;
 	}
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		// Z80 address space
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
-			return _z80Ram[z80Addr];
+			uint8_t value = _z80Ram[z80Addr];
+			_openBus = value;
+			return value;
 		}
 		return _openBus;
 	}
@@ -718,19 +723,24 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		if (addr & 0x01) {
-			TrackSegaCdHandshakeTranscript(addr, false, _openBus);
-			return _openBus;
+			uint8_t value = _openBus;
+			_openBus = value;
+			TrackSegaCdHandshakeTranscript(addr, false, value);
+			return value;
 		}
 
 		// Z80 bus request: bit 0 indicates bus grant, upper bits preserve open bus.
 		uint8_t value = (_openBus & 0xFE) | GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
+		_openBus = value;
 		TrackSegaCdHandshakeTranscript(addr, false, value);
 		return value;
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
-		TrackSegaCdHandshakeTranscript(addr, false, _openBus);
-		return _openBus;
+		uint8_t value = _openBus;
+		_openBus = value;
+		TrackSegaCdHandshakeTranscript(addr, false, value);
+		return value;
 	}
 
 	return _openBus;
