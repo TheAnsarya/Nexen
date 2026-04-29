@@ -48,6 +48,9 @@ private:
 	uint8_t _accessMode = 0; // 0=VRAM read, 1=VRAM write, 3=CRAM write, 5=VSRAM write
 	uint16_t _addressReg = 0;
 	uint8_t _autoIncrement = 0;
+	bool _displayEnabledLast = false;
+	bool _displayDisabledLogged = false;
+	uint32_t _lastFrameLog = 0;
 
 	// Internal methods
 	void ProcessScanline();

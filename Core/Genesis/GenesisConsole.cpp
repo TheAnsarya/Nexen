@@ -8,6 +8,7 @@
 #include "Genesis/GenesisTypes.h"
 #include "Shared/Emulator.h"
 #include "Shared/EmuSettings.h"
+#include "Shared/MessageManager.h"
 #include "Genesis/GenesisDefaultVideoFilter.h"
 #include "Shared/Video/BaseVideoFilter.h"
 #include "Utilities/Serializer.h"
@@ -126,6 +127,11 @@ LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 	_memoryManager->LoadBattery();
 
 	_vdp->SetRegion(_region == ConsoleRegion::Pal);
+	MessageManager::Log(std::format("[Genesis] ROM loaded: {} size={} region={} tmss={}",
+		romFile.GetFileName(),
+		romData.size(),
+		_region == ConsoleRegion::Pal ? "PAL" : "NTSC",
+		_memoryManager->GetIoState().TmssEnabled ? "on" : "off"));
 
 	return LoadRomResult::Success;
 }
@@ -149,8 +155,30 @@ void GenesisConsole::Reset() {
 
 void GenesisConsole::RunFrame() {
 	uint32_t frame = _vdp->GetFrameCount();
+	uint64_t startClock = _memoryManager->GetMasterClock();
+	uint32_t guard = 0;
 	while (frame == _vdp->GetFrameCount()) {
 		_cpu->Exec();
+		guard++;
+		if ((guard % 2000000) == 0) {
+			MessageManager::Log(std::format("[Genesis] RunFrame waiting frame={} guard={} pc=${:06x} cycles={} masterClock={}",
+				frame,
+				guard,
+				_cpu->GetState().PC & 0x00ffffff,
+				_cpu->GetState().CycleCount,
+				_memoryManager->GetMasterClock()));
+		}
+	}
+
+	uint32_t nextFrame = _vdp->GetFrameCount();
+	if ((nextFrame % 120) == 0) {
+		GenesisVdpState vdpState = _vdp->GetState();
+		MessageManager::Log(std::format("[Genesis] Frame advanced to {} (deltaClock={}) display={} R1=${:02x} tmssUnlocked={}",
+			nextFrame,
+			_memoryManager->GetMasterClock() - startClock,
+			(vdpState.Registers[1] & 0x40) ? "on" : "off",
+			vdpState.Registers[1],
+			_memoryManager->GetIoState().TmssUnlocked ? "true" : "false"));
 	}
 }
 

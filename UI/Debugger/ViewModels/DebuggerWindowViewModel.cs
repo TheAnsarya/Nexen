@@ -218,7 +218,9 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 	/// </remarks>
 	public DebuggerWindowViewModel(CpuType? cpuType) {
 		if (!Design.IsDesignMode) {
+			Log.Debug($"[DebuggerVM] InitializeDebugger start requestedCpu={cpuType}");
 			DebugApi.InitializeDebugger();
+			Log.Debug($"[DebuggerVM] InitializeDebugger complete requestedCpu={cpuType}");
 		}
 
 		ConsoleType consoleType;
@@ -227,6 +229,7 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 			consoleType = ConsoleType.Snes;
 		} else {
 			RomInfo romInfo = EmuApi.GetRomInfo();
+			Log.Debug($"[DebuggerVM] Active ROM console={romInfo.ConsoleType} cpuCount={romInfo.CpuTypes.Count}");
 			consoleType = romInfo.ConsoleType;
 			if (cpuType is not null) {
 				CpuType = cpuType.Value;

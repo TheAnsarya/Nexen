@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -32,16 +32,19 @@ public partial class DebuggerWindow : NexenWindow, INotificationHandler {
 	public DebuggerWindow() : this(null, null) { }
 
 	public DebuggerWindow(CpuType? cpuType, int? scrollToAddress = null) {
+		Log.Debug($"[DebuggerWindow] ctor start cpu={cpuType}");
 		InitializeComponent();
 #if DEBUG
 		this.AttachDeveloperTools();
 #endif
 
 		_model = new DebuggerWindowViewModel(cpuType);
+		Log.Debug($"[DebuggerWindow] ctor model created cpu={_model.CpuType}");
 		_scrollToAddress = scrollToAddress;
 		DataContext = _model;
 
 		_model.InitializeMenu(this);
+		Log.Debug($"[DebuggerWindow] ctor menu initialized cpu={_model.CpuType}");
 
 		if (Design.IsDesignMode) {
 			return;
@@ -65,10 +68,15 @@ public partial class DebuggerWindow : NexenWindow, INotificationHandler {
 	}
 
 	public static DebuggerWindow GetOrOpenWindow(CpuType cpuType) {
+		Log.Debug($"[DebuggerWindow] GetOrOpenWindow requested for cpu={cpuType}");
 		DebuggerWindow? wnd = DebugWindowManager.GetDebugWindow<DebuggerWindow>(x => x.CpuType == cpuType);
 		if (wnd == null) {
-			return DebugWindowManager.OpenDebugWindow<DebuggerWindow>(() => new DebuggerWindow(cpuType));
+			Log.Debug($"[DebuggerWindow] No existing window for cpu={cpuType}, opening new window");
+			DebuggerWindow newWnd = DebugWindowManager.OpenDebugWindow<DebuggerWindow>(() => new DebuggerWindow(cpuType));
+			Log.Debug($"[DebuggerWindow] Opened new debugger window for cpu={cpuType}");
+			return newWnd;
 		} else {
+			Log.Debug($"[DebuggerWindow] Reusing existing debugger window for cpu={cpuType}");
 			wnd.BringToFront();
 		}
 
@@ -88,15 +96,19 @@ public partial class DebuggerWindow : NexenWindow, INotificationHandler {
 
 	protected override void OnOpened(EventArgs e) {
 		base.OnOpened(e);
+		Log.Debug($"[DebuggerWindow] OnOpened cpu={_model.CpuType}");
 
 		//Do this in OnOpened to ensure the window is ready to receive notifications
 		Dispatcher.UIThread.Post(() => {
+			Log.Debug($"[DebuggerWindow] Initializing debugger model cpu={_model.CpuType}");
 			_model.Init();
 			_model.UpdateDebugger(true);
+			Log.Debug($"[DebuggerWindow] Initial debugger refresh complete cpu={_model.CpuType}");
 
 			if (_scrollToAddress.HasValue) {
 				ScrollToAddress((uint)_scrollToAddress);
 			} else if (_model.Config.BreakOnOpen) {
+				Log.Debug($"[DebuggerWindow] BreakOnOpen active cpu={_model.CpuType}");
 				if (!EmuApi.IsPaused()) {
 					_model.Step(StepType.Step);
 				}
@@ -164,6 +176,7 @@ public partial class DebuggerWindow : NexenWindow, INotificationHandler {
 				break;
 
 			case ConsoleNotificationType.GameLoaded:
+				Log.Debug($"[DebuggerWindow] GameLoaded notification cpu={_model.CpuType}");
 				RomInfo romInfo = EmuApi.GetRomInfo();
 				HashSet<CpuType> cpuTypes = romInfo.CpuTypes;
 				if (!cpuTypes.Contains(_model.CpuType)) {

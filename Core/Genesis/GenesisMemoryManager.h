@@ -56,6 +56,7 @@ private:
 	// TMSS (Trademark Security System)
 	bool _tmssEnabled = false;
 	bool _tmssUnlocked = false;
+	bool _tmssVdpBlockLogged = false;
 	bool _segaCdSubCpuRunning = false;
 	bool _segaCdSubCpuBusRequest = false;
 	uint32_t _segaCdSubCpuTransitionCount = 0;

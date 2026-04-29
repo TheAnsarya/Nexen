@@ -1289,7 +1289,11 @@ void Emulator::ProcessEvent(EventType type, std::optional<CpuType> cpuType) {
 template <CpuType cpuType>
 void Emulator::AddDebugEvent(DebugEventType evtType) {
 	if (_debugger) {
-		_debugger->GetEventManager(cpuType)->AddEvent(evtType);
+		if (BaseEventManager* evtMgr = _debugger->GetEventManager(cpuType)) {
+			evtMgr->AddEvent(evtType);
+		} else {
+			MessageManager::Log(std::format("[Emulator] Dropped debug event type={} for cpuType={} (no event manager)", (int)evtType, (int)cpuType));
+		}
 	}
 }
 

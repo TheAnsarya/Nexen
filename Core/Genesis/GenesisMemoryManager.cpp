@@ -8,6 +8,7 @@
 #include "Shared/Emulator.h"
 #include "Shared/EmuSettings.h"
 #include "Shared/BatteryManager.h"
+#include "Shared/MessageManager.h"
 #include "Utilities/Serializer.h"
 
 namespace {
@@ -102,6 +103,7 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_z80Reset = true;
 	_tmssEnabled = _emu->GetSettings()->GetGenesisConfig().EnableTmss;
 	_tmssUnlocked = false;
+	_tmssVdpBlockLogged = false;
 	_segaCdSubCpuRunning = false;
 	_segaCdSubCpuBusRequest = false;
 	_segaCdSubCpuTransitionCount = 0;
@@ -779,6 +781,10 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		if (_tmssEnabled && !_tmssUnlocked) {
+			if (!_tmssVdpBlockLogged) {
+				_tmssVdpBlockLogged = true;
+				MessageManager::Log(std::format("[Genesis][MMU] TMSS is locking VDP read8 access at ${:06x}", addr));
+			}
 			uint8_t effectiveValue = _openBus;
 			_openBus = effectiveValue;
 			return effectiveValue;
@@ -901,6 +907,10 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		if (_tmssEnabled && !_tmssUnlocked) {
+			if (!_tmssVdpBlockLogged) {
+				_tmssVdpBlockLogged = true;
+				MessageManager::Log(std::format("[Genesis][MMU] TMSS is locking VDP read16 access at ${:06x}", addr));
+			}
 			uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
 			_openBus = (uint8_t)(effectiveValue & 0xFF);
 			return effectiveValue;
@@ -977,12 +987,27 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	if (IsTmssAddress(addr)) [[unlikely]] {
 		uint8_t effectiveValue = value;
 		uint32_t slot = addr & 0x03;
+		bool wasUnlocked = _tmssUnlocked;
 		_segaCdBridgeA140[slot] = effectiveValue;
 		_openBus = effectiveValue;
 		_tmssUnlocked = _segaCdBridgeA140[0] == 'S'
 			&& _segaCdBridgeA140[1] == 'E'
 			&& _segaCdBridgeA140[2] == 'G'
 			&& _segaCdBridgeA140[3] == 'A';
+		if (_tmssEnabled) {
+			MessageManager::Log(std::format("[Genesis][MMU] TMSS write ${:06x}=${:02x} state='{}{}{}{}' unlocked={}",
+				addr,
+				effectiveValue,
+				(char)_segaCdBridgeA140[0],
+				(char)_segaCdBridgeA140[1],
+				(char)_segaCdBridgeA140[2],
+				(char)_segaCdBridgeA140[3],
+				_tmssUnlocked ? "true" : "false"));
+		}
+		if (!wasUnlocked && _tmssUnlocked) {
+			_tmssVdpBlockLogged = false;
+			MessageManager::Log("[Genesis][MMU] TMSS unlocked - VDP access enabled");
+		}
 		_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
 		_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
 		return;
@@ -1015,6 +1040,10 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		uint8_t effectiveValue = value;
 		if (_tmssEnabled && !_tmssUnlocked) {
+			if (!_tmssVdpBlockLogged) {
+				_tmssVdpBlockLogged = true;
+				MessageManager::Log(std::format("[Genesis][MMU] TMSS is locking VDP write8 access at ${:06x}", addr));
+			}
 			_openBus = effectiveValue;
 			return;
 		}
@@ -1863,6 +1892,7 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_z80Reset = nextZ80Reset;
 	_openBus = nextOpenBus;
 	_tmssUnlocked = nextTmssUnlocked;
+	_tmssVdpBlockLogged = false;
 
 	if (tmssEnabled) {
 		memset(_segaCdBridgeA140, 0, sizeof(_segaCdBridgeA140));

@@ -56,6 +56,7 @@
 #include "Shared/EmuSettings.h"
 #include "Shared/Audio/SoundMixer.h"
 #include "Shared/NotificationManager.h"
+#include "Shared/MessageManager.h"
 #include "Shared/BaseState.h"
 #include "Shared/Emulator.h"
 #include "Shared/Interfaces/IConsole.h"
@@ -81,6 +82,7 @@ Debugger::Debugger(Emulator* emu, IConsole* console) {
 
 	// Get list of CPU types for this console (main CPU + coprocessors)
 	vector<CpuType> cpuTypes = _emu->GetCpuTypes();
+	MessageManager::Log(std::format("[Debugger] Creating debugger for console={} cpuCount={}", (int)_consoleType, cpuTypes.size()));
 	_cpuTypes = unordered_set<CpuType>(cpuTypes.begin(), cpuTypes.end());
 	_mainCpuType = cpuTypes[0];  // First CPU is always the main CPU
 
@@ -97,6 +99,7 @@ Debugger::Debugger(Emulator* emu, IConsole* console) {
 	// Use cpuTypes for iteration (ordered), not _cpuTypes (order is important for coprocessors, etc.)
 	for (CpuType type : cpuTypes) {
 		unique_ptr<IDebugger>& debugger = _debuggers[(int)type].Debugger;
+		MessageManager::Log(std::format("[Debugger] Creating backend for cpuType={}", (int)type));
 		switch (type) {
 			case CpuType::Snes:
 				debugger = std::make_unique<SnesDebugger>(this, CpuType::Snes);
@@ -152,6 +155,7 @@ Debugger::Debugger(Emulator* emu, IConsole* console) {
 			default:
 				[[unlikely]] throw std::runtime_error("Unsupported CPU type");
 		}
+		MessageManager::Log(std::format("[Debugger] Backend ready for cpuType={}", (int)type));
 
 		_debuggers[(int)type].Evaluator = std::make_unique<ExpressionEvaluator>(this, _debuggers[(int)type].Debugger.get(), type);
 	}
@@ -160,6 +164,7 @@ Debugger::Debugger(Emulator* emu, IConsole* console) {
 		_debuggers[(int)type].Debugger->Init();
 		_debuggers[(int)type].Debugger->ProcessConfigChange();
 	}
+	MessageManager::Log(std::format("[Debugger] Initialized all backends, mainCpuType={}", (int)_mainCpuType));
 
 	_breakRequestCount = 0;
 	_suspendRequestCount = 0;
@@ -803,7 +808,11 @@ void Debugger::ProcessInterrupt(uint32_t originalPc, uint32_t currentPc, bool fo
 
 void Debugger::InternalProcessInterrupt(CpuType cpuType, IDebugger& dbg, StepRequest& stepRequest, AddressInfo& src, uint32_t srcAddr, AddressInfo& dest, uint32_t destAddr, AddressInfo& ret, uint32_t retAddr, uint32_t retSp, bool forNmi) {
 	dbg.GetCallstackManager()->Push(src, srcAddr, dest, destAddr, ret, retAddr, retSp, forNmi ? StackFrameFlags::Nmi : StackFrameFlags::Irq);
-	dbg.GetEventManager()->AddEvent(forNmi ? DebugEventType::Nmi : DebugEventType::Irq);
+	if (BaseEventManager* evtMgr = dbg.GetEventManager()) {
+		evtMgr->AddEvent(forNmi ? DebugEventType::Nmi : DebugEventType::Irq);
+	} else {
+		MessageManager::Log(std::format("[Debugger] Missing event manager for cpuType={} while processing interrupt", (int)cpuType));
+	}
 	stepRequest.ProcessNmiIrq(forNmi);
 }
 

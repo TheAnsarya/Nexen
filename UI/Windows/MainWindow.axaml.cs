@@ -67,6 +67,7 @@ public partial class MainWindow : NexenWindow {
 	private Dictionary<Key, long> _keyPressedStamp = new();
 	private bool _focusInMenu;
 	private static long _notificationTraceSequence;
+	private long _ppuFrameDoneCount;
 
 	static MainWindow() {
 		WindowStateProperty.Changed.AddClassHandler<MainWindow>((x, e) => x.OnWindowStateChanged());
@@ -314,6 +315,13 @@ public partial class MainWindow : NexenWindow {
 
 		try {
 			switch (e.NotificationType) {
+			case ConsoleNotificationType.PpuFrameDone:
+				long frameCount = Interlocked.Increment(ref _ppuFrameDoneCount);
+				if ((frameCount % 120) == 0) {
+					Log.Info($"[MainWindow] PpuFrameDone count={frameCount}");
+				}
+				break;
+
 			case ConsoleNotificationType.GameLoaded:
 				CheatCodes.ApplyCheats();
 				RomInfo romInfo = EmuApi.GetRomInfo();

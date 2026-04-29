@@ -4,6 +4,8 @@
 #include "Genesis/GenesisM68k.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Shared/Emulator.h"
+#include "Shared/MessageManager.h"
+#include "Shared/NotificationManager.h"
 #include "Utilities/Serializer.h"
 
 GenesisVdp::GenesisVdp() {
@@ -50,6 +52,9 @@ void GenesisVdp::Reset(bool hardReset) {
 	_autoIncrement = 2;
 	_accessMode = 0;
 	_addressReg = 0;
+	_displayEnabledLast = false;
+	_displayDisabledLogged = false;
+	_lastFrameLog = 0;
 	_pendingControlWrite = false;
 	_firstControlWord = 0;
 
@@ -64,6 +69,7 @@ void GenesisVdp::Reset(bool hardReset) {
 		_state.FrameCount = 0;
 		memset(_outputBuffers, 0, sizeof(_outputBuffers));
 		_currentBuffer = 0;
+		MessageManager::Log("[Genesis][VDP] Hard reset complete (frame counter cleared)");
 	}
 }
 
@@ -107,6 +113,18 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 				_state.StatusRegister ^= VdpStatus::OddFrame;
 				_currentBuffer ^= 1;
 				_state.FrameCount++;
+				_emu->GetNotificationManager()->SendNotification(ConsoleNotificationType::PpuFrameDone);
+
+				if ((_state.FrameCount - _lastFrameLog) >= 120) {
+					_lastFrameLog = _state.FrameCount;
+					MessageManager::Log(std::format("[Genesis][VDP] Frame={} display={} size={}x{} totalLines={} masterCycle={}",
+						_state.FrameCount,
+						IsDisplayEnabled() ? "on" : "off",
+						_screenWidth,
+						_screenHeight,
+						_totalLines,
+						_lastRunCycle));
+				}
 			}
 		}
 	}
@@ -116,8 +134,16 @@ void GenesisVdp::ProcessScanline() {
 	if (_scanline < _screenHeight) {
 		// Active display — render this scanline
 		if (IsDisplayEnabled()) {
+			if (_displayDisabledLogged) {
+				MessageManager::Log(std::format("[Genesis][VDP] Display enabled at frame {} scanline {}", _state.FrameCount, _scanline));
+				_displayDisabledLogged = false;
+			}
 			RenderScanline();
 		} else {
+			if (_scanline == 0 && !_displayDisabledLogged) {
+				MessageManager::Log(std::format("[Genesis][VDP] Display disabled at frame {} (R1=${:02x})", _state.FrameCount, _state.Registers[1]));
+				_displayDisabledLogged = true;
+			}
 			// Display off — fill with backdrop color
 			uint16_t* buf = _outputBuffers[_currentBuffer];
 			uint16_t bgcolor = CramToRgb555(_cram[GetBackgroundPaletteIndex() * 16 + GetBackgroundColorIndex()]);
@@ -457,6 +483,7 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 		// Register write: 100R RRRR DDDD DDDD
 		uint8_t reg = (value >> 8) & 0x1F;
 		uint8_t data = value & 0xFF;
+		bool displayEnabledBefore = IsDisplayEnabled();
 		if (reg < 24) {
 			_state.Registers[reg] = data;
 		}
@@ -468,6 +495,13 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 		// Update screen mode
 		if (reg == 12) {
 			_screenWidth = IsH40Mode() ? 320 : 256;
+		}
+
+		if (reg == 1) {
+			bool displayEnabledAfter = IsDisplayEnabled();
+			if (displayEnabledAfter != displayEnabledBefore) {
+				MessageManager::Log(std::format("[Genesis][VDP] Display {} via R1 write (${:#04x})", displayEnabledAfter ? "enabled" : "disabled", data));
+			}
 		}
 		return;
 	}
