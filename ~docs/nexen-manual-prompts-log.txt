@@ -2057,7 +2057,7 @@ yes do that
 
 yes do that
 
-build and run Nexen with all the logging turned on, so I can open a Genesis ROM and see what happens
+build and run Nexen with all the logging turned on, so I can open a Genesis ROM and see what happens, monitor the logs and fix whatever crashes
 
 
 
