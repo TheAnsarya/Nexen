@@ -82,6 +82,30 @@ namespace {
 		}
 	}
 
+	TEST(GenesisCompatibilityHarnessTests, BaseConsoleReadinessCheckpointsArePresentForTargetCorpus) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus = BuildGenesisCompatibilityCorpus();
+
+		GenesisCompatibilityMatrixResult result = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+
+		ASSERT_EQ((int)result.Entries.size(), (int)corpus.size());
+		for (const GenesisCompatibilityEntry& entry : result.Entries) {
+			auto hasPassingCheckpoint = [&](const string& checkpointId) {
+				return std::any_of(entry.Checkpoints.begin(), entry.Checkpoints.end(), [&](const GenesisCompatibilityCheckpoint& checkpoint) {
+					return checkpoint.Id == checkpointId && checkpoint.Pass;
+				});
+			};
+
+			// Base Genesis/Mega Drive readiness gates (no Sega CD/32X/PBC dependencies).
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-BUS-OWNERSHIP"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-HOST-MODE"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DETERMINISM"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DEBUG-LANE"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TAS-CHEAT"));
+		}
+	}
+
 	TEST(GenesisCompatibilityHarnessTests, PbcHostModeScenarioDigestIsDeterministicAcrossRuns) {
 		GenesisM68kBoundaryScaffold scaffold;
 		vector<GenesisCompatibilityRomCase> corpus;

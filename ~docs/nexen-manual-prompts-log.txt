@@ -1993,7 +1993,8 @@ keep going! as long as you can
 
 continue;
 
-[Nexen] Our goal is a correctly and reliably working and highly performant Genesis emulator, triage work on that assumption; and while segacd and 32x are important in the long run, we need to focus on making the base Genesis/Megadrive emulator work, I want to play a Genesis game like Sonic or Jurassic Park by the end of the week; Let's 100% focus on finishing the emulator and UI for the original console; Create and open a document that shows our overall progress with the emulator, what we've done, what needs to be done, by subsystem with completion percentages; continue;
+[Nexen] Our goal is a correctly and reliably working and highly performant Genesis emulator, triage work on that assumption; and while segacd and 32x are important in the long run, we need to focus on making the base Genesis/Megadrive emulator work, I want to play a Genesis game like Sonic or Jurassic Park by the end of the week; Let's 100% focus on finishing the emulator and UI for the original console; Also, in addition to our concrete implementation focused work, create and open a document that shows our overall progress with the emulator, what we've done, what needs to be done, by subsystem with completion percentages; continue;
+
 
 
 
