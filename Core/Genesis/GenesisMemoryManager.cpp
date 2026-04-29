@@ -659,7 +659,9 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			_openBus = value;
 			return value;
 		}
-		return _openBus;
+		uint8_t value = _openBus;
+		_openBus = value;
+		return value;
 	}
 
 	if (addr >= 0xFF0000) [[likely]] {
@@ -692,7 +694,9 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			_openBus = value;
 			return value;
 		}
-		return _openBus;
+		uint8_t value = _openBus;
+		_openBus = value;
+		return value;
 	}
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
@@ -743,7 +747,9 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		return value;
 	}
 
-	return _openBus;
+	uint8_t value = _openBus;
+	_openBus = value;
+	return value;
 }
 
 uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
@@ -861,6 +867,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	if (TryGetSramOffset(addr, sramOffset)) [[unlikely]] {
 		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, value, MemoryOperationType::Write);
 		_saveRam[sramOffset] = value;
+		_openBus = value;
 		return;
 	}
 
@@ -943,8 +950,9 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		return;
 	}
 
-	// ROM area — ignore writes (no mapper for now)
-	_openBus = value;
+	// Unmapped/ROM area — ignore writes (no mapper for now)
+	uint8_t effectiveValue = value;
+	_openBus = effectiveValue;
 }
 
 void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
@@ -969,30 +977,33 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	if (addr >= 0xFF0000) [[likely]] {
 		uint32_t offset = addr & 0xFFFF;
 		uint8_t highByte = (uint8_t)(value >> 8);
+		uint8_t lowByte = (uint8_t)(value & 0xFF);
 		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, highByte, MemoryOperationType::Write);
-		_workRam[offset] = (uint8_t)(value >> 8);
-		_workRam[(offset + 1) & 0xFFFF] = (uint8_t)(value & 0xFF);
-		_openBus = (uint8_t)(value & 0xFF);
+		_workRam[offset] = highByte;
+		_workRam[(offset + 1) & 0xFFFF] = lowByte;
+		_openBus = lowByte;
 		return;
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
+		uint8_t lowByte = (uint8_t)(value & 0xFF);
 		if (_tmssEnabled && !_tmssUnlocked) {
-			_openBus = (uint8_t)(value & 0xFF);
+			_openBus = lowByte;
 			return;
 		}
 		WriteVdpPort(addr, value);
-		_openBus = (uint8_t)(value & 0xFF);
+		_openBus = lowByte;
 		return;
 	}
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
+		uint8_t lowByte = (uint8_t)(value & 0xFF);
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
 			_z80Ram[z80Addr] = (uint8_t)(value >> 8);
-			_z80Ram[(z80Addr + 1) & 0x1FFF] = (uint8_t)(value & 0xFF);
+			_z80Ram[(z80Addr + 1) & 0x1FFF] = lowByte;
 		}
-		_openBus = (uint8_t)(value & 0xFF);
+		_openBus = lowByte;
 		return;
 	}
 
@@ -1206,8 +1217,10 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return value;
 	}
 	if (IsZ80ResetAddress(addr)) {
-		TrackDebugTranscriptEntry(addr, false, _openBus, 0x86);
-		return _openBus;
+		uint8_t value = _openBus;
+		_openBus = value;
+		TrackDebugTranscriptEntry(addr, false, value, 0x86);
+		return value;
 	}
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
 		uint8_t value = _openBus;
@@ -1283,8 +1296,10 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		TrackDebugTranscriptEntry(addr, false, value, 0x02);
 		return value;
 	}
-	TrackDebugTranscriptEntry(addr, false, _openBus, 0x00);
-	return _openBus;
+	uint8_t value = _openBus;
+	_openBus = value;
+	TrackDebugTranscriptEntry(addr, false, value, 0x00);
+	return value;
 }
 
 void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
