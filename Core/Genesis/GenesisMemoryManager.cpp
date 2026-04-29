@@ -1221,6 +1221,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	if (IsTmssAddress(addr)) {
 		uint32_t slot = addr & 0x03;
 		_segaCdBridgeA140[slot] = value;
+		_openBus = value;
 		_tmssUnlocked = _segaCdBridgeA140[0] == 'S'
 			&& _segaCdBridgeA140[1] == 'E'
 			&& _segaCdBridgeA140[2] == 'G'
@@ -1232,6 +1233,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	}
 	if (addr >= 0xFF0000) {
 		_workRam[addr & 0xFFFF] = value;
+		_openBus = value;
 		return;
 	}
 	if (addr >= 0xA10000 && addr <= 0xA1001F) {
@@ -1290,6 +1292,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		if (!(addr & 0x01)) {
 			_z80BusRequest = (value & 0x01) != 0;
 		}
+		_openBus = value;
 		TrackDebugTranscriptEntry(addr, true, value, 0x80);
 		return;
 	}
@@ -1297,6 +1300,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		if (!(addr & 0x01)) {
 			_z80Reset = !(value & 0x01);
 		}
+		_openBus = value;
 		TrackDebugTranscriptEntry(addr, true, value, 0x84);
 		return;
 	}
@@ -1304,17 +1308,20 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		if (_z80BusRequest || _z80Reset) {
 			_z80Ram[addr & 0x1FFF] = value;
 		}
+		_openBus = value;
 		TrackDebugTranscriptEntry(addr, true, value, 0x20);
 		return;
 	}
 	if (addr >= 0xC00000 && addr <= 0xC0001F) {
 		if (_tmssEnabled && !_tmssUnlocked) {
+			_openBus = value;
 			TrackDebugTranscriptEntry(addr, true, value, 0x30);
 			return;
 		}
 		if (_vdp) {
 			WriteVdpPort(addr, (uint16_t)value | ((uint16_t)value << 8));
 		}
+		_openBus = value;
 		TrackDebugTranscriptEntry(addr, true, value, 0x30);
 		return;
 	}
@@ -1323,6 +1330,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) {
 		bridgeSlot[bridgeIndex] = value;
+		_openBus = value;
 		if (IsSegaCdSubCpuControlAddress(addr)) {
 			UpdateSegaCdSubCpuControl(value);
 		} else if (IsSegaCdAudioDataAddress(addr)) {
