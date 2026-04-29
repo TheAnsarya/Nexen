@@ -595,25 +595,27 @@ void GenesisMemoryManager::TrackTranscriptEntry(uint32_t addr, bool isWrite, uin
 void GenesisMemoryManager::TrackDebugTranscriptEntry(uint32_t addr, bool isWrite, uint8_t value, uint8_t roleFlags) {
 	static constexpr uint64_t FnvOffsetBasis = 1469598103934665603ull;
 	static constexpr uint64_t FnvPrime = 1099511628211ull;
+	uint8_t effectiveValue = value;
+	uint8_t effectiveRoleFlags = roleFlags;
 
 	if (isWrite) {
-		roleFlags |= 0x01;
+		effectiveRoleFlags |= 0x01;
 	}
-	roleFlags |= 0x40;
+	effectiveRoleFlags |= 0x40;
 
 	uint64_t hash = _ioState.DebugTranscriptLaneDigest == 0 ? FnvOffsetBasis : _ioState.DebugTranscriptLaneDigest;
 	hash ^= (addr & 0xFFFFFF);
 	hash *= FnvPrime;
-	hash ^= value;
+	hash ^= effectiveValue;
 	hash *= FnvPrime;
-	hash ^= roleFlags;
+	hash ^= effectiveRoleFlags;
 	hash *= FnvPrime;
 	_ioState.DebugTranscriptLaneDigest = hash;
 
 	uint32_t index = _ioState.DebugTranscriptLaneCount % 4;
 	_ioState.DebugTranscriptEntryAddress[index] = addr & 0xFFFFFF;
-	_ioState.DebugTranscriptEntryValue[index] = value;
-	_ioState.DebugTranscriptEntryFlags[index] = roleFlags;
+	_ioState.DebugTranscriptEntryValue[index] = effectiveValue;
+	_ioState.DebugTranscriptEntryFlags[index] = effectiveRoleFlags;
 	_ioState.DebugTranscriptLaneCount++;
 }
 
@@ -1725,13 +1727,15 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 
 void GenesisMemoryManager::LoadBattery() {
 	if (HasSaveRam()) {
-		_emu->GetBatteryManager()->LoadBattery(".sav", std::span<uint8_t>(_saveRam, _saveRamSize));
+		BatteryManager* batteryManager = _emu->GetBatteryManager();
+		batteryManager->LoadBattery(".sav", std::span<uint8_t>(_saveRam, _saveRamSize));
 	}
 }
 
 void GenesisMemoryManager::SaveBattery() {
 	if (HasSaveRam()) {
-		_emu->GetBatteryManager()->SaveBattery(".sav", std::span<const uint8_t>(_saveRam, _saveRamSize));
+		BatteryManager* batteryManager = _emu->GetBatteryManager();
+		batteryManager->SaveBattery(".sav", std::span<const uint8_t>(_saveRam, _saveRamSize));
 	}
 }
 
