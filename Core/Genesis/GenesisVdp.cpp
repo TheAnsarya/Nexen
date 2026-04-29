@@ -80,6 +80,8 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 	while (_lastRunCycle < targetCycle) {
 		_lastRunCycle++;
 		_hCounter++;
+		_state.HCounter = _hCounter;
+		_state.VCounter = _scanline;
 
 		if (_hCounter >= CyclesPerLine) {
 			_hCounter = 0;
@@ -89,6 +91,7 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 			if (_scanline >= _totalLines) {
 				// End of frame
 				_scanline = 0;
+				_state.VCounter = 0;
 				_state.StatusRegister &= ~VdpStatus::VBlankFlag;
 				_currentBuffer ^= 1;
 				_state.FrameCount++;
@@ -376,9 +379,21 @@ uint16_t GenesisVdp::ReadDataPort() {
 uint16_t GenesisVdp::ReadControlPort() {
 	_pendingControlWrite = false;
 	uint16_t status = _state.StatusRegister;
-	// Reading control port clears pending interrupts
-	_state.StatusRegister &= ~(VdpStatus::VIntPending | VdpStatus::HIntPending);
+	// Reading control port acknowledges V interrupt pending in this implementation.
+	_state.StatusRegister &= ~VdpStatus::VIntPending;
 	return status;
+}
+
+GenesisVdpState GenesisVdp::GetState() const {
+	GenesisVdpState state = _state;
+	state.AddressRegister = _addressReg;
+	state.CodeRegister = _accessMode;
+	state.WritePending = _pendingControlWrite;
+	state.HCounter = _hCounter;
+	state.VCounter = _scanline;
+	memcpy(state.Cram, _cram, sizeof(_cram));
+	memcpy(state.Vsram, _vsram, sizeof(_vsram));
+	return state;
 }
 
 uint16_t GenesisVdp::ReadHVCounter() {

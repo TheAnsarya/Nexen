@@ -105,7 +105,7 @@ public:
 
 	bool IsInVBlank() const { return _scanline >= _screenHeight; }
 
-	GenesisVdpState GetState() const { return _state; }
+	GenesisVdpState GetState() const;
 
 	void Serialize(Serializer& s) override;
 };
