@@ -61,6 +61,8 @@ void GenesisVdp::Reset(bool hardReset) {
 	_hCounter = 0;
 	_lastRunCycle = 0;
 	if (hardReset) {
+		_state.FrameCount = 0;
+		memset(_outputBuffers, 0, sizeof(_outputBuffers));
 		_currentBuffer = 0;
 	}
 }
