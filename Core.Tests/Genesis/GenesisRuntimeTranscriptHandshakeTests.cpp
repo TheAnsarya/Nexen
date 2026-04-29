@@ -3,6 +3,8 @@
 #include "Shared/Emulator.h"
 
 namespace {
+	constexpr uint32_t MapperWindowSize = 0x80000;
+
 	struct RuntimeTranscriptSnapshot {
 		uint32_t LaneCount = 0;
 		uint64_t LaneDigest = 0;
@@ -24,6 +26,18 @@ namespace {
 		GenesisMemoryManager memoryManager;
 		memoryManager.Init(&emu, nullptr, romData, nullptr, nullptr, nullptr);
 		return memoryManager;
+	}
+
+	std::vector<uint8_t> BuildMapperPatternRom(uint32_t bankCount, uint8_t stride = 0x11) {
+		std::vector<uint8_t> rom((size_t)bankCount * MapperWindowSize, 0);
+		for (uint32_t bank = 0; bank < bankCount; bank++) {
+			uint8_t pattern = (uint8_t)(bank * stride);
+			uint32_t base = bank * MapperWindowSize;
+			rom[base + 0] = pattern;
+			rom[base + 1] = (uint8_t)(pattern ^ 0x5a);
+			rom[base + MapperWindowSize - 1] = (uint8_t)(pattern ^ 0xa5);
+		}
+		return rom;
 	}
 
 	RuntimeTranscriptSnapshot CaptureSnapshot(const GenesisMemoryManager& memoryManager) {
@@ -103,6 +117,93 @@ namespace {
 
 		EXPECT_EQ(memoryManager.DebugRead8(0xA1000B), 0xCDu);
 		EXPECT_EQ(memoryManager.DebugRead8(0xA1000D), 0xEFu);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, MapperRegisterOddWindowWritesSwitchExpectedRomBanks) {
+		Emulator emu;
+		std::vector<uint8_t> romData = BuildMapperPatternRom(8);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		for (uint32_t slot = 0; slot < 7; slot++) {
+			uint32_t regAddress = 0xa130f3 + (slot * 2);
+			uint8_t targetBank = (uint8_t)((7 - slot) & 0x07);
+			uint8_t expectedPattern = (uint8_t)(targetBank * 0x11);
+			uint32_t mappedAddress = 0x080000 + (slot * MapperWindowSize);
+
+			memoryManager.Write8(regAddress, targetBank);
+			EXPECT_EQ(memoryManager.Read8(regAddress), targetBank);
+			EXPECT_EQ(memoryManager.Read8(mappedAddress), expectedPattern);
+			EXPECT_EQ(memoryManager.Read8(mappedAddress + 1), (uint8_t)(expectedPattern ^ 0x5a));
+		}
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, MapperRegisterEvenAddressWriteDoesNotRetargetBankSlot) {
+		Emulator emu;
+		std::vector<uint8_t> romData = BuildMapperPatternRom(8);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xa130f3, 0x06);
+		uint8_t baseline = memoryManager.Read8(0x080000);
+		EXPECT_EQ(baseline, (uint8_t)(0x06 * 0x11));
+
+		memoryManager.Write8(0xa130f2, 0x01);
+		EXPECT_EQ(memoryManager.Read8(0xa130f3), 0x06);
+		EXPECT_EQ(memoryManager.Read8(0x080000), baseline);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, MapperWrite16UsesLowByteOddAddressForRegisterSlot) {
+		Emulator emu;
+		std::vector<uint8_t> romData = BuildMapperPatternRom(8);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xa130f3, 0x03);
+		uint8_t before = memoryManager.Read8(0x080000);
+		EXPECT_EQ(before, (uint8_t)(0x03 * 0x11));
+
+		memoryManager.Write16(0xa130f2, 0xab05);
+		EXPECT_EQ(memoryManager.Read8(0xa130f3), 0x05);
+		EXPECT_EQ(memoryManager.Read8(0x080000), (uint8_t)(0x05 * 0x11));
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, MapperRegisterStatusAndMappedDataReplayAcrossSerializeRoundtrip) {
+		Emulator emuA;
+		std::vector<uint8_t> romA = BuildMapperPatternRom(8);
+		GenesisMemoryManager original = CreateMemoryManager(emuA, romA);
+
+		auto runPrefix = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.Write8(0xa130f3, 0x06);
+			memoryManager.Write8(0xa130f5, 0x02);
+			(void)memoryManager.Read8(0x080000);
+		};
+
+		auto runTail = [](GenesisMemoryManager& memoryManager) {
+			memoryManager.Write16(0xa130f4, 0xbe07);
+			uint8_t reg0 = memoryManager.Read8(0xa130f3);
+			uint8_t reg1 = memoryManager.Read8(0xa130f5);
+			uint8_t bank0Sample = memoryManager.Read8(0x080000);
+			uint8_t bank1Sample = memoryManager.Read8(0x100000);
+			return std::tuple<uint8_t, uint8_t, uint8_t, uint8_t>(reg0, reg1, bank0Sample, bank1Sample);
+		};
+
+		runPrefix(original);
+		Serializer saver(1, true, SerializeFormat::Binary);
+		original.Serialize(saver);
+		std::stringstream state;
+		saver.SaveTo(state);
+		state.seekg(0);
+
+		auto expected = runTail(original);
+
+		Emulator emuB;
+		std::vector<uint8_t> romB = BuildMapperPatternRom(8);
+		GenesisMemoryManager restored = CreateMemoryManager(emuB, romB);
+		Serializer loader(1, false, SerializeFormat::Binary);
+		ASSERT_TRUE(loader.LoadFrom(state));
+		restored.Serialize(loader);
+
+		auto replay = runTail(restored);
+
+		EXPECT_EQ(expected, replay);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, Z80WindowRead16ReturnsConsecutiveBytesWhenBusGranted) {
