@@ -34,6 +34,7 @@ void GenesisVdp::Reset(bool hardReset) {
 	_state.HIntCounter = _state.Registers[10];
 	_state.StatusRegister &= ~(VdpStatus::VBlankFlag | VdpStatus::VIntPending | VdpStatus::HIntPending);
 	_state.DmaActive = false;
+	_state.DmaMode = 0;
 	_autoIncrement = 2;
 	_accessMode = 0;
 	_addressReg = 0;
@@ -457,6 +458,8 @@ void GenesisVdp::ProcessDma() {
 	                | ((uint32_t)_state.Registers[21] << 1);
 
 	if (dmaLength == 0) dmaLength = 0xFFFF;
+	_state.DmaMode = dmaMode;
+	_state.StatusRegister |= VdpStatus::DmaBusy;
 
 	if (dmaMode == 0 || dmaMode == 1) {
 		// 68K → VRAM/CRAM/VSRAM copy
@@ -465,26 +468,41 @@ void GenesisVdp::ProcessDma() {
 			WriteDataPort(word);
 			dmaSrc += 2;
 		}
+
+		uint32_t srcWordAddress = (dmaSrc >> 1) & 0x3FFFFF;
+		_state.Registers[21] = (uint8_t)(srcWordAddress & 0xFF);
+		_state.Registers[22] = (uint8_t)((srcWordAddress >> 8) & 0xFF);
+		_state.Registers[23] = (uint8_t)((_state.Registers[23] & 0xC0) | ((srcWordAddress >> 16) & 0x3F));
 	} else if (dmaMode == 2) {
 		// VRAM fill
 		uint8_t fillByte = _state.Registers[23] & 0xFF; // Simplified
+		uint32_t dmaDst = _addressReg;
 		for (uint16_t i = 0; i < dmaLength; i++) {
-			uint32_t addr = (_addressReg + i) & 0xFFFF;
+			uint32_t addr = dmaDst & 0xFFFF;
 			if (addr < VramSize) _vram[addr] = fillByte;
+			dmaDst += _autoIncrement;
 		}
+		_addressReg = (uint16_t)dmaDst;
 	} else if (dmaMode == 3) {
 		// VRAM copy
 		uint16_t srcAddr = ((uint16_t)_state.Registers[22] << 8) | _state.Registers[21];
+		uint32_t dmaDst = _addressReg;
 		for (uint16_t i = 0; i < dmaLength; i++) {
 			uint32_t src = (srcAddr + i) & 0xFFFF;
-			uint32_t dst = (_addressReg + i) & 0xFFFF;
+			uint32_t dst = dmaDst & 0xFFFF;
 			if (src < VramSize && dst < VramSize) {
 				_vram[dst] = _vram[src];
 			}
+			dmaDst += _autoIncrement;
 		}
+		_addressReg = (uint16_t)dmaDst;
 	}
 
+	_state.Registers[19] = 0;
+	_state.Registers[20] = 0;
+
 	_state.DmaActive = false;
+	_state.StatusRegister &= ~VdpStatus::DmaBusy;
 }
 
 uint16_t GenesisVdp::GetPlaneWidth() const {
