@@ -228,59 +228,79 @@ public partial class MainWindow : NexenWindow {
 		this.FindDescendantOfType<StateGrid>()?.Focus();
 
 		Task.Run(() => {
-			CommandLineHelper cmdLine = new CommandLineHelper(Program.CommandLineArgs, true);
-			_cmdLine = cmdLine;
-
-			EmuApi.InitializeEmu(
-				ConfigManager.HomeFolder,
-				TryGetPlatformHandle()?.Handle ?? IntPtr.Zero,
-				_renderer.Handle,
-				_usesSoftwareRenderer,
-				cmdLine.NoAudio,
-				cmdLine.NoVideo,
-				cmdLine.NoInput
-			);
-
-			ConfigManager.Config.RemoveObsoleteConfig();
-
-			//InitializeDefaults must be after InitializeEmu, otherwise keybindings will be empty
-			ConfigManager.Config.InitializeDefaults();
-			ConfigManager.Config.UpgradeConfig();
-
-			_listener = new NotificationListener();
-			_listener.OnNotification += OnNotification;
-
-			// Apply config and add known folders (can be done on background thread)
-			// Wrap in try-catch so a missing native export (e.g. stale NexenCore.dll)
-			// doesn't prevent menu initialization from running.
 			try {
-				ConfigManager.Config.ApplyConfig();
-			} catch (Exception ex) {
-				Utilities.Log.Error(ex, "[MainWindow] ApplyConfig failed during startup (stale NexenCore.dll?) — continuing initialization");
-			}
+				Log.Info("[MainWindow] Startup background init begin");
+				CommandLineHelper cmdLine = new CommandLineHelper(Program.CommandLineArgs, true);
+				Log.Info($"[MainWindow] Parsed command line: files={cmdLine.FilesToLoad.Count}, lua={cmdLine.LuaScriptsToLoad.Count}, noVideo={cmdLine.NoVideo}, noAudio={cmdLine.NoAudio}, noInput={cmdLine.NoInput}");
+				_cmdLine = cmdLine;
 
-			if (ConfigManager.Config.Preferences.OverrideGameFolder && Directory.Exists(ConfigManager.Config.Preferences.GameFolder)) {
-				EmuApi.AddKnownGameFolder(ConfigManager.Config.Preferences.GameFolder);
-			}
+				Log.Info("[MainWindow] Calling EmuApi.InitializeEmu");
+				EmuApi.InitializeEmu(
+					ConfigManager.HomeFolder,
+					TryGetPlatformHandle()?.Handle ?? IntPtr.Zero,
+					_renderer.Handle,
+					_usesSoftwareRenderer,
+					cmdLine.NoAudio,
+					cmdLine.NoVideo,
+					cmdLine.NoInput
+				);
+				Log.Info("[MainWindow] EmuApi.InitializeEmu completed");
 
-			foreach (RecentItem recentItem in ConfigManager.Config.RecentFiles.Items) {
-				EmuApi.AddKnownGameFolder(recentItem.RomFile.Folder);
-			}
+				ConfigManager.Config.RemoveObsoleteConfig();
 
-			ConfigManager.Config.Preferences.UpdateFileAssociations();
-			SingleInstance.Instance.ArgumentsReceived += Instance_ArgumentsReceived;
+				//InitializeDefaults must be after InitializeEmu, otherwise keybindings will be empty
+				ConfigManager.Config.InitializeDefaults();
+				ConfigManager.Config.UpgradeConfig();
 
-			// Menu initialization creates UI controls (Image), must be on UI thread
-			Dispatcher.UIThread.Post(() => {
-				_model.Init(this);
+				_listener = new NotificationListener();
+				_listener.OnNotification += OnNotification;
+				Log.Info("[MainWindow] Notification listener initialized");
 
-				cmdLine.LoadFiles();
-				cmdLine.OnAfterInit(this);
-
-				if (ConfigManager.Config.Preferences.AutomaticallyCheckForUpdates) {
-					_model.MainMenu.CheckForUpdate(this, true);
+				// Apply config and add known folders (can be done on background thread)
+				// Wrap in try-catch so a missing native export (e.g. stale NexenCore.dll)
+				// doesn't prevent menu initialization from running.
+				try {
+					ConfigManager.Config.ApplyConfig();
+					Log.Info("[MainWindow] ApplyConfig completed");
+				} catch (Exception ex) {
+					Utilities.Log.Error(ex, "[MainWindow] ApplyConfig failed during startup (stale NexenCore.dll?) — continuing initialization");
 				}
-			});
+
+				if (ConfigManager.Config.Preferences.OverrideGameFolder && Directory.Exists(ConfigManager.Config.Preferences.GameFolder)) {
+					EmuApi.AddKnownGameFolder(ConfigManager.Config.Preferences.GameFolder);
+				}
+
+				foreach (RecentItem recentItem in ConfigManager.Config.RecentFiles.Items) {
+					EmuApi.AddKnownGameFolder(recentItem.RomFile.Folder);
+				}
+
+				ConfigManager.Config.Preferences.UpdateFileAssociations();
+				SingleInstance.Instance.ArgumentsReceived += Instance_ArgumentsReceived;
+				Log.Info("[MainWindow] Posting UI startup continuation");
+
+				// Menu initialization creates UI controls (Image), must be on UI thread
+				Dispatcher.UIThread.Post(() => {
+					try {
+						Log.Info("[MainWindow] UI startup continuation begin");
+						_model.Init(this);
+						Log.Info("[MainWindow] Main model initialized");
+
+						cmdLine.LoadFiles();
+						Log.Info("[MainWindow] Command-line files loaded");
+						cmdLine.OnAfterInit(this);
+						Log.Info("[MainWindow] Post-load command switches processed");
+
+						if (ConfigManager.Config.Preferences.AutomaticallyCheckForUpdates) {
+							_model.MainMenu.CheckForUpdate(this, true);
+						}
+						Log.Info("[MainWindow] UI startup continuation completed");
+					} catch (Exception ex) {
+						Log.Error(ex, "[MainWindow] UI startup continuation failed");
+					}
+				});
+			} catch (Exception ex) {
+				Log.Error(ex, "[MainWindow] Startup background init failed");
+			}
 		});
 	}
 

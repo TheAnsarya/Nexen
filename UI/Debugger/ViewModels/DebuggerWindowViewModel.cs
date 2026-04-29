@@ -221,6 +221,15 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 			Log.Debug($"[DebuggerVM] InitializeDebugger start requestedCpu={cpuType}");
 			DebugApi.InitializeDebugger();
 			Log.Debug($"[DebuggerVM] InitializeDebugger complete requestedCpu={cpuType}");
+			_ = Task.Run(() => {
+				try {
+					Log.Debug("[DebuggerVM] Async workspace load start");
+					DebugWorkspaceManager.Load();
+					Log.Debug("[DebuggerVM] Async workspace load complete");
+				} catch (Exception ex) {
+					Log.Error(ex, "[DebuggerVM] Async DebugWorkspaceManager.Load failed - continuing with empty workspace");
+				}
+			});
 		}
 
 		ConsoleType consoleType;
@@ -247,19 +256,26 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 		}
 
 		Config = ConfigManager.Config.Debug.Debugger;
+		Log.Debug($"[DebuggerVM] Constructor checkpoint: config loaded cpu={CpuType}");
 
 		Options = new DebuggerOptionsViewModel(Config, CpuType);
+		Log.Debug("[DebuggerVM] Constructor checkpoint: options created");
 		Disassembly = AddDisposable(new DisassemblyViewModel(this, ConfigManager.Config.Debug, CpuType));
+		Log.Debug("[DebuggerVM] Constructor checkpoint: disassembly created");
 		BreakpointList = AddDisposable(new BreakpointListViewModel(CpuType, this));
+		Log.Debug("[DebuggerVM] Constructor checkpoint: breakpoint list created");
 		LabelList = AddDisposable(new LabelListViewModel(CpuType, this));
+		Log.Debug("[DebuggerVM] Constructor checkpoint: label list created");
 		FindResultList = AddDisposable(new FindResultListViewModel(this));
 		ControllerList = new ControllerListViewModel(consoleType);
 		if (CpuType.SupportsFunctionList()) {
 			FunctionList = AddDisposable(new FunctionListViewModel(CpuType, this));
 		}
+		Log.Debug("[DebuggerVM] Constructor checkpoint: list/tool view models created");
 
 		CallStack = AddDisposable(new CallStackViewModel(CpuType, this));
 		WatchList = AddDisposable(new WatchListViewModel(CpuType));
+		Log.Debug("[DebuggerVM] Constructor checkpoint: call stack + watch created");
 		ConsoleStatus = CpuType switch {
 			CpuType.Snes => new SnesStatusViewModel(CpuType.Snes),
 			CpuType.Spc => new SpcStatusViewModel(),
@@ -278,8 +294,10 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 			CpuType.ChannelF => new ChannelFStatusViewModel(),
 			_ => null
 		};
+		Log.Debug("[DebuggerVM] Constructor checkpoint: console status created");
 
 		DockFactory = new DebuggerDockFactory(Config.SavedDockLayout);
+		Log.Debug("[DebuggerVM] Constructor checkpoint: dock factory created");
 
 		DockFactory.BreakpointListTool.Model = BreakpointList;
 		DockFactory.LabelListTool.Model = LabelList;
@@ -293,7 +311,9 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 		DockFactory.StatusTool.Model = ConsoleStatus;
 
 		DockLayout = DockFactory.CreateLayout();
+		Log.Debug("[DebuggerVM] Constructor checkpoint: dock layout created");
 		InitDock();
+		Log.Debug("[DebuggerVM] Constructor checkpoint: dock initialized");
 
 		if (Design.IsDesignMode) {
 			return;
@@ -304,12 +324,22 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 		if (CpuType.SupportsMemoryMappings()) {
 			MemoryMappings = new MemoryMappingViewModel(CpuType);
 		}
+		Log.Debug("[DebuggerVM] Constructor checkpoint: optional memory mappings ready");
 
 		DebugWorkspaceManager.SymbolProviderChanged += DebugWorkspaceManager_SymbolProviderChanged;
 		LabelManager.OnLabelUpdated += LabelManager_OnLabelUpdated;
 		BreakpointManager.BreakpointsChanged += BreakpointManager_BreakpointsChanged;
-		BreakpointManager.AddCpuType(CpuType);
-		ConfigApi.SetDebuggerFlag(CpuType.GetDebuggerFlag(), true);
+		_ = Task.Run(() => {
+			try {
+				Log.Debug("[DebuggerVM] Async debugger activation start");
+				BreakpointManager.AddCpuType(CpuType);
+				ConfigApi.SetDebuggerFlag(CpuType.GetDebuggerFlag(), true);
+				Log.Debug("[DebuggerVM] Async debugger activation complete");
+			} catch (Exception ex) {
+				Log.Error(ex, "[DebuggerVM] Async debugger activation failed");
+			}
+		});
+		Log.Debug("[DebuggerVM] Constructor checkpoint: final subscriptions complete");
 	}
 
 	/// <summary>

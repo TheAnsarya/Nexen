@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -23,14 +23,9 @@ public static class DebugWindowManager {
 		int count = Interlocked.Increment(ref _debugWindowCounter);
 		Log.Debug($"[DebugWindowManager] CreateDebugWindow start type={typeof(T).Name} count={count}");
 		if (count == 1) {
-			//Opened a debug window and nothing else was opened, load the saved workspace
-			try {
-				Log.Debug("[DebugWindowManager] Loading debug workspace before first debug window");
-				DebugWorkspaceManager.Load();
-				Log.Debug("[DebugWindowManager] Debug workspace loaded");
-			} catch (Exception ex) {
-				Log.Error(ex, "[DebugWindowManager] DebugWorkspaceManager.Load failed - continuing with default layout");
-			}
+			// Defer workspace loading until DebugApi.InitializeDebugger has completed
+			// in DebuggerWindowViewModel. Loading here can occur too early and block.
+			Log.Debug("[DebugWindowManager] First debug window creation - workspace load deferred to view model");
 		}
 
 		try {
