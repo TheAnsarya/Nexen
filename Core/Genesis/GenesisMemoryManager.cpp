@@ -823,6 +823,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	if (IsTmssAddress(addr)) [[unlikely]] {
 		uint32_t slot = addr & 0x03;
 		_segaCdBridgeA140[slot] = value;
+		_openBus = value;
 		_tmssUnlocked = _segaCdBridgeA140[0] == 'S'
 			&& _segaCdBridgeA140[1] == 'E'
 			&& _segaCdBridgeA140[2] == 'G'
@@ -842,15 +843,18 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		uint32_t offset = addr & 0xFFFF;
 		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, value, MemoryOperationType::Write);
 		_workRam[offset] = value;
+		_openBus = value;
 		return;
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		if (_tmssEnabled && !_tmssUnlocked) {
+			_openBus = value;
 			return;
 		}
 		// VDP byte write - promote to word write
 		WriteVdpPort(addr, (uint16_t)value | ((uint16_t)value << 8));
+		_openBus = value;
 		return;
 	}
 
@@ -859,6 +863,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 			uint32_t z80Addr = addr & 0x1FFF;
 			_z80Ram[z80Addr] = value;
 		}
+		_openBus = value;
 		return;
 	}
 
@@ -871,6 +876,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
 		bridgeSlot[bridgeIndex] = value;
+		_openBus = value;
 		if (IsSegaCdSubCpuControlAddress(addr)) {
 			UpdateSegaCdSubCpuControl(value);
 		} else if (IsSegaCdAudioDataAddress(addr)) {
@@ -892,6 +898,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		if (!(addr & 0x01)) {
 			_z80BusRequest = (value & 0x01) != 0;
 		}
+		_openBus = value;
 		TrackSegaCdHandshakeTranscript(addr, true, value);
 		return;
 	}
@@ -900,11 +907,13 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		if (!(addr & 0x01)) {
 			_z80Reset = !(value & 0x01);
 		}
+		_openBus = value;
 		TrackSegaCdHandshakeTranscript(addr, true, value);
 		return;
 	}
 
 	// ROM area — ignore writes (no mapper for now)
+	_openBus = value;
 }
 
 void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
