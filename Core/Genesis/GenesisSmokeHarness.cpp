@@ -390,6 +390,63 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			addCheckpoint("GEN-TITLE-JURASSIC", jurassicPass, std::format("contentionCycles={}", scaffold.GetBus().GetDmaContentionCycles()));
 		}
 
+		auto runVdpStartupPath = [&scaffold, &titleClass]() {
+			if (titleClass == "sonic") {
+				scaffold.GetBus().SetRenderCompositionInputs(0x1C, true, 0x06, false, 0x02, false, true, 0x20, true);
+				scaffold.GetBus().SetScroll(4, 2);
+				scaffold.GetBus().RenderScaffoldLine(56);
+				scaffold.StepFrameScaffold(488u + 96u);
+			} else if (titleClass == "jurassic") {
+				scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 16);
+				scaffold.StepFrameScaffold(488u + 128u);
+				scaffold.GetBus().RenderScaffoldLine(80);
+			} else {
+				scaffold.StepFrameScaffold(128u);
+			}
+		};
+
+		GenesisBoundaryScaffoldSaveState vdpTimingBaseline = scaffold.SaveState();
+		runVdpStartupPath();
+		GenesisBoundaryScaffoldSaveState vdpTimingFirst = scaffold.SaveState();
+		scaffold.LoadState(vdpTimingBaseline);
+		runVdpStartupPath();
+		GenesisBoundaryScaffoldSaveState vdpTimingReplay = scaffold.SaveState();
+		scaffold.LoadState(vdpTimingFirst);
+
+		bool isTargetStartupClass = titleClass == "sonic" || titleClass == "jurassic";
+		bool timingAdvanced = vdpTimingFirst.TimingFrame > vdpTimingBaseline.TimingFrame
+			|| (vdpTimingFirst.TimingFrame == vdpTimingBaseline.TimingFrame && vdpTimingFirst.TimingScanline > vdpTimingBaseline.TimingScanline);
+		bool vdpTimingReplayMatch = vdpTimingFirst.TimingFrame == vdpTimingReplay.TimingFrame
+			&& vdpTimingFirst.TimingScanline == vdpTimingReplay.TimingScanline
+			&& vdpTimingFirst.TimingCycleRemainder == vdpTimingReplay.TimingCycleRemainder
+			&& vdpTimingFirst.VInterruptCount == vdpTimingReplay.VInterruptCount
+			&& vdpTimingFirst.HInterruptCount == vdpTimingReplay.HInterruptCount
+			&& vdpTimingFirst.Bus.VdpStatus == vdpTimingReplay.Bus.VdpStatus
+			&& vdpTimingFirst.Bus.RenderLineDigest == vdpTimingReplay.Bus.RenderLineDigest
+			&& vdpTimingFirst.Bus.DmaContentionCycles == vdpTimingReplay.Bus.DmaContentionCycles
+			&& vdpTimingFirst.Bus.DmaContentionEvents == vdpTimingReplay.Bus.DmaContentionEvents;
+		bool targetEvidencePass = !vdpTimingFirst.Bus.RenderLineDigest.empty();
+		if (titleClass == "jurassic") {
+			targetEvidencePass = targetEvidencePass && vdpTimingFirst.Bus.DmaContentionCycles >= vdpTimingBaseline.Bus.DmaContentionCycles;
+		}
+		bool vdpTimingStartupPass = !isTargetStartupClass || (timingAdvanced && vdpTimingReplayMatch && targetEvidencePass);
+		addCheckpoint(
+			"GEN-COMPAT-VDP-TIMING-STARTUP",
+			vdpTimingStartupPass,
+			std::format(
+				"class={} target={} advanced={} replayMatch={} evidence={} frame={} scanline={} vdpStatus={:04x} renderDigest={} dmaCycles={} dmaEvents={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				timingAdvanced ? 1 : 0,
+				vdpTimingReplayMatch ? 1 : 0,
+				targetEvidencePass ? 1 : 0,
+				vdpTimingFirst.TimingFrame,
+				vdpTimingFirst.TimingScanline,
+				vdpTimingFirst.Bus.VdpStatus,
+				vdpTimingFirst.Bus.RenderLineDigest,
+				vdpTimingFirst.Bus.DmaContentionCycles,
+				vdpTimingFirst.Bus.DmaContentionEvents));
+
 		string digestA = BuildCheckpointDigest(entry.Checkpoints);
 		string digestB = BuildCheckpointDigest(entry.Checkpoints);
 		addCheckpoint("GEN-COMPAT-DETERMINISM", digestA == digestB, std::format("digestA={} digestB={}", digestA, digestB));
@@ -405,6 +462,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-BUS-OWNERSHIP")
 			&& hasPassingCheckpoint("GEN-COMPAT-HOST-MODE")
 			&& hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE")
+			&& hasPassingCheckpoint("GEN-COMPAT-VDP-TIMING-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-RENDER")
 			&& hasPassingCheckpoint("GEN-COMPAT-AUDIO")
 			&& hasPassingCheckpoint("GEN-COMPAT-DETERMINISM");

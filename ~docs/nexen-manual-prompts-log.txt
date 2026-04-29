@@ -1997,6 +1997,7 @@ continue;
 
 continue;
 
+[Nexen] Sega Genesis/Megadrive test roms are available in the reference roms folder, specifically `C:\~reference-roms\genesis\` as `*.bin` files; continue with the next narrow base-console slice by adding one new checkpoint that isolates VDP timing stability for Sonic/Jurassic startup paths.; continue doing concrete emulation progress code codes and issues and slices; continue;
 
 
 
