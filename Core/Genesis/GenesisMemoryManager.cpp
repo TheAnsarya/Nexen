@@ -1367,16 +1367,17 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	if (IsTmssAddress(addr)) {
+		uint8_t effectiveValue = value;
 		uint32_t slot = addr & 0x03;
-		_segaCdBridgeA140[slot] = value;
-		_openBus = value;
+		_segaCdBridgeA140[slot] = effectiveValue;
+		_openBus = effectiveValue;
 		_tmssUnlocked = _segaCdBridgeA140[0] == 'S'
 			&& _segaCdBridgeA140[1] == 'E'
 			&& _segaCdBridgeA140[2] == 'G'
 			&& _segaCdBridgeA140[3] == 'A';
 		_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
 		_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
-		TrackDebugTranscriptEntry(addr, true, value, 0x02);
+		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x02);
 		return;
 	}
 	if (addr < _prgRomSize) {
@@ -1507,22 +1508,23 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) {
-		bridgeSlot[bridgeIndex] = value;
-		_openBus = value;
+		uint8_t effectiveValue = value;
+		bridgeSlot[bridgeIndex] = effectiveValue;
+		_openBus = effectiveValue;
 		if (IsSegaCdSubCpuControlAddress(addr)) {
-			UpdateSegaCdSubCpuControl(value);
+			UpdateSegaCdSubCpuControl(effectiveValue);
 		} else if (IsSegaCdAudioDataAddress(addr)) {
-			UpdateSegaCdAudioPath(addr, value);
+			UpdateSegaCdAudioPath(addr, effectiveValue);
 		} else if (IsSegaCdToolingControlAddress(addr)) {
-			UpdateSegaCdToolingContract(addr, value);
+			UpdateSegaCdToolingContract(addr, effectiveValue);
 		} else if (Is32xSh2ControlAddress(addr)) {
-			Update32xSh2Staging(addr, value);
+			Update32xSh2Staging(addr, effectiveValue);
 		} else if (Is32xCompositionControlAddress(addr)) {
-			Update32xCompositionStaging(addr, value);
+			Update32xCompositionStaging(addr, effectiveValue);
 		} else if (Is32xToolingControlAddress(addr)) {
-			Update32xToolingContract(addr, value);
+			Update32xToolingContract(addr, effectiveValue);
 		}
-		TrackDebugTranscriptEntry(addr, true, value, 0x02);
+		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x02);
 		return;
 	}
 
