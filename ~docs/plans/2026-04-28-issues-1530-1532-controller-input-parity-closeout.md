@@ -1,4 +1,4 @@
-# Issues #1530 and #1532 - Controller/Input Parity Closeout (2026-04-28)
+﻿# Issues #1530 and #1532 - Controller/Input Parity Closeout (2026-04-28)
 
 ## Summary
 

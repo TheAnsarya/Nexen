@@ -1780,6 +1780,30 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xA11281), 0xA5u);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA112EvenByteReadReturnsOpenBus) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
+
+		memoryManager.Write8(0xA11200, 0x01);
+		EXPECT_EQ(memoryManager.Read8(0xA11200), 0xA5u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA112EvenByteReadReturnsOpenBus) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
+
+		memoryManager.Write8(0xA11280, 0x01);
+		EXPECT_EQ(memoryManager.Read8(0xA11280), 0xA5u);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA111OddByteWriteDoesNotChangeBusRequest) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
@@ -1964,6 +1988,30 @@ namespace {
 		memoryManager.DebugWrite8(0xA11280, 0x01);
 		memoryManager.DebugWrite8(0xA11180, 0x01);
 		EXPECT_EQ(memoryManager.DebugRead8(0xA11181), 0xA5u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeA112EvenByteReadReturnsOpenBus) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
+
+		memoryManager.DebugWrite8(0xA11200, 0x01);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11200), 0xA5u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeMirroredA112EvenByteReadReturnsOpenBus) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
+
+		memoryManager.DebugWrite8(0xA11280, 0x01);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11280), 0xA5u);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshake16BitScenarioIsDeterministicAcrossRuns) {

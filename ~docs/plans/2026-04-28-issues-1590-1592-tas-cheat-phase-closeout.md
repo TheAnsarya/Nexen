@@ -1,4 +1,4 @@
-# Issues #1590-#1592 - TAS/Cheat Phase Closeout (2026-04-28)
+﻿# Issues #1590-#1592 - TAS/Cheat Phase Closeout (2026-04-28)
 
 ## Summary
 

@@ -1,4 +1,4 @@
-# Issues #1533 and #1535 - Debugger and UX/Config Parity Closeout (2026-04-28)
+﻿# Issues #1533 and #1535 - Debugger and UX/Config Parity Closeout (2026-04-28)
 
 ## Summary
 

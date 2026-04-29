@@ -1,4 +1,4 @@
-# Issues #1581-#1586 - Power Base Risk and Genesis-Side Sequencing Closeout (2026-04-28)
+﻿# Issues #1581-#1586 - Power Base Risk and Genesis-Side Sequencing Closeout (2026-04-28)
 
 ## Summary
 

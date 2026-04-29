@@ -1,4 +1,4 @@
-# Issues #1593-#1595 - Debugger Tooling and Docs Closeout (2026-04-28)
+﻿# Issues #1593-#1595 - Debugger Tooling and Docs Closeout (2026-04-28)
 
 ## Summary
 

@@ -1,4 +1,4 @@
-# Issues #1587-#1589 - Config UX Phase Closeout (2026-04-28)
+﻿# Issues #1587-#1589 - Config UX Phase Closeout (2026-04-28)
 
 ## Summary
 

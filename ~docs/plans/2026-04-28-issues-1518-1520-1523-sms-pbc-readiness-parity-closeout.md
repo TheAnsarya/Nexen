@@ -1,4 +1,4 @@
-# Issues #1518, #1520, #1523 - SMS/PBC Readiness and Parity Closeout (2026-04-28)
+﻿# Issues #1518, #1520, #1523 - SMS/PBC Readiness and Parity Closeout (2026-04-28)
 
 ## Summary
 
