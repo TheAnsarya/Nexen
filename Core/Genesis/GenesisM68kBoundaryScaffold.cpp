@@ -351,12 +351,6 @@ void GenesisPlatformBusStub::ApplyVdpControlWord(uint16_t controlWord) {
 		}
 
 		if (regIndex == 1) {
-			if ((regValue & 0x40) != 0) {
-				_vdpStatus |= 0x0008;
-			} else {
-				_vdpStatus = (uint16_t)(_vdpStatus & ~0x0008);
-			}
-
 			if ((regValue & 0x20) != 0) {
 				_dmaRequested = true;
 				if (_dmaMode == GenesisVdpDmaMode::None) {
@@ -379,9 +373,9 @@ GenesisVdpDmaMode GenesisPlatformBusStub::DecodeDmaModeFromControl(uint8_t regis
 		return GenesisVdpDmaMode::Fill;
 	}
 	if (modeBits == 0xC0) {
-		return GenesisVdpDmaMode::Copy;
+		return GenesisVdpDmaMode::VramCopy;
 	}
-	return GenesisVdpDmaMode::None;
+	return GenesisVdpDmaMode::Copy;
 }
 
 void GenesisPlatformBusStub::BeginDmaTransfer(GenesisVdpDmaMode mode, uint32_t transferWords) {
@@ -543,7 +537,7 @@ void GenesisPlatformBusStub::Reset() {
 	std::fill(_expansionIo.begin(), _expansionIo.end(), 0);
 	std::fill(_vdpIo.begin(), _vdpIo.end(), 0);
 	std::fill(_vdpRegisters.begin(), _vdpRegisters.end(), 0);
-	_vdpStatus = 0x0001;
+	_vdpStatus = 0x0200;
 	_vdpDataPortLatch = 0;
 	_vdpControlWordLatch = 0;
 	_planeASample = 0;

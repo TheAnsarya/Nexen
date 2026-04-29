@@ -20,7 +20,8 @@ enum class GenesisBusOwner : uint8_t {
 enum class GenesisVdpDmaMode : uint8_t {
 	None = 0,
 	Copy = 1,
-	Fill = 2
+	Fill = 2,
+	VramCopy = 3
 };
 
 struct GenesisPlatformBusSaveState {
@@ -166,7 +167,7 @@ private:
 	vector<uint8_t> _expansionIo;
 	vector<uint8_t> _vdpIo;
 	std::array<uint8_t, 0x20> _vdpRegisters = {};
-	uint16_t _vdpStatus = 0x0001;
+	uint16_t _vdpStatus = 0x0200;
 	uint16_t _vdpDataPortLatch = 0;
 	uint16_t _vdpControlWordLatch = 0;
 	uint8_t _planeASample = 0;
