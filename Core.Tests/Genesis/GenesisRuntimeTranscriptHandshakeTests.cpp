@@ -1453,6 +1453,42 @@ namespace {
 		EXPECT_EQ(runA, runB);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeOddAddressReadsCaptureExpectedAddressAndFlags) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		(void)memoryManager.DebugRead8(0xA11101);
+		(void)memoryManager.DebugRead8(0xA11201);
+		RuntimeTranscriptSnapshot snapshot = CaptureSnapshot(memoryManager);
+
+		ASSERT_EQ(snapshot.DebugLaneCount, 2u);
+		EXPECT_EQ(snapshot.DebugEntryAddress[0], 0xA11101u);
+		EXPECT_EQ(snapshot.DebugEntryAddress[1], 0xA11201u);
+		EXPECT_EQ(snapshot.DebugEntryFlags[0] & 0xC2, 0xC2);
+		EXPECT_EQ(snapshot.DebugEntryFlags[0] & 0x04, 0x00);
+		EXPECT_EQ(snapshot.DebugEntryFlags[1] & 0xC6, 0xC6);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeOddAddressReadsAreDeterministicAcrossRuns) {
+		auto runOddDebugReadScenario = []() {
+			Emulator emu;
+			std::vector<uint8_t> romData(0x400000);
+			GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+			(void)memoryManager.DebugRead8(0xA11101);
+			(void)memoryManager.DebugRead8(0xA11201);
+			(void)memoryManager.DebugRead8(0xA11101);
+			(void)memoryManager.DebugRead8(0xA11201);
+			return CaptureSnapshot(memoryManager);
+		};
+
+		RuntimeTranscriptSnapshot runA = runOddDebugReadScenario();
+		RuntimeTranscriptSnapshot runB = runOddDebugReadScenario();
+
+		EXPECT_EQ(runA, runB);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshake16BitAccessesCaptureExpectedEntriesAndFlags) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
