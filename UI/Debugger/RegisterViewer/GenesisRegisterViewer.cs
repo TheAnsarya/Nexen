@@ -8,10 +8,10 @@ namespace Nexen.Debugger.RegisterViewer;
 public sealed class GenesisRegisterViewer {
 	private static string DecodeTranscriptFlags(byte flags) {
 		if ((flags & 0x80) != 0) {
-			string op = (flags & 0x01) != 0 ? "Write" : "Read";
+			string hsOp = (flags & 0x01) != 0 ? "Write" : "Read";
 			string channel = (flags & 0x04) != 0 ? "Z80-RESET" : "Z80-BUSREQ";
-			string role = (flags & 0x02) != 0 ? "State" : "Command";
-			return op + " | HS | " + channel + " | " + role;
+			string hsRole = (flags & 0x02) != 0 ? "State" : "Command";
+			return hsOp + " | HS | " + channel + " | " + hsRole;
 		}
 
 		string op = (flags & 0x01) != 0 ? "Write" : "Read";

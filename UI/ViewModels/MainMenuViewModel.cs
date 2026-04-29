@@ -761,6 +761,7 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 			IsSelected = () => MainWindow.RomInfo.ConsoleType switch {
 				ConsoleType.Snes => ConfigManager.Config.Snes.Region == region,
 				ConsoleType.Nes => ConfigManager.Config.Nes.Region == region,
+				ConsoleType.Genesis => ConfigManager.Config.Genesis.Region == region,
 				ConsoleType.Sms =>
 					MainWindow.RomInfo.Format switch {
 						RomFormat.ColecoVision => ConfigManager.Config.Cv.Region,
@@ -791,6 +792,11 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 
 						ConfigManager.Config.Sms.ApplyConfig();
 						ConfigManager.Config.Cv.ApplyConfig();
+						break;
+
+					case ConsoleType.Genesis:
+						ConfigManager.Config.Genesis.Region = region;
+						ConfigManager.Config.Genesis.ApplyConfig();
 						break;
 
 					default:

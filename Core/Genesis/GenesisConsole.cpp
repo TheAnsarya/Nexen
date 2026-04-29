@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisConsole.h"
 #include "Genesis/GenesisM68k.h"
 #include "Genesis/GenesisVdp.h"
@@ -11,6 +11,47 @@
 #include "Genesis/GenesisDefaultVideoFilter.h"
 #include "Shared/Video/BaseVideoFilter.h"
 #include "Utilities/Serializer.h"
+
+namespace {
+	ConsoleRegion ResolveConfiguredGenesisRegion(ConsoleRegion configuredRegion) {
+		switch (configuredRegion) {
+			case ConsoleRegion::Pal:
+				return ConsoleRegion::Pal;
+
+			case ConsoleRegion::NtscJapan:
+			case ConsoleRegion::Ntsc:
+			case ConsoleRegion::Dendy:
+				return ConsoleRegion::Ntsc;
+
+			case ConsoleRegion::Auto:
+			default:
+				return ConsoleRegion::Auto;
+		}
+	}
+
+	ConsoleRegion DetectGenesisRegionFromHeader(const vector<uint8_t>& romData) {
+		if (romData.size() < 0x1F3) {
+			return ConsoleRegion::Ntsc;
+		}
+
+		bool hasPalMarker = false;
+		bool hasNtscMarker = false;
+		for (uint32_t i = 0x1F0; i <= 0x1F2; i++) {
+			char marker = (char)std::toupper((unsigned char)romData[i]);
+			if (marker == 'E') {
+				hasPalMarker = true;
+			} else if (marker == 'U' || marker == 'J') {
+				hasNtscMarker = true;
+			}
+		}
+
+		if (hasPalMarker && !hasNtscMarker) {
+			return ConsoleRegion::Pal;
+		}
+
+		return ConsoleRegion::Ntsc;
+	}
+}
 
 GenesisConsole::GenesisConsole(Emulator* emu) {
 	_emu = emu;
@@ -55,15 +96,9 @@ LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 		romData.insert(romData.end(), newSize - romData.size(), 0);
 	}
 
-	// Detect region from ROM header
-	if (romData.size() >= 0x1F2) {
-		char regionChar = (char)romData[0x1F0];
-		if (regionChar == 'E') {
-			_region = ConsoleRegion::Pal;
-		} else {
-			_region = ConsoleRegion::Ntsc;
-		}
-	}
+	EmuSettings* settings = _emu->GetSettings();
+	ConsoleRegion configuredRegion = ResolveConfiguredGenesisRegion(settings->GetGenesisConfig().Region);
+	_region = configuredRegion == ConsoleRegion::Auto ? DetectGenesisRegionFromHeader(romData) : configuredRegion;
 
 	// Create all hardware components
 	_vdp = std::make_unique<GenesisVdp>();

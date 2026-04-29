@@ -2003,6 +2003,7 @@ Add startup VBlank/HBlank interval tolerance checkpoint for Sonic/Jurassic trace
 
 continue;
 
+[Nexen] I see a lots of Harness and Smoke Tests and no actual emulator updates, tests and verification are important but the most important things are actual emulator  implementation; focus on making code changes to the emulator and UI code, not so much on tests/etc; continue;
 
 
 
