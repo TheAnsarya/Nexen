@@ -42,6 +42,7 @@ public sealed partial class GenesisConfig : BaseConfig<GenesisConfig> {
 
 	internal void InitializeDefaults(DefaultKeyMappingType defaultMappings) {
 		Port1.InitDefaults(defaultMappings, ControllerType.GenesisController);
+		Port2.InitDefaults(defaultMappings, ControllerType.GenesisController);
 	}
 }
 
