@@ -66,7 +66,15 @@ public sealed class GenesisRegisterViewer {
 		GenesisVdpState vdp = state.Vdp;
 		List<RegEntry> entries = [];
 		uint dmaLength = (uint)((vdp.Registers[20] << 8) | vdp.Registers[19]);
+		uint dmaEffectiveLength = dmaLength == 0 ? 0x10000u : dmaLength;
 		uint dmaSource = (uint)(((vdp.Registers[23] & 0x3F) << 17) | (vdp.Registers[22] << 9) | (vdp.Registers[21] << 1));
+		string dmaModeLabel = vdp.DmaMode switch {
+			0 => "68kCopy",
+			1 => "Fill",
+			2 => "VramCopy",
+			3 => "RawMode3",
+			_ => "Unknown"
+		};
 
 		entries.AddRange(new List<RegEntry>() {
 			new RegEntry("", "State"),
@@ -89,7 +97,9 @@ public sealed class GenesisRegisterViewer {
 			new RegEntry("", "DMA"),
 			new RegEntry("", "DmaActive", vdp.DmaActive),
 			new RegEntry("", "DmaMode", vdp.DmaMode, Format.X8),
+			new RegEntry("", "DmaModeLabel: " + dmaModeLabel),
 			new RegEntry("", "DmaLength", dmaLength, Format.X16),
+			new RegEntry("", "DmaEffectiveLength", dmaEffectiveLength, Format.X32),
 			new RegEntry("", "DmaSource", dmaSource, Format.X32),
 		});
 

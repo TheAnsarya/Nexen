@@ -34,12 +34,13 @@ void GenesisVdp::Reset(bool hardReset) {
 	_state.Registers[1] = 0x04; // Mode register 2 (display off)
 	_state.Registers[10] = 0xFF; // HBlank counter
 	_state.HIntCounter = _state.Registers[10];
-	_state.StatusRegister = VdpStatus::FifoEmpty | VdpStatus::FifoFull;
+	_state.StatusRegister = VdpStatus::FifoEmpty;
 	if (palMode) {
 		_state.StatusRegister |= VdpStatus::PalMode;
 	}
 	_state.DmaActive = false;
 	_state.DmaMode = 0;
+	_state.DataPortBuffer = 0;
 	_autoIncrement = 2;
 	_accessMode = 0;
 	_addressReg = 0;
@@ -85,8 +86,10 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 
 		if (_hCounter >= CyclesPerLine) {
 			_hCounter = 0;
+			_state.HCounter = 0;
 			ProcessScanline();
 			_scanline++;
+			_state.VCounter = _scanline;
 
 			if (_scanline >= _totalLines) {
 				// End of frame
@@ -373,6 +376,7 @@ uint16_t GenesisVdp::ReadDataPort() {
 	}
 
 	_addressReg += _autoIncrement;
+	_state.DataPortBuffer = result;
 	return result;
 }
 
@@ -404,6 +408,7 @@ uint16_t GenesisVdp::ReadHVCounter() {
 
 void GenesisVdp::WriteDataPort(uint16_t value) {
 	_pendingControlWrite = false;
+	_state.DataPortBuffer = value;
 
 	if (_accessMode == 1) { // VRAM write
 		uint32_t addr = _addressReg & 0xFFFE;
