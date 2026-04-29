@@ -1,4 +1,5 @@
 ﻿#include "pch.h"
+#include "Genesis/GenesisM68kBoundaryScaffold.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Shared/Emulator.h"
 
@@ -163,6 +164,48 @@ namespace {
 		memoryManager.Write16(0xa130f2, 0xab05);
 		EXPECT_EQ(memoryManager.Read8(0xa130f3), 0x05);
 		EXPECT_EQ(memoryManager.Read8(0x080000), (uint8_t)(0x05 * 0x11));
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, MapperRead16UsesAlignedAddressAndStatefulOpenBusHighByte) {
+		Emulator emu;
+		std::vector<uint8_t> romData = BuildMapperPatternRom(8);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xa130f3, 0x06);
+		memoryManager.Write8(0xa130f5, 0x02);
+
+		EXPECT_EQ(memoryManager.Read16(0xa130f2), 0x0206);
+		EXPECT_EQ(memoryManager.Read16(0xa130f3), 0x0606);
+		EXPECT_EQ(memoryManager.Read16(0xa130f4), 0x0602);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeAndScaffoldMapperViewsMatchForRegistersAndMappedWindows) {
+		std::vector<uint8_t> romData = BuildMapperPatternRom(8);
+
+		Emulator emu;
+		GenesisMemoryManager runtime = CreateMemoryManager(emu, romData);
+
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.LoadRom(romData);
+		scaffold.Startup();
+		auto& bus = scaffold.GetBus();
+
+		for (uint32_t slot = 0; slot < 7; slot++) {
+			uint32_t regAddress = 0xa130f3 + (slot * 2);
+			uint8_t targetBank = (uint8_t)((slot * 3 + 1) & 0x07);
+			runtime.Write8(regAddress, targetBank);
+			bus.WriteByte(regAddress, targetBank);
+		}
+
+		for (uint32_t slot = 0; slot < 7; slot++) {
+			uint32_t regAddress = 0xa130f3 + (slot * 2);
+			EXPECT_EQ(runtime.Read8(regAddress), bus.ReadByte(regAddress));
+
+			uint32_t mappedBase = 0x080000 + (slot * MapperWindowSize);
+			EXPECT_EQ(runtime.Read8(mappedBase), bus.ReadByte(mappedBase));
+			EXPECT_EQ(runtime.Read8(mappedBase + 1), bus.ReadByte(mappedBase + 1));
+			EXPECT_EQ(runtime.Read8(mappedBase + MapperWindowSize - 1), bus.ReadByte(mappedBase + MapperWindowSize - 1));
+		}
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, MapperRegisterStatusAndMappedDataReplayAcrossSerializeRoundtrip) {
