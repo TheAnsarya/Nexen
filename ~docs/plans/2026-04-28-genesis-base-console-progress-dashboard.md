@@ -1,4 +1,4 @@
-# Genesis Base Console Progress Dashboard (2026-04-28)
+﻿# Genesis Base Console Progress Dashboard (2026-04-28)
 
 ## Goal
 
@@ -16,9 +16,9 @@ Percentages are execution estimates based on current test coverage, implemented 
 
 | Subsystem | Completion | Done | Remaining |
 | ---------- | ---------- | ---------- | ---------- |
-| 68000 CPU execution baseline | 78% | Boundary/scaffold harnesses, deterministic compatibility digest path, checkpoint infrastructure | ISA edge-case correctness expansion, cycle-sensitive corner validation against hardware-focused corpus |
+| 68000 CPU execution baseline | 79% | Boundary/scaffold harnesses, deterministic compatibility digest path, checkpoint infrastructure, synthesized base-core compatibility gate | ISA edge-case correctness expansion, cycle-sensitive corner validation against hardware-focused corpus |
 | Z80 handoff + bus arbitration (base path) | 72% | Handshake/read-write parity tests and transcript determinism gates | Additional real-game transition coverage and timing-sensitive conflict validation |
-| Memory map + mapper edge handling | 76% | Mapper edge checkpoints and ownership gates in compatibility harness | Mapper-specific behavioral deltas for target-game bank behaviors |
+| Memory map + mapper edge handling | 77% | Mapper edge checkpoints and ownership gates in compatibility harness, base-core compatibility checkpoint synthesis | Mapper-specific behavioral deltas for target-game bank behaviors |
 | VDP rendering + DMA core path | 64% | VDP/DMA scaffolding and regression test packs exist | Pixel-accurate behavior and game-facing timing correctness for Sonic/Jurassic scenes |
 | Audio (YM2612 + SN76489 base path) | 58% | Audio timing scaffold and mixed-audio test lanes available | Game-facing audio correctness and latency/perf tuning on base console path |
 | Controller/input core path | 70% | Input/tooling checkpoints and controller matrix decomposition work available | Base-console UX and per-device mapping closure for week target |
@@ -65,6 +65,7 @@ By end of week, all items below should be true for base Genesis path:
 ## Tracking Issues
 
 - Current base Genesis focus umbrella: #1706
+- Base-core compatibility checkpoint slice: #1707
 - Immediate implementation backlog buckets:
 	- #1696, #1697, #1700, #1701, #1702
 

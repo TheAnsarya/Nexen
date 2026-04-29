@@ -103,6 +103,7 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DETERMINISM"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DEBUG-LANE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TAS-CHEAT"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-BASE-CORE"));
 		}
 	}
 

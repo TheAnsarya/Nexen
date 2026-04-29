@@ -394,6 +394,29 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 		string digestB = BuildCheckpointDigest(entry.Checkpoints);
 		addCheckpoint("GEN-COMPAT-DETERMINISM", digestA == digestB, std::format("digestA={} digestB={}", digestA, digestB));
 
+		auto hasPassingCheckpoint = [&entry](const string& checkpointId) {
+			return std::any_of(entry.Checkpoints.begin(), entry.Checkpoints.end(), [&](const GenesisCompatibilityCheckpoint& checkpoint) {
+				return checkpoint.Id == checkpointId && checkpoint.Pass;
+			});
+		};
+
+		bool baseCorePass = hasPassingCheckpoint("GEN-COMPAT-BOOT")
+			&& hasPassingCheckpoint("GEN-COMPAT-BUS")
+			&& hasPassingCheckpoint("GEN-COMPAT-BUS-OWNERSHIP")
+			&& hasPassingCheckpoint("GEN-COMPAT-HOST-MODE")
+			&& hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE")
+			&& hasPassingCheckpoint("GEN-COMPAT-RENDER")
+			&& hasPassingCheckpoint("GEN-COMPAT-AUDIO")
+			&& hasPassingCheckpoint("GEN-COMPAT-DETERMINISM");
+
+		if (titleClass == "sonic") {
+			baseCorePass = baseCorePass && hasPassingCheckpoint("GEN-TITLE-SONIC");
+		} else if (titleClass == "jurassic") {
+			baseCorePass = baseCorePass && hasPassingCheckpoint("GEN-TITLE-JURASSIC");
+		}
+
+		addCheckpoint("GEN-COMPAT-BASE-CORE", baseCorePass, std::format("class={}", titleClass));
+
 		entry.Pass = entry.FailCount == 0;
 		entry.Digest = BuildCheckpointDigest(entry.Checkpoints);
 		if (entry.Pass) {
