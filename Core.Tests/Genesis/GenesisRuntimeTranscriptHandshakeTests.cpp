@@ -1741,6 +1741,21 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xA11101), 0xA5u);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA111OddByteReadReturnsOpenBus) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
+
+		memoryManager.Write8(0xA11280, 0x01);
+		memoryManager.Write8(0xA11180, 0x01);
+
+		EXPECT_EQ(memoryManager.Read8(0xA11180), 0xA4u);
+		EXPECT_EQ(memoryManager.Read8(0xA11181), 0xA5u);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA112OddByteReadReturnsOpenBus) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
