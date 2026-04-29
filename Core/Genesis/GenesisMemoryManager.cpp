@@ -639,16 +639,16 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
 	if (IsTmssAddress(addr)) [[unlikely]] {
-		uint8_t value = _segaCdBridgeA140[addr & 0x03];
-		_openBus = value;
-		return value;
+		uint8_t effectiveValue = _segaCdBridgeA140[addr & 0x03];
+		_openBus = effectiveValue;
+		return effectiveValue;
 	}
 
 	if (TryGetSramOffset(addr, sramOffset)) [[unlikely]] {
-		uint8_t value = _saveRam[sramOffset];
-		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, value, MemoryOperationType::Read);
-		_openBus = value;
-		return value;
+		uint8_t effectiveValue = _saveRam[sramOffset];
+		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Read);
+		_openBus = effectiveValue;
+		return effectiveValue;
 	}
 
 	if (addr < 0x400000) [[likely]] {
@@ -667,10 +667,10 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	if (addr >= 0xFF0000) [[likely]] {
 		// Work RAM
 		uint32_t offset = addr & 0xFFFF;
-		uint8_t value = _workRam[offset];
-		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, value, MemoryOperationType::Read);
-		_openBus = value;
-		return value;
+		uint8_t effectiveValue = _workRam[offset];
+		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Read);
+		_openBus = effectiveValue;
+		return effectiveValue;
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
@@ -708,17 +708,26 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
 		uint8_t value = bridgeSlot[bridgeIndex];
 		if (IsSegaCdSubCpuControlAddress(addr)) {
-			value = GetSegaCdSubCpuStatusByte();
+			uint8_t effectiveValue = GetSegaCdSubCpuStatusByte();
+			value = effectiveValue;
 		} else if (IsSegaCdAudioStatusAddress(addr)) {
-			value = GetSegaCdAudioStatusByte(addr);
+			uint8_t effectiveValue = GetSegaCdAudioStatusByte(addr);
+			value = effectiveValue;
 		} else if (IsSegaCdToolingStatusAddress(addr)) {
-			value = GetSegaCdToolingStatusByte(addr);
+			uint8_t effectiveValue = GetSegaCdToolingStatusByte(addr);
+			value = effectiveValue;
 		} else if (Is32xSh2StatusAddress(addr)) {
-			value = Get32xSh2StatusByte(addr);
+			uint8_t effectiveValue = Get32xSh2StatusByte(addr);
+			value = effectiveValue;
 		} else if (Is32xCompositionStatusAddress(addr)) {
-			value = Get32xCompositionStatusByte(addr);
+			uint8_t effectiveValue = Get32xCompositionStatusByte(addr);
+			value = effectiveValue;
 		} else if (Is32xToolingStatusAddress(addr)) {
-			value = Get32xToolingStatusByte(addr);
+			uint8_t effectiveValue = Get32xToolingStatusByte(addr);
+			value = effectiveValue;
+		} else {
+			uint8_t effectiveValue = bridgeSlot[bridgeIndex];
+			value = effectiveValue;
 		}
 		TrackSegaCdTranscript(addr, false, value);
 		_openBus = value;
