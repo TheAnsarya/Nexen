@@ -38,6 +38,7 @@ void GenesisVdp::Reset(bool hardReset) {
 	if (palMode) {
 		_state.StatusRegister |= VdpStatus::PalMode;
 	}
+	_state.StatusRegister &= ~VdpStatus::OddFrame;
 	_state.DmaActive = false;
 	_state.DmaMode = 0;
 	_state.DataPortBuffer = 0;
@@ -96,6 +97,7 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 				_scanline = 0;
 				_state.VCounter = 0;
 				_state.StatusRegister &= ~VdpStatus::VBlankFlag;
+				_state.StatusRegister ^= VdpStatus::OddFrame;
 				_currentBuffer ^= 1;
 				_state.FrameCount++;
 			}
@@ -132,7 +134,6 @@ void GenesisVdp::ProcessScanline() {
 		// HBlank counter (reload from R10 after underflow)
 		if (_state.HIntCounter == 0) {
 			_state.HIntCounter = _state.Registers[10];
-			_state.StatusRegister |= VdpStatus::HIntPending;
 			_cpu->SetInterrupt(4); // Level 4 — HBlank
 		} else {
 			_state.HIntCounter--;
