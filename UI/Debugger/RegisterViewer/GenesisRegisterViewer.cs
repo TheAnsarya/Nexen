@@ -72,7 +72,6 @@ public sealed class GenesisRegisterViewer {
 			0 => "68kCopy",
 			1 => "Fill",
 			2 => "VramCopy",
-			3 => "RawMode3",
 			_ => "Unknown"
 		};
 

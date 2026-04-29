@@ -34,6 +34,11 @@ void GenesisVdp::Reset(bool hardReset) {
 	_state.Registers[1] = 0x04; // Mode register 2 (display off)
 	_state.Registers[10] = 0xFF; // HBlank counter
 	_state.HIntCounter = _state.Registers[10];
+	_state.HCounter = 0;
+	_state.VCounter = 0;
+	_state.AddressRegister = 0;
+	_state.CodeRegister = 0;
+	_state.WritePending = false;
 	_state.StatusRegister = VdpStatus::FifoEmpty;
 	if (palMode) {
 		_state.StatusRegister |= VdpStatus::PalMode;
@@ -484,7 +489,13 @@ void GenesisVdp::ProcessDma() {
 	                | ((uint32_t)_state.Registers[21] << 1);
 
 	if (dmaLength == 0) dmaLength = 0x10000;
-	_state.DmaMode = dmaMode;
+	if (dmaMode <= 1) {
+		_state.DmaMode = 0;
+	} else if (dmaMode == 2) {
+		_state.DmaMode = 1;
+	} else {
+		_state.DmaMode = 2;
+	}
 	_state.StatusRegister |= VdpStatus::DmaBusy;
 
 	if (dmaMode == 0 || dmaMode == 1) {
@@ -570,6 +581,7 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_state.FrameCount);
 	SV(_state.DmaActive);
 	SV(_state.DmaMode);
+	SV(_state.DataPortBuffer);
 	for (int i = 0; i < 24; i++) {
 		SVI(_state.Registers[i]);
 	}
