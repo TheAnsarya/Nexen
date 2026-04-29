@@ -947,8 +947,8 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	}
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
-		uint8_t writeValue = value;
-		WriteIo(addr, writeValue);
+		uint8_t effectiveValue = value;
+		WriteIo(addr, effectiveValue);
 		return;
 	}
 
@@ -1003,22 +1003,23 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	addr &= 0xFFFFFE;
 	if (IsTmssAddress(addr)) [[unlikely]] {
-		uint8_t highByte = (uint8_t)(value >> 8);
-		uint8_t lowByte = (uint8_t)(value & 0xFF);
-		Write8(addr, highByte);
-		Write8(addr + 1, lowByte);
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		Write8(addr, effectiveHighByte);
+		Write8(addr + 1, effectiveLowByte);
 		return;
 	}
 	if (HasSaveRam() && addr >= _sramStart && addr <= _sramEnd) [[unlikely]] {
-		uint8_t highByte = (uint8_t)(value >> 8);
-		uint8_t lowByte = (uint8_t)(value & 0xFF);
-		Write8(addr, highByte);
-		Write8(addr + 1, lowByte);
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		Write8(addr, effectiveHighByte);
+		Write8(addr + 1, effectiveLowByte);
 		return;
 	}
 
 	if (addr < _prgRomSize) [[likely]] {
-		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		uint16_t effectiveValue = value;
+		uint8_t effectiveLowByte = (uint8_t)(effectiveValue & 0xFF);
 		_openBus = effectiveLowByte;
 		return;
 	}
@@ -1035,12 +1036,13 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
-		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		uint16_t effectiveValue = value;
+		uint8_t effectiveLowByte = (uint8_t)(effectiveValue & 0xFF);
 		if (_tmssEnabled && !_tmssUnlocked) {
 			_openBus = effectiveLowByte;
 			return;
 		}
-		WriteVdpPort(addr, value);
+		WriteVdpPort(addr, effectiveValue);
 		_openBus = effectiveLowByte;
 		return;
 	}
@@ -1068,15 +1070,17 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
-		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
-		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		uint16_t effectiveValue = value;
+		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(effectiveValue & 0xFF);
 		Write8(addr, effectiveHighByte);
 		Write8(addr + 1, effectiveLowByte);
 		return;
 	}
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
-		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint16_t effectiveValue = value;
+		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
 		_z80BusRequest = (effectiveHighByte & 0x01) != 0;
 		_openBus = effectiveHighByte;
 		TrackSegaCdHandshakeTranscript(addr, true, effectiveHighByte);
@@ -1084,14 +1088,16 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
-		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint16_t effectiveValue = value;
+		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
 		_z80Reset = !(effectiveHighByte & 0x01);
 		_openBus = effectiveHighByte;
 		TrackSegaCdHandshakeTranscript(addr, true, effectiveHighByte);
 		return;
 	}
 
-	_openBus = (uint8_t)(value & 0xFF);
+	uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+	_openBus = effectiveLowByte;
 }
 
 // VDP port access
@@ -1117,12 +1123,13 @@ uint16_t GenesisMemoryManager::ReadVdpPort(uint32_t addr) {
 
 void GenesisMemoryManager::WriteVdpPort(uint32_t addr, uint16_t value) {
 	uint32_t port = addr & 0x1F;
+	uint16_t effectiveValue = value;
 	uint8_t effectiveHighByte = (uint8_t)(value >> 8);
 	uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
 	if (port < 0x04) {
-		_vdp->WriteDataPort(value);
+		_vdp->WriteDataPort(effectiveValue);
 	} else if (port < 0x08) {
-		_vdp->WriteControlPort(value);
+		_vdp->WriteControlPort(effectiveValue);
 	} else if (port >= 0x11 && port < 0x14) {
 		// PSG write — SN76489 accepts byte writes via top byte of word
 		if (_psg) {
