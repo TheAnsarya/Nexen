@@ -33,6 +33,16 @@ namespace {
 	__forceinline bool IsTmssAddress(uint32_t addr) {
 		return addr >= 0xA14000 && addr <= 0xA14003;
 	}
+
+	__forceinline uint8_t BuildVersionRegister(ConsoleRegion region) {
+		uint8_t version = 0xA0; // Overseas + base hardware profile
+		if (region == ConsoleRegion::Pal) {
+			version |= 0x40;
+		} else {
+			version &= (uint8_t)~0x40;
+		}
+		return version;
+	}
 }
 
 GenesisMemoryManager::GenesisMemoryManager() {
@@ -993,7 +1003,7 @@ void GenesisMemoryManager::WriteVdpPort(uint32_t addr, uint16_t value) {
 uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
 	uint32_t reg = addr & 0x1F;
 	switch (reg) {
-		case 0x01: return 0xA0; // Version register (overseas, NTSC, no expansion)
+		case 0x01: return BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
 		case 0x03: return _controlManager->ReadDataPort(0); // Controller 1 data
 		case 0x05: return _controlManager->ReadDataPort(1); // Controller 2 data
 		case 0x07: return 0xFF; // EXT port
@@ -1031,7 +1041,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		uint8_t value = _openBus;
 		switch (reg) {
 			case 0x01:
-				value = 0xA0;
+				value = BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
 				break;
 			case 0x03:
 				value = _controlManager ? _controlManager->ReadDataPort(0) : 0x7F;
