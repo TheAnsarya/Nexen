@@ -384,6 +384,10 @@ void GenesisPlatformBusStub::BeginDmaTransfer(GenesisVdpDmaMode mode, uint32_t t
 		return;
 	}
 
+	if (mode == GenesisVdpDmaMode::None) {
+		mode = GenesisVdpDmaMode::Copy;
+	}
+
 	_dmaMode = mode;
 	_dmaTransferWords = transferWords;
 	_vdpStatus |= VdpStatus::DmaBusy;
@@ -397,7 +401,16 @@ void GenesisPlatformBusStub::BeginDmaTransfer(GenesisVdpDmaMode mode, uint32_t t
 }
 
 uint32_t GenesisPlatformBusStub::ConsumeDmaContention(uint32_t requestedCycles) {
-	if (_dmaMode == GenesisVdpDmaMode::None || _dmaActiveCyclesRemaining == 0 || requestedCycles == 0) {
+	if (requestedCycles == 0) {
+		return 0;
+	}
+
+	if (_dmaMode == GenesisVdpDmaMode::None || _dmaActiveCyclesRemaining == 0) {
+		_dmaMode = GenesisVdpDmaMode::None;
+		_dmaTransferWords = 0;
+		_dmaActiveCyclesRemaining = 0;
+		_dmaRequested = false;
+		_vdpStatus &= (uint16_t)~VdpStatus::DmaBusy;
 		return 0;
 	}
 
@@ -771,7 +784,17 @@ void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state)
 	_z80WindowAccessed = state.Z80WindowAccessed;
 	_ioWindowAccessed = state.IoWindowAccessed;
 	_vdpWindowAccessed = state.VdpWindowAccessed;
-	_dmaRequested = state.DmaRequested;
+	bool dmaActive = _dmaMode != GenesisVdpDmaMode::None && _dmaActiveCyclesRemaining > 0;
+	if (!dmaActive) {
+		_dmaMode = GenesisVdpDmaMode::None;
+		_dmaTransferWords = 0;
+		_dmaActiveCyclesRemaining = 0;
+		_dmaRequested = false;
+		_vdpStatus &= (uint16_t)~VdpStatus::DmaBusy;
+	} else {
+		_dmaRequested = state.DmaRequested || dmaActive;
+		_vdpStatus |= VdpStatus::DmaBusy;
+	}
 	_romReadCount = state.RomReadCount;
 	_z80ReadCount = state.Z80ReadCount;
 	_z80WriteCount = state.Z80WriteCount;
@@ -1007,9 +1030,7 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 				_lastVdpValue = (uint8_t)((_vdpDataPortLatch >> ((address & 1) == 0 ? 8 : 0)) & 0xFF);
 			} else {
 				_lastVdpValue = (uint8_t)((_vdpStatus >> ((address & 1) == 0 ? 8 : 0)) & 0xFF);
-				if ((address & 1) == 0) {
-					_vdpStatus &= (uint16_t)~VdpStatus::VInterrupt;
-				}
+				_vdpStatus &= (uint16_t)~VdpStatus::VInterrupt;
 			}
 			result = _lastVdpValue;
 			break;
@@ -1212,7 +1233,7 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 					ApplyVdpControlWord(_vdpControlWordLatch);
 				}
 			}
-			if (address >= 0xC00004 && address <= 0xC00007 && (value & 0x80) != 0) {
+			if (address >= 0xC00004 && address <= 0xC00007 && (address & 1) == 1 && (_vdpControlWordLatch & 0x0080) != 0) {
 				_dmaRequested = true;
 				if (_dmaMode == GenesisVdpDmaMode::None) {
 					_dmaMode = GenesisVdpDmaMode::Copy;
