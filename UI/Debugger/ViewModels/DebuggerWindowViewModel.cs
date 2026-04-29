@@ -191,6 +191,9 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 	/// Master clock value for tracking elapsed time.
 	/// </summary>
 	private UInt64 _masterClock = 0;
+	private bool _debuggerSessionActivated = false;
+	private bool _debuggerSessionActivationInProgress = false;
+	private bool _breakpointCpuTypeRegistered = false;
 
 	/// <summary>
 	/// Flag to track whether to auto-switch back to source view.
@@ -221,15 +224,6 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 			Log.Debug($"[DebuggerVM] InitializeDebugger start requestedCpu={cpuType}");
 			DebugApi.InitializeDebugger();
 			Log.Debug($"[DebuggerVM] InitializeDebugger complete requestedCpu={cpuType}");
-			_ = Task.Run(() => {
-				try {
-					Log.Debug("[DebuggerVM] Async workspace load start");
-					DebugWorkspaceManager.Load();
-					Log.Debug("[DebuggerVM] Async workspace load complete");
-				} catch (Exception ex) {
-					Log.Error(ex, "[DebuggerVM] Async DebugWorkspaceManager.Load failed - continuing with empty workspace");
-				}
-			});
 		}
 
 		ConsoleType consoleType;
@@ -329,17 +323,57 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 		DebugWorkspaceManager.SymbolProviderChanged += DebugWorkspaceManager_SymbolProviderChanged;
 		LabelManager.OnLabelUpdated += LabelManager_OnLabelUpdated;
 		BreakpointManager.BreakpointsChanged += BreakpointManager_BreakpointsChanged;
+		Log.Debug("[DebuggerVM] Constructor checkpoint: final subscriptions complete");
+	}
+
+	public void ActivateDebuggerSessionAsync(Action? onActivated = null) {
+		if (_debuggerSessionActivated) {
+			if (onActivated is not null) {
+				Dispatcher.UIThread.Post(onActivated);
+			}
+			return;
+		}
+
+		if (_debuggerSessionActivationInProgress) {
+			return;
+		}
+
+		_debuggerSessionActivationInProgress = true;
 		_ = Task.Run(() => {
 			try {
-				Log.Debug("[DebuggerVM] Async debugger activation start");
-				BreakpointManager.AddCpuType(CpuType);
-				ConfigApi.SetDebuggerFlag(CpuType.GetDebuggerFlag(), true);
-				Log.Debug("[DebuggerVM] Async debugger activation complete");
+				Log.Debug("[DebuggerVM] Activating debugger session (async)");
+				if (CpuType.SupportsDebuggerFlag()) {
+					_ = Task.Run(() => {
+						try {
+							Log.Debug("[DebuggerVM] Background breakpoint registration begin: BreakpointManager.AddCpuType");
+							BreakpointManager.AddCpuType(CpuType);
+							_breakpointCpuTypeRegistered = true;
+							Log.Debug("[DebuggerVM] Background breakpoint registration complete: BreakpointManager.AddCpuType");
+						} catch (Exception ex) {
+							Log.Error(ex, "[DebuggerVM] Background breakpoint registration failed");
+						}
+					});
+				} else {
+					Log.Debug($"[DebuggerVM] Background breakpoint registration skipped: unsupported debugger cpu={CpuType}");
+				}
+				if (CpuType.SupportsDebuggerFlag()) {
+					Log.Debug("[DebuggerVM] Activation step begin: ConfigApi.SetDebuggerFlag(true)");
+					ConfigApi.SetDebuggerFlag(CpuType.GetDebuggerFlag(), true);
+					Log.Debug("[DebuggerVM] Activation step end: ConfigApi.SetDebuggerFlag(true)");
+				} else {
+					Log.Debug($"[DebuggerVM] Activation step skipped: debugger flag unsupported for cpu={CpuType}");
+				}
+				_debuggerSessionActivated = true;
+				Log.Debug("[DebuggerVM] Debugger session activated (async)");
 			} catch (Exception ex) {
-				Log.Error(ex, "[DebuggerVM] Async debugger activation failed");
+				Log.Error(ex, "[DebuggerVM] Debugger session activation failed");
+			} finally {
+				_debuggerSessionActivationInProgress = false;
+				if (_debuggerSessionActivated && onActivated is not null) {
+					Dispatcher.UIThread.Post(onActivated);
+				}
 			}
 		});
-		Log.Debug("[DebuggerVM] Constructor checkpoint: final subscriptions complete");
 	}
 
 	/// <summary>
@@ -382,11 +416,25 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 	/// Initializes all debugger panels with current data.
 	/// </summary>
 	public void Init() {
+		Log.Debug($"[DebuggerVM] Init step begin: WatchList.UpdateWatch cpu={CpuType}");
 		WatchList.UpdateWatch();
-		CallStack.UpdateCallStack();
+		Log.Debug($"[DebuggerVM] Init step end: WatchList.UpdateWatch cpu={CpuType}");
+		Log.Debug($"[DebuggerVM] Init step begin: CallStack.UpdateCallStack cpu={CpuType}");
+		if (EmuApi.IsPaused()) {
+			CallStack.UpdateCallStack();
+		} else {
+			Log.Debug($"[DebuggerVM] Init step skipped: CallStack.UpdateCallStack while running cpu={CpuType}");
+		}
+		Log.Debug($"[DebuggerVM] Init step end: CallStack.UpdateCallStack cpu={CpuType}");
+		Log.Debug($"[DebuggerVM] Init step begin: LabelList.UpdateLabelList cpu={CpuType}");
 		LabelList.UpdateLabelList();
+		Log.Debug($"[DebuggerVM] Init step end: LabelList.UpdateLabelList cpu={CpuType}");
+		Log.Debug($"[DebuggerVM] Init step begin: FunctionList.UpdateFunctionList cpu={CpuType}");
 		FunctionList?.UpdateFunctionList();
+		Log.Debug($"[DebuggerVM] Init step end: FunctionList.UpdateFunctionList cpu={CpuType}");
+		Log.Debug($"[DebuggerVM] Init step begin: BreakpointList.UpdateBreakpoints cpu={CpuType}");
 		BreakpointList.UpdateBreakpoints();
+		Log.Debug($"[DebuggerVM] Init step end: BreakpointList.UpdateBreakpoints cpu={CpuType}");
 	}
 
 	/// <summary>
@@ -402,8 +450,17 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 		DebugWorkspaceManager.SymbolProviderChanged -= DebugWorkspaceManager_SymbolProviderChanged;
 		LabelManager.OnLabelUpdated -= LabelManager_OnLabelUpdated;
 		BreakpointManager.BreakpointsChanged -= BreakpointManager_BreakpointsChanged;
-		BreakpointManager.RemoveCpuType(CpuType);
-		ConfigApi.SetDebuggerFlag(CpuType.GetDebuggerFlag(), false);
+		if (_breakpointCpuTypeRegistered) {
+			BreakpointManager.RemoveCpuType(CpuType);
+			_breakpointCpuTypeRegistered = false;
+		}
+
+		if (_debuggerSessionActivated) {
+			if (CpuType.SupportsDebuggerFlag()) {
+				ConfigApi.SetDebuggerFlag(CpuType.GetDebuggerFlag(), false);
+			}
+			_debuggerSessionActivated = false;
+		}
 	}
 
 	/// <summary>
@@ -494,7 +551,9 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 		LabelList.RefreshLabelList();
 		FunctionList?.UpdateFunctionList();
 		WatchList.UpdateWatch();
-		CallStack.UpdateCallStack();
+		if (EmuApi.IsPaused()) {
+			CallStack.UpdateCallStack();
+		}
 	}
 
 	/// <summary>

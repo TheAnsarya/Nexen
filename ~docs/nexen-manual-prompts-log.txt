@@ -2071,13 +2071,30 @@ go
 
 1
 
+continue;
 
+The loading screen didn't close, the emulator shows only black screen, debug window opened but no content and everything was crashed and frozen; continue;
 
+--- steer
+THe loading screen doesn't close, so has initialization finished before you open a rom and open the debugger? did you want long enough?
 
+this is what you're looking at (see picture)
 
+I opened Nexen, it ran, loading screen went away, I opened a rom, nothing but black screen, I opened Debugger, it opened but had no data, I clcicked a menu, it froze and crashed; continue;Is the emulator running after we open a Genesis rom? or does it crash when trying to load? and why? fix that portion of emulation that breaks when we play the game; continue;
 
+continue working for a long time
 
+Is the emulator running after we open a Genesis rom? or does it crash when trying to load? and why? fix that portion of emulation that breaks when we play the game; continue;
 
+continue working for a long time
+
+[Nexen] compare to other emulators' source code for the startup process, memory managment, video, etc to see if there is a better way to do it, and continue working on emulator code in order to display something, anything, after opening a Genesis ROM, load it and run it and intiialize it, and go; OUR GOAL: run and play Sonic and Jurassic Park, fix anything and everything to make Genesis/Megadrive emulation possible, review and check other emulators and use them as a reference path; continue;
+
+continue working for a long time, you didn't return a response, which means you need to do smaller reponses, not small, but smaller than that last one which basically froze the prompt; work the last prompt: [Nexen] compare to other emulators' source code for the startup process, memory managment, video, etc to see if there is a better way to do it, and continue working on emulator code in order to display something, anything, after opening a Genesis ROM, load it and run it and intiialize it, and go; OUR GOAL: run and play Sonic and Jurassic Park, fix anything and everything to make Genesis/Megadrive emulation possible, review and check other emulators and use them as a reference path; continue;
+
+I can continue immediately on the next blocker by tracing the first bad control-flow transition after the $a04000 loop exit and patching that path next.
+
+[Nexen] Do 3 steps, 1) git commit everything with comments on issues and such; 2) Make a `\~sources\Emus\` folder (add to gitignore) and then research and download and then add subfolders with sourcecode from other emulators for the Sega Genesis/MegaDrive; Then use the sources to compare to the Nexen Genesis core emulation code and fix our code so we can load and run Genesis games, I only care if the emulator can run a game; 3) Yes do the Natural next steps: Run a longer Jurassic soak (60-120s) to confirm stability beyond early startup loops., Move to the next functional blocker after this control-flow fix (likely interpreter/VDP progress out of current loop).; continue;
 
 
 

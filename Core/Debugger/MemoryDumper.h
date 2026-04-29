@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include <unordered_map>
 #include "Debugger/DebugTypes.h"
@@ -15,6 +15,7 @@ class PceConsole;
 class SmsConsole;
 class GbaConsole;
 class WsConsole;
+class GenesisConsole;
 class Emulator;
 class Debugger;
 
@@ -85,6 +86,7 @@ private:
 	SmsConsole* _smsConsole = nullptr;                                  ///< Sega Master System console
 	GbaConsole* _gbaConsole = nullptr;                                  ///< Game Boy Advance console
 	WsConsole* _wsConsole = nullptr;                                    ///< WonderSwan console
+	GenesisConsole* _genesisConsole = nullptr;                          ///< Sega Genesis console
 	BaseCartridge* _cartridge = nullptr;                                ///< Active cartridge
 	Debugger* _debugger = nullptr;                                      ///< Main debugger
 	bool _isMemorySupported[DebugUtilities::GetMemoryTypeCount()] = {}; ///< Supported memory types

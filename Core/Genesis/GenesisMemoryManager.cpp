@@ -37,8 +37,15 @@ namespace {
 		return isResetAddress;
 	}
 
+	__forceinline bool IsYm2612Address(uint32_t addr) {
+		uint32_t effectiveAddr = addr & 0xFFFFFF;
+		bool isYm2612Address = effectiveAddr >= 0xA04000 && effectiveAddr <= 0xA04003;
+		return isYm2612Address;
+	}
+
 	__forceinline uint8_t GetZ80BusAckStatusBit(bool busRequested, bool resetAsserted) {
-		uint8_t ackStatus = (busRequested && !resetAsserted) ? 0x00 : 0x01;
+		// Bit0 = 0 when 68k owns the Z80 bus (bus requested OR Z80 held in reset).
+		uint8_t ackStatus = (busRequested || resetAsserted) ? 0x00 : 0x01;
 		return ackStatus;
 	}
 
@@ -797,6 +804,13 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	}
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
+		if (IsYm2612Address(addr)) {
+			// YM2612 status/data ports. Report not-busy so startup polls can progress.
+			uint8_t effectiveValue = 0x00;
+			_openBus = effectiveValue;
+			return effectiveValue;
+		}
+
 		// Z80 address space
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
@@ -921,6 +935,14 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	}
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
+		if (IsYm2612Address(addr)) {
+			uint8_t effectiveHighByte = 0x00;
+			uint8_t effectiveLowByte = 0x00;
+			uint16_t effectiveValue = (uint16_t)(((uint16_t)effectiveHighByte << 8) | effectiveLowByte);
+			_openBus = effectiveLowByte;
+			return effectiveValue;
+		}
+
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
 			uint8_t effectiveHighByte = _z80Ram[z80Addr];
@@ -935,9 +957,13 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	}
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
-		uint8_t effectiveHi = ReadIo(addr);
+		// 68k word access targets even addresses; Genesis I/O registers are byte-mapped on odd addresses.
+		// Keep the high byte neutral and read the register from addr+1.
+		uint8_t effectiveHi = 0x00;
 		uint8_t effectiveLo = ReadIo(addr + 1);
-		return ((uint16_t)effectiveHi << 8) | effectiveLo;
+		uint16_t effectiveValue = ((uint16_t)effectiveHi << 8) | effectiveLo;
+		_openBus = effectiveLo;
+		return effectiveValue;
 	}
 
 	if (addr >= 0xA130F0 && addr <= 0xA130FE) [[unlikely]] {
@@ -1055,6 +1081,11 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		uint8_t effectiveValue = value;
+		if (IsYm2612Address(addr)) {
+			_openBus = effectiveValue;
+			return;
+		}
+
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
 			_z80Ram[z80Addr] = effectiveValue;
@@ -1181,6 +1212,11 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
 		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		if (IsYm2612Address(addr)) {
+			_openBus = effectiveLowByte;
+			return;
+		}
+
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
 			_z80Ram[z80Addr] = effectiveHighByte;
@@ -1191,10 +1227,10 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	}
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
-		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
 		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
-		WriteIo(addr, effectiveHighByte);
+		// 68k word writes hit even addresses; only the low byte maps to the odd-byte I/O register.
 		WriteIo(addr + 1, effectiveLowByte);
+		_openBus = effectiveLowByte;
 		return;
 	}
 

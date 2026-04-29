@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Debugger/Debugger.h"
 #include "Shared/Emulator.h"
 #include "SNES/SnesMemoryManager.h"
@@ -25,6 +25,8 @@
 #include "GBA/GbaMemoryManager.h"
 #include "WS/WsConsole.h"
 #include "WS/WsMemoryManager.h"
+#include "Genesis/GenesisConsole.h"
+#include "Genesis/GenesisMemoryManager.h"
 #include "Shared/Video/VideoDecoder.h"
 #include "Debugger/DebugTypes.h"
 #include "Debugger/DebugBreakHelper.h"
@@ -55,6 +57,8 @@ MemoryDumper::MemoryDumper(Debugger* debugger) {
 		_gbaConsole = gba;
 	} else if (WsConsole* ws = dynamic_cast<WsConsole*>(console)) {
 		_wsConsole = ws;
+	} else if (GenesisConsole* genesis = dynamic_cast<GenesisConsole*>(console)) {
+		_genesisConsole = genesis;
 	}
 
 	for (int i = 0; i < DebugUtilities::GetMemoryTypeCount(); i++) {
@@ -114,6 +118,8 @@ uint32_t MemoryDumper::GetMemorySize(MemoryType type) {
 			return 0x10000000;
 		case MemoryType::WsMemory:
 			return 0x100000;
+		case MemoryType::GenesisMemory:
+			return 0x1000000;
 		case MemoryType::SnesRegister:
 			return 0x10000;
 		case MemoryType::SmsPort:
@@ -196,6 +202,14 @@ void MemoryDumper::GetMemoryState(MemoryType type, uint8_t* buffer) {
 				}
 			}
 			break;
+
+		case MemoryType::GenesisMemory: {
+			GenesisMemoryManager* memManager = _genesisConsole->GetMemoryManager();
+			for (int i = 0; i <= 0xFFFFFF; i++) {
+				buffer[i] = memManager->DebugRead8(i);
+			}
+			break;
+		}
 		}
 
 		case MemoryType::NesPpuMemory: {
@@ -326,6 +340,9 @@ void MemoryDumper::InternalSetMemoryValues(MemoryType originalMemoryType, uint32
 			case MemoryType::WsMemory:
 				_wsConsole->GetMemoryManager()->DebugWrite(address, value);
 				break;
+			case MemoryType::GenesisMemory:
+				_genesisConsole->GetMemoryManager()->DebugWrite8(address, value);
+				break;
 			case MemoryType::SpcDspRegisters:
 				_spc->DebugWriteDspReg(address, value);
 				break;
@@ -449,6 +466,8 @@ uint8_t MemoryDumper::InternalGetMemoryValue(MemoryType memoryType, uint32_t add
 			return _gbaConsole->GetMemoryManager()->DebugRead(address);
 		case MemoryType::WsMemory:
 			return _wsConsole->GetMemoryManager()->DebugRead(address);
+		case MemoryType::GenesisMemory:
+			return _genesisConsole->GetMemoryManager()->DebugRead8(address);
 		case MemoryType::WsPort:
 			return _wsConsole->GetMemoryManager()->DebugReadPort<uint8_t>(address);
 

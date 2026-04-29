@@ -14,6 +14,7 @@ private:
 	GenesisMemoryManager* _memoryManager = nullptr;
 
 	GenesisM68kState _state = {};
+	uint8_t _pendingInterruptLevel = 0;
 
 	// Prefetch
 	uint16_t _prefetch[2] = {};

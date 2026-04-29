@@ -3,6 +3,7 @@
 #include "Genesis/GenesisConsole.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Shared/Emulator.h"
+#include "Shared/MessageManager.h"
 #include "Utilities/Serializer.h"
 
 void GenesisM68k::Init(Emulator* emu, GenesisConsole* console, GenesisMemoryManager* memoryManager) {
@@ -231,6 +232,7 @@ void GenesisM68k::WriteEa(uint8_t mode, uint8_t reg, uint8_t size, uint32_t valu
 void GenesisM68k::RaiseException(uint8_t vector) {
 	// Switch to supervisor mode, push PC and SR
 	uint16_t oldSR = _state.SR;
+	uint32_t faultPc = _state.PC;
 	_state.SR |= M68kFlags::Supervisor;
 	_state.SR &= ~M68kFlags::Trace;
 
@@ -245,6 +247,11 @@ void GenesisM68k::RaiseException(uint8_t vector) {
 
 	// Read vector
 	uint32_t vectorAddr = Read32(vector * 4);
+	static uint64_t exceptionCount = 0;
+	exceptionCount++;
+	if (exceptionCount <= 128 || vector <= 16 || vectorAddr == 0 || (exceptionCount % 2048) == 0) {
+		MessageManager::Log(std::format("[Genesis][M68K] Exception #{} vector={} pc=${:06x} newpc=${:06x} oldsr=${:04x}", exceptionCount, vector, faultPc & 0xffffff, vectorAddr & 0xffffff, oldSR));
+	}
 	_state.PC = vectorAddr;
 	_state.Stopped = false;
 	AddCycles(34);
@@ -252,6 +259,7 @@ void GenesisM68k::RaiseException(uint8_t vector) {
 
 void GenesisM68k::ProcessInterrupt(uint8_t level) {
 	uint16_t oldSR = _state.SR;
+	uint32_t oldPc = _state.PC;
 	_state.SR = (_state.SR & ~M68kFlags::IntMask) | ((uint16_t)level << 8);
 	_state.SR |= M68kFlags::Supervisor;
 	_state.SR &= ~M68kFlags::Trace;
@@ -267,20 +275,33 @@ void GenesisM68k::ProcessInterrupt(uint8_t level) {
 	// Genesis interrupt vectors: level 2=external, 4=HBlank, 6=VBlank
 	uint8_t vector = 24 + level;
 	_state.PC = Read32(vector * 4);
+	if (_console && _console->GetVdp()) {
+		_console->GetVdp()->AcknowledgeInterrupt(level);
+	}
+	static uint64_t irqCount = 0;
+	irqCount++;
+	if (irqCount <= 128 || (irqCount % 4096) == 0) {
+		MessageManager::Log(std::format("[Genesis][M68K] IRQ #{} level={} vector={} pc=${:06x}->${:06x} sr=${:04x}", irqCount, level, vector, oldPc & 0xffffff, _state.PC & 0xffffff, oldSR));
+	}
 	_state.Stopped = false;
 	AddCycles(44);
 }
 
 void GenesisM68k::SetInterrupt(uint8_t level) {
-	// Will be processed at start of next instruction
-	if (level > GetIntMask() || level == 7) {
-		ProcessInterrupt(level);
+	// Latch and process at the next instruction boundary inside Exec().
+	if (level > _pendingInterruptLevel) {
+		_pendingInterruptLevel = level;
 	}
 }
 
 // ===== Main execution =====
 
 void GenesisM68k::Exec() {
+	if (_pendingInterruptLevel > 0 && (_pendingInterruptLevel > GetIntMask() || _pendingInterruptLevel == 7)) {
+		ProcessInterrupt(_pendingInterruptLevel);
+		_pendingInterruptLevel = 0;
+	}
+
 	if (_state.Stopped) {
 		AddCycles(4);
 		return;
@@ -291,17 +312,23 @@ void GenesisM68k::Exec() {
 }
 
 void GenesisM68k::Reset(bool softReset) {
+	static uint64_t resetCount = 0;
+	resetCount++;
 	if (!softReset) {
 		memset(&_state, 0, sizeof(_state));
 	}
 
 	_state.SR = 0x2700; // Supervisor mode, all interrupts masked
 	_state.Stopped = false;
+	_pendingInterruptLevel = 0;
 
 	// Read initial SSP and PC from vector table
 	_state.SSP = Read32(0x000000);
 	_state.A[7] = _state.SSP;
 	_state.PC = Read32(0x000004);
+	if (resetCount <= 8 || (resetCount % 256) == 0) {
+		MessageManager::Log(std::format("[Genesis][M68K] Reset #{} soft={} ssp=${:08x} pc=${:06x}", resetCount, softReset ? 1 : 0, _state.SSP, _state.PC));
+	}
 }
 
 // ===== Instruction decoder =====
@@ -584,7 +611,7 @@ void GenesisM68k::Op_MOVEM(uint16_t opcode) {
 	if (toMemory) {
 		if (mode == 4) { // Predecrement: register order is reversed
 			for (int i = 15; i >= 0; i--) {
-				if (regList & (1 << (15 - i))) {
+				if (regList & (1 << i)) {
 					uint32_t val = (i < 8) ? _state.D[i] : _state.A[i - 8];
 					if (size == 1) {
 						_state.A[reg] -= 2;
@@ -596,7 +623,13 @@ void GenesisM68k::Op_MOVEM(uint16_t opcode) {
 				}
 			}
 		} else {
-			uint32_t addr = GetEffectiveAddress(mode, reg, size);
+			uint32_t addr;
+			if (mode == 3) {
+				// (An)+ uses the current address and updates An after the full transfer.
+				addr = _state.A[reg];
+			} else {
+				addr = GetEffectiveAddress(mode, reg, size);
+			}
 			for (int i = 0; i < 16; i++) {
 				if (regList & (1 << i)) {
 					uint32_t val = (i < 8) ? _state.D[i] : _state.A[i - 8];
@@ -608,6 +641,9 @@ void GenesisM68k::Op_MOVEM(uint16_t opcode) {
 						addr += 4;
 					}
 				}
+			}
+			if (mode == 3) {
+				_state.A[reg] = addr;
 			}
 		}
 	} else { // To registers
@@ -748,11 +784,23 @@ void GenesisM68k::Op_ADDI(uint16_t opcode) {
 	uint32_t imm = (size == 2) ? FetchLong() : (FetchWord() & mask);
 	uint8_t mode = (opcode >> 3) & 7;
 	uint8_t reg = opcode & 7;
-
-	uint32_t dst = ReadEa(mode, reg, size);
-	uint64_t result = (uint64_t)(dst & mask) + (uint64_t)(imm & mask);
-	SetFlags_Add(imm, dst, (uint32_t)result, size);
-	WriteEa(mode, reg, size, (uint32_t)result);
+	uint32_t dst;
+	if (mode <= 1) {
+		dst = ReadEa(mode, reg, size);
+		uint64_t result = (uint64_t)(dst & mask) + (uint64_t)(imm & mask);
+		SetFlags_Add(imm, dst, (uint32_t)result, size);
+		WriteEa(mode, reg, size, (uint32_t)result);
+	} else {
+		uint32_t addr = GetEffectiveAddress(mode, reg, size);
+		if (size == 0) dst = Read8(addr);
+		else if (size == 1) dst = Read16(addr);
+		else dst = Read32(addr);
+		uint64_t result = (uint64_t)(dst & mask) + (uint64_t)(imm & mask);
+		SetFlags_Add(imm, dst, (uint32_t)result, size);
+		if (size == 0) Write8(addr, (uint8_t)result);
+		else if (size == 1) Write16(addr, (uint16_t)result);
+		else Write32(addr, (uint32_t)result);
+	}
 	AddCycles(size == 2 ? 16 : 8);
 }
 
@@ -767,10 +815,24 @@ void GenesisM68k::Op_ADDQ(uint16_t opcode) {
 		_state.A[reg] += data;
 	} else {
 		uint32_t mask = SizeMask(size);
-		uint32_t dst = ReadEa(mode, reg, size) & mask;
-		uint64_t result = (uint64_t)dst + data;
-		SetFlags_Add(data, dst, (uint32_t)result, size);
-		WriteEa(mode, reg, size, (uint32_t)result);
+		if (mode == 0) {
+			uint32_t dst = ReadEa(mode, reg, size) & mask;
+			uint64_t result = (uint64_t)dst + data;
+			SetFlags_Add(data, dst, (uint32_t)result, size);
+			WriteEa(mode, reg, size, (uint32_t)result);
+		} else {
+			uint32_t addr = GetEffectiveAddress(mode, reg, size);
+			uint32_t dst;
+			if (size == 0) dst = Read8(addr);
+			else if (size == 1) dst = Read16(addr);
+			else dst = Read32(addr);
+			dst &= mask;
+			uint64_t result = (uint64_t)dst + data;
+			SetFlags_Add(data, dst, (uint32_t)result, size);
+			if (size == 0) Write8(addr, (uint8_t)result);
+			else if (size == 1) Write16(addr, (uint16_t)result);
+			else Write32(addr, (uint32_t)result);
+		}
 	}
 	AddCycles(4);
 }
@@ -823,10 +885,24 @@ void GenesisM68k::Op_SUBI(uint16_t opcode) {
 	uint8_t mode = (opcode >> 3) & 7;
 	uint8_t reg = opcode & 7;
 
-	uint32_t dst = ReadEa(mode, reg, size) & mask;
-	uint32_t result = dst - imm;
-	SetFlags_Sub(imm, dst, result, size);
-	WriteEa(mode, reg, size, result);
+	if (mode <= 1) {
+		uint32_t dst = ReadEa(mode, reg, size) & mask;
+		uint32_t result = dst - imm;
+		SetFlags_Sub(imm, dst, result, size);
+		WriteEa(mode, reg, size, result);
+	} else {
+		uint32_t addr = GetEffectiveAddress(mode, reg, size);
+		uint32_t dst;
+		if (size == 0) dst = Read8(addr);
+		else if (size == 1) dst = Read16(addr);
+		else dst = Read32(addr);
+		dst &= mask;
+		uint32_t result = dst - imm;
+		SetFlags_Sub(imm, dst, result, size);
+		if (size == 0) Write8(addr, (uint8_t)result);
+		else if (size == 1) Write16(addr, (uint16_t)result);
+		else Write32(addr, result);
+	}
 	AddCycles(size == 2 ? 16 : 8);
 }
 
@@ -841,10 +917,24 @@ void GenesisM68k::Op_SUBQ(uint16_t opcode) {
 		_state.A[reg] -= data;
 	} else {
 		uint32_t mask = SizeMask(size);
-		uint32_t dst = ReadEa(mode, reg, size) & mask;
-		uint32_t result = dst - data;
-		SetFlags_Sub(data, dst, result, size);
-		WriteEa(mode, reg, size, result);
+		if (mode == 0) {
+			uint32_t dst = ReadEa(mode, reg, size) & mask;
+			uint32_t result = dst - data;
+			SetFlags_Sub(data, dst, result, size);
+			WriteEa(mode, reg, size, result);
+		} else {
+			uint32_t addr = GetEffectiveAddress(mode, reg, size);
+			uint32_t dst;
+			if (size == 0) dst = Read8(addr);
+			else if (size == 1) dst = Read16(addr);
+			else dst = Read32(addr);
+			dst &= mask;
+			uint32_t result = dst - data;
+			SetFlags_Sub(data, dst, result, size);
+			if (size == 0) Write8(addr, (uint8_t)result);
+			else if (size == 1) Write16(addr, (uint16_t)result);
+			else Write32(addr, result);
+		}
 	}
 	AddCycles(4);
 }
@@ -1038,10 +1128,24 @@ void GenesisM68k::Op_ANDI(uint16_t opcode) {
 	uint8_t mode = (opcode >> 3) & 7;
 	uint8_t reg = opcode & 7;
 
-	uint32_t dst = ReadEa(mode, reg, size) & mask;
-	uint32_t result = dst & imm;
-	SetFlags_Logical(result, size);
-	WriteEa(mode, reg, size, result);
+	if (mode <= 1) {
+		uint32_t dst = ReadEa(mode, reg, size) & mask;
+		uint32_t result = dst & imm;
+		SetFlags_Logical(result, size);
+		WriteEa(mode, reg, size, result);
+	} else {
+		uint32_t addr = GetEffectiveAddress(mode, reg, size);
+		uint32_t dst;
+		if (size == 0) dst = Read8(addr);
+		else if (size == 1) dst = Read16(addr);
+		else dst = Read32(addr);
+		dst &= mask;
+		uint32_t result = dst & imm;
+		SetFlags_Logical(result, size);
+		if (size == 0) Write8(addr, (uint8_t)result);
+		else if (size == 1) Write16(addr, (uint16_t)result);
+		else Write32(addr, result);
+	}
 	AddCycles(size == 2 ? 14 : 8);
 }
 
@@ -1080,10 +1184,24 @@ void GenesisM68k::Op_ORI(uint16_t opcode) {
 	uint8_t mode = (opcode >> 3) & 7;
 	uint8_t reg = opcode & 7;
 
-	uint32_t dst = ReadEa(mode, reg, size) & mask;
-	uint32_t result = dst | imm;
-	SetFlags_Logical(result, size);
-	WriteEa(mode, reg, size, result);
+	if (mode <= 1) {
+		uint32_t dst = ReadEa(mode, reg, size) & mask;
+		uint32_t result = dst | imm;
+		SetFlags_Logical(result, size);
+		WriteEa(mode, reg, size, result);
+	} else {
+		uint32_t addr = GetEffectiveAddress(mode, reg, size);
+		uint32_t dst;
+		if (size == 0) dst = Read8(addr);
+		else if (size == 1) dst = Read16(addr);
+		else dst = Read32(addr);
+		dst &= mask;
+		uint32_t result = dst | imm;
+		SetFlags_Logical(result, size);
+		if (size == 0) Write8(addr, (uint8_t)result);
+		else if (size == 1) Write16(addr, (uint16_t)result);
+		else Write32(addr, result);
+	}
 	AddCycles(size == 2 ? 16 : 8);
 }
 
@@ -1121,10 +1239,24 @@ void GenesisM68k::Op_EORI(uint16_t opcode) {
 	uint8_t mode = (opcode >> 3) & 7;
 	uint8_t reg = opcode & 7;
 
-	uint32_t dst = ReadEa(mode, reg, size) & mask;
-	uint32_t result = dst ^ imm;
-	SetFlags_Logical(result, size);
-	WriteEa(mode, reg, size, result);
+	if (mode <= 1) {
+		uint32_t dst = ReadEa(mode, reg, size) & mask;
+		uint32_t result = dst ^ imm;
+		SetFlags_Logical(result, size);
+		WriteEa(mode, reg, size, result);
+	} else {
+		uint32_t addr = GetEffectiveAddress(mode, reg, size);
+		uint32_t dst;
+		if (size == 0) dst = Read8(addr);
+		else if (size == 1) dst = Read16(addr);
+		else dst = Read32(addr);
+		dst &= mask;
+		uint32_t result = dst ^ imm;
+		SetFlags_Logical(result, size);
+		if (size == 0) Write8(addr, (uint8_t)result);
+		else if (size == 1) Write16(addr, (uint16_t)result);
+		else Write32(addr, result);
+	}
 	AddCycles(size == 2 ? 16 : 8);
 }
 
@@ -1134,10 +1266,24 @@ void GenesisM68k::Op_NOT(uint16_t opcode) {
 	uint8_t reg = opcode & 7;
 	uint32_t mask = SizeMask(size);
 
-	uint32_t dst = ReadEa(mode, reg, size) & mask;
-	uint32_t result = (~dst) & mask;
-	SetFlags_Logical(result, size);
-	WriteEa(mode, reg, size, result);
+	if (mode <= 1) {
+		uint32_t dst = ReadEa(mode, reg, size) & mask;
+		uint32_t result = (~dst) & mask;
+		SetFlags_Logical(result, size);
+		WriteEa(mode, reg, size, result);
+	} else {
+		uint32_t addr = GetEffectiveAddress(mode, reg, size);
+		uint32_t dst;
+		if (size == 0) dst = Read8(addr);
+		else if (size == 1) dst = Read16(addr);
+		else dst = Read32(addr);
+		dst &= mask;
+		uint32_t result = (~dst) & mask;
+		SetFlags_Logical(result, size);
+		if (size == 0) Write8(addr, (uint8_t)result);
+		else if (size == 1) Write16(addr, (uint16_t)result);
+		else Write32(addr, result);
+	}
 	AddCycles(4);
 }
 
@@ -1393,47 +1539,55 @@ void GenesisM68k::Op_BCHG(uint16_t opcode) {
 
 void GenesisM68k::Op_BRA(uint16_t opcode) {
 	int8_t disp8 = (int8_t)(opcode & 0xff);
+	uint32_t basePc = _state.PC;
 	int32_t offset;
+	uint32_t targetBase;
 	if (disp8 == 0) {
 		offset = (int16_t)FetchWord();
+		targetBase = basePc;
 	} else {
 		offset = disp8;
+		targetBase = _state.PC;
 	}
-	_state.PC = (_state.PC - 2) + 2 + offset; // PC was already advanced past opcode
-	if (disp8 != 0) _state.PC += 2; // For short branch, PC points after opcode word
+	_state.PC = targetBase + offset;
 	AddCycles(10);
 }
 
 void GenesisM68k::Op_BSR(uint16_t opcode) {
 	int8_t disp8 = (int8_t)(opcode & 0xff);
+	uint32_t basePc = _state.PC;
 	int32_t offset;
-	uint32_t returnPC;
+	uint32_t targetBase;
 	if (disp8 == 0) {
 		offset = (int16_t)FetchWord();
-		returnPC = _state.PC;
+		targetBase = basePc;
 	} else {
 		offset = disp8;
-		returnPC = _state.PC;
+		targetBase = _state.PC;
 	}
+	uint32_t returnPC = _state.PC;
 	Push32(returnPC);
-	_state.PC = (_state.PC - (disp8 == 0 ? 4 : 2)) + 2 + offset;
+	_state.PC = targetBase + offset;
 	AddCycles(18);
 }
 
 void GenesisM68k::Op_Bcc(uint16_t opcode) {
 	uint8_t cc = (opcode >> 8) & 0x0f;
 	int8_t disp8 = (int8_t)(opcode & 0xff);
+	uint32_t basePc = _state.PC;
 	int32_t offset;
+	uint32_t targetBase;
 
 	if (disp8 == 0) {
 		offset = (int16_t)FetchWord();
+		targetBase = basePc;
 	} else {
 		offset = disp8;
+		targetBase = _state.PC;
 	}
 
 	if (TestCondition(cc)) {
-		uint32_t base = _state.PC - (disp8 == 0 ? 4 : 2);
-		_state.PC = base + 2 + offset;
+		_state.PC = targetBase + offset;
 		AddCycles(10);
 	} else {
 		AddCycles(disp8 == 0 ? 12 : 8);
@@ -1443,6 +1597,7 @@ void GenesisM68k::Op_Bcc(uint16_t opcode) {
 void GenesisM68k::Op_DBcc(uint16_t opcode) {
 	uint8_t cc = (opcode >> 8) & 0x0f;
 	uint8_t reg = opcode & 7;
+	uint32_t basePc = _state.PC;
 	int16_t disp = (int16_t)FetchWord();
 
 	if (!TestCondition(cc)) {
@@ -1450,7 +1605,7 @@ void GenesisM68k::Op_DBcc(uint16_t opcode) {
 		counter--;
 		_state.D[reg] = (_state.D[reg] & 0xffff0000) | (uint16_t)counter;
 		if (counter != -1) {
-			_state.PC = (_state.PC - 4) + 2 + disp;
+			_state.PC = basePc + disp;
 			AddCycles(10);
 		} else {
 			AddCycles(14);
@@ -1630,6 +1785,11 @@ void GenesisM68k::Op_EORI_SR(uint16_t opcode) {
 }
 
 void GenesisM68k::Op_ILLEGAL(uint16_t opcode) {
+	static uint64_t illegalCount = 0;
+	illegalCount++;
+	if (illegalCount <= 16 || (illegalCount % 1024) == 0) {
+		MessageManager::Log(std::format("[Genesis][M68K] Illegal opcode #{} op=${:04x} pc=${:06x}", illegalCount, opcode, _state.PC - 2));
+	}
 	_state.PC -= 2; // Back up to illegal opcode
 	RaiseException(4); // Illegal instruction
 }
@@ -1647,4 +1807,5 @@ void GenesisM68k::Serialize(Serializer& s) {
 	SV(_state.SR);
 	SV(_state.CycleCount);
 	SV(_state.Stopped);
+	SV(_pendingInterruptLevel);
 }

@@ -173,6 +173,13 @@ public static class CpuTypeExtensions {
 		};
 	}
 
+	public static bool SupportsDebuggerFlag(this CpuType cpuType) {
+		return cpuType switch {
+			CpuType.Genesis => false,
+			_ => true,
+		};
+	}
+
 	public static ConsoleType GetConsoleType(this CpuType cpuType) {
 		return cpuType switch {
 			CpuType.Snes => ConsoleType.Snes,

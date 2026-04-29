@@ -94,6 +94,7 @@ public:
 	uint16_t ReadHVCounter();
 	void WriteDataPort(uint16_t value);
 	void WriteControlPort(uint16_t value);
+	void AcknowledgeInterrupt(uint8_t level);
 
 	// Frame output
 	uint16_t* GetScreenBuffer(bool previousBuffer) {

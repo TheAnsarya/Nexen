@@ -416,10 +416,13 @@ uint16_t GenesisVdp::ReadDataPort() {
 
 uint16_t GenesisVdp::ReadControlPort() {
 	_pendingControlWrite = false;
-	uint16_t status = _state.StatusRegister;
-	// Reading control port acknowledges V interrupt pending in this implementation.
-	_state.StatusRegister &= ~VdpStatus::VIntPending;
-	return status;
+	return _state.StatusRegister;
+}
+
+void GenesisVdp::AcknowledgeInterrupt(uint8_t level) {
+	if (level == 6) {
+		_state.StatusRegister &= ~VdpStatus::VIntPending;
+	}
 }
 
 GenesisVdpState GenesisVdp::GetState() const {

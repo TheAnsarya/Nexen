@@ -106,15 +106,29 @@ public partial class DebuggerWindow : NexenWindow, INotificationHandler {
 		//Do this in OnOpened to ensure the window is ready to receive notifications
 		Dispatcher.UIThread.Post(() => {
 			Log.Debug($"[DebuggerWindow] Initializing debugger model cpu={_model.CpuType}");
+			Log.Debug($"[DebuggerWindow] Init begin cpu={_model.CpuType}");
 			_model.Init();
+			Log.Debug($"[DebuggerWindow] Init complete cpu={_model.CpuType}");
+			Log.Debug($"[DebuggerWindow] Initial update begin cpu={_model.CpuType}");
 			_model.UpdateDebugger(true);
-			Log.Debug($"[DebuggerWindow] Initial debugger refresh complete cpu={_model.CpuType}");
+			Log.Debug($"[DebuggerWindow] Initial update complete cpu={_model.CpuType}");
+			_model.ActivateDebuggerSessionAsync(() => {
+				if (_model.Disposed) {
+					return;
+				}
+
+				Log.Debug($"[DebuggerWindow] Debugger session activation callback cpu={_model.CpuType}");
+				_model.UpdateDebugger(true);
+				Log.Debug($"[DebuggerWindow] Initial debugger refresh complete cpu={_model.CpuType}");
+			});
 
 			if (_scrollToAddress.HasValue) {
 				ScrollToAddress((uint)_scrollToAddress);
 			} else if (_model.Config.BreakOnOpen) {
 				Log.Debug($"[DebuggerWindow] BreakOnOpen active cpu={_model.CpuType}");
-				if (!EmuApi.IsPaused()) {
+				if (!_model.CpuType.SupportsDebuggerFlag()) {
+					Log.Debug($"[DebuggerWindow] BreakOnOpen skipped: debugger unsupported for cpu={_model.CpuType}");
+				} else if (!EmuApi.IsPaused()) {
 					_model.Step(StepType.Step);
 				}
 			}
