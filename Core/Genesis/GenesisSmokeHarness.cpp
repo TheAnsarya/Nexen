@@ -146,6 +146,26 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 		bool mapperEdgePass = edgeByte == romCase.RomData.back() && mirroredByte == firstByte;
 		addCheckpoint("GEN-COMPAT-MAPPER-EDGE", mapperEdgePass, std::format("romSize={} edge={:02x} mirrored={:02x} first={:02x}", romSize, edgeByte, mirroredByte, firstByte));
 
+		bool mapperBankSwitchPass = true;
+		string mapperBankSwitchDetail = "skipped-small-rom";
+		if (romSize > 0x100000) {
+			uint32_t bankWindowAddress = 0x080000;
+			uint8_t baselineBankValue = scaffold.GetBus().ReadByte(bankWindowAddress);
+			scaffold.GetBus().WriteByte(0xA130F3, 0x00);
+			uint8_t switchedBankValue = scaffold.GetBus().ReadByte(bankWindowAddress);
+			scaffold.GetBus().WriteByte(0xA130F3, 0x01);
+			uint8_t restoredBankValue = scaffold.GetBus().ReadByte(bankWindowAddress);
+			uint8_t expectedSwitchedValue = romCase.RomData[0];
+			mapperBankSwitchPass = switchedBankValue == expectedSwitchedValue && restoredBankValue == baselineBankValue;
+			mapperBankSwitchDetail = std::format(
+				"baseline={:02x} switched={:02x} expectedSwitch={:02x} restored={:02x}",
+				baselineBankValue,
+				switchedBankValue,
+				expectedSwitchedValue,
+				restoredBankValue);
+		}
+		addCheckpoint("GEN-COMPAT-MAPPER-BANK-SWITCH", mapperBankSwitchPass, mapperBankSwitchDetail);
+
 		scaffold.GetBus().WriteByte(0xA12012, 0x11);
 		scaffold.GetBus().WriteByte(0xA12013, 0x22);
 		scaffold.GetBus().WriteByte(0xA12014, 0x33);
