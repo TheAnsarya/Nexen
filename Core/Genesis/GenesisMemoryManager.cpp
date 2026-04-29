@@ -831,15 +831,17 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		} else {
 			value &= (uint16_t)~0x0100;
 		}
+		uint8_t highByte = (uint8_t)(value >> 8);
 		_openBus = (uint8_t)(value & 0xFF);
-		TrackSegaCdHandshakeTranscript(addr, false, (uint8_t)(value >> 8));
+		TrackSegaCdHandshakeTranscript(addr, false, highByte);
 		return value;
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
 		uint16_t value = (uint16_t)((_openBus << 8) | _openBus);
+		uint8_t highByte = (uint8_t)(value >> 8);
 		_openBus = (uint8_t)(value & 0xFF);
-		TrackSegaCdHandshakeTranscript(addr, false, (uint8_t)(value >> 8));
+		TrackSegaCdHandshakeTranscript(addr, false, highByte);
 		return value;
 	}
 
@@ -933,20 +935,22 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	}
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
+		uint8_t effectiveValue = value;
 		if (!(addr & 0x01)) {
-			_z80BusRequest = (value & 0x01) != 0;
+			_z80BusRequest = (effectiveValue & 0x01) != 0;
 		}
-		_openBus = value;
-		TrackSegaCdHandshakeTranscript(addr, true, value);
+		_openBus = effectiveValue;
+		TrackSegaCdHandshakeTranscript(addr, true, effectiveValue);
 		return;
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
+		uint8_t effectiveValue = value;
 		if (!(addr & 0x01)) {
-			_z80Reset = !(value & 0x01);
+			_z80Reset = !(effectiveValue & 0x01);
 		}
-		_openBus = value;
-		TrackSegaCdHandshakeTranscript(addr, true, value);
+		_openBus = effectiveValue;
+		TrackSegaCdHandshakeTranscript(addr, true, effectiveValue);
 		return;
 	}
 
@@ -1081,8 +1085,11 @@ uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
 	uint32_t reg = addr & 0x1F;
 	switch (reg) {
 		case 0x01:
-			_openBus = BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
-			return _openBus;
+			{
+				uint8_t value = BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
+				_openBus = value;
+				return value;
+			}
 		case 0x03:
 			_ioState.DataPort[0] = _controlManager ? _controlManager->ReadDataPort(0) : 0x7F; // Controller 1 data
 			_ioState.ThState[0] = _controlManager ? _controlManager->GetThState(0) : 0;
@@ -1100,16 +1107,29 @@ uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
 			_openBus = _ioState.DataPort[2];
 			return _ioState.DataPort[2];
 		case 0x09:
-			_openBus = _ioState.CtrlPort[0]; // Controller 1 ctrl
-			return _openBus;
+			{
+				uint8_t value = _ioState.CtrlPort[0]; // Controller 1 ctrl
+				_openBus = value;
+				return value;
+			}
 		case 0x0B:
-			_openBus = _ioState.CtrlPort[1]; // Controller 2 ctrl
-			return _openBus;
+			{
+				uint8_t value = _ioState.CtrlPort[1]; // Controller 2 ctrl
+				_openBus = value;
+				return value;
+			}
 		case 0x0D:
-			_openBus = _ioState.CtrlPort[2]; // EXT ctrl
-			return _openBus;
+			{
+				uint8_t value = _ioState.CtrlPort[2]; // EXT ctrl
+				_openBus = value;
+				return value;
+			}
 		default:
-			return _openBus;
+			{
+				uint8_t value = _openBus;
+				_openBus = value;
+				return value;
+			}
 	}
 }
 
@@ -1140,9 +1160,24 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 				_ioState.ThCount[1] = 0;
 			}
 			break;
-		case 0x09: _ioState.CtrlPort[0] = value; break;
-		case 0x0B: _ioState.CtrlPort[1] = value; break;
-		case 0x0D: _ioState.CtrlPort[2] = value; break;
+		case 0x09:
+			{
+				uint8_t writeValue = value;
+				_ioState.CtrlPort[0] = writeValue;
+				break;
+			}
+		case 0x0B:
+			{
+				uint8_t writeValue = value;
+				_ioState.CtrlPort[1] = writeValue;
+				break;
+			}
+		case 0x0D:
+			{
+				uint8_t writeValue = value;
+				_ioState.CtrlPort[2] = writeValue;
+				break;
+			}
 	}
 	_openBus = value;
 }
