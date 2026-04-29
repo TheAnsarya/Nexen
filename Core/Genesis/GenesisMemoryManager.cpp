@@ -654,10 +654,10 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	if (addr < 0x400000) [[likely]] {
 		// Cartridge ROM
 		if (addr < _prgRomSize) {
-			uint8_t value = _prgRom[addr];
-			_emu->ProcessMemoryRead<CpuType::Genesis>(addr, value, MemoryOperationType::Read);
-			_openBus = value;
-			return value;
+			uint8_t effectiveValue = _prgRom[addr];
+			_emu->ProcessMemoryRead<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Read);
+			_openBus = effectiveValue;
+			return effectiveValue;
 		}
 		uint8_t value = _openBus;
 		_openBus = value;
@@ -680,19 +680,19 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			return value;
 		}
 		// VDP ports (byte access from word port)
-		uint16_t word = ReadVdpPort(addr);
-		uint8_t value = (addr & 1) ? (uint8_t)(word & 0xFF) : (uint8_t)(word >> 8);
-		_openBus = value;
-		return value;
+		uint16_t effectiveWord = ReadVdpPort(addr);
+		uint8_t effectiveValue = (addr & 1) ? (uint8_t)(effectiveWord & 0xFF) : (uint8_t)(effectiveWord >> 8);
+		_openBus = effectiveValue;
+		return effectiveValue;
 	}
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		// Z80 address space
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
-			uint8_t value = _z80Ram[z80Addr];
-			_openBus = value;
-			return value;
+			uint8_t effectiveValue = _z80Ram[z80Addr];
+			_openBus = effectiveValue;
+			return effectiveValue;
 		}
 		uint8_t value = _openBus;
 		_openBus = value;
@@ -743,7 +743,8 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		}
 
 		// Z80 bus request: bit 0 indicates bus grant, upper bits preserve open bus.
-		uint8_t value = (_openBus & 0xFE) | GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
+		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
+		uint8_t value = (uint8_t)((_openBus & 0xFE) | ackStatus);
 		_openBus = value;
 		TrackSegaCdHandshakeTranscript(addr, false, value);
 		return value;
@@ -1079,25 +1080,27 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 uint16_t GenesisMemoryManager::ReadVdpPort(uint32_t addr) {
 	uint32_t port = addr & 0x1F;
 	if (port < 0x04) {
-		uint16_t value = _vdp->ReadDataPort();
-		_openBus = (uint8_t)(value & 0xFF);
-		return value;
+		uint16_t effectiveValue = _vdp->ReadDataPort();
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return effectiveValue;
 	} else if (port < 0x08) {
-		uint16_t value = _vdp->ReadControlPort();
-		_openBus = (uint8_t)(value & 0xFF);
-		return value;
+		uint16_t effectiveValue = _vdp->ReadControlPort();
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return effectiveValue;
 	} else if (port < 0x10) {
-		uint16_t value = _vdp->ReadHVCounter();
-		_openBus = (uint8_t)(value & 0xFF);
-		return value;
+		uint16_t effectiveValue = _vdp->ReadHVCounter();
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return effectiveValue;
 	}
-	uint16_t value = _openBus;
-	_openBus = (uint8_t)(value & 0xFF);
-	return value;
+	uint16_t effectiveValue = _openBus;
+	_openBus = (uint8_t)(effectiveValue & 0xFF);
+	return effectiveValue;
 }
 
 void GenesisMemoryManager::WriteVdpPort(uint32_t addr, uint16_t value) {
 	uint32_t port = addr & 0x1F;
+	uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+	uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
 	if (port < 0x04) {
 		_vdp->WriteDataPort(value);
 	} else if (port < 0x08) {
@@ -1105,10 +1108,10 @@ void GenesisMemoryManager::WriteVdpPort(uint32_t addr, uint16_t value) {
 	} else if (port >= 0x11 && port < 0x14) {
 		// PSG write — SN76489 accepts byte writes via top byte of word
 		if (_psg) {
-			_psg->Write((uint8_t)(value >> 8));
+			_psg->Write(effectiveHighByte);
 		}
 	}
-	_openBus = (uint8_t)(value & 0xFF);
+	_openBus = effectiveLowByte;
 }
 
 // I/O registers ($A10001-$A1001F)
