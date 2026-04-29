@@ -313,7 +313,8 @@ uint8_t GenesisMemoryManager::GetSegaCdAudioStatusByte(uint32_t addr) const {
 		uint8_t statusByte = _segaCdMixedRight;
 		return statusByte;
 	}
-	return 0;
+	uint8_t statusByte = 0;
+	return statusByte;
 }
 
 void GenesisMemoryManager::UpdateSegaCdToolingContract(uint32_t addr, uint8_t value) {
@@ -365,19 +366,24 @@ uint8_t GenesisMemoryManager::GetSegaCdToolingStatusByte(uint32_t addr) const {
 		return statusByte;
 	}
 	if (addr == 0xA1201B) {
-		return _segaCdToolingDigest;
+		uint8_t statusByte = _segaCdToolingDigest;
+		return statusByte;
 	}
 	if (addr == 0xA1201C) {
-		return _controlManager ? _controlManager->GetDeterministicPortCapabilities(0) : 0;
+		uint8_t statusByte = _controlManager ? _controlManager->GetDeterministicPortCapabilities(0) : 0;
+		return statusByte;
 	}
 	if (addr == 0xA1201D) {
-		return _controlManager ? _controlManager->GetDeterministicPortDigest(0) : 0;
+		uint8_t statusByte = _controlManager ? _controlManager->GetDeterministicPortDigest(0) : 0;
+		return statusByte;
 	}
 	if (addr == 0xA1201E) {
-		return _controlManager ? _controlManager->GetDeterministicPortCapabilities(1) : 0;
+		uint8_t statusByte = _controlManager ? _controlManager->GetDeterministicPortCapabilities(1) : 0;
+		return statusByte;
 	}
 	if (addr == 0xA1201F) {
-		return _controlManager ? _controlManager->GetDeterministicPortDigest(1) : 0;
+		uint8_t statusByte = _controlManager ? _controlManager->GetDeterministicPortDigest(1) : 0;
+		return statusByte;
 	}
 	uint8_t statusByte = 0;
 	return statusByte;
@@ -429,7 +435,8 @@ uint8_t GenesisMemoryManager::Get32xSh2StatusByte(uint32_t addr) const {
 		uint8_t statusByte = _m32xSh2Digest;
 		return statusByte;
 	}
-	return 0;
+	uint8_t statusByte = 0;
+	return statusByte;
 }
 
 void GenesisMemoryManager::Update32xCompositionStaging(uint32_t addr, uint8_t value) {
@@ -465,7 +472,8 @@ uint8_t GenesisMemoryManager::Get32xCompositionStatusByte(uint32_t addr) const {
 		uint8_t statusByte = _m32xCompositionDigest;
 		return statusByte;
 	}
-	return 0;
+	uint8_t statusByte = 0;
+	return statusByte;
 }
 
 void GenesisMemoryManager::Update32xToolingContract(uint32_t addr, uint8_t value) {
@@ -484,8 +492,9 @@ void GenesisMemoryManager::Update32xToolingContract(uint32_t addr, uint8_t value
 		return;
 	}
 
-	if (*target != value) {
-		*target = value;
+	uint8_t effectiveValue = value;
+	if (*target != effectiveValue) {
+		*target = effectiveValue;
 		_m32xToolingEventCount++;
 	}
 
@@ -872,9 +881,10 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
 	if (IsTmssAddress(addr)) [[unlikely]] {
+		uint8_t effectiveValue = value;
 		uint32_t slot = addr & 0x03;
-		_segaCdBridgeA140[slot] = value;
-		_openBus = value;
+		_segaCdBridgeA140[slot] = effectiveValue;
+		_openBus = effectiveValue;
 		_tmssUnlocked = _segaCdBridgeA140[0] == 'S'
 			&& _segaCdBridgeA140[1] == 'E'
 			&& _segaCdBridgeA140[2] == 'G'
