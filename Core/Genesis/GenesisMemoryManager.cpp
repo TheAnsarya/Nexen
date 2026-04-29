@@ -1555,74 +1555,74 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 				return;
 		}
 	}
-	if (IsZ80BusReqAddress(addr)) {
+	if (IsZ80BusReqAddress(effectiveAddr)) {
 		uint8_t effectiveValue = value;
-		if (!(addr & 0x01)) {
+		if (!(effectiveAddr & 0x01)) {
 			_z80BusRequest = (effectiveValue & 0x01) != 0;
 		}
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x80);
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x80);
 		return;
 	}
-	if (IsZ80ResetAddress(addr)) {
+	if (IsZ80ResetAddress(effectiveAddr)) {
 		uint8_t effectiveValue = value;
-		if (!(addr & 0x01)) {
+		if (!(effectiveAddr & 0x01)) {
 			_z80Reset = !(effectiveValue & 0x01);
 		}
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x84);
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x84);
 		return;
 	}
-	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
+	if (effectiveAddr >= 0xA00000 && effectiveAddr <= 0xA0FFFF) {
 		uint8_t effectiveValue = value;
 		if (_z80BusRequest || _z80Reset) {
-			_z80Ram[addr & 0x1FFF] = effectiveValue;
+			_z80Ram[effectiveAddr & 0x1FFF] = effectiveValue;
 		}
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x20);
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x20);
 		return;
 	}
-	if (addr >= 0xC00000 && addr <= 0xC0001F) {
+	if (effectiveAddr >= 0xC00000 && effectiveAddr <= 0xC0001F) {
 		uint8_t effectiveValue = value;
 		if (_tmssEnabled && !_tmssUnlocked) {
 			_openBus = effectiveValue;
-			TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x30);
+			TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x30);
 			return;
 		}
 		if (_vdp) {
-			WriteVdpPort(addr, (uint16_t)effectiveValue | ((uint16_t)effectiveValue << 8));
+			WriteVdpPort(effectiveAddr, (uint16_t)effectiveValue | ((uint16_t)effectiveValue << 8));
 		}
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x30);
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x30);
 		return;
 	}
 
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
-	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) {
+	if (TryGetSegaCdBridgeSlot(effectiveAddr, bridgeSlot, bridgeIndex)) {
 		uint8_t effectiveValue = value;
 		bridgeSlot[bridgeIndex] = effectiveValue;
 		_openBus = effectiveValue;
-		if (IsSegaCdSubCpuControlAddress(addr)) {
+		if (IsSegaCdSubCpuControlAddress(effectiveAddr)) {
 			UpdateSegaCdSubCpuControl(effectiveValue);
-		} else if (IsSegaCdAudioDataAddress(addr)) {
-			UpdateSegaCdAudioPath(addr, effectiveValue);
-		} else if (IsSegaCdToolingControlAddress(addr)) {
-			UpdateSegaCdToolingContract(addr, effectiveValue);
-		} else if (Is32xSh2ControlAddress(addr)) {
-			Update32xSh2Staging(addr, effectiveValue);
-		} else if (Is32xCompositionControlAddress(addr)) {
-			Update32xCompositionStaging(addr, effectiveValue);
-		} else if (Is32xToolingControlAddress(addr)) {
-			Update32xToolingContract(addr, effectiveValue);
+		} else if (IsSegaCdAudioDataAddress(effectiveAddr)) {
+			UpdateSegaCdAudioPath(effectiveAddr, effectiveValue);
+		} else if (IsSegaCdToolingControlAddress(effectiveAddr)) {
+			UpdateSegaCdToolingContract(effectiveAddr, effectiveValue);
+		} else if (Is32xSh2ControlAddress(effectiveAddr)) {
+			Update32xSh2Staging(effectiveAddr, effectiveValue);
+		} else if (Is32xCompositionControlAddress(effectiveAddr)) {
+			Update32xCompositionStaging(effectiveAddr, effectiveValue);
+		} else if (Is32xToolingControlAddress(effectiveAddr)) {
+			Update32xToolingContract(effectiveAddr, effectiveValue);
 		}
-		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x02);
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x02);
 		return;
 	}
 
 	uint8_t effectiveValue = value;
 	_openBus = effectiveValue;
-	TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x00);
+	TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x00);
 }
 
 AddressInfo GenesisMemoryManager::GetAbsoluteAddress(uint32_t addr) {
