@@ -132,6 +132,9 @@ LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 
 void GenesisConsole::Reset() {
 	_cpu->Reset(true);
+	if (_memoryManager) {
+		_memoryManager->ResetRuntimeState(true);
+	}
 	if (_psg) {
 		_psg->Reset();
 	}

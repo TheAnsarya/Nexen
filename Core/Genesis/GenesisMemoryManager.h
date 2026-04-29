@@ -129,6 +129,7 @@ public:
 	void Init(Emulator* emu, GenesisConsole* console, vector<uint8_t>& romData, GenesisVdp* vdp, GenesisControlManager* controlManager, GenesisPsg* psg);
 	void LoadBattery();
 	void SaveBattery();
+	void ResetRuntimeState(bool hardReset);
 
 	void SetCpu(GenesisM68k* cpu) { _cpu = cpu; }
 

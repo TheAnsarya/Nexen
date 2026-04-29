@@ -1363,3 +1363,20 @@ void GenesisMemoryManager::SaveBattery() {
 		_emu->GetBatteryManager()->SaveBattery(".sav", std::span<const uint8_t>(_saveRam, _saveRamSize));
 	}
 }
+
+void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
+	_z80BusRequest = false;
+	_z80Reset = true;
+
+	if (_tmssEnabled) {
+		_tmssUnlocked = false;
+		memset(_segaCdBridgeA140, 0, sizeof(_segaCdBridgeA140));
+	}
+
+	_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
+	_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
+
+	if (hardReset) {
+		ClearDebugTranscriptLane();
+	}
+}
