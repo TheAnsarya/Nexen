@@ -447,6 +447,52 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				vdpTimingFirst.Bus.DmaContentionCycles,
 				vdpTimingFirst.Bus.DmaContentionEvents));
 
+		auto runInterruptCadenceStartupPath = [&scaffold, &titleClass]() {
+			if (titleClass == "sonic") {
+				scaffold.StepFrameScaffold(488u + 64u);
+			} else if (titleClass == "jurassic") {
+				scaffold.StepFrameScaffold(488u + 112u);
+			} else {
+				scaffold.StepFrameScaffold(128u);
+			}
+		};
+
+		GenesisBoundaryScaffoldSaveState interruptCadenceBaseline = scaffold.SaveState();
+		runInterruptCadenceStartupPath();
+		GenesisBoundaryScaffoldSaveState interruptCadenceFirst = scaffold.SaveState();
+		scaffold.LoadState(interruptCadenceBaseline);
+		runInterruptCadenceStartupPath();
+		GenesisBoundaryScaffoldSaveState interruptCadenceReplay = scaffold.SaveState();
+		scaffold.LoadState(interruptCadenceFirst);
+
+		bool cadenceAdvanced = interruptCadenceFirst.TimingFrame > interruptCadenceBaseline.TimingFrame
+			|| (interruptCadenceFirst.TimingFrame == interruptCadenceBaseline.TimingFrame
+				&& interruptCadenceFirst.TimingScanline > interruptCadenceBaseline.TimingScanline);
+		bool cadenceCounterAdvanced = interruptCadenceFirst.VInterruptCount >= interruptCadenceBaseline.VInterruptCount
+			&& interruptCadenceFirst.HInterruptCount >= interruptCadenceBaseline.HInterruptCount;
+		bool cadenceReplayMatch = interruptCadenceFirst.TimingFrame == interruptCadenceReplay.TimingFrame
+			&& interruptCadenceFirst.TimingScanline == interruptCadenceReplay.TimingScanline
+			&& interruptCadenceFirst.TimingCycleRemainder == interruptCadenceReplay.TimingCycleRemainder
+			&& interruptCadenceFirst.VInterruptCount == interruptCadenceReplay.VInterruptCount
+			&& interruptCadenceFirst.HInterruptCount == interruptCadenceReplay.HInterruptCount
+			&& interruptCadenceFirst.TimingEvents == interruptCadenceReplay.TimingEvents;
+		bool interruptCadenceStartupPass = !isTargetStartupClass || (cadenceAdvanced && cadenceCounterAdvanced && cadenceReplayMatch);
+		addCheckpoint(
+			"GEN-COMPAT-INTERRUPT-CADENCE-STARTUP",
+			interruptCadenceStartupPass,
+			std::format(
+				"class={} target={} advanced={} countersAdvanced={} replayMatch={} frame={} scanline={} vInt={} hInt={} events={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				cadenceAdvanced ? 1 : 0,
+				cadenceCounterAdvanced ? 1 : 0,
+				cadenceReplayMatch ? 1 : 0,
+				interruptCadenceFirst.TimingFrame,
+				interruptCadenceFirst.TimingScanline,
+				interruptCadenceFirst.VInterruptCount,
+				interruptCadenceFirst.HInterruptCount,
+				interruptCadenceFirst.TimingEvents.size()));
+
 		string digestA = BuildCheckpointDigest(entry.Checkpoints);
 		string digestB = BuildCheckpointDigest(entry.Checkpoints);
 		addCheckpoint("GEN-COMPAT-DETERMINISM", digestA == digestB, std::format("digestA={} digestB={}", digestA, digestB));
@@ -463,6 +509,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-HOST-MODE")
 			&& hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-TIMING-STARTUP")
+			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-CADENCE-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-RENDER")
 			&& hasPassingCheckpoint("GEN-COMPAT-AUDIO")
 			&& hasPassingCheckpoint("GEN-COMPAT-DETERMINISM");
