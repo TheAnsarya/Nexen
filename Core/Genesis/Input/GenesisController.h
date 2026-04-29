@@ -73,6 +73,15 @@ protected:
 					SetPressedState(Buttons::Z, keyMapping.TurboR);
 				}
 			}
+
+			if (IsPressed(Buttons::Up) && IsPressed(Buttons::Down)) {
+				ClearBit(Buttons::Up);
+				ClearBit(Buttons::Down);
+			}
+			if (IsPressed(Buttons::Left) && IsPressed(Buttons::Right)) {
+				ClearBit(Buttons::Left);
+				ClearBit(Buttons::Right);
+			}
 		}
 	}
 

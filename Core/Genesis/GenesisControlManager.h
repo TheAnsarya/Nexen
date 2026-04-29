@@ -32,6 +32,7 @@ public:
 
 	uint8_t ReadDataPort(uint8_t port);
 	void WriteDataPort(uint8_t port, uint8_t value);
+	void ResetRuntimeState();
 	[[nodiscard]] uint8_t GetDeterministicPortCapabilities(uint8_t port) const;
 	[[nodiscard]] uint8_t GetDeterministicPortDigest(uint8_t port) const;
 

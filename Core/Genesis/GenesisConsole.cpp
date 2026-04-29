@@ -132,6 +132,13 @@ LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 
 void GenesisConsole::Reset() {
 	_cpu->Reset(true);
+	if (_vdp) {
+		_vdp->Reset(false);
+		_vdp->SetRegion(_region == ConsoleRegion::Pal);
+	}
+	if (_controlManager) {
+		_controlManager->ResetRuntimeState();
+	}
 	if (_memoryManager) {
 		_memoryManager->ResetRuntimeState(true);
 	}

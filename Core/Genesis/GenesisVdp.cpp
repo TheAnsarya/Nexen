@@ -23,12 +23,22 @@ void GenesisVdp::Init(Emulator* emu, GenesisConsole* console, GenesisM68k* cpu, 
 	memset(_vsram, 0, sizeof(_vsram));
 	memset(&_state, 0, sizeof(_state));
 	memset(_outputBuffers, 0, sizeof(_outputBuffers));
+	Reset(true);
+}
 
+
+void GenesisVdp::Reset(bool hardReset) {
 	_state.Registers[0] = 0x04; // Mode register 1
 	_state.Registers[1] = 0x04; // Mode register 2 (display off)
 	_state.Registers[10] = 0xFF; // HBlank counter
 	_state.HIntCounter = _state.Registers[10];
+	_state.StatusRegister &= ~(VdpStatus::VBlankFlag | VdpStatus::VIntPending | VdpStatus::HIntPending);
+	_state.DmaActive = false;
 	_autoIncrement = 2;
+	_accessMode = 0;
+	_addressReg = 0;
+	_pendingControlWrite = false;
+	_firstControlWord = 0;
 
 	_screenWidth = 320;
 	_screenHeight = 224;
@@ -37,7 +47,9 @@ void GenesisVdp::Init(Emulator* emu, GenesisConsole* console, GenesisM68k* cpu, 
 	_scanline = 0;
 	_hCounter = 0;
 	_lastRunCycle = 0;
-	_currentBuffer = 0;
+	if (hardReset) {
+		_currentBuffer = 0;
+	}
 }
 
 void GenesisVdp::SetRegion(bool pal) {

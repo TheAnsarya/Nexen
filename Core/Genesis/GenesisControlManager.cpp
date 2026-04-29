@@ -162,6 +162,12 @@ void GenesisControlManager::WriteDataPort(uint8_t port, uint8_t value) {
 	_dataPortWrite[port] = value;
 }
 
+void GenesisControlManager::ResetRuntimeState() {
+	memset(_dataPortWrite, 0, sizeof(_dataPortWrite));
+	memset(_thState, 0, sizeof(_thState));
+	memset(_thCount, 0, sizeof(_thCount));
+}
+
 uint8_t GenesisControlManager::GetDeterministicPortCapabilities(uint8_t port) const {
 	return BuildDeterministicPortCapabilities(port);
 }

@@ -80,6 +80,7 @@ public:
 	~GenesisVdp();
 
 	void Init(Emulator* emu, GenesisConsole* console, GenesisM68k* cpu, GenesisMemoryManager* memoryManager);
+	void Reset(bool hardReset);
 
 	// Run VDP up to target master clock
 	void Run(uint64_t targetCycle);
