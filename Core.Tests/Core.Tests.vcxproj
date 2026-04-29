@@ -176,6 +176,9 @@
 		<ClCompile Include="Shared\VideoRecordingFormatTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="Shared\BinRomRoutingTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="PCE\PceCpuTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>

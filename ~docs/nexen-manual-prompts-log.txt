@@ -2055,6 +2055,9 @@ I am opening a `*.bin` file but it is not a ChannelF ROM, it is a Sega GEnesis R
 
 yes do that
 
+yes do that
+
+build and run Nexen with all the logging turned on, so I can open a Genesis ROM and see what happens
 
 
 
