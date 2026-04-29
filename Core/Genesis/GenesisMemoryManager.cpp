@@ -1740,12 +1740,17 @@ void GenesisMemoryManager::SaveBattery() {
 }
 
 void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
-	_z80BusRequest = false;
-	_z80Reset = true;
-	_openBus = 0;
-	_tmssUnlocked = false;
+	bool nextZ80BusRequest = false;
+	bool nextZ80Reset = true;
+	uint8_t nextOpenBus = 0;
+	bool nextTmssUnlocked = false;
+	bool tmssEnabled = _tmssEnabled;
+	_z80BusRequest = nextZ80BusRequest;
+	_z80Reset = nextZ80Reset;
+	_openBus = nextOpenBus;
+	_tmssUnlocked = nextTmssUnlocked;
 
-	if (_tmssEnabled) {
+	if (tmssEnabled) {
 		memset(_segaCdBridgeA140, 0, sizeof(_segaCdBridgeA140));
 	}
 
@@ -1755,18 +1760,23 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	memset(_ioState.SCtrl, 0, sizeof(_ioState.SCtrl));
 	memset(_ioState.ThCount, 0, sizeof(_ioState.ThCount));
 	memset(_ioState.ThState, 0, sizeof(_ioState.ThState));
-	_ioState.TranscriptLaneCount = 0;
-	_ioState.TranscriptLaneDigest = 0;
+	uint32_t resetTranscriptLaneCount = 0;
+	uint64_t resetTranscriptLaneDigest = 0;
+	_ioState.TranscriptLaneCount = resetTranscriptLaneCount;
+	_ioState.TranscriptLaneDigest = resetTranscriptLaneDigest;
 	for (uint32_t i = 0; i < 4; i++) {
 		_ioState.TranscriptEntryAddress[i] = 0;
 		_ioState.TranscriptEntryValue[i] = 0;
 		_ioState.TranscriptEntryFlags[i] = 0;
 	}
 
-	_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
-	_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
+	uint8_t tmssEnabledValue = tmssEnabled ? 1 : 0;
+	uint8_t tmssUnlockedValue = nextTmssUnlocked ? 1 : 0;
+	_ioState.TmssEnabled = tmssEnabledValue;
+	_ioState.TmssUnlocked = tmssUnlockedValue;
 
-	if (hardReset) {
+	bool doHardReset = hardReset;
+	if (doHardReset) {
 		ClearDebugTranscriptLane();
 	}
 }
