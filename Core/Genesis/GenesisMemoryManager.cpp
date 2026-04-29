@@ -261,8 +261,9 @@ bool GenesisMemoryManager::Is32xToolingStatusAddress(uint32_t addr) const {
 }
 
 void GenesisMemoryManager::UpdateSegaCdSubCpuControl(uint8_t value) {
-	bool nextRunning = (value & 0x01) != 0;
-	bool nextBusRequest = (value & 0x02) != 0;
+	uint8_t effectiveValue = value;
+	bool nextRunning = (effectiveValue & 0x01) != 0;
+	bool nextBusRequest = (effectiveValue & 0x02) != 0;
 	if (nextRunning != _segaCdSubCpuRunning || nextBusRequest != _segaCdSubCpuBusRequest) {
 		_segaCdSubCpuTransitionCount++;
 	}
@@ -283,14 +284,15 @@ uint8_t GenesisMemoryManager::GetSegaCdSubCpuStatusByte() const {
 }
 
 void GenesisMemoryManager::UpdateSegaCdAudioPath(uint32_t addr, uint8_t value) {
+	uint8_t effectiveValue = value;
 	if (addr == 0xA12002) {
-		_segaCdPcmLeft = value;
+		_segaCdPcmLeft = effectiveValue;
 	} else if (addr == 0xA12003) {
-		_segaCdPcmRight = value;
+		_segaCdPcmRight = effectiveValue;
 	} else if (addr == 0xA12004) {
-		_segaCdCddaLeft = value;
+		_segaCdCddaLeft = effectiveValue;
 	} else if (addr == 0xA12005) {
-		_segaCdCddaRight = value;
+		_segaCdCddaRight = effectiveValue;
 	} else {
 		return;
 	}
@@ -390,20 +392,21 @@ uint8_t GenesisMemoryManager::GetSegaCdToolingStatusByte(uint32_t addr) const {
 }
 
 void GenesisMemoryManager::Update32xSh2Staging(uint32_t addr, uint8_t value) {
+	uint8_t effectiveValue = value;
 	bool changed = false;
 	if (addr == 0xA15012) {
-		bool nextMaster = (value & 0x01) != 0;
-		bool nextSlave = (value & 0x02) != 0;
+		bool nextMaster = (effectiveValue & 0x01) != 0;
+		bool nextSlave = (effectiveValue & 0x02) != 0;
 		changed = nextMaster != _m32xMasterSh2Running || nextSlave != _m32xSlaveSh2Running;
 		_m32xMasterSh2Running = nextMaster;
 		_m32xSlaveSh2Running = nextSlave;
 	} else if (addr == 0xA15013) {
-		uint8_t phase = (uint8_t)(value & 0x0F);
+		uint8_t phase = (uint8_t)(effectiveValue & 0x0F);
 		changed = phase != _m32xSh2SyncPhase;
 		_m32xSh2SyncPhase = phase;
 	} else if (addr == 0xA15014) {
-		changed = value != _m32xSh2Milestone;
-		_m32xSh2Milestone = value;
+		changed = effectiveValue != _m32xSh2Milestone;
+		_m32xSh2Milestone = effectiveValue;
 	}
 
 	if (changed) {
@@ -440,13 +443,14 @@ uint8_t GenesisMemoryManager::Get32xSh2StatusByte(uint32_t addr) const {
 }
 
 void GenesisMemoryManager::Update32xCompositionStaging(uint32_t addr, uint8_t value) {
+	uint8_t effectiveValue = value;
 	bool changed = false;
 	if (addr == 0xA15016) {
-		uint8_t blend = (uint8_t)(value & 0x0F);
+		uint8_t blend = (uint8_t)(effectiveValue & 0x0F);
 		changed = blend != _m32xCompositionBlend;
 		_m32xCompositionBlend = blend;
 	} else if (addr == 0xA15017) {
-		uint8_t nextMarker = value;
+		uint8_t nextMarker = effectiveValue;
 		changed = nextMarker != _m32xFrameSyncMarker;
 		_m32xFrameSyncMarker = nextMarker;
 	}
@@ -509,10 +513,12 @@ void GenesisMemoryManager::Update32xToolingContract(uint32_t addr, uint8_t value
 
 uint8_t GenesisMemoryManager::Get32xToolingStatusByte(uint32_t addr) const {
 	if (addr == 0xA15018) {
-		return (uint8_t)(_m32xToolingEventCount & 0xFF);
+		uint8_t statusByte = (uint8_t)(_m32xToolingEventCount & 0xFF);
+		return statusByte;
 	}
 	if (addr == 0xA15019) {
-		return (uint8_t)((_m32xToolingEventCount >> 8) & 0xFF);
+		uint8_t statusByte = (uint8_t)((_m32xToolingEventCount >> 8) & 0xFF);
+		return statusByte;
 	}
 	if (addr == 0xA1501E) {
 		uint8_t statusByte = 0x0F;
