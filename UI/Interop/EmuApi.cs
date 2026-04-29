@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -417,7 +417,8 @@ public enum FirmwareType {
 	Ymf288AdpcmRom,
 	SmsBootRom,
 	GgBootRom,
-	LynxBootRom
+	LynxBootRom,
+	ChannelFBios
 }
 
 public struct MissingFirmwareMessage {

@@ -2047,10 +2047,13 @@ continue working on real code changes;
 
 continue working on real code changes;
 
+build and run Nexen with all the logging turned on, so I can open a Genesis ROM and see what happens
 
+I opened the Sonic rom and it crashed, see image for error message; check the logs and see what the problem is and fix it; if there is a Genesis firmware rom missing let me know and I'll add it to the firmware folder
 
+I am opening a `*.bin` file but it is not a ChannelF ROM, it is a Sega GEnesis ROM, how to we differentiate which system `*.bin` files run in? as several systems use this file extension
 
-
+yes do that
 
 
 

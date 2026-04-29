@@ -40,6 +40,7 @@
 #include "Lynx/LynxConsole.h"
 #include "Atari2600/Atari2600Console.h"
 #include "ChannelF/ChannelFConsole.h"
+#include "ChannelF/ChannelFMemoryManager.h"
 #include "Genesis/GenesisConsole.h"
 #include "Debugger/Debugger.h"
 #include "Debugger/BaseEventManager.h"
@@ -52,6 +53,56 @@
 #include "Utilities/FolderUtilities.h"
 #include "Shared/MemoryOperationType.h"
 #include "Shared/EventType.h"
+
+namespace {
+	[[nodiscard]] bool HasFourByteMarker(const vector<uint8_t>& romData, size_t offset, const char* marker) {
+		return romData.size() >= offset + 4
+			&& romData[offset] == (uint8_t)marker[0]
+			&& romData[offset + 1] == (uint8_t)marker[1]
+			&& romData[offset + 2] == (uint8_t)marker[2]
+			&& romData[offset + 3] == (uint8_t)marker[3];
+	}
+
+	[[nodiscard]] int ScoreGenesisBin(const vector<uint8_t>& romData) {
+		int score = 0;
+		if (HasFourByteMarker(romData, 0x100, "SEGA")) {
+			score += 100;
+		}
+
+		if (romData.size() >= 0x20000) {
+			score += 20;
+		}
+
+		if ((romData.size() & 1) == 0) {
+			score += 1;
+		}
+
+		return score;
+	}
+
+	[[nodiscard]] int ScoreChannelFBin(const vector<uint8_t>& romData) {
+		int score = 0;
+		if (romData.empty() || romData.size() > ChannelFMemoryManager::MaxCartSize) {
+			return -1000;
+		}
+
+		score += 60;
+
+		if ((romData.size() & 0x07ff) == 0) {
+			score += 10;
+		}
+
+		if (romData.size() <= 0x2000) {
+			score += 10;
+		}
+
+		if (HasFourByteMarker(romData, 0x100, "SEGA")) {
+			score -= 200;
+		}
+
+		return score;
+	}
+}
 
 // Initialize emulator with all core subsystems
 Emulator::Emulator() : _settings(new EmuSettings(this)),
@@ -593,6 +644,26 @@ void Emulator::InitConsole(unique_ptr<IConsole>& newConsole, ConsoleMemoryInfo o
 }
 
 void Emulator::TryLoadRom(VirtualFile& romFile, LoadRomResult& result, unique_ptr<IConsole>& console, bool useFileSignature) {
+	if (!useFileSignature && result == LoadRomResult::UnknownType && romFile.GetFileExtension() == ".bin") {
+		vector<uint8_t> romData;
+		if (romFile.ReadFile(romData) && !romData.empty()) {
+			int genesisScore = ScoreGenesisBin(romData);
+			int channelFScore = ScoreChannelFBin(romData);
+
+			if (genesisScore >= channelFScore) {
+				TryLoadRom<GenesisConsole>(romFile, result, console, useFileSignature);
+				TryLoadRom<ChannelFConsole>(romFile, result, console, useFileSignature);
+			} else {
+				TryLoadRom<ChannelFConsole>(romFile, result, console, useFileSignature);
+				TryLoadRom<GenesisConsole>(romFile, result, console, useFileSignature);
+			}
+
+			if (result != LoadRomResult::UnknownType) {
+				return;
+			}
+		}
+	}
+
 	TryLoadRom<NesConsole>(romFile, result, console, useFileSignature);
 	TryLoadRom<SnesConsole>(romFile, result, console, useFileSignature);
 	TryLoadRom<Gameboy>(romFile, result, console, useFileSignature);

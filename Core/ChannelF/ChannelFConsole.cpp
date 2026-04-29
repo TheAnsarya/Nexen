@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "ChannelF/ChannelFConsole.h"
 #include "ChannelF/ChannelFTypes.h"
 #include "Shared/Emulator.h"
@@ -57,6 +57,16 @@ LoadRomResult ChannelFConsole::LoadRom(VirtualFile& romFile) {
 	vector<uint8_t> romData;
 	if (!romFile.ReadFile(romData) || romData.empty()) {
 		return LoadRomResult::Failure;
+	}
+
+	// Channel F carts are bounded in size and should not claim larger BIN images.
+	if (romData.size() > ChannelFMemoryManager::MaxCartSize) {
+		return LoadRomResult::UnknownType;
+	}
+
+	// Genesis/Mega Drive ROMs typically expose the "SEGA" marker at 0x100.
+	if (romData.size() >= 0x104 && memcmp(romData.data() + 0x100, "SEGA", 4) == 0) {
+		return LoadRomResult::UnknownType;
 	}
 
 	_romSha1 = romFile.GetSha1Hash();

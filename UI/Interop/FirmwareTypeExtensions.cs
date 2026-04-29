@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Nexen.Interop;
@@ -77,9 +77,10 @@ public static class FirmwareTypeExtensions {
 			case FirmwareType.WonderSwanColor: return new("bootrom.wsc") { new(0x2000, "F5A5C044D84CE1681F94E9EF74287CB989784497BE5BD5108DF17908DFA55DB2") };
 			case FirmwareType.SwanCrystal: return new("bootrom_sc.wsc") { new(0x2000, "82E96ADDF5AB1CE09A84B6EEDAA904E4CA432756851F7E0CC0649006C183834D") };
 			case FirmwareType.Ymf288AdpcmRom: return new("ymf288_adpcm_rom.bin") { new(0x2000, "53AFD0FA9C62EDA3E2BE939E23F3ADF48A2AF8AD37BB1640261726C5D5ADEBA8") };
+			case FirmwareType.ChannelFBios: return new("channelf.bin", "sl31253_sl31254.bin") { new(0x800) };
 		}
 
-		throw new Exception("Unsupported firmware type");
+		return new("firmware.bin") { new(0) };
 	}
 }
 

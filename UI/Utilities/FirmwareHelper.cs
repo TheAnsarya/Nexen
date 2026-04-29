@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +13,29 @@ using Nexen.Windows;
 
 namespace Nexen.Utilities;
 public static class FirmwareHelper {
+	private static FirmwareFiles GetKnownFirmwaresOrFallback(MissingFirmwareMessage msg, string filename) {
+		try {
+			return msg.Firmware.GetFirmwareInfo();
+		} catch {
+			List<FirmwareFileInfo> candidates = new();
+			if (msg.Size > 0) {
+				candidates.Add(new FirmwareFileInfo((int)msg.Size));
+			}
+
+			if (msg.AltSize > 0) {
+				candidates.Add(new FirmwareFileInfo((int)msg.AltSize));
+			}
+
+			if (candidates.Count == 0) {
+				candidates.Add(new FirmwareFileInfo(0));
+			}
+
+			FirmwareFiles fallback = new(filename);
+			fallback.AddRange(candidates);
+			return fallback;
+		}
+	}
+
 	public static string GetFileHash(string filename) {
 		var hashes = RomHashService.ComputeFileHashes(filename);
 		return hashes.Sha256;
@@ -31,8 +54,16 @@ public static class FirmwareHelper {
 		foreach (string file in Directory.EnumerateFiles(firmwareFolder)) {
 			try {
 				long fileSize = new FileInfo(file).Length;
+				string fileName = Path.GetFileName(file);
 				foreach (FirmwareFileInfo knownFirmware in knownFirmwares) {
 					if (knownFirmware.Size == fileSize) {
+						if (knownFirmware.Hashes.Length == 0) {
+							if (Array.Exists(knownFirmwares.Names, name => string.Equals(name, fileName, StringComparison.OrdinalIgnoreCase))) {
+								return file;
+							}
+							continue;
+						}
+
 						string hash = GetFileHash(file);
 						if (Array.IndexOf(knownFirmware.Hashes, hash) >= 0) {
 							return file;
@@ -53,7 +84,7 @@ public static class FirmwareHelper {
 		Window? wnd = ApplicationHelper.GetMainWindow();
 
 		// Try to auto-find a matching firmware file in the firmware folder
-		FirmwareFiles knownFirmwares = msg.Firmware.GetFirmwareInfo();
+		FirmwareFiles knownFirmwares = GetKnownFirmwaresOrFallback(msg, filename);
 		string? autoMatch = FindMatchingFirmwareInFolder(knownFirmwares);
 		if (autoMatch is not null) {
 			string destination = Path.Combine(ConfigManager.FirmwareFolder, knownFirmwares.Names[0]);
@@ -82,7 +113,14 @@ public static class FirmwareHelper {
 	}
 
 	public static async Task<bool> SelectFirmwareFile(FirmwareType type, string selectedFile, Visual? wnd) {
-		FirmwareFiles knownFirmwares = type.GetFirmwareInfo();
+		FirmwareFiles knownFirmwares;
+		try {
+			knownFirmwares = type.GetFirmwareInfo();
+		} catch {
+			knownFirmwares = new(Path.GetFileName(selectedFile)) {
+				new((int)new FileInfo(selectedFile).Length)
+			};
+		}
 
 		long fileSize = new FileInfo(selectedFile).Length;
 
@@ -100,14 +138,18 @@ public static class FirmwareHelper {
 
 		string fileHash = GetFileHash(selectedFile);
 		bool hashMatches = false;
+		bool hasKnownHashes = false;
 		foreach (FirmwareFileInfo knownFirmware in knownFirmwares) {
-			if (Array.IndexOf(knownFirmware.Hashes, fileHash) >= 0) {
-				hashMatches = true;
-				break;
+			if (knownFirmware.Hashes.Length > 0) {
+				hasKnownHashes = true;
+				if (Array.IndexOf(knownFirmware.Hashes, fileHash) >= 0) {
+					hashMatches = true;
+					break;
+				}
 			}
 		}
 
-		if (!hashMatches) {
+		if (hasKnownHashes && !hashMatches) {
 			if (await NexenMsgBox.Show(wnd, "FirmwareMismatch", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, ResourceHelper.GetEnumText(type), knownFirmwares[0].Hashes[0], fileHash) != DialogResult.OK) {
 				//Files don't match and user cancelled the action, retry
 				return false;
