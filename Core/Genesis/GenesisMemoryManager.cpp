@@ -978,82 +978,91 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	addr &= 0xFFFFFE;
 	if (IsTmssAddress(addr)) [[unlikely]] {
-		Write8(addr, (uint8_t)(value >> 8));
-		Write8(addr + 1, (uint8_t)(value & 0xFF));
+		uint8_t highByte = (uint8_t)(value >> 8);
+		uint8_t lowByte = (uint8_t)(value & 0xFF);
+		Write8(addr, highByte);
+		Write8(addr + 1, lowByte);
 		return;
 	}
 	if (HasSaveRam() && addr >= _sramStart && addr <= _sramEnd) [[unlikely]] {
-		Write8(addr, (uint8_t)(value >> 8));
-		Write8(addr + 1, (uint8_t)(value & 0xFF));
+		uint8_t highByte = (uint8_t)(value >> 8);
+		uint8_t lowByte = (uint8_t)(value & 0xFF);
+		Write8(addr, highByte);
+		Write8(addr + 1, lowByte);
 		return;
 	}
 
 	if (addr < _prgRomSize) [[likely]] {
-		uint8_t lowByte = (uint8_t)(value & 0xFF);
-		_openBus = lowByte;
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		_openBus = effectiveLowByte;
 		return;
 	}
 
 	if (addr >= 0xFF0000) [[likely]] {
 		uint32_t offset = addr & 0xFFFF;
-		uint8_t highByte = (uint8_t)(value >> 8);
-		uint8_t lowByte = (uint8_t)(value & 0xFF);
-		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, highByte, MemoryOperationType::Write);
-		_workRam[offset] = highByte;
-		_workRam[(offset + 1) & 0xFFFF] = lowByte;
-		_openBus = lowByte;
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, effectiveHighByte, MemoryOperationType::Write);
+		_workRam[offset] = effectiveHighByte;
+		_workRam[(offset + 1) & 0xFFFF] = effectiveLowByte;
+		_openBus = effectiveLowByte;
 		return;
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
-		uint8_t lowByte = (uint8_t)(value & 0xFF);
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
 		if (_tmssEnabled && !_tmssUnlocked) {
-			_openBus = lowByte;
+			_openBus = effectiveLowByte;
 			return;
 		}
 		WriteVdpPort(addr, value);
-		_openBus = lowByte;
+		_openBus = effectiveLowByte;
 		return;
 	}
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
-		uint8_t lowByte = (uint8_t)(value & 0xFF);
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
 		if (_z80BusRequest || _z80Reset) {
 			uint32_t z80Addr = addr & 0x1FFF;
-			_z80Ram[z80Addr] = (uint8_t)(value >> 8);
-			_z80Ram[(z80Addr + 1) & 0x1FFF] = lowByte;
+			_z80Ram[z80Addr] = effectiveHighByte;
+			_z80Ram[(z80Addr + 1) & 0x1FFF] = effectiveLowByte;
 		}
-		_openBus = lowByte;
+		_openBus = effectiveLowByte;
 		return;
 	}
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
-		WriteIo(addr, (uint8_t)(value >> 8));
-		WriteIo(addr + 1, (uint8_t)(value & 0xFF));
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		WriteIo(addr, effectiveHighByte);
+		WriteIo(addr + 1, effectiveLowByte);
 		return;
 	}
 
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
-		Write8(addr, (uint8_t)(value >> 8));
-		Write8(addr + 1, (uint8_t)(value & 0xFF));
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		Write8(addr, effectiveHighByte);
+		Write8(addr + 1, effectiveLowByte);
 		return;
 	}
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
-		uint8_t highByte = (uint8_t)(value >> 8);
-		_z80BusRequest = (highByte & 0x01) != 0;
-		_openBus = highByte;
-		TrackSegaCdHandshakeTranscript(addr, true, highByte);
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		_z80BusRequest = (effectiveHighByte & 0x01) != 0;
+		_openBus = effectiveHighByte;
+		TrackSegaCdHandshakeTranscript(addr, true, effectiveHighByte);
 		return;
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
-		uint8_t highByte = (uint8_t)(value >> 8);
-		_z80Reset = !(highByte & 0x01);
-		_openBus = highByte;
-		TrackSegaCdHandshakeTranscript(addr, true, highByte);
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		_z80Reset = !(effectiveHighByte & 0x01);
+		_openBus = effectiveHighByte;
+		TrackSegaCdHandshakeTranscript(addr, true, effectiveHighByte);
 		return;
 	}
 
