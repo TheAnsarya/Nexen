@@ -1128,18 +1128,27 @@ uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
 			_ioState.DataPort[0] = _controlManager ? _controlManager->ReadDataPort(0) : 0x7F; // Controller 1 data
 			_ioState.ThState[0] = _controlManager ? _controlManager->GetThState(0) : 0;
 			_ioState.ThCount[0] = _controlManager ? _controlManager->GetThCount(0) : 0;
-			_openBus = _ioState.DataPort[0];
-			return _ioState.DataPort[0];
+			{
+				uint8_t effectiveValue = _ioState.DataPort[0];
+				_openBus = effectiveValue;
+				return effectiveValue;
+			}
 		case 0x05:
 			_ioState.DataPort[1] = _controlManager ? _controlManager->ReadDataPort(1) : 0x7F; // Controller 2 data
 			_ioState.ThState[1] = _controlManager ? _controlManager->GetThState(1) : 0;
 			_ioState.ThCount[1] = _controlManager ? _controlManager->GetThCount(1) : 0;
-			_openBus = _ioState.DataPort[1];
-			return _ioState.DataPort[1];
+			{
+				uint8_t effectiveValue = _ioState.DataPort[1];
+				_openBus = effectiveValue;
+				return effectiveValue;
+			}
 		case 0x07:
 			_ioState.DataPort[2] = 0xFF; // EXT port
-			_openBus = _ioState.DataPort[2];
-			return _ioState.DataPort[2];
+			{
+				uint8_t effectiveValue = _ioState.DataPort[2];
+				_openBus = effectiveValue;
+				return effectiveValue;
+			}
 		case 0x09:
 			{
 				uint8_t value = _ioState.CtrlPort[0]; // Controller 1 ctrl
@@ -1171,29 +1180,35 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 	uint32_t reg = addr & 0x1F;
 	switch (reg) {
 		case 0x03:
+			{
+				uint8_t writeValue = value;
 			if (_controlManager) {
-				_controlManager->WriteDataPort(0, value);
+				_controlManager->WriteDataPort(0, writeValue);
 				_ioState.DataPort[0] = _controlManager->GetDataPortWriteLatch(0);
 				_ioState.ThState[0] = _controlManager->GetThState(0);
 				_ioState.ThCount[0] = _controlManager->GetThCount(0);
 			} else {
-				_ioState.DataPort[0] = value;
+				_ioState.DataPort[0] = writeValue;
 				_ioState.ThState[0] = 0;
 				_ioState.ThCount[0] = 0;
 			}
 			break;
+			}
 		case 0x05:
+			{
+				uint8_t writeValue = value;
 			if (_controlManager) {
-				_controlManager->WriteDataPort(1, value);
+				_controlManager->WriteDataPort(1, writeValue);
 				_ioState.DataPort[1] = _controlManager->GetDataPortWriteLatch(1);
 				_ioState.ThState[1] = _controlManager->GetThState(1);
 				_ioState.ThCount[1] = _controlManager->GetThCount(1);
 			} else {
-				_ioState.DataPort[1] = value;
+				_ioState.DataPort[1] = writeValue;
 				_ioState.ThState[1] = 0;
 				_ioState.ThCount[1] = 0;
 			}
 			break;
+			}
 		case 0x09:
 			{
 				uint8_t writeValue = value;
@@ -1213,7 +1228,8 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 				break;
 			}
 	}
-	_openBus = value;
+	uint8_t effectiveValue = value;
+	_openBus = effectiveValue;
 }
 
 uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
@@ -1313,39 +1329,39 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return value;
 	}
 	if (IsZ80ResetAddress(addr)) {
-		uint8_t value = _openBus;
-		_openBus = value;
-		TrackDebugTranscriptEntry(addr, false, value, 0x86);
-		return value;
+		uint8_t effectiveValue = _openBus;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x86);
+		return effectiveValue;
 	}
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
-		uint8_t value = _openBus;
+		uint8_t effectiveValue = _openBus;
 		if (_z80BusRequest || _z80Reset) {
-			value = _z80Ram[addr & 0x1FFF];
+			effectiveValue = _z80Ram[addr & 0x1FFF];
 		}
-		_openBus = value;
-		TrackDebugTranscriptEntry(addr, false, value, 0x20);
-		return value;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x20);
+		return effectiveValue;
 	}
 	if (addr >= 0xC00000 && addr <= 0xC0001F) {
 		if (_tmssEnabled && !_tmssUnlocked) {
-			uint8_t value = _openBus;
-			_openBus = value;
-			TrackDebugTranscriptEntry(addr, false, value, 0x30);
-			return value;
+			uint8_t effectiveValue = _openBus;
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x30);
+			return effectiveValue;
 		}
-		uint8_t value = _openBus;
+		uint8_t effectiveValue = _openBus;
 		if (_vdp) {
-			uint16_t word = ReadVdpPort(addr);
+			uint16_t effectiveWord = ReadVdpPort(addr);
 			if (addr & 1) {
-				value = (uint8_t)(word & 0xFF);
+				effectiveValue = (uint8_t)(effectiveWord & 0xFF);
 			} else {
-				value = (uint8_t)(word >> 8);
+				effectiveValue = (uint8_t)(effectiveWord >> 8);
 			}
 		}
-		_openBus = value;
-		TrackDebugTranscriptEntry(addr, false, value, 0x30);
-		return value;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x30);
+		return effectiveValue;
 	}
 
 	uint8_t* bridgeSlot = nullptr;
