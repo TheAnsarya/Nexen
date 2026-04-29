@@ -75,8 +75,9 @@ LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 		vector<uint8_t> deinterleaved;
 		size_t dataSize = romData.size() - 0x200;
 		deinterleaved.resize(dataSize);
+		size_t blockCount = dataSize / 0x4000;
 
-		for (size_t i = 0; i < dataSize / 0x4000; i++) {
+		for (size_t i = 0; i < blockCount; i++) {
 			size_t srcOffset = 0x200 + i * 0x4000;
 			size_t dstOffset = i * 0x4000;
 
@@ -86,6 +87,16 @@ LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 				deinterleaved[dstOffset + j * 2] = romData[srcOffset + 0x2000 + j];
 			}
 		}
+
+		// Preserve any trailing non-standard payload bytes instead of dropping/zeroing them.
+		size_t consumed = blockCount * 0x4000;
+		if (consumed < dataSize) {
+			size_t srcTailOffset = 0x200 + consumed;
+			size_t dstTailOffset = consumed;
+			size_t tailSize = dataSize - consumed;
+			memcpy(&deinterleaved[dstTailOffset], &romData[srcTailOffset], tailSize);
+		}
+
 		romData = std::move(deinterleaved);
 	}
 
