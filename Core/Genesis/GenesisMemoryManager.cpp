@@ -935,14 +935,17 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, highByte, MemoryOperationType::Write);
 		_workRam[offset] = (uint8_t)(value >> 8);
 		_workRam[(offset + 1) & 0xFFFF] = (uint8_t)(value & 0xFF);
+		_openBus = (uint8_t)(value & 0xFF);
 		return;
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		if (_tmssEnabled && !_tmssUnlocked) {
+			_openBus = (uint8_t)(value & 0xFF);
 			return;
 		}
 		WriteVdpPort(addr, value);
+		_openBus = (uint8_t)(value & 0xFF);
 		return;
 	}
 
@@ -952,6 +955,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 			_z80Ram[z80Addr] = (uint8_t)(value >> 8);
 			_z80Ram[(z80Addr + 1) & 0x1FFF] = (uint8_t)(value & 0xFF);
 		}
+		_openBus = (uint8_t)(value & 0xFF);
 		return;
 	}
 
@@ -971,12 +975,14 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		_z80BusRequest = (value & 0x0100) != 0;
+		_openBus = (uint8_t)(value >> 8);
 		TrackSegaCdHandshakeTranscript(addr, true, (uint8_t)(value >> 8));
 		return;
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
 		_z80Reset = !(value & 0x0100);
+		_openBus = (uint8_t)(value >> 8);
 		TrackSegaCdHandshakeTranscript(addr, true, (uint8_t)(value >> 8));
 		return;
 	}
