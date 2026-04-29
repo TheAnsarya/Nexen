@@ -1265,26 +1265,27 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 
 uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	addr &= 0xFFFFFF;
-	if (IsTmssAddress(addr)) {
-		uint8_t effectiveValue = _segaCdBridgeA140[addr & 0x03];
+	uint32_t effectiveAddr = addr;
+	if (IsTmssAddress(effectiveAddr)) {
+		uint8_t effectiveValue = _segaCdBridgeA140[effectiveAddr & 0x03];
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
 		return effectiveValue;
 	}
-	if (addr < _prgRomSize) {
-		uint8_t effectiveValue = _prgRom[addr];
+	if (effectiveAddr < _prgRomSize) {
+		uint8_t effectiveValue = _prgRom[effectiveAddr];
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x01);
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x01);
 		return effectiveValue;
 	}
-	if (addr >= 0xFF0000) {
-		uint8_t effectiveValue = _workRam[addr & 0xFFFF];
+	if (effectiveAddr >= 0xFF0000) {
+		uint8_t effectiveValue = _workRam[effectiveAddr & 0xFFFF];
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x04);
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x04);
 		return effectiveValue;
 	}
-	if (addr >= 0xA10000 && addr <= 0xA1001F) {
-		uint32_t reg = addr & 0x1F;
+	if (effectiveAddr >= 0xA10000 && effectiveAddr <= 0xA1001F) {
+		uint32_t reg = effectiveAddr & 0x1F;
 		uint8_t effectiveValue = _openBus;
 		switch (reg) {
 			case 0x01:
@@ -1343,105 +1344,105 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 				break;
 		}
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x10);
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x10);
 		return effectiveValue;
 	}
-	if (IsZ80BusReqAddress(addr)) {
-		if (addr & 0x01) {
+	if (IsZ80BusReqAddress(effectiveAddr)) {
+		if (effectiveAddr & 0x01) {
 			uint8_t effectiveValue = _openBus;
 			_openBus = effectiveValue;
-			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x82);
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x82);
 			return effectiveValue;
 		}
 		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
 		uint8_t effectiveValue = (uint8_t)((_openBus & 0xFE) | ackStatus);
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x82);
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x82);
 		return effectiveValue;
 	}
-	if (IsZ80ResetAddress(addr)) {
+	if (IsZ80ResetAddress(effectiveAddr)) {
 		uint8_t effectiveValue = _openBus;
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x86);
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x86);
 		return effectiveValue;
 	}
-	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
+	if (effectiveAddr >= 0xA00000 && effectiveAddr <= 0xA0FFFF) {
 		uint8_t effectiveValue = _openBus;
 		if (_z80BusRequest || _z80Reset) {
-			effectiveValue = _z80Ram[addr & 0x1FFF];
+			effectiveValue = _z80Ram[effectiveAddr & 0x1FFF];
 		}
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x20);
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x20);
 		return effectiveValue;
 	}
-	if (addr >= 0xC00000 && addr <= 0xC0001F) {
+	if (effectiveAddr >= 0xC00000 && effectiveAddr <= 0xC0001F) {
 		if (_tmssEnabled && !_tmssUnlocked) {
 			uint8_t effectiveValue = _openBus;
 			_openBus = effectiveValue;
-			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x30);
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x30);
 			return effectiveValue;
 		}
 		uint8_t effectiveValue = _openBus;
 		if (_vdp) {
-			uint16_t effectiveWord = ReadVdpPort(addr);
-			if (addr & 1) {
+			uint16_t effectiveWord = ReadVdpPort(effectiveAddr);
+			if (effectiveAddr & 1) {
 				effectiveValue = (uint8_t)(effectiveWord & 0xFF);
 			} else {
 				effectiveValue = (uint8_t)(effectiveWord >> 8);
 			}
 		}
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x30);
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x30);
 		return effectiveValue;
 	}
 
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
-	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) {
-		if (IsSegaCdSubCpuControlAddress(addr)) {
+	if (TryGetSegaCdBridgeSlot(effectiveAddr, bridgeSlot, bridgeIndex)) {
+		if (IsSegaCdSubCpuControlAddress(effectiveAddr)) {
 			uint8_t effectiveValue = GetSegaCdSubCpuStatusByte();
 			_openBus = effectiveValue;
-			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
 			return effectiveValue;
 		}
-		if (IsSegaCdAudioStatusAddress(addr)) {
-			uint8_t effectiveValue = GetSegaCdAudioStatusByte(addr);
+		if (IsSegaCdAudioStatusAddress(effectiveAddr)) {
+			uint8_t effectiveValue = GetSegaCdAudioStatusByte(effectiveAddr);
 			_openBus = effectiveValue;
-			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
 			return effectiveValue;
 		}
-		if (IsSegaCdToolingStatusAddress(addr)) {
-			uint8_t effectiveValue = GetSegaCdToolingStatusByte(addr);
+		if (IsSegaCdToolingStatusAddress(effectiveAddr)) {
+			uint8_t effectiveValue = GetSegaCdToolingStatusByte(effectiveAddr);
 			_openBus = effectiveValue;
-			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
 			return effectiveValue;
 		}
-		if (Is32xSh2StatusAddress(addr)) {
-			uint8_t effectiveValue = Get32xSh2StatusByte(addr);
+		if (Is32xSh2StatusAddress(effectiveAddr)) {
+			uint8_t effectiveValue = Get32xSh2StatusByte(effectiveAddr);
 			_openBus = effectiveValue;
-			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
 			return effectiveValue;
 		}
-		if (Is32xCompositionStatusAddress(addr)) {
-			uint8_t effectiveValue = Get32xCompositionStatusByte(addr);
+		if (Is32xCompositionStatusAddress(effectiveAddr)) {
+			uint8_t effectiveValue = Get32xCompositionStatusByte(effectiveAddr);
 			_openBus = effectiveValue;
-			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
 			return effectiveValue;
 		}
-		if (Is32xToolingStatusAddress(addr)) {
-			uint8_t effectiveValue = Get32xToolingStatusByte(addr);
+		if (Is32xToolingStatusAddress(effectiveAddr)) {
+			uint8_t effectiveValue = Get32xToolingStatusByte(effectiveAddr);
 			_openBus = effectiveValue;
-			TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
 			return effectiveValue;
 		}
 		uint8_t effectiveValue = bridgeSlot[bridgeIndex];
 		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x02);
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
 		return effectiveValue;
 	}
 	uint8_t effectiveValue = _openBus;
 	_openBus = effectiveValue;
-	TrackDebugTranscriptEntry(addr, false, effectiveValue, 0x00);
+	TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x00);
 	return effectiveValue;
 }
 
