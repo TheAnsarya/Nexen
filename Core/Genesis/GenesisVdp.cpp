@@ -64,6 +64,8 @@ void GenesisVdp::Reset(bool hardReset) {
 
 	_scanline = 0;
 	_hCounter = 0;
+	_currentLineCycleTarget = 488;
+	_lineCycleRemainder = 0;
 	_lastRunCycle = 0;
 	if (hardReset) {
 		_state.FrameCount = 0;
@@ -83,14 +85,12 @@ void GenesisVdp::SetRegion(bool pal) {
 	}
 }
 
-// Run VDP forward to the target master clock cycle
-// Genesis M68k runs at 7.67 MHz, VDP pixel clock is the same
-// Each scanline is 3420 master clocks (MCLK), which is 342 pixels * 10
-// but we simplify: ~488 68k cycles per line (NTSC), 262/313 lines per frame
+// Run VDP forward to the target master clock cycle.
+// One scanline is 3420 MCLK and 68k runs at MCLK/7, so the line length is
+// 3420/7 = 488 + 4/7 68k cycles. Keep the fractional remainder to avoid
+// fixed-phase aliasing in VBlank polling loops.
 void GenesisVdp::Run(uint64_t targetCycle) {
-	// Each M68k cycle = 1 VDP step (simplified)
-	// Real hardware has MCLK but we use 68k cycles as base
-	static constexpr uint32_t CyclesPerLine = 488;
+	// Each M68k cycle = 1 VDP timing step in this simplified model.
 
 	while (_lastRunCycle < targetCycle) {
 		_lastRunCycle++;
@@ -98,12 +98,19 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 		_state.HCounter = _hCounter;
 		_state.VCounter = _scanline;
 
-		if (_hCounter >= CyclesPerLine) {
+		if (_hCounter >= _currentLineCycleTarget) {
 			_hCounter = 0;
 			_state.HCounter = 0;
 			ProcessScanline();
 			_scanline++;
 			_state.VCounter = _scanline;
+
+			_currentLineCycleTarget = 488;
+			_lineCycleRemainder += 4;
+			if (_lineCycleRemainder >= 7) {
+				_lineCycleRemainder -= 7;
+				_currentLineCycleTarget = 489;
+			}
 
 			if (_scanline >= _totalLines) {
 				// End of frame
@@ -416,6 +423,11 @@ uint16_t GenesisVdp::ReadDataPort() {
 
 uint16_t GenesisVdp::ReadControlPort() {
 	_pendingControlWrite = false;
+	if (_scanline >= _screenHeight && _scanline < _totalLines) {
+		_state.StatusRegister |= VdpStatus::VBlankFlag;
+	} else {
+		_state.StatusRegister &= ~VdpStatus::VBlankFlag;
+	}
 	return _state.StatusRegister;
 }
 
@@ -605,6 +617,8 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SVArray(_vsram, (uint32_t)40);
 	SV(_scanline);
 	SV(_hCounter);
+	SV(_currentLineCycleTarget);
+	SV(_lineCycleRemainder);
 	SV(_lastRunCycle);
 	SV(_currentBuffer);
 	SV(_screenWidth);

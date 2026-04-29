@@ -44,8 +44,8 @@ namespace {
 	}
 
 	__forceinline uint8_t GetZ80BusAckStatusBit(bool busRequested, bool resetAsserted) {
-		// Bit0 = 0 when 68k owns the Z80 bus (bus requested OR Z80 held in reset).
-		uint8_t ackStatus = (busRequested || resetAsserted) ? 0x00 : 0x01;
+		// BUSACK bit is low only while the 68k has requested the Z80 bus and Z80 is not in reset.
+		uint8_t ackStatus = (busRequested && !resetAsserted) ? 0x00 : 0x01;
 		return ackStatus;
 	}
 

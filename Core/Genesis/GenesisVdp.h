@@ -35,6 +35,8 @@ private:
 	// Rendering state
 	uint16_t _scanline = 0;
 	uint16_t _hCounter = 0;
+	uint16_t _currentLineCycleTarget = 488;
+	uint8_t _lineCycleRemainder = 0;
 	uint64_t _lastRunCycle = 0;
 
 	// Screen dimensions based on mode

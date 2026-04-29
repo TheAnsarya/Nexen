@@ -217,3 +217,6 @@ terminal-*.txt
 all-*.txt
 chf-*.txt
 windows-*.txt
+
+# External emulator source mirrors (local research only)
+~sources/Emus/
