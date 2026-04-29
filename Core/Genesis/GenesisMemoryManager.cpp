@@ -639,7 +639,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
 	if (IsTmssAddress(addr)) [[unlikely]] {
-		uint8_t value = _tmssUnlocked ? 0x53 : 0x00;
+		uint8_t value = _segaCdBridgeA140[addr & 0x03];
 		_openBus = value;
 		return value;
 	}
@@ -739,7 +739,8 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	addr &= 0xFFFFFE;
 	if (IsTmssAddress(addr)) [[unlikely]] {
-		uint16_t value = _tmssUnlocked ? 0x5345 : 0x0000;
+		uint16_t value = ((uint16_t)_segaCdBridgeA140[addr & 0x03] << 8)
+			| (uint16_t)_segaCdBridgeA140[(addr + 1) & 0x03];
 		_openBus = (uint8_t)(value & 0xFF);
 		return value;
 	}
@@ -1028,7 +1029,7 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	if (IsTmssAddress(addr)) {
-		return _tmssUnlocked ? 0x53 : 0x00;
+		return _segaCdBridgeA140[addr & 0x03];
 	}
 	if (addr < _prgRomSize) {
 		return _prgRom[addr];
