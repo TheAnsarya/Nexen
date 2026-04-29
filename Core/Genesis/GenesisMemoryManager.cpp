@@ -1005,8 +1005,16 @@ uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
 	uint32_t reg = addr & 0x1F;
 	switch (reg) {
 		case 0x01: return BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
-		case 0x03: return _controlManager->ReadDataPort(0); // Controller 1 data
-		case 0x05: return _controlManager->ReadDataPort(1); // Controller 2 data
+		case 0x03:
+			_ioState.DataPort[0] = _controlManager->ReadDataPort(0); // Controller 1 data
+			_ioState.ThState[0] = _controlManager->GetThState(0);
+			_ioState.ThCount[0] = _controlManager->GetThCount(0);
+			return _ioState.DataPort[0];
+		case 0x05:
+			_ioState.DataPort[1] = _controlManager->ReadDataPort(1); // Controller 2 data
+			_ioState.ThState[1] = _controlManager->GetThState(1);
+			_ioState.ThCount[1] = _controlManager->GetThCount(1);
+			return _ioState.DataPort[1];
 		case 0x07: return 0xFF; // EXT port
 		case 0x09: return _ioState.CtrlPort[0]; // Controller 1 ctrl
 		case 0x0B: return _ioState.CtrlPort[1]; // Controller 2 ctrl
@@ -1018,8 +1026,18 @@ uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
 void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 	uint32_t reg = addr & 0x1F;
 	switch (reg) {
-		case 0x03: _controlManager->WriteDataPort(0, value); break;
-		case 0x05: _controlManager->WriteDataPort(1, value); break;
+		case 0x03:
+			_controlManager->WriteDataPort(0, value);
+			_ioState.DataPort[0] = _controlManager->GetDataPortWriteLatch(0);
+			_ioState.ThState[0] = _controlManager->GetThState(0);
+			_ioState.ThCount[0] = _controlManager->GetThCount(0);
+			break;
+		case 0x05:
+			_controlManager->WriteDataPort(1, value);
+			_ioState.DataPort[1] = _controlManager->GetDataPortWriteLatch(1);
+			_ioState.ThState[1] = _controlManager->GetThState(1);
+			_ioState.ThCount[1] = _controlManager->GetThCount(1);
+			break;
 		case 0x09: _ioState.CtrlPort[0] = value; break;
 		case 0x0B: _ioState.CtrlPort[1] = value; break;
 		case 0x0D: _ioState.CtrlPort[2] = value; break;
@@ -1367,10 +1385,25 @@ void GenesisMemoryManager::SaveBattery() {
 void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_z80BusRequest = false;
 	_z80Reset = true;
+	_openBus = 0;
 
 	if (_tmssEnabled) {
 		_tmssUnlocked = false;
 		memset(_segaCdBridgeA140, 0, sizeof(_segaCdBridgeA140));
+	}
+
+	memset(_ioState.DataPort, 0, sizeof(_ioState.DataPort));
+	memset(_ioState.TxData, 0, sizeof(_ioState.TxData));
+	memset(_ioState.RxData, 0, sizeof(_ioState.RxData));
+	memset(_ioState.SCtrl, 0, sizeof(_ioState.SCtrl));
+	memset(_ioState.ThCount, 0, sizeof(_ioState.ThCount));
+	memset(_ioState.ThState, 0, sizeof(_ioState.ThState));
+	_ioState.TranscriptLaneCount = 0;
+	_ioState.TranscriptLaneDigest = 0;
+	for (uint32_t i = 0; i < 4; i++) {
+		_ioState.TranscriptEntryAddress[i] = 0;
+		_ioState.TranscriptEntryValue[i] = 0;
+		_ioState.TranscriptEntryFlags[i] = 0;
 	}
 
 	_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;

@@ -168,6 +168,27 @@ void GenesisControlManager::ResetRuntimeState() {
 	memset(_thCount, 0, sizeof(_thCount));
 }
 
+uint8_t GenesisControlManager::GetDataPortWriteLatch(uint8_t port) const {
+	if (port > 1) {
+		return 0;
+	}
+	return _dataPortWrite[port];
+}
+
+uint8_t GenesisControlManager::GetThState(uint8_t port) const {
+	if (port > 1) {
+		return 0;
+	}
+	return _thState[port];
+}
+
+uint8_t GenesisControlManager::GetThCount(uint8_t port) const {
+	if (port > 1) {
+		return 0;
+	}
+	return _thCount[port];
+}
+
 uint8_t GenesisControlManager::GetDeterministicPortCapabilities(uint8_t port) const {
 	return BuildDeterministicPortCapabilities(port);
 }

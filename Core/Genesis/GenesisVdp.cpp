@@ -40,7 +40,7 @@ void GenesisVdp::Reset(bool hardReset) {
 	_pendingControlWrite = false;
 	_firstControlWord = 0;
 
-	_screenWidth = 320;
+	_screenWidth = IsH40Mode() ? 320 : 256;
 	_screenHeight = 224;
 	_totalLines = 262; // NTSC
 
