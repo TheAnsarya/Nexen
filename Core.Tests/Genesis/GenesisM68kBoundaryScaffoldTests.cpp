@@ -1,5 +1,7 @@
 ﻿#include "pch.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
+#include "Genesis/GenesisMemoryManager.h"
+#include "Shared/Emulator.h"
 
 namespace {
 	constexpr uint32_t MapperWindowSize = 0x80000;
@@ -23,6 +25,14 @@ namespace {
 			rom[base + MapperWindowSize - 1] = (uint8_t)(pattern ^ 0xa5);
 		}
 		return rom;
+	}
+
+	GenesisMemoryManager CreateMemoryManager(Emulator& emu, std::vector<uint8_t>& romData) {
+		emu.Initialize(false);
+
+		GenesisMemoryManager memoryManager;
+		memoryManager.Init(&emu, nullptr, romData, nullptr, nullptr, nullptr);
+		return memoryManager;
 	}
 
 	void WriteVector(vector<uint8_t>& rom, uint32_t vectorAddress, uint32_t targetPc) {
@@ -204,5 +214,40 @@ namespace {
 		EXPECT_EQ(bus.ReadByte(0x09FFFF), baselineTail);
 		EXPECT_EQ(bus.ReadByte(0xA130F3), 0x07);
 		EXPECT_EQ(bus.ReadByte(0xA130F5), 0x03);
+	}
+
+	TEST(GenesisM68kBoundaryScaffoldTests, MapperReadWordUsesAlignedAddressAndOpenBusHighByte) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.LoadRom(BuildMapperPatternRom(8));
+		scaffold.Startup();
+
+		auto& bus = scaffold.GetBus();
+		bus.WriteByte(0xA130F3, 0x06);
+		bus.WriteByte(0xA130F5, 0x02);
+
+		EXPECT_EQ(bus.ReadWord(0xA130F2), 0x0206);
+		EXPECT_EQ(bus.ReadWord(0xA130F3), 0x0606);
+		EXPECT_EQ(bus.ReadWord(0xA130F4), 0x0602);
+	}
+
+	TEST(GenesisM68kBoundaryScaffoldTests, RuntimeAndScaffoldReadWordParityForMapperWindow) {
+		std::vector<uint8_t> rom = BuildMapperPatternRom(8);
+
+		Emulator emu;
+		GenesisMemoryManager runtime = CreateMemoryManager(emu, rom);
+
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.LoadRom(rom);
+		scaffold.Startup();
+		auto& bus = scaffold.GetBus();
+
+		runtime.Write8(0xA130F3, 0x06);
+		runtime.Write8(0xA130F5, 0x02);
+		bus.WriteByte(0xA130F3, 0x06);
+		bus.WriteByte(0xA130F5, 0x02);
+
+		EXPECT_EQ(runtime.Read16(0xA130F2), bus.ReadWord(0xA130F2));
+		EXPECT_EQ(runtime.Read16(0xA130F3), bus.ReadWord(0xA130F3));
+		EXPECT_EQ(runtime.Read16(0xA130F4), bus.ReadWord(0xA130F4));
 	}
 }

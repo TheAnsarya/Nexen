@@ -58,6 +58,10 @@ namespace {
 	bool Is32xToolingStatusAddress(uint32_t address) {
 		return address >= 0xA15018 && address <= 0xA1501F;
 	}
+
+	bool IsMapperWindowAddress(uint32_t address) {
+		return address >= 0xA130F0 && address <= 0xA130FF;
+	}
 }
 
 GenesisPlatformBusStub::GenesisPlatformBusStub()
@@ -678,6 +682,7 @@ void GenesisPlatformBusStub::Reset() {
 	_workRamWriteCount = 0;
 	_openBusReadCount = 0;
 	_openBusWriteCount = 0;
+	_openBus = 0;
 	_lastVdpAddress = 0;
 	_lastVdpValue = 0;
 	_ownershipTraceCount = 0;
@@ -757,6 +762,7 @@ GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
 	state.WorkRamWriteCount = _workRamWriteCount;
 	state.OpenBusReadCount = _openBusReadCount;
 	state.OpenBusWriteCount = _openBusWriteCount;
+	state.OpenBus = _openBus;
 	state.LastVdpAddress = _lastVdpAddress;
 	state.LastVdpValue = _lastVdpValue;
 	state.OwnershipTraceCount = _ownershipTraceCount;
@@ -876,6 +882,7 @@ void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state)
 	_workRamWriteCount = state.WorkRamWriteCount;
 	_openBusReadCount = state.OpenBusReadCount;
 	_openBusWriteCount = state.OpenBusWriteCount;
+	_openBus = state.OpenBus;
 	_lastVdpAddress = state.LastVdpAddress;
 	_lastVdpValue = state.LastVdpValue;
 	_ownershipTraceCount = state.OwnershipTraceCount;
@@ -980,7 +987,7 @@ uint8_t GenesisPlatformBusStub::GetRenderLinePixel(uint32_t index) const {
 uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 	address &= 0xFFFFFF;
 	GenesisBusOwner owner = DecodeOwner(address);
-	uint8_t result = 0xFF;
+	uint8_t result = _openBus;
 
 	switch (owner) {
 		case GenesisBusOwner::Rom:
@@ -1008,6 +1015,10 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 			uint8_t bankSlot = 0;
 			if (TryGetRomBankRegisterSlot(address, bankSlot)) {
 				result = _romBankRegisters[bankSlot];
+				break;
+			}
+			if (IsMapperWindowAddress(address)) {
+				result = _openBus;
 				break;
 			}
 			if (IsSegaCdToolingStatusAddress(address)) {
@@ -1120,7 +1131,7 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 		case GenesisBusOwner::OpenBus:
 		default:
 			_openBusReadCount++;
-			result = 0xFF;
+			result = _openBus;
 			break;
 	}
 
@@ -1128,13 +1139,22 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 		AppendCommandResponseLane(address, false, result);
 	}
 
+	_openBus = result;
 	AppendOwnershipTrace(address, owner, false, result);
 	return result;
+}
+
+uint16_t GenesisPlatformBusStub::ReadWord(uint32_t address) {
+	address &= 0xFFFFFE;
+	uint8_t high = ReadByte(address);
+	uint8_t low = ReadByte(address + 1);
+	return (uint16_t)(((uint16_t)high << 8) | (uint16_t)low);
 }
 
 void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 	address &= 0xFFFFFF;
 	GenesisBusOwner owner = DecodeOwner(address);
+	_openBus = value;
 	AppendOwnershipTrace(address, owner, true, value);
 
 	switch (owner) {
@@ -1337,6 +1357,12 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 			_openBusWriteCount++;
 			return;
 	}
+}
+
+void GenesisPlatformBusStub::WriteWord(uint32_t address, uint16_t value) {
+	address &= 0xFFFFFE;
+	WriteByte(address, (uint8_t)(value >> 8));
+	WriteByte(address + 1, (uint8_t)(value & 0xFF));
 }
 
 void GenesisM68kCpuStub::AttachBus(IGenesisM68kBus* bus) {

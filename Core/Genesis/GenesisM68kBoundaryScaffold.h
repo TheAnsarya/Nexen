@@ -91,6 +91,7 @@ struct GenesisPlatformBusSaveState {
 	uint32_t WorkRamWriteCount = 0;
 	uint32_t OpenBusReadCount = 0;
 	uint32_t OpenBusWriteCount = 0;
+	uint8_t OpenBus = 0;
 	uint32_t LastVdpAddress = 0;
 	uint8_t LastVdpValue = 0;
 	uint32_t OwnershipTraceCount = 0;
@@ -229,6 +230,7 @@ private:
 	uint32_t _workRamWriteCount = 0;
 	uint32_t _openBusReadCount = 0;
 	uint32_t _openBusWriteCount = 0;
+	uint8_t _openBus = 0;
 	uint32_t _lastVdpAddress = 0;
 	uint8_t _lastVdpValue = 0;
 	uint32_t _ownershipTraceCount = 0;
@@ -290,6 +292,8 @@ public:
 
 	uint8_t ReadByte(uint32_t address) override;
 	void WriteByte(uint32_t address, uint8_t value) override;
+	uint16_t ReadWord(uint32_t address);
+	void WriteWord(uint32_t address, uint16_t value);
 
 	[[nodiscard]] bool WasZ80WindowAccessed() const { return _z80WindowAccessed; }
 	[[nodiscard]] bool WasIoWindowAccessed() const { return _ioWindowAccessed; }
@@ -306,6 +310,7 @@ public:
 	[[nodiscard]] uint32_t GetWorkRamWriteCount() const { return _workRamWriteCount; }
 	[[nodiscard]] uint32_t GetOpenBusReadCount() const { return _openBusReadCount; }
 	[[nodiscard]] uint32_t GetOpenBusWriteCount() const { return _openBusWriteCount; }
+	[[nodiscard]] uint8_t GetOpenBusValue() const { return _openBus; }
 	[[nodiscard]] uint32_t GetLastVdpAddress() const { return _lastVdpAddress; }
 	[[nodiscard]] uint8_t GetLastVdpValue() const { return _lastVdpValue; }
 	[[nodiscard]] uint32_t GetOwnershipTraceCount() const { return _ownershipTraceCount; }
