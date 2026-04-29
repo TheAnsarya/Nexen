@@ -2019,6 +2019,7 @@ keep going! complete many slices in one batch; continue;
 
 [Nexen] actual emulator updates, actual emulator implementation; focus on making code changes to the emulator and UI code, not so much on tests/etc; continue; keep going! complete many slices in one batch; continue;
 
+continue; keep goin! as long as you can, complete several slices, like 10; continue;
 
 
 
@@ -2026,7 +2027,7 @@ keep going! complete many slices in one batch; continue;
 
 
 
-
+continue; keep going! as long as you can, complete several slices, like 10; continue;
 
 
 

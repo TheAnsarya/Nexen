@@ -28,6 +28,7 @@ void GenesisVdp::Init(Emulator* emu, GenesisConsole* console, GenesisM68k* cpu, 
 
 
 void GenesisVdp::Reset(bool hardReset) {
+	memset(_state.Registers, 0, sizeof(_state.Registers));
 	_state.Registers[0] = 0x04; // Mode register 1
 	_state.Registers[1] = 0x04; // Mode register 2 (display off)
 	_state.Registers[10] = 0xFF; // HBlank counter
@@ -452,18 +453,18 @@ void GenesisVdp::ProcessDma() {
 	if (!_state.DmaActive) return;
 
 	uint8_t dmaMode = (_state.Registers[23] >> 6) & 3;
-	uint16_t dmaLength = ((uint16_t)_state.Registers[20] << 8) | _state.Registers[19];
+	uint32_t dmaLength = ((uint16_t)_state.Registers[20] << 8) | _state.Registers[19];
 	uint32_t dmaSrc = ((uint32_t)(_state.Registers[23] & 0x3F) << 17)
 	                | ((uint32_t)_state.Registers[22] << 9)
 	                | ((uint32_t)_state.Registers[21] << 1);
 
-	if (dmaLength == 0) dmaLength = 0xFFFF;
+	if (dmaLength == 0) dmaLength = 0x10000;
 	_state.DmaMode = dmaMode;
 	_state.StatusRegister |= VdpStatus::DmaBusy;
 
 	if (dmaMode == 0 || dmaMode == 1) {
 		// 68K → VRAM/CRAM/VSRAM copy
-		for (uint16_t i = 0; i < dmaLength; i++) {
+		for (uint32_t i = 0; i < dmaLength; i++) {
 			uint16_t word = _memoryManager->Read16(dmaSrc);
 			WriteDataPort(word);
 			dmaSrc += 2;
@@ -477,7 +478,7 @@ void GenesisVdp::ProcessDma() {
 		// VRAM fill
 		uint8_t fillByte = _state.Registers[23] & 0xFF; // Simplified
 		uint32_t dmaDst = _addressReg;
-		for (uint16_t i = 0; i < dmaLength; i++) {
+		for (uint32_t i = 0; i < dmaLength; i++) {
 			uint32_t addr = dmaDst & 0xFFFF;
 			if (addr < VramSize) _vram[addr] = fillByte;
 			dmaDst += _autoIncrement;
@@ -487,7 +488,7 @@ void GenesisVdp::ProcessDma() {
 		// VRAM copy
 		uint16_t srcAddr = ((uint16_t)_state.Registers[22] << 8) | _state.Registers[21];
 		uint32_t dmaDst = _addressReg;
-		for (uint16_t i = 0; i < dmaLength; i++) {
+		for (uint32_t i = 0; i < dmaLength; i++) {
 			uint32_t src = (srcAddr + i) & 0xFFFF;
 			uint32_t dst = dmaDst & 0xFFFF;
 			if (src < VramSize && dst < VramSize) {
