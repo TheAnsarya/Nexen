@@ -6,6 +6,8 @@
 namespace {
 	static constexpr uint64_t FnvOffsetBasis = 1469598103934665603ull;
 	static constexpr uint64_t FnvPrime = 1099511628211ull;
+	static constexpr uint32_t MapperWindowSize = 0x80000;
+	static constexpr uint32_t MapperBankWindowCount = 7;
 
 	string ToHexDigest(uint64_t value) {
 		return std::format("{:016x}", value);
@@ -63,6 +65,66 @@ GenesisPlatformBusStub::GenesisPlatformBusStub()
 	  _io(0x20, 0),
 	  _expansionIo(0xC0, 0),
 	  _vdpIo(0x20, 0) {
+	ResetRomBankMapper();
+}
+
+void GenesisPlatformBusStub::ResetRomBankMapper() {
+	uint32_t bankCount = ((uint32_t)_rom.size() + MapperWindowSize - 1) / MapperWindowSize;
+	if (bankCount == 0) {
+		bankCount = 1;
+	}
+
+	_romBankMapperEnabled = _rom.size() > MapperWindowSize;
+	for (uint32_t i = 0; i < MapperBankWindowCount; i++) {
+		_romBankRegisters[i] = (uint8_t)((i + 1) % bankCount);
+	}
+}
+
+bool GenesisPlatformBusStub::TryGetRomBankRegisterSlot(uint32_t address, uint8_t& slot) const {
+	if ((address & 0x01) == 0) {
+		return false;
+	}
+
+	if (address < 0xA130F3 || address > 0xA130FF) {
+		return false;
+	}
+
+	slot = (uint8_t)((address - 0xA130F3) >> 1);
+	return slot < MapperBankWindowCount;
+}
+
+bool GenesisPlatformBusStub::TryWriteRomBankRegister(uint32_t address, uint8_t value) {
+	uint8_t slot = 0;
+	if (!TryGetRomBankRegisterSlot(address, slot)) {
+		return false;
+	}
+
+	_romBankRegisters[slot] = value;
+	return true;
+}
+
+uint32_t GenesisPlatformBusStub::TranslateRomAddress(uint32_t address) const {
+	if (_rom.empty()) {
+		return 0;
+	}
+
+	uint32_t effectiveAddress = address & 0x3FFFFF;
+	uint32_t bankCount = ((uint32_t)_rom.size() + MapperWindowSize - 1) / MapperWindowSize;
+	if (bankCount == 0) {
+		bankCount = 1;
+	}
+
+	if (_romBankMapperEnabled && effectiveAddress >= 0x080000 && effectiveAddress < 0x400000) {
+		uint32_t windowOffset = effectiveAddress - 0x080000;
+		uint32_t slot = windowOffset / MapperWindowSize;
+		if (slot < MapperBankWindowCount) {
+			uint32_t bank = _romBankRegisters[slot] % bankCount;
+			uint32_t mappedAddress = bank * MapperWindowSize + (windowOffset % MapperWindowSize);
+			return mappedAddress % (uint32_t)_rom.size();
+		}
+	}
+
+	return effectiveAddress % (uint32_t)_rom.size();
 }
 
 GenesisBusOwner GenesisPlatformBusStub::DecodeOwner(uint32_t address) const {
@@ -543,6 +605,7 @@ void GenesisPlatformBusStub::LoadRom(const vector<uint8_t>& romData) {
 	if (_rom.empty()) {
 		_rom.resize(0x10000, 0);
 	}
+	ResetRomBankMapper();
 }
 
 void GenesisPlatformBusStub::Reset() {
@@ -619,6 +682,7 @@ void GenesisPlatformBusStub::Reset() {
 	_commandResponseLaneCount = 0;
 	_commandResponseLaneDigest.clear();
 	_commandResponseLane.clear();
+	ResetRomBankMapper();
 }
 
 GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
@@ -723,6 +787,8 @@ GenesisPlatformBusSaveState GenesisPlatformBusStub::SaveState() const {
 	state.M32xToolingCheatSignal = _m32xToolingCheatSignal;
 	state.M32xToolingEventCount = _m32xToolingEventCount;
 	state.M32xToolingDigest = _m32xToolingDigest;
+	state.RomBankMapperEnabled = _romBankMapperEnabled;
+	state.RomBankRegisters = _romBankRegisters;
 	return state;
 }
 
@@ -840,6 +906,8 @@ void GenesisPlatformBusStub::LoadState(const GenesisPlatformBusSaveState& state)
 	_m32xToolingCheatSignal = state.M32xToolingCheatSignal;
 	_m32xToolingEventCount = state.M32xToolingEventCount;
 	_m32xToolingDigest = state.M32xToolingDigest;
+	_romBankMapperEnabled = state.RomBankMapperEnabled;
+	_romBankRegisters = state.RomBankRegisters;
 }
 
 uint8_t GenesisPlatformBusStub::ComposeRenderPixel() const {
@@ -917,7 +985,7 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 				result = 0xFF;
 				break;
 			}
-			result = _rom[address % _rom.size()];
+			result = _rom[TranslateRomAddress(address)];
 			break;
 
 		case GenesisBusOwner::Z80:
@@ -933,6 +1001,11 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 		case GenesisBusOwner::Io: {
 			_ioWindowAccessed = true;
 			_ioReadCount++;
+			uint8_t bankSlot = 0;
+			if (TryGetRomBankRegisterSlot(address, bankSlot)) {
+				result = _romBankRegisters[bankSlot];
+				break;
+			}
 			if (IsSegaCdToolingStatusAddress(address)) {
 				if (address == 0xA12016) {
 					result = (uint8_t)(_segaCdToolingEventCount & 0xFF);
@@ -1075,6 +1148,12 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 		case GenesisBusOwner::Io: {
 			_ioWindowAccessed = true;
 			_ioWriteCount++;
+			if (TryWriteRomBankRegister(address, value)) {
+				if (IsCommandResponseLaneAddress(address)) {
+					AppendCommandResponseLane(address, true, value);
+				}
+				return;
+			}
 			if (IsSegaCdToolingControlAddress(address)) {
 				uint8_t* target = nullptr;
 				if (address == 0xA12012) {

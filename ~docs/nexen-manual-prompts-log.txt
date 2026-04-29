@@ -2039,6 +2039,7 @@ continue; keep going! as long as you can, do several 10-slice batches in a row, 
 
 Hey, this work is just a bunch of variable renames and stupid crap! Focus on actually implementing the emulator and making it able to run a game, the tetchy details can be cleaned up later; Do real work!
 
+continue working on real code changes;
 
 
 

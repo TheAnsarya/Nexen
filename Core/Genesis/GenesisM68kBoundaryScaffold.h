@@ -125,6 +125,8 @@ struct GenesisPlatformBusSaveState {
 	uint8_t M32xToolingCheatSignal = 0;
 	uint32_t M32xToolingEventCount = 0;
 	uint8_t M32xToolingDigest = 0;
+	bool RomBankMapperEnabled = false;
+	std::array<uint8_t, 7> RomBankRegisters = {};
 
 	bool operator==(const GenesisPlatformBusSaveState&) const = default;
 };
@@ -261,6 +263,8 @@ private:
 	uint8_t _m32xToolingCheatSignal = 0;
 	uint32_t _m32xToolingEventCount = 0;
 	uint8_t _m32xToolingDigest = 0;
+	bool _romBankMapperEnabled = false;
+	std::array<uint8_t, 7> _romBankRegisters = {};
 
 	[[nodiscard]] GenesisBusOwner DecodeOwner(uint32_t address) const;
 	[[nodiscard]] bool TryGetExpansionIoOffset(uint32_t address, uint32_t& offset) const;
@@ -274,6 +278,10 @@ private:
 	void ApplyVdpControlWord(uint16_t controlWord);
 	[[nodiscard]] uint8_t ComposeRenderPixel() const;
 	[[nodiscard]] GenesisVdpDmaMode DecodeDmaModeFromControl(uint8_t registerValue) const;
+	void ResetRomBankMapper();
+	[[nodiscard]] bool TryGetRomBankRegisterSlot(uint32_t address, uint8_t& slot) const;
+	[[nodiscard]] bool TryWriteRomBankRegister(uint32_t address, uint8_t value);
+	[[nodiscard]] uint32_t TranslateRomAddress(uint32_t address) const;
 
 public:
 	GenesisPlatformBusStub();
