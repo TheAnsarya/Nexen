@@ -83,6 +83,7 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 			if (_scanline >= _totalLines) {
 				// End of frame
 				_scanline = 0;
+				_state.StatusRegister &= ~VdpStatus::VBlankFlag;
 				_currentBuffer ^= 1;
 				_state.FrameCount++;
 			}
@@ -514,12 +515,14 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_currentBuffer);
 	SV(_screenWidth);
 	SV(_screenHeight);
+	SV(_totalLines);
 	SV(_pendingControlWrite);
 	SV(_firstControlWord);
 	SV(_accessMode);
 	SV(_addressReg);
 	SV(_autoIncrement);
 	SV(_state.StatusRegister);
+	SV(_state.HIntCounter);
 	SV(_state.FrameCount);
 	SV(_state.DmaActive);
 	for (int i = 0; i < 24; i++) {

@@ -80,7 +80,7 @@
 				</StackPanel>
 			</Panel>
 
-			<Grid ColumnDefinitions="*,Auto,*" RowDefinitions="Auto,Auto" Width="580" Canvas.Bottom="20" IsVisible="{Binding !Port}">
+			<Grid ColumnDefinitions="*,Auto,*" RowDefinitions="Auto,Auto" Width="580" Canvas.Bottom="20">
 				<c:KeyBindingButton KeyBinding="{Binding Mapping.Start}" Grid.Column="1" Width="90" />
 				<TextBlock Grid.Column="1" Grid.Row="1" Text="Start" FontSize="14" HorizontalAlignment="Center" />
 			</Grid>
