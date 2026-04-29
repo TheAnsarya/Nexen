@@ -143,6 +143,7 @@ public abstract partial class BaseMenuAction : ViewModelBase, IDisposable {
 						try {
 							value();
 						} catch (Exception ex) {
+							Log.Error(ex, $"[MenuActionBase] Action {ActionType} threw");
 							Dispatcher.UIThread.Post(() => NexenMsgBox.ShowException(ex));
 						}
 					}

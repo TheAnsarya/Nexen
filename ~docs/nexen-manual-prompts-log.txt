@@ -2059,6 +2059,36 @@ yes do that
 
 build and run Nexen with all the logging turned on, so I can open a Genesis ROM and see what happens, monitor the logs and fix whatever crashes
 
+it crashed, check logs, fix problems
+
+No, that's wrong, we want to open the debugger, don't just close it off, if it crashes that means "fix the debugger" not "don't let me open the debugger" and when I opened the rom, all I got was a black screen, so that didn't crash but it did not run, figure out how it runs; make real progress on actually emulating a game that is our only goal, ignore harness/smoke/parity/blahblahblah, focus on actually making a game play; continue;
+
+[Nexen] Keep running Nexen builds with a rom and checking the logs (add a bunch of new debug logging across the application as we go wherever we are searching for bugs) to fix problems with loading and running the ROM until we can get to a reliable emulation and can play the game; Make the game display, nop black screen, and fix the debugger so we can open it;
+
+do that
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

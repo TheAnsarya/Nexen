@@ -20,15 +20,30 @@ public static class DebugWindowManager {
 	private static int _closeInProgress = 0;
 
 	public static T CreateDebugWindow<T>(Func<T> createWindow) where T : NexenWindow {
-		if (Interlocked.Increment(ref _debugWindowCounter) == 1) {
+		int count = Interlocked.Increment(ref _debugWindowCounter);
+		Log.Debug($"[DebugWindowManager] CreateDebugWindow start type={typeof(T).Name} count={count}");
+		if (count == 1) {
 			//Opened a debug window and nothing else was opened, load the saved workspace
-			DebugWorkspaceManager.Load();
+			try {
+				Log.Debug("[DebugWindowManager] Loading debug workspace before first debug window");
+				DebugWorkspaceManager.Load();
+				Log.Debug("[DebugWindowManager] Debug workspace loaded");
+			} catch (Exception ex) {
+				Log.Error(ex, "[DebugWindowManager] DebugWorkspaceManager.Load failed - continuing with default layout");
+			}
 		}
 
-		T wnd = createWindow();
-		wnd.Closed += OnClosedHandler;
-		_openedWindows.TryAdd(wnd, true);
-		return wnd;
+		try {
+			T wnd = createWindow();
+			wnd.Closed += OnClosedHandler;
+			_openedWindows.TryAdd(wnd, true);
+			Log.Debug($"[DebugWindowManager] CreateDebugWindow success type={typeof(T).Name}");
+			return wnd;
+		} catch {
+			Interlocked.Decrement(ref _debugWindowCounter);
+			Log.Debug($"[DebugWindowManager] CreateDebugWindow failed type={typeof(T).Name} countRolledBack={_debugWindowCounter}");
+			throw;
+		}
 	}
 
 	private static void OnClosedHandler(object? sender, EventArgs e) {
@@ -45,8 +60,10 @@ public static class DebugWindowManager {
 	}
 
 	public static T OpenDebugWindow<T>(Func<T> createWindow) where T : NexenWindow {
+		Log.Debug($"[DebugWindowManager] OpenDebugWindow start type={typeof(T).Name}");
 		T wnd = CreateDebugWindow<T>(createWindow);
 		wnd.Show();
+		Log.Debug($"[DebugWindowManager] OpenDebugWindow shown type={typeof(T).Name}");
 		return wnd;
 	}
 

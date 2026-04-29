@@ -410,6 +410,19 @@ public partial class MainWindow : NexenWindow {
 				// Start background CDL recording if enabled
 				Dispatcher.UIThread.Post(() => BackgroundPansyExporter.OnRomLoaded(romInfo));
 
+				string? autoOpenDebugger = Environment.GetEnvironmentVariable("NEXEN_AUTO_OPEN_DEBUGGER");
+				if (string.Equals(autoOpenDebugger, "1", StringComparison.OrdinalIgnoreCase)) {
+					Dispatcher.UIThread.Post(() => {
+						try {
+							CpuType cpuType = romInfo.ConsoleType.GetMainCpuType();
+							Log.Info($"[MainWindow] NEXEN_AUTO_OPEN_DEBUGGER=1, opening debugger for cpu={cpuType}");
+							DebuggerWindow.GetOrOpenWindow(cpuType);
+						} catch (Exception ex) {
+							Log.Error(ex, "[MainWindow] Auto-open debugger failed");
+						}
+					});
+				}
+
 				// Reset recent play timer so the first auto-save happens 5 minutes after load,
 				// not immediately (constructor initializes _lastRecentPlayTime to epoch 0)
 				EmuApi.ResetRecentPlayTimer();

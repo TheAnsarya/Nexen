@@ -69,18 +69,23 @@ public partial class DebuggerWindow : NexenWindow, INotificationHandler {
 
 	public static DebuggerWindow GetOrOpenWindow(CpuType cpuType) {
 		Log.Debug($"[DebuggerWindow] GetOrOpenWindow requested for cpu={cpuType}");
-		DebuggerWindow? wnd = DebugWindowManager.GetDebugWindow<DebuggerWindow>(x => x.CpuType == cpuType);
-		if (wnd == null) {
-			Log.Debug($"[DebuggerWindow] No existing window for cpu={cpuType}, opening new window");
-			DebuggerWindow newWnd = DebugWindowManager.OpenDebugWindow<DebuggerWindow>(() => new DebuggerWindow(cpuType));
-			Log.Debug($"[DebuggerWindow] Opened new debugger window for cpu={cpuType}");
-			return newWnd;
-		} else {
-			Log.Debug($"[DebuggerWindow] Reusing existing debugger window for cpu={cpuType}");
-			wnd.BringToFront();
-		}
+		try {
+			DebuggerWindow? wnd = DebugWindowManager.GetDebugWindow<DebuggerWindow>(x => x.CpuType == cpuType);
+			if (wnd == null) {
+				Log.Debug($"[DebuggerWindow] No existing window for cpu={cpuType}, opening new window");
+				DebuggerWindow newWnd = DebugWindowManager.OpenDebugWindow<DebuggerWindow>(() => new DebuggerWindow(cpuType));
+				Log.Debug($"[DebuggerWindow] Opened new debugger window for cpu={cpuType}");
+				return newWnd;
+			} else {
+				Log.Debug($"[DebuggerWindow] Reusing existing debugger window for cpu={cpuType}");
+				wnd.BringToFront();
+			}
 
-		return wnd;
+			return wnd;
+		} catch (Exception ex) {
+			Log.Error(ex, $"[DebuggerWindow] GetOrOpenWindow failed for cpu={cpuType}");
+			throw;
+		}
 	}
 
 	public static void OpenWindowAtAddress(CpuType cpuType, int address) {
