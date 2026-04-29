@@ -1074,13 +1074,19 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	if (IsTmssAddress(addr)) {
-		return _segaCdBridgeA140[addr & 0x03];
+		uint8_t value = _segaCdBridgeA140[addr & 0x03];
+		_openBus = value;
+		return value;
 	}
 	if (addr < _prgRomSize) {
-		return _prgRom[addr];
+		uint8_t value = _prgRom[addr];
+		_openBus = value;
+		return value;
 	}
 	if (addr >= 0xFF0000) {
-		return _workRam[addr & 0xFFFF];
+		uint8_t value = _workRam[addr & 0xFFFF];
+		_openBus = value;
+		return value;
 	}
 	if (addr >= 0xA10000 && addr <= 0xA1001F) {
 		uint32_t reg = addr & 0x1F;
@@ -1117,6 +1123,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 				value = _openBus;
 				break;
 		}
+		_openBus = value;
 		TrackDebugTranscriptEntry(addr, false, value, 0x10);
 		return value;
 	}
@@ -1126,6 +1133,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 			return _openBus;
 		}
 		uint8_t value = (_openBus & 0xFE) | GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
+		_openBus = value;
 		TrackDebugTranscriptEntry(addr, false, value, 0x82);
 		return value;
 	}
@@ -1138,6 +1146,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		if (_z80BusRequest || _z80Reset) {
 			value = _z80Ram[addr & 0x1FFF];
 		}
+		_openBus = value;
 		TrackDebugTranscriptEntry(addr, false, value, 0x20);
 		return value;
 	}
@@ -1155,6 +1164,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 				value = (uint8_t)(word >> 8);
 			}
 		}
+		_openBus = value;
 		TrackDebugTranscriptEntry(addr, false, value, 0x30);
 		return value;
 	}
@@ -1164,39 +1174,46 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) {
 		if (IsSegaCdSubCpuControlAddress(addr)) {
 			uint8_t value = GetSegaCdSubCpuStatusByte();
+			_openBus = value;
 			TrackDebugTranscriptEntry(addr, false, value, 0x02);
 			return value;
 		}
 		if (IsSegaCdAudioStatusAddress(addr)) {
 			uint8_t value = GetSegaCdAudioStatusByte(addr);
+			_openBus = value;
 			TrackDebugTranscriptEntry(addr, false, value, 0x02);
 			return value;
 		}
 		if (IsSegaCdToolingStatusAddress(addr)) {
 			uint8_t value = GetSegaCdToolingStatusByte(addr);
+			_openBus = value;
 			TrackDebugTranscriptEntry(addr, false, value, 0x02);
 			return value;
 		}
 		if (Is32xSh2StatusAddress(addr)) {
 			uint8_t value = Get32xSh2StatusByte(addr);
+			_openBus = value;
 			TrackDebugTranscriptEntry(addr, false, value, 0x02);
 			return value;
 		}
 		if (Is32xCompositionStatusAddress(addr)) {
 			uint8_t value = Get32xCompositionStatusByte(addr);
+			_openBus = value;
 			TrackDebugTranscriptEntry(addr, false, value, 0x02);
 			return value;
 		}
 		if (Is32xToolingStatusAddress(addr)) {
 			uint8_t value = Get32xToolingStatusByte(addr);
+			_openBus = value;
 			TrackDebugTranscriptEntry(addr, false, value, 0x02);
 			return value;
 		}
 		uint8_t value = bridgeSlot[bridgeIndex];
+		_openBus = value;
 		TrackDebugTranscriptEntry(addr, false, value, 0x02);
 		return value;
 	}
-	return 0;
+	return _openBus;
 }
 
 void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
