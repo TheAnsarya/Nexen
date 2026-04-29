@@ -1119,16 +1119,19 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	if (IsTmssAddress(addr)) {
 		uint8_t value = _segaCdBridgeA140[addr & 0x03];
 		_openBus = value;
+		TrackDebugTranscriptEntry(addr, false, value, 0x02);
 		return value;
 	}
 	if (addr < _prgRomSize) {
 		uint8_t value = _prgRom[addr];
 		_openBus = value;
+		TrackDebugTranscriptEntry(addr, false, value, 0x01);
 		return value;
 	}
 	if (addr >= 0xFF0000) {
 		uint8_t value = _workRam[addr & 0xFFFF];
 		_openBus = value;
+		TrackDebugTranscriptEntry(addr, false, value, 0x04);
 		return value;
 	}
 	if (addr >= 0xA10000 && addr <= 0xA1001F) {
@@ -1195,8 +1198,10 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	}
 	if (addr >= 0xC00000 && addr <= 0xC0001F) {
 		if (_tmssEnabled && !_tmssUnlocked) {
-			TrackDebugTranscriptEntry(addr, false, _openBus, 0x30);
-			return _openBus;
+			uint8_t value = _openBus;
+			_openBus = value;
+			TrackDebugTranscriptEntry(addr, false, value, 0x30);
+			return value;
 		}
 		uint8_t value = _openBus;
 		if (_vdp) {
@@ -1256,6 +1261,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		TrackDebugTranscriptEntry(addr, false, value, 0x02);
 		return value;
 	}
+	TrackDebugTranscriptEntry(addr, false, _openBus, 0x00);
 	return _openBus;
 }
 
@@ -1274,9 +1280,15 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		TrackDebugTranscriptEntry(addr, true, value, 0x02);
 		return;
 	}
+	if (addr < _prgRomSize) {
+		_openBus = value;
+		TrackDebugTranscriptEntry(addr, true, value, 0x01);
+		return;
+	}
 	if (addr >= 0xFF0000) {
 		_workRam[addr & 0xFFFF] = value;
 		_openBus = value;
+		TrackDebugTranscriptEntry(addr, true, value, 0x04);
 		return;
 	}
 	if (addr >= 0xA10000 && addr <= 0xA1001F) {
@@ -1332,19 +1344,21 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		}
 	}
 	if (IsZ80BusReqAddress(addr)) {
+		uint8_t effectiveValue = value;
 		if (!(addr & 0x01)) {
-			_z80BusRequest = (value & 0x01) != 0;
+			_z80BusRequest = (effectiveValue & 0x01) != 0;
 		}
-		_openBus = value;
-		TrackDebugTranscriptEntry(addr, true, value, 0x80);
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x80);
 		return;
 	}
 	if (IsZ80ResetAddress(addr)) {
+		uint8_t effectiveValue = value;
 		if (!(addr & 0x01)) {
-			_z80Reset = !(value & 0x01);
+			_z80Reset = !(effectiveValue & 0x01);
 		}
-		_openBus = value;
-		TrackDebugTranscriptEntry(addr, true, value, 0x84);
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(addr, true, effectiveValue, 0x84);
 		return;
 	}
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) {
@@ -1388,7 +1402,11 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 			Update32xToolingContract(addr, value);
 		}
 		TrackDebugTranscriptEntry(addr, true, value, 0x00);
+		return;
 	}
+
+	_openBus = value;
+	TrackDebugTranscriptEntry(addr, true, value, 0x00);
 }
 
 AddressInfo GenesisMemoryManager::GetAbsoluteAddress(uint32_t addr) {
