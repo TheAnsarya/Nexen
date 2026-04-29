@@ -547,6 +547,59 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				hIntervalEstimate,
 				vIntervalEstimate));
 
+		auto runVdpStatusStartupPath = [&scaffold, &titleClass]() {
+			if (titleClass == "sonic") {
+				scaffold.GetBus().SetRenderCompositionInputs(0x14, true, 0x05, false, 0x01, false, true, 0x20, true);
+				scaffold.GetBus().RenderScaffoldLine(40);
+				scaffold.StepFrameScaffold(488u + 72u);
+			} else if (titleClass == "jurassic") {
+				scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 10);
+				scaffold.StepFrameScaffold(488u + 104u);
+				scaffold.GetBus().RenderScaffoldLine(72);
+			} else {
+				scaffold.StepFrameScaffold(160u);
+			}
+		};
+
+		auto statusDelta = [](uint16_t fromStatus, uint16_t toStatus) {
+			return (uint16_t)(fromStatus ^ toStatus);
+		};
+
+		GenesisBoundaryScaffoldSaveState vdpStatusBaseline = scaffold.SaveState();
+		runVdpStatusStartupPath();
+		GenesisBoundaryScaffoldSaveState vdpStatusFirst = scaffold.SaveState();
+		scaffold.LoadState(vdpStatusBaseline);
+		runVdpStatusStartupPath();
+		GenesisBoundaryScaffoldSaveState vdpStatusReplay = scaffold.SaveState();
+		scaffold.LoadState(vdpStatusFirst);
+
+		uint16_t vdpTransitionFirst = statusDelta(vdpStatusBaseline.Bus.VdpStatus, vdpStatusFirst.Bus.VdpStatus);
+		uint16_t vdpTransitionReplay = statusDelta(vdpStatusBaseline.Bus.VdpStatus, vdpStatusReplay.Bus.VdpStatus);
+		bool vdpStatusAdvanced = vdpStatusFirst.TimingFrame > vdpStatusBaseline.TimingFrame
+			|| (vdpStatusFirst.TimingFrame == vdpStatusBaseline.TimingFrame && vdpStatusFirst.TimingScanline > vdpStatusBaseline.TimingScanline);
+		bool vdpStatusReplayParity = vdpStatusFirst.Bus.VdpStatus == vdpStatusReplay.Bus.VdpStatus
+			&& vdpTransitionFirst == vdpTransitionReplay
+			&& vdpStatusFirst.Bus.LastVdpAddress == vdpStatusReplay.Bus.LastVdpAddress
+			&& vdpStatusFirst.Bus.LastVdpValue == vdpStatusReplay.Bus.LastVdpValue;
+		bool vdpStatusEvidence = vdpTransitionFirst != 0 || !vdpStatusFirst.Bus.RenderLineDigest.empty();
+		bool vdpStatusStartupPass = !isTargetStartupClass || (vdpStatusAdvanced && vdpStatusReplayParity && vdpStatusEvidence);
+		addCheckpoint(
+			"GEN-COMPAT-VDP-STATUS-STARTUP",
+			vdpStatusStartupPass,
+			std::format(
+				"class={} target={} advanced={} replayParity={} evidence={} baseStatus={:04x} firstStatus={:04x} replayStatus={:04x} transition={:04x} lastAddr={:06x} lastValue={:02x}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				vdpStatusAdvanced ? 1 : 0,
+				vdpStatusReplayParity ? 1 : 0,
+				vdpStatusEvidence ? 1 : 0,
+				vdpStatusBaseline.Bus.VdpStatus,
+				vdpStatusFirst.Bus.VdpStatus,
+				vdpStatusReplay.Bus.VdpStatus,
+				vdpTransitionFirst,
+				vdpStatusFirst.Bus.LastVdpAddress,
+				vdpStatusFirst.Bus.LastVdpValue));
+
 		string digestA = BuildCheckpointDigest(entry.Checkpoints);
 		string digestB = BuildCheckpointDigest(entry.Checkpoints);
 		addCheckpoint("GEN-COMPAT-DETERMINISM", digestA == digestB, std::format("digestA={} digestB={}", digestA, digestB));
@@ -563,6 +616,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-HOST-MODE")
 			&& hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-TIMING-STARTUP")
+			&& hasPassingCheckpoint("GEN-COMPAT-VDP-STATUS-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-CADENCE-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-INTERVAL-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-RENDER")
