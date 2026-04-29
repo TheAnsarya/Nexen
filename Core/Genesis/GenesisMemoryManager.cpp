@@ -659,9 +659,9 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			_openBus = effectiveValue;
 			return effectiveValue;
 		}
-		uint8_t value = _openBus;
-		_openBus = value;
-		return value;
+		uint8_t effectiveValue = _openBus;
+		_openBus = effectiveValue;
+		return effectiveValue;
 	}
 
 	if (addr >= 0xFF0000) [[likely]] {
@@ -675,9 +675,9 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		if (_tmssEnabled && !_tmssUnlocked) {
-			uint8_t value = _openBus;
-			_openBus = value;
-			return value;
+			uint8_t effectiveValue = _openBus;
+			_openBus = effectiveValue;
+			return effectiveValue;
 		}
 		// VDP ports (byte access from word port)
 		uint16_t effectiveWord = ReadVdpPort(addr);
@@ -694,9 +694,9 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			_openBus = effectiveValue;
 			return effectiveValue;
 		}
-		uint8_t value = _openBus;
-		_openBus = value;
-		return value;
+		uint8_t effectiveValue = _openBus;
+		_openBus = effectiveValue;
+		return effectiveValue;
 	}
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
@@ -706,60 +706,51 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
-		uint8_t value = bridgeSlot[bridgeIndex];
+		uint8_t effectiveValue = bridgeSlot[bridgeIndex];
 		if (IsSegaCdSubCpuControlAddress(addr)) {
-			uint8_t effectiveValue = GetSegaCdSubCpuStatusByte();
-			value = effectiveValue;
+			effectiveValue = GetSegaCdSubCpuStatusByte();
 		} else if (IsSegaCdAudioStatusAddress(addr)) {
-			uint8_t effectiveValue = GetSegaCdAudioStatusByte(addr);
-			value = effectiveValue;
+			effectiveValue = GetSegaCdAudioStatusByte(addr);
 		} else if (IsSegaCdToolingStatusAddress(addr)) {
-			uint8_t effectiveValue = GetSegaCdToolingStatusByte(addr);
-			value = effectiveValue;
+			effectiveValue = GetSegaCdToolingStatusByte(addr);
 		} else if (Is32xSh2StatusAddress(addr)) {
-			uint8_t effectiveValue = Get32xSh2StatusByte(addr);
-			value = effectiveValue;
+			effectiveValue = Get32xSh2StatusByte(addr);
 		} else if (Is32xCompositionStatusAddress(addr)) {
-			uint8_t effectiveValue = Get32xCompositionStatusByte(addr);
-			value = effectiveValue;
+			effectiveValue = Get32xCompositionStatusByte(addr);
 		} else if (Is32xToolingStatusAddress(addr)) {
-			uint8_t effectiveValue = Get32xToolingStatusByte(addr);
-			value = effectiveValue;
-		} else {
-			uint8_t effectiveValue = bridgeSlot[bridgeIndex];
-			value = effectiveValue;
+			effectiveValue = Get32xToolingStatusByte(addr);
 		}
-		TrackSegaCdTranscript(addr, false, value);
-		_openBus = value;
-		return value;
+		TrackSegaCdTranscript(addr, false, effectiveValue);
+		_openBus = effectiveValue;
+		return effectiveValue;
 	}
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		if (addr & 0x01) {
-			uint8_t value = _openBus;
-			_openBus = value;
-			TrackSegaCdHandshakeTranscript(addr, false, value);
-			return value;
+			uint8_t effectiveValue = _openBus;
+			_openBus = effectiveValue;
+			TrackSegaCdHandshakeTranscript(addr, false, effectiveValue);
+			return effectiveValue;
 		}
 
 		// Z80 bus request: bit 0 indicates bus grant, upper bits preserve open bus.
 		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
-		uint8_t value = (uint8_t)((_openBus & 0xFE) | ackStatus);
-		_openBus = value;
-		TrackSegaCdHandshakeTranscript(addr, false, value);
-		return value;
+		uint8_t effectiveValue = (uint8_t)((_openBus & 0xFE) | ackStatus);
+		_openBus = effectiveValue;
+		TrackSegaCdHandshakeTranscript(addr, false, effectiveValue);
+		return effectiveValue;
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
-		uint8_t value = _openBus;
-		_openBus = value;
-		TrackSegaCdHandshakeTranscript(addr, false, value);
-		return value;
+		uint8_t effectiveValue = _openBus;
+		_openBus = effectiveValue;
+		TrackSegaCdHandshakeTranscript(addr, false, effectiveValue);
+		return effectiveValue;
 	}
 
-	uint8_t value = _openBus;
-	_openBus = value;
-	return value;
+	uint8_t effectiveValue = _openBus;
+	_openBus = effectiveValue;
+	return effectiveValue;
 }
 
 uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
