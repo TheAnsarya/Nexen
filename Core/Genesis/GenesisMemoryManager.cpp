@@ -12,36 +12,49 @@
 
 namespace {
 	__forceinline uint32_t ReadBe32(const vector<uint8_t>& data, size_t offset) {
-		return ((uint32_t)data[offset] << 24)
-			| ((uint32_t)data[offset + 1] << 16)
-			| ((uint32_t)data[offset + 2] << 8)
-			| (uint32_t)data[offset + 3];
+		size_t effectiveOffset = offset;
+		uint32_t byte0 = (uint32_t)data[effectiveOffset];
+		uint32_t byte1 = (uint32_t)data[effectiveOffset + 1];
+		uint32_t byte2 = (uint32_t)data[effectiveOffset + 2];
+		uint32_t byte3 = (uint32_t)data[effectiveOffset + 3];
+		uint32_t value = (byte0 << 24)
+			| (byte1 << 16)
+			| (byte2 << 8)
+			| byte3;
+		return value;
 	}
 
 	__forceinline bool IsZ80BusReqAddress(uint32_t addr) {
-		return (addr & 0xFFFF00) == 0xA11100;
+		uint32_t effectiveAddr = addr;
+		bool isBusReqAddress = (effectiveAddr & 0xFFFF00) == 0xA11100;
+		return isBusReqAddress;
 	}
 
 	__forceinline bool IsZ80ResetAddress(uint32_t addr) {
-		return (addr & 0xFFFF00) == 0xA11200;
+		uint32_t effectiveAddr = addr;
+		bool isResetAddress = (effectiveAddr & 0xFFFF00) == 0xA11200;
+		return isResetAddress;
 	}
 
 	__forceinline uint8_t GetZ80BusAckStatusBit(bool busRequested, bool resetAsserted) {
-		return (busRequested && !resetAsserted) ? 0x00 : 0x01;
+		uint8_t ackStatus = (busRequested && !resetAsserted) ? 0x00 : 0x01;
+		return ackStatus;
 	}
 
 	__forceinline bool IsTmssAddress(uint32_t addr) {
-		return addr >= 0xA14000 && addr <= 0xA14003;
+		uint32_t effectiveAddr = addr;
+		bool isTmssAddress = effectiveAddr >= 0xA14000 && effectiveAddr <= 0xA14003;
+		return isTmssAddress;
 	}
 
 	__forceinline uint8_t BuildVersionRegister(ConsoleRegion region) {
-		uint8_t version = 0xA0; // Overseas + base hardware profile
+		uint8_t versionByte = 0xA0; // Overseas + base hardware profile
 		if (region == ConsoleRegion::Pal) {
-			version |= 0x40;
+			versionByte |= 0x40;
 		} else {
-			version &= (uint8_t)~0x40;
+			versionByte &= (uint8_t)~0x40;
 		}
-		return version;
+		return versionByte;
 	}
 }
 
@@ -634,11 +647,12 @@ bool GenesisMemoryManager::IsSramAddress(uint32_t addr) const {
 }
 
 bool GenesisMemoryManager::TryGetSramOffset(uint32_t addr, uint32_t& offset) const {
-	if (!IsSramAddress(addr)) {
+	uint32_t effectiveAddr = addr;
+	if (!IsSramAddress(effectiveAddr)) {
 		return false;
 	}
 
-	if ((addr & 0x01) == 0) {
+	if ((effectiveAddr & 0x01) == 0) {
 		if (!_sramEvenBytes) {
 			return false;
 		}
@@ -647,9 +661,9 @@ bool GenesisMemoryManager::TryGetSramOffset(uint32_t addr, uint32_t& offset) con
 	}
 
 	if (_sramEvenBytes && _sramOddBytes) {
-		offset = addr - _sramStart;
+		offset = effectiveAddr - _sramStart;
 	} else {
-		offset = (addr - _sramStart) >> 1;
+		offset = (effectiveAddr - _sramStart) >> 1;
 	}
 
 	return offset < _saveRamSize;
