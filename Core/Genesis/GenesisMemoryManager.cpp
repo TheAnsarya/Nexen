@@ -533,58 +533,62 @@ uint8_t GenesisMemoryManager::Get32xToolingStatusByte(uint32_t addr) const {
 }
 
 void GenesisMemoryManager::TrackSegaCdTranscript(uint32_t addr, bool isWrite, uint8_t value) {
-	uint8_t roleFlags = 0;
+	uint8_t effectiveValue = value;
+	uint8_t effectiveRoleFlags = 0;
 	if ((addr & 0x10) != 0) {
-		roleFlags |= 0x02;
+		effectiveRoleFlags |= 0x02;
 	}
 	if (addr >= 0xA13000 && addr <= 0xA1301F) {
-		roleFlags |= 0x04;
+		effectiveRoleFlags |= 0x04;
 	} else if (addr >= 0xA14000 && addr <= 0xA1401F) {
-		roleFlags |= 0x08;
+		effectiveRoleFlags |= 0x08;
 	} else if (addr >= 0xA15000 && addr <= 0xA1501F) {
-		roleFlags |= 0x10;
+		effectiveRoleFlags |= 0x10;
 	} else if (addr >= 0xA16000 && addr <= 0xA1601F) {
-		roleFlags |= 0x20;
+		effectiveRoleFlags |= 0x20;
 	} else if (addr >= 0xA18000 && addr <= 0xA1801F) {
-		roleFlags |= 0x40;
+		effectiveRoleFlags |= 0x40;
 	}
 
-	TrackTranscriptEntry(addr, isWrite, value, roleFlags);
+	TrackTranscriptEntry(addr, isWrite, effectiveValue, effectiveRoleFlags);
 }
 
 void GenesisMemoryManager::TrackSegaCdHandshakeTranscript(uint32_t addr, bool isWrite, uint8_t value) {
-	uint8_t roleFlags = 0x80;
+	uint8_t effectiveValue = value;
+	uint8_t effectiveRoleFlags = 0x80;
 	if (IsZ80ResetAddress(addr)) {
-		roleFlags |= 0x04;
+		effectiveRoleFlags |= 0x04;
 	}
 	if (!isWrite) {
-		roleFlags |= 0x02;
+		effectiveRoleFlags |= 0x02;
 	}
 
-	TrackTranscriptEntry(addr, isWrite, value, roleFlags);
+	TrackTranscriptEntry(addr, isWrite, effectiveValue, effectiveRoleFlags);
 }
 
 void GenesisMemoryManager::TrackTranscriptEntry(uint32_t addr, bool isWrite, uint8_t value, uint8_t roleFlags) {
 	static constexpr uint64_t FnvOffsetBasis = 1469598103934665603ull;
 	static constexpr uint64_t FnvPrime = 1099511628211ull;
+	uint8_t effectiveValue = value;
+	uint8_t effectiveRoleFlags = roleFlags;
 
 	if (isWrite) {
-		roleFlags |= 0x01;
+		effectiveRoleFlags |= 0x01;
 	}
 
 	uint64_t hash = _ioState.TranscriptLaneDigest == 0 ? FnvOffsetBasis : _ioState.TranscriptLaneDigest;
 	hash ^= (addr & 0xFFFFFF);
 	hash *= FnvPrime;
-	hash ^= value;
+	hash ^= effectiveValue;
 	hash *= FnvPrime;
-	hash ^= roleFlags;
+	hash ^= effectiveRoleFlags;
 	hash *= FnvPrime;
 	_ioState.TranscriptLaneDigest = hash;
 
 	uint32_t index = _ioState.TranscriptLaneCount % 4;
 	_ioState.TranscriptEntryAddress[index] = addr & 0xFFFFFF;
-	_ioState.TranscriptEntryValue[index] = value;
-	_ioState.TranscriptEntryFlags[index] = roleFlags;
+	_ioState.TranscriptEntryValue[index] = effectiveValue;
+	_ioState.TranscriptEntryFlags[index] = effectiveRoleFlags;
 	_ioState.TranscriptLaneCount++;
 }
 
