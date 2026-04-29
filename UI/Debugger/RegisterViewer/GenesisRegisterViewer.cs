@@ -159,6 +159,22 @@ public sealed class GenesisRegisterViewer {
 			entries.Add(new RegEntry("", "Entry[" + i + "] Decoded", decodedFlags, flags));
 		}
 
+		entries.Add(new RegEntry("", "Debug Transcript"));
+		entries.Add(new RegEntry("", "DebugLaneCount", io.DebugTranscriptLaneCount));
+		entries.Add(new RegEntry("", "DebugLaneDigestHi", (uint)(io.DebugTranscriptLaneDigest >> 32), Format.X32));
+		entries.Add(new RegEntry("", "DebugLaneDigestLo", (uint)(io.DebugTranscriptLaneDigest & 0xFFFFFFFF), Format.X32));
+
+		for (int i = 0; i < 4; i++) {
+			uint address = io.DebugTranscriptEntryAddress[i];
+			byte value = io.DebugTranscriptEntryValue[i];
+			byte flags = io.DebugTranscriptEntryFlags[i];
+			string decodedFlags = DecodeTranscriptFlags(flags);
+			entries.Add(new RegEntry("", "DebugEntry[" + i + "] Addr", address, Format.X32));
+			entries.Add(new RegEntry("", "DebugEntry[" + i + "] Value", value, Format.X8));
+			entries.Add(new RegEntry("", "DebugEntry[" + i + "] Flags", flags, Format.X8));
+			entries.Add(new RegEntry("", "DebugEntry[" + i + "] Decoded", decodedFlags, flags));
+		}
+
 		return new RegisterViewerTab("I/O", entries, CpuType.Genesis);
 	}
 }

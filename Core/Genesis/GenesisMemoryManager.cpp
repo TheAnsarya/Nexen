@@ -1004,22 +1004,36 @@ void GenesisMemoryManager::WriteVdpPort(uint32_t addr, uint16_t value) {
 uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
 	uint32_t reg = addr & 0x1F;
 	switch (reg) {
-		case 0x01: return BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
+		case 0x01:
+			_openBus = BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
+			return _openBus;
 		case 0x03:
-			_ioState.DataPort[0] = _controlManager->ReadDataPort(0); // Controller 1 data
-			_ioState.ThState[0] = _controlManager->GetThState(0);
-			_ioState.ThCount[0] = _controlManager->GetThCount(0);
+			_ioState.DataPort[0] = _controlManager ? _controlManager->ReadDataPort(0) : 0x7F; // Controller 1 data
+			_ioState.ThState[0] = _controlManager ? _controlManager->GetThState(0) : 0;
+			_ioState.ThCount[0] = _controlManager ? _controlManager->GetThCount(0) : 0;
+			_openBus = _ioState.DataPort[0];
 			return _ioState.DataPort[0];
 		case 0x05:
-			_ioState.DataPort[1] = _controlManager->ReadDataPort(1); // Controller 2 data
-			_ioState.ThState[1] = _controlManager->GetThState(1);
-			_ioState.ThCount[1] = _controlManager->GetThCount(1);
+			_ioState.DataPort[1] = _controlManager ? _controlManager->ReadDataPort(1) : 0x7F; // Controller 2 data
+			_ioState.ThState[1] = _controlManager ? _controlManager->GetThState(1) : 0;
+			_ioState.ThCount[1] = _controlManager ? _controlManager->GetThCount(1) : 0;
+			_openBus = _ioState.DataPort[1];
 			return _ioState.DataPort[1];
-		case 0x07: return 0xFF; // EXT port
-		case 0x09: return _ioState.CtrlPort[0]; // Controller 1 ctrl
-		case 0x0B: return _ioState.CtrlPort[1]; // Controller 2 ctrl
-		case 0x0D: return _ioState.CtrlPort[2]; // EXT ctrl
-		default: return _openBus;
+		case 0x07:
+			_ioState.DataPort[2] = 0xFF; // EXT port
+			_openBus = _ioState.DataPort[2];
+			return _ioState.DataPort[2];
+		case 0x09:
+			_openBus = _ioState.CtrlPort[0]; // Controller 1 ctrl
+			return _openBus;
+		case 0x0B:
+			_openBus = _ioState.CtrlPort[1]; // Controller 2 ctrl
+			return _openBus;
+		case 0x0D:
+			_openBus = _ioState.CtrlPort[2]; // EXT ctrl
+			return _openBus;
+		default:
+			return _openBus;
 	}
 }
 
@@ -1027,16 +1041,28 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 	uint32_t reg = addr & 0x1F;
 	switch (reg) {
 		case 0x03:
-			_controlManager->WriteDataPort(0, value);
-			_ioState.DataPort[0] = _controlManager->GetDataPortWriteLatch(0);
-			_ioState.ThState[0] = _controlManager->GetThState(0);
-			_ioState.ThCount[0] = _controlManager->GetThCount(0);
+			if (_controlManager) {
+				_controlManager->WriteDataPort(0, value);
+				_ioState.DataPort[0] = _controlManager->GetDataPortWriteLatch(0);
+				_ioState.ThState[0] = _controlManager->GetThState(0);
+				_ioState.ThCount[0] = _controlManager->GetThCount(0);
+			} else {
+				_ioState.DataPort[0] = value;
+				_ioState.ThState[0] = 0;
+				_ioState.ThCount[0] = 0;
+			}
 			break;
 		case 0x05:
-			_controlManager->WriteDataPort(1, value);
-			_ioState.DataPort[1] = _controlManager->GetDataPortWriteLatch(1);
-			_ioState.ThState[1] = _controlManager->GetThState(1);
-			_ioState.ThCount[1] = _controlManager->GetThCount(1);
+			if (_controlManager) {
+				_controlManager->WriteDataPort(1, value);
+				_ioState.DataPort[1] = _controlManager->GetDataPortWriteLatch(1);
+				_ioState.ThState[1] = _controlManager->GetThState(1);
+				_ioState.ThCount[1] = _controlManager->GetThCount(1);
+			} else {
+				_ioState.DataPort[1] = value;
+				_ioState.ThState[1] = 0;
+				_ioState.ThCount[1] = 0;
+			}
 			break;
 		case 0x09: _ioState.CtrlPort[0] = value; break;
 		case 0x0B: _ioState.CtrlPort[1] = value; break;
@@ -1386,9 +1412,9 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_z80BusRequest = false;
 	_z80Reset = true;
 	_openBus = 0;
+	_tmssUnlocked = false;
 
 	if (_tmssEnabled) {
-		_tmssUnlocked = false;
 		memset(_segaCdBridgeA140, 0, sizeof(_segaCdBridgeA140));
 	}
 
