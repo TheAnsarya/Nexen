@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
+#include "Genesis/GenesisTypes.h"
 #include <charconv>
 
 namespace {
@@ -361,9 +362,9 @@ void GenesisPlatformBusStub::ApplyVdpControlWord(uint16_t controlWord) {
 		}
 	} else if ((controlWord & 0xC000) == 0x4000) {
 		// Model a deterministic status side effect for control-word command routing.
-		_vdpStatus |= 0x8000;
-		_vdpStatus = (uint16_t)(_vdpStatus & ~0x0001);
-		_vdpStatus |= 0x0002;
+		_vdpStatus |= VdpStatus::VInterrupt;
+		_vdpStatus &= (uint16_t)~VdpStatus::FifoEmpty;
+		_vdpStatus |= VdpStatus::DmaBusy;
 	}
 }
 
@@ -1007,7 +1008,7 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 			} else {
 				_lastVdpValue = (uint8_t)((_vdpStatus >> ((address & 1) == 0 ? 8 : 0)) & 0xFF);
 				if ((address & 1) == 0) {
-					_vdpStatus = (uint16_t)(_vdpStatus & ~0x8000);
+					_vdpStatus &= (uint16_t)~VdpStatus::VInterrupt;
 				}
 			}
 			result = _lastVdpValue;
@@ -1203,8 +1204,8 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 				} else {
 					_vdpDataPortLatch = (uint16_t)((_vdpDataPortLatch & 0xFF00) | value);
 				}
-				_vdpStatus = (uint16_t)(_vdpStatus & ~0x0002);
-				_vdpStatus |= 0x0001;
+				_vdpStatus &= (uint16_t)~VdpStatus::DmaBusy;
+				_vdpStatus |= VdpStatus::FifoEmpty;
 			} else {
 				if ((address & 1) == 0) {
 					_vdpControlWordLatch = (uint16_t)((_vdpControlWordLatch & 0x00FF) | ((uint16_t)value << 8));
