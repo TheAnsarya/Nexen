@@ -366,13 +366,17 @@ public partial class MainWindow : NexenWindow {
 						byte ff001e = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xFF001E);
 						byte ff001f = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xFF001F);
 						ushort sr = genesisState.Cpu.SR;
+						ushort vdpStatus = genesisState.Vdp.StatusRegister;
+						byte vdpStatusLo = (byte)(vdpStatus & 0xFF);
+						bool vblankBit3 = (vdpStatusLo & 0x08) != 0;
+						byte statusByteC00005 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xC00005);
 						int intMask = (sr >> 8) & 0x07;
 						bool vIntEnabled = (reg01 & 0x20) != 0;
 						bool hIntEnabled = (reg00 & 0x10) != 0;
 						bool vIntPending = (genesisState.Vdp.StatusRegister & 0x0080) != 0;
 						ushort cram1 = genesisState.Vdp.Cram is { Length: > 1 } ? genesisState.Vdp.Cram[1] : (ushort)0;
 						ushort cram2 = genesisState.Vdp.Cram is { Length: > 2 } ? genesisState.Vdp.Cram[2] : (ushort)0;
-						Log.Info($"[MainWindow] GenesisDiag frame={frameCount} pc=${pc:x6} op=${opHi:x2}{opLo:x2} ext=${ext0:x2}{ext1:x2}{ext2:x2}{ext3:x2} extAddr=${opExtAddr24:x6} extVal=${opExtAddrValue:x2} sr=${sr:x4} imask={intMask} r0=${reg00:x2} r1=${reg01:x2} hIntEn={hIntEnabled} vIntEn={vIntEnabled} vIntPending={vIntPending} displayEnabled={displayEnabled} ff001e=${ff001e:x2} ff001f=${ff001f:x2} vdpAddr=${genesisState.Vdp.AddressRegister:x4} vdpCode=${genesisState.Vdp.CodeRegister:x2} dmaActive={genesisState.Vdp.DmaActive} dmaMode={genesisState.Vdp.DmaMode} dmaLen=${reg14:x2}{reg13:x2} dmaSrc=${reg17:x2}{reg16:x2}{reg15:x2} autoInc=${reg0f:x2} cram1=${cram1:x4} cram2=${cram2:x4} tmssEnabled={genesisState.Io.TmssEnabled} tmssUnlocked={genesisState.Io.TmssUnlocked} vdpFrame={genesisState.Vdp.FrameCount}");
+						Log.Info($"[MainWindow] GenesisDiag frame={frameCount} pc=${pc:x6} op=${opHi:x2}{opLo:x2} ext=${ext0:x2}{ext1:x2}{ext2:x2}{ext3:x2} extAddr=${opExtAddr24:x6} extVal=${opExtAddrValue:x2} sr=${sr:x4} imask={intMask} r0=${reg00:x2} r1=${reg01:x2} hIntEn={hIntEnabled} vIntEn={vIntEnabled} vIntPending={vIntPending} vblankBit3={vblankBit3} statusLo=${vdpStatusLo:x2} c00005=${statusByteC00005:x2} displayEnabled={displayEnabled} ff001e=${ff001e:x2} ff001f=${ff001f:x2} vdpAddr=${genesisState.Vdp.AddressRegister:x4} vdpCode=${genesisState.Vdp.CodeRegister:x2} dmaActive={genesisState.Vdp.DmaActive} dmaMode={genesisState.Vdp.DmaMode} dmaLen=${reg14:x2}{reg13:x2} dmaSrc=${reg17:x2}{reg16:x2}{reg15:x2} autoInc=${reg0f:x2} cram1=${cram1:x4} cram2=${cram2:x4} tmssEnabled={genesisState.Io.TmssEnabled} tmssUnlocked={genesisState.Io.TmssUnlocked} vdpFrame={genesisState.Vdp.FrameCount}");
 					}
 				}
 				break;

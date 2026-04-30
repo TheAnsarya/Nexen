@@ -2098,7 +2098,9 @@ I can continue immediately on the next blocker by tracing the first bad control-
 
 [Nexen] I still see nothing but a black screen in graphics/video for Genesis, focus on starting a rom, and getting it to display some graphics on screen; Also, the debugger windows for graphics are either just causing errors(check the logs) or showing nothing, so fix Tile Viewer, TileMap Viewer, Palette Viewer, etc.; continue;
 
+yes do that
 
+[Nexen] add more logging to the core c++ code if you need to get status or messages from specific places in the code; continue;
 
 
 

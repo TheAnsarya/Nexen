@@ -1440,6 +1440,7 @@ void GenesisM68k::Op_ROXd(uint16_t opcode) {
 
 void GenesisM68k::Op_BTST(uint16_t opcode) {
 	uint8_t bitNum;
+	uint32_t btstPc = (_state.PC - 2) & 0x00ffffff;
 	if (opcode & 0x0100) {
 		bitNum = _state.D[(opcode >> 9) & 7];
 	} else {
@@ -1455,6 +1456,19 @@ void GenesisM68k::Op_BTST(uint16_t opcode) {
 	} else {
 		bitNum &= 7;
 		uint8_t data = (uint8_t)ReadEa(mode, reg, 0);
+		static uint64_t btstMemCount = 0;
+		btstMemCount++;
+		if ((btstMemCount <= 128 || (btstMemCount % 4096) == 0) && bitNum == 3) {
+			MessageManager::Log(std::format("[Genesis][M68K] BTST.mem #{} pc=${:06x} op=${:04x} mode={} reg={} bit={} data=${:02x} z={}",
+				btstMemCount,
+				btstPc,
+				opcode,
+				mode,
+				reg,
+				bitNum,
+				data,
+				((data & (1 << bitNum)) == 0) ? 1 : 0));
+		}
 		SetCcrIf(M68kFlags::Zero, !(data & (1 << bitNum)));
 	}
 	AddCycles(4);

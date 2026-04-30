@@ -423,10 +423,30 @@ uint16_t GenesisVdp::ReadDataPort() {
 
 uint16_t GenesisVdp::ReadControlPort() {
 	_pendingControlWrite = false;
-	if (_scanline >= _screenHeight && _scanline < _totalLines) {
+	if (!IsDisplayEnabled()) {
+		// With display disabled during startup, software often expects status polling to
+		// observe VBlank as active while display timing is not yet fully configured.
+		_state.StatusRegister |= VdpStatus::VBlankFlag;
+	} else if (_scanline >= _screenHeight && _scanline < _totalLines) {
 		_state.StatusRegister |= VdpStatus::VBlankFlag;
 	} else {
 		_state.StatusRegister &= ~VdpStatus::VBlankFlag;
+	}
+
+	static uint64_t controlReadCount = 0;
+	controlReadCount++;
+	if (controlReadCount <= 128 || (controlReadCount % 4096) == 0) {
+		uint8_t statusLo = (uint8_t)(_state.StatusRegister & 0xff);
+		bool vblankBit = (statusLo & (uint8_t)VdpStatus::VBlankFlag) != 0;
+		MessageManager::Log(std::format("[Genesis][VDP] CtrlRead #{} status=${:04x} lo=${:02x} vb={} display={} scanline={} hcounter={} r1=${:02x}",
+			controlReadCount,
+			_state.StatusRegister,
+			statusLo,
+			vblankBit ? 1 : 0,
+			IsDisplayEnabled() ? 1 : 0,
+			_scanline,
+			_hCounter,
+			_state.Registers[1]));
 	}
 	return _state.StatusRegister;
 }
