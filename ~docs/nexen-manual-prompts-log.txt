@@ -2118,14 +2118,17 @@ ok, continue
 
 yes, do the stress test
 
-No, instead figurew out why the game isn't running and nothing is displayed
+No, instead figure out why the game isn't running and nothing is displayed
 
 sure, do that
 
 yes, use localization
 
+figure out why the game isn't running and nothing is displayed
 
+3
 
+[Nexen] (Genesis) Take a step back and research/review `https://github.com/Hoshiruna/Mesen2-Expanded` which is also a Mesen based emulator with a lot of Genesis emulator work; so steal a lot of their code (we have permission from the author, see `https://github.com/TheAnsarya/Nexen/issues/1872`) and integrate it into our code, which isn't working; Only take code from the Genesis emulator, not the rest of Mesen unless is unique to the `Mesen2-Expanded` code, not reverts to the original Mesen, we do not change code back to Mesen code; Make our Genesis emulator work using this new code resource!; continue;
 
 
 
