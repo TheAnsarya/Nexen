@@ -140,6 +140,13 @@ LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 }
 
 void GenesisConsole::Reset() {
+	static uint64_t resetCount = 0;
+	resetCount++;
+	if (resetCount <= 64 || (resetCount % 1024) == 0) {
+		uint32_t pcBeforeReset = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
+		MessageManager::Log(std::format("[Genesis] Console Reset #{} pcBefore=${:06x}", resetCount, pcBeforeReset));
+	}
+
 	_cpu->Reset(true);
 	if (_vdp) {
 		_vdp->Reset(false);

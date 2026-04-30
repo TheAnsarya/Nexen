@@ -13,6 +13,7 @@
 #include "Debugger/StepBackManager.h"
 #include "Shared/EmuSettings.h"
 #include "Shared/Emulator.h"
+#include "Shared/MessageManager.h"
 #include "Shared/MemoryOperationType.h"
 
 GenesisDebugger::GenesisDebugger(Debugger* debugger) : IDebugger(debugger->GetEmulator()) {
@@ -160,12 +161,19 @@ DebuggerFeatures GenesisDebugger::GetSupportedFeatures() {
 }
 
 void GenesisDebugger::SetProgramCounter(uint32_t addr, bool updateDebuggerOnly) {
+	uint32_t effectiveAddr = addr & 0x00ffffff;
 	if (!updateDebuggerOnly) {
 		GenesisM68kState state = _cpu->GetState();
-		state.PC = addr & 0x00ffffff;
+		uint32_t oldPc = state.PC & 0x00ffffff;
+		state.PC = effectiveAddr;
 		_cpu->SetState(state);
+		static uint64_t pcWriteCount = 0;
+		pcWriteCount++;
+		if (effectiveAddr == 0 || pcWriteCount <= 64 || (pcWriteCount % 2048) == 0) {
+			MessageManager::Log(std::format("[Genesis][Debugger] SetProgramCounter #{} oldPc=${:06x} newPc=${:06x} updateDebuggerOnly=0", pcWriteCount, oldPc, effectiveAddr));
+		}
 	}
-	_prevProgramCounter = addr & 0x00ffffff;
+	_prevProgramCounter = effectiveAddr;
 	_prevOpCode = _memoryManager->DebugRead8(_prevProgramCounter);
 }
 

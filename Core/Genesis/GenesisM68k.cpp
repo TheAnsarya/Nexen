@@ -307,8 +307,24 @@ void GenesisM68k::Exec() {
 		return;
 	}
 
+	uint32_t prevPc = _state.PC & 0x00ffffff;
 	uint16_t opcode = FetchOpcode();
 	ExecuteInstruction(opcode);
+
+	uint32_t nextPc = _state.PC & 0x00ffffff;
+	if (prevPc != 0 && nextPc == 0) {
+		static uint64_t pcZeroTransitionCount = 0;
+		pcZeroTransitionCount++;
+		if (pcZeroTransitionCount <= 256 || (pcZeroTransitionCount % 4096) == 0) {
+			MessageManager::Log(std::format("[Genesis][M68K] PC->0 transition #{} prevPc=${:06x} opcode=${:04x} sr=${:04x} cycles={} stopped={}",
+				pcZeroTransitionCount,
+				prevPc,
+				opcode,
+				_state.SR,
+				_state.CycleCount,
+				_state.Stopped ? 1 : 0));
+		}
+	}
 }
 
 void GenesisM68k::Reset(bool softReset) {
