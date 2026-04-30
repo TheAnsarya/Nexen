@@ -500,6 +500,11 @@ public partial class MainWindow : NexenWindow {
 
 			case ConsoleNotificationType.GameLoadFailed:
 				LoadRomHelper.ResetReloadCounter();
+				Dispatcher.UIThread.Post(() => {
+					DisplayMessageHelper.DisplayMessage("Error", "Game failed to load. Select a game to try again.");
+					_model.RecentGames.Init(GameScreenMode.RecentGames);
+					_model.RecentGames.Visible = true;
+				});
 				break;
 
 			case ConsoleNotificationType.DebuggerResumed:

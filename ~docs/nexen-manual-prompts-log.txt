@@ -2110,6 +2110,32 @@ They all open, although all data is zeros, and they crash on window close
 
 yes do that
 
+do both of those, please
+
+continue;
+
+ok, continue
+
+yes, do the stress test
+
+No, instead figurew out why the game isn't running and nothing is displayed
+
+sure, do that
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
