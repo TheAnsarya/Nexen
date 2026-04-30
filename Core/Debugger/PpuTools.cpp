@@ -301,12 +301,20 @@ void PpuTools::SetViewerUpdateTiming(uint32_t viewerId, uint16_t scanline, uint1
 	ViewerRefreshConfig cfg;
 	cfg.Scanline = scanline;
 	cfg.Cycle = cycle;
-	_updateTimings[viewerId] = cfg;
+	{
+		std::lock_guard<std::mutex> lock(_updateTimingsLock);
+		_updateTimings[viewerId] = cfg;
+		_updateTimingCount.store((uint32_t)_updateTimings.size(), std::memory_order_relaxed);
+	}
 }
 
 void PpuTools::RemoveViewer(uint32_t viewerId) {
 	DebugBreakHelper helper(_debugger);
-	_updateTimings.erase(viewerId);
+	{
+		std::lock_guard<std::mutex> lock(_updateTimingsLock);
+		_updateTimings.erase(viewerId);
+		_updateTimingCount.store((uint32_t)_updateTimings.size(), std::memory_order_relaxed);
+	}
 }
 
 int32_t PpuTools::GetTilePixel(AddressInfo tileAddress, TileFormat format, int32_t x, int32_t y) {
@@ -509,12 +517,27 @@ void PpuTools::GetSetTilePixel(AddressInfo tileAddress, TileFormat format, int32
 }
 
 void PpuTools::UpdateViewers(uint16_t scanline, uint16_t cycle) {
-	for (const auto& updateTiming : _updateTimings) {
-		const ViewerRefreshConfig& cfg = updateTiming.second;
-		if (cfg.Cycle == cycle && cfg.Scanline == scanline) {
-			if (!_emu->IsDebuggerBlocked()) {
-				_emu->GetNotificationManager()->SendNotification(ConsoleNotificationType::ViewerRefresh, (void*)(uint64_t)updateTiming.first);
+	if (_updateTimingCount.load(std::memory_order_relaxed) == 0) {
+		return;
+	}
+
+	std::vector<uint32_t> matchingViewerIds;
+	{
+		std::lock_guard<std::mutex> lock(_updateTimingsLock);
+		matchingViewerIds.reserve(_updateTimings.size());
+		for (const auto& updateTiming : _updateTimings) {
+			const ViewerRefreshConfig& cfg = updateTiming.second;
+			if (cfg.Cycle == cycle && cfg.Scanline == scanline) {
+				matchingViewerIds.push_back(updateTiming.first);
 			}
 		}
+	}
+
+	if (_emu->IsDebuggerBlocked()) {
+		return;
+	}
+
+	for (uint32_t viewerId : matchingViewerIds) {
+		_emu->GetNotificationManager()->SendNotification(ConsoleNotificationType::ViewerRefresh, (void*)(uint64_t)viewerId);
 	}
 }

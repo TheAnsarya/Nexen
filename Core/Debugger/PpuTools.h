@@ -1,9 +1,11 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "Debugger/DebugTypes.h"
 #include "Shared/NotificationManager.h"
 #include "Shared/Emulator.h"
 #include "Shared/ColorUtilities.h"
+#include <atomic>
+#include <mutex>
 
 class Debugger;
 
@@ -294,6 +296,8 @@ protected:
 	Emulator* _emu;                                              ///< Emulator instance
 	Debugger* _debugger;                                         ///< Debugger instance
 	unordered_map<uint32_t, ViewerRefreshConfig> _updateTimings; ///< Viewer ID → refresh timing
+	std::mutex _updateTimingsLock;                               ///< Synchronizes _updateTimings access across UI/emulation threads
+	std::atomic<uint32_t> _updateTimingCount = 0;                ///< Cached viewer count for hot-path checks
 
 	/// <summary>
 	/// Blend two colors (alpha compositing).
@@ -506,7 +510,7 @@ public:
 	/// Inline for performance - called frequently to skip viewer updates.
 	/// </remarks>
 	__forceinline bool HasOpenedViewer() {
-		return _updateTimings.size() > 0;
+		return _updateTimingCount.load(std::memory_order_relaxed) > 0;
 	}
 
 	/// <summary>

@@ -2106,6 +2106,7 @@ Stop going back and forth on that off-by-two address stuff, you're spirialing, y
 
 They crash
 
+They all open, although all data is zeros, and they crash on window close
 
 
 
