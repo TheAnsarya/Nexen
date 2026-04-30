@@ -23,6 +23,44 @@ namespace {
 		rom[7] = (uint8_t)(initialPc & 0xFF);
 		return rom;
 	}
+
+	struct StepLoopSnapshot {
+		std::vector<uint32_t> ProgramCounterHeartbeat;
+		std::vector<uint64_t> CycleHeartbeat;
+		std::vector<uint64_t> InstructionHeartbeat;
+		uint32_t FinalPc = 0;
+		uint64_t FinalCycles = 0;
+
+		bool operator==(const StepLoopSnapshot&) const = default;
+	};
+
+	StepLoopSnapshot RunSteppedLoop(uint32_t initialSp, uint32_t initialPc, int stepCount) {
+		std::vector<uint8_t> romData = BuildNopBootRom(initialSp, initialPc);
+		VirtualFile rom(romData.data(), romData.size(), "boot-step-loop.md");
+		Emulator emu;
+		GenesisConsole console(&emu);
+
+		StepLoopSnapshot snapshot = {};
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetCpu() || !console.GetMemoryManager()) {
+			return snapshot;
+		}
+
+		auto* cpu = console.GetCpu();
+		auto* memoryManager = console.GetMemoryManager();
+
+		for (int i = 0; i < stepCount; i++) {
+			cpu->Exec();
+			GenesisIoState ioState = memoryManager->GetIoState();
+			snapshot.ProgramCounterHeartbeat.push_back(ioState.CpuProgramCounterHeartbeat);
+			snapshot.CycleHeartbeat.push_back(ioState.CpuCycleHeartbeat);
+			snapshot.InstructionHeartbeat.push_back(ioState.CpuInstructionHeartbeat);
+		}
+
+		GenesisM68kState finalState = cpu->GetState();
+		snapshot.FinalPc = finalState.PC;
+		snapshot.FinalCycles = finalState.CycleCount;
+		return snapshot;
+	}
 }
 
 TEST(GenesisExecutionStartupTests, LoadRomSeedsCpuFromResetVectors) {
@@ -79,4 +117,39 @@ TEST(GenesisExecutionStartupTests, ExecAdvancesPcCyclesAndExecutionHeartbeat) {
 	EXPECT_GE(ioAfter.CpuInstructionHeartbeat, ioBefore.CpuInstructionHeartbeat + StepCount);
 	EXPECT_EQ(ioAfter.CpuCycleHeartbeat, after.CycleCount);
 	EXPECT_EQ(ioAfter.CpuProgramCounterHeartbeat, after.PC);
+}
+
+TEST(GenesisExecutionStartupTests, SteppedRunLoopHeartbeatProgressesDeterministicallyPerStep) {
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int StepCount = 10;
+
+	StepLoopSnapshot snapshot = RunSteppedLoop(InitialSp, InitialPc, StepCount);
+	ASSERT_EQ((int)snapshot.ProgramCounterHeartbeat.size(), StepCount);
+	ASSERT_EQ((int)snapshot.CycleHeartbeat.size(), StepCount);
+	ASSERT_EQ((int)snapshot.InstructionHeartbeat.size(), StepCount);
+
+	for (int i = 0; i < StepCount; i++) {
+		EXPECT_EQ(snapshot.ProgramCounterHeartbeat[i], InitialPc + ((uint32_t)(i + 1) * 2));
+	}
+
+	for (int i = 1; i < StepCount; i++) {
+		EXPECT_GT(snapshot.CycleHeartbeat[i], snapshot.CycleHeartbeat[i - 1]);
+		EXPECT_EQ(snapshot.InstructionHeartbeat[i], snapshot.InstructionHeartbeat[i - 1] + 1);
+	}
+
+	EXPECT_EQ(snapshot.FinalPc, InitialPc + ((uint32_t)StepCount * 2));
+	EXPECT_EQ(snapshot.ProgramCounterHeartbeat.back(), snapshot.FinalPc);
+	EXPECT_EQ(snapshot.CycleHeartbeat.back(), snapshot.FinalCycles);
+}
+
+TEST(GenesisExecutionStartupTests, SteppedRunLoopHeartbeatSequenceIsDeterministicAcrossRuns) {
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int StepCount = 24;
+
+	StepLoopSnapshot runA = RunSteppedLoop(InitialSp, InitialPc, StepCount);
+	StepLoopSnapshot runB = RunSteppedLoop(InitialSp, InitialPc, StepCount);
+
+	EXPECT_EQ(runA, runB);
 }
