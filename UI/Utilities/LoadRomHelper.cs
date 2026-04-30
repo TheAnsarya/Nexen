@@ -280,6 +280,9 @@ public static class LoadRomHelper {
 			if (IsPatchFile(filename)) {
 				Log.Info($"[LoadRomHelper] Detected patch file, calling LoadPatchFile");
 				_ = LoadPatchFile(filename);
+			} else if (ext == ".rgd") {
+				Log.Info($"[LoadRomHelper] Detected recent game data file, calling LoadRecentGame");
+				LoadRecentGame(filename, false);
 			} else if (ext is ("." + FileDialogHelper.NexenSaveStateExt) or ("." + FileDialogHelper.MesenSaveStateExt)) {
 				Log.Info($"[LoadRomHelper] Detected save state, calling LoadStateFile");
 				EmuApi.LoadStateFile(filename);
