@@ -466,6 +466,13 @@ public sealed partial class TilemapViewerViewModel : DisposableViewModel, ICpuTy
 					break;
 				}
 
+			case CpuType.Genesis:
+				Tabs = new() {
+					new() { Title = "Plane A", Layer = 0 },
+					new() { Title = "Plane B", Layer = 1 }
+				};
+				break;
+
 			case CpuType.Ws:
 				Tabs = new() {
 					new() { Title = "BG0", Layer = 0 },

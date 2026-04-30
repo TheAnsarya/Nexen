@@ -2104,6 +2104,7 @@ continue;
 
 Stop going back and forth on that off-by-two address stuff, you're spirialing, you need to figure out how addresses are calculated instead of just changing things for no reason; [Nexen] I still see nothing but a black screen in graphics/video for Genesis, focus on starting a rom, and getting it to display some graphics on screen; Also, the debugger windows for graphics are either just causing errors(check the logs) or showing nothing, so fix Tile Viewer, TileMap Viewer, Palette Viewer, etc.; continue;
 
+They crash
 
 
 

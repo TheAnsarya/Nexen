@@ -423,6 +423,7 @@ public sealed partial class TileViewerViewModel : DisposableViewModel, ICpuTypeM
 			CpuType.Pce => new Enum[] { TileFormat.Bpp4, TileFormat.PceSpriteBpp4, TileFormat.PceSpriteBpp2Sp01, TileFormat.PceSpriteBpp2Sp23, TileFormat.PceBackgroundBpp2Cg0, TileFormat.PceBackgroundBpp2Cg1 },
 			CpuType.Sms => new Enum[] { TileFormat.SmsBpp4, TileFormat.SmsSgBpp1 },
 			CpuType.Gba => new Enum[] { TileFormat.GbaBpp4, TileFormat.GbaBpp8 },
+			CpuType.Genesis => new Enum[] { TileFormat.Bpp4 },
 			CpuType.Ws => new Enum[] { TileFormat.Bpp2, TileFormat.SmsBpp4, TileFormat.WsBpp4Packed },
 			CpuType.Lynx => new Enum[] { TileFormat.WsBpp4Packed },
 			CpuType.Atari2600 => new Enum[] { TileFormat.Bpp4 },
@@ -467,6 +468,7 @@ public sealed partial class TileViewerViewModel : DisposableViewModel, ICpuTypeM
 			case CpuType.Snes:
 			case CpuType.Nes:
 			case CpuType.Gameboy:
+			case CpuType.Genesis:
 				ApplyPpuPreset();
 				break;
 
@@ -942,6 +944,15 @@ public sealed partial class TileViewerViewModel : DisposableViewModel, ICpuTypeM
 					CreatePreset(2, "Sprites", () => ApplySpritePreset(0)),
 				};
 
+			case CpuType.Genesis:
+				return new() {
+					CreatePreset(0, "VDP", () => ApplyPpuPreset()),
+					CreatePreset(0, "ROM", () => ApplyPrgPreset()),
+					CreatePreset(1, "Plane A", () => ApplyBgPreset(0)),
+					CreatePreset(1, "Plane B", () => ApplyBgPreset(1)),
+					CreatePreset(2, "Sprites", () => ApplySpritePreset(0)),
+				};
+
 			case CpuType.Ws:
 				return new() {
 					CreatePreset(0, "PPU", () => ApplyPpuPreset()),
@@ -1062,6 +1073,16 @@ public sealed partial class TileViewerViewModel : DisposableViewModel, ICpuTypeM
 					preset.RowCount = 128;
 					preset.Layout = TileLayout.Normal;
 					preset.Format = TileFormat.GbaBpp4;
+					break;
+				}
+
+			case CpuType.Genesis: {
+					preset.Source = MemoryType.GenesisVideoRam;
+					preset.StartAddress = 0;
+					preset.ColumnCount = 16;
+					preset.RowCount = 128;
+					preset.Layout = TileLayout.Normal;
+					preset.Format = TileFormat.Bpp4;
 					break;
 				}
 
@@ -1188,6 +1209,16 @@ public sealed partial class TileViewerViewModel : DisposableViewModel, ICpuTypeM
 					break;
 				}
 
+			case CpuType.Genesis: {
+					preset.Source = MemoryType.GenesisVideoRam;
+					preset.StartAddress = 0;
+					preset.ColumnCount = 16;
+					preset.RowCount = 128;
+					preset.Layout = TileLayout.Normal;
+					preset.Format = TileFormat.Bpp4;
+					break;
+				}
+
 			case CpuType.Ws: {
 					WsPpuState ppu = (WsPpuState)state;
 					int bank0Addr = ppu.Mode >= WsVideoMode.Color4bpp ? 0x4000 : 0x2000;
@@ -1307,6 +1338,17 @@ public sealed partial class TileViewerViewModel : DisposableViewModel, ICpuTypeM
 						preset.SelectedPalette = 16;
 					}
 
+					break;
+				}
+
+			case CpuType.Genesis: {
+					preset.Source = MemoryType.GenesisVideoRam;
+					preset.StartAddress = 0;
+					preset.ColumnCount = 16;
+					preset.RowCount = 128;
+					preset.Layout = TileLayout.Normal;
+					preset.Format = TileFormat.Bpp4;
+					preset.Background = TileBackground.Default;
 					break;
 				}
 
