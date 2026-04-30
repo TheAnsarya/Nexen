@@ -53,22 +53,22 @@ namespace {
 		EXPECT_NE(preH40.StatusRegister & VdpStatus::DmaBusy, 0);
 		EXPECT_NE(preH32.StatusRegister & VdpStatus::DmaBusy, 0);
 
-		vdpH40.Run(19);
-		vdpH32.Run(19);
-		GenesisVdpState cycle19H40 = vdpH40.GetState();
-		GenesisVdpState cycle19H32 = vdpH32.GetState();
-		EXPECT_FALSE(cycle19H40.DmaActive);
-		EXPECT_TRUE(cycle19H32.DmaActive);
-		EXPECT_EQ(cycle19H40.Registers[19], 0x00);
-		EXPECT_EQ(cycle19H32.Registers[19], 0x01);
-		EXPECT_EQ(cycle19H40.StatusRegister & VdpStatus::DmaBusy, 0);
-		EXPECT_NE(cycle19H32.StatusRegister & VdpStatus::DmaBusy, 0);
+		vdpH40.Run(41);
+		vdpH32.Run(41);
+		GenesisVdpState cycle41H40 = vdpH40.GetState();
+		GenesisVdpState cycle41H32 = vdpH32.GetState();
+		EXPECT_FALSE(cycle41H40.DmaActive);
+		EXPECT_TRUE(cycle41H32.DmaActive);
+		EXPECT_EQ(cycle41H40.Registers[19], 0x00);
+		EXPECT_EQ(cycle41H32.Registers[19], 0x01);
+		EXPECT_EQ(cycle41H40.StatusRegister & VdpStatus::DmaBusy, 0);
+		EXPECT_NE(cycle41H32.StatusRegister & VdpStatus::DmaBusy, 0);
 
-		vdpH32.Run(23);
-		GenesisVdpState cycle23H32 = vdpH32.GetState();
-		EXPECT_FALSE(cycle23H32.DmaActive);
-		EXPECT_EQ(cycle23H32.Registers[19], 0x00);
-		EXPECT_EQ(cycle23H32.StatusRegister & VdpStatus::DmaBusy, 0);
+		vdpH32.Run(42);
+		GenesisVdpState cycle42H32 = vdpH32.GetState();
+		EXPECT_FALSE(cycle42H32.DmaActive);
+		EXPECT_EQ(cycle42H32.Registers[19], 0x00);
+		EXPECT_EQ(cycle42H32.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
 
 	TEST(GenesisVdpDmaStartupLatencyTests, RemainingLengthAndBusyBitTransitionDeterministicallyAcrossDelay) {
@@ -88,24 +88,30 @@ namespace {
 		EXPECT_EQ(start.Registers[19], 0x02);
 		EXPECT_NE(start.StatusRegister & VdpStatus::DmaBusy, 0);
 
-		vdp.Run(21);
-		GenesisVdpState afterCycle21 = vdp.GetState();
-		EXPECT_TRUE(afterCycle21.DmaActive);
-		EXPECT_EQ(afterCycle21.Registers[19], 0x02);
-		EXPECT_NE(afterCycle21.StatusRegister & VdpStatus::DmaBusy, 0);
+		vdp.Run(41);
+		GenesisVdpState afterCycle41 = vdp.GetState();
+		EXPECT_TRUE(afterCycle41.DmaActive);
+		EXPECT_EQ(afterCycle41.Registers[19], 0x02);
+		EXPECT_NE(afterCycle41.StatusRegister & VdpStatus::DmaBusy, 0);
 
-		vdp.Run(23);
-		GenesisVdpState afterCycle23 = vdp.GetState();
-		EXPECT_TRUE(afterCycle23.DmaActive);
-		EXPECT_EQ(afterCycle23.Registers[19], 0x01);
-		EXPECT_NE(afterCycle23.StatusRegister & VdpStatus::DmaBusy, 0);
+		vdp.Run(42);
+		GenesisVdpState afterCycle42 = vdp.GetState();
+		EXPECT_TRUE(afterCycle42.DmaActive);
+		EXPECT_EQ(afterCycle42.Registers[19], 0x01);
+		EXPECT_NE(afterCycle42.StatusRegister & VdpStatus::DmaBusy, 0);
 
-		vdp.Run(57);
-		GenesisVdpState afterCycle57 = vdp.GetState();
-		EXPECT_FALSE(afterCycle57.DmaActive);
-		EXPECT_EQ(afterCycle57.Registers[19], 0x00);
-		EXPECT_EQ(afterCycle57.Registers[20], 0x00);
-		EXPECT_EQ(afterCycle57.StatusRegister & VdpStatus::DmaBusy, 0);
+		vdp.Run(44);
+		GenesisVdpState beforeSecondSlot = vdp.GetState();
+		EXPECT_TRUE(beforeSecondSlot.DmaActive);
+		EXPECT_EQ(beforeSecondSlot.Registers[19], 0x01);
+		EXPECT_NE(beforeSecondSlot.StatusRegister & VdpStatus::DmaBusy, 0);
+
+		vdp.Run(45);
+		GenesisVdpState afterCycle45 = vdp.GetState();
+		EXPECT_FALSE(afterCycle45.DmaActive);
+		EXPECT_EQ(afterCycle45.Registers[19], 0x00);
+		EXPECT_EQ(afterCycle45.Registers[20], 0x00);
+		EXPECT_EQ(afterCycle45.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
 
 	TEST(GenesisVdpDmaStartupLatencyTests, ActiveDisplayBusDmaAdvancesOnlyOnExternalSlots) {
@@ -120,24 +126,24 @@ namespace {
 		vdp.Init(&emu, nullptr, nullptr, &mm);
 		ConfigureBusDmaTransfer(vdp, true, 0x02);
 
-		// H40 slot table starts at cycle 18. Ensure no progress before the slot.
-		vdp.Run(17);
+		// H40 refined external-slot schedule starts at cycle 41.
+		vdp.Run(40);
 		GenesisVdpState beforeFirstSlot = vdp.GetState();
 		EXPECT_EQ(beforeFirstSlot.Registers[19], 0x02);
 		EXPECT_TRUE(beforeFirstSlot.DmaActive);
 
-		vdp.Run(19);
+		vdp.Run(41);
 		GenesisVdpState afterFirstSlot = vdp.GetState();
 		EXPECT_EQ(afterFirstSlot.Registers[19], 0x01);
 		EXPECT_TRUE(afterFirstSlot.DmaActive);
 
-		// Between slot 18 and slot 54 there should be no additional decrement.
-		vdp.Run(53);
+		// Between slot 41 and slot 43 there should be no additional decrement.
+		vdp.Run(42);
 		GenesisVdpState betweenSlots = vdp.GetState();
 		EXPECT_EQ(betweenSlots.Registers[19], 0x01);
 		EXPECT_TRUE(betweenSlots.DmaActive);
 
-		vdp.Run(55);
+		vdp.Run(43);
 		GenesisVdpState afterSecondSlot = vdp.GetState();
 		EXPECT_EQ(afterSecondSlot.Registers[19], 0x00);
 		EXPECT_FALSE(afterSecondSlot.DmaActive);
