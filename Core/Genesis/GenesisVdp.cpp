@@ -118,6 +118,17 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 			_scanline++;
 			_state.VCounter = _scanline;
 
+			// Enter VBlank at the start of the first VBlank line.
+			if (_scanline == _screenHeight) {
+				_state.StatusRegister |= VdpStatus::VBlankFlag;
+				if (IsVBlankInterruptEnabled()) {
+					_state.StatusRegister |= VdpStatus::VIntPending;
+					if (_cpu) {
+						_cpu->SetInterrupt(6); // Level 6 - VBlank
+					}
+				}
+			}
+
 			_currentLineCycleTarget = 488;
 			_lineCycleRemainder += 4;
 			if (_lineCycleRemainder >= 7) {
@@ -173,21 +184,14 @@ void GenesisVdp::ProcessScanline() {
 		}
 	}
 
-	if (_scanline == _screenHeight) {
-		// VBlank start
-		_state.StatusRegister |= VdpStatus::VBlankFlag;
-		if (IsVBlankInterruptEnabled()) {
-			_state.StatusRegister |= VdpStatus::VIntPending;
-			_cpu->SetInterrupt(6); // Level 6 — VBlank
-		}
-	}
-
 	// HBlank interrupt
 	if (_scanline < _screenHeight && IsHBlankInterruptEnabled()) {
 		// HBlank counter (reload from R10 after underflow)
 		if (_state.HIntCounter == 0) {
 			_state.HIntCounter = _state.Registers[10];
-			_cpu->SetInterrupt(4); // Level 4 — HBlank
+			if (_cpu) {
+				_cpu->SetInterrupt(4); // Level 4 - HBlank
+			}
 		} else {
 			_state.HIntCounter--;
 		}

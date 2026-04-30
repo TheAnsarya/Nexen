@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "Genesis/GenesisVdp.h"
 #include "Genesis/GenesisM68k.h"
+#include "Shared/Emulator.h"
 
 namespace {
 	TEST(GenesisVdpObjectRunSafetyTests, RunOneScanlinePreservesNullDependencySafetyPreconditions) {
@@ -80,5 +81,66 @@ namespace {
 
 		uint16_t* frame = vdp.GetScreenBuffer(false);
 		EXPECT_EQ(frame[0], 0x7c00);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, VBlankAndVIntStartAtFirstVBlankLineBoundary) {
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisM68k cpu;
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, &cpu, nullptr);
+
+		// Enable VBlank interrupt while keeping display disabled startup mode.
+		vdp.WriteControlPort(0x8124);
+
+		GenesisVdpState prev = vdp.GetState();
+		bool reachedVBlankBoundary = false;
+		constexpr uint32_t MaxCycles = 200000;
+
+		for (uint32_t cycle = 1; cycle <= MaxCycles; cycle++) {
+			vdp.Run(cycle);
+			GenesisVdpState curr = vdp.GetState();
+
+			if (curr.VCounter == 224 && curr.HCounter == 0) {
+				reachedVBlankBoundary = true;
+				EXPECT_EQ(prev.VCounter, 223u);
+				EXPECT_EQ(prev.StatusRegister & VdpStatus::VBlankFlag, 0u);
+				EXPECT_NE(curr.StatusRegister & VdpStatus::VBlankFlag, 0u);
+				EXPECT_NE(curr.StatusRegister & VdpStatus::VIntPending, 0u);
+				break;
+			}
+
+			prev = curr;
+		}
+
+		EXPECT_TRUE(reachedVBlankBoundary);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, FrameStartBoundaryClearsVBlankFlag) {
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, nullptr);
+
+		GenesisVdpState prev = vdp.GetState();
+		bool reachedFrameStartBoundary = false;
+		constexpr uint32_t MaxCycles = 300000;
+
+		for (uint32_t cycle = 1; cycle <= MaxCycles; cycle++) {
+			vdp.Run(cycle);
+			GenesisVdpState curr = vdp.GetState();
+
+			if (curr.FrameCount > 0 && curr.VCounter == 0 && curr.HCounter == 0) {
+				reachedFrameStartBoundary = true;
+				EXPECT_EQ(prev.VCounter, 261u);
+				EXPECT_NE(prev.StatusRegister & VdpStatus::VBlankFlag, 0u);
+				EXPECT_EQ(curr.StatusRegister & VdpStatus::VBlankFlag, 0u);
+				break;
+			}
+
+			prev = curr;
+		}
+
+		EXPECT_TRUE(reachedFrameStartBoundary);
 	}
 }
