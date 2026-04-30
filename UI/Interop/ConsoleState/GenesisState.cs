@@ -72,6 +72,7 @@ public struct GenesisIoState : BaseState {
 	public byte[] DebugTranscriptEntryValue;
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
 	public byte[] DebugTranscriptEntryFlags;
+	public UInt64 RomReadHeartbeat;
 }
 
 public struct GenesisPsgChannelState {

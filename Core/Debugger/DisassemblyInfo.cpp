@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <algorithm>
 #include "Debugger/DisassemblyInfo.h"
 #include "Debugger/MemoryDumper.h"
@@ -110,6 +110,13 @@ void DisassemblyInfo::GetDisassembly(string& out, uint32_t memoryAddr, LabelMana
 			ChannelFDisUtils::GetDisassembly(*this, out, memoryAddr, labelManager, settings);
 			break;
 
+		case CpuType::Genesis: {
+			bool useLowerCase = settings->GetDebugConfig().UseLowerCaseDisassembly;
+			const char* mnemonic = useLowerCase ? "dc.w" : "DC.W";
+			out += std::format("{} ${:02x}{:02x}", mnemonic, _byteCode[0], _byteCode[1]);
+			break;
+		}
+
 		[[unlikely]] default:
 			throw std::runtime_error("GetDisassembly - Unsupported CPU type");
 	}
@@ -158,6 +165,8 @@ EffectiveAddressInfo DisassemblyInfo::GetEffectiveAddress(Debugger* debugger, vo
 			return Atari2600DisUtils::GetEffectiveAddress(*this, *(Atari2600CpuState*)cpuState, debugger->GetMemoryDumper());
 		case CpuType::ChannelF:
 			return ChannelFDisUtils::GetEffectiveAddress(*this, *(ChannelFCpuState*)cpuState, debugger->GetMemoryDumper());
+		case CpuType::Genesis:
+			return {};
 	}
 
 	[[unlikely]] throw std::runtime_error("GetEffectiveAddress - Unsupported CPU type");
@@ -250,6 +259,8 @@ uint8_t DisassemblyInfo::GetOpSize(uint32_t opCode, uint8_t flags, CpuType type,
 			return Atari2600DisUtils::GetOpSize(opCode);
 		case CpuType::ChannelF:
 			return ChannelFDisUtils::GetOpSize(opCode);
+		case CpuType::Genesis:
+			return 2;
 	}
 
 	[[unlikely]] throw std::runtime_error("GetOpSize - Unsupported CPU type");
@@ -289,6 +300,8 @@ bool DisassemblyInfo::IsJumpToSub() {
 			return Atari2600DisUtils::IsJumpToSub(GetOpCode());
 		case CpuType::ChannelF:
 			return ChannelFDisUtils::IsJumpToSub(GetOpCode());
+		case CpuType::Genesis:
+			return false;
 	}
 
 	[[unlikely]] throw std::runtime_error("IsJumpToSub - Unsupported CPU type");
@@ -328,6 +341,8 @@ bool DisassemblyInfo::IsReturnInstruction() {
 			return Atari2600DisUtils::IsReturnInstruction(GetOpCode());
 		case CpuType::ChannelF:
 			return ChannelFDisUtils::IsReturnInstruction(GetOpCode());
+		case CpuType::Genesis:
+			return false;
 	}
 
 	[[unlikely]] throw std::runtime_error("IsReturnInstruction - Unsupported CPU type");
@@ -386,6 +401,8 @@ bool DisassemblyInfo::IsUnconditionalJump() {
 			return Atari2600DisUtils::IsUnconditionalJump(GetOpCode());
 		case CpuType::ChannelF:
 			return ChannelFDisUtils::IsUnconditionalJump(GetOpCode());
+		case CpuType::Genesis:
+			return false;
 	}
 
 	[[unlikely]] throw std::runtime_error("IsUnconditionalJump - Unsupported CPU type");
@@ -430,6 +447,8 @@ bool DisassemblyInfo::IsJump() {
 			return Atari2600DisUtils::IsConditionalJump(GetOpCode());
 		case CpuType::ChannelF:
 			return ChannelFDisUtils::IsConditionalJump(GetOpCode());
+		case CpuType::Genesis:
+			return false;
 	}
 
 	[[unlikely]] throw std::runtime_error("IsJump - Unsupported CPU type");

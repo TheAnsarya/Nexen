@@ -149,6 +149,7 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_sramEnd = 0;
 	_ioState.DebugTranscriptLaneCount = 0;
 	_ioState.DebugTranscriptLaneDigest = 0;
+	_ioState.RomReadHeartbeat = 0;
 	_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
 	_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
 	for (int i = 0; i < 4; i++) {
@@ -772,6 +773,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		// Cartridge ROM
 		uint32_t mappedAddr = TranslateRomAddress(addr);
 		uint8_t effectiveValue = _prgRom[mappedAddr];
+		_ioState.RomReadHeartbeat++;
 		_emu->ProcessMemoryRead<CpuType::Genesis>(mappedAddr, effectiveValue, MemoryOperationType::Read);
 		_openBus = effectiveValue;
 		return effectiveValue;
@@ -905,6 +907,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		uint8_t effectiveHighByte = _prgRom[mappedAddrHi];
 		uint8_t effectiveLowByte = _prgRom[mappedAddrLo];
 		uint16_t effectiveValue = ((uint16_t)effectiveHighByte << 8) | effectiveLowByte;
+		_ioState.RomReadHeartbeat += 2;
 		_emu->ProcessMemoryRead<CpuType::Genesis>(mappedAddrHi, effectiveHighByte, MemoryOperationType::Read);
 		_openBus = (uint8_t)(effectiveValue & 0xFF);
 		return effectiveValue;
@@ -2021,6 +2024,7 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	uint64_t resetTranscriptLaneDigest = 0;
 	_ioState.TranscriptLaneCount = resetTranscriptLaneCount;
 	_ioState.TranscriptLaneDigest = resetTranscriptLaneDigest;
+	_ioState.RomReadHeartbeat = 0;
 	for (uint32_t i = 0; i < 4; i++) {
 		_ioState.TranscriptEntryAddress[i] = 0;
 		_ioState.TranscriptEntryValue[i] = 0;

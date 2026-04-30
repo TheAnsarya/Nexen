@@ -143,6 +143,7 @@ struct GenesisIoState {
 	uint32_t DebugTranscriptEntryAddress[4] = {};
 	uint8_t DebugTranscriptEntryValue[4] = {};
 	uint8_t DebugTranscriptEntryFlags[4] = {};
+	uint64_t RomReadHeartbeat = 0;
 };
 
 // ===== PSG (SN76489) State =====
