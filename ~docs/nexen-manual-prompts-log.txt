@@ -2108,6 +2108,7 @@ They crash
 
 They all open, although all data is zeros, and they crash on window close
 
+yes do that
 
 
 

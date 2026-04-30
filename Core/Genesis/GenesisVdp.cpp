@@ -475,24 +475,79 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 	_pendingControlWrite = false;
 	_state.DataPortBuffer = value;
 
+	static uint64_t dataWriteCount = 0;
+	static bool loggedUnsupportedMode = false;
+	static bool loggedFirstNonZeroVram = false;
+	static bool loggedFirstNonZeroCram = false;
+	static bool loggedFirstNonZeroVsram = false;
+	dataWriteCount++;
+
 	if (_accessMode == 1) { // VRAM write
 		uint32_t addr = _addressReg & 0xFFFE;
 		if (addr + 1 < VramSize) {
-			_vram[addr] = (uint8_t)(value >> 8);
-			_vram[addr + 1] = (uint8_t)(value & 0xFF);
+			uint8_t hi = (uint8_t)(value >> 8);
+			uint8_t lo = (uint8_t)(value & 0xFF);
+			_vram[addr] = hi;
+			_vram[addr + 1] = lo;
+
+			if (!loggedFirstNonZeroVram && (hi != 0 || lo != 0)) {
+				loggedFirstNonZeroVram = true;
+				MessageManager::Log(std::format("[Genesis][VDP] First non-zero VRAM write at ${:04x}: ${:02x} ${:02x} (word=${:04x}, dataWrite#{}, frame={})",
+					addr,
+					hi,
+					lo,
+					value,
+					dataWriteCount,
+					_state.FrameCount));
+			}
 		}
 	} else if (_accessMode == 3) { // CRAM write
 		uint8_t idx = (_addressReg / 2) & 0x3F;
-		_cram[idx] = value & 0x0EEE; // Mask to valid Genesis color bits
+		uint16_t cramValue = value & 0x0EEE;
+		_cram[idx] = cramValue; // Mask to valid Genesis color bits
+
+		if (!loggedFirstNonZeroCram && cramValue != 0) {
+			loggedFirstNonZeroCram = true;
+			MessageManager::Log(std::format("[Genesis][VDP] First non-zero CRAM write at idx {}: ${:04x} (raw=${:04x}, dataWrite#{}, frame={})",
+				idx,
+				cramValue,
+				value,
+				dataWriteCount,
+				_state.FrameCount));
+		}
 	} else if (_accessMode == 5) { // VSRAM write
 		uint8_t idx = (_addressReg / 2) & 0x3F;
-		if (idx < 40) _vsram[idx] = value & 0x7FF;
+		if (idx < 40) {
+			uint16_t vsramValue = value & 0x07FF;
+			_vsram[idx] = vsramValue;
+
+			if (!loggedFirstNonZeroVsram && vsramValue != 0) {
+				loggedFirstNonZeroVsram = true;
+				MessageManager::Log(std::format("[Genesis][VDP] First non-zero VSRAM write at idx {}: ${:04x} (raw=${:04x}, dataWrite#{}, frame={})",
+					idx,
+					vsramValue,
+					value,
+					dataWriteCount,
+					_state.FrameCount));
+			}
+		}
+	} else if (!loggedUnsupportedMode) {
+		loggedUnsupportedMode = true;
+		MessageManager::Log(std::format("[Genesis][VDP] Data write used unsupported mode {} at addr ${:04x} value=${:04x} (dataWrite#{}, frame={})",
+			_accessMode,
+			_addressReg,
+			value,
+			dataWriteCount,
+			_state.FrameCount));
 	}
 
 	_addressReg += _autoIncrement;
 }
 
 void GenesisVdp::WriteControlPort(uint16_t value) {
+	static uint64_t controlWriteCount = 0;
+	controlWriteCount++;
+
 	if (_pendingControlWrite) {
 		// Second word of control write
 		_pendingControlWrite = false;
@@ -501,6 +556,18 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 		// CD5-CD1 = access mode
 		_accessMode = ((full >> 14) & 0x03) | (((value >> 4) & 0x03) << 2);
 		_addressReg = (full & 0x3FFF) | ((value & 0x03) << 14);
+
+		if (controlWriteCount <= 128 || (controlWriteCount % 4096) == 0) {
+			MessageManager::Log(std::format("[Genesis][VDP] CtrlWrite2 #{} first=${:04x} second=${:04x} mode={} addr=${:04x} autoInc=${:02x} r1=${:02x} frame={}",
+				controlWriteCount,
+				full,
+				value,
+				_accessMode,
+				_addressReg,
+				_autoIncrement,
+				_state.Registers[1],
+				_state.FrameCount));
+		}
 
 		// Check for DMA trigger
 		if ((value & 0x80) && (_state.Registers[1] & 0x10)) {
@@ -534,6 +601,15 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 				MessageManager::Log(std::format("[Genesis][VDP] Display {} via R1 write (${:#04x})", displayEnabledAfter ? "enabled" : "disabled", data));
 			}
 		}
+
+		if (controlWriteCount <= 128 || (controlWriteCount % 4096) == 0) {
+			MessageManager::Log(std::format("[Genesis][VDP] CtrlRegWrite #{} reg={} data=${:02x} r1=${:02x} frame={}",
+				controlWriteCount,
+				reg,
+				data,
+				_state.Registers[1],
+				_state.FrameCount));
+		}
 		return;
 	}
 
@@ -544,6 +620,15 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 	// Update access mode from first word (partially)
 	_accessMode = (value >> 14) & 0x03;
 	_addressReg = value & 0x3FFF;
+
+	if (controlWriteCount <= 128 || (controlWriteCount % 4096) == 0) {
+		MessageManager::Log(std::format("[Genesis][VDP] CtrlWrite1 #{} word=${:04x} modeLow={} addrLow=${:04x} frame={}",
+			controlWriteCount,
+			value,
+			_accessMode,
+			_addressReg,
+			_state.FrameCount));
+	}
 }
 
 void GenesisVdp::ProcessDma() {

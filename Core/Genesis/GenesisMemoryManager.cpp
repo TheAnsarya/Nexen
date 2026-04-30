@@ -1071,6 +1071,16 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		uint8_t effectiveValue = value;
+		static uint64_t vdpWrite8GateCount = 0;
+		if (vdpWrite8GateCount < 64) {
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			MessageManager::Log(std::format("[Genesis][MMU] VDP write8 gate #{} addr=${:06x} val=${:02x} pc=${:06x}",
+				vdpWrite8GateCount + 1,
+				addr,
+				effectiveValue,
+				pc));
+		}
+		vdpWrite8GateCount++;
 		if (_tmssEnabled && !_tmssUnlocked) {
 			if (!_tmssVdpBlockLogged) {
 				_tmssVdpBlockLogged = true;
@@ -1206,6 +1216,16 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
 		uint16_t effectiveValue = value;
 		uint8_t effectiveLowByte = (uint8_t)(effectiveValue & 0xFF);
+		static uint64_t vdpWrite16GateCount = 0;
+		if (vdpWrite16GateCount < 128) {
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			MessageManager::Log(std::format("[Genesis][MMU] VDP write16 gate #{} addr=${:06x} val=${:04x} pc=${:06x}",
+				vdpWrite16GateCount + 1,
+				addr,
+				effectiveValue,
+				pc));
+		}
+		vdpWrite16GateCount++;
 		if (_tmssEnabled && !_tmssUnlocked) {
 			_openBus = effectiveLowByte;
 			return;
@@ -1319,9 +1339,38 @@ void GenesisMemoryManager::WriteVdpPort(uint32_t addr, uint16_t value) {
 	uint16_t effectiveValue = value;
 	uint8_t effectiveHighByte = (uint8_t)(value >> 8);
 	uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+	static uint64_t vdpPortWriteCount = 0;
+	static bool loggedFirstNonZeroDataWrite = false;
+	static bool loggedFirstNonZeroControlWrite = false;
+	vdpPortWriteCount++;
+
 	if (port < 0x04) {
+		if (!loggedFirstNonZeroDataWrite && effectiveValue != 0) {
+			loggedFirstNonZeroDataWrite = true;
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			MessageManager::Log(std::format("[Genesis][MMU] First non-zero VDP data write #{} addr=${:06x} port=${:02x} word=${:04x} hi=${:02x} lo=${:02x} pc=${:06x}",
+				vdpPortWriteCount,
+				addr & 0x00ffffff,
+				port,
+				effectiveValue,
+				effectiveHighByte,
+				effectiveLowByte,
+				pc));
+		}
 		_vdp->WriteDataPort(effectiveValue);
 	} else if (port < 0x08) {
+		if (!loggedFirstNonZeroControlWrite && effectiveValue != 0) {
+			loggedFirstNonZeroControlWrite = true;
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			MessageManager::Log(std::format("[Genesis][MMU] First non-zero VDP control write #{} addr=${:06x} port=${:02x} word=${:04x} hi=${:02x} lo=${:02x} pc=${:06x}",
+				vdpPortWriteCount,
+				addr & 0x00ffffff,
+				port,
+				effectiveValue,
+				effectiveHighByte,
+				effectiveLowByte,
+				pc));
+		}
 		_vdp->WriteControlPort(effectiveValue);
 	} else if (port >= 0x11 && port < 0x14) {
 		// PSG write — SN76489 accepts byte writes via top byte of word

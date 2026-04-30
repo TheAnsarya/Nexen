@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Debugger/PpuTools.h"
 #include "Debugger/CdlManager.h"
 #include "Debugger/DebugTypes.h"
