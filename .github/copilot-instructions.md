@@ -134,6 +134,8 @@ When the user asks to implement, fix, continue, or ship work, do not ask for com
 - Do not pause to ask "should I commit" or "which files should I include"
 - Do not pause due to a dirty working tree
 - Do not interrupt execution to ask about unrelated or unexpected local modifications
+- Treat unexpected/stray local modifications as in-scope by default: include them as-is and continue execution
+- Never ask the user for confirmation about dirty-tree or file-selection decisions during implementation work
 
 ### ⚠️ MANDATORY: Terminal and Process Cleanup
 

@@ -149,4 +149,132 @@ namespace {
 		EXPECT_FALSE(afterSecondSlot.DmaActive);
 		EXPECT_EQ(afterSecondSlot.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
+
+	TEST(GenesisVdpDmaStartupLatencyTests, H40LateLineExternalSlotsRemainSlotGated) {
+		vector<uint8_t> rom = BuildDmaSourceRom();
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+		ConfigureBusDmaTransfer(vdp, true, 0x0e);
+
+		vdp.Run(460);
+		GenesisVdpState beforeLateSlots = vdp.GetState();
+		EXPECT_EQ(beforeLateSlots.Registers[19], 0x05);
+		EXPECT_TRUE(beforeLateSlots.DmaActive);
+
+		vdp.Run(461);
+		GenesisVdpState after461 = vdp.GetState();
+		EXPECT_EQ(after461.Registers[19], 0x04);
+		EXPECT_TRUE(after461.DmaActive);
+
+		vdp.Run(462);
+		GenesisVdpState after462 = vdp.GetState();
+		EXPECT_EQ(after462.Registers[19], 0x04);
+		EXPECT_TRUE(after462.DmaActive);
+
+		vdp.Run(463);
+		GenesisVdpState after463 = vdp.GetState();
+		EXPECT_EQ(after463.Registers[19], 0x03);
+		EXPECT_TRUE(after463.DmaActive);
+
+		vdp.Run(464);
+		GenesisVdpState after464 = vdp.GetState();
+		EXPECT_EQ(after464.Registers[19], 0x03);
+		EXPECT_TRUE(after464.DmaActive);
+
+		vdp.Run(465);
+		GenesisVdpState after465 = vdp.GetState();
+		EXPECT_EQ(after465.Registers[19], 0x02);
+		EXPECT_TRUE(after465.DmaActive);
+
+		vdp.Run(467);
+		GenesisVdpState before468 = vdp.GetState();
+		EXPECT_EQ(before468.Registers[19], 0x02);
+		EXPECT_TRUE(before468.DmaActive);
+
+		vdp.Run(468);
+		GenesisVdpState after468 = vdp.GetState();
+		EXPECT_EQ(after468.Registers[19], 0x01);
+		EXPECT_TRUE(after468.DmaActive);
+
+		vdp.Run(471);
+		GenesisVdpState before472 = vdp.GetState();
+		EXPECT_EQ(before472.Registers[19], 0x01);
+		EXPECT_TRUE(before472.DmaActive);
+
+		vdp.Run(472);
+		GenesisVdpState after472 = vdp.GetState();
+		EXPECT_EQ(after472.Registers[19], 0x00);
+		EXPECT_FALSE(after472.DmaActive);
+		EXPECT_EQ(after472.StatusRegister & VdpStatus::DmaBusy, 0);
+	}
+
+	TEST(GenesisVdpDmaStartupLatencyTests, H32LateLineExternalSlotsRemainSlotGated) {
+		vector<uint8_t> rom = BuildDmaSourceRom();
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+		ConfigureBusDmaTransfer(vdp, false, 0x0e);
+
+		vdp.Run(453);
+		GenesisVdpState beforeLateSlots = vdp.GetState();
+		EXPECT_EQ(beforeLateSlots.Registers[19], 0x05);
+		EXPECT_TRUE(beforeLateSlots.DmaActive);
+
+		vdp.Run(454);
+		GenesisVdpState after454 = vdp.GetState();
+		EXPECT_EQ(after454.Registers[19], 0x04);
+		EXPECT_TRUE(after454.DmaActive);
+
+		vdp.Run(456);
+		GenesisVdpState before457 = vdp.GetState();
+		EXPECT_EQ(before457.Registers[19], 0x04);
+		EXPECT_TRUE(before457.DmaActive);
+
+		vdp.Run(457);
+		GenesisVdpState after457 = vdp.GetState();
+		EXPECT_EQ(after457.Registers[19], 0x03);
+		EXPECT_TRUE(after457.DmaActive);
+
+		vdp.Run(459);
+		GenesisVdpState before460 = vdp.GetState();
+		EXPECT_EQ(before460.Registers[19], 0x03);
+		EXPECT_TRUE(before460.DmaActive);
+
+		vdp.Run(460);
+		GenesisVdpState after460 = vdp.GetState();
+		EXPECT_EQ(after460.Registers[19], 0x02);
+		EXPECT_TRUE(after460.DmaActive);
+
+		vdp.Run(461);
+		GenesisVdpState before462 = vdp.GetState();
+		EXPECT_EQ(before462.Registers[19], 0x02);
+		EXPECT_TRUE(before462.DmaActive);
+
+		vdp.Run(462);
+		GenesisVdpState after462 = vdp.GetState();
+		EXPECT_EQ(after462.Registers[19], 0x01);
+		EXPECT_TRUE(after462.DmaActive);
+
+		vdp.Run(467);
+		GenesisVdpState before468 = vdp.GetState();
+		EXPECT_EQ(before468.Registers[19], 0x01);
+		EXPECT_TRUE(before468.DmaActive);
+
+		vdp.Run(468);
+		GenesisVdpState after468 = vdp.GetState();
+		EXPECT_EQ(after468.Registers[19], 0x00);
+		EXPECT_FALSE(after468.DmaActive);
+		EXPECT_EQ(after468.StatusRegister & VdpStatus::DmaBusy, 0);
+	}
 }

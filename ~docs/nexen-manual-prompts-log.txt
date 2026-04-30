@@ -2134,6 +2134,28 @@ figure out why the game isn't running and nothing is displayed
 
 Next logical step is continuing issue #1883 with DMA pacing and event-timing parity imports from the Mesen2-Expanded-informed research path.
 
+This issue `https://github.com/TheAnsarya/Nexen/issues/1883` has a lot of "\n" literals instead of actual newlines, fix that and watch out in the future.; continue working on integrating `Hoshiruna/Mesen2-Expanded` into our Genesis/Megadrive code;
+
+[Nexen] (Genesis) Continue fixing code using `Mesen2-Expanded` as a resource; create and fix multiple issues;
+
+[Nexen] (Genesis) Continue fixing code using `Hoshiruna/Mesen2-Expanded` as a resource; create and fix multiple issues;
+
+FUCK! I've told you a thousand times, always just commit the files, there is no need to ever ask me, just commit and move on, I thought we'd already fixed the copilot instructions, etc, scrub them clean of any "ask about unexpected changes" nonsense, I am tired of this crap; go; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -653,25 +653,48 @@ uint8_t GenesisVdp::GetDmaWordPeriodCycles() const {
 }
 
 bool GenesisVdp::IsActiveDisplayExternalDmaSlot() const {
-	static constexpr uint16_t H40ExternalSlots[14] = {
-		41, 43, 46, 49, 82, 85, 88,
-		90, 93, 461, 463, 465, 468, 472
-	};
-
-	static constexpr uint16_t H32ExternalSlots[14] = {
-		42, 45, 48, 51, 74, 77, 80,
-		82, 85, 454, 457, 460, 462, 468
-	};
-
-	const uint16_t* slots = IsH40Mode() ? H40ExternalSlots : H32ExternalSlots;
 	uint16_t cycle = _hCounter;
-	for (uint8_t i = 0; i < 14; i++) {
-		if (slots[i] == cycle) {
-			return true;
+	if (IsH40Mode()) {
+		switch (cycle) {
+			case 41:
+			case 43:
+			case 46:
+			case 49:
+			case 82:
+			case 85:
+			case 88:
+			case 90:
+			case 93:
+			case 461:
+			case 463:
+			case 465:
+			case 468:
+			case 472:
+				return true;
+			default:
+				return false;
 		}
 	}
 
-	return false;
+	switch (cycle) {
+		case 42:
+		case 45:
+		case 48:
+		case 51:
+		case 74:
+		case 77:
+		case 80:
+		case 82:
+		case 85:
+		case 454:
+		case 457:
+		case 460:
+		case 462:
+		case 468:
+			return true;
+		default:
+			return false;
+	}
 }
 
 void GenesisVdp::ProcessDma() {
