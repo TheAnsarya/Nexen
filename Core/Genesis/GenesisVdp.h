@@ -60,6 +60,7 @@ private:
 	uint32_t _dmaRemainingWords = 0;
 	uint32_t _dmaSourceAddress = 0;
 	uint16_t _dmaCopySourceAddress = 0;
+	uint8_t _dmaStartupDelayLinesRemaining = 0;
 
 	// Internal methods
 	void ProcessScanline();

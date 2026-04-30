@@ -62,6 +62,7 @@ void GenesisVdp::Reset(bool hardReset) {
 	_dmaRemainingWords = 0;
 	_dmaSourceAddress = 0;
 	_dmaCopySourceAddress = 0;
+	_dmaStartupDelayLinesRemaining = 0;
 
 	_screenWidth = IsH40Mode() ? 320 : 256;
 	_screenHeight = 224;
@@ -581,6 +582,7 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 			// DMA enabled
 			_state.DmaActive = true;
 			_dmaInitialized = false;
+			_state.StatusRegister |= VdpStatus::DmaBusy;
 		}
 		return;
 	}
@@ -667,10 +669,14 @@ void GenesisVdp::ProcessDma() {
 
 		if (_dmaLatchedMode <= 1) {
 			_state.DmaMode = 0;
+			// Startup latency approximation for 68K-bus DMA, informed by Mesen2-Expanded.
+			_dmaStartupDelayLinesRemaining = IsH40Mode() ? 1 : 2;
 		} else if (_dmaLatchedMode == 2) {
 			_state.DmaMode = 1;
+			_dmaStartupDelayLinesRemaining = 0;
 		} else {
 			_state.DmaMode = 2;
+			_dmaStartupDelayLinesRemaining = 0;
 		}
 
 		_dmaInitialized = true;
@@ -686,6 +692,11 @@ void GenesisVdp::ProcessDma() {
 	}
 
 	_state.StatusRegister |= VdpStatus::DmaBusy;
+
+	if ((_dmaLatchedMode == 0 || _dmaLatchedMode == 1) && _dmaStartupDelayLinesRemaining > 0) {
+		_dmaStartupDelayLinesRemaining--;
+		return;
+	}
 
 	if (_dmaLatchedMode == 0 || _dmaLatchedMode == 1) {
 		// 68K → VRAM/CRAM/VSRAM copy
@@ -736,6 +747,7 @@ void GenesisVdp::ProcessDma() {
 
 	_state.DmaActive = false;
 	_dmaInitialized = false;
+	_dmaStartupDelayLinesRemaining = 0;
 	_state.StatusRegister &= ~VdpStatus::DmaBusy;
 }
 
@@ -786,6 +798,7 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_dmaRemainingWords);
 	SV(_dmaSourceAddress);
 	SV(_dmaCopySourceAddress);
+	SV(_dmaStartupDelayLinesRemaining);
 	for (int i = 0; i < 24; i++) {
 		SVI(_state.Registers[i]);
 	}

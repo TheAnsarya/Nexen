@@ -356,6 +356,9 @@
 		<ClCompile Include="Genesis\GenesisVdpTimingScaffoldTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="Genesis\GenesisVdpDmaStartupLatencyTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Genesis\GenesisZ80HandoffTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
