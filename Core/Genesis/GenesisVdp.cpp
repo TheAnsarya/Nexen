@@ -423,11 +423,7 @@ uint16_t GenesisVdp::ReadDataPort() {
 
 uint16_t GenesisVdp::ReadControlPort() {
 	_pendingControlWrite = false;
-	if (!IsDisplayEnabled()) {
-		// With display disabled during startup, software often expects status polling to
-		// observe VBlank as active while display timing is not yet fully configured.
-		_state.StatusRegister |= VdpStatus::VBlankFlag;
-	} else if (_scanline >= _screenHeight && _scanline < _totalLines) {
+	if (_scanline >= _screenHeight && _scanline < _totalLines) {
 		_state.StatusRegister |= VdpStatus::VBlankFlag;
 	} else {
 		_state.StatusRegister &= ~VdpStatus::VBlankFlag;

@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "Genesis/Debugger/GenesisDebugger.h"
 #include "Genesis/GenesisConsole.h"
+#include "Genesis/Debugger/GenesisVdpTools.h"
 #include "Genesis/GenesisM68k.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Genesis/GenesisTypes.h"
@@ -28,6 +29,7 @@ GenesisDebugger::GenesisDebugger(Debugger* debugger) : IDebugger(debugger->GetEm
 	_stepBackManager = std::make_unique<StepBackManager>(_emu, this);
 	_callstackManager = std::make_unique<CallstackManager>(debugger, this);
 	_breakpointManager = std::make_unique<BreakpointManager>(debugger, this, CpuType::Genesis, nullptr);
+	_ppuTools = std::make_unique<GenesisVdpTools>(debugger, _emu, _console);
 	_step = std::make_unique<StepRequest>();
 }
 
@@ -204,7 +206,7 @@ ITraceLogger* GenesisDebugger::GetTraceLogger() {
 }
 
 PpuTools* GenesisDebugger::GetPpuTools() {
-	return nullptr;
+	return _ppuTools.get();
 }
 
 void GenesisDebugger::ProcessInputOverrides(DebugControllerState inputOverrides[8]) {

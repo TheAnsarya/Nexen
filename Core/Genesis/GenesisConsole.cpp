@@ -10,6 +10,7 @@
 #include "Shared/EmuSettings.h"
 #include "Shared/MessageManager.h"
 #include "Genesis/GenesisDefaultVideoFilter.h"
+#include "Debugger/DebugTypes.h"
 #include "Shared/Video/BaseVideoFilter.h"
 #include "Utilities/Serializer.h"
 
@@ -121,6 +122,8 @@ LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 
 	_memoryManager->Init(_emu, this, romData, _vdp.get(), _controlManager.get(), _psg.get());
 	_vdp->Init(_emu, this, _cpu.get(), _memoryManager.get());
+	_emu->RegisterMemory(MemoryType::GenesisVideoRam, _vdp->GetVramPointer(), 0x10000);
+	_emu->RegisterMemory(MemoryType::GenesisPaletteRam, _vdp->GetCramPointer(), 128);
 	_memoryManager->SetCpu(_cpu.get());
 	_cpu->Init(_emu, this, _memoryManager.get());
 	_cpu->Reset(false);
@@ -235,7 +238,7 @@ PpuFrameInfo GenesisConsole::GetPpuFrame() {
 	frame.ScanlineCount = (_region == ConsoleRegion::Pal) ? 313 : 262;
 	frame.CycleCount = 488; // Cycles per scanline at 68k rate
 	frame.FrameBufferSize = frame.Width * frame.Height * sizeof(uint16_t);
-	frame.FrameBuffer = (uint8_t*)_vdp->GetScreenBuffer(false);
+	frame.FrameBuffer = (uint8_t*)_vdp->GetScreenBuffer(true);
 	return frame;
 }
 

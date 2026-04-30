@@ -68,6 +68,7 @@ public partial class MainWindow : NexenWindow {
 	private bool _focusInMenu;
 	private static long _notificationTraceSequence;
 	private long _ppuFrameDoneCount;
+	private long _genesisTimerSampleCount;
 
 	static MainWindow() {
 		WindowStateProperty.Changed.AddClassHandler<MainWindow>((x, e) => x.OnWindowStateChanged());
@@ -365,6 +366,14 @@ public partial class MainWindow : NexenWindow {
 						byte opExtAddrValue = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, opExtAddr24);
 						byte ff001e = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xFF001E);
 						byte ff001f = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xFF001F);
+						byte a11100 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xA11100);
+						byte a11101 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xA11101);
+						byte a11200 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xA11200);
+						byte a11201 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xA11201);
+						uint d0 = genesisState.Cpu.D is { Length: > 0 } ? genesisState.Cpu.D[0] : 0u;
+						uint d1 = genesisState.Cpu.D is { Length: > 1 } ? genesisState.Cpu.D[1] : 0u;
+						uint a0 = genesisState.Cpu.A is { Length: > 0 } ? genesisState.Cpu.A[0] : 0u;
+						uint a1 = genesisState.Cpu.A is { Length: > 1 } ? genesisState.Cpu.A[1] : 0u;
 						ushort sr = genesisState.Cpu.SR;
 						ushort vdpStatus = genesisState.Vdp.StatusRegister;
 						byte vdpStatusLo = (byte)(vdpStatus & 0xFF);
@@ -376,7 +385,7 @@ public partial class MainWindow : NexenWindow {
 						bool vIntPending = (genesisState.Vdp.StatusRegister & 0x0080) != 0;
 						ushort cram1 = genesisState.Vdp.Cram is { Length: > 1 } ? genesisState.Vdp.Cram[1] : (ushort)0;
 						ushort cram2 = genesisState.Vdp.Cram is { Length: > 2 } ? genesisState.Vdp.Cram[2] : (ushort)0;
-						Log.Info($"[MainWindow] GenesisDiag frame={frameCount} pc=${pc:x6} op=${opHi:x2}{opLo:x2} ext=${ext0:x2}{ext1:x2}{ext2:x2}{ext3:x2} extAddr=${opExtAddr24:x6} extVal=${opExtAddrValue:x2} sr=${sr:x4} imask={intMask} r0=${reg00:x2} r1=${reg01:x2} hIntEn={hIntEnabled} vIntEn={vIntEnabled} vIntPending={vIntPending} vblankBit3={vblankBit3} statusLo=${vdpStatusLo:x2} c00005=${statusByteC00005:x2} displayEnabled={displayEnabled} ff001e=${ff001e:x2} ff001f=${ff001f:x2} vdpAddr=${genesisState.Vdp.AddressRegister:x4} vdpCode=${genesisState.Vdp.CodeRegister:x2} dmaActive={genesisState.Vdp.DmaActive} dmaMode={genesisState.Vdp.DmaMode} dmaLen=${reg14:x2}{reg13:x2} dmaSrc=${reg17:x2}{reg16:x2}{reg15:x2} autoInc=${reg0f:x2} cram1=${cram1:x4} cram2=${cram2:x4} tmssEnabled={genesisState.Io.TmssEnabled} tmssUnlocked={genesisState.Io.TmssUnlocked} vdpFrame={genesisState.Vdp.FrameCount}");
+						Log.Info($"[MainWindow] GenesisDiag frame={frameCount} pc=${pc:x6} op=${opHi:x2}{opLo:x2} ext=${ext0:x2}{ext1:x2}{ext2:x2}{ext3:x2} extAddr=${opExtAddr24:x6} extVal=${opExtAddrValue:x2} sr=${sr:x4} imask={intMask} d0=${d0:x8} d1=${d1:x8} a0=${a0:x8} a1=${a1:x8} r0=${reg00:x2} r1=${reg01:x2} hIntEn={hIntEnabled} vIntEn={vIntEnabled} vIntPending={vIntPending} vblankBit3={vblankBit3} statusLo=${vdpStatusLo:x2} c00005=${statusByteC00005:x2} vc={genesisState.Vdp.VCounter} hc={genesisState.Vdp.HCounter} displayEnabled={displayEnabled} ff001e=${ff001e:x2} ff001f=${ff001f:x2} a11100=${a11100:x2} a11101=${a11101:x2} a11200=${a11200:x2} a11201=${a11201:x2} vdpAddr=${genesisState.Vdp.AddressRegister:x4} vdpCode=${genesisState.Vdp.CodeRegister:x2} dmaActive={genesisState.Vdp.DmaActive} dmaMode={genesisState.Vdp.DmaMode} dmaLen=${reg14:x2}{reg13:x2} dmaSrc=${reg17:x2}{reg16:x2}{reg15:x2} autoInc=${reg0f:x2} cram1=${cram1:x4} cram2=${cram2:x4} tmssEnabled={genesisState.Io.TmssEnabled} tmssUnlocked={genesisState.Io.TmssUnlocked} vdpFrame={genesisState.Vdp.FrameCount}");
 					}
 				}
 				break;
@@ -898,6 +907,21 @@ public partial class MainWindow : NexenWindow {
 		// Check if we should save a Recent Play state (every 5 minutes)
 		if (EmuApi.IsRunning() && EmuApi.ShouldSaveRecentPlay()) {
 			EmuApi.SaveRecentPlayState();
+		}
+
+		if (isGameRunning) {
+			RomInfo activeRom = EmuApi.GetRomInfo();
+			if (activeRom.ConsoleType == ConsoleType.Genesis) {
+				long sampleCount = Interlocked.Increment(ref _genesisTimerSampleCount);
+				if ((sampleCount % 10) == 0) {
+					GenesisState genesisState = DebugApi.GetConsoleState<GenesisState>(ConsoleType.Genesis);
+					uint pc = genesisState.Cpu.PC & 0xFFFFFF;
+					uint d6 = genesisState.Cpu.D is { Length: > 6 } ? genesisState.Cpu.D[6] : 0u;
+					uint d7 = genesisState.Cpu.D is { Length: > 7 } ? genesisState.Cpu.D[7] : 0u;
+					byte statusByteC00005 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xC00005);
+					Log.Info($"[MainWindow] GenesisTimer sample={sampleCount} pc=${pc:x6} d6=${d6:x8} d7=${d7:x8} vc={genesisState.Vdp.VCounter} hc={genesisState.Vdp.HCounter} c00005=${statusByteC00005:x2} status=${genesisState.Vdp.StatusRegister:x4} r1=${(genesisState.Vdp.Registers is { Length: > 1 } ? genesisState.Vdp.Registers[1] : (byte)0):x2}");
+				}
+			}
 		}
 	}
 

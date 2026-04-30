@@ -1439,9 +1439,10 @@ void GenesisM68k::Op_ROXd(uint16_t opcode) {
 // ===== Bit operations =====
 
 void GenesisM68k::Op_BTST(uint16_t opcode) {
+	bool dynamicBit = (opcode & 0x0100) != 0;
 	uint8_t bitNum;
 	uint32_t btstPc = (_state.PC - 2) & 0x00ffffff;
-	if (opcode & 0x0100) {
+	if (dynamicBit) {
 		bitNum = _state.D[(opcode >> 9) & 7];
 	} else {
 		bitNum = (uint8_t)FetchWord();
@@ -1471,7 +1472,37 @@ void GenesisM68k::Op_BTST(uint16_t opcode) {
 		}
 		SetCcrIf(M68kFlags::Zero, !(data & (1 << bitNum)));
 	}
-	AddCycles(4);
+
+	int cycles = 0;
+	if (mode == 0) {
+		cycles = dynamicBit ? 6 : 10;
+	} else {
+		cycles = dynamicBit ? 8 : 12;
+		switch (mode) {
+			case 5: // (d16,An)
+			case 6: // (d8,An,Xn)
+				cycles += 4;
+				break;
+			case 7:
+				switch (reg) {
+					case 0: // (xxx).W
+					case 2: // (d16,PC)
+					case 3: // (d8,PC,Xn)
+						cycles += 4;
+						break;
+					case 1: // (xxx).L
+						cycles += 8;
+						break;
+					default:
+						break;
+				}
+				break;
+			default:
+				break;
+		}
+	}
+
+	AddCycles(cycles);
 }
 
 void GenesisM68k::Op_BSET(uint16_t opcode) {

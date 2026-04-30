@@ -179,6 +179,8 @@ public static class MemoryTypeExtensions {
 				return true;
 
 			case MemoryType.GbaVideoRam:
+			case MemoryType.GenesisVideoRam:
+			case MemoryType.GenesisPaletteRam:
 				return true;
 
 			default:
@@ -227,6 +229,8 @@ public static class MemoryTypeExtensions {
 			case MemoryType.GbaBootRom:
 			case MemoryType.GbaPaletteRam:
 			case MemoryType.GbaSpriteRam:
+
+			case MemoryType.GenesisPaletteRam:
 
 			case MemoryType.WsPort:
 				return false;

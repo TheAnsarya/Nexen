@@ -106,6 +106,8 @@ public:
 	uint16_t GetScreenWidth() const { return _screenWidth; }
 	uint16_t GetScreenHeight() const { return _screenHeight; }
 	uint32_t GetFrameCount() const { return _state.FrameCount; }
+	uint8_t* GetVramPointer() { return _vram; }
+	uint16_t* GetCramPointer() { return _cram; }
 
 	void SetRegion(bool pal);
 

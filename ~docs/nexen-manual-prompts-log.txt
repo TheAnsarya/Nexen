@@ -2096,12 +2096,13 @@ I can continue immediately on the next blocker by tracing the first bad control-
 
 [Nexen] Do 3 steps, 1) git commit everything with comments on issues and such; 2) Make a `\~sources\Emus\` folder (add to gitignore) and then research and download and then add subfolders with sourcecode from other emulators for the Sega Genesis/MegaDrive; Then use the sources to compare to the Nexen Genesis core emulation code and fix our code so we can load and run Genesis games, I only care if the emulator can run a game; 3) Yes do the Natural next steps: Run a longer Jurassic soak (60-120s) to confirm stability beyond early startup loops., Move to the next functional blocker after this control-flow fix (likely interpreter/VDP progress out of current loop).; continue;
 
-[Nexen] I still see nothing but a black screen in graphics/video for Genesis, focus on starting a rom, and getting it to display some graphics on screen; Also, the debugger windows for graphics are either just causing errors(check the logs) or showing nothing, so fix Tile Viewer, TileMap Viewer, Palette Viewer, etc.; continue;
-
 yes do that
 
 [Nexen] add more logging to the core c++ code if you need to get status or messages from specific places in the code; continue;
 
+continue;
+
+Stop going back and forth on that off-by-two address stuff, you're spirialing, you need to figure out how addresses are calculated instead of just changing things for no reason; [Nexen] I still see nothing but a black screen in graphics/video for Genesis, focus on starting a rom, and getting it to display some graphics on screen; Also, the debugger windows for graphics are either just causing errors(check the logs) or showing nothing, so fix Tile Viewer, TileMap Viewer, Palette Viewer, etc.; continue;
 
 
 
@@ -2118,7 +2119,7 @@ yes do that
 
 
 
-
+[Nexen] I still see nothing but a black screen in graphics/video for Genesis, focus on starting a rom, and getting it to display some graphics on screen; Also, the debugger windows for graphics are either just causing errors(check the logs) or showing nothing, so fix Tile Viewer, TileMap Viewer, Palette Viewer, etc.; continue;
 
 
 

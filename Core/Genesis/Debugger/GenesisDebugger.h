@@ -14,6 +14,7 @@ class Emulator;
 class GenesisConsole;
 class GenesisM68k;
 class GenesisMemoryManager;
+class GenesisVdpTools;
 
 enum class MemoryOperationType;
 
@@ -30,6 +31,7 @@ class GenesisDebugger final : public IDebugger {
 
 	unique_ptr<CallstackManager> _callstackManager;
 	unique_ptr<BreakpointManager> _breakpointManager;
+	unique_ptr<GenesisVdpTools> _ppuTools;
 
 	GenesisM68kState _cachedState = {};
 	uint16_t _prevOpCode = 0;

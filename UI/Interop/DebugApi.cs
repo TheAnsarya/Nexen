@@ -144,6 +144,7 @@ public sealed class DebugApi {
 			CpuType.Pce => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
 			CpuType.Sms => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
 			CpuType.Gba => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
+			CpuType.Genesis => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
 			CpuType.Ws => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
 			CpuType.Lynx => GetPpuToolsState<EmptyPpuToolsState>(cpuType),
 			CpuType.Atari2600 => GetPpuToolsState<EmptyPpuToolsState>(cpuType),

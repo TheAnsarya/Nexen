@@ -873,7 +873,8 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
-		uint8_t effectiveValue = _openBus;
+		uint8_t resetStatus = _z80Reset ? 0x00 : 0x01;
+		uint8_t effectiveValue = (uint8_t)((_openBus & 0xFE) | resetStatus);
 		_openBus = effectiveValue;
 		TrackSegaCdHandshakeTranscript(addr, false, effectiveValue);
 		return effectiveValue;
@@ -996,6 +997,11 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
 		uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
+		if (_z80Reset) {
+			effectiveValue &= (uint16_t)~0x0100;
+		} else {
+			effectiveValue |= 0x0100;
+		}
 		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
 		_openBus = (uint8_t)(effectiveValue & 0xFF);
 		TrackSegaCdHandshakeTranscript(addr, false, effectiveHighByte);
