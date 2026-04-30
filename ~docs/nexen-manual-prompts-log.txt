@@ -2142,9 +2142,13 @@ FUCK! I've told you a thousand times, always just commit the files, there is no 
 
 [Nexen] (Genesis) Continue fixing code using `Hoshiruna/Mesen2-Expanded` as a resource; create and fix multiple issues;
 
+[Nexen] (Genesis) Continue fixing code using `Hoshiruna/Mesen2-Expanded` as a resource, and make the emulator cycle accurate, and focus on startup and initialization for a session or three, and get graphics on the screen; `Hoshiruna/Mesen2-Expanded` works, ours doesn't, so incorporate much of that code into ours; create and fix multiple issues; continue;
 
+Next active issue for this thread is #1896 (startup scheduling parity).
 
+[Nexen] (Genesis) Stop focusing on the VDP for a minute, we want the rom to actually load and run code make that works, even if visual isn't there yet, if the code itself is running strongly, then the visual-screen will have the base it needs in order to render; continue; using `Hoshiruna/Mesen2-Expanded` as a resource; the code needs to load, then it needs to run, then it needs to update the debugger, then we need visuals, thgen we need controller input, then we need sound, with savestates, pansy, and all the extras as we go along; continue;
 
+Why did you die immediately after prompt posting? [Nexen] (Genesis) Stop focusing on the VDP for a minute, we want the rom to actually load and run code make that works, even if visual isn't there yet, if the code itself is running strongly, then the visual-screen will have the base it needs in order to render; continue; using `Hoshiruna/Mesen2-Expanded` as a resource; the code needs to load, then it needs to run, then it needs to update the debugger, then we need visuals, thgen we need controller input, then we need sound, with savestates, pansy, and all the extras as we go along; continue;
 
 
 

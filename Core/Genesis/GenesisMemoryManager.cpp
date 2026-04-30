@@ -213,6 +213,12 @@ void GenesisMemoryManager::ResetRomBankMapper() {
 	}
 }
 
+void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t programCounter, uint64_t cycleCount) {
+	_ioState.CpuProgramCounterHeartbeat = programCounter & 0x00ffffff;
+	_ioState.CpuCycleHeartbeat = cycleCount;
+	_ioState.CpuInstructionHeartbeat++;
+}
+
 bool GenesisMemoryManager::TryGetRomBankRegisterSlot(uint32_t addr, uint8_t& slot) const {
 	if ((addr & 0x01) == 0) {
 		return false;
@@ -1966,6 +1972,9 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_ioState.CtrlPort[0]); SV(_ioState.CtrlPort[1]); SV(_ioState.CtrlPort[2]);
 	SV(_ioState.TmssEnabled);
 	SV(_ioState.TmssUnlocked);
+	SV(_ioState.CpuProgramCounterHeartbeat);
+	SV(_ioState.CpuCycleHeartbeat);
+	SV(_ioState.CpuInstructionHeartbeat);
 	SV(_ioState.TranscriptLaneCount);
 	SV(_ioState.TranscriptLaneDigest);
 	for (uint32_t i = 0; i < 4; i++) {
@@ -1980,6 +1989,7 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 		SV(_ioState.DebugTranscriptEntryValue[i]);
 		SV(_ioState.DebugTranscriptEntryFlags[i]);
 	}
+	SV(_ioState.RomReadHeartbeat);
 }
 
 void GenesisMemoryManager::LoadBattery() {

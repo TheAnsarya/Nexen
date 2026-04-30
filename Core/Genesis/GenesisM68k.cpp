@@ -283,6 +283,7 @@ void GenesisM68k::ProcessInterrupt(uint8_t level) {
 	if (irqCount <= 128 || (irqCount % 4096) == 0) {
 		MessageManager::Log(std::format("[Genesis][M68K] IRQ #{} level={} vector={} pc=${:06x}->${:06x} sr=${:04x}", irqCount, level, vector, oldPc & 0xffffff, _state.PC & 0xffffff, oldSR));
 	}
+	_emu->ProcessInterrupt<CpuType::Genesis>(oldPc, _state.PC, false);
 	_state.Stopped = false;
 	AddCycles(44);
 }
@@ -307,9 +308,16 @@ void GenesisM68k::Exec() {
 		return;
 	}
 
+#ifndef DUMMYCPU
+	_emu->ProcessInstruction<CpuType::Genesis>();
+#endif
+
 	uint32_t prevPc = _state.PC & 0x00ffffff;
 	uint16_t opcode = FetchOpcode();
 	ExecuteInstruction(opcode);
+	if (_memoryManager) {
+		_memoryManager->UpdateExecutionHeartbeat(_state.PC, _state.CycleCount);
+	}
 
 	uint32_t nextPc = _state.PC & 0x00ffffff;
 	if (prevPc != 0 && nextPc == 0) {

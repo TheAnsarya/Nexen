@@ -131,6 +131,9 @@ struct GenesisIoState {
 	uint8_t ThState[2] = {};    // Current TH state
 	uint8_t TmssEnabled = 0;
 	uint8_t TmssUnlocked = 0;
+	uint32_t CpuProgramCounterHeartbeat = 0;
+	uint64_t CpuCycleHeartbeat = 0;
+	uint64_t CpuInstructionHeartbeat = 0;
 
 	uint32_t TranscriptLaneCount = 0;
 	uint64_t TranscriptLaneDigest = 0;
