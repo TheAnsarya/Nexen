@@ -2039,6 +2039,7 @@ E
 		<Message ID="AutoUpdateInvalidFile">The downloaded file did not match the expected file.&#xA;&#xA;   Expected SHA256 signature: {0}&#xA;&#xA;   File SHA256 signature: {1}&#xA;&#xA;Please visit the website and manually download the latest release.</Message>
 		<Message ID="FileNotFound">File not found: {0}</Message>
 		<Message ID="InvalidArgument">Invalid argument: {0}</Message>
+		<Message ID="UnsupportedFileType">Unsupported file type: {0}&#xA;&#xA;Select a valid ROM, archive, patch, save state, movie (while running), or recent game file.</Message>
 
 		<Message ID="NexenUpToDate">You are running the latest version of Nexen.</Message>
 		<Message ID="PatchAndReset">Patch and reset the current game?</Message>

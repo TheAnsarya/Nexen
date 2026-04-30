@@ -289,9 +289,12 @@ public static class LoadRomHelper {
 			} else if (EmuApi.IsRunning() && (ext == "." + FileDialogHelper.NexenMovieExt || ext == "." + FileDialogHelper.MesenMovieExt)) {
 				Log.Info($"[LoadRomHelper] Detected movie file, calling MoviePlay");
 				RecordApi.MoviePlay(filename);
-			} else {
-				Log.Info($"[LoadRomHelper] Treating as ROM file, calling LoadRom");
+			} else if (FolderHelper.IsRomFile(filename) || FolderHelper.IsArchiveFile(filename)) {
+				Log.Info($"[LoadRomHelper] Detected ROM/archive file, calling LoadRom");
 				_ = LoadRom(filename);
+			} else {
+				Log.Error($"[LoadRomHelper] ERROR: Unsupported file type for load: {filename}");
+				DisplayMessageHelper.DisplayMessage(ResourceHelper.GetMessage("GameLoadFailedTitle"), ResourceHelper.GetMessage("UnsupportedFileType", filename));
 			}
 		} else {
 			Log.Error($"[LoadRomHelper] ERROR: File not found: {filename}");
