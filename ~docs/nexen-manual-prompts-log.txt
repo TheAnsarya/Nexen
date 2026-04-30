@@ -2132,6 +2132,7 @@ figure out why the game isn't running and nothing is displayed
 
 [Nexen] (Genesis) Continue fixing code using `Mesen2-Expanded` as a resource; create and fix multiple issues;
 
+Next logical step is continuing issue #1883 with DMA pacing and event-timing parity imports from the Mesen2-Expanded-informed research path.
 
 
 

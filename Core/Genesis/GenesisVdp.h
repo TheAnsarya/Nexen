@@ -54,6 +54,13 @@ private:
 	bool _displayDisabledLogged = false;
 	uint32_t _lastFrameLog = 0;
 
+	// DMA pacing state (latched when a DMA transfer starts)
+	bool _dmaInitialized = false;
+	uint8_t _dmaLatchedMode = 0;
+	uint32_t _dmaRemainingWords = 0;
+	uint32_t _dmaSourceAddress = 0;
+	uint16_t _dmaCopySourceAddress = 0;
+
 	// Internal methods
 	void ProcessScanline();
 	void RenderScanline();
@@ -62,6 +69,7 @@ private:
 	void OutputPixel(uint16_t x, uint16_t y, uint16_t color);
 	uint16_t CramToRgb555(uint16_t cramColor);
 	void ProcessDma();
+	uint32_t GetDmaWordsPerScanline() const;
 
 	// Register helpers
 	bool IsDisplayEnabled() const { return (_state.Registers[1] & 0x40) != 0; }

@@ -57,6 +57,11 @@ void GenesisVdp::Reset(bool hardReset) {
 	_lastFrameLog = 0;
 	_pendingControlWrite = false;
 	_firstControlWord = 0;
+	_dmaInitialized = false;
+	_dmaLatchedMode = 0;
+	_dmaRemainingWords = 0;
+	_dmaSourceAddress = 0;
+	_dmaCopySourceAddress = 0;
 
 	_screenWidth = IsH40Mode() ? 320 : 256;
 	_screenHeight = 224;
@@ -575,6 +580,7 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 		if ((_accessMode & 0x20) && (_state.Registers[1] & 0x10)) {
 			// DMA enabled
 			_state.DmaActive = true;
+			_dmaInitialized = false;
 		}
 		return;
 	}
@@ -633,66 +639,103 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 	}
 }
 
+uint32_t GenesisVdp::GetDmaWordsPerScanline() const {
+	bool blanking = !IsDisplayEnabled() || _scanline >= _screenHeight;
+	if (blanking) {
+		// Approximation informed by Mesen2-Expanded timing model.
+		return IsH40Mode() ? 107u : 85u;
+	}
+
+	// Active display is external-slot limited.
+	return 14u;
+}
+
 void GenesisVdp::ProcessDma() {
 	if (!_state.DmaActive) return;
 
-	uint8_t dmaMode = (_state.Registers[23] >> 6) & 3;
-	uint32_t dmaLength = ((uint16_t)_state.Registers[20] << 8) | _state.Registers[19];
-	uint32_t dmaSrc = ((uint32_t)(_state.Registers[23] & 0x3F) << 17)
-	                | ((uint32_t)_state.Registers[22] << 9)
-	                | ((uint32_t)_state.Registers[21] << 1);
-
-	if (dmaLength == 0) dmaLength = 0x10000;
-	if (dmaMode <= 1) {
-		_state.DmaMode = 0;
-	} else if (dmaMode == 2) {
-		_state.DmaMode = 1;
-	} else {
-		_state.DmaMode = 2;
-	}
-	_state.StatusRegister |= VdpStatus::DmaBusy;
-
-	if (dmaMode == 0 || dmaMode == 1) {
-		// 68K → VRAM/CRAM/VSRAM copy
-		for (uint32_t i = 0; i < dmaLength; i++) {
-			uint16_t word = _memoryManager->Read16(dmaSrc);
-			WriteDataPort(word);
-			dmaSrc += 2;
+	if (!_dmaInitialized) {
+		_dmaLatchedMode = (uint8_t)((_state.Registers[23] >> 6) & 3);
+		_dmaRemainingWords = ((uint16_t)_state.Registers[20] << 8) | _state.Registers[19];
+		if (_dmaRemainingWords == 0) {
+			_dmaRemainingWords = 0x10000;
 		}
 
-		uint32_t srcWordAddress = (dmaSrc >> 1) & 0x3FFFFF;
+		_dmaSourceAddress = ((uint32_t)(_state.Registers[23] & 0x3F) << 17)
+		                | ((uint32_t)_state.Registers[22] << 9)
+		                | ((uint32_t)_state.Registers[21] << 1);
+		_dmaCopySourceAddress = ((uint16_t)_state.Registers[22] << 8) | _state.Registers[21];
+
+		if (_dmaLatchedMode <= 1) {
+			_state.DmaMode = 0;
+		} else if (_dmaLatchedMode == 2) {
+			_state.DmaMode = 1;
+		} else {
+			_state.DmaMode = 2;
+		}
+
+		_dmaInitialized = true;
+	}
+
+	uint32_t wordsThisStep = _dmaRemainingWords;
+	if (_dmaLatchedMode == 0 || _dmaLatchedMode == 1) {
+		uint32_t wordsPerScanline = GetDmaWordsPerScanline();
+		wordsThisStep = std::min(_dmaRemainingWords, wordsPerScanline);
+	}
+	if (wordsThisStep == 0) {
+		return;
+	}
+
+	_state.StatusRegister |= VdpStatus::DmaBusy;
+
+	if (_dmaLatchedMode == 0 || _dmaLatchedMode == 1) {
+		// 68K → VRAM/CRAM/VSRAM copy
+		for (uint32_t i = 0; i < wordsThisStep; i++) {
+			uint16_t word = _memoryManager->Read16(_dmaSourceAddress);
+			WriteDataPort(word);
+			_dmaSourceAddress += 2;
+		}
+
+		uint32_t srcWordAddress = (_dmaSourceAddress >> 1) & 0x3FFFFF;
 		_state.Registers[21] = (uint8_t)(srcWordAddress & 0xFF);
 		_state.Registers[22] = (uint8_t)((srcWordAddress >> 8) & 0xFF);
 		_state.Registers[23] = (uint8_t)((_state.Registers[23] & 0xC0) | ((srcWordAddress >> 16) & 0x3F));
-	} else if (dmaMode == 2) {
+	} else if (_dmaLatchedMode == 2) {
 		// VRAM fill
 		uint8_t fillByte = _state.Registers[23] & 0xFF; // Simplified
 		uint32_t dmaDst = _addressReg;
-		for (uint32_t i = 0; i < dmaLength; i++) {
+		for (uint32_t i = 0; i < wordsThisStep; i++) {
 			uint32_t addr = dmaDst & 0xFFFF;
 			if (addr < VramSize) _vram[addr] = fillByte;
 			dmaDst += _autoIncrement;
 		}
 		_addressReg = (uint16_t)dmaDst;
-	} else if (dmaMode == 3) {
+	} else if (_dmaLatchedMode == 3) {
 		// VRAM copy
-		uint16_t srcAddr = ((uint16_t)_state.Registers[22] << 8) | _state.Registers[21];
 		uint32_t dmaDst = _addressReg;
-		for (uint32_t i = 0; i < dmaLength; i++) {
-			uint32_t src = (srcAddr + i) & 0xFFFF;
+		for (uint32_t i = 0; i < wordsThisStep; i++) {
+			uint32_t src = (_dmaCopySourceAddress + i) & 0xFFFF;
 			uint32_t dst = dmaDst & 0xFFFF;
 			if (src < VramSize && dst < VramSize) {
 				_vram[dst] = _vram[src];
 			}
 			dmaDst += _autoIncrement;
 		}
+		_dmaCopySourceAddress = (uint16_t)(_dmaCopySourceAddress + wordsThisStep);
 		_addressReg = (uint16_t)dmaDst;
+	}
+
+	_dmaRemainingWords -= wordsThisStep;
+	if (_dmaRemainingWords > 0) {
+		_state.Registers[19] = (uint8_t)(_dmaRemainingWords & 0xFF);
+		_state.Registers[20] = (uint8_t)((_dmaRemainingWords >> 8) & 0xFF);
+		return;
 	}
 
 	_state.Registers[19] = 0;
 	_state.Registers[20] = 0;
 
 	_state.DmaActive = false;
+	_dmaInitialized = false;
 	_state.StatusRegister &= ~VdpStatus::DmaBusy;
 }
 
@@ -738,6 +781,11 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_state.DmaActive);
 	SV(_state.DmaMode);
 	SV(_state.DataPortBuffer);
+	SV(_dmaInitialized);
+	SV(_dmaLatchedMode);
+	SV(_dmaRemainingWords);
+	SV(_dmaSourceAddress);
+	SV(_dmaCopySourceAddress);
 	for (int i = 0; i < 24; i++) {
 		SVI(_state.Registers[i]);
 	}
