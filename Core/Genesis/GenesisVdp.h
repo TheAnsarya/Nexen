@@ -72,6 +72,7 @@ private:
 	uint16_t CramToRgb555(uint16_t cramColor);
 	void ProcessDma();
 	uint8_t GetDmaWordPeriodCycles() const;
+	bool IsActiveDisplayExternalDmaSlot() const;
 
 	// Register helpers
 	bool IsDisplayEnabled() const { return (_state.Registers[1] & 0x40) != 0; }

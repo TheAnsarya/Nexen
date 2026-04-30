@@ -648,8 +648,30 @@ uint8_t GenesisVdp::GetDmaWordPeriodCycles() const {
 		return IsH40Mode() ? 5 : 6;
 	}
 
-	// Active display uses only external slots, so period is longer.
-	return 35;
+	// Active display DMA uses explicit external-slot gating.
+	return 0;
+}
+
+bool GenesisVdp::IsActiveDisplayExternalDmaSlot() const {
+	static constexpr uint16_t H40ExternalSlots[14] = {
+		18, 54, 90, 126, 162, 198, 234,
+		270, 306, 342, 378, 414, 450, 486
+	};
+
+	static constexpr uint16_t H32ExternalSlots[14] = {
+		22, 56, 90, 124, 158, 192, 226,
+		260, 294, 328, 362, 396, 430, 464
+	};
+
+	const uint16_t* slots = IsH40Mode() ? H40ExternalSlots : H32ExternalSlots;
+	uint16_t cycle = _hCounter;
+	for (uint8_t i = 0; i < 14; i++) {
+		if (slots[i] == cycle) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void GenesisVdp::ProcessDma() {
@@ -694,15 +716,25 @@ void GenesisVdp::ProcessDma() {
 			return;
 		}
 
-		uint8_t periodCycles = GetDmaWordPeriodCycles();
-		uint32_t budgetCycles = 1u + _dmaBusCycleRemainder;
-		uint32_t transferableWords = budgetCycles / periodCycles;
-		_dmaBusCycleRemainder = (uint8_t)(budgetCycles % periodCycles);
-		if (transferableWords == 0) {
-			return;
-		}
+		bool activeDisplay = IsDisplayEnabled() && _scanline < _screenHeight;
+		if (activeDisplay) {
+			_dmaBusCycleRemainder = 0;
+			if (!IsActiveDisplayExternalDmaSlot()) {
+				return;
+			}
 
-		wordsThisStep = std::min(_dmaRemainingWords, transferableWords);
+			wordsThisStep = 1;
+		} else {
+			uint8_t periodCycles = GetDmaWordPeriodCycles();
+			uint32_t budgetCycles = 1u + _dmaBusCycleRemainder;
+			uint32_t transferableWords = budgetCycles / periodCycles;
+			_dmaBusCycleRemainder = (uint8_t)(budgetCycles % periodCycles);
+			if (transferableWords == 0) {
+				return;
+			}
+
+			wordsThisStep = std::min(_dmaRemainingWords, transferableWords);
+		}
 	}
 
 	if (wordsThisStep == 0) {
