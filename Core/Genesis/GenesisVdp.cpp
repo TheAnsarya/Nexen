@@ -62,7 +62,8 @@ void GenesisVdp::Reset(bool hardReset) {
 	_dmaRemainingWords = 0;
 	_dmaSourceAddress = 0;
 	_dmaCopySourceAddress = 0;
-	_dmaStartupDelayLinesRemaining = 0;
+	_dmaStartupDelayCyclesRemaining = 0;
+	_dmaBusCycleRemainder = 0;
 
 	_screenWidth = IsH40Mode() ? 320 : 256;
 	_screenHeight = 224;
@@ -103,6 +104,10 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 		_hCounter++;
 		_state.HCounter = _hCounter;
 		_state.VCounter = _scanline;
+
+		if (_state.DmaActive) {
+			ProcessDma();
+		}
 
 		if (_hCounter >= _currentLineCycleTarget) {
 			_hCounter = 0;
@@ -184,11 +189,6 @@ void GenesisVdp::ProcessScanline() {
 		} else {
 			_state.HIntCounter--;
 		}
-	}
-
-	// DMA processing
-	if (_state.DmaActive) {
-		ProcessDma();
 	}
 }
 
@@ -641,15 +641,15 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 	}
 }
 
-uint32_t GenesisVdp::GetDmaWordsPerScanline() const {
+uint8_t GenesisVdp::GetDmaWordPeriodCycles() const {
 	bool blanking = !IsDisplayEnabled() || _scanline >= _screenHeight;
 	if (blanking) {
-		// Approximation informed by Mesen2-Expanded timing model.
-		return IsH40Mode() ? 107u : 85u;
+		// Approximation informed by Mesen2-Expanded: blanking DMA is faster.
+		return IsH40Mode() ? 5 : 6;
 	}
 
-	// Active display is external-slot limited.
-	return 14u;
+	// Active display uses only external slots, so period is longer.
+	return 35;
 }
 
 void GenesisVdp::ProcessDma() {
@@ -669,32 +669,43 @@ void GenesisVdp::ProcessDma() {
 
 		if (_dmaLatchedMode <= 1) {
 			_state.DmaMode = 0;
-			// Startup latency approximation for 68K-bus DMA, informed by Mesen2-Expanded.
-			_dmaStartupDelayLinesRemaining = IsH40Mode() ? 1 : 2;
+			// Startup latency approximation for 68K-bus DMA in the core-cycle domain.
+			_dmaStartupDelayCyclesRemaining = IsH40Mode() ? 7 : 9;
+			_dmaBusCycleRemainder = 0;
 		} else if (_dmaLatchedMode == 2) {
 			_state.DmaMode = 1;
-			_dmaStartupDelayLinesRemaining = 0;
+			_dmaStartupDelayCyclesRemaining = 0;
+			_dmaBusCycleRemainder = 0;
 		} else {
 			_state.DmaMode = 2;
-			_dmaStartupDelayLinesRemaining = 0;
+			_dmaStartupDelayCyclesRemaining = 0;
+			_dmaBusCycleRemainder = 0;
 		}
 
 		_dmaInitialized = true;
 	}
 
-	uint32_t wordsThisStep = _dmaRemainingWords;
-	if (_dmaLatchedMode == 0 || _dmaLatchedMode == 1) {
-		uint32_t wordsPerScanline = GetDmaWordsPerScanline();
-		wordsThisStep = std::min(_dmaRemainingWords, wordsPerScanline);
-	}
-	if (wordsThisStep == 0) {
-		return;
-	}
-
 	_state.StatusRegister |= VdpStatus::DmaBusy;
 
-	if ((_dmaLatchedMode == 0 || _dmaLatchedMode == 1) && _dmaStartupDelayLinesRemaining > 0) {
-		_dmaStartupDelayLinesRemaining--;
+	uint32_t wordsThisStep = _dmaRemainingWords;
+	if (_dmaLatchedMode == 0 || _dmaLatchedMode == 1) {
+		if (_dmaStartupDelayCyclesRemaining > 0) {
+			_dmaStartupDelayCyclesRemaining--;
+			return;
+		}
+
+		uint8_t periodCycles = GetDmaWordPeriodCycles();
+		uint32_t budgetCycles = 1u + _dmaBusCycleRemainder;
+		uint32_t transferableWords = budgetCycles / periodCycles;
+		_dmaBusCycleRemainder = (uint8_t)(budgetCycles % periodCycles);
+		if (transferableWords == 0) {
+			return;
+		}
+
+		wordsThisStep = std::min(_dmaRemainingWords, transferableWords);
+	}
+
+	if (wordsThisStep == 0) {
 		return;
 	}
 
@@ -747,7 +758,8 @@ void GenesisVdp::ProcessDma() {
 
 	_state.DmaActive = false;
 	_dmaInitialized = false;
-	_dmaStartupDelayLinesRemaining = 0;
+	_dmaStartupDelayCyclesRemaining = 0;
+	_dmaBusCycleRemainder = 0;
 	_state.StatusRegister &= ~VdpStatus::DmaBusy;
 }
 
@@ -798,7 +810,8 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_dmaRemainingWords);
 	SV(_dmaSourceAddress);
 	SV(_dmaCopySourceAddress);
-	SV(_dmaStartupDelayLinesRemaining);
+	SV(_dmaStartupDelayCyclesRemaining);
+	SV(_dmaBusCycleRemainder);
 	for (int i = 0; i < 24; i++) {
 		SVI(_state.Registers[i]);
 	}

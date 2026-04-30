@@ -60,7 +60,8 @@ private:
 	uint32_t _dmaRemainingWords = 0;
 	uint32_t _dmaSourceAddress = 0;
 	uint16_t _dmaCopySourceAddress = 0;
-	uint8_t _dmaStartupDelayLinesRemaining = 0;
+	uint8_t _dmaStartupDelayCyclesRemaining = 0;
+	uint8_t _dmaBusCycleRemainder = 0;
 
 	// Internal methods
 	void ProcessScanline();
@@ -70,7 +71,7 @@ private:
 	void OutputPixel(uint16_t x, uint16_t y, uint16_t color);
 	uint16_t CramToRgb555(uint16_t cramColor);
 	void ProcessDma();
-	uint32_t GetDmaWordsPerScanline() const;
+	uint8_t GetDmaWordPeriodCycles() const;
 
 	// Register helpers
 	bool IsDisplayEnabled() const { return (_state.Registers[1] & 0x40) != 0; }

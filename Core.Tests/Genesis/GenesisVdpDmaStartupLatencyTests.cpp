@@ -53,25 +53,22 @@ namespace {
 		EXPECT_NE(preH40.StatusRegister & VdpStatus::DmaBusy, 0);
 		EXPECT_NE(preH32.StatusRegister & VdpStatus::DmaBusy, 0);
 
-		vdpH40.Run(488);
-		vdpH32.Run(488);
-		GenesisVdpState line1H40 = vdpH40.GetState();
-		GenesisVdpState line1H32 = vdpH32.GetState();
-		EXPECT_TRUE(line1H40.DmaActive);
-		EXPECT_TRUE(line1H32.DmaActive);
-		EXPECT_EQ(line1H40.Registers[19], 0x01);
-		EXPECT_EQ(line1H32.Registers[19], 0x01);
+		vdpH40.Run(12);
+		vdpH32.Run(12);
+		GenesisVdpState cycle12H40 = vdpH40.GetState();
+		GenesisVdpState cycle12H32 = vdpH32.GetState();
+		EXPECT_FALSE(cycle12H40.DmaActive);
+		EXPECT_TRUE(cycle12H32.DmaActive);
+		EXPECT_EQ(cycle12H40.Registers[19], 0x00);
+		EXPECT_EQ(cycle12H32.Registers[19], 0x01);
+		EXPECT_EQ(cycle12H40.StatusRegister & VdpStatus::DmaBusy, 0);
+		EXPECT_NE(cycle12H32.StatusRegister & VdpStatus::DmaBusy, 0);
 
-		vdpH40.Run(976);
-		vdpH32.Run(976);
-		GenesisVdpState line2H40 = vdpH40.GetState();
-		GenesisVdpState line2H32 = vdpH32.GetState();
-		EXPECT_FALSE(line2H40.DmaActive);
-		EXPECT_TRUE(line2H32.DmaActive);
-		EXPECT_EQ(line2H40.Registers[19], 0x00);
-		EXPECT_EQ(line2H32.Registers[19], 0x01);
-		EXPECT_EQ(line2H40.StatusRegister & VdpStatus::DmaBusy, 0);
-		EXPECT_NE(line2H32.StatusRegister & VdpStatus::DmaBusy, 0);
+		vdpH32.Run(15);
+		GenesisVdpState cycle15H32 = vdpH32.GetState();
+		EXPECT_FALSE(cycle15H32.DmaActive);
+		EXPECT_EQ(cycle15H32.Registers[19], 0x00);
+		EXPECT_EQ(cycle15H32.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
 
 	TEST(GenesisVdpDmaStartupLatencyTests, RemainingLengthAndBusyBitTransitionDeterministicallyAcrossDelay) {
@@ -91,23 +88,23 @@ namespace {
 		EXPECT_EQ(start.Registers[19], 0x02);
 		EXPECT_NE(start.StatusRegister & VdpStatus::DmaBusy, 0);
 
-		vdp.Run(488);
-		GenesisVdpState afterLine1 = vdp.GetState();
-		EXPECT_TRUE(afterLine1.DmaActive);
-		EXPECT_EQ(afterLine1.Registers[19], 0x02);
-		EXPECT_NE(afterLine1.StatusRegister & VdpStatus::DmaBusy, 0);
+		vdp.Run(8);
+		GenesisVdpState afterCycle8 = vdp.GetState();
+		EXPECT_TRUE(afterCycle8.DmaActive);
+		EXPECT_EQ(afterCycle8.Registers[19], 0x02);
+		EXPECT_NE(afterCycle8.StatusRegister & VdpStatus::DmaBusy, 0);
 
-		vdp.Run(976);
-		GenesisVdpState afterLine2 = vdp.GetState();
-		EXPECT_TRUE(afterLine2.DmaActive);
-		EXPECT_EQ(afterLine2.Registers[19], 0x02);
-		EXPECT_NE(afterLine2.StatusRegister & VdpStatus::DmaBusy, 0);
+		vdp.Run(15);
+		GenesisVdpState afterCycle15 = vdp.GetState();
+		EXPECT_TRUE(afterCycle15.DmaActive);
+		EXPECT_EQ(afterCycle15.Registers[19], 0x01);
+		EXPECT_NE(afterCycle15.StatusRegister & VdpStatus::DmaBusy, 0);
 
-		vdp.Run(1952);
-		GenesisVdpState afterLine4 = vdp.GetState();
-		EXPECT_FALSE(afterLine4.DmaActive);
-		EXPECT_EQ(afterLine4.Registers[19], 0x00);
-		EXPECT_EQ(afterLine4.Registers[20], 0x00);
-		EXPECT_EQ(afterLine4.StatusRegister & VdpStatus::DmaBusy, 0);
+		vdp.Run(21);
+		GenesisVdpState afterCycle21 = vdp.GetState();
+		EXPECT_FALSE(afterCycle21.DmaActive);
+		EXPECT_EQ(afterCycle21.Registers[19], 0x00);
+		EXPECT_EQ(afterCycle21.Registers[20], 0x00);
+		EXPECT_EQ(afterCycle21.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
 }
