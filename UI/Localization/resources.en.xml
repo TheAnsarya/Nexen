@@ -2052,6 +2052,8 @@ E
 		<Message ID="AlreadyRunningMessage">Nexen is already running. Would you like to close the existing instance and restart?</Message>
 		<Message ID="AlreadyRunningRestart">Close and Restart Nexen</Message>
 		<Message ID="AlreadyRunningLeave">Leave Current Version Running</Message>
+		<Message ID="GameLoadFailedTitle">Error</Message>
+		<Message ID="GameLoadFailedMessage">Game failed to load. Select a game to try again.</Message>
 
 		<Message ID="UnexpectedError">An unexpected error has occurred.&#xA;&#xA;Error details:&#xA;{0}</Message>
 		<Message ID="UpdateDownloadFailed">Download failed - the file appears to be corrupted. Please visit the Nexen website to download the latest version manually.</Message>

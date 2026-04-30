@@ -2122,6 +2122,7 @@ No, instead figurew out why the game isn't running and nothing is displayed
 
 sure, do that
 
+yes, use localization
 
 
 
