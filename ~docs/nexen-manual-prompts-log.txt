@@ -2138,9 +2138,10 @@ This issue `https://github.com/TheAnsarya/Nexen/issues/1883` has a lot of "\n" l
 
 [Nexen] (Genesis) Continue fixing code using `Mesen2-Expanded` as a resource; create and fix multiple issues;
 
+FUCK! I've told you a thousand times, always just commit the files, there is no need to ever ask me, just commit and move on, I thought we'd already fixed the copilot instructions, etc, scrub them clean of any "ask about unexpected changes" nonsense, I am tired of this crap; go; continue;
+
 [Nexen] (Genesis) Continue fixing code using `Hoshiruna/Mesen2-Expanded` as a resource; create and fix multiple issues;
 
-FUCK! I've told you a thousand times, always just commit the files, there is no need to ever ask me, just commit and move on, I thought we'd already fixed the copilot instructions, etc, scrub them clean of any "ask about unexpected changes" nonsense, I am tired of this crap; go; continue;
 
 
 

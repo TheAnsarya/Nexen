@@ -652,49 +652,46 @@ uint8_t GenesisVdp::GetDmaWordPeriodCycles() const {
 	return 0;
 }
 
-bool GenesisVdp::IsActiveDisplayExternalDmaSlot() const {
-	uint16_t cycle = _hCounter;
-	if (IsH40Mode()) {
-		switch (cycle) {
-			case 41:
-			case 43:
-			case 46:
-			case 49:
-			case 82:
-			case 85:
-			case 88:
-			case 90:
-			case 93:
-			case 461:
-			case 463:
-			case 465:
-			case 468:
-			case 472:
-				return true;
-			default:
-				return false;
+namespace {
+	static constexpr uint16_t H40ExternalSlotCycles[14] = {
+		41, 43, 46, 49, 82, 85, 88,
+		90, 93, 461, 463, 465, 468, 472
+	};
+
+	static constexpr uint16_t H32ExternalSlotCycles[14] = {
+		42, 45, 48, 51, 74, 77, 80,
+		82, 85, 454, 457, 460, 462, 468
+	};
+
+	static constexpr uint16_t MaxSlotCycle = 472;
+
+	void BuildSlotLookup(const uint16_t* slotCycles, bool (&lookup)[MaxSlotCycle + 1]) {
+		for (uint16_t i = 0; i <= MaxSlotCycle; i++) {
+			lookup[i] = false;
+		}
+
+		for (uint8_t i = 0; i < 14; i++) {
+			lookup[slotCycles[i]] = true;
 		}
 	}
+}
 
-	switch (cycle) {
-		case 42:
-		case 45:
-		case 48:
-		case 51:
-		case 74:
-		case 77:
-		case 80:
-		case 82:
-		case 85:
-		case 454:
-		case 457:
-		case 460:
-		case 462:
-		case 468:
-			return true;
-		default:
-			return false;
+bool GenesisVdp::IsActiveDisplayExternalDmaSlot() const {
+	uint16_t cycle = _hCounter;
+	if (cycle > MaxSlotCycle) {
+		return false;
 	}
+
+	static bool h40Lookup[MaxSlotCycle + 1] = {};
+	static bool h32Lookup[MaxSlotCycle + 1] = {};
+	static bool lookupInitialized = false;
+	if (!lookupInitialized) {
+		BuildSlotLookup(H40ExternalSlotCycles, h40Lookup);
+		BuildSlotLookup(H32ExternalSlotCycles, h32Lookup);
+		lookupInitialized = true;
+	}
+
+	return IsH40Mode() ? h40Lookup[cycle] : h32Lookup[cycle];
 }
 
 void GenesisVdp::ProcessDma() {
