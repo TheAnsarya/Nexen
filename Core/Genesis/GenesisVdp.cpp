@@ -34,6 +34,8 @@ void GenesisVdp::Reset(bool hardReset) {
 	bool palMode = (_state.StatusRegister & VdpStatus::PalMode) != 0;
 	_state.Registers[0] = 0x04; // Mode register 1
 	_state.Registers[1] = 0x04; // Mode register 2 (display off)
+	_state.Registers[12] = 0x81; // Mode register 4 (H40 startup default)
+	_state.Registers[15] = 0x02; // Auto increment default
 	_state.Registers[10] = 0xFF; // HBlank counter
 	_state.HIntCounter = _state.Registers[10];
 	_state.HCounter = 0;
@@ -41,7 +43,7 @@ void GenesisVdp::Reset(bool hardReset) {
 	_state.AddressRegister = 0;
 	_state.CodeRegister = 0;
 	_state.WritePending = false;
-	_state.StatusRegister = VdpStatus::FifoEmpty;
+	_state.StatusRegister = 0x3400 | VdpStatus::FifoEmpty;
 	if (palMode) {
 		_state.StatusRegister |= VdpStatus::PalMode;
 	}
@@ -49,7 +51,7 @@ void GenesisVdp::Reset(bool hardReset) {
 	_state.DmaActive = false;
 	_state.DmaMode = 0;
 	_state.DataPortBuffer = 0;
-	_autoIncrement = 2;
+	_autoIncrement = _state.Registers[15];
 	_accessMode = 0;
 	_addressReg = 0;
 	_displayEnabledLast = false;

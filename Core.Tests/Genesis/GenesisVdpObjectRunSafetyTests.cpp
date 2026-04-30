@@ -55,4 +55,30 @@ namespace {
 		GenesisVdpState ntscState = vdp.GetState();
 		EXPECT_EQ(ntscState.StatusRegister & VdpStatus::PalMode, 0u);
 	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, ResetAppliesStartupDefaultsForModeAndAutoIncrement) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		GenesisVdpState state = vdp.GetState();
+		EXPECT_EQ(state.Registers[1], 0x04);
+		EXPECT_EQ(state.Registers[12], 0x81);
+		EXPECT_EQ(state.Registers[15], 0x02);
+		EXPECT_NE(state.StatusRegister & VdpStatus::FifoEmpty, 0u);
+		EXPECT_EQ(vdp.GetScreenWidth(), 320u);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, StartupDisplayEnableCanRenderFirstVisibleScanline) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		// CRAM color format is 0000BBB0GGG0RRR0; this sets full red.
+		vdp.GetCramPointer()[0] = 0x000e;
+		// Enable display (R1 bit 6) while preserving existing startup bits.
+		vdp.WriteControlPort(0x8144);
+		vdp.Run(488);
+
+		uint16_t* frame = vdp.GetScreenBuffer(false);
+		EXPECT_EQ(frame[0], 0x7c00);
+	}
 }
