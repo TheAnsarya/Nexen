@@ -4,6 +4,7 @@
 #include "Genesis/GenesisM68k.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Genesis/GenesisVdp.h"
+#include "Shared/BaseControlManager.h"
 #include "Shared/Emulator.h"
 #include "Utilities/VirtualFile.h"
 
@@ -223,6 +224,58 @@ TEST(GenesisExecutionPipelineTests, RunFrameAdvancesExactlyOneFramePerInvocation
 	for (int i = 0; i < FrameCount; i++) {
 		EXPECT_EQ(frameDeltasA[i], 1u);
 		EXPECT_GT(instructionDeltasA[i], 0u);
+	}
+
+	EXPECT_EQ(runA, runB);
+}
+
+TEST(GenesisExecutionPipelineTests, RunFrameAdvancesPollAndLagCountersDeterministicallyInHeadlessCadence) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 4;
+
+	auto captureRun = [&]() {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-poll-lag-cadence.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetControlManager()) {
+			return std::tuple<std::vector<uint32_t>, std::vector<uint32_t>>();
+		}
+
+		BaseControlManager* controlManager = console.GetControlManager();
+		std::vector<uint32_t> pollDeltas;
+		std::vector<uint32_t> lagDeltas;
+		pollDeltas.reserve(FrameCount);
+		lagDeltas.reserve(FrameCount);
+
+		for (int i = 0; i < FrameCount; i++) {
+			uint32_t pollBefore = controlManager->GetPollCounter();
+			uint32_t lagBefore = controlManager->GetLagCounter();
+
+			console.RunFrame();
+
+			uint32_t pollAfter = controlManager->GetPollCounter();
+			uint32_t lagAfter = controlManager->GetLagCounter();
+			pollDeltas.push_back(pollAfter - pollBefore);
+			lagDeltas.push_back(lagAfter - lagBefore);
+		}
+
+		return std::make_tuple(pollDeltas, lagDeltas);
+	};
+
+	auto runA = captureRun();
+	auto runB = captureRun();
+
+	auto& pollDeltasA = std::get<0>(runA);
+	auto& lagDeltasA = std::get<1>(runA);
+
+	ASSERT_EQ((int)pollDeltasA.size(), FrameCount);
+	ASSERT_EQ((int)lagDeltasA.size(), FrameCount);
+
+	for (int i = 0; i < FrameCount; i++) {
+		EXPECT_EQ(pollDeltasA[i], 1u);
+		EXPECT_EQ(lagDeltasA[i], 1u);
 	}
 
 	EXPECT_EQ(runA, runB);

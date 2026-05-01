@@ -2166,6 +2166,7 @@ continue working on real code changes;
 
 Yes please! work on those three goals starting with "Do #1916 then #1917" continue working for longer than usual, maybe do all three of these a long session with multiple work sections, just keep going; continue;
 
+remember, we are going for cycle accurate emulation; continue;
 
 
 
