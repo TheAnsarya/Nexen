@@ -176,3 +176,54 @@ TEST(GenesisExecutionPipelineTests, ContinuousRunFrameCadenceStaysMonotonicAndDe
 
 	EXPECT_EQ(runA, runB);
 }
+
+TEST(GenesisExecutionPipelineTests, RunFrameAdvancesExactlyOneFramePerInvocationDeterministically) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 5;
+
+	auto captureRun = [&]() {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-single-step-frame.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetVdp() || !console.GetMemoryManager()) {
+			return std::tuple<std::vector<uint32_t>, std::vector<uint64_t>>();
+		}
+
+		std::vector<uint32_t> frameDeltas;
+		std::vector<uint64_t> instructionDeltas;
+		frameDeltas.reserve(FrameCount);
+		instructionDeltas.reserve(FrameCount);
+
+		for (int i = 0; i < FrameCount; i++) {
+			uint32_t frameBefore = console.GetVdp()->GetFrameCount();
+			GenesisIoState ioBefore = console.GetMemoryManager()->GetIoState();
+
+			console.RunFrame();
+
+			uint32_t frameAfter = console.GetVdp()->GetFrameCount();
+			GenesisIoState ioAfter = console.GetMemoryManager()->GetIoState();
+			frameDeltas.push_back(frameAfter - frameBefore);
+			instructionDeltas.push_back(ioAfter.CpuInstructionHeartbeat - ioBefore.CpuInstructionHeartbeat);
+		}
+
+		return std::make_tuple(frameDeltas, instructionDeltas);
+	};
+
+	auto runA = captureRun();
+	auto runB = captureRun();
+
+	auto& frameDeltasA = std::get<0>(runA);
+	auto& instructionDeltasA = std::get<1>(runA);
+
+	ASSERT_EQ((int)frameDeltasA.size(), FrameCount);
+	ASSERT_EQ((int)instructionDeltasA.size(), FrameCount);
+
+	for (int i = 0; i < FrameCount; i++) {
+		EXPECT_EQ(frameDeltasA[i], 1u);
+		EXPECT_GT(instructionDeltasA[i], 0u);
+	}
+
+	EXPECT_EQ(runA, runB);
+}

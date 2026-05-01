@@ -220,6 +220,8 @@ void GenesisConsole::Reset() {
 }
 
 void GenesisConsole::RunFrame() {
+	_emu->ProcessEvent(EventType::StartFrame, CpuType::Genesis);
+
 	uint32_t frame = _vdp->GetFrameCount();
 	uint64_t startClock = _memoryManager->GetMasterClock();
 	uint32_t guard = 0;

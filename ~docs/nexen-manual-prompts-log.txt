@@ -2162,8 +2162,9 @@ continue working on real code changes;
 
 [Nexen] (Genesis) continue Next execution-ready steps: Execute #1905 research on cart bus memory-map parity vs Hoshiruna/Mesen2-Expanded.; Implement #1906 mapper/SRAM register parity fixes with targeted deterministic tests.; continue
 
+[Nexen] (Genesis) continue working on real code changes; continue; using `Hoshiruna/Mesen2-Expanded` as a resource; start with the basics like loading and memory mapping and getting continuous code execution working, focusing on correctness and workability, the code needs to load, then it needs to run, then it needs to update the debugger, then we need visuals, then we need controller input, then we need sound, with savestates, pansy, and all the extras as we go along; make a bunch of issues for research and implementation and then work through them, always using `Hoshiruna/Mesen2-Expanded` as a resource; also, always end the session with suggestions for what to work on next while sticking with this `Hoshiruna/Mesen2-Expanded` integration and focus on getting a genesis rom to run and play; continue;
 
-
+Yes please! work on those three goals starting with "Do #1916 then #1917" continue working for longer than usual, maybe do all three of these a long session with multiple work sections, just keep going; continue;
 
 
 
