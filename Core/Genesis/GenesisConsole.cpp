@@ -15,6 +15,59 @@
 #include "Utilities/Serializer.h"
 
 namespace {
+	bool HasSegaHeader(const vector<uint8_t>& romData) {
+		if (romData.size() < 0x104) {
+			return false;
+		}
+
+		return romData[0x100] == 'S' && romData[0x101] == 'E' && romData[0x102] == 'G' && romData[0x103] == 'A';
+	}
+
+	bool IsLikelySmdImage(const vector<uint8_t>& romData, const string& extension) {
+		if (romData.size() <= 0x200) {
+			return false;
+		}
+
+		if (extension == ".smd") {
+			return true;
+		}
+
+		// Typical SMD layout is a 512-byte header plus 16KB interleaved payload blocks.
+		if ((romData.size() & 0x3fff) != 0x200) {
+			return false;
+		}
+
+		// Avoid false positives when the raw image already looks like linear Genesis ROM.
+		return !HasSegaHeader(romData);
+	}
+
+	void DecodeSmdToLinear(vector<uint8_t>& romData) {
+		if (romData.size() <= 0x200) {
+			return;
+		}
+
+		size_t payloadSize = romData.size() - 0x200;
+		if ((payloadSize & 0x3fff) != 0) {
+			// Irregular payload: safest fallback is to strip the copier header only.
+			romData.erase(romData.begin(), romData.begin() + 0x200);
+			return;
+		}
+
+		vector<uint8_t> decoded(payloadSize);
+		const uint8_t* src = romData.data() + 0x200;
+
+		for (size_t block = 0; block < payloadSize; block += 0x4000) {
+			const uint8_t* in = src + block;
+			uint8_t* out = decoded.data() + block;
+			for (size_t i = 0; i < 0x2000; i++) {
+				out[(i << 1)] = in[0x2000 + i];
+				out[(i << 1) + 1] = in[i];
+			}
+		}
+
+		romData.swap(decoded);
+	}
+
 	ConsoleRegion ResolveConfiguredGenesisRegion(ConsoleRegion configuredRegion) {
 		switch (configuredRegion) {
 			case ConsoleRegion::Pal:
@@ -32,19 +85,44 @@ namespace {
 	}
 
 	ConsoleRegion DetectGenesisRegionFromHeader(const vector<uint8_t>& romData) {
-		if (romData.size() < 0x1F3) {
+		if (romData.size() < 0x1F0) {
 			return ConsoleRegion::Ntsc;
 		}
 
+		uint32_t regionMask = 0;
 		bool hasPalMarker = false;
 		bool hasNtscMarker = false;
-		for (uint32_t i = 0x1F0; i <= 0x1F2; i++) {
+		bool foundAnyRegionMarker = false;
+		uint32_t endOffset = (uint32_t)std::min<size_t>(romData.size(), 0x200);
+		for (uint32_t i = 0x1F0; i < endOffset; i++) {
 			char marker = (char)std::toupper((unsigned char)romData[i]);
+			if (marker == 0 || marker == ' ') {
+				continue;
+			}
+
 			if (marker == 'E') {
+				foundAnyRegionMarker = true;
 				hasPalMarker = true;
 			} else if (marker == 'U' || marker == 'J') {
+				foundAnyRegionMarker = true;
 				hasNtscMarker = true;
+			} else if (std::isxdigit((unsigned char)marker)) {
+				foundAnyRegionMarker = true;
+				if (marker >= '0' && marker <= '9') {
+					regionMask |= (uint32_t)(marker - '0');
+				} else {
+					regionMask |= (uint32_t)(10 + marker - 'A');
+				}
 			}
+		}
+
+		if (regionMask != 0) {
+			hasPalMarker = hasPalMarker || ((regionMask & 0x08) != 0);
+			hasNtscMarker = hasNtscMarker || ((regionMask & 0x01) != 0) || ((regionMask & 0x04) != 0);
+		}
+
+		if (!foundAnyRegionMarker) {
+			return ConsoleRegion::Ntsc;
 		}
 
 		if (hasPalMarker && !hasNtscMarker) {
@@ -70,36 +148,13 @@ LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 		return LoadRomResult::Failure;
 	}
 
-	// Handle SMD interleaved format
 	string ext = romFile.GetFileExtension();
-	if (ext == ".smd" && romData.size() > 0x200) {
-		// Strip 512-byte header
-		vector<uint8_t> deinterleaved;
-		size_t dataSize = romData.size() - 0x200;
-		deinterleaved.resize(dataSize);
-		size_t blockCount = dataSize / 0x4000;
+	std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c) {
+		return (char)std::tolower(c);
+	});
 
-		for (size_t i = 0; i < blockCount; i++) {
-			size_t srcOffset = 0x200 + i * 0x4000;
-			size_t dstOffset = i * 0x4000;
-
-			// De-interleave: odd bytes first, then even bytes
-			for (size_t j = 0; j < 0x2000; j++) {
-				deinterleaved[dstOffset + j * 2 + 1] = romData[srcOffset + j];
-				deinterleaved[dstOffset + j * 2] = romData[srcOffset + 0x2000 + j];
-			}
-		}
-
-		// Preserve any trailing non-standard payload bytes instead of dropping/zeroing them.
-		size_t consumed = blockCount * 0x4000;
-		if (consumed < dataSize) {
-			size_t srcTailOffset = 0x200 + consumed;
-			size_t dstTailOffset = consumed;
-			size_t tailSize = dataSize - consumed;
-			memcpy(&deinterleaved[dstTailOffset], &romData[srcTailOffset], tailSize);
-		}
-
-		romData = std::move(deinterleaved);
+	if (IsLikelySmdImage(romData, ext)) {
+		DecodeSmdToLinear(romData);
 	}
 
 	// Pad ROM to power of 2

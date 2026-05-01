@@ -6,7 +6,7 @@
 #include "Utilities/VirtualFile.h"
 
 namespace {
-	std::vector<uint8_t> BuildNopBootRom(uint32_t initialSp, uint32_t initialPc, size_t romSize = 0x2000) {
+	std::vector<uint8_t> BuildNopBootRom(uint32_t initialSp, uint32_t initialPc, size_t romSize = 0x2000, bool includeSegaHeader = false) {
 		std::vector<uint8_t> rom(romSize, 0);
 		for (size_t i = 0; i + 1 < rom.size(); i += 2) {
 			rom[i] = 0x4E;
@@ -21,7 +21,35 @@ namespace {
 		rom[5] = (uint8_t)((initialPc >> 16) & 0xFF);
 		rom[6] = (uint8_t)((initialPc >> 8) & 0xFF);
 		rom[7] = (uint8_t)(initialPc & 0xFF);
+		if (includeSegaHeader && rom.size() >= 0x104) {
+			rom[0x100] = 'S';
+			rom[0x101] = 'E';
+			rom[0x102] = 'G';
+			rom[0x103] = 'A';
+		}
+
 		return rom;
+	}
+
+	std::vector<uint8_t> EncodeSmdFromLinear(const std::vector<uint8_t>& linearRom) {
+		std::vector<uint8_t> smd(0x200 + linearRom.size(), 0);
+		const size_t payloadSize = linearRom.size();
+		const size_t fullBlockBytes = payloadSize & ~((size_t)0x3fff);
+
+		for (size_t block = 0; block < fullBlockBytes; block += 0x4000) {
+			size_t srcBase = block;
+			size_t dstBase = 0x200 + block;
+			for (size_t i = 0; i < 0x2000; i++) {
+				smd[dstBase + i] = linearRom[srcBase + (i << 1) + 1];
+				smd[dstBase + 0x2000 + i] = linearRom[srcBase + (i << 1)];
+			}
+		}
+
+		if (fullBlockBytes < payloadSize) {
+			memcpy(smd.data() + 0x200 + fullBlockBytes, linearRom.data() + fullBlockBytes, payloadSize - fullBlockBytes);
+		}
+
+		return smd;
 	}
 
 	struct StepLoopSnapshot {
@@ -152,4 +180,38 @@ TEST(GenesisExecutionStartupTests, SteppedRunLoopHeartbeatSequenceIsDeterministi
 	StepLoopSnapshot runB = RunSteppedLoop(InitialSp, InitialPc, StepCount);
 
 	EXPECT_EQ(runA, runB);
+}
+
+TEST(GenesisExecutionStartupTests, LoadRomDecodesSmdExtensionToLinearResetVectors) {
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> linearRom = BuildNopBootRom(InitialSp, InitialPc, 0x4000, true);
+	std::vector<uint8_t> smdRom = EncodeSmdFromLinear(linearRom);
+
+	VirtualFile rom(smdRom.data(), smdRom.size(), "boot-smd.smd");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetCpu(), nullptr);
+	GenesisM68kState state = console.GetCpu()->GetState();
+	EXPECT_EQ(state.PC & 0x00ffffff, InitialPc);
+	EXPECT_EQ(state.A[7] & 0x00ffffff, InitialSp);
+}
+
+TEST(GenesisExecutionStartupTests, LoadRomHeuristicallyDecodesSmdLayoutWithoutSmdExtension) {
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> linearRom = BuildNopBootRom(InitialSp, InitialPc, 0x4000, true);
+	std::vector<uint8_t> smdRom = EncodeSmdFromLinear(linearRom);
+
+	VirtualFile rom(smdRom.data(), smdRom.size(), "boot-heuristic.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetCpu(), nullptr);
+	GenesisM68kState state = console.GetCpu()->GetState();
+	EXPECT_EQ(state.PC & 0x00ffffff, InitialPc);
+	EXPECT_EQ(state.A[7] & 0x00ffffff, InitialSp);
 }
