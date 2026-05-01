@@ -52,6 +52,8 @@ private:
 	bool _z80Reset = true;
 	bool _romBankMapperEnabled = false;
 	uint8_t _romBankRegisters[MapperBankWindowCount] = {};
+	bool _ramEnable = false;
+	bool _ramWritable = true;
 
 	// TMSS (Trademark Security System)
 	bool _tmssEnabled = false;
@@ -129,6 +131,9 @@ private:
 	void ResetRomBankMapper();
 	bool TryGetRomBankRegisterSlot(uint32_t addr, uint8_t& slot) const;
 	bool TryWriteRomBankRegister(uint32_t addr, uint8_t value);
+	bool IsRamControlRegister(uint32_t addr) const;
+	uint8_t GetRamControlRegisterValue() const;
+	void WriteRamControlRegister(uint8_t value);
 	uint32_t TranslateRomAddress(uint32_t addr) const;
 
 public:

@@ -27,6 +27,27 @@ namespace {
 		return rom;
 	}
 
+	vector<uint8_t> BuildSramHeaderRom(uint32_t romSize = 0x400000, uint32_t sramStart = 0x200000, uint32_t sramEnd = 0x200003) {
+		vector<uint8_t> rom(romSize, 0x00);
+		rom[0x1B0] = 'R';
+		rom[0x1B1] = 'A';
+		rom[0x1B2] = 0xA0;
+		rom[0x1B3] = 0x20;
+		rom[0x1B4] = (uint8_t)((sramStart >> 24) & 0xFF);
+		rom[0x1B5] = (uint8_t)((sramStart >> 16) & 0xFF);
+		rom[0x1B6] = (uint8_t)((sramStart >> 8) & 0xFF);
+		rom[0x1B7] = (uint8_t)(sramStart & 0xFF);
+		rom[0x1B8] = (uint8_t)((sramEnd >> 24) & 0xFF);
+		rom[0x1B9] = (uint8_t)((sramEnd >> 16) & 0xFF);
+		rom[0x1BA] = (uint8_t)((sramEnd >> 8) & 0xFF);
+		rom[0x1BB] = (uint8_t)(sramEnd & 0xFF);
+		rom[sramStart] = 0x9A;
+		rom[sramStart + 1] = 0xBC;
+		rom[sramStart + 2] = 0xDE;
+		rom[sramStart + 3] = 0xF0;
+		return rom;
+	}
+
 	GenesisMemoryManager CreateMemoryManager(Emulator& emu, std::vector<uint8_t>& romData) {
 		emu.Initialize(false);
 
@@ -249,5 +270,45 @@ namespace {
 		EXPECT_EQ(runtime.Read16(0xA130F2), bus.ReadWord(0xA130F2));
 		EXPECT_EQ(runtime.Read16(0xA130F3), bus.ReadWord(0xA130F3));
 		EXPECT_EQ(runtime.Read16(0xA130F4), bus.ReadWord(0xA130F4));
+	}
+
+	TEST(GenesisM68kBoundaryScaffoldTests, RuntimeRamControlRegisterGatesSramReadsAndWritesDeterministically) {
+		std::vector<uint8_t> rom = BuildSramHeaderRom();
+
+		Emulator emu;
+		GenesisMemoryManager runtime = CreateMemoryManager(emu, rom);
+
+		EXPECT_EQ(runtime.Read8(0xA130F1), 0x00);
+		EXPECT_EQ(runtime.Read8(0x200000), 0x9A);
+
+		runtime.Write8(0x200000, 0x12);
+		EXPECT_EQ(runtime.Read8(0x200000), 0x9A);
+
+		runtime.Write8(0xA130F1, 0x01);
+		EXPECT_EQ(runtime.Read8(0xA130F1), 0x01);
+
+		runtime.Write8(0x200000, 0x12);
+		EXPECT_EQ(runtime.Read8(0x200000), 0x12);
+
+		runtime.Write8(0xA130F1, 0x03);
+		EXPECT_EQ(runtime.Read8(0xA130F1), 0x03);
+
+		runtime.Write8(0x200000, 0x34);
+		EXPECT_EQ(runtime.Read8(0x200000), 0x12);
+	}
+
+	TEST(GenesisM68kBoundaryScaffoldTests, RuntimeMapperRegistersMaskWritesToSixBitParity) {
+		std::vector<uint8_t> rom = BuildMapperPatternRom(64);
+
+		Emulator emu;
+		GenesisMemoryManager runtime = CreateMemoryManager(emu, rom);
+
+		runtime.Write8(0xA130F3, 0xFF);
+		runtime.Write8(0xA130F5, 0x80);
+
+		EXPECT_EQ(runtime.Read8(0xA130F3), 0x3F);
+		EXPECT_EQ(runtime.Read8(0xA130F5), 0x00);
+		EXPECT_EQ(runtime.Read8(0x080000), (uint8_t)(0x3F * 0x11));
+		EXPECT_EQ(runtime.Read8(0x100000), (uint8_t)(0x00 * 0x11));
 	}
 }

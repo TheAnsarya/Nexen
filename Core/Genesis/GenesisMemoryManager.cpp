@@ -232,13 +232,26 @@ bool GenesisMemoryManager::TryGetRomBankRegisterSlot(uint32_t addr, uint8_t& slo
 	return slot < MapperBankWindowCount;
 }
 
+bool GenesisMemoryManager::IsRamControlRegister(uint32_t addr) const {
+	return (addr & 0xFFFFFF) == 0xA130F1;
+}
+
+uint8_t GenesisMemoryManager::GetRamControlRegisterValue() const {
+	return (uint8_t)((_ramEnable ? 0x01 : 0x00) | (_ramWritable ? 0x00 : 0x02));
+}
+
+void GenesisMemoryManager::WriteRamControlRegister(uint8_t value) {
+	_ramEnable = (value & 0x01) != 0;
+	_ramWritable = (value & 0x02) == 0;
+}
+
 bool GenesisMemoryManager::TryWriteRomBankRegister(uint32_t addr, uint8_t value) {
 	uint8_t slot = 0;
 	if (!TryGetRomBankRegisterSlot(addr, slot)) {
 		return false;
 	}
 
-	uint8_t effectiveValue = value;
+	uint8_t effectiveValue = (uint8_t)(value & 0x3F);
 	_romBankRegisters[slot] = effectiveValue;
 	return true;
 }
@@ -721,7 +734,7 @@ void GenesisMemoryManager::ClearDebugTranscriptLane() {
 }
 
 bool GenesisMemoryManager::IsSramAddress(uint32_t addr) const {
-	return HasSaveRam() && addr >= _sramStart && addr <= _sramEnd;
+	return HasSaveRam() && _ramEnable && addr >= _sramStart && addr <= _sramEnd;
 }
 
 bool GenesisMemoryManager::TryGetSramOffset(uint32_t addr, uint32_t& offset) const {
@@ -836,6 +849,12 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	}
 
 	uint8_t bankSlot = 0;
+	if (IsRamControlRegister(addr)) [[unlikely]] {
+		uint8_t effectiveValue = GetRamControlRegisterValue();
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
+
 	if (TryGetRomBankRegisterSlot(addr, bankSlot)) [[unlikely]] {
 		uint8_t effectiveValue = _romBankRegisters[bankSlot];
 		_openBus = effectiveValue;
@@ -1055,6 +1074,11 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	}
 
 	if (TryGetSramOffset(addr, sramOffset)) [[unlikely]] {
+		if (!_ramWritable) {
+			_openBus = value;
+			return;
+		}
+
 		uint8_t effectiveValue = value;
 		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Write);
 		_saveRam[sramOffset] = effectiveValue;
@@ -1062,7 +1086,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		return;
 	}
 
-	if (addr < _prgRomSize) [[likely]] {
+	if (addr < 0x400000) [[likely]] {
 		uint8_t effectiveValue = value;
 		_openBus = effectiveValue;
 		TrackSegaCdTranscript(addr, true, effectiveValue);
@@ -1126,7 +1150,14 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	}
 
 	if (TryWriteRomBankRegister(addr, value)) [[unlikely]] {
+		uint8_t effectiveValue = (uint8_t)(value & 0x3F);
+		_openBus = effectiveValue;
+		return;
+	}
+
+	if (IsRamControlRegister(addr)) [[unlikely]] {
 		uint8_t effectiveValue = value;
+		WriteRamControlRegister(effectiveValue);
 		_openBus = effectiveValue;
 		return;
 	}
@@ -1189,6 +1220,12 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		return;
 	}
 	if (HasSaveRam() && addr >= _sramStart && addr <= _sramEnd) [[unlikely]] {
+		if (!_ramEnable || !_ramWritable) {
+			uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+			_openBus = effectiveLowByte;
+			return;
+		}
+
 		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
 		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
 		Write8(addr, effectiveHighByte);
@@ -1204,7 +1241,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		return;
 	}
 
-	if (addr < _prgRomSize) [[likely]] {
+	if (addr < 0x400000) [[likely]] {
 		uint16_t effectiveValue = value;
 		uint8_t effectiveLowByte = (uint8_t)(effectiveValue & 0xFF);
 		_openBus = effectiveLowByte;
@@ -1594,6 +1631,13 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return effectiveValue;
 	}
 	uint8_t bankSlot = 0;
+	if (IsRamControlRegister(effectiveAddr)) {
+		uint8_t effectiveValue = GetRamControlRegisterValue();
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x11);
+		return effectiveValue;
+	}
+
 	if (TryGetRomBankRegisterSlot(effectiveAddr, bankSlot)) {
 		uint8_t effectiveValue = _romBankRegisters[bankSlot];
 		_openBus = effectiveValue;
@@ -1716,7 +1760,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x02);
 		return;
 	}
-	if (effectiveAddr < _prgRomSize) {
+	if (effectiveAddr < 0x400000) {
 		uint8_t effectiveValue = value;
 		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x01);
@@ -1809,7 +1853,14 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		}
 	}
 	if (TryWriteRomBankRegister(effectiveAddr, value)) {
+		uint8_t effectiveValue = (uint8_t)(value & 0x3F);
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x11);
+		return;
+	}
+	if (IsRamControlRegister(effectiveAddr)) {
 		uint8_t effectiveValue = value;
+		WriteRamControlRegister(effectiveValue);
 		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x11);
 		return;
@@ -1928,6 +1979,8 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_z80Reset);
 	SV(_romBankMapperEnabled);
 	SVArray(_romBankRegisters, (uint32_t)sizeof(_romBankRegisters));
+	SV(_ramEnable);
+	SV(_ramWritable);
 	SV(_tmssEnabled);
 	SV(_tmssUnlocked);
 	SV(_segaCdSubCpuRunning);
@@ -2016,6 +2069,8 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_z80Reset = nextZ80Reset;
 	_openBus = nextOpenBus;
 	_tmssUnlocked = nextTmssUnlocked;
+	_ramEnable = false;
+	_ramWritable = true;
 	_tmssVdpBlockLogged = false;
 
 	if (tmssEnabled) {
