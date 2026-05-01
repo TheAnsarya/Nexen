@@ -13,6 +13,7 @@
 #include "Debugger/DebugTypes.h"
 #include "Shared/Video/BaseVideoFilter.h"
 #include "Utilities/Serializer.h"
+#include "Shared/EventType.h"
 
 namespace {
 	bool HasSegaHeader(const vector<uint8_t>& romData) {
@@ -245,6 +246,8 @@ void GenesisConsole::RunFrame() {
 			vdpState.Registers[1],
 			_memoryManager->GetIoState().TmssUnlocked ? "true" : "false"));
 	}
+
+	_emu->ProcessEvent(EventType::EndFrame, CpuType::Genesis);
 }
 
 void GenesisConsole::ProcessEndOfFrame() {

@@ -118,3 +118,61 @@ TEST(GenesisExecutionPipelineTests, StepRequestProgressTracksSteppedCpuExecution
 	EXPECT_EQ(ioAfter.CpuInstructionHeartbeat, ioBefore.CpuInstructionHeartbeat + (uint64_t)StepBudget);
 	EXPECT_EQ(ioAfter.CpuProgramCounterHeartbeat, expectedHeartbeatPc);
 }
+
+TEST(GenesisExecutionPipelineTests, ContinuousRunFrameCadenceStaysMonotonicAndDeterministicAcrossRuns) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 3;
+
+	auto runCadenceCapture = [&]() {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-cadence.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetVdp() || !console.GetCpu() || !console.GetMemoryManager()) {
+			return std::tuple<std::vector<uint32_t>, std::vector<uint64_t>, std::vector<uint64_t>, std::vector<uint64_t>>();
+		}
+
+		std::vector<uint32_t> frameCounts;
+		std::vector<uint64_t> cpuCycles;
+		std::vector<uint64_t> cycleHeartbeat;
+		std::vector<uint64_t> instructionHeartbeat;
+		frameCounts.reserve(FrameCount);
+		cpuCycles.reserve(FrameCount);
+		cycleHeartbeat.reserve(FrameCount);
+		instructionHeartbeat.reserve(FrameCount);
+
+		for (int i = 0; i < FrameCount; i++) {
+			console.RunFrame();
+			frameCounts.push_back(console.GetVdp()->GetFrameCount());
+			cpuCycles.push_back(console.GetCpu()->GetState().CycleCount);
+			GenesisIoState ioState = console.GetMemoryManager()->GetIoState();
+			cycleHeartbeat.push_back(ioState.CpuCycleHeartbeat);
+			instructionHeartbeat.push_back(ioState.CpuInstructionHeartbeat);
+		}
+
+		return std::make_tuple(frameCounts, cpuCycles, cycleHeartbeat, instructionHeartbeat);
+	};
+
+	auto runA = runCadenceCapture();
+	auto runB = runCadenceCapture();
+
+	auto& frameA = std::get<0>(runA);
+	auto& cyclesA = std::get<1>(runA);
+	auto& cycleHeartbeatA = std::get<2>(runA);
+	auto& instructionHeartbeatA = std::get<3>(runA);
+
+	ASSERT_EQ((int)frameA.size(), FrameCount);
+	ASSERT_EQ((int)cyclesA.size(), FrameCount);
+	ASSERT_EQ((int)cycleHeartbeatA.size(), FrameCount);
+	ASSERT_EQ((int)instructionHeartbeatA.size(), FrameCount);
+
+	for (int i = 1; i < FrameCount; i++) {
+		EXPECT_GT(frameA[i], frameA[i - 1]);
+		EXPECT_GT(cyclesA[i], cyclesA[i - 1]);
+		EXPECT_GT(cycleHeartbeatA[i], cycleHeartbeatA[i - 1]);
+		EXPECT_GT(instructionHeartbeatA[i], instructionHeartbeatA[i - 1]);
+	}
+
+	EXPECT_EQ(runA, runB);
+}
