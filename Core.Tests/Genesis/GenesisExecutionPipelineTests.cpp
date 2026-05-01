@@ -5,6 +5,7 @@
 #include "Genesis/GenesisMemoryManager.h"
 #include "Genesis/GenesisVdp.h"
 #include "Shared/BaseControlManager.h"
+#include "Shared/EventType.h"
 #include "Shared/Emulator.h"
 #include "Utilities/VirtualFile.h"
 
@@ -276,6 +277,117 @@ TEST(GenesisExecutionPipelineTests, RunFrameAdvancesPollAndLagCountersDeterminis
 	for (int i = 0; i < FrameCount; i++) {
 		EXPECT_EQ(pollDeltasA[i], 1u);
 		EXPECT_EQ(lagDeltasA[i], 1u);
+	}
+
+	EXPECT_EQ(runA, runB);
+}
+
+TEST(GenesisExecutionPipelineTests, StartupFrameVisibilityHandoffIsDeterministicAcrossRuns) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 4;
+
+	auto captureRun = [&]() {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-startup-visibility.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success) {
+			return std::tuple<std::vector<uint32_t>, std::vector<uintptr_t>, std::vector<uint32_t>, std::vector<uint32_t>>();
+		}
+
+		std::vector<uint32_t> frameCounts;
+		std::vector<uintptr_t> frameBufferPtrs;
+		std::vector<uint32_t> widths;
+		std::vector<uint32_t> heights;
+		frameCounts.reserve(FrameCount);
+		frameBufferPtrs.reserve(FrameCount);
+		widths.reserve(FrameCount);
+		heights.reserve(FrameCount);
+
+		for (int i = 0; i < FrameCount; i++) {
+			console.RunFrame();
+			PpuFrameInfo frame = console.GetPpuFrame();
+			frameCounts.push_back(frame.FrameCount);
+			frameBufferPtrs.push_back((uintptr_t)frame.FrameBuffer);
+			widths.push_back(frame.Width);
+			heights.push_back(frame.Height);
+		}
+
+		return std::make_tuple(frameCounts, frameBufferPtrs, widths, heights);
+	};
+
+	auto runA = captureRun();
+	auto runB = captureRun();
+
+	auto& frameCountsA = std::get<0>(runA);
+	auto& frameBufferPtrsA = std::get<1>(runA);
+	auto& widthsA = std::get<2>(runA);
+	auto& heightsA = std::get<3>(runA);
+
+	ASSERT_EQ((int)frameCountsA.size(), FrameCount);
+	ASSERT_EQ((int)frameBufferPtrsA.size(), FrameCount);
+	ASSERT_EQ((int)widthsA.size(), FrameCount);
+	ASSERT_EQ((int)heightsA.size(), FrameCount);
+
+	for (int i = 0; i < FrameCount; i++) {
+		EXPECT_EQ(frameCountsA[i], (uint32_t)(i + 1));
+		EXPECT_NE(frameBufferPtrsA[i], (uintptr_t)0);
+		EXPECT_GT(widthsA[i], 0u);
+		EXPECT_GT(heightsA[i], 0u);
+	}
+
+	for (int i = 2; i < FrameCount; i++) {
+		EXPECT_EQ(frameBufferPtrsA[i], frameBufferPtrsA[i - 2]);
+	}
+
+	EXPECT_EQ(runA, runB);
+}
+
+TEST(GenesisExecutionPipelineTests, EventOrderingInteractionsDoNotBreakStartupFrameHandoffDeterminism) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 3;
+
+	auto captureRun = [&]() {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-debugger-frame-order.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetVdp()) {
+			return std::tuple<std::vector<uint32_t>, std::vector<uintptr_t>>();
+		}
+
+		std::vector<uint32_t> frameCounts;
+		std::vector<uintptr_t> frameBufferPtrs;
+		frameCounts.reserve(FrameCount);
+		frameBufferPtrs.reserve(FrameCount);
+
+		for (int i = 0; i < FrameCount; i++) {
+			emu.ProcessEvent(EventType::StartFrame, CpuType::Genesis);
+			console.RunFrame();
+			emu.ProcessEvent(EventType::EndFrame, CpuType::Genesis);
+
+			PpuFrameInfo frame = console.GetPpuFrame();
+			frameCounts.push_back(frame.FrameCount);
+			frameBufferPtrs.push_back((uintptr_t)frame.FrameBuffer);
+		}
+
+		return std::make_tuple(frameCounts, frameBufferPtrs);
+	};
+
+	auto runA = captureRun();
+	auto runB = captureRun();
+
+	auto& frameCountsA = std::get<0>(runA);
+	auto& frameBufferPtrsA = std::get<1>(runA);
+
+	ASSERT_EQ((int)frameCountsA.size(), FrameCount);
+	ASSERT_EQ((int)frameBufferPtrsA.size(), FrameCount);
+
+	for (int i = 0; i < FrameCount; i++) {
+		EXPECT_EQ(frameCountsA[i], (uint32_t)(i + 1));
+		EXPECT_NE(frameBufferPtrsA[i], (uintptr_t)0);
 	}
 
 	EXPECT_EQ(runA, runB);

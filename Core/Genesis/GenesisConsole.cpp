@@ -12,6 +12,8 @@
 #include "Genesis/GenesisDefaultVideoFilter.h"
 #include "Debugger/DebugTypes.h"
 #include "Shared/Video/BaseVideoFilter.h"
+#include "Shared/RenderedFrame.h"
+#include "Shared/Video/VideoDecoder.h"
 #include "Utilities/Serializer.h"
 #include "Shared/EventType.h"
 
@@ -250,6 +252,21 @@ void GenesisConsole::RunFrame() {
 	}
 
 	_emu->ProcessEvent(EventType::EndFrame, CpuType::Genesis);
+
+	if (_emu && _emu->IsEmulationThread() && _vdp && _controlManager) {
+		uint16_t* frameBuffer = _vdp->GetScreenBuffer(true);
+		if (frameBuffer) {
+			RenderedFrame renderedFrame(
+				frameBuffer,
+				_vdp->GetScreenWidth(),
+				_vdp->GetScreenHeight(),
+				1.0,
+				nextFrame,
+				_controlManager->GetPortStates());
+			_emu->GetVideoDecoder()->UpdateFrame(renderedFrame, false, false);
+		}
+	}
+
 	ProcessEndOfFrame();
 }
 

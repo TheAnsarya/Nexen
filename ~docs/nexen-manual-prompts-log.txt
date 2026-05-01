@@ -2168,7 +2168,7 @@ Yes please! work on those three goals starting with "Do #1916 then #1917" contin
 
 remember, we are going for cycle accurate emulation; continue;
 
-
+[Nexen] (Genesis) Yes please! work on those three goals Next best steps to keep momentum on cycle-accurate Genesis: Do #1920 research now: first-visible-frame render parity audit against Hoshiruna/Mesen2-Expanded timing/order; Implement #1921: first-visible-frame visual cadence hardening with deterministic frame-0/frame-1 tests; Add one focused Genesis render regression slice for startup frame visibility plus debugger/event ordering interactions; continue;
 
 
 
