@@ -213,8 +213,8 @@ void GenesisMemoryManager::ResetRomBankMapper() {
 	}
 }
 
-void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t programCounter, uint64_t cycleCount) {
-	_ioState.CpuProgramCounterHeartbeat = programCounter & 0x00ffffff;
+void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t instructionProgramCounter, uint64_t cycleCount) {
+	_ioState.CpuProgramCounterHeartbeat = instructionProgramCounter & 0x00ffffff;
 	_ioState.CpuCycleHeartbeat = cycleCount;
 	_ioState.CpuInstructionHeartbeat++;
 }

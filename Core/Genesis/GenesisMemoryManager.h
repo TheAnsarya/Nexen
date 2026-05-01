@@ -141,7 +141,7 @@ public:
 	void ResetRuntimeState(bool hardReset);
 
 	void SetCpu(GenesisM68k* cpu) { _cpu = cpu; }
-	void UpdateExecutionHeartbeat(uint32_t programCounter, uint64_t cycleCount);
+	void UpdateExecutionHeartbeat(uint32_t instructionProgramCounter, uint64_t cycleCount);
 
 	// Memory access (24-bit address space)
 	uint8_t Read8(uint32_t addr);

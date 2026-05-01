@@ -316,7 +316,7 @@ void GenesisM68k::Exec() {
 	uint16_t opcode = FetchOpcode();
 	ExecuteInstruction(opcode);
 	if (_memoryManager) {
-		_memoryManager->UpdateExecutionHeartbeat(_state.PC, _state.CycleCount);
+		_memoryManager->UpdateExecutionHeartbeat(prevPc, _state.CycleCount);
 	}
 
 	uint32_t nextPc = _state.PC & 0x00ffffff;

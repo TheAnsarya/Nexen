@@ -116,7 +116,7 @@ TEST(GenesisExecutionStartupTests, ExecAdvancesPcCyclesAndExecutionHeartbeat) {
 	EXPECT_GT(ioAfter.RomReadHeartbeat, ioBefore.RomReadHeartbeat);
 	EXPECT_GE(ioAfter.CpuInstructionHeartbeat, ioBefore.CpuInstructionHeartbeat + StepCount);
 	EXPECT_EQ(ioAfter.CpuCycleHeartbeat, after.CycleCount);
-	EXPECT_EQ(ioAfter.CpuProgramCounterHeartbeat, after.PC);
+	EXPECT_EQ(ioAfter.CpuProgramCounterHeartbeat, after.PC - 2);
 }
 
 TEST(GenesisExecutionStartupTests, SteppedRunLoopHeartbeatProgressesDeterministicallyPerStep) {
@@ -130,7 +130,7 @@ TEST(GenesisExecutionStartupTests, SteppedRunLoopHeartbeatProgressesDeterministi
 	ASSERT_EQ((int)snapshot.InstructionHeartbeat.size(), StepCount);
 
 	for (int i = 0; i < StepCount; i++) {
-		EXPECT_EQ(snapshot.ProgramCounterHeartbeat[i], InitialPc + ((uint32_t)(i + 1) * 2));
+		EXPECT_EQ(snapshot.ProgramCounterHeartbeat[i], InitialPc + ((uint32_t)i * 2));
 	}
 
 	for (int i = 1; i < StepCount; i++) {
@@ -139,7 +139,7 @@ TEST(GenesisExecutionStartupTests, SteppedRunLoopHeartbeatProgressesDeterministi
 	}
 
 	EXPECT_EQ(snapshot.FinalPc, InitialPc + ((uint32_t)StepCount * 2));
-	EXPECT_EQ(snapshot.ProgramCounterHeartbeat.back(), snapshot.FinalPc);
+	EXPECT_EQ(snapshot.ProgramCounterHeartbeat.back(), snapshot.FinalPc - 2);
 	EXPECT_EQ(snapshot.CycleHeartbeat.back(), snapshot.FinalCycles);
 }
 

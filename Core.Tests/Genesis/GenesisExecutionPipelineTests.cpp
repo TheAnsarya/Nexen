@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Debugger/DebugTypes.h"
 #include "Genesis/GenesisConsole.h"
 #include "Genesis/GenesisM68k.h"
@@ -87,7 +87,7 @@ TEST(GenesisExecutionPipelineTests, RunFrameAdvancesCodeExecutionAndHeartbeat) {
 
 TEST(GenesisExecutionPipelineTests, StepRequestProgressTracksSteppedCpuExecution) {
 	constexpr uint32_t InitialSp = 0x00fffe00;
-	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr uint32_t InitialPc = 0x00000200;
 	constexpr int32_t StepBudget = 8;
 	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
 	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-step.bin");
@@ -101,10 +101,14 @@ TEST(GenesisExecutionPipelineTests, StepRequestProgressTracksSteppedCpuExecution
 	StepRequest stepRequest(StepType::Step);
 	stepRequest.StepCount = StepBudget;
 	GenesisIoState ioBefore = console.GetMemoryManager()->GetIoState();
+	uint32_t expectedHeartbeatPc = InitialPc;
 
 	for (int32_t i = 0; i < StepBudget; i++) {
 		stepRequest.ProcessCpuExec();
 		console.GetCpu()->Exec();
+		GenesisIoState ioStep = console.GetMemoryManager()->GetIoState();
+		expectedHeartbeatPc = InitialPc + (uint32_t)(i * 2);
+		EXPECT_EQ(ioStep.CpuProgramCounterHeartbeat, expectedHeartbeatPc);
 	}
 
 	GenesisIoState ioAfter = console.GetMemoryManager()->GetIoState();
@@ -112,4 +116,5 @@ TEST(GenesisExecutionPipelineTests, StepRequestProgressTracksSteppedCpuExecution
 	EXPECT_EQ(stepRequest.BreakNeeded, BreakType::User);
 	EXPECT_EQ(stepRequest.GetBreakSource(), BreakSource::CpuStep);
 	EXPECT_EQ(ioAfter.CpuInstructionHeartbeat, ioBefore.CpuInstructionHeartbeat + (uint64_t)StepBudget);
+	EXPECT_EQ(ioAfter.CpuProgramCounterHeartbeat, expectedHeartbeatPc);
 }
