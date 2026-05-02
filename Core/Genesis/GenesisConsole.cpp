@@ -223,7 +223,10 @@ void GenesisConsole::Reset() {
 }
 
 void GenesisConsole::RunFrame() {
-	_emu->ProcessEvent(EventType::StartFrame, CpuType::Genesis);
+	bool emitFrameEvents = _emu && _emu->IsEmulationThread();
+	if (emitFrameEvents) {
+		_emu->ProcessEvent(EventType::StartFrame, CpuType::Genesis);
+	}
 
 	uint32_t frame = _vdp->GetFrameCount();
 	uint64_t startClock = _memoryManager->GetMasterClock();
@@ -252,7 +255,9 @@ void GenesisConsole::RunFrame() {
 			_memoryManager->GetIoState().TmssUnlocked ? "true" : "false"));
 	}
 
-	_emu->ProcessEvent(EventType::EndFrame, CpuType::Genesis);
+	if (emitFrameEvents) {
+		_emu->ProcessEvent(EventType::EndFrame, CpuType::Genesis);
+	}
 
 	if (_emu && _emu->IsEmulationThread() && _vdp && _controlManager) {
 		uint16_t* frameBuffer = _vdp->GetScreenBuffer(true);

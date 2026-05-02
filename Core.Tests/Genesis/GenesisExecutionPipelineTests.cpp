@@ -349,7 +349,7 @@ TEST(GenesisExecutionPipelineTests, EventOrderingInteractionsDoNotBreakStartupFr
 	constexpr uint32_t InitialPc = 0x00000100;
 	constexpr int FrameCount = 3;
 
-	auto captureRun = [&]() {
+	auto captureRun = [&](bool injectExternalEvents) {
 		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
 		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-debugger-frame-order.bin");
 		Emulator emu;
@@ -364,9 +364,13 @@ TEST(GenesisExecutionPipelineTests, EventOrderingInteractionsDoNotBreakStartupFr
 		frameBufferPtrs.reserve(FrameCount);
 
 		for (int i = 0; i < FrameCount; i++) {
-			emu.ProcessEvent(EventType::StartFrame, CpuType::Genesis);
+			if (injectExternalEvents) {
+				emu.ProcessEvent(EventType::StartFrame, CpuType::Genesis);
+			}
 			console.RunFrame();
-			emu.ProcessEvent(EventType::EndFrame, CpuType::Genesis);
+			if (injectExternalEvents) {
+				emu.ProcessEvent(EventType::EndFrame, CpuType::Genesis);
+			}
 
 			PpuFrameInfo frame = console.GetPpuFrame();
 			frameCounts.push_back(frame.FrameCount);
@@ -376,8 +380,9 @@ TEST(GenesisExecutionPipelineTests, EventOrderingInteractionsDoNotBreakStartupFr
 		return std::make_tuple(frameCounts, frameBufferPtrs);
 	};
 
-	auto runA = captureRun();
-	auto runB = captureRun();
+	auto runA = captureRun(false);
+	auto runB = captureRun(false);
+	auto runC = captureRun(true);
 
 	auto& frameCountsA = std::get<0>(runA);
 	auto& frameBufferPtrsA = std::get<1>(runA);
@@ -391,4 +396,5 @@ TEST(GenesisExecutionPipelineTests, EventOrderingInteractionsDoNotBreakStartupFr
 	}
 
 	EXPECT_EQ(runA, runB);
+	EXPECT_EQ(runA, runC);
 }
