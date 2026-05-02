@@ -1,0 +1,43 @@
+<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:w="using:Nexen.Windows"
+	xmlns:u="using:Nexen.Utilities"
+	mc:Ignorable="d"
+	x:Class="Nexen.Windows.VerifiedSystemsWindow"
+	x:DataType="w:VerifiedSystemsViewModel"
+	Title="Verified Games"
+	Width="1080"
+	Height="760"
+	CanResize="True"
+>
+	<Grid Background="#1d130f" RowDefinitions="Auto,*,Auto" Margin="18">
+		<TextBlock Grid.Row="0" Text="Verified Games" Foreground="#fff8e7" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center" Margin="0 0 0 14" />
+
+		<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+			<ItemsControl ItemsSource="{Binding Systems}">
+				<ItemsControl.ItemsPanel>
+					<ItemsPanelTemplate>
+						<WrapPanel ItemWidth="320" ItemHeight="170" Orientation="Horizontal" HorizontalAlignment="Center" />
+					</ItemsPanelTemplate>
+				</ItemsControl.ItemsPanel>
+				<ItemsControl.ItemTemplate>
+					<DataTemplate x:DataType="u:VerifiedSystemInfo">
+						<Button Click="OnSystemClick" Tag="{Binding Id}" Margin="10" Padding="14" CornerRadius="14" Background="#35221a" BorderBrush="#ffb15e" BorderThickness="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+							<StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+								<Image Source="{Binding IconPath}" Width="52" Height="52" HorizontalAlignment="Center" />
+								<TextBlock Text="{Binding Name}" Foreground="#fff4df" FontSize="24" FontWeight="SemiBold" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" />
+							</StackPanel>
+						</Button>
+					</DataTemplate>
+				</ItemsControl.ItemTemplate>
+			</ItemsControl>
+		</ScrollViewer>
+
+		<StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0 14 0 0">
+			<Button Content="Cancel" Click="OnCancelClick" Width="120" Height="40" />
+		</StackPanel>
+	</Grid>
+</Window>

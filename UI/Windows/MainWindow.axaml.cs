@@ -30,6 +30,7 @@ using Nexen.Views;
 namespace Nexen.Windows;
 public partial class MainWindow : NexenWindow {
 	private DispatcherTimer _timerBackgroundFlag = new DispatcherTimer();
+	private System.Threading.Timer? _coreLogMirrorTimer;
 	private MainWindowViewModel _model = null!;
 
 	private NotificationListener? _listener = null;
@@ -165,6 +166,8 @@ public partial class MainWindow : NexenWindow {
 		}
 
 		_timerBackgroundFlag.Stop();
+		_coreLogMirrorTimer?.Dispose();
+		_coreLogMirrorTimer = null;
 		EmuApi.Stop();
 		_listener?.Dispose();
 		EmuApi.Release();
@@ -220,6 +223,9 @@ public partial class MainWindow : NexenWindow {
 		_timerBackgroundFlag.Interval = TimeSpan.FromMilliseconds(100);
 		_timerBackgroundFlag.Tick += timerUpdateBackgroundFlag;
 		_timerBackgroundFlag.Start();
+
+		_coreLogMirrorTimer?.Dispose();
+		_coreLogMirrorTimer = new System.Threading.Timer(_ => MirrorCoreLogSnapshotToDisk(), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
 
 		//Give focus to panel to avoid menu being given focus by default
 		this.GetControl<Panel>("RendererPanel").Focus();
@@ -339,6 +345,10 @@ public partial class MainWindow : NexenWindow {
 			case ConsoleNotificationType.PpuFrameDone:
 				long frameCount = Interlocked.Increment(ref _ppuFrameDoneCount);
 				bool traceFrame = (frameCount <= 60) || (frameCount >= 2050 && frameCount <= 2450) || ((frameCount % 120) == 0);
+				if (frameCount <= 5) {
+					CoreLogPersistence.MirrorSnapshot($"ppu-frame-{frameCount}");
+				}
+
 				if (traceFrame) {
 					Log.Info($"[MainWindow] PpuFrameDone count={frameCount}");
 
@@ -391,6 +401,7 @@ public partial class MainWindow : NexenWindow {
 				break;
 
 			case ConsoleNotificationType.GameLoaded:
+				CoreLogPersistence.MirrorSnapshot("game-loaded");
 				CheatCodes.ApplyCheats();
 				RomInfo romInfo = EmuApi.GetRomInfo();
 
@@ -500,6 +511,8 @@ public partial class MainWindow : NexenWindow {
 
 			case ConsoleNotificationType.GameLoadFailed:
 				LoadRomHelper.ResetReloadCounter();
+				Log.Warn($"[MainWindow] GameLoadFailed notification received (stopCode={EmuApi.GetStopCode()})");
+				CoreLogPersistence.MirrorSnapshot("game-load-failed");
 				Dispatcher.UIThread.Post(() => {
 					DisplayMessageHelper.DisplayMessage(ResourceHelper.GetMessage("GameLoadFailedTitle"), ResourceHelper.GetMessage("GameLoadFailedMessage"));
 					_model.RecentGames.Init(GameScreenMode.RecentGames);
@@ -528,6 +541,10 @@ public partial class MainWindow : NexenWindow {
 				break;
 
 			case ConsoleNotificationType.EmulationStopped:
+				int stopCode = EmuApi.GetStopCode();
+				Log.Warn($"[MainWindow] EmulationStopped notification received (stopCode={stopCode})");
+				CoreLogPersistence.MirrorSnapshot("emulation-stopped");
+
 				// Update global emulator state (console is destroyed at this point)
 				Dispatcher.UIThread.Post(() => Services.EmulatorState.Instance.OnRomChanged(new RomInfo()));
 
@@ -599,6 +616,10 @@ public partial class MainWindow : NexenWindow {
 	private static void UpdateInputConfiguration() {
 		//Used to update input devices when the core requests changes (NES-only for now)
 		ConfigManager.Config.Nes.UpdateInputFromCoreConfig();
+	}
+
+	private void MirrorCoreLogSnapshotToDisk() {
+		CoreLogPersistence.MirrorSnapshot("main-window-timer");
 	}
 
 	private void InitializeComponent() {

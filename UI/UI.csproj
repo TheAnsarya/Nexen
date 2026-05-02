@@ -134,9 +134,18 @@
 	<PackageReference Include="Tmds.DBus.Protocol" Version="0.92.0" />
    </ItemGroup>
 	<ItemGroup>
+		<None Include="..\seedlists\**\*.txt" Link="seedlists\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+	<ItemGroup>
 	<ProjectReference Include="..\MovieConverter\MovieConverter.csproj" />
 	</ItemGroup>
   <ItemGroup>
+	<Compile Update="Windows\VerifiedSystemsWindow.axaml.cs">
+	  <DependentUpon>VerifiedSystemsWindow.axaml</DependentUpon>
+	</Compile>
+	<Compile Update="Windows\VerifiedGamesWindow.axaml.cs">
+	  <DependentUpon>VerifiedGamesWindow.axaml</DependentUpon>
+	</Compile>
 	<Compile Update="Controls\ButtonWithIcon.axaml.cs">
 	  <DependentUpon>ButtonWithIcon.axaml</DependentUpon>
 	</Compile>

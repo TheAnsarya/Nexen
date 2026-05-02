@@ -1,0 +1,2 @@
+# format: Display Name|Absolute ROM path
+Bonk's Adventure (USA)|C:\~reference-roms\pce\Bonk's Adventure (USA).pce

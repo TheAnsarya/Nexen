@@ -1,0 +1,38 @@
+﻿<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:w="using:Nexen.Windows"
+	xmlns:u="using:Nexen.Utilities"
+	mc:Ignorable="d"
+	x:Class="Nexen.Windows.VerifiedGamesWindow"
+	x:DataType="w:VerifiedGamesViewModel"
+	Title="Verified Games"
+	Width="1080"
+	Height="760"
+	CanResize="True"
+>
+	<Grid Background="#1b100c" RowDefinitions="Auto,*,Auto" Margin="16">
+		<TextBlock Grid.Row="0" Text="{Binding Title}" Foreground="#fff8e7" FontSize="30" FontWeight="Bold" HorizontalAlignment="Center" Margin="0 0 0 12" />
+
+		<ListBox Grid.Row="1" Name="GamesList" ItemsSource="{Binding Games}" SelectedItem="{Binding SelectedGame}" SelectionChanged="OnSelectionChanged" DoubleTapped="OnDoubleTapped" Background="#2a1b14" BorderBrush="#b8773b" BorderThickness="2" ScrollViewer.AllowAutoHide="False">
+			<ListBox.ItemTemplate>
+				<DataTemplate x:DataType="u:VerifiedGameEntry">
+					<Border Margin="4" Padding="10" CornerRadius="8" BorderBrush="#a96b36" BorderThickness="1" Background="#35231b">
+						<StackPanel>
+							<TextBlock Text="{Binding Name}" Foreground="#fff3e3" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+							<TextBlock Text="{Binding RomPath}" Foreground="#ffe1c7" FontSize="12" TextWrapping="Wrap" />
+							<TextBlock Text="{Binding RomExists, StringFormat='Exists: {0}'}" Foreground="#ffd9a8" FontSize="12" />
+						</StackPanel>
+					</Border>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+
+		<StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0 12 0 0">
+			<Button Content="Back" Click="OnCancelClick" Width="120" Height="40" />
+			<Button Name="LoadButton" Content="Load" Click="OnLoadClick" Width="120" Height="40" />
+		</StackPanel>
+	</Grid>
+</Window>

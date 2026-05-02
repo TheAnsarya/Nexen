@@ -2203,8 +2203,9 @@ make sure the `*.md` files are treated like the smd files and load into Genesis/
 
 did you not build after adding the `md` file type? It said it wasn't valid, so we couldn't test, but still check the logs to see where we crashed; find the problems and fix them; rerun nexen after building; continue;
 
+make sure all logs are written to disk and add extra logging in order to track down the current failures, what code is breaking?  fix it; On the "Open game" screen with the thumbnails, the two buttons at the bottom "Open ROM" and "Verfied Games" do not work, they do nothing, so make them work, at least "OPEN ROM" should work by opening the file selection dialog for a rom, and "Verified Games" should open a new display that shows all the systems as big buttons, in orange and brown and white, with big outlined buttons with an icon and label (large text) for every supported game system which then opens a new display with a big list of every game we know about from `seedlists` which we should add to the workspace; continue;
 
-
+oh, and jurassic park crashed the emulator, we're not doing it right; continue doing the last prompt;
 
 
 

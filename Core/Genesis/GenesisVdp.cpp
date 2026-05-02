@@ -496,6 +496,14 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 		if (dmaMode == 2 && _dmaFillDataPending) {
 			_dmaFillByte = (uint8_t)((value >> 8) & 0xFF);
 			_dmaFillDataPending = false;
+
+			// The first data-port write both provides the fill byte and writes one byte to the destination.
+			uint32_t fillAddr = _addressReg & 0xFFFF;
+			if (fillAddr < VramSize) {
+				_vram[fillAddr] = _dmaFillByte;
+			}
+			_addressReg += _autoIncrement;
+
 			MessageManager::Log(std::format("[Genesis][VDP] Latched DMA fill byte ${:02x} at addr ${:04x} (frame={})",
 				_dmaFillByte,
 				_addressReg,

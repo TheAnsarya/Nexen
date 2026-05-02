@@ -1,0 +1,5 @@
+# format: Display Name|Absolute ROM path
+Jurassic Park (USA)|C:\~reference-roms\genesis\Jurassic Park (USA).md
+Jurassic Park (U) [!]|C:\~reference-roms\genesis\Jurassic Park (U) [!].bin
+Sonic The Hedgehog (USA)|C:\~reference-roms\genesis\Sonic The Hedgehog (USA).md
+Sonic The Hedgehog 2 (World)|C:\~reference-roms\genesis\Sonic The Hedgehog 2 (World).md

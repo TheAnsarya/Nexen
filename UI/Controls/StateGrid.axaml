@@ -35,7 +35,7 @@
 					<TextBlock Text="Open ROM" Foreground="White" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" />
 				</StackPanel>
 			</Button>
-			<Button Click="OnVerifiedGamesClick" Background="#2A2A2A" BorderBrush="SlateGray" BorderThickness="1" CornerRadius="6" Padding="16 8" Cursor="Hand" IsEnabled="False" Opacity="0.5">
+			<Button Click="OnVerifiedGamesClick" Background="#2A2A2A" BorderBrush="SlateGray" BorderThickness="1" CornerRadius="6" Padding="16 8" Cursor="Hand">
 				<StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
 					<Image Source="{SvgImage /Assets/Find.svg}" Width="24" Height="24" />
 					<TextBlock Text="Verified Games" Foreground="White" FontSize="14" FontWeight="Medium" VerticalAlignment="Center" />

@@ -145,20 +145,62 @@ public partial class StateGrid : UserControl {
 	}
 
 	private async void OnOpenRomClick(object sender, RoutedEventArgs e) {
-		if (VisualRoot is MainWindow wnd) {
+		try {
+			Log.Info("[StateGrid] Open ROM button clicked");
+			Window? wnd = ApplicationHelper.ResolveParentWindow(this);
+			if (wnd is null) {
+				Log.Error("[StateGrid] Open ROM failed: unable to resolve parent window");
+				return;
+			}
+
 			string? initialFolder = ConfigManager.Config.Preferences.OverrideGameFolder && Directory.Exists(ConfigManager.Config.Preferences.GameFolder)
 				? ConfigManager.Config.Preferences.GameFolder
 				: ConfigManager.Config.RecentFiles.Items.Count > 0 ? ConfigManager.Config.RecentFiles.Items[0].RomFile.Folder : null;
 
 			string? filename = await FileDialogHelper.OpenFile(initialFolder, wnd, FileDialogHelper.RomExt);
 			if (filename is not null) {
+				Log.Info($"[StateGrid] Open ROM selected: {filename}");
 				LoadRomHelper.LoadFile(filename);
+			} else {
+				Log.Info("[StateGrid] Open ROM canceled by user");
 			}
+		} catch (Exception ex) {
+			Log.Error(ex, "[StateGrid] Open ROM click handler failed");
 		}
 	}
 
-	private void OnVerifiedGamesClick(object sender, RoutedEventArgs e) {
-		// Placeholder — will be connected to verified games / seedlists browser
+	private async void OnVerifiedGamesClick(object sender, RoutedEventArgs e) {
+		try {
+			Log.Info("[StateGrid] Verified Games button clicked");
+			Window? parent = ApplicationHelper.ResolveParentWindow(this);
+			if (parent is null) {
+				Log.Error("[StateGrid] Verified Games failed: unable to resolve parent window");
+				return;
+			}
+
+			VerifiedSystemInfo? system = await VerifiedSystemsWindow.ShowDialogAsync(parent);
+			if (system is null) {
+				Log.Info("[StateGrid] Verified Games canceled at system picker");
+				return;
+			}
+
+			VerifiedGameEntry? selectedGame = await VerifiedGamesWindow.ShowDialogAsync(parent, system);
+			if (selectedGame is null) {
+				Log.Info("[StateGrid] Verified Games canceled at game list");
+				return;
+			}
+
+			if (string.IsNullOrWhiteSpace(selectedGame.RomPath)) {
+				Log.Error($"[StateGrid] Verified Games selected entry with empty rom path: {selectedGame.Name}");
+				DisplayMessageHelper.DisplayMessage("Error", "Selected verified game entry has no ROM path.");
+				return;
+			}
+
+			Log.Info($"[StateGrid] Verified Games loading ROM: {selectedGame.RomPath}");
+			LoadRomHelper.LoadFile(selectedGame.RomPath);
+		} catch (Exception ex) {
+			Log.Error(ex, "[StateGrid] Verified Games handler failed");
+		}
 	}
 
 	/// <summary>

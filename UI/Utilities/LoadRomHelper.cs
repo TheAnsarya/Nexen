@@ -162,6 +162,7 @@ public static class LoadRomHelper {
 				//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side
 				bool success = EmuApi.LoadRom(romPathForCore, patchPath);
 				Log.Info($"[LoadRomHelper] EmuApi.LoadRom returned: {success}");
+				CoreLogPersistence.MirrorSnapshot(success ? "loadrom-success" : "loadrom-failed");
 
 				if (success) {
 					ConfigManager.Config.RecentFiles.AddRecentFile(romPath, patchPath);
@@ -196,6 +197,7 @@ public static class LoadRomHelper {
 					bool resetGame = !forceLoadState && ConfigManager.Config.Preferences.GameSelectionScreenMode == GameSelectionMode.PowerOn;
 					Log.Info($"[LoadRomHelper] Calling EmuApi.LoadRecentGame (resetGame: {resetGame})");
 					EmuApi.LoadRecentGame(filename, resetGame);
+					CoreLogPersistence.MirrorSnapshot("loadrecentgame");
 				} else {
 					Log.Error($"[LoadRomHelper] ERROR: Recent game file not found: {filename}");
 				}
