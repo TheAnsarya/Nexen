@@ -2060,6 +2060,7 @@ void GenesisMemoryManager::SaveBattery() {
 }
 
 void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
+	(void)hardReset;
 	if (_emu && _emu->GetSettings()) {
 		_tmssEnabled = _emu->GetSettings()->GetGenesisConfig().EnableTmss;
 	}
@@ -2109,8 +2110,5 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_ioState.TmssEnabled = tmssEnabledValue;
 	_ioState.TmssUnlocked = tmssUnlockedValue;
 
-	bool doHardReset = hardReset;
-	if (doHardReset) {
-		ClearDebugTranscriptLane();
-	}
+	ClearDebugTranscriptLane();
 }

@@ -249,6 +249,51 @@ TEST(GenesisExecutionStartupTests, ResetHeartbeatClearingIsDeterministicAcrossRu
 	EXPECT_EQ(runA, runB);
 }
 
+TEST(GenesisExecutionStartupTests, SoftResetClearsDebugTranscriptLaneStateDeterministically) {
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000100;
+
+	auto captureAfterSoftReset = [&]() {
+		std::vector<uint8_t> romData = BuildNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "boot-reset-debug-lane.md");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetMemoryManager()) {
+			return std::tuple<uint32_t, uint64_t, uint32_t, uint8_t, uint8_t, uint8_t>(0, 0, 0, 0, 0, 0);
+		}
+
+		auto* memoryManager = console.GetMemoryManager();
+		memoryManager->DebugWrite8(0xA10009, 0x12);
+		memoryManager->DebugWrite8(0xA00000, 0x34);
+		memoryManager->DebugWrite8(0xA11100, 0x01);
+
+		GenesisIoState ioBeforeReset = memoryManager->GetIoState();
+		EXPECT_GT(ioBeforeReset.DebugTranscriptLaneCount, 0u);
+		EXPECT_NE(ioBeforeReset.DebugTranscriptLaneDigest, 0ull);
+
+		console.Reset();
+
+		GenesisIoState ioAfterReset = memoryManager->GetIoState();
+		return std::make_tuple(
+			ioAfterReset.DebugTranscriptLaneCount,
+			ioAfterReset.DebugTranscriptLaneDigest,
+			ioAfterReset.DebugTranscriptEntryAddress[0],
+			ioAfterReset.DebugTranscriptEntryValue[0],
+			ioAfterReset.DebugTranscriptEntryFlags[0],
+			ioAfterReset.TmssEnabled);
+	};
+
+	auto runA = captureAfterSoftReset();
+	auto runB = captureAfterSoftReset();
+
+	EXPECT_EQ(std::get<0>(runA), 0u);
+	EXPECT_EQ(std::get<1>(runA), 0ull);
+	EXPECT_EQ(std::get<2>(runA), 0u);
+	EXPECT_EQ(std::get<3>(runA), 0u);
+	EXPECT_EQ(std::get<4>(runA), 0u);
+	EXPECT_EQ(runA, runB);
+}
+
 TEST(GenesisExecutionStartupTests, LoadRomDecodesSmdExtensionToLinearResetVectors) {
 	constexpr uint32_t InitialSp = 0x00FFFE00;
 	constexpr uint32_t InitialPc = 0x00000100;
