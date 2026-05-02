@@ -65,6 +65,7 @@ public sealed class FileDialogHelper {
 						"*.pce", "*.sgx", "*.cue", "*.hes",
 						"*.sms", "*.gg", "*.sg", "*.col",
 						"*.gba",
+						"*.md", "*.gen", "*.smd",
 						"*.chf", "*.bin",
 						"*.lnx", "*.lyx", "*.o", "*.atari-lynx",
 						"*.ws", "*.wsc",
@@ -76,6 +77,7 @@ public sealed class FileDialogHelper {
 					filter.Add(new FilePickerFileType("NES ROM files") { Patterns = new List<string>() { "*.nes", "*.fds", "*.qd", "*.unif", "*.unf", "*.studybox", "*.nsf", "*.nsfe" } });
 					filter.Add(new FilePickerFileType("GB ROM files") { Patterns = new List<string>() { "*.gb", "*.gbc", "*.gbx", "*.gbs" } });
 					filter.Add(new FilePickerFileType("GBA ROM files") { Patterns = new List<string>() { "*.gba" } });
+					filter.Add(new FilePickerFileType("Genesis / Mega Drive ROM files") { Patterns = new List<string>() { "*.md", "*.gen", "*.smd" } });
 					filter.Add(new FilePickerFileType("PC Engine ROM files") { Patterns = new List<string>() { "*.pce", "*.sgx", "*.cue", "*.hes" } });
 					filter.Add(new FilePickerFileType("SMS / GG ROM files") { Patterns = new List<string>() { "*.sms", "*.gg" } });
 					filter.Add(new FilePickerFileType("SG-1000 ROM files") { Patterns = new List<string>() { "*.sg" } });
