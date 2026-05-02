@@ -2170,9 +2170,11 @@ remember, we are going for cycle accurate emulation; continue;
 
 [Nexen] (Genesis) Yes please! work on those three goals Next best steps to keep momentum on cycle-accurate Genesis: Do #1920 research now: first-visible-frame render parity audit against Hoshiruna/Mesen2-Expanded timing/order; Implement #1921: first-visible-frame visual cadence hardening with deterministic frame-0/frame-1 tests; Add one focused Genesis render regression slice for startup frame visibility plus debugger/event ordering interactions; continue;
 
+[Nexen] (Genesis) Make issues for future (but very soon) work for the Next best cycle-accuracy steps: 1) Audio startup parity audit: first-audible-frame timing/order vs Genesis frame handoff, 2) Add deterministic frame/audio sync tests around startup frames (frame 0/1/2), 3) Save-state/load-state parity check during startup render handoff to ensure cycle-consistent restoration; instead of working on audio right now, work on execution, memory, debugging, startup and video/graphics, open a build of Nexen and see if it will do anything with a Genesis ROM; keep working issues and making new issues to work on the integration of Mesen2-Expanded using `Hoshiruna/Mesen2-Expanded` as a resource; continue;
 
+[Nexen] (Genesis/Megadrive) I've added the No-Intro set of Genesis roms at `C:\reference-roms\genesis\no-intro` with a bunch of `*.7z` files with `*.md` files inside to the reference roms folder; [Nexen] (Genesis) Make issues for future (but very soon) work for the Next best cycle-accuracy steps: 1) Audio startup parity audit: first-audible-frame timing/order vs Genesis frame handoff, 2) Add deterministic frame/audio sync tests around startup frames (frame 0/1/2), 3) Save-state/load-state parity check during startup render handoff to ensure cycle-consistent restoration; instead of working on audio right now, work on execution, memory, debugging, startup and video/graphics, open a build of Nexen and see if it will do anything with a Genesis ROM; keep working issues and making new issues to work on the integration of Mesen2-Expanded using `Hoshiruna/Mesen2-Expanded` as a resource; continue;
 
-
+1; continue;
 
 
 
