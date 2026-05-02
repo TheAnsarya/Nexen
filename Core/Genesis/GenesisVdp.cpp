@@ -494,7 +494,7 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 	if (_state.DmaActive) {
 		uint8_t dmaMode = _dmaInitialized ? _dmaLatchedMode : (uint8_t)((_state.Registers[23] >> 6) & 3);
 		if (dmaMode == 2 && _dmaFillDataPending) {
-			_dmaFillByte = (uint8_t)(value & 0xFF);
+			_dmaFillByte = (uint8_t)((value >> 8) & 0xFF);
 			_dmaFillDataPending = false;
 			MessageManager::Log(std::format("[Genesis][VDP] Latched DMA fill byte ${:02x} at addr ${:04x} (frame={})",
 				_dmaFillByte,
