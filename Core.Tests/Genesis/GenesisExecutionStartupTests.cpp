@@ -3,6 +3,7 @@
 #include "Genesis/GenesisM68k.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Shared/Emulator.h"
+#include "Shared/EmuSettings.h"
 #include "Utilities/VirtualFile.h"
 
 namespace {
@@ -280,4 +281,34 @@ TEST(GenesisExecutionStartupTests, LoadRomHeuristicallyDecodesSmdLayoutWithoutSm
 	GenesisM68kState state = console.GetCpu()->GetState();
 	EXPECT_EQ(state.PC & 0x00ffffff, InitialPc);
 	EXPECT_EQ(state.A[7] & 0x00ffffff, InitialSp);
+}
+
+TEST(GenesisExecutionStartupTests, ResetReSyncsTmssEnabledFromRuntimeSettingsDeterministically) {
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildNopBootRom(InitialSp, InitialPc, 0x4000, true);
+
+	VirtualFile rom(romData.data(), romData.size(), "boot-tmss-reset-sync.md");
+	Emulator emu;
+	emu.GetSettings()->GetGenesisConfig().EnableTmss = false;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	GenesisIoState initialIo = console.GetMemoryManager()->GetIoState();
+	EXPECT_EQ(initialIo.TmssEnabled, 0u);
+	EXPECT_EQ(initialIo.TmssUnlocked, 0u);
+
+	emu.GetSettings()->GetGenesisConfig().EnableTmss = true;
+	console.Reset();
+	GenesisIoState tmssEnabledIo = console.GetMemoryManager()->GetIoState();
+	EXPECT_EQ(tmssEnabledIo.TmssEnabled, 1u);
+	EXPECT_EQ(tmssEnabledIo.TmssUnlocked, 0u);
+
+	emu.GetSettings()->GetGenesisConfig().EnableTmss = false;
+	console.Reset();
+	GenesisIoState tmssDisabledIo = console.GetMemoryManager()->GetIoState();
+	EXPECT_EQ(tmssDisabledIo.TmssEnabled, 0u);
+	EXPECT_EQ(tmssDisabledIo.TmssUnlocked, 0u);
 }

@@ -2060,6 +2060,10 @@ void GenesisMemoryManager::SaveBattery() {
 }
 
 void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
+	if (_emu && _emu->GetSettings()) {
+		_tmssEnabled = _emu->GetSettings()->GetGenesisConfig().EnableTmss;
+	}
+
 	bool nextZ80BusRequest = false;
 	bool nextZ80Reset = true;
 	uint8_t nextOpenBus = 0;
