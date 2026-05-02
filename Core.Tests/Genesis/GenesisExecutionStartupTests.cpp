@@ -294,6 +294,57 @@ TEST(GenesisExecutionStartupTests, SoftResetClearsDebugTranscriptLaneStateDeterm
 	EXPECT_EQ(runA, runB);
 }
 
+TEST(GenesisExecutionStartupTests, SoftResetClearsToolingTelemetryCountersDeterministically) {
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000100;
+
+	auto captureAfterSoftReset = [&]() {
+		std::vector<uint8_t> romData = BuildNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "boot-reset-tooling-telemetry.md");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetMemoryManager()) {
+			return std::tuple<uint16_t, uint16_t, uint8_t, uint8_t>(0, 0, 0, 0);
+		}
+
+		auto* memoryManager = console.GetMemoryManager();
+		memoryManager->Write8(0xA12012, 0x11);
+		memoryManager->Write8(0xA12013, 0x22);
+		memoryManager->Write8(0xA12014, 0x33);
+		memoryManager->Write8(0xA12015, 0x44);
+		memoryManager->Write8(0xA15008, 0x55);
+		memoryManager->Write8(0xA15009, 0x66);
+		memoryManager->Write8(0xA1500A, 0x77);
+		memoryManager->Write8(0xA1500B, 0x88);
+
+		uint16_t segaCdEventCountBefore = (uint16_t)memoryManager->Read8(0xA12016)
+			| ((uint16_t)memoryManager->Read8(0xA12017) << 8);
+		uint16_t m32xEventCountBefore = (uint16_t)memoryManager->Read8(0xA15018)
+			| ((uint16_t)memoryManager->Read8(0xA15019) << 8);
+		EXPECT_GT(segaCdEventCountBefore, 0u);
+		EXPECT_GT(m32xEventCountBefore, 0u);
+
+		console.Reset();
+
+		uint16_t segaCdEventCountAfter = (uint16_t)memoryManager->Read8(0xA12016)
+			| ((uint16_t)memoryManager->Read8(0xA12017) << 8);
+		uint16_t m32xEventCountAfter = (uint16_t)memoryManager->Read8(0xA15018)
+			| ((uint16_t)memoryManager->Read8(0xA15019) << 8);
+		uint8_t segaCdDigestAfter = memoryManager->Read8(0xA1201B);
+		uint8_t m32xDigestAfter = memoryManager->Read8(0xA1501F);
+		return std::make_tuple(segaCdEventCountAfter, m32xEventCountAfter, segaCdDigestAfter, m32xDigestAfter);
+	};
+
+	auto runA = captureAfterSoftReset();
+	auto runB = captureAfterSoftReset();
+
+	EXPECT_EQ(std::get<0>(runA), 0u);
+	EXPECT_EQ(std::get<1>(runA), 0u);
+	EXPECT_EQ(std::get<2>(runA), 0u);
+	EXPECT_EQ(std::get<3>(runA), 0u);
+	EXPECT_EQ(runA, runB);
+}
+
 TEST(GenesisExecutionStartupTests, LoadRomDecodesSmdExtensionToLinearResetVectors) {
 	constexpr uint32_t InitialSp = 0x00FFFE00;
 	constexpr uint32_t InitialPc = 0x00000100;

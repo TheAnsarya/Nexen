@@ -2110,5 +2110,19 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_ioState.TmssEnabled = tmssEnabledValue;
 	_ioState.TmssUnlocked = tmssUnlockedValue;
 
+	_segaCdToolingDebuggerSignal = 0;
+	_segaCdToolingTasSignal = 0;
+	_segaCdToolingSaveStateSignal = 0;
+	_segaCdToolingCheatSignal = 0;
+	_segaCdToolingEventCount = 0;
+	_segaCdToolingDigest = 0;
+
+	_m32xToolingDebuggerSignal = 0;
+	_m32xToolingTasSignal = 0;
+	_m32xToolingSaveStateSignal = 0;
+	_m32xToolingCheatSignal = 0;
+	_m32xToolingEventCount = 0;
+	_m32xToolingDigest = 0;
+
 	ClearDebugTranscriptLane();
 }
