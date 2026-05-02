@@ -491,12 +491,20 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 
 	static uint64_t dataWriteCount = 0;
 	static bool loggedUnsupportedMode = false;
+	static bool loggedMode0WriteFallback = false;
 	static bool loggedFirstNonZeroVram = false;
 	static bool loggedFirstNonZeroCram = false;
 	static bool loggedFirstNonZeroVsram = false;
 	dataWriteCount++;
 
-	if (accessMode == 1) { // VRAM write
+	if (accessMode == 0 || accessMode == 1) { // VRAM write (mode 0 fallback used by some boot paths)
+		if (accessMode == 0 && !loggedMode0WriteFallback) {
+			loggedMode0WriteFallback = true;
+			MessageManager::Log(std::format("[Genesis][VDP] Treating mode 0 data-port writes as VRAM writes for compatibility (addr=${:04x}, frame={})",
+				_addressReg,
+				_state.FrameCount));
+		}
+
 		uint32_t addr = _addressReg & 0xFFFE;
 		if (addr + 1 < VramSize) {
 			uint8_t hi = (uint8_t)(value >> 8);
