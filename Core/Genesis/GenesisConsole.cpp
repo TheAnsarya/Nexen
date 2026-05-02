@@ -14,6 +14,7 @@
 #include "Shared/Video/BaseVideoFilter.h"
 #include "Shared/RenderedFrame.h"
 #include "Shared/Video/VideoDecoder.h"
+#include "Shared/RewindManager.h"
 #include "Utilities/Serializer.h"
 #include "Shared/EventType.h"
 
@@ -256,6 +257,7 @@ void GenesisConsole::RunFrame() {
 	if (_emu && _emu->IsEmulationThread() && _vdp && _controlManager) {
 		uint16_t* frameBuffer = _vdp->GetScreenBuffer(true);
 		if (frameBuffer) {
+			bool rewinding = _emu->GetRewindManager()->IsRewinding();
 			RenderedFrame renderedFrame(
 				frameBuffer,
 				_vdp->GetScreenWidth(),
@@ -263,7 +265,7 @@ void GenesisConsole::RunFrame() {
 				1.0,
 				nextFrame,
 				_controlManager->GetPortStates());
-			_emu->GetVideoDecoder()->UpdateFrame(renderedFrame, false, false);
+			_emu->GetVideoDecoder()->UpdateFrame(renderedFrame, rewinding, rewinding);
 		}
 	}
 
