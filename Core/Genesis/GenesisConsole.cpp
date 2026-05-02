@@ -278,12 +278,12 @@ void GenesisConsole::ProcessEndOfFrame() {
 	if (_emu && _emu->IsEmulationThread()) {
 		_controlManager->UpdateControlDevices();
 		_controlManager->UpdateInputState();
+		_emu->ProcessEndOfFrame();
 	} else {
 		// Keep headless frame tests deterministic without requiring host input stack initialization.
 		_controlManager->SetPollCounter(_controlManager->GetPollCounter() + 1);
+		_controlManager->ProcessEndOfFrame();
 	}
-
-	_controlManager->ProcessEndOfFrame();
 }
 
 void GenesisConsole::SaveBattery() {
