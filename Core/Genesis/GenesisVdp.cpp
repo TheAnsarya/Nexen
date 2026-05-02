@@ -618,7 +618,7 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 		return;
 	}
 
-	if ((value & 0xC000) == 0x8000) {
+	if ((value & 0xE000) == 0x8000) {
 		// Register write: 100R RRRR DDDD DDDD
 		uint8_t reg = (value >> 8) & 0x1F;
 		uint8_t data = value & 0xFF;
