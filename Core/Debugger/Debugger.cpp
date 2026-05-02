@@ -822,7 +822,11 @@ void Debugger::ProcessEvent(EventType type, std::optional<CpuType> cpuTypeOpt) {
 	if (routedCpuType != evtCpuType) {
 		MessageManager::Log(std::format("[Debugger] Rerouting event={} from cpuType={} to mainCpuType={}", (int)type, (int)evtCpuType, (int)routedCpuType));
 	}
-	_scriptManager->ProcessEvent(type, routedCpuType);
+	if (_emu->InternalGetDebugger() == this) {
+		_scriptManager->ProcessEvent(type, routedCpuType);
+	} else {
+		MessageManager::Log(std::format("[Debugger] Skipping script event dispatch for non-owned debugger instance (event={}, cpuType={})", (int)type, (int)routedCpuType));
+	}
 
 	switch (type) {
 		default:

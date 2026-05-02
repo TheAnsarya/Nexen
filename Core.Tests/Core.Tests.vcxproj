@@ -287,6 +287,9 @@
 		<ClCompile Include="Genesis\GenesisDebuggerStepLoopTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+		<ClCompile Include="Genesis\GenesisDebuggerEventRoutingTests.cpp">
+			<PrecompiledHeader>Use</PrecompiledHeader>
+		</ClCompile>
 		<ClCompile Include="Genesis\GenesisCompatibilityHarnessTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
