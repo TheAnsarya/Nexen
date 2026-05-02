@@ -56,7 +56,13 @@ namespace {
 	}
 
 	__forceinline uint8_t BuildVersionRegister(ConsoleRegion region) {
-		uint8_t versionByte = 0xA0; // Overseas + base hardware profile
+		uint8_t versionByte = 0xA0; // Base hardware profile
+		if (region == ConsoleRegion::NtscJapan) {
+			versionByte &= (uint8_t)~0x80; // Domestic
+		} else {
+			versionByte |= 0x80; // Overseas
+		}
+
 		if (region == ConsoleRegion::Pal) {
 			versionByte |= 0x40;
 		} else {

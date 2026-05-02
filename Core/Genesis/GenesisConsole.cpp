@@ -78,6 +78,8 @@ namespace {
 				return ConsoleRegion::Pal;
 
 			case ConsoleRegion::NtscJapan:
+				return ConsoleRegion::NtscJapan;
+
 			case ConsoleRegion::Ntsc:
 			case ConsoleRegion::Dendy:
 				return ConsoleRegion::Ntsc;
@@ -96,6 +98,8 @@ namespace {
 		uint32_t regionMask = 0;
 		bool hasPalMarker = false;
 		bool hasNtscMarker = false;
+		bool hasJapanMarker = false;
+		bool hasOverseasNtscMarker = false;
 		bool foundAnyRegionMarker = false;
 		uint32_t endOffset = (uint32_t)std::min<size_t>(romData.size(), 0x200);
 		for (uint32_t i = 0x1F0; i < endOffset; i++) {
@@ -110,6 +114,12 @@ namespace {
 			} else if (marker == 'U' || marker == 'J') {
 				foundAnyRegionMarker = true;
 				hasNtscMarker = true;
+				if (marker == 'J') {
+					hasJapanMarker = true;
+				}
+				if (marker == 'U') {
+					hasOverseasNtscMarker = true;
+				}
 			} else if (std::isxdigit((unsigned char)marker)) {
 				foundAnyRegionMarker = true;
 				if (marker >= '0' && marker <= '9') {
@@ -123,6 +133,8 @@ namespace {
 		if (regionMask != 0) {
 			hasPalMarker = hasPalMarker || ((regionMask & 0x08) != 0);
 			hasNtscMarker = hasNtscMarker || ((regionMask & 0x01) != 0) || ((regionMask & 0x04) != 0);
+			hasJapanMarker = hasJapanMarker || ((regionMask & 0x01) != 0);
+			hasOverseasNtscMarker = hasOverseasNtscMarker || ((regionMask & 0x04) != 0);
 		}
 
 		if (!foundAnyRegionMarker) {
@@ -131,6 +143,10 @@ namespace {
 
 		if (hasPalMarker && !hasNtscMarker) {
 			return ConsoleRegion::Pal;
+		}
+
+		if (hasNtscMarker && !hasPalMarker && hasJapanMarker && !hasOverseasNtscMarker) {
+			return ConsoleRegion::NtscJapan;
 		}
 
 		return ConsoleRegion::Ntsc;
@@ -189,10 +205,17 @@ LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 	_memoryManager->LoadBattery();
 
 	_vdp->SetRegion(_region == ConsoleRegion::Pal);
+	const char* regionName = "NTSC";
+	if (_region == ConsoleRegion::Pal) {
+		regionName = "PAL";
+	} else if (_region == ConsoleRegion::NtscJapan) {
+		regionName = "NTSC-J";
+	}
+
 	MessageManager::Log(std::format("[Genesis] ROM loaded: {} size={} region={} tmss={}",
 		romFile.GetFileName(),
 		romData.size(),
-		_region == ConsoleRegion::Pal ? "PAL" : "NTSC",
+		regionName,
 		_memoryManager->GetIoState().TmssEnabled ? "on" : "off"));
 
 	return LoadRomResult::Success;

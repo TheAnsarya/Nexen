@@ -2191,6 +2191,7 @@ continue on the next issue;
 
 1
 
+[Nexen] (Genesis/Megadrive) continue working to integrate `Hoshiruna/Mesen2-Expanded` into our Genesis work, but you're doing too much testing and smoke and harness work, You need to focus on actual emulator code, to make a game run and be playable; start by running Nexen so I can see what loading a rom does, then start emulator work with new issues focuses on real emulator improvement, sidelining testing for a while; continue;
 
 
 
