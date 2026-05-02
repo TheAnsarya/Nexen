@@ -182,6 +182,72 @@ TEST(GenesisExecutionStartupTests, SteppedRunLoopHeartbeatSequenceIsDeterministi
 	EXPECT_EQ(runA, runB);
 }
 
+TEST(GenesisExecutionStartupTests, ResetClearsExecutionHeartbeatsBeforeNextInstruction) {
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildNopBootRom(InitialSp, InitialPc);
+
+	VirtualFile rom(romData.data(), romData.size(), "boot-reset-heartbeat.md");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	auto* cpu = console.GetCpu();
+	auto* memoryManager = console.GetMemoryManager();
+	ASSERT_NE(cpu, nullptr);
+	ASSERT_NE(memoryManager, nullptr);
+
+	for (int i = 0; i < 6; i++) {
+		cpu->Exec();
+	}
+
+	GenesisIoState ioBeforeReset = memoryManager->GetIoState();
+	EXPECT_GT(ioBeforeReset.CpuInstructionHeartbeat, 0u);
+	EXPECT_GT(ioBeforeReset.CpuCycleHeartbeat, 0u);
+
+	console.Reset();
+
+	GenesisIoState ioAfterReset = memoryManager->GetIoState();
+	EXPECT_EQ(ioAfterReset.CpuProgramCounterHeartbeat, 0u);
+	EXPECT_EQ(ioAfterReset.CpuCycleHeartbeat, 0u);
+	EXPECT_EQ(ioAfterReset.CpuInstructionHeartbeat, 0u);
+	EXPECT_EQ(ioAfterReset.RomReadHeartbeat, 0u);
+}
+
+TEST(GenesisExecutionStartupTests, ResetHeartbeatClearingIsDeterministicAcrossRuns) {
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000100;
+
+	auto captureAfterReset = [&]() {
+		std::vector<uint8_t> romData = BuildNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "boot-reset-heartbeat-determinism.md");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetCpu() || !console.GetMemoryManager()) {
+			return std::tuple<uint32_t, uint64_t, uint64_t, uint64_t>(0, 0, 0, 0);
+		}
+
+		auto* cpu = console.GetCpu();
+		auto* memoryManager = console.GetMemoryManager();
+		for (int i = 0; i < 6; i++) {
+			cpu->Exec();
+		}
+
+		console.Reset();
+		GenesisIoState io = memoryManager->GetIoState();
+		return std::make_tuple(io.CpuProgramCounterHeartbeat, io.CpuCycleHeartbeat, io.CpuInstructionHeartbeat, io.RomReadHeartbeat);
+	};
+
+	auto runA = captureAfterReset();
+	auto runB = captureAfterReset();
+
+	EXPECT_EQ(std::get<0>(runA), 0u);
+	EXPECT_EQ(std::get<1>(runA), 0u);
+	EXPECT_EQ(std::get<2>(runA), 0u);
+	EXPECT_EQ(std::get<3>(runA), 0u);
+	EXPECT_EQ(runA, runB);
+}
+
 TEST(GenesisExecutionStartupTests, LoadRomDecodesSmdExtensionToLinearResetVectors) {
 	constexpr uint32_t InitialSp = 0x00FFFE00;
 	constexpr uint32_t InitialPc = 0x00000100;

@@ -2080,11 +2080,15 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	ResetRomBankMapper();
 
 	memset(_ioState.DataPort, 0, sizeof(_ioState.DataPort));
+	memset(_ioState.CtrlPort, 0, sizeof(_ioState.CtrlPort));
 	memset(_ioState.TxData, 0, sizeof(_ioState.TxData));
 	memset(_ioState.RxData, 0, sizeof(_ioState.RxData));
 	memset(_ioState.SCtrl, 0, sizeof(_ioState.SCtrl));
 	memset(_ioState.ThCount, 0, sizeof(_ioState.ThCount));
 	memset(_ioState.ThState, 0, sizeof(_ioState.ThState));
+	_ioState.CpuProgramCounterHeartbeat = 0;
+	_ioState.CpuCycleHeartbeat = 0;
+	_ioState.CpuInstructionHeartbeat = 0;
 	uint32_t resetTranscriptLaneCount = 0;
 	uint64_t resetTranscriptLaneDigest = 0;
 	_ioState.TranscriptLaneCount = resetTranscriptLaneCount;

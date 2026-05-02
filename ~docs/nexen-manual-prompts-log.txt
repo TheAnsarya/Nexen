@@ -2176,9 +2176,12 @@ remember, we are going for cycle accurate emulation; continue;
 
 1; continue;
 
+[Nexen] (Genesis/Megadrive) work Next continuation target: Continue #1925 with behavior-level deltas (execution ordering, memory init, debugger/event ordering, startup frame visibility), then apply the next #1926 fix with #1927 test expansion; continue;
 
+[Nexen] (Genesis/Megadrive) continue working to integrate `Hoshiruna/Mesen2-Expanded` into our Genesis work while working across the whole spectrum to make real work making the MegaDrive/Genesis emulator work completely; work on many different issues and integrations, go for a very long time, continue;
 
-
+[Nexen] (Genesis/Megadrive) continue working to integrate `Hoshiruna/Mesen2-Expanded` into our Genesis work while working across the whole spectrum to make real work making the MegaDrive/Genesis emulator work completely; work on many different issues and integrations, go for a very long time, continue;
+--- run/queue 6 times
 
 
 
