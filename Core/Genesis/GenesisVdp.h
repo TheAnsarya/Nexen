@@ -60,6 +60,8 @@ private:
 	uint32_t _dmaRemainingWords = 0;
 	uint32_t _dmaSourceAddress = 0;
 	uint16_t _dmaCopySourceAddress = 0;
+	uint8_t _dmaFillByte = 0;
+	bool _dmaFillDataPending = false;
 	uint8_t _dmaStartupDelayCyclesRemaining = 0;
 	uint8_t _dmaBusCycleRemainder = 0;
 

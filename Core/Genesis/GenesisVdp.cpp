@@ -64,6 +64,8 @@ void GenesisVdp::Reset(bool hardReset) {
 	_dmaRemainingWords = 0;
 	_dmaSourceAddress = 0;
 	_dmaCopySourceAddress = 0;
+	_dmaFillByte = 0;
+	_dmaFillDataPending = false;
 	_dmaStartupDelayCyclesRemaining = 0;
 	_dmaBusCycleRemainder = 0;
 
@@ -487,6 +489,21 @@ uint16_t GenesisVdp::ReadHVCounter() {
 void GenesisVdp::WriteDataPort(uint16_t value) {
 	_pendingControlWrite = false;
 	_state.DataPortBuffer = value;
+
+	// DMA fill takes its fill byte from the first data-port write after the DMA command.
+	if (_state.DmaActive) {
+		uint8_t dmaMode = _dmaInitialized ? _dmaLatchedMode : (uint8_t)((_state.Registers[23] >> 6) & 3);
+		if (dmaMode == 2 && _dmaFillDataPending) {
+			_dmaFillByte = (uint8_t)(value & 0xFF);
+			_dmaFillDataPending = false;
+			MessageManager::Log(std::format("[Genesis][VDP] Latched DMA fill byte ${:02x} at addr ${:04x} (frame={})",
+				_dmaFillByte,
+				_addressReg,
+				_state.FrameCount));
+			return;
+		}
+	}
+
 	uint8_t accessMode = _accessMode & 0x0F;
 
 	static uint64_t dataWriteCount = 0;
@@ -730,10 +747,14 @@ void GenesisVdp::ProcessDma() {
 			_dmaBusCycleRemainder = 0;
 		} else if (_dmaLatchedMode == 2) {
 			_state.DmaMode = 1;
+			_dmaFillDataPending = true;
+			_dmaFillByte = 0;
 			_dmaStartupDelayCyclesRemaining = 0;
 			_dmaBusCycleRemainder = 0;
 		} else {
 			_state.DmaMode = 2;
+			_dmaFillDataPending = false;
+			_dmaFillByte = 0;
 			_dmaStartupDelayCyclesRemaining = 0;
 			_dmaBusCycleRemainder = 0;
 		}
@@ -788,8 +809,12 @@ void GenesisVdp::ProcessDma() {
 		_state.Registers[22] = (uint8_t)((srcWordAddress >> 8) & 0xFF);
 		_state.Registers[23] = (uint8_t)((_state.Registers[23] & 0xC0) | ((srcWordAddress >> 16) & 0x3F));
 	} else if (_dmaLatchedMode == 2) {
+		if (_dmaFillDataPending) {
+			return;
+		}
+
 		// VRAM fill
-		uint8_t fillByte = _state.Registers[23] & 0xFF; // Simplified
+		uint8_t fillByte = _dmaFillByte;
 		uint32_t dmaDst = _addressReg;
 		for (uint32_t i = 0; i < wordsThisStep; i++) {
 			uint32_t addr = dmaDst & 0xFFFF;
@@ -824,6 +849,7 @@ void GenesisVdp::ProcessDma() {
 
 	_state.DmaActive = false;
 	_dmaInitialized = false;
+	_dmaFillDataPending = false;
 	_dmaStartupDelayCyclesRemaining = 0;
 	_dmaBusCycleRemainder = 0;
 	_state.StatusRegister &= ~VdpStatus::DmaBusy;
@@ -876,6 +902,8 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_dmaRemainingWords);
 	SV(_dmaSourceAddress);
 	SV(_dmaCopySourceAddress);
+	SV(_dmaFillByte);
+	SV(_dmaFillDataPending);
 	SV(_dmaStartupDelayCyclesRemaining);
 	SV(_dmaBusCycleRemainder);
 	for (int i = 0; i < 24; i++) {
