@@ -15,6 +15,7 @@ public static class FolderHelper {
 	".nes", ".unif", ".unf", ".fds", ".qd", ".studybox",
 	".pce", ".sgx", ".cue",
 	".sms", ".gg", ".sg", ".col",
+	".md", ".gen", ".smd",
 	".gba",
 	".ws", ".wsc"
 		];

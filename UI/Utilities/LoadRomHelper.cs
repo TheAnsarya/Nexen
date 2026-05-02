@@ -276,6 +276,8 @@ public static class LoadRomHelper {
 		if (File.Exists(filename)) {
 			string ext = Path.GetExtension(filename).ToLowerInvariant();
 			Log.Info($"[LoadRomHelper] File exists, extension: {ext}");
+			bool isRomFile = FolderHelper.IsRomFile(filename);
+			bool isArchiveFile = FolderHelper.IsArchiveFile(filename);
 
 			if (IsPatchFile(filename)) {
 				Log.Info($"[LoadRomHelper] Detected patch file, calling LoadPatchFile");
@@ -289,11 +291,11 @@ public static class LoadRomHelper {
 			} else if (EmuApi.IsRunning() && (ext == "." + FileDialogHelper.NexenMovieExt || ext == "." + FileDialogHelper.MesenMovieExt)) {
 				Log.Info($"[LoadRomHelper] Detected movie file, calling MoviePlay");
 				RecordApi.MoviePlay(filename);
-			} else if (FolderHelper.IsRomFile(filename) || FolderHelper.IsArchiveFile(filename)) {
+			} else if (isRomFile || isArchiveFile) {
 				Log.Info($"[LoadRomHelper] Detected ROM/archive file, calling LoadRom");
 				_ = LoadRom(filename);
 			} else {
-				Log.Error($"[LoadRomHelper] ERROR: Unsupported file type for load: {filename}");
+				Log.Error($"[LoadRomHelper] ERROR: Unsupported file type for load: {filename} (ext={ext}, isRomFile={isRomFile}, isArchiveFile={isArchiveFile})");
 				DisplayMessageHelper.DisplayMessage(ResourceHelper.GetMessage("GameLoadFailedTitle"), ResourceHelper.GetMessage("UnsupportedFileType", filename));
 			}
 		} else {

@@ -2197,7 +2197,11 @@ continue;
 
 2 and then 1
 
+make sure the `*.md` files are treated like the smd files and load into Genesis/megadrive during file load
 
+[Nexen] (Genesis/Megadrive) run Nexen so I can try to open a ROM, and then wait for me to do that, then open the log files to read errors (add more error logs if anything is broken, but unlogged) and fix any problems that are revealed and merge `Hoshiruna/Mesen2-Expanded` code which is better emulator than ours into our code and work on running a game like `C:\~reference-roms\genesis\Jurassic Park (USA).md`; continue;
+
+did you not build after adding the `md` file type? It said it wasn't valid, so we couldn't test, but still check the logs to see where we crashed; find the problems and fix them; rerun nexen after building; continue;
 
 
 
