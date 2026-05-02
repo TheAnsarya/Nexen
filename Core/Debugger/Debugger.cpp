@@ -818,25 +818,43 @@ void Debugger::InternalProcessInterrupt(CpuType cpuType, IDebugger& dbg, StepReq
 
 void Debugger::ProcessEvent(EventType type, std::optional<CpuType> cpuTypeOpt) {
 	CpuType evtCpuType = cpuTypeOpt.value_or(_mainCpuType);
-	_scriptManager->ProcessEvent(type, evtCpuType);
+	CpuType routedCpuType = HasCpuType(evtCpuType) ? evtCpuType : _mainCpuType;
+	if (routedCpuType != evtCpuType) {
+		MessageManager::Log(std::format("[Debugger] Rerouting event={} from cpuType={} to mainCpuType={}", (int)type, (int)evtCpuType, (int)routedCpuType));
+	}
+	_scriptManager->ProcessEvent(type, routedCpuType);
 
 	switch (type) {
 		default:
 			break;
 
-		case EventType::InputPolled:
-				if (!HasCpuType(evtCpuType) || !_debuggers[(int)evtCpuType].Debugger) {
-					MessageManager::Log(std::format("[Debugger] Ignoring InputPolled for unmapped cpuType={}", (int)evtCpuType));
-					break;
+		case EventType::InputPolled: {
+			IDebugger* inputDebugger = nullptr;
+			if (HasCpuType(routedCpuType)) {
+				inputDebugger = _debuggers[(int)routedCpuType].Debugger.get();
+			}
+
+			if (!inputDebugger && HasCpuType(_mainCpuType)) {
+				inputDebugger = _debuggers[(int)_mainCpuType].Debugger.get();
+				if (inputDebugger) {
+					MessageManager::Log(std::format("[Debugger] Rerouting InputPolled from cpuType={} to mainCpuType={}", (int)evtCpuType, (int)_mainCpuType));
 				}
-				_debuggers[(int)evtCpuType].Debugger->ProcessInputOverrides(_inputOverrides);
+			}
+
+			if (!inputDebugger) {
+				MessageManager::Log(std::format("[Debugger] Ignoring InputPolled for cpuType={} (no available debugger backend)", (int)evtCpuType));
+				break;
+			}
+
+			inputDebugger->ProcessInputOverrides(_inputOverrides);
 			break;
+		}
 
 		case EventType::StartFrame: {
 			if (!_emu->IsDebuggerBlocked()) {
-				_emu->GetNotificationManager()->SendNotification(ConsoleNotificationType::EventViewerRefresh, (void*)evtCpuType);
+				_emu->GetNotificationManager()->SendNotification(ConsoleNotificationType::EventViewerRefresh, (void*)routedCpuType);
 			}
-			BaseEventManager* evtMgr = GetEventManager(evtCpuType);
+			BaseEventManager* evtMgr = GetEventManager(routedCpuType);
 			if (evtMgr) {
 				evtMgr->ClearFrameEvents();
 			}
