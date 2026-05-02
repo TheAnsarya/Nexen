@@ -825,7 +825,11 @@ void Debugger::ProcessEvent(EventType type, std::optional<CpuType> cpuTypeOpt) {
 			break;
 
 		case EventType::InputPolled:
-			_debuggers[(int)evtCpuType].Debugger->ProcessInputOverrides(_inputOverrides);
+				if (!HasCpuType(evtCpuType) || !_debuggers[(int)evtCpuType].Debugger) {
+					MessageManager::Log(std::format("[Debugger] Ignoring InputPolled for unmapped cpuType={}", (int)evtCpuType));
+					break;
+				}
+				_debuggers[(int)evtCpuType].Debugger->ProcessInputOverrides(_inputOverrides);
 			break;
 
 		case EventType::StartFrame: {
