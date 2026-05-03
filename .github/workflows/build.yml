@@ -317,15 +317,61 @@ jobs:
           sudo apt-get update -qy
           sudo apt-get install -qy libsdl2-dev ccache xvfb # The compilers are already installed on GitHub's runners.
 
-      # Install GCC 13 for C++23 <format> support (default GCC 11 on ubuntu-22.04 doesn't have it)
+      # Resolve a GCC toolchain with C++23 <format> support without relying on Launchpad PPA APIs.
       - name: Install GCC 13
         if: matrix.compiler == 'gcc'
         run: |
-          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          sudo apt-get update
-          sudo apt-get install -y g++-13 gcc-13
-          echo "CC=gcc-13" >> $GITHUB_ENV
-          echo "CXX=g++-13" >> $GITHUB_ENV
+          set -euo pipefail
+
+          pick_compiler_pair() {
+            local cc="$1"
+            local cxx="$2"
+            if command -v "$cc" >/dev/null 2>&1 && command -v "$cxx" >/dev/null 2>&1; then
+              echo "$cc;$cxx"
+              return 0
+            fi
+            return 1
+          }
+
+          selected=""
+          for pair in "gcc-14;g++-14" "gcc-13;g++-13" "gcc-12;g++-12"; do
+            cc="${pair%%;*}"
+            cxx="${pair##*;}"
+            if resolved=$(pick_compiler_pair "$cc" "$cxx"); then
+              selected="$resolved"
+              break
+            fi
+          done
+
+          if [ -z "$selected" ]; then
+            echo "No suitable GCC toolchain preinstalled. Attempting apt install fallback..."
+            sudo apt-get update -qy
+            sudo apt-get install -qy g++-13 gcc-13 || sudo apt-get install -qy g++-12 gcc-12
+
+            for pair in "gcc-13;g++-13" "gcc-12;g++-12"; do
+              cc="${pair%%;*}"
+              cxx="${pair##*;}"
+              if resolved=$(pick_compiler_pair "$cc" "$cxx"); then
+                selected="$resolved"
+                break
+              fi
+            done
+          fi
+
+          if [ -z "$selected" ]; then
+            echo "Failed to resolve a usable GCC toolchain."
+            exit 1
+          fi
+
+          CC_BIN="${selected%%;*}"
+          CXX_BIN="${selected##*;}"
+
+          echo "Using GCC toolchain: $CC_BIN / $CXX_BIN"
+          "$CC_BIN" --version
+          "$CXX_BIN" --version
+
+          echo "CC=$CC_BIN" >> "$GITHUB_ENV"
+          echo "CXX=$CXX_BIN" >> "$GITHUB_ENV"
 
       # Install LLVM 18 for C++23 support (default clang on ubuntu-22.04 doesn't support c++23)
       # Also install libc++ since the system libstdc++ doesn't have <format>
@@ -351,7 +397,9 @@ jobs:
         run: |
           set -o pipefail
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=gcc-13 CXX=g++-13 2>&1 | tee build-linux.log
+            CC_BIN="${CC:-gcc-13}"
+            CXX_BIN="${CXX:-g++-13}"
+            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC="$CC_BIN" CXX="$CXX_BIN" 2>&1 | tee build-linux.log
           else
             make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++" 2>&1 | tee build-linux.log
           fi
