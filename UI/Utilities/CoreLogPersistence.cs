@@ -12,7 +12,7 @@ public static class CoreLogPersistence {
 	private static string _lastSnapshot = string.Empty;
 	private static int _snapshotQueued;
 
-	public static void MirrorSnapshot(string reason) {
+	public static void MirrorSnapshot(string reason, bool forceWrite = false) {
 		if (Interlocked.Exchange(ref _snapshotQueued, 1) == 1) {
 			return;
 		}
@@ -21,14 +21,14 @@ public static class CoreLogPersistence {
 			try {
 				lock (_lock) {
 					string snapshot = EmuApi.GetLog();
-					if (snapshot == _lastSnapshot) {
+					if (!forceWrite && snapshot == _lastSnapshot) {
 						return;
 					}
 
 					string coreLogPath = Path.Combine(ConfigManager.HomeFolder, "nexen-core-log.txt");
 					File.WriteAllText(coreLogPath, snapshot);
 					_lastSnapshot = snapshot;
-					Log.Debug($"[CoreLogPersistence] Wrote core log snapshot ({reason})");
+					Log.Debug($"[CoreLogPersistence] Wrote core log snapshot ({reason}, force={forceWrite})");
 				}
 			} catch (Exception ex) {
 				Log.Error(ex, $"[CoreLogPersistence] Failed to write core log snapshot ({reason})");

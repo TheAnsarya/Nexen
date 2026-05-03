@@ -2233,8 +2233,9 @@ Don't just hide errors, fix them;
 
 yep, do that, run Nexen with Sonic `C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md` and see what happens, and then check logs, and errors and fix everything you find that's work, let's get this moving forward, our goal is running Sonic; continue;
 
+Add a bunch of debug logs that we will remove later (most of them) after seeing where our problem is; continue;
 
-
+If you want, next I can add a temporary forced runtime persistence checkpoint (every N frames) so these new logs are guaranteed to land in the core log file during Sonic execution.
 
 
 

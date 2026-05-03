@@ -72,7 +72,18 @@ public partial class MainWindow : NexenWindow {
 	private long _genesisTimerSampleCount;
 	private static readonly bool _traceFrameNotifications = string.Equals(Environment.GetEnvironmentVariable("NEXEN_TRACE_FRAME_NOTIFICATIONS"), "1", StringComparison.OrdinalIgnoreCase);
 	private static readonly bool _enablePeriodicCoreLogSnapshots = string.Equals(Environment.GetEnvironmentVariable("NEXEN_ENABLE_PERIODIC_CORE_LOG_SNAPSHOTS"), "1", StringComparison.OrdinalIgnoreCase);
+	private static readonly int _forcedFrameCoreLogSnapshotInterval = GetForcedFrameCoreLogSnapshotInterval();
 	private static readonly bool _enableGenesisTimerSampling = string.Equals(Environment.GetEnvironmentVariable("NEXEN_ENABLE_GENESIS_TIMER_SAMPLING"), "1", StringComparison.OrdinalIgnoreCase);
+
+	private static int GetForcedFrameCoreLogSnapshotInterval() {
+		string? value = Environment.GetEnvironmentVariable("NEXEN_FORCE_CORE_LOG_SNAPSHOT_EVERY_N_FRAMES");
+		if (!string.IsNullOrWhiteSpace(value) && int.TryParse(value, out int configured)) {
+			return Math.Clamp(configured, 1, 10000);
+		}
+
+		// Temporary runtime checkpoint cadence for Genesis/Sonic triage.
+		return 120;
+	}
 
 	static MainWindow() {
 		WindowStateProperty.Changed.AddClassHandler<MainWindow>((x, e) => x.OnWindowStateChanged());
@@ -349,6 +360,11 @@ public partial class MainWindow : NexenWindow {
 			switch (e.NotificationType) {
 			case ConsoleNotificationType.PpuFrameDone:
 				long frameCount = Interlocked.Increment(ref _ppuFrameDoneCount);
+				if ((_forcedFrameCoreLogSnapshotInterval > 0 && frameCount <= 10)
+					|| (_forcedFrameCoreLogSnapshotInterval > 0 && (frameCount % _forcedFrameCoreLogSnapshotInterval) == 0)) {
+					CoreLogPersistence.MirrorSnapshot($"ppu-frame-{frameCount}", forceWrite: true);
+				}
+
 				if (_traceFrameNotifications) {
 					bool traceFrame = (frameCount <= 60) || (frameCount >= 2050 && frameCount <= 2450) || ((frameCount % 120) == 0);
 					if (traceFrame) {
