@@ -1345,6 +1345,142 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				startupMemMapReplayMatch ? 1 : 0,
 				startupMemMapFirst.SignatureDigest));
 
+		struct BootToPlayReadinessProbeResult {
+			uint32_t WindowCount = 0;
+			bool FoundControllableFrame = false;
+			uint32_t FirstControllableWindow = 0xffffffffu;
+			uint32_t FirstControllableFrame = 0;
+			uint32_t FirstControllableScanline = 0;
+			uint32_t InputEvidenceCount = 0;
+			uint32_t FinalFrameDelta = 0;
+			uint8_t ControlCapsP1 = 0;
+			uint8_t ControlCapsP2 = 0;
+			string SignatureDigest;
+		};
+
+		auto runBootToPlayReadinessProbe = [&scaffold, &titleClass](const GenesisBoundaryScaffoldSaveState& baseline) {
+			BootToPlayReadinessProbeResult probe = {};
+			uint64_t digest = 1469598103934665603ull;
+
+			for (uint32_t window = 0; window < 5; window++) {
+				uint8_t writeP1 = (uint8_t)(0x40 | (window & 0x01));
+				uint8_t writeP2 = (uint8_t)(0x40 | ((window + 1) & 0x01));
+				scaffold.GetBus().WriteByte(0xA10003, writeP1);
+				scaffold.GetBus().WriteByte(0xA10005, writeP2);
+
+				if (titleClass == "sonic") {
+					scaffold.GetBus().SetRenderCompositionInputs((uint8_t)(0x18 + (window & 0x03)), true, 0x07, false, 0x02, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((window * 4) & 0x1f), (uint16_t)((window * 2) & 0x1f));
+					scaffold.GetBus().RenderScaffoldLine((uint16_t)(68 + window * 3));
+					scaffold.StepFrameScaffold(488u * 262u + 88u + window * 6u);
+				} else if (titleClass == "jurassic") {
+					if ((window % 2) == 0) {
+						scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 9 + window);
+					}
+					scaffold.GetBus().SetRenderCompositionInputs((uint8_t)(0x17 + (window & 0x03)), true, 0x06, false, 0x01, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((window + 1) & 0x0f), (uint16_t)((window + 2) & 0x0f));
+					scaffold.GetBus().RenderScaffoldLine((uint16_t)(70 + window * 2));
+					scaffold.StepFrameScaffold(488u * 262u + 104u + window * 8u);
+				} else {
+					scaffold.StepFrameScaffold(256u);
+				}
+
+				GenesisBoundaryScaffoldSaveState sample = scaffold.SaveState();
+				probe.WindowCount++;
+				probe.FinalFrameDelta = sample.TimingFrame - baseline.TimingFrame;
+				probe.ControlCapsP1 = scaffold.GetBus().ReadByte(0xA1201C);
+				probe.ControlCapsP2 = scaffold.GetBus().ReadByte(0xA1201E);
+				uint8_t digestP1 = scaffold.GetBus().ReadByte(0xA1201D);
+				uint8_t digestP2 = scaffold.GetBus().ReadByte(0xA1201F);
+
+				bool inputEvidence = sample.Bus.ControlThCount[0] > baseline.Bus.ControlThCount[0]
+					|| sample.Bus.ControlThCount[1] > baseline.Bus.ControlThCount[1]
+					|| sample.Bus.ControlDataPortWrite[0] != baseline.Bus.ControlDataPortWrite[0]
+					|| sample.Bus.ControlDataPortWrite[1] != baseline.Bus.ControlDataPortWrite[1];
+				if (inputEvidence) {
+					probe.InputEvidenceCount++;
+				}
+
+				bool frameAdvanced = sample.TimingFrame > baseline.TimingFrame
+					|| (sample.TimingFrame == baseline.TimingFrame && sample.TimingScanline > baseline.TimingScanline);
+				bool capsReady = (probe.ControlCapsP1 & 0x10) != 0 && (probe.ControlCapsP2 & 0x20) != 0;
+				bool renderReady = !sample.Bus.RenderLineDigest.empty();
+				bool controllable = frameAdvanced && inputEvidence && capsReady && renderReady;
+				if (controllable && !probe.FoundControllableFrame) {
+					probe.FoundControllableFrame = true;
+					probe.FirstControllableWindow = window;
+					probe.FirstControllableFrame = sample.TimingFrame;
+					probe.FirstControllableScanline = sample.TimingScanline;
+				}
+
+				string line = std::format(
+					"w{}:{}:{}:{}:{}:{:02x}:{:02x}:{:02x}:{:02x}:{}:{}:{}",
+					window,
+					sample.TimingFrame,
+					sample.TimingScanline,
+					sample.VInterruptCount,
+					probe.InputEvidenceCount,
+					probe.ControlCapsP1,
+					probe.ControlCapsP2,
+					digestP1,
+					digestP2,
+					controllable ? 1 : 0,
+					sample.Bus.ControlThCount[0],
+					sample.Bus.ControlThCount[1]);
+				for (uint8_t ch : line) {
+					digest ^= ch;
+					digest *= 1099511628211ull;
+				}
+			}
+
+			probe.SignatureDigest = ToHex(digest);
+			return probe;
+		};
+
+		GenesisBoundaryScaffoldSaveState bootToPlayBaseline = scaffold.SaveState();
+		BootToPlayReadinessProbeResult bootToPlayFirst = runBootToPlayReadinessProbe(bootToPlayBaseline);
+		GenesisBoundaryScaffoldSaveState bootToPlayTail = scaffold.SaveState();
+		scaffold.LoadState(bootToPlayBaseline);
+		BootToPlayReadinessProbeResult bootToPlayReplay = runBootToPlayReadinessProbe(bootToPlayBaseline);
+		scaffold.LoadState(bootToPlayTail);
+
+		bool bootToPlayReplayMatch = bootToPlayFirst.WindowCount == bootToPlayReplay.WindowCount
+			&& bootToPlayFirst.FoundControllableFrame == bootToPlayReplay.FoundControllableFrame
+			&& bootToPlayFirst.FirstControllableWindow == bootToPlayReplay.FirstControllableWindow
+			&& bootToPlayFirst.FirstControllableFrame == bootToPlayReplay.FirstControllableFrame
+			&& bootToPlayFirst.FirstControllableScanline == bootToPlayReplay.FirstControllableScanline
+			&& bootToPlayFirst.InputEvidenceCount == bootToPlayReplay.InputEvidenceCount
+			&& bootToPlayFirst.FinalFrameDelta == bootToPlayReplay.FinalFrameDelta
+			&& bootToPlayFirst.ControlCapsP1 == bootToPlayReplay.ControlCapsP1
+			&& bootToPlayFirst.ControlCapsP2 == bootToPlayReplay.ControlCapsP2
+			&& bootToPlayFirst.SignatureDigest == bootToPlayReplay.SignatureDigest;
+		bool bootToPlayReadinessPass = !isTargetStartupClass || (
+			bootToPlayFirst.WindowCount == 5
+			&& bootToPlayFirst.FinalFrameDelta >= 5
+			&& bootToPlayFirst.FoundControllableFrame
+			&& bootToPlayFirst.InputEvidenceCount > 0
+			&& (bootToPlayFirst.ControlCapsP1 & 0x10) != 0
+			&& (bootToPlayFirst.ControlCapsP2 & 0x20) != 0
+			&& bootToPlayReplayMatch);
+		addCheckpoint(
+			"GEN-COMPAT-BOOT-TO-PLAY-READINESS",
+			bootToPlayReadinessPass,
+			std::format(
+				"class={} target={} windows={} frameDelta={} found={} firstWindow={} firstFrame={} firstScanline={} inputEvidence={} capsP1={:02x} capsP2={:02x} replayMatch={} digest={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				bootToPlayFirst.WindowCount,
+				bootToPlayFirst.FinalFrameDelta,
+				bootToPlayFirst.FoundControllableFrame ? 1 : 0,
+				bootToPlayFirst.FirstControllableWindow,
+				bootToPlayFirst.FirstControllableFrame,
+				bootToPlayFirst.FirstControllableScanline,
+				bootToPlayFirst.InputEvidenceCount,
+				bootToPlayFirst.ControlCapsP1,
+				bootToPlayFirst.ControlCapsP2,
+				bootToPlayReplayMatch ? 1 : 0,
+				bootToPlayFirst.SignatureDigest));
+
 		auto runInterruptCadenceStartupPath = [&scaffold, &titleClass]() {
 			if (titleClass == "sonic") {
 				scaffold.StepFrameScaffold(488u + 64u);
@@ -1519,6 +1655,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-RENDER-HANDOFF")
 			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-CPU-PROGRESSION")
 			&& hasPassingCheckpoint("GEN-COMPAT-BOOT-TO-TITLE-PROGRESSION")
+			&& hasPassingCheckpoint("GEN-COMPAT-BOOT-TO-PLAY-READINESS")
 			&& hasPassingCheckpoint("GEN-COMPAT-REALROM-STARTUP-SMOKE")
 			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-INPUT-WINDOW")
 			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-MEMMAP-PARITY")
