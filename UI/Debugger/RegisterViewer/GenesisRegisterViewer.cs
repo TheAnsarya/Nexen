@@ -123,9 +123,10 @@ public sealed class GenesisRegisterViewer {
 		entries.Add(new RegEntry("", "WriteCount", psg.WriteCount));
 
 		for (int i = 0; i < 4; i++) {
+			GenesisPsgChannelState channel = GetChannel(psg.Channels, i);
 			entries.Add(new RegEntry("", "Channel " + i));
-			entries.Add(new RegEntry("", "ToneCounter", psg.Channels[i].ToneCounter, Format.X16));
-			entries.Add(new RegEntry("", "Volume", psg.Channels[i].Volume, Format.X8));
+			entries.Add(new RegEntry("", "ToneCounter", channel.ToneCounter, Format.X16));
+			entries.Add(new RegEntry("", "Volume", channel.Volume, Format.X8));
 		}
 
 		return new RegisterViewerTab("PSG", entries, CpuType.Genesis);
@@ -175,9 +176,9 @@ public sealed class GenesisRegisterViewer {
 		entries.Add(new RegEntry("", "LaneDigestLo", (uint)(io.TranscriptLaneDigest & 0xFFFFFFFF), Format.X32));
 
 		for (int i = 0; i < 4; i++) {
-			uint address = io.TranscriptEntryAddress[i];
-			byte value = io.TranscriptEntryValue[i];
-			byte flags = io.TranscriptEntryFlags[i];
+			uint address = GetArrayValue(io.TranscriptEntryAddress, i);
+			byte value = GetArrayValue(io.TranscriptEntryValue, i);
+			byte flags = GetArrayValue(io.TranscriptEntryFlags, i);
 			string decodedFlags = DecodeTranscriptFlags(flags);
 			entries.Add(new RegEntry("", "Entry[" + i + "] Addr", address, Format.X32));
 			entries.Add(new RegEntry("", "Entry[" + i + "] Value", value, Format.X8));
@@ -191,9 +192,9 @@ public sealed class GenesisRegisterViewer {
 		entries.Add(new RegEntry("", "DebugLaneDigestLo", (uint)(io.DebugTranscriptLaneDigest & 0xFFFFFFFF), Format.X32));
 
 		for (int i = 0; i < 4; i++) {
-			uint address = io.DebugTranscriptEntryAddress[i];
-			byte value = io.DebugTranscriptEntryValue[i];
-			byte flags = io.DebugTranscriptEntryFlags[i];
+			uint address = GetArrayValue(io.DebugTranscriptEntryAddress, i);
+			byte value = GetArrayValue(io.DebugTranscriptEntryValue, i);
+			byte flags = GetArrayValue(io.DebugTranscriptEntryFlags, i);
 			string decodedFlags = DecodeTranscriptFlags(flags);
 			entries.Add(new RegEntry("", "DebugEntry[" + i + "] Addr", address, Format.X32));
 			entries.Add(new RegEntry("", "DebugEntry[" + i + "] Value", value, Format.X8));
@@ -202,5 +203,29 @@ public sealed class GenesisRegisterViewer {
 		}
 
 		return new RegisterViewerTab("I/O", entries, CpuType.Genesis);
+	}
+
+	private static GenesisPsgChannelState GetChannel(GenesisPsgChannelState[]? channels, int index) {
+		if (channels is not null && index >= 0 && index < channels.Length) {
+			return channels[index];
+		}
+
+		return new GenesisPsgChannelState();
+	}
+
+	private static byte GetArrayValue(byte[]? values, int index) {
+		if (values is null || index < 0 || index >= values.Length) {
+			return 0;
+		}
+
+		return values[index];
+	}
+
+	private static uint GetArrayValue(uint[]? values, int index) {
+		if (values is null || index < 0 || index >= values.Length) {
+			return 0;
+		}
+
+		return values[index];
 	}
 }

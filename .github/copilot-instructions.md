@@ -492,3 +492,7 @@ When generating new markdown content, **always include proper blank line spacing
 - **Peony** - Disassembler using Pansy format
 - **GameInfo** - ROM hacking toolkit
 
+## Session Wrap-Up Directive
+
+- Always end every Copilot session response with concise, actionable suggestions for what to work on next.
+

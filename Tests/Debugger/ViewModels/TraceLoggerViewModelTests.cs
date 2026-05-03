@@ -1,4 +1,4 @@
-using Nexen.Debugger.ViewModels;
+﻿using Nexen.Debugger.ViewModels;
 using Nexen.Interop;
 using Xunit;
 

@@ -11,9 +11,9 @@ using Avalonia.Platform.Storage.FileIO;
 
 namespace Nexen.Utilities;
 public sealed class FileDialogHelper {
-	public const string RomExt = "[[ROMFILES]]";
-	public const string FirmwareExt = "[[FIRMWAREFILES]]";
-	public const string LabelFileExt = "[[LABELFILES]]";
+	public const string RomExt = "__rom_files__";
+	public const string FirmwareExt = "__firmware_files__";
+	public const string LabelFileExt = "__label_files__";
 
 	// Nexen native formats (preferred for new files)
 	public const string NexenMovieExt = "nexen-movie";

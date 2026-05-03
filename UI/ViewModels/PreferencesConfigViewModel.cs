@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Styling;
 using Nexen.Config;
 using Nexen.Config.Shortcuts;
+using Nexen.Localization;
 using Nexen.Utilities;
 using ReactiveUI.SourceGenerators;
 
@@ -21,6 +22,9 @@ public sealed partial class PreferencesConfigViewModel : DisposableViewModel {
 
 	/// <summary>Gets the data storage location path.</summary>
 	public string DataStorageLocation { get; }
+
+	/// <summary>Gets a comma-separated list of bundled UI languages.</summary>
+	public string AvailableLanguagesSummary => string.Join(", ", ResourceHelper.GetAvailableLanguageDisplayNames());
 
 	/// <summary>Gets whether the current platform is macOS.</summary>
 	public bool IsOsx { get; }

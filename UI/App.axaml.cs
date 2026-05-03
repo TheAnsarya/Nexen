@@ -25,9 +25,11 @@ public partial class App : Application {
 
 	public override void Initialize() {
 		ThemeVariant theme = ThemeVariant.Light;
+		string languageCode = "en";
 		if (!Design.IsDesignMode && !ShowConfigWindow) {
 			try {
 				theme = ConfigManager.Config.Preferences.Theme == NexenTheme.Dark ? ThemeVariant.Dark : ThemeVariant.Light;
+				languageCode = PreferencesConfig.GetLanguageCode(ConfigManager.Config.Preferences.UiLanguage);
 			} catch (Exception ex) {
 				Log.Error(ex, "[App] Failed to read theme preference, defaulting to Light");
 			}
@@ -45,7 +47,8 @@ public partial class App : Application {
 		};
 
 		AvaloniaXamlLoader.Load(this);
-		ResourceHelper.LoadResources();
+		ResourceHelper.LoadResources(languageCode);
+		Log.Info($"[App] Loaded UI language '{languageCode}'. Available languages: {string.Join(", ", ResourceHelper.GetAvailableLanguageCodes())}");
 	}
 
 	public override void OnFrameworkInitializationCompleted() {

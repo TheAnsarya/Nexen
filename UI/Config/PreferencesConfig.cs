@@ -22,6 +22,7 @@ public sealed partial class PreferencesConfig : BaseConfig<PreferencesConfig> {
 	[Reactive] public partial PrimaryUsageProfile PrimaryUsageProfile { get; set; } = PrimaryUsageProfile.Playing;
 	[Reactive] public partial bool PreferUserProfileStorage { get; set; } = true;
 	[Reactive] public partial NexenTheme Theme { get; set; } = NexenTheme.Light;
+	[Reactive] public partial UiLanguage UiLanguage { get; set; } = UiLanguage.English;
 	[Reactive] public partial bool AutomaticallyCheckForUpdates { get; set; } = true;
 	[Reactive] public partial bool SingleInstance { get; set; } = true;
 	[Reactive] public partial bool AutoLoadPatches { get; set; } = true;
@@ -212,6 +213,13 @@ public sealed partial class PreferencesConfig : BaseConfig<PreferencesConfig> {
 		}
 	}
 
+	public static string GetLanguageCode(UiLanguage language) {
+		return language switch {
+			UiLanguage.English => "en",
+			_ => "en"
+		};
+	}
+
 	public void ApplyConfig() {
 		UpdateFonts();
 
@@ -262,6 +270,10 @@ public enum NexenTheme {
 public enum PrimaryUsageProfile {
 	Playing = 0,
 	Debugging = 1
+}
+
+public enum UiLanguage {
+	English = 0
 }
 
 public enum FontAntialiasing {

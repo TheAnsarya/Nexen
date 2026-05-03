@@ -801,6 +801,7 @@
 			<Control ID="lblRequiresRestart">(requires restart)</Control>
 
 			<Control ID="lblDisplayLanguage">Display Language:</Control>
+			<Control ID="lblAvailableLanguages">Available languages:</Control>
 			<Control ID="chkSingleInstance">Only allow one instance of Nexen at a time</Control>
 			<Control ID="chkAutomaticallyCheckForUpdates">Automatically check for updates</Control>
 
@@ -2746,6 +2747,9 @@ E
 		<Enum ID="NexenTheme">
 			<Value ID="Light">Light</Value>
 			<Value ID="Dark">Dark</Value>
+		</Enum>
+		<Enum ID="UiLanguage">
+			<Value ID="English">English</Value>
 		</Enum>
 		<Enum ID="PceConsoleType">
 			<Value ID="Auto">Auto (recommended)</Value>
