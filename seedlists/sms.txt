@@ -1,2 +1,2 @@
-# format: Display Name|Absolute ROM path
+﻿# format: Display Name|Absolute ROM path
 Sonic The Hedgehog (World)|C:\~reference-roms\sms\Sonic The Hedgehog (World).sms

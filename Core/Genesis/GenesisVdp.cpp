@@ -907,13 +907,6 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_state.DataPortBuffer);
 	SV(_dmaInitialized);
 	SV(_dmaLatchedMode);
-	SV(_dmaRemainingWords);
-	SV(_dmaSourceAddress);
-	SV(_dmaCopySourceAddress);
-	SV(_dmaFillByte);
-	SV(_dmaFillDataPending);
-	SV(_dmaStartupDelayCyclesRemaining);
-	SV(_dmaBusCycleRemainder);
 	for (int i = 0; i < 24; i++) {
 		SVI(_state.Registers[i]);
 	}

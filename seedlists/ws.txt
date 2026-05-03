@@ -1,2 +1,2 @@
-# format: Display Name|Absolute ROM path
+﻿# format: Display Name|Absolute ROM path
 Gunpey (Japan)|C:\~reference-roms\ws\Gunpey (Japan).ws

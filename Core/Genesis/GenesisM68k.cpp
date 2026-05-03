@@ -313,10 +313,25 @@ void GenesisM68k::Exec() {
 #endif
 
 	uint32_t prevPc = _state.PC & 0x00ffffff;
+	uint64_t cyclesBefore = _state.CycleCount;
 	uint16_t opcode = FetchOpcode();
 	ExecuteInstruction(opcode);
+	uint64_t cyclesAfter = _state.CycleCount;
 	if (_memoryManager) {
 		_memoryManager->UpdateExecutionHeartbeat(prevPc, _state.CycleCount);
+	}
+
+	if (cyclesAfter == cyclesBefore) {
+		static uint64_t zeroCycleInstructionCount = 0;
+		zeroCycleInstructionCount++;
+		if (zeroCycleInstructionCount <= 512 || (zeroCycleInstructionCount % 8192) == 0) {
+			MessageManager::Log(std::format("[Genesis][M68K] Zero-cycle instruction #{} pc=${:06x} opcode=${:04x} sr=${:04x} stopped={}",
+				zeroCycleInstructionCount,
+				prevPc,
+				opcode,
+				_state.SR,
+				_state.Stopped ? 1 : 0));
+		}
 	}
 
 	uint32_t nextPc = _state.PC & 0x00ffffff;

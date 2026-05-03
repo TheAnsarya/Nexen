@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include <algorithm>
 #include <cctype>
@@ -164,11 +164,18 @@ public:
 	/// <param name="outBuffer">Destination buffer</param>
 	/// <param name="maxSize">Maximum bytes to copy</param>
 	/// <remarks>
-	/// Does not null-terminate. Copies min(str.size(), maxSize) bytes.
-	/// Caller is responsible for ensuring buffer is large enough.
+	/// Always null-terminates when maxSize > 0 to keep interop string reads safe.
 	/// </remarks>
 	static void CopyToBuffer(string_view str, char* outBuffer, uint32_t maxSize) {
-		memcpy(outBuffer, str.data(), std::min<uint32_t>((uint32_t)str.size(), maxSize));
+		if (!outBuffer || maxSize == 0) {
+			return;
+		}
+
+		uint32_t copySize = std::min<uint32_t>((uint32_t)str.size(), maxSize - 1);
+		if (copySize > 0) {
+			memcpy(outBuffer, str.data(), copySize);
+		}
+		outBuffer[copySize] = '\0';
 	}
 
 	/// <summary>

@@ -257,13 +257,24 @@ void GenesisConsole::RunFrame() {
 	while (frame == _vdp->GetFrameCount()) {
 		_cpu->Exec();
 		guard++;
-		if ((guard % 2000000) == 0) {
-			MessageManager::Log(std::format("[Genesis] RunFrame waiting frame={} guard={} pc=${:06x} cycles={} masterClock={}",
+		if ((guard % 50000) == 0) {
+			GenesisVdpState vdpState = _vdp->GetState();
+			GenesisIoState ioState = _memoryManager->GetIoState();
+			MessageManager::Log(std::format("[Genesis] RunFrame waiting frame={} guard={} pc=${:06x} cycles={} masterClock={} heartbeatPc=${:06x} heartbeatCycles={} heartbeatInstr={} vdpVc={} vdpHc={} vdpStatus=${:04x} r1=${:02x} dmaActive={} dmaMode={}",
 				frame,
 				guard,
 				_cpu->GetState().PC & 0x00ffffff,
 				_cpu->GetState().CycleCount,
-				_memoryManager->GetMasterClock()));
+				_memoryManager->GetMasterClock(),
+				ioState.CpuProgramCounterHeartbeat,
+				ioState.CpuCycleHeartbeat,
+				ioState.CpuInstructionHeartbeat,
+				vdpState.VCounter,
+				vdpState.HCounter,
+				vdpState.StatusRegister,
+				vdpState.Registers[1],
+				vdpState.DmaActive ? 1 : 0,
+				vdpState.DmaMode));
 		}
 	}
 

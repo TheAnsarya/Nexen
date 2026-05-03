@@ -345,58 +345,8 @@ public partial class MainWindow : NexenWindow {
 			case ConsoleNotificationType.PpuFrameDone:
 				long frameCount = Interlocked.Increment(ref _ppuFrameDoneCount);
 				bool traceFrame = (frameCount <= 60) || (frameCount >= 2050 && frameCount <= 2450) || ((frameCount % 120) == 0);
-				if (frameCount <= 5) {
-					CoreLogPersistence.MirrorSnapshot($"ppu-frame-{frameCount}");
-				}
-
 				if (traceFrame) {
 					Log.Info($"[MainWindow] PpuFrameDone count={frameCount}");
-
-					RomInfo activeRom = EmuApi.GetRomInfo();
-					if (activeRom.ConsoleType == ConsoleType.Genesis && (frameCount <= 240 || (frameCount >= 2050 && frameCount <= 2450) || (frameCount % 600) == 0)) {
-						GenesisState genesisState = DebugApi.GetConsoleState<GenesisState>(ConsoleType.Genesis);
-						byte reg01 = genesisState.Vdp.Registers is { Length: > 1 } ? genesisState.Vdp.Registers[1] : (byte)0;
-						byte reg00 = genesisState.Vdp.Registers is { Length: > 0 } ? genesisState.Vdp.Registers[0] : (byte)0;
-						byte reg0f = genesisState.Vdp.Registers is { Length: > 15 } ? genesisState.Vdp.Registers[15] : (byte)0;
-						byte reg13 = genesisState.Vdp.Registers is { Length: > 19 } ? genesisState.Vdp.Registers[19] : (byte)0;
-						byte reg14 = genesisState.Vdp.Registers is { Length: > 20 } ? genesisState.Vdp.Registers[20] : (byte)0;
-						byte reg15 = genesisState.Vdp.Registers is { Length: > 21 } ? genesisState.Vdp.Registers[21] : (byte)0;
-						byte reg16 = genesisState.Vdp.Registers is { Length: > 22 } ? genesisState.Vdp.Registers[22] : (byte)0;
-						byte reg17 = genesisState.Vdp.Registers is { Length: > 23 } ? genesisState.Vdp.Registers[23] : (byte)0;
-						bool displayEnabled = (reg01 & 0x40) != 0;
-						uint pc = genesisState.Cpu.PC & 0xFFFFFF;
-						byte opHi = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, pc);
-						byte opLo = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, (pc + 1) & 0xFFFFFF);
-						byte ext0 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, (pc + 2) & 0xFFFFFF);
-						byte ext1 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, (pc + 3) & 0xFFFFFF);
-						byte ext2 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, (pc + 4) & 0xFFFFFF);
-						byte ext3 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, (pc + 5) & 0xFFFFFF);
-						uint opExtLong = ((uint)ext0 << 24) | ((uint)ext1 << 16) | ((uint)ext2 << 8) | ext3;
-						uint opExtAddr24 = opExtLong & 0x00FFFFFF;
-						byte opExtAddrValue = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, opExtAddr24);
-						byte ff001e = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xFF001E);
-						byte ff001f = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xFF001F);
-						byte a11100 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xA11100);
-						byte a11101 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xA11101);
-						byte a11200 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xA11200);
-						byte a11201 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xA11201);
-						uint d0 = genesisState.Cpu.D is { Length: > 0 } ? genesisState.Cpu.D[0] : 0u;
-						uint d1 = genesisState.Cpu.D is { Length: > 1 } ? genesisState.Cpu.D[1] : 0u;
-						uint a0 = genesisState.Cpu.A is { Length: > 0 } ? genesisState.Cpu.A[0] : 0u;
-						uint a1 = genesisState.Cpu.A is { Length: > 1 } ? genesisState.Cpu.A[1] : 0u;
-						ushort sr = genesisState.Cpu.SR;
-						ushort vdpStatus = genesisState.Vdp.StatusRegister;
-						byte vdpStatusLo = (byte)(vdpStatus & 0xFF);
-						bool vblankBit3 = (vdpStatusLo & 0x08) != 0;
-						byte statusByteC00005 = DebugApi.GetMemoryValue(MemoryType.GenesisMemory, 0xC00005);
-						int intMask = (sr >> 8) & 0x07;
-						bool vIntEnabled = (reg01 & 0x20) != 0;
-						bool hIntEnabled = (reg00 & 0x10) != 0;
-						bool vIntPending = (genesisState.Vdp.StatusRegister & 0x0080) != 0;
-						ushort cram1 = genesisState.Vdp.Cram is { Length: > 1 } ? genesisState.Vdp.Cram[1] : (ushort)0;
-						ushort cram2 = genesisState.Vdp.Cram is { Length: > 2 } ? genesisState.Vdp.Cram[2] : (ushort)0;
-						Log.Info($"[MainWindow] GenesisDiag frame={frameCount} pc=${pc:x6} op=${opHi:x2}{opLo:x2} ext=${ext0:x2}{ext1:x2}{ext2:x2}{ext3:x2} extAddr=${opExtAddr24:x6} extVal=${opExtAddrValue:x2} sr=${sr:x4} imask={intMask} d0=${d0:x8} d1=${d1:x8} a0=${a0:x8} a1=${a1:x8} r0=${reg00:x2} r1=${reg01:x2} hIntEn={hIntEnabled} vIntEn={vIntEnabled} vIntPending={vIntPending} vblankBit3={vblankBit3} statusLo=${vdpStatusLo:x2} c00005=${statusByteC00005:x2} vc={genesisState.Vdp.VCounter} hc={genesisState.Vdp.HCounter} displayEnabled={displayEnabled} ff001e=${ff001e:x2} ff001f=${ff001f:x2} a11100=${a11100:x2} a11101=${a11101:x2} a11200=${a11200:x2} a11201=${a11201:x2} vdpAddr=${genesisState.Vdp.AddressRegister:x4} vdpCode=${genesisState.Vdp.CodeRegister:x2} dmaActive={genesisState.Vdp.DmaActive} dmaMode={genesisState.Vdp.DmaMode} dmaLen=${reg14:x2}{reg13:x2} dmaSrc=${reg17:x2}{reg16:x2}{reg15:x2} autoInc=${reg0f:x2} cram1=${cram1:x4} cram2=${cram2:x4} tmssEnabled={genesisState.Io.TmssEnabled} tmssUnlocked={genesisState.Io.TmssUnlocked} vdpFrame={genesisState.Vdp.FrameCount}");
-					}
 				}
 				break;
 

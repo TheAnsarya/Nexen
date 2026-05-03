@@ -1,2 +1,2 @@
-# format: Display Name|Absolute ROM path
+﻿# format: Display Name|Absolute ROM path
 California Games (USA)|C:\~reference-roms\lynx\California Games (USA).lnx
