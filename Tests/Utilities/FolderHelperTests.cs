@@ -15,4 +15,25 @@ public sealed class FolderHelperTests {
 	public void IsRomFile_RejectsNonRomExtension() {
 		Assert.False(FolderHelper.IsRomFile("readme.txt"));
 	}
+
+	[Fact]
+	public void GetRomExtensionsForSystem_GenesisIncludesBin() {
+		string[] extensions = FolderHelper.GetRomExtensionsForSystem("genesis");
+
+		Assert.Contains(".bin", extensions);
+		Assert.Contains(".md", extensions);
+	}
+
+	[Fact]
+	public void GetRomExtensionsForSystem_ChannelFIncludesChfAndBin() {
+		string[] extensions = FolderHelper.GetRomExtensionsForSystem("channelf");
+
+		Assert.Contains(".chf", extensions);
+		Assert.Contains(".bin", extensions);
+	}
+
+	[Fact]
+	public void GetRomFilePatternsForSystem_UnknownSystemReturnsEmpty() {
+		Assert.Empty(FolderHelper.GetRomFilePatternsForSystem("unknown-system"));
+	}
 }

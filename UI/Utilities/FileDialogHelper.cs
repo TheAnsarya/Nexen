@@ -57,34 +57,27 @@ public sealed class FileDialogHelper {
 			List<FilePickerFileType> filter = [];
 			foreach (string ext in extensions) {
 				if (ext == FileDialogHelper.RomExt) {
+					List<string> allRomPatterns = FolderHelper.GetRomFilePatterns().ToList();
+					allRomPatterns.Add("*.zip");
+					allRomPatterns.Add("*.7z");
+					allRomPatterns.Add("*.ips");
+					allRomPatterns.Add("*.bps");
+
 					filter.Add(new FilePickerFileType("All supported files") {
-						Patterns = new List<string>() {
-						"*.sfc", "*.fig", "*.smc", "*.bs", "*.st", "*.spc",
-						"*.nes", "*.fds", "*.qd", "*.unif", "*.unf", "*.studybox", "*.nsf", "*.nsfe",
-						"*.gb", "*.gbc", "*.gbx", "*.gbs",
-						"*.pce", "*.sgx", "*.cue", "*.hes",
-						"*.sms", "*.gg", "*.sg", "*.col",
-						"*.gba",
-						"*.md", "*.gen", "*.smd",
-						"*.chf", "*.bin",
-						"*.lnx", "*.lyx", "*.o", "*.atari-lynx",
-						"*.ws", "*.wsc",
-						"*.zip", "*.7z",
-						"*.ips", "*.bps"
-					}
+						Patterns = allRomPatterns
 					});
 					filter.Add(new FilePickerFileType("SNES ROM files") { Patterns = new List<string>() { "*.sfc", "*.fig", "*.smc", "*.bs", "*.st", "*.spc" } });
 					filter.Add(new FilePickerFileType("NES ROM files") { Patterns = new List<string>() { "*.nes", "*.fds", "*.qd", "*.unif", "*.unf", "*.studybox", "*.nsf", "*.nsfe" } });
 					filter.Add(new FilePickerFileType("GB ROM files") { Patterns = new List<string>() { "*.gb", "*.gbc", "*.gbx", "*.gbs" } });
 					filter.Add(new FilePickerFileType("GBA ROM files") { Patterns = new List<string>() { "*.gba" } });
-					filter.Add(new FilePickerFileType("Genesis / Mega Drive ROM files") { Patterns = new List<string>() { "*.md", "*.gen", "*.smd" } });
+					filter.Add(new FilePickerFileType("Genesis / Mega Drive ROM files") { Patterns = FolderHelper.GetRomFilePatternsForSystem("genesis").ToList() });
 					filter.Add(new FilePickerFileType("PC Engine ROM files") { Patterns = new List<string>() { "*.pce", "*.sgx", "*.cue", "*.hes" } });
 					filter.Add(new FilePickerFileType("SMS / GG ROM files") { Patterns = new List<string>() { "*.sms", "*.gg" } });
 					filter.Add(new FilePickerFileType("SG-1000 ROM files") { Patterns = new List<string>() { "*.sg" } });
 					filter.Add(new FilePickerFileType("ColecoVision ROM files") { Patterns = new List<string>() { "*.col" } });
 					filter.Add(new FilePickerFileType("Lynx ROM files") { Patterns = new List<string>() { "*.lnx", "*.lyx", "*.o", "*.atari-lynx" } });
 					filter.Add(new FilePickerFileType("WonderSwan ROM files") { Patterns = new List<string>() { "*.ws", "*.wsc" } });
-					filter.Add(new FilePickerFileType("Channel F ROM files") { Patterns = new List<string>() { "*.chf", "*.bin" } });
+					filter.Add(new FilePickerFileType("Channel F ROM files") { Patterns = FolderHelper.GetRomFilePatternsForSystem("channelf").ToList() });
 					filter.Add(new FilePickerFileType("Patch files (IPS/BPS)") { Patterns = new List<string>() { "*.ips", "*.bps" } });
 				} else if (ext == FileDialogHelper.FirmwareExt) {
 					filter.Add(new FilePickerFileType("All firmware files") { Patterns = new List<string>() { "*.sfc", "*.pce", "*.nes", "*.bin", "*.rom", "*.col", "*.sms", "*.gg", "*.gba" } });

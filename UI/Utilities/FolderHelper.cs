@@ -9,20 +9,47 @@ using Nexen.Config;
 
 namespace Nexen.Utilities;
 public static class FolderHelper {
-	private static HashSet<string> _romExtensions = [
-			".sfc", ".smc", ".fig", ".swc", ".bs", ".st",
-	".gb", ".gbc", ".gbx",
-	".nes", ".unif", ".unf", ".fds", ".qd", ".studybox",
-	".pce", ".sgx", ".cue",
-	".sms", ".gg", ".sg", ".col",
-	".md", ".gen", ".smd", ".bin",
-	".gba",
-	".ws", ".wsc"
-		];
+	private static readonly Dictionary<string, string[]> _systemRomExtensions = new(StringComparer.OrdinalIgnoreCase) {
+		["snes"] = [".sfc", ".fig", ".smc", ".swc", ".bs", ".st", ".spc"],
+		["nes"] = [".nes", ".fds", ".qd", ".unif", ".unf", ".studybox", ".nsf", ".nsfe"],
+		["gb"] = [".gb", ".gbc", ".gbx", ".gbs"],
+		["gba"] = [".gba"],
+		["genesis"] = [".md", ".gen", ".smd", ".bin"],
+		["pce"] = [".pce", ".sgx", ".cue", ".hes"],
+		["sms"] = [".sms", ".gg"],
+		["sg1000"] = [".sg"],
+		["coleco"] = [".col"],
+		["lynx"] = [".lnx", ".lyx", ".o", ".atari-lynx"],
+		["ws"] = [".ws", ".wsc"],
+		["channelf"] = [".chf", ".bin"]
+	};
+
+	private static readonly HashSet<string> _romExtensions = new(
+		_systemRomExtensions.Values.SelectMany(v => v),
+		StringComparer.OrdinalIgnoreCase
+	);
 
 	public static bool IsRomFile(string path) {
-		string ext = Path.GetExtension(path).ToLower();
+		string ext = Path.GetExtension(path).ToLowerInvariant();
 		return _romExtensions.Contains(ext);
+	}
+
+	public static string[] GetRomExtensions() {
+		return _romExtensions.OrderBy(ext => ext, StringComparer.OrdinalIgnoreCase).ToArray();
+	}
+
+	public static string[] GetRomExtensionsForSystem(string systemId) {
+		return _systemRomExtensions.TryGetValue(systemId, out string[]? extensions)
+			? extensions.ToArray()
+			: [];
+	}
+
+	public static string[] GetRomFilePatterns() {
+		return GetRomExtensions().Select(ext => "*" + ext).ToArray();
+	}
+
+	public static string[] GetRomFilePatternsForSystem(string systemId) {
+		return GetRomExtensionsForSystem(systemId).Select(ext => "*" + ext).ToArray();
 	}
 
 	public static bool IsArchiveFile(string path) {

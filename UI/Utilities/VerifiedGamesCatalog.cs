@@ -32,18 +32,6 @@ public static class VerifiedGamesCatalog {
 		["lynx"] = ["atari lynx", "lynx"]
 	};
 
-	private static readonly Dictionary<string, string[]> _systemExtensions = new(StringComparer.OrdinalIgnoreCase) {
-		["genesis"] = [".md", ".bin", ".gen", ".smd"],
-		["nes"] = [".nes", ".fds", ".nsf"],
-		["snes"] = [".sfc", ".smc"],
-		["gb"] = [".gb", ".gbc"],
-		["gba"] = [".gba"],
-		["sms"] = [".sms"],
-		["pce"] = [".pce"],
-		["ws"] = [".ws", ".wsc"],
-		["lynx"] = [".lnx"]
-	};
-
 	private static readonly List<VerifiedSystemInfo> _systems = [
 		new() { Id = "genesis", Name = "Genesis / Mega Drive", IconPath = "/Assets/Drive.svg", SeedlistFileName = "genesis.txt" },
 		new() { Id = "nes", Name = "Nintendo Entertainment System", IconPath = "/Assets/NesIcon.svg", SeedlistFileName = "nes.txt" },
@@ -188,7 +176,8 @@ public static class VerifiedGamesCatalog {
 		}
 
 		string extension = Path.GetExtension(candidate);
-		if (!_systemExtensions.TryGetValue(systemId, out string[]? extensions) || !extensions.Contains(extension, StringComparer.OrdinalIgnoreCase)) {
+		string[] extensions = FolderHelper.GetRomExtensionsForSystem(systemId);
+		if (extensions.Length == 0 || !extensions.Contains(extension, StringComparer.OrdinalIgnoreCase)) {
 			return string.Empty;
 		}
 
@@ -196,7 +185,8 @@ public static class VerifiedGamesCatalog {
 	}
 
 	private static string TryResolveReferenceRomPath(string systemId, string name) {
-		if (!_systemExtensions.TryGetValue(systemId, out string[]? extensions) || extensions.Length == 0) {
+		string[] extensions = FolderHelper.GetRomExtensionsForSystem(systemId);
+		if (extensions.Length == 0) {
 			return string.Empty;
 		}
 
