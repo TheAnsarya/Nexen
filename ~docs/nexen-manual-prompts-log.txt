@@ -2237,6 +2237,56 @@ Add a bunch of debug logs that we will remove later (most of them) after seeing 
 
 If you want, next I can add a temporary forced runtime persistence checkpoint (every N frames) so these new logs are guaranteed to land in the core log file during Sonic execution.
 
+continue;
+
+[Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.39 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and add at the top of the release notes add a warning that this release is a bad release for testing and not to be used yet, watch out for 1.5.0, and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2341,7 +2391,7 @@ We've got partial pansy and cdl files for FFMQ (SNES) and so rerun peony and pop
 
 
 
-[Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.39 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
+[Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.40 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
 
 
 
