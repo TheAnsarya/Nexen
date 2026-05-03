@@ -469,7 +469,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 				Op_ILLEGAL(opcode); break;
 			}
 			if ((opcode & 0xfb80) == 0x4880) { Op_MOVEM(opcode); break; }
-			if ((opcode & 0xffc0) == 0x4ac0) { Op_TST(opcode); break; } // TAS
+			if ((opcode & 0xffc0) == 0x4ac0) { Op_TAS(opcode); break; }
 			if ((opcode & 0xff00) == 0x4a00) { Op_TST(opcode); break; }
 
 			uint8_t subOp = (opcode >> 6) & 3;
@@ -482,7 +482,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 					} else if (op2 == 0x04 || op2 == 0x08 || op2 == 0x0c) {
 						Op_NEG(opcode);
 					} else if ((opcode & 0xffc0) == 0x4ac0) {
-						Op_TST(opcode);
+						Op_TAS(opcode);
 					} else {
 						Op_ILLEGAL(opcode);
 					}
@@ -1123,10 +1123,38 @@ void GenesisM68k::Op_EXT(uint16_t opcode) {
 
 void GenesisM68k::Op_TST(uint16_t opcode) {
 	uint8_t size = (opcode >> 6) & 3;
+	if (size == 3) {
+		Op_ILLEGAL(opcode);
+		return;
+	}
 	uint8_t mode = (opcode >> 3) & 7;
 	uint8_t reg = opcode & 7;
 	uint32_t data = ReadEa(mode, reg, size);
 	SetFlags_Logical(data, size);
+	AddCycles(4);
+}
+
+void GenesisM68k::Op_TAS(uint16_t opcode) {
+	uint8_t mode = (opcode >> 3) & 7;
+	uint8_t reg = opcode & 7;
+
+	// TAS operates on data-alterable destinations only.
+	if (mode == 1 || (mode == 7 && reg >= 2)) {
+		Op_ILLEGAL(opcode);
+		return;
+	}
+
+	uint8_t data = 0;
+	if (mode == 0) {
+		data = (uint8_t)(_state.D[reg] & 0xff);
+		SetFlags_Logical(data, 0);
+		_state.D[reg] = (_state.D[reg] & 0xffffff00) | (uint8_t)(data | 0x80);
+	} else {
+		uint32_t addr = GetEffectiveAddress(mode, reg, 0);
+		data = Read8(addr);
+		SetFlags_Logical(data, 0);
+		Write8(addr, (uint8_t)(data | 0x80));
+	}
 	AddCycles(4);
 }
 

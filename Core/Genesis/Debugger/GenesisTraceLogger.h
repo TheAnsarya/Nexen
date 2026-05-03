@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "Debugger/BaseTraceLogger.h"
 #include "Genesis/GenesisTypes.h"

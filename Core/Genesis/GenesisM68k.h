@@ -172,6 +172,7 @@ private:
 	void Op_NEG(uint16_t opcode);
 	void Op_EXT(uint16_t opcode);
 	void Op_TST(uint16_t opcode);
+	void Op_TAS(uint16_t opcode);
 
 	// --- Logic ---
 	void Op_AND(uint16_t opcode);

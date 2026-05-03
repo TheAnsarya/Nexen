@@ -148,6 +148,71 @@ TEST(GenesisExecutionStartupTests, ExecAdvancesPcCyclesAndExecutionHeartbeat) {
 	EXPECT_EQ(ioAfter.CpuProgramCounterHeartbeat, after.PC - 2);
 }
 
+TEST(GenesisExecutionStartupTests, TasOnDataRegisterSetsBitSevenAndLogicalFlags) {
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000200;
+	std::vector<uint8_t> romData = BuildNopBootRom(InitialSp, InitialPc);
+
+	romData[InitialPc + 0] = 0x70; // moveq #0,d0
+	romData[InitialPc + 1] = 0x00;
+	romData[InitialPc + 2] = 0x4A; // tas d0
+	romData[InitialPc + 3] = 0xC0;
+
+	VirtualFile rom(romData.data(), romData.size(), "boot-tas-d0.md");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	auto* cpu = console.GetCpu();
+	ASSERT_NE(cpu, nullptr);
+
+	cpu->Exec();
+	cpu->Exec();
+
+	GenesisM68kState state = cpu->GetState();
+	EXPECT_EQ(state.D[0], 0x00000080u);
+	EXPECT_EQ(state.PC, InitialPc + 4);
+	EXPECT_EQ(state.SR & M68kFlags::Negative, 0u);
+	EXPECT_EQ(state.SR & M68kFlags::Zero, M68kFlags::Zero);
+	EXPECT_EQ(state.SR & M68kFlags::Overflow, 0u);
+	EXPECT_EQ(state.SR & M68kFlags::Carry, 0u);
+}
+
+TEST(GenesisExecutionStartupTests, TasOnAbsoluteLongMemoryUpdatesTargetByte) {
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000200;
+	constexpr uint32_t TargetAddress = 0x00FF0000;
+	std::vector<uint8_t> romData = BuildNopBootRom(InitialSp, InitialPc);
+
+	romData[InitialPc + 0] = 0x4A; // tas $00ff0000.l
+	romData[InitialPc + 1] = 0xF9;
+	romData[InitialPc + 2] = 0x00;
+	romData[InitialPc + 3] = 0xFF;
+	romData[InitialPc + 4] = 0x00;
+	romData[InitialPc + 5] = 0x00;
+
+	VirtualFile rom(romData.data(), romData.size(), "boot-tas-mem.md");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	auto* cpu = console.GetCpu();
+	auto* memoryManager = console.GetMemoryManager();
+	ASSERT_NE(cpu, nullptr);
+	ASSERT_NE(memoryManager, nullptr);
+
+	memoryManager->Write8(TargetAddress, 0x00);
+	cpu->Exec();
+
+	GenesisM68kState state = cpu->GetState();
+	EXPECT_EQ(memoryManager->Read8(TargetAddress), 0x80u);
+	EXPECT_EQ(state.PC, InitialPc + 6);
+	EXPECT_EQ(state.SR & M68kFlags::Zero, M68kFlags::Zero);
+	EXPECT_EQ(state.SR & M68kFlags::Negative, 0u);
+	EXPECT_EQ(state.SR & M68kFlags::Overflow, 0u);
+	EXPECT_EQ(state.SR & M68kFlags::Carry, 0u);
+}
+
 TEST(GenesisExecutionStartupTests, SteppedRunLoopHeartbeatProgressesDeterministicallyPerStep) {
 	constexpr uint32_t InitialSp = 0x00FFFE00;
 	constexpr uint32_t InitialPc = 0x00000100;
