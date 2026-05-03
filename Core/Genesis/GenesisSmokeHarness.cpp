@@ -626,6 +626,88 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				startupEventFirst.EventCount,
 				startupEventFirst.SequenceDigest));
 
+		struct StartupFrameWindowProbeResult {
+			uint32_t FrameDelta = 0;
+			uint32_t VInterruptDelta = 0;
+			uint32_t HInterruptDelta = 0;
+			uint32_t EventCount = 0;
+			string EventDigest;
+		};
+
+		auto runStartupFrameWindowProbe = [&scaffold, &titleClass](const GenesisBoundaryScaffoldSaveState& baseline) {
+			StartupFrameWindowProbeResult probe = {};
+
+			scaffold.ClearTimingEvents();
+			for (uint32_t frameIndex = 0; frameIndex < 3; frameIndex++) {
+				if (titleClass == "sonic") {
+					scaffold.GetBus().SetRenderCompositionInputs(0x1A, true, 0x07, false, 0x02, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((frameIndex * 3) & 0x1F), (uint16_t)((frameIndex * 2) & 0x1F));
+					scaffold.GetBus().RenderScaffoldLine(64);
+				} else if (titleClass == "jurassic") {
+					if ((frameIndex % 2) == 0) {
+						scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 12);
+					}
+					scaffold.GetBus().SetRenderCompositionInputs(0x18, true, 0x06, false, 0x01, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)(frameIndex & 0x0F), (uint16_t)((frameIndex + 1) & 0x0F));
+					scaffold.GetBus().RenderScaffoldLine(72);
+				} else {
+					scaffold.GetBus().SetRenderCompositionInputs(0x10, true, 0x04, false, 0x00, false, false, 0x20, true);
+					scaffold.GetBus().RenderScaffoldLine(48);
+				}
+
+				scaffold.StepFrameScaffold(488u * 262u + 96u);
+			}
+
+			GenesisBoundaryScaffoldSaveState sample = scaffold.SaveState();
+			probe.FrameDelta = sample.TimingFrame - baseline.TimingFrame;
+			probe.VInterruptDelta = sample.VInterruptCount - baseline.VInterruptCount;
+			probe.HInterruptDelta = sample.HInterruptCount - baseline.HInterruptCount;
+
+			const vector<string>& events = scaffold.GetTimingEvents();
+			probe.EventCount = (uint32_t)events.size();
+			uint64_t digest = 1469598103934665603ull;
+			for (const string& eventLine : events) {
+				for (uint8_t ch : eventLine) {
+					digest ^= ch;
+					digest *= 1099511628211ull;
+				}
+			}
+			probe.EventDigest = ToHex(digest);
+			return probe;
+		};
+
+		GenesisBoundaryScaffoldSaveState startupFrameWindowBaseline = scaffold.SaveState();
+		StartupFrameWindowProbeResult startupFrameWindowFirst = runStartupFrameWindowProbe(startupFrameWindowBaseline);
+		GenesisBoundaryScaffoldSaveState startupFrameWindowTail = scaffold.SaveState();
+		scaffold.LoadState(startupFrameWindowBaseline);
+		StartupFrameWindowProbeResult startupFrameWindowReplay = runStartupFrameWindowProbe(startupFrameWindowBaseline);
+		scaffold.LoadState(startupFrameWindowTail);
+
+		bool startupFrameWindowReplayMatch = startupFrameWindowFirst.FrameDelta == startupFrameWindowReplay.FrameDelta
+			&& startupFrameWindowFirst.VInterruptDelta == startupFrameWindowReplay.VInterruptDelta
+			&& startupFrameWindowFirst.HInterruptDelta == startupFrameWindowReplay.HInterruptDelta
+			&& startupFrameWindowFirst.EventCount == startupFrameWindowReplay.EventCount
+			&& startupFrameWindowFirst.EventDigest == startupFrameWindowReplay.EventDigest;
+		bool startupFrameWindowPass = !isTargetStartupClass || (
+			startupFrameWindowFirst.FrameDelta >= 3
+			&& startupFrameWindowFirst.VInterruptDelta >= 3
+			&& startupFrameWindowFirst.HInterruptDelta > 0
+			&& startupFrameWindowFirst.EventCount > 0
+			&& startupFrameWindowReplayMatch);
+		addCheckpoint(
+			"GEN-COMPAT-STARTUP-FRAME-WINDOW",
+			startupFrameWindowPass,
+			std::format(
+				"class={} target={} frameDelta={} vIntDelta={} hIntDelta={} eventCount={} replayMatch={} eventDigest={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				startupFrameWindowFirst.FrameDelta,
+				startupFrameWindowFirst.VInterruptDelta,
+				startupFrameWindowFirst.HInterruptDelta,
+				startupFrameWindowFirst.EventCount,
+				startupFrameWindowReplayMatch ? 1 : 0,
+				startupFrameWindowFirst.EventDigest));
+
 		auto runInterruptCadenceStartupPath = [&scaffold, &titleClass]() {
 			if (titleClass == "sonic") {
 				scaffold.StepFrameScaffold(488u + 64u);
@@ -796,6 +878,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE")
 			&& hasPassingCheckpoint("GEN-COMPAT-FIRST-VISIBLE-FRAME")
 			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-EVENT-SEQUENCE")
+			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-FRAME-WINDOW")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-TIMING-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-STATUS-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-CADENCE-STARTUP")
