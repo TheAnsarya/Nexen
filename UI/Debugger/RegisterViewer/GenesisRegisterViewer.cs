@@ -40,6 +40,7 @@ public sealed class GenesisRegisterViewer {
 	private static RegisterViewerTab GetCpuTab(ref GenesisState state) {
 		GenesisM68kState cpu = state.Cpu;
 		List<RegEntry> entries = [];
+		ulong cpuDigest = ComputeCpuTraceDigest(cpu);
 
 		entries.Add(new RegEntry("", "Core"));
 		entries.Add(new RegEntry("", "PC", cpu.PC, Format.X32));
@@ -48,6 +49,9 @@ public sealed class GenesisRegisterViewer {
 		entries.Add(new RegEntry("", "SSP", cpu.SSP, Format.X32));
 		entries.Add(new RegEntry("", "CycleCount", cpu.CycleCount));
 		entries.Add(new RegEntry("", "Stopped", cpu.Stopped));
+		entries.Add(new RegEntry("", "TraceParity"));
+		entries.Add(new RegEntry("", "CpuDigestHi", (uint)(cpuDigest >> 32), Format.X32));
+		entries.Add(new RegEntry("", "CpuDigestLo", (uint)(cpuDigest & 0xFFFFFFFF), Format.X32));
 
 		entries.Add(new RegEntry("", "Data registers"));
 		for (int i = 0; i < 8; i++) {
@@ -68,6 +72,7 @@ public sealed class GenesisRegisterViewer {
 		uint dmaLength = (uint)((vdp.Registers[20] << 8) | vdp.Registers[19]);
 		uint dmaEffectiveLength = dmaLength == 0 ? 0x10000u : dmaLength;
 		uint dmaSource = (uint)(((vdp.Registers[23] & 0x3F) << 17) | (vdp.Registers[22] << 9) | (vdp.Registers[21] << 1));
+		ulong vdpDigest = ComputeVdpTraceDigest(vdp, dmaLength, dmaEffectiveLength, dmaSource);
 		string dmaModeLabel = vdp.DmaMode switch {
 			0 => "68kCopy",
 			1 => "Fill",
@@ -103,6 +108,9 @@ public sealed class GenesisRegisterViewer {
 			new RegEntry("", "DmaLength", dmaLength, Format.X16),
 			new RegEntry("", "DmaEffectiveLength", dmaEffectiveLength, Format.X32),
 			new RegEntry("", "DmaSource", dmaSource, Format.X32),
+			new RegEntry("", "TraceParity"),
+			new RegEntry("", "VdpDigestHi", (uint)(vdpDigest >> 32), Format.X32),
+			new RegEntry("", "VdpDigestLo", (uint)(vdpDigest & 0xFFFFFFFF), Format.X32),
 		});
 
 		for (int i = 0; i < 24; i++) {
@@ -227,5 +235,57 @@ public sealed class GenesisRegisterViewer {
 		}
 
 		return values[index];
+	}
+
+	private static ulong ComputeCpuTraceDigest(GenesisM68kState cpu) {
+		ulong digest = 1469598103934665603ul;
+		digest = Fnv1aUpdate(digest, cpu.PC);
+		digest = Fnv1aUpdate(digest, cpu.SR);
+		digest = Fnv1aUpdate(digest, cpu.USP);
+		digest = Fnv1aUpdate(digest, cpu.SSP);
+		digest = Fnv1aUpdate(digest, (uint)cpu.CycleCount);
+		digest = Fnv1aUpdate(digest, cpu.Stopped ? 1u : 0u);
+
+		for (int i = 0; i < 8; i++) {
+			digest = Fnv1aUpdate(digest, cpu.D[i]);
+			digest = Fnv1aUpdate(digest, cpu.A[i]);
+		}
+
+		return digest;
+	}
+
+	private static ulong ComputeVdpTraceDigest(GenesisVdpState vdp, uint dmaLength, uint dmaEffectiveLength, uint dmaSource) {
+		ulong digest = 1469598103934665603ul;
+		digest = Fnv1aUpdate(digest, (uint)vdp.FrameCount);
+		digest = Fnv1aUpdate(digest, vdp.HCounter);
+		digest = Fnv1aUpdate(digest, vdp.VCounter);
+		digest = Fnv1aUpdate(digest, vdp.StatusRegister);
+		digest = Fnv1aUpdate(digest, vdp.AddressRegister);
+		digest = Fnv1aUpdate(digest, vdp.CodeRegister);
+		digest = Fnv1aUpdate(digest, vdp.HIntCounter);
+		digest = Fnv1aUpdate(digest, vdp.DataPortBuffer);
+		digest = Fnv1aUpdate(digest, vdp.DmaActive ? 1u : 0u);
+		digest = Fnv1aUpdate(digest, vdp.DmaMode);
+		digest = Fnv1aUpdate(digest, dmaLength);
+		digest = Fnv1aUpdate(digest, dmaEffectiveLength);
+		digest = Fnv1aUpdate(digest, dmaSource);
+
+		for (int i = 0; i < 24; i++) {
+			digest = Fnv1aUpdate(digest, vdp.Registers[i]);
+		}
+
+		return digest;
+	}
+
+	private static ulong Fnv1aUpdate(ulong digest, uint value) {
+		digest ^= (byte)(value & 0xFFu);
+		digest *= 1099511628211ul;
+		digest ^= (byte)((value >> 8) & 0xFFu);
+		digest *= 1099511628211ul;
+		digest ^= (byte)((value >> 16) & 0xFFu);
+		digest *= 1099511628211ul;
+		digest ^= (byte)((value >> 24) & 0xFFu);
+		digest *= 1099511628211ul;
+		return digest;
 	}
 }

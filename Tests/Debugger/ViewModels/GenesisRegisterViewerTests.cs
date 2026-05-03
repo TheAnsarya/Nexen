@@ -33,6 +33,8 @@ public class GenesisRegisterViewerTests {
 		Assert.Contains("SR", names);
 		Assert.Contains("D0", names);
 		Assert.Contains("A7", names);
+		Assert.Contains("CpuDigestHi", names);
+		Assert.Contains("CpuDigestLo", names);
 	}
 
 	[Fact]
@@ -44,6 +46,8 @@ public class GenesisRegisterViewerTests {
 		Assert.Contains("AddressRegister", names);
 		Assert.Contains("DmaActive", names);
 		Assert.Contains("Register 0", names);
+		Assert.Contains("VdpDigestHi", names);
+		Assert.Contains("VdpDigestLo", names);
 	}
 
 	private static List<RegisterViewerTab> GetAllTabs() {

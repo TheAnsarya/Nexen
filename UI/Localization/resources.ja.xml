@@ -2,12 +2,12 @@
 <Resources>
 	<Forms>
 		<Form ID="MainMenuView">
-			<Control ID="mnuFile">_File</Control>
-			<Control ID="mnuGame">_Game</Control>
-			<Control ID="mnuOptions">_Settings</Control>
-			<Control ID="mnuTools">_Tools</Control>
-			<Control ID="mnuDebug">_Debug</Control>
-			<Control ID="mnuHelp">_Help</Control>
+			<Control ID="mnuFile">_ファイル</Control>
+			<Control ID="mnuGame">_ゲーム</Control>
+			<Control ID="mnuOptions">_設定</Control>
+			<Control ID="mnuTools">_ツール</Control>
+			<Control ID="mnuDebug">_デバッグ</Control>
+			<Control ID="mnuHelp">_ヘルプ</Control>
 		</Form>
 		<Form ID="AudioConfigView">
 			<Control ID="tpgGeneral">General</Control>
@@ -768,11 +768,11 @@
 		</Form>
 
 		<Form ID="ConfigWindow">
-			<Control ID="wndTitle">Settings</Control>
+			<Control ID="wndTitle">設定</Control>
 
 			<Control ID="tabAudio">Audio</Control>
-			<Control ID="tabEmulation">Emulation</Control>
-			<Control ID="tabInput">Input</Control>
+			<Control ID="tabEmulation">エミュレーション</Control>
+			<Control ID="tabInput">入力</Control>
 			<Control ID="tabVideo">Video</Control>
 			<Control ID="tabNes">NES</Control>
 			<Control ID="tabSnes">SNES</Control>
@@ -785,49 +785,49 @@
 			<Control ID="tabLynx">Lynx</Control>
 			<Control ID="tabAtari2600">Atari 2600</Control>
 			<Control ID="tabChannelF">Channel F</Control>
-			<Control ID="tabOtherConsoles">Other systems</Control>
-			<Control ID="tabPreferences">Preferences</Control>
+			<Control ID="tabOtherConsoles">その他のシステム</Control>
+			<Control ID="tabPreferences">環境設定</Control>
 
-			<Control ID="btnOpenNexenFolder">Open Nexen folder</Control>
-			<Control ID="btnResetSettings">Reset all settings</Control>
+			<Control ID="btnOpenNexenFolder">Nexenフォルダを開く</Control>
+			<Control ID="btnResetSettings">すべての設定をリセット</Control>
 
 			<Control ID="btnOK">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">キャンセル</Control>
 		</Form>
 
 		<Form ID="PreferencesConfigView">
-			<Control ID="tpgGeneral">General</Control>
-			<Control ID="lblTheme">Theme:</Control>
-			<Control ID="lblRequiresRestart">(requires restart)</Control>
+			<Control ID="tpgGeneral">一般</Control>
+			<Control ID="lblTheme">テーマ:</Control>
+			<Control ID="lblRequiresRestart">(再起動が必要)</Control>
 
 			<Control ID="lblDisplayLanguage">表示言語:</Control>
 			<Control ID="lblAvailableLanguages">利用可能な言語:</Control>
-			<Control ID="chkSingleInstance">Only allow one instance of Nexen at a time</Control>
-			<Control ID="chkAutomaticallyCheckForUpdates">Automatically check for updates</Control>
+			<Control ID="chkSingleInstance">Nexenの同時起動を1つに制限する</Control>
+			<Control ID="chkAutomaticallyCheckForUpdates">起動時に自動で更新を確認する</Control>
 
-			<Control ID="chkDeveloperMode">Enable developer mode</Control>
+			<Control ID="chkDeveloperMode">開発者モードを有効にする</Control>
 
-			<Control ID="lblPauseBackgroundSettings">Pause/Background Settings</Control>
-			<Control ID="lblMiscSettings">Miscellaneous Settings</Control>
-			<Control ID="chkAutoHideMenu">Automatically hide menu bar</Control>
-			<Control ID="chkDisplayTitleBarInfo">Display additional information in title bar</Control>
+			<Control ID="lblPauseBackgroundSettings">一時停止/バックグラウンド設定</Control>
+			<Control ID="lblMiscSettings">その他の設定</Control>
+			<Control ID="chkAutoHideMenu">メニューバーを自動的に隠す</Control>
+			<Control ID="chkDisplayTitleBarInfo">タイトルバーに追加情報を表示する</Control>
 
-			<Control ID="chkConfirmExitResetPower">Display confirmation dialog before reset / power cycle / power off / exit</Control>
-			<Control ID="chkPauseOnMovieEnd">Pause when a movie finishes playing</Control>
-			<Control ID="chkShowMovieIcons">Display play/pause icon when playing/recording a movie</Control>
-			<Control ID="chkShowTurboRewindIcons">Display icon when fast-forwarding/rewinding</Control>
-			<Control ID="chkAllowBackgroundInput">Allow input when in background (controllers only)</Control>
+			<Control ID="chkConfirmExitResetPower">リセット/電源再投入/電源オフ/終了の前に確認する</Control>
+			<Control ID="chkPauseOnMovieEnd">ムービー再生終了時に一時停止する</Control>
+			<Control ID="chkShowMovieIcons">ムービー再生/録画中に再生/一時停止アイコンを表示する</Control>
+			<Control ID="chkShowTurboRewindIcons">早送り/巻き戻し時にアイコンを表示する</Control>
+			<Control ID="chkAllowBackgroundInput">バックグラウンド時に入力を許可する（コントローラーのみ）</Control>
 
-			<Control ID="chkPauseWhenInBackground">Pause when in background</Control>
-			<Control ID="chkPauseInMenuAndConfig">Pause when in menu and config dialogs</Control>
-			<Control ID="chkPauseInDebugger">Debugging tools</Control>
+			<Control ID="chkPauseWhenInBackground">バックグラウンド時に一時停止</Control>
+			<Control ID="chkPauseInMenuAndConfig">メニューや設定ダイアログ表示中に一時停止</Control>
+			<Control ID="chkPauseInDebugger">デバッグツール</Control>
 
-			<Control ID="chkAutoLoadIps">Automatically load IPS/BPS patches</Control>
-			<Control ID="chkHidePauseOverlay">Hide the pause screen</Control>
-			<Control ID="chkDisplayMovieIcons">Display play/record icon when playing or recording a movie</Control>
+			<Control ID="chkAutoLoadIps">IPS/BPSパッチを自動読み込みする</Control>
+			<Control ID="chkHidePauseOverlay">一時停止画面を隠す</Control>
+			<Control ID="chkDisplayMovieIcons">ムービー再生/録画時に再生/録画アイコンを表示する</Control>
 
-			<Control ID="tpgFiles">Folders/Files</Control>
-			<Control ID="grpFileAssociations">File Associations</Control>
+			<Control ID="tpgFiles">フォルダー/ファイル</Control>
+			<Control ID="grpFileAssociations">ファイル関連付け</Control>
 			<Control ID="chkSnesRomFiles">SNES roms: .sfc, .smc, .swc, .fig, .bs</Control>
 			<Control ID="chkSnesMusicFiles">SNES music: .spc</Control>
 			<Control ID="chkNesRomFiles">NES roms: .nes, .unif, .fds, .qd, .studybox</Control>
@@ -843,68 +843,68 @@
 			<Control ID="chkCvRomFiles">ColecoVision roms: .col</Control>
 			<Control ID="chkWsRomFiles">WonderSwan roms: .ws, .wsc</Control>
 
-			<Control ID="grpDataStorageLocation">Data Storage Folder</Control>
-			<Control ID="btnChangeStorageFolder">Change folder...</Control>
-			<Control ID="lblDataLocation">Folder:</Control>
+			<Control ID="grpDataStorageLocation">データ保存フォルダー</Control>
+			<Control ID="btnChangeStorageFolder">フォルダーを変更...</Control>
+			<Control ID="lblDataLocation">フォルダー:</Control>
 
-			<Control ID="grpPathOverrides">Folder Overrides</Control>
-			<Control ID="chkGameOverride">Games:</Control>
-			<Control ID="chkAviOverride">Videos:</Control>
-			<Control ID="chkScreenshotsOverride">Screenshots:</Control>
-			<Control ID="chkSaveDataOverride">Save Data:</Control>
-			<Control ID="chkWaveOverride">Audio:</Control>
-			<Control ID="chkSaveStatesOverride">Save States:</Control>
-			<Control ID="chkMoviesOverride">Movies:</Control>
+			<Control ID="grpPathOverrides">フォルダー上書き</Control>
+			<Control ID="chkGameOverride">ゲーム:</Control>
+			<Control ID="chkAviOverride">動画:</Control>
+			<Control ID="chkScreenshotsOverride">スクリーンショット:</Control>
+			<Control ID="chkSaveDataOverride">セーブデータ:</Control>
+			<Control ID="chkWaveOverride">音声:</Control>
+			<Control ID="chkSaveStatesOverride">ステート:</Control>
+			<Control ID="chkMoviesOverride">ムービー:</Control>
 
-			<Control ID="grpDataMigration">Data Migration</Control>
-			<Control ID="lblMigrationDescription">When legacy game data is detected, Nexen can migrate save states and battery saves to per-game folders on ROM load. Use the button below to remove old copies of files that have already been migrated.</Control>
-			<Control ID="btnCleanupLegacyData">Clean up migrated legacy files...</Control>
+			<Control ID="grpDataMigration">データ移行</Control>
+			<Control ID="lblMigrationDescription">古いゲームデータが検出された場合、ROM読み込み時にセーブステートとバッテリーセーブをゲームごとのフォルダーへ移行できます。下のボタンで移行済みの古いコピーを削除できます。</Control>
+			<Control ID="btnCleanupLegacyData">移行済みの古いファイルを整理...</Control>
 
-			<Control ID="tpgAdvanced">Advanced</Control>
-			<Control ID="chkShowFullPathInRecents">Show full file path in recent file list</Control>
-			<Control ID="chkShowFrameCounter">Show frame counter</Control>
-			<Control ID="chkShowGameTimer">Show game timer</Control>
-			<Control ID="chkShowLagCounter">Show lag counter</Control>
-			<Control ID="btnResetLagCounter">Reset lag counter</Control>
-			<Control ID="chkShowRerecordCounter">Show rerecord counter (TAS)</Control>
-			<Control ID="chkShowLagFrameIndicator">Flash screen on lag frames (TAS)</Control>
+			<Control ID="tpgAdvanced">詳細</Control>
+			<Control ID="chkShowFullPathInRecents">最近使ったファイルにフルパスを表示</Control>
+			<Control ID="chkShowFrameCounter">フレームカウンターを表示</Control>
+			<Control ID="chkShowGameTimer">ゲームタイマーを表示</Control>
+			<Control ID="chkShowLagCounter">ラグカウンターを表示</Control>
+			<Control ID="btnResetLagCounter">ラグカウンターをリセット</Control>
+			<Control ID="chkShowRerecordCounter">再記録カウンターを表示 (TAS)</Control>
+			<Control ID="chkShowLagFrameIndicator">ラグフレームで画面を点滅 (TAS)</Control>
 			<Control ID="chkShowVsConfigOnLoad">Show game configuration dialog when loading VS System games</Control>
 
-			<Control ID="lblFontSettings">Font Settings</Control>
-			<Control ID="lblFontAntialiasing">Font anti-aliasing:</Control>
-			<Control ID="lblRegularFont">Default font:</Control>
-			<Control ID="lblMenuFont">Menu font:</Control>
+			<Control ID="lblFontSettings">フォント設定</Control>
+			<Control ID="lblFontAntialiasing">フォントのアンチエイリアス:</Control>
+			<Control ID="lblRegularFont">標準フォント:</Control>
+			<Control ID="lblMenuFont">メニューフォント:</Control>
 
-			<Control ID="lblAdvancedMisc">Miscellaneous Settings</Control>
-			<Control ID="chkEnableAutoSaveState">Automatically create a save state every </Control>
-			<Control ID="lblSaveStateMinutes">minutes (game clock)</Control>
-			<Control ID="chkShowAutoSaveNotifications">Show notification for auto-save</Control>
-			<Control ID="chkShowRecentPlayNotifications">Show notification for recent-play save</Control>
-			<Control ID="lblRewind">Allow rewind to use up to </Control>
+			<Control ID="lblAdvancedMisc">その他の設定</Control>
+			<Control ID="chkEnableAutoSaveState">次の間隔で自動ステートを作成する </Control>
+			<Control ID="lblSaveStateMinutes">分（ゲーム内時間）</Control>
+			<Control ID="chkShowAutoSaveNotifications">自動保存の通知を表示</Control>
+			<Control ID="chkShowRecentPlayNotifications">最近のプレイ保存の通知を表示</Control>
+			<Control ID="lblRewind">巻き戻しに使用する上限 </Control>
 			<Control ID="lblRewindMinutes">MB of memory (Memory Usage ≈5MB/min)</Control>
 
-			<Control ID="tpgShortcuts">Shortcut Keys</Control>
+			<Control ID="tpgShortcuts">ショートカットキー</Control>
 
-			<Control ID="lblUiDisplaySettings">UI Display Settings</Control>
-			<Control ID="lblWindowSettings">Window Settings</Control>
-			<Control ID="chkDisableMouseResize">Do not allow the main window to be resized using the mouse</Control>
-			<Control ID="lblGameSelectionScreenSettings">Game Selection Screen Settings</Control>
-			<Control ID="chkGameSelectionScreenResetGame">Start game from power-on instead of resuming the previous gameplay session</Control>
-			<Control ID="lblGameSelectionScreen">Game selection screen:</Control>
+			<Control ID="lblUiDisplaySettings">UI表示設定</Control>
+			<Control ID="lblWindowSettings">ウィンドウ設定</Control>
+			<Control ID="chkDisableMouseResize">マウスでメインウィンドウのサイズ変更を許可しない</Control>
+			<Control ID="lblGameSelectionScreenSettings">ゲーム選択画面設定</Control>
+			<Control ID="chkGameSelectionScreenResetGame">前回のプレイ再開ではなく電源オン状態から開始する</Control>
+			<Control ID="lblGameSelectionScreen">ゲーム選択画面:</Control>
 
-			<Control ID="chkDisableGameDatabase">Disable game database</Control>
-			<Control ID="chkDisableHighResolutionTimer">Disable high resolution timer</Control>
-			<Control ID="chkDisableOsd">Hide on-screen messages</Control>
+			<Control ID="chkDisableGameDatabase">ゲームデータベースを無効化</Control>
+			<Control ID="chkDisableHighResolutionTimer">高精度タイマーを無効化</Control>
+			<Control ID="chkDisableOsd">画面上メッセージを隠す</Control>
 
-			<Control ID="chkAlwaysOnTop">Always display on top of other windows</Control>
-			<Control ID="chkShowFps">Show FPS</Control>
-			<Control ID="lblHudDisplaySize">HUD display size:</Control>
-			<Control ID="chkShowDebugInformation">Show debug information</Control>
+			<Control ID="chkAlwaysOnTop">常に最前面に表示</Control>
+			<Control ID="chkShowFps">FPSを表示</Control>
+			<Control ID="lblHudDisplaySize">HUD表示サイズ:</Control>
+			<Control ID="chkShowDebugInformation">デバッグ情報を表示</Control>
 
-			<Control ID="lblLastFolderUsed">Last Folder Used</Control>
+			<Control ID="lblLastFolderUsed">前回使用フォルダー</Control>
 
 			<Control ID="btnOK">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">キャンセル</Control>
 		</Form>
 		<Form ID="SelectStorageFolderWindow">
 			<Control ID="wndTitle">Select Data Storage Folder</Control>
@@ -2038,9 +2038,9 @@ E
 		<Message ID="AutoUpdateNotSupported">The version of Nexen you're using does not support automatic updates. Please visit the website and manually download the latest release.</Message>
 		<Message ID="ErrorWhileCheckingUpdates">An error has occurred while trying to check for updates. Check your internet connection and try again.&#xA;&#xA;Error details:&#xA;{0}</Message>
 		<Message ID="AutoUpdateInvalidFile">The downloaded file did not match the expected file.&#xA;&#xA;   Expected SHA256 signature: {0}&#xA;&#xA;   File SHA256 signature: {1}&#xA;&#xA;Please visit the website and manually download the latest release.</Message>
-		<Message ID="FileNotFound">File not found: {0}</Message>
-		<Message ID="InvalidArgument">Invalid argument: {0}</Message>
-		<Message ID="UnsupportedFileType">Unsupported file type: {0}&#xA;&#xA;Select a valid ROM, archive, patch, save state, movie (while running), or recent game file.</Message>
+		<Message ID="FileNotFound">ファイルが見つかりません: {0}</Message>
+		<Message ID="InvalidArgument">無効な引数: {0}</Message>
+		<Message ID="UnsupportedFileType">対応していないファイル形式です: {0}&#xA;&#xA;有効なROM、アーカイブ、パッチ、ステート、ムービー（実行中）、または最近のゲームファイルを選択してください。</Message>
 
 		<Message ID="NexenUpToDate">You are running the latest version of Nexen.</Message>
 		<Message ID="PatchAndReset">Patch and reset the current game?</Message>
@@ -2050,12 +2050,12 @@ E
 		<Message ID="UnableToStartMissingDependencies">Nexen could not launch because of missing dependencies.&#xA;&#xA;Error details:&#xA;{0}</Message>
 		<Message ID="UnableToStartMissingFiles">Nexen was unable to start due to missing files.&#xA;&#xA;Error: NexenCore.dll is missing.</Message>
 
-		<Message ID="AlreadyRunningTitle">Nexen Already Running</Message>
-		<Message ID="AlreadyRunningMessage">Nexen is already running. Would you like to close the existing instance and restart?</Message>
-		<Message ID="AlreadyRunningRestart">Close and Restart Nexen</Message>
-		<Message ID="AlreadyRunningLeave">Leave Current Version Running</Message>
+		<Message ID="AlreadyRunningTitle">Nexenは既に実行中です</Message>
+		<Message ID="AlreadyRunningMessage">Nexenは既に実行中です。既存のインスタンスを終了して再起動しますか？</Message>
+		<Message ID="AlreadyRunningRestart">終了してNexenを再起動</Message>
+		<Message ID="AlreadyRunningLeave">現在の実行を継続する</Message>
 		<Message ID="GameLoadFailedTitle">Error</Message>
-		<Message ID="GameLoadFailedMessage">Game failed to load. Select a game to try again.</Message>
+		<Message ID="GameLoadFailedMessage">ゲームの読み込みに失敗しました。ゲームを選択して再試行してください。</Message>
 
 		<Message ID="UnexpectedError">An unexpected error has occurred.&#xA;&#xA;Error details:&#xA;{0}</Message>
 		<Message ID="UpdateDownloadFailed">Download failed - the file appears to be corrupted. Please visit the Nexen website to download the latest version manually.</Message>
@@ -2067,11 +2067,11 @@ E
 		<Message ID="InvalidXmlFile">The selected file ({0}) is not a valid XML file.</Message>
 		<Message ID="NoMatchingCheats">The selected cheat file ({0}) contains no cheats that match the selected game.</Message>
 
-		<Message ID="ConfirmReset">Are you sure you want to reset?</Message>
-		<Message ID="ConfirmPowerCycle">Are you sure you want to power cycle?</Message>
-		<Message ID="ConfirmReloadRom">Are you sure you want to reload the ROM from the disk?</Message>
-		<Message ID="ConfirmPowerOff">Are you sure you want to power off?</Message>
-		<Message ID="ConfirmExit">Are you sure you want to exit?</Message>
+		<Message ID="ConfirmReset">リセットしてもよろしいですか？</Message>
+		<Message ID="ConfirmPowerCycle">電源再投入してもよろしいですか？</Message>
+		<Message ID="ConfirmReloadRom">ディスクからROMを再読み込みしてもよろしいですか？</Message>
+		<Message ID="ConfirmPowerOff">電源を切ってもよろしいですか？</Message>
+		<Message ID="ConfirmExit">終了してもよろしいですか？</Message>
 		<Message ID="ConfirmDeleteSaveState">Are you sure you want to delete this save state?&#xA;&#xA;{0}</Message>
 
 		<Message ID="InstallHdPackWrongRom">The selected HD Pack is not compatible with the currently running game and cannot be installed.</Message>
@@ -2096,9 +2096,9 @@ E
 		<Message ID="ViewInAction">View in {0}</Message>
 
 		<Message ID="btnOK">OK</Message>
-		<Message ID="btnCancel">Cancel</Message>
-		<Message ID="btnYes">Yes</Message>
-		<Message ID="btnNo">No</Message>
+		<Message ID="btnCancel">キャンセル</Message>
+		<Message ID="btnYes">はい</Message>
+		<Message ID="btnNo">いいえ</Message>
 
 		<Message ID="ScriptSaveConfirmation">You have unsaved changes for this script - would you like to save them?</Message>
 
