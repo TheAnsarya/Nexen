@@ -73,6 +73,8 @@ public sealed class GenesisRegisterViewer {
 		uint dmaEffectiveLength = dmaLength == 0 ? 0x10000u : dmaLength;
 		uint dmaSource = (uint)(((vdp.Registers[23] & 0x3F) << 17) | (vdp.Registers[22] << 9) | (vdp.Registers[21] << 1));
 		ulong vdpDigest = ComputeVdpTraceDigest(vdp, dmaLength, dmaEffectiveLength, dmaSource);
+		uint rasterParityKey = ComputeRasterParityKey(vdp);
+		uint dmaParityKey = ComputeDmaParityKey(vdp, dmaEffectiveLength, dmaSource);
 		string dmaModeLabel = vdp.DmaMode switch {
 			0 => "68kCopy",
 			1 => "Fill",
@@ -111,6 +113,8 @@ public sealed class GenesisRegisterViewer {
 			new RegEntry("", "TraceParity"),
 			new RegEntry("", "VdpDigestHi", (uint)(vdpDigest >> 32), Format.X32),
 			new RegEntry("", "VdpDigestLo", (uint)(vdpDigest & 0xFFFFFFFF), Format.X32),
+			new RegEntry("", "RasterParityKey", rasterParityKey, Format.X32),
+			new RegEntry("", "DmaParityKey", dmaParityKey, Format.X32),
 		});
 
 		for (int i = 0; i < 24; i++) {
@@ -287,5 +291,27 @@ public sealed class GenesisRegisterViewer {
 		digest ^= (byte)((value >> 24) & 0xFFu);
 		digest *= 1099511628211ul;
 		return digest;
+	}
+
+	private static uint ComputeRasterParityKey(GenesisVdpState vdp) {
+		ulong digest = 1469598103934665603ul;
+		digest = Fnv1aUpdate(digest, (uint)vdp.FrameCount);
+		digest = Fnv1aUpdate(digest, vdp.HCounter);
+		digest = Fnv1aUpdate(digest, vdp.VCounter);
+		digest = Fnv1aUpdate(digest, vdp.StatusRegister & 0x01FFu);
+		digest = Fnv1aUpdate(digest, vdp.HIntCounter);
+		return (uint)(digest ^ (digest >> 32));
+	}
+
+	private static uint ComputeDmaParityKey(GenesisVdpState vdp, uint dmaEffectiveLength, uint dmaSource) {
+		ulong digest = 1469598103934665603ul;
+		digest = Fnv1aUpdate(digest, vdp.DmaActive ? 1u : 0u);
+		digest = Fnv1aUpdate(digest, vdp.DmaMode);
+		digest = Fnv1aUpdate(digest, dmaEffectiveLength);
+		digest = Fnv1aUpdate(digest, dmaSource);
+		digest = Fnv1aUpdate(digest, vdp.AddressRegister);
+		digest = Fnv1aUpdate(digest, vdp.CodeRegister);
+		digest = Fnv1aUpdate(digest, vdp.WritePending ? 1u : 0u);
+		return (uint)(digest ^ (digest >> 32));
 	}
 }

@@ -1336,31 +1336,31 @@
 		</Form>
 
 		<Form ID="LogWindow">
-			<Control ID="wndTitle">Log Window</Control>
-			<Control ID="btnClose">Close</Control>
+			<Control ID="wndTitle">ログウィンドウ</Control>
+			<Control ID="btnClose">閉じる</Control>
 		</Form>
 
 		<Form ID="DebugLogWindow">
-			<Control ID="wndTitle">Debug Log</Control>
-			<Control ID="btnClose">Close</Control>
+			<Control ID="wndTitle">デバッグログ</Control>
+			<Control ID="btnClose">閉じる</Control>
 		</Form>
 
 		<Form ID="HistoryViewerWindow">
-			<Control ID="wndTitle">History Viewer</Control>
-			<Control ID="lblVolume">Volume</Control>
+			<Control ID="wndTitle">履歴ビューア</Control>
+			<Control ID="lblVolume">音量</Control>
 
-			<Control ID="mnuFile">File</Control>
-			<Control ID="mnuOptions">Settings</Control>
+			<Control ID="mnuFile">ファイル</Control>
+			<Control ID="mnuOptions">設定</Control>
 		</Form>
 
 		<Form ID="HistoryViewerRangePickerWindow">
-			<Control ID="wndTitle">Export specific range...</Control>
-			<Control ID="lblStartTime">Start time:</Control>
-			<Control ID="lblEndTime">End time:</Control>
-			<Control ID="lblSeconds"> seconds</Control>
+			<Control ID="wndTitle">範囲を指定してエクスポート...</Control>
+			<Control ID="lblStartTime">開始時間:</Control>
+			<Control ID="lblEndTime">終了時間:</Control>
+			<Control ID="lblSeconds"> 秒</Control>
 
 			<Control ID="btnOk">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">キャンセル</Control>
 		</Form>
 
 		<Form ID="NesHeaderEditWindow">
@@ -1391,88 +1391,88 @@
 		</Form>
 
 		<Form ID="TraceLoggerWindow">
-			<Control ID="wndTitle">Trace Logger</Control>
-			<Control ID="lblCondition">Condition: </Control>
-			<Control ID="chkEnabled">Enabled</Control>
+			<Control ID="wndTitle">トレースロガー</Control>
+			<Control ID="lblCondition">条件: </Control>
+			<Control ID="chkEnabled">有効</Control>
 
-			<Control ID="grpLogOptions">{0} - Log settings</Control>
+			<Control ID="grpLogOptions">{0} - ログ設定</Control>
 
-			<Control ID="chkCustomFormat">Use custom format:</Control>
+			<Control ID="chkCustomFormat">カスタム形式を使用:</Control>
 
-			<Control ID="chkRegisters">Show registers</Control>
-			<Control ID="chkStatusFlags">Show status flags</Control>
-			<Control ID="lblFlagFormat">Flag format:</Control>
-			<Control ID="chkByteCode">Show byte code</Control>
-			<Control ID="chkEffectiveAddress">Show effective address</Control>
-			<Control ID="chkMemoryValue">Show memory value</Control>
+			<Control ID="chkRegisters">レジスタを表示</Control>
+			<Control ID="chkStatusFlags">ステータスフラグを表示</Control>
+			<Control ID="lblFlagFormat">フラグ形式:</Control>
+			<Control ID="chkByteCode">バイトコードを表示</Control>
+			<Control ID="chkEffectiveAddress">実効アドレスを表示</Control>
+			<Control ID="chkMemoryValue">メモリ値を表示</Control>
 
-			<Control ID="chkClockCounter">Show clock counter</Control>
-			<Control ID="chkFrameCounter">Show frame counter</Control>
-			<Control ID="chkFramePosition">Show frame position</Control>
+			<Control ID="chkClockCounter">クロックカウンターを表示</Control>
+			<Control ID="chkFrameCounter">フレームカウンターを表示</Control>
+			<Control ID="chkFramePosition">フレーム位置を表示</Control>
 
-			<Control ID="chkUseLabels">Use labels</Control>
-			<Control ID="chkIndentCode">Indent based on stack pointer</Control>
+			<Control ID="chkUseLabels">ラベルを使用</Control>
+			<Control ID="chkIndentCode">スタックポインタに基づいてインデント</Control>
 
-			<Control ID="lblConditionError">Condition contains invalid syntax or symbols.</Control>
+			<Control ID="lblConditionError">条件に無効な構文またはシンボルが含まれています。</Control>
 
-			<Control ID="mnuFile">_File</Control>
-			<Control ID="mnuDebug">_Debug</Control>
-			<Control ID="mnuView">_View</Control>
-			<Control ID="mnuSearch">_Search</Control>
+			<Control ID="mnuFile">_ファイル</Control>
+			<Control ID="mnuDebug">_デバッグ</Control>
+			<Control ID="mnuView">_表示</Control>
+			<Control ID="mnuSearch">_検索</Control>
 
-			<Control ID="btnOpenTraceFile">Open trace file</Control>
-			<Control ID="btnStart">Log to file...</Control>
-			<Control ID="btnStop">Stop logging</Control>
-			<Control ID="btnClear">Clear log</Control>
+			<Control ID="btnOpenTraceFile">トレースファイルを開く</Control>
+			<Control ID="btnStart">ファイルに記録...</Control>
+			<Control ID="btnStop">記録を停止</Control>
+			<Control ID="btnClear">ログをクリア</Control>
 		</Form>
 
 		<Form ID="EventViewerWindow">
-			<Control ID="wndTitle">Event Viewer</Control>
+			<Control ID="wndTitle">イベントビューア</Control>
 
-			<Control ID="mnuFile">_File</Control>
-			<Control ID="mnuDebug">_Debug</Control>
-			<Control ID="mnuView">_View</Control>
+			<Control ID="mnuFile">_ファイル</Control>
+			<Control ID="mnuDebug">_デバッグ</Control>
+			<Control ID="mnuView">_表示</Control>
 
-			<Control ID="btnToggleSettings">Toggle settings panel</Control>
+			<Control ID="btnToggleSettings">設定パネルを切り替え</Control>
 
-			<Control ID="chkShowListView">Show list view</Control>
-			<Control ID="btnSelectAll">Select all</Control>
-			<Control ID="btnDeselectAll">Deselect all</Control>
+			<Control ID="chkShowListView">リスト表示</Control>
+			<Control ID="btnSelectAll">すべて選択</Control>
+			<Control ID="btnDeselectAll">すべて解除</Control>
 
 			<Control ID="colPc">PC</Control>
-			<Control ID="colScanline">Scanline</Control>
-			<Control ID="colCycle">Cycle</Control>
-			<Control ID="colType">Type</Control>
-			<Control ID="colAddress">Address</Control>
-			<Control ID="colValue">Value</Control>
-			<Control ID="colDetails">Details</Control>
+			<Control ID="colScanline">スキャンライン</Control>
+			<Control ID="colCycle">サイクル</Control>
+			<Control ID="colType">種類</Control>
+			<Control ID="colAddress">アドレス</Control>
+			<Control ID="colValue">値</Control>
+			<Control ID="colDetails">詳細</Control>
 		</Form>
 
 		<Form ID="DebuggerWindow">
-			<Control ID="mnuFile">_File</Control>
-			<Control ID="mnuDebug">_Debug</Control>
-			<Control ID="mnuSearch">_Search</Control>
-			<Control ID="mnuOptions">_Settings</Control>
-			<Control ID="btnToggleSettingsPanel">Toggle settings panel</Control>
+			<Control ID="mnuFile">_ファイル</Control>
+			<Control ID="mnuDebug">_デバッグ</Control>
+			<Control ID="mnuSearch">_検索</Control>
+			<Control ID="mnuOptions">_設定</Control>
+			<Control ID="btnToggleSettingsPanel">設定パネルを切り替え</Control>
 		</Form>
 
 		<Form ID="BreakpointListView">
 			<Control ID="colEnabled">E</Control>
 			<Control ID="colMarked">M</Control>
-			<Control ID="colType">Type</Control>
-			<Control ID="colAddress">Address</Control>
-			<Control ID="colCondition">Condition</Control>
+			<Control ID="colType">種類</Control>
+			<Control ID="colAddress">アドレス</Control>
+			<Control ID="colCondition">条件</Control>
 		</Form>
 
 		<Form ID="CallStackView">
-			<Control ID="colFunction">Function</Control>
-			<Control ID="colPcAddress">PC Address</Control>
-			<Control ID="colRomAddress">ROM Address</Control>
+			<Control ID="colFunction">関数</Control>
+			<Control ID="colPcAddress">PCアドレス</Control>
+			<Control ID="colRomAddress">ROMアドレス</Control>
 		</Form>
 
 		<Form ID="FindResultListView">
-			<Control ID="colAddress">Address</Control>
-			<Control ID="colResult">Result</Control>
+			<Control ID="colAddress">アドレス</Control>
+			<Control ID="colResult">結果</Control>
 		</Form>
 
 		<Form ID="FunctionListView">

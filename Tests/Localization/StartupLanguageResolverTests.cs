@@ -1,4 +1,4 @@
-using Nexen.Config;
+﻿using Nexen.Config;
 using Nexen.Localization;
 using Xunit;
 
@@ -34,5 +34,39 @@ public sealed class StartupLanguageResolverTests {
 		string code = StartupLanguageResolver.ResolveLanguageCode(false, false, () => throw new InvalidOperationException("config read failed"));
 
 		Assert.Equal("en", code);
+	}
+
+	[Fact]
+	public void ResolveLanguageCode_StartupPath_SpanishLoadsSpanishMainMenuLabel() {
+		string code = StartupLanguageResolver.ResolveLanguageCode(false, false, () => UiLanguage.Spanish);
+		ResourceHelper.LoadResources(code);
+
+		Assert.Equal("es", code);
+		Assert.Equal("_Archivo", ResourceHelper.GetViewLabel("MainMenuView", "mnuFile"));
+	}
+
+	[Fact]
+	public void ResolveLanguageCode_StartupPath_JapaneseLoadsJapaneseMainMenuLabel() {
+		string code = StartupLanguageResolver.ResolveLanguageCode(false, false, () => UiLanguage.Japanese);
+		ResourceHelper.LoadResources(code);
+
+		Assert.Equal("ja", code);
+		Assert.Equal("_ファイル", ResourceHelper.GetViewLabel("MainMenuView", "mnuFile"));
+	}
+
+	[Fact]
+	public void ResolveLanguageCode_DesignModeFallback_LoadsEnglishLabel() {
+		string code = StartupLanguageResolver.ResolveLanguageCode(true, false, () => UiLanguage.Japanese);
+		ResourceHelper.LoadResources(code);
+
+		Assert.Equal("en", code);
+		Assert.Equal("_File", ResourceHelper.GetViewLabel("MainMenuView", "mnuFile"));
+	}
+
+	[Fact]
+	public void LoadResources_UnknownLanguageCode_FallsBackToEnglishLabels() {
+		ResourceHelper.LoadResources("zz");
+
+		Assert.Equal("_File", ResourceHelper.GetViewLabel("MainMenuView", "mnuFile"));
 	}
 }

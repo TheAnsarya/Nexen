@@ -2268,12 +2268,15 @@ do all four in order; continue;
 
 1, and the Trace Logger says "unsupported type", so check the logs and fix it; continue;
 
+Ugh, also, always end the session with suggestions for what to work on next and add this directive to the copilot instructions for all of the repos; [Nexen] (Genesis) In the UI, make sure there aren't any more "[[xxxxxx]]" strings that are not real values, run everything through localization. Search the whole UI, and make sure we're using localization. Then make sure there is a settings option for localized language, and tell me what languages we have (anything other than English?); Continue integrating and fixing code using `Hoshiruna/Mesen2-Expanded`'s Genesis code as a resource into our framework; create and fix multiple issues; continue;
 
+1
 
+do 2, then 1 (do japanese and spanish), then 3
 
+do 1, then 2, then 3
 
-
-
+do all three steps; continue;
 
 
 

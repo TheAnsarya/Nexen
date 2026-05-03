@@ -23,7 +23,7 @@ class ResourceHelper {
 
 	public static void LoadResources(string? preferredLanguageCode = null) {
 		try {
-			Assembly assembly = Assembly.GetExecutingAssembly();
+			Assembly assembly = typeof(ResourceHelper).Assembly;
 			string normalizedCode = NormalizeLanguageCode(preferredLanguageCode);
 			string resourceName = $"Nexen.Localization.resources.{normalizedCode}.xml";
 
@@ -55,7 +55,7 @@ class ResourceHelper {
 			}
 
 #pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-			Dictionary<string, Type> enumTypes = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsEnum).ToDictionary(t => t.Name);
+			Dictionary<string, Type> enumTypes = typeof(ResourceHelper).Assembly.GetTypes().Where(t => t.IsEnum).ToDictionary(t => t.Name);
 #pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 
 			foreach (XmlNode node in _resources.SelectNodes("/Resources/Enums/Enum")!) {
@@ -88,7 +88,7 @@ class ResourceHelper {
 		const string prefix = "Nexen.Localization.resources.";
 		const string suffix = ".xml";
 
-		return Assembly.GetExecutingAssembly()
+		return typeof(ResourceHelper).Assembly
 			.GetManifestResourceNames()
 			.Where(name => name.StartsWith(prefix, StringComparison.Ordinal) && name.EndsWith(suffix, StringComparison.Ordinal))
 			.Select(name => name[prefix.Length..^suffix.Length])

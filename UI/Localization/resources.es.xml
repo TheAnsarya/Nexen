@@ -1336,31 +1336,31 @@
 		</Form>
 
 		<Form ID="LogWindow">
-			<Control ID="wndTitle">Log Window</Control>
-			<Control ID="btnClose">Close</Control>
+			<Control ID="wndTitle">Ventana de registro</Control>
+			<Control ID="btnClose">Cerrar</Control>
 		</Form>
 
 		<Form ID="DebugLogWindow">
-			<Control ID="wndTitle">Debug Log</Control>
-			<Control ID="btnClose">Close</Control>
+			<Control ID="wndTitle">Registro de depuracion</Control>
+			<Control ID="btnClose">Cerrar</Control>
 		</Form>
 
 		<Form ID="HistoryViewerWindow">
-			<Control ID="wndTitle">History Viewer</Control>
-			<Control ID="lblVolume">Volume</Control>
+			<Control ID="wndTitle">Visor de historial</Control>
+			<Control ID="lblVolume">Volumen</Control>
 
-			<Control ID="mnuFile">File</Control>
-			<Control ID="mnuOptions">Settings</Control>
+			<Control ID="mnuFile">Archivo</Control>
+			<Control ID="mnuOptions">Configuracion</Control>
 		</Form>
 
 		<Form ID="HistoryViewerRangePickerWindow">
-			<Control ID="wndTitle">Export specific range...</Control>
-			<Control ID="lblStartTime">Start time:</Control>
-			<Control ID="lblEndTime">End time:</Control>
-			<Control ID="lblSeconds"> seconds</Control>
+			<Control ID="wndTitle">Exportar rango especifico...</Control>
+			<Control ID="lblStartTime">Hora de inicio:</Control>
+			<Control ID="lblEndTime">Hora de fin:</Control>
+			<Control ID="lblSeconds"> segundos</Control>
 
 			<Control ID="btnOk">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">Cancelar</Control>
 		</Form>
 
 		<Form ID="NesHeaderEditWindow">
@@ -1391,88 +1391,88 @@
 		</Form>
 
 		<Form ID="TraceLoggerWindow">
-			<Control ID="wndTitle">Trace Logger</Control>
-			<Control ID="lblCondition">Condition: </Control>
-			<Control ID="chkEnabled">Enabled</Control>
+			<Control ID="wndTitle">Registrador de trazas</Control>
+			<Control ID="lblCondition">Condicion: </Control>
+			<Control ID="chkEnabled">Habilitado</Control>
 
-			<Control ID="grpLogOptions">{0} - Log settings</Control>
+			<Control ID="grpLogOptions">{0} - Configuracion de registro</Control>
 
-			<Control ID="chkCustomFormat">Use custom format:</Control>
+			<Control ID="chkCustomFormat">Usar formato personalizado:</Control>
 
-			<Control ID="chkRegisters">Show registers</Control>
-			<Control ID="chkStatusFlags">Show status flags</Control>
-			<Control ID="lblFlagFormat">Flag format:</Control>
-			<Control ID="chkByteCode">Show byte code</Control>
-			<Control ID="chkEffectiveAddress">Show effective address</Control>
-			<Control ID="chkMemoryValue">Show memory value</Control>
+			<Control ID="chkRegisters">Mostrar registros</Control>
+			<Control ID="chkStatusFlags">Mostrar banderas de estado</Control>
+			<Control ID="lblFlagFormat">Formato de banderas:</Control>
+			<Control ID="chkByteCode">Mostrar codigo de bytes</Control>
+			<Control ID="chkEffectiveAddress">Mostrar direccion efectiva</Control>
+			<Control ID="chkMemoryValue">Mostrar valor de memoria</Control>
 
-			<Control ID="chkClockCounter">Show clock counter</Control>
-			<Control ID="chkFrameCounter">Show frame counter</Control>
-			<Control ID="chkFramePosition">Show frame position</Control>
+			<Control ID="chkClockCounter">Mostrar contador de reloj</Control>
+			<Control ID="chkFrameCounter">Mostrar contador de fotogramas</Control>
+			<Control ID="chkFramePosition">Mostrar posicion del fotograma</Control>
 
-			<Control ID="chkUseLabels">Use labels</Control>
-			<Control ID="chkIndentCode">Indent based on stack pointer</Control>
+			<Control ID="chkUseLabels">Usar etiquetas</Control>
+			<Control ID="chkIndentCode">Indentar segun el puntero de pila</Control>
 
-			<Control ID="lblConditionError">Condition contains invalid syntax or symbols.</Control>
+			<Control ID="lblConditionError">La condicion contiene sintaxis o simbolos invalidos.</Control>
 
-			<Control ID="mnuFile">_File</Control>
-			<Control ID="mnuDebug">_Debug</Control>
-			<Control ID="mnuView">_View</Control>
-			<Control ID="mnuSearch">_Search</Control>
+			<Control ID="mnuFile">_Archivo</Control>
+			<Control ID="mnuDebug">_Depurar</Control>
+			<Control ID="mnuView">_Vista</Control>
+			<Control ID="mnuSearch">_Buscar</Control>
 
-			<Control ID="btnOpenTraceFile">Open trace file</Control>
-			<Control ID="btnStart">Log to file...</Control>
-			<Control ID="btnStop">Stop logging</Control>
-			<Control ID="btnClear">Clear log</Control>
+			<Control ID="btnOpenTraceFile">Abrir archivo de traza</Control>
+			<Control ID="btnStart">Registrar en archivo...</Control>
+			<Control ID="btnStop">Detener registro</Control>
+			<Control ID="btnClear">Limpiar registro</Control>
 		</Form>
 
 		<Form ID="EventViewerWindow">
-			<Control ID="wndTitle">Event Viewer</Control>
+			<Control ID="wndTitle">Visor de eventos</Control>
 
-			<Control ID="mnuFile">_File</Control>
-			<Control ID="mnuDebug">_Debug</Control>
-			<Control ID="mnuView">_View</Control>
+			<Control ID="mnuFile">_Archivo</Control>
+			<Control ID="mnuDebug">_Depurar</Control>
+			<Control ID="mnuView">_Vista</Control>
 
-			<Control ID="btnToggleSettings">Toggle settings panel</Control>
+			<Control ID="btnToggleSettings">Alternar panel de configuracion</Control>
 
-			<Control ID="chkShowListView">Show list view</Control>
-			<Control ID="btnSelectAll">Select all</Control>
-			<Control ID="btnDeselectAll">Deselect all</Control>
+			<Control ID="chkShowListView">Mostrar vista de lista</Control>
+			<Control ID="btnSelectAll">Seleccionar todo</Control>
+			<Control ID="btnDeselectAll">Deseleccionar todo</Control>
 
 			<Control ID="colPc">PC</Control>
-			<Control ID="colScanline">Scanline</Control>
+			<Control ID="colScanline">Linea de escaneo</Control>
 			<Control ID="colCycle">Cycle</Control>
 			<Control ID="colType">Type</Control>
-			<Control ID="colAddress">Address</Control>
-			<Control ID="colValue">Value</Control>
-			<Control ID="colDetails">Details</Control>
+			<Control ID="colAddress">Direccion</Control>
+			<Control ID="colValue">Valor</Control>
+			<Control ID="colDetails">Detalles</Control>
 		</Form>
 
 		<Form ID="DebuggerWindow">
-			<Control ID="mnuFile">_File</Control>
-			<Control ID="mnuDebug">_Debug</Control>
-			<Control ID="mnuSearch">_Search</Control>
-			<Control ID="mnuOptions">_Settings</Control>
-			<Control ID="btnToggleSettingsPanel">Toggle settings panel</Control>
+			<Control ID="mnuFile">_Archivo</Control>
+			<Control ID="mnuDebug">_Depurar</Control>
+			<Control ID="mnuSearch">_Buscar</Control>
+			<Control ID="mnuOptions">_Configuracion</Control>
+			<Control ID="btnToggleSettingsPanel">Alternar panel de configuracion</Control>
 		</Form>
 
 		<Form ID="BreakpointListView">
 			<Control ID="colEnabled">E</Control>
 			<Control ID="colMarked">M</Control>
-			<Control ID="colType">Type</Control>
-			<Control ID="colAddress">Address</Control>
-			<Control ID="colCondition">Condition</Control>
+			<Control ID="colType">Tipo</Control>
+			<Control ID="colAddress">Direccion</Control>
+			<Control ID="colCondition">Condicion</Control>
 		</Form>
 
 		<Form ID="CallStackView">
-			<Control ID="colFunction">Function</Control>
-			<Control ID="colPcAddress">PC Address</Control>
-			<Control ID="colRomAddress">ROM Address</Control>
+			<Control ID="colFunction">Funcion</Control>
+			<Control ID="colPcAddress">Direccion de PC</Control>
+			<Control ID="colRomAddress">Direccion ROM</Control>
 		</Form>
 
 		<Form ID="FindResultListView">
-			<Control ID="colAddress">Address</Control>
-			<Control ID="colResult">Result</Control>
+			<Control ID="colAddress">Direccion</Control>
+			<Control ID="colResult">Resultado</Control>
 		</Form>
 
 		<Form ID="FunctionListView">

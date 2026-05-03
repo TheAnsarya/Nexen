@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Nexen.Config;
 
 namespace Nexen.Localization;
