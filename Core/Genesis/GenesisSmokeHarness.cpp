@@ -467,6 +467,86 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				vdpTimingFirst.Bus.DmaContentionCycles,
 				vdpTimingFirst.Bus.DmaContentionEvents));
 
+		struct FirstVisibleFrameProbeResult {
+			bool Found = false;
+			uint32_t Frame = 0;
+			uint32_t Scanline = 0;
+			uint32_t VInterruptCount = 0;
+			string RenderDigest;
+		};
+
+		auto runFirstVisibleFrameProbe = [&scaffold, &titleClass](uint32_t baselineFrame, uint32_t baselineScanline, uint32_t baselineVInterruptCount) {
+			FirstVisibleFrameProbeResult probe = {};
+
+			for (uint32_t window = 0; window < 24; window++) {
+				if (titleClass == "sonic") {
+					scaffold.GetBus().SetRenderCompositionInputs(0x1A, true, 0x06, false, 0x02, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((window * 3) & 0x1F), (uint16_t)((window * 2) & 0x1F));
+				} else if (titleClass == "jurassic") {
+					if ((window % 4) == 0) {
+						scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 8);
+					}
+					scaffold.GetBus().SetRenderCompositionInputs(0x18, true, 0x05, false, 0x01, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)(window & 0x0F), (uint16_t)((window + 1) & 0x0F));
+				} else {
+					scaffold.GetBus().SetRenderCompositionInputs(0x10, true, 0x04, false, 0x00, false, false, 0x20, true);
+				}
+
+				scaffold.GetBus().RenderScaffoldLine(64);
+				scaffold.StepFrameScaffold(488u * 8u);
+
+				GenesisBoundaryScaffoldSaveState sample = scaffold.SaveState();
+				bool timingAdvanced = sample.TimingFrame > baselineFrame
+					|| (sample.TimingFrame == baselineFrame && sample.TimingScanline > baselineScanline);
+				bool frameVisible = timingAdvanced && !sample.Bus.RenderLineDigest.empty();
+				if (frameVisible) {
+					probe.Found = true;
+					probe.Frame = sample.TimingFrame;
+					probe.Scanline = sample.TimingScanline;
+					probe.VInterruptCount = sample.VInterruptCount;
+					probe.RenderDigest = sample.Bus.RenderLineDigest;
+					break;
+				}
+			}
+
+			if (!probe.Found) {
+				GenesisBoundaryScaffoldSaveState tail = scaffold.SaveState();
+				probe.Frame = tail.TimingFrame;
+				probe.Scanline = tail.TimingScanline;
+				probe.VInterruptCount = tail.VInterruptCount;
+				probe.RenderDigest = tail.Bus.RenderLineDigest;
+			}
+
+			return probe;
+		};
+
+		GenesisBoundaryScaffoldSaveState firstVisibleBaseline = scaffold.SaveState();
+		FirstVisibleFrameProbeResult firstVisibleFirst = runFirstVisibleFrameProbe(firstVisibleBaseline.TimingFrame, firstVisibleBaseline.TimingScanline, firstVisibleBaseline.VInterruptCount);
+		GenesisBoundaryScaffoldSaveState firstVisibleState = scaffold.SaveState();
+		scaffold.LoadState(firstVisibleBaseline);
+		FirstVisibleFrameProbeResult firstVisibleReplay = runFirstVisibleFrameProbe(firstVisibleBaseline.TimingFrame, firstVisibleBaseline.TimingScanline, firstVisibleBaseline.VInterruptCount);
+		scaffold.LoadState(firstVisibleState);
+
+		bool firstVisibleReplayMatch = firstVisibleFirst.Found == firstVisibleReplay.Found
+			&& firstVisibleFirst.Frame == firstVisibleReplay.Frame
+			&& firstVisibleFirst.Scanline == firstVisibleReplay.Scanline
+			&& firstVisibleFirst.VInterruptCount == firstVisibleReplay.VInterruptCount
+			&& firstVisibleFirst.RenderDigest == firstVisibleReplay.RenderDigest;
+		bool firstVisibleFramePass = !isTargetStartupClass || (firstVisibleFirst.Found && firstVisibleReplayMatch);
+		addCheckpoint(
+			"GEN-COMPAT-FIRST-VISIBLE-FRAME",
+			firstVisibleFramePass,
+			std::format(
+				"class={} target={} found={} replayMatch={} frame={} scanline={} vInt={} digest={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				firstVisibleFirst.Found ? 1 : 0,
+				firstVisibleReplayMatch ? 1 : 0,
+				firstVisibleFirst.Frame,
+				firstVisibleFirst.Scanline,
+				firstVisibleFirst.VInterruptCount,
+				firstVisibleFirst.RenderDigest));
+
 		auto runInterruptCadenceStartupPath = [&scaffold, &titleClass]() {
 			if (titleClass == "sonic") {
 				scaffold.StepFrameScaffold(488u + 64u);
@@ -635,6 +715,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-BUS-OWNERSHIP")
 			&& hasPassingCheckpoint("GEN-COMPAT-HOST-MODE")
 			&& hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE")
+			&& hasPassingCheckpoint("GEN-COMPAT-FIRST-VISIBLE-FRAME")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-TIMING-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-STATUS-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-CADENCE-STARTUP")

@@ -76,6 +76,7 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-32X-TOOLING"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-32X-TELEMETRY"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DEBUG-LANE"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST-VISIBLE-FRAME"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TAS-CHEAT"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-PBC-BOOT"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-PBC-RUNTIME"));
@@ -100,6 +101,7 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-BUS-OWNERSHIP"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-HOST-MODE"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST-VISIBLE-FRAME"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DETERMINISM"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DEBUG-LANE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TAS-CHEAT"));
@@ -145,6 +147,44 @@ namespace {
 		for (const GenesisCompatibilityRomCase& romCase : corpus) {
 			string contextA = readVdpTimingContext(runA, romCase.Name);
 			string contextB = readVdpTimingContext(runB, romCase.Name);
+			EXPECT_EQ(contextA, contextB);
+		}
+	}
+
+	TEST(GenesisCompatibilityHarnessTests, FirstVisibleFrameCheckpointContextIsDeterministicAcrossRuns) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus = BuildGenesisCompatibilityCorpus();
+
+		auto readFirstVisibleFrameContext = [&](const GenesisCompatibilityMatrixResult& result, const string& romName) {
+			auto entryIt = std::find_if(result.Entries.begin(), result.Entries.end(), [&](const GenesisCompatibilityEntry& entry) {
+				return entry.Name == romName;
+			});
+			if (entryIt == result.Entries.end()) {
+				ADD_FAILURE() << "Missing compatibility entry for " << romName;
+				return string();
+			}
+
+			auto checkpointIt = std::find_if(entryIt->Checkpoints.begin(), entryIt->Checkpoints.end(), [](const GenesisCompatibilityCheckpoint& checkpoint) {
+				return checkpoint.Id == "GEN-COMPAT-FIRST-VISIBLE-FRAME";
+			});
+			if (checkpointIt == entryIt->Checkpoints.end()) {
+				ADD_FAILURE() << "Missing GEN-COMPAT-FIRST-VISIBLE-FRAME checkpoint for " << romName;
+				return string();
+			}
+
+			EXPECT_TRUE(checkpointIt->Pass);
+			return checkpointIt->Context;
+		};
+
+		GenesisCompatibilityMatrixResult runA = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+		GenesisCompatibilityMatrixResult runB = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+
+		ASSERT_EQ((int)runA.Entries.size(), (int)corpus.size());
+		ASSERT_EQ((int)runB.Entries.size(), (int)corpus.size());
+
+		for (const GenesisCompatibilityRomCase& romCase : corpus) {
+			string contextA = readFirstVisibleFrameContext(runA, romCase.Name);
+			string contextB = readFirstVisibleFrameContext(runB, romCase.Name);
 			EXPECT_EQ(contextA, contextB);
 		}
 	}

@@ -2250,6 +2250,9 @@ GitHub Actions run 25269102024 is still in progress.
 Release v1.4.39 is still not published yet.
 &&&&&&&&&&
 
+[Nexen] (Genesis/MegaDrive) Continue integrating `Hoshiruna/Mesen2-Expanded`'s Genesis code into our framework
+
+1
 
 
 
