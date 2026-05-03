@@ -1218,6 +1218,133 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				startupInputReplayMatch ? 1 : 0,
 				startupInputFirst.SignatureDigest));
 
+		struct StartupMemMapParityProbeResult {
+			uint32_t WindowCount = 0;
+			uint32_t FinalFrameDelta = 0;
+			uint32_t TmssEchoCount = 0;
+			uint32_t IoAccessDelta = 0;
+			uint32_t VdpAccessDelta = 0;
+			bool OwnerParityPass = false;
+			bool VdpWindowTouched = false;
+			string SignatureDigest;
+		};
+
+		auto runStartupMemMapParityProbe = [&scaffold, &titleClass](const GenesisBoundaryScaffoldSaveState& baseline) {
+			StartupMemMapParityProbeResult probe = {};
+			uint64_t digest = 1469598103934665603ull;
+
+			for (uint32_t window = 0; window < 3; window++) {
+				uint8_t tmssValue = (uint8_t)(0x50 + window * 3);
+				scaffold.GetBus().WriteByte(0xA14000, tmssValue);
+				uint8_t tmssRead = scaffold.GetBus().ReadByte(0xA14000);
+				if (tmssRead == tmssValue) {
+					probe.TmssEchoCount++;
+				}
+
+				scaffold.GetBus().WriteByte(0xA10003, (uint8_t)(0x40 | (window & 0x01)));
+				scaffold.GetBus().WriteByte(0xA11100, (uint8_t)(window & 0x01));
+				scaffold.GetBus().WriteByte(0xA11200, 0x01);
+				uint8_t ioRead = scaffold.GetBus().ReadByte(0xA10003);
+				uint8_t busRead = scaffold.GetBus().ReadByte(0xA11100);
+				uint8_t runRead = scaffold.GetBus().ReadByte(0xA11200);
+
+				scaffold.GetBus().WriteByte(0xC00004, (uint8_t)(0x80 | (window << 1)));
+				scaffold.GetBus().WriteByte(0xC00005, (uint8_t)(0x11 + window));
+				uint8_t vdpStatusHigh = scaffold.GetBus().ReadByte(0xC00004);
+				uint8_t vdpStatusLow = scaffold.GetBus().ReadByte(0xC00005);
+
+				if (titleClass == "sonic") {
+					scaffold.GetBus().SetRenderCompositionInputs(0x16, true, 0x06, false, 0x02, false, true, 0x20, true);
+					scaffold.GetBus().RenderScaffoldLine((uint16_t)(60 + window * 4));
+					scaffold.StepFrameScaffold(488u * 262u + 88u);
+				} else if (titleClass == "jurassic") {
+					scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 8 + window);
+					scaffold.GetBus().SetRenderCompositionInputs(0x15, true, 0x05, false, 0x01, false, true, 0x20, true);
+					scaffold.GetBus().RenderScaffoldLine((uint16_t)(66 + window * 3));
+					scaffold.StepFrameScaffold(488u * 262u + 104u);
+				} else {
+					scaffold.StepFrameScaffold(256u);
+				}
+
+				GenesisBoundaryScaffoldSaveState sample = scaffold.SaveState();
+				probe.WindowCount++;
+				probe.FinalFrameDelta = sample.TimingFrame - baseline.TimingFrame;
+				probe.IoAccessDelta = (sample.Bus.IoReadCount + sample.Bus.IoWriteCount)
+					- (baseline.Bus.IoReadCount + baseline.Bus.IoWriteCount);
+				probe.VdpAccessDelta = (sample.Bus.VdpReadCount + sample.Bus.VdpWriteCount)
+					- (baseline.Bus.VdpReadCount + baseline.Bus.VdpWriteCount);
+				probe.VdpWindowTouched = sample.Bus.VdpWindowAccessed;
+
+				string line = std::format(
+					"w{}:{}:{}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{}:{}",
+					window,
+					sample.TimingFrame,
+					sample.TimingScanline,
+					tmssRead,
+					ioRead,
+					busRead,
+					runRead,
+					vdpStatusHigh,
+					vdpStatusLow,
+					probe.IoAccessDelta,
+					probe.VdpAccessDelta);
+				for (uint8_t ch : line) {
+					digest ^= ch;
+					digest *= 1099511628211ull;
+				}
+			}
+
+			probe.OwnerParityPass = scaffold.GetBus().GetOwnerForAddress(0xA14000) == GenesisBusOwner::Io
+				&& scaffold.GetBus().GetOwnerForAddress(0xA10003) == GenesisBusOwner::Io
+				&& scaffold.GetBus().GetOwnerForAddress(0xA11100) == GenesisBusOwner::Io
+				&& scaffold.GetBus().GetOwnerForAddress(0xA11200) == GenesisBusOwner::Io
+				&& scaffold.GetBus().GetOwnerForAddress(0xC00004) == GenesisBusOwner::Vdp;
+
+			probe.SignatureDigest = ToHex(digest);
+			return probe;
+		};
+
+		GenesisBoundaryScaffoldSaveState startupMemMapBaseline = scaffold.SaveState();
+		StartupMemMapParityProbeResult startupMemMapFirst = runStartupMemMapParityProbe(startupMemMapBaseline);
+		GenesisBoundaryScaffoldSaveState startupMemMapTail = scaffold.SaveState();
+		scaffold.LoadState(startupMemMapBaseline);
+		StartupMemMapParityProbeResult startupMemMapReplay = runStartupMemMapParityProbe(startupMemMapBaseline);
+		scaffold.LoadState(startupMemMapTail);
+
+		bool startupMemMapReplayMatch = startupMemMapFirst.WindowCount == startupMemMapReplay.WindowCount
+			&& startupMemMapFirst.FinalFrameDelta == startupMemMapReplay.FinalFrameDelta
+			&& startupMemMapFirst.TmssEchoCount == startupMemMapReplay.TmssEchoCount
+			&& startupMemMapFirst.IoAccessDelta == startupMemMapReplay.IoAccessDelta
+			&& startupMemMapFirst.VdpAccessDelta == startupMemMapReplay.VdpAccessDelta
+			&& startupMemMapFirst.OwnerParityPass == startupMemMapReplay.OwnerParityPass
+			&& startupMemMapFirst.VdpWindowTouched == startupMemMapReplay.VdpWindowTouched
+			&& startupMemMapFirst.SignatureDigest == startupMemMapReplay.SignatureDigest;
+		bool startupMemMapParityPass = !isTargetStartupClass || (
+			startupMemMapFirst.WindowCount == 3
+			&& startupMemMapFirst.FinalFrameDelta >= 3
+			&& startupMemMapFirst.TmssEchoCount >= 2
+			&& startupMemMapFirst.IoAccessDelta > 0
+			&& startupMemMapFirst.VdpAccessDelta > 0
+			&& startupMemMapFirst.OwnerParityPass
+			&& startupMemMapFirst.VdpWindowTouched
+			&& startupMemMapReplayMatch);
+		addCheckpoint(
+			"GEN-COMPAT-STARTUP-MEMMAP-PARITY",
+			startupMemMapParityPass,
+			std::format(
+				"class={} target={} windows={} frameDelta={} tmssEcho={} ioDelta={} vdpDelta={} ownerParity={} vdpTouched={} replayMatch={} digest={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				startupMemMapFirst.WindowCount,
+				startupMemMapFirst.FinalFrameDelta,
+				startupMemMapFirst.TmssEchoCount,
+				startupMemMapFirst.IoAccessDelta,
+				startupMemMapFirst.VdpAccessDelta,
+				startupMemMapFirst.OwnerParityPass ? 1 : 0,
+				startupMemMapFirst.VdpWindowTouched ? 1 : 0,
+				startupMemMapReplayMatch ? 1 : 0,
+				startupMemMapFirst.SignatureDigest));
+
 		auto runInterruptCadenceStartupPath = [&scaffold, &titleClass]() {
 			if (titleClass == "sonic") {
 				scaffold.StepFrameScaffold(488u + 64u);
@@ -1394,6 +1521,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-BOOT-TO-TITLE-PROGRESSION")
 			&& hasPassingCheckpoint("GEN-COMPAT-REALROM-STARTUP-SMOKE")
 			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-INPUT-WINDOW")
+			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-MEMMAP-PARITY")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-TIMING-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-STATUS-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-CADENCE-STARTUP")
