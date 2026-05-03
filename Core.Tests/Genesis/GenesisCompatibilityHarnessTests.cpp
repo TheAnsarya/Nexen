@@ -81,6 +81,7 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-STARTUP-FRAME-WINDOW"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-STARTUP-RENDER-HANDOFF"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-STARTUP-CPU-PROGRESSION"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-BOOT-TO-TITLE-PROGRESSION"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TAS-CHEAT"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-PBC-BOOT"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-PBC-RUNTIME"));
@@ -110,6 +111,7 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-STARTUP-FRAME-WINDOW"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-STARTUP-RENDER-HANDOFF"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-STARTUP-CPU-PROGRESSION"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-BOOT-TO-TITLE-PROGRESSION"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DETERMINISM"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DEBUG-LANE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TAS-CHEAT"));
@@ -345,6 +347,44 @@ namespace {
 		for (const GenesisCompatibilityRomCase& romCase : corpus) {
 			string contextA = readStartupCpuProgressionContext(runA, romCase.Name);
 			string contextB = readStartupCpuProgressionContext(runB, romCase.Name);
+			EXPECT_EQ(contextA, contextB);
+		}
+	}
+
+	TEST(GenesisCompatibilityHarnessTests, BootToTitleProgressionCheckpointContextIsDeterministicAcrossRuns) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus = BuildGenesisCompatibilityCorpus();
+
+		auto readBootToTitleProgressionContext = [&](const GenesisCompatibilityMatrixResult& result, const string& romName) {
+			auto entryIt = std::find_if(result.Entries.begin(), result.Entries.end(), [&](const GenesisCompatibilityEntry& entry) {
+				return entry.Name == romName;
+			});
+			if (entryIt == result.Entries.end()) {
+				ADD_FAILURE() << "Missing compatibility entry for " << romName;
+				return string();
+			}
+
+			auto checkpointIt = std::find_if(entryIt->Checkpoints.begin(), entryIt->Checkpoints.end(), [](const GenesisCompatibilityCheckpoint& checkpoint) {
+				return checkpoint.Id == "GEN-COMPAT-BOOT-TO-TITLE-PROGRESSION";
+			});
+			if (checkpointIt == entryIt->Checkpoints.end()) {
+				ADD_FAILURE() << "Missing GEN-COMPAT-BOOT-TO-TITLE-PROGRESSION checkpoint for " << romName;
+				return string();
+			}
+
+			EXPECT_TRUE(checkpointIt->Pass);
+			return checkpointIt->Context;
+		};
+
+		GenesisCompatibilityMatrixResult runA = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+		GenesisCompatibilityMatrixResult runB = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+
+		ASSERT_EQ((int)runA.Entries.size(), (int)corpus.size());
+		ASSERT_EQ((int)runB.Entries.size(), (int)corpus.size());
+
+		for (const GenesisCompatibilityRomCase& romCase : corpus) {
+			string contextA = readBootToTitleProgressionContext(runA, romCase.Name);
+			string contextB = readBootToTitleProgressionContext(runB, romCase.Name);
 			EXPECT_EQ(contextA, contextB);
 		}
 	}
