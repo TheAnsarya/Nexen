@@ -70,6 +70,9 @@ public partial class MainWindow : NexenWindow {
 	private static long _notificationTraceSequence;
 	private long _ppuFrameDoneCount;
 	private long _genesisTimerSampleCount;
+	private static readonly bool _traceFrameNotifications = string.Equals(Environment.GetEnvironmentVariable("NEXEN_TRACE_FRAME_NOTIFICATIONS"), "1", StringComparison.OrdinalIgnoreCase);
+	private static readonly bool _enablePeriodicCoreLogSnapshots = string.Equals(Environment.GetEnvironmentVariable("NEXEN_ENABLE_PERIODIC_CORE_LOG_SNAPSHOTS"), "1", StringComparison.OrdinalIgnoreCase);
+	private static readonly bool _enableGenesisTimerSampling = string.Equals(Environment.GetEnvironmentVariable("NEXEN_ENABLE_GENESIS_TIMER_SAMPLING"), "1", StringComparison.OrdinalIgnoreCase);
 
 	static MainWindow() {
 		WindowStateProperty.Changed.AddClassHandler<MainWindow>((x, e) => x.OnWindowStateChanged());
@@ -225,7 +228,9 @@ public partial class MainWindow : NexenWindow {
 		_timerBackgroundFlag.Start();
 
 		_coreLogMirrorTimer?.Dispose();
-		_coreLogMirrorTimer = new System.Threading.Timer(_ => MirrorCoreLogSnapshotToDisk(), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+		if (_enablePeriodicCoreLogSnapshots) {
+			_coreLogMirrorTimer = new System.Threading.Timer(_ => MirrorCoreLogSnapshotToDisk(), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+		}
 
 		//Give focus to panel to avoid menu being given focus by default
 		this.GetControl<Panel>("RendererPanel").Focus();
@@ -344,9 +349,11 @@ public partial class MainWindow : NexenWindow {
 			switch (e.NotificationType) {
 			case ConsoleNotificationType.PpuFrameDone:
 				long frameCount = Interlocked.Increment(ref _ppuFrameDoneCount);
-				bool traceFrame = (frameCount <= 60) || (frameCount >= 2050 && frameCount <= 2450) || ((frameCount % 120) == 0);
-				if (traceFrame) {
-					Log.Info($"[MainWindow] PpuFrameDone count={frameCount}");
+				if (_traceFrameNotifications) {
+					bool traceFrame = (frameCount <= 60) || (frameCount >= 2050 && frameCount <= 2450) || ((frameCount % 120) == 0);
+					if (traceFrame) {
+						Log.Info($"[MainWindow] PpuFrameDone count={frameCount}");
+					}
 				}
 				break;
 
@@ -569,6 +576,10 @@ public partial class MainWindow : NexenWindow {
 	}
 
 	private void MirrorCoreLogSnapshotToDisk() {
+		if (!_enablePeriodicCoreLogSnapshots) {
+			return;
+		}
+
 		CoreLogPersistence.MirrorSnapshot("main-window-timer");
 	}
 
@@ -885,7 +896,7 @@ public partial class MainWindow : NexenWindow {
 			EmuApi.SaveRecentPlayState();
 		}
 
-		if (isGameRunning) {
+		if (_enableGenesisTimerSampling && isGameRunning) {
 			RomInfo activeRom = EmuApi.GetRomInfo();
 			if (activeRom.ConsoleType == ConsoleType.Genesis) {
 				long sampleCount = Interlocked.Increment(ref _genesisTimerSampleCount);

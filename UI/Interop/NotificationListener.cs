@@ -1,9 +1,11 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 
 namespace Nexen.Interop;
 public sealed class NotificationListener : IDisposable {
+	[UnmanagedFunctionPointer(CallingConvention.StdCall)]
 	public delegate void NotificationCallback(int type, IntPtr parameter);
 	public delegate void NotificationEventHandler(NotificationEventArgs e);
 	public event NotificationEventHandler? OnNotification;
@@ -42,10 +44,15 @@ public sealed class NotificationListener : IDisposable {
 	}
 
 	public void ProcessNotification(int type, IntPtr parameter) {
-		OnNotification?.Invoke(new NotificationEventArgs() {
-			NotificationType = (ConsoleNotificationType)type,
-			Parameter = parameter
-		});
+		try {
+			OnNotification?.Invoke(new NotificationEventArgs() {
+				NotificationType = (ConsoleNotificationType)type,
+				Parameter = parameter
+			});
+		} catch (Exception ex) {
+			// Never allow exceptions to cross the unmanaged callback boundary.
+			Debug.WriteLine($"[NotificationListener] Unhandled notification exception type={type}: {ex}");
+		}
 	}
 }
 
