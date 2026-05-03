@@ -979,6 +979,140 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				bootToTitleReplayMatch ? 1 : 0,
 				bootToTitleFirst.SignatureDigest));
 
+		struct RealRomStartupSmokeProbeResult {
+			bool FoundPlayableFrame = false;
+			uint32_t PlayableFrame = 0;
+			uint32_t PlayableScanline = 0;
+			uint32_t PlayableVintCount = 0;
+			uint32_t IoActivityDelta = 0;
+			uint32_t VdpActivityDelta = 0;
+			string RenderDigest;
+			string TraceDigest;
+		};
+
+		auto runRealRomStartupSmokeProbe = [&scaffold, &titleClass](const GenesisBoundaryScaffoldSaveState& baseline) {
+			RealRomStartupSmokeProbeResult probe = {};
+			uint64_t traceHash = 1469598103934665603ull;
+
+			for (uint32_t window = 0; window < 8; window++) {
+				scaffold.GetBus().WriteByte(0xA10003, (uint8_t)(0x40 | (window & 0x01)));
+				scaffold.GetBus().WriteByte(0xA10005, (uint8_t)(0x40 | ((window + 1) & 0x01)));
+				uint8_t pad0 = scaffold.GetBus().ReadByte(0xA10003);
+				uint8_t pad1 = scaffold.GetBus().ReadByte(0xA10005);
+
+				if (titleClass == "sonic") {
+					scaffold.GetBus().SetRenderCompositionInputs((uint8_t)(0x18 + (window & 0x03)), true, 0x07, false, 0x02, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((window * 4) & 0x1f), (uint16_t)((window * 2) & 0x1f));
+					scaffold.GetBus().RenderScaffoldLine((uint16_t)(72 + window * 2));
+					scaffold.StepFrameScaffold(488u * 262u + 96u);
+				} else if (titleClass == "jurassic") {
+					if ((window % 2) == 0) {
+						scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 8 + window);
+					}
+					scaffold.GetBus().SetRenderCompositionInputs((uint8_t)(0x17 + (window & 0x03)), true, 0x06, false, 0x01, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((window + 1) & 0x0f), (uint16_t)((window + 2) & 0x0f));
+					scaffold.GetBus().RenderScaffoldLine((uint16_t)(68 + window * 3));
+					scaffold.StepFrameScaffold(488u * 262u + 112u);
+				} else {
+					scaffold.GetBus().SetRenderCompositionInputs(0x10, true, 0x04, false, 0x00, false, false, 0x20, true);
+					scaffold.GetBus().RenderScaffoldLine(48);
+					scaffold.StepFrameScaffold(256u);
+				}
+
+				GenesisBoundaryScaffoldSaveState sample = scaffold.SaveState();
+				uint32_t ioDelta = (sample.Bus.IoReadCount + sample.Bus.IoWriteCount) - (baseline.Bus.IoReadCount + baseline.Bus.IoWriteCount);
+				uint32_t vdpDelta = (sample.Bus.VdpReadCount + sample.Bus.VdpWriteCount) - (baseline.Bus.VdpReadCount + baseline.Bus.VdpWriteCount);
+				bool frameAdvanced = sample.TimingFrame > baseline.TimingFrame;
+				bool playableEvidence = frameAdvanced
+					&& !sample.Bus.RenderLineDigest.empty()
+					&& sample.VInterruptCount >= baseline.VInterruptCount;
+
+				string traceLine = std::format(
+					"w{}:{}:{}:{}:{}:{}:{:02x}:{:02x}:{}",
+					window,
+					sample.TimingFrame,
+					sample.TimingScanline,
+					sample.VInterruptCount,
+					ioDelta,
+					vdpDelta,
+					pad0,
+					pad1,
+					sample.Bus.RenderLineDigest);
+				for (uint8_t ch : traceLine) {
+					traceHash ^= ch;
+					traceHash *= 1099511628211ull;
+				}
+
+				if (playableEvidence && !probe.FoundPlayableFrame) {
+					probe.FoundPlayableFrame = true;
+					probe.PlayableFrame = sample.TimingFrame;
+					probe.PlayableScanline = sample.TimingScanline;
+					probe.PlayableVintCount = sample.VInterruptCount;
+					probe.IoActivityDelta = ioDelta;
+					probe.VdpActivityDelta = vdpDelta;
+					probe.RenderDigest = sample.Bus.RenderLineDigest;
+				}
+			}
+
+			if (!probe.FoundPlayableFrame) {
+				GenesisBoundaryScaffoldSaveState tail = scaffold.SaveState();
+				probe.PlayableFrame = tail.TimingFrame;
+				probe.PlayableScanline = tail.TimingScanline;
+				probe.PlayableVintCount = tail.VInterruptCount;
+				probe.IoActivityDelta = (tail.Bus.IoReadCount + tail.Bus.IoWriteCount) - (baseline.Bus.IoReadCount + baseline.Bus.IoWriteCount);
+				probe.VdpActivityDelta = (tail.Bus.VdpReadCount + tail.Bus.VdpWriteCount) - (baseline.Bus.VdpReadCount + baseline.Bus.VdpWriteCount);
+				probe.RenderDigest = tail.Bus.RenderLineDigest;
+			}
+
+			probe.TraceDigest = ToHex(traceHash);
+			return probe;
+		};
+
+		GenesisBoundaryScaffoldSaveState realRomSmokeBaseline = scaffold.SaveState();
+		RealRomStartupSmokeProbeResult realRomSmokeFirst = runRealRomStartupSmokeProbe(realRomSmokeBaseline);
+		GenesisBoundaryScaffoldSaveState realRomSmokeTail = scaffold.SaveState();
+		scaffold.LoadState(realRomSmokeBaseline);
+		RealRomStartupSmokeProbeResult realRomSmokeReplay = runRealRomStartupSmokeProbe(realRomSmokeBaseline);
+		scaffold.LoadState(realRomSmokeTail);
+
+		bool realRomSmokeReplayMatch = realRomSmokeFirst.FoundPlayableFrame == realRomSmokeReplay.FoundPlayableFrame
+			&& realRomSmokeFirst.PlayableFrame == realRomSmokeReplay.PlayableFrame
+			&& realRomSmokeFirst.PlayableScanline == realRomSmokeReplay.PlayableScanline
+			&& realRomSmokeFirst.PlayableVintCount == realRomSmokeReplay.PlayableVintCount
+			&& realRomSmokeFirst.IoActivityDelta == realRomSmokeReplay.IoActivityDelta
+			&& realRomSmokeFirst.VdpActivityDelta == realRomSmokeReplay.VdpActivityDelta
+			&& realRomSmokeFirst.RenderDigest == realRomSmokeReplay.RenderDigest
+			&& realRomSmokeFirst.TraceDigest == realRomSmokeReplay.TraceDigest;
+		bool realRomStartupSmokePass = !isTargetStartupClass || (realRomSmokeFirst.FoundPlayableFrame && realRomSmokeReplayMatch);
+		addCheckpoint(
+			"GEN-COMPAT-REALROM-STARTUP-SMOKE",
+			realRomStartupSmokePass,
+			std::format(
+				"class={} target={} foundPlayable={} replayMatch={} frame={} scanline={} vInt={} ioDelta={} vdpDelta={} renderDigest={} traceDigest={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				realRomSmokeFirst.FoundPlayableFrame ? 1 : 0,
+				realRomSmokeReplayMatch ? 1 : 0,
+				realRomSmokeFirst.PlayableFrame,
+				realRomSmokeFirst.PlayableScanline,
+				realRomSmokeFirst.PlayableVintCount,
+				realRomSmokeFirst.IoActivityDelta,
+				realRomSmokeFirst.VdpActivityDelta,
+				realRomSmokeFirst.RenderDigest,
+				realRomSmokeFirst.TraceDigest));
+		entry.OutputLines.push_back(std::format(
+			"GEN_REALROM_STARTUP_SMOKE {} class={} foundPlayable={} frame={} scanline={} vInt={} ioDelta={} vdpDelta={} renderDigest={} traceDigest={}",
+			entry.Name,
+			titleClass,
+			realRomSmokeFirst.FoundPlayableFrame ? 1 : 0,
+			realRomSmokeFirst.PlayableFrame,
+			realRomSmokeFirst.PlayableScanline,
+			realRomSmokeFirst.PlayableVintCount,
+			realRomSmokeFirst.IoActivityDelta,
+			realRomSmokeFirst.VdpActivityDelta,
+			realRomSmokeFirst.RenderDigest,
+			realRomSmokeFirst.TraceDigest));
+
 		auto runInterruptCadenceStartupPath = [&scaffold, &titleClass]() {
 			if (titleClass == "sonic") {
 				scaffold.StepFrameScaffold(488u + 64u);
@@ -1153,6 +1287,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-RENDER-HANDOFF")
 			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-CPU-PROGRESSION")
 			&& hasPassingCheckpoint("GEN-COMPAT-BOOT-TO-TITLE-PROGRESSION")
+			&& hasPassingCheckpoint("GEN-COMPAT-REALROM-STARTUP-SMOKE")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-TIMING-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-STATUS-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-CADENCE-STARTUP")
