@@ -2264,8 +2264,9 @@ All five sound great! Let's do them all so make issues for all of these work ewf
 
 do all four in order; continue;
 
+[Nexen] (Genesis/MegaDrive) Build and run Nexen running Sonic 1 to see what we get (add logging and review logs); Continue integrating and fixing code using `Hoshiruna/Mesen2-Expanded`'s Genesis code as a resource into our framework; create and fix multiple issues; continue;
 
-
+1, and the Trace Logger says "unsupported type", so check the logs and fix it; continue;
 
 
 

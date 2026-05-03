@@ -1,4 +1,4 @@
-using Nexen.Utilities;
+﻿using Nexen.Utilities;
 using Xunit;
 
 namespace Nexen.Tests.Utilities;

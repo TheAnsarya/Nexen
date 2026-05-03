@@ -944,24 +944,7 @@ public sealed partial class TraceLoggerOptionTab : DisposableViewModel {
 
 		addBoldRow("CPU-specific tags (" + ResourceHelper.GetEnumText(CpuType) + ")");
 
-		string[] tokens = CpuType switch {
-			CpuType.Snes or CpuType.Sa1 => new string[] { "A", "X", "Y", "D", "DB", "P", "SP" },
-			CpuType.Spc => new string[] { "A", "X", "Y", "P", "SP" },
-			CpuType.NecDsp => new string[] { "A", "B", "FlagsA", "FlagsB", "K", "L", "M", "N", "RP", "DP", "DR", "SR", "TR", "TRB" },
-			CpuType.Gsu => new string[] { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "SRC", "DST", "SFR" },
-			CpuType.Cx4 => new string[] { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "MAR", "MDR", "DPR", "ML", "MH", "PB", "P", "PS", "A" },
-			CpuType.Gameboy => new string[] { "A", "B", "C", "D", "E", "F", "H", "L", "PS", "SP" },
-			CpuType.Nes => new string[] { "A", "X", "Y", "P", "SP" },
-			CpuType.Pce => new string[] { "A", "X", "Y", "P", "SP" },
-			CpuType.Sms => new string[] { "A", "B", "C", "D", "E", "F", "H", "L", "IX", "IY", "A'", "B'", "C'", "D'", "E'", "F'", "H'", "L'", "I", "R", "PS", "SP" },
-			CpuType.Gba or CpuType.St018 => new string[] { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "CPSR" },
-			CpuType.Ws => new string[] { "AX", "BX", "CX", "DX", "CS", "IP", "SS", "SP", "BP", "DS", "ES", "SI", "DI", "F" },
-			CpuType.Lynx => new string[] { "A", "X", "Y", "P", "SP" },
-			CpuType.Genesis => new string[] { "D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "A0", "A1", "A2", "A3", "A4", "A5", "A6", "SP", "SR" },
-			CpuType.Atari2600 => new string[] { "A", "X", "Y", "P", "SP" },
-			CpuType.ChannelF => new string[] { "A", "W", "ISAR", "PC1", "DC0", "DC1" },
-			_ => throw new Exception("unsupported cpu type")
-		};
+		string[] tokens = GetCpuSpecificTokens(CpuType);
 
 		Array.Sort(tokens);
 
@@ -988,6 +971,32 @@ public sealed partial class TraceLoggerOptionTab : DisposableViewModel {
 		panel.Children.Add(tokenGrid);
 
 		return panel;
+	}
+
+	public static string[] GetCpuSpecificTokens(CpuType cpuType) {
+		return cpuType switch {
+			CpuType.Snes or CpuType.Sa1 => new string[] { "A", "X", "Y", "D", "DB", "P", "SP" },
+			CpuType.Spc => new string[] { "A", "X", "Y", "P", "SP" },
+			CpuType.NecDsp => new string[] { "A", "B", "FlagsA", "FlagsB", "K", "L", "M", "N", "RP", "DP", "DR", "SR", "TR", "TRB" },
+			CpuType.Gsu => new string[] { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "SRC", "DST", "SFR" },
+			CpuType.Cx4 => new string[] { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "MAR", "MDR", "DPR", "ML", "MH", "PB", "P", "PS", "A" },
+			CpuType.Gameboy => new string[] { "A", "B", "C", "D", "E", "F", "H", "L", "PS", "SP" },
+			CpuType.Nes => new string[] { "A", "X", "Y", "P", "SP" },
+			CpuType.Pce => new string[] { "A", "X", "Y", "P", "SP" },
+			CpuType.Sms => new string[] { "A", "B", "C", "D", "E", "F", "H", "L", "IX", "IY", "A'", "B'", "C'", "D'", "E'", "F'", "H'", "L'", "I", "R", "PS", "SP" },
+			CpuType.Gba or CpuType.St018 => new string[] { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "CPSR" },
+			CpuType.Ws => new string[] { "AX", "BX", "CX", "DX", "CS", "IP", "SS", "SP", "BP", "DS", "ES", "SI", "DI", "F" },
+			CpuType.Lynx => new string[] { "A", "X", "Y", "P", "SP" },
+			CpuType.Genesis => new string[] { "D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "A0", "A1", "A2", "A3", "A4", "A5", "A6", "SP", "SR" },
+			CpuType.Atari2600 => new string[] { "A", "X", "Y", "P", "SP" },
+			CpuType.ChannelF => new string[] { "A", "W", "ISAR", "PC1", "DC0", "DC1" },
+			_ => GetFallbackCpuTokens(cpuType)
+		};
+	}
+
+	private static string[] GetFallbackCpuTokens(CpuType cpuType) {
+		Log.Warn($"[TraceLogger] Unknown CPU type for token tooltip: {cpuType} ({(byte)cpuType}), using fallback tokens");
+		return ["PC", "ByteCode", "Disassembly"];
 	}
 }
 
