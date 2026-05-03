@@ -2110,6 +2110,9 @@ E
 
 		<Message ID="ExportPansySuccess">Pansy metadata file exported successfully.</Message>
 		<Message ID="ExportPansyFailed">Failed to export Pansy metadata file.</Message>
+		<Message ID="lblExportComplete">Export Complete</Message>
+		<Message ID="lblExportSuccessful">Export completed successfully.</Message>
+		<Message ID="lblExportFailed">Export Failed</Message>
 	</Messages>
 	<Enums>
 		<Enum ID="EmulatorShortcut">
@@ -2126,6 +2129,10 @@ E
 			<Value ID="PowerCycle">Power Cycle</Value>
 			<Value ID="ReloadRom">Reload ROM</Value>
 			<Value ID="PowerOff">Power Off</Value>
+			<Value ID="ExecReset">Reset (Execute)</Value>
+			<Value ID="ExecPowerCycle">Power Cycle (Execute)</Value>
+			<Value ID="ExecReloadRom">Reload ROM (Execute)</Value>
+			<Value ID="ExecPowerOff">Power Off (Execute)</Value>
 			<Value ID="Exit">Exit</Value>
 			<Value ID="TakeScreenshot">Take Screenshot</Value>
 			<Value ID="MoveToNextStateSlot">Select Next Save Slot</Value>
@@ -2232,6 +2239,7 @@ E
 
 			<Value ID="FdsSwitchDiskSide">FDS - Switch Disk Side</Value>
 			<Value ID="FdsEjectDisk">FDS - Eject Disk</Value>
+			<Value ID="FdsInsertDiskNumber">FDS - Insert Disk Number</Value>
 			<Value ID="FdsInsertNextDisk">FDS - Insert Next Disk</Value>
 			<Value ID="VsInsertCoin1">VS - Insert Coin 1</Value>
 			<Value ID="VsInsertCoin2">VS - Insert Coin 2</Value>
@@ -2244,6 +2252,9 @@ E
 			<Value ID="LoadTape">Load Tape From File</Value>
 			<Value ID="RecordTape">Start Recording Tape To File</Value>
 			<Value ID="StopRecordTape">Stop Recording Tape</Value>
+			<Value ID="StartRecordHdPack">HD Pack - Start Recording</Value>
+			<Value ID="StopRecordHdPack">HD Pack - Stop Recording</Value>
+			<Value ID="LastValidValue">Last Valid Value (Internal)</Value>
 		</Enum>
 		<Enum ID="ControllerType">
 			<Value ID="None">None</Value>
@@ -2999,6 +3010,8 @@ E
 			<Value ID="Ymf288AdpcmRom">YFM288 ADPCM ROM (EPSM)</Value>
 			<Value ID="SmsBootRom">Master System - Boot ROM</Value>
 			<Value ID="GgBootRom">Game Gear - Boot ROM</Value>
+			<Value ID="LynxBootRom">Atari Lynx - Boot ROM</Value>
+			<Value ID="ChannelFBios">Channel F - BIOS</Value>
 		</Enum>
 
 		<Enum ID="CpuType">
@@ -3116,6 +3129,29 @@ E
 			<Value ID="WsInternalEeprom">IEEPROM (Internal)</Value>
 			<Value ID="WsPort">I/O Port</Value>
 
+			<Value ID="LynxMemory">CPU Memory</Value>
+			<Value ID="GenesisMemory">CPU Memory</Value>
+			<Value ID="Atari2600Memory">CPU Memory</Value>
+			<Value ID="ChannelFMemory">CPU Memory</Value>
+
+			<Value ID="LynxPrgRom">ROM</Value>
+			<Value ID="LynxWorkRam">Work RAM</Value>
+			<Value ID="LynxBootRom">Boot ROM</Value>
+			<Value ID="LynxSaveRam">Save RAM</Value>
+
+			<Value ID="GenesisPrgRom">ROM</Value>
+			<Value ID="GenesisWorkRam">Work RAM</Value>
+			<Value ID="GenesisVideoRam">Video RAM</Value>
+			<Value ID="GenesisPaletteRam">Palette RAM</Value>
+
+			<Value ID="Atari2600PrgRom">ROM</Value>
+			<Value ID="Atari2600Ram">RAM</Value>
+			<Value ID="Atari2600TiaRegisters">TIA Registers</Value>
+
+			<Value ID="ChannelFBiosRom">BIOS ROM</Value>
+			<Value ID="ChannelFCartRom">Cartridge ROM</Value>
+			<Value ID="ChannelFVideoRam">Video RAM</Value>
+
 			<Value ID="None">None</Value>
 		</Enum>
 		<Enum ID="GameboyModel">
@@ -3210,6 +3246,7 @@ E
 			<Value ID="CompactText">Text (Active only)</Value>
 		</Enum>
 		<Enum ID="BreakSource">
+			<Value ID="Unspecified">Unspecified</Value>
 			<Value ID="Breakpoint">Breakpoint</Value>
 			<Value ID="Pause">Pause</Value>
 			<Value ID="CpuStep">CPU Step</Value>
@@ -3231,6 +3268,7 @@ E
 			<Value ID="Nmi">NMI</Value>
 
 			<Value ID="NesBreakOnDecayedOamRead">Decayed OAM read</Value>
+			<Value ID="NesBreakOnPpuScrollGlitch">PPU scroll glitch</Value>
 			<Value ID="NesBreakOnPpu2000ScrollGlitch">$2000/5/6 scroll glitch</Value>
 			<Value ID="NesBreakOnPpu2006ScrollGlitch">$2006 scroll glitch</Value>
 			<Value ID="BreakOnUnofficialOpCode">Unofficial OP</Value>
@@ -3441,6 +3479,7 @@ E
 			<Value ID="StkRelIndIdxY">(d,s),y - Stack Relative Indirect Indexed</Value>
 
 			<Value ID="AbxXInd">(a,x) - Absolute Indexed Indirect</Value>
+			<Value ID="AbsXInd">(a,x) - Absolute Indexed Indirect</Value>
 			<Value ID="Block">s,d,l - Block Transfer</Value>
 			<Value ID="ImZero">#i,z - Immediate Zero Page</Value>
 			<Value ID="ImZeroX">#i,z,x - Immediate Zero Page Indexed</Value>
@@ -3491,6 +3530,7 @@ E
 			<Value ID="OpenRegisterViewer">Open Register Viewer</Value>
 			<Value ID="OpenDebugLog">Open Debug Log</Value>
 			<Value ID="OpenNesHeaderEditor">Open NES Header Editor</Value>
+			<Value ID="OpenDebugSettings">Open Debug Settings</Value>
 			<Value ID="OpenTilemapViewer">Open Tilemap Viewer</Value>
 			<Value ID="OpenTileViewer">Open Tile Viewer</Value>
 			<Value ID="OpenSpriteViewer">Open Sprite Viewer</Value>
@@ -3624,6 +3664,7 @@ E
 			<Value ID="MemoryViewer_GoToNextExec">Navigate to: Next exec block</Value>
 
 			<Value ID="ScriptWindow_OpenScript">Open Script</Value>
+			<Value ID="ScriptWindow_NewScript">New Script</Value>
 			<Value ID="ScriptWindow_SaveScript">Save Script</Value>
 			<Value ID="ScriptWindow_RunScript">Run Script</Value>
 			<Value ID="ScriptWindow_StopScript">Stop Script</Value>
@@ -3651,6 +3692,7 @@ E
 			<Value ID="SyncPansyFolder">Integration - Sync Folder</Value>
 		</Enum>
 		<Enum ID="ActionType">
+			<Value ID="Custom">Custom</Value>
 			<Value ID="Copy">Copy</Value>
 			<Value ID="Paste">Paste</Value>
 			<Value ID="SelectAll">Select All</Value>
