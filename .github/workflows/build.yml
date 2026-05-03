@@ -299,7 +299,7 @@ jobs:
           - compiler: clang_aot
             make_flags: "USE_AOT=true"
       fail-fast: false
-    runs-on: ${{ matrix.platform.os }}
+    runs-on: ${{ matrix.compiler == 'gcc' && (matrix.platform.path == 'x64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm') || matrix.platform.os }}
 
     steps:
       - name: Checkout repo
@@ -317,8 +317,8 @@ jobs:
           sudo apt-get update -qy
           sudo apt-get install -qy libsdl2-dev ccache xvfb # The compilers are already installed on GitHub's runners.
 
-      # Resolve a GCC toolchain with C++23 <format> support without relying on Launchpad PPA APIs.
-      - name: Install GCC 13
+      # Resolve a GCC toolchain with C++23 <format> support without Launchpad PPA dependencies.
+      - name: Resolve GCC toolchain (>=13)
         if: matrix.compiler == 'gcc'
         run: |
           set -euo pipefail
@@ -334,7 +334,7 @@ jobs:
           }
 
           selected=""
-          for pair in "gcc-14;g++-14" "gcc-13;g++-13" "gcc-12;g++-12"; do
+          for pair in "gcc-14;g++-14" "gcc-13;g++-13"; do
             cc="${pair%%;*}"
             cxx="${pair##*;}"
             if resolved=$(pick_compiler_pair "$cc" "$cxx"); then
@@ -344,11 +344,11 @@ jobs:
           done
 
           if [ -z "$selected" ]; then
-            echo "No suitable GCC toolchain preinstalled. Attempting apt install fallback..."
+            echo "No suitable GCC 13+ toolchain preinstalled. Attempting apt fallback..."
             sudo apt-get update -qy
-            sudo apt-get install -qy g++-13 gcc-13 || sudo apt-get install -qy g++-12 gcc-12
+            sudo apt-get install -qy g++-14 gcc-14 || sudo apt-get install -qy g++-13 gcc-13
 
-            for pair in "gcc-13;g++-13" "gcc-12;g++-12"; do
+            for pair in "gcc-14;g++-14" "gcc-13;g++-13"; do
               cc="${pair%%;*}"
               cxx="${pair##*;}"
               if resolved=$(pick_compiler_pair "$cc" "$cxx"); then
@@ -359,7 +359,7 @@ jobs:
           fi
 
           if [ -z "$selected" ]; then
-            echo "Failed to resolve a usable GCC toolchain."
+            echo "Failed to resolve a usable GCC 13+ toolchain."
             exit 1
           fi
 
@@ -397,8 +397,8 @@ jobs:
         run: |
           set -o pipefail
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            CC_BIN="${CC:-gcc-13}"
-            CXX_BIN="${CXX:-g++-13}"
+            CC_BIN="${CC:-gcc-14}"
+            CXX_BIN="${CXX:-g++-14}"
             make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC="$CC_BIN" CXX="$CXX_BIN" 2>&1 | tee build-linux.log
           else
             make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++" 2>&1 | tee build-linux.log
