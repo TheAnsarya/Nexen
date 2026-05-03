@@ -1,14 +1,16 @@
-using Nexen.Localization;
+﻿using Nexen.Localization;
 using Xunit;
 
 namespace Nexen.Tests.Localization;
 
 public sealed class ResourceHelperTests {
 	[Fact]
-	public void GetAvailableLanguageCodes_IncludesEnglish() {
+	public void GetAvailableLanguageCodes_IncludesEnglishSpanishAndJapanese() {
 		string[] languageCodes = ResourceHelper.GetAvailableLanguageCodes();
 
 		Assert.Contains("en", languageCodes);
+		Assert.Contains("es", languageCodes);
+		Assert.Contains("ja", languageCodes);
 	}
 
 	[Fact]

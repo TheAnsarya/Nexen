@@ -279,6 +279,12 @@ public static class LoadRomHelper {
 			string ext = Path.GetExtension(filename).ToLowerInvariant();
 			Log.Info($"[LoadRomHelper] File exists, extension: {ext}");
 			bool isRomFile = FolderHelper.IsRomFile(filename);
+			if (!isRomFile && ext == ".bin") {
+				// Defensive fallback: some command-line/open-file flows reported .bin as unsupported in logs.
+				// .bin is a valid Genesis/Channel F extension, so treat it as ROM here and let core validation decide.
+				isRomFile = true;
+				Log.Warn($"[LoadRomHelper] Applying .bin ROM fallback for path: {filename}");
+			}
 			bool isArchiveFile = FolderHelper.IsArchiveFile(filename);
 
 			if (IsPatchFile(filename)) {

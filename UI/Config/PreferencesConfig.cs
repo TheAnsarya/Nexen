@@ -216,6 +216,8 @@ public sealed partial class PreferencesConfig : BaseConfig<PreferencesConfig> {
 	public static string GetLanguageCode(UiLanguage language) {
 		return language switch {
 			UiLanguage.English => "en",
+			UiLanguage.Spanish => "es",
+			UiLanguage.Japanese => "ja",
 			_ => "en"
 		};
 	}
@@ -273,7 +275,9 @@ public enum PrimaryUsageProfile {
 }
 
 public enum UiLanguage {
-	English = 0
+	English = 0,
+	Spanish = 1,
+	Japanese = 2
 }
 
 public enum FontAntialiasing {

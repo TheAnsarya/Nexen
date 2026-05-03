@@ -7,6 +7,7 @@ public sealed class FolderHelperTests {
 	[Theory]
 	[InlineData("Sonic The Hedgehog (W) (REV00) [!].bin")]
 	[InlineData("Sonic The Hedgehog (W) (REV00) [!].BIN")]
+	[InlineData(@"C:\~reference-roms\genesis\Sonic The Hedgehog (W) (REV00) [!].bin")]
 	public void IsRomFile_AcceptsBinExtension(string fileName) {
 		Assert.True(FolderHelper.IsRomFile(fileName));
 	}

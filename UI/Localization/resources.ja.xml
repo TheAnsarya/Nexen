@@ -800,8 +800,8 @@
 			<Control ID="lblTheme">Theme:</Control>
 			<Control ID="lblRequiresRestart">(requires restart)</Control>
 
-			<Control ID="lblDisplayLanguage">Display Language:</Control>
-			<Control ID="lblAvailableLanguages">Available languages:</Control>
+			<Control ID="lblDisplayLanguage">表示言語:</Control>
+			<Control ID="lblAvailableLanguages">利用可能な言語:</Control>
 			<Control ID="chkSingleInstance">Only allow one instance of Nexen at a time</Control>
 			<Control ID="chkAutomaticallyCheckForUpdates">Automatically check for updates</Control>
 
@@ -2749,9 +2749,9 @@ E
 			<Value ID="Dark">Dark</Value>
 		</Enum>
 		<Enum ID="UiLanguage">
-			<Value ID="English">English</Value>
-			<Value ID="Spanish">Spanish</Value>
-			<Value ID="Japanese">Japanese</Value>
+			<Value ID="English">英語</Value>
+			<Value ID="Spanish">スペイン語</Value>
+			<Value ID="Japanese">日本語</Value>
 		</Enum>
 		<Enum ID="PceConsoleType">
 			<Value ID="Auto">Auto (recommended)</Value>
