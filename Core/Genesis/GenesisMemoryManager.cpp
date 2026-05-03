@@ -114,6 +114,13 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 
 	_z80BusRequest = false;
 	_z80Reset = true;
+	_z80RuntimeRunning = false;
+	_z80RuntimeRunnableCycles = 0;
+	_z80RuntimeStalledCycles = 0;
+	_z80RuntimeTransitionCount = 0;
+	_z80RuntimeStateEpoch = 0;
+	_z80RuntimeLastTransitionClock = 0;
+	UpdateZ80RuntimeState(false, 0, 0, "init");
 	_tmssEnabled = _emu->GetSettings()->GetGenesisConfig().EnableTmss;
 	_tmssUnlocked = false;
 	_tmssVdpBlockLogged = false;
@@ -284,6 +291,35 @@ uint32_t GenesisMemoryManager::TranslateRomAddress(uint32_t addr) const {
 	}
 
 	return effectiveAddr % _prgRomSize;
+}
+
+bool GenesisMemoryManager::ComputeZ80RuntimeRunning() const {
+	return !_z80BusRequest && !_z80Reset;
+}
+
+void GenesisMemoryManager::UpdateZ80RuntimeState(bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag) {
+	bool nextRunning = ComputeZ80RuntimeRunning();
+	if (_z80RuntimeRunning != nextRunning) {
+		_z80RuntimeTransitionCount++;
+		_z80RuntimeStateEpoch++;
+		_z80RuntimeLastTransitionClock = _masterClock;
+		if (allowTransitionLog) {
+			MessageManager::Log(std::format("[Genesis][MMU] Z80 runtime transition #{} epoch={} src={} addr=${:06x} pc=${:06x} oldRunning={} newRunning={} busReq={} reset={} runnableCycles={} stalledCycles={} masterClock={}",
+				_z80RuntimeTransitionCount,
+				_z80RuntimeStateEpoch,
+				sourceTag,
+				addr & 0x00ffffff,
+				pc & 0x00ffffff,
+				_z80RuntimeRunning ? 1 : 0,
+				nextRunning ? 1 : 0,
+				_z80BusRequest ? 1 : 0,
+				_z80Reset ? 1 : 0,
+				_z80RuntimeRunnableCycles,
+				_z80RuntimeStalledCycles,
+				_masterClock));
+		}
+	}
+	_z80RuntimeRunning = nextRunning;
 }
 
 bool GenesisMemoryManager::TryGetSegaCdBridgeSlot(uint32_t addr, uint8_t*& slot, uint32_t& slotIndex) {
@@ -1294,6 +1330,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 					_z80BusRequest ? 1 : 0,
 					_z80Reset ? 1 : 0));
 			}
+			UpdateZ80RuntimeState(true, addr, pc, "write8-busreq");
 		}
 		_openBus = effectiveValue;
 		TrackSegaCdHandshakeTranscript(addr, true, effectiveValue);
@@ -1318,6 +1355,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 					_z80Reset ? 1 : 0,
 					_z80BusRequest ? 1 : 0));
 			}
+			UpdateZ80RuntimeState(true, addr, pc, "write8-reset");
 		}
 		_openBus = effectiveValue;
 		TrackSegaCdHandshakeTranscript(addr, true, effectiveValue);
@@ -1455,6 +1493,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 				_z80BusRequest ? 1 : 0,
 				_z80Reset ? 1 : 0));
 		}
+		UpdateZ80RuntimeState(true, addr, pc, "write16-busreq");
 		_openBus = effectiveHighByte;
 		TrackSegaCdHandshakeTranscript(addr, true, effectiveHighByte);
 		return;
@@ -1479,6 +1518,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 				_z80Reset ? 1 : 0,
 				_z80BusRequest ? 1 : 0));
 		}
+		UpdateZ80RuntimeState(true, addr, pc, "write16-reset");
 		_openBus = effectiveHighByte;
 		TrackSegaCdHandshakeTranscript(addr, true, effectiveHighByte);
 		return;
@@ -2030,6 +2070,8 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		uint8_t effectiveValue = value;
 		if (!(effectiveAddr & 0x01)) {
 			_z80BusRequest = (effectiveValue & 0x01) != 0;
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			UpdateZ80RuntimeState(false, effectiveAddr, pc, "debugwrite8-busreq");
 		}
 		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x80);
@@ -2039,6 +2081,8 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		uint8_t effectiveValue = value;
 		if (!(effectiveAddr & 0x01)) {
 			_z80Reset = !(effectiveValue & 0x01);
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			UpdateZ80RuntimeState(false, effectiveAddr, pc, "debugwrite8-reset");
 		}
 		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x84);
@@ -2233,6 +2277,13 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	bool tmssEnabled = _tmssEnabled;
 	_z80BusRequest = nextZ80BusRequest;
 	_z80Reset = nextZ80Reset;
+	_z80RuntimeRunning = false;
+	_z80RuntimeRunnableCycles = 0;
+	_z80RuntimeStalledCycles = 0;
+	_z80RuntimeTransitionCount = 0;
+	_z80RuntimeStateEpoch = 0;
+	_z80RuntimeLastTransitionClock = 0;
+	UpdateZ80RuntimeState(false, 0, 0, "reset");
 	_openBus = nextOpenBus;
 	_tmssUnlocked = nextTmssUnlocked;
 	_ramEnable = false;

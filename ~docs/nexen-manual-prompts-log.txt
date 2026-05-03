@@ -2243,6 +2243,7 @@ continue;
 
 If you want, next I will instrument the active Genesis runtime path for explicit Z80 run-state/cycle-progress counters (not just MMU access state), then rerun Sonic to confirm whether Z80 is actually advancing while this loop is active.
 
+[Nexen] don't pause when we open debugging, Like when we open Settings->Input or we open Debug there are a bunch of "[[xxxxxx]]" stings that are not real values, just component name or something, so make them have real Labels (search the whole codebase to find these things, and fix them with localized values; continue;
 
 
 

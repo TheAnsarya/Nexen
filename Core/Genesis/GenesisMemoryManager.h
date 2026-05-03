@@ -50,6 +50,12 @@ private:
 	// Z80 bus
 	bool _z80BusRequest = false;
 	bool _z80Reset = true;
+	bool _z80RuntimeRunning = false;
+	uint64_t _z80RuntimeRunnableCycles = 0;
+	uint64_t _z80RuntimeStalledCycles = 0;
+	uint64_t _z80RuntimeTransitionCount = 0;
+	uint64_t _z80RuntimeStateEpoch = 0;
+	uint64_t _z80RuntimeLastTransitionClock = 0;
 	bool _romBankMapperEnabled = false;
 	uint8_t _romBankRegisters[MapperBankWindowCount] = {};
 	bool _ramEnable = false;
@@ -135,6 +141,8 @@ private:
 	uint8_t GetRamControlRegisterValue() const;
 	void WriteRamControlRegister(uint8_t value);
 	uint32_t TranslateRomAddress(uint32_t addr) const;
+	bool ComputeZ80RuntimeRunning() const;
+	void UpdateZ80RuntimeState(bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag);
 
 public:
 	GenesisMemoryManager();
@@ -169,11 +177,22 @@ public:
 	// Clock
 	__forceinline void Exec(uint32_t cycles) {
 		_masterClock += cycles;
+		if (_z80RuntimeRunning) {
+			_z80RuntimeRunnableCycles += cycles;
+		} else {
+			_z80RuntimeStalledCycles += cycles;
+		}
 		_vdp->Run(_masterClock);
 	}
 
 	uint64_t GetMasterClock() const { return _masterClock; }
 	GenesisIoState GetIoState() const { return _ioState; }
+	bool GetZ80RuntimeRunning() const { return _z80RuntimeRunning; }
+	uint64_t GetZ80RuntimeRunnableCycles() const { return _z80RuntimeRunnableCycles; }
+	uint64_t GetZ80RuntimeStalledCycles() const { return _z80RuntimeStalledCycles; }
+	uint64_t GetZ80RuntimeTransitionCount() const { return _z80RuntimeTransitionCount; }
+	uint64_t GetZ80RuntimeStateEpoch() const { return _z80RuntimeStateEpoch; }
+	uint64_t GetZ80RuntimeLastTransitionClock() const { return _z80RuntimeLastTransitionClock; }
 	uint32_t GetDebugTranscriptLaneCount() const { return _ioState.DebugTranscriptLaneCount; }
 	uint64_t GetDebugTranscriptLaneDigest() const { return _ioState.DebugTranscriptLaneDigest; }
 	void ClearDebugTranscriptLane();

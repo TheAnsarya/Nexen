@@ -274,7 +274,7 @@ void GenesisConsole::RunFrame() {
 		if ((guard % 50000) == 0) {
 			GenesisVdpState vdpState = _vdp->GetState();
 			GenesisIoState ioState = _memoryManager->GetIoState();
-			MessageManager::Log(std::format("[Genesis] RunFrame waiting frame={} guard={} pc=${:06x} cycles={} masterClock={} heartbeatPc=${:06x} heartbeatCycles={} heartbeatInstr={} vdpVc={} vdpHc={} vdpStatus=${:04x} r1=${:02x} dmaActive={} dmaMode={}",
+			MessageManager::Log(std::format("[Genesis] RunFrame waiting frame={} guard={} pc=${:06x} cycles={} masterClock={} heartbeatPc=${:06x} heartbeatCycles={} heartbeatInstr={} z80Running={} z80RunnableCycles={} z80StalledCycles={} z80Transitions={} z80Epoch={} z80LastTransitionClock={} vdpVc={} vdpHc={} vdpStatus=${:04x} r1=${:02x} dmaActive={} dmaMode={}",
 				frame,
 				guard,
 				_cpu->GetState().PC & 0x00ffffff,
@@ -283,6 +283,12 @@ void GenesisConsole::RunFrame() {
 				ioState.CpuProgramCounterHeartbeat,
 				ioState.CpuCycleHeartbeat,
 				ioState.CpuInstructionHeartbeat,
+				_memoryManager->GetZ80RuntimeRunning() ? 1 : 0,
+				_memoryManager->GetZ80RuntimeRunnableCycles(),
+				_memoryManager->GetZ80RuntimeStalledCycles(),
+				_memoryManager->GetZ80RuntimeTransitionCount(),
+				_memoryManager->GetZ80RuntimeStateEpoch(),
+				_memoryManager->GetZ80RuntimeLastTransitionClock(),
 				vdpState.VCounter,
 				vdpState.HCounter,
 				vdpState.StatusRegister,
