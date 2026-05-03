@@ -2219,12 +2219,15 @@ light brown:90590d
 
 commit everything and then run seedlists and connect it to verified games, and focus on genesis emulator improvement; continue;
 
+yes please do that
 
+[Nexen] (Genesis/Megadrive) Yes, do the Next natural step: Run a longer multi-minute Genesis stability soak, then re-enable each diagnostic env flag one-by-one to isolate any remaining unsafe path; continue working bringing all of `Hoshiruna/Mesen2-Expanded`'s Genesis code into our framework; get rid of that Debug UI heartbeat call and we don't want to batter the core every 100ms for very little return; continue;
 
+If we should keep the heartbeat then keep it, only remove it if it's not helpful; continue working last prompt; continue;
 
+Don't just hide errors, fix them;
 
-
-
+[Nexen] (Genesis/MegaDrive) The "Debugger"->"Trace Logger" menu item is not opening the trace logger, fix it, open the trace logger so we can see what, if anything, is executing; continue;
 
 
 

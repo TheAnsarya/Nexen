@@ -621,6 +621,12 @@ public static class MemoryTypeExtensions {
 			MemoryType.LynxBootRom => "BOOT",
 			MemoryType.LynxSaveRam => "SRAM",
 
+			MemoryType.GenesisMemory => "CPU",
+			MemoryType.GenesisPrgRom => "ROM",
+			MemoryType.GenesisWorkRam => "WRAM",
+			MemoryType.GenesisVideoRam => "VRAM",
+			MemoryType.GenesisPaletteRam => "CRAM",
+
 			MemoryType.Atari2600Memory => "CPU",
 			MemoryType.Atari2600PrgRom => "ROM",
 			MemoryType.Atari2600Ram => "RAM",
@@ -633,7 +639,7 @@ public static class MemoryTypeExtensions {
 
 			MemoryType.None => "n/a",
 
-			_ => throw new Exception("invalid type"),
+			_ => memType.ToString(),
 		};
 	}
 
