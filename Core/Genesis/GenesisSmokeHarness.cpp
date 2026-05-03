@@ -547,6 +547,85 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				firstVisibleFirst.VInterruptCount,
 				firstVisibleFirst.RenderDigest));
 
+		struct StartupEventProbeResult {
+			uint32_t EventCount = 0;
+			bool HasHint = false;
+			bool HasVint = false;
+			bool HintBeforeVint = false;
+			string SequenceDigest;
+		};
+
+		auto runStartupEventProbe = [&scaffold, &titleClass]() {
+			StartupEventProbeResult probe = {};
+
+			scaffold.ClearTimingEvents();
+			if (titleClass == "sonic") {
+				scaffold.StepFrameScaffold(488u * 300u + 64u);
+			} else if (titleClass == "jurassic") {
+				scaffold.StepFrameScaffold(488u * 304u + 80u);
+			} else {
+				scaffold.StepFrameScaffold(488u * 280u + 48u);
+			}
+
+			const vector<string>& events = scaffold.GetTimingEvents();
+			probe.EventCount = (uint32_t)events.size();
+
+			int firstHintIndex = -1;
+			int firstVintIndex = -1;
+			for (size_t i = 0; i < events.size(); i++) {
+				if (firstHintIndex < 0 && events[i].starts_with("HINT ")) {
+					firstHintIndex = (int)i;
+					probe.HasHint = true;
+				}
+				if (firstVintIndex < 0 && events[i].starts_with("VINT ")) {
+					firstVintIndex = (int)i;
+					probe.HasVint = true;
+				}
+				if (probe.HasHint && probe.HasVint) {
+					break;
+				}
+			}
+
+			probe.HintBeforeVint = !probe.HasVint || (probe.HasHint && firstHintIndex <= firstVintIndex);
+
+			uint64_t digest = 1469598103934665603ull;
+			for (const string& eventLine : events) {
+				for (uint8_t ch : eventLine) {
+					digest ^= ch;
+					digest *= 1099511628211ull;
+				}
+			}
+			probe.SequenceDigest = ToHex(digest);
+			return probe;
+		};
+
+		GenesisBoundaryScaffoldSaveState startupEventBaseline = scaffold.SaveState();
+		StartupEventProbeResult startupEventFirst = runStartupEventProbe();
+		GenesisBoundaryScaffoldSaveState startupEventTail = scaffold.SaveState();
+		scaffold.LoadState(startupEventBaseline);
+		StartupEventProbeResult startupEventReplay = runStartupEventProbe();
+		scaffold.LoadState(startupEventTail);
+
+		bool startupEventReplayMatch = startupEventFirst.EventCount == startupEventReplay.EventCount
+			&& startupEventFirst.HasHint == startupEventReplay.HasHint
+			&& startupEventFirst.HasVint == startupEventReplay.HasVint
+			&& startupEventFirst.HintBeforeVint == startupEventReplay.HintBeforeVint
+			&& startupEventFirst.SequenceDigest == startupEventReplay.SequenceDigest;
+		bool startupEventPass = !isTargetStartupClass || (startupEventFirst.HasHint && startupEventFirst.HasVint && startupEventFirst.HintBeforeVint && startupEventReplayMatch);
+		addCheckpoint(
+			"GEN-COMPAT-STARTUP-EVENT-SEQUENCE",
+			startupEventPass,
+			std::format(
+				"class={} target={} hasHint={} hasVint={} hintBeforeVint={} replayMatch={} count={} digest={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				startupEventFirst.HasHint ? 1 : 0,
+				startupEventFirst.HasVint ? 1 : 0,
+				startupEventFirst.HintBeforeVint ? 1 : 0,
+				startupEventReplayMatch ? 1 : 0,
+				startupEventFirst.EventCount,
+				startupEventFirst.SequenceDigest));
+
 		auto runInterruptCadenceStartupPath = [&scaffold, &titleClass]() {
 			if (titleClass == "sonic") {
 				scaffold.StepFrameScaffold(488u + 64u);
@@ -716,6 +795,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-HOST-MODE")
 			&& hasPassingCheckpoint("GEN-COMPAT-MAPPER-EDGE")
 			&& hasPassingCheckpoint("GEN-COMPAT-FIRST-VISIBLE-FRAME")
+			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-EVENT-SEQUENCE")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-TIMING-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-STATUS-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-CADENCE-STARTUP")
