@@ -2258,7 +2258,7 @@ continue;
 
 continue;
 
-
+[Nexen] (Genesis) Continue fixing code using `Mesen2-Expanded` as a resource; create and fix multiple issues; also, always end the session with suggestions for what to work on next while sticking with this `Hoshiruna/Mesen2-Expanded` integration and focus on getting a genesis rom to run and play; continue;
 
 
 

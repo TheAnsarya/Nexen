@@ -708,6 +708,162 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				startupFrameWindowReplayMatch ? 1 : 0,
 				startupFrameWindowFirst.EventDigest));
 
+		struct StartupRenderHandoffProbeResult {
+			uint32_t FrameDelta = 0;
+			uint32_t VInterruptDelta = 0;
+			uint16_t VdpStatusTransition = 0;
+			string RenderDigest;
+			string PlaneDigest;
+		};
+
+		auto runStartupRenderHandoffProbe = [&scaffold, &titleClass](const GenesisBoundaryScaffoldSaveState& baseline) {
+			StartupRenderHandoffProbeResult probe = {};
+
+			for (uint32_t frameIndex = 0; frameIndex < 2; frameIndex++) {
+				if (titleClass == "sonic") {
+					scaffold.GetBus().SetRenderCompositionInputs(0x1c, true, 0x08, false, 0x02, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((frameIndex * 5) & 0x1f), (uint16_t)((frameIndex * 3) & 0x1f));
+					scaffold.GetBus().RenderScaffoldLine(96);
+					scaffold.StepFrameScaffold(488u * 262u + 128u);
+				} else if (titleClass == "jurassic") {
+					scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 14);
+					scaffold.GetBus().SetRenderCompositionInputs(0x1a, true, 0x07, false, 0x02, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((frameIndex + 2) & 0x0f), (uint16_t)((frameIndex + 3) & 0x0f));
+					scaffold.GetBus().RenderScaffoldLine(88);
+					scaffold.StepFrameScaffold(488u * 262u + 152u);
+				} else {
+					scaffold.GetBus().SetRenderCompositionInputs(0x10, true, 0x04, false, 0x00, false, false, 0x20, true);
+					scaffold.GetBus().RenderScaffoldLine(56);
+					scaffold.StepFrameScaffold(256u);
+				}
+			}
+
+			GenesisBoundaryScaffoldSaveState sample = scaffold.SaveState();
+			probe.FrameDelta = sample.TimingFrame - baseline.TimingFrame;
+			probe.VInterruptDelta = sample.VInterruptCount - baseline.VInterruptCount;
+			probe.VdpStatusTransition = (uint16_t)(baseline.Bus.VdpStatus ^ sample.Bus.VdpStatus);
+			probe.RenderDigest = sample.Bus.RenderLineDigest;
+			probe.PlaneDigest = std::format(
+				"{:02x}{:02x}{:02x}{:02x}-{}{}{}{}-{:02x}-{:02x}{:02x}",
+				sample.Bus.PlaneASample,
+				sample.Bus.PlaneBSample,
+				sample.Bus.WindowSample,
+				sample.Bus.SpriteSample,
+				sample.Bus.PlaneAPriority ? 1 : 0,
+				sample.Bus.PlaneBPriority ? 1 : 0,
+				sample.Bus.WindowPriority ? 1 : 0,
+				sample.Bus.SpritePriority ? 1 : 0,
+				sample.Bus.WindowEnabled ? 1 : 0,
+				sample.Bus.ScrollX & 0xff,
+				sample.Bus.ScrollY & 0xff);
+			return probe;
+		};
+
+		GenesisBoundaryScaffoldSaveState startupRenderHandoffBaseline = scaffold.SaveState();
+		StartupRenderHandoffProbeResult startupRenderHandoffFirst = runStartupRenderHandoffProbe(startupRenderHandoffBaseline);
+		GenesisBoundaryScaffoldSaveState startupRenderHandoffTail = scaffold.SaveState();
+		scaffold.LoadState(startupRenderHandoffBaseline);
+		StartupRenderHandoffProbeResult startupRenderHandoffReplay = runStartupRenderHandoffProbe(startupRenderHandoffBaseline);
+		scaffold.LoadState(startupRenderHandoffTail);
+
+		bool startupRenderHandoffReplayMatch = startupRenderHandoffFirst.FrameDelta == startupRenderHandoffReplay.FrameDelta
+			&& startupRenderHandoffFirst.VInterruptDelta == startupRenderHandoffReplay.VInterruptDelta
+			&& startupRenderHandoffFirst.VdpStatusTransition == startupRenderHandoffReplay.VdpStatusTransition
+			&& startupRenderHandoffFirst.RenderDigest == startupRenderHandoffReplay.RenderDigest
+			&& startupRenderHandoffFirst.PlaneDigest == startupRenderHandoffReplay.PlaneDigest;
+		bool startupRenderHandoffEvidence = startupRenderHandoffFirst.VdpStatusTransition != 0 || !startupRenderHandoffFirst.RenderDigest.empty();
+		bool startupRenderHandoffPass = !isTargetStartupClass || (
+			startupRenderHandoffFirst.FrameDelta >= 2
+			&& startupRenderHandoffFirst.VInterruptDelta >= 2
+			&& startupRenderHandoffEvidence
+			&& startupRenderHandoffReplayMatch);
+		addCheckpoint(
+			"GEN-COMPAT-STARTUP-RENDER-HANDOFF",
+			startupRenderHandoffPass,
+			std::format(
+				"class={} target={} frameDelta={} vIntDelta={} transition={:04x} evidence={} replayMatch={} renderDigest={} planeDigest={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				startupRenderHandoffFirst.FrameDelta,
+				startupRenderHandoffFirst.VInterruptDelta,
+				startupRenderHandoffFirst.VdpStatusTransition,
+				startupRenderHandoffEvidence ? 1 : 0,
+				startupRenderHandoffReplayMatch ? 1 : 0,
+				startupRenderHandoffFirst.RenderDigest,
+				startupRenderHandoffFirst.PlaneDigest));
+
+		struct StartupCpuProgressionProbeResult {
+			uint32_t ProgramCounterDelta = 0;
+			uint64_t CycleDelta = 0;
+			uint32_t StackDelta = 0;
+			uint16_t StatusTransition = 0;
+			uint32_t InterruptSequenceDelta = 0;
+			string EventDigest;
+		};
+
+		auto runStartupCpuProgressionProbe = [&scaffold, &titleClass](const GenesisBoundaryScaffoldSaveState& baseline) {
+			StartupCpuProgressionProbeResult probe = {};
+
+			scaffold.ClearTimingEvents();
+			if (titleClass == "sonic") {
+				scaffold.StepFrameScaffold(488u * 3u + 144u);
+			} else if (titleClass == "jurassic") {
+				scaffold.StepFrameScaffold(488u * 3u + 168u);
+			} else {
+				scaffold.StepFrameScaffold(320u);
+			}
+
+			GenesisBoundaryScaffoldSaveState sample = scaffold.SaveState();
+			probe.ProgramCounterDelta = (sample.Cpu.ProgramCounter - baseline.Cpu.ProgramCounter) & 0x00ffffff;
+			probe.CycleDelta = sample.Cpu.CycleCount - baseline.Cpu.CycleCount;
+			probe.StackDelta = (sample.Cpu.SupervisorStackPointer - baseline.Cpu.SupervisorStackPointer) & 0x00ffffff;
+			probe.StatusTransition = (uint16_t)(sample.Cpu.StatusRegister ^ baseline.Cpu.StatusRegister);
+			probe.InterruptSequenceDelta = sample.Cpu.InterruptSequenceCount - baseline.Cpu.InterruptSequenceCount;
+
+			const vector<string>& events = scaffold.GetTimingEvents();
+			uint64_t digest = 1469598103934665603ull;
+			for (const string& eventLine : events) {
+				for (uint8_t ch : eventLine) {
+					digest ^= ch;
+					digest *= 1099511628211ull;
+				}
+			}
+			probe.EventDigest = ToHex(digest);
+			return probe;
+		};
+
+		GenesisBoundaryScaffoldSaveState startupCpuProgressionBaseline = scaffold.SaveState();
+		StartupCpuProgressionProbeResult startupCpuProgressionFirst = runStartupCpuProgressionProbe(startupCpuProgressionBaseline);
+		GenesisBoundaryScaffoldSaveState startupCpuProgressionTail = scaffold.SaveState();
+		scaffold.LoadState(startupCpuProgressionBaseline);
+		StartupCpuProgressionProbeResult startupCpuProgressionReplay = runStartupCpuProgressionProbe(startupCpuProgressionBaseline);
+		scaffold.LoadState(startupCpuProgressionTail);
+
+		bool startupCpuProgressionReplayMatch = startupCpuProgressionFirst.ProgramCounterDelta == startupCpuProgressionReplay.ProgramCounterDelta
+			&& startupCpuProgressionFirst.CycleDelta == startupCpuProgressionReplay.CycleDelta
+			&& startupCpuProgressionFirst.StackDelta == startupCpuProgressionReplay.StackDelta
+			&& startupCpuProgressionFirst.StatusTransition == startupCpuProgressionReplay.StatusTransition
+			&& startupCpuProgressionFirst.InterruptSequenceDelta == startupCpuProgressionReplay.InterruptSequenceDelta
+			&& startupCpuProgressionFirst.EventDigest == startupCpuProgressionReplay.EventDigest;
+		bool startupCpuProgressionAdvanced = startupCpuProgressionFirst.CycleDelta > 0
+			&& startupCpuProgressionFirst.ProgramCounterDelta > 0;
+		bool startupCpuProgressionPass = !isTargetStartupClass || (startupCpuProgressionAdvanced && startupCpuProgressionReplayMatch);
+		addCheckpoint(
+			"GEN-COMPAT-STARTUP-CPU-PROGRESSION",
+			startupCpuProgressionPass,
+			std::format(
+				"class={} target={} advanced={} replayMatch={} pcDelta={:06x} cycleDelta={} stackDelta={:06x} statusTransition={:04x} intSeqDelta={} eventDigest={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				startupCpuProgressionAdvanced ? 1 : 0,
+				startupCpuProgressionReplayMatch ? 1 : 0,
+				startupCpuProgressionFirst.ProgramCounterDelta,
+				startupCpuProgressionFirst.CycleDelta,
+				startupCpuProgressionFirst.StackDelta,
+				startupCpuProgressionFirst.StatusTransition,
+				startupCpuProgressionFirst.InterruptSequenceDelta,
+				startupCpuProgressionFirst.EventDigest));
+
 		auto runInterruptCadenceStartupPath = [&scaffold, &titleClass]() {
 			if (titleClass == "sonic") {
 				scaffold.StepFrameScaffold(488u + 64u);
@@ -879,6 +1035,8 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-FIRST-VISIBLE-FRAME")
 			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-EVENT-SEQUENCE")
 			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-FRAME-WINDOW")
+			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-RENDER-HANDOFF")
+			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-CPU-PROGRESSION")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-TIMING-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-STATUS-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-CADENCE-STARTUP")
