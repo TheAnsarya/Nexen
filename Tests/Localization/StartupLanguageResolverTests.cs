@@ -69,4 +69,22 @@ public sealed class StartupLanguageResolverTests {
 
 		Assert.Equal("_File", ResourceHelper.GetViewLabel("MainMenuView", "mnuFile"));
 	}
+
+	[Fact]
+	public void ResolveLanguageCode_SetupWindowForcesEnglish_AndLoadsEnglishLabel() {
+		string code = StartupLanguageResolver.ResolveLanguageCode(false, true, () => UiLanguage.Spanish);
+		ResourceHelper.LoadResources(code);
+
+		Assert.Equal("en", code);
+		Assert.Equal("_File", ResourceHelper.GetViewLabel("MainMenuView", "mnuFile"));
+	}
+
+	[Fact]
+	public void GetAvailableLanguageDisplayNames_ContainsExpectedLanguages() {
+		string[] displayNames = ResourceHelper.GetAvailableLanguageDisplayNames();
+
+		Assert.Contains("English", displayNames);
+		Assert.Contains("Spanish", displayNames);
+		Assert.Contains("Japanese", displayNames);
+	}
 }

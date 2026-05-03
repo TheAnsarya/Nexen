@@ -1476,45 +1476,45 @@
 		</Form>
 
 		<Form ID="FunctionListView">
-			<Control ID="colFunction">Function</Control>
-			<Control ID="colCpuAddr">CPU Addr</Control>
-			<Control ID="colRomAddr">ROM Addr</Control>
+			<Control ID="colFunction">関数</Control>
+			<Control ID="colCpuAddr">CPUアドレス</Control>
+			<Control ID="colRomAddr">ROMアドレス</Control>
 		</Form>
 
 		<Form ID="LabelListView">
-			<Control ID="colLabel">Label</Control>
-			<Control ID="colCpuAddr">CPU Addr</Control>
-			<Control ID="colRomAddr">ROM Addr</Control>
-			<Control ID="colComment">Comment</Control>
+			<Control ID="colLabel">ラベル</Control>
+			<Control ID="colCpuAddr">CPUアドレス</Control>
+			<Control ID="colRomAddr">ROMアドレス</Control>
+			<Control ID="colComment">コメント</Control>
 		</Form>
 
 		<Form ID="WatchListView">
-			<Control ID="colName">Name</Control>
-			<Control ID="colValue">Value</Control>
+			<Control ID="colName">名前</Control>
+			<Control ID="colValue">値</Control>
 		</Form>
 
 		<Form ID="QuickSearchView">
-			<Control ID="lblSearch">Search</Control>
+			<Control ID="lblSearch">検索</Control>
 		</Form>
 
 		<Form ID="SourceViewView">
-			<Control ID="lblFile">File:</Control>
+			<Control ID="lblFile">ファイル:</Control>
 		</Form>
 
 		<Form ID="DebuggerOptionsView">
-			<Control ID="lblDisassemblyOptions">Disassembly settings</Control>
-			<Control ID="lblVerifiedData">Data:</Control>
-			<Control ID="lblUnidentifiedBlock">Unidentified:</Control>
-			<Control ID="lblAddressDisplay">Margin:</Control>
-			<Control ID="chkShowByteCode">Show byte code</Control>
-			<Control ID="chkShowMemoryValues">Show memory values</Control>
-			<Control ID="chkUseLowerCaseDisassembly">Use lower case</Control>
-			<Control ID="chkShowJumpLabels">Show jump/sub labels</Control>
+			<Control ID="lblDisassemblyOptions">逆アセンブル設定</Control>
+			<Control ID="lblVerifiedData">データ:</Control>
+			<Control ID="lblUnidentifiedBlock">未識別:</Control>
+			<Control ID="lblAddressDisplay">余白:</Control>
+			<Control ID="chkShowByteCode">バイトコードを表示</Control>
+			<Control ID="chkShowMemoryValues">メモリ値を表示</Control>
+			<Control ID="chkUseLowerCaseDisassembly">小文字を使用</Control>
+			<Control ID="chkShowJumpLabels">ジャンプ/サブルーチンラベルを表示</Control>
 			<Control ID="chkSnesUseAltSpcOpNames">Use 6502-like mnemonics</Control>
-			<Control ID="lblDisassemblyMode">CPU mode:</Control>
-			<Control ID="lblDisassemblyModeHint">Controls whether unidentified code is disassembled as ARM or Thumb.</Control>
+			<Control ID="lblDisassemblyMode">CPUモード:</Control>
+			<Control ID="lblDisassemblyModeHint">未識別コードをARMまたはThumbとして逆アセンブルするかを制御します。</Control>
 
-			<Control ID="lblBreakOptions">Break on...</Control>
+			<Control ID="lblBreakOptions">停止条件...</Control>
 			<Control ID="chkBreakOnBrk">BRK</Control>
 			<Control ID="chkBreakOnCop">COP</Control>
 			<Control ID="chkBreakOnWdm">WDM</Control>
@@ -1555,13 +1555,13 @@
 
 			<Control ID="chkBreakOnUndefinedOpCode">Undefined opcodes</Control>
 
-			<Control ID="lblMiscSettings">Misc. settings</Control>
-			<Control ID="chkBringToFrontOnBreak">Bring to front on break</Control>
-			<Control ID="chkBringToFrontOnPause">Bring to front on pause</Control>
-			<Control ID="chkFocusGameOnResume">Focus game window on resume</Control>
-			<Control ID="chkRefreshWhileRunning">Refresh while running</Control>
-			<Control ID="chkDrawPartialFrame">Draw partial frame</Control>
-			<Control ID="chkUsePredictiveBreakpoints">Use predictive breakpoints</Control>
+			<Control ID="lblMiscSettings">その他の設定</Control>
+			<Control ID="chkBringToFrontOnBreak">停止時に前面へ表示</Control>
+			<Control ID="chkBringToFrontOnPause">一時停止時に前面へ表示</Control>
+			<Control ID="chkFocusGameOnResume">再開時にゲームウィンドウへフォーカス</Control>
+			<Control ID="chkRefreshWhileRunning">実行中に更新</Control>
+			<Control ID="chkDrawPartialFrame">部分フレームを描画</Control>
+			<Control ID="chkUsePredictiveBreakpoints">予測ブレークポイントを使用</Control>
 			<Control ID="chkUsePredictiveBreakpointsHint">When enabled, the debugger attempts to predict breakpoints before the corresponding read/write occurs,&#xA;allowing execution to be stopped before the instruction starts executing.</Control>
 			<Control ID="chkSingleBreakpointPerInstruction">Break once per instruction</Control>
 			<Control ID="chkSnesIgnoreDspReadWrites">Ignore DSP reads/writes</Control>

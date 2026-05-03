@@ -1476,45 +1476,45 @@
 		</Form>
 
 		<Form ID="FunctionListView">
-			<Control ID="colFunction">Function</Control>
-			<Control ID="colCpuAddr">CPU Addr</Control>
-			<Control ID="colRomAddr">ROM Addr</Control>
+			<Control ID="colFunction">Funcion</Control>
+			<Control ID="colCpuAddr">Dir. CPU</Control>
+			<Control ID="colRomAddr">Dir. ROM</Control>
 		</Form>
 
 		<Form ID="LabelListView">
-			<Control ID="colLabel">Label</Control>
-			<Control ID="colCpuAddr">CPU Addr</Control>
-			<Control ID="colRomAddr">ROM Addr</Control>
-			<Control ID="colComment">Comment</Control>
+			<Control ID="colLabel">Etiqueta</Control>
+			<Control ID="colCpuAddr">Dir. CPU</Control>
+			<Control ID="colRomAddr">Dir. ROM</Control>
+			<Control ID="colComment">Comentario</Control>
 		</Form>
 
 		<Form ID="WatchListView">
-			<Control ID="colName">Name</Control>
-			<Control ID="colValue">Value</Control>
+			<Control ID="colName">Nombre</Control>
+			<Control ID="colValue">Valor</Control>
 		</Form>
 
 		<Form ID="QuickSearchView">
-			<Control ID="lblSearch">Search</Control>
+			<Control ID="lblSearch">Buscar</Control>
 		</Form>
 
 		<Form ID="SourceViewView">
-			<Control ID="lblFile">File:</Control>
+			<Control ID="lblFile">Archivo:</Control>
 		</Form>
 
 		<Form ID="DebuggerOptionsView">
-			<Control ID="lblDisassemblyOptions">Disassembly settings</Control>
-			<Control ID="lblVerifiedData">Data:</Control>
-			<Control ID="lblUnidentifiedBlock">Unidentified:</Control>
-			<Control ID="lblAddressDisplay">Margin:</Control>
-			<Control ID="chkShowByteCode">Show byte code</Control>
-			<Control ID="chkShowMemoryValues">Show memory values</Control>
-			<Control ID="chkUseLowerCaseDisassembly">Use lower case</Control>
-			<Control ID="chkShowJumpLabels">Show jump/sub labels</Control>
+			<Control ID="lblDisassemblyOptions">Configuracion de desensamblado</Control>
+			<Control ID="lblVerifiedData">Datos:</Control>
+			<Control ID="lblUnidentifiedBlock">No identificado:</Control>
+			<Control ID="lblAddressDisplay">Margen:</Control>
+			<Control ID="chkShowByteCode">Mostrar codigo de bytes</Control>
+			<Control ID="chkShowMemoryValues">Mostrar valores de memoria</Control>
+			<Control ID="chkUseLowerCaseDisassembly">Usar minusculas</Control>
+			<Control ID="chkShowJumpLabels">Mostrar etiquetas de salto/subrutina</Control>
 			<Control ID="chkSnesUseAltSpcOpNames">Use 6502-like mnemonics</Control>
-			<Control ID="lblDisassemblyMode">CPU mode:</Control>
-			<Control ID="lblDisassemblyModeHint">Controls whether unidentified code is disassembled as ARM or Thumb.</Control>
+			<Control ID="lblDisassemblyMode">Modo CPU:</Control>
+			<Control ID="lblDisassemblyModeHint">Controla si el codigo no identificado se desensambla como ARM o Thumb.</Control>
 
-			<Control ID="lblBreakOptions">Break on...</Control>
+			<Control ID="lblBreakOptions">Detener en...</Control>
 			<Control ID="chkBreakOnBrk">BRK</Control>
 			<Control ID="chkBreakOnCop">COP</Control>
 			<Control ID="chkBreakOnWdm">WDM</Control>
@@ -1555,13 +1555,13 @@
 
 			<Control ID="chkBreakOnUndefinedOpCode">Undefined opcodes</Control>
 
-			<Control ID="lblMiscSettings">Misc. settings</Control>
-			<Control ID="chkBringToFrontOnBreak">Bring to front on break</Control>
-			<Control ID="chkBringToFrontOnPause">Bring to front on pause</Control>
-			<Control ID="chkFocusGameOnResume">Focus game window on resume</Control>
-			<Control ID="chkRefreshWhileRunning">Refresh while running</Control>
-			<Control ID="chkDrawPartialFrame">Draw partial frame</Control>
-			<Control ID="chkUsePredictiveBreakpoints">Use predictive breakpoints</Control>
+			<Control ID="lblMiscSettings">Configuracion varia</Control>
+			<Control ID="chkBringToFrontOnBreak">Traer al frente al detener</Control>
+			<Control ID="chkBringToFrontOnPause">Traer al frente al pausar</Control>
+			<Control ID="chkFocusGameOnResume">Enfocar la ventana del juego al reanudar</Control>
+			<Control ID="chkRefreshWhileRunning">Actualizar durante la ejecucion</Control>
+			<Control ID="chkDrawPartialFrame">Dibujar fotograma parcial</Control>
+			<Control ID="chkUsePredictiveBreakpoints">Usar puntos de interrupcion predictivos</Control>
 			<Control ID="chkUsePredictiveBreakpointsHint">When enabled, the debugger attempts to predict breakpoints before the corresponding read/write occurs,&#xA;allowing execution to be stopped before the instruction starts executing.</Control>
 			<Control ID="chkSingleBreakpointPerInstruction">Break once per instruction</Control>
 			<Control ID="chkSnesIgnoreDspReadWrites">Ignore DSP reads/writes</Control>
