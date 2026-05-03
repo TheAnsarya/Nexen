@@ -2227,12 +2227,11 @@ If we should keep the heartbeat then keep it, only remove it if it's not helpful
 
 Don't just hide errors, fix them;
 
-[Nexen] (Genesis/MegaDrive) The "Debugger"->"Trace Logger" menu item is not opening the trace logger, fix it, open the trace logger so we can see what, if anything, is executing; continue;
+[Nexen] (Genesis/MegaDrive) The "Debugger"->"Trace Logger" menu item is not opening the trace logger, fix it, open the trace logger so we can see what, if anything, is executing; The debugger only shows `dc.w` command which is wrong, it also doesn't show the Megadrive header which starts at $0100 so fix the debugger; continue;
 
+[Nexen] (Genesis/MegaDrive) Loading the "Sonic" rom shows on screen part of of "SEGA" logo, this is massive progress, this shows some of the execution actually happens before it stops; continue; The Sega Genesis begins executing code at ROM address 0x00000004, which contains the reset vector pointing to your actual init routine. The very first bytes of the ROM are the 68000 exception vector table, and the reset vector is the second longword. `https://copilot.microsoft.com/chats/jQdKmWJ3BhFTx38vkzGip`; continue;
 
-
-
-
+yep, do that, run Nexen with Sonic `C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md` and see what happens, and then check logs, and errors and fix everything you find that's work, let's get this moving forward, our goal is running Sonic; continue;
 
 
 

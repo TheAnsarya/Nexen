@@ -123,8 +123,26 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 			// Enter VBlank at the start of the first VBlank line.
 			if (_scanline == _screenHeight) {
 				_state.StatusRegister |= VdpStatus::VBlankFlag;
+				static uint64_t vblankEnterCount = 0;
+				vblankEnterCount++;
+				if (vblankEnterCount <= 256 || (vblankEnterCount % 2048) == 0) {
+					MessageManager::Log(std::format("[Genesis][VDP] VBlank enter #{} frame={} scanline={} status=${:04x} r1=${:02x} vintEn={} hc={}",
+						vblankEnterCount,
+						_state.FrameCount,
+						_scanline,
+						_state.StatusRegister,
+						_state.Registers[1],
+						IsVBlankInterruptEnabled() ? 1 : 0,
+						_hCounter));
+				}
 				if (IsVBlankInterruptEnabled()) {
 					_state.StatusRegister |= VdpStatus::VIntPending;
+					if (vblankEnterCount <= 256 || (vblankEnterCount % 2048) == 0) {
+						MessageManager::Log(std::format("[Genesis][VDP] VBlank IRQ request frame={} status=${:04x} pending={}",
+							_state.FrameCount,
+							_state.StatusRegister,
+							(_state.StatusRegister & VdpStatus::VIntPending) ? 1 : 0));
+					}
 					if (_cpu) {
 						_cpu->SetInterrupt(6); // Level 6 - VBlank
 					}
@@ -142,8 +160,19 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 				// End of frame
 				_scanline = 0;
 				_state.VCounter = 0;
+				uint16_t statusBeforeExit = _state.StatusRegister;
 				_state.StatusRegister &= ~VdpStatus::VBlankFlag;
 				_state.StatusRegister ^= VdpStatus::OddFrame;
+				static uint64_t vblankExitCount = 0;
+				vblankExitCount++;
+				if (vblankExitCount <= 256 || (vblankExitCount % 2048) == 0) {
+					MessageManager::Log(std::format("[Genesis][VDP] VBlank exit #{} frame={} statusBefore=${:04x} statusAfter=${:04x} pendingAfter={}",
+						vblankExitCount,
+						_state.FrameCount,
+						statusBeforeExit,
+						_state.StatusRegister,
+						(_state.StatusRegister & VdpStatus::VIntPending) ? 1 : 0));
+				}
 				_currentBuffer ^= 1;
 				_state.FrameCount++;
 				_emu->GetNotificationManager()->SendNotification(ConsoleNotificationType::PpuFrameDone);
@@ -444,14 +473,16 @@ uint16_t GenesisVdp::ReadControlPort() {
 		_state.StatusRegister &= ~VdpStatus::VBlankFlag;
 	}
 
+	uint16_t status = _state.StatusRegister;
+
 	static uint64_t controlReadCount = 0;
 	controlReadCount++;
 	if (controlReadCount <= 128 || (controlReadCount % 4096) == 0) {
-		uint8_t statusLo = (uint8_t)(_state.StatusRegister & 0xff);
+		uint8_t statusLo = (uint8_t)(status & 0xff);
 		bool vblankBit = (statusLo & (uint8_t)VdpStatus::VBlankFlag) != 0;
 		MessageManager::Log(std::format("[Genesis][VDP] CtrlRead #{} status=${:04x} lo=${:02x} vb={} display={} scanline={} hcounter={} r1=${:02x}",
 			controlReadCount,
-			_state.StatusRegister,
+			status,
 			statusLo,
 			vblankBit ? 1 : 0,
 			IsDisplayEnabled() ? 1 : 0,
@@ -459,13 +490,26 @@ uint16_t GenesisVdp::ReadControlPort() {
 			_hCounter,
 			_state.Registers[1]));
 	}
-	return _state.StatusRegister;
+
+	// Hardware clears the latched VINT-pending bit when status is read.
+	if (status & VdpStatus::VIntPending) {
+		static uint64_t clearOnReadCount = 0;
+		clearOnReadCount++;
+		if (clearOnReadCount <= 256 || (clearOnReadCount % 2048) == 0) {
+			MessageManager::Log(std::format("[Genesis][VDP] CtrlReadClearVInt #{} frame={} scanline={} hc={} statusBefore=${:04x}",
+				clearOnReadCount,
+				_state.FrameCount,
+				_scanline,
+				_hCounter,
+				status));
+		}
+	}
+	_state.StatusRegister &= ~VdpStatus::VIntPending;
+	return status;
 }
 
 void GenesisVdp::AcknowledgeInterrupt(uint8_t level) {
-	if (level == 6) {
-		_state.StatusRegister &= ~VdpStatus::VIntPending;
-	}
+	(void)level;
 }
 
 GenesisVdpState GenesisVdp::GetState() const {

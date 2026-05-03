@@ -213,6 +213,47 @@ TEST(GenesisExecutionStartupTests, TasOnAbsoluteLongMemoryUpdatesTargetByte) {
 	EXPECT_EQ(state.SR & M68kFlags::Carry, 0u);
 }
 
+TEST(GenesisExecutionStartupTests, VdpStatusReadClearsVBlankInterruptPendingBit) {
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000200;
+	std::vector<uint8_t> romData = BuildNopBootRom(InitialSp, InitialPc);
+
+	VirtualFile rom(romData.data(), romData.size(), "boot-vint-status-clear.md");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	auto* cpu = console.GetCpu();
+	auto* memoryManager = console.GetMemoryManager();
+	auto* vdp = console.GetVdp();
+	ASSERT_NE(cpu, nullptr);
+	ASSERT_NE(memoryManager, nullptr);
+	ASSERT_NE(vdp, nullptr);
+
+	// Enable VINT generation while keeping the CPU interrupt mask at level 7 so
+	// the pending flag can be observed before any handler-side acknowledge path.
+	memoryManager->Write16(0xC00004, 0x8120);
+	GenesisM68kState state = cpu->GetState();
+	state.SR = (uint16_t)((state.SR & ~M68kFlags::IntMask) | 0x0700);
+	cpu->SetState(state);
+
+	bool sawPendingVint = false;
+	for (int i = 0; i < 250000; i++) {
+		cpu->Exec();
+		if ((vdp->GetState().StatusRegister & VdpStatus::VIntPending) != 0) {
+			sawPendingVint = true;
+			break;
+		}
+	}
+	ASSERT_TRUE(sawPendingVint);
+
+	uint16_t statusBeforeClear = memoryManager->Read16(0xC00004);
+	uint16_t statusAfterClear = memoryManager->Read16(0xC00004);
+
+	EXPECT_NE(statusBeforeClear & VdpStatus::VIntPending, 0u);
+	EXPECT_EQ(statusAfterClear & VdpStatus::VIntPending, 0u);
+}
+
 TEST(GenesisExecutionStartupTests, SteppedRunLoopHeartbeatProgressesDeterministicallyPerStep) {
 	constexpr uint32_t InitialSp = 0x00FFFE00;
 	constexpr uint32_t InitialPc = 0x00000100;

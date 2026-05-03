@@ -260,6 +260,10 @@ void GenesisM68k::RaiseException(uint8_t vector) {
 void GenesisM68k::ProcessInterrupt(uint8_t level) {
 	uint16_t oldSR = _state.SR;
 	uint32_t oldPc = _state.PC;
+	uint16_t vdpStatusBeforeAck = 0;
+	if (_console && _console->GetVdp()) {
+		vdpStatusBeforeAck = _console->GetVdp()->GetState().StatusRegister;
+	}
 	_state.SR = (_state.SR & ~M68kFlags::IntMask) | ((uint16_t)level << 8);
 	_state.SR |= M68kFlags::Supervisor;
 	_state.SR &= ~M68kFlags::Trace;
@@ -278,10 +282,23 @@ void GenesisM68k::ProcessInterrupt(uint8_t level) {
 	if (_console && _console->GetVdp()) {
 		_console->GetVdp()->AcknowledgeInterrupt(level);
 	}
+	uint16_t vdpStatusAfterAck = vdpStatusBeforeAck;
+	if (_console && _console->GetVdp()) {
+		vdpStatusAfterAck = _console->GetVdp()->GetState().StatusRegister;
+	}
 	static uint64_t irqCount = 0;
 	irqCount++;
 	if (irqCount <= 128 || (irqCount % 4096) == 0) {
-		MessageManager::Log(std::format("[Genesis][M68K] IRQ #{} level={} vector={} pc=${:06x}->${:06x} sr=${:04x}", irqCount, level, vector, oldPc & 0xffffff, _state.PC & 0xffffff, oldSR));
+		MessageManager::Log(std::format("[Genesis][M68K] IRQ #{} level={} vector={} pc=${:06x}->${:06x} sr=${:04x} vdpBefore=${:04x} vdpAfter=${:04x} pendingAfter={}",
+			irqCount,
+			level,
+			vector,
+			oldPc & 0xffffff,
+			_state.PC & 0xffffff,
+			oldSR,
+			vdpStatusBeforeAck,
+			vdpStatusAfterAck,
+			(vdpStatusAfterAck & VdpStatus::VIntPending) ? 1 : 0));
 	}
 	_emu->ProcessInterrupt<CpuType::Genesis>(oldPc, _state.PC, false);
 	_state.Stopped = false;
@@ -290,8 +307,27 @@ void GenesisM68k::ProcessInterrupt(uint8_t level) {
 
 void GenesisM68k::SetInterrupt(uint8_t level) {
 	// Latch and process at the next instruction boundary inside Exec().
+	uint8_t previousPending = _pendingInterruptLevel;
 	if (level > _pendingInterruptLevel) {
 		_pendingInterruptLevel = level;
+	}
+
+	static uint64_t irqLatchCount = 0;
+	irqLatchCount++;
+	if (irqLatchCount <= 256 || (irqLatchCount % 4096) == 0) {
+		uint16_t vdpStatus = 0;
+		if (_console && _console->GetVdp()) {
+			vdpStatus = _console->GetVdp()->GetState().StatusRegister;
+		}
+		MessageManager::Log(std::format("[Genesis][M68K] SetInterrupt #{} reqLevel={} prevPending={} newPending={} intMask={} pc=${:06x} sr=${:04x} vdp=${:04x}",
+			irqLatchCount,
+			level,
+			previousPending,
+			_pendingInterruptLevel,
+			GetIntMask(),
+			_state.PC & 0xffffff,
+			_state.SR,
+			vdpStatus));
 	}
 }
 

@@ -1353,6 +1353,7 @@ uint16_t GenesisMemoryManager::ReadVdpPort(uint32_t addr) {
 		_openBus = (uint8_t)(effectiveValue & 0xFF);
 		return effectiveValue;
 	} else if (port < 0x08) {
+		GenesisVdpState stateBeforeRead = _vdp->GetState();
 		uint16_t effectiveValue = _vdp->ReadControlPort();
 		static uint64_t controlPortReadCount = 0;
 		controlPortReadCount++;
@@ -1373,6 +1374,17 @@ uint16_t GenesisMemoryManager::ReadVdpPort(uint32_t addr) {
 				vdpState.VCounter,
 				vdpState.HCounter,
 				vdpState.Registers[1]));
+			MessageManager::Log(std::format("[Genesis][MMU] CtrlPortReadState #{} beforeStatus=${:04x} afterStatus=${:04x} beforePending={} latchedPending={} afterPending={} beforeVc={} afterVc={} beforeHc={} afterHc={}",
+				controlPortReadCount,
+				stateBeforeRead.StatusRegister,
+				vdpState.StatusRegister,
+				(stateBeforeRead.StatusRegister & VdpStatus::VIntPending) ? 1 : 0,
+				(effectiveValue & VdpStatus::VIntPending) ? 1 : 0,
+				(vdpState.StatusRegister & VdpStatus::VIntPending) ? 1 : 0,
+				stateBeforeRead.VCounter,
+				vdpState.VCounter,
+				stateBeforeRead.HCounter,
+				vdpState.HCounter));
 		}
 		_openBus = (uint8_t)(effectiveValue & 0xFF);
 		return effectiveValue;

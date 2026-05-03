@@ -246,6 +246,20 @@ void GenesisConsole::Reset() {
 }
 
 void GenesisConsole::RunFrame() {
+	static uint64_t runFrameCallCount = 0;
+	runFrameCallCount++;
+	if (runFrameCallCount <= 256 || (runFrameCallCount % 2048) == 0) {
+		uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+		uint16_t sr = _cpu ? _cpu->GetState().SR : 0;
+		uint32_t frameBefore = _vdp ? _vdp->GetFrameCount() : 0;
+		MessageManager::Log(std::format("[Genesis] RunFrame enter #{} frame={} pc=${:06x} sr=${:04x} masterClock={}",
+			runFrameCallCount,
+			frameBefore,
+			pc,
+			sr,
+			_memoryManager ? _memoryManager->GetMasterClock() : 0));
+	}
+
 	bool emitFrameEvents = _emu && _emu->IsEmulationThread();
 	if (emitFrameEvents) {
 		_emu->ProcessEvent(EventType::StartFrame, CpuType::Genesis);
