@@ -2,6 +2,7 @@
 #include "Genesis/Debugger/GenesisDebugger.h"
 #include "Genesis/GenesisConsole.h"
 #include "Genesis/Debugger/GenesisVdpTools.h"
+#include "Genesis/Debugger/GenesisTraceLogger.h"
 #include "Genesis/GenesisM68k.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Genesis/GenesisTypes.h"
@@ -31,6 +32,7 @@ GenesisDebugger::GenesisDebugger(Debugger* debugger) : IDebugger(debugger->GetEm
 	_callstackManager = std::make_unique<CallstackManager>(debugger, this);
 	_breakpointManager = std::make_unique<BreakpointManager>(debugger, this, CpuType::Genesis, nullptr);
 	_ppuTools = std::make_unique<GenesisVdpTools>(debugger, _emu, _console);
+	_traceLogger = std::make_unique<GenesisTraceLogger>(debugger, this, _console->GetVdp());
 	_step = std::make_unique<StepRequest>();
 }
 
@@ -44,6 +46,7 @@ void GenesisDebugger::Reset() {
 	_callstackManager->Clear();
 	_prevOpCode = 0;
 	_prevProgramCounter = 0;
+	_traceLogger->Clear();
 }
 
 uint64_t GenesisDebugger::GetCpuCycleCount([[maybe_unused]] bool forProfiler) {
@@ -53,15 +56,18 @@ uint64_t GenesisDebugger::GetCpuCycleCount([[maybe_unused]] bool forProfiler) {
 void GenesisDebugger::ProcessInstruction() {
 	GenesisM68kState& state = _cpu->GetState();
 	uint32_t pc = state.PC & 0x00ffffff;
-	uint8_t opCode = _memoryManager->DebugRead8(pc);
+	uint16_t opCode = (uint16_t)((_memoryManager->DebugRead8(pc) << 8) | _memoryManager->DebugRead8((pc + 1) & 0x00ffffff));
 	AddressInfo relAddress{(int32_t)pc, MemoryType::GenesisMemory};
 	AddressInfo absAddress = _console->GetAbsoluteAddress(relAddress);
-	MemoryOperationInfo operation(pc, opCode, MemoryOperationType::ExecOpCode, MemoryType::GenesisMemory);
+	MemoryOperationInfo operation(pc, (uint8_t)(opCode >> 8), MemoryOperationType::ExecOpCode, MemoryType::GenesisMemory);
 	InstructionProgress.LastMemOperation = operation;
 	InstructionProgress.StartCycle = state.CycleCount;
 
+	bool needDisassemble = _traceLogger->IsEnabled();
 	if (absAddress.Address >= 0) {
-		_disassembler->BuildCache(absAddress, 0, CpuType::Genesis);
+		if (needDisassemble) {
+			_disassembler->BuildCache(absAddress, 0, CpuType::Genesis);
+		}
 	}
 
 	_prevOpCode = opCode;
@@ -78,11 +84,21 @@ void GenesisDebugger::ProcessRead(uint32_t addr, uint8_t value, MemoryOperationT
 	AddressInfo absAddress = _console->GetAbsoluteAddress(relAddress);
 	MemoryOperationInfo operation(addr, value, type, MemoryType::GenesisMemory);
 	InstructionProgress.LastMemOperation = operation;
+	GenesisM68kState& state = _cpu->GetState();
 
 	if (type == MemoryOperationType::ExecOpCode || type == MemoryOperationType::ExecOperand) {
-		_memoryAccessCounter->ProcessMemoryExec(absAddress, _cpu->GetState().CycleCount);
+		if (type == MemoryOperationType::ExecOpCode && _traceLogger->IsEnabled()) {
+			DisassemblyInfo disInfo = _disassembler->GetDisassemblyInfo(absAddress, addr, 0, CpuType::Genesis);
+			_traceLogger->Log(state, disInfo, operation, absAddress);
+		}
+
+		_memoryAccessCounter->ProcessMemoryExec(absAddress, state.CycleCount);
 	} else {
-		_memoryAccessCounter->ProcessMemoryRead(absAddress, _cpu->GetState().CycleCount);
+		if (_traceLogger->IsEnabled()) {
+			_traceLogger->LogNonExec(operation, absAddress);
+		}
+
+		_memoryAccessCounter->ProcessMemoryRead(absAddress, state.CycleCount);
 	}
 
 	_step->ProcessCpuCycle();
@@ -96,8 +112,13 @@ void GenesisDebugger::ProcessWrite(uint32_t addr, uint8_t value, MemoryOperation
 	AddressInfo absAddress = _console->GetAbsoluteAddress(relAddress);
 	MemoryOperationInfo operation(addr, value, type, MemoryType::GenesisMemory);
 	InstructionProgress.LastMemOperation = operation;
+	GenesisM68kState& state = _cpu->GetState();
 
-	_memoryAccessCounter->ProcessMemoryWrite(absAddress, _cpu->GetState().CycleCount);
+	if (_traceLogger->IsEnabled()) {
+		_traceLogger->LogNonExec(operation, absAddress);
+	}
+
+	_memoryAccessCounter->ProcessMemoryWrite(absAddress, state.CycleCount);
 	_step->ProcessCpuCycle();
 	if (_breakpointManager) {
 		_debugger->ProcessBreakConditions(CpuType::Genesis, *_step.get(), _breakpointManager.get(), operation, absAddress);
@@ -210,7 +231,7 @@ void GenesisDebugger::SetPpuState([[maybe_unused]] BaseState& state) {
 }
 
 ITraceLogger* GenesisDebugger::GetTraceLogger() {
-	return nullptr;
+	return _traceLogger.get();
 }
 
 PpuTools* GenesisDebugger::GetPpuTools() {

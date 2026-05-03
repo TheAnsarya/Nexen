@@ -15,6 +15,7 @@ class GenesisConsole;
 class GenesisM68k;
 class GenesisMemoryManager;
 class GenesisVdpTools;
+class GenesisTraceLogger;
 
 enum class MemoryOperationType;
 
@@ -32,6 +33,7 @@ class GenesisDebugger final : public IDebugger {
 	unique_ptr<CallstackManager> _callstackManager;
 	unique_ptr<BreakpointManager> _breakpointManager;
 	unique_ptr<GenesisVdpTools> _ppuTools;
+	unique_ptr<GenesisTraceLogger> _traceLogger;
 
 	GenesisM68kState _cachedState = {};
 	uint16_t _prevOpCode = 0;

@@ -1146,7 +1146,14 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 				ActionType = ActionType.OpenDebugger,
 				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.OpenDebugger),
 				IsEnabled = () => EmulatorState.Instance.IsRomLoaded,
-				OnClick = () => DebuggerWindow.GetOrOpenWindow(MainWindow.RomInfo.ConsoleType.GetMainCpuType())
+				OnClick = () => {
+					CpuType cpuType = MainWindow.RomInfo.ConsoleType.GetMainCpuType();
+					if (cpuType == CpuType.Genesis) {
+						DebuggerWindow.OpenWindowAtAddress(CpuType.Genesis, 0x100);
+					} else {
+						DebuggerWindow.GetOrOpenWindow(cpuType);
+					}
+				}
 			},
 			new DebugMenuAction() {
 				ActionType = ActionType.OpenSpcDebugger,

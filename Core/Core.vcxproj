@@ -831,6 +831,7 @@
     <ClInclude Include="Genesis\GenesisDefaultVideoFilter.h" />
     <ClInclude Include="Genesis\Input\GenesisController.h" />
     <ClInclude Include="Genesis\Debugger\GenesisDebugger.h" />
+    <ClInclude Include="Genesis\Debugger\GenesisTraceLogger.h" />
     <ClInclude Include="Genesis\Debugger\GenesisVdpTools.h" />
     <ClInclude Include="Lynx\Debugger\LynxDisUtils.h" />
     <ClInclude Include="Lynx\Debugger\LynxDebugger.h" />
@@ -1192,6 +1193,7 @@
     <ClCompile Include="Genesis\GenesisPsg.cpp" />
     <ClCompile Include="Genesis\GenesisControlManager.cpp" />
     <ClCompile Include="Genesis\Debugger\GenesisDebugger.cpp" />
+    <ClCompile Include="Genesis\Debugger\GenesisTraceLogger.cpp" />
     <ClCompile Include="Genesis\Debugger\GenesisVdpTools.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxDisUtils.cpp" />
     <ClCompile Include="Lynx\Debugger\LynxDebugger.cpp" />
