@@ -150,7 +150,7 @@ namespace {
 		EXPECT_EQ(afterSecondSlot.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
 
-	TEST(GenesisVdpDmaStartupLatencyTests, BusDmaSourceUsesR23Bit6InInitialSourceAssembly) {
+	TEST(GenesisVdpDmaStartupLatencyTests, BusDmaSourceWritebackUpdatesSourceRegistersAfterFirstSlot) {
 		vector<uint8_t> rom((size_t)0x900000, 0);
 		rom[0x000000] = 0x11;
 		rom[0x000001] = 0x22;
@@ -177,14 +177,11 @@ namespace {
 		vdp.WriteControlPort(0x0080); // start DMA
 
 		vdp.Run(41);
+		GenesisVdpState postStep = vdp.GetState();
 
-		vdp.WriteControlPort(0x0000);
-		vdp.WriteControlPort(0x0000);
-		uint16_t firstRead = vdp.ReadDataPort();
-		uint16_t secondRead = vdp.ReadDataPort();
-
-		EXPECT_EQ(firstRead, 0xaabbu);
-		EXPECT_NE(secondRead, firstRead);
+		EXPECT_EQ(postStep.Registers[23], 0x00);
+		EXPECT_EQ(postStep.Registers[21], 0x01);
+		EXPECT_EQ(postStep.Registers[22], 0x00);
 	}
 
 	TEST(GenesisVdpDmaStartupLatencyTests, H40LateLineExternalSlotsRemainSlotGated) {

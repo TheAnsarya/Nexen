@@ -156,5 +156,8 @@ public sealed class StartupLanguageResolverTests {
 		Assert.NotEqual("An unexpected error has occurred.\n\nError details:\nsample", ResourceHelper.GetMessage("UnexpectedError", "sample"));
 		Assert.NotEqual("The selected file is not a valid HD Pack.", ResourceHelper.GetMessage("InstallHdPackInvalidPack"));
 		Assert.NotEqual("You are running the latest version of Nexen.", ResourceHelper.GetMessage("NexenUpToDate"));
+		Assert.NotEqual("Load from file...", ResourceHelper.GetMessage("LoadFromFile"));
+		Assert.NotEqual("Save to file...", ResourceHelper.GetMessage("SaveToFile"));
+		Assert.NotEqual("Download failed - the file appears to be corrupted. Please visit the Nexen website to download the latest version manually.", ResourceHelper.GetMessage("UpdateDownloadFailed"));
 	}
 }
