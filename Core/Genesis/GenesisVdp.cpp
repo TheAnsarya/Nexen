@@ -852,14 +852,22 @@ void GenesisVdp::ProcessDma() {
 	if (_dmaLatchedMode == 0 || _dmaLatchedMode == 1) {
 		// 68K → VRAM/CRAM/VSRAM copy
 		for (uint32_t i = 0; i < wordsThisStep; i++) {
-			uint16_t word = _memoryManager->Read16(_dmaSourceAddress);
+			// Expanded-compatible source progression: wrap within current 128KB source window.
+			uint32_t srcBase = _dmaSourceAddress & ~0x1FFFFu;
+			uint32_t srcOffset = _dmaSourceAddress & 0x1FFFFu;
+
+			uint8_t hi = _memoryManager->Read8(srcBase | srcOffset);
+			uint8_t lo = _memoryManager->Read8(srcBase | ((srcOffset + 1u) & 0x1FFFFu));
+			uint16_t word = ((uint16_t)hi << 8) | lo;
 			WriteDataPort(word);
-			_dmaSourceAddress += 2;
+
+			srcOffset = (srcOffset + 2u) & 0x1FFFFu;
+			_dmaSourceAddress = srcBase | srcOffset;
 		}
 
-		uint32_t srcWordAddress = (_dmaSourceAddress >> 1) & 0x3FFFFF;
-		_state.Registers[21] = (uint8_t)(srcWordAddress & 0xFF);
-		_state.Registers[22] = (uint8_t)((srcWordAddress >> 8) & 0xFF);
+		uint32_t srcWindowWordAddress = (_dmaSourceAddress & 0x1FFFFu) >> 1;
+		_state.Registers[21] = (uint8_t)(srcWindowWordAddress & 0xFF);
+		_state.Registers[22] = (uint8_t)((srcWindowWordAddress >> 8) & 0xFF);
 		// Keep R23 source-high bits fixed during bus DMA; only R21/R22 advance.
 	} else if (_dmaLatchedMode == 2) {
 		if (_dmaFillDataPending) {

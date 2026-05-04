@@ -184,6 +184,54 @@ namespace {
 		EXPECT_EQ(postStep.Registers[22], 0x00);
 	}
 
+	TEST(GenesisVdpDmaStartupLatencyTests, BusDmaSourceWrapsInsideCurrent128KbWindow) {
+		vector<uint8_t> rom((size_t)0x30000, 0);
+		rom[0x01FFFE] = 0x12;
+		rom[0x01FFFF] = 0x34;
+		rom[0x000000] = 0x56;
+		rom[0x000001] = 0x78;
+		rom[0x020000] = 0x56;
+		rom[0x020001] = 0x78;
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+
+		vdp.WriteControlPort(0x8150); // DMA + display enable
+		vdp.WriteControlPort(0x8c01); // H40
+		vdp.WriteControlPort(0x8f02); // auto-increment
+		vdp.WriteControlPort(0x9302); // length low = 2 words
+		vdp.WriteControlPort(0x9400); // length high
+		vdp.WriteControlPort(0x95ff); // src low (word addr low)
+		vdp.WriteControlPort(0x96ff); // src mid (word addr mid)
+		vdp.WriteControlPort(0x9700); // src high / mode
+		vdp.WriteControlPort(0x4000); // addr low + mode low
+		vdp.WriteControlPort(0x0080); // start DMA
+
+		vdp.Run(41);
+		GenesisVdpState afterFirst = vdp.GetState();
+		EXPECT_EQ(afterFirst.Registers[21], 0x00);
+		EXPECT_EQ(afterFirst.Registers[22], 0x00);
+		uint8_t r23 = afterFirst.Registers[23];
+
+		vdp.Run(43);
+		GenesisVdpState afterSecond = vdp.GetState();
+		EXPECT_EQ(afterSecond.Registers[21], 0x01);
+		EXPECT_EQ(afterSecond.Registers[22], 0x00);
+		EXPECT_EQ(afterSecond.Registers[23], r23);
+		EXPECT_FALSE(afterSecond.DmaActive);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		EXPECT_EQ(vram[0x0000], 0x12);
+		EXPECT_EQ(vram[0x0001], 0x34);
+		EXPECT_EQ(vram[0x0002], 0x56);
+		EXPECT_EQ(vram[0x0003], 0x78);
+	}
+
 	TEST(GenesisVdpDmaStartupLatencyTests, H40LateLineExternalSlotsRemainSlotGated) {
 		vector<uint8_t> rom = BuildDmaSourceRom();
 

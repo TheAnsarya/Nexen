@@ -2298,7 +2298,8 @@ Spanish (ES) and Japanese (JP) translations are currently just a couple entries 
 
 try again translating all the localization files, do it in big batches it's only like 1000 entries, it shouldn't take long; continue;
 
-do all three steps; continue; do several batches in a row; and integrate (and replace our code if it sucks) with `Hoshiruna/Mesen2-Expanded` Genesis code as we have been doing, but even more, make games run!; continue;
+do all three steps; continue; do several batches in a row; and integrate (and replace our code if it sucks) with `Hoshiruna/Mesen2-Expanded` Genesis code as we have been doing, but even more, make games run!; run nexen with sonic rom; continue;
+
 
 
 
