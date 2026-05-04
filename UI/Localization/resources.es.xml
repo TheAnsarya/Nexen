@@ -1841,31 +1841,31 @@
 		</Form>
 
 		<Form ID="FindAllOccurrencesWindow">
-			<Control ID="wndTitle">Find All Occurrences...</Control>
-			<Control ID="lblSearch">Search:</Control>
-			<Control ID="chkMatchCase">Match case</Control>
-			<Control ID="chkMatchWholeWord">Match whole word</Control>
-			<Control ID="btnFind">Find</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="wndTitle">Buscar todas las coincidencias...</Control>
+			<Control ID="lblSearch">Buscar:</Control>
+			<Control ID="chkMatchCase">Coincidir mayusculas/minusculas</Control>
+			<Control ID="chkMatchWholeWord">Coincidir palabra completa</Control>
+			<Control ID="btnFind">Buscar</Control>
+			<Control ID="btnCancel">Cancelar</Control>
 		</Form>
 
 		<Form ID="BreakInWindow">
-			<Control ID="wndTitle">Break In...</Control>
-			<Control ID="lblBreakIn">Break in:</Control>
-			<Control ID="lblCpuInst">CPU instructions</Control>
-			<Control ID="lblCpuCycles">CPU cycles</Control>
-			<Control ID="lblPpuCycles">PPU cycles</Control>
-			<Control ID="lblPpuScanlines">Scanlines</Control>
-			<Control ID="lblPpuFrames">Frames</Control>
+			<Control ID="wndTitle">Detener en...</Control>
+			<Control ID="lblBreakIn">Detener en:</Control>
+			<Control ID="lblCpuInst">Instrucciones de CPU</Control>
+			<Control ID="lblCpuCycles">Ciclos de CPU</Control>
+			<Control ID="lblPpuCycles">Ciclos de PPU</Control>
+			<Control ID="lblPpuScanlines">Lineas de barrido</Control>
+			<Control ID="lblPpuFrames">Fotogramas</Control>
 			<Control ID="btnOk">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">Cancelar</Control>
 		</Form>
 
 		<Form ID="BreakOnWindow">
-			<Control ID="wndTitle">Run to scanline...</Control>
-			<Control ID="lblBreakOn">Scanline #:</Control>
+			<Control ID="wndTitle">Ejecutar hasta linea de barrido...</Control>
+			<Control ID="lblBreakOn">Linea de barrido #:</Control>
 			<Control ID="btnOk">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">Cancelar</Control>
 		</Form>
 
 		<Form ID="LabelEditWindow">

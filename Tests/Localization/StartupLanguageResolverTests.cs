@@ -122,4 +122,11 @@ public sealed class StartupLanguageResolverTests {
 
 		Assert.Equal("zz-unknown", displayName);
 	}
+
+	[Fact]
+	public void GetLanguageDisplayName_MixedCaseKnownCodeWithoutNormalization_ReturnsOriginalCode() {
+		string displayName = ResourceHelper.GetLanguageDisplayName(" Ja ");
+
+		Assert.Equal(" Ja ", displayName);
+	}
 }

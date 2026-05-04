@@ -38,6 +38,7 @@ public class GenesisRegisterViewerTests {
 		Assert.Contains("CpuFlowParityKey", names);
 		Assert.Contains("CpuRegsParityKey", names);
 		Assert.Contains("CpuStackParityKey", names);
+		Assert.Contains("CpuStatusParityKey", names);
 	}
 
 	[Fact]

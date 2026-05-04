@@ -1841,31 +1841,31 @@
 		</Form>
 
 		<Form ID="FindAllOccurrencesWindow">
-			<Control ID="wndTitle">Find All Occurrences...</Control>
-			<Control ID="lblSearch">Search:</Control>
-			<Control ID="chkMatchCase">Match case</Control>
-			<Control ID="chkMatchWholeWord">Match whole word</Control>
-			<Control ID="btnFind">Find</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="wndTitle">すべての一致を検索...</Control>
+			<Control ID="lblSearch">検索:</Control>
+			<Control ID="chkMatchCase">大文字/小文字を区別</Control>
+			<Control ID="chkMatchWholeWord">単語全体に一致</Control>
+			<Control ID="btnFind">検索</Control>
+			<Control ID="btnCancel">キャンセル</Control>
 		</Form>
 
 		<Form ID="BreakInWindow">
-			<Control ID="wndTitle">Break In...</Control>
-			<Control ID="lblBreakIn">Break in:</Control>
-			<Control ID="lblCpuInst">CPU instructions</Control>
-			<Control ID="lblCpuCycles">CPU cycles</Control>
-			<Control ID="lblPpuCycles">PPU cycles</Control>
-			<Control ID="lblPpuScanlines">Scanlines</Control>
-			<Control ID="lblPpuFrames">Frames</Control>
+			<Control ID="wndTitle">中断まで...</Control>
+			<Control ID="lblBreakIn">中断まで:</Control>
+			<Control ID="lblCpuInst">CPU 命令</Control>
+			<Control ID="lblCpuCycles">CPU サイクル</Control>
+			<Control ID="lblPpuCycles">PPU サイクル</Control>
+			<Control ID="lblPpuScanlines">スキャンライン</Control>
+			<Control ID="lblPpuFrames">フレーム</Control>
 			<Control ID="btnOk">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">キャンセル</Control>
 		</Form>
 
 		<Form ID="BreakOnWindow">
-			<Control ID="wndTitle">Run to scanline...</Control>
-			<Control ID="lblBreakOn">Scanline #:</Control>
+			<Control ID="wndTitle">スキャンラインまで実行...</Control>
+			<Control ID="lblBreakOn">スキャンライン #:</Control>
 			<Control ID="btnOk">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">キャンセル</Control>
 		</Form>
 
 		<Form ID="LabelEditWindow">

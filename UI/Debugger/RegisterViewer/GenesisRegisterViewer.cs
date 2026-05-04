@@ -44,6 +44,7 @@ public sealed class GenesisRegisterViewer {
 		uint cpuFlowParityKey = ComputeCpuFlowParityKey(cpu);
 		uint cpuRegsParityKey = ComputeCpuRegsParityKey(cpu);
 		uint cpuStackParityKey = ComputeCpuStackParityKey(cpu);
+		uint cpuStatusParityKey = ComputeCpuStatusParityKey(cpu);
 
 		entries.Add(new RegEntry("", "Core"));
 		entries.Add(new RegEntry("", "PC", cpu.PC, Format.X32));
@@ -58,6 +59,7 @@ public sealed class GenesisRegisterViewer {
 		entries.Add(new RegEntry("", "CpuFlowParityKey", cpuFlowParityKey, Format.X32));
 		entries.Add(new RegEntry("", "CpuRegsParityKey", cpuRegsParityKey, Format.X32));
 		entries.Add(new RegEntry("", "CpuStackParityKey", cpuStackParityKey, Format.X32));
+		entries.Add(new RegEntry("", "CpuStatusParityKey", cpuStatusParityKey, Format.X32));
 
 		entries.Add(new RegEntry("", "Data registers"));
 		for (int i = 0; i < 8; i++) {
@@ -297,6 +299,13 @@ public sealed class GenesisRegisterViewer {
 		digest = Fnv1aUpdate(digest, cpu.USP);
 		digest = Fnv1aUpdate(digest, cpu.SSP);
 		digest = Fnv1aUpdate(digest, cpu.SR & 0x2700u);
+		return (uint)(digest ^ (digest >> 32));
+	}
+
+	private static uint ComputeCpuStatusParityKey(GenesisM68kState cpu) {
+		ulong digest = 1469598103934665603ul;
+		digest = Fnv1aUpdate(digest, cpu.SR);
+		digest = Fnv1aUpdate(digest, cpu.Stopped ? 1u : 0u);
 		return (uint)(digest ^ (digest >> 32));
 	}
 
