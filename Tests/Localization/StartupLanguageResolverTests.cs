@@ -144,4 +144,17 @@ public sealed class StartupLanguageResolverTests {
 
 		Assert.DoesNotContain(displayNames, string.IsNullOrWhiteSpace);
 	}
+
+	[Theory]
+	[InlineData("es")]
+	[InlineData("ja")]
+	public void HighVisibilityMessages_AreLocalized(string languageCode) {
+		ResourceHelper.LoadResources(languageCode);
+
+		Assert.NotEqual("Save changes?", ResourceHelper.GetMessage("PromptSaveChanges"));
+		Assert.NotEqual("Keep changes?", ResourceHelper.GetMessage("PromptKeepChanges"));
+		Assert.NotEqual("An unexpected error has occurred.\n\nError details:\nsample", ResourceHelper.GetMessage("UnexpectedError", "sample"));
+		Assert.NotEqual("The selected file is not a valid HD Pack.", ResourceHelper.GetMessage("InstallHdPackInvalidPack"));
+		Assert.NotEqual("You are running the latest version of Nexen.", ResourceHelper.GetMessage("NexenUpToDate"));
+	}
 }

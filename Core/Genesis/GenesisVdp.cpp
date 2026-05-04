@@ -787,7 +787,8 @@ void GenesisVdp::ProcessDma() {
 			_dmaRemainingWords = 0x10000;
 		}
 
-		_dmaSourceAddress = ((uint32_t)(_state.Registers[23] & 0x3F) << 17)
+		// Mesen2-Expanded keeps the full low 7 bits of R23 in the initial bus-DMA source assembly.
+		_dmaSourceAddress = ((uint32_t)(_state.Registers[23] & 0x7F) << 17)
 		                | ((uint32_t)_state.Registers[22] << 9)
 		                | ((uint32_t)_state.Registers[21] << 1);
 		_dmaCopySourceAddress = ((uint16_t)_state.Registers[22] << 8) | _state.Registers[21];

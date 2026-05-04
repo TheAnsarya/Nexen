@@ -1950,46 +1950,45 @@
 		<Message ID="VideoLayerEnabled">{0} enabled.</Message>
 		<Message ID="AllLayersEnabled">All BG/sprite layers enabled.</Message>
 
-		<Message ID="PromptSaveChanges">Save changes?</Message>
-		<Message ID="PromptKeepChanges">Keep changes?</Message>
+		<Message ID="PromptSaveChanges">変更を保存しますか？</Message>
+		<Message ID="PromptKeepChanges">変更を保持しますか？</Message>
 
-		<Message ID="PromptLoadSufamiTurbo">Do you want to load a second Sufami Turbo ROM to insert into slot B?</Message>
+		<Message ID="PromptLoadSufamiTurbo">スロットBに挿入する2つ目のスーファミターボROMを読み込みますか？</Message>
 
 		<Message ID="UnknownFirmwareHash">This file does not match any of the known firmwares and may not work properly.&#xA;&#xA;Expected (SHA256): {0}&#xA;Current (SHA256): {1}</Message>
 		<Message ID="InvalidFirmwareSize">This file does not have the required size.&#xA;&#xA;Expected: {0} bytes&#xA;Current: {1} bytes</Message>
 		<Message ID="PromptDeleteFirmware">The following file will be deleted permanently. Are you sure?&#xA;&#xA;{0}</Message>
 		<Message ID="OverwriteFirmware">The following file already exists and will be overwritten. This cannot be undone. Are you sure?&#xA;&#xA;{0}</Message>
 
-		<Message ID="MovieSegment">Segment #{0}</Message>
-		<Message ID="MovieExportEntireSegment">Export entire segment</Message>
-		<Message ID="MovieExportSpecificRange">Export specific range...</Message>
-		<Message ID="MovieSaveError">An error occurred while trying to save the movie file.</Message>
-		<Message ID="InvalidMoviePath">Please select a valid movie file path before recording.</Message>
-		<Message ID="MovieRecordStartError">Unable to start movie recording.&#xA;&#xA;Details:&#xA;{0}</Message>
+		<Message ID="MovieSegment">セグメント #{0}</Message>
+		<Message ID="MovieExportEntireSegment">セグメント全体をエクスポート</Message>
+		<Message ID="MovieExportSpecificRange">指定範囲をエクスポート...</Message>
+		<Message ID="MovieSaveError">ムービーファイルの保存中にエラーが発生しました。</Message>
+		<Message ID="InvalidMoviePath">録画を開始する前に有効なムービーファイルのパスを選択してください。</Message>
+		<Message ID="MovieRecordStartError">ムービー録画を開始できませんでした。&#xA;&#xA;詳細:&#xA;{0}</Message>
 		<Message ID="GreenzoneMemoryUsageMB">{0} MB</Message>
-		<Message ID="FileSaveError">An error occurred while trying to save the file.</Message>
+		<Message ID="FileSaveError">ファイルの保存中にエラーが発生しました。</Message>
 
-		<Message ID="SetKeyHint">Press any key on your keyboard to set a new binding.</Message>
-		<Message ID="SetKeyMouseHint">Press any key on your keyboard, controller or mouse to set a new binding.</Message>
+		<Message ID="SetKeyHint">新しい割り当てを設定するには、キーボードのいずれかのキーを押してください。</Message>
+		<Message ID="SetKeyMouseHint">新しい割り当てを設定するには、キーボード、コントローラー、またはマウスのいずれかのキーを押してください。</Message>
 
-		<Message ID="ClearHistory">Clear History</Message>
+		<Message ID="ClearHistory">履歴をクリア</Message>
 
-		<Message ID="SpcClockSpeedMsg">= {0} Hz (default: 40)</Message>
-E
+		<Message ID="SpcClockSpeedMsg">= {0} Hz (既定値: 40)</Message>
 		<Message ID="FirmwareNotFound">This game requires a firmware file for the: {0}&#xA;&#xA;  Filename: {1}&#xA;  Size: {2} bytes&#xA;&#xA;Would you like to select it now?</Message>
 		<Message ID="FirmwareMismatch">The selected file does not match the firmware required for the: {0}&#xA;&#xA;Firmware SHA-256:&#xA;{1}&#xA;&#xA;Selected file's SHA-256:&#xA;{2}&#xA;&#xA;Would you like to use this file anyway?</Message>
 		<Message ID="FirmwareFileWrongSize">The selected file does not match the required size ({0} bytes) and cannot be used.</Message>
 
 		<Message ID="MouseModeEnabled">Mouse enabled - pause to release cursor</Message>
 		<Message ID="BandaiMicrophone">Bandai Microphone</Message>
-		<Message ID="DatachBarcodeReader">Datach Barcode Reader</Message>
+		<Message ID="DatachBarcodeReader">Datach バーコードリーダー</Message>
 
 		<Message ID="HelpFullscreen">/fullscreen - Start Nexen in fullscreen mode</Message>
 		<Message ID="HelpDoNotSaveSettings">/DoNotSaveSettings - Prevent settings from being saved to the disk (useful to prevent command line options from becoming the default settings)</Message>
 		<Message ID="HelpRecordMovie">/RecordMovie="filename.mmo" - Start recording a movie after the specified game is loaded.</Message>
 		<Message ID="HelpLoadLastSession">/LoadLastSession - Resumes the game in the state it was left in when it was last played.</Message>
 
-		<Message ID="RightClickToClearBinding">Right-click to clear binding</Message>
+		<Message ID="RightClickToClearBinding">右クリックで割り当てをクリア</Message>
 
 		<Message ID="Resume">Resume</Message>
 		<Message ID="Pause">Pause</Message>
@@ -2042,9 +2041,9 @@ E
 		<Message ID="InvalidArgument">無効な引数: {0}</Message>
 		<Message ID="UnsupportedFileType">対応していないファイル形式です: {0}&#xA;&#xA;有効なROM、アーカイブ、パッチ、ステート、ムービー（実行中）、または最近のゲームファイルを選択してください。</Message>
 
-		<Message ID="NexenUpToDate">You are running the latest version of Nexen.</Message>
-		<Message ID="PatchAndReset">Patch and reset the current game?</Message>
-		<Message ID="SelectRomIps">Please select a ROM for this patch file.</Message>
+		<Message ID="NexenUpToDate">Nexen の最新バージョンを実行しています。</Message>
+		<Message ID="PatchAndReset">現在のゲームにパッチを適用してリセットしますか？</Message>
+		<Message ID="SelectRomIps">このパッチファイルに対応するROMを選択してください。</Message>
 		<Message ID="UnableToDownload">Unable to download file. Check your internet connection and try again.&#xA;&#xA;Details:&#xA;{0}</Message>
 		<Message ID="UnableToStartMissingSdl">Nexen could not launch because SDL2 could not be found. Install SDL2 using your package manager and try again.&#xA;&#xA;Error details:&#xA;{0}</Message>
 		<Message ID="UnableToStartMissingDependencies">Nexen could not launch because of missing dependencies.&#xA;&#xA;Error details:&#xA;{0}</Message>
@@ -2057,7 +2056,7 @@ E
 		<Message ID="GameLoadFailedTitle">Error</Message>
 		<Message ID="GameLoadFailedMessage">ゲームの読み込みに失敗しました。ゲームを選択して再試行してください。</Message>
 
-		<Message ID="UnexpectedError">An unexpected error has occurred.&#xA;&#xA;Error details:&#xA;{0}</Message>
+		<Message ID="UnexpectedError">予期しないエラーが発生しました。&#xA;&#xA;エラー詳細:&#xA;{0}</Message>
 		<Message ID="UpdateDownloadFailed">Download failed - the file appears to be corrupted. Please visit the Nexen website to download the latest version manually.</Message>
 		<Message ID="UpgradeSuccess">Upgrade completed successfully.</Message>
 		<Message ID="UpdaterNotFound">The update process could not be started due to missing files.</Message>
@@ -2072,11 +2071,11 @@ E
 		<Message ID="ConfirmReloadRom">ディスクからROMを再読み込みしてもよろしいですか？</Message>
 		<Message ID="ConfirmPowerOff">電源を切ってもよろしいですか？</Message>
 		<Message ID="ConfirmExit">終了してもよろしいですか？</Message>
-		<Message ID="ConfirmDeleteSaveState">Are you sure you want to delete this save state?&#xA;&#xA;{0}</Message>
+		<Message ID="ConfirmDeleteSaveState">このセーブステートを削除してもよろしいですか？&#xA;&#xA;{0}</Message>
 
 		<Message ID="InstallHdPackWrongRom">The selected HD Pack is not compatible with the currently running game and cannot be installed.</Message>
 		<Message ID="InstallHdPackError">An error occurred while trying to install the HD Pack: &#xA;&#xA;{0}</Message>
-		<Message ID="InstallHdPackInvalidPack">The selected file is not a valid HD Pack.</Message>
+		<Message ID="InstallHdPackInvalidPack">選択したファイルは有効なHD Packではありません。</Message>
 		<Message ID="InstallHdPackInvalidZipFile">The selected file is not a valid ZIP file.</Message>
 		<Message ID="InstallHdPackConfirmOverwrite">The destination folder ({0}) already exists - are you sure you want to overwrite it?</Message>
 		<Message ID="InstallHdPackConfirmReset">The HD Pack has been installed successfully. Do you want to reset the game and load the HD Pack now?</Message>
@@ -2298,7 +2297,7 @@ E
 			<Value ID="BattleBox">Battle Box</Value>
 
 			<Value ID="BandaiMicrophone">Bandai Microphone</Value>
-			<Value ID="DatachBarcodeReader">Datach Barcode Reader</Value>
+			<Value ID="DatachBarcodeReader">Datach バーコードリーダー</Value>
 
 			<Value ID="GameboyController">Gameboy Controller</Value>
 			<Value ID="GameboyAccelerometer">Game Boy Accelerometer</Value>

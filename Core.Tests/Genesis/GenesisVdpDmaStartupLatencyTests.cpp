@@ -150,6 +150,43 @@ namespace {
 		EXPECT_EQ(afterSecondSlot.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
 
+	TEST(GenesisVdpDmaStartupLatencyTests, BusDmaSourceUsesR23Bit6InInitialSourceAssembly) {
+		vector<uint8_t> rom((size_t)0x900000, 0);
+		rom[0x000000] = 0x11;
+		rom[0x000001] = 0x22;
+		rom[0x800000] = 0xaa;
+		rom[0x800001] = 0xbb;
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+
+		vdp.WriteControlPort(0x8110); // DMA enable
+		vdp.WriteControlPort(0x8c01); // H40
+		vdp.WriteControlPort(0x8f02); // auto-increment
+		vdp.WriteControlPort(0x9301); // length low = 1 word
+		vdp.WriteControlPort(0x9400); // length high
+		vdp.WriteControlPort(0x9500); // src low
+		vdp.WriteControlPort(0x9600); // src mid
+		vdp.WriteControlPort(0x9740); // src high includes bit6, bus DMA mode
+		vdp.WriteControlPort(0x4000); // addr low + mode low
+		vdp.WriteControlPort(0x0080); // start DMA
+
+		vdp.Run(41);
+
+		vdp.WriteControlPort(0x0000);
+		vdp.WriteControlPort(0x0000);
+		uint16_t firstRead = vdp.ReadDataPort();
+		uint16_t secondRead = vdp.ReadDataPort();
+
+		EXPECT_EQ(firstRead, 0xaabbu);
+		EXPECT_NE(secondRead, firstRead);
+	}
+
 	TEST(GenesisVdpDmaStartupLatencyTests, H40LateLineExternalSlotsRemainSlotGated) {
 		vector<uint8_t> rom = BuildDmaSourceRom();
 

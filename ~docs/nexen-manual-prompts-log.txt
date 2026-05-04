@@ -2286,12 +2286,13 @@ do all three steps; continue;
 
 do all three steps; continue; do several batches in a row
 
+Nexen is in the repos, at `C:\Users\me\source\repos\Nexen\bin\win-x64\Release` now go back to what you doing befor; continue;
 
+do all three steps; continue; do several batches in a row
 
+do all three steps; continue; do several batches in a row
 
-
-
-
+do all three steps; continue; do several batches in a row; make sure we're finding all strings in the UI that are displayed that should be localized and localize them and make translations for them as well and all localized strings; and integrate (and replace our code if it sucks) with `Hoshiruna/Mesen2-Expanded` Genesis code as we have been doing, but even more, make games run!; continue;
 
 
 
