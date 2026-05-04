@@ -79,6 +79,7 @@ public sealed class GenesisRegisterViewer {
 		ulong vdpDigest = ComputeVdpTraceDigest(vdp, dmaLength, dmaEffectiveLength, dmaSource);
 		uint rasterParityKey = ComputeRasterParityKey(vdp);
 		uint dmaParityKey = ComputeDmaParityKey(vdp, dmaEffectiveLength, dmaSource);
+		uint vdpRegsParityKey = ComputeVdpRegsParityKey(vdp);
 		string dmaModeLabel = vdp.DmaMode switch {
 			0 => "68kCopy",
 			1 => "Fill",
@@ -119,6 +120,7 @@ public sealed class GenesisRegisterViewer {
 			new RegEntry("", "VdpDigestLo", (uint)(vdpDigest & 0xFFFFFFFF), Format.X32),
 			new RegEntry("", "RasterParityKey", rasterParityKey, Format.X32),
 			new RegEntry("", "DmaParityKey", dmaParityKey, Format.X32),
+			new RegEntry("", "VdpRegsParityKey", vdpRegsParityKey, Format.X32),
 		});
 
 		for (int i = 0; i < 24; i++) {
@@ -338,6 +340,15 @@ public sealed class GenesisRegisterViewer {
 		digest = Fnv1aUpdate(digest, vdp.AddressRegister);
 		digest = Fnv1aUpdate(digest, vdp.CodeRegister);
 		digest = Fnv1aUpdate(digest, vdp.WritePending ? 1u : 0u);
+		return (uint)(digest ^ (digest >> 32));
+	}
+
+	private static uint ComputeVdpRegsParityKey(GenesisVdpState vdp) {
+		ulong digest = 1469598103934665603ul;
+		for (int i = 0; i < 24; i++) {
+			digest = Fnv1aUpdate(digest, vdp.Registers[i]);
+		}
+
 		return (uint)(digest ^ (digest >> 32));
 	}
 }

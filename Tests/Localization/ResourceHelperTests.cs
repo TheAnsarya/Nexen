@@ -3,6 +3,7 @@ using Xunit;
 
 namespace Nexen.Tests.Localization;
 
+[Collection("LocalizationResourceTests")]
 public sealed class ResourceHelperTests {
 	[Fact]
 	public void GetAvailableLanguageCodes_IncludesEnglishSpanishAndJapanese() {

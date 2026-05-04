@@ -1562,70 +1562,70 @@
 			<Control ID="chkRefreshWhileRunning">実行中に更新</Control>
 			<Control ID="chkDrawPartialFrame">部分フレームを描画</Control>
 			<Control ID="chkUsePredictiveBreakpoints">予測ブレークポイントを使用</Control>
-			<Control ID="chkUsePredictiveBreakpointsHint">When enabled, the debugger attempts to predict breakpoints before the corresponding read/write occurs,&#xA;allowing execution to be stopped before the instruction starts executing.</Control>
-			<Control ID="chkSingleBreakpointPerInstruction">Break once per instruction</Control>
-			<Control ID="chkSnesIgnoreDspReadWrites">Ignore DSP reads/writes</Control>
-			<Control ID="chkSnesIgnoreDspReadWritesHint">DSP reads/writes to SPC RAM will be ignored by the debugger.&#xA;Reads/writes done by the DSP won't trigger breakpoints, nor be counted as accesses, etc.&#xA;(This slightly improves performance when debugging)</Control>
+			<Control ID="chkUsePredictiveBreakpointsHint">有効時、デバッガーは対応する読み書きが発生する前にブレークポイントを予測し、&#xA;命令の実行開始前に停止できるようにします。</Control>
+			<Control ID="chkSingleBreakpointPerInstruction">命令ごとに1回だけ停止</Control>
+			<Control ID="chkSnesIgnoreDspReadWrites">DSPの読み書きを無視</Control>
+			<Control ID="chkSnesIgnoreDspReadWritesHint">SPC RAMへのDSP読み書きはデバッガーで無視されます。&#xA;DSPによる読み書きはブレークポイントを発生させず、アクセスとしても数えられません。&#xA;（デバッグ時の性能がわずかに向上します）</Control>
 		</Form>
 
 		<Form ID="MemoryToolsWindow">
-			<Control ID="wndTitle">Memory Viewer</Control>
-			<Control ID="mnuFile">_File</Control>
-			<Control ID="mnuView">_View</Control>
-			<Control ID="mnuSearch">_Search</Control>
+			<Control ID="wndTitle">メモリビューア</Control>
+			<Control ID="mnuFile">_ファイル</Control>
+			<Control ID="mnuView">_表示</Control>
+			<Control ID="mnuSearch">_検索</Control>
 
-			<Control ID="lblMemoryType">Memory Type:</Control>
-			<Control ID="btnToggleSettings">Toggle settings panel</Control>
+			<Control ID="lblMemoryType">メモリタイプ:</Control>
+			<Control ID="btnToggleSettings">設定パネルを切り替え</Control>
 		</Form>
 
 		<Form ID="MemoryToolsDisplayOptionsView">
-			<Control ID="lblAccessHighlight">Access highlighting</Control>
-			<Control ID="lblFadeSpeed">Fade speed: </Control>
-			<Control ID="lblDataTypeHighlight">Data type highlighting</Control>
-			<Control ID="lblFontSettings">Font settings</Control>
-			<Control ID="lblMiscSettings">Misc. settings</Control>
+			<Control ID="lblAccessHighlight">アクセス強調表示</Control>
+			<Control ID="lblFadeSpeed">フェード速度: </Control>
+			<Control ID="lblDataTypeHighlight">データ型の強調表示</Control>
+			<Control ID="lblFontSettings">フォント設定</Control>
+			<Control ID="lblMiscSettings">その他の設定</Control>
 
-			<Control ID="chkHighlightRead">Reads</Control>
-			<Control ID="chkHighlightWrite">Writes</Control>
-			<Control ID="chkHighlightExec">Execution</Control>
-			<Control ID="chkHighlightCode">Code</Control>
-			<Control ID="chkHighlightData">Data</Control>
-			<Control ID="lblUnidentified">Unidentified</Control>
-			<Control ID="chkHighlightLabel">Labels</Control>
-			<Control ID="chkHighlightFrozenAddresses">Frozen addresses</Control>
+			<Control ID="chkHighlightRead">読み取り</Control>
+			<Control ID="chkHighlightWrite">書き込み</Control>
+			<Control ID="chkHighlightExec">実行</Control>
+			<Control ID="chkHighlightCode">コード</Control>
+			<Control ID="chkHighlightData">データ</Control>
+			<Control ID="lblUnidentified">未識別</Control>
+			<Control ID="chkHighlightLabel">ラベル</Control>
+			<Control ID="chkHighlightFrozenAddresses">固定アドレス</Control>
 			<Control ID="chkHighlightNesPcmData">DPCM Data</Control>
-			<Control ID="chkHighlightNesDrawnChrRom">Drawn tiles (PPU)</Control>
-			<Control ID="chkHighlightBreakpoints">Breakpoints</Control>
-			<Control ID="chkHighDensityTextMode">Use high-density text</Control>
-			<Control ID="chkShowCharacters">Show characters</Control>
-			<Control ID="chkShowTooltips">Show tooltips</Control>
+			<Control ID="chkHighlightNesDrawnChrRom">描画済みタイル (PPU)</Control>
+			<Control ID="chkHighlightBreakpoints">ブレークポイント</Control>
+			<Control ID="chkHighDensityTextMode">高密度テキストを使用</Control>
+			<Control ID="chkShowCharacters">文字を表示</Control>
+			<Control ID="chkShowTooltips">ツールチップを表示</Control>
 		</Form>
 		<Form ID="MemoryViewerFindWindow">
-			<Control ID="wndTitle">Find...</Control>
-			<Control ID="lblSearch">Search:</Control>
-			<Control ID="lblDataType">Data Type:</Control>
-			<Control ID="lblIntType">Format:</Control>
-			<Control ID="chkCaseSensitive">Case sensitive</Control>
-			<Control ID="chkUseTblMappings">Use TBL mappings</Control>
-			<Control ID="lblDataTypeFilters">Data Type Filters</Control>
-			<Control ID="chkFilterCode">Code</Control>
-			<Control ID="chkFilterData">Data</Control>
-			<Control ID="chkFilterUnidentified">Unidentified</Control>
-			<Control ID="lblAccessFilters">Access Filters</Control>
-			<Control ID="chkFilterNotAccessed">Not accessed</Control>
-			<Control ID="chkFilterRead">Read</Control>
-			<Control ID="chkFilterWrite">Written</Control>
-			<Control ID="chkFilterExec">Executed</Control>
-			<Control ID="chkFilterTimeSpan">In the last</Control>
-			<Control ID="lblFrames">frames</Control>
+			<Control ID="wndTitle">検索...</Control>
+			<Control ID="lblSearch">検索:</Control>
+			<Control ID="lblDataType">データ型:</Control>
+			<Control ID="lblIntType">形式:</Control>
+			<Control ID="chkCaseSensitive">大文字小文字を区別</Control>
+			<Control ID="chkUseTblMappings">TBLマッピングを使用</Control>
+			<Control ID="lblDataTypeFilters">データ型フィルター</Control>
+			<Control ID="chkFilterCode">コード</Control>
+			<Control ID="chkFilterData">データ</Control>
+			<Control ID="chkFilterUnidentified">未識別</Control>
+			<Control ID="lblAccessFilters">アクセスフィルター</Control>
+			<Control ID="chkFilterNotAccessed">未アクセス</Control>
+			<Control ID="chkFilterRead">読み取り済み</Control>
+			<Control ID="chkFilterWrite">書き込み済み</Control>
+			<Control ID="chkFilterExec">実行済み</Control>
+			<Control ID="chkFilterTimeSpan">直近</Control>
+			<Control ID="lblFrames">フレーム</Control>
 
-			<Control ID="lblNoMatchFound">No match found!</Control>
-			<Control ID="btnFindPrev">Previous</Control>
-			<Control ID="btnFindNext">Next</Control>
+			<Control ID="lblNoMatchFound">一致が見つかりません。</Control>
+			<Control ID="btnFindPrev">前へ</Control>
+			<Control ID="btnFindNext">次へ</Control>
 
-			<Control ID="lblSearchHelp">When searching hexadecimal values, a question mark (?)&#10;can be used to define a byte that can take any value.&#10;&#10;e.g: "FF ? 55" will search for any set of three&#10;bytes that starts with FF and ends with 55.</Control>
+			<Control ID="lblSearchHelp">16進値を検索する際、疑問符 (?) を使うと任意の値を取るバイトを指定できます。&#10;&#10;例: "FF ? 55" は、FFで始まり55で終わる3バイトの&#10;任意の並びを検索します。</Control>
 
-			<Control ID="btnClose">Close</Control>
+			<Control ID="btnClose">閉じる</Control>
 		</Form>
 		<Form ID="FontOptionsView">
 			<Control ID="lblFamily">Family: </Control>

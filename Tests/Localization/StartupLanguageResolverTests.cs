@@ -4,6 +4,7 @@ using Xunit;
 
 namespace Nexen.Tests.Localization;
 
+[Collection("LocalizationResourceTests")]
 public sealed class StartupLanguageResolverTests {
 	[Fact]
 	public void ResolveLanguageCode_DesignMode_UsesEnglishFallback() {
@@ -86,5 +87,12 @@ public sealed class StartupLanguageResolverTests {
 		Assert.Contains("English", displayNames);
 		Assert.Contains("Spanish", displayNames);
 		Assert.Contains("Japanese", displayNames);
+	}
+
+	[Fact]
+	public void LoadResources_MixedCaseWhitespaceLanguageCode_LoadsSpanishLabel() {
+		ResourceHelper.LoadResources(" Es ");
+
+		Assert.Equal("_Archivo", ResourceHelper.GetViewLabel("MainMenuView", "mnuFile"));
 	}
 }

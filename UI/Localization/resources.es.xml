@@ -1562,70 +1562,70 @@
 			<Control ID="chkRefreshWhileRunning">Actualizar durante la ejecucion</Control>
 			<Control ID="chkDrawPartialFrame">Dibujar fotograma parcial</Control>
 			<Control ID="chkUsePredictiveBreakpoints">Usar puntos de interrupcion predictivos</Control>
-			<Control ID="chkUsePredictiveBreakpointsHint">When enabled, the debugger attempts to predict breakpoints before the corresponding read/write occurs,&#xA;allowing execution to be stopped before the instruction starts executing.</Control>
-			<Control ID="chkSingleBreakpointPerInstruction">Break once per instruction</Control>
-			<Control ID="chkSnesIgnoreDspReadWrites">Ignore DSP reads/writes</Control>
-			<Control ID="chkSnesIgnoreDspReadWritesHint">DSP reads/writes to SPC RAM will be ignored by the debugger.&#xA;Reads/writes done by the DSP won't trigger breakpoints, nor be counted as accesses, etc.&#xA;(This slightly improves performance when debugging)</Control>
+			<Control ID="chkUsePredictiveBreakpointsHint">Cuando esta opcion esta habilitada, el depurador intenta predecir puntos de interrupcion antes de que ocurra la lectura/escritura correspondiente,&#xA;permitiendo detener la ejecucion antes de que la instruccion comience a ejecutarse.</Control>
+			<Control ID="chkSingleBreakpointPerInstruction">Detener una vez por instruccion</Control>
+			<Control ID="chkSnesIgnoreDspReadWrites">Ignorar lecturas/escrituras DSP</Control>
+			<Control ID="chkSnesIgnoreDspReadWritesHint">Las lecturas/escrituras DSP a la RAM del SPC seran ignoradas por el depurador.&#xA;Las lecturas/escrituras hechas por el DSP no activaran puntos de interrupcion ni se contaran como accesos, etc.&#xA;(Esto mejora levemente el rendimiento al depurar)</Control>
 		</Form>
 
 		<Form ID="MemoryToolsWindow">
-			<Control ID="wndTitle">Memory Viewer</Control>
-			<Control ID="mnuFile">_File</Control>
-			<Control ID="mnuView">_View</Control>
-			<Control ID="mnuSearch">_Search</Control>
+			<Control ID="wndTitle">Visor de memoria</Control>
+			<Control ID="mnuFile">_Archivo</Control>
+			<Control ID="mnuView">_Vista</Control>
+			<Control ID="mnuSearch">_Buscar</Control>
 
-			<Control ID="lblMemoryType">Memory Type:</Control>
-			<Control ID="btnToggleSettings">Toggle settings panel</Control>
+			<Control ID="lblMemoryType">Tipo de memoria:</Control>
+			<Control ID="btnToggleSettings">Alternar panel de configuracion</Control>
 		</Form>
 
 		<Form ID="MemoryToolsDisplayOptionsView">
-			<Control ID="lblAccessHighlight">Access highlighting</Control>
-			<Control ID="lblFadeSpeed">Fade speed: </Control>
-			<Control ID="lblDataTypeHighlight">Data type highlighting</Control>
-			<Control ID="lblFontSettings">Font settings</Control>
-			<Control ID="lblMiscSettings">Misc. settings</Control>
+			<Control ID="lblAccessHighlight">Resaltado de accesos</Control>
+			<Control ID="lblFadeSpeed">Velocidad de desvanecimiento: </Control>
+			<Control ID="lblDataTypeHighlight">Resaltado por tipo de dato</Control>
+			<Control ID="lblFontSettings">Configuracion de fuente</Control>
+			<Control ID="lblMiscSettings">Configuracion varia</Control>
 
-			<Control ID="chkHighlightRead">Reads</Control>
-			<Control ID="chkHighlightWrite">Writes</Control>
-			<Control ID="chkHighlightExec">Execution</Control>
-			<Control ID="chkHighlightCode">Code</Control>
-			<Control ID="chkHighlightData">Data</Control>
-			<Control ID="lblUnidentified">Unidentified</Control>
-			<Control ID="chkHighlightLabel">Labels</Control>
-			<Control ID="chkHighlightFrozenAddresses">Frozen addresses</Control>
+			<Control ID="chkHighlightRead">Lecturas</Control>
+			<Control ID="chkHighlightWrite">Escrituras</Control>
+			<Control ID="chkHighlightExec">Ejecucion</Control>
+			<Control ID="chkHighlightCode">Codigo</Control>
+			<Control ID="chkHighlightData">Datos</Control>
+			<Control ID="lblUnidentified">No identificado</Control>
+			<Control ID="chkHighlightLabel">Etiquetas</Control>
+			<Control ID="chkHighlightFrozenAddresses">Direcciones congeladas</Control>
 			<Control ID="chkHighlightNesPcmData">DPCM Data</Control>
-			<Control ID="chkHighlightNesDrawnChrRom">Drawn tiles (PPU)</Control>
-			<Control ID="chkHighlightBreakpoints">Breakpoints</Control>
-			<Control ID="chkHighDensityTextMode">Use high-density text</Control>
-			<Control ID="chkShowCharacters">Show characters</Control>
-			<Control ID="chkShowTooltips">Show tooltips</Control>
+			<Control ID="chkHighlightNesDrawnChrRom">Tiles dibujados (PPU)</Control>
+			<Control ID="chkHighlightBreakpoints">Puntos de interrupcion</Control>
+			<Control ID="chkHighDensityTextMode">Usar texto de alta densidad</Control>
+			<Control ID="chkShowCharacters">Mostrar caracteres</Control>
+			<Control ID="chkShowTooltips">Mostrar informacion emergente</Control>
 		</Form>
 		<Form ID="MemoryViewerFindWindow">
-			<Control ID="wndTitle">Find...</Control>
-			<Control ID="lblSearch">Search:</Control>
-			<Control ID="lblDataType">Data Type:</Control>
+			<Control ID="wndTitle">Buscar...</Control>
+			<Control ID="lblSearch">Buscar:</Control>
+			<Control ID="lblDataType">Tipo de dato:</Control>
 			<Control ID="lblIntType">Format:</Control>
-			<Control ID="chkCaseSensitive">Case sensitive</Control>
-			<Control ID="chkUseTblMappings">Use TBL mappings</Control>
-			<Control ID="lblDataTypeFilters">Data Type Filters</Control>
+			<Control ID="chkCaseSensitive">Distinguir mayusculas/minusculas</Control>
+			<Control ID="chkUseTblMappings">Usar mapeos TBL</Control>
+			<Control ID="lblDataTypeFilters">Filtros de tipo de dato</Control>
 			<Control ID="chkFilterCode">Code</Control>
 			<Control ID="chkFilterData">Data</Control>
-			<Control ID="chkFilterUnidentified">Unidentified</Control>
-			<Control ID="lblAccessFilters">Access Filters</Control>
-			<Control ID="chkFilterNotAccessed">Not accessed</Control>
+			<Control ID="chkFilterUnidentified">No identificado</Control>
+			<Control ID="lblAccessFilters">Filtros de acceso</Control>
+			<Control ID="chkFilterNotAccessed">No accedido</Control>
 			<Control ID="chkFilterRead">Read</Control>
-			<Control ID="chkFilterWrite">Written</Control>
-			<Control ID="chkFilterExec">Executed</Control>
-			<Control ID="chkFilterTimeSpan">In the last</Control>
-			<Control ID="lblFrames">frames</Control>
+			<Control ID="chkFilterWrite">Escrito</Control>
+			<Control ID="chkFilterExec">Ejecutado</Control>
+			<Control ID="chkFilterTimeSpan">En los ultimos</Control>
+			<Control ID="lblFrames">fotogramas</Control>
 
-			<Control ID="lblNoMatchFound">No match found!</Control>
-			<Control ID="btnFindPrev">Previous</Control>
-			<Control ID="btnFindNext">Next</Control>
+			<Control ID="lblNoMatchFound">No se encontro coincidencia.</Control>
+			<Control ID="btnFindPrev">Anterior</Control>
+			<Control ID="btnFindNext">Siguiente</Control>
 
-			<Control ID="lblSearchHelp">When searching hexadecimal values, a question mark (?)&#10;can be used to define a byte that can take any value.&#10;&#10;e.g: "FF ? 55" will search for any set of three&#10;bytes that starts with FF and ends with 55.</Control>
+			<Control ID="lblSearchHelp">Al buscar valores hexadecimales, se puede usar un signo de interrogacion (?)&#10;para definir un byte que puede tomar cualquier valor.&#10;&#10;Ej.: "FF ? 55" buscara cualquier conjunto de tres&#10;bytes que comience con FF y termine en 55.</Control>
 
-			<Control ID="btnClose">Close</Control>
+			<Control ID="btnClose">Cerrar</Control>
 		</Form>
 		<Form ID="FontOptionsView">
 			<Control ID="lblFamily">Family: </Control>
