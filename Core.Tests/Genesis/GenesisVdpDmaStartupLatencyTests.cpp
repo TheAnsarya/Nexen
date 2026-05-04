@@ -150,7 +150,7 @@ namespace {
 		EXPECT_EQ(afterSecondSlot.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
 
-	TEST(GenesisVdpDmaStartupLatencyTests, BusDmaSourceWritebackUpdatesSourceRegistersAfterFirstSlot) {
+	TEST(GenesisVdpDmaStartupLatencyTests, BusDmaSourceWritebackKeepsR23ClearedAfterFirstSlot) {
 		vector<uint8_t> rom((size_t)0x900000, 0);
 		rom[0x000000] = 0x11;
 		rom[0x000001] = 0x22;

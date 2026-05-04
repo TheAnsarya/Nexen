@@ -202,7 +202,7 @@
 		<Form ID="SnesConfigView">
 			<Control ID="tpgGeneral">generales</Control>
 			<Control ID="lblRegion">Región:</Control>
-			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="tpgAudio">Sonido</Control>
 			<Control ID="lblAudioInterpolation">Tipo de interpolación de audio:</Control>
 			<Control ID="grpVolume">Volumen</Control>
 			<Control ID="lblChannel1">Canal 1</Control>
@@ -272,7 +272,7 @@
 			<Control ID="lblOverscan">sobreexploración</Control>
 			<Control ID="lblOverscanNtsc">NTSC</Control>
 			<Control ID="lblOverscanPal">CAMARADA</Control>
-			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="tpgAudio">Sonido</Control>
 			<Control ID="grpGeneral">generales</Control>
 			<Control ID="lblVolume">Volumen del canal</Control>
 			<Control ID="lblPanning">Panorámica de canales</Control>
@@ -327,8 +327,8 @@
 			<Control ID="tpgVideo">Vídeo</Control>
 			<Control ID="lblGameboyPalette">Paleta de Game Boy (DMG)</Control>
 			<Control ID="lblGbBackground">Fondo:</Control>
-			<Control ID="lblGbObj0">Sprites #1:</Control>
-			<Control ID="lblGbObj1">Sprites #2:</Control>
+			<Control ID="lblGbObj0">Sprites n.º 1:</Control>
+			<Control ID="lblGbObj1">Sprites n.º 2:</Control>
 			<Control ID="btnSelectPreset">Seleccione Preestablecido...</Control>
 			<Control ID="lblGrayscale">Escala de grises</Control>
 			<Control ID="lblGrayscaleHighContrast">Escala de grises (alto contraste)</Control>
@@ -341,7 +341,7 @@
 			<Control ID="chkDisableSprites">Deshabilitar sprites</Control>
 			<Control ID="lblMiscSettings">Configuraciones varias</Control>
 			<Control ID="chkHideSgbBorders">Ocultar bordes de Super Game Boy</Control>
-			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="tpgAudio">Sonido</Control>
 			<Control ID="grpVolume">Volumen</Control>
 			<Control ID="lblSquare1">Cuadrado 1</Control>
 			<Control ID="lblSquare2">Cuadrado 2</Control>
@@ -376,7 +376,7 @@
 			<Control ID="chkDisableFrameSkipping">Desactivar el salto de fotogramas durante el avance rápido</Control>
 			<Control ID="chkDisableSprites">Deshabilitar sprites</Control>
 			<Control ID="lblMiscSettings">Configuraciones varias</Control>
-			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="tpgAudio">Sonido</Control>
 			<Control ID="grpVolume">Volumen</Control>
 			<Control ID="lblChannelA">Canal A</Control>
 			<Control ID="lblChannelB">Canal B</Control>
@@ -393,7 +393,7 @@
 			<Control ID="tpgGeneral">generales</Control>
 			<Control ID="lblConsoleType">Tipo de consola:</Control>
 			<Control ID="lblCdRomType">Sistema de CD-ROM:</Control>
-			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="tpgAudio">Sonido</Control>
 			<Control ID="grpVolume">Volumen</Control>
 			<Control ID="lblChannel1">Canal 1</Control>
 			<Control ID="lblChannel2">Canal 2</Control>
@@ -451,7 +451,7 @@
 			<Control ID="tpgGeneral">generales</Control>
 			<Control ID="lblRegionSms">Región (Sistema maestro):</Control>
 			<Control ID="lblRegionGg">Región (equipo de juego):</Control>
-			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="tpgAudio">Sonido</Control>
 			<Control ID="grpVolume">Volumen</Control>
 			<Control ID="lblChannel1">Tono 1</Control>
 			<Control ID="lblChannel2">Tono 2</Control>
@@ -497,7 +497,7 @@
 		<Form ID="CvConfigView">
 			<Control ID="tpgGeneral">generales</Control>
 			<Control ID="lblRegion">Región:</Control>
-			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="tpgAudio">Sonido</Control>
 			<Control ID="grpVolume">Volumen</Control>
 			<Control ID="lblChannel1">Tono 1</Control>
 			<Control ID="lblChannel2">Tono 2</Control>
@@ -533,7 +533,7 @@
 			<Control ID="chkHideBgLayer2">Ocultar capa de fondo 2</Control>
 			<Control ID="chkDisableSprites">Deshabilitar sprites</Control>
 			<Control ID="lblMiscSettings">Configuraciones varias</Control>
-			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="tpgAudio">Sonido</Control>
 			<Control ID="lblAudioMode">Modo de salida:</Control>
 			<Control ID="grpVolume">Volumen</Control>
 			<Control ID="lblChannel1">Canal 1</Control>
@@ -568,7 +568,7 @@
 			<Control ID="chkP0DifficultyB">Jugador 1 dificultad B (principiante)</Control>
 			<Control ID="chkP1DifficultyB">Jugador 2 dificultad B (principiante)</Control>
 			<Control ID="chkColorMode">Modo de color (frente a B/N)</Control>
-			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="tpgAudio">Sonido</Control>
 			<Control ID="grpVolume">Volumen</Control>
 			<Control ID="lblChannel1">Canal 1</Control>
 			<Control ID="lblChannel2">Canal 2</Control>
@@ -598,7 +598,7 @@
 			<Control ID="tpgGeneral">generales</Control>
 			<Control ID="lblLynxGeneralHint">Habilite la rotación automática para que coincida con la orientación esperada por los juegos que admiten los modos vertical y horizontal.</Control>
 			<Control ID="chkAutoRotate">Girar pantalla automáticamente</Control>
-			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="tpgAudio">Sonido</Control>
 			<Control ID="grpVolume">Volumen</Control>
 			<Control ID="lblChannel1">Canal 1</Control>
 			<Control ID="lblChannel2">Canal 2</Control>
@@ -620,9 +620,9 @@
 			<Control ID="chkDisableSprites">Deshabilitar sprites</Control>
 		</Form>
 		<Form ID="ChannelFConfigView">
-			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="tpgAudio">Sonido</Control>
 			<Control ID="grpVolume">Volumen</Control>
-			<Control ID="lblAudio">Audio</Control>
+			<Control ID="lblAudio">Sonido</Control>
 			<Control ID="lblChannelFAudioHelp">El canal F utiliza un único canal de audio mixto. Ajuste este control deslizante para controlar el volumen de salida general.</Control>
 			<Control ID="tpgEmulation">Emulación</Control>
 			<Control ID="lblDeveloperSettings">Configuraciones recomendadas para desarrolladores (homebrew/pirateo de ROM)</Control>
@@ -649,7 +649,7 @@
 		</Form>
 		<Form ID="ConfigWindow">
 			<Control ID="wndTitle">Configuracion</Control>
-			<Control ID="tabAudio">Audio</Control>
+			<Control ID="tabAudio">Sonido</Control>
 			<Control ID="tabEmulation">Emulacion</Control>
 			<Control ID="tabInput">Entrada</Control>
 			<Control ID="tabVideo">Vídeo</Control>
@@ -719,7 +719,7 @@
 			<Control ID="chkAviOverride">Vídeos:</Control>
 			<Control ID="chkScreenshotsOverride">Capturas:</Control>
 			<Control ID="chkSaveDataOverride">Datos guardados:</Control>
-			<Control ID="chkWaveOverride">Audio:</Control>
+			<Control ID="chkWaveOverride">Sonido:</Control>
 			<Control ID="chkSaveStatesOverride">Estados guardados:</Control>
 			<Control ID="chkMoviesOverride">Peliculas:</Control>
 			<Control ID="grpDataMigration">Migracion de datos</Control>
@@ -939,17 +939,17 @@ para el paquete HD. Utilice los filtros "Preescala" para generar los mosaicos
 a mayor escala sin aplicar ninguna transformación a los píxeles.</Message>
 			<Message ID="lblBankSizeHelp">Esta opción sólo está disponible para juegos CHR RAM.  Los juegos CHR RAM no tienen
 "Bancos" fijos: se crean dinámicamente mediante el código del juego.
-Esta opción altera el comportamiento de HD Pack Builder al agrupar los mosaicos en 
-los archivos PNG: un tamaño de banco más pequeño generalmente resultará en menos PNG 
-archivos (pero dependiendo del código del juego, valores más grandes pueden producir 
+Esta opción altera el comportamiento de HD Pack Builder al agrupar los mosaicos en
+los archivos PNG: un tamaño de banco más pequeño generalmente resultará en menos PNG
+archivos (pero dependiendo del código del juego, valores más grandes pueden producir
 mejores resultados).</Message>
 			<Message ID="lblSortByUsageFrequencyHelp">Cuando esta opción está habilitada, los mosaicos en archivos PNG se ordenan por
-frecuencia con la que se muestran en la pantalla durante la grabación (más 
-Las paletas comunes se agruparán en el primer PNG para un banco específico. 
-número. Si esta opción no está marcada, los PNG se ordenarán por paleta. 
+frecuencia con la que se muestran en la pantalla durante la grabación (más
+Las paletas comunes se agruparán en el primer PNG para un banco específico.
+número. Si esta opción no está marcada, los PNG se ordenarán por paleta.
 En este caso, cada PNG sólo contendrá hasta 4 colores diferentes.</Message>
 			<Message ID="lblGroupBlankTilesHelp">Esta opción agrupa todos los mosaicos en blanco secuencialmente en el mismo PNG.
-archivos: esto ayuda a reducir la cantidad de archivos PNG producidos al eliminar 
+archivos: esto ayuda a reducir la cantidad de archivos PNG producidos al eliminar
 Archivos PNG casi vacíos que contienen solo mosaicos en blanco.</Message>
 			<Message ID="lblUseLargeSpritesHelp">Cuando está habilitada, esta opción alterará el orden de visualización de los bancos CHR.
 que contienen solo sprites para que sean más fáciles de editar en el archivo PNG.</Message>
@@ -1868,7 +1868,7 @@ Detalles del error:
 
 {0}</Message>
 		<Message ID="InstallHdPackWrongRom">El HD Pack seleccionado no es compatible con el juego que se está ejecutando actualmente y no se puede instalar.</Message>
-		<Message ID="InstallHdPackError">Se produjo un error al intentar instalar el paquete HD: 
+		<Message ID="InstallHdPackError">Se produjo un error al intentar instalar el paquete HD:
 
 {0}</Message>
 		<Message ID="InstallHdPackInvalidPack">El archivo seleccionado no es un HD Pack valido.</Message>
@@ -1877,7 +1877,7 @@ Detalles del error:
 		<Message ID="InstallHdPackConfirmReset">El HD Pack se ha instalado correctamente. ¿Quieres restablecer el juego y cargar el paquete HD ahora?</Message>
 		<Message ID="GamePackageExported">Paquete de juego exportado exitosamente: {0}</Message>
 		<Message ID="GamePackageExportFailed">No se pudo exportar el paquete del juego. Actualmente no hay ninguna ROM cargada.</Message>
-		<Message ID="GamePackageExportError">Se produjo un error al exportar el paquete del juego: 
+		<Message ID="GamePackageExportError">Se produjo un error al exportar el paquete del juego:
 
 {0}</Message>
 		<Message ID="Player">Jugador</Message>
@@ -3578,7 +3578,7 @@ supported by the watch window can be used.</Message>
 			<Value ID="Fullscreen">Pantalla completa</Value>
 			<Value ID="VideoFilter">Filtro de vídeo</Value>
 			<Value ID="Region">Región / Modelo</Value>
-			<Value ID="Audio">Audio</Value>
+			<Value ID="Audio">Sonido</Value>
 			<Value ID="Emulation">Emulación</Value>
 			<Value ID="Input">Aporte</Value>
 			<Value ID="Video">Vídeo</Value>

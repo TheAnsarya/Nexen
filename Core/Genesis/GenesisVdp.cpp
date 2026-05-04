@@ -860,7 +860,7 @@ void GenesisVdp::ProcessDma() {
 		uint32_t srcWordAddress = (_dmaSourceAddress >> 1) & 0x3FFFFF;
 		_state.Registers[21] = (uint8_t)(srcWordAddress & 0xFF);
 		_state.Registers[22] = (uint8_t)((srcWordAddress >> 8) & 0xFF);
-		_state.Registers[23] = (uint8_t)((_state.Registers[23] & 0x80) | ((srcWordAddress >> 16) & 0x7F));
+		// Keep R23 source-high bits fixed during bus DMA; only R21/R22 advance.
 	} else if (_dmaLatchedMode == 2) {
 		if (_dmaFillDataPending) {
 			return;

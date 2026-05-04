@@ -160,4 +160,19 @@ public sealed class StartupLanguageResolverTests {
 		Assert.NotEqual("Save to file...", ResourceHelper.GetMessage("SaveToFile"));
 		Assert.NotEqual("Download failed - the file appears to be corrupted. Please visit the Nexen website to download the latest version manually.", ResourceHelper.GetMessage("UpdateDownloadFailed"));
 	}
+
+	[Theory]
+	[InlineData("es")]
+	[InlineData("ja")]
+	public void HighTrafficControlsAndMessages_AreLocalized(string languageCode) {
+		ResourceHelper.LoadResources(languageCode);
+
+		Assert.NotEqual("Audio", ResourceHelper.GetViewLabel("NesConfigView", "tpgAudio"));
+		Assert.NotEqual("Audio", ResourceHelper.GetViewLabel("ConfigWindow", "tabAudio"));
+		Assert.NotEqual("Sprites #1:", ResourceHelper.GetViewLabel("GameboyConfigView", "lblGbObj0"));
+		Assert.NotEqual("Sprites #2:", ResourceHelper.GetViewLabel("GameboyConfigView", "lblGbObj1"));
+		if (languageCode == "ja") {
+			Assert.NotEqual("No", ResourceHelper.GetMessage("btnNo"));
+		}
+	}
 }
