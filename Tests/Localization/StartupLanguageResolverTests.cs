@@ -95,4 +95,14 @@ public sealed class StartupLanguageResolverTests {
 
 		Assert.Equal("_Archivo", ResourceHelper.GetViewLabel("MainMenuView", "mnuFile"));
 	}
+
+	[Theory]
+	[InlineData(null)]
+	[InlineData("")]
+	[InlineData("   ")]
+	public void LoadResources_EmptyLanguageCode_UsesEnglishFallback(string? languageCode) {
+		ResourceHelper.LoadResources(languageCode);
+
+		Assert.Equal("_File", ResourceHelper.GetViewLabel("MainMenuView", "mnuFile"));
+	}
 }

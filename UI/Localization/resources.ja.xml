@@ -1628,49 +1628,49 @@
 			<Control ID="btnClose">閉じる</Control>
 		</Form>
 		<Form ID="FontOptionsView">
-			<Control ID="lblFamily">Family: </Control>
-			<Control ID="lblSize">Size: </Control>
-			<Control ID="lblWarningMono">This font doesn't appear to be a monospace font.&#10;Using this font may cause display issues in the UI.</Control>
-			<Control ID="lblError">This font is not supported and cannot be used.</Control>
+			<Control ID="lblFamily">フォントファミリー: </Control>
+			<Control ID="lblSize">サイズ: </Control>
+			<Control ID="lblWarningMono">このフォントは等幅フォントではない可能性があります。&#10;使用するとUI表示に問題が出る場合があります。</Control>
+			<Control ID="lblError">このフォントはサポートされておらず使用できません。</Control>
 		</Form>
 
 		<Form ID="RefreshTimingView">
-			<Control ID="lblScanline">Refresh on scanline (V)</Control>
-			<Control ID="lblCycle">and cycle (H)</Control>
-			<Control ID="lblResetToDefault">Reset to default</Control>
-			<Control ID="chkRefreshOnBreakPause">Refresh on break</Control>
+			<Control ID="lblScanline">スキャンライン (V) で更新</Control>
+			<Control ID="lblCycle">およびサイクル (H)</Control>
+			<Control ID="lblResetToDefault">既定値にリセット</Control>
+			<Control ID="chkRefreshOnBreakPause">停止時に更新</Control>
 		</Form>
 
 		<Form ID="GoToAllWindow">
-			<Control ID="wndTitle">Go to All</Control>
-			<Control ID="lblSearch">Search:</Control>
-			<Control ID="lblResults">results</Control>
-			<Control ID="btnSelect">Select</Control>
-			<Control ID="btnClose">Close</Control>
+			<Control ID="wndTitle">すべてへ移動</Control>
+			<Control ID="lblSearch">検索:</Control>
+			<Control ID="lblResults">件の結果</Control>
+			<Control ID="btnSelect">選択</Control>
+			<Control ID="btnClose">閉じる</Control>
 		</Form>
 
 		<Form ID="DebuggerConfigWindow">
-			<Control ID="wndTitle">Debugger Settings</Control>
+			<Control ID="wndTitle">デバッガー設定</Control>
 			<Control ID="btnOK">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">キャンセル</Control>
 
-			<Control ID="tabDebugger">Debugger</Control>
-			<Control ID="lblGeneralSettings">General settings</Control>
-			<Control ID="chkAutoResetCdl">Reset CDL when ROM changes</Control>
-			<Control ID="chkDisableDefaultLabels">Disable default labels</Control>
+			<Control ID="tabDebugger">デバッガー</Control>
+			<Control ID="lblGeneralSettings">一般設定</Control>
+			<Control ID="chkAutoResetCdl">ROM変更時にCDLをリセット</Control>
+			<Control ID="chkDisableDefaultLabels">既定ラベルを無効化</Control>
 
-			<Control ID="lblDisassemblySettings">Disassembly settings</Control>
-			<Control ID="chkKeepActiveStatementInCenter">Keep active statement in the center</Control>
+			<Control ID="lblDisassemblySettings">逆アセンブル設定</Control>
+			<Control ID="chkKeepActiveStatementInCenter">アクティブ命令を中央に保持</Control>
 
-			<Control ID="lblCopyCodeSettings">Copy selected code settings</Control>
-			<Control ID="chkCopyAddresses">Copy addresses</Control>
-			<Control ID="chkCopyByteCode">Copy byte code</Control>
-			<Control ID="chkCopyComments">Copy comments</Control>
-			<Control ID="chkCopyBlockHeaders">Copy block headers</Control>
+			<Control ID="lblCopyCodeSettings">選択コードのコピー設定</Control>
+			<Control ID="chkCopyAddresses">アドレスをコピー</Control>
+			<Control ID="chkCopyByteCode">バイトコードをコピー</Control>
+			<Control ID="chkCopyComments">コメントをコピー</Control>
+			<Control ID="chkCopyBlockHeaders">ブロックヘッダーをコピー</Control>
 
-			<Control ID="tabScriptWindow">Script Window</Control>
-			<Control ID="lblScriptStartupBehavior">When a script window is opened: </Control>
-			<Control ID="chkSaveScriptBeforeRun">Auto-save changes before running script</Control>
+			<Control ID="tabScriptWindow">スクリプトウィンドウ</Control>
+			<Control ID="lblScriptStartupBehavior">スクリプトウィンドウを開いたとき: </Control>
+			<Control ID="chkSaveScriptBeforeRun">実行前に変更を自動保存</Control>
 			<Control ID="chkAutoStartScriptOnLoad">Auto-start script when loaded (or reloaded)</Control>
 			<Control ID="chkAutoReloadScriptWhenFileChanges">Auto-reload script from disk when file changes</Control>
 			<Control ID="chkAutoRestartScriptAfterPowerCycle">Auto-restart script after power cycling or reloading a game</Control>
