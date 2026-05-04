@@ -2278,11 +2278,13 @@ do 1, then 2, then 3
 
 do all three steps; continue;
 
+do all three steps; continue;
 
+do all three steps; continue;
 
+do all three steps; continue;
 
-
-
+do all three steps; continue; do several batches in a row
 
 
 

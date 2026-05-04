@@ -1766,18 +1766,18 @@
 		</Form>
 
 		<Form ID="PansyExportProgressWindow">
-			<Control ID="wndPansyExportProgress">Pansy Export</Control>
-			<Control ID="lblExportingPansy">Exporting Pansy Metadata...</Control>
-			<Control ID="lblInitializing">Initializing...</Control>
-			<Control ID="lblExportComplete">Export Complete</Control>
-			<Control ID="lblExportSuccessful">Export completed successfully.</Control>
-			<Control ID="lblExportFailed">Export Failed</Control>
-			<Control ID="lblSymbolsExported">Symbols exported:</Control>
-			<Control ID="lblCommentsExported">Comments exported:</Control>
-			<Control ID="lblCodeBytesMarked">Code bytes marked:</Control>
-			<Control ID="lblDataBytesMarked">Data bytes marked:</Control>
-			<Control ID="lblFileSize">File size:</Control>
-			<Control ID="lblExportTime">Export time:</Control>
+			<Control ID="wndPansyExportProgress">Pansy エクスポート</Control>
+			<Control ID="lblExportingPansy">Pansy メタデータをエクスポート中...</Control>
+			<Control ID="lblInitializing">初期化中...</Control>
+			<Control ID="lblExportComplete">エクスポート完了</Control>
+			<Control ID="lblExportSuccessful">エクスポートが正常に完了しました。</Control>
+			<Control ID="lblExportFailed">エクスポート失敗</Control>
+			<Control ID="lblSymbolsExported">エクスポートされたシンボル:</Control>
+			<Control ID="lblCommentsExported">エクスポートされたコメント:</Control>
+			<Control ID="lblCodeBytesMarked">マーク済みコードバイト:</Control>
+			<Control ID="lblDataBytesMarked">マーク済みデータバイト:</Control>
+			<Control ID="lblFileSize">ファイルサイズ:</Control>
+			<Control ID="lblExportTime">エクスポート時間:</Control>
 		</Form>
 
 		<Form ID="WatchWindow">
@@ -1785,59 +1785,59 @@
 		</Form>
 
 		<Form ID="ProfilerWindow">
-			<Control ID="wndTitle">Profiler</Control>
+			<Control ID="wndTitle">プロファイラー</Control>
 
-			<Control ID="mnuFile">_File</Control>
-			<Control ID="mnuView">_View</Control>
+			<Control ID="mnuFile">_ファイル</Control>
+			<Control ID="mnuView">_表示</Control>
 
-			<Control ID="btnReset">Reset</Control>
-			<Control ID="btnRefresh">Refresh</Control>
-			<Control ID="chkRefreshOnBreakPause">Refresh on break</Control>
+			<Control ID="btnReset">リセット</Control>
+			<Control ID="btnRefresh">更新</Control>
+			<Control ID="chkRefreshOnBreakPause">停止時に更新</Control>
 
-			<Control ID="colFunction">Function (Entry Address)</Control>
-			<Control ID="colCallCount">Call Count</Control>
-			<Control ID="colInclusiveTime">Inclusive Time (Cycles)</Control>
-			<Control ID="colInclusiveTimePercent">Inclusive Time (%)</Control>
-			<Control ID="colExclusiveTime">Exclusive Time (Cycles)</Control>
-			<Control ID="colExclusiveTimePercent">Exclusive Time (%)</Control>
-			<Control ID="colAvgCycles">Avg. Cycles</Control>
-			<Control ID="colMinCycles">Min. Cycles</Control>
-			<Control ID="colMaxCycles">Max. Cycles</Control>
+			<Control ID="colFunction">関数 (エントリアドレス)</Control>
+			<Control ID="colCallCount">呼び出し回数</Control>
+			<Control ID="colInclusiveTime">包括時間 (サイクル)</Control>
+			<Control ID="colInclusiveTimePercent">包括時間 (%)</Control>
+			<Control ID="colExclusiveTime">排他時間 (サイクル)</Control>
+			<Control ID="colExclusiveTimePercent">排他時間 (%)</Control>
+			<Control ID="colAvgCycles">平均サイクル</Control>
+			<Control ID="colMinCycles">最小サイクル</Control>
+			<Control ID="colMaxCycles">最大サイクル</Control>
 		</Form>
 
 		<Form ID="MemorySearchWindow">
-			<Control ID="wndTitle">Memory Search</Control>
-			<Control ID="btnApplyFilter">Apply filter</Control>
-			<Control ID="btnReset">Reset</Control>
-			<Control ID="btnUndo">Undo</Control>
+			<Control ID="wndTitle">メモリ検索</Control>
+			<Control ID="btnApplyFilter">フィルター適用</Control>
+			<Control ID="btnReset">リセット</Control>
+			<Control ID="btnUndo">元に戻す</Control>
 
-			<Control ID="btnResetCounters">Reset access stats</Control>
+			<Control ID="btnResetCounters">アクセス統計をリセット</Control>
 
-			<Control ID="lblMemType">Memory type:</Control>
-			<Control ID="lblFormat">Format:</Control>
-			<Control ID="lblValueSize">Value size:</Control>
+			<Control ID="lblMemType">メモリタイプ:</Control>
+			<Control ID="lblFormat">形式:</Control>
+			<Control ID="lblValueSize">値サイズ:</Control>
 
-			<Control ID="lblSearchFilter">Search Filter</Control>
-			<Control ID="lblCompareTo">Compare To</Control>
-			<Control ID="lblOperator">Operator</Control>
+			<Control ID="lblSearchFilter">検索フィルター</Control>
+			<Control ID="lblCompareTo">比較対象</Control>
+			<Control ID="lblOperator">演算子</Control>
 
-			<Control ID="colAddress">Address</Control>
-			<Control ID="colValue">Value</Control>
-			<Control ID="colPrevValue">Last Value</Control>
-			<Control ID="colReadCount">Reads</Control>
-			<Control ID="colWriteCount">Writes</Control>
-			<Control ID="colExecCount">Execs</Control>
-			<Control ID="colLastRead">Last Read</Control>
-			<Control ID="colLastWrite">Last Write</Control>
-			<Control ID="colLastExec">Last Exec</Control>
-			<Control ID="colMatch">Match</Control>
+			<Control ID="colAddress">アドレス</Control>
+			<Control ID="colValue">値</Control>
+			<Control ID="colPrevValue">前回値</Control>
+			<Control ID="colReadCount">読み取り</Control>
+			<Control ID="colWriteCount">書き込み</Control>
+			<Control ID="colExecCount">実行</Control>
+			<Control ID="colLastRead">最終読み取り</Control>
+			<Control ID="colLastWrite">最終書き込み</Control>
+			<Control ID="colLastExec">最終実行</Control>
+			<Control ID="colMatch">一致</Control>
 		</Form>
 
 		<Form ID="GoToWindow">
-			<Control ID="wndTitle">Go to Address...</Control>
-			<Control ID="lblAddress">Address:</Control>
+			<Control ID="wndTitle">アドレスへ移動...</Control>
+			<Control ID="lblAddress">アドレス:</Control>
 			<Control ID="btnOk">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">キャンセル</Control>
 		</Form>
 
 		<Form ID="FindAllOccurrencesWindow">

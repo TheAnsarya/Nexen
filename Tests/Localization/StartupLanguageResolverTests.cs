@@ -115,4 +115,11 @@ public sealed class StartupLanguageResolverTests {
 		Assert.Contains("ja", codes);
 		Assert.DoesNotContain(codes, code => code != code.ToLowerInvariant());
 	}
+
+	[Fact]
+	public void GetLanguageDisplayName_UnknownCode_ReturnsCode() {
+		string displayName = ResourceHelper.GetLanguageDisplayName("zz-unknown");
+
+		Assert.Equal("zz-unknown", displayName);
+	}
 }
