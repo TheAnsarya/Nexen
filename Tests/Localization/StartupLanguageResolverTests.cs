@@ -105,4 +105,14 @@ public sealed class StartupLanguageResolverTests {
 
 		Assert.Equal("_File", ResourceHelper.GetViewLabel("MainMenuView", "mnuFile"));
 	}
+
+	[Fact]
+	public void GetAvailableLanguageCodes_ReturnsLowercaseCodes() {
+		string[] codes = ResourceHelper.GetAvailableLanguageCodes();
+
+		Assert.Contains("en", codes);
+		Assert.Contains("es", codes);
+		Assert.Contains("ja", codes);
+		Assert.DoesNotContain(codes, code => code != code.ToLowerInvariant());
+	}
 }
