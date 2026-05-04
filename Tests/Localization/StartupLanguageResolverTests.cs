@@ -137,4 +137,11 @@ public sealed class StartupLanguageResolverTests {
 
 		Assert.Equal(codes.Length, displayNames.Length);
 	}
+
+	[Fact]
+	public void GetAvailableLanguageDisplayNames_ContainsNoEmptyEntries() {
+		string[] displayNames = ResourceHelper.GetAvailableLanguageDisplayNames();
+
+		Assert.DoesNotContain(displayNames, string.IsNullOrWhiteSpace);
+	}
 }

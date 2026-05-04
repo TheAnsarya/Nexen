@@ -87,6 +87,7 @@ public sealed class GenesisRegisterViewer {
 		uint vdpStatusParityKey = ComputeVdpStatusParityKey(vdp);
 		uint vdpCommandParityKey = ComputeVdpCommandParityKey(vdp);
 		uint vdpFifoParityKey = ComputeVdpFifoParityKey(vdp);
+		uint vdpDmaCommandParityKey = ComputeVdpDmaCommandParityKey(vdp, dmaEffectiveLength, dmaSource);
 		string dmaModeLabel = vdp.DmaMode switch {
 			0 => "68kCopy",
 			1 => "Fill",
@@ -131,6 +132,7 @@ public sealed class GenesisRegisterViewer {
 			new RegEntry("", "VdpStatusParityKey", vdpStatusParityKey, Format.X32),
 			new RegEntry("", "VdpCommandParityKey", vdpCommandParityKey, Format.X32),
 			new RegEntry("", "VdpFifoParityKey", vdpFifoParityKey, Format.X32),
+			new RegEntry("", "VdpDmaCommandParityKey", vdpDmaCommandParityKey, Format.X32),
 		});
 
 		for (int i = 0; i < 24; i++) {
@@ -401,6 +403,16 @@ public sealed class GenesisRegisterViewer {
 		digest = Fnv1aUpdate(digest, vdp.DataPortBuffer);
 		digest = Fnv1aUpdate(digest, vdp.WritePending ? 1u : 0u);
 		digest = Fnv1aUpdate(digest, vdp.AddressRegister & 0xFFu);
+		return (uint)(digest ^ (digest >> 32));
+	}
+
+	private static uint ComputeVdpDmaCommandParityKey(GenesisVdpState vdp, uint dmaEffectiveLength, uint dmaSource) {
+		ulong digest = 1469598103934665603ul;
+		digest = Fnv1aUpdate(digest, vdp.DmaMode);
+		digest = Fnv1aUpdate(digest, dmaEffectiveLength);
+		digest = Fnv1aUpdate(digest, dmaSource);
+		digest = Fnv1aUpdate(digest, vdp.AddressRegister);
+		digest = Fnv1aUpdate(digest, vdp.CodeRegister);
 		return (uint)(digest ^ (digest >> 32));
 	}
 }

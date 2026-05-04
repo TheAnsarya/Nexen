@@ -1902,34 +1902,34 @@
 		</Form>
 
 		<Form ID="BreakpointEditWindow">
-			<Control ID="wndTitle">Edit breakpoint...</Control>
-			<Control ID="wndTitleForbid">Edit forbid breakpoint...</Control>
-			<Control ID="chkBreakOnRead">Read</Control>
-			<Control ID="chkBreakOnWrite">Write</Control>
-			<Control ID="chkBreakOnExec">Execution</Control>
+			<Control ID="wndTitle">Editar punto de interrupcion...</Control>
+			<Control ID="wndTitleForbid">Editar punto de prohibicion...</Control>
+			<Control ID="chkBreakOnRead">Lectura</Control>
+			<Control ID="chkBreakOnWrite">Escritura</Control>
+			<Control ID="chkBreakOnExec">Ejecucion</Control>
 
-			<Control ID="lblBreakpointType">Memory type:</Control>
-			<Control ID="lblBreakOn">Break on:</Control>
+			<Control ID="lblBreakpointType">Tipo de memoria:</Control>
+			<Control ID="lblBreakOn">Interrumpir en:</Control>
 
-			<Control ID="lblAddress">Address:</Control>
-			<Control ID="lblAddressTo">to $</Control>
+			<Control ID="lblAddress">Direccion:</Control>
+			<Control ID="lblAddressTo">a $</Control>
 
-			<Control ID="lblCondition">Condition:</Control>
+			<Control ID="lblCondition">Condicion:</Control>
 
-			<Control ID="chkIgnoreDummyOperations">Ignore dummy reads/writes</Control>
-			<Control ID="chkMark">Mark on Event Viewer</Control>
-			<Control ID="chkEnable">Break Execution</Control>
-			<Control ID="chkEnableForbid">Enabled</Control>
+			<Control ID="chkIgnoreDummyOperations">Ignorar lecturas/escrituras ficticias</Control>
+			<Control ID="chkMark">Marcar en el visor de eventos</Control>
+			<Control ID="chkEnable">Interrumpir ejecucion</Control>
+			<Control ID="chkEnableForbid">Habilitado</Control>
 
-			<Control ID="lblConditionError">Condition contains invalid syntax or symbols.</Control>
+			<Control ID="lblConditionError">La condicion contiene sintaxis o simbolos invalidos.</Control>
 
 			<Control ID="btnOK">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">Cancelar</Control>
 		</Form>
 
 		<Form ID="FirmwareSelect">
-			<Control ID="btnSelect">Select...</Control>
-			<Control ID="btnDelete">Delete file</Control>
+			<Control ID="btnSelect">Seleccionar...</Control>
+			<Control ID="btnDelete">Eliminar archivo</Control>
 		</Form>
 	</Forms>
 	<Messages>

@@ -1902,34 +1902,34 @@
 		</Form>
 
 		<Form ID="BreakpointEditWindow">
-			<Control ID="wndTitle">Edit breakpoint...</Control>
-			<Control ID="wndTitleForbid">Edit forbid breakpoint...</Control>
-			<Control ID="chkBreakOnRead">Read</Control>
-			<Control ID="chkBreakOnWrite">Write</Control>
-			<Control ID="chkBreakOnExec">Execution</Control>
+			<Control ID="wndTitle">ブレークポイントを編集...</Control>
+			<Control ID="wndTitleForbid">禁止ブレークポイントを編集...</Control>
+			<Control ID="chkBreakOnRead">読み取り</Control>
+			<Control ID="chkBreakOnWrite">書き込み</Control>
+			<Control ID="chkBreakOnExec">実行</Control>
 
-			<Control ID="lblBreakpointType">Memory type:</Control>
-			<Control ID="lblBreakOn">Break on:</Control>
+			<Control ID="lblBreakpointType">メモリタイプ:</Control>
+			<Control ID="lblBreakOn">ブレーク条件:</Control>
 
-			<Control ID="lblAddress">Address:</Control>
-			<Control ID="lblAddressTo">to $</Control>
+			<Control ID="lblAddress">アドレス:</Control>
+			<Control ID="lblAddressTo">から $</Control>
 
-			<Control ID="lblCondition">Condition:</Control>
+			<Control ID="lblCondition">条件:</Control>
 
-			<Control ID="chkIgnoreDummyOperations">Ignore dummy reads/writes</Control>
-			<Control ID="chkMark">Mark on Event Viewer</Control>
-			<Control ID="chkEnable">Break Execution</Control>
-			<Control ID="chkEnableForbid">Enabled</Control>
+			<Control ID="chkIgnoreDummyOperations">ダミー読み書きを無視</Control>
+			<Control ID="chkMark">イベントビューアでマーク</Control>
+			<Control ID="chkEnable">実行を停止</Control>
+			<Control ID="chkEnableForbid">有効</Control>
 
-			<Control ID="lblConditionError">Condition contains invalid syntax or symbols.</Control>
+			<Control ID="lblConditionError">条件に無効な構文またはシンボルが含まれています。</Control>
 
 			<Control ID="btnOK">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">キャンセル</Control>
 		</Form>
 
 		<Form ID="FirmwareSelect">
-			<Control ID="btnSelect">Select...</Control>
-			<Control ID="btnDelete">Delete file</Control>
+			<Control ID="btnSelect">選択...</Control>
+			<Control ID="btnDelete">ファイルを削除</Control>
 		</Form>
 	</Forms>
 	<Messages>

@@ -58,6 +58,7 @@ public class GenesisRegisterViewerTests {
 		Assert.Contains("VdpStatusParityKey", names);
 		Assert.Contains("VdpCommandParityKey", names);
 		Assert.Contains("VdpFifoParityKey", names);
+		Assert.Contains("VdpDmaCommandParityKey", names);
 	}
 
 	private static List<RegisterViewerTab> GetAllTabs() {
