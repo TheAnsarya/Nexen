@@ -1869,36 +1869,36 @@
 		</Form>
 
 		<Form ID="LabelEditWindow">
-			<Control ID="wndTitle">Edit label...</Control>
-			<Control ID="lblMemoryType">Memory type:</Control>
-			<Control ID="lblAddress">Address:</Control>
-			<Control ID="lblLabel">Label:</Control>
-			<Control ID="lblComment">Comment:</Control>
-			<Control ID="lblLength">Length:</Control>
+			<Control ID="wndTitle">Editar etiqueta...</Control>
+			<Control ID="lblMemoryType">Tipo de memoria:</Control>
+			<Control ID="lblAddress">Direccion:</Control>
+			<Control ID="lblLabel">Etiqueta:</Control>
+			<Control ID="lblComment">Comentario:</Control>
+			<Control ID="lblLength">Longitud:</Control>
 			<Control ID="lblBytes">bytes</Control>
-			<Control ID="btnDelete">Delete Label</Control>
+			<Control ID="btnDelete">Eliminar etiqueta</Control>
 			<Control ID="btnOk">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">Cancelar</Control>
 		</Form>
 
 		<Form ID="CommentEditWindow">
-			<Control ID="wndTitle">Edit comment...</Control>
+			<Control ID="wndTitle">Editar comentario...</Control>
 			<Control ID="btnOk">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">Cancelar</Control>
 		</Form>
 
 		<Form ID="RegisterViewerWindow">
-			<Control ID="wndTitle">Register Viewer</Control>
+			<Control ID="wndTitle">Visor de registros</Control>
 
-			<Control ID="mnuFile">_File</Control>
-			<Control ID="mnuView">_View</Control>
+			<Control ID="mnuFile">_Archivo</Control>
+			<Control ID="mnuView">_Vista</Control>
 		</Form>
 
 		<Form ID="RegisterTabView">
-			<Control ID="colAddress">Address</Control>
-			<Control ID="colName">Name</Control>
+			<Control ID="colAddress">Direccion</Control>
+			<Control ID="colName">Nombre</Control>
 			<Control ID="colValue">Value</Control>
-			<Control ID="colValueHex">Value (Hex)</Control>
+			<Control ID="colValueHex">Valor (hex)</Control>
 		</Form>
 
 		<Form ID="BreakpointEditWindow">

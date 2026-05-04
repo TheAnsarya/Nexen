@@ -129,4 +129,12 @@ public sealed class StartupLanguageResolverTests {
 
 		Assert.Equal(" Ja ", displayName);
 	}
+
+	[Fact]
+	public void GetAvailableLanguageCodes_AndDisplayNames_HaveMatchingCount() {
+		string[] codes = ResourceHelper.GetAvailableLanguageCodes();
+		string[] displayNames = ResourceHelper.GetAvailableLanguageDisplayNames();
+
+		Assert.Equal(codes.Length, displayNames.Length);
+	}
 }

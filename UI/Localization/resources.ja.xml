@@ -1869,36 +1869,36 @@
 		</Form>
 
 		<Form ID="LabelEditWindow">
-			<Control ID="wndTitle">Edit label...</Control>
-			<Control ID="lblMemoryType">Memory type:</Control>
-			<Control ID="lblAddress">Address:</Control>
-			<Control ID="lblLabel">Label:</Control>
-			<Control ID="lblComment">Comment:</Control>
-			<Control ID="lblLength">Length:</Control>
+			<Control ID="wndTitle">ラベルを編集...</Control>
+			<Control ID="lblMemoryType">メモリタイプ:</Control>
+			<Control ID="lblAddress">アドレス:</Control>
+			<Control ID="lblLabel">ラベル:</Control>
+			<Control ID="lblComment">コメント:</Control>
+			<Control ID="lblLength">長さ:</Control>
 			<Control ID="lblBytes">bytes</Control>
-			<Control ID="btnDelete">Delete Label</Control>
+			<Control ID="btnDelete">ラベルを削除</Control>
 			<Control ID="btnOk">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">キャンセル</Control>
 		</Form>
 
 		<Form ID="CommentEditWindow">
-			<Control ID="wndTitle">Edit comment...</Control>
+			<Control ID="wndTitle">コメントを編集...</Control>
 			<Control ID="btnOk">OK</Control>
-			<Control ID="btnCancel">Cancel</Control>
+			<Control ID="btnCancel">キャンセル</Control>
 		</Form>
 
 		<Form ID="RegisterViewerWindow">
-			<Control ID="wndTitle">Register Viewer</Control>
+			<Control ID="wndTitle">レジスタビューア</Control>
 
-			<Control ID="mnuFile">_File</Control>
-			<Control ID="mnuView">_View</Control>
+			<Control ID="mnuFile">_ファイル</Control>
+			<Control ID="mnuView">_表示</Control>
 		</Form>
 
 		<Form ID="RegisterTabView">
-			<Control ID="colAddress">Address</Control>
-			<Control ID="colName">Name</Control>
-			<Control ID="colValue">Value</Control>
-			<Control ID="colValueHex">Value (Hex)</Control>
+			<Control ID="colAddress">アドレス</Control>
+			<Control ID="colName">名前</Control>
+			<Control ID="colValue">値</Control>
+			<Control ID="colValueHex">値 (16進)</Control>
 		</Form>
 
 		<Form ID="BreakpointEditWindow">
