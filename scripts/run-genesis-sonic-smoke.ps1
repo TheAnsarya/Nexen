@@ -12,7 +12,9 @@ Write-Host "Launching Nexen smoke run" -ForegroundColor Cyan
 Write-Host "Exe: $resolvedExe"
 Write-Host "Rom: $resolvedRom"
 
-$process = Start-Process -FilePath $resolvedExe -ArgumentList @($resolvedRom) -PassThru
+# Pass ROM path as one explicitly quoted argument so spaces/special chars stay intact.
+$romArgument = '"' + $resolvedRom + '"'
+$process = Start-Process -FilePath $resolvedExe -ArgumentList $romArgument -PassThru
 
 if ($null -eq $process) {
 	Write-Error "Failed to launch Nexen process."

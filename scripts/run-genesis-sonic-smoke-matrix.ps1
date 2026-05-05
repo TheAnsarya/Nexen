@@ -4,7 +4,10 @@
 	[string]$ExePath = ".\bin\win-x64\Release\Nexen.exe",
 	[int]$AutoStopTimeoutSeconds = 8,
 	[string]$NonSonicRomPath,
-	[string]$SummaryJsonPath
+	[string]$SummaryJsonPath,
+	[string]$SummaryMarkdownPath,
+	[int]$RetryCount = 0,
+	[switch]$StopOnFirstFailure
 )
 
 $runner = Join-Path $PSScriptRoot "run-genesis-sonic-smoke.ps1"
@@ -43,20 +46,40 @@ foreach ($rom in $allRomPaths) {
 	Write-Host "---" -ForegroundColor DarkGray
 	Write-Host "ROM: $rom" -ForegroundColor Cyan
 
-	& $runner -RomPath $rom -ExePath $ExePath -AutoStopTimeoutSeconds $AutoStopTimeoutSeconds
-	if ($LASTEXITCODE -ne 0) {
+	$attempt = 0
+	$passed = $false
+	$exitCode = 0
+	$maxAttempts = 1 + [Math]::Max(0, $RetryCount)
+	while ($attempt -lt $maxAttempts -and -not $passed) {
+		$attempt++
+		if ($attempt -gt 1) {
+			Write-Host "Retry $attempt/$maxAttempts for $rom" -ForegroundColor Yellow
+		}
+
+		& $runner -RomPath $rom -ExePath $ExePath -AutoStopTimeoutSeconds $AutoStopTimeoutSeconds
+		$exitCode = $LASTEXITCODE
+		$passed = $exitCode -eq 0
+	}
+
+	if (-not $passed) {
 		$failed.Add($rom)
 		$results.Add([PSCustomObject]@{
 			RomPath = $rom
 			Passed = $false
-			ExitCode = $LASTEXITCODE
+			ExitCode = $exitCode
+			Attempts = $attempt
 		})
 		Write-Host "FAILED: $rom" -ForegroundColor Red
+		if ($StopOnFirstFailure) {
+			Write-Host "StopOnFirstFailure is set; aborting matrix early." -ForegroundColor Red
+			break
+		}
 	} else {
 		$results.Add([PSCustomObject]@{
 			RomPath = $rom
 			Passed = $true
 			ExitCode = 0
+			Attempts = $attempt
 		})
 		Write-Host "PASSED: $rom" -ForegroundColor Green
 	}
@@ -79,6 +102,30 @@ if (-not [string]::IsNullOrWhiteSpace($SummaryJsonPath)) {
 
 	$summaryObject | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $SummaryJsonPath -Encoding utf8
 	Write-Host "Summary JSON: $SummaryJsonPath" -ForegroundColor Cyan
+}
+
+if (-not [string]::IsNullOrWhiteSpace($SummaryMarkdownPath)) {
+	$mdDir = Split-Path -Path $SummaryMarkdownPath -Parent
+	if (-not [string]::IsNullOrWhiteSpace($mdDir)) {
+		New-Item -ItemType Directory -Path $mdDir -Force | Out-Null
+	}
+
+	$lines = New-Object System.Collections.Generic.List[string]
+	$lines.Add('# Genesis Smoke Matrix Report')
+	$lines.Add('')
+	$lines.Add("- Total: $($results.Count)")
+	$lines.Add("- Passed: $($results.Count - $failed.Count)")
+	$lines.Add("- Failed: $($failed.Count)")
+	$lines.Add('')
+	$lines.Add('| ROM | Result | ExitCode | Attempts |')
+	$lines.Add('|---|---:|---:|---:|')
+	foreach ($r in $results) {
+		$resultText = if ($r.Passed) { 'PASS' } else { 'FAIL' }
+		$lines.Add("| $($r.RomPath) | $resultText | $($r.ExitCode) | $($r.Attempts) |")
+	}
+
+	$lines | Set-Content -LiteralPath $SummaryMarkdownPath -Encoding utf8
+	Write-Host "Summary markdown: $SummaryMarkdownPath" -ForegroundColor Cyan
 }
 
 Write-Host "---" -ForegroundColor DarkGray

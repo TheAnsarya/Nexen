@@ -2300,8 +2300,9 @@ try again translating all the localization files, do it in big batches it's only
 
 do all three steps; continue; do several batches in a row; and integrate (and replace our code if it sucks) with `Hoshiruna/Mesen2-Expanded` Genesis code as we have been doing, but even more, make games run!; run nexen with sonic rom; continue;
 
+These session are very short and you're making a ton of issues for small amounts of work. Make issues that cover more work, and 
 
-
+You keep running Nexen, but The filename being opened isn't "quoted" so it's treating it as space limited and tries to open many bad (nonexistant) files
 
 
 
