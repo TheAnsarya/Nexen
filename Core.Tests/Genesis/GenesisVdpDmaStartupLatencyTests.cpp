@@ -797,14 +797,20 @@ namespace {
 
 		vdp.Run(460);
 		GenesisVdpState beforeLateSlots = vdp.GetState();
+		uint8_t baseSourceLow = beforeLateSlots.Registers[21];
 		EXPECT_EQ(beforeLateSlots.Registers[19], 0x05);
 		EXPECT_EQ(beforeLateSlots.AddressRegister, 0x0024);
+		EXPECT_EQ(beforeLateSlots.Registers[22], 0x00);
+		EXPECT_EQ(beforeLateSlots.Registers[23], 0x41);
 		EXPECT_TRUE(beforeLateSlots.DmaActive);
 
 		vdp.Run(461);
 		GenesisVdpState after461 = vdp.GetState();
 		EXPECT_EQ(after461.Registers[19], 0x04);
 		EXPECT_EQ(after461.AddressRegister, 0x0028);
+		EXPECT_EQ(after461.Registers[21], (uint8_t)(baseSourceLow + 0x01));
+		EXPECT_EQ(after461.Registers[22], 0x00);
+		EXPECT_EQ(after461.Registers[23], 0x41);
 		EXPECT_TRUE(after461.DmaActive);
 
 		vdp.Run(462);
@@ -817,18 +823,27 @@ namespace {
 		GenesisVdpState after463 = vdp.GetState();
 		EXPECT_EQ(after463.Registers[19], 0x03);
 		EXPECT_EQ(after463.AddressRegister, 0x002c);
+		EXPECT_EQ(after463.Registers[21], (uint8_t)(baseSourceLow + 0x02));
+		EXPECT_EQ(after463.Registers[22], 0x00);
+		EXPECT_EQ(after463.Registers[23], 0x41);
 		EXPECT_TRUE(after463.DmaActive);
 
 		vdp.Run(465);
 		GenesisVdpState after465 = vdp.GetState();
 		EXPECT_EQ(after465.Registers[19], 0x02);
 		EXPECT_EQ(after465.AddressRegister, 0x0030);
+		EXPECT_EQ(after465.Registers[21], (uint8_t)(baseSourceLow + 0x03));
+		EXPECT_EQ(after465.Registers[22], 0x00);
+		EXPECT_EQ(after465.Registers[23], 0x41);
 		EXPECT_TRUE(after465.DmaActive);
 
 		vdp.Run(468);
 		GenesisVdpState after468 = vdp.GetState();
 		EXPECT_EQ(after468.Registers[19], 0x01);
 		EXPECT_EQ(after468.AddressRegister, 0x0034);
+		EXPECT_EQ(after468.Registers[21], (uint8_t)(baseSourceLow + 0x04));
+		EXPECT_EQ(after468.Registers[22], 0x00);
+		EXPECT_EQ(after468.Registers[23], 0x41);
 		EXPECT_TRUE(after468.DmaActive);
 
 		vdp.Run(472);
@@ -836,6 +851,9 @@ namespace {
 		EXPECT_EQ(after472.Registers[19], 0x00);
 		EXPECT_EQ(after472.Registers[20], 0x00);
 		EXPECT_EQ(after472.AddressRegister, 0x0038);
+		EXPECT_EQ(after472.Registers[21], (uint8_t)(baseSourceLow + 0x05));
+		EXPECT_EQ(after472.Registers[22], 0x00);
+		EXPECT_EQ(after472.Registers[23], 0x41);
 		EXPECT_FALSE(after472.DmaActive);
 		EXPECT_EQ((uint32_t)(after472.StatusRegister & VdpStatus::DmaBusy), 0u);
 	}
@@ -864,32 +882,47 @@ namespace {
 
 		vdp.Run(453);
 		GenesisVdpState beforeLateSlots = vdp.GetState();
+		uint8_t baseSourceLow = beforeLateSlots.Registers[21];
 		EXPECT_EQ(beforeLateSlots.Registers[19], 0x05);
 		EXPECT_EQ(beforeLateSlots.AddressRegister, 0x0024);
+		EXPECT_EQ(beforeLateSlots.Registers[22], 0x00);
+		EXPECT_EQ(beforeLateSlots.Registers[23], 0x41);
 		EXPECT_TRUE(beforeLateSlots.DmaActive);
 
 		vdp.Run(454);
 		GenesisVdpState after454 = vdp.GetState();
 		EXPECT_EQ(after454.Registers[19], 0x04);
 		EXPECT_EQ(after454.AddressRegister, 0x0028);
+		EXPECT_EQ(after454.Registers[21], (uint8_t)(baseSourceLow + 0x01));
+		EXPECT_EQ(after454.Registers[22], 0x00);
+		EXPECT_EQ(after454.Registers[23], 0x41);
 		EXPECT_TRUE(after454.DmaActive);
 
 		vdp.Run(457);
 		GenesisVdpState after457 = vdp.GetState();
 		EXPECT_EQ(after457.Registers[19], 0x03);
 		EXPECT_EQ(after457.AddressRegister, 0x002c);
+		EXPECT_EQ(after457.Registers[21], (uint8_t)(baseSourceLow + 0x02));
+		EXPECT_EQ(after457.Registers[22], 0x00);
+		EXPECT_EQ(after457.Registers[23], 0x41);
 		EXPECT_TRUE(after457.DmaActive);
 
 		vdp.Run(460);
 		GenesisVdpState after460 = vdp.GetState();
 		EXPECT_EQ(after460.Registers[19], 0x02);
 		EXPECT_EQ(after460.AddressRegister, 0x0030);
+		EXPECT_EQ(after460.Registers[21], (uint8_t)(baseSourceLow + 0x03));
+		EXPECT_EQ(after460.Registers[22], 0x00);
+		EXPECT_EQ(after460.Registers[23], 0x41);
 		EXPECT_TRUE(after460.DmaActive);
 
 		vdp.Run(462);
 		GenesisVdpState after462 = vdp.GetState();
 		EXPECT_EQ(after462.Registers[19], 0x01);
 		EXPECT_EQ(after462.AddressRegister, 0x0034);
+		EXPECT_EQ(after462.Registers[21], (uint8_t)(baseSourceLow + 0x04));
+		EXPECT_EQ(after462.Registers[22], 0x00);
+		EXPECT_EQ(after462.Registers[23], 0x41);
 		EXPECT_TRUE(after462.DmaActive);
 
 		vdp.Run(468);
@@ -897,6 +930,9 @@ namespace {
 		EXPECT_EQ(after468.Registers[19], 0x00);
 		EXPECT_EQ(after468.Registers[20], 0x00);
 		EXPECT_EQ(after468.AddressRegister, 0x0038);
+		EXPECT_EQ(after468.Registers[21], (uint8_t)(baseSourceLow + 0x05));
+		EXPECT_EQ(after468.Registers[22], 0x00);
+		EXPECT_EQ(after468.Registers[23], 0x41);
 		EXPECT_FALSE(after468.DmaActive);
 		EXPECT_EQ((uint32_t)(after468.StatusRegister & VdpStatus::DmaBusy), 0u);
 	}
