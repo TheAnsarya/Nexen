@@ -9,6 +9,8 @@
 	[string]$SummaryCsvPath,
 	[string]$CompactSummaryArtifactPath,
 	[int]$RetryCount = 0,
+	[int]$ForceProbeFailureCountPerRom = 0,
+	[int]$ForceProbeFailureEveryN = 0,
 	[switch]$StopOnFirstFailure,
 	[switch]$VerboseLaunch,
 	[switch]$TimestampedArtifacts,
@@ -133,6 +135,11 @@ $syntheticFailureCount = 0
 $jsonOutputPath = Get-ArtifactPath -BasePath $SummaryJsonPath -RunTimestamp $runTimestamp -UseTimestampedSuffix:$TimestampedArtifacts
 $markdownOutputPath = Get-ArtifactPath -BasePath $SummaryMarkdownPath -RunTimestamp $runTimestamp -UseTimestampedSuffix:$TimestampedArtifacts
 $csvOutputPath = Get-ArtifactPath -BasePath $SummaryCsvPath -RunTimestamp $runTimestamp -UseTimestampedSuffix:$TimestampedArtifacts
+$compactSummaryOutputPath = Get-ArtifactPath -BasePath $CompactSummaryArtifactPath -RunTimestamp $runTimestamp -UseTimestampedSuffix:$TimestampedArtifacts
+$compactSummaryLatestAliasPath = $null
+if ($CreateLatestAliases -and -not [string]::IsNullOrWhiteSpace($CompactSummaryArtifactPath)) {
+	$compactSummaryLatestAliasPath = Get-LatestAliasPath -BasePath $CompactSummaryArtifactPath
+}
 
 Write-Host "Running Genesis Sonic smoke matrix for $($allRomPaths.Count) ROM(s)..." -ForegroundColor Cyan
 
@@ -147,19 +154,30 @@ foreach ($rom in $allRomPaths) {
 	$maxAttempts = 1 + [Math]::Max(0, $RetryCount)
 	$lastAttemptElapsedMs = [int64]0
 	$attemptElapsedMsValues = New-Object System.Collections.Generic.List[int64]
+	$syntheticFailuresInjectedForRom = 0
 	while ($attempt -lt $maxAttempts -and -not $passed) {
 		$attempt++
 		if ($attempt -gt 1) {
 			Write-Host "Retry $attempt/$maxAttempts for $rom" -ForegroundColor Yellow
 		}
 
-		if ($ForceFirstAttemptFailureProbe -and $attempt -eq 1) {
+		$shouldInjectSyntheticFailure = $false
+		if ($ForceProbeFailureCountPerRom -gt 0 -and $syntheticFailuresInjectedForRom -lt $ForceProbeFailureCountPerRom) {
+			$shouldInjectSyntheticFailure = $true
+		} elseif ($ForceFirstAttemptFailureProbe -and $attempt -eq 1) {
+			$shouldInjectSyntheticFailure = $true
+		} elseif ($ForceProbeFailureEveryN -gt 0 -and ($attempt % $ForceProbeFailureEveryN) -eq 0) {
+			$shouldInjectSyntheticFailure = $true
+		}
+
+		if ($shouldInjectSyntheticFailure) {
 			$exitCode = 99
 			$lastAttemptElapsedMs = [int64]0
 			$attemptElapsedMsValues.Add($lastAttemptElapsedMs)
 			$passed = $false
 			$syntheticFailureCount++
-			Write-Host "Injected synthetic probe failure on attempt 1 for $rom" -ForegroundColor Yellow
+			$syntheticFailuresInjectedForRom++
+			Write-Host "Injected synthetic probe failure on attempt $attempt for $rom" -ForegroundColor Yellow
 		} else {
 			$attemptStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 			& $runner -RomPath $rom -ExePath $ExePath -AutoStopTimeoutSeconds $AutoStopTimeoutSeconds -VerboseLaunch:$VerboseLaunch
@@ -188,6 +206,7 @@ foreach ($rom in $allRomPaths) {
 			AttemptElapsedCount = $attemptElapsedMsValues.Count
 			AttemptElapsedMsCsv = $attemptElapsedMsCsv
 			AttemptElapsedMs = @($attemptElapsedMsValues)
+			SyntheticFailuresInjected = $syntheticFailuresInjectedForRom
 		})
 		Write-Host "FAILED: $rom" -ForegroundColor Red
 		if ($StopOnFirstFailure) {
@@ -206,6 +225,7 @@ foreach ($rom in $allRomPaths) {
 			AttemptElapsedCount = $attemptElapsedMsValues.Count
 			AttemptElapsedMsCsv = $attemptElapsedMsCsv
 			AttemptElapsedMs = @($attemptElapsedMsValues)
+			SyntheticFailuresInjected = $syntheticFailuresInjectedForRom
 		})
 		Write-Host "PASSED: $rom" -ForegroundColor Green
 	}
@@ -238,7 +258,11 @@ if (-not [string]::IsNullOrWhiteSpace($jsonOutputPath)) {
 		RetriesUsedTotal = $retriesUsedTotal
 		RetryHitCount = $retryHitCount
 		ForceFirstAttemptFailureProbeEnabled = [bool]$ForceFirstAttemptFailureProbe
+		ForceProbeFailureCountPerRom = $ForceProbeFailureCountPerRom
+		ForceProbeFailureEveryN = $ForceProbeFailureEveryN
 		SyntheticFailureCount = $syntheticFailureCount
+		CompactSummaryArtifactPath = $compactSummaryOutputPath
+		CompactSummaryLatestAliasPath = $compactSummaryLatestAliasPath
 		Results = $results
 	}
 
@@ -265,15 +289,20 @@ if (-not [string]::IsNullOrWhiteSpace($markdownOutputPath)) {
 	$lines.Add("- RetryHitCount: $retryHitCount")
 	$lines.Add("- ForceFirstAttemptFailureProbeEnabled: $([bool]$ForceFirstAttemptFailureProbe)")
 	$lines.Add("- SyntheticFailureCount: $syntheticFailureCount")
-	if (-not [string]::IsNullOrWhiteSpace($CompactSummaryArtifactPath)) {
-		$lines.Add("- CompactSummaryArtifactPath: $CompactSummaryArtifactPath")
+	$lines.Add("- ForceProbeFailureCountPerRom: $ForceProbeFailureCountPerRom")
+	$lines.Add("- ForceProbeFailureEveryN: $ForceProbeFailureEveryN")
+	if (-not [string]::IsNullOrWhiteSpace($compactSummaryOutputPath)) {
+		$lines.Add("- CompactSummaryArtifactPath: $compactSummaryOutputPath")
+	}
+	if (-not [string]::IsNullOrWhiteSpace($compactSummaryLatestAliasPath)) {
+		$lines.Add("- CompactSummaryLatestAliasPath: $compactSummaryLatestAliasPath")
 	}
 	$lines.Add('')
-	$lines.Add('| ROM | Result | ExitCode | Attempts | RetryCountUsed | AttemptElapsedCount | ElapsedMs | LastAttemptElapsedMs | AttemptElapsedMsCsv |')
-	$lines.Add('|---|---:|---:|---:|---:|---:|---:|---:|---|')
+	$lines.Add('| ROM | Result | ExitCode | Attempts | RetryCountUsed | SyntheticFailuresInjected | AttemptElapsedCount | ElapsedMs | LastAttemptElapsedMs | AttemptElapsedMsCsv |')
+	$lines.Add('|---|---:|---:|---:|---:|---:|---:|---:|---:|---|')
 	foreach ($r in $results) {
 		$resultText = if ($r.Passed) { 'PASS' } else { 'FAIL' }
-		$lines.Add("| $($r.RomPath) | $resultText | $($r.ExitCode) | $($r.Attempts) | $($r.RetryCountUsed) | $($r.AttemptElapsedCount) | $($r.ElapsedMs) | $($r.LastAttemptElapsedMs) | $($r.AttemptElapsedMsCsv) |")
+		$lines.Add("| $($r.RomPath) | $resultText | $($r.ExitCode) | $($r.Attempts) | $($r.RetryCountUsed) | $($r.SyntheticFailuresInjected) | $($r.AttemptElapsedCount) | $($r.ElapsedMs) | $($r.LastAttemptElapsedMs) | $($r.AttemptElapsedMsCsv) |")
 	}
 
 	$lines | Set-Content -LiteralPath $markdownOutputPath -Encoding utf8
@@ -292,10 +321,11 @@ if (-not [string]::IsNullOrWhiteSpace($csvOutputPath)) {
 Write-Host "---" -ForegroundColor DarkGray
 $ciSummaryLine = "CI_SUMMARY total=$($results.Count) passed=$($results.Count - $failed.Count) failed=$($failed.Count) retriesUsed=$retriesUsedTotal retryHitCount=$retryHitCount syntheticFailures=$syntheticFailureCount totalElapsedMs=$totalElapsedMs averageElapsedMs=$averageElapsedMs maxElapsedMs=$maxElapsedMs"
 
-if (-not [string]::IsNullOrWhiteSpace($CompactSummaryArtifactPath)) {
-	Ensure-ParentDirectory -TargetPath $CompactSummaryArtifactPath
-	$ciSummaryLine | Set-Content -LiteralPath $CompactSummaryArtifactPath -Encoding utf8
-	Write-Host "Compact summary artifact: $CompactSummaryArtifactPath" -ForegroundColor Cyan
+if (-not [string]::IsNullOrWhiteSpace($compactSummaryOutputPath)) {
+	Ensure-ParentDirectory -TargetPath $compactSummaryOutputPath
+	$ciSummaryLine | Set-Content -LiteralPath $compactSummaryOutputPath -Encoding utf8
+	Write-Host "Compact summary artifact: $compactSummaryOutputPath" -ForegroundColor Cyan
+	Write-LatestAlias -ActualPath $compactSummaryOutputPath -BasePath $CompactSummaryArtifactPath -Label "Compact summary artifact" -Enabled:$CreateLatestAliases
 }
 
 if ($failed.Count -gt 0) {
