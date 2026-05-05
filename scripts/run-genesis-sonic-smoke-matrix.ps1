@@ -9,8 +9,91 @@
 	[string]$SummaryCsvPath,
 	[int]$RetryCount = 0,
 	[switch]$StopOnFirstFailure,
-	[switch]$VerboseLaunch
+	[switch]$VerboseLaunch,
+	[switch]$TimestampedArtifacts,
+	[switch]$CreateLatestAliases
 )
+
+function Get-ArtifactPath {
+	param(
+		[string]$BasePath,
+		[string]$RunTimestamp,
+		[bool]$UseTimestampedSuffix
+	)
+
+	if ([string]::IsNullOrWhiteSpace($BasePath)) {
+		return $null
+	}
+
+	if (-not $UseTimestampedSuffix) {
+		return $BasePath
+	}
+
+	$directory = Split-Path -Path $BasePath -Parent
+	$fileName = [System.IO.Path]::GetFileNameWithoutExtension($BasePath)
+	$extension = [System.IO.Path]::GetExtension($BasePath)
+	$timestampedName = "$fileName-$RunTimestamp$extension"
+
+	if ([string]::IsNullOrWhiteSpace($directory)) {
+		return $timestampedName
+	}
+
+	return Join-Path $directory $timestampedName
+}
+
+function Get-LatestAliasPath {
+	param([string]$BasePath)
+
+	if ([string]::IsNullOrWhiteSpace($BasePath)) {
+		return $null
+	}
+
+	$directory = Split-Path -Path $BasePath -Parent
+	$fileName = [System.IO.Path]::GetFileNameWithoutExtension($BasePath)
+	$extension = [System.IO.Path]::GetExtension($BasePath)
+	$latestName = "$fileName-latest$extension"
+
+	if ([string]::IsNullOrWhiteSpace($directory)) {
+		return $latestName
+	}
+
+	return Join-Path $directory $latestName
+}
+
+function Ensure-ParentDirectory {
+	param([string]$TargetPath)
+
+	if ([string]::IsNullOrWhiteSpace($TargetPath)) {
+		return
+	}
+
+	$targetDir = Split-Path -Path $TargetPath -Parent
+	if (-not [string]::IsNullOrWhiteSpace($targetDir)) {
+		New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
+	}
+}
+
+function Write-LatestAlias {
+	param(
+		[string]$ActualPath,
+		[string]$BasePath,
+		[string]$Label,
+		[bool]$Enabled
+	)
+
+	if (-not $Enabled -or [string]::IsNullOrWhiteSpace($ActualPath) -or [string]::IsNullOrWhiteSpace($BasePath)) {
+		return
+	}
+
+	if (-not (Test-Path -LiteralPath $ActualPath)) {
+		return
+	}
+
+	$latestAlias = Get-LatestAliasPath -BasePath $BasePath
+	Ensure-ParentDirectory -TargetPath $latestAlias
+	Copy-Item -LiteralPath $ActualPath -Destination $latestAlias -Force
+	Write-Host "$Label latest alias: $latestAlias" -ForegroundColor Cyan
+}
 
 $runner = Join-Path $PSScriptRoot "run-genesis-sonic-smoke.ps1"
 if (-not (Test-Path -LiteralPath $runner)) {
@@ -41,27 +124,39 @@ foreach ($rom in $allRomPaths) {
 
 $failed = New-Object System.Collections.Generic.List[string]
 $results = New-Object System.Collections.Generic.List[object]
+$runTimestamp = [DateTime]::UtcNow.ToString("yyyyMMdd-HHmmss")
+
+$jsonOutputPath = Get-ArtifactPath -BasePath $SummaryJsonPath -RunTimestamp $runTimestamp -UseTimestampedSuffix:$TimestampedArtifacts
+$markdownOutputPath = Get-ArtifactPath -BasePath $SummaryMarkdownPath -RunTimestamp $runTimestamp -UseTimestampedSuffix:$TimestampedArtifacts
+$csvOutputPath = Get-ArtifactPath -BasePath $SummaryCsvPath -RunTimestamp $runTimestamp -UseTimestampedSuffix:$TimestampedArtifacts
 
 Write-Host "Running Genesis Sonic smoke matrix for $($allRomPaths.Count) ROM(s)..." -ForegroundColor Cyan
 
 foreach ($rom in $allRomPaths) {
 	Write-Host "---" -ForegroundColor DarkGray
 	Write-Host "ROM: $rom" -ForegroundColor Cyan
+	$romStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 	$attempt = 0
 	$passed = $false
 	$exitCode = 0
 	$maxAttempts = 1 + [Math]::Max(0, $RetryCount)
+	$lastAttemptElapsedMs = [int64]0
 	while ($attempt -lt $maxAttempts -and -not $passed) {
 		$attempt++
 		if ($attempt -gt 1) {
 			Write-Host "Retry $attempt/$maxAttempts for $rom" -ForegroundColor Yellow
 		}
 
+		$attemptStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 		& $runner -RomPath $rom -ExePath $ExePath -AutoStopTimeoutSeconds $AutoStopTimeoutSeconds -VerboseLaunch:$VerboseLaunch
+		$attemptStopwatch.Stop()
+		$lastAttemptElapsedMs = [int64]$attemptStopwatch.Elapsed.TotalMilliseconds
 		$exitCode = $LASTEXITCODE
 		$passed = $exitCode -eq 0
 	}
+	$romStopwatch.Stop()
+	$elapsedMs = [int64]$romStopwatch.Elapsed.TotalMilliseconds
 
 	if (-not $passed) {
 		$failed.Add($rom)
@@ -70,6 +165,8 @@ foreach ($rom in $allRomPaths) {
 			Passed = $false
 			ExitCode = $exitCode
 			Attempts = $attempt
+			ElapsedMs = $elapsedMs
+			LastAttemptElapsedMs = $lastAttemptElapsedMs
 		})
 		Write-Host "FAILED: $rom" -ForegroundColor Red
 		if ($StopOnFirstFailure) {
@@ -82,35 +179,45 @@ foreach ($rom in $allRomPaths) {
 			Passed = $true
 			ExitCode = 0
 			Attempts = $attempt
+			ElapsedMs = $elapsedMs
+			LastAttemptElapsedMs = $lastAttemptElapsedMs
 		})
 		Write-Host "PASSED: $rom" -ForegroundColor Green
 	}
 }
 
-if (-not [string]::IsNullOrWhiteSpace($SummaryJsonPath)) {
+$totalElapsedMs = [int64]0
+$averageElapsedMs = [int64]0
+$maxElapsedMs = [int64]0
+if ($results.Count -gt 0) {
+	$totalElapsedMs = [int64](($results | Measure-Object -Property ElapsedMs -Sum).Sum)
+	$averageElapsedMs = [int64][Math]::Round((($results | Measure-Object -Property ElapsedMs -Average).Average), 0)
+	$maxElapsedMs = [int64](($results | Measure-Object -Property ElapsedMs -Maximum).Maximum)
+}
+
+if (-not [string]::IsNullOrWhiteSpace($jsonOutputPath)) {
 	$summaryObject = [PSCustomObject]@{
 		TimestampUtc = [DateTime]::UtcNow.ToString("o")
+		RunTimestamp = $runTimestamp
 		ExePath = (Resolve-Path -LiteralPath $ExePath).Path
 		AutoStopTimeoutSeconds = $AutoStopTimeoutSeconds
 		Total = $results.Count
 		Failed = $failed.Count
+		TotalElapsedMs = $totalElapsedMs
+		AverageElapsedMs = $averageElapsedMs
+		MaxElapsedMs = $maxElapsedMs
 		Results = $results
 	}
 
-	$summaryDir = Split-Path -Path $SummaryJsonPath -Parent
-	if (-not [string]::IsNullOrWhiteSpace($summaryDir)) {
-		New-Item -ItemType Directory -Path $summaryDir -Force | Out-Null
-	}
+	Ensure-ParentDirectory -TargetPath $jsonOutputPath
 
-	$summaryObject | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $SummaryJsonPath -Encoding utf8
-	Write-Host "Summary JSON: $SummaryJsonPath" -ForegroundColor Cyan
+	$summaryObject | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $jsonOutputPath -Encoding utf8
+	Write-Host "Summary JSON: $jsonOutputPath" -ForegroundColor Cyan
+	Write-LatestAlias -ActualPath $jsonOutputPath -BasePath $SummaryJsonPath -Label "Summary JSON" -Enabled:$CreateLatestAliases
 }
 
-if (-not [string]::IsNullOrWhiteSpace($SummaryMarkdownPath)) {
-	$mdDir = Split-Path -Path $SummaryMarkdownPath -Parent
-	if (-not [string]::IsNullOrWhiteSpace($mdDir)) {
-		New-Item -ItemType Directory -Path $mdDir -Force | Out-Null
-	}
+if (-not [string]::IsNullOrWhiteSpace($markdownOutputPath)) {
+	Ensure-ParentDirectory -TargetPath $markdownOutputPath
 
 	$lines = New-Object System.Collections.Generic.List[string]
 	$lines.Add('# Genesis Smoke Matrix Report')
@@ -118,26 +225,28 @@ if (-not [string]::IsNullOrWhiteSpace($SummaryMarkdownPath)) {
 	$lines.Add("- Total: $($results.Count)")
 	$lines.Add("- Passed: $($results.Count - $failed.Count)")
 	$lines.Add("- Failed: $($failed.Count)")
+	$lines.Add("- TotalElapsedMs: $totalElapsedMs")
+	$lines.Add("- AverageElapsedMs: $averageElapsedMs")
+	$lines.Add("- MaxElapsedMs: $maxElapsedMs")
 	$lines.Add('')
-	$lines.Add('| ROM | Result | ExitCode | Attempts |')
-	$lines.Add('|---|---:|---:|---:|')
+	$lines.Add('| ROM | Result | ExitCode | Attempts | ElapsedMs | LastAttemptElapsedMs |')
+	$lines.Add('|---|---:|---:|---:|---:|---:|')
 	foreach ($r in $results) {
 		$resultText = if ($r.Passed) { 'PASS' } else { 'FAIL' }
-		$lines.Add("| $($r.RomPath) | $resultText | $($r.ExitCode) | $($r.Attempts) |")
+		$lines.Add("| $($r.RomPath) | $resultText | $($r.ExitCode) | $($r.Attempts) | $($r.ElapsedMs) | $($r.LastAttemptElapsedMs) |")
 	}
 
-	$lines | Set-Content -LiteralPath $SummaryMarkdownPath -Encoding utf8
-	Write-Host "Summary markdown: $SummaryMarkdownPath" -ForegroundColor Cyan
+	$lines | Set-Content -LiteralPath $markdownOutputPath -Encoding utf8
+	Write-Host "Summary markdown: $markdownOutputPath" -ForegroundColor Cyan
+	Write-LatestAlias -ActualPath $markdownOutputPath -BasePath $SummaryMarkdownPath -Label "Summary markdown" -Enabled:$CreateLatestAliases
 }
 
-if (-not [string]::IsNullOrWhiteSpace($SummaryCsvPath)) {
-	$csvDir = Split-Path -Path $SummaryCsvPath -Parent
-	if (-not [string]::IsNullOrWhiteSpace($csvDir)) {
-		New-Item -ItemType Directory -Path $csvDir -Force | Out-Null
-	}
+if (-not [string]::IsNullOrWhiteSpace($csvOutputPath)) {
+	Ensure-ParentDirectory -TargetPath $csvOutputPath
 
-	$results | Export-Csv -LiteralPath $SummaryCsvPath -NoTypeInformation -Encoding utf8
-	Write-Host "Summary CSV: $SummaryCsvPath" -ForegroundColor Cyan
+	$results | Export-Csv -LiteralPath $csvOutputPath -NoTypeInformation -Encoding utf8
+	Write-Host "Summary CSV: $csvOutputPath" -ForegroundColor Cyan
+	Write-LatestAlias -ActualPath $csvOutputPath -BasePath $SummaryCsvPath -Label "Summary CSV" -Enabled:$CreateLatestAliases
 }
 
 Write-Host "---" -ForegroundColor DarkGray
