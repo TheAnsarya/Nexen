@@ -1,8 +1,16 @@
 ﻿param(
-	[Parameter(Mandatory = $true)]
+	[Parameter(Mandatory = $false)]
 	[string[]]$RomPaths,
 	[string]$ExePath = ".\bin\win-x64\Release\Nexen.exe",
 	[int]$AutoStopTimeoutSeconds = 8,
+	# Compatibility aliases used by older automation wrappers.
+	[string]$BuildConfig,
+	[string]$BuildPlatform,
+	[int]$FrameTarget,
+	[int]$StartupTimeoutSeconds,
+	[switch]$UseRealSonicRoms,
+	[int]$RealRunFrames,
+	[switch]$WriteSummaryHash,
 	[string]$NonSonicRomPath,
 	[string]$SummaryJsonPath,
 	[string]$SummaryMarkdownPath,
@@ -21,6 +29,32 @@
 	[switch]$CompactCiSummary,
 	[switch]$ForceFirstAttemptFailureProbe
 )
+
+# Legacy compatibility handling: accept and map/ignore historical parameters.
+if ($PSBoundParameters.ContainsKey('StartupTimeoutSeconds')) {
+	if ($StartupTimeoutSeconds -gt 0) {
+		$AutoStopTimeoutSeconds = $StartupTimeoutSeconds
+	}
+}
+
+if ($UseRealSonicRoms -and ($null -eq $RomPaths -or $RomPaths.Count -eq 0)) {
+	$RomPaths = @(
+		"C:\~reference-roms\genesis\Sonic The Hedgehog (W) (REV00) [!].bin",
+		"C:\~reference-roms\genesis\Sonic The Hedgehog (W) (REV01) [!].bin",
+		"C:\~reference-roms\genesis\Sonic The Hedgehog 2 (W) (REV01) [!].bin"
+	)
+}
+
+$ignoredLegacy = @()
+if ($PSBoundParameters.ContainsKey('BuildConfig')) { $ignoredLegacy += 'BuildConfig' }
+if ($PSBoundParameters.ContainsKey('BuildPlatform')) { $ignoredLegacy += 'BuildPlatform' }
+if ($PSBoundParameters.ContainsKey('FrameTarget')) { $ignoredLegacy += 'FrameTarget' }
+if ($PSBoundParameters.ContainsKey('RealRunFrames')) { $ignoredLegacy += 'RealRunFrames' }
+if ($PSBoundParameters.ContainsKey('WriteSummaryHash')) { $ignoredLegacy += 'WriteSummaryHash' }
+
+if ($ignoredLegacy.Count -gt 0) {
+	Write-Host ("Legacy compatibility note: accepted but ignored parameter(s): {0}" -f ([string]::Join(', ', $ignoredLegacy))) -ForegroundColor DarkYellow
+}
 
 function Get-ArtifactPath {
 	param(
@@ -115,6 +149,11 @@ if (-not (Test-Path -LiteralPath $ExePath)) {
 }
 
 $allRomPaths = New-Object System.Collections.Generic.List[string]
+if ($null -eq $RomPaths -or $RomPaths.Count -eq 0) {
+	Write-Error "No ROMs specified. Provide -RomPaths or use -UseRealSonicRoms."
+	exit 12
+}
+
 foreach ($rom in $RomPaths) {
 	$allRomPaths.Add($rom)
 }
