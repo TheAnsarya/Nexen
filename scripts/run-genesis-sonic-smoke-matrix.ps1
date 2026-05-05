@@ -11,7 +11,8 @@
 	[switch]$StopOnFirstFailure,
 	[switch]$VerboseLaunch,
 	[switch]$TimestampedArtifacts,
-	[switch]$CreateLatestAliases
+	[switch]$CreateLatestAliases,
+	[switch]$CompactCiSummary
 )
 
 function Get-ArtifactPath {
@@ -142,6 +143,7 @@ foreach ($rom in $allRomPaths) {
 	$exitCode = 0
 	$maxAttempts = 1 + [Math]::Max(0, $RetryCount)
 	$lastAttemptElapsedMs = [int64]0
+	$attemptElapsedMsValues = New-Object System.Collections.Generic.List[int64]
 	while ($attempt -lt $maxAttempts -and -not $passed) {
 		$attempt++
 		if ($attempt -gt 1) {
@@ -152,11 +154,14 @@ foreach ($rom in $allRomPaths) {
 		& $runner -RomPath $rom -ExePath $ExePath -AutoStopTimeoutSeconds $AutoStopTimeoutSeconds -VerboseLaunch:$VerboseLaunch
 		$attemptStopwatch.Stop()
 		$lastAttemptElapsedMs = [int64]$attemptStopwatch.Elapsed.TotalMilliseconds
+		$attemptElapsedMsValues.Add($lastAttemptElapsedMs)
 		$exitCode = $LASTEXITCODE
 		$passed = $exitCode -eq 0
 	}
 	$romStopwatch.Stop()
 	$elapsedMs = [int64]$romStopwatch.Elapsed.TotalMilliseconds
+	$retryCountUsed = [Math]::Max(0, $attempt - 1)
+	$attemptElapsedMsCsv = [string]::Join(';', ($attemptElapsedMsValues | ForEach-Object { $_.ToString() }))
 
 	if (-not $passed) {
 		$failed.Add($rom)
@@ -167,6 +172,10 @@ foreach ($rom in $allRomPaths) {
 			Attempts = $attempt
 			ElapsedMs = $elapsedMs
 			LastAttemptElapsedMs = $lastAttemptElapsedMs
+			RetryCountUsed = $retryCountUsed
+			AttemptElapsedCount = $attemptElapsedMsValues.Count
+			AttemptElapsedMsCsv = $attemptElapsedMsCsv
+			AttemptElapsedMs = @($attemptElapsedMsValues)
 		})
 		Write-Host "FAILED: $rom" -ForegroundColor Red
 		if ($StopOnFirstFailure) {
@@ -181,6 +190,10 @@ foreach ($rom in $allRomPaths) {
 			Attempts = $attempt
 			ElapsedMs = $elapsedMs
 			LastAttemptElapsedMs = $lastAttemptElapsedMs
+			RetryCountUsed = $retryCountUsed
+			AttemptElapsedCount = $attemptElapsedMsValues.Count
+			AttemptElapsedMsCsv = $attemptElapsedMsCsv
+			AttemptElapsedMs = @($attemptElapsedMsValues)
 		})
 		Write-Host "PASSED: $rom" -ForegroundColor Green
 	}
@@ -189,10 +202,14 @@ foreach ($rom in $allRomPaths) {
 $totalElapsedMs = [int64]0
 $averageElapsedMs = [int64]0
 $maxElapsedMs = [int64]0
+$retriesUsedTotal = 0
+$retryHitCount = 0
 if ($results.Count -gt 0) {
 	$totalElapsedMs = [int64](($results | Measure-Object -Property ElapsedMs -Sum).Sum)
 	$averageElapsedMs = [int64][Math]::Round((($results | Measure-Object -Property ElapsedMs -Average).Average), 0)
 	$maxElapsedMs = [int64](($results | Measure-Object -Property ElapsedMs -Maximum).Maximum)
+	$retriesUsedTotal = [int](($results | Measure-Object -Property RetryCountUsed -Sum).Sum)
+	$retryHitCount = [int](($results | Where-Object { $_.RetryCountUsed -gt 0 }).Count)
 }
 
 if (-not [string]::IsNullOrWhiteSpace($jsonOutputPath)) {
@@ -206,12 +223,14 @@ if (-not [string]::IsNullOrWhiteSpace($jsonOutputPath)) {
 		TotalElapsedMs = $totalElapsedMs
 		AverageElapsedMs = $averageElapsedMs
 		MaxElapsedMs = $maxElapsedMs
+		RetriesUsedTotal = $retriesUsedTotal
+		RetryHitCount = $retryHitCount
 		Results = $results
 	}
 
 	Ensure-ParentDirectory -TargetPath $jsonOutputPath
 
-	$summaryObject | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $jsonOutputPath -Encoding utf8
+	$summaryObject | ConvertTo-Json -Depth 7 | Set-Content -LiteralPath $jsonOutputPath -Encoding utf8
 	Write-Host "Summary JSON: $jsonOutputPath" -ForegroundColor Cyan
 	Write-LatestAlias -ActualPath $jsonOutputPath -BasePath $SummaryJsonPath -Label "Summary JSON" -Enabled:$CreateLatestAliases
 }
@@ -228,12 +247,14 @@ if (-not [string]::IsNullOrWhiteSpace($markdownOutputPath)) {
 	$lines.Add("- TotalElapsedMs: $totalElapsedMs")
 	$lines.Add("- AverageElapsedMs: $averageElapsedMs")
 	$lines.Add("- MaxElapsedMs: $maxElapsedMs")
+	$lines.Add("- RetriesUsedTotal: $retriesUsedTotal")
+	$lines.Add("- RetryHitCount: $retryHitCount")
 	$lines.Add('')
-	$lines.Add('| ROM | Result | ExitCode | Attempts | ElapsedMs | LastAttemptElapsedMs |')
-	$lines.Add('|---|---:|---:|---:|---:|---:|')
+	$lines.Add('| ROM | Result | ExitCode | Attempts | RetryCountUsed | AttemptElapsedCount | ElapsedMs | LastAttemptElapsedMs | AttemptElapsedMsCsv |')
+	$lines.Add('|---|---:|---:|---:|---:|---:|---:|---:|---|')
 	foreach ($r in $results) {
 		$resultText = if ($r.Passed) { 'PASS' } else { 'FAIL' }
-		$lines.Add("| $($r.RomPath) | $resultText | $($r.ExitCode) | $($r.Attempts) | $($r.ElapsedMs) | $($r.LastAttemptElapsedMs) |")
+		$lines.Add("| $($r.RomPath) | $resultText | $($r.ExitCode) | $($r.Attempts) | $($r.RetryCountUsed) | $($r.AttemptElapsedCount) | $($r.ElapsedMs) | $($r.LastAttemptElapsedMs) | $($r.AttemptElapsedMsCsv) |")
 	}
 
 	$lines | Set-Content -LiteralPath $markdownOutputPath -Encoding utf8
@@ -253,8 +274,14 @@ Write-Host "---" -ForegroundColor DarkGray
 if ($failed.Count -gt 0) {
 	Write-Host "Smoke matrix finished with failures ($($failed.Count))." -ForegroundColor Red
 	$failed | ForEach-Object { Write-Host " - $_" -ForegroundColor Red }
+	if ($CompactCiSummary) {
+		Write-Host "CI_SUMMARY total=$($results.Count) passed=$($results.Count - $failed.Count) failed=$($failed.Count) retriesUsed=$retriesUsedTotal retryHitCount=$retryHitCount totalElapsedMs=$totalElapsedMs averageElapsedMs=$averageElapsedMs maxElapsedMs=$maxElapsedMs exitCode=1"
+	}
 	exit 1
 }
 
 Write-Host "Smoke matrix completed successfully." -ForegroundColor Green
+if ($CompactCiSummary) {
+	Write-Host "CI_SUMMARY total=$($results.Count) passed=$($results.Count - $failed.Count) failed=$($failed.Count) retriesUsed=$retriesUsedTotal retryHitCount=$retryHitCount totalElapsedMs=$totalElapsedMs averageElapsedMs=$averageElapsedMs maxElapsedMs=$maxElapsedMs exitCode=0"
+}
 exit 0
