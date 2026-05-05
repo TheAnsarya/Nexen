@@ -470,6 +470,93 @@ namespace {
 		EXPECT_EQ(afterThird.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
 
+	TEST(GenesisVdpDmaStartupLatencyTests, BusDmaNonDefaultAutoIncrementAdvancesAddressByConfiguredStep) {
+		vector<uint8_t> rom((size_t)0x200000, 0);
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+
+		vdp.WriteControlPort(0x8150); // DMA + display enable
+		vdp.WriteControlPort(0x8c01); // H40
+		vdp.WriteControlPort(0x8f04); // auto-increment = 4
+		vdp.WriteControlPort(0x9302); // length low = 2 words
+		vdp.WriteControlPort(0x9400); // length high
+		vdp.WriteControlPort(0x9500); // src low
+		vdp.WriteControlPort(0x9600); // src mid
+		vdp.WriteControlPort(0x9741); // source-high + bus DMA mode
+		vdp.WriteControlPort(0x4000); // addr low + mode low
+		vdp.WriteControlPort(0x0080); // start DMA
+
+		vdp.Run(41);
+		GenesisVdpState afterFirst = vdp.GetState();
+		EXPECT_TRUE(afterFirst.DmaActive);
+		EXPECT_EQ(afterFirst.AddressRegister, 0x0004);
+		EXPECT_EQ(afterFirst.Registers[21], 0x01);
+
+		vdp.Run(43);
+		GenesisVdpState afterSecond = vdp.GetState();
+		EXPECT_FALSE(afterSecond.DmaActive);
+		EXPECT_EQ(afterSecond.AddressRegister, 0x0008);
+		EXPECT_EQ(afterSecond.Registers[21], 0x02);
+		EXPECT_EQ(afterSecond.Registers[19], 0x00);
+		EXPECT_EQ(afterSecond.StatusRegister & VdpStatus::DmaBusy, 0);
+	}
+
+	TEST(GenesisVdpDmaStartupLatencyTests, BusDmaRepeatedMidTransferR23WritesWithNonDefaultAutoIncrementRemainDeterministic) {
+		vector<uint8_t> rom((size_t)0x200000, 0);
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+
+		vdp.WriteControlPort(0x8150); // DMA + display enable
+		vdp.WriteControlPort(0x8c01); // H40
+		vdp.WriteControlPort(0x8f04); // auto-increment = 4
+		vdp.WriteControlPort(0x9303); // length low = 3 words
+		vdp.WriteControlPort(0x9400); // length high
+		vdp.WriteControlPort(0x9500); // src low
+		vdp.WriteControlPort(0x9600); // src mid
+		vdp.WriteControlPort(0x9741); // initial non-zero source-high latch
+		vdp.WriteControlPort(0x4000); // addr low + mode low
+		vdp.WriteControlPort(0x0080); // start DMA
+
+		vdp.Run(41);
+		GenesisVdpState afterFirst = vdp.GetState();
+		EXPECT_TRUE(afterFirst.DmaActive);
+		EXPECT_EQ(afterFirst.Registers[19], 0x02);
+		EXPECT_EQ(afterFirst.AddressRegister, 0x0004);
+		EXPECT_EQ(afterFirst.Registers[23], 0x41);
+
+		vdp.WriteControlPort(0x97c0);
+
+		vdp.Run(43);
+		GenesisVdpState afterSecond = vdp.GetState();
+		EXPECT_TRUE(afterSecond.DmaActive);
+		EXPECT_EQ(afterSecond.Registers[19], 0x01);
+		EXPECT_EQ(afterSecond.AddressRegister, 0x0008);
+		EXPECT_EQ(afterSecond.Registers[23], 0xc0);
+
+		vdp.WriteControlPort(0x9742);
+
+		vdp.Run(46);
+		GenesisVdpState afterThird = vdp.GetState();
+		EXPECT_FALSE(afterThird.DmaActive);
+		EXPECT_EQ(afterThird.Registers[19], 0x00);
+		EXPECT_EQ(afterThird.Registers[20], 0x00);
+		EXPECT_EQ(afterThird.AddressRegister, 0x000c);
+		EXPECT_EQ(afterThird.Registers[23], 0x42);
+		EXPECT_EQ(afterThird.StatusRegister & VdpStatus::DmaBusy, 0);
+	}
+
 	TEST(GenesisVdpDmaStartupLatencyTests, H40LateLineExternalSlotsRemainSlotGated) {
 		vector<uint8_t> rom = BuildDmaSourceRom();
 

@@ -6,8 +6,10 @@
 	[string]$NonSonicRomPath,
 	[string]$SummaryJsonPath,
 	[string]$SummaryMarkdownPath,
+	[string]$SummaryCsvPath,
 	[int]$RetryCount = 0,
-	[switch]$StopOnFirstFailure
+	[switch]$StopOnFirstFailure,
+	[switch]$VerboseLaunch
 )
 
 $runner = Join-Path $PSScriptRoot "run-genesis-sonic-smoke.ps1"
@@ -56,7 +58,7 @@ foreach ($rom in $allRomPaths) {
 			Write-Host "Retry $attempt/$maxAttempts for $rom" -ForegroundColor Yellow
 		}
 
-		& $runner -RomPath $rom -ExePath $ExePath -AutoStopTimeoutSeconds $AutoStopTimeoutSeconds
+		& $runner -RomPath $rom -ExePath $ExePath -AutoStopTimeoutSeconds $AutoStopTimeoutSeconds -VerboseLaunch:$VerboseLaunch
 		$exitCode = $LASTEXITCODE
 		$passed = $exitCode -eq 0
 	}
@@ -126,6 +128,16 @@ if (-not [string]::IsNullOrWhiteSpace($SummaryMarkdownPath)) {
 
 	$lines | Set-Content -LiteralPath $SummaryMarkdownPath -Encoding utf8
 	Write-Host "Summary markdown: $SummaryMarkdownPath" -ForegroundColor Cyan
+}
+
+if (-not [string]::IsNullOrWhiteSpace($SummaryCsvPath)) {
+	$csvDir = Split-Path -Path $SummaryCsvPath -Parent
+	if (-not [string]::IsNullOrWhiteSpace($csvDir)) {
+		New-Item -ItemType Directory -Path $csvDir -Force | Out-Null
+	}
+
+	$results | Export-Csv -LiteralPath $SummaryCsvPath -NoTypeInformation -Encoding utf8
+	Write-Host "Summary CSV: $SummaryCsvPath" -ForegroundColor Cyan
 }
 
 Write-Host "---" -ForegroundColor DarkGray

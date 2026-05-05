@@ -2,7 +2,8 @@
 	[Parameter(Mandatory = $true)]
 	[string]$RomPath,
 	[string]$ExePath = ".\bin\win-x64\Release\Nexen.exe",
-	[int]$AutoStopTimeoutSeconds = 8
+	[int]$AutoStopTimeoutSeconds = 8,
+	[switch]$VerboseLaunch
 )
 
 $resolvedExe = (Resolve-Path -LiteralPath $ExePath -ErrorAction Stop).Path
@@ -14,6 +15,10 @@ Write-Host "Rom: $resolvedRom"
 
 # Pass ROM path as one explicitly quoted argument so spaces/special chars stay intact.
 $romArgument = '"' + $resolvedRom + '"'
+if ($VerboseLaunch) {
+	Write-Host "LaunchArg: $romArgument" -ForegroundColor DarkCyan
+	Write-Host "LaunchCommand: `"$resolvedExe`" $romArgument" -ForegroundColor DarkCyan
+}
 $process = Start-Process -FilePath $resolvedExe -ArgumentList $romArgument -PassThru
 
 if ($null -eq $process) {

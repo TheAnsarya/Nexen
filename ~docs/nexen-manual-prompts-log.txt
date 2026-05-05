@@ -2304,6 +2304,7 @@ These session are very short and you're making a ton of issues for small amounts
 
 You keep running Nexen, but The filename being opened isn't "quoted" so it's treating it as space limited and tries to open many bad (nonexistant) files
 
+do all three steps; continue; do ***several*** batches in a row
 
 
 
