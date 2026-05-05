@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
 
 namespace {
@@ -9,6 +9,7 @@ namespace {
 		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0x000120), GenesisBusOwner::Rom);
 		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xA00010), GenesisBusOwner::Z80);
 		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xA10002), GenesisBusOwner::Io);
+		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xA14101), GenesisBusOwner::Io);
 		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xC00004), GenesisBusOwner::Vdp);
 		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xFF1234), GenesisBusOwner::WorkRam);
 		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0x800000), GenesisBusOwner::OpenBus);
@@ -34,7 +35,7 @@ namespace {
 		scaffold.GetBus().WriteByte(0x800000, 0x11);
 		uint8_t value = scaffold.GetBus().ReadByte(0x800000);
 
-		EXPECT_EQ(value, 0xFFu);
+		EXPECT_EQ(value, 0x11u);
 		EXPECT_EQ(scaffold.GetBus().GetOpenBusWriteCount(), 1u);
 		EXPECT_EQ(scaffold.GetBus().GetOpenBusReadCount(), 1u);
 	}

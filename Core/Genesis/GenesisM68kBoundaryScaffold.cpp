@@ -158,6 +158,10 @@ GenesisBusOwner GenesisPlatformBusStub::DecodeOwner(uint32_t address) const {
 		return GenesisBusOwner::Io;
 	}
 
+	if (address == 0xA14101) {
+		return GenesisBusOwner::Io;
+	}
+
 	if (address >= 0xA15000 && address <= 0xA1501F) {
 		return GenesisBusOwner::Io;
 	}
@@ -202,6 +206,11 @@ bool GenesisPlatformBusStub::TryGetExpansionIoOffset(uint32_t address, uint32_t&
 
 	if (address >= 0xA14000 && address <= 0xA1401F) {
 		offset = 0x40 + (address & 0x1F);
+		return true;
+	}
+
+	if (address == 0xA14101) {
+		offset = 0x40 + 0x01;
 		return true;
 	}
 

@@ -1295,6 +1295,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			}
 
 			probe.OwnerParityPass = scaffold.GetBus().GetOwnerForAddress(0xA14000) == GenesisBusOwner::Io
+				&& scaffold.GetBus().GetOwnerForAddress(0xA14101) == GenesisBusOwner::Io
 				&& scaffold.GetBus().GetOwnerForAddress(0xA10003) == GenesisBusOwner::Io
 				&& scaffold.GetBus().GetOwnerForAddress(0xA11100) == GenesisBusOwner::Io
 				&& scaffold.GetBus().GetOwnerForAddress(0xA11200) == GenesisBusOwner::Io
