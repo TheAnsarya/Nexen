@@ -120,6 +120,44 @@ namespace {
 		EXPECT_EQ(memoryManager.DebugRead8(0xA1000D), 0xEFu);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, TmssCartRegisterReadReturnsFFAndPreservesTmssUnlockState) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		GenesisIoState ioBefore = memoryManager.GetIoState();
+		EXPECT_EQ(memoryManager.Read8(0xA14101), 0xFFu);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA14101), 0xFFu);
+
+		GenesisIoState ioAfter = memoryManager.GetIoState();
+		EXPECT_EQ(ioAfter.TmssEnabled, ioBefore.TmssEnabled);
+		EXPECT_EQ(ioAfter.TmssUnlocked, ioBefore.TmssUnlocked);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, TmssCartRegisterWritesAreNoOpForUnlockAndReadbackPath) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA14000, 'S');
+		memoryManager.Write8(0xA14001, 'E');
+		memoryManager.Write8(0xA14002, 'G');
+		memoryManager.Write8(0xA14003, 'A');
+		GenesisIoState unlockedBefore = memoryManager.GetIoState();
+
+		memoryManager.Write8(0xA14101, 0x12);
+		memoryManager.DebugWrite8(0xA14101, 0x34);
+		memoryManager.Write16(0xA14100, 0xABCD);
+
+		EXPECT_EQ(memoryManager.Read8(0xA14101), 0xFFu);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA14101), 0xFFu);
+		EXPECT_EQ(memoryManager.Read16(0xA14100), 0xFFFFu);
+
+		GenesisIoState unlockedAfter = memoryManager.GetIoState();
+		EXPECT_EQ(unlockedAfter.TmssEnabled, unlockedBefore.TmssEnabled);
+		EXPECT_EQ(unlockedAfter.TmssUnlocked, unlockedBefore.TmssUnlocked);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, MapperRegisterOddWindowWritesSwitchExpectedRomBanks) {
 		Emulator emu;
 		std::vector<uint8_t> romData = BuildMapperPatternRom(8);

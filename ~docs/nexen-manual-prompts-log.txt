@@ -2311,9 +2311,15 @@ do all three steps; continue; do ***several*** batches in a row
 do all three steps; continue; do ***several*** batches in a row
 
 do all three steps; continue; do ***several*** batches in a row
-do all three steps; continue; do ***several*** batches in a row
+
 do all three steps; continue; do ***several*** batches in a row
 
+do all three steps; continue; do ***several*** batches in a row
+
+--- steer
+don't make an issue for every tiny thing, batch them all in one or two issues at a time; continue;
+
+[Nexen] (Genesis/MegaDrive) integrate (and replace our code if it sucks) with `Hoshiruna/Mesen2-Expanded` Genesis code as we have been doing, but even more, make games run!; do all three steps; continue; do ***several*** batches in a row;
 
 
 

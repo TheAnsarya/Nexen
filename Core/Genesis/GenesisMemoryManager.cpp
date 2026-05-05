@@ -55,6 +55,11 @@ namespace {
 		return isTmssAddress;
 	}
 
+	__forceinline bool IsTmssCartAddress(uint32_t addr) {
+		uint32_t effectiveAddr = addr;
+		return effectiveAddr == 0xA14101;
+	}
+
 	__forceinline uint8_t BuildVersionRegister(ConsoleRegion region) {
 		uint8_t versionByte = 0xA0; // Base hardware profile
 		if (region == ConsoleRegion::NtscJapan) {
@@ -817,6 +822,12 @@ bool GenesisMemoryManager::TryGetSramOffset(uint32_t addr, uint32_t& offset) con
 uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
+	if (IsTmssCartAddress(addr)) [[unlikely]] {
+		// TMSS/cart register is not modeled yet; expose stable open-bus-style value.
+		uint8_t effectiveValue = 0xFF;
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
 	if (IsTmssAddress(addr)) [[unlikely]] {
 		uint8_t effectiveValue = _segaCdBridgeA140[addr & 0x03];
 		_openBus = effectiveValue;
@@ -1018,6 +1029,11 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	addr &= 0xFFFFFE;
+	if (addr == 0xA14100) [[unlikely]] {
+		uint16_t effectiveValue = (uint16_t)((_openBus << 8) | 0xFF);
+		_openBus = 0xFF;
+		return effectiveValue;
+	}
 	if (IsTmssAddress(addr)) [[unlikely]] {
 		uint16_t effectiveValue = ((uint16_t)_segaCdBridgeA140[addr & 0x03] << 8)
 			| (uint16_t)_segaCdBridgeA140[(addr + 1) & 0x03];
@@ -1148,6 +1164,12 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
+	if (IsTmssCartAddress(addr)) [[unlikely]] {
+		// Accept TMSS/cart writes as no-op to match compatibility expectations.
+		uint8_t effectiveValue = value;
+		_openBus = effectiveValue;
+		return;
+	}
 	if (IsTmssAddress(addr)) [[unlikely]] {
 		uint8_t effectiveValue = value;
 		uint32_t slot = addr & 0x03;
@@ -1369,6 +1391,11 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 
 void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	addr &= 0xFFFFFE;
+	if (addr == 0xA14100) [[unlikely]] {
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		_openBus = effectiveLowByte;
+		return;
+	}
 	if (IsTmssAddress(addr)) [[unlikely]] {
 		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
 		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
@@ -1749,6 +1776,12 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	uint32_t effectiveAddr = addr;
+	if (IsTmssCartAddress(effectiveAddr)) {
+		uint8_t effectiveValue = 0xFF;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+		return effectiveValue;
+	}
 	if (IsTmssAddress(effectiveAddr)) {
 		uint8_t effectiveValue = _segaCdBridgeA140[effectiveAddr & 0x03];
 		_openBus = effectiveValue;
@@ -1947,6 +1980,12 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	uint32_t effectiveAddr = addr;
+	if (IsTmssCartAddress(effectiveAddr)) {
+		uint8_t effectiveValue = value;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x02);
+		return;
+	}
 	if (IsTmssAddress(effectiveAddr)) {
 		uint8_t effectiveValue = value;
 		uint32_t slot = effectiveAddr & 0x03;
