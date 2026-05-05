@@ -239,21 +239,21 @@ void GenesisVdp::RenderScanline() {
 		lineBuffer[x] = bgcolor;
 	}
 
-	// Render Plane B (low priority background)
-	RenderBackground(lineBuffer, 1);
-
-	// Render Plane A (high priority background)
-	RenderBackground(lineBuffer, 0);
-
-	// Render sprites
-	RenderSprites(lineBuffer);
+	// Genesis composition order (simplified):
+	// low-priority planes -> low-priority sprites -> high-priority planes -> high-priority sprites.
+	RenderBackground(lineBuffer, 1, false);
+	RenderBackground(lineBuffer, 0, false);
+	RenderSprites(lineBuffer, false);
+	RenderBackground(lineBuffer, 1, true);
+	RenderBackground(lineBuffer, 0, true);
+	RenderSprites(lineBuffer, true);
 
 	// Copy to output buffer
 	uint16_t* buf = _outputBuffers[_currentBuffer];
 	memcpy(&buf[_scanline * MaxScreenWidth], lineBuffer, _screenWidth * sizeof(uint16_t));
 }
 
-void GenesisVdp::RenderBackground(uint16_t* lineBuffer, uint8_t planeIndex) {
+void GenesisVdp::RenderBackground(uint16_t* lineBuffer, uint8_t planeIndex, bool highPriority) {
 	uint16_t planeBase = planeIndex == 0 ? GetPlaneABase() : GetPlaneBBase();
 	uint16_t planeW = GetPlaneWidth();
 	uint16_t planeH = GetPlaneHeight();
@@ -316,6 +316,10 @@ void GenesisVdp::RenderBackground(uint16_t* lineBuffer, uint8_t planeIndex) {
 		bool hFlip = (ntEntry >> 11) & 1;
 		bool vFlip = (ntEntry >> 12) & 1;
 		uint8_t palette = (ntEntry >> 13) & 3;
+		bool priority = (ntEntry >> 15) & 1;
+		if (priority != highPriority) {
+			continue;
+		}
 
 		// Get pixel within tile
 		uint8_t tileX = px & 7;
@@ -345,7 +349,7 @@ void GenesisVdp::RenderBackground(uint16_t* lineBuffer, uint8_t planeIndex) {
 	}
 }
 
-void GenesisVdp::RenderSprites(uint16_t* lineBuffer) {
+void GenesisVdp::RenderSprites(uint16_t* lineBuffer, bool highPriority) {
 	uint16_t satBase = GetSpriteTableBase();
 	uint16_t maxSprites = IsH40Mode() ? 80 : 64;
 	uint16_t maxPerLine = IsH40Mode() ? 20 : 16;
@@ -373,7 +377,12 @@ void GenesisVdp::RenderSprites(uint16_t* lineBuffer) {
 		bool hFlip = (attr >> 11) & 1;
 		bool vFlip = (attr >> 12) & 1;
 		uint8_t palette = (attr >> 13) & 3;
-		// bool priority = (attr >> 15) & 1;
+		bool priority = (attr >> 15) & 1;
+		if (priority != highPriority) {
+			spriteIdx = link;
+			if (spriteIdx == 0 || spriteIdx >= maxSprites) break;
+			continue;
+		}
 
 		uint16_t xPos = (((uint16_t)_vram[satAddr + 6] << 8) | _vram[satAddr + 7]) & 0x3FF;
 

@@ -69,8 +69,8 @@ private:
 	// Internal methods
 	void ProcessScanline();
 	void RenderScanline();
-	void RenderBackground(uint16_t* lineBuffer, uint8_t planeIndex);
-	void RenderSprites(uint16_t* lineBuffer);
+	void RenderBackground(uint16_t* lineBuffer, uint8_t planeIndex, bool highPriority);
+	void RenderSprites(uint16_t* lineBuffer, bool highPriority);
 	void OutputPixel(uint16_t x, uint16_t y, uint16_t color);
 	uint16_t CramToRgb555(uint16_t cramColor);
 	void ProcessDma();
