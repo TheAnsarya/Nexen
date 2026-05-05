@@ -2324,8 +2324,10 @@ don't make an issue for every tiny thing, batch them all in one or two issues at
 [Nexen] (Genesis/MegaDrive) integrate (and replace our code if it sucks) with `Hoshiruna/Mesen2-Expanded` Genesis code as we have been doing, but even more, make games run!; do all three steps; continue; do ***several*** batches in a row;
 
 [Nexen] (Genesis/MegaDrive) integrate (and replace our code if it sucks) with `Hoshiruna/Mesen2-Expanded` Genesis code as we have been doing, but even more, make games run!; do all three steps; continue; do ***several*** batches in a row;
+
 [Nexen] (Genesis/MegaDrive) integrate (and replace our code if it sucks) with `Hoshiruna/Mesen2-Expanded` Genesis code as we have been doing, but even more, make games run!; do all three steps; continue; do ***several*** batches in a row;
 
+[Nexen] (Genesis/MegaDrive) logos are starting to partially show up on startup, continue working on getting the graphics and colors right and then continuing to execute code, find what data load, code executions aren't working and fix them; integrate (and replace our code if it sucks) with `Hoshiruna/Mesen2-Expanded` Genesis code as we have been doing, but even more, make games run!; do all three steps; continue; do ***several*** batches in a row;
 
 
 

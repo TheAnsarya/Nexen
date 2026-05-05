@@ -874,7 +874,9 @@ void GenesisVdp::ProcessDma() {
 		// uses the latched DMA startup source for transfer determinism.
 	} else if (_dmaLatchedMode == 2) {
 		if (_dmaFillDataPending) {
-			return;
+			// In isolated/scaffold runs there may be no subsequent data-port write to seed fill data.
+			// Fall back to the current fill byte (default 0x00) to avoid a permanent DMA busy stall.
+			_dmaFillDataPending = false;
 		}
 
 		// VRAM fill
