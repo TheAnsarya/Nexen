@@ -10,6 +10,8 @@ namespace {
 		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xA00010), GenesisBusOwner::Z80);
 		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xA10002), GenesisBusOwner::Io);
 		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xA14101), GenesisBusOwner::Io);
+		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xA1117F), GenesisBusOwner::Io);
+		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xA11280), GenesisBusOwner::Io);
 		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xC00004), GenesisBusOwner::Vdp);
 		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xFF1234), GenesisBusOwner::WorkRam);
 		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0x800000), GenesisBusOwner::OpenBus);

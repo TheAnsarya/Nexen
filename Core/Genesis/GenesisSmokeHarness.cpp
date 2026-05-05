@@ -1298,7 +1298,9 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				&& scaffold.GetBus().GetOwnerForAddress(0xA14101) == GenesisBusOwner::Io
 				&& scaffold.GetBus().GetOwnerForAddress(0xA10003) == GenesisBusOwner::Io
 				&& scaffold.GetBus().GetOwnerForAddress(0xA11100) == GenesisBusOwner::Io
+				&& scaffold.GetBus().GetOwnerForAddress(0xA1117F) == GenesisBusOwner::Io
 				&& scaffold.GetBus().GetOwnerForAddress(0xA11200) == GenesisBusOwner::Io
+				&& scaffold.GetBus().GetOwnerForAddress(0xA11280) == GenesisBusOwner::Io
 				&& scaffold.GetBus().GetOwnerForAddress(0xC00004) == GenesisBusOwner::Vdp;
 
 			probe.SignatureDigest = ToHex(digest);

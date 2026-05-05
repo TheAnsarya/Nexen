@@ -62,6 +62,14 @@ namespace {
 	bool IsMapperWindowAddress(uint32_t address) {
 		return address >= 0xA130F0 && address <= 0xA130FF;
 	}
+
+	bool IsZ80BusReqAddress(uint32_t address) {
+		return (address & 0xFFFF00) == 0xA11100;
+	}
+
+	bool IsZ80ResetAddress(uint32_t address) {
+		return (address & 0xFFFF00) == 0xA11200;
+	}
 }
 
 GenesisPlatformBusStub::GenesisPlatformBusStub()
@@ -178,7 +186,7 @@ GenesisBusOwner GenesisPlatformBusStub::DecodeOwner(uint32_t address) const {
 		return GenesisBusOwner::Z80;
 	}
 
-	if ((address >= 0xA10000 && address <= 0xA1001F) || (address >= 0xA11100 && address <= 0xA11201)) {
+	if ((address >= 0xA10000 && address <= 0xA1001F) || IsZ80BusReqAddress(address) || IsZ80ResetAddress(address)) {
 		return GenesisBusOwner::Io;
 	}
 
@@ -1117,11 +1125,11 @@ uint8_t GenesisPlatformBusStub::ReadByte(uint32_t address) {
 				result = _ym2612Registers[(0x100 | _ym2612AddressPort1) & 0x1FF];
 				break;
 			}
-			if (address == 0xA11100) {
+			if (IsZ80BusReqAddress(address) && ((address & 0x01) == 0)) {
 				result = _z80BusRequested ? 0x01 : 0x00;
 				break;
 			}
-			if (address == 0xA11200) {
+			if (IsZ80ResetAddress(address) && ((address & 0x01) == 0)) {
 				result = _z80Running ? 0x01 : 0x00;
 				break;
 			}
@@ -1322,10 +1330,10 @@ void GenesisPlatformBusStub::WriteByte(uint32_t address, uint8_t value) {
 			if (address == 0xA04003) {
 				YmWriteData(1, value);
 			}
-			if (address == 0xA11100) {
+			if (IsZ80BusReqAddress(address) && ((address & 0x01) == 0)) {
 				RequestZ80Bus((value & 0x01) != 0);
 			}
-			if (address == 0xA11200) {
+			if (IsZ80ResetAddress(address) && ((address & 0x01) == 0)) {
 				if ((value & 0x01) == 0) {
 					_z80Running = false;
 				} else {
