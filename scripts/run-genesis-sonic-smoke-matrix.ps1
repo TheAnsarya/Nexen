@@ -37,6 +37,17 @@ if ($PSBoundParameters.ContainsKey('StartupTimeoutSeconds')) {
 	}
 }
 
+if ($PSBoundParameters.ContainsKey('RealRunFrames')) {
+	if ($RealRunFrames -gt 0) {
+		# Legacy wrappers pass frame counts; map to seconds at 60 fps.
+		$AutoStopTimeoutSeconds = [Math]::Max(1, [int][Math]::Ceiling($RealRunFrames / 60.0))
+	}
+}
+
+if ($WriteSummaryHash) {
+	$CompactCiSummary = $true
+}
+
 if ($UseRealSonicRoms -and ($null -eq $RomPaths -or $RomPaths.Count -eq 0)) {
 	$RomPaths = @(
 		"C:\~reference-roms\genesis\Sonic The Hedgehog (W) (REV00) [!].bin",
@@ -49,8 +60,6 @@ $ignoredLegacy = @()
 if ($PSBoundParameters.ContainsKey('BuildConfig')) { $ignoredLegacy += 'BuildConfig' }
 if ($PSBoundParameters.ContainsKey('BuildPlatform')) { $ignoredLegacy += 'BuildPlatform' }
 if ($PSBoundParameters.ContainsKey('FrameTarget')) { $ignoredLegacy += 'FrameTarget' }
-if ($PSBoundParameters.ContainsKey('RealRunFrames')) { $ignoredLegacy += 'RealRunFrames' }
-if ($PSBoundParameters.ContainsKey('WriteSummaryHash')) { $ignoredLegacy += 'WriteSummaryHash' }
 
 if ($ignoredLegacy.Count -gt 0) {
 	Write-Host ("Legacy compatibility note: accepted but ignored parameter(s): {0}" -f ([string]::Join(', ', $ignoredLegacy))) -ForegroundColor DarkYellow
