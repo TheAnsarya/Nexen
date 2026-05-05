@@ -12,6 +12,10 @@
 	     the .NET 10 SDK considers unsupported. The build works correctly regardless;
 	     this just silences the spurious version-gate warning in CI. -->
 	<PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+		<!-- Keep all managed projects on C# 14 for .NET 10 modernization baseline. -->
+		<LangVersion>14.0</LangVersion>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<AnalysisLevel>latest</AnalysisLevel>
 		<NoWarn>$(NoWarn);NETSDK1233</NoWarn>
 	</PropertyGroup>
 </Project>

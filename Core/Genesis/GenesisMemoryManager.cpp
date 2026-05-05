@@ -10,6 +10,7 @@
 #include "Shared/BatteryManager.h"
 #include "Shared/MessageManager.h"
 #include "Utilities/Serializer.h"
+#include <filesystem>
 
 namespace {
 	__forceinline uint32_t ReadBe32(const vector<uint8_t>& data, size_t offset) {
@@ -74,6 +75,120 @@ namespace {
 			versionByte &= (uint8_t)~0x40;
 		}
 		return versionByte;
+	}
+
+	static constexpr const char* kNexenWramTraceDirectory = "reference";
+	static constexpr const char* kNexenWramTracePath = "reference/cpu_ram_trace.log";
+	static FILE* sNexenWramTraceFile = nullptr;
+	static uint32_t sNexenWramTraceLines = 0;
+	static bool sNexenWramTraceConfigLoaded = false;
+	static uint32_t sNexenWramTraceFrameStart = 0u;
+	static uint32_t sNexenWramTraceFrameEnd = 50u;
+	static uint32_t sNexenWramTraceAddrStart = 0xFFCC00u;
+	static uint32_t sNexenWramTraceAddrEnd = 0xFFCFFFu;
+	static uint32_t sNexenWramTraceMaxLines = 300000u;
+
+	static bool TryParseNexenTraceEnvU32AutoBase(const char* name, uint32_t minValue, uint32_t maxValue, uint32_t& outValue) {
+		const char* raw = std::getenv(name);
+		if (!raw || !*raw) {
+			return false;
+		}
+
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(raw, &end, 0);
+		if (end == raw || *end != '\0' || parsed < minValue || parsed > maxValue) {
+			return false;
+		}
+
+		outValue = (uint32_t)parsed;
+		return true;
+	}
+
+	static void LoadNexenWramTraceConfigFromEnv() {
+		if (sNexenWramTraceConfigLoaded) {
+			return;
+		}
+		sNexenWramTraceConfigLoaded = true;
+
+		uint32_t value = 0;
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_WRAM_FRAME_START", 0u, 0xFFFFFFFFu, value)) {
+			sNexenWramTraceFrameStart = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_WRAM_FRAME_END", 0u, 0xFFFFFFFFu, value)) {
+			sNexenWramTraceFrameEnd = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_WRAM_ADDR_START", 0u, 0xFFFFFFu, value)) {
+			sNexenWramTraceAddrStart = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_WRAM_ADDR_END", 0u, 0xFFFFFFu, value)) {
+			sNexenWramTraceAddrEnd = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_WRAM_MAX_LINES", 1u, 0xFFFFFFFFu, value)) {
+			sNexenWramTraceMaxLines = value;
+		}
+
+		if (sNexenWramTraceFrameStart > sNexenWramTraceFrameEnd) {
+			std::swap(sNexenWramTraceFrameStart, sNexenWramTraceFrameEnd);
+		}
+		if (sNexenWramTraceAddrStart > sNexenWramTraceAddrEnd) {
+			std::swap(sNexenWramTraceAddrStart, sNexenWramTraceAddrEnd);
+		}
+	}
+
+	static void EnsureNexenWramTraceOpen() {
+		if (sNexenWramTraceFile) {
+			return;
+		}
+
+		LoadNexenWramTraceConfigFromEnv();
+		std::error_code fsError;
+		std::filesystem::create_directories(kNexenWramTraceDirectory, fsError);
+		sNexenWramTraceFile = fopen(kNexenWramTracePath, "w");
+		if (sNexenWramTraceFile) {
+			fprintf(sNexenWramTraceFile, "# CPU work-RAM write trace\n");
+			fprintf(sNexenWramTraceFile, "# frameRange=%u-%u addrRange=%06X-%06X maxLines=%u\n",
+				sNexenWramTraceFrameStart,
+				sNexenWramTraceFrameEnd,
+				(unsigned)sNexenWramTraceAddrStart,
+				(unsigned)sNexenWramTraceAddrEnd,
+				sNexenWramTraceMaxLines);
+			fflush(sNexenWramTraceFile);
+		}
+	}
+
+	static bool ShouldLogNexenWramTrace(uint32_t frame, uint32_t address) {
+		EnsureNexenWramTraceOpen();
+		if (!sNexenWramTraceFile) {
+			return false;
+		}
+		if (sNexenWramTraceLines >= sNexenWramTraceMaxLines) {
+			return false;
+		}
+		if (frame < sNexenWramTraceFrameStart || frame > sNexenWramTraceFrameEnd) {
+			return false;
+		}
+		if (address < sNexenWramTraceAddrStart || address > sNexenWramTraceAddrEnd) {
+			return false;
+		}
+		return true;
+	}
+
+	static void LogNexenWramTrace(uint32_t frame, uint16_t line, uint32_t address, uint8_t data, uint32_t programCounter, uint64_t masterClock) {
+		if (!sNexenWramTraceFile) {
+			return;
+		}
+
+		fprintf(sNexenWramTraceFile, "F%04u L%03u WRAM addr=%06X data=%02X pc=%06X mclk=%llu\n",
+			(unsigned)frame,
+			(unsigned)line,
+			(unsigned)address,
+			(unsigned)data,
+			(unsigned)programCounter,
+			(unsigned long long)masterClock);
+		sNexenWramTraceLines++;
+		if ((sNexenWramTraceLines & 0x3FFu) == 0u) {
+			fflush(sNexenWramTraceFile);
+		}
 	}
 }
 
@@ -232,6 +347,8 @@ void GenesisMemoryManager::ResetRomBankMapper() {
 }
 
 void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t instructionProgramCounter, uint64_t cycleCount) {
+	EnsureNexenWramTraceOpen();
+
 	_ioState.CpuProgramCounterHeartbeat = instructionProgramCounter & 0x00ffffff;
 	_ioState.CpuCycleHeartbeat = cycleCount;
 	_ioState.CpuInstructionHeartbeat++;
@@ -851,7 +968,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		return effectiveValue;
 	}
 
-	if (addr >= 0xFF0000) [[likely]] {
+	if (addr >= 0xE00000) [[likely]] {
 		// Work RAM
 		uint32_t offset = addr & 0xFFFF;
 		uint8_t effectiveValue = _workRam[offset];
@@ -1053,7 +1170,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		return effectiveValue;
 	}
 
-	if (addr >= 0xFF0000) [[likely]] {
+	if (addr >= 0xE00000) [[likely]] {
 		uint32_t offset = addr & 0xFFFF;
 		uint8_t effectiveHighByte = _workRam[offset];
 		uint8_t effectiveLowByte = _workRam[(offset + 1) & 0xFFFF];
@@ -1207,11 +1324,19 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		return;
 	}
 
-	if (addr >= 0xFF0000) [[likely]] {
+	if (addr >= 0xE00000) [[likely]] {
 		uint32_t offset = addr & 0xFFFF;
 		uint8_t effectiveValue = value;
 		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Write);
 		_workRam[offset] = effectiveValue;
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			if (ShouldLogNexenWramTrace(frame, addr)) {
+				uint16_t line = _vdp->GetState().VCounter;
+				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
+				LogNexenWramTrace(frame, line, addr, effectiveValue, pc, _masterClock);
+			}
+		}
 		_openBus = effectiveValue;
 		return;
 	}
@@ -1418,13 +1543,27 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		return;
 	}
 
-	if (addr >= 0xFF0000) [[likely]] {
+	if (addr >= 0xE00000) [[likely]] {
 		uint32_t offset = addr & 0xFFFF;
 		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
 		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
 		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, effectiveHighByte, MemoryOperationType::Write);
 		_workRam[offset] = effectiveHighByte;
 		_workRam[(offset + 1) & 0xFFFF] = effectiveLowByte;
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			if (ShouldLogNexenWramTrace(frame, addr)) {
+				uint16_t line = _vdp->GetState().VCounter;
+				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
+				LogNexenWramTrace(frame, line, addr, effectiveHighByte, pc, _masterClock);
+			}
+			uint32_t lowAddress = (addr + 1) & 0xFFFFFF;
+			if (ShouldLogNexenWramTrace(frame, lowAddress)) {
+				uint16_t line = _vdp->GetState().VCounter;
+				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
+				LogNexenWramTrace(frame, line, lowAddress, effectiveLowByte, pc, _masterClock);
+			}
+		}
 		_openBus = effectiveLowByte;
 		return;
 	}
@@ -1781,7 +1920,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x01);
 		return effectiveValue;
 	}
-	if (effectiveAddr >= 0xFF0000) {
+	if (effectiveAddr >= 0xE00000) {
 		uint8_t effectiveValue = _workRam[effectiveAddr & 0xFFFF];
 		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x04);
@@ -1989,7 +2128,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x01);
 		return;
 	}
-	if (effectiveAddr >= 0xFF0000) {
+	if (effectiveAddr >= 0xE00000) {
 		uint8_t effectiveValue = value;
 		_workRam[effectiveAddr & 0xFFFF] = effectiveValue;
 		_openBus = effectiveValue;
@@ -2167,7 +2306,7 @@ AddressInfo GenesisMemoryManager::GetAbsoluteAddress(uint32_t addr) {
 	if (effectiveAddress < 0x400000) {
 		info.Address = TranslateRomAddress(effectiveAddress);
 		info.Type = MemoryType::GenesisPrgRom;
-	} else if (effectiveAddress >= 0xFF0000) {
+	} else if (effectiveAddress >= 0xE00000) {
 		info.Address = effectiveAddress & 0xFFFF;
 		info.Type = MemoryType::GenesisWorkRam;
 	} else {
@@ -2182,7 +2321,7 @@ int32_t GenesisMemoryManager::GetRelativeAddress(AddressInfo& absAddress) {
 	if (absAddress.Type == MemoryType::GenesisPrgRom) {
 		relativeAddress = absAddress.Address;
 	} else if (absAddress.Type == MemoryType::GenesisWorkRam) {
-		relativeAddress = 0xFF0000 + absAddress.Address;
+		relativeAddress = 0xE00000 + absAddress.Address;
 	}
 	return relativeAddress;
 }
