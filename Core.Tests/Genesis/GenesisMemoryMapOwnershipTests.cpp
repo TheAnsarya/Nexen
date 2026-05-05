@@ -54,6 +54,30 @@ namespace {
 		EXPECT_EQ(scaffold.GetBus().GetWorkRamReadCount(), 1u);
 	}
 
+	TEST(GenesisMemoryMapOwnershipTests, WorkRamUpperMirrorWindowDecodesToWorkRamOwner) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+
+		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xE00000), GenesisBusOwner::WorkRam);
+		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xE0FFFE), GenesisBusOwner::WorkRam);
+		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xFE0000), GenesisBusOwner::WorkRam);
+		EXPECT_EQ(scaffold.GetBus().GetOwnerForAddress(0xFFFFFF), GenesisBusOwner::WorkRam);
+	}
+
+	TEST(GenesisMemoryMapOwnershipTests, WorkRamUpperMirrorWindowReadWriteMatchesFfWindowBacking) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+
+		scaffold.GetBus().WriteByte(0xE01234, 0x3C);
+		uint8_t ffWindowValue = scaffold.GetBus().ReadByte(0xFF1234);
+		uint8_t secondMirrorValue = scaffold.GetBus().ReadByte(0xF01234);
+
+		EXPECT_EQ(ffWindowValue, 0x3Cu);
+		EXPECT_EQ(secondMirrorValue, 0x3Cu);
+		EXPECT_EQ(scaffold.GetBus().GetWorkRamWriteCount(), 1u);
+		EXPECT_EQ(scaffold.GetBus().GetWorkRamReadCount(), 2u);
+	}
+
 	TEST(GenesisMemoryMapOwnershipTests, Z80OwnershipTransitionsPreserveDecodeAndToggleAccessSemantics) {
 		GenesisM68kBoundaryScaffold scaffold;
 		scaffold.Startup();
