@@ -11,6 +11,8 @@
 	[int]$RetryCount = 0,
 	[int]$ForceProbeFailureCountPerRom = 0,
 	[int]$ForceProbeFailureEveryN = 0,
+	[ValidateSet('CountFirst','EveryNFirst','Combined')]
+	[string]$ProbePrecedence = 'CountFirst',
 	[switch]$StopOnFirstFailure,
 	[switch]$VerboseLaunch,
 	[switch]$TimestampedArtifacts,
@@ -161,13 +163,21 @@ foreach ($rom in $allRomPaths) {
 			Write-Host "Retry $attempt/$maxAttempts for $rom" -ForegroundColor Yellow
 		}
 
+		$countRule = ($ForceProbeFailureCountPerRom -gt 0 -and $syntheticFailuresInjectedForRom -lt $ForceProbeFailureCountPerRom)
+		$firstRule = ($ForceFirstAttemptFailureProbe -and $attempt -eq 1)
+		$everyNRule = ($ForceProbeFailureEveryN -gt 0 -and ($attempt % $ForceProbeFailureEveryN) -eq 0)
+
 		$shouldInjectSyntheticFailure = $false
-		if ($ForceProbeFailureCountPerRom -gt 0 -and $syntheticFailuresInjectedForRom -lt $ForceProbeFailureCountPerRom) {
-			$shouldInjectSyntheticFailure = $true
-		} elseif ($ForceFirstAttemptFailureProbe -and $attempt -eq 1) {
-			$shouldInjectSyntheticFailure = $true
-		} elseif ($ForceProbeFailureEveryN -gt 0 -and ($attempt % $ForceProbeFailureEveryN) -eq 0) {
-			$shouldInjectSyntheticFailure = $true
+		switch ($ProbePrecedence) {
+			'CountFirst' {
+				$shouldInjectSyntheticFailure = $countRule -or $firstRule -or $everyNRule
+			}
+			'EveryNFirst' {
+				$shouldInjectSyntheticFailure = $everyNRule -or $firstRule -or $countRule
+			}
+			'Combined' {
+				$shouldInjectSyntheticFailure = $countRule -or $firstRule -or $everyNRule
+			}
 		}
 
 		if ($shouldInjectSyntheticFailure) {
@@ -260,9 +270,11 @@ if (-not [string]::IsNullOrWhiteSpace($jsonOutputPath)) {
 		ForceFirstAttemptFailureProbeEnabled = [bool]$ForceFirstAttemptFailureProbe
 		ForceProbeFailureCountPerRom = $ForceProbeFailureCountPerRom
 		ForceProbeFailureEveryN = $ForceProbeFailureEveryN
+		ProbePrecedence = $ProbePrecedence
 		SyntheticFailureCount = $syntheticFailureCount
 		CompactSummaryArtifactPath = $compactSummaryOutputPath
 		CompactSummaryLatestAliasPath = $compactSummaryLatestAliasPath
+		CompactSummaryHash = $null
 		Results = $results
 	}
 
@@ -291,6 +303,7 @@ if (-not [string]::IsNullOrWhiteSpace($markdownOutputPath)) {
 	$lines.Add("- SyntheticFailureCount: $syntheticFailureCount")
 	$lines.Add("- ForceProbeFailureCountPerRom: $ForceProbeFailureCountPerRom")
 	$lines.Add("- ForceProbeFailureEveryN: $ForceProbeFailureEveryN")
+	$lines.Add("- ProbePrecedence: $ProbePrecedence")
 	if (-not [string]::IsNullOrWhiteSpace($compactSummaryOutputPath)) {
 		$lines.Add("- CompactSummaryArtifactPath: $compactSummaryOutputPath")
 	}
@@ -319,7 +332,33 @@ if (-not [string]::IsNullOrWhiteSpace($csvOutputPath)) {
 }
 
 Write-Host "---" -ForegroundColor DarkGray
-$ciSummaryLine = "CI_SUMMARY total=$($results.Count) passed=$($results.Count - $failed.Count) failed=$($failed.Count) retriesUsed=$retriesUsedTotal retryHitCount=$retryHitCount syntheticFailures=$syntheticFailureCount totalElapsedMs=$totalElapsedMs averageElapsedMs=$averageElapsedMs maxElapsedMs=$maxElapsedMs"
+$ciSummaryCore = "CI_SUMMARY total=$($results.Count) passed=$($results.Count - $failed.Count) failed=$($failed.Count) retriesUsed=$retriesUsedTotal retryHitCount=$retryHitCount syntheticFailures=$syntheticFailureCount probePrecedence=$ProbePrecedence totalElapsedMs=$totalElapsedMs averageElapsedMs=$averageElapsedMs maxElapsedMs=$maxElapsedMs"
+$hashBytes = [System.Security.Cryptography.SHA256]::HashData([System.Text.Encoding]::UTF8.GetBytes($ciSummaryCore))
+$ciSummaryHash = ([System.Convert]::ToHexString($hashBytes)).ToLowerInvariant()
+$ciSummaryLine = "$ciSummaryCore summaryHash=$ciSummaryHash"
+
+if (-not [string]::IsNullOrWhiteSpace($jsonOutputPath)) {
+	$jsonRoot = Get-Content -LiteralPath $jsonOutputPath -Raw | ConvertFrom-Json
+	$jsonRoot.CompactSummaryHash = $ciSummaryHash
+	$jsonRoot | ConvertTo-Json -Depth 7 | Set-Content -LiteralPath $jsonOutputPath -Encoding utf8
+}
+
+if (-not [string]::IsNullOrWhiteSpace($markdownOutputPath)) {
+	$mdExisting = Get-Content -LiteralPath $markdownOutputPath
+	$mdWithHash = New-Object System.Collections.Generic.List[string]
+	$inserted = $false
+	foreach ($line in $mdExisting) {
+		$mdWithHash.Add($line)
+		if (-not $inserted -and $line -like '- ProbePrecedence:*') {
+			$mdWithHash.Add("- CompactSummaryHash: $ciSummaryHash")
+			$inserted = $true
+		}
+	}
+	if (-not $inserted) {
+		$mdWithHash.Add("- CompactSummaryHash: $ciSummaryHash")
+	}
+	$mdWithHash | Set-Content -LiteralPath $markdownOutputPath -Encoding utf8
+}
 
 if (-not [string]::IsNullOrWhiteSpace($compactSummaryOutputPath)) {
 	Ensure-ParentDirectory -TargetPath $compactSummaryOutputPath

@@ -1039,6 +1039,14 @@ namespace {
 		EXPECT_EQ(after82.Registers[22], 0x00);
 		EXPECT_EQ(after82.Registers[23], 0x41);
 
+		vdp.Run(84);
+		GenesisVdpState before85 = vdp.GetState();
+		EXPECT_EQ(before85.Registers[19], 0x04);
+		EXPECT_EQ(before85.AddressRegister, 0x0014);
+		EXPECT_EQ(before85.Registers[21], (uint8_t)(baseSourceLow + 0x01));
+		EXPECT_EQ(before85.Registers[22], 0x00);
+		EXPECT_EQ(before85.Registers[23], 0x41);
+
 		vdp.Run(85);
 		GenesisVdpState after85 = vdp.GetState();
 		EXPECT_EQ(after85.Registers[19], 0x03);
@@ -1176,6 +1184,14 @@ namespace {
 		EXPECT_EQ(after74.Registers[21], (uint8_t)(baseSourceLow + 0x01));
 		EXPECT_EQ(after74.Registers[22], 0x00);
 		EXPECT_EQ(after74.Registers[23], 0x41);
+
+		vdp.Run(76);
+		GenesisVdpState before77 = vdp.GetState();
+		EXPECT_EQ(before77.Registers[19], 0x04);
+		EXPECT_EQ(before77.AddressRegister, 0x0014);
+		EXPECT_EQ(before77.Registers[21], (uint8_t)(baseSourceLow + 0x01));
+		EXPECT_EQ(before77.Registers[22], 0x00);
+		EXPECT_EQ(before77.Registers[23], 0x41);
 
 		vdp.Run(77);
 		GenesisVdpState after77 = vdp.GetState();
