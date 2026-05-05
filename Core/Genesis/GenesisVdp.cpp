@@ -61,6 +61,7 @@ void GenesisVdp::Reset(bool hardReset) {
 	_firstControlWord = 0;
 	_dmaInitialized = false;
 	_dmaLatchedMode = 0;
+	_dmaSourceReg23Latched = 0;
 	_dmaRemainingWords = 0;
 	_dmaSourceAddress = 0;
 	_dmaCopySourceAddress = 0;
@@ -781,6 +782,7 @@ void GenesisVdp::ProcessDma() {
 	if (!_state.DmaActive) return;
 
 	if (!_dmaInitialized) {
+		_dmaSourceReg23Latched = _state.Registers[23];
 		_dmaLatchedMode = (uint8_t)((_state.Registers[23] >> 6) & 3);
 		_dmaRemainingWords = ((uint16_t)_state.Registers[20] << 8) | _state.Registers[19];
 		if (_dmaRemainingWords == 0) {
@@ -869,6 +871,7 @@ void GenesisVdp::ProcessDma() {
 		_state.Registers[21] = (uint8_t)(srcWindowWordAddress & 0xFF);
 		_state.Registers[22] = (uint8_t)((srcWindowWordAddress >> 8) & 0xFF);
 		// Keep R23 source-high bits fixed during bus DMA; only R21/R22 advance.
+		_state.Registers[23] = _dmaSourceReg23Latched;
 	} else if (_dmaLatchedMode == 2) {
 		if (_dmaFillDataPending) {
 			return;
@@ -960,6 +963,7 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_state.DataPortBuffer);
 	SV(_dmaInitialized);
 	SV(_dmaLatchedMode);
+	SV(_dmaSourceReg23Latched);
 	for (int i = 0; i < 24; i++) {
 		SVI(_state.Registers[i]);
 	}

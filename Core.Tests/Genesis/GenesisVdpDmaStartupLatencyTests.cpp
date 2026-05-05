@@ -150,7 +150,7 @@ namespace {
 		EXPECT_EQ(afterSecondSlot.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
 
-	TEST(GenesisVdpDmaStartupLatencyTests, BusDmaSourceWritebackKeepsR23ClearedAfterFirstSlot) {
+	TEST(GenesisVdpDmaStartupLatencyTests, BusDmaSourceWritebackPreservesR23LatchedValueAfterFirstSlot) {
 		vector<uint8_t> rom((size_t)0x900000, 0);
 		rom[0x000000] = 0x11;
 		rom[0x000001] = 0x22;
@@ -179,7 +179,7 @@ namespace {
 		vdp.Run(41);
 		GenesisVdpState postStep = vdp.GetState();
 
-		EXPECT_EQ(postStep.Registers[23], 0x00);
+		EXPECT_EQ(postStep.Registers[23], 0x40);
 		EXPECT_EQ(postStep.Registers[21], 0x01);
 		EXPECT_EQ(postStep.Registers[22], 0x00);
 	}
@@ -216,6 +216,7 @@ namespace {
 		GenesisVdpState afterFirst = vdp.GetState();
 		EXPECT_EQ(afterFirst.Registers[21], 0x00);
 		EXPECT_EQ(afterFirst.Registers[22], 0x00);
+		EXPECT_EQ(afterFirst.Registers[23], 0x00);
 		uint8_t r23 = afterFirst.Registers[23];
 
 		vdp.Run(43);

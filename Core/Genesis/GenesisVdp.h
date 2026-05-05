@@ -57,6 +57,7 @@ private:
 	// DMA pacing state (latched when a DMA transfer starts)
 	bool _dmaInitialized = false;
 	uint8_t _dmaLatchedMode = 0;
+	uint8_t _dmaSourceReg23Latched = 0;
 	uint32_t _dmaRemainingWords = 0;
 	uint32_t _dmaSourceAddress = 0;
 	uint16_t _dmaCopySourceAddress = 0;
