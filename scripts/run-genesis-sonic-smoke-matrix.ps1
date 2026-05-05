@@ -8,6 +8,7 @@
 	[string]$SummaryMarkdownPath,
 	[string]$SummaryCsvPath,
 	[string]$CompactSummaryArtifactPath,
+	[string]$CompactSummaryHashArtifactPath,
 	[int]$RetryCount = 0,
 	[int]$ForceProbeFailureCountPerRom = 0,
 	[int]$ForceProbeFailureEveryN = 0,
@@ -138,9 +139,14 @@ $jsonOutputPath = Get-ArtifactPath -BasePath $SummaryJsonPath -RunTimestamp $run
 $markdownOutputPath = Get-ArtifactPath -BasePath $SummaryMarkdownPath -RunTimestamp $runTimestamp -UseTimestampedSuffix:$TimestampedArtifacts
 $csvOutputPath = Get-ArtifactPath -BasePath $SummaryCsvPath -RunTimestamp $runTimestamp -UseTimestampedSuffix:$TimestampedArtifacts
 $compactSummaryOutputPath = Get-ArtifactPath -BasePath $CompactSummaryArtifactPath -RunTimestamp $runTimestamp -UseTimestampedSuffix:$TimestampedArtifacts
+$compactSummaryHashOutputPath = Get-ArtifactPath -BasePath $CompactSummaryHashArtifactPath -RunTimestamp $runTimestamp -UseTimestampedSuffix:$TimestampedArtifacts
 $compactSummaryLatestAliasPath = $null
 if ($CreateLatestAliases -and -not [string]::IsNullOrWhiteSpace($CompactSummaryArtifactPath)) {
 	$compactSummaryLatestAliasPath = Get-LatestAliasPath -BasePath $CompactSummaryArtifactPath
+}
+$compactSummaryHashLatestAliasPath = $null
+if ($CreateLatestAliases -and -not [string]::IsNullOrWhiteSpace($CompactSummaryHashArtifactPath)) {
+	$compactSummaryHashLatestAliasPath = Get-LatestAliasPath -BasePath $CompactSummaryHashArtifactPath
 }
 
 Write-Host "Running Genesis Sonic smoke matrix for $($allRomPaths.Count) ROM(s)..." -ForegroundColor Cyan
@@ -202,6 +208,8 @@ foreach ($rom in $allRomPaths) {
 	$elapsedMs = [int64]$romStopwatch.Elapsed.TotalMilliseconds
 	$retryCountUsed = [Math]::Max(0, $attempt - 1)
 	$attemptElapsedMsCsv = [string]::Join(';', ($attemptElapsedMsValues | ForEach-Object { $_.ToString() }))
+	$romPathHashBytes = [System.Security.Cryptography.SHA256]::HashData([System.Text.Encoding]::UTF8.GetBytes($rom))
+	$romPathSha256 = ([System.Convert]::ToHexString($romPathHashBytes)).ToLowerInvariant()
 
 	if (-not $passed) {
 		$failed.Add($rom)
@@ -217,6 +225,7 @@ foreach ($rom in $allRomPaths) {
 			AttemptElapsedMsCsv = $attemptElapsedMsCsv
 			AttemptElapsedMs = @($attemptElapsedMsValues)
 			SyntheticFailuresInjected = $syntheticFailuresInjectedForRom
+			RomPathSha256 = $romPathSha256
 		})
 		Write-Host "FAILED: $rom" -ForegroundColor Red
 		if ($StopOnFirstFailure) {
@@ -236,6 +245,7 @@ foreach ($rom in $allRomPaths) {
 			AttemptElapsedMsCsv = $attemptElapsedMsCsv
 			AttemptElapsedMs = @($attemptElapsedMsValues)
 			SyntheticFailuresInjected = $syntheticFailuresInjectedForRom
+			RomPathSha256 = $romPathSha256
 		})
 		Write-Host "PASSED: $rom" -ForegroundColor Green
 	}
@@ -274,6 +284,8 @@ if (-not [string]::IsNullOrWhiteSpace($jsonOutputPath)) {
 		SyntheticFailureCount = $syntheticFailureCount
 		CompactSummaryArtifactPath = $compactSummaryOutputPath
 		CompactSummaryLatestAliasPath = $compactSummaryLatestAliasPath
+		CompactSummaryHashArtifactPath = $compactSummaryHashOutputPath
+		CompactSummaryHashLatestAliasPath = $compactSummaryHashLatestAliasPath
 		CompactSummaryHash = $null
 		Results = $results
 	}
@@ -310,12 +322,18 @@ if (-not [string]::IsNullOrWhiteSpace($markdownOutputPath)) {
 	if (-not [string]::IsNullOrWhiteSpace($compactSummaryLatestAliasPath)) {
 		$lines.Add("- CompactSummaryLatestAliasPath: $compactSummaryLatestAliasPath")
 	}
+	if (-not [string]::IsNullOrWhiteSpace($compactSummaryHashOutputPath)) {
+		$lines.Add("- CompactSummaryHashArtifactPath: $compactSummaryHashOutputPath")
+	}
+	if (-not [string]::IsNullOrWhiteSpace($compactSummaryHashLatestAliasPath)) {
+		$lines.Add("- CompactSummaryHashLatestAliasPath: $compactSummaryHashLatestAliasPath")
+	}
 	$lines.Add('')
-	$lines.Add('| ROM | Result | ExitCode | Attempts | RetryCountUsed | SyntheticFailuresInjected | AttemptElapsedCount | ElapsedMs | LastAttemptElapsedMs | AttemptElapsedMsCsv |')
-	$lines.Add('|---|---:|---:|---:|---:|---:|---:|---:|---:|---|')
+	$lines.Add('| ROM | RomPathSha256 | Result | ExitCode | Attempts | RetryCountUsed | SyntheticFailuresInjected | AttemptElapsedCount | ElapsedMs | LastAttemptElapsedMs | AttemptElapsedMsCsv |')
+	$lines.Add('|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|')
 	foreach ($r in $results) {
 		$resultText = if ($r.Passed) { 'PASS' } else { 'FAIL' }
-		$lines.Add("| $($r.RomPath) | $resultText | $($r.ExitCode) | $($r.Attempts) | $($r.RetryCountUsed) | $($r.SyntheticFailuresInjected) | $($r.AttemptElapsedCount) | $($r.ElapsedMs) | $($r.LastAttemptElapsedMs) | $($r.AttemptElapsedMsCsv) |")
+		$lines.Add("| $($r.RomPath) | $($r.RomPathSha256) | $resultText | $($r.ExitCode) | $($r.Attempts) | $($r.RetryCountUsed) | $($r.SyntheticFailuresInjected) | $($r.AttemptElapsedCount) | $($r.ElapsedMs) | $($r.LastAttemptElapsedMs) | $($r.AttemptElapsedMsCsv) |")
 	}
 
 	$lines | Set-Content -LiteralPath $markdownOutputPath -Encoding utf8
@@ -365,6 +383,13 @@ if (-not [string]::IsNullOrWhiteSpace($compactSummaryOutputPath)) {
 	$ciSummaryLine | Set-Content -LiteralPath $compactSummaryOutputPath -Encoding utf8
 	Write-Host "Compact summary artifact: $compactSummaryOutputPath" -ForegroundColor Cyan
 	Write-LatestAlias -ActualPath $compactSummaryOutputPath -BasePath $CompactSummaryArtifactPath -Label "Compact summary artifact" -Enabled:$CreateLatestAliases
+}
+
+if (-not [string]::IsNullOrWhiteSpace($compactSummaryHashOutputPath)) {
+	Ensure-ParentDirectory -TargetPath $compactSummaryHashOutputPath
+	$ciSummaryHash | Set-Content -LiteralPath $compactSummaryHashOutputPath -Encoding utf8
+	Write-Host "Compact summary hash artifact: $compactSummaryHashOutputPath" -ForegroundColor Cyan
+	Write-LatestAlias -ActualPath $compactSummaryHashOutputPath -BasePath $CompactSummaryHashArtifactPath -Label "Compact summary hash artifact" -Enabled:$CreateLatestAliases
 }
 
 if ($failed.Count -gt 0) {
