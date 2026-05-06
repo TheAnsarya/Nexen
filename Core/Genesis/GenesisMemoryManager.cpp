@@ -204,6 +204,7 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_vdp = vdp;
 	_controlManager = controlManager;
 	_psg = psg;
+	EnsureNexenWramTraceOpen();
 
 	// Register and allocate ROM
 	_prgRomSize = (uint32_t)romData.size();
@@ -2425,6 +2426,7 @@ void GenesisMemoryManager::SaveBattery() {
 
 void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	(void)hardReset;
+	EnsureNexenWramTraceOpen();
 	if (_emu && _emu->GetSettings()) {
 		_tmssEnabled = _emu->GetSettings()->GetGenesisConfig().EnableTmss;
 	}
