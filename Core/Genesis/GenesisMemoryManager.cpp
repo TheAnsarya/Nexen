@@ -1256,9 +1256,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
 	if (IsTmssCartAddress(addr)) [[unlikely]] {
-		// Accept TMSS/cart writes as no-op to match compatibility expectations.
-		uint8_t effectiveValue = value;
-		_openBus = effectiveValue;
+		// TMSS/cart byte writes are ignored on base Genesis path.
 		return;
 	}
 	if (IsTmssAddress(addr)) [[unlikely]] {
@@ -2108,9 +2106,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	uint32_t effectiveAddr = addr;
 	if (IsTmssCartAddress(effectiveAddr)) {
-		uint8_t effectiveValue = value;
-		_openBus = effectiveValue;
-		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x02);
+		TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x02);
 		return;
 	}
 	if (IsTmssAddress(effectiveAddr)) {
