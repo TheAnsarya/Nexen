@@ -2353,6 +2353,7 @@ C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md
 
 [Nexen] (Genesis/MegaDrive) Continue doing what we've been doing, but with a big aggressive code change push instead of piddly small efforts; Make a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` Genesis code to make big changes; continue;
 
+[Nexen] (Genesis/MegaDrive) Continue doing what we've been doing, but with a big aggressive code change push instead of piddly small efforts; Make a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` Genesis code to make big changes; continue;do all three steps; continue; do ***several*** batches in a row and make only one issue per big effort as three issues each prompt is too many; continue;
 
 
 

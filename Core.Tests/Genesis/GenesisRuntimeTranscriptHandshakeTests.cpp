@@ -312,6 +312,45 @@ namespace {
 		EXPECT_EQ(memoryManager.Read16(0xA11000), 0x0000u);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, BridgeWindowsUnsupportedLanesAreDeterministicAndWriteNoOp) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		memoryManager.Write8(0xA12008, 0x66);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		EXPECT_EQ(memoryManager.Read8(0xA12008), 0x00u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA12008), 0x00u);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		memoryManager.DebugWrite8(0xA15004, 0x77);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		EXPECT_EQ(memoryManager.Read8(0xA15004), 0x00u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA15004), 0x00u);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		memoryManager.Write8(0xA16000, 0x88);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		EXPECT_EQ(memoryManager.Read8(0xA16000), 0x00u);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		memoryManager.DebugWrite8(0xA18010, 0x99);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA18010), 0x00u);
+
+		// Ensure modeled control/status lanes continue to function.
+		memoryManager.Write8(0xA12000, 0x03);
+		EXPECT_EQ(memoryManager.Read8(0xA12000) & 0x03u, 0x03u);
+		memoryManager.Write8(0xA15012, 0x41);
+		uint8_t sh2Status = memoryManager.Read8(0xA1501A);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1501A), sh2Status);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, MapperRegisterOddWindowWritesSwitchExpectedRomBanks) {
 		Emulator emu;
 		std::vector<uint8_t> romData = BuildMapperPatternRom(8);

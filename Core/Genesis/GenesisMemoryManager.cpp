@@ -1081,9 +1081,13 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
-		uint8_t effectiveValue = bridgeSlot[bridgeIndex];
+		uint8_t effectiveValue = 0x00;
 		if (IsSegaCdSubCpuControlAddress(addr)) {
 			effectiveValue = GetSegaCdSubCpuStatusByte();
+		} else if (IsSegaCdAudioDataAddress(addr) || IsSegaCdToolingControlAddress(addr)
+			|| Is32xSh2ControlAddress(addr) || Is32xCompositionControlAddress(addr)
+			|| Is32xToolingControlAddress(addr)) {
+			effectiveValue = bridgeSlot[bridgeIndex];
 		} else if (IsSegaCdAudioStatusAddress(addr)) {
 			effectiveValue = GetSegaCdAudioStatusByte(addr);
 		} else if (IsSegaCdToolingStatusAddress(addr)) {
@@ -1094,6 +1098,8 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			effectiveValue = Get32xCompositionStatusByte(addr);
 		} else if (Is32xToolingStatusAddress(addr)) {
 			effectiveValue = Get32xToolingStatusByte(addr);
+		} else if ((addr >= 0xA13000 && addr <= 0xA1301F) || (addr >= 0xA14000 && addr <= 0xA1401F)) {
+			effectiveValue = bridgeSlot[bridgeIndex];
 		}
 		TrackSegaCdTranscript(addr, false, effectiveValue);
 		_openBus = effectiveValue;
@@ -1457,6 +1463,18 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
+		bool isA120Control = IsSegaCdSubCpuControlAddress(addr)
+			|| IsSegaCdAudioDataAddress(addr)
+			|| IsSegaCdToolingControlAddress(addr);
+		bool isA150Control = Is32xSh2ControlAddress(addr)
+			|| Is32xCompositionControlAddress(addr)
+			|| Is32xToolingControlAddress(addr);
+		bool isLegacyBridgePassThrough = (addr >= 0xA13000 && addr <= 0xA1301F)
+			|| (addr >= 0xA14000 && addr <= 0xA1401F);
+		if (!(isA120Control || isA150Control || isLegacyBridgePassThrough)) {
+			return;
+		}
+
 		uint8_t effectiveValue = value;
 		bridgeSlot[bridgeIndex] = effectiveValue;
 		_openBus = effectiveValue;
@@ -2126,6 +2144,16 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(effectiveAddr, bridgeSlot, bridgeIndex)) {
+		if (IsSegaCdAudioDataAddress(effectiveAddr)
+			|| IsSegaCdToolingControlAddress(effectiveAddr)
+			|| Is32xSh2ControlAddress(effectiveAddr)
+			|| Is32xCompositionControlAddress(effectiveAddr)
+			|| Is32xToolingControlAddress(effectiveAddr)) {
+			uint8_t effectiveValue = bridgeSlot[bridgeIndex];
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+			return effectiveValue;
+		}
 		if (IsSegaCdSubCpuControlAddress(effectiveAddr)) {
 			uint8_t effectiveValue = GetSegaCdSubCpuStatusByte();
 			_openBus = effectiveValue;
@@ -2162,7 +2190,11 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
 			return effectiveValue;
 		}
-		uint8_t effectiveValue = bridgeSlot[bridgeIndex];
+		uint8_t effectiveValue = 0x00;
+		if ((effectiveAddr >= 0xA13000 && effectiveAddr <= 0xA1301F)
+			|| (effectiveAddr >= 0xA14000 && effectiveAddr <= 0xA1401F)) {
+			effectiveValue = bridgeSlot[bridgeIndex];
+		}
 		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
 		return effectiveValue;
@@ -2376,6 +2408,19 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(effectiveAddr, bridgeSlot, bridgeIndex)) {
+		bool isA120Control = IsSegaCdSubCpuControlAddress(effectiveAddr)
+			|| IsSegaCdAudioDataAddress(effectiveAddr)
+			|| IsSegaCdToolingControlAddress(effectiveAddr);
+		bool isA150Control = Is32xSh2ControlAddress(effectiveAddr)
+			|| Is32xCompositionControlAddress(effectiveAddr)
+			|| Is32xToolingControlAddress(effectiveAddr);
+		bool isLegacyBridgePassThrough = (effectiveAddr >= 0xA13000 && effectiveAddr <= 0xA1301F)
+			|| (effectiveAddr >= 0xA14000 && effectiveAddr <= 0xA1401F);
+		if (!(isA120Control || isA150Control || isLegacyBridgePassThrough)) {
+			TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x02);
+			return;
+		}
+
 		uint8_t effectiveValue = value;
 		bridgeSlot[bridgeIndex] = effectiveValue;
 		_openBus = effectiveValue;
