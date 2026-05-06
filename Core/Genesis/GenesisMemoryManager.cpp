@@ -1024,7 +1024,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			_openBus = effectiveValue;
 			return effectiveValue;
 		}
-		uint8_t effectiveValue = _openBus;
+		uint8_t effectiveValue = 0xFF;
 		if (z80WindowReadCount <= 256 || (z80WindowReadCount % 4096) == 0) {
 			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
 			MessageManager::Log(std::format("[Genesis][MMU] Z80 read #{} addr=${:06x} val=${:02x} pc=${:06x} busReq={} reset={} gate=blocked",
@@ -1195,7 +1195,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 			_openBus = (uint8_t)(effectiveValue & 0xFF);
 			return effectiveValue;
 		}
-		uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
+		uint16_t effectiveValue = 0xFFFF;
 		_openBus = (uint8_t)(effectiveValue & 0xFF);
 		return effectiveValue;
 	}
@@ -1998,7 +1998,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return effectiveValue;
 	}
 	if (effectiveAddr >= 0xA00000 && effectiveAddr <= 0xA0FFFF) {
-		uint8_t effectiveValue = _openBus;
+		uint8_t effectiveValue = 0xFF;
 		if (_z80BusRequest || _z80Reset) {
 			effectiveValue = _z80Ram[effectiveAddr & 0x1FFF];
 		}

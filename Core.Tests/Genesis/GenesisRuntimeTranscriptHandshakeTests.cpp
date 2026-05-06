@@ -762,7 +762,8 @@ namespace {
 
 		memoryManager.DebugWrite8(0xA11200, 0x01);
 		memoryManager.DebugWrite8(0xA11100, 0x00);
-		EXPECT_EQ(memoryManager.DebugRead8(0xA00010), memoryManager.GetOpenBus());
+		EXPECT_EQ(memoryManager.DebugRead8(0xA00010), 0xFFu);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xFFu);
 
 		memoryManager.DebugWrite8(0xA11100, 0x01);
 		EXPECT_EQ(memoryManager.DebugRead8(0xA00010), 0x5Au);
@@ -1951,7 +1952,7 @@ namespace {
 
 		// Release reset via mirrored control address high lane.
 		memoryManager.Write16(0xA11280, 0x0100);
-		EXPECT_EQ(memoryManager.Read8(0xA00000), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA00000), 0xFFu);
 
 		// Assert reset again via mirrored control address high lane.
 		memoryManager.Write16(0xA112E0, 0x0000);
