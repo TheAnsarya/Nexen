@@ -940,6 +940,11 @@ bool GenesisMemoryManager::TryGetSramOffset(uint32_t addr, uint32_t& offset) con
 uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
+	if (addr == 0xA11000 || addr == 0xA11001) [[unlikely]] {
+		uint8_t effectiveValue = 0x00;
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
 	if (addr == 0xA14100) [[unlikely]] {
 		uint8_t effectiveValue = 0xFF;
 		_openBus = effectiveValue;
@@ -1048,6 +1053,17 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
 		return ReadIo(addr);
 	}
+	if (addr >= 0xA13000 && addr <= 0xA130FF) [[unlikely]] {
+		uint8_t bankSlot = 0;
+		uint8_t effectiveValue = 0x00;
+		if (IsRamControlRegister(addr)) {
+			effectiveValue = GetRamControlRegisterValue();
+		} else if (TryGetRomBankRegisterSlot(addr, bankSlot)) {
+			effectiveValue = _romBankRegisters[bankSlot];
+		}
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
 
 	uint8_t bankSlot = 0;
 	if (IsRamControlRegister(addr)) [[unlikely]] {
@@ -1132,6 +1148,11 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	addr &= 0xFFFFFE;
+	if (addr == 0xA11000) [[unlikely]] {
+		uint16_t effectiveValue = 0x0000;
+		_openBus = 0x00;
+		return effectiveValue;
+	}
 	if (addr == 0xA14100) [[unlikely]] {
 		uint16_t effectiveValue = 0xFFFF;
 		_openBus = 0xFF;
@@ -1217,7 +1238,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		return effectiveValue;
 	}
 
-	if (addr >= 0xA130F0 && addr <= 0xA130FE) [[unlikely]] {
+	if (addr >= 0xA13000 && addr <= 0xA130FE) [[unlikely]] {
 		uint8_t effectiveHi = Read8(addr);
 		uint8_t effectiveLo = Read8(addr + 1);
 		return ((uint16_t)effectiveHi << 8) | effectiveLo;
@@ -1259,6 +1280,23 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
+	if (addr == 0xA11000 || addr == 0xA11001) [[unlikely]] {
+		return;
+	}
+	if (addr >= 0xA13000 && addr <= 0xA130FF) [[unlikely]] {
+		if (TryWriteRomBankRegister(addr, value)) {
+			uint8_t effectiveValue = (uint8_t)(value & 0x3F);
+			_openBus = effectiveValue;
+			return;
+		}
+		if (IsRamControlRegister(addr)) {
+			uint8_t effectiveValue = value;
+			WriteRamControlRegister(effectiveValue);
+			_openBus = effectiveValue;
+			return;
+		}
+		return;
+	}
 	if ((addr & 0xFFFFFE) == 0xA14100) [[unlikely]] {
 		// TMSS/cart byte writes are ignored on base Genesis path.
 		return;
@@ -1494,6 +1532,9 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 
 void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	addr &= 0xFFFFFE;
+	if (addr == 0xA11000) [[unlikely]] {
+		return;
+	}
 	if (addr == 0xA14100) [[unlikely]] {
 		return;
 	}
@@ -1518,7 +1559,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		return;
 	}
 
-	if (addr >= 0xA130F0 && addr <= 0xA130FE) [[unlikely]] {
+	if (addr >= 0xA13000 && addr <= 0xA130FE) [[unlikely]] {
 		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
 		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
 		Write8(addr, effectiveHighByte);
@@ -1901,6 +1942,12 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	uint32_t effectiveAddr = addr;
+	if (effectiveAddr == 0xA11000 || effectiveAddr == 0xA11001) {
+		uint8_t effectiveValue = 0x00;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x12);
+		return effectiveValue;
+	}
 	if (effectiveAddr == 0xA14100) {
 		uint8_t effectiveValue = 0xFF;
 		_openBus = effectiveValue;
@@ -2000,6 +2047,18 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		}
 		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x10);
+		return effectiveValue;
+	}
+	if (effectiveAddr >= 0xA13000 && effectiveAddr <= 0xA130FF) {
+		uint8_t bankSlot = 0;
+		uint8_t effectiveValue = 0x00;
+		if (IsRamControlRegister(effectiveAddr)) {
+			effectiveValue = GetRamControlRegisterValue();
+		} else if (TryGetRomBankRegisterSlot(effectiveAddr, bankSlot)) {
+			effectiveValue = _romBankRegisters[bankSlot];
+		}
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x11);
 		return effectiveValue;
 	}
 	uint8_t bankSlot = 0;
@@ -2117,6 +2176,27 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	uint32_t effectiveAddr = addr;
+	if (effectiveAddr == 0xA11000 || effectiveAddr == 0xA11001) {
+		TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x12);
+		return;
+	}
+	if (effectiveAddr >= 0xA13000 && effectiveAddr <= 0xA130FF) {
+		if (TryWriteRomBankRegister(effectiveAddr, value)) {
+			uint8_t effectiveValue = (uint8_t)(value & 0x3F);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x11);
+			return;
+		}
+		if (IsRamControlRegister(effectiveAddr)) {
+			uint8_t effectiveValue = value;
+			WriteRamControlRegister(effectiveValue);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x11);
+			return;
+		}
+		TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x11);
+		return;
+	}
 	if ((effectiveAddr & 0xFFFFFE) == 0xA14100) {
 		TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x02);
 		return;

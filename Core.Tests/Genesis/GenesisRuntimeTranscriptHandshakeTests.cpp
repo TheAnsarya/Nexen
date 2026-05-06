@@ -280,6 +280,38 @@ namespace {
 		EXPECT_EQ(afterReads.TmssUnlocked, beforeReads.TmssUnlocked);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, MemoryModeAndMapperUnknownRegistersUseDeterministicDefaults) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		EXPECT_EQ(memoryManager.Read8(0xA11000), 0x00u);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0x00u);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11001), 0x00u);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0x00u);
+
+		memoryManager.Write8(0xA130F3, 0x06);
+		EXPECT_EQ(memoryManager.Read8(0xA130F3), 0x06u);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		memoryManager.Write8(0xA130F2, 0x34);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA13002), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA130F3), 0x06u);
+
+		memoryManager.DebugWrite8(0xA13020, 0x77);
+		EXPECT_EQ(memoryManager.Read8(0xA13020), 0x00u);
+
+		memoryManager.Write16(0xA11000, 0xABCD);
+		EXPECT_EQ(memoryManager.Read16(0xA11000), 0x0000u);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, MapperRegisterOddWindowWritesSwitchExpectedRomBanks) {
 		Emulator emu;
 		std::vector<uint8_t> romData = BuildMapperPatternRom(8);
@@ -326,7 +358,7 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0x080000), (uint8_t)(0x05 * 0x11));
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, MapperRead16UsesAlignedAddressAndStatefulOpenBusHighByte) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, MapperRead16UsesAlignedAddressAndDeterministicHighByteDefaults) {
 		Emulator emu;
 		std::vector<uint8_t> romData = BuildMapperPatternRom(8);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -334,9 +366,9 @@ namespace {
 		memoryManager.Write8(0xa130f3, 0x06);
 		memoryManager.Write8(0xa130f5, 0x02);
 
-		EXPECT_EQ(memoryManager.Read16(0xa130f2), 0x0206);
-		EXPECT_EQ(memoryManager.Read16(0xa130f3), 0x0606);
-		EXPECT_EQ(memoryManager.Read16(0xa130f4), 0x0602);
+		EXPECT_EQ(memoryManager.Read16(0xA130F2), 0x0006);
+		EXPECT_EQ(memoryManager.Read16(0xA130F3), 0x0006);
+		EXPECT_EQ(memoryManager.Read16(0xA130F4), 0x0002);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeAndScaffoldMapperViewsMatchForRegistersAndMappedWindows) {

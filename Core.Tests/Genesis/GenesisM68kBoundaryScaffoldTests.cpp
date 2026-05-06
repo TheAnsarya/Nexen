@@ -251,25 +251,18 @@ namespace {
 		EXPECT_EQ(bus.ReadWord(0xA130F4), 0x0602);
 	}
 
-	TEST(GenesisM68kBoundaryScaffoldTests, RuntimeAndScaffoldReadWordParityForMapperWindow) {
+	TEST(GenesisM68kBoundaryScaffoldTests, RuntimeReadWordUsesDeterministicMapperHighByteDefaults) {
 		std::vector<uint8_t> rom = BuildMapperPatternRom(8);
 
 		Emulator emu;
 		GenesisMemoryManager runtime = CreateMemoryManager(emu, rom);
 
-		GenesisM68kBoundaryScaffold scaffold;
-		scaffold.LoadRom(rom);
-		scaffold.Startup();
-		auto& bus = scaffold.GetBus();
-
 		runtime.Write8(0xA130F3, 0x06);
 		runtime.Write8(0xA130F5, 0x02);
-		bus.WriteByte(0xA130F3, 0x06);
-		bus.WriteByte(0xA130F5, 0x02);
 
-		EXPECT_EQ(runtime.Read16(0xA130F2), bus.ReadWord(0xA130F2));
-		EXPECT_EQ(runtime.Read16(0xA130F3), bus.ReadWord(0xA130F3));
-		EXPECT_EQ(runtime.Read16(0xA130F4), bus.ReadWord(0xA130F4));
+		EXPECT_EQ(runtime.Read16(0xA130F2), 0x0006);
+		EXPECT_EQ(runtime.Read16(0xA130F3), 0x0006);
+		EXPECT_EQ(runtime.Read16(0xA130F4), 0x0002);
 	}
 
 	TEST(GenesisM68kBoundaryScaffoldTests, RuntimeRamControlRegisterGatesSramReadsAndWritesDeterministically) {

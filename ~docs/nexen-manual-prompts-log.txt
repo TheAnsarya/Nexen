@@ -2351,6 +2351,7 @@ C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md
 
 [Nexen] (Genesis/MegaDrive) integrate (and replace our code if it sucks) with `Hoshiruna/Mesen2-Expanded` Genesis code as we have been doing, but even more, make games run!; do all three steps; continue; do ***several*** batches in a row;
 
+[Nexen] (Genesis/MegaDrive) Continue doing what we've been doing, but with a big aggressive code change push instead of piddly small efforts; Make a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` Genesis code to make big changes; continue;
 
 
 
