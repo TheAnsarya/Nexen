@@ -1081,7 +1081,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		// Z80 bus request: bit 0 indicates bus grant, mirrored on both byte lanes.
 		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
-		uint8_t effectiveValue = (uint8_t)((_openBus & 0xFE) | ackStatus);
+		uint8_t effectiveValue = (uint8_t)(0xFE | ackStatus);
 		static uint64_t z80BusReqReadCount = 0;
 		z80BusReqReadCount++;
 		if (z80BusReqReadCount <= 256 || (z80BusReqReadCount % 2048) == 0) {
@@ -2003,7 +2003,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	}
 	if (IsZ80BusReqAddress(effectiveAddr)) {
 		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
-		uint8_t effectiveValue = (uint8_t)((_openBus & 0xFE) | ackStatus);
+		uint8_t effectiveValue = (uint8_t)(0xFE | ackStatus);
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x82);
 		return effectiveValue;
 	}
