@@ -61,6 +61,25 @@ namespace {
 		return effectiveAddr == 0xA14101;
 	}
 
+	__forceinline bool IsLegacyBridgePassThroughAddress(uint32_t addr) {
+		return (addr >= 0xA13000 && addr <= 0xA1301F)
+			|| (addr >= 0xA14000 && addr <= 0xA1401F);
+	}
+
+	__forceinline bool IsBridgeControlReadbackAddress(uint32_t addr) {
+		return (addr >= 0xA12002 && addr <= 0xA12005)
+			|| (addr >= 0xA12012 && addr <= 0xA12015)
+			|| addr == 0xA15012 || addr == 0xA15013 || addr == 0xA15014
+			|| addr == 0xA15016 || addr == 0xA15017
+			|| (addr >= 0xA15008 && addr <= 0xA1500B);
+	}
+
+	__forceinline bool IsBridgeModeledWriteAddress(uint32_t addr) {
+		return addr == 0xA12000 || addr == 0xA12001
+			|| IsBridgeControlReadbackAddress(addr)
+			|| IsLegacyBridgePassThroughAddress(addr);
+	}
+
 	__forceinline uint8_t BuildVersionRegister(ConsoleRegion region) {
 		uint8_t versionByte = 0xA0; // Base hardware profile
 		if (region == ConsoleRegion::NtscJapan) {
@@ -1084,9 +1103,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		uint8_t effectiveValue = 0x00;
 		if (IsSegaCdSubCpuControlAddress(addr)) {
 			effectiveValue = GetSegaCdSubCpuStatusByte();
-		} else if (IsSegaCdAudioDataAddress(addr) || IsSegaCdToolingControlAddress(addr)
-			|| Is32xSh2ControlAddress(addr) || Is32xCompositionControlAddress(addr)
-			|| Is32xToolingControlAddress(addr)) {
+		} else if (IsBridgeControlReadbackAddress(addr)) {
 			effectiveValue = bridgeSlot[bridgeIndex];
 		} else if (IsSegaCdAudioStatusAddress(addr)) {
 			effectiveValue = GetSegaCdAudioStatusByte(addr);
@@ -1098,7 +1115,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			effectiveValue = Get32xCompositionStatusByte(addr);
 		} else if (Is32xToolingStatusAddress(addr)) {
 			effectiveValue = Get32xToolingStatusByte(addr);
-		} else if ((addr >= 0xA13000 && addr <= 0xA1301F) || (addr >= 0xA14000 && addr <= 0xA1401F)) {
+		} else if (IsLegacyBridgePassThroughAddress(addr)) {
 			effectiveValue = bridgeSlot[bridgeIndex];
 		}
 		TrackSegaCdTranscript(addr, false, effectiveValue);
@@ -1463,15 +1480,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
-		bool isA120Control = IsSegaCdSubCpuControlAddress(addr)
-			|| IsSegaCdAudioDataAddress(addr)
-			|| IsSegaCdToolingControlAddress(addr);
-		bool isA150Control = Is32xSh2ControlAddress(addr)
-			|| Is32xCompositionControlAddress(addr)
-			|| Is32xToolingControlAddress(addr);
-		bool isLegacyBridgePassThrough = (addr >= 0xA13000 && addr <= 0xA1301F)
-			|| (addr >= 0xA14000 && addr <= 0xA1401F);
-		if (!(isA120Control || isA150Control || isLegacyBridgePassThrough)) {
+		if (!IsBridgeModeledWriteAddress(addr)) {
 			return;
 		}
 
@@ -2144,11 +2153,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(effectiveAddr, bridgeSlot, bridgeIndex)) {
-		if (IsSegaCdAudioDataAddress(effectiveAddr)
-			|| IsSegaCdToolingControlAddress(effectiveAddr)
-			|| Is32xSh2ControlAddress(effectiveAddr)
-			|| Is32xCompositionControlAddress(effectiveAddr)
-			|| Is32xToolingControlAddress(effectiveAddr)) {
+		if (IsBridgeControlReadbackAddress(effectiveAddr)) {
 			uint8_t effectiveValue = bridgeSlot[bridgeIndex];
 			_openBus = effectiveValue;
 			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
@@ -2191,8 +2196,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 			return effectiveValue;
 		}
 		uint8_t effectiveValue = 0x00;
-		if ((effectiveAddr >= 0xA13000 && effectiveAddr <= 0xA1301F)
-			|| (effectiveAddr >= 0xA14000 && effectiveAddr <= 0xA1401F)) {
+		if (IsLegacyBridgePassThroughAddress(effectiveAddr)) {
 			effectiveValue = bridgeSlot[bridgeIndex];
 		}
 		_openBus = effectiveValue;
@@ -2408,15 +2412,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	uint8_t* bridgeSlot = nullptr;
 	uint32_t bridgeIndex = 0;
 	if (TryGetSegaCdBridgeSlot(effectiveAddr, bridgeSlot, bridgeIndex)) {
-		bool isA120Control = IsSegaCdSubCpuControlAddress(effectiveAddr)
-			|| IsSegaCdAudioDataAddress(effectiveAddr)
-			|| IsSegaCdToolingControlAddress(effectiveAddr);
-		bool isA150Control = Is32xSh2ControlAddress(effectiveAddr)
-			|| Is32xCompositionControlAddress(effectiveAddr)
-			|| Is32xToolingControlAddress(effectiveAddr);
-		bool isLegacyBridgePassThrough = (effectiveAddr >= 0xA13000 && effectiveAddr <= 0xA1301F)
-			|| (effectiveAddr >= 0xA14000 && effectiveAddr <= 0xA1401F);
-		if (!(isA120Control || isA150Control || isLegacyBridgePassThrough)) {
+		if (!IsBridgeModeledWriteAddress(effectiveAddr)) {
 			TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x02);
 			return;
 		}
