@@ -1138,8 +1138,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		return effectiveValue;
 	}
 	if (IsTmssAddress(addr)) [[unlikely]] {
-		uint16_t effectiveValue = ((uint16_t)_segaCdBridgeA140[addr & 0x03] << 8)
-			| (uint16_t)_segaCdBridgeA140[(addr + 1) & 0x03];
+		uint16_t effectiveValue = 0xFFFF;
 		_openBus = (uint8_t)(effectiveValue & 0xFF);
 		return effectiveValue;
 	}

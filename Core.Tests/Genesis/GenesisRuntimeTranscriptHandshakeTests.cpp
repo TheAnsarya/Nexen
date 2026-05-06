@@ -270,6 +270,10 @@ namespace {
 		EXPECT_EQ(beforeReads.TmssUnlocked, 1u);
 		EXPECT_EQ(memoryManager.Read8(0xA14000), 0xFFu);
 		EXPECT_EQ(memoryManager.DebugRead8(0xA14002), 0xFFu);
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		EXPECT_EQ(memoryManager.Read16(0xA14000), 0xFFFFu);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xFFu);
 
 		GenesisIoState afterReads = memoryManager.GetIoState();
 		EXPECT_EQ(afterReads.TmssEnabled, beforeReads.TmssEnabled);
