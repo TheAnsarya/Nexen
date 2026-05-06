@@ -1079,25 +1079,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	}
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
-		if (addr & 0x01) {
-			uint8_t effectiveValue = _openBus;
-			static uint64_t z80BusReqReadOddCount = 0;
-			z80BusReqReadOddCount++;
-			if (z80BusReqReadOddCount <= 128 || (z80BusReqReadOddCount % 2048) == 0) {
-				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
-				MessageManager::Log(std::format("[Genesis][MMU] Z80 busreq read(odd) #{} addr=${:06x} val=${:02x} pc=${:06x} busReq={} reset={}",
-					z80BusReqReadOddCount,
-					addr,
-					effectiveValue,
-					pc,
-					_z80BusRequest ? 1 : 0,
-					_z80Reset ? 1 : 0));
-			}
-			TrackSegaCdHandshakeTranscript(addr, false, effectiveValue);
-			return effectiveValue;
-		}
-
-		// Z80 bus request: bit 0 indicates bus grant, upper bits preserve open bus.
+		// Z80 bus request: bit 0 indicates bus grant, mirrored on both byte lanes.
 		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
 		uint8_t effectiveValue = (uint8_t)((_openBus & 0xFE) | ackStatus);
 		static uint64_t z80BusReqReadCount = 0;

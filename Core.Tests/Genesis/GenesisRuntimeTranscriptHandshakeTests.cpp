@@ -1797,13 +1797,13 @@ namespace {
 		// Bus free: both byte lanes expose status bit.
 		memoryManager.Write8(0xA11100, 0x00);
 		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x01u);
-		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x01u);
 		EXPECT_EQ(memoryManager.Read16(0xA11100) & 0x0100u, 0x0100u);
 
 		// Bus requested while reset is asserted: BUSACK remains set.
 		memoryManager.Write8(0xA11100, 0x01);
 		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x01u);
-		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x01u);
 		EXPECT_EQ(memoryManager.Read16(0xA11100) & 0x0100u, 0x0100u);
 
 		// Releasing reset allows BUSREQ to clear BUSACK.
@@ -1821,13 +1821,13 @@ namespace {
 		// Bus free: both byte lanes expose status bit.
 		memoryManager.Write8(0xA11180, 0x00);
 		EXPECT_EQ(memoryManager.Read8(0xA11180), 0x01u);
-		EXPECT_EQ(memoryManager.Read8(0xA11181), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA11181), 0x01u);
 		EXPECT_EQ(memoryManager.Read16(0xA11180) & 0x0100u, 0x0100u);
 
 		// Bus requested while reset is asserted: BUSACK remains set.
 		memoryManager.Write8(0xA11180, 0x01);
 		EXPECT_EQ(memoryManager.Read8(0xA11180), 0x01u);
-		EXPECT_EQ(memoryManager.Read8(0xA11181), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA11181), 0x01u);
 		EXPECT_EQ(memoryManager.Read16(0xA11180) & 0x0100u, 0x0100u);
 
 		// Releasing reset allows BUSREQ to clear BUSACK.
@@ -1904,7 +1904,7 @@ namespace {
 		memoryManager.Write16(0xA11100, 0x0001);
 
 		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x01u);
-		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA11101), 0x01u);
 		EXPECT_EQ(memoryManager.Read16(0xA11100) & 0x0100u, 0x0100u);
 	}
 
@@ -1938,7 +1938,7 @@ namespace {
 
 		memoryManager.Write8(0xA111FE, 0x00);
 		EXPECT_EQ(memoryManager.Read8(0xA11100), 0x01u);
-		EXPECT_EQ(memoryManager.Read8(0xA111FF), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA111FF), 0x01u);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA112Write16HighLaneControlsReset) {
@@ -1990,7 +1990,7 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xA11180), 0xA5u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA111OddByteReadReturnsOpenBus) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA111OddByteReadMirrorsBusAckStatus) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2002,10 +2002,10 @@ namespace {
 		memoryManager.Write8(0xA11100, 0x01);
 
 		EXPECT_EQ(memoryManager.Read8(0xA11100), 0xA4u);
-		EXPECT_EQ(memoryManager.Read8(0xA11101), 0xA5u);
+		EXPECT_EQ(memoryManager.Read8(0xA11101), 0xA4u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA111OddByteReadReturnsOpenBus) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA111OddByteReadMirrorsBusAckStatus) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2017,7 +2017,7 @@ namespace {
 		memoryManager.Write8(0xA11180, 0x01);
 
 		EXPECT_EQ(memoryManager.Read8(0xA11180), 0xA4u);
-		EXPECT_EQ(memoryManager.Read8(0xA11181), 0xA5u);
+		EXPECT_EQ(memoryManager.Read8(0xA11181), 0xA4u);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA112OddByteReadReturnsOpenBus) {
