@@ -1,5 +1,4 @@
 ﻿param(
-	[Parameter(Mandatory = $true)]
 	[string]$RomPath,
 	[string]$NexenExePath = ".\bin\win-x64\Release\Nexen.exe",
 	[string]$MesenExePath = "..\Mesen2-Expanded\bin\win-x64\Release\Mesen.exe",
@@ -31,6 +30,41 @@ function Resolve-RequiredPath {
 		throw "Unable to resolve $Label path: $Path"
 	}
 	return $resolved.Path
+}
+
+function Resolve-OptionalPath {
+	param(
+		[Parameter(Mandatory = $true)]
+		[string]$Path
+	)
+
+	try {
+		$resolved = Resolve-Path -LiteralPath $Path -ErrorAction Stop
+		if ($null -eq $resolved) {
+			return $null
+		}
+		return $resolved.Path
+	} catch {
+		return $null
+	}
+}
+
+function Resolve-FirstExistingPath {
+	param(
+		[Parameter(Mandatory = $true)]
+		[string[]]$CandidatePaths,
+		[Parameter(Mandatory = $true)]
+		[string]$Label
+	)
+
+	foreach ($candidate in $CandidatePaths) {
+		$resolvedCandidate = Resolve-OptionalPath -Path $candidate
+		if ($null -ne $resolvedCandidate) {
+			return $resolvedCandidate
+		}
+	}
+
+	throw "Unable to resolve $Label. Tried: $($CandidatePaths -join '; ')"
 }
 
 function Start-TimedRun {
@@ -181,9 +215,26 @@ function Find-FirstDifference {
 	return -1
 }
 
-$resolvedRom = Resolve-RequiredPath -Path $RomPath -Label "ROM"
+$romCandidates = @()
+if (-not [string]::IsNullOrWhiteSpace($RomPath)) {
+	$romCandidates += $RomPath
+}
+$romCandidates += @(
+	"C:\~reference-roms\genesis\Sonic The Hedgehog (W) (REV00) [!].bin",
+	"C:\~reference-roms\genesis\Sonic The Hedgehog (W) (REV01) [!].bin",
+	"C:\~reference-roms\genesis\Sonic The Hedgehog 2 (W) (REV01) [!].bin",
+	"C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md"
+)
+
+$mesenExeCandidates = @(
+	$MesenExePath,
+	"..\Mesen2-Expanded\bin\win-x64\Release\Mesen.exe",
+	"..\Mesen2-Expanded\bin\win-x64\Debug\Mesen.exe"
+)
+
+$resolvedRom = Resolve-FirstExistingPath -CandidatePaths $romCandidates -Label "ROM"
 $resolvedNexenExe = Resolve-RequiredPath -Path $NexenExePath -Label "Nexen exe"
-$resolvedMesenExe = Resolve-RequiredPath -Path $MesenExePath -Label "Mesen2-Expanded exe"
+$resolvedMesenExe = Resolve-FirstExistingPath -CandidatePaths $mesenExeCandidates -Label "Mesen2-Expanded frontend exe"
 $resolvedNexenDir = Resolve-RequiredPath -Path $NexenWorkingDir -Label "Nexen working dir"
 $resolvedMesenDir = Resolve-RequiredPath -Path $MesenWorkingDir -Label "Mesen2-Expanded working dir"
 
