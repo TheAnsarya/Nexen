@@ -134,6 +134,40 @@ namespace {
 		EXPECT_EQ(memoryManager.DebugRead8(0xA10008), 0x00u);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, IoWindowEvenAddressWriteIsNoOpForRuntimeStateAndOpenBus) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA10009, 0x77);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA10009), 0x77u);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+
+		memoryManager.Write8(0xA10008, 0x12);
+
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA10009), 0x77u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, IoWindowEvenAddressWriteIsNoOpForDebugStateAndOpenBus) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.DebugWrite8(0xA10009, 0x66);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA10009), 0x66u);
+
+		memoryManager.DebugWrite8(0xFFFFFE, 0xA4);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA4u);
+
+		memoryManager.DebugWrite8(0xA10008, 0x11);
+
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA4u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA10009), 0x66u);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, TmssCartRegisterReadReturnsFFAndPreservesTmssUnlockState) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);

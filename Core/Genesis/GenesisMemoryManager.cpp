@@ -1834,6 +1834,10 @@ uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
 }
 
 void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
+	if ((addr & 0x01) == 0) {
+		return;
+	}
+
 	uint32_t reg = addr & 0x1F;
 	switch (reg) {
 		case 0x03:
@@ -2129,6 +2133,11 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		return;
 	}
 	if (effectiveAddr >= 0xA10000 && effectiveAddr <= 0xA1001F) {
+		if ((effectiveAddr & 0x01) == 0) {
+			TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x10);
+			return;
+		}
+
 		uint32_t reg = effectiveAddr & 0x1F;
 		switch (reg) {
 			case 0x03:
