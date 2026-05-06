@@ -168,6 +168,32 @@ namespace {
 		EXPECT_EQ(memoryManager.DebugRead8(0xA10009), 0x66u);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, Ym2612WindowReadSemanticsAreStableAcrossEvenOddLanes) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		EXPECT_EQ(memoryManager.Read8(0xA04000), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA04001), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA04002), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA04003), 0x00u);
+		EXPECT_EQ(memoryManager.Read16(0xA04000), 0x0000u);
+		EXPECT_EQ(memoryManager.Read16(0xA04002), 0x0000u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugYm2612ReadDoesNotAliasZ80RamWindow) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.DebugWrite8(0xA11200, 0x00);
+		memoryManager.DebugWrite8(0xA00000, 0x5Au);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA00000), 0x5Au);
+
+		EXPECT_EQ(memoryManager.DebugRead8(0xA04000), 0x00u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA04001), 0x00u);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, TmssCartRegisterReadReturnsFFAndPreservesTmssUnlockState) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);

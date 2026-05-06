@@ -997,7 +997,8 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		if (IsYm2612Address(addr)) {
-			// YM2612 status/data ports. Report not-busy so startup polls can progress.
+			// YM2612 register window: even lanes are status ports, odd lanes are data ports.
+			// Until the MMU is wired to the FM core status API, keep status reads as not-busy.
 			uint8_t effectiveValue = 0x00;
 			_openBus = effectiveValue;
 			return effectiveValue;
@@ -2017,6 +2018,13 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return effectiveValue;
 	}
 	if (effectiveAddr >= 0xA00000 && effectiveAddr <= 0xA0FFFF) {
+		if (IsYm2612Address(effectiveAddr)) {
+			uint8_t effectiveValue = 0x00;
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x20);
+			return effectiveValue;
+		}
+
 		uint8_t effectiveValue = 0xFF;
 		if (_z80BusRequest || _z80Reset) {
 			effectiveValue = _z80Ram[effectiveAddr & 0x1FFF];
