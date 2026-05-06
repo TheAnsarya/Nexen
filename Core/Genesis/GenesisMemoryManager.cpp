@@ -1987,11 +1987,6 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return effectiveValue;
 	}
 	if (IsZ80BusReqAddress(effectiveAddr)) {
-		if (effectiveAddr & 0x01) {
-			uint8_t effectiveValue = _openBus;
-			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x82);
-			return effectiveValue;
-		}
 		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
 		uint8_t effectiveValue = (uint8_t)((_openBus & 0xFE) | ackStatus);
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x82);
