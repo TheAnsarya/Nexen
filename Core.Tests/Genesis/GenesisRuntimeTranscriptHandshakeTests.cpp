@@ -226,6 +226,10 @@ namespace {
 		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
 		memoryManager.DebugWrite8(0xA14101, 0x34);
 		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		memoryManager.Write8(0xA14100, 0x56);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
+		memoryManager.DebugWrite8(0xA14100, 0x78);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
 		memoryManager.Write16(0xA14100, 0xABCD);
 		EXPECT_EQ(memoryManager.GetOpenBus(), 0xA5u);
 

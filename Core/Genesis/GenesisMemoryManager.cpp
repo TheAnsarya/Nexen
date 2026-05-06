@@ -1255,6 +1255,10 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
+	if ((addr & 0xFFFFFE) == 0xA14100) [[unlikely]] {
+		// TMSS/cart byte writes are ignored on base Genesis path.
+		return;
+	}
 	if (IsTmssCartAddress(addr)) [[unlikely]] {
 		// TMSS/cart byte writes are ignored on base Genesis path.
 		return;
@@ -2103,6 +2107,10 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	uint32_t effectiveAddr = addr;
+	if ((effectiveAddr & 0xFFFFFE) == 0xA14100) {
+		TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x02);
+		return;
+	}
 	if (IsTmssCartAddress(effectiveAddr)) {
 		TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x02);
 		return;
