@@ -1100,15 +1100,17 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
-		uint8_t effectiveValue = _openBus;
+		uint8_t resetStatus = _z80Reset ? 0x01 : 0x00;
+		uint8_t effectiveValue = resetStatus;
 		static uint64_t z80ResetReadCount = 0;
 		z80ResetReadCount++;
 		if (z80ResetReadCount <= 256 || (z80ResetReadCount % 2048) == 0) {
 			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
-			MessageManager::Log(std::format("[Genesis][MMU] Z80 reset read #{} addr=${:06x} val=${:02x} pc=${:06x} busReq={} reset={}",
+			MessageManager::Log(std::format("[Genesis][MMU] Z80 reset read #{} addr=${:06x} val=${:02x} status={} pc=${:06x} busReq={} reset={}",
 				z80ResetReadCount,
 				addr,
 				effectiveValue,
+				resetStatus,
 				pc,
 				_z80BusRequest ? 1 : 0,
 				_z80Reset ? 1 : 0));
@@ -1238,7 +1240,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
-		uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
+		uint16_t effectiveValue = _z80Reset ? 0x0101 : 0x0000;
 		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
 		TrackSegaCdHandshakeTranscript(addr, false, effectiveHighByte);
 		return effectiveValue;
@@ -1993,7 +1995,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return effectiveValue;
 	}
 	if (IsZ80ResetAddress(effectiveAddr)) {
-		uint8_t effectiveValue = _openBus;
+		uint8_t effectiveValue = _z80Reset ? 0x01 : 0x00;
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x86);
 		return effectiveValue;
 	}

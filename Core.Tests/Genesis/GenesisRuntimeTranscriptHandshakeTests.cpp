@@ -2021,7 +2021,7 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xA11181), 0xA4u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA112OddByteReadReturnsOpenBus) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA112OddByteReadMirrorsResetStatus) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2030,10 +2030,10 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
 
 		memoryManager.Write8(0xA11200, 0x01);
-		EXPECT_EQ(memoryManager.Read8(0xA11201), 0xA5u);
+		EXPECT_EQ(memoryManager.Read8(0xA11201), 0x00u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA112OddByteReadReturnsOpenBus) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA112OddByteReadMirrorsResetStatus) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2042,10 +2042,10 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
 
 		memoryManager.Write8(0xA11280, 0x01);
-		EXPECT_EQ(memoryManager.Read8(0xA11281), 0xA5u);
+		EXPECT_EQ(memoryManager.Read8(0xA11281), 0x00u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA112EvenByteReadReturnsOpenBus) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA112EvenByteReadMirrorsResetStatus) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2054,10 +2054,10 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
 
 		memoryManager.Write8(0xA11200, 0x01);
-		EXPECT_EQ(memoryManager.Read8(0xA11200), 0xA5u);
+		EXPECT_EQ(memoryManager.Read8(0xA11200), 0x00u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA112EvenByteReadReturnsOpenBus) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA112EvenByteReadMirrorsResetStatus) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2066,10 +2066,10 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
 
 		memoryManager.Write8(0xA11280, 0x01);
-		EXPECT_EQ(memoryManager.Read8(0xA11280), 0xA5u);
+		EXPECT_EQ(memoryManager.Read8(0xA11280), 0x00u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA112Read16ReturnsDuplicatedOpenBusValue) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA112Read16MirrorsResetStatusAcrossLanes) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2078,10 +2078,10 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
 
 		memoryManager.Write8(0xA11200, 0x01);
-		EXPECT_EQ(memoryManager.Read16(0xA11200), 0xA5A5u);
+		EXPECT_EQ(memoryManager.Read16(0xA11200), 0x0000u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA112Read16ReturnsDuplicatedOpenBusValue) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeMirroredA112Read16MirrorsResetStatusAcrossLanes) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2090,7 +2090,7 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
 
 		memoryManager.Write8(0xA11280, 0x01);
-		EXPECT_EQ(memoryManager.Read16(0xA11280), 0xA5A5u);
+		EXPECT_EQ(memoryManager.Read16(0xA11280), 0x0000u);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeA111OddByteWriteDoesNotChangeBusRequest) {
@@ -2213,7 +2213,7 @@ namespace {
 		EXPECT_EQ(memoryManager.DebugRead8(0xA11100), 0xA5u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeA112OddByteReadReturnsOpenBus) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeA112OddByteReadMirrorsResetStatus) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2222,7 +2222,7 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
 
 		memoryManager.DebugWrite8(0xA11200, 0x01);
-		EXPECT_EQ(memoryManager.DebugRead8(0xA11201), 0xA5u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11201), 0x00u);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeA111OddByteReadMirrorsBusAckStatus) {
@@ -2254,7 +2254,7 @@ namespace {
 		EXPECT_EQ(memoryManager.DebugRead8(0xA11180), 0xA5u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeMirroredA112OddByteReadReturnsOpenBus) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeMirroredA112OddByteReadMirrorsResetStatus) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2263,7 +2263,7 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
 
 		memoryManager.DebugWrite8(0xA11280, 0x01);
-		EXPECT_EQ(memoryManager.DebugRead8(0xA11281), 0xA5u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11281), 0x00u);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeMirroredA111OddByteReadMirrorsBusAckStatus) {
@@ -2279,7 +2279,7 @@ namespace {
 		EXPECT_EQ(memoryManager.DebugRead8(0xA11181), 0xA4u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeA112EvenByteReadReturnsOpenBus) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeA112EvenByteReadMirrorsResetStatus) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2288,10 +2288,10 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
 
 		memoryManager.DebugWrite8(0xA11200, 0x01);
-		EXPECT_EQ(memoryManager.DebugRead8(0xA11200), 0xA5u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11200), 0x00u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeMirroredA112EvenByteReadReturnsOpenBus) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeMirroredA112EvenByteReadMirrorsResetStatus) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2300,10 +2300,10 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
 
 		memoryManager.DebugWrite8(0xA11280, 0x01);
-		EXPECT_EQ(memoryManager.DebugRead8(0xA11280), 0xA5u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11280), 0x00u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeA112Read16ReturnsDuplicatedOpenBusValue) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeA112Read16MirrorsResetStatusAcrossLanes) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2314,10 +2314,10 @@ namespace {
 		memoryManager.DebugWrite8(0xA11200, 0x01);
 		uint16_t value = ((uint16_t)memoryManager.DebugRead8(0xA11200) << 8)
 			| memoryManager.DebugRead8(0xA11201);
-		EXPECT_EQ(value, 0xA5A5u);
+		EXPECT_EQ(value, 0x0000u);
 	}
 
-	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeMirroredA112Read16ReturnsDuplicatedOpenBusValue) {
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugHandshakeMirroredA112Read16MirrorsResetStatusAcrossLanes) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);
 		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
@@ -2328,7 +2328,7 @@ namespace {
 		memoryManager.DebugWrite8(0xA11280, 0x01);
 		uint16_t value = ((uint16_t)memoryManager.DebugRead8(0xA11280) << 8)
 			| memoryManager.DebugRead8(0xA11281);
-		EXPECT_EQ(value, 0xA5A5u);
+		EXPECT_EQ(value, 0x0000u);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshake16BitScenarioIsDeterministicAcrossRuns) {
