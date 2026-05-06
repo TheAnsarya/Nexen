@@ -120,6 +120,20 @@ namespace {
 		EXPECT_EQ(memoryManager.DebugRead8(0xA1000D), 0xEFu);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, IoWindowEvenAddressReadsReturnZeroInRuntimeAndDebug) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xFFFFFE, 0xA5);
+		EXPECT_EQ(memoryManager.Read8(0xFFFFFE), 0xA5u);
+
+		EXPECT_EQ(memoryManager.Read8(0xA10000), 0x00u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA10000), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA10008), 0x00u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA10008), 0x00u);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, TmssCartRegisterReadReturnsFFAndPreservesTmssUnlockState) {
 		Emulator emu;
 		std::vector<uint8_t> romData(0x400000);

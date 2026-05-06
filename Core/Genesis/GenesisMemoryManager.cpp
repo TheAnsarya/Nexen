@@ -1767,6 +1767,12 @@ void GenesisMemoryManager::WriteVdpPort(uint32_t addr, uint16_t value) {
 
 // I/O registers ($A10001-$A1001F)
 uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
+	if ((addr & 0x01) == 0) {
+		uint8_t effectiveValue = 0x00;
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
+
 	uint32_t reg = addr & 0x1F;
 	switch (reg) {
 		case 0x01:
@@ -1912,6 +1918,13 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return effectiveValue;
 	}
 	if (effectiveAddr >= 0xA10000 && effectiveAddr <= 0xA1001F) {
+		if ((effectiveAddr & 0x01) == 0) {
+			uint8_t effectiveValue = 0x00;
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x10);
+			return effectiveValue;
+		}
+
 		uint32_t reg = effectiveAddr & 0x1F;
 		uint8_t effectiveValue = _openBus;
 		switch (reg) {
