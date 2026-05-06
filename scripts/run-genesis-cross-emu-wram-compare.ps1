@@ -6,6 +6,7 @@
 	[string]$MesenWorkingDir = "..\Mesen2-Expanded",
 	[string[]]$MesenArgs = @("--testRunner", "--timeout=35"),
 	[string[]]$NexenArgs = @(),
+	[switch]$AllowMissingMesenFrontend,
 	[int]$AutoStopTimeoutSeconds = 30,
 	[int]$FrameStart = 0,
 	[int]$FrameEnd = 80,
@@ -234,22 +235,33 @@ $mesenExeCandidates = @(
 
 $resolvedRom = Resolve-FirstExistingPath -CandidatePaths $romCandidates -Label "ROM"
 $resolvedNexenExe = Resolve-RequiredPath -Path $NexenExePath -Label "Nexen exe"
-$resolvedMesenExe = Resolve-FirstExistingPath -CandidatePaths $mesenExeCandidates -Label "Mesen2-Expanded frontend exe"
+$resolvedMesenExe = $null
+try {
+	$resolvedMesenExe = Resolve-FirstExistingPath -CandidatePaths $mesenExeCandidates -Label "Mesen2-Expanded frontend exe"
+} catch {
+	if (-not $AllowMissingMesenFrontend) {
+		throw
+	}
+	Write-Warning "Mesen frontend executable was not found. Continuing in Nexen-only mode."
+}
 $resolvedNexenDir = Resolve-RequiredPath -Path $NexenWorkingDir -Label "Nexen working dir"
 $resolvedMesenDir = Resolve-RequiredPath -Path $MesenWorkingDir -Label "Mesen2-Expanded working dir"
 
 $nexenExeDir = Split-Path -Parent $resolvedNexenExe
-$mesenExeDir = Split-Path -Parent $resolvedMesenExe
+$mesenExeDir = $null
+if ($null -ne $resolvedMesenExe) {
+	$mesenExeDir = Split-Path -Parent $resolvedMesenExe
+}
 $mesenDocumentsDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)) "Mesen2"
 $nexenTraceCandidates = @(
 	(Join-Path $resolvedNexenDir "reference\cpu_ram_trace.log"),
 	(Join-Path $nexenExeDir "reference\cpu_ram_trace.log")
 )
-$mesenTraceCandidates = @(
-	(Join-Path $resolvedMesenDir "reference\cpu_ram_trace.log"),
-	(Join-Path $mesenExeDir "reference\cpu_ram_trace.log"),
-	(Join-Path $mesenDocumentsDir "reference\cpu_ram_trace.log")
-)
+$mesenTraceCandidates = @((Join-Path $resolvedMesenDir "reference\cpu_ram_trace.log"))
+if ($null -ne $mesenExeDir) {
+	$mesenTraceCandidates += (Join-Path $mesenExeDir "reference\cpu_ram_trace.log")
+}
+$mesenTraceCandidates += (Join-Path $mesenDocumentsDir "reference\cpu_ram_trace.log")
 $resolvedReportPath = [System.IO.Path]::GetFullPath((Join-Path $resolvedNexenDir $ReportPath))
 $reportDir = Split-Path -Parent $resolvedReportPath
 if (!(Test-Path -LiteralPath $reportDir)) {
@@ -272,6 +284,7 @@ $oldNexenFrameEnd = $env:NEXEN_WRAM_FRAME_END
 $oldNexenAddrStart = $env:NEXEN_WRAM_ADDR_START
 $oldNexenAddrEnd = $env:NEXEN_WRAM_ADDR_END
 $oldNexenMaxLines = $env:NEXEN_WRAM_MAX_LINES
+$mesenRunSkipped = $false
 
 try {
 	$env:MESEN_WRAM_FRAME_START = "$FrameStart"
@@ -286,11 +299,21 @@ try {
 	$env:NEXEN_WRAM_ADDR_END = "$AddressEnd"
 	$env:NEXEN_WRAM_MAX_LINES = "$MaxLines"
 
-	Stop-ExistingProcessInstances -ProgramPath $resolvedMesenExe -Name "Mesen2-Expanded"
+	if ($null -ne $resolvedMesenExe) {
+		Stop-ExistingProcessInstances -ProgramPath $resolvedMesenExe -Name "Mesen2-Expanded"
+	}
 	Stop-ExistingProcessInstances -ProgramPath $resolvedNexenExe -Name "Nexen"
 
-	Write-Host "Running Mesen2-Expanded trace capture..." -ForegroundColor Cyan
-	$mesenRun = Start-TimedRun -ProgramPath $resolvedMesenExe -PreArgs $MesenArgs -Rom $resolvedRom -WorkingDir $resolvedMesenDir -TimeoutSeconds $AutoStopTimeoutSeconds -Name "Mesen2-Expanded"
+	$mesenRun = [pscustomobject]@{
+		Pid = 0
+		StoppedByTimeout = $false
+	}
+	if ($null -ne $resolvedMesenExe) {
+		Write-Host "Running Mesen2-Expanded trace capture..." -ForegroundColor Cyan
+		$mesenRun = Start-TimedRun -ProgramPath $resolvedMesenExe -PreArgs $MesenArgs -Rom $resolvedRom -WorkingDir $resolvedMesenDir -TimeoutSeconds $AutoStopTimeoutSeconds -Name "Mesen2-Expanded"
+	} else {
+		$mesenRunSkipped = $true
+	}
 
 	Write-Host "Running Nexen trace capture..." -ForegroundColor Cyan
 	$nexenRun = Start-TimedRun -ProgramPath $resolvedNexenExe -PreArgs $NexenArgs -Rom $resolvedRom -WorkingDir $resolvedNexenDir -TimeoutSeconds $AutoStopTimeoutSeconds -Name "Nexen"
@@ -340,6 +363,8 @@ $report.Add("mesenLines=$($mesenLines.Count)")
 $report.Add("nexenLines=$($nexenLines.Count)")
 $report.Add("mesenHash=$mesenHash")
 $report.Add("nexenHash=$nexenHash")
+$report.Add("mesenFrontendMissing=$($null -eq $resolvedMesenExe)")
+$report.Add("mesenRunSkipped=$mesenRunSkipped")
 $report.Add("mesenTraceMissing=$($null -eq $mesenTracePath)")
 $report.Add("nexenTraceMissing=$($null -eq $nexenTracePath)")
 $report.Add("mesenTimedOut=$($mesenRun.StoppedByTimeout)")
@@ -368,6 +393,11 @@ if ($null -eq $nexenTracePath) {
 if ($firstDiff -ge 0) {
 	Write-Host "First difference found at index $firstDiff" -ForegroundColor Yellow
 	exit 3
+}
+
+if ($mesenRunSkipped) {
+	Write-Warning "Mesen2-Expanded run was skipped because no frontend executable was found."
+	exit 0
 }
 
 exit 0
