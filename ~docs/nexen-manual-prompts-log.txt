@@ -2335,6 +2335,7 @@ Make sure Nexen is always using the most recent frameworks, packages, and practi
 
 [Nexen] (Genesis/MegaDrive) continue, make sure Nexen stays dotnet 10 (until 11 is available) but continue comparing with Mesen-Extended, just make sure to update the code you decide to bring over; integrate (and replace our code if it sucks) with `Hoshiruna/Mesen2-Expanded` Genesis code as we have been doing, but even more, make games run!; do all three steps; continue; do ***several*** batches in a row;
 
+[Nexen] (Genesis/MegaDrive) integrate (and replace our code if it sucks) with `Hoshiruna/Mesen2-Expanded` Genesis code as we have been doing, but even more, make games run!; do all three steps; continue; do ***several*** batches in a row;
 
 
 

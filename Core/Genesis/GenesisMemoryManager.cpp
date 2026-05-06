@@ -934,7 +934,7 @@ bool GenesisMemoryManager::TryGetSramOffset(uint32_t addr, uint32_t& offset) con
 // $A11100         : Z80 bus request
 // $A11200         : Z80 reset
 // $C00000-$C0001F : VDP ports
-// $FF0000-$FFFFFF : 68000 work RAM (64KB, mirrored)
+// $E00000-$FFFFFF : 68000 work RAM (64KB, mirrored)
 
 uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	addr &= 0xFFFFFF;

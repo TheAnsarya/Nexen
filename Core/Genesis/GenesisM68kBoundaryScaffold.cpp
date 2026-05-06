@@ -194,7 +194,7 @@ GenesisBusOwner GenesisPlatformBusStub::DecodeOwner(uint32_t address) const {
 		return GenesisBusOwner::Vdp;
 	}
 
-	if (address >= 0xFF0000) {
+	if (address >= 0xE00000) {
 		return GenesisBusOwner::WorkRam;
 	}
 
