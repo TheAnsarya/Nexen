@@ -940,6 +940,11 @@ bool GenesisMemoryManager::TryGetSramOffset(uint32_t addr, uint32_t& offset) con
 uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	uint32_t sramOffset = 0;
+	if (addr == 0xA14100) [[unlikely]] {
+		uint8_t effectiveValue = 0xFF;
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
 	if (IsTmssCartAddress(addr)) [[unlikely]] {
 		// TMSS/cart register is not modeled yet; expose stable open-bus-style value.
 		uint8_t effectiveValue = 0xFF;
@@ -1897,6 +1902,12 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	addr &= 0xFFFFFF;
 	uint32_t effectiveAddr = addr;
+	if (effectiveAddr == 0xA14100) {
+		uint8_t effectiveValue = 0xFF;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+		return effectiveValue;
+	}
 	if (IsTmssCartAddress(effectiveAddr)) {
 		uint8_t effectiveValue = 0xFF;
 		_openBus = effectiveValue;
