@@ -952,7 +952,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		return effectiveValue;
 	}
 	if (IsTmssAddress(addr)) [[unlikely]] {
-		uint8_t effectiveValue = _segaCdBridgeA140[addr & 0x03];
+		uint8_t effectiveValue = 0xFF;
 		_openBus = effectiveValue;
 		return effectiveValue;
 	}
@@ -1915,7 +1915,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return effectiveValue;
 	}
 	if (IsTmssAddress(effectiveAddr)) {
-		uint8_t effectiveValue = _segaCdBridgeA140[effectiveAddr & 0x03];
+		uint8_t effectiveValue = 0xFF;
 		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
 		return effectiveValue;

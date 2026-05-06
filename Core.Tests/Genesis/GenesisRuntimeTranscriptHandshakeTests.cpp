@@ -256,6 +256,26 @@ namespace {
 		EXPECT_EQ(unlockedAfter.TmssUnlocked, unlockedBefore.TmssUnlocked);
 	}
 
+	TEST(GenesisRuntimeTranscriptHandshakeTests, TmssUnlockRegisterByteReadsReturnFFAndPreserveUnlockState) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA14000, 'S');
+		memoryManager.Write8(0xA14001, 'E');
+		memoryManager.Write8(0xA14002, 'G');
+		memoryManager.Write8(0xA14003, 'A');
+
+		GenesisIoState beforeReads = memoryManager.GetIoState();
+		EXPECT_EQ(beforeReads.TmssUnlocked, 1u);
+		EXPECT_EQ(memoryManager.Read8(0xA14000), 0xFFu);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA14002), 0xFFu);
+
+		GenesisIoState afterReads = memoryManager.GetIoState();
+		EXPECT_EQ(afterReads.TmssEnabled, beforeReads.TmssEnabled);
+		EXPECT_EQ(afterReads.TmssUnlocked, beforeReads.TmssUnlocked);
+	}
+
 	TEST(GenesisRuntimeTranscriptHandshakeTests, MapperRegisterOddWindowWritesSwitchExpectedRomBanks) {
 		Emulator emu;
 		std::vector<uint8_t> romData = BuildMapperPatternRom(8);
