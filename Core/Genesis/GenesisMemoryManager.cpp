@@ -1128,7 +1128,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	addr &= 0xFFFFFE;
 	if (addr == 0xA14100) [[unlikely]] {
-		uint16_t effectiveValue = (uint16_t)((_openBus << 8) | 0xFF);
+		uint16_t effectiveValue = 0xFFFF;
 		_openBus = 0xFF;
 		return effectiveValue;
 	}
