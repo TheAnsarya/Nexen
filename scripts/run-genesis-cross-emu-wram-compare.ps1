@@ -228,9 +228,18 @@ $romCandidates += @(
 )
 
 $mesenExeCandidates = @(
+	$env:NEXEN_MESEN_FRONTEND_PATH,
 	$MesenExePath,
 	"..\Mesen2-Expanded\bin\win-x64\Release\Mesen.exe",
-	"..\Mesen2-Expanded\bin\win-x64\Debug\Mesen.exe"
+	"..\Mesen2-Expanded\bin\win-x64\Debug\Mesen.exe",
+	"..\Mesen2-Expanded\bin\win-x64\Release\Mesen.dll",
+	"..\Mesen2-Expanded\bin\win-x64\Debug\Mesen.dll",
+	"..\Mesen2-Expanded\UI\bin\win-x64\Release\Mesen.exe",
+	"..\Mesen2-Expanded\UI\bin\win-x64\Release\Mesen.dll",
+	"..\Mesen2-Expanded\UI\bin\Release\Mesen.exe",
+	"..\Mesen2-Expanded\UI\bin\Release\Mesen.dll",
+	"..\Mesen2-Expanded\UI\bin\Release\net8.0\win-x64\publish\Mesen.exe",
+	"..\Mesen2-Expanded\UI\bin\Release\net8.0\win-x64\publish\Mesen.dll"
 )
 
 $resolvedRom = Resolve-FirstExistingPath -CandidatePaths $romCandidates -Label "ROM"
