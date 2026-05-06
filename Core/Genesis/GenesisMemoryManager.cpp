@@ -1487,8 +1487,6 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	addr &= 0xFFFFFE;
 	if (addr == 0xA14100) [[unlikely]] {
-		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
-		_openBus = effectiveLowByte;
 		return;
 	}
 	if (IsTmssAddress(addr)) [[unlikely]] {
