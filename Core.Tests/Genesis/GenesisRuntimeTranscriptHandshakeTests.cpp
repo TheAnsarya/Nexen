@@ -445,14 +445,14 @@ namespace {
 		memoryManager.DebugWrite8(0xA1800A, 0x22);
 		memoryManager.DebugWrite8(0xA1800B, 0x11);
 
-		EXPECT_EQ(memoryManager.Read8(0xA18008), 0x44u);
-		EXPECT_EQ(memoryManager.Read8(0xA18009), 0x33u);
-		EXPECT_EQ(memoryManager.Read8(0xA1800A), 0x22u);
-		EXPECT_EQ(memoryManager.Read8(0xA1800B), 0x11u);
-		EXPECT_EQ(memoryManager.DebugRead8(0xA18008), 0x44u);
-		EXPECT_EQ(memoryManager.DebugRead8(0xA18009), 0x33u);
-		EXPECT_EQ(memoryManager.DebugRead8(0xA1800A), 0x22u);
-		EXPECT_EQ(memoryManager.DebugRead8(0xA1800B), 0x11u);
+		EXPECT_EQ(memoryManager.Read8(0xA18008), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA18009), 0x01u);
+		EXPECT_EQ(memoryManager.Read8(0xA1800A), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA1800B), 0x01u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA18008), 0x00u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA18009), 0x01u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1800A), 0x00u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1800B), 0x01u);
 
 		uint8_t countLo = memoryManager.Read8(0xA18018);
 		uint8_t countHi = memoryManager.Read8(0xA18019);
@@ -463,7 +463,97 @@ namespace {
 		EXPECT_EQ(memoryManager.DebugRead8(0xA1801A), flags);
 		EXPECT_EQ(memoryManager.DebugRead8(0xA1801B), digest);
 		EXPECT_NE(digest, 0x00u);
-		EXPECT_EQ(flags & 0x0Fu, 0x0Fu);
+		EXPECT_EQ(flags & 0x0Fu, 0x0Au);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, BridgeWindowA160ControlWritesAreNormalizedBeforeReadback) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA16012, 0xFF);
+		memoryManager.Write8(0xA16013, 0x02);
+		memoryManager.Write8(0xA16014, 0x9E);
+		memoryManager.Write8(0xA16015, 0xF7);
+
+		EXPECT_EQ(memoryManager.Read8(0xA16012), 0x01u);
+		EXPECT_EQ(memoryManager.Read8(0xA16013), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA16014), 0x0Eu);
+		EXPECT_EQ(memoryManager.Read8(0xA16015), 0x03u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA16012), 0x01u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA16013), 0x00u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA16014), 0x0Eu);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA16015), 0x03u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, BridgeWindowA160StatusExposesEdgeAndEpochLanes) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA16012, 0x01);
+		memoryManager.DebugWrite8(0xA16012, 0x00);
+		memoryManager.Write8(0xA16014, 0x03);
+		memoryManager.Write8(0xA16014, 0x07);
+		memoryManager.DebugWrite8(0xA16015, 0x01);
+		memoryManager.DebugWrite8(0xA16015, 0x00);
+
+		uint8_t edgeCount = memoryManager.Read8(0xA1601E);
+		uint8_t epochPacked = memoryManager.Read8(0xA1601F);
+		uint8_t packed = memoryManager.Read8(0xA1601C);
+		EXPECT_GT(edgeCount, 0u);
+		EXPECT_NE(epochPacked, 0x00u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1601E), edgeCount);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1601F), epochPacked);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1601C), packed);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, BridgeWindowA180ControlWritesAreNormalizedAndEmitDerivedTokens) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA18008, 0xFE);
+		memoryManager.DebugWrite8(0xA18009, 0xA5);
+		memoryManager.Write8(0xA1800A, 0x00);
+		memoryManager.DebugWrite8(0xA1800B, 0x7C);
+
+		EXPECT_EQ(memoryManager.Read8(0xA18008), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA18009), 0x01u);
+		EXPECT_EQ(memoryManager.Read8(0xA1800A), 0x00u);
+		EXPECT_EQ(memoryManager.Read8(0xA1800B), 0x00u);
+
+		uint8_t tokenNonce = memoryManager.Read8(0xA1801C);
+		uint8_t tokenAck = memoryManager.Read8(0xA1801D);
+		uint8_t flags = memoryManager.Read8(0xA1801A);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1801C), tokenNonce);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1801D), tokenAck);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA1801A), flags);
+		EXPECT_NE(tokenNonce, 0x00u);
+		EXPECT_NE(tokenAck, 0x00u);
+		EXPECT_EQ(flags & 0x0Au, 0x02u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, BridgeWindowA160A180MixedRuntimeDebugInterleavingKeepsStatusParity) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA16012, 0x01);
+		memoryManager.DebugWrite8(0xA18008, 0x01);
+		memoryManager.Write16(0xA16014, 0x0F01);
+		memoryManager.DebugWrite8(0xA1800A, 0x00);
+		memoryManager.DebugWrite8(0xA1800B, 0x01);
+		memoryManager.Write8(0xA16015, 0x02);
+		memoryManager.DebugWrite8(0xA18009, 0x01);
+
+		for (uint32_t addr = 0xA1601A; addr <= 0xA1601F; addr++) {
+			EXPECT_EQ(memoryManager.Read8(addr), memoryManager.DebugRead8(addr));
+		}
+
+		for (uint32_t addr = 0xA18018; addr <= 0xA1801F; addr++) {
+			EXPECT_EQ(memoryManager.Read8(addr), memoryManager.DebugRead8(addr));
+		}
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, BridgeWindowA160AndA180WordParityMatchesByteLanes) {
@@ -476,15 +566,15 @@ namespace {
 		memoryManager.Write8(0xA18008, 0x12);
 		memoryManager.Write8(0xA18009, 0x34);
 
-		EXPECT_EQ(memoryManager.Read16(0xA16012), 0x9ABCu);
-		EXPECT_EQ(memoryManager.Read16(0xA18008), 0x1234u);
+		EXPECT_EQ(memoryManager.Read16(0xA16012), 0x0000u);
+		EXPECT_EQ(memoryManager.Read16(0xA18008), 0x0000u);
 
 		memoryManager.Write16(0xA16014, 0x5566);
 		memoryManager.Write16(0xA1800A, 0x7788);
-		EXPECT_EQ(memoryManager.Read8(0xA16014), 0x55u);
-		EXPECT_EQ(memoryManager.Read8(0xA16015), 0x66u);
-		EXPECT_EQ(memoryManager.Read8(0xA1800A), 0x77u);
-		EXPECT_EQ(memoryManager.Read8(0xA1800B), 0x88u);
+		EXPECT_EQ(memoryManager.Read8(0xA16014), 0x05u);
+		EXPECT_EQ(memoryManager.Read8(0xA16015), 0x02u);
+		EXPECT_EQ(memoryManager.Read8(0xA1800A), 0x01u);
+		EXPECT_EQ(memoryManager.Read8(0xA1800B), 0x00u);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, BridgeWindowA160AndA180StatusReplayAcrossSerializeRoundtrip) {

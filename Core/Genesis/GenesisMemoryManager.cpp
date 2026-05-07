@@ -307,12 +307,20 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_m32xCoprocFenceSignal = 0;
 	_m32xCoprocEventCount = 0;
 	_m32xCoprocDigest = 0;
+	_m32xCoprocEdgeCount = 0;
+	_m32xCoprocPhaseEpoch = 0;
+	_m32xCoprocFenceEpoch = 0;
+	_m32xCoprocArbiterLatch = 0;
 	_m32xHostDebuggerSignal = 0;
 	_m32xHostTasSignal = 0;
 	_m32xHostSaveStateSignal = 0;
 	_m32xHostCheatSignal = 0;
 	_m32xHostEventCount = 0;
 	_m32xHostDigest = 0;
+	_m32xHostEdgeCount = 0;
+	_m32xHostCommandNonce = 0;
+	_m32xHostAckToken = 0;
+	_m32xHostDeterminismLatch = 0;
 
 	_hasSram = false;
 	_sramStart = 0;
@@ -686,6 +694,54 @@ bool GenesisMemoryManager::Is32xHostToolingStatusAddress(uint32_t addr) const {
 	return addr >= 0xA18018 && addr <= 0xA1801F;
 }
 
+uint8_t GenesisMemoryManager::Normalize32xCoprocControlValue(uint32_t addr, uint8_t value) const {
+	if (addr == 0xA16012 || addr == 0xA16013) {
+		return (uint8_t)(value & 0x01);
+	}
+	if (addr == 0xA16014) {
+		return (uint8_t)(value & 0x0F);
+	}
+	if (addr == 0xA16015) {
+		return (uint8_t)(value & 0x03);
+	}
+	return value;
+}
+
+uint8_t GenesisMemoryManager::Normalize32xHostControlValue(uint32_t addr, uint8_t value) const {
+	if (addr >= 0xA18008 && addr <= 0xA1800B) {
+		return (uint8_t)(value & 0x01);
+	}
+	return value;
+}
+
+void GenesisMemoryManager::Recompute32xCoprocDigest() {
+	uint8_t digest = _m32xToolingDigest;
+	digest ^= _m32xCoprocMasterSignal;
+	digest ^= (uint8_t)(_m32xCoprocSlaveSignal << 1);
+	digest ^= (uint8_t)(_m32xCoprocPhaseSignal << 2);
+	digest ^= (uint8_t)(_m32xCoprocFenceSignal << 5);
+	digest ^= (uint8_t)(_m32xCoprocEventCount & 0xFF);
+	digest ^= (uint8_t)(_m32xCoprocEdgeCount & 0xFF);
+	digest ^= (uint8_t)(_m32xCoprocPhaseEpoch & 0xFF);
+	digest ^= (uint8_t)(_m32xCoprocFenceEpoch << 4);
+	digest ^= _m32xCoprocArbiterLatch;
+	_m32xCoprocDigest = digest;
+}
+
+void GenesisMemoryManager::Recompute32xHostDigest() {
+	uint8_t digest = _m32xCoprocDigest;
+	digest ^= _m32xHostDebuggerSignal;
+	digest ^= (uint8_t)(_m32xHostTasSignal << 1);
+	digest ^= (uint8_t)(_m32xHostSaveStateSignal << 2);
+	digest ^= (uint8_t)(_m32xHostCheatSignal << 3);
+	digest ^= (uint8_t)(_m32xHostEventCount & 0xFF);
+	digest ^= (uint8_t)(_m32xHostEdgeCount & 0xFF);
+	digest ^= _m32xHostCommandNonce;
+	digest ^= _m32xHostAckToken;
+	digest ^= _m32xHostDeterminismLatch;
+	_m32xHostDigest = digest;
+}
+
 void GenesisMemoryManager::UpdateSegaCdSubCpuControl(uint8_t value) {
 	uint8_t effectiveValue = value;
 	bool nextRunning = (effectiveValue & 0x01) != 0;
@@ -974,19 +1030,46 @@ void GenesisMemoryManager::Update32xCoprocContract(uint32_t addr, uint8_t value)
 		return;
 	}
 
-	uint8_t effectiveValue = value;
-	if (*target != effectiveValue) {
+	uint8_t effectiveValue = Normalize32xCoprocControlValue(addr, value);
+	uint8_t previousValue = *target;
+	if (previousValue != effectiveValue) {
 		*target = effectiveValue;
 		_m32xCoprocEventCount++;
+		_m32xCoprocEdgeCount++;
+
+		if (addr == 0xA16014) {
+			uint8_t previousPhase = (uint8_t)(previousValue & 0x0F);
+			uint8_t nextPhase = (uint8_t)(effectiveValue & 0x0F);
+			uint8_t phaseDelta = (uint8_t)((nextPhase - previousPhase) & 0x0F);
+			if (phaseDelta == 0) {
+				phaseDelta = 1;
+			}
+			_m32xCoprocPhaseEpoch = (uint16_t)(_m32xCoprocPhaseEpoch + phaseDelta);
+		}
+
+		if (addr == 0xA16015) {
+			uint8_t previousFence = (uint8_t)(previousValue & 0x03);
+			uint8_t nextFence = (uint8_t)(effectiveValue & 0x03);
+			if (((previousFence ^ nextFence) & 0x01) != 0) {
+				_m32xCoprocFenceEpoch++;
+			}
+		}
 	}
 
-	uint8_t digest = _m32xToolingDigest;
-	digest ^= _m32xCoprocMasterSignal;
-	digest ^= (uint8_t)(_m32xCoprocSlaveSignal << 1);
-	digest ^= (uint8_t)(_m32xCoprocPhaseSignal << 2);
-	digest ^= (uint8_t)(_m32xCoprocFenceSignal << 3);
-	digest ^= (uint8_t)(_m32xCoprocEventCount & 0xFF);
-	_m32xCoprocDigest = digest;
+	uint8_t arbiterLatch = 0;
+	arbiterLatch |= (_m32xCoprocMasterSignal & 0x01);
+	arbiterLatch |= (uint8_t)((_m32xCoprocSlaveSignal & 0x01) << 1);
+	arbiterLatch |= (uint8_t)((_m32xCoprocPhaseEpoch & 0x03) << 2);
+	arbiterLatch |= (uint8_t)((_m32xCoprocFenceEpoch & 0x03) << 4);
+	if ((_m32xCoprocMasterSignal & _m32xCoprocSlaveSignal & 0x01) != 0) {
+		arbiterLatch |= 0x40;
+	}
+	if ((_m32xCoprocEdgeCount & 0x01) != 0) {
+		arbiterLatch |= 0x80;
+	}
+	_m32xCoprocArbiterLatch = arbiterLatch;
+
+	Recompute32xCoprocDigest();
 }
 
 uint8_t GenesisMemoryManager::Get32xCoprocStatusByte(uint32_t addr) const {
@@ -1002,16 +1085,17 @@ uint8_t GenesisMemoryManager::Get32xCoprocStatusByte(uint32_t addr) const {
 		status |= (uint8_t)((_m32xCoprocSlaveSignal & 0x01) << 1);
 		status |= (uint8_t)((_m32xCoprocPhaseSignal & 0x03) << 2);
 		status |= (uint8_t)((_m32xCoprocFenceSignal & 0x03) << 4);
+		status |= (uint8_t)(_m32xCoprocArbiterLatch & 0xC0);
 		return status;
 	}
 	if (addr == 0xA1601D) {
 		return _m32xCoprocDigest;
 	}
 	if (addr == 0xA1601E) {
-		return (uint8_t)(_ioState.TranscriptLaneDigest & 0xFF);
+		return (uint8_t)(_m32xCoprocEdgeCount & 0xFF);
 	}
 	if (addr == 0xA1601F) {
-		return (uint8_t)(_ioState.DebugTranscriptLaneDigest & 0xFF);
+		return (uint8_t)((_m32xCoprocPhaseEpoch & 0x0F) | ((_m32xCoprocFenceEpoch & 0x0F) << 4));
 	}
 	return 0;
 }
@@ -1032,19 +1116,37 @@ void GenesisMemoryManager::Update32xHostToolingContract(uint32_t addr, uint8_t v
 		return;
 	}
 
-	uint8_t effectiveValue = value;
-	if (*target != effectiveValue) {
+	uint8_t effectiveValue = Normalize32xHostControlValue(addr, value);
+	uint8_t previousValue = *target;
+	if (previousValue != effectiveValue) {
 		*target = effectiveValue;
 		_m32xHostEventCount++;
+		_m32xHostEdgeCount++;
+
+		if (addr == 0xA18008) {
+			_m32xHostCommandNonce ^= effectiveValue ? 0x11 : 0x1D;
+			_m32xHostAckToken = (uint8_t)(_m32xHostAckToken + 0x03);
+		} else if (addr == 0xA18009) {
+			_m32xHostCommandNonce = (uint8_t)(_m32xHostCommandNonce + (effectiveValue ? 0x17 : 0x05));
+			_m32xHostAckToken ^= 0x05;
+		} else if (addr == 0xA1800A) {
+			_m32xHostCommandNonce = (uint8_t)((_m32xHostCommandNonce << 1) | (_m32xHostCommandNonce >> 7));
+			_m32xHostAckToken = (uint8_t)(_m32xHostAckToken + (effectiveValue ? 0x2B : 0x09));
+		} else if (addr == 0xA1800B) {
+			_m32xHostCommandNonce ^= 0x3C;
+			_m32xHostAckToken = (uint8_t)(_m32xHostAckToken + (effectiveValue ? 0x33 : 0x0F));
+		}
 	}
 
-	uint8_t digest = _m32xCoprocDigest;
-	digest ^= _m32xHostDebuggerSignal;
-	digest ^= (uint8_t)(_m32xHostTasSignal << 1);
-	digest ^= (uint8_t)(_m32xHostSaveStateSignal << 2);
-	digest ^= (uint8_t)(_m32xHostCheatSignal << 3);
-	digest ^= (uint8_t)(_m32xHostEventCount & 0xFF);
-	_m32xHostDigest = digest;
+	uint8_t determinismLatch = 0;
+	determinismLatch |= (_m32xHostDebuggerSignal & 0x01);
+	determinismLatch |= (uint8_t)((_m32xHostTasSignal & 0x01) << 1);
+	determinismLatch |= (uint8_t)((_m32xHostSaveStateSignal & 0x01) << 2);
+	determinismLatch |= (uint8_t)((_m32xHostCheatSignal & 0x01) << 3);
+	determinismLatch |= (uint8_t)((_m32xHostEdgeCount & 0x0F) << 4);
+	_m32xHostDeterminismLatch = determinismLatch;
+
+	Recompute32xHostDigest();
 }
 
 uint8_t GenesisMemoryManager::Get32xHostToolingStatusByte(uint32_t addr) const {
@@ -1055,22 +1157,24 @@ uint8_t GenesisMemoryManager::Get32xHostToolingStatusByte(uint32_t addr) const {
 		return (uint8_t)((_m32xHostEventCount >> 8) & 0xFF);
 	}
 	if (addr == 0xA1801A) {
-		return (uint8_t)(0x0F | ((_m32xHostEventCount & 0x03) << 4));
+		return _m32xHostDeterminismLatch;
 	}
 	if (addr == 0xA1801B) {
 		return _m32xHostDigest;
 	}
 	if (addr == 0xA1801C) {
-		return _controlManager ? _controlManager->GetDeterministicPortCapabilities(0) : 0;
+		return _m32xHostCommandNonce;
 	}
 	if (addr == 0xA1801D) {
-		return _controlManager ? _controlManager->GetDeterministicPortDigest(0) : 0;
+		return _m32xHostAckToken;
 	}
 	if (addr == 0xA1801E) {
-		return _controlManager ? _controlManager->GetDeterministicPortCapabilities(1) : 0;
+		uint8_t capability = _controlManager ? _controlManager->GetDeterministicPortCapabilities(0) : 0;
+		return (uint8_t)(capability ^ _m32xHostDeterminismLatch);
 	}
 	if (addr == 0xA1801F) {
-		return _controlManager ? _controlManager->GetDeterministicPortDigest(1) : 0;
+		uint8_t digest = _controlManager ? _controlManager->GetDeterministicPortDigest(0) : 0;
+		return (uint8_t)(digest ^ _m32xHostDigest);
 	}
 	return 0;
 }
@@ -1750,6 +1854,11 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		}
 
 		uint8_t effectiveValue = value;
+		if (Is32xCoprocControlAddress(addr)) {
+			effectiveValue = Normalize32xCoprocControlValue(addr, effectiveValue);
+		} else if (Is32xHostToolingControlAddress(addr)) {
+			effectiveValue = Normalize32xHostControlValue(addr, effectiveValue);
+		}
 		bridgeSlot[bridgeIndex] = effectiveValue;
 		_openBus = effectiveValue;
 		if (IsSegaCdSubCpuControlAddress(addr)) {
@@ -2709,6 +2818,11 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		}
 
 		uint8_t effectiveValue = value;
+		if (Is32xCoprocControlAddress(effectiveAddr)) {
+			effectiveValue = Normalize32xCoprocControlValue(effectiveAddr, effectiveValue);
+		} else if (Is32xHostToolingControlAddress(effectiveAddr)) {
+			effectiveValue = Normalize32xHostControlValue(effectiveAddr, effectiveValue);
+		}
 		bridgeSlot[bridgeIndex] = effectiveValue;
 		_openBus = effectiveValue;
 		if (IsSegaCdSubCpuControlAddress(effectiveAddr)) {
@@ -2826,12 +2940,20 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_m32xCoprocFenceSignal);
 	SV(_m32xCoprocEventCount);
 	SV(_m32xCoprocDigest);
+	SV(_m32xCoprocEdgeCount);
+	SV(_m32xCoprocPhaseEpoch);
+	SV(_m32xCoprocFenceEpoch);
+	SV(_m32xCoprocArbiterLatch);
 	SV(_m32xHostDebuggerSignal);
 	SV(_m32xHostTasSignal);
 	SV(_m32xHostSaveStateSignal);
 	SV(_m32xHostCheatSignal);
 	SV(_m32xHostEventCount);
 	SV(_m32xHostDigest);
+	SV(_m32xHostEdgeCount);
+	SV(_m32xHostCommandNonce);
+	SV(_m32xHostAckToken);
+	SV(_m32xHostDeterminismLatch);
 	SVArray(_segaCdBridgeA120, (uint32_t)sizeof(_segaCdBridgeA120));
 	SVArray(_segaCdBridgeA130, (uint32_t)sizeof(_segaCdBridgeA130));
 	SVArray(_segaCdBridgeA140, (uint32_t)sizeof(_segaCdBridgeA140));
@@ -2957,12 +3079,20 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_m32xCoprocFenceSignal = 0;
 	_m32xCoprocEventCount = 0;
 	_m32xCoprocDigest = 0;
+	_m32xCoprocEdgeCount = 0;
+	_m32xCoprocPhaseEpoch = 0;
+	_m32xCoprocFenceEpoch = 0;
+	_m32xCoprocArbiterLatch = 0;
 	_m32xHostDebuggerSignal = 0;
 	_m32xHostTasSignal = 0;
 	_m32xHostSaveStateSignal = 0;
 	_m32xHostCheatSignal = 0;
 	_m32xHostEventCount = 0;
 	_m32xHostDigest = 0;
+	_m32xHostEdgeCount = 0;
+	_m32xHostCommandNonce = 0;
+	_m32xHostAckToken = 0;
+	_m32xHostDeterminismLatch = 0;
 
 	ClearDebugTranscriptLane();
 }
