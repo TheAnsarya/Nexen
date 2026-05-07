@@ -645,6 +645,9 @@ namespace {
 		// Line 0 H-scroll: plane A = 16.
 		vram[0x0400] = 0x00;
 		vram[0x0401] = 0x10;
+		// Line 2 H-scroll: plane A = 16 (sample uses y=2).
+		vram[0x0408] = 0x00;
+		vram[0x0409] = 0x10;
 
 		constexpr uint16_t kTileIndex = 0x0055;
 		constexpr uint16_t kEntry = 0xF855;
@@ -691,6 +694,9 @@ namespace {
 		// Line 0 H-scroll: plane B = 16.
 		vram[0x0402] = 0x00;
 		vram[0x0403] = 0x10;
+		// Line 2 H-scroll: plane B = 16 (sample uses y=2).
+		vram[0x040A] = 0x00;
+		vram[0x040B] = 0x10;
 
 		constexpr uint16_t kTileIndex = 0x0034;
 		constexpr uint16_t kEntry = 0xF834;
@@ -720,6 +726,89 @@ namespace {
 		EXPECT_EQ(info.HorizontalMirroring, NullableBoolean::True);
 		EXPECT_EQ(info.VerticalMirroring, NullableBoolean::True);
 		EXPECT_EQ(info.PixelData, 0x0c);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapTileInfoUsesSampledYForLineScrollSelection) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x8200);
+		vdp.WriteControlPort(0x8B03);
+		vdp.WriteControlPort(0x8D01);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+
+		// H-scroll table at $0400: line 0 uses scroll 0, line 1 uses scroll 8.
+		vram[0x0400] = 0x00;
+		vram[0x0401] = 0x00;
+		vram[0x0404] = 0x00;
+		vram[0x0405] = 0x08;
+
+		constexpr uint16_t kTileCol0 = 0x0009;
+		constexpr uint16_t kTileCol1 = 0x012a;
+		vram[0x0000] = (uint8_t)((kTileCol0 >> 8) & 0xFFu);
+		vram[0x0001] = (uint8_t)(kTileCol0 & 0xFFu);
+		vram[0x0002] = (uint8_t)((kTileCol1 >> 8) & 0xFFu);
+		vram[0x0003] = (uint8_t)(kTileCol1 & 0xFFu);
+
+		GenesisVdpState state = vdp.GetState();
+		state.VCounter = 0;
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+
+		GetTilemapOptions options = {};
+		options.Layer = 0;
+		options.DisplayMode = TilemapDisplayMode::Default;
+		DebugTilemapTileInfo info = tools.GetTilemapTileInfo(0, 1, vram, options, (BaseState&)state, (BaseState&)ppuState);
+
+		EXPECT_EQ(info.Column, 1);
+		EXPECT_EQ(info.Row, 0);
+		EXPECT_EQ(info.TileMapAddress, 0x0002);
+		EXPECT_EQ(info.TileIndex, kTileCol1 & 0x07FF);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapTileInfoUsesSampledYGroupForCellScrollSelection) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x8200);
+		vdp.WriteControlPort(0x8B02);
+		vdp.WriteControlPort(0x8D01);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+
+		// Cell mode: group 0 at $0400 uses scroll 0, group 8+ at $0420 uses scroll 8.
+		vram[0x0400] = 0x00;
+		vram[0x0401] = 0x00;
+		vram[0x0420] = 0x00;
+		vram[0x0421] = 0x08;
+
+		constexpr uint16_t kTileCol0 = 0x0010;
+		constexpr uint16_t kTileCol1 = 0x0133;
+		vram[0x0000] = (uint8_t)((kTileCol0 >> 8) & 0xFFu);
+		vram[0x0001] = (uint8_t)(kTileCol0 & 0xFFu);
+		vram[0x0002] = (uint8_t)((kTileCol1 >> 8) & 0xFFu);
+		vram[0x0003] = (uint8_t)(kTileCol1 & 0xFFu);
+		// Row 1, column 1 is selected after sampled y/group scroll in this test.
+		vram[0x0042] = (uint8_t)((kTileCol1 >> 8) & 0xFFu);
+		vram[0x0043] = (uint8_t)(kTileCol1 & 0xFFu);
+
+		GenesisVdpState state = vdp.GetState();
+		state.VCounter = 0;
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+
+		GetTilemapOptions options = {};
+		options.Layer = 0;
+		options.DisplayMode = TilemapDisplayMode::Default;
+		DebugTilemapTileInfo info = tools.GetTilemapTileInfo(0, 9, vram, options, (BaseState&)state, (BaseState&)ppuState);
+
+		EXPECT_EQ(info.Column, 1);
+		EXPECT_EQ(info.Row, 1);
+		EXPECT_EQ(info.TileMapAddress, 0x0042);
+		EXPECT_EQ(info.TileIndex, kTileCol1 & 0x07FF);
 	}
 
 	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapReportsCellScrollUsingActiveLineGroup) {

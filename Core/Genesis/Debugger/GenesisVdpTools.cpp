@@ -217,7 +217,13 @@ DebugTilemapTileInfo GenesisVdpTools::GetTilemapTileInfo(uint32_t x, uint32_t y,
 	uint16_t hScrollBase = GetHScrollBase(reg13);
 	uint16_t visibleHeight = (state.Registers[1] & 0x08) ? 240u : 224u;
 	uint16_t activeLine = (uint16_t)std::min<uint16_t>(state.VCounter, (uint16_t)(visibleHeight - 1u));
-	uint16_t scrollX = GetHScroll(vram, reg11, hScrollBase, activeLine, planeA);
+	uint16_t sampledLine = (uint16_t)std::min<uint32_t>(y, (uint32_t)(visibleHeight - 1u));
+	uint16_t hScrollLine = activeLine;
+	uint8_t hScrollMode = reg11 & 0x03u;
+	if (hScrollMode == 0x02u || hScrollMode == 0x03u) {
+		hScrollLine = sampledLine;
+	}
+	uint16_t scrollX = GetHScroll(vram, reg11, hScrollBase, hScrollLine, planeA);
 
 	uint32_t planeWidthPx = planeWidthTiles * 8u;
 	uint32_t planeHeightPx = planeHeightTiles * 8u;
