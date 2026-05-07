@@ -38,6 +38,9 @@ private:
 	uint16_t _currentLineCycleTarget = 488;
 	uint8_t _lineCycleRemainder = 0;
 	uint64_t _lastRunCycle = 0;
+	bool _lineDisplayEnabled = false;
+	bool _lineH40Mode = true;
+	uint16_t _lineScreenWidth = 320;
 
 	// Screen dimensions based on mode
 	uint16_t _screenWidth = 320;

@@ -73,6 +73,9 @@ void GenesisVdp::Reset(bool hardReset) {
 	_screenWidth = IsH40Mode() ? 320 : 256;
 	_screenHeight = 224;
 	_totalLines = 262; // NTSC
+	_lineDisplayEnabled = IsDisplayEnabled();
+	_lineH40Mode = IsH40Mode();
+	_lineScreenWidth = _screenWidth;
 
 	_scanline = 0;
 	_hCounter = 0;
@@ -120,6 +123,11 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 			ProcessScanline();
 			_scanline++;
 			_state.VCounter = _scanline;
+			// Latch mode/display at scanline boundaries to avoid mid-line timing drift.
+			_lineDisplayEnabled = IsDisplayEnabled();
+			_lineH40Mode = IsH40Mode();
+			_lineScreenWidth = _lineH40Mode ? 320 : 256;
+			_screenWidth = _lineScreenWidth;
 
 			// Enter VBlank at the start of the first VBlank line.
 			if (_scanline == _screenHeight) {
@@ -196,7 +204,7 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 void GenesisVdp::ProcessScanline() {
 	if (_scanline < _screenHeight) {
 		// Active display — render this scanline
-		if (IsDisplayEnabled()) {
+		if (_lineDisplayEnabled) {
 			if (_displayDisabledLogged) {
 				MessageManager::Log(std::format("[Genesis][VDP] Display enabled at frame {} scanline {}", _state.FrameCount, _scanline));
 				_displayDisabledLogged = false;
@@ -210,7 +218,7 @@ void GenesisVdp::ProcessScanline() {
 			// Display off — fill with backdrop color
 			uint16_t* buf = _outputBuffers[_currentBuffer];
 			uint16_t bgcolor = CramToRgb555(_cram[GetBackgroundPaletteIndex() * 16 + GetBackgroundColorIndex()]);
-			for (uint16_t x = 0; x < _screenWidth; x++) {
+			for (uint16_t x = 0; x < _lineScreenWidth; x++) {
 				buf[_scanline * MaxScreenWidth + x] = bgcolor;
 			}
 		}
@@ -235,7 +243,7 @@ void GenesisVdp::RenderScanline() {
 
 	// Background color (backdrop)
 	uint16_t bgcolor = CramToRgb555(_cram[GetBackgroundPaletteIndex() * 16 + GetBackgroundColorIndex()]);
-	for (int x = 0; x < _screenWidth; x++) {
+	for (int x = 0; x < _lineScreenWidth; x++) {
 		lineBuffer[x] = bgcolor;
 	}
 
@@ -250,7 +258,7 @@ void GenesisVdp::RenderScanline() {
 
 	// Copy to output buffer
 	uint16_t* buf = _outputBuffers[_currentBuffer];
-	memcpy(&buf[_scanline * MaxScreenWidth], lineBuffer, _screenWidth * sizeof(uint16_t));
+	memcpy(&buf[_scanline * MaxScreenWidth], lineBuffer, _lineScreenWidth * sizeof(uint16_t));
 }
 
 void GenesisVdp::RenderBackground(uint16_t* lineBuffer, uint8_t planeIndex, bool highPriority) {
@@ -684,6 +692,7 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 		// Register write: 100R RRRR DDDD DDDD
 		uint8_t reg = (value >> 8) & 0x1F;
 		uint8_t data = value & 0xFF;
+		bool atLineBoundary = _hCounter == 0;
 		bool displayEnabledBefore = IsDisplayEnabled();
 		if (reg < 24) {
 			_state.Registers[reg] = data;
@@ -694,12 +703,20 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 		if (reg == VdpReg::HIntCounter) _state.HIntCounter = data;
 
 		// Update screen mode
-		if (reg == 12) {
-			_screenWidth = IsH40Mode() ? 320 : 256;
+		// Screen width is applied on scanline boundaries via line latch in Run().
+		// If a write occurs exactly at the line boundary, apply it immediately to
+		// the line latch so pre-line setup affects the upcoming rendered line.
+		if (reg == 12 && atLineBoundary) {
+			_lineH40Mode = IsH40Mode();
+			_lineScreenWidth = _lineH40Mode ? 320 : 256;
+			_screenWidth = _lineScreenWidth;
 		}
 
 		if (reg == 1) {
 			bool displayEnabledAfter = IsDisplayEnabled();
+			if (atLineBoundary) {
+				_lineDisplayEnabled = displayEnabledAfter;
+			}
 			if (displayEnabledAfter != displayEnabledBefore) {
 				MessageManager::Log(std::format("[Genesis][VDP] Display {} via R1 write (${:#04x})", displayEnabledAfter ? "enabled" : "disabled", data));
 			}
@@ -735,10 +752,10 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 }
 
 uint8_t GenesisVdp::GetDmaWordPeriodCycles() const {
-	bool blanking = !IsDisplayEnabled() || _scanline >= _screenHeight;
+	bool blanking = !_lineDisplayEnabled || _scanline >= _screenHeight;
 	if (blanking) {
 		// Approximation informed by Mesen2-Expanded: blanking DMA is faster.
-		return IsH40Mode() ? 5 : 6;
+		return _lineH40Mode ? 5 : 6;
 	}
 
 	// Active display DMA uses explicit external-slot gating.
@@ -784,7 +801,7 @@ bool GenesisVdp::IsActiveDisplayExternalDmaSlot() const {
 		lookupInitialized = true;
 	}
 
-	return IsH40Mode() ? h40Lookup[cycle] : h32Lookup[cycle];
+	return _lineH40Mode ? h40Lookup[cycle] : h32Lookup[cycle];
 }
 
 void GenesisVdp::ProcessDma() {
@@ -807,7 +824,7 @@ void GenesisVdp::ProcessDma() {
 		if (_dmaLatchedMode <= 1) {
 			_state.DmaMode = 0;
 			// Startup latency approximation for 68K-bus DMA in the core-cycle domain.
-			_dmaStartupDelayCyclesRemaining = IsH40Mode() ? 7 : 9;
+			_dmaStartupDelayCyclesRemaining = _lineH40Mode ? 7 : 9;
 			_dmaBusCycleRemainder = 0;
 		} else if (_dmaLatchedMode == 2) {
 			_state.DmaMode = 1;
@@ -835,7 +852,7 @@ void GenesisVdp::ProcessDma() {
 			return;
 		}
 
-		bool activeDisplay = IsDisplayEnabled() && _scanline < _screenHeight;
+		bool activeDisplay = _lineDisplayEnabled && _scanline < _screenHeight;
 		if (activeDisplay) {
 			_dmaBusCycleRemainder = 0;
 			if (!IsActiveDisplayExternalDmaSlot()) {
@@ -957,6 +974,9 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_currentLineCycleTarget);
 	SV(_lineCycleRemainder);
 	SV(_lastRunCycle);
+	SV(_lineDisplayEnabled);
+	SV(_lineH40Mode);
+	SV(_lineScreenWidth);
 	SV(_currentBuffer);
 	SV(_screenWidth);
 	SV(_screenHeight);
