@@ -1211,6 +1211,162 @@ namespace {
 		EXPECT_EQ((uint32_t)tileInfoH32.TileIndex, (kEntryH32 & 0x07FFu));
 	}
 
+	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapTileInfoMaintainsParityAcrossH32ToH40MixedLineAndPerColumnScrollTransitionPlaneA) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x8200);
+		vdp.WriteControlPort(0x8B07);
+		vdp.WriteControlPort(0x8D01);
+		vdp.WriteControlPort(0x8C80);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+
+		// Line 2: plane A h-scroll = 16, plane B h-scroll = 0.
+		vram[0x0408] = 0x00;
+		vram[0x0409] = 0x10;
+		vram[0x040A] = 0x00;
+		vram[0x040B] = 0x00;
+
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+		GetTilemapOptions mapOptions = {};
+		mapOptions.Layer = 0;
+		mapOptions.DisplayMode = TilemapDisplayMode::Default;
+
+		std::array<uint32_t, 64> palette = {};
+		BuildArgbPaletteFromCram(vdp, palette);
+
+		constexpr uint32_t kSampleX = 0;
+		constexpr uint32_t kSampleY = 2;
+		constexpr uint16_t kEntryH32 = 0x0146;
+		constexpr uint16_t kEntryH40 = 0x0174;
+
+		GenesisVdpState stateH32 = vdp.GetState();
+		stateH32.VCounter = (uint16_t)kSampleY;
+		stateH32.Vsram[0] = 0x0000;
+		stateH32.Vsram[2] = 0x0010;
+		GenesisVdpState ppuStateH32 = stateH32;
+
+		FrameInfo mapSizeH32 = tools.GetTilemapSize(mapOptions, (BaseState&)stateH32);
+		std::vector<uint32_t> mapBufferH32(mapSizeH32.Width * mapSizeH32.Height);
+		DebugTilemapInfo mapInfoH32 = tools.GetTilemap(mapOptions, (BaseState&)stateH32, (BaseState&)ppuStateH32, vram, palette.data(), mapBufferH32.data());
+
+		uint32_t expectedColH32 = ((kSampleX + mapInfoH32.ScrollX) % mapSizeH32.Width) / 8u;
+		uint32_t expectedRowH32 = ((kSampleY + mapInfoH32.ScrollY) % mapSizeH32.Height) / 8u;
+		uint32_t expectedAddrH32 = ((expectedRowH32 * (mapSizeH32.Width / 8u) + expectedColH32) * 2u) & 0xFFFFu;
+		vram[expectedAddrH32] = (uint8_t)((kEntryH32 >> 8) & 0xFFu);
+		vram[(expectedAddrH32 + 1u) & 0xFFFFu] = (uint8_t)(kEntryH32 & 0xFFu);
+
+		DebugTilemapTileInfo tileInfoH32 = tools.GetTilemapTileInfo(kSampleX, kSampleY, vram, mapOptions, (BaseState&)stateH32, (BaseState&)ppuStateH32);
+		EXPECT_EQ((uint32_t)tileInfoH32.Column, expectedColH32);
+		EXPECT_EQ((uint32_t)tileInfoH32.Row, expectedRowH32);
+		EXPECT_EQ((uint32_t)tileInfoH32.TileMapAddress, expectedAddrH32);
+		EXPECT_EQ((uint32_t)tileInfoH32.TileIndex, (kEntryH32 & 0x07FFu));
+
+		vdp.WriteControlPort(0x8C81);
+
+		GenesisVdpState stateH40 = vdp.GetState();
+		stateH40.VCounter = (uint16_t)kSampleY;
+		stateH40.Vsram[0] = stateH32.Vsram[0];
+		stateH40.Vsram[2] = stateH32.Vsram[2];
+		GenesisVdpState ppuStateH40 = stateH40;
+
+		FrameInfo mapSizeH40 = tools.GetTilemapSize(mapOptions, (BaseState&)stateH40);
+		std::vector<uint32_t> mapBufferH40(mapSizeH40.Width * mapSizeH40.Height);
+		DebugTilemapInfo mapInfoH40 = tools.GetTilemap(mapOptions, (BaseState&)stateH40, (BaseState&)ppuStateH40, vram, palette.data(), mapBufferH40.data());
+
+		uint32_t expectedColH40 = ((kSampleX + mapInfoH40.ScrollX) % mapSizeH40.Width) / 8u;
+		uint32_t expectedRowH40 = ((kSampleY + mapInfoH40.ScrollY) % mapSizeH40.Height) / 8u;
+		uint32_t expectedAddrH40 = ((expectedRowH40 * (mapSizeH40.Width / 8u) + expectedColH40) * 2u) & 0xFFFFu;
+		vram[expectedAddrH40] = (uint8_t)((kEntryH40 >> 8) & 0xFFu);
+		vram[(expectedAddrH40 + 1u) & 0xFFFFu] = (uint8_t)(kEntryH40 & 0xFFu);
+
+		DebugTilemapTileInfo tileInfoH40 = tools.GetTilemapTileInfo(kSampleX, kSampleY, vram, mapOptions, (BaseState&)stateH40, (BaseState&)ppuStateH40);
+		EXPECT_EQ((uint32_t)tileInfoH40.Column, expectedColH40);
+		EXPECT_EQ((uint32_t)tileInfoH40.Row, expectedRowH40);
+		EXPECT_EQ((uint32_t)tileInfoH40.TileMapAddress, expectedAddrH40);
+		EXPECT_EQ((uint32_t)tileInfoH40.TileIndex, (kEntryH40 & 0x07FFu));
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapTileInfoMaintainsParityAcrossH40ToH32MixedLineAndPerColumnScrollTransitionPlaneB) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x8400);
+		vdp.WriteControlPort(0x8B07);
+		vdp.WriteControlPort(0x8D01);
+		vdp.WriteControlPort(0x8C81);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+
+		// Line 2: plane A h-scroll = 0, plane B h-scroll = 16.
+		vram[0x0408] = 0x00;
+		vram[0x0409] = 0x00;
+		vram[0x040A] = 0x00;
+		vram[0x040B] = 0x10;
+
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+		GetTilemapOptions mapOptions = {};
+		mapOptions.Layer = 1;
+		mapOptions.DisplayMode = TilemapDisplayMode::Default;
+
+		std::array<uint32_t, 64> palette = {};
+		BuildArgbPaletteFromCram(vdp, palette);
+
+		constexpr uint32_t kSampleX = 0;
+		constexpr uint32_t kSampleY = 2;
+		constexpr uint16_t kEntryH40 = 0x0151;
+		constexpr uint16_t kEntryH32 = 0x0129;
+
+		GenesisVdpState stateH40 = vdp.GetState();
+		stateH40.VCounter = (uint16_t)kSampleY;
+		stateH40.Vsram[1] = 0x0000;
+		stateH40.Vsram[3] = 0x0010;
+		GenesisVdpState ppuStateH40 = stateH40;
+
+		FrameInfo mapSizeH40 = tools.GetTilemapSize(mapOptions, (BaseState&)stateH40);
+		std::vector<uint32_t> mapBufferH40(mapSizeH40.Width * mapSizeH40.Height);
+		DebugTilemapInfo mapInfoH40 = tools.GetTilemap(mapOptions, (BaseState&)stateH40, (BaseState&)ppuStateH40, vram, palette.data(), mapBufferH40.data());
+
+		uint32_t expectedColH40 = ((kSampleX + mapInfoH40.ScrollX) % mapSizeH40.Width) / 8u;
+		uint32_t expectedRowH40 = ((kSampleY + mapInfoH40.ScrollY) % mapSizeH40.Height) / 8u;
+		uint32_t expectedAddrH40 = ((expectedRowH40 * (mapSizeH40.Width / 8u) + expectedColH40) * 2u) & 0xFFFFu;
+		vram[expectedAddrH40] = (uint8_t)((kEntryH40 >> 8) & 0xFFu);
+		vram[(expectedAddrH40 + 1u) & 0xFFFFu] = (uint8_t)(kEntryH40 & 0xFFu);
+
+		DebugTilemapTileInfo tileInfoH40 = tools.GetTilemapTileInfo(kSampleX, kSampleY, vram, mapOptions, (BaseState&)stateH40, (BaseState&)ppuStateH40);
+		EXPECT_EQ((uint32_t)tileInfoH40.Column, expectedColH40);
+		EXPECT_EQ((uint32_t)tileInfoH40.Row, expectedRowH40);
+		EXPECT_EQ((uint32_t)tileInfoH40.TileMapAddress, expectedAddrH40);
+		EXPECT_EQ((uint32_t)tileInfoH40.TileIndex, (kEntryH40 & 0x07FFu));
+
+		vdp.WriteControlPort(0x8C80);
+
+		GenesisVdpState stateH32 = vdp.GetState();
+		stateH32.VCounter = (uint16_t)kSampleY;
+		stateH32.Vsram[1] = stateH40.Vsram[1];
+		stateH32.Vsram[3] = stateH40.Vsram[3];
+		GenesisVdpState ppuStateH32 = stateH32;
+
+		FrameInfo mapSizeH32 = tools.GetTilemapSize(mapOptions, (BaseState&)stateH32);
+		std::vector<uint32_t> mapBufferH32(mapSizeH32.Width * mapSizeH32.Height);
+		DebugTilemapInfo mapInfoH32 = tools.GetTilemap(mapOptions, (BaseState&)stateH32, (BaseState&)ppuStateH32, vram, palette.data(), mapBufferH32.data());
+
+		uint32_t expectedColH32 = ((kSampleX + mapInfoH32.ScrollX) % mapSizeH32.Width) / 8u;
+		uint32_t expectedRowH32 = ((kSampleY + mapInfoH32.ScrollY) % mapSizeH32.Height) / 8u;
+		uint32_t expectedAddrH32 = ((expectedRowH32 * (mapSizeH32.Width / 8u) + expectedColH32) * 2u) & 0xFFFFu;
+		vram[expectedAddrH32] = (uint8_t)((kEntryH32 >> 8) & 0xFFu);
+		vram[(expectedAddrH32 + 1u) & 0xFFFFu] = (uint8_t)(kEntryH32 & 0xFFu);
+
+		DebugTilemapTileInfo tileInfoH32 = tools.GetTilemapTileInfo(kSampleX, kSampleY, vram, mapOptions, (BaseState&)stateH32, (BaseState&)ppuStateH32);
+		EXPECT_EQ((uint32_t)tileInfoH32.Column, expectedColH32);
+		EXPECT_EQ((uint32_t)tileInfoH32.Row, expectedRowH32);
+		EXPECT_EQ((uint32_t)tileInfoH32.TileMapAddress, expectedAddrH32);
+		EXPECT_EQ((uint32_t)tileInfoH32.TileIndex, (kEntryH32 & 0x07FFu));
+	}
+
 	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapReportsCellScrollUsingActiveLineGroup) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
