@@ -335,6 +335,9 @@
 			<ClCompile Include="Genesis\GenesisStartupLogoProfileTests.cpp">
 				<PrecompiledHeader>Use</PrecompiledHeader>
 			</ClCompile>
+			<ClCompile Include="Genesis\GenesisStartupLogoBoundaryTests.cpp">
+				<PrecompiledHeader>Use</PrecompiledHeader>
+			</ClCompile>
 			<ClCompile Include="Genesis\GenesisStartupLogoStressTests.cpp">
 				<PrecompiledHeader>Use</PrecompiledHeader>
 			</ClCompile>

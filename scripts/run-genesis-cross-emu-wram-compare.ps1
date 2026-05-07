@@ -378,6 +378,26 @@ function Find-FirstDifference {
 	return -1
 }
 
+function Get-StartupEventCount {
+	param(
+		[string[]]$Lines,
+		[string]$Token
+	)
+
+	if ($null -eq $Lines -or [string]::IsNullOrWhiteSpace($Token)) {
+		return 0
+	}
+
+	$count = 0
+	foreach ($line in $Lines) {
+		if ($line -like "*$Token*") {
+			$count++
+		}
+	}
+
+	return $count
+}
+
 $romCandidates = @()
 if (-not [string]::IsNullOrWhiteSpace($RomPath)) {
 	$romCandidates += $RomPath
@@ -441,7 +461,11 @@ if ($null -ne $mesenExeDir) {
 	$mesenTraceCandidates += (Join-Path $mesenExeDir "reference\cpu_ram_trace.log")
 }
 $mesenTraceCandidates += (Join-Path $mesenDocumentsDir "reference\cpu_ram_trace.log")
-$resolvedReportPath = [System.IO.Path]::GetFullPath((Join-Path $resolvedNexenDir $ReportPath))
+$resolvedReportPath = $ReportPath
+if (-not [System.IO.Path]::IsPathRooted($resolvedReportPath)) {
+	$resolvedReportPath = Join-Path $resolvedNexenDir $resolvedReportPath
+}
+$resolvedReportPath = [System.IO.Path]::GetFullPath($resolvedReportPath)
 $reportDir = Split-Path -Parent $resolvedReportPath
 if (!(Test-Path -LiteralPath $reportDir)) {
 	New-Item -Path $reportDir -ItemType Directory -Force | Out-Null
@@ -627,6 +651,10 @@ $nexenStartupLines = @()
 $mesenStartupHash = "missing"
 $nexenStartupHash = "missing"
 $startupFirstDiff = -1
+$mesenStartupCheckpointCount = 0
+$nexenStartupCheckpointCount = 0
+$mesenStartupDisplayTransitionCount = 0
+$nexenStartupDisplayTransitionCount = 0
 
 if ($null -ne $mesenTracePath) {
 	$mesenLines = Get-TraceLines -Path $mesenTracePath
@@ -654,6 +682,10 @@ if ($mesenLines.Count -gt 0 -or $nexenLines.Count -gt 0) {
 
 if ($mesenStartupLines.Count -gt 0 -or $nexenStartupLines.Count -gt 0) {
 	$startupFirstDiff = Find-FirstDifference -Left $mesenStartupLines -Right $nexenStartupLines
+	$mesenStartupCheckpointCount = Get-StartupEventCount -Lines $mesenStartupLines -Token "STARTUP_CHECKPOINT"
+	$nexenStartupCheckpointCount = Get-StartupEventCount -Lines $nexenStartupLines -Token "STARTUP_CHECKPOINT"
+	$mesenStartupDisplayTransitionCount = Get-StartupEventCount -Lines $mesenStartupLines -Token "VDP_DISP_TGL"
+	$nexenStartupDisplayTransitionCount = Get-StartupEventCount -Lines $nexenStartupLines -Token "VDP_DISP_TGL"
 }
 
 $report = New-Object System.Collections.Generic.List[string]
@@ -679,6 +711,10 @@ $report.Add("mesenLines=$($mesenLines.Count)")
 $report.Add("nexenLines=$($nexenLines.Count)")
 $report.Add("mesenStartupLines=$($mesenStartupLines.Count)")
 $report.Add("nexenStartupLines=$($nexenStartupLines.Count)")
+$report.Add("mesenStartupCheckpointCount=$mesenStartupCheckpointCount")
+$report.Add("nexenStartupCheckpointCount=$nexenStartupCheckpointCount")
+$report.Add("mesenStartupDisplayTransitionCount=$mesenStartupDisplayTransitionCount")
+$report.Add("nexenStartupDisplayTransitionCount=$nexenStartupDisplayTransitionCount")
 $report.Add("mesenHash=$mesenHash")
 $report.Add("nexenHash=$nexenHash")
 $report.Add("mesenStartupHash=$mesenStartupHash")

@@ -1,0 +1,40 @@
+{
+  "generatedUtc": "2026-05-07T21:32:27.4143404Z",
+  "frameStart": 0,
+  "frameEnd": 600,
+  "autoStopTimeoutSeconds": 45,
+  "maxLines": 1200000,
+  "romCount": 1,
+  "regressionCount": 0,
+  "missingMesenCount": 1,
+  "anyErrors": false,
+  "baselinePath": "C:\\Users\\me\\source\\repos\\Nexen\\reference\\startup-logo-baseline.json",
+  "baselineUpdated": false,
+  "results": [
+    {
+      "romKey": "sonic-the-hedgehog-usa-europe",
+      "romPath": "C:\\~reference-roms\\genesis\\Sonic The Hedgehog (USA, Europe).md",
+      "reportPath": "C:\\Users\\me\\source\\repos\\Nexen\\reference\\startup-logo-regression\\cross-emu-sonic-the-hedgehog-usa-europe-20260507-213047.txt",
+      "compareExitCode": 3,
+      "firstDiffIndex": 0,
+      "startupFirstDiffIndex": 0,
+      "nexenHash": "b2e05061184b79241ec146e349ceb3c431e1ee197b01dfa906569885522af8ea",
+      "mesenHash": "missing",
+      "nexenStartupHash": "e1033875cac231451ef949a080bfc066a9002ecd215668b550d5a03bb4c9859f",
+      "mesenStartupHash": "missing",
+      "nexenLines": 257366,
+      "mesenLines": 0,
+      "nexenStartupLines": 33817,
+      "mesenStartupLines": 0,
+      "nexenStartupCheckpointCount": 0,
+      "mesenStartupCheckpointCount": 0,
+      "nexenStartupDisplayTransitionCount": 1,
+      "mesenStartupDisplayTransitionCount": 0,
+      "mesenTraceMissing": true,
+      "mesenStartupTraceMissing": true,
+      "mesenRunSkipped": false,
+      "regressions": [],
+      "regressionCount": 0
+    }
+  ]
+}
