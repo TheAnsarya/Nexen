@@ -1677,6 +1677,99 @@ namespace {
 		EXPECT_NE(screenPreview[previewRowStart], palette[33]);
 	}
 
+	TEST(GenesisVdpObjectRunSafetyTests, MaskSpriteVisibilityParityMaintainsAcrossH32ToH40Transition) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.GetCramPointer()[0] = 0x0000;
+		vdp.GetCramPointer()[1] = 0x000e;
+
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+		GetSpritePreviewOptions options = {};
+		options.Background = SpriteBackground::Gray;
+
+		std::array<uint32_t, 64> palette = {};
+		BuildArgbPaletteFromCram(vdp, palette);
+
+		auto runAndAssertMaskBehavior = [&](bool h40, uint16_t satBase, uint8_t reg5) {
+			ConfigureSpriteRenderMode(vdp, h40, reg5);
+
+			uint8_t* vram = vdp.GetVramPointer();
+			memset(vram, 0, 0x10000);
+			constexpr uint16_t kTileIndex = 4;
+			WriteSolidSpriteTileRow0(vram, kTileIndex, 1);
+
+			WriteSpriteSatEntry(vram, satBase, 0, 128, 1, 1, 1, (uint16_t)(0x8000 | kTileIndex), 128);
+			WriteSpriteSatEntry(vram, satBase, 1, 128, 1, 1, 2, (uint16_t)(0x8000 | kTileIndex), 0);
+			WriteSpriteSatEntry(vram, satBase, 2, 128, 1, 1, 0, (uint16_t)(0x8000 | kTileIndex), 144);
+
+			vdp.Run(488);
+
+			GenesisVdpState state = vdp.GetState();
+			GenesisVdpState ppuState = state;
+			DebugSpritePreviewInfo previewInfo = tools.GetSpritePreviewInfo(options, (BaseState&)state, (BaseState&)ppuState);
+
+			std::vector<DebugSpriteInfo> sprites(previewInfo.SpriteCount);
+			std::vector<uint32_t> spritePreviews(previewInfo.SpriteCount * 128u * 128u);
+			std::vector<uint32_t> screenPreview(previewInfo.Width * previewInfo.Height);
+			tools.GetSpriteList(options, (BaseState&)state, (BaseState&)ppuState, vram, nullptr, palette.data(), sprites.data(), spritePreviews.data(), screenPreview.data());
+
+			uint32_t previewRowStart = previewInfo.VisibleY * previewInfo.Width + previewInfo.VisibleX;
+			constexpr uint32_t kVisibleBg = 0xFF666666;
+			EXPECT_NE(screenPreview[previewRowStart], kVisibleBg);
+			EXPECT_EQ(screenPreview[previewRowStart + 16], kVisibleBg);
+		};
+
+		runAndAssertMaskBehavior(false, 0x0200, 0x01);
+		runAndAssertMaskBehavior(true, 0x0000, 0x00);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, EarlierSpritePriorityParityMaintainsAcrossH40ToH32Transition) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.GetCramPointer()[0] = 0x0000;
+		vdp.GetCramPointer()[17] = 0x000e;
+		vdp.GetCramPointer()[33] = 0x00e0;
+
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+		GetSpritePreviewOptions options = {};
+		options.Background = SpriteBackground::Gray;
+
+		std::array<uint32_t, 64> palette = {};
+		BuildArgbPaletteFromCram(vdp, palette);
+
+		auto runAndAssertPriorityBehavior = [&](bool h40, uint16_t satBase, uint8_t reg5) {
+			ConfigureSpriteRenderMode(vdp, h40, reg5);
+
+			uint8_t* vram = vdp.GetVramPointer();
+			memset(vram, 0, 0x10000);
+			constexpr uint16_t kTileIndex = 20;
+			WriteSolidSpriteTileRow0(vram, kTileIndex, 1);
+
+			WriteSpriteSatEntry(vram, satBase, 0, 128, 1, 1, 1, (uint16_t)(0x2000 | kTileIndex), 128);
+			WriteSpriteSatEntry(vram, satBase, 1, 128, 1, 1, 0, (uint16_t)(0xC000 | kTileIndex), 128);
+
+			vdp.Run(488);
+
+			GenesisVdpState state = vdp.GetState();
+			GenesisVdpState ppuState = state;
+			DebugSpritePreviewInfo previewInfo = tools.GetSpritePreviewInfo(options, (BaseState&)state, (BaseState&)ppuState);
+
+			std::vector<DebugSpriteInfo> sprites(previewInfo.SpriteCount);
+			std::vector<uint32_t> spritePreviews(previewInfo.SpriteCount * 128u * 128u);
+			std::vector<uint32_t> screenPreview(previewInfo.Width * previewInfo.Height);
+			tools.GetSpriteList(options, (BaseState&)state, (BaseState&)ppuState, vram, nullptr, palette.data(), sprites.data(), spritePreviews.data(), screenPreview.data());
+
+			uint32_t previewRowStart = previewInfo.VisibleY * previewInfo.Width + previewInfo.VisibleX;
+			EXPECT_EQ(screenPreview[previewRowStart], palette[17]);
+			EXPECT_NE(screenPreview[previewRowStart], palette[33]);
+		};
+
+		runAndAssertPriorityBehavior(true, 0x0000, 0x00);
+		runAndAssertPriorityBehavior(false, 0x0200, 0x01);
+	}
+
 	TEST(GenesisVdpObjectRunSafetyTests, EarlierSpriteRemainsVisibleOnPartialOverlapEdge) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
