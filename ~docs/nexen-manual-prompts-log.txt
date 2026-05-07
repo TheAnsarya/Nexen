@@ -2361,8 +2361,9 @@ yes, continue doing big-effort large batches but go bigger and longer; make a bu
 
 c'mon! make a ***big*** change, I mean 100's of lines of code, work many fixes, you're only running for a few minutes, not doing very many changes, don't stop the session quickly, keep working more and more in one big effort or several large efforts; [Nexen] (Genesis/MegaDrive) Continue doing what we've been doing, but with a big aggressive code change push instead of piddly small efforts; Make a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` Genesis code to make big changes; continue; do all the steps; continue; do ***several*** batches in a row and make only one issue per big effort as three issues each prompt is too many; continue;
 
+sorry, continue last prompt;
 
-
+c'mon! make a ***big*** change, I mean 1000's of lines of code, work many fixes, you're only running for a few minutes, not doing very many changes, don't stop the session quickly, keep working more and more in one big effort or several large efforts; [Nexen] (Genesis/MegaDrive) Continue doing what we've been doing, but with a big aggressive code change push instead of piddly small efforts; Make a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` Genesis code to make big changes; continue; do all the steps; continue; do ***several*** batches in a row and make only one issue per big effort as three issues each prompt is too many; continue;
 
 
 
