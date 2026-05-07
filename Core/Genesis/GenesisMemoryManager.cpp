@@ -28,13 +28,13 @@ namespace {
 
 	__forceinline bool IsZ80BusReqAddress(uint32_t addr) {
 		uint32_t effectiveAddr = addr;
-		bool isBusReqAddress = (effectiveAddr & 0xFFFFFE) == 0xA11100;
+		bool isBusReqAddress = (effectiveAddr & 0xFFFF00) == 0xA11100;
 		return isBusReqAddress;
 	}
 
 	__forceinline bool IsZ80ResetAddress(uint32_t addr) {
 		uint32_t effectiveAddr = addr;
-		bool isResetAddress = (effectiveAddr & 0xFFFFFE) == 0xA11200;
+		bool isResetAddress = (effectiveAddr & 0xFFFF00) == 0xA11200;
 		return isResetAddress;
 	}
 
@@ -568,9 +568,13 @@ void GenesisMemoryManager::EvaluateTmssUnlockState(bool allowLog, uint32_t addr,
 		&& _segaCdBridgeA140[3] == 'A';
 
 	if (!_tmssEnabled) {
-		_tmssUnlocked = false;
 		_tmssUnlockPending = false;
 		_tmssUnlockDelayMclk = 0;
+		_tmssUnlocked = signatureMatch;
+		_tmssVdpBlockLogged = false;
+		_tmssStartupBypassLogged = false;
+		_ioState.TmssEnabled = 0;
+		_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
 		return;
 	}
 

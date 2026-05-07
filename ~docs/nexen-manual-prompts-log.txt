@@ -2410,6 +2410,8 @@ You're not quoting the rom paths when opening a rom when running Nexen so spaces
 
 yes! that was several hundred lines of code, but do even more and bigger; Mesen-Expanded runs Sonic, Nexen doesn't, fix that; continue;
 
+continue;
+
 
 
 
