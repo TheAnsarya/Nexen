@@ -2580,12 +2580,12 @@ prepare for a release, and clean up and update documentation and fix as many war
 
 
 
-0+0+597+347+0+754+565+315+619+626=3823
-0+0+570+
+0+0+570+347+0+747+560+313+614+625=3776
 625 * 5 = 3125
-3823 - 3125 = 698
-94
+3776 - 3125 = 651
+214
 
+Close!
 
 
 
