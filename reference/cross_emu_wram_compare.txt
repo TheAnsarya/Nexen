@@ -1,16 +1,28 @@
 ﻿GENESIS_CROSS_EMU_WRAM_TRACE_COMPARE
 rom=C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md
 mesenTrace=
-nexenTrace=
+nexenTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260507-202502.log
+mesenStartupTrace=
+nexenStartupTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260507-202502.log
 mesenLines=0
-nexenLines=0
+nexenLines=65536
+mesenStartupLines=0
+nexenStartupLines=1884
 mesenHash=missing
-nexenHash=missing
+nexenHash=08e9af4307e9bb3aa6271c3144c8efedc9a77fb0db91c89691f8225140651819
+mesenStartupHash=missing
+nexenStartupHash=d5344e0cc02f1d0c352ca9d8f0989f9c056c990cea8ee2fe587acbee053750ce
 mesenFrontendMissing=False
 mesenRunSkipped=False
 mesenTraceMissing=True
-nexenTraceMissing=True
+nexenTraceMissing=False
+mesenStartupTraceMissing=True
+nexenStartupTraceMissing=False
 mesenTimedOut=False
 nexenTimedOut=True
-firstDiffIndex=-1
-status=identical
+firstDiffIndex=0
+startupFirstDiffIndex=0
+mesenFirstDiff=<no-line>
+nexenFirstDiff=F0000 L005 WRAM addr=FFFFFC data=00 pc=000264 mclk=2902
+mesenStartupFirstDiff=<no-line>
+nexenStartupFirstDiff=F0000 L000 S000000 MMU_INIT addr=000000 val=0000 aux=0000 pc=FFFFFF mclk=0 digest=1f3bbbbdd1637e30

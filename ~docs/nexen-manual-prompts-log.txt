@@ -2414,6 +2414,7 @@ continue;
 
 use the `md` versions of sonic roms, not the `bin` versions ( i moved them into a sub folder); continue;
 
+yes, do that, work hard, make a ton of changes; continue;
 
 
 

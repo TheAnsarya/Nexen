@@ -98,9 +98,8 @@ namespace {
 		return versionByte;
 	}
 
-	static constexpr const char* kNexenWramTraceDirectory = "reference";
-	static constexpr const char* kNexenWramTracePath = "reference/cpu_ram_trace.log";
-	static constexpr const char* kNexenStartupTracePath = "reference/genesis_startup_trace.log";
+	static std::string sNexenWramTracePath = "reference/cpu_ram_trace.log";
+	static std::string sNexenStartupTracePath = "reference/genesis_startup_trace.log";
 	static FILE* sNexenWramTraceFile = nullptr;
 	static FILE* sNexenStartupTraceFile = nullptr;
 	static uint32_t sNexenWramTraceLines = 0;
@@ -116,6 +115,31 @@ namespace {
 	static uint32_t sNexenStartupTraceFrameEnd = 6u;
 	static uint32_t sNexenStartupTraceMaxLines = 50000u;
 	static bool sNexenGenesisTmssStrictMode = false;
+
+	static bool TryGetNexenTracePathFromEnv(const char* name, std::string& outPath) {
+		const char* raw = std::getenv(name);
+		if (!raw || !*raw) {
+			return false;
+		}
+
+		outPath = raw;
+		return !outPath.empty();
+	}
+
+	static void EnsureNexenTraceDirectoryForPath(const std::string& tracePath) {
+		if (tracePath.empty()) {
+			return;
+		}
+
+		std::filesystem::path path = std::filesystem::path(tracePath);
+		std::filesystem::path parent = path.parent_path();
+		if (parent.empty()) {
+			return;
+		}
+
+		std::error_code fsError;
+		std::filesystem::create_directories(parent, fsError);
+	}
 
 	static bool TryParseNexenTraceEnvU32AutoBase(const char* name, uint32_t minValue, uint32_t maxValue, uint32_t& outValue) {
 		const char* raw = std::getenv(name);
@@ -155,6 +179,10 @@ namespace {
 		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_WRAM_MAX_LINES", 1u, 0xFFFFFFFFu, value)) {
 			sNexenWramTraceMaxLines = value;
 		}
+		std::string tracePath;
+		if (TryGetNexenTracePathFromEnv("NEXEN_WRAM_TRACE_PATH", tracePath)) {
+			sNexenWramTracePath = tracePath;
+		}
 
 		if (sNexenWramTraceFrameStart > sNexenWramTraceFrameEnd) {
 			std::swap(sNexenWramTraceFrameStart, sNexenWramTraceFrameEnd);
@@ -183,6 +211,10 @@ namespace {
 		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_TMSS_STRICT", 0u, 1u, value)) {
 			sNexenGenesisTmssStrictMode = value != 0;
 		}
+		std::string tracePath;
+		if (TryGetNexenTracePathFromEnv("NEXEN_GENESIS_STARTUP_TRACE_PATH", tracePath)) {
+			sNexenStartupTracePath = tracePath;
+		}
 	}
 
 	static void EnsureNexenWramTraceOpen() {
@@ -191,11 +223,11 @@ namespace {
 		}
 
 		LoadNexenWramTraceConfigFromEnv();
-		std::error_code fsError;
-		std::filesystem::create_directories(kNexenWramTraceDirectory, fsError);
-		sNexenWramTraceFile = fopen(kNexenWramTracePath, "w");
+		EnsureNexenTraceDirectoryForPath(sNexenWramTracePath);
+		sNexenWramTraceFile = fopen(sNexenWramTracePath.c_str(), "w");
 		if (sNexenWramTraceFile) {
 			fprintf(sNexenWramTraceFile, "# CPU work-RAM write trace\n");
+			fprintf(sNexenWramTraceFile, "# tracePath=%s\n", sNexenWramTracePath.c_str());
 			fprintf(sNexenWramTraceFile, "# frameRange=%u-%u addrRange=%06X-%06X maxLines=%u\n",
 				sNexenWramTraceFrameStart,
 				sNexenWramTraceFrameEnd,
@@ -216,11 +248,11 @@ namespace {
 			return;
 		}
 
-		std::error_code fsError;
-		std::filesystem::create_directories(kNexenWramTraceDirectory, fsError);
-		sNexenStartupTraceFile = fopen(kNexenStartupTracePath, "w");
+		EnsureNexenTraceDirectoryForPath(sNexenStartupTracePath);
+		sNexenStartupTraceFile = fopen(sNexenStartupTracePath.c_str(), "w");
 		if (sNexenStartupTraceFile) {
 			fprintf(sNexenStartupTraceFile, "# Genesis startup trace\n");
+			fprintf(sNexenStartupTraceFile, "# tracePath=%s\n", sNexenStartupTracePath.c_str());
 			fprintf(sNexenStartupTraceFile, "# frameEnd=%u maxLines=%u\n",
 				sNexenStartupTraceFrameEnd,
 				sNexenStartupTraceMaxLines);
