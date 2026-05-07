@@ -44,9 +44,9 @@ namespace {
 		return isYm2612Address;
 	}
 
-	__forceinline uint8_t GetZ80BusAckStatusBit(bool busRequested, bool resetAsserted) {
-		// BUSACK bit is low only while the 68k has requested the Z80 bus and Z80 is not in reset.
-		uint8_t ackStatus = (busRequested && !resetAsserted) ? 0x00 : 0x01;
+	__forceinline uint8_t GetZ80BusAckStatusBit(bool busAck) {
+		// BUSACK bit is low when 68k currently owns the Z80 bus.
+		uint8_t ackStatus = busAck ? 0x00 : 0x01;
 		return ackStatus;
 	}
 
@@ -254,6 +254,9 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 
 	_z80BusRequest = false;
 	_z80Reset = true;
+	_z80BusAck = false;
+	_z80BusReqDelayMclk = 0;
+	_z80ResumeDelayMclk = 0;
 	_z80RuntimeRunning = false;
 	_z80RuntimeRunnableCycles = 0;
 	_z80RuntimeStalledCycles = 0;
@@ -435,8 +438,113 @@ uint32_t GenesisMemoryManager::TranslateRomAddress(uint32_t addr) const {
 	return effectiveAddr % _prgRomSize;
 }
 
+bool GenesisMemoryManager::IsZ80BusGranted() const {
+	// 68k can access the Z80 window when BUSACK is asserted or when reset is held.
+	return _z80BusAck || _z80Reset;
+}
+
+void GenesisMemoryManager::AdvanceZ80BusArbitration(uint32_t masterClocks) {
+	if (masterClocks == 0) {
+		return;
+	}
+
+	if (_z80Reset) {
+		_z80BusReqDelayMclk = 0;
+		_z80ResumeDelayMclk = 0;
+		_z80BusAck = _z80BusRequest;
+		return;
+	}
+
+	if (_z80BusRequest) {
+		_z80ResumeDelayMclk = 0;
+		if (!_z80BusAck && _z80BusReqDelayMclk > 0) {
+			if (masterClocks >= _z80BusReqDelayMclk) {
+				_z80BusReqDelayMclk = 0;
+				_z80BusAck = true;
+			} else {
+				_z80BusReqDelayMclk = (uint16_t)(_z80BusReqDelayMclk - masterClocks);
+			}
+		}
+	} else {
+		_z80BusReqDelayMclk = 0;
+		if (_z80ResumeDelayMclk > 0) {
+			if (masterClocks >= _z80ResumeDelayMclk) {
+				_z80ResumeDelayMclk = 0;
+			} else {
+				_z80ResumeDelayMclk = (uint16_t)(_z80ResumeDelayMclk - masterClocks);
+			}
+		}
+	}
+}
+
+void GenesisMemoryManager::SetZ80BusRequest(bool request, bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag) {
+	bool oldBusReq = _z80BusRequest;
+	_z80BusRequest = request;
+	if (request) {
+		_z80ResumeDelayMclk = 0;
+		if (_z80Reset) {
+			_z80BusAck = true;
+			_z80BusReqDelayMclk = 0;
+		} else if (!_z80BusAck && _z80BusReqDelayMclk == 0) {
+			_z80BusReqDelayMclk = Z80BusReqAckDelayMclk;
+		}
+	} else {
+		_z80BusAck = false;
+		_z80BusReqDelayMclk = 0;
+		_z80ResumeDelayMclk = _z80Reset ? 0 : Z80BusResumeDelayMclk;
+	}
+
+	if (allowTransitionLog && oldBusReq != _z80BusRequest) {
+		MessageManager::Log(std::format("[Genesis][MMU] Z80 busreq latch src={} addr=${:06x} pc=${:06x} oldReq={} newReq={} reset={} ack={} reqDelay={} resumeDelay={}",
+			sourceTag,
+			addr & 0x00ffffff,
+			pc & 0x00ffffff,
+			oldBusReq ? 1 : 0,
+			_z80BusRequest ? 1 : 0,
+			_z80Reset ? 1 : 0,
+			_z80BusAck ? 1 : 0,
+			_z80BusReqDelayMclk,
+			_z80ResumeDelayMclk));
+	}
+
+	UpdateZ80RuntimeState(allowTransitionLog, addr, pc, sourceTag);
+}
+
+void GenesisMemoryManager::SetZ80Reset(bool resetAsserted, bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag) {
+	bool oldReset = _z80Reset;
+	_z80Reset = resetAsserted;
+	if (resetAsserted) {
+		_z80BusReqDelayMclk = 0;
+		_z80ResumeDelayMclk = 0;
+		_z80BusAck = _z80BusRequest;
+	} else if (_z80BusRequest) {
+		_z80BusAck = false;
+		_z80BusReqDelayMclk = Z80BusReqAckDelayMclk;
+		_z80ResumeDelayMclk = 0;
+	} else {
+		_z80BusAck = false;
+		_z80BusReqDelayMclk = 0;
+		_z80ResumeDelayMclk = 0;
+	}
+
+	if (allowTransitionLog && oldReset != _z80Reset) {
+		MessageManager::Log(std::format("[Genesis][MMU] Z80 reset latch src={} addr=${:06x} pc=${:06x} oldReset={} newReset={} req={} ack={} reqDelay={} resumeDelay={}",
+			sourceTag,
+			addr & 0x00ffffff,
+			pc & 0x00ffffff,
+			oldReset ? 1 : 0,
+			_z80Reset ? 1 : 0,
+			_z80BusRequest ? 1 : 0,
+			_z80BusAck ? 1 : 0,
+			_z80BusReqDelayMclk,
+			_z80ResumeDelayMclk));
+	}
+
+	UpdateZ80RuntimeState(allowTransitionLog, addr, pc, sourceTag);
+}
+
 bool GenesisMemoryManager::ComputeZ80RuntimeRunning() const {
-	return !_z80BusRequest && !_z80Reset;
+	return !_z80Reset && !_z80BusAck && _z80ResumeDelayMclk == 0;
 }
 
 void GenesisMemoryManager::UpdateZ80RuntimeState(bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag) {
@@ -958,6 +1066,8 @@ bool GenesisMemoryManager::TryGetSramOffset(uint32_t addr, uint32_t& offset) con
 
 uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	addr &= 0xFFFFFF;
+	AdvanceZ80BusArbitration(7);
+	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "read8");
 	uint32_t sramOffset = 0;
 	if (addr == 0xA11000 || addr == 0xA11001) [[unlikely]] {
 		uint8_t effectiveValue = 0x00;
@@ -1036,7 +1146,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		// Z80 address space
 		static uint64_t z80WindowReadCount = 0;
 		z80WindowReadCount++;
-		if (_z80BusRequest || _z80Reset) {
+		if (IsZ80BusGranted()) {
 			uint32_t z80Addr = addr & 0x1FFF;
 			uint8_t effectiveValue = _z80Ram[z80Addr];
 			bool traceAccess = z80WindowReadCount <= 256 || (z80WindowReadCount % 4096) == 0 || (z80Addr >= 0x1ff0);
@@ -1125,7 +1235,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		// Z80 bus request: bit 0 indicates bus grant, mirrored on both byte lanes.
-		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
+		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusAck);
 		uint8_t effectiveValue = (uint8_t)(0xFE | ackStatus);
 		static uint64_t z80BusReqReadCount = 0;
 		z80BusReqReadCount++;
@@ -1171,6 +1281,8 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	addr &= 0xFFFFFE;
+	AdvanceZ80BusArbitration(7);
+	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "read16");
 	if (addr == 0xA11000) [[unlikely]] {
 		uint16_t effectiveValue = 0x0000;
 		_openBus = 0x00;
@@ -1238,7 +1350,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 			return effectiveValue;
 		}
 
-		if (_z80BusRequest || _z80Reset) {
+		if (IsZ80BusGranted()) {
 			uint32_t z80Addr = addr & 0x1FFF;
 			uint8_t effectiveHighByte = _z80Ram[z80Addr];
 			uint8_t effectiveLowByte = _z80Ram[(z80Addr + 1) & 0x1FFF];
@@ -1276,7 +1388,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	}
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
-		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
+		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusAck);
 		uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
 		if (ackStatus) {
 			effectiveValue |= 0x0100;
@@ -1302,6 +1414,8 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 
 void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
+	AdvanceZ80BusArbitration(7);
+	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "write8-pre");
 	uint32_t sramOffset = 0;
 	if (addr == 0xA11000 || addr == 0xA11001) [[unlikely]] {
 		return;
@@ -1429,7 +1543,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 
 		static uint64_t z80WindowWriteCount = 0;
 		z80WindowWriteCount++;
-		if (_z80BusRequest || _z80Reset) {
+		if (IsZ80BusGranted()) {
 			uint32_t z80Addr = addr & 0x1FFF;
 			_z80Ram[z80Addr] = effectiveValue;
 			bool traceAccess = z80WindowWriteCount <= 256 || (z80WindowWriteCount % 4096) == 0 || (z80Addr >= 0x1ff0);
@@ -1507,22 +1621,23 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		uint8_t effectiveValue = value;
 		if (!(addr & 0x01)) {
-			bool oldBusReq = _z80BusRequest;
-			_z80BusRequest = (effectiveValue & 0x01) != 0;
 			static uint64_t z80BusReqWriteCount = 0;
 			z80BusReqWriteCount++;
 			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
-			if (oldBusReq != _z80BusRequest || (pc >= 0x071b00 && pc <= 0x071cff) || z80BusReqWriteCount <= 256 || (z80BusReqWriteCount % 2048) == 0) {
-				MessageManager::Log(std::format("[Genesis][MMU] Z80 busreq write8 #{} addr=${:06x} val=${:02x} pc=${:06x} oldBusReq={} newBusReq={} reset={}",
+			bool request = (effectiveValue & 0x01) != 0;
+			SetZ80BusRequest(request, true, addr, pc, "write8-busreq");
+			if ((pc >= 0x071b00 && pc <= 0x071cff) || z80BusReqWriteCount <= 256 || (z80BusReqWriteCount % 2048) == 0) {
+				MessageManager::Log(std::format("[Genesis][MMU] Z80 busreq write8 #{} addr=${:06x} val=${:02x} pc=${:06x} req={} reset={} ack={} reqDelay={} resumeDelay={}",
 					z80BusReqWriteCount,
 					addr,
 					effectiveValue,
 					pc,
-					oldBusReq ? 1 : 0,
-					_z80BusRequest ? 1 : 0,
-					_z80Reset ? 1 : 0));
+					request ? 1 : 0,
+					_z80Reset ? 1 : 0,
+					_z80BusAck ? 1 : 0,
+					_z80BusReqDelayMclk,
+					_z80ResumeDelayMclk));
 			}
-			UpdateZ80RuntimeState(true, addr, pc, "write8-busreq");
 		}
 		TrackSegaCdHandshakeTranscript(addr, true, effectiveValue);
 		return;
@@ -1531,22 +1646,23 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
 		uint8_t effectiveValue = value;
 		if (!(addr & 0x01)) {
-			bool oldReset = _z80Reset;
-			_z80Reset = !(effectiveValue & 0x01);
 			static uint64_t z80ResetWriteCount = 0;
 			z80ResetWriteCount++;
 			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
-			if (oldReset != _z80Reset || (pc >= 0x071b00 && pc <= 0x071cff) || z80ResetWriteCount <= 256 || (z80ResetWriteCount % 2048) == 0) {
-				MessageManager::Log(std::format("[Genesis][MMU] Z80 reset write8 #{} addr=${:06x} val=${:02x} pc=${:06x} oldReset={} newReset={} busReq={}",
+			bool resetAsserted = !(effectiveValue & 0x01);
+			SetZ80Reset(resetAsserted, true, addr, pc, "write8-reset");
+			if ((pc >= 0x071b00 && pc <= 0x071cff) || z80ResetWriteCount <= 256 || (z80ResetWriteCount % 2048) == 0) {
+				MessageManager::Log(std::format("[Genesis][MMU] Z80 reset write8 #{} addr=${:06x} val=${:02x} pc=${:06x} reset={} req={} ack={} reqDelay={} resumeDelay={}",
 					z80ResetWriteCount,
 					addr,
 					effectiveValue,
 					pc,
-					oldReset ? 1 : 0,
-					_z80Reset ? 1 : 0,
-					_z80BusRequest ? 1 : 0));
+					resetAsserted ? 1 : 0,
+					_z80BusRequest ? 1 : 0,
+					_z80BusAck ? 1 : 0,
+					_z80BusReqDelayMclk,
+					_z80ResumeDelayMclk));
 			}
-			UpdateZ80RuntimeState(true, addr, pc, "write8-reset");
 		}
 		TrackSegaCdHandshakeTranscript(addr, true, effectiveValue);
 		return;
@@ -1559,6 +1675,8 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 
 void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	addr &= 0xFFFFFE;
+	AdvanceZ80BusArbitration(7);
+	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "write16-pre");
 	if (addr == 0xA11000) [[unlikely]] {
 		return;
 	}
@@ -1656,7 +1774,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 			return;
 		}
 
-		if (_z80BusRequest || _z80Reset) {
+		if (IsZ80BusGranted()) {
 			uint32_t z80Addr = addr & 0x1FFF;
 			_z80Ram[z80Addr] = effectiveHighByte;
 			_z80Ram[(z80Addr + 1) & 0x1FFF] = effectiveLowByte;
@@ -1687,23 +1805,24 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		uint16_t effectiveValue = value;
 		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
-		bool oldBusReq = _z80BusRequest;
-		_z80BusRequest = (effectiveHighByte & 0x01) != 0;
+		bool request = (effectiveHighByte & 0x01) != 0;
 		static uint64_t z80BusReqWrite16Count = 0;
 		z80BusReqWrite16Count++;
 		uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
-		if (oldBusReq != _z80BusRequest || (pc >= 0x071b00 && pc <= 0x071cff) || z80BusReqWrite16Count <= 256 || (z80BusReqWrite16Count % 2048) == 0) {
-			MessageManager::Log(std::format("[Genesis][MMU] Z80 busreq write16 #{} addr=${:06x} val=${:04x} hi=${:02x} pc=${:06x} oldBusReq={} newBusReq={} reset={}",
+		SetZ80BusRequest(request, true, addr, pc, "write16-busreq");
+		if ((pc >= 0x071b00 && pc <= 0x071cff) || z80BusReqWrite16Count <= 256 || (z80BusReqWrite16Count % 2048) == 0) {
+			MessageManager::Log(std::format("[Genesis][MMU] Z80 busreq write16 #{} addr=${:06x} val=${:04x} hi=${:02x} pc=${:06x} req={} reset={} ack={} reqDelay={} resumeDelay={}",
 				z80BusReqWrite16Count,
 				addr,
 				effectiveValue,
 				effectiveHighByte,
 				pc,
-				oldBusReq ? 1 : 0,
-				_z80BusRequest ? 1 : 0,
-				_z80Reset ? 1 : 0));
+				request ? 1 : 0,
+				_z80Reset ? 1 : 0,
+				_z80BusAck ? 1 : 0,
+				_z80BusReqDelayMclk,
+				_z80ResumeDelayMclk));
 		}
-		UpdateZ80RuntimeState(true, addr, pc, "write16-busreq");
 		TrackSegaCdHandshakeTranscript(addr, true, effectiveHighByte);
 		return;
 	}
@@ -1712,23 +1831,24 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		uint16_t effectiveValue = value;
 		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
 		uint8_t effectiveLowByte = (uint8_t)(effectiveValue & 0xFF);
-		bool oldReset = _z80Reset;
-		_z80Reset = !(effectiveHighByte & 0x01);
+		bool resetAsserted = !(effectiveHighByte & 0x01);
 		static uint64_t z80ResetWrite16Count = 0;
 		z80ResetWrite16Count++;
 		uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
-		if (oldReset != _z80Reset || (pc >= 0x071b00 && pc <= 0x071cff) || z80ResetWrite16Count <= 256 || (z80ResetWrite16Count % 2048) == 0) {
-			MessageManager::Log(std::format("[Genesis][MMU] Z80 reset write16 #{} addr=${:06x} val=${:04x} hi=${:02x} pc=${:06x} oldReset={} newReset={} busReq={}",
+		SetZ80Reset(resetAsserted, true, addr, pc, "write16-reset");
+		if ((pc >= 0x071b00 && pc <= 0x071cff) || z80ResetWrite16Count <= 256 || (z80ResetWrite16Count % 2048) == 0) {
+			MessageManager::Log(std::format("[Genesis][MMU] Z80 reset write16 #{} addr=${:06x} val=${:04x} hi=${:02x} pc=${:06x} reset={} req={} ack={} reqDelay={} resumeDelay={}",
 				z80ResetWrite16Count,
 				addr,
 				effectiveValue,
 				effectiveHighByte,
 				pc,
-				oldReset ? 1 : 0,
-				_z80Reset ? 1 : 0,
-				_z80BusRequest ? 1 : 0));
+				resetAsserted ? 1 : 0,
+				_z80BusRequest ? 1 : 0,
+				_z80BusAck ? 1 : 0,
+				_z80BusReqDelayMclk,
+				_z80ResumeDelayMclk));
 		}
-		UpdateZ80RuntimeState(true, addr, pc, "write16-reset");
 		_openBus = effectiveLowByte;
 		TrackSegaCdHandshakeTranscript(addr, true, effectiveHighByte);
 		return;
@@ -1968,6 +2088,8 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 
 uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	addr &= 0xFFFFFF;
+	AdvanceZ80BusArbitration(7);
+	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "debugread8");
 	uint32_t effectiveAddr = addr;
 	if (effectiveAddr == 0xA11000 || effectiveAddr == 0xA11001) {
 		uint8_t effectiveValue = 0x00;
@@ -2103,7 +2225,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return effectiveValue;
 	}
 	if (IsZ80BusReqAddress(effectiveAddr)) {
-		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusRequest, _z80Reset);
+		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusAck);
 		uint8_t effectiveValue = (uint8_t)(0xFE | ackStatus);
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x82);
 		return effectiveValue;
@@ -2122,7 +2244,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		}
 
 		uint8_t effectiveValue = 0xFF;
-		if (_z80BusRequest || _z80Reset) {
+		if (IsZ80BusGranted()) {
 			effectiveValue = _z80Ram[effectiveAddr & 0x1FFF];
 		}
 		_openBus = effectiveValue;
@@ -2211,6 +2333,8 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 
 void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
+	AdvanceZ80BusArbitration(7);
+	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "debugwrite8-pre");
 	uint32_t effectiveAddr = addr;
 	if (effectiveAddr == 0xA11000 || effectiveAddr == 0xA11001) {
 		TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x12);
@@ -2368,9 +2492,9 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	if (IsZ80BusReqAddress(effectiveAddr)) {
 		uint8_t effectiveValue = value;
 		if (!(effectiveAddr & 0x01)) {
-			_z80BusRequest = (effectiveValue & 0x01) != 0;
+			bool request = (effectiveValue & 0x01) != 0;
 			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
-			UpdateZ80RuntimeState(false, effectiveAddr, pc, "debugwrite8-busreq");
+			SetZ80BusRequest(request, false, effectiveAddr, pc, "debugwrite8-busreq");
 		}
 		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x80);
 		return;
@@ -2378,16 +2502,16 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	if (IsZ80ResetAddress(effectiveAddr)) {
 		uint8_t effectiveValue = value;
 		if (!(effectiveAddr & 0x01)) {
-			_z80Reset = !(effectiveValue & 0x01);
+			bool resetAsserted = !(effectiveValue & 0x01);
 			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
-			UpdateZ80RuntimeState(false, effectiveAddr, pc, "debugwrite8-reset");
+			SetZ80Reset(resetAsserted, false, effectiveAddr, pc, "debugwrite8-reset");
 		}
 		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x84);
 		return;
 	}
 	if (effectiveAddr >= 0xA00000 && effectiveAddr <= 0xA0FFFF) {
 		uint8_t effectiveValue = value;
-		if (_z80BusRequest || _z80Reset) {
+		if (IsZ80BusGranted()) {
 			_z80Ram[effectiveAddr & 0x1FFF] = effectiveValue;
 		}
 		_openBus = effectiveValue;
@@ -2484,6 +2608,9 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_openBus);
 	SV(_z80BusRequest);
 	SV(_z80Reset);
+	SV(_z80BusAck);
+	SV(_z80BusReqDelayMclk);
+	SV(_z80ResumeDelayMclk);
 	SV(_romBankMapperEnabled);
 	SVArray(_romBankRegisters, (uint32_t)sizeof(_romBankRegisters));
 	SV(_ramEnable);
@@ -2580,6 +2707,9 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	bool tmssEnabled = _tmssEnabled;
 	_z80BusRequest = nextZ80BusRequest;
 	_z80Reset = nextZ80Reset;
+	_z80BusAck = false;
+	_z80BusReqDelayMclk = 0;
+	_z80ResumeDelayMclk = 0;
 	_z80RuntimeRunning = false;
 	_z80RuntimeRunnableCycles = 0;
 	_z80RuntimeStalledCycles = 0;

@@ -50,6 +50,11 @@ private:
 	// Z80 bus
 	bool _z80BusRequest = false;
 	bool _z80Reset = true;
+	bool _z80BusAck = false;
+	uint16_t _z80BusReqDelayMclk = 0;
+	uint16_t _z80ResumeDelayMclk = 0;
+	static constexpr uint16_t Z80BusReqAckDelayMclk = 7;
+	static constexpr uint16_t Z80BusResumeDelayMclk = 7;
 	bool _z80RuntimeRunning = false;
 	uint64_t _z80RuntimeRunnableCycles = 0;
 	uint64_t _z80RuntimeStalledCycles = 0;
@@ -141,6 +146,10 @@ private:
 	uint8_t GetRamControlRegisterValue() const;
 	void WriteRamControlRegister(uint8_t value);
 	uint32_t TranslateRomAddress(uint32_t addr) const;
+	bool IsZ80BusGranted() const;
+	void AdvanceZ80BusArbitration(uint32_t masterClocks);
+	void SetZ80BusRequest(bool request, bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag);
+	void SetZ80Reset(bool resetAsserted, bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag);
 	bool ComputeZ80RuntimeRunning() const;
 	void UpdateZ80RuntimeState(bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag);
 
@@ -177,6 +186,8 @@ public:
 	// Clock
 	__forceinline void Exec(uint32_t cycles) {
 		_masterClock += cycles;
+		AdvanceZ80BusArbitration(cycles);
+		UpdateZ80RuntimeState(false, 0, 0, "exec");
 		if (_z80RuntimeRunning) {
 			_z80RuntimeRunnableCycles += cycles;
 		} else {

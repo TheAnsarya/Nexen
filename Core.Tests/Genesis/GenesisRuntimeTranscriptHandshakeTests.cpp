@@ -2047,11 +2047,11 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xA11101), 0xFFu);
 		EXPECT_EQ(memoryManager.Read16(0xA11100) & 0x0100u, 0x0100u);
 
-		// Bus requested while reset is asserted: BUSACK remains set.
+		// Bus requested while reset is asserted: 68k keeps bus ownership (BUSACK low).
 		memoryManager.Write8(0xA11100, 0x01);
-		EXPECT_EQ(memoryManager.Read8(0xA11100), 0xFFu);
-		EXPECT_EQ(memoryManager.Read8(0xA11101), 0xFFu);
-		EXPECT_EQ(memoryManager.Read16(0xA11100) & 0x0100u, 0x0100u);
+		EXPECT_EQ(memoryManager.Read8(0xA11100), 0xFEu);
+		EXPECT_EQ(memoryManager.Read8(0xA11101), 0xFEu);
+		EXPECT_EQ(memoryManager.Read16(0xA11100) & 0x0100u, 0x0000u);
 
 		// Releasing reset allows BUSREQ to clear BUSACK.
 		memoryManager.Write8(0xA11200, 0x01);
@@ -2071,11 +2071,11 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xA11181), 0xFFu);
 		EXPECT_EQ(memoryManager.Read16(0xA11180) & 0x0100u, 0x0100u);
 
-		// Bus requested while reset is asserted: BUSACK remains set.
+		// Bus requested while reset is asserted: 68k keeps bus ownership (BUSACK low).
 		memoryManager.Write8(0xA11180, 0x01);
-		EXPECT_EQ(memoryManager.Read8(0xA11180), 0xFFu);
-		EXPECT_EQ(memoryManager.Read8(0xA11181), 0xFFu);
-		EXPECT_EQ(memoryManager.Read16(0xA11180) & 0x0100u, 0x0100u);
+		EXPECT_EQ(memoryManager.Read8(0xA11180), 0xFEu);
+		EXPECT_EQ(memoryManager.Read8(0xA11181), 0xFEu);
+		EXPECT_EQ(memoryManager.Read16(0xA11180) & 0x0100u, 0x0000u);
 
 		// Releasing reset allows BUSREQ to clear BUSACK.
 		memoryManager.Write8(0xA11280, 0x01);
@@ -2100,11 +2100,11 @@ namespace {
 		EXPECT_EQ(memoryManager.DebugRead8(0xA11101), 0xFFu);
 		EXPECT_EQ(debugRead16(0xA11100) & 0x0100u, 0x0100u);
 
-		// Bus requested while reset is asserted: BUSACK remains set.
+		// Bus requested while reset is asserted: 68k keeps bus ownership (BUSACK low).
 		memoryManager.DebugWrite8(0xA11100, 0x01);
-		EXPECT_EQ(memoryManager.DebugRead8(0xA11100), 0xFFu);
-		EXPECT_EQ(memoryManager.DebugRead8(0xA11101), 0xFFu);
-		EXPECT_EQ(debugRead16(0xA11100) & 0x0100u, 0x0100u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11100), 0xFEu);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11101), 0xFEu);
+		EXPECT_EQ(debugRead16(0xA11100) & 0x0100u, 0x0000u);
 
 		// Releasing reset allows BUSREQ to clear BUSACK.
 		memoryManager.DebugWrite8(0xA11200, 0x01);
@@ -2129,17 +2129,137 @@ namespace {
 		EXPECT_EQ(memoryManager.DebugRead8(0xA11181), 0xFFu);
 		EXPECT_EQ(debugRead16(0xA11180) & 0x0100u, 0x0100u);
 
-		// Bus requested while reset is asserted: BUSACK remains set.
+		// Bus requested while reset is asserted: 68k keeps bus ownership (BUSACK low).
 		memoryManager.DebugWrite8(0xA11180, 0x01);
-		EXPECT_EQ(memoryManager.DebugRead8(0xA11180), 0xFFu);
-		EXPECT_EQ(memoryManager.DebugRead8(0xA11181), 0xFFu);
-		EXPECT_EQ(debugRead16(0xA11180) & 0x0100u, 0x0100u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11180), 0xFEu);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA11181), 0xFEu);
+		EXPECT_EQ(debugRead16(0xA11180) & 0x0100u, 0x0000u);
 
 		// Releasing reset allows BUSREQ to clear BUSACK.
 		memoryManager.DebugWrite8(0xA11280, 0x01);
 		EXPECT_EQ(memoryManager.DebugRead8(0xA11180), 0xFEu);
 		EXPECT_EQ(memoryManager.DebugRead8(0xA11181), 0xFEu);
 		EXPECT_EQ(debugRead16(0xA11180) & 0x0100u, 0x0000u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, Z80ArbitrationStateIsDeterministicAcrossSerializeReplay) {
+		auto runScenario = []() {
+			Emulator emuA;
+			std::vector<uint8_t> romA(0x400000);
+			GenesisMemoryManager original = CreateMemoryManager(emuA, romA);
+
+			auto runPrefix = [](GenesisMemoryManager& memoryManager) {
+				memoryManager.Write8(0xA11200, 0x01);
+				memoryManager.Write8(0xA11100, 0x01);
+				memoryManager.Write8(0xA00000, 0x5a);
+				(void)memoryManager.Read8(0xA11100);
+			};
+
+			auto runTail = [](GenesisMemoryManager& memoryManager) {
+				uint8_t busReqA = memoryManager.Read8(0xA11100);
+				uint8_t resetA = memoryManager.Read8(0xA11200);
+				uint8_t z80ByteA = memoryManager.Read8(0xA00000);
+				bool runningA = memoryManager.GetZ80RuntimeRunning();
+
+				memoryManager.Write8(0xA11100, 0x00);
+				uint8_t busReqB = memoryManager.Read8(0xA11100);
+				uint8_t resetB = memoryManager.Read8(0xA11200);
+				uint8_t z80ByteB = memoryManager.Read8(0xA00000);
+				bool runningB = memoryManager.GetZ80RuntimeRunning();
+
+				return std::tuple<uint8_t, uint8_t, uint8_t, bool, uint8_t, uint8_t, uint8_t, bool>(
+					busReqA,
+					resetA,
+					z80ByteA,
+					runningA,
+					busReqB,
+					resetB,
+					z80ByteB,
+					runningB);
+			};
+
+			runPrefix(original);
+			Serializer saver(1, true, SerializeFormat::Binary);
+			original.Serialize(saver);
+			std::stringstream state;
+			saver.SaveTo(state);
+			state.seekg(0);
+
+			auto expected = runTail(original);
+
+			Emulator emuB;
+			std::vector<uint8_t> romB(0x400000);
+			GenesisMemoryManager restored = CreateMemoryManager(emuB, romB);
+			Serializer loader(1, false, SerializeFormat::Binary);
+			EXPECT_TRUE(loader.LoadFrom(state));
+			restored.Serialize(loader);
+
+			auto replay = runTail(restored);
+			return std::tuple<std::tuple<uint8_t, uint8_t, uint8_t, bool, uint8_t, uint8_t, uint8_t, bool>, std::tuple<uint8_t, uint8_t, uint8_t, bool, uint8_t, uint8_t, uint8_t, bool>>(expected, replay);
+		};
+
+		auto [expected, replay] = runScenario();
+		EXPECT_EQ(expected, replay);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugZ80ArbitrationStateIsDeterministicAcrossSerializeReplay) {
+		auto runScenario = []() {
+			Emulator emuA;
+			std::vector<uint8_t> romA(0x400000);
+			GenesisMemoryManager original = CreateMemoryManager(emuA, romA);
+
+			auto runPrefix = [](GenesisMemoryManager& memoryManager) {
+				memoryManager.DebugWrite8(0xA11200, 0x01);
+				memoryManager.DebugWrite8(0xA11100, 0x01);
+				memoryManager.DebugWrite8(0xA00000, 0x3c);
+				(void)memoryManager.DebugRead8(0xA11100);
+			};
+
+			auto runTail = [](GenesisMemoryManager& memoryManager) {
+				uint8_t busReqA = memoryManager.DebugRead8(0xA11100);
+				uint8_t resetA = memoryManager.DebugRead8(0xA11200);
+				uint8_t z80ByteA = memoryManager.DebugRead8(0xA00000);
+				bool runningA = memoryManager.GetZ80RuntimeRunning();
+
+				memoryManager.DebugWrite8(0xA11100, 0x00);
+				uint8_t busReqB = memoryManager.DebugRead8(0xA11100);
+				uint8_t resetB = memoryManager.DebugRead8(0xA11200);
+				uint8_t z80ByteB = memoryManager.DebugRead8(0xA00000);
+				bool runningB = memoryManager.GetZ80RuntimeRunning();
+
+				return std::tuple<uint8_t, uint8_t, uint8_t, bool, uint8_t, uint8_t, uint8_t, bool>(
+					busReqA,
+					resetA,
+					z80ByteA,
+					runningA,
+					busReqB,
+					resetB,
+					z80ByteB,
+					runningB);
+			};
+
+			runPrefix(original);
+			Serializer saver(1, true, SerializeFormat::Binary);
+			original.Serialize(saver);
+			std::stringstream state;
+			saver.SaveTo(state);
+			state.seekg(0);
+
+			auto expected = runTail(original);
+
+			Emulator emuB;
+			std::vector<uint8_t> romB(0x400000);
+			GenesisMemoryManager restored = CreateMemoryManager(emuB, romB);
+			Serializer loader(1, false, SerializeFormat::Binary);
+			EXPECT_TRUE(loader.LoadFrom(state));
+			restored.Serialize(loader);
+
+			auto replay = runTail(restored);
+			return std::tuple<std::tuple<uint8_t, uint8_t, uint8_t, bool, uint8_t, uint8_t, uint8_t, bool>, std::tuple<uint8_t, uint8_t, uint8_t, bool, uint8_t, uint8_t, uint8_t, bool>>(expected, replay);
+		};
+
+		auto [expected, replay] = runScenario();
+		EXPECT_EQ(expected, replay);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeWrite16LowLaneDoesNotRequestBus) {
