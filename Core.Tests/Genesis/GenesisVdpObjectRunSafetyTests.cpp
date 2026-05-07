@@ -2021,6 +2021,158 @@ namespace {
 		EXPECT_EQ(screenPreview[previewRowStart + 16], kVisibleBg);
 	}
 
+	TEST(GenesisVdpObjectRunSafetyTests, MalformedOutOfRangeSatLinkParityMaintainsAcrossH32ToH40Transition) {
+		auto runScenario = [&](bool h40, uint16_t satBase, uint8_t reg5) {
+			GenesisVdp vdp;
+			vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+			vdp.GetCramPointer()[0] = 0x0000;
+			vdp.GetCramPointer()[1] = 0x000e;
+			ConfigureSpriteRenderMode(vdp, h40, reg5);
+
+			uint8_t* vram = vdp.GetVramPointer();
+			memset(vram, 0, 0x10000);
+			constexpr uint16_t kTileIndex = 4;
+			WriteSolidSpriteTileRow0(vram, kTileIndex, 1);
+
+			WriteSpriteSatEntry(vram, satBase, 0, 128, 1, 1, 127, (uint16_t)(0x8000 | kTileIndex), 128);
+
+			vdp.Run(488);
+
+			GenesisVdpState state = vdp.GetState();
+			GenesisVdpState ppuState = state;
+			GenesisVdpTools tools(nullptr, nullptr, nullptr);
+			GetSpritePreviewOptions options = {};
+			options.Background = SpriteBackground::Gray;
+			DebugSpritePreviewInfo previewInfo = tools.GetSpritePreviewInfo(options, (BaseState&)state, (BaseState&)ppuState);
+
+			std::array<uint32_t, 64> palette = {};
+			BuildArgbPaletteFromCram(vdp, palette);
+
+			std::vector<DebugSpriteInfo> sprites(previewInfo.SpriteCount);
+			std::vector<uint32_t> spritePreviews(previewInfo.SpriteCount * 128u * 128u);
+			std::vector<uint32_t> screenPreview(previewInfo.Width * previewInfo.Height);
+			tools.GetSpriteList(options, (BaseState&)state, (BaseState&)ppuState, vram, nullptr, palette.data(), sprites.data(), spritePreviews.data(), screenPreview.data());
+
+			uint32_t previewRowStart = previewInfo.VisibleY * previewInfo.Width + previewInfo.VisibleX;
+			constexpr uint32_t kVisibleBg = 0xFF666666;
+			return std::pair<bool, bool>(screenPreview[previewRowStart] != kVisibleBg, screenPreview[previewRowStart + 16] != kVisibleBg);
+		};
+
+		auto h32 = runScenario(false, 0x0200, 0x01);
+		auto h40 = runScenario(true, 0x0000, 0x00);
+
+		EXPECT_TRUE(h32.first);
+		EXPECT_FALSE(h32.second);
+		EXPECT_TRUE(h40.first);
+		EXPECT_FALSE(h40.second);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, SelfReferentialSatLinkParityMaintainsAcrossH40ToH32Transition) {
+		auto runScenario = [&](bool h40, uint16_t satBase, uint8_t reg5) {
+			GenesisVdp vdp;
+			vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+			vdp.GetCramPointer()[0] = 0x0000;
+			vdp.GetCramPointer()[1] = 0x000e;
+			ConfigureSpriteRenderMode(vdp, h40, reg5);
+
+			uint8_t* vram = vdp.GetVramPointer();
+			memset(vram, 0, 0x10000);
+			constexpr uint16_t kTileIndex = 4;
+			WriteSolidSpriteTileRow0(vram, kTileIndex, 1);
+
+			WriteSpriteSatEntry(vram, satBase, 0, 128, 1, 1, 1, (uint16_t)(0x8000 | kTileIndex), 128);
+			WriteSpriteSatEntry(vram, satBase, 1, 128, 1, 1, 1, (uint16_t)(0x8000 | kTileIndex), 128);
+
+			vdp.Run(488);
+
+			GenesisVdpState state = vdp.GetState();
+			GenesisVdpState ppuState = state;
+			GenesisVdpTools tools(nullptr, nullptr, nullptr);
+			GetSpritePreviewOptions options = {};
+			options.Background = SpriteBackground::Gray;
+			DebugSpritePreviewInfo previewInfo = tools.GetSpritePreviewInfo(options, (BaseState&)state, (BaseState&)ppuState);
+
+			std::array<uint32_t, 64> palette = {};
+			BuildArgbPaletteFromCram(vdp, palette);
+
+			std::vector<DebugSpriteInfo> sprites(previewInfo.SpriteCount);
+			std::vector<uint32_t> spritePreviews(previewInfo.SpriteCount * 128u * 128u);
+			std::vector<uint32_t> screenPreview(previewInfo.Width * previewInfo.Height);
+			tools.GetSpriteList(options, (BaseState&)state, (BaseState&)ppuState, vram, nullptr, palette.data(), sprites.data(), spritePreviews.data(), screenPreview.data());
+
+			uint32_t previewRowStart = previewInfo.VisibleY * previewInfo.Width + previewInfo.VisibleX;
+			constexpr uint32_t kVisibleBg = 0xFF666666;
+			return std::pair<bool, bool>(screenPreview[previewRowStart] != kVisibleBg, screenPreview[previewRowStart + 16] != kVisibleBg);
+		};
+
+		auto h40 = runScenario(true, 0x0000, 0x00);
+		auto h32 = runScenario(false, 0x0200, 0x01);
+
+		EXPECT_TRUE(h40.first);
+		EXPECT_FALSE(h40.second);
+		EXPECT_TRUE(h32.first);
+		EXPECT_FALSE(h32.second);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, TwoNodeSatCycleRemainsDeterministicAcrossH32AndH40Modes) {
+		auto runScenarioDigest = [&](bool h40, uint16_t satBase, uint8_t reg5) {
+			GenesisVdp vdp;
+			vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+			vdp.GetCramPointer()[0] = 0x0000;
+			vdp.GetCramPointer()[1] = 0x000e;
+			ConfigureSpriteRenderMode(vdp, h40, reg5);
+
+			uint8_t* vram = vdp.GetVramPointer();
+			memset(vram, 0, 0x10000);
+			constexpr uint16_t kTileIndex = 4;
+			WriteSolidSpriteTileRow0(vram, kTileIndex, 1);
+
+			// Two-node cycle: 0 -> 1, 1 -> 0.
+			WriteSpriteSatEntry(vram, satBase, 0, 128, 1, 1, 1, (uint16_t)(0x8000 | kTileIndex), 128);
+			WriteSpriteSatEntry(vram, satBase, 1, 128, 1, 1, 0, (uint16_t)(0x8000 | kTileIndex), 136);
+
+			vdp.Run(488);
+
+			GenesisVdpState state = vdp.GetState();
+			GenesisVdpState ppuState = state;
+			GenesisVdpTools tools(nullptr, nullptr, nullptr);
+			GetSpritePreviewOptions options = {};
+			options.Background = SpriteBackground::Gray;
+			DebugSpritePreviewInfo previewInfo = tools.GetSpritePreviewInfo(options, (BaseState&)state, (BaseState&)ppuState);
+
+			std::array<uint32_t, 64> palette = {};
+			BuildArgbPaletteFromCram(vdp, palette);
+
+			std::vector<DebugSpriteInfo> sprites(previewInfo.SpriteCount);
+			std::vector<uint32_t> spritePreviews(previewInfo.SpriteCount * 128u * 128u);
+			std::vector<uint32_t> screenPreview(previewInfo.Width * previewInfo.Height);
+			tools.GetSpriteList(options, (BaseState&)state, (BaseState&)ppuState, vram, nullptr, palette.data(), sprites.data(), spritePreviews.data(), screenPreview.data());
+
+			uint32_t previewRowStart = previewInfo.VisibleY * previewInfo.Width + previewInfo.VisibleX;
+			constexpr uint32_t kVisibleBg = 0xFF666666;
+			uint64_t digest = 1469598103934665603ull;
+			for (uint32_t x = 0; x < 48; x += 4) {
+				digest ^= (uint64_t)screenPreview[previewRowStart + x];
+				digest *= 1099511628211ull;
+			}
+			bool firstVisible = screenPreview[previewRowStart] != kVisibleBg;
+			return std::pair<bool, uint64_t>(firstVisible, digest);
+		};
+
+		auto h32a = runScenarioDigest(false, 0x0200, 0x01);
+		auto h32b = runScenarioDigest(false, 0x0200, 0x01);
+		auto h40a = runScenarioDigest(true, 0x0000, 0x00);
+		auto h40b = runScenarioDigest(true, 0x0000, 0x00);
+
+		EXPECT_TRUE(h32a.first);
+		EXPECT_TRUE(h40a.first);
+		EXPECT_EQ(h32a.second, h32b.second);
+		EXPECT_EQ(h40a.second, h40b.second);
+	}
+
 	TEST(GenesisVdpObjectRunSafetyTests, StartupDisplayEnableCanRenderFirstVisibleScanline) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
