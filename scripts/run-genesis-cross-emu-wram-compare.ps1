@@ -89,16 +89,19 @@ function Start-TimedRun {
 	if ($PreArgs -and $PreArgs.Count -gt 0) {
 		$launchArgs += $PreArgs
 	}
-	$launchArgs += $Rom
+	# Always quote ROM path explicitly so spaces/special chars are preserved.
+	$quotedRom = '"' + $Rom + '"'
+	$launchArgs += $quotedRom
 	if ([System.IO.Path]::GetExtension($ProgramPath).Equals('.dll', [System.StringComparison]::OrdinalIgnoreCase)) {
 		$launchTarget = "dotnet"
 		$launchArgs = @($ProgramPath)
 		if ($PreArgs -and $PreArgs.Count -gt 0) {
 			$launchArgs += $PreArgs
 		}
-		$launchArgs += $Rom
+		$launchArgs += $quotedRom
 	}
 
+	Write-Host "$Name launch: $launchTarget $($launchArgs -join ' ')" -ForegroundColor DarkCyan
 	$process = Start-Process -FilePath $launchTarget -WorkingDirectory $WorkingDir -ArgumentList $launchArgs -PassThru
 	if ($null -eq $process) {
 		throw "Failed to launch $Name process."

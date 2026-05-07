@@ -2404,6 +2404,55 @@ c'mon! make a ***big*** change, I mean 1000's of lines of code, work many fixes,
 
 I am seeing tests, not emulator code changes, you can't make any progress unless you change the emulator itself; focus on changing emulator code
 
+I'm still seeing very small amounts of code changes, make very large amount of lines of code changes focusing on making the Genesis loading and logo screen (first few seconds) work, you can run `Mesen-Expanded` with the same roms and track what they do (put in more debug logging if you want) in a parallel run so we can see what we're trying to match; you can't make any progress unless you change the emulator itself; focus on changing emulator code and hitting the startup logo, if we can run the first few seconds correctly, we can run the rest; continue;
+
+You're not quoting the rom paths when opening a rom when running Nexen so spaces are messing up parsing; "quote" the rom paths/names; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2532,6 +2581,7 @@ prepare for a release, and clean up and update documentation and fix as many war
 
 
 0+0+597+347+0+754+565+315+619+626=3823
+0+0+570+
 625 * 5 = 3125
 3823 - 3125 = 698
 94

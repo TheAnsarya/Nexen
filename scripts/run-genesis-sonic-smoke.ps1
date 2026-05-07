@@ -19,7 +19,7 @@ if ($VerboseLaunch) {
 	Write-Host "LaunchArg: $romArgument" -ForegroundColor DarkCyan
 	Write-Host "LaunchCommand: `"$resolvedExe`" $romArgument" -ForegroundColor DarkCyan
 }
-$process = Start-Process -FilePath $resolvedExe -ArgumentList $romArgument -PassThru
+$process = Start-Process -FilePath $resolvedExe -ArgumentList @($romArgument) -PassThru
 
 if ($null -eq $process) {
 	Write-Error "Failed to launch Nexen process."

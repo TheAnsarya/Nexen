@@ -70,6 +70,13 @@ private:
 	bool _tmssEnabled = false;
 	bool _tmssUnlocked = false;
 	bool _tmssVdpBlockLogged = false;
+	bool _tmssStartupBypassLogged = false;
+	bool _tmssUnlockPending = false;
+	uint16_t _tmssUnlockDelayMclk = 0;
+	uint8_t _tmssCartRegister = 0;
+	uint32_t _startupWindowFrames = 8;
+	uint32_t _startupTraceSequence = 0;
+	uint64_t _startupTraceDigest = 0;
 	bool _segaCdSubCpuRunning = false;
 	bool _segaCdSubCpuBusRequest = false;
 	uint32_t _segaCdSubCpuTransitionCount = 0;
@@ -184,6 +191,12 @@ private:
 	void SetZ80Reset(bool resetAsserted, bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag);
 	bool ComputeZ80RuntimeRunning() const;
 	void UpdateZ80RuntimeState(bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag);
+	void EvaluateTmssUnlockState(bool allowLog, uint32_t addr, uint32_t value, bool isWrite);
+	void UpdateTmssUnlockWindow(uint32_t masterClocks);
+	bool IsStartupWindowActive() const;
+	bool IsTmssLockedVdpReadAllowed(uint32_t addr) const;
+	bool IsTmssLockedVdpWriteAllowed(uint32_t addr) const;
+	void TraceStartupEvent(const char* tag, uint32_t addr, uint16_t value, uint16_t auxValue = 0);
 
 public:
 	GenesisMemoryManager();
@@ -219,6 +232,7 @@ public:
 	__forceinline void Exec(uint32_t cycles) {
 		_masterClock += cycles;
 		AdvanceZ80BusArbitration(cycles);
+		UpdateTmssUnlockWindow(cycles);
 		UpdateZ80RuntimeState(false, 0, 0, "exec");
 		if (_z80RuntimeRunning) {
 			_z80RuntimeRunnableCycles += cycles;

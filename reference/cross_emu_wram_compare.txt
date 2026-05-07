@@ -11,6 +11,6 @@ mesenRunSkipped=True
 mesenTraceMissing=True
 nexenTraceMissing=True
 mesenTimedOut=False
-nexenTimedOut=False
+nexenTimedOut=True
 firstDiffIndex=-1
 status=identical
