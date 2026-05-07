@@ -631,6 +631,97 @@ namespace {
 		EXPECT_EQ(info.TileIndex, kTileRow2Col2 & 0x07FF);
 	}
 
+	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapTileInfoPreservesFlipPriorityAndPixelDataUnderScrollPlaneA) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x8200);
+		vdp.WriteControlPort(0x8B07);
+		vdp.WriteControlPort(0x8D01);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+
+		// Line 0 H-scroll: plane A = 16.
+		vram[0x0400] = 0x00;
+		vram[0x0401] = 0x10;
+
+		constexpr uint16_t kTileIndex = 0x0055;
+		constexpr uint16_t kEntry = 0xF855;
+		constexpr uint16_t kEntryAddr = 0x0084;
+		vram[kEntryAddr + 0] = (uint8_t)((kEntry >> 8) & 0xFFu);
+		vram[kEntryAddr + 1] = (uint8_t)(kEntry & 0xFFu);
+
+		// Row 5, pixel 6 (high nibble of byte 3) should be selected after h/v flip at sample (x=1,y=2).
+		uint32_t tileBase = (uint32_t)kTileIndex * 32u;
+		vram[(tileBase + 5u * 4u + 3u) & 0xFFFFu] = 0xB0;
+
+		GenesisVdpState state = vdp.GetState();
+		state.Vsram[2] = 16;
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+
+		GetTilemapOptions options = {};
+		options.Layer = 0;
+		options.DisplayMode = TilemapDisplayMode::Default;
+		DebugTilemapTileInfo info = tools.GetTilemapTileInfo(1, 2, vram, options, (BaseState&)state, (BaseState&)ppuState);
+
+		EXPECT_EQ(info.Column, 2);
+		EXPECT_EQ(info.Row, 2);
+		EXPECT_EQ(info.TileMapAddress, kEntryAddr);
+		EXPECT_EQ(info.TileIndex, kTileIndex);
+		EXPECT_EQ(info.PaletteIndex, 3);
+		EXPECT_EQ(info.HighPriority, NullableBoolean::True);
+		EXPECT_EQ(info.HorizontalMirroring, NullableBoolean::True);
+		EXPECT_EQ(info.VerticalMirroring, NullableBoolean::True);
+		EXPECT_EQ(info.PixelData, 0x0b);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapTileInfoPreservesFlipPriorityAndPixelDataUnderScrollPlaneB) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x8400);
+		vdp.WriteControlPort(0x8B07);
+		vdp.WriteControlPort(0x8D01);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+
+		// Line 0 H-scroll: plane B = 16.
+		vram[0x0402] = 0x00;
+		vram[0x0403] = 0x10;
+
+		constexpr uint16_t kTileIndex = 0x0034;
+		constexpr uint16_t kEntry = 0xF834;
+		constexpr uint16_t kEntryAddr = 0x0084;
+		vram[kEntryAddr + 0] = (uint8_t)((kEntry >> 8) & 0xFFu);
+		vram[kEntryAddr + 1] = (uint8_t)(kEntry & 0xFFu);
+
+		uint32_t tileBase = (uint32_t)kTileIndex * 32u;
+		vram[(tileBase + 5u * 4u + 3u) & 0xFFFFu] = 0xC0;
+
+		GenesisVdpState state = vdp.GetState();
+		state.Vsram[3] = 16;
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+
+		GetTilemapOptions options = {};
+		options.Layer = 1;
+		options.DisplayMode = TilemapDisplayMode::Default;
+		DebugTilemapTileInfo info = tools.GetTilemapTileInfo(1, 2, vram, options, (BaseState&)state, (BaseState&)ppuState);
+
+		EXPECT_EQ(info.Column, 2);
+		EXPECT_EQ(info.Row, 2);
+		EXPECT_EQ(info.TileMapAddress, kEntryAddr);
+		EXPECT_EQ(info.TileIndex, kTileIndex);
+		EXPECT_EQ(info.PaletteIndex, 3);
+		EXPECT_EQ(info.HighPriority, NullableBoolean::True);
+		EXPECT_EQ(info.HorizontalMirroring, NullableBoolean::True);
+		EXPECT_EQ(info.VerticalMirroring, NullableBoolean::True);
+		EXPECT_EQ(info.PixelData, 0x0c);
+	}
+
 	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapReportsCellScrollUsingActiveLineGroup) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);

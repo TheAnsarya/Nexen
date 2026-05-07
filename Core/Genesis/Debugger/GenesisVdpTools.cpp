@@ -182,10 +182,9 @@ DebugTilemapInfo GenesisVdpTools::GetTilemap(GetTilemapOptions options, BaseStat
 
 			for (uint32_t y = 0; y < 8; y++) {
 				uint32_t tileY = vFlip ? (7 - y) : y;
-				uint32_t rowStart = tileIndex * 32 + tileY * 4;
 				for (uint32_t x = 0; x < 8; x++) {
 					uint32_t tileX = hFlip ? (7 - x) : x;
-					uint8_t colorIndex = GetTilePixelColor<TileFormat::Bpp4>(vram, 0xFFFF, rowStart, (uint8_t)tileX);
+					uint8_t colorIndex = GetSpriteTilePixel(vram, (uint32_t)tileIndex * 32u, (uint8_t)tileY, (uint8_t)tileX);
 					uint32_t paletteEntry = (paletteIndex * 16 + colorIndex) & 0x3F;
 					uint32_t outX = col * 8 + x;
 					uint32_t outY = row * 8 + y;
@@ -243,8 +242,7 @@ DebugTilemapTileInfo GenesisVdpTools::GetTilemapTileInfo(uint32_t x, uint32_t y,
 	uint32_t py = adjustedY & 0x07;
 	uint32_t tileX = hFlip ? (7 - px) : px;
 	uint32_t tileY = vFlip ? (7 - py) : py;
-	uint32_t rowStart = tileIndex * 32 + tileY * 4;
-	uint8_t pixelData = GetTilePixelColor<TileFormat::Bpp4>(vram, 0xFFFF, rowStart, (uint8_t)tileX);
+	uint8_t pixelData = GetSpriteTilePixel(vram, (uint32_t)tileIndex * 32u, (uint8_t)tileY, (uint8_t)tileX);
 
 	info.Row = (int32_t)row;
 	info.Column = (int32_t)col;
