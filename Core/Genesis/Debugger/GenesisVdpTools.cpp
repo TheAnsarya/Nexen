@@ -164,7 +164,8 @@ DebugTilemapInfo GenesisVdpTools::GetTilemap(GetTilemapOptions options, BaseStat
 	uint16_t activeLine = (uint16_t)std::min<uint16_t>(state.VCounter, (uint16_t)(visibleHeight - 1u));
 
 	result.ScrollX = GetHScroll(vram, reg11, hScrollBase, activeLine, planeA);
-	result.ScrollY = GetVScroll(state.Vsram, reg11, 0, planeA);
+	uint16_t vScrollColumn2 = (uint16_t)((result.ScrollX >> 4) & 0x1Fu);
+	result.ScrollY = GetVScroll(state.Vsram, reg11, vScrollColumn2, planeA);
 
 	uint32_t planeWidth = result.ColumnCount;
 	uint32_t planeHeight = result.RowCount;
