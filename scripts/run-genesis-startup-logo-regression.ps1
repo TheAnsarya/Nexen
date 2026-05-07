@@ -11,9 +11,16 @@
 	[int]$FrameEnd = 600,
 	[int]$AutoStopTimeoutSeconds = 45,
 	[int]$MaxLines = 1200000,
+	[string[]]$StartupProfiles = @("logo-compat"),
 	[switch]$UpdateBaseline,
 	[switch]$AllowMissingMesenFrontend,
-	[switch]$DisableMesenFallbackRunModes
+	[switch]$DisableMesenFallbackRunModes,
+	[switch]$StrictRequireMesenTraces,
+	[switch]$FailOnWramDiff,
+	[switch]$FailOnStartupDiff,
+	[switch]$FailOnMissingStartupMetrics,
+	[int]$MinNexenStartupCheckpointCount = 1,
+	[int]$MinNexenStartupDisplayTransitionCount = 0
 )
 
 $ErrorActionPreference = "Stop"
@@ -156,7 +163,12 @@ if ((Test-Path -LiteralPath $resolvedBaselinePath) -and -not $UpdateBaseline) {
 $results = New-Object System.Collections.Generic.List[object]
 $regressionCount = 0
 $missingMesenCount = 0
+$policyFailureCount = 0
 $anyErrors = $false
+
+if ($null -eq $StartupProfiles -or $StartupProfiles.Count -eq 0) {
+	$StartupProfiles = @("logo-compat")
+}
 
 foreach ($rom in $RomPaths) {
 	if ([string]::IsNullOrWhiteSpace($rom)) {
@@ -169,101 +181,144 @@ foreach ($rom in $RomPaths) {
 		continue
 	}
 	$romKey = New-RomKey -Path $resolvedRom
-	$runReportPath = Join-Path $resolvedOutputDirectory "cross-emu-$romKey-$timestamp.txt"
-
-	$runnerArgs = @(
-		"-NoProfile",
-		"-ExecutionPolicy", "Bypass",
-		"-File", $resolvedCompareScriptPath,
-		"-RomPath", $resolvedRom,
-		"-FrameStart", "$FrameStart",
-		"-FrameEnd", "$FrameEnd",
-		"-AutoStopTimeoutSeconds", "$AutoStopTimeoutSeconds",
-		"-MaxLines", "$MaxLines",
-		"-ReportPath", $runReportPath
-	)
-
-	if ($AllowMissingMesenFrontend) {
-		$runnerArgs += "-AllowMissingMesenFrontend"
-	}
-	if ($DisableMesenFallbackRunModes) {
-		$runnerArgs += "-DisableMesenFallbackRunModes"
-	}
-
-	Write-Host "Running startup/logo compare for $resolvedRom" -ForegroundColor Cyan
-	& pwsh @runnerArgs
-	$compareExitCode = $LASTEXITCODE
-
-	$report = Convert-ReportToMap -ReportPath $runReportPath
-	$mesenMissing = Get-BoolValue -Value $report["mesenTraceMissing"]
-	$mesenStartupMissing = Get-BoolValue -Value $report["mesenStartupTraceMissing"]
-	$mesenSkipped = Get-BoolValue -Value $report["mesenRunSkipped"]
-
-	if ($mesenMissing -or $mesenStartupMissing -or $mesenSkipped) {
-		$missingMesenCount++
-	}
-
-	$current = [ordered]@{
-		romKey = $romKey
-		romPath = $resolvedRom
-		reportPath = $runReportPath
-		compareExitCode = $compareExitCode
-		firstDiffIndex = Get-IntValue -Value $report["firstDiffIndex"] -Default -1
-		startupFirstDiffIndex = Get-IntValue -Value $report["startupFirstDiffIndex"] -Default -1
-		nexenHash = $report["nexenHash"]
-		mesenHash = $report["mesenHash"]
-		nexenStartupHash = $report["nexenStartupHash"]
-		mesenStartupHash = $report["mesenStartupHash"]
-		nexenLines = Get-IntValue -Value $report["nexenLines"]
-		mesenLines = Get-IntValue -Value $report["mesenLines"]
-		nexenStartupLines = Get-IntValue -Value $report["nexenStartupLines"]
-		mesenStartupLines = Get-IntValue -Value $report["mesenStartupLines"]
-		nexenStartupCheckpointCount = Get-IntValue -Value $report["nexenStartupCheckpointCount"]
-		mesenStartupCheckpointCount = Get-IntValue -Value $report["mesenStartupCheckpointCount"]
-		nexenStartupDisplayTransitionCount = Get-IntValue -Value $report["nexenStartupDisplayTransitionCount"]
-		mesenStartupDisplayTransitionCount = Get-IntValue -Value $report["mesenStartupDisplayTransitionCount"]
-		mesenTraceMissing = $mesenMissing
-		mesenStartupTraceMissing = $mesenStartupMissing
-		mesenRunSkipped = $mesenSkipped
-	}
-
-	$baselineEntry = $null
-	if ($baseline.ContainsKey($romKey)) {
-		$baselineEntry = $baseline[$romKey]
-	}
-
-	$regressions = New-Object System.Collections.Generic.List[string]
-	if ($null -ne $baselineEntry) {
-		if ($baselineEntry.nexenHash -and $baselineEntry.nexenHash -ne $current.nexenHash) {
-			$regressions.Add("nexenHash")
+	foreach ($profile in $StartupProfiles) {
+		$profileName = if ([string]::IsNullOrWhiteSpace($profile)) { "logo-compat" } else { $profile }
+		$profileKey = [Regex]::Replace($profileName.ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-')
+		if ([string]::IsNullOrWhiteSpace($profileKey)) {
+			$profileKey = "logo-compat"
 		}
-		if ($baselineEntry.nexenStartupHash -and $baselineEntry.nexenStartupHash -ne $current.nexenStartupHash) {
-			$regressions.Add("nexenStartupHash")
-		}
-		if ($baselineEntry.nexenStartupCheckpointCount -ne $null -and [int]$baselineEntry.nexenStartupCheckpointCount -ne $current.nexenStartupCheckpointCount) {
-			$regressions.Add("nexenStartupCheckpointCount")
-		}
-		if ($baselineEntry.nexenStartupDisplayTransitionCount -ne $null -and [int]$baselineEntry.nexenStartupDisplayTransitionCount -ne $current.nexenStartupDisplayTransitionCount) {
-			$regressions.Add("nexenStartupDisplayTransitionCount")
-		}
-	}
 
-	$current["regressions"] = @($regressions)
-	$current["regressionCount"] = $regressions.Count
-	if ($regressions.Count -gt 0) {
-		$regressionCount++
-	}
+		$runReportPath = Join-Path $resolvedOutputDirectory "cross-emu-$romKey-$profileKey-$timestamp.txt"
 
-	if ($compareExitCode -ne 0 -and $compareExitCode -ne 3) {
-		$anyErrors = $true
-	}
+		$runnerArgs = @(
+			"-NoProfile",
+			"-ExecutionPolicy", "Bypass",
+			"-File", $resolvedCompareScriptPath,
+			"-RomPath", $resolvedRom,
+			"-FrameStart", "$FrameStart",
+			"-FrameEnd", "$FrameEnd",
+			"-AutoStopTimeoutSeconds", "$AutoStopTimeoutSeconds",
+			"-MaxLines", "$MaxLines",
+			"-ReportPath", $runReportPath
+		)
 
-	$results.Add([pscustomobject]$current)
+		if ($AllowMissingMesenFrontend) {
+			$runnerArgs += "-AllowMissingMesenFrontend"
+		}
+		if ($DisableMesenFallbackRunModes) {
+			$runnerArgs += "-DisableMesenFallbackRunModes"
+		}
+
+		$oldProfile = $env:NEXEN_GENESIS_STARTUP_PROFILE
+		try {
+			$env:NEXEN_GENESIS_STARTUP_PROFILE = $profileName
+			Write-Host "Running startup/logo compare for $resolvedRom (profile=$profileName)" -ForegroundColor Cyan
+			& pwsh @runnerArgs
+			$compareExitCode = $LASTEXITCODE
+		} finally {
+			$env:NEXEN_GENESIS_STARTUP_PROFILE = $oldProfile
+		}
+
+		$report = Convert-ReportToMap -ReportPath $runReportPath
+		$mesenMissing = Get-BoolValue -Value $report["mesenTraceMissing"]
+		$mesenStartupMissing = Get-BoolValue -Value $report["mesenStartupTraceMissing"]
+		$mesenSkipped = Get-BoolValue -Value $report["mesenRunSkipped"]
+
+		if ($mesenMissing -or $mesenStartupMissing -or $mesenSkipped) {
+			$missingMesenCount++
+		}
+
+		$current = [ordered]@{
+			romKey = $romKey
+			profile = $profileName
+			profileKey = $profileKey
+			baselineKey = "$romKey::$profileKey"
+			romPath = $resolvedRom
+			reportPath = $runReportPath
+			compareExitCode = $compareExitCode
+			firstDiffIndex = Get-IntValue -Value $report["firstDiffIndex"] -Default -1
+			startupFirstDiffIndex = Get-IntValue -Value $report["startupFirstDiffIndex"] -Default -1
+			nexenHash = $report["nexenHash"]
+			mesenHash = $report["mesenHash"]
+			nexenStartupHash = $report["nexenStartupHash"]
+			mesenStartupHash = $report["mesenStartupHash"]
+			nexenLines = Get-IntValue -Value $report["nexenLines"]
+			mesenLines = Get-IntValue -Value $report["mesenLines"]
+			nexenStartupLines = Get-IntValue -Value $report["nexenStartupLines"]
+			mesenStartupLines = Get-IntValue -Value $report["mesenStartupLines"]
+			nexenStartupCheckpointCount = Get-IntValue -Value $report["nexenStartupCheckpointCount"]
+			mesenStartupCheckpointCount = Get-IntValue -Value $report["mesenStartupCheckpointCount"]
+			nexenStartupDisplayTransitionCount = Get-IntValue -Value $report["nexenStartupDisplayTransitionCount"]
+			mesenStartupDisplayTransitionCount = Get-IntValue -Value $report["mesenStartupDisplayTransitionCount"]
+			mesenTraceMissing = $mesenMissing
+			mesenStartupTraceMissing = $mesenStartupMissing
+			mesenRunSkipped = $mesenSkipped
+		}
+
+		$baselineEntry = $null
+		if ($baseline.ContainsKey($current.baselineKey)) {
+			$baselineEntry = $baseline[$current.baselineKey]
+		}
+
+		$regressions = New-Object System.Collections.Generic.List[string]
+		if ($null -ne $baselineEntry) {
+			if ($baselineEntry.nexenHash -and $baselineEntry.nexenHash -ne $current.nexenHash) {
+				$regressions.Add("nexenHash")
+			}
+			if ($baselineEntry.nexenStartupHash -and $baselineEntry.nexenStartupHash -ne $current.nexenStartupHash) {
+				$regressions.Add("nexenStartupHash")
+			}
+			if ($baselineEntry.nexenStartupCheckpointCount -ne $null -and [int]$baselineEntry.nexenStartupCheckpointCount -ne $current.nexenStartupCheckpointCount) {
+				$regressions.Add("nexenStartupCheckpointCount")
+			}
+			if ($baselineEntry.nexenStartupDisplayTransitionCount -ne $null -and [int]$baselineEntry.nexenStartupDisplayTransitionCount -ne $current.nexenStartupDisplayTransitionCount) {
+				$regressions.Add("nexenStartupDisplayTransitionCount")
+			}
+		}
+
+		$current["regressions"] = @($regressions)
+		$current["regressionCount"] = $regressions.Count
+		if ($regressions.Count -gt 0) {
+			$regressionCount++
+		}
+
+		if ($compareExitCode -ne 0 -and $compareExitCode -ne 3) {
+			$anyErrors = $true
+		}
+
+		$policyFailures = New-Object System.Collections.Generic.List[string]
+		if ($StrictRequireMesenTraces -and ($mesenMissing -or $mesenStartupMissing -or $mesenSkipped)) {
+			$policyFailures.Add("missingMesenTrace")
+		}
+		if ($FailOnWramDiff -and $current.firstDiffIndex -ge 0) {
+			$policyFailures.Add("wramDiff")
+		}
+		if ($FailOnStartupDiff -and $current.startupFirstDiffIndex -ge 0) {
+			$policyFailures.Add("startupDiff")
+		}
+		if ($FailOnMissingStartupMetrics) {
+			if ($current.nexenStartupCheckpointCount -lt $MinNexenStartupCheckpointCount) {
+				$policyFailures.Add("nexenStartupCheckpointCount")
+			}
+			if ($current.nexenStartupDisplayTransitionCount -lt $MinNexenStartupDisplayTransitionCount) {
+				$policyFailures.Add("nexenStartupDisplayTransitionCount")
+			}
+		}
+
+		$current["policyFailures"] = @($policyFailures)
+		$current["policyFailureCount"] = $policyFailures.Count
+		$current["verdict"] = if ($policyFailures.Count -gt 0) { "policy-fail" } else { "pass" }
+		if ($policyFailures.Count -gt 0) {
+			$policyFailureCount++
+		}
+
+		$results.Add([pscustomobject]$current)
+	}
 }
 
 $baselineOut = [ordered]@{}
 foreach ($item in $results) {
-	$baselineOut[$item.romKey] = [ordered]@{
+	$baselineOut[$item.baselineKey] = [ordered]@{
 		nexenHash = $item.nexenHash
 		nexenStartupHash = $item.nexenStartupHash
 		nexenStartupCheckpointCount = $item.nexenStartupCheckpointCount
@@ -293,7 +348,15 @@ $summary | Add-Member -NotePropertyName "maxLines" -NotePropertyValue $MaxLines
 $summary | Add-Member -NotePropertyName "romCount" -NotePropertyValue $results.Count
 $summary | Add-Member -NotePropertyName "regressionCount" -NotePropertyValue $regressionCount
 $summary | Add-Member -NotePropertyName "missingMesenCount" -NotePropertyValue $missingMesenCount
+$summary | Add-Member -NotePropertyName "policyFailureCount" -NotePropertyValue $policyFailureCount
 $summary | Add-Member -NotePropertyName "anyErrors" -NotePropertyValue $anyErrors
+$summary | Add-Member -NotePropertyName "startupProfiles" -NotePropertyValue @($StartupProfiles)
+$summary | Add-Member -NotePropertyName "strictRequireMesenTraces" -NotePropertyValue ([bool]$StrictRequireMesenTraces)
+$summary | Add-Member -NotePropertyName "failOnWramDiff" -NotePropertyValue ([bool]$FailOnWramDiff)
+$summary | Add-Member -NotePropertyName "failOnStartupDiff" -NotePropertyValue ([bool]$FailOnStartupDiff)
+$summary | Add-Member -NotePropertyName "failOnMissingStartupMetrics" -NotePropertyValue ([bool]$FailOnMissingStartupMetrics)
+$summary | Add-Member -NotePropertyName "minNexenStartupCheckpointCount" -NotePropertyValue $MinNexenStartupCheckpointCount
+$summary | Add-Member -NotePropertyName "minNexenStartupDisplayTransitionCount" -NotePropertyValue $MinNexenStartupDisplayTransitionCount
 $summary | Add-Member -NotePropertyName "baselinePath" -NotePropertyValue $resolvedBaselinePath
 $summary | Add-Member -NotePropertyName "baselineUpdated" -NotePropertyValue ([bool]$UpdateBaseline)
 $summary | Add-Member -NotePropertyName "results" -NotePropertyValue $resultArray.ToArray()
@@ -313,17 +376,29 @@ $md.Add("- maxLines: $MaxLines")
 $md.Add("- romCount: $($summary.romCount)")
 $md.Add("- regressionCount: $regressionCount")
 $md.Add("- missingMesenCount: $missingMesenCount")
+$md.Add("- policyFailureCount: $policyFailureCount")
 $md.Add("- anyErrors: $anyErrors")
+$md.Add("- startupProfiles: $($StartupProfiles -join ',')")
+$md.Add("- strictRequireMesenTraces: $([bool]$StrictRequireMesenTraces)")
+$md.Add("- failOnWramDiff: $([bool]$FailOnWramDiff)")
+$md.Add("- failOnStartupDiff: $([bool]$FailOnStartupDiff)")
+$md.Add("- failOnMissingStartupMetrics: $([bool]$FailOnMissingStartupMetrics)")
+$md.Add("- minNexenStartupCheckpointCount: $MinNexenStartupCheckpointCount")
+$md.Add("- minNexenStartupDisplayTransitionCount: $MinNexenStartupDisplayTransitionCount")
 $md.Add("")
-$md.Add("| ROM | Exit | Diff | Startup Diff | Nexen Startup Hash | Mesen Startup Hash | Nexen Chkpt | Nexen Disp Tgl | Regressions |")
-$md.Add("|---|---:|---:|---:|---|---|---:|---:|---|")
+$md.Add("| ROM | Profile | Exit | Diff | Startup Diff | Nexen Startup Hash | Mesen Startup Hash | Nexen Chkpt | Nexen Disp Tgl | Regressions | Policy Failures | Verdict |")
+$md.Add("|---|---|---:|---:|---:|---|---|---:|---:|---|---|---|")
 foreach ($item in $results) {
 	$regressionText = ""
 	if ($item.regressionCount -gt 0) {
 		$regressionText = ($item.regressions -join ",")
 	}
+	$policyText = ""
+	if ($item.policyFailureCount -gt 0) {
+		$policyText = ($item.policyFailures -join ",")
+	}
 
-	$md.Add("| $($item.romKey) | $($item.compareExitCode) | $($item.firstDiffIndex) | $($item.startupFirstDiffIndex) | $($item.nexenStartupHash) | $($item.mesenStartupHash) | $($item.nexenStartupCheckpointCount) | $($item.nexenStartupDisplayTransitionCount) | $regressionText |")
+	$md.Add("| $($item.romKey) | $($item.profileKey) | $($item.compareExitCode) | $($item.firstDiffIndex) | $($item.startupFirstDiffIndex) | $($item.nexenStartupHash) | $($item.mesenStartupHash) | $($item.nexenStartupCheckpointCount) | $($item.nexenStartupDisplayTransitionCount) | $regressionText | $policyText | $($item.verdict) |")
 }
 
 $md.Add("")
@@ -331,6 +406,7 @@ $md.Add("## Notes")
 $md.Add("")
 $md.Add("- compareExitCode=3 indicates first-difference detection from the compare script.")
 $md.Add("- missingMesenCount includes missing trace/startup-trace or skipped Mesen run.")
+$md.Add("- policy failures are controlled by strict gate switches and do not imply infrastructure errors.")
 $md.Add("- Use -UpdateBaseline to refresh baseline hashes and startup counters.")
 
 $md | Out-File -LiteralPath $summaryMarkdownPath -Encoding utf8
@@ -347,6 +423,10 @@ if ($anyErrors) {
 
 if ($regressionCount -gt 0) {
 	exit 5
+}
+
+if ($policyFailureCount -gt 0) {
+	exit 6
 }
 
 exit 0
