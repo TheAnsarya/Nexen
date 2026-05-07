@@ -27,7 +27,9 @@
 	[switch]$TimestampedArtifacts,
 	[switch]$CreateLatestAliases,
 	[switch]$CompactCiSummary,
-	[switch]$ForceFirstAttemptFailureProbe
+	[switch]$ForceFirstAttemptFailureProbe,
+	[switch]$CompatibilitySelfTest,
+	[switch]$ForceLegacyHashFallback
 )
 
 # Legacy compatibility handling: accept and map/ignore historical parameters.
@@ -132,7 +134,7 @@ function Get-Sha256Bytes {
 	}
 
 	$hashData = [System.Security.Cryptography.SHA256].GetMethod('HashData', [Type[]]@([byte[]]))
-	if ($null -ne $hashData) {
+	if (-not $ForceLegacyHashFallback -and $null -ne $hashData) {
 		return [System.Security.Cryptography.SHA256]::HashData($InputBytes)
 	}
 
@@ -152,7 +154,7 @@ function Convert-BytesToHexLower {
 	}
 
 	$toHexString = [System.Convert].GetMethod('ToHexString', [Type[]]@([byte[]]))
-	if ($null -ne $toHexString) {
+	if (-not $ForceLegacyHashFallback -and $null -ne $toHexString) {
 		return ([System.Convert]::ToHexString($Bytes)).ToLowerInvariant()
 	}
 
@@ -179,6 +181,23 @@ function Write-LatestAlias {
 	Ensure-ParentDirectory -TargetPath $latestAlias
 	Copy-Item -LiteralPath $ActualPath -Destination $latestAlias -Force
 	Write-Host "$Label latest alias: $latestAlias" -ForegroundColor Cyan
+}
+
+if ($CompatibilitySelfTest) {
+	$sampleBytes = [System.Text.Encoding]::UTF8.GetBytes('abc')
+	$expectedHash = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
+	$actualHash = Convert-BytesToHexLower (Get-Sha256Bytes $sampleBytes)
+	if ($actualHash -ne $expectedHash) {
+		Write-Error "CompatibilitySelfTest failed: expected $expectedHash, got $actualHash"
+		exit 13
+	}
+
+	$mode = if ($ForceLegacyHashFallback) { 'legacy-fallback' } else { 'default' }
+	Write-Host "CompatibilitySelfTest passed (mode=$mode, sha256=$actualHash)." -ForegroundColor Green
+	if ($CompactCiSummary) {
+		Write-Host "CI_SUMMARY compatibilitySelfTest=pass mode=$mode summaryHash=$actualHash exitCode=0"
+	}
+	exit 0
 }
 
 $runner = Join-Path $PSScriptRoot "run-genesis-sonic-smoke.ps1"

@@ -44,6 +44,12 @@ namespace {
 		}
 	}
 
+	void BuildArgbPaletteFromCram(GenesisVdp& vdp, std::array<uint32_t, 64>& palette) {
+		for (uint32_t i = 0; i < palette.size(); i++) {
+			palette[i] = CramToArgb(vdp.GetCramPointer()[i]);
+		}
+	}
+
 	void SetupSingleVisibleSpriteAtBase(GenesisVdp& vdp, uint16_t satBase) {
 		uint8_t* vram = vdp.GetVramPointer();
 		memset(vram, 0, 0x10000);
@@ -304,6 +310,123 @@ namespace {
 		for (uint32_t x = 0; x < 8; x++) {
 			EXPECT_NE(spritePreviews[x], kVisibleBg);
 		}
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapParitiesRenderedFrameBackdropForTransparentPlaneCellAtOrigin) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.GetCramPointer()[0] = 0x000e;
+		vdp.GetCramPointer()[1] = 0x0000;
+		vdp.WriteControlPort(0x8144);
+		vdp.WriteControlPort(0x8200);
+		vdp.WriteControlPort(0x9000);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+		constexpr uint16_t kTileIndex = 12;
+
+		vram[0] = (uint8_t)(kTileIndex >> 8);
+		vram[1] = (uint8_t)kTileIndex;
+
+		vdp.Run(488);
+
+		GenesisVdpState state = vdp.GetState();
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+		GetTilemapOptions options = {};
+		options.Layer = 0;
+		options.DisplayMode = TilemapDisplayMode::Default;
+
+		std::array<uint32_t, 64> palette = {};
+		BuildArgbPaletteFromCram(vdp, palette);
+
+		FrameInfo tilemapSize = tools.GetTilemapSize(options, (BaseState&)state);
+		std::vector<uint32_t> tilemapBuffer(tilemapSize.Width * tilemapSize.Height);
+		tools.GetTilemap(options, (BaseState&)state, (BaseState&)ppuState, vram, palette.data(), tilemapBuffer.data());
+
+		uint16_t* frame = vdp.GetScreenBuffer(false);
+		EXPECT_EQ(frame[0], 0x7c00);
+		EXPECT_EQ(tilemapBuffer[0], palette[0]);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, MalformedSatOutOfRangeLinkKeepsDebuggerPreviewStable) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.GetCramPointer()[0] = 0x0000;
+		vdp.GetCramPointer()[1] = 0x000e;
+		ConfigureSpriteRenderMode(vdp, true, 0x00);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+		constexpr uint16_t kTileIndex = 4;
+		WriteSolidSpriteTileRow0(vram, kTileIndex, 1);
+
+		constexpr uint16_t kSatBase = 0x0000;
+		WriteSpriteSatEntry(vram, kSatBase, 0, 128, 1, 1, 127, (uint16_t)(0x8000 | kTileIndex), 128);
+
+		vdp.Run(488);
+
+		GenesisVdpState state = vdp.GetState();
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+		GetSpritePreviewOptions options = {};
+		options.Background = SpriteBackground::Gray;
+		DebugSpritePreviewInfo previewInfo = tools.GetSpritePreviewInfo(options, (BaseState&)state, (BaseState&)ppuState);
+
+		std::array<uint32_t, 64> palette = {};
+		BuildArgbPaletteFromCram(vdp, palette);
+
+		std::vector<DebugSpriteInfo> sprites(previewInfo.SpriteCount);
+		std::vector<uint32_t> spritePreviews(previewInfo.SpriteCount * 128u * 128u);
+		std::vector<uint32_t> screenPreview(previewInfo.Width * previewInfo.Height);
+		tools.GetSpriteList(options, (BaseState&)state, (BaseState&)ppuState, vram, nullptr, palette.data(), sprites.data(), spritePreviews.data(), screenPreview.data());
+
+		uint32_t previewRowStart = previewInfo.VisibleY * previewInfo.Width + previewInfo.VisibleX;
+		constexpr uint32_t kVisibleBg = 0xFF666666;
+		EXPECT_NE(screenPreview[previewRowStart], kVisibleBg);
+		EXPECT_EQ(screenPreview[previewRowStart + 16], kVisibleBg);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, SelfReferentialSatLinkDoesNotBreakDebuggerPreviewComposition) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.GetCramPointer()[0] = 0x0000;
+		vdp.GetCramPointer()[1] = 0x000e;
+		ConfigureSpriteRenderMode(vdp, true, 0x00);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+		constexpr uint16_t kTileIndex = 4;
+		WriteSolidSpriteTileRow0(vram, kTileIndex, 1);
+
+		constexpr uint16_t kSatBase = 0x0000;
+		WriteSpriteSatEntry(vram, kSatBase, 0, 128, 1, 1, 1, (uint16_t)(0x8000 | kTileIndex), 128);
+		WriteSpriteSatEntry(vram, kSatBase, 1, 128, 1, 1, 1, (uint16_t)(0x8000 | kTileIndex), 128);
+
+		vdp.Run(488);
+
+		GenesisVdpState state = vdp.GetState();
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+		GetSpritePreviewOptions options = {};
+		options.Background = SpriteBackground::Gray;
+		DebugSpritePreviewInfo previewInfo = tools.GetSpritePreviewInfo(options, (BaseState&)state, (BaseState&)ppuState);
+
+		std::array<uint32_t, 64> palette = {};
+		BuildArgbPaletteFromCram(vdp, palette);
+
+		std::vector<DebugSpriteInfo> sprites(previewInfo.SpriteCount);
+		std::vector<uint32_t> spritePreviews(previewInfo.SpriteCount * 128u * 128u);
+		std::vector<uint32_t> screenPreview(previewInfo.Width * previewInfo.Height);
+		tools.GetSpriteList(options, (BaseState&)state, (BaseState&)ppuState, vram, nullptr, palette.data(), sprites.data(), spritePreviews.data(), screenPreview.data());
+
+		uint32_t previewRowStart = previewInfo.VisibleY * previewInfo.Width + previewInfo.VisibleX;
+		constexpr uint32_t kVisibleBg = 0xFF666666;
+		EXPECT_NE(screenPreview[previewRowStart], kVisibleBg);
+		EXPECT_EQ(screenPreview[previewRowStart + 16], kVisibleBg);
 	}
 
 	TEST(GenesisVdpObjectRunSafetyTests, StartupDisplayEnableCanRenderFirstVisibleScanline) {
