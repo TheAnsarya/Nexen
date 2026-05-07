@@ -28,13 +28,13 @@ namespace {
 
 	__forceinline bool IsZ80BusReqAddress(uint32_t addr) {
 		uint32_t effectiveAddr = addr;
-		bool isBusReqAddress = (effectiveAddr & 0xFFFF00) == 0xA11100;
+		bool isBusReqAddress = (effectiveAddr & 0xFFFFFE) == 0xA11100;
 		return isBusReqAddress;
 	}
 
 	__forceinline bool IsZ80ResetAddress(uint32_t addr) {
 		uint32_t effectiveAddr = addr;
-		bool isResetAddress = (effectiveAddr & 0xFFFF00) == 0xA11200;
+		bool isResetAddress = (effectiveAddr & 0xFFFFFE) == 0xA11200;
 		return isResetAddress;
 	}
 
@@ -115,6 +115,7 @@ namespace {
 	static bool sNexenStartupTraceEnabled = true;
 	static uint32_t sNexenStartupTraceFrameEnd = 6u;
 	static uint32_t sNexenStartupTraceMaxLines = 50000u;
+	static bool sNexenGenesisTmssStrictMode = false;
 
 	static bool TryParseNexenTraceEnvU32AutoBase(const char* name, uint32_t minValue, uint32_t maxValue, uint32_t& outValue) {
 		const char* raw = std::getenv(name);
@@ -178,6 +179,9 @@ namespace {
 		}
 		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_TRACE_MAX_LINES", 1u, 0xFFFFFFFFu, value)) {
 			sNexenStartupTraceMaxLines = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_TMSS_STRICT", 0u, 1u, value)) {
+			sNexenGenesisTmssStrictMode = value != 0;
 		}
 	}
 
@@ -348,6 +352,7 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_z80RuntimeLastTransitionClock = 0;
 	UpdateZ80RuntimeState(false, 0, 0, "init");
 	_tmssEnabled = _emu->GetSettings()->GetGenesisConfig().EnableTmss;
+	_tmssStrictMode = sNexenGenesisTmssStrictMode;
 	_tmssUnlocked = false;
 	_tmssVdpBlockLogged = false;
 	_segaCdSubCpuRunning = false;
@@ -484,11 +489,19 @@ void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t instructionProgramC
 	}
 }
 
+bool GenesisMemoryManager::IsTmssVdpLockEnforced() const {
+	return _tmssEnabled && _tmssStrictMode && !_tmssUnlocked;
+}
+
 bool GenesisMemoryManager::IsStartupWindowActive() const {
 	return _vdp && _vdp->GetFrameCount() < _startupWindowFrames;
 }
 
 bool GenesisMemoryManager::IsTmssLockedVdpReadAllowed(uint32_t addr) const {
+	if (!IsTmssVdpLockEnforced()) {
+		return true;
+	}
+
 	uint32_t port = addr & 0x1F;
 	if (port >= 0x04 && port < 0x10) {
 		// Allow status/HV polling while locked to stabilize startup loops.
@@ -504,6 +517,10 @@ bool GenesisMemoryManager::IsTmssLockedVdpReadAllowed(uint32_t addr) const {
 }
 
 bool GenesisMemoryManager::IsTmssLockedVdpWriteAllowed(uint32_t addr) const {
+	if (!IsTmssVdpLockEnforced()) {
+		return true;
+	}
+
 	uint32_t port = addr & 0x1F;
 	if (port >= 0x04 && port < 0x08) {
 		// Allow register/control setup while TMSS is still settling.
@@ -582,10 +599,13 @@ void GenesisMemoryManager::EvaluateTmssUnlockState(bool allowLog, uint32_t addr,
 
 	_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
 	_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
+	MessageManager::Log(std::format("[Genesis][MMU] TMSS mode enable={} strictLocking={} (strict toggled by NEXEN_GENESIS_TMSS_STRICT)",
+		_tmssEnabled ? 1 : 0,
+		_tmssStrictMode ? 1 : 0));
 }
 
 void GenesisMemoryManager::UpdateTmssUnlockWindow(uint32_t masterClocks) {
-	if (!_tmssEnabled || !_tmssUnlockPending || _tmssUnlocked) {
+	if (!IsTmssVdpLockEnforced() || !_tmssUnlockPending) {
 		return;
 	}
 
@@ -1576,7 +1596,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
-		if (_tmssEnabled && !_tmssUnlocked) {
+		if (IsTmssVdpLockEnforced()) {
 			if (!IsTmssLockedVdpReadAllowed(addr)) {
 				if (!_tmssVdpBlockLogged) {
 					_tmssVdpBlockLogged = true;
@@ -1800,7 +1820,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
-		if (_tmssEnabled && !_tmssUnlocked) {
+		if (IsTmssVdpLockEnforced()) {
 			if (!IsTmssLockedVdpReadAllowed(addr)) {
 				if (!_tmssVdpBlockLogged) {
 					_tmssVdpBlockLogged = true;
@@ -1997,7 +2017,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 				pc));
 		}
 		vdpWrite8GateCount++;
-		if (_tmssEnabled && !_tmssUnlocked) {
+		if (IsTmssVdpLockEnforced()) {
 			if (!IsTmssLockedVdpWriteAllowed(addr)) {
 				if (!_tmssVdpBlockLogged) {
 					_tmssVdpBlockLogged = true;
@@ -2254,7 +2274,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 				pc));
 		}
 		vdpWrite16GateCount++;
-		if (_tmssEnabled && !_tmssUnlocked) {
+		if (IsTmssVdpLockEnforced()) {
 			if (!IsTmssLockedVdpWriteAllowed(addr)) {
 				TraceStartupEvent("TMSS_VDP_W16_BLOCK", addr, effectiveValue, 0);
 				_openBus = effectiveLowByte;
@@ -2763,7 +2783,7 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return effectiveValue;
 	}
 	if (effectiveAddr >= 0xC00000 && effectiveAddr <= 0xC0001F) {
-		if (_tmssEnabled && !_tmssUnlocked) {
+		if (IsTmssVdpLockEnforced()) {
 			uint8_t effectiveValue = _openBus;
 			_openBus = effectiveValue;
 			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x30);
@@ -3038,7 +3058,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	}
 	if (effectiveAddr >= 0xC00000 && effectiveAddr <= 0xC0001F) {
 		uint8_t effectiveValue = value;
-		if (_tmssEnabled && !_tmssUnlocked) {
+		if (IsTmssVdpLockEnforced()) {
 			_openBus = effectiveValue;
 			TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x30);
 			return;
@@ -3143,6 +3163,7 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_ramEnable);
 	SV(_ramWritable);
 	SV(_tmssEnabled);
+	SV(_tmssStrictMode);
 	SV(_tmssUnlocked);
 	SV(_tmssStartupBypassLogged);
 	SV(_tmssUnlockPending);
@@ -3254,6 +3275,8 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	if (_emu && _emu->GetSettings()) {
 		_tmssEnabled = _emu->GetSettings()->GetGenesisConfig().EnableTmss;
 	}
+	LoadNexenStartupTraceConfigFromEnv();
+	_tmssStrictMode = sNexenGenesisTmssStrictMode;
 	uint32_t startupWindowFrames = _startupWindowFrames;
 	if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_WINDOW_FRAMES", 0u, 120u, startupWindowFrames)) {
 		_startupWindowFrames = startupWindowFrames;

@@ -2408,6 +2408,7 @@ I'm still seeing very small amounts of code changes, make very large amount of l
 
 You're not quoting the rom paths when opening a rom when running Nexen so spaces are messing up parsing; "quote" the rom paths/names; continue;
 
+yes! that was several hundred lines of code, but do even more and bigger; Mesen-Expanded runs Sonic, Nexen doesn't, fix that; continue;
 
 
 

@@ -68,6 +68,7 @@ private:
 
 	// TMSS (Trademark Security System)
 	bool _tmssEnabled = false;
+	bool _tmssStrictMode = false;
 	bool _tmssUnlocked = false;
 	bool _tmssVdpBlockLogged = false;
 	bool _tmssStartupBypassLogged = false;
@@ -193,6 +194,7 @@ private:
 	void UpdateZ80RuntimeState(bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag);
 	void EvaluateTmssUnlockState(bool allowLog, uint32_t addr, uint32_t value, bool isWrite);
 	void UpdateTmssUnlockWindow(uint32_t masterClocks);
+	bool IsTmssVdpLockEnforced() const;
 	bool IsStartupWindowActive() const;
 	bool IsTmssLockedVdpReadAllowed(uint32_t addr) const;
 	bool IsTmssLockedVdpWriteAllowed(uint32_t addr) const;
