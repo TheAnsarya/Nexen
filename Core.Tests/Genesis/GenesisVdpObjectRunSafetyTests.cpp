@@ -811,6 +811,104 @@ namespace {
 		EXPECT_EQ(info.TileIndex, kTileCol1 & 0x07FF);
 	}
 
+	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapTileInfoMatchesTilemapCoordinatesUnderLineScroll) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x8200);
+		vdp.WriteControlPort(0x8B03);
+		vdp.WriteControlPort(0x8D01);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+
+		// Line 1 H-scroll: plane A = 8.
+		vram[0x0404] = 0x00;
+		vram[0x0405] = 0x08;
+
+		constexpr uint16_t kEntry = 0x0123;
+		vram[0x0002] = (uint8_t)((kEntry >> 8) & 0xFFu);
+		vram[0x0003] = (uint8_t)(kEntry & 0xFFu);
+
+		GenesisVdpState state = vdp.GetState();
+		state.VCounter = 1;
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+
+		std::array<uint32_t, 64> palette = {};
+		BuildArgbPaletteFromCram(vdp, palette);
+
+		GetTilemapOptions mapOptions = {};
+		mapOptions.Layer = 0;
+		mapOptions.DisplayMode = TilemapDisplayMode::Default;
+		FrameInfo mapSize = tools.GetTilemapSize(mapOptions, (BaseState&)state);
+		std::vector<uint32_t> mapBuffer(mapSize.Width * mapSize.Height);
+		DebugTilemapInfo mapInfo = tools.GetTilemap(mapOptions, (BaseState&)state, (BaseState&)ppuState, vram, palette.data(), mapBuffer.data());
+
+		constexpr uint32_t kSampleX = 0;
+		constexpr uint32_t kSampleY = 1;
+		DebugTilemapTileInfo tileInfo = tools.GetTilemapTileInfo(kSampleX, kSampleY, vram, mapOptions, (BaseState&)state, (BaseState&)ppuState);
+
+		uint32_t expectedCol = ((kSampleX + mapInfo.ScrollX) % mapSize.Width) / 8u;
+		uint32_t expectedRow = ((kSampleY + mapInfo.ScrollY) % mapSize.Height) / 8u;
+		uint32_t expectedAddr = ((expectedRow * (mapSize.Width / 8u) + expectedCol) * 2u) & 0xFFFFu;
+		uint16_t expectedEntry = (uint16_t)(((uint16_t)vram[expectedAddr] << 8) | vram[(expectedAddr + 1u) & 0xFFFFu]);
+
+		EXPECT_EQ((uint32_t)tileInfo.Column, expectedCol);
+		EXPECT_EQ((uint32_t)tileInfo.Row, expectedRow);
+		EXPECT_EQ((uint32_t)tileInfo.TileMapAddress, expectedAddr);
+		EXPECT_EQ((uint32_t)tileInfo.TileIndex, (expectedEntry & 0x07FFu));
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapTileInfoMatchesTilemapCoordinatesUnderCellScroll) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x8200);
+		vdp.WriteControlPort(0x8B02);
+		vdp.WriteControlPort(0x8D01);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+
+		// Cell group for lines 8-15 uses scroll 8.
+		vram[0x0420] = 0x00;
+		vram[0x0421] = 0x08;
+
+		constexpr uint16_t kEntry = 0x0166;
+		vram[0x0042] = (uint8_t)((kEntry >> 8) & 0xFFu);
+		vram[0x0043] = (uint8_t)(kEntry & 0xFFu);
+
+		GenesisVdpState state = vdp.GetState();
+		state.VCounter = 9;
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+
+		std::array<uint32_t, 64> palette = {};
+		BuildArgbPaletteFromCram(vdp, palette);
+
+		GetTilemapOptions mapOptions = {};
+		mapOptions.Layer = 0;
+		mapOptions.DisplayMode = TilemapDisplayMode::Default;
+		FrameInfo mapSize = tools.GetTilemapSize(mapOptions, (BaseState&)state);
+		std::vector<uint32_t> mapBuffer(mapSize.Width * mapSize.Height);
+		DebugTilemapInfo mapInfo = tools.GetTilemap(mapOptions, (BaseState&)state, (BaseState&)ppuState, vram, palette.data(), mapBuffer.data());
+
+		constexpr uint32_t kSampleX = 0;
+		constexpr uint32_t kSampleY = 9;
+		DebugTilemapTileInfo tileInfo = tools.GetTilemapTileInfo(kSampleX, kSampleY, vram, mapOptions, (BaseState&)state, (BaseState&)ppuState);
+
+		uint32_t expectedCol = ((kSampleX + mapInfo.ScrollX) % mapSize.Width) / 8u;
+		uint32_t expectedRow = ((kSampleY + mapInfo.ScrollY) % mapSize.Height) / 8u;
+		uint32_t expectedAddr = ((expectedRow * (mapSize.Width / 8u) + expectedCol) * 2u) & 0xFFFFu;
+		uint16_t expectedEntry = (uint16_t)(((uint16_t)vram[expectedAddr] << 8) | vram[(expectedAddr + 1u) & 0xFFFFu]);
+
+		EXPECT_EQ((uint32_t)tileInfo.Column, expectedCol);
+		EXPECT_EQ((uint32_t)tileInfo.Row, expectedRow);
+		EXPECT_EQ((uint32_t)tileInfo.TileMapAddress, expectedAddr);
+		EXPECT_EQ((uint32_t)tileInfo.TileIndex, (expectedEntry & 0x07FFu));
+	}
+
 	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapReportsCellScrollUsingActiveLineGroup) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
