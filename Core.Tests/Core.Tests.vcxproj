@@ -332,6 +332,12 @@
 		<ClCompile Include="Genesis\GenesisRuntimeTranscriptHandshakeTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>
+			<ClCompile Include="Genesis\GenesisStartupLogoProfileTests.cpp">
+				<PrecompiledHeader>Use</PrecompiledHeader>
+			</ClCompile>
+			<ClCompile Include="Genesis\GenesisStartupLogoStressTests.cpp">
+				<PrecompiledHeader>Use</PrecompiledHeader>
+			</ClCompile>
 		<ClCompile Include="Genesis\GenesisPsgMixedAudioTests.cpp">
 			<PrecompiledHeader>Use</PrecompiledHeader>
 		</ClCompile>

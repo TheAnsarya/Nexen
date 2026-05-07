@@ -53,8 +53,11 @@ private:
 	bool _z80BusAck = false;
 	uint16_t _z80BusReqDelayMclk = 0;
 	uint16_t _z80ResumeDelayMclk = 0;
-	static constexpr uint16_t Z80BusReqAckDelayMclk = 7;
-	static constexpr uint16_t Z80BusResumeDelayMclk = 7;
+	static constexpr uint16_t DefaultZ80BusReqAckDelayMclk = 7;
+	static constexpr uint16_t DefaultZ80BusResumeDelayMclk = 7;
+	uint16_t _z80BusReqAckDelayMclkSetting = DefaultZ80BusReqAckDelayMclk;
+	uint16_t _z80BusResumeDelayMclkSetting = DefaultZ80BusResumeDelayMclk;
+	bool _z80LatchOnlyHighByteWrites = true;
 	bool _z80RuntimeRunning = false;
 	uint64_t _z80RuntimeRunnableCycles = 0;
 	uint64_t _z80RuntimeStalledCycles = 0;
@@ -78,6 +81,12 @@ private:
 	uint32_t _startupWindowFrames = 8;
 	uint32_t _startupTraceSequence = 0;
 	uint64_t _startupTraceDigest = 0;
+	uint32_t _startupCheckpointIntervalFrames = 1;
+	uint32_t _startupCheckpointEndFrame = 600;
+	uint32_t _startupNextCheckpointFrame = 0;
+	uint32_t _startupDisplayTransitionCount = 0;
+	bool _startupLastDisplayEnabled = false;
+	bool _startupProfilePreferMesenBusHandoff = true;
 	bool _segaCdSubCpuRunning = false;
 	bool _segaCdSubCpuBusRequest = false;
 	uint32_t _segaCdSubCpuTransitionCount = 0;
@@ -194,6 +203,8 @@ private:
 	void UpdateZ80RuntimeState(bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag);
 	void EvaluateTmssUnlockState(bool allowLog, uint32_t addr, uint32_t value, bool isWrite);
 	void UpdateTmssUnlockWindow(uint32_t masterClocks);
+	void ApplyStartupEnvironmentProfile();
+	void EmitStartupCheckpointIfNeeded(const char* sourceTag);
 	bool IsTmssVdpLockEnforced() const;
 	bool IsStartupWindowActive() const;
 	bool IsTmssLockedVdpReadAllowed(uint32_t addr) const;
@@ -236,6 +247,7 @@ public:
 		AdvanceZ80BusArbitration(cycles);
 		UpdateTmssUnlockWindow(cycles);
 		UpdateZ80RuntimeState(false, 0, 0, "exec");
+		EmitStartupCheckpointIfNeeded("exec");
 		if (_z80RuntimeRunning) {
 			_z80RuntimeRunnableCycles += cycles;
 		} else {
@@ -252,6 +264,18 @@ public:
 	uint64_t GetZ80RuntimeTransitionCount() const { return _z80RuntimeTransitionCount; }
 	uint64_t GetZ80RuntimeStateEpoch() const { return _z80RuntimeStateEpoch; }
 	uint64_t GetZ80RuntimeLastTransitionClock() const { return _z80RuntimeLastTransitionClock; }
+	bool GetZ80BusRequestLatched() const { return _z80BusRequest; }
+	bool GetZ80ResetAsserted() const { return _z80Reset; }
+	bool GetZ80BusAckLatched() const { return _z80BusAck; }
+	uint16_t GetZ80BusReqDelayMclk() const { return _z80BusReqDelayMclk; }
+	uint16_t GetZ80ResumeDelayMclk() const { return _z80ResumeDelayMclk; }
+	uint16_t GetZ80BusReqAckDelaySettingMclk() const { return _z80BusReqAckDelayMclkSetting; }
+	uint16_t GetZ80BusResumeDelaySettingMclk() const { return _z80BusResumeDelayMclkSetting; }
+	uint32_t GetStartupWindowFrames() const { return _startupWindowFrames; }
+	uint32_t GetStartupCheckpointEndFrame() const { return _startupCheckpointEndFrame; }
+	uint32_t GetStartupCheckpointIntervalFrames() const { return _startupCheckpointIntervalFrames; }
+	uint32_t GetStartupDisplayTransitionCount() const { return _startupDisplayTransitionCount; }
+	bool GetStartupProfilePreferMesenBusHandoff() const { return _startupProfilePreferMesenBusHandoff; }
 	uint32_t GetDebugTranscriptLaneCount() const { return _ioState.DebugTranscriptLaneCount; }
 	uint64_t GetDebugTranscriptLaneDigest() const { return _ioState.DebugTranscriptLaneDigest; }
 	void ClearDebugTranscriptLane();

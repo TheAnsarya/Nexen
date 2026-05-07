@@ -8,12 +8,12 @@
 	[string[]]$NexenArgs = @(),
 	[switch]$DisableMesenFallbackRunModes,
 	[switch]$AllowMissingMesenFrontend,
-	[int]$AutoStopTimeoutSeconds = 30,
+	[int]$AutoStopTimeoutSeconds = 45,
 	[int]$FrameStart = 0,
-	[int]$FrameEnd = 80,
+	[int]$FrameEnd = 600,
 	[string]$AddressStart = "0xE00000",
 	[string]$AddressEnd = "0xFFFFFF",
-	[int]$MaxLines = 300000,
+	[int]$MaxLines = 1200000,
 	[string]$ReportPath = ".\reference\cross_emu_wram_compare.txt"
 )
 
@@ -659,6 +659,10 @@ if ($mesenStartupLines.Count -gt 0 -or $nexenStartupLines.Count -gt 0) {
 $report = New-Object System.Collections.Generic.List[string]
 $report.Add("GENESIS_CROSS_EMU_WRAM_TRACE_COMPARE")
 $report.Add("rom=$resolvedRom")
+$report.Add("frameStart=$FrameStart")
+$report.Add("frameEnd=$FrameEnd")
+$report.Add("autoStopTimeoutSeconds=$AutoStopTimeoutSeconds")
+$report.Add("maxLines=$MaxLines")
 $report.Add("mesenTrace=$mesenTracePath")
 $report.Add("nexenTrace=$nexenTracePath")
 $report.Add("mesenStartupTrace=$mesenStartupTracePath")
