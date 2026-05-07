@@ -89,7 +89,16 @@ private:
 	uint16_t GetPlaneABase() const { return (uint16_t)((_state.Registers[2] & 0x38) << 10); }
 	uint16_t GetPlaneBBase() const { return (uint16_t)((_state.Registers[4] & 0x07) << 13); }
 	uint16_t GetWindowBase() const { return (uint16_t)((_state.Registers[3] & 0x3E) << 10); }
-	uint16_t GetSpriteTableBase() const { return (uint16_t)((_state.Registers[5] & 0x7F) << 9); }
+	uint16_t GetSpriteTableBase() const {
+		uint8_t reg5 = _state.Registers[5];
+		// In H40 mode bit 0 is ignored for SAT base selection.
+		if (IsH40Mode()) {
+			reg5 &= 0x7E;
+		} else {
+			reg5 &= 0x7F;
+		}
+		return (uint16_t)(reg5 << 9);
+	}
 	uint16_t GetHScrollBase() const { return (uint16_t)((_state.Registers[13] & 0x3F) << 10); }
 	uint8_t GetBackgroundPaletteIndex() const { return (_state.Registers[7] >> 4) & 3; }
 	uint8_t GetBackgroundColorIndex() const { return _state.Registers[7] & 0x0F; }

@@ -2371,6 +2371,8 @@ you didn't do much work, do way more work, chain them go for a very long time, m
 
 1
 
+Bing says a Genesis MMU doesn't exist, `https://copilot.microsoft.com/chats/DY9gZFWmk71kEnsFSG1J5`, so what are we working on, make graphics work, big efforts, and debugging like tiles, sprites, and such; continue fixing from `Hoshiruna/Mesen2-Expanded`; continue;
+
 
 
 

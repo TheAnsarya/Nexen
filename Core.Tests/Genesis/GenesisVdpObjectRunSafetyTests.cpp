@@ -4,6 +4,30 @@
 #include "Shared/Emulator.h"
 
 namespace {
+	void SetupSingleVisibleSpriteAtBase(GenesisVdp& vdp, uint16_t satBase) {
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+
+		constexpr uint16_t kTileIndex = 4;
+		uint32_t tileBase = kTileIndex * 32u;
+		// Tile row 0: eight pixels with color index 1.
+		vram[tileBase + 0] = 0x11;
+		vram[tileBase + 1] = 0x11;
+		vram[tileBase + 2] = 0x11;
+		vram[tileBase + 3] = 0x11;
+
+		uint16_t addr = satBase & 0xFFFF;
+		// Sprite at (0,0) after hardware offset of 128.
+		vram[(addr + 0) & 0xFFFF] = 0x00; // y high
+		vram[(addr + 1) & 0xFFFF] = 0x80; // y low (128)
+		vram[(addr + 2) & 0xFFFF] = 0x00; // size/link high (1x1)
+		vram[(addr + 3) & 0xFFFF] = 0x00; // link = 0 end
+		vram[(addr + 4) & 0xFFFF] = 0x80; // priority=1
+		vram[(addr + 5) & 0xFFFF] = (uint8_t)kTileIndex;
+		vram[(addr + 6) & 0xFFFF] = 0x00; // x high
+		vram[(addr + 7) & 0xFFFF] = 0x80; // x low (128)
+	}
+
 	TEST(GenesisVdpObjectRunSafetyTests, RunOneScanlinePreservesNullDependencySafetyPreconditions) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
@@ -67,6 +91,46 @@ namespace {
 		EXPECT_EQ(state.Registers[15], 0x02);
 		EXPECT_NE(state.StatusRegister & VdpStatus::FifoEmpty, 0u);
 		EXPECT_EQ(vdp.GetScreenWidth(), 320u);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, H40SpriteTableBaseMasksReg5Bit0ForVisibleSpriteFetch) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.GetCramPointer()[0] = 0x0000;
+		vdp.GetCramPointer()[1] = 0x000e;
+
+		// H40 mode (default) and display enabled.
+		vdp.WriteControlPort(0x8C81);
+		vdp.WriteControlPort(0x8144);
+		// R5 bit0 set; H40 should ignore this bit and use base 0x0000.
+		vdp.WriteControlPort(0x8501);
+
+		SetupSingleVisibleSpriteAtBase(vdp, 0x0000);
+		vdp.Run(488);
+
+		uint16_t* frame = vdp.GetScreenBuffer(false);
+		EXPECT_EQ(frame[0], 0x7c00);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, H32SpriteTableBaseUsesReg5Bit0ForVisibleSpriteFetch) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.GetCramPointer()[0] = 0x0000;
+		vdp.GetCramPointer()[1] = 0x000e;
+
+		// Force H32 mode and enable display.
+		vdp.WriteControlPort(0x8C80);
+		vdp.WriteControlPort(0x8144);
+		// In H32 mode, R5 bit0 selects SAT base 0x0200.
+		vdp.WriteControlPort(0x8501);
+
+		SetupSingleVisibleSpriteAtBase(vdp, 0x0200);
+		vdp.Run(488);
+
+		uint16_t* frame = vdp.GetScreenBuffer(false);
+		EXPECT_EQ(frame[0], 0x7c00);
 	}
 
 	TEST(GenesisVdpObjectRunSafetyTests, StartupDisplayEnableCanRenderFirstVisibleScanline) {
