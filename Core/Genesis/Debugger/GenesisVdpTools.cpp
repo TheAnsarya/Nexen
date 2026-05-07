@@ -10,6 +10,45 @@ namespace {
 		return h40 ? (uint16_t)(reg5 & 0x7E) << 9 : (uint16_t)(reg5 & 0x7F) << 9;
 	}
 
+	uint16_t GetHScrollBase(uint8_t reg13) {
+		return (uint16_t)(reg13 & 0x3F) << 10;
+	}
+
+	uint16_t GetHScroll(const uint8_t* vram, uint8_t reg11, uint16_t hScrollBase, uint16_t line, bool planeA) {
+		uint32_t entryOffset = 0;
+		switch (reg11 & 0x03) {
+			case 0x01:
+				entryOffset = 0;
+				break;
+			case 0x02:
+				entryOffset = (line & ~7u) * 4u;
+				break;
+			case 0x03:
+				entryOffset = (uint32_t)line * 4u;
+				break;
+			default:
+				entryOffset = 0;
+				break;
+		}
+
+		uint16_t byteAddr = (uint16_t)((hScrollBase + entryOffset) & 0xFFFFu);
+		uint16_t scrollA = ((uint16_t)vram[byteAddr] << 8) | vram[(byteAddr + 1u) & 0xFFFFu];
+		uint16_t scrollB = ((uint16_t)vram[(byteAddr + 2u) & 0xFFFFu] << 8) | vram[(byteAddr + 3u) & 0xFFFFu];
+		return planeA ? (scrollA & 0x03FFu) : (scrollB & 0x03FFu);
+	}
+
+	uint16_t GetVScroll(const uint16_t* vsram, uint8_t reg11, uint16_t tileCol2, bool planeA) {
+		uint8_t vsramIdx;
+		if ((reg11 & 0x04u) != 0) {
+			uint8_t base = (uint8_t)((tileCol2 & 0x1Fu) * 2u);
+			vsramIdx = planeA ? base : (base + 1u);
+		} else {
+			vsramIdx = planeA ? 0u : 1u;
+		}
+
+		return (uint16_t)(vsram[vsramIdx & 0x27u] & 0x03FFu);
+	}
+
 	struct DebugGenesisLineSprite {
 		uint16_t Tile = 0;
 		uint16_t RawX = 0;
@@ -97,6 +136,7 @@ FrameInfo GenesisVdpTools::GetTilemapSize([[maybe_unused]] GetTilemapOptions opt
 DebugTilemapInfo GenesisVdpTools::GetTilemap(GetTilemapOptions options, BaseState& baseState, [[maybe_unused]] BaseState& ppuToolsState, uint8_t* vram, uint32_t* palette, uint32_t* outBuffer) {
 	DebugTilemapInfo result = {};
 	GenesisVdpState& state = (GenesisVdpState&)baseState;
+	bool planeA = options.Layer == 0;
 
 	result.Bpp = 4;
 	result.Format = TileFormat::Bpp4;
@@ -116,6 +156,15 @@ DebugTilemapInfo GenesisVdpTools::GetTilemap(GetTilemapOptions options, BaseStat
 	if (!vram || !outBuffer || !palette) {
 		return result;
 	}
+
+	uint8_t reg11 = state.Registers[11];
+	uint8_t reg13 = state.Registers[13];
+	uint16_t hScrollBase = GetHScrollBase(reg13);
+	uint16_t visibleHeight = (state.Registers[1] & 0x08) ? 240u : 224u;
+	uint16_t activeLine = (uint16_t)std::min<uint16_t>(state.VCounter, (uint16_t)(visibleHeight - 1u));
+
+	result.ScrollX = GetHScroll(vram, reg11, hScrollBase, activeLine, planeA);
+	result.ScrollY = GetVScroll(state.Vsram, reg11, 0, planeA);
 
 	uint32_t planeWidth = result.ColumnCount;
 	uint32_t planeHeight = result.RowCount;
