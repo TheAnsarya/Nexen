@@ -472,6 +472,79 @@ namespace {
 		EXPECT_EQ(infoB.ScrollX, 0x222u);
 	}
 
+	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapTileInfoUsesActiveHorizontalScrollPosition) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x8200);
+		vdp.WriteControlPort(0x8B03);
+		vdp.WriteControlPort(0x8D01);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+
+		vram[0x0400] = 0x00;
+		vram[0x0401] = 0x08;
+		vram[0x0402] = 0x00;
+		vram[0x0403] = 0x00;
+
+		constexpr uint16_t kTileCol0 = 0x0011;
+		constexpr uint16_t kTileCol1 = 0x0123;
+		vram[0x0000] = (uint8_t)((kTileCol0 >> 8) & 0xFFu);
+		vram[0x0001] = (uint8_t)(kTileCol0 & 0xFFu);
+		vram[0x0002] = (uint8_t)((kTileCol1 >> 8) & 0xFFu);
+		vram[0x0003] = (uint8_t)(kTileCol1 & 0xFFu);
+
+		GenesisVdpState state = vdp.GetState();
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+
+		GetTilemapOptions options = {};
+		options.Layer = 0;
+		options.DisplayMode = TilemapDisplayMode::Default;
+		DebugTilemapTileInfo info = tools.GetTilemapTileInfo(0, 0, vram, options, (BaseState&)state, (BaseState&)ppuState);
+
+		EXPECT_EQ(info.Column, 1);
+		EXPECT_EQ(info.Row, 0);
+		EXPECT_EQ(info.TileMapAddress, 0x0002);
+		EXPECT_EQ(info.TileIndex, kTileCol1 & 0x07FF);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapTileInfoUsesPerColumnVerticalScrollAtSampledX) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x8200);
+		vdp.WriteControlPort(0x8B04);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+
+		constexpr uint16_t kTileRow0Col2 = 0x0007;
+		constexpr uint16_t kTileRow2Col2 = 0x0155;
+		constexpr uint16_t kRow0Col2Addr = 0x0004;
+		constexpr uint16_t kRow2Col2Addr = 0x0084;
+		vram[kRow0Col2Addr + 0] = (uint8_t)((kTileRow0Col2 >> 8) & 0xFFu);
+		vram[kRow0Col2Addr + 1] = (uint8_t)(kTileRow0Col2 & 0xFFu);
+		vram[kRow2Col2Addr + 0] = (uint8_t)((kTileRow2Col2 >> 8) & 0xFFu);
+		vram[kRow2Col2Addr + 1] = (uint8_t)(kTileRow2Col2 & 0xFFu);
+
+		GenesisVdpState state = vdp.GetState();
+		state.Vsram[2] = 16;
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+
+		GetTilemapOptions options = {};
+		options.Layer = 0;
+		options.DisplayMode = TilemapDisplayMode::Default;
+		DebugTilemapTileInfo info = tools.GetTilemapTileInfo(16, 0, vram, options, (BaseState&)state, (BaseState&)ppuState);
+
+		EXPECT_EQ(info.Column, 2);
+		EXPECT_EQ(info.Row, 2);
+		EXPECT_EQ(info.TileMapAddress, kRow2Col2Addr);
+		EXPECT_EQ(info.TileIndex, kTileRow2Col2 & 0x07FF);
+	}
+
 	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapReportsCellScrollUsingActiveLineGroup) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);

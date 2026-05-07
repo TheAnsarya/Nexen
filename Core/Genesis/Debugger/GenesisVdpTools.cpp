@@ -208,11 +208,27 @@ DebugTilemapTileInfo GenesisVdpTools::GetTilemapTileInfo(uint32_t x, uint32_t y,
 		return info;
 	}
 
-	uint32_t col = x / 8;
-	uint32_t row = y / 8;
-	if (col >= planeWidthTiles || row >= planeHeightTiles || !vram) {
+	if (!vram) {
 		return info;
 	}
+
+	bool planeA = options.Layer == 0;
+	uint8_t reg11 = state.Registers[11];
+	uint8_t reg13 = state.Registers[13];
+	uint16_t hScrollBase = GetHScrollBase(reg13);
+	uint16_t visibleHeight = (state.Registers[1] & 0x08) ? 240u : 224u;
+	uint16_t activeLine = (uint16_t)std::min<uint16_t>(state.VCounter, (uint16_t)(visibleHeight - 1u));
+	uint16_t scrollX = GetHScroll(vram, reg11, hScrollBase, activeLine, planeA);
+	uint16_t vScrollColumn2 = (uint16_t)(((x & 0x1FFu) >> 4) & 0x1Fu);
+	uint16_t scrollY = GetVScroll(state.Vsram, reg11, vScrollColumn2, planeA);
+
+	uint32_t planeWidthPx = planeWidthTiles * 8u;
+	uint32_t planeHeightPx = planeHeightTiles * 8u;
+	uint32_t adjustedX = (x + scrollX) % planeWidthPx;
+	uint32_t adjustedY = (y + scrollY) % planeHeightPx;
+
+	uint32_t col = adjustedX / 8u;
+	uint32_t row = adjustedY / 8u;
 
 	uint32_t layerBase = options.Layer == 1 ? (uint32_t)((state.Registers[4] & 0x07) << 13) : (uint32_t)((state.Registers[2] & 0x38) << 10);
 	uint32_t entryAddr = (layerBase + ((row * planeWidthTiles + col) * 2)) & 0xFFFF;
@@ -223,8 +239,8 @@ DebugTilemapTileInfo GenesisVdpTools::GetTilemapTileInfo(uint32_t x, uint32_t y,
 	bool vFlip = (entry & 0x1000) != 0;
 	bool hFlip = (entry & 0x0800) != 0;
 
-	uint32_t px = x & 0x07;
-	uint32_t py = y & 0x07;
+	uint32_t px = adjustedX & 0x07;
+	uint32_t py = adjustedY & 0x07;
 	uint32_t tileX = hFlip ? (7 - px) : px;
 	uint32_t tileY = vFlip ? (7 - py) : py;
 	uint32_t rowStart = tileIndex * 32 + tileY * 4;
