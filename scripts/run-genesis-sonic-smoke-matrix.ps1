@@ -124,6 +124,41 @@ function Ensure-ParentDirectory {
 	}
 }
 
+function Get-Sha256Bytes {
+	param([byte[]]$InputBytes)
+
+	if ($null -eq $InputBytes) {
+		$InputBytes = [byte[]]::new(0)
+	}
+
+	$hashData = [System.Security.Cryptography.SHA256].GetMethod('HashData', [Type[]]@([byte[]]))
+	if ($null -ne $hashData) {
+		return [System.Security.Cryptography.SHA256]::HashData($InputBytes)
+	}
+
+	$sha = [System.Security.Cryptography.SHA256]::Create()
+	try {
+		return $sha.ComputeHash($InputBytes)
+	} finally {
+		$sha.Dispose()
+	}
+}
+
+function Convert-BytesToHexLower {
+	param([byte[]]$Bytes)
+
+	if ($null -eq $Bytes) {
+		return ''
+	}
+
+	$toHexString = [System.Convert].GetMethod('ToHexString', [Type[]]@([byte[]]))
+	if ($null -ne $toHexString) {
+		return ([System.Convert]::ToHexString($Bytes)).ToLowerInvariant()
+	}
+
+	return ([System.BitConverter]::ToString($Bytes).Replace('-', '')).ToLowerInvariant()
+}
+
 function Write-LatestAlias {
 	param(
 		[string]$ActualPath,
@@ -256,8 +291,8 @@ foreach ($rom in $allRomPaths) {
 	$elapsedMs = [int64]$romStopwatch.Elapsed.TotalMilliseconds
 	$retryCountUsed = [Math]::Max(0, $attempt - 1)
 	$attemptElapsedMsCsv = [string]::Join(';', ($attemptElapsedMsValues | ForEach-Object { $_.ToString() }))
-	$romPathHashBytes = [System.Security.Cryptography.SHA256]::HashData([System.Text.Encoding]::UTF8.GetBytes($rom))
-	$romPathSha256 = ([System.Convert]::ToHexString($romPathHashBytes)).ToLowerInvariant()
+	$romPathHashBytes = Get-Sha256Bytes ([System.Text.Encoding]::UTF8.GetBytes($rom))
+	$romPathSha256 = Convert-BytesToHexLower $romPathHashBytes
 
 	if (-not $passed) {
 		$failed.Add($rom)
@@ -399,8 +434,8 @@ if (-not [string]::IsNullOrWhiteSpace($csvOutputPath)) {
 
 Write-Host "---" -ForegroundColor DarkGray
 $ciSummaryCore = "CI_SUMMARY total=$($results.Count) passed=$($results.Count - $failed.Count) failed=$($failed.Count) retriesUsed=$retriesUsedTotal retryHitCount=$retryHitCount syntheticFailures=$syntheticFailureCount probePrecedence=$ProbePrecedence totalElapsedMs=$totalElapsedMs averageElapsedMs=$averageElapsedMs maxElapsedMs=$maxElapsedMs"
-$hashBytes = [System.Security.Cryptography.SHA256]::HashData([System.Text.Encoding]::UTF8.GetBytes($ciSummaryCore))
-$ciSummaryHash = ([System.Convert]::ToHexString($hashBytes)).ToLowerInvariant()
+$hashBytes = Get-Sha256Bytes ([System.Text.Encoding]::UTF8.GetBytes($ciSummaryCore))
+$ciSummaryHash = Convert-BytesToHexLower $hashBytes
 $ciSummaryLine = "$ciSummaryCore summaryHash=$ciSummaryHash"
 
 if (-not [string]::IsNullOrWhiteSpace($jsonOutputPath)) {

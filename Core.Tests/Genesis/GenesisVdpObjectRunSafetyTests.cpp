@@ -1,14 +1,54 @@
 ﻿#include "pch.h"
 #include "Genesis/GenesisVdp.h"
 #include "Genesis/GenesisM68k.h"
+#include "Genesis/Debugger/GenesisVdpTools.h"
 #include "Shared/Emulator.h"
 
 namespace {
+	uint32_t CramToArgb(uint16_t cramColor) {
+		uint8_t r3 = (uint8_t)((cramColor >> 1) & 0x07);
+		uint8_t g3 = (uint8_t)((cramColor >> 5) & 0x07);
+		uint8_t b3 = (uint8_t)((cramColor >> 9) & 0x07);
+
+		uint8_t r = (uint8_t)((r3 << 5) | (r3 << 2) | (r3 >> 1));
+		uint8_t g = (uint8_t)((g3 << 5) | (g3 << 2) | (g3 >> 1));
+		uint8_t b = (uint8_t)((b3 << 5) | (b3 << 2) | (b3 >> 1));
+
+		return 0xFF000000u | ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+	}
+
+	void ConfigureSpriteRenderMode(GenesisVdp& vdp, bool h40, uint8_t reg5) {
+		vdp.WriteControlPort((uint16_t)(0x8C00 | (h40 ? 0x81 : 0x80)));
+		vdp.WriteControlPort(0x8144);
+		vdp.WriteControlPort((uint16_t)(0x8500 | reg5));
+	}
+
+	void WriteSpriteSatEntry(uint8_t* vram, uint16_t satBase, uint8_t index, uint16_t rawY, uint8_t vertCells, uint8_t horizCells, uint8_t link, uint16_t attrWord, uint16_t rawX) {
+		uint16_t addr = (uint16_t)(satBase + (uint16_t)index * 8u);
+		uint16_t w1 = (uint16_t)((((horizCells - 1u) & 0x03u) << 10) | (((vertCells - 1u) & 0x03u) << 8) | (link & 0x7Fu));
+		vram[(addr + 0) & 0xFFFF] = (uint8_t)(rawY >> 8);
+		vram[(addr + 1) & 0xFFFF] = (uint8_t)rawY;
+		vram[(addr + 2) & 0xFFFF] = (uint8_t)(w1 >> 8);
+		vram[(addr + 3) & 0xFFFF] = (uint8_t)w1;
+		vram[(addr + 4) & 0xFFFF] = (uint8_t)(attrWord >> 8);
+		vram[(addr + 5) & 0xFFFF] = (uint8_t)attrWord;
+		vram[(addr + 6) & 0xFFFF] = (uint8_t)(rawX >> 8);
+		vram[(addr + 7) & 0xFFFF] = (uint8_t)rawX;
+	}
+
+	void WriteSolidSpriteTileRow0(uint8_t* vram, uint16_t tileIndex, uint8_t colorNibble) {
+		uint32_t tileBase = (uint32_t)tileIndex * 32u;
+		uint8_t packed = (uint8_t)((colorNibble << 4) | colorNibble);
+		for (uint32_t i = 0; i < 4; i++) {
+			vram[(tileBase + i) & 0xFFFF] = packed;
+		}
+	}
+
 	void SetupSingleVisibleSpriteAtBase(GenesisVdp& vdp, uint16_t satBase) {
 		uint8_t* vram = vdp.GetVramPointer();
 		memset(vram, 0, 0x10000);
 
-		constexpr uint16_t kTileIndex = 4;
+		constexpr uint16_t kTileIndex = 8;
 		uint32_t tileBase = kTileIndex * 32u;
 		// Tile row 0: eight pixels with color index 1.
 		vram[tileBase + 0] = 0x11;
@@ -131,6 +171,139 @@ namespace {
 
 		uint16_t* frame = vdp.GetScreenBuffer(false);
 		EXPECT_EQ(frame[0], 0x7c00);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, H32DebuggerPreviewDropsSpritesBeyondSixteenPerLine) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.GetCramPointer()[0] = 0x0000;
+		vdp.GetCramPointer()[1] = 0x000e;
+		ConfigureSpriteRenderMode(vdp, false, 0x00);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+		constexpr uint16_t kTileIndex = 16;
+		WriteSolidSpriteTileRow0(vram, kTileIndex, 1);
+
+		constexpr uint16_t kSatBase = 0x0000;
+		for (uint8_t i = 0; i < 17; i++) {
+			uint8_t link = (i == 16) ? 0 : (uint8_t)(i + 1);
+			uint16_t rawX = (uint16_t)(128 + (uint16_t)i * 8u);
+			WriteSpriteSatEntry(vram, kSatBase, i, 128, 1, 1, link, (uint16_t)(0x8000 | kTileIndex), rawX);
+		}
+
+		vdp.Run(488);
+
+		GenesisVdpState state = vdp.GetState();
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+		GetSpritePreviewOptions options = {};
+		options.Background = SpriteBackground::Gray;
+		DebugSpritePreviewInfo previewInfo = tools.GetSpritePreviewInfo(options, (BaseState&)state, (BaseState&)ppuState);
+
+		std::array<uint32_t, 64> palette = {};
+		for (uint32_t i = 0; i < palette.size(); i++) {
+			palette[i] = CramToArgb(vdp.GetCramPointer()[i]);
+		}
+
+		std::vector<DebugSpriteInfo> sprites(previewInfo.SpriteCount);
+		std::vector<uint32_t> spritePreviews(previewInfo.SpriteCount * 128u * 128u);
+		std::vector<uint32_t> screenPreview(previewInfo.Width * previewInfo.Height);
+
+		tools.GetSpriteList(options, (BaseState&)state, (BaseState&)ppuState, vdp.GetVramPointer(), nullptr, palette.data(), sprites.data(), spritePreviews.data(), screenPreview.data());
+
+		uint32_t previewRowStart = previewInfo.VisibleY * previewInfo.Width + previewInfo.VisibleX;
+		constexpr uint32_t kVisibleBg = 0xFF666666;
+		EXPECT_NE(screenPreview[previewRowStart], kVisibleBg);
+		EXPECT_EQ(screenPreview[previewRowStart + 128], kVisibleBg);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, MaskSpriteHidesFollowingSpritesInDebuggerPreview) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.GetCramPointer()[0] = 0x0000;
+		vdp.GetCramPointer()[1] = 0x000e;
+		ConfigureSpriteRenderMode(vdp, true, 0x00);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+		constexpr uint16_t kTileIndex = 4;
+		WriteSolidSpriteTileRow0(vram, kTileIndex, 1);
+
+		constexpr uint16_t kSatBase = 0x0000;
+		WriteSpriteSatEntry(vram, kSatBase, 0, 128, 1, 1, 1, (uint16_t)(0x8000 | kTileIndex), 128);
+		WriteSpriteSatEntry(vram, kSatBase, 1, 128, 1, 1, 2, (uint16_t)(0x8000 | kTileIndex), 0);
+		WriteSpriteSatEntry(vram, kSatBase, 2, 128, 1, 1, 0, (uint16_t)(0x8000 | kTileIndex), 144);
+
+		vdp.Run(488);
+
+		GenesisVdpState state = vdp.GetState();
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+		GetSpritePreviewOptions options = {};
+		options.Background = SpriteBackground::Gray;
+		DebugSpritePreviewInfo previewInfo = tools.GetSpritePreviewInfo(options, (BaseState&)state, (BaseState&)ppuState);
+
+		std::array<uint32_t, 64> palette = {};
+		for (uint32_t i = 0; i < palette.size(); i++) {
+			palette[i] = CramToArgb(vdp.GetCramPointer()[i]);
+		}
+
+		std::vector<DebugSpriteInfo> sprites(previewInfo.SpriteCount);
+		std::vector<uint32_t> spritePreviews(previewInfo.SpriteCount * 128u * 128u);
+		std::vector<uint32_t> screenPreview(previewInfo.Width * previewInfo.Height);
+
+		tools.GetSpriteList(options, (BaseState&)state, (BaseState&)ppuState, vdp.GetVramPointer(), nullptr, palette.data(), sprites.data(), spritePreviews.data(), screenPreview.data());
+
+		uint32_t previewRowStart = previewInfo.VisibleY * previewInfo.Width + previewInfo.VisibleX;
+		constexpr uint32_t kVisibleBg = 0xFF666666;
+		EXPECT_NE(screenPreview[previewRowStart], kVisibleBg);
+		EXPECT_EQ(screenPreview[previewRowStart + 16], kVisibleBg);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, DebugSpriteScreenPreviewParitiesRenderedSliceForSingleSprite) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.GetCramPointer()[0] = 0x0000;
+		vdp.GetCramPointer()[1] = 0x000e;
+		ConfigureSpriteRenderMode(vdp, true, 0x00);
+		SetupSingleVisibleSpriteAtBase(vdp, 0x0000);
+		vdp.Run(488);
+
+		GenesisVdpState state = vdp.GetState();
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+		GetSpritePreviewOptions options = {};
+		options.Background = SpriteBackground::Gray;
+		DebugSpritePreviewInfo previewInfo = tools.GetSpritePreviewInfo(options, (BaseState&)state, (BaseState&)ppuState);
+
+		std::array<uint32_t, 64> palette = {};
+		for (uint32_t i = 0; i < palette.size(); i++) {
+			palette[i] = CramToArgb(vdp.GetCramPointer()[i]);
+		}
+
+		std::vector<DebugSpriteInfo> sprites(previewInfo.SpriteCount);
+		std::vector<uint32_t> spritePreviews(previewInfo.SpriteCount * 128u * 128u);
+		std::vector<uint32_t> screenPreview(previewInfo.Width * previewInfo.Height);
+
+		tools.GetSpriteList(options, (BaseState&)state, (BaseState&)ppuState, vdp.GetVramPointer(), nullptr, palette.data(), sprites.data(), spritePreviews.data(), screenPreview.data());
+
+		uint16_t* frame = vdp.GetScreenBuffer(false);
+		uint32_t previewRowStart = previewInfo.VisibleY * previewInfo.Width + previewInfo.VisibleX;
+		constexpr uint32_t kVisibleBg = 0xFF666666;
+		for (uint32_t x = 0; x < 8; x++) {
+			bool frameDrawn = frame[x] != 0;
+			bool previewDrawn = screenPreview[previewRowStart + x] != kVisibleBg;
+			EXPECT_EQ(frameDrawn, previewDrawn);
+		}
+
+		EXPECT_EQ(sprites[0].Visibility, SpriteVisibility::Visible);
+		for (uint32_t x = 0; x < 8; x++) {
+			EXPECT_NE(spritePreviews[x], kVisibleBg);
+		}
 	}
 
 	TEST(GenesisVdpObjectRunSafetyTests, StartupDisplayEnableCanRenderFirstVisibleScanline) {
