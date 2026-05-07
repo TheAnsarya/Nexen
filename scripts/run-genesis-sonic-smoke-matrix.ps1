@@ -32,6 +32,72 @@
 	[switch]$ForceLegacyHashFallback
 )
 
+function Get-DefaultSonicMdRomPaths {
+	$results = New-Object System.Collections.Generic.List[string]
+	$rootCandidates = @(
+		"C:\~reference-roms\genesis\md",
+		"C:\~reference-roms\genesis\md\sonic",
+		"C:\~reference-roms\genesis\sonic",
+		"C:\~reference-roms\genesis"
+	)
+
+	$preferredFiles = @(
+		"Sonic The Hedgehog (W) (REV00) [!].md",
+		"Sonic The Hedgehog (W) (REV01) [!].md",
+		"Sonic The Hedgehog 2 (W) (REV01) [!].md",
+		"Sonic The Hedgehog (USA, Europe).md",
+		"Sonic The Hedgehog 2 (USA, Europe).md"
+	)
+
+	foreach ($fileName in $preferredFiles) {
+		if ($results.Count -ge 3) {
+			break
+		}
+
+		foreach ($root in $rootCandidates) {
+			if ([string]::IsNullOrWhiteSpace($root) -or -not (Test-Path -LiteralPath $root)) {
+				continue
+			}
+
+			$candidate = Join-Path $root $fileName
+			if (Test-Path -LiteralPath $candidate) {
+				$resolved = (Resolve-Path -LiteralPath $candidate).Path
+				if (-not $results.Contains($resolved)) {
+					$results.Add($resolved)
+				}
+				break
+			}
+		}
+	}
+
+	if ($results.Count -ge 3) {
+		return $results.ToArray()
+	}
+
+	foreach ($root in $rootCandidates) {
+		if ([string]::IsNullOrWhiteSpace($root) -or -not (Test-Path -LiteralPath $root)) {
+			continue
+		}
+
+		$discovered = Get-ChildItem -LiteralPath $root -Recurse -File -Filter "*.md" -ErrorAction SilentlyContinue |
+			Where-Object { $_.Name -like "Sonic The Hedgehog*.md" } |
+			Sort-Object FullName
+
+		foreach ($item in $discovered) {
+			if ($results.Count -ge 3) {
+				break
+			}
+
+			$resolved = $item.FullName
+			if (-not $results.Contains($resolved)) {
+				$results.Add($resolved)
+			}
+		}
+	}
+
+	return $results.ToArray()
+}
+
 # Legacy compatibility handling: accept and map/ignore historical parameters.
 if ($PSBoundParameters.ContainsKey('StartupTimeoutSeconds')) {
 	if ($StartupTimeoutSeconds -gt 0) {
@@ -51,11 +117,11 @@ if ($WriteSummaryHash) {
 }
 
 if ($UseRealSonicRoms -and ($null -eq $RomPaths -or $RomPaths.Count -eq 0)) {
-	$RomPaths = @(
-		"C:\~reference-roms\genesis\Sonic The Hedgehog (W) (REV00) [!].bin",
-		"C:\~reference-roms\genesis\Sonic The Hedgehog (W) (REV01) [!].bin",
-		"C:\~reference-roms\genesis\Sonic The Hedgehog 2 (W) (REV01) [!].bin"
-	)
+	$RomPaths = Get-DefaultSonicMdRomPaths
+	if ($null -eq $RomPaths -or $RomPaths.Count -eq 0) {
+		Write-Error "No Sonic .md ROMs were found. Place ROMs under C:\~reference-roms\genesis\md (or a subfolder) or pass -RomPaths explicitly."
+		exit 12
+	}
 }
 
 $ignoredLegacy = @()

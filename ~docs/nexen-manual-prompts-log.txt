@@ -2412,6 +2412,7 @@ yes! that was several hundred lines of code, but do even more and bigger; Mesen-
 
 continue;
 
+use the `md` versions of sonic roms, not the `bin` versions ( i moved them into a sub folder); continue;
 
 
 

@@ -59,6 +59,10 @@ function Resolve-FirstExistingPath {
 	)
 
 	foreach ($candidate in $CandidatePaths) {
+		if ([string]::IsNullOrWhiteSpace($candidate)) {
+			continue
+		}
+
 		$resolvedCandidate = Resolve-OptionalPath -Path $candidate
 		if ($null -ne $resolvedCandidate) {
 			return $resolvedCandidate
@@ -224,9 +228,13 @@ if (-not [string]::IsNullOrWhiteSpace($RomPath)) {
 	$romCandidates += $RomPath
 }
 $romCandidates += @(
-	"C:\~reference-roms\genesis\Sonic The Hedgehog (W) (REV00) [!].bin",
-	"C:\~reference-roms\genesis\Sonic The Hedgehog (W) (REV01) [!].bin",
-	"C:\~reference-roms\genesis\Sonic The Hedgehog 2 (W) (REV01) [!].bin",
+	"C:\~reference-roms\genesis\md\Sonic The Hedgehog (W) (REV00) [!].md",
+	"C:\~reference-roms\genesis\md\Sonic The Hedgehog (W) (REV01) [!].md",
+	"C:\~reference-roms\genesis\md\Sonic The Hedgehog 2 (W) (REV01) [!].md",
+	"C:\~reference-roms\genesis\md\Sonic The Hedgehog (USA, Europe).md",
+	"C:\~reference-roms\genesis\md\sonic\Sonic The Hedgehog (W) (REV00) [!].md",
+	"C:\~reference-roms\genesis\md\sonic\Sonic The Hedgehog (W) (REV01) [!].md",
+	"C:\~reference-roms\genesis\md\sonic\Sonic The Hedgehog 2 (W) (REV01) [!].md",
 	"C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md"
 )
 
@@ -244,6 +252,9 @@ $mesenExeCandidates = @(
 	"..\Mesen2-Expanded\UI\bin\Release\net8.0\win-x64\publish\Mesen.exe",
 	"..\Mesen2-Expanded\UI\bin\Release\net8.0\win-x64\publish\Mesen.dll"
 )
+
+$romCandidates = @($romCandidates | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+$mesenExeCandidates = @($mesenExeCandidates | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 
 $resolvedRom = Resolve-FirstExistingPath -CandidatePaths $romCandidates -Label "ROM"
 $resolvedNexenExe = Resolve-RequiredPath -Path $NexenExePath -Label "Nexen exe"
