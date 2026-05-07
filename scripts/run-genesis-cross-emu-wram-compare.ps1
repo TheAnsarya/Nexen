@@ -6,6 +6,7 @@
 	[string]$MesenWorkingDir = "..\Mesen2-Expanded",
 	[string[]]$MesenArgs = @("--testRunner", "--timeout=35"),
 	[string[]]$NexenArgs = @(),
+	[switch]$DisableMesenFallbackRunModes,
 	[switch]$AllowMissingMesenFrontend,
 	[int]$AutoStopTimeoutSeconds = 30,
 	[int]$FrameStart = 0,
@@ -113,8 +114,11 @@ function Start-TimedRun {
 
 	Write-Host "$Name started: pid=$($process.Id)" -ForegroundColor Green
 	$stoppedByTimeout = $false
+	$exitCode = $null
 	try {
 		Wait-Process -Id $process.Id -Timeout $TimeoutSeconds -ErrorAction Stop
+		$process.Refresh()
+		$exitCode = $process.ExitCode
 		Write-Host "$Name exited before timeout." -ForegroundColor Yellow
 	} catch {
 		Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
@@ -125,7 +129,158 @@ function Start-TimedRun {
 	return [pscustomobject]@{
 		Pid = $process.Id
 		StoppedByTimeout = $stoppedByTimeout
+		ExitCode = $exitCode
+		LaunchTarget = $launchTarget
+		LaunchArgs = ($launchArgs -join " ")
 	}
+}
+
+function Remove-ExistingFiles {
+	param(
+		[Parameter(Mandatory = $true)]
+		[string[]]$Paths
+	)
+
+	foreach ($path in $Paths) {
+		if ([string]::IsNullOrWhiteSpace($path)) {
+			continue
+		}
+
+		if (Test-Path -LiteralPath $path) {
+			Remove-Item -LiteralPath $path -Force
+		}
+	}
+}
+
+function Get-TraceSearchRoots {
+	param(
+		[string[]]$Roots
+	)
+
+	$unique = New-Object System.Collections.Generic.List[string]
+	$seen = New-Object "System.Collections.Generic.HashSet[string]" ([System.StringComparer]::OrdinalIgnoreCase)
+
+	foreach ($root in $Roots) {
+		if ([string]::IsNullOrWhiteSpace($root)) {
+			continue
+		}
+
+		if (!(Test-Path -LiteralPath $root)) {
+			continue
+		}
+
+		$full = [System.IO.Path]::GetFullPath($root)
+		if ($seen.Add($full)) {
+			$unique.Add($full)
+		}
+	}
+
+	return $unique
+}
+
+function Find-LatestMatchingFile {
+	param(
+		[Parameter(Mandatory = $true)]
+		[string[]]$Roots,
+		[Parameter(Mandatory = $true)]
+		[string[]]$NamePatterns,
+		[int]$MaxDepth = 6
+	)
+
+	$candidates = New-Object System.Collections.Generic.List[object]
+	foreach ($root in $Roots) {
+		if (!(Test-Path -LiteralPath $root)) {
+			continue
+		}
+
+		foreach ($pattern in $NamePatterns) {
+			$files = Get-ChildItem -LiteralPath $root -Recurse -File -Filter $pattern -ErrorAction SilentlyContinue
+			foreach ($file in $files) {
+				$relativeSegments = ($file.FullName.Substring($root.Length).TrimStart('\\') -split '\\').Count
+				if ($relativeSegments -le ($MaxDepth + 1)) {
+					$candidates.Add($file)
+				}
+			}
+		}
+	}
+
+	if ($candidates.Count -eq 0) {
+		return $null
+	}
+
+	return ($candidates | Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1).FullName
+}
+
+function Resolve-TraceWithFallbackSearch {
+	param(
+		[Parameter(Mandatory = $true)]
+		[string[]]$CandidatePaths,
+		[Parameter(Mandatory = $true)]
+		[string[]]$SearchRoots,
+		[Parameter(Mandatory = $true)]
+		[string[]]$NamePatterns,
+		[Parameter(Mandatory = $true)]
+		[string]$CapturePath
+	)
+
+	$direct = TryResolveExistingTracePath -CandidatePaths $CandidatePaths
+	if ($null -ne $direct) {
+		if ($direct -ne $CapturePath) {
+			Copy-Item -LiteralPath $direct -Destination $CapturePath -Force
+			return [pscustomobject]@{
+				Path = $CapturePath
+				SourcePath = $direct
+				SourceKind = "direct-candidate-copy"
+			}
+		}
+
+		return [pscustomobject]@{
+			Path = $direct
+			SourcePath = $direct
+			SourceKind = "direct-candidate"
+		}
+	}
+
+	$fallback = Find-LatestMatchingFile -Roots $SearchRoots -NamePatterns $NamePatterns
+	if ($null -eq $fallback) {
+		return [pscustomobject]@{
+			Path = $null
+			SourcePath = $null
+			SourceKind = "missing"
+		}
+	}
+
+	Copy-Item -LiteralPath $fallback -Destination $CapturePath -Force
+	return [pscustomobject]@{
+		Path = $CapturePath
+		SourcePath = $fallback
+		SourceKind = "fallback-search-copy"
+	}
+}
+
+function Test-MesenStartupTraceEnvSupport {
+	param(
+		[Parameter(Mandatory = $true)]
+		[string]$MesenWorkingDirectory
+	)
+
+	$sourceCandidates = @(
+		(Join-Path $MesenWorkingDirectory "Core\Genesis\GenesisNativeBackend.cpp"),
+		(Join-Path $MesenWorkingDirectory "..\Mesen2-Expanded\Core\Genesis\GenesisNativeBackend.cpp")
+	)
+
+	foreach ($source in $sourceCandidates) {
+		if (!(Test-Path -LiteralPath $source)) {
+			continue
+		}
+
+		$match = Select-String -Path $source -Pattern "MESEN_GENESIS_STARTUP_TRACE" -Quiet -ErrorAction SilentlyContinue
+		if ($match) {
+			return $true
+		}
+	}
+
+	return $false
 }
 
 function Stop-ExistingProcessInstances {
@@ -276,6 +431,7 @@ if ($null -ne $resolvedMesenExe) {
 	$mesenExeDir = Split-Path -Parent $resolvedMesenExe
 }
 $mesenDocumentsDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)) "Mesen2"
+$mesenAppDataDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) "Mesen2"
 $nexenTraceCandidates = @(
 	(Join-Path $resolvedNexenDir "reference\cpu_ram_trace.log"),
 	(Join-Path $nexenExeDir "reference\cpu_ram_trace.log")
@@ -308,11 +464,7 @@ foreach ($tracePath in ($nexenTraceCandidates + $mesenTraceCandidates)) {
 	}
 }
 
-foreach ($tracePath in @($nexenExplicitWramTracePath, $nexenExplicitStartupTracePath, $mesenExplicitWramTracePath, $mesenExplicitStartupTracePath)) {
-	if (Test-Path -LiteralPath $tracePath) {
-		Remove-Item -LiteralPath $tracePath -Force
-	}
-}
+Remove-ExistingFiles -Paths @($nexenExplicitWramTracePath, $nexenExplicitStartupTracePath, $mesenExplicitWramTracePath, $mesenExplicitStartupTracePath)
 
 $nexenTraceCandidates = @($nexenExplicitWramTracePath) + $nexenTraceCandidates
 $nexenStartupTraceCandidates = @(
@@ -353,6 +505,8 @@ $oldMesenStartupTraceEnabled = $env:MESEN_GENESIS_STARTUP_TRACE
 $oldMesenStartupTraceFrameEnd = $env:MESEN_GENESIS_STARTUP_TRACE_FRAME_END
 $oldMesenStartupTraceMaxLines = $env:MESEN_GENESIS_STARTUP_TRACE_MAX_LINES
 $mesenRunSkipped = $false
+$mesenStartupTraceEnvSupported = Test-MesenStartupTraceEnvSupport -MesenWorkingDirectory $resolvedMesenDir
+$mesenAttemptNotes = New-Object System.Collections.Generic.List[string]
 
 try {
 	$env:MESEN_WRAM_FRAME_START = "$FrameStart"
@@ -385,10 +539,38 @@ try {
 	$mesenRun = [pscustomobject]@{
 		Pid = 0
 		StoppedByTimeout = $false
+		ExitCode = $null
+		LaunchTarget = ""
+		LaunchArgs = ""
 	}
 	if ($null -ne $resolvedMesenExe) {
-		Write-Host "Running Mesen2-Expanded trace capture..." -ForegroundColor Cyan
-		$mesenRun = Start-TimedRun -ProgramPath $resolvedMesenExe -PreArgs $MesenArgs -Rom $resolvedRom -WorkingDir $resolvedMesenDir -TimeoutSeconds $AutoStopTimeoutSeconds -Name "Mesen2-Expanded"
+		$mesenRunModes = New-Object System.Collections.Generic.List[object]
+		$mesenRunModes.Add([pscustomobject]@{ Name = "configured-args"; Args = $MesenArgs })
+		if (-not $DisableMesenFallbackRunModes) {
+			$mesenRunModes.Add([pscustomobject]@{ Name = "rom-only"; Args = @() })
+		}
+
+		$mesenTraceFound = $false
+		for ($modeIndex = 0; $modeIndex -lt $mesenRunModes.Count; $modeIndex++) {
+			$mode = $mesenRunModes[$modeIndex]
+			Remove-ExistingFiles -Paths ($mesenTraceCandidates + $mesenStartupTraceCandidates)
+
+			Write-Host "Running Mesen2-Expanded trace capture (mode=$($mode.Name))..." -ForegroundColor Cyan
+			$mesenRun = Start-TimedRun -ProgramPath $resolvedMesenExe -PreArgs $mode.Args -Rom $resolvedRom -WorkingDir $resolvedMesenDir -TimeoutSeconds $AutoStopTimeoutSeconds -Name "Mesen2-Expanded"
+
+			$attemptTracePath = TryResolveExistingTracePath -CandidatePaths $mesenTraceCandidates
+			$attemptStartupPath = TryResolveExistingTracePath -CandidatePaths $mesenStartupTraceCandidates
+			$mesenAttemptNotes.Add("attempt[$modeIndex]=$($mode.Name);trace=$attemptTracePath;startup=$attemptStartupPath;exit=$($mesenRun.ExitCode);timeout=$($mesenRun.StoppedByTimeout)")
+
+			if ($null -ne $attemptTracePath -or $null -ne $attemptStartupPath) {
+				$mesenTraceFound = $true
+				break
+			}
+		}
+
+		if (-not $mesenTraceFound) {
+			Write-Warning "Mesen2-Expanded produced no direct trace artifacts in launch attempts; fallback search will be used."
+		}
 	} else {
 		$mesenRunSkipped = $true
 	}
@@ -420,11 +602,20 @@ try {
 	$env:MESEN_GENESIS_STARTUP_TRACE_MAX_LINES = $oldMesenStartupTraceMaxLines
 }
 
-$mesenTracePath = TryResolveExistingTracePath -CandidatePaths $mesenTraceCandidates
-$nexenTracePath = TryResolveExistingTracePath -CandidatePaths $nexenTraceCandidates
+$mesenSearchRoots = Get-TraceSearchRoots -Roots @($resolvedMesenDir, $mesenExeDir, $mesenDocumentsDir, $mesenAppDataDir)
+$nexenSearchRoots = Get-TraceSearchRoots -Roots @($resolvedNexenDir, $nexenExeDir)
 
-$mesenStartupTracePath = TryResolveExistingTracePath -CandidatePaths $mesenStartupTraceCandidates
-$nexenStartupTracePath = TryResolveExistingTracePath -CandidatePaths $nexenStartupTraceCandidates
+$mesenTraceResult = Resolve-TraceWithFallbackSearch -CandidatePaths $mesenTraceCandidates -SearchRoots $mesenSearchRoots -NamePatterns @("cpu_ram_trace.log", "mesen-cpu-ram-trace-*.log") -CapturePath $mesenExplicitWramTracePath
+$nexenTraceResult = Resolve-TraceWithFallbackSearch -CandidatePaths $nexenTraceCandidates -SearchRoots $nexenSearchRoots -NamePatterns @("cpu_ram_trace.log", "nexen-cpu-ram-trace-*.log") -CapturePath $nexenExplicitWramTracePath
+
+$mesenTracePath = $mesenTraceResult.Path
+$nexenTracePath = $nexenTraceResult.Path
+
+$mesenStartupTraceResult = Resolve-TraceWithFallbackSearch -CandidatePaths $mesenStartupTraceCandidates -SearchRoots $mesenSearchRoots -NamePatterns @("genesis_startup_trace.log", "mesen-startup-trace-*.log") -CapturePath $mesenExplicitStartupTracePath
+$nexenStartupTraceResult = Resolve-TraceWithFallbackSearch -CandidatePaths $nexenStartupTraceCandidates -SearchRoots $nexenSearchRoots -NamePatterns @("genesis_startup_trace.log", "nexen-startup-trace-*.log") -CapturePath $nexenExplicitStartupTracePath
+
+$mesenStartupTracePath = $mesenStartupTraceResult.Path
+$nexenStartupTracePath = $nexenStartupTraceResult.Path
 
 $mesenLines = @()
 $nexenLines = @()
@@ -472,6 +663,14 @@ $report.Add("mesenTrace=$mesenTracePath")
 $report.Add("nexenTrace=$nexenTracePath")
 $report.Add("mesenStartupTrace=$mesenStartupTracePath")
 $report.Add("nexenStartupTrace=$nexenStartupTracePath")
+$report.Add("mesenTraceSourceKind=$($mesenTraceResult.SourceKind)")
+$report.Add("nexenTraceSourceKind=$($nexenTraceResult.SourceKind)")
+$report.Add("mesenStartupTraceSourceKind=$($mesenStartupTraceResult.SourceKind)")
+$report.Add("nexenStartupTraceSourceKind=$($nexenStartupTraceResult.SourceKind)")
+$report.Add("mesenTraceSourcePath=$($mesenTraceResult.SourcePath)")
+$report.Add("nexenTraceSourcePath=$($nexenTraceResult.SourcePath)")
+$report.Add("mesenStartupTraceSourcePath=$($mesenStartupTraceResult.SourcePath)")
+$report.Add("nexenStartupTraceSourcePath=$($nexenStartupTraceResult.SourcePath)")
 $report.Add("mesenLines=$($mesenLines.Count)")
 $report.Add("nexenLines=$($nexenLines.Count)")
 $report.Add("mesenStartupLines=$($mesenStartupLines.Count)")
@@ -488,6 +687,22 @@ $report.Add("mesenStartupTraceMissing=$($null -eq $mesenStartupTracePath)")
 $report.Add("nexenStartupTraceMissing=$($null -eq $nexenStartupTracePath)")
 $report.Add("mesenTimedOut=$($mesenRun.StoppedByTimeout)")
 $report.Add("nexenTimedOut=$($nexenRun.StoppedByTimeout)")
+$report.Add("mesenExitCode=$($mesenRun.ExitCode)")
+$report.Add("nexenExitCode=$($nexenRun.ExitCode)")
+$report.Add("mesenLaunchTarget=$($mesenRun.LaunchTarget)")
+$report.Add("mesenLaunchArgs=$($mesenRun.LaunchArgs)")
+$report.Add("nexenLaunchTarget=$($nexenRun.LaunchTarget)")
+$report.Add("nexenLaunchArgs=$($nexenRun.LaunchArgs)")
+$report.Add("mesenStartupTraceEnvSupported=$mesenStartupTraceEnvSupported")
+$report.Add("mesenSearchRoots=$($mesenSearchRoots -join ';')")
+$report.Add("nexenSearchRoots=$($nexenSearchRoots -join ';')")
+$report.Add("mesenTraceCandidates=$($mesenTraceCandidates -join ';')")
+$report.Add("mesenStartupTraceCandidates=$($mesenStartupTraceCandidates -join ';')")
+$report.Add("nexenTraceCandidates=$($nexenTraceCandidates -join ';')")
+$report.Add("nexenStartupTraceCandidates=$($nexenStartupTraceCandidates -join ';')")
+if ($mesenAttemptNotes.Count -gt 0) {
+	$report.Add("mesenAttempts=$($mesenAttemptNotes -join ' | ')")
+}
 $report.Add("firstDiffIndex=$firstDiff")
 $report.Add("startupFirstDiffIndex=$startupFirstDiff")
 
@@ -518,7 +733,11 @@ if ($null -eq $nexenTracePath) {
 	Write-Warning "Nexen trace file was not emitted."
 }
 if ($null -eq $mesenStartupTracePath) {
-	Write-Warning "Mesen2-Expanded startup trace file was not emitted."
+	if (-not $mesenStartupTraceEnvSupported) {
+		Write-Warning "Mesen2-Expanded startup trace file was not emitted (startup trace env support not detected in source tree)."
+	} else {
+		Write-Warning "Mesen2-Expanded startup trace file was not emitted."
+	}
 }
 if ($null -eq $nexenStartupTracePath) {
 	Write-Warning "Nexen startup trace file was not emitted."
