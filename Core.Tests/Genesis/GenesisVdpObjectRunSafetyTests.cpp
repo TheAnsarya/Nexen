@@ -389,6 +389,89 @@ namespace {
 		EXPECT_EQ(infoB.ScrollX, 0x22u);
 	}
 
+	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapUsesBaseHScrollEntryInMode0) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x8B00);
+		vdp.WriteControlPort(0x8D00);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+		vram[0] = 0x00;
+		vram[1] = 0x2a;
+		vram[2] = 0x00;
+		vram[3] = 0x3b;
+
+		GenesisVdpState state = vdp.GetState();
+		state.VCounter = 211;
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+
+		std::array<uint32_t, 64> palette = {};
+		BuildArgbPaletteFromCram(vdp, palette);
+
+		GetTilemapOptions planeAOptions = {};
+		planeAOptions.Layer = 0;
+		planeAOptions.DisplayMode = TilemapDisplayMode::Default;
+		FrameInfo sizeA = tools.GetTilemapSize(planeAOptions, (BaseState&)state);
+		std::vector<uint32_t> bufferA(sizeA.Width * sizeA.Height);
+		DebugTilemapInfo infoA = tools.GetTilemap(planeAOptions, (BaseState&)state, (BaseState&)ppuState, vram, palette.data(), bufferA.data());
+
+		GetTilemapOptions planeBOptions = {};
+		planeBOptions.Layer = 1;
+		planeBOptions.DisplayMode = TilemapDisplayMode::Default;
+		FrameInfo sizeB = tools.GetTilemapSize(planeBOptions, (BaseState&)state);
+		std::vector<uint32_t> bufferB(sizeB.Width * sizeB.Height);
+		DebugTilemapInfo infoB = tools.GetTilemap(planeBOptions, (BaseState&)state, (BaseState&)ppuState, vram, palette.data(), bufferB.data());
+
+		EXPECT_EQ(infoA.ScrollX, 0x2au);
+		EXPECT_EQ(infoB.ScrollX, 0x3bu);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapClampsActiveLineTo240VisibleHeightInLineScrollMode) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x810c);
+		vdp.WriteControlPort(0x8B03);
+		vdp.WriteControlPort(0x8D00);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		memset(vram, 0, 0x10000);
+		constexpr uint16_t kClampedLine = 239;
+		uint16_t addr = (uint16_t)(kClampedLine * 4u);
+		vram[addr + 0] = 0x01;
+		vram[addr + 1] = 0x11;
+		vram[addr + 2] = 0x02;
+		vram[addr + 3] = 0x22;
+
+		GenesisVdpState state = vdp.GetState();
+		state.VCounter = 260;
+		GenesisVdpState ppuState = state;
+		GenesisVdpTools tools(nullptr, nullptr, nullptr);
+
+		std::array<uint32_t, 64> palette = {};
+		BuildArgbPaletteFromCram(vdp, palette);
+
+		GetTilemapOptions planeAOptions = {};
+		planeAOptions.Layer = 0;
+		planeAOptions.DisplayMode = TilemapDisplayMode::Default;
+		FrameInfo sizeA = tools.GetTilemapSize(planeAOptions, (BaseState&)state);
+		std::vector<uint32_t> bufferA(sizeA.Width * sizeA.Height);
+		DebugTilemapInfo infoA = tools.GetTilemap(planeAOptions, (BaseState&)state, (BaseState&)ppuState, vram, palette.data(), bufferA.data());
+
+		GetTilemapOptions planeBOptions = {};
+		planeBOptions.Layer = 1;
+		planeBOptions.DisplayMode = TilemapDisplayMode::Default;
+		FrameInfo sizeB = tools.GetTilemapSize(planeBOptions, (BaseState&)state);
+		std::vector<uint32_t> bufferB(sizeB.Width * sizeB.Height);
+		DebugTilemapInfo infoB = tools.GetTilemap(planeBOptions, (BaseState&)state, (BaseState&)ppuState, vram, palette.data(), bufferB.data());
+
+		EXPECT_EQ(infoA.ScrollX, 0x111u);
+		EXPECT_EQ(infoB.ScrollX, 0x222u);
+	}
+
 	TEST(GenesisVdpObjectRunSafetyTests, DebugTilemapReportsCellScrollUsingActiveLineGroup) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
