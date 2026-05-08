@@ -381,17 +381,24 @@ function Find-FirstDifference {
 function Get-StartupEventCount {
 	param(
 		[string[]]$Lines,
-		[string]$Token
+		[string[]]$Tokens
 	)
 
-	if ($null -eq $Lines -or [string]::IsNullOrWhiteSpace($Token)) {
+	if ($null -eq $Lines -or $null -eq $Tokens -or $Tokens.Count -eq 0) {
 		return 0
 	}
 
 	$count = 0
 	foreach ($line in $Lines) {
-		if ($line -like "*$Token*") {
-			$count++
+		foreach ($token in $Tokens) {
+			if ([string]::IsNullOrWhiteSpace($token)) {
+				continue
+			}
+
+			if ($line -like "*$token*") {
+				$count++
+				break
+			}
 		}
 	}
 
@@ -682,10 +689,10 @@ if ($mesenLines.Count -gt 0 -or $nexenLines.Count -gt 0) {
 
 if ($mesenStartupLines.Count -gt 0 -or $nexenStartupLines.Count -gt 0) {
 	$startupFirstDiff = Find-FirstDifference -Left $mesenStartupLines -Right $nexenStartupLines
-	$mesenStartupCheckpointCount = Get-StartupEventCount -Lines $mesenStartupLines -Token "STARTUP_CHECKPOINT"
-	$nexenStartupCheckpointCount = Get-StartupEventCount -Lines $nexenStartupLines -Token "STARTUP_CHECKPOINT"
-	$mesenStartupDisplayTransitionCount = Get-StartupEventCount -Lines $mesenStartupLines -Token "VDP_DISP_TGL"
-	$nexenStartupDisplayTransitionCount = Get-StartupEventCount -Lines $nexenStartupLines -Token "VDP_DISP_TGL"
+	$mesenStartupCheckpointCount = Get-StartupEventCount -Lines $mesenStartupLines -Tokens @("STARTUP_CHECKPOINT", "STARTUP_CP")
+	$nexenStartupCheckpointCount = Get-StartupEventCount -Lines $nexenStartupLines -Tokens @("STARTUP_CHECKPOINT", "STARTUP_CP")
+	$mesenStartupDisplayTransitionCount = Get-StartupEventCount -Lines $mesenStartupLines -Tokens @("VDP_DISP_TGL")
+	$nexenStartupDisplayTransitionCount = Get-StartupEventCount -Lines $nexenStartupLines -Tokens @("VDP_DISP_TGL")
 }
 
 $report = New-Object System.Collections.Generic.List[string]
