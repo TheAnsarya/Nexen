@@ -20,7 +20,10 @@
 	[switch]$FailOnStartupDiff,
 	[switch]$FailOnMissingStartupMetrics,
 	[int]$MinNexenStartupCheckpointCount = 1,
-	[int]$MinNexenStartupDisplayTransitionCount = 0
+	[int]$MinNexenStartupDisplayTransitionCount = 0,
+	[switch]$StrictRequireMesenStartupEvents,
+	[int]$MinMesenStartupCheckpointCount = 1,
+	[int]$MinMesenStartupDisplayTransitionCount = 0
 )
 
 $ErrorActionPreference = "Stop"
@@ -304,6 +307,14 @@ foreach ($rom in $RomPaths) {
 				$policyFailures.Add("nexenStartupDisplayTransitionCount")
 			}
 		}
+		if ($StrictRequireMesenStartupEvents) {
+			if ($current.mesenStartupCheckpointCount -lt $MinMesenStartupCheckpointCount) {
+				$policyFailures.Add("mesenStartupCheckpointCount")
+			}
+			if ($current.mesenStartupDisplayTransitionCount -lt $MinMesenStartupDisplayTransitionCount) {
+				$policyFailures.Add("mesenStartupDisplayTransitionCount")
+			}
+		}
 
 		$current["policyFailures"] = @($policyFailures)
 		$current["policyFailureCount"] = $policyFailures.Count
@@ -355,8 +366,11 @@ $summary | Add-Member -NotePropertyName "strictRequireMesenTraces" -NoteProperty
 $summary | Add-Member -NotePropertyName "failOnWramDiff" -NotePropertyValue ([bool]$FailOnWramDiff)
 $summary | Add-Member -NotePropertyName "failOnStartupDiff" -NotePropertyValue ([bool]$FailOnStartupDiff)
 $summary | Add-Member -NotePropertyName "failOnMissingStartupMetrics" -NotePropertyValue ([bool]$FailOnMissingStartupMetrics)
+$summary | Add-Member -NotePropertyName "strictRequireMesenStartupEvents" -NotePropertyValue ([bool]$StrictRequireMesenStartupEvents)
 $summary | Add-Member -NotePropertyName "minNexenStartupCheckpointCount" -NotePropertyValue $MinNexenStartupCheckpointCount
 $summary | Add-Member -NotePropertyName "minNexenStartupDisplayTransitionCount" -NotePropertyValue $MinNexenStartupDisplayTransitionCount
+$summary | Add-Member -NotePropertyName "minMesenStartupCheckpointCount" -NotePropertyValue $MinMesenStartupCheckpointCount
+$summary | Add-Member -NotePropertyName "minMesenStartupDisplayTransitionCount" -NotePropertyValue $MinMesenStartupDisplayTransitionCount
 $summary | Add-Member -NotePropertyName "baselinePath" -NotePropertyValue $resolvedBaselinePath
 $summary | Add-Member -NotePropertyName "baselineUpdated" -NotePropertyValue ([bool]$UpdateBaseline)
 $summary | Add-Member -NotePropertyName "results" -NotePropertyValue $resultArray.ToArray()
@@ -383,8 +397,11 @@ $md.Add("- strictRequireMesenTraces: $([bool]$StrictRequireMesenTraces)")
 $md.Add("- failOnWramDiff: $([bool]$FailOnWramDiff)")
 $md.Add("- failOnStartupDiff: $([bool]$FailOnStartupDiff)")
 $md.Add("- failOnMissingStartupMetrics: $([bool]$FailOnMissingStartupMetrics)")
+$md.Add("- strictRequireMesenStartupEvents: $([bool]$StrictRequireMesenStartupEvents)")
 $md.Add("- minNexenStartupCheckpointCount: $MinNexenStartupCheckpointCount")
 $md.Add("- minNexenStartupDisplayTransitionCount: $MinNexenStartupDisplayTransitionCount")
+$md.Add("- minMesenStartupCheckpointCount: $MinMesenStartupCheckpointCount")
+$md.Add("- minMesenStartupDisplayTransitionCount: $MinMesenStartupDisplayTransitionCount")
 $md.Add("")
 $md.Add("| ROM | Profile | Exit | Diff | Startup Diff | Nexen Startup Hash | Mesen Startup Hash | Nexen Chkpt | Nexen Disp Tgl | Regressions | Policy Failures | Verdict |")
 $md.Add("|---|---|---:|---:|---:|---|---|---:|---:|---|---|---|")
