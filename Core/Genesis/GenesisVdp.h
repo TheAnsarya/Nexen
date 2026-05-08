@@ -53,6 +53,10 @@ private:
 	// FIFO emulation (simplified)
 	bool _pendingControlWrite = false;
 	uint16_t _firstControlWord = 0;
+	bool _pendingDataHighWrite = false;
+	uint8_t _dataHighWrite = 0;
+	bool _pendingControlHighWrite = false;
+	uint8_t _controlHighWrite = 0;
 	uint8_t _accessMode = 0; // 0=VRAM read, 1=VRAM write, 3=CRAM write, 5=VSRAM write
 	uint16_t _addressReg = 0;
 	uint8_t _autoIncrement = 0;
@@ -103,7 +107,13 @@ private:
 	uint16_t GetPlaneHeight() const;
 	uint16_t GetPlaneABase() const { return (uint16_t)((_state.Registers[2] & 0x38) << 10); }
 	uint16_t GetPlaneBBase() const { return (uint16_t)((_state.Registers[4] & 0x07) << 13); }
-	uint16_t GetWindowBase() const { return (uint16_t)((_state.Registers[3] & 0x3E) << 10); }
+	uint16_t GetWindowBase() const {
+		if (IsH40Mode()) {
+			return (uint16_t)((_state.Registers[3] & 0x3C) << 10);
+		}
+
+		return (uint16_t)((_state.Registers[3] & 0x3E) << 10);
+	}
 	uint16_t GetSpriteTableBase() const {
 		uint8_t reg5 = _state.Registers[5];
 		// In H40 mode bit 0 is ignored for SAT base selection.
@@ -132,6 +142,8 @@ public:
 	uint16_t ReadDataPort();
 	uint16_t ReadControlPort();
 	uint16_t ReadHVCounter();
+	void WriteDataPortByte(uint8_t value, bool highByte);
+	void WriteControlPortByte(uint8_t value, bool highByte);
 	void WriteDataPort(uint16_t value);
 	void WriteControlPort(uint16_t value);
 	void AcknowledgeInterrupt(uint8_t level);

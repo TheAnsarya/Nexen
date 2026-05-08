@@ -2263,8 +2263,15 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 			}
 			TraceStartupEvent("TMSS_VDP_W8_ALLOW", addr, effectiveValue, IsStartupWindowActive() ? 1 : 0);
 		}
-		// VDP byte write - promote to word write
-		WriteVdpPort(addr, (uint16_t)effectiveValue | ((uint16_t)effectiveValue << 8));
+		uint32_t port = addr & 0x1F;
+		if (_vdp && port < 0x04) {
+			_vdp->WriteDataPortByte(effectiveValue, (addr & 1u) == 0u);
+		} else if (_vdp && port < 0x08) {
+			_vdp->WriteControlPortByte(effectiveValue, (addr & 1u) == 0u);
+		} else {
+			// Non data/control VDP byte writes keep legacy behavior.
+			WriteVdpPort(addr, (uint16_t)effectiveValue | ((uint16_t)effectiveValue << 8));
+		}
 		_openBus = effectiveValue;
 		return;
 	}
@@ -3306,7 +3313,14 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 			return;
 		}
 		if (_vdp) {
-			WriteVdpPort(effectiveAddr, (uint16_t)effectiveValue | ((uint16_t)effectiveValue << 8));
+			uint32_t port = effectiveAddr & 0x1F;
+			if (port < 0x04) {
+				_vdp->WriteDataPortByte(effectiveValue, (effectiveAddr & 1u) == 0u);
+			} else if (port < 0x08) {
+				_vdp->WriteControlPortByte(effectiveValue, (effectiveAddr & 1u) == 0u);
+			} else {
+				WriteVdpPort(effectiveAddr, (uint16_t)effectiveValue | ((uint16_t)effectiveValue << 8));
+			}
 			_openBus = effectiveValue;
 		}
 		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x30);

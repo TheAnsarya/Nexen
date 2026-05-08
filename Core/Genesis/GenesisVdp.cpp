@@ -61,6 +61,10 @@ void GenesisVdp::Reset(bool hardReset) {
 	_displayDisabledLogged = false;
 	_lastFrameLog = 0;
 	_pendingControlWrite = false;
+	_pendingDataHighWrite = false;
+	_dataHighWrite = 0;
+	_pendingControlHighWrite = false;
+	_controlHighWrite = 0;
 	_firstControlWord = 0;
 	_dmaInitialized = false;
 	_dmaLatchedMode = 0;
@@ -361,7 +365,7 @@ void GenesisVdp::RenderPlane(uint16_t line, bool planeA, uint8_t* dst) const {
 		uint16_t tileBase = interlace2 ? (uint16_t)(tile * 64u) : (uint16_t)(tile * 32u);
 		uint8_t color = FetchTilePixel(tileBase, fetchY, fetchX);
 
-		dst[x] = (uint8_t)((priority ? 0x80u : 0x00u) | (palette << 4) | color);
+		dst[x] = (uint8_t)((priority ? 0x80u : 0x00u) | 0x40u | (palette << 4) | color);
 	}
 }
 
@@ -643,12 +647,13 @@ void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const ui
 		uint8_t pW = window[x];
 		uint8_t pS = spr[x];
 
+		bool winSrc = (pW & 0x40u) != 0;
 		bool winHi = (pW & 0x80u) != 0;
-		bool winVis = (pW & 0x0Fu) != 0;
+		bool winVis = winSrc && ((pW & 0x0Fu) != 0);
 		bool sprHi = (pS & 0x80u) != 0;
 		bool sprVis = (pS & 0x0Fu) != 0;
-		bool pAHi = (pA & 0x80u) != 0;
-		bool pAVis = (pA & 0x0Fu) != 0;
+		bool pAHi = !winSrc && ((pA & 0x80u) != 0);
+		bool pAVis = !winSrc && ((pA & 0x0Fu) != 0);
 		bool pBHi = (pB & 0x80u) != 0;
 		bool pBVis = (pB & 0x0Fu) != 0;
 
@@ -797,6 +802,34 @@ uint16_t GenesisVdp::ReadHVCounter() {
 	uint8_t v = (uint8_t)_scanline;
 	uint8_t h = (uint8_t)(_hCounter >> 1);
 	return ((uint16_t)v << 8) | h;
+}
+
+void GenesisVdp::WriteDataPortByte(uint8_t value, bool highByte) {
+	if (highByte) {
+		_dataHighWrite = value;
+		_pendingDataHighWrite = true;
+		return;
+	}
+
+	uint16_t word = _pendingDataHighWrite
+		? (uint16_t)(((uint16_t)_dataHighWrite << 8) | value)
+		: (uint16_t)value;
+	_pendingDataHighWrite = false;
+	WriteDataPort(word);
+}
+
+void GenesisVdp::WriteControlPortByte(uint8_t value, bool highByte) {
+	if (highByte) {
+		_controlHighWrite = value;
+		_pendingControlHighWrite = true;
+		return;
+	}
+
+	uint16_t word = _pendingControlHighWrite
+		? (uint16_t)(((uint16_t)_controlHighWrite << 8) | value)
+		: (uint16_t)value;
+	_pendingControlHighWrite = false;
+	WriteControlPort(word);
 }
 
 void GenesisVdp::WriteDataPort(uint16_t value) {
