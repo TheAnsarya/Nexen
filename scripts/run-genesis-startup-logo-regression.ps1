@@ -197,7 +197,9 @@ if ($StrictStartupParity) {
 	$StrictRequireBothStartupDisplayTransitionEvents = $true
 	$StrictRequireBothStartupPaletteCheckpointEvents = $true
 	$StrictRequireBothStartupVdpSnapshotEvents = $true
+	$StrictRequireBothStartupVdpRegisterWriteEvents = $true
 	$StrictRequireBothStartupTmssUnlockEvents = $true
+	$StrictRequireBothStartupZ80RuntimeToggleEvents = $true
 
 	$MinNexenStartupCheckpointCount = [Math]::Max($MinNexenStartupCheckpointCount, 1)
 	$MinMesenStartupCheckpointCount = [Math]::Max($MinMesenStartupCheckpointCount, 1)
@@ -207,6 +209,10 @@ if ($StrictStartupParity) {
 	$MinMesenStartupPaletteCheckpointCount = [Math]::Max($MinMesenStartupPaletteCheckpointCount, 1)
 	$MinNexenStartupVdpSnapshotCount = [Math]::Max($MinNexenStartupVdpSnapshotCount, 1)
 	$MinMesenStartupVdpSnapshotCount = [Math]::Max($MinMesenStartupVdpSnapshotCount, 1)
+	$MinNexenStartupVdpRegisterWriteCount = [Math]::Max($MinNexenStartupVdpRegisterWriteCount, 1)
+	$MinMesenStartupVdpRegisterWriteCount = [Math]::Max($MinMesenStartupVdpRegisterWriteCount, 1)
+	$MinNexenStartupZ80RuntimeToggleCount = [Math]::Max($MinNexenStartupZ80RuntimeToggleCount, 1)
+	$MinMesenStartupZ80RuntimeToggleCount = [Math]::Max($MinMesenStartupZ80RuntimeToggleCount, 1)
 }
 
 foreach ($rom in $RomPaths) {

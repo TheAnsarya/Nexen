@@ -1,16 +1,16 @@
 # Genesis Startup Logo Regression Summary
 
-- generatedUtc: 2026-05-08T15:42:53.7021690Z
+- generatedUtc: 2026-05-08T15:40:44.0795301Z
 - frameStart: 0
 - frameEnd: 600
 - autoStopTimeoutSeconds: 45
 - maxLines: 1200000
-- romCount: 1
+- romCount: 3
 - regressionCount: 0
 - missingMesenCount: 0
 - policyFailureCount: 0
 - anyErrors: False
-- startupProfiles: strict-startup
+- startupProfiles: logo-compat,mesen-startup,strict-startup
 - strictRequireMesenTraces: True
 - strictStartupParity: True
 - failOnWramDiff: False
@@ -30,7 +30,7 @@
 - minNexenStartupVdpSnapshotCount: 1
 - minNexenStartupVdpRegisterWriteCount: 1
 - minNexenStartupTmssUnlockCount: 0
-- minNexenStartupZ80RuntimeToggleCount: 1
+- minNexenStartupZ80RuntimeToggleCount: 0
 - minMesenStartupCheckpointCount: 1
 - minMesenStartupDisplayTransitionCount: 1
 - minMesenStartupPaletteCheckpointCount: 1
@@ -41,7 +41,9 @@
 
 | ROM | Profile | Exit | Diff | Startup Diff | Nexen Startup Hash | Mesen Startup Hash | N/M Chkpt | N/M Disp | N/M Pal | N/M VdpRegW | N/M Z80Tgl | N/M TmssUnlock | Regressions | Policy Failures | Verdict |
 |---|---|---:|---:|---:|---|---|---|---|---|---|---|---|---|---|---|
-| sonic-the-hedgehog-usa-europe | strict-startup | 3 | 0 | 0 | b1154d6f831abfc4709e55e7acfb2eb10ccbe3d2b37aa8971a473c2e9ae4134c | 6c749c9e124877e46d50684f7c297d35aa7b6b7331a24d3e528061dfe82c01d1 | 61/416 | 1/1 | 122/832 | 9165/2301 | 1144/867 | 0/0 |  |  | pass |
+| sonic-the-hedgehog-usa-europe | logo-compat | 3 | 0 | 0 | 0690916919e8cabc24dce866864a07ad62a611841878ea2dae4df45dd33e7735 | 82555261ab772120c5e4235daf3d7e0bea69d6fb3e4ffbafc2c06f29c17b2280 | 601/404 | 1/1 | 1202/808 | 9165/2061 | 1684/807 | 0/0 |  |  | pass |
+| sonic-the-hedgehog-usa-europe | mesen-startup | 3 | 0 | 0 | e1842381cc43cbe272e2757f9274c7b2164e2124e58a3f03ae5dc28f27a1362f | 0a71f4e95a5f41f5834c079c5487c0ebeba810e2719f453086b810d026ff4db8 | 601/406 | 1/1 | 1202/812 | 9165/2101 | 1684/817 | 0/0 |  |  | pass |
+| sonic-the-hedgehog-usa-europe | strict-startup | 3 | 0 | 0 | 4d30a1a8549a66430f26cdc61b7da25b809877a98f6fd992b793aec2eae376d4 | 8d7e933bf8dc81c17a5b92a13aa5125aabceefcc784641d492c2b68ba88d398f | 61/414 | 1/1 | 122/828 | 9165/2261 | 1144/857 | 0/0 |  |  | pass |
 
 ## Notes
 
