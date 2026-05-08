@@ -413,6 +413,21 @@ namespace {
 		// Flush every line so traces survive force-stop smoke runs.
 		fflush(sNexenStartupTraceFile);
 	}
+
+	static uint16_t ComputeStartupPaletteDigest(const uint16_t* cram) {
+		if (!cram) {
+			return 0;
+		}
+
+		uint16_t digest = 0x4d47;
+		for (uint32_t i = 0; i < 16; i++) {
+			digest = (uint16_t)((digest << 3) | (digest >> 13));
+			digest ^= cram[i];
+			digest = (uint16_t)(digest * 33u + (uint16_t)i);
+		}
+
+		return digest;
+	}
 }
 
 GenesisMemoryManager::GenesisMemoryManager() {
@@ -653,6 +668,9 @@ void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) 
 	uint16_t startupValue = (uint16_t)(((frame & 0x3FFu) << 6) | (state.VCounter & 0x003Fu));
 	TraceStartupEvent("STARTUP_CP", 0xC00004, startupValue, startupFlags);
 	TraceStartupEvent("STARTUP_Z80", 0xA11100, _z80BusReqDelayMclk, _z80ResumeDelayMclk);
+	uint16_t paletteDigest = ComputeStartupPaletteDigest(_vdp->GetCramPointer());
+	TraceStartupEvent("STARTUP_PAL", 0xC00000, paletteDigest, (uint16_t)(state.Registers[VdpReg::ModeSet2]));
+	TraceStartupEvent("STARTUP_VDP", 0xC00004, state.StatusRegister, (uint16_t)(state.Registers[VdpReg::ModeSet1] | ((uint16_t)state.Registers[VdpReg::ModeSet2] << 8)));
 
 	if (displayEnabled != _startupLastDisplayEnabled) {
 		_startupDisplayTransitionCount++;
@@ -960,6 +978,7 @@ void GenesisMemoryManager::SetZ80BusRequest(bool request, bool allowTransitionLo
 			_z80BusAck ? 1 : 0,
 			_z80BusReqDelayMclk,
 			_z80ResumeDelayMclk));
+		TraceStartupEvent("Z80_BUSREQ", addr, (uint16_t)((oldBusReq ? 0x100 : 0) | (_z80BusRequest ? 0x001 : 0)), (uint16_t)(_z80BusAck ? 1 : 0));
 	}
 
 	UpdateZ80RuntimeState(allowTransitionLog, addr, pc, sourceTag);
@@ -993,6 +1012,7 @@ void GenesisMemoryManager::SetZ80Reset(bool resetAsserted, bool allowTransitionL
 			_z80BusAck ? 1 : 0,
 			_z80BusReqDelayMclk,
 			_z80ResumeDelayMclk));
+		TraceStartupEvent("Z80_RESET", addr, (uint16_t)((oldReset ? 0x100 : 0) | (_z80Reset ? 0x001 : 0)), (uint16_t)(_z80BusRequest ? 1 : 0));
 	}
 
 	UpdateZ80RuntimeState(allowTransitionLog, addr, pc, sourceTag);
@@ -1008,6 +1028,7 @@ void GenesisMemoryManager::UpdateZ80RuntimeState(bool allowTransitionLog, uint32
 		_z80RuntimeTransitionCount++;
 		_z80RuntimeStateEpoch++;
 		_z80RuntimeLastTransitionClock = _masterClock;
+		TraceStartupEvent("Z80_RUN_TGL", 0xA11100, nextRunning ? 1 : 0, (uint16_t)(_z80RuntimeTransitionCount & 0xFFFFu));
 		if (allowTransitionLog) {
 			MessageManager::Log(std::format("[Genesis][MMU] Z80 runtime transition #{} epoch={} src={} addr=${:06x} pc=${:06x} oldRunning={} newRunning={} busReq={} reset={} runnableCycles={} stalledCycles={} masterClock={}",
 				_z80RuntimeTransitionCount,
@@ -2674,6 +2695,7 @@ void GenesisMemoryManager::WriteVdpPort(uint32_t addr, uint16_t value) {
 		TraceStartupEvent("VDP_DATA_W", addr, effectiveValue, port);
 		_vdp->WriteDataPort(effectiveValue);
 	} else if (port < 0x08) {
+		GenesisVdpState stateBeforeWrite = _vdp->GetState();
 		if (!loggedFirstNonZeroControlWrite && effectiveValue != 0) {
 			loggedFirstNonZeroControlWrite = true;
 			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
@@ -2688,6 +2710,18 @@ void GenesisMemoryManager::WriteVdpPort(uint32_t addr, uint16_t value) {
 		}
 		TraceStartupEvent("VDP_CTRL_W", addr, effectiveValue, port);
 		_vdp->WriteControlPort(effectiveValue);
+		GenesisVdpState stateAfterWrite = _vdp->GetState();
+		for (uint32_t reg = 0; reg < 24; reg++) {
+			uint8_t oldValue = stateBeforeWrite.Registers[reg];
+			uint8_t newValue = stateAfterWrite.Registers[reg];
+			if (oldValue != newValue) {
+				uint16_t packed = (uint16_t)(((uint16_t)oldValue << 8) | newValue);
+				TraceStartupEvent("VDP_REG_W", 0xC00004, packed, (uint16_t)reg);
+			}
+		}
+		if (stateBeforeWrite.StatusRegister != stateAfterWrite.StatusRegister) {
+			TraceStartupEvent("VDP_STAT_W", 0xC00004, stateAfterWrite.StatusRegister, (uint16_t)(stateBeforeWrite.StatusRegister ^ stateAfterWrite.StatusRegister));
+		}
 	} else if (port >= 0x11 && port < 0x14) {
 		// PSG write — SN76489 accepts byte writes via top byte of word
 		if (_psg) {

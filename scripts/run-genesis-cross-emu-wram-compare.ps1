@@ -405,6 +405,25 @@ function Get-StartupEventCount {
 	return $count
 }
 
+function Get-StartupMetrics {
+	param(
+		[string[]]$Lines
+	)
+
+	$metrics = [ordered]@{}
+	$metrics["startupCheckpointCount"] = Get-StartupEventCount -Lines $Lines -Tokens @("STARTUP_CHECKPOINT", "STARTUP_CP")
+	$metrics["startupDisplayTransitionCount"] = Get-StartupEventCount -Lines $Lines -Tokens @("VDP_DISP_TGL")
+	$metrics["startupPaletteCheckpointCount"] = Get-StartupEventCount -Lines $Lines -Tokens @("STARTUP_PAL", "STARTUP_CHECKPOINT", "STARTUP_CP")
+	$metrics["startupVdpSnapshotCount"] = Get-StartupEventCount -Lines $Lines -Tokens @("STARTUP_VDP", "STARTUP_CHECKPOINT", "STARTUP_CP")
+	$metrics["startupVdpRegisterWriteCount"] = Get-StartupEventCount -Lines $Lines -Tokens @("VDP_REG_W", "VDP_CTRL_W")
+	$metrics["startupTmssUnlockCount"] = Get-StartupEventCount -Lines $Lines -Tokens @("TMSS_UNLOCK", "TMSS_W8", "TMSS_W16")
+	$metrics["startupZ80RuntimeToggleCount"] = Get-StartupEventCount -Lines $Lines -Tokens @("Z80_RUN_TGL", "STARTUP_Z80")
+	$metrics["startupZ80BusReqEventCount"] = Get-StartupEventCount -Lines $Lines -Tokens @("Z80_BUSREQ", "STARTUP_Z80")
+	$metrics["startupZ80ResetEventCount"] = Get-StartupEventCount -Lines $Lines -Tokens @("Z80_RESET", "STARTUP_Z80")
+
+	return $metrics
+}
+
 $romCandidates = @()
 if (-not [string]::IsNullOrWhiteSpace($RomPath)) {
 	$romCandidates += $RomPath
@@ -662,6 +681,20 @@ $mesenStartupCheckpointCount = 0
 $nexenStartupCheckpointCount = 0
 $mesenStartupDisplayTransitionCount = 0
 $nexenStartupDisplayTransitionCount = 0
+$mesenStartupPaletteCheckpointCount = 0
+$nexenStartupPaletteCheckpointCount = 0
+$mesenStartupVdpSnapshotCount = 0
+$nexenStartupVdpSnapshotCount = 0
+$mesenStartupVdpRegisterWriteCount = 0
+$nexenStartupVdpRegisterWriteCount = 0
+$mesenStartupTmssUnlockCount = 0
+$nexenStartupTmssUnlockCount = 0
+$mesenStartupZ80RuntimeToggleCount = 0
+$nexenStartupZ80RuntimeToggleCount = 0
+$mesenStartupZ80BusReqEventCount = 0
+$nexenStartupZ80BusReqEventCount = 0
+$mesenStartupZ80ResetEventCount = 0
+$nexenStartupZ80ResetEventCount = 0
 
 if ($null -ne $mesenTracePath) {
 	$mesenLines = Get-TraceLines -Path $mesenTracePath
@@ -689,10 +722,27 @@ if ($mesenLines.Count -gt 0 -or $nexenLines.Count -gt 0) {
 
 if ($mesenStartupLines.Count -gt 0 -or $nexenStartupLines.Count -gt 0) {
 	$startupFirstDiff = Find-FirstDifference -Left $mesenStartupLines -Right $nexenStartupLines
-	$mesenStartupCheckpointCount = Get-StartupEventCount -Lines $mesenStartupLines -Tokens @("STARTUP_CHECKPOINT", "STARTUP_CP")
-	$nexenStartupCheckpointCount = Get-StartupEventCount -Lines $nexenStartupLines -Tokens @("STARTUP_CHECKPOINT", "STARTUP_CP")
-	$mesenStartupDisplayTransitionCount = Get-StartupEventCount -Lines $mesenStartupLines -Tokens @("VDP_DISP_TGL")
-	$nexenStartupDisplayTransitionCount = Get-StartupEventCount -Lines $nexenStartupLines -Tokens @("VDP_DISP_TGL")
+	$mesenStartupMetrics = Get-StartupMetrics -Lines $mesenStartupLines
+	$nexenStartupMetrics = Get-StartupMetrics -Lines $nexenStartupLines
+
+	$mesenStartupCheckpointCount = $mesenStartupMetrics.startupCheckpointCount
+	$nexenStartupCheckpointCount = $nexenStartupMetrics.startupCheckpointCount
+	$mesenStartupDisplayTransitionCount = $mesenStartupMetrics.startupDisplayTransitionCount
+	$nexenStartupDisplayTransitionCount = $nexenStartupMetrics.startupDisplayTransitionCount
+	$mesenStartupPaletteCheckpointCount = $mesenStartupMetrics.startupPaletteCheckpointCount
+	$nexenStartupPaletteCheckpointCount = $nexenStartupMetrics.startupPaletteCheckpointCount
+	$mesenStartupVdpSnapshotCount = $mesenStartupMetrics.startupVdpSnapshotCount
+	$nexenStartupVdpSnapshotCount = $nexenStartupMetrics.startupVdpSnapshotCount
+	$mesenStartupVdpRegisterWriteCount = $mesenStartupMetrics.startupVdpRegisterWriteCount
+	$nexenStartupVdpRegisterWriteCount = $nexenStartupMetrics.startupVdpRegisterWriteCount
+	$mesenStartupTmssUnlockCount = $mesenStartupMetrics.startupTmssUnlockCount
+	$nexenStartupTmssUnlockCount = $nexenStartupMetrics.startupTmssUnlockCount
+	$mesenStartupZ80RuntimeToggleCount = $mesenStartupMetrics.startupZ80RuntimeToggleCount
+	$nexenStartupZ80RuntimeToggleCount = $nexenStartupMetrics.startupZ80RuntimeToggleCount
+	$mesenStartupZ80BusReqEventCount = $mesenStartupMetrics.startupZ80BusReqEventCount
+	$nexenStartupZ80BusReqEventCount = $nexenStartupMetrics.startupZ80BusReqEventCount
+	$mesenStartupZ80ResetEventCount = $mesenStartupMetrics.startupZ80ResetEventCount
+	$nexenStartupZ80ResetEventCount = $nexenStartupMetrics.startupZ80ResetEventCount
 }
 
 $report = New-Object System.Collections.Generic.List[string]
@@ -722,6 +772,20 @@ $report.Add("mesenStartupCheckpointCount=$mesenStartupCheckpointCount")
 $report.Add("nexenStartupCheckpointCount=$nexenStartupCheckpointCount")
 $report.Add("mesenStartupDisplayTransitionCount=$mesenStartupDisplayTransitionCount")
 $report.Add("nexenStartupDisplayTransitionCount=$nexenStartupDisplayTransitionCount")
+$report.Add("mesenStartupPaletteCheckpointCount=$mesenStartupPaletteCheckpointCount")
+$report.Add("nexenStartupPaletteCheckpointCount=$nexenStartupPaletteCheckpointCount")
+$report.Add("mesenStartupVdpSnapshotCount=$mesenStartupVdpSnapshotCount")
+$report.Add("nexenStartupVdpSnapshotCount=$nexenStartupVdpSnapshotCount")
+$report.Add("mesenStartupVdpRegisterWriteCount=$mesenStartupVdpRegisterWriteCount")
+$report.Add("nexenStartupVdpRegisterWriteCount=$nexenStartupVdpRegisterWriteCount")
+$report.Add("mesenStartupTmssUnlockCount=$mesenStartupTmssUnlockCount")
+$report.Add("nexenStartupTmssUnlockCount=$nexenStartupTmssUnlockCount")
+$report.Add("mesenStartupZ80RuntimeToggleCount=$mesenStartupZ80RuntimeToggleCount")
+$report.Add("nexenStartupZ80RuntimeToggleCount=$nexenStartupZ80RuntimeToggleCount")
+$report.Add("mesenStartupZ80BusReqEventCount=$mesenStartupZ80BusReqEventCount")
+$report.Add("nexenStartupZ80BusReqEventCount=$nexenStartupZ80BusReqEventCount")
+$report.Add("mesenStartupZ80ResetEventCount=$mesenStartupZ80ResetEventCount")
+$report.Add("nexenStartupZ80ResetEventCount=$nexenStartupZ80ResetEventCount")
 $report.Add("mesenHash=$mesenHash")
 $report.Add("nexenHash=$nexenHash")
 $report.Add("mesenStartupHash=$mesenStartupHash")

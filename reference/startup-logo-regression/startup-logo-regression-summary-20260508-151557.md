@@ -1,6 +1,6 @@
 # Genesis Startup Logo Regression Summary
 
-- generatedUtc: 2026-05-08T15:25:51.7547679Z
+- generatedUtc: 2026-05-08T15:20:27.4959396Z
 - frameStart: 0
 - frameEnd: 600
 - autoStopTimeoutSeconds: 45
@@ -8,7 +8,7 @@
 - romCount: 3
 - regressionCount: 0
 - missingMesenCount: 0
-- policyFailureCount: 0
+- policyFailureCount: 3
 - anyErrors: False
 - startupProfiles: logo-compat,mesen-startup,strict-startup
 - strictRequireMesenTraces: True
@@ -21,29 +21,29 @@
 - strictRequireBothStartupDisplayTransitionEvents: True
 - strictRequireBothStartupPaletteCheckpointEvents: True
 - strictRequireBothStartupVdpSnapshotEvents: True
-- strictRequireBothStartupVdpRegisterWriteEvents: False
+- strictRequireBothStartupVdpRegisterWriteEvents: True
 - strictRequireBothStartupTmssUnlockEvents: True
-- strictRequireBothStartupZ80RuntimeToggleEvents: False
+- strictRequireBothStartupZ80RuntimeToggleEvents: True
 - minNexenStartupCheckpointCount: 1
 - minNexenStartupDisplayTransitionCount: 1
 - minNexenStartupPaletteCheckpointCount: 1
 - minNexenStartupVdpSnapshotCount: 1
 - minNexenStartupVdpRegisterWriteCount: 1
 - minNexenStartupTmssUnlockCount: 0
-- minNexenStartupZ80RuntimeToggleCount: 0
+- minNexenStartupZ80RuntimeToggleCount: 1
 - minMesenStartupCheckpointCount: 1
 - minMesenStartupDisplayTransitionCount: 1
 - minMesenStartupPaletteCheckpointCount: 1
 - minMesenStartupVdpSnapshotCount: 1
 - minMesenStartupVdpRegisterWriteCount: 1
 - minMesenStartupTmssUnlockCount: 0
-- minMesenStartupZ80RuntimeToggleCount: 0
+- minMesenStartupZ80RuntimeToggleCount: 1
 
 | ROM | Profile | Exit | Diff | Startup Diff | Nexen Startup Hash | Mesen Startup Hash | N/M Chkpt | N/M Disp | N/M Pal | N/M VdpRegW | N/M Z80Tgl | N/M TmssUnlock | Regressions | Policy Failures | Verdict |
 |---|---|---:|---:|---:|---|---|---|---|---|---|---|---|---|---|---|
-| sonic-the-hedgehog-usa-europe | logo-compat | 3 | 0 | 0 | 63a48c49551108afbbe8133ec10dce244f84c89052c99e7f1263f29b18c87d68 | ce9a9f95ca8a51a2c12faa915e087e6d7ecd784f3e5de27185f08dc210ed58a0 | 601/413 | 1/1 | 601/413 | 6459/0 | 601/0 | 0/0 |  |  | pass |
-| sonic-the-hedgehog-usa-europe | mesen-startup | 3 | 0 | 0 | 22fa8e7e522a65c6a6fca4b5bcb77b194465655702247a7e39a4104b6b0f1fa2 | cb5a9db77f7fbd610699b5319023ee76eaa974e9f5fd30350c319dab3e6ba35d | 601/414 | 1/1 | 601/414 | 6459/0 | 601/0 | 0/0 |  |  | pass |
-| sonic-the-hedgehog-usa-europe | strict-startup | 3 | 0 | 0 | a9e1612e19113fe0c530b0797c8d8bcee44d32fe179559a8c726c748a9444c9b | c4e7dfa68a6f7a3180b2289bc0f259884f8ec4e3ff9772201412ce7a1da02dbf | 61/413 | 1/1 | 61/413 | 6459/0 | 61/0 | 0/0 |  |  | pass |
+| sonic-the-hedgehog-usa-europe | logo-compat | 3 | 0 | 0 | 4de2b066757aba7db6be4047fb9e25212dea4347c7f3f0d2f5203c672838b5c8 | 5b626a7c14021cb77d93f677dcedbca50e9febdac345ca4c93a31464fe320633 | 601/415 | 1/1 | 601/415 | 6459/0 | 601/0 | 0/0 |  | dualStartupVdpRegisterWrite.mesen,dualStartupZ80RuntimeToggle.mesen | policy-fail |
+| sonic-the-hedgehog-usa-europe | mesen-startup | 3 | 0 | 0 | 305e194cc872ecce753ced41964b9208658503dace5f6f38cee50dca3fb3fd18 | 34ea80baf5cb70b5ee4b83cbead0c16926d46369199ca59c24d5aa86c8258375 | 601/415 | 1/1 | 601/415 | 6459/0 | 601/0 | 0/0 |  | dualStartupVdpRegisterWrite.mesen,dualStartupZ80RuntimeToggle.mesen | policy-fail |
+| sonic-the-hedgehog-usa-europe | strict-startup | 3 | 0 | 0 | af0b088bca3ee9e4489d3f18e536be82bdd9acc0c12082cf1d8449a99b990910 | f41889b354aafb538a0b750d661f98fa9615ef228abf83ad3aa0a94dc134f218 | 61/416 | 1/1 | 61/416 | 6459/0 | 61/0 | 0/0 |  | dualStartupVdpRegisterWrite.mesen,dualStartupZ80RuntimeToggle.mesen | policy-fail |
 
 ## Notes
 

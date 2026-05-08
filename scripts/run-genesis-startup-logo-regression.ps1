@@ -16,16 +16,32 @@
 	[switch]$AllowMissingMesenFrontend,
 	[switch]$DisableMesenFallbackRunModes,
 	[switch]$StrictRequireMesenTraces,
+	[switch]$StrictStartupParity,
 	[switch]$FailOnWramDiff,
 	[switch]$FailOnStartupDiff,
 	[switch]$FailOnMissingStartupMetrics,
 	[int]$MinNexenStartupCheckpointCount = 1,
 	[int]$MinNexenStartupDisplayTransitionCount = 0,
+	[int]$MinNexenStartupPaletteCheckpointCount = 1,
+	[int]$MinNexenStartupVdpSnapshotCount = 1,
+	[int]$MinNexenStartupVdpRegisterWriteCount = 1,
+	[int]$MinNexenStartupTmssUnlockCount = 0,
+	[int]$MinNexenStartupZ80RuntimeToggleCount = 0,
 	[switch]$StrictRequireMesenStartupEvents,
 	[switch]$StrictRequireBothStartupCheckpointEvents,
 	[switch]$StrictRequireBothStartupDisplayTransitionEvents,
+	[switch]$StrictRequireBothStartupPaletteCheckpointEvents,
+	[switch]$StrictRequireBothStartupVdpSnapshotEvents,
+	[switch]$StrictRequireBothStartupVdpRegisterWriteEvents,
+	[switch]$StrictRequireBothStartupTmssUnlockEvents,
+	[switch]$StrictRequireBothStartupZ80RuntimeToggleEvents,
 	[int]$MinMesenStartupCheckpointCount = 1,
-	[int]$MinMesenStartupDisplayTransitionCount = 0
+	[int]$MinMesenStartupDisplayTransitionCount = 0,
+	[int]$MinMesenStartupPaletteCheckpointCount = 1,
+	[int]$MinMesenStartupVdpSnapshotCount = 1,
+	[int]$MinMesenStartupVdpRegisterWriteCount = 1,
+	[int]$MinMesenStartupTmssUnlockCount = 0,
+	[int]$MinMesenStartupZ80RuntimeToggleCount = 0
 )
 
 $ErrorActionPreference = "Stop"
@@ -175,6 +191,24 @@ if ($null -eq $StartupProfiles -or $StartupProfiles.Count -eq 0) {
 	$StartupProfiles = @("logo-compat")
 }
 
+if ($StrictStartupParity) {
+	$StrictRequireMesenTraces = $true
+	$StrictRequireBothStartupCheckpointEvents = $true
+	$StrictRequireBothStartupDisplayTransitionEvents = $true
+	$StrictRequireBothStartupPaletteCheckpointEvents = $true
+	$StrictRequireBothStartupVdpSnapshotEvents = $true
+	$StrictRequireBothStartupTmssUnlockEvents = $true
+
+	$MinNexenStartupCheckpointCount = [Math]::Max($MinNexenStartupCheckpointCount, 1)
+	$MinMesenStartupCheckpointCount = [Math]::Max($MinMesenStartupCheckpointCount, 1)
+	$MinNexenStartupDisplayTransitionCount = [Math]::Max($MinNexenStartupDisplayTransitionCount, 1)
+	$MinMesenStartupDisplayTransitionCount = [Math]::Max($MinMesenStartupDisplayTransitionCount, 1)
+	$MinNexenStartupPaletteCheckpointCount = [Math]::Max($MinNexenStartupPaletteCheckpointCount, 1)
+	$MinMesenStartupPaletteCheckpointCount = [Math]::Max($MinMesenStartupPaletteCheckpointCount, 1)
+	$MinNexenStartupVdpSnapshotCount = [Math]::Max($MinNexenStartupVdpSnapshotCount, 1)
+	$MinMesenStartupVdpSnapshotCount = [Math]::Max($MinMesenStartupVdpSnapshotCount, 1)
+}
+
 foreach ($rom in $RomPaths) {
 	if ([string]::IsNullOrWhiteSpace($rom)) {
 		continue
@@ -255,6 +289,16 @@ foreach ($rom in $RomPaths) {
 			mesenStartupCheckpointCount = Get-IntValue -Value $report["mesenStartupCheckpointCount"]
 			nexenStartupDisplayTransitionCount = Get-IntValue -Value $report["nexenStartupDisplayTransitionCount"]
 			mesenStartupDisplayTransitionCount = Get-IntValue -Value $report["mesenStartupDisplayTransitionCount"]
+			nexenStartupPaletteCheckpointCount = Get-IntValue -Value $report["nexenStartupPaletteCheckpointCount"]
+			mesenStartupPaletteCheckpointCount = Get-IntValue -Value $report["mesenStartupPaletteCheckpointCount"]
+			nexenStartupVdpSnapshotCount = Get-IntValue -Value $report["nexenStartupVdpSnapshotCount"]
+			mesenStartupVdpSnapshotCount = Get-IntValue -Value $report["mesenStartupVdpSnapshotCount"]
+			nexenStartupVdpRegisterWriteCount = Get-IntValue -Value $report["nexenStartupVdpRegisterWriteCount"]
+			mesenStartupVdpRegisterWriteCount = Get-IntValue -Value $report["mesenStartupVdpRegisterWriteCount"]
+			nexenStartupTmssUnlockCount = Get-IntValue -Value $report["nexenStartupTmssUnlockCount"]
+			mesenStartupTmssUnlockCount = Get-IntValue -Value $report["mesenStartupTmssUnlockCount"]
+			nexenStartupZ80RuntimeToggleCount = Get-IntValue -Value $report["nexenStartupZ80RuntimeToggleCount"]
+			mesenStartupZ80RuntimeToggleCount = Get-IntValue -Value $report["mesenStartupZ80RuntimeToggleCount"]
 			mesenTraceMissing = $mesenMissing
 			mesenStartupTraceMissing = $mesenStartupMissing
 			mesenRunSkipped = $mesenSkipped
@@ -278,6 +322,21 @@ foreach ($rom in $RomPaths) {
 			}
 			if ($baselineEntry.nexenStartupDisplayTransitionCount -ne $null -and [int]$baselineEntry.nexenStartupDisplayTransitionCount -ne $current.nexenStartupDisplayTransitionCount) {
 				$regressions.Add("nexenStartupDisplayTransitionCount")
+			}
+			if ($baselineEntry.nexenStartupPaletteCheckpointCount -ne $null -and [int]$baselineEntry.nexenStartupPaletteCheckpointCount -ne $current.nexenStartupPaletteCheckpointCount) {
+				$regressions.Add("nexenStartupPaletteCheckpointCount")
+			}
+			if ($baselineEntry.nexenStartupVdpSnapshotCount -ne $null -and [int]$baselineEntry.nexenStartupVdpSnapshotCount -ne $current.nexenStartupVdpSnapshotCount) {
+				$regressions.Add("nexenStartupVdpSnapshotCount")
+			}
+			if ($baselineEntry.nexenStartupVdpRegisterWriteCount -ne $null -and [int]$baselineEntry.nexenStartupVdpRegisterWriteCount -ne $current.nexenStartupVdpRegisterWriteCount) {
+				$regressions.Add("nexenStartupVdpRegisterWriteCount")
+			}
+			if ($baselineEntry.nexenStartupTmssUnlockCount -ne $null -and [int]$baselineEntry.nexenStartupTmssUnlockCount -ne $current.nexenStartupTmssUnlockCount) {
+				$regressions.Add("nexenStartupTmssUnlockCount")
+			}
+			if ($baselineEntry.nexenStartupZ80RuntimeToggleCount -ne $null -and [int]$baselineEntry.nexenStartupZ80RuntimeToggleCount -ne $current.nexenStartupZ80RuntimeToggleCount) {
+				$regressions.Add("nexenStartupZ80RuntimeToggleCount")
 			}
 		}
 
@@ -308,6 +367,21 @@ foreach ($rom in $RomPaths) {
 			if ($current.nexenStartupDisplayTransitionCount -lt $MinNexenStartupDisplayTransitionCount) {
 				$policyFailures.Add("nexenStartupDisplayTransitionCount")
 			}
+			if ($current.nexenStartupPaletteCheckpointCount -lt $MinNexenStartupPaletteCheckpointCount) {
+				$policyFailures.Add("nexenStartupPaletteCheckpointCount")
+			}
+			if ($current.nexenStartupVdpSnapshotCount -lt $MinNexenStartupVdpSnapshotCount) {
+				$policyFailures.Add("nexenStartupVdpSnapshotCount")
+			}
+			if ($current.nexenStartupVdpRegisterWriteCount -lt $MinNexenStartupVdpRegisterWriteCount) {
+				$policyFailures.Add("nexenStartupVdpRegisterWriteCount")
+			}
+			if ($current.nexenStartupTmssUnlockCount -lt $MinNexenStartupTmssUnlockCount) {
+				$policyFailures.Add("nexenStartupTmssUnlockCount")
+			}
+			if ($current.nexenStartupZ80RuntimeToggleCount -lt $MinNexenStartupZ80RuntimeToggleCount) {
+				$policyFailures.Add("nexenStartupZ80RuntimeToggleCount")
+			}
 		}
 		if ($StrictRequireMesenStartupEvents) {
 			if ($current.mesenStartupCheckpointCount -lt $MinMesenStartupCheckpointCount) {
@@ -333,6 +407,46 @@ foreach ($rom in $RomPaths) {
 				$policyFailures.Add("dualStartupDisplayTransition.nexen")
 			}
 		}
+		if ($StrictRequireBothStartupPaletteCheckpointEvents) {
+			if ($current.mesenStartupPaletteCheckpointCount -lt $MinMesenStartupPaletteCheckpointCount) {
+				$policyFailures.Add("dualStartupPaletteCheckpoint.mesen")
+			}
+			if ($current.nexenStartupPaletteCheckpointCount -lt $MinNexenStartupPaletteCheckpointCount) {
+				$policyFailures.Add("dualStartupPaletteCheckpoint.nexen")
+			}
+		}
+		if ($StrictRequireBothStartupVdpSnapshotEvents) {
+			if ($current.mesenStartupVdpSnapshotCount -lt $MinMesenStartupVdpSnapshotCount) {
+				$policyFailures.Add("dualStartupVdpSnapshot.mesen")
+			}
+			if ($current.nexenStartupVdpSnapshotCount -lt $MinNexenStartupVdpSnapshotCount) {
+				$policyFailures.Add("dualStartupVdpSnapshot.nexen")
+			}
+		}
+		if ($StrictRequireBothStartupVdpRegisterWriteEvents) {
+			if ($current.mesenStartupVdpRegisterWriteCount -lt $MinMesenStartupVdpRegisterWriteCount) {
+				$policyFailures.Add("dualStartupVdpRegisterWrite.mesen")
+			}
+			if ($current.nexenStartupVdpRegisterWriteCount -lt $MinNexenStartupVdpRegisterWriteCount) {
+				$policyFailures.Add("dualStartupVdpRegisterWrite.nexen")
+			}
+		}
+		if ($StrictRequireBothStartupTmssUnlockEvents) {
+			if ($current.mesenStartupTmssUnlockCount -lt $MinMesenStartupTmssUnlockCount) {
+				$policyFailures.Add("dualStartupTmssUnlock.mesen")
+			}
+			if ($current.nexenStartupTmssUnlockCount -lt $MinNexenStartupTmssUnlockCount) {
+				$policyFailures.Add("dualStartupTmssUnlock.nexen")
+			}
+		}
+		if ($StrictRequireBothStartupZ80RuntimeToggleEvents) {
+			if ($current.mesenStartupZ80RuntimeToggleCount -lt $MinMesenStartupZ80RuntimeToggleCount) {
+				$policyFailures.Add("dualStartupZ80RuntimeToggle.mesen")
+			}
+			if ($current.nexenStartupZ80RuntimeToggleCount -lt $MinNexenStartupZ80RuntimeToggleCount) {
+				$policyFailures.Add("dualStartupZ80RuntimeToggle.nexen")
+			}
+		}
 
 		$current["policyFailures"] = @($policyFailures)
 		$current["policyFailureCount"] = $policyFailures.Count
@@ -352,6 +466,11 @@ foreach ($item in $results) {
 		nexenStartupHash = $item.nexenStartupHash
 		nexenStartupCheckpointCount = $item.nexenStartupCheckpointCount
 		nexenStartupDisplayTransitionCount = $item.nexenStartupDisplayTransitionCount
+		nexenStartupPaletteCheckpointCount = $item.nexenStartupPaletteCheckpointCount
+		nexenStartupVdpSnapshotCount = $item.nexenStartupVdpSnapshotCount
+		nexenStartupVdpRegisterWriteCount = $item.nexenStartupVdpRegisterWriteCount
+		nexenStartupTmssUnlockCount = $item.nexenStartupTmssUnlockCount
+		nexenStartupZ80RuntimeToggleCount = $item.nexenStartupZ80RuntimeToggleCount
 	}
 }
 
@@ -381,16 +500,32 @@ $summary | Add-Member -NotePropertyName "policyFailureCount" -NotePropertyValue 
 $summary | Add-Member -NotePropertyName "anyErrors" -NotePropertyValue $anyErrors
 $summary | Add-Member -NotePropertyName "startupProfiles" -NotePropertyValue @($StartupProfiles)
 $summary | Add-Member -NotePropertyName "strictRequireMesenTraces" -NotePropertyValue ([bool]$StrictRequireMesenTraces)
+$summary | Add-Member -NotePropertyName "strictStartupParity" -NotePropertyValue ([bool]$StrictStartupParity)
 $summary | Add-Member -NotePropertyName "failOnWramDiff" -NotePropertyValue ([bool]$FailOnWramDiff)
 $summary | Add-Member -NotePropertyName "failOnStartupDiff" -NotePropertyValue ([bool]$FailOnStartupDiff)
 $summary | Add-Member -NotePropertyName "failOnMissingStartupMetrics" -NotePropertyValue ([bool]$FailOnMissingStartupMetrics)
 $summary | Add-Member -NotePropertyName "strictRequireMesenStartupEvents" -NotePropertyValue ([bool]$StrictRequireMesenStartupEvents)
 $summary | Add-Member -NotePropertyName "strictRequireBothStartupCheckpointEvents" -NotePropertyValue ([bool]$StrictRequireBothStartupCheckpointEvents)
 $summary | Add-Member -NotePropertyName "strictRequireBothStartupDisplayTransitionEvents" -NotePropertyValue ([bool]$StrictRequireBothStartupDisplayTransitionEvents)
+$summary | Add-Member -NotePropertyName "strictRequireBothStartupPaletteCheckpointEvents" -NotePropertyValue ([bool]$StrictRequireBothStartupPaletteCheckpointEvents)
+$summary | Add-Member -NotePropertyName "strictRequireBothStartupVdpSnapshotEvents" -NotePropertyValue ([bool]$StrictRequireBothStartupVdpSnapshotEvents)
+$summary | Add-Member -NotePropertyName "strictRequireBothStartupVdpRegisterWriteEvents" -NotePropertyValue ([bool]$StrictRequireBothStartupVdpRegisterWriteEvents)
+$summary | Add-Member -NotePropertyName "strictRequireBothStartupTmssUnlockEvents" -NotePropertyValue ([bool]$StrictRequireBothStartupTmssUnlockEvents)
+$summary | Add-Member -NotePropertyName "strictRequireBothStartupZ80RuntimeToggleEvents" -NotePropertyValue ([bool]$StrictRequireBothStartupZ80RuntimeToggleEvents)
 $summary | Add-Member -NotePropertyName "minNexenStartupCheckpointCount" -NotePropertyValue $MinNexenStartupCheckpointCount
 $summary | Add-Member -NotePropertyName "minNexenStartupDisplayTransitionCount" -NotePropertyValue $MinNexenStartupDisplayTransitionCount
+$summary | Add-Member -NotePropertyName "minNexenStartupPaletteCheckpointCount" -NotePropertyValue $MinNexenStartupPaletteCheckpointCount
+$summary | Add-Member -NotePropertyName "minNexenStartupVdpSnapshotCount" -NotePropertyValue $MinNexenStartupVdpSnapshotCount
+$summary | Add-Member -NotePropertyName "minNexenStartupVdpRegisterWriteCount" -NotePropertyValue $MinNexenStartupVdpRegisterWriteCount
+$summary | Add-Member -NotePropertyName "minNexenStartupTmssUnlockCount" -NotePropertyValue $MinNexenStartupTmssUnlockCount
+$summary | Add-Member -NotePropertyName "minNexenStartupZ80RuntimeToggleCount" -NotePropertyValue $MinNexenStartupZ80RuntimeToggleCount
 $summary | Add-Member -NotePropertyName "minMesenStartupCheckpointCount" -NotePropertyValue $MinMesenStartupCheckpointCount
 $summary | Add-Member -NotePropertyName "minMesenStartupDisplayTransitionCount" -NotePropertyValue $MinMesenStartupDisplayTransitionCount
+$summary | Add-Member -NotePropertyName "minMesenStartupPaletteCheckpointCount" -NotePropertyValue $MinMesenStartupPaletteCheckpointCount
+$summary | Add-Member -NotePropertyName "minMesenStartupVdpSnapshotCount" -NotePropertyValue $MinMesenStartupVdpSnapshotCount
+$summary | Add-Member -NotePropertyName "minMesenStartupVdpRegisterWriteCount" -NotePropertyValue $MinMesenStartupVdpRegisterWriteCount
+$summary | Add-Member -NotePropertyName "minMesenStartupTmssUnlockCount" -NotePropertyValue $MinMesenStartupTmssUnlockCount
+$summary | Add-Member -NotePropertyName "minMesenStartupZ80RuntimeToggleCount" -NotePropertyValue $MinMesenStartupZ80RuntimeToggleCount
 $summary | Add-Member -NotePropertyName "baselinePath" -NotePropertyValue $resolvedBaselinePath
 $summary | Add-Member -NotePropertyName "baselineUpdated" -NotePropertyValue ([bool]$UpdateBaseline)
 $summary | Add-Member -NotePropertyName "results" -NotePropertyValue $resultArray.ToArray()
@@ -414,19 +549,35 @@ $md.Add("- policyFailureCount: $policyFailureCount")
 $md.Add("- anyErrors: $anyErrors")
 $md.Add("- startupProfiles: $($StartupProfiles -join ',')")
 $md.Add("- strictRequireMesenTraces: $([bool]$StrictRequireMesenTraces)")
+$md.Add("- strictStartupParity: $([bool]$StrictStartupParity)")
 $md.Add("- failOnWramDiff: $([bool]$FailOnWramDiff)")
 $md.Add("- failOnStartupDiff: $([bool]$FailOnStartupDiff)")
 $md.Add("- failOnMissingStartupMetrics: $([bool]$FailOnMissingStartupMetrics)")
 $md.Add("- strictRequireMesenStartupEvents: $([bool]$StrictRequireMesenStartupEvents)")
 $md.Add("- strictRequireBothStartupCheckpointEvents: $([bool]$StrictRequireBothStartupCheckpointEvents)")
 $md.Add("- strictRequireBothStartupDisplayTransitionEvents: $([bool]$StrictRequireBothStartupDisplayTransitionEvents)")
+$md.Add("- strictRequireBothStartupPaletteCheckpointEvents: $([bool]$StrictRequireBothStartupPaletteCheckpointEvents)")
+$md.Add("- strictRequireBothStartupVdpSnapshotEvents: $([bool]$StrictRequireBothStartupVdpSnapshotEvents)")
+$md.Add("- strictRequireBothStartupVdpRegisterWriteEvents: $([bool]$StrictRequireBothStartupVdpRegisterWriteEvents)")
+$md.Add("- strictRequireBothStartupTmssUnlockEvents: $([bool]$StrictRequireBothStartupTmssUnlockEvents)")
+$md.Add("- strictRequireBothStartupZ80RuntimeToggleEvents: $([bool]$StrictRequireBothStartupZ80RuntimeToggleEvents)")
 $md.Add("- minNexenStartupCheckpointCount: $MinNexenStartupCheckpointCount")
 $md.Add("- minNexenStartupDisplayTransitionCount: $MinNexenStartupDisplayTransitionCount")
+$md.Add("- minNexenStartupPaletteCheckpointCount: $MinNexenStartupPaletteCheckpointCount")
+$md.Add("- minNexenStartupVdpSnapshotCount: $MinNexenStartupVdpSnapshotCount")
+$md.Add("- minNexenStartupVdpRegisterWriteCount: $MinNexenStartupVdpRegisterWriteCount")
+$md.Add("- minNexenStartupTmssUnlockCount: $MinNexenStartupTmssUnlockCount")
+$md.Add("- minNexenStartupZ80RuntimeToggleCount: $MinNexenStartupZ80RuntimeToggleCount")
 $md.Add("- minMesenStartupCheckpointCount: $MinMesenStartupCheckpointCount")
 $md.Add("- minMesenStartupDisplayTransitionCount: $MinMesenStartupDisplayTransitionCount")
+$md.Add("- minMesenStartupPaletteCheckpointCount: $MinMesenStartupPaletteCheckpointCount")
+$md.Add("- minMesenStartupVdpSnapshotCount: $MinMesenStartupVdpSnapshotCount")
+$md.Add("- minMesenStartupVdpRegisterWriteCount: $MinMesenStartupVdpRegisterWriteCount")
+$md.Add("- minMesenStartupTmssUnlockCount: $MinMesenStartupTmssUnlockCount")
+$md.Add("- minMesenStartupZ80RuntimeToggleCount: $MinMesenStartupZ80RuntimeToggleCount")
 $md.Add("")
-$md.Add("| ROM | Profile | Exit | Diff | Startup Diff | Nexen Startup Hash | Mesen Startup Hash | Nexen Chkpt | Nexen Disp Tgl | Regressions | Policy Failures | Verdict |")
-$md.Add("|---|---|---:|---:|---:|---|---|---:|---:|---|---|---|")
+$md.Add("| ROM | Profile | Exit | Diff | Startup Diff | Nexen Startup Hash | Mesen Startup Hash | N/M Chkpt | N/M Disp | N/M Pal | N/M VdpRegW | N/M Z80Tgl | N/M TmssUnlock | Regressions | Policy Failures | Verdict |")
+$md.Add("|---|---|---:|---:|---:|---|---|---|---|---|---|---|---|---|---|---|")
 foreach ($item in $results) {
 	$regressionText = ""
 	if ($item.regressionCount -gt 0) {
@@ -437,7 +588,7 @@ foreach ($item in $results) {
 		$policyText = ($item.policyFailures -join ",")
 	}
 
-	$md.Add("| $($item.romKey) | $($item.profileKey) | $($item.compareExitCode) | $($item.firstDiffIndex) | $($item.startupFirstDiffIndex) | $($item.nexenStartupHash) | $($item.mesenStartupHash) | $($item.nexenStartupCheckpointCount) | $($item.nexenStartupDisplayTransitionCount) | $regressionText | $policyText | $($item.verdict) |")
+	$md.Add("| $($item.romKey) | $($item.profileKey) | $($item.compareExitCode) | $($item.firstDiffIndex) | $($item.startupFirstDiffIndex) | $($item.nexenStartupHash) | $($item.mesenStartupHash) | $($item.nexenStartupCheckpointCount)/$($item.mesenStartupCheckpointCount) | $($item.nexenStartupDisplayTransitionCount)/$($item.mesenStartupDisplayTransitionCount) | $($item.nexenStartupPaletteCheckpointCount)/$($item.mesenStartupPaletteCheckpointCount) | $($item.nexenStartupVdpRegisterWriteCount)/$($item.mesenStartupVdpRegisterWriteCount) | $($item.nexenStartupZ80RuntimeToggleCount)/$($item.mesenStartupZ80RuntimeToggleCount) | $($item.nexenStartupTmssUnlockCount)/$($item.mesenStartupTmssUnlockCount) | $regressionText | $policyText | $($item.verdict) |")
 }
 
 $md.Add("")
