@@ -23,6 +23,7 @@
 	[int]$MinNexenStartupDisplayTransitionCount = 0,
 	[switch]$StrictRequireMesenStartupEvents,
 	[switch]$StrictRequireBothStartupCheckpointEvents,
+	[switch]$StrictRequireBothStartupDisplayTransitionEvents,
 	[int]$MinMesenStartupCheckpointCount = 1,
 	[int]$MinMesenStartupDisplayTransitionCount = 0
 )
@@ -324,6 +325,14 @@ foreach ($rom in $RomPaths) {
 				$policyFailures.Add("dualStartupCheckpoint.nexen")
 			}
 		}
+		if ($StrictRequireBothStartupDisplayTransitionEvents) {
+			if ($current.mesenStartupDisplayTransitionCount -lt $MinMesenStartupDisplayTransitionCount) {
+				$policyFailures.Add("dualStartupDisplayTransition.mesen")
+			}
+			if ($current.nexenStartupDisplayTransitionCount -lt $MinNexenStartupDisplayTransitionCount) {
+				$policyFailures.Add("dualStartupDisplayTransition.nexen")
+			}
+		}
 
 		$current["policyFailures"] = @($policyFailures)
 		$current["policyFailureCount"] = $policyFailures.Count
@@ -377,6 +386,7 @@ $summary | Add-Member -NotePropertyName "failOnStartupDiff" -NotePropertyValue (
 $summary | Add-Member -NotePropertyName "failOnMissingStartupMetrics" -NotePropertyValue ([bool]$FailOnMissingStartupMetrics)
 $summary | Add-Member -NotePropertyName "strictRequireMesenStartupEvents" -NotePropertyValue ([bool]$StrictRequireMesenStartupEvents)
 $summary | Add-Member -NotePropertyName "strictRequireBothStartupCheckpointEvents" -NotePropertyValue ([bool]$StrictRequireBothStartupCheckpointEvents)
+$summary | Add-Member -NotePropertyName "strictRequireBothStartupDisplayTransitionEvents" -NotePropertyValue ([bool]$StrictRequireBothStartupDisplayTransitionEvents)
 $summary | Add-Member -NotePropertyName "minNexenStartupCheckpointCount" -NotePropertyValue $MinNexenStartupCheckpointCount
 $summary | Add-Member -NotePropertyName "minNexenStartupDisplayTransitionCount" -NotePropertyValue $MinNexenStartupDisplayTransitionCount
 $summary | Add-Member -NotePropertyName "minMesenStartupCheckpointCount" -NotePropertyValue $MinMesenStartupCheckpointCount
@@ -409,6 +419,7 @@ $md.Add("- failOnStartupDiff: $([bool]$FailOnStartupDiff)")
 $md.Add("- failOnMissingStartupMetrics: $([bool]$FailOnMissingStartupMetrics)")
 $md.Add("- strictRequireMesenStartupEvents: $([bool]$StrictRequireMesenStartupEvents)")
 $md.Add("- strictRequireBothStartupCheckpointEvents: $([bool]$StrictRequireBothStartupCheckpointEvents)")
+$md.Add("- strictRequireBothStartupDisplayTransitionEvents: $([bool]$StrictRequireBothStartupDisplayTransitionEvents)")
 $md.Add("- minNexenStartupCheckpointCount: $MinNexenStartupCheckpointCount")
 $md.Add("- minNexenStartupDisplayTransitionCount: $MinNexenStartupDisplayTransitionCount")
 $md.Add("- minMesenStartupCheckpointCount: $MinMesenStartupCheckpointCount")
