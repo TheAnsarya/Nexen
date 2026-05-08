@@ -2424,9 +2424,14 @@ c'mon! make a ***big*** change, I mean 1000's of lines of code, work many fixes,
 --- queued x5
 continue;
 
+continue;
+continue;
+continue;
+continue;
 
+c'mon! make a ***big*** change, I mean 1000's of lines of code, work many fixes, you're only running for a few minutes, not doing very many changes, don't stop the session quickly, keep working more and more in one big effort or several large efforts; [Nexen] (Genesis/MegaDrive) Continue doing what we've been doing, but with a big aggressive code change push instead of piddly small efforts; Update a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` Genesis code to make big changes; continue; do all the steps; continue; do ***several*** batches in a row and make only one issue per big effort; Focus on getting the startup and logos correct (like the first 10 seconds of a rom running after loading; continue;
 
-
+continue; but also the colors are wrong, check out how the palette works and fix our version;
 
 
 

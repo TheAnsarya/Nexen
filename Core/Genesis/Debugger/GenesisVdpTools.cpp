@@ -87,13 +87,17 @@ GenesisVdpTools::GenesisVdpTools(Debugger* debugger, Emulator* emu, GenesisConso
 }
 
 uint32_t GenesisVdpTools::CramToArgb(uint16_t cramColor) {
+	static constexpr uint8_t kGenesisDacLevels[15] = {
+		0, 27, 49, 71, 87, 103, 119, 130, 146, 157, 174, 190, 206, 228, 255
+	};
+
 	uint8_t r3 = (uint8_t)((cramColor >> 1) & 0x07);
 	uint8_t g3 = (uint8_t)((cramColor >> 5) & 0x07);
 	uint8_t b3 = (uint8_t)((cramColor >> 9) & 0x07);
 
-	uint8_t r = (uint8_t)((r3 << 5) | (r3 << 2) | (r3 >> 1));
-	uint8_t g = (uint8_t)((g3 << 5) | (g3 << 2) | (g3 >> 1));
-	uint8_t b = (uint8_t)((b3 << 5) | (b3 << 2) | (b3 >> 1));
+	uint8_t r = kGenesisDacLevels[r3 << 1];
+	uint8_t g = kGenesisDacLevels[g3 << 1];
+	uint8_t b = kGenesisDacLevels[b3 << 1];
 
 	return 0xFF000000 | (r << 16) | (g << 8) | b;
 }

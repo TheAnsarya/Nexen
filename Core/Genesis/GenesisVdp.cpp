@@ -447,16 +447,24 @@ void GenesisVdp::RenderSprites(uint16_t* lineBuffer, bool highPriority) {
 	}
 }
 
-// Convert Genesis CRAM color (0000BBB0GGG0RRR0) to RGB555
+namespace {
+	static constexpr uint8_t kGenesisDacToRgb555[8] = {
+		0, 6, 11, 14, 18, 21, 25, 31
+	};
+}
+
+// Convert Genesis CRAM color (0000BBB0GGG0RRR0) to RGB555 where bits 4:0 are red.
 uint16_t GenesisVdp::CramToRgb555(uint16_t cramColor) {
-	uint8_t r = (cramColor >> 1) & 7;
-	uint8_t g = (cramColor >> 5) & 7;
-	uint8_t b = (cramColor >> 9) & 7;
-	// Scale 3-bit (0-7) to 5-bit (0-31)
-	r = (r << 2) | (r >> 1);
-	g = (g << 2) | (g >> 1);
-	b = (b << 2) | (b >> 1);
-	return (r << 10) | (g << 5) | b; // RGB555
+	uint8_t r3 = (uint8_t)((cramColor >> 1) & 7u);
+	uint8_t g3 = (uint8_t)((cramColor >> 5) & 7u);
+	uint8_t b3 = (uint8_t)((cramColor >> 9) & 7u);
+
+	// Normal mode uses levels[channel3 << 1], pre-quantized to RGB555.
+	uint8_t r5 = kGenesisDacToRgb555[r3];
+	uint8_t g5 = kGenesisDacToRgb555[g3];
+	uint8_t b5 = kGenesisDacToRgb555[b3];
+
+	return (uint16_t)((b5 << 10) | (g5 << 5) | r5);
 }
 
 // Port access
