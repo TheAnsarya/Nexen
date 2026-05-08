@@ -83,7 +83,7 @@ private:
 	void RenderPlane(uint16_t line, bool planeA, uint8_t* dst) const;
 	void RenderWindow(uint16_t line, uint8_t* dst) const;
 	void RenderSprites(uint16_t line, uint8_t* dst);
-	void Composite(uint16_t* lineBuffer, const uint8_t* planeB, const uint8_t* planeA, const uint8_t* window, const uint8_t* spr, uint16_t pixels) const;
+	void Composite(uint16_t* lineBuffer, const uint8_t* planeB, const uint8_t* planeA, const uint8_t* spr, uint16_t pixels) const;
 	uint16_t GetHScrollForLine(uint16_t line, bool planeA) const;
 	uint16_t GetVScrollForPixel(uint16_t x, bool planeA) const;
 	bool IsWindowPixel(uint16_t line, uint16_t x) const;

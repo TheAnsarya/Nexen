@@ -255,14 +255,13 @@ void GenesisVdp::RenderScanline() {
 	uint16_t lineBuffer[MaxScreenWidth] = {};
 	uint8_t planeB[MaxScreenWidth] = {};
 	uint8_t planeA[MaxScreenWidth] = {};
-	uint8_t window[MaxScreenWidth] = {};
 	uint8_t sprites[MaxScreenWidth] = {};
 
 	RenderPlane(_scanline, false, planeB);
 	RenderPlane(_scanline, true, planeA);
-	RenderWindow(_scanline, window);
+	RenderWindow(_scanline, planeA);
 	RenderSprites(_scanline, sprites);
-	Composite(lineBuffer, planeB, planeA, window, sprites, _lineScreenWidth);
+	Composite(lineBuffer, planeB, planeA, sprites, _lineScreenWidth);
 
 	// Copy to output buffer
 	uint16_t* buf = _outputBuffers[_currentBuffer];
@@ -380,10 +379,7 @@ void GenesisVdp::RenderWindow(uint16_t line, uint8_t* dst) const {
 	uint16_t interlacePixRow = interlace2 ? (uint16_t)(pixRow * 2u + (interlaceField ? 1u : 0u)) : pixRow;
 
 	for (uint16_t x = 0; x < _lineScreenWidth; x++) {
-		if (!IsWindowPixel(line, x)) {
-			dst[x] = 0;
-			continue;
-		}
+			if (!IsWindowPixel(line, x)) continue;
 
 		uint16_t tileCol = x >> 3;
 		uint16_t tileX = x & 7u;
@@ -401,7 +397,7 @@ void GenesisVdp::RenderWindow(uint16_t line, uint8_t* dst) const {
 		uint16_t tileBase = interlace2 ? (uint16_t)(tile * 64u) : (uint16_t)(tile * 32u);
 		uint8_t color = FetchTilePixel(tileBase, fetchY, fetchX);
 
-		dst[x] = (uint8_t)((priority ? 0x80u : 0x00u) | (palette << 4) | color);
+		dst[x] = (uint8_t)((priority ? 0x80u : 0x00u) | 0x40u | (palette << 4) | color);
 	}
 }
 
@@ -623,7 +619,7 @@ uint16_t GenesisVdp::CramToRgb555(uint16_t cramColor) const {
 
 void GenesisVdp::UpdatePaletteEntry(uint8_t idx) {
 	idx &= 0x3Fu;
-	uint16_t cramColor = _cram[idx] & 0x0EEE;
+	uint16_t cramColor = _cram[idx];
 	_palette[idx] = CramToRgb555WithShade(cramColor, 1);
 	_shadowPalette[idx] = CramToRgb555WithShade(cramColor, 0);
 	_highlightPalette[idx] = CramToRgb555WithShade(cramColor, 2);
@@ -635,7 +631,7 @@ void GenesisVdp::RefreshPaletteCache() {
 	}
 }
 
-void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const uint8_t* planeA, const uint8_t* window, const uint8_t* spr, uint16_t pixels) const {
+void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const uint8_t* planeA, const uint8_t* spr, uint16_t pixels) const {
 	uint8_t bgIdx = _state.Registers[7] & 0x3Fu;
 	bool shadowHighlight = (_state.Registers[12] & 0x08u) != 0;
 
@@ -644,12 +640,11 @@ void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const ui
 	for (uint16_t x = 0; x < pixels; x++) {
 		uint8_t pB = planeB[x];
 		uint8_t pA = planeA[x];
-		uint8_t pW = window[x];
 		uint8_t pS = spr[x];
 
-		bool winSrc = (pW & 0x40u) != 0;
-		bool winHi = (pW & 0x80u) != 0;
-		bool winVis = winSrc && ((pW & 0x0Fu) != 0);
+		bool winSrc = (pA & 0x40u) != 0;
+		bool winHi = winSrc && ((pA & 0x80u) != 0);
+		bool winVis = winSrc && ((pA & 0x0Fu) != 0);
 		bool sprHi = (pS & 0x80u) != 0;
 		bool sprVis = (pS & 0x0Fu) != 0;
 		bool pAHi = !winSrc && ((pA & 0x80u) != 0);
@@ -683,15 +678,15 @@ void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const ui
 
 		uint8_t cramIdx = bgIdx;
 		if (winHi && winVis) {
-			cramIdx = (uint8_t)((((pW >> 4) & 3u) * 16u) + (pW & 0x0Fu));
+			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
 		} else if (sprHi && sprVis && !sprIsOperator) {
 			cramIdx = (uint8_t)((((pS >> 4) & 3u) * 16u) + (pS & 0x0Fu));
 		} else if (pAHi && pAVis) {
 			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
 		} else if (pBHi && pBVis) {
 			cramIdx = (uint8_t)((((pB >> 4) & 3u) * 16u) + (pB & 0x0Fu));
-		} else if (winVis) {
-			cramIdx = (uint8_t)((((pW >> 4) & 3u) * 16u) + (pW & 0x0Fu));
+		} else if (!winHi && winVis) {
+			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
 		} else if (!sprHi && sprVis && !sprIsOperator) {
 			cramIdx = (uint8_t)((((pS >> 4) & 3u) * 16u) + (pS & 0x0Fu));
 		} else if (!pAHi && pAVis) {
@@ -896,8 +891,8 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 		}
 	} else if (accessMode == 3) { // CRAM write
 		uint8_t idx = (_addressReg / 2) & 0x3F;
-		uint16_t cramValue = value & 0x0EEE;
-		_cram[idx] = cramValue; // Mask to valid Genesis color bits
+		uint16_t cramValue = value;
+		_cram[idx] = cramValue;
 		UpdatePaletteEntry(idx);
 
 		if (!loggedFirstNonZeroCram && cramValue != 0) {
@@ -1186,7 +1181,7 @@ void GenesisVdp::ProcessDma() {
 				}
 				case 0x03: {
 					uint8_t idx = (uint8_t)((dmaDst >> 1) & 0x3Fu);
-					_cram[idx] = word & 0x0EEEu;
+					_cram[idx] = word;
 					UpdatePaletteEntry(idx);
 					break;
 				}
