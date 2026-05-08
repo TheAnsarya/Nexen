@@ -1,5 +1,6 @@
 ﻿local outputPath = os.getenv("NEXEN_STARTUP_SCREENSHOT_PATH")
 local targetFrame = tonumber(os.getenv("NEXEN_STARTUP_SCREENSHOT_FRAME") or "180")
+local maxExtraFrames = tonumber(os.getenv("NEXEN_STARTUP_SCREENSHOT_MAX_EXTRA_FRAMES") or "240")
 
 local function finish(exitCode)
 	if type(emu.exit) == "function" then
@@ -17,6 +18,19 @@ end
 
 if targetFrame == nil or targetFrame < 1 then
 	targetFrame = 1
+end
+
+if maxExtraFrames == nil or maxExtraFrames < 0 then
+	maxExtraFrames = 0
+end
+
+local function isLikelyBlankFrame(pngBytes)
+	if pngBytes == nil then
+		return true
+	end
+
+	-- Flat startup blanks compress to very small PNG payloads.
+	return #pngBytes < 1500
 end
 
 local function writePngBytes(bytes)
@@ -43,15 +57,21 @@ if type(emu.step) == "function" and emu.stepType ~= nil and emu.stepType.frame ~
 		emu.step(1, emu.stepType.frame)
 	end
 
-	local ok, pngBytes = pcall(emu.takeScreenshot)
-	if not ok then
-		emu.log("capture-genesis-startup-screenshot: takeScreenshot failed")
-		finish(5)
-		return
-	end
+	for offset = 0, maxExtraFrames do
+		local ok, pngBytes = pcall(emu.takeScreenshot)
+		if not ok then
+			emu.log("capture-genesis-startup-screenshot: takeScreenshot failed")
+			finish(5)
+			return
+		end
 
-	writePngBytes(pngBytes)
-	return
+		if (offset == maxExtraFrames) or (not isLikelyBlankFrame(pngBytes)) then
+			writePngBytes(pngBytes)
+			return
+		end
+
+		emu.step(1, emu.stepType.frame)
+	end
 end
 
 local frameCounter = 0
@@ -61,10 +81,20 @@ emu.addEventCallback(function()
 		return
 	end
 
+	if frameCounter > (targetFrame + maxExtraFrames) then
+		emu.log("capture-genesis-startup-screenshot: reached frame limit without non-blank frame")
+		finish(6)
+		return
+	end
+
 	local ok, pngBytes = pcall(emu.takeScreenshot)
 	if not ok then
 		emu.log("capture-genesis-startup-screenshot: takeScreenshot failed")
 		finish(5)
+		return
+	end
+
+	if isLikelyBlankFrame(pngBytes) then
 		return
 	end
 

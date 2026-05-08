@@ -35,7 +35,7 @@ void GenesisVdp::Init(Emulator* emu, GenesisConsole* console, GenesisM68k* cpu, 
 void GenesisVdp::Reset(bool hardReset) {
 	memset(_state.Registers, 0, sizeof(_state.Registers));
 	bool palMode = (_state.StatusRegister & VdpStatus::PalMode) != 0;
-	_state.Registers[0] = 0x04; // Mode register 1
+	_state.Registers[0] = 0x00; // Mode register 1
 	_state.Registers[1] = 0x04; // Mode register 2 (display off)
 	_state.Registers[12] = 0x81; // Mode register 4 (H40 startup default)
 	_state.Registers[15] = 0x02; // Auto increment default
@@ -251,13 +251,14 @@ void GenesisVdp::RenderScanline() {
 	uint16_t lineBuffer[MaxScreenWidth] = {};
 	uint8_t planeB[MaxScreenWidth] = {};
 	uint8_t planeA[MaxScreenWidth] = {};
+	uint8_t window[MaxScreenWidth] = {};
 	uint8_t sprites[MaxScreenWidth] = {};
 
 	RenderPlane(_scanline, false, planeB);
 	RenderPlane(_scanline, true, planeA);
-	RenderWindow(_scanline, planeA);
+	RenderWindow(_scanline, window);
 	RenderSprites(_scanline, sprites);
-	Composite(lineBuffer, planeB, planeA, sprites, _lineScreenWidth);
+	Composite(lineBuffer, planeB, planeA, window, sprites, _lineScreenWidth);
 
 	// Copy to output buffer
 	uint16_t* buf = _outputBuffers[_currentBuffer];
@@ -376,6 +377,7 @@ void GenesisVdp::RenderWindow(uint16_t line, uint8_t* dst) const {
 
 	for (uint16_t x = 0; x < _lineScreenWidth; x++) {
 		if (!IsWindowPixel(line, x)) {
+			dst[x] = 0;
 			continue;
 		}
 
@@ -395,7 +397,7 @@ void GenesisVdp::RenderWindow(uint16_t line, uint8_t* dst) const {
 		uint16_t tileBase = interlace2 ? (uint16_t)(tile * 64u) : (uint16_t)(tile * 32u);
 		uint8_t color = FetchTilePixel(tileBase, fetchY, fetchX);
 
-		dst[x] = (uint8_t)((priority ? 0x80u : 0x00u) | 0x40u | (palette << 4) | color);
+		dst[x] = (uint8_t)((priority ? 0x80u : 0x00u) | (palette << 4) | color);
 	}
 }
 
@@ -629,7 +631,7 @@ void GenesisVdp::RefreshPaletteCache() {
 	}
 }
 
-void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const uint8_t* planeA, const uint8_t* spr, uint16_t pixels) const {
+void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const uint8_t* planeA, const uint8_t* window, const uint8_t* spr, uint16_t pixels) const {
 	uint8_t bgIdx = _state.Registers[7] & 0x3Fu;
 	bool shadowHighlight = (_state.Registers[12] & 0x08u) != 0;
 
@@ -638,15 +640,15 @@ void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const ui
 	for (uint16_t x = 0; x < pixels; x++) {
 		uint8_t pB = planeB[x];
 		uint8_t pA = planeA[x];
+		uint8_t pW = window[x];
 		uint8_t pS = spr[x];
 
-		bool winSrc = (pA & 0x40u) != 0;
-		bool winHi = winSrc && ((pA & 0x80u) != 0);
-		bool winVis = winSrc && ((pA & 0x0Fu) != 0);
+		bool winHi = (pW & 0x80u) != 0;
+		bool winVis = (pW & 0x0Fu) != 0;
 		bool sprHi = (pS & 0x80u) != 0;
 		bool sprVis = (pS & 0x0Fu) != 0;
-		bool pAHi = !winSrc && ((pA & 0x80u) != 0);
-		bool pAVis = !winSrc && ((pA & 0x0Fu) != 0);
+		bool pAHi = (pA & 0x80u) != 0;
+		bool pAVis = (pA & 0x0Fu) != 0;
 		bool pBHi = (pB & 0x80u) != 0;
 		bool pBVis = (pB & 0x0Fu) != 0;
 
@@ -676,15 +678,15 @@ void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const ui
 
 		uint8_t cramIdx = bgIdx;
 		if (winHi && winVis) {
-			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
+			cramIdx = (uint8_t)((((pW >> 4) & 3u) * 16u) + (pW & 0x0Fu));
 		} else if (sprHi && sprVis && !sprIsOperator) {
 			cramIdx = (uint8_t)((((pS >> 4) & 3u) * 16u) + (pS & 0x0Fu));
 		} else if (pAHi && pAVis) {
 			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
 		} else if (pBHi && pBVis) {
 			cramIdx = (uint8_t)((((pB >> 4) & 3u) * 16u) + (pB & 0x0Fu));
-		} else if (!winHi && winVis) {
-			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
+		} else if (winVis) {
+			cramIdx = (uint8_t)((((pW >> 4) & 3u) * 16u) + (pW & 0x0Fu));
 		} else if (!sprHi && sprVis && !sprIsOperator) {
 			cramIdx = (uint8_t)((((pS >> 4) & 3u) * 16u) + (pS & 0x0Fu));
 		} else if (!pAHi && pAVis) {
