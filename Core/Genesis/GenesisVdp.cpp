@@ -364,7 +364,7 @@ void GenesisVdp::RenderPlane(uint16_t line, bool planeA, uint8_t* dst) const {
 		uint16_t tileBase = interlace2 ? (uint16_t)(tile * 64u) : (uint16_t)(tile * 32u);
 		uint8_t color = FetchTilePixel(tileBase, fetchY, fetchX);
 
-		dst[x] = (uint8_t)((priority ? 0x80u : 0x00u) | 0x40u | (palette << 4) | color);
+		dst[x] = (uint8_t)((priority ? 0x80u : 0x00u) | (palette << 4) | color);
 	}
 }
 
@@ -871,7 +871,7 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 				_state.FrameCount));
 		}
 
-		uint32_t addr = _addressReg & 0xFFFE;
+		uint32_t addr = _addressReg & 0xFFFF;
 		if (addr + 1 < VramSize) {
 			uint8_t hi = (uint8_t)(value >> 8);
 			uint8_t lo = (uint8_t)(value & 0xFF);
