@@ -27,6 +27,9 @@ private:
 	uint8_t _vram[VramSize] = {};
 	uint16_t _cram[64] = {};     // Color RAM (64 entries, 9-bit BGR)
 	uint16_t _vsram[40] = {};   // Vertical scroll RAM (40 entries)
+	uint16_t _palette[64] = {};
+	uint16_t _shadowPalette[64] = {};
+	uint16_t _highlightPalette[64] = {};
 
 	// Output frame buffers (double-buffered, RGB555)
 	uint16_t _outputBuffers[2][MaxScreenWidth * MaxScreenHeight] = {};
@@ -68,14 +71,23 @@ private:
 	bool _dmaFillDataPending = false;
 	uint8_t _dmaStartupDelayCyclesRemaining = 0;
 	uint8_t _dmaBusCycleRemainder = 0;
+	bool _prevLineDotOverflow = false;
 
 	// Internal methods
 	void ProcessScanline();
 	void RenderScanline();
-	void RenderBackground(uint16_t* lineBuffer, uint8_t planeIndex, bool highPriority);
-	void RenderSprites(uint16_t* lineBuffer, bool highPriority);
+	void RenderPlane(uint16_t line, bool planeA, uint8_t* dst) const;
+	void RenderWindow(uint16_t line, uint8_t* dst) const;
+	void RenderSprites(uint16_t line, uint8_t* dst);
+	void Composite(uint16_t* lineBuffer, const uint8_t* planeB, const uint8_t* planeA, const uint8_t* spr, uint16_t pixels) const;
+	uint16_t GetHScrollForLine(uint16_t line, bool planeA) const;
+	uint16_t GetVScrollForPixel(uint16_t x, bool planeA) const;
+	bool IsWindowPixel(uint16_t line, uint16_t x) const;
+	uint8_t FetchTilePixel(uint16_t tileBase, uint8_t row, uint8_t col) const;
 	void OutputPixel(uint16_t x, uint16_t y, uint16_t color);
-	uint16_t CramToRgb555(uint16_t cramColor);
+	uint16_t CramToRgb555(uint16_t cramColor) const;
+	void UpdatePaletteEntry(uint8_t idx);
+	void RefreshPaletteCache();
 	void ProcessDma();
 	uint8_t GetDmaWordPeriodCycles() const;
 	bool IsActiveDisplayExternalDmaSlot() const;

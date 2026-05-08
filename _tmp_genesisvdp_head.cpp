@@ -23,9 +23,6 @@ void GenesisVdp::Init(Emulator* emu, GenesisConsole* console, GenesisM68k* cpu, 
 	memset(_vram, 0, VramSize);
 	memset(_cram, 0, sizeof(_cram));
 	memset(_vsram, 0, sizeof(_vsram));
-	memset(_palette, 0, sizeof(_palette));
-	memset(_shadowPalette, 0, sizeof(_shadowPalette));
-	memset(_highlightPalette, 0, sizeof(_highlightPalette));
 	memset(&_state, 0, sizeof(_state));
 	memset(_outputBuffers, 0, sizeof(_outputBuffers));
 	Reset(true);
@@ -72,7 +69,6 @@ void GenesisVdp::Reset(bool hardReset) {
 	_dmaFillDataPending = false;
 	_dmaStartupDelayCyclesRemaining = 0;
 	_dmaBusCycleRemainder = 0;
-	_prevLineDotOverflow = false;
 
 	_screenWidth = IsH40Mode() ? 320 : 256;
 	_screenHeight = 224;
@@ -92,8 +88,6 @@ void GenesisVdp::Reset(bool hardReset) {
 		_currentBuffer = 0;
 		MessageManager::Log("[Genesis][VDP] Hard reset complete (frame counter cleared)");
 	}
-
-	RefreshPaletteCache();
 }
 
 void GenesisVdp::SetRegion(bool pal) {
@@ -209,8 +203,6 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 
 void GenesisVdp::ProcessScanline() {
 	if (_scanline < _screenHeight) {
-		RefreshPaletteCache();
-
 		// Active display — render this scanline
 		if (_lineDisplayEnabled) {
 			if (_displayDisabledLogged) {
@@ -225,9 +217,8 @@ void GenesisVdp::ProcessScanline() {
 			}
 			// Display off — fill with backdrop color
 			uint16_t* buf = _outputBuffers[_currentBuffer];
-			uint8_t bgcolorIdx = (uint8_t)((GetBackgroundPaletteIndex() << 4) | GetBackgroundColorIndex());
-			uint16_t bgcolor = _palette[bgcolorIdx & 0x3Fu];
-			for (uint16_t x = 0; x < MaxScreenWidth; x++) {
+			uint16_t bgcolor = CramToRgb555(_cram[GetBackgroundPaletteIndex() * 16 + GetBackgroundColorIndex()]);
+			for (uint16_t x = 0; x < _lineScreenWidth; x++) {
 				buf[_scanline * MaxScreenWidth + x] = bgcolor;
 			}
 		}
@@ -249,360 +240,221 @@ void GenesisVdp::ProcessScanline() {
 
 void GenesisVdp::RenderScanline() {
 	uint16_t lineBuffer[MaxScreenWidth] = {};
-	uint8_t planeB[MaxScreenWidth] = {};
-	uint8_t planeA[MaxScreenWidth] = {};
-	uint8_t sprites[MaxScreenWidth] = {};
 
-	RenderPlane(_scanline, false, planeB);
-	RenderPlane(_scanline, true, planeA);
-	RenderWindow(_scanline, planeA);
-	RenderSprites(_scanline, sprites);
-	Composite(lineBuffer, planeB, planeA, sprites, _lineScreenWidth);
+	// Background color (backdrop)
+	uint16_t bgcolor = CramToRgb555(_cram[GetBackgroundPaletteIndex() * 16 + GetBackgroundColorIndex()]);
+	for (int x = 0; x < _lineScreenWidth; x++) {
+		lineBuffer[x] = bgcolor;
+	}
+
+	// Genesis composition order (simplified):
+	// low-priority planes -> low-priority sprites -> high-priority planes -> high-priority sprites.
+	RenderBackground(lineBuffer, 1, false);
+	RenderBackground(lineBuffer, 0, false);
+	RenderSprites(lineBuffer, false);
+	RenderBackground(lineBuffer, 1, true);
+	RenderBackground(lineBuffer, 0, true);
+	RenderSprites(lineBuffer, true);
 
 	// Copy to output buffer
 	uint16_t* buf = _outputBuffers[_currentBuffer];
-	uint16_t* dstLine = &buf[_scanline * MaxScreenWidth];
-	memcpy(dstLine, lineBuffer, _lineScreenWidth * sizeof(uint16_t));
-	for (uint16_t x = _lineScreenWidth; x < MaxScreenWidth; x++) {
-		dstLine[x] = 0;
-	}
+	memcpy(&buf[_scanline * MaxScreenWidth], lineBuffer, _lineScreenWidth * sizeof(uint16_t));
 }
 
-uint16_t GenesisVdp::GetHScrollForLine(uint16_t line, bool planeA) const {
-	uint16_t hscrollBase = GetHScrollBase();
-	uint8_t hscrollMode = _state.Registers[11] & 0x03;
-	uint32_t hscrollAddr = hscrollBase + (planeA ? 0u : 2u);
-
-	if (hscrollMode == 0) {
-		return (uint16_t)((_vram[hscrollAddr & 0xFFFFu] << 8) | _vram[(hscrollAddr + 1u) & 0xFFFFu]);
-	} else if (hscrollMode == 2) {
-		uint32_t cellAddr = hscrollAddr + (line / 8u) * 32u;
-		return (uint16_t)((_vram[cellAddr & 0xFFFFu] << 8) | _vram[(cellAddr + 1u) & 0xFFFFu]);
-	} else if (hscrollMode == 3) {
-		uint32_t lineAddr = hscrollAddr + line * 4u;
-		return (uint16_t)((_vram[lineAddr & 0xFFFFu] << 8) | _vram[(lineAddr + 1u) & 0xFFFFu]);
-	}
-
-	return 0;
-}
-
-uint16_t GenesisVdp::GetVScrollForPixel(uint16_t x, bool planeA) const {
-	uint8_t vscrollMode = (_state.Registers[11] >> 2) & 0x01u;
-	if (vscrollMode == 0) {
-		uint8_t idx = planeA ? 0u : 1u;
-		return _vsram[idx] & 0x03FFu;
-	}
-
-	uint8_t pair = (uint8_t)(((x >> 4) * 2u) + (planeA ? 0u : 1u));
-	if (pair < 40) {
-		return _vsram[pair] & 0x03FFu;
-	}
-
-	return planeA ? (_vsram[0] & 0x03FFu) : (_vsram[1] & 0x03FFu);
-}
-
-bool GenesisVdp::IsWindowPixel(uint16_t line, uint16_t x) const {
-	uint8_t wx = _state.Registers[17];
-	uint8_t wy = _state.Registers[18];
-	bool windowRight = (wx & 0x80u) != 0;
-	bool windowDown = (wy & 0x80u) != 0;
-	uint16_t wxPix = (uint16_t)(wx & 0x1Fu) * 16u;
-	uint16_t wyCell = (uint16_t)(wy & 0x1Fu);
-	uint16_t lineCell = line >> 3;
-
-	bool covY = windowDown ? (lineCell >= wyCell) : (lineCell < wyCell);
-	bool covX = windowRight ? (x >= wxPix) : (x < wxPix);
-	return covX || covY;
-}
-
-uint8_t GenesisVdp::FetchTilePixel(uint16_t tileBase, uint8_t row, uint8_t col) const {
-	uint16_t byteAddr = (uint16_t)(tileBase + (uint16_t)row * 4u + (col >> 1));
-	uint8_t b = _vram[byteAddr & 0xFFFFu];
-	return (col & 1u) ? (b & 0x0Fu) : ((b >> 4) & 0x0Fu);
-}
-
-void GenesisVdp::RenderPlane(uint16_t line, bool planeA, uint8_t* dst) const {
-	uint16_t planeBase = planeA ? GetPlaneABase() : GetPlaneBBase();
+void GenesisVdp::RenderBackground(uint16_t* lineBuffer, uint8_t planeIndex, bool highPriority) {
+	uint16_t planeBase = planeIndex == 0 ? GetPlaneABase() : GetPlaneBBase();
 	uint16_t planeW = GetPlaneWidth();
 	uint16_t planeH = GetPlaneHeight();
-	uint16_t hscroll = GetHScrollForLine(line, planeA) & 0x03FFu;
-	bool interlace2 = (_state.Registers[12] & 0x06u) == 0x06u;
-	bool interlaceField = (_state.StatusRegister & VdpStatus::OddFrame) != 0;
-	uint16_t tilePixH = interlace2 ? 16u : 8u;
-	uint16_t tileRowLine = line / tilePixH;
-	uint16_t pixRowLine = line % tilePixH;
-	uint16_t interlacePixRow = interlace2 ? (uint16_t)(pixRowLine * 2u + (interlaceField ? 1u : 0u)) : pixRowLine;
-	uint16_t width = _lineScreenWidth;
-	uint32_t planePxW = (uint32_t)planeW * 8u;
-	uint32_t planePxH = (uint32_t)planeH * tilePixH;
 
-	for (uint16_t x = 0; x < width; x++) {
-		uint16_t vscroll = GetVScrollForPixel(x, planeA);
-		uint16_t px = (uint16_t)(x - hscroll) & (uint16_t)(planePxW - 1u);
-		uint16_t py = (uint16_t)(((uint32_t)tileRowLine * tilePixH + interlacePixRow + vscroll) % planePxH);
+	// Get scroll values
+	uint16_t hscrollBase = GetHScrollBase();
+	uint8_t hscrollMode = _state.Registers[11] & 0x03;
+	uint8_t vscrollMode = (_state.Registers[11] >> 2) & 0x01;
 
-		uint16_t tileCol = px >> 3;
-		uint16_t tileRow = py / tilePixH;
-		uint16_t tileX = px & 7u;
-		uint16_t tileY = py % tilePixH;
+	// Get horizontal scroll for this line
+	int16_t hscroll = 0;
+	uint32_t hscrollAddr = hscrollBase + (planeIndex == 0 ? 0 : 2);
+	if (hscrollMode == 0) {
+		// Whole screen
+		hscroll = (int16_t)((_vram[hscrollAddr] << 8) | _vram[hscrollAddr + 1]);
+	} else if (hscrollMode == 2) {
+		// Per-cell (8 lines)
+		uint32_t cellAddr = hscrollAddr + (_scanline / 8) * 32;
+		if (cellAddr + 1 < VramSize) {
+			hscroll = (int16_t)((_vram[cellAddr] << 8) | _vram[cellAddr + 1]);
+		}
+	} else if (hscrollMode == 3) {
+		// Per-line
+		uint32_t lineAddr = hscrollAddr + _scanline * 4;
+		if (lineAddr + 1 < VramSize) {
+			hscroll = (int16_t)((_vram[lineAddr] << 8) | _vram[lineAddr + 1]);
+		}
+	}
+	hscroll &= 0x3FF;
 
-		uint32_t ntAddr = (planeBase + (tileRow * planeW + tileCol) * 2u) & 0xFFFFu;
-		uint16_t entry = ((uint16_t)_vram[ntAddr] << 8) | _vram[(ntAddr + 1u) & 0xFFFFu];
+	for (uint16_t x = 0; x < _screenWidth; x++) {
+		// Get vertical scroll
+		uint16_t vscroll = 0;
+		if (vscrollMode == 0) {
+			// Whole screen
+			vscroll = _vsram[planeIndex];
+		} else {
+			// Per-2-cell column
+			uint8_t col = x / 16;
+			if (col * 2 + planeIndex < 40) {
+				vscroll = _vsram[col * 2 + planeIndex];
+			}
+		}
+		vscroll &= 0x3FF;
 
-		bool priority = ((entry >> 15) & 1u) != 0;
-		uint8_t palette = (uint8_t)((entry >> 13) & 0x03u);
-		bool vFlip = ((entry >> 12) & 1u) != 0;
-		bool hFlip = ((entry >> 11) & 1u) != 0;
-		uint16_t tile = entry & 0x07FFu;
+		// Calculate pixel position in plane
+		uint16_t px = (x - hscroll) & ((planeW * 8) - 1);
+		uint16_t py = (_scanline + vscroll) & ((planeH * 8) - 1);
 
-		uint8_t fetchX = hFlip ? (uint8_t)(7u - tileX) : (uint8_t)tileX;
-		uint8_t fetchY = vFlip ? (uint8_t)(tilePixH - 1u - tileY) : (uint8_t)tileY;
-		uint16_t tileBase = interlace2 ? (uint16_t)(tile * 64u) : (uint16_t)(tile * 32u);
-		uint8_t color = FetchTilePixel(tileBase, fetchY, fetchX);
+		// Get tile from nametable
+		uint16_t tileCol = px / 8;
+		uint16_t tileRow = py / 8;
+		uint32_t ntAddr = planeBase + (tileRow * planeW + tileCol) * 2;
+		if (ntAddr + 1 >= VramSize) continue;
 
-		dst[x] = (uint8_t)((priority ? 0x80u : 0x00u) | (palette << 4) | color);
+		uint16_t ntEntry = ((uint16_t)_vram[ntAddr] << 8) | _vram[ntAddr + 1];
+
+		// Decode nametable entry
+		uint16_t tileIndex = ntEntry & 0x7FF;
+		bool hFlip = (ntEntry >> 11) & 1;
+		bool vFlip = (ntEntry >> 12) & 1;
+		uint8_t palette = (ntEntry >> 13) & 3;
+		bool priority = (ntEntry >> 15) & 1;
+		if (priority != highPriority) {
+			continue;
+		}
+
+		// Get pixel within tile
+		uint8_t tileX = px & 7;
+		uint8_t tileY = py & 7;
+		if (hFlip) tileX = 7 - tileX;
+		if (vFlip) tileY = 7 - tileY;
+
+		// Read 4bpp tile data (each tile is 32 bytes = 8 rows * 4 bytes)
+		uint32_t tileAddr = tileIndex * 32 + tileY * 4;
+		if (tileAddr + 3 >= VramSize) continue;
+
+		// Each row: 4 bytes = 8 pixels (4bpp, big-endian nibbles)
+		uint8_t nibbleOffset = tileX;
+		uint8_t byteIdx = nibbleOffset / 2;
+		uint8_t pixelData = _vram[tileAddr + byteIdx];
+		uint8_t colorIdx;
+		if (nibbleOffset & 1) {
+			colorIdx = pixelData & 0x0F;
+		} else {
+			colorIdx = (pixelData >> 4) & 0x0F;
+		}
+
+		if (colorIdx != 0) { // Color 0 is transparent
+			uint16_t cramIdx = palette * 16 + colorIdx;
+			lineBuffer[x] = CramToRgb555(_cram[cramIdx]);
+		}
 	}
 }
 
-void GenesisVdp::RenderWindow(uint16_t line, uint8_t* dst) const {
-	uint16_t nameBase = GetWindowBase();
-	uint16_t cellW = IsH40Mode() ? 64u : 32u;
-	bool interlace2 = (_state.Registers[12] & 0x06u) == 0x06u;
-	bool interlaceField = (_state.StatusRegister & VdpStatus::OddFrame) != 0;
-	uint16_t tilePixH = interlace2 ? 16u : 8u;
-	uint16_t tileRow = line / tilePixH;
-	uint16_t pixRow = line % tilePixH;
-	uint16_t interlacePixRow = interlace2 ? (uint16_t)(pixRow * 2u + (interlaceField ? 1u : 0u)) : pixRow;
+void GenesisVdp::RenderSprites(uint16_t* lineBuffer, bool highPriority) {
+	uint16_t satBase = GetSpriteTableBase();
+	uint16_t maxSprites = IsH40Mode() ? 80 : 64;
+	uint16_t maxPerLine = IsH40Mode() ? 20 : 16;
+	uint16_t spritesOnLine = 0;
 
-	for (uint16_t x = 0; x < _lineScreenWidth; x++) {
-		if (!IsWindowPixel(line, x)) {
+	// Walk sprite link list (entry 0 is first)
+	uint16_t spriteIdx = 0;
+	for (uint16_t i = 0; i < maxSprites; i++) {
+		uint32_t satAddr = satBase + spriteIdx * 8;
+		if (satAddr + 7 >= VramSize) break;
+
+		// Sprite attribute table entry (8 bytes each):
+		// Word 0: Y position (10 bits)
+		// Word 1: bits 0-1: width-1, bits 2-3: height-1, bits 0-6 (byte 3): link
+		// Word 2: bits 0-10: tile index, bit 11: hflip, bit 12: vflip, bits 13-14: palette, bit 15: priority
+		// Word 3: X position (10 bits)
+
+		uint16_t yPos = (((uint16_t)_vram[satAddr] << 8) | _vram[satAddr + 1]) & 0x3FF;
+		uint8_t sizeH = ((_vram[satAddr + 2] >> 0) & 3) + 1; // Width in cells (1-4)
+		uint8_t sizeV = ((_vram[satAddr + 2] >> 2) & 3) + 1; // Height in cells (1-4)
+		uint8_t link = _vram[satAddr + 3] & 0x7F;
+
+		uint16_t attr = ((uint16_t)_vram[satAddr + 4] << 8) | _vram[satAddr + 5];
+		uint16_t tileIndex = attr & 0x7FF;
+		bool hFlip = (attr >> 11) & 1;
+		bool vFlip = (attr >> 12) & 1;
+		uint8_t palette = (attr >> 13) & 3;
+		bool priority = (attr >> 15) & 1;
+		if (priority != highPriority) {
+			spriteIdx = link;
+			if (spriteIdx == 0 || spriteIdx >= maxSprites) break;
 			continue;
 		}
 
-		uint16_t tileCol = x >> 3;
-		uint16_t tileX = x & 7u;
-		uint32_t ntAddr = (nameBase + (tileRow * cellW + tileCol) * 2u) & 0xFFFFu;
-		uint16_t entry = ((uint16_t)_vram[ntAddr] << 8) | _vram[(ntAddr + 1u) & 0xFFFFu];
+		uint16_t xPos = (((uint16_t)_vram[satAddr + 6] << 8) | _vram[satAddr + 7]) & 0x3FF;
 
-		bool priority = ((entry >> 15) & 1u) != 0;
-		uint8_t palette = (uint8_t)((entry >> 13) & 0x03u);
-		bool vFlip = ((entry >> 12) & 1u) != 0;
-		bool hFlip = ((entry >> 11) & 1u) != 0;
-		uint16_t tile = entry & 0x07FFu;
+		// Sprites use screen coordinates offset by 128
+		int16_t screenY = (int16_t)yPos - 128;
+		int16_t screenX = (int16_t)xPos - 128;
+		uint16_t spriteHeight = sizeV * 8;
+		uint16_t spriteWidth = sizeH * 8;
 
-		uint8_t fetchX = hFlip ? (uint8_t)(7u - tileX) : (uint8_t)tileX;
-		uint8_t fetchY = vFlip ? (uint8_t)(tilePixH - 1u - interlacePixRow) : (uint8_t)interlacePixRow;
-		uint16_t tileBase = interlace2 ? (uint16_t)(tile * 64u) : (uint16_t)(tile * 32u);
-		uint8_t color = FetchTilePixel(tileBase, fetchY, fetchX);
+		// Check if sprite is on this scanline
+		if (_scanline >= screenY && _scanline < screenY + spriteHeight) {
+			if (++spritesOnLine > maxPerLine) break;
 
-		dst[x] = (uint8_t)((priority ? 0x80u : 0x00u) | 0x40u | (palette << 4) | color);
+			uint16_t py = _scanline - screenY;
+			if (vFlip) py = spriteHeight - 1 - py;
+
+			for (uint16_t sx = 0; sx < spriteWidth; sx++) {
+				int16_t px = screenX + sx;
+				if (px < 0 || px >= _screenWidth) continue;
+
+				uint16_t tileX = hFlip ? (spriteWidth - 1 - sx) : sx;
+
+				// Calculate tile within multi-cell sprite
+				// Tiles are laid out column-major: column0(rows), column1(rows), ...
+				uint16_t cellCol = tileX / 8;
+				uint16_t cellRow = py / 8;
+				uint16_t tileNum = tileIndex + cellCol * sizeV + cellRow;
+
+				uint8_t pixX = tileX & 7;
+				uint8_t pixY = py & 7;
+
+				uint32_t tileAddr = tileNum * 32 + pixY * 4;
+				if (tileAddr + 3 >= VramSize) continue;
+
+				uint8_t byteIdx = pixX / 2;
+				uint8_t pixelData = _vram[tileAddr + byteIdx];
+				uint8_t colorIdx;
+				if (pixX & 1) {
+					colorIdx = pixelData & 0x0F;
+				} else {
+					colorIdx = (pixelData >> 4) & 0x0F;
+				}
+
+				if (colorIdx != 0) {
+					uint16_t cramIdx = palette * 16 + colorIdx;
+					lineBuffer[px] = CramToRgb555(_cram[cramIdx]);
+				}
+			}
+		}
+
+		// Follow link for next sprite
+		if (link == 0) break;
+		spriteIdx = link;
 	}
-}
-
-void GenesisVdp::RenderSprites(uint16_t line, uint8_t* dst) {
-	struct LineSprite {
-		uint16_t tile = 0;
-		uint16_t rawX = 0;
-		int16_t x = 0;
-		uint8_t palette = 0;
-		uint8_t vertCells = 1;
-		uint8_t horizCells = 1;
-		uint8_t cellRow = 0;
-		uint8_t pixRow = 0;
-		bool priority = false;
-		bool hFlip = false;
-		bool vFlip = false;
-	};
-
-	struct LineSpriteCell {
-		uint16_t tile = 0;
-		uint16_t rawX = 0;
-		int16_t x = 0;
-		uint8_t palette = 0;
-		uint8_t vertCells = 1;
-		uint8_t screenCellCol = 0;
-		uint8_t patternCellOffsetX = 0;
-		uint8_t patternCellOffsetY = 0;
-		uint8_t pixRow = 0;
-		bool priority = false;
-		bool hFlip = false;
-		bool vFlip = false;
-	};
-
-	uint16_t sprBase = GetSpriteTableBase();
-	uint16_t maxSprites = IsH40Mode() ? 80u : 64u;
-	uint16_t maxPerLine = IsH40Mode() ? 20u : 16u;
-	uint16_t maxCells = IsH40Mode() ? 40u : 32u;
-	bool interlace2 = (_state.Registers[12] & 0x06u) == 0x06u;
-	bool interlaceField = (_state.StatusRegister & VdpStatus::OddFrame) != 0;
-	uint16_t cellPixH = interlace2 ? 16u : 8u;
-	uint16_t effectiveLine = interlace2 ? (uint16_t)(line * 2u + (interlaceField ? 1u : 0u)) : line;
-
-	LineSprite spriteList[80] = {};
-	LineSpriteCell cellList[40] = {};
-	uint16_t spriteCount = 0;
-	uint16_t cellCount = 0;
-	bool lineDotOverflow = false;
-
-	uint8_t idx = 0;
-	for (uint16_t s = 0; s < maxSprites; s++) {
-		uint16_t entryBase = (uint16_t)(sprBase + (uint16_t)idx * 8u);
-		uint16_t w0 = ((uint16_t)_vram[(entryBase + 0u) & 0xFFFFu] << 8) | _vram[(entryBase + 1u) & 0xFFFFu];
-		uint16_t w1 = ((uint16_t)_vram[(entryBase + 2u) & 0xFFFFu] << 8) | _vram[(entryBase + 3u) & 0xFFFFu];
-		uint16_t w2 = ((uint16_t)_vram[(entryBase + 4u) & 0xFFFFu] << 8) | _vram[(entryBase + 5u) & 0xFFFFu];
-		uint16_t w3 = ((uint16_t)_vram[(entryBase + 6u) & 0xFFFFu] << 8) | _vram[(entryBase + 7u) & 0xFFFFu];
-
-		int16_t sprY = (int16_t)(w0 & 0x01FFu) - 128;
-		uint8_t vertCells = (uint8_t)(((w1 >> 8) & 0x03u) + 1u);
-		uint8_t horizCells = (uint8_t)(((w1 >> 10) & 0x03u) + 1u);
-		uint8_t link = (uint8_t)(w1 & 0x7Fu);
-		uint16_t sprH = (uint16_t)vertCells * cellPixH;
-
-		if ((int16_t)effectiveLine >= sprY && (int16_t)effectiveLine < (int16_t)(sprY + sprH)) {
-			if (spriteCount >= maxPerLine) {
-				_state.StatusRegister |= 0x0040u;
-				lineDotOverflow = true;
-				break;
-			}
-
-			bool vFlip = (w2 & 0x1000u) != 0;
-			uint16_t sprRow = (uint16_t)((int16_t)effectiveLine - sprY);
-			uint8_t cellRow = (uint8_t)(sprRow / cellPixH);
-			uint8_t pixRow = (uint8_t)(sprRow % cellPixH);
-
-			LineSprite& sprite = spriteList[spriteCount++];
-			sprite.tile = w2 & 0x07FFu;
-			sprite.rawX = w3 & 0x01FFu;
-			sprite.x = (int16_t)sprite.rawX - 128;
-			sprite.palette = (uint8_t)((w2 >> 13) & 0x03u);
-			sprite.vertCells = vertCells;
-			sprite.horizCells = horizCells;
-			sprite.cellRow = vFlip ? (uint8_t)(vertCells - 1u - cellRow) : cellRow;
-			sprite.pixRow = pixRow;
-			sprite.priority = (w2 & 0x8000u) != 0;
-			sprite.hFlip = (w2 & 0x0800u) != 0;
-			sprite.vFlip = vFlip;
-		}
-
-		if (link == 0 || link >= maxSprites) {
-			break;
-		}
-		idx = link;
-	}
-
-	for (uint16_t i = 0; i < spriteCount; i++) {
-		const LineSprite& sprite = spriteList[i];
-		for (uint8_t screenCellCol = 0; screenCellCol < sprite.horizCells; screenCellCol++) {
-			if (cellCount >= maxCells) {
-				_state.StatusRegister |= 0x0040u;
-				lineDotOverflow = true;
-				break;
-			}
-
-			LineSpriteCell& cell = cellList[cellCount++];
-			cell.tile = sprite.tile;
-			cell.rawX = sprite.rawX;
-			cell.x = sprite.x;
-			cell.palette = sprite.palette;
-			cell.vertCells = sprite.vertCells;
-			cell.screenCellCol = screenCellCol;
-			cell.patternCellOffsetX = sprite.hFlip ? (uint8_t)(sprite.horizCells - 1u - screenCellCol) : screenCellCol;
-			cell.patternCellOffsetY = sprite.cellRow;
-			cell.pixRow = sprite.pixRow;
-			cell.priority = sprite.priority;
-			cell.hFlip = sprite.hFlip;
-			cell.vFlip = sprite.vFlip;
-		}
-
-		if (lineDotOverflow) {
-			break;
-		}
-	}
-
-	bool maskActive = false;
-	bool nonMaskCellEncountered = false;
-	for (uint16_t i = 0; i < cellCount; i++) {
-		const LineSpriteCell& cell = cellList[i];
-		if (cell.rawX == 0) {
-			if (nonMaskCellEncountered || _prevLineDotOverflow) {
-				maskActive = true;
-			}
-			continue;
-		}
-
-		nonMaskCellEncountered = true;
-		if (maskActive) {
-			continue;
-		}
-
-		uint16_t tileIdx = (uint16_t)(cell.tile + cell.patternCellOffsetX * cell.vertCells + cell.patternCellOffsetY);
-		uint16_t tileBase = interlace2 ? (uint16_t)(tileIdx * 64u) : (uint16_t)(tileIdx * 32u);
-
-		for (uint8_t px = 0; px < 8u; px++) {
-			int16_t screenX = (int16_t)(cell.x + (int16_t)(cell.screenCellCol * 8u + px));
-			if (screenX < 0 || screenX >= (int16_t)_lineScreenWidth) {
-				continue;
-			}
-
-			uint8_t col = cell.hFlip ? (uint8_t)(7u - px) : px;
-			uint8_t row = cell.vFlip ? (uint8_t)(cellPixH - 1u - cell.pixRow) : cell.pixRow;
-			uint8_t pix = FetchTilePixel(tileBase, row, col);
-			if (pix == 0) {
-				continue;
-			}
-
-			if (dst[screenX] != 0) {
-				_state.StatusRegister |= 0x0020u;
-				continue;
-			}
-
-			dst[screenX] = (uint8_t)((cell.priority ? 0x80u : 0x00u) | (cell.palette << 4) | pix);
-		}
-	}
-
-	_prevLineDotOverflow = lineDotOverflow;
 }
 
 namespace {
-	static constexpr uint8_t kGenesisDacLevels[15] = {
-		0, 27, 49, 71, 87, 103, 119, 130, 146, 157, 174, 190, 206, 228, 255
-	};
-
 	static constexpr uint8_t kGenesisDacToRgb555[8] = {
 		0, 6, 11, 14, 18, 21, 25, 31
 	};
-
-	static uint16_t CramToRgb555WithShade(uint16_t cramColor, uint8_t shadeMode) {
-		uint8_t r3 = (uint8_t)((cramColor >> 1) & 7u);
-		uint8_t g3 = (uint8_t)((cramColor >> 5) & 7u);
-		uint8_t b3 = (uint8_t)((cramColor >> 9) & 7u);
-
-		uint8_t r8;
-		uint8_t g8;
-		uint8_t b8;
-		if (shadeMode == 0) {
-			r8 = kGenesisDacLevels[r3];
-			g8 = kGenesisDacLevels[g3];
-			b8 = kGenesisDacLevels[b3];
-		} else if (shadeMode == 2) {
-			r8 = kGenesisDacLevels[r3 + 7u];
-			g8 = kGenesisDacLevels[g3 + 7u];
-			b8 = kGenesisDacLevels[b3 + 7u];
-		} else {
-			r8 = kGenesisDacLevels[r3 << 1];
-			g8 = kGenesisDacLevels[g3 << 1];
-			b8 = kGenesisDacLevels[b3 << 1];
-		}
-
-		uint8_t r5 = (uint8_t)((r8 * 31u + 127u) / 255u);
-		uint8_t g5 = (uint8_t)((g8 * 31u + 127u) / 255u);
-		uint8_t b5 = (uint8_t)((b8 * 31u + 127u) / 255u);
-		return (uint16_t)((b5 << 10) | (g5 << 5) | r5);
-	}
 }
 
 // Convert Genesis CRAM color (0000BBB0GGG0RRR0) to RGB555 where bits 4:0 are red.
-uint16_t GenesisVdp::CramToRgb555(uint16_t cramColor) const {
+uint16_t GenesisVdp::CramToRgb555(uint16_t cramColor) {
 	uint8_t r3 = (uint8_t)((cramColor >> 1) & 7u);
 	uint8_t g3 = (uint8_t)((cramColor >> 5) & 7u);
 	uint8_t b3 = (uint8_t)((cramColor >> 9) & 7u);
@@ -613,99 +465,6 @@ uint16_t GenesisVdp::CramToRgb555(uint16_t cramColor) const {
 	uint8_t b5 = kGenesisDacToRgb555[b3];
 
 	return (uint16_t)((b5 << 10) | (g5 << 5) | r5);
-}
-
-void GenesisVdp::UpdatePaletteEntry(uint8_t idx) {
-	idx &= 0x3Fu;
-	uint16_t cramColor = _cram[idx] & 0x0EEE;
-	_palette[idx] = CramToRgb555WithShade(cramColor, 1);
-	_shadowPalette[idx] = CramToRgb555WithShade(cramColor, 0);
-	_highlightPalette[idx] = CramToRgb555WithShade(cramColor, 2);
-}
-
-void GenesisVdp::RefreshPaletteCache() {
-	for (uint8_t i = 0; i < 64u; i++) {
-		UpdatePaletteEntry(i);
-	}
-}
-
-void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const uint8_t* planeA, const uint8_t* spr, uint16_t pixels) const {
-	uint8_t bgIdx = _state.Registers[7] & 0x3Fu;
-	bool shadowHighlight = (_state.Registers[12] & 0x08u) != 0;
-
-	enum : uint8_t { Shade_Shadow = 0, Shade_Normal = 1, Shade_Highlight = 2 };
-
-	for (uint16_t x = 0; x < pixels; x++) {
-		uint8_t pB = planeB[x];
-		uint8_t pA = planeA[x];
-		uint8_t pS = spr[x];
-
-		bool winSrc = (pA & 0x40u) != 0;
-		bool winHi = winSrc && ((pA & 0x80u) != 0);
-		bool winVis = winSrc && ((pA & 0x0Fu) != 0);
-		bool sprHi = (pS & 0x80u) != 0;
-		bool sprVis = (pS & 0x0Fu) != 0;
-		bool pAHi = !winSrc && ((pA & 0x80u) != 0);
-		bool pAVis = !winSrc && ((pA & 0x0Fu) != 0);
-		bool pBHi = (pB & 0x80u) != 0;
-		bool pBVis = (pB & 0x0Fu) != 0;
-
-		uint8_t shade = Shade_Normal;
-		bool sprIsOperator = false;
-		if (shadowHighlight) {
-			if ((winHi && winVis) || (pAHi && pAVis) || (pBHi && pBVis)) {
-				shade = Shade_Normal;
-			}
-
-			if (sprVis) {
-				uint8_t sprPal = (pS >> 4) & 0x03u;
-				uint8_t sprColor = pS & 0x0Fu;
-				if (!sprHi && sprPal == 3u) {
-					if (sprColor == 14u) {
-						shade = Shade_Shadow;
-						sprIsOperator = true;
-					} else if (sprColor == 15u) {
-						shade = (shade == Shade_Shadow) ? Shade_Normal : Shade_Highlight;
-						sprIsOperator = true;
-					}
-				} else if (sprHi || sprColor == 15u) {
-					shade = Shade_Normal;
-				}
-			}
-		}
-
-		uint8_t cramIdx = bgIdx;
-		if (winHi && winVis) {
-			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
-		} else if (sprHi && sprVis && !sprIsOperator) {
-			cramIdx = (uint8_t)((((pS >> 4) & 3u) * 16u) + (pS & 0x0Fu));
-		} else if (pAHi && pAVis) {
-			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
-		} else if (pBHi && pBVis) {
-			cramIdx = (uint8_t)((((pB >> 4) & 3u) * 16u) + (pB & 0x0Fu));
-		} else if (!winHi && winVis) {
-			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
-		} else if (!sprHi && sprVis && !sprIsOperator) {
-			cramIdx = (uint8_t)((((pS >> 4) & 3u) * 16u) + (pS & 0x0Fu));
-		} else if (!pAHi && pAVis) {
-			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
-		} else if (!pBHi && pBVis) {
-			cramIdx = (uint8_t)((((pB >> 4) & 3u) * 16u) + (pB & 0x0Fu));
-		}
-
-		cramIdx &= 0x3Fu;
-		if (shadowHighlight) {
-			if (shade == Shade_Shadow) {
-				lineBuffer[x] = _shadowPalette[cramIdx];
-			} else if (shade == Shade_Highlight) {
-				lineBuffer[x] = _highlightPalette[cramIdx];
-			} else {
-				lineBuffer[x] = _palette[cramIdx];
-			}
-		} else {
-			lineBuffer[x] = _palette[cramIdx];
-		}
-	}
 }
 
 // Port access
@@ -863,7 +622,6 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 		uint8_t idx = (_addressReg / 2) & 0x3F;
 		uint16_t cramValue = value & 0x0EEE;
 		_cram[idx] = cramValue; // Mask to valid Genesis color bits
-		UpdatePaletteEntry(idx);
 
 		if (!loggedFirstNonZeroCram && cramValue != 0) {
 			loggedFirstNonZeroCram = true;
@@ -1245,12 +1003,7 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_dmaInitialized);
 	SV(_dmaLatchedMode);
 	SV(_dmaSourceReg23Latched);
-	SV(_prevLineDotOverflow);
 	for (int i = 0; i < 24; i++) {
 		SVI(_state.Registers[i]);
-	}
-
-	if (!s.IsSaving()) {
-		RefreshPaletteCache();
 	}
 }

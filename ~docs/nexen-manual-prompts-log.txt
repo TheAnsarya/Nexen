@@ -2433,8 +2433,13 @@ c'mon! make a ***big*** change, I mean 1000's of lines of code, work many fixes,
 
 continue; but also the colors are wrong, check out how the palette works and fix our version;
 
+yes please do those both, then focus on the rest of the graphics for the startup logo;compare the palette and graphics code with Mesen-Expanded's code; continue;
 
+don't do the smallest changes, take big swings and change as much as you can if the changes are making things betters! continue;
 
+what's going on? why did you stop? continue fixing big swaths of code and continue for a large amount of changes; continue;
+
+continue;
 
 
 

@@ -156,7 +156,7 @@ namespace {
 		vdp.Run(488);
 
 		uint16_t* frame = vdp.GetScreenBuffer(false);
-		EXPECT_EQ(frame[0], 0x7c00);
+		EXPECT_EQ(frame[0], 0x001f);
 	}
 
 	TEST(GenesisVdpObjectRunSafetyTests, H32SpriteTableBaseUsesReg5Bit0ForVisibleSpriteFetch) {
@@ -176,7 +176,7 @@ namespace {
 		vdp.Run(488);
 
 		uint16_t* frame = vdp.GetScreenBuffer(false);
-		EXPECT_EQ(frame[0], 0x7c00);
+		EXPECT_EQ(frame[0], 0x001f);
 	}
 
 	TEST(GenesisVdpObjectRunSafetyTests, H32DebuggerPreviewDropsSpritesBeyondSixteenPerLine) {
@@ -406,7 +406,7 @@ namespace {
 		tools.GetTilemap(options, (BaseState&)state, (BaseState&)ppuState, vram, palette.data(), tilemapBuffer.data());
 
 		uint16_t* frame = vdp.GetScreenBuffer(false);
-		EXPECT_EQ(frame[0], 0x7c00);
+		EXPECT_EQ(frame[0], 0x001f);
 		EXPECT_EQ(tilemapBuffer[0], palette[0]);
 	}
 
@@ -443,7 +443,7 @@ namespace {
 		std::vector<uint32_t> tilemapBufferH40(tilemapSizeH40.Width * tilemapSizeH40.Height);
 		tools.GetTilemap(options, (BaseState&)stateH40, (BaseState&)ppuStateH40, vram, palette.data(), tilemapBufferH40.data());
 		uint16_t* frameH40 = vdp.GetScreenBuffer(false);
-		EXPECT_EQ(frameH40[0], 0x7c00);
+		EXPECT_EQ(frameH40[0], 0x001f);
 		EXPECT_EQ(tilemapBufferH40[0], palette[0]);
 
 		vdp.WriteControlPort(0x8C80);
@@ -455,7 +455,7 @@ namespace {
 		std::vector<uint32_t> tilemapBufferH32(tilemapSizeH32.Width * tilemapSizeH32.Height);
 		tools.GetTilemap(options, (BaseState&)stateH32, (BaseState&)ppuStateH32, vram, palette.data(), tilemapBufferH32.data());
 		uint16_t* frameH32 = vdp.GetScreenBuffer(false);
-		EXPECT_EQ(frameH32[0], 0x7c00);
+		EXPECT_EQ(frameH32[0], 0x001f);
 		EXPECT_EQ(tilemapBufferH32[0], palette[0]);
 	}
 
@@ -2184,7 +2184,28 @@ namespace {
 		vdp.Run(488);
 
 		uint16_t* frame = vdp.GetScreenBuffer(false);
-		EXPECT_EQ(frame[0], 0x7c00);
+		EXPECT_EQ(frame[0], 0x001f);
+	}
+
+	TEST(GenesisVdpObjectRunSafetyTests, StartupBackdropRgb555UsesRedInLowFiveBits) {
+		auto expectBackdrop = [](uint16_t cramColor, uint16_t expectedRgb555) {
+			GenesisVdp vdp;
+			vdp.Init(nullptr, nullptr, nullptr, nullptr);
+			vdp.WriteControlPort(0x8144);
+			vdp.GetCramPointer()[0] = cramColor;
+			vdp.Run(488);
+			uint16_t* frame = vdp.GetScreenBuffer(false);
+			EXPECT_EQ(frame[0], expectedRgb555);
+		};
+
+		// Full red in Genesis CRAM format 0000BBB0GGG0RRR0.
+		expectBackdrop(0x000e, 0x001f);
+
+		// Full green.
+		expectBackdrop(0x00e0, 0x03e0);
+
+		// Full blue.
+		expectBackdrop(0x0e00, 0x7c00);
 	}
 
 	TEST(GenesisVdpObjectRunSafetyTests, VBlankAndVIntStartAtFirstVBlankLineBoundary) {
