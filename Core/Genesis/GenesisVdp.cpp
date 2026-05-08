@@ -1164,6 +1164,8 @@ void GenesisVdp::ProcessDma() {
 
 	if (_dmaLatchedMode == 0 || _dmaLatchedMode == 1) {
 		// 68K → VRAM/CRAM/VSRAM copy
+		uint8_t dmaDestCode = _accessMode & 0x0Fu;
+		uint32_t dmaDst = _addressReg;
 		for (uint32_t i = 0; i < wordsThisStep; i++) {
 			// Expanded-compatible source progression: wrap within current 128KB source window.
 			uint32_t srcBase = _dmaSourceAddress & ~0x1FFFFu;
@@ -1172,11 +1174,36 @@ void GenesisVdp::ProcessDma() {
 			uint8_t hi = _memoryManager->Read8(srcBase | srcOffset);
 			uint8_t lo = _memoryManager->Read8(srcBase | ((srcOffset + 1u) & 0x1FFFFu));
 			uint16_t word = ((uint16_t)hi << 8) | lo;
-			WriteDataPort(word);
+
+			switch (dmaDestCode) {
+				case 0x01: {
+					uint32_t addr = dmaDst & 0xFFFFu;
+					if (addr + 1u < VramSize) {
+						_vram[addr] = (uint8_t)(word >> 8);
+						_vram[addr + 1u] = (uint8_t)word;
+					}
+					break;
+				}
+				case 0x03: {
+					uint8_t idx = (uint8_t)((dmaDst >> 1) & 0x3Fu);
+					_cram[idx] = word & 0x0EEEu;
+					UpdatePaletteEntry(idx);
+					break;
+				}
+				case 0x05: {
+					uint8_t idx = (uint8_t)((dmaDst >> 1) & 0x27u);
+					_vsram[idx] = word & 0x07FFu;
+					break;
+				}
+				default:
+					break;
+			}
 
 			srcOffset = (srcOffset + 2u) & 0x1FFFFu;
 			_dmaSourceAddress = srcBase | srcOffset;
+			dmaDst += _autoIncrement;
 		}
+		_addressReg = (uint16_t)dmaDst;
 
 		uint32_t srcWindowWordAddress = (_dmaSourceAddress & 0x1FFFFu) >> 1;
 		_state.Registers[21] = (uint8_t)(srcWindowWordAddress & 0xFF);
