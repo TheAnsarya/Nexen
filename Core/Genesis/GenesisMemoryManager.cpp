@@ -818,12 +818,18 @@ void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) 
 		return;
 	}
 
-	// Align startup checkpoints to end-of-frame timing to reduce early line-0 noise.
-	// This keeps cross-emulator comparisons focused on stable per-frame state.
+	// Keep legacy profile on end-of-frame checkpoints, but align Mesen-profile checkpoints
+	// to scanline 0 so startup tags begin with frame-head chronology.
 	uint16_t totalLines = _vdp->GetTotalLines();
 	uint16_t scanline = _vdp->GetScanline();
-	if (totalLines > 0u && scanline < (uint16_t)(totalLines - 1u)) {
-		return;
+	if (_startupProfilePreferMesenBusHandoff) {
+		if (scanline != 0u) {
+			return;
+		}
+	} else {
+		if (totalLines > 0u && scanline < (uint16_t)(totalLines - 1u)) {
+			return;
+		}
 	}
 
 	GenesisVdpState state = _vdp->GetState();
@@ -842,12 +848,20 @@ void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) 
 	startupFlags |= displayEnabled ? 0x0040 : 0x0000;
 	startupFlags |= _startupProfilePreferMesenBusHandoff ? 0x0080 : 0x0000;
 
-	uint16_t startupValue = (uint16_t)(((frame & 0x3FFu) << 6) | (state.VCounter & 0x003Fu));
-	TraceStartupEvent("STARTUP_CHECKPOINT", 0xC00004, startupValue, startupFlags);
-	TraceStartupEvent("STARTUP_Z80", 0xA11100, _z80BusReqDelayMclk, _z80ResumeDelayMclk);
 	uint16_t paletteDigest = ComputeStartupPaletteDigest(_vdp->GetCramPointer());
-	TraceStartupEvent("STARTUP_PAL", 0xC00000, paletteDigest, (uint16_t)(state.Registers[VdpReg::ModeSet2]));
-	TraceStartupEvent("STARTUP_VDP", 0xC00004, state.StatusRegister, (uint16_t)(state.Registers[VdpReg::ModeSet1] | ((uint16_t)state.Registers[VdpReg::ModeSet2] << 8)));
+	uint16_t startupVdpAux = (uint16_t)(state.Registers[VdpReg::ModeSet1] | ((uint16_t)state.Registers[VdpReg::ModeSet2] << 8));
+	uint16_t startupValue = (uint16_t)(((frame & 0x3FFu) << 6) | (state.VCounter & 0x003Fu));
+	if (_startupProfilePreferMesenBusHandoff) {
+		TraceStartupEvent("STARTUP_PAL", 0xC00000, paletteDigest, (uint16_t)(state.Registers[VdpReg::ModeSet2]));
+		TraceStartupEvent("STARTUP_VDP", 0xC00004, state.StatusRegister, startupVdpAux);
+		TraceStartupEvent("STARTUP_CHECKPOINT", 0xC00004, startupValue, startupFlags);
+		TraceStartupEvent("STARTUP_Z80", 0xA11100, _z80BusReqDelayMclk, _z80ResumeDelayMclk);
+	} else {
+		TraceStartupEvent("STARTUP_CHECKPOINT", 0xC00004, startupValue, startupFlags);
+		TraceStartupEvent("STARTUP_Z80", 0xA11100, _z80BusReqDelayMclk, _z80ResumeDelayMclk);
+		TraceStartupEvent("STARTUP_PAL", 0xC00000, paletteDigest, (uint16_t)(state.Registers[VdpReg::ModeSet2]));
+		TraceStartupEvent("STARTUP_VDP", 0xC00004, state.StatusRegister, startupVdpAux);
+	}
 
 	if (displayEnabled != _startupLastDisplayEnabled) {
 		_startupDisplayTransitionCount++;
