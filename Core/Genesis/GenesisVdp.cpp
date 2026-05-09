@@ -205,6 +205,23 @@ namespace {
 		return cycle;
 	}
 
+	uint32_t GetVIntEventOffsetMclk(bool h40Mode) {
+		if (h40Mode) {
+			return MclksPerLine - (H40LineChangeSlot - H40VIntSlot) * 16u;
+		}
+
+		// H32 wraps from hslot 147 to 233 before reaching hslot 0.
+		return (H32VIntSlot + 256u - 233u + 148u - H32LineChangeSlot) * 20u;
+	}
+
+	uint32_t GetVBlankFlagOffsetMclk(bool h40Mode) {
+		if (h40Mode) {
+			return (H40VBlankStartSlot - H40LineChangeSlot) * 16u;
+		}
+
+		return (H32VBlankStartSlot - H32LineChangeSlot) * 20u;
+	}
+
 	void EnsureHCounterTables() {
 		if (HCounterTablesBuilt) {
 			return;
@@ -467,18 +484,12 @@ uint8_t GenesisVdp::HCounterValue(uint32_t lineCycle, bool h40Mode) const {
 }
 
 uint16_t GenesisVdp::GetVIntStartCycle() const {
-	// Keep VINT aligned with the deferred VBlank point expected by current parity tests.
-	return GetVBlankFlagStartCycle();
+	uint32_t offsetMclk = GetVIntEventOffsetMclk(_lineH40Mode);
+	return (uint16_t)ConvertMclkOffsetToLineCycles(offsetMclk, _currentLineCycleTarget);
 }
 
 uint16_t GenesisVdp::GetVBlankFlagStartCycle() const {
-	uint32_t offsetMclk;
-	if (_lineH40Mode) {
-		offsetMclk = (H40VBlankStartSlot - H40LineChangeSlot) * 16u;
-	} else {
-		offsetMclk = (H32VBlankStartSlot - H32LineChangeSlot) * 20u;
-	}
-
+	uint32_t offsetMclk = GetVBlankFlagOffsetMclk(_lineH40Mode);
 	return (uint16_t)ConvertMclkOffsetToLineCycles(offsetMclk, _currentLineCycleTarget);
 }
 

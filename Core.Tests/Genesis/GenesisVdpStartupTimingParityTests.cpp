@@ -41,7 +41,7 @@ namespace {
 		uint16_t statusAtLineStart = ReadStatus(vdp);
 		EXPECT_EQ(statusAtLineStart & VdpStatus::VIntPending, 0u);
 
-		vdp.Run(vblankLineStart + 64ull);
+		vdp.Run(vblankLineStart + 128ull);
 		uint16_t statusAfterDelay = ReadStatus(vdp);
 		EXPECT_NE(statusAfterDelay & VdpStatus::VIntPending, 0u);
 
@@ -125,7 +125,7 @@ namespace {
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
 
 		WriteReg(vdp, 1, 0x44); // VINT disabled
-		vdp.Run(LineStartCycle(224) + 64ull);
+		vdp.Run(LineStartCycle(224) + 128ull);
 
 		GenesisVdpState beforeAck = vdp.GetState();
 		EXPECT_NE(beforeAck.StatusRegister & VdpStatus::VIntPending, 0u);
@@ -140,7 +140,7 @@ namespace {
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
 
 		WriteReg(vdp, 1, 0x44); // VINT disabled
-		vdp.Run(LineStartCycle(224) + 64ull);
+		vdp.Run(LineStartCycle(224) + 128ull);
 		GenesisVdpState latchedWhileMasked = vdp.GetState();
 		EXPECT_NE(latchedWhileMasked.StatusRegister & VdpStatus::VIntPending, 0u);
 
