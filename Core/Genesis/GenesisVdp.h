@@ -44,6 +44,7 @@ private:
 	bool _lineDisplayEnabled = false;
 	bool _lineH40Mode = true;
 	uint16_t _lineScreenWidth = 320;
+	bool _vblankEnteredThisFrame = false;
 
 	// Screen dimensions based on mode
 	uint16_t _screenWidth = 320;
@@ -114,6 +115,8 @@ private:
 	void PrimeReadBuffer();
 	uint8_t VCounterValue(uint32_t scanline) const;
 	uint8_t HCounterValue(uint32_t lineCycle, bool h40Mode) const;
+	uint16_t GetVBlankFlagStartCycle() const;
+	uint16_t GetHBlankStartCycle() const;
 
 	// Register helpers
 	bool IsDisplayEnabled() const { return (_state.Registers[1] & 0x40) != 0; }

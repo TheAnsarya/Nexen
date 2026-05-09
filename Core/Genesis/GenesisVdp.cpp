@@ -150,6 +150,7 @@ void GenesisVdp::Reset(bool hardReset) {
 	_lineDisplayEnabled = IsDisplayEnabled();
 	_lineH40Mode = IsH40Mode();
 	_lineScreenWidth = _screenWidth;
+	_vblankEnteredThisFrame = false;
 
 	_scanline = 0;
 	_hCounter = 0;
@@ -234,6 +235,34 @@ uint8_t GenesisVdp::HCounterValue(uint32_t lineCycle, bool h40Mode) const {
 	return h40Mode ? HCounterTableH40[mclkInLine] : HCounterTableH32[mclkInLine];
 }
 
+uint16_t GenesisVdp::GetVBlankFlagStartCycle() const {
+	uint32_t slotOffsetMclk = (_lineH40Mode ? 32u : 40u);
+	uint32_t cycle = (slotOffsetMclk * _currentLineCycleTarget + (MclksPerLine / 2u)) / MclksPerLine;
+	if (cycle == 0u) {
+		cycle = 1u;
+	}
+
+	if (cycle >= _currentLineCycleTarget) {
+		cycle = _currentLineCycleTarget - 1u;
+	}
+
+	return (uint16_t)cycle;
+}
+
+uint16_t GenesisVdp::GetHBlankStartCycle() const {
+	uint32_t hblankMclk = _lineH40Mode ? 2850u : 2860u;
+	uint32_t cycle = (hblankMclk * _currentLineCycleTarget + (MclksPerLine / 2u)) / MclksPerLine;
+	if (cycle == 0u) {
+		cycle = 1u;
+	}
+
+	if (cycle >= _currentLineCycleTarget) {
+		cycle = _currentLineCycleTarget - 1u;
+	}
+
+	return (uint16_t)cycle;
+}
+
 // Run VDP forward to the target master clock cycle.
 // One scanline is 3420 MCLK and 68k runs at MCLK/7, so the line length is
 // 3420/7 = 488 + 4/7 68k cycles. Keep the fractional remainder to avoid
@@ -246,6 +275,63 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 		_hCounter++;
 		_state.HCounter = HCounterValue(_hCounter, _lineH40Mode);
 		_state.VCounter = VCounterValue(_scanline);
+
+		uint16_t hblankStartCycle = GetHBlankStartCycle();
+		if (_hCounter >= hblankStartCycle) {
+			_state.StatusRegister |= VdpStatus::HBlanking;
+		} else {
+			_state.StatusRegister &= ~VdpStatus::HBlanking;
+		}
+
+		bool inVblankLines = _scanline >= _screenHeight && _scanline < _totalLines;
+		bool vblankFlagActive = false;
+		if (inVblankLines) {
+			if (_scanline > _screenHeight) {
+				vblankFlagActive = true;
+			} else {
+				vblankFlagActive = _hCounter >= GetVBlankFlagStartCycle();
+			}
+		}
+
+		if (vblankFlagActive) {
+			_state.StatusRegister |= VdpStatus::VBlankFlag;
+		} else {
+			_state.StatusRegister &= ~VdpStatus::VBlankFlag;
+		}
+
+		if (vblankFlagActive && !_vblankEnteredThisFrame) {
+			_vblankEnteredThisFrame = true;
+			static uint64_t vblankEnterCount = 0;
+			vblankEnterCount++;
+			if (vblankEnterCount <= 256 || (vblankEnterCount % 2048) == 0) {
+				MessageManager::Log(std::format("[Genesis][VDP] VBlank enter #{} frame={} scanline={} hc={} status=${:04x} r1=${:02x} vintEn={}",
+					vblankEnterCount,
+					_state.FrameCount,
+					_scanline,
+					_hCounter,
+					_state.StatusRegister,
+					_state.Registers[1],
+					IsVBlankInterruptEnabled() ? 1 : 0));
+			}
+
+			if (IsVBlankInterruptEnabled()) {
+				_state.StatusRegister |= VdpStatus::VIntPending;
+				if (_cpu) {
+					_cpu->SetInterrupt(6);
+				}
+			}
+		}
+
+		if (_scanline < _screenHeight && _hCounter == hblankStartCycle) {
+			if (_state.HIntCounter == 0) {
+				_state.HIntCounter = _state.Registers[10];
+				if (IsHBlankInterruptEnabled() && _cpu) {
+					_cpu->SetInterrupt(4);
+				}
+			} else {
+				_state.HIntCounter--;
+			}
+		}
 
 		if (_state.DmaActive) {
 			ProcessDma();
@@ -270,35 +356,6 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 			_lineScreenWidth = _lineH40Mode ? 320 : 256;
 			_screenWidth = _lineScreenWidth;
 
-			// Enter VBlank at the start of the first VBlank line.
-			if (_scanline == _screenHeight) {
-				_state.StatusRegister |= VdpStatus::VBlankFlag;
-				static uint64_t vblankEnterCount = 0;
-				vblankEnterCount++;
-				if (vblankEnterCount <= 256 || (vblankEnterCount % 2048) == 0) {
-					MessageManager::Log(std::format("[Genesis][VDP] VBlank enter #{} frame={} scanline={} status=${:04x} r1=${:02x} vintEn={} hc={}",
-						vblankEnterCount,
-						_state.FrameCount,
-						_scanline,
-						_state.StatusRegister,
-						_state.Registers[1],
-						IsVBlankInterruptEnabled() ? 1 : 0,
-						_hCounter));
-				}
-				if (IsVBlankInterruptEnabled()) {
-					_state.StatusRegister |= VdpStatus::VIntPending;
-					if (vblankEnterCount <= 256 || (vblankEnterCount % 2048) == 0) {
-						MessageManager::Log(std::format("[Genesis][VDP] VBlank IRQ request frame={} status=${:04x} pending={}",
-							_state.FrameCount,
-							_state.StatusRegister,
-							(_state.StatusRegister & VdpStatus::VIntPending) ? 1 : 0));
-					}
-					if (_cpu) {
-						_cpu->SetInterrupt(6); // Level 6 - VBlank
-					}
-				}
-			}
-
 			_currentLineCycleTarget = 488;
 			_lineCycleRemainder += 4;
 			if (_lineCycleRemainder >= 7) {
@@ -310,8 +367,10 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 				// End of frame
 				_scanline = 0;
 				_state.VCounter = VCounterValue(0);
+				_vblankEnteredThisFrame = false;
 				uint16_t statusBeforeExit = _state.StatusRegister;
 				_state.StatusRegister &= ~VdpStatus::VBlankFlag;
+				_state.StatusRegister &= ~VdpStatus::HBlanking;
 				_state.StatusRegister ^= VdpStatus::OddFrame;
 				static uint64_t vblankExitCount = 0;
 				vblankExitCount++;
@@ -368,18 +427,6 @@ void GenesisVdp::ProcessScanline() {
 		}
 	}
 
-	// HBlank interrupt
-	if (_scanline < _screenHeight && IsHBlankInterruptEnabled()) {
-		// HBlank counter (reload from R10 after underflow)
-		if (_state.HIntCounter == 0) {
-			_state.HIntCounter = _state.Registers[10];
-			if (_cpu) {
-				_cpu->SetInterrupt(4); // Level 4 - HBlank
-			}
-		} else {
-			_state.HIntCounter--;
-		}
-	}
 }
 
 void GenesisVdp::RenderScanline() {
@@ -929,10 +976,27 @@ void GenesisVdp::PrimeReadBuffer() {
 uint16_t GenesisVdp::ReadControlPort() {
 	_pendingControlWrite = false;
 	_pendingControlHighWrite = false;
-	if (_scanline >= _screenHeight && _scanline < _totalLines) {
+
+	bool inVblankLines = _scanline >= _screenHeight && _scanline < _totalLines;
+	bool vblankFlagActive = false;
+	if (inVblankLines) {
+		if (_scanline > _screenHeight) {
+			vblankFlagActive = true;
+		} else {
+			vblankFlagActive = _hCounter >= GetVBlankFlagStartCycle();
+		}
+	}
+
+	if (vblankFlagActive) {
 		_state.StatusRegister |= VdpStatus::VBlankFlag;
 	} else {
 		_state.StatusRegister &= ~VdpStatus::VBlankFlag;
+	}
+
+	if (_hCounter >= GetHBlankStartCycle()) {
+		_state.StatusRegister |= VdpStatus::HBlanking;
+	} else {
+		_state.StatusRegister &= ~VdpStatus::HBlanking;
 	}
 	if (_state.DmaActive) {
 		_state.StatusRegister |= VdpStatus::DmaBusy;
