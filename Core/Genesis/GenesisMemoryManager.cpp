@@ -265,7 +265,7 @@ namespace {
 			sNexenGenesisStartupCheckpointEndFrame = 120u;
 			sNexenGenesisPreferNexenBusHandoff = false;
 			sNexenGenesisTmssStrictMode = true;
-		} else if (sNexenGenesisStartupProfile == "mesen" || sNexenGenesisStartupProfile == "mesen-startup") {
+		} else if (sNexenGenesisStartupProfile == "nexen-ref" || sNexenGenesisStartupProfile == "nexen-ref-startup" || sNexenGenesisStartupProfile == "mesen" || sNexenGenesisStartupProfile == "mesen-startup") {
 			sNexenGenesisStartupWindowFrames = 10u;
 			sNexenGenesisStartupCheckpointIntervalFrames = 1u;
 			sNexenGenesisStartupCheckpointEndFrame = 600u;
@@ -833,7 +833,7 @@ void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) 
 		return;
 	}
 
-	// Keep legacy profile on end-of-frame checkpoints, but align Mesen-profile checkpoints
+	// Keep legacy profile on end-of-frame checkpoints, but align NexenRef-profile checkpoints
 	// to scanline 0 so startup tags begin with frame-head chronology.
 	uint16_t totalLines = _vdp->GetTotalLines();
 	uint16_t scanline = _vdp->GetScanline();
@@ -982,7 +982,7 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 			return;
 		}
 
-		// Keep frame-0 emission limited to bootstrap to better match Mesen startup chronology.
+		// Keep frame-0 emission limited to bootstrap to better match NexenRef startup chronology.
 		if (frame == 0u && !StartupTagEquals(tag, "STARTUP_BOOT")) {
 			return;
 		}
@@ -4014,5 +4014,6 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 
 	ClearDebugTranscriptLane();
 }
+
 
 

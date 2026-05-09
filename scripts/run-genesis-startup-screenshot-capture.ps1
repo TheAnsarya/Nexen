@@ -27,7 +27,7 @@ New-Item -ItemType Directory -Path $resolvedOutputDirectory -Force | Out-Null
 
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $nexenOut = Join-Path $resolvedOutputDirectory "nexen-startup-frame-$CaptureFrame-$timestamp.png"
-$nexenRefOut = Join-Path $resolvedOutputDirectory "mesen-startup-frame-$CaptureFrame-$timestamp.png"
+$nexenRefOut = Join-Path $resolvedOutputDirectory "nexenref-startup-frame-$CaptureFrame-$timestamp.png"
 
 function Invoke-CaptureRun {
 	param(
@@ -113,7 +113,7 @@ $summary = [ordered]@{
 	timestamp = $timestamp
 	captureFrame = $CaptureFrame
 	rom = "$resolvedRom"
-	mesenScreenshot = "$nexenRefOut"
+	nexenRefScreenshot = "$nexenRefOut"
 	nexenScreenshot = "$nexenOut"
 }
 
@@ -123,8 +123,9 @@ $summaryJson = $summary | ConvertTo-Json -Depth 4
 Set-Content -Path $summaryPath -Value $summaryJson -Encoding UTF8
 Set-Content -Path $latestPath -Value $summaryJson -Encoding UTF8
 
-Write-Host "Mesen screenshot: $nexenRefOut" -ForegroundColor Green
+Write-Host "NexenRef screenshot: $nexenRefOut" -ForegroundColor Green
 Write-Host "Nexen screenshot: $nexenOut" -ForegroundColor Green
 Write-Host "Summary: $summaryPath" -ForegroundColor Green
+
 
 

@@ -103,7 +103,7 @@ namespace {
 
 	TEST(GenesisStartupLogoProfileTests, NexenProfileUsesFirstTenSecondCheckpointAndCompatibilityBias) {
 		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
-			{ "NEXEN_GENESIS_STARTUP_PROFILE", "mesen" }
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "nexen-ref" }
 		});
 
 		EXPECT_EQ(memoryManager.GetStartupWindowFrames(), 10u);
@@ -266,12 +266,13 @@ namespace {
 
 		{
 			GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
-				{ "NEXEN_GENESIS_STARTUP_PROFILE", "mesen" }
+				{ "NEXEN_GENESIS_STARTUP_PROFILE", "nexen-ref" }
 			});
 			EXPECT_EQ(memoryManager.GetStartupWindowFrames(), 10u);
 			EXPECT_TRUE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
 		}
 	}
 }
+
 
 

@@ -89,7 +89,7 @@ namespace {
 
 		const std::array<ProfileCase, 3> cases = {
 			ProfileCase{ "logo-compat", "logo-compat", 16u, true },
-			ProfileCase{ "mesen", "mesen", 10u, true },
+			ProfileCase{ "nexen-ref", "nexen-ref", 10u, true },
 			ProfileCase{ "strict", "strict", 0u, false }
 		};
 
@@ -107,7 +107,7 @@ namespace {
 
 	TEST(GenesisStartupLogoStressTests, RepeatedBusHandoffLoopsKeepRuntimeCountersMonotonicAndStable) {
 		std::vector<std::pair<const char*, const char*>> envVars = {
-			{ "NEXEN_GENESIS_STARTUP_PROFILE", "mesen" },
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "nexen-ref" },
 			{ "NEXEN_GENESIS_Z80_BUSREQ_ACK_DELAY_MCLK", "9" },
 			{ "NEXEN_GENESIS_Z80_BUSRESUME_DELAY_MCLK", "9" }
 		};
@@ -196,7 +196,7 @@ namespace {
 
 	TEST(GenesisStartupLogoStressTests, StartupWindowOverridesSupportAggressiveFirstTenSecondSweeps) {
 		std::vector<std::pair<const char*, const char*>> envVars = {
-			{ "NEXEN_GENESIS_STARTUP_PROFILE", "mesen" },
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "nexen-ref" },
 			{ "NEXEN_GENESIS_STARTUP_WINDOW_FRAMES", "60" },
 			{ "NEXEN_GENESIS_STARTUP_CHECKPOINT_INTERVAL_FRAMES", "2" },
 			{ "NEXEN_GENESIS_STARTUP_CHECKPOINT_END_FRAME", "600" }
@@ -234,5 +234,6 @@ namespace {
 		EXPECT_EQ(runA, runB);
 	}
 }
+
 
 
