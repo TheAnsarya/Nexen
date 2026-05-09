@@ -627,15 +627,15 @@ $resolvedRom = Resolve-FirstExistingPath -CandidatePaths $romCandidates -Label "
 $resolvedNexenExe = Resolve-RequiredPath -Path $NexenExePath -Label "Nexen exe"
 $resolvedNexenRefExe = $null
 try {
-	$resolvedNexenRefExe = Resolve-FirstExistingPath -CandidatePaths $nexenRefExeCandidates -Label "Mesen2-Expanded frontend exe"
+	$resolvedNexenRefExe = Resolve-FirstExistingPath -CandidatePaths $nexenRefExeCandidates -Label "NexenRef frontend exe"
 } catch {
 	if (-not $AllowMissingNexenRefFrontend) {
 		throw
 	}
-	Write-Warning "Mesen frontend executable was not found. Continuing in Nexen-only mode."
+	Write-Warning "NexenRef frontend executable was not found. Continuing in Nexen-only mode."
 }
 $resolvedNexenDir = Resolve-RequiredPath -Path $NexenWorkingDir -Label "Nexen working dir"
-$resolvedNexenRefDir = Resolve-RequiredPath -Path $NexenRefWorkingDir -Label "Mesen2-Expanded working dir"
+$resolvedNexenRefDir = Resolve-RequiredPath -Path $NexenRefWorkingDir -Label "NexenRef working dir"
 
 $nexenExeDir = Split-Path -Parent $resolvedNexenExe
 $nexenRefExeDir = $null
@@ -748,7 +748,7 @@ try {
 	$env:NEXEN_GENESIS_STARTUP_TRACE_MAX_LINES = "$MaxLines"
 
 	if ($null -ne $resolvedNexenRefExe) {
-		Stop-ExistingProcessInstances -ProgramPath $resolvedNexenRefExe -Name "Mesen2-Expanded"
+		Stop-ExistingProcessInstances -ProgramPath $resolvedNexenRefExe -Name "NexenRef"
 	}
 	Stop-ExistingProcessInstances -ProgramPath $resolvedNexenExe -Name "Nexen"
 
@@ -771,8 +771,8 @@ try {
 			$mode = $nexenRefRunModes[$modeIndex]
 			Remove-ExistingFiles -Paths ($nexenRefTraceCandidates + $nexenRefStartupTraceCandidates)
 
-			Write-Host "Running Mesen2-Expanded trace capture (mode=$($mode.Name))..." -ForegroundColor Cyan
-			$nexenRefRun = Start-TimedRun -ProgramPath $resolvedNexenRefExe -PreArgs $mode.Args -Rom $resolvedRom -WorkingDir $resolvedNexenRefDir -TimeoutSeconds $AutoStopTimeoutSeconds -Name "Mesen2-Expanded"
+			Write-Host "Running NexenRef trace capture (mode=$($mode.Name))..." -ForegroundColor Cyan
+			$nexenRefRun = Start-TimedRun -ProgramPath $resolvedNexenRefExe -PreArgs $mode.Args -Rom $resolvedRom -WorkingDir $resolvedNexenRefDir -TimeoutSeconds $AutoStopTimeoutSeconds -Name "NexenRef"
 
 			$attemptTracePath = TryResolveExistingTracePath -CandidatePaths $nexenRefTraceCandidates
 			$attemptStartupPath = TryResolveExistingTracePath -CandidatePaths $nexenRefStartupTraceCandidates
@@ -785,7 +785,7 @@ try {
 		}
 
 		if (-not $nexenRefTraceFound) {
-			Write-Warning "Mesen2-Expanded produced no direct trace artifacts in launch attempts; fallback search will be used."
+			Write-Warning "NexenRef produced no direct trace artifacts in launch attempts; fallback search will be used."
 		}
 	} else {
 		$nexenRefRunSkipped = $true

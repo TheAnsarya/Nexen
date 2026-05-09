@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Genesis/GenesisConsole.h"
 #include "Genesis/GenesisM68k.h"
@@ -265,7 +265,7 @@ namespace {
 			sNexenGenesisStartupCheckpointEndFrame = 120u;
 			sNexenGenesisPreferNexenBusHandoff = false;
 			sNexenGenesisTmssStrictMode = true;
-		} else if (sNexenGenesisStartupProfile == "nexen-ref" || sNexenGenesisStartupProfile == "nexen-ref-startup" || sNexenGenesisStartupProfile == "mesen" || sNexenGenesisStartupProfile == "mesen-startup") {
+		} else if (sNexenGenesisStartupProfile == "nexen-ref" || sNexenGenesisStartupProfile == "nexen-ref-startup") {
 			sNexenGenesisStartupWindowFrames = 10u;
 			sNexenGenesisStartupCheckpointIntervalFrames = 1u;
 			sNexenGenesisStartupCheckpointEndFrame = 600u;
@@ -291,7 +291,7 @@ namespace {
 			sNexenGenesisZ80BusResumeDelayMclk = (uint16_t)value;
 		}
 		TryParseNexenTraceEnvBool("NEXEN_GENESIS_Z80_LATCH_HIGH_BYTE_ONLY", sNexenGenesisZ80LatchOnlyHighByteWrites);
-		TryParseNexenTraceEnvBool("NEXEN_GENESIS_PREFER_MESEN_BUS_HANDOFF", sNexenGenesisPreferNexenBusHandoff);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_PREFER_NEXENREF_BUS_HANDOFF", sNexenGenesisPreferNexenBusHandoff);
 		TryParseNexenTraceEnvBool("NEXEN_GENESIS_POWERON_Z80_RESET_ASSERTED", sNexenGenesisPowerOnZ80ResetAsserted);
 
 		std::string tracePath;

@@ -1,4 +1,4 @@
-param(
+﻿param(
 	[Parameter(Mandatory = $true)]
 	[string]$RomPath,
 	[string]$NexenTarget = ".\bin\win-x64\Release\Nexen.dll",
@@ -101,7 +101,7 @@ $oldPath = $env:NEXEN_STARTUP_SCREENSHOT_PATH
 $oldFrame = $env:NEXEN_STARTUP_SCREENSHOT_FRAME
 
 try {
-	Invoke-CaptureRunWithRetry -TargetPath $resolvedNexenRefTarget -OutputPath $nexenRefOut -Label "Mesen2-Expanded"
+	Invoke-CaptureRunWithRetry -TargetPath $resolvedNexenRefTarget -OutputPath $nexenRefOut -Label "NexenRef"
 	Invoke-CaptureRunWithRetry -TargetPath $resolvedNexenTarget -OutputPath $nexenOut -Label "Nexen"
 }
 finally {

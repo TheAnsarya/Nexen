@@ -51,7 +51,7 @@ namespace {
 			Vars.emplace_back("NEXEN_GENESIS_Z80_BUSREQ_ACK_DELAY_MCLK", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_Z80_BUSRESUME_DELAY_MCLK", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_Z80_LATCH_HIGH_BYTE_ONLY", nullptr);
-			Vars.emplace_back("NEXEN_GENESIS_PREFER_MESEN_BUS_HANDOFF", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_PREFER_NEXENREF_BUS_HANDOFF", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_POWERON_Z80_RESET_ASSERTED", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_STARTUP_TRACE", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_STARTUP_TRACE_FRAME_END", nullptr);
@@ -182,7 +182,7 @@ namespace {
 
 	TEST(GenesisStartupLogoBoundaryTests, BoolParsingAcceptsNumericValueForHandoffPreference) {
 		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
-			{ "NEXEN_GENESIS_PREFER_MESEN_BUS_HANDOFF", "0" }
+			{ "NEXEN_GENESIS_PREFER_NEXENREF_BUS_HANDOFF", "0" }
 		});
 
 		EXPECT_FALSE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
@@ -209,7 +209,7 @@ namespace {
 	TEST(GenesisStartupLogoBoundaryTests, StrictProfileCanBeOverriddenWithExplicitCompatibilityHandoff) {
 		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
 			{ "NEXEN_GENESIS_STARTUP_PROFILE", "strict" },
-			{ "NEXEN_GENESIS_PREFER_MESEN_BUS_HANDOFF", "1" }
+			{ "NEXEN_GENESIS_PREFER_NEXENREF_BUS_HANDOFF", "1" }
 		});
 
 		EXPECT_TRUE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
@@ -227,6 +227,7 @@ namespace {
 		EXPECT_TRUE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
 	}
 }
+
 
 
 
