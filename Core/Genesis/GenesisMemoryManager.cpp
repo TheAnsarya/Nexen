@@ -468,6 +468,25 @@ namespace {
 
 		return digest;
 	}
+
+	static bool StartupTagEquals(const char* tag, const char* literal) {
+		return std::strcmp(tag, literal) == 0;
+	}
+
+	static bool ShouldEmitMesenProfileStartupTag(const char* tag) {
+		return StartupTagEquals(tag, "STARTUP_BOOT")
+			|| StartupTagEquals(tag, "STARTUP_CHECKPOINT")
+			|| StartupTagEquals(tag, "STARTUP_Z80")
+			|| StartupTagEquals(tag, "STARTUP_PAL")
+			|| StartupTagEquals(tag, "STARTUP_VDP")
+			|| StartupTagEquals(tag, "VDP_DISP_TGL")
+			|| StartupTagEquals(tag, "Z80_RUN_TGL")
+			|| StartupTagEquals(tag, "Z80_BUSREQ")
+			|| StartupTagEquals(tag, "Z80_RESET")
+			|| StartupTagEquals(tag, "VDP_REG_W")
+			|| StartupTagEquals(tag, "VDP_STAT_W")
+			|| StartupTagEquals(tag, "TMSS_UNLOCK");
+	}
 }
 
 GenesisMemoryManager::GenesisMemoryManager() {
@@ -915,6 +934,17 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 		return;
 	}
 
+	if (_startupProfilePreferMesenBusHandoff) {
+		if (!ShouldEmitMesenProfileStartupTag(tag)) {
+			return;
+		}
+
+		// Keep frame-0 emission limited to bootstrap to better match Mesen startup chronology.
+		if (frame == 0u && !StartupTagEquals(tag, "STARTUP_BOOT")) {
+			return;
+		}
+	}
+
 	GenesisVdpState vdpState = _vdp->GetState();
 	uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0x000000;
 	for (const uint8_t* p = (const uint8_t*)tag; *p; p++) {
@@ -928,7 +958,8 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 	_startupTraceDigest ^= auxValue;
 	_startupTraceDigest *= 1099511628211ull;
 
-	LogNexenStartupTrace(frame, vdpState.VCounter, tag, addr, value, auxValue, pc, _masterClock);
+	uint16_t line = _vdp->GetScanline();
+	LogNexenStartupTrace(frame, line, tag, addr, value, auxValue, pc, _masterClock);
 	_startupTraceSequence++;
 }
 

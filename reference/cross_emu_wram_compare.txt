@@ -4,47 +4,47 @@ frameStart=0
 frameEnd=600
 autoStopTimeoutSeconds=45
 maxLines=1200000
-mesenTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-cpu-ram-trace-20260509-134135.log
-nexenTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260509-134135.log
-mesenStartupTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-startup-trace-20260509-134135.log
-nexenStartupTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260509-134135.log
+mesenTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-cpu-ram-trace-20260509-135014.log
+nexenTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260509-135014.log
+mesenStartupTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-startup-trace-20260509-135014.log
+nexenStartupTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260509-135014.log
 mesenTraceSourceKind=direct-candidate-copy
 nexenTraceSourceKind=direct-candidate
 mesenStartupTraceSourceKind=direct-candidate
 nexenStartupTraceSourceKind=direct-candidate
 mesenTraceSourcePath=C:\Users\me\Documents\Mesen2\reference\cpu_ram_trace.log
-nexenTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260509-134135.log
-mesenStartupTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-startup-trace-20260509-134135.log
-nexenStartupTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260509-134135.log
-mesenLines=165771
+nexenTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260509-135014.log
+mesenStartupTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-startup-trace-20260509-135014.log
+nexenStartupTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260509-135014.log
+mesenLines=166003
 nexenLines=257383
-mesenStartupLines=6646
-nexenStartupLines=416858
+mesenStartupLines=6720
+nexenStartupLines=358715
 snapshotFrame=180
-mesenStartupNormalizedLines=6646
-nexenStartupNormalizedLines=406139
-mesenStartupCheckpointCount=424
+mesenStartupNormalizedLines=6720
+nexenStartupNormalizedLines=358715
+mesenStartupCheckpointCount=426
 nexenStartupCheckpointCount=600
 mesenStartupDisplayTransitionCount=1
 nexenStartupDisplayTransitionCount=1
-mesenStartupPaletteCheckpointCount=848
+mesenStartupPaletteCheckpointCount=852
 nexenStartupPaletteCheckpointCount=1200
-mesenStartupVdpSnapshotCount=848
+mesenStartupVdpSnapshotCount=852
 nexenStartupVdpSnapshotCount=1200
-mesenStartupVdpRegisterWriteCount=2461
-nexenStartupVdpRegisterWriteCount=42258
+mesenStartupVdpRegisterWriteCount=2501
+nexenStartupVdpRegisterWriteCount=35773
 mesenStartupTmssUnlockCount=0
 nexenStartupTmssUnlockCount=0
-mesenStartupZ80RuntimeToggleCount=907
-nexenStartupZ80RuntimeToggleCount=2766
-mesenStartupZ80BusReqEventCount=908
-nexenStartupZ80BusReqEventCount=2756
-mesenStartupZ80ResetEventCount=427
-nexenStartupZ80ResetEventCount=614
-mesenHash=85ff14c6d569695aa46e5d86075f9d2f0f53c14716684a8800fae10831745b71
-nexenHash=8f6362ec98429195a415b05baf1055f251d4915af2cd694f9092d76f371b0836
-mesenStartupHash=2e6e95254be55a00a7e4e3350df1c1e1afb8d7a9e3b6f79a8d13329c781939a1
-nexenStartupHash=061b64ced7988d3662d262f5b155214a9d2f487ad9e987440f039678a08fc0c9
+mesenStartupZ80RuntimeToggleCount=917
+nexenStartupZ80RuntimeToggleCount=2760
+mesenStartupZ80BusReqEventCount=918
+nexenStartupZ80BusReqEventCount=2752
+mesenStartupZ80ResetEventCount=429
+nexenStartupZ80ResetEventCount=608
+mesenHash=8922199ba3ce11a301b15cfcb073c153e6745b37a9a8fd031eaf3ed593b3a0bf
+nexenHash=9698e1f96921e1e7c43d4959ae1aa86fcdcb768957d4bf49d7069fd2e6c74263
+mesenStartupHash=0c2517232a76668090e5ae28dcebb8f5bad1dbef4dc4c69dc6545fc92fb5aa71
+nexenStartupHash=463b4a4bce8c2f395db334aed9ec0618e29585cc45f60e898cbcbc30fd6e71a7
 mesenFrontendMissing=False
 mesenRunSkipped=False
 mesenTraceMissing=False
@@ -62,20 +62,20 @@ nexenLaunchArgs=--testRunner --timeout=35 "C:\~reference-roms\genesis\Sonic The 
 mesenStartupTraceEnvSupported=True
 mesenSearchRoots=C:\Users\me\source\repos\Mesen2-Expanded;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug;C:\Users\me\Documents\Mesen2
 nexenSearchRoots=C:\Users\me\source\repos\Nexen;C:\Users\me\source\repos\Nexen\bin\win-x64\Release
-mesenTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-cpu-ram-trace-20260509-134135.log;C:\Users\me\source\repos\Mesen2-Expanded\reference\cpu_ram_trace.log;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\reference\cpu_ram_trace.log;C:\Users\me\Documents\Mesen2\reference\cpu_ram_trace.log
-mesenStartupTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-startup-trace-20260509-134135.log;C:\Users\me\source\repos\Mesen2-Expanded\reference\genesis_startup_trace.log;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\reference\genesis_startup_trace.log;C:\Users\me\Documents\Mesen2\reference\genesis_startup_trace.log
-nexenTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260509-134135.log;C:\Users\me\source\repos\Nexen\reference\cpu_ram_trace.log;C:\Users\me\source\repos\Nexen\bin\win-x64\Release\reference\cpu_ram_trace.log
-nexenStartupTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260509-134135.log;C:\Users\me\source\repos\Nexen\reference\genesis_startup_trace.log;C:\Users\me\source\repos\Nexen\bin\win-x64\Release\reference\genesis_startup_trace.log
-mesenAttempts=attempt[0]=configured-args;trace=C:\Users\me\Documents\Mesen2\reference\cpu_ram_trace.log;startup=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-startup-trace-20260509-134135.log;exit=-1;timeout=False
+mesenTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-cpu-ram-trace-20260509-135014.log;C:\Users\me\source\repos\Mesen2-Expanded\reference\cpu_ram_trace.log;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\reference\cpu_ram_trace.log;C:\Users\me\Documents\Mesen2\reference\cpu_ram_trace.log
+mesenStartupTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-startup-trace-20260509-135014.log;C:\Users\me\source\repos\Mesen2-Expanded\reference\genesis_startup_trace.log;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\reference\genesis_startup_trace.log;C:\Users\me\Documents\Mesen2\reference\genesis_startup_trace.log
+nexenTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260509-135014.log;C:\Users\me\source\repos\Nexen\reference\cpu_ram_trace.log;C:\Users\me\source\repos\Nexen\bin\win-x64\Release\reference\cpu_ram_trace.log
+nexenStartupTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260509-135014.log;C:\Users\me\source\repos\Nexen\reference\genesis_startup_trace.log;C:\Users\me\source\repos\Nexen\bin\win-x64\Release\reference\genesis_startup_trace.log
+mesenAttempts=attempt[0]=configured-args;trace=C:\Users\me\Documents\Mesen2\reference\cpu_ram_trace.log;startup=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-startup-trace-20260509-135014.log;exit=-1;timeout=False
 firstDiffIndex=1
 startupFirstDiffIndex=1
 startupNormalizedFirstDiffIndex=1
 mesenFirstDiff=F0001 L006 WRAM addr=FFFFFC data=00 pc=000264 mclk=23940
 nexenFirstDiff=F0000 L005 WRAM addr=FFFFFC data=00 pc=000264 mclk=2902
 mesenStartupFirstDiff=F0001 L000 STARTUP_PAL addr=C00000 data=8D07 aux=4 pc=000206 mclk=0
-nexenStartupFirstDiff=F0000 L000 VDP_CTRL_W addr=C00004 data=8004 aux=4 pc=000242 mclk=282
+nexenStartupFirstDiff=F0001 L000 VDP_STAT_W addr=C00004 data=3690 aux=28 pc=000264 mclk=127856
 mesenStartupNormalizedFirstDiff=F0001 L000 STARTUP_PAL addr=C00000 data=8D07 aux=4 pc=000206 mclk=0
-nexenStartupNormalizedFirstDiff=F0000 L000 VDP_REG_W addr=C00004 data=0004 aux=0 pc=000242 mclk=282
+nexenStartupNormalizedFirstDiff=F0001 L000 VDP_STAT_W addr=C00004 data=3690 aux=28 pc=000264 mclk=127856
 mesenSnapshot_STARTUP_PAL=F0180 L261 STARTUP_PAL addr=C00000 data=7870 aux=116 pc=0029AC mclk=160391160
 nexenSnapshot_STARTUP_PAL=F0180 L261 STARTUP_PAL addr=C00000 data=539B aux=116 pc=071FC6 mclk=23141452
 mesenSnapshot_STARTUP_VDP=F0180 L261 STARTUP_VDP addr=C00004 data=360C aux=29700 pc=0029AC mclk=160391160
@@ -87,17 +87,17 @@ nexenSnapshot_VDP_STAT_W=F0180 L000 VDP_STAT_W addr=C00004 data=3680 aux=28 pc=0
 mesenSnapshot_LOOP_POLL8=<missing>
 nexenSnapshot_LOOP_POLL8=<missing>
 mesenSnapshot_LOOP_POLL16=<missing>
-nexenSnapshot_LOOP_POLL16=F0180 L000 LOOP_POLL16 addr=071FC6 data=51C8 aux=8134 pc=071FC6 mclk=23014082
+nexenSnapshot_LOOP_POLL16=<missing>
 mesenSnapshot_CPU_PRELOOP=<missing>
 nexenSnapshot_CPU_PRELOOP=<missing>
 mesenSnapshot_CPU_LOOP=<missing>
-nexenSnapshot_CPU_LOOP=F0180 L000 CPU_LOOP addr=071FC6 data=63D7 aux=4 pc=071FC4 mclk=23014096
+nexenSnapshot_CPU_LOOP=<missing>
 mesenLoopPoll16Count=0
-nexenLoopPoll16Count=58
+nexenLoopPoll16Count=0
 mesenLoopPoll16First=<missing>
-nexenLoopPoll16First=F0180 L000 LOOP_POLL16 addr=071FC6 data=51C8 aux=8134 pc=071FC6 mclk=23014082
+nexenLoopPoll16First=<missing>
 mesenLoopPoll16Last=<missing>
-nexenLoopPoll16Last=F0180 L001 LOOP_POLL16 addr=071FC6 data=51C8 aux=8134 pc=071FC6 mclk=23014576
+nexenLoopPoll16Last=<missing>
 mesenCpuPreloopCount=0
 nexenCpuPreloopCount=0
 mesenCpuPreloopFirst=<missing>
@@ -105,18 +105,18 @@ nexenCpuPreloopFirst=<missing>
 mesenCpuPreloopLast=<missing>
 nexenCpuPreloopLast=<missing>
 mesenCpuPreloopGlobalCount=0
-nexenCpuPreloopGlobalCount=13
+nexenCpuPreloopGlobalCount=0
 mesenCpuPreloopGlobalFirstFrame=-1
-nexenCpuPreloopGlobalFirstFrame=171
+nexenCpuPreloopGlobalFirstFrame=-1
 mesenCpuPreloopGlobalLastFrame=-1
-nexenCpuPreloopGlobalLastFrame=441
+nexenCpuPreloopGlobalLastFrame=-1
 mesenCpuPreloopGlobalFirst=<missing>
-nexenCpuPreloopGlobalFirst=F0171 L227 CPU_PRELOOP addr=071F82 data=007F aux=9744 pc=071F86 mclk=21974554
+nexenCpuPreloopGlobalFirst=<missing>
 mesenCpuPreloopGlobalLast=<missing>
-nexenCpuPreloopGlobalLast=F0441 L230 CPU_PRELOOP addr=071F94 data=007F aux=9728 pc=071FA8 mclk=56496954
+nexenCpuPreloopGlobalLast=<missing>
 mesenCpuLoopCount=0
-nexenCpuLoopCount=38
+nexenCpuLoopCount=0
 mesenCpuLoopFirst=<missing>
-nexenCpuLoopFirst=F0180 L000 CPU_LOOP addr=071FC6 data=63D7 aux=4 pc=071FC4 mclk=23014096
+nexenCpuLoopFirst=<missing>
 mesenCpuLoopLast=<missing>
-nexenCpuLoopLast=F0180 L001 CPU_LOOP addr=071FC4 data=63C5 aux=4 pc=071FC6 mclk=23014572
+nexenCpuLoopLast=<missing>
