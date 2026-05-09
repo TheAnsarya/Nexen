@@ -151,6 +151,10 @@ void GenesisVdp::Reset(bool hardReset) {
 	_lineH40Mode = IsH40Mode();
 	_lineScreenWidth = _screenWidth;
 	_vblankEnteredThisFrame = false;
+	_vintPending = false;
+	_vintNew = false;
+	_hintPending = false;
+	_hintNew = false;
 
 	_scanline = 0;
 	_hCounter = 0;
@@ -315,18 +319,28 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 			}
 
 			if (IsVBlankInterruptEnabled()) {
+				_vintPending = true;
+				_vintNew = true;
 				_state.StatusRegister |= VdpStatus::VIntPending;
 				if (_cpu) {
 					_cpu->SetInterrupt(6);
 				}
+			} else {
+				_vintPending = true;
+				_vintNew = false;
+				_state.StatusRegister |= VdpStatus::VIntPending;
 			}
 		}
 
 		if (_scanline < _screenHeight && _hCounter == hblankStartCycle) {
 			if (_state.HIntCounter == 0) {
 				_state.HIntCounter = _state.Registers[10];
+				_hintPending = true;
 				if (IsHBlankInterruptEnabled() && _cpu) {
+					_hintNew = true;
 					_cpu->SetInterrupt(4);
+				} else {
+					_hintNew = false;
 				}
 			} else {
 				_state.HIntCounter--;
@@ -368,6 +382,10 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 				_scanline = 0;
 				_state.VCounter = VCounterValue(0);
 				_vblankEnteredThisFrame = false;
+				_vintPending = false;
+				_vintNew = false;
+				_hintPending = false;
+				_hintNew = false;
 				uint16_t statusBeforeExit = _state.StatusRegister;
 				_state.StatusRegister &= ~VdpStatus::VBlankFlag;
 				_state.StatusRegister &= ~VdpStatus::HBlanking;
@@ -1036,6 +1054,8 @@ uint16_t GenesisVdp::ReadControlPort() {
 				status));
 		}
 	}
+	_vintPending = false;
+	_vintNew = false;
 	_state.StatusRegister &= ~VdpStatus::VIntPending;
 	_state.StatusRegister &= ~VdpStatus::SprOverflow;
 	_state.StatusRegister &= ~VdpStatus::SprCollision;
@@ -1043,7 +1063,14 @@ uint16_t GenesisVdp::ReadControlPort() {
 }
 
 void GenesisVdp::AcknowledgeInterrupt(uint8_t level) {
-	(void)level;
+	if (level >= 6 && _vintPending && IsVBlankInterruptEnabled()) {
+		_vintPending = false;
+		_vintNew = false;
+		_state.StatusRegister &= ~VdpStatus::VIntPending;
+	} else if (level >= 4 && _hintPending && IsHBlankInterruptEnabled()) {
+		_hintPending = false;
+		_hintNew = false;
+	}
 }
 
 GenesisVdpState GenesisVdp::GetState() const {
@@ -1349,8 +1376,27 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 			if (atLineBoundary) {
 				_lineDisplayEnabled = displayEnabledAfter;
 			}
+
+			bool vintEnableRise = ((oldData & 0x20u) == 0u) && ((data & 0x20u) != 0u);
+			if (vintEnableRise && _vintPending && !_vintNew) {
+				_vintNew = true;
+				if (_cpu) {
+					_cpu->SetInterrupt(6);
+				}
+			}
+
 			if (displayEnabledAfter != displayEnabledBefore) {
 				MessageManager::Log(std::format("[Genesis][VDP] Display {} via R1 write (${:#04x})", displayEnabledAfter ? "enabled" : "disabled", data));
+			}
+		}
+
+		if (reg == 0) {
+			bool hintEnableRise = ((oldData & 0x10u) == 0u) && ((data & 0x10u) != 0u);
+			if (hintEnableRise && _hintPending && !_hintNew) {
+				_hintNew = true;
+				if (_cpu) {
+					_cpu->SetInterrupt(4);
+				}
 			}
 		}
 
@@ -1638,6 +1684,11 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_lineDisplayEnabled);
 	SV(_lineH40Mode);
 	SV(_lineScreenWidth);
+	SV(_vblankEnteredThisFrame);
+	SV(_vintPending);
+	SV(_vintNew);
+	SV(_hintPending);
+	SV(_hintNew);
 	SV(_currentBuffer);
 	SV(_screenWidth);
 	SV(_screenHeight);

@@ -45,6 +45,10 @@ private:
 	bool _lineH40Mode = true;
 	uint16_t _lineScreenWidth = 320;
 	bool _vblankEnteredThisFrame = false;
+	bool _vintPending = false;
+	bool _vintNew = false;
+	bool _hintPending = false;
+	bool _hintNew = false;
 
 	// Screen dimensions based on mode
 	uint16_t _screenWidth = 320;

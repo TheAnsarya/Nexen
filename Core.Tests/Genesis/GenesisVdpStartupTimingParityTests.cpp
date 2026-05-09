@@ -119,4 +119,35 @@ namespace {
 		GenesisVdpState third = vdp.GetState();
 		EXPECT_EQ(third.HIntCounter, 0u);
 	}
+
+	TEST(GenesisVdpStartupTimingParityTests, VIntPendingStaysLatchedWhenAcknowledgeOccursWhileMasked) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 1, 0x44); // VINT disabled
+		vdp.Run(LineStartCycle(224) + 64ull);
+
+		GenesisVdpState beforeAck = vdp.GetState();
+		EXPECT_NE(beforeAck.StatusRegister & VdpStatus::VIntPending, 0u);
+
+		vdp.AcknowledgeInterrupt(6);
+		GenesisVdpState afterMaskedAck = vdp.GetState();
+		EXPECT_NE(afterMaskedAck.StatusRegister & VdpStatus::VIntPending, 0u);
+	}
+
+	TEST(GenesisVdpStartupTimingParityTests, VIntPendingCanBeConsumedAfterEnableEdgeAndAcknowledge) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 1, 0x44); // VINT disabled
+		vdp.Run(LineStartCycle(224) + 64ull);
+		GenesisVdpState latchedWhileMasked = vdp.GetState();
+		EXPECT_NE(latchedWhileMasked.StatusRegister & VdpStatus::VIntPending, 0u);
+
+		WriteReg(vdp, 1, 0x64); // enable VINT after pending is already set
+		vdp.AcknowledgeInterrupt(6);
+
+		GenesisVdpState afterAckEnabled = vdp.GetState();
+		EXPECT_EQ(afterAckEnabled.StatusRegister & VdpStatus::VIntPending, 0u);
+	}
 }
