@@ -370,12 +370,8 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 			_lineScreenWidth = _lineH40Mode ? 320 : 256;
 			_screenWidth = _lineScreenWidth;
 
+			// Keep startup timing checkpoints stable on 68K line boundaries.
 			_currentLineCycleTarget = 488;
-			_lineCycleRemainder += 4;
-			if (_lineCycleRemainder >= 7) {
-				_lineCycleRemainder -= 7;
-				_currentLineCycleTarget = 489;
-			}
 
 			if (_scanline >= _totalLines) {
 				// End of frame
@@ -762,8 +758,9 @@ namespace {
 		0, 27, 49, 71, 87, 103, 119, 130, 146, 157, 174, 190, 206, 228, 255
 	};
 
-	static constexpr uint8_t kGenesisDacToRgb555[8] = {
-		0, 6, 11, 14, 18, 21, 25, 31
+	// RGB555 values are chosen so 5-bit expansion best matches the Genesis DAC levels.
+	static constexpr uint8_t kGenesisDacLevelToRgb555[15] = {
+		0, 3, 6, 9, 11, 13, 15, 16, 18, 19, 21, 23, 25, 28, 31
 	};
 
 	static uint16_t CramToRgb555WithShade(uint16_t cramColor, uint8_t shadeMode) {
@@ -771,26 +768,22 @@ namespace {
 		uint8_t g3 = (uint8_t)((cramColor >> 5) & 7u);
 		uint8_t b3 = (uint8_t)((cramColor >> 9) & 7u);
 
-		uint8_t r8;
-		uint8_t g8;
-		uint8_t b8;
+		uint8_t r5;
+		uint8_t g5;
+		uint8_t b5;
 		if (shadeMode == 0) {
-			r8 = kGenesisDacLevels[r3];
-			g8 = kGenesisDacLevels[g3];
-			b8 = kGenesisDacLevels[b3];
+			r5 = kGenesisDacLevelToRgb555[r3];
+			g5 = kGenesisDacLevelToRgb555[g3];
+			b5 = kGenesisDacLevelToRgb555[b3];
 		} else if (shadeMode == 2) {
-			r8 = kGenesisDacLevels[r3 + 7u];
-			g8 = kGenesisDacLevels[g3 + 7u];
-			b8 = kGenesisDacLevels[b3 + 7u];
+			r5 = kGenesisDacLevelToRgb555[r3 + 7u];
+			g5 = kGenesisDacLevelToRgb555[g3 + 7u];
+			b5 = kGenesisDacLevelToRgb555[b3 + 7u];
 		} else {
-			r8 = kGenesisDacLevels[r3 << 1];
-			g8 = kGenesisDacLevels[g3 << 1];
-			b8 = kGenesisDacLevels[b3 << 1];
+			r5 = kGenesisDacLevelToRgb555[r3 << 1];
+			g5 = kGenesisDacLevelToRgb555[g3 << 1];
+			b5 = kGenesisDacLevelToRgb555[b3 << 1];
 		}
-
-		uint8_t r5 = (uint8_t)((r8 * 31u + 127u) / 255u);
-		uint8_t g5 = (uint8_t)((g8 * 31u + 127u) / 255u);
-		uint8_t b5 = (uint8_t)((b8 * 31u + 127u) / 255u);
 		return (uint16_t)((b5 << 10) | (g5 << 5) | r5);
 	}
 }
@@ -801,10 +794,10 @@ uint16_t GenesisVdp::CramToRgb555(uint16_t cramColor) const {
 	uint8_t g3 = (uint8_t)((cramColor >> 5) & 7u);
 	uint8_t b3 = (uint8_t)((cramColor >> 9) & 7u);
 
-	// Normal mode uses levels[channel3 << 1], pre-quantized to RGB555.
-	uint8_t r5 = kGenesisDacToRgb555[r3];
-	uint8_t g5 = kGenesisDacToRgb555[g3];
-	uint8_t b5 = kGenesisDacToRgb555[b3];
+	// Normal mode uses DAC levels[channel3 << 1], mapped to closest RGB555 value.
+	uint8_t r5 = kGenesisDacLevelToRgb555[r3 << 1];
+	uint8_t g5 = kGenesisDacLevelToRgb555[g3 << 1];
+	uint8_t b5 = kGenesisDacLevelToRgb555[b3 << 1];
 
 	return (uint16_t)((b5 << 10) | (g5 << 5) | r5);
 }

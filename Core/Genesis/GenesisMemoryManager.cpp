@@ -444,7 +444,7 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_psg = psg;
 	EnsureNexenWramTraceOpen();
 	EnsureNexenStartupTraceOpen();
-	TraceStartupEvent("MMU_INIT", 0x000000, 0, 0);
+	TraceStartupEvent("STARTUP_BOOT", 0x000000, 0, 0);
 
 	// Register and allocate ROM
 	_prgRomSize = (uint32_t)romData.size();
@@ -768,7 +768,7 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 	}
 
 	GenesisVdpState vdpState = _vdp->GetState();
-	uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+	uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0x000000;
 	for (const uint8_t* p = (const uint8_t*)tag; *p; p++) {
 		_startupTraceDigest ^= *p;
 		_startupTraceDigest *= 1099511628211ull;

@@ -2457,6 +2457,21 @@ make a ***big*** change, I mean 1000's of lines of code, work many fixes, you're
 
 continue with big batches;
 
+yes do all of those next steps, continue with big batches; work on big merges with `Mesen-Expanded`; continue;
+
+yes do all of those next steps, continue with big batches; work on big merges with `Mesen-Expanded`; continue; wait until `Core.Tests.exe` is built before you run the testing suite so you won't have all these testing run failures; all the effects on the logo don't work, fix those palette and visual effects; we want to get past the logos and to the loading screens, so work on continuing execution of the code and compare emulators to see where we stop and make code changes so we continue; continue;
+
+git commit everything, and add documentation; yes do all of those next steps, continue with big batches; work on big merges with `Mesen-Expanded`; continue; wait until `Core.Tests.exe` is built before you run the testing suite so you won't have all these testing run failures; all the effects on the logo don't work, fix those palette and visual effects; we want to get past the logos and to the loading screens, so work on continuing execution of the code and compare emulators to see where we stop and make code changes so we continue; continue;
+
+
+
+
+
+
+
+
+
+
 
 
 

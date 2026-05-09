@@ -5,7 +5,7 @@
 	[string]$NexenWorkingDir = ".",
 	[string]$MesenWorkingDir = "..\Mesen2-Expanded",
 	[string[]]$MesenArgs = @("--testRunner", "--timeout=35"),
-	[string[]]$NexenArgs = @(),
+	[string[]]$NexenArgs = @("--testRunner", "--timeout=35"),
 	[switch]$DisableMesenFallbackRunModes,
 	[switch]$AllowMissingMesenFrontend,
 	[int]$AutoStopTimeoutSeconds = 45,
