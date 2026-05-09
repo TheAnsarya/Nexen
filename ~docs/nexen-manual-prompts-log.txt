@@ -2468,6 +2468,7 @@ git commit everything, and add documentation; yes do all of those next steps, co
 --- queued x6
 continue with big batches;
 
+[Nexen] (Genesis/MegaDrive) make ***big*** changes, I mean 1000's of lines of code, work many fixes, Continue doing what we've been doing, but with a big aggressive code change push instead of small efforts; work on big merges with `Mesen-Expanded`; continue; do all the steps; continue; do ***several*** batches in a row and make only one issue per big effort; Focus on cycle accurate emulation; continue;
 
 
 

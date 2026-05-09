@@ -509,6 +509,42 @@ function Get-StartupFrameSnapshot {
 	return $result
 }
 
+function Get-StartupFrameTagStats {
+	param(
+		[string[]]$Lines,
+		[int]$Frame,
+		[string]$Tag
+	)
+
+	$result = [ordered]@{}
+	$result["Count"] = 0
+	$result["First"] = "<missing>"
+	$result["Last"] = "<missing>"
+
+	if ($null -eq $Lines -or $Lines.Count -eq 0 -or [string]::IsNullOrWhiteSpace($Tag)) {
+		return $result
+	}
+
+	$framePrefix = "F{0:d4} " -f $Frame
+	$token = " {0} " -f $Tag
+	foreach ($line in $Lines) {
+		if (-not $line.StartsWith($framePrefix)) {
+			continue
+		}
+		if (-not $line.Contains($token)) {
+			continue
+		}
+
+		if ($result["Count"] -eq 0) {
+			$result["First"] = $line
+		}
+		$result["Last"] = $line
+		$result["Count"] = $result["Count"] + 1
+	}
+
+	return $result
+}
+
 $romCandidates = @()
 if (-not [string]::IsNullOrWhiteSpace($RomPath)) {
 	$romCandidates += $RomPath
@@ -819,6 +855,10 @@ if ($mesenStartupLines.Count -gt 0 -or $nexenStartupLines.Count -gt 0) {
 	$nexenStartupMetrics = Get-StartupMetrics -Lines $nexenStartupLines
 	$mesenFrameSnapshot = Get-StartupFrameSnapshot -Lines $mesenStartupLines -Frame $SnapshotFrame
 	$nexenFrameSnapshot = Get-StartupFrameSnapshot -Lines $nexenStartupLines -Frame $SnapshotFrame
+	$mesenLoopPoll16Stats = Get-StartupFrameTagStats -Lines $mesenStartupLines -Frame $SnapshotFrame -Tag "LOOP_POLL16"
+	$nexenLoopPoll16Stats = Get-StartupFrameTagStats -Lines $nexenStartupLines -Frame $SnapshotFrame -Tag "LOOP_POLL16"
+	$mesenCpuLoopStats = Get-StartupFrameTagStats -Lines $mesenStartupLines -Frame $SnapshotFrame -Tag "CPU_LOOP"
+	$nexenCpuLoopStats = Get-StartupFrameTagStats -Lines $nexenStartupLines -Frame $SnapshotFrame -Tag "CPU_LOOP"
 
 	$mesenStartupCheckpointCount = $mesenStartupMetrics.startupCheckpointCount
 	$nexenStartupCheckpointCount = $nexenStartupMetrics.startupCheckpointCount
@@ -953,6 +993,18 @@ $report.Add("mesenSnapshot_LOOP_POLL16=$($mesenFrameSnapshot.LOOP_POLL16)")
 $report.Add("nexenSnapshot_LOOP_POLL16=$($nexenFrameSnapshot.LOOP_POLL16)")
 $report.Add("mesenSnapshot_CPU_LOOP=$($mesenFrameSnapshot.CPU_LOOP)")
 $report.Add("nexenSnapshot_CPU_LOOP=$($nexenFrameSnapshot.CPU_LOOP)")
+$report.Add("mesenLoopPoll16Count=$($mesenLoopPoll16Stats.Count)")
+$report.Add("nexenLoopPoll16Count=$($nexenLoopPoll16Stats.Count)")
+$report.Add("mesenLoopPoll16First=$($mesenLoopPoll16Stats.First)")
+$report.Add("nexenLoopPoll16First=$($nexenLoopPoll16Stats.First)")
+$report.Add("mesenLoopPoll16Last=$($mesenLoopPoll16Stats.Last)")
+$report.Add("nexenLoopPoll16Last=$($nexenLoopPoll16Stats.Last)")
+$report.Add("mesenCpuLoopCount=$($mesenCpuLoopStats.Count)")
+$report.Add("nexenCpuLoopCount=$($nexenCpuLoopStats.Count)")
+$report.Add("mesenCpuLoopFirst=$($mesenCpuLoopStats.First)")
+$report.Add("nexenCpuLoopFirst=$($nexenCpuLoopStats.First)")
+$report.Add("mesenCpuLoopLast=$($mesenCpuLoopStats.Last)")
+$report.Add("nexenCpuLoopLast=$($nexenCpuLoopStats.Last)")
 
 $report | Out-File -LiteralPath $resolvedReportPath -Encoding utf8
 
