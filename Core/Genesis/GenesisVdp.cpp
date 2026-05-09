@@ -274,20 +274,16 @@ void GenesisVdp::RenderScanline() {
 
 uint16_t GenesisVdp::GetHScrollForLine(uint16_t line, bool planeA) const {
 	uint16_t hscrollBase = GetHScrollBase();
-	uint8_t hscrollMode = _state.Registers[11] & 0x03;
-	uint32_t hscrollAddr = hscrollBase + (planeA ? 0u : 2u);
-
-	if (hscrollMode == 0) {
-		return (uint16_t)((_vram[hscrollAddr & 0xFFFFu] << 8) | _vram[(hscrollAddr + 1u) & 0xFFFFu]);
-	} else if (hscrollMode == 2) {
-		uint32_t cellAddr = hscrollAddr + (line / 8u) * 32u;
-		return (uint16_t)((_vram[cellAddr & 0xFFFFu] << 8) | _vram[(cellAddr + 1u) & 0xFFFFu]);
-	} else if (hscrollMode == 3) {
-		uint32_t lineAddr = hscrollAddr + line * 4u;
-		return (uint16_t)((_vram[lineAddr & 0xFFFFu] << 8) | _vram[(lineAddr + 1u) & 0xFFFFu]);
+	uint16_t lineMask = 0;
+	if ((_state.Registers[11] & 0x02u) != 0) {
+		lineMask |= 0xF8u;
+	}
+	if ((_state.Registers[11] & 0x01u) != 0) {
+		lineMask |= 0x07u;
 	}
 
-	return 0;
+	uint32_t hscrollAddr = (hscrollBase + ((line & lineMask) * 4u) + (planeA ? 0u : 2u)) & 0xFFFFu;
+	return (uint16_t)((_vram[hscrollAddr] << 8) | _vram[(hscrollAddr + 1u) & 0xFFFFu]);
 }
 
 uint16_t GenesisVdp::GetVScrollForPixel(uint16_t x, bool planeA) const {
