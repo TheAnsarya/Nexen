@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include <ranges>
 #include "Shared/Movies/NexenMovie.h"
 #include "Shared/Movies/MovieTypes.h"
@@ -183,7 +183,7 @@ bool NexenMovie::Play(VirtualFile& file) {
 	LoadCheats();
 
 	stringstream saveStateData;
-	// Try new Nexen format first, then legacy Mesen format for backward compatibility
+	// Try new Nexen format first, then legacy interop format for backward compatibility
 	if (_reader->GetStream("SaveState.nexen-save", saveStateData) || _reader->GetStream("SaveState.mss", saveStateData)) {
 		if (!_emu->GetSaveStateManager()->LoadState(saveStateData)) {
 			return false;
@@ -320,3 +320,4 @@ bool NexenMovie::LoadCheat(const string& cheatData, CheatCode& code) {
 	MessageManager::Log("[Movie] Invalid cheat definition: " + cheatData);
 	return false;
 }
+

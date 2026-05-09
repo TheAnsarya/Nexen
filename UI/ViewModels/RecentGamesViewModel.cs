@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -175,10 +175,10 @@ public sealed partial class RecentGamesViewModel : ViewModelBase {
 
 			string romName = EmuApi.GetRomInfo().GetRomName();
 			for (int i = 0; i < (mode == GameScreenMode.LoadState ? 11 : 10); i++) {
-				// Try Nexen native format first, then legacy Mesen format
+				// Try Nexen native format first, then legacy interop format
 				string pathNexen = Path.Combine(ConfigManager.SaveStateFolder, romName + "_" + (i + 1) + "." + FileDialogHelper.NexenSaveStateExt);
-				string pathMesen = Path.Combine(ConfigManager.SaveStateFolder, romName + "_" + (i + 1) + "." + FileDialogHelper.MesenSaveStateExt);
-				string filePath = File.Exists(pathNexen) ? pathNexen : (File.Exists(pathMesen) ? pathMesen : pathNexen);
+				string pathLegacy = Path.Combine(ConfigManager.SaveStateFolder, romName + "_" + (i + 1) + "." + FileDialogHelper.LegacySaveStateExt);
+				string filePath = File.Exists(pathNexen) ? pathNexen : (File.Exists(pathLegacy) ? pathLegacy : pathNexen);
 				entries.Add(new RecentGameInfo() {
 					FileName = filePath,
 					StateIndex = i + 1,
@@ -355,3 +355,4 @@ public sealed partial class RecentGameInfo {
 		}
 	}
 }
+

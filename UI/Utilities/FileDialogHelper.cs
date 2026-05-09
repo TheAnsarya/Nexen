@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,10 +20,10 @@ public sealed class FileDialogHelper {
 	public const string NexenSaveStateExt = "nexen-save";
 	public const string NexenLabelExt = "nexen-labels";
 
-	// Legacy Mesen formats (for backward compatibility)
-	public const string MesenMovieExt = "mmo";
-	public const string MesenSaveStateExt = "mss";
-	public const string MesenLabelExt = "mlb";
+	// Legacy interop formats (for backward compatibility)
+	public const string LegacyMovieExt = "mmo";
+	public const string LegacySaveStateExt = "mss";
+	public const string LegacyLabelExt = "mlb";
 
 	public const string TblExt = "tbl";
 	public const string PaletteExt = "pal";
@@ -165,3 +165,4 @@ public sealed class FileDialogHelper {
 		return null;
 	}
 }
+

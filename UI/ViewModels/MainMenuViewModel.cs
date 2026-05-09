@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -915,7 +915,7 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 					ActionType = ActionType.Play,
 					IsEnabled = () => SupportsMovieTools() && !RecordApi.MovieRecording() && !RecordApi.MoviePlaying(),
 					OnClick = async () => {
-						string? filename = await FileDialogHelper.OpenFile(ConfigManager.MovieFolder, wnd, FileDialogHelper.NexenMovieExt, FileDialogHelper.MesenMovieExt);
+						string? filename = await FileDialogHelper.OpenFile(ConfigManager.MovieFolder, wnd, FileDialogHelper.NexenMovieExt, FileDialogHelper.LegacyMovieExt);
 						if(filename is not null) {
 							RecordApi.MoviePlay(filename);
 						}
@@ -1567,3 +1567,4 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 		return true;
 	}
 }
+

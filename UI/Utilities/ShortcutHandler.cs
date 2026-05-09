@@ -165,7 +165,7 @@ public sealed class ShortcutHandler {
 	}
 
 	private async void LoadStateFromFile() {
-		string? filename = await FileDialogHelper.OpenFile(ConfigManager.SaveStateFolder, _mainWindow, FileDialogHelper.NexenSaveStateExt, FileDialogHelper.MesenSaveStateExt);
+		string? filename = await FileDialogHelper.OpenFile(ConfigManager.SaveStateFolder, _mainWindow, FileDialogHelper.NexenSaveStateExt, FileDialogHelper.LegacySaveStateExt);
 		if (filename is not null) {
 			EmuApi.LoadStateFile(filename);
 		}
@@ -569,3 +569,4 @@ public sealed class ShortcutHandler {
 		}
 	}
 }
+

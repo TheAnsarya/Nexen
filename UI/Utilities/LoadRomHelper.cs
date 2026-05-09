@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -293,10 +293,10 @@ public static class LoadRomHelper {
 			} else if (ext == ".rgd") {
 				Log.Info($"[LoadRomHelper] Detected recent game data file, calling LoadRecentGame");
 				LoadRecentGame(filename, false);
-			} else if (ext is ("." + FileDialogHelper.NexenSaveStateExt) or ("." + FileDialogHelper.MesenSaveStateExt)) {
+			} else if (ext is ("." + FileDialogHelper.NexenSaveStateExt) or ("." + FileDialogHelper.LegacySaveStateExt)) {
 				Log.Info($"[LoadRomHelper] Detected save state, calling LoadStateFile");
 				EmuApi.LoadStateFile(filename);
-			} else if (EmuApi.IsRunning() && (ext == "." + FileDialogHelper.NexenMovieExt || ext == "." + FileDialogHelper.MesenMovieExt)) {
+			} else if (EmuApi.IsRunning() && (ext == "." + FileDialogHelper.NexenMovieExt || ext == "." + FileDialogHelper.LegacyMovieExt)) {
 				Log.Info($"[LoadRomHelper] Detected movie file, calling MoviePlay");
 				RecordApi.MoviePlay(filename);
 			} else if (isRomFile || isArchiveFile) {
@@ -335,3 +335,4 @@ public static class LoadRomHelper {
 	public static void PowerOff() { RunReloadShortcut(EmulatorShortcut.ExecPowerOff); }
 	public static void ReloadRom() { RunReloadShortcut(EmulatorShortcut.ExecReloadRom); }
 }
+

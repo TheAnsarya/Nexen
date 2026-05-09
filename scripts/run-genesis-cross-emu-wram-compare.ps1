@@ -1,4 +1,4 @@
-param(
+﻿param(
 	[string]$RomPath,
 	[string]$NexenExePath = ".\bin\win-x64\Release\Nexen.exe",
 	[string]$NexenRefExePath = "..\Mesen2-Expanded\bin\win-x64\Release\Mesen.exe",

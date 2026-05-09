@@ -165,7 +165,7 @@ RomTestResult RecordedRomTest::Run(const string& filename) {
 		return result;
 	}
 
-	// Try new Nexen format first, then legacy Mesen format for backward compatibility
+	// Try new Nexen format first, then legacy interop format for backward compatibility
 	VirtualFile testMovie(filename, "TestMovie.nexen-movie");
 	if (!testMovie.IsValid()) {
 		testMovie = VirtualFile(filename, "TestMovie.mmo");
@@ -300,3 +300,4 @@ void RecordedRomTest::Save() {
 
 	MessageManager::DisplayMessage("Test", "TestFileSavedTo", FolderUtilities::GetFilename(_filename, true));
 }
+

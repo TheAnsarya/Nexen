@@ -72,7 +72,7 @@ public sealed class CommandLineHelper {
 							}
 
 							string lowerPath = moviePath.ToLower();
-							if (!lowerPath.EndsWith("." + FileDialogHelper.NexenMovieExt) && !lowerPath.EndsWith("." + FileDialogHelper.MesenMovieExt)) {
+							if (!lowerPath.EndsWith("." + FileDialogHelper.NexenMovieExt) && !lowerPath.EndsWith("." + FileDialogHelper.LegacyMovieExt)) {
 								moviePath += "." + FileDialogHelper.NexenMovieExt;
 							}
 
@@ -234,3 +234,4 @@ public sealed class CommandLineHelper {
 		return sb.ToString();
 	}
 }
+

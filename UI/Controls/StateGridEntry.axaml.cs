@@ -148,7 +148,7 @@ public partial class StateGridEntry : UserControl {
 				SubTitle = game.FriendlyTimestamp;
 			} else {
 				string ext = Path.GetExtension(game.FileName);
-				if (ext is ("." + FileDialogHelper.NexenSaveStateExt) or ("." + FileDialogHelper.MesenSaveStateExt)) {
+				if (ext is ("." + FileDialogHelper.NexenSaveStateExt) or ("." + FileDialogHelper.LegacySaveStateExt)) {
 					SubTitle = new FileInfo(game.FileName).LastWriteTime.ToString();
 				} else {
 					DateTime writeTime = new FileInfo(game.FileName).LastWriteTime;
@@ -188,7 +188,7 @@ public partial class StateGridEntry : UserControl {
 				double aspectRatio = 0;
 				try {
 					string ext = Path.GetExtension(game.FileName);
-					if (ext is ("." + FileDialogHelper.NexenSaveStateExt) or ("." + FileDialogHelper.MesenSaveStateExt)) {
+					if (ext is ("." + FileDialogHelper.NexenSaveStateExt) or ("." + FileDialogHelper.LegacySaveStateExt)) {
 						// Serialize native calls — C++ video filter is not thread-safe
 						await _previewLock.WaitAsync();
 						try {
@@ -237,3 +237,4 @@ public partial class StateGridEntry : UserControl {
 		}
 	}
 }
+

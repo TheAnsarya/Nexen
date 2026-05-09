@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -886,7 +886,7 @@ public sealed partial class TasEditorViewModel : DisposableViewModel {
 			ConfigManager.MovieFolder,
 			_window,
 			FileDialogHelper.NexenMovieExt,
-			FileDialogHelper.MesenMovieExt,
+			FileDialogHelper.LegacyMovieExt,
 			"bk2", "fm2", "smv", "lsmv", "vbm", "gmv");
 
 		if (!string.IsNullOrEmpty(path)) {
@@ -4594,3 +4594,4 @@ public sealed partial class TasMarkerEntryViewModel {
 }
 
 #endregion
+

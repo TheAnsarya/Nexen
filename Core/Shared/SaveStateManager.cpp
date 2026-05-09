@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Utilities/FolderUtilities.h"
 #include "Utilities/ZipWriter.h"
 #include "Utilities/ZipReader.h"
@@ -634,8 +634,8 @@ vector<SaveStateInfo> SaveStateManager::GetSaveStateList() {
 
 			// Check if it's a save state file (.nexen-save or legacy .mss)
 			bool isNexenSave = filename.ends_with(".nexen-save");
-			bool isMesenSave = filename.ends_with(".mss");
-			if (!isNexenSave && !isMesenSave) {
+			bool isLegacySave = filename.ends_with(".mss");
+			if (!isNexenSave && !isLegacySave) {
 				continue;
 			}
 
@@ -1070,3 +1070,4 @@ void SaveStateManager::FlushPendingWrites() {
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 }
+

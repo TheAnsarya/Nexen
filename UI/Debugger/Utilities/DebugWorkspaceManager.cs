@@ -190,9 +190,9 @@ public static class DebugWorkspaceManager {
 		}
 
 		if (SymbolProvider is null && ConfigManager.Config.Debug.Integration.AutoLoadLabelFiles) {
-			// Try Nexen native format first, then legacy Mesen format
+			// Try Nexen native format first, then legacy interop format
 			string? labelsPath = GetMatchingFile(FileDialogHelper.NexenLabelExt);
-			labelsPath ??= GetMatchingFile(FileDialogHelper.MesenLabelExt);
+			labelsPath ??= GetMatchingFile(FileDialogHelper.LegacyLabelExt);
 			if (labelsPath is not null) {
 				LoadNexenLabelFile(labelsPath, false);
 			}
@@ -345,12 +345,12 @@ public static class DebugWorkspaceManager {
 	/// <param name="path">Full path to the .nexen-labels or legacy .mlb file.</param>
 	/// <param name="showResult">If <c>true</c>, displays the import result to the user.</param>
 	/// <remarks>
-	/// Supports Nexen's native binary format (.nexen-labels) and the legacy Mesen format (.mlb).
+	/// Supports Nexen's native binary format (.nexen-labels) and the legacy interop format (.mlb).
 	/// See <see cref="NexenLabelFile"/> for format details.
 	/// </remarks>
 	public static void LoadNexenLabelFile(string path, bool showResult) {
 		string ext = Path.GetExtension(path).ToLower();
-		if (File.Exists(path) && (ext == "." + FileDialogHelper.NexenLabelExt || ext == "." + FileDialogHelper.MesenLabelExt)) {
+		if (File.Exists(path) && (ext == "." + FileDialogHelper.NexenLabelExt || ext == "." + FileDialogHelper.LegacyLabelExt)) {
 			ResetLabels();
 			NexenLabelFile.Import(path, showResult);
 		}
@@ -418,7 +418,7 @@ public static class DebugWorkspaceManager {
 			case FileDialogHelper.CdbFileExt: LoadCdbFile(filename, showResult); break;
 			case FileDialogHelper.ElfFileExt: LoadElfFile(filename, showResult); break;
 			case FileDialogHelper.NexenLabelExt: LoadNexenLabelFile(filename, showResult); break;
-			case FileDialogHelper.MesenLabelExt: LoadNexenLabelFile(filename, showResult); break;
+			case FileDialogHelper.LegacyLabelExt: LoadNexenLabelFile(filename, showResult); break;
 			case FileDialogHelper.NesAsmLabelExt: LoadNesAsmLabelFile(filename, showResult); break;
 			case FileDialogHelper.CdlExt: LoadCdlFile(filename); SymbolProvider = symbolProvider; break;
 		}
@@ -649,3 +649,4 @@ public sealed class DebugWorkspace {
 		LabelManager.RefreshLabels(true);
 	}
 }
+

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -1174,7 +1174,7 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 				new ContextMenuAction() {
 					ActionType = ActionType.ImportLegacyMlb,
 					OnClick = async () => {
-						string? filename = await FileDialogHelper.OpenFile(null, wnd, FileDialogHelper.MesenLabelExt);
+						string? filename = await FileDialogHelper.OpenFile(null, wnd, FileDialogHelper.LegacyLabelExt);
 						if (filename is not null) {
 							NexenLabelFile.ImportLegacyMlb(filename, true);
 						}
@@ -1183,8 +1183,8 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 				new ContextMenuAction() {
 					ActionType = ActionType.ExportLegacyMlb,
 					OnClick = async () => {
-						string initFilename = EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.MesenLabelExt;
-						string? filename = await FileDialogHelper.SaveFile(null, initFilename, wnd, FileDialogHelper.MesenLabelExt);
+						string initFilename = EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.LegacyLabelExt;
+						string? filename = await FileDialogHelper.SaveFile(null, initFilename, wnd, FileDialogHelper.LegacyLabelExt);
 						if (filename is not null) {
 							NexenLabelFile.ExportLegacyMlb(filename);
 						}
@@ -1348,3 +1348,4 @@ public sealed partial class DebuggerWindowViewModel : DisposableViewModel {
 		}
 	}
 }
+
