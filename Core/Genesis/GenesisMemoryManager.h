@@ -236,6 +236,9 @@ public:
 	// VDP access
 	uint16_t ReadVdpPort(uint32_t addr);
 	void WriteVdpPort(uint32_t addr, uint16_t value);
+	void TraceVdpStartupEvent(const char* tag, uint16_t value, uint16_t auxValue = 0) {
+		TraceStartupEvent(tag, 0xC00000, value, auxValue);
+	}
 
 	// I/O access
 	uint8_t ReadIo(uint32_t addr);

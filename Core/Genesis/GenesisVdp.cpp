@@ -642,6 +642,23 @@ void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const ui
 	bool shadowHighlight = (_state.Registers[12] & 0x08u) != 0;
 
 	enum : uint8_t { Shade_Shadow = 0, Shade_Normal = 1, Shade_Highlight = 2 };
+	enum : uint8_t {
+		Winner_Backdrop = 0,
+		Winner_HiWindow = 1,
+		Winner_HiSprite = 2,
+		Winner_HiPlaneA = 3,
+		Winner_HiPlaneB = 4,
+		Winner_LoWindow = 5,
+		Winner_LoSprite = 6,
+		Winner_LoPlaneA = 7,
+		Winner_LoPlaneB = 8
+	};
+
+	uint16_t nonBackdropCount = 0;
+	uint16_t shadowCount = 0;
+	uint16_t highlightCount = 0;
+	uint16_t operatorSpriteCount = 0;
+	uint16_t winnerDigest = 0;
 
 	for (uint16_t x = 0; x < pixels; x++) {
 		uint8_t pB = planeB[x];
@@ -683,25 +700,56 @@ void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const ui
 		}
 
 		uint8_t cramIdx = bgIdx;
+		bool backdrop = true;
+		uint8_t winner = Winner_Backdrop;
 		if (winHi && winVis) {
 			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
+			backdrop = false;
+			winner = Winner_HiWindow;
 		} else if (sprHi && sprVis && !sprIsOperator) {
 			cramIdx = (uint8_t)((((pS >> 4) & 3u) * 16u) + (pS & 0x0Fu));
+			backdrop = false;
+			winner = Winner_HiSprite;
 		} else if (pAHi && pAVis) {
 			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
+			backdrop = false;
+			winner = Winner_HiPlaneA;
 		} else if (pBHi && pBVis) {
 			cramIdx = (uint8_t)((((pB >> 4) & 3u) * 16u) + (pB & 0x0Fu));
+			backdrop = false;
+			winner = Winner_HiPlaneB;
 		} else if (!winHi && winVis) {
 			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
+			backdrop = false;
+			winner = Winner_LoWindow;
 		} else if (!sprHi && sprVis && !sprIsOperator) {
 			cramIdx = (uint8_t)((((pS >> 4) & 3u) * 16u) + (pS & 0x0Fu));
+			backdrop = false;
+			winner = Winner_LoSprite;
 		} else if (!pAHi && pAVis) {
 			cramIdx = (uint8_t)((((pA >> 4) & 3u) * 16u) + (pA & 0x0Fu));
+			backdrop = false;
+			winner = Winner_LoPlaneA;
 		} else if (!pBHi && pBVis) {
 			cramIdx = (uint8_t)((((pB >> 4) & 3u) * 16u) + (pB & 0x0Fu));
+			backdrop = false;
+			winner = Winner_LoPlaneB;
 		}
 
 		cramIdx &= 0x3Fu;
+		if (!backdrop) {
+			nonBackdropCount++;
+		}
+		if (sprIsOperator) {
+			operatorSpriteCount++;
+		}
+		if (shade == Shade_Shadow) {
+			shadowCount++;
+		} else if (shade == Shade_Highlight) {
+			highlightCount++;
+		}
+		winnerDigest = (uint16_t)((winnerDigest * 131u) ^ (uint16_t)((winner << 2) | (shade & 0x03u)));
+
 		if (shadowHighlight) {
 			if (shade == Shade_Shadow) {
 				lineBuffer[x] = _shadowPalette[cramIdx];
@@ -713,6 +761,14 @@ void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const ui
 		} else {
 			lineBuffer[x] = _palette[cramIdx];
 		}
+	}
+
+	if (_memoryManager != nullptr && _state.FrameCount <= 160u && (_scanline % 16u) == 0u) {
+		uint16_t packedCounts = (uint16_t)((nonBackdropCount & 0x01FFu) | ((shadowCount & 0x003Fu) << 9));
+		uint16_t packedAux = (uint16_t)(((_scanline & 0x00FFu) << 8) | (highlightCount & 0x00FFu));
+		_memoryManager->TraceVdpStartupEvent("VDP_COMP", packedCounts, packedAux);
+		uint16_t digestAux = (uint16_t)(((operatorSpriteCount & 0x00FFu) << 8) | (shadowHighlight ? 1u : 0u));
+		_memoryManager->TraceVdpStartupEvent("VDP_SHAD", winnerDigest, digestAux);
 	}
 }
 
