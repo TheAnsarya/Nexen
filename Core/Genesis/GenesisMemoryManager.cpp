@@ -473,6 +473,11 @@ namespace {
 		return std::strcmp(tag, literal) == 0;
 	}
 
+	static bool StartupTagStartsWith(const char* tag, const char* prefix) {
+		size_t prefixLen = std::strlen(prefix);
+		return std::strncmp(tag, prefix, prefixLen) == 0;
+	}
+
 	static bool ShouldEmitMesenProfileStartupTag(const char* tag) {
 		return StartupTagEquals(tag, "STARTUP_BOOT")
 			|| StartupTagEquals(tag, "STARTUP_CHECKPOINT")
@@ -716,6 +721,8 @@ void GenesisMemoryManager::ApplyStartupEnvironmentProfile() {
 	_startupHasLastVdpRegs = false;
 	memset(_startupLastVdpRegs, 0, sizeof(_startupLastVdpRegs));
 	_startupLastVdpStatus = 0;
+	_startupHasMesenClockAnchor = false;
+	_startupMesenClockAnchor = 0;
 	_startupProfilePreferMesenBusHandoff = sNexenGenesisPreferMesenBusHandoff;
 	_z80BusReqAckDelayMclkSetting = sNexenGenesisZ80BusReqAckDelayMclk;
 	_z80BusResumeDelayMclkSetting = sNexenGenesisZ80BusResumeDelayMclk;
@@ -849,17 +856,21 @@ void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) 
 	startupFlags |= _startupProfilePreferMesenBusHandoff ? 0x0080 : 0x0000;
 
 	uint16_t paletteDigest = ComputeStartupPaletteDigest(_vdp->GetCramPointer());
+	uint16_t startupPalAux = (uint16_t)(state.Registers[VdpReg::ModeSet2]);
+	if (_startupProfilePreferMesenBusHandoff) {
+		startupPalAux &= 0x000Fu;
+	}
 	uint16_t startupVdpAux = (uint16_t)(state.Registers[VdpReg::ModeSet1] | ((uint16_t)state.Registers[VdpReg::ModeSet2] << 8));
 	uint16_t startupValue = (uint16_t)(((frame & 0x3FFu) << 6) | (state.VCounter & 0x003Fu));
 	if (_startupProfilePreferMesenBusHandoff) {
-		TraceStartupEvent("STARTUP_PAL", 0xC00000, paletteDigest, (uint16_t)(state.Registers[VdpReg::ModeSet2]));
+		TraceStartupEvent("STARTUP_PAL", 0xC00000, paletteDigest, startupPalAux);
 		TraceStartupEvent("STARTUP_VDP", 0xC00004, state.StatusRegister, startupVdpAux);
 		TraceStartupEvent("STARTUP_CHECKPOINT", 0xC00004, startupValue, startupFlags);
 		TraceStartupEvent("STARTUP_Z80", 0xA11100, _z80BusReqDelayMclk, _z80ResumeDelayMclk);
 	} else {
 		TraceStartupEvent("STARTUP_CHECKPOINT", 0xC00004, startupValue, startupFlags);
 		TraceStartupEvent("STARTUP_Z80", 0xA11100, _z80BusReqDelayMclk, _z80ResumeDelayMclk);
-		TraceStartupEvent("STARTUP_PAL", 0xC00000, paletteDigest, (uint16_t)(state.Registers[VdpReg::ModeSet2]));
+		TraceStartupEvent("STARTUP_PAL", 0xC00000, paletteDigest, startupPalAux);
 		TraceStartupEvent("STARTUP_VDP", 0xC00004, state.StatusRegister, startupVdpAux);
 	}
 
@@ -969,8 +980,24 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 		}
 	}
 
-	GenesisVdpState vdpState = _vdp->GetState();
 	uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0x000000;
+	uint64_t traceClock = _masterClock;
+	bool isStartupTag = StartupTagStartsWith(tag, "STARTUP_");
+	if (_startupProfilePreferMesenBusHandoff && isStartupTag) {
+		uint32_t heartbeatPc = _ioState.CpuProgramCounterHeartbeat & 0x00ffffffu;
+		if (heartbeatPc != 0u) {
+			pc = heartbeatPc;
+		}
+
+		if (!_startupHasMesenClockAnchor) {
+			_startupHasMesenClockAnchor = true;
+			_startupMesenClockAnchor = _masterClock;
+		}
+
+		traceClock = (_masterClock >= _startupMesenClockAnchor)
+			? (_masterClock - _startupMesenClockAnchor)
+			: 0;
+	}
 	for (const uint8_t* p = (const uint8_t*)tag; *p; p++) {
 		_startupTraceDigest ^= *p;
 		_startupTraceDigest *= 1099511628211ull;
@@ -983,7 +1010,7 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 	_startupTraceDigest *= 1099511628211ull;
 
 	uint16_t line = _vdp->GetScanline();
-	LogNexenStartupTrace(frame, line, tag, addr, value, auxValue, pc, _masterClock);
+	LogNexenStartupTrace(frame, line, tag, addr, value, auxValue, pc, traceClock);
 	_startupTraceSequence++;
 }
 
@@ -3737,6 +3764,8 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_startupWindowFrames);
 	SV(_startupTraceSequence);
 	SV(_startupTraceDigest);
+	SV(_startupHasMesenClockAnchor);
+	SV(_startupMesenClockAnchor);
 	SV(_startupCheckpointIntervalFrames);
 	SV(_startupCheckpointEndFrame);
 	SV(_startupNextCheckpointFrame);
@@ -3882,6 +3911,8 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_tmssCartRegister = 0;
 	_startupTraceSequence = 0;
 	_startupTraceDigest = 1469598103934665603ull;
+	_startupHasMesenClockAnchor = false;
+	_startupMesenClockAnchor = 0;
 	_startupDisplayTransitionCount = 0;
 	_startupNextCheckpointFrame = 0;
 	_startupHasLastDisplayState = false;

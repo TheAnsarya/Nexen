@@ -81,6 +81,8 @@ private:
 	uint32_t _startupWindowFrames = 8;
 	uint32_t _startupTraceSequence = 0;
 	uint64_t _startupTraceDigest = 0;
+	bool _startupHasMesenClockAnchor = false;
+	uint64_t _startupMesenClockAnchor = 0;
 	uint32_t _startupCheckpointIntervalFrames = 1;
 	uint32_t _startupCheckpointEndFrame = 600;
 	uint32_t _startupNextCheckpointFrame = 0;
