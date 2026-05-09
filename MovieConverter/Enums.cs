@@ -10,8 +10,12 @@ public enum MovieFormat {
 	/// <summary>Nexen native format (.nexen-movie) - ZIP-based, human-readable</summary>
 	Nexen,
 
-	/// <summary>Mesen/Mesen2 format (.mmm/.mmo)</summary>
-	Mesen,
+	/// <summary>Legacy interop format (.mmm/.mmo)</summary>
+	LegacyMmoMmm,
+
+	/// <summary>Obsolete alias for LegacyMmoMmm.</summary>
+	[System.Obsolete("Use LegacyMmoMmm instead.")]
+	Mesen = LegacyMmoMmm,
 
 	/// <summary>Snes9x format (.smv)</summary>
 	Smv,
@@ -34,8 +38,12 @@ public enum MovieFormat {
 	/// <summary>Mednafen format (.mcm)</summary>
 	Mcm,
 
-	/// <summary>Mesen-S format (.msm) - SNES</summary>
-	MesenS,
+	/// <summary>Legacy SNES interop format (.msm)</summary>
+	LegacyMsm,
+
+	/// <summary>Obsolete alias for LegacyMsm.</summary>
+	[System.Obsolete("Use LegacyMsm instead.")]
+	MesenS = LegacyMsm,
 
 	/// <summary>BSNES format (.bsv)</summary>
 	Bsv,

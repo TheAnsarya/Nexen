@@ -340,7 +340,7 @@ public static class DebugWorkspaceManager {
 	}
 
 	/// <summary>
-	/// Loads labels from a Nexen/Mesen native label file.
+	/// Loads labels from a Nexen/legacy native label file.
 	/// </summary>
 	/// <param name="path">Full path to the .nexen-labels or legacy .mlb file.</param>
 	/// <param name="showResult">If <c>true</c>, displays the import result to the user.</param>

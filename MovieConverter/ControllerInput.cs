@@ -225,7 +225,7 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 	}
 
 	/// <summary>
-	/// Convert to Nexen/Mesen text format: BYsSUDLRAXLRcZM
+	/// Convert to Nexen/legacy interop text format: BYsSUDLRAXLRcZM
 	/// </summary>
 	/// <returns>15-character string representing button states</returns>
 	public string ToNexenFormat() {
@@ -253,7 +253,7 @@ public sealed class ControllerInput : IEquatable<ControllerInput> {
 	}
 
 	/// <summary>
-	/// Parse from Nexen/Mesen text format.
+	/// Parse from Nexen/legacy interop text format.
 	/// Supports both 12-char legacy (BYsSUDLRAXLR) and 15-char extended (BYsSUDLRAXLRcZM) formats.
 	/// </summary>
 	/// <param name="input">12 or 15-character input string</param>

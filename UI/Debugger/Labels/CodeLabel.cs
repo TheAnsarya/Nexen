@@ -109,7 +109,7 @@ public sealed partial class CodeLabel {
 	/// <returns>A <see cref="CodeLabel"/> if parsing succeeds; otherwise, <c>null</c>.</returns>
 	/// <remarks>
 	/// Expected format: "MemoryType:Address[-EndAddress]:Label[:Comment]"
-	/// Supports legacy memory type names for Mesen v1/Mesen-S compatibility.
+	/// Supports legacy memory type names for legacy v1/v2 compatibility.
 	/// </remarks>
 	public static CodeLabel? FromString(string data) {
 		string[] rowData = data.Split(_separator, 4);
@@ -275,7 +275,7 @@ public sealed partial class CodeLabel {
 	}
 
 	/// <summary>
-	/// Translates legacy memory type names from Mesen v1 and Mesen-S to current enum values.
+	/// Translates legacy memory type names from legacy v1/v2 formats to current enum values.
 	/// </summary>
 	/// <param name="name">The legacy memory type name.</param>
 	/// <param name="type">The translated <see cref="MemoryType"/> if successful.</param>

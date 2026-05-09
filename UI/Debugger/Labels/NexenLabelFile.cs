@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -21,13 +21,13 @@ namespace Nexen.Debugger.Labels;
 /// <list type="bullet">
 ///   <item><description><b>.nexen-labels</b> — New binary format with metadata, CRC32 integrity,
 ///     and full CodeLabelFlags preservation. This is the native format.</description></item>
-///   <item><description><b>.mlb</b> — Legacy Mesen text format (MemoryType:Address:Label:Comment).
+///   <item><description><b>.mlb</b> — Legacy interop text format (MemoryType:Address:Label:Comment).
 ///     Kept for backward compatibility import. Does NOT preserve CodeLabelFlags.</description></item>
 /// </list>
 /// </para>
 /// <para>
 /// Export always writes the binary .nexen-labels format. Use <see cref="ExportLegacyMlb"/>
-/// for explicit MLB export (interop with other Mesen-based emulators).
+/// for explicit MLB export (interop with other MLB-compatible emulators).
 /// </para>
 /// </remarks>
 public sealed class NexenLabelFile {
@@ -114,7 +114,7 @@ public sealed class NexenLabelFile {
 	/// <param name="path">Path to write the .mlb file to.</param>
 	/// <remarks>
 	/// <para>
-	/// This is for interop with other Mesen-based emulators. The MLB format does NOT
+	/// This is for interop with other MLB-compatible emulators. The MLB format does NOT
 	/// preserve <see cref="CodeLabelFlags"/>. For normal use, prefer <see cref="Export"/>.
 	/// </para>
 	/// <para>
