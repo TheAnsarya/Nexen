@@ -11,6 +11,7 @@
 	[int]$AutoStopTimeoutSeconds = 45,
 	[int]$FrameStart = 0,
 	[int]$FrameEnd = 600,
+	[int]$SnapshotFrame = 180,
 	[string]$AddressStart = "0xE00000",
 	[string]$AddressEnd = "0xFFFFFF",
 	[int]$MaxLines = 1200000,
@@ -424,6 +425,75 @@ function Get-StartupMetrics {
 	return $metrics
 }
 
+function Get-NormalizedStartupLines {
+	param(
+		[string[]]$Lines
+	)
+
+	if ($null -eq $Lines -or $Lines.Count -eq 0) {
+		return @()
+	}
+
+	$noiseTokens = @(" VDP_CTRL_R ", " VDP_CTRL_W ", " VDP_DATA_R ", " VDP_DATA_W ", " VDP_HV_R ")
+	return @($Lines | Where-Object {
+		$line = $_
+		if ([string]::IsNullOrWhiteSpace($line)) {
+			return $false
+		}
+
+		foreach ($token in $noiseTokens) {
+			if ($line.Contains($token)) {
+				return $false
+			}
+		}
+
+		return $true
+	})
+}
+
+function Get-StartupFrameSnapshot {
+	param(
+		[string[]]$Lines,
+		[int]$Frame
+	)
+
+	$result = [ordered]@{}
+	$result["STARTUP_PAL"] = "<missing>"
+	$result["STARTUP_VDP"] = "<missing>"
+	$result["VDP_REG_W"] = "<missing>"
+	$result["VDP_STAT_W"] = "<missing>"
+
+	if ($null -eq $Lines -or $Lines.Count -eq 0) {
+		return $result
+	}
+
+	$framePrefix = "F{0:d4} " -f $Frame
+	foreach ($line in $Lines) {
+		if (-not $line.StartsWith($framePrefix)) {
+			continue
+		}
+
+		if ($result["STARTUP_PAL"] -eq "<missing>" -and $line.Contains(" STARTUP_PAL ")) {
+			$result["STARTUP_PAL"] = $line
+			continue
+		}
+		if ($result["STARTUP_VDP"] -eq "<missing>" -and $line.Contains(" STARTUP_VDP ")) {
+			$result["STARTUP_VDP"] = $line
+			continue
+		}
+		if ($result["VDP_REG_W"] -eq "<missing>" -and $line.Contains(" VDP_REG_W ")) {
+			$result["VDP_REG_W"] = $line
+			continue
+		}
+		if ($result["VDP_STAT_W"] -eq "<missing>" -and $line.Contains(" VDP_STAT_W ")) {
+			$result["VDP_STAT_W"] = $line
+			continue
+		}
+	}
+
+	return $result
+}
+
 $romCandidates = @()
 if (-not [string]::IsNullOrWhiteSpace($RomPath)) {
 	$romCandidates += $RomPath
@@ -695,6 +765,11 @@ $mesenStartupZ80BusReqEventCount = 0
 $nexenStartupZ80BusReqEventCount = 0
 $mesenStartupZ80ResetEventCount = 0
 $nexenStartupZ80ResetEventCount = 0
+$mesenStartupNormalizedLines = @()
+$nexenStartupNormalizedLines = @()
+$startupNormalizedFirstDiff = -1
+$mesenFrameSnapshot = [ordered]@{}
+$nexenFrameSnapshot = [ordered]@{}
 
 if ($null -ne $mesenTracePath) {
 	$mesenLines = Get-TraceLines -Path $mesenTracePath
@@ -722,8 +797,13 @@ if ($mesenLines.Count -gt 0 -or $nexenLines.Count -gt 0) {
 
 if ($mesenStartupLines.Count -gt 0 -or $nexenStartupLines.Count -gt 0) {
 	$startupFirstDiff = Find-FirstDifference -Left $mesenStartupLines -Right $nexenStartupLines
+	$mesenStartupNormalizedLines = Get-NormalizedStartupLines -Lines $mesenStartupLines
+	$nexenStartupNormalizedLines = Get-NormalizedStartupLines -Lines $nexenStartupLines
+	$startupNormalizedFirstDiff = Find-FirstDifference -Left $mesenStartupNormalizedLines -Right $nexenStartupNormalizedLines
 	$mesenStartupMetrics = Get-StartupMetrics -Lines $mesenStartupLines
 	$nexenStartupMetrics = Get-StartupMetrics -Lines $nexenStartupLines
+	$mesenFrameSnapshot = Get-StartupFrameSnapshot -Lines $mesenStartupLines -Frame $SnapshotFrame
+	$nexenFrameSnapshot = Get-StartupFrameSnapshot -Lines $nexenStartupLines -Frame $SnapshotFrame
 
 	$mesenStartupCheckpointCount = $mesenStartupMetrics.startupCheckpointCount
 	$nexenStartupCheckpointCount = $nexenStartupMetrics.startupCheckpointCount
@@ -768,6 +848,9 @@ $report.Add("mesenLines=$($mesenLines.Count)")
 $report.Add("nexenLines=$($nexenLines.Count)")
 $report.Add("mesenStartupLines=$($mesenStartupLines.Count)")
 $report.Add("nexenStartupLines=$($nexenStartupLines.Count)")
+$report.Add("snapshotFrame=$SnapshotFrame")
+$report.Add("mesenStartupNormalizedLines=$($mesenStartupNormalizedLines.Count)")
+$report.Add("nexenStartupNormalizedLines=$($nexenStartupNormalizedLines.Count)")
 $report.Add("mesenStartupCheckpointCount=$mesenStartupCheckpointCount")
 $report.Add("nexenStartupCheckpointCount=$nexenStartupCheckpointCount")
 $report.Add("mesenStartupDisplayTransitionCount=$mesenStartupDisplayTransitionCount")
@@ -816,6 +899,7 @@ if ($mesenAttemptNotes.Count -gt 0) {
 }
 $report.Add("firstDiffIndex=$firstDiff")
 $report.Add("startupFirstDiffIndex=$startupFirstDiff")
+$report.Add("startupNormalizedFirstDiffIndex=$startupNormalizedFirstDiff")
 
 if ($firstDiff -ge 0) {
 	$mesenFirst = if ($firstDiff -lt $mesenLines.Count) { $mesenLines[$firstDiff] } else { "<no-line>" }
@@ -832,6 +916,22 @@ if ($startupFirstDiff -ge 0) {
 	$report.Add("mesenStartupFirstDiff=$mesenStartupFirst")
 	$report.Add("nexenStartupFirstDiff=$nexenStartupFirst")
 }
+
+if ($startupNormalizedFirstDiff -ge 0) {
+	$mesenStartupNormalizedFirst = if ($startupNormalizedFirstDiff -lt $mesenStartupNormalizedLines.Count) { $mesenStartupNormalizedLines[$startupNormalizedFirstDiff] } else { "<no-line>" }
+	$nexenStartupNormalizedFirst = if ($startupNormalizedFirstDiff -lt $nexenStartupNormalizedLines.Count) { $nexenStartupNormalizedLines[$startupNormalizedFirstDiff] } else { "<no-line>" }
+	$report.Add("mesenStartupNormalizedFirstDiff=$mesenStartupNormalizedFirst")
+	$report.Add("nexenStartupNormalizedFirstDiff=$nexenStartupNormalizedFirst")
+}
+
+$report.Add("mesenSnapshot_STARTUP_PAL=$($mesenFrameSnapshot.STARTUP_PAL)")
+$report.Add("nexenSnapshot_STARTUP_PAL=$($nexenFrameSnapshot.STARTUP_PAL)")
+$report.Add("mesenSnapshot_STARTUP_VDP=$($mesenFrameSnapshot.STARTUP_VDP)")
+$report.Add("nexenSnapshot_STARTUP_VDP=$($nexenFrameSnapshot.STARTUP_VDP)")
+$report.Add("mesenSnapshot_VDP_REG_W=$($mesenFrameSnapshot.VDP_REG_W)")
+$report.Add("nexenSnapshot_VDP_REG_W=$($nexenFrameSnapshot.VDP_REG_W)")
+$report.Add("mesenSnapshot_VDP_STAT_W=$($mesenFrameSnapshot.VDP_STAT_W)")
+$report.Add("nexenSnapshot_VDP_STAT_W=$($nexenFrameSnapshot.VDP_STAT_W)")
 
 $report | Out-File -LiteralPath $resolvedReportPath -Encoding utf8
 
