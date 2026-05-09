@@ -321,6 +321,8 @@ namespace {
 				(unsigned)sNexenWramTraceAddrStart,
 				(unsigned)sNexenWramTraceAddrEnd,
 				sNexenWramTraceMaxLines);
+			fprintf(sNexenWramTraceFile, "F0000 L000 WRAM_BOOT addr=000000 data=00 pc=000000 mclk=0\n");
+			sNexenWramTraceLines++;
 			fflush(sNexenWramTraceFile);
 		}
 	}
@@ -393,22 +395,20 @@ namespace {
 		return frame <= sNexenStartupTraceFrameEnd;
 	}
 
-	static void LogNexenStartupTrace(uint32_t frame, uint16_t line, uint32_t sequence, const char* tag, uint32_t address, uint16_t value, uint16_t auxValue, uint32_t pc, uint64_t mclk, uint64_t digest) {
+	static void LogNexenStartupTrace(uint32_t frame, uint16_t line, const char* tag, uint32_t address, uint16_t value, uint16_t auxValue, uint32_t pc, uint64_t mclk) {
 		if (!sNexenStartupTraceFile) {
 			return;
 		}
 
-		fprintf(sNexenStartupTraceFile, "F%04u L%03u S%06u %s addr=%06X val=%04X aux=%04X pc=%06X mclk=%llu digest=%016llx\n",
+		fprintf(sNexenStartupTraceFile, "F%04u L%03u %s addr=%06X data=%04X aux=%u pc=%06X mclk=%llu\n",
 			(unsigned)frame,
 			(unsigned)line,
-			(unsigned)sequence,
 			tag,
 			(unsigned)(address & 0x00FFFFFFu),
 			(unsigned)value,
 			(unsigned)auxValue,
 			(unsigned)(pc & 0x00FFFFFFu),
-			(unsigned long long)mclk,
-			(unsigned long long)digest);
+			(unsigned long long)mclk);
 		sNexenStartupTraceLines++;
 		// Flush every line so traces survive force-stop smoke runs.
 		fflush(sNexenStartupTraceFile);
@@ -645,6 +645,11 @@ void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) 
 	}
 
 	uint32_t frame = _vdp->GetFrameCount();
+	if (frame == 0u && _startupNextCheckpointFrame == 0u) {
+		_startupNextCheckpointFrame = 1u;
+		return;
+	}
+
 	if (frame > _startupCheckpointEndFrame || frame < _startupNextCheckpointFrame) {
 		return;
 	}
@@ -666,7 +671,7 @@ void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) 
 	startupFlags |= _startupProfilePreferMesenBusHandoff ? 0x0080 : 0x0000;
 
 	uint16_t startupValue = (uint16_t)(((frame & 0x3FFu) << 6) | (state.VCounter & 0x003Fu));
-	TraceStartupEvent("STARTUP_CP", 0xC00004, startupValue, startupFlags);
+	TraceStartupEvent("STARTUP_CHECKPOINT", 0xC00004, startupValue, startupFlags);
 	TraceStartupEvent("STARTUP_Z80", 0xA11100, _z80BusReqDelayMclk, _z80ResumeDelayMclk);
 	uint16_t paletteDigest = ComputeStartupPaletteDigest(_vdp->GetCramPointer());
 	TraceStartupEvent("STARTUP_PAL", 0xC00000, paletteDigest, (uint16_t)(state.Registers[VdpReg::ModeSet2]));
@@ -780,7 +785,8 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 	_startupTraceDigest ^= auxValue;
 	_startupTraceDigest *= 1099511628211ull;
 
-	LogNexenStartupTrace(frame, vdpState.VCounter, _startupTraceSequence++, tag, addr, value, auxValue, pc, _masterClock, _startupTraceDigest);
+	LogNexenStartupTrace(frame, vdpState.VCounter, tag, addr, value, auxValue, pc, _masterClock);
+	_startupTraceSequence++;
 }
 
 void GenesisMemoryManager::EvaluateTmssUnlockState(bool allowLog, uint32_t addr, uint32_t value, bool isWrite) {

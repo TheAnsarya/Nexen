@@ -1,54 +1,72 @@
-﻿GENESIS_CROSS_EMU_WRAM_TRACE_COMPARE
+GENESIS_CROSS_EMU_WRAM_TRACE_COMPARE
 rom=C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md
 frameStart=0
 frameEnd=600
 autoStopTimeoutSeconds=45
 maxLines=1200000
-mesenTrace=
-nexenTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260507-210755.log
-mesenStartupTrace=
-nexenStartupTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260507-210755.log
-mesenTraceSourceKind=missing
+mesenTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-cpu-ram-trace-20260509-074639.log
+nexenTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260509-074639.log
+mesenStartupTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-startup-trace-20260509-074639.log
+nexenStartupTrace=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260509-074639.log
+mesenTraceSourceKind=direct-candidate-copy
 nexenTraceSourceKind=direct-candidate
-mesenStartupTraceSourceKind=missing
+mesenStartupTraceSourceKind=direct-candidate
 nexenStartupTraceSourceKind=direct-candidate
-mesenTraceSourcePath=
-nexenTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260507-210755.log
-mesenStartupTraceSourcePath=
-nexenStartupTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260507-210755.log
-mesenLines=0
-nexenLines=257366
-mesenStartupLines=0
-nexenStartupLines=33817
-mesenHash=missing
-nexenHash=52d5282e79015f68cdf1563b7bc962e4edb206c2e63b7b56a173e7347684146d
-mesenStartupHash=missing
-nexenStartupHash=0cc3a9b6e5166c981214ab140e7929c9bea889d4e480e5a832db412d69052249
+mesenTraceSourcePath=C:\Users\me\Documents\Mesen2\reference\cpu_ram_trace.log
+nexenTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260509-074639.log
+mesenStartupTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-startup-trace-20260509-074639.log
+nexenStartupTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260509-074639.log
+mesenLines=164611
+nexenLines=257383
+mesenStartupLines=6276
+nexenStartupLines=41955
+mesenStartupCheckpointCount=414
+nexenStartupCheckpointCount=600
+mesenStartupDisplayTransitionCount=1
+nexenStartupDisplayTransitionCount=1
+mesenStartupPaletteCheckpointCount=828
+nexenStartupPaletteCheckpointCount=1200
+mesenStartupVdpSnapshotCount=828
+nexenStartupVdpSnapshotCount=1200
+mesenStartupVdpRegisterWriteCount=2261
+nexenStartupVdpRegisterWriteCount=9166
+mesenStartupTmssUnlockCount=0
+nexenStartupTmssUnlockCount=0
+mesenStartupZ80RuntimeToggleCount=857
+nexenStartupZ80RuntimeToggleCount=1683
+mesenStartupZ80BusReqEventCount=858
+nexenStartupZ80BusReqEventCount=1678
+mesenStartupZ80ResetEventCount=417
+nexenStartupZ80ResetEventCount=607
+mesenHash=c692b2e74e740d5dfebf892876039fa69a96c8f301d76142d8660e7c2575d235
+nexenHash=13626e2ecd0ce164e0c5a10e21f1af72d15bd17022df83466387ba3f412c15e8
+mesenStartupHash=d4858409241313a2d672e94396901f7e13f4ed78f93e13b381f624335eaa3cc8
+nexenStartupHash=f8233769ebe8664c24ec4235812a62db0b9e6f2ce5d484f5325e40b7f13266e6
 mesenFrontendMissing=False
 mesenRunSkipped=False
-mesenTraceMissing=True
+mesenTraceMissing=False
 nexenTraceMissing=False
-mesenStartupTraceMissing=True
+mesenStartupTraceMissing=False
 nexenStartupTraceMissing=False
-mesenTimedOut=True
-nexenTimedOut=True
-mesenExitCode=
-nexenExitCode=
+mesenTimedOut=False
+nexenTimedOut=False
+mesenExitCode=-1
+nexenExitCode=-3
 mesenLaunchTarget=C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\Mesen.exe
-mesenLaunchArgs="C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md"
+mesenLaunchArgs=--testRunner --timeout=35 "C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md"
 nexenLaunchTarget=C:\Users\me\source\repos\Nexen\bin\win-x64\Release\Nexen.exe
-nexenLaunchArgs="C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md"
-mesenStartupTraceEnvSupported=False
+nexenLaunchArgs=--testRunner --timeout=35 "C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md"
+mesenStartupTraceEnvSupported=True
 mesenSearchRoots=C:\Users\me\source\repos\Mesen2-Expanded;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug;C:\Users\me\Documents\Mesen2
 nexenSearchRoots=C:\Users\me\source\repos\Nexen;C:\Users\me\source\repos\Nexen\bin\win-x64\Release
-mesenTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-cpu-ram-trace-20260507-210755.log;C:\Users\me\source\repos\Mesen2-Expanded\reference\cpu_ram_trace.log;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\reference\cpu_ram_trace.log;C:\Users\me\Documents\Mesen2\reference\cpu_ram_trace.log
-mesenStartupTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-startup-trace-20260507-210755.log;C:\Users\me\source\repos\Mesen2-Expanded\reference\genesis_startup_trace.log;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\reference\genesis_startup_trace.log;C:\Users\me\Documents\Mesen2\reference\genesis_startup_trace.log
-nexenTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260507-210755.log;C:\Users\me\source\repos\Nexen\reference\cpu_ram_trace.log;C:\Users\me\source\repos\Nexen\bin\win-x64\Release\reference\cpu_ram_trace.log
-nexenStartupTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260507-210755.log;C:\Users\me\source\repos\Nexen\reference\genesis_startup_trace.log;C:\Users\me\source\repos\Nexen\bin\win-x64\Release\reference\genesis_startup_trace.log
-mesenAttempts=attempt[0]=configured-args;trace=;startup=;exit=-532462766;timeout=False | attempt[1]=rom-only;trace=;startup=;exit=;timeout=True
-firstDiffIndex=0
-startupFirstDiffIndex=0
-mesenFirstDiff=<no-line>
+mesenTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-cpu-ram-trace-20260509-074639.log;C:\Users\me\source\repos\Mesen2-Expanded\reference\cpu_ram_trace.log;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\reference\cpu_ram_trace.log;C:\Users\me\Documents\Mesen2\reference\cpu_ram_trace.log
+mesenStartupTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-startup-trace-20260509-074639.log;C:\Users\me\source\repos\Mesen2-Expanded\reference\genesis_startup_trace.log;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\reference\genesis_startup_trace.log;C:\Users\me\Documents\Mesen2\reference\genesis_startup_trace.log
+nexenTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260509-074639.log;C:\Users\me\source\repos\Nexen\reference\cpu_ram_trace.log;C:\Users\me\source\repos\Nexen\bin\win-x64\Release\reference\cpu_ram_trace.log
+nexenStartupTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260509-074639.log;C:\Users\me\source\repos\Nexen\reference\genesis_startup_trace.log;C:\Users\me\source\repos\Nexen\bin\win-x64\Release\reference\genesis_startup_trace.log
+mesenAttempts=attempt[0]=configured-args;trace=C:\Users\me\Documents\Mesen2\reference\cpu_ram_trace.log;startup=C:\Users\me\source\repos\Nexen\reference\trace-captures\mesen-startup-trace-20260509-074639.log;exit=-1;timeout=False
+firstDiffIndex=1
+startupFirstDiffIndex=1
+mesenFirstDiff=F0001 L006 WRAM addr=FFFFFC data=00 pc=000264 mclk=23940
 nexenFirstDiff=F0000 L005 WRAM addr=FFFFFC data=00 pc=000264 mclk=2902
-mesenStartupFirstDiff=<no-line>
-nexenStartupFirstDiff=F0000 L000 S000000 MMU_INIT addr=000000 val=0000 aux=0000 pc=FFFFFF mclk=0 digest=1f3bbbbdd1637e30
+mesenStartupFirstDiff=F0001 L000 STARTUP_PAL addr=C00000 data=8D07 aux=4 pc=000206 mclk=0
+nexenStartupFirstDiff=F0000 L000 VDP_CTRL_R addr=C00004 data=3600 aux=0 pc=000236 mclk=226
