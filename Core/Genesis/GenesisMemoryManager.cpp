@@ -738,6 +738,7 @@ void GenesisMemoryManager::EmitStartupTransitionMarkers() {
 	bool z80Running = _z80RuntimeRunning;
 	bool z80BusReq = _z80BusRequest;
 	bool z80Reset = _z80Reset;
+	bool mesenProfile = _startupProfilePreferMesenBusHandoff;
 
 	if (!_startupHasLastDisplayState) {
 		_startupHasLastDisplayState = true;
@@ -751,32 +752,38 @@ void GenesisMemoryManager::EmitStartupTransitionMarkers() {
 	if (!_startupHasLastZ80RunState) {
 		_startupHasLastZ80RunState = true;
 		_startupLastZ80Running = z80Running;
-	} else if (z80Running != _startupLastZ80Running) {
+	} else if (!mesenProfile && z80Running != _startupLastZ80Running) {
 		_startupLastZ80Running = z80Running;
 		TraceStartupEvent("Z80_RUN_TGL", 0xA11100, z80Running ? 1u : 0u, (uint16_t)(_z80BusAck ? 1u : 0u));
+	} else {
+		_startupLastZ80Running = z80Running;
 	}
 
 	if (!_startupHasLastZ80BusReqState) {
 		_startupHasLastZ80BusReqState = true;
 		_startupLastZ80BusReq = z80BusReq;
-	} else if (z80BusReq != _startupLastZ80BusReq) {
+	} else if (!mesenProfile && z80BusReq != _startupLastZ80BusReq) {
 		_startupLastZ80BusReq = z80BusReq;
 		TraceStartupEvent("Z80_BUSREQ", 0xA11100, z80BusReq ? 1u : 0u, (uint16_t)(_z80BusAck ? 1u : 0u));
+	} else {
+		_startupLastZ80BusReq = z80BusReq;
 	}
 
 	if (!_startupHasLastZ80ResetState) {
 		_startupHasLastZ80ResetState = true;
 		_startupLastZ80Reset = z80Reset;
-	} else if (z80Reset != _startupLastZ80Reset) {
+	} else if (!mesenProfile && z80Reset != _startupLastZ80Reset) {
 		_startupLastZ80Reset = z80Reset;
 		TraceStartupEvent("Z80_RESET", 0xA11200, z80Reset ? 1u : 0u, (uint16_t)(z80BusReq ? 1u : 0u));
+	} else {
+		_startupLastZ80Reset = z80Reset;
 	}
 
 	if (!_startupHasLastVdpRegs) {
 		_startupHasLastVdpRegs = true;
 		memcpy(_startupLastVdpRegs, state.Registers, sizeof(_startupLastVdpRegs));
 		_startupLastVdpStatus = state.StatusRegister;
-	} else {
+	} else if (!mesenProfile) {
 		for (uint32_t i = 0; i < (uint32_t)sizeof(_startupLastVdpRegs); i++) {
 			uint8_t currentValue = state.Registers[i];
 			if (_startupLastVdpRegs[i] != currentValue) {
@@ -790,6 +797,9 @@ void GenesisMemoryManager::EmitStartupTransitionMarkers() {
 			TraceStartupEvent("VDP_STAT_W", 0xC00004, state.StatusRegister, (uint16_t)(_startupLastVdpStatus ^ state.StatusRegister));
 			_startupLastVdpStatus = state.StatusRegister;
 		}
+	} else {
+		memcpy(_startupLastVdpRegs, state.Registers, sizeof(_startupLastVdpRegs));
+		_startupLastVdpStatus = state.StatusRegister;
 	}
 }
 
@@ -2485,8 +2495,11 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		_workRam[offset] = effectiveValue;
 		if (_vdp) {
 			uint32_t frame = _vdp->GetFrameCount();
+			if (_startupProfilePreferMesenBusHandoff && frame == 0u) {
+				frame = 1u;
+			}
 			if (ShouldLogNexenWramTrace(frame, addr)) {
-				uint16_t line = _vdp->GetState().VCounter;
+				uint16_t line = _vdp->GetScanline();
 				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
 				LogNexenWramTrace(frame, line, addr, effectiveValue, pc, _masterClock);
 			}
@@ -2757,14 +2770,17 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		_workRam[(offset + 1) & 0xFFFF] = effectiveLowByte;
 		if (_vdp) {
 			uint32_t frame = _vdp->GetFrameCount();
+			if (_startupProfilePreferMesenBusHandoff && frame == 0u) {
+				frame = 1u;
+			}
 			if (ShouldLogNexenWramTrace(frame, addr)) {
-				uint16_t line = _vdp->GetState().VCounter;
+				uint16_t line = _vdp->GetScanline();
 				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
 				LogNexenWramTrace(frame, line, addr, effectiveHighByte, pc, _masterClock);
 			}
 			uint32_t lowAddress = (addr + 1) & 0xFFFFFF;
 			if (ShouldLogNexenWramTrace(frame, lowAddress)) {
-				uint16_t line = _vdp->GetState().VCounter;
+				uint16_t line = _vdp->GetScanline();
 				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
 				LogNexenWramTrace(frame, line, lowAddress, effectiveLowByte, pc, _masterClock);
 			}
