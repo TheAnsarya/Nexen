@@ -5,7 +5,8 @@
 	[string]$MesenTarget = "C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\Mesen.dll",
 	[string]$OutputDirectory = ".\reference\startup-logo-regression\screenshots",
 	[int]$CaptureFrame = 180,
-	[int]$TimeoutSeconds = 20
+	[int]$TimeoutSeconds = 20,
+	[int]$RetryCount = 3
 )
 
 Set-StrictMode -Version Latest
@@ -69,12 +70,39 @@ function Invoke-CaptureRun {
 	}
 }
 
+function Invoke-CaptureRunWithRetry {
+	param(
+		[Parameter(Mandatory = $true)]
+		[string]$TargetPath,
+		[Parameter(Mandatory = $true)]
+		[string]$OutputPath,
+		[Parameter(Mandatory = $true)]
+		[string]$Label
+	)
+
+	$lastError = $null
+	for ($attempt = 1; $attempt -le $RetryCount; $attempt++) {
+		try {
+			Invoke-CaptureRun -TargetPath $TargetPath -OutputPath $OutputPath -Label $Label
+			return
+		}
+		catch {
+			$lastError = $_
+			if ($attempt -lt $RetryCount) {
+				Write-Host "$Label capture attempt $attempt failed, retrying..." -ForegroundColor Yellow
+			}
+		}
+	}
+
+	throw "$Label capture failed after $RetryCount attempts. Last error: $lastError"
+}
+
 $oldPath = $env:NEXEN_STARTUP_SCREENSHOT_PATH
 $oldFrame = $env:NEXEN_STARTUP_SCREENSHOT_FRAME
 
 try {
-	Invoke-CaptureRun -TargetPath $resolvedMesenTarget -OutputPath $mesenOut -Label "Mesen2-Expanded"
-	Invoke-CaptureRun -TargetPath $resolvedNexenTarget -OutputPath $nexenOut -Label "Nexen"
+	Invoke-CaptureRunWithRetry -TargetPath $resolvedMesenTarget -OutputPath $mesenOut -Label "Mesen2-Expanded"
+	Invoke-CaptureRunWithRetry -TargetPath $resolvedNexenTarget -OutputPath $nexenOut -Label "Nexen"
 }
 finally {
 	$env:NEXEN_STARTUP_SCREENSHOT_PATH = $oldPath
