@@ -8,6 +8,68 @@
 #include "Shared/NotificationManager.h"
 #include "Utilities/Serializer.h"
 
+namespace {
+	static constexpr uint32_t MclksPerLine = 3420u;
+	static constexpr uint32_t H40LineChangeSlot = 165u;
+	static constexpr uint32_t H32LineChangeSlot = 133u;
+
+	static constexpr uint32_t H40HsyncCycles[17] = {
+		19u, 20u, 20u, 20u, 18u, 20u, 20u, 20u, 18u,
+		20u, 20u, 20u, 18u, 20u, 20u, 20u, 19u
+	};
+
+	static uint8_t HCounterTableH40[MclksPerLine] = {};
+	static uint8_t HCounterTableH32[MclksPerLine] = {};
+	static bool HCounterTablesBuilt = false;
+
+	void EnsureHCounterTables() {
+		if (HCounterTablesBuilt) {
+			return;
+		}
+
+		HCounterTablesBuilt = true;
+
+		{
+			uint32_t mclk = 0;
+			uint8_t hslot = (uint8_t)H40LineChangeSlot;
+			while (mclk < MclksPerLine) {
+				uint32_t cycles = (hslot >= 230u && hslot <= 246u)
+					? H40HsyncCycles[hslot - 230u]
+					: 16u;
+				for (uint32_t c = 0; c < cycles && (mclk + c) < MclksPerLine; c++) {
+					HCounterTableH40[mclk + c] = hslot;
+				}
+				mclk += cycles;
+				if (hslot == 182u) {
+					hslot = 229u;
+				} else if (hslot == 255u) {
+					hslot = 0u;
+				} else {
+					hslot++;
+				}
+			}
+		}
+
+		{
+			uint32_t mclk = 0;
+			uint8_t hslot = (uint8_t)H32LineChangeSlot;
+			while (mclk < MclksPerLine) {
+				for (uint32_t c = 0; c < 20u && (mclk + c) < MclksPerLine; c++) {
+					HCounterTableH32[mclk + c] = hslot;
+				}
+				mclk += 20u;
+				if (hslot == 147u) {
+					hslot = 233u;
+				} else if (hslot == 255u) {
+					hslot = 0u;
+				} else {
+					hslot++;
+				}
+			}
+		}
+	}
+}
+
 GenesisVdp::GenesisVdp() {
 }
 
@@ -80,6 +142,7 @@ void GenesisVdp::Reset(bool hardReset) {
 	_writeFifoRead = 0;
 	_writeFifoWrite = 0;
 	_writeFifoCount = 0;
+	_hvCounterLatch = 0;
 
 	_screenWidth = IsH40Mode() ? 320 : 256;
 	_screenHeight = 224;
@@ -113,6 +176,64 @@ void GenesisVdp::SetRegion(bool pal) {
 	}
 }
 
+void GenesisVdp::UpdateFifoStatusBits() {
+	if (_writeFifoCount == 0) {
+		_state.StatusRegister |= VdpStatus::FifoEmpty;
+		_state.StatusRegister &= ~VdpStatus::FifoFull;
+	} else if (_writeFifoCount >= 4) {
+		_state.StatusRegister &= ~VdpStatus::FifoEmpty;
+		_state.StatusRegister |= VdpStatus::FifoFull;
+	} else {
+		_state.StatusRegister &= ~VdpStatus::FifoEmpty;
+		_state.StatusRegister &= ~VdpStatus::FifoFull;
+	}
+}
+
+uint8_t GenesisVdp::VCounterValue(uint32_t scanline) const {
+	uint16_t vc = (uint16_t)scanline;
+
+	if ((_state.StatusRegister & VdpStatus::PalMode) == 0) {
+		if (scanline > 234u) {
+			vc = (uint16_t)(0x1e5u + (scanline - 235u));
+		}
+	} else {
+		bool v30 = (_state.Registers[1] & 0x08u) != 0;
+		if (v30) {
+			if (scanline > 266u) {
+				vc = (uint16_t)(0x1d2u + (scanline - 267u));
+			}
+		} else {
+			if (scanline > 258u) {
+				vc = (uint16_t)(0x1cau + (scanline - 259u));
+			}
+		}
+	}
+
+	if (IsInterlaceMode()) {
+		vc = (uint16_t)(vc << 1);
+		if ((_state.StatusRegister & VdpStatus::OddFrame) != 0) {
+			vc |= 1u;
+		}
+	}
+
+	return (uint8_t)(vc & 0xffu);
+}
+
+uint8_t GenesisVdp::HCounterValue(uint32_t lineCycle, bool h40Mode) const {
+	EnsureHCounterTables();
+	if (_currentLineCycleTarget == 0) {
+		return 0;
+	}
+
+	uint32_t clampedCycle = std::min(lineCycle, (uint32_t)(_currentLineCycleTarget - 1u));
+	uint32_t mclkInLine = (clampedCycle * MclksPerLine) / _currentLineCycleTarget;
+	if (mclkInLine >= MclksPerLine) {
+		mclkInLine = MclksPerLine - 1u;
+	}
+
+	return h40Mode ? HCounterTableH40[mclkInLine] : HCounterTableH32[mclkInLine];
+}
+
 // Run VDP forward to the target master clock cycle.
 // One scanline is 3420 MCLK and 68k runs at MCLK/7, so the line length is
 // 3420/7 = 488 + 4/7 68k cycles. Keep the fractional remainder to avoid
@@ -123,8 +244,8 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 	while (_lastRunCycle < targetCycle) {
 		_lastRunCycle++;
 		_hCounter++;
-		_state.HCounter = _hCounter;
-		_state.VCounter = _scanline;
+		_state.HCounter = HCounterValue(_hCounter, _lineH40Mode);
+		_state.VCounter = VCounterValue(_scanline);
 
 		if (_state.DmaActive) {
 			ProcessDma();
@@ -139,10 +260,10 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 
 		if (_hCounter >= _currentLineCycleTarget) {
 			_hCounter = 0;
-			_state.HCounter = 0;
+			_state.HCounter = HCounterValue(0, _lineH40Mode);
 			ProcessScanline();
 			_scanline++;
-			_state.VCounter = _scanline;
+			_state.VCounter = VCounterValue(_scanline);
 			// Latch mode/display at scanline boundaries to avoid mid-line timing drift.
 			_lineDisplayEnabled = IsDisplayEnabled();
 			_lineH40Mode = IsH40Mode();
@@ -188,7 +309,7 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 			if (_scanline >= _totalLines) {
 				// End of frame
 				_scanline = 0;
-				_state.VCounter = 0;
+				_state.VCounter = VCounterValue(0);
 				uint16_t statusBeforeExit = _state.StatusRegister;
 				_state.StatusRegister &= ~VdpStatus::VBlankFlag;
 				_state.StatusRegister ^= VdpStatus::OddFrame;
@@ -775,34 +896,50 @@ void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const ui
 // Port access
 uint16_t GenesisVdp::ReadDataPort() {
 	_pendingControlWrite = false;
-	uint16_t result = 0;
-	uint8_t accessMode = _accessMode & 0x0F;
+	uint16_t result = _state.DataPortBuffer;
+	PrimeReadBuffer();
+	return result;
+}
 
-	if (accessMode == 0) { // VRAM read
-		uint32_t addr = _addressReg & 0xFFFE;
-		if (addr + 1 < VramSize) {
-			result = ((uint16_t)_vram[addr] << 8) | _vram[addr + 1];
+void GenesisVdp::PrimeReadBuffer() {
+	uint8_t accessMode = _accessMode & 0x0Fu;
+	uint16_t next = _state.DataPortBuffer;
+
+	if (accessMode == 0x00u) {
+		uint32_t addr = _addressReg & 0xFFFFu;
+		next = (uint16_t)(((uint16_t)_vram[addr] << 8) | _vram[(addr + 1u) & 0xFFFFu]);
+		_addressReg = (uint16_t)(_addressReg + _autoIncrement);
+	} else if (accessMode == 0x04u) {
+		uint8_t idx = (uint8_t)((_addressReg >> 1) & 0x3Fu);
+		if (idx < 40u) {
+			next = _vsram[idx];
+		} else {
+			next = 0;
 		}
-	} else if (accessMode == 4) { // VSRAM read
-		uint8_t idx = (_addressReg / 2) & 0x3F;
-		if (idx < 40) result = _vsram[idx];
-	} else if (accessMode == 8) { // CRAM read
-		uint8_t idx = (_addressReg / 2) & 0x3F;
-		result = _cram[idx];
+		_addressReg = (uint16_t)(_addressReg + _autoIncrement);
+	} else if (accessMode == 0x08u) {
+		uint8_t idx = (uint8_t)((_addressReg >> 1) & 0x3Fu);
+		next = _cram[idx];
+		_addressReg = (uint16_t)(_addressReg + _autoIncrement);
 	}
 
-	_addressReg += _autoIncrement;
-	_state.DataPortBuffer = result;
-	return result;
+	_state.DataPortBuffer = next;
 }
 
 uint16_t GenesisVdp::ReadControlPort() {
 	_pendingControlWrite = false;
+	_pendingControlHighWrite = false;
 	if (_scanline >= _screenHeight && _scanline < _totalLines) {
 		_state.StatusRegister |= VdpStatus::VBlankFlag;
 	} else {
 		_state.StatusRegister &= ~VdpStatus::VBlankFlag;
 	}
+	if (_state.DmaActive) {
+		_state.StatusRegister |= VdpStatus::DmaBusy;
+	} else {
+		_state.StatusRegister &= ~VdpStatus::DmaBusy;
+	}
+	UpdateFifoStatusBits();
 
 	uint16_t status = _state.StatusRegister;
 
@@ -836,6 +973,8 @@ uint16_t GenesisVdp::ReadControlPort() {
 		}
 	}
 	_state.StatusRegister &= ~VdpStatus::VIntPending;
+	_state.StatusRegister &= ~VdpStatus::SprOverflow;
+	_state.StatusRegister &= ~VdpStatus::SprCollision;
 	return status;
 }
 
@@ -856,8 +995,12 @@ GenesisVdpState GenesisVdp::GetState() const {
 }
 
 uint16_t GenesisVdp::ReadHVCounter() {
-	uint8_t v = (uint8_t)_scanline;
-	uint8_t h = (uint8_t)(_hCounter >> 1);
+	if ((_state.Registers[0] & 0x02u) != 0) {
+		return _hvCounterLatch;
+	}
+
+	uint8_t v = VCounterValue(_scanline);
+	uint8_t h = HCounterValue(_hCounter, _lineH40Mode);
 	return ((uint16_t)v << 8) | h;
 }
 
@@ -1020,6 +1163,7 @@ void GenesisVdp::EnqueueWriteFifo(uint8_t accessMode, uint16_t address, uint16_t
 	if (_writeFifoCount < 4) {
 		_writeFifoCount++;
 	}
+	UpdateFifoStatusBits();
 }
 
 void GenesisVdp::DrainWriteFifoOne() {
@@ -1031,6 +1175,7 @@ void GenesisVdp::DrainWriteFifoOne() {
 	ApplyPortWrite(entry.AccessMode, entry.Address, entry.Value);
 	_writeFifoRead = (_writeFifoRead + 1u) & 0x03u;
 	_writeFifoCount--;
+	UpdateFifoStatusBits();
 }
 
 void GenesisVdp::ApplyPortWrite(uint8_t accessMode, uint16_t address, uint16_t value) {
@@ -1074,6 +1219,8 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 		// 6-bit command code: CD1:CD0 from first word bits 15:14, CD5:CD2 from second word bits 7:4.
 		_accessMode = (uint8_t)((full >> 14) | ((value >> 2) & 0x3C));
 		_addressReg = (full & 0x3FFF) | ((value & 0x03) << 14);
+		_state.CodeRegister = _accessMode;
+		_state.AddressRegister = _addressReg;
 
 		if (controlWriteCount <= 128 || (controlWriteCount % 4096) == 0) {
 			MessageManager::Log(std::format("[Genesis][VDP] CtrlWrite2 #{} first=${:04x} second=${:04x} mode={} addr=${:04x} autoInc=${:02x} r1=${:02x} frame={}",
@@ -1093,6 +1240,8 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 			_state.DmaActive = true;
 			_dmaInitialized = false;
 			_state.StatusRegister |= VdpStatus::DmaBusy;
+		} else {
+			PrimeReadBuffer();
 		}
 		return;
 	}
@@ -1101,10 +1250,20 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 		// Register write: 100R RRRR DDDD DDDD
 		uint8_t reg = (value >> 8) & 0x1F;
 		uint8_t data = value & 0xFF;
+		uint8_t oldData = reg < 24 ? _state.Registers[reg] : 0;
 		bool atLineBoundary = _hCounter == 0;
 		bool displayEnabledBefore = IsDisplayEnabled();
 		if (reg < 24) {
 			_state.Registers[reg] = data;
+		}
+
+		if (reg == 0) {
+			bool latchTransition = ((oldData & 0x02u) == 0) && ((data & 0x02u) != 0);
+			if (latchTransition) {
+				_state.Registers[0] = (uint8_t)(data & ~0x02u);
+				_hvCounterLatch = ReadHVCounter();
+				_state.Registers[0] = data;
+			}
 		}
 
 		// Auto-increment from register 15
@@ -1149,6 +1308,8 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 	// Update access mode from first word (partially)
 	_accessMode = (value >> 14) & 0x03;
 	_addressReg = value & 0x3FFF;
+	_state.CodeRegister = _accessMode;
+	_state.AddressRegister = _addressReg;
 
 	if (controlWriteCount <= 128 || (controlWriteCount % 4096) == 0) {
 		MessageManager::Log(std::format("[Genesis][VDP] CtrlWrite1 #{} word=${:04x} modeLow={} addrLow=${:04x} frame={}",
@@ -1434,6 +1595,7 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_writeFifoRead);
 	SV(_writeFifoWrite);
 	SV(_writeFifoCount);
+	SV(_hvCounterLatch);
 	for (uint8_t i = 0; i < 4; i++) {
 		SV(_writeFifo[i].Address);
 		SV(_writeFifo[i].Value);
@@ -1446,5 +1608,6 @@ void GenesisVdp::Serialize(Serializer& s) {
 
 	if (!s.IsSaving()) {
 		RefreshPaletteCache();
+		UpdateFifoStatusBits();
 	}
 }

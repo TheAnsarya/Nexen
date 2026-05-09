@@ -57,6 +57,7 @@ private:
 	uint8_t _dataHighWrite = 0;
 	bool _pendingControlHighWrite = false;
 	uint8_t _controlHighWrite = 0;
+	uint16_t _hvCounterLatch = 0;
 	uint8_t _accessMode = 0; // 0=VRAM read, 1=VRAM write, 3=CRAM write, 5=VSRAM write
 	uint16_t _addressReg = 0;
 	uint8_t _autoIncrement = 0;
@@ -109,6 +110,10 @@ private:
 	void EnqueueWriteFifo(uint8_t accessMode, uint16_t address, uint16_t value);
 	void DrainWriteFifoOne();
 	void ApplyPortWrite(uint8_t accessMode, uint16_t address, uint16_t value);
+	void UpdateFifoStatusBits();
+	void PrimeReadBuffer();
+	uint8_t VCounterValue(uint32_t scanline) const;
+	uint8_t HCounterValue(uint32_t lineCycle, bool h40Mode) const;
 
 	// Register helpers
 	bool IsDisplayEnabled() const { return (_state.Registers[1] & 0x40) != 0; }
