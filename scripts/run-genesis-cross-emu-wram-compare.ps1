@@ -464,6 +464,7 @@ function Get-StartupFrameSnapshot {
 	$result["VDP_STAT_W"] = "<missing>"
 	$result["LOOP_POLL8"] = "<missing>"
 	$result["LOOP_POLL16"] = "<missing>"
+	$result["CPU_PRELOOP"] = "<missing>"
 	$result["CPU_LOOP"] = "<missing>"
 
 	if ($null -eq $Lines -or $Lines.Count -eq 0) {
@@ -498,6 +499,10 @@ function Get-StartupFrameSnapshot {
 		}
 		if ($result["LOOP_POLL16"] -eq "<missing>" -and $line.Contains(" LOOP_POLL16 ")) {
 			$result["LOOP_POLL16"] = $line
+			continue
+		}
+		if ($result["CPU_PRELOOP"] -eq "<missing>" -and $line.Contains(" CPU_PRELOOP ")) {
+			$result["CPU_PRELOOP"] = $line
 			continue
 		}
 		if ($result["CPU_LOOP"] -eq "<missing>" -and $line.Contains(" CPU_LOOP ")) {
@@ -539,6 +544,46 @@ function Get-StartupFrameTagStats {
 			$result["First"] = $line
 		}
 		$result["Last"] = $line
+		$result["Count"] = $result["Count"] + 1
+	}
+
+	return $result
+}
+
+function Get-StartupTagGlobalStats {
+	param(
+		[string[]]$Lines,
+		[string]$Tag
+	)
+
+	$result = [ordered]@{}
+	$result["Count"] = 0
+	$result["First"] = "<missing>"
+	$result["Last"] = "<missing>"
+	$result["FirstFrame"] = -1
+	$result["LastFrame"] = -1
+
+	if ($null -eq $Lines -or $Lines.Count -eq 0 -or [string]::IsNullOrWhiteSpace($Tag)) {
+		return $result
+	}
+
+	$token = " {0} " -f $Tag
+	foreach ($line in $Lines) {
+		if (-not $line.Contains($token)) {
+			continue
+		}
+
+		if ($result["Count"] -eq 0) {
+			$result["First"] = $line
+			if ($line -match '^F(\d{4}) ') {
+				$result["FirstFrame"] = [int]$Matches[1]
+			}
+		}
+
+		$result["Last"] = $line
+		if ($line -match '^F(\d{4}) ') {
+			$result["LastFrame"] = [int]$Matches[1]
+		}
 		$result["Count"] = $result["Count"] + 1
 	}
 
@@ -857,6 +902,10 @@ if ($mesenStartupLines.Count -gt 0 -or $nexenStartupLines.Count -gt 0) {
 	$nexenFrameSnapshot = Get-StartupFrameSnapshot -Lines $nexenStartupLines -Frame $SnapshotFrame
 	$mesenLoopPoll16Stats = Get-StartupFrameTagStats -Lines $mesenStartupLines -Frame $SnapshotFrame -Tag "LOOP_POLL16"
 	$nexenLoopPoll16Stats = Get-StartupFrameTagStats -Lines $nexenStartupLines -Frame $SnapshotFrame -Tag "LOOP_POLL16"
+	$mesenCpuPreloopStats = Get-StartupFrameTagStats -Lines $mesenStartupLines -Frame $SnapshotFrame -Tag "CPU_PRELOOP"
+	$nexenCpuPreloopStats = Get-StartupFrameTagStats -Lines $nexenStartupLines -Frame $SnapshotFrame -Tag "CPU_PRELOOP"
+	$mesenCpuPreloopGlobalStats = Get-StartupTagGlobalStats -Lines $mesenStartupLines -Tag "CPU_PRELOOP"
+	$nexenCpuPreloopGlobalStats = Get-StartupTagGlobalStats -Lines $nexenStartupLines -Tag "CPU_PRELOOP"
 	$mesenCpuLoopStats = Get-StartupFrameTagStats -Lines $mesenStartupLines -Frame $SnapshotFrame -Tag "CPU_LOOP"
 	$nexenCpuLoopStats = Get-StartupFrameTagStats -Lines $nexenStartupLines -Frame $SnapshotFrame -Tag "CPU_LOOP"
 
@@ -991,6 +1040,8 @@ $report.Add("mesenSnapshot_LOOP_POLL8=$($mesenFrameSnapshot.LOOP_POLL8)")
 $report.Add("nexenSnapshot_LOOP_POLL8=$($nexenFrameSnapshot.LOOP_POLL8)")
 $report.Add("mesenSnapshot_LOOP_POLL16=$($mesenFrameSnapshot.LOOP_POLL16)")
 $report.Add("nexenSnapshot_LOOP_POLL16=$($nexenFrameSnapshot.LOOP_POLL16)")
+$report.Add("mesenSnapshot_CPU_PRELOOP=$($mesenFrameSnapshot.CPU_PRELOOP)")
+$report.Add("nexenSnapshot_CPU_PRELOOP=$($nexenFrameSnapshot.CPU_PRELOOP)")
 $report.Add("mesenSnapshot_CPU_LOOP=$($mesenFrameSnapshot.CPU_LOOP)")
 $report.Add("nexenSnapshot_CPU_LOOP=$($nexenFrameSnapshot.CPU_LOOP)")
 $report.Add("mesenLoopPoll16Count=$($mesenLoopPoll16Stats.Count)")
@@ -999,6 +1050,22 @@ $report.Add("mesenLoopPoll16First=$($mesenLoopPoll16Stats.First)")
 $report.Add("nexenLoopPoll16First=$($nexenLoopPoll16Stats.First)")
 $report.Add("mesenLoopPoll16Last=$($mesenLoopPoll16Stats.Last)")
 $report.Add("nexenLoopPoll16Last=$($nexenLoopPoll16Stats.Last)")
+$report.Add("mesenCpuPreloopCount=$($mesenCpuPreloopStats.Count)")
+$report.Add("nexenCpuPreloopCount=$($nexenCpuPreloopStats.Count)")
+$report.Add("mesenCpuPreloopFirst=$($mesenCpuPreloopStats.First)")
+$report.Add("nexenCpuPreloopFirst=$($nexenCpuPreloopStats.First)")
+$report.Add("mesenCpuPreloopLast=$($mesenCpuPreloopStats.Last)")
+$report.Add("nexenCpuPreloopLast=$($nexenCpuPreloopStats.Last)")
+$report.Add("mesenCpuPreloopGlobalCount=$($mesenCpuPreloopGlobalStats.Count)")
+$report.Add("nexenCpuPreloopGlobalCount=$($nexenCpuPreloopGlobalStats.Count)")
+$report.Add("mesenCpuPreloopGlobalFirstFrame=$($mesenCpuPreloopGlobalStats.FirstFrame)")
+$report.Add("nexenCpuPreloopGlobalFirstFrame=$($nexenCpuPreloopGlobalStats.FirstFrame)")
+$report.Add("mesenCpuPreloopGlobalLastFrame=$($mesenCpuPreloopGlobalStats.LastFrame)")
+$report.Add("nexenCpuPreloopGlobalLastFrame=$($nexenCpuPreloopGlobalStats.LastFrame)")
+$report.Add("mesenCpuPreloopGlobalFirst=$($mesenCpuPreloopGlobalStats.First)")
+$report.Add("nexenCpuPreloopGlobalFirst=$($nexenCpuPreloopGlobalStats.First)")
+$report.Add("mesenCpuPreloopGlobalLast=$($mesenCpuPreloopGlobalStats.Last)")
+$report.Add("nexenCpuPreloopGlobalLast=$($nexenCpuPreloopGlobalStats.Last)")
 $report.Add("mesenCpuLoopCount=$($mesenCpuLoopStats.Count)")
 $report.Add("nexenCpuLoopCount=$($nexenCpuLoopStats.Count)")
 $report.Add("mesenCpuLoopFirst=$($mesenCpuLoopStats.First)")

@@ -415,6 +415,26 @@ namespace {
 		return true;
 	}
 
+	static bool ShouldTraceStartupPreLoopBranch(uint32_t frame, uint32_t pc) {
+		if (pc < 0x071f80u || pc > 0x071fa0u) {
+			return false;
+		}
+
+		static uint32_t sPreLoopTraceFrame = 0xFFFFFFFFu;
+		static uint32_t sPreLoopTraceCount = 0u;
+		if (sPreLoopTraceFrame != frame) {
+			sPreLoopTraceFrame = frame;
+			sPreLoopTraceCount = 0u;
+		}
+
+		if (sPreLoopTraceCount >= 64u) {
+			return false;
+		}
+
+		sPreLoopTraceCount++;
+		return true;
+	}
+
 	static void LogNexenStartupTrace(uint32_t frame, uint16_t line, const char* tag, uint32_t address, uint16_t value, uint16_t auxValue, uint32_t pc, uint64_t mclk) {
 		if (!sNexenStartupTraceFile) {
 			return;
@@ -642,8 +662,14 @@ void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t instructionProgramC
 	_ioState.CpuInstructionHeartbeat++;
 	if (_cpu && _vdp) {
 		uint32_t frame = _vdp->GetFrameCount();
-		if (ShouldTraceStartupLoopPoll(frame, instructionProgramCounter & 0x00ffffffu)) {
-			GenesisM68kState cpuState = _cpu->GetState();
+		uint32_t pc = instructionProgramCounter & 0x00ffffffu;
+		GenesisM68kState cpuState = _cpu->GetState();
+		if (ShouldTraceStartupPreLoopBranch(frame, pc)) {
+			uint16_t d0 = (uint16_t)(cpuState.D[0] & 0xFFFFu);
+			uint16_t sr = cpuState.SR;
+			TraceStartupEvent("CPU_PRELOOP", instructionProgramCounter, d0, sr);
+		}
+		if (ShouldTraceStartupLoopPoll(frame, pc)) {
 			uint16_t d0 = (uint16_t)(cpuState.D[0] & 0xFFFFu);
 			uint16_t d7 = (uint16_t)(cpuState.D[7] & 0xFFFFu);
 			TraceStartupEvent("CPU_LOOP", instructionProgramCounter, d0, d7);
