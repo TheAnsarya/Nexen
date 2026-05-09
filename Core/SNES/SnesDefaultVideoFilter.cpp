@@ -107,7 +107,7 @@ void SnesDefaultVideoFilter::ApplyFilter(uint16_t* ppuOutputBuffer) {
 	if (_baseFrameInfo.Width == 512 && _blendHighRes) {
 		// Blend hi-res pixel pairs: (0,1), (2,3), etc.
 		// Each pair is blended together and both set to the same result.
-		// Fixes incorrect full-screen blur (Mesen2 PR #80).
+		// Fixes incorrect full-screen blur observed in prior upstream-derived behavior.
 		uint32_t* row = out;
 		for (uint32_t i = 0; i < frameInfo.Height; i++) {
 			for (uint32_t j = 0; j < frameInfo.Width; j += 2) {

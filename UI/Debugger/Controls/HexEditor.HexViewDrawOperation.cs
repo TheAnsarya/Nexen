@@ -43,7 +43,7 @@ public partial class HexEditor {
 		private SKPaint? _selectedPaint;
 
 		// Static typeface cache — SKTypeface.FromFamilyName() uses FontConfig on Linux,
-		// which is extremely slow. Caching avoids per-frame overhead. (Mesen2 PR #85)
+		// which is extremely slow. Caching avoids per-frame overhead.
 		private static string? _cachedFontFamily;
 		private static SKTypeface? _cachedTypeface;
 

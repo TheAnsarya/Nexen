@@ -1,4 +1,4 @@
-namespace Nexen.MovieConverter;
+﻿namespace Nexen.MovieConverter;
 
 /// <summary>
 /// Represents the format of a TAS movie file

@@ -1354,7 +1354,7 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 			new SimpleMenuAction() {
 				ActionType = ActionType.OnlineHelp,
 				IsVisible = () => false,
-				OnClick = () => ApplicationHelper.OpenBrowser("https://www.mesen.ca/documentation/")
+				OnClick = () => ApplicationHelper.OpenBrowser("https://github.com/TheAnsarya/Nexen#readme")
 			},
 			new SimpleMenuAction() {
 				ActionType = ActionType.CommandLineHelp,
@@ -1366,7 +1366,7 @@ public sealed partial class MainMenuViewModel : ViewModelBase {
 			new SimpleMenuAction() {
 				ActionType = ActionType.ReportBug,
 				IsVisible = () => false,
-				OnClick = () => ApplicationHelper.OpenBrowser("https://www.mesen.ca/reportbug/")
+				OnClick = () => ApplicationHelper.OpenBrowser("https://github.com/TheAnsarya/Nexen/issues/new/choose")
 			},
 			new MenuSeparator(),
 			new SimpleMenuAction() {

@@ -105,7 +105,7 @@ bool ScriptingContext::LoadScript(const string& scriptName, const string& path, 
 void ScriptingContext::ProcessLuaError() {
 	// Use luaL_tolstring instead of lua_tostring — safely converts any Lua value
 	// to a string (lua_tostring returns NULL for non-string/number types, which
-	// would crash when assigned to std::string). Fixes: Mesen2 PR #76.
+	// would crash when assigned to std::string).
 	string errorMsg = luaL_tolstring(_lua, -1, nullptr);
 	if (StringUtilities::Contains(errorMsg, "attempt to call a nil value (global 'require')") || StringUtilities::Contains(errorMsg, "attempt to index a nil value (global 'os')") || StringUtilities::Contains(errorMsg, "attempt to index a nil value (global 'io')")) {
 		Log("I/O and OS libraries are disabled by default for security.\nYou can enable them here:\nScript->Settings->Script Window->Restrictions->Allow access to I/O and OS functions.");

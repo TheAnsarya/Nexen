@@ -1689,7 +1689,7 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 uint8_t GenesisVdp::GetDmaWordPeriodCycles() const {
 	bool blanking = !_lineDisplayEnabled || _scanline >= _screenHeight;
 	if (blanking) {
-		// Approximation informed by Mesen2-Expanded: blanking DMA is faster.
+		// Approximation informed by reference emulator behavior: blanking DMA is faster.
 		return _lineH40Mode ? 5 : 6;
 	}
 
@@ -1716,7 +1716,7 @@ void GenesisVdp::ProcessDma() {
 			_dmaRemainingWords = 0x10000;
 		}
 
-		// Mesen2-Expanded keeps the full low 7 bits of R23 in the initial bus-DMA source assembly.
+		// Reference implementation keeps the full low 7 bits of R23 in the initial bus-DMA source assembly.
 		_dmaSourceAddress = ((uint32_t)(_state.Registers[23] & 0x7F) << 17)
 		                | ((uint32_t)_state.Registers[22] << 9)
 		                | ((uint32_t)_state.Registers[21] << 1);
