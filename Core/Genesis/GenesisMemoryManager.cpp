@@ -654,6 +654,14 @@ void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) 
 		return;
 	}
 
+	// Align startup checkpoints to end-of-frame timing to reduce early line-0 noise.
+	// This keeps cross-emulator comparisons focused on stable per-frame state.
+	uint16_t totalLines = _vdp->GetTotalLines();
+	uint16_t scanline = _vdp->GetScanline();
+	if (totalLines > 0u && scanline < (uint16_t)(totalLines - 1u)) {
+		return;
+	}
+
 	GenesisVdpState state = _vdp->GetState();
 	bool displayEnabled = (state.Registers[VdpReg::ModeSet2] & 0x40) != 0;
 	if (frame == 0u && _startupNextCheckpointFrame == 0u) {
