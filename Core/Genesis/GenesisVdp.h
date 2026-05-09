@@ -45,6 +45,7 @@ private:
 	bool _lineH40Mode = true;
 	uint16_t _lineScreenWidth = 320;
 	bool _vblankEnteredThisFrame = false;
+	bool _vintFiredThisFrame = false;
 	bool _vintPending = false;
 	bool _vintNew = false;
 	bool _hintPending = false;
@@ -119,6 +120,7 @@ private:
 	void PrimeReadBuffer();
 	uint8_t VCounterValue(uint32_t scanline) const;
 	uint8_t HCounterValue(uint32_t lineCycle, bool h40Mode) const;
+	uint16_t GetVIntStartCycle() const;
 	uint16_t GetVBlankFlagStartCycle() const;
 	uint16_t GetHBlankStartCycle() const;
 

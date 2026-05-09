@@ -1,6 +1,6 @@
 # Genesis Startup Logo Regression Summary
 
-- generatedUtc: 2026-05-09T08:22:34.5437160Z
+- generatedUtc: 2026-05-09T08:13:02.0366132Z
 - frameStart: 0
 - frameEnd: 600
 - autoStopTimeoutSeconds: 45
@@ -41,7 +41,7 @@
 
 | ROM | Profile | Exit | Diff | Startup Diff | Nexen Startup Hash | Mesen Startup Hash | N/M Chkpt | N/M Disp | N/M Pal | N/M VdpRegW | N/M Z80Tgl | N/M TmssUnlock | Regressions | Policy Failures | Verdict |
 |---|---|---:|---:|---:|---|---|---|---|---|---|---|---|---|---|---|
-| sonic-the-hedgehog-usa-europe | logo-compat | 3 | 1 | 1 | 43f3371a2f7d60acafbdcd29827f049f880f7eced7cc03431ebe0ef27486a718 | 259d1805129c336906346ba13090c94e4ff0a33b3ccba9cf347c0f2552e602f2 | 600/427 | 1/1 | 1200/854 | 9166/2521 | 1683/922 | 0/0 |  |  | pass |
+| sonic-the-hedgehog-usa-europe | logo-compat | 3 | 1 | 1 | 4d756e2a24288e2ecd8d2dcae9c3a14f60d4c358e013200661f4cd79957d2dcb | 407de6912e3596d0bff604af8daaf803594865f28512ed4a79aebdc866af5bf6 | 600/417 | 1/1 | 1200/834 | 9166/2321 | 1683/872 | 0/0 |  |  | pass |
 
 ## Notes
 

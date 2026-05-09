@@ -151,6 +151,7 @@ void GenesisVdp::Reset(bool hardReset) {
 	_lineH40Mode = IsH40Mode();
 	_lineScreenWidth = _screenWidth;
 	_vblankEnteredThisFrame = false;
+	_vintFiredThisFrame = false;
 	_vintPending = false;
 	_vintNew = false;
 	_hintPending = false;
@@ -199,17 +200,17 @@ uint8_t GenesisVdp::VCounterValue(uint32_t scanline) const {
 
 	if ((_state.StatusRegister & VdpStatus::PalMode) == 0) {
 		if (scanline > 234u) {
-			vc = (uint16_t)(0x1e5u + (scanline - 235u));
+			vc = (uint16_t)(0x1e4u + (scanline - 235u));
 		}
 	} else {
 		bool v30 = (_state.Registers[1] & 0x08u) != 0;
 		if (v30) {
 			if (scanline > 266u) {
-				vc = (uint16_t)(0x1d2u + (scanline - 267u));
+				vc = (uint16_t)(0x1d1u + (scanline - 267u));
 			}
 		} else {
 			if (scanline > 258u) {
-				vc = (uint16_t)(0x1cau + (scanline - 259u));
+				vc = (uint16_t)(0x1c9u + (scanline - 259u));
 			}
 		}
 	}
@@ -237,6 +238,12 @@ uint8_t GenesisVdp::HCounterValue(uint32_t lineCycle, bool h40Mode) const {
 	}
 
 	return h40Mode ? HCounterTableH40[mclkInLine] : HCounterTableH32[mclkInLine];
+}
+
+uint16_t GenesisVdp::GetVIntStartCycle() const {
+	// Keep VINT aligned with the first deferred VBlank point on the first VBlank line.
+	// This matches current startup parity expectations while preserving per-frame one-shot latching.
+	return GetVBlankFlagStartCycle();
 }
 
 uint16_t GenesisVdp::GetVBlankFlagStartCycle() const {
@@ -288,9 +295,10 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 		}
 
 		bool inVblankLines = _scanline >= _screenHeight && _scanline < _totalLines;
+		bool firstVblankLine = _scanline == _screenHeight;
 		bool vblankFlagActive = false;
 		if (inVblankLines) {
-			if (_scanline > _screenHeight) {
+			if (!firstVblankLine) {
 				vblankFlagActive = true;
 			} else {
 				vblankFlagActive = _hCounter >= GetVBlankFlagStartCycle();
@@ -318,6 +326,19 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 					IsVBlankInterruptEnabled() ? 1 : 0));
 			}
 
+		}
+
+		bool vintSetPointReached = false;
+		if (!_vintFiredThisFrame && inVblankLines) {
+			if (!firstVblankLine) {
+				vintSetPointReached = true;
+			} else {
+				vintSetPointReached = _hCounter >= GetVIntStartCycle();
+			}
+		}
+
+		if (vintSetPointReached) {
+			_vintFiredThisFrame = true;
 			if (IsVBlankInterruptEnabled()) {
 				_vintPending = true;
 				_vintNew = true;
@@ -378,6 +399,7 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 				_scanline = 0;
 				_state.VCounter = VCounterValue(0);
 				_vblankEnteredThisFrame = false;
+				_vintFiredThisFrame = false;
 				_vintPending = false;
 				_vintNew = false;
 				_hintPending = false;
@@ -1678,6 +1700,7 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_lineH40Mode);
 	SV(_lineScreenWidth);
 	SV(_vblankEnteredThisFrame);
+	SV(_vintFiredThisFrame);
 	SV(_vintPending);
 	SV(_vintNew);
 	SV(_hintPending);
