@@ -127,6 +127,8 @@ void GenesisVdp::Reset(bool hardReset) {
 	_dataHighWrite = 0;
 	_pendingControlHighWrite = false;
 	_controlHighWrite = 0;
+	_statusReadLatch = 0;
+	_statusReadLatchValid = false;
 	_firstControlWord = 0;
 	_dmaInitialized = false;
 	_dmaLatchedMode = 0;
@@ -180,6 +182,47 @@ void GenesisVdp::SetRegion(bool pal) {
 	} else {
 		_state.StatusRegister &= ~VdpStatus::PalMode;
 	}
+}
+
+uint8_t GenesisVdp::ReadPortByte(uint32_t addr) {
+	uint32_t port = addr & 0x1Fu;
+	bool statusOddRead = (port >= 0x04u && port <= 0x07u && (port & 1u) != 0u);
+	if (_statusReadLatchValid && !statusOddRead) {
+		_statusReadLatchValid = false;
+	}
+
+	if (port < 0x04u) {
+		uint16_t buffered = _state.DataPortBuffer;
+		if ((port & 1u) == 0u) {
+			return (uint8_t)(buffered >> 8);
+		}
+
+		PrimeReadBuffer();
+		return (uint8_t)(buffered & 0xFFu);
+	}
+
+	if (port < 0x08u) {
+		if ((port & 1u) == 0u) {
+			_statusReadLatch = ReadControlPort();
+			_statusReadLatchValid = true;
+			return (uint8_t)(_statusReadLatch >> 8);
+		}
+
+		if (_statusReadLatchValid) {
+			_statusReadLatchValid = false;
+			return (uint8_t)(_statusReadLatch & 0xFFu);
+		}
+
+		uint16_t status = ReadControlPort();
+		return (uint8_t)(status & 0xFFu);
+	}
+
+	if (port < 0x10u) {
+		uint16_t hv = ReadHVCounter();
+		return (port & 1u) == 0u ? (uint8_t)(hv >> 8) : (uint8_t)(hv & 0xFFu);
+	}
+
+	return 0xFFu;
 }
 
 void GenesisVdp::UpdateFifoStatusBits() {
@@ -975,6 +1018,7 @@ void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const ui
 
 // Port access
 uint16_t GenesisVdp::ReadDataPort() {
+	_statusReadLatchValid = false;
 	_pendingControlWrite = false;
 	uint16_t result = _state.DataPortBuffer;
 	PrimeReadBuffer();
@@ -1007,6 +1051,7 @@ void GenesisVdp::PrimeReadBuffer() {
 }
 
 uint16_t GenesisVdp::ReadControlPort() {
+	_statusReadLatchValid = false;
 	_pendingControlWrite = false;
 	_pendingControlHighWrite = false;
 
@@ -1101,6 +1146,7 @@ GenesisVdpState GenesisVdp::GetState() const {
 }
 
 uint16_t GenesisVdp::ReadHVCounter() {
+	_statusReadLatchValid = false;
 	if ((_state.Registers[0] & 0x02u) != 0) {
 		return _hvCounterLatch;
 	}
@@ -1111,6 +1157,7 @@ uint16_t GenesisVdp::ReadHVCounter() {
 }
 
 void GenesisVdp::WriteDataPortByte(uint8_t value, bool highByte) {
+	_statusReadLatchValid = false;
 	if (highByte) {
 		_dataHighWrite = value;
 		_pendingDataHighWrite = true;
@@ -1125,6 +1172,7 @@ void GenesisVdp::WriteDataPortByte(uint8_t value, bool highByte) {
 }
 
 void GenesisVdp::WriteControlPortByte(uint8_t value, bool highByte) {
+	_statusReadLatchValid = false;
 	if (highByte) {
 		_controlHighWrite = value;
 		_pendingControlHighWrite = true;
@@ -1139,6 +1187,7 @@ void GenesisVdp::WriteControlPortByte(uint8_t value, bool highByte) {
 }
 
 void GenesisVdp::WriteDataPort(uint16_t value) {
+	_statusReadLatchValid = false;
 	_pendingControlWrite = false;
 	_state.DataPortBuffer = value;
 
@@ -1314,6 +1363,7 @@ void GenesisVdp::ApplyPortWrite(uint8_t accessMode, uint16_t address, uint16_t v
 }
 
 void GenesisVdp::WriteControlPort(uint16_t value) {
+	_statusReadLatchValid = false;
 	static uint64_t controlWriteCount = 0;
 	controlWriteCount++;
 
@@ -1726,6 +1776,8 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_writeFifoRead);
 	SV(_writeFifoWrite);
 	SV(_writeFifoCount);
+	SV(_statusReadLatch);
+	SV(_statusReadLatchValid);
 	SV(_hvCounterLatch);
 	for (uint8_t i = 0; i < 4; i++) {
 		SV(_writeFifo[i].Address);

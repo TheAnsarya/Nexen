@@ -63,6 +63,8 @@ private:
 	uint8_t _dataHighWrite = 0;
 	bool _pendingControlHighWrite = false;
 	uint8_t _controlHighWrite = 0;
+	uint16_t _statusReadLatch = 0;
+	bool _statusReadLatchValid = false;
 	uint16_t _hvCounterLatch = 0;
 	uint8_t _accessMode = 0; // 0=VRAM read, 1=VRAM write, 3=CRAM write, 5=VSRAM write
 	uint16_t _addressReg = 0;
@@ -167,6 +169,7 @@ public:
 	void Run(uint64_t targetCycle);
 
 	// Port access
+	uint8_t ReadPortByte(uint32_t addr);
 	uint16_t ReadDataPort();
 	uint16_t ReadControlPort();
 	uint16_t ReadHVCounter();

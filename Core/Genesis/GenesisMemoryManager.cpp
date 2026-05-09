@@ -1857,9 +1857,8 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			}
 			TraceStartupEvent("TMSS_VDP_R8_ALLOW", addr, 0, IsStartupWindowActive() ? 1 : 0);
 		}
-		// VDP ports (byte access from word port)
-		uint16_t effectiveWord = ReadVdpPort(addr);
-		uint8_t effectiveValue = (addr & 1) ? (uint8_t)(effectiveWord & 0xFF) : (uint8_t)(effectiveWord >> 8);
+		// Use byte-accurate VDP semantics to avoid duplicating word-read side effects.
+		uint8_t effectiveValue = _vdp ? _vdp->ReadPortByte(addr) : 0xFF;
 		_openBus = effectiveValue;
 		return effectiveValue;
 	}
@@ -2676,7 +2675,10 @@ uint16_t GenesisMemoryManager::ReadVdpPort(uint32_t addr) {
 				stateBeforeRead.HCounter,
 				vdpState.HCounter));
 		}
-		TraceStartupEvent("VDP_CTRL_R", addr, effectiveValue, (uint16_t)(stateBeforeRead.StatusRegister ^ _vdp->GetState().StatusRegister));
+		GenesisVdpState stateAfterRead = _vdp->GetState();
+		if (stateAfterRead.FrameCount > 0u) {
+			TraceStartupEvent("VDP_CTRL_R", addr, effectiveValue, (uint16_t)(stateBeforeRead.StatusRegister ^ stateAfterRead.StatusRegister));
+		}
 		_openBus = (uint8_t)(effectiveValue & 0xFF);
 		return effectiveValue;
 	} else if (port < 0x10) {
