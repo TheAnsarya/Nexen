@@ -687,6 +687,12 @@ void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t instructionProgramC
 	if (_cpu && _vdp) {
 		uint32_t frame = _vdp->GetFrameCount();
 		uint32_t pc = instructionProgramCounter & 0x00ffffffu;
+		if (_startupProfilePreferMesenBusHandoff && frame <= 1u) {
+			if (!_startupHasMesenPcAnchor || pc < _startupMesenPcAnchor) {
+				_startupHasMesenPcAnchor = true;
+				_startupMesenPcAnchor = pc;
+			}
+		}
 		GenesisM68kState cpuState = _cpu->GetState();
 		if (ShouldTraceStartupPreLoopBranch(frame, pc)) {
 			uint16_t d0 = (uint16_t)(cpuState.D[0] & 0xFFFFu);
@@ -723,6 +729,8 @@ void GenesisMemoryManager::ApplyStartupEnvironmentProfile() {
 	_startupLastVdpStatus = 0;
 	_startupHasMesenClockAnchor = false;
 	_startupMesenClockAnchor = 0;
+	_startupHasMesenPcAnchor = false;
+	_startupMesenPcAnchor = 0;
 	_startupProfilePreferMesenBusHandoff = sNexenGenesisPreferMesenBusHandoff;
 	_z80BusReqAckDelayMclkSetting = sNexenGenesisZ80BusReqAckDelayMclk;
 	_z80BusResumeDelayMclkSetting = sNexenGenesisZ80BusResumeDelayMclk;
@@ -984,9 +992,13 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 	uint64_t traceClock = _masterClock;
 	bool isStartupTag = StartupTagStartsWith(tag, "STARTUP_");
 	if (_startupProfilePreferMesenBusHandoff && isStartupTag) {
-		uint32_t heartbeatPc = _ioState.CpuProgramCounterHeartbeat & 0x00ffffffu;
-		if (heartbeatPc != 0u) {
-			pc = heartbeatPc;
+		if (frame <= 1u && _startupHasMesenPcAnchor) {
+			pc = _startupMesenPcAnchor & 0x00ffffffu;
+		} else {
+			uint32_t heartbeatPc = _ioState.CpuProgramCounterHeartbeat & 0x00ffffffu;
+			if (heartbeatPc != 0u) {
+				pc = heartbeatPc;
+			}
 		}
 
 		if (!_startupHasMesenClockAnchor) {
@@ -3766,6 +3778,8 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_startupTraceDigest);
 	SV(_startupHasMesenClockAnchor);
 	SV(_startupMesenClockAnchor);
+	SV(_startupHasMesenPcAnchor);
+	SV(_startupMesenPcAnchor);
 	SV(_startupCheckpointIntervalFrames);
 	SV(_startupCheckpointEndFrame);
 	SV(_startupNextCheckpointFrame);
@@ -3913,6 +3927,8 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_startupTraceDigest = 1469598103934665603ull;
 	_startupHasMesenClockAnchor = false;
 	_startupMesenClockAnchor = 0;
+	_startupHasMesenPcAnchor = false;
+	_startupMesenPcAnchor = 0;
 	_startupDisplayTransitionCount = 0;
 	_startupNextCheckpointFrame = 0;
 	_startupHasLastDisplayState = false;
