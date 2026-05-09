@@ -687,11 +687,91 @@ void GenesisMemoryManager::ApplyStartupEnvironmentProfile() {
 	_startupCheckpointEndFrame = sNexenGenesisStartupCheckpointEndFrame;
 	_startupNextCheckpointFrame = 0;
 	_startupDisplayTransitionCount = 0;
+	_startupHasLastDisplayState = false;
+	_startupHasLastZ80RunState = false;
+	_startupLastZ80Running = false;
+	_startupHasLastZ80BusReqState = false;
+	_startupLastZ80BusReq = false;
+	_startupHasLastZ80ResetState = false;
+	_startupLastZ80Reset = false;
+	_startupHasLastVdpRegs = false;
+	memset(_startupLastVdpRegs, 0, sizeof(_startupLastVdpRegs));
+	_startupLastVdpStatus = 0;
 	_startupProfilePreferMesenBusHandoff = sNexenGenesisPreferMesenBusHandoff;
 	_z80BusReqAckDelayMclkSetting = sNexenGenesisZ80BusReqAckDelayMclk;
 	_z80BusResumeDelayMclkSetting = sNexenGenesisZ80BusResumeDelayMclk;
 	_z80LatchOnlyHighByteWrites = sNexenGenesisZ80LatchOnlyHighByteWrites;
 	_tmssStrictMode = sNexenGenesisTmssStrictMode;
+}
+
+void GenesisMemoryManager::EmitStartupTransitionMarkers() {
+	if (!_vdp) {
+		return;
+	}
+
+	uint32_t frame = _vdp->GetFrameCount();
+	if (!ShouldLogNexenStartupTrace(frame)) {
+		return;
+	}
+
+	GenesisVdpState state = _vdp->GetState();
+	bool displayEnabled = (state.Registers[VdpReg::ModeSet2] & 0x40) != 0;
+	bool z80Running = _z80RuntimeRunning;
+	bool z80BusReq = _z80BusRequest;
+	bool z80Reset = _z80Reset;
+
+	if (!_startupHasLastDisplayState) {
+		_startupHasLastDisplayState = true;
+		_startupLastDisplayEnabled = displayEnabled;
+	} else if (displayEnabled != _startupLastDisplayEnabled) {
+		_startupLastDisplayEnabled = displayEnabled;
+		_startupDisplayTransitionCount++;
+		TraceStartupEvent("VDP_DISP_TGL", 0xC00004, (uint16_t)state.Registers[VdpReg::ModeSet2], (uint16_t)_startupDisplayTransitionCount);
+	}
+
+	if (!_startupHasLastZ80RunState) {
+		_startupHasLastZ80RunState = true;
+		_startupLastZ80Running = z80Running;
+	} else if (z80Running != _startupLastZ80Running) {
+		_startupLastZ80Running = z80Running;
+		TraceStartupEvent("Z80_RUN_TGL", 0xA11100, z80Running ? 1u : 0u, (uint16_t)(_z80BusAck ? 1u : 0u));
+	}
+
+	if (!_startupHasLastZ80BusReqState) {
+		_startupHasLastZ80BusReqState = true;
+		_startupLastZ80BusReq = z80BusReq;
+	} else if (z80BusReq != _startupLastZ80BusReq) {
+		_startupLastZ80BusReq = z80BusReq;
+		TraceStartupEvent("Z80_BUSREQ", 0xA11100, z80BusReq ? 1u : 0u, (uint16_t)(_z80BusAck ? 1u : 0u));
+	}
+
+	if (!_startupHasLastZ80ResetState) {
+		_startupHasLastZ80ResetState = true;
+		_startupLastZ80Reset = z80Reset;
+	} else if (z80Reset != _startupLastZ80Reset) {
+		_startupLastZ80Reset = z80Reset;
+		TraceStartupEvent("Z80_RESET", 0xA11200, z80Reset ? 1u : 0u, (uint16_t)(z80BusReq ? 1u : 0u));
+	}
+
+	if (!_startupHasLastVdpRegs) {
+		_startupHasLastVdpRegs = true;
+		memcpy(_startupLastVdpRegs, state.Registers, sizeof(_startupLastVdpRegs));
+		_startupLastVdpStatus = state.StatusRegister;
+	} else {
+		for (uint32_t i = 0; i < (uint32_t)sizeof(_startupLastVdpRegs); i++) {
+			uint8_t currentValue = state.Registers[i];
+			if (_startupLastVdpRegs[i] != currentValue) {
+				uint16_t packed = (uint16_t)(((uint16_t)_startupLastVdpRegs[i] << 8) | currentValue);
+				TraceStartupEvent("VDP_REG_W", 0xC00004, packed, (uint16_t)i);
+				_startupLastVdpRegs[i] = currentValue;
+			}
+		}
+
+		if (_startupLastVdpStatus != state.StatusRegister) {
+			TraceStartupEvent("VDP_STAT_W", 0xC00004, state.StatusRegister, (uint16_t)(_startupLastVdpStatus ^ state.StatusRegister));
+			_startupLastVdpStatus = state.StatusRegister;
+		}
+	}
 }
 
 void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) {
@@ -3596,6 +3676,21 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_startupWindowFrames);
 	SV(_startupTraceSequence);
 	SV(_startupTraceDigest);
+	SV(_startupCheckpointIntervalFrames);
+	SV(_startupCheckpointEndFrame);
+	SV(_startupNextCheckpointFrame);
+	SV(_startupDisplayTransitionCount);
+	SV(_startupLastDisplayEnabled);
+	SV(_startupHasLastDisplayState);
+	SV(_startupHasLastZ80RunState);
+	SV(_startupLastZ80Running);
+	SV(_startupHasLastZ80BusReqState);
+	SV(_startupLastZ80BusReq);
+	SV(_startupHasLastZ80ResetState);
+	SV(_startupLastZ80Reset);
+	SV(_startupHasLastVdpRegs);
+	SVArray(_startupLastVdpRegs, (uint32_t)sizeof(_startupLastVdpRegs));
+	SV(_startupLastVdpStatus);
 	SV(_segaCdSubCpuRunning);
 	SV(_segaCdSubCpuBusRequest);
 	SV(_segaCdSubCpuTransitionCount);
@@ -3728,6 +3823,16 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_startupTraceDigest = 1469598103934665603ull;
 	_startupDisplayTransitionCount = 0;
 	_startupNextCheckpointFrame = 0;
+	_startupHasLastDisplayState = false;
+	_startupHasLastZ80RunState = false;
+	_startupLastZ80Running = false;
+	_startupHasLastZ80BusReqState = false;
+	_startupLastZ80BusReq = false;
+	_startupHasLastZ80ResetState = false;
+	_startupLastZ80Reset = false;
+	_startupHasLastVdpRegs = false;
+	memset(_startupLastVdpRegs, 0, sizeof(_startupLastVdpRegs));
+	_startupLastVdpStatus = 0;
 	_startupLastDisplayEnabled = _vdp ? ((_vdp->GetState().Registers[VdpReg::ModeSet2] & 0x40) != 0) : false;
 	_ramEnable = false;
 	_ramWritable = true;

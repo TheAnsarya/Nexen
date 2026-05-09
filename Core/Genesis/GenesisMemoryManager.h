@@ -86,6 +86,16 @@ private:
 	uint32_t _startupNextCheckpointFrame = 0;
 	uint32_t _startupDisplayTransitionCount = 0;
 	bool _startupLastDisplayEnabled = false;
+	bool _startupHasLastDisplayState = false;
+	bool _startupHasLastZ80RunState = false;
+	bool _startupLastZ80Running = false;
+	bool _startupHasLastZ80BusReqState = false;
+	bool _startupLastZ80BusReq = false;
+	bool _startupHasLastZ80ResetState = false;
+	bool _startupLastZ80Reset = false;
+	bool _startupHasLastVdpRegs = false;
+	uint8_t _startupLastVdpRegs[24] = {};
+	uint16_t _startupLastVdpStatus = 0;
 	bool _startupProfilePreferMesenBusHandoff = true;
 	bool _segaCdSubCpuRunning = false;
 	bool _segaCdSubCpuBusRequest = false;
@@ -204,6 +214,7 @@ private:
 	void EvaluateTmssUnlockState(bool allowLog, uint32_t addr, uint32_t value, bool isWrite);
 	void UpdateTmssUnlockWindow(uint32_t masterClocks);
 	void ApplyStartupEnvironmentProfile();
+	void EmitStartupTransitionMarkers();
 	void EmitStartupCheckpointIfNeeded(const char* sourceTag);
 	bool IsTmssVdpLockEnforced() const;
 	bool IsStartupWindowActive() const;
@@ -257,6 +268,7 @@ public:
 			_z80RuntimeStalledCycles += cycles;
 		}
 		_vdp->Run(_masterClock);
+		EmitStartupTransitionMarkers();
 	}
 
 	uint64_t GetMasterClock() const { return _masterClock; }
