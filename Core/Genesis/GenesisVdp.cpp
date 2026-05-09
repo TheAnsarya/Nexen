@@ -77,6 +77,9 @@ void GenesisVdp::Reset(bool hardReset) {
 	_dmaStartupDelayCyclesRemaining = 0;
 	_dmaBusCycleRemainder = 0;
 	_prevLineDotOverflow = false;
+	_writeFifoRead = 0;
+	_writeFifoWrite = 0;
+	_writeFifoCount = 0;
 
 	_screenWidth = IsH40Mode() ? 320 : 256;
 	_screenHeight = 224;
@@ -125,6 +128,13 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 
 		if (_state.DmaActive) {
 			ProcessDma();
+		}
+
+		if (_writeFifoCount > 0) {
+			bool activeDisplay = _lineDisplayEnabled && _scanline < _screenHeight;
+			if (!activeDisplay || IsActiveDisplayExternalDmaSlot()) {
+				DrainWriteFifoOne();
+			}
 		}
 
 		if (_hCounter >= _currentLineCycleTarget) {
@@ -868,28 +878,28 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 		}
 
 		uint32_t addr = _addressReg & 0xFFFF;
-		if (addr + 1 < VramSize) {
-			uint8_t hi = (uint8_t)(value >> 8);
-			uint8_t lo = (uint8_t)(value & 0xFF);
-			_vram[addr] = hi;
-			_vram[addr + 1] = lo;
+		uint8_t hi = (uint8_t)(value >> 8);
+		uint8_t lo = (uint8_t)(value & 0xFF);
+		if (!loggedFirstNonZeroVram && (hi != 0 || lo != 0)) {
+			loggedFirstNonZeroVram = true;
+			MessageManager::Log(std::format("[Genesis][VDP] First non-zero VRAM write at ${:04x}: ${:02x} ${:02x} (word=${:04x}, dataWrite#{}, frame={})",
+				addr,
+				hi,
+				lo,
+				value,
+				dataWriteCount,
+				_state.FrameCount));
+		}
 
-			if (!loggedFirstNonZeroVram && (hi != 0 || lo != 0)) {
-				loggedFirstNonZeroVram = true;
-				MessageManager::Log(std::format("[Genesis][VDP] First non-zero VRAM write at ${:04x}: ${:02x} ${:02x} (word=${:04x}, dataWrite#{}, frame={})",
-					addr,
-					hi,
-					lo,
-					value,
-					dataWriteCount,
-					_state.FrameCount));
-			}
+		bool activeDisplay = _lineDisplayEnabled && _scanline < _screenHeight;
+		if (activeDisplay) {
+			EnqueueWriteFifo(accessMode, _addressReg, value);
+		} else {
+			ApplyPortWrite(accessMode, _addressReg, value);
 		}
 	} else if (accessMode == 3) { // CRAM write
 		uint8_t idx = (_addressReg / 2) & 0x3F;
 		uint16_t cramValue = value;
-		_cram[idx] = cramValue;
-		UpdatePaletteEntry(idx);
 
 		if (!loggedFirstNonZeroCram && cramValue != 0) {
 			loggedFirstNonZeroCram = true;
@@ -900,11 +910,17 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 				dataWriteCount,
 				_state.FrameCount));
 		}
+
+		bool activeDisplay = _lineDisplayEnabled && _scanline < _screenHeight;
+		if (activeDisplay) {
+			EnqueueWriteFifo(accessMode, _addressReg, value);
+		} else {
+			ApplyPortWrite(accessMode, _addressReg, value);
+		}
 	} else if (accessMode == 5) { // VSRAM write
 		uint8_t idx = (_addressReg / 2) & 0x3F;
 		if (idx < 40) {
 			uint16_t vsramValue = value & 0x07FF;
-			_vsram[idx] = vsramValue;
 
 			if (!loggedFirstNonZeroVsram && vsramValue != 0) {
 				loggedFirstNonZeroVsram = true;
@@ -914,6 +930,13 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 					value,
 					dataWriteCount,
 					_state.FrameCount));
+			}
+
+			bool activeDisplay = _lineDisplayEnabled && _scanline < _screenHeight;
+			if (activeDisplay) {
+				EnqueueWriteFifo(accessMode, _addressReg, value);
+			} else {
+				ApplyPortWrite(accessMode, _addressReg, value);
 			}
 		}
 	} else if (!loggedUnsupportedMode) {
@@ -927,6 +950,60 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 	}
 
 	_addressReg += _autoIncrement;
+}
+
+void GenesisVdp::EnqueueWriteFifo(uint8_t accessMode, uint16_t address, uint16_t value) {
+	if (_writeFifoCount >= 4) {
+		DrainWriteFifoOne();
+	}
+
+	_writeFifo[_writeFifoWrite].AccessMode = accessMode;
+	_writeFifo[_writeFifoWrite].Address = address;
+	_writeFifo[_writeFifoWrite].Value = value;
+	_writeFifoWrite = (_writeFifoWrite + 1u) & 0x03u;
+	if (_writeFifoCount < 4) {
+		_writeFifoCount++;
+	}
+}
+
+void GenesisVdp::DrainWriteFifoOne() {
+	if (_writeFifoCount == 0) {
+		return;
+	}
+
+	const VdpWriteFifoEntry& entry = _writeFifo[_writeFifoRead];
+	ApplyPortWrite(entry.AccessMode, entry.Address, entry.Value);
+	_writeFifoRead = (_writeFifoRead + 1u) & 0x03u;
+	_writeFifoCount--;
+}
+
+void GenesisVdp::ApplyPortWrite(uint8_t accessMode, uint16_t address, uint16_t value) {
+	switch (accessMode & 0x0Fu) {
+		case 0x00:
+		case 0x01: {
+			uint32_t addr = address & 0xFFFFu;
+			if (addr + 1u < VramSize) {
+				_vram[addr] = (uint8_t)(value >> 8);
+				_vram[addr + 1u] = (uint8_t)value;
+			}
+			break;
+		}
+		case 0x03: {
+			uint8_t idx = (uint8_t)((address >> 1) & 0x3Fu);
+			_cram[idx] = value;
+			UpdatePaletteEntry(idx);
+			break;
+		}
+		case 0x05: {
+			uint8_t idx = (uint8_t)((address >> 1) & 0x3Fu);
+			if (idx < 40) {
+				_vsram[idx] = value & 0x07FFu;
+			}
+			break;
+		}
+		default:
+			break;
+	}
 }
 
 void GenesisVdp::WriteControlPort(uint16_t value) {
@@ -1298,6 +1375,14 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_dmaInitialized);
 	SV(_dmaLatchedMode);
 	SV(_dmaSourceReg23Latched);
+	SV(_writeFifoRead);
+	SV(_writeFifoWrite);
+	SV(_writeFifoCount);
+	for (uint8_t i = 0; i < 4; i++) {
+		SV(_writeFifo[i].Address);
+		SV(_writeFifo[i].Value);
+		SV(_writeFifo[i].AccessMode);
+	}
 	SV(_prevLineDotOverflow);
 	for (int i = 0; i < 24; i++) {
 		SVI(_state.Registers[i]);

@@ -77,6 +77,17 @@ private:
 	uint8_t _dmaBusCycleRemainder = 0;
 	bool _prevLineDotOverflow = false;
 
+	struct VdpWriteFifoEntry {
+		uint16_t Address = 0;
+		uint16_t Value = 0;
+		uint8_t AccessMode = 0;
+	};
+
+	VdpWriteFifoEntry _writeFifo[4] = {};
+	uint8_t _writeFifoRead = 0;
+	uint8_t _writeFifoWrite = 0;
+	uint8_t _writeFifoCount = 0;
+
 	// Internal methods
 	void ProcessScanline();
 	void RenderScanline();
@@ -95,6 +106,9 @@ private:
 	void ProcessDma();
 	uint8_t GetDmaWordPeriodCycles() const;
 	bool IsActiveDisplayExternalDmaSlot() const;
+	void EnqueueWriteFifo(uint8_t accessMode, uint16_t address, uint16_t value);
+	void DrainWriteFifoOne();
+	void ApplyPortWrite(uint8_t accessMode, uint16_t address, uint16_t value);
 
 	// Register helpers
 	bool IsDisplayEnabled() const { return (_state.Registers[1] & 0x40) != 0; }
