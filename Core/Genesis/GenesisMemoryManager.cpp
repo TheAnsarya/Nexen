@@ -395,6 +395,26 @@ namespace {
 		return frame <= sNexenStartupTraceFrameEnd;
 	}
 
+	static bool ShouldTraceStartupLoopPoll(uint32_t frame, uint32_t pc) {
+		if (pc < 0x071f80u || pc > 0x072040u) {
+			return false;
+		}
+
+		static uint32_t sLoopPollTraceFrame = 0xFFFFFFFFu;
+		static uint32_t sLoopPollTraceCount = 0u;
+		if (sLoopPollTraceFrame != frame) {
+			sLoopPollTraceFrame = frame;
+			sLoopPollTraceCount = 0u;
+		}
+
+		if (sLoopPollTraceCount >= 96u) {
+			return false;
+		}
+
+		sLoopPollTraceCount++;
+		return true;
+	}
+
 	static void LogNexenStartupTrace(uint32_t frame, uint16_t line, const char* tag, uint32_t address, uint16_t value, uint16_t auxValue, uint32_t pc, uint64_t mclk) {
 		if (!sNexenStartupTraceFile) {
 			return;
@@ -620,6 +640,15 @@ void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t instructionProgramC
 	_ioState.CpuProgramCounterHeartbeat = instructionProgramCounter & 0x00ffffff;
 	_ioState.CpuCycleHeartbeat = cycleCount;
 	_ioState.CpuInstructionHeartbeat++;
+	if (_cpu && _vdp) {
+		uint32_t frame = _vdp->GetFrameCount();
+		if (ShouldTraceStartupLoopPoll(frame, instructionProgramCounter & 0x00ffffffu)) {
+			GenesisM68kState cpuState = _cpu->GetState();
+			uint16_t d0 = (uint16_t)(cpuState.D[0] & 0xFFFFu);
+			uint16_t d7 = (uint16_t)(cpuState.D[7] & 0xFFFFu);
+			TraceStartupEvent("CPU_LOOP", instructionProgramCounter, d0, d7);
+		}
+	}
 	if ((_ioState.CpuInstructionHeartbeat & 0xFFu) == 0u) {
 		TraceStartupEvent("CPU_HB", instructionProgramCounter, (uint16_t)(cycleCount & 0xFFFFu), (uint16_t)(_ioState.CpuInstructionHeartbeat & 0xFFFFu));
 	}
@@ -1825,6 +1854,13 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		uint8_t effectiveValue = _prgRom[mappedAddr];
 		_ioState.RomReadHeartbeat++;
 		_emu->ProcessMemoryRead<CpuType::Genesis>(mappedAddr, effectiveValue, MemoryOperationType::Read);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL8", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
 		_openBus = effectiveValue;
 		return effectiveValue;
 	}
@@ -1834,6 +1870,13 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		uint32_t offset = addr & 0xFFFF;
 		uint8_t effectiveValue = _workRam[offset];
 		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Read);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL8", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
 		_openBus = effectiveValue;
 		return effectiveValue;
 	}
@@ -1870,6 +1913,12 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 				}
 			} else if (port < 0x10) {
 				TraceStartupEvent("VDP_HV_R", addr, effectiveValue, (uint16_t)port);
+			}
+
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			uint32_t frame = _vdp->GetFrameCount();
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL8", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
 			}
 		}
 		_openBus = effectiveValue;
@@ -1997,6 +2046,13 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 				_z80Reset ? 1 : 0));
 		}
 		TrackSegaCdHandshakeTranscript(addr, false, effectiveValue);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL8", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
 		return effectiveValue;
 	}
 
@@ -2017,6 +2073,13 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 				_z80Reset ? 1 : 0));
 		}
 		TrackSegaCdHandshakeTranscript(addr, false, effectiveValue);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL8", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
 		return effectiveValue;
 	}
 
@@ -2060,6 +2123,13 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		uint16_t effectiveValue = ((uint16_t)effectiveHighByte << 8) | effectiveLowByte;
 		_ioState.RomReadHeartbeat += 2;
 		_emu->ProcessMemoryRead<CpuType::Genesis>(mappedAddrHi, effectiveHighByte, MemoryOperationType::Read);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL16", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
 		_openBus = (uint8_t)(effectiveValue & 0xFF);
 		return effectiveValue;
 	}
@@ -2070,6 +2140,13 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		uint8_t effectiveLowByte = _workRam[(offset + 1) & 0xFFFF];
 		uint16_t effectiveValue = ((uint16_t)effectiveHighByte << 8) | effectiveLowByte;
 		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, effectiveHighByte, MemoryOperationType::Read);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL16", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
 		_openBus = effectiveLowByte;
 		return effectiveValue;
 	}
@@ -2094,6 +2171,13 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 			TraceStartupEvent("TMSS_VDP_R16_ALLOW", addr, 0, IsStartupWindowActive() ? 1 : 0);
 		}
 		uint16_t effectiveValue = ReadVdpPort(addr);
+		if (_vdp) {
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			uint32_t frame = _vdp->GetFrameCount();
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL16", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
 		_openBus = (uint8_t)(effectiveValue & 0xFF);
 		return effectiveValue;
 	}
@@ -2154,6 +2238,13 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		}
 		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
 		TrackSegaCdHandshakeTranscript(addr, false, effectiveHighByte);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL16", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
 		return effectiveValue;
 	}
 
@@ -2161,6 +2252,13 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 		uint16_t effectiveValue = _z80Reset ? 0x0101 : 0x0000;
 		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
 		TrackSegaCdHandshakeTranscript(addr, false, effectiveHighByte);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL16", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
 		return effectiveValue;
 	}
 

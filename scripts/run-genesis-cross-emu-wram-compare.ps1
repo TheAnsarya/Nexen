@@ -462,6 +462,9 @@ function Get-StartupFrameSnapshot {
 	$result["STARTUP_VDP"] = "<missing>"
 	$result["VDP_REG_W"] = "<missing>"
 	$result["VDP_STAT_W"] = "<missing>"
+	$result["LOOP_POLL8"] = "<missing>"
+	$result["LOOP_POLL16"] = "<missing>"
+	$result["CPU_LOOP"] = "<missing>"
 
 	if ($null -eq $Lines -or $Lines.Count -eq 0) {
 		return $result
@@ -487,6 +490,18 @@ function Get-StartupFrameSnapshot {
 		}
 		if ($result["VDP_STAT_W"] -eq "<missing>" -and $line.Contains(" VDP_STAT_W ")) {
 			$result["VDP_STAT_W"] = $line
+			continue
+		}
+		if ($result["LOOP_POLL8"] -eq "<missing>" -and $line.Contains(" LOOP_POLL8 ")) {
+			$result["LOOP_POLL8"] = $line
+			continue
+		}
+		if ($result["LOOP_POLL16"] -eq "<missing>" -and $line.Contains(" LOOP_POLL16 ")) {
+			$result["LOOP_POLL16"] = $line
+			continue
+		}
+		if ($result["CPU_LOOP"] -eq "<missing>" -and $line.Contains(" CPU_LOOP ")) {
+			$result["CPU_LOOP"] = $line
 			continue
 		}
 	}
@@ -932,6 +947,12 @@ $report.Add("mesenSnapshot_VDP_REG_W=$($mesenFrameSnapshot.VDP_REG_W)")
 $report.Add("nexenSnapshot_VDP_REG_W=$($nexenFrameSnapshot.VDP_REG_W)")
 $report.Add("mesenSnapshot_VDP_STAT_W=$($mesenFrameSnapshot.VDP_STAT_W)")
 $report.Add("nexenSnapshot_VDP_STAT_W=$($nexenFrameSnapshot.VDP_STAT_W)")
+$report.Add("mesenSnapshot_LOOP_POLL8=$($mesenFrameSnapshot.LOOP_POLL8)")
+$report.Add("nexenSnapshot_LOOP_POLL8=$($nexenFrameSnapshot.LOOP_POLL8)")
+$report.Add("mesenSnapshot_LOOP_POLL16=$($mesenFrameSnapshot.LOOP_POLL16)")
+$report.Add("nexenSnapshot_LOOP_POLL16=$($nexenFrameSnapshot.LOOP_POLL16)")
+$report.Add("mesenSnapshot_CPU_LOOP=$($mesenFrameSnapshot.CPU_LOOP)")
+$report.Add("nexenSnapshot_CPU_LOOP=$($nexenFrameSnapshot.CPU_LOOP)")
 
 $report | Out-File -LiteralPath $resolvedReportPath -Encoding utf8
 
