@@ -1123,11 +1123,11 @@ uint16_t GenesisVdp::ReadControlPort() {
 }
 
 void GenesisVdp::AcknowledgeInterrupt(uint8_t level) {
-	if (level >= 6 && _vintPending && IsVBlankInterruptEnabled()) {
+	if (_vintPending && IsVBlankInterruptEnabled()) {
 		_vintPending = false;
 		_vintNew = false;
 		_state.StatusRegister &= ~VdpStatus::VIntPending;
-	} else if (level >= 4 && _hintPending && IsHBlankInterruptEnabled()) {
+	} else if (_hintPending && IsHBlankInterruptEnabled()) {
 		_hintPending = false;
 		_hintNew = false;
 	}

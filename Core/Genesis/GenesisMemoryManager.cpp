@@ -1859,6 +1859,19 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		}
 		// Use byte-accurate VDP semantics to avoid duplicating word-read side effects.
 		uint8_t effectiveValue = _vdp ? _vdp->ReadPortByte(addr) : 0xFF;
+		if (_vdp) {
+			uint32_t port = addr & 0x1F;
+			if (port < 0x04) {
+				TraceStartupEvent("VDP_DATA_R", addr, effectiveValue, (uint16_t)port);
+			} else if (port < 0x08) {
+				GenesisVdpState stateAfterRead = _vdp->GetState();
+				if (stateAfterRead.FrameCount > 0u) {
+					TraceStartupEvent("VDP_CTRL_R", addr, effectiveValue, (uint16_t)port);
+				}
+			} else if (port < 0x10) {
+				TraceStartupEvent("VDP_HV_R", addr, effectiveValue, (uint16_t)port);
+			}
+		}
 		_openBus = effectiveValue;
 		return effectiveValue;
 	}
@@ -2278,9 +2291,24 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		}
 		uint32_t port = addr & 0x1F;
 		if (_vdp && port < 0x04) {
+			TraceStartupEvent("VDP_DATA_W", addr, effectiveValue, (uint16_t)port);
 			_vdp->WriteDataPortByte(effectiveValue, (addr & 1u) == 0u);
 		} else if (_vdp && port < 0x08) {
+			GenesisVdpState stateBeforeWrite = _vdp->GetState();
+			TraceStartupEvent("VDP_CTRL_W", addr, effectiveValue, (uint16_t)port);
 			_vdp->WriteControlPortByte(effectiveValue, (addr & 1u) == 0u);
+			GenesisVdpState stateAfterWrite = _vdp->GetState();
+			for (uint32_t reg = 0; reg < 24; reg++) {
+				uint8_t oldValue = stateBeforeWrite.Registers[reg];
+				uint8_t newValue = stateAfterWrite.Registers[reg];
+				if (oldValue != newValue) {
+					uint16_t packed = (uint16_t)(((uint16_t)oldValue << 8) | newValue);
+					TraceStartupEvent("VDP_REG_W", 0xC00004, packed, (uint16_t)reg);
+				}
+			}
+			if (stateBeforeWrite.StatusRegister != stateAfterWrite.StatusRegister) {
+				TraceStartupEvent("VDP_STAT_W", 0xC00004, stateAfterWrite.StatusRegister, (uint16_t)(stateBeforeWrite.StatusRegister ^ stateAfterWrite.StatusRegister));
+			}
 		} else {
 			// Non data/control VDP byte writes keep legacy behavior.
 			WriteVdpPort(addr, (uint16_t)effectiveValue | ((uint16_t)effectiveValue << 8));
