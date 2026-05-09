@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Genesis/GenesisConsole.h"
 #include "Genesis/GenesisM68k.h"
@@ -124,7 +124,7 @@ namespace {
 	static uint16_t sNexenGenesisZ80BusReqAckDelayMclk = 7u;
 	static uint16_t sNexenGenesisZ80BusResumeDelayMclk = 7u;
 	static bool sNexenGenesisZ80LatchOnlyHighByteWrites = true;
-	static bool sNexenGenesisPreferMesenBusHandoff = true;
+	static bool sNexenGenesisPreferNexenBusHandoff = true;
 	static bool sNexenGenesisPowerOnZ80ResetAsserted = true;
 
 	static bool TryGetNexenTracePathFromEnv(const char* name, std::string& outPath) {
@@ -237,7 +237,7 @@ namespace {
 		sNexenGenesisZ80BusReqAckDelayMclk = 7u;
 		sNexenGenesisZ80BusResumeDelayMclk = 7u;
 		sNexenGenesisZ80LatchOnlyHighByteWrites = true;
-		sNexenGenesisPreferMesenBusHandoff = true;
+		sNexenGenesisPreferNexenBusHandoff = true;
 		sNexenGenesisPowerOnZ80ResetAsserted = true;
 
 		uint32_t value = 0;
@@ -263,13 +263,13 @@ namespace {
 			sNexenGenesisStartupWindowFrames = 0u;
 			sNexenGenesisStartupCheckpointIntervalFrames = 2u;
 			sNexenGenesisStartupCheckpointEndFrame = 120u;
-			sNexenGenesisPreferMesenBusHandoff = false;
+			sNexenGenesisPreferNexenBusHandoff = false;
 			sNexenGenesisTmssStrictMode = true;
 		} else if (sNexenGenesisStartupProfile == "mesen" || sNexenGenesisStartupProfile == "mesen-startup") {
 			sNexenGenesisStartupWindowFrames = 10u;
 			sNexenGenesisStartupCheckpointIntervalFrames = 1u;
 			sNexenGenesisStartupCheckpointEndFrame = 600u;
-			sNexenGenesisPreferMesenBusHandoff = true;
+			sNexenGenesisPreferNexenBusHandoff = true;
 		} else {
 			// logo-compat and unknown values fall back to compatibility-first behavior.
 			sNexenGenesisStartupProfile = "logo-compat";
@@ -291,7 +291,7 @@ namespace {
 			sNexenGenesisZ80BusResumeDelayMclk = (uint16_t)value;
 		}
 		TryParseNexenTraceEnvBool("NEXEN_GENESIS_Z80_LATCH_HIGH_BYTE_ONLY", sNexenGenesisZ80LatchOnlyHighByteWrites);
-		TryParseNexenTraceEnvBool("NEXEN_GENESIS_PREFER_MESEN_BUS_HANDOFF", sNexenGenesisPreferMesenBusHandoff);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_PREFER_MESEN_BUS_HANDOFF", sNexenGenesisPreferNexenBusHandoff);
 		TryParseNexenTraceEnvBool("NEXEN_GENESIS_POWERON_Z80_RESET_ASSERTED", sNexenGenesisPowerOnZ80ResetAsserted);
 
 		std::string tracePath;
@@ -478,7 +478,7 @@ namespace {
 		return std::strncmp(tag, prefix, prefixLen) == 0;
 	}
 
-	static bool ShouldEmitMesenProfileStartupTag(const char* tag) {
+	static bool ShouldEmitNexenProfileStartupTag(const char* tag) {
 		return StartupTagEquals(tag, "STARTUP_BOOT")
 			|| StartupTagEquals(tag, "STARTUP_CHECKPOINT")
 			|| StartupTagEquals(tag, "STARTUP_Z80")
@@ -687,10 +687,10 @@ void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t instructionProgramC
 	if (_cpu && _vdp) {
 		uint32_t frame = _vdp->GetFrameCount();
 		uint32_t pc = instructionProgramCounter & 0x00ffffffu;
-		if (_startupProfilePreferMesenBusHandoff && frame <= 1u) {
-			if (!_startupHasMesenPcAnchor || pc < _startupMesenPcAnchor) {
-				_startupHasMesenPcAnchor = true;
-				_startupMesenPcAnchor = pc;
+		if (_startupProfilePreferNexenBusHandoff && frame <= 1u) {
+			if (!_startupHasNexenPcAnchor || pc < _startupNexenPcAnchor) {
+				_startupHasNexenPcAnchor = true;
+				_startupNexenPcAnchor = pc;
 			}
 		}
 		GenesisM68kState cpuState = _cpu->GetState();
@@ -727,11 +727,11 @@ void GenesisMemoryManager::ApplyStartupEnvironmentProfile() {
 	_startupHasLastVdpRegs = false;
 	memset(_startupLastVdpRegs, 0, sizeof(_startupLastVdpRegs));
 	_startupLastVdpStatus = 0;
-	_startupHasMesenClockAnchor = false;
-	_startupMesenClockAnchor = 0;
-	_startupHasMesenPcAnchor = false;
-	_startupMesenPcAnchor = 0;
-	_startupProfilePreferMesenBusHandoff = sNexenGenesisPreferMesenBusHandoff;
+	_startupHasNexenClockAnchor = false;
+	_startupNexenClockAnchor = 0;
+	_startupHasNexenPcAnchor = false;
+	_startupNexenPcAnchor = 0;
+	_startupProfilePreferNexenBusHandoff = sNexenGenesisPreferNexenBusHandoff;
 	_z80BusReqAckDelayMclkSetting = sNexenGenesisZ80BusReqAckDelayMclk;
 	_z80BusResumeDelayMclkSetting = sNexenGenesisZ80BusResumeDelayMclk;
 	_z80LatchOnlyHighByteWrites = sNexenGenesisZ80LatchOnlyHighByteWrites;
@@ -753,7 +753,7 @@ void GenesisMemoryManager::EmitStartupTransitionMarkers() {
 	bool z80Running = _z80RuntimeRunning;
 	bool z80BusReq = _z80BusRequest;
 	bool z80Reset = _z80Reset;
-	bool mesenProfile = _startupProfilePreferMesenBusHandoff;
+	bool nexenProfile = _startupProfilePreferNexenBusHandoff;
 
 	if (!_startupHasLastDisplayState) {
 		_startupHasLastDisplayState = true;
@@ -767,7 +767,7 @@ void GenesisMemoryManager::EmitStartupTransitionMarkers() {
 	if (!_startupHasLastZ80RunState) {
 		_startupHasLastZ80RunState = true;
 		_startupLastZ80Running = z80Running;
-	} else if (!mesenProfile && z80Running != _startupLastZ80Running) {
+	} else if (!nexenProfile && z80Running != _startupLastZ80Running) {
 		_startupLastZ80Running = z80Running;
 		TraceStartupEvent("Z80_RUN_TGL", 0xA11100, z80Running ? 1u : 0u, (uint16_t)(_z80BusAck ? 1u : 0u));
 	} else {
@@ -777,7 +777,7 @@ void GenesisMemoryManager::EmitStartupTransitionMarkers() {
 	if (!_startupHasLastZ80BusReqState) {
 		_startupHasLastZ80BusReqState = true;
 		_startupLastZ80BusReq = z80BusReq;
-	} else if (!mesenProfile && z80BusReq != _startupLastZ80BusReq) {
+	} else if (!nexenProfile && z80BusReq != _startupLastZ80BusReq) {
 		_startupLastZ80BusReq = z80BusReq;
 		TraceStartupEvent("Z80_BUSREQ", 0xA11100, z80BusReq ? 1u : 0u, (uint16_t)(_z80BusAck ? 1u : 0u));
 	} else {
@@ -787,7 +787,7 @@ void GenesisMemoryManager::EmitStartupTransitionMarkers() {
 	if (!_startupHasLastZ80ResetState) {
 		_startupHasLastZ80ResetState = true;
 		_startupLastZ80Reset = z80Reset;
-	} else if (!mesenProfile && z80Reset != _startupLastZ80Reset) {
+	} else if (!nexenProfile && z80Reset != _startupLastZ80Reset) {
 		_startupLastZ80Reset = z80Reset;
 		TraceStartupEvent("Z80_RESET", 0xA11200, z80Reset ? 1u : 0u, (uint16_t)(z80BusReq ? 1u : 0u));
 	} else {
@@ -798,7 +798,7 @@ void GenesisMemoryManager::EmitStartupTransitionMarkers() {
 		_startupHasLastVdpRegs = true;
 		memcpy(_startupLastVdpRegs, state.Registers, sizeof(_startupLastVdpRegs));
 		_startupLastVdpStatus = state.StatusRegister;
-	} else if (!mesenProfile) {
+	} else if (!nexenProfile) {
 		for (uint32_t i = 0; i < (uint32_t)sizeof(_startupLastVdpRegs); i++) {
 			uint8_t currentValue = state.Registers[i];
 			if (_startupLastVdpRegs[i] != currentValue) {
@@ -837,7 +837,7 @@ void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) 
 	// to scanline 0 so startup tags begin with frame-head chronology.
 	uint16_t totalLines = _vdp->GetTotalLines();
 	uint16_t scanline = _vdp->GetScanline();
-	if (_startupProfilePreferMesenBusHandoff) {
+	if (_startupProfilePreferNexenBusHandoff) {
 		if (scanline != 0u) {
 			return;
 		}
@@ -861,16 +861,16 @@ void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) 
 	startupFlags |= _z80BusAck ? 0x0010 : 0x0000;
 	startupFlags |= _z80RuntimeRunning ? 0x0020 : 0x0000;
 	startupFlags |= displayEnabled ? 0x0040 : 0x0000;
-	startupFlags |= _startupProfilePreferMesenBusHandoff ? 0x0080 : 0x0000;
+	startupFlags |= _startupProfilePreferNexenBusHandoff ? 0x0080 : 0x0000;
 
 	uint16_t paletteDigest = ComputeStartupPaletteDigest(_vdp->GetCramPointer());
 	uint16_t startupPalAux = (uint16_t)(state.Registers[VdpReg::ModeSet2]);
-	if (_startupProfilePreferMesenBusHandoff) {
+	if (_startupProfilePreferNexenBusHandoff) {
 		startupPalAux &= 0x000Fu;
 	}
 	uint16_t startupVdpAux = (uint16_t)(state.Registers[VdpReg::ModeSet1] | ((uint16_t)state.Registers[VdpReg::ModeSet2] << 8));
 	uint16_t startupValue = (uint16_t)(((frame & 0x3FFu) << 6) | (state.VCounter & 0x003Fu));
-	if (_startupProfilePreferMesenBusHandoff) {
+	if (_startupProfilePreferNexenBusHandoff) {
 		TraceStartupEvent("STARTUP_PAL", 0xC00000, paletteDigest, startupPalAux);
 		TraceStartupEvent("STARTUP_VDP", 0xC00004, state.StatusRegister, startupVdpAux);
 		TraceStartupEvent("STARTUP_CHECKPOINT", 0xC00004, startupValue, startupFlags);
@@ -930,7 +930,7 @@ bool GenesisMemoryManager::IsTmssLockedVdpReadAllowed(uint32_t addr) const {
 		return true;
 	}
 
-	if (_startupProfilePreferMesenBusHandoff && port < 0x04) {
+	if (_startupProfilePreferNexenBusHandoff && port < 0x04) {
 		// Compatibility path: allow early data/control reads while logo sequence initializes.
 		return IsStartupWindowActive();
 	}
@@ -954,7 +954,7 @@ bool GenesisMemoryManager::IsTmssLockedVdpWriteAllowed(uint32_t addr) const {
 		return true;
 	}
 
-	if (_startupProfilePreferMesenBusHandoff && port < 0x04) {
+	if (_startupProfilePreferNexenBusHandoff && port < 0x04) {
 		// Compatibility path: allow data/control writes during startup logo setup.
 		return IsStartupWindowActive();
 	}
@@ -977,8 +977,8 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 		return;
 	}
 
-	if (_startupProfilePreferMesenBusHandoff) {
-		if (!ShouldEmitMesenProfileStartupTag(tag)) {
+	if (_startupProfilePreferNexenBusHandoff) {
+		if (!ShouldEmitNexenProfileStartupTag(tag)) {
 			return;
 		}
 
@@ -991,9 +991,9 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 	uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0x000000;
 	uint64_t traceClock = _masterClock;
 	bool isStartupTag = StartupTagStartsWith(tag, "STARTUP_");
-	if (_startupProfilePreferMesenBusHandoff && isStartupTag) {
-		if (frame <= 1u && _startupHasMesenPcAnchor) {
-			pc = _startupMesenPcAnchor & 0x00ffffffu;
+	if (_startupProfilePreferNexenBusHandoff && isStartupTag) {
+		if (frame <= 1u && _startupHasNexenPcAnchor) {
+			pc = _startupNexenPcAnchor & 0x00ffffffu;
 		} else {
 			uint32_t heartbeatPc = _ioState.CpuProgramCounterHeartbeat & 0x00ffffffu;
 			if (heartbeatPc != 0u) {
@@ -1001,13 +1001,13 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 			}
 		}
 
-		if (!_startupHasMesenClockAnchor) {
-			_startupHasMesenClockAnchor = true;
-			_startupMesenClockAnchor = _masterClock;
+		if (!_startupHasNexenClockAnchor) {
+			_startupHasNexenClockAnchor = true;
+			_startupNexenClockAnchor = _masterClock;
 		}
 
-		traceClock = (_masterClock >= _startupMesenClockAnchor)
-			? (_masterClock - _startupMesenClockAnchor)
+		traceClock = (_masterClock >= _startupNexenClockAnchor)
+			? (_masterClock - _startupNexenClockAnchor)
 			: 0;
 	}
 	for (const uint8_t* p = (const uint8_t*)tag; *p; p++) {
@@ -2548,7 +2548,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		_workRam[offset] = effectiveValue;
 		if (_vdp) {
 			uint32_t frame = _vdp->GetFrameCount();
-			if (_startupProfilePreferMesenBusHandoff && frame == 0u) {
+			if (_startupProfilePreferNexenBusHandoff && frame == 0u) {
 				frame = 1u;
 			}
 			if (ShouldLogNexenWramTrace(frame, addr)) {
@@ -2823,7 +2823,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		_workRam[(offset + 1) & 0xFFFF] = effectiveLowByte;
 		if (_vdp) {
 			uint32_t frame = _vdp->GetFrameCount();
-			if (_startupProfilePreferMesenBusHandoff && frame == 0u) {
+			if (_startupProfilePreferNexenBusHandoff && frame == 0u) {
 				frame = 1u;
 			}
 			if (ShouldLogNexenWramTrace(frame, addr)) {
@@ -3776,10 +3776,10 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_startupWindowFrames);
 	SV(_startupTraceSequence);
 	SV(_startupTraceDigest);
-	SV(_startupHasMesenClockAnchor);
-	SV(_startupMesenClockAnchor);
-	SV(_startupHasMesenPcAnchor);
-	SV(_startupMesenPcAnchor);
+	SV(_startupHasNexenClockAnchor);
+	SV(_startupNexenClockAnchor);
+	SV(_startupHasNexenPcAnchor);
+	SV(_startupNexenPcAnchor);
 	SV(_startupCheckpointIntervalFrames);
 	SV(_startupCheckpointEndFrame);
 	SV(_startupNextCheckpointFrame);
@@ -3925,10 +3925,10 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_tmssCartRegister = 0;
 	_startupTraceSequence = 0;
 	_startupTraceDigest = 1469598103934665603ull;
-	_startupHasMesenClockAnchor = false;
-	_startupMesenClockAnchor = 0;
-	_startupHasMesenPcAnchor = false;
-	_startupMesenPcAnchor = 0;
+	_startupHasNexenClockAnchor = false;
+	_startupNexenClockAnchor = 0;
+	_startupHasNexenPcAnchor = false;
+	_startupNexenPcAnchor = 0;
 	_startupDisplayTransitionCount = 0;
 	_startupNextCheckpointFrame = 0;
 	_startupHasLastDisplayState = false;
@@ -4014,3 +4014,5 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 
 	ClearDebugTranscriptLane();
 }
+
+

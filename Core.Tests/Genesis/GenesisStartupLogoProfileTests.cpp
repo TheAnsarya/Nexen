@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Shared/Emulator.h"
 #include <memory>
@@ -85,12 +85,12 @@ namespace {
 		EXPECT_EQ(memoryManager.GetStartupWindowFrames(), 16u);
 		EXPECT_EQ(memoryManager.GetStartupCheckpointIntervalFrames(), 1u);
 		EXPECT_EQ(memoryManager.GetStartupCheckpointEndFrame(), 600u);
-		EXPECT_TRUE(memoryManager.GetStartupProfilePreferMesenBusHandoff());
+		EXPECT_TRUE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
 		EXPECT_EQ(memoryManager.GetZ80BusReqAckDelaySettingMclk(), 7u);
 		EXPECT_EQ(memoryManager.GetZ80BusResumeDelaySettingMclk(), 7u);
 	}
 
-	TEST(GenesisStartupLogoProfileTests, StrictProfileDisablesStartupWindowAndMesenCompatibilityBias) {
+	TEST(GenesisStartupLogoProfileTests, StrictProfileDisablesStartupWindowAndNexenCompatibilityBias) {
 		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
 			{ "NEXEN_GENESIS_STARTUP_PROFILE", "strict-startup" }
 		});
@@ -98,10 +98,10 @@ namespace {
 		EXPECT_EQ(memoryManager.GetStartupWindowFrames(), 0u);
 		EXPECT_EQ(memoryManager.GetStartupCheckpointIntervalFrames(), 2u);
 		EXPECT_EQ(memoryManager.GetStartupCheckpointEndFrame(), 120u);
-		EXPECT_FALSE(memoryManager.GetStartupProfilePreferMesenBusHandoff());
+		EXPECT_FALSE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
 	}
 
-	TEST(GenesisStartupLogoProfileTests, MesenProfileUsesFirstTenSecondCheckpointAndCompatibilityBias) {
+	TEST(GenesisStartupLogoProfileTests, NexenProfileUsesFirstTenSecondCheckpointAndCompatibilityBias) {
 		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
 			{ "NEXEN_GENESIS_STARTUP_PROFILE", "mesen" }
 		});
@@ -109,7 +109,7 @@ namespace {
 		EXPECT_EQ(memoryManager.GetStartupWindowFrames(), 10u);
 		EXPECT_EQ(memoryManager.GetStartupCheckpointIntervalFrames(), 1u);
 		EXPECT_EQ(memoryManager.GetStartupCheckpointEndFrame(), 600u);
-		EXPECT_TRUE(memoryManager.GetStartupProfilePreferMesenBusHandoff());
+		EXPECT_TRUE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
 	}
 
 	TEST(GenesisStartupLogoProfileTests, ExplicitWindowAndCheckpointOverridesApplyAcrossProfiles) {
@@ -261,7 +261,7 @@ namespace {
 				{ "NEXEN_GENESIS_STARTUP_PROFILE", "strict" }
 			});
 			EXPECT_EQ(memoryManager.GetStartupWindowFrames(), 0u);
-			EXPECT_FALSE(memoryManager.GetStartupProfilePreferMesenBusHandoff());
+			EXPECT_FALSE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
 		}
 
 		{
@@ -269,7 +269,9 @@ namespace {
 				{ "NEXEN_GENESIS_STARTUP_PROFILE", "mesen" }
 			});
 			EXPECT_EQ(memoryManager.GetStartupWindowFrames(), 10u);
-			EXPECT_TRUE(memoryManager.GetStartupProfilePreferMesenBusHandoff());
+			EXPECT_TRUE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
 		}
 	}
 }
+
+

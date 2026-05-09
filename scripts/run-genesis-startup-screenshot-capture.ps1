@@ -1,8 +1,8 @@
-﻿param(
+param(
 	[Parameter(Mandatory = $true)]
 	[string]$RomPath,
 	[string]$NexenTarget = ".\bin\win-x64\Release\Nexen.dll",
-	[string]$MesenTarget = "C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\Mesen.dll",
+	[string]$NexenRefTarget = "C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\Mesen.dll",
 	[string]$OutputDirectory = ".\reference\startup-logo-regression\screenshots",
 	[int]$CaptureFrame = 180,
 	[int]$TimeoutSeconds = 20,
@@ -15,7 +15,7 @@ $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path ".").Path
 $resolvedRom = (Resolve-Path $RomPath).Path
 $resolvedNexenTarget = (Resolve-Path $NexenTarget).Path
-$resolvedMesenTarget = (Resolve-Path $MesenTarget).Path
+$resolvedNexenRefTarget = (Resolve-Path $NexenRefTarget).Path
 $resolvedOutputDirectory = Join-Path $repoRoot $OutputDirectory
 $luaScript = Join-Path $repoRoot "scripts\capture-genesis-startup-screenshot.lua"
 
@@ -27,7 +27,7 @@ New-Item -ItemType Directory -Path $resolvedOutputDirectory -Force | Out-Null
 
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $nexenOut = Join-Path $resolvedOutputDirectory "nexen-startup-frame-$CaptureFrame-$timestamp.png"
-$mesenOut = Join-Path $resolvedOutputDirectory "mesen-startup-frame-$CaptureFrame-$timestamp.png"
+$nexenRefOut = Join-Path $resolvedOutputDirectory "mesen-startup-frame-$CaptureFrame-$timestamp.png"
 
 function Invoke-CaptureRun {
 	param(
@@ -101,7 +101,7 @@ $oldPath = $env:NEXEN_STARTUP_SCREENSHOT_PATH
 $oldFrame = $env:NEXEN_STARTUP_SCREENSHOT_FRAME
 
 try {
-	Invoke-CaptureRunWithRetry -TargetPath $resolvedMesenTarget -OutputPath $mesenOut -Label "Mesen2-Expanded"
+	Invoke-CaptureRunWithRetry -TargetPath $resolvedNexenRefTarget -OutputPath $nexenRefOut -Label "Mesen2-Expanded"
 	Invoke-CaptureRunWithRetry -TargetPath $resolvedNexenTarget -OutputPath $nexenOut -Label "Nexen"
 }
 finally {
@@ -113,7 +113,7 @@ $summary = [ordered]@{
 	timestamp = $timestamp
 	captureFrame = $CaptureFrame
 	rom = "$resolvedRom"
-	mesenScreenshot = "$mesenOut"
+	mesenScreenshot = "$nexenRefOut"
 	nexenScreenshot = "$nexenOut"
 }
 
@@ -123,6 +123,8 @@ $summaryJson = $summary | ConvertTo-Json -Depth 4
 Set-Content -Path $summaryPath -Value $summaryJson -Encoding UTF8
 Set-Content -Path $latestPath -Value $summaryJson -Encoding UTF8
 
-Write-Host "Mesen screenshot: $mesenOut" -ForegroundColor Green
+Write-Host "Mesen screenshot: $nexenRefOut" -ForegroundColor Green
 Write-Host "Nexen screenshot: $nexenOut" -ForegroundColor Green
 Write-Host "Summary: $summaryPath" -ForegroundColor Green
+
+

@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Shared/Emulator.h"
 #include <memory>
@@ -89,7 +89,7 @@ namespace {
 		EXPECT_EQ(memoryManager.GetStartupWindowFrames(), 16u);
 		EXPECT_EQ(memoryManager.GetStartupCheckpointIntervalFrames(), 1u);
 		EXPECT_EQ(memoryManager.GetStartupCheckpointEndFrame(), 600u);
-		EXPECT_TRUE(memoryManager.GetStartupProfilePreferMesenBusHandoff());
+		EXPECT_TRUE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
 	}
 
 	TEST(GenesisStartupLogoBoundaryTests, InvalidWindowValueKeepsProfileDefault) {
@@ -185,7 +185,7 @@ namespace {
 			{ "NEXEN_GENESIS_PREFER_MESEN_BUS_HANDOFF", "0" }
 		});
 
-		EXPECT_FALSE(memoryManager.GetStartupProfilePreferMesenBusHandoff());
+		EXPECT_FALSE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
 	}
 
 	TEST(GenesisStartupLogoBoundaryTests, BoolParsingAcceptsNumericValueForPowerOnResetState) {
@@ -212,11 +212,11 @@ namespace {
 			{ "NEXEN_GENESIS_PREFER_MESEN_BUS_HANDOFF", "1" }
 		});
 
-		EXPECT_TRUE(memoryManager.GetStartupProfilePreferMesenBusHandoff());
+		EXPECT_TRUE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
 		EXPECT_EQ(memoryManager.GetStartupCheckpointIntervalFrames(), 2u);
 	}
 
-	TEST(GenesisStartupLogoBoundaryTests, MesenAliasProfileUsesMesenStartupDefaults) {
+	TEST(GenesisStartupLogoBoundaryTests, NexenAliasProfileUsesNexenStartupDefaults) {
 		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
 			{ "NEXEN_GENESIS_STARTUP_PROFILE", "mesen-startup" }
 		});
@@ -224,6 +224,8 @@ namespace {
 		EXPECT_EQ(memoryManager.GetStartupWindowFrames(), 10u);
 		EXPECT_EQ(memoryManager.GetStartupCheckpointIntervalFrames(), 1u);
 		EXPECT_EQ(memoryManager.GetStartupCheckpointEndFrame(), 600u);
-		EXPECT_TRUE(memoryManager.GetStartupProfilePreferMesenBusHandoff());
+		EXPECT_TRUE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
 	}
 }
+
+

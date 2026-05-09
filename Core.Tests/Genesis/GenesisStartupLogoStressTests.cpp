@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Shared/Emulator.h"
 #include <memory>
@@ -84,7 +84,7 @@ namespace {
 			const char* Name;
 			const char* Profile;
 			uint32_t ExpectedWindow;
-			bool ExpectedPreferMesen;
+			bool ExpectedPreferNexen;
 		};
 
 		const std::array<ProfileCase, 3> cases = {
@@ -100,7 +100,7 @@ namespace {
 			Harness harness(envVars);
 
 			EXPECT_EQ(harness.Memory.GetStartupWindowFrames(), profileCase.ExpectedWindow) << profileCase.Name;
-			EXPECT_EQ(harness.Memory.GetStartupProfilePreferMesenBusHandoff(), profileCase.ExpectedPreferMesen) << profileCase.Name;
+			EXPECT_EQ(harness.Memory.GetStartupProfilePreferNexenBusHandoff(), profileCase.ExpectedPreferNexen) << profileCase.Name;
 			EXPECT_EQ(harness.Memory.GetStartupCheckpointEndFrame(), (profileCase.ExpectedWindow == 0u) ? 120u : 600u) << profileCase.Name;
 		}
 	}
@@ -206,7 +206,7 @@ namespace {
 		EXPECT_EQ(harness.Memory.GetStartupWindowFrames(), 60u);
 		EXPECT_EQ(harness.Memory.GetStartupCheckpointIntervalFrames(), 2u);
 		EXPECT_EQ(harness.Memory.GetStartupCheckpointEndFrame(), 600u);
-		EXPECT_TRUE(harness.Memory.GetStartupProfilePreferMesenBusHandoff());
+		EXPECT_TRUE(harness.Memory.GetStartupProfilePreferNexenBusHandoff());
 	}
 
 	TEST(GenesisStartupLogoStressTests, StartupConfigurationStressMatrixRemainsDeterministicAcrossTwoHarnesses) {
@@ -226,7 +226,7 @@ namespace {
 				harness.Memory.GetZ80RuntimeStateEpoch(),
 				harness.Memory.GetZ80BusReqAckDelaySettingMclk(),
 				harness.Memory.GetZ80BusResumeDelaySettingMclk(),
-				harness.Memory.GetStartupProfilePreferMesenBusHandoff());
+				harness.Memory.GetStartupProfilePreferNexenBusHandoff());
 		};
 
 		auto runA = runScenario();
@@ -234,3 +234,5 @@ namespace {
 		EXPECT_EQ(runA, runB);
 	}
 }
+
+

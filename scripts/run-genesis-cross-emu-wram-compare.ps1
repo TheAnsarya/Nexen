@@ -1,13 +1,13 @@
-﻿param(
+param(
 	[string]$RomPath,
 	[string]$NexenExePath = ".\bin\win-x64\Release\Nexen.exe",
-	[string]$MesenExePath = "..\Mesen2-Expanded\bin\win-x64\Release\Mesen.exe",
+	[string]$NexenRefExePath = "..\Mesen2-Expanded\bin\win-x64\Release\Mesen.exe",
 	[string]$NexenWorkingDir = ".",
-	[string]$MesenWorkingDir = "..\Mesen2-Expanded",
-	[string[]]$MesenArgs = @("--testRunner", "--timeout=35"),
+	[string]$NexenRefWorkingDir = "..\Mesen2-Expanded",
+	[string[]]$NexenRefArgs = @("--testRunner", "--timeout=35"),
 	[string[]]$NexenArgs = @("--testRunner", "--timeout=35"),
-	[switch]$DisableMesenFallbackRunModes,
-	[switch]$AllowMissingMesenFrontend,
+	[switch]$DisableNexenRefFallbackRunModes,
+	[switch]$AllowMissingNexenRefFrontend,
 	[int]$AutoStopTimeoutSeconds = 45,
 	[int]$FrameStart = 0,
 	[int]$FrameEnd = 600,
@@ -259,15 +259,15 @@ function Resolve-TraceWithFallbackSearch {
 	}
 }
 
-function Test-MesenStartupTraceEnvSupport {
+function Test-NexenRefStartupTraceEnvSupport {
 	param(
 		[Parameter(Mandatory = $true)]
-		[string]$MesenWorkingDirectory
+		[string]$NexenRefWorkingDirectory
 	)
 
 	$sourceCandidates = @(
-		(Join-Path $MesenWorkingDirectory "Core\Genesis\GenesisNativeBackend.cpp"),
-		(Join-Path $MesenWorkingDirectory "..\Mesen2-Expanded\Core\Genesis\GenesisNativeBackend.cpp")
+		(Join-Path $NexenRefWorkingDirectory "Core\Genesis\GenesisNativeBackend.cpp"),
+		(Join-Path $NexenRefWorkingDirectory "..\Mesen2-Expanded\Core\Genesis\GenesisNativeBackend.cpp")
 	)
 
 	foreach ($source in $sourceCandidates) {
@@ -605,9 +605,9 @@ $romCandidates += @(
 	"C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md"
 )
 
-$mesenExeCandidates = @(
+$nexenRefExeCandidates = @(
 	$env:NEXEN_MESEN_FRONTEND_PATH,
-	$MesenExePath,
+	$NexenRefExePath,
 	"..\Mesen2-Expanded\bin\win-x64\Release\Mesen.exe",
 	"..\Mesen2-Expanded\bin\win-x64\Debug\Mesen.exe",
 	"..\Mesen2-Expanded\bin\win-x64\Release\Mesen.dll",
@@ -621,38 +621,38 @@ $mesenExeCandidates = @(
 )
 
 $romCandidates = @($romCandidates | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-$mesenExeCandidates = @($mesenExeCandidates | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+$nexenRefExeCandidates = @($nexenRefExeCandidates | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 
 $resolvedRom = Resolve-FirstExistingPath -CandidatePaths $romCandidates -Label "ROM"
 $resolvedNexenExe = Resolve-RequiredPath -Path $NexenExePath -Label "Nexen exe"
-$resolvedMesenExe = $null
+$resolvedNexenRefExe = $null
 try {
-	$resolvedMesenExe = Resolve-FirstExistingPath -CandidatePaths $mesenExeCandidates -Label "Mesen2-Expanded frontend exe"
+	$resolvedNexenRefExe = Resolve-FirstExistingPath -CandidatePaths $nexenRefExeCandidates -Label "Mesen2-Expanded frontend exe"
 } catch {
-	if (-not $AllowMissingMesenFrontend) {
+	if (-not $AllowMissingNexenRefFrontend) {
 		throw
 	}
 	Write-Warning "Mesen frontend executable was not found. Continuing in Nexen-only mode."
 }
 $resolvedNexenDir = Resolve-RequiredPath -Path $NexenWorkingDir -Label "Nexen working dir"
-$resolvedMesenDir = Resolve-RequiredPath -Path $MesenWorkingDir -Label "Mesen2-Expanded working dir"
+$resolvedNexenRefDir = Resolve-RequiredPath -Path $NexenRefWorkingDir -Label "Mesen2-Expanded working dir"
 
 $nexenExeDir = Split-Path -Parent $resolvedNexenExe
-$mesenExeDir = $null
-if ($null -ne $resolvedMesenExe) {
-	$mesenExeDir = Split-Path -Parent $resolvedMesenExe
+$nexenRefExeDir = $null
+if ($null -ne $resolvedNexenRefExe) {
+	$nexenRefExeDir = Split-Path -Parent $resolvedNexenRefExe
 }
-$mesenDocumentsDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)) "Mesen2"
-$mesenAppDataDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) "Mesen2"
+$nexenRefDocumentsDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)) "Mesen2"
+$nexenRefAppDataDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) "Mesen2"
 $nexenTraceCandidates = @(
 	(Join-Path $resolvedNexenDir "reference\cpu_ram_trace.log"),
 	(Join-Path $nexenExeDir "reference\cpu_ram_trace.log")
 )
-$mesenTraceCandidates = @((Join-Path $resolvedMesenDir "reference\cpu_ram_trace.log"))
-if ($null -ne $mesenExeDir) {
-	$mesenTraceCandidates += (Join-Path $mesenExeDir "reference\cpu_ram_trace.log")
+$nexenRefTraceCandidates = @((Join-Path $resolvedNexenRefDir "reference\cpu_ram_trace.log"))
+if ($null -ne $nexenRefExeDir) {
+	$nexenRefTraceCandidates += (Join-Path $nexenRefExeDir "reference\cpu_ram_trace.log")
 }
-$mesenTraceCandidates += (Join-Path $mesenDocumentsDir "reference\cpu_ram_trace.log")
+$nexenRefTraceCandidates += (Join-Path $nexenRefDocumentsDir "reference\cpu_ram_trace.log")
 $resolvedReportPath = $ReportPath
 if (-not [System.IO.Path]::IsPathRooted($resolvedReportPath)) {
 	$resolvedReportPath = Join-Path $resolvedNexenDir $resolvedReportPath
@@ -671,16 +671,16 @@ if (!(Test-Path -LiteralPath $traceOutputDir)) {
 
 $nexenExplicitWramTracePath = Join-Path $traceOutputDir "nexen-cpu-ram-trace-$traceRunId.log"
 $nexenExplicitStartupTracePath = Join-Path $traceOutputDir "nexen-startup-trace-$traceRunId.log"
-$mesenExplicitWramTracePath = Join-Path $traceOutputDir "mesen-cpu-ram-trace-$traceRunId.log"
-$mesenExplicitStartupTracePath = Join-Path $traceOutputDir "mesen-startup-trace-$traceRunId.log"
+$nexenRefExplicitWramTracePath = Join-Path $traceOutputDir "mesen-cpu-ram-trace-$traceRunId.log"
+$nexenRefExplicitStartupTracePath = Join-Path $traceOutputDir "mesen-startup-trace-$traceRunId.log"
 
-foreach ($tracePath in ($nexenTraceCandidates + $mesenTraceCandidates)) {
+foreach ($tracePath in ($nexenTraceCandidates + $nexenRefTraceCandidates)) {
 	if (Test-Path -LiteralPath $tracePath) {
 		Remove-Item -LiteralPath $tracePath -Force
 	}
 }
 
-Remove-ExistingFiles -Paths @($nexenExplicitWramTracePath, $nexenExplicitStartupTracePath, $mesenExplicitWramTracePath, $mesenExplicitStartupTracePath)
+Remove-ExistingFiles -Paths @($nexenExplicitWramTracePath, $nexenExplicitStartupTracePath, $nexenRefExplicitWramTracePath, $nexenRefExplicitStartupTracePath)
 
 $nexenTraceCandidates = @($nexenExplicitWramTracePath) + $nexenTraceCandidates
 $nexenStartupTraceCandidates = @(
@@ -689,21 +689,21 @@ $nexenStartupTraceCandidates = @(
 	(Join-Path $nexenExeDir "reference\genesis_startup_trace.log")
 )
 
-$mesenTraceCandidates = @($mesenExplicitWramTracePath) + $mesenTraceCandidates
-$mesenStartupTraceCandidates = @(
-	$mesenExplicitStartupTracePath,
-	(Join-Path $resolvedMesenDir "reference\genesis_startup_trace.log")
+$nexenRefTraceCandidates = @($nexenRefExplicitWramTracePath) + $nexenRefTraceCandidates
+$nexenRefStartupTraceCandidates = @(
+	$nexenRefExplicitStartupTracePath,
+	(Join-Path $resolvedNexenRefDir "reference\genesis_startup_trace.log")
 )
-if ($null -ne $mesenExeDir) {
-	$mesenStartupTraceCandidates += (Join-Path $mesenExeDir "reference\genesis_startup_trace.log")
+if ($null -ne $nexenRefExeDir) {
+	$nexenRefStartupTraceCandidates += (Join-Path $nexenRefExeDir "reference\genesis_startup_trace.log")
 }
-$mesenStartupTraceCandidates += (Join-Path $mesenDocumentsDir "reference\genesis_startup_trace.log")
+$nexenRefStartupTraceCandidates += (Join-Path $nexenRefDocumentsDir "reference\genesis_startup_trace.log")
 
-$oldMesenFrameStart = $env:MESEN_WRAM_FRAME_START
-$oldMesenFrameEnd = $env:MESEN_WRAM_FRAME_END
-$oldMesenAddrStart = $env:MESEN_WRAM_ADDR_START
-$oldMesenAddrEnd = $env:MESEN_WRAM_ADDR_END
-$oldMesenMaxLines = $env:MESEN_WRAM_MAX_LINES
+$oldNexenRefFrameStart = $env:MESEN_WRAM_FRAME_START
+$oldNexenRefFrameEnd = $env:MESEN_WRAM_FRAME_END
+$oldNexenRefAddrStart = $env:MESEN_WRAM_ADDR_START
+$oldNexenRefAddrEnd = $env:MESEN_WRAM_ADDR_END
+$oldNexenRefMaxLines = $env:MESEN_WRAM_MAX_LINES
 $oldNexenFrameStart = $env:NEXEN_WRAM_FRAME_START
 $oldNexenFrameEnd = $env:NEXEN_WRAM_FRAME_END
 $oldNexenAddrStart = $env:NEXEN_WRAM_ADDR_START
@@ -715,14 +715,14 @@ $oldNexenStartupTraceEnabled = $env:NEXEN_GENESIS_STARTUP_TRACE
 $oldNexenStartupTraceFrameEnd = $env:NEXEN_GENESIS_STARTUP_TRACE_FRAME_END
 $oldNexenStartupTraceMaxLines = $env:NEXEN_GENESIS_STARTUP_TRACE_MAX_LINES
 
-$oldMesenWramTracePath = $env:MESEN_WRAM_TRACE_PATH
-$oldMesenStartupTracePath = $env:MESEN_GENESIS_STARTUP_TRACE_PATH
-$oldMesenStartupTraceEnabled = $env:MESEN_GENESIS_STARTUP_TRACE
-$oldMesenStartupTraceFrameEnd = $env:MESEN_GENESIS_STARTUP_TRACE_FRAME_END
-$oldMesenStartupTraceMaxLines = $env:MESEN_GENESIS_STARTUP_TRACE_MAX_LINES
-$mesenRunSkipped = $false
-$mesenStartupTraceEnvSupported = Test-MesenStartupTraceEnvSupport -MesenWorkingDirectory $resolvedMesenDir
-$mesenAttemptNotes = New-Object System.Collections.Generic.List[string]
+$oldNexenRefWramTracePath = $env:MESEN_WRAM_TRACE_PATH
+$oldNexenRefStartupTracePath = $env:MESEN_GENESIS_STARTUP_TRACE_PATH
+$oldNexenRefStartupTraceEnabled = $env:MESEN_GENESIS_STARTUP_TRACE
+$oldNexenRefStartupTraceFrameEnd = $env:MESEN_GENESIS_STARTUP_TRACE_FRAME_END
+$oldNexenRefStartupTraceMaxLines = $env:MESEN_GENESIS_STARTUP_TRACE_MAX_LINES
+$nexenRefRunSkipped = $false
+$nexenRefStartupTraceEnvSupported = Test-NexenRefStartupTraceEnvSupport -NexenRefWorkingDirectory $resolvedNexenRefDir
+$nexenRefAttemptNotes = New-Object System.Collections.Generic.List[string]
 
 try {
 	$env:MESEN_WRAM_FRAME_START = "$FrameStart"
@@ -730,8 +730,8 @@ try {
 	$env:MESEN_WRAM_ADDR_START = "$AddressStart"
 	$env:MESEN_WRAM_ADDR_END = "$AddressEnd"
 	$env:MESEN_WRAM_MAX_LINES = "$MaxLines"
-	$env:MESEN_WRAM_TRACE_PATH = "$mesenExplicitWramTracePath"
-	$env:MESEN_GENESIS_STARTUP_TRACE_PATH = "$mesenExplicitStartupTracePath"
+	$env:MESEN_WRAM_TRACE_PATH = "$nexenRefExplicitWramTracePath"
+	$env:MESEN_GENESIS_STARTUP_TRACE_PATH = "$nexenRefExplicitStartupTracePath"
 	$env:MESEN_GENESIS_STARTUP_TRACE = "1"
 	$env:MESEN_GENESIS_STARTUP_TRACE_FRAME_END = "$FrameEnd"
 	$env:MESEN_GENESIS_STARTUP_TRACE_MAX_LINES = "$MaxLines"
@@ -747,58 +747,58 @@ try {
 	$env:NEXEN_GENESIS_STARTUP_TRACE_FRAME_END = "$FrameEnd"
 	$env:NEXEN_GENESIS_STARTUP_TRACE_MAX_LINES = "$MaxLines"
 
-	if ($null -ne $resolvedMesenExe) {
-		Stop-ExistingProcessInstances -ProgramPath $resolvedMesenExe -Name "Mesen2-Expanded"
+	if ($null -ne $resolvedNexenRefExe) {
+		Stop-ExistingProcessInstances -ProgramPath $resolvedNexenRefExe -Name "Mesen2-Expanded"
 	}
 	Stop-ExistingProcessInstances -ProgramPath $resolvedNexenExe -Name "Nexen"
 
-	$mesenRun = [pscustomobject]@{
+	$nexenRefRun = [pscustomobject]@{
 		Pid = 0
 		StoppedByTimeout = $false
 		ExitCode = $null
 		LaunchTarget = ""
 		LaunchArgs = ""
 	}
-	if ($null -ne $resolvedMesenExe) {
-		$mesenRunModes = New-Object System.Collections.Generic.List[object]
-		$mesenRunModes.Add([pscustomobject]@{ Name = "configured-args"; Args = $MesenArgs })
-		if (-not $DisableMesenFallbackRunModes) {
-			$mesenRunModes.Add([pscustomobject]@{ Name = "rom-only"; Args = @() })
+	if ($null -ne $resolvedNexenRefExe) {
+		$nexenRefRunModes = New-Object System.Collections.Generic.List[object]
+		$nexenRefRunModes.Add([pscustomobject]@{ Name = "configured-args"; Args = $NexenRefArgs })
+		if (-not $DisableNexenRefFallbackRunModes) {
+			$nexenRefRunModes.Add([pscustomobject]@{ Name = "rom-only"; Args = @() })
 		}
 
-		$mesenTraceFound = $false
-		for ($modeIndex = 0; $modeIndex -lt $mesenRunModes.Count; $modeIndex++) {
-			$mode = $mesenRunModes[$modeIndex]
-			Remove-ExistingFiles -Paths ($mesenTraceCandidates + $mesenStartupTraceCandidates)
+		$nexenRefTraceFound = $false
+		for ($modeIndex = 0; $modeIndex -lt $nexenRefRunModes.Count; $modeIndex++) {
+			$mode = $nexenRefRunModes[$modeIndex]
+			Remove-ExistingFiles -Paths ($nexenRefTraceCandidates + $nexenRefStartupTraceCandidates)
 
 			Write-Host "Running Mesen2-Expanded trace capture (mode=$($mode.Name))..." -ForegroundColor Cyan
-			$mesenRun = Start-TimedRun -ProgramPath $resolvedMesenExe -PreArgs $mode.Args -Rom $resolvedRom -WorkingDir $resolvedMesenDir -TimeoutSeconds $AutoStopTimeoutSeconds -Name "Mesen2-Expanded"
+			$nexenRefRun = Start-TimedRun -ProgramPath $resolvedNexenRefExe -PreArgs $mode.Args -Rom $resolvedRom -WorkingDir $resolvedNexenRefDir -TimeoutSeconds $AutoStopTimeoutSeconds -Name "Mesen2-Expanded"
 
-			$attemptTracePath = TryResolveExistingTracePath -CandidatePaths $mesenTraceCandidates
-			$attemptStartupPath = TryResolveExistingTracePath -CandidatePaths $mesenStartupTraceCandidates
-			$mesenAttemptNotes.Add("attempt[$modeIndex]=$($mode.Name);trace=$attemptTracePath;startup=$attemptStartupPath;exit=$($mesenRun.ExitCode);timeout=$($mesenRun.StoppedByTimeout)")
+			$attemptTracePath = TryResolveExistingTracePath -CandidatePaths $nexenRefTraceCandidates
+			$attemptStartupPath = TryResolveExistingTracePath -CandidatePaths $nexenRefStartupTraceCandidates
+			$nexenRefAttemptNotes.Add("attempt[$modeIndex]=$($mode.Name);trace=$attemptTracePath;startup=$attemptStartupPath;exit=$($nexenRefRun.ExitCode);timeout=$($nexenRefRun.StoppedByTimeout)")
 
 			if ($null -ne $attemptTracePath -or $null -ne $attemptStartupPath) {
-				$mesenTraceFound = $true
+				$nexenRefTraceFound = $true
 				break
 			}
 		}
 
-		if (-not $mesenTraceFound) {
+		if (-not $nexenRefTraceFound) {
 			Write-Warning "Mesen2-Expanded produced no direct trace artifacts in launch attempts; fallback search will be used."
 		}
 	} else {
-		$mesenRunSkipped = $true
+		$nexenRefRunSkipped = $true
 	}
 
 	Write-Host "Running Nexen trace capture..." -ForegroundColor Cyan
 	$nexenRun = Start-TimedRun -ProgramPath $resolvedNexenExe -PreArgs $NexenArgs -Rom $resolvedRom -WorkingDir $resolvedNexenDir -TimeoutSeconds $AutoStopTimeoutSeconds -Name "Nexen"
 } finally {
-	$env:MESEN_WRAM_FRAME_START = $oldMesenFrameStart
-	$env:MESEN_WRAM_FRAME_END = $oldMesenFrameEnd
-	$env:MESEN_WRAM_ADDR_START = $oldMesenAddrStart
-	$env:MESEN_WRAM_ADDR_END = $oldMesenAddrEnd
-	$env:MESEN_WRAM_MAX_LINES = $oldMesenMaxLines
+	$env:MESEN_WRAM_FRAME_START = $oldNexenRefFrameStart
+	$env:MESEN_WRAM_FRAME_END = $oldNexenRefFrameEnd
+	$env:MESEN_WRAM_ADDR_START = $oldNexenRefAddrStart
+	$env:MESEN_WRAM_ADDR_END = $oldNexenRefAddrEnd
+	$env:MESEN_WRAM_MAX_LINES = $oldNexenRefMaxLines
 
 	$env:NEXEN_WRAM_FRAME_START = $oldNexenFrameStart
 	$env:NEXEN_WRAM_FRAME_END = $oldNexenFrameEnd
@@ -811,65 +811,65 @@ try {
 	$env:NEXEN_GENESIS_STARTUP_TRACE_FRAME_END = $oldNexenStartupTraceFrameEnd
 	$env:NEXEN_GENESIS_STARTUP_TRACE_MAX_LINES = $oldNexenStartupTraceMaxLines
 
-	$env:MESEN_WRAM_TRACE_PATH = $oldMesenWramTracePath
-	$env:MESEN_GENESIS_STARTUP_TRACE_PATH = $oldMesenStartupTracePath
-	$env:MESEN_GENESIS_STARTUP_TRACE = $oldMesenStartupTraceEnabled
-	$env:MESEN_GENESIS_STARTUP_TRACE_FRAME_END = $oldMesenStartupTraceFrameEnd
-	$env:MESEN_GENESIS_STARTUP_TRACE_MAX_LINES = $oldMesenStartupTraceMaxLines
+	$env:MESEN_WRAM_TRACE_PATH = $oldNexenRefWramTracePath
+	$env:MESEN_GENESIS_STARTUP_TRACE_PATH = $oldNexenRefStartupTracePath
+	$env:MESEN_GENESIS_STARTUP_TRACE = $oldNexenRefStartupTraceEnabled
+	$env:MESEN_GENESIS_STARTUP_TRACE_FRAME_END = $oldNexenRefStartupTraceFrameEnd
+	$env:MESEN_GENESIS_STARTUP_TRACE_MAX_LINES = $oldNexenRefStartupTraceMaxLines
 }
 
-$mesenSearchRoots = Get-TraceSearchRoots -Roots @($resolvedMesenDir, $mesenExeDir, $mesenDocumentsDir, $mesenAppDataDir)
+$nexenRefSearchRoots = Get-TraceSearchRoots -Roots @($resolvedNexenRefDir, $nexenRefExeDir, $nexenRefDocumentsDir, $nexenRefAppDataDir)
 $nexenSearchRoots = Get-TraceSearchRoots -Roots @($resolvedNexenDir, $nexenExeDir)
 
-$mesenTraceResult = Resolve-TraceWithFallbackSearch -CandidatePaths $mesenTraceCandidates -SearchRoots $mesenSearchRoots -NamePatterns @("cpu_ram_trace.log", "mesen-cpu-ram-trace-*.log") -CapturePath $mesenExplicitWramTracePath
+$nexenRefTraceResult = Resolve-TraceWithFallbackSearch -CandidatePaths $nexenRefTraceCandidates -SearchRoots $nexenRefSearchRoots -NamePatterns @("cpu_ram_trace.log", "mesen-cpu-ram-trace-*.log") -CapturePath $nexenRefExplicitWramTracePath
 $nexenTraceResult = Resolve-TraceWithFallbackSearch -CandidatePaths $nexenTraceCandidates -SearchRoots $nexenSearchRoots -NamePatterns @("cpu_ram_trace.log", "nexen-cpu-ram-trace-*.log") -CapturePath $nexenExplicitWramTracePath
 
-$mesenTracePath = $mesenTraceResult.Path
+$nexenRefTracePath = $nexenRefTraceResult.Path
 $nexenTracePath = $nexenTraceResult.Path
 
-$mesenStartupTraceResult = Resolve-TraceWithFallbackSearch -CandidatePaths $mesenStartupTraceCandidates -SearchRoots $mesenSearchRoots -NamePatterns @("genesis_startup_trace.log", "mesen-startup-trace-*.log") -CapturePath $mesenExplicitStartupTracePath
+$nexenRefStartupTraceResult = Resolve-TraceWithFallbackSearch -CandidatePaths $nexenRefStartupTraceCandidates -SearchRoots $nexenRefSearchRoots -NamePatterns @("genesis_startup_trace.log", "mesen-startup-trace-*.log") -CapturePath $nexenRefExplicitStartupTracePath
 $nexenStartupTraceResult = Resolve-TraceWithFallbackSearch -CandidatePaths $nexenStartupTraceCandidates -SearchRoots $nexenSearchRoots -NamePatterns @("genesis_startup_trace.log", "nexen-startup-trace-*.log") -CapturePath $nexenExplicitStartupTracePath
 
-$mesenStartupTracePath = $mesenStartupTraceResult.Path
+$nexenRefStartupTracePath = $nexenRefStartupTraceResult.Path
 $nexenStartupTracePath = $nexenStartupTraceResult.Path
 
-$mesenLines = @()
+$nexenRefLines = @()
 $nexenLines = @()
 $firstDiff = -1
-$mesenHash = "missing"
+$nexenRefHash = "missing"
 $nexenHash = "missing"
-$mesenStartupLines = @()
+$nexenRefStartupLines = @()
 $nexenStartupLines = @()
-$mesenStartupHash = "missing"
+$nexenRefStartupHash = "missing"
 $nexenStartupHash = "missing"
 $startupFirstDiff = -1
-$mesenStartupCheckpointCount = 0
+$nexenRefStartupCheckpointCount = 0
 $nexenStartupCheckpointCount = 0
-$mesenStartupDisplayTransitionCount = 0
+$nexenRefStartupDisplayTransitionCount = 0
 $nexenStartupDisplayTransitionCount = 0
-$mesenStartupPaletteCheckpointCount = 0
+$nexenRefStartupPaletteCheckpointCount = 0
 $nexenStartupPaletteCheckpointCount = 0
-$mesenStartupVdpSnapshotCount = 0
+$nexenRefStartupVdpSnapshotCount = 0
 $nexenStartupVdpSnapshotCount = 0
-$mesenStartupVdpRegisterWriteCount = 0
+$nexenRefStartupVdpRegisterWriteCount = 0
 $nexenStartupVdpRegisterWriteCount = 0
-$mesenStartupTmssUnlockCount = 0
+$nexenRefStartupTmssUnlockCount = 0
 $nexenStartupTmssUnlockCount = 0
-$mesenStartupZ80RuntimeToggleCount = 0
+$nexenRefStartupZ80RuntimeToggleCount = 0
 $nexenStartupZ80RuntimeToggleCount = 0
-$mesenStartupZ80BusReqEventCount = 0
+$nexenRefStartupZ80BusReqEventCount = 0
 $nexenStartupZ80BusReqEventCount = 0
-$mesenStartupZ80ResetEventCount = 0
+$nexenRefStartupZ80ResetEventCount = 0
 $nexenStartupZ80ResetEventCount = 0
-$mesenStartupNormalizedLines = @()
+$nexenRefStartupNormalizedLines = @()
 $nexenStartupNormalizedLines = @()
 $startupNormalizedFirstDiff = -1
-$mesenFrameSnapshot = [ordered]@{}
+$nexenRefFrameSnapshot = [ordered]@{}
 $nexenFrameSnapshot = [ordered]@{}
 
-if ($null -ne $mesenTracePath) {
-	$mesenLines = Get-TraceLines -Path $mesenTracePath
-	$mesenHash = (Get-FileHash -LiteralPath $mesenTracePath -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($null -ne $nexenRefTracePath) {
+	$nexenRefLines = Get-TraceLines -Path $nexenRefTracePath
+	$nexenRefHash = (Get-FileHash -LiteralPath $nexenRefTracePath -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
 if ($null -ne $nexenTracePath) {
@@ -877,9 +877,9 @@ if ($null -ne $nexenTracePath) {
 	$nexenHash = (Get-FileHash -LiteralPath $nexenTracePath -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
-if ($null -ne $mesenStartupTracePath) {
-	$mesenStartupLines = Get-TraceLines -Path $mesenStartupTracePath
-	$mesenStartupHash = (Get-FileHash -LiteralPath $mesenStartupTracePath -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($null -ne $nexenRefStartupTracePath) {
+	$nexenRefStartupLines = Get-TraceLines -Path $nexenRefStartupTracePath
+	$nexenRefStartupHash = (Get-FileHash -LiteralPath $nexenRefStartupTracePath -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
 if ($null -ne $nexenStartupTracePath) {
@@ -887,45 +887,45 @@ if ($null -ne $nexenStartupTracePath) {
 	$nexenStartupHash = (Get-FileHash -LiteralPath $nexenStartupTracePath -Algorithm SHA256).Hash.ToLowerInvariant()
 }
 
-if ($mesenLines.Count -gt 0 -or $nexenLines.Count -gt 0) {
-	$firstDiff = Find-FirstDifference -Left $mesenLines -Right $nexenLines
+if ($nexenRefLines.Count -gt 0 -or $nexenLines.Count -gt 0) {
+	$firstDiff = Find-FirstDifference -Left $nexenRefLines -Right $nexenLines
 }
 
-if ($mesenStartupLines.Count -gt 0 -or $nexenStartupLines.Count -gt 0) {
-	$startupFirstDiff = Find-FirstDifference -Left $mesenStartupLines -Right $nexenStartupLines
-	$mesenStartupNormalizedLines = Get-NormalizedStartupLines -Lines $mesenStartupLines
+if ($nexenRefStartupLines.Count -gt 0 -or $nexenStartupLines.Count -gt 0) {
+	$startupFirstDiff = Find-FirstDifference -Left $nexenRefStartupLines -Right $nexenStartupLines
+	$nexenRefStartupNormalizedLines = Get-NormalizedStartupLines -Lines $nexenRefStartupLines
 	$nexenStartupNormalizedLines = Get-NormalizedStartupLines -Lines $nexenStartupLines
-	$startupNormalizedFirstDiff = Find-FirstDifference -Left $mesenStartupNormalizedLines -Right $nexenStartupNormalizedLines
-	$mesenStartupMetrics = Get-StartupMetrics -Lines $mesenStartupLines
+	$startupNormalizedFirstDiff = Find-FirstDifference -Left $nexenRefStartupNormalizedLines -Right $nexenStartupNormalizedLines
+	$nexenRefStartupMetrics = Get-StartupMetrics -Lines $nexenRefStartupLines
 	$nexenStartupMetrics = Get-StartupMetrics -Lines $nexenStartupLines
-	$mesenFrameSnapshot = Get-StartupFrameSnapshot -Lines $mesenStartupLines -Frame $SnapshotFrame
+	$nexenRefFrameSnapshot = Get-StartupFrameSnapshot -Lines $nexenRefStartupLines -Frame $SnapshotFrame
 	$nexenFrameSnapshot = Get-StartupFrameSnapshot -Lines $nexenStartupLines -Frame $SnapshotFrame
-	$mesenLoopPoll16Stats = Get-StartupFrameTagStats -Lines $mesenStartupLines -Frame $SnapshotFrame -Tag "LOOP_POLL16"
+	$nexenRefLoopPoll16Stats = Get-StartupFrameTagStats -Lines $nexenRefStartupLines -Frame $SnapshotFrame -Tag "LOOP_POLL16"
 	$nexenLoopPoll16Stats = Get-StartupFrameTagStats -Lines $nexenStartupLines -Frame $SnapshotFrame -Tag "LOOP_POLL16"
-	$mesenCpuPreloopStats = Get-StartupFrameTagStats -Lines $mesenStartupLines -Frame $SnapshotFrame -Tag "CPU_PRELOOP"
+	$nexenRefCpuPreloopStats = Get-StartupFrameTagStats -Lines $nexenRefStartupLines -Frame $SnapshotFrame -Tag "CPU_PRELOOP"
 	$nexenCpuPreloopStats = Get-StartupFrameTagStats -Lines $nexenStartupLines -Frame $SnapshotFrame -Tag "CPU_PRELOOP"
-	$mesenCpuPreloopGlobalStats = Get-StartupTagGlobalStats -Lines $mesenStartupLines -Tag "CPU_PRELOOP"
+	$nexenRefCpuPreloopGlobalStats = Get-StartupTagGlobalStats -Lines $nexenRefStartupLines -Tag "CPU_PRELOOP"
 	$nexenCpuPreloopGlobalStats = Get-StartupTagGlobalStats -Lines $nexenStartupLines -Tag "CPU_PRELOOP"
-	$mesenCpuLoopStats = Get-StartupFrameTagStats -Lines $mesenStartupLines -Frame $SnapshotFrame -Tag "CPU_LOOP"
+	$nexenRefCpuLoopStats = Get-StartupFrameTagStats -Lines $nexenRefStartupLines -Frame $SnapshotFrame -Tag "CPU_LOOP"
 	$nexenCpuLoopStats = Get-StartupFrameTagStats -Lines $nexenStartupLines -Frame $SnapshotFrame -Tag "CPU_LOOP"
 
-	$mesenStartupCheckpointCount = $mesenStartupMetrics.startupCheckpointCount
+	$nexenRefStartupCheckpointCount = $nexenRefStartupMetrics.startupCheckpointCount
 	$nexenStartupCheckpointCount = $nexenStartupMetrics.startupCheckpointCount
-	$mesenStartupDisplayTransitionCount = $mesenStartupMetrics.startupDisplayTransitionCount
+	$nexenRefStartupDisplayTransitionCount = $nexenRefStartupMetrics.startupDisplayTransitionCount
 	$nexenStartupDisplayTransitionCount = $nexenStartupMetrics.startupDisplayTransitionCount
-	$mesenStartupPaletteCheckpointCount = $mesenStartupMetrics.startupPaletteCheckpointCount
+	$nexenRefStartupPaletteCheckpointCount = $nexenRefStartupMetrics.startupPaletteCheckpointCount
 	$nexenStartupPaletteCheckpointCount = $nexenStartupMetrics.startupPaletteCheckpointCount
-	$mesenStartupVdpSnapshotCount = $mesenStartupMetrics.startupVdpSnapshotCount
+	$nexenRefStartupVdpSnapshotCount = $nexenRefStartupMetrics.startupVdpSnapshotCount
 	$nexenStartupVdpSnapshotCount = $nexenStartupMetrics.startupVdpSnapshotCount
-	$mesenStartupVdpRegisterWriteCount = $mesenStartupMetrics.startupVdpRegisterWriteCount
+	$nexenRefStartupVdpRegisterWriteCount = $nexenRefStartupMetrics.startupVdpRegisterWriteCount
 	$nexenStartupVdpRegisterWriteCount = $nexenStartupMetrics.startupVdpRegisterWriteCount
-	$mesenStartupTmssUnlockCount = $mesenStartupMetrics.startupTmssUnlockCount
+	$nexenRefStartupTmssUnlockCount = $nexenRefStartupMetrics.startupTmssUnlockCount
 	$nexenStartupTmssUnlockCount = $nexenStartupMetrics.startupTmssUnlockCount
-	$mesenStartupZ80RuntimeToggleCount = $mesenStartupMetrics.startupZ80RuntimeToggleCount
+	$nexenRefStartupZ80RuntimeToggleCount = $nexenRefStartupMetrics.startupZ80RuntimeToggleCount
 	$nexenStartupZ80RuntimeToggleCount = $nexenStartupMetrics.startupZ80RuntimeToggleCount
-	$mesenStartupZ80BusReqEventCount = $mesenStartupMetrics.startupZ80BusReqEventCount
+	$nexenRefStartupZ80BusReqEventCount = $nexenRefStartupMetrics.startupZ80BusReqEventCount
 	$nexenStartupZ80BusReqEventCount = $nexenStartupMetrics.startupZ80BusReqEventCount
-	$mesenStartupZ80ResetEventCount = $mesenStartupMetrics.startupZ80ResetEventCount
+	$nexenRefStartupZ80ResetEventCount = $nexenRefStartupMetrics.startupZ80ResetEventCount
 	$nexenStartupZ80ResetEventCount = $nexenStartupMetrics.startupZ80ResetEventCount
 }
 
@@ -936,155 +936,155 @@ $report.Add("frameStart=$FrameStart")
 $report.Add("frameEnd=$FrameEnd")
 $report.Add("autoStopTimeoutSeconds=$AutoStopTimeoutSeconds")
 $report.Add("maxLines=$MaxLines")
-$report.Add("mesenTrace=$mesenTracePath")
+$report.Add("mesenTrace=$nexenRefTracePath")
 $report.Add("nexenTrace=$nexenTracePath")
-$report.Add("mesenStartupTrace=$mesenStartupTracePath")
+$report.Add("mesenStartupTrace=$nexenRefStartupTracePath")
 $report.Add("nexenStartupTrace=$nexenStartupTracePath")
-$report.Add("mesenTraceSourceKind=$($mesenTraceResult.SourceKind)")
+$report.Add("mesenTraceSourceKind=$($nexenRefTraceResult.SourceKind)")
 $report.Add("nexenTraceSourceKind=$($nexenTraceResult.SourceKind)")
-$report.Add("mesenStartupTraceSourceKind=$($mesenStartupTraceResult.SourceKind)")
+$report.Add("mesenStartupTraceSourceKind=$($nexenRefStartupTraceResult.SourceKind)")
 $report.Add("nexenStartupTraceSourceKind=$($nexenStartupTraceResult.SourceKind)")
-$report.Add("mesenTraceSourcePath=$($mesenTraceResult.SourcePath)")
+$report.Add("mesenTraceSourcePath=$($nexenRefTraceResult.SourcePath)")
 $report.Add("nexenTraceSourcePath=$($nexenTraceResult.SourcePath)")
-$report.Add("mesenStartupTraceSourcePath=$($mesenStartupTraceResult.SourcePath)")
+$report.Add("mesenStartupTraceSourcePath=$($nexenRefStartupTraceResult.SourcePath)")
 $report.Add("nexenStartupTraceSourcePath=$($nexenStartupTraceResult.SourcePath)")
-$report.Add("mesenLines=$($mesenLines.Count)")
+$report.Add("mesenLines=$($nexenRefLines.Count)")
 $report.Add("nexenLines=$($nexenLines.Count)")
-$report.Add("mesenStartupLines=$($mesenStartupLines.Count)")
+$report.Add("mesenStartupLines=$($nexenRefStartupLines.Count)")
 $report.Add("nexenStartupLines=$($nexenStartupLines.Count)")
 $report.Add("snapshotFrame=$SnapshotFrame")
-$report.Add("mesenStartupNormalizedLines=$($mesenStartupNormalizedLines.Count)")
+$report.Add("mesenStartupNormalizedLines=$($nexenRefStartupNormalizedLines.Count)")
 $report.Add("nexenStartupNormalizedLines=$($nexenStartupNormalizedLines.Count)")
-$report.Add("mesenStartupCheckpointCount=$mesenStartupCheckpointCount")
+$report.Add("mesenStartupCheckpointCount=$nexenRefStartupCheckpointCount")
 $report.Add("nexenStartupCheckpointCount=$nexenStartupCheckpointCount")
-$report.Add("mesenStartupDisplayTransitionCount=$mesenStartupDisplayTransitionCount")
+$report.Add("mesenStartupDisplayTransitionCount=$nexenRefStartupDisplayTransitionCount")
 $report.Add("nexenStartupDisplayTransitionCount=$nexenStartupDisplayTransitionCount")
-$report.Add("mesenStartupPaletteCheckpointCount=$mesenStartupPaletteCheckpointCount")
+$report.Add("mesenStartupPaletteCheckpointCount=$nexenRefStartupPaletteCheckpointCount")
 $report.Add("nexenStartupPaletteCheckpointCount=$nexenStartupPaletteCheckpointCount")
-$report.Add("mesenStartupVdpSnapshotCount=$mesenStartupVdpSnapshotCount")
+$report.Add("mesenStartupVdpSnapshotCount=$nexenRefStartupVdpSnapshotCount")
 $report.Add("nexenStartupVdpSnapshotCount=$nexenStartupVdpSnapshotCount")
-$report.Add("mesenStartupVdpRegisterWriteCount=$mesenStartupVdpRegisterWriteCount")
+$report.Add("mesenStartupVdpRegisterWriteCount=$nexenRefStartupVdpRegisterWriteCount")
 $report.Add("nexenStartupVdpRegisterWriteCount=$nexenStartupVdpRegisterWriteCount")
-$report.Add("mesenStartupTmssUnlockCount=$mesenStartupTmssUnlockCount")
+$report.Add("mesenStartupTmssUnlockCount=$nexenRefStartupTmssUnlockCount")
 $report.Add("nexenStartupTmssUnlockCount=$nexenStartupTmssUnlockCount")
-$report.Add("mesenStartupZ80RuntimeToggleCount=$mesenStartupZ80RuntimeToggleCount")
+$report.Add("mesenStartupZ80RuntimeToggleCount=$nexenRefStartupZ80RuntimeToggleCount")
 $report.Add("nexenStartupZ80RuntimeToggleCount=$nexenStartupZ80RuntimeToggleCount")
-$report.Add("mesenStartupZ80BusReqEventCount=$mesenStartupZ80BusReqEventCount")
+$report.Add("mesenStartupZ80BusReqEventCount=$nexenRefStartupZ80BusReqEventCount")
 $report.Add("nexenStartupZ80BusReqEventCount=$nexenStartupZ80BusReqEventCount")
-$report.Add("mesenStartupZ80ResetEventCount=$mesenStartupZ80ResetEventCount")
+$report.Add("mesenStartupZ80ResetEventCount=$nexenRefStartupZ80ResetEventCount")
 $report.Add("nexenStartupZ80ResetEventCount=$nexenStartupZ80ResetEventCount")
-$report.Add("mesenHash=$mesenHash")
+$report.Add("mesenHash=$nexenRefHash")
 $report.Add("nexenHash=$nexenHash")
-$report.Add("mesenStartupHash=$mesenStartupHash")
+$report.Add("mesenStartupHash=$nexenRefStartupHash")
 $report.Add("nexenStartupHash=$nexenStartupHash")
-$report.Add("mesenFrontendMissing=$($null -eq $resolvedMesenExe)")
-$report.Add("mesenRunSkipped=$mesenRunSkipped")
-$report.Add("mesenTraceMissing=$($null -eq $mesenTracePath)")
+$report.Add("mesenFrontendMissing=$($null -eq $resolvedNexenRefExe)")
+$report.Add("mesenRunSkipped=$nexenRefRunSkipped")
+$report.Add("mesenTraceMissing=$($null -eq $nexenRefTracePath)")
 $report.Add("nexenTraceMissing=$($null -eq $nexenTracePath)")
-$report.Add("mesenStartupTraceMissing=$($null -eq $mesenStartupTracePath)")
+$report.Add("mesenStartupTraceMissing=$($null -eq $nexenRefStartupTracePath)")
 $report.Add("nexenStartupTraceMissing=$($null -eq $nexenStartupTracePath)")
-$report.Add("mesenTimedOut=$($mesenRun.StoppedByTimeout)")
+$report.Add("mesenTimedOut=$($nexenRefRun.StoppedByTimeout)")
 $report.Add("nexenTimedOut=$($nexenRun.StoppedByTimeout)")
-$report.Add("mesenExitCode=$($mesenRun.ExitCode)")
+$report.Add("mesenExitCode=$($nexenRefRun.ExitCode)")
 $report.Add("nexenExitCode=$($nexenRun.ExitCode)")
-$report.Add("mesenLaunchTarget=$($mesenRun.LaunchTarget)")
-$report.Add("mesenLaunchArgs=$($mesenRun.LaunchArgs)")
+$report.Add("mesenLaunchTarget=$($nexenRefRun.LaunchTarget)")
+$report.Add("mesenLaunchArgs=$($nexenRefRun.LaunchArgs)")
 $report.Add("nexenLaunchTarget=$($nexenRun.LaunchTarget)")
 $report.Add("nexenLaunchArgs=$($nexenRun.LaunchArgs)")
-$report.Add("mesenStartupTraceEnvSupported=$mesenStartupTraceEnvSupported")
-$report.Add("mesenSearchRoots=$($mesenSearchRoots -join ';')")
+$report.Add("mesenStartupTraceEnvSupported=$nexenRefStartupTraceEnvSupported")
+$report.Add("mesenSearchRoots=$($nexenRefSearchRoots -join ';')")
 $report.Add("nexenSearchRoots=$($nexenSearchRoots -join ';')")
-$report.Add("mesenTraceCandidates=$($mesenTraceCandidates -join ';')")
-$report.Add("mesenStartupTraceCandidates=$($mesenStartupTraceCandidates -join ';')")
+$report.Add("mesenTraceCandidates=$($nexenRefTraceCandidates -join ';')")
+$report.Add("mesenStartupTraceCandidates=$($nexenRefStartupTraceCandidates -join ';')")
 $report.Add("nexenTraceCandidates=$($nexenTraceCandidates -join ';')")
 $report.Add("nexenStartupTraceCandidates=$($nexenStartupTraceCandidates -join ';')")
-if ($mesenAttemptNotes.Count -gt 0) {
-	$report.Add("mesenAttempts=$($mesenAttemptNotes -join ' | ')")
+if ($nexenRefAttemptNotes.Count -gt 0) {
+	$report.Add("mesenAttempts=$($nexenRefAttemptNotes -join ' | ')")
 }
 $report.Add("firstDiffIndex=$firstDiff")
 $report.Add("startupFirstDiffIndex=$startupFirstDiff")
 $report.Add("startupNormalizedFirstDiffIndex=$startupNormalizedFirstDiff")
 
 if ($firstDiff -ge 0) {
-	$mesenFirst = if ($firstDiff -lt $mesenLines.Count) { $mesenLines[$firstDiff] } else { "<no-line>" }
+	$nexenRefFirst = if ($firstDiff -lt $nexenRefLines.Count) { $nexenRefLines[$firstDiff] } else { "<no-line>" }
 	$nexenFirst = if ($firstDiff -lt $nexenLines.Count) { $nexenLines[$firstDiff] } else { "<no-line>" }
-	$report.Add("mesenFirstDiff=$mesenFirst")
+	$report.Add("mesenFirstDiff=$nexenRefFirst")
 	$report.Add("nexenFirstDiff=$nexenFirst")
 } else {
 	$report.Add("status=identical")
 }
 
 if ($startupFirstDiff -ge 0) {
-	$mesenStartupFirst = if ($startupFirstDiff -lt $mesenStartupLines.Count) { $mesenStartupLines[$startupFirstDiff] } else { "<no-line>" }
+	$nexenRefStartupFirst = if ($startupFirstDiff -lt $nexenRefStartupLines.Count) { $nexenRefStartupLines[$startupFirstDiff] } else { "<no-line>" }
 	$nexenStartupFirst = if ($startupFirstDiff -lt $nexenStartupLines.Count) { $nexenStartupLines[$startupFirstDiff] } else { "<no-line>" }
-	$report.Add("mesenStartupFirstDiff=$mesenStartupFirst")
+	$report.Add("mesenStartupFirstDiff=$nexenRefStartupFirst")
 	$report.Add("nexenStartupFirstDiff=$nexenStartupFirst")
 }
 
 if ($startupNormalizedFirstDiff -ge 0) {
-	$mesenStartupNormalizedFirst = if ($startupNormalizedFirstDiff -lt $mesenStartupNormalizedLines.Count) { $mesenStartupNormalizedLines[$startupNormalizedFirstDiff] } else { "<no-line>" }
+	$nexenRefStartupNormalizedFirst = if ($startupNormalizedFirstDiff -lt $nexenRefStartupNormalizedLines.Count) { $nexenRefStartupNormalizedLines[$startupNormalizedFirstDiff] } else { "<no-line>" }
 	$nexenStartupNormalizedFirst = if ($startupNormalizedFirstDiff -lt $nexenStartupNormalizedLines.Count) { $nexenStartupNormalizedLines[$startupNormalizedFirstDiff] } else { "<no-line>" }
-	$report.Add("mesenStartupNormalizedFirstDiff=$mesenStartupNormalizedFirst")
+	$report.Add("mesenStartupNormalizedFirstDiff=$nexenRefStartupNormalizedFirst")
 	$report.Add("nexenStartupNormalizedFirstDiff=$nexenStartupNormalizedFirst")
 }
 
-$report.Add("mesenSnapshot_STARTUP_PAL=$($mesenFrameSnapshot.STARTUP_PAL)")
+$report.Add("mesenSnapshot_STARTUP_PAL=$($nexenRefFrameSnapshot.STARTUP_PAL)")
 $report.Add("nexenSnapshot_STARTUP_PAL=$($nexenFrameSnapshot.STARTUP_PAL)")
-$report.Add("mesenSnapshot_STARTUP_VDP=$($mesenFrameSnapshot.STARTUP_VDP)")
+$report.Add("mesenSnapshot_STARTUP_VDP=$($nexenRefFrameSnapshot.STARTUP_VDP)")
 $report.Add("nexenSnapshot_STARTUP_VDP=$($nexenFrameSnapshot.STARTUP_VDP)")
-$report.Add("mesenSnapshot_VDP_REG_W=$($mesenFrameSnapshot.VDP_REG_W)")
+$report.Add("mesenSnapshot_VDP_REG_W=$($nexenRefFrameSnapshot.VDP_REG_W)")
 $report.Add("nexenSnapshot_VDP_REG_W=$($nexenFrameSnapshot.VDP_REG_W)")
-$report.Add("mesenSnapshot_VDP_STAT_W=$($mesenFrameSnapshot.VDP_STAT_W)")
+$report.Add("mesenSnapshot_VDP_STAT_W=$($nexenRefFrameSnapshot.VDP_STAT_W)")
 $report.Add("nexenSnapshot_VDP_STAT_W=$($nexenFrameSnapshot.VDP_STAT_W)")
-$report.Add("mesenSnapshot_LOOP_POLL8=$($mesenFrameSnapshot.LOOP_POLL8)")
+$report.Add("mesenSnapshot_LOOP_POLL8=$($nexenRefFrameSnapshot.LOOP_POLL8)")
 $report.Add("nexenSnapshot_LOOP_POLL8=$($nexenFrameSnapshot.LOOP_POLL8)")
-$report.Add("mesenSnapshot_LOOP_POLL16=$($mesenFrameSnapshot.LOOP_POLL16)")
+$report.Add("mesenSnapshot_LOOP_POLL16=$($nexenRefFrameSnapshot.LOOP_POLL16)")
 $report.Add("nexenSnapshot_LOOP_POLL16=$($nexenFrameSnapshot.LOOP_POLL16)")
-$report.Add("mesenSnapshot_CPU_PRELOOP=$($mesenFrameSnapshot.CPU_PRELOOP)")
+$report.Add("mesenSnapshot_CPU_PRELOOP=$($nexenRefFrameSnapshot.CPU_PRELOOP)")
 $report.Add("nexenSnapshot_CPU_PRELOOP=$($nexenFrameSnapshot.CPU_PRELOOP)")
-$report.Add("mesenSnapshot_CPU_LOOP=$($mesenFrameSnapshot.CPU_LOOP)")
+$report.Add("mesenSnapshot_CPU_LOOP=$($nexenRefFrameSnapshot.CPU_LOOP)")
 $report.Add("nexenSnapshot_CPU_LOOP=$($nexenFrameSnapshot.CPU_LOOP)")
-$report.Add("mesenLoopPoll16Count=$($mesenLoopPoll16Stats.Count)")
+$report.Add("mesenLoopPoll16Count=$($nexenRefLoopPoll16Stats.Count)")
 $report.Add("nexenLoopPoll16Count=$($nexenLoopPoll16Stats.Count)")
-$report.Add("mesenLoopPoll16First=$($mesenLoopPoll16Stats.First)")
+$report.Add("mesenLoopPoll16First=$($nexenRefLoopPoll16Stats.First)")
 $report.Add("nexenLoopPoll16First=$($nexenLoopPoll16Stats.First)")
-$report.Add("mesenLoopPoll16Last=$($mesenLoopPoll16Stats.Last)")
+$report.Add("mesenLoopPoll16Last=$($nexenRefLoopPoll16Stats.Last)")
 $report.Add("nexenLoopPoll16Last=$($nexenLoopPoll16Stats.Last)")
-$report.Add("mesenCpuPreloopCount=$($mesenCpuPreloopStats.Count)")
+$report.Add("mesenCpuPreloopCount=$($nexenRefCpuPreloopStats.Count)")
 $report.Add("nexenCpuPreloopCount=$($nexenCpuPreloopStats.Count)")
-$report.Add("mesenCpuPreloopFirst=$($mesenCpuPreloopStats.First)")
+$report.Add("mesenCpuPreloopFirst=$($nexenRefCpuPreloopStats.First)")
 $report.Add("nexenCpuPreloopFirst=$($nexenCpuPreloopStats.First)")
-$report.Add("mesenCpuPreloopLast=$($mesenCpuPreloopStats.Last)")
+$report.Add("mesenCpuPreloopLast=$($nexenRefCpuPreloopStats.Last)")
 $report.Add("nexenCpuPreloopLast=$($nexenCpuPreloopStats.Last)")
-$report.Add("mesenCpuPreloopGlobalCount=$($mesenCpuPreloopGlobalStats.Count)")
+$report.Add("mesenCpuPreloopGlobalCount=$($nexenRefCpuPreloopGlobalStats.Count)")
 $report.Add("nexenCpuPreloopGlobalCount=$($nexenCpuPreloopGlobalStats.Count)")
-$report.Add("mesenCpuPreloopGlobalFirstFrame=$($mesenCpuPreloopGlobalStats.FirstFrame)")
+$report.Add("mesenCpuPreloopGlobalFirstFrame=$($nexenRefCpuPreloopGlobalStats.FirstFrame)")
 $report.Add("nexenCpuPreloopGlobalFirstFrame=$($nexenCpuPreloopGlobalStats.FirstFrame)")
-$report.Add("mesenCpuPreloopGlobalLastFrame=$($mesenCpuPreloopGlobalStats.LastFrame)")
+$report.Add("mesenCpuPreloopGlobalLastFrame=$($nexenRefCpuPreloopGlobalStats.LastFrame)")
 $report.Add("nexenCpuPreloopGlobalLastFrame=$($nexenCpuPreloopGlobalStats.LastFrame)")
-$report.Add("mesenCpuPreloopGlobalFirst=$($mesenCpuPreloopGlobalStats.First)")
+$report.Add("mesenCpuPreloopGlobalFirst=$($nexenRefCpuPreloopGlobalStats.First)")
 $report.Add("nexenCpuPreloopGlobalFirst=$($nexenCpuPreloopGlobalStats.First)")
-$report.Add("mesenCpuPreloopGlobalLast=$($mesenCpuPreloopGlobalStats.Last)")
+$report.Add("mesenCpuPreloopGlobalLast=$($nexenRefCpuPreloopGlobalStats.Last)")
 $report.Add("nexenCpuPreloopGlobalLast=$($nexenCpuPreloopGlobalStats.Last)")
-$report.Add("mesenCpuLoopCount=$($mesenCpuLoopStats.Count)")
+$report.Add("mesenCpuLoopCount=$($nexenRefCpuLoopStats.Count)")
 $report.Add("nexenCpuLoopCount=$($nexenCpuLoopStats.Count)")
-$report.Add("mesenCpuLoopFirst=$($mesenCpuLoopStats.First)")
+$report.Add("mesenCpuLoopFirst=$($nexenRefCpuLoopStats.First)")
 $report.Add("nexenCpuLoopFirst=$($nexenCpuLoopStats.First)")
-$report.Add("mesenCpuLoopLast=$($mesenCpuLoopStats.Last)")
+$report.Add("mesenCpuLoopLast=$($nexenRefCpuLoopStats.Last)")
 $report.Add("nexenCpuLoopLast=$($nexenCpuLoopStats.Last)")
 
 $report | Out-File -LiteralPath $resolvedReportPath -Encoding utf8
 
 Write-Host "Trace comparison report: $resolvedReportPath" -ForegroundColor Green
-Write-Host "mesenLines=$($mesenLines.Count) nexenLines=$($nexenLines.Count) firstDiffIndex=$firstDiff" -ForegroundColor Green
-if ($null -eq $mesenTracePath) {
+Write-Host "mesenLines=$($nexenRefLines.Count) nexenLines=$($nexenLines.Count) firstDiffIndex=$firstDiff" -ForegroundColor Green
+if ($null -eq $nexenRefTracePath) {
 	Write-Warning "Mesen2-Expanded trace file was not emitted."
 }
 if ($null -eq $nexenTracePath) {
 	Write-Warning "Nexen trace file was not emitted."
 }
-if ($null -eq $mesenStartupTracePath) {
-	if (-not $mesenStartupTraceEnvSupported) {
+if ($null -eq $nexenRefStartupTracePath) {
+	if (-not $nexenRefStartupTraceEnvSupported) {
 		Write-Warning "Mesen2-Expanded startup trace file was not emitted (startup trace env support not detected in source tree)."
 	} else {
 		Write-Warning "Mesen2-Expanded startup trace file was not emitted."
@@ -1098,9 +1098,11 @@ if ($firstDiff -ge 0) {
 	exit 3
 }
 
-if ($mesenRunSkipped) {
+if ($nexenRefRunSkipped) {
 	Write-Warning "Mesen2-Expanded run was skipped because no frontend executable was found."
 	exit 0
 }
 
 exit 0
+
+

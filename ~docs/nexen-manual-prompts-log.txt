@@ -2473,6 +2473,23 @@ continue with big batches;
 --- queued x6
 continue with big batches;
 
+[Nexen] (Genesis/MegaDrive) Some variables have been added that use `Mesen` as part of the name, replace all `Mesen` names in all projects with `Nexen` because WE ARE NOT MESEN; make ***big*** changes thousands of lines of code, work many fixes, Continue doing what we've been doing, but with a big aggressive code change push instead of small efforts; work on big merges with `Mesen-Expanded`; you've been doing the same thing over and over back and forth, don't do that, just make code run continue; do all the steps; continue; do ***several*** batches in a row and make only one issue per big effort; Focus on cycle accurate emulation and code execution, make sure every command works; continue;
+
+--- queued x10
+continue with big batches;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
