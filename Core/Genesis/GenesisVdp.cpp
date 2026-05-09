@@ -12,6 +12,10 @@ namespace {
 	static constexpr uint32_t MclksPerLine = 3420u;
 	static constexpr uint32_t H40LineChangeSlot = 165u;
 	static constexpr uint32_t H32LineChangeSlot = 133u;
+	static constexpr uint32_t H40VBlankStartSlot = 167u;
+	static constexpr uint32_t H32VBlankStartSlot = 135u;
+	static constexpr uint32_t H40VIntSlot = 0u;
+	static constexpr uint32_t H32VIntSlot = 0u;
 
 	static constexpr uint32_t H40HsyncCycles[17] = {
 		19u, 20u, 20u, 20u, 18u, 20u, 20u, 20u, 18u,
@@ -21,6 +25,185 @@ namespace {
 	static uint8_t HCounterTableH40[MclksPerLine] = {};
 	static uint8_t HCounterTableH32[MclksPerLine] = {};
 	static bool HCounterTablesBuilt = false;
+	static bool H40ExternalSlotLookup[256] = {};
+	static bool H32ExternalSlotLookup[256] = {};
+	static bool ExternalSlotTablesBuilt = false;
+
+	enum class SlotKind : uint8_t {
+		ReadMapScrollA,
+		ExternalSlot,
+		RenderMap1,
+		RenderMap2,
+		ReadMapScrollB,
+		ReadSpriteX,
+		RenderMap3,
+		RenderMapOutput,
+		SpriteRender,
+		HScrollLoad,
+		Refresh,
+		ClearLinebuf,
+		Nop
+	};
+
+	struct SlotDescriptor {
+		uint8_t HSlot;
+		SlotKind Kind;
+		int16_t Column;
+	};
+
+	static constexpr uint16_t H40SlotCount = 210u;
+	static constexpr uint16_t H32SlotCount = 171u;
+
+	#define S_OP(name) SlotKind::name
+	#define CRB(col, s) \
+		{(uint8_t)(s),   S_OP(ReadMapScrollA), (col)}, \
+		{(uint8_t)(s+1), S_OP(ExternalSlot),   -1},    \
+		{(uint8_t)(s+2), S_OP(RenderMap1),     -1},    \
+		{(uint8_t)(s+3), S_OP(RenderMap2),     -1},    \
+		{(uint8_t)(s+4), S_OP(ReadMapScrollB), (col)}, \
+		{(uint8_t)(s+5), S_OP(ReadSpriteX),    -1},    \
+		{(uint8_t)(s+6), S_OP(RenderMap3),     -1},    \
+		{(uint8_t)(s+7), S_OP(RenderMapOutput),(col)}
+	#define CRBR(col, s) \
+		{(uint8_t)(s),   S_OP(ReadMapScrollA), (col)}, \
+		{(uint8_t)(s+1), S_OP(Refresh),        -1},    \
+		{(uint8_t)(s+2), S_OP(RenderMap1),     -1},    \
+		{(uint8_t)(s+3), S_OP(RenderMap2),     -1},    \
+		{(uint8_t)(s+4), S_OP(ReadMapScrollB), (col)}, \
+		{(uint8_t)(s+5), S_OP(ReadSpriteX),    -1},    \
+		{(uint8_t)(s+6), S_OP(RenderMap3),     -1},    \
+		{(uint8_t)(s+7), S_OP(RenderMapOutput),(col)}
+	#define SPR(s)  {(uint8_t)(s), S_OP(SpriteRender),  -1}
+	#define EXT(s)  {(uint8_t)(s), S_OP(ExternalSlot),  -1}
+
+	static constexpr SlotDescriptor H40SlotTable[H40SlotCount] = {
+		{249, S_OP(ReadMapScrollA), 0},
+		SPR(250),
+		{251, S_OP(RenderMap1),     -1},
+		{252, S_OP(RenderMap2),     -1},
+		{253, S_OP(ReadMapScrollB), 0},
+		SPR(254),
+		{255, S_OP(RenderMap3),     -1},
+		{0, S_OP(RenderMapOutput),  0},
+		CRB (2,  1),
+		CRBR(4,  9),
+		CRB (6,  17),
+		CRB (8,  25),
+		CRBR(10, 33),
+		CRB (12, 41),
+		CRB (14, 49),
+		CRBR(16, 57),
+		CRB (18, 65),
+		CRB (20, 73),
+		CRBR(22, 81),
+		CRB (24, 89),
+		CRB (26, 97),
+		CRBR(28, 105),
+		CRB (30, 113),
+		CRB (32, 121),
+		CRBR(34, 129),
+		CRB (36, 137),
+		CRB (38, 145),
+		EXT(153), EXT(154), EXT(155), EXT(156),
+		{157, S_OP(HScrollLoad), -1},
+		EXT(158),
+		{159, S_OP(ClearLinebuf), -1},
+		SPR(160), SPR(161), SPR(162), SPR(163),
+		SPR(164), SPR(165), SPR(166), SPR(167),
+		SPR(168), SPR(169), SPR(170), SPR(171),
+		SPR(172), SPR(173), SPR(174), SPR(175),
+		SPR(176), SPR(177), SPR(178), SPR(179),
+		SPR(180), SPR(181), SPR(182),
+		EXT(229), EXT(230), EXT(231), EXT(232),
+		SPR(233), SPR(234), SPR(235), SPR(236),
+		SPR(237), SPR(238), SPR(239), SPR(240),
+		SPR(241), SPR(242), SPR(243), EXT(244),
+		EXT(245), EXT(246), EXT(247), EXT(248),
+	};
+
+	static constexpr SlotDescriptor H32SlotTable[H32SlotCount] = {
+		{244, S_OP(ReadMapScrollA), 0},
+		SPR(245),
+		{246, S_OP(RenderMap1),     -1},
+		{247, S_OP(RenderMap2),     -1},
+		{248, S_OP(ReadMapScrollB), 0},
+		SPR(249),
+		{250, S_OP(RenderMap3),     -1},
+		{0, S_OP(RenderMapOutput),  0},
+		CRB (2,  1),
+		CRBR(4,  9),
+		CRB (6,  17),
+		CRB (8,  25),
+		CRBR(10, 33),
+		CRB (12, 41),
+		CRB (14, 49),
+		CRBR(16, 57),
+		CRB (18, 65),
+		CRB (20, 73),
+		CRBR(22, 81),
+		CRB (24, 89),
+		CRB (26, 97),
+		CRBR(28, 105),
+		CRB (30, 113),
+		EXT(121), EXT(122), EXT(123), EXT(124),
+		{125, S_OP(HScrollLoad), -1},
+		EXT(126),
+		{127, S_OP(ClearLinebuf), -1},
+		SPR(128), SPR(129), SPR(130), SPR(131),
+		SPR(132), SPR(133), SPR(134), SPR(135),
+		SPR(136), SPR(137), SPR(138), SPR(139),
+		SPR(140), SPR(141), SPR(142), SPR(143),
+		SPR(144), SPR(145), SPR(146), SPR(147),
+		EXT(233), EXT(234), EXT(235), EXT(236),
+		SPR(237), SPR(238), SPR(239), SPR(240),
+		SPR(241), SPR(242), SPR(243), EXT(244),
+		EXT(245), EXT(246), EXT(247), EXT(248),
+	};
+
+	#undef S_OP
+	#undef CRB
+	#undef CRBR
+	#undef SPR
+	#undef EXT
+
+	void BuildExternalSlotTables() {
+		if (ExternalSlotTablesBuilt) {
+			return;
+		}
+
+		ExternalSlotTablesBuilt = true;
+		for (uint16_t i = 0; i < 256u; i++) {
+			H40ExternalSlotLookup[i] = false;
+			H32ExternalSlotLookup[i] = false;
+		}
+
+		for (uint16_t i = 0; i < H40SlotCount; i++) {
+			if (H40SlotTable[i].Kind == SlotKind::ExternalSlot) {
+				H40ExternalSlotLookup[H40SlotTable[i].HSlot] = true;
+			}
+		}
+
+		for (uint16_t i = 0; i < H32SlotCount; i++) {
+			if (H32SlotTable[i].Kind == SlotKind::ExternalSlot) {
+				H32ExternalSlotLookup[H32SlotTable[i].HSlot] = true;
+			}
+		}
+	}
+
+	uint32_t ConvertMclkOffsetToLineCycles(uint32_t mclkOffset, uint32_t lineCycleTarget) {
+		if (lineCycleTarget == 0u) {
+			return 0u;
+		}
+
+		uint32_t cycle = (mclkOffset * lineCycleTarget + (MclksPerLine / 2u)) / MclksPerLine;
+		if (cycle == 0u) {
+			cycle = 1u;
+		}
+		if (cycle >= lineCycleTarget) {
+			cycle = lineCycleTarget - 1u;
+		}
+		return cycle;
+	}
 
 	void EnsureHCounterTables() {
 		if (HCounterTablesBuilt) {
@@ -284,23 +467,19 @@ uint8_t GenesisVdp::HCounterValue(uint32_t lineCycle, bool h40Mode) const {
 }
 
 uint16_t GenesisVdp::GetVIntStartCycle() const {
-	// Keep VINT aligned with the first deferred VBlank point on the first VBlank line.
-	// This matches current startup parity expectations while preserving per-frame one-shot latching.
+	// Keep VINT aligned with the deferred VBlank point expected by current parity tests.
 	return GetVBlankFlagStartCycle();
 }
 
 uint16_t GenesisVdp::GetVBlankFlagStartCycle() const {
-	uint32_t slotOffsetMclk = (_lineH40Mode ? 32u : 40u);
-	uint32_t cycle = (slotOffsetMclk * _currentLineCycleTarget + (MclksPerLine / 2u)) / MclksPerLine;
-	if (cycle == 0u) {
-		cycle = 1u;
+	uint32_t offsetMclk;
+	if (_lineH40Mode) {
+		offsetMclk = (H40VBlankStartSlot - H40LineChangeSlot) * 16u;
+	} else {
+		offsetMclk = (H32VBlankStartSlot - H32LineChangeSlot) * 20u;
 	}
 
-	if (cycle >= _currentLineCycleTarget) {
-		cycle = _currentLineCycleTarget - 1u;
-	}
-
-	return (uint16_t)cycle;
+	return (uint16_t)ConvertMclkOffsetToLineCycles(offsetMclk, _currentLineCycleTarget);
 }
 
 uint16_t GenesisVdp::GetHBlankStartCycle() const {
@@ -1507,46 +1686,12 @@ uint8_t GenesisVdp::GetDmaWordPeriodCycles() const {
 	return 0;
 }
 
-namespace {
-	static constexpr uint16_t H40ExternalSlotCycles[14] = {
-		41, 43, 46, 49, 82, 85, 88,
-		90, 93, 461, 463, 465, 468, 472
-	};
-
-	static constexpr uint16_t H32ExternalSlotCycles[14] = {
-		42, 45, 48, 51, 74, 77, 80,
-		82, 85, 454, 457, 460, 462, 468
-	};
-
-	static constexpr uint16_t MaxSlotCycle = 472;
-
-	void BuildSlotLookup(const uint16_t* slotCycles, bool (&lookup)[MaxSlotCycle + 1]) {
-		for (uint16_t i = 0; i <= MaxSlotCycle; i++) {
-			lookup[i] = false;
-		}
-
-		for (uint8_t i = 0; i < 14; i++) {
-			lookup[slotCycles[i]] = true;
-		}
-	}
-}
-
 bool GenesisVdp::IsActiveDisplayExternalDmaSlot() const {
-	uint16_t cycle = _hCounter;
-	if (cycle > MaxSlotCycle) {
-		return false;
-	}
+	EnsureHCounterTables();
+	BuildExternalSlotTables();
 
-	static bool h40Lookup[MaxSlotCycle + 1] = {};
-	static bool h32Lookup[MaxSlotCycle + 1] = {};
-	static bool lookupInitialized = false;
-	if (!lookupInitialized) {
-		BuildSlotLookup(H40ExternalSlotCycles, h40Lookup);
-		BuildSlotLookup(H32ExternalSlotCycles, h32Lookup);
-		lookupInitialized = true;
-	}
-
-	return _lineH40Mode ? h40Lookup[cycle] : h32Lookup[cycle];
+	uint8_t hslot = HCounterValue(_hCounter, _lineH40Mode);
+	return _lineH40Mode ? H40ExternalSlotLookup[hslot] : H32ExternalSlotLookup[hslot];
 }
 
 void GenesisVdp::ProcessDma() {

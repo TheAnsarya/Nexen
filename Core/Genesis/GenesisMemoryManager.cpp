@@ -2079,6 +2079,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 				TraceStartupEvent("LOOP_POLL8", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
 			}
 		}
+		_openBus = effectiveValue;
 		return effectiveValue;
 	}
 
@@ -2106,6 +2107,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 				TraceStartupEvent("LOOP_POLL8", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
 			}
 		}
+		_openBus = effectiveValue;
 		return effectiveValue;
 	}
 
@@ -2256,12 +2258,8 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusAck);
-		uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
-		if (ackStatus) {
-			effectiveValue |= 0x0100;
-		} else {
-			effectiveValue &= (uint16_t)~0x0100;
-		}
+		uint8_t busStatus = (uint8_t)(0xFE | ackStatus);
+		uint16_t effectiveValue = (uint16_t)(((uint16_t)busStatus << 8) | busStatus);
 		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
 		TrackSegaCdHandshakeTranscript(addr, false, effectiveHighByte);
 		if (_vdp) {
@@ -2271,6 +2269,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 				TraceStartupEvent("LOOP_POLL16", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
 			}
 		}
+		_openBus = busStatus;
 		return effectiveValue;
 	}
 
@@ -2285,6 +2284,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 				TraceStartupEvent("LOOP_POLL16", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
 			}
 		}
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
 		return effectiveValue;
 	}
 
