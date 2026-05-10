@@ -2484,6 +2484,14 @@ continue with big batches;
 
 3
 
+[Nexen] continue with big batches; make all "Nexen" names have been changed to "Nexen";
+
+[Nexen] continue with big batches; make all "Nexen" names have been changed to "Nexen";
+
+y
+y
+
+continue with big batches;
 
 
 
