@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <algorithm>
 #include "SNES/SnesDefaultVideoFilter.h"
 #include "Shared/Video/DebugHud.h"

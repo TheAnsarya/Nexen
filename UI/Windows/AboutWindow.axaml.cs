@@ -88,7 +88,7 @@ public partial class AboutWindow : NexenWindow {
 
 		InitializeComponent();
 
-		// Credit both original Mesen author and Nexen fork
+		// Credit both original upstream author and the Nexen fork.
 		this.GetControl<TextBlock>("lblCopyright").Text = $"© 2024-{DateTime.Now.Year} Ansarya (Mesen2 © 2014-2024 Sour)";
 	}
 

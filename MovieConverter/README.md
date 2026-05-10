@@ -1,4 +1,4 @@
-# 🎬 Nexen MovieConverter
+﻿# 🎬 Nexen MovieConverter
 
 A .NET library for converting TAS (Tool-Assisted Speedrun) movie files between different emulator formats.
 
