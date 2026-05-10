@@ -1,12 +1,17 @@
 ﻿param(
 	[string]$RomPath,
 	[string]$NexenExePath = ".\bin\win-x64\Release\Nexen.exe",
+	[Alias("MesenExePath")]
 	[string]$NexenRefExePath = "..\Mesen2-Expanded\bin\win-x64\Release\Mesen.exe",
 	[string]$NexenWorkingDir = ".",
+	[Alias("MesenWorkingDir")]
 	[string]$NexenRefWorkingDir = "..\Mesen2-Expanded",
+	[Alias("MesenArgs")]
 	[string[]]$NexenRefArgs = @("--testRunner", "--timeout=35"),
 	[string[]]$NexenArgs = @("--testRunner", "--timeout=35"),
+	[Alias("DisableMesenFallbackRunModes")]
 	[switch]$DisableNexenRefFallbackRunModes,
+	[Alias("AllowMissingMesenFrontend")]
 	[switch]$AllowMissingNexenRefFrontend,
 	[int]$AutoStopTimeoutSeconds = 45,
 	[int]$FrameStart = 0,

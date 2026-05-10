@@ -2,6 +2,7 @@
 	[Parameter(Mandatory = $true)]
 	[string]$RomPath,
 	[string]$NexenTarget = ".\bin\win-x64\Release\Nexen.dll",
+	[Alias("MesenTarget")]
 	[string]$NexenRefTarget = "C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\Mesen.dll",
 	[string]$OutputDirectory = ".\reference\startup-logo-regression\screenshots",
 	[int]$CaptureFrame = 180,
