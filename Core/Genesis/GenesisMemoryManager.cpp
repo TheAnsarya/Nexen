@@ -116,16 +116,212 @@ namespace {
 	static bool sNexenStartupTraceEnabled = true;
 	static uint32_t sNexenStartupTraceFrameEnd = 600u;
 	static uint32_t sNexenStartupTraceMaxLines = 50000u;
+	enum class StartupProfileKind : uint8_t {
+		LogoCompat = 0,
+		NexenRef = 1,
+		MesenCompat = 2,
+		Hybrid = 3,
+		Strict = 4,
+	};
+
+	struct StartupProfileTuning {
+		StartupProfileKind Kind = StartupProfileKind::LogoCompat;
+		const char* Name = "logo-compat";
+		uint32_t StartupWindowFrames = 16u;
+		uint32_t StartupBootRelaxFrames = 2u;
+		uint32_t StartupLogoPhaseEndFrame = 90u;
+		uint32_t StartupStrictPhaseStartFrame = 240u;
+		uint32_t StartupCheckpointIntervalFrames = 1u;
+		uint32_t StartupCheckpointEndFrame = 600u;
+		uint16_t StartupTmssUnlockDelayMclk = 0u;
+		uint16_t EarlyBusReqAckDelayMclk = 7u;
+		uint16_t EarlyBusResumeDelayMclk = 7u;
+		uint16_t LateBusReqAckDelayMclk = 7u;
+		uint16_t LateBusResumeDelayMclk = 7u;
+		bool LatchOnlyHighByteWrites = true;
+		bool PreferNexenBusHandoff = true;
+		bool PreferMesenBusHandoff = false;
+		bool UseDynamicBusTiming = false;
+		bool MesenCompatMode = false;
+		bool HybridBusHandoff = false;
+		bool StrictTmssDuringLogo = false;
+		bool ForceTmssUntilUnlock = false;
+		bool TmssStrictMode = false;
+		bool PowerOnZ80ResetAsserted = true;
+	};
+
 	static bool sNexenGenesisTmssStrictMode = false;
 	static std::string sNexenGenesisStartupProfile = "logo-compat";
 	static uint32_t sNexenGenesisStartupWindowFrames = 16u;
+	static uint32_t sNexenGenesisStartupBootRelaxFrames = 2u;
+	static uint32_t sNexenGenesisStartupLogoPhaseEndFrame = 90u;
+	static uint32_t sNexenGenesisStartupStrictPhaseStartFrame = 240u;
 	static uint32_t sNexenGenesisStartupCheckpointIntervalFrames = 1u;
 	static uint32_t sNexenGenesisStartupCheckpointEndFrame = 600u;
+	static uint16_t sNexenGenesisTmssUnlockDelayMclk = 0u;
 	static uint16_t sNexenGenesisZ80BusReqAckDelayMclk = 7u;
 	static uint16_t sNexenGenesisZ80BusResumeDelayMclk = 7u;
+	static uint16_t sNexenGenesisZ80EarlyBusReqAckDelayMclk = 7u;
+	static uint16_t sNexenGenesisZ80EarlyBusResumeDelayMclk = 7u;
+	static uint16_t sNexenGenesisZ80LateBusReqAckDelayMclk = 7u;
+	static uint16_t sNexenGenesisZ80LateBusResumeDelayMclk = 7u;
 	static bool sNexenGenesisZ80LatchOnlyHighByteWrites = true;
 	static bool sNexenGenesisPreferNexenBusHandoff = true;
+	static bool sNexenGenesisPreferMesenBusHandoff = false;
+	static bool sNexenGenesisUseDynamicBusTiming = false;
+	static bool sNexenGenesisMesenCompatMode = false;
+	static bool sNexenGenesisHybridBusHandoff = false;
+	static bool sNexenGenesisStrictTmssDuringLogo = false;
+	static bool sNexenGenesisForceTmssUntilUnlock = false;
 	static bool sNexenGenesisPowerOnZ80ResetAsserted = true;
+	static StartupProfileKind sNexenGenesisStartupProfileKind = StartupProfileKind::LogoCompat;
+
+	static StartupProfileKind ParseStartupProfileKind(const std::string& profileName) {
+		if (profileName == "strict" || profileName == "strict-startup") {
+			return StartupProfileKind::Strict;
+		}
+		if (profileName == "nexen-ref" || profileName == "nexen-ref-startup") {
+			return StartupProfileKind::NexenRef;
+		}
+		if (profileName == "mesen-compat" || profileName == "mesen" || profileName == "mesen-startup") {
+			return StartupProfileKind::MesenCompat;
+		}
+		if (profileName == "hybrid" || profileName == "hybrid-startup") {
+			return StartupProfileKind::Hybrid;
+		}
+		return StartupProfileKind::LogoCompat;
+	}
+
+	static StartupProfileTuning BuildStartupProfileTuning(StartupProfileKind kind) {
+		StartupProfileTuning tuning = {};
+		tuning.Kind = kind;
+
+		switch (kind) {
+			case StartupProfileKind::Strict:
+				tuning.Name = "strict";
+				tuning.StartupWindowFrames = 0u;
+				tuning.StartupBootRelaxFrames = 0u;
+				tuning.StartupLogoPhaseEndFrame = 0u;
+				tuning.StartupStrictPhaseStartFrame = 0u;
+				tuning.StartupCheckpointIntervalFrames = 2u;
+				tuning.StartupCheckpointEndFrame = 120u;
+				tuning.StartupTmssUnlockDelayMclk = 45u;
+				tuning.EarlyBusReqAckDelayMclk = 45u;
+				tuning.EarlyBusResumeDelayMclk = 15u;
+				tuning.LateBusReqAckDelayMclk = 45u;
+				tuning.LateBusResumeDelayMclk = 15u;
+				tuning.LatchOnlyHighByteWrites = true;
+				tuning.PreferNexenBusHandoff = false;
+				tuning.PreferMesenBusHandoff = true;
+				tuning.UseDynamicBusTiming = false;
+				tuning.MesenCompatMode = true;
+				tuning.HybridBusHandoff = false;
+				tuning.StrictTmssDuringLogo = true;
+				tuning.ForceTmssUntilUnlock = true;
+				tuning.TmssStrictMode = true;
+				tuning.PowerOnZ80ResetAsserted = true;
+				break;
+			case StartupProfileKind::NexenRef:
+				tuning.Name = "nexen-ref";
+				tuning.StartupWindowFrames = 10u;
+				tuning.StartupBootRelaxFrames = 2u;
+				tuning.StartupLogoPhaseEndFrame = 90u;
+				tuning.StartupStrictPhaseStartFrame = 300u;
+				tuning.StartupCheckpointIntervalFrames = 1u;
+				tuning.StartupCheckpointEndFrame = 600u;
+				tuning.StartupTmssUnlockDelayMclk = 0u;
+				tuning.EarlyBusReqAckDelayMclk = 7u;
+				tuning.EarlyBusResumeDelayMclk = 7u;
+				tuning.LateBusReqAckDelayMclk = 7u;
+				tuning.LateBusResumeDelayMclk = 7u;
+				tuning.LatchOnlyHighByteWrites = true;
+				tuning.PreferNexenBusHandoff = true;
+				tuning.PreferMesenBusHandoff = false;
+				tuning.UseDynamicBusTiming = false;
+				tuning.MesenCompatMode = false;
+				tuning.HybridBusHandoff = false;
+				tuning.StrictTmssDuringLogo = false;
+				tuning.ForceTmssUntilUnlock = false;
+				tuning.TmssStrictMode = false;
+				tuning.PowerOnZ80ResetAsserted = true;
+				break;
+			case StartupProfileKind::MesenCompat:
+				tuning.Name = "mesen-compat";
+				tuning.StartupWindowFrames = 0u;
+				tuning.StartupBootRelaxFrames = 1u;
+				tuning.StartupLogoPhaseEndFrame = 75u;
+				tuning.StartupStrictPhaseStartFrame = 180u;
+				tuning.StartupCheckpointIntervalFrames = 1u;
+				tuning.StartupCheckpointEndFrame = 600u;
+				tuning.StartupTmssUnlockDelayMclk = 45u;
+				tuning.EarlyBusReqAckDelayMclk = 45u;
+				tuning.EarlyBusResumeDelayMclk = 15u;
+				tuning.LateBusReqAckDelayMclk = 45u;
+				tuning.LateBusResumeDelayMclk = 15u;
+				tuning.LatchOnlyHighByteWrites = true;
+				tuning.PreferNexenBusHandoff = false;
+				tuning.PreferMesenBusHandoff = true;
+				tuning.UseDynamicBusTiming = false;
+				tuning.MesenCompatMode = true;
+				tuning.HybridBusHandoff = false;
+				tuning.StrictTmssDuringLogo = true;
+				tuning.ForceTmssUntilUnlock = true;
+				tuning.TmssStrictMode = true;
+				tuning.PowerOnZ80ResetAsserted = true;
+				break;
+			case StartupProfileKind::Hybrid:
+				tuning.Name = "hybrid";
+				tuning.StartupWindowFrames = 6u;
+				tuning.StartupBootRelaxFrames = 2u;
+				tuning.StartupLogoPhaseEndFrame = 120u;
+				tuning.StartupStrictPhaseStartFrame = 280u;
+				tuning.StartupCheckpointIntervalFrames = 1u;
+				tuning.StartupCheckpointEndFrame = 600u;
+				tuning.StartupTmssUnlockDelayMclk = 15u;
+				tuning.EarlyBusReqAckDelayMclk = 45u;
+				tuning.EarlyBusResumeDelayMclk = 15u;
+				tuning.LateBusReqAckDelayMclk = 7u;
+				tuning.LateBusResumeDelayMclk = 7u;
+				tuning.LatchOnlyHighByteWrites = true;
+				tuning.PreferNexenBusHandoff = true;
+				tuning.PreferMesenBusHandoff = true;
+				tuning.UseDynamicBusTiming = true;
+				tuning.MesenCompatMode = false;
+				tuning.HybridBusHandoff = true;
+				tuning.StrictTmssDuringLogo = false;
+				tuning.ForceTmssUntilUnlock = true;
+				tuning.TmssStrictMode = false;
+				tuning.PowerOnZ80ResetAsserted = true;
+				break;
+			case StartupProfileKind::LogoCompat:
+			default:
+				tuning.Name = "logo-compat";
+				tuning.StartupWindowFrames = 16u;
+				tuning.StartupBootRelaxFrames = 2u;
+				tuning.StartupLogoPhaseEndFrame = 120u;
+				tuning.StartupStrictPhaseStartFrame = 300u;
+				tuning.StartupCheckpointIntervalFrames = 1u;
+				tuning.StartupCheckpointEndFrame = 600u;
+				tuning.StartupTmssUnlockDelayMclk = 0u;
+				tuning.EarlyBusReqAckDelayMclk = 7u;
+				tuning.EarlyBusResumeDelayMclk = 7u;
+				tuning.LateBusReqAckDelayMclk = 7u;
+				tuning.LateBusResumeDelayMclk = 7u;
+				tuning.LatchOnlyHighByteWrites = true;
+				tuning.PreferNexenBusHandoff = true;
+				tuning.PreferMesenBusHandoff = false;
+				tuning.UseDynamicBusTiming = false;
+				tuning.MesenCompatMode = false;
+				tuning.HybridBusHandoff = false;
+				tuning.StrictTmssDuringLogo = false;
+				tuning.ForceTmssUntilUnlock = false;
+				tuning.TmssStrictMode = false;
+				tuning.PowerOnZ80ResetAsserted = true;
+				break;
+		}
+
+		return tuning;
+	}
 
 	static bool TryGetNexenTracePathFromEnv(const char* name, std::string& outPath) {
 		const char* raw = std::getenv(name);
@@ -231,14 +427,8 @@ namespace {
 
 		// Profile defaults: tuned for startup/logo validation in the first 10 seconds.
 		sNexenGenesisStartupProfile = "logo-compat";
-		sNexenGenesisStartupWindowFrames = 16u;
-		sNexenGenesisStartupCheckpointIntervalFrames = 1u;
-		sNexenGenesisStartupCheckpointEndFrame = 600u;
-		sNexenGenesisZ80BusReqAckDelayMclk = 7u;
-		sNexenGenesisZ80BusResumeDelayMclk = 7u;
-		sNexenGenesisZ80LatchOnlyHighByteWrites = true;
-		sNexenGenesisPreferNexenBusHandoff = true;
-		sNexenGenesisPowerOnZ80ResetAsserted = true;
+		sNexenGenesisStartupProfileKind = StartupProfileKind::LogoCompat;
+		StartupProfileTuning tuning = BuildStartupProfileTuning(sNexenGenesisStartupProfileKind);
 
 		uint32_t value = 0;
 		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_TRACE", 0u, 1u, value)) {
@@ -259,40 +449,86 @@ namespace {
 			sNexenGenesisStartupProfile = startupProfile;
 		}
 
-		if (sNexenGenesisStartupProfile == "strict" || sNexenGenesisStartupProfile == "strict-startup") {
-			sNexenGenesisStartupWindowFrames = 0u;
-			sNexenGenesisStartupCheckpointIntervalFrames = 2u;
-			sNexenGenesisStartupCheckpointEndFrame = 120u;
-			sNexenGenesisPreferNexenBusHandoff = false;
-			sNexenGenesisTmssStrictMode = true;
-		} else if (sNexenGenesisStartupProfile == "nexen-ref" || sNexenGenesisStartupProfile == "nexen-ref-startup") {
-			sNexenGenesisStartupWindowFrames = 10u;
-			sNexenGenesisStartupCheckpointIntervalFrames = 1u;
-			sNexenGenesisStartupCheckpointEndFrame = 600u;
-			sNexenGenesisPreferNexenBusHandoff = true;
-		} else {
-			// logo-compat and unknown values fall back to compatibility-first behavior.
-			sNexenGenesisStartupProfile = "logo-compat";
-		}
+		sNexenGenesisStartupProfileKind = ParseStartupProfileKind(sNexenGenesisStartupProfile);
+		tuning = BuildStartupProfileTuning(sNexenGenesisStartupProfileKind);
+		sNexenGenesisStartupProfile = tuning.Name;
 
 		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_WINDOW_FRAMES", 0u, 120u, value)) {
-			sNexenGenesisStartupWindowFrames = value;
+			tuning.StartupWindowFrames = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_BOOT_RELAX_FRAMES", 0u, 120u, value)) {
+			tuning.StartupBootRelaxFrames = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", 0u, 1800u, value)) {
+			tuning.StartupLogoPhaseEndFrame = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_STRICT_PHASE_START_FRAME", 0u, 1800u, value)) {
+			tuning.StartupStrictPhaseStartFrame = value;
 		}
 		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_CHECKPOINT_INTERVAL_FRAMES", 1u, 120u, value)) {
-			sNexenGenesisStartupCheckpointIntervalFrames = value;
+			tuning.StartupCheckpointIntervalFrames = value;
 		}
 		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_CHECKPOINT_END_FRAME", 0u, 1800u, value)) {
-			sNexenGenesisStartupCheckpointEndFrame = value;
+			tuning.StartupCheckpointEndFrame = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_TMSS_UNLOCK_DELAY_MCLK", 0u, 255u, value)) {
+			tuning.StartupTmssUnlockDelayMclk = (uint16_t)value;
 		}
 		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_Z80_BUSREQ_ACK_DELAY_MCLK", 0u, 255u, value)) {
-			sNexenGenesisZ80BusReqAckDelayMclk = (uint16_t)value;
+			tuning.EarlyBusReqAckDelayMclk = (uint16_t)value;
+			tuning.LateBusReqAckDelayMclk = (uint16_t)value;
 		}
 		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_Z80_BUSRESUME_DELAY_MCLK", 0u, 255u, value)) {
-			sNexenGenesisZ80BusResumeDelayMclk = (uint16_t)value;
+			tuning.EarlyBusResumeDelayMclk = (uint16_t)value;
+			tuning.LateBusResumeDelayMclk = (uint16_t)value;
 		}
-		TryParseNexenTraceEnvBool("NEXEN_GENESIS_Z80_LATCH_HIGH_BYTE_ONLY", sNexenGenesisZ80LatchOnlyHighByteWrites);
-		TryParseNexenTraceEnvBool("NEXEN_GENESIS_PREFER_NEXENREF_BUS_HANDOFF", sNexenGenesisPreferNexenBusHandoff);
-		TryParseNexenTraceEnvBool("NEXEN_GENESIS_POWERON_Z80_RESET_ASSERTED", sNexenGenesisPowerOnZ80ResetAsserted);
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_Z80_EARLY_BUSREQ_ACK_DELAY_MCLK", 0u, 255u, value)) {
+			tuning.EarlyBusReqAckDelayMclk = (uint16_t)value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_Z80_EARLY_BUSRESUME_DELAY_MCLK", 0u, 255u, value)) {
+			tuning.EarlyBusResumeDelayMclk = (uint16_t)value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_Z80_LATE_BUSREQ_ACK_DELAY_MCLK", 0u, 255u, value)) {
+			tuning.LateBusReqAckDelayMclk = (uint16_t)value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_Z80_LATE_BUSRESUME_DELAY_MCLK", 0u, 255u, value)) {
+			tuning.LateBusResumeDelayMclk = (uint16_t)value;
+		}
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_Z80_LATCH_HIGH_BYTE_ONLY", tuning.LatchOnlyHighByteWrites);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_PREFER_NEXENREF_BUS_HANDOFF", tuning.PreferNexenBusHandoff);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_PREFER_MESEN_BUS_HANDOFF", tuning.PreferMesenBusHandoff);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_USE_DYNAMIC_BUS_TIMING", tuning.UseDynamicBusTiming);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_TMSS_STRICT_DURING_LOGO", tuning.StrictTmssDuringLogo);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_TMSS_FORCE_UNTIL_UNLOCK", tuning.ForceTmssUntilUnlock);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_POWERON_Z80_RESET_ASSERTED", tuning.PowerOnZ80ResetAsserted);
+
+		if (tuning.StartupStrictPhaseStartFrame < tuning.StartupLogoPhaseEndFrame) {
+			tuning.StartupStrictPhaseStartFrame = tuning.StartupLogoPhaseEndFrame;
+		}
+
+		sNexenGenesisStartupWindowFrames = tuning.StartupWindowFrames;
+		sNexenGenesisStartupBootRelaxFrames = tuning.StartupBootRelaxFrames;
+		sNexenGenesisStartupLogoPhaseEndFrame = tuning.StartupLogoPhaseEndFrame;
+		sNexenGenesisStartupStrictPhaseStartFrame = tuning.StartupStrictPhaseStartFrame;
+		sNexenGenesisStartupCheckpointIntervalFrames = tuning.StartupCheckpointIntervalFrames;
+		sNexenGenesisStartupCheckpointEndFrame = tuning.StartupCheckpointEndFrame;
+		sNexenGenesisTmssUnlockDelayMclk = tuning.StartupTmssUnlockDelayMclk;
+		sNexenGenesisZ80BusReqAckDelayMclk = tuning.EarlyBusReqAckDelayMclk;
+		sNexenGenesisZ80BusResumeDelayMclk = tuning.EarlyBusResumeDelayMclk;
+		sNexenGenesisZ80EarlyBusReqAckDelayMclk = tuning.EarlyBusReqAckDelayMclk;
+		sNexenGenesisZ80EarlyBusResumeDelayMclk = tuning.EarlyBusResumeDelayMclk;
+		sNexenGenesisZ80LateBusReqAckDelayMclk = tuning.LateBusReqAckDelayMclk;
+		sNexenGenesisZ80LateBusResumeDelayMclk = tuning.LateBusResumeDelayMclk;
+		sNexenGenesisZ80LatchOnlyHighByteWrites = tuning.LatchOnlyHighByteWrites;
+		sNexenGenesisPreferNexenBusHandoff = tuning.PreferNexenBusHandoff;
+		sNexenGenesisPreferMesenBusHandoff = tuning.PreferMesenBusHandoff;
+		sNexenGenesisUseDynamicBusTiming = tuning.UseDynamicBusTiming;
+		sNexenGenesisMesenCompatMode = tuning.MesenCompatMode;
+		sNexenGenesisHybridBusHandoff = tuning.HybridBusHandoff;
+		sNexenGenesisStrictTmssDuringLogo = tuning.StrictTmssDuringLogo;
+		sNexenGenesisForceTmssUntilUnlock = tuning.ForceTmssUntilUnlock;
+		sNexenGenesisPowerOnZ80ResetAsserted = tuning.PowerOnZ80ResetAsserted;
+		sNexenGenesisTmssStrictMode = tuning.TmssStrictMode || sNexenGenesisTmssStrictMode;
 
 		std::string tracePath;
 		if (TryGetNexenTracePathFromEnv("NEXEN_GENESIS_STARTUP_TRACE_PATH", tracePath)) {
@@ -712,10 +948,30 @@ void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t instructionProgramC
 
 void GenesisMemoryManager::ApplyStartupEnvironmentProfile() {
 	LoadNexenStartupTraceConfigFromEnv();
+	_startupProfileKindValue = (uint8_t)sNexenGenesisStartupProfileKind;
 	_startupWindowFrames = sNexenGenesisStartupWindowFrames;
+	_startupBootRelaxFrames = sNexenGenesisStartupBootRelaxFrames;
+	_startupLogoPhaseEndFrame = sNexenGenesisStartupLogoPhaseEndFrame;
+	_startupStrictPhaseStartFrame = sNexenGenesisStartupStrictPhaseStartFrame;
 	_startupCheckpointIntervalFrames = std::max<uint32_t>(1u, sNexenGenesisStartupCheckpointIntervalFrames);
 	_startupCheckpointEndFrame = sNexenGenesisStartupCheckpointEndFrame;
 	_startupNextCheckpointFrame = 0;
+	_startupBusTimingRetuneCount = 0;
+	_startupLastBusTimingFrame = 0;
+	_startupEarlyBusReqAckDelayMclk = sNexenGenesisZ80EarlyBusReqAckDelayMclk;
+	_startupEarlyBusResumeDelayMclk = sNexenGenesisZ80EarlyBusResumeDelayMclk;
+	_startupLateBusReqAckDelayMclk = sNexenGenesisZ80LateBusReqAckDelayMclk;
+	_startupLateBusResumeDelayMclk = sNexenGenesisZ80LateBusResumeDelayMclk;
+	_startupUseDynamicBusTiming = sNexenGenesisUseDynamicBusTiming;
+	_startupMesenCompatMode = sNexenGenesisMesenCompatMode;
+	_startupHybridBusHandoff = sNexenGenesisHybridBusHandoff;
+	_startupStrictTmssDuringLogo = sNexenGenesisStrictTmssDuringLogo;
+	_startupForceTmssUntilUnlock = sNexenGenesisForceTmssUntilUnlock;
+	_startupHadTmssSignature = false;
+	_startupTmssUnlockLogged = false;
+	_startupArbitrationDigest = 0;
+	_startupArbitrationEpoch = 0;
+	_startupLastArbitrationMclk = 0;
 	_startupDisplayTransitionCount = 0;
 	_startupHasLastDisplayState = false;
 	_startupHasLastZ80RunState = false;
@@ -732,10 +988,149 @@ void GenesisMemoryManager::ApplyStartupEnvironmentProfile() {
 	_startupHasNexenPcAnchor = false;
 	_startupNexenPcAnchor = 0;
 	_startupProfilePreferNexenBusHandoff = sNexenGenesisPreferNexenBusHandoff;
+	_startupProfilePreferMesenBusHandoff = sNexenGenesisPreferMesenBusHandoff;
 	_z80BusReqAckDelayMclkSetting = sNexenGenesisZ80BusReqAckDelayMclk;
 	_z80BusResumeDelayMclkSetting = sNexenGenesisZ80BusResumeDelayMclk;
 	_z80LatchOnlyHighByteWrites = sNexenGenesisZ80LatchOnlyHighByteWrites;
 	_tmssStrictMode = sNexenGenesisTmssStrictMode;
+	_tmssUnlockDelayMclkSetting = sNexenGenesisTmssUnlockDelayMclk;
+	RefreshStartupBusTiming(0u, false, 0, 0, "startup-profile");
+}
+
+uint32_t GenesisMemoryManager::GetStartupFrame() const {
+	return _vdp ? _vdp->GetFrameCount() : 0u;
+}
+
+bool GenesisMemoryManager::IsStartupLogoPhase(uint32_t frame) const {
+	return frame < _startupLogoPhaseEndFrame;
+}
+
+bool GenesisMemoryManager::IsStartupStrictPhase(uint32_t frame) const {
+	return frame >= _startupStrictPhaseStartFrame;
+}
+
+uint16_t GenesisMemoryManager::GetEffectiveZ80BusReqAckDelayMclk(uint32_t frame) const {
+	if (!_startupUseDynamicBusTiming) {
+		return _z80BusReqAckDelayMclkSetting;
+	}
+
+	if (IsStartupStrictPhase(frame)) {
+		return _startupLateBusReqAckDelayMclk;
+	}
+
+	if (IsStartupLogoPhase(frame)) {
+		return _startupEarlyBusReqAckDelayMclk;
+	}
+
+	if (_startupHybridBusHandoff) {
+		// Hybrid mode ramps from early->late in the first seconds of execution.
+		uint32_t span = _startupStrictPhaseStartFrame > _startupLogoPhaseEndFrame
+			? (_startupStrictPhaseStartFrame - _startupLogoPhaseEndFrame)
+			: 1u;
+		uint32_t pos = frame > _startupLogoPhaseEndFrame ? (frame - _startupLogoPhaseEndFrame) : 0u;
+		if (pos > span) {
+			pos = span;
+		}
+
+		uint32_t early = _startupEarlyBusReqAckDelayMclk;
+		uint32_t late = _startupLateBusReqAckDelayMclk;
+		return (uint16_t)(early + ((late - early) * pos) / span);
+	}
+
+	return _startupEarlyBusReqAckDelayMclk;
+}
+
+uint16_t GenesisMemoryManager::GetEffectiveZ80BusResumeDelayMclk(uint32_t frame) const {
+	if (!_startupUseDynamicBusTiming) {
+		return _z80BusResumeDelayMclkSetting;
+	}
+
+	if (IsStartupStrictPhase(frame)) {
+		return _startupLateBusResumeDelayMclk;
+	}
+
+	if (IsStartupLogoPhase(frame)) {
+		return _startupEarlyBusResumeDelayMclk;
+	}
+
+	if (_startupHybridBusHandoff) {
+		uint32_t span = _startupStrictPhaseStartFrame > _startupLogoPhaseEndFrame
+			? (_startupStrictPhaseStartFrame - _startupLogoPhaseEndFrame)
+			: 1u;
+		uint32_t pos = frame > _startupLogoPhaseEndFrame ? (frame - _startupLogoPhaseEndFrame) : 0u;
+		if (pos > span) {
+			pos = span;
+		}
+
+		uint32_t early = _startupEarlyBusResumeDelayMclk;
+		uint32_t late = _startupLateBusResumeDelayMclk;
+		return (uint16_t)(early + ((late - early) * pos) / span);
+	}
+
+	return _startupEarlyBusResumeDelayMclk;
+}
+
+void GenesisMemoryManager::RefreshStartupBusTiming(uint32_t frame, bool allowTrace, uint32_t addr, uint32_t pc, const char* sourceTag) {
+	uint16_t nextAck = GetEffectiveZ80BusReqAckDelayMclk(frame);
+	uint16_t nextResume = GetEffectiveZ80BusResumeDelayMclk(frame);
+	if (nextAck == _z80BusReqAckDelayMclkSetting && nextResume == _z80BusResumeDelayMclkSetting) {
+		return;
+	}
+
+	_z80BusReqAckDelayMclkSetting = nextAck;
+	_z80BusResumeDelayMclkSetting = nextResume;
+	_startupBusTimingRetuneCount++;
+	_startupLastBusTimingFrame = frame;
+	_startupArbitrationEpoch++;
+	_startupArbitrationDigest ^= (uint8_t)((nextAck & 0x0F) | ((nextResume & 0x0F) << 4));
+
+	if (allowTrace) {
+		TraceStartupEvent("Z80_TIMING", addr, nextAck, nextResume);
+		if (_startupBusTimingRetuneCount <= 64u || (_startupBusTimingRetuneCount % 512u) == 0u) {
+			MessageManager::Log(std::format("[Genesis][MMU] Z80 timing retune #{} src={} frame={} pc=${:06x} ackDelay={} resumeDelay={} profile={}",
+				_startupBusTimingRetuneCount,
+				sourceTag,
+				frame,
+				pc & 0x00ffffff,
+				nextAck,
+				nextResume,
+				_startupProfileKindValue));
+		}
+	}
+}
+
+bool GenesisMemoryManager::ShouldAllowTmssStartupBypassPort(uint32_t addr, bool isWrite) const {
+	if (!_vdp) {
+		return false;
+	}
+
+	uint32_t frame = _vdp->GetFrameCount();
+	if (frame >= _startupWindowFrames) {
+		return false;
+	}
+
+	if (_startupStrictTmssDuringLogo && IsStartupLogoPhase(frame)) {
+		return false;
+	}
+
+	uint32_t port = addr & 0x1Fu;
+	if (port >= 0x04u && port < 0x10u) {
+		return true;
+	}
+
+	if (isWrite) {
+		// During boot-relax frames we permit early data/control writes to avoid dead startup loops.
+		if (frame < _startupBootRelaxFrames) {
+			return true;
+		}
+		return _startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff;
+	}
+
+	if (frame < _startupBootRelaxFrames) {
+		return true;
+	}
+
+	return _startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff;
 }
 
 void GenesisMemoryManager::EmitStartupTransitionMarkers() {
@@ -753,7 +1148,7 @@ void GenesisMemoryManager::EmitStartupTransitionMarkers() {
 	bool z80Running = _z80RuntimeRunning;
 	bool z80BusReq = _z80BusRequest;
 	bool z80Reset = _z80Reset;
-	bool nexenProfile = _startupProfilePreferNexenBusHandoff;
+	bool reducedStartupTrace = _startupProfilePreferNexenBusHandoff && !_startupProfilePreferMesenBusHandoff;
 
 	if (!_startupHasLastDisplayState) {
 		_startupHasLastDisplayState = true;
@@ -767,7 +1162,7 @@ void GenesisMemoryManager::EmitStartupTransitionMarkers() {
 	if (!_startupHasLastZ80RunState) {
 		_startupHasLastZ80RunState = true;
 		_startupLastZ80Running = z80Running;
-	} else if (!nexenProfile && z80Running != _startupLastZ80Running) {
+	} else if (!reducedStartupTrace && z80Running != _startupLastZ80Running) {
 		_startupLastZ80Running = z80Running;
 		TraceStartupEvent("Z80_RUN_TGL", 0xA11100, z80Running ? 1u : 0u, (uint16_t)(_z80BusAck ? 1u : 0u));
 	} else {
@@ -777,7 +1172,7 @@ void GenesisMemoryManager::EmitStartupTransitionMarkers() {
 	if (!_startupHasLastZ80BusReqState) {
 		_startupHasLastZ80BusReqState = true;
 		_startupLastZ80BusReq = z80BusReq;
-	} else if (!nexenProfile && z80BusReq != _startupLastZ80BusReq) {
+	} else if (!reducedStartupTrace && z80BusReq != _startupLastZ80BusReq) {
 		_startupLastZ80BusReq = z80BusReq;
 		TraceStartupEvent("Z80_BUSREQ", 0xA11100, z80BusReq ? 1u : 0u, (uint16_t)(_z80BusAck ? 1u : 0u));
 	} else {
@@ -787,7 +1182,7 @@ void GenesisMemoryManager::EmitStartupTransitionMarkers() {
 	if (!_startupHasLastZ80ResetState) {
 		_startupHasLastZ80ResetState = true;
 		_startupLastZ80Reset = z80Reset;
-	} else if (!nexenProfile && z80Reset != _startupLastZ80Reset) {
+	} else if (!reducedStartupTrace && z80Reset != _startupLastZ80Reset) {
 		_startupLastZ80Reset = z80Reset;
 		TraceStartupEvent("Z80_RESET", 0xA11200, z80Reset ? 1u : 0u, (uint16_t)(z80BusReq ? 1u : 0u));
 	} else {
@@ -798,7 +1193,7 @@ void GenesisMemoryManager::EmitStartupTransitionMarkers() {
 		_startupHasLastVdpRegs = true;
 		memcpy(_startupLastVdpRegs, state.Registers, sizeof(_startupLastVdpRegs));
 		_startupLastVdpStatus = state.StatusRegister;
-	} else if (!nexenProfile) {
+	} else if (!reducedStartupTrace) {
 		for (uint32_t i = 0; i < (uint32_t)sizeof(_startupLastVdpRegs); i++) {
 			uint8_t currentValue = state.Registers[i];
 			if (_startupLastVdpRegs[i] != currentValue) {
@@ -837,7 +1232,7 @@ void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) 
 	// to scanline 0 so startup tags begin with frame-head chronology.
 	uint16_t totalLines = _vdp->GetTotalLines();
 	uint16_t scanline = _vdp->GetScanline();
-	if (_startupProfilePreferNexenBusHandoff) {
+	if (_startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff) {
 		if (scanline != 0u) {
 			return;
 		}
@@ -861,16 +1256,16 @@ void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) 
 	startupFlags |= _z80BusAck ? 0x0010 : 0x0000;
 	startupFlags |= _z80RuntimeRunning ? 0x0020 : 0x0000;
 	startupFlags |= displayEnabled ? 0x0040 : 0x0000;
-	startupFlags |= _startupProfilePreferNexenBusHandoff ? 0x0080 : 0x0000;
+	startupFlags |= (_startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff) ? 0x0080 : 0x0000;
 
 	uint16_t paletteDigest = ComputeStartupPaletteDigest(_vdp->GetCramPointer());
 	uint16_t startupPalAux = (uint16_t)(state.Registers[VdpReg::ModeSet2]);
-	if (_startupProfilePreferNexenBusHandoff) {
+	if (_startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff) {
 		startupPalAux &= 0x000Fu;
 	}
 	uint16_t startupVdpAux = (uint16_t)(state.Registers[VdpReg::ModeSet1] | ((uint16_t)state.Registers[VdpReg::ModeSet2] << 8));
 	uint16_t startupValue = (uint16_t)(((frame & 0x3FFu) << 6) | (state.VCounter & 0x003Fu));
-	if (_startupProfilePreferNexenBusHandoff) {
+	if (_startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff) {
 		TraceStartupEvent("STARTUP_PAL", 0xC00000, paletteDigest, startupPalAux);
 		TraceStartupEvent("STARTUP_VDP", 0xC00004, state.StatusRegister, startupVdpAux);
 		TraceStartupEvent("STARTUP_CHECKPOINT", 0xC00004, startupValue, startupFlags);
@@ -930,13 +1325,23 @@ bool GenesisMemoryManager::IsTmssLockedVdpReadAllowed(uint32_t addr) const {
 		return true;
 	}
 
-	if (_startupProfilePreferNexenBusHandoff && port < 0x04) {
-		// Compatibility path: allow early data/control reads while logo sequence initializes.
-		return IsStartupWindowActive();
+	if (ShouldAllowTmssStartupBypassPort(addr, false)) {
+		return true;
+	}
+
+	if (_startupForceTmssUntilUnlock && !_tmssUnlocked) {
+		// Strict startup path keeps TMSS fully locked until signature unlock.
+		return false;
+	}
+
+	if (_startupProfilePreferMesenBusHandoff && IsStartupLogoPhase(GetStartupFrame()) && port < 0x04) {
+		// Mesen-compatible path keeps data-port reads blocked during logo phase while still
+		// allowing control/HV polling in the same interval.
+		return false;
 	}
 
 	if (IsStartupWindowActive()) {
-		// Startup compatibility window: allow early VDP reads during first frames.
+		// Compatibility fallback for profiles that still enable startup-window bypass.
 		return true;
 	}
 
@@ -954,13 +1359,20 @@ bool GenesisMemoryManager::IsTmssLockedVdpWriteAllowed(uint32_t addr) const {
 		return true;
 	}
 
-	if (_startupProfilePreferNexenBusHandoff && port < 0x04) {
-		// Compatibility path: allow data/control writes during startup logo setup.
-		return IsStartupWindowActive();
+	if (ShouldAllowTmssStartupBypassPort(addr, true)) {
+		return true;
+	}
+
+	if (_startupForceTmssUntilUnlock && !_tmssUnlocked) {
+		return false;
+	}
+
+	if (_startupProfilePreferMesenBusHandoff && IsStartupLogoPhase(GetStartupFrame()) && port < 0x04) {
+		return false;
 	}
 
 	if (IsStartupWindowActive()) {
-		// Startup compatibility window: permit early writes in first frames.
+		// Compatibility fallback for startup profiles with relaxed lock behavior.
 		return true;
 	}
 
@@ -977,7 +1389,7 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 		return;
 	}
 
-	if (_startupProfilePreferNexenBusHandoff) {
+	if (_startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff) {
 		if (!ShouldEmitNexenProfileStartupTag(tag)) {
 			return;
 		}
@@ -991,7 +1403,7 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 	uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0x000000;
 	uint64_t traceClock = _masterClock;
 	bool isStartupTag = StartupTagStartsWith(tag, "STARTUP_");
-	if (_startupProfilePreferNexenBusHandoff && isStartupTag) {
+	if ((_startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff) && isStartupTag) {
 		if (frame <= 1u && _startupHasNexenPcAnchor) {
 			pc = _startupNexenPcAnchor & 0x00ffffffu;
 		} else {
@@ -1031,6 +1443,7 @@ void GenesisMemoryManager::EvaluateTmssUnlockState(bool allowLog, uint32_t addr,
 		&& _segaCdBridgeA140[1] == 'E'
 		&& _segaCdBridgeA140[2] == 'G'
 		&& _segaCdBridgeA140[3] == 'A';
+	_startupHadTmssSignature = signatureMatch;
 
 	if (!_tmssEnabled) {
 		_tmssUnlockPending = false;
@@ -1044,19 +1457,28 @@ void GenesisMemoryManager::EvaluateTmssUnlockState(bool allowLog, uint32_t addr,
 	}
 
 	if (signatureMatch) {
-		_tmssUnlockPending = false;
-		_tmssUnlockDelayMclk = 0;
+		uint16_t unlockDelay = _tmssUnlockDelayMclkSetting;
+		if (unlockDelay > 0u && !_tmssUnlocked) {
+			_tmssUnlockPending = true;
+			_tmssUnlockDelayMclk = unlockDelay;
+		} else {
+			_tmssUnlockPending = false;
+			_tmssUnlockDelayMclk = 0;
+		}
 		if (!_tmssUnlocked) {
-			_tmssUnlocked = true;
+			_tmssUnlocked = unlockDelay == 0u;
 			_tmssVdpBlockLogged = false;
 			_tmssStartupBypassLogged = false;
 			if (allowLog) {
-				MessageManager::Log(std::format("[Genesis][MMU] TMSS signature complete; unlock immediate ({} ${:06x}=${:02x})",
+				MessageManager::Log(std::format("[Genesis][MMU] TMSS signature complete; unlock {} ({} ${:06x}=${:02x})",
+					unlockDelay == 0u ? "immediate" : std::format("delayed {} mclk", unlockDelay),
 					isWrite ? "write" : "read",
 					addr,
 					value & 0xFF));
 			}
-			TraceStartupEvent("TMSS_UNLOCK", addr, (uint16_t)(value & 0xFFFF), 0);
+			if (!_tmssUnlockPending) {
+				TraceStartupEvent("TMSS_UNLOCK", addr, (uint16_t)(value & 0xFFFF), 0);
+			}
 		}
 	} else {
 		_tmssUnlocked = false;
@@ -1068,9 +1490,13 @@ void GenesisMemoryManager::EvaluateTmssUnlockState(bool allowLog, uint32_t addr,
 
 	_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
 	_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
-	MessageManager::Log(std::format("[Genesis][MMU] TMSS mode enable={} strictLocking={} (strict toggled by NEXEN_GENESIS_TMSS_STRICT)",
-		_tmssEnabled ? 1 : 0,
-		_tmssStrictMode ? 1 : 0));
+	if (allowLog) {
+		MessageManager::Log(std::format("[Genesis][MMU] TMSS mode enable={} strictLocking={} unlockPending={} unlockDelay={} (strict toggled by NEXEN_GENESIS_TMSS_STRICT)",
+			_tmssEnabled ? 1 : 0,
+			_tmssStrictMode ? 1 : 0,
+			_tmssUnlockPending ? 1 : 0,
+			_tmssUnlockDelayMclk));
+	}
 }
 
 void GenesisMemoryManager::UpdateTmssUnlockWindow(uint32_t masterClocks) {
@@ -1086,7 +1512,10 @@ void GenesisMemoryManager::UpdateTmssUnlockWindow(uint32_t masterClocks) {
 		_tmssStartupBypassLogged = false;
 		_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
 		_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
-		MessageManager::Log("[Genesis][MMU] TMSS unlock delay elapsed - VDP access enabled");
+		if (!_startupTmssUnlockLogged) {
+			_startupTmssUnlockLogged = true;
+			MessageManager::Log("[Genesis][MMU] TMSS unlock delay elapsed - VDP access enabled");
+		}
 		TraceStartupEvent("TMSS_UNLOCK", 0xA14000, 0x5345, 0x4741);
 	} else {
 		_tmssUnlockDelayMclk = (uint16_t)(_tmssUnlockDelayMclk - masterClocks);
@@ -1164,6 +1593,11 @@ void GenesisMemoryManager::AdvanceZ80BusArbitration(uint32_t masterClocks) {
 		return;
 	}
 
+	uint32_t frame = GetStartupFrame();
+	RefreshStartupBusTiming(frame, false, 0xA11100, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "arb");
+	_startupLastArbitrationMclk = (uint16_t)(masterClocks & 0xFFFFu);
+	_startupArbitrationDigest ^= (uint8_t)((masterClocks ^ _z80BusReqDelayMclk ^ _z80ResumeDelayMclk) & 0xFFu);
+
 	if (_z80Reset) {
 		_z80BusReqDelayMclk = 0;
 		_z80ResumeDelayMclk = 0;
@@ -1194,6 +1628,11 @@ void GenesisMemoryManager::AdvanceZ80BusArbitration(uint32_t masterClocks) {
 }
 
 void GenesisMemoryManager::SetZ80BusRequest(bool request, bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag) {
+	uint32_t frame = GetStartupFrame();
+	RefreshStartupBusTiming(frame, allowTransitionLog, addr, pc, sourceTag);
+	uint16_t effectiveReqDelay = GetEffectiveZ80BusReqAckDelayMclk(frame);
+	uint16_t effectiveResumeDelay = GetEffectiveZ80BusResumeDelayMclk(frame);
+
 	bool oldBusReq = _z80BusRequest;
 	_z80BusRequest = request;
 	if (request) {
@@ -1202,12 +1641,12 @@ void GenesisMemoryManager::SetZ80BusRequest(bool request, bool allowTransitionLo
 			_z80BusAck = true;
 			_z80BusReqDelayMclk = 0;
 		} else if (!_z80BusAck && _z80BusReqDelayMclk == 0) {
-			_z80BusReqDelayMclk = _z80BusReqAckDelayMclkSetting;
+			_z80BusReqDelayMclk = effectiveReqDelay;
 		}
 	} else {
 		_z80BusAck = false;
 		_z80BusReqDelayMclk = 0;
-		_z80ResumeDelayMclk = _z80Reset ? 0 : _z80BusResumeDelayMclkSetting;
+		_z80ResumeDelayMclk = _z80Reset ? 0 : effectiveResumeDelay;
 	}
 
 	if (allowTransitionLog && oldBusReq != _z80BusRequest) {
@@ -1228,6 +1667,10 @@ void GenesisMemoryManager::SetZ80BusRequest(bool request, bool allowTransitionLo
 }
 
 void GenesisMemoryManager::SetZ80Reset(bool resetAsserted, bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag) {
+	uint32_t frame = GetStartupFrame();
+	RefreshStartupBusTiming(frame, allowTransitionLog, addr, pc, sourceTag);
+	uint16_t effectiveReqDelay = GetEffectiveZ80BusReqAckDelayMclk(frame);
+
 	bool oldReset = _z80Reset;
 	_z80Reset = resetAsserted;
 	if (resetAsserted) {
@@ -1236,7 +1679,7 @@ void GenesisMemoryManager::SetZ80Reset(bool resetAsserted, bool allowTransitionL
 		_z80BusAck = _z80BusRequest;
 	} else if (_z80BusRequest) {
 		_z80BusAck = false;
-		_z80BusReqDelayMclk = _z80BusReqAckDelayMclkSetting;
+		_z80BusReqDelayMclk = effectiveReqDelay;
 		_z80ResumeDelayMclk = 0;
 	} else {
 		_z80BusAck = false;
@@ -3772,8 +4215,26 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_tmssStartupBypassLogged);
 	SV(_tmssUnlockPending);
 	SV(_tmssUnlockDelayMclk);
+	SV(_tmssUnlockDelayMclkSetting);
 	SV(_tmssCartRegister);
+	SV(_startupProfileKindValue);
 	SV(_startupWindowFrames);
+	SV(_startupBootRelaxFrames);
+	SV(_startupLogoPhaseEndFrame);
+	SV(_startupStrictPhaseStartFrame);
+	SV(_startupBusTimingRetuneCount);
+	SV(_startupLastBusTimingFrame);
+	SV(_startupEarlyBusReqAckDelayMclk);
+	SV(_startupEarlyBusResumeDelayMclk);
+	SV(_startupLateBusReqAckDelayMclk);
+	SV(_startupLateBusResumeDelayMclk);
+	SV(_startupUseDynamicBusTiming);
+	SV(_startupMesenCompatMode);
+	SV(_startupHybridBusHandoff);
+	SV(_startupStrictTmssDuringLogo);
+	SV(_startupForceTmssUntilUnlock);
+	SV(_startupHadTmssSignature);
+	SV(_startupTmssUnlockLogged);
 	SV(_startupTraceSequence);
 	SV(_startupTraceDigest);
 	SV(_startupHasNexenClockAnchor);
@@ -3795,6 +4256,11 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_startupHasLastVdpRegs);
 	SVArray(_startupLastVdpRegs, (uint32_t)sizeof(_startupLastVdpRegs));
 	SV(_startupLastVdpStatus);
+	SV(_startupProfilePreferNexenBusHandoff);
+	SV(_startupProfilePreferMesenBusHandoff);
+	SV(_startupArbitrationDigest);
+	SV(_startupArbitrationEpoch);
+	SV(_startupLastArbitrationMclk);
 	SV(_segaCdSubCpuRunning);
 	SV(_segaCdSubCpuBusRequest);
 	SV(_segaCdSubCpuTransitionCount);

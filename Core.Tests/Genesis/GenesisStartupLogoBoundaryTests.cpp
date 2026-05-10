@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisMemoryManager.h"
 #include "Shared/Emulator.h"
 #include <memory>
@@ -38,20 +38,32 @@ namespace {
 
 		StartupBoundaryFixture()
 			: Vars() {
-			Vars.reserve(24);
+			Vars.reserve(64);
 			ResetAll();
 		}
 
 		void ResetAll() {
 			Vars.emplace_back("NEXEN_GENESIS_STARTUP_PROFILE", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_STARTUP_WINDOW_FRAMES", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_STARTUP_BOOT_RELAX_FRAMES", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_STARTUP_STRICT_PHASE_START_FRAME", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_STARTUP_CHECKPOINT_INTERVAL_FRAMES", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_STARTUP_CHECKPOINT_END_FRAME", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_TMSS_STRICT", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_TMSS_UNLOCK_DELAY_MCLK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_TMSS_STRICT_DURING_LOGO", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_TMSS_FORCE_UNTIL_UNLOCK", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_Z80_BUSREQ_ACK_DELAY_MCLK", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_Z80_BUSRESUME_DELAY_MCLK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_Z80_EARLY_BUSREQ_ACK_DELAY_MCLK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_Z80_EARLY_BUSRESUME_DELAY_MCLK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_Z80_LATE_BUSREQ_ACK_DELAY_MCLK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_Z80_LATE_BUSRESUME_DELAY_MCLK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_USE_DYNAMIC_BUS_TIMING", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_Z80_LATCH_HIGH_BYTE_ONLY", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_PREFER_NEXENREF_BUS_HANDOFF", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_PREFER_MESEN_BUS_HANDOFF", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_POWERON_Z80_RESET_ASSERTED", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_STARTUP_TRACE", nullptr);
 			Vars.emplace_back("NEXEN_GENESIS_STARTUP_TRACE_FRAME_END", nullptr);
@@ -90,6 +102,17 @@ namespace {
 		EXPECT_EQ(memoryManager.GetStartupCheckpointIntervalFrames(), 1u);
 		EXPECT_EQ(memoryManager.GetStartupCheckpointEndFrame(), 600u);
 		EXPECT_TRUE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
+	}
+
+	TEST(GenesisStartupLogoBoundaryTests, MesenAliasProfileSelectsMesenCompatibleDefaults) {
+		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "mesen" }
+		});
+
+		EXPECT_EQ(memoryManager.GetStartupWindowFrames(), 0u);
+		EXPECT_FALSE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
+		EXPECT_EQ(memoryManager.GetZ80BusReqAckDelaySettingMclk(), 45u);
+		EXPECT_EQ(memoryManager.GetZ80BusResumeDelaySettingMclk(), 15u);
 	}
 
 	TEST(GenesisStartupLogoBoundaryTests, InvalidWindowValueKeepsProfileDefault) {
@@ -180,6 +203,19 @@ namespace {
 		EXPECT_EQ(memoryManager.GetZ80BusResumeDelaySettingMclk(), 7u);
 	}
 
+	TEST(GenesisStartupLogoBoundaryTests, OutOfRangeEarlyLateDelayValuesKeepProfileDefaults) {
+		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "hybrid" },
+			{ "NEXEN_GENESIS_Z80_EARLY_BUSREQ_ACK_DELAY_MCLK", "999" },
+			{ "NEXEN_GENESIS_Z80_EARLY_BUSRESUME_DELAY_MCLK", "999" },
+			{ "NEXEN_GENESIS_Z80_LATE_BUSREQ_ACK_DELAY_MCLK", "999" },
+			{ "NEXEN_GENESIS_Z80_LATE_BUSRESUME_DELAY_MCLK", "999" }
+		});
+
+		EXPECT_EQ(memoryManager.GetZ80BusReqAckDelaySettingMclk(), 45u);
+		EXPECT_EQ(memoryManager.GetZ80BusResumeDelaySettingMclk(), 15u);
+	}
+
 	TEST(GenesisStartupLogoBoundaryTests, BoolParsingAcceptsNumericValueForHandoffPreference) {
 		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
 			{ "NEXEN_GENESIS_PREFER_NEXENREF_BUS_HANDOFF", "0" }
@@ -195,6 +231,16 @@ namespace {
 
 		EXPECT_FALSE(memoryManager.GetZ80ResetAsserted());
 		EXPECT_TRUE(memoryManager.GetZ80RuntimeRunning());
+	}
+
+	TEST(GenesisStartupLogoBoundaryTests, InvalidBoolValuesDoNotOverrideDynamicBusTimingDefaults) {
+		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "hybrid" },
+			{ "NEXEN_GENESIS_USE_DYNAMIC_BUS_TIMING", "banana" }
+		});
+
+		EXPECT_EQ(memoryManager.GetZ80BusReqAckDelaySettingMclk(), 45u);
+		EXPECT_EQ(memoryManager.GetZ80BusResumeDelaySettingMclk(), 15u);
 	}
 
 	TEST(GenesisStartupLogoBoundaryTests, BoolParsingIgnoresUnknownValuesForLatchMode) {
@@ -216,6 +262,16 @@ namespace {
 		EXPECT_EQ(memoryManager.GetStartupCheckpointIntervalFrames(), 2u);
 	}
 
+	TEST(GenesisStartupLogoBoundaryTests, ExplicitMesenHandoffPreferenceCanBeEnabledIndependently) {
+		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "logo-compat" },
+			{ "NEXEN_GENESIS_PREFER_MESEN_BUS_HANDOFF", "1" }
+		});
+
+		EXPECT_EQ(memoryManager.GetStartupWindowFrames(), 16u);
+		EXPECT_EQ(memoryManager.GetStartupCheckpointEndFrame(), 600u);
+	}
+
 	TEST(GenesisStartupLogoBoundaryTests, NexenAliasProfileUsesNexenStartupDefaults) {
 		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
 			{ "NEXEN_GENESIS_STARTUP_PROFILE", "nexen-ref-startup" }
@@ -225,6 +281,17 @@ namespace {
 		EXPECT_EQ(memoryManager.GetStartupCheckpointIntervalFrames(), 1u);
 		EXPECT_EQ(memoryManager.GetStartupCheckpointEndFrame(), 600u);
 		EXPECT_TRUE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
+	}
+
+	TEST(GenesisStartupLogoBoundaryTests, HybridAliasProfileUsesDynamicFriendlyDefaults) {
+		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "hybrid-startup" }
+		});
+
+		EXPECT_EQ(memoryManager.GetStartupWindowFrames(), 6u);
+		EXPECT_TRUE(memoryManager.GetStartupProfilePreferNexenBusHandoff());
+		EXPECT_EQ(memoryManager.GetZ80BusReqAckDelaySettingMclk(), 45u);
+		EXPECT_EQ(memoryManager.GetZ80BusResumeDelaySettingMclk(), 15u);
 	}
 }
 

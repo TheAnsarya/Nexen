@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "Genesis/GenesisTypes.h"
 #include "Genesis/GenesisVdp.h"
@@ -77,8 +77,26 @@ private:
 	bool _tmssStartupBypassLogged = false;
 	bool _tmssUnlockPending = false;
 	uint16_t _tmssUnlockDelayMclk = 0;
+	uint16_t _tmssUnlockDelayMclkSetting = 0;
 	uint8_t _tmssCartRegister = 0;
+	uint8_t _startupProfileKindValue = 0;
 	uint32_t _startupWindowFrames = 8;
+	uint32_t _startupBootRelaxFrames = 0;
+	uint32_t _startupLogoPhaseEndFrame = 0;
+	uint32_t _startupStrictPhaseStartFrame = 0;
+	uint32_t _startupBusTimingRetuneCount = 0;
+	uint32_t _startupLastBusTimingFrame = 0;
+	uint16_t _startupEarlyBusReqAckDelayMclk = DefaultZ80BusReqAckDelayMclk;
+	uint16_t _startupEarlyBusResumeDelayMclk = DefaultZ80BusResumeDelayMclk;
+	uint16_t _startupLateBusReqAckDelayMclk = DefaultZ80BusReqAckDelayMclk;
+	uint16_t _startupLateBusResumeDelayMclk = DefaultZ80BusResumeDelayMclk;
+	bool _startupUseDynamicBusTiming = false;
+	bool _startupMesenCompatMode = false;
+	bool _startupHybridBusHandoff = false;
+	bool _startupStrictTmssDuringLogo = false;
+	bool _startupForceTmssUntilUnlock = false;
+	bool _startupHadTmssSignature = false;
+	bool _startupTmssUnlockLogged = false;
 	uint32_t _startupTraceSequence = 0;
 	uint64_t _startupTraceDigest = 0;
 	bool _startupHasNexenClockAnchor = false;
@@ -101,6 +119,10 @@ private:
 	uint8_t _startupLastVdpRegs[24] = {};
 	uint16_t _startupLastVdpStatus = 0;
 	bool _startupProfilePreferNexenBusHandoff = true;
+	bool _startupProfilePreferMesenBusHandoff = false;
+	uint8_t _startupArbitrationDigest = 0;
+	uint8_t _startupArbitrationEpoch = 0;
+	uint16_t _startupLastArbitrationMclk = 0;
 	bool _segaCdSubCpuRunning = false;
 	bool _segaCdSubCpuBusRequest = false;
 	uint32_t _segaCdSubCpuTransitionCount = 0;
@@ -215,6 +237,13 @@ private:
 	void SetZ80Reset(bool resetAsserted, bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag);
 	bool ComputeZ80RuntimeRunning() const;
 	void UpdateZ80RuntimeState(bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag);
+	uint32_t GetStartupFrame() const;
+	bool IsStartupLogoPhase(uint32_t frame) const;
+	bool IsStartupStrictPhase(uint32_t frame) const;
+	void RefreshStartupBusTiming(uint32_t frame, bool allowTrace, uint32_t addr, uint32_t pc, const char* sourceTag);
+	uint16_t GetEffectiveZ80BusReqAckDelayMclk(uint32_t frame) const;
+	uint16_t GetEffectiveZ80BusResumeDelayMclk(uint32_t frame) const;
+	bool ShouldAllowTmssStartupBypassPort(uint32_t addr, bool isWrite) const;
 	void EvaluateTmssUnlockState(bool allowLog, uint32_t addr, uint32_t value, bool isWrite);
 	void UpdateTmssUnlockWindow(uint32_t masterClocks);
 	void ApplyStartupEnvironmentProfile();
