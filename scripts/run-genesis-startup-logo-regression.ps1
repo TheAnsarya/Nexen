@@ -52,10 +52,34 @@
 	[Alias("MinMesenStartupTmssUnlockCount")]
 	[int]$MinNexenRefStartupTmssUnlockCount = 0,
 	[Alias("MinMesenStartupZ80RuntimeToggleCount")]
-	[int]$MinNexenRefStartupZ80RuntimeToggleCount = 0
+	[int]$MinNexenRefStartupZ80RuntimeToggleCount = 0,
+	[switch]$SuppressLegacyAliasNotice
 )
 
 $ErrorActionPreference = "Stop"
+
+function Write-LegacyAliasNotice {
+	param(
+		[switch]$SuppressNotice
+	)
+
+	if ($SuppressNotice) {
+		return
+	}
+
+	$legacyAliases = @(
+		"AllowMissingMesenFrontend -> AllowMissingNexenRefFrontend",
+		"DisableMesenFallbackRunModes -> DisableNexenRefFallbackRunModes",
+		"StrictRequireMesenTraces -> StrictRequireNexenRefTraces",
+		"StrictRequireMesenStartupEvents -> StrictRequireNexenRefStartupEvents",
+		"MinMesenStartup* -> MinNexenRefStartup*"
+	)
+
+	Write-Warning "Legacy Mesen* CLI aliases are accepted for compatibility. Prefer NexenRef* parameters in new automation calls."
+	Write-Host ("Legacy aliases: {0}" -f ($legacyAliases -join "; ")) -ForegroundColor DarkYellow
+}
+
+Write-LegacyAliasNotice -SuppressNotice:$SuppressLegacyAliasNotice
 
 function Resolve-PathRequired {
 	param(

@@ -13,6 +13,7 @@
 	[switch]$DisableNexenRefFallbackRunModes,
 	[Alias("AllowMissingMesenFrontend")]
 	[switch]$AllowMissingNexenRefFrontend,
+	[switch]$SuppressLegacyAliasNotice,
 	[int]$AutoStopTimeoutSeconds = 45,
 	[int]$FrameStart = 0,
 	[int]$FrameEnd = 600,
@@ -24,6 +25,29 @@
 )
 
 $ErrorActionPreference = "Stop"
+
+function Write-LegacyAliasNotice {
+	param(
+		[switch]$SuppressNotice
+	)
+
+	if ($SuppressNotice) {
+		return
+	}
+
+	$legacyAliases = @(
+		"MesenExePath -> NexenRefExePath",
+		"MesenWorkingDir -> NexenRefWorkingDir",
+		"MesenArgs -> NexenRefArgs",
+		"DisableMesenFallbackRunModes -> DisableNexenRefFallbackRunModes",
+		"AllowMissingMesenFrontend -> AllowMissingNexenRefFrontend"
+	)
+
+	Write-Warning "Legacy Mesen* CLI aliases are accepted for compatibility. Prefer NexenRef* parameters in new automation calls."
+	Write-Host ("Legacy aliases: {0}" -f ($legacyAliases -join "; ")) -ForegroundColor DarkYellow
+}
+
+Write-LegacyAliasNotice -SuppressNotice:$SuppressLegacyAliasNotice
 
 function Resolve-RequiredPath {
 	param(

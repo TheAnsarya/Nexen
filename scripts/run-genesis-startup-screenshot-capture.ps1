@@ -7,11 +7,31 @@
 	[string]$OutputDirectory = ".\reference\startup-logo-regression\screenshots",
 	[int]$CaptureFrame = 180,
 	[int]$TimeoutSeconds = 20,
-	[int]$RetryCount = 3
+	[int]$RetryCount = 3,
+	[switch]$SuppressLegacyAliasNotice
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+function Write-LegacyAliasNotice {
+	param(
+		[switch]$SuppressNotice
+	)
+
+	if ($SuppressNotice) {
+		return
+	}
+
+	$legacyAliases = @(
+		"MesenTarget -> NexenRefTarget"
+	)
+
+	Write-Warning "Legacy Mesen* CLI aliases are accepted for compatibility. Prefer NexenRef* parameters in new automation calls."
+	Write-Host ("Legacy aliases: {0}" -f ($legacyAliases -join "; ")) -ForegroundColor DarkYellow
+}
+
+Write-LegacyAliasNotice -SuppressNotice:$SuppressLegacyAliasNotice
 
 $repoRoot = (Resolve-Path ".").Path
 $resolvedRom = (Resolve-Path $RomPath).Path
