@@ -1,4 +1,4 @@
-{
+﻿{
   "generatedUtc": "2026-05-07T21:39:59.1669239Z",
   "frameStart": 0,
   "frameEnd": 600,
@@ -6,13 +6,13 @@
   "maxLines": 1200000,
   "romCount": 1,
   "regressionCount": 0,
-  "missingMesenCount": 1,
+  "missingNexenRefCount": 1,
   "policyFailureCount": 1,
   "anyErrors": false,
   "startupProfiles": [
     "logo-compat"
   ],
-  "strictRequireMesenTraces": true,
+  "strictRequireNexenRefTraces": true,
   "failOnWramDiff": false,
   "failOnStartupDiff": false,
   "failOnMissingStartupMetrics": false,
@@ -32,24 +32,24 @@
       "firstDiffIndex": 0,
       "startupFirstDiffIndex": 0,
       "nexenHash": "76bbff6c3a372962de8e36a9b47d4f9eb83d26b6dbb31e38724561104f0dbde4",
-      "mesenHash": "missing",
+      "nexenRefHash": "missing",
       "nexenStartupHash": "0830bdf1cc009bc4fe66d8d22196906567044f0a674c6e2b54874fe4b78249bc",
-      "mesenStartupHash": "missing",
+      "nexenRefStartupHash": "missing",
       "nexenLines": 257366,
-      "mesenLines": 0,
+      "nexenRefLines": 0,
       "nexenStartupLines": 33817,
-      "mesenStartupLines": 0,
+      "nexenRefStartupLines": 0,
       "nexenStartupCheckpointCount": 0,
-      "mesenStartupCheckpointCount": 0,
+      "nexenRefStartupCheckpointCount": 0,
       "nexenStartupDisplayTransitionCount": 1,
-      "mesenStartupDisplayTransitionCount": 0,
-      "mesenTraceMissing": true,
-      "mesenStartupTraceMissing": true,
-      "mesenRunSkipped": false,
+      "nexenRefStartupDisplayTransitionCount": 0,
+      "nexenRefTraceMissing": true,
+      "nexenRefStartupTraceMissing": true,
+      "nexenRefRunSkipped": false,
       "regressions": [],
       "regressionCount": 0,
       "policyFailures": [
-        "missingMesenTrace"
+        "missingNexenRefTrace"
       ],
       "policyFailureCount": 1,
       "verdict": "policy-fail"

@@ -1,9 +1,9 @@
-{
+﻿{
   "timestamp": "20260510-125858",
   "captureFrame": 180,
   "maxExtraFrames": 240,
   "rom": "C:\\~reference-roms\\genesis\\Sonic The Hedgehog (USA, Europe).md",
-  "nexenRefTargetResolved": "C:\\Users\\me\\source\\repos\\Mesen2-Expanded\\bin\\win-x64\\Debug\\Mesen.exe",
+  "nexenRefTargetResolved": "C:\\Users\\me\\source\\repos\\NexenRef2-Expanded\\bin\\win-x64\\Debug\\nexenRef.exe",
   "nexenRefCaptureSkipped": true,
   "nexenRefCaptureSkipReason": "NexenRef launch failed: NexenRef capture failed after 3 attempts. Last error: NexenRef capture did not produce output: C:\\Users\\me\\source\\repos\\Nexen\\.\\reference\\startup-logo-regression\\screenshots\\nexenref-startup-frame-180-20260510-125858.png",
   "nexenRefScreenshot": null,

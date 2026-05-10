@@ -7,16 +7,16 @@
 - maxLines: 1200000
 - romCount: 1
 - regressionCount: 0
-- missingMesenCount: 0
+- missingNexenRefCount: 0
 - policyFailureCount: 0
 - anyErrors: False
 - startupProfiles: logo-compat
-- strictRequireMesenTraces: False
+- strictRequireNexenRefTraces: False
 - strictStartupParity: False
 - failOnWramDiff: False
 - failOnStartupDiff: False
 - failOnMissingStartupMetrics: False
-- strictRequireMesenStartupEvents: False
+- strictRequireNexenRefStartupEvents: False
 - strictRequireBothStartupCheckpointEvents: False
 - strictRequireBothStartupDisplayTransitionEvents: False
 - strictRequireBothStartupPaletteCheckpointEvents: False
@@ -31,21 +31,21 @@
 - minNexenStartupVdpRegisterWriteCount: 1
 - minNexenStartupTmssUnlockCount: 0
 - minNexenStartupZ80RuntimeToggleCount: 0
-- minMesenStartupCheckpointCount: 1
-- minMesenStartupDisplayTransitionCount: 0
-- minMesenStartupPaletteCheckpointCount: 1
-- minMesenStartupVdpSnapshotCount: 1
-- minMesenStartupVdpRegisterWriteCount: 1
-- minMesenStartupTmssUnlockCount: 0
-- minMesenStartupZ80RuntimeToggleCount: 0
+- minNexenRefStartupCheckpointCount: 1
+- minNexenRefStartupDisplayTransitionCount: 0
+- minNexenRefStartupPaletteCheckpointCount: 1
+- minNexenRefStartupVdpSnapshotCount: 1
+- minNexenRefStartupVdpRegisterWriteCount: 1
+- minNexenRefStartupTmssUnlockCount: 0
+- minNexenRefStartupZ80RuntimeToggleCount: 0
 
-| ROM | Profile | Exit | Diff | Startup Diff | Nexen Startup Hash | Mesen Startup Hash | N/M Chkpt | N/M Disp | N/M Pal | N/M VdpRegW | N/M Z80Tgl | N/M TmssUnlock | Regressions | Policy Failures | Verdict |
+| ROM | Profile | Exit | Diff | Startup Diff | Nexen Startup Hash | NexenRef Startup Hash | N/M Chkpt | N/M Disp | N/M Pal | N/M VdpRegW | N/M Z80Tgl | N/M TmssUnlock | Regressions | Policy Failures | Verdict |
 |---|---|---:|---:|---:|---|---|---|---|---|---|---|---|---|---|---|
 | sonic-the-hedgehog-usa-europe | logo-compat | 3 | 0 | 0 | c34e3127a6aca76ec816d94be092e5565163026bdf5de5a8ed464475b6dcd980 | 3be94eabe7ad8e27c0b23c648112d1a1e7c834a77ec20a2c553d41884d5f4d33 | 601/409 | 1/1 | 1202/818 | 9166/2161 | 1684/832 | 0/0 |  |  | pass |
 
 ## Notes
 
 - compareExitCode=3 indicates first-difference detection from the compare script.
-- missingMesenCount includes missing trace/startup-trace or skipped Mesen run.
+- missingNexenRefCount includes missing trace/startup-trace or skipped nexenRef run.
 - policy failures are controlled by strict gate switches and do not imply infrastructure errors.
 - Use -UpdateBaseline to refresh baseline hashes and startup counters.

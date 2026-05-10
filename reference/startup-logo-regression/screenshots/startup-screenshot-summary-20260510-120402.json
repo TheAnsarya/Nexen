@@ -1,8 +1,8 @@
-{
+﻿{
   "timestamp": "20260510-120402",
   "captureFrame": 180,
   "rom": "C:\\~reference-roms\\genesis\\Sonic The Hedgehog (USA, Europe).md",
-  "nexenRefTargetResolved": "C:\\Users\\me\\source\\repos\\Mesen2-Expanded\\bin\\win-x64\\Debug\\Mesen.dll",
+  "nexenRefTargetResolved": "C:\\Users\\me\\source\\repos\\NexenRef2-Expanded\\bin\\win-x64\\Debug\\nexenRef.dll",
   "nexenRefCaptureSkipped": true,
   "nexenRefCaptureSkipReason": "NexenRef launch failed: NexenRef capture failed after 3 attempts. Last error: NexenRef capture failed with exit code -1",
   "nexenRefScreenshot": null,
