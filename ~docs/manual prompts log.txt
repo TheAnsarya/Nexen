@@ -172,7 +172,7 @@ try again and continue
 Fix this issue by concentrating on Nexen and making sure the diz-connection server is properly implemented and is actually turned on correctly by the UI, by checking the code. The UI code I know is incorrect (see screenshot) so maybe it's implementation code is incorect too
 ---- Copy-Item -Path "C:\Users\me\AppData\Roaming\Code\User\workspaceStorage\vscode-chat-images\image-1763731124031.png" -Destination "C:\Users\me\source\repos\Nexen2\~docs\manual prompts log screenshot - 2025-11-21 0819.png"
 
-OK, so the handahke exists now? (retest) then fix the issue where no data streams, and fix the MEsen UI for the Diz server window (see previous screenshot)
+OK, so the handahke exists now? (retest) then fix the issue where no data streams, and fix the Nexen UI for the Diz server window (see previous screenshot)
 
 Fix the UI display issues first; There is already a ROM loaded in Nexen, there has been the whole time. Make sure the emulation code is actually calling the live-streaming code
 
