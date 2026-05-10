@@ -10,8 +10,10 @@
 	[switch]$DisableNexenRefFallbackRunModes,
 	[string]$OutputDirectory = ".\reference\startup-logo-regression\screenshots",
 	[int]$CaptureFrame = 180,
+	[int]$MaxExtraFrames = 240,
 	[int]$TimeoutSeconds = 20,
 	[int]$RetryCount = 3,
+	[switch]$StrictRequireBothScreenshots,
 	[switch]$SuppressLegacyAliasNotice
 )
 
@@ -99,6 +101,42 @@ function Get-NexenRefTargetCandidates {
 	return $candidates
 }
 
+function Write-CapturePreflight {
+	param(
+		[Parameter(Mandatory = $true)]
+		[string]$ResolvedNexenTargetPath,
+		[Parameter(Mandatory = $true)]
+		[string[]]$NexenRefCandidatePaths,
+		[string]$ResolvedNexenRefTargetPath,
+		[switch]$AllowMissingNexenRef,
+		[switch]$DisableNexenRefFallback,
+		[switch]$StrictBothShots,
+		[int]$ConfiguredCaptureFrame,
+		[int]$ConfiguredMaxExtraFrames,
+		[int]$ConfiguredRetryCount,
+		[int]$ConfiguredTimeoutSeconds
+	)
+
+	Write-Host "Screenshot preflight:" -ForegroundColor DarkCyan
+	Write-Host ("  Nexen target: {0}" -f $ResolvedNexenTargetPath) -ForegroundColor DarkCyan
+	$resolvedNexenRefDisplay = "<none>"
+	if (-not [string]::IsNullOrWhiteSpace($ResolvedNexenRefTargetPath)) {
+		$resolvedNexenRefDisplay = $ResolvedNexenRefTargetPath
+	}
+	Write-Host ("  NexenRef resolved target: {0}" -f $resolvedNexenRefDisplay) -ForegroundColor DarkCyan
+	Write-Host ("  Allow missing NexenRef: {0}" -f ([bool]$AllowMissingNexenRef)) -ForegroundColor DarkCyan
+	Write-Host ("  Disable NexenRef fallback: {0}" -f ([bool]$DisableNexenRefFallback)) -ForegroundColor DarkCyan
+	Write-Host ("  Strict require both screenshots: {0}" -f ([bool]$StrictBothShots)) -ForegroundColor DarkCyan
+	Write-Host ("  Capture frame: {0}, max extra frames: {1}, retry count: {2}, timeout: {3}s" -f $ConfiguredCaptureFrame, $ConfiguredMaxExtraFrames, $ConfiguredRetryCount, $ConfiguredTimeoutSeconds) -ForegroundColor DarkCyan
+
+	if ([string]::IsNullOrWhiteSpace($ResolvedNexenRefTargetPath)) {
+		Write-Host "  NexenRef candidates considered:" -ForegroundColor DarkCyan
+		foreach ($candidate in $NexenRefCandidatePaths) {
+			Write-Host ("    - {0}" -f $candidate) -ForegroundColor DarkCyan
+		}
+	}
+}
+
 $repoRoot = (Resolve-Path ".").Path
 $resolvedRom = (Resolve-Path $RomPath).Path
 $resolvedNexenTarget = (Resolve-Path $NexenTarget).Path
@@ -106,6 +144,8 @@ $nexenRefCandidates = Get-NexenRefTargetCandidates -ConfiguredPath $NexenRefTarg
 $resolvedNexenRefTarget = Resolve-FirstExistingPath -CandidatePaths $nexenRefCandidates
 $resolvedOutputDirectory = Join-Path $repoRoot $OutputDirectory
 $luaScript = Join-Path $repoRoot "scripts\capture-genesis-startup-screenshot.lua"
+
+Write-CapturePreflight -ResolvedNexenTargetPath $resolvedNexenTarget -NexenRefCandidatePaths $nexenRefCandidates -ResolvedNexenRefTargetPath $resolvedNexenRefTarget -AllowMissingNexenRef:$AllowMissingNexenRefFrontend -DisableNexenRefFallback:$DisableNexenRefFallbackRunModes -StrictBothShots:$StrictRequireBothScreenshots -ConfiguredCaptureFrame $CaptureFrame -ConfiguredMaxExtraFrames $MaxExtraFrames -ConfiguredRetryCount $RetryCount -ConfiguredTimeoutSeconds $TimeoutSeconds
 
 if (-not (Test-Path $luaScript)) {
 	throw "Lua script not found: $luaScript"
@@ -129,6 +169,7 @@ function Invoke-CaptureRun {
 
 	$env:NEXEN_STARTUP_SCREENSHOT_PATH = $OutputPath
 	$env:NEXEN_STARTUP_SCREENSHOT_FRAME = "$CaptureFrame"
+	$env:NEXEN_STARTUP_SCREENSHOT_MAX_EXTRA_FRAMES = "$MaxExtraFrames"
 
 	$commonArgs = @(
 		"--testRunner",
@@ -187,6 +228,7 @@ function Invoke-CaptureRunWithRetry {
 
 $oldPath = $env:NEXEN_STARTUP_SCREENSHOT_PATH
 $oldFrame = $env:NEXEN_STARTUP_SCREENSHOT_FRAME
+$oldMaxExtraFrames = $env:NEXEN_STARTUP_SCREENSHOT_MAX_EXTRA_FRAMES
 $nexenRefSkipped = $false
 $nexenRefSkipReason = ""
 
@@ -222,17 +264,25 @@ try {
 finally {
 	$env:NEXEN_STARTUP_SCREENSHOT_PATH = $oldPath
 	$env:NEXEN_STARTUP_SCREENSHOT_FRAME = $oldFrame
+	$env:NEXEN_STARTUP_SCREENSHOT_MAX_EXTRA_FRAMES = $oldMaxExtraFrames
 }
+
+$strictViolation = $StrictRequireBothScreenshots -and $nexenRefSkipped
+$strictViolationReason = if ($strictViolation) { "StrictRequireBothScreenshots enabled and NexenRef screenshot was skipped." } else { $null }
 
 $summary = [ordered]@{
 	timestamp = $timestamp
 	captureFrame = $CaptureFrame
+	maxExtraFrames = $MaxExtraFrames
 	rom = "$resolvedRom"
 	nexenRefTargetResolved = if ([string]::IsNullOrWhiteSpace($resolvedNexenRefTarget)) { $null } else { "$resolvedNexenRefTarget" }
 	nexenRefCaptureSkipped = $nexenRefSkipped
 	nexenRefCaptureSkipReason = if ([string]::IsNullOrWhiteSpace($nexenRefSkipReason)) { $null } else { $nexenRefSkipReason }
 	nexenRefScreenshot = if ($nexenRefSkipped) { $null } else { "$nexenRefOut" }
 	nexenScreenshot = "$nexenOut"
+	strictRequireBothScreenshots = [bool]$StrictRequireBothScreenshots
+	strictViolation = [bool]$strictViolation
+	strictViolationReason = $strictViolationReason
 }
 
 $summaryPath = Join-Path $resolvedOutputDirectory "startup-screenshot-summary-$timestamp.json"
@@ -249,6 +299,10 @@ else {
 }
 Write-Host "Nexen screenshot: $nexenOut" -ForegroundColor Green
 Write-Host "Summary: $summaryPath" -ForegroundColor Green
+
+if ($strictViolation) {
+	throw "$strictViolationReason NexenRef skip reason: $nexenRefSkipReason"
+}
 
 
 
