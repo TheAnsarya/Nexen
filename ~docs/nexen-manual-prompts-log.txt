@@ -2495,8 +2495,9 @@ continue with big batches;
 
 yes do all those three things; [Nexen] continue with big batches; make all "Mesen" names have been changed to "Nexen";
 
-Stop trying to change my MANUAL log file, this is for me to change only, do not change it, we already have rules about this: `C:\Users\me\source\repos\Nexen\~docs\nexen-manual-prompts-log.txt`; continue;
+Stop trying to change my MANUAL log file, this is for me to change only, do not change it, we already have rules about this: `C:\Users\me\source\repos\Nexen\~docs\nexen-manual-prompts-log.txt`; continue with big batches; continue;
 
+yes do all those three things; [Nexen] continue with big batches;
 
 
 
