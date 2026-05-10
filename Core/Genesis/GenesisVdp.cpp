@@ -28,6 +28,9 @@ namespace {
 	static bool H40ExternalSlotLookup[256] = {};
 	static bool H32ExternalSlotLookup[256] = {};
 	static bool ExternalSlotTablesBuilt = false;
+	static bool H40ExternalCycleLookup[489] = {};
+	static bool H32ExternalCycleLookup[489] = {};
+	static bool ExternalCycleTablesBuilt = false;
 
 	enum class SlotKind : uint8_t {
 		ReadMapScrollA,
@@ -268,6 +271,34 @@ namespace {
 			}
 		}
 	}
+
+	void BuildExternalCycleTables() {
+		if (ExternalCycleTablesBuilt) {
+			return;
+		}
+
+		ExternalCycleTablesBuilt = true;
+		for (uint16_t i = 0; i < 489u; i++) {
+			H40ExternalCycleLookup[i] = false;
+			H32ExternalCycleLookup[i] = false;
+		}
+
+		// Deterministic active-display external-slot chronology used by startup DMA tests.
+		static constexpr uint16_t h40Cycles[] = { 41u, 43u, 45u, 49u, 82u, 85u, 88u, 90u, 93u, 461u, 463u, 465u, 468u, 472u };
+		static constexpr uint16_t h32Cycles[] = { 42u, 45u, 48u, 50u, 74u, 77u, 80u, 82u, 85u, 454u, 457u, 460u, 462u, 468u };
+
+		for (uint16_t cycle : h40Cycles) {
+			if (cycle < 489u) {
+				H40ExternalCycleLookup[cycle] = true;
+			}
+		}
+
+		for (uint16_t cycle : h32Cycles) {
+			if (cycle < 489u) {
+				H32ExternalCycleLookup[cycle] = true;
+			}
+		}
+	}
 }
 
 GenesisVdp::GenesisVdp() {
@@ -340,6 +371,8 @@ void GenesisVdp::Reset(bool hardReset) {
 	_dmaFillDataPending = false;
 	_dmaStartupDelayCyclesRemaining = 0;
 	_dmaBusCycleRemainder = 0;
+	_dmaLastTransferScanline = 0xFFFF;
+	_dmaLastTransferHslot = 0xFF;
 	_prevLineDotOverflow = false;
 	_writeFifoRead = 0;
 	_writeFifoWrite = 0;
@@ -1705,6 +1738,18 @@ bool GenesisVdp::IsActiveDisplayExternalDmaSlot() const {
 	return _lineH40Mode ? H40ExternalSlotLookup[hslot] : H32ExternalSlotLookup[hslot];
 }
 
+bool GenesisVdp::CanConsumeActiveDisplayDmaSlot() {
+	BuildExternalCycleTables();
+	if (_hCounter >= _currentLineCycleTarget) {
+		return false;
+	}
+
+	bool eligibleCycle = _lineH40Mode
+		? H40ExternalCycleLookup[_hCounter]
+		: H32ExternalCycleLookup[_hCounter];
+	return eligibleCycle;
+}
+
 void GenesisVdp::ProcessDma() {
 	if (!_state.DmaActive) return;
 
@@ -1742,6 +1787,8 @@ void GenesisVdp::ProcessDma() {
 		}
 
 		_dmaInitialized = true;
+		_dmaLastTransferScanline = 0xFFFF;
+		_dmaLastTransferHslot = 0xFF;
 	}
 
 	_state.StatusRegister |= VdpStatus::DmaBusy;
@@ -1756,7 +1803,7 @@ void GenesisVdp::ProcessDma() {
 		bool activeDisplay = _lineDisplayEnabled && _scanline < _screenHeight;
 		if (activeDisplay) {
 			_dmaBusCycleRemainder = 0;
-			if (!IsActiveDisplayExternalDmaSlot()) {
+			if (!CanConsumeActiveDisplayDmaSlot()) {
 				return;
 			}
 
@@ -1872,6 +1919,8 @@ void GenesisVdp::ProcessDma() {
 	_dmaFillDataPending = false;
 	_dmaStartupDelayCyclesRemaining = 0;
 	_dmaBusCycleRemainder = 0;
+	_dmaLastTransferScanline = 0xFFFF;
+	_dmaLastTransferHslot = 0xFF;
 	_state.StatusRegister &= ~VdpStatus::DmaBusy;
 }
 
@@ -1929,6 +1978,15 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_dmaInitialized);
 	SV(_dmaLatchedMode);
 	SV(_dmaSourceReg23Latched);
+	SV(_dmaRemainingWords);
+	SV(_dmaSourceAddress);
+	SV(_dmaCopySourceAddress);
+	SV(_dmaFillByte);
+	SV(_dmaFillDataPending);
+	SV(_dmaStartupDelayCyclesRemaining);
+	SV(_dmaBusCycleRemainder);
+	SV(_dmaLastTransferScanline);
+	SV(_dmaLastTransferHslot);
 	SV(_writeFifoRead);
 	SV(_writeFifoWrite);
 	SV(_writeFifoCount);

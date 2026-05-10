@@ -84,6 +84,8 @@ private:
 	bool _dmaFillDataPending = false;
 	uint8_t _dmaStartupDelayCyclesRemaining = 0;
 	uint8_t _dmaBusCycleRemainder = 0;
+	uint16_t _dmaLastTransferScanline = 0xFFFF;
+	uint8_t _dmaLastTransferHslot = 0xFF;
 	bool _prevLineDotOverflow = false;
 
 	struct VdpWriteFifoEntry {
@@ -115,6 +117,7 @@ private:
 	void ProcessDma();
 	uint8_t GetDmaWordPeriodCycles() const;
 	bool IsActiveDisplayExternalDmaSlot() const;
+	bool CanConsumeActiveDisplayDmaSlot();
 	void EnqueueWriteFifo(uint8_t accessMode, uint16_t address, uint16_t value);
 	void DrainWriteFifoOne();
 	void ApplyPortWrite(uint8_t accessMode, uint16_t address, uint16_t value);
