@@ -1,17 +1,12 @@
 ﻿param(
 	[string]$RomPath,
 	[string]$NexenExePath = ".\bin\win-x64\Release\Nexen.exe",
-	[Alias("MesenExePath")]
-	[string]$NexenRefExePath = "..\Mesen2-Expanded\bin\win-x64\Release\Mesen.exe",
+	[string]$NexenRefExePath = "",
 	[string]$NexenWorkingDir = ".",
-	[Alias("MesenWorkingDir")]
-	[string]$NexenRefWorkingDir = "..\Mesen2-Expanded",
-	[Alias("MesenArgs")]
+	[string]$NexenRefWorkingDir = ".",
 	[string[]]$NexenRefArgs = @("--testRunner", "--timeout=35"),
 	[string[]]$NexenArgs = @("--testRunner", "--timeout=35"),
-	[Alias("DisableMesenFallbackRunModes")]
 	[switch]$DisableNexenRefFallbackRunModes,
-	[Alias("AllowMissingMesenFrontend")]
 	[switch]$AllowMissingNexenRefFrontend,
 	[switch]$SuppressLegacyAliasNotice,
 	[int]$AutoStopTimeoutSeconds = 45,
@@ -35,16 +30,7 @@ function Write-LegacyAliasNotice {
 		return
 	}
 
-	$legacyAliases = @(
-		"MesenExePath -> NexenRefExePath",
-		"MesenWorkingDir -> NexenRefWorkingDir",
-		"MesenArgs -> NexenRefArgs",
-		"DisableMesenFallbackRunModes -> DisableNexenRefFallbackRunModes",
-		"AllowMissingMesenFrontend -> AllowMissingNexenRefFrontend"
-	)
-
-	Write-Warning "Legacy Mesen* CLI aliases are accepted for compatibility. Prefer NexenRef* parameters in new automation calls."
-	Write-Host ("Legacy aliases: {0}" -f ($legacyAliases -join "; ")) -ForegroundColor DarkYellow
+	Write-Host "Compatibility mode enabled. Use NexenRef* parameters for reference frontend settings." -ForegroundColor DarkYellow
 }
 
 Write-LegacyAliasNotice -SuppressNotice:$SuppressLegacyAliasNotice
@@ -101,6 +87,34 @@ function Resolve-FirstExistingPath {
 	}
 
 	throw "Unable to resolve $Label. Tried: $($CandidatePaths -join '; ')"
+}
+
+function Get-AutoDetectedNexenRefFrontendCandidates {
+	$results = New-Object System.Collections.Generic.List[string]
+	$patterns = @(
+		"..\*Expanded\bin\win-x64\Debug",
+		"..\*Expanded\bin\win-x64\Release",
+		"..\*Expanded\UI\bin\win-x64\Release",
+		"..\*Expanded\UI\bin\Release",
+		"..\*Expanded\UI\bin\Release\net8.0\win-x64\publish"
+	)
+
+	foreach ($pattern in $patterns) {
+		foreach ($folder in (Get-ChildItem -Path $pattern -Directory -ErrorAction SilentlyContinue)) {
+			$bins = Get-ChildItem -LiteralPath $folder.FullName -File -ErrorAction SilentlyContinue |
+				Where-Object {
+					($_.Extension -ieq ".exe" -or $_.Extension -ieq ".dll") -and
+					-not $_.Name.StartsWith("Nexen", [System.StringComparison]::OrdinalIgnoreCase)
+				} |
+				Sort-Object LastWriteTimeUtc -Descending
+
+			foreach ($bin in $bins) {
+				$results.Add($bin.FullName)
+			}
+		}
+	}
+
+	return $results
 }
 
 function Start-TimedRun {
@@ -295,8 +309,7 @@ function Test-NexenRefStartupTraceEnvSupport {
 	)
 
 	$sourceCandidates = @(
-		(Join-Path $NexenRefWorkingDirectory "Core\Genesis\GenesisNativeBackend.cpp"),
-		(Join-Path $NexenRefWorkingDirectory "..\Mesen2-Expanded\Core\Genesis\GenesisNativeBackend.cpp")
+		(Join-Path $NexenRefWorkingDirectory "Core\Genesis\GenesisNativeBackend.cpp")
 	)
 
 	foreach ($source in $sourceCandidates) {
@@ -304,7 +317,7 @@ function Test-NexenRefStartupTraceEnvSupport {
 			continue
 		}
 
-		$match = Select-String -Path $source -Pattern "MESEN_GENESIS_STARTUP_TRACE" -Quiet -ErrorAction SilentlyContinue
+		$match = Select-String -Path $source -Pattern "NEXENREF_GENESIS_STARTUP_TRACE" -Quiet -ErrorAction SilentlyContinue
 		if ($match) {
 			return $true
 		}
@@ -635,19 +648,10 @@ $romCandidates += @(
 )
 
 $nexenRefExeCandidates = @(
-	$env:NEXEN_MESEN_FRONTEND_PATH,
-	$NexenRefExePath,
-	"..\Mesen2-Expanded\bin\win-x64\Release\Mesen.exe",
-	"..\Mesen2-Expanded\bin\win-x64\Debug\Mesen.exe",
-	"..\Mesen2-Expanded\bin\win-x64\Release\Mesen.dll",
-	"..\Mesen2-Expanded\bin\win-x64\Debug\Mesen.dll",
-	"..\Mesen2-Expanded\UI\bin\win-x64\Release\Mesen.exe",
-	"..\Mesen2-Expanded\UI\bin\win-x64\Release\Mesen.dll",
-	"..\Mesen2-Expanded\UI\bin\Release\Mesen.exe",
-	"..\Mesen2-Expanded\UI\bin\Release\Mesen.dll",
-	"..\Mesen2-Expanded\UI\bin\Release\net8.0\win-x64\publish\Mesen.exe",
-	"..\Mesen2-Expanded\UI\bin\Release\net8.0\win-x64\publish\Mesen.dll"
+	$env:NEXEN_REF_FRONTEND_PATH,
+	$NexenRefExePath
 )
+$nexenRefExeCandidates += Get-AutoDetectedNexenRefFrontendCandidates
 
 $romCandidates = @($romCandidates | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 $nexenRefExeCandidates = @($nexenRefExeCandidates | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
@@ -671,8 +675,8 @@ $nexenRefExeDir = $null
 if ($null -ne $resolvedNexenRefExe) {
 	$nexenRefExeDir = Split-Path -Parent $resolvedNexenRefExe
 }
-$nexenRefDocumentsDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)) "Mesen2"
-$nexenRefAppDataDir = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) "Mesen2"
+$nexenRefDocumentsDir = [Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)
+$nexenRefAppDataDir = [Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)
 $nexenTraceCandidates = @(
 	(Join-Path $resolvedNexenDir "reference\cpu_ram_trace.log"),
 	(Join-Path $nexenExeDir "reference\cpu_ram_trace.log")
@@ -681,7 +685,6 @@ $nexenRefTraceCandidates = @((Join-Path $resolvedNexenRefDir "reference\cpu_ram_
 if ($null -ne $nexenRefExeDir) {
 	$nexenRefTraceCandidates += (Join-Path $nexenRefExeDir "reference\cpu_ram_trace.log")
 }
-$nexenRefTraceCandidates += (Join-Path $nexenRefDocumentsDir "reference\cpu_ram_trace.log")
 $resolvedReportPath = $ReportPath
 if (-not [System.IO.Path]::IsPathRooted($resolvedReportPath)) {
 	$resolvedReportPath = Join-Path $resolvedNexenDir $resolvedReportPath
@@ -728,11 +731,11 @@ if ($null -ne $nexenRefExeDir) {
 }
 $nexenRefStartupTraceCandidates += (Join-Path $nexenRefDocumentsDir "reference\genesis_startup_trace.log")
 
-$oldNexenRefFrameStart = $env:MESEN_WRAM_FRAME_START
-$oldNexenRefFrameEnd = $env:MESEN_WRAM_FRAME_END
-$oldNexenRefAddrStart = $env:MESEN_WRAM_ADDR_START
-$oldNexenRefAddrEnd = $env:MESEN_WRAM_ADDR_END
-$oldNexenRefMaxLines = $env:MESEN_WRAM_MAX_LINES
+$oldNexenRefFrameStart = $env:NEXENREF_WRAM_FRAME_START
+$oldNexenRefFrameEnd = $env:NEXENREF_WRAM_FRAME_END
+$oldNexenRefAddrStart = $env:NEXENREF_WRAM_ADDR_START
+$oldNexenRefAddrEnd = $env:NEXENREF_WRAM_ADDR_END
+$oldNexenRefMaxLines = $env:NEXENREF_WRAM_MAX_LINES
 $oldNexenFrameStart = $env:NEXEN_WRAM_FRAME_START
 $oldNexenFrameEnd = $env:NEXEN_WRAM_FRAME_END
 $oldNexenAddrStart = $env:NEXEN_WRAM_ADDR_START
@@ -744,26 +747,26 @@ $oldNexenStartupTraceEnabled = $env:NEXEN_GENESIS_STARTUP_TRACE
 $oldNexenStartupTraceFrameEnd = $env:NEXEN_GENESIS_STARTUP_TRACE_FRAME_END
 $oldNexenStartupTraceMaxLines = $env:NEXEN_GENESIS_STARTUP_TRACE_MAX_LINES
 
-$oldNexenRefWramTracePath = $env:MESEN_WRAM_TRACE_PATH
-$oldNexenRefStartupTracePath = $env:MESEN_GENESIS_STARTUP_TRACE_PATH
-$oldNexenRefStartupTraceEnabled = $env:MESEN_GENESIS_STARTUP_TRACE
-$oldNexenRefStartupTraceFrameEnd = $env:MESEN_GENESIS_STARTUP_TRACE_FRAME_END
-$oldNexenRefStartupTraceMaxLines = $env:MESEN_GENESIS_STARTUP_TRACE_MAX_LINES
+$oldNexenRefWramTracePath = $env:NEXENREF_WRAM_TRACE_PATH
+$oldNexenRefStartupTracePath = $env:NEXENREF_GENESIS_STARTUP_TRACE_PATH
+$oldNexenRefStartupTraceEnabled = $env:NEXENREF_GENESIS_STARTUP_TRACE
+$oldNexenRefStartupTraceFrameEnd = $env:NEXENREF_GENESIS_STARTUP_TRACE_FRAME_END
+$oldNexenRefStartupTraceMaxLines = $env:NEXENREF_GENESIS_STARTUP_TRACE_MAX_LINES
 $nexenRefRunSkipped = $false
 $nexenRefStartupTraceEnvSupported = Test-NexenRefStartupTraceEnvSupport -NexenRefWorkingDirectory $resolvedNexenRefDir
 $nexenRefAttemptNotes = New-Object System.Collections.Generic.List[string]
 
 try {
-	$env:MESEN_WRAM_FRAME_START = "$FrameStart"
-	$env:MESEN_WRAM_FRAME_END = "$FrameEnd"
-	$env:MESEN_WRAM_ADDR_START = "$AddressStart"
-	$env:MESEN_WRAM_ADDR_END = "$AddressEnd"
-	$env:MESEN_WRAM_MAX_LINES = "$MaxLines"
-	$env:MESEN_WRAM_TRACE_PATH = "$nexenRefExplicitWramTracePath"
-	$env:MESEN_GENESIS_STARTUP_TRACE_PATH = "$nexenRefExplicitStartupTracePath"
-	$env:MESEN_GENESIS_STARTUP_TRACE = "1"
-	$env:MESEN_GENESIS_STARTUP_TRACE_FRAME_END = "$FrameEnd"
-	$env:MESEN_GENESIS_STARTUP_TRACE_MAX_LINES = "$MaxLines"
+	$env:NEXENREF_WRAM_FRAME_START = "$FrameStart"
+	$env:NEXENREF_WRAM_FRAME_END = "$FrameEnd"
+	$env:NEXENREF_WRAM_ADDR_START = "$AddressStart"
+	$env:NEXENREF_WRAM_ADDR_END = "$AddressEnd"
+	$env:NEXENREF_WRAM_MAX_LINES = "$MaxLines"
+	$env:NEXENREF_WRAM_TRACE_PATH = "$nexenRefExplicitWramTracePath"
+	$env:NEXENREF_GENESIS_STARTUP_TRACE_PATH = "$nexenRefExplicitStartupTracePath"
+	$env:NEXENREF_GENESIS_STARTUP_TRACE = "1"
+	$env:NEXENREF_GENESIS_STARTUP_TRACE_FRAME_END = "$FrameEnd"
+	$env:NEXENREF_GENESIS_STARTUP_TRACE_MAX_LINES = "$MaxLines"
 
 	$env:NEXEN_WRAM_FRAME_START = "$FrameStart"
 	$env:NEXEN_WRAM_FRAME_END = "$FrameEnd"
@@ -823,11 +826,11 @@ try {
 	Write-Host "Running Nexen trace capture..." -ForegroundColor Cyan
 	$nexenRun = Start-TimedRun -ProgramPath $resolvedNexenExe -PreArgs $NexenArgs -Rom $resolvedRom -WorkingDir $resolvedNexenDir -TimeoutSeconds $AutoStopTimeoutSeconds -Name "Nexen"
 } finally {
-	$env:MESEN_WRAM_FRAME_START = $oldNexenRefFrameStart
-	$env:MESEN_WRAM_FRAME_END = $oldNexenRefFrameEnd
-	$env:MESEN_WRAM_ADDR_START = $oldNexenRefAddrStart
-	$env:MESEN_WRAM_ADDR_END = $oldNexenRefAddrEnd
-	$env:MESEN_WRAM_MAX_LINES = $oldNexenRefMaxLines
+	$env:NEXENREF_WRAM_FRAME_START = $oldNexenRefFrameStart
+	$env:NEXENREF_WRAM_FRAME_END = $oldNexenRefFrameEnd
+	$env:NEXENREF_WRAM_ADDR_START = $oldNexenRefAddrStart
+	$env:NEXENREF_WRAM_ADDR_END = $oldNexenRefAddrEnd
+	$env:NEXENREF_WRAM_MAX_LINES = $oldNexenRefMaxLines
 
 	$env:NEXEN_WRAM_FRAME_START = $oldNexenFrameStart
 	$env:NEXEN_WRAM_FRAME_END = $oldNexenFrameEnd
@@ -840,11 +843,11 @@ try {
 	$env:NEXEN_GENESIS_STARTUP_TRACE_FRAME_END = $oldNexenStartupTraceFrameEnd
 	$env:NEXEN_GENESIS_STARTUP_TRACE_MAX_LINES = $oldNexenStartupTraceMaxLines
 
-	$env:MESEN_WRAM_TRACE_PATH = $oldNexenRefWramTracePath
-	$env:MESEN_GENESIS_STARTUP_TRACE_PATH = $oldNexenRefStartupTracePath
-	$env:MESEN_GENESIS_STARTUP_TRACE = $oldNexenRefStartupTraceEnabled
-	$env:MESEN_GENESIS_STARTUP_TRACE_FRAME_END = $oldNexenRefStartupTraceFrameEnd
-	$env:MESEN_GENESIS_STARTUP_TRACE_MAX_LINES = $oldNexenRefStartupTraceMaxLines
+	$env:NEXENREF_WRAM_TRACE_PATH = $oldNexenRefWramTracePath
+	$env:NEXENREF_GENESIS_STARTUP_TRACE_PATH = $oldNexenRefStartupTracePath
+	$env:NEXENREF_GENESIS_STARTUP_TRACE = $oldNexenRefStartupTraceEnabled
+	$env:NEXENREF_GENESIS_STARTUP_TRACE_FRAME_END = $oldNexenRefStartupTraceFrameEnd
+	$env:NEXENREF_GENESIS_STARTUP_TRACE_MAX_LINES = $oldNexenRefStartupTraceMaxLines
 }
 
 $nexenRefSearchRoots = Get-TraceSearchRoots -Roots @($resolvedNexenRefDir, $nexenRefExeDir, $nexenRefDocumentsDir, $nexenRefAppDataDir)

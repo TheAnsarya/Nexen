@@ -13,11 +13,8 @@
 	[int]$MaxLines = 1200000,
 	[string[]]$StartupProfiles = @("logo-compat"),
 	[switch]$UpdateBaseline,
-	[Alias("AllowMissingMesenFrontend")]
 	[switch]$AllowMissingNexenRefFrontend,
-	[Alias("DisableMesenFallbackRunModes")]
 	[switch]$DisableNexenRefFallbackRunModes,
-	[Alias("StrictRequireMesenTraces")]
 	[switch]$StrictRequireNexenRefTraces,
 	[switch]$StrictStartupParity,
 	[switch]$FailOnWramDiff,
@@ -30,7 +27,6 @@
 	[int]$MinNexenStartupVdpRegisterWriteCount = 1,
 	[int]$MinNexenStartupTmssUnlockCount = 0,
 	[int]$MinNexenStartupZ80RuntimeToggleCount = 0,
-	[Alias("StrictRequireMesenStartupEvents")]
 	[switch]$StrictRequireNexenRefStartupEvents,
 	[switch]$StrictRequireBothStartupCheckpointEvents,
 	[switch]$StrictRequireBothStartupDisplayTransitionEvents,
@@ -39,19 +35,12 @@
 	[switch]$StrictRequireBothStartupVdpRegisterWriteEvents,
 	[switch]$StrictRequireBothStartupTmssUnlockEvents,
 	[switch]$StrictRequireBothStartupZ80RuntimeToggleEvents,
-	[Alias("MinMesenStartupCheckpointCount")]
 	[int]$MinNexenRefStartupCheckpointCount = 1,
-	[Alias("MinMesenStartupDisplayTransitionCount")]
 	[int]$MinNexenRefStartupDisplayTransitionCount = 0,
-	[Alias("MinMesenStartupPaletteCheckpointCount")]
 	[int]$MinNexenRefStartupPaletteCheckpointCount = 1,
-	[Alias("MinMesenStartupVdpSnapshotCount")]
 	[int]$MinNexenRefStartupVdpSnapshotCount = 1,
-	[Alias("MinMesenStartupVdpRegisterWriteCount")]
 	[int]$MinNexenRefStartupVdpRegisterWriteCount = 1,
-	[Alias("MinMesenStartupTmssUnlockCount")]
 	[int]$MinNexenRefStartupTmssUnlockCount = 0,
-	[Alias("MinMesenStartupZ80RuntimeToggleCount")]
 	[int]$MinNexenRefStartupZ80RuntimeToggleCount = 0,
 	[switch]$SuppressLegacyAliasNotice
 )
@@ -67,16 +56,7 @@ function Write-LegacyAliasNotice {
 		return
 	}
 
-	$legacyAliases = @(
-		"AllowMissingMesenFrontend -> AllowMissingNexenRefFrontend",
-		"DisableMesenFallbackRunModes -> DisableNexenRefFallbackRunModes",
-		"StrictRequireMesenTraces -> StrictRequireNexenRefTraces",
-		"StrictRequireMesenStartupEvents -> StrictRequireNexenRefStartupEvents",
-		"MinMesenStartup* -> MinNexenRefStartup*"
-	)
-
-	Write-Warning "Legacy Mesen* CLI aliases are accepted for compatibility. Prefer NexenRef* parameters in new automation calls."
-	Write-Host ("Legacy aliases: {0}" -f ($legacyAliases -join "; ")) -ForegroundColor DarkYellow
+	Write-Host "Compatibility mode enabled. Use NexenRef* parameters for reference frontend settings." -ForegroundColor DarkYellow
 }
 
 Write-LegacyAliasNotice -SuppressNotice:$SuppressLegacyAliasNotice

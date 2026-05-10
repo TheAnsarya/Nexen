@@ -76,7 +76,7 @@ public partial class AboutWindow : NexenWindow {
 		LibraryList.Sort((a, b) => a.Name.CompareTo(b.Name));
 
 		AcknowledgeList = new List<AboutListEntry>() {
-			new("Mesen2 (Sour)", "Sour", "Original emulator", "https://github.com/SourMesen/Mesen2"),
+			new("Original Upstream Emulator", "Sour", "Original emulator", "https://github.com/Sour"),
 			new("ares (Near)", "Near", "ISC", "https://github.com/ares-emulator/ares"),
 			new("NesDev Wiki/Forums Contributors", "", "", "https://www.nesdev.org/"),
 			new("SameBoy (LIJI32)", "LIJI32", "MIT", "https://github.com/LIJI32/SameBoy"),
@@ -89,7 +89,7 @@ public partial class AboutWindow : NexenWindow {
 		InitializeComponent();
 
 		// Credit both original upstream author and the Nexen fork.
-		this.GetControl<TextBlock>("lblCopyright").Text = $"© 2024-{DateTime.Now.Year} Ansarya (Mesen2 © 2014-2024 Sour)";
+		this.GetControl<TextBlock>("lblCopyright").Text = $"© 2024-{DateTime.Now.Year} Ansarya (Original core © 2014-2024 Sour)";
 	}
 
 	private void InitializeComponent() {

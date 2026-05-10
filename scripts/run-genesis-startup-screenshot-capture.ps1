@@ -2,11 +2,8 @@
 	[Parameter(Mandatory = $true)]
 	[string]$RomPath,
 	[string]$NexenTarget = ".\bin\win-x64\Release\Nexen.dll",
-	[Alias("MesenTarget")]
-	[string]$NexenRefTarget = "C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\Mesen.dll",
-	[Alias("AllowMissingMesenFrontend")]
+	[string]$NexenRefTarget = "",
 	[switch]$AllowMissingNexenRefFrontend,
-	[Alias("DisableMesenFallbackRunModes")]
 	[switch]$DisableNexenRefFallbackRunModes,
 	[string]$OutputDirectory = ".\reference\startup-logo-regression\screenshots",
 	[int]$CaptureFrame = 180,
@@ -29,14 +26,7 @@ function Write-LegacyAliasNotice {
 		return
 	}
 
-	$legacyAliases = @(
-		"MesenTarget -> NexenRefTarget",
-		"AllowMissingMesenFrontend -> AllowMissingNexenRefFrontend",
-		"DisableMesenFallbackRunModes -> DisableNexenRefFallbackRunModes"
-	)
-
-	Write-Warning "Legacy Mesen* CLI aliases are accepted for compatibility. Prefer NexenRef* parameters in new automation calls."
-	Write-Host ("Legacy aliases: {0}" -f ($legacyAliases -join "; ")) -ForegroundColor DarkYellow
+	Write-Host "Compatibility mode enabled. Use NexenRef* parameters for reference frontend settings." -ForegroundColor DarkYellow
 }
 
 Write-LegacyAliasNotice -SuppressNotice:$SuppressLegacyAliasNotice
@@ -79,23 +69,38 @@ function Resolve-FirstExistingPath {
 
 function Get-NexenRefTargetCandidates {
 	param(
-		[Parameter(Mandatory = $true)]
 		[string]$ConfiguredPath,
 		[switch]$DisableFallback
 	)
 
 	$candidates = New-Object System.Collections.Generic.List[string]
-	$candidates.Add($ConfiguredPath)
+	if (-not [string]::IsNullOrWhiteSpace($ConfiguredPath)) {
+		$candidates.Add($ConfiguredPath)
+	}
 
 	if (-not $DisableFallback) {
-		$candidates.Add("C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\Mesen.exe")
-		$candidates.Add("C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Release\Mesen.exe")
-		$candidates.Add("C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\Mesen.dll")
-		$candidates.Add("C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Release\Mesen.dll")
-		$candidates.Add(".\Mesen2-Expanded\bin\win-x64\Debug\Mesen.exe")
-		$candidates.Add(".\Mesen2-Expanded\bin\win-x64\Release\Mesen.exe")
-		$candidates.Add(".\Mesen2-Expanded\bin\win-x64\Debug\Mesen.dll")
-		$candidates.Add(".\Mesen2-Expanded\bin\win-x64\Release\Mesen.dll")
+		$searchPatterns = @(
+			"..\*Expanded\bin\win-x64\Debug",
+			"..\*Expanded\bin\win-x64\Release",
+			"..\*Expanded\UI\bin\win-x64\Release",
+			"..\*Expanded\UI\bin\Release",
+			"..\*Expanded\UI\bin\Release\net8.0\win-x64\publish"
+		)
+
+		foreach ($pattern in $searchPatterns) {
+			foreach ($folder in (Get-ChildItem -Path $pattern -Directory -ErrorAction SilentlyContinue)) {
+				$bins = Get-ChildItem -LiteralPath $folder.FullName -File -ErrorAction SilentlyContinue |
+					Where-Object {
+						($_.Extension -ieq ".exe" -or $_.Extension -ieq ".dll") -and
+						-not $_.Name.StartsWith("Nexen", [System.StringComparison]::OrdinalIgnoreCase)
+					} |
+					Sort-Object LastWriteTimeUtc -Descending
+
+				foreach ($bin in $bins) {
+					$candidates.Add($bin.FullName)
+				}
+			}
+		}
 	}
 
 	return $candidates
