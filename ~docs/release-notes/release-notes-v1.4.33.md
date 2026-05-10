@@ -1,4 +1,4 @@
-﻿# Nexen v1.4.33 — Quality, Stability & Migration Improvements
+# Nexen v1.4.33 — Quality, Stability & Migration Improvements
 
 > **18 commits** | **12 issues resolved** | **5,134 tests passing** (3,690 C++ + 1,444 .NET) | **Zero warnings**
 
@@ -52,7 +52,7 @@ All CI workflows now set `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true` in the envir
 
 ### TODOv2: issue-scoped TODO triage — #1281
 
-All 20 files containing stale `TODOv2` markers (inherited from the Mesen2 era) have been triaged. Each marker was either:
+All 20 files containing stale `TODOv2` markers (inherited from the Nexen2 era) have been triaged. Each marker was either:
 
 - Converted to `TODO(#issue)` format with a tracking issue reference
 - Resolved and removed if the work was already done
@@ -60,7 +60,7 @@ All 20 files containing stale `TODOv2` markers (inherited from the Mesen2 era) h
 
 ### SteamOS / Steam Deck guide — #1282, #1283
 
-The `SteamOS.md` guide was entirely stale Mesen2 content. It has been completely rewritten with:
+The `SteamOS.md` guide was entirely stale Nexen2 content. It has been completely rewritten with:
 
 - Nexen-specific download and installation instructions
 - Desktop Mode and Game Mode configuration
@@ -110,8 +110,8 @@ Real emulator-path microbenchmarks were created for GBA and NES memory hotpaths 
 | Issue | Title | Type |
 |-------|-------|------|
 | #1274 | Add migration flow for legacy scattered game data | fix |
-| #1281 | Triage 21 stale TODOv2 comments from Mesen2 era | refactor |
-| #1282 | SteamOS.md is entirely stale Mesen2 content | docs |
+| #1281 | Triage 21 stale TODOv2 comments from Nexen2 era | refactor |
+| #1282 | SteamOS.md is entirely stale Nexen2 content | docs |
 | #1283 | SteamOS guide rewrite | docs |
 | #1285 | WS timing gate scaffold | test |
 | #1287 | Expand WS timing scaffold to multi-event timeline | test |

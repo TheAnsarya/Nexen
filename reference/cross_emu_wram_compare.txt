@@ -12,7 +12,7 @@ nexenRefTraceSourceKind=fallback-search-copy
 nexenTraceSourceKind=direct-candidate
 nexenRefStartupTraceSourceKind=fallback-search-copy
 nexenStartupTraceSourceKind=direct-candidate
-nexenRefTraceSourcePath=C:\Users\me\Documents\Mesen2\reference\cpu_ram_trace.log
+nexenRefTraceSourcePath=C:\Users\me\Documents\Nexen2\reference\cpu_ram_trace.log
 nexenTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260510-164558.log
 nexenRefStartupTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexenRef-startup-trace-20260510-163956.log
 nexenStartupTraceSourcePath=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260510-164558.log
@@ -55,15 +55,15 @@ nexenRefTimedOut=False
 nexenTimedOut=False
 nexenRefExitCode=-1
 nexenExitCode=-3
-nexenRefLaunchTarget=C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\Mesen.exe
+nexenRefLaunchTarget=C:\Users\me\source\repos\Nexen2-Expanded\bin\win-x64\Debug\Nexen.exe
 nexenRefLaunchArgs=--testRunner --timeout=35 "C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md"
 nexenLaunchTarget=C:\Users\me\source\repos\Nexen\bin\win-x64\Release\Nexen.exe
 nexenLaunchArgs=--testRunner --timeout=35 "C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md"
 nexenRefStartupTraceEnvSupported=False
-nexenRefSearchRoots=C:\Users\me\source\repos\Nexen;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug;C:\Users\me\Documents;C:\Users\me\AppData\Local
+nexenRefSearchRoots=C:\Users\me\source\repos\Nexen;C:\Users\me\source\repos\Nexen2-Expanded\bin\win-x64\Debug;C:\Users\me\Documents;C:\Users\me\AppData\Local
 nexenSearchRoots=C:\Users\me\source\repos\Nexen;C:\Users\me\source\repos\Nexen\bin\win-x64\Release
-nexenRefTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexenRef-cpu-ram-trace-20260510-164558.log;C:\Users\me\source\repos\Nexen\reference\cpu_ram_trace.log;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\reference\cpu_ram_trace.log
-nexenRefStartupTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexenRef-startup-trace-20260510-164558.log;C:\Users\me\source\repos\Nexen\reference\genesis_startup_trace.log;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Debug\reference\genesis_startup_trace.log;C:\Users\me\Documents\reference\genesis_startup_trace.log
+nexenRefTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexenRef-cpu-ram-trace-20260510-164558.log;C:\Users\me\source\repos\Nexen\reference\cpu_ram_trace.log;C:\Users\me\source\repos\Nexen2-Expanded\bin\win-x64\Debug\reference\cpu_ram_trace.log
+nexenRefStartupTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexenRef-startup-trace-20260510-164558.log;C:\Users\me\source\repos\Nexen\reference\genesis_startup_trace.log;C:\Users\me\source\repos\Nexen2-Expanded\bin\win-x64\Debug\reference\genesis_startup_trace.log;C:\Users\me\Documents\reference\genesis_startup_trace.log
 nexenTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-cpu-ram-trace-20260510-164558.log;C:\Users\me\source\repos\Nexen\reference\cpu_ram_trace.log;C:\Users\me\source\repos\Nexen\bin\win-x64\Release\reference\cpu_ram_trace.log
 nexenStartupTraceCandidates=C:\Users\me\source\repos\Nexen\reference\trace-captures\nexen-startup-trace-20260510-164558.log;C:\Users\me\source\repos\Nexen\reference\genesis_startup_trace.log;C:\Users\me\source\repos\Nexen\bin\win-x64\Release\reference\genesis_startup_trace.log
 nexenRefAttempts=attempt[0]=configured-args;trace=;startup=;exit=-1;timeout=False

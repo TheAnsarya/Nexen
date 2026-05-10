@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to Nexen are documented in this file.
 
@@ -443,7 +443,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **GSU HiROM memory mapping** — SuperFX coprocessor now supports HiROM cartridge layouts (upstream Mesen2 PR #89) (#1061)
+- **GSU HiROM memory mapping** — SuperFX coprocessor now supports HiROM cartridge layouts (upstream Nexen2 PR #89) (#1061)
 	- HiROM banks $40-$6f, $72-$7d mapped with 64KB page increments, mirrors at $c0-$ef, $f2-$ff
 	- RAM override at $70-$71 for HiROM carts
 	- GSU-side linear 64KB-per-bank addressing preserved
@@ -452,7 +452,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **GSU accuracy improvements** — Four fixes from upstream Mesen2 PR #90 (#1062):
+- **GSU accuracy improvements** — Four fixes from upstream Nexen2 PR #90 (#1062):
 	- STOP instruction now flushes pixel cache before halting
 	- R14 ROM stall guard prevents hangs when program bank > $5f
 	- RomDelay/RamDelay underflow prevention (explicit conditional instead of `std::min`)
@@ -611,7 +611,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 	- ROM database with ~80 No-Intro entries
 	- 67 performance benchmarks, 84+ unit tests, TAS integration tests
 
-- **Upstream Mesen2 Fixes** — 8 bug fixes from open Mesen2 PRs
+- **Upstream Nexen2 Fixes** — 8 bug fixes from open Nexen2 PRs
 	- PR #87: SNES DMA uint8_t overflow (could miscalculate cycle overhead)
 	- PR #82: NES GetInternalOpenBus returning wrong bus value
 	- PR #86: SNES CX4 cache/timing (bus delay, preload, IRQ flag, cycle compare)
@@ -869,6 +869,6 @@ Initial public release of Nexen.
 
 ## Version History
 
-Nexen is based on [Mesen](https://github.com/SourMesen/Mesen2) by Sour.
+Nexen is based on [Nexen](https://github.com/SourNexen/Nexen2) by Sour.
 
-For the original Mesen changelog, see the [upstream repository](https://github.com/SourMesen/Mesen2/releases).
+For the original Nexen changelog, see the [upstream repository](https://github.com/SourNexen/Nexen2/releases).

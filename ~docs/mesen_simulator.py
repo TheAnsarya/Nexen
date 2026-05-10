@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Mesen2 DiztinGUIsh Server Simulator
-Simulates the Mesen2 DiztinGUIsh protocol server for testing DiztinGUIsh integration.
+Nexen2 DiztinGUIsh Server Simulator
+Simulates the Nexen2 DiztinGUIsh protocol server for testing DiztinGUIsh integration.
 """
 import socket
 import struct
@@ -26,8 +26,8 @@ class MessageType:
     CpuStateRequest = 0x21
     Error = 0xFF
 
-class MesenSimulator:
-    """Simulates Mesen2 DiztinGUIsh server behavior"""
+class NexenSimulator:
+    """Simulates Nexen2 DiztinGUIsh server behavior"""
     
     def __init__(self, port=9998):
         self.port = port
@@ -47,7 +47,7 @@ class MesenSimulator:
             self.server_socket.listen(1)
             self.running = True
             
-            print(f"✅ Mesen2 Simulator started on port {self.port}")
+            print(f"✅ Nexen2 Simulator started on port {self.port}")
             print("Waiting for DiztinGUIsh connection...")
             
             self.server_thread = threading.Thread(target=self._accept_connections)
@@ -271,10 +271,10 @@ class MesenSimulator:
 
 def main():
     """Main simulator entry point"""
-    print("Mesen2 DiztinGUIsh Server Simulator")
+    print("Nexen2 DiztinGUIsh Server Simulator")
     print("===================================")
     
-    simulator = MesenSimulator(9998)
+    simulator = NexenSimulator(9998)
     
     try:
         success = simulator.start_server()

@@ -1,15 +1,15 @@
-# Test sequence for Mesen2 → DiztinGUIsh connection
-# Run this AFTER starting Mesen2 server
+# Test sequence for Nexen2 → DiztinGUIsh connection
+# Run this AFTER starting Nexen2 server
 
-Write-Host "`n=== STEP 1: Verify Mesen2 server is listening ===" -ForegroundColor Cyan
+Write-Host "`n=== STEP 1: Verify Nexen2 server is listening ===" -ForegroundColor Cyan
 $listening = Get-NetTCPConnection -LocalPort 9998 -State Listen -ErrorAction SilentlyContinue
 if ($listening) {
     Write-Host "✅ Port 9998 IS LISTENING - Process: $($listening.OwningProcess)" -ForegroundColor Green
     Write-Host "   Ready to connect from DiztinGUIsh!" -ForegroundColor Green
 } else {
     Write-Host "❌ Port 9998 NOT listening!" -ForegroundColor Red
-    Write-Host "   Please start Mesen2 server first:" -ForegroundColor Yellow
-    Write-Host "   1. Open Mesen2" -ForegroundColor Yellow
+    Write-Host "   Please start Nexen2 server first:" -ForegroundColor Yellow
+    Write-Host "   1. Open Nexen2" -ForegroundColor Yellow
     Write-Host "   2. Load a SNES ROM" -ForegroundColor Yellow
     Write-Host "   3. Tools → DiztinGUIsh Server → Start Server" -ForegroundColor Yellow
     exit 1
@@ -49,7 +49,7 @@ try {
             
             if ($totalRead -eq $messageLength) {
                 Write-Host "✅ HANDSHAKE RECEIVED SUCCESSFULLY!" -ForegroundColor Green
-                Write-Host "`n   This means Mesen2 server is working correctly!" -ForegroundColor Green
+                Write-Host "`n   This means Nexen2 server is working correctly!" -ForegroundColor Green
                 Write-Host "   Now try connecting from DiztinGUIsh application." -ForegroundColor Green
             } else {
                 Write-Host "❌ Incomplete payload: got $totalRead bytes, expected $messageLength" -ForegroundColor Red

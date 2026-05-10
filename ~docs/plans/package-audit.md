@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document catalogs every package and third-party dependency in Nexen (inherited from Mesen2 or added since), evaluates whether each can be replaced with standard .NET / Microsoft libraries, and recommends a path forward.
+This document catalogs every package and third-party dependency in Nexen (inherited from Nexen2 or added since), evaluates whether each can be replaced with standard .NET / Microsoft libraries, and recommends a path forward.
 
 ---
 
@@ -187,7 +187,7 @@ Everything else — Avalonia, ReactiveUI, Dock, AvaloniaEdit, all C++ emulation 
 
 ### Current State
 
-There are **166 PNG/ICO image assets** in `UI/Assets/`. These were inherited from Mesen2 and include:
+There are **166 PNG/ICO image assets** in `UI/Assets/`. These were inherited from Nexen2 and include:
 
 - System icons (NES, SNES, GB, GBA, SMS, PCE, WS)
 - Debugger icons (breakpoints, step controls, memory views)

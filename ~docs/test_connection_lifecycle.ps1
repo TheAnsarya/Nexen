@@ -1,4 +1,4 @@
-# Quick test to check Mesen2 DiztinGUIsh server connection lifecycle
+# Quick test to check Nexen2 DiztinGUIsh server connection lifecycle
 # Tests if server is running, accepting connections, and streaming data
 
 param(
@@ -6,10 +6,10 @@ param(
     [int]$Port = 9998
 )
 
-function Test-MesenConnection {
+function Test-NexenConnection {
     param($HostName, $PortNumber)
     
-    Write-Host "🧪 Testing connection to Mesen2 at ${HostName}:${PortNumber}" -ForegroundColor Cyan
+    Write-Host "🧪 Testing connection to Nexen2 at ${HostName}:${PortNumber}" -ForegroundColor Cyan
     Write-Host ("=" * 50) -ForegroundColor Gray
     
     $tcpClient = $null
@@ -132,7 +132,7 @@ function Test-MesenConnection {
         if ($messageCount -eq 1) {
             Write-Host "⚠️  Only handshake received - no streaming data" -ForegroundColor Yellow
             Write-Host "💡 Possible causes:" -ForegroundColor White
-            Write-Host "   • Mesen2 emulation is paused" -ForegroundColor Gray
+            Write-Host "   • Nexen2 emulation is paused" -ForegroundColor Gray
             Write-Host "   • No ROM is loaded" -ForegroundColor Gray
             Write-Host "   • DiztinGUIsh server is not actively streaming" -ForegroundColor Gray
             return $false
@@ -142,7 +142,7 @@ function Test-MesenConnection {
         }
         
     } catch [System.Net.Sockets.SocketException] {
-        Write-Host "❌ Connection refused - Mesen2 server not running or port blocked" -ForegroundColor Red
+        Write-Host "❌ Connection refused - Nexen2 server not running or port blocked" -ForegroundColor Red
         return $false
     } catch {
         Write-Host "❌ Connection error: $($_.Exception.Message)" -ForegroundColor Red
@@ -154,7 +154,7 @@ function Test-MesenConnection {
 }
 
 # Run the test
-$success = Test-MesenConnection -HostName $HostName -PortNumber $Port
+$success = Test-NexenConnection -HostName $HostName -PortNumber $Port
 
 if ($success) {
     Write-Host ""
@@ -164,8 +164,8 @@ if ($success) {
     Write-Host ""
     Write-Host "❌ Connection test FAILED" -ForegroundColor Red
     Write-Host "🔧 Troubleshooting steps:" -ForegroundColor White
-    Write-Host "   1. Make sure Mesen2 is running" -ForegroundColor Gray
-    Write-Host "   2. Load a ROM in Mesen2" -ForegroundColor Gray
+    Write-Host "   1. Make sure Nexen2 is running" -ForegroundColor Gray
+    Write-Host "   2. Load a ROM in Nexen2" -ForegroundColor Gray
     Write-Host "   3. Enable DiztinGUIsh server: emu.startDiztinguishServer($Port)" -ForegroundColor Gray
     Write-Host "   4. Start emulation (unpause)" -ForegroundColor Gray
 }

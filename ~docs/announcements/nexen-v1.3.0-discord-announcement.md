@@ -6,7 +6,7 @@
 
 ## 🎮 Nexen v1.3.0 Released
 
-**Nexen** is a multi-system emulator for **NES, SNES, Game Boy, GBA, SMS, PC Engine, WonderSwan, and Atari Lynx** — forked from Mesen2 and taken in a new direction.
+**Nexen** is a multi-system emulator for **NES, SNES, Game Boy, GBA, SMS, PC Engine, WonderSwan, and Atari Lynx** — forked from Nexen2 and taken in a new direction.
 
 📥 **Download:** <https://github.com/TheAnsarya/Nexen/releases/tag/v1.3.0>
 
@@ -39,9 +39,9 @@ This release focuses on **performance optimization** — 20 commits of benchmark
 
 ---
 
-## 🌟 Why Nexen Exists — Full Diff from Mesen2
+## 🌟 Why Nexen Exists — Full Diff from Nexen2
 
-Nexen was forked from [Mesen2](https://github.com/SourMesen/Mesen2) because development had stalled, leaving unmerged bug fixes and no path forward for the features we wanted. **616 commits** and **+154,000 lines** later, Nexen is its own project.
+Nexen was forked from [Nexen2](https://github.com/SourNexen/Nexen2) because development had stalled, leaving unmerged bug fixes and no path forward for the features we wanted. **616 commits** and **+154,000 lines** later, Nexen is its own project.
 
 ### 🆕 New Systems
 
@@ -72,9 +72,9 @@ Nexen was forked from [Mesen2](https://github.com/SourMesen/Mesen2) because deve
 - Auto-export every 5 minutes + ROM CRC32 verification
 - Bidirectional sync with external label files
 
-### 🐛 8 Upstream Mesen2 Bug Fixes
+### 🐛 8 Upstream Nexen2 Bug Fixes
 
-Fixes from unmerged Mesen2 PRs that Nexen integrates:
+Fixes from unmerged Nexen2 PRs that Nexen integrates:
 
 - SNES DMA overflow, CX4 cache/timing, hi-res blend, ExLoRom mapping
 - NES open bus, NTSC dot crawl, Lua crash fix
@@ -117,7 +117,7 @@ Fixes from unmerged Mesen2 PRs that Nexen integrates:
 
 - **Release:** <https://github.com/TheAnsarya/Nexen/releases/tag/v1.3.0>
 - **Full Changelog:** <https://github.com/TheAnsarya/Nexen/compare/v1.2.0...v1.3.0>
-- **All Changes vs Mesen2:** <https://github.com/SourMesen/Mesen2/compare/master...TheAnsarya:Nexen:master>
+- **All Changes vs Nexen2:** <https://github.com/SourNexen/Nexen2/compare/master...TheAnsarya:Nexen:master>
 - **GitHub:** <https://github.com/TheAnsarya/Nexen>
 
 ---

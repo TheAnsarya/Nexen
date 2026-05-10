@@ -34,7 +34,7 @@ git remote -v
 
 - Current branch: `Nexen-record-and-play-tas-gameplay`
 - Commits ahead of upstream: ~50
-- Remotes: origin (fork), upstream (SourMesen/Nexen)
+- Remotes: origin (fork), upstream (SourNexen/Nexen)
 
 **Copilot:** Creating preservation branch...
 
@@ -51,7 +51,7 @@ git reset --hard upstream/master
 git push --force origin master
 ```
 
-✅ **Success:** Master branch now mirrors SourMesen/Nexen@fabc9a62
+✅ **Success:** Master branch now mirrors SourNexen/Nexen@fabc9a62
 
 ---
 

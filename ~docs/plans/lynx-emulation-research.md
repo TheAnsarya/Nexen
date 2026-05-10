@@ -568,7 +568,7 @@ Options:
 
 ## 10. Accuracy-Focused Projects
 
-**None exist.** There is no "cycle-accurate" or "accuracy-focused" Lynx emulator project analogous to higan/bsnes (SNES), Gambatte (GB), or Mesen (NES). All Lynx emulators are forks of the same Handy codebase with the same accuracy characteristics.
+**None exist.** There is no "cycle-accurate" or "accuracy-focused" Lynx emulator project analogous to higan/bsnes (SNES), Gambatte (GB), or Nexen (NES). All Lynx emulators are forks of the same Handy codebase with the same accuracy characteristics.
 
 This presents an opportunity: if Nexen implements Lynx emulation from scratch (using Handy as reference but rewriting), it could potentially become the first independently-verified Lynx emulator, discovering bugs that have been inherited across all Handy derivatives.
 

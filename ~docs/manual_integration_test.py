@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Manual Integration Test for DiztinGUIsh-Mesen2 Integration
+Manual Integration Test for DiztinGUIsh-Nexen2 Integration
 ==========================================================
 
-Use this script when you have Mesen2 already running with DiztinGUIsh server enabled.
+Use this script when you have Nexen2 already running with DiztinGUIsh server enabled.
 
 Prerequisites:
-1. Mesen2 is running with a SNES ROM loaded
+1. Nexen2 is running with a SNES ROM loaded
 2. Tools → DiztinGUIsh Server is started on port 9998
 
 Usage:
@@ -30,10 +30,10 @@ def check_server_availability(host='localhost', port=9998):
 def run_manual_integration_test():
     """Run integration tests against an already running server"""
     
-    print("🧪 Manual DiztinGUIsh-Mesen2 Integration Test")
+    print("🧪 Manual DiztinGUIsh-Nexen2 Integration Test")
     print("=" * 50)
     print("Prerequisites:")
-    print("  ✓ Mesen2 is running with SNES ROM loaded")
+    print("  ✓ Nexen2 is running with SNES ROM loaded")
     print("  ✓ Tools → DiztinGUIsh Server started on port 9998")
     print()
     
@@ -43,7 +43,7 @@ def run_manual_integration_test():
         print("❌ DiztinGUIsh server not found on localhost:9998")
         print()
         print("Please ensure:")
-        print("  1. Mesen2 is running")
+        print("  1. Nexen2 is running")
         print("  2. A SNES ROM is loaded")
         print("  3. Tools → DiztinGUIsh Server is open")
         print("  4. Server is started on port 9998")
@@ -75,7 +75,7 @@ def run_manual_integration_test():
             print("   • Binary protocol message handling")
             print("   • Connection stability and error recovery")
             print()
-            print("🚀 The DiztinGUIsh-Mesen2 integration is FULLY OPERATIONAL!")
+            print("🚀 The DiztinGUIsh-Nexen2 integration is FULLY OPERATIONAL!")
             print("   Ready for real-time disassembly during SNES gameplay.")
         else:
             print("❌ SOME TESTS FAILED")
@@ -83,7 +83,7 @@ def run_manual_integration_test():
             print("   Please check the test output above for specific issues.")
             print("   Common problems:")
             print("   • Server disconnected during testing")
-            print("   • ROM not loaded in Mesen2")
+            print("   • ROM not loaded in Nexen2")
             print("   • Server not properly initialized")
             
         return success

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Quick test to check Mesen2 DiztinGUIsh server connection lifecycle.
+Quick test to check Nexen2 DiztinGUIsh server connection lifecycle.
 Tests if server is running, accepting connections, and streaming data.
 """
 
@@ -8,13 +8,13 @@ import socket
 import time
 import struct
 
-def test_mesen_connection():
-    """Test basic connection to Mesen2 server"""
+def test_nexen_connection():
+    """Test basic connection to Nexen2 server"""
     host = "localhost" 
     port = 9998
     sock = None
     
-    print(f"🧪 Testing connection to Mesen2 at {host}:{port}")
+    print(f"🧪 Testing connection to Nexen2 at {host}:{port}")
     print("=" * 50)
     
     # Test 1: Basic TCP connection
@@ -89,7 +89,7 @@ def test_mesen_connection():
             if message_count == 1:
                 print("⚠️  Only handshake received - no streaming data")
                 print("💡 Possible causes:")
-                print("   • Mesen2 emulation is paused")
+                print("   • Nexen2 emulation is paused")
                 print("   • No ROM is loaded")
                 print("   • DiztinGUIsh server is not actively streaming")
                 return False
@@ -102,7 +102,7 @@ def test_mesen_connection():
             return False
             
     except ConnectionRefusedError:
-        print("❌ Connection refused - Mesen2 server not running or port blocked")
+        print("❌ Connection refused - Nexen2 server not running or port blocked")
         return False
     except Exception as e:
         print(f"❌ Connection error: {e}")
@@ -115,14 +115,14 @@ def test_mesen_connection():
                 pass
 
 if __name__ == "__main__":
-    success = test_mesen_connection()
+    success = test_nexen_connection()
     if success:
         print("\n🎉 Connection test PASSED - streaming is working")
         print("💡 If DiztinGUIsh still has issues, check the UI cancellation logic")
     else:
         print("\n❌ Connection test FAILED")
         print("🔧 Troubleshooting steps:")
-        print("   1. Make sure Mesen2 is running")
-        print("   2. Load a ROM in Mesen2") 
+        print("   1. Make sure Nexen2 is running")
+        print("   2. Load a ROM in Nexen2") 
         print("   3. Enable DiztinGUIsh server: emu.startDiztinguishServer(9998)")
         print("   4. Start emulation (unpause)")

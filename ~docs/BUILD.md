@@ -1,6 +1,6 @@
-# Building Mesen2 with DiztinGUIsh Integration
+# Building Nexen2 with DiztinGUIsh Integration
 
-Complete guide to building Mesen2 with the DiztinGUIsh streaming feature.
+Complete guide to building Nexen2 with the DiztinGUIsh streaming feature.
 
 ---
 
@@ -37,13 +37,13 @@ Complete guide to building Mesen2 with the DiztinGUIsh streaming feature.
 
 ```powershell
 # Clone repository
-git clone https://github.com/TheAnsarya/Mesen2.git
-cd Mesen2
+git clone https://github.com/TheAnsarya/Nexen2.git
+cd Nexen2
 
 # Build Release configuration
-msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64
+msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64
 
-# Output: bin\win-x64\Mesen.exe
+# Output: bin\win-x64\Nexen.exe
 ```
 
 **Build time:** ~5 minutes (first build), ~30 seconds (incremental)
@@ -56,8 +56,8 @@ msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64
 # Use Developer Command Prompt for VS 2022
 # Or run: "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat"
 
-cd Mesen2
-msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64 /m
+cd Nexen2
+msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /m
 ```
 
 The `/m` flag enables multi-core build (much faster).
@@ -68,8 +68,8 @@ The `/m` flag enables multi-core build (much faster).
 
 ```bash
 # Clone repository
-git clone https://github.com/TheAnsarya/Mesen2.git
-cd Mesen2
+git clone https://github.com/TheAnsarya/Nexen2.git
+cd Nexen2
 
 # Install dependencies (Ubuntu/Debian)
 sudo apt-get install build-essential libsdl2-dev pkg-config
@@ -77,7 +77,7 @@ sudo apt-get install build-essential libsdl2-dev pkg-config
 # Build
 make -j$(nproc)
 
-# Output: bin/linux-x64/Mesen
+# Output: bin/linux-x64/Nexen
 ```
 
 **Build time:** ~3 minutes (first build), ~20 seconds (incremental)
@@ -88,8 +88,8 @@ make -j$(nproc)
 
 ```bash
 # Clone repository
-git clone https://github.com/TheAnsarya/Mesen2.git
-cd Mesen2
+git clone https://github.com/TheAnsarya/Nexen2.git
+cd Nexen2
 
 # Install dependencies via Homebrew
 brew install sdl2
@@ -97,7 +97,7 @@ brew install sdl2
 # Build
 make -j$(sysctl -n hw.ncpu)
 
-# Output: bin/osx-x64/Mesen
+# Output: bin/osx-x64/Nexen
 ```
 
 ---
@@ -111,7 +111,7 @@ make -j$(sysctl -n hw.ncpu)
 
 ```powershell
 # Windows
-msbuild Mesen.sln /p:Configuration=Debug /p:Platform=x64
+msbuild Nexen.sln /p:Configuration=Debug /p:Platform=x64
 
 # Linux/macOS
 make clean
@@ -127,7 +127,7 @@ make debug
 
 ```powershell
 # Windows
-msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64
+msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64
 
 # Linux/macOS
 make clean
@@ -144,14 +144,14 @@ make
 **Windows:**
 ```powershell
 # Step 1: Build with instrumentation
-msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64 /p:WholeProgramOptimization=PGInstrument
+msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:WholeProgramOptimization=PGInstrument
 
 # Step 2: Run emulator with typical workload (trains optimizer)
-bin\win-x64\Mesen.exe
+bin\win-x64\Nexen.exe
 # Load ROM, play for a few minutes, close
 
 # Step 3: Build with PGO optimization
-msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64 /p:WholeProgramOptimization=PGOptimize
+msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:WholeProgramOptimization=PGOptimize
 ```
 
 **Linux:**
@@ -172,7 +172,7 @@ msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64 /p:WholeProgramOptimi
 **Windows:**
 ```powershell
 # Check DiztinGUIsh bridge is linked
-dumpbin /SYMBOLS bin\win-x64\MesenCore.dll | findstr "DiztinguishBridge"
+dumpbin /SYMBOLS bin\win-x64\NexenCore.dll | findstr "DiztinguishBridge"
 
 # Should show symbols like:
 # DiztinguishBridge::StartServer
@@ -183,7 +183,7 @@ dumpbin /SYMBOLS bin\win-x64\MesenCore.dll | findstr "DiztinguishBridge"
 **Linux/macOS:**
 ```bash
 # Check DiztinGUIsh symbols
-nm bin/linux-x64/libMesenCore.so | grep Diztinguish
+nm bin/linux-x64/libNexenCore.so | grep Diztinguish
 
 # Should show symbols like:
 # DiztinguishBridge::StartServer
@@ -195,19 +195,19 @@ nm bin/linux-x64/libMesenCore.so | grep Diztinguish
 
 ### Test Lua API
 
-**Launch Mesen2:**
+**Launch Nexen2:**
 ```bash
 # Windows
-bin\win-x64\Mesen.exe
+bin\win-x64\Nexen.exe
 
 # Linux
-./bin/linux-x64/Mesen
+./bin/linux-x64/Nexen
 
 # macOS
-./bin/osx-x64/Mesen
+./bin/osx-x64/Nexen
 ```
 
-**In Mesen2:**
+**In Nexen2:**
 1. Load any SNES ROM
 2. Open Debugger (F7 or Debug → Debugger)
 3. Open Script Window (Debug → Script Window)
@@ -235,7 +235,7 @@ cannot be found.
 **Solution:**
 ```powershell
 # Retarget solution for VS 2022
-devenv Mesen.sln /upgrade
+devenv Nexen.sln /upgrade
 ```
 
 Or in Visual Studio:
@@ -304,8 +304,8 @@ DiztinguishBridge::StartServer(unsigned short)"
 1. Check Core.vcxproj includes DiztinguishBridge.cpp
 2. Clean and rebuild:
    ```powershell
-   msbuild Mesen.sln /t:Clean
-   msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64
+   msbuild Nexen.sln /t:Clean
+   msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64
    ```
 
 ---
@@ -333,12 +333,12 @@ class SnesDebugger;
 
 **Use all CPU cores:**
 ```powershell
-msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64 /m
+msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /m
 ```
 
 **Specific core count:**
 ```powershell
-msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64 /m:8
+msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /m:8
 ```
 
 ---
@@ -361,8 +361,8 @@ make -j8
 
 **Windows:**
 ```powershell
-msbuild Mesen.sln /t:Clean
-msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64
+msbuild Nexen.sln /t:Clean
+msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64
 ```
 
 **Linux/macOS:**
@@ -395,26 +395,26 @@ make
 ### Binary Locations
 
 **Windows:**
-- Executable: `bin\win-x64\Mesen.exe`
-- Core DLL: `bin\win-x64\MesenCore.dll`
+- Executable: `bin\win-x64\Nexen.exe`
+- Core DLL: `bin\win-x64\NexenCore.dll`
 - Interop DLL: `bin\win-x64\InteropDLL.dll`
 
 **Linux:**
-- Executable: `bin/linux-x64/Mesen`
-- Core library: `bin/linux-x64/libMesenCore.so`
+- Executable: `bin/linux-x64/Nexen`
+- Core library: `bin/linux-x64/libNexenCore.so`
 
 **macOS:**
-- Executable: `bin/osx-x64/Mesen`
-- Core library: `bin/osx-x64/libMesenCore.dylib`
+- Executable: `bin/osx-x64/Nexen`
+- Core library: `bin/osx-x64/libNexenCore.dylib`
 
 ---
 
 ### File Sizes
 
 **Typical sizes (Release build):**
-- Mesen.exe: ~15 MB
-- MesenCore.dll: ~8 MB
-- libMesenCore.so: ~6 MB (Linux, stripped)
+- Nexen.exe: ~15 MB
+- NexenCore.dll: ~8 MB
+- libNexenCore.so: ~6 MB (Linux, stripped)
 
 **Debug build:** 2-3x larger (includes symbols)
 
@@ -424,7 +424,7 @@ make
 
 ### Basic Functionality Test
 
-1. Launch Mesen2
+1. Launch Nexen2
 2. Load a SNES ROM
 3. Press F5 to run
 4. Verify emulation works at 60 FPS
@@ -447,13 +447,13 @@ make
 5. In another terminal:
    ```bash
    cd ~docs
-   python test_mesen_stream.py
+   python test_nexen_stream.py
    ```
 
 6. Python client should print:
    ```
    ✅ Connected successfully
-   📡 HANDSHAKE: Protocol v1, Emulator: Mesen2 v0.7.0
+   📡 HANDSHAKE: Protocol v1, Emulator: Nexen2 v0.7.0
    ```
 
 **If all steps succeed:** Build is correct! ✅
@@ -466,14 +466,14 @@ make
 
 ```powershell
 # Create portable package
-mkdir Mesen2-Portable
-copy bin\win-x64\*.exe Mesen2-Portable\
-copy bin\win-x64\*.dll Mesen2-Portable\
-copy LICENSE Mesen2-Portable\
-copy README.md Mesen2-Portable\
+mkdir Nexen2-Portable
+copy bin\win-x64\*.exe Nexen2-Portable\
+copy bin\win-x64\*.dll Nexen2-Portable\
+copy LICENSE Nexen2-Portable\
+copy README.md Nexen2-Portable\
 
 # Zip it
-Compress-Archive -Path Mesen2-Portable -DestinationPath Mesen2-Portable.zip
+Compress-Archive -Path Nexen2-Portable -DestinationPath Nexen2-Portable.zip
 ```
 
 ---
@@ -485,7 +485,7 @@ Compress-Archive -Path Mesen2-Portable -DestinationPath Mesen2-Portable.zip
 cd Linux/appimage
 ./build.sh
 
-# Output: Mesen2-x86_64.AppImage
+# Output: Nexen2-x86_64.AppImage
 ```
 
 ---
@@ -495,7 +495,7 @@ cd Linux/appimage
 ### GitHub Actions (Example)
 
 ```yaml
-name: Build Mesen2
+name: Build Nexen2
 
 on: [push, pull_request]
 
@@ -506,10 +506,10 @@ jobs:
       - uses: actions/checkout@v3
       - uses: microsoft/setup-msbuild@v1
       - name: Build
-        run: msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64 /m
+        run: msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /m
       - uses: actions/upload-artifact@v3
         with:
-          name: mesen-windows
+          name: nexen-windows
           path: bin/win-x64/
 
   build-linux:
@@ -522,7 +522,7 @@ jobs:
         run: make -j$(nproc)
       - uses: actions/upload-artifact@v3
         with:
-          name: mesen-linux
+          name: nexen-linux
           path: bin/linux-x64/
 ```
 
@@ -552,7 +552,7 @@ jobs:
 make
 
 # 3. Test
-./bin/linux-x64/Mesen
+./bin/linux-x64/Nexen
 # Load test ROM, verify changes
 
 # 4. If bug found, add debug logging:
@@ -577,12 +577,12 @@ make
 **Solution:**
 ```powershell
 # Clean everything
-msbuild Mesen.sln /t:Clean
+msbuild Nexen.sln /t:Clean
 rm -rf bin/
 rm -rf obj/
 
 # Rebuild from scratch
-msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64
+msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64
 ```
 
 ---
@@ -590,7 +590,7 @@ msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64
 ### Problem: DiztinGUIsh functions not found in Lua
 
 **Check:**
-1. DiztinguishBridge linked into MesenCore
+1. DiztinguishBridge linked into NexenCore
 2. LuaApi.cpp has function registrations
 3. Console type is SNES
 
@@ -633,11 +633,11 @@ After successful build:
 
 ## Resources
 
-- **Main Repository:** https://github.com/TheAnsarya/Mesen2
-- **Build Issues:** https://github.com/TheAnsarya/Mesen2/issues
+- **Main Repository:** https://github.com/TheAnsarya/Nexen2
+- **Build Issues:** https://github.com/TheAnsarya/Nexen2/issues
 - **Quick Start:** ~docs/QUICK_START.md
 - **Testing Guide:** ~docs/TESTING.md
-- **Discord:** (Mesen community server)
+- **Discord:** (Nexen community server)
 
 ---
 

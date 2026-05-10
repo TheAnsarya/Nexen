@@ -1,7 +1,7 @@
-# Mesen2 ↔ DiztinGUIsh Live Streaming Fixes - COMPLETE
+# Nexen2 ↔ DiztinGUIsh Live Streaming Fixes - COMPLETE
 
 ## Problem Summary
-The live streaming connection between DiztinGUIsh (client) and Mesen2 (server) was not working:
+The live streaming connection between DiztinGUIsh (client) and Nexen2 (server) was not working:
 - **Connection closed immediately after handshake**
 - **No execution trace data was transferred**
 - **Potential crashes when connection closed**
@@ -11,14 +11,14 @@ The live streaming connection between DiztinGUIsh (client) and Mesen2 (server) w
 ### 1. Missing Configuration Message ⚠️ **CRITICAL**
 **Problem**: DiztinGUIsh client never sent the `ConfigStreamMessage` after completing the handshake.
 
-**Why This Broke Streaming**: Mesen2's `DiztinguishBridge::OnFrameEnd()` checks `_configReceived` flag before sending any trace data:
+**Why This Broke Streaming**: Nexen2's `DiztinguishBridge::OnFrameEnd()` checks `_configReceived` flag before sending any trace data:
 ```cpp
 if(!_clientConnected || !_configReceived) {
     return;  // Early exit - no data sent!
 }
 ```
 
-Without the configuration message, `_configReceived` stayed `false` and Mesen2 never streamed any data.
+Without the configuration message, `_configReceived` stayed `false` and Nexen2 never streamed any data.
 
 ### 2. Message Type Enum Mismatch
 **Problem**: C# client had incorrect message type values that didn't match the C++ protocol header.
@@ -49,10 +49,10 @@ ExecTrace = 3,
 This meant the client couldn't properly handle incoming messages.
 
 ### 3. Wrong Message Type for Execution Traces
-**Problem**: Client was only handling `MessageType.ExecTrace` (0x10), but Mesen2 sends `MessageType.ExecTraceBatch` (0x11).
+**Problem**: Client was only handling `MessageType.ExecTrace` (0x10), but Nexen2 sends `MessageType.ExecTraceBatch` (0x11).
 
 ### 4. Incorrect Trace Batch Parsing
-**Problem**: The old `ParseExecutionTrace()` method expected a different format than what Mesen2 actually sends.
+**Problem**: The old `ParseExecutionTrace()` method expected a different format than what Nexen2 actually sends.
 
 **Actual Format** (ExecTraceBatchMessage):
 ```cpp
@@ -81,7 +81,7 @@ struct ExecTraceEntry {
 ## Fixes Implemented
 
 ### Fix #1: Automatic Configuration Sending ✅
-**File**: `DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs`
+**File**: `DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs`
 
 **Change**: Modified `ConnectAsync()` to automatically send streaming configuration after handshake completes:
 
@@ -89,10 +89,10 @@ struct ExecTraceEntry {
 // Perform handshake
 if (await PerformHandshakeAsync().ConfigureAwait(false))
 {
-    Status = Mesen2ConnectionStatus.HandshakeComplete;
+    Status = Nexen2ConnectionStatus.HandshakeComplete;
     
     // Send streaming configuration automatically after handshake
-    // This is required for Mesen2 to start streaming data
+    // This is required for Nexen2 to start streaming data
     bool configSent = await SetStreamingConfigAsync(
         enableExecTrace: true,
         enableMemoryAccess: true,
@@ -111,17 +111,17 @@ if (await PerformHandshakeAsync().ConfigureAwait(false))
 }
 ```
 
-**Impact**: Mesen2 now receives configuration and sets `_configReceived = true`, enabling trace streaming.
+**Impact**: Nexen2 now receives configuration and sets `_configReceived = true`, enabling trace streaming.
 
 ---
 
 ### Fix #2: Corrected Message Type Enum ✅
-**File**: `DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs`
+**File**: `DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs`
 
 **Change**: Updated all message type values to match protocol specification:
 
 ```csharp
-internal enum Mesen2MessageType : byte
+internal enum Nexen2MessageType : byte
 {
     Handshake = 0x01,
     HandshakeAck = 0x02,
@@ -160,17 +160,17 @@ internal enum Mesen2MessageType : byte
 ---
 
 ### Fix #3: Handle ExecTraceBatch Messages ✅
-**File**: `DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs`
+**File**: `DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs`
 
 **Change**: Updated message processing to handle both ExecTrace and ExecTraceBatch:
 
 ```csharp
-case Mesen2MessageType.ExecTrace:
-case Mesen2MessageType.ExecTraceBatch:
+case Nexen2MessageType.ExecTrace:
+case Nexen2MessageType.ExecTraceBatch:
     var traceEntries = ParseExecutionTrace(payload);
     if (traceEntries.Count > 0)
     {
-        ExecutionTraceReceived?.Invoke(this, new Mesen2TraceEventArgs { TraceEntries = traceEntries });
+        ExecutionTraceReceived?.Invoke(this, new Nexen2TraceEventArgs { TraceEntries = traceEntries });
     }
     break;
 ```
@@ -178,14 +178,14 @@ case Mesen2MessageType.ExecTraceBatch:
 ---
 
 ### Fix #4: Correct Trace Batch Parsing ✅
-**File**: `DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs`
+**File**: `DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs`
 
 **Change**: Completely rewrote `ParseExecutionTrace()` to match the actual protocol:
 
 ```csharp
-private static List<Mesen2TraceEntry> ParseExecutionTrace(byte[] payload)
+private static List<Nexen2TraceEntry> ParseExecutionTrace(byte[] payload)
 {
-    var entries = new List<Mesen2TraceEntry>();
+    var entries = new List<Nexen2TraceEntry>();
     
     try
     {
@@ -218,7 +218,7 @@ private static List<Mesen2TraceEntry> ParseExecutionTrace(byte[] payload)
                 var instructionBytes = new byte[] { opcode };
                 
                 // Create CPU state with available information
-                var cpuState = new Mesen2CpuState
+                var cpuState = new Nexen2CpuState
                 {
                     PC = pc,
                     DB = dbRegister,
@@ -228,7 +228,7 @@ private static List<Mesen2TraceEntry> ParseExecutionTrace(byte[] payload)
                 };
                 
                 // Create trace entry
-                var entry = new Mesen2TraceEntry
+                var entry = new Nexen2TraceEntry
                 {
                     PC = pc,
                     Instruction = instructionBytes,
@@ -253,7 +253,7 @@ private static List<Mesen2TraceEntry> ParseExecutionTrace(byte[] payload)
 ---
 
 ### Fix #5: Improved Error Handling ✅
-**File**: `DiztinGUIsh\Diz.Core\mesen2\Mesen2StreamingClient.cs`
+**File**: `DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs`
 
 **Changes**:
 
@@ -312,10 +312,10 @@ public async Task DisconnectAsync()
     lock (_lockObject)
     {
         // Prevent double-disconnect
-        if (Status == Mesen2ConnectionStatus.Disconnected)
+        if (Status == Nexen2ConnectionStatus.Disconnected)
             return;
             
-        Status = Mesen2ConnectionStatus.Disconnected;
+        Status = Nexen2ConnectionStatus.Disconnected;
     }
 
     try
@@ -325,7 +325,7 @@ public async Task DisconnectAsync()
         {
             try
             {
-                await SendMessageAsync(Mesen2MessageType.Disconnect, Array.Empty<byte>()).ConfigureAwait(false);
+                await SendMessageAsync(Nexen2MessageType.Disconnect, Array.Empty<byte>()).ConfigureAwait(false);
             }
             catch
             {
@@ -395,7 +395,7 @@ public async Task DisconnectAsync()
 
 ### Build Status
 ✅ **DiztinGUIsh**: Build succeeded with only warnings (no errors)
-✅ **Mesen2 Core Library**: Build succeeded (MesenCore.dll created)
+✅ **Nexen2 Core Library**: Build succeeded (NexenCore.dll created)
 
 ### Expected Behavior After Fixes
 
@@ -425,8 +425,8 @@ public async Task DisconnectAsync()
 
 ## Testing Recommendations
 
-1. **Start Mesen2** with a SNES ROM loaded
-2. **Open DiztinGUIsh Server window** in Mesen2
+1. **Start Nexen2** with a SNES ROM loaded
+2. **Open DiztinGUIsh Server window** in Nexen2
 3. **Click "Start Server"**
 4. **In DiztinGUIsh**, connect to `localhost:37777`
 5. **Verify**:
@@ -440,14 +440,14 @@ public async Task DisconnectAsync()
 ## Files Modified
 
 ### DiztinGUIsh (C#)
-- `Diz.Core\mesen2\Mesen2StreamingClient.cs`
+- `Diz.Core\nexen2\Nexen2StreamingClient.cs`
   - ✅ Fixed message type enum values
   - ✅ Added automatic configuration sending
   - ✅ Fixed trace batch parsing
   - ✅ Improved error handling
   - ✅ Robust disconnect handling
 
-### Mesen2 (C++)
+### Nexen2 (C++)
 - No code changes needed! The server implementation was correct all along.
 - The issue was 100% on the client side.
 

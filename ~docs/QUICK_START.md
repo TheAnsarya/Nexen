@@ -1,6 +1,6 @@
 # DiztinGUIsh Streaming - Quick Start Guide
 
-**Goal:** Get Mesen2 streaming live execution traces to your Python test client in under 5 minutes.
+**Goal:** Get Nexen2 streaming live execution traces to your Python test client in under 5 minutes.
 
 ---
 
@@ -12,27 +12,27 @@ Before starting, ensure you have:
 - [ ] Visual Studio 2022 (Windows) or GCC/Clang (Linux/macOS)
 - [ ] Python 3.7 or later
 - [ ] SNES ROM file (any LoROM or HiROM game)
-- [ ] Git repository cloned: `git clone https://github.com/TheAnsarya/Mesen2.git`
+- [ ] Git repository cloned: `git clone https://github.com/TheAnsarya/Nexen2.git`
 
 ---
 
 ## Step-by-Step Setup
 
-### 1. Build Mesen2 (5 minutes)
+### 1. Build Nexen2 (5 minutes)
 
 **Windows (Visual Studio):**
 ```powershell
-cd Mesen2
-msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64
+cd Nexen2
+msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64
 ```
 
 **Linux/macOS (Makefile):**
 ```bash
-cd Mesen2
+cd Nexen2
 make
 ```
 
-**Expected output:** `bin/win-x64/Mesen.exe` (or equivalent for your platform)
+**Expected output:** `bin/win-x64/Nexen.exe` (or equivalent for your platform)
 
 **Troubleshooting:**
 - Missing dependencies? Install Visual Studio C++ build tools
@@ -44,14 +44,14 @@ make
 
 **Open a terminal:**
 ```bash
-cd Mesen2/~docs
-python test_mesen_stream.py
+cd Nexen2/~docs
+python test_nexen_stream.py
 ```
 
 **Expected output:**
 ```
 ======================================================================
-Mesen2 DiztinGUIsh Streaming Test Client
+Nexen2 DiztinGUIsh Streaming Test Client
 ======================================================================
 
 Connecting to 127.0.0.1:9998...
@@ -61,15 +61,15 @@ Client will wait for server to start. **Keep this running!**
 
 ---
 
-### 3. Launch Mesen2 and Load ROM (1 minute)
+### 3. Launch Nexen2 and Load ROM (1 minute)
 
-1. Run Mesen2:
+1. Run Nexen2:
    ```bash
    # Windows
-   bin\win-x64\Mesen.exe
+   bin\win-x64\Nexen.exe
    
    # Linux/macOS
-   ./bin/Mesen
+   ./bin/Nexen
    ```
 
 2. Load any SNES ROM:
@@ -122,14 +122,14 @@ You should immediately see:
 📡 Listening for messages... (Ctrl+C to stop)
 ======================================================================
 
-📡 HANDSHAKE: Protocol v1, Emulator: Mesen2 v0.7.0
+📡 HANDSHAKE: Protocol v1, Emulator: Nexen2 v0.7.0
 ```
 
 ---
 
 ### 6. Run Emulation and Watch Traces (ongoing)
 
-**In Mesen2:**
+**In Nexen2:**
 1. Press **F5** to run emulation (or click Run button)
 2. Game starts running
 
@@ -148,7 +148,7 @@ Traces start streaming immediately:
 ...
 ```
 
-**In Mesen2 Lua console:**
+**In Nexen2 Lua console:**
 ```
 📡 Client connected!
 ```
@@ -164,7 +164,7 @@ You should see:
 - ✅ FRAME_START/END markers every ~16.7ms (60 FPS)
 - ✅ EXEC_TRACE messages streaming continuously
 - ✅ CDL_UPDATE messages for newly executed code
-- ✅ No errors in Mesen2 console
+- ✅ No errors in Nexen2 console
 - ✅ Emulation running at full speed (60 FPS)
 
 ---
@@ -245,12 +245,12 @@ emu.stopDiztinguishServer()
 
 ## Stopping the Session
 
-### Stop in Mesen2
+### Stop in Nexen2
 ```lua
 emu.stopDiztinguishServer()
 ```
 
-Or just close Mesen2 - server stops automatically.
+Or just close Nexen2 - server stops automatically.
 
 ### Stop Python Client
 Press **Ctrl+C** in terminal
@@ -289,7 +289,7 @@ emu.startDiztinguishServer(9999)  -- Use different port
 
 Then update Python client:
 ```bash
-python test_mesen_stream.py --port 9999
+python test_nexen_stream.py --port 9999
 ```
 
 ---
@@ -323,7 +323,7 @@ python test_mesen_stream.py --port 9999
 
 **Cause:** Emulation paused or not running
 
-**Solution:** Press **F5** in Mesen2 to run emulation
+**Solution:** Press **F5** in Nexen2 to run emulation
 
 ---
 
@@ -332,7 +332,7 @@ python test_mesen_stream.py --port 9999
 **Cause:** Emulation running very slowly or ROM stuck
 
 **Solution:**
-1. Check FPS in Mesen2 status bar (should be ~60)
+1. Check FPS in Nexen2 status bar (should be ~60)
 2. Try different ROM
 3. Disable step-debugging
 
@@ -356,7 +356,7 @@ Each has different memory mappings and instruction mixes.
 
 Run for 60 seconds and check statistics:
 ```bash
-python test_mesen_stream.py --duration 60
+python test_nexen_stream.py --duration 60
 ```
 
 Compare across ROM types and emulation scenarios.
@@ -367,9 +367,9 @@ Compare across ROM types and emulation scenarios.
 
 **This is the critical path for DiztinGUIsh integration!**
 
-1. Create `Diz.Import.Mesen` project
-2. Port protocol to C# (`MesenProtocol.cs`)
-3. Implement TCP client (`MesenLiveTraceClient.cs`)
+1. Create `Diz.Import.Nexen` project
+2. Port protocol to C# (`NexenProtocol.cs`)
+3. Implement TCP client (`NexenLiveTraceClient.cs`)
 4. Parse messages into DiztinGUIsh data model
 5. Update UI in real-time
 
@@ -377,7 +377,7 @@ See Issue #10 for details.
 
 ---
 
-### 4. Add Mesen2 UI
+### 4. Add Nexen2 UI
 
 Replace Lua script with menu items:
 - Debug → DiztinGUIsh → Start Server
@@ -401,19 +401,19 @@ See Issue #9 for details.
 - **[session_logs/](session_logs/)** - Development session summaries
 
 ### Test Tools
-- **[test_mesen_stream.py](test_mesen_stream.py)** - Python protocol client
+- **[test_nexen_stream.py](test_nexen_stream.py)** - Python protocol client
 - **[test_server.lua](test_server.lua)** - Lua server control script
 
 ---
 
 ## Support
 
-**GitHub Issues:** https://github.com/TheAnsarya/Mesen2/issues
+**GitHub Issues:** https://github.com/TheAnsarya/Nexen2/issues
 
 **Label your issue:** `diztinguish`, `testing`, or `enhancement`
 
 **Include:**
-- Mesen2 version
+- Nexen2 version
 - OS and Python version
 - ROM type (LoROM/HiROM/etc.)
 - Full error messages
@@ -423,7 +423,7 @@ See Issue #9 for details.
 
 **🎉 Congratulations!**
 
-You're now streaming live SNES execution traces from Mesen2!
+You're now streaming live SNES execution traces from Nexen2!
 
 **Time to completion:** ~7 minutes  
 **Lines of code:** 0 (everything pre-built!)  

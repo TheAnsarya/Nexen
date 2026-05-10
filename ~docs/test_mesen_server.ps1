@@ -1,6 +1,6 @@
-# Test if Mesen2 DiztinGUIsh server is actually listening on port 9998
+# Test if Nexen2 DiztinGUIsh server is actually listening on port 9998
 
-Write-Host "Testing Mesen2 DiztinGUIsh server connection..." -ForegroundColor Cyan
+Write-Host "Testing Nexen2 DiztinGUIsh server connection..." -ForegroundColor Cyan
 Write-Host ""
 
 # Test 1: Check if port 9998 is listening
@@ -20,12 +20,12 @@ if ($listening) {
 } else {
     Write-Host "❌ Port 9998 is NOT listening!" -ForegroundColor Red
     Write-Host ""
-    Write-Host "SOLUTION: In Mesen2, you need to:" -ForegroundColor Yellow
+    Write-Host "SOLUTION: In Nexen2, you need to:" -ForegroundColor Yellow
     Write-Host "1. Go to Debug → Script Window (or press F7)" -ForegroundColor White
     Write-Host "2. Click 'Load Script' button" -ForegroundColor White
-    Write-Host "3. Browse to: c:\Users\me\source\repos\Mesen2\~docs\start_diztinguish_server.lua" -ForegroundColor White
+    Write-Host "3. Browse to: c:\Users\me\source\repos\Nexen2\~docs\start_diztinguish_server.lua" -ForegroundColor White
     Write-Host "4. The script will run and start the server" -ForegroundColor White
-    Write-Host "5. Check the Mesen2 log window - should see: '✅ DiztinGUIsh server started on port 9998'" -ForegroundColor White
+    Write-Host "5. Check the Nexen2 log window - should see: '✅ DiztinGUIsh server started on port 9998'" -ForegroundColor White
     Write-Host ""
 }
 
@@ -56,7 +56,7 @@ Write-Host "NEXT STEPS:" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 
 if (-not $listening) {
-    Write-Host "1. Start Mesen2" -ForegroundColor White
+    Write-Host "1. Start Nexen2" -ForegroundColor White
     Write-Host "2. Load a SNES ROM" -ForegroundColor White
     Write-Host "3. Open Script Window (Debug → Script Window or F7)" -ForegroundColor White
     Write-Host "4. Load the script: ~docs\start_diztinguish_server.lua" -ForegroundColor White

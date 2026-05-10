@@ -2,7 +2,7 @@
 
 ## Overview
 
-Replace the legacy MLB (Mesen Label Binary) text format with a new binary `.nexen-labels` format as the **native** label storage format. MLB becomes a legacy import/export-only format, accessible from a dedicated conversion menu.
+Replace the legacy MLB (Nexen Label Binary) text format with a new binary `.nexen-labels` format as the **native** label storage format. MLB becomes a legacy import/export-only format, accessible from a dedicated conversion menu.
 
 ### Why Replace MLB?
 
@@ -165,12 +165,12 @@ Each label entry:
 **Modify: `DebugWorkspaceManager.cs`**
 
 - `AutoLoadMlbFiles` → `AutoLoadLabelFiles` in auto-load check
-- Keep `MesenLabelExt` fallback in `LoadSupportedFile` switch for drag-drop/import
+- Keep `NexenLabelExt` fallback in `LoadSupportedFile` switch for drag-drop/import
 - `LoadNexenLabelFile` accepts both extensions (already does)
 
 **Modify: `FileDialogHelper.cs`**
 
-- Keep `MesenLabelExt = "mlb"` for legacy import dialogs
+- Keep `NexenLabelExt = "mlb"` for legacy import dialogs
 - Import filter already includes both `*.nexen-labels` and `*.mlb` ✓
 - Export default: `NexenLabelExt` only (no `.mlb` in save dialog)
 
@@ -190,7 +190,7 @@ Add menu entries for legacy format conversion:
 - **Debug menu → "Export Labels as Legacy MLB..."** — Calls `NexenLabelFile.ExportLegacyMlb()`
 - **Debug menu → "Import Legacy MLB File..."** — Calls `NexenLabelFile.ImportLegacyMlb()`
 
-These are for interop with other Mesen-based emulators.
+These are for interop with other Nexen-based emulators.
 
 ---
 

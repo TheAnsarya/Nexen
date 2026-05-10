@@ -2,16 +2,16 @@
 
 ## Overview
 
-The current About dialog is inherited from Mesen2 and needs complete modernization for Nexen. It contains outdated information, references to removed dependencies, and the wrong branding.
+The current About dialog is inherited from Nexen2 and needs complete modernization for Nexen. It contains outdated information, references to removed dependencies, and the wrong branding.
 
 ## Current Issues
 
 ### Branding Issues
 
 - Copyright says "Sour" → Should be "2026 Ansarya"
-- Homepage URL references Mesen → Should be `ansarya.com/Nexen/` or GitHub repo
+- Homepage URL references Nexen → Should be `ansarya.com/Nexen/` or GitHub repo
 - Build date is wrong/stale
-- Title still references Mesen branding
+- Title still references Nexen branding
 
 ### Content Issues
 
@@ -48,7 +48,7 @@ The current About dialog is inherited from Mesen2 and needs complete modernizati
 
 4. **Credits Section**
    - Copyright: "© 2026 Ansarya"
-   - Based on Mesen2 by Sour (with appropriate attribution)
+   - Based on Nexen2 by Sour (with appropriate attribution)
    - Major contributors
 
 5. **Dependencies Section**

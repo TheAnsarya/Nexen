@@ -1,7 +1,7 @@
 Nexen - Dual License
 ====================
 
-Nexen is a fork of Mesen2 (https://github.com/SourMesen/Mesen2) by Sour.
+Nexen is a fork of Nexen2 (https://github.com/SourNexen/Nexen2) by Sour.
 
 This project uses a dual-license structure:
 
@@ -17,13 +17,13 @@ This project uses a dual-license structure:
       * Documentation improvements
       * Build system updates for C++23 and .NET 10
 
-  - The original Mesen code by Sour remains under the GNU General Public
+  - The original Nexen code by Sour remains under the GNU General Public
     License v3 (GPL-3.0). We are required to include this license as the
     base code is GPL-licensed.
 
 While not required, attribution is appreciated:
   - Fork: TheAnsarya/Nexen
-  - Original: SourMesen/Mesen2 by Sour
+  - Original: SourNexen/Nexen2 by Sour
 
 
 ==============================================================================
@@ -57,7 +57,7 @@ For more information, please refer to <https://unlicense.org>
 
 
 ==============================================================================
-GNU GENERAL PUBLIC LICENSE v3 (applies to original Mesen code)
+GNU GENERAL PUBLIC LICENSE v3 (applies to original Nexen code)
 ==============================================================================
 
                     GNU GENERAL PUBLIC LICENSE

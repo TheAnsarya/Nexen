@@ -2,7 +2,7 @@
 """
 Clean DiztinGUIsh Protocol Test
 
-Test the Mesen2 DiztinGUIsh streaming protocol to diagnose handshake issues.
+Test the Nexen2 DiztinGUIsh streaming protocol to diagnose handshake issues.
 """
 
 import socket
@@ -25,9 +25,9 @@ class MessageType(IntEnum):
     CPU_STATE_REQUEST = 0x21
     ERROR = 0xFF
 
-def test_mesen_protocol(host="localhost", port=9998):
-    """Test Mesen DiztinGUIsh protocol"""
-    print("🔍 Testing Mesen DiztinGUIsh Protocol")
+def test_nexen_protocol(host="localhost", port=9998):
+    """Test Nexen DiztinGUIsh protocol"""
+    print("🔍 Testing Nexen DiztinGUIsh Protocol")
     print("=" * 50)
     
     sock = None
@@ -232,7 +232,7 @@ def test_mesen_protocol(host="localhost", port=9998):
     
     except ConnectionRefusedError:
         print("❌ CONNECTION REFUSED: Server not running")
-        print("💡 Make sure Mesen2 DiztinGUIsh server is started")
+        print("💡 Make sure Nexen2 DiztinGUIsh server is started")
         return False
     except socket.timeout:
         print("❌ TIMEOUT: Server not responding")
@@ -253,5 +253,5 @@ if __name__ == "__main__":
     host = sys.argv[1] if len(sys.argv) > 1 else "localhost"
     port = int(sys.argv[2]) if len(sys.argv) > 2 else 9998
     
-    success = test_mesen_protocol(host, port)
+    success = test_nexen_protocol(host, port)
     print(f"\n🏁 Test {'PASSED' if success else 'FAILED'}")

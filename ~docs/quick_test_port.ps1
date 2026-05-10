@@ -1,4 +1,4 @@
-# Quick test: Is Mesen2 DiztinGUIsh server ACTUALLY running?
+# Quick test: Is Nexen2 DiztinGUIsh server ACTUALLY running?
 
 $port = 9998
 
@@ -29,7 +29,7 @@ if ($conn) {
     Write-Host "❌ Port $port NOT listening (via PowerShell)" -ForegroundColor Red
     Write-Host ""
     Write-Host "CHECKLIST:" -ForegroundColor Yellow
-    Write-Host "1. Is Mesen2 running?" -ForegroundColor White
+    Write-Host "1. Is Nexen2 running?" -ForegroundColor White
     Write-Host "2. Is a SNES ROM loaded?" -ForegroundColor White
     Write-Host "3. Did you click Tools → DiztinGUIsh Server → Start Server?" -ForegroundColor White
     Write-Host "4. Is emulation RUNNING (not paused)? Press F5!" -ForegroundColor White

@@ -1,6 +1,6 @@
 # Nexen v1.0.0 Manual Testing Checklist
 
-> **Purpose:** Comprehensive testing checklist for all Nexen features implemented since forking from Mesen2.
+> **Purpose:** Comprehensive testing checklist for all Nexen features implemented since forking from Nexen2.
 > **Date Created:** 2026-02-02
 > **Target Version:** v1.0.0
 

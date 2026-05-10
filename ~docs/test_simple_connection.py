@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple connection test to see what happens when we connect to Mesen
+Simple connection test to see what happens when we connect to Nexen
 """
 import socket
 import time

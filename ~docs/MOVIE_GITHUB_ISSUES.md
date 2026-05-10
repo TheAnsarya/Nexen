@@ -1,6 +1,6 @@
 # GitHub Issues for Movie Record/Replay Feature
 
-This document contains the issue definitions for the movie recording enhancement feature branch `mesen-record-and-play-gameplay`.
+This document contains the issue definitions for the movie recording enhancement feature branch `nexen-record-and-play-gameplay`.
 
 ---
 
@@ -10,7 +10,7 @@ This document contains the issue definitions for the movie recording enhancement
 
 ### Description
 
-Epic issue tracking all enhancements to Mesen2's movie recording and playback system. This includes:
+Epic issue tracking all enhancements to Nexen2's movie recording and playback system. This includes:
 - Adding standard TAS (Tool-Assisted Speedrun) features
 - Importing movies from other emulators
 - Improving the recording/playback UI
@@ -25,7 +25,7 @@ Epic issue tracking all enhancements to Mesen2's movie recording and playback sy
 
 ### Background
 
-Mesen2 already has a functional movie recording system in `Core/Shared/Movies/`. This epic tracks enhancements to bring it up to feature parity with other TAS-focused emulators like BizHawk, lsnes, and FCEUX.
+Nexen2 already has a functional movie recording system in `Core/Shared/Movies/`. This epic tracks enhancements to bring it up to feature parity with other TAS-focused emulators like BizHawk, lsnes, and FCEUX.
 
 ### Acceptance Criteria
 - [ ] All sub-issues completed
@@ -59,7 +59,7 @@ No rerecord count is tracked.
 - `Core/Shared/Movies/MovieRecorder.h`
 - `Core/Shared/Movies/MovieRecorder.cpp`
 - `Core/Shared/Movies/MovieTypes.h`
-- `Core/Shared/Movies/MesenMovie.cpp` (for playback display)
+- `Core/Shared/Movies/NexenMovie.cpp` (for playback display)
 
 ---
 
@@ -144,7 +144,7 @@ Resets are not recorded in the input stream.
 
 ### Files to Modify
 - `Core/Shared/Movies/MovieRecorder.cpp`
-- `Core/Shared/Movies/MesenMovie.cpp`
+- `Core/Shared/Movies/NexenMovie.cpp`
 
 ---
 
@@ -184,7 +184,7 @@ SMV button order: `R L X A → ↓ ← Start Select Y B`
 - Create `SmvMovie` class implementing `IMovie`
 - Parse header to detect version (1.43, 1.51, 1.52)
 - Handle savestate/SRAM differences
-- Convert 2-byte input to Mesen button format
+- Convert 2-byte input to Nexen button format
 - Handle reset marker (FF FF)
 
 ### Acceptance Criteria
@@ -223,7 +223,7 @@ Where:
 - Create `LsmvMovie` class implementing `IMovie`
 - Parse ZIP archive
 - Validate systemid
-- Convert input format to Mesen format
+- Convert input format to Nexen format
 - Handle multiple controller configurations
 
 ---
@@ -359,6 +359,6 @@ gh issue create --title "[Enhancement] Add rerecord counter to movie recording" 
 
 ## Notes
 
-- All issues should reference this branch: `mesen-record-and-play-gameplay`
+- All issues should reference this branch: `nexen-record-and-play-gameplay`
 - Each issue should be completable independently where possible
 - Testing with real TAS movies from TASVideos is essential

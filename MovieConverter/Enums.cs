@@ -1,4 +1,4 @@
-﻿namespace Nexen.MovieConverter;
+namespace Nexen.MovieConverter;
 
 /// <summary>
 /// Represents the format of a TAS movie file
@@ -15,7 +15,7 @@ public enum MovieFormat {
 
 	/// <summary>Obsolete alias for LegacyMmoMmm.</summary>
 	[System.Obsolete("Use LegacyMmoMmm instead.")]
-	Mesen = LegacyMmoMmm,
+	Nexen = LegacyMmoMmm,
 
 	/// <summary>Snes9x format (.smv)</summary>
 	Smv,
@@ -43,7 +43,7 @@ public enum MovieFormat {
 
 	/// <summary>Obsolete alias for LegacyMsm.</summary>
 	[System.Obsolete("Use LegacyMsm instead.")]
-	MesenS = LegacyMsm,
+	NexenS = LegacyMsm,
 
 	/// <summary>BSNES format (.bsv)</summary>
 	Bsv,

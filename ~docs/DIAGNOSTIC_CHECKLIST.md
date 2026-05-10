@@ -1,19 +1,19 @@
-# DiztinGUIsh ↔ Mesen2 Connection Diagnostic Checklist
+# DiztinGUIsh ↔ Nexen2 Connection Diagnostic Checklist
 
 ## 🔍 How to View Diagnostic Logs
 
-### Mesen2 Logs
+### Nexen2 Logs
 
 **Option 1: Debug Log Window (RECOMMENDED)**
-1. In Mesen2, go to **Tools** → **Debug Log** (or press the keyboard shortcut)
+1. In Nexen2, go to **Tools** → **Debug Log** (or press the keyboard shortcut)
 2. This window shows all `_debugger->Log()` output in real-time
 3. Look for lines starting with `[DiztinGUIsh]`
 
 **Option 2: Console Output**
-If you launched Mesen2 from a terminal:
+If you launched Nexen2 from a terminal:
 ```powershell
-cd c:\Users\me\source\repos\Mesen2\bin\win-x64\Release
-.\Mesen.exe
+cd c:\Users\me\source\repos\Nexen2\bin\win-x64\Release
+.\Nexen.exe
 ```
 All logs will appear in the console window.
 
@@ -34,7 +34,7 @@ cd c:\Users\me\source\repos\DiztinGUIsh\Diz.App.Winforms\bin\Release\net9.0-wind
 ## ✅ Connection Diagnostic Steps
 
 ### Step 1: Verify Server Started
-**In Mesen2 Debug Log, you should see:**
+**In Nexen2 Debug Log, you should see:**
 ```
 [DiztinGUIsh] Created socket, attempting to bind to port 9998...
 [DiztinGUIsh] Socket bound successfully, calling Listen(1)...
@@ -50,7 +50,7 @@ cd c:\Users\me\source\repos\DiztinGUIsh\Diz.App.Winforms\bin\Release\net9.0-wind
 ---
 
 ### Step 2: Verify Client Connected
-**In Mesen2 Debug Log, you should see:**
+**In Nexen2 Debug Log, you should see:**
 ```
 [DiztinGUIsh] Calling Accept() - this will block until client connects...
 [DiztinGUIsh] Accept() returned, checking socket status...
@@ -65,7 +65,7 @@ cd c:\Users\me\source\repos\DiztinGUIsh\Diz.App.Winforms\bin\Release\net9.0-wind
 ---
 
 ### Step 3: Verify Handshake Completed
-**In Mesen2 Debug Log, you should see:**
+**In Nexen2 Debug Log, you should see:**
 ```
 [DiztinGUIsh] Handshake accepted by DiztinGUIsh Client
 ```
@@ -76,7 +76,7 @@ cd c:\Users\me\source\repos\DiztinGUIsh\Diz.App.Winforms\bin\Release\net9.0-wind
 ---
 
 ### Step 4: **CRITICAL** - Verify Config Received
-**In Mesen2 Debug Log, you MUST see:**
+**In Nexen2 Debug Log, you MUST see:**
 ```
 [DiztinGUIsh] *** CONFIG RECEIVED - Trace streaming now enabled ***
 [DiztinGUIsh] Configuration received:
@@ -100,7 +100,7 @@ cd c:\Users\me\source\repos\DiztinGUIsh\Diz.App.Winforms\bin\Release\net9.0-wind
 
 ### Step 5: Verify Game is Running
 **Check that:**
-1. A ROM is loaded in Mesen2
+1. A ROM is loaded in Nexen2
 2. Emulation is **NOT PAUSED** (press F5 to resume if paused)
 3. Frames are advancing (watch the frame counter in status bar)
 
@@ -109,7 +109,7 @@ cd c:\Users\me\source\repos\DiztinGUIsh\Diz.App.Winforms\bin\Release\net9.0-wind
 ---
 
 ### Step 6: Verify Traces Being Sent (Every 4 Frames)
-**In Mesen2 Debug Log, you should see (repeatedly):**
+**In Nexen2 Debug Log, you should see (repeatedly):**
 ```
 [DiztinGUIsh] Sent ExecTraceBatch: frame=120, entries=856
 [DiztinGUIsh] Sent ExecTraceBatch: frame=124, entries=892
@@ -130,7 +130,7 @@ cd c:\Users\me\source\repos\DiztinGUIsh\Diz.App.Winforms\bin\Release\net9.0-wind
 ```
 
 ✅ **If you see these:** Traces are flowing end-to-end!  
-❌ **If missing but Mesen2 sent traces**: Network issue or DiztinGUIsh receive loop broken
+❌ **If missing but Nexen2 sent traces**: Network issue or DiztinGUIsh receive loop broken
 
 ---
 
@@ -142,7 +142,7 @@ cd c:\Users\me\source\repos\DiztinGUIsh\Diz.App.Winforms\bin\Release\net9.0-wind
 
 **Check in DiztinGUIsh code:**
 ```csharp
-// MesenLiveTraceClient.cs - after handshake, should send config
+// NexenLiveTraceClient.cs - after handshake, should send config
 await SendConfigAsync();
 ```
 
@@ -167,7 +167,7 @@ await SendConfigAsync();
 
 **Root Cause:** Already fixed! Was caused by `using` statement disposing importer
 
-**Verify:** Check that `_activeMesenImporter` is stored in private field, not disposed
+**Verify:** Check that `_activeNexenImporter` is stored in private field, not disposed
 
 ---
 
@@ -184,7 +184,7 @@ await SendConfigAsync();
 
 ## 📊 Expected Log Sequence (Full Successful Connection)
 
-### Mesen2 Side:
+### Nexen2 Side:
 ```
 [DiztinGUIsh] Created socket, attempting to bind to port 9998...
 [DiztinGUIsh] Socket bound successfully, calling Listen(1)...
@@ -215,7 +215,7 @@ await SendConfigAsync();
 
 ## 🎯 What to Check NOW
 
-1. **Open Mesen2 Debug Log** (Tools → Debug Log)
+1. **Open Nexen2 Debug Log** (Tools → Debug Log)
 2. **Scroll to find connection logs**
 3. **Check if you see "*** CONFIG RECEIVED ***"**
    - ✅ **YES**: Config received, check if game is running (Step 5)

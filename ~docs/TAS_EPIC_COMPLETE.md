@@ -42,8 +42,8 @@ The TAS (Tool-Assisted Speedrun) epic has been successfully completed. All plann
    - R/W mode indicator (green R / red W badge)
 
 2. **MovieConverter Library & CLI**
-   - .NET 8 class library (`Mesen.MovieConverter.dll`)
-   - Standalone CLI tool (`MesenMovieConverter.exe`)
+   - .NET 8 class library (`Nexen.MovieConverter.dll`)
+   - Standalone CLI tool (`NexenMovieConverter.exe`)
    - Supports: MMO, SMV, LSMV, FM2, BK2 formats
 
 3. **Movie Import/Export UI**
@@ -85,11 +85,11 @@ The TAS (Tool-Assisted Speedrun) epic has been successfully completed. All plann
 ## Build Verification
 
 ```powershell
-# C++ Core - MesenCore.dll
-msbuild Mesen.sln /p:Configuration=Debug /p:Platform=x64 /m
+# C++ Core - NexenCore.dll
+msbuild Nexen.sln /p:Configuration=Debug /p:Platform=x64 /m
 # Result: ✅ Built successfully
 
-# C# UI - Mesen.dll
+# C# UI - Nexen.dll
 dotnet build UI/UI.csproj -c Debug
 # Result: ✅ Built successfully
 
@@ -108,7 +108,7 @@ dotnet build MovieConverter.CLI/MovieConverter.CLI.csproj -c Debug
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        Mesen2 UI                            │
+│                        Nexen2 UI                            │
 │  ┌─────────────────┐  ┌─────────────────┐                   │
 │  │ MainMenuViewModel│  │MovieExportWindow │                  │
 │  │ Import/Export   │  │ Export Dialog    │                  │
@@ -118,7 +118,7 @@ dotnet build MovieConverter.CLI/MovieConverter.CLI.csproj -c Debug
 │  │    MovieConverter Library (.dll)      │                   │
 │  │  - MovieConverterRegistry            │                   │
 │  │  - IMovieConverter interface         │                   │
-│  │  - MesenMovieConverter               │                   │
+│  │  - NexenMovieConverter               │                   │
 │  │  - SmvMovieConverter                 │                   │
 │  │  - LsmvMovieConverter                │                   │
 │  │  - Fm2MovieConverter                 │                   │
@@ -132,7 +132,7 @@ dotnet build MovieConverter.CLI/MovieConverter.CLI.csproj -c Debug
 └───────────┼─────────────────────┼───────────────────────────┘
             │                     │
 ┌───────────▼─────────────────────▼───────────────────────────┐
-│                     MesenCore.dll                           │
+│                     NexenCore.dll                           │
 │  ┌─────────────────┐  ┌─────────────────┐                   │
 │  │   MovieManager  │  │    SystemHud    │                   │
 │  │ - TAS State     │  │ - Frame Counter │                   │
@@ -182,11 +182,11 @@ The TAS epic has been successfully completed with all core functionality impleme
 - ✅ Full rerecording support with savestate integration
 - ✅ Comprehensive TAS HUD with all counters and indicators
 - ✅ Movie format conversion (5 formats supported)
-- ✅ Import/Export UI in Mesen
+- ✅ Import/Export UI in Nexen
 - ✅ Keyboard shortcuts for TAS workflow
 - ✅ Lua API for scripting
 - ✅ Comprehensive documentation
 
-The implementation follows Mesen2's architecture patterns and integrates seamlessly with existing features. All code is properly commented and documented.
+The implementation follows Nexen2's architecture patterns and integrates seamlessly with existing features. All code is properly commented and documented.
 
 **This epic can now be closed.**

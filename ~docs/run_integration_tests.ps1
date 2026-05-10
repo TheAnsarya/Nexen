@@ -4,7 +4,7 @@
 DiztinGUIsh Integration Test Runner (PowerShell)
 
 .DESCRIPTION
-PowerShell script for running DiztinGUIsh-Mesen2 integration tests.
+PowerShell script for running DiztinGUIsh-Nexen2 integration tests.
 This script validates the streaming protocol implementation.
 
 .PARAMETER TestType
@@ -34,12 +34,12 @@ param(
     
     [int]$Port = 9998,
     
-    [string]$MesenPath = "",
+    [string]$NexenPath = "",
     
     [switch]$Verbose
 )
 
-Write-Host "DiztinGUIsh-Mesen2 Integration Test Runner" -ForegroundColor Cyan
+Write-Host "DiztinGUIsh-Nexen2 Integration Test Runner" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -81,7 +81,7 @@ if ($TestType -eq "manual") {
     $process = Start-Process -FilePath "python" -ArgumentList ($testClientPath + $arguments) -Wait -NoNewWindow -PassThru
     
 } elseif ($TestType -eq "automated") {
-    # Run automated integration test with Mesen2 startup
+    # Run automated integration test with Nexen2 startup
     Write-Host "Starting automated integration test..." -ForegroundColor Cyan
     Write-Host ""
     
@@ -94,15 +94,15 @@ if ($TestType -eq "manual") {
     }
     
     $arguments = @("--port", $Port.ToString())
-    if ($MesenPath -ne "") { $arguments += @("--mesen-path", $MesenPath) }
+    if ($NexenPath -ne "") { $arguments += @("--nexen-path", $NexenPath) }
     if ($Verbose) { $arguments += "--verbose" }
     $process = Start-Process -FilePath "python" -ArgumentList ($testClientPath + $arguments) -Wait -NoNewWindow -PassThru
     
 } else {
     # Run standard protocol tests (requires server already running)
     
-    # Check if Mesen2 DiztinGUIsh server is running
-    Write-Host "Checking if Mesen2 DiztinGUIsh server is running..." -ForegroundColor Yellow
+    # Check if Nexen2 DiztinGUIsh server is running
+    Write-Host "Checking if Nexen2 DiztinGUIsh server is running..." -ForegroundColor Yellow
     try {
         $tcpClient = New-Object System.Net.Sockets.TcpClient
         $tcpClient.ReceiveTimeout = 2000
@@ -111,10 +111,10 @@ if ($TestType -eq "manual") {
         $tcpClient.Close()
         Write-Host "✅ Server is running on ${Host}:${Port}" -ForegroundColor Green
     } catch {
-        Write-Host "❌ Mesen2 DiztinGUIsh server is not running" -ForegroundColor Red
+        Write-Host "❌ Nexen2 DiztinGUIsh server is not running" -ForegroundColor Red
         Write-Host ""
         Write-Host "Please follow these steps:" -ForegroundColor Yellow
-        Write-Host "1. Start Mesen2" -ForegroundColor White
+        Write-Host "1. Start Nexen2" -ForegroundColor White
         Write-Host "2. Load a SNES ROM" -ForegroundColor White  
         Write-Host "3. Go to Tools → DiztinGUIsh Server" -ForegroundColor White
         Write-Host "4. Click 'Start Server' (default port 9998)" -ForegroundColor White

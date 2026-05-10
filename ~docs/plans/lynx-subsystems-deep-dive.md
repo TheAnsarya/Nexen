@@ -358,7 +358,7 @@ string LynxConsole::GetHash(HashType type) {
 
 ### ROM Database
 
-- No official Lynx game database exists in Mesen2/Nexen
+- No official Lynx game database exists in Nexen2/Nexen
 - Create `LynxGameDatabase.h` with ~85 entries from No-Intro DAT
 - Fields: CRC32, name, EEPROM type, rotation, player count
 - Used for: auto-detecting rotation, EEPROM support, game-specific fixes

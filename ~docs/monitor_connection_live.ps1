@@ -1,4 +1,4 @@
-# Real-time connection monitor for Mesen2 ↔ DiztinGUIsh
+# Real-time connection monitor for Nexen2 ↔ DiztinGUIsh
 
 Write-Host "=== Live Connection Monitor ===" -ForegroundColor Cyan
 Write-Host "Monitoring TCP connection on port 9998..." -ForegroundColor Yellow

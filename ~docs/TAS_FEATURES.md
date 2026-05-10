@@ -1,6 +1,6 @@
-# Mesen2 TAS (Tool-Assisted Speedrun) Features
+# Nexen2 TAS (Tool-Assisted Speedrun) Features
 
-This document describes the TAS features implemented in Mesen2, including movie recording/playback, rerecording, and format conversion.
+This document describes the TAS features implemented in Nexen2, including movie recording/playback, rerecording, and format conversion.
 
 > **Status:** ✅ TAS EPIC COMPLETE  
 > **Issues:** #17-#25 ALL CLOSED  
@@ -9,13 +9,13 @@ This document describes the TAS features implemented in Mesen2, including movie 
 
 ## Overview
 
-Mesen2 now supports comprehensive TAS (Tool-Assisted Speedrun/Superplay) features:
+Nexen2 now supports comprehensive TAS (Tool-Assisted Speedrun/Superplay) features:
 
 1. **Movie Recording & Playback** - Record and play back input sequences ✅
 2. **Rerecording** - Load savestates during recording to branch off and create alternate input sequences ✅
 3. **Rerecord Counter** - Track how many times you've rerecorded during a TAS session ✅
 4. **Input Display** - Show controller inputs on screen ✅ (pre-existing)
-5. **Movie Format Conversion** - Convert between Mesen, SMV, LSMV, FM2, and BK2 formats ✅
+5. **Movie Format Conversion** - Convert between Nexen, SMV, LSMV, FM2, and BK2 formats ✅
 6. **Read-Only Mode** - Toggle between read-only playback and read-write editing ✅
 7. **TAS Lua API** - Script access to TAS state information ✅
 8. **Import/Export UI** - UI dialogs for importing and exporting TAS movies ✅
@@ -82,7 +82,7 @@ The `MovieConverter` utility allows converting between movie formats:
 
 | Format | Extension | Emulator |
 |--------|-----------|----------|
-| Mesen | .mmo | Mesen2 |
+| Nexen | .mmo | Nexen2 |
 | SMV | .smv | Snes9x |
 | LSMV | .lsmv | lsnes |
 | FM2 | .fm2 | FCEUX |
@@ -101,17 +101,17 @@ MovieConverter --info movie.smv
 MovieConverter --list-formats
 ```
 
-### Import/Export in Mesen2
+### Import/Export in Nexen2
 
 - **Tools → Movies → Import Movie...** - Import movie files from other emulators (SMV, LSMV, FM2, BK2)
-  - Automatically converts to Mesen native format (.mmo) before playback
+  - Automatically converts to Nexen native format (.mmo) before playback
   - Converted files are saved in the Movies folder
 - **Tools → Movies → Export Movie...** - Export the current movie to another format
   - Opens MovieExportWindow dialog
   - Select source .mmo file and target format
   - Supports export to SMV, LSMV, FM2, BK2 formats
 
-**Note:** Mesen uses the MovieConverter library directly for conversions. The CLI tool (MesenMovieConverter.exe) is available separately for external/scripted use.
+**Note:** Nexen uses the MovieConverter library directly for conversions. The CLI tool (NexenMovieConverter.exe) is available separately for external/scripted use.
 
 ## TAS State Information
 
@@ -170,7 +170,7 @@ emu.setInput(0, { a = true, b = false, up = true })
 
 ### Movie File Format (.mmo)
 
-Mesen movie files (.mmo) are ZIP archives containing:
+Nexen movie files (.mmo) are ZIP archives containing:
 - `GameSettings.txt` - Game and emulator settings
 - `Input.txt` - Frame-by-frame input data
 - `SaveState.mss` - Initial savestate (if recording from savestate)
@@ -227,7 +227,7 @@ Where:
 - `UI/Interop/RecordApi.cs` - TAS API bindings
 
 #### MovieConverter Project
-- `MovieConverter/` - .NET 8 class library for format conversion (used by Mesen UI)
+- `MovieConverter/` - .NET 8 class library for format conversion (used by Nexen UI)
 - `MovieConverter.CLI/` - Command-line tool for external/scripted conversions
 
 ## Future Enhancements

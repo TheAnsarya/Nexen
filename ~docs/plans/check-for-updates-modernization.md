@@ -8,7 +8,7 @@ The "Check for Updates" feature needs modernization to work with Nexen's distrib
 
 ### Endpoint Issues
 
-- Currently points to Mesen update servers (no longer valid)
+- Currently points to Nexen update servers (no longer valid)
 - Needs to use GitHub Releases API
 - May have hardcoded URLs
 

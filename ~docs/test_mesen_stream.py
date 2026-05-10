@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Simple test client for Mesen2 DiztinGUIsh streaming server.
+Simple test client for Nexen2 DiztinGUIsh streaming server.
 Tests protocol handshake, execution traces, and CDL updates.
 
-Usage: python test_mesen_stream.py [--port PORT] [--host HOST]
+Usage: python test_nexen_stream.py [--port PORT] [--host HOST]
 """
 
 import socket
@@ -32,8 +32,8 @@ class MessageType(IntEnum):
     FRAME_END = 0x0F
     ERROR = 0xFF
 
-class MesenStreamClient:
-    """Client for testing Mesen2 DiztinGUIsh streaming protocol"""
+class NexenStreamClient:
+    """Client for testing Nexen2 DiztinGUIsh streaming protocol"""
     
     def __init__(self, host='127.0.0.1', port=9998):
         self.host = host
@@ -54,7 +54,7 @@ class MesenStreamClient:
         }
     
     def connect(self):
-        """Connect to Mesen2 server"""
+        """Connect to Nexen2 server"""
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.settimeout(5.0)
@@ -254,18 +254,18 @@ class MesenStreamClient:
         print(f"{'='*70}\n")
 
 def main():
-    parser = argparse.ArgumentParser(description='Test Mesen2 DiztinGUIsh streaming')
+    parser = argparse.ArgumentParser(description='Test Nexen2 DiztinGUIsh streaming')
     parser.add_argument('--host', default='127.0.0.1', help='Server hostname (default: 127.0.0.1)')
     parser.add_argument('--port', type=int, default=9998, help='Server port (default: 9998)')
     parser.add_argument('--duration', type=int, help='Run for specified seconds (default: infinite)')
     args = parser.parse_args()
     
     print("=" * 70)
-    print("Mesen2 DiztinGUIsh Streaming Test Client")
+    print("Nexen2 DiztinGUIsh Streaming Test Client")
     print("=" * 70)
     print()
     
-    client = MesenStreamClient(host=args.host, port=args.port)
+    client = NexenStreamClient(host=args.host, port=args.port)
     client.run(duration=args.duration)
 
 if __name__ == '__main__':

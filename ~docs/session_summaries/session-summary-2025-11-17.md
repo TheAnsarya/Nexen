@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Successfully completed Phase 1 foundation work for real-time streaming integration between Mesen2 and DiztinGUIsh. Created 2,000+ lines of production code implementing the TCP server infrastructure, protocol specification, and debugger integration.
+Successfully completed Phase 1 foundation work for real-time streaming integration between Nexen2 and DiztinGUIsh. Created 2,000+ lines of production code implementing the TCP server infrastructure, protocol specification, and debugger integration.
 
 **CRITICAL DISCOVERY:** DiztinGUIsh already has socket-based tracelog capture from their BSNES integration! This validates our entire approach and means client-side infrastructure already exists.
 
@@ -179,7 +179,7 @@ struct MessageHeader {
 | 0x40-0x43 | Breakpoint* | Both | Breakpoint control |
 | 0x50-0x51 | MemoryDump* | Both | Memory requests |
 
-(M = Mesen2, D = DiztinGUIsh)
+(M = Nexen2, D = DiztinGUIsh)
 
 ### Execution Trace Format
 
@@ -276,10 +276,10 @@ Existing importers:
 - BSNES tracelog import
 - BSNES usage map import
 
-**Pattern for Mesen2:**
+**Pattern for Nexen2:**
 ```csharp
-// Create Diz.Import.Mesen namespace
-public interface IMesenLiveTraceImporter {
+// Create Diz.Import.Nexen namespace
+public interface INexenLiveTraceImporter {
     void Connect(string host, int port);
     void Disconnect();
     void StartCapture();
@@ -297,18 +297,18 @@ public interface IMesenLiveTraceImporter {
 
 **Attempted:** Created PowerShell script `~docs/create-github-issues.ps1` to automate issue creation using GitHub CLI.
 
-**Error:** `the 'TheAnsarya/Mesen2' repository has disabled issues`
+**Error:** `the 'TheAnsarya/Nexen2' repository has disabled issues`
 
 **Solution Required:**
 1. Enable issues in repository settings:
-   - Go to https://github.com/TheAnsarya/Mesen2/settings
+   - Go to https://github.com/TheAnsarya/Nexen2/settings
    - Scroll to "Features" section
    - Check "Issues" checkbox
    - Save changes
 
 2. Run the script:
    ```powershell
-   cd "c:\Users\me\source\repos\Mesen2\~docs"
+   cd "c:\Users\me\source\repos\Nexen2\~docs"
    pwsh -ExecutionPolicy Bypass -File create-github-issues.ps1
    ```
 
@@ -324,7 +324,7 @@ public interface IMesenLiveTraceImporter {
 | S5 | Label Bidirectional Sync | Task | Ready |
 | S6 | Breakpoint Control | Task | Ready |
 | S7 | Memory Dump Request/Response | Task | Ready |
-| S8 | Connection UI in Mesen2 | Task | Ready |
+| S8 | Connection UI in Nexen2 | Task | Ready |
 | S9 | DiztinGUIsh Client Implementation | Task | Ready |
 | S10 | Integration Testing & Documentation | Task | Ready |
 
@@ -621,11 +621,11 @@ public interface IMesenLiveTraceImporter {
 ### Medium-Term (Next Week)
 
 7. **Create DiztinGUIsh Client**
-   - Create `Diz.Import.Mesen` project
-   - Implement `MesenProtocol.cs` (C# port)
-   - Implement `MesenLiveTraceClient.cs`
+   - Create `Diz.Import.Nexen` project
+   - Implement `NexenProtocol.cs` (C# port)
+   - Implement `NexenLiveTraceClient.cs`
    - Add connection UI
-   - Test with Mesen2 server
+   - Test with Nexen2 server
 
 8. **Integration Testing**
    - Test handshake protocol
@@ -640,23 +640,23 @@ public interface IMesenLiveTraceImporter {
 
 ### Documentation
 
-- [Streaming Integration Spec](https://github.com/TheAnsarya/Mesen2/blob/master/docs/diztinguish/streaming-integration.md) - 693 lines technical specification
-- [GitHub Issue Creation Guide](https://github.com/TheAnsarya/Mesen2/blob/master/docs/diztinguish/GITHUB_ISSUE_CREATION.md) - Step-by-step manual
-- [GitHub Issues Templates](https://github.com/TheAnsarya/Mesen2/blob/master/docs/diztinguish/github-issues.md) - All issue bodies
-- [Repository Analysis](https://github.com/TheAnsarya/Mesen2/blob/master/docs/diztinguish/diztinguish-repository-analysis.md) - DiztinGUIsh architecture
-- [API Documentation](https://github.com/TheAnsarya/Mesen2/blob/master/docs/README.md) - Message protocol reference
+- [Streaming Integration Spec](https://github.com/TheAnsarya/Nexen2/blob/master/docs/diztinguish/streaming-integration.md) - 693 lines technical specification
+- [GitHub Issue Creation Guide](https://github.com/TheAnsarya/Nexen2/blob/master/docs/diztinguish/GITHUB_ISSUE_CREATION.md) - Step-by-step manual
+- [GitHub Issues Templates](https://github.com/TheAnsarya/Nexen2/blob/master/docs/diztinguish/github-issues.md) - All issue bodies
+- [Repository Analysis](https://github.com/TheAnsarya/Nexen2/blob/master/docs/diztinguish/diztinguish-repository-analysis.md) - DiztinGUIsh architecture
+- [API Documentation](https://github.com/TheAnsarya/Nexen2/blob/master/docs/README.md) - Message protocol reference
 
 ### External Resources
 
 - **DiztinGUIsh Repository:** https://github.com/IsoFrieze/DiztinGUIsh
 - **DiztinGUIsh Discord:** #diztinguish on https://sneslab.net/
-- **Mesen2 Project Board:** https://github.com/users/TheAnsarya/projects/4
+- **Nexen2 Project Board:** https://github.com/users/TheAnsarya/projects/4
 - **LightInject DI:** https://www.lightinject.net/ (DiztinGUIsh uses this)
 - **Eto.Forms:** https://github.com/picoe/Eto (DiztinGUIsh UI framework)
 
 ### Code References
 
-**Mesen2:**
+**Nexen2:**
 - `Utilities/Socket.h` - Existing socket infrastructure
 - `Core/Netplay/` - Reference implementation for networking
 - `Core/SNES/Debugger/SnesDebugger.h` - Debugger integration point
@@ -737,7 +737,7 @@ public interface IMesenLiveTraceImporter {
 
 **Excellent progress on Phase 1 foundation!**
 
-Successfully implemented the core TCP server infrastructure for real-time streaming integration between Mesen2 and DiztinGUIsh. The DiztinguishBridge is now integrated into the SNES debugger and ready for CPU hooks.
+Successfully implemented the core TCP server infrastructure for real-time streaming integration between Nexen2 and DiztinGUIsh. The DiztinguishBridge is now integrated into the SNES debugger and ready for CPU hooks.
 
 **Key accomplishment:** Discovered that DiztinGUIsh already has socket-based tracelog capture, which validates our entire approach and provides a proven reference implementation.
 

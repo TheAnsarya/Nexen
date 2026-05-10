@@ -9,7 +9,7 @@
 
 ## Session Objectives
 
-1. Analyze Mesen2 project structure
+1. Analyze Nexen2 project structure
 2. Research DiztinGUIsh project
 3. Create comprehensive documentation
 4. Plan integration between the two projects
@@ -19,7 +19,7 @@
 
 ## Activities Completed
 
-### 1. Mesen2 Project Analysis
+### 1. Nexen2 Project Analysis
 
 **Files Examined:**
 - `UI/UI.csproj` - Main UI project file
@@ -80,7 +80,7 @@
 **Identified Integration Opportunities:**
 
 1. **CDL (Code/Data Logger) Exchange** ? RECOMMENDED
-   - Mesen2 tracks code vs data during emulation
+   - Nexen2 tracks code vs data during emulation
    - DiztinGUIsh imports CDL to auto-mark regions
    - Minimal coupling, high value
 
@@ -90,7 +90,7 @@
    - Moderate complexity
 
 3. **Enhanced Trace Logs**
-   - Mesen2 exports execution traces with context
+   - Nexen2 exports execution traces with context
    - DiztinGUIsh analyzes to discover M/X/DB/DP values
    - Automates tedious manual tracking
 
@@ -99,13 +99,13 @@
    - Complex, uncertain ROI
 
 5. **Library Integration** (lower priority)
-   - Embed DiztinGUIsh core in Mesen2
+   - Embed DiztinGUIsh core in Nexen2
    - High coupling, maintenance burden
 
 ### 4. Documentation Created
 
 **Core Documentation:**
-- `docs/README.md` - Mesen2 project documentation
+- `docs/README.md` - Nexen2 project documentation
   - Project overview
   - Architecture description
   - Technology stack
@@ -199,7 +199,7 @@ docs/
 ### CDL Format (Draft)
 ```
 Header:
-  - Magic: "MESEN2CDL"
+  - Magic: "NEXEN2CDL"
   - Version: 1
   - System: SNES
   - ROM Size: [bytes]
@@ -211,7 +211,7 @@ Body:
 ```
 
 ### Label Exchange
-- Use Mesen .mlb format (existing)
+- Use Nexen .mlb format (existing)
 - Create converters if needed
 - Support bidirectional exchange
 
@@ -228,7 +228,7 @@ Binary: Packed struct for efficiency
 ### Immediate (Next Session)
 1. ? Complete session log documentation
 2. ? Create chat log from this session
-3. ? Examine Mesen2 SNES core code structure
+3. ? Examine Nexen2 SNES core code structure
 4. ? Identify CDL implementation points
 5. ? Examine DiztinGUIsh import mechanism
 
@@ -289,7 +289,7 @@ Binary: Packed struct for efficiency
 
 ### Existing CDL Implementations
 - **FCEUX** (NES emulator): Has CDL support
-- **Mesen** (NES): Supports CDL import/export
+- **Nexen** (NES): Supports CDL import/export
 - **Opportunity:** Leverage existing formats or create SNES-specific extension
 
 ### SNES Specifics
@@ -307,7 +307,7 @@ Binary: Packed struct for efficiency
 
 ## Questions for Future Investigation
 
-1. **Mesen2 Questions:**
+1. **Nexen2 Questions:**
    - Where exactly is SNES disassembly implemented?
    - Does existing SNES debugger track any code/data distinction?
    - What format are existing labels stored in?
@@ -366,7 +366,7 @@ Binary: Packed struct for efficiency
 - [ ] Consider reaching out to project maintainers
 
 ### For Next Session
-- [ ] Deep dive into Mesen2 SNES core
+- [ ] Deep dive into Nexen2 SNES core
 - [ ] Deep dive into DiztinGUIsh import mechanism
 - [ ] Start CDL format specification
 - [ ] Start SNES memory mapping documentation

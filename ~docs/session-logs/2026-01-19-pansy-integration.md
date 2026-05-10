@@ -20,7 +20,7 @@ Primary goal: Add Pansy metadata export capability to Nexen emulator/debugger
    - DiztinGUIsh integration
    - TAS recording features
    - MovieConverter tools
-3. **Reset master to upstream** `SourMesen/Nexen` master branch
+3. **Reset master to upstream** `SourNexen/Nexen` master branch
 4. **Force pushed** clean master to `TheAnsarya/Nexen`
 5. **Created new branch** `pansy-export` from clean master
 
@@ -221,7 +221,7 @@ A  ~docs/pansy-roadmap.md						  (+292 lines)
 
 - [Pansy Repository](https://github.com/TheAnsarya/pansy)
 - [Pansy File Format Spec](https://github.com/TheAnsarya/pansy/blob/main/docs/FILE-FORMAT.md)
-- [Nexen Upstream](https://github.com/SourMesen/Nexen)
+- [Nexen Upstream](https://github.com/SourNexen/Nexen)
 - [Commit 6fd99def](https://github.com/TheAnsarya/Nexen/commit/6fd99def)
 
 ---

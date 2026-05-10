@@ -15,7 +15,7 @@ Continued development of Nexen Pansy export feature. Completed Phase 1.5 documen
 
 ### Phase 2: Unit Testing Infrastructure
 
-- Created new test project: `Tests/Mesen.Tests.csproj`
+- Created new test project: `Tests/Nexen.Tests.csproj`
 - Added `PansyExporterTests.cs` with 15+ unit tests covering:
 	- CRC32 calculation
 	- Header parsing
@@ -54,7 +54,7 @@ Also added section constants for future features:
 ## Files Changed
 
 - `UI/Debugger/Labels/PansyExporter.cs` - Added Phase 3 sections
-- `Tests/Mesen.Tests.csproj` - New test project
+- `Tests/Nexen.Tests.csproj` - New test project
 - `Tests/Debugger/Labels/PansyExporterTests.cs` - New test file
 - `Tests/Debugger/Labels/BackgroundPansyExporterTests.cs` - New test file
 - `~docs/testing/phase-1.5-manual-testing-plan.md` - New testing plan

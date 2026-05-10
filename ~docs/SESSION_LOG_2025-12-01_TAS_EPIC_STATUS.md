@@ -15,7 +15,7 @@ The TAS epic has comprehensive implementation completed across Core, InteropDLL,
 | Feature | Issue | Implementation |
 |---------|-------|----------------|
 | MovieConverter Console App | #19 | Full .NET 8 app with 5 format converters |
-| Input Display Overlay | #20 | Pre-existing in Mesen2 (Settings → Input) |
+| Input Display Overlay | #20 | Pre-existing in Nexen2 (Settings → Input) |
 | Rerecording from Savestate | #21 | TruncateToFrame, HandleRerecord |
 | Rerecord Counter Display | #22 | SystemHud::ShowRerecordCounter |
 | TAS Keyboard Shortcuts | #24 | 4 shortcuts in EmulatorShortcut.cs |
@@ -97,7 +97,7 @@ In a follow-up session, the MovieExportWindow UI was implemented:
 - `UI/ViewModels/MovieExportViewModel.cs` - ViewModel with export logic
 
 #### Files Modified
-- `MovieConverter/Converters/MesenMovieConverter.cs` - Fixed to use .mmo extension
+- `MovieConverter/Converters/NexenMovieConverter.cs` - Fixed to use .mmo extension
 - `UI/ViewModels/MainMenuViewModel.cs` - Wired up Export menu, added Import conversion
 - `UI/Localization/resources.en.xml` - Added MovieExportWindow localization strings
 
@@ -107,7 +107,7 @@ In a follow-up session, the MovieExportWindow UI was implemented:
    - Target format dropdown (SMV, LSMV, FM2, BK2)
    - Export path selection with auto-naming
    - Status feedback during conversion
-   - Uses MesenMovieConverter CLI for conversion
+   - Uses NexenMovieConverter CLI for conversion
 
 2. **Import Movie Enhancement**
    - Auto-detects if file is native .mmo or external format

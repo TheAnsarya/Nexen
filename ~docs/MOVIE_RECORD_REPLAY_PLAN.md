@@ -1,18 +1,18 @@
-# Mesen2 Movie Record/Replay Enhancement Plan
+# Nexen2 Movie Record/Replay Enhancement Plan
 
 ## Current State
 
 ### Existing Movie System
-Mesen2 already has a robust movie recording and playback system:
+Nexen2 already has a robust movie recording and playback system:
 
 **Files:**
 - `Core/Shared/Movies/MovieManager.h/.cpp` - Main manager for recording/playback
 - `Core/Shared/Movies/MovieRecorder.h/.cpp` - Records input to movie files
-- `Core/Shared/Movies/MesenMovie.h/.cpp` - Plays back Mesen movie files
+- `Core/Shared/Movies/NexenMovie.h/.cpp` - Plays back Nexen movie files
 - `Core/Shared/Movies/MovieTypes.h` - Data structures and keys
 
-**Current Format (Mesen Movie - .mmm):**
-The Mesen movie format is a ZIP archive containing:
+**Current Format (Nexen Movie - .mmm):**
+The Nexen movie format is a ZIP archive containing:
 - `GameSettings.txt` - Emulator settings, ROM info, SHA1 hash, cheats
 - `Input.txt` - Per-frame controller input (pipe-delimited text)
 - `MovieInfo.txt` - Author and description (optional)
@@ -139,7 +139,7 @@ class SmvMovie : public IMovie {
 
 #### 3.3 Export to Standard Formats
 **Priority:** Low  
-**Description:** Export Mesen movies to SMV/LSMV for compatibility
+**Description:** Export Nexen movies to SMV/LSMV for compatibility
 
 ### Phase 4: TAS Features
 
@@ -199,7 +199,7 @@ class SmvMovie : public IMovie {
 
 ## File Format Comparison
 
-| Feature | Mesen (.mmm) | FM2 | SMV | LSMV |
+| Feature | Nexen (.mmm) | FM2 | SMV | LSMV |
 |---------|--------------|-----|-----|------|
 | Text-based | Yes (in ZIP) | Yes | No | Both |
 | Rerecord count | No | Yes | Yes | Yes |

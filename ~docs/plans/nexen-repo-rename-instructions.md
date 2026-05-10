@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document provides step-by-step instructions to complete the Mesen2 → Nexen rename.
+This document provides step-by-step instructions to complete the Nexen2 → Nexen rename.
 
 ## Prerequisites
 
@@ -18,7 +18,7 @@ This document provides step-by-step instructions to complete the Mesen2 → Nexe
 ### 1. Push the nexen-rename Branch
 
 ```powershell
-cd "c:\Users\me\source\repos\Mesen2"
+cd "c:\Users\me\source\repos\Nexen2"
 git push -u origin nexen-rename
 ```
 
@@ -26,15 +26,15 @@ git push -u origin nexen-rename
 
 ```powershell
 git checkout master
-git merge nexen-rename -m "Merge nexen-rename: Complete Mesen to Nexen rebrand (#110)"
+git merge nexen-rename -m "Merge nexen-rename: Complete Nexen to Nexen rebrand (#110)"
 git push origin master
 ```
 
 ### 3. Rename GitHub Repository
 
-1. Go to: <https://github.com/TheAnsarya/Mesen2/settings>
+1. Go to: <https://github.com/TheAnsarya/Nexen2/settings>
 2. Scroll to "Repository name"
-3. Change from `Mesen2` to `Nexen`
+3. Change from `Nexen2` to `Nexen`
 4. Click "Rename"
 
 **Note:** GitHub will automatically redirect old URLs to the new location.
@@ -45,7 +45,7 @@ After renaming on GitHub:
 
 ```powershell
 # Update remote URL
-cd "c:\Users\me\source\repos\Mesen2"
+cd "c:\Users\me\source\repos\Nexen2"
 git remote set-url origin https://github.com/TheAnsarya/Nexen.git
 
 # Verify
@@ -57,7 +57,7 @@ git remote -v
 ```powershell
 # Close VS Code first!
 cd "c:\Users\me\source\repos"
-Rename-Item "Mesen2" "Nexen"
+Rename-Item "Nexen2" "Nexen"
 ```
 
 ### 6. Update VS Code Workspace
@@ -68,7 +68,7 @@ Edit the workspace file (e.g., `GameInfo.code-workspace`) to update the folder p
 
 ```json
 {
-	"path": "../Mesen2"
+	"path": "../Nexen2"
 }
 ```
 
@@ -94,16 +94,16 @@ gh issue close 115 --repo TheAnsarya/Nexen --comment "Completed: Repository rena
 
 ### 8. Update Upstream Remote
 
-✅ **COMPLETED** - The upstream remote is correctly set to track the original Mesen2 repository:
+✅ **COMPLETED** - The upstream remote is correctly set to track the original Nexen2 repository:
 
 ```powershell
 git remote -v
 # Shows:
 # origin     https://github.com/TheAnsarya/Nexen.git (fetch/push)
-# upstream   https://github.com/SourMesen/Mesen2.git (fetch/push)
+# upstream   https://github.com/SourNexen/Nexen2.git (fetch/push)
 ```
 
-This allows syncing with upstream Mesen2 developments while maintaining the fork.
+This allows syncing with upstream Nexen2 developments while maintaining the fork.
 
 ### 9. Update CI/CD & Documentation
 
@@ -112,7 +112,7 @@ This allows syncing with upstream Mesen2 developments while maintaining the fork
 1. **GitHub Actions Workflows** - Already use `TheAnsarya/Nexen` in all workflow references
 2. **README.md** - Updated:
    - Fork attribution: `(TheAnsarya/Nexen)` ✅
-   - Upstream link: `github.com/SourMesen/Mesen2` ✅
+   - Upstream link: `github.com/SourNexen/Nexen2` ✅
    - Fork link: `github.com/TheAnsarya/Nexen` ✅
 3. **Copilot Instructions** - Updated to reference `TheAnsarya/Nexen` ✅
 4. **Build Documentation** - Updated file paths and repository references ✅
@@ -131,13 +131,13 @@ After completing all steps, verify:
 
 If something goes wrong:
 
-1. Rename repo back on GitHub: `Nexen` → `Mesen2`
-2. Update remote URL: `git remote set-url origin https://github.com/TheAnsarya/Mesen2.git`
-3. Rename local folder back: `Rename-Item "Nexen" "Mesen2"`
+1. Rename repo back on GitHub: `Nexen` → `Nexen2`
+2. Update remote URL: `git remote set-url origin https://github.com/TheAnsarya/Nexen2.git`
+3. Rename local folder back: `Rename-Item "Nexen" "Nexen2"`
 
 ## Related Issues
 
-- #110 - [Epic] Rename Mesen2 Fork to Nexen
+- #110 - [Epic] Rename Nexen2 Fork to Nexen
 - #111 - Solution/Project Rename
 - #112 - Namespace Updates
 - #113 - Documentation Updates

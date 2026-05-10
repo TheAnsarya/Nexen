@@ -1,4 +1,4 @@
-﻿# Nexen
+# Nexen
 
 <p align="center">
   <img src="~assets/Nexen%20icon.png" alt="Nexen" width="128"/>
@@ -26,7 +26,7 @@
 
 ## Overview
 
-Nexen is a multi-system emulator based on [Mesen2](https://github.com/SourMesen/Mesen2) with significant enhancements: a full-featured TAS editor with undo/redo and greenzone support, an infinite save state system with visual picker, a ZIP-based movie format with multi-format import/export, 🌼 Pansy metadata export for integration with the Flower Toolchain disassembly pipeline, and active development of Sega Genesis, Atari 2600, and Fairchild Channel F support.
+Nexen is a multi-system emulator based on [Nexen2](https://github.com/SourNexen/Nexen2) with significant enhancements: a full-featured TAS editor with undo/redo and greenzone support, an infinite save state system with visual picker, a ZIP-based movie format with multi-format import/export, 🌼 Pansy metadata export for integration with the Flower Toolchain disassembly pipeline, and active development of Sega Genesis, Atari 2600, and Fairchild Channel F support.
 
 ---
 
@@ -367,7 +367,7 @@ pwsh -File scripts/benchmark-markdown-policy.ps1 -Runs 5
 Nexen is dual-licensed:
 
 - **Nexen Additions (Unlicense):** All new features, modifications, and additions created for this fork are released into the public domain under [The Unlicense](https://unlicense.org).
-- **Base Code (GPL v3):** The original [Mesen](https://github.com/SourMesen/Mesen2) code by Sour remains under the GNU General Public License v3.
+- **Base Code (GPL v3):** The original [Nexen](https://github.com/SourNexen/Nexen2) code by Sour remains under the GNU General Public License v3.
 
 See [LICENSE](LICENSE) for full details.
 
@@ -377,7 +377,7 @@ See [LICENSE](LICENSE) for full details.
 
 Nexen builds upon the excellent work of:
 
-- **[Mesen](https://github.com/SourMesen/Mesen2)** by Sour — The original emulator codebase
+- **[Nexen](https://github.com/SourNexen/Nexen2)** by Sour — The original emulator codebase
 - The emulation community for documentation and research
 - Contributors and testers
 

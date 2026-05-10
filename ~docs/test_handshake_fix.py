@@ -8,12 +8,12 @@ import struct
 import time
 
 def test_handshake():
-    """Test the handshake protocol with Mesen2"""
+    """Test the handshake protocol with Nexen2"""
     print("🧪 Testing DiztinguishBridge handshake fix...")
     
     sock = None
     try:
-        # Connect to Mesen2 DiztinGUIsh server
+        # Connect to Nexen2 DiztinGUIsh server
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5.0)
         

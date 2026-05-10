@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test DiztinGUIsh Mesen Integration
+Test DiztinGUIsh Nexen Integration
 Tests the complete pipeline from simulator to DiztinGUIsh
 """
 import subprocess
@@ -10,12 +10,12 @@ import os
 import sys
 
 def run_simulator():
-    """Run the Mesen simulator in background"""
-    print("🚀 Starting Mesen simulator...")
+    """Run the Nexen simulator in background"""
+    print("🚀 Starting Nexen simulator...")
     
     # Start simulator in background
     process = subprocess.Popen(
-        [sys.executable, "mesen_simulator.py"],
+        [sys.executable, "nexen_simulator.py"],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -41,7 +41,7 @@ def test_diztinguish_connection():
         print("   1. Open DiztinGUIsh (should already be running)")
         print("   2. Create a new project or open existing one")
         print("   3. Go to Import menu")
-        print("   4. Select 'Mesen2 Live Stream'")
+        print("   4. Select 'Nexen2 Live Stream'")
         print("   5. Use host: localhost, port: 9998")
         print("   6. Click Connect")
         print()

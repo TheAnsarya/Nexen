@@ -5,7 +5,7 @@ REM   test_type: all, connect, cpu, breakpoints, memory (default: all)
 
 setlocal EnableDelayedExpansion
 
-echo DiztinGUIsh-Mesen2 Integration Test Runner
+echo DiztinGUIsh-Nexen2 Integration Test Runner
 echo ==========================================
 
 REM Check if Python is available
@@ -24,14 +24,14 @@ if "!test_type!"=="" set test_type=all
 echo Running test type: !test_type!
 echo.
 
-REM Check if Mesen2 is running and server is available
-echo Checking if Mesen2 DiztinGUIsh server is running...
+REM Check if Nexen2 is running and server is available
+echo Checking if Nexen2 DiztinGUIsh server is running...
 python -c "import socket; s=socket.socket(); s.settimeout(2); s.connect(('127.0.0.1', 9998)); print('✅ Server is running'); s.close()" 2>nul
 if %errorlevel% neq 0 (
-    echo ❌ Mesen2 DiztinGUIsh server is not running
+    echo ❌ Nexen2 DiztinGUIsh server is not running
     echo.
     echo Please:
-    echo 1. Start Mesen2
+    echo 1. Start Nexen2
     echo 2. Load a SNES ROM
     echo 3. Enable DiztinGUIsh server (menu or hotkey)
     echo 4. Verify server starts on port 9998
@@ -40,7 +40,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo ✅ Mesen2 server detected on port 9998
+echo ✅ Nexen2 server detected on port 9998
 echo.
 
 REM Run the test client

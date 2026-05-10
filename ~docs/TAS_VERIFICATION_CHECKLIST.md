@@ -1,6 +1,6 @@
 # TAS Epic Verification Checklist
 
-This document provides a comprehensive manual verification checklist for the TAS (Tool-Assisted Speedrun) features implemented in Mesen2.
+This document provides a comprehensive manual verification checklist for the TAS (Tool-Assisted Speedrun) features implemented in Nexen2.
 
 > **Epic Status:** COMPLETE  
 > **Last Verified:** December 1, 2025  
@@ -11,8 +11,8 @@ This document provides a comprehensive manual verification checklist for the TAS
 ## Pre-Verification Setup
 
 ### Build Requirements
-1. [ ] Build MesenCore.dll (C++ Core) - `msbuild Mesen.sln /p:Configuration=Debug /p:Platform=x64`
-2. [ ] Build Mesen.dll (C# UI) - `dotnet build UI/UI.csproj -c Debug`
+1. [ ] Build NexenCore.dll (C++ Core) - `msbuild Nexen.sln /p:Configuration=Debug /p:Platform=x64`
+2. [ ] Build Nexen.dll (C# UI) - `dotnet build UI/UI.csproj -c Debug`
 3. [ ] Build MovieConverter.dll - `dotnet build MovieConverter/MovieConverter.csproj -c Debug`
 4. [ ] Build MovieConverter.CLI - `dotnet build MovieConverter.CLI/MovieConverter.CLI.csproj -c Debug`
 
@@ -28,7 +28,7 @@ This document provides a comprehensive manual verification checklist for the TAS
 ### 1. Movie Recording & Playback (Pre-existing, enhanced)
 
 #### Record a Movie
-- [ ] Launch Mesen2 and load a SNES ROM
+- [ ] Launch Nexen2 and load a SNES ROM
 - [ ] Go to **Tools → Movies → Record**
 - [ ] Choose a filename and click Save
 - [ ] Verify "Recording" icon appears on screen (if ShowMovieIcons enabled)
@@ -150,7 +150,7 @@ This document provides a comprehensive manual verification checklist for the TAS
 - [ ] Verify movie plays correctly after import
 
 #### Export to External Formats
-- [ ] Record or load a Mesen movie (.mmo)
+- [ ] Record or load a Nexen movie (.mmo)
 - [ ] Go to **Tools → Movies → Export Movie...**
 - [ ] Select the source .mmo file
 - [ ] Choose export format (SMV, LSMV, FM2, BK2)
@@ -169,13 +169,13 @@ This document provides a comprehensive manual verification checklist for the TAS
 cd bin\Debug
 
 # List supported formats
-.\MesenMovieConverter.exe list-formats
+.\NexenMovieConverter.exe list-formats
 
 # Convert SMV to MMO
-.\MesenMovieConverter.exe convert input.smv output.mmo
+.\NexenMovieConverter.exe convert input.smv output.mmo
 
 # Get movie info
-.\MesenMovieConverter.exe info movie.smv
+.\NexenMovieConverter.exe info movie.smv
 ```
 
 #### Verify CLI Commands
@@ -319,7 +319,7 @@ _Record any issues found during verification:_
 ### Movie Formats
 | Extension | Format | Read | Write |
 |-----------|--------|------|-------|
-| .mmo | Mesen | ✅ | ✅ |
+| .mmo | Nexen | ✅ | ✅ |
 | .smv | Snes9x | ✅ | ✅ |
 | .lsmv | lsnes | ✅ | ✅ |
 | .fm2 | FCEUX | ✅ | ✅ |

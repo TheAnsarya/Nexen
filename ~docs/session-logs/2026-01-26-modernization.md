@@ -17,7 +17,7 @@ Major modernization milestone achieved: Upgraded Nexen from .NET 8 to .NET 10, u
 ### .NET 10 Migration ✅
 
 - Updated `UI.csproj` from `net8.0` to `net10.0`
-- Updated `Mesen.Tests.csproj` from `net8.0` to `net10.0`
+- Updated `Nexen.Tests.csproj` from `net8.0` to `net10.0`
 - Updated version to 2.2.0
 - Build succeeded with 0 errors
 
@@ -61,7 +61,7 @@ Major modernization milestone achieved: Upgraded Nexen from .NET 8 to .NET 10, u
 ## Files Changed
 
 - `UI/UI.csproj` - .NET 10, Avalonia 11.3.9, added System.IO.Hashing
-- `Tests/Mesen.Tests.csproj` - .NET 10, added System.IO.Hashing
+- `Tests/Nexen.Tests.csproj` - .NET 10, added System.IO.Hashing
 - `UI/Debugger/Labels/PansyExporter.cs` - System.IO.Hashing for CRC32
 - `Tests/Debugger/Labels/PansyExporterTests.cs` - System.IO.Hashing for CRC32
 
@@ -116,7 +116,7 @@ Applied modern C# idioms to the following files:
 	- Pattern matching: `label is not null`
 	- Spread operator: `[.._labels]`
 
-- **MesenLabelFile.cs**
+- **NexenLabelFile.cs**
 	- Target-typed new for List with capacity
 	- Pattern matching: `label is null`
 

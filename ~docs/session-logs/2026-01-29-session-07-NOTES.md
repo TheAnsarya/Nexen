@@ -69,7 +69,7 @@ Despite the pre-existing build issue, the following projects were successfully c
 
 ### Solution Integration
 
-- Both projects added to `Mesen.sln`
+- Both projects added to `Nexen.sln`
 - Platform configurations set up for all build modes
 - Project dependencies configured (Core + Utilities)
 - Ready to build once underlying build issues are resolved
@@ -102,7 +102,7 @@ Despite the pre-existing build issue, the following projects were successfully c
 
 ## Files Modified This Session
 
-- `Mesen.sln` - Added Core.Tests and Core.Benchmarks projects
+- `Nexen.sln` - Added Core.Tests and Core.Benchmarks projects
 - `Core.Tests/` - New directory with 4 files
 - `Core.Benchmarks/` - New directory with 4 files
 - `vcpkg.json` - Package manifest (created in previous session)
@@ -117,7 +117,7 @@ feat: add Core.Tests and Core.Benchmarks projects to solution
 
 - Created Core.Tests with 11 ColorUtilities unit tests using Google Test
 - Created Core.Benchmarks with 5 performance benchmarks using Google Benchmark
-- Both projects properly integrated into Mesen.sln with dependencies
+- Both projects properly integrated into Nexen.sln with dependencies
 - Tests validate constexpr implementation correctness
 - Benchmarks will measure zero-cost abstraction performance
 

@@ -3,14 +3,14 @@
 ## Quick Start Testing
 
 ### Prerequisites
-- Mesen2 compiled with DiztinGUIsh bridge
+- Nexen2 compiled with DiztinGUIsh bridge
 - Python 3.7+ (for test client)
 - SNES ROM file for testing
 
-### Step 1: Build Mesen2
+### Step 1: Build Nexen2
 ```bash
 # Build in Visual Studio or via command line
-msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64
+msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64
 ```
 
 ### Step 2: Start Test Client
@@ -19,13 +19,13 @@ msbuild Mesen.sln /p:Configuration=Release /p:Platform=x64
 cd ~docs
 
 # Run test client (waits for server)
-python test_mesen_stream.py
+python test_nexen_stream.py
 ```
 
 Keep this running in a separate terminal.
 
-### Step 3: Start Mesen2 and Enable Server
-1. Launch Mesen2
+### Step 3: Start Nexen2 and Enable Server
+1. Launch Nexen2
 2. Open any SNES ROM
 3. Open debugger window (Debug → Debugger)
 4. Load Lua script:
@@ -49,7 +49,7 @@ The test_server.lua script will:
 **Test Client Terminal:**
 ```
 ======================================================================
-Mesen2 DiztinGUIsh Streaming Test Client
+Nexen2 DiztinGUIsh Streaming Test Client
 ======================================================================
 
 Connecting to 127.0.0.1:9998...
@@ -59,7 +59,7 @@ Connecting to 127.0.0.1:9998...
 📡 Listening for messages... (Ctrl+C to stop)
 ======================================================================
 
-📡 HANDSHAKE: Protocol v1, Emulator: Mesen2 v0.7.0
+📡 HANDSHAKE: Protocol v1, Emulator: Nexen2 v0.7.0
 🎬 FRAME_START: Frame #1
 🔍 EXEC_TRACE #0: $008000 = $78 (M8 X8) DB=$00 D=$0000
 🔍 EXEC_TRACE #1: $008001 = $18 (M8 X8) DB=$00 D=$0000
@@ -78,12 +78,12 @@ Connecting to 127.0.0.1:9998...
 
 **Steps:**
 1. Start test client first
-2. Start Mesen2 server
+2. Start Nexen2 server
 3. Check for HANDSHAKE message
 
 **Expected:**
 - Protocol version = 1
-- Emulator name = "Mesen2 v0.7.0" (or current version)
+- Emulator name = "Nexen2 v0.7.0" (or current version)
 
 **Pass Criteria:**
 - ✅ Handshake received within 1 second
@@ -97,7 +97,7 @@ Connecting to 127.0.0.1:9998...
 
 **Steps:**
 1. Connect test client
-2. Load ROM in Mesen2
+2. Load ROM in Nexen2
 3. Run emulation (press F5)
 4. Observe EXEC_TRACE messages
 
@@ -163,9 +163,9 @@ Connecting to 127.0.0.1:9998...
 **Steps:**
 1. Run test client with duration limit:
    ```bash
-   python test_mesen_stream.py --duration 60
+   python test_nexen_stream.py --duration 60
    ```
-2. Run Mesen2 for 60 seconds
+2. Run Nexen2 for 60 seconds
 3. Check statistics output
 
 **Expected Bandwidth:**
@@ -272,7 +272,7 @@ TEST(DiztinguishBridge, ExecTraceFormat) {
 ```python
 # tests/test_streaming_integration.py
 def test_handshake():
-    client = MesenStreamClient()
+    client = NexenStreamClient()
     client.connect()
     msg = client.wait_for_message(MessageType.HANDSHAKE, timeout=5)
     assert msg.protocol_version == 1
@@ -286,7 +286,7 @@ def test_handshake():
 1. Check server started: Look for "DiztinGUIsh server listening on port 9998"
 2. Check firewall: Windows may block port 9998
 3. Check port conflict: Try different port with `--port 9999`
-4. Enable verbose logging in Mesen2
+4. Enable verbose logging in Nexen2
 
 ### Incorrect Message Data
 1. Add hex dump to test client:
@@ -303,7 +303,7 @@ def test_handshake():
 4. Profile with Visual Studio profiler
 
 ### Memory Leaks
-1. Run Mesen2 with Valgrind (Linux) or Dr. Memory (Windows)
+1. Run Nexen2 with Valgrind (Linux) or Dr. Memory (Windows)
 2. Check message queue growth in DiztinguishBridge
 3. Verify thread cleanup on disconnect
 
@@ -314,7 +314,7 @@ def test_handshake():
 Once basic streaming works:
 
 1. **[Issue #5]** Implement CPU state snapshots
-2. **[Issue #9]** Add connection UI in Mesen2
+2. **[Issue #9]** Add connection UI in Nexen2
 3. **[Issue #10]** Build DiztinGUIsh C# client
 4. **[Issue #6-8]** Add label sync, breakpoints, memory dumps
 5. **[Issue #11]** Create comprehensive test suite
@@ -327,7 +327,7 @@ Once basic streaming works:
 ## Test Session: [Date]
 
 ### Environment
-- Mesen2 Version: [version]
+- Nexen2 Version: [version]
 - OS: [Windows/Linux/macOS]
 - ROM: [name, type]
 - Test Duration: [seconds]
@@ -362,5 +362,5 @@ Once basic streaming works:
 Questions or issues? Create GitHub issue with:
 - Test scenario that failed
 - Expected vs actual output
-- Mesen2 version and OS
+- Nexen2 version and OS
 - ROM type (LoROM/HiROM/etc.)

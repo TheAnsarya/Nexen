@@ -17,15 +17,15 @@
 
 ## 🐱 What is Nexen?
 
-Nexen is a **multi-system emulator** forked from [Mesen2](https://github.com/SourMesen/Mesen2) — one of the most accurate emulators ever made. We forked because we wanted things Mesen2 doesn't have:
+Nexen is a **multi-system emulator** forked from [Nexen2](https://github.com/SourNexen/Nexen2) — one of the most accurate emulators ever made. We forked because we wanted things Nexen2 doesn't have:
 
 - **TAS Editor** — Full piano roll, greenzone, branches, rerecording
 - **New Systems** — Atari Lynx (and more coming)
 - **🌼 Pansy Export** — Universal disassembly metadata format
 - **Performance** — Hundreds of optimizations to the hot path
-- **Upstream Bug Fixes** — We evaluate and apply all open Mesen2 PRs
+- **Upstream Bug Fixes** — We evaluate and apply all open Nexen2 PRs
 - **Modern C++23** — constexpr, [[likely]], std::bit_cast, ranges
-- **Testing** — 1,495 unit/integration tests (Mesen2 has 0)
+- **Testing** — 1,495 unit/integration tests (Nexen2 has 0)
 
 Nexen emulates **NES, SNES, Game Boy, GBA, Master System, PC Engine, WonderSwan, and now Atari Lynx**.
 
@@ -47,8 +47,8 @@ Nexen emulates **NES, SNES, Game Boy, GBA, Master System, PC Engine, WonderSwan,
 - **~80 game ROM database** from No-Intro
 - 67 performance benchmarks + 84 unit tests
 
-### 🔧 8 Upstream Mesen2 Bug Fixes
-We evaluated all 24 open Mesen2 PRs and applied 8 accuracy fixes:
+### 🔧 8 Upstream Nexen2 Bug Fixes
+We evaluated all 24 open Nexen2 PRs and applied 8 accuracy fixes:
 
 - **SNES** — DMA overflow (#87), CX4 timing (#86), hi-res blend (#80), ExLoRom mapping (#74)
 - **NES** — Open bus value (#82), NTSC dot crawl + Bisqwit matrix + RGB PPU emphasis (#31)
@@ -66,14 +66,14 @@ We evaluated all 24 open Mesen2 PRs and applied 8 accuracy fixes:
 ### 🧪 1,495 Tests (was 659)
 - Exhaustive 65C02 CPU instruction tests
 - Lynx hardware reference tests (63), math unit (16), sprite (50+), fuzz (17)
-- Upstream Mesen2 fix verification
+- Upstream Nexen2 fix verification
 - TAS integration and movie converter tests
 
 ---
 
-## 📊 Since Forking from Mesen2
+## 📊 Since Forking from Nexen2
 
-| | Mesen2 | Nexen v1.2.0 |
+| | Nexen2 | Nexen v1.2.0 |
 | --- | --- | --- |
 | **Emulated systems** | 7 | **8** (+Atari Lynx) |
 | **Test suite** | 0 tests | **1,495 tests** |

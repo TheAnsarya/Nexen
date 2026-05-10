@@ -1,28 +1,28 @@
-# Mesen2 ↔ DiztinGUIsh Live Streaming - WORKING!
+# Nexen2 ↔ DiztinGUIsh Live Streaming - WORKING!
 
 ## ✅ Connection Test Results
 
-The TCP connection between Mesen2 server and DiztinGUIsh client **IS WORKING**!
+The TCP connection between Nexen2 server and DiztinGUIsh client **IS WORKING**!
 
-Test output from `~docs/Mesen2ConnectionTest`:
+Test output from `~docs/Nexen2ConnectionTest`:
 ```
-[MesenLiveTraceClient] ConnectAsync starting - Host: localhost, Port: 9998, Timeout: 5000ms
-[MesenLiveTraceClient] TcpClient created, attempting connection...
-[MesenLiveTraceClient] Connection successful! Getting network stream...
-[MesenLiveTraceClient] Starting receive loop...
-[MesenLiveTraceClient] ConnectAsync completed successfully!
-SUCCESS! Connected to Mesen2!
+[NexenLiveTraceClient] ConnectAsync starting - Host: localhost, Port: 9998, Timeout: 5000ms
+[NexenLiveTraceClient] TcpClient created, attempting connection...
+[NexenLiveTraceClient] Connection successful! Getting network stream...
+[NexenLiveTraceClient] Starting receive loop...
+[NexenLiveTraceClient] ConnectAsync completed successfully!
+SUCCESS! Connected to Nexen2!
 ```
 
 Port scan confirms:
-- Port 9998 is in use by Mesen (PID 15480)
+- Port 9998 is in use by Nexen (PID 15480)
 - TCP connection to localhost:9998 succeeds
 
 ## 🔧 How to Test Live Streaming
 
 ### Prerequisites
-1. **Mesen2 server must be running:**
-   - Launch: `c:\Users\me\source\repos\Mesen2\bin\win-x64\Release\Mesen.exe`
+1. **Nexen2 server must be running:**
+   - Launch: `c:\Users\me\source\repos\Nexen2\bin\win-x64\Release\Nexen.exe`
    - Load a ROM
    - Open Lua Console (Tools → Script Window)
    - Run: `emu.startDiztinguishServer(9998)`
@@ -32,17 +32,17 @@ Port scan confirms:
 
 ### Test #1: Connection Check (PowerShell)
 ```powershell
-cd c:\Users\me\source\repos\Mesen2\~docs
+cd c:\Users\me\source\repos\Nexen2\~docs
 .\test_connection_detailed.ps1
 ```
 This checks if port 9998 is listening and attempts a basic TCP connection.
 
 ### Test #2: Client Connection Test (Console App)
 ```powershell
-cd c:\Users\me\source\repos\DiztinGUIsh\~docs\Mesen2ConnectionTest
+cd c:\Users\me\source\repos\DiztinGUIsh\~docs\Nexen2ConnectionTest
 dotnet run
 ```
-This uses the actual `MesenLiveTraceClient` to connect and verifies the protocol works.
+This uses the actual `NexenLiveTraceClient` to connect and verifies the protocol works.
 
 ### Test #3: Full DiztinGUIsh UI Test
 ```powershell
@@ -52,17 +52,17 @@ dotnet run --project Diz.App.Winforms -c Release
 
 In DiztinGUIsh:
 1. File → New Project (or load existing)
-2. Mesen2 → Live Streaming
+2. Nexen2 → Live Streaming
 3. Enter: localhost, 9998
 4. Click Connect
 
-**Expected result:** Connection succeeds, live trace data streams from Mesen2 into DiztinGUIsh.
+**Expected result:** Connection succeeds, live trace data streams from Nexen2 into DiztinGUIsh.
 
 ## 📊 Enhanced Logging
 
 Both server (C++) and client (C#) now have detailed logging:
 
-**Mesen2 Server Logs** (in Mesen2 debugger console):
+**Nexen2 Server Logs** (in Nexen2 debugger console):
 ```
 [DiztinGUIsh] Enabled SNES debugger for streaming
 [DiztinGUIsh] Created socket, attempting to bind to port 9998...
@@ -78,32 +78,32 @@ Both server (C++) and client (C#) now have detailed logging:
 
 **DiztinGUIsh Client Logs** (Console.WriteLine):
 ```
-[MesenLiveTraceClient] ConnectAsync starting - Host: localhost, Port: 9998, Timeout: 5000ms
-[MesenLiveTraceClient] TcpClient created, attempting connection...
-[MesenLiveTraceClient] Connection successful! Getting network stream...
-[MesenLiveTraceClient] Starting receive loop...
-[MesenLiveTraceClient] ConnectAsync completed successfully!
+[NexenLiveTraceClient] ConnectAsync starting - Host: localhost, Port: 9998, Timeout: 5000ms
+[NexenLiveTraceClient] TcpClient created, attempting connection...
+[NexenLiveTraceClient] Connection successful! Getting network stream...
+[NexenLiveTraceClient] Starting receive loop...
+[NexenLiveTraceClient] ConnectAsync completed successfully!
 ```
 
 ## 🐛 If Connection Still Fails in UI
 
 1. **Check console output** - The logging will show exactly where it fails
-2. **Verify Mesen2 server is actually started** - Run the PowerShell test first
+2. **Verify Nexen2 server is actually started** - Run the PowerShell test first
 3. **Check for exceptions** - Look for stack traces in console
 4. **Verify project loaded** - DiztinGUIsh needs a project with ROM data loaded
 
 ## 📝 Files Modified
 
-**Mesen2 (C++):**
+**Nexen2 (C++):**
 - `Core/Debugger/DiztinguishBridge.cpp` - Added extensive logging to StartServer() and ServerThreadMain()
 
 **DiztinGUIsh (C#):**
-- `Diz.Import/src/mesen/tracelog/MesenLiveTraceClient.cs` - Added logging to ConnectAsync()
-- `Diz.Core/mesen2/Mesen2StreamingClient.cs` - Added logging (though this isn't used by import flow)
+- `Diz.Import/src/nexen/tracelog/NexenLiveTraceClient.cs` - Added logging to ConnectAsync()
+- `Diz.Core/nexen2/Nexen2StreamingClient.cs` - Added logging (though this isn't used by import flow)
 
 **Test Files:**
 - `~docs/test_connection_detailed.ps1` - PowerShell port/firewall check
-- `~docs/Mesen2ConnectionTest/` - Console app for testing client connection
+- `~docs/Nexen2ConnectionTest/` - Console app for testing client connection
 
 ## ✅ What's Fixed
 

@@ -1,17 +1,17 @@
-# Diagnostic script to check Mesen2 ↔ DiztinGUIsh live connection
+# Diagnostic script to check Nexen2 ↔ DiztinGUIsh live connection
 
-Write-Host "=== Mesen2 ↔ DiztinGUIsh Connection Diagnostics ===" -ForegroundColor Cyan
+Write-Host "=== Nexen2 ↔ DiztinGUIsh Connection Diagnostics ===" -ForegroundColor Cyan
 Write-Host ""
 
 # Check 1: Are both processes running?
 Write-Host "[1] Process Check:" -ForegroundColor Yellow
-$mesen = Get-Process -Name "Mesen" -ErrorAction SilentlyContinue
+$nexen = Get-Process -Name "Nexen" -ErrorAction SilentlyContinue
 $diz = Get-Process -Name "Diz.App.Winforms" -ErrorAction SilentlyContinue
 
-if ($mesen) {
-    Write-Host "  ✅ Mesen2 is running (PID: $($mesen.Id))" -ForegroundColor Green
+if ($nexen) {
+    Write-Host "  ✅ Nexen2 is running (PID: $($nexen.Id))" -ForegroundColor Green
 } else {
-    Write-Host "  ❌ Mesen2 is NOT running!" -ForegroundColor Red
+    Write-Host "  ❌ Nexen2 is NOT running!" -ForegroundColor Red
     exit
 }
 
@@ -31,8 +31,8 @@ if ($listening) {
     Write-Host "  ✅ Port 9998 is LISTENING (server started)" -ForegroundColor Green
 } else {
     Write-Host "  ❌ Port 9998 is NOT listening!" -ForegroundColor Red
-    Write-Host "     The Lua script may not be running in Mesen2." -ForegroundColor Yellow
-    Write-Host "     In Mesen2: Debug → Script Window → Load start_diztinguish_server.lua" -ForegroundColor Yellow
+    Write-Host "     The Lua script may not be running in Nexen2." -ForegroundColor Yellow
+    Write-Host "     In Nexen2: Debug → Script Window → Load start_diztinguish_server.lua" -ForegroundColor Yellow
 }
 
 Write-Host ""
@@ -45,7 +45,7 @@ if ($established) {
     Write-Host "     Remote: $($established.RemoteAddress):$($established.RemotePort)" -ForegroundColor Gray
 } else {
     Write-Host "  ❌ No ESTABLISHED connection on port 9998!" -ForegroundColor Red
-    Write-Host "     In DiztinGUIsh: Press Ctrl+F6 or menu → Connect to Mesen2" -ForegroundColor Yellow
+    Write-Host "     In DiztinGUIsh: Press Ctrl+F6 or menu → Connect to Nexen2" -ForegroundColor Yellow
 }
 
 Write-Host ""
@@ -68,19 +68,19 @@ catch {
 
 Write-Host ""
 
-# Check 5: Look for Mesen2 debug log (if it exists)
-Write-Host "[5] Checking for Mesen2 debug output:" -ForegroundColor Yellow
-$logPath = "$env:USERPROFILE\Documents\Mesen2\DebugLog.txt"
+# Check 5: Look for Nexen2 debug log (if it exists)
+Write-Host "[5] Checking for Nexen2 debug output:" -ForegroundColor Yellow
+$logPath = "$env:USERPROFILE\Documents\Nexen2\DebugLog.txt"
 if (Test-Path $logPath) {
     $recentLogs = Get-Content $logPath -Tail 10 | Where-Object { $_ -match "DiztinGUIsh" }
     if ($recentLogs) {
-        Write-Host "  Found recent DiztinGUIsh activity in Mesen2 log:" -ForegroundColor Green
+        Write-Host "  Found recent DiztinGUIsh activity in Nexen2 log:" -ForegroundColor Green
         $recentLogs | ForEach-Object { Write-Host "    $_" -ForegroundColor Gray }
     } else {
-        Write-Host "  ⚠️  No recent DiztinGUIsh activity in Mesen2 log" -ForegroundColor Yellow
+        Write-Host "  ⚠️  No recent DiztinGUIsh activity in Nexen2 log" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "  (No Mesen2 debug log found at $logPath)" -ForegroundColor Gray
+    Write-Host "  (No Nexen2 debug log found at $logPath)" -ForegroundColor Gray
 }
 
 Write-Host ""
@@ -88,21 +88,21 @@ Write-Host "=== Diagnostic Summary ===" -ForegroundColor Cyan
 
 # Provide guidance based on results
 if (-not $listening) {
-    Write-Host "🔴 ISSUE: Server not started in Mesen2" -ForegroundColor Red
-    Write-Host "   FIX: In Mesen2 → Debug → Script Window → Run start_diztinguish_server.lua" -ForegroundColor Yellow
+    Write-Host "🔴 ISSUE: Server not started in Nexen2" -ForegroundColor Red
+    Write-Host "   FIX: In Nexen2 → Debug → Script Window → Run start_diztinguish_server.lua" -ForegroundColor Yellow
 }
 elseif (-not $established) {
     Write-Host "🔴 ISSUE: DiztinGUIsh not connected" -ForegroundColor Red
-    Write-Host "   FIX: In DiztinGUIsh → Press Ctrl+F6 or menu → Connect to Mesen2" -ForegroundColor Yellow
+    Write-Host "   FIX: In DiztinGUIsh → Press Ctrl+F6 or menu → Connect to Nexen2" -ForegroundColor Yellow
 }
 else {
     Write-Host "✅ Connection appears healthy!" -ForegroundColor Green
     Write-Host ""
     Write-Host "If no data is flowing:" -ForegroundColor Yellow
-    Write-Host "  1. Make sure a ROM is loaded in Mesen2" -ForegroundColor Cyan
+    Write-Host "  1. Make sure a ROM is loaded in Nexen2" -ForegroundColor Cyan
     Write-Host "  2. Make sure the game is UNPAUSED (playing)" -ForegroundColor Cyan
-    Write-Host "  3. Check Mesen2 logs for 'Sent ExecTraceBatch' messages" -ForegroundColor Cyan
-    Write-Host "  4. Enable Debug → Show Log Window in Mesen2 to see real-time logs" -ForegroundColor Cyan
+    Write-Host "  3. Check Nexen2 logs for 'Sent ExecTraceBatch' messages" -ForegroundColor Cyan
+    Write-Host "  4. Enable Debug → Show Log Window in Nexen2 to see real-time logs" -ForegroundColor Cyan
 }
 
 Write-Host ""

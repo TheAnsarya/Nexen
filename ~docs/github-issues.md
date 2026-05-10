@@ -412,7 +412,7 @@ Complete documentation and prepare for upstream PR.
 - [ ] FAQ document
 - [ ] Troubleshooting guide
 - [ ] Release notes
-- [ ] Submit PR to SourMesen/Nexen
+- [ ] Submit PR to SourNexen/Nexen
 - [ ] Community announcement (Reddit, Discord)
 - [ ] Example .pansy files repository
 
@@ -500,7 +500,7 @@ Keep MLB (Nexen Label) files in sync with Pansy files.
 
 **Files:**
 
-- MOD: `UI/Debugger/Labels/MesenLabelFile.cs`
+- MOD: `UI/Debugger/Labels/NexenLabelFile.cs`
 - MOD: `UI/Debugger/Labels/PansyExporter.cs`
 - MOD: `UI/Debugger/Labels/DebugFolderManager.cs`
 

@@ -1,9 +1,9 @@
-# GitHub Issues Creation Script for Mesen2 DiztinGUIsh Integration
+# GitHub Issues Creation Script for Nexen2 DiztinGUIsh Integration
 # This script uses GitHub CLI (gh) to create all issues programmatically
 # Install GitHub CLI: https://cli.github.com/
 
 # Repository configuration
-$REPO = "TheAnsarya/Mesen2"
+$REPO = "TheAnsarya/Nexen2"
 $PROJECT_URL = "https://github.com/users/TheAnsarya/projects/4"
 
 # Check if gh is installed
@@ -19,7 +19,7 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-Write-Host "Creating GitHub issues for Mesen2 DiztinGUIsh Integration..." -ForegroundColor Green
+Write-Host "Creating GitHub issues for Nexen2 DiztinGUIsh Integration..." -ForegroundColor Green
 Write-Host "Repository: $REPO" -ForegroundColor Cyan
 Write-Host "Project Board: $PROJECT_URL" -ForegroundColor Cyan
 Write-Host ""
@@ -78,7 +78,7 @@ Write-Host ""
 
 # Epic #4: Real-Time Streaming Integration (HIGHEST PRIORITY)
 $epic4Body = @"
-Implement real-time bidirectional streaming integration between Mesen2 and DiztinGUIsh using TCP sockets. This enables live disassembly updates, execution trace streaming, CDL synchronization, and bidirectional debug control.
+Implement real-time bidirectional streaming integration between Nexen2 and DiztinGUIsh using TCP sockets. This enables live disassembly updates, execution trace streaming, CDL synchronization, and bidirectional debug control.
 
 ## Background
 
@@ -88,14 +88,14 @@ While CDL export/import and label exchange provide offline workflows, real-time 
 - Enabling bidirectional control (set breakpoints, push labels, request memory dumps)
 - Eliminating manual export/import steps
 
-Mesen2 already has robust socket infrastructure (\`Utilities/Socket.h\`) used for netplay, which can be leveraged for this integration.
+Nexen2 already has robust socket infrastructure (\`Utilities/Socket.h\`) used for netplay, which can be leveraged for this integration.
 
 **CRITICAL DISCOVERY:** DiztinGUIsh already has socket-based tracelog capture from their BSNES integration! This validates our entire approach and means we can reuse existing client infrastructure.
 
 ## Goals
 
-- Implement DiztinGUIsh Bridge server in Mesen2
-- Implement Mesen2 Client in DiztinGUIsh  
+- Implement DiztinGUIsh Bridge server in Nexen2
+- Implement Nexen2 Client in DiztinGUIsh  
 - Design and implement binary message protocol
 - Stream execution traces with CPU context (PC, opcode, M/X flags, DB/DP registers)
 - Stream memory access events for CDL generation
@@ -107,13 +107,13 @@ Mesen2 already has robust socket infrastructure (\`Utilities/Socket.h\`) used fo
 
 ## Success Criteria
 
-- [ ] Mesen2 can accept connections from DiztinGUIsh on configurable port
+- [ ] Nexen2 can accept connections from DiztinGUIsh on configurable port
 - [ ] Handshake protocol successfully negotiates protocol version and ROM
 - [ ] Execution traces stream in real-time at 15+ Hz (every 4 frames at 60 FPS)
 - [ ] M/X flag detection from traces achieves 95%+ accuracy
 - [ ] CDL data synchronizes correctly between tools
 - [ ] Labels can be pushed bidirectionally without data loss
-- [ ] Breakpoints set from DiztinGUIsh trigger correctly in Mesen2
+- [ ] Breakpoints set from DiztinGUIsh trigger correctly in Nexen2
 - [ ] Latency < 100ms for local connections
 - [ ] Bandwidth < 200 KB/s with default settings
 - [ ] No crashes or memory leaks in 24-hour connection test
@@ -176,7 +176,7 @@ Write-Host ""
 
 # Issue S1: DiztinGUIsh Bridge Infrastructure
 $s1Body = @"
-Create the core DiztinGUIsh Bridge component in Mesen2 that acts as a TCP server, accepting connections from DiztinGUIsh and managing the streaming session.
+Create the core DiztinGUIsh Bridge component in Nexen2 that acts as a TCP server, accepting connections from DiztinGUIsh and managing the streaming session.
 
 ## Tasks
 
@@ -220,7 +220,7 @@ Create the core DiztinGUIsh Bridge component in Mesen2 that acts as a TCP server
 $s1 = Create-Issue `
     -Title "[STREAMING] Create DiztinGUIsh Bridge server infrastructure" `
     -Body $s1Body `
-    -Labels @("enhancement", "mesen2", "streaming", "networking", "phase-1") `
+    -Labels @("enhancement", "nexen2", "streaming", "networking", "phase-1") `
     -Milestone "Phase 1 - Streaming Foundation"
 
 if ($s1) { $issueNumbers["S1"] = $s1 }
@@ -272,9 +272,9 @@ See \`streaming-integration.md\` for \`EXEC_TRACE\` message specification.
 "@
 
 $s2 = Create-Issue `
-    -Title "[STREAMING] Stream execution traces from Mesen2 to DiztinGUIsh" `
+    -Title "[STREAMING] Stream execution traces from Nexen2 to DiztinGUIsh" `
     -Body $s2Body `
-    -Labels @("enhancement", "mesen2", "streaming", "phase-1") `
+    -Labels @("enhancement", "nexen2", "streaming", "phase-1") `
     -Milestone "Phase 1 - Streaming Foundation"
 
 if ($s2) { $issueNumbers["S2"] = $s2 }
@@ -325,7 +325,7 @@ Stream memory access events (read/write/execute) to enable real-time CDL generat
 $s3 = Create-Issue `
     -Title "[STREAMING] Stream memory access events and CDL updates" `
     -Body $s3Body `
-    -Labels @("enhancement", "mesen2", "streaming", "cdl", "phase-1") `
+    -Labels @("enhancement", "nexen2", "streaming", "cdl", "phase-1") `
     -Milestone "Phase 1 - Streaming Foundation"
 
 if ($s3) { $issueNumbers["S3"] = $s3 }
@@ -333,7 +333,7 @@ Start-Sleep -Seconds 2
 
 # Issue S4: CPU State Snapshots
 $s4Body = @"
-Implement periodic CPU state snapshots to synchronize CPU context (registers, flags, stack) between Mesen2 and DiztinGUIsh.
+Implement periodic CPU state snapshots to synchronize CPU context (registers, flags, stack) between Nexen2 and DiztinGUIsh.
 
 ## Tasks
 
@@ -378,7 +378,7 @@ struct CpuStateSnapshot {
 $s4 = Create-Issue `
     -Title "[STREAMING] Implement CPU state snapshot streaming" `
     -Body $s4Body `
-    -Labels @("enhancement", "mesen2", "streaming", "phase-1") `
+    -Labels @("enhancement", "nexen2", "streaming", "phase-1") `
     -Milestone "Phase 1 - Streaming Foundation"
 
 if ($s4) { $issueNumbers["S4"] = $s4 }
@@ -386,7 +386,7 @@ Start-Sleep -Seconds 2
 
 # Issue S5: Label Bidirectional Sync
 $s5Body = @"
-Implement bidirectional label synchronization between Mesen2 and DiztinGUIsh, allowing labels to be created/updated in either tool and automatically synchronized.
+Implement bidirectional label synchronization between Nexen2 and DiztinGUIsh, allowing labels to be created/updated in either tool and automatically synchronized.
 
 ## Tasks
 
@@ -395,7 +395,7 @@ Implement bidirectional label synchronization between Mesen2 and DiztinGUIsh, al
 - [ ] Implement \`LABEL_UPDATE\` message type
 - [ ] Implement \`LABEL_DELETE\` message type
 - [ ] Implement \`LABEL_SYNC_REQUEST\` message type
-- [ ] Add label change detection in Mesen2
+- [ ] Add label change detection in Nexen2
 - [ ] Add label import from DiztinGUIsh
 - [ ] Handle label conflicts (same address, different name)
 - [ ] Add bulk label sync on connection
@@ -414,7 +414,7 @@ struct LabelMessage {
 ## Conflict Resolution
 
 - Newest timestamp wins
-- Option to prefer Mesen2 or DiztinGUIsh labels
+- Option to prefer Nexen2 or DiztinGUIsh labels
 - User prompt for important conflicts
 
 ## Files to Modify
@@ -433,7 +433,7 @@ struct LabelMessage {
 $s5 = Create-Issue `
     -Title "[STREAMING] Implement bidirectional label synchronization" `
     -Body $s5Body `
-    -Labels @("enhancement", "mesen2", "streaming", "labels", "phase-2") `
+    -Labels @("enhancement", "nexen2", "streaming", "labels", "phase-2") `
     -Milestone "Phase 2 - Synchronization"
 
 if ($s5) { $issueNumbers["S5"] = $s5 }
@@ -441,14 +441,14 @@ Start-Sleep -Seconds 2
 
 # Issue S6: Breakpoint Control
 $s6Body = @"
-Enable DiztinGUIsh to set and control breakpoints in Mesen2, allowing users to debug from the disassembly view.
+Enable DiztinGUIsh to set and control breakpoints in Nexen2, allowing users to debug from the disassembly view.
 
 ## Tasks
 
 - [ ] Implement \`BREAKPOINT_ADD\` message type
 - [ ] Implement \`BREAKPOINT_REMOVE\` message type
-- [ ] Implement \`BREAKPOINT_HIT\` message type (Mesen2 → DiztinGUIsh)
-- [ ] Add breakpoint registration in Mesen2
+- [ ] Implement \`BREAKPOINT_HIT\` message type (Nexen2 → DiztinGUIsh)
+- [ ] Add breakpoint registration in Nexen2
 - [ ] Add breakpoint removal
 - [ ] Send breakpoint hit notifications
 - [ ] Support execution and access breakpoints
@@ -465,9 +465,9 @@ Enable DiztinGUIsh to set and control breakpoints in Mesen2, allowing users to d
 ## Workflow
 
 1. User sets breakpoint in DiztinGUIsh disassembly view
-2. DiztinGUIsh sends \`BREAKPOINT_ADD\` to Mesen2
-3. Mesen2 registers breakpoint
-4. When hit, Mesen2 pauses and sends \`BREAKPOINT_HIT\`
+2. DiztinGUIsh sends \`BREAKPOINT_ADD\` to Nexen2
+3. Nexen2 registers breakpoint
+4. When hit, Nexen2 pauses and sends \`BREAKPOINT_HIT\`
 5. DiztinGUIsh highlights line and shows CPU state
 
 ## Files to Modify
@@ -486,7 +486,7 @@ Enable DiztinGUIsh to set and control breakpoints in Mesen2, allowing users to d
 $s6 = Create-Issue `
     -Title "[STREAMING] Enable breakpoint control from DiztinGUIsh" `
     -Body $s6Body `
-    -Labels @("enhancement", "mesen2", "streaming", "debugging", "phase-2") `
+    -Labels @("enhancement", "nexen2", "streaming", "debugging", "phase-2") `
     -Milestone "Phase 2 - Synchronization"
 
 if ($s6) { $issueNumbers["S6"] = $s6 }
@@ -494,7 +494,7 @@ Start-Sleep -Seconds 2
 
 # Issue S7: Memory Dump Requests
 $s7Body = @"
-Allow DiztinGUIsh to request memory dumps from Mesen2 for analysis without requiring file export/import.
+Allow DiztinGUIsh to request memory dumps from Nexen2 for analysis without requiring file export/import.
 
 ## Tasks
 
@@ -544,15 +544,15 @@ struct MemoryDumpResponse {
 $s7 = Create-Issue `
     -Title "[STREAMING] Implement memory dump request/response" `
     -Body $s7Body `
-    -Labels @("enhancement", "mesen2", "streaming", "memory", "phase-3") `
+    -Labels @("enhancement", "nexen2", "streaming", "memory", "phase-3") `
     -Milestone "Phase 3 - Advanced Features"
 
 if ($s7) { $issueNumbers["S7"] = $s7 }
 Start-Sleep -Seconds 2
 
-# Issue S8: Connection UI in Mesen2
+# Issue S8: Connection UI in Nexen2
 $s8Body = @"
-Add user interface in Mesen2 for managing the DiztinGUIsh connection.
+Add user interface in Nexen2 for managing the DiztinGUIsh connection.
 
 ## Tasks
 
@@ -596,9 +596,9 @@ Debugger Menu
 "@
 
 $s8 = Create-Issue `
-    -Title "[STREAMING] Add connection UI in Mesen2" `
+    -Title "[STREAMING] Add connection UI in Nexen2" `
     -Body $s8Body `
-    -Labels @("enhancement", "mesen2", "ui", "streaming", "phase-3") `
+    -Labels @("enhancement", "nexen2", "ui", "streaming", "phase-3") `
     -Milestone "Phase 3 - Polish"
 
 if ($s8) { $issueNumbers["S8"] = $s8 }
@@ -606,15 +606,15 @@ Start-Sleep -Seconds 2
 
 # Issue S9: DiztinGUIsh Client Implementation
 $s9Body = @"
-Implement Mesen2 client in DiztinGUIsh to connect to Mesen2's streaming server.
+Implement Nexen2 client in DiztinGUIsh to connect to Nexen2's streaming server.
 
 **NOTE:** This issue is for the DiztinGUIsh repository, but tracked here for visibility.
 
 ## Tasks
 
-- [ ] Create \`Diz.Import.Mesen\` project
-- [ ] Implement \`MesenProtocol.cs\` (message definitions)
-- [ ] Implement \`MesenLiveTraceClient.cs\` (TCP client)
+- [ ] Create \`Diz.Import.Nexen\` project
+- [ ] Implement \`NexenProtocol.cs\` (message definitions)
+- [ ] Implement \`NexenLiveTraceClient.cs\` (TCP client)
 - [ ] Implement message decoder
 - [ ] Process \`EXEC_TRACE\` messages → update IData
 - [ ] Process \`CDL_UPDATE\` messages → update CDL
@@ -633,14 +633,14 @@ Leverage existing DiztinGUIsh BSNES socket integration pattern.
 
 ## Files to Create
 
-- \`Diz.Import.Mesen/MesenLiveTraceClient.cs\`
-- \`Diz.Import.Mesen/MesenProtocol.cs\`
-- \`Diz.Import.Mesen/MesenConnectionDialog.cs\`
-- \`Diz.Import.Mesen/ServiceRegistration.cs\`
+- \`Diz.Import.Nexen/NexenLiveTraceClient.cs\`
+- \`Diz.Import.Nexen/NexenProtocol.cs\`
+- \`Diz.Import.Nexen/NexenConnectionDialog.cs\`
+- \`Diz.Import.Nexen/ServiceRegistration.cs\`
 
 ## Files to Modify
 
-- \`Diz.Controllers/controllers/IProjectController.cs\` (add Mesen connection)
+- \`Diz.Controllers/controllers/IProjectController.cs\` (add Nexen connection)
 
 **Epic:** #$($issueNumbers["Epic4"])  
 **Repository:** IsoFrieze/DiztinGUIsh
@@ -650,7 +650,7 @@ Leverage existing DiztinGUIsh BSNES socket integration pattern.
 "@
 
 $s9 = Create-Issue `
-    -Title "[STREAMING] Implement Mesen2 client in DiztinGUIsh" `
+    -Title "[STREAMING] Implement Nexen2 client in DiztinGUIsh" `
     -Body $s9Body `
     -Labels @("enhancement", "diztinguish", "streaming", "phase-1") `
     -Milestone "Phase 1 - Streaming Foundation"
@@ -660,7 +660,7 @@ Start-Sleep -Seconds 2
 
 # Issue S10: Integration Testing and Documentation
 $s10Body = @"
-Create comprehensive integration tests and user documentation for the Mesen2-DiztinGUIsh streaming integration.
+Create comprehensive integration tests and user documentation for the Nexen2-DiztinGUIsh streaming integration.
 
 ## Tasks
 

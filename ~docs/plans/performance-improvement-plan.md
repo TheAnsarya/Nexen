@@ -24,7 +24,7 @@ User reports while playing Dragon Warrior 4 (NES):
 - **Estimated overhead: 30-50% CPU slowdown**
 - **Status: FIXED** — Default changed to `false`, config upgrade now sets `false` instead of `true`
 
-### Finding 2 (HIGH — Mesen2): Audio buffer overflow at turbo speed
+### Finding 2 (HIGH — Nexen2): Audio buffer overflow at turbo speed
 
 - `SoundMixer::PlayAudioBuffer` has no handling for speed > 100%
 - Pitch adjustment only handles speed < 100% (slow-motion)
@@ -32,7 +32,7 @@ User reports while playing Dragon Warrior 4 (NES):
 - `SoundResampler` disables rate feedback when speed != 100%
 - Buffer health monitoring disabled when speed > 100%
 
-### Finding 3 (HIGH — Mesen2): VideoDecoder spin-wait caps emulation speed
+### Finding 3 (HIGH — Nexen2): VideoDecoder spin-wait caps emulation speed
 
 - `VideoDecoder::UpdateFrame()` busy-spins `while (_frameChanged) {}` with NO sleep/yield
 - If video decode thread is slow, emulation thread burns CPU waiting
@@ -46,12 +46,12 @@ User reports while playing Dragon Warrior 4 (NES):
 - Each save can take 5-15ms (NES frame = 16.7ms)
 - **Partial fix applied:** SaveVideoData compression level reduced from 6 to 1
 
-### Finding 5 (MEDIUM — Mesen2): Rewind buffer overhead at turbo
+### Finding 5 (MEDIUM — Nexen2): Rewind buffer overhead at turbo
 
 - Records full savestate every 30 frames (always active if buffer > 0)
 - At 3x speed, fires 3x more often in real-time
 
-### Finding 6 (LOW — Mesen2): Audio effects chain runs at turbo speed
+### Finding 6 (LOW — Nexen2): Audio effects chain runs at turbo speed
 
 - Full effects pipeline (resampling, EQ, reverb, crossfeed) runs for every audio frame
 - At 3x speed, this is 3x the effects processing per real-time second

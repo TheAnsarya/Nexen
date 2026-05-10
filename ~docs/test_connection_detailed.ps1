@@ -1,8 +1,8 @@
-# Detailed Mesen2 <-> DiztinGUIsh Connection Test
-# This script tests the TCP connection between Mesen2 server and DiztinGUIsh client
+# Detailed Nexen2 <-> DiztinGUIsh Connection Test
+# This script tests the TCP connection between Nexen2 server and DiztinGUIsh client
 
 Write-Host "=====================================" -ForegroundColor Cyan
-Write-Host "Mesen2 Connection Test - Detailed" -ForegroundColor Cyan
+Write-Host "Nexen2 Connection Test - Detailed" -ForegroundColor Cyan
 Write-Host "=====================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -25,7 +25,7 @@ if ($firewallRule) {
 } else {
     Write-Host "    WARNING: No firewall rule found - connection might be blocked" -ForegroundColor Red
     Write-Host "    Run this as Admin to create rule:" -ForegroundColor Yellow
-    Write-Host "    New-NetFirewallRule -DisplayName 'Mesen2 DiztinGUIsh' -Direction Inbound -LocalPort 9998 -Protocol TCP -Action Allow" -ForegroundColor Gray
+    Write-Host "    New-NetFirewallRule -DisplayName 'Nexen2 DiztinGUIsh' -Direction Inbound -LocalPort 9998 -Protocol TCP -Action Allow" -ForegroundColor Gray
 }
 Write-Host ""
 
@@ -43,7 +43,7 @@ try {
         $tcpClient.Close()
     } else {
         Write-Host "    ✗ Connection FAILED - timeout or refused" -ForegroundColor Red
-        Write-Host "    This means Mesen2 server is NOT listening on port 9998" -ForegroundColor Red
+        Write-Host "    This means Nexen2 server is NOT listening on port 9998" -ForegroundColor Red
     }
     $tcpClient.Dispose()
 } catch {
@@ -54,11 +54,11 @@ Write-Host ""
 
 # Step 4: Instructions
 Write-Host "[4] Next Steps:" -ForegroundColor Cyan
-Write-Host "    1. Launch Mesen2: c:\Users\me\source\repos\Mesen2\bin\win-x64\Release\Mesen.exe" -ForegroundColor White
-Write-Host "    2. Load a ROM in Mesen2" -ForegroundColor White
+Write-Host "    1. Launch Nexen2: c:\Users\me\source\repos\Nexen2\bin\win-x64\Release\Nexen.exe" -ForegroundColor White
+Write-Host "    2. Load a ROM in Nexen2" -ForegroundColor White
 Write-Host "    3. Open Lua Console (Tools -> Script Window)" -ForegroundColor White
 Write-Host "    4. Run: emu.startDiztinguishServer(9998)" -ForegroundColor White
-Write-Host "    5. Check Mesen2 log for: '[DiztinGUIsh] Server started successfully on port 9998'" -ForegroundColor White
+Write-Host "    5. Check Nexen2 log for: '[DiztinGUIsh] Server started successfully on port 9998'" -ForegroundColor White
 Write-Host "    6. Re-run this script to verify server is listening" -ForegroundColor White
 Write-Host ""
 Write-Host "    After server starts, you should see:" -ForegroundColor White

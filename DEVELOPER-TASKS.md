@@ -1,4 +1,4 @@
-﻿# Developer Tasks and Current Priorities
+# Developer Tasks and Current Priorities
 
 Issue linkage: [#1305](https://github.com/TheAnsarya/Nexen/issues/1305)
 
@@ -15,7 +15,7 @@ These are the open issues and active tracks:
 - Cross-emulator differential testing harness: [#1017](https://github.com/TheAnsarya/Nexen/issues/1017)
 - Sega Genesis / Mega Drive implementation: [Epic #801](https://github.com/TheAnsarya/Nexen/issues/801)
 - Sega Genesis emulation hardening: [Epic #754](https://github.com/TheAnsarya/Nexen/issues/754)
-- Replace Mesen icons with Nexen graphics: [#169](https://github.com/TheAnsarya/Nexen/issues/169)
+- Replace Nexen icons with Nexen graphics: [#169](https://github.com/TheAnsarya/Nexen/issues/169)
 - Future-work index (program-level map): [docs/FUTURE-WORK.md](docs/FUTURE-WORK.md)
 
 ### Completed tracks (archived)

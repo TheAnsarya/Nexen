@@ -14,7 +14,7 @@ def test_detailed_handshake():
     
     sock = None
     try:
-        # Connect to Mesen2 DiztinGUIsh server
+        # Connect to Nexen2 DiztinGUIsh server
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(10.0)  # Longer timeout
         
@@ -131,8 +131,8 @@ def main():
     else:
         print("🏁 FAILURE: Handshake protocol still not working")
         print("\n💡 Troubleshooting suggestions:")
-        print("   1. Check if DiztinGUIsh server is actually started in Mesen2")
-        print("   2. Look at Mesen2 logs for any error messages")
+        print("   1. Check if DiztinGUIsh server is actually started in Nexen2")
+        print("   2. Look at Nexen2 logs for any error messages")
         print("   3. Verify the server is listening properly")
         print("   4. Check if our fix was compiled correctly")
     print("=" * 70)

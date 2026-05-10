@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 DiztinGUIsh Protocol Handshake Diagnostics
-Comprehensive testing of Mesen2 -> DiztinGUIsh protocol
+Comprehensive testing of Nexen2 -> DiztinGUIsh protocol
 """
 import socket
 import struct
@@ -35,8 +35,8 @@ def test_connection_only():
             return True
         else:
             print(f"❌ Connection failed: {result}")
-            print("   Make sure Mesen2 is running and DiztinGUIsh server is started")
-            print("   In Mesen2 console, run: emu.startDiztinguishServer(9998)")
+            print("   Make sure Nexen2 is running and DiztinGUIsh server is started")
+            print("   In Nexen2 console, run: emu.startDiztinguishServer(9998)")
             return False
     except Exception as e:
         print(f"❌ Connection error: {e}")
@@ -151,7 +151,7 @@ def run_diagnostics():
     if not test_connection_only():
         print("\n❌ Cannot connect to server. Stopping tests.")
         print("Instructions:")
-        print("1. Start Mesen2")
+        print("1. Start Nexen2")
         print("2. Open console (F9 or Debug > Console)")
         print("3. Type: emu.startDiztinguishServer(9998)")
         print("4. Re-run this test")
@@ -168,7 +168,7 @@ def run_diagnostics():
     
     print("\n=== SUMMARY ===")
     print("If tests show server immediately sends handshake:")
-    print("  → Server-initiated protocol (Mesen sends first)")
+    print("  → Server-initiated protocol (Nexen sends first)")
     print("If tests show server waits for client:")
     print("  → Client-initiated protocol (DiztinGUIsh sends first)")
     print("Either way, we can now see the exact protocol flow!")

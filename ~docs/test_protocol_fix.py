@@ -111,7 +111,7 @@ def test_corrected_protocol():
         
     except ConnectionRefusedError:
         print("❌ Connection refused - DiztinGUIsh server not running")
-        print("Start Mesen2 and run: emu.startDiztinguishServer(9998)")
+        print("Start Nexen2 and run: emu.startDiztinguishServer(9998)")
         return False
     except Exception as e:
         print(f"❌ Error: {e}")
@@ -130,6 +130,6 @@ if __name__ == "__main__":
     else:
         print("\n❌ Protocol test failed.")
         print("Check that:")
-        print("1. Mesen2 is running")  
+        print("1. Nexen2 is running")  
         print("2. DiztinGUIsh server is started: emu.startDiztinguishServer(9998)")
         print("3. The updated C++ code is compiled and running")

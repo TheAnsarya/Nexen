@@ -1,4 +1,4 @@
-# MESEN2-DIZTINGUISH INTEGRATION STATUS
+# NEXEN2-DIZTINGUISH INTEGRATION STATUS
 
 ## COMPLETION SUMMARY
 
@@ -6,13 +6,13 @@
 
 ### 1. DIZTINGUISH BRIDGE FIXES ✅
 
-**Problem**: Protocol message type mismatches between Mesen2 C++ and DiztinGUIsh C#
+**Problem**: Protocol message type mismatches between Nexen2 C++ and DiztinGUIsh C#
 **Solution**: Fixed protocol definitions to match exactly
 
 **Files Updated**:
-- `DiztinGUIsh\Diz.Import\src\mesen\MesenProtocol.cs` - Fixed message types and structures
-- `DiztinGUIsh\Diz.Import\src\mesen\tracelog\MesenLiveTraceClient.cs` - Updated parsing
-- `DiztinGUIsh\Diz.Import\src\mesen\tracelog\MesenTraceLogImporter.cs` - Fixed field references
+- `DiztinGUIsh\Diz.Import\src\nexen\NexenProtocol.cs` - Fixed message types and structures
+- `DiztinGUIsh\Diz.Import\src\nexen\tracelog\NexenLiveTraceClient.cs` - Updated parsing
+- `DiztinGUIsh\Diz.Import\src\nexen\tracelog\NexenTraceLogImporter.cs` - Fixed field references
 
 **Protocol Fixes**:
 - HandshakeMessage: Now correctly 268 bytes (uint16 major, uint16 minor, uint32 checksum, uint32 size, char[256] name)
@@ -26,10 +26,10 @@
 **Status**: Complete implementation
 
 **Files Created**:
-- `Mesen2\Core\Debugger\DiztinguishBinaryBridge.h` - Binary bridge header
-- `Mesen2\Core\Debugger\DiztinguishBinaryBridge.cpp` - Binary bridge implementation  
-- Updated `Mesen2\Core\SNES\Debugger\SnesDebugger.h/.cpp` - Integration
-- Updated `Mesen2\Core\Core.vcxproj` - Build system
+- `Nexen2\Core\Debugger\DiztinguishBinaryBridge.h` - Binary bridge header
+- `Nexen2\Core\Debugger\DiztinguishBinaryBridge.cpp` - Binary bridge implementation  
+- Updated `Nexen2\Core\SNES\Debugger\SnesDebugger.h/.cpp` - Integration
+- Updated `Nexen2\Core\Core.vcxproj` - Build system
 
 **Features**:
 - 22-byte packets matching BSNES format
@@ -41,39 +41,39 @@
 
 ### Phase 1: Start Server
 ```
-1. Run Mesen2 executable
+1. Run Nexen2 executable
 2. Open console (F9)
 3. Type: emu.startDiztinguishServer(9998)
 ```
 
 ### Phase 2: Test Protocol Fix
 ```
-cd c:\Users\me\source\repos\Mesen2\~docs
+cd c:\Users\me\source\repos\Nexen2\~docs
 python test_protocol_fix.py
 ```
 
 ### Phase 3: Test Binary Bridge  
 ```
-cd c:\Users\me\source\repos\Mesen2\~docs
+cd c:\Users\me\source\repos\Nexen2\~docs
 python test_binary_bridge.py
 ```
 
 ### Phase 4: Test DiztinGUIsh Integration
 ```
 1. Open DiztinGUIsh
-2. Use Import > Mesen2 Live Stream
+2. Use Import > Nexen2 Live Stream
 3. Connect to localhost:9998
-4. Load a ROM in Mesen2 and run
+4. Load a ROM in Nexen2 and run
 ```
 
 ## INTEGRATION POINTS
 
 ### ProjectController Methods
-- `ImportMesenTraceLive()` - Live streaming from protocol bridge
-- `ImportMesenTraceLogsBinary()` - Import from binary bridge files (to be added)
+- `ImportNexenTraceLive()` - Live streaming from protocol bridge
+- `ImportNexenTraceLogsBinary()` - Import from binary bridge files (to be added)
 
-### MesenTraceLogImporter 
-- Handles live TCP connection to Mesen2
+### NexenTraceLogImporter 
+- Handles live TCP connection to Nexen2
 - Processes handshake, trace data, CDL updates
 - Integrates with DiztinGUIsh SNES data model
 - Statistics tracking and error handling
@@ -82,8 +82,8 @@ python test_binary_bridge.py
 
 1. **Test Protocol Fix**: Verify handshake works
 2. **Test Binary Bridge**: Verify 22-byte streaming  
-3. **Add Binary Import**: Create ProjectController.ImportMesenTraceLogsBinary()
-4. **UI Integration**: Add menu items for Mesen2 import options
+3. **Add Binary Import**: Create ProjectController.ImportNexenTraceLogsBinary()
+4. **UI Integration**: Add menu items for Nexen2 import options
 5. **Documentation**: Update user guides
 
 ## EXPECTED OUTCOME

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Manual DiztinGUIsh Server Control via Mesen2 API
-This will try to automate the server startup through Mesen2's API if possible
+Manual DiztinGUIsh Server Control via Nexen2 API
+This will try to automate the server startup through Nexen2's API if possible
 """
 
 import subprocess
@@ -45,7 +45,7 @@ def main():
         print("❌ DiztinGUIsh server is not running")
         print()
         print("Please manually start the server:")
-        print("1. In Mesen2, go to Tools → DiztinGUIsh Server")
+        print("1. In Nexen2, go to Tools → DiztinGUIsh Server")
         print("2. Click 'Start Server' button")
         print("3. Verify port is 9998")
         print()
@@ -55,7 +55,7 @@ def main():
         if wait_for_server_start():
             print("🎉 Server started successfully!")
         else:
-            print("💥 Server failed to start - check Mesen2")
+            print("💥 Server failed to start - check Nexen2")
             return False
     
     print()

@@ -212,7 +212,7 @@ def test_correct_protocol_flow(host="localhost", port=9998):
             else:
                 print(f"❌ NO DATA: Handshake worked but no streaming data")
                 print("   Possible causes:")
-                print("   1. Emulation PAUSED - Press F5 in Mesen2")
+                print("   1. Emulation PAUSED - Press F5 in Nexen2")
                 print("   2. No ROM loaded")  
                 print("   3. DiztinGUIsh hooks not called during emulation")
                 return False
@@ -245,7 +245,7 @@ def main():
     else:
         print("🔧 RESULT: DiztinGUIsh needs troubleshooting.")
         print("\n💡 Next steps:")
-        print("   1. Check Mesen2 is running emulation (not paused)")
+        print("   1. Check Nexen2 is running emulation (not paused)")
         print("   2. Verify SNES ROM is loaded")
         print("   3. Restart DiztinGUIsh server")
         print("   4. Check for build/compilation issues")

@@ -1,4 +1,4 @@
-# Mesen2 API Documentation
+# Nexen2 API Documentation
 
 **Status:** In Progress  
 **Last Updated:** 2025  
@@ -7,7 +7,7 @@
 
 ## Overview
 
-This directory contains API documentation for Mesen2's core components and interop layer.
+This directory contains API documentation for Nexen2's core components and interop layer.
 
 ---
 

@@ -6,7 +6,7 @@
 
 ## 🎯 **Mission Accomplished**
 
-> **"Connect diztinguish and mesen so we can use mesen for live tracing in diztinguish"**
+> **"Connect diztinguish and nexen so we can use nexen for live tracing in diztinguish"**
 
 ✅ **COMPLETE** - Live SNES trace streaming infrastructure is fully implemented and ready for testing!
 
@@ -14,7 +14,7 @@
 
 ## 📊 **What We Built (Total: ~6,000 Lines of Code)**
 
-### **Phase 1: Mesen2 Server (Session 1)**
+### **Phase 1: Nexen2 Server (Session 1)**
 - ✅ **DiztinguishBridge.cpp/h** (850 lines) - TCP server with thread-safe queue
 - ✅ **DiztinguishProtocol.h** (15 message types) - Binary protocol specification
 - ✅ **Integration hooks** - CPU execution, CDL tracking, frame boundaries
@@ -27,9 +27,9 @@
 - ✅ **Lua API** (3 functions) - emu.startDiztinguishServer(), stop, status
 
 ### **Phase 3: C# Client Integration (Current Session) - BREAKTHROUGH!**
-- ✅ **MesenLiveTraceClient.cs** (400+ lines) - Async TCP client with event system
-- ✅ **MesenProtocol.cs** (150+ lines) - Complete binary protocol parsing
-- ✅ **MesenTraceLogImporter.cs** (500+ lines) - DiztinGUIsh integration
+- ✅ **NexenLiveTraceClient.cs** (400+ lines) - Async TCP client with event system
+- ✅ **NexenProtocol.cs** (150+ lines) - Complete binary protocol parsing
+- ✅ **NexenTraceLogImporter.cs** (500+ lines) - DiztinGUIsh integration
 - ✅ **Demo application** (250+ lines) - Standalone testing tool
 - ✅ **Comprehensive documentation** (1,500+ lines) - BUILD.md, README.md, examples
 
@@ -39,7 +39,7 @@
 
 ```
 ┌─────────────────┐    TCP/IP     ┌─────────────────────┐
-│     Mesen2      │◄─────────────►│    DiztinGUIsh     │
+│     Nexen2      │◄─────────────►│    DiztinGUIsh     │
 │   SNES Emulator │   Port 9998   │   Disassembler      │
 │                 │               │                     │
 │ ┌─────────────┐ │               │ ┌─────────────────┐ │
@@ -95,7 +95,7 @@
 ## 🚀 **Ready for Production**
 
 ### **What Works Now:**
-1. **Mesen2 Server** - Ready to stream (needs compilation)
+1. **Nexen2 Server** - Ready to stream (needs compilation)
 2. **Protocol** - Complete binary format with all message types
 3. **C# Client** - Builds successfully, handles all message types
 4. **Demo App** - Can connect and display live statistics
@@ -103,12 +103,12 @@
 
 ### **Usage Flow:**
 ```csharp
-// 1. Start Mesen2 server
-// In Mesen2 Script Window:
+// 1. Start Nexen2 server
+// In Nexen2 Script Window:
 emu.startDiztinguishServer(9998)
 
 // 2. Connect from DiztinGUIsh
-var importer = new MesenTraceLogImporter(project.Data.GetSnesApi());
+var importer = new NexenTraceLogImporter(project.Data.GetSnesApi());
 await importer.ConnectAsync("localhost", 9998);
 
 // 3. Live updates happen automatically!
@@ -140,21 +140,21 @@ await importer.ConnectAsync("localhost", 9998);
 
 ### **1. IMMEDIATE: Test End-to-End (1-2 hours)**
 ```bash
-# Need Visual Studio to compile Mesen2
+# Need Visual Studio to compile Nexen2
 # Once compiled:
-1. Load SNES ROM in Mesen2
+1. Load SNES ROM in Nexen2
 2. Run: emu.startDiztinguishServer(9998)
-3. Run: dotnet run --project demo/MesenDemo.csproj --host localhost
+3. Run: dotnet run --project demo/NexenDemo.csproj --host localhost
 4. Verify: Traces, CDL, frames streaming correctly
 ```
 
 ### **2. CRITICAL: DiztinGUIsh Integration (4-6 hours)**
 ```csharp
 // Add to DiztinGUIsh solution:
-1. Copy Diz.Import.Mesen to DiztinGUIsh/
+1. Copy Diz.Import.Nexen to DiztinGUIsh/
 2. Add project reference to main solution
-3. Update ProjectController with Mesen support
-4. Add UI menu: "Import → Mesen2 Live Stream..."
+3. Update ProjectController with Nexen support
+4. Add UI menu: "Import → Nexen2 Live Stream..."
 5. Test with real ROM
 ```
 
@@ -173,7 +173,7 @@ await importer.ConnectAsync("localhost", 9998);
 
 ### **Files Created This Session:**
 ```
-C++/Lua (Mesen2):
+C++/Lua (Nexen2):
 - CPU execution hooks: 26 lines
 - CDL integration: 7 lines  
 - Frame tracking: 19 lines
@@ -210,9 +210,9 @@ GRAND TOTAL: 2,790 lines this session
 ## 🏆 **Success Criteria - ACHIEVED!**
 
 ### **Original Goals:**
-- ✅ **"Connect DiztinGUIsh and Mesen"** - TCP streaming implemented
+- ✅ **"Connect DiztinGUIsh and Nexen"** - TCP streaming implemented
 - ✅ **"Live tracing in DiztinGUIsh"** - Real-time disassembly updates
-- ✅ **"Use Mesen for live tracing"** - CPU hooks capture everything
+- ✅ **"Use Nexen for live tracing"** - CPU hooks capture everything
 
 ### **Technical Requirements:**
 - ✅ **High performance** - Handles 1.79M traces/sec
@@ -231,7 +231,7 @@ GRAND TOTAL: 2,790 lines this session
 
 ## 🎉 **Final Status: MISSION ACCOMPLISHED**
 
-> **We have successfully implemented a complete live SNES trace streaming system from Mesen2 to DiztinGUIsh!**
+> **We have successfully implemented a complete live SNES trace streaming system from Nexen2 to DiztinGUIsh!**
 
 **The vision is now reality:**
 - ⚡ **Real-time streaming** - 1.79M CPU instructions/sec
@@ -240,7 +240,7 @@ GRAND TOTAL: 2,790 lines this session
 - 🛠️ **Professional quality** - Thread-safe, high-performance, documented
 
 **Ready for:**
-- 🧪 **Testing** with compiled Mesen2
+- 🧪 **Testing** with compiled Nexen2
 - 🔗 **Integration** with DiztinGUIsh codebase
 - 👥 **Community use** by ROM hackers and researchers
 - 📈 **Future enhancements** (label sync, breakpoints, etc.)

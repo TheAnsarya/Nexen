@@ -1,6 +1,6 @@
 # Atari Lynx Implementation — Comprehensive Audit Report
 
-> **Scope:** All Lynx-related code in the Nexen project (Mesen2 fork)
+> **Scope:** All Lynx-related code in the Nexen project (Nexen2 fork)
 > **Date:** 2026-02-16 | **Last re-audit:** 2026-04-05
 > **Files audited:** ~70 files across `Core/Lynx/`, `Core.Tests/Lynx/`, `Core.Benchmarks/Lynx/`, `UI/Interop/`, `MovieConverter.Tests/`
 
@@ -267,7 +267,7 @@
 - **9 buttons:** Up, Down, Left, Right, A, B, Option1, Option2, Pause
 - **Active-low encoding** (bits cleared when pressed)
 - **TAS button names:** `"UDLRabOoP"` — compact representation for movie files
-- **Turbo support** via Mesen's standard turbo framework
+- **Turbo support** via Nexen's standard turbo framework
 - **InputHud drawing:** Custom drawing for on-screen display
 - **Left-handed mode:** Suzy SPRSYS bit 3 (LeftHand) — I/O pin swap happens at hardware level
 
@@ -295,7 +295,7 @@
 - **Operations:** Read, Write, Erase, ERAL (erase all), WRAL (write all), EWEN/EWDS
 - **Wired through Mikey I/O:** IODIR/IODAT registers (`$FD88`/`$FD89`)
 - **Auto-detection:** From LNX header byte 60 or game database
-- **Battery save/load:** Integration with Mesen's save system
+- **Battery save/load:** Integration with Nexen's save system
 
 ### RSA Decryption (LynxDecrypt)
 
@@ -424,7 +424,7 @@ Every component properly implements `Serialize()`:
 
 ## 14. UI Integration
 
-**Status: Complete — fully integrated with Mesen2 UI framework**
+**Status: Complete — fully integrated with Nexen2 UI framework**
 
 ### Enums & Types (registered in shared headers)
 
@@ -576,11 +576,11 @@ All bugs have corresponding test cases in `LynxHardwareBugsTests.cpp`.
 
 **The Atari Lynx implementation is remarkably thorough and production-ready.** Key strengths:
 
-1. **Hardware accuracy:** All documented hardware bugs emulated and tested. The emulation closely follows the Handy reference implementation while adding modern Mesen2 integration.
+1. **Hardware accuracy:** All documented hardware bugs emulated and tested. The emulation closely follows the Handy reference implementation while adding modern Nexen2 integration.
 
 2. **Code quality:** Extensive inline documentation referencing hardware manual sections (§ numbers). Every UART status bit, every sprite type, every math register quirk is commented with its hardware reference.
 
-3. **Complete debugger suite:** All standard Mesen2 debugger features are present — breakpoints, callstack, CDL, trace logger, event viewer, PPU tools, assembler.
+3. **Complete debugger suite:** All standard Nexen2 debugger features are present — breakpoints, callstack, CDL, trace logger, event viewer, PPU tools, assembler.
 
 4. **Thorough serialization:** Every register of every subsystem is saved/restored, including the 32-entry UART RX queue and all 16 pen index remap entries.
 

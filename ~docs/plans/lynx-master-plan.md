@@ -10,7 +10,7 @@
 
 ## 1. Executive Summary
 
-This document is the master plan for adding **first-class Atari Lynx emulation** to Nexen. The Lynx is an ideal system to differentiate Nexen from its Mesen2 predecessor:
+This document is the master plan for adding **first-class Atari Lynx emulation** to Nexen. The Lynx is an ideal system to differentiate Nexen from its Nexen2 predecessor:
 
 - **No independent emulator exists** — every Lynx emulator traces to K. Wilkins' 1996 Handy codebase
 - **Relatively simple hardware** — 65C02 CPU, two custom chips (Mikey + Suzy), 64KB RAM, 160×102 display
