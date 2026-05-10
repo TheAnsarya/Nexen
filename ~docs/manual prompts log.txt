@@ -1,4 +1,4 @@
-
+﻿
 
 Add all markdown documentation to `\docs\` and subfolders based on category and document our changes and API here starting with a `README.md`; create session logs in `\~docs\session_logs\` and chat logs in `\~docs\chat_logs\`; research and analyze the project and create todo lists, documentation, and github hub issues for implementing a connection to DiztinGUIsh `https://github.com/IsoFrieze/DiztinGUIsh` which is also a local project at `C:\Users\me\source\repos\DiztinGUIsh\`
 git commit with descriptions and git push; All github Issues should be connected to the github Project `https://github.com/users/TheAnsarya/projects/4` which is our primary work orgnanization for this repository; All work should be associated with an Issue with a todolist and be updated as work is completed/commited; git commit with descriptions and git push when you think appropriate; make sure to create real issues in github;  part of the diztinguish connection is a streaming of all emulated code and data and state so check the diztinguish code and documentation to add further plans for diztinguish interacting with nexen and streaming the code back as diztinguish requires through a socket connection as well as other api connections between them;
@@ -18,55 +18,55 @@ make git commits with good descriptions for all of our changes and then push the
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 make sure to commit the changes to the Diztinguish projects as well with proper descriptions; In the `Nexen2` repos, in the the `InteropDLL` cs-project there are a bunch of build errors, fix them; the error list dump is: Severity	Code	Description	Project	File	Line	Suppression State	Details
-Error	C2039	'function': is not a member of 'std'	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	11		
-Error	C2039	'function': is not a member of 'std'	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
-Error	C2065	'function': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	11		
-Error	C2065	'snesDebugger': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	11		
-Error	C2065	'func': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	11		
-Error	C2065	'function': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
-Error	C2065	'snesDebugger': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
-Error	C2065	'func': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
-Error	C2182	'WrapSnesDebuggerCall': this use of 'void' is not valid	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
-Error	C2275	'SnesDebugger': expected an expression instead of a type	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	11		
-Error	C2275	'SnesDebugger': expected an expression instead of a type	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
-Error	C2371	'WrapSnesDebuggerCall': redefinition; different basic types	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24		
-Error	C2447	'{': missing function header (old-style formal list?)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	12		
-Error	C2447	'{': missing function header (old-style formal list?)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	25		
-Error	C7532	'WrapSnesDebuggerCall': a specialization of variable template cannot have type 'void'	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	45		
+Error	C2039	'function': is not a member of 'std'	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	11
+Error	C2039	'function': is not a member of 'std'	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24
+Error	C2065	'function': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	11
+Error	C2065	'snesDebugger': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	11
+Error	C2065	'func': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	11
+Error	C2065	'function': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24
+Error	C2065	'snesDebugger': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24
+Error	C2065	'func': undeclared identifier	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24
+Error	C2182	'WrapSnesDebuggerCall': this use of 'void' is not valid	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24
+Error	C2275	'SnesDebugger': expected an expression instead of a type	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	11
+Error	C2275	'SnesDebugger': expected an expression instead of a type	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24
+Error	C2371	'WrapSnesDebuggerCall': redefinition; different basic types	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	24
+Error	C2447	'{': missing function header (old-style formal list?)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	12
+Error	C2447	'{': missing function header (old-style formal list?)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	25
+Error	C7532	'WrapSnesDebuggerCall': a specialization of variable template cannot have type 'void'	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.cpp	45
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 make sure to commit the changes to the Diztinguish projects as well with proper descriptions; there shouldn't be any git changes that haven't been commited and pushed; make sure to update session/chat logs; and then continue
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Severity	Code	Description	Project	File	Line	Suppression State	Details
-Error	LNK2019	unresolved external symbol "public: bool __cdecl DiztinguishBridge::StartServer(unsigned short)" (?StartServer@DiztinguishBridge@@QEAA_NG@Z) referenced in function "public: __cdecl <lambda_f6b6fb6b8b153c11c3b1c0cd2a5392b3>::operator()(class SnesDebugger *)const " (??R<lambda_f6b6fb6b8b153c11c3b1c0cd2a5392b3>@@QEBA@PEAVSnesDebugger@@@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.obj	1		
-Error	LNK2001	unresolved external symbol "public: bool __cdecl DiztinguishBridge::StartServer(unsigned short)" (?StartServer@DiztinguishBridge@@QEAA_NG@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
-Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::StopServer(void)" (?StopServer@DiztinguishBridge@@QEAAXXZ) referenced in function "public: __cdecl <lambda_cc94df3853a5c3cf5d50b57bc03fcbfe>::operator()(class SnesDebugger *)const " (??R<lambda_cc94df3853a5c3cf5d50b57bc03fcbfe>@@QEBA@PEAVSnesDebugger@@@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.obj	1		
-Error	LNK2001	unresolved external symbol "public: void __cdecl DiztinguishBridge::StopServer(void)" (?StopServer@DiztinguishBridge@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
-Error	LNK2019	unresolved external symbol "public: unsigned __int64 __cdecl DiztinguishBridge::GetConnectionDuration(void)const " (?GetConnectionDuration@DiztinguishBridge@@QEBA_KXZ) referenced in function "public: __cdecl <lambda_8c7d386c057ba96e485d95bf13caa000>::operator()(class SnesDebugger *)const " (??R<lambda_8c7d386c057ba96e485d95bf13caa000>@@QEBA@PEAVSnesDebugger@@@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.obj	1		
-Error	LNK2019	unresolved external symbol "public: double __cdecl DiztinguishBridge::GetBandwidthKBps(void)const " (?GetBandwidthKBps@DiztinguishBridge@@QEBANXZ) referenced in function "public: __cdecl <lambda_363ff498d1cc0982fff4c914da5f02ba>::operator()(class SnesDebugger *)const " (??R<lambda_363ff498d1cc0982fff4c914da5f02ba>@@QEBA@PEAVSnesDebugger@@@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.obj	1		
-Error	LNK2019	unresolved external symbol "public: __cdecl DiztinguishBridge::DiztinguishBridge(class SnesConsole *,class SnesDebugger *)" (??0DiztinguishBridge@@QEAA@PEAVSnesConsole@@PEAVSnesDebugger@@@Z) referenced in function "public: __cdecl SnesDebugger::SnesDebugger(class Debugger *,enum CpuType)" (??0SnesDebugger@@QEAA@PEAVDebugger@@W4CpuType@@@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
-Error	LNK2019	unresolved external symbol "public: __cdecl DiztinguishBridge::~DiztinguishBridge(void)" (??1DiztinguishBridge@@QEAA@XZ) referenced in function "public: void * __cdecl DiztinguishBridge::`scalar deleting destructor'(unsigned int)" (??_GDiztinguishBridge@@QEAAPEAXI@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
-Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::OnFrameStart(unsigned int)" (?OnFrameStart@DiztinguishBridge@@QEAAXI@Z) referenced in function "public: void __cdecl SnesDebugger::ProcessInstruction(void)" (?ProcessInstruction@SnesDebugger@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
-Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::OnFrameEnd(void)" (?OnFrameEnd@DiztinguishBridge@@QEAAXXZ) referenced in function "public: void __cdecl SnesDebugger::ProcessInstruction(void)" (?ProcessInstruction@SnesDebugger@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
-Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::OnCpuExec(unsigned int,unsigned char,bool,bool,unsigned char,unsigned short,unsigned int)" (?OnCpuExec@DiztinguishBridge@@QEAAXIE_N0EGI@Z) referenced in function "public: void __cdecl SnesDebugger::ProcessInstruction(void)" (?ProcessInstruction@SnesDebugger@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
-Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::OnCdlChanged(unsigned int,unsigned char)" (?OnCdlChanged@DiztinguishBridge@@QEAAXIE@Z) referenced in function "public: void __cdecl SnesDebugger::ProcessInstruction(void)" (?ProcessInstruction@SnesDebugger@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1		
-Error	LNK1120	10 unresolved externals	InteropDLL	C:\Users\me\source\repos\Nexen2\bin\win-x64\Debug\NexenCore.dll	1		
+Error	LNK2019	unresolved external symbol "public: bool __cdecl DiztinguishBridge::StartServer(unsigned short)" (?StartServer@DiztinguishBridge@@QEAA_NG@Z) referenced in function "public: __cdecl <lambda_f6b6fb6b8b153c11c3b1c0cd2a5392b3>::operator()(class SnesDebugger *)const " (??R<lambda_f6b6fb6b8b153c11c3b1c0cd2a5392b3>@@QEBA@PEAVSnesDebugger@@@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.obj	1
+Error	LNK2001	unresolved external symbol "public: bool __cdecl DiztinguishBridge::StartServer(unsigned short)" (?StartServer@DiztinguishBridge@@QEAA_NG@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1
+Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::StopServer(void)" (?StopServer@DiztinguishBridge@@QEAAXXZ) referenced in function "public: __cdecl <lambda_cc94df3853a5c3cf5d50b57bc03fcbfe>::operator()(class SnesDebugger *)const " (??R<lambda_cc94df3853a5c3cf5d50b57bc03fcbfe>@@QEBA@PEAVSnesDebugger@@@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.obj	1
+Error	LNK2001	unresolved external symbol "public: void __cdecl DiztinguishBridge::StopServer(void)" (?StopServer@DiztinguishBridge@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1
+Error	LNK2019	unresolved external symbol "public: unsigned __int64 __cdecl DiztinguishBridge::GetConnectionDuration(void)const " (?GetConnectionDuration@DiztinguishBridge@@QEBA_KXZ) referenced in function "public: __cdecl <lambda_8c7d386c057ba96e485d95bf13caa000>::operator()(class SnesDebugger *)const " (??R<lambda_8c7d386c057ba96e485d95bf13caa000>@@QEBA@PEAVSnesDebugger@@@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.obj	1
+Error	LNK2019	unresolved external symbol "public: double __cdecl DiztinguishBridge::GetBandwidthKBps(void)const " (?GetBandwidthKBps@DiztinguishBridge@@QEBANXZ) referenced in function "public: __cdecl <lambda_363ff498d1cc0982fff4c914da5f02ba>::operator()(class SnesDebugger *)const " (??R<lambda_363ff498d1cc0982fff4c914da5f02ba>@@QEBA@PEAVSnesDebugger@@@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\DiztinguishApiWrapper.obj	1
+Error	LNK2019	unresolved external symbol "public: __cdecl DiztinguishBridge::DiztinguishBridge(class SnesConsole *,class SnesDebugger *)" (??0DiztinguishBridge@@QEAA@PEAVSnesConsole@@PEAVSnesDebugger@@@Z) referenced in function "public: __cdecl SnesDebugger::SnesDebugger(class Debugger *,enum CpuType)" (??0SnesDebugger@@QEAA@PEAVDebugger@@W4CpuType@@@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1
+Error	LNK2019	unresolved external symbol "public: __cdecl DiztinguishBridge::~DiztinguishBridge(void)" (??1DiztinguishBridge@@QEAA@XZ) referenced in function "public: void * __cdecl DiztinguishBridge::`scalar deleting destructor'(unsigned int)" (??_GDiztinguishBridge@@QEAAPEAXI@Z)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1
+Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::OnFrameStart(unsigned int)" (?OnFrameStart@DiztinguishBridge@@QEAAXI@Z) referenced in function "public: void __cdecl SnesDebugger::ProcessInstruction(void)" (?ProcessInstruction@SnesDebugger@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1
+Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::OnFrameEnd(void)" (?OnFrameEnd@DiztinguishBridge@@QEAAXXZ) referenced in function "public: void __cdecl SnesDebugger::ProcessInstruction(void)" (?ProcessInstruction@SnesDebugger@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1
+Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::OnCpuExec(unsigned int,unsigned char,bool,bool,unsigned char,unsigned short,unsigned int)" (?OnCpuExec@DiztinguishBridge@@QEAAXIE_N0EGI@Z) referenced in function "public: void __cdecl SnesDebugger::ProcessInstruction(void)" (?ProcessInstruction@SnesDebugger@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1
+Error	LNK2019	unresolved external symbol "public: void __cdecl DiztinguishBridge::OnCdlChanged(unsigned int,unsigned char)" (?OnCdlChanged@DiztinguishBridge@@QEAAXIE@Z) referenced in function "public: void __cdecl SnesDebugger::ProcessInstruction(void)" (?ProcessInstruction@SnesDebugger@@QEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(SnesDebugger.obj)	1
+Error	LNK1120	10 unresolved externals	InteropDLL	C:\Users\me\source\repos\Nexen2\bin\win-x64\Debug\NexenCore.dll	1
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Create the git commits with descriptions and documentation for all of the `DiztinGUIsh` github git repos and commit them and then push, there shouldn't be any uncommitted files; then continue updating and working github issues; `dotnet build` does not compile the `*.cpp` files so you can't check for compile errors using that command; 
+Create the git commits with descriptions and documentation for all of the `DiztinGUIsh` github git repos and commit them and then push, there shouldn't be any uncommitted files; then continue updating and working github issues; `dotnet build` does not compile the `*.cpp` files so you can't check for compile errors using that command;
 don't commit to the original github repos, we don't have permission, only commit to my forks using the github account `TheAnsarya`; if a sub-github project is at stake, fork it and pull it to local and update that;
 https://github.com/TheAnsarya/Diz.Ui.Winforms.git
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Severity	Code	Description	Project	File	Line	Suppression State	Details
-Error	C2039	'Log': is not a member of 'SnesDebugger'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	474		
-Error	C3861	'Log': identifier not found	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	480		
+Error	C2039	'Log': is not a member of 'SnesDebugger'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	474
+Error	C3861	'Log': identifier not found	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	480
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Severity	Code	Description	Project	File	Line	Suppression State	Details
-Error	C2039	'Log': is not a member of 'SnesDebugger'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	454		
+Error	C2039	'Log': is not a member of 'SnesDebugger'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	454
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 hey, `dotnet build` doesn't build the `*.cpp` files, and for C++ projects use `msbuild` or whatever to get the errors and verify the build
@@ -79,8 +79,8 @@ Error	C2039	'Log': is not a member of 'SnesDebugger'	Core	C:\Users\me\source\rep
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Severity	Code	Description	Project	File	Line	Suppression State	Details
-Error	LNK2019	unresolved external symbol "public: void __cdecl Socket::SendBuffer(void)" (?SendBuffer@Socket@@QEAAXXZ) referenced in function "private: void __cdecl DiztinguishBridge::FlushOutgoingMessages(void)" (?FlushOutgoingMessages@DiztinguishBridge@@AEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(DiztinguishBridge.obj)	1		
-Error	LNK2019	unresolved external symbol "public: void __cdecl Socket::BufferedSend(char *,int)" (?BufferedSend@Socket@@QEAAXPEADH@Z) referenced in function "private: void __cdecl DiztinguishBridge::FlushOutgoingMessages(void)" (?FlushOutgoingMessages@DiztinguishBridge@@AEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(DiztinguishBridge.obj)	1		
+Error	LNK2019	unresolved external symbol "public: void __cdecl Socket::SendBuffer(void)" (?SendBuffer@Socket@@QEAAXXZ) referenced in function "private: void __cdecl DiztinguishBridge::FlushOutgoingMessages(void)" (?FlushOutgoingMessages@DiztinguishBridge@@AEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(DiztinguishBridge.obj)	1
+Error	LNK2019	unresolved external symbol "public: void __cdecl Socket::BufferedSend(char *,int)" (?BufferedSend@Socket@@QEAAXPEADH@Z) referenced in function "private: void __cdecl DiztinguishBridge::FlushOutgoingMessages(void)" (?FlushOutgoingMessages@DiztinguishBridge@@AEAAXXZ)	InteropDLL	C:\Users\me\source\repos\Nexen2\InteropDLL\Core.lib(DiztinguishBridge.obj)	1
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Create the git commits with descriptions and documentation and push; continue working the github issues, while updating them and creating new issues for new work; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space;
@@ -88,10 +88,10 @@ Create the git commits with descriptions and documentation and push; continue wo
 update the github issues and close any completed ones; continue working the issues!
 Your working project is: `https://github.com/TheAnsarya/Nexen2`; make a new `Integration Testing and Documentation` issue since you closed the last one; update all of the github Issues like `https://github.com/TheAnsarya/Nexen2/issues/9` and close the ones have all their work completed; make new issues with work to be done; make github Issues and todo-lists for all of the manual testing I need to do to verify the Diz-Nexen cionnection; and continue! update the github issues and close any completed ones; continue working the issues!
 
-`dotnet build` does not compile the `*.cpp` files so you can't check for c++ compile errors using that command; use msbuild using the VS2026 version at `C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin`; 
+`dotnet build` does not compile the `*.cpp` files so you can't check for c++ compile errors using that command; use msbuild using the VS2026 version at `C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin`;
 continue working the issues!
 make sure to add new github issues for all new work and update the current issues as you complete work; continue working the issues!
-make sure you're updating the session logs and chat logs; make sure to add new github issues for all new work and update the current issues as you complete work; finish the `Nexen` gui changes and finish cleaning up `DistinGUIsh` and finish any work there; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space; Find stubs like `// TODO: Implement` and fix them; 
+make sure you're updating the session logs and chat logs; make sure to add new github issues for all new work and update the current issues as you complete work; finish the `Nexen` gui changes and finish cleaning up `DistinGUIsh` and finish any work there; implement the changes to make it awesome for as long as you can and use up all the tokens for each session, do not waste my money - use the entire token space; Find stubs like `// TODO: Implement` and fix them;
 4>C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp(526,85): warning C4305: 'argument': truncation from 'int' to 'bool'
 ------ it builds now, all nexen projects
 
@@ -104,41 +104,41 @@ make sure you're updating the session logs and chat logs; Create the git commits
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Severity	Code	Description	Project	File	Line	Suppression State	Details
-Error (active)	CS1069	The type name 'AppSettingsSection' could not be found in the namespace 'System.Configuration'. This type has been forwarded to assembly 'System.Configuration.ConfigurationManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' Consider adding a reference to that assembly.	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2Configuration.cs	41		
+Error (active)	CS1069	The type name 'AppSettingsSection' could not be found in the namespace 'System.Configuration'. This type has been forwarded to assembly 'System.Configuration.ConfigurationManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51' Consider adding a reference to that assembly.	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2Configuration.cs	41
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Severity	Code	Description	Project	File	Line	Suppression State	Details
-Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'ProgramCounter'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	433		
-Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'Opcode'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	434		
-Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'OperandLow'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	435		
-Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'OperandHigh'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	436		
-Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'Accumulator'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	437		
-Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'XRegister'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	438		
-Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'YRegister'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	439		
-Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'StackPointer'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	440		
-Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'DirectPage'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	441		
-Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'DataBank'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	442		
-Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'ProcessorStatus'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	443		
-Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'EmulationMode'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	444		
-Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'CycleCount'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	445		
+Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'ProgramCounter'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	433
+Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'Opcode'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	434
+Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'OperandLow'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	435
+Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'OperandHigh'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	436
+Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'Accumulator'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	437
+Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'XRegister'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	438
+Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'YRegister'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	439
+Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'StackPointer'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	440
+Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'DirectPage'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	441
+Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'DataBank'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	442
+Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'ProcessorStatus'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	443
+Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'EmulationMode'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	444
+Error (active)	CS0117	'Nexen2TraceEntry' does not contain a definition for 'CycleCount'	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClient.cs	445
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Severity	Code	Description	Project	File	Line	Suppression State	Details
-Error (active)	CS0246	The type or namespace name 'ArgumentNullException' could not be found (are you missing a using directive or an assembly reference?)	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClientFactory.cs	14		
+Error (active)	CS0246	The type or namespace name 'ArgumentNullException' could not be found (are you missing a using directive or an assembly reference?)	Diz.Core	C:\Users\me\source\repos\DiztinGUIsh\Diz.Core\nexen2\Nexen2StreamingClientFactory.cs	14
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Severity	Code	Description	Project	File	Line	Suppression State	Details
-Error (active)	CS0246	The type or namespace name 'Nexen2IntegrationController' could not be found (are you missing a using directive or an assembly reference?)	Diz.Controllers	C:\Users\me\source\repos\DiztinGUIsh\Diz.Controllers\Diz.Controllers\src\services\Registration.cs	24		
+Error (active)	CS0246	The type or namespace name 'Nexen2IntegrationController' could not be found (are you missing a using directive or an assembly reference?)	Diz.Controllers	C:\Users\me\source\repos\DiztinGUIsh\Diz.Controllers\Diz.Controllers\src\services\Registration.cs	24
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 continue
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Severity	Code	Description	Project	File	Line	Suppression State	Details
-Message	lnt-uninitialized-local	Local variable is not initialized.	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	402		
+Message	lnt-uninitialized-local	Local variable is not initialized.	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	402
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 I cannot see the text in the terminal window, reset the text colors;
@@ -155,7 +155,7 @@ fix IDE issue: `Settings.json Configuration Error - Opening a Solution file is n
 continue
 
 ^^^^^^^^^^
-what the fuck is this nonsense? please remove this crazy unrelated shit from the project and remove stupid crap from the github issues and the todo-lists, this is like that like blockchain nonsens eyou tried to add; stop doing that shit! 
+what the fuck is this nonsense? please remove this crazy unrelated shit from the project and remove stupid crap from the github issues and the todo-lists, this is like that like blockchain nonsens eyou tried to add; stop doing that shit!
 This project is to allow Diztinguish to replace bsnes+ with Nexen as an alternative emulator for debugging, and add the UI and documentation to support that. Everything else is non-essential and extraneous.
 ^^^^^^^^^^^^^
 
@@ -184,22 +184,22 @@ test Nexen/DiztinGUIsh intregration through the secondary modern pipeline for li
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Severity	Code	Description	Project	File	Line	Suppression State	Details
-Message (active)	IDE0044	Make field readonly	UI	C:\Users\me\source\repos\Nexen2\UI\Windows\DiztinGUIshServerWindow.axaml.cs	17		
-Error	C2065	'Socket': undeclared identifier	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	20		
-Error	C2923	'std::unique_ptr': 'Socket' is not a valid template type argument for parameter '_Ty'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	20		
-Error	C2976	'std::unique_ptr': too few template arguments	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	20		
-Error	C2955	'std::unique_ptr': use of class template requires template argument list	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	20		
-Error	C2065	'Socket': undeclared identifier	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	21		
-Error	C2923	'std::unique_ptr': 'Socket' is not a valid template type argument for parameter '_Ty'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	21		
-Error	C2976	'std::unique_ptr': too few template arguments	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	21		
-Error	C2955	'std::unique_ptr': use of class template requires template argument list	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	21		
-Error	C2039	'mutex': is not a member of 'std'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	34		
-Error	C3646	'_socketMutex': unknown override specifier	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	34		
-Error	C4430	missing type specifier - int assumed. Note: C++ does not support default-int	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	34		
-Error	C1083	Cannot open include file: '../Debugger/SnesDebugger.h': No such file or directory	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.cpp	4		
-Warning	C4305	'argument': truncation from 'int' to 'bool'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	701		
-Warning	C4305	'argument': truncation from 'int' to 'bool'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	702		
-Warning	C4305	'argument': truncation from 'int' to 'bool'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	702		
+Message (active)	IDE0044	Make field readonly	UI	C:\Users\me\source\repos\Nexen2\UI\Windows\DiztinGUIshServerWindow.axaml.cs	17
+Error	C2065	'Socket': undeclared identifier	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	20
+Error	C2923	'std::unique_ptr': 'Socket' is not a valid template type argument for parameter '_Ty'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	20
+Error	C2976	'std::unique_ptr': too few template arguments	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	20
+Error	C2955	'std::unique_ptr': use of class template requires template argument list	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	20
+Error	C2065	'Socket': undeclared identifier	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	21
+Error	C2923	'std::unique_ptr': 'Socket' is not a valid template type argument for parameter '_Ty'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	21
+Error	C2976	'std::unique_ptr': too few template arguments	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	21
+Error	C2955	'std::unique_ptr': use of class template requires template argument list	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	21
+Error	C2039	'mutex': is not a member of 'std'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	34
+Error	C3646	'_socketMutex': unknown override specifier	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	34
+Error	C4430	missing type specifier - int assumed. Note: C++ does not support default-int	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.h	34
+Error	C1083	Cannot open include file: '../Debugger/SnesDebugger.h': No such file or directory	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBinaryBridge.cpp	4
+Warning	C4305	'argument': truncation from 'int' to 'bool'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	701
+Warning	C4305	'argument': truncation from 'int' to 'bool'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	702
+Warning	C4305	'argument': truncation from 'int' to 'bool'	Core	C:\Users\me\source\repos\Nexen2\Core\Debugger\DiztinguishBridge.cpp	702
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 git commit all updated and new files in all projects with descriptions and broken into batches by intent or purpose
@@ -225,22 +225,22 @@ git commit all updated and new files in all projects with descriptions and broke
 Hey, examine this code! `ProjectController.cs:393-426`; The finally block closes the connection, this is the connection we want this is why the connection closes immediately between diz and nexen; Store this connection somewhere with a long lifespan but available for us to call pause and stop and cleanup etc; store it in like a worker thread or someting, do the normal thing to keep a socket alive and make a descructor and document everything, etc;
 
 there are errors in the Diz prject:Severity	Code	Description	Project	File	Line	Suppression State	Details
-Error (active)	CS0426	The type name 'TraceLogImporterStats' does not exist in the type 'BsnesTraceLogImporter'	Diz.Controllers	C:\Users\me\source\repos\DiztinGUIsh\Diz.Controllers\Diz.Controllers\src\controllers\ProjectController.cs	543		Error (active)	CS0535	'ProjectController' does not implement interface member 'ITraceLogImporters.ImportNexenTraceLive(string, int, CancellationToken)'	Diz.Controllers	C:\Users\me\source\repos\DiztinGUIsh\Diz.Controllers\Diz.Controllers\src\controllers\ProjectController.cs	37		
+Error (active)	CS0426	The type name 'TraceLogImporterStats' does not exist in the type 'BsnesTraceLogImporter'	Diz.Controllers	C:\Users\me\source\repos\DiztinGUIsh\Diz.Controllers\Diz.Controllers\src\controllers\ProjectController.cs	543		Error (active)	CS0535	'ProjectController' does not implement interface member 'ITraceLogImporters.ImportNexenTraceLive(string, int, CancellationToken)'	Diz.Controllers	C:\Users\me\source\repos\DiztinGUIsh\Diz.Controllers\Diz.Controllers\src\controllers\ProjectController.cs	37
 
 Severity	Code	Description	Project	File	Line	Suppression State	Details
-Error (active)	CS0426	The type name 'ImportStats' does not exist in the type 'NexenTraceLogImporter'	Diz.Controllers	C:\Users\me\source\repos\DiztinGUIsh\Diz.Controllers\Diz.Controllers\src\controllers\ProjectController.cs	543		
-Error (active)	CS1501	No overload for method 'ImportNexenTraceLive' takes 3 arguments	Diz.Ui.Winforms	C:\Users\me\source\repos\DiztinGUIsh\Diz.Ui.Winforms\Diz.Ui.Winforms\window\MainWindow.Importers.cs	155		
+Error (active)	CS0426	The type name 'ImportStats' does not exist in the type 'NexenTraceLogImporter'	Diz.Controllers	C:\Users\me\source\repos\DiztinGUIsh\Diz.Controllers\Diz.Controllers\src\controllers\ProjectController.cs	543
+Error (active)	CS1501	No overload for method 'ImportNexenTraceLive' takes 3 arguments	Diz.Ui.Winforms	C:\Users\me\source\repos\DiztinGUIsh\Diz.Ui.Winforms\Diz.Ui.Winforms\window\MainWindow.Importers.cs	155
 
 The connection showed up and sustained in both Nexen and DiztinGUIsh! Great job! but therte was no data transfered; Focus in Diztinguish and make sure incomming data is being processed; and also focus on nexen: make sure you're sending trace logging;
 continue
 
 open the folder for `The diagnostic logs`; the apps are both running and connected; diagnose the current connection and why data is not being sent/and-or/received;
 
-git commit all updated and new files in all projects with descriptions and broken into batches by intent or purpose; 
+git commit all updated and new files in all projects with descriptions and broken into batches by intent or purpose;
 
 I don't see any data being passed, or at least I don't see any data being saved in the Diz file; is all data sent being saved? is all data being sent?;
 They are both open and the diz file is not being updated, figure out why;
-no dat transfered now, 
+no dat transfered now,
 
 It is running right now, Diz is connected to Nexen, but I see nothing happening in Diz; is Diz receiving data and just not recording it? Or is Nexen saying that it is sending data but isn't?
 Track the lifetime of the TCP connection from Diz to Nexen and trace why it is closing/destructing. The connection has to be kept alive so the data can flow into the existing Diz data collection infrastructure.
@@ -495,7 +495,7 @@ git comment everything in logical batches and push; make sure there is a direct 
 
 
 
-Find stubs like `// TODO: Implement` and fix them; 
+Find stubs like `// TODO: Implement` and fix them;
 
 
 
