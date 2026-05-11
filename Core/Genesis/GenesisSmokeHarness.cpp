@@ -48,6 +48,12 @@ namespace {
 		if (lower.find("jurassic") != string::npos) {
 			return "jurassic";
 		}
+		if (lower.find("golden") != string::npos && lower.find("axe") != string::npos) {
+			return "goldenaxe";
+		}
+		if (lower.find("streets") != string::npos || lower.find("sor") != string::npos) {
+			return "streets";
+		}
 		return "generic";
 	}
 }
@@ -434,6 +440,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 		scaffold.LoadState(vdpTimingFirst);
 
 		bool isTargetStartupClass = titleClass == "sonic" || titleClass == "jurassic";
+		bool isSequencingStressClass = isTargetStartupClass || titleClass == "goldenaxe" || titleClass == "streets";
 		bool timingAdvanced = vdpTimingFirst.TimingFrame > vdpTimingBaseline.TimingFrame
 			|| (vdpTimingFirst.TimingFrame == vdpTimingBaseline.TimingFrame && vdpTimingFirst.TimingScanline > vdpTimingBaseline.TimingScanline);
 		bool vdpTimingReplayMatch = vdpTimingFirst.TimingFrame == vdpTimingReplay.TimingFrame
@@ -1912,6 +1919,168 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				first10sBusArbReplayMatch ? 1 : 0,
 				first10sLogoLaneReplayMatch ? 1 : 0));
 
+		struct First20SecondsSequencingStressProbeResult {
+			uint32_t WindowCount = 0;
+			uint32_t FinalFrameDelta = 0;
+			uint32_t RenderTransitionCount = 0;
+			uint32_t BusReqTransitionCount = 0;
+			uint32_t ResetTransitionCount = 0;
+			uint32_t FirstRenderTransitionWindow = 0xffffffffu;
+			uint32_t FirstBusReqTransitionWindow = 0xffffffffu;
+			uint32_t FirstResetTransitionWindow = 0xffffffffu;
+			string SignatureDigest;
+		};
+
+		auto runFirst20SecondsSequencingStressProbe = [&scaffold, &titleClass](const GenesisBoundaryScaffoldSaveState& baseline) {
+			First20SecondsSequencingStressProbeResult probe = {};
+			uint64_t digest = 1469598103934665603ull;
+			string previousRenderDigest;
+			uint8_t previousBusReqRead = 0;
+			uint8_t previousResetRead = 0;
+			bool hasPreviousBusReqRead = false;
+			bool hasPreviousResetRead = false;
+
+			for (uint32_t window = 0; window < 20; window++) {
+				uint8_t p1Write = (uint8_t)(0x40 | (window & 0x01));
+				uint8_t p2Write = (uint8_t)(0x40 | ((window + 1) & 0x01));
+				scaffold.GetBus().WriteByte(0xA10003, p1Write);
+				scaffold.GetBus().WriteByte(0xA10005, p2Write);
+
+				uint8_t busReqValue = (window & 0x01) ? 0x01 : 0x00;
+				uint8_t resetPulse = (window % 4u) == 0u ? 0x00 : 0x01;
+				scaffold.GetBus().WriteByte(0xA11100, busReqValue);
+				scaffold.GetBus().WriteByte(0xA11200, resetPulse);
+				scaffold.GetBus().WriteByte(0xA11200, 0x01);
+				uint8_t busReqRead = scaffold.GetBus().ReadByte(0xA11100);
+				uint8_t resetRead = scaffold.GetBus().ReadByte(0xA11200);
+
+				if (titleClass == "sonic") {
+					scaffold.GetBus().SetRenderCompositionInputs((uint8_t)(0x16 + (window & 0x03)), true, (uint8_t)(0x05 + (window & 0x03)), false, 0x02, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((window * 3) & 0x1f), (uint16_t)((window * 7) & 0x1f));
+					scaffold.GetBus().RenderScaffoldLine((uint16_t)(60 + (window % 48u)));
+					scaffold.StepFrameScaffold(488u * 262u * 6u + 96u + window * 6u);
+				} else if (titleClass == "jurassic") {
+					if ((window % 3u) == 0u) {
+						scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 10u + window);
+					}
+					scaffold.GetBus().SetRenderCompositionInputs((uint8_t)(0x15 + (window & 0x03)), true, (uint8_t)(0x04 + (window & 0x03)), false, 0x01, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((window + 2) & 0x1f), (uint16_t)((window * 5) & 0x1f));
+					scaffold.GetBus().RenderScaffoldLine((uint16_t)(68 + (window % 48u)));
+					scaffold.StepFrameScaffold(488u * 262u * 6u + 112u + window * 8u);
+				} else if (titleClass == "goldenaxe") {
+					if ((window % 4u) == 0u) {
+						scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 8u + (window & 0x0fu));
+					}
+					scaffold.GetBus().SetRenderCompositionInputs((uint8_t)(0x14 + (window & 0x03)), true, (uint8_t)(0x06 + (window & 0x03)), false, 0x03, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((window * 9) & 0x1f), (uint16_t)((window * 2) & 0x1f));
+					scaffold.GetBus().RenderScaffoldLine((uint16_t)(74 + (window % 52u)));
+					scaffold.StepFrameScaffold(488u * 262u * 6u + 104u + window * 9u);
+				} else if (titleClass == "streets") {
+					scaffold.GetBus().SetRenderCompositionInputs((uint8_t)(0x12 + (window & 0x03)), true, (uint8_t)(0x07 + (window & 0x03)), false, 0x02, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((window * 4) & 0x1f), (uint16_t)((window * 6) & 0x1f));
+					scaffold.GetBus().RenderScaffoldLine((uint16_t)(66 + (window % 50u)));
+					scaffold.StepFrameScaffold(488u * 262u * 6u + 100u + window * 7u);
+				} else {
+					scaffold.GetBus().SetRenderCompositionInputs(0x10, true, 0x04, false, 0x00, false, false, 0x20, true);
+					scaffold.GetBus().RenderScaffoldLine(48);
+					scaffold.StepFrameScaffold(488u * 262u * 6u + 64u);
+				}
+
+				GenesisBoundaryScaffoldSaveState sample = scaffold.SaveState();
+				probe.WindowCount++;
+				probe.FinalFrameDelta = sample.TimingFrame - baseline.TimingFrame;
+
+				if (!sample.Bus.RenderLineDigest.empty()) {
+					if (!previousRenderDigest.empty() && previousRenderDigest != sample.Bus.RenderLineDigest) {
+						probe.RenderTransitionCount++;
+						if (probe.FirstRenderTransitionWindow == 0xffffffffu) {
+							probe.FirstRenderTransitionWindow = window;
+						}
+					}
+					previousRenderDigest = sample.Bus.RenderLineDigest;
+				}
+
+				if (hasPreviousBusReqRead && busReqRead != previousBusReqRead) {
+					probe.BusReqTransitionCount++;
+					if (probe.FirstBusReqTransitionWindow == 0xffffffffu) {
+						probe.FirstBusReqTransitionWindow = window;
+					}
+				}
+				hasPreviousBusReqRead = true;
+				previousBusReqRead = busReqRead;
+
+				if (hasPreviousResetRead && resetRead != previousResetRead) {
+					probe.ResetTransitionCount++;
+					if (probe.FirstResetTransitionWindow == 0xffffffffu) {
+						probe.FirstResetTransitionWindow = window;
+					}
+				}
+				hasPreviousResetRead = true;
+				previousResetRead = resetRead;
+
+				string line = std::format(
+					"w{}:{}:{}:{}:{}:{}:{}:{}",
+					window,
+					sample.TimingFrame,
+					sample.TimingScanline,
+					sample.Bus.Z80HandoffCount,
+					sample.Bus.Z80ExecutedCycles,
+					busReqRead,
+					resetRead,
+					sample.Bus.RenderLineDigest);
+				for (uint8_t ch : line) {
+					digest ^= ch;
+					digest *= 1099511628211ull;
+				}
+			}
+
+			probe.SignatureDigest = ToHex(digest);
+			return probe;
+		};
+
+		GenesisBoundaryScaffoldSaveState first20sSequencingBaseline = scaffold.SaveState();
+		First20SecondsSequencingStressProbeResult first20sSequencingFirst = runFirst20SecondsSequencingStressProbe(first20sSequencingBaseline);
+		GenesisBoundaryScaffoldSaveState first20sSequencingTail = scaffold.SaveState();
+		scaffold.LoadState(first20sSequencingBaseline);
+		First20SecondsSequencingStressProbeResult first20sSequencingReplay = runFirst20SecondsSequencingStressProbe(first20sSequencingBaseline);
+		scaffold.LoadState(first20sSequencingTail);
+
+		bool first20sSequencingReplayMatch = first20sSequencingFirst.WindowCount == first20sSequencingReplay.WindowCount
+			&& first20sSequencingFirst.FinalFrameDelta == first20sSequencingReplay.FinalFrameDelta
+			&& first20sSequencingFirst.RenderTransitionCount == first20sSequencingReplay.RenderTransitionCount
+			&& first20sSequencingFirst.BusReqTransitionCount == first20sSequencingReplay.BusReqTransitionCount
+			&& first20sSequencingFirst.ResetTransitionCount == first20sSequencingReplay.ResetTransitionCount
+			&& first20sSequencingFirst.FirstRenderTransitionWindow == first20sSequencingReplay.FirstRenderTransitionWindow
+			&& first20sSequencingFirst.FirstBusReqTransitionWindow == first20sSequencingReplay.FirstBusReqTransitionWindow
+			&& first20sSequencingFirst.FirstResetTransitionWindow == first20sSequencingReplay.FirstResetTransitionWindow
+			&& first20sSequencingFirst.SignatureDigest == first20sSequencingReplay.SignatureDigest;
+		bool first20sSequencingPass = !isSequencingStressClass || (
+			first20sSequencingFirst.WindowCount == 20
+			&& first20sSequencingFirst.FinalFrameDelta > 0
+			&& first20sSequencingFirst.RenderTransitionCount > 0
+			&& first20sSequencingFirst.BusReqTransitionCount > 0
+			&& first20sSequencingFirst.ResetTransitionCount > 0
+			&& (first20sSequencingFirst.FirstRenderTransitionWindow == 0xffffffffu
+				|| (first20sSequencingFirst.FirstBusReqTransitionWindow <= first20sSequencingFirst.FirstRenderTransitionWindow
+					&& first20sSequencingFirst.FirstResetTransitionWindow <= first20sSequencingFirst.FirstRenderTransitionWindow)));
+		addCheckpoint(
+			"GEN-COMPAT-FIRST20S-SEQUENCING-STRESS",
+			first20sSequencingPass,
+			std::format(
+				"class={} target={} windows={} frameDelta={} renderTransitions={} busReqTransitions={} resetTransitions={} firstRenderWindow={} firstBusReqWindow={} firstResetWindow={} replayMatch={} digest={}",
+				titleClass,
+				isSequencingStressClass ? 1 : 0,
+				first20sSequencingFirst.WindowCount,
+				first20sSequencingFirst.FinalFrameDelta,
+				first20sSequencingFirst.RenderTransitionCount,
+				first20sSequencingFirst.BusReqTransitionCount,
+				first20sSequencingFirst.ResetTransitionCount,
+				first20sSequencingFirst.FirstRenderTransitionWindow,
+				first20sSequencingFirst.FirstBusReqTransitionWindow,
+				first20sSequencingFirst.FirstResetTransitionWindow,
+				first20sSequencingReplayMatch ? 1 : 0,
+				first20sSequencingFirst.SignatureDigest));
+
 		struct First10SecondsEventIntegrityProbeResult {
 			uint32_t EventCount = 0;
 			uint32_t HintCount = 0;
@@ -2022,6 +2191,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-FIRST10S-BUS-ARBITRATION")
 			&& hasPassingCheckpoint("GEN-COMPAT-FIRST10S-EVENT-INTEGRITY")
 			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-SEQUENCING-COHERENCE")
+			&& hasPassingCheckpoint("GEN-COMPAT-FIRST20S-SEQUENCING-STRESS")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-TIMING-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-STATUS-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-CADENCE-STARTUP")

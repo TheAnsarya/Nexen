@@ -7,6 +7,8 @@ namespace {
 		vector<GenesisCompatibilityRomCase> corpus;
 		corpus.push_back({"sonic-1.bin", vector<uint8_t>(0x8000, 0x4E)});
 		corpus.push_back({"jurassic-park.bin", vector<uint8_t>(0x8000, 0x4E)});
+		corpus.push_back({"golden-axe.bin", vector<uint8_t>(0x8000, 0x4E)});
+		corpus.push_back({"streets-of-rage.bin", vector<uint8_t>(0x8000, 0x4E)});
 		return corpus;
 	}
 
@@ -120,6 +122,7 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST10S-BUS-ARBITRATION"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST10S-EVENT-INTEGRITY"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-STARTUP-SEQUENCING-COHERENCE"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST20S-SEQUENCING-STRESS"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TAS-CHEAT"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-PBC-BOOT"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-PBC-RUNTIME"));
@@ -158,6 +161,7 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST10S-BUS-ARBITRATION"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST10S-EVENT-INTEGRITY"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-STARTUP-SEQUENCING-COHERENCE"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST20S-SEQUENCING-STRESS"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DETERMINISM"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DEBUG-LANE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TAS-CHEAT"));
@@ -697,6 +701,82 @@ namespace {
 		for (const GenesisCompatibilityRomCase& romCase : corpus) {
 			string contextA = readFirst10sEventIntegrityContext(runA, romCase.Name);
 			string contextB = readFirst10sEventIntegrityContext(runB, romCase.Name);
+			EXPECT_EQ(contextA, contextB);
+		}
+	}
+
+	TEST(GenesisCompatibilityHarnessTests, StartupSequencingCoherenceCheckpointContextIsDeterministicAcrossRuns) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus = BuildGenesisCompatibilityCorpus();
+
+		auto readStartupSequencingCoherenceContext = [&](const GenesisCompatibilityMatrixResult& result, const string& romName) {
+			auto entryIt = std::find_if(result.Entries.begin(), result.Entries.end(), [&](const GenesisCompatibilityEntry& entry) {
+				return entry.Name == romName;
+			});
+			if (entryIt == result.Entries.end()) {
+				ADD_FAILURE() << "Missing compatibility entry for " << romName;
+				return string();
+			}
+
+			auto checkpointIt = std::find_if(entryIt->Checkpoints.begin(), entryIt->Checkpoints.end(), [](const GenesisCompatibilityCheckpoint& checkpoint) {
+				return checkpoint.Id == "GEN-COMPAT-STARTUP-SEQUENCING-COHERENCE";
+			});
+			if (checkpointIt == entryIt->Checkpoints.end()) {
+				ADD_FAILURE() << "Missing GEN-COMPAT-STARTUP-SEQUENCING-COHERENCE checkpoint for " << romName;
+				return string();
+			}
+
+			EXPECT_TRUE(checkpointIt->Pass);
+			return checkpointIt->Context;
+		};
+
+		GenesisCompatibilityMatrixResult runA = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+		GenesisCompatibilityMatrixResult runB = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+
+		ASSERT_EQ((int)runA.Entries.size(), (int)corpus.size());
+		ASSERT_EQ((int)runB.Entries.size(), (int)corpus.size());
+
+		for (const GenesisCompatibilityRomCase& romCase : corpus) {
+			string contextA = readStartupSequencingCoherenceContext(runA, romCase.Name);
+			string contextB = readStartupSequencingCoherenceContext(runB, romCase.Name);
+			EXPECT_EQ(contextA, contextB);
+		}
+	}
+
+	TEST(GenesisCompatibilityHarnessTests, First20sSequencingStressCheckpointContextIsDeterministicAcrossRuns) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus = BuildGenesisCompatibilityCorpus();
+
+		auto readFirst20sSequencingStressContext = [&](const GenesisCompatibilityMatrixResult& result, const string& romName) {
+			auto entryIt = std::find_if(result.Entries.begin(), result.Entries.end(), [&](const GenesisCompatibilityEntry& entry) {
+				return entry.Name == romName;
+			});
+			if (entryIt == result.Entries.end()) {
+				ADD_FAILURE() << "Missing compatibility entry for " << romName;
+				return string();
+			}
+
+			auto checkpointIt = std::find_if(entryIt->Checkpoints.begin(), entryIt->Checkpoints.end(), [](const GenesisCompatibilityCheckpoint& checkpoint) {
+				return checkpoint.Id == "GEN-COMPAT-FIRST20S-SEQUENCING-STRESS";
+			});
+			if (checkpointIt == entryIt->Checkpoints.end()) {
+				ADD_FAILURE() << "Missing GEN-COMPAT-FIRST20S-SEQUENCING-STRESS checkpoint for " << romName;
+				return string();
+			}
+
+			EXPECT_TRUE(checkpointIt->Pass);
+			return checkpointIt->Context;
+		};
+
+		GenesisCompatibilityMatrixResult runA = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+		GenesisCompatibilityMatrixResult runB = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+
+		ASSERT_EQ((int)runA.Entries.size(), (int)corpus.size());
+		ASSERT_EQ((int)runB.Entries.size(), (int)corpus.size());
+
+		for (const GenesisCompatibilityRomCase& romCase : corpus) {
+			string contextA = readFirst20sSequencingStressContext(runA, romCase.Name);
+			string contextB = readFirst20sSequencingStressContext(runB, romCase.Name);
 			EXPECT_EQ(contextA, contextB);
 		}
 	}
