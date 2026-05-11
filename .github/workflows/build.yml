@@ -46,6 +46,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Audit third-party source policy
+        shell: pwsh
+        run: |
+          ./scripts/audit-third-party-source.ps1 -Enforce -ReportPath docs/THIRD-PARTY-SOURCE-INVENTORY.md
+
       - name: Guard removed archive vendor-path references
         shell: pwsh
         run: |

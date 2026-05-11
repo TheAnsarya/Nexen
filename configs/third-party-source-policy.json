@@ -1,0 +1,125 @@
+{
+	"generatedOn": "2026-05-11",
+	"policy": {
+		"defaultRule": "No new vendored third-party source files. Prefer NuGet, vcpkg, or system packages.",
+		"exceptionRule": "Only explicitly-listed components are allowed and must not grow without policy update."
+	},
+	"blockedPathRegex": [
+		"^UI/ThirdParty/.+",
+		"^ThirdParty/.+",
+		"^external/.+",
+		"^vendor/.+"
+	],
+	"components": [
+		{
+			"name": "Lua",
+			"pattern": "Lua/*",
+			"preferredSource": "vcpkg/lua",
+			"status": "temporary-vendored",
+			"reason": "Carries Nexen-specific watchdog hooks; migrate via package + patch layer.",
+			"maxFiles": 103,
+			"maxBytes": 1113623,
+			"maxLines": 31818
+		},
+		{
+			"name": "miniz",
+			"pattern": "Utilities/miniz.*",
+			"preferredSource": "vcpkg/zlib or package-backed codec",
+			"status": "temporary-vendored",
+			"reason": "Compression fallback in active runtime path.",
+			"maxFiles": 2,
+			"maxBytes": 249606,
+			"maxLines": 4801
+		},
+		{
+			"name": "HQX",
+			"pattern": "Utilities/HQX/*",
+			"preferredSource": "package-backed video filter bundle",
+			"status": "temporary-vendored",
+			"reason": "Legacy scaler path still shipped.",
+			"maxFiles": 6,
+			"maxBytes": 179016,
+			"maxLines": 9893
+		},
+		{
+			"name": "libspng",
+			"pattern": "Utilities/spng.*",
+			"preferredSource": "vcpkg/libspng",
+			"status": "temporary-vendored",
+			"reason": "PNG encode/decode dependency in screenshot/state pipeline.",
+			"maxFiles": 2,
+			"maxBytes": 157549,
+			"maxLines": 4213
+		},
+		{
+			"name": "magic_enum",
+			"pattern": "Utilities/magic_enum.hpp",
+			"preferredSource": "vcpkg/magic-enum",
+			"status": "temporary-vendored",
+			"reason": "Header-only dependency currently checked in.",
+			"maxFiles": 1,
+			"maxBytes": 56356,
+			"maxLines": 1144
+		},
+		{
+			"name": "Scale2x",
+			"pattern": "Utilities/Scale2x/*",
+			"preferredSource": "package-backed video filter bundle",
+			"status": "temporary-vendored",
+			"reason": "Legacy scaler path still shipped.",
+			"maxFiles": 6,
+			"maxBytes": 52159,
+			"maxLines": 1282
+		},
+		{
+			"name": "xBRZ",
+			"pattern": "Utilities/xBRZ/*",
+			"preferredSource": "package-backed video filter bundle",
+			"status": "temporary-vendored",
+			"reason": "Legacy scaler path still shipped.",
+			"maxFiles": 3,
+			"maxBytes": 48228,
+			"maxLines": 1042
+		},
+		{
+			"name": "snes_ntsc",
+			"pattern": "Utilities/NTSC/snes_ntsc*",
+			"preferredSource": "package-backed video filter bundle",
+			"status": "temporary-vendored",
+			"reason": "Specialized CRT filter implementation.",
+			"maxFiles": 4,
+			"maxBytes": 35176,
+			"maxLines": 753
+		},
+		{
+			"name": "nes_ntsc",
+			"pattern": "Utilities/NTSC/nes_ntsc*",
+			"preferredSource": "package-backed video filter bundle",
+			"status": "temporary-vendored",
+			"reason": "Specialized CRT filter implementation.",
+			"maxFiles": 4,
+			"maxBytes": 33193,
+			"maxLines": 778
+		},
+		{
+			"name": "KreedSaiEagle",
+			"pattern": "Utilities/KreedSaiEagle/*",
+			"preferredSource": "package-backed video filter bundle",
+			"status": "temporary-vendored",
+			"reason": "Legacy scaler path still shipped.",
+			"maxFiles": 4,
+			"maxBytes": 28460,
+			"maxLines": 382
+		},
+		{
+			"name": "kissfft",
+			"pattern": "Utilities/kissfft.h",
+			"preferredSource": "vcpkg/kissfft",
+			"status": "temporary-vendored",
+			"reason": "Header-only FFT implementation in equalizer path.",
+			"maxFiles": 1,
+			"maxBytes": 11408,
+			"maxLines": 309
+		}
+	]
+}
