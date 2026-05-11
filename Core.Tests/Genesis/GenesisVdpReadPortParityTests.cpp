@@ -21,6 +21,14 @@ namespace {
 		vdp.WriteControlPort(second);
 	}
 
+	static void SetDataPortWriteCram(GenesisVdp& vdp, uint16_t address) {
+		// CD3..0 = 0011 (CRAM write)
+		uint16_t first = (uint16_t)(0xC000u | (address & 0x3fffu));
+		uint16_t second = (uint16_t)(0x0000u | ((address >> 14) & 0x0003u));
+		vdp.WriteControlPort(first);
+		vdp.WriteControlPort(second);
+	}
+
 	static void SetDataPortReadVram(GenesisVdp& vdp, uint16_t address) {
 		SetDataPortCommand(vdp, 0x00, address);
 	}
@@ -177,5 +185,33 @@ namespace {
 		vdp.Run(488);
 		uint16_t emptyStatus = vdp.ReadControlPort();
 		EXPECT_NE(emptyStatus & VdpStatus::FifoEmpty, 0u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, VramWriteWrapsAcrossEndOfAddressSpace) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 15, 0x02);
+		SetDataPortWriteVram(vdp, 0xFFFF);
+		vdp.WriteDataPort(0x1234);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		EXPECT_EQ(vram[0xFFFF], 0x12u);
+		EXPECT_EQ(vram[0x0000], 0x34u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, CramWriteMasksToHardwareColorBits) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		SetDataPortWriteCram(vdp, 0x0000);
+		vdp.WriteDataPort(0xFFFF);
+
+		uint16_t* cram = vdp.GetCramPointer();
+		EXPECT_EQ(cram[0], 0x0eeeu);
+
+		SetDataPortReadCram(vdp, 0x0000);
+		uint16_t first = vdp.ReadDataPort();
+		EXPECT_EQ(first, 0x0eeeu);
 	}
 }

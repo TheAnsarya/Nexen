@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "Genesis/GenesisTypes.h"
 #include "Genesis/GenesisVdp.h"
+#include "Genesis/GenesisControlManager.h"
 #include "Shared/Emulator.h"
 #include "Shared/MemoryOperationType.h"
 #include "Debugger/AddressInfo.h"
@@ -12,7 +13,6 @@ class Emulator;
 class GenesisConsole;
 class GenesisM68k;
 class GenesisVdp;
-class GenesisControlManager;
 class GenesisPsg;
 
 class GenesisMemoryManager final : public ISerializable {
@@ -292,6 +292,9 @@ public:
 	__forceinline void Exec(uint32_t cycles) {
 		_masterClock += cycles;
 		AdvanceZ80BusArbitration(cycles);
+		if (_controlManager) {
+			_controlManager->AdvanceMasterClock(cycles);
+		}
 		UpdateTmssUnlockWindow(cycles);
 		UpdateZ80RuntimeState(false, 0, 0, "exec");
 		EmitStartupCheckpointIfNeeded("exec");

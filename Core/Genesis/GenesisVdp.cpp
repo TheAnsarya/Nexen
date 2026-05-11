@@ -1561,15 +1561,14 @@ void GenesisVdp::ApplyPortWrite(uint8_t accessMode, uint16_t address, uint16_t v
 		case 0x00:
 		case 0x01: {
 			uint32_t addr = address & 0xFFFFu;
-			if (addr + 1u < VramSize) {
-				_vram[addr] = (uint8_t)(value >> 8);
-				_vram[addr + 1u] = (uint8_t)value;
-			}
+			uint32_t nextAddr = (addr + 1u) & 0xFFFFu;
+			_vram[addr] = (uint8_t)(value >> 8);
+			_vram[nextAddr] = (uint8_t)value;
 			break;
 		}
 		case 0x03: {
 			uint8_t idx = (uint8_t)((address >> 1) & 0x3Fu);
-			_cram[idx] = value;
+			_cram[idx] = (uint16_t)(value & 0x0eeeu);
 			UpdatePaletteEntry(idx);
 			break;
 		}

@@ -766,6 +766,13 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_ioState.CtrlPort[0] = 0;
 	_ioState.CtrlPort[1] = 0;
 	_ioState.CtrlPort[2] = 0;
+	if (_controlManager) {
+		_controlManager->ResetRuntimeState();
+		_controlManager->WriteControlPort(0, _ioState.CtrlPort[0]);
+		_controlManager->WriteControlPort(1, _ioState.CtrlPort[1]);
+		_controlManager->WriteDataPort(0, _ioState.DataPort[0]);
+		_controlManager->WriteDataPort(1, _ioState.DataPort[1]);
+	}
 	memset(_segaCdBridgeA120, 0, sizeof(_segaCdBridgeA120));
 	memset(_segaCdBridgeA130, 0, sizeof(_segaCdBridgeA130));
 	memset(_segaCdBridgeA140, 0, sizeof(_segaCdBridgeA140));
@@ -3602,12 +3609,18 @@ uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
 			}
 		case 0x09:
 			{
+				if (_controlManager) {
+					_controlManager->WriteControlPort(0, _ioState.CtrlPort[0]);
+				}
 				uint8_t effectiveValue = _ioState.CtrlPort[0]; // Controller 1 ctrl
 				_openBus = effectiveValue;
 				return effectiveValue;
 			}
 		case 0x0B:
 			{
+				if (_controlManager) {
+					_controlManager->WriteControlPort(1, _ioState.CtrlPort[1]);
+				}
 				uint8_t effectiveValue = _ioState.CtrlPort[1]; // Controller 2 ctrl
 				_openBus = effectiveValue;
 				return effectiveValue;
@@ -3668,12 +3681,22 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 			{
 				uint8_t effectiveValue = value;
 				_ioState.CtrlPort[0] = effectiveValue;
+				if (_controlManager) {
+					_controlManager->WriteControlPort(0, effectiveValue);
+					_ioState.ThState[0] = _controlManager->GetThState(0);
+					_ioState.ThCount[0] = _controlManager->GetThCount(0);
+				}
 				break;
 			}
 		case 0x0B:
 			{
 				uint8_t effectiveValue = value;
 				_ioState.CtrlPort[1] = effectiveValue;
+				if (_controlManager) {
+					_controlManager->WriteControlPort(1, effectiveValue);
+					_ioState.ThState[1] = _controlManager->GetThState(1);
+					_ioState.ThCount[1] = _controlManager->GetThCount(1);
+				}
 				break;
 			}
 		case 0x0D:
@@ -3773,12 +3796,18 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 			case 0x09:
 				{
 					uint8_t statusByte = _ioState.CtrlPort[0];
+					if (_controlManager) {
+						_controlManager->WriteControlPort(0, statusByte);
+					}
 					effectiveValue = statusByte;
 				}
 				break;
 			case 0x0B:
 				{
 					uint8_t statusByte = _ioState.CtrlPort[1];
+					if (_controlManager) {
+						_controlManager->WriteControlPort(1, statusByte);
+					}
 					effectiveValue = statusByte;
 				}
 				break;
@@ -4053,6 +4082,11 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 					uint8_t effectiveValue = value;
 					uint8_t controlValue = effectiveValue;
 					_ioState.CtrlPort[0] = controlValue;
+					if (_controlManager) {
+						_controlManager->WriteControlPort(0, controlValue);
+						_ioState.ThState[0] = _controlManager->GetThState(0);
+						_ioState.ThCount[0] = _controlManager->GetThCount(0);
+					}
 					_openBus = effectiveValue;
 					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
 				}
@@ -4062,6 +4096,11 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 					uint8_t effectiveValue = value;
 					uint8_t controlValue = effectiveValue;
 					_ioState.CtrlPort[1] = controlValue;
+					if (_controlManager) {
+						_controlManager->WriteControlPort(1, controlValue);
+						_ioState.ThState[1] = _controlManager->GetThState(1);
+						_ioState.ThCount[1] = _controlManager->GetThCount(1);
+					}
 					_openBus = effectiveValue;
 					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
 				}
@@ -4455,6 +4494,13 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	memset(_ioState.SCtrl, 0, sizeof(_ioState.SCtrl));
 	memset(_ioState.ThCount, 0, sizeof(_ioState.ThCount));
 	memset(_ioState.ThState, 0, sizeof(_ioState.ThState));
+	if (_controlManager) {
+		_controlManager->ResetRuntimeState();
+		_controlManager->WriteControlPort(0, _ioState.CtrlPort[0]);
+		_controlManager->WriteControlPort(1, _ioState.CtrlPort[1]);
+		_controlManager->WriteDataPort(0, _ioState.DataPort[0]);
+		_controlManager->WriteDataPort(1, _ioState.DataPort[1]);
+	}
 	_ioState.CpuProgramCounterHeartbeat = 0;
 	_ioState.CpuCycleHeartbeat = 0;
 	_ioState.CpuInstructionHeartbeat = 0;

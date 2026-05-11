@@ -38,6 +38,7 @@ namespace {
 		GenesisConsole console(&emu);
 		std::unique_ptr<GenesisControlManager> controlManager = CreateControlManager(emu, console);
 		ASSERT_NE(controlManager, nullptr);
+		controlManager->WriteControlPort(0, 0x40);
 
 		auto device = controlManager->GetControlDevice(0);
 		ASSERT_NE(device, nullptr);
@@ -70,6 +71,7 @@ namespace {
 		GenesisConsole console(&emu);
 		std::unique_ptr<GenesisControlManager> controlManager = CreateControlManager(emu, console);
 		ASSERT_NE(controlManager, nullptr);
+		controlManager->WriteControlPort(0, 0x40);
 
 		auto device = controlManager->GetControlDevice(0);
 		ASSERT_NE(device, nullptr);
@@ -113,6 +115,7 @@ namespace {
 		GenesisConsole consoleA(&emuA);
 		std::unique_ptr<GenesisControlManager> managerA = CreateControlManager(emuA, consoleA);
 		ASSERT_NE(managerA, nullptr);
+		managerA->WriteControlPort(0, 0x40);
 
 		auto deviceA = managerA->GetControlDevice(0);
 		ASSERT_NE(deviceA, nullptr);
@@ -151,6 +154,7 @@ namespace {
 		GenesisConsole consoleA(&emuA);
 		std::unique_ptr<GenesisControlManager> managerA = CreateControlManager(emuA, consoleA);
 		ASSERT_NE(managerA, nullptr);
+		managerA->WriteControlPort(0, 0x40);
 
 		auto deviceA = managerA->GetControlDevice(0);
 		ASSERT_NE(deviceA, nullptr);
@@ -216,6 +220,8 @@ namespace {
 		GenesisConsole consoleA(&emuA);
 		std::unique_ptr<GenesisControlManager> managerA = CreateControlManager(emuA, consoleA);
 		ASSERT_NE(managerA, nullptr);
+		managerA->WriteControlPort(0, 0x40);
+		managerA->WriteControlPort(1, 0x40);
 
 		managerA->WriteDataPort(0, 0x40);
 		managerA->WriteDataPort(0, 0x00);
@@ -243,5 +249,49 @@ namespace {
 		EXPECT_EQ(managerB->GetDeterministicPortDigest(1), p2Digest);
 		EXPECT_NE(p1Caps & 0x10u, 0u);
 		EXPECT_NE(p2Caps & 0x20u, 0u);
+	}
+
+	TEST(GenesisControlManagerTests, ControlPortDirectionMaskOverridesInputBitsForOutputLines) {
+		Emulator emu;
+		GenesisConsole console(&emu);
+		std::unique_ptr<GenesisControlManager> controlManager = CreateControlManager(emu, console);
+		ASSERT_NE(controlManager, nullptr);
+
+		// Configure bit 3 and TH as output lines.
+		controlManager->WriteControlPort(0, 0x48);
+
+		controlManager->WriteDataPort(0, 0x40);
+		uint8_t highWithOutputLow = controlManager->ReadDataPort(0);
+		EXPECT_EQ(highWithOutputLow & 0x08u, 0x00u);
+
+		controlManager->WriteDataPort(0, 0x48);
+		uint8_t highWithOutputHigh = controlManager->ReadDataPort(0);
+		EXPECT_EQ(highWithOutputHigh & 0x08u, 0x08u);
+		EXPECT_EQ(highWithOutputHigh & 0x40u, 0x40u);
+	}
+
+	TEST(GenesisControlManagerTests, SixButtonSessionTimesOutWithoutThTransitions) {
+		Emulator emu;
+		GenesisConsole console(&emu);
+		std::unique_ptr<GenesisControlManager> controlManager = CreateControlManager(emu, console);
+		ASSERT_NE(controlManager, nullptr);
+
+		auto device = controlManager->GetControlDevice(0);
+		ASSERT_NE(device, nullptr);
+		device->SetBit(GenesisController::Buttons::X);
+
+		controlManager->WriteControlPort(0, 0x40);
+		controlManager->WriteDataPort(0, 0x40);
+		controlManager->WriteDataPort(0, 0x00);
+		controlManager->WriteDataPort(0, 0x40);
+		controlManager->WriteDataPort(0, 0x00);
+		controlManager->WriteDataPort(0, 0x40);
+
+		uint8_t sixButtonRead = controlManager->ReadDataPort(0);
+		EXPECT_EQ(sixButtonRead, 0x7bu);
+
+		controlManager->AdvanceMasterClock(13000);
+		uint8_t timedOutRead = controlManager->ReadDataPort(0);
+		EXPECT_EQ(timedOutRead, 0x7fu);
 	}
 }
