@@ -1,8 +1,7 @@
 ﻿#include "pch.h"
 #include <algorithm>
 #include <regex>
-#include "Lua/lua.hpp"
-#include "Lua/luasocket.hpp"
+#include "Debugger/LuaInterop.h"
 #include "Debugger/ScriptingContext.h"
 #include "Debugger/LuaApi.h"
 #include "Debugger/LuaCallHelper.h"

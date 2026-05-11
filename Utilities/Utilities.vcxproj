@@ -69,6 +69,11 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='PGO Optimize|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <PropertyGroup>
+    <NexenUsePackagedSpng Condition="'$(NexenUsePackagedSpng)'==''">false</NexenUsePackagedSpng>
+    <NexenUsePackagedSpngDefine Condition="'$(NexenUsePackagedSpng)'=='true'">1</NexenUsePackagedSpngDefine>
+    <NexenUsePackagedSpngDefine Condition="'$(NexenUsePackagedSpng)'!='true'">0</NexenUsePackagedSpngDefine>
+  </PropertyGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)\bin\win-$(PlatformTarget)\$(Configuration)\</OutDir>
@@ -99,7 +104,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NEXEN_USE_PACKAGED_SPNG=$(NexenUsePackagedSpngDefine);_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <CallingConvention>Cdecl</CallingConvention>
       <AdditionalIncludeDirectories>../</AdditionalIncludeDirectories>
@@ -121,7 +126,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NEXEN_USE_PACKAGED_SPNG=$(NexenUsePackagedSpngDefine);_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -143,7 +148,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NEXENRELEASE;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NEXEN_USE_PACKAGED_SPNG=$(NexenUsePackagedSpngDefine);NEXENRELEASE;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -165,7 +170,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NEXENRELEASE;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NEXEN_USE_PACKAGED_SPNG=$(NexenUsePackagedSpngDefine);NEXENRELEASE;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -382,7 +387,7 @@
     <ClCompile Include="sha1.cpp" />
     <ClCompile Include="SimpleLock.cpp" />
     <ClCompile Include="Socket.cpp" />
-    <ClCompile Include="spng.c">
+    <ClCompile Include="spng.c" Condition="'$(NexenUsePackagedSpng)'!='true'">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Default</CompileAs>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>

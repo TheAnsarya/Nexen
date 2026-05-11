@@ -2551,9 +2551,28 @@ did we just removing a warning? Or did we make sure we're not using Node 20?
 [Nexen] How much third party code are you storing? We want to use libraries and nuget packages, not raw source code, so fix that discrepancy; continue;
 
 continue;
+continue;
 
 [Nexen] `https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.40` was reverted to the the 1.4.39 description/readme and we need to fix it so it shows 1.4.40 description instead;
 
+yes do all those three things; [Nexen] continue with big batches;
+yes do all those three things; [Nexen] continue with big batches;
+yes do all those three things; [Nexen] continue with big batches;
+yes do all those three things; [Nexen] continue with big batches;
+yes do all those three things; [Nexen] continue with big batches;
+yes do all those three things; [Nexen] continue with big batches;
+
+[Nexen] How much third party code are you storing? We want to use libraries and nuget packages, not raw source code, so fix that discrepancy; make a ***big*** change, I mean 1000's of lines of code, work many fixes, you're only running for a few minutes, not doing very many changes, don't stop the session quickly, keep working more and more in one big effort or several large efforts; [Nexen] (Genesis/MegaDrive) Continue doing what we've been doing, but with a big aggressive code change push instead of piddly small efforts; Update a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` Genesis code to make big changes; continue; do all the steps; continue; do ***several*** batches in a row and make only one issue per big effort; Focus on controllers and input and timing and palettes and the completeness and correctness of operations/commands; continue;
+
+yes do all those three things; [Nexen] continue with big batches;
+yes do all those three things; [Nexen] continue with big batches;
+yes do all those three things; [Nexen] continue with big batches;
+yes do all those three things; [Nexen] continue with big batches;
+
+make a ***big*** change, I mean 1000's of lines of code, work many fixes, you're only running for a few minutes, not doing very many changes, don't stop the session quickly, keep working more and more in one big effort or several large efforts; [Nexen] (Genesis/MegaDrive) Continue doing what we've been doing, but with a big aggressive code change push instead of piddly small efforts; Update a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` Genesis code to make big changes; continue; do all the steps; continue; do ***several*** batches in a row and make only one issue per big effort; Focus on getting the startup and logos correct (like the first 10 seconds of a rom running after loading, but do even more and bigger; Mesen-Expanded runs Sonic, Nexen doesn't, fix that; continue;; continue;
+
+yes do all those three things; [Nexen] continue with big batches;
+yes do all those three things; [Nexen] continue with big batches;
 
 
 
@@ -2566,6 +2585,10 @@ continue;
 
 
 
+
+
+
+, but do even more and bigger; Mesen-Expanded runs Sonic, Nexen doesn't, fix that; continue;
 
 
 

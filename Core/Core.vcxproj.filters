@@ -118,7 +118,13 @@
     <ClCompile Include="Debugger\LuaCallHelper.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="Debugger\LuaWatchdogCompat.cpp">
+      <Filter>Debugger</Filter>
+    </ClCompile>
     <ClInclude Include="Debugger\LuaCallHelper.h">
+      <Filter>Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\LuaInterop.h">
       <Filter>Debugger</Filter>
     </ClInclude>
     <ClCompile Include="Debugger\MemoryAccessCounter.cpp">

@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include <cctype>
 #include "LuaApi.h"
-#include "Lua/lua.hpp"
+#include "Debugger/LuaInterop.h"
 #include "Debugger/LuaCallHelper.h"
 #include "Debugger/Debugger.h"
 #include "Debugger/MemoryDumper.h"

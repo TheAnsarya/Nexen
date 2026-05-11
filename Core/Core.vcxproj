@@ -674,6 +674,7 @@
     <ClInclude Include="Debugger\LabelManager.h" />
     <ClInclude Include="Debugger\LuaApi.h" />
     <ClInclude Include="Debugger\LuaCallHelper.h" />
+    <ClInclude Include="Debugger\LuaInterop.h" />
     <ClInclude Include="Debugger\MemoryAccessCounter.h" />
     <ClInclude Include="Netplay\MessageType.h" />
     <ClInclude Include="Netplay\MovieDataMessage.h" />
@@ -1135,6 +1136,7 @@
     <ClCompile Include="Shared\SaveStateManager.cpp" />
     <ClCompile Include="Shared\Video\ScaleFilter.cpp" />
     <ClCompile Include="Debugger\ScriptHost.cpp" />
+    <ClCompile Include="Debugger\LuaWatchdogCompat.cpp" />
     <ClCompile Include="Debugger\ScriptingContext.cpp" />
     <ClCompile Include="Debugger\ScriptManager.cpp" />
     <ClCompile Include="SNES\Coprocessors\SDD1\Sdd1.cpp" />
@@ -1290,6 +1292,11 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='PGO Optimize|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <PropertyGroup>
+    <NexenUsePackagedLua Condition="'$(NexenUsePackagedLua)'==''">false</NexenUsePackagedLua>
+    <NexenUsePackagedLuaDefine Condition="'$(NexenUsePackagedLua)'=='true'">1</NexenUsePackagedLuaDefine>
+    <NexenUsePackagedLuaDefine Condition="'$(NexenUsePackagedLua)'!='true'">0</NexenUsePackagedLuaDefine>
+  </PropertyGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -1329,7 +1336,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NEXEN_USE_PACKAGED_LUA=$(NexenUsePackagedLuaDefine);WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <InlineFunctionExpansion>
       </InlineFunctionExpansion>
@@ -1364,7 +1371,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NEXEN_USE_PACKAGED_LUA=$(NexenUsePackagedLuaDefine);WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
@@ -1398,7 +1405,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NexenOPTIMIZE;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NEXEN_USE_PACKAGED_LUA=$(NexenUsePackagedLuaDefine);NexenOPTIMIZE;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
@@ -1430,7 +1437,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NEXENOPTIMIZE;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NEXEN_USE_PACKAGED_LUA=$(NexenUsePackagedLuaDefine);NEXENOPTIMIZE;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>

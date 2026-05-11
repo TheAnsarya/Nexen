@@ -21,6 +21,34 @@ Remove vendored `Lua/*` source from Nexen and consume Lua through package-manage
 	- Lua lines: 31818
 	- Lua bytes: 1113623
 
+## Phase 1 Delta Inventory (completed)
+
+Nexen-specific Lua deltas explicitly marked in vendored sources:
+
+- `Lua/lua.h`
+	- Added `lua_WatchDogHook` callback typedef.
+	- Added `lua_setwatchdogtimer(lua_State*, lua_WatchDogHook, int)` API declaration.
+- `Lua/lstate.h`
+	- Added per-thread watchdog state fields (`watchdogtimer`, `watchdoghook`).
+- `Lua/lstate.c`
+	- Initialized watchdog state in `preinit_thread()`.
+- `Lua/ldebug.c`
+	- Implemented `lua_setwatchdogtimer()` API.
+- `Lua/lvm.c`
+	- Added watchdog countdown check in `vmfetch()` instruction dispatch macro.
+
+## Prototype Build Toggles (implemented)
+
+- `NexenUsePackagedLua` (MSBuild property, default `false`)
+	- When `true`, solution projects can bypass direct `Lua/Lua.vcxproj` linkage in:
+		- `Core.Tests/Core.Tests.vcxproj`
+		- `Core.Benchmarks/Core.Benchmarks.vcxproj`
+		- `InteropDLL/InteropDLL.vcxproj`
+- `NEXEN_USE_PACKAGED_LUA` (compile-time define in `Core/Core.vcxproj`)
+	- Added interop adapter: `Core/Debugger/LuaInterop.h`
+	- Added compatibility shim: `Core/Debugger/LuaWatchdogCompat.cpp`
+	- Current shim maps watchdog behavior onto `lua_sethook(..., LUA_MASKCOUNT, ...)` for prototype validation.
+
 ## Plan
 
 1. Identify all Nexen-specific Lua deltas versus upstream/package Lua.

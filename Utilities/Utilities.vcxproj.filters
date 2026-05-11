@@ -248,7 +248,7 @@
     <ClCompile Include="PNGHelper.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="spng.c" />
+    <ClCompile Include="spng.c" Condition="'$(NexenUsePackagedSpng)'!='true'" />
     <ClCompile Include="Audio\blip_buf.cpp">
       <Filter>Audio</Filter>
     </ClCompile>
