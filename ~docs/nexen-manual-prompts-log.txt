@@ -2529,6 +2529,23 @@ yes do those three steps! Make sure 1.4.40 is fully released, with read me and d
 
 yes do those three steps! Make sure 1.4.40 is fully released, with read me and doc changes, full artifact builds, and a complete release to the github page; continue; make sure all projects are using the most modern versions and code and standards and practices, and the most modern libraries and framework versions, like dot net 10+ and C# 14+; stop running test actions on github every git commit if they cost tokens, because those are about to cost money, run github test actions only when making a release; make sure the build sdks are using dotnet 10 and c# 14 or a more modern version; continue;
 
+You're building and failing in a spiral without making any changes? STOP building figure out why window builds aren't working, figure out why other builds wouldn't work, fix all the problems, then try to build and release 1.4.40 again; continue;
+
+You're building and failing in a spiral without making any changes? STOP building figure out why Windows builds aren't working, figure out why other builds (linux, MacOS) wouldn't work, fix all the problems, then try to build and release 1.4.40 again; make sure all projects are using the most modern versions and code and standards and practices, and the most modern libraries and framework versions, like dot net 10+ and C# 14+; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
