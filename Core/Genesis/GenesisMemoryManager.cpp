@@ -1032,9 +1032,17 @@ uint16_t GenesisMemoryManager::GetEffectiveZ80BusReqAckDelayMclk(uint32_t frame)
 			pos = span;
 		}
 
-		uint32_t early = _startupEarlyBusReqAckDelayMclk;
-		uint32_t late = _startupLateBusReqAckDelayMclk;
-		return (uint16_t)(early + ((late - early) * pos) / span);
+		int32_t early = (int32_t)_startupEarlyBusReqAckDelayMclk;
+		int32_t late = (int32_t)_startupLateBusReqAckDelayMclk;
+		int32_t delta = late - early;
+		int32_t blended = early + (int32_t)((delta * (int32_t)pos) / (int32_t)span);
+		if (blended < 0) {
+			blended = 0;
+		}
+		if (blended > 255) {
+			blended = 255;
+		}
+		return (uint16_t)blended;
 	}
 
 	return _startupEarlyBusReqAckDelayMclk;
@@ -1062,9 +1070,17 @@ uint16_t GenesisMemoryManager::GetEffectiveZ80BusResumeDelayMclk(uint32_t frame)
 			pos = span;
 		}
 
-		uint32_t early = _startupEarlyBusResumeDelayMclk;
-		uint32_t late = _startupLateBusResumeDelayMclk;
-		return (uint16_t)(early + ((late - early) * pos) / span);
+		int32_t early = (int32_t)_startupEarlyBusResumeDelayMclk;
+		int32_t late = (int32_t)_startupLateBusResumeDelayMclk;
+		int32_t delta = late - early;
+		int32_t blended = early + (int32_t)((delta * (int32_t)pos) / (int32_t)span);
+		if (blended < 0) {
+			blended = 0;
+		}
+		if (blended > 255) {
+			blended = 255;
+		}
+		return (uint16_t)blended;
 	}
 
 	return _startupEarlyBusResumeDelayMclk;

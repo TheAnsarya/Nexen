@@ -385,6 +385,85 @@ namespace {
 		EXPECT_EQ(memoryManager.GetStartupCheckpointEndFrame(), 600u);
 		EXPECT_EQ(memoryManager.GetZ80BusReqAckDelaySettingMclk(), 7u);
 	}
+
+	TEST(GenesisStartupLogoProfileTests, StartupPhaseOverridesAreStoredAndStrictStartIsClampedToLogoPhaseEnd) {
+		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
+			{ "NEXEN_GENESIS_STARTUP_BOOT_RELAX_FRAMES", "9" },
+			{ "NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", "160" },
+			{ "NEXEN_GENESIS_STARTUP_STRICT_PHASE_START_FRAME", "100" }
+		});
+
+		EXPECT_EQ(memoryManager.GetStartupBootRelaxFrames(), 9u);
+		EXPECT_EQ(memoryManager.GetStartupLogoPhaseEndFrame(), 160u);
+		EXPECT_EQ(memoryManager.GetStartupStrictPhaseStartFrame(), 160u);
+	}
+
+	TEST(GenesisStartupLogoProfileTests, HybridDynamicTimingInterpolatesAcrossPhaseBoundaries) {
+		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "hybrid" },
+			{ "NEXEN_GENESIS_USE_DYNAMIC_BUS_TIMING", "1" },
+			{ "NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", "100" },
+			{ "NEXEN_GENESIS_STARTUP_STRICT_PHASE_START_FRAME", "300" },
+			{ "NEXEN_GENESIS_Z80_EARLY_BUSREQ_ACK_DELAY_MCLK", "45" },
+			{ "NEXEN_GENESIS_Z80_EARLY_BUSRESUME_DELAY_MCLK", "15" },
+			{ "NEXEN_GENESIS_Z80_LATE_BUSREQ_ACK_DELAY_MCLK", "7" },
+			{ "NEXEN_GENESIS_Z80_LATE_BUSRESUME_DELAY_MCLK", "7" }
+		});
+
+		EXPECT_TRUE(memoryManager.GetStartupUseDynamicBusTiming());
+		EXPECT_TRUE(memoryManager.IsStartupLogoPhaseForFrame(99u));
+		EXPECT_FALSE(memoryManager.IsStartupLogoPhaseForFrame(100u));
+		EXPECT_FALSE(memoryManager.IsStartupStrictPhaseForFrame(299u));
+		EXPECT_TRUE(memoryManager.IsStartupStrictPhaseForFrame(300u));
+
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusReqAckDelayForFrame(0u), 45u);
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusReqAckDelayForFrame(100u), 45u);
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusReqAckDelayForFrame(200u), 26u);
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusReqAckDelayForFrame(300u), 7u);
+
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusResumeDelayForFrame(0u), 15u);
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusResumeDelayForFrame(100u), 15u);
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusResumeDelayForFrame(200u), 11u);
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusResumeDelayForFrame(300u), 7u);
+	}
+
+	TEST(GenesisStartupLogoProfileTests, NonDynamicTimingRemainsStableAcrossFrameSweeps) {
+		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "logo-compat" },
+			{ "NEXEN_GENESIS_USE_DYNAMIC_BUS_TIMING", "0" },
+			{ "NEXEN_GENESIS_Z80_BUSREQ_ACK_DELAY_MCLK", "12" },
+			{ "NEXEN_GENESIS_Z80_BUSRESUME_DELAY_MCLK", "14" }
+		});
+
+		EXPECT_FALSE(memoryManager.GetStartupUseDynamicBusTiming());
+		for (uint32_t frame = 0; frame <= 720; frame += 120) {
+			EXPECT_EQ(memoryManager.GetEffectiveZ80BusReqAckDelayForFrame(frame), 12u);
+			EXPECT_EQ(memoryManager.GetEffectiveZ80BusResumeDelayForFrame(frame), 14u);
+		}
+	}
+
+	TEST(GenesisStartupLogoProfileTests, RefreshStartupBusTimingForFrameTracksPhaseRetunes) {
+		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "hybrid" },
+			{ "NEXEN_GENESIS_USE_DYNAMIC_BUS_TIMING", "1" },
+			{ "NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", "60" },
+			{ "NEXEN_GENESIS_STARTUP_STRICT_PHASE_START_FRAME", "120" },
+			{ "NEXEN_GENESIS_Z80_EARLY_BUSREQ_ACK_DELAY_MCLK", "30" },
+			{ "NEXEN_GENESIS_Z80_EARLY_BUSRESUME_DELAY_MCLK", "20" },
+			{ "NEXEN_GENESIS_Z80_LATE_BUSREQ_ACK_DELAY_MCLK", "10" },
+			{ "NEXEN_GENESIS_Z80_LATE_BUSRESUME_DELAY_MCLK", "8" }
+		});
+
+		uint32_t initialRetunes = memoryManager.GetStartupBusTimingRetuneCount();
+		memoryManager.RefreshStartupBusTimingForFrame(60u);
+		memoryManager.RefreshStartupBusTimingForFrame(90u);
+		memoryManager.RefreshStartupBusTimingForFrame(120u);
+
+		EXPECT_GE(memoryManager.GetStartupBusTimingRetuneCount(), initialRetunes + 2u);
+		EXPECT_EQ(memoryManager.GetStartupLastBusTimingFrame(), 120u);
+		EXPECT_EQ(memoryManager.GetZ80BusReqAckDelaySettingMclk(), 10u);
+		EXPECT_EQ(memoryManager.GetZ80BusResumeDelaySettingMclk(), 8u);
+	}
 }
 
 

@@ -309,6 +309,95 @@ namespace {
 		auto runB = runScenario();
 		EXPECT_EQ(runA, runB);
 	}
+
+	TEST(GenesisStartupLogoStressTests, HybridDynamicDelaysAreMonotonicAcrossStartupSweep) {
+		std::vector<std::pair<const char*, const char*>> envVars = {
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "hybrid" },
+			{ "NEXEN_GENESIS_USE_DYNAMIC_BUS_TIMING", "1" },
+			{ "NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", "120" },
+			{ "NEXEN_GENESIS_STARTUP_STRICT_PHASE_START_FRAME", "360" },
+			{ "NEXEN_GENESIS_Z80_EARLY_BUSREQ_ACK_DELAY_MCLK", "45" },
+			{ "NEXEN_GENESIS_Z80_EARLY_BUSRESUME_DELAY_MCLK", "15" },
+			{ "NEXEN_GENESIS_Z80_LATE_BUSREQ_ACK_DELAY_MCLK", "7" },
+			{ "NEXEN_GENESIS_Z80_LATE_BUSRESUME_DELAY_MCLK", "7" }
+		};
+		Harness harness(envVars);
+
+		uint16_t prevAck = harness.Memory.GetEffectiveZ80BusReqAckDelayForFrame(0u);
+		uint16_t prevResume = harness.Memory.GetEffectiveZ80BusResumeDelayForFrame(0u);
+		for (uint32_t frame = 20u; frame <= 420u; frame += 20u) {
+			uint16_t ack = harness.Memory.GetEffectiveZ80BusReqAckDelayForFrame(frame);
+			uint16_t resume = harness.Memory.GetEffectiveZ80BusResumeDelayForFrame(frame);
+			EXPECT_LE(ack, prevAck);
+			EXPECT_LE(resume, prevResume);
+			prevAck = ack;
+			prevResume = resume;
+		}
+
+		EXPECT_EQ(harness.Memory.GetEffectiveZ80BusReqAckDelayForFrame(480u), 7u);
+		EXPECT_EQ(harness.Memory.GetEffectiveZ80BusResumeDelayForFrame(480u), 7u);
+	}
+
+	TEST(GenesisStartupLogoStressTests, StartupProfileParityMaintainsExpectedEarlyBootHandshakeTargets) {
+		struct PhaseParityCase {
+			const char* Profile;
+			uint16_t EarlyAck;
+			uint16_t EarlyResume;
+			uint16_t StrictAck;
+			uint16_t StrictResume;
+		};
+
+		const std::array<PhaseParityCase, 4> cases = {
+			PhaseParityCase{ "logo-compat", 7u, 7u, 7u, 7u },
+			PhaseParityCase{ "nexen-ref", 7u, 7u, 7u, 7u },
+			PhaseParityCase{ "mesen-compat", 45u, 15u, 45u, 15u },
+			PhaseParityCase{ "strict", 45u, 15u, 45u, 15u }
+		};
+
+		for (const auto& profileCase : cases) {
+			std::vector<std::pair<const char*, const char*>> envVars = {
+				{ "NEXEN_GENESIS_STARTUP_PROFILE", profileCase.Profile }
+			};
+			Harness harness(envVars);
+			EXPECT_EQ(harness.Memory.GetEffectiveZ80BusReqAckDelayForFrame(0u), profileCase.EarlyAck) << profileCase.Profile;
+			EXPECT_EQ(harness.Memory.GetEffectiveZ80BusResumeDelayForFrame(0u), profileCase.EarlyResume) << profileCase.Profile;
+			EXPECT_EQ(harness.Memory.GetEffectiveZ80BusReqAckDelayForFrame(600u), profileCase.StrictAck) << profileCase.Profile;
+			EXPECT_EQ(harness.Memory.GetEffectiveZ80BusResumeDelayForFrame(600u), profileCase.StrictResume) << profileCase.Profile;
+		}
+	}
+
+	TEST(GenesisStartupLogoStressTests, DynamicRetuneSweepIsDeterministicAcrossIdenticalHarnessRuns) {
+		auto runRetuneScenario = []() {
+			Harness harness({
+				{ "NEXEN_GENESIS_STARTUP_PROFILE", "hybrid" },
+				{ "NEXEN_GENESIS_USE_DYNAMIC_BUS_TIMING", "1" },
+				{ "NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", "90" },
+				{ "NEXEN_GENESIS_STARTUP_STRICT_PHASE_START_FRAME", "270" },
+				{ "NEXEN_GENESIS_Z80_EARLY_BUSREQ_ACK_DELAY_MCLK", "39" },
+				{ "NEXEN_GENESIS_Z80_EARLY_BUSRESUME_DELAY_MCLK", "17" },
+				{ "NEXEN_GENESIS_Z80_LATE_BUSREQ_ACK_DELAY_MCLK", "9" },
+				{ "NEXEN_GENESIS_Z80_LATE_BUSRESUME_DELAY_MCLK", "7" }
+			});
+
+			for (uint32_t frame = 0u; frame <= 360u; frame += 30u) {
+				harness.Memory.RefreshStartupBusTimingForFrame(frame);
+			}
+
+			return std::tuple<uint32_t, uint32_t, uint16_t, uint16_t>(
+				harness.Memory.GetStartupBusTimingRetuneCount(),
+				harness.Memory.GetStartupLastBusTimingFrame(),
+				harness.Memory.GetZ80BusReqAckDelaySettingMclk(),
+				harness.Memory.GetZ80BusResumeDelaySettingMclk());
+		};
+
+		auto runA = runRetuneScenario();
+		auto runB = runRetuneScenario();
+		EXPECT_EQ(runA, runB);
+		EXPECT_GE(std::get<0>(runA), 2u);
+		EXPECT_EQ(std::get<1>(runA), 270u);
+		EXPECT_EQ(std::get<2>(runA), 9u);
+		EXPECT_EQ(std::get<3>(runA), 7u);
+	}
 }
 
 

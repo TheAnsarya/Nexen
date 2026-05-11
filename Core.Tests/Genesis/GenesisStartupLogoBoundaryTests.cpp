@@ -293,6 +293,61 @@ namespace {
 		EXPECT_EQ(memoryManager.GetZ80BusReqAckDelaySettingMclk(), 45u);
 		EXPECT_EQ(memoryManager.GetZ80BusResumeDelaySettingMclk(), 15u);
 	}
+
+	TEST(GenesisStartupLogoBoundaryTests, StrictPhaseStartLowerThanLogoEndIsClampedToLogoEnd) {
+		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
+			{ "NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", "220" },
+			{ "NEXEN_GENESIS_STARTUP_STRICT_PHASE_START_FRAME", "100" }
+		});
+
+		EXPECT_EQ(memoryManager.GetStartupLogoPhaseEndFrame(), 220u);
+		EXPECT_EQ(memoryManager.GetStartupStrictPhaseStartFrame(), 220u);
+	}
+
+	TEST(GenesisStartupLogoBoundaryTests, OutOfRangePhaseBoundaryValuesKeepProfileDefaults) {
+		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
+			{ "NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", "1900" },
+			{ "NEXEN_GENESIS_STARTUP_STRICT_PHASE_START_FRAME", "1900" }
+		});
+
+		EXPECT_EQ(memoryManager.GetStartupLogoPhaseEndFrame(), 120u);
+		EXPECT_EQ(memoryManager.GetStartupStrictPhaseStartFrame(), 300u);
+	}
+
+	TEST(GenesisStartupLogoBoundaryTests, UnifiedDelayOverridesCanBeRefinedByLatePhaseSpecificOverrides) {
+		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "hybrid" },
+			{ "NEXEN_GENESIS_USE_DYNAMIC_BUS_TIMING", "1" },
+			{ "NEXEN_GENESIS_Z80_BUSREQ_ACK_DELAY_MCLK", "23" },
+			{ "NEXEN_GENESIS_Z80_BUSRESUME_DELAY_MCLK", "25" },
+			{ "NEXEN_GENESIS_Z80_LATE_BUSREQ_ACK_DELAY_MCLK", "11" },
+			{ "NEXEN_GENESIS_Z80_LATE_BUSRESUME_DELAY_MCLK", "13" },
+			{ "NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", "100" },
+			{ "NEXEN_GENESIS_STARTUP_STRICT_PHASE_START_FRAME", "200" }
+		});
+
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusReqAckDelayForFrame(0u), 23u);
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusResumeDelayForFrame(0u), 25u);
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusReqAckDelayForFrame(200u), 11u);
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusResumeDelayForFrame(200u), 13u);
+	}
+
+	TEST(GenesisStartupLogoBoundaryTests, DynamicTimingDisabledUsesResolvedStaticDelaySettingsAcrossAllPhaseFrames) {
+		GenesisMemoryManager memoryManager = CreateMemoryManagerWithEnv({
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "hybrid" },
+			{ "NEXEN_GENESIS_USE_DYNAMIC_BUS_TIMING", "0" },
+			{ "NEXEN_GENESIS_Z80_BUSREQ_ACK_DELAY_MCLK", "18" },
+			{ "NEXEN_GENESIS_Z80_BUSRESUME_DELAY_MCLK", "20" },
+			{ "NEXEN_GENESIS_Z80_EARLY_BUSREQ_ACK_DELAY_MCLK", "45" },
+			{ "NEXEN_GENESIS_Z80_LATE_BUSREQ_ACK_DELAY_MCLK", "7" }
+		});
+
+		EXPECT_FALSE(memoryManager.GetStartupUseDynamicBusTiming());
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusReqAckDelayForFrame(0u), 45u);
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusReqAckDelayForFrame(600u), 45u);
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusResumeDelayForFrame(0u), 20u);
+		EXPECT_EQ(memoryManager.GetEffectiveZ80BusResumeDelayForFrame(600u), 20u);
+	}
 }
 
 

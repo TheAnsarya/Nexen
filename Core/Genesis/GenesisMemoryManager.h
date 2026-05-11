@@ -320,10 +320,26 @@ public:
 	uint16_t GetZ80BusReqAckDelaySettingMclk() const { return _z80BusReqAckDelayMclkSetting; }
 	uint16_t GetZ80BusResumeDelaySettingMclk() const { return _z80BusResumeDelayMclkSetting; }
 	uint32_t GetStartupWindowFrames() const { return _startupWindowFrames; }
+	uint32_t GetStartupBootRelaxFrames() const { return _startupBootRelaxFrames; }
+	uint32_t GetStartupLogoPhaseEndFrame() const { return _startupLogoPhaseEndFrame; }
+	uint32_t GetStartupStrictPhaseStartFrame() const { return _startupStrictPhaseStartFrame; }
 	uint32_t GetStartupCheckpointEndFrame() const { return _startupCheckpointEndFrame; }
 	uint32_t GetStartupCheckpointIntervalFrames() const { return _startupCheckpointIntervalFrames; }
 	uint32_t GetStartupDisplayTransitionCount() const { return _startupDisplayTransitionCount; }
 	bool GetStartupProfilePreferNexenBusHandoff() const { return _startupProfilePreferNexenBusHandoff; }
+	bool GetStartupProfilePreferMesenBusHandoff() const { return _startupProfilePreferMesenBusHandoff; }
+	bool GetStartupUseDynamicBusTiming() const { return _startupUseDynamicBusTiming; }
+	bool IsStartupLogoPhaseForFrame(uint32_t frame) const { return IsStartupLogoPhase(frame); }
+	bool IsStartupStrictPhaseForFrame(uint32_t frame) const { return IsStartupStrictPhase(frame); }
+	uint16_t GetStartupEarlyBusReqAckDelayMclk() const { return _startupEarlyBusReqAckDelayMclk; }
+	uint16_t GetStartupEarlyBusResumeDelayMclk() const { return _startupEarlyBusResumeDelayMclk; }
+	uint16_t GetStartupLateBusReqAckDelayMclk() const { return _startupLateBusReqAckDelayMclk; }
+	uint16_t GetStartupLateBusResumeDelayMclk() const { return _startupLateBusResumeDelayMclk; }
+	uint16_t GetEffectiveZ80BusReqAckDelayForFrame(uint32_t frame) const { return GetEffectiveZ80BusReqAckDelayMclk(frame); }
+	uint16_t GetEffectiveZ80BusResumeDelayForFrame(uint32_t frame) const { return GetEffectiveZ80BusResumeDelayMclk(frame); }
+	void RefreshStartupBusTimingForFrame(uint32_t frame) { RefreshStartupBusTiming(frame, false, 0, 0, "test"); }
+	uint32_t GetStartupBusTimingRetuneCount() const { return _startupBusTimingRetuneCount; }
+	uint32_t GetStartupLastBusTimingFrame() const { return _startupLastBusTimingFrame; }
 	uint32_t GetDebugTranscriptLaneCount() const { return _ioState.DebugTranscriptLaneCount; }
 	uint64_t GetDebugTranscriptLaneDigest() const { return _ioState.DebugTranscriptLaneDigest; }
 	void ClearDebugTranscriptLane();
