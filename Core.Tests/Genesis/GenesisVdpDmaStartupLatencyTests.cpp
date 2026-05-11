@@ -405,7 +405,6 @@ namespace {
 		EXPECT_EQ(afterFirst.Registers[19], 0x02);
 		EXPECT_EQ(afterFirst.Registers[21], 0x01);
 		EXPECT_EQ(afterFirst.Registers[23], 0x41);
-
 		vdp.WriteControlPort(0x97c0);
 
 		vdp.Run(43);
@@ -1236,5 +1235,78 @@ namespace {
 		EXPECT_EQ(after85.Registers[23], 0x41);
 		EXPECT_FALSE(after85.DmaActive);
 		EXPECT_EQ((uint32_t)(after85.StatusRegister & VdpStatus::DmaBusy), 0u);
+	}
+
+	TEST(GenesisVdpDmaStartupLatencyTests, StatusReportsBusDmaAsFifoFullAndNotEmptyDuringStartupWindow) {
+		vector<uint8_t> rom = BuildDmaSourceRom();
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+		ConfigureBusDmaTransfer(vdp, false, 0x02);
+
+		uint16_t statusAtStart = vdp.ReadControlPort();
+		EXPECT_NE(statusAtStart & VdpStatus::DmaBusy, 0u);
+		EXPECT_NE(statusAtStart & VdpStatus::FifoFull, 0u);
+		EXPECT_EQ(statusAtStart & VdpStatus::FifoEmpty, 0u);
+
+		vdp.Run(41);
+		uint16_t statusDuringDelay = vdp.ReadControlPort();
+		EXPECT_NE(statusDuringDelay & VdpStatus::DmaBusy, 0u);
+		EXPECT_NE(statusDuringDelay & VdpStatus::FifoFull, 0u);
+		EXPECT_EQ(statusDuringDelay & VdpStatus::FifoEmpty, 0u);
+	}
+
+	TEST(GenesisVdpDmaStartupLatencyTests, StatusReleasesBusDmaFifoOverrideAfterTransferCompletes) {
+		vector<uint8_t> rom = BuildDmaSourceRom();
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+		ConfigureBusDmaTransfer(vdp, true, 0x01);
+
+		uint16_t statusBeforeRun = vdp.ReadControlPort();
+		EXPECT_NE(statusBeforeRun & VdpStatus::FifoFull, 0u);
+		EXPECT_EQ(statusBeforeRun & VdpStatus::FifoEmpty, 0u);
+
+		vdp.Run(41);
+		GenesisVdpState stateAfterTransfer = vdp.GetState();
+		EXPECT_FALSE(stateAfterTransfer.DmaActive);
+
+		uint16_t statusAfterTransfer = vdp.ReadControlPort();
+		EXPECT_EQ(statusAfterTransfer & VdpStatus::DmaBusy, 0u);
+		EXPECT_EQ(statusAfterTransfer & VdpStatus::FifoFull, 0u);
+		EXPECT_NE(statusAfterTransfer & VdpStatus::FifoEmpty, 0u);
+	}
+
+	TEST(GenesisVdpDmaStartupLatencyTests, FillDmaDoesNotForceBusDmaFifoStatusOverride) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x8110); // DMA enable
+		vdp.WriteControlPort(0x8f02); // auto-increment
+		vdp.WriteControlPort(0x9301); // length low
+		vdp.WriteControlPort(0x9400); // length high
+		vdp.WriteControlPort(0x9500); // src low
+		vdp.WriteControlPort(0x9600); // src mid
+		vdp.WriteControlPort(0x9780); // fill DMA mode
+		vdp.WriteControlPort(0x4000); // address + command first
+		vdp.WriteControlPort(0x0080); // address + command second (start DMA)
+
+		GenesisVdpState stateBeforeFillData = vdp.GetState();
+		EXPECT_TRUE(stateBeforeFillData.DmaActive);
+
+		uint16_t statusBeforeFillData = vdp.ReadControlPort();
+		EXPECT_NE(statusBeforeFillData & VdpStatus::DmaBusy, 0u);
+		EXPECT_EQ(statusBeforeFillData & VdpStatus::FifoFull, 0u);
+		EXPECT_NE(statusBeforeFillData & VdpStatus::FifoEmpty, 0u);
 	}
 }

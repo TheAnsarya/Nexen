@@ -121,6 +121,7 @@ private:
 	void EnqueueWriteFifo(uint8_t accessMode, uint16_t address, uint16_t value);
 	void DrainWriteFifoOne();
 	void ApplyPortWrite(uint8_t accessMode, uint16_t address, uint16_t value);
+	bool IsBusDmaTransferActiveForStatus() const;
 	void UpdateFifoStatusBits();
 	void PrimeReadBuffer();
 	uint8_t VCounterValue(uint32_t scanline) const;

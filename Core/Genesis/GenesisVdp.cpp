@@ -459,6 +459,12 @@ uint8_t GenesisVdp::ReadPortByte(uint32_t addr) {
 }
 
 void GenesisVdp::UpdateFifoStatusBits() {
+	if (IsBusDmaTransferActiveForStatus()) {
+		_state.StatusRegister &= ~VdpStatus::FifoEmpty;
+		_state.StatusRegister |= VdpStatus::FifoFull;
+		return;
+	}
+
 	if (_writeFifoCount == 0) {
 		_state.StatusRegister |= VdpStatus::FifoEmpty;
 		_state.StatusRegister &= ~VdpStatus::FifoFull;
@@ -469,6 +475,23 @@ void GenesisVdp::UpdateFifoStatusBits() {
 		_state.StatusRegister &= ~VdpStatus::FifoEmpty;
 		_state.StatusRegister &= ~VdpStatus::FifoFull;
 	}
+}
+
+bool GenesisVdp::IsBusDmaTransferActiveForStatus() const {
+	if (!_state.DmaActive) {
+		return false;
+	}
+
+	if (!_dmaInitialized) {
+		uint8_t configuredMode = (uint8_t)((_state.Registers[23] >> 6) & 0x03u);
+		return configuredMode <= 1;
+	}
+
+	if (_dmaLatchedMode > 1) {
+		return false;
+	}
+
+	return _dmaRemainingWords > 0;
 }
 
 uint8_t GenesisVdp::VCounterValue(uint32_t scanline) const {
