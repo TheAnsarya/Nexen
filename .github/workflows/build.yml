@@ -972,14 +972,34 @@ jobs:
           ls -la release-assets/
 
       - name: Create or update release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ env.VERSION }}
-          name: Nexen ${{ env.VERSION }}
-          body_path: .github/release-notes/latest.md
-          target_commitish: ${{ github.sha }}
-          files: release-assets/*
-          fail_on_unmatched_files: false
-          generate_release_notes: false
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          VERSION="${VERSION}"
+          RELEASE_TITLE="Nexen ${VERSION}"
+          RELEASE_TAG="${VERSION}"
+
+          if gh release view "${RELEASE_TAG}" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh release edit "${RELEASE_TAG}" \
+              --repo "${{ github.repository }}" \
+              --title "${RELEASE_TITLE}" \
+              --notes-file .github/release-notes/latest.md \
+              --target "${{ github.sha }}"
+          else
+            gh release create "${RELEASE_TAG}" \
+              --repo "${{ github.repository }}" \
+              --title "${RELEASE_TITLE}" \
+              --notes-file .github/release-notes/latest.md \
+              --target "${{ github.sha }}"
+          fi
+
+          if compgen -G "release-assets/*" > /dev/null; then
+            gh release upload "${RELEASE_TAG}" release-assets/* \
+              --repo "${{ github.repository }}" \
+              --clobber
+          else
+            echo "No release assets found; skipping upload"
+          fi

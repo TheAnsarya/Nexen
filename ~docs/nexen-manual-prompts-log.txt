@@ -2535,11 +2535,13 @@ You're building and failing in a spiral without making any changes? STOP buildin
 
 fix warnings in the Windows build path so we can finish the 1.4.40 release and rerun the windows builds; continue;
 
+you've got windows builds now, make sure readme.md and other docs are updated, and finish the 1.4.40 version release, copying artifacts, and continue;
 
+[Nexen] The 1.4.40 release page `https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.40` still has the content from the 1.4.39 release so create a new body text for the 1.4.40 release page and update the content; the 1.4.40 release also has not been pushed to github! The Nexen page is still linking to 1.4.39, push the release; continue;
 
+[Nexen] `https://github.com/TheAnsarya/Nexen` still shows links to 1.4.39, not the latest release 1.4.40; fix this release link issue; make sure the 1.4.40 release is complete and in the `readme.md`; continue;
 
-
-
+What "Node 20 deprecation"? Always use the most modern versions! continue;
 
 
 
