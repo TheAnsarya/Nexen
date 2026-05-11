@@ -194,6 +194,8 @@ jobs:
         run: |
           $warningLog = "build-warning-report.txt"
           $firstPartyWarningLog = "build-warning-report-firstparty.txt"
+          "Warning report placeholder (step started)." | Out-File -FilePath $warningLog -Encoding utf8
+          "First-party warning report placeholder (step started)." | Out-File -FilePath $firstPartyWarningLog -Encoding utf8
           msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /m /nologo /clp:WarningsOnly 2>&1 | Tee-Object -FilePath $warningLog
           if (!(Test-Path $warningLog) -or (Get-Item $warningLog).Length -eq 0) {
             "No warnings detected (WarningsOnly output was empty)." | Out-File -FilePath $warningLog -Encoding utf8
@@ -220,6 +222,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: Warning Report (Windows${{ matrix.platform.aotString }})
+          if-no-files-found: warn
           path: |
             build-warning-report.txt
             build-warning-report-firstparty.txt
