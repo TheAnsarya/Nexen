@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "stb_vorbis.h"
 // Ogg Vorbis audio decoder - v1.22 - public domain
 // http://nothings.org/stb_vorbis/
@@ -4474,7 +4474,7 @@ static int go_to_page_before(stb_vorbis* f, unsigned int limit_offset) {
 // be less than or equal to the provided sample number (the closer the
 // better).
 static int seek_to_sample_coarse(stb_vorbis* f, uint32 sample_number) {
-	ProbedPage left, right, mid;
+	ProbedPage left, right, mid = {};
 	int i, start_seg_with_known_loc, end_pos, page_start;
 	uint32 delta, stream_length, padding, last_sample_limit;
 	double offset = 0.0, bytes_per_sample = 0.0;
@@ -4506,6 +4506,7 @@ static int seek_to_sample_coarse(stb_vorbis* f, uint32 sample_number) {
 
 	right = f->p_last;
 	assert(right.last_decoded_sample != ~0U);
+	mid = left;
 
 	// starting from the start is handled differently
 	if (last_sample_limit <= left.last_decoded_sample) {

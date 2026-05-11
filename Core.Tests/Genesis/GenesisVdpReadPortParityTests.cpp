@@ -233,16 +233,16 @@ namespace {
 		vdp.WriteDataPort(0xdddd);
 
 		uint16_t fullStatus = vdp.ReadControlPort();
-		EXPECT_NE(fullStatus & VdpStatus::FifoFull, 0u);
-		EXPECT_EQ(fullStatus & VdpStatus::FifoEmpty, 0u);
+		EXPECT_NE((uint16_t)(fullStatus & (uint16_t)VdpStatus::FifoFull), (uint16_t)0);
+		EXPECT_EQ((uint16_t)(fullStatus & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
 
 		vdp.Run(400);
 		uint16_t midStatus = vdp.ReadControlPort();
-		EXPECT_EQ(midStatus & VdpStatus::FifoFull, 0u);
+		EXPECT_EQ((uint16_t)(midStatus & (uint16_t)VdpStatus::FifoFull), (uint16_t)0);
 
 		vdp.Run(488);
 		uint16_t emptyStatus = vdp.ReadControlPort();
-		EXPECT_NE(emptyStatus & VdpStatus::FifoEmpty, 0u);
+		EXPECT_NE((uint16_t)(emptyStatus & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
 	}
 
 	TEST(GenesisVdpReadPortParityTests, VramWriteWrapsAcrossEndOfAddressSpace) {
