@@ -1645,6 +1645,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			uint32_t RenderEvidenceCount = 0;
 			uint32_t InputEvidenceCount = 0;
 			uint32_t StageTransitionCount = 0;
+			uint32_t FirstStageTransitionWindow = 0xffffffffu;
 			string SignatureDigest;
 		};
 
@@ -1688,6 +1689,9 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 					probe.RenderEvidenceCount++;
 					if (!previousRenderDigest.empty() && previousRenderDigest != sample.Bus.RenderLineDigest) {
 						probe.StageTransitionCount++;
+						if (probe.FirstStageTransitionWindow == 0xffffffffu) {
+							probe.FirstStageTransitionWindow = window;
+						}
 					}
 					previousRenderDigest = sample.Bus.RenderLineDigest;
 				}
@@ -1734,6 +1738,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& first10sLogoLaneFirst.RenderEvidenceCount == first10sLogoLaneReplay.RenderEvidenceCount
 			&& first10sLogoLaneFirst.InputEvidenceCount == first10sLogoLaneReplay.InputEvidenceCount
 			&& first10sLogoLaneFirst.StageTransitionCount == first10sLogoLaneReplay.StageTransitionCount
+			&& first10sLogoLaneFirst.FirstStageTransitionWindow == first10sLogoLaneReplay.FirstStageTransitionWindow
 			&& first10sLogoLaneFirst.SignatureDigest == first10sLogoLaneReplay.SignatureDigest;
 		bool first10sLogoLanePass = !isTargetStartupClass || (
 			first10sLogoLaneFirst.WindowCount == 10
@@ -1745,7 +1750,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			"GEN-COMPAT-FIRST10S-LOGO-LANE",
 			first10sLogoLanePass,
 			std::format(
-				"class={} target={} windows={} frameDelta={} vIntDelta={} hIntDelta={} renderEvidence={} inputEvidence={} stageTransitions={} replayMatch={} digest={}",
+				"class={} target={} windows={} frameDelta={} vIntDelta={} hIntDelta={} renderEvidence={} inputEvidence={} stageTransitions={} firstStageWindow={} replayMatch={} digest={}",
 				titleClass,
 				isTargetStartupClass ? 1 : 0,
 				first10sLogoLaneFirst.WindowCount,
@@ -1755,6 +1760,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				first10sLogoLaneFirst.RenderEvidenceCount,
 				first10sLogoLaneFirst.InputEvidenceCount,
 				first10sLogoLaneFirst.StageTransitionCount,
+				first10sLogoLaneFirst.FirstStageTransitionWindow,
 				first10sLogoLaneReplayMatch ? 1 : 0,
 				first10sLogoLaneFirst.SignatureDigest));
 
@@ -1765,12 +1771,18 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			uint64_t ExecutedCyclesDelta = 0;
 			uint32_t BusReqToggleWindows = 0;
 			uint32_t ResetToggleWindows = 0;
+			uint32_t FirstBusReqToggleWindow = 0xffffffffu;
+			uint32_t FirstResetToggleWindow = 0xffffffffu;
 			string SignatureDigest;
 		};
 
 		auto runFirst10SecondsBusArbitrationProbe = [&scaffold, &titleClass](const GenesisBoundaryScaffoldSaveState& baseline) {
 			First10SecondsBusArbitrationProbeResult probe = {};
 			uint64_t digest = 1469598103934665603ull;
+			uint8_t previousBusReqRead = 0;
+			uint8_t previousResetRead = 0;
+			bool hasPreviousBusReqRead = false;
+			bool hasPreviousResetRead = false;
 
 			for (uint32_t window = 0; window < 10; window++) {
 				uint8_t busReqValue = (window & 0x01) ? 0x01 : 0x00;
@@ -1801,9 +1813,19 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 
 				if (busReqRead == 0x01 || busReqRead == 0x00) {
 					probe.BusReqToggleWindows++;
+					if (hasPreviousBusReqRead && busReqRead != previousBusReqRead && probe.FirstBusReqToggleWindow == 0xffffffffu) {
+						probe.FirstBusReqToggleWindow = window;
+					}
+					hasPreviousBusReqRead = true;
+					previousBusReqRead = busReqRead;
 				}
 				if (resetRead == 0x01 || resetRead == 0x00) {
 					probe.ResetToggleWindows++;
+					if (hasPreviousResetRead && resetRead != previousResetRead && probe.FirstResetToggleWindow == 0xffffffffu) {
+						probe.FirstResetToggleWindow = window;
+					}
+					hasPreviousResetRead = true;
+					previousResetRead = resetRead;
 				}
 
 				string line = std::format(
@@ -1838,6 +1860,8 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& first10sBusArbFirst.ExecutedCyclesDelta == first10sBusArbReplay.ExecutedCyclesDelta
 			&& first10sBusArbFirst.BusReqToggleWindows == first10sBusArbReplay.BusReqToggleWindows
 			&& first10sBusArbFirst.ResetToggleWindows == first10sBusArbReplay.ResetToggleWindows
+			&& first10sBusArbFirst.FirstBusReqToggleWindow == first10sBusArbReplay.FirstBusReqToggleWindow
+			&& first10sBusArbFirst.FirstResetToggleWindow == first10sBusArbReplay.FirstResetToggleWindow
 			&& first10sBusArbFirst.SignatureDigest == first10sBusArbReplay.SignatureDigest;
 		bool first10sBusArbPass = !isTargetStartupClass || (
 			first10sBusArbFirst.WindowCount == 10
@@ -1850,7 +1874,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			"GEN-COMPAT-FIRST10S-BUS-ARBITRATION",
 			first10sBusArbPass,
 			std::format(
-				"class={} target={} windows={} frameDelta={} handoffDelta={} executedCyclesDelta={} busReqToggles={} resetToggles={} replayMatch={} digest={}",
+				"class={} target={} windows={} frameDelta={} handoffDelta={} executedCyclesDelta={} busReqToggles={} resetToggles={} firstBusReqWindow={} firstResetWindow={} replayMatch={} digest={}",
 				titleClass,
 				isTargetStartupClass ? 1 : 0,
 				first10sBusArbFirst.WindowCount,
@@ -1859,8 +1883,34 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				first10sBusArbFirst.ExecutedCyclesDelta,
 				first10sBusArbFirst.BusReqToggleWindows,
 				first10sBusArbFirst.ResetToggleWindows,
+				first10sBusArbFirst.FirstBusReqToggleWindow,
+				first10sBusArbFirst.FirstResetToggleWindow,
 				first10sBusArbReplayMatch ? 1 : 0,
 				first10sBusArbFirst.SignatureDigest));
+
+		bool hasDisplayTransitionWindow = first10sLogoLaneFirst.FirstStageTransitionWindow != 0xffffffffu;
+		bool hasBusReqToggleWindow = first10sBusArbFirst.FirstBusReqToggleWindow != 0xffffffffu;
+		bool hasResetToggleWindow = first10sBusArbFirst.FirstResetToggleWindow != 0xffffffffu;
+		bool startupSequencingPass = !isTargetStartupClass || (
+			!hasDisplayTransitionWindow
+			|| ((hasBusReqToggleWindow && hasResetToggleWindow)
+				&& first10sBusArbFirst.FirstBusReqToggleWindow <= first10sLogoLaneFirst.FirstStageTransitionWindow
+				&& first10sBusArbFirst.FirstResetToggleWindow <= first10sLogoLaneFirst.FirstStageTransitionWindow));
+		addCheckpoint(
+			"GEN-COMPAT-STARTUP-SEQUENCING-COHERENCE",
+			startupSequencingPass,
+			std::format(
+				"class={} target={} hasDisplayTransition={} firstDisplayWindow={} hasBusReqToggle={} firstBusReqWindow={} hasResetToggle={} firstResetWindow={} busReplayMatch={} logoReplayMatch={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				hasDisplayTransitionWindow ? 1 : 0,
+				first10sLogoLaneFirst.FirstStageTransitionWindow,
+				hasBusReqToggleWindow ? 1 : 0,
+				first10sBusArbFirst.FirstBusReqToggleWindow,
+				hasResetToggleWindow ? 1 : 0,
+				first10sBusArbFirst.FirstResetToggleWindow,
+				first10sBusArbReplayMatch ? 1 : 0,
+				first10sLogoLaneReplayMatch ? 1 : 0));
 
 		struct First10SecondsEventIntegrityProbeResult {
 			uint32_t EventCount = 0;
@@ -1971,6 +2021,7 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-FIRST10S-LOGO-LANE")
 			&& hasPassingCheckpoint("GEN-COMPAT-FIRST10S-BUS-ARBITRATION")
 			&& hasPassingCheckpoint("GEN-COMPAT-FIRST10S-EVENT-INTEGRITY")
+			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-SEQUENCING-COHERENCE")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-TIMING-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-STATUS-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-CADENCE-STARTUP")

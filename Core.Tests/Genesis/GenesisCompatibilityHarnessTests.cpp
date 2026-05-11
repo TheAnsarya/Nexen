@@ -10,6 +10,12 @@ namespace {
 		return corpus;
 	}
 
+	vector<GenesisCompatibilityRomCase> BuildStartupBudgetCorpus() {
+		vector<GenesisCompatibilityRomCase> corpus;
+		corpus.push_back({"startup-budget.bin", vector<uint8_t>(0x4000, 0x4E)});
+		return corpus;
+	}
+
 	TEST(GenesisCompatibilityHarnessTests, CompatibilityDigestIsDeterministicAcrossRuns) {
 		GenesisM68kBoundaryScaffold scaffold;
 		vector<GenesisCompatibilityRomCase> corpus = BuildGenesisCompatibilityCorpus();
@@ -60,6 +66,22 @@ namespace {
 		EXPECT_FALSE(result.Digest.empty());
 	}
 
+	TEST(GenesisCompatibilityHarnessTests, StartupCompatibilityRuntimeBudgetGatePassesForTargetSlice) {
+		GenesisM68kBoundaryScaffold scaffold;
+		vector<GenesisCompatibilityRomCase> corpus = BuildStartupBudgetCorpus();
+		constexpr uint64_t kStartupBudgetMicros = 20000000ull;
+
+		auto start = std::chrono::steady_clock::now();
+		GenesisCompatibilityMatrixResult result = GenesisSmokeHarness::RunCompatibilityMatrix(scaffold, corpus);
+		auto end = std::chrono::steady_clock::now();
+		uint64_t elapsedMicros = (uint64_t)std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+		EXPECT_EQ(result.PassCount, (int)corpus.size());
+		EXPECT_EQ(result.FailCount, 0);
+		EXPECT_FALSE(result.Digest.empty());
+		EXPECT_LE(elapsedMicros, kStartupBudgetMicros);
+	}
+
 	TEST(GenesisCompatibilityHarnessTests, MapperEdgeAndOwnershipCheckpointsArePresentAndPassing) {
 		GenesisM68kBoundaryScaffold scaffold;
 		vector<GenesisCompatibilityRomCase> corpus = BuildGenesisCompatibilityCorpus();
@@ -97,6 +119,7 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST10S-LOGO-LANE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST10S-BUS-ARBITRATION"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST10S-EVENT-INTEGRITY"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-STARTUP-SEQUENCING-COHERENCE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TAS-CHEAT"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-PBC-BOOT"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-PBC-RUNTIME"));
@@ -134,6 +157,7 @@ namespace {
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST10S-LOGO-LANE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST10S-BUS-ARBITRATION"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-FIRST10S-EVENT-INTEGRITY"));
+			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-STARTUP-SEQUENCING-COHERENCE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DETERMINISM"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-DEBUG-LANE"));
 			EXPECT_TRUE(hasPassingCheckpoint("GEN-COMPAT-TAS-CHEAT"));

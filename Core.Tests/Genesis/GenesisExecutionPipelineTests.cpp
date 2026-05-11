@@ -506,3 +506,44 @@ TEST(GenesisExecutionPipelineTests, StartupTraceInvariantsHoldWhenFrameEventsAre
 	EXPECT_EQ(runA, runC);
 	EXPECT_GT(std::get<0>(runA), 0u);
 }
+
+TEST(GenesisExecutionPipelineTests, StartupDisplayTransitionsTrackBusReqResetTimelineDeterministically) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 90;
+
+	auto captureRun = [&]() {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-startup-sequencing.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetMemoryManager()) {
+			return std::tuple<uint32_t, uint8_t, uint16_t, uint64_t, uint64_t>(0, 0, 0, 0, 0);
+		}
+
+		auto* mm = console.GetMemoryManager();
+		for (int i = 0; i < FrameCount; i++) {
+			mm->Write8(0xA11200, (i & 1) ? 0x00 : 0x01);
+			mm->Write8(0xA11100, (i & 1) ? 0x00 : 0x01);
+			console.RunFrame();
+		}
+
+		return std::tuple<uint32_t, uint8_t, uint16_t, uint64_t, uint64_t>(
+			mm->GetStartupDisplayTransitionCount(),
+			mm->GetStartupArbitrationEpoch(),
+			mm->GetStartupLastArbitrationMclk(),
+			mm->GetZ80RuntimeTransitionCount(),
+			mm->GetStartupTraceDigest());
+	};
+
+	auto runA = captureRun();
+	auto runB = captureRun();
+
+	EXPECT_EQ(runA, runB);
+	EXPECT_GT(std::get<4>(runA), 0u);
+	if (std::get<0>(runA) > 0u) {
+		EXPECT_GT(std::get<1>(runA), 0u);
+		EXPECT_GT(std::get<2>(runA), 0u);
+		EXPECT_GT(std::get<3>(runA), 0u);
+	}
+}

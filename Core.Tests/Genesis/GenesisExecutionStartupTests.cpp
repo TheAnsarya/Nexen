@@ -663,6 +663,65 @@ TEST(GenesisExecutionStartupTests, StartupTmssStrictDuringLogoDisablesBypassWith
 	EXPECT_TRUE(mm->IsTmssLockedWriteAllowedForAddr(0xC00004));
 }
 
+TEST(GenesisExecutionStartupTests, StartupTmssStrictDelayedUnlockCheckpointsRemainDeterministicAcrossRuns) {
+	auto captureCheckpointTimeline = []() {
+		ScopedStartupEnv env({
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "hybrid" },
+			{ "NEXEN_GENESIS_TMSS_STRICT", "1" },
+			{ "NEXEN_GENESIS_TMSS_STRICT_DURING_LOGO", "1" },
+			{ "NEXEN_GENESIS_TMSS_FORCE_UNTIL_UNLOCK", "1" },
+			{ "NEXEN_GENESIS_TMSS_UNLOCK_DELAY_MCLK", "32" },
+			{ "NEXEN_GENESIS_STARTUP_WINDOW_FRAMES", "96" },
+			{ "NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", "144" }
+		});
+
+		constexpr uint32_t InitialSp = 0x00FFFE00;
+		constexpr uint32_t InitialPc = 0x00000100;
+		std::vector<uint8_t> romData = BuildNopBootRom(InitialSp, InitialPc, 0x4000, true);
+		VirtualFile rom(romData.data(), romData.size(), "boot-tmss-strict-delayed-unlock.md");
+		Emulator emu;
+		emu.GetSettings()->GetGenesisConfig().EnableTmss = true;
+		GenesisConsole console(&emu);
+
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetMemoryManager()) {
+			return std::tuple<std::vector<uint64_t>, uint32_t>(std::vector<uint64_t>(), 0xffffffffu);
+		}
+
+		auto* mm = console.GetMemoryManager();
+		mm->Write8(0xA14000, 'S');
+		mm->Write8(0xA14001, 'E');
+		mm->Write8(0xA14002, 'G');
+		mm->Write8(0xA14003, 'A');
+
+		std::vector<uint64_t> checkpoints;
+		checkpoints.reserve(10);
+		uint32_t firstUnlockedStep = 0xffffffffu;
+		for (uint32_t step = 0; step < 10; step++) {
+			mm->Exec(4);
+			uint64_t packed = 0;
+			packed |= (uint64_t)(mm->GetTmssUnlockPending() ? 1u : 0u) << 0;
+			packed |= (uint64_t)(mm->GetTmssUnlocked() ? 1u : 0u) << 1;
+			packed |= (uint64_t)(mm->IsTmssLockedReadAllowedForAddr(0xC00000) ? 1u : 0u) << 2;
+			packed |= (uint64_t)(mm->IsTmssLockedWriteAllowedForAddr(0xC00000) ? 1u : 0u) << 3;
+			packed |= (uint64_t)(mm->GetTmssUnlockDelayMclk() & 0xFFFFu) << 8;
+			checkpoints.push_back(packed);
+			if (mm->GetTmssUnlocked() && firstUnlockedStep == 0xffffffffu) {
+				firstUnlockedStep = step;
+			}
+		}
+
+		return std::tuple<std::vector<uint64_t>, uint32_t>(checkpoints, firstUnlockedStep);
+	};
+
+	auto runA = captureCheckpointTimeline();
+	auto runB = captureCheckpointTimeline();
+
+	ASSERT_FALSE(std::get<0>(runA).empty());
+	EXPECT_EQ(runA, runB);
+	EXPECT_NE(std::get<1>(runA), 0xffffffffu);
+	EXPECT_LT(std::get<1>(runA), 10u);
+}
+
 TEST(GenesisExecutionStartupTests, FirstSecondArbitrationTelemetryRemainsDeterministicAcrossRuns) {
 	auto capture = []() {
 		ScopedStartupEnv env({
