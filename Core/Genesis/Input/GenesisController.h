@@ -21,6 +21,64 @@ public:
 		return _sixButton;
 	}
 
+	uint32_t GetButtonMask() {
+		enum : uint32_t {
+			MaskUp = 1u << 0,
+			MaskDown = 1u << 1,
+			MaskLeft = 1u << 2,
+			MaskRight = 1u << 3,
+			MaskA = 1u << 4,
+			MaskB = 1u << 5,
+			MaskC = 1u << 6,
+			MaskStart = 1u << 7,
+			MaskX = 1u << 8,
+			MaskY = 1u << 9,
+			MaskZ = 1u << 10,
+			MaskMode = 1u << 11,
+		};
+
+		uint32_t mask = 0;
+		if (IsPressed(Buttons::Up)) {
+			mask |= MaskUp;
+		}
+		if (IsPressed(Buttons::Down)) {
+			mask |= MaskDown;
+		}
+		if (IsPressed(Buttons::Left)) {
+			mask |= MaskLeft;
+		}
+		if (IsPressed(Buttons::Right)) {
+			mask |= MaskRight;
+		}
+		if (IsPressed(Buttons::A)) {
+			mask |= MaskA;
+		}
+		if (IsPressed(Buttons::B)) {
+			mask |= MaskB;
+		}
+		if (IsPressed(Buttons::C)) {
+			mask |= MaskC;
+		}
+		if (IsPressed(Buttons::Start)) {
+			mask |= MaskStart;
+		}
+		if (_sixButton) {
+			if (IsPressed(Buttons::X)) {
+				mask |= MaskX;
+			}
+			if (IsPressed(Buttons::Y)) {
+				mask |= MaskY;
+			}
+			if (IsPressed(Buttons::Z)) {
+				mask |= MaskZ;
+			}
+			if (IsPressed(Buttons::Mode)) {
+				mask |= MaskMode;
+			}
+		}
+		return mask;
+	}
+
 	uint8_t ReadRam(uint16_t addr) override { return 0; }
 	void WriteRam(uint16_t addr, uint8_t value) override {}
 

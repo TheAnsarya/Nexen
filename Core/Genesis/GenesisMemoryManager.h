@@ -254,6 +254,12 @@ private:
 	bool IsTmssLockedVdpReadAllowed(uint32_t addr) const;
 	bool IsTmssLockedVdpWriteAllowed(uint32_t addr) const;
 	void TraceStartupEvent(const char* tag, uint32_t addr, uint16_t value, uint16_t auxValue = 0);
+	uint8_t ReadVersionRegister() const;
+	void SyncIoPadRuntimeState(uint8_t port);
+	uint8_t ReadIoDataPort(uint8_t port);
+	uint8_t ReadIoControlPort(uint8_t port);
+	void WriteIoDataPort(uint8_t port, uint8_t value);
+	void WriteIoControlPort(uint8_t port, uint8_t value);
 
 public:
 	GenesisMemoryManager();

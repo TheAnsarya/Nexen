@@ -12,28 +12,62 @@ GenesisControlManager::GenesisControlManager(Emulator* emu, GenesisConsole* cons
 }
 
 void GenesisControlManager::ApplySixButtonSessionTimeout(uint8_t port) {
-	if (port > 1 || _thCount[port] == 0) {
+	if (port > 1 || _thPulseCounter[port] == 0) {
 		return;
 	}
 
 	uint64_t idleTime = _masterClock - _lastThTransitionClock[port];
 	if (idleTime >= SixButtonSessionTimeoutMclk) {
-		_thCount[port] = 0;
+		_thPulseCounter[port] = 0;
 	}
 }
 
-void GenesisControlManager::CommitThOutputState(uint8_t port, uint8_t nextThState) {
+void GenesisControlManager::WriteGamepadPort(uint8_t port, uint8_t data, uint8_t directionMask) {
+	if (port > 1) {
+		return;
+	}
+	uint8_t prevState = (uint8_t)(_thState[port] & 0x40u);
+	bool thOutput = (directionMask & 0x40u) != 0u;
+	bool compatBootThDrive = !thOutput && directionMask == 0x00u;
+
+	if (thOutput || compatBootThDrive) {
+		uint8_t nextState = (uint8_t)(data & 0x40u);
+		_thInputLatencyUntilClock[port] = 0;
+
+		if (IsSixButtonDevice(port) && nextState != 0 && prevState == 0) {
+			if (_thPulseCounter[port] <= 6u) {
+				_thPulseCounter[port] = (uint8_t)(_thPulseCounter[port] + 2u);
+			} else {
+				_thPulseCounter[port] = 8u;
+			}
+			_lastThTransitionClock[port] = _masterClock;
+		}
+
+		if (nextState != prevState) {
+			_lastThTransitionClock[port] = _masterClock;
+		}
+		_thState[port] = nextState;
+	} else {
+		_thState[port] = 0x40u;
+		if (prevState == 0) {
+			// Hardware delays TH input-high visibility after direction flips to input.
+			_thInputLatencyUntilClock[port] = _masterClock + 172u;
+		}
+	}
+
+	auto device = GetControlDevice(port);
+	if (!device || !device->IsConnected()) {
+		_thPulseCounter[port] = 0;
+		_thInputLatencyUntilClock[port] = 0;
+	}
+}
+
+void GenesisControlManager::ApplyPortWriteState(uint8_t port) {
 	if (port > 1) {
 		return;
 	}
 
-	if (nextThState != _thState[port]) {
-		_thState[port] = nextThState;
-		if (_thCount[port] < 0xff) {
-			_thCount[port]++;
-		}
-		_lastThTransitionClock[port] = _masterClock;
-	}
+	WriteGamepadPort(port, (uint8_t)(_dataPortWrite[port] & 0x7fu), (uint8_t)(_ctrlPortWrite[port] & 0x7fu));
 }
 
 bool GenesisControlManager::IsSixButtonSessionActive(uint8_t port) const {
@@ -41,7 +75,28 @@ bool GenesisControlManager::IsSixButtonSessionActive(uint8_t port) const {
 		return false;
 	}
 
-	return _thCount[port] >= 4;
+	return _thPulseCounter[port] >= 4u;
+}
+
+uint8_t GenesisControlManager::BuildSixButtonStep(uint8_t port, bool thHigh) const {
+	if (port > 1) {
+		return thHigh ? 1u : 0u;
+	}
+
+	uint8_t step = (uint8_t)(thHigh ? 1u : 0u);
+	if (IsSixButtonDevice(port)) {
+		step = (uint8_t)(step | _thPulseCounter[port]);
+	}
+
+	if (_masterClock < _thInputLatencyUntilClock[port]) {
+		step &= 0xfeu;
+	}
+
+	if (!IsSixButtonDevice(port)) {
+		step = (uint8_t)(thHigh ? 1u : 0u);
+	}
+
+	return step;
 }
 
 bool GenesisControlManager::IsSixButtonDevice(uint8_t port) const {
@@ -71,12 +126,7 @@ uint8_t GenesisControlManager::ResolveThOutputLevel(uint8_t port) const {
 		return 0x40;
 	}
 
-	// TH defaults high when configured as input.
-	if ((_ctrlPortWrite[port] & 0x40) == 0) {
-		return 0x40;
-	}
-
-	return (uint8_t)(_dataPortWrite[port] & 0x40);
+	return (uint8_t)(_thState[port] & 0x40u);
 }
 
 uint8_t GenesisControlManager::BuildRawInputState(uint8_t port, bool thHigh, bool sixButtonSession) const {
@@ -89,34 +139,63 @@ uint8_t GenesisControlManager::BuildRawInputState(uint8_t port, bool thHigh, boo
 		return 0x7f;
 	}
 
-	uint8_t value = 0;
-	if (thHigh) {
-		bool exposeExtraButtons = sixButtonSession && ((_thCount[port] & 0x07u) >= 4u);
-		if (exposeExtraButtons) {
-			value |= device->IsPressed(GenesisController::Buttons::Z)    ? 0 : 0x01;
-			value |= device->IsPressed(GenesisController::Buttons::Y)    ? 0 : 0x02;
-			value |= device->IsPressed(GenesisController::Buttons::X)    ? 0 : 0x04;
-			value |= device->IsPressed(GenesisController::Buttons::Mode) ? 0 : 0x08;
-			value |= device->IsPressed(GenesisController::Buttons::B)    ? 0 : 0x10;
-			value |= device->IsPressed(GenesisController::Buttons::C)    ? 0 : 0x20;
-		} else {
-			value |= device->IsPressed(GenesisController::Buttons::Up)    ? 0 : 0x01;
-			value |= device->IsPressed(GenesisController::Buttons::Down)  ? 0 : 0x02;
-			value |= device->IsPressed(GenesisController::Buttons::Left)  ? 0 : 0x04;
-			value |= device->IsPressed(GenesisController::Buttons::Right) ? 0 : 0x08;
-			value |= device->IsPressed(GenesisController::Buttons::B)     ? 0 : 0x10;
-			value |= device->IsPressed(GenesisController::Buttons::C)     ? 0 : 0x20;
+	uint8_t value = (uint8_t)((thHigh ? 0x40u : 0x00u) | 0x3fu);
+	uint8_t step = BuildSixButtonStep(port, thHigh);
+	if (!sixButtonSession) {
+		step = (uint8_t)(thHigh ? 1u : 0u);
+	}
+
+	auto activeLow = [&](uint8_t bit, GenesisController::Buttons button) {
+		if (device->IsPressed(button)) {
+			uint8_t bitMask = (uint8_t)(1u << bit);
+			if ((value & bitMask) != 0u) {
+				value = (uint8_t)(value - bitMask);
+			}
 		}
-		value |= 0x40;
-	} else {
-		value |= device->IsPressed(GenesisController::Buttons::Up)    ? 0 : 0x01;
-		value |= device->IsPressed(GenesisController::Buttons::Down)  ? 0 : 0x02;
-		if (sixButtonSession && ((_thCount[port] & 0x07u) >= 4u)) {
-			// 6-button signature nibble once the session is active.
-			value |= 0x0c;
-		}
-		value |= device->IsPressed(GenesisController::Buttons::A)     ? 0 : 0x10;
-		value |= device->IsPressed(GenesisController::Buttons::Start) ? 0 : 0x20;
+	};
+
+	switch (step) {
+		case 2: // Third low: ?0SA0000
+			value = 0x30u;
+			activeLow(5, GenesisController::Buttons::Start);
+			activeLow(4, GenesisController::Buttons::A);
+			break;
+
+		case 5: // Fourth high: ?1CBMXYZ
+			value = 0x7Fu;
+			activeLow(5, GenesisController::Buttons::C);
+			activeLow(4, GenesisController::Buttons::B);
+			activeLow(3, GenesisController::Buttons::Mode);
+			activeLow(2, GenesisController::Buttons::X);
+			activeLow(1, GenesisController::Buttons::Y);
+			activeLow(0, GenesisController::Buttons::Z);
+			break;
+
+		case 4: // Fourth low: ?0SA1111
+			value = 0x3Fu;
+			activeLow(5, GenesisController::Buttons::Start);
+			activeLow(4, GenesisController::Buttons::A);
+			break;
+
+		default:
+			if ((step & 1u) != 0u) {
+				// TH=1: ?1CBRLDU
+				value = 0x7Fu;
+				activeLow(5, GenesisController::Buttons::C);
+				activeLow(4, GenesisController::Buttons::B);
+				activeLow(3, GenesisController::Buttons::Right);
+				activeLow(2, GenesisController::Buttons::Left);
+				activeLow(1, GenesisController::Buttons::Down);
+				activeLow(0, GenesisController::Buttons::Up);
+			} else {
+				// TH=0: ?0SA00DU
+				value = 0x33u;
+				activeLow(5, GenesisController::Buttons::Start);
+				activeLow(4, GenesisController::Buttons::A);
+				activeLow(1, GenesisController::Buttons::Down);
+				activeLow(0, GenesisController::Buttons::Up);
+			}
+			break;
 	}
 
 	return value;
@@ -143,7 +222,7 @@ uint8_t GenesisControlManager::BuildDeterministicPortCapabilities(uint8_t port) 
 	if (device && device->IsConnected()) {
 		capabilities |= 0x01;
 	}
-	if (_thCount[port] >= 4) {
+	if (_thPulseCounter[port] >= 4u) {
 		capabilities |= 0x02;
 	}
 	if ((_thState[port] & 0x40) != 0) {
@@ -172,7 +251,8 @@ uint8_t GenesisControlManager::BuildDeterministicPortDigest(uint8_t port) const 
 	digest ^= _dataPortWrite[port];
 	digest ^= (uint8_t)(_ctrlPortWrite[port] << 1);
 	digest ^= (uint8_t)(_thState[port] >> 1);
-	digest ^= (uint8_t)(_thCount[port] * 13u);
+	digest ^= (uint8_t)(_thPulseCounter[port] * 13u);
+	digest ^= (uint8_t)((_thInputLatencyUntilClock[port] > _masterClock) ? 0x33u : 0u);
 	return digest;
 }
 
@@ -226,6 +306,30 @@ void GenesisControlManager::UpdateControlDevices() {
 	_prevConfig = cfg;
 }
 
+uint32_t GenesisControlManager::GetButtonsForPort(int port) {
+	auto lock = _deviceLock.AcquireSafe();
+	for (shared_ptr<BaseControlDevice>& dev : _controlDevices) {
+		if (dev->GetPort() == (uint8_t)port && (
+			dev->HasControllerType(ControllerType::GenesisController) ||
+			dev->HasControllerType(ControllerType::GenesisController3Buttons)
+		)) {
+			GenesisController* pad = dynamic_cast<GenesisController*>(dev.get());
+			return pad ? pad->GetButtonMask() : 0u;
+		}
+	}
+	return 0u;
+}
+
+bool GenesisControlManager::IsPortConnected(int port) {
+	auto lock = _deviceLock.AcquireSafe();
+	for (shared_ptr<BaseControlDevice>& dev : _controlDevices) {
+		if (dev->GetPort() == (uint8_t)port) {
+			return dev->IsConnected();
+		}
+	}
+	return false;
+}
+
 void GenesisControlManager::AdvanceMasterClock(uint32_t masterClocks) {
 	_masterClock += masterClocks;
 	ApplySixButtonSessionTimeout(0);
@@ -240,10 +344,17 @@ uint8_t GenesisControlManager::ReadDataPort(uint8_t port) {
 	}
 
 	ApplySixButtonSessionTimeout(port);
+	shared_ptr<BaseControlDevice> device = GetControlDevice(port);
+	if (!device || !device->IsConnected()) {
+		_thPulseCounter[port] = 0;
+		_thInputLatencyUntilClock[port] = 0;
+		return 0x7f;
+	}
+
 	bool thHigh = (ResolveThOutputLevel(port) & 0x40) != 0;
 	bool sixButtonSession = IsSixButtonDevice(port) && IsSixButtonSessionActive(port);
 	uint8_t rawInput = BuildRawInputState(port, thHigh, sixButtonSession);
-	return ApplyControlPortDirectionMask(port, rawInput);
+	return (uint8_t)(ApplyControlPortDirectionMask(port, rawInput) & 0x7fu);
 }
 
 void GenesisControlManager::WriteDataPort(uint8_t port, uint8_t value) {
@@ -251,9 +362,8 @@ void GenesisControlManager::WriteDataPort(uint8_t port, uint8_t value) {
 		return;
 	}
 
-	_dataPortWrite[port] = value;
-	uint8_t nextThState = ResolveThOutputLevel(port);
-	CommitThOutputState(port, nextThState);
+	_dataPortWrite[port] = (uint8_t)(value & 0x7fu);
+	ApplyPortWriteState(port);
 }
 
 void GenesisControlManager::WriteControlPort(uint8_t port, uint8_t value) {
@@ -261,16 +371,16 @@ void GenesisControlManager::WriteControlPort(uint8_t port, uint8_t value) {
 		return;
 	}
 
-	_ctrlPortWrite[port] = value;
-	uint8_t nextThState = ResolveThOutputLevel(port);
-	CommitThOutputState(port, nextThState);
+	_ctrlPortWrite[port] = (uint8_t)(value & 0x7fu);
+	ApplyPortWriteState(port);
 }
 
 void GenesisControlManager::ResetRuntimeState() {
 	memset(_dataPortWrite, 0, sizeof(_dataPortWrite));
 	memset(_ctrlPortWrite, 0, sizeof(_ctrlPortWrite));
-	memset(_thState, 0, sizeof(_thState));
-	memset(_thCount, 0, sizeof(_thCount));
+	memset(_thState, 0x40, sizeof(_thState));
+	memset(_thPulseCounter, 0, sizeof(_thPulseCounter));
+	memset(_thInputLatencyUntilClock, 0, sizeof(_thInputLatencyUntilClock));
 	memset(_lastThTransitionClock, 0, sizeof(_lastThTransitionClock));
 	_masterClock = 0;
 }
@@ -300,7 +410,7 @@ uint8_t GenesisControlManager::GetThCount(uint8_t port) const {
 	if (port > 1) {
 		return 0;
 	}
-	return _thCount[port];
+	return _thPulseCounter[port];
 }
 
 uint8_t GenesisControlManager::GetDeterministicPortCapabilities(uint8_t port) const {
@@ -316,7 +426,8 @@ void GenesisControlManager::Serialize(Serializer& s) {
 	SVArray(_dataPortWrite, 2);
 	SVArray(_ctrlPortWrite, 2);
 	SVArray(_thState, 2);
-	SVArray(_thCount, 2);
+	SVArray(_thPulseCounter, 2);
+	SVArray(_thInputLatencyUntilClock, 2);
 	SVArray(_lastThTransitionClock, 2);
 	SV(_masterClock);
 }

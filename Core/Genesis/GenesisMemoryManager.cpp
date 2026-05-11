@@ -3566,6 +3566,86 @@ void GenesisMemoryManager::WriteVdpPort(uint32_t addr, uint16_t value) {
 	_openBus = effectiveLowByte;
 }
 
+uint8_t GenesisMemoryManager::ReadVersionRegister() const {
+	return BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
+}
+
+void GenesisMemoryManager::SyncIoPadRuntimeState(uint8_t port) {
+	if (port > 1) {
+		return;
+	}
+
+	if (_controlManager) {
+		_ioState.ThState[port] = _controlManager->GetThState(port);
+		_ioState.ThCount[port] = _controlManager->GetThCount(port);
+	} else {
+		_ioState.ThState[port] = 0;
+		_ioState.ThCount[port] = 0;
+	}
+}
+
+uint8_t GenesisMemoryManager::ReadIoDataPort(uint8_t port) {
+	if (port < 2) {
+		uint8_t value = _controlManager ? _controlManager->ReadDataPort(port) : 0x7Fu;
+		_ioState.DataPort[port] = (uint8_t)(value & 0x7Fu);
+		SyncIoPadRuntimeState(port);
+		return _ioState.DataPort[port];
+	}
+
+	uint8_t ctrl = (uint8_t)(_ioState.CtrlPort[2] & 0x7Fu);
+	uint8_t inputData = 0x7Fu;
+	uint8_t outputData = (uint8_t)(_ioState.DataPort[2] & ctrl);
+	uint8_t inputBits = (uint8_t)(inputData & (uint8_t)(~ctrl));
+	uint8_t value = (uint8_t)((outputData | inputBits) & 0x7Fu);
+	_ioState.DataPort[2] = value;
+	return value;
+}
+
+uint8_t GenesisMemoryManager::ReadIoControlPort(uint8_t port) {
+	if (port > 2) {
+		return 0;
+	}
+
+	if (_controlManager && port < 2) {
+		_controlManager->WriteControlPort(port, _ioState.CtrlPort[port]);
+		SyncIoPadRuntimeState(port);
+	}
+
+	return (uint8_t)(_ioState.CtrlPort[port] & 0x7Fu);
+}
+
+void GenesisMemoryManager::WriteIoDataPort(uint8_t port, uint8_t value) {
+	if (port > 2) {
+		return;
+	}
+
+	uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+	if (_controlManager && port < 2) {
+		_controlManager->WriteDataPort(port, effectiveValue);
+		_ioState.DataPort[port] = _controlManager->GetDataPortWriteLatch(port);
+		SyncIoPadRuntimeState(port);
+	} else {
+		_ioState.DataPort[port] = effectiveValue;
+		if (port < 2) {
+			_ioState.ThState[port] = 0;
+			_ioState.ThCount[port] = 0;
+		}
+	}
+}
+
+void GenesisMemoryManager::WriteIoControlPort(uint8_t port, uint8_t value) {
+	if (port > 2) {
+		return;
+	}
+
+	uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+	_ioState.CtrlPort[port] = effectiveValue;
+	if (_controlManager && port < 2) {
+		_controlManager->WriteControlPort(port, effectiveValue);
+		SyncIoPadRuntimeState(port);
+	}
+}
+
 // I/O registers ($A10001-$A1001F)
 uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
 	if ((addr & 0x01) == 0) {
@@ -3578,56 +3658,43 @@ uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
 	switch (reg) {
 		case 0x01:
 			{
-				uint8_t effectiveValue = BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
+				uint8_t effectiveValue = ReadVersionRegister();
 				_openBus = effectiveValue;
 				return effectiveValue;
 			}
 		case 0x03:
-			_ioState.DataPort[0] = _controlManager ? _controlManager->ReadDataPort(0) : 0x7F; // Controller 1 data
-			_ioState.ThState[0] = _controlManager ? _controlManager->GetThState(0) : 0;
-			_ioState.ThCount[0] = _controlManager ? _controlManager->GetThCount(0) : 0;
 			{
-				uint8_t effectiveValue = _ioState.DataPort[0];
+				uint8_t effectiveValue = ReadIoDataPort(0);
 				_openBus = effectiveValue;
 				return effectiveValue;
 			}
 		case 0x05:
-			_ioState.DataPort[1] = _controlManager ? _controlManager->ReadDataPort(1) : 0x7F; // Controller 2 data
-			_ioState.ThState[1] = _controlManager ? _controlManager->GetThState(1) : 0;
-			_ioState.ThCount[1] = _controlManager ? _controlManager->GetThCount(1) : 0;
 			{
-				uint8_t effectiveValue = _ioState.DataPort[1];
+				uint8_t effectiveValue = ReadIoDataPort(1);
 				_openBus = effectiveValue;
 				return effectiveValue;
 			}
 		case 0x07:
-			_ioState.DataPort[2] = 0xFF; // EXT port
 			{
-				uint8_t effectiveValue = _ioState.DataPort[2];
+				uint8_t effectiveValue = ReadIoDataPort(2);
 				_openBus = effectiveValue;
 				return effectiveValue;
 			}
 		case 0x09:
 			{
-				if (_controlManager) {
-					_controlManager->WriteControlPort(0, _ioState.CtrlPort[0]);
-				}
-				uint8_t effectiveValue = _ioState.CtrlPort[0]; // Controller 1 ctrl
+				uint8_t effectiveValue = ReadIoControlPort(0);
 				_openBus = effectiveValue;
 				return effectiveValue;
 			}
 		case 0x0B:
 			{
-				if (_controlManager) {
-					_controlManager->WriteControlPort(1, _ioState.CtrlPort[1]);
-				}
-				uint8_t effectiveValue = _ioState.CtrlPort[1]; // Controller 2 ctrl
+				uint8_t effectiveValue = ReadIoControlPort(1);
 				_openBus = effectiveValue;
 				return effectiveValue;
 			}
 		case 0x0D:
 			{
-				uint8_t effectiveValue = _ioState.CtrlPort[2]; // EXT ctrl
+				uint8_t effectiveValue = ReadIoControlPort(2);
 				_openBus = effectiveValue;
 				return effectiveValue;
 			}
@@ -3649,64 +3716,36 @@ void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
 	switch (reg) {
 		case 0x03:
 			{
-				uint8_t effectiveValue = value;
-				if (_controlManager) {
-					_controlManager->WriteDataPort(0, effectiveValue);
-					_ioState.DataPort[0] = _controlManager->GetDataPortWriteLatch(0);
-					_ioState.ThState[0] = _controlManager->GetThState(0);
-					_ioState.ThCount[0] = _controlManager->GetThCount(0);
-				} else {
-					_ioState.DataPort[0] = effectiveValue;
-					_ioState.ThState[0] = 0;
-					_ioState.ThCount[0] = 0;
-				}
+				uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+				WriteIoDataPort(0, effectiveValue);
 				break;
 			}
 		case 0x05:
 			{
-				uint8_t effectiveValue = value;
-				if (_controlManager) {
-					_controlManager->WriteDataPort(1, effectiveValue);
-					_ioState.DataPort[1] = _controlManager->GetDataPortWriteLatch(1);
-					_ioState.ThState[1] = _controlManager->GetThState(1);
-					_ioState.ThCount[1] = _controlManager->GetThCount(1);
-				} else {
-					_ioState.DataPort[1] = effectiveValue;
-					_ioState.ThState[1] = 0;
-					_ioState.ThCount[1] = 0;
-				}
+				uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+				WriteIoDataPort(1, effectiveValue);
 				break;
 			}
 		case 0x09:
 			{
-				uint8_t effectiveValue = value;
-				_ioState.CtrlPort[0] = effectiveValue;
-				if (_controlManager) {
-					_controlManager->WriteControlPort(0, effectiveValue);
-					_ioState.ThState[0] = _controlManager->GetThState(0);
-					_ioState.ThCount[0] = _controlManager->GetThCount(0);
-				}
+				uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+				WriteIoControlPort(0, effectiveValue);
 				break;
 			}
 		case 0x0B:
 			{
-				uint8_t effectiveValue = value;
-				_ioState.CtrlPort[1] = effectiveValue;
-				if (_controlManager) {
-					_controlManager->WriteControlPort(1, effectiveValue);
-					_ioState.ThState[1] = _controlManager->GetThState(1);
-					_ioState.ThCount[1] = _controlManager->GetThCount(1);
-				}
+				uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+				WriteIoControlPort(1, effectiveValue);
 				break;
 			}
 		case 0x0D:
 			{
-				uint8_t effectiveValue = value;
-				_ioState.CtrlPort[2] = effectiveValue;
+				uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+				WriteIoControlPort(2, effectiveValue);
 				break;
 			}
 	}
-	uint8_t effectiveValue = value;
+	uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
 	_openBus = effectiveValue;
 }
 
@@ -3765,55 +3804,43 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		switch (reg) {
 			case 0x01:
 				{
-					uint8_t statusByte = BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
+					uint8_t statusByte = ReadVersionRegister();
 					effectiveValue = statusByte;
 				}
 				break;
 			case 0x03:
-				_ioState.DataPort[0] = _controlManager ? _controlManager->ReadDataPort(0) : 0x7F;
-				_ioState.ThState[0] = _controlManager ? _controlManager->GetThState(0) : 0;
-				_ioState.ThCount[0] = _controlManager ? _controlManager->GetThCount(0) : 0;
 				{
-					uint8_t statusByte = _ioState.DataPort[0];
+					uint8_t statusByte = ReadIoDataPort(0);
 					effectiveValue = statusByte;
 				}
 				break;
 			case 0x05:
-				_ioState.DataPort[1] = _controlManager ? _controlManager->ReadDataPort(1) : 0x7F;
-				_ioState.ThState[1] = _controlManager ? _controlManager->GetThState(1) : 0;
-				_ioState.ThCount[1] = _controlManager ? _controlManager->GetThCount(1) : 0;
 				{
-					uint8_t statusByte = _ioState.DataPort[1];
+					uint8_t statusByte = ReadIoDataPort(1);
 					effectiveValue = statusByte;
 				}
 				break;
 			case 0x07:
 				{
-					uint8_t statusByte = 0xFF;
+					uint8_t statusByte = ReadIoDataPort(2);
 					effectiveValue = statusByte;
 				}
 				break;
 			case 0x09:
 				{
-					uint8_t statusByte = _ioState.CtrlPort[0];
-					if (_controlManager) {
-						_controlManager->WriteControlPort(0, statusByte);
-					}
+					uint8_t statusByte = ReadIoControlPort(0);
 					effectiveValue = statusByte;
 				}
 				break;
 			case 0x0B:
 				{
-					uint8_t statusByte = _ioState.CtrlPort[1];
-					if (_controlManager) {
-						_controlManager->WriteControlPort(1, statusByte);
-					}
+					uint8_t statusByte = ReadIoControlPort(1);
 					effectiveValue = statusByte;
 				}
 				break;
 			case 0x0D:
 				{
-					uint8_t statusByte = _ioState.CtrlPort[2];
+					uint8_t statusByte = ReadIoControlPort(2);
 					effectiveValue = statusByte;
 				}
 				break;
@@ -4039,17 +4066,8 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 		switch (reg) {
 			case 0x03:
 				{
-					uint8_t ioWriteValue = value;
-				if (_controlManager) {
-					_controlManager->WriteDataPort(0, ioWriteValue);
-					_ioState.DataPort[0] = _controlManager->GetDataPortWriteLatch(0);
-					_ioState.ThState[0] = _controlManager->GetThState(0);
-					_ioState.ThCount[0] = _controlManager->GetThCount(0);
-				} else {
-					_ioState.DataPort[0] = ioWriteValue;
-					_ioState.ThState[0] = 0;
-					_ioState.ThCount[0] = 0;
-				}
+					uint8_t ioWriteValue = (uint8_t)(value & 0x7Fu);
+					WriteIoDataPort(0, ioWriteValue);
 				{
 					uint8_t effectiveValue = ioWriteValue;
 					_openBus = effectiveValue;
@@ -4059,17 +4077,8 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 				}
 			case 0x05:
 				{
-					uint8_t ioWriteValue = value;
-				if (_controlManager) {
-					_controlManager->WriteDataPort(1, ioWriteValue);
-					_ioState.DataPort[1] = _controlManager->GetDataPortWriteLatch(1);
-					_ioState.ThState[1] = _controlManager->GetThState(1);
-					_ioState.ThCount[1] = _controlManager->GetThCount(1);
-				} else {
-					_ioState.DataPort[1] = ioWriteValue;
-					_ioState.ThState[1] = 0;
-					_ioState.ThCount[1] = 0;
-				}
+					uint8_t ioWriteValue = (uint8_t)(value & 0x7Fu);
+					WriteIoDataPort(1, ioWriteValue);
 				{
 					uint8_t effectiveValue = ioWriteValue;
 					_openBus = effectiveValue;
@@ -4079,37 +4088,24 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 				}
 			case 0x09:
 				{
-					uint8_t effectiveValue = value;
-					uint8_t controlValue = effectiveValue;
-					_ioState.CtrlPort[0] = controlValue;
-					if (_controlManager) {
-						_controlManager->WriteControlPort(0, controlValue);
-						_ioState.ThState[0] = _controlManager->GetThState(0);
-						_ioState.ThCount[0] = _controlManager->GetThCount(0);
-					}
+					uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+					WriteIoControlPort(0, effectiveValue);
 					_openBus = effectiveValue;
 					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
 				}
 				return;
 			case 0x0B:
 				{
-					uint8_t effectiveValue = value;
-					uint8_t controlValue = effectiveValue;
-					_ioState.CtrlPort[1] = controlValue;
-					if (_controlManager) {
-						_controlManager->WriteControlPort(1, controlValue);
-						_ioState.ThState[1] = _controlManager->GetThState(1);
-						_ioState.ThCount[1] = _controlManager->GetThCount(1);
-					}
+					uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+					WriteIoControlPort(1, effectiveValue);
 					_openBus = effectiveValue;
 					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
 				}
 				return;
 			case 0x0D:
 				{
-					uint8_t effectiveValue = value;
-					uint8_t controlValue = effectiveValue;
-					_ioState.CtrlPort[2] = controlValue;
+					uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+					WriteIoControlPort(2, effectiveValue);
 					_openBus = effectiveValue;
 					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
 				}
