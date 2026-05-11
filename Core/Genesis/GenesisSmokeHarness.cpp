@@ -1637,6 +1637,312 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 				vdpStatusFirst.Bus.LastVdpAddress,
 				vdpStatusFirst.Bus.LastVdpValue));
 
+		struct First10SecondsLogoLaneProbeResult {
+			uint32_t WindowCount = 0;
+			uint32_t FinalFrameDelta = 0;
+			uint32_t VInterruptDelta = 0;
+			uint32_t HInterruptDelta = 0;
+			uint32_t RenderEvidenceCount = 0;
+			uint32_t InputEvidenceCount = 0;
+			uint32_t StageTransitionCount = 0;
+			string SignatureDigest;
+		};
+
+		auto runFirst10SecondsLogoLaneProbe = [&scaffold, &titleClass](const GenesisBoundaryScaffoldSaveState& baseline) {
+			First10SecondsLogoLaneProbeResult probe = {};
+			uint64_t digest = 1469598103934665603ull;
+			string previousRenderDigest;
+
+			for (uint32_t window = 0; window < 10; window++) {
+				uint8_t p1Write = (uint8_t)(0x40 | (window & 0x01));
+				uint8_t p2Write = (uint8_t)(0x40 | ((window + 1) & 0x01));
+				scaffold.GetBus().WriteByte(0xA10003, p1Write);
+				scaffold.GetBus().WriteByte(0xA10005, p2Write);
+
+				if (titleClass == "sonic") {
+					scaffold.GetBus().SetRenderCompositionInputs((uint8_t)(0x18 + (window & 0x03)), true, (uint8_t)(0x06 + (window & 0x03)), false, 0x02, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((window * 7) & 0x1f), (uint16_t)((window * 5) & 0x1f));
+					scaffold.GetBus().RenderScaffoldLine((uint16_t)(64 + (window * 2)));
+					scaffold.StepFrameScaffold(488u * 262u * 6u + 96u + window * 8u);
+				} else if (titleClass == "jurassic") {
+					if ((window % 2u) == 0u) {
+						scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 12u + window);
+					}
+					scaffold.GetBus().SetRenderCompositionInputs((uint8_t)(0x17 + (window & 0x03)), true, (uint8_t)(0x05 + (window & 0x03)), false, 0x01, false, true, 0x20, true);
+					scaffold.GetBus().SetScroll((uint16_t)((window + 3) & 0x0f), (uint16_t)((window + 4) & 0x0f));
+					scaffold.GetBus().RenderScaffoldLine((uint16_t)(72 + (window * 2)));
+					scaffold.StepFrameScaffold(488u * 262u * 6u + 112u + window * 10u);
+				} else {
+					scaffold.GetBus().SetRenderCompositionInputs(0x10, true, 0x04, false, 0x00, false, false, 0x20, true);
+					scaffold.GetBus().RenderScaffoldLine(48);
+					scaffold.StepFrameScaffold(488u * 262u * 6u + 64u);
+				}
+
+				GenesisBoundaryScaffoldSaveState sample = scaffold.SaveState();
+				probe.WindowCount++;
+				probe.FinalFrameDelta = sample.TimingFrame - baseline.TimingFrame;
+				probe.VInterruptDelta = sample.VInterruptCount - baseline.VInterruptCount;
+				probe.HInterruptDelta = sample.HInterruptCount - baseline.HInterruptCount;
+
+				if (!sample.Bus.RenderLineDigest.empty()) {
+					probe.RenderEvidenceCount++;
+					if (!previousRenderDigest.empty() && previousRenderDigest != sample.Bus.RenderLineDigest) {
+						probe.StageTransitionCount++;
+					}
+					previousRenderDigest = sample.Bus.RenderLineDigest;
+				}
+
+				bool inputEvidence = sample.Bus.ControlThCount[0] > baseline.Bus.ControlThCount[0]
+					|| sample.Bus.ControlThCount[1] > baseline.Bus.ControlThCount[1]
+					|| sample.Bus.ControlThState[0] != baseline.Bus.ControlThState[0]
+					|| sample.Bus.ControlThState[1] != baseline.Bus.ControlThState[1];
+				if (inputEvidence) {
+					probe.InputEvidenceCount++;
+				}
+
+				string line = std::format(
+					"w{}:{}:{}:{}:{}:{}:{}:{}",
+					window,
+					sample.TimingFrame,
+					sample.TimingScanline,
+					sample.VInterruptCount,
+					sample.HInterruptCount,
+					sample.Bus.ControlThCount[0],
+					sample.Bus.ControlThCount[1],
+					sample.Bus.RenderLineDigest);
+				for (uint8_t ch : line) {
+					digest ^= ch;
+					digest *= 1099511628211ull;
+				}
+			}
+
+			probe.SignatureDigest = ToHex(digest);
+			return probe;
+		};
+
+		GenesisBoundaryScaffoldSaveState first10sLogoLaneBaseline = scaffold.SaveState();
+		First10SecondsLogoLaneProbeResult first10sLogoLaneFirst = runFirst10SecondsLogoLaneProbe(first10sLogoLaneBaseline);
+		GenesisBoundaryScaffoldSaveState first10sLogoLaneTail = scaffold.SaveState();
+		scaffold.LoadState(first10sLogoLaneBaseline);
+		First10SecondsLogoLaneProbeResult first10sLogoLaneReplay = runFirst10SecondsLogoLaneProbe(first10sLogoLaneBaseline);
+		scaffold.LoadState(first10sLogoLaneTail);
+
+		bool first10sLogoLaneReplayMatch = first10sLogoLaneFirst.WindowCount == first10sLogoLaneReplay.WindowCount
+			&& first10sLogoLaneFirst.FinalFrameDelta == first10sLogoLaneReplay.FinalFrameDelta
+			&& first10sLogoLaneFirst.VInterruptDelta == first10sLogoLaneReplay.VInterruptDelta
+			&& first10sLogoLaneFirst.HInterruptDelta == first10sLogoLaneReplay.HInterruptDelta
+			&& first10sLogoLaneFirst.RenderEvidenceCount == first10sLogoLaneReplay.RenderEvidenceCount
+			&& first10sLogoLaneFirst.InputEvidenceCount == first10sLogoLaneReplay.InputEvidenceCount
+			&& first10sLogoLaneFirst.StageTransitionCount == first10sLogoLaneReplay.StageTransitionCount
+			&& first10sLogoLaneFirst.SignatureDigest == first10sLogoLaneReplay.SignatureDigest;
+		bool first10sLogoLanePass = !isTargetStartupClass || (
+			first10sLogoLaneFirst.WindowCount == 10
+			&& first10sLogoLaneFirst.FinalFrameDelta > 0
+			&& first10sLogoLaneFirst.VInterruptDelta > 0
+			&& first10sLogoLaneFirst.HInterruptDelta > 0
+			&& first10sLogoLaneFirst.RenderEvidenceCount > 0);
+		addCheckpoint(
+			"GEN-COMPAT-FIRST10S-LOGO-LANE",
+			first10sLogoLanePass,
+			std::format(
+				"class={} target={} windows={} frameDelta={} vIntDelta={} hIntDelta={} renderEvidence={} inputEvidence={} stageTransitions={} replayMatch={} digest={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				first10sLogoLaneFirst.WindowCount,
+				first10sLogoLaneFirst.FinalFrameDelta,
+				first10sLogoLaneFirst.VInterruptDelta,
+				first10sLogoLaneFirst.HInterruptDelta,
+				first10sLogoLaneFirst.RenderEvidenceCount,
+				first10sLogoLaneFirst.InputEvidenceCount,
+				first10sLogoLaneFirst.StageTransitionCount,
+				first10sLogoLaneReplayMatch ? 1 : 0,
+				first10sLogoLaneFirst.SignatureDigest));
+
+		struct First10SecondsBusArbitrationProbeResult {
+			uint32_t WindowCount = 0;
+			uint32_t FinalFrameDelta = 0;
+			uint32_t HandoffDelta = 0;
+			uint64_t ExecutedCyclesDelta = 0;
+			uint32_t BusReqToggleWindows = 0;
+			uint32_t ResetToggleWindows = 0;
+			string SignatureDigest;
+		};
+
+		auto runFirst10SecondsBusArbitrationProbe = [&scaffold, &titleClass](const GenesisBoundaryScaffoldSaveState& baseline) {
+			First10SecondsBusArbitrationProbeResult probe = {};
+			uint64_t digest = 1469598103934665603ull;
+
+			for (uint32_t window = 0; window < 10; window++) {
+				uint8_t busReqValue = (window & 0x01) ? 0x01 : 0x00;
+				uint8_t resetPulse = (window % 3u) == 0u ? 0x00 : 0x01;
+
+				scaffold.GetBus().WriteByte(0xA11100, busReqValue);
+				scaffold.GetBus().WriteByte(0xA11200, resetPulse);
+				scaffold.GetBus().WriteByte(0xA11200, 0x01);
+				uint8_t busReqRead = scaffold.GetBus().ReadByte(0xA11100);
+				uint8_t resetRead = scaffold.GetBus().ReadByte(0xA11200);
+
+				if (titleClass == "sonic") {
+					scaffold.StepFrameScaffold(488u * 262u * 3u + 80u + window * 8u);
+				} else if (titleClass == "jurassic") {
+					if ((window % 2u) == 0u) {
+						scaffold.GetBus().BeginDmaTransfer(GenesisVdpDmaMode::Copy, 6u + window);
+					}
+					scaffold.StepFrameScaffold(488u * 262u * 3u + 96u + window * 10u);
+				} else {
+					scaffold.StepFrameScaffold(488u * 262u * 3u + 64u);
+				}
+
+				GenesisBoundaryScaffoldSaveState sample = scaffold.SaveState();
+				probe.WindowCount++;
+				probe.FinalFrameDelta = sample.TimingFrame - baseline.TimingFrame;
+				probe.HandoffDelta = sample.Bus.Z80HandoffCount - baseline.Bus.Z80HandoffCount;
+				probe.ExecutedCyclesDelta = sample.Bus.Z80ExecutedCycles - baseline.Bus.Z80ExecutedCycles;
+
+				if (busReqRead == 0x01 || busReqRead == 0x00) {
+					probe.BusReqToggleWindows++;
+				}
+				if (resetRead == 0x01 || resetRead == 0x00) {
+					probe.ResetToggleWindows++;
+				}
+
+				string line = std::format(
+					"w{}:{}:{}:{}:{}:{:02x}:{:02x}",
+					window,
+					sample.TimingFrame,
+					sample.TimingScanline,
+					probe.HandoffDelta,
+					probe.ExecutedCyclesDelta,
+					busReqRead,
+					resetRead);
+				for (uint8_t ch : line) {
+					digest ^= ch;
+					digest *= 1099511628211ull;
+				}
+			}
+
+			probe.SignatureDigest = ToHex(digest);
+			return probe;
+		};
+
+		GenesisBoundaryScaffoldSaveState first10sBusArbBaseline = scaffold.SaveState();
+		First10SecondsBusArbitrationProbeResult first10sBusArbFirst = runFirst10SecondsBusArbitrationProbe(first10sBusArbBaseline);
+		GenesisBoundaryScaffoldSaveState first10sBusArbTail = scaffold.SaveState();
+		scaffold.LoadState(first10sBusArbBaseline);
+		First10SecondsBusArbitrationProbeResult first10sBusArbReplay = runFirst10SecondsBusArbitrationProbe(first10sBusArbBaseline);
+		scaffold.LoadState(first10sBusArbTail);
+
+		bool first10sBusArbReplayMatch = first10sBusArbFirst.WindowCount == first10sBusArbReplay.WindowCount
+			&& first10sBusArbFirst.FinalFrameDelta == first10sBusArbReplay.FinalFrameDelta
+			&& first10sBusArbFirst.HandoffDelta == first10sBusArbReplay.HandoffDelta
+			&& first10sBusArbFirst.ExecutedCyclesDelta == first10sBusArbReplay.ExecutedCyclesDelta
+			&& first10sBusArbFirst.BusReqToggleWindows == first10sBusArbReplay.BusReqToggleWindows
+			&& first10sBusArbFirst.ResetToggleWindows == first10sBusArbReplay.ResetToggleWindows
+			&& first10sBusArbFirst.SignatureDigest == first10sBusArbReplay.SignatureDigest;
+		bool first10sBusArbPass = !isTargetStartupClass || (
+			first10sBusArbFirst.WindowCount == 10
+			&& first10sBusArbFirst.FinalFrameDelta > 0
+			&& first10sBusArbFirst.HandoffDelta > 0
+			&& first10sBusArbFirst.ExecutedCyclesDelta > 0
+			&& first10sBusArbFirst.BusReqToggleWindows == 10
+			&& first10sBusArbFirst.ResetToggleWindows == 10);
+		addCheckpoint(
+			"GEN-COMPAT-FIRST10S-BUS-ARBITRATION",
+			first10sBusArbPass,
+			std::format(
+				"class={} target={} windows={} frameDelta={} handoffDelta={} executedCyclesDelta={} busReqToggles={} resetToggles={} replayMatch={} digest={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				first10sBusArbFirst.WindowCount,
+				first10sBusArbFirst.FinalFrameDelta,
+				first10sBusArbFirst.HandoffDelta,
+				first10sBusArbFirst.ExecutedCyclesDelta,
+				first10sBusArbFirst.BusReqToggleWindows,
+				first10sBusArbFirst.ResetToggleWindows,
+				first10sBusArbReplayMatch ? 1 : 0,
+				first10sBusArbFirst.SignatureDigest));
+
+		struct First10SecondsEventIntegrityProbeResult {
+			uint32_t EventCount = 0;
+			uint32_t HintCount = 0;
+			uint32_t VintCount = 0;
+			bool HintBeforeAnyVint = false;
+			string EventDigest;
+		};
+
+		auto runFirst10SecondsEventIntegrityProbe = [&scaffold, &titleClass]() {
+			First10SecondsEventIntegrityProbeResult probe = {};
+			scaffold.ClearTimingEvents();
+
+			if (titleClass == "sonic") {
+				scaffold.StepFrameScaffold(488u * 262u * 90u + 96u);
+			} else if (titleClass == "jurassic") {
+				scaffold.StepFrameScaffold(488u * 262u * 90u + 128u);
+			} else {
+				scaffold.StepFrameScaffold(488u * 262u * 90u + 64u);
+			}
+
+			const vector<string>& events = scaffold.GetTimingEvents();
+			probe.EventCount = (uint32_t)events.size();
+			int firstHintIndex = -1;
+			int firstVintIndex = -1;
+
+			uint64_t digest = 1469598103934665603ull;
+			for (size_t i = 0; i < events.size(); i++) {
+				const string& eventLine = events[i];
+				if (eventLine.starts_with("HINT ")) {
+					probe.HintCount++;
+					if (firstHintIndex < 0) {
+						firstHintIndex = (int)i;
+					}
+				}
+				if (eventLine.starts_with("VINT ")) {
+					probe.VintCount++;
+					if (firstVintIndex < 0) {
+						firstVintIndex = (int)i;
+					}
+				}
+				for (uint8_t ch : eventLine) {
+					digest ^= ch;
+					digest *= 1099511628211ull;
+				}
+			}
+
+			probe.HintBeforeAnyVint = firstHintIndex >= 0 && (firstVintIndex < 0 || firstHintIndex <= firstVintIndex);
+			probe.EventDigest = ToHex(digest);
+			return probe;
+		};
+
+		GenesisBoundaryScaffoldSaveState first10sEventBaseline = scaffold.SaveState();
+		First10SecondsEventIntegrityProbeResult first10sEventFirst = runFirst10SecondsEventIntegrityProbe();
+		GenesisBoundaryScaffoldSaveState first10sEventTail = scaffold.SaveState();
+		scaffold.LoadState(first10sEventBaseline);
+		First10SecondsEventIntegrityProbeResult first10sEventReplay = runFirst10SecondsEventIntegrityProbe();
+		scaffold.LoadState(first10sEventTail);
+
+		bool first10sEventReplayMatch = first10sEventFirst.EventCount == first10sEventReplay.EventCount
+			&& first10sEventFirst.HintCount == first10sEventReplay.HintCount
+			&& first10sEventFirst.VintCount == first10sEventReplay.VintCount
+			&& first10sEventFirst.HintBeforeAnyVint == first10sEventReplay.HintBeforeAnyVint
+			&& first10sEventFirst.EventDigest == first10sEventReplay.EventDigest;
+		bool first10sEventPass = !isTargetStartupClass || (
+			first10sEventFirst.EventCount > 0
+			&& first10sEventFirst.VintCount > 0
+			&& first10sEventFirst.HintCount > 0);
+		addCheckpoint(
+			"GEN-COMPAT-FIRST10S-EVENT-INTEGRITY",
+			first10sEventPass,
+			std::format(
+				"class={} target={} eventCount={} hintCount={} vintCount={} hintBeforeVint={} replayMatch={} digest={}",
+				titleClass,
+				isTargetStartupClass ? 1 : 0,
+				first10sEventFirst.EventCount,
+				first10sEventFirst.HintCount,
+				first10sEventFirst.VintCount,
+				first10sEventFirst.HintBeforeAnyVint ? 1 : 0,
+				first10sEventReplayMatch ? 1 : 0,
+				first10sEventFirst.EventDigest));
+
 		string digestA = BuildCheckpointDigest(entry.Checkpoints);
 		string digestB = BuildCheckpointDigest(entry.Checkpoints);
 		addCheckpoint("GEN-COMPAT-DETERMINISM", digestA == digestB, std::format("digestA={} digestB={}", digestA, digestB));
@@ -1662,6 +1968,9 @@ GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(Gen
 			&& hasPassingCheckpoint("GEN-COMPAT-REALROM-STARTUP-SMOKE")
 			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-INPUT-WINDOW")
 			&& hasPassingCheckpoint("GEN-COMPAT-STARTUP-MEMMAP-PARITY")
+			&& hasPassingCheckpoint("GEN-COMPAT-FIRST10S-LOGO-LANE")
+			&& hasPassingCheckpoint("GEN-COMPAT-FIRST10S-BUS-ARBITRATION")
+			&& hasPassingCheckpoint("GEN-COMPAT-FIRST10S-EVENT-INTEGRITY")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-TIMING-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-VDP-STATUS-STARTUP")
 			&& hasPassingCheckpoint("GEN-COMPAT-INTERRUPT-CADENCE-STARTUP")
