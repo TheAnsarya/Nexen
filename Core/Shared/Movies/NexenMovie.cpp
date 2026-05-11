@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <ranges>
 #include "Shared/Movies/NexenMovie.h"
 #include "Shared/Movies/MovieTypes.h"
@@ -16,7 +16,7 @@
 #include "Utilities/StringUtilities.h"
 #include "Utilities/HexUtilities.h"
 #include "Utilities/VirtualFile.h"
-#include "Utilities/magic_enum.hpp"
+#include <magic_enum/magic_enum.hpp>
 #include "Utilities/Serializer.h"
 
 NexenMovie::NexenMovie(Emulator* emu, bool silent) {

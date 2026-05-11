@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <deque>
 #include "Utilities/HexUtilities.h"
 #include "Utilities/FolderUtilities.h"
@@ -18,7 +18,7 @@
 #include "Shared/BatteryManager.h"
 #include "Shared/CheatManager.h"
 #include "Utilities/Serializer.h"
-#include "Utilities/magic_enum.hpp"
+#include <magic_enum/magic_enum.hpp>
 
 MovieRecorder::MovieRecorder(Emulator* emu) {
 	_emu = emu;

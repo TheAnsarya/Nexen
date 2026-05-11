@@ -2542,18 +2542,21 @@ you've got windows builds now, make sure readme.md and other docs are updated, a
 [Nexen] `https://github.com/TheAnsarya/Nexen` still shows links to 1.4.39, not the latest release 1.4.40; fix this release link issue; make sure the 1.4.40 release is complete and in the `readme.md`; continue;
 
 What "Node 20 deprecation"? Always use the most modern versions! continue;
+What "Node 20 deprecation"? Always use the most modern versions! continue;
 
-
-
-
-
-
-
-
-
-
+did we just removing a warning? Or did we make sure we're not using Node 20?
 
 [Nexen] How much third party code are you storing? We want to use libraries and nuget packages, not raw source code, so fix that discrepancy; make a ***big*** change, I mean 1000's of lines of code, work many fixes, you're only running for a few minutes, not doing very many changes, don't stop the session quickly, keep working more and more in one big effort or several large efforts; [Nexen] (Genesis/MegaDrive) Continue doing what we've been doing, but with a big aggressive code change push instead of piddly small efforts; Update a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` Genesis code to make big changes; continue; do all the steps; continue; do ***several*** batches in a row and make only one issue per big effort; Focus on controllers and input and timing and palettes and the completeness and correctness of operations/commands; continue;
+
+[Nexen] How much third party code are you storing? We want to use libraries and nuget packages, not raw source code, so fix that discrepancy; continue;
+
+continue;
+
+[Nexen] `https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.40` was reverted to the the 1.4.39 description/readme and we need to fix it so it shows 1.4.40 description instead;
+
+
+
+
 
 
 

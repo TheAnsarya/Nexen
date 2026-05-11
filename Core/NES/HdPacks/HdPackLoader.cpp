@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <algorithm>
 #include <cctype>
 #include <ranges>
@@ -14,7 +14,7 @@
 #include "Utilities/HexUtilities.h"
 #include "Utilities/PNGHelper.h"
 #include "Utilities/FastString.h"
-#include "Utilities/magic_enum.hpp"
+#include <magic_enum/magic_enum.hpp>
 
 #define logError(y)                                                               \
 	MessageManager::Log(std::format("[HDPack - Line {}] {}", _currentLine, (y))); \

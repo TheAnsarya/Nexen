@@ -1,4 +1,4 @@
-{
+﻿{
 	"generatedOn": "2026-05-11",
 	"policy": {
 		"defaultRule": "No new vendored third-party source files. Prefer NuGet, vcpkg, or system packages.",
@@ -50,16 +50,6 @@
 			"maxFiles": 2,
 			"maxBytes": 157549,
 			"maxLines": 4213
-		},
-		{
-			"name": "magic_enum",
-			"pattern": "Utilities/magic_enum.hpp",
-			"preferredSource": "vcpkg/magic-enum",
-			"status": "temporary-vendored",
-			"reason": "Header-only dependency currently checked in.",
-			"maxFiles": 1,
-			"maxBytes": 56356,
-			"maxLines": 1144
 		},
 		{
 			"name": "Scale2x",

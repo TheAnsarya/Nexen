@@ -1,4 +1,4 @@
-# Third-Party Source Policy
+﻿# Third-Party Source Policy
 
 ## Goal
 

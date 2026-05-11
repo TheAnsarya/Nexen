@@ -628,14 +628,14 @@ bool Emulator::InternalLoadRom(VirtualFile romFile, VirtualFile patchFile, bool 
 void Emulator::InitConsole(unique_ptr<IConsole>& newConsole, ConsoleMemoryInfo originalConsoleMemory[], bool preserveRom) {
 	if (preserveRom && _console) {
 		// When power cycling, copy over the content of any ROM memory from the previous instance
-		magic_enum::enum_for_each<MemoryType>([&](MemoryType memType) {
+		for (MemoryType memType : magic_enum::enum_values<MemoryType>()) {
 			if (DebugUtilities::IsRom(memType)) {
 				uint32_t orgSize = originalConsoleMemory[(int)memType].Size;
 				if (orgSize > 0 && GetMemory(memType).Size == orgSize) {
 					memcpy(_consoleMemory[(int)memType].Memory, originalConsoleMemory[(int)memType].Memory, orgSize);
 				}
 			}
-		});
+		}
 	}
 
 	_console.reset(newConsole);

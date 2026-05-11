@@ -1,4 +1,4 @@
-# Doxyfile 1.12.0
+﻿# Doxyfile 1.12.0
 # Nexen Multi-System Emulator Documentation Configuration
 
 #---------------------------------------------------------------------------
@@ -284,7 +284,6 @@ EXCLUDE                = Core/Lua \
                          Utilities/emu2413.h \
                          Utilities/blip_buf.h \
                          Utilities/blip_buf.c \
-                         Utilities/magic_enum.hpp \
                          Utilities/ymfm \
                          Utilities/NTSC \
                          Utilities/xBRZ

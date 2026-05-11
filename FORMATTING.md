@@ -1,4 +1,4 @@
-# Code Formatting Guidelines
+﻿# Code Formatting Guidelines
 
 This project uses **clang-format** for consistent C++ code formatting.
 
@@ -93,7 +93,7 @@ clang-format --dry-run --Werror path/to/file.cpp
 
 Third-party libraries are **not** formatted to maintain upstream compatibility:
 
-- `Utilities/magic_enum.hpp`
+- `<magic_enum/magic_enum.hpp>` (via vcpkg package `magic-enum`)
 - `Utilities/miniz.*`
 - `Utilities/stb_vorbis.*`
 - `Utilities/emu2413.*`

@@ -1,9 +1,9 @@
-#pragma once
+﻿#pragma once
 
 #include "pch.h"
 #include "Utilities/ISerializable.h"
 #include "Utilities/FastString.h"
-#include "Utilities/magic_enum.hpp"
+#include <magic_enum/magic_enum.hpp>
 #include "Utilities/safe_ptr.h"
 
 class Serializer;

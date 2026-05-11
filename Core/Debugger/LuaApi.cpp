@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <cctype>
 #include "LuaApi.h"
 #include "Lua/lua.hpp"
@@ -30,7 +30,7 @@
 #include "Shared/Movies/MovieTypes.h"
 #include "Utilities/HexUtilities.h"
 #include "Utilities/FolderUtilities.h"
-#include "Utilities/magic_enum.hpp"
+#include <magic_enum/magic_enum.hpp>
 #include "SNES/Debugger/SnesDebugger.h"
 #include "SNES/SnesConsole.h"
 #include "Shared/MemoryOperationType.h"
