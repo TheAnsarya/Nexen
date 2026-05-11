@@ -4,12 +4,13 @@ using System.Linq;
 using System.IO;
 using SharpCompress.Archives;
 using SharpCompress.Common;
+using SharpCompress.Readers;
 using Nexen.Utilities;
 
 namespace Nexen.GUI.Utilities;
 public sealed class ArchiveHelper {
 	public static List<ArchiveRomEntry> GetArchiveRomList(string archivePath) {
-		using IArchive archive = ArchiveFactory.Open(archivePath);
+		using IArchive archive = ArchiveFactory.OpenArchive(archivePath, new ReaderOptions());
 
 		return archive.Entries
 			.Where(entry => !entry.IsDirectory && !string.IsNullOrWhiteSpace(entry.Key) && FolderHelper.IsRomFile(entry.Key))
@@ -26,7 +27,7 @@ public sealed class ArchiveHelper {
 			return resourcePath.Path;
 		}
 
-		using IArchive archive = ArchiveFactory.Open(resourcePath.Path);
+		using IArchive archive = ArchiveFactory.OpenArchive(resourcePath.Path, new ReaderOptions());
 		IArchiveEntry? entry = archive.Entries.FirstOrDefault(candidate =>
 			!candidate.IsDirectory
 			&& string.Equals(candidate.Key, resourcePath.InnerFile, StringComparison.Ordinal)
