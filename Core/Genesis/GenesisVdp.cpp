@@ -1265,7 +1265,6 @@ void GenesisVdp::Composite(uint16_t* lineBuffer, const uint8_t* planeB, const ui
 // Port access
 uint16_t GenesisVdp::ReadDataPort() {
 	_statusReadLatchValid = false;
-	_pendingControlWrite = false;
 	uint16_t result = _state.DataPortBuffer;
 	PrimeReadBuffer();
 	return result;
@@ -1434,7 +1433,6 @@ void GenesisVdp::WriteControlPortByte(uint8_t value, bool highByte) {
 
 void GenesisVdp::WriteDataPort(uint16_t value) {
 	_statusReadLatchValid = false;
-	_pendingControlWrite = false;
 	_state.DataPortBuffer = value;
 
 	// DMA fill takes its fill byte from the first data-port write after the DMA command.

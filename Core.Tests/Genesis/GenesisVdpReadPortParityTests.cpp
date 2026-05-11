@@ -162,6 +162,36 @@ namespace {
 		EXPECT_FALSE(afterRead.WritePending);
 	}
 
+	TEST(GenesisVdpReadPortParityTests, DataReadDoesNotClearPendingControlWritePairState) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x1234);
+		GenesisVdpState pending = vdp.GetState();
+		EXPECT_TRUE(pending.WritePending);
+
+		(void)vdp.ReadDataPort();
+		GenesisVdpState afterDataRead = vdp.GetState();
+		EXPECT_TRUE(afterDataRead.WritePending);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, DataWriteDoesNotClearPendingControlWritePairState) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x1234);
+		GenesisVdpState pending = vdp.GetState();
+		EXPECT_TRUE(pending.WritePending);
+
+		vdp.WriteDataPort(0xabcd);
+		GenesisVdpState afterDataWrite = vdp.GetState();
+		EXPECT_TRUE(afterDataWrite.WritePending);
+
+		vdp.WriteControlPort(0x0020);
+		GenesisVdpState afterSecondWord = vdp.GetState();
+		EXPECT_FALSE(afterSecondWord.WritePending);
+	}
+
 	TEST(GenesisVdpReadPortParityTests, FifoStatusBitsTrackQueuedWritesAcrossReadCycles) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
