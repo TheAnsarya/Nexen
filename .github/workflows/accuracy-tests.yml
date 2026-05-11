@@ -36,6 +36,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
+          global-json-file: global.json
           dotnet-version: 10.x
 
       - name: Setup MSBuild
@@ -160,6 +161,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
+          global-json-file: global.json
           dotnet-version: 10.x
 
       - name: Setup MSBuild

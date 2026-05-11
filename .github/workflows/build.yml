@@ -72,7 +72,6 @@ jobs:
         with:
           global-json-file: global.json
           dotnet-version: 10.x
-          include-prerelease: true
 
       - name: Setup MSBuild.exe
         uses: microsoft/setup-msbuild@v3
@@ -317,7 +316,6 @@ jobs:
         with:
           global-json-file: global.json
           dotnet-version: 10.x
-          include-prerelease: true
 
       - name: Install dependencies
         run: |
@@ -570,7 +568,6 @@ jobs:
         with:
           global-json-file: global.json
           dotnet-version: 10.x
-          include-prerelease: true
 
       - name: Install dependencies
         run: |
@@ -762,7 +759,6 @@ jobs:
         with:
           global-json-file: global.json
           dotnet-version: 10.x
-          include-prerelease: true
 
       - name: Install dependencies
         run: |

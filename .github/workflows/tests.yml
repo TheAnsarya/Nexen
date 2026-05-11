@@ -1,21 +1,7 @@
 ﻿name: C++ Tests
 
 on:
-  push:
-    branches: [ master, cpp-modernization, pansy-export ]
-    paths:
-      - 'Core/**'
-      - 'Core.Tests/**'
-      - 'Core.Benchmarks/**'
-      - 'Utilities/**'
-      - '.github/workflows/tests.yml'
-  pull_request:
-    branches: [ master ]
-    paths:
-      - 'Core/**'
-      - 'Core.Tests/**'
-      - 'Core.Benchmarks/**'
-      - 'Utilities/**'
+  workflow_dispatch:
 
 env:
   VCPKG_DEFAULT_TRIPLET: x64-windows

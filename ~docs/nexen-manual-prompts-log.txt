@@ -2525,7 +2525,15 @@ continue;
 
 [Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.40 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and add at the top of the release notes add a warning that this release is a bad release for testing and not to be used yet, watch out for 1.5.0 (coming in June!), and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
 
+yes do those three steps! Make sure 1.4.40 is fully released, with read me and doc changes, full artifact builds, and a complete release to the github page; continue;
 
+yes do those three steps! Make sure 1.4.40 is fully released, with read me and doc changes, full artifact builds, and a complete release to the github page; continue; make sure all projects are using the most modern versions and code and standards and practices, and the most modern libraries and framework versions, like dot net 10+ and C# 14+; stop running test actions on github every git commit if they cost tokens, because those are about to cost money, run github test actions only when making a release; make sure the build sdks are using dotnet 10 and c# 14 or a more modern version; continue;
+
+
+
+
+
+[Nexen] How much third party code are you storing? We want to use libraries and nuget packages, not raw source code, so fix that discrepancy; make a ***big*** change, I mean 1000's of lines of code, work many fixes, you're only running for a few minutes, not doing very many changes, don't stop the session quickly, keep working more and more in one big effort or several large efforts; [Nexen] (Genesis/MegaDrive) Continue doing what we've been doing, but with a big aggressive code change push instead of piddly small efforts; Update a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` Genesis code to make big changes; continue; do all the steps; continue; do ***several*** batches in a row and make only one issue per big effort; Focus on controllers and input and timing and palettes and the completeness and correctness of operations/commands; continue;
 
 
 

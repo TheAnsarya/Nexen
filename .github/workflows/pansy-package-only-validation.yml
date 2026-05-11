@@ -1,24 +1,6 @@
 ﻿name: Pansy Package-Only Validation
 
 on:
-  push:
-    branches: [ master, cpp-modernization, pansy-export ]
-    paths:
-      - 'UI/**'
-      - 'Tests/**'
-      - 'Directory.Build.props'
-      - '.github/workflows/pansy-package-only-validation.yml'
-      - '.github/workflows/build.yml'
-      - '.github/workflows/accuracy-tests.yml'
-  pull_request:
-    branches: [ master ]
-    paths:
-      - 'UI/**'
-      - 'Tests/**'
-      - 'Directory.Build.props'
-      - '.github/workflows/pansy-package-only-validation.yml'
-      - '.github/workflows/build.yml'
-      - '.github/workflows/accuracy-tests.yml'
   workflow_dispatch:
 
 env:
@@ -40,6 +22,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
+          global-json-file: global.json
           dotnet-version: 10.x
 
       - name: Ensure no sibling pansy checkout
