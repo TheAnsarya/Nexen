@@ -32,6 +32,7 @@ private:
 	[[nodiscard]] uint8_t ResolveThOutputLevel(uint8_t port) const;
 	[[nodiscard]] uint8_t BuildRawInputState(uint8_t port, bool thHigh, bool sixButtonSession) const;
 	[[nodiscard]] uint8_t ApplyControlPortDirectionMask(uint8_t port, uint8_t inputValue) const;
+	[[nodiscard]] bool IsSixButtonDevice(uint8_t port) const;
 	[[nodiscard]] uint8_t BuildDeterministicPortCapabilities(uint8_t port) const;
 	[[nodiscard]] uint8_t BuildDeterministicPortDigest(uint8_t port) const;
 

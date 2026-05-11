@@ -11,9 +11,14 @@ public:
 		X, Y, Z, Mode
 	};
 
-	GenesisController(Emulator* emu, uint8_t port, KeyMappingSet keyMappings)
-		: BaseControlDevice(emu, ControllerType::GenesisController, port, keyMappings) {
+	GenesisController(Emulator* emu, uint8_t port, KeyMappingSet keyMappings, bool sixButton = true)
+		: BaseControlDevice(emu, sixButton ? ControllerType::GenesisController : ControllerType::GenesisController3Buttons, port, keyMappings) {
 		_turboSpeed = keyMappings.TurboSpeed;
+		_sixButton = sixButton;
+	}
+
+	bool IsSixButtonController() const {
+		return _sixButton;
 	}
 
 	uint8_t ReadRam(uint16_t addr) override { return 0; }
@@ -21,7 +26,7 @@ public:
 
 protected:
 	string GetKeyNames() override {
-		return "UDLRABCSxyzm";
+		return _sixButton ? "UDLRABCSxyzm" : "UDLRABCS";
 	}
 
 	bool HasCustomGenesisMapping(const KeyMapping& keyMapping) {
@@ -44,10 +49,12 @@ protected:
 				SetPressedState(Buttons::B, keyMapping.CustomKeys[Buttons::B]);
 				SetPressedState(Buttons::C, keyMapping.CustomKeys[Buttons::C]);
 				SetPressedState(Buttons::Start, keyMapping.CustomKeys[Buttons::Start]);
-				SetPressedState(Buttons::X, keyMapping.CustomKeys[Buttons::X]);
-				SetPressedState(Buttons::Y, keyMapping.CustomKeys[Buttons::Y]);
-				SetPressedState(Buttons::Z, keyMapping.CustomKeys[Buttons::Z]);
-				SetPressedState(Buttons::Mode, keyMapping.CustomKeys[Buttons::Mode]);
+				if (_sixButton) {
+					SetPressedState(Buttons::X, keyMapping.CustomKeys[Buttons::X]);
+					SetPressedState(Buttons::Y, keyMapping.CustomKeys[Buttons::Y]);
+					SetPressedState(Buttons::Z, keyMapping.CustomKeys[Buttons::Z]);
+					SetPressedState(Buttons::Mode, keyMapping.CustomKeys[Buttons::Mode]);
+				}
 			} else {
 				SetPressedState(Buttons::Up, keyMapping.Up);
 				SetPressedState(Buttons::Down, keyMapping.Down);
@@ -57,10 +64,12 @@ protected:
 				SetPressedState(Buttons::B, keyMapping.B);
 				SetPressedState(Buttons::C, keyMapping.X);
 				SetPressedState(Buttons::Start, keyMapping.Start);
-				SetPressedState(Buttons::X, keyMapping.Y);
-				SetPressedState(Buttons::Y, keyMapping.L);
-				SetPressedState(Buttons::Z, keyMapping.R);
-				SetPressedState(Buttons::Mode, keyMapping.GenericKey1);
+				if (_sixButton) {
+					SetPressedState(Buttons::X, keyMapping.Y);
+					SetPressedState(Buttons::Y, keyMapping.L);
+					SetPressedState(Buttons::Z, keyMapping.R);
+					SetPressedState(Buttons::Mode, keyMapping.GenericKey1);
+				}
 
 				uint8_t turboFreq = 1 << (4 - _turboSpeed);
 				bool turboOn = (uint8_t)(_emu->GetFrameCount() % turboFreq) < turboFreq / 2;
@@ -68,9 +77,11 @@ protected:
 					SetPressedState(Buttons::A, keyMapping.TurboA);
 					SetPressedState(Buttons::B, keyMapping.TurboB);
 					SetPressedState(Buttons::C, keyMapping.TurboX);
-					SetPressedState(Buttons::X, keyMapping.TurboY);
-					SetPressedState(Buttons::Y, keyMapping.TurboL);
-					SetPressedState(Buttons::Z, keyMapping.TurboR);
+					if (_sixButton) {
+						SetPressedState(Buttons::X, keyMapping.TurboY);
+						SetPressedState(Buttons::Y, keyMapping.TurboL);
+						SetPressedState(Buttons::Z, keyMapping.TurboR);
+					}
 				}
 			}
 
@@ -87,4 +98,5 @@ protected:
 
 private:
 	uint32_t _turboSpeed = 0;
+	bool _sixButton = true;
 };

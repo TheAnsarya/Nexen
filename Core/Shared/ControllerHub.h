@@ -134,6 +134,10 @@ public:
 				case ControllerType::GenesisController:
 					_ports[i] = std::make_unique<GenesisController>(emu, 0, controllers[i].Keys);
 					break;
+
+				case ControllerType::GenesisController3Buttons:
+					_ports[i] = std::make_unique<GenesisController>(emu, 0, controllers[i].Keys, false);
+					break;
 			}
 		}
 	}

@@ -247,7 +247,10 @@ enum class ControllerType {
 
 	// Channel F
 	ChannelFController,
-	ChannelFConsolePanel
+	ChannelFConsolePanel,
+
+	// Additional Genesis variants
+	GenesisController3Buttons
 };
 
 struct KeyMapping {

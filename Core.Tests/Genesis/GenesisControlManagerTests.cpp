@@ -294,4 +294,44 @@ namespace {
 		uint8_t timedOutRead = controlManager->ReadDataPort(0);
 		EXPECT_EQ(timedOutRead, 0x7fu);
 	}
+
+	TEST(GenesisControlManagerTests, ThreeButtonDeviceNeverExposesSixButtonSignatureOrExtendedButtons) {
+		Emulator emu;
+		GenesisConsole console(&emu);
+		std::unique_ptr<GenesisControlManager> controlManager = CreateControlManager(emu, console, ControllerType::GenesisController3Buttons, ControllerType::None);
+		ASSERT_NE(controlManager, nullptr);
+
+		auto device = controlManager->GetControlDevice(0);
+		ASSERT_NE(device, nullptr);
+		device->SetBit(GenesisController::Buttons::X);
+		device->SetBit(GenesisController::Buttons::Y);
+		device->SetBit(GenesisController::Buttons::Z);
+		device->SetBit(GenesisController::Buttons::Mode);
+
+		controlManager->WriteControlPort(0, 0x40);
+		controlManager->WriteDataPort(0, 0x40);
+		controlManager->WriteDataPort(0, 0x00);
+		controlManager->WriteDataPort(0, 0x40);
+		controlManager->WriteDataPort(0, 0x00);
+		controlManager->WriteDataPort(0, 0x40);
+
+		uint8_t highRead = controlManager->ReadDataPort(0);
+		EXPECT_EQ(highRead, 0x7fu);
+
+		controlManager->WriteDataPort(0, 0x00);
+		uint8_t lowRead = controlManager->ReadDataPort(0);
+		EXPECT_EQ(lowRead, 0x33u);
+	}
+
+	TEST(GenesisControlManagerTests, CreateControllerDeviceRespectsGenesisThreeButtonControllerType) {
+		Emulator emu;
+		GenesisConsole console(&emu);
+		std::unique_ptr<GenesisControlManager> controlManager = CreateControlManager(emu, console, ControllerType::GenesisController3Buttons, ControllerType::None);
+		ASSERT_NE(controlManager, nullptr);
+
+		auto device = controlManager->GetControlDevice(0);
+		ASSERT_NE(device, nullptr);
+		EXPECT_TRUE(device->HasControllerType(ControllerType::GenesisController3Buttons));
+		EXPECT_FALSE(device->HasControllerType(ControllerType::GenesisController));
+	}
 }

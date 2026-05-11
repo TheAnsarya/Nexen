@@ -172,6 +172,15 @@ TEST(ControllerHubCreationTests, GenesisControllerSubPortIsDetectedByType) {
 	EXPECT_TRUE(hub.HasControllerType(ControllerType::GenesisController));
 }
 
+TEST(ControllerHubCreationTests, GenesisThreeButtonSubPortIsDetectedByType) {
+	ControllerConfig controllers[2] = {};
+	controllers[0].Type = ControllerType::GenesisController3Buttons;
+	controllers[1].Type = ControllerType::None;
+
+	ConfiguredHub2Port hub(controllers);
+	EXPECT_TRUE(hub.HasControllerType(ControllerType::GenesisController3Buttons));
+}
+
 // ===== RewindData InputLog Tests =====
 
 class RewindDataTest : public ::testing::Test {};

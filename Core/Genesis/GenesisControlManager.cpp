@@ -44,6 +44,28 @@ bool GenesisControlManager::IsSixButtonSessionActive(uint8_t port) const {
 	return _thCount[port] >= 4;
 }
 
+bool GenesisControlManager::IsSixButtonDevice(uint8_t port) const {
+	if (port > 1) {
+		return false;
+	}
+
+	shared_ptr<BaseControlDevice> device = const_cast<GenesisControlManager*>(this)->GetControlDevice(port);
+	if (!device || !device->IsConnected()) {
+		return false;
+	}
+
+	if (device->HasControllerType(ControllerType::GenesisController3Buttons)) {
+		return false;
+	}
+
+	if (device->HasControllerType(ControllerType::GenesisController)) {
+		return true;
+	}
+
+	GenesisController* pad = dynamic_cast<GenesisController*>(device.get());
+	return pad ? pad->IsSixButtonController() : false;
+}
+
 uint8_t GenesisControlManager::ResolveThOutputLevel(uint8_t port) const {
 	if (port > 1) {
 		return 0x40;
@@ -173,7 +195,10 @@ shared_ptr<BaseControlDevice> GenesisControlManager::CreateControllerDevice(Cont
 		case ControllerType::None:
 			break;
 		case ControllerType::GenesisController:
-			device = std::make_unique<GenesisController>(_emu, port, keys);
+			device = std::make_unique<GenesisController>(_emu, port, keys, true);
+			break;
+		case ControllerType::GenesisController3Buttons:
+			device = std::make_unique<GenesisController>(_emu, port, keys, false);
 			break;
 	}
 
@@ -216,7 +241,7 @@ uint8_t GenesisControlManager::ReadDataPort(uint8_t port) {
 
 	ApplySixButtonSessionTimeout(port);
 	bool thHigh = (ResolveThOutputLevel(port) & 0x40) != 0;
-	bool sixButtonSession = IsSixButtonSessionActive(port);
+	bool sixButtonSession = IsSixButtonDevice(port) && IsSixButtonSessionActive(port);
 	uint8_t rawInput = BuildRawInputState(port, thHigh, sixButtonSession);
 	return ApplyControlPortDirectionMask(port, rawInput);
 }
