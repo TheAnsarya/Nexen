@@ -7,6 +7,73 @@
 #include "Utilities/VirtualFile.h"
 
 namespace {
+	struct ScopedEnvVar {
+		std::string Name;
+		bool HadValue = false;
+		std::string OldValue;
+
+		ScopedEnvVar(const char* name, const char* value)
+			: Name(name) {
+			const char* existing = std::getenv(Name.c_str());
+			if (existing) {
+				HadValue = true;
+				OldValue = existing;
+			}
+
+			if (value) {
+				_putenv_s(Name.c_str(), value);
+			} else {
+				_putenv_s(Name.c_str(), "");
+			}
+		}
+
+		~ScopedEnvVar() {
+			if (HadValue) {
+				_putenv_s(Name.c_str(), OldValue.c_str());
+			} else {
+				_putenv_s(Name.c_str(), "");
+			}
+		}
+	};
+
+	struct ScopedStartupEnv {
+		std::vector<ScopedEnvVar> Vars;
+
+		ScopedStartupEnv(const std::vector<std::pair<const char*, const char*>>& vars)
+			: Vars() {
+			Vars.reserve(64);
+			ResetTrackedVars();
+			for (const auto& [name, value] : vars) {
+				Vars.emplace_back(name, value);
+			}
+		}
+
+		void ResetTrackedVars() {
+			Vars.emplace_back("NEXEN_GENESIS_STARTUP_PROFILE", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_STARTUP_WINDOW_FRAMES", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_STARTUP_BOOT_RELAX_FRAMES", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_STARTUP_STRICT_PHASE_START_FRAME", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_STARTUP_CHECKPOINT_INTERVAL_FRAMES", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_STARTUP_CHECKPOINT_END_FRAME", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_TMSS_STRICT", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_TMSS_UNLOCK_DELAY_MCLK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_TMSS_STRICT_DURING_LOGO", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_TMSS_FORCE_UNTIL_UNLOCK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_Z80_BUSREQ_ACK_DELAY_MCLK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_Z80_BUSRESUME_DELAY_MCLK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_Z80_EARLY_BUSREQ_ACK_DELAY_MCLK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_Z80_EARLY_BUSRESUME_DELAY_MCLK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_Z80_LATE_BUSREQ_ACK_DELAY_MCLK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_Z80_LATE_BUSRESUME_DELAY_MCLK", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_USE_DYNAMIC_BUS_TIMING", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_Z80_LATCH_HIGH_BYTE_ONLY", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_PREFER_NEXENREF_BUS_HANDOFF", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_PREFER_MESEN_BUS_HANDOFF", nullptr);
+			Vars.emplace_back("NEXEN_GENESIS_POWERON_Z80_RESET_ASSERTED", nullptr);
+		}
+	};
+
 	std::vector<uint8_t> BuildNopBootRom(uint32_t initialSp, uint32_t initialPc, size_t romSize = 0x2000, bool includeSegaHeader = false) {
 		std::vector<uint8_t> rom(romSize, 0);
 		for (size_t i = 0; i + 1 < rom.size(); i += 2) {
@@ -513,4 +580,135 @@ TEST(GenesisExecutionStartupTests, ResetReSyncsTmssEnabledFromRuntimeSettingsDet
 	GenesisIoState tmssDisabledIo = console.GetMemoryManager()->GetIoState();
 	EXPECT_EQ(tmssDisabledIo.TmssEnabled, 0u);
 	EXPECT_EQ(tmssDisabledIo.TmssUnlocked, 0u);
+}
+
+TEST(GenesisExecutionStartupTests, StartupTmssStrictForcePolicyLocksDataPortsUntilUnlockDelayElapses) {
+	ScopedStartupEnv env({
+		{ "NEXEN_GENESIS_STARTUP_PROFILE", "strict" },
+		{ "NEXEN_GENESIS_TMSS_STRICT", "1" },
+		{ "NEXEN_GENESIS_TMSS_FORCE_UNTIL_UNLOCK", "1" },
+		{ "NEXEN_GENESIS_TMSS_UNLOCK_DELAY_MCLK", "24" }
+	});
+
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildNopBootRom(InitialSp, InitialPc, 0x4000, true);
+	VirtualFile rom(romData.data(), romData.size(), "boot-tmss-force-lock.md");
+	Emulator emu;
+	emu.GetSettings()->GetGenesisConfig().EnableTmss = true;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+	auto* mm = console.GetMemoryManager();
+
+	EXPECT_TRUE(mm->GetTmssEnabled());
+	EXPECT_TRUE(mm->GetTmssStrictMode());
+	EXPECT_TRUE(mm->GetStartupForceTmssUntilUnlock());
+	EXPECT_FALSE(mm->GetTmssUnlocked());
+	EXPECT_FALSE(mm->IsTmssLockedReadAllowedForAddr(0xC00000));
+	EXPECT_FALSE(mm->IsTmssLockedWriteAllowedForAddr(0xC00000));
+
+	mm->Write8(0xA14000, 'S');
+	mm->Write8(0xA14001, 'E');
+	mm->Write8(0xA14002, 'G');
+	mm->Write8(0xA14003, 'A');
+
+	EXPECT_TRUE(mm->GetStartupHadTmssSignature());
+	EXPECT_TRUE(mm->GetTmssUnlockPending());
+	EXPECT_FALSE(mm->GetTmssUnlocked());
+	EXPECT_FALSE(mm->IsTmssLockedWriteAllowedForAddr(0xC00000));
+
+	mm->Exec(16);
+	EXPECT_TRUE(mm->GetTmssUnlockPending());
+	EXPECT_GT(mm->GetTmssUnlockDelayMclk(), 0u);
+
+	mm->Exec(16);
+	EXPECT_FALSE(mm->GetTmssUnlockPending());
+	EXPECT_TRUE(mm->GetTmssUnlocked());
+	EXPECT_TRUE(mm->IsTmssLockedReadAllowedForAddr(0xC00000));
+	EXPECT_TRUE(mm->IsTmssLockedWriteAllowedForAddr(0xC00000));
+}
+
+TEST(GenesisExecutionStartupTests, StartupTmssStrictDuringLogoDisablesBypassWithinStartupWindow) {
+	ScopedStartupEnv env({
+		{ "NEXEN_GENESIS_STARTUP_PROFILE", "logo-compat" },
+		{ "NEXEN_GENESIS_TMSS_STRICT", "1" },
+		{ "NEXEN_GENESIS_TMSS_STRICT_DURING_LOGO", "1" },
+		{ "NEXEN_GENESIS_STARTUP_WINDOW_FRAMES", "64" },
+		{ "NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", "120" }
+	});
+
+	constexpr uint32_t InitialSp = 0x00FFFE00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildNopBootRom(InitialSp, InitialPc, 0x4000, true);
+	VirtualFile rom(romData.data(), romData.size(), "boot-tmss-strict-logo.md");
+	Emulator emu;
+	emu.GetSettings()->GetGenesisConfig().EnableTmss = true;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+	auto* mm = console.GetMemoryManager();
+
+	EXPECT_TRUE(mm->GetTmssEnabled());
+	EXPECT_TRUE(mm->GetTmssStrictMode());
+	EXPECT_TRUE(mm->GetStartupStrictTmssDuringLogo());
+	EXPECT_FALSE(mm->GetTmssUnlocked());
+	EXPECT_FALSE(mm->IsTmssLockedReadAllowedForAddr(0xC00000));
+	EXPECT_FALSE(mm->IsTmssLockedWriteAllowedForAddr(0xC00000));
+
+	// Status/HV ports remain available even in strict TMSS lock mode.
+	EXPECT_TRUE(mm->IsTmssLockedReadAllowedForAddr(0xC00008));
+	EXPECT_TRUE(mm->IsTmssLockedWriteAllowedForAddr(0xC00004));
+}
+
+TEST(GenesisExecutionStartupTests, FirstSecondArbitrationTelemetryRemainsDeterministicAcrossRuns) {
+	auto capture = []() {
+		ScopedStartupEnv env({
+			{ "NEXEN_GENESIS_STARTUP_PROFILE", "hybrid" },
+			{ "NEXEN_GENESIS_USE_DYNAMIC_BUS_TIMING", "1" },
+			{ "NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", "90" },
+			{ "NEXEN_GENESIS_STARTUP_STRICT_PHASE_START_FRAME", "240" },
+			{ "NEXEN_GENESIS_Z80_EARLY_BUSREQ_ACK_DELAY_MCLK", "45" },
+			{ "NEXEN_GENESIS_Z80_EARLY_BUSRESUME_DELAY_MCLK", "15" },
+			{ "NEXEN_GENESIS_Z80_LATE_BUSREQ_ACK_DELAY_MCLK", "9" },
+			{ "NEXEN_GENESIS_Z80_LATE_BUSRESUME_DELAY_MCLK", "7" }
+		});
+
+		constexpr uint32_t InitialSp = 0x00FFFE00;
+		constexpr uint32_t InitialPc = 0x00000100;
+		std::vector<uint8_t> romData = BuildNopBootRom(InitialSp, InitialPc, 0x4000, true);
+		VirtualFile rom(romData.data(), romData.size(), "boot-first-second-arbitration.md");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetMemoryManager() || !console.GetCpu()) {
+			return std::tuple<uint8_t, uint8_t, uint16_t, uint64_t, uint32_t>(0, 0, 0, 0, 0);
+		}
+
+		auto* mm = console.GetMemoryManager();
+		for (int i = 0; i < 64; i++) {
+			mm->Write8(0xA11200, 0x01);
+			mm->Write8(0xA11100, 0x01);
+			mm->Exec(8);
+			mm->Write8(0xA11100, 0x00);
+			mm->Exec(8);
+			mm->Write8(0xA11200, 0x00);
+			mm->Exec(4);
+		}
+
+		return std::tuple<uint8_t, uint8_t, uint16_t, uint64_t, uint32_t>(
+			mm->GetStartupArbitrationDigest(),
+			mm->GetStartupArbitrationEpoch(),
+			mm->GetStartupLastArbitrationMclk(),
+			mm->GetZ80RuntimeTransitionCount(),
+			mm->GetStartupBusTimingRetuneCount());
+	};
+
+	auto runA = capture();
+	auto runB = capture();
+
+	EXPECT_EQ(runA, runB);
+	EXPECT_GT(std::get<2>(runA), 0u);
+	EXPECT_GT(std::get<3>(runA), 0u);
 }

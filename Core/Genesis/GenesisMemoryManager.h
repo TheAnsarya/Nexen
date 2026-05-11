@@ -329,6 +329,14 @@ public:
 	bool GetStartupProfilePreferNexenBusHandoff() const { return _startupProfilePreferNexenBusHandoff; }
 	bool GetStartupProfilePreferMesenBusHandoff() const { return _startupProfilePreferMesenBusHandoff; }
 	bool GetStartupUseDynamicBusTiming() const { return _startupUseDynamicBusTiming; }
+	bool GetTmssStrictMode() const { return _tmssStrictMode; }
+	bool GetTmssEnabled() const { return _tmssEnabled; }
+	bool GetTmssUnlocked() const { return _tmssUnlocked; }
+	bool GetTmssUnlockPending() const { return _tmssUnlockPending; }
+	uint16_t GetTmssUnlockDelayMclk() const { return _tmssUnlockDelayMclk; }
+	bool GetStartupForceTmssUntilUnlock() const { return _startupForceTmssUntilUnlock; }
+	bool GetStartupStrictTmssDuringLogo() const { return _startupStrictTmssDuringLogo; }
+	bool GetStartupHadTmssSignature() const { return _startupHadTmssSignature; }
 	bool IsStartupLogoPhaseForFrame(uint32_t frame) const { return IsStartupLogoPhase(frame); }
 	bool IsStartupStrictPhaseForFrame(uint32_t frame) const { return IsStartupStrictPhase(frame); }
 	uint16_t GetStartupEarlyBusReqAckDelayMclk() const { return _startupEarlyBusReqAckDelayMclk; }
@@ -340,6 +348,13 @@ public:
 	void RefreshStartupBusTimingForFrame(uint32_t frame) { RefreshStartupBusTiming(frame, false, 0, 0, "test"); }
 	uint32_t GetStartupBusTimingRetuneCount() const { return _startupBusTimingRetuneCount; }
 	uint32_t GetStartupLastBusTimingFrame() const { return _startupLastBusTimingFrame; }
+	uint32_t GetStartupTraceSequence() const { return _startupTraceSequence; }
+	uint64_t GetStartupTraceDigest() const { return _startupTraceDigest; }
+	uint8_t GetStartupArbitrationDigest() const { return _startupArbitrationDigest; }
+	uint8_t GetStartupArbitrationEpoch() const { return _startupArbitrationEpoch; }
+	uint16_t GetStartupLastArbitrationMclk() const { return _startupLastArbitrationMclk; }
+	bool IsTmssLockedReadAllowedForAddr(uint32_t addr) const { return IsTmssLockedVdpReadAllowed(addr); }
+	bool IsTmssLockedWriteAllowedForAddr(uint32_t addr) const { return IsTmssLockedVdpWriteAllowed(addr); }
 	uint32_t GetDebugTranscriptLaneCount() const { return _ioState.DebugTranscriptLaneCount; }
 	uint64_t GetDebugTranscriptLaneDigest() const { return _ioState.DebugTranscriptLaneDigest; }
 	void ClearDebugTranscriptLane();

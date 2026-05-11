@@ -293,52 +293,64 @@ TEST(GenesisExecutionPipelineTests, StartupFrameVisibilityHandoffIsDeterministic
 		Emulator emu;
 		GenesisConsole console(&emu);
 		if (console.LoadRom(rom) != LoadRomResult::Success) {
-			return std::tuple<std::vector<uint32_t>, std::vector<uintptr_t>, std::vector<uint32_t>, std::vector<uint32_t>>();
+			return std::tuple<std::vector<uint32_t>, std::vector<uint8_t>, std::vector<uint32_t>, std::vector<uint32_t>>();
 		}
 
 		std::vector<uint32_t> frameCounts;
-		std::vector<uintptr_t> frameBufferPtrs;
+		std::vector<uint8_t> pointerPattern;
 		std::vector<uint32_t> widths;
 		std::vector<uint32_t> heights;
 		frameCounts.reserve(FrameCount);
-		frameBufferPtrs.reserve(FrameCount);
+		pointerPattern.reserve(FrameCount);
 		widths.reserve(FrameCount);
 		heights.reserve(FrameCount);
+		uintptr_t firstPtr = 0;
+		uintptr_t secondPtr = 0;
 
 		for (int i = 0; i < FrameCount; i++) {
 			console.RunFrame();
 			PpuFrameInfo frame = console.GetPpuFrame();
 			frameCounts.push_back(frame.FrameCount);
-			frameBufferPtrs.push_back((uintptr_t)frame.FrameBuffer);
+			uintptr_t ptr = (uintptr_t)frame.FrameBuffer;
+			if (i == 0) {
+				firstPtr = ptr;
+				pointerPattern.push_back(ptr != 0 ? 1u : 0u);
+			} else if (i == 1) {
+				secondPtr = ptr;
+				pointerPattern.push_back(ptr != 0 && ptr != firstPtr ? 1u : 0u);
+			} else {
+				uintptr_t expected = (i & 1) == 0 ? firstPtr : secondPtr;
+				pointerPattern.push_back(ptr == expected ? 1u : 0u);
+			}
 			widths.push_back(frame.Width);
 			heights.push_back(frame.Height);
 		}
 
-		return std::make_tuple(frameCounts, frameBufferPtrs, widths, heights);
+		return std::make_tuple(frameCounts, pointerPattern, widths, heights);
 	};
 
 	auto runA = captureRun();
 	auto runB = captureRun();
 
 	auto& frameCountsA = std::get<0>(runA);
-	auto& frameBufferPtrsA = std::get<1>(runA);
+	auto& pointerPatternA = std::get<1>(runA);
 	auto& widthsA = std::get<2>(runA);
 	auto& heightsA = std::get<3>(runA);
 
 	ASSERT_EQ((int)frameCountsA.size(), FrameCount);
-	ASSERT_EQ((int)frameBufferPtrsA.size(), FrameCount);
+	ASSERT_EQ((int)pointerPatternA.size(), FrameCount);
 	ASSERT_EQ((int)widthsA.size(), FrameCount);
 	ASSERT_EQ((int)heightsA.size(), FrameCount);
 
 	for (int i = 0; i < FrameCount; i++) {
 		EXPECT_EQ(frameCountsA[i], (uint32_t)(i + 1));
-		EXPECT_NE(frameBufferPtrsA[i], (uintptr_t)0);
 		EXPECT_GT(widthsA[i], 0u);
 		EXPECT_GT(heightsA[i], 0u);
 	}
-
+	EXPECT_EQ(pointerPatternA[0], 1u);
+	EXPECT_EQ(pointerPatternA[1], 1u);
 	for (int i = 2; i < FrameCount; i++) {
-		EXPECT_EQ(frameBufferPtrsA[i], frameBufferPtrsA[i - 2]);
+		EXPECT_EQ(pointerPatternA[i], 1u);
 	}
 
 	EXPECT_EQ(runA, runB);
@@ -355,13 +367,14 @@ TEST(GenesisExecutionPipelineTests, EventOrderingInteractionsDoNotBreakStartupFr
 		Emulator emu;
 		GenesisConsole console(&emu);
 		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetVdp()) {
-			return std::tuple<std::vector<uint32_t>, std::vector<uintptr_t>>();
+			return std::tuple<std::vector<uint32_t>, std::vector<uint8_t>>();
 		}
 
 		std::vector<uint32_t> frameCounts;
-		std::vector<uintptr_t> frameBufferPtrs;
+		std::vector<uint8_t> pointerPattern;
 		frameCounts.reserve(FrameCount);
-		frameBufferPtrs.reserve(FrameCount);
+		pointerPattern.reserve(FrameCount);
+		uintptr_t firstPtr = 0;
 
 		for (int i = 0; i < FrameCount; i++) {
 			if (injectExternalEvents) {
@@ -374,10 +387,18 @@ TEST(GenesisExecutionPipelineTests, EventOrderingInteractionsDoNotBreakStartupFr
 
 			PpuFrameInfo frame = console.GetPpuFrame();
 			frameCounts.push_back(frame.FrameCount);
-			frameBufferPtrs.push_back((uintptr_t)frame.FrameBuffer);
+			uintptr_t ptr = (uintptr_t)frame.FrameBuffer;
+			if (i == 0) {
+				firstPtr = ptr;
+				pointerPattern.push_back(ptr != 0 ? 1u : 0u);
+			} else if (i == 1) {
+				pointerPattern.push_back(ptr != 0 && ptr != firstPtr ? 1u : 0u);
+			} else {
+				pointerPattern.push_back(ptr == firstPtr ? 1u : 0u);
+			}
 		}
 
-		return std::make_tuple(frameCounts, frameBufferPtrs);
+		return std::make_tuple(frameCounts, pointerPattern);
 	};
 
 	auto runA = captureRun(false);
@@ -385,16 +406,103 @@ TEST(GenesisExecutionPipelineTests, EventOrderingInteractionsDoNotBreakStartupFr
 	auto runC = captureRun(true);
 
 	auto& frameCountsA = std::get<0>(runA);
-	auto& frameBufferPtrsA = std::get<1>(runA);
+	auto& pointerPatternA = std::get<1>(runA);
 
 	ASSERT_EQ((int)frameCountsA.size(), FrameCount);
-	ASSERT_EQ((int)frameBufferPtrsA.size(), FrameCount);
+	ASSERT_EQ((int)pointerPatternA.size(), FrameCount);
 
 	for (int i = 0; i < FrameCount; i++) {
 		EXPECT_EQ(frameCountsA[i], (uint32_t)(i + 1));
-		EXPECT_NE(frameBufferPtrsA[i], (uintptr_t)0);
+		EXPECT_EQ(pointerPatternA[i], 1u);
 	}
 
 	EXPECT_EQ(runA, runB);
 	EXPECT_EQ(runA, runC);
+}
+
+TEST(GenesisExecutionPipelineTests, StartupTraceSequenceAndDigestRemainDeterministicAcrossFirstSecondCadence) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 60;
+
+	auto captureRun = [&]() {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-trace-order-cadence.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetMemoryManager()) {
+			return std::tuple<std::vector<uint32_t>, std::vector<uint64_t>>();
+		}
+
+		auto* mm = console.GetMemoryManager();
+		std::vector<uint32_t> sequence;
+		std::vector<uint64_t> digest;
+		sequence.reserve(FrameCount);
+		digest.reserve(FrameCount);
+
+		for (int i = 0; i < FrameCount; i++) {
+			console.RunFrame();
+			sequence.push_back(mm->GetStartupTraceSequence());
+			digest.push_back(mm->GetStartupTraceDigest());
+		}
+
+		return std::make_tuple(sequence, digest);
+	};
+
+	auto runA = captureRun();
+	auto runB = captureRun();
+
+	auto& sequenceA = std::get<0>(runA);
+	auto& digestA = std::get<1>(runA);
+	ASSERT_EQ((int)sequenceA.size(), FrameCount);
+	ASSERT_EQ((int)digestA.size(), FrameCount);
+
+	for (int i = 1; i < FrameCount; i++) {
+		EXPECT_GE(sequenceA[i], sequenceA[i - 1]);
+	}
+
+	EXPECT_EQ(runA, runB);
+}
+
+TEST(GenesisExecutionPipelineTests, StartupTraceInvariantsHoldWhenFrameEventsAreExternallyInjected) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 30;
+
+	auto captureRun = [&](bool injectExternalEvents) {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-trace-order-events.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetMemoryManager()) {
+			return std::tuple<uint32_t, uint64_t, uint32_t, uint8_t, uint8_t, uint16_t>(0, 0, 0, 0, 0, 0);
+		}
+
+		auto* mm = console.GetMemoryManager();
+		for (int i = 0; i < FrameCount; i++) {
+			if (injectExternalEvents) {
+				emu.ProcessEvent(EventType::StartFrame, CpuType::Genesis);
+			}
+			console.RunFrame();
+			if (injectExternalEvents) {
+				emu.ProcessEvent(EventType::EndFrame, CpuType::Genesis);
+			}
+		}
+
+		return std::tuple<uint32_t, uint64_t, uint32_t, uint8_t, uint8_t, uint16_t>(
+			mm->GetStartupTraceSequence(),
+			mm->GetStartupTraceDigest(),
+			mm->GetStartupDisplayTransitionCount(),
+			mm->GetStartupArbitrationDigest(),
+			mm->GetStartupArbitrationEpoch(),
+			mm->GetStartupLastArbitrationMclk());
+	};
+
+	auto runA = captureRun(false);
+	auto runB = captureRun(false);
+	auto runC = captureRun(true);
+
+	EXPECT_EQ(runA, runB);
+	EXPECT_EQ(runA, runC);
+	EXPECT_GT(std::get<0>(runA), 0u);
 }

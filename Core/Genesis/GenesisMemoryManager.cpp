@@ -1335,6 +1335,8 @@ bool GenesisMemoryManager::IsTmssLockedVdpReadAllowed(uint32_t addr) const {
 		return true;
 	}
 
+	uint32_t frame = GetStartupFrame();
+
 	uint32_t port = addr & 0x1F;
 	if (port >= 0x04 && port < 0x10) {
 		// Allow status/HV polling while locked to stabilize startup loops.
@@ -1350,7 +1352,12 @@ bool GenesisMemoryManager::IsTmssLockedVdpReadAllowed(uint32_t addr) const {
 		return false;
 	}
 
-	if (_startupProfilePreferMesenBusHandoff && IsStartupLogoPhase(GetStartupFrame()) && port < 0x04) {
+	if (_startupStrictTmssDuringLogo && IsStartupLogoPhase(frame) && port < 0x04) {
+		// In strict-logo mode, keep data/control read paths blocked for logo-phase frames.
+		return false;
+	}
+
+	if (_startupProfilePreferMesenBusHandoff && IsStartupLogoPhase(frame) && port < 0x04) {
 		// Mesen-compatible path keeps data-port reads blocked during logo phase while still
 		// allowing control/HV polling in the same interval.
 		return false;
@@ -1369,6 +1376,8 @@ bool GenesisMemoryManager::IsTmssLockedVdpWriteAllowed(uint32_t addr) const {
 		return true;
 	}
 
+	uint32_t frame = GetStartupFrame();
+
 	uint32_t port = addr & 0x1F;
 	if (port >= 0x04 && port < 0x08) {
 		// Allow register/control setup while TMSS is still settling.
@@ -1383,7 +1392,12 @@ bool GenesisMemoryManager::IsTmssLockedVdpWriteAllowed(uint32_t addr) const {
 		return false;
 	}
 
-	if (_startupProfilePreferMesenBusHandoff && IsStartupLogoPhase(GetStartupFrame()) && port < 0x04) {
+	if (_startupStrictTmssDuringLogo && IsStartupLogoPhase(frame) && port < 0x04) {
+		// In strict-logo mode, keep data/control write paths blocked for logo-phase frames.
+		return false;
+	}
+
+	if (_startupProfilePreferMesenBusHandoff && IsStartupLogoPhase(frame) && port < 0x04) {
 		return false;
 	}
 
