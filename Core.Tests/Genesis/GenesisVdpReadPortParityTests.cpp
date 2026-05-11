@@ -192,6 +192,34 @@ namespace {
 		EXPECT_FALSE(afterSecondWord.WritePending);
 	}
 
+	TEST(GenesisVdpReadPortParityTests, FullWordDataWriteClearsStaleHighByteDataLatch) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteDataPortByte(0x56u, true);
+		vdp.WriteDataPort(0xabcdu);
+		vdp.WriteDataPortByte(0x78u, false);
+
+		GenesisVdpState state = vdp.GetState();
+		EXPECT_EQ(state.DataPortBuffer, 0x0078u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, FullWordControlWriteClearsStaleHighByteControlLatch) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPortByte(0x12u, true);
+		vdp.WriteControlPort(0x4000u);
+		vdp.WriteControlPort(0x0000u);
+
+		vdp.WriteControlPortByte(0x34u, false);
+		vdp.WriteControlPortByte(0x00u, false);
+
+		GenesisVdpState state = vdp.GetState();
+		EXPECT_EQ(state.AddressRegister & 0xff00u, 0x0000u);
+		EXPECT_NE(state.AddressRegister & 0xff00u, 0x1200u);
+	}
+
 	TEST(GenesisVdpReadPortParityTests, FifoStatusBitsTrackQueuedWritesAcrossReadCycles) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);

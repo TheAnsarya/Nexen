@@ -1433,6 +1433,7 @@ void GenesisVdp::WriteControlPortByte(uint8_t value, bool highByte) {
 
 void GenesisVdp::WriteDataPort(uint16_t value) {
 	_statusReadLatchValid = false;
+	_pendingDataHighWrite = false;
 	_state.DataPortBuffer = value;
 
 	// DMA fill takes its fill byte from the first data-port write after the DMA command.
@@ -1607,6 +1608,7 @@ void GenesisVdp::ApplyPortWrite(uint8_t accessMode, uint16_t address, uint16_t v
 
 void GenesisVdp::WriteControlPort(uint16_t value) {
 	_statusReadLatchValid = false;
+	_pendingControlHighWrite = false;
 	static uint64_t controlWriteCount = 0;
 	controlWriteCount++;
 
