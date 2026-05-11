@@ -2531,8 +2531,9 @@ yes do those three steps! Make sure 1.4.40 is fully released, with read me and d
 
 You're building and failing in a spiral without making any changes? STOP building figure out why window builds aren't working, figure out why other builds wouldn't work, fix all the problems, then try to build and release 1.4.40 again; continue;
 
-You're building and failing in a spiral without making any changes? STOP building figure out why Windows builds aren't working, figure out why other builds (linux, MacOS) wouldn't work, fix all the problems, then try to build and release 1.4.40 again; make sure all projects are using the most modern versions and code and standards and practices, and the most modern libraries and framework versions, like dot net 10+ and C# 14+; continue;
+You're building and failing in a spiral without making any changes? STOP building and figure out why Windows builds aren't working, figure out why other builds (linux, MacOS) wouldn't work, fix all the problems, then try to build and release 1.4.40 again; make sure all projects are using the most modern versions and code and standards and practices, and the most modern libraries and framework versions, like dot net 10+ and C# 14+; continue;
 
+fix warnings in the Windows build path so we can finish the 1.4.40 release and rerun the windows builds; continue;
 
 
 

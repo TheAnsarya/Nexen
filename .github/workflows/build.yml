@@ -192,11 +192,13 @@ jobs:
         continue-on-error: true
         shell: pwsh
         run: |
+          $PSNativeCommandUseErrorActionPreference = $false
           $warningLog = "build-warning-report.txt"
           $firstPartyWarningLog = "build-warning-report-firstparty.txt"
-          "Warning report placeholder (step started)." | Out-File -FilePath $warningLog -Encoding utf8
-          "First-party warning report placeholder (step started)." | Out-File -FilePath $firstPartyWarningLog -Encoding utf8
+          "Report placeholder (step started)." | Out-File -FilePath $warningLog -Encoding utf8
+          "First-party report placeholder (step started)." | Out-File -FilePath $firstPartyWarningLog -Encoding utf8
           msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /m /nologo /clp:WarningsOnly 2>&1 | Tee-Object -FilePath $warningLog
+          $msbuildExitCode = $LASTEXITCODE
           if (!(Test-Path $warningLog) -or (Get-Item $warningLog).Length -eq 0) {
             "No warnings detected (WarningsOnly output was empty)." | Out-File -FilePath $warningLog -Encoding utf8
           }
@@ -215,6 +217,11 @@ jobs:
             "No first-party warnings detected after vendor filtering." | Out-File -FilePath $firstPartyWarningLog -Encoding utf8
           } else {
             $firstPartyWarnings | Out-File -FilePath $firstPartyWarningLog -Encoding utf8
+          }
+
+          if ($msbuildExitCode -gt 1) {
+            Write-Error "WarningsOnly msbuild failed with exit code $msbuildExitCode"
+            exit $msbuildExitCode
           }
 
       - name: Upload warning report (Windows)
