@@ -56,6 +56,86 @@ namespace {
 		}
 		return "generic";
 	}
+
+	const vector<string>& GetStartupDeterminismRequiredCheckpointIds(uint32_t frameWindow) {
+		static const vector<string> startup10s = {
+			"GEN-COMPAT-STARTUP-EVENT-SEQUENCE",
+			"GEN-COMPAT-STARTUP-FRAME-WINDOW",
+			"GEN-COMPAT-STARTUP-RENDER-HANDOFF",
+			"GEN-COMPAT-STARTUP-CPU-PROGRESSION",
+			"GEN-COMPAT-BOOT-TO-TITLE-PROGRESSION",
+			"GEN-COMPAT-BOOT-TO-PLAY-READINESS",
+			"GEN-COMPAT-REALROM-STARTUP-SMOKE",
+			"GEN-COMPAT-STARTUP-INPUT-WINDOW",
+			"GEN-COMPAT-STARTUP-MEMMAP-PARITY",
+			"GEN-COMPAT-FIRST10S-LOGO-LANE",
+			"GEN-COMPAT-FIRST10S-BUS-ARBITRATION",
+			"GEN-COMPAT-FIRST10S-EVENT-INTEGRITY",
+			"GEN-COMPAT-STARTUP-SEQUENCING-COHERENCE",
+			"GEN-COMPAT-DETERMINISM"
+		};
+
+		static const vector<string> startup20s = {
+			"GEN-COMPAT-STARTUP-EVENT-SEQUENCE",
+			"GEN-COMPAT-STARTUP-FRAME-WINDOW",
+			"GEN-COMPAT-STARTUP-RENDER-HANDOFF",
+			"GEN-COMPAT-STARTUP-CPU-PROGRESSION",
+			"GEN-COMPAT-BOOT-TO-TITLE-PROGRESSION",
+			"GEN-COMPAT-BOOT-TO-PLAY-READINESS",
+			"GEN-COMPAT-REALROM-STARTUP-SMOKE",
+			"GEN-COMPAT-STARTUP-INPUT-WINDOW",
+			"GEN-COMPAT-STARTUP-MEMMAP-PARITY",
+			"GEN-COMPAT-FIRST10S-LOGO-LANE",
+			"GEN-COMPAT-FIRST10S-BUS-ARBITRATION",
+			"GEN-COMPAT-FIRST10S-EVENT-INTEGRITY",
+			"GEN-COMPAT-STARTUP-SEQUENCING-COHERENCE",
+			"GEN-COMPAT-FIRST20S-SEQUENCING-STRESS",
+			"GEN-COMPAT-DETERMINISM"
+		};
+
+		return frameWindow >= 1200 ? startup20s : startup10s;
+	}
+
+	int CountPassingRequiredCheckpoints(const GenesisCompatibilityEntry& compatibilityEntry, const vector<string>& requiredCheckpointIds) {
+		int passCount = 0;
+		for (const string& checkpointId : requiredCheckpointIds) {
+			auto checkpointIt = std::find_if(compatibilityEntry.Checkpoints.begin(), compatibilityEntry.Checkpoints.end(), [&](const GenesisCompatibilityCheckpoint& checkpoint) {
+				return checkpoint.Id == checkpointId;
+			});
+			if (checkpointIt != compatibilityEntry.Checkpoints.end() && checkpointIt->Pass) {
+				passCount++;
+			}
+		}
+		return passCount;
+	}
+
+	string BuildStartupDeterminismSignature(const GenesisCompatibilityEntry& compatibilityEntry, const vector<string>& requiredCheckpointIds) {
+		uint64_t hash = 1469598103934665603ull;
+		for (const string& checkpointId : requiredCheckpointIds) {
+			auto checkpointIt = std::find_if(compatibilityEntry.Checkpoints.begin(), compatibilityEntry.Checkpoints.end(), [&](const GenesisCompatibilityCheckpoint& checkpoint) {
+				return checkpoint.Id == checkpointId;
+			});
+
+			string line;
+			if (checkpointIt == compatibilityEntry.Checkpoints.end()) {
+				line = std::format("{}:MISSING", checkpointId);
+			} else {
+				line = std::format("{}:{}:{}", checkpointIt->Id, checkpointIt->Pass ? "PASS" : "FAIL", checkpointIt->Context);
+			}
+
+			for (uint8_t ch : line) {
+				hash ^= ch;
+				hash *= 1099511628211ull;
+			}
+		}
+
+		for (uint8_t ch : compatibilityEntry.Digest) {
+			hash ^= ch;
+			hash *= 1099511628211ull;
+		}
+
+		return ToHex(hash);
+	}
 }
 
 GenesisCompatibilityMatrixResult GenesisSmokeHarness::RunCompatibilityMatrix(GenesisM68kBoundaryScaffold& scaffold, const vector<GenesisCompatibilityRomCase>& romSet) {
@@ -2412,5 +2492,124 @@ GenesisPerformanceGateResult GenesisSmokeHarness::RunPerformanceGate(GenesisM68k
 		m32xToolingEventTotal,
 		avgM32xEventsPerCase,
 		result.Digest));
+	return result;
+}
+
+GenesisStartupDeterminismGateResult GenesisSmokeHarness::RunStartupDeterminismGate(GenesisM68kBoundaryScaffold& scaffold, const vector<GenesisCompatibilityRomCase>& romSet, uint32_t frameWindow) {
+	GenesisStartupDeterminismGateResult result = {};
+	result.FrameWindow = frameWindow;
+	result.Entries.reserve(romSet.size());
+	const vector<string>& requiredCheckpointIds = GetStartupDeterminismRequiredCheckpointIds(frameWindow);
+
+	for (const GenesisCompatibilityRomCase& romCase : romSet) {
+		GenesisStartupDeterminismGateEntry entry = {};
+		entry.Name = romCase.Name;
+		entry.TitleClass = InferTitleClass(romCase.Name);
+		entry.RequiredCheckpointCount = (int)requiredCheckpointIds.size();
+
+		GenesisCompatibilityMatrixResult runA = RunCompatibilityMatrix(scaffold, {romCase});
+		GenesisCompatibilityMatrixResult runB = RunCompatibilityMatrix(scaffold, {romCase});
+
+		bool hasRunAEntry = runA.Entries.size() == 1;
+		bool hasRunBEntry = runB.Entries.size() == 1;
+		bool compatibilityPass = runA.PassCount == 1 && runA.FailCount == 0 && runB.PassCount == 1 && runB.FailCount == 0;
+
+		if (hasRunAEntry && hasRunBEntry) {
+			const GenesisCompatibilityEntry& compatibilityEntryA = runA.Entries.front();
+			const GenesisCompatibilityEntry& compatibilityEntryB = runB.Entries.front();
+			int passCountA = CountPassingRequiredCheckpoints(compatibilityEntryA, requiredCheckpointIds);
+			int passCountB = CountPassingRequiredCheckpoints(compatibilityEntryB, requiredCheckpointIds);
+			entry.PassingRequiredCheckpointCount = std::min(passCountA, passCountB);
+			entry.SignatureA = BuildStartupDeterminismSignature(compatibilityEntryA, requiredCheckpointIds);
+			entry.SignatureB = BuildStartupDeterminismSignature(compatibilityEntryB, requiredCheckpointIds);
+
+			bool requiredCheckpointPass = passCountA == entry.RequiredCheckpointCount && passCountB == entry.RequiredCheckpointCount;
+			bool deterministicPass = entry.SignatureA == entry.SignatureB;
+			entry.Pass = compatibilityPass && requiredCheckpointPass && deterministicPass;
+
+			if (!entry.Pass) {
+				result.OutputLines.push_back(std::format(
+					"GEN_STARTUP_GATE_FAIL_CONTEXT {} class={} frame_window={} compatA={} compatB={} requiredA={}/{} requiredB={}/{} sigA={} sigB={} compatDigestA={} compatDigestB={}",
+					entry.Name,
+					entry.TitleClass,
+					frameWindow,
+					runA.PassCount == 1 && runA.FailCount == 0 ? 1 : 0,
+					runB.PassCount == 1 && runB.FailCount == 0 ? 1 : 0,
+					passCountA,
+					entry.RequiredCheckpointCount,
+					passCountB,
+					entry.RequiredCheckpointCount,
+					entry.SignatureA,
+					entry.SignatureB,
+					runA.Digest,
+					runB.Digest));
+			}
+		} else {
+			entry.PassingRequiredCheckpointCount = 0;
+			entry.SignatureA = ToHex(0);
+			entry.SignatureB = ToHex(0);
+			entry.Pass = false;
+			result.OutputLines.push_back(std::format(
+				"GEN_STARTUP_GATE_FAIL_CONTEXT {} class={} frame_window={} reason=missing_compat_entry entriesA={} entriesB={} compatDigestA={} compatDigestB={}",
+				entry.Name,
+				entry.TitleClass,
+				frameWindow,
+				runA.Entries.size(),
+				runB.Entries.size(),
+				runA.Digest,
+				runB.Digest));
+		}
+
+		if (entry.Pass) {
+			result.PassCount++;
+		} else {
+			result.FailCount++;
+		}
+
+		result.OutputLines.push_back(std::format(
+			"GEN_STARTUP_GATE_RESULT {} {} CLASS={} FRAME_WINDOW={} REQUIRED_PASS={}/{} SIG_A={} SIG_B={}",
+			entry.Name,
+			entry.Pass ? "PASS" : "FAIL",
+			entry.TitleClass,
+			frameWindow,
+			entry.PassingRequiredCheckpointCount,
+			entry.RequiredCheckpointCount,
+			entry.SignatureA,
+			entry.SignatureB));
+		result.Entries.push_back(std::move(entry));
+	}
+
+	uint64_t gateHash = 1469598103934665603ull;
+	for (const GenesisStartupDeterminismGateEntry& entry : result.Entries) {
+		string line = std::format(
+			"{}:{}:{}:{}:{}:{}:{}",
+			entry.Name,
+			entry.TitleClass,
+			entry.Pass ? "PASS" : "FAIL",
+			entry.PassingRequiredCheckpointCount,
+			entry.RequiredCheckpointCount,
+			entry.SignatureA,
+			entry.SignatureB);
+		for (uint8_t ch : line) {
+			gateHash ^= ch;
+			gateHash *= 1099511628211ull;
+		}
+	}
+
+	result.Digest = ToHex(gateHash);
+	uint64_t totalCases = (uint64_t)result.Entries.size();
+	uint64_t passRatioPct = totalCases == 0 ? 0 : ((uint64_t)result.PassCount * 100ull) / totalCases;
+	uint64_t failRatioPct = totalCases == 0 ? 0 : ((uint64_t)result.FailCount * 100ull) / totalCases;
+	result.OutputLines.push_back(std::format(
+		"GEN_STARTUP_GATE_SUMMARY PASS={} FAIL={} CASE_TOTAL={} FRAME_WINDOW={} REQUIRED_CHECKPOINTS={} PASS_RATIO_PCT={} FAIL_RATIO_PCT={} DIGEST={}",
+		result.PassCount,
+		result.FailCount,
+		totalCases,
+		frameWindow,
+		requiredCheckpointIds.size(),
+		passRatioPct,
+		failRatioPct,
+		result.Digest));
+
 	return result;
 }
