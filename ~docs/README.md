@@ -112,6 +112,7 @@ The Pansy export feature enables exporting and importing debug metadata in a uni
 | [Keyboard Shortcuts](keyboard-shortcuts-save-states.md) | Save state shortcut design |
 | [Q2 Future Work Program](plans/future-work-program-2026-q2.md) | Milestone-driven execution plan for Epic #673 and sub-issues |
 | [libspng Package Prototype Track](plans/libspng-package-prototype-track.md) | Issue #2188 implementation track for optional package-backed libspng migration scaffolding |
+| [kissfft Package Migration Track](plans/kissfft-package-migration-track.md) | Issue #2190 migration track for removing vendored kissfft header and using package-managed dependency |
 | [Q3 Platform Parity Research Program](plans/platform-parity-research-program-2026-q3.md) | Multi-session research and execution plan for #704-#707 |
 | [Scaffold Future-Work Backlog](plans/platform-parity-scaffold-future-work-backlog.md) | Deferred issue tree for converting Atari/Genesis scaffold phases into production implementation work |
 | [Atari 2600 Feasibility and Harness Plan](plans/atari-2600-feasibility-and-harness-plan.md) | Spike architecture boundaries, risk register, and harness milestones |

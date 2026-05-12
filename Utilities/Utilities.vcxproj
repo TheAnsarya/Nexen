@@ -70,7 +70,7 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup>
-    <NexenUsePackagedSpng Condition="'$(NexenUsePackagedSpng)'==''">false</NexenUsePackagedSpng>
+    <NexenUsePackagedSpng Condition="'$(NexenUsePackagedSpng)'==''">true</NexenUsePackagedSpng>
     <NexenUsePackagedSpngDefine Condition="'$(NexenUsePackagedSpng)'=='true'">1</NexenUsePackagedSpngDefine>
     <NexenUsePackagedSpngDefine Condition="'$(NexenUsePackagedSpng)'!='true'">0</NexenUsePackagedSpngDefine>
   </PropertyGroup>
@@ -212,7 +212,6 @@
     <ClInclude Include="CompressionHelper.h" />
     <ClInclude Include="CRC32.h" />
     <ClInclude Include="FastString.h" />
-    <ClInclude Include="kissfft.h" />
     <ClInclude Include="FolderUtilities.h" />
     <ClInclude Include="HexUtilities.h" />
     <ClInclude Include="HQX\common.h" />
@@ -243,7 +242,6 @@
     <ClInclude Include="Scale2x\scalebit.h" />
     <ClInclude Include="Serializer.h" />
     <ClInclude Include="sha1.h" />
-    <ClInclude Include="spng.h" />
     <ClInclude Include="StaticFor.h" />
     <ClInclude Include="StringUtilities.h" />
     <ClInclude Include="UPnPPortMapper.h" />
@@ -387,13 +385,6 @@
     <ClCompile Include="sha1.cpp" />
     <ClCompile Include="SimpleLock.cpp" />
     <ClCompile Include="Socket.cpp" />
-    <ClCompile Include="spng.c" Condition="'$(NexenUsePackagedSpng)'!='true'">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Default</CompileAs>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='PGO Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='PGO Optimize|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

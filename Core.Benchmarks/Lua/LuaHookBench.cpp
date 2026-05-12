@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include <benchmark/benchmark.h>
-#include "Lua/lua.hpp"
+#include "Debugger/LuaInterop.h"
 
 // =============================================================================
 // Lua Hook Performance Benchmarks

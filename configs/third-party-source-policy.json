@@ -18,8 +18,8 @@
 			"status": "temporary-vendored",
 			"reason": "Carries Nexen-specific watchdog hooks; migrate via package + patch layer.",
 			"maxFiles": 103,
-			"maxBytes": 1113623,
-			"maxLines": 31818
+			"maxBytes": 1113794,
+			"maxLines": 31822
 		},
 		{
 			"name": "miniz",
@@ -40,16 +40,6 @@
 			"maxFiles": 6,
 			"maxBytes": 179016,
 			"maxLines": 9893
-		},
-		{
-			"name": "libspng",
-			"pattern": "Utilities/spng.*",
-			"preferredSource": "vcpkg/libspng",
-			"status": "temporary-vendored",
-			"reason": "PNG encode/decode dependency in screenshot/state pipeline.",
-			"maxFiles": 2,
-			"maxBytes": 157549,
-			"maxLines": 4213
 		},
 		{
 			"name": "Scale2x",
@@ -100,16 +90,6 @@
 			"maxFiles": 4,
 			"maxBytes": 28460,
 			"maxLines": 382
-		},
-		{
-			"name": "kissfft",
-			"pattern": "Utilities/kissfft.h",
-			"preferredSource": "vcpkg/kissfft",
-			"status": "temporary-vendored",
-			"reason": "Header-only FFT implementation in equalizer path.",
-			"maxFiles": 1,
-			"maxBytes": 11408,
-			"maxLines": 309
 		}
 	]
 }

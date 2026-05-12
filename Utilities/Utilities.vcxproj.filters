@@ -157,14 +157,12 @@
     <ClInclude Include="FolderUtilities.h" />
     <ClInclude Include="HexUtilities.h" />
     <ClInclude Include="ISerializable.h" />
-    <ClInclude Include="kissfft.h" />
     <ClInclude Include="PlatformUtilities.h" />
     <ClInclude Include="RandomHelper.h" />
     <ClInclude Include="safe_ptr.h" />
     <ClInclude Include="Serializer.h" />
     <ClInclude Include="SimpleLock.h" />
     <ClInclude Include="Socket.h" />
-    <ClInclude Include="spng.h" />
     <ClInclude Include="StringUtilities.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="UPnPPortMapper.h" />
@@ -248,7 +246,6 @@
     <ClCompile Include="PNGHelper.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="spng.c" Condition="'$(NexenUsePackagedSpng)'!='true'" />
     <ClCompile Include="Audio\blip_buf.cpp">
       <Filter>Audio</Filter>
     </ClCompile>

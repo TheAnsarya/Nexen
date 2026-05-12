@@ -1,11 +1,11 @@
-# libspng Package Prototype Track
+﻿# libspng Package Prototype Track
 
 Issue: #2188
 Parent: #2185
 
 ## Goal
 
-Prepare an opt-in package-backed `libspng` path without changing default runtime behavior.
+Complete migration from vendored `libspng` source to package-managed dependency usage.
 
 ## Constraints
 
@@ -15,30 +15,24 @@ Prepare an opt-in package-backed `libspng` path without changing default runtime
 
 ## Current State
 
-- `Utilities/spng.c` is compiled directly in `Utilities/Utilities.vcxproj`.
-- `Utilities/PNGHelper.cpp` includes local `spng.h`.
-- Inventory baseline for libspng:
-	- Files: 2
-	- Lines: 4213
-	- Bytes: 157549
+- Vendored `Utilities/spng.c` and `Utilities/spng.h` were removed.
+- `Utilities/PNGHelper.cpp` now uses package include `<spng.h>`.
+- `Utilities/Utilities.vcxproj` defaults to packaged mode (`NexenUsePackagedSpng=true`).
 
-## Prototype Changes
+## Implemented Changes
 
-1. Add `NexenUsePackagedSpng` MSBuild property (default `false`).
+1. Add `NexenUsePackagedSpng` MSBuild property (default `true`).
 2. Add compile define `NEXEN_USE_PACKAGED_SPNG` in `Utilities/Utilities.vcxproj`.
-3. Condition vendored `spng.c` compile item on `NexenUsePackagedSpng != true`.
-4. Add include abstraction in `Utilities/PNGHelper.cpp`:
-	- packaged mode: `#include <spng.h>`
-	- default mode: `#include "spng.h"`
+3. Remove vendored `spng.c` compile item from `Utilities/Utilities.vcxproj`.
+4. Remove vendored `spng.h` project/filter entries.
+5. Use package include in `Utilities/PNGHelper.cpp`.
 
 ## Validation
 
-- Default Release x64 build remains unchanged.
-- PNG helper compile path is valid in default mode.
-- Follow-up (next batch): enable packaged mode with concrete dependency wiring and runtime checks.
+- Third-party audit report now excludes libspng vendored component.
+- `scripts/audit-third-party-source.ps1 -Enforce` passes with updated policy caps.
+- Packaged-mode C++ build path validated for active targets.
 
-## Exit Criteria
+## Status
 
-- Packaged mode links successfully with package-provided libspng.
-- PNG load/save behavior validated by targeted tests/manual checks.
-- Vendored libspng source removed and inventory/policy caps updated.
+Completed for vendored-source removal and policy/inventory updates.

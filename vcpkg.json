@@ -6,6 +6,9 @@
 	"dependencies": [
 		"gtest",
 		"benchmark",
-		"magic-enum"
+		"magic-enum",
+		"lua",
+		"libspng",
+		"kissfft"
 	]
 }

@@ -1,29 +1,27 @@
 # Third-Party Source Inventory
 
-Generated: 2026-05-11 10:30:16-04:00
+Generated: 2026-05-12 07:30:01-04:00
 
 ## Summary
 
-- Components tracked: 10
-- Vendored files tracked: 135
-- Vendored lines tracked: 55271
-- Vendored bytes tracked: 1908418
-- Largest component: Lua (1113623 bytes, 31818 lines)
+- Components tracked: 8
+- Vendored files tracked: 132
+- Vendored lines tracked: 50753
+- Vendored bytes tracked: 1739632
+- Largest component: Lua (1113794 bytes, 31822 lines)
 
 ## Component Breakdown
 
 | Component | Pattern | Status | Preferred Source | Files | Lines | Bytes | Max Files | Max Lines | Max Bytes |
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
-| Lua | Lua/* | temporary-vendored | vcpkg/lua | 103 | 31818 | 1113623 | 103 | 31818 | 1113623 |
+| Lua | Lua/* | temporary-vendored | vcpkg/lua | 103 | 31822 | 1113794 | 103 | 31822 | 1113794 |
 | miniz | Utilities/miniz.* | temporary-vendored | vcpkg/zlib or package-backed codec | 2 | 4801 | 249606 | 2 | 4801 | 249606 |
 | HQX | Utilities/HQX/* | temporary-vendored | package-backed video filter bundle | 6 | 9893 | 179016 | 6 | 9893 | 179016 |
-| libspng | Utilities/spng.* | temporary-vendored | vcpkg/libspng | 2 | 4213 | 157549 | 2 | 4213 | 157549 |
 | Scale2x | Utilities/Scale2x/* | temporary-vendored | package-backed video filter bundle | 6 | 1282 | 52159 | 6 | 1282 | 52159 |
 | xBRZ | Utilities/xBRZ/* | temporary-vendored | package-backed video filter bundle | 3 | 1042 | 48228 | 3 | 1042 | 48228 |
 | snes_ntsc | Utilities/NTSC/snes_ntsc* | temporary-vendored | package-backed video filter bundle | 4 | 753 | 35176 | 4 | 753 | 35176 |
 | nes_ntsc | Utilities/NTSC/nes_ntsc* | temporary-vendored | package-backed video filter bundle | 4 | 778 | 33193 | 4 | 778 | 33193 |
 | KreedSaiEagle | Utilities/KreedSaiEagle/* | temporary-vendored | package-backed video filter bundle | 4 | 382 | 28460 | 4 | 382 | 28460 |
-| kissfft | Utilities/kissfft.h | temporary-vendored | vcpkg/kissfft | 1 | 309 | 11408 | 1 | 309 | 11408 |
 
 ## Policy
 

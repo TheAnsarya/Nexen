@@ -1,9 +1,8 @@
-#pragma once
+﻿#pragma once
 
 #if NEXEN_USE_PACKAGED_LUA
-extern "C" {
 #include <lua.hpp>
-}
+#include <lauxlib.h>
 
 extern "C" int luaopen_socket_core(lua_State* lua);
 extern "C" int luaopen_mime_core(lua_State* lua);

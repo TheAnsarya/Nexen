@@ -529,7 +529,7 @@
 		<ProjectReference Include="..\Utilities\Utilities.vcxproj">
 			<Project>{4e9f1043-2995-4ffa-86f6-52c1f8316f66}</Project>
 		</ProjectReference>
-		<ProjectReference Include="..\Lua\Lua.vcxproj" Condition="'$(NexenUsePackagedLua)'!='true'">
+		<ProjectReference Include="..\Lua\Lua.vcxproj" Condition="'$(NexenUsePackagedLua)'=='' Or '$(NexenUsePackagedLua)'=='false' Or '$(NexenUsePackagedLua)'=='False'">
 			<Project>{b609e0a0-5050-4871-91d6-e760633bcdd1}</Project>
 		</ProjectReference>
 	</ItemGroup>

@@ -29,6 +29,13 @@
 	<ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
 		<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
 	</ImportGroup>
+	<PropertyGroup>
+		<NexenUsePackagedLua Condition="'$(NexenUsePackagedLua)'==''">false</NexenUsePackagedLua>
+		<NexenUsePackagedLuaDefine Condition="'$(NexenUsePackagedLua)'=='true'">1</NexenUsePackagedLuaDefine>
+		<NexenUsePackagedLuaDefine Condition="'$(NexenUsePackagedLua)'!='true'">0</NexenUsePackagedLuaDefine>
+		<NexenPackagedLuaLinkLib Condition="'$(NexenUsePackagedLua)'=='true'">lua.lib;</NexenPackagedLuaLinkLib>
+		<NexenPackagedLuaLinkLib Condition="'$(NexenUsePackagedLua)'!='true'"></NexenPackagedLuaLinkLib>
+	</PropertyGroup>
 	<PropertyGroup Label="UserMacros" />
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
 		<LinkIncremental>false</LinkIncremental>
@@ -43,7 +50,7 @@
 			<Optimization>Full</Optimization>
 			<FunctionLevelLinking>true</FunctionLevelLinking>
 			<IntrinsicFunctions>true</IntrinsicFunctions>
-			<PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+			<PreprocessorDefinitions>NEXEN_USE_PACKAGED_LUA=$(NexenUsePackagedLuaDefine);WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 			<SDLCheck>false</SDLCheck>
 			<InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
 			<FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -58,7 +65,7 @@
 			<OptimizeReferences>true</OptimizeReferences>
 			<GenerateDebugInformation>true</GenerateDebugInformation>
 			<AdditionalLibraryDirectories>$(VCPKG_INSTALLED_DIR)\x64-windows\lib;$(VCPKG_INSTALLED_DIR)\x64-windows\lib\manual-link;$(VCPKG_INSTALLED_DIR)\x64-windows-static\lib;$(VCPKG_INSTALLED_DIR)\x64-windows-static\lib\manual-link;$(VCPKG_ROOT)\installed\x64-windows\lib;$(VCPKG_ROOT)\installed\x64-windows\lib\manual-link;$(VCPKG_ROOT)\installed\x64-windows-static\lib;$(VCPKG_ROOT)\installed\x64-windows-static\lib\manual-link;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-			<AdditionalDependencies>winmm.lib;benchmark.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>$(NexenPackagedLuaLinkLib)winmm.lib;benchmark.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemGroup>
@@ -256,7 +263,7 @@
 		<ProjectReference Include="..\Utilities\Utilities.vcxproj">
 			<Project>{4e9f1043-2995-4ffa-86f6-52c1f8316f66}</Project>
 		</ProjectReference>
-		<ProjectReference Include="..\Lua\Lua.vcxproj" Condition="'$(NexenUsePackagedLua)'!='true'">
+		<ProjectReference Include="..\Lua\Lua.vcxproj" Condition="'$(NexenUsePackagedLua)'=='' Or '$(NexenUsePackagedLua)'=='false' Or '$(NexenUsePackagedLua)'=='False'">
 			<Project>{b609e0a0-5050-4871-91d6-e760633bcdd1}</Project>
 		</ProjectReference>
 	</ItemGroup>

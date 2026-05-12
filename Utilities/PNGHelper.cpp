@@ -1,13 +1,13 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <sstream>
 #include "PNGHelper.h"
 #include "miniz.h"
 
 #define SPNG_USE_MINIZ
-#if NEXEN_USE_PACKAGED_SPNG
 #include <spng.h>
-#else
-#include "spng.h"
+
+#if NEXEN_USE_PACKAGED_SPNG
+#pragma comment(lib, "spng.lib")
 #endif
 
 bool PNGHelper::WritePNG(std::stringstream& stream, uint32_t* buffer, uint32_t xSize, uint32_t ySize, uint32_t bitsPerPixel) {
