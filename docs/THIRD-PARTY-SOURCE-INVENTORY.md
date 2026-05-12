@@ -1,13 +1,13 @@
 # Third-Party Source Inventory
 
-Generated: 2026-05-12 07:30:01-04:00
+Generated: 2026-05-12 08:58:41-04:00
 
 ## Summary
 
-- Components tracked: 8
-- Vendored files tracked: 132
-- Vendored lines tracked: 50753
-- Vendored bytes tracked: 1739632
+- Components tracked: 7
+- Vendored files tracked: 130
+- Vendored lines tracked: 45952
+- Vendored bytes tracked: 1490026
 - Largest component: Lua (1113794 bytes, 31822 lines)
 
 ## Component Breakdown
@@ -15,7 +15,6 @@ Generated: 2026-05-12 07:30:01-04:00
 | Component | Pattern | Status | Preferred Source | Files | Lines | Bytes | Max Files | Max Lines | Max Bytes |
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
 | Lua | Lua/* | temporary-vendored | vcpkg/lua | 103 | 31822 | 1113794 | 103 | 31822 | 1113794 |
-| miniz | Utilities/miniz.* | temporary-vendored | vcpkg/zlib or package-backed codec | 2 | 4801 | 249606 | 2 | 4801 | 249606 |
 | HQX | Utilities/HQX/* | temporary-vendored | package-backed video filter bundle | 6 | 9893 | 179016 | 6 | 9893 | 179016 |
 | Scale2x | Utilities/Scale2x/* | temporary-vendored | package-backed video filter bundle | 6 | 1282 | 52159 | 6 | 1282 | 52159 |
 | xBRZ | Utilities/xBRZ/* | temporary-vendored | package-backed video filter bundle | 3 | 1042 | 48228 | 3 | 1042 | 48228 |

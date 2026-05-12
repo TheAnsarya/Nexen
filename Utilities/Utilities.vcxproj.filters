@@ -148,7 +148,6 @@
       <Filter>Video</Filter>
     </ClInclude>
     <ClInclude Include="ArchiveReader.h" />
-    <ClInclude Include="miniz.h" />
     <ClInclude Include="ZipReader.h" />
     <ClInclude Include="ZipWriter.h" />
     <ClInclude Include="AutoResetEvent.h" />
@@ -307,7 +306,6 @@
       <Filter>NTSC</Filter>
     </ClCompile>
     <ClCompile Include="ArchiveReader.cpp" />
-    <ClCompile Include="miniz.cpp" />
     <ClCompile Include="ZipReader.cpp" />
     <ClCompile Include="ZipWriter.cpp" />
     <ClCompile Include="AutoResetEvent.cpp" />

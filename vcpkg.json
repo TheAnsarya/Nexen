@@ -9,6 +9,7 @@
 		"magic-enum",
 		"lua",
 		"libspng",
-		"kissfft"
+		"kissfft",
+		"miniz"
 	]
 }

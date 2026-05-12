@@ -1,4 +1,4 @@
-// This file is a part of Nexen
+﻿// This file is a part of Nexen
 // It is a heavily modified version of the zmbv.h/cpp file found in DOSBox's code.
 
 /*
@@ -22,7 +22,7 @@
 #pragma once
 
 #include "BaseCodec.h"
-#include "miniz.h"
+#include <miniz/miniz.h>
 
 #ifdef _MSC_VER
 #define INLINE __forceinline

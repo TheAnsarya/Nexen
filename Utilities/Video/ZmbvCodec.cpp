@@ -1,4 +1,4 @@
-// This file is a part of Nexen
+﻿// This file is a part of Nexen
 // It is a heavily modified version of the zmbv.h/cpp file found in DOSBox's code.
 
 /*
@@ -25,7 +25,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "miniz.h"
+#include <miniz/miniz.h>
 #include "ZmbvCodec.h"
 
 #define DBZV_VERSION_HIGH 0

@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include <sstream>
 #include "PNGHelper.h"
-#include "miniz.h"
+#include <miniz/miniz.h>
 
 #define SPNG_USE_MINIZ
 #include <spng.h>

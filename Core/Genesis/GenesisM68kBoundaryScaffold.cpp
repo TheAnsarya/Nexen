@@ -439,12 +439,6 @@ void GenesisPlatformBusStub::ApplyVdpControlWord(uint16_t controlWord) {
 		}
 
 		if (regIndex == 1) {
-			if ((regValue & 0x40) != 0) {
-				_vdpStatus |= VdpStatus::VBlanking;
-			} else {
-				_vdpStatus &= (uint16_t)~VdpStatus::VBlanking;
-			}
-
 			if ((regValue & 0x20) != 0) {
 				_dmaRequested = true;
 				if (_dmaMode == GenesisVdpDmaMode::None) {
@@ -985,6 +979,30 @@ void GenesisPlatformBusStub::SetRenderCompositionInputs(uint8_t planeA, bool pla
 void GenesisPlatformBusStub::SetScroll(uint16_t scrollX, uint16_t scrollY) {
 	_scrollX = scrollX;
 	_scrollY = scrollY;
+}
+
+void GenesisPlatformBusStub::SetVdpVBlankState(bool enabled) {
+	if (enabled) {
+		_vdpStatus |= VdpStatus::VBlanking;
+	} else {
+		_vdpStatus &= (uint16_t)~VdpStatus::VBlanking;
+	}
+}
+
+void GenesisPlatformBusStub::SetVdpHBlankState(bool enabled) {
+	if (enabled) {
+		_vdpStatus |= VdpStatus::HBlanking;
+	} else {
+		_vdpStatus &= (uint16_t)~VdpStatus::HBlanking;
+	}
+}
+
+void GenesisPlatformBusStub::SetVdpInterruptPending(bool enabled) {
+	if (enabled) {
+		_vdpStatus |= VdpStatus::VInterrupt;
+	} else {
+		_vdpStatus &= (uint16_t)~VdpStatus::VInterrupt;
+	}
 }
 
 void GenesisPlatformBusStub::RenderScaffoldLine(uint32_t pixelCount) {
@@ -1540,9 +1558,19 @@ void GenesisM68kBoundaryScaffold::AdvanceTiming(uint32_t cpuCycles) {
 	_timingCycleRemainder += cpuCycles;
 	while (_timingCycleRemainder >= TimingCyclesPerScanline) {
 		_timingCycleRemainder -= TimingCyclesPerScanline;
-		_timingScanline++;
+		uint32_t nextScanline = _timingScanline + 1;
+		bool enteringVBlank = !_inVBlank && nextScanline == TimingActiveDisplayScanlines;
+		if (enteringVBlank) {
+			_inVBlank = true;
+			_vblankEnterCount++;
+			_bus.SetVdpVBlankState(true);
+			_timingEvents.push_back(std::format("VBLANK_ENTER frame={} scanline={}", _timingFrame, nextScanline));
+		}
 
-		if (_hInterruptEnabled && _hInterruptIntervalScanlines > 0 && (_timingScanline % _hInterruptIntervalScanlines) == 0) {
+		_timingScanline = nextScanline;
+
+		bool hintWindow = !_inVBlank && _timingScanline > 0;
+		if (_hInterruptEnabled && hintWindow && (_timingScanline % _hInterruptIntervalScanlines) == 0) {
 			_cpu.SetInterrupt(4);
 			_hInterruptCount++;
 			_timingEvents.push_back(std::format("HINT frame={} scanline={} count={}", _timingFrame, _timingScanline, _hInterruptCount));
@@ -1551,12 +1579,19 @@ void GenesisM68kBoundaryScaffold::AdvanceTiming(uint32_t cpuCycles) {
 		if (_timingScanline >= TimingScanlinesPerFrame) {
 			if (_vInterruptEnabled) {
 				_cpu.SetInterrupt(6);
+				_bus.SetVdpInterruptPending(true);
 				_vInterruptCount++;
 				_timingEvents.push_back(std::format("VINT frame={} count={}", _timingFrame + 1, _vInterruptCount));
 			}
 
 			_timingScanline = 0;
 			_timingFrame++;
+			if (_inVBlank) {
+				_inVBlank = false;
+				_vblankExitCount++;
+				_bus.SetVdpVBlankState(false);
+				_timingEvents.push_back(std::format("VBLANK_EXIT frame={}", _timingFrame));
+			}
 		}
 	}
 }
@@ -1572,9 +1607,15 @@ void GenesisM68kBoundaryScaffold::Startup() {
 	_timingScanline = 0;
 	_timingFrame = 0;
 	_timingCycleRemainder = 0;
+	_inVBlank = false;
 	_hInterruptCount = 0;
 	_vInterruptCount = 0;
+	_vblankEnterCount = 0;
+	_vblankExitCount = 0;
 	_timingEvents.clear();
+	_bus.SetVdpVBlankState(false);
+	_bus.SetVdpHBlankState(false);
+	_bus.SetVdpInterruptPending(false);
 }
 
 void GenesisM68kBoundaryScaffold::ConfigureInterruptSchedule(bool hInterruptEnabled, uint32_t hInterruptIntervalScanlines, bool vInterruptEnabled) {
@@ -1609,11 +1650,14 @@ GenesisBoundaryScaffoldSaveState GenesisM68kBoundaryScaffold::SaveState() const 
 	state.TimingScanline = _timingScanline;
 	state.TimingFrame = _timingFrame;
 	state.TimingCycleRemainder = _timingCycleRemainder;
+	state.InVBlank = _inVBlank;
 	state.HInterruptEnabled = _hInterruptEnabled;
 	state.VInterruptEnabled = _vInterruptEnabled;
 	state.HInterruptIntervalScanlines = _hInterruptIntervalScanlines;
 	state.HInterruptCount = _hInterruptCount;
 	state.VInterruptCount = _vInterruptCount;
+	state.VBlankEnterCount = _vblankEnterCount;
+	state.VBlankExitCount = _vblankExitCount;
 	state.TimingEvents = _timingEvents;
 	return state;
 }
@@ -1626,10 +1670,13 @@ void GenesisM68kBoundaryScaffold::LoadState(const GenesisBoundaryScaffoldSaveSta
 	_timingScanline = state.TimingScanline;
 	_timingFrame = state.TimingFrame;
 	_timingCycleRemainder = state.TimingCycleRemainder;
+	_inVBlank = state.InVBlank;
 	_hInterruptEnabled = state.HInterruptEnabled;
 	_vInterruptEnabled = state.VInterruptEnabled;
 	_hInterruptIntervalScanlines = std::max<uint32_t>(1, state.HInterruptIntervalScanlines);
 	_hInterruptCount = state.HInterruptCount;
 	_vInterruptCount = state.VInterruptCount;
+	_vblankEnterCount = state.VBlankEnterCount;
+	_vblankExitCount = state.VBlankExitCount;
 	_timingEvents = state.TimingEvents;
 }

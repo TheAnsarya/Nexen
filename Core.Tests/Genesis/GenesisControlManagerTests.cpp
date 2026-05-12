@@ -330,4 +330,92 @@ namespace {
 		EXPECT_TRUE(device->HasControllerType(ControllerType::GenesisController3Buttons));
 		EXPECT_FALSE(device->HasControllerType(ControllerType::GenesisController));
 	}
+
+	TEST(GenesisControlManagerTests, ConstructorImmediatelyBuildsGameplayPortDevices) {
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisConfig& cfg = emu.GetSettings()->GetGenesisConfig();
+		cfg.Port1.Type = ControllerType::GenesisController;
+		cfg.Port2.Type = ControllerType::GenesisController3Buttons;
+
+		GenesisConsole console(&emu);
+		auto manager = std::make_unique<GenesisControlManager>(&emu, &console);
+		ASSERT_NE(manager, nullptr);
+
+		auto p1 = manager->GetControlDevice(0);
+		auto p2 = manager->GetControlDevice(1);
+		ASSERT_NE(p1, nullptr);
+		ASSERT_NE(p2, nullptr);
+		EXPECT_TRUE(p1->HasControllerType(ControllerType::GenesisController));
+		EXPECT_TRUE(p2->HasControllerType(ControllerType::GenesisController3Buttons));
+	}
+
+	TEST(GenesisControlManagerTests, SerializeLoadRebuildsDevicesAndPreservesLatches) {
+		Emulator emuA;
+		GenesisConsole consoleA(&emuA);
+		auto managerA = CreateControlManager(emuA, consoleA, ControllerType::GenesisController, ControllerType::GenesisController3Buttons);
+		ASSERT_NE(managerA, nullptr);
+
+		managerA->WriteControlPort(0, 0x48);
+		managerA->WriteDataPort(0, 0x40);
+		managerA->WriteControlPort(1, 0x40);
+		managerA->WriteDataPort(1, 0x00);
+		managerA->AdvanceMasterClock(256);
+
+		uint8_t p1Data = managerA->GetDataPortWriteLatch(0);
+		uint8_t p1Ctrl = managerA->GetControlPortWriteLatch(0);
+		uint8_t p2Data = managerA->GetDataPortWriteLatch(1);
+		uint8_t p2Ctrl = managerA->GetControlPortWriteLatch(1);
+		uint8_t p1ThCount = managerA->GetThCount(0);
+		uint8_t p2ThCount = managerA->GetThCount(1);
+		std::string stateData = SaveManagerState(*managerA);
+
+		Emulator emuB;
+		GenesisConsole consoleB(&emuB);
+		auto managerB = CreateControlManager(emuB, consoleB, ControllerType::GenesisController, ControllerType::GenesisController3Buttons);
+		ASSERT_NE(managerB, nullptr);
+		LoadManagerState(*managerB, stateData);
+
+		auto p1 = managerB->GetControlDevice(0);
+		auto p2 = managerB->GetControlDevice(1);
+		ASSERT_NE(p1, nullptr);
+		ASSERT_NE(p2, nullptr);
+
+		EXPECT_EQ(managerB->GetDataPortWriteLatch(0), p1Data);
+		EXPECT_EQ(managerB->GetControlPortWriteLatch(0), p1Ctrl);
+		EXPECT_EQ(managerB->GetDataPortWriteLatch(1), p2Data);
+		EXPECT_EQ(managerB->GetControlPortWriteLatch(1), p2Ctrl);
+		EXPECT_EQ(managerB->GetThCount(0), p1ThCount);
+		EXPECT_EQ(managerB->GetThCount(1), p2ThCount);
+		EXPECT_TRUE(p1->HasControllerType(ControllerType::GenesisController));
+		EXPECT_TRUE(p2->HasControllerType(ControllerType::GenesisController3Buttons));
+	}
+
+	TEST(GenesisControlManagerTests, DefaultMappingFallbackStillProducesReadableButtonState) {
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisConfig& cfg = emu.GetSettings()->GetGenesisConfig();
+		cfg.Port1.Type = ControllerType::GenesisController;
+		cfg.Port1.Keys = {};
+
+		GenesisConsole console(&emu);
+		auto manager = std::make_unique<GenesisControlManager>(&emu, &console);
+		ASSERT_NE(manager, nullptr);
+
+		auto device = manager->GetControlDevice(0);
+		ASSERT_NE(device, nullptr);
+		device->SetBit(GenesisController::Buttons::Up);
+		device->SetBit(GenesisController::Buttons::A);
+		device->SetBit(GenesisController::Buttons::Start);
+
+		manager->WriteControlPort(0, 0x40);
+		manager->WriteDataPort(0, 0x00);
+		uint8_t lowRead = manager->ReadDataPort(0);
+		manager->WriteDataPort(0, 0x40);
+		uint8_t highRead = manager->ReadDataPort(0);
+
+		EXPECT_NE(lowRead, 0x7fu);
+		EXPECT_NE(highRead, 0x7fu);
+		EXPECT_EQ((highRead & 0x01u), 0x00u);
+	}
 }

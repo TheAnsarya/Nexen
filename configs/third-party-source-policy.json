@@ -22,16 +22,6 @@
 			"maxLines": 31822
 		},
 		{
-			"name": "miniz",
-			"pattern": "Utilities/miniz.*",
-			"preferredSource": "vcpkg/zlib or package-backed codec",
-			"status": "temporary-vendored",
-			"reason": "Compression fallback in active runtime path.",
-			"maxFiles": 2,
-			"maxBytes": 249606,
-			"maxLines": 4801
-		},
-		{
 			"name": "HQX",
 			"pattern": "Utilities/HQX/*",
 			"preferredSource": "package-backed video filter bundle",

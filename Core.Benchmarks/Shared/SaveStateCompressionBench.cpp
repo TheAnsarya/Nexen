@@ -1,9 +1,9 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <vector>
 #include <cstring>
 #include <numeric>
 #include <algorithm>
-#include "Utilities/miniz.h"
+#include <miniz/miniz.h>
 
 // =============================================================================
 // Save State Compression Algorithm Comparison Benchmarks

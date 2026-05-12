@@ -1,6 +1,6 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
-#include "miniz.h"
+#include <miniz/miniz.h>
 #include "ArchiveReader.h"
 
 /// <summary>

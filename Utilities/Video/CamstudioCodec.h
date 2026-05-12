@@ -1,7 +1,7 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "BaseCodec.h"
-#include "miniz.h"
+#include <miniz/miniz.h>
 
 class CamstudioCodec : public BaseCodec {
 private:

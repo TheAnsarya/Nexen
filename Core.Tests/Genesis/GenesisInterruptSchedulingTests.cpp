@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
 
 namespace {
@@ -46,9 +46,33 @@ namespace {
 		scaffold.StepFrameScaffold(488u * 262u);
 		const vector<string>& events = scaffold.GetTimingEvents();
 
-		ASSERT_GE(events.size(), 2u);
-		EXPECT_TRUE(events.at(events.size() - 2).starts_with("HINT "));
-		EXPECT_TRUE(events.at(events.size() - 1).starts_with("VINT "));
+		ASSERT_GE(events.size(), 4u);
+		size_t hintIdx = events.size();
+		size_t vblankEnterIdx = events.size();
+		size_t vintIdx = events.size();
+		size_t vblankExitIdx = events.size();
+		for (size_t i = 0; i < events.size(); i++) {
+			if (events[i].starts_with("HINT ")) {
+				hintIdx = i;
+			}
+			if (events[i].starts_with("VBLANK_ENTER ")) {
+				vblankEnterIdx = i;
+			}
+			if (events[i].starts_with("VINT ")) {
+				vintIdx = i;
+			}
+			if (events[i].starts_with("VBLANK_EXIT ")) {
+				vblankExitIdx = i;
+			}
+		}
+
+		ASSERT_LT(hintIdx, events.size());
+		ASSERT_LT(vblankEnterIdx, events.size());
+		ASSERT_LT(vintIdx, events.size());
+		ASSERT_LT(vblankExitIdx, events.size());
+		EXPECT_LT(hintIdx, vblankEnterIdx);
+		EXPECT_LT(vblankEnterIdx, vintIdx);
+		EXPECT_LT(vintIdx, vblankExitIdx);
 	}
 
 	TEST(GenesisInterruptSchedulingTests, HAndVInterruptsAppearInSingleBoundaryStepOrder) {
@@ -60,9 +84,11 @@ namespace {
 		scaffold.StepFrameScaffold(488u * 262u);
 		const vector<string>& events = scaffold.GetTimingEvents();
 
-		ASSERT_GE(events.size(), 2u);
-		EXPECT_TRUE(events.at(events.size() - 2).starts_with("HINT frame=0 scanline=262"));
-		EXPECT_TRUE(events.at(events.size() - 1).starts_with("VINT frame=1"));
+		ASSERT_GE(events.size(), 4u);
+		EXPECT_TRUE(events.at(events.size() - 4).starts_with("HINT frame=0 scanline=223"));
+		EXPECT_TRUE(events.at(events.size() - 3).starts_with("VBLANK_ENTER frame=0 scanline=224"));
+		EXPECT_TRUE(events.at(events.size() - 2).starts_with("VINT frame=1"));
+		EXPECT_TRUE(events.at(events.size() - 1).starts_with("VBLANK_EXIT frame=1"));
 	}
 
 	TEST(GenesisInterruptSchedulingTests, SaveStateReplayKeepsInterruptEventOrderStable) {

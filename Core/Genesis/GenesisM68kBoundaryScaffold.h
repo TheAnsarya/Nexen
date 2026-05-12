@@ -152,11 +152,14 @@ struct GenesisBoundaryScaffoldSaveState {
 	uint32_t TimingScanline = 0;
 	uint32_t TimingFrame = 0;
 	uint32_t TimingCycleRemainder = 0;
+	bool InVBlank = false;
 	bool HInterruptEnabled = true;
 	bool VInterruptEnabled = true;
 	uint32_t HInterruptIntervalScanlines = 16;
 	uint32_t HInterruptCount = 0;
 	uint32_t VInterruptCount = 0;
+	uint32_t VBlankEnterCount = 0;
+	uint32_t VBlankExitCount = 0;
 	vector<string> TimingEvents;
 
 	bool operator==(const GenesisBoundaryScaffoldSaveState&) const = default;
@@ -327,6 +330,9 @@ public:
 	void SetRenderCompositionInputs(uint8_t planeA, bool planeAPriority, uint8_t planeB, bool planeBPriority, uint8_t window, bool windowEnabled, bool windowPriority, uint8_t sprite, bool spritePriority);
 	void SetScroll(uint16_t scrollX, uint16_t scrollY);
 	void RenderScaffoldLine(uint32_t pixelCount = 64);
+	void SetVdpVBlankState(bool enabled);
+	void SetVdpHBlankState(bool enabled);
+	void SetVdpInterruptPending(bool enabled);
 	[[nodiscard]] uint8_t GetRenderLinePixel(uint32_t index) const;
 	[[nodiscard]] const string& GetRenderLineDigest() const { return _renderLineDigest; }
 	void BeginDmaTransfer(GenesisVdpDmaMode mode, uint32_t transferWords);
@@ -410,6 +416,7 @@ class GenesisM68kBoundaryScaffold {
 private:
 	static constexpr uint32_t TimingCyclesPerScanline = 488;
 	static constexpr uint32_t TimingScanlinesPerFrame = 262;
+	static constexpr uint32_t TimingActiveDisplayScanlines = 224;
 
 	GenesisPlatformBusStub _bus;
 	GenesisM68kCpuStub _cpu;
@@ -417,11 +424,14 @@ private:
 	uint32_t _timingScanline = 0;
 	uint32_t _timingFrame = 0;
 	uint32_t _timingCycleRemainder = 0;
+	bool _inVBlank = false;
 	bool _hInterruptEnabled = true;
 	bool _vInterruptEnabled = true;
 	uint32_t _hInterruptIntervalScanlines = 16;
 	uint32_t _hInterruptCount = 0;
 	uint32_t _vInterruptCount = 0;
+	uint32_t _vblankEnterCount = 0;
+	uint32_t _vblankExitCount = 0;
 	vector<string> _timingEvents;
 
 	void AdvanceTiming(uint32_t cpuCycles);
@@ -437,8 +447,11 @@ public:
 	[[nodiscard]] bool IsStarted() const { return _started; }
 	[[nodiscard]] uint32_t GetTimingScanline() const { return _timingScanline; }
 	[[nodiscard]] uint32_t GetTimingFrame() const { return _timingFrame; }
+	[[nodiscard]] bool IsInVBlank() const { return _inVBlank; }
 	[[nodiscard]] uint32_t GetHorizontalInterruptCount() const { return _hInterruptCount; }
 	[[nodiscard]] uint32_t GetVerticalInterruptCount() const { return _vInterruptCount; }
+	[[nodiscard]] uint32_t GetVBlankEnterCount() const { return _vblankEnterCount; }
+	[[nodiscard]] uint32_t GetVBlankExitCount() const { return _vblankExitCount; }
 	[[nodiscard]] const vector<string>& GetTimingEvents() const { return _timingEvents; }
 	[[nodiscard]] GenesisBoundaryScaffoldSaveState SaveState() const;
 	void LoadState(const GenesisBoundaryScaffoldSaveState& state);

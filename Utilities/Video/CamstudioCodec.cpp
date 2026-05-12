@@ -1,9 +1,9 @@
-// This is based on the code in lsnes' cscd.cpp file
+﻿// This is based on the code in lsnes' cscd.cpp file
 // A few modifications were done to improve compression speed
 #include "pch.h"
 #include <cstring>
 #include "CamstudioCodec.h"
-#include "miniz.h"
+#include <miniz/miniz.h>
 
 CamstudioCodec::~CamstudioCodec() {
 	deflateEnd(&_compressor);

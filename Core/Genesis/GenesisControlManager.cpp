@@ -4,11 +4,64 @@
 #include "Genesis/Input/GenesisController.h"
 #include "Shared/Emulator.h"
 #include "Shared/EmuSettings.h"
+#include "Shared/KeyManager.h"
 #include "Utilities/Serializer.h"
+
+namespace {
+	bool HasAnyKeyMapping(KeyMappingSet& keys) {
+		return keys.Mapping1.HasKeySet()
+			|| keys.Mapping2.HasKeySet()
+			|| keys.Mapping3.HasKeySet()
+			|| keys.Mapping4.HasKeySet();
+	}
+
+	void ApplyDefaultGenesisMapping(KeyMappingSet& keys, uint8_t port, bool sixButton) {
+		if (HasAnyKeyMapping(keys)) {
+			return;
+		}
+
+		KeyMapping map = {};
+		if (port == 0) {
+			map.Up = KeyManager::GetKeyCode("Up Arrow");
+			map.Down = KeyManager::GetKeyCode("Down Arrow");
+			map.Left = KeyManager::GetKeyCode("Left Arrow");
+			map.Right = KeyManager::GetKeyCode("Right Arrow");
+			map.A = KeyManager::GetKeyCode("Z");
+			map.B = KeyManager::GetKeyCode("X");
+			map.TurboA = KeyManager::GetKeyCode("C");
+			map.Start = KeyManager::GetKeyCode("Enter");
+			if (sixButton) {
+				map.X = KeyManager::GetKeyCode("A");
+				map.Y = KeyManager::GetKeyCode("S");
+				map.TurboB = KeyManager::GetKeyCode("D");
+				map.Select = KeyManager::GetKeyCode("Right Shift");
+			}
+		} else {
+			map.Up = KeyManager::GetKeyCode("W");
+			map.Down = KeyManager::GetKeyCode("S");
+			map.Left = KeyManager::GetKeyCode("A");
+			map.Right = KeyManager::GetKeyCode("D");
+			map.A = KeyManager::GetKeyCode("F");
+			map.B = KeyManager::GetKeyCode("G");
+			map.TurboA = KeyManager::GetKeyCode("H");
+			map.Start = KeyManager::GetKeyCode("Tab");
+			if (sixButton) {
+				map.X = KeyManager::GetKeyCode("R");
+				map.Y = KeyManager::GetKeyCode("T");
+				map.TurboB = KeyManager::GetKeyCode("Y");
+				map.Select = KeyManager::GetKeyCode("Left Shift");
+			}
+		}
+
+		keys.Mapping1 = map;
+		keys.TurboSpeed = 2;
+	}
+}
 
 GenesisControlManager::GenesisControlManager(Emulator* emu, GenesisConsole* console)
 	: BaseControlManager(emu, CpuType::Genesis) {
 	_console = console;
+	UpdateControlDevices();
 }
 
 void GenesisControlManager::ApplySixButtonSessionTimeout(uint8_t port) {
@@ -275,9 +328,11 @@ shared_ptr<BaseControlDevice> GenesisControlManager::CreateControllerDevice(Cont
 		case ControllerType::None:
 			break;
 		case ControllerType::GenesisController:
+			ApplyDefaultGenesisMapping(keys, port, true);
 			device = std::make_unique<GenesisController>(_emu, port, keys, true);
 			break;
 		case ControllerType::GenesisController3Buttons:
+			ApplyDefaultGenesisMapping(keys, port, false);
 			device = std::make_unique<GenesisController>(_emu, port, keys, false);
 			break;
 	}
@@ -423,6 +478,15 @@ uint8_t GenesisControlManager::GetDeterministicPortDigest(uint8_t port) const {
 
 void GenesisControlManager::Serialize(Serializer& s) {
 	BaseControlManager::Serialize(s);
+
+	if (!s.IsSaving()) {
+		UpdateControlDevices();
+	}
+
+	for (uint8_t i = 0; i < _controlDevices.size(); i++) {
+		SVI(_controlDevices[i]);
+	}
+
 	SVArray(_dataPortWrite, 2);
 	SVArray(_ctrlPortWrite, 2);
 	SVArray(_thState, 2);

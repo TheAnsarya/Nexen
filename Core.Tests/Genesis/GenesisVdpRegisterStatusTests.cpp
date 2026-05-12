@@ -1,8 +1,8 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
 
 namespace {
-	TEST(GenesisVdpRegisterStatusTests, ControlWordUpdatesRegisterFileAndStatusSemantics) {
+	TEST(GenesisVdpRegisterStatusTests, ControlWordUpdatesRegisterFileWithoutForcingVBlankFlag) {
 		GenesisM68kBoundaryScaffold scaffold;
 		scaffold.Startup();
 
@@ -10,12 +10,25 @@ namespace {
 		scaffold.GetBus().WriteByte(0xC00005, 0x40);
 		EXPECT_EQ(scaffold.GetBus().GetVdpControlWordLatch(), 0x8140u);
 		EXPECT_EQ(scaffold.GetBus().GetVdpRegister(1), 0x40u);
-		EXPECT_TRUE((scaffold.GetBus().GetVdpStatus() & 0x0008u) != 0);
+		EXPECT_TRUE((scaffold.GetBus().GetVdpStatus() & 0x0008u) == 0);
 
 		scaffold.GetBus().WriteByte(0xC00004, 0x81);
 		scaffold.GetBus().WriteByte(0xC00005, 0x00);
 		EXPECT_EQ(scaffold.GetBus().GetVdpRegister(1), 0x00u);
 		EXPECT_TRUE((scaffold.GetBus().GetVdpStatus() & 0x0008u) == 0);
+	}
+
+	TEST(GenesisVdpRegisterStatusTests, VBlankFlagTransitionsAreTimingDriven) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+
+		scaffold.StepFrameScaffold(488u * 223u);
+		EXPECT_FALSE(scaffold.IsInVBlank());
+		EXPECT_TRUE((scaffold.GetBus().GetVdpStatus() & 0x0008u) == 0);
+
+		scaffold.StepFrameScaffold(488u);
+		EXPECT_TRUE(scaffold.IsInVBlank());
+		EXPECT_TRUE((scaffold.GetBus().GetVdpStatus() & 0x0008u) != 0);
 	}
 
 	TEST(GenesisVdpRegisterStatusTests, StatusReadClearsStickyPendingBitOnHighByteRead) {
@@ -59,7 +72,7 @@ namespace {
 			EXPECT_EQ(scaffold.GetBus().GetVdpControlWordLatch(), word);
 
 			if ((word & 0xc000u) == 0x8000u && ((word >> 8) & 0x1fu) == 1u) {
-				bool expectedSet = (word & 0x40u) != 0;
+				bool expectedSet = false;
 				bool actualSet = (scaffold.GetBus().GetVdpStatus() & 0x0008u) != 0;
 				EXPECT_EQ(actualSet, expectedSet);
 			}

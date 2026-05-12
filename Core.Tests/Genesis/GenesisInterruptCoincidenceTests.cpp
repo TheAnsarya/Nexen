@@ -1,9 +1,10 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
 
 namespace {
 	static constexpr uint32_t CyclesPerScanline = 488;
 	static constexpr uint32_t ScanlinesPerFrame = 262;
+	static constexpr uint32_t ActiveScanlines = 224;
 
 	static bool HasEventPrefix(const vector<string>& events, const string& prefix) {
 		return std::any_of(events.begin(), events.end(), [&](const string& line) {
@@ -12,17 +13,16 @@ namespace {
 	}
 
 	TEST(GenesisInterruptCoincidenceTests, HIntAtVBlankBoundaryProducesBothEvents) {
-		// Configure H-INT interval so it fires exactly on the VBlank boundary scanline.
-		// VBlank occurs at scanline 262 (frame rollover). With interval=262,
-		// H-INT fires at scanline 262 = same as VBlank.
+		// Configure H-INT interval so it fires exactly at active-display end.
+		// VBlank enters at scanline 224 in scaffold timing.
 		GenesisM68kBoundaryScaffold scaffold;
 		scaffold.Startup();
-		scaffold.ConfigureInterruptSchedule(true, ScanlinesPerFrame, true);
+		scaffold.ConfigureInterruptSchedule(true, ActiveScanlines, true);
 		scaffold.ClearTimingEvents();
 
 		scaffold.StepFrameScaffold(CyclesPerScanline * ScanlinesPerFrame);
 
-		// Both should fire: H-INT at exactly the VBlank boundary scanline.
+		// Both should fire in-frame when H-INT lands on active-display boundary.
 		EXPECT_EQ(scaffold.GetHorizontalInterruptCount(), 1u);
 		EXPECT_EQ(scaffold.GetVerticalInterruptCount(), 1u);
 		EXPECT_TRUE(HasEventPrefix(scaffold.GetTimingEvents(), "HINT "));
@@ -30,11 +30,11 @@ namespace {
 	}
 
 	TEST(GenesisInterruptCoincidenceTests, HIntOneLineBelowVBlankDoesNotCoincide) {
-		// H-INT fires at scanline 261 (one before VBlank). After full frame,
+		// H-INT fires one line before VBlank boundary. After full frame,
 		// both should fire but at different scanlines.
 		GenesisM68kBoundaryScaffold scaffold;
 		scaffold.Startup();
-		scaffold.ConfigureInterruptSchedule(true, 261, true);
+		scaffold.ConfigureInterruptSchedule(true, ActiveScanlines - 1u, true);
 		scaffold.ClearTimingEvents();
 
 		scaffold.StepFrameScaffold(CyclesPerScanline * ScanlinesPerFrame);
@@ -45,7 +45,7 @@ namespace {
 		const auto& events = scaffold.GetTimingEvents();
 		ASSERT_GE(events.size(), 2u);
 
-		// H-INT should come before V-INT since scanline 261 < 262.
+		// H-INT should come before V-INT since scanline 223 < frame rollover VINT.
 		size_t hintIdx = 0, vintIdx = 0;
 		for (size_t i = 0; i < events.size(); i++) {
 			if (events[i].starts_with("HINT ")) hintIdx = i;
@@ -63,7 +63,7 @@ namespace {
 
 		scaffold.StepFrameScaffold(CyclesPerScanline * ScanlinesPerFrame);
 
-		uint32_t expectedHints = ScanlinesPerFrame / 4;
+		uint32_t expectedHints = ActiveScanlines / 4;
 		EXPECT_EQ(scaffold.GetHorizontalInterruptCount(), expectedHints);
 		EXPECT_EQ(scaffold.GetVerticalInterruptCount(), 1u);
 
@@ -77,14 +77,14 @@ namespace {
 		// When H-INT and V-INT fire on the same scanline, H-INT should precede V-INT.
 		GenesisM68kBoundaryScaffold scaffold;
 		scaffold.Startup();
-		// Interval 131 → H-INT at scanlines 131, 262. VBlank at 262.
-		scaffold.ConfigureInterruptSchedule(true, 131, true);
+		// Interval 112 → H-INT at scanlines 112 and 224 (vblank entry boundary).
+		scaffold.ConfigureInterruptSchedule(true, 112, true);
 		scaffold.ClearTimingEvents();
 
 		scaffold.StepFrameScaffold(CyclesPerScanline * ScanlinesPerFrame);
 
 		const auto& events = scaffold.GetTimingEvents();
-		ASSERT_GE(events.size(), 3u); // 2 HINTs + 1 VINT
+		ASSERT_GE(events.size(), 4u); // 2 HINTs + VBLANK_ENTER + VINT (+ optional VBLANK_EXIT)
 
 		// Find the last HINT and the VINT — they should coincide at scanline 262.
 		size_t lastHint = 0, vintPos = 0;
@@ -100,7 +100,7 @@ namespace {
 		// At coincidence (H-INT level 4, V-INT level 6), CPU interrupt level should be 6.
 		GenesisM68kBoundaryScaffold scaffold;
 		scaffold.Startup();
-		scaffold.ConfigureInterruptSchedule(true, ScanlinesPerFrame, true);
+		scaffold.ConfigureInterruptSchedule(true, ActiveScanlines, true);
 		scaffold.ClearTimingEvents();
 
 		scaffold.StepFrameScaffold(CyclesPerScanline * ScanlinesPerFrame);
@@ -112,7 +112,7 @@ namespace {
 	TEST(GenesisInterruptCoincidenceTests, DisablingVIntStillFiresHIntAtBoundary) {
 		GenesisM68kBoundaryScaffold scaffold;
 		scaffold.Startup();
-		scaffold.ConfigureInterruptSchedule(true, ScanlinesPerFrame, false);
+		scaffold.ConfigureInterruptSchedule(true, ActiveScanlines, false);
 		scaffold.ClearTimingEvents();
 
 		scaffold.StepFrameScaffold(CyclesPerScanline * ScanlinesPerFrame);
@@ -146,7 +146,7 @@ namespace {
 		// Run 3 full frames.
 		scaffold.StepFrameScaffold(CyclesPerScanline * ScanlinesPerFrame * 3);
 
-		uint32_t expectedHints = (ScanlinesPerFrame / 8) * 3;
+		uint32_t expectedHints = (ActiveScanlines / 8) * 3;
 		EXPECT_EQ(scaffold.GetHorizontalInterruptCount(), expectedHints);
 		EXPECT_EQ(scaffold.GetVerticalInterruptCount(), 3u);
 		EXPECT_EQ(scaffold.GetTimingFrame(), 3u);
@@ -226,7 +226,7 @@ namespace {
 
 		// Total HINTs should be less than if interval stayed at 8.
 		uint32_t totalHints = scaffold.GetHorizontalInterruptCount();
-		uint32_t hintsAtInterval8Only = ScanlinesPerFrame / 8;
+		uint32_t hintsAtInterval8Only = ActiveScanlines / 8;
 		EXPECT_LT(totalHints, hintsAtInterval8Only);
 		EXPECT_GT(totalHints, hintsAfterFirst);
 	}

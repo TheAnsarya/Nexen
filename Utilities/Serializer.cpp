@@ -1,9 +1,9 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <algorithm>
 #include <cctype>
 #include "Serializer.h"
 #include "ISerializable.h"
-#include "miniz.h"
+#include <miniz/miniz.h>
 
 Serializer::Serializer(uint32_t version, bool forSave, SerializeFormat format) {
 	_version = version;
