@@ -61,6 +61,27 @@ namespace {
 		EXPECT_EQ(scaffold.GetVerticalInterruptCount(), 0u);
 	}
 
+	TEST(GenesisVdpTimingScaffoldTests, HIntDoesNotFireWhenDisabled) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+		scaffold.ConfigureInterruptSchedule(false, 8u, true);
+
+		scaffold.StepFrameScaffold(488u * 262u);
+		EXPECT_EQ(scaffold.GetHorizontalInterruptCount(), 0u);
+		EXPECT_EQ(scaffold.GetVerticalInterruptCount(), 1u);
+	}
+
+	TEST(GenesisVdpTimingScaffoldTests, VIntFiresOncePerFrameWhenEnabled) {
+		GenesisM68kBoundaryScaffold scaffold;
+		scaffold.Startup();
+		scaffold.ConfigureInterruptSchedule(false, 16u, true);
+
+		scaffold.StepFrameScaffold(488u * 262u * 2u);
+		EXPECT_EQ(scaffold.GetVerticalInterruptCount(), 2u);
+		EXPECT_EQ(scaffold.GetVBlankEnterCount(), 2u);
+		EXPECT_EQ(scaffold.GetVBlankExitCount(), 2u);
+	}
+
 	TEST(GenesisVdpTimingScaffoldTests, VBlankAndVIntEventsAppearInDeterministicOrder) {
 		GenesisM68kBoundaryScaffold scaffold;
 		scaffold.Startup();

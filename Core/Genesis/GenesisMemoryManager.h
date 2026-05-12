@@ -120,6 +120,11 @@ private:
 	uint16_t _startupLastVdpStatus = 0;
 	bool _startupProfilePreferNexenBusHandoff = true;
 	bool _startupProfilePreferMesenBusHandoff = false;
+	uint8_t _startupTitleClassValue = 0;
+	bool _startupTitleAutotuneApplied = false;
+	bool _startupTitleHintUsed = false;
+	char _startupDetectedTitle[65] = {};
+	char _startupDetectedProductCode[17] = {};
 	uint8_t _startupArbitrationDigest = 0;
 	uint8_t _startupArbitrationEpoch = 0;
 	uint16_t _startupLastArbitrationMclk = 0;
@@ -224,6 +229,8 @@ private:
 	void TrackDebugTranscriptEntry(uint32_t addr, bool isWrite, uint8_t value, uint8_t roleFlags);
 	void TrackSegaCdTranscript(uint32_t addr, bool isWrite, uint8_t value);
 	void TrackSegaCdHandshakeTranscript(uint32_t addr, bool isWrite, uint8_t value);
+	void DetectStartupTitleSignature();
+	void ApplyStartupTitleAutotune();
 	void ResetRomBankMapper();
 	bool TryGetRomBankRegisterSlot(uint32_t addr, uint8_t& slot) const;
 	bool TryWriteRomBankRegister(uint32_t addr, uint8_t value);
@@ -337,6 +344,11 @@ public:
 	uint32_t GetStartupDisplayTransitionCount() const { return _startupDisplayTransitionCount; }
 	bool GetStartupProfilePreferNexenBusHandoff() const { return _startupProfilePreferNexenBusHandoff; }
 	bool GetStartupProfilePreferMesenBusHandoff() const { return _startupProfilePreferMesenBusHandoff; }
+	uint8_t GetStartupTitleClassValue() const { return _startupTitleClassValue; }
+	bool GetStartupTitleAutotuneApplied() const { return _startupTitleAutotuneApplied; }
+	bool GetStartupTitleHintUsed() const { return _startupTitleHintUsed; }
+	const char* GetStartupDetectedTitle() const { return _startupDetectedTitle; }
+	const char* GetStartupDetectedProductCode() const { return _startupDetectedProductCode; }
 	bool GetStartupUseDynamicBusTiming() const { return _startupUseDynamicBusTiming; }
 	bool GetTmssStrictMode() const { return _tmssStrictMode; }
 	bool GetTmssEnabled() const { return _tmssEnabled; }

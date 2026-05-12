@@ -1,13 +1,13 @@
-# Third-Party Source Inventory
+﻿# Third-Party Source Inventory
 
-Generated: 2026-05-12 08:58:41-04:00
+Generated: 2026-05-12 09:57:21-04:00
 
 ## Summary
 
-- Components tracked: 7
-- Vendored files tracked: 130
-- Vendored lines tracked: 45952
-- Vendored bytes tracked: 1490026
+- Components tracked: 8
+- Vendored files tracked: 134
+- Vendored lines tracked: 46583
+- Vendored bytes tracked: 1517314
 - Largest component: Lua (1113794 bytes, 31822 lines)
 
 ## Component Breakdown
@@ -21,6 +21,7 @@ Generated: 2026-05-12 08:58:41-04:00
 | snes_ntsc | Utilities/NTSC/snes_ntsc* | temporary-vendored | package-backed video filter bundle | 4 | 753 | 35176 | 4 | 753 | 35176 |
 | nes_ntsc | Utilities/NTSC/nes_ntsc* | temporary-vendored | package-backed video filter bundle | 4 | 778 | 33193 | 4 | 778 | 33193 |
 | KreedSaiEagle | Utilities/KreedSaiEagle/* | temporary-vendored | package-backed video filter bundle | 4 | 382 | 28460 | 4 | 382 | 28460 |
+| sms_ntsc | Utilities/NTSC/sms_ntsc* | temporary-vendored | package-backed video filter bundle | 4 | 631 | 27288 | 4 | 631 | 27288 |
 
 ## Policy
 

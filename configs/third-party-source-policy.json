@@ -72,6 +72,16 @@
 			"maxLines": 778
 		},
 		{
+			"name": "sms_ntsc",
+			"pattern": "Utilities/NTSC/sms_ntsc*",
+			"preferredSource": "package-backed video filter bundle",
+			"status": "temporary-vendored",
+			"reason": "Specialized CRT filter implementation.",
+			"maxFiles": 4,
+			"maxBytes": 27288,
+			"maxLines": 631
+		},
+		{
 			"name": "KreedSaiEagle",
 			"pattern": "Utilities/KreedSaiEagle/*",
 			"preferredSource": "package-backed video filter bundle",

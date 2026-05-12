@@ -302,6 +302,9 @@
     <ClCompile Include="NTSC\nes_ntsc.cpp">
       <Filter>NTSC</Filter>
     </ClCompile>
+    <ClCompile Include="NTSC\sms_ntsc.cpp">
+      <Filter>NTSC</Filter>
+    </ClCompile>
     <ClCompile Include="NTSC\snes_ntsc.cpp">
       <Filter>NTSC</Filter>
     </ClCompile>
@@ -323,9 +326,6 @@
     <ClCompile Include="CRC32.cpp" />
     <ClCompile Include="md5.cpp" />
     <ClCompile Include="sha1.cpp" />
-    <ClCompile Include="NTSC\sms_ntsc.cpp">
-      <Filter>NTSC</Filter>
-    </ClCompile>
     <ClCompile Include="Audio\ymfm\ymfm_misc.cpp">
       <Filter>Audio\ymfm</Filter>
     </ClCompile>

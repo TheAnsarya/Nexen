@@ -122,6 +122,17 @@ namespace {
 		MesenCompat = 2,
 		Hybrid = 3,
 		Strict = 4,
+		SonicStartup = 5,
+	};
+
+	enum class StartupTitleClass : uint8_t {
+		Unknown = 0,
+		SonicGeneral = 1,
+		Sonic1 = 2,
+		Sonic2 = 3,
+		Sonic3 = 4,
+		SonicAndKnuckles = 5,
+		SonicSpinball = 6,
 	};
 
 	struct StartupProfileTuning {
@@ -174,11 +185,17 @@ namespace {
 	static bool sNexenGenesisStrictTmssDuringLogo = false;
 	static bool sNexenGenesisForceTmssUntilUnlock = false;
 	static bool sNexenGenesisPowerOnZ80ResetAsserted = true;
+	static bool sNexenGenesisStartupRomAutotune = true;
+	static bool sNexenGenesisStartupProfileExplicit = false;
+	static std::string sNexenGenesisStartupTitleHint;
 	static StartupProfileKind sNexenGenesisStartupProfileKind = StartupProfileKind::LogoCompat;
 
 	static StartupProfileKind ParseStartupProfileKind(const std::string& profileName) {
 		if (profileName == "strict" || profileName == "strict-startup") {
 			return StartupProfileKind::Strict;
+		}
+		if (profileName == "sonic" || profileName == "sonic-startup" || profileName == "sonic-boot") {
+			return StartupProfileKind::SonicStartup;
 		}
 		if (profileName == "nexen-ref" || profileName == "nexen-ref-startup") {
 			return StartupProfileKind::NexenRef;
@@ -216,6 +233,30 @@ namespace {
 				tuning.UseDynamicBusTiming = false;
 				tuning.MesenCompatMode = true;
 				tuning.HybridBusHandoff = false;
+				tuning.StrictTmssDuringLogo = true;
+				tuning.ForceTmssUntilUnlock = true;
+				tuning.TmssStrictMode = true;
+				tuning.PowerOnZ80ResetAsserted = true;
+				break;
+			case StartupProfileKind::SonicStartup:
+				tuning.Name = "sonic-startup";
+				tuning.StartupWindowFrames = 24u;
+				tuning.StartupBootRelaxFrames = 6u;
+				tuning.StartupLogoPhaseEndFrame = 180u;
+				tuning.StartupStrictPhaseStartFrame = 420u;
+				tuning.StartupCheckpointIntervalFrames = 1u;
+				tuning.StartupCheckpointEndFrame = 900u;
+				tuning.StartupTmssUnlockDelayMclk = 45u;
+				tuning.EarlyBusReqAckDelayMclk = 45u;
+				tuning.EarlyBusResumeDelayMclk = 15u;
+				tuning.LateBusReqAckDelayMclk = 21u;
+				tuning.LateBusResumeDelayMclk = 9u;
+				tuning.LatchOnlyHighByteWrites = true;
+				tuning.PreferNexenBusHandoff = true;
+				tuning.PreferMesenBusHandoff = true;
+				tuning.UseDynamicBusTiming = true;
+				tuning.MesenCompatMode = true;
+				tuning.HybridBusHandoff = true;
 				tuning.StrictTmssDuringLogo = true;
 				tuning.ForceTmssUntilUnlock = true;
 				tuning.TmssStrictMode = true;
@@ -387,6 +428,66 @@ namespace {
 		return !outValue.empty();
 	}
 
+	static std::string TrimAsciiSpaces(const std::string& value) {
+		size_t start = 0;
+		while (start < value.size() && std::isspace((unsigned char)value[start])) {
+			start++;
+		}
+
+		size_t end = value.size();
+		while (end > start && std::isspace((unsigned char)value[end - 1])) {
+			end--;
+		}
+
+		return value.substr(start, end - start);
+	}
+
+	static std::string NormalizeStartupTitleToken(const std::string& input) {
+		std::string out;
+		out.reserve(input.size());
+		for (char c : input) {
+			unsigned char ch = (unsigned char)c;
+			if (std::isalnum(ch)) {
+				out.push_back((char)std::toupper(ch));
+			} else if (std::isspace(ch) || c == '-' || c == '_' || c == '/' || c == '&') {
+				if (out.empty() || out.back() != ' ') {
+					out.push_back(' ');
+				}
+			}
+		}
+
+		return TrimAsciiSpaces(out);
+	}
+
+	static StartupTitleClass ClassifyStartupTitle(const std::string& normalizedTitle, const std::string& normalizedProductCode) {
+		if (normalizedTitle.empty() && normalizedProductCode.empty()) {
+			return StartupTitleClass::Unknown;
+		}
+
+		bool hasSonic = normalizedTitle.find("SONIC") != std::string::npos;
+		if (!hasSonic && normalizedProductCode.find("SONIC") == std::string::npos) {
+			return StartupTitleClass::Unknown;
+		}
+
+		if (normalizedTitle.find("SPINBALL") != std::string::npos) {
+			return StartupTitleClass::SonicSpinball;
+		}
+		if (normalizedTitle.find("KNUCKLES") != std::string::npos) {
+			return StartupTitleClass::SonicAndKnuckles;
+		}
+		if (normalizedTitle.find("SONIC 3") != std::string::npos || normalizedTitle.find("SONIC3") != std::string::npos) {
+			return StartupTitleClass::Sonic3;
+		}
+		if (normalizedTitle.find("SONIC 2") != std::string::npos || normalizedTitle.find("SONIC2") != std::string::npos) {
+			return StartupTitleClass::Sonic2;
+		}
+		if (normalizedTitle.find("SONIC THE HEDGEHOG") != std::string::npos) {
+			return StartupTitleClass::Sonic1;
+		}
+
+		return StartupTitleClass::SonicGeneral;
+	}
+
 	static void LoadNexenWramTraceConfigFromEnv() {
 		if (sNexenWramTraceConfigLoaded) {
 			return;
@@ -427,6 +528,9 @@ namespace {
 
 		// Profile defaults: tuned for startup/logo validation in the first 10 seconds.
 		sNexenGenesisStartupProfile = "logo-compat";
+		sNexenGenesisStartupProfileExplicit = false;
+		sNexenGenesisStartupRomAutotune = true;
+		sNexenGenesisStartupTitleHint.clear();
 		sNexenGenesisStartupProfileKind = StartupProfileKind::LogoCompat;
 		StartupProfileTuning tuning = BuildStartupProfileTuning(sNexenGenesisStartupProfileKind);
 
@@ -447,7 +551,11 @@ namespace {
 		std::string startupProfile;
 		if (TryGetNexenTraceEnvLowerString("NEXEN_GENESIS_STARTUP_PROFILE", startupProfile)) {
 			sNexenGenesisStartupProfile = startupProfile;
+			sNexenGenesisStartupProfileExplicit = true;
 		}
+
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_STARTUP_ROM_AUTOTUNE", sNexenGenesisStartupRomAutotune);
+		TryGetNexenTraceEnvLowerString("NEXEN_GENESIS_STARTUP_TITLE_HINT", sNexenGenesisStartupTitleHint);
 
 		sNexenGenesisStartupProfileKind = ParseStartupProfileKind(sNexenGenesisStartupProfile);
 		tuning = BuildStartupProfileTuning(sNexenGenesisStartupProfileKind);
@@ -750,6 +858,7 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_prgRomSize = (uint32_t)romData.size();
 	_prgRom = new uint8_t[_prgRomSize];
 	memcpy(_prgRom, romData.data(), _prgRomSize);
+	DetectStartupTitleSignature();
 	_emu->RegisterMemory(MemoryType::GenesisPrgRom, _prgRom, _prgRomSize);
 
 	// Register and allocate work RAM
@@ -953,8 +1062,165 @@ void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t instructionProgramC
 	}
 }
 
+void GenesisMemoryManager::DetectStartupTitleSignature() {
+	_startupTitleClassValue = (uint8_t)StartupTitleClass::Unknown;
+	_startupTitleAutotuneApplied = false;
+	_startupTitleHintUsed = false;
+	memset(_startupDetectedTitle, 0, sizeof(_startupDetectedTitle));
+	memset(_startupDetectedProductCode, 0, sizeof(_startupDetectedProductCode));
+
+	auto copySanitizedRange = [](const uint8_t* src, size_t len, char* dst, size_t dstLen) {
+		if (!src || !dst || dstLen == 0) {
+			return;
+		}
+
+		size_t writeIndex = 0;
+		for (size_t i = 0; i < len && writeIndex + 1 < dstLen; i++) {
+			unsigned char c = src[i];
+			if (c >= 0x20 && c <= 0x7E) {
+				dst[writeIndex++] = (char)c;
+			} else {
+				dst[writeIndex++] = ' ';
+			}
+		}
+		dst[writeIndex] = '\0';
+	};
+
+	std::string title;
+	std::string productCode;
+	if (_prgRom && _prgRomSize >= 0x200) {
+		char domesticTitle[65] = {};
+		char overseasTitle[65] = {};
+		char product[17] = {};
+		copySanitizedRange(_prgRom + 0x120, 48, domesticTitle, sizeof(domesticTitle));
+		copySanitizedRange(_prgRom + 0x150, 48, overseasTitle, sizeof(overseasTitle));
+		copySanitizedRange(_prgRom + 0x180, 14, product, sizeof(product));
+
+		std::string domesticTrimmed = TrimAsciiSpaces(domesticTitle);
+		std::string overseasTrimmed = TrimAsciiSpaces(overseasTitle);
+		title = !overseasTrimmed.empty() ? overseasTrimmed : domesticTrimmed;
+		productCode = TrimAsciiSpaces(product);
+	}
+
+	if (!sNexenGenesisStartupTitleHint.empty()) {
+		title = sNexenGenesisStartupTitleHint;
+		_startupTitleHintUsed = true;
+	}
+
+	std::string normalizedTitle = NormalizeStartupTitleToken(title);
+	std::string normalizedProductCode = NormalizeStartupTitleToken(productCode);
+	StartupTitleClass titleClass = ClassifyStartupTitle(normalizedTitle, normalizedProductCode);
+	_startupTitleClassValue = (uint8_t)titleClass;
+
+	if (!normalizedTitle.empty()) {
+		strncpy_s(_startupDetectedTitle, sizeof(_startupDetectedTitle), normalizedTitle.c_str(), _TRUNCATE);
+	}
+	if (!normalizedProductCode.empty()) {
+		strncpy_s(_startupDetectedProductCode, sizeof(_startupDetectedProductCode), normalizedProductCode.c_str(), _TRUNCATE);
+	}
+}
+
+void GenesisMemoryManager::ApplyStartupTitleAutotune() {
+	_startupTitleAutotuneApplied = false;
+	if (!sNexenGenesisStartupRomAutotune) {
+		return;
+	}
+
+	if (_startupTitleClassValue == (uint8_t)StartupTitleClass::Unknown) {
+		return;
+	}
+
+	// Respect explicit profile choices from environment and preserve strict/manual workflows.
+	if (sNexenGenesisStartupProfileExplicit || _startupProfileKindValue == (uint8_t)StartupProfileKind::Strict) {
+		return;
+	}
+
+	if (_startupProfileKindValue == (uint8_t)StartupProfileKind::MesenCompat) {
+		return;
+	}
+
+	uint16_t earlyAck = 45u;
+	uint16_t earlyResume = 15u;
+	uint16_t lateAck = 21u;
+	uint16_t lateResume = 9u;
+	uint32_t logoPhaseEnd = 180u;
+	uint32_t strictPhaseStart = 420u;
+	uint32_t checkpointEnd = 900u;
+
+	switch ((StartupTitleClass)_startupTitleClassValue) {
+		case StartupTitleClass::SonicSpinball:
+			lateAck = 17u;
+			lateResume = 9u;
+			logoPhaseEnd = 210u;
+			strictPhaseStart = 480u;
+			checkpointEnd = 960u;
+			break;
+		case StartupTitleClass::SonicAndKnuckles:
+			lateAck = 19u;
+			lateResume = 9u;
+			logoPhaseEnd = 210u;
+			strictPhaseStart = 500u;
+			checkpointEnd = 1000u;
+			break;
+		case StartupTitleClass::Sonic3:
+			lateAck = 19u;
+			lateResume = 9u;
+			logoPhaseEnd = 200u;
+			strictPhaseStart = 480u;
+			checkpointEnd = 980u;
+			break;
+		case StartupTitleClass::Sonic2:
+			lateAck = 19u;
+			lateResume = 9u;
+			logoPhaseEnd = 190u;
+			strictPhaseStart = 450u;
+			checkpointEnd = 940u;
+			break;
+		case StartupTitleClass::Sonic1:
+		case StartupTitleClass::SonicGeneral:
+		default:
+			break;
+	}
+
+	_startupWindowFrames = std::max<uint32_t>(_startupWindowFrames, 24u);
+	_startupBootRelaxFrames = std::max<uint32_t>(_startupBootRelaxFrames, 6u);
+	_startupLogoPhaseEndFrame = std::max<uint32_t>(_startupLogoPhaseEndFrame, logoPhaseEnd);
+	_startupStrictPhaseStartFrame = std::max<uint32_t>(_startupStrictPhaseStartFrame, strictPhaseStart);
+	_startupCheckpointEndFrame = std::max<uint32_t>(_startupCheckpointEndFrame, checkpointEnd);
+	_startupCheckpointIntervalFrames = std::max<uint32_t>(_startupCheckpointIntervalFrames, 1u);
+
+	_startupUseDynamicBusTiming = true;
+	_startupMesenCompatMode = true;
+	_startupHybridBusHandoff = true;
+	_startupProfilePreferNexenBusHandoff = true;
+	_startupProfilePreferMesenBusHandoff = true;
+	_startupStrictTmssDuringLogo = true;
+	_startupForceTmssUntilUnlock = true;
+	_tmssStrictMode = true;
+	_tmssUnlockDelayMclkSetting = std::max<uint16_t>(_tmssUnlockDelayMclkSetting, 45u);
+
+	_startupEarlyBusReqAckDelayMclk = std::max<uint16_t>(_startupEarlyBusReqAckDelayMclk, earlyAck);
+	_startupEarlyBusResumeDelayMclk = std::max<uint16_t>(_startupEarlyBusResumeDelayMclk, earlyResume);
+	_startupLateBusReqAckDelayMclk = std::max<uint16_t>(_startupLateBusReqAckDelayMclk, lateAck);
+	_startupLateBusResumeDelayMclk = std::max<uint16_t>(_startupLateBusResumeDelayMclk, lateResume);
+	_z80BusReqAckDelayMclkSetting = _startupEarlyBusReqAckDelayMclk;
+	_z80BusResumeDelayMclkSetting = _startupEarlyBusResumeDelayMclk;
+
+	_startupTitleAutotuneApplied = true;
+	MessageManager::Log(std::format("[Genesis][MMU] startup autotune applied titleClass={} title='{}' product='{}' hint={} early={}/{} late={}/{}",
+		_startupTitleClassValue,
+		_startupDetectedTitle,
+		_startupDetectedProductCode,
+		_startupTitleHintUsed ? 1 : 0,
+		_startupEarlyBusReqAckDelayMclk,
+		_startupEarlyBusResumeDelayMclk,
+		_startupLateBusReqAckDelayMclk,
+		_startupLateBusResumeDelayMclk));
+}
+
 void GenesisMemoryManager::ApplyStartupEnvironmentProfile() {
 	LoadNexenStartupTraceConfigFromEnv();
+	DetectStartupTitleSignature();
 	_startupProfileKindValue = (uint8_t)sNexenGenesisStartupProfileKind;
 	_startupWindowFrames = sNexenGenesisStartupWindowFrames;
 	_startupBootRelaxFrames = sNexenGenesisStartupBootRelaxFrames;
@@ -1001,6 +1267,7 @@ void GenesisMemoryManager::ApplyStartupEnvironmentProfile() {
 	_z80LatchOnlyHighByteWrites = sNexenGenesisZ80LatchOnlyHighByteWrites;
 	_tmssStrictMode = sNexenGenesisTmssStrictMode;
 	_tmssUnlockDelayMclkSetting = sNexenGenesisTmssUnlockDelayMclk;
+	ApplyStartupTitleAutotune();
 	RefreshStartupBusTiming(0u, false, 0, 0, "startup-profile");
 }
 
@@ -4323,6 +4590,11 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_startupLastVdpStatus);
 	SV(_startupProfilePreferNexenBusHandoff);
 	SV(_startupProfilePreferMesenBusHandoff);
+	SV(_startupTitleClassValue);
+	SV(_startupTitleAutotuneApplied);
+	SV(_startupTitleHintUsed);
+	SVArray(_startupDetectedTitle, (uint32_t)sizeof(_startupDetectedTitle));
+	SVArray(_startupDetectedProductCode, (uint32_t)sizeof(_startupDetectedProductCode));
 	SV(_startupArbitrationDigest);
 	SV(_startupArbitrationEpoch);
 	SV(_startupLastArbitrationMclk);
