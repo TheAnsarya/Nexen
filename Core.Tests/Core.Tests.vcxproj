@@ -19,6 +19,9 @@
 		<!-- Fallback for standalone builds (when SolutionDir is not set) -->
 		<SolutionDir Condition="'$(SolutionDir)'==''">$(MSBuildProjectDirectory)\..\</SolutionDir>
 	</PropertyGroup>
+	<PropertyGroup>
+		<NexenUsePackagedLua>true</NexenUsePackagedLua>
+	</PropertyGroup>
 	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
 		<ConfigurationType>Application</ConfigurationType>

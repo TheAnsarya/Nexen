@@ -4,9 +4,20 @@
 		     The root vcpkg.json declares dependencies (gtest, benchmark, etc.)
 		     and vcpkg-configuration.json pins the baseline. -->
 		<VcpkgEnableManifest>true</VcpkgEnableManifest>
+		<!-- Keep Lua linkage mode centralized so all C++ projects evaluate the same switch. -->
+		<NexenUsePackagedLua Condition="'$(NexenUsePackagedLua)'==''">true</NexenUsePackagedLua>
+		<NexenIgnorePackagedLuaImportLib Condition="'$(NexenUsePackagedLua)'=='' Or '$(NexenUsePackagedLua)'=='false' Or '$(NexenUsePackagedLua)'=='False'">lua.lib;</NexenIgnorePackagedLuaImportLib>
+		<NexenIgnorePackagedLuaImportLib Condition="'$(NexenUsePackagedLua)'!='' And '$(NexenUsePackagedLua)'!='false' And '$(NexenUsePackagedLua)'!='False'" />
 		<!-- Canonical Pansy.Core package version used when local sibling source is not present. -->
 		<PansyCorePackageVersion>1.0.0</PansyCorePackageVersion>
 	</PropertyGroup>
+
+	<ItemDefinitionGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
+		<Link>
+			<!-- Avoid mixed vendored+packaged Lua symbol collisions in full-solution links. -->
+			<IgnoreSpecificDefaultLibraries>$(NexenIgnorePackagedLuaImportLib)%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+		</Link>
+	</ItemDefinitionGroup>
 
 	<!-- Suppress NETSDK1233: GitHub Actions windows-latest has VS 2022 17.14 which
 	     the .NET 10 SDK considers unsupported. The build works correctly regardless;

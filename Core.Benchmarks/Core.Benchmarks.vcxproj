@@ -30,7 +30,7 @@
 		<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
 	</ImportGroup>
 	<PropertyGroup>
-		<NexenUsePackagedLua Condition="'$(NexenUsePackagedLua)'==''">false</NexenUsePackagedLua>
+		<NexenUsePackagedLua Condition="'$(NexenUsePackagedLua)'==''">true</NexenUsePackagedLua>
 		<NexenUsePackagedLuaDefine Condition="'$(NexenUsePackagedLua)'=='true'">1</NexenUsePackagedLuaDefine>
 		<NexenUsePackagedLuaDefine Condition="'$(NexenUsePackagedLua)'!='true'">0</NexenUsePackagedLuaDefine>
 		<NexenPackagedLuaLinkLib Condition="'$(NexenUsePackagedLua)'=='true'">lua.lib;</NexenPackagedLuaLinkLib>
