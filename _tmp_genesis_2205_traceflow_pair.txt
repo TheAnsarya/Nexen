@@ -1,0 +1,7 @@
+unknown file: error: SEH exception with code 0xc0000005 thrown in the test body.
+Stack trace:
+
+
+[  FAILED  ] GenesisExecutionTraceAndStallRecoveryTests.TraceRowsCaptureProgramCounterAndOpcodeFlow (4 ms)
+[==========] 1 test from 1 test suite ran. (4 ms total)
+[  PASSED  ] 0 tests.

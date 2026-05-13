@@ -399,6 +399,8 @@ public:
 	uint16_t GetStartupLastArbitrationMclk() const { return _startupLastArbitrationMclk; }
 	string BuildRuntimeFlowTraceSummary() const;
 	string BuildRuntimeOpTraceSummary() const;
+	string BuildRuntimeOpTraceWindow(uint32_t maxLines) const;
+	const vector<string>& GetRecentRuntimeOpTraceLines() const { return _recentRuntimeOpTraceLines; }
 	bool IsTmssLockedReadAllowedForAddr(uint32_t addr) const { return IsTmssLockedVdpReadAllowed(addr); }
 	bool IsTmssLockedWriteAllowedForAddr(uint32_t addr) const { return IsTmssLockedVdpWriteAllowed(addr); }
 	uint32_t GetDebugTranscriptLaneCount() const { return _ioState.DebugTranscriptLaneCount; }

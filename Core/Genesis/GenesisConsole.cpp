@@ -17,6 +17,8 @@
 #include "Shared/RewindManager.h"
 #include "Utilities/Serializer.h"
 #include "Shared/EventType.h"
+#include <cstdlib>
+#include <excpt.h>
 
 namespace {
 	bool HasSegaHeader(const vector<uint8_t>& romData) {
@@ -150,6 +152,35 @@ namespace {
 		}
 
 		return ConsoleRegion::Ntsc;
+	}
+
+	bool IsGenesisSehDiagGuardEnabled() {
+		static int cached = -1;
+		if (cached >= 0) {
+			return cached == 1;
+		}
+
+		cached = 0;
+		const char* raw = std::getenv("NEXEN_GENESIS_SEH_DIAG_GUARD");
+		if (raw && (*raw == '1' || *raw == 'y' || *raw == 'Y' || *raw == 't' || *raw == 'T')) {
+			cached = 1;
+		}
+		return cached == 1;
+	}
+
+	bool TryExecWithSehGuard(GenesisM68k* cpu, uint32_t& sehCode) {
+		if (!cpu) {
+			return false;
+		}
+
+		sehCode = 0;
+		__try {
+			cpu->Exec();
+			return true;
+		} __except (EXCEPTION_EXECUTE_HANDLER) {
+			sehCode = (uint32_t)_exception_code();
+			return false;
+		}
 	}
 }
 
@@ -327,83 +358,118 @@ void GenesisConsole::RunFrame() {
 	uint64_t lastProgressCpuCycles = _cpu->GetState().CycleCount;
 	uint32_t stagnantIterations = 0;
 	uint32_t forcedAdvancePulses = 0;
+	bool trappedSehFault = false;
+	uint32_t trappedSehCode = 0;
 	constexpr uint32_t StagnantIterationThreshold = 250000;
 	constexpr uint32_t ForcedAdvancePulseLimit = 8;
-	while (frame == _vdp->GetFrameCount()) {
-		_cpu->Exec();
-		guard++;
-
-		uint64_t currentClock = _memoryManager->GetMasterClock();
-		uint64_t currentCpuCycles = _cpu->GetState().CycleCount;
-		if (currentClock == lastProgressClock && currentCpuCycles == lastProgressCpuCycles) {
-			stagnantIterations++;
-		} else {
-			stagnantIterations = 0;
-			lastProgressClock = currentClock;
-			lastProgressCpuCycles = currentCpuCycles;
-		}
-
-		if (stagnantIterations >= StagnantIterationThreshold) {
-			_runFrameStallEventCount++;
-			forcedAdvancePulses++;
-			_cpu->ForceClockAdvance(488);
-			_runFrameForcedAdvanceCount++;
-			_runFrameLastStallSummary = _cpu->BuildExecutionStallSummary();
-			MessageManager::Log(std::format("[Genesis] RunFrame stall recovery #{} pulse={} frame={} guard={} summary={} masterClock={} cpuCycles={}",
-				_runFrameStallEventCount,
-				forcedAdvancePulses,
-				frame,
-				guard,
-				_runFrameLastStallSummary,
-				_memoryManager->GetMasterClock(),
-				_cpu->GetState().CycleCount));
-			stagnantIterations = 0;
-			lastProgressClock = _memoryManager->GetMasterClock();
-			lastProgressCpuCycles = _cpu->GetState().CycleCount;
-
-			if (forcedAdvancePulses >= ForcedAdvancePulseLimit) {
-				if (_runFrameFirstFailureBoundarySummary.empty()) {
-					_runFrameFirstFailureBoundarySummary = _cpu->BuildDispatchBoundaryProbeSummary();
-					_runFrameFirstFailureBoundaryCaptureCount++;
-					MessageManager::Log(std::format("[Genesis] RunFrame first-failure pair cpuBoundary={} mmuFlow={} mmuOps={}",
-						_runFrameFirstFailureBoundarySummary,
-						_memoryManager->BuildRuntimeFlowTraceSummary(),
-						_memoryManager->BuildRuntimeOpTraceSummary()));
+	bool sehGuardEnabled = IsGenesisSehDiagGuardEnabled();
+	auto runFrameLoop = [&]() {
+		while (frame == _vdp->GetFrameCount()) {
+			if (sehGuardEnabled) {
+				if (!TryExecWithSehGuard(_cpu.get(), trappedSehCode)) {
+					trappedSehFault = true;
+					break;
 				}
-				MessageManager::Log(std::format("[Genesis] RunFrame forced completion frame={} guard={} pulses={} traceDigest={}",
+			} else {
+				_cpu->Exec();
+			}
+			guard++;
+
+			uint64_t currentClock = _memoryManager->GetMasterClock();
+			uint64_t currentCpuCycles = _cpu->GetState().CycleCount;
+			if (currentClock == lastProgressClock && currentCpuCycles == lastProgressCpuCycles) {
+				stagnantIterations++;
+			} else {
+				stagnantIterations = 0;
+				lastProgressClock = currentClock;
+				lastProgressCpuCycles = currentCpuCycles;
+			}
+
+			if (stagnantIterations >= StagnantIterationThreshold) {
+				_runFrameStallEventCount++;
+				forcedAdvancePulses++;
+				_cpu->ForceClockAdvance(488);
+				_runFrameForcedAdvanceCount++;
+				_runFrameLastStallSummary = _cpu->BuildExecutionStallSummary();
+				MessageManager::Log(std::format("[Genesis] RunFrame stall recovery #{} pulse={} frame={} guard={} summary={} masterClock={} cpuCycles={}",
+					_runFrameStallEventCount,
+					forcedAdvancePulses,
 					frame,
 					guard,
-					forcedAdvancePulses,
-					_cpu->BuildInstructionTraceDigest()));
-				break;
+					_runFrameLastStallSummary,
+					_memoryManager->GetMasterClock(),
+					_cpu->GetState().CycleCount));
+				stagnantIterations = 0;
+				lastProgressClock = _memoryManager->GetMasterClock();
+				lastProgressCpuCycles = _cpu->GetState().CycleCount;
+
+				if (forcedAdvancePulses >= ForcedAdvancePulseLimit) {
+					if (_runFrameFirstFailureBoundarySummary.empty()) {
+						_runFrameFirstFailureBoundarySummary = _cpu->BuildDispatchBoundaryProbeSummary();
+						_runFrameFirstFailureBoundaryCaptureCount++;
+						MessageManager::Log(std::format("[Genesis] RunFrame first-failure pair cpuBoundary={} mmuFlow={} mmuOps={} mmuOpsWindow={}",
+							_runFrameFirstFailureBoundarySummary,
+							_memoryManager->BuildRuntimeFlowTraceSummary(),
+							_memoryManager->BuildRuntimeOpTraceSummary(),
+							_memoryManager->BuildRuntimeOpTraceWindow(8)));
+					}
+					MessageManager::Log(std::format("[Genesis] RunFrame forced completion frame={} guard={} pulses={} traceDigest={}",
+						frame,
+						guard,
+						forcedAdvancePulses,
+						_cpu->BuildInstructionTraceDigest()));
+					break;
+				}
+			}
+
+			if ((guard % 50000) == 0) {
+				GenesisVdpState vdpState = _vdp->GetState();
+				GenesisIoState ioState = _memoryManager->GetIoState();
+				MessageManager::Log(std::format("[Genesis] RunFrame waiting frame={} guard={} pc=${:06x} cycles={} masterClock={} heartbeatPc=${:06x} heartbeatCycles={} heartbeatInstr={} z80Running={} z80RunnableCycles={} z80StalledCycles={} z80Transitions={} z80Epoch={} z80LastTransitionClock={} vdpVc={} vdpHc={} vdpStatus=${:04x} r1=${:02x} dmaActive={} dmaMode={}",
+					frame,
+					guard,
+					_cpu->GetState().PC & 0x00ffffff,
+					_cpu->GetState().CycleCount,
+					_memoryManager->GetMasterClock(),
+					ioState.CpuProgramCounterHeartbeat,
+					ioState.CpuCycleHeartbeat,
+					ioState.CpuInstructionHeartbeat,
+					_memoryManager->GetZ80RuntimeRunning() ? 1 : 0,
+					_memoryManager->GetZ80RuntimeRunnableCycles(),
+					_memoryManager->GetZ80RuntimeStalledCycles(),
+					_memoryManager->GetZ80RuntimeTransitionCount(),
+					_memoryManager->GetZ80RuntimeStateEpoch(),
+					_memoryManager->GetZ80RuntimeLastTransitionClock(),
+					vdpState.VCounter,
+					vdpState.HCounter,
+					vdpState.StatusRegister,
+					vdpState.Registers[1],
+					vdpState.DmaActive ? 1 : 0,
+					vdpState.DmaMode));
 			}
 		}
+	};
 
-		if ((guard % 50000) == 0) {
-			GenesisVdpState vdpState = _vdp->GetState();
-			GenesisIoState ioState = _memoryManager->GetIoState();
-			MessageManager::Log(std::format("[Genesis] RunFrame waiting frame={} guard={} pc=${:06x} cycles={} masterClock={} heartbeatPc=${:06x} heartbeatCycles={} heartbeatInstr={} z80Running={} z80RunnableCycles={} z80StalledCycles={} z80Transitions={} z80Epoch={} z80LastTransitionClock={} vdpVc={} vdpHc={} vdpStatus=${:04x} r1=${:02x} dmaActive={} dmaMode={}",
-				frame,
-				guard,
-				_cpu->GetState().PC & 0x00ffffff,
-				_cpu->GetState().CycleCount,
-				_memoryManager->GetMasterClock(),
-				ioState.CpuProgramCounterHeartbeat,
-				ioState.CpuCycleHeartbeat,
-				ioState.CpuInstructionHeartbeat,
-				_memoryManager->GetZ80RuntimeRunning() ? 1 : 0,
-				_memoryManager->GetZ80RuntimeRunnableCycles(),
-				_memoryManager->GetZ80RuntimeStalledCycles(),
-				_memoryManager->GetZ80RuntimeTransitionCount(),
-				_memoryManager->GetZ80RuntimeStateEpoch(),
-				_memoryManager->GetZ80RuntimeLastTransitionClock(),
-				vdpState.VCounter,
-				vdpState.HCounter,
-				vdpState.StatusRegister,
-				vdpState.Registers[1],
-				vdpState.DmaActive ? 1 : 0,
-				vdpState.DmaMode));
+	runFrameLoop();
+
+	if (trappedSehFault) {
+		_runFrameEarlyAbortCount++;
+		if (_runFrameFirstFailureBoundarySummary.empty()) {
+			_runFrameFirstFailureBoundarySummary = _cpu->BuildDispatchBoundaryProbeSummary();
+			_runFrameFirstFailureBoundaryCaptureCount++;
 		}
+		_runFrameLastExitSummary = std::format("seh_guard_abort code=${:08x} frame={} guard={} pc=${:06x} cycles={} cpuBoundary={} mmuFlow={} mmuOps={} mmuOpsWindow={}",
+			trappedSehCode,
+			frame,
+			guard,
+			_cpu->GetState().PC & 0x00ffffff,
+			_cpu->GetState().CycleCount,
+			_runFrameFirstFailureBoundarySummary,
+			_memoryManager->BuildRuntimeFlowTraceSummary(),
+			_memoryManager->BuildRuntimeOpTraceSummary(),
+			_memoryManager->BuildRuntimeOpTraceWindow(12));
+		MessageManager::Log(std::format("[Genesis] RunFrame SEH trapped {}", _runFrameLastExitSummary));
+		return;
 	}
 	_runFrameLastGuardIterations = guard;
 

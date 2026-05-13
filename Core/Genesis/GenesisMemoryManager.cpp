@@ -1269,6 +1269,37 @@ string GenesisMemoryManager::BuildRuntimeOpTraceSummary() const {
 		lastLine);
 }
 
+string GenesisMemoryManager::BuildRuntimeOpTraceWindow(uint32_t maxLines) const {
+	if (_recentRuntimeOpTraceLines.empty()) {
+		return "none";
+	}
+
+	uint32_t clampedLines = maxLines;
+	if (clampedLines == 0) {
+		clampedLines = 1;
+	}
+
+	uint32_t startIndex = 0;
+	if (_recentRuntimeOpTraceLines.size() > clampedLines) {
+		startIndex = (uint32_t)_recentRuntimeOpTraceLines.size() - clampedLines;
+	}
+
+	string window = {};
+	for (uint32_t i = startIndex; i < (uint32_t)_recentRuntimeOpTraceLines.size(); i++) {
+		if (!window.empty()) {
+			window += " || ";
+		}
+
+		string line = _recentRuntimeOpTraceLines[i];
+		if (line.size() > 180) {
+			line = line.substr(0, 180);
+		}
+		window += line;
+	}
+
+	return window;
+}
+
 void GenesisMemoryManager::DetectStartupTitleSignature() {
 	_startupTitleClassValue = (uint8_t)StartupTitleClass::Unknown;
 	_startupTitleAutotuneApplied = false;

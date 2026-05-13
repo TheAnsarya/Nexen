@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "Genesis/GenesisConsole.h"
 #include "Genesis/GenesisM68k.h"
+#include "Genesis/GenesisMemoryManager.h"
 #include "Genesis/GenesisSmokeHarness.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
 #include "Utilities/VirtualFile.h"
@@ -104,6 +105,18 @@ TEST(GenesisCrashTriageProbeTests, M68kInstructionFlowSummaryDefaultsDisabledAnd
 	EXPECT_NE(flowSummary.find("skipped=0"), std::string::npos);
 	EXPECT_NE(flowSummary.find("ring=0"), std::string::npos);
 	EXPECT_NE(flowSummary.find("last=none"), std::string::npos);
+}
+
+TEST(GenesisCrashTriageProbeTests, MmuOpTraceSummaryAndWindowDefaultsAreEmpty) {
+	GenesisMemoryManager memoryManager;
+	std::string opSummary = memoryManager.BuildRuntimeOpTraceSummary();
+	std::string opWindow = memoryManager.BuildRuntimeOpTraceWindow(8);
+
+	EXPECT_NE(opSummary.find("enabled=0"), std::string::npos);
+	EXPECT_NE(opSummary.find("logged=0"), std::string::npos);
+	EXPECT_NE(opSummary.find("ring=0"), std::string::npos);
+	EXPECT_NE(opSummary.find("last=none"), std::string::npos);
+	EXPECT_EQ(opWindow, "none");
 }
 
 TEST(GenesisCrashTriageProbeTests, ResilienceGateIncludesSonicDigestMarkersForSonicCases) {
