@@ -128,6 +128,15 @@ private:
 	uint8_t _startupArbitrationDigest = 0;
 	uint8_t _startupArbitrationEpoch = 0;
 	uint16_t _startupLastArbitrationMclk = 0;
+	bool _runtimeFlowTraceConfigLoaded = false;
+	bool _runtimeFlowTraceEnabled = false;
+	uint32_t _runtimeFlowTraceLimit = 20000;
+	uint32_t _runtimeFlowTraceStride = 1;
+	uint32_t _runtimeFlowTraceCount = 0;
+	uint32_t _runtimeFlowTraceSkipped = 0;
+	string _lastRuntimeFlowTraceLine = {};
+	vector<string> _recentRuntimeFlowTraceLines = {};
+	uint32_t _recentRuntimeFlowTraceCapacity = 64;
 	bool _segaCdSubCpuRunning = false;
 	bool _segaCdSubCpuBusRequest = false;
 	uint32_t _segaCdSubCpuTransitionCount = 0;
@@ -260,6 +269,8 @@ private:
 	bool IsStartupWindowActive() const;
 	bool IsTmssLockedVdpReadAllowed(uint32_t addr) const;
 	bool IsTmssLockedVdpWriteAllowed(uint32_t addr) const;
+	void LoadRuntimeFlowTraceConfig();
+	void EmitRuntimeFlowSnapshot(uint32_t instructionProgramCounter, uint64_t cycleCount);
 	void TraceStartupEvent(const char* tag, uint32_t addr, uint16_t value, uint16_t auxValue = 0);
 	uint8_t ReadVersionRegister() const;
 	void SyncIoPadRuntimeState(uint8_t port);
@@ -375,6 +386,7 @@ public:
 	uint8_t GetStartupArbitrationDigest() const { return _startupArbitrationDigest; }
 	uint8_t GetStartupArbitrationEpoch() const { return _startupArbitrationEpoch; }
 	uint16_t GetStartupLastArbitrationMclk() const { return _startupLastArbitrationMclk; }
+	string BuildRuntimeFlowTraceSummary() const;
 	bool IsTmssLockedReadAllowedForAddr(uint32_t addr) const { return IsTmssLockedVdpReadAllowed(addr); }
 	bool IsTmssLockedWriteAllowedForAddr(uint32_t addr) const { return IsTmssLockedVdpWriteAllowed(addr); }
 	uint32_t GetDebugTranscriptLaneCount() const { return _ioState.DebugTranscriptLaneCount; }

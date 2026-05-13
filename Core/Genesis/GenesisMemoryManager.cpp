@@ -12,6 +12,7 @@
 #include "Utilities/Serializer.h"
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
 #include <filesystem>
 
 namespace {
@@ -1060,6 +1061,112 @@ void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t instructionProgramC
 	if ((_ioState.CpuInstructionHeartbeat & 0xFFu) == 0u) {
 		TraceStartupEvent("CPU_HB", instructionProgramCounter, (uint16_t)(cycleCount & 0xFFFFu), (uint16_t)(_ioState.CpuInstructionHeartbeat & 0xFFFFu));
 	}
+	EmitRuntimeFlowSnapshot(instructionProgramCounter, cycleCount);
+}
+
+void GenesisMemoryManager::LoadRuntimeFlowTraceConfig() {
+	if (_runtimeFlowTraceConfigLoaded) {
+		return;
+	}
+
+	_runtimeFlowTraceConfigLoaded = true;
+	const char* enabledRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_FLOW");
+	if (enabledRaw && (*enabledRaw == '1' || *enabledRaw == 'y' || *enabledRaw == 'Y' || *enabledRaw == 't' || *enabledRaw == 'T')) {
+		_runtimeFlowTraceEnabled = true;
+	}
+
+	if (const char* limitRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_LIMIT")) {
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(limitRaw, &end, 0);
+		if (end != limitRaw && *end == '\0' && parsed >= 64 && parsed <= 5000000) {
+			_runtimeFlowTraceLimit = (uint32_t)parsed;
+		}
+	}
+
+	if (const char* strideRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_STRIDE")) {
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(strideRaw, &end, 0);
+		if (end != strideRaw && *end == '\0' && parsed >= 1 && parsed <= 1000000) {
+			_runtimeFlowTraceStride = (uint32_t)parsed;
+		}
+	}
+
+	if (const char* ringRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_RING")) {
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(ringRaw, &end, 0);
+		if (end != ringRaw && *end == '\0' && parsed >= 8 && parsed <= 1024) {
+			_recentRuntimeFlowTraceCapacity = (uint32_t)parsed;
+		}
+	}
+
+	_recentRuntimeFlowTraceLines.clear();
+	_recentRuntimeFlowTraceLines.reserve(_recentRuntimeFlowTraceCapacity);
+}
+
+void GenesisMemoryManager::EmitRuntimeFlowSnapshot(uint32_t instructionProgramCounter, uint64_t cycleCount) {
+	LoadRuntimeFlowTraceConfig();
+	if (!_runtimeFlowTraceEnabled) {
+		return;
+	}
+
+	uint32_t sequence = _runtimeFlowTraceCount;
+	if (sequence >= _runtimeFlowTraceLimit) {
+		_runtimeFlowTraceSkipped++;
+		return;
+	}
+
+	_runtimeFlowTraceCount++;
+	if ((sequence % _runtimeFlowTraceStride) != 0) {
+		_runtimeFlowTraceSkipped++;
+		return;
+	}
+
+	GenesisM68kState cpuState = _cpu ? _cpu->GetState() : GenesisM68kState{};
+	GenesisVdpState vdpState = _vdp ? _vdp->GetState() : GenesisVdpState{};
+	string line = std::format(
+		"[Genesis][MMU][FLOW] seq={} hbInstr={} pc=${:06x} cyc={} master={} z80Run={} z80Req={} z80Ack={} z80Reset={} z80Runnable={} z80Stalled={} tmssUnlocked={} frame={} vc={} hc={} vdpStatus=${:04x} sr=${:04x} d0=${:08x} a0=${:08x}",
+		sequence,
+		_ioState.CpuInstructionHeartbeat,
+		instructionProgramCounter & 0x00ffffffu,
+		cycleCount,
+		_masterClock,
+		_z80RuntimeRunning ? 1 : 0,
+		_z80BusRequest ? 1 : 0,
+		_z80BusAck ? 1 : 0,
+		_z80Reset ? 1 : 0,
+		_z80RuntimeRunnableCycles,
+		_z80RuntimeStalledCycles,
+		_tmssUnlocked ? 1 : 0,
+		vdpState.FrameCount,
+		vdpState.VCounter,
+		vdpState.HCounter,
+		vdpState.StatusRegister,
+		cpuState.SR,
+		cpuState.D[0],
+		cpuState.A[0]);
+
+	_lastRuntimeFlowTraceLine = line;
+	MessageManager::Log(line);
+	if (_recentRuntimeFlowTraceLines.size() >= _recentRuntimeFlowTraceCapacity && !_recentRuntimeFlowTraceLines.empty()) {
+		_recentRuntimeFlowTraceLines.erase(_recentRuntimeFlowTraceLines.begin());
+	}
+	_recentRuntimeFlowTraceLines.push_back(line);
+}
+
+string GenesisMemoryManager::BuildRuntimeFlowTraceSummary() const {
+	string lastLine = _lastRuntimeFlowTraceLine.empty() ? "none" : _lastRuntimeFlowTraceLine;
+	if (lastLine.size() > 240) {
+		lastLine = lastLine.substr(0, 240);
+	}
+
+	return std::format("enabled={} logged={} skipped={} stride={} limit={} ring={} last={}",
+		_runtimeFlowTraceEnabled ? 1 : 0,
+		_runtimeFlowTraceCount,
+		_runtimeFlowTraceSkipped,
+		_runtimeFlowTraceStride,
+		_runtimeFlowTraceLimit,
+		_recentRuntimeFlowTraceLines.size(),
+		lastLine);
 }
 
 void GenesisMemoryManager::DetectStartupTitleSignature() {

@@ -63,6 +63,7 @@ TEST(GenesisCrashTriageProbeTests, RunFrameCrashProbeSummaryReportsMissingCompon
 	EXPECT_NE(summary.find("firstFailureCaptures="), std::string::npos);
 	EXPECT_NE(summary.find("firstFailureBoundary=none"), std::string::npos);
 	EXPECT_NE(summary.find("cpuProbe="), std::string::npos);
+	EXPECT_NE(summary.find("mmuFlow=enabled=0"), std::string::npos);
 	EXPECT_NE(summary.find("abort_missing_component"), std::string::npos);
 }
 
@@ -176,5 +177,6 @@ TEST(GenesisCrashTriageProbeTests, CrashProbeSummaryContainsCpuProbeFieldAfterLo
 	// We only validate summary formatting and counter visibility here.
 	std::string summaryBefore = console.BuildRunFrameCrashProbeSummary();
 	EXPECT_NE(summaryBefore.find("cpuProbe="), std::string::npos);
+	EXPECT_NE(summaryBefore.find("mmuFlow=enabled=0"), std::string::npos);
 	EXPECT_NE(summaryBefore.find("entryCount="), std::string::npos);
 }

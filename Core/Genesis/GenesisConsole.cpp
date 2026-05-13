@@ -163,8 +163,9 @@ GenesisConsole::~GenesisConsole() {
 string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 	string cpuSummary = _cpu ? _cpu->BuildCrashProbeSummary() : "cpu=missing";
 	string cpuBoundarySummary = _cpu ? _cpu->BuildDispatchBoundaryProbeSummary() : "cpuBoundary=missing";
+	string mmuFlowSummary = _memoryManager ? _memoryManager->BuildRuntimeFlowTraceSummary() : "mmuFlow=missing";
 	return std::format(
-		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={}",
+		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={}",
 		_runFrameEntryCount,
 		_runFrameExitCount,
 		_runFrameEarlyAbortCount,
@@ -177,7 +178,8 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 		_runFrameLastEntrySummary.empty() ? "none" : _runFrameLastEntrySummary,
 		_runFrameLastExitSummary.empty() ? "none" : _runFrameLastExitSummary,
 		cpuSummary,
-		cpuBoundarySummary);
+		cpuBoundarySummary,
+		mmuFlowSummary);
 }
 
 LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
