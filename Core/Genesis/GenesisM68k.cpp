@@ -4,9 +4,17 @@
 #include "Genesis/GenesisMemoryManager.h"
 #include "Shared/Emulator.h"
 #include "Shared/MessageManager.h"
+#include "Utilities/HexUtilities.h"
 #include "Utilities/Serializer.h"
+#include <cstdlib>
+#include <functional>
 
 namespace {
+	const char* kBranchCondNames[16] = {
+		"t", "f", "hi", "ls", "cc", "cs", "ne", "eq",
+		"vc", "vs", "pl", "mi", "ge", "lt", "gt", "le"
+	};
+
 	uint64_t HashTraceText(uint64_t hash, const string& text) {
 		for (uint8_t ch : text) {
 			hash ^= ch;
@@ -14,12 +22,159 @@ namespace {
 		}
 		return hash;
 	}
+
+	bool TryReadEnvU32(const char* name, uint32_t minValue, uint32_t maxValue, uint32_t& outValue) {
+		const char* raw = getenv(name);
+		if (!raw || !*raw) {
+			return false;
+		}
+
+		char* end = nullptr;
+		unsigned long parsed = strtoul(raw, &end, 0);
+		if (end == raw || *end != '\0' || parsed < minValue || parsed > maxValue) {
+			return false;
+		}
+
+		outValue = (uint32_t)parsed;
+		return true;
+	}
+
+	string FormatM68kEa(uint8_t mode, uint8_t reg, uint8_t sizeBytes, uint32_t extAddr, const std::function<uint16_t(uint32_t)>& readWord, uint32_t& consumedBytes) {
+		consumedBytes = 0;
+		switch (mode) {
+			case 0: return "D" + std::to_string(reg);
+			case 1: return "A" + std::to_string(reg);
+			case 2: return "(A" + std::to_string(reg) + ")";
+			case 3: return "(A" + std::to_string(reg) + ")+";
+			case 4: return "-(A" + std::to_string(reg) + ")";
+			case 5: {
+				int16_t d16 = (int16_t)readWord(extAddr);
+				consumedBytes = 2;
+				return "$" + HexUtilities::ToHex((uint16_t)d16) + "(A" + std::to_string(reg) + ")";
+			}
+			case 6: {
+				uint16_t ext = readWord(extAddr);
+				consumedBytes = 2;
+				int8_t d8 = (int8_t)(ext & 0xff);
+				uint8_t xn = (ext >> 12) & 7;
+				bool isAn = (ext & 0x8000) != 0;
+				bool longSize = (ext & 0x0800) != 0;
+				return "$" + HexUtilities::ToHex((uint8_t)d8) + "(A" + std::to_string(reg) + "," + (isAn ? "A" : "D") + std::to_string(xn) + "." + (longSize ? "l" : "w") + ")";
+			}
+			case 7:
+				switch (reg) {
+					case 0: {
+						uint16_t absw = readWord(extAddr);
+						consumedBytes = 2;
+						return "$" + HexUtilities::ToHex(absw) + ".w";
+					}
+					case 1: {
+						uint32_t absl = ((uint32_t)readWord(extAddr) << 16) | readWord(extAddr + 2);
+						consumedBytes = 4;
+						return "$" + HexUtilities::ToHex32(absl) + ".l";
+					}
+					case 2: {
+						int16_t d16 = (int16_t)readWord(extAddr);
+						consumedBytes = 2;
+						uint32_t target = (extAddr + 2 + d16) & 0x00ffffff;
+						return "$" + HexUtilities::ToHex24((int32_t)target) + "(pc)";
+					}
+					case 3: {
+						uint16_t ext = readWord(extAddr);
+						consumedBytes = 2;
+						int8_t d8 = (int8_t)(ext & 0xff);
+						uint8_t xn = (ext >> 12) & 7;
+						bool isAn = (ext & 0x8000) != 0;
+						bool longSize = (ext & 0x0800) != 0;
+						return "$" + HexUtilities::ToHex((uint8_t)d8) + "(pc," + (isAn ? "A" : "D") + std::to_string(xn) + "." + (longSize ? "l" : "w") + ")";
+					}
+					case 4: {
+						if (sizeBytes == 4) {
+							uint32_t imm = ((uint32_t)readWord(extAddr) << 16) | readWord(extAddr + 2);
+							consumedBytes = 4;
+							return "#$" + HexUtilities::ToHex32(imm);
+						}
+
+						uint16_t immWord = readWord(extAddr);
+						consumedBytes = 2;
+						if (sizeBytes == 1) {
+							return "#$" + HexUtilities::ToHex((uint8_t)immWord);
+						}
+						return "#$" + HexUtilities::ToHex(immWord);
+					}
+			}
+			break;
+		}
+		return "ea";
+	}
+
+	string DisassembleM68kLine(uint32_t pc, uint16_t opcode, uint16_t operandWordA, uint16_t operandWordB, const std::function<uint16_t(uint32_t)>& readWord) {
+		if (opcode == 0x4e71) return "nop";
+		if (opcode == 0x4e75) return "rts";
+		if (opcode == 0x4e73) return "rte";
+		if (opcode == 0x4e77) return "rtr";
+		if (opcode == 0x4e70) return "reset";
+		if (opcode == 0x4e76) return "trapv";
+		if (opcode == 0x4e72) return "stop";
+		if ((opcode & 0xfff0) == 0x4e40) {
+			return "trap #" + std::to_string(opcode & 0x0f);
+		}
+
+		if ((opcode & 0xff00) == 0x6000 || (opcode & 0xff00) == 0x6100 || ((opcode & 0xf000) == 0x6000)) {
+			uint8_t cc = (uint8_t)((opcode >> 8) & 0x0f);
+			string mnemonic = (cc == 0) ? "bra" : (cc == 1 ? "bsr" : ("b" + string(kBranchCondNames[cc])));
+			int32_t disp = 0;
+			uint32_t base = (pc + 2) & 0x00ffffff;
+			if ((opcode & 0x00ff) == 0) {
+				disp = (int16_t)operandWordA;
+				base = (base + 2) & 0x00ffffff;
+			} else {
+				disp = (int8_t)(opcode & 0x00ff);
+			}
+
+			uint32_t target = (base + disp) & 0x00ffffff;
+			return mnemonic + " $" + HexUtilities::ToHex24((int32_t)target);
+		}
+
+		if ((opcode & 0xf100) == 0x7000) {
+			uint8_t reg = (uint8_t)((opcode >> 9) & 7);
+			int8_t imm = (int8_t)(opcode & 0xff);
+			return "moveq #" + std::to_string((int)imm) + ",D" + std::to_string(reg);
+		}
+
+		if ((opcode & 0xffc0) == 0x4e80 || (opcode & 0xffc0) == 0x4ec0) {
+			uint8_t mode = (uint8_t)((opcode >> 3) & 7);
+			uint8_t reg = (uint8_t)(opcode & 7);
+			uint32_t used = 0;
+			string ea = FormatM68kEa(mode, reg, 4, pc + 2, readWord, used);
+			return ((opcode & 0xffc0) == 0x4e80 ? "jsr " : "jmp ") + ea;
+		}
+
+		uint8_t top = (uint8_t)(opcode >> 12);
+		if (top >= 1 && top <= 3) {
+			uint8_t sizeBytes = top == 1 ? 1 : (top == 2 ? 4 : 2);
+			uint8_t srcMode = (uint8_t)((opcode >> 3) & 7);
+			uint8_t srcReg = (uint8_t)(opcode & 7);
+			uint8_t dstMode = (uint8_t)((opcode >> 6) & 7);
+			uint8_t dstReg = (uint8_t)((opcode >> 9) & 7);
+			uint32_t usedSrc = 0;
+			uint32_t usedDst = 0;
+			string src = FormatM68kEa(srcMode, srcReg, sizeBytes, pc + 2, readWord, usedSrc);
+			string dst = FormatM68kEa(dstMode, dstReg, sizeBytes, pc + 2 + usedSrc, readWord, usedDst);
+			char sizeSuffix = sizeBytes == 1 ? 'b' : (sizeBytes == 2 ? 'w' : 'l');
+			return string("move.") + sizeSuffix + " " + src + "," + dst;
+		}
+
+		return "dc.w $" + HexUtilities::ToHex(opcode) + ",$" + HexUtilities::ToHex(operandWordA) + ",$" + HexUtilities::ToHex(operandWordB);
+	}
 }
 
 void GenesisM68k::Init(Emulator* emu, GenesisConsole* console, GenesisMemoryManager* memoryManager) {
 	_emu = emu;
 	_console = console;
 	_memoryManager = memoryManager;
+	_recentInstructionFlowLogs.clear();
+	_recentInstructionFlowLogs.reserve(_recentInstructionFlowCapacity);
 }
 
 // ===== Flag operations =====
@@ -418,6 +573,7 @@ void GenesisM68k::Exec() {
 		operandWordA = PeekWord(_state.PC);
 		operandWordB = PeekWord(_state.PC + 2);
 	}
+	MaybeLogInstructionFlow(prevPc, opcode, operandWordA, operandWordB, cyclesBefore, cyclesBefore, srBefore, _state.SR);
 
 	if ((opcode == 0x0000 && _lastFetchPreviewWordA == 0x0000 && _lastFetchPreviewWordB == 0x0000)
 		|| (opcode == 0xffff && _lastFetchPreviewWordA == 0xffff && _lastFetchPreviewWordB == 0xffff)) {
@@ -470,6 +626,7 @@ void GenesisM68k::Exec() {
 		_dispatchGuardHitCount,
 		_decodeFaultCount,
 		_dispatchFaultCount);
+	MaybeLogInstructionFlow(prevPc, opcode, operandWordA, operandWordB, cyclesBefore, cyclesAfter, srBefore, _state.SR);
 
 	if (_state.PC == prevPc && opcode == _lastRunOpcode) {
 		_samePcRunLength++;
@@ -545,6 +702,81 @@ uint16_t GenesisM68k::PeekWord(uint32_t addr) const {
 	uint8_t hi = _memoryManager->Peek8ForTrace(addr & 0x00ffffff);
 	uint8_t lo = _memoryManager->Peek8ForTrace((addr + 1) & 0x00ffffff);
 	return (uint16_t)((hi << 8) | lo);
+}
+
+void GenesisM68k::LoadInstructionFlowLogConfig() {
+	if (_instructionFlowConfigLoaded) {
+		return;
+	}
+
+	_instructionFlowConfigLoaded = true;
+	const char* enabledRaw = getenv("NEXEN_GENESIS_TRACE_EXEC_FLOW");
+	if (enabledRaw && (*enabledRaw == '1' || *enabledRaw == 'y' || *enabledRaw == 'Y' || *enabledRaw == 't' || *enabledRaw == 'T')) {
+		_instructionFlowLogEnabled = true;
+	}
+
+	uint32_t limit = 0;
+	if (TryReadEnvU32("NEXEN_GENESIS_TRACE_EXEC_LIMIT", 64, 5000000, limit)) {
+		_instructionFlowLogLimit = limit;
+	}
+
+	uint32_t stride = 0;
+	if (TryReadEnvU32("NEXEN_GENESIS_TRACE_EXEC_STRIDE", 1, 1000000, stride)) {
+		_instructionFlowLogStride = stride;
+	}
+
+	uint32_t ringCapacity = 0;
+	if (TryReadEnvU32("NEXEN_GENESIS_TRACE_EXEC_RING", 8, 1024, ringCapacity)) {
+		_recentInstructionFlowCapacity = ringCapacity;
+	}
+
+	_recentInstructionFlowLogs.clear();
+	_recentInstructionFlowLogs.reserve(_recentInstructionFlowCapacity);
+}
+
+void GenesisM68k::MaybeLogInstructionFlow(uint32_t prePc, uint16_t opcode, uint16_t operandWordA, uint16_t operandWordB, uint64_t cyclesBefore, uint64_t cyclesAfter, uint16_t srBefore, uint16_t srAfter) {
+	LoadInstructionFlowLogConfig();
+	if (!_instructionFlowLogEnabled) {
+		return;
+	}
+
+	if (_instructionFlowLogCount >= _instructionFlowLogLimit) {
+		_instructionFlowLogSkipped++;
+		return;
+	}
+
+	if ((_instructionFlowLogCount % _instructionFlowLogStride) != 0) {
+		_instructionFlowLogSkipped++;
+		_instructionFlowLogCount++;
+		return;
+	}
+
+	auto readWord = [this](uint32_t addr) {
+		return PeekWord(addr);
+	};
+
+	string disasm = DisassembleM68kLine(prePc, opcode, operandWordA, operandWordB, readWord);
+	string line = std::format("[Genesis][M68K][FLOW] seq={} pc=${:06x} op=${:04x} a=${:04x} b=${:04x} sr=${:04x}->${:04x} cyc={}->{} delta={} route={} disasm={}",
+		_instructionFlowLogCount,
+		prePc,
+		opcode,
+		operandWordA,
+		operandWordB,
+		srBefore,
+		srAfter,
+		cyclesBefore,
+		cyclesAfter,
+		cyclesAfter > cyclesBefore ? (uint32_t)(cyclesAfter - cyclesBefore) : 0,
+		_lastDecodeRouteSummary.empty() ? "none" : _lastDecodeRouteSummary,
+		disasm);
+
+	_lastInstructionFlowLogLine = line;
+	MessageManager::Log(line);
+	if (_recentInstructionFlowLogs.size() >= _recentInstructionFlowCapacity && !_recentInstructionFlowLogs.empty()) {
+		_recentInstructionFlowLogs.erase(_recentInstructionFlowLogs.begin());
+	}
+	_recentInstructionFlowLogs.push_back(line);
+	_instructionFlowLogCount++;
 }
 
 void GenesisM68k::RecordInstructionTrace(uint32_t programCounterBefore, uint32_t programCounterAfter, uint16_t opcode, uint16_t operandWordA, uint16_t operandWordB, uint16_t statusRegisterBefore, uint16_t statusRegisterAfter, uint64_t cycleCountBefore, uint64_t cycleCountAfter, uint32_t d0Before, uint32_t d0After, uint32_t a0Before, uint32_t a0After, uint32_t a7Before, uint32_t a7After, bool forcedCycleFloor, bool stoppedBefore, bool stoppedAfter) {
@@ -688,7 +920,7 @@ string GenesisM68k::BuildCrashProbeSummary() const {
 	}
 
 	return std::format(
-		"resetCount={} vectorSp=${:08x} vectorPc=${:06x} firstDispatch={} dispatchFaults={} lastDispatchFault={} guardHits={} decodeFaults={} lastFetchPc=${:06x} lastOpcode=${:04x} decodeRoute={} boundary={} forcedCycleFloors={} forcedClockAdvances={}",
+		"resetCount={} vectorSp=${:08x} vectorPc=${:06x} firstDispatch={} dispatchFaults={} lastDispatchFault={} guardHits={} decodeFaults={} lastFetchPc=${:06x} lastOpcode=${:04x} decodeRoute={} boundary={} flow={} forcedCycleFloors={} forcedClockAdvances={}",
 		_resetProbeCount,
 		_lastResetVectorSp,
 		_lastResetVectorPc,
@@ -701,13 +933,14 @@ string GenesisM68k::BuildCrashProbeSummary() const {
 		_lastFetchOpcode,
 		_lastDecodeRouteSummary.empty() ? "none" : _lastDecodeRouteSummary,
 		_lastDispatchBoundarySummary.empty() ? "none" : _lastDispatchBoundarySummary,
+		BuildInstructionFlowSummary(),
 		_forcedCycleFloorCount,
 		_forcedClockAdvanceCount);
 }
 
 string GenesisM68k::BuildDispatchBoundaryProbeSummary() const {
 	return std::format(
-		"execCalls={} guardHits={} decodeFaults={} dispatchFaults={} fetchPc=${:06x} fetchOpcode=${:04x} decodeGroup={} decodeSubOp={} decodeMode={} decodeReg={} decodeRoute={} preview=${:04x}:{:04x} boundary={}",
+		"execCalls={} guardHits={} decodeFaults={} dispatchFaults={} fetchPc=${:06x} fetchOpcode=${:04x} decodeGroup={} decodeSubOp={} decodeMode={} decodeReg={} decodeRoute={} preview=${:04x}:{:04x} boundary={} flow={}",
 		_execCallCount,
 		_dispatchGuardHitCount,
 		_decodeFaultCount,
@@ -721,7 +954,24 @@ string GenesisM68k::BuildDispatchBoundaryProbeSummary() const {
 		_lastDecodeRouteSummary.empty() ? "none" : _lastDecodeRouteSummary,
 		_lastFetchPreviewWordA,
 		_lastFetchPreviewWordB,
-		_lastDispatchBoundarySummary.empty() ? "none" : _lastDispatchBoundarySummary);
+		_lastDispatchBoundarySummary.empty() ? "none" : _lastDispatchBoundarySummary,
+		BuildInstructionFlowSummary());
+}
+
+string GenesisM68k::BuildInstructionFlowSummary() const {
+	string lastLine = _lastInstructionFlowLogLine.empty() ? "none" : _lastInstructionFlowLogLine;
+	if (lastLine.size() > 240) {
+		lastLine = lastLine.substr(0, 240);
+	}
+
+	return std::format("enabled={} logged={} skipped={} stride={} limit={} ring={} last={}",
+		_instructionFlowLogEnabled ? 1 : 0,
+		_instructionFlowLogCount,
+		_instructionFlowLogSkipped,
+		_instructionFlowLogStride,
+		_instructionFlowLogLimit,
+		_recentInstructionFlowLogs.size(),
+		lastLine);
 }
 
 void GenesisM68k::ForceClockAdvance(uint32_t cycles) {
@@ -2366,4 +2616,26 @@ void GenesisM68k::Serialize(Serializer& s) {
 	SV(_lastDecodedReg);
 	SVArray(_decodeGroupHitCount, 16);
 	SV(_lastDecodeRouteSummary);
+	SV(_instructionFlowConfigLoaded);
+	SV(_instructionFlowLogEnabled);
+	SV(_instructionFlowLogLimit);
+	SV(_instructionFlowLogStride);
+	SV(_instructionFlowLogCount);
+	SV(_instructionFlowLogSkipped);
+	SV(_lastInstructionFlowLogLine);
+	SV(_recentInstructionFlowCapacity);
+	uint32_t flowLineCount = (uint32_t)_recentInstructionFlowLogs.size();
+	SV(flowLineCount);
+	if (!s.IsSaving()) {
+		_recentInstructionFlowLogs.clear();
+		_recentInstructionFlowLogs.reserve(_recentInstructionFlowCapacity);
+	}
+
+	for (uint32_t i = 0; i < flowLineCount; i++) {
+		string flowLine = s.IsSaving() ? _recentInstructionFlowLogs[i] : string{};
+		SV(flowLine);
+		if (!s.IsSaving()) {
+			_recentInstructionFlowLogs.push_back(flowLine);
+		}
+	}
 }

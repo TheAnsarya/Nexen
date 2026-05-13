@@ -48,6 +48,15 @@ private:
 	uint8_t _lastDecodedReg = 0;
 	uint64_t _decodeGroupHitCount[16] = {};
 	string _lastDecodeRouteSummary = {};
+	bool _instructionFlowConfigLoaded = false;
+	bool _instructionFlowLogEnabled = false;
+	uint32_t _instructionFlowLogLimit = 20000;
+	uint32_t _instructionFlowLogStride = 1;
+	uint32_t _instructionFlowLogCount = 0;
+	uint32_t _instructionFlowLogSkipped = 0;
+	string _lastInstructionFlowLogLine = {};
+	vector<string> _recentInstructionFlowLogs = {};
+	uint32_t _recentInstructionFlowCapacity = 64;
 
 	// Prefetch
 	uint16_t _prefetch[2] = {};
@@ -168,6 +177,8 @@ private:
 	void ExecuteInstruction(uint16_t opcode);
 	void RecordInstructionTrace(uint32_t programCounterBefore, uint32_t programCounterAfter, uint16_t opcode, uint16_t operandWordA, uint16_t operandWordB, uint16_t statusRegisterBefore, uint16_t statusRegisterAfter, uint64_t cycleCountBefore, uint64_t cycleCountAfter, uint32_t d0Before, uint32_t d0After, uint32_t a0Before, uint32_t a0After, uint32_t a7Before, uint32_t a7After, bool forcedCycleFloor, bool stoppedBefore, bool stoppedAfter);
 	uint16_t PeekWord(uint32_t addr) const;
+	void LoadInstructionFlowLogConfig();
+	void MaybeLogInstructionFlow(uint32_t prePc, uint16_t opcode, uint16_t operandWordA, uint16_t operandWordB, uint64_t cyclesBefore, uint64_t cyclesAfter, uint16_t srBefore, uint16_t srAfter);
 	__forceinline void AddCycles(uint32_t cycles) {
 		if (_debugForceNoCycleProgress) {
 			return;
@@ -300,8 +311,13 @@ public:
 	uint8_t GetLastDecodedMode() const { return _lastDecodedMode; }
 	uint8_t GetLastDecodedReg() const { return _lastDecodedReg; }
 	const string& GetLastDecodeRouteSummary() const { return _lastDecodeRouteSummary; }
+	const string& GetLastInstructionFlowLogLine() const { return _lastInstructionFlowLogLine; }
+	uint32_t GetInstructionFlowLogCount() const { return _instructionFlowLogCount; }
+	uint32_t GetInstructionFlowLogSkippedCount() const { return _instructionFlowLogSkipped; }
+	vector<string> GetRecentInstructionFlowLogs() const { return _recentInstructionFlowLogs; }
 	string BuildCrashProbeSummary() const;
 	string BuildDispatchBoundaryProbeSummary() const;
+	string BuildInstructionFlowSummary() const;
 
 	void Serialize(Serializer& s) override;
 };

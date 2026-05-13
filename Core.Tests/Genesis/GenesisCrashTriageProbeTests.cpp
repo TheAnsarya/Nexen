@@ -90,6 +90,18 @@ TEST(GenesisCrashTriageProbeTests, M68kDispatchBoundaryProbeSummaryReportsDefaul
 	EXPECT_NE(summary.find("boundary=none"), std::string::npos);
 	EXPECT_NE(summary.find("decodeGroup=0"), std::string::npos);
 	EXPECT_NE(summary.find("decodeRoute=none"), std::string::npos);
+	EXPECT_NE(summary.find("flow=enabled=0"), std::string::npos);
+}
+
+TEST(GenesisCrashTriageProbeTests, M68kInstructionFlowSummaryDefaultsDisabledAndEmpty) {
+	GenesisM68k cpu;
+	std::string flowSummary = cpu.BuildInstructionFlowSummary();
+
+	EXPECT_NE(flowSummary.find("enabled=0"), std::string::npos);
+	EXPECT_NE(flowSummary.find("logged=0"), std::string::npos);
+	EXPECT_NE(flowSummary.find("skipped=0"), std::string::npos);
+	EXPECT_NE(flowSummary.find("ring=0"), std::string::npos);
+	EXPECT_NE(flowSummary.find("last=none"), std::string::npos);
 }
 
 TEST(GenesisCrashTriageProbeTests, ResilienceGateIncludesSonicDigestMarkersForSonicCases) {
