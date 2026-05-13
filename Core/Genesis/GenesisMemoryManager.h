@@ -125,6 +125,12 @@ private:
 	bool _startupTitleHintUsed = false;
 	char _startupDetectedTitle[65] = {};
 	char _startupDetectedProductCode[17] = {};
+	bool _pcOrderTraceHasLastWramPc = false;
+	uint32_t _pcOrderTraceLastWramPc = 0;
+	uint32_t _pcOrderTraceEdgeCount = 0;
+	uint32_t _pcOrderTraceEventCount = 0;
+	bool _pcOrderTraceSaw000264 = false;
+	bool _pcOrderTraceSaw00034A = false;
 	uint8_t _startupArbitrationDigest = 0;
 	uint8_t _startupArbitrationEpoch = 0;
 	uint16_t _startupLastArbitrationMclk = 0;
@@ -282,6 +288,7 @@ private:
 	void EmitRuntimeFlowSnapshot(uint32_t instructionProgramCounter, uint64_t cycleCount);
 	void LoadRuntimeOpTraceConfig();
 	void MaybeRecordRuntimeOp(const char* operationTag, uint32_t addr, uint16_t value, bool isWord, bool isWrite);
+	void TraceWramPcTransitionOrdering(uint32_t frame, uint16_t line, uint32_t address, uint8_t data, uint32_t programCounter);
 	void TraceStartupEvent(const char* tag, uint32_t addr, uint16_t value, uint16_t auxValue = 0);
 	uint8_t ReadVersionRegister() const;
 	void SyncIoPadRuntimeState(uint8_t port);

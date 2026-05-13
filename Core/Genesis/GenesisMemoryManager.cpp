@@ -829,6 +829,8 @@ namespace {
 			|| StartupTagEquals(tag, "STARTUP_Z80")
 			|| StartupTagEquals(tag, "STARTUP_PAL")
 			|| StartupTagEquals(tag, "STARTUP_VDP")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_MARK")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_EDGE")
 			|| StartupTagEquals(tag, "VDP_DISP_TGL")
 			|| StartupTagEquals(tag, "Z80_RUN_TGL")
 			|| StartupTagEquals(tag, "Z80_BUSREQ")
@@ -1978,6 +1980,64 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 	uint16_t line = _vdp->GetScanline();
 	LogNexenStartupTrace(frame, line, tag, addr, value, auxValue, pc, traceClock);
 	_startupTraceSequence++;
+}
+
+void GenesisMemoryManager::TraceWramPcTransitionOrdering(uint32_t frame, uint16_t line, uint32_t address, uint8_t data, uint32_t programCounter) {
+	(void)line;
+
+	uint32_t pc = programCounter & 0x00ffffffu;
+	if (pc != 0x000264u && pc != 0x00034au) {
+		return;
+	}
+
+	if (!ShouldLogNexenStartupTrace(frame)) {
+		return;
+	}
+
+	if (_pcOrderTraceEventCount >= 4096u) {
+		return;
+	}
+
+	bool emitEvent = false;
+	const char* tag = "CPU_MMU_PC_MARK";
+	uint16_t aux = 0;
+
+	if (pc == 0x000264u && !_pcOrderTraceSaw000264) {
+		_pcOrderTraceSaw000264 = true;
+		emitEvent = true;
+		aux |= 0x0001u;
+	}
+
+	if (pc == 0x00034au && !_pcOrderTraceSaw00034A) {
+		_pcOrderTraceSaw00034A = true;
+		emitEvent = true;
+		aux |= 0x0002u;
+	}
+
+	if (_pcOrderTraceHasLastWramPc && _pcOrderTraceLastWramPc != pc) {
+		tag = "CPU_MMU_PC_EDGE";
+		_pcOrderTraceEdgeCount++;
+		emitEvent = true;
+		if (_pcOrderTraceLastWramPc == 0x000264u && pc == 0x00034au) {
+			aux |= 0x0100u;
+		} else if (_pcOrderTraceLastWramPc == 0x00034au && pc == 0x000264u) {
+			aux |= 0x0200u;
+		} else {
+			aux |= 0x0400u;
+		}
+		aux |= (uint16_t)(_pcOrderTraceEdgeCount & 0x00ffu);
+	}
+
+	_pcOrderTraceHasLastWramPc = true;
+	_pcOrderTraceLastWramPc = pc;
+
+	if (!emitEvent) {
+		return;
+	}
+
+	uint16_t packedValue = (uint16_t)(((address & 0x000000ffu) << 8) | data);
+	TraceStartupEvent(tag, address & 0x00ffffffu, packedValue, aux);
+	_pcOrderTraceEventCount++;
 }
 
 void GenesisMemoryManager::EvaluateTmssUnlockState(bool allowLog, uint32_t addr, uint32_t value, bool isWrite) {
@@ -3556,11 +3616,12 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 			if (_startupProfilePreferNexenBusHandoff && frame == 0u) {
 				frame = 1u;
 			}
+			uint16_t line = _vdp->GetScanline();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
 			if (ShouldLogNexenWramTrace(frame, addr)) {
-				uint16_t line = _vdp->GetScanline();
-				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
 				LogNexenWramTrace(frame, line, addr, effectiveValue, pc, _masterClock);
 			}
+			TraceWramPcTransitionOrdering(frame, line, addr, effectiveValue, pc);
 		}
 		_openBus = effectiveValue;
 		traceWrite8("write8-wram", addr, effectiveValue);
@@ -3846,17 +3907,17 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 			if (_startupProfilePreferNexenBusHandoff && frame == 0u) {
 				frame = 1u;
 			}
+			uint16_t line = _vdp->GetScanline();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
 			if (ShouldLogNexenWramTrace(frame, addr)) {
-				uint16_t line = _vdp->GetScanline();
-				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
 				LogNexenWramTrace(frame, line, addr, effectiveHighByte, pc, _masterClock);
 			}
+			TraceWramPcTransitionOrdering(frame, line, addr, effectiveHighByte, pc);
 			uint32_t lowAddress = (addr + 1) & 0xFFFFFF;
 			if (ShouldLogNexenWramTrace(frame, lowAddress)) {
-				uint16_t line = _vdp->GetScanline();
-				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
 				LogNexenWramTrace(frame, line, lowAddress, effectiveLowByte, pc, _masterClock);
 			}
+			TraceWramPcTransitionOrdering(frame, line, lowAddress, effectiveLowByte, pc);
 		}
 		_openBus = effectiveLowByte;
 		traceWrite16("write16-wram", addr, value);
@@ -5047,6 +5108,12 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_startupNexenClockAnchor = 0;
 	_startupHasNexenPcAnchor = false;
 	_startupNexenPcAnchor = 0;
+	_pcOrderTraceHasLastWramPc = false;
+	_pcOrderTraceLastWramPc = 0;
+	_pcOrderTraceEdgeCount = 0;
+	_pcOrderTraceEventCount = 0;
+	_pcOrderTraceSaw000264 = false;
+	_pcOrderTraceSaw00034A = false;
 	_startupDisplayTransitionCount = 0;
 	_startupNextCheckpointFrame = 0;
 	_startupHasLastDisplayState = false;
