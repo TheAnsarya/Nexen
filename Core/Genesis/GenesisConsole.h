@@ -32,6 +32,8 @@ private:
 	uint32_t _runFrameLastGuardIterations = 0;
 	string _runFrameLastEntrySummary = {};
 	string _runFrameLastExitSummary = {};
+	uint64_t _runFrameFirstFailureBoundaryCaptureCount = 0;
+	string _runFrameFirstFailureBoundarySummary = {};
 
 public:
 	static vector<string> GetSupportedExtensions() { return {".md", ".gen", ".bin", ".smd"}; }
@@ -53,6 +55,8 @@ public:
 	uint32_t GetRunFrameLastGuardIterations() const { return _runFrameLastGuardIterations; }
 	const string& GetRunFrameLastEntrySummary() const { return _runFrameLastEntrySummary; }
 	const string& GetRunFrameLastExitSummary() const { return _runFrameLastExitSummary; }
+	uint64_t GetRunFrameFirstFailureBoundaryCaptureCount() const { return _runFrameFirstFailureBoundaryCaptureCount; }
+	const string& GetRunFrameFirstFailureBoundarySummary() const { return _runFrameFirstFailureBoundarySummary; }
 	string BuildRunFrameCrashProbeSummary() const;
 
 	LoadRomResult LoadRom(VirtualFile& romFile) override;

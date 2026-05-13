@@ -60,6 +60,8 @@ TEST(GenesisCrashTriageProbeTests, RunFrameCrashProbeSummaryReportsMissingCompon
 	std::string summary = console.BuildRunFrameCrashProbeSummary();
 
 	EXPECT_NE(summary.find("earlyAbortCount="), std::string::npos);
+	EXPECT_NE(summary.find("firstFailureCaptures="), std::string::npos);
+	EXPECT_NE(summary.find("firstFailureBoundary=none"), std::string::npos);
 	EXPECT_NE(summary.find("cpuProbe="), std::string::npos);
 	EXPECT_NE(summary.find("abort_missing_component"), std::string::npos);
 }
@@ -74,6 +76,7 @@ TEST(GenesisCrashTriageProbeTests, M68kCrashProbeSummaryReportsDefaultFields) {
 	EXPECT_NE(summary.find("guardHits=0"), std::string::npos);
 	EXPECT_NE(summary.find("decodeFaults=0"), std::string::npos);
 	EXPECT_NE(summary.find("lastFetchPc=$000000"), std::string::npos);
+	EXPECT_NE(summary.find("decodeRoute=none"), std::string::npos);
 }
 
 TEST(GenesisCrashTriageProbeTests, M68kDispatchBoundaryProbeSummaryReportsDefaultFields) {
@@ -85,6 +88,8 @@ TEST(GenesisCrashTriageProbeTests, M68kDispatchBoundaryProbeSummaryReportsDefaul
 	EXPECT_NE(summary.find("decodeFaults=0"), std::string::npos);
 	EXPECT_NE(summary.find("fetchPc=$000000"), std::string::npos);
 	EXPECT_NE(summary.find("boundary=none"), std::string::npos);
+	EXPECT_NE(summary.find("decodeGroup=0"), std::string::npos);
+	EXPECT_NE(summary.find("decodeRoute=none"), std::string::npos);
 }
 
 TEST(GenesisCrashTriageProbeTests, ResilienceGateIncludesSonicDigestMarkersForSonicCases) {

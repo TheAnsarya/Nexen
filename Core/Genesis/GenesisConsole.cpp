@@ -164,10 +164,12 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 	string cpuSummary = _cpu ? _cpu->BuildCrashProbeSummary() : "cpu=missing";
 	string cpuBoundarySummary = _cpu ? _cpu->BuildDispatchBoundaryProbeSummary() : "cpuBoundary=missing";
 	return std::format(
-		"entryCount={} exitCount={} earlyAbortCount={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={}",
+		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={}",
 		_runFrameEntryCount,
 		_runFrameExitCount,
 		_runFrameEarlyAbortCount,
+		_runFrameFirstFailureBoundaryCaptureCount,
+		_runFrameFirstFailureBoundarySummary.empty() ? "none" : _runFrameFirstFailureBoundarySummary,
 		_runFrameLastGuardIterations,
 		_runFrameStallEventCount,
 		_runFrameForcedAdvanceCount,
@@ -281,6 +283,10 @@ void GenesisConsole::RunFrame() {
 
 	if (!_cpu || !_vdp || !_memoryManager || !_controlManager) {
 		_runFrameEarlyAbortCount++;
+		if (_cpu && _runFrameFirstFailureBoundarySummary.empty()) {
+			_runFrameFirstFailureBoundarySummary = _cpu->BuildDispatchBoundaryProbeSummary();
+			_runFrameFirstFailureBoundaryCaptureCount++;
+		}
 		_runFrameLastEntrySummary = std::format("abort_missing_component cpu={} vdp={} mmu={} ctrl={}",
 			_cpu ? 1 : 0,
 			_vdp ? 1 : 0,
@@ -346,6 +352,10 @@ void GenesisConsole::RunFrame() {
 			lastProgressCpuCycles = _cpu->GetState().CycleCount;
 
 			if (forcedAdvancePulses >= ForcedAdvancePulseLimit) {
+				if (_runFrameFirstFailureBoundarySummary.empty()) {
+					_runFrameFirstFailureBoundarySummary = _cpu->BuildDispatchBoundaryProbeSummary();
+					_runFrameFirstFailureBoundaryCaptureCount++;
+				}
 				MessageManager::Log(std::format("[Genesis] RunFrame forced completion frame={} guard={} pulses={} traceDigest={}",
 					frame,
 					guard,

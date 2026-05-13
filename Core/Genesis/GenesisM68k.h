@@ -42,6 +42,12 @@ private:
 	uint16_t _lastFetchPreviewWordA = 0;
 	uint16_t _lastFetchPreviewWordB = 0;
 	string _lastDispatchBoundarySummary = {};
+	uint8_t _lastDecodedGroup = 0;
+	uint8_t _lastDecodedSubOp = 0;
+	uint8_t _lastDecodedMode = 0;
+	uint8_t _lastDecodedReg = 0;
+	uint64_t _decodeGroupHitCount[16] = {};
+	string _lastDecodeRouteSummary = {};
 
 	// Prefetch
 	uint16_t _prefetch[2] = {};
@@ -289,6 +295,11 @@ public:
 	uint32_t GetLastFetchProgramCounter() const { return _lastFetchProgramCounter; }
 	uint16_t GetLastFetchOpcode() const { return _lastFetchOpcode; }
 	const string& GetLastDispatchBoundarySummary() const { return _lastDispatchBoundarySummary; }
+	uint8_t GetLastDecodedGroup() const { return _lastDecodedGroup; }
+	uint8_t GetLastDecodedSubOp() const { return _lastDecodedSubOp; }
+	uint8_t GetLastDecodedMode() const { return _lastDecodedMode; }
+	uint8_t GetLastDecodedReg() const { return _lastDecodedReg; }
+	const string& GetLastDecodeRouteSummary() const { return _lastDecodeRouteSummary; }
 	string BuildCrashProbeSummary() const;
 	string BuildDispatchBoundaryProbeSummary() const;
 

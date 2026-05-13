@@ -688,7 +688,7 @@ string GenesisM68k::BuildCrashProbeSummary() const {
 	}
 
 	return std::format(
-		"resetCount={} vectorSp=${:08x} vectorPc=${:06x} firstDispatch={} dispatchFaults={} lastDispatchFault={} guardHits={} decodeFaults={} lastFetchPc=${:06x} lastOpcode=${:04x} boundary={} forcedCycleFloors={} forcedClockAdvances={}",
+		"resetCount={} vectorSp=${:08x} vectorPc=${:06x} firstDispatch={} dispatchFaults={} lastDispatchFault={} guardHits={} decodeFaults={} lastFetchPc=${:06x} lastOpcode=${:04x} decodeRoute={} boundary={} forcedCycleFloors={} forcedClockAdvances={}",
 		_resetProbeCount,
 		_lastResetVectorSp,
 		_lastResetVectorPc,
@@ -699,6 +699,7 @@ string GenesisM68k::BuildCrashProbeSummary() const {
 		_decodeFaultCount,
 		_lastFetchProgramCounter,
 		_lastFetchOpcode,
+		_lastDecodeRouteSummary.empty() ? "none" : _lastDecodeRouteSummary,
 		_lastDispatchBoundarySummary.empty() ? "none" : _lastDispatchBoundarySummary,
 		_forcedCycleFloorCount,
 		_forcedClockAdvanceCount);
@@ -706,13 +707,18 @@ string GenesisM68k::BuildCrashProbeSummary() const {
 
 string GenesisM68k::BuildDispatchBoundaryProbeSummary() const {
 	return std::format(
-		"execCalls={} guardHits={} decodeFaults={} dispatchFaults={} fetchPc=${:06x} fetchOpcode=${:04x} preview=${:04x}:${:04x} boundary={}",
+		"execCalls={} guardHits={} decodeFaults={} dispatchFaults={} fetchPc=${:06x} fetchOpcode=${:04x} decodeGroup={} decodeSubOp={} decodeMode={} decodeReg={} decodeRoute={} preview=${:04x}:{:04x} boundary={}",
 		_execCallCount,
 		_dispatchGuardHitCount,
 		_decodeFaultCount,
 		_dispatchFaultCount,
 		_lastFetchProgramCounter,
 		_lastFetchOpcode,
+		_lastDecodedGroup,
+		_lastDecodedSubOp,
+		_lastDecodedMode,
+		_lastDecodedReg,
+		_lastDecodeRouteSummary.empty() ? "none" : _lastDecodeRouteSummary,
 		_lastFetchPreviewWordA,
 		_lastFetchPreviewWordB,
 		_lastDispatchBoundarySummary.empty() ? "none" : _lastDispatchBoundarySummary);
@@ -764,11 +770,24 @@ void GenesisM68k::Reset(bool softReset) {
 
 void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 	uint8_t group = (opcode >> 12) & 0x0f;
+	uint8_t subOp = (opcode >> 9) & 0x07;
+	uint8_t mode = (opcode >> 3) & 0x07;
+	uint8_t reg = opcode & 0x07;
+	_lastDecodedGroup = group;
+	_lastDecodedSubOp = subOp;
+	_lastDecodedMode = mode;
+	_lastDecodedReg = reg;
+	_decodeGroupHitCount[group]++;
+	_lastDecodeRouteSummary = std::format("route=entry g={} sub={} mode={} reg={} hits={}", group, subOp, mode, reg, _decodeGroupHitCount[group]);
+	auto setRoute = [&](const char* routeTag) {
+		_lastDecodeRouteSummary = std::format("route={} g={} sub={} mode={} reg={} hits={}", routeTag, group, subOp, mode, reg, _decodeGroupHitCount[group]);
+	};
 
 	switch (group) {
 		case 0x0: // Bit manipulation / MOVEP / Immediate
 		{
 			if ((opcode & 0x0100) && !(opcode & 0x0038)) {
+				setRoute("g0-dynbit-dn");
 				// Dynamic bit operations on Dn
 				uint8_t bitOp = (opcode >> 6) & 3;
 				switch (bitOp) {
@@ -778,6 +797,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 					case 3: Op_BSET(opcode); break;
 				}
 			} else if (opcode & 0x0100) {
+				setRoute("g0-dynbit-mem");
 				// Dynamic bit ops on memory
 				uint8_t bitOp = (opcode >> 6) & 3;
 				switch (bitOp) {
@@ -787,6 +807,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 					case 3: Op_BSET(opcode); break;
 				}
 			} else {
+				setRoute("g0-imm-subswitch");
 				uint8_t subOp = (opcode >> 9) & 7;
 				switch (subOp) {
 					case 0: // ORI
@@ -825,6 +846,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 		case 0x2: // MOVE.L
 		case 0x3: // MOVE.W
 		{
+			setRoute("g1to3-move");
 			uint8_t dstMode = (opcode >> 6) & 7;
 			if (dstMode == 1 && group != 1) {
 				Op_MOVEA(opcode);
@@ -836,6 +858,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 
 		case 0x4: // Miscellaneous
 		{
+			setRoute("g4-misc");
 			if ((opcode & 0xffc0) == 0x46c0) { Op_MOVE_SR(opcode); break; } // MOVE to SR
 			if ((opcode & 0xffc0) == 0x44c0) { Op_MOVE_SR(opcode); break; } // MOVE to CCR
 			if ((opcode & 0xffc0) == 0x40c0) { Op_MOVE_SR(opcode); break; } // MOVE from SR
@@ -889,6 +912,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 
 		case 0x5: // ADDQ/SUBQ/Scc/DBcc
 		{
+			setRoute("g5-addq-subq-scc");
 			uint8_t size = (opcode >> 6) & 3;
 			if (size == 3) {
 				// Scc / DBcc
@@ -904,6 +928,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 
 		case 0x6: // Bcc/BSR/BRA
 		{
+			setRoute("g6-branch");
 			uint8_t cc = (opcode >> 8) & 0x0f;
 			if (cc == 0) Op_BRA(opcode);
 			else if (cc == 1) Op_BSR(opcode);
@@ -912,11 +937,13 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 		}
 
 		case 0x7: // MOVEQ
+			setRoute("g7-moveq");
 			Op_MOVEQ(opcode);
 			break;
 
 		case 0x8: // OR/DIV
 		{
+			setRoute("g8-or-div");
 			uint8_t opMode = (opcode >> 6) & 7;
 			if (opMode == 3) Op_DIVU(opcode);
 			else if (opMode == 7) Op_DIVS(opcode);
@@ -926,6 +953,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 
 		case 0x9: // SUB/SUBA
 		{
+			setRoute("g9-sub");
 			uint8_t opMode = (opcode >> 6) & 7;
 			if (opMode == 3 || opMode == 7) Op_SUBA(opcode);
 			else Op_SUB(opcode);
@@ -934,6 +962,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 
 		case 0xb: // CMP/CMPA/EOR
 		{
+			setRoute("gb-cmp-eor");
 			uint8_t opMode = (opcode >> 6) & 7;
 			if (opMode == 3 || opMode == 7) Op_CMPA(opcode);
 			else if (opMode >= 4 && opMode <= 6) Op_EOR(opcode);
@@ -943,6 +972,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 
 		case 0xc: // AND/MUL/EXG
 		{
+			setRoute("gc-and-mul-exg");
 			uint8_t opMode = (opcode >> 6) & 7;
 			if (opMode == 3) Op_MULU(opcode);
 			else if (opMode == 7) Op_MULS(opcode);
@@ -953,6 +983,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 
 		case 0xd: // ADD/ADDA
 		{
+			setRoute("gd-add");
 			uint8_t opMode = (opcode >> 6) & 7;
 			if (opMode == 3 || opMode == 7) Op_ADDA(opcode);
 			else Op_ADD(opcode);
@@ -961,6 +992,7 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 
 		case 0xe: // Shift/Rotate
 		{
+			setRoute("ge-shift-rotate");
 			uint8_t type = (opcode >> 3) & 3;
 			switch (type & 3) {
 				case 0: Op_ASd(opcode); break;
@@ -972,16 +1004,19 @@ void GenesisM68k::ExecuteInstruction(uint16_t opcode) {
 		}
 
 		case 0xa: // Line-A exception
+			setRoute("ga-linea-exception");
 			_state.PC -= 2;
 			RaiseException(10);
 			break;
 
 		case 0xf: // Line-F exception
+			setRoute("gf-linef-exception");
 			_state.PC -= 2;
 			RaiseException(11);
 			break;
 
 		default:
+			setRoute("g?-illegal");
 			Op_ILLEGAL(opcode);
 			break;
 	}
@@ -2325,4 +2360,10 @@ void GenesisM68k::Serialize(Serializer& s) {
 	SV(_lastFetchPreviewWordB);
 	SV(_lastDispatchFaultSummary);
 	SV(_lastDispatchBoundarySummary);
+	SV(_lastDecodedGroup);
+	SV(_lastDecodedSubOp);
+	SV(_lastDecodedMode);
+	SV(_lastDecodedReg);
+	SVArray(_decodeGroupHitCount, 16);
+	SV(_lastDecodeRouteSummary);
 }
