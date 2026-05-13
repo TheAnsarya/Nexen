@@ -352,9 +352,11 @@ void GenesisM68k::SetInterrupt(uint8_t level) {
 // ===== Main execution =====
 
 void GenesisM68k::Exec() {
+	_execCallCount++;
 	if (!_memoryManager) {
 		_dispatchFaultCount++;
 		_lastDispatchFaultSummary = "missing_memory_manager";
+		_lastDispatchBoundarySummary = "missing_memory_manager";
 		return;
 	}
 
@@ -372,20 +374,65 @@ void GenesisM68k::Exec() {
 	_emu->ProcessInstruction<CpuType::Genesis>();
 #endif
 
-	uint32_t prevPc = _state.PC & 0x00ffffff;
+	uint32_t rawPc = _state.PC;
+	uint32_t prevPc = rawPc & 0x00ffffff;
+	if (rawPc != prevPc) {
+		_dispatchGuardHitCount++;
+		_dispatchFaultCount++;
+		_lastDispatchFaultSummary = std::format("pc_normalized raw=${:08x} normalized=${:06x}", rawPc, prevPc);
+		_state.PC = prevPc;
+	}
+	if ((prevPc & 1) != 0) {
+		_dispatchGuardHitCount++;
+		_dispatchFaultCount++;
+		uint32_t alignedPc = prevPc & 0xfffffe;
+		_lastDispatchFaultSummary = std::format("odd_pc_alignment pc=${:06x} aligned=${:06x}", prevPc, alignedPc);
+		prevPc = alignedPc;
+		_state.PC = alignedPc;
+		AddCycles(4);
+	}
+
 	uint16_t srBefore = _state.SR;
 	uint32_t d0Before = _state.D[0];
 	uint32_t a0Before = _state.A[0];
 	uint32_t a7Before = _state.A[7];
 	bool stoppedBefore = _state.Stopped;
 	uint64_t cyclesBefore = _state.CycleCount;
+	_lastFetchProgramCounter = prevPc;
+	_lastFetchPreviewWordA = PeekWord(prevPc);
+	_lastFetchPreviewWordB = PeekWord(prevPc + 2);
+	_lastDispatchBoundarySummary = std::format("exec={} pc=${:06x} sr=${:04x} preview=${:04x}:${:04x} pendingIrq={} mask={} guardHits={}",
+		_execCallCount,
+		prevPc,
+		srBefore,
+		_lastFetchPreviewWordA,
+		_lastFetchPreviewWordB,
+		_pendingInterruptLevel,
+		GetIntMask(),
+		_dispatchGuardHitCount);
 	uint16_t opcode = FetchOpcode();
+	_lastFetchOpcode = opcode;
 	uint16_t operandWordA = 0;
 	uint16_t operandWordB = 0;
 	if (_instructionTraceEnabled) {
 		operandWordA = PeekWord(_state.PC);
 		operandWordB = PeekWord(_state.PC + 2);
 	}
+
+	if ((opcode == 0x0000 && _lastFetchPreviewWordA == 0x0000 && _lastFetchPreviewWordB == 0x0000)
+		|| (opcode == 0xffff && _lastFetchPreviewWordA == 0xffff && _lastFetchPreviewWordB == 0xffff)) {
+		_decodeFaultCount++;
+		if (_decodeFaultCount <= 128 || (_decodeFaultCount % 2048) == 0) {
+			MessageManager::Log(std::format("[Genesis][M68K] DecodeBoundaryFault #{} pc=${:06x} op=${:04x} preview=${:04x}:${:04x} sr=${:04x}",
+				_decodeFaultCount,
+				prevPc,
+				opcode,
+				_lastFetchPreviewWordA,
+				_lastFetchPreviewWordB,
+				srBefore));
+		}
+	}
+
 	ExecuteInstruction(opcode);
 	uint64_t cyclesAfter = _state.CycleCount;
 	bool forcedCycleFloorApplied = false;
@@ -409,6 +456,20 @@ void GenesisM68k::Exec() {
 				_state.Stopped ? 1 : 0));
 		}
 	}
+
+	_lastDispatchBoundarySummary = std::format("exec={} pc=${:06x}->${:06x} op=${:04x} sr=${:04x}->${:04x} preview=${:04x}:${:04x} delta={} guards={} decodeFaults={} dispatchFaults={}",
+		_execCallCount,
+		prevPc,
+		_state.PC & 0x00ffffff,
+		opcode,
+		srBefore,
+		_state.SR,
+		_lastFetchPreviewWordA,
+		_lastFetchPreviewWordB,
+		cyclesAfter > cyclesBefore ? (uint32_t)(cyclesAfter - cyclesBefore) : 0,
+		_dispatchGuardHitCount,
+		_decodeFaultCount,
+		_dispatchFaultCount);
 
 	if (_state.PC == prevPc && opcode == _lastRunOpcode) {
 		_samePcRunLength++;
@@ -627,15 +688,34 @@ string GenesisM68k::BuildCrashProbeSummary() const {
 	}
 
 	return std::format(
-		"resetCount={} vectorSp=${:08x} vectorPc=${:06x} firstDispatch={} dispatchFaults={} lastDispatchFault={} forcedCycleFloors={} forcedClockAdvances={}",
+		"resetCount={} vectorSp=${:08x} vectorPc=${:06x} firstDispatch={} dispatchFaults={} lastDispatchFault={} guardHits={} decodeFaults={} lastFetchPc=${:06x} lastOpcode=${:04x} boundary={} forcedCycleFloors={} forcedClockAdvances={}",
 		_resetProbeCount,
 		_lastResetVectorSp,
 		_lastResetVectorPc,
 		firstDispatchSummary,
 		_dispatchFaultCount,
 		_lastDispatchFaultSummary.empty() ? "none" : _lastDispatchFaultSummary,
+		_dispatchGuardHitCount,
+		_decodeFaultCount,
+		_lastFetchProgramCounter,
+		_lastFetchOpcode,
+		_lastDispatchBoundarySummary.empty() ? "none" : _lastDispatchBoundarySummary,
 		_forcedCycleFloorCount,
 		_forcedClockAdvanceCount);
+}
+
+string GenesisM68k::BuildDispatchBoundaryProbeSummary() const {
+	return std::format(
+		"execCalls={} guardHits={} decodeFaults={} dispatchFaults={} fetchPc=${:06x} fetchOpcode=${:04x} preview=${:04x}:${:04x} boundary={}",
+		_execCallCount,
+		_dispatchGuardHitCount,
+		_decodeFaultCount,
+		_dispatchFaultCount,
+		_lastFetchProgramCounter,
+		_lastFetchOpcode,
+		_lastFetchPreviewWordA,
+		_lastFetchPreviewWordB,
+		_lastDispatchBoundarySummary.empty() ? "none" : _lastDispatchBoundarySummary);
 }
 
 void GenesisM68k::ForceClockAdvance(uint32_t cycles) {
@@ -2236,4 +2316,13 @@ void GenesisM68k::Serialize(Serializer& s) {
 	SV(_lastResetVectorPc);
 	SV(_firstDispatchCaptured);
 	SV(_dispatchFaultCount);
+	SV(_dispatchGuardHitCount);
+	SV(_decodeFaultCount);
+	SV(_execCallCount);
+	SV(_lastFetchProgramCounter);
+	SV(_lastFetchOpcode);
+	SV(_lastFetchPreviewWordA);
+	SV(_lastFetchPreviewWordB);
+	SV(_lastDispatchFaultSummary);
+	SV(_lastDispatchBoundarySummary);
 }

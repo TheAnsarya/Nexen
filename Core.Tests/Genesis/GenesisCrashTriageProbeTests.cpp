@@ -71,6 +71,20 @@ TEST(GenesisCrashTriageProbeTests, M68kCrashProbeSummaryReportsDefaultFields) {
 	EXPECT_NE(summary.find("resetCount=0"), std::string::npos);
 	EXPECT_NE(summary.find("firstDispatch=none"), std::string::npos);
 	EXPECT_NE(summary.find("dispatchFaults=0"), std::string::npos);
+	EXPECT_NE(summary.find("guardHits=0"), std::string::npos);
+	EXPECT_NE(summary.find("decodeFaults=0"), std::string::npos);
+	EXPECT_NE(summary.find("lastFetchPc=$000000"), std::string::npos);
+}
+
+TEST(GenesisCrashTriageProbeTests, M68kDispatchBoundaryProbeSummaryReportsDefaultFields) {
+	GenesisM68k cpu;
+	std::string summary = cpu.BuildDispatchBoundaryProbeSummary();
+
+	EXPECT_NE(summary.find("execCalls=0"), std::string::npos);
+	EXPECT_NE(summary.find("guardHits=0"), std::string::npos);
+	EXPECT_NE(summary.find("decodeFaults=0"), std::string::npos);
+	EXPECT_NE(summary.find("fetchPc=$000000"), std::string::npos);
+	EXPECT_NE(summary.find("boundary=none"), std::string::npos);
 }
 
 TEST(GenesisCrashTriageProbeTests, ResilienceGateIncludesSonicDigestMarkersForSonicCases) {
@@ -131,6 +145,7 @@ TEST(GenesisCrashTriageProbeTests, LoadedConsoleExposesCpuCrashProbeSummaryStrin
 	std::string cpuSummary = console.GetCpu()->BuildCrashProbeSummary();
 	EXPECT_NE(cpuSummary.find("resetCount="), std::string::npos);
 	EXPECT_NE(cpuSummary.find("vectorPc="), std::string::npos);
+	EXPECT_NE(cpuSummary.find("boundary="), std::string::npos);
 }
 
 TEST(GenesisCrashTriageProbeTests, CrashProbeSummaryContainsCpuProbeFieldAfterLoadedRunFrameAttempt) {

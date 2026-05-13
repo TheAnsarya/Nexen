@@ -162,8 +162,9 @@ GenesisConsole::~GenesisConsole() {
 
 string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 	string cpuSummary = _cpu ? _cpu->BuildCrashProbeSummary() : "cpu=missing";
+	string cpuBoundarySummary = _cpu ? _cpu->BuildDispatchBoundaryProbeSummary() : "cpuBoundary=missing";
 	return std::format(
-		"entryCount={} exitCount={} earlyAbortCount={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={}",
+		"entryCount={} exitCount={} earlyAbortCount={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={}",
 		_runFrameEntryCount,
 		_runFrameExitCount,
 		_runFrameEarlyAbortCount,
@@ -173,7 +174,8 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 		_runFrameLastStallSummary.empty() ? "none" : _runFrameLastStallSummary,
 		_runFrameLastEntrySummary.empty() ? "none" : _runFrameLastEntrySummary,
 		_runFrameLastExitSummary.empty() ? "none" : _runFrameLastExitSummary,
-		cpuSummary);
+		cpuSummary,
+		cpuBoundarySummary);
 }
 
 LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {

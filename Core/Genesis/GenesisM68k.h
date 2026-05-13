@@ -34,6 +34,14 @@ private:
 	GenesisInstructionTraceEntry _firstDispatchEntry = {};
 	uint64_t _dispatchFaultCount = 0;
 	string _lastDispatchFaultSummary = {};
+	uint64_t _dispatchGuardHitCount = 0;
+	uint64_t _decodeFaultCount = 0;
+	uint64_t _execCallCount = 0;
+	uint32_t _lastFetchProgramCounter = 0;
+	uint16_t _lastFetchOpcode = 0;
+	uint16_t _lastFetchPreviewWordA = 0;
+	uint16_t _lastFetchPreviewWordB = 0;
+	string _lastDispatchBoundarySummary = {};
 
 	// Prefetch
 	uint16_t _prefetch[2] = {};
@@ -276,7 +284,13 @@ public:
 	const GenesisInstructionTraceEntry& GetFirstDispatchEntry() const { return _firstDispatchEntry; }
 	uint64_t GetDispatchFaultCount() const { return _dispatchFaultCount; }
 	const string& GetLastDispatchFaultSummary() const { return _lastDispatchFaultSummary; }
+	uint64_t GetDispatchGuardHitCount() const { return _dispatchGuardHitCount; }
+	uint64_t GetDecodeFaultCount() const { return _decodeFaultCount; }
+	uint32_t GetLastFetchProgramCounter() const { return _lastFetchProgramCounter; }
+	uint16_t GetLastFetchOpcode() const { return _lastFetchOpcode; }
+	const string& GetLastDispatchBoundarySummary() const { return _lastDispatchBoundarySummary; }
 	string BuildCrashProbeSummary() const;
+	string BuildDispatchBoundaryProbeSummary() const;
 
 	void Serialize(Serializer& s) override;
 };
