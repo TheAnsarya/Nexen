@@ -497,6 +497,88 @@ function Get-FrameAgnosticWramLines {
 	return $result.ToArray()
 }
 
+function Get-FirstWramPcIndex {
+	param(
+		[string[]]$Lines,
+		[string]$ProgramCounterHex
+	)
+
+	if ($null -eq $Lines -or $Lines.Count -eq 0 -or [string]::IsNullOrWhiteSpace($ProgramCounterHex)) {
+		return -1
+	}
+
+	$needle = "pc=$ProgramCounterHex"
+	for ($i = 0; $i -lt $Lines.Count; $i++) {
+		$line = $Lines[$i]
+		if ([string]::IsNullOrWhiteSpace($line)) {
+			continue
+		}
+		if ($line.Contains($needle)) {
+			return $i
+		}
+	}
+
+	return -1
+}
+
+function Find-FrameAgnosticResync {
+	param(
+		[string[]]$Left,
+		[string[]]$Right,
+		[int]$StartIndex,
+		[int]$ScanLimit = 256
+	)
+
+	$result = [ordered]@{}
+	$result["Found"] = $false
+	$result["LeftIndex"] = -1
+	$result["RightIndex"] = -1
+	$result["LeftAdvance"] = -1
+	$result["RightAdvance"] = -1
+	$result["MatchedLine"] = "<missing>"
+
+	if ($null -eq $Left -or $null -eq $Right) {
+		return $result
+	}
+
+	if ($StartIndex -lt 0) {
+		return $result
+	}
+
+	if ($Left.Count -eq 0 -or $Right.Count -eq 0) {
+		return $result
+	}
+
+	$leftStart = [Math]::Min($StartIndex, [Math]::Max(0, $Left.Count - 1))
+	$rightStart = [Math]::Min($StartIndex, [Math]::Max(0, $Right.Count - 1))
+	$leftEnd = [Math]::Min($Left.Count - 1, $leftStart + $ScanLimit)
+	$rightEnd = [Math]::Min($Right.Count - 1, $rightStart + $ScanLimit)
+
+	$rightLookup = @{}
+	for ($j = $rightStart; $j -le $rightEnd; $j++) {
+		$line = $Right[$j]
+		if (-not $rightLookup.ContainsKey($line)) {
+			$rightLookup[$line] = $j
+		}
+	}
+
+	for ($i = $leftStart; $i -le $leftEnd; $i++) {
+		$line = $Left[$i]
+		if ($rightLookup.ContainsKey($line)) {
+			$j = [int]$rightLookup[$line]
+			$result["Found"] = $true
+			$result["LeftIndex"] = $i
+			$result["RightIndex"] = $j
+			$result["LeftAdvance"] = $i - $StartIndex
+			$result["RightAdvance"] = $j - $StartIndex
+			$result["MatchedLine"] = $line
+			return $result
+		}
+	}
+
+	return $result
+}
+
 function Get-StartupEventCount {
 	param(
 		[string[]]$Lines,
@@ -1022,6 +1104,22 @@ $nexenStartupZ80ResetEventCount = 0
 $nexenRefStartupNormalizedLines = @()
 $nexenStartupNormalizedLines = @()
 $startupNormalizedFirstDiff = -1
+$nexenRefFirstPc000264Index = -1
+$nexenFirstPc000264Index = -1
+$nexenRefFirstPc00034AIndex = -1
+$nexenFirstPc00034AIndex = -1
+$firstPc00034AGap = -1
+$frameAgnosticResync = [ordered]@{}
+$frameAgnosticResync["Found"] = $false
+$frameAgnosticResync["LeftIndex"] = -1
+$frameAgnosticResync["RightIndex"] = -1
+$frameAgnosticResync["LeftAdvance"] = -1
+$frameAgnosticResync["RightAdvance"] = -1
+$frameAgnosticResync["MatchedLine"] = "<missing>"
+$nexenRefStartupCpuMmuPcMarkStats = [ordered]@{}
+$nexenStartupCpuMmuPcMarkStats = [ordered]@{}
+$nexenRefStartupCpuMmuPcEdgeStats = [ordered]@{}
+$nexenStartupCpuMmuPcEdgeStats = [ordered]@{}
 $nexenRefFrameSnapshot = [ordered]@{}
 $nexenFrameSnapshot = [ordered]@{}
 
@@ -1053,6 +1151,16 @@ if ($nexenRefLines.Count -gt 0 -or $nexenLines.Count -gt 0) {
 	$nexenRefFrameAgnosticLines = Get-FrameAgnosticWramLines -Lines $nexenRefNormalizedLines
 	$nexenFrameAgnosticLines = Get-FrameAgnosticWramLines -Lines $nexenNormalizedLines
 	$frameAgnosticFirstDiff = Find-FirstDifference -Left $nexenRefFrameAgnosticLines -Right $nexenFrameAgnosticLines
+	$nexenRefFirstPc000264Index = Get-FirstWramPcIndex -Lines $nexenRefFrameAgnosticLines -ProgramCounterHex "000264"
+	$nexenFirstPc000264Index = Get-FirstWramPcIndex -Lines $nexenFrameAgnosticLines -ProgramCounterHex "000264"
+	$nexenRefFirstPc00034AIndex = Get-FirstWramPcIndex -Lines $nexenRefFrameAgnosticLines -ProgramCounterHex "00034A"
+	$nexenFirstPc00034AIndex = Get-FirstWramPcIndex -Lines $nexenFrameAgnosticLines -ProgramCounterHex "00034A"
+	if ($nexenRefFirstPc00034AIndex -ge 0 -and $nexenFirstPc00034AIndex -ge 0) {
+		$firstPc00034AGap = $nexenFirstPc00034AIndex - $nexenRefFirstPc00034AIndex
+	}
+	if ($frameAgnosticFirstDiff -ge 0) {
+		$frameAgnosticResync = Find-FrameAgnosticResync -Left $nexenRefFrameAgnosticLines -Right $nexenFrameAgnosticLines -StartIndex $frameAgnosticFirstDiff -ScanLimit 512
+	}
 }
 
 if ($nexenRefStartupLines.Count -gt 0 -or $nexenStartupLines.Count -gt 0) {
@@ -1072,6 +1180,10 @@ if ($nexenRefStartupLines.Count -gt 0 -or $nexenStartupLines.Count -gt 0) {
 	$nexenCpuPreloopGlobalStats = Get-StartupTagGlobalStats -Lines $nexenStartupLines -Tag "CPU_PRELOOP"
 	$nexenRefCpuLoopStats = Get-StartupFrameTagStats -Lines $nexenRefStartupLines -Frame $SnapshotFrame -Tag "CPU_LOOP"
 	$nexenCpuLoopStats = Get-StartupFrameTagStats -Lines $nexenStartupLines -Frame $SnapshotFrame -Tag "CPU_LOOP"
+	$nexenRefStartupCpuMmuPcMarkStats = Get-StartupTagGlobalStats -Lines $nexenRefStartupLines -Tag "CPU_MMU_PC_MARK"
+	$nexenStartupCpuMmuPcMarkStats = Get-StartupTagGlobalStats -Lines $nexenStartupLines -Tag "CPU_MMU_PC_MARK"
+	$nexenRefStartupCpuMmuPcEdgeStats = Get-StartupTagGlobalStats -Lines $nexenRefStartupLines -Tag "CPU_MMU_PC_EDGE"
+	$nexenStartupCpuMmuPcEdgeStats = Get-StartupTagGlobalStats -Lines $nexenStartupLines -Tag "CPU_MMU_PC_EDGE"
 
 	$nexenRefStartupCheckpointCount = $nexenRefStartupMetrics.startupCheckpointCount
 	$nexenStartupCheckpointCount = $nexenStartupMetrics.startupCheckpointCount
@@ -1172,6 +1284,17 @@ if ($nexenRefAttemptNotes.Count -gt 0) {
 $report.Add("firstDiffIndex=$firstDiff")
 $report.Add("normalizedFirstDiffIndex=$normalizedFirstDiff")
 $report.Add("frameAgnosticFirstDiffIndex=$frameAgnosticFirstDiff")
+$report.Add("nexenRefFirstPc000264Index=$nexenRefFirstPc000264Index")
+$report.Add("nexenFirstPc000264Index=$nexenFirstPc000264Index")
+$report.Add("nexenRefFirstPc00034AIndex=$nexenRefFirstPc00034AIndex")
+$report.Add("nexenFirstPc00034AIndex=$nexenFirstPc00034AIndex")
+$report.Add("firstPc00034AGap=$firstPc00034AGap")
+$report.Add("frameAgnosticResyncFound=$($frameAgnosticResync.Found)")
+$report.Add("frameAgnosticResyncLeftIndex=$($frameAgnosticResync.LeftIndex)")
+$report.Add("frameAgnosticResyncRightIndex=$($frameAgnosticResync.RightIndex)")
+$report.Add("frameAgnosticResyncLeftAdvance=$($frameAgnosticResync.LeftAdvance)")
+$report.Add("frameAgnosticResyncRightAdvance=$($frameAgnosticResync.RightAdvance)")
+$report.Add("frameAgnosticResyncLine=$($frameAgnosticResync.MatchedLine)")
 $report.Add("startupFirstDiffIndex=$startupFirstDiff")
 $report.Add("startupNormalizedFirstDiffIndex=$startupNormalizedFirstDiff")
 
@@ -1268,6 +1391,18 @@ $report.Add("nexenRefCpuLoopFirst=$($nexenRefCpuLoopStats.First)")
 $report.Add("nexenCpuLoopFirst=$($nexenCpuLoopStats.First)")
 $report.Add("nexenRefCpuLoopLast=$($nexenRefCpuLoopStats.Last)")
 $report.Add("nexenCpuLoopLast=$($nexenCpuLoopStats.Last)")
+$report.Add("nexenRefCpuMmuPcMarkCount=$($nexenRefStartupCpuMmuPcMarkStats.Count)")
+$report.Add("nexenCpuMmuPcMarkCount=$($nexenStartupCpuMmuPcMarkStats.Count)")
+$report.Add("nexenRefCpuMmuPcMarkFirstFrame=$($nexenRefStartupCpuMmuPcMarkStats.FirstFrame)")
+$report.Add("nexenCpuMmuPcMarkFirstFrame=$($nexenStartupCpuMmuPcMarkStats.FirstFrame)")
+$report.Add("nexenRefCpuMmuPcMarkFirst=$($nexenRefStartupCpuMmuPcMarkStats.First)")
+$report.Add("nexenCpuMmuPcMarkFirst=$($nexenStartupCpuMmuPcMarkStats.First)")
+$report.Add("nexenRefCpuMmuPcEdgeCount=$($nexenRefStartupCpuMmuPcEdgeStats.Count)")
+$report.Add("nexenCpuMmuPcEdgeCount=$($nexenStartupCpuMmuPcEdgeStats.Count)")
+$report.Add("nexenRefCpuMmuPcEdgeFirstFrame=$($nexenRefStartupCpuMmuPcEdgeStats.FirstFrame)")
+$report.Add("nexenCpuMmuPcEdgeFirstFrame=$($nexenStartupCpuMmuPcEdgeStats.FirstFrame)")
+$report.Add("nexenRefCpuMmuPcEdgeFirst=$($nexenRefStartupCpuMmuPcEdgeStats.First)")
+$report.Add("nexenCpuMmuPcEdgeFirst=$($nexenStartupCpuMmuPcEdgeStats.First)")
 
 $report | Out-File -LiteralPath $resolvedReportPath -Encoding utf8
 

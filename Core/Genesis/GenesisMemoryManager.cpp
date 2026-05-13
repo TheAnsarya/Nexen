@@ -831,6 +831,7 @@ namespace {
 			|| StartupTagEquals(tag, "STARTUP_VDP")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_MARK")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_EDGE")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_REG")
 			|| StartupTagEquals(tag, "VDP_DISP_TGL")
 			|| StartupTagEquals(tag, "Z80_RUN_TGL")
 			|| StartupTagEquals(tag, "Z80_BUSREQ")
@@ -2037,6 +2038,13 @@ void GenesisMemoryManager::TraceWramPcTransitionOrdering(uint32_t frame, uint16_
 
 	uint16_t packedValue = (uint16_t)(((address & 0x000000ffu) << 8) | data);
 	TraceStartupEvent(tag, address & 0x00ffffffu, packedValue, aux);
+	if (_cpu) {
+		GenesisM68kState& state = _cpu->GetState();
+		uint16_t d7Low = (uint16_t)(state.D[7] & 0xffffu);
+		uint16_t sr = state.SR;
+		uint32_t a7 = state.A[7] & 0x00ffffffu;
+		TraceStartupEvent("CPU_MMU_PC_REG", a7, d7Low, sr);
+	}
 	_pcOrderTraceEventCount++;
 }
 
