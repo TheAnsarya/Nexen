@@ -2600,6 +2600,8 @@ yes do all those three things; [Nexen] continue with big batches;
 
 [Nexen] (Genesis/Megadrive) Add targeted Genesis CPU/MMU transition instrumentation for pc=000264 to pc=00034A ordering in Nexen.; Re-run the same 15s dual-emulator capture through scripts/run-genesis-cross-emu-wram-compare.ps1 and verify whether the 65521 boundary moves.; If ordering mismatch is confirmed, implement a correctness-preserving core fix and revalidate with the same report pipeline.; continue;
 
+[Nexen] sure do all those three things; make it so you can load both emulators with a given rom and a temporary tracelog path (one for Nexen, one for Mesen-Expanded) and turn on debugging tracelogging to those temp files, and run the roms for like 10 to 20 seconds, and then compare those two tracelogs to see where they diverge and focus on fixing the differences (issues, code changes, etc); continue with big batches;
+
 
 
 
