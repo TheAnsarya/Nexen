@@ -1196,6 +1196,18 @@ if ($frameAgnosticFirstDiff -ge 0) {
 	$nexenFrameAgnosticFirst = if ($frameAgnosticFirstDiff -lt $nexenFrameAgnosticLines.Count) { $nexenFrameAgnosticLines[$frameAgnosticFirstDiff] } else { "<no-line>" }
 	$report.Add("nexenRefFrameAgnosticFirstDiff=$nexenRefFrameAgnosticFirst")
 	$report.Add("nexenFrameAgnosticFirstDiff=$nexenFrameAgnosticFirst")
+
+	$frameAgnosticContextStart = [Math]::Max(0, $frameAgnosticFirstDiff - 5)
+	$frameAgnosticContextEnd = [Math]::Min(([Math]::Min($nexenRefFrameAgnosticLines.Count, $nexenFrameAgnosticLines.Count) - 1), ($frameAgnosticFirstDiff + 5))
+	$report.Add("frameAgnosticContextStart=$frameAgnosticContextStart")
+	$report.Add("frameAgnosticContextEnd=$frameAgnosticContextEnd")
+
+	for ($idx = $frameAgnosticContextStart; $idx -le $frameAgnosticContextEnd; $idx++) {
+		$leftLine = if ($idx -lt $nexenRefFrameAgnosticLines.Count) { $nexenRefFrameAgnosticLines[$idx] } else { "<no-line>" }
+		$rightLine = if ($idx -lt $nexenFrameAgnosticLines.Count) { $nexenFrameAgnosticLines[$idx] } else { "<no-line>" }
+		$report.Add("frameAgnosticContext[$idx].ref=$leftLine")
+		$report.Add("frameAgnosticContext[$idx].nexen=$rightLine")
+	}
 }
 
 if ($startupFirstDiff -ge 0) {
