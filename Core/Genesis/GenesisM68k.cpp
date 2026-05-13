@@ -352,6 +352,12 @@ void GenesisM68k::SetInterrupt(uint8_t level) {
 // ===== Main execution =====
 
 void GenesisM68k::Exec() {
+	if (!_memoryManager) {
+		_dispatchFaultCount++;
+		_lastDispatchFaultSummary = "missing_memory_manager";
+		return;
+	}
+
 	if (_pendingInterruptLevel > 0 && (_pendingInterruptLevel > GetIntMask() || _pendingInterruptLevel == 7)) {
 		ProcessInterrupt(_pendingInterruptLevel);
 		_pendingInterruptLevel = 0;
@@ -437,6 +443,22 @@ void GenesisM68k::Exec() {
 			forcedCycleFloorApplied,
 			stoppedBefore,
 			_state.Stopped);
+	}
+
+	if (!_firstDispatchCaptured) {
+		_firstDispatchCaptured = true;
+		_firstDispatchEntry = {};
+		_firstDispatchEntry.Sequence = _instructionTraceSequence;
+		_firstDispatchEntry.ProgramCounterBefore = prevPc;
+		_firstDispatchEntry.ProgramCounterAfter = _state.PC & 0x00ffffff;
+		_firstDispatchEntry.Opcode = opcode;
+		_firstDispatchEntry.OperandWordA = operandWordA;
+		_firstDispatchEntry.OperandWordB = operandWordB;
+		_firstDispatchEntry.StatusRegisterBefore = srBefore;
+		_firstDispatchEntry.StatusRegisterAfter = _state.SR;
+		_firstDispatchEntry.CycleCountBefore = cyclesBefore;
+		_firstDispatchEntry.CycleCountAfter = cyclesAfter;
+		_firstDispatchEntry.InstructionCycleDelta = cyclesAfter > cyclesBefore ? (uint32_t)(cyclesAfter - cyclesBefore) : 0;
 	}
 
 	uint32_t nextPc = _state.PC & 0x00ffffff;
@@ -592,6 +614,30 @@ string GenesisM68k::BuildExecutionStallSummary() const {
 	return summary;
 }
 
+string GenesisM68k::BuildCrashProbeSummary() const {
+	string firstDispatchSummary = "none";
+	if (_firstDispatchCaptured) {
+		firstDispatchSummary = std::format(
+			"pc=${:06x} opcode=${:04x} next=${:06x} delta={} sr=${:04x}",
+			_firstDispatchEntry.ProgramCounterBefore,
+			_firstDispatchEntry.Opcode,
+			_firstDispatchEntry.ProgramCounterAfter,
+			_firstDispatchEntry.InstructionCycleDelta,
+			_firstDispatchEntry.StatusRegisterAfter);
+	}
+
+	return std::format(
+		"resetCount={} vectorSp=${:08x} vectorPc=${:06x} firstDispatch={} dispatchFaults={} lastDispatchFault={} forcedCycleFloors={} forcedClockAdvances={}",
+		_resetProbeCount,
+		_lastResetVectorSp,
+		_lastResetVectorPc,
+		firstDispatchSummary,
+		_dispatchFaultCount,
+		_lastDispatchFaultSummary.empty() ? "none" : _lastDispatchFaultSummary,
+		_forcedCycleFloorCount,
+		_forcedClockAdvanceCount);
+}
+
 void GenesisM68k::ForceClockAdvance(uint32_t cycles) {
 	if (!_memoryManager || cycles == 0) {
 		return;
@@ -604,8 +650,13 @@ void GenesisM68k::ForceClockAdvance(uint32_t cycles) {
 void GenesisM68k::Reset(bool softReset) {
 	static uint64_t resetCount = 0;
 	resetCount++;
+	_resetProbeCount++;
 	if (!softReset) {
 		memset(&_state, 0, sizeof(_state));
+		_firstDispatchCaptured = false;
+		_firstDispatchEntry = {};
+		_dispatchFaultCount = 0;
+		_lastDispatchFaultSummary.clear();
 	}
 
 	_state.SR = 0x2700; // Supervisor mode, all interrupts masked
@@ -616,8 +667,15 @@ void GenesisM68k::Reset(bool softReset) {
 	_state.SSP = Read32(0x000000);
 	_state.A[7] = _state.SSP;
 	_state.PC = Read32(0x000004);
+	_lastResetVectorSp = _state.SSP;
+	_lastResetVectorPc = _state.PC & 0x00ffffff;
+	if ((_state.PC & 0x00ffffff) == 0) {
+		_dispatchFaultCount++;
+		_lastDispatchFaultSummary = "reset_vector_pc_zero";
+	}
 	if (resetCount <= 8 || (resetCount % 256) == 0) {
 		MessageManager::Log(std::format("[Genesis][M68K] Reset #{} soft={} ssp=${:08x} pc=${:06x}", resetCount, softReset ? 1 : 0, _state.SSP, _state.PC));
+		MessageManager::Log(std::format("[Genesis][M68K] ResetCrashProbe {}", BuildCrashProbeSummary()));
 	}
 }
 
@@ -2173,4 +2231,9 @@ void GenesisM68k::Serialize(Serializer& s) {
 	SV(_pendingInterruptLevel);
 	SV(_forcedCycleFloorCount);
 	SV(_forcedClockAdvanceCount);
+	SV(_resetProbeCount);
+	SV(_lastResetVectorSp);
+	SV(_lastResetVectorPc);
+	SV(_firstDispatchCaptured);
+	SV(_dispatchFaultCount);
 }

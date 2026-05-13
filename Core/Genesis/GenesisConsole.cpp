@@ -160,6 +160,22 @@ GenesisConsole::GenesisConsole(Emulator* emu) {
 GenesisConsole::~GenesisConsole() {
 }
 
+string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
+	string cpuSummary = _cpu ? _cpu->BuildCrashProbeSummary() : "cpu=missing";
+	return std::format(
+		"entryCount={} exitCount={} earlyAbortCount={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={}",
+		_runFrameEntryCount,
+		_runFrameExitCount,
+		_runFrameEarlyAbortCount,
+		_runFrameLastGuardIterations,
+		_runFrameStallEventCount,
+		_runFrameForcedAdvanceCount,
+		_runFrameLastStallSummary.empty() ? "none" : _runFrameLastStallSummary,
+		_runFrameLastEntrySummary.empty() ? "none" : _runFrameLastEntrySummary,
+		_runFrameLastExitSummary.empty() ? "none" : _runFrameLastExitSummary,
+		cpuSummary);
+}
+
 LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 	vector<uint8_t> romData;
 	(void)romFile.ReadFile(romData);
@@ -248,6 +264,7 @@ void GenesisConsole::Reset() {
 void GenesisConsole::RunFrame() {
 	static uint64_t runFrameCallCount = 0;
 	runFrameCallCount++;
+	_runFrameEntryCount++;
 	if (runFrameCallCount <= 256 || (runFrameCallCount % 2048) == 0) {
 		uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
 		uint16_t sr = _cpu ? _cpu->GetState().SR : 0;
@@ -259,6 +276,26 @@ void GenesisConsole::RunFrame() {
 			sr,
 			_memoryManager ? _memoryManager->GetMasterClock() : 0));
 	}
+
+	if (!_cpu || !_vdp || !_memoryManager || !_controlManager) {
+		_runFrameEarlyAbortCount++;
+		_runFrameLastEntrySummary = std::format("abort_missing_component cpu={} vdp={} mmu={} ctrl={}",
+			_cpu ? 1 : 0,
+			_vdp ? 1 : 0,
+			_memoryManager ? 1 : 0,
+			_controlManager ? 1 : 0);
+		_runFrameLastExitSummary = _runFrameLastEntrySummary;
+		MessageManager::Log(std::format("[Genesis] RunFrame early abort #{} {}", _runFrameEarlyAbortCount, BuildRunFrameCrashProbeSummary()));
+		return;
+	}
+
+	_runFrameLastEntrySummary = std::format("entry={} frame={} pc=${:06x} sr=${:04x} clock={} cpuProbe={}",
+		_runFrameEntryCount,
+		_vdp->GetFrameCount(),
+		_cpu->GetState().PC & 0x00ffffff,
+		_cpu->GetState().SR,
+		_memoryManager->GetMasterClock(),
+		_cpu->BuildCrashProbeSummary());
 
 	bool emitFrameEvents = _emu && _emu->IsEmulationThread();
 	if (emitFrameEvents) {
@@ -342,6 +379,7 @@ void GenesisConsole::RunFrame() {
 				vdpState.DmaMode));
 		}
 	}
+	_runFrameLastGuardIterations = guard;
 
 	uint32_t nextFrame = _vdp->GetFrameCount();
 	if (nextFrame == frame) {
@@ -382,6 +420,17 @@ void GenesisConsole::RunFrame() {
 	}
 
 	ProcessEndOfFrame();
+	_runFrameExitCount++;
+	_runFrameLastExitSummary = std::format("exit={} frameBefore={} frameAfter={} guard={} stalls={} forcedAdvances={} pc=${:06x} cycles={} traceDigest={}",
+		_runFrameExitCount,
+		frame,
+		nextFrame,
+		guard,
+		_runFrameStallEventCount,
+		_runFrameForcedAdvanceCount,
+		_cpu->GetState().PC & 0x00ffffff,
+		_cpu->GetState().CycleCount,
+		_cpu->BuildInstructionTraceDigest());
 }
 
 void GenesisConsole::ProcessEndOfFrame() {

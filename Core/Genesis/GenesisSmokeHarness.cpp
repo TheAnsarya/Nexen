@@ -2666,6 +2666,23 @@ GenesisExecutionResilienceGateResult GenesisSmokeHarness::RunExecutionResilience
 			bool deterministicPass = sigA == sigB && sigA == sigC;
 			bool compatPass = entryA.Pass && entryB.Pass && entryC.Pass;
 			entry.Pass = requiredPass && deterministicPass && compatPass;
+
+			if (entry.TitleClass == "sonic") {
+				GenesisStartupDeterminismGateResult sonicShortWindow = RunStartupDeterminismGate(scaffold, {romCase}, frameWindow);
+				GenesisStartupDeterminismGateResult sonicExtendedWindow = RunStartupDeterminismGate(scaffold, {romCase}, std::max<uint32_t>(frameWindow, 1200u));
+
+				bool shortWindowPass = sonicShortWindow.PassCount == 1 && sonicShortWindow.FailCount == 0 && sonicShortWindow.Entries.size() == 1;
+				bool extendedWindowPass = sonicExtendedWindow.PassCount == 1 && sonicExtendedWindow.FailCount == 0 && sonicExtendedWindow.Entries.size() == 1;
+				bool windowDeterministic = !sonicShortWindow.Digest.empty() && sonicShortWindow.Digest == sonicExtendedWindow.Digest;
+
+				entry.TraceDigest += std::format(":SONIC:{}:{}", sonicShortWindow.Digest, sonicExtendedWindow.Digest);
+				entry.StallSummary += std::format(" sonicShortPass={} sonicExtendedPass={} sonicWindowDigestStable={}", shortWindowPass ? 1 : 0, extendedWindowPass ? 1 : 0, windowDeterministic ? 1 : 0);
+				if (!shortWindowPass || !extendedWindowPass || !windowDeterministic) {
+					entry.Pass = false;
+					entry.StallEvents += 1;
+					entry.ForcedAdvances += 1;
+				}
+			}
 		} else {
 			entry.Pass = false;
 			entry.StallEvents = 3;

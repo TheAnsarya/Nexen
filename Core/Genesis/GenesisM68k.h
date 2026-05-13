@@ -27,6 +27,13 @@ private:
 	uint32_t _lastRunPc = 0xffffffff;
 	uint16_t _lastRunOpcode = 0;
 	bool _debugForceNoCycleProgress = false;
+	uint64_t _resetProbeCount = 0;
+	uint32_t _lastResetVectorSp = 0;
+	uint32_t _lastResetVectorPc = 0;
+	bool _firstDispatchCaptured = false;
+	GenesisInstructionTraceEntry _firstDispatchEntry = {};
+	uint64_t _dispatchFaultCount = 0;
+	string _lastDispatchFaultSummary = {};
 
 	// Prefetch
 	uint16_t _prefetch[2] = {};
@@ -262,6 +269,14 @@ public:
 	uint64_t GetForcedClockAdvanceCount() const { return _forcedClockAdvanceCount; }
 	void ForceClockAdvance(uint32_t cycles);
 	void SetDebugForceNoCycleProgress(bool forceNoProgress) { _debugForceNoCycleProgress = forceNoProgress; }
+	uint64_t GetResetProbeCount() const { return _resetProbeCount; }
+	uint32_t GetLastResetVectorSp() const { return _lastResetVectorSp; }
+	uint32_t GetLastResetVectorPc() const { return _lastResetVectorPc; }
+	bool HasFirstDispatchEntry() const { return _firstDispatchCaptured; }
+	const GenesisInstructionTraceEntry& GetFirstDispatchEntry() const { return _firstDispatchEntry; }
+	uint64_t GetDispatchFaultCount() const { return _dispatchFaultCount; }
+	const string& GetLastDispatchFaultSummary() const { return _lastDispatchFaultSummary; }
+	string BuildCrashProbeSummary() const;
 
 	void Serialize(Serializer& s) override;
 };
