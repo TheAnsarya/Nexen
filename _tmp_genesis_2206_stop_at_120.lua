@@ -1,4 +1,4 @@
-local targetFrames = 120
+﻿local targetFrames = 120
 
 emu.addEventCallback(emu.eventType.endFrame, function()
 	local state = emu.getState()

@@ -1,4 +1,4 @@
-local out = io.open("c:/Users/me/source/repos/Nexen/_tmp_genesis_2206_mesen_trace.log", "w")
+﻿local out = io.open("c:/Users/me/source/repos/Nexen/_tmp_genesis_2206_mesen_trace.log", "w")
 out:write("# frame-level genesis trace\n")
 out:write("# fields: frame pc sr hclock vclock vdpStatus displayEnabled vintPending hintPending dmaSource dmaLength d0 a0\n")
 

@@ -1,1 +1,1 @@
-emu.stop(123)
+﻿emu.stop(123)

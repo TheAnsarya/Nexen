@@ -2591,6 +2591,36 @@ yes do all those three things; [Nexen] continue with big batches;
 [Nexen] (Genesis/MegaDrive) make a ***big*** change, I mean 1000's of lines of code, work many fixes, but do even more and bigger; Mesen-Expanded runs Sonic, Nexen doesn't, fix that; Continue doing what we've been doing, but with a big aggressive code change push; Update a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` (referenced as Hoshiruna) Genesis code to make big changes; continue; do all the steps; continue; do ***several*** batches in a row and make only one issue per big effort; Focus on fixing anything that stops or impeeds code execution, add more debug and logging so we can track commands/operands one by one to see where we go wrong, make it so emulation doesn't hang, it should continue, fix all the problems; Mesen-Expanded runs Sonic, Nexen doesn't, fix that; continue;
 
 [Nexen] yes do all those three things; continue with big batches;
+[Nexen] yes do all those three things; continue with big batches;
+[Nexen] yes do all those three things; continue with big batches;
+
+[Nexen] run the sonic genesis rom in `Mesen-Expanded` and `Nexen` with tracelog on and compare the tracelogs to see where they diverge; continue;
+
+[Nexen] sure do all those three things; make it so you can load both emulators with a given rom and a temporary tracelog path (one for Nexen, one for Mesen-Expanded) and turn on debugging tracelogging to those temp files, and run the roms for like 10 to 20 seconds, and then compare those two tracelogs to see where they diverge and focus on fixing the differences (issues, code changes, etc); continue with big batches;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

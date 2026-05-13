@@ -9,13 +9,17 @@
 	[switch]$DisableNexenRefFallbackRunModes,
 	[switch]$AllowMissingNexenRefFrontend,
 	[switch]$SuppressLegacyAliasNotice,
-	[int]$AutoStopTimeoutSeconds = 45,
+	[int]$AutoStopTimeoutSeconds = 15,
 	[int]$FrameStart = 0,
 	[int]$FrameEnd = 600,
 	[int]$SnapshotFrame = 180,
 	[string]$AddressStart = "0xE00000",
 	[string]$AddressEnd = "0xFFFFFF",
 	[int]$MaxLines = 1200000,
+	[string]$NexenTempWramTracePath = "",
+	[string]$NexenTempStartupTracePath = "",
+	[string]$NexenRefTempWramTracePath = "",
+	[string]$NexenRefTempStartupTracePath = "",
 	[string]$ReportPath = ".\reference\cross_emu_wram_compare.txt"
 )
 
@@ -421,6 +425,39 @@ function Find-FirstDifference {
 	return -1
 }
 
+function Normalize-WramTraceLine {
+	param(
+		[string]$Line
+	)
+
+	if ([string]::IsNullOrWhiteSpace($Line)) {
+		return $Line
+	}
+
+	if ($Line -match '^F(?<frame>\d+)\s+L\d+\s+WRAM\s+addr=(?<addr>[0-9A-F]+)\s+data=(?<data>[0-9A-F]+)\s+pc=(?<pc>[0-9A-F]+)\s+mclk=\d+$') {
+		return "F$($Matches['frame']) WRAM addr=$($Matches['addr']) data=$($Matches['data']) pc=$($Matches['pc'])"
+	}
+
+	return $Line
+}
+
+function Get-NormalizedWramLines {
+	param(
+		[string[]]$Lines
+	)
+
+	if ($null -eq $Lines -or $Lines.Count -eq 0) {
+		return @()
+	}
+
+	$normalized = New-Object System.Collections.Generic.List[string]
+	foreach ($line in $Lines) {
+		$normalized.Add((Normalize-WramTraceLine -Line $line))
+	}
+
+	return $normalized.ToArray()
+}
+
 function Get-StartupEventCount {
 	param(
 		[string[]]$Lines,
@@ -701,10 +738,21 @@ if (!(Test-Path -LiteralPath $traceOutputDir)) {
 	New-Item -Path $traceOutputDir -ItemType Directory -Force | Out-Null
 }
 
-$nexenExplicitWramTracePath = Join-Path $traceOutputDir "nexen-cpu-ram-trace-$traceRunId.log"
-$nexenExplicitStartupTracePath = Join-Path $traceOutputDir "nexen-startup-trace-$traceRunId.log"
-$nexenRefExplicitWramTracePath = Join-Path $traceOutputDir "nexenRef-cpu-ram-trace-$traceRunId.log"
-$nexenRefExplicitStartupTracePath = Join-Path $traceOutputDir "nexenRef-startup-trace-$traceRunId.log"
+$nexenExplicitWramTracePath = if ([string]::IsNullOrWhiteSpace($NexenTempWramTracePath)) { Join-Path $traceOutputDir "nexen-cpu-ram-trace-$traceRunId.log" } else { [System.IO.Path]::GetFullPath($NexenTempWramTracePath) }
+$nexenExplicitStartupTracePath = if ([string]::IsNullOrWhiteSpace($NexenTempStartupTracePath)) { Join-Path $traceOutputDir "nexen-startup-trace-$traceRunId.log" } else { [System.IO.Path]::GetFullPath($NexenTempStartupTracePath) }
+$nexenRefExplicitWramTracePath = if ([string]::IsNullOrWhiteSpace($NexenRefTempWramTracePath)) { Join-Path $traceOutputDir "nexenRef-cpu-ram-trace-$traceRunId.log" } else { [System.IO.Path]::GetFullPath($NexenRefTempWramTracePath) }
+$nexenRefExplicitStartupTracePath = if ([string]::IsNullOrWhiteSpace($NexenRefTempStartupTracePath)) { Join-Path $traceOutputDir "nexenRef-startup-trace-$traceRunId.log" } else { [System.IO.Path]::GetFullPath($NexenRefTempStartupTracePath) }
+
+foreach ($explicitPath in @($nexenExplicitWramTracePath, $nexenExplicitStartupTracePath, $nexenRefExplicitWramTracePath, $nexenRefExplicitStartupTracePath)) {
+	if ([string]::IsNullOrWhiteSpace($explicitPath)) {
+		continue
+	}
+
+	$explicitDir = Split-Path -Parent $explicitPath
+	if (-not [string]::IsNullOrWhiteSpace($explicitDir) -and !(Test-Path -LiteralPath $explicitDir)) {
+		New-Item -Path $explicitDir -ItemType Directory -Force | Out-Null
+	}
+}
 
 foreach ($tracePath in ($nexenTraceCandidates + $nexenRefTraceCandidates)) {
 	if (Test-Path -LiteralPath $tracePath) {
@@ -752,6 +800,17 @@ $oldNexenRefStartupTracePath = $env:NEXENREF_GENESIS_STARTUP_TRACE_PATH
 $oldNexenRefStartupTraceEnabled = $env:NEXENREF_GENESIS_STARTUP_TRACE
 $oldNexenRefStartupTraceFrameEnd = $env:NEXENREF_GENESIS_STARTUP_TRACE_FRAME_END
 $oldNexenRefStartupTraceMaxLines = $env:NEXENREF_GENESIS_STARTUP_TRACE_MAX_LINES
+
+$oldMesenFrameStart = $env:MESEN_WRAM_FRAME_START
+$oldMesenFrameEnd = $env:MESEN_WRAM_FRAME_END
+$oldMesenAddrStart = $env:MESEN_WRAM_ADDR_START
+$oldMesenAddrEnd = $env:MESEN_WRAM_ADDR_END
+$oldMesenMaxLines = $env:MESEN_WRAM_MAX_LINES
+$oldMesenWramTracePath = $env:MESEN_WRAM_TRACE_PATH
+$oldMesenStartupTracePath = $env:MESEN_GENESIS_STARTUP_TRACE_PATH
+$oldMesenStartupTraceEnabled = $env:MESEN_GENESIS_STARTUP_TRACE
+$oldMesenStartupTraceFrameEnd = $env:MESEN_GENESIS_STARTUP_TRACE_FRAME_END
+$oldMesenStartupTraceMaxLines = $env:MESEN_GENESIS_STARTUP_TRACE_MAX_LINES
 $nexenRefRunSkipped = $false
 $nexenRefStartupTraceEnvSupported = Test-NexenRefStartupTraceEnvSupport -NexenRefWorkingDirectory $resolvedNexenRefDir
 $nexenRefAttemptNotes = New-Object System.Collections.Generic.List[string]
@@ -767,6 +826,17 @@ try {
 	$env:NEXENREF_GENESIS_STARTUP_TRACE = "1"
 	$env:NEXENREF_GENESIS_STARTUP_TRACE_FRAME_END = "$FrameEnd"
 	$env:NEXENREF_GENESIS_STARTUP_TRACE_MAX_LINES = "$MaxLines"
+
+	$env:MESEN_WRAM_FRAME_START = "$FrameStart"
+	$env:MESEN_WRAM_FRAME_END = "$FrameEnd"
+	$env:MESEN_WRAM_ADDR_START = "$AddressStart"
+	$env:MESEN_WRAM_ADDR_END = "$AddressEnd"
+	$env:MESEN_WRAM_MAX_LINES = "$MaxLines"
+	$env:MESEN_WRAM_TRACE_PATH = "$nexenRefExplicitWramTracePath"
+	$env:MESEN_GENESIS_STARTUP_TRACE_PATH = "$nexenRefExplicitStartupTracePath"
+	$env:MESEN_GENESIS_STARTUP_TRACE = "1"
+	$env:MESEN_GENESIS_STARTUP_TRACE_FRAME_END = "$FrameEnd"
+	$env:MESEN_GENESIS_STARTUP_TRACE_MAX_LINES = "$MaxLines"
 
 	$env:NEXEN_WRAM_FRAME_START = "$FrameStart"
 	$env:NEXEN_WRAM_FRAME_END = "$FrameEnd"
@@ -848,6 +918,17 @@ try {
 	$env:NEXENREF_GENESIS_STARTUP_TRACE = $oldNexenRefStartupTraceEnabled
 	$env:NEXENREF_GENESIS_STARTUP_TRACE_FRAME_END = $oldNexenRefStartupTraceFrameEnd
 	$env:NEXENREF_GENESIS_STARTUP_TRACE_MAX_LINES = $oldNexenRefStartupTraceMaxLines
+
+	$env:MESEN_WRAM_FRAME_START = $oldMesenFrameStart
+	$env:MESEN_WRAM_FRAME_END = $oldMesenFrameEnd
+	$env:MESEN_WRAM_ADDR_START = $oldMesenAddrStart
+	$env:MESEN_WRAM_ADDR_END = $oldMesenAddrEnd
+	$env:MESEN_WRAM_MAX_LINES = $oldMesenMaxLines
+	$env:MESEN_WRAM_TRACE_PATH = $oldMesenWramTracePath
+	$env:MESEN_GENESIS_STARTUP_TRACE_PATH = $oldMesenStartupTracePath
+	$env:MESEN_GENESIS_STARTUP_TRACE = $oldMesenStartupTraceEnabled
+	$env:MESEN_GENESIS_STARTUP_TRACE_FRAME_END = $oldMesenStartupTraceFrameEnd
+	$env:MESEN_GENESIS_STARTUP_TRACE_MAX_LINES = $oldMesenStartupTraceMaxLines
 }
 
 $nexenRefSearchRoots = Get-TraceSearchRoots -Roots @($resolvedNexenRefDir, $nexenRefExeDir, $nexenRefDocumentsDir, $nexenRefAppDataDir)
@@ -868,6 +949,9 @@ $nexenStartupTracePath = $nexenStartupTraceResult.Path
 $nexenRefLines = @()
 $nexenLines = @()
 $firstDiff = -1
+$nexenRefNormalizedLines = @()
+$nexenNormalizedLines = @()
+$normalizedFirstDiff = -1
 $nexenRefHash = "missing"
 $nexenHash = "missing"
 $nexenRefStartupLines = @()
@@ -921,6 +1005,9 @@ if ($null -ne $nexenStartupTracePath) {
 
 if ($nexenRefLines.Count -gt 0 -or $nexenLines.Count -gt 0) {
 	$firstDiff = Find-FirstDifference -Left $nexenRefLines -Right $nexenLines
+	$nexenRefNormalizedLines = Get-NormalizedWramLines -Lines $nexenRefLines
+	$nexenNormalizedLines = Get-NormalizedWramLines -Lines $nexenLines
+	$normalizedFirstDiff = Find-FirstDifference -Left $nexenRefNormalizedLines -Right $nexenNormalizedLines
 }
 
 if ($nexenRefStartupLines.Count -gt 0 -or $nexenStartupLines.Count -gt 0) {
@@ -982,6 +1069,8 @@ $report.Add("nexenRefStartupTraceSourcePath=$($nexenRefStartupTraceResult.Source
 $report.Add("nexenStartupTraceSourcePath=$($nexenStartupTraceResult.SourcePath)")
 $report.Add("nexenRefLines=$($nexenRefLines.Count)")
 $report.Add("nexenLines=$($nexenLines.Count)")
+$report.Add("nexenRefNormalizedLines=$($nexenRefNormalizedLines.Count)")
+$report.Add("nexenNormalizedLines=$($nexenNormalizedLines.Count)")
 $report.Add("nexenRefStartupLines=$($nexenRefStartupLines.Count)")
 $report.Add("nexenStartupLines=$($nexenStartupLines.Count)")
 $report.Add("snapshotFrame=$SnapshotFrame")
@@ -1034,6 +1123,7 @@ if ($nexenRefAttemptNotes.Count -gt 0) {
 	$report.Add("nexenRefAttempts=$($nexenRefAttemptNotes -join ' | ')")
 }
 $report.Add("firstDiffIndex=$firstDiff")
+$report.Add("normalizedFirstDiffIndex=$normalizedFirstDiff")
 $report.Add("startupFirstDiffIndex=$startupFirstDiff")
 $report.Add("startupNormalizedFirstDiffIndex=$startupNormalizedFirstDiff")
 
@@ -1044,6 +1134,13 @@ if ($firstDiff -ge 0) {
 	$report.Add("nexenFirstDiff=$nexenFirst")
 } else {
 	$report.Add("status=identical")
+}
+
+if ($normalizedFirstDiff -ge 0) {
+	$nexenRefNormalizedFirst = if ($normalizedFirstDiff -lt $nexenRefNormalizedLines.Count) { $nexenRefNormalizedLines[$normalizedFirstDiff] } else { "<no-line>" }
+	$nexenNormalizedFirst = if ($normalizedFirstDiff -lt $nexenNormalizedLines.Count) { $nexenNormalizedLines[$normalizedFirstDiff] } else { "<no-line>" }
+	$report.Add("nexenRefNormalizedFirstDiff=$nexenRefNormalizedFirst")
+	$report.Add("nexenNormalizedFirstDiff=$nexenNormalizedFirst")
 }
 
 if ($startupFirstDiff -ge 0) {
@@ -1109,6 +1206,7 @@ $report | Out-File -LiteralPath $resolvedReportPath -Encoding utf8
 
 Write-Host "Trace comparison report: $resolvedReportPath" -ForegroundColor Green
 Write-Host "nexenRefLines=$($nexenRefLines.Count) nexenLines=$($nexenLines.Count) firstDiffIndex=$firstDiff" -ForegroundColor Green
+Write-Host "nexenRefNormalizedLines=$($nexenRefNormalizedLines.Count) nexenNormalizedLines=$($nexenNormalizedLines.Count) normalizedFirstDiffIndex=$normalizedFirstDiff" -ForegroundColor Green
 if ($null -eq $nexenRefTracePath) {
 	Write-Warning "NexenRef trace file was not emitted."
 }
@@ -1125,8 +1223,8 @@ if ($null -eq $nexenRefStartupTracePath) {
 if ($null -eq $nexenStartupTracePath) {
 	Write-Warning "Nexen startup trace file was not emitted."
 }
-if ($firstDiff -ge 0) {
-	Write-Host "First difference found at index $firstDiff" -ForegroundColor Yellow
+if ($normalizedFirstDiff -ge 0) {
+	Write-Host "First normalized difference found at index $normalizedFirstDiff" -ForegroundColor Yellow
 	exit 3
 }
 
