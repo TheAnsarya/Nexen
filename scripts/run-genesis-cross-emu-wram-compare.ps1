@@ -455,7 +455,46 @@ function Get-NormalizedWramLines {
 		$normalized.Add((Normalize-WramTraceLine -Line $line))
 	}
 
+	$baseFrame = $null
+	for ($i = 0; $i -lt $normalized.Count; $i++) {
+		$current = $normalized[$i]
+		if ($current -match '^F(?<frame>\d+) WRAM ') {
+			$frameValue = [int]$Matches['frame']
+			if ($null -eq $baseFrame) {
+				$baseFrame = $frameValue
+			}
+
+			$rebasedFrame = $frameValue - $baseFrame
+			if ($rebasedFrame -lt 0) {
+				$rebasedFrame = 0
+			}
+
+			$normalized[$i] = ($current -replace '^F\d+', ('F{0:D4}' -f $rebasedFrame))
+		}
+	}
+
 	return $normalized.ToArray()
+}
+
+function Get-FrameAgnosticWramLines {
+	param(
+		[string[]]$Lines
+	)
+
+	if ($null -eq $Lines -or $Lines.Count -eq 0) {
+		return @()
+	}
+
+	$result = New-Object System.Collections.Generic.List[string]
+	foreach ($line in $Lines) {
+		if ($line -match '^F\d+\s+(?<tail>WRAM\s+addr=[0-9A-F]+\s+data=[0-9A-F]+\s+pc=[0-9A-F]+)$') {
+			$result.Add($Matches['tail'])
+		} else {
+			$result.Add($line)
+		}
+	}
+
+	return $result.ToArray()
 }
 
 function Get-StartupEventCount {
@@ -952,6 +991,9 @@ $firstDiff = -1
 $nexenRefNormalizedLines = @()
 $nexenNormalizedLines = @()
 $normalizedFirstDiff = -1
+$nexenRefFrameAgnosticLines = @()
+$nexenFrameAgnosticLines = @()
+$frameAgnosticFirstDiff = -1
 $nexenRefHash = "missing"
 $nexenHash = "missing"
 $nexenRefStartupLines = @()
@@ -1008,6 +1050,9 @@ if ($nexenRefLines.Count -gt 0 -or $nexenLines.Count -gt 0) {
 	$nexenRefNormalizedLines = Get-NormalizedWramLines -Lines $nexenRefLines
 	$nexenNormalizedLines = Get-NormalizedWramLines -Lines $nexenLines
 	$normalizedFirstDiff = Find-FirstDifference -Left $nexenRefNormalizedLines -Right $nexenNormalizedLines
+	$nexenRefFrameAgnosticLines = Get-FrameAgnosticWramLines -Lines $nexenRefNormalizedLines
+	$nexenFrameAgnosticLines = Get-FrameAgnosticWramLines -Lines $nexenNormalizedLines
+	$frameAgnosticFirstDiff = Find-FirstDifference -Left $nexenRefFrameAgnosticLines -Right $nexenFrameAgnosticLines
 }
 
 if ($nexenRefStartupLines.Count -gt 0 -or $nexenStartupLines.Count -gt 0) {
@@ -1071,6 +1116,8 @@ $report.Add("nexenRefLines=$($nexenRefLines.Count)")
 $report.Add("nexenLines=$($nexenLines.Count)")
 $report.Add("nexenRefNormalizedLines=$($nexenRefNormalizedLines.Count)")
 $report.Add("nexenNormalizedLines=$($nexenNormalizedLines.Count)")
+$report.Add("nexenRefFrameAgnosticLines=$($nexenRefFrameAgnosticLines.Count)")
+$report.Add("nexenFrameAgnosticLines=$($nexenFrameAgnosticLines.Count)")
 $report.Add("nexenRefStartupLines=$($nexenRefStartupLines.Count)")
 $report.Add("nexenStartupLines=$($nexenStartupLines.Count)")
 $report.Add("snapshotFrame=$SnapshotFrame")
@@ -1124,6 +1171,7 @@ if ($nexenRefAttemptNotes.Count -gt 0) {
 }
 $report.Add("firstDiffIndex=$firstDiff")
 $report.Add("normalizedFirstDiffIndex=$normalizedFirstDiff")
+$report.Add("frameAgnosticFirstDiffIndex=$frameAgnosticFirstDiff")
 $report.Add("startupFirstDiffIndex=$startupFirstDiff")
 $report.Add("startupNormalizedFirstDiffIndex=$startupNormalizedFirstDiff")
 
@@ -1141,6 +1189,13 @@ if ($normalizedFirstDiff -ge 0) {
 	$nexenNormalizedFirst = if ($normalizedFirstDiff -lt $nexenNormalizedLines.Count) { $nexenNormalizedLines[$normalizedFirstDiff] } else { "<no-line>" }
 	$report.Add("nexenRefNormalizedFirstDiff=$nexenRefNormalizedFirst")
 	$report.Add("nexenNormalizedFirstDiff=$nexenNormalizedFirst")
+}
+
+if ($frameAgnosticFirstDiff -ge 0) {
+	$nexenRefFrameAgnosticFirst = if ($frameAgnosticFirstDiff -lt $nexenRefFrameAgnosticLines.Count) { $nexenRefFrameAgnosticLines[$frameAgnosticFirstDiff] } else { "<no-line>" }
+	$nexenFrameAgnosticFirst = if ($frameAgnosticFirstDiff -lt $nexenFrameAgnosticLines.Count) { $nexenFrameAgnosticLines[$frameAgnosticFirstDiff] } else { "<no-line>" }
+	$report.Add("nexenRefFrameAgnosticFirstDiff=$nexenRefFrameAgnosticFirst")
+	$report.Add("nexenFrameAgnosticFirstDiff=$nexenFrameAgnosticFirst")
 }
 
 if ($startupFirstDiff -ge 0) {
@@ -1207,6 +1262,7 @@ $report | Out-File -LiteralPath $resolvedReportPath -Encoding utf8
 Write-Host "Trace comparison report: $resolvedReportPath" -ForegroundColor Green
 Write-Host "nexenRefLines=$($nexenRefLines.Count) nexenLines=$($nexenLines.Count) firstDiffIndex=$firstDiff" -ForegroundColor Green
 Write-Host "nexenRefNormalizedLines=$($nexenRefNormalizedLines.Count) nexenNormalizedLines=$($nexenNormalizedLines.Count) normalizedFirstDiffIndex=$normalizedFirstDiff" -ForegroundColor Green
+Write-Host "nexenRefFrameAgnosticLines=$($nexenRefFrameAgnosticLines.Count) nexenFrameAgnosticLines=$($nexenFrameAgnosticLines.Count) frameAgnosticFirstDiffIndex=$frameAgnosticFirstDiff" -ForegroundColor Green
 if ($null -eq $nexenRefTracePath) {
 	Write-Warning "NexenRef trace file was not emitted."
 }
