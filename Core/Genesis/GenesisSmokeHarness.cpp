@@ -2613,3 +2613,126 @@ GenesisStartupDeterminismGateResult GenesisSmokeHarness::RunStartupDeterminismGa
 
 	return result;
 }
+
+GenesisExecutionResilienceGateResult GenesisSmokeHarness::RunExecutionResilienceGate(GenesisM68kBoundaryScaffold& scaffold, const vector<GenesisCompatibilityRomCase>& romSet, uint32_t frameWindow) {
+	GenesisExecutionResilienceGateResult result = {};
+	result.FrameWindow = frameWindow;
+	result.Entries.reserve(romSet.size());
+	const vector<string>& requiredCheckpointIds = GetStartupDeterminismRequiredCheckpointIds(frameWindow);
+
+	for (const GenesisCompatibilityRomCase& romCase : romSet) {
+		GenesisExecutionResilienceGateEntry entry = {};
+		entry.Name = romCase.Name;
+		entry.TitleClass = InferTitleClass(romCase.Name);
+
+		GenesisCompatibilityMatrixResult runA = RunCompatibilityMatrix(scaffold, {romCase});
+		GenesisCompatibilityMatrixResult runB = RunCompatibilityMatrix(scaffold, {romCase});
+		GenesisCompatibilityMatrixResult runC = RunCompatibilityMatrix(scaffold, {romCase});
+
+		bool validRuns = runA.Entries.size() == 1 && runB.Entries.size() == 1 && runC.Entries.size() == 1;
+		if (validRuns) {
+			const GenesisCompatibilityEntry& entryA = runA.Entries.front();
+			const GenesisCompatibilityEntry& entryB = runB.Entries.front();
+			const GenesisCompatibilityEntry& entryC = runC.Entries.front();
+
+			int requiredA = CountPassingRequiredCheckpoints(entryA, requiredCheckpointIds);
+			int requiredB = CountPassingRequiredCheckpoints(entryB, requiredCheckpointIds);
+			int requiredC = CountPassingRequiredCheckpoints(entryC, requiredCheckpointIds);
+
+			string sigA = BuildStartupDeterminismSignature(entryA, requiredCheckpointIds);
+			string sigB = BuildStartupDeterminismSignature(entryB, requiredCheckpointIds);
+			string sigC = BuildStartupDeterminismSignature(entryC, requiredCheckpointIds);
+
+			entry.TraceDigest = std::format("{}:{}:{}", sigA, sigB, sigC);
+			entry.StallEvents = (requiredA == 0 ? 1u : 0u) + (requiredB == 0 ? 1u : 0u) + (requiredC == 0 ? 1u : 0u);
+			entry.ForcedAdvances = (entryA.Pass ? 0u : 1u) + (entryB.Pass ? 0u : 1u) + (entryC.Pass ? 0u : 1u);
+			entry.FrameCount = frameWindow;
+			entry.StallSummary = std::format(
+				"required={}/{}/{} of {} compat={}/{}/{} digests={}/{}/{}",
+				requiredA,
+				requiredB,
+				requiredC,
+				requiredCheckpointIds.size(),
+				entryA.Pass ? 1 : 0,
+				entryB.Pass ? 1 : 0,
+				entryC.Pass ? 1 : 0,
+				runA.Digest,
+				runB.Digest,
+				runC.Digest);
+
+			bool requiredPass = requiredA == (int)requiredCheckpointIds.size()
+				&& requiredB == (int)requiredCheckpointIds.size()
+				&& requiredC == (int)requiredCheckpointIds.size();
+			bool deterministicPass = sigA == sigB && sigA == sigC;
+			bool compatPass = entryA.Pass && entryB.Pass && entryC.Pass;
+			entry.Pass = requiredPass && deterministicPass && compatPass;
+		} else {
+			entry.Pass = false;
+			entry.StallEvents = 3;
+			entry.ForcedAdvances = 3;
+			entry.TraceDigest = ToHex(0);
+			entry.FrameCount = frameWindow;
+			entry.StallSummary = std::format("missing_runs entriesA={} entriesB={} entriesC={}", runA.Entries.size(), runB.Entries.size(), runC.Entries.size());
+		}
+
+		if (entry.Pass) {
+			result.PassCount++;
+		} else {
+			result.FailCount++;
+			result.OutputLines.push_back(std::format(
+				"GEN_RESILIENCE_GATE_FAIL_CONTEXT {} class={} frame_window={} stalls={} forced={} summary={} traceDigest={}",
+				entry.Name,
+				entry.TitleClass,
+				frameWindow,
+				entry.StallEvents,
+				entry.ForcedAdvances,
+				entry.StallSummary,
+				entry.TraceDigest));
+		}
+
+		result.OutputLines.push_back(std::format(
+			"GEN_RESILIENCE_GATE_RESULT {} {} CLASS={} FRAME_WINDOW={} STALLS={} FORCED={} TRACE={} SUMMARY={}",
+			entry.Name,
+			entry.Pass ? "PASS" : "FAIL",
+			entry.TitleClass,
+			frameWindow,
+			entry.StallEvents,
+			entry.ForcedAdvances,
+			entry.TraceDigest,
+			entry.StallSummary));
+		result.Entries.push_back(std::move(entry));
+	}
+
+	uint64_t gateHash = 1469598103934665603ull;
+	for (const GenesisExecutionResilienceGateEntry& entry : result.Entries) {
+		string line = std::format(
+			"{}:{}:{}:{}:{}:{}:{}",
+			entry.Name,
+			entry.TitleClass,
+			entry.Pass ? "PASS" : "FAIL",
+			entry.FrameCount,
+			entry.StallEvents,
+			entry.ForcedAdvances,
+			entry.TraceDigest);
+		for (uint8_t ch : line) {
+			gateHash ^= ch;
+			gateHash *= 1099511628211ull;
+		}
+	}
+
+	result.Digest = ToHex(gateHash);
+	uint64_t totalCases = (uint64_t)result.Entries.size();
+	uint64_t passRatioPct = totalCases == 0 ? 0 : ((uint64_t)result.PassCount * 100ull) / totalCases;
+	uint64_t failRatioPct = totalCases == 0 ? 0 : ((uint64_t)result.FailCount * 100ull) / totalCases;
+	result.OutputLines.push_back(std::format(
+		"GEN_RESILIENCE_GATE_SUMMARY PASS={} FAIL={} CASE_TOTAL={} FRAME_WINDOW={} PASS_RATIO_PCT={} FAIL_RATIO_PCT={} DIGEST={}",
+		result.PassCount,
+		result.FailCount,
+		totalCases,
+		frameWindow,
+		passRatioPct,
+		failRatioPct,
+		result.Digest));
+
+	return result;
+}

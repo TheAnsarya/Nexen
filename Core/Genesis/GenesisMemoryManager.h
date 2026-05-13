@@ -289,6 +289,7 @@ public:
 	// Debug access
 	uint8_t DebugRead8(uint32_t addr);
 	void DebugWrite8(uint32_t addr, uint8_t value);
+	uint8_t Peek8ForTrace(uint32_t addr) const;
 
 	// VDP access
 	uint16_t ReadVdpPort(uint32_t addr);

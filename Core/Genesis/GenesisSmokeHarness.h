@@ -68,9 +68,30 @@ struct GenesisStartupDeterminismGateResult {
 	vector<string> OutputLines;
 };
 
+struct GenesisExecutionResilienceGateEntry {
+	string Name;
+	string TitleClass;
+	bool Pass = false;
+	uint32_t FrameCount = 0;
+	uint64_t StallEvents = 0;
+	uint64_t ForcedAdvances = 0;
+	string TraceDigest;
+	string StallSummary;
+};
+
+struct GenesisExecutionResilienceGateResult {
+	vector<GenesisExecutionResilienceGateEntry> Entries;
+	int PassCount = 0;
+	int FailCount = 0;
+	uint32_t FrameWindow = 0;
+	string Digest;
+	vector<string> OutputLines;
+};
+
 class GenesisSmokeHarness {
 public:
 	static GenesisCompatibilityMatrixResult RunCompatibilityMatrix(GenesisM68kBoundaryScaffold& scaffold, const vector<GenesisCompatibilityRomCase>& romSet);
 	static GenesisPerformanceGateResult RunPerformanceGate(GenesisM68kBoundaryScaffold& scaffold, const vector<GenesisCompatibilityRomCase>& romSet, uint64_t budgetMicros = 25000);
 	static GenesisStartupDeterminismGateResult RunStartupDeterminismGate(GenesisM68kBoundaryScaffold& scaffold, const vector<GenesisCompatibilityRomCase>& romSet, uint32_t frameWindow = 600);
+	static GenesisExecutionResilienceGateResult RunExecutionResilienceGate(GenesisM68kBoundaryScaffold& scaffold, const vector<GenesisCompatibilityRomCase>& romSet, uint32_t frameWindow = 600);
 };

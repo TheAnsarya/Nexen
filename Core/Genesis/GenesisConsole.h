@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "Shared/Interfaces/IConsole.h"
 #include "Shared/SettingTypes.h"
@@ -23,6 +23,9 @@ private:
 	unique_ptr<GenesisMemoryManager> _memoryManager;
 	unique_ptr<GenesisPsg> _psg;
 	ConsoleRegion _region = ConsoleRegion::Ntsc;
+	uint64_t _runFrameStallEventCount = 0;
+	uint64_t _runFrameForcedAdvanceCount = 0;
+	string _runFrameLastStallSummary = {};
 
 public:
 	static vector<string> GetSupportedExtensions() { return {".md", ".gen", ".bin", ".smd"}; }
@@ -35,6 +38,9 @@ public:
 	GenesisM68k* GetCpu() { return _cpu.get(); }
 	GenesisVdp* GetVdp() { return _vdp.get(); }
 	GenesisMemoryManager* GetMemoryManager() { return _memoryManager.get(); }
+	uint64_t GetRunFrameStallEventCount() const { return _runFrameStallEventCount; }
+	uint64_t GetRunFrameForcedAdvanceCount() const { return _runFrameForcedAdvanceCount; }
+	const string& GetRunFrameLastStallSummary() const { return _runFrameLastStallSummary; }
 
 	LoadRomResult LoadRom(VirtualFile& romFile) override;
 

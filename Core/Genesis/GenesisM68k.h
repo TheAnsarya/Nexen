@@ -15,6 +15,18 @@ private:
 
 	GenesisM68kState _state = {};
 	uint8_t _pendingInterruptLevel = 0;
+	bool _instructionTraceEnabled = false;
+	uint32_t _instructionTraceCapacity = 16384;
+	vector<GenesisInstructionTraceEntry> _instructionTraceEntries = {};
+	uint32_t _instructionTraceWriteIndex = 0;
+	bool _instructionTraceWrapped = false;
+	uint64_t _instructionTraceSequence = 0;
+	uint64_t _forcedCycleFloorCount = 0;
+	uint64_t _forcedClockAdvanceCount = 0;
+	uint32_t _samePcRunLength = 0;
+	uint32_t _lastRunPc = 0xffffffff;
+	uint16_t _lastRunOpcode = 0;
+	bool _debugForceNoCycleProgress = false;
 
 	// Prefetch
 	uint16_t _prefetch[2] = {};
@@ -133,7 +145,12 @@ private:
 
 	// ===== Instruction execution =====
 	void ExecuteInstruction(uint16_t opcode);
+	void RecordInstructionTrace(uint32_t programCounterBefore, uint32_t programCounterAfter, uint16_t opcode, uint16_t operandWordA, uint16_t operandWordB, uint16_t statusRegisterBefore, uint16_t statusRegisterAfter, uint64_t cycleCountBefore, uint64_t cycleCountAfter, uint32_t d0Before, uint32_t d0After, uint32_t a0Before, uint32_t a0After, uint32_t a7Before, uint32_t a7After, bool forcedCycleFloor, bool stoppedBefore, bool stoppedAfter);
+	uint16_t PeekWord(uint32_t addr) const;
 	__forceinline void AddCycles(uint32_t cycles) {
+		if (_debugForceNoCycleProgress) {
+			return;
+		}
 		_state.CycleCount += cycles;
 		if (_memoryManager) {
 			_memoryManager->Exec(cycles);
@@ -232,6 +249,19 @@ public:
 	void SetState(GenesisM68kState& state) { _state = state; }
 
 	void SetInterrupt(uint8_t level);
+
+	void SetInstructionTraceEnabled(bool enabled) { _instructionTraceEnabled = enabled; }
+	bool GetInstructionTraceEnabled() const { return _instructionTraceEnabled; }
+	void SetInstructionTraceCapacity(uint32_t capacity);
+	uint32_t GetInstructionTraceCapacity() const { return _instructionTraceCapacity; }
+	void ClearInstructionTrace();
+	vector<GenesisInstructionTraceEntry> GetInstructionTraceSnapshot() const;
+	string BuildInstructionTraceDigest() const;
+	string BuildExecutionStallSummary() const;
+	uint64_t GetForcedCycleFloorCount() const { return _forcedCycleFloorCount; }
+	uint64_t GetForcedClockAdvanceCount() const { return _forcedClockAdvanceCount; }
+	void ForceClockAdvance(uint32_t cycles);
+	void SetDebugForceNoCycleProgress(bool forceNoProgress) { _debugForceNoCycleProgress = forceNoProgress; }
 
 	void Serialize(Serializer& s) override;
 };

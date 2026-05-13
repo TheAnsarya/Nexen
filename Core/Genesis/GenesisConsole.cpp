@@ -268,9 +268,54 @@ void GenesisConsole::RunFrame() {
 	uint32_t frame = _vdp->GetFrameCount();
 	uint64_t startClock = _memoryManager->GetMasterClock();
 	uint32_t guard = 0;
+	uint64_t lastProgressClock = startClock;
+	uint64_t lastProgressCpuCycles = _cpu->GetState().CycleCount;
+	uint32_t stagnantIterations = 0;
+	uint32_t forcedAdvancePulses = 0;
+	constexpr uint32_t StagnantIterationThreshold = 250000;
+	constexpr uint32_t ForcedAdvancePulseLimit = 8;
 	while (frame == _vdp->GetFrameCount()) {
 		_cpu->Exec();
 		guard++;
+
+		uint64_t currentClock = _memoryManager->GetMasterClock();
+		uint64_t currentCpuCycles = _cpu->GetState().CycleCount;
+		if (currentClock == lastProgressClock && currentCpuCycles == lastProgressCpuCycles) {
+			stagnantIterations++;
+		} else {
+			stagnantIterations = 0;
+			lastProgressClock = currentClock;
+			lastProgressCpuCycles = currentCpuCycles;
+		}
+
+		if (stagnantIterations >= StagnantIterationThreshold) {
+			_runFrameStallEventCount++;
+			forcedAdvancePulses++;
+			_cpu->ForceClockAdvance(488);
+			_runFrameForcedAdvanceCount++;
+			_runFrameLastStallSummary = _cpu->BuildExecutionStallSummary();
+			MessageManager::Log(std::format("[Genesis] RunFrame stall recovery #{} pulse={} frame={} guard={} summary={} masterClock={} cpuCycles={}",
+				_runFrameStallEventCount,
+				forcedAdvancePulses,
+				frame,
+				guard,
+				_runFrameLastStallSummary,
+				_memoryManager->GetMasterClock(),
+				_cpu->GetState().CycleCount));
+			stagnantIterations = 0;
+			lastProgressClock = _memoryManager->GetMasterClock();
+			lastProgressCpuCycles = _cpu->GetState().CycleCount;
+
+			if (forcedAdvancePulses >= ForcedAdvancePulseLimit) {
+				MessageManager::Log(std::format("[Genesis] RunFrame forced completion frame={} guard={} pulses={} traceDigest={}",
+					frame,
+					guard,
+					forcedAdvancePulses,
+					_cpu->BuildInstructionTraceDigest()));
+				break;
+			}
+		}
+
 		if ((guard % 50000) == 0) {
 			GenesisVdpState vdpState = _vdp->GetState();
 			GenesisIoState ioState = _memoryManager->GetIoState();
@@ -299,6 +344,14 @@ void GenesisConsole::RunFrame() {
 	}
 
 	uint32_t nextFrame = _vdp->GetFrameCount();
+	if (nextFrame == frame) {
+		// Last resort fallback: force enough master clocks to cross scanline/frame boundaries.
+		for (uint32_t i = 0; i < 8 && nextFrame == frame; i++) {
+			_cpu->ForceClockAdvance(488 * 4);
+			nextFrame = _vdp->GetFrameCount();
+			_runFrameForcedAdvanceCount++;
+		}
+	}
 	if ((nextFrame % 120) == 0) {
 		GenesisVdpState vdpState = _vdp->GetState();
 		MessageManager::Log(std::format("[Genesis] Frame advanced to {} (deltaClock={}) display={} R1=${:02x} tmssUnlocked={}",

@@ -14,6 +14,30 @@ struct GenesisM68kState {
 	bool Stopped = false;     // STOP instruction halted CPU
 };
 
+struct GenesisInstructionTraceEntry {
+	uint64_t Sequence = 0;
+	uint32_t ProgramCounterBefore = 0;
+	uint32_t ProgramCounterAfter = 0;
+	uint16_t Opcode = 0;
+	uint16_t OperandWordA = 0;
+	uint16_t OperandWordB = 0;
+	uint16_t StatusRegisterBefore = 0;
+	uint16_t StatusRegisterAfter = 0;
+	uint64_t CycleCountBefore = 0;
+	uint64_t CycleCountAfter = 0;
+	uint32_t D0Before = 0;
+	uint32_t D0After = 0;
+	uint32_t A0Before = 0;
+	uint32_t A0After = 0;
+	uint32_t A7Before = 0;
+	uint32_t A7After = 0;
+	uint32_t InstructionCycleDelta = 0;
+	uint8_t ForcedCycleFloor = 0;
+	uint8_t InterruptLatched = 0;
+	uint8_t StoppedBefore = 0;
+	uint8_t StoppedAfter = 0;
+};
+
 // M68000 status register bits
 namespace M68kFlags {
 	constexpr uint16_t Carry    = 0x0001;  // C

@@ -4267,6 +4267,46 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 	return effectiveValue;
 }
 
+uint8_t GenesisMemoryManager::Peek8ForTrace(uint32_t addr) const {
+	uint32_t effectiveAddr = addr & 0xFFFFFF;
+
+	if (effectiveAddr < 0x400000) {
+		if (!_prgRom || _prgRomSize == 0) {
+			return 0;
+		}
+		uint32_t mappedAddr = TranslateRomAddress(effectiveAddr);
+		if (mappedAddr >= _prgRomSize) {
+			mappedAddr &= (_prgRomSize - 1);
+		}
+		return _prgRom[mappedAddr];
+	}
+
+	if (effectiveAddr >= 0xE00000) {
+		return _workRam ? _workRam[effectiveAddr & 0xFFFF] : 0;
+	}
+
+	if (effectiveAddr >= 0xA00000 && effectiveAddr <= 0xA0FFFF) {
+		return _z80Ram ? _z80Ram[effectiveAddr & 0x1FFF] : 0;
+	}
+
+	if (effectiveAddr >= 0xA10000 && effectiveAddr <= 0xA1001F) {
+		if ((effectiveAddr & 0x01) == 0) {
+			return 0;
+		}
+		switch (effectiveAddr & 0x1F) {
+			case 0x01: return _ioState.DataPort[0];
+			case 0x03: return _ioState.DataPort[1];
+			case 0x05: return _ioState.DataPort[2];
+			case 0x09: return _ioState.CtrlPort[0];
+			case 0x0B: return _ioState.CtrlPort[1];
+			case 0x0D: return _ioState.CtrlPort[2];
+			default: return 0;
+		}
+	}
+
+	return _openBus;
+}
+
 void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
 	AdvanceZ80BusArbitration(7);

@@ -6,6 +6,16 @@
 #include "Shared/MessageManager.h"
 #include "Utilities/Serializer.h"
 
+namespace {
+	uint64_t HashTraceText(uint64_t hash, const string& text) {
+		for (uint8_t ch : text) {
+			hash ^= ch;
+			hash *= 1099511628211ull;
+		}
+		return hash;
+	}
+}
+
 void GenesisM68k::Init(Emulator* emu, GenesisConsole* console, GenesisMemoryManager* memoryManager) {
 	_emu = emu;
 	_console = console;
@@ -31,11 +41,19 @@ void GenesisM68k::SetFlags_Add(uint32_t src, uint32_t dst, uint32_t result, uint
 	bool dm = (dst & msb) != 0;
 	bool rm = (res & msb) != 0;
 
-	SetCcrIf(M68kFlags::Carry, (result >> (size == 0 ? 8 : (size == 1 ? 16 : 32))) & 1);
+	uint32_t carryOut = 0;
+	if (size == 0) {
+		carryOut = (result >> 8) & 1;
+	} else if (size == 1) {
+		carryOut = (result >> 16) & 1;
+	} else {
+		carryOut = (res < src) ? 1u : 0u;
+	}
+	SetCcrIf(M68kFlags::Carry, carryOut != 0);
 	SetCcrIf(M68kFlags::Overflow, (sm && dm && !rm) || (!sm && !dm && rm));
 	SetCcrIf(M68kFlags::Zero, res == 0);
 	SetCcrIf(M68kFlags::Negative, rm);
-	SetCcrIf(M68kFlags::Extend, (result >> (size == 0 ? 8 : (size == 1 ? 16 : 32))) & 1);
+	SetCcrIf(M68kFlags::Extend, carryOut != 0);
 }
 
 void GenesisM68k::SetFlags_Sub(uint32_t src, uint32_t dst, uint32_t result, uint8_t size) {
@@ -349,15 +367,31 @@ void GenesisM68k::Exec() {
 #endif
 
 	uint32_t prevPc = _state.PC & 0x00ffffff;
+	uint16_t srBefore = _state.SR;
+	uint32_t d0Before = _state.D[0];
+	uint32_t a0Before = _state.A[0];
+	uint32_t a7Before = _state.A[7];
+	bool stoppedBefore = _state.Stopped;
 	uint64_t cyclesBefore = _state.CycleCount;
 	uint16_t opcode = FetchOpcode();
+	uint16_t operandWordA = 0;
+	uint16_t operandWordB = 0;
+	if (_instructionTraceEnabled) {
+		operandWordA = PeekWord(_state.PC);
+		operandWordB = PeekWord(_state.PC + 2);
+	}
 	ExecuteInstruction(opcode);
 	uint64_t cyclesAfter = _state.CycleCount;
+	bool forcedCycleFloorApplied = false;
 	if (_memoryManager) {
 		_memoryManager->UpdateExecutionHeartbeat(prevPc, _state.CycleCount);
 	}
 
 	if (cyclesAfter == cyclesBefore) {
+		AddCycles(4);
+		cyclesAfter = _state.CycleCount;
+		_forcedCycleFloorCount++;
+		forcedCycleFloorApplied = true;
 		static uint64_t zeroCycleInstructionCount = 0;
 		zeroCycleInstructionCount++;
 		if (zeroCycleInstructionCount <= 512 || (zeroCycleInstructionCount % 8192) == 0) {
@@ -368,6 +402,41 @@ void GenesisM68k::Exec() {
 				_state.SR,
 				_state.Stopped ? 1 : 0));
 		}
+	}
+
+	if (_state.PC == prevPc && opcode == _lastRunOpcode) {
+		_samePcRunLength++;
+	} else {
+		_samePcRunLength = 0;
+	}
+	_lastRunPc = prevPc;
+	_lastRunOpcode = opcode;
+
+	if (_samePcRunLength >= 200000) {
+		ForceClockAdvance(32);
+		_samePcRunLength = 0;
+	}
+
+	if (_instructionTraceEnabled) {
+		RecordInstructionTrace(
+			prevPc,
+			_state.PC & 0x00ffffff,
+			opcode,
+			operandWordA,
+			operandWordB,
+			srBefore,
+			_state.SR,
+			cyclesBefore,
+			cyclesAfter,
+			d0Before,
+			_state.D[0],
+			a0Before,
+			_state.A[0],
+			a7Before,
+			_state.A[7],
+			forcedCycleFloorApplied,
+			stoppedBefore,
+			_state.Stopped);
 	}
 
 	uint32_t nextPc = _state.PC & 0x00ffffff;
@@ -384,6 +453,152 @@ void GenesisM68k::Exec() {
 				_state.Stopped ? 1 : 0));
 		}
 	}
+}
+
+uint16_t GenesisM68k::PeekWord(uint32_t addr) const {
+	if (!_memoryManager) {
+		return 0;
+	}
+	uint8_t hi = _memoryManager->Peek8ForTrace(addr & 0x00ffffff);
+	uint8_t lo = _memoryManager->Peek8ForTrace((addr + 1) & 0x00ffffff);
+	return (uint16_t)((hi << 8) | lo);
+}
+
+void GenesisM68k::RecordInstructionTrace(uint32_t programCounterBefore, uint32_t programCounterAfter, uint16_t opcode, uint16_t operandWordA, uint16_t operandWordB, uint16_t statusRegisterBefore, uint16_t statusRegisterAfter, uint64_t cycleCountBefore, uint64_t cycleCountAfter, uint32_t d0Before, uint32_t d0After, uint32_t a0Before, uint32_t a0After, uint32_t a7Before, uint32_t a7After, bool forcedCycleFloor, bool stoppedBefore, bool stoppedAfter) {
+	if (!_instructionTraceEnabled || _instructionTraceCapacity == 0) {
+		return;
+	}
+
+	if (_instructionTraceEntries.size() != _instructionTraceCapacity) {
+		_instructionTraceEntries.assign(_instructionTraceCapacity, GenesisInstructionTraceEntry{});
+		_instructionTraceWriteIndex = 0;
+		_instructionTraceWrapped = false;
+	}
+
+	GenesisInstructionTraceEntry entry = {};
+	entry.Sequence = ++_instructionTraceSequence;
+	entry.ProgramCounterBefore = programCounterBefore & 0x00ffffff;
+	entry.ProgramCounterAfter = programCounterAfter & 0x00ffffff;
+	entry.Opcode = opcode;
+	entry.OperandWordA = operandWordA;
+	entry.OperandWordB = operandWordB;
+	entry.StatusRegisterBefore = statusRegisterBefore;
+	entry.StatusRegisterAfter = statusRegisterAfter;
+	entry.CycleCountBefore = cycleCountBefore;
+	entry.CycleCountAfter = cycleCountAfter;
+	entry.D0Before = d0Before;
+	entry.D0After = d0After;
+	entry.A0Before = a0Before;
+	entry.A0After = a0After;
+	entry.A7Before = a7Before;
+	entry.A7After = a7After;
+	entry.InstructionCycleDelta = cycleCountAfter > cycleCountBefore ? (uint32_t)(cycleCountAfter - cycleCountBefore) : 0;
+	entry.ForcedCycleFloor = forcedCycleFloor ? 1 : 0;
+	entry.InterruptLatched = _pendingInterruptLevel;
+	entry.StoppedBefore = stoppedBefore ? 1 : 0;
+	entry.StoppedAfter = stoppedAfter ? 1 : 0;
+
+	_instructionTraceEntries[_instructionTraceWriteIndex] = entry;
+	_instructionTraceWriteIndex++;
+	if (_instructionTraceWriteIndex >= _instructionTraceCapacity) {
+		_instructionTraceWriteIndex = 0;
+		_instructionTraceWrapped = true;
+	}
+}
+
+void GenesisM68k::SetInstructionTraceCapacity(uint32_t capacity) {
+	_instructionTraceCapacity = std::max<uint32_t>(capacity, 256);
+	_instructionTraceEntries.assign(_instructionTraceCapacity, GenesisInstructionTraceEntry{});
+	_instructionTraceWriteIndex = 0;
+	_instructionTraceWrapped = false;
+	_instructionTraceSequence = 0;
+}
+
+void GenesisM68k::ClearInstructionTrace() {
+	_instructionTraceEntries.clear();
+	_instructionTraceWriteIndex = 0;
+	_instructionTraceWrapped = false;
+	_instructionTraceSequence = 0;
+}
+
+vector<GenesisInstructionTraceEntry> GenesisM68k::GetInstructionTraceSnapshot() const {
+	vector<GenesisInstructionTraceEntry> snapshot = {};
+	if (_instructionTraceEntries.empty() || _instructionTraceCapacity == 0) {
+		return snapshot;
+	}
+
+	uint32_t start = _instructionTraceWrapped ? _instructionTraceWriteIndex : 0;
+	uint32_t count = _instructionTraceWrapped ? _instructionTraceCapacity : _instructionTraceWriteIndex;
+	snapshot.reserve(count);
+	for (uint32_t i = 0; i < count; i++) {
+		snapshot.push_back(_instructionTraceEntries[(start + i) % _instructionTraceCapacity]);
+	}
+	return snapshot;
+}
+
+string GenesisM68k::BuildInstructionTraceDigest() const {
+	auto snapshot = GetInstructionTraceSnapshot();
+	uint64_t hash = 1469598103934665603ull;
+	for (const GenesisInstructionTraceEntry& entry : snapshot) {
+		hash ^= entry.Sequence;
+		hash *= 1099511628211ull;
+		hash ^= ((uint64_t)entry.ProgramCounterBefore << 32) | entry.ProgramCounterAfter;
+		hash *= 1099511628211ull;
+		hash ^= ((uint64_t)entry.Opcode << 48) | ((uint64_t)entry.OperandWordA << 24) | entry.OperandWordB;
+		hash *= 1099511628211ull;
+		hash ^= ((uint64_t)entry.StatusRegisterBefore << 16) | entry.StatusRegisterAfter;
+		hash *= 1099511628211ull;
+		hash ^= ((uint64_t)entry.ForcedCycleFloor << 8) | entry.InterruptLatched;
+		hash *= 1099511628211ull;
+		hash ^= entry.InstructionCycleDelta;
+		hash *= 1099511628211ull;
+	}
+	return std::format("{:016x}", hash);
+}
+
+string GenesisM68k::BuildExecutionStallSummary() const {
+	auto snapshot = GetInstructionTraceSnapshot();
+	if (snapshot.empty()) {
+		return "trace=empty";
+	}
+
+	const GenesisInstructionTraceEntry& lastEntry = snapshot.back();
+	uint32_t forcedEntries = 0;
+	for (const GenesisInstructionTraceEntry& entry : snapshot) {
+		forcedEntries += entry.ForcedCycleFloor != 0 ? 1u : 0u;
+	}
+
+	string summary = std::format(
+		"traceCount={} digest={} forcedCycleFloors={} forcedClockAdvances={} lastPc=${:06x} lastOpcode=${:04x} lastDelta={} lastSr=${:04x}",
+		snapshot.size(),
+		BuildInstructionTraceDigest(),
+		forcedEntries,
+		_forcedClockAdvanceCount,
+		lastEntry.ProgramCounterBefore,
+		lastEntry.Opcode,
+		lastEntry.InstructionCycleDelta,
+		lastEntry.StatusRegisterAfter);
+
+	if (snapshot.size() >= 4) {
+		uint64_t loopHash = 1469598103934665603ull;
+		for (size_t i = snapshot.size() - 4; i < snapshot.size(); i++) {
+			const GenesisInstructionTraceEntry& entry = snapshot[i];
+			string row = std::format("{:06x}:{:04x}:{:06x}:{}", entry.ProgramCounterBefore, entry.Opcode, entry.ProgramCounterAfter, entry.InstructionCycleDelta);
+			loopHash = HashTraceText(loopHash, row);
+		}
+		summary += std::format(" loopSig={:016x}", loopHash);
+	}
+
+	return summary;
+}
+
+void GenesisM68k::ForceClockAdvance(uint32_t cycles) {
+	if (!_memoryManager || cycles == 0) {
+		return;
+	}
+	_memoryManager->Exec(cycles);
+	_state.CycleCount += cycles;
+	_forcedClockAdvanceCount++;
 }
 
 void GenesisM68k::Reset(bool softReset) {
@@ -1956,4 +2171,6 @@ void GenesisM68k::Serialize(Serializer& s) {
 	SV(_state.CycleCount);
 	SV(_state.Stopped);
 	SV(_pendingInterruptLevel);
+	SV(_forcedCycleFloorCount);
+	SV(_forcedClockAdvanceCount);
 }
