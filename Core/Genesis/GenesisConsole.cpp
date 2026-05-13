@@ -164,8 +164,9 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 	string cpuSummary = _cpu ? _cpu->BuildCrashProbeSummary() : "cpu=missing";
 	string cpuBoundarySummary = _cpu ? _cpu->BuildDispatchBoundaryProbeSummary() : "cpuBoundary=missing";
 	string mmuFlowSummary = _memoryManager ? _memoryManager->BuildRuntimeFlowTraceSummary() : "mmuFlow=missing";
+	string mmuOpSummary = _memoryManager ? _memoryManager->BuildRuntimeOpTraceSummary() : "mmuOps=missing";
 	return std::format(
-		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={}",
+		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={} mmuOps={}",
 		_runFrameEntryCount,
 		_runFrameExitCount,
 		_runFrameEarlyAbortCount,
@@ -179,7 +180,8 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 		_runFrameLastExitSummary.empty() ? "none" : _runFrameLastExitSummary,
 		cpuSummary,
 		cpuBoundarySummary,
-		mmuFlowSummary);
+		mmuFlowSummary,
+		mmuOpSummary);
 }
 
 LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
@@ -288,6 +290,12 @@ void GenesisConsole::RunFrame() {
 		if (_cpu && _runFrameFirstFailureBoundarySummary.empty()) {
 			_runFrameFirstFailureBoundarySummary = _cpu->BuildDispatchBoundaryProbeSummary();
 			_runFrameFirstFailureBoundaryCaptureCount++;
+			if (_memoryManager) {
+				MessageManager::Log(std::format("[Genesis] RunFrame first-failure pair cpuBoundary={} mmuFlow={} mmuOps={}",
+					_runFrameFirstFailureBoundarySummary,
+					_memoryManager->BuildRuntimeFlowTraceSummary(),
+					_memoryManager->BuildRuntimeOpTraceSummary()));
+			}
 		}
 		_runFrameLastEntrySummary = std::format("abort_missing_component cpu={} vdp={} mmu={} ctrl={}",
 			_cpu ? 1 : 0,
@@ -357,6 +365,10 @@ void GenesisConsole::RunFrame() {
 				if (_runFrameFirstFailureBoundarySummary.empty()) {
 					_runFrameFirstFailureBoundarySummary = _cpu->BuildDispatchBoundaryProbeSummary();
 					_runFrameFirstFailureBoundaryCaptureCount++;
+					MessageManager::Log(std::format("[Genesis] RunFrame first-failure pair cpuBoundary={} mmuFlow={} mmuOps={}",
+						_runFrameFirstFailureBoundarySummary,
+						_memoryManager->BuildRuntimeFlowTraceSummary(),
+						_memoryManager->BuildRuntimeOpTraceSummary()));
 				}
 				MessageManager::Log(std::format("[Genesis] RunFrame forced completion frame={} guard={} pulses={} traceDigest={}",
 					frame,

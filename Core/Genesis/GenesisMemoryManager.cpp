@@ -1169,6 +1169,106 @@ string GenesisMemoryManager::BuildRuntimeFlowTraceSummary() const {
 		lastLine);
 }
 
+void GenesisMemoryManager::LoadRuntimeOpTraceConfig() {
+	if (_runtimeOpTraceConfigLoaded) {
+		return;
+	}
+
+	_runtimeOpTraceConfigLoaded = true;
+	const char* enabledRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_OPS");
+	if (enabledRaw && (*enabledRaw == '1' || *enabledRaw == 'y' || *enabledRaw == 'Y' || *enabledRaw == 't' || *enabledRaw == 'T')) {
+		_runtimeOpTraceEnabled = true;
+	}
+
+	if (const char* limitRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_OPS_LIMIT")) {
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(limitRaw, &end, 0);
+		if (end != limitRaw && *end == '\0' && parsed >= 64 && parsed <= 5000000) {
+			_runtimeOpTraceLimit = (uint32_t)parsed;
+		}
+	}
+
+	if (const char* strideRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_OPS_STRIDE")) {
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(strideRaw, &end, 0);
+		if (end != strideRaw && *end == '\0' && parsed >= 1 && parsed <= 1000000) {
+			_runtimeOpTraceStride = (uint32_t)parsed;
+		}
+	}
+
+	if (const char* ringRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_OPS_RING")) {
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(ringRaw, &end, 0);
+		if (end != ringRaw && *end == '\0' && parsed >= 8 && parsed <= 2048) {
+			_recentRuntimeOpTraceCapacity = (uint32_t)parsed;
+		}
+	}
+
+	_recentRuntimeOpTraceLines.clear();
+	_recentRuntimeOpTraceLines.reserve(_recentRuntimeOpTraceCapacity);
+}
+
+void GenesisMemoryManager::MaybeRecordRuntimeOp(const char* operationTag, uint32_t addr, uint16_t value, bool isWord, bool isWrite) {
+	LoadRuntimeOpTraceConfig();
+	if (!_runtimeOpTraceEnabled) {
+		return;
+	}
+
+	uint32_t sequence = _runtimeOpTraceCount;
+	if (sequence >= _runtimeOpTraceLimit) {
+		_runtimeOpTraceSkipped++;
+		return;
+	}
+
+	_runtimeOpTraceCount++;
+	if ((sequence % _runtimeOpTraceStride) != 0) {
+		_runtimeOpTraceSkipped++;
+		return;
+	}
+
+	uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+	uint64_t cycles = _cpu ? _cpu->GetState().CycleCount : 0;
+	string line = std::format(
+		"seq={} op={} width={} rw={} addr=${:06x} value=${:04x} pc=${:06x} cyc={} hbInstr={} hbPc=${:06x} master={} z80Run={} z80Req={} z80Ack={} tmssUnlocked={}",
+		sequence,
+		operationTag ? operationTag : "mmu",
+		isWord ? 16 : 8,
+		isWrite ? 'w' : 'r',
+		addr & 0x00ffffffu,
+		isWord ? value : (value & 0x00ffu),
+		pc,
+		cycles,
+		_ioState.CpuInstructionHeartbeat,
+		_ioState.CpuProgramCounterHeartbeat,
+		_masterClock,
+		_z80RuntimeRunning ? 1 : 0,
+		_z80BusRequest ? 1 : 0,
+		_z80BusAck ? 1 : 0,
+		_tmssUnlocked ? 1 : 0);
+
+	_lastRuntimeOpTraceLine = line;
+	if (_recentRuntimeOpTraceLines.size() >= _recentRuntimeOpTraceCapacity && !_recentRuntimeOpTraceLines.empty()) {
+		_recentRuntimeOpTraceLines.erase(_recentRuntimeOpTraceLines.begin());
+	}
+	_recentRuntimeOpTraceLines.push_back(line);
+}
+
+string GenesisMemoryManager::BuildRuntimeOpTraceSummary() const {
+	string lastLine = _lastRuntimeOpTraceLine.empty() ? "none" : _lastRuntimeOpTraceLine;
+	if (lastLine.size() > 240) {
+		lastLine = lastLine.substr(0, 240);
+	}
+
+	return std::format("enabled={} logged={} skipped={} stride={} limit={} ring={} last={}",
+		_runtimeOpTraceEnabled ? 1 : 0,
+		_runtimeOpTraceCount,
+		_runtimeOpTraceSkipped,
+		_runtimeOpTraceStride,
+		_runtimeOpTraceLimit,
+		_recentRuntimeOpTraceLines.size(),
+		lastLine);
+}
+
 void GenesisMemoryManager::DetectStartupTitleSignature() {
 	_startupTitleClassValue = (uint8_t)StartupTitleClass::Unknown;
 	_startupTitleAutotuneApplied = false;
@@ -2868,13 +2968,17 @@ bool GenesisMemoryManager::TryGetSramOffset(uint32_t addr, uint32_t& offset) con
 
 uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	addr &= 0xFFFFFF;
+	auto traceRead8 = [&](const char* opTag, uint32_t effectiveAddr, uint8_t effectiveValue) {
+		MaybeRecordRuntimeOp(opTag, effectiveAddr, effectiveValue, false, false);
+		return effectiveValue;
+	};
 	AdvanceZ80BusArbitration(7);
 	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "read8");
 	uint32_t sramOffset = 0;
 	if (addr == 0xA11000 || addr == 0xA11001) [[unlikely]] {
 		uint8_t effectiveValue = 0x00;
 		_openBus = effectiveValue;
-		return effectiveValue;
+		return traceRead8("read8-busreq-open", addr, effectiveValue);
 	}
 	if (addr == 0xA14100) [[unlikely]] {
 		uint8_t effectiveValue = 0xFF;
@@ -2899,7 +3003,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 		uint8_t effectiveValue = _saveRam[sramOffset];
 		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Read);
 		_openBus = effectiveValue;
-		return effectiveValue;
+		return traceRead8("read8-sram", addr, effectiveValue);
 	}
 
 	if (addr < 0x400000) [[likely]] {
@@ -2916,7 +3020,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			}
 		}
 		_openBus = effectiveValue;
-		return effectiveValue;
+		return traceRead8("read8-rom", addr, effectiveValue);
 	}
 
 	if (addr >= 0xE00000) [[likely]] {
@@ -2932,7 +3036,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			}
 		}
 		_openBus = effectiveValue;
-		return effectiveValue;
+		return traceRead8("read8-wram", addr, effectiveValue);
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
@@ -2976,7 +3080,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			}
 		}
 		_openBus = effectiveValue;
-		return effectiveValue;
+		return traceRead8("read8-vdp", addr, effectiveValue);
 	}
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
@@ -3025,7 +3129,8 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	}
 
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
-		return ReadIo(addr);
+		uint8_t effectiveValue = ReadIo(addr);
+		return traceRead8("read8-io", addr, effectiveValue);
 	}
 	if (addr >= 0xA13000 && addr <= 0xA130FF) [[unlikely]] {
 		uint8_t bankSlot = 0;
@@ -3108,7 +3213,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			}
 		}
 		_openBus = effectiveValue;
-		return effectiveValue;
+		return traceRead8("read8-z80-busreq", addr, effectiveValue);
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
@@ -3136,22 +3241,26 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 			}
 		}
 		_openBus = effectiveValue;
-		return effectiveValue;
+		return traceRead8("read8-z80-reset", addr, effectiveValue);
 	}
 
 	uint8_t effectiveValue = _openBus;
 	_openBus = effectiveValue;
-	return effectiveValue;
+	return traceRead8("read8-openbus", addr, effectiveValue);
 }
 
 uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	addr &= 0xFFFFFE;
+	auto traceRead16 = [&](const char* opTag, uint32_t effectiveAddr, uint16_t effectiveValue) {
+		MaybeRecordRuntimeOp(opTag, effectiveAddr, effectiveValue, true, false);
+		return effectiveValue;
+	};
 	AdvanceZ80BusArbitration(7);
 	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "read16");
 	if (addr == 0xA11000) [[unlikely]] {
 		uint16_t effectiveValue = 0x0000;
 		_openBus = 0x00;
-		return effectiveValue;
+		return traceRead16("read16-busreq-open", addr, effectiveValue);
 	}
 	if (addr == 0xA14100) [[unlikely]] {
 		uint16_t effectiveValue = 0xFFFF;
@@ -3187,7 +3296,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 			}
 		}
 		_openBus = (uint8_t)(effectiveValue & 0xFF);
-		return effectiveValue;
+		return traceRead16("read16-rom", addr, effectiveValue);
 	}
 
 	if (addr >= 0xE00000) [[likely]] {
@@ -3204,7 +3313,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 			}
 		}
 		_openBus = effectiveLowByte;
-		return effectiveValue;
+		return traceRead16("read16-wram", addr, effectiveValue);
 	}
 
 	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
@@ -3318,34 +3427,42 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 
 	uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
 	_openBus = (uint8_t)(effectiveValue & 0xFF);
-	return effectiveValue;
+	return traceRead16("read16-openbus", addr, effectiveValue);
 }
 
 void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	addr &= 0xFFFFFF;
+	auto traceWrite8 = [&](const char* opTag, uint32_t effectiveAddr, uint8_t effectiveValue) {
+		MaybeRecordRuntimeOp(opTag, effectiveAddr, effectiveValue, false, true);
+	};
 	AdvanceZ80BusArbitration(7);
 	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "write8-pre");
 	uint32_t sramOffset = 0;
 	if (addr == 0xA11000 || addr == 0xA11001) [[unlikely]] {
+		traceWrite8("write8-busreq-noop", addr, value);
 		return;
 	}
 	if (addr >= 0xA13000 && addr <= 0xA130FF) [[unlikely]] {
 		if (TryWriteRomBankRegister(addr, value)) {
 			uint8_t effectiveValue = (uint8_t)(value & 0x3F);
 			_openBus = effectiveValue;
+			traceWrite8("write8-bankreg", addr, effectiveValue);
 			return;
 		}
 		if (IsRamControlRegister(addr)) {
 			uint8_t effectiveValue = value;
 			WriteRamControlRegister(effectiveValue);
 			_openBus = effectiveValue;
+			traceWrite8("write8-ramctrl", addr, effectiveValue);
 			return;
 		}
+		traceWrite8("write8-bank-noop", addr, value);
 		return;
 	}
 	if ((addr & 0xFFFFFE) == 0xA14100) [[unlikely]] {
 		// TMSS/cart byte writes are no-op on this path.
 		TraceStartupEvent("TMSS_CART_W8", addr, value, 0);
+		traceWrite8("write8-tmss-cart", addr, value);
 		return;
 	}
 	if (IsTmssCartAddress(addr)) [[unlikely]] {
@@ -3378,6 +3495,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	if (TryGetSramOffset(addr, sramOffset)) [[unlikely]] {
 		if (!_ramWritable) {
 			_openBus = value;
+			traceWrite8("write8-sram-blocked", addr, value);
 			return;
 		}
 
@@ -3385,6 +3503,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Write);
 		_saveRam[sramOffset] = effectiveValue;
 		_openBus = effectiveValue;
+		traceWrite8("write8-sram", addr, effectiveValue);
 		return;
 	}
 
@@ -3392,6 +3511,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		uint8_t effectiveValue = value;
 		_openBus = effectiveValue;
 		TrackSegaCdTranscript(addr, true, effectiveValue);
+		traceWrite8("write8-rom-noop", addr, effectiveValue);
 		return;
 	}
 
@@ -3412,6 +3532,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 			}
 		}
 		_openBus = effectiveValue;
+		traceWrite8("write8-wram", addr, effectiveValue);
 		return;
 	}
 
@@ -3469,6 +3590,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 			WriteVdpPort(addr, (uint16_t)effectiveValue | ((uint16_t)effectiveValue << 8));
 		}
 		_openBus = effectiveValue;
+		traceWrite8("write8-vdp", addr, effectiveValue);
 		return;
 	}
 
@@ -3513,12 +3635,14 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
 		uint8_t effectiveValue = value;
 		WriteIo(addr, effectiveValue);
+		traceWrite8("write8-io", addr, effectiveValue);
 		return;
 	}
 
 	if (TryWriteRomBankRegister(addr, value)) [[unlikely]] {
 		uint8_t effectiveValue = (uint8_t)(value & 0x3F);
 		_openBus = effectiveValue;
+		traceWrite8("write8-bankreg", addr, effectiveValue);
 		return;
 	}
 
@@ -3526,6 +3650,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 		uint8_t effectiveValue = value;
 		WriteRamControlRegister(effectiveValue);
 		_openBus = effectiveValue;
+		traceWrite8("write8-ramctrl", addr, effectiveValue);
 		return;
 	}
 
@@ -3562,6 +3687,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 			Update32xHostToolingContract(addr, effectiveValue);
 		}
 		TrackSegaCdTranscript(addr, true, effectiveValue);
+		traceWrite8("write8-bridge", addr, effectiveValue);
 		return;
 	}
 
@@ -3587,6 +3713,7 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 			}
 		}
 		TrackSegaCdHandshakeTranscript(addr, true, effectiveValue);
+		traceWrite8("write8-z80-busreq", addr, effectiveValue);
 		return;
 	}
 
@@ -3612,24 +3739,31 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 			}
 		}
 		TrackSegaCdHandshakeTranscript(addr, true, effectiveValue);
+		traceWrite8("write8-z80-reset", addr, effectiveValue);
 		return;
 	}
 
 	// Unmapped/ROM area — ignore writes (no mapper for now)
 	uint8_t effectiveValue = value;
 	_openBus = effectiveValue;
+	traceWrite8("write8-openbus", addr, effectiveValue);
 }
 
 void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	addr &= 0xFFFFFE;
+	auto traceWrite16 = [&](const char* opTag, uint32_t effectiveAddr, uint16_t effectiveValue) {
+		MaybeRecordRuntimeOp(opTag, effectiveAddr, effectiveValue, true, true);
+	};
 	AdvanceZ80BusArbitration(7);
 	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "write16-pre");
 	if (addr == 0xA11000) [[unlikely]] {
+		traceWrite16("write16-busreq-noop", addr, value);
 		return;
 	}
 	if (addr == 0xA14100) [[unlikely]] {
 		// TMSS/cart word writes are no-op.
 		TraceStartupEvent("TMSS_CART_W16", addr, value, 0);
+		traceWrite16("write16-tmss-cart", addr, value);
 		return;
 	}
 	if (IsTmssAddress(addr)) [[unlikely]] {
@@ -3665,6 +3799,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		uint16_t effectiveValue = value;
 		uint8_t effectiveLowByte = (uint8_t)(effectiveValue & 0xFF);
 		_openBus = effectiveLowByte;
+		traceWrite16("write16-rom-noop", addr, effectiveValue);
 		return;
 	}
 
@@ -3693,6 +3828,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 			}
 		}
 		_openBus = effectiveLowByte;
+		traceWrite16("write16-wram", addr, value);
 		return;
 	}
 
@@ -3724,6 +3860,7 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 		}
 		WriteVdpPort(addr, effectiveValue);
 		_openBus = effectiveLowByte;
+		traceWrite16("write16-vdp", addr, effectiveValue);
 		return;
 	}
 
