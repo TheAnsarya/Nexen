@@ -2407,10 +2407,12 @@ void GenesisMemoryManager::SetZ80BusRequest(bool request, bool allowTransitionLo
 	if (request) {
 		_z80ResumeDelayMclk = 0;
 		if (_z80Reset) {
+			if (!_z80BusAck && _z80BusReqDelayMclk == 0) {
+				_z80BusReqDelayMclk = effectiveReqDelay;
+			}
+		} else {
 			_z80BusAck = true;
 			_z80BusReqDelayMclk = 0;
-		} else if (!_z80BusAck && _z80BusReqDelayMclk == 0) {
-			_z80BusReqDelayMclk = effectiveReqDelay;
 		}
 	} else {
 		_z80BusAck = false;
