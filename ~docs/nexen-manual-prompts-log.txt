@@ -2612,8 +2612,9 @@ continue;
 
 [Nexen] (Genesis/Megadrive) Show me the two tracelogs that are created when running the double-emulator comparison test (open in our current VSCode instance); continue;
 
+Yes please!
 
-
+[Nexen] (Genesis/Megadrive) go frame by frame through the tracelogs and find what's different between the two emulator runs and fix Nexen code from the `Hoshiruna/Mesen2-Expanded` Genesis code; Add targeted Genesis CPU/MMU transition instrumentation for pc=000264 to pc=00034A ordering in Nexen.; continue;
 
 
 

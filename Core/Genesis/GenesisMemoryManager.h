@@ -131,6 +131,15 @@ private:
 	uint32_t _pcOrderTraceEventCount = 0;
 	bool _pcOrderTraceSaw000264 = false;
 	bool _pcOrderTraceSaw00034A = false;
+	uint32_t _pcOrderTraceFirst264Frame = 0;
+	uint32_t _pcOrderTraceFirst34AFrame = 0;
+	uint16_t _pcOrderTraceFirst264Line = 0;
+	uint16_t _pcOrderTraceFirst34ALine = 0;
+	uint32_t _pcOrderTraceFirst264Seq = 0;
+	uint32_t _pcOrderTraceFirst34ASeq = 0;
+	uint64_t _pcOrderTraceFirst264Mclk = 0;
+	uint64_t _pcOrderTraceFirst34AMclk = 0;
+	bool _pcOrderTraceTransitionSummaryEmitted = false;
 	uint8_t _startupArbitrationDigest = 0;
 	uint8_t _startupArbitrationEpoch = 0;
 	uint16_t _startupLastArbitrationMclk = 0;
