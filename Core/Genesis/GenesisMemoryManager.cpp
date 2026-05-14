@@ -1987,7 +1987,7 @@ void GenesisMemoryManager::TraceWramPcTransitionOrdering(uint32_t frame, uint16_
 	uint32_t pc = programCounter & 0x00ffffffu;
 	if (pc != 0x000264u && pc != 0x00034au) {
 		return;
-	(void)line; // This line is retained for clarity
+	}
 
 	if (!ShouldLogNexenStartupTrace(frame)) {
 		return;
@@ -1995,20 +1995,12 @@ void GenesisMemoryManager::TraceWramPcTransitionOrdering(uint32_t frame, uint16_
 
 	if (_pcOrderTraceEventCount >= 4096u) {
 		return;
-		_pcOrderTraceFirst264Frame = frame;
-		_pcOrderTraceFirst264Line = line;
-		_pcOrderTraceFirst264Seq = _pcOrderTraceEventCount;
-		_pcOrderTraceFirst264Mclk = _masterClock;
 	}
 
 	bool emitEvent = false;
 	const char* tag = "CPU_MMU_PC_MARK";
 	uint16_t aux = 0;
 
-		_pcOrderTraceFirst34AFrame = frame;
-		_pcOrderTraceFirst34ALine = line;
-		_pcOrderTraceFirst34ASeq = _pcOrderTraceEventCount;
-		_pcOrderTraceFirst34AMclk = _masterClock;
 	if (pc == 0x000264u && !_pcOrderTraceSaw000264) {
 		_pcOrderTraceSaw000264 = true;
 		_pcOrderTraceFirst264Frame = frame;
@@ -2022,53 +2014,11 @@ void GenesisMemoryManager::TraceWramPcTransitionOrdering(uint32_t frame, uint16_
 	if (pc == 0x00034au && !_pcOrderTraceSaw00034A) {
 		_pcOrderTraceSaw00034A = true;
 		_pcOrderTraceFirst34AFrame = frame;
-	if (!_pcOrderTraceTransitionSummaryEmitted && _pcOrderTraceSaw000264 && _pcOrderTraceSaw00034A) {
-		_pcOrderTraceTransitionSummaryEmitted = true;
-
-		uint16_t transitionAux = 0;
-		if (_pcOrderTraceFirst264Seq < _pcOrderTraceFirst34ASeq) {
-			transitionAux |= 0x0100u;
-		} else if (_pcOrderTraceFirst34ASeq < _pcOrderTraceFirst264Seq) {
-			transitionAux |= 0x0200u;
-		} else {
-			transitionAux |= 0x0300u;
-		}
-
-		uint32_t frameDelta = (_pcOrderTraceFirst264Frame >= _pcOrderTraceFirst34AFrame)
-			? (_pcOrderTraceFirst264Frame - _pcOrderTraceFirst34AFrame)
-			: (_pcOrderTraceFirst34AFrame - _pcOrderTraceFirst264Frame);
-		if (frameDelta > 0x00ffu) {
-			frameDelta = 0x00ffu;
-		}
-		transitionAux |= (uint16_t)frameDelta;
-
-		uint32_t packedFrames = ((_pcOrderTraceFirst264Frame & 0x0fffu) << 12) | (_pcOrderTraceFirst34AFrame & 0x0fffu);
-		uint16_t packedLines = (uint16_t)(((_pcOrderTraceFirst264Line & 0x00ffu) << 8) | (_pcOrderTraceFirst34ALine & 0x00ffu));
-		TraceStartupEvent("CPU_MMU_PC_264_34A", packedFrames, packedLines, transitionAux);
-
-		uint64_t firstMclk = _pcOrderTraceFirst264Mclk;
-		uint64_t secondMclk = _pcOrderTraceFirst34AMclk;
-		uint64_t mclkDelta = (firstMclk >= secondMclk) ? (firstMclk - secondMclk) : (secondMclk - firstMclk);
-		TraceStartupEvent(
-			"CPU_MMU_PC_264_34A_MCLK",
-			(uint32_t)(mclkDelta & 0x00ffffffu),
-			(uint16_t)(mclkDelta & 0xffffu),
-			(uint16_t)((mclkDelta >> 16) & 0xffffu));
-	}
 		_pcOrderTraceFirst34ALine = line;
 		_pcOrderTraceFirst34ASeq = _pcOrderTraceEventCount;
 		_pcOrderTraceFirst34AMclk = _masterClock;
 		emitEvent = true;
 		aux |= 0x0002u;
-	_pcOrderTraceFirst264Frame = 0;
-	_pcOrderTraceFirst34AFrame = 0;
-	_pcOrderTraceFirst264Line = 0;
-	_pcOrderTraceFirst34ALine = 0;
-	_pcOrderTraceFirst264Seq = 0;
-	_pcOrderTraceFirst34ASeq = 0;
-	_pcOrderTraceFirst264Mclk = 0;
-	_pcOrderTraceFirst34AMclk = 0;
-	_pcOrderTraceTransitionSummaryEmitted = false;
 	}
 
 	if (_pcOrderTraceHasLastWramPc && _pcOrderTraceLastWramPc != pc) {
