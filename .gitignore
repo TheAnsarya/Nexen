@@ -201,6 +201,10 @@ MovieConverter.Benchmarks/BenchmarkDotNet.Artifacts/
 
 # Generated validation artifacts
 artifacts/
+reference/
+
+# Root temp scratch files
+_tmp*
 
 # Temp build/benchmark/test output files (use artifacts/ folder instead of root)
 bench-*.json

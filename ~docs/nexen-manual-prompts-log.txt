@@ -2622,16 +2622,50 @@ continue;
 
 continue;
 
--------------- queued x4--------------------------------
+---------------------------------------------------------
+continue;
+continue;
+-------------------------------------------------------
+
+add to .gitignore `C:\Users\me\source\repos\Nexen\reference`
+
+remove temp files and add to gitignore file temp files; continue;
+
+-------------------------------------------------------
+continue;
+-------------------------------------------------------
+
+[Nexen] (Genesis/MegaDrive) Make sure SNES emulation is correct and accurate still, and that we haven't accidently messed anything up, and that pansy auto-output still works, so that we can play FFMQ and get a correct FFMQ pansy output or play DQ3r or DW4 or Lufia2 or Zelda3 or whatever with full and correct pansy outputs; pansy files should track everything, make sure they're not not incorrectly using flags, and have separate areas for all tracking; continue; [Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.41 and run the github actions that build the artifacts for the release, and make a big description for the release with all of the changes (using emojis and avoiding mojibake) and add at the top of the release notes add a warning that this release is a bad release for testing and not to be used yet, watch out for 1.5.0 (coming in June!), and make a good title for the release; make sure the build works and artifacts are added to the release; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------
+
+[Nexen] (Genesis/MegaDrive) make a ***big*** change, I mean 1000's of lines of code, work many fixes, but do even more and bigger; Mesen-Expanded runs Sonic, Nexen doesn't, fix that; Continue doing what we've been doing, but with a big aggressive code change push; Update a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` (referenced as Hoshiruna) Genesis code to make big changes; continue; do all the steps; continue; do ***several*** batches in a row and make only one issue per big effort; Focus on fixing anything that stops or impeeds code execution, add more debug and logging so we can track commands/operands one by one to see where we go wrong, make it so emulation doesn't hang, it should continue, fix all the problems; Mesen-Expanded runs Sonic, Nexen doesn't, fix that; continue;
+
+continue;
+continue;
 continue;
 
 [Nexen] (Genesis/Megadrive) go frame by frame through the tracelogs and find what's different between the two emulator runs and fix Nexen code from the `Hoshiruna/Mesen2-Expanded` Genesis code; continue;
 
 continue;
-continue;
-
-[Nexen] (Genesis/MegaDrive) make a ***big*** change, I mean 1000's of lines of code, work many fixes, but do even more and bigger; Mesen-Expanded runs Sonic, Nexen doesn't, fix that; Continue doing what we've been doing, but with a big aggressive code change push; Update a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` (referenced as Hoshiruna) Genesis code to make big changes; continue; do all the steps; continue; do ***several*** batches in a row and make only one issue per big effort; Focus on fixing anything that stops or impeeds code execution, add more debug and logging so we can track commands/operands one by one to see where we go wrong, make it so emulation doesn't hang, it should continue, fix all the problems; Mesen-Expanded runs Sonic, Nexen doesn't, fix that; continue;
-
 continue;
 continue;
 continue;
@@ -2647,27 +2681,7 @@ continue;
 
 
 
-
-
-
-
-
 continue;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

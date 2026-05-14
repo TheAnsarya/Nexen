@@ -836,9 +836,19 @@ namespace {
 			|| StartupTagEquals(tag, "CPU_MMU_PC_REG")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_REG2")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_264_BLOCK")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_ITER")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_ITER_REG")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_ITER_REG2")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_D6")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_SETUP_240")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_SETUP_D6CHG")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_EARLY")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_D6LOW")
+			|| StartupTagEquals(tag, "CPU_MMU_D6SEED_WIN")
 			|| StartupTagEquals(tag, "VDP_DISP_TGL")
 			|| StartupTagEquals(tag, "Z80_RUN_TGL")
-			|| StartupTagEquals(tag, "Z80_BUSREQ")
+				|| StartupTagEquals(tag, "CPU_MMU_PC_264_D6")
+				|| StartupTagEquals(tag, "CPU_MMU_PC_264_D6A1")
 			|| StartupTagEquals(tag, "Z80_RESET")
 			|| StartupTagEquals(tag, "VDP_REG_W")
 			|| StartupTagEquals(tag, "VDP_STAT_W")
@@ -1046,6 +1056,7 @@ void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t instructionProgramC
 	_ioState.CpuInstructionHeartbeat++;
 	if (_cpu && _vdp) {
 		uint32_t frame = _vdp->GetFrameCount();
+		uint16_t line = _vdp->GetScanline();
 		uint32_t pc = instructionProgramCounter & 0x00ffffffu;
 		if (_startupProfilePreferNexenBusHandoff && frame <= 1u) {
 			if (!_startupHasNexenPcAnchor || pc < _startupNexenPcAnchor) {
@@ -1064,11 +1075,80 @@ void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t instructionProgramC
 			uint16_t d7 = (uint16_t)(cpuState.D[7] & 0xFFFFu);
 			TraceStartupEvent("CPU_LOOP", instructionProgramCounter, d0, d7);
 		}
+		if (frame == 4u && line >= 80u && line <= 110u && pc >= 0x000250u && pc <= 0x000270u) {
+			uint16_t d6 = (uint16_t)(cpuState.D[6] & 0xFFFFu);
+			uint16_t sr = cpuState.SR;
+			TraceStartupEvent("CPU_MMU_PC_264_D6", instructionProgramCounter, d6, sr);
+			uint16_t a5 = (uint16_t)(cpuState.A[5] & 0xFFFFu);
+			TraceStartupEvent("CPU_MMU_PC_264_D6A1", instructionProgramCounter, d6, a5);
+		}
+		if (frame <= 6u && pc >= 0x000230u && pc <= 0x000250u) {
+			uint16_t d5 = (uint16_t)(cpuState.D[5] & 0xFFFFu);
+			uint16_t d7 = (uint16_t)(cpuState.D[7] & 0xFFFFu);
+			uint16_t a5 = (uint16_t)(cpuState.A[5] & 0xFFFFu);
+			TraceStartupEvent("CPU_MMU_PC_SETUP_240", instructionProgramCounter, d5, (uint16_t)(((d7 & 0x00ffu) << 8) | (a5 & 0x00ffu)));
+		}
+		if (frame <= 10u && pc >= 0x000220u && pc <= 0x000260u) {
+			static uint16_t lastD6 = 0;
+			static bool hasLastD6 = false;
+			static uint32_t emitCount = 0;
+			uint16_t d6 = (uint16_t)(cpuState.D[6] & 0xFFFFu);
+			if ((!hasLastD6 || d6 != lastD6) && emitCount < 128u) {
+				hasLastD6 = true;
+				lastD6 = d6;
+				emitCount++;
+				uint16_t d5 = (uint16_t)(cpuState.D[5] & 0xFFFFu);
+				uint16_t a6 = (uint16_t)(cpuState.A[6] & 0xFFFFu);
+				TraceStartupEvent("CPU_MMU_PC_SETUP_D6CHG", instructionProgramCounter, d6, (uint16_t)(((d5 & 0x00ffu) << 8) | (a6 & 0x00ffu)));
+			}
+		}
+		if (pc < 0x000300u) {
+			static uint32_t earlyEmitCount = 0;
+			if (earlyEmitCount < 512u) {
+				earlyEmitCount++;
+				uint16_t d6 = (uint16_t)(cpuState.D[6] & 0xFFFFu);
+				uint16_t d7 = (uint16_t)(cpuState.D[7] & 0xFFFFu);
+				TraceStartupEvent("CPU_MMU_EARLY_PC", instructionProgramCounter, d6, d7);
+			}
+		}
 	}
 	if ((_ioState.CpuInstructionHeartbeat & 0xFFu) == 0u) {
 		TraceStartupEvent("CPU_HB", instructionProgramCounter, (uint16_t)(cycleCount & 0xFFFFu), (uint16_t)(_ioState.CpuInstructionHeartbeat & 0xFFFFu));
 	}
 	EmitRuntimeFlowSnapshot(instructionProgramCounter, cycleCount);
+}
+
+void GenesisMemoryManager::TraceCpuEarlyProbe(uint32_t instructionProgramCounter, const GenesisM68kState& cpuState) {
+	uint32_t pc = instructionProgramCounter & 0x00ffffffu;
+	uint16_t d6 = (uint16_t)(cpuState.D[6] & 0xFFFFu);
+	if (d6 >= 0x0100u && d6 <= 0x0120u) {
+		static uint32_t d6SeedWindowEmitCount = 0;
+		if (d6SeedWindowEmitCount < 1024u) {
+			d6SeedWindowEmitCount++;
+			uint16_t d5 = (uint16_t)(cpuState.D[5] & 0xFFFFu);
+			uint16_t a6 = (uint16_t)(cpuState.A[6] & 0xFFFFu);
+			TraceStartupEvent("CPU_MMU_D6SEED_WIN", pc, d6, (uint16_t)(((d5 & 0x00ffu) << 8) | (a6 & 0x00ffu)));
+		}
+	}
+
+	if (pc >= 0x000300u || _startupEarlyCpuProbeCount >= 70000u) {
+		return;
+	}
+
+	EnsureNexenStartupTraceOpen();
+	_startupEarlyCpuProbeCount++;
+	uint16_t d7 = (uint16_t)(cpuState.D[7] & 0xFFFFu);
+	TraceStartupEvent("CPU_MMU_PC_EARLY", pc, d6, d7);
+
+	if (d6 <= 0x0020u && pc >= 0x000220u && pc <= 0x000280u) {
+		static uint32_t lowD6EmitCount = 0;
+		if (lowD6EmitCount < 1024u) {
+			lowD6EmitCount++;
+			uint16_t d5 = (uint16_t)(cpuState.D[5] & 0xFFFFu);
+			uint16_t a6 = (uint16_t)(cpuState.A[6] & 0xFFFFu);
+			TraceStartupEvent("CPU_MMU_PC_D6LOW", pc, d6, (uint16_t)(((d5 & 0x00ffu) << 8) | (a6 & 0x00ffu)));
+		}
+	}
 }
 
 void GenesisMemoryManager::LoadRuntimeFlowTraceConfig() {
@@ -1944,7 +2024,12 @@ void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uin
 		}
 
 		// Keep frame-0 emission limited to bootstrap to better match NexenRef startup chronology.
-		if (frame == 0u && !StartupTagEquals(tag, "STARTUP_BOOT")) {
+		if (frame == 0u
+			&& !StartupTagEquals(tag, "STARTUP_BOOT")
+			&& !StartupTagEquals(tag, "CPU_MMU_PC_EARLY")
+			&& !StartupTagEquals(tag, "CPU_MMU_PC_D6LOW")
+			&& !StartupTagEquals(tag, "CPU_MMU_PC_SETUP_240")
+			&& !StartupTagEquals(tag, "CPU_MMU_PC_SETUP_D6CHG")) {
 			return;
 		}
 	}
@@ -2049,6 +2134,24 @@ void GenesisMemoryManager::TraceWramPcTransitionOrdering(uint32_t frame, uint16_
 		uint16_t blockIndex = (uint16_t)(((address - 0x00ff0000u) >> 4) & 0x00ffu);
 		uint16_t probeAux = (uint16_t)(((blockIndex & 0x00ffu) << 8) | (d6Low & 0x00ffu));
 		TraceStartupEvent("CPU_MMU_PC_264_BLOCK", address & 0x00ffffffu, a0Low, probeAux);
+	}
+
+	if (_cpu
+		&& pc == 0x000264u
+		&& address >= 0x00ff0000u
+		&& address <= 0x00ff002fu
+		&& (address & 0x00000003u) == 0u) {
+		GenesisM68kState& iterState = _cpu->GetState();
+		uint16_t d6Low = (uint16_t)(iterState.D[6] & 0xffffu);
+		uint16_t d7Low = (uint16_t)(iterState.D[7] & 0xffffu);
+		uint16_t srLow = (uint16_t)(iterState.SR & 0x00ffu);
+		uint16_t a0Low = (uint16_t)(iterState.A[0] & 0xffffu);
+		uint16_t a5Low = (uint16_t)(iterState.A[5] & 0xffffu);
+		uint16_t a6Low = (uint16_t)(iterState.A[6] & 0xffffu);
+		uint16_t iterAux = (uint16_t)((address & 0x00ffu) << 8) | (srLow & 0x00ffu);
+		TraceStartupEvent("CPU_MMU_PC_264_ITER", address & 0x00ffffffu, d6Low, iterAux);
+		TraceStartupEvent("CPU_MMU_PC_264_ITER_REG", address & 0x00ffffffu, a0Low, a5Low);
+		TraceStartupEvent("CPU_MMU_PC_264_ITER_REG2", address & 0x00ffffffu, a6Low, d7Low);
 	}
 
 	if (!emitEvent) {
@@ -5167,6 +5270,7 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_tmssUnlockDelayMclk = 0;
 	_tmssCartRegister = 0;
 	_startupTraceSequence = 0;
+	_startupEarlyCpuProbeCount = 0;
 	_startupTraceDigest = 1469598103934665603ull;
 	_startupHasNexenClockAnchor = false;
 	_startupNexenClockAnchor = 0;

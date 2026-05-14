@@ -98,6 +98,7 @@ private:
 	bool _startupHadTmssSignature = false;
 	bool _startupTmssUnlockLogged = false;
 	uint32_t _startupTraceSequence = 0;
+	uint32_t _startupEarlyCpuProbeCount = 0;
 	uint64_t _startupTraceDigest = 0;
 	bool _startupHasNexenClockAnchor = false;
 	uint64_t _startupNexenClockAnchor = 0;
@@ -317,6 +318,7 @@ public:
 
 	void SetCpu(GenesisM68k* cpu) { _cpu = cpu; }
 	void UpdateExecutionHeartbeat(uint32_t instructionProgramCounter, uint64_t cycleCount);
+	void TraceCpuEarlyProbe(uint32_t instructionProgramCounter, const GenesisM68kState& cpuState);
 
 	// Memory access (24-bit address space)
 	uint8_t Read8(uint32_t addr);

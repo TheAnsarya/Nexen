@@ -547,6 +547,10 @@ void GenesisM68k::Exec() {
 		AddCycles(4);
 	}
 
+	if (_memoryManager) {
+		_memoryManager->TraceCpuEarlyProbe(prevPc, _state);
+	}
+
 	uint16_t srBefore = _state.SR;
 	uint32_t d0Before = _state.D[0];
 	uint32_t a0Before = _state.A[0];
