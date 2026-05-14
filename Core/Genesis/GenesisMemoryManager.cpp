@@ -831,6 +831,8 @@ namespace {
 			|| StartupTagEquals(tag, "STARTUP_VDP")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_MARK")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_EDGE")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_34A")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_34A_MCLK")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_REG")
 			|| StartupTagEquals(tag, "VDP_DISP_TGL")
 			|| StartupTagEquals(tag, "Z80_RUN_TGL")
