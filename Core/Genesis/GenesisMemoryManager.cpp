@@ -835,6 +835,7 @@ namespace {
 			|| StartupTagEquals(tag, "CPU_MMU_PC_264_34A_MCLK")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_REG")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_REG2")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_BLOCK")
 			|| StartupTagEquals(tag, "VDP_DISP_TGL")
 			|| StartupTagEquals(tag, "Z80_RUN_TGL")
 			|| StartupTagEquals(tag, "Z80_BUSREQ")
@@ -1992,10 +1993,6 @@ void GenesisMemoryManager::TraceWramPcTransitionOrdering(uint32_t frame, uint16_
 		return;
 	}
 
-	if (!ShouldLogNexenStartupTrace(frame)) {
-		return;
-	}
-
 	if (_pcOrderTraceEventCount >= 4096u) {
 		return;
 	}
@@ -2040,6 +2037,19 @@ void GenesisMemoryManager::TraceWramPcTransitionOrdering(uint32_t frame, uint16_
 
 	_pcOrderTraceHasLastWramPc = true;
 	_pcOrderTraceLastWramPc = pc;
+
+	if (_cpu
+		&& pc == 0x000264u
+		&& address >= 0x00ff0000u
+		&& address <= 0x00ff002fu
+		&& (address & 0x0000000fu) == 0u) {
+		GenesisM68kState& probeState = _cpu->GetState();
+		uint16_t d6Low = (uint16_t)(probeState.D[6] & 0xffffu);
+		uint16_t a0Low = (uint16_t)(probeState.A[0] & 0xffffu);
+		uint16_t blockIndex = (uint16_t)(((address - 0x00ff0000u) >> 4) & 0x00ffu);
+		uint16_t probeAux = (uint16_t)(((blockIndex & 0x00ffu) << 8) | (d6Low & 0x00ffu));
+		TraceStartupEvent("CPU_MMU_PC_264_BLOCK", address & 0x00ffffffu, a0Low, probeAux);
+	}
 
 	if (!emitEvent) {
 		return;
