@@ -590,7 +590,9 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 			if (!firstVblankLine) {
 				vblankFlagActive = true;
 			} else {
-				vblankFlagActive = _hCounter >= GetVBlankFlagStartCycle();
+				// Once VBlank has been entered this frame (which is set at the scanline
+				// boundary), keep the flag asserted throughout the first VBlank line.
+				vblankFlagActive = _vblankEnteredThisFrame || _hCounter >= GetVBlankFlagStartCycle();
 			}
 		}
 
@@ -682,6 +684,27 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 
 			// Keep startup timing checkpoints stable on 68K line boundaries.
 			_currentLineCycleTarget = 488;
+
+			// Assert VBlank flag and fire VInt immediately at the first VBlank scanline
+			// boundary so that the status register is consistent when HCounter resets to 0.
+			if (_scanline == _screenHeight) {
+				_vblankEnteredThisFrame = true;
+				_state.StatusRegister |= VdpStatus::VBlankFlag;
+				if (!_vintFiredThisFrame) {
+					_vintFiredThisFrame = true;
+					_vintPending = true;
+					if (IsVBlankInterruptEnabled()) {
+						_vintNew = true;
+						_state.StatusRegister |= VdpStatus::VIntPending;
+						if (_cpu) {
+							_cpu->SetInterrupt(6);
+						}
+					} else {
+						_vintNew = false;
+						_state.StatusRegister |= VdpStatus::VIntPending;
+					}
+				}
+			}
 
 			if (_scanline >= _totalLines) {
 				// End of frame
@@ -1863,15 +1886,13 @@ void GenesisVdp::ProcessDma() {
 			switch (dmaDestCode) {
 				case 0x01: {
 					uint32_t addr = dmaDst & 0xFFFFu;
-					if (addr + 1u < VramSize) {
-						_vram[addr] = (uint8_t)(word >> 8);
-						_vram[addr + 1u] = (uint8_t)word;
-					}
+					_vram[addr] = (uint8_t)(word >> 8);
+					_vram[(addr + 1u) & 0xFFFFu] = (uint8_t)word;
 					break;
 				}
 				case 0x03: {
 					uint8_t idx = (uint8_t)((dmaDst >> 1) & 0x3Fu);
-					_cram[idx] = word;
+					_cram[idx] = word & 0x0EEEu;
 					UpdatePaletteEntry(idx);
 					break;
 				}

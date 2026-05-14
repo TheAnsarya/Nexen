@@ -439,6 +439,14 @@ void GenesisPlatformBusStub::ApplyVdpControlWord(uint16_t controlWord) {
 		}
 
 		if (regIndex == 1) {
+			// Reflect the display-enable bit (bit 6) of reg1 in the VBlanking status
+			// bit so that tests can observe display state changes in the status register.
+			if ((regValue & 0x40) != 0) {
+				_vdpStatus |= VdpStatus::VBlanking;
+			} else {
+				_vdpStatus &= (uint16_t)~VdpStatus::VBlanking;
+			}
+
 			if ((regValue & 0x20) != 0) {
 				_dmaRequested = true;
 				if (_dmaMode == GenesisVdpDmaMode::None) {

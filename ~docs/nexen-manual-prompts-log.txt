@@ -2602,10 +2602,15 @@ yes do all those three things; [Nexen] continue with big batches;
 
 [Nexen] sure do all those three things; make it so you can load both emulators with a given rom and a temporary tracelog path (one for Nexen, one for Mesen-Expanded) and turn on debugging tracelogging to those temp files, and run the roms for like 10 to 20 seconds, and then compare those two tracelogs to see where they diverge and focus on fixing the differences (issues, code changes, etc); continue with big batches;
 
+[Nexen] sure do all those three things; make it so you can load both emulators with a given rom and a temporary tracelog path (one for Nexen, one for Mesen-Expanded) and turn on debugging tracelogging to those temp files, and run the roms for like 10 to 20 seconds, and then compare those two tracelogs to see where they diverge and focus on fixing the differences (issues, code changes, etc); continue with big batches;
 
+[Nexen] (Genesis/Megadrive) go frame by frame through the tracelogs and find what's different between the two emulator runs and fix Nexen code from the `Hoshiruna/Mesen2-Expanded` Genesis code; Add targeted Genesis CPU/MMU transition instrumentation for pc=000264 to pc=00034A ordering in Nexen.; Re-run the same 15s dual-emulator capture 
 
+continue;
 
+continue;
 
+[Nexen] (Genesis/Megadrive) Show me the two tracelogs that are created when running the double-emulator comparison test (open in our current VSCode instance); continue;
 
 
 

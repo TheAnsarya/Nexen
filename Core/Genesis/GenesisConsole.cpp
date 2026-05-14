@@ -194,8 +194,8 @@ GenesisConsole::~GenesisConsole() {
 string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 	string cpuSummary = _cpu ? _cpu->BuildCrashProbeSummary() : "cpu=missing";
 	string cpuBoundarySummary = _cpu ? _cpu->BuildDispatchBoundaryProbeSummary() : "cpuBoundary=missing";
-	string mmuFlowSummary = _memoryManager ? _memoryManager->BuildRuntimeFlowTraceSummary() : "mmuFlow=missing";
-	string mmuOpSummary = _memoryManager ? _memoryManager->BuildRuntimeOpTraceSummary() : "mmuOps=missing";
+	string mmuFlowSummary = _memoryManager ? _memoryManager->BuildRuntimeFlowTraceSummary() : "enabled=0";
+	string mmuOpSummary = _memoryManager ? _memoryManager->BuildRuntimeOpTraceSummary() : "enabled=0";
 	return std::format(
 		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={} mmuOps={}",
 		_runFrameEntryCount,
@@ -475,9 +475,11 @@ void GenesisConsole::RunFrame() {
 
 	uint32_t nextFrame = _vdp->GetFrameCount();
 	if (nextFrame == frame) {
-		// Last resort fallback: force enough master clocks to cross scanline/frame boundaries.
-		for (uint32_t i = 0; i < 8 && nextFrame == frame; i++) {
-			_cpu->ForceClockAdvance(488 * 4);
+		// Last resort fallback: force enough master clocks to cross a full frame boundary.
+		// One NTSC frame = 262 scanlines x 488 cycles = 127856 cycles; use 320 iterations
+		// of 488 cycles (= 156160 cycles) to guarantee crossing both NTSC and PAL frames.
+		for (uint32_t i = 0; i < 320 && nextFrame == frame; i++) {
+			_cpu->ForceClockAdvance(488);
 			nextFrame = _vdp->GetFrameCount();
 			_runFrameForcedAdvanceCount++;
 		}

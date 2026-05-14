@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Shared/BaseControlManager.h"
 #include "Shared/Emulator.h"
 #include "Shared/EmuSettings.h"
@@ -132,7 +132,9 @@ void BaseControlManager::ClearDevices() {
 	_controlDevices.clear();
 
 	for (const shared_ptr<BaseControlDevice>& device : _systemDevices) {
-		RegisterControlDevice(device);
+		if (device) {
+			RegisterControlDevice(device);
+		}
 	}
 }
 
