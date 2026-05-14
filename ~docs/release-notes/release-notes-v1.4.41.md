@@ -47,6 +47,16 @@ Nexen v1.4.41 - Modern Forge, Testing Only
 - `dotnet build scripts/IconRasterizer/IconRasterizer.csproj -c Release` passed.
 - `Core.Tests.shadow.exe --gtest_filter="Snes*:*Cdl*:*Label*"` passed (216/216).
 
+## 📊 Progress Report (Live Release State)
+
+| Track | Status | Notes |
+|---|---|---|
+| 🧰 Modernization updates | ✅ Completed | .NET 10 SDK pin + package refresh landed and pushed |
+| 🧪 Targeted validation | ✅ Completed | SNES/CDL/label validation passed (216/216) |
+| 🚀 Release metadata | ✅ Completed | v1.4.41 tag + release notes updated |
+| 🏗️ Artifact pipeline | 🔄 In Progress | CI reruns active to finish full cross-platform asset publish |
+| 🎯 Final release verification | 🔄 In Progress | Waiting for full matrix completion + asset confirmation |
+
 ## 📦 Expected Release Assets (v1.4.41)
 
 - Nexen-Windows-x64-v1.4.41.exe
