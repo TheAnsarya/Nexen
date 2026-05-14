@@ -26,7 +26,15 @@ foreach ($component in $config.components) {
 		if (Test-Path $file) {
 			$allowedFileSet.Add($file) | Out-Null
 			$lineSum += (Get-Content -Path $file | Measure-Object -Line).Lines
-			$byteSum += (Get-Item -Path $file).Length
+
+			# Use Git blob size to avoid CRLF/LF checkout differences causing policy drift on CI.
+			$blobSpec = "HEAD:$file"
+			$blobSizeRaw = git cat-file -s $blobSpec 2>$null
+			if ($LASTEXITCODE -eq 0 -and $blobSizeRaw) {
+				$byteSum += [int64]$blobSizeRaw
+			} else {
+				$byteSum += (Get-Item -Path $file).Length
+			}
 		}
 	}
 

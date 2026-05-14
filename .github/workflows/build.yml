@@ -334,6 +334,22 @@ jobs:
           sudo apt-get update -qy
           sudo apt-get install -qy libsdl2-dev ccache xvfb # The compilers are already installed on GitHub's runners.
 
+      - name: Setup vcpkg dependencies (Linux)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git vcpkg
+          ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+
+          if [ "${{ matrix.platform.path }}" = "x64" ]; then
+            triplet="x64-linux"
+          else
+            triplet="arm64-linux"
+          fi
+
+          ./vcpkg/vcpkg install miniz magic-enum --triplet "$triplet" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build
+          echo "VCPKG_TRIPLET=$triplet" >> "$GITHUB_ENV"
+          echo "VCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg_installed" >> "$GITHUB_ENV"
+
       # Resolve a GCC toolchain with C++23 <format> support without Launchpad PPA dependencies.
       - name: Resolve GCC toolchain (>=13)
         if: matrix.compiler == 'gcc'
@@ -413,12 +429,16 @@ jobs:
       - name: Build Nexen
         run: |
           set -o pipefail
+
+          VCPKG_INCLUDE="-I${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/include"
+          VCPKG_LINK="-L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lminiz"
+
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
             CC_BIN="${CC:-gcc-14}"
             CXX_BIN="${CXX:-g++-14}"
-            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC="$CC_BIN" CXX="$CXX_BIN" 2>&1 | tee build-linux.log
+            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC="$CC_BIN" CXX="$CXX_BIN" EXTRA_CXXFLAGS="$VCPKG_INCLUDE $VCPKG_LINK" 2>&1 | tee build-linux.log
           else
-            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++" 2>&1 | tee build-linux.log
+            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++ $VCPKG_INCLUDE $VCPKG_LINK" 2>&1 | tee build-linux.log
           fi
 
       - name: Capture Linux runtime dependency report
@@ -586,6 +606,22 @@ jobs:
           sudo apt-get update -qy
           sudo apt-get install -qy libsdl2-dev libfuse2 ccache xvfb # The compilers are already installed on GitHub's runners.
 
+      - name: Setup vcpkg dependencies (AppImage)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git vcpkg
+          ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+
+          if [ "${{ matrix.platform.name }}" = "x64" ]; then
+            triplet="x64-linux"
+          else
+            triplet="arm64-linux"
+          fi
+
+          ./vcpkg/vcpkg install miniz magic-enum --triplet "$triplet" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build
+          echo "VCPKG_TRIPLET=$triplet" >> "$GITHUB_ENV"
+          echo "VCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg_installed" >> "$GITHUB_ENV"
+
       # Install LLVM 18 for C++23 support (ubuntu-22.04 default clang doesn't support c++23)
       # Also install libc++ since the system libstdc++ doesn't have <format>
       - name: Install LLVM 18
@@ -604,6 +640,7 @@ jobs:
       - name: Build Nexen (AppImage)
         run: |
           set -o pipefail
+          export NEXEN_EXTRA_CXXFLAGS="-I${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/include -L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lminiz"
           ${{ matrix.platform.script }} 2>&1 | tee build-appimage.log
 
       - name: Capture runtime dependency report (AppImage publish)
@@ -776,6 +813,22 @@ jobs:
         run: |
           brew install sdl2 ccache llvm
 
+      - name: Setup vcpkg dependencies (macOS)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git vcpkg
+          ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+
+          if [ "${{ matrix.platform.arch }}" = "arm64" ]; then
+            triplet="arm64-osx"
+          else
+            triplet="x64-osx"
+          fi
+
+          ./vcpkg/vcpkg install miniz magic-enum --triplet "$triplet" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build
+          echo "VCPKG_TRIPLET=$triplet" >> "$GITHUB_ENV"
+          echo "VCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg_installed" >> "$GITHUB_ENV"
+
       - name: Setup CCache
         uses: ./.github/actions/setup-ccache-action
         with:
@@ -796,7 +849,8 @@ jobs:
           # EXTRA_CXXFLAGS is appended to CXXFLAGS/CFLAGS alongside NEXENFLAGS in the makefile
           LIBCXX_FLAGS="-stdlib=libc++ -nostdinc++ -isystem ${LLVM_PREFIX}/include/c++/v1"
           LINK_FLAGS="-L${LLVM_PREFIX}/lib/c++ -Wl,-rpath,${LLVM_PREFIX}/lib/c++ -lc++ -lc++abi"
-          make CC="$CC" CXX="$CXX" EXTRA_CXXFLAGS="${LIBCXX_FLAGS} ${LINK_FLAGS}" ${{ matrix.make_flags }} -j$(sysctl -n hw.logicalcpu)
+          VCPKG_FLAGS="-I${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/include -L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lminiz"
+          make CC="$CC" CXX="$CXX" EXTRA_CXXFLAGS="${LIBCXX_FLAGS} ${LINK_FLAGS} ${VCPKG_FLAGS}" ${{ matrix.make_flags }} -j$(sysctl -n hw.logicalcpu)
 
       - name: Sign binary
         env:

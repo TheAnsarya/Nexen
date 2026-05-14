@@ -1,26 +1,26 @@
-﻿# Third-Party Source Inventory
+# Third-Party Source Inventory
 
-Generated: 2026-05-12 09:57:21-04:00
+Generated: 2026-05-14 15:44:15-04:00
 
 ## Summary
 
 - Components tracked: 8
 - Vendored files tracked: 134
 - Vendored lines tracked: 46583
-- Vendored bytes tracked: 1517314
-- Largest component: Lua (1113794 bytes, 31822 lines)
+- Vendored bytes tracked: 1467315
+- Largest component: Lua (1078704 bytes, 31822 lines)
 
 ## Component Breakdown
 
 | Component | Pattern | Status | Preferred Source | Files | Lines | Bytes | Max Files | Max Lines | Max Bytes |
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
-| Lua | Lua/* | temporary-vendored | vcpkg/lua | 103 | 31822 | 1113794 | 103 | 31822 | 1113794 |
-| HQX | Utilities/HQX/* | temporary-vendored | package-backed video filter bundle | 6 | 9893 | 179016 | 6 | 9893 | 179016 |
-| Scale2x | Utilities/Scale2x/* | temporary-vendored | package-backed video filter bundle | 6 | 1282 | 52159 | 6 | 1282 | 52159 |
-| xBRZ | Utilities/xBRZ/* | temporary-vendored | package-backed video filter bundle | 3 | 1042 | 48228 | 3 | 1042 | 48228 |
-| snes_ntsc | Utilities/NTSC/snes_ntsc* | temporary-vendored | package-backed video filter bundle | 4 | 753 | 35176 | 4 | 753 | 35176 |
-| nes_ntsc | Utilities/NTSC/nes_ntsc* | temporary-vendored | package-backed video filter bundle | 4 | 778 | 33193 | 4 | 778 | 33193 |
-| KreedSaiEagle | Utilities/KreedSaiEagle/* | temporary-vendored | package-backed video filter bundle | 4 | 382 | 28460 | 4 | 382 | 28460 |
+| Lua | Lua/* | temporary-vendored | vcpkg/lua | 103 | 31822 | 1078704 | 103 | 31822 | 1113794 |
+| HQX | Utilities/HQX/* | temporary-vendored | package-backed video filter bundle | 6 | 9893 | 169035 | 6 | 9893 | 179016 |
+| Scale2x | Utilities/Scale2x/* | temporary-vendored | package-backed video filter bundle | 6 | 1282 | 50698 | 6 | 1282 | 52159 |
+| xBRZ | Utilities/xBRZ/* | temporary-vendored | package-backed video filter bundle | 3 | 1042 | 46987 | 3 | 1042 | 48228 |
+| snes_ntsc | Utilities/NTSC/snes_ntsc* | temporary-vendored | package-backed video filter bundle | 4 | 753 | 34286 | 4 | 753 | 35176 |
+| nes_ntsc | Utilities/NTSC/nes_ntsc* | temporary-vendored | package-backed video filter bundle | 4 | 778 | 32276 | 4 | 778 | 33193 |
+| KreedSaiEagle | Utilities/KreedSaiEagle/* | temporary-vendored | package-backed video filter bundle | 4 | 382 | 28041 | 4 | 382 | 28460 |
 | sms_ntsc | Utilities/NTSC/sms_ntsc* | temporary-vendored | package-backed video filter bundle | 4 | 631 | 27288 | 4 | 631 | 27288 |
 
 ## Policy
