@@ -2673,6 +2673,25 @@ do we need `miniz`? it is causing all of our build problems; remove it if we don
 
 continue;
 
+The github build action failed: fix as many warnings as you can; remove the warning regression limit gate on the build and instead add a bit to the copilot instructions to fix warnings regularly; fix the issue and keep working towards a clean github artifact build for windows and make sure the 1.4.41 release is updated with those artifacts; continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
