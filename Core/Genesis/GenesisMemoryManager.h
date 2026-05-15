@@ -141,6 +141,11 @@ private:
 	uint64_t _pcOrderTraceFirst264Mclk = 0;
 	uint64_t _pcOrderTraceFirst34AMclk = 0;
 	bool _pcOrderTraceTransitionSummaryEmitted = false;
+	bool _pcOrderTrace264LoopSeen = false;
+	uint16_t _pcOrderTrace264FirstD6 = 0;
+	uint16_t _pcOrderTrace264LastD6 = 0;
+	uint32_t _pcOrderTrace264IterCount = 0;
+	bool _pcOrderTrace264To34ASummaryEmitted = false;
 	uint8_t _startupArbitrationDigest = 0;
 	uint8_t _startupArbitrationEpoch = 0;
 	uint16_t _startupLastArbitrationMclk = 0;

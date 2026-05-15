@@ -839,12 +839,16 @@ namespace {
 			|| StartupTagEquals(tag, "CPU_MMU_PC_264_ITER")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_264_ITER_REG")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_264_ITER_REG2")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_SUM")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_SUM2")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_264_D6")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_SETUP_240")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_SETUP_D6CHG")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_EARLY")
 			|| StartupTagEquals(tag, "CPU_MMU_PC_D6LOW")
 			|| StartupTagEquals(tag, "CPU_MMU_D6SEED_WIN")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_MOVEM")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_MOVEM_REG")
 			|| StartupTagEquals(tag, "VDP_DISP_TGL")
 			|| StartupTagEquals(tag, "Z80_RUN_TGL")
 				|| StartupTagEquals(tag, "CPU_MMU_PC_264_D6")
@@ -1139,6 +1143,21 @@ void GenesisMemoryManager::TraceCpuEarlyProbe(uint32_t instructionProgramCounter
 	_startupEarlyCpuProbeCount++;
 	uint16_t d7 = (uint16_t)(cpuState.D[7] & 0xFFFFu);
 	TraceStartupEvent("CPU_MMU_PC_EARLY", pc, d6, d7);
+
+	if ((pc == 0x00021au || pc == 0x00021eu || pc == 0x000220u
+		|| pc == 0x00025cu || pc == 0x00025eu || pc == 0x000260u || pc == 0x000262u || pc == 0x000264u)
+		&& _startupEarlyCpuProbeCount <= 72000u) {
+		static uint32_t movemWindowEmitCount = 0;
+		if (movemWindowEmitCount < 1024u) {
+			movemWindowEmitCount++;
+			uint16_t d5 = (uint16_t)(cpuState.D[5] & 0xFFFFu);
+			uint16_t a5 = (uint16_t)(cpuState.A[5] & 0xFFFFu);
+			uint16_t a6 = (uint16_t)(cpuState.A[6] & 0xFFFFu);
+			uint16_t movemAux = (uint16_t)(((d5 & 0x00ffu) << 8) | (d7 & 0x00ffu));
+			TraceStartupEvent("CPU_MMU_PC_MOVEM", pc, d6, movemAux);
+			TraceStartupEvent("CPU_MMU_PC_MOVEM_REG", a5, a6, d5);
+		}
+	}
 
 	if (d6 <= 0x0020u && pc >= 0x000220u && pc <= 0x000280u) {
 		static uint32_t lowD6EmitCount = 0;
@@ -2149,9 +2168,23 @@ void GenesisMemoryManager::TraceWramPcTransitionOrdering(uint32_t frame, uint16_
 		uint16_t a5Low = (uint16_t)(iterState.A[5] & 0xffffu);
 		uint16_t a6Low = (uint16_t)(iterState.A[6] & 0xffffu);
 		uint16_t iterAux = (uint16_t)((address & 0x00ffu) << 8) | (srLow & 0x00ffu);
+		if (!_pcOrderTrace264LoopSeen) {
+			_pcOrderTrace264LoopSeen = true;
+			_pcOrderTrace264FirstD6 = d6Low;
+		}
+		_pcOrderTrace264LastD6 = d6Low;
+		_pcOrderTrace264IterCount++;
 		TraceStartupEvent("CPU_MMU_PC_264_ITER", address & 0x00ffffffu, d6Low, iterAux);
 		TraceStartupEvent("CPU_MMU_PC_264_ITER_REG", address & 0x00ffffffu, a0Low, a5Low);
 		TraceStartupEvent("CPU_MMU_PC_264_ITER_REG2", address & 0x00ffffffu, a6Low, d7Low);
+	}
+
+	if (_cpu && !_pcOrderTrace264To34ASummaryEmitted && _pcOrderTrace264LoopSeen && _pcOrderTraceSaw00034A && pc == 0x00034au) {
+		_pcOrderTrace264To34ASummaryEmitted = true;
+		GenesisM68kState& summaryState = _cpu->GetState();
+		uint16_t d6At34A = (uint16_t)(summaryState.D[6] & 0xffffu);
+		TraceStartupEvent("CPU_MMU_PC_264_SUM", 0x000264u, _pcOrderTrace264FirstD6, _pcOrderTrace264LastD6);
+		TraceStartupEvent("CPU_MMU_PC_264_SUM2", (uint32_t)(_pcOrderTrace264IterCount & 0x00ffffffu), d6At34A, (uint16_t)(_pcOrderTrace264IterCount >> 16));
 	}
 
 	if (!emitEvent) {
@@ -5293,6 +5326,11 @@ void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
 	_pcOrderTraceFirst264Mclk = 0;
 	_pcOrderTraceFirst34AMclk = 0;
 	_pcOrderTraceTransitionSummaryEmitted = false;
+	_pcOrderTrace264LoopSeen = false;
+	_pcOrderTrace264FirstD6 = 0;
+	_pcOrderTrace264LastD6 = 0;
+	_pcOrderTrace264IterCount = 0;
+	_pcOrderTrace264To34ASummaryEmitted = false;
 	_startupDisplayTransitionCount = 0;
 	_startupNextCheckpointFrame = 0;
 	_startupHasLastDisplayState = false;

@@ -2644,10 +2644,12 @@ and then continue with the 1.4.41. release; continue;
 
 The 1.4.41 release has 1.4.39 descriptiopn; make a different description for the 1.4.41 release with emojis and progress reports and all that and did you already make it? update the release with the right desctiption
 
-[Nexen] (Genesis/MegaDrive) Make sure SNES emulation is correct and accurate still, and that we haven't accidently messed anything up, and that pansy auto-output still works, so that we can play FFMQ and get a correct FFMQ pansy output or play DQ3r or DW4 or Lufia2 or Zelda3 or whatever with full and correct pansy outputs; pansy files should track everything, make sure they're not not incorrectly using flags, and have separate areas for all tracking; continue; 
+[Nexen] (Genesis/MegaDrive) Make sure SNES emulation is correct and accurate still, and that we haven't accidently messed anything up, and that pansy auto-output still works, so that we can play FFMQ and get a correct FFMQ pansy output or play DQ3r or DW4 or Lufia2 or Zelda3 or whatever with full and correct pansy outputs; pansy files should track everything, make sure they're not not incorrectly using flags, and have separate areas for all tracking; continue;
 
 --- queued x7
 continue;
+
+[Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.41 and run the github actions that build the artifacts for the release; continue;
 
 
 

@@ -8,8 +8,8 @@
 	<AssemblyName>Nexen</AssemblyName>
 	<RootNamespace>Nexen</RootNamespace>
 	<StartupObject>Nexen.Program</StartupObject>
-	<Version>1.4.36</Version>
-	<FileVersion>1.4.36</FileVersion>
+	<Version>1.4.41</Version>
+	<FileVersion>1.4.41</FileVersion>
 	<Copyright>(C) 2026 TheAnsarya</Copyright>
   </PropertyGroup>
 	<PropertyGroup>
@@ -47,8 +47,8 @@
 		<CFBundleName>Nexen</CFBundleName> <!-- Also defines .app file name -->
 		<CFBundleDisplayName>Nexen</CFBundleDisplayName>
 		<CFBundleIdentifier>com.nexen</CFBundleIdentifier>
-		<CFBundleVersion>1.4.35</CFBundleVersion>
-		<CFBundleShortVersionString>1.4.35</CFBundleShortVersionString>
+		<CFBundleVersion>1.4.41</CFBundleVersion>
+		<CFBundleShortVersionString>1.4.41</CFBundleShortVersionString>
 		<CFBundlePackageType>APPL</CFBundlePackageType>
 		<CFBundleSignature>????</CFBundleSignature>
 		<CFBundleExecutable>Nexen</CFBundleExecutable>
@@ -110,8 +110,8 @@
 	</ItemGroup>
   <ItemGroup>
 	<PackageReference Include="Avalonia" Version="12.0.3" />
-	<PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.0" />
-	<PackageReference Include="Avalonia.Controls.DataGrid" Version="12.0.0" />
+	<PackageReference Include="Avalonia.AvaloniaEdit" Version="12.0.3" />
+	<PackageReference Include="Avalonia.Controls.DataGrid" Version="12.0.3" />
 	<PackageReference Include="Avalonia.Desktop" Version="12.0.3" />
 	<PackageReference Include="Avalonia.Controls.ColorPicker" Version="12.0.3" />
 	<PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.1" Condition="'$(OptimizeUi)'!='true'" />

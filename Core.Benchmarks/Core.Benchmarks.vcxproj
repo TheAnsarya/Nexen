@@ -30,7 +30,7 @@
 		<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
 	</ImportGroup>
 	<PropertyGroup>
-		<NexenUsePackagedLua Condition="'$(NexenUsePackagedLua)'==''">true</NexenUsePackagedLua>
+		<NexenUsePackagedLua Condition="'$(NexenUsePackagedLua)'==''">false</NexenUsePackagedLua>
 		<NexenUsePackagedLuaDefine Condition="'$(NexenUsePackagedLua)'=='true'">1</NexenUsePackagedLuaDefine>
 		<NexenUsePackagedLuaDefine Condition="'$(NexenUsePackagedLua)'!='true'">0</NexenUsePackagedLuaDefine>
 		<NexenPackagedLuaLinkLib Condition="'$(NexenUsePackagedLua)'=='true'">lua.lib;</NexenPackagedLuaLinkLib>
@@ -65,7 +65,7 @@
 			<OptimizeReferences>true</OptimizeReferences>
 			<GenerateDebugInformation>true</GenerateDebugInformation>
 			<AdditionalLibraryDirectories>$(VCPKG_INSTALLED_DIR)\x64-windows\lib;$(VCPKG_INSTALLED_DIR)\x64-windows\lib\manual-link;$(VCPKG_INSTALLED_DIR)\x64-windows-static\lib;$(VCPKG_INSTALLED_DIR)\x64-windows-static\lib\manual-link;$(VCPKG_ROOT)\installed\x64-windows\lib;$(VCPKG_ROOT)\installed\x64-windows\lib\manual-link;$(VCPKG_ROOT)\installed\x64-windows-static\lib;$(VCPKG_ROOT)\installed\x64-windows-static\lib\manual-link;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-			<AdditionalDependencies>$(NexenPackagedLuaLinkLib)winmm.lib;benchmark.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<AdditionalDependencies>winmm.lib;benchmark.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 	<ItemGroup>

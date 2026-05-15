@@ -5,6 +5,22 @@ All notable changes to Nexen are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.41] - 2026-05-14
+
+### Fixed
+
+- **Genesis startup trace stabilization instrumentation** — expanded WRAM startup probes around `pc=000264`/`pc=00034A` to narrow remaining divergence and ensure reproducible parity diagnostics in reduced compare runs (#2218)
+- **Release build compatibility in benchmark project** — removed redundant benchmark package references that forced conflicting transitive versions during full-solution Release builds
+
+### Changed
+
+- **UI release metadata alignment** — updated UI version metadata and macOS bundle version fields to `1.4.41`
+- **Avalonia package consistency** — aligned key UI Avalonia package versions to `12.0.3` to match the active UI core dependency line
+
+### Validation
+
+- **Release build gate** — `Build Nexen Release x64` completed successfully for packaging targets
+
 ## [1.4.38] - 2026-04-26
 
 ### Fixed
