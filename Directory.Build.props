@@ -4,6 +4,11 @@
 		     The root vcpkg.json declares dependencies (gtest, benchmark, etc.)
 		     and vcpkg-configuration.json pins the baseline. -->
 		<VcpkgEnableManifest>true</VcpkgEnableManifest>
+		<VcpkgInstalledDir Condition="'$(VcpkgInstalledDir)'=='' and Exists('$(MSBuildThisFileDirectory)vcpkg_installed')">$(MSBuildThisFileDirectory)vcpkg_installed</VcpkgInstalledDir>
+		<NexenVcpkgTriplet Condition="'$(VcpkgTriplet)'!=''">$(VcpkgTriplet)</NexenVcpkgTriplet>
+		<NexenVcpkgTriplet Condition="'$(NexenVcpkgTriplet)'=='' and '$(Platform)'=='x64'">x64-windows</NexenVcpkgTriplet>
+		<NexenVcpkgInstalledRoot Condition="'$(VcpkgInstalledDir)'!=''">$([MSBuild]::EnsureTrailingSlash('$(VcpkgInstalledDir)'))</NexenVcpkgInstalledRoot>
+		<NexenVcpkgIncludeDir Condition="'$(NexenVcpkgInstalledRoot)'!='' and '$(NexenVcpkgTriplet)'!=''">$(NexenVcpkgInstalledRoot)$(NexenVcpkgTriplet)\include</NexenVcpkgIncludeDir>
 		<!-- Keep Lua linkage mode centralized so all C++ projects evaluate the same switch. -->
 		<NexenUsePackagedLua Condition="'$(NexenUsePackagedLua)'==''">true</NexenUsePackagedLua>
 		<NexenIgnorePackagedLuaImportLib Condition="'$(NexenUsePackagedLua)'=='' Or '$(NexenUsePackagedLua)'=='false' Or '$(NexenUsePackagedLua)'=='False'">lua.lib;</NexenIgnorePackagedLuaImportLib>
@@ -13,6 +18,9 @@
 	</PropertyGroup>
 
 	<ItemDefinitionGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
+		<ClCompile>
+			<AdditionalIncludeDirectories Condition="'$(NexenVcpkgIncludeDir)'!=''">$(NexenVcpkgIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+		</ClCompile>
 		<Link>
 			<!-- Avoid mixed vendored+packaged Lua symbol collisions in full-solution links. -->
 			<IgnoreSpecificDefaultLibraries>$(NexenIgnorePackagedLuaImportLib)%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
