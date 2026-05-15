@@ -1296,6 +1296,10 @@
     <NexenUsePackagedLua Condition="'$(NexenUsePackagedLua)'==''">false</NexenUsePackagedLua>
     <NexenUsePackagedLuaDefine Condition="'$(NexenUsePackagedLua)'=='true'">1</NexenUsePackagedLuaDefine>
     <NexenUsePackagedLuaDefine Condition="'$(NexenUsePackagedLua)'!='true'">0</NexenUsePackagedLuaDefine>
+    <NexenVcpkgTriplet Condition="'$(VcpkgTriplet)'!=''">$(VcpkgTriplet)</NexenVcpkgTriplet>
+    <NexenVcpkgTriplet Condition="'$(NexenVcpkgTriplet)'=='' and '$(Platform)'=='x64'">x64-windows</NexenVcpkgTriplet>
+    <NexenVcpkgInstalledRoot Condition="'$(VcpkgInstalledDir)'!=''">$([MSBuild]::EnsureTrailingSlash('$(VcpkgInstalledDir)'))</NexenVcpkgInstalledRoot>
+    <NexenVcpkgIncludeDir Condition="'$(NexenVcpkgInstalledRoot)'!=''">$(NexenVcpkgInstalledRoot)$(NexenVcpkgTriplet)\include</NexenVcpkgIncludeDir>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -1343,8 +1347,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <CallingConvention>Cdecl</CallingConvention>
-      <AdditionalIncludeDirectories>../
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;$(NexenVcpkgIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
@@ -1376,8 +1379,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>../
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;$(NexenVcpkgIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
@@ -1410,8 +1412,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;$(NexenVcpkgIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
@@ -1442,8 +1443,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;$(NexenVcpkgIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
