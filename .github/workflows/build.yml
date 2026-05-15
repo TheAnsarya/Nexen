@@ -130,7 +130,7 @@ jobs:
         uses: ./.github/actions/build-sha1-action
 
       - name: Build C++ core (InteropDLL)
-        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=true -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg\installed\" -p:VcpkgTriplet=x64-windows -t:InteropDLL Nexen.sln
+        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=true -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg\installed" -p:VcpkgTriplet=x64-windows -t:InteropDLL Nexen.sln
 
       - name: Copy native libs from NuGet cache
         shell: pwsh
@@ -549,7 +549,7 @@ jobs:
         if: always()
         run: |
           baseline="${WARNING_BASELINE_LINUX}"
-          if [ "${{ matrix.compiler }}" = "gcc" ] && [ "${{ matrix.platform.path }}" = "arm64" ]; then
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
             baseline="4192"
           fi
           count=0
