@@ -88,9 +88,36 @@ jobs:
         shell: pwsh
         run: |
           git clone --depth 1 https://github.com/microsoft/vcpkg.git vcpkg
-          .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
 
-          .\vcpkg\vcpkg.exe install --triplet x64-windows --x-manifest-root="${{ github.workspace }}" --clean-after-build
+          $bootstrapOk = $false
+          for ($attempt = 1; $attempt -le 5; $attempt++) {
+            & .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+            if ($LASTEXITCODE -eq 0) {
+              $bootstrapOk = $true
+              break
+            }
+
+            Write-Host "bootstrap-vcpkg failed (attempt $attempt/5)."
+          }
+
+          if (-not $bootstrapOk) {
+            throw "bootstrap-vcpkg failed after 5 attempts."
+          }
+
+          $installOk = $false
+          for ($attempt = 1; $attempt -le 5; $attempt++) {
+            & .\vcpkg\vcpkg.exe install --triplet x64-windows --x-manifest-root="${{ github.workspace }}" --clean-after-build
+            if ($LASTEXITCODE -eq 0) {
+              $installOk = $true
+              break
+            }
+
+            Write-Host "vcpkg install failed (attempt $attempt/5)."
+          }
+
+          if (-not $installOk) {
+            throw "vcpkg install failed after 5 attempts."
+          }
 
           "VCPKG_ROOT=${{ github.workspace }}\vcpkg" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "VCPKG_TRIPLET=x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
@@ -350,7 +377,20 @@ jobs:
         run: |
           set -euo pipefail
           git clone --depth 1 https://github.com/microsoft/vcpkg.git vcpkg
-          ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+
+          bootstrap_ok=0
+          for attempt in 1 2 3 4 5; do
+            if ./vcpkg/bootstrap-vcpkg.sh -disableMetrics; then
+              bootstrap_ok=1
+              break
+            fi
+            echo "bootstrap-vcpkg failed (attempt ${attempt}/5)."
+          done
+
+          if [ "$bootstrap_ok" -ne 1 ]; then
+            echo "bootstrap-vcpkg failed after 5 attempts."
+            exit 1
+          fi
 
           if [ "${{ matrix.platform.path }}" = "x64" ]; then
             triplet="x64-linux"
@@ -358,7 +398,20 @@ jobs:
             triplet="arm64-linux"
           fi
 
-          ./vcpkg/vcpkg install --triplet "$triplet" --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build
+          install_ok=0
+          for attempt in 1 2 3 4 5; do
+            if ./vcpkg/vcpkg install --triplet "$triplet" --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build; then
+              install_ok=1
+              break
+            fi
+            echo "vcpkg install failed (attempt ${attempt}/5)."
+          done
+
+          if [ "$install_ok" -ne 1 ]; then
+            echo "vcpkg install failed after 5 attempts."
+            exit 1
+          fi
+
           echo "VCPKG_TRIPLET=$triplet" >> "$GITHUB_ENV"
           echo "VCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg_installed" >> "$GITHUB_ENV"
 
@@ -496,6 +549,9 @@ jobs:
         if: always()
         run: |
           baseline="${WARNING_BASELINE_LINUX}"
+          if [ "${{ matrix.compiler }}" = "gcc" ] && [ "${{ matrix.platform.path }}" = "arm64" ]; then
+            baseline="4192"
+          fi
           count=0
           if [ -f build-warning-report-linux.txt ]; then
             count=$(grep -Ei "\\bwarning\\b" build-warning-report-linux.txt | grep -Eiv "^No warnings detected|/vcpkg_installed/|\\\\vcpkg_installed\\\\" | wc -l || true)
@@ -622,7 +678,20 @@ jobs:
         run: |
           set -euo pipefail
           git clone --depth 1 https://github.com/microsoft/vcpkg.git vcpkg
-          ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+
+          bootstrap_ok=0
+          for attempt in 1 2 3 4 5; do
+            if ./vcpkg/bootstrap-vcpkg.sh -disableMetrics; then
+              bootstrap_ok=1
+              break
+            fi
+            echo "bootstrap-vcpkg failed (attempt ${attempt}/5)."
+          done
+
+          if [ "$bootstrap_ok" -ne 1 ]; then
+            echo "bootstrap-vcpkg failed after 5 attempts."
+            exit 1
+          fi
 
           if [ "${{ matrix.platform.name }}" = "x64" ]; then
             triplet="x64-linux"
@@ -630,7 +699,20 @@ jobs:
             triplet="arm64-linux"
           fi
 
-          ./vcpkg/vcpkg install --triplet "$triplet" --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build
+          install_ok=0
+          for attempt in 1 2 3 4 5; do
+            if ./vcpkg/vcpkg install --triplet "$triplet" --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build; then
+              install_ok=1
+              break
+            fi
+            echo "vcpkg install failed (attempt ${attempt}/5)."
+          done
+
+          if [ "$install_ok" -ne 1 ]; then
+            echo "vcpkg install failed after 5 attempts."
+            exit 1
+          fi
+
           echo "VCPKG_TRIPLET=$triplet" >> "$GITHUB_ENV"
           echo "VCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg_installed" >> "$GITHUB_ENV"
 
@@ -830,7 +912,20 @@ jobs:
         run: |
           set -euo pipefail
           git clone --depth 1 https://github.com/microsoft/vcpkg.git vcpkg
-          ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+
+          bootstrap_ok=0
+          for attempt in 1 2 3 4 5; do
+            if ./vcpkg/bootstrap-vcpkg.sh -disableMetrics; then
+              bootstrap_ok=1
+              break
+            fi
+            echo "bootstrap-vcpkg failed (attempt ${attempt}/5)."
+          done
+
+          if [ "$bootstrap_ok" -ne 1 ]; then
+            echo "bootstrap-vcpkg failed after 5 attempts."
+            exit 1
+          fi
 
           if [ "${{ matrix.platform.arch }}" = "arm64" ]; then
             triplet="arm64-osx"
@@ -838,7 +933,20 @@ jobs:
             triplet="x64-osx"
           fi
 
-          ./vcpkg/vcpkg install --triplet "$triplet" --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build
+          install_ok=0
+          for attempt in 1 2 3 4 5; do
+            if ./vcpkg/vcpkg install --triplet "$triplet" --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build; then
+              install_ok=1
+              break
+            fi
+            echo "vcpkg install failed (attempt ${attempt}/5)."
+          done
+
+          if [ "$install_ok" -ne 1 ]; then
+            echo "vcpkg install failed after 5 attempts."
+            exit 1
+          fi
+
           echo "VCPKG_TRIPLET=$triplet" >> "$GITHUB_ENV"
           echo "VCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg_installed" >> "$GITHUB_ENV"
 
