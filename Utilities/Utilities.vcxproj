@@ -75,7 +75,8 @@
     <NexenUsePackagedSpngDefine Condition="'$(NexenUsePackagedSpng)'!='true'">0</NexenUsePackagedSpngDefine>
     <NexenVcpkgTriplet Condition="'$(VcpkgTriplet)'!=''">$(VcpkgTriplet)</NexenVcpkgTriplet>
     <NexenVcpkgTriplet Condition="'$(NexenVcpkgTriplet)'=='' and '$(Platform)'=='x64'">x64-windows</NexenVcpkgTriplet>
-    <NexenVcpkgIncludeDir Condition="'$(VcpkgInstalledDir)'!=''">$(VcpkgInstalledDir)$(NexenVcpkgTriplet)\include</NexenVcpkgIncludeDir>
+    <NexenVcpkgInstalledRoot Condition="'$(VcpkgInstalledDir)'!=''">$([MSBuild]::EnsureTrailingSlash('$(VcpkgInstalledDir)'))</NexenVcpkgInstalledRoot>
+    <NexenVcpkgIncludeDir Condition="'$(NexenVcpkgInstalledRoot)'!=''">$(NexenVcpkgInstalledRoot)$(NexenVcpkgTriplet)\include</NexenVcpkgIncludeDir>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

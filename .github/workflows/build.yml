@@ -498,7 +498,7 @@ jobs:
           baseline="${WARNING_BASELINE_LINUX}"
           count=0
           if [ -f build-warning-report-linux.txt ]; then
-            count=$(grep -Eic "\\bwarning\\b" build-warning-report-linux.txt || true)
+            count=$(grep -Ei "\\bwarning\\b" build-warning-report-linux.txt | grep -Eiv "^No warnings detected|/vcpkg_installed/|\\\\vcpkg_installed\\\\" | wc -l || true)
           fi
           delta=$((count - baseline))
           {
@@ -707,7 +707,7 @@ jobs:
           baseline="${WARNING_BASELINE_APPIMAGE}"
           count=0
           if [ -f build-warning-report-appimage.txt ]; then
-            count=$(grep -Eic "\\bwarning\\b" build-warning-report-appimage.txt || true)
+            count=$(grep -Ei "\\bwarning\\b" build-warning-report-appimage.txt | grep -Eiv "^No warnings detected|/vcpkg_installed/|\\\\vcpkg_installed\\\\" | wc -l || true)
           fi
           delta=$((count - baseline))
           {
