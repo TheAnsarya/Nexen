@@ -323,20 +323,20 @@ TEST_F(LynxHardwareRefTest, Timer_CountIs8) {
 
 TEST_F(LynxHardwareRefTest, Timer_PrescalerPeriods) {
 	// Ref: Timer CTLA bits 2:0 select prescaler:
-	//   000: 1 μs (divide by 1)
-	//   001: 2 μs (divide by 2)
-	//   010: 4 μs (divide by 4)
-	//   011: 8 μs (divide by 8)
-	//   100: 16 μs (divide by 16)
-	//   101: 32 μs (divide by 32)
-	//   110: 64 μs (divide by 64)
+	//   000: 1 us (divide by 1)
+	//   001: 2 us (divide by 2)
+	//   010: 4 us (divide by 4)
+	//   011: 8 us (divide by 8)
+	//   100: 16 us (divide by 16)
+	//   101: 32 us (divide by 32)
+	//   110: 64 us (divide by 64)
 	//   111: linked (cascaded from previous timer)
 	// At 4 MHz, these correspond to cycle counts: 4, 8, 16, 32, 64, 128, 256
 	uint32_t prescalers[] = { 1, 2, 4, 8, 16, 32, 64 };
 	for (int i = 0; i < 7; i++) {
 		uint32_t cpuCycles = prescalers[i] * LynxConstants::CpuDivider;
 		EXPECT_EQ(cpuCycles, prescalers[i] * 4u)
-			<< "Prescaler " << i << " at " << prescalers[i] << " μs";
+			<< "Prescaler " << i << " at " << prescalers[i] << " us";
 	}
 }
 

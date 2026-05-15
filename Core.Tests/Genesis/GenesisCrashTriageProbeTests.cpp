@@ -7,6 +7,14 @@
 #include "Utilities/VirtualFile.h"
 
 namespace {
+	bool IsLongHarnessEnabled() {
+		char* enabled = nullptr;
+		size_t enabledLen = 0;
+		const bool hasValue = _dupenv_s(&enabled, &enabledLen, "NEXEN_ENABLE_GENESIS_LONG_HARNESS") == 0 && enabled != nullptr && enabled[0] != '\0';
+		std::free(enabled);
+		return hasValue;
+	}
+
 	std::vector<uint8_t> BuildProbeRom(uint32_t initialSp, uint32_t initialPc, size_t romSize = 0x40000) {
 		std::vector<uint8_t> rom(romSize, 0);
 		for (size_t i = 0; i + 1 < rom.size(); i += 2) {
@@ -120,7 +128,7 @@ TEST(GenesisCrashTriageProbeTests, MmuOpTraceSummaryAndWindowDefaultsAreEmpty) {
 }
 
 TEST(GenesisCrashTriageProbeTests, ResilienceGateIncludesSonicDigestMarkersForSonicCases) {
-	if (getenv("NEXEN_ENABLE_GENESIS_LONG_HARNESS") == nullptr) {
+	if (!IsLongHarnessEnabled()) {
 		GTEST_SKIP() << "Long-running resilience harness test is opt-in; set NEXEN_ENABLE_GENESIS_LONG_HARNESS=1 to run.";
 	}
 
@@ -135,7 +143,7 @@ TEST(GenesisCrashTriageProbeTests, ResilienceGateIncludesSonicDigestMarkersForSo
 }
 
 TEST(GenesisCrashTriageProbeTests, ResilienceGateStillProducesDigestForMixedTitleClasses) {
-	if (getenv("NEXEN_ENABLE_GENESIS_LONG_HARNESS") == nullptr) {
+	if (!IsLongHarnessEnabled()) {
 		GTEST_SKIP() << "Long-running resilience harness test is opt-in; set NEXEN_ENABLE_GENESIS_LONG_HARNESS=1 to run.";
 	}
 

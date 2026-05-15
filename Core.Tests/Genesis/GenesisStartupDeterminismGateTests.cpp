@@ -10,11 +10,13 @@ namespace {
 
 		ScopedEnvVar(const char* name, const char* value)
 			: Name(name) {
-			const char* existing = std::getenv(Name.c_str());
-			if (existing) {
+			char* existing = nullptr;
+			size_t existingLen = 0;
+			if (_dupenv_s(&existing, &existingLen, Name.c_str()) == 0 && existing != nullptr) {
 				HadValue = true;
 				OldValue = existing;
 			}
+			std::free(existing);
 
 			if (value) {
 				_putenv_s(Name.c_str(), value);

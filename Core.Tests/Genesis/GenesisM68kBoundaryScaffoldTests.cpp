@@ -301,7 +301,7 @@ namespace {
 
 		EXPECT_EQ(runtime.Read8(0xA130F3), 0x3F);
 		EXPECT_EQ(runtime.Read8(0xA130F5), 0x00);
-		EXPECT_EQ(runtime.Read8(0x080000), (uint8_t)(0x3F * 0x11));
-		EXPECT_EQ(runtime.Read8(0x100000), (uint8_t)(0x00 * 0x11));
+		EXPECT_EQ(runtime.Read8(0x080000), static_cast<uint8_t>((0x3fu * 0x11u) & 0xffu));
+		EXPECT_EQ(runtime.Read8(0x100000), static_cast<uint8_t>((0x00u * 0x11u) & 0xffu));
 	}
 }
