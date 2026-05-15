@@ -2669,8 +2669,9 @@ do the strict flow now: local Windows build validation first, then only trigger 
 
 The windows build is still broken, see the logs at `https://github.com/TheAnsarya/Nexen/actions/runs/25920296295/job/76187321262`; since the linux and macos builds are completed in other runs, can we just run the windows builds on github until we fix the issue, and then run everything at the end?; find and fix the windows build issues!; continue;
 
+do we need `miniz`? it is causing all of our build problems; remove it if we don't need it
 
-
+continue;
 
 
 

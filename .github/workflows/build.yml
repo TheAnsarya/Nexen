@@ -174,7 +174,7 @@ jobs:
         shell: pwsh
 
       - name: Build UI
-        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=true -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg\installed\" -p:VcpkgTriplet=x64-windows -t:UI Nexen.sln
+        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=true -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg_installed" -p:VcpkgTriplet=x64-windows -t:UI Nexen.sln
 
       - name: Publish Nexen
         run: dotnet publish --no-restore -c Release -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained=true -p:PublishSingleFile="${{ matrix.platform.singleFile }}" -p:IncludeNativeLibrariesForSelfExtract="${{ matrix.platform.singleFile }}" -p:OptimizeUi="true" -r win-x64 -o build/publish UI/UI.csproj
