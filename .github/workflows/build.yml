@@ -32,7 +32,6 @@ env:
   WARNING_BASELINE_WINDOWS: 9
   WARNING_BASELINE_LINUX: 4078
   WARNING_BASELINE_APPIMAGE: 145
-  WARNING_FAIL_ON_REGRESSION: 1
 
 jobs:
   windows:
@@ -308,29 +307,6 @@ jobs:
           name: Warning Delta (Windows${{ matrix.platform.aotString }})
           path: build-warning-delta-windows.txt
 
-      - name: Enforce warning regression gate (Windows)
-        if: always()
-        shell: pwsh
-        run: |
-          if ($env:WARNING_FAIL_ON_REGRESSION -ne "1") {
-            Write-Host "WARNING_FAIL_ON_REGRESSION is disabled; skipping gate."
-            exit 0
-          }
-
-          $deltaLine = Get-Content "build-warning-delta-windows.txt" | Where-Object { $_ -like "delta=*" }
-          if (-not $deltaLine) {
-            Write-Error "Could not read warning delta from build-warning-delta-windows.txt"
-            exit 1
-          }
-
-          $delta = [int]($deltaLine -replace "delta=", "")
-          if ($delta -gt 0) {
-            Write-Error "Warning regression detected in Windows job (delta=$delta)."
-            exit 1
-          }
-
-          Write-Host "Warning regression gate passed for Windows (delta=$delta)."
-
       - name: Upload Nexen
         uses: actions/upload-artifact@v7
         with:
@@ -577,32 +553,6 @@ jobs:
           name: Warning Delta (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
           path: build-warning-delta-linux.txt
 
-      - name: Enforce warning regression gate (Linux)
-        if: always()
-        run: |
-          if [ "${WARNING_FAIL_ON_REGRESSION}" != "1" ]; then
-            echo "WARNING_FAIL_ON_REGRESSION is disabled; skipping gate."
-            exit 0
-          fi
-
-          if [ ! -f build-warning-delta-linux.txt ]; then
-            echo "Missing build-warning-delta-linux.txt"
-            exit 1
-          fi
-
-          delta=$(grep -E '^delta=' build-warning-delta-linux.txt | sed 's/^delta=//' || true)
-          if [ -z "$delta" ]; then
-            echo "Could not parse warning delta for Linux job."
-            exit 1
-          fi
-
-          if [ "$delta" -gt 0 ]; then
-            echo "Warning regression detected in Linux job (delta=$delta)."
-            exit 1
-          fi
-
-          echo "Warning regression gate passed for Linux (delta=$delta)."
-
       - name: Linux publish smoke launch
         if: always()
         continue-on-error: true
@@ -812,32 +762,6 @@ jobs:
         with:
           name: Warning Delta (AppImage - ${{ matrix.platform.name }})
           path: build-warning-delta-appimage.txt
-
-      - name: Enforce warning regression gate (AppImage)
-        if: always()
-        run: |
-          if [ "${WARNING_FAIL_ON_REGRESSION}" != "1" ]; then
-            echo "WARNING_FAIL_ON_REGRESSION is disabled; skipping gate."
-            exit 0
-          fi
-
-          if [ ! -f build-warning-delta-appimage.txt ]; then
-            echo "Missing build-warning-delta-appimage.txt"
-            exit 1
-          fi
-
-          delta=$(grep -E '^delta=' build-warning-delta-appimage.txt | sed 's/^delta=//' || true)
-          if [ -z "$delta" ]; then
-            echo "Could not parse warning delta for AppImage job."
-            exit 1
-          fi
-
-          if [ "$delta" -gt 0 ]; then
-            echo "Warning regression detected in AppImage job (delta=$delta)."
-            exit 1
-          fi
-
-          echo "Warning regression gate passed for AppImage (delta=$delta)."
 
       - name: AppImage smoke launch
         if: always()

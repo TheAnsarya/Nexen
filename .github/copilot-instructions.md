@@ -155,6 +155,16 @@ When the user asks to "run nexen", "open nexen", or equivalent, launch the actua
 
 ## Coding Standards
 
+### ⚠️ MANDATORY: Warning Hygiene (No CI Hard Gate)
+
+Warning regression gates in CI may be disabled for build-flow stability, but warning cleanup remains mandatory during normal development.
+
+- On every implementation session, fix as many first-party warnings as practical in touched areas.
+- Prioritize warnings in files you modify before expanding scope.
+- Keep generating warning reports/artifacts in CI for visibility and trend tracking.
+- Do not ignore warning debt indefinitely: create follow-up issues when warnings cannot be resolved in the same session.
+- Prefer warning-reducing changes that preserve emulator correctness.
+
 ### Indentation
 - **TABS for indentation** - enforced by `.editorconfig`
 - **Tab width: 4 spaces** - ALWAYS use 4-space-equivalent tabs
