@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 export PUBLISHFLAGS="-r linux-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false -p:PublishReadyToRun=true"
 # Use clang-18 for C++23 support on ubuntu-22.04 with libc++ for <format>
