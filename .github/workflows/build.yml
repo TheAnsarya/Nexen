@@ -106,7 +106,7 @@ jobs:
 
           $installOk = $false
           for ($attempt = 1; $attempt -le 5; $attempt++) {
-            & .\vcpkg\vcpkg.exe install --triplet x64-windows --x-manifest-root="${{ github.workspace }}" --clean-after-build
+            & .\vcpkg\vcpkg.exe install --triplet x64-windows --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}\vcpkg_installed" --clean-after-build
             if ($LASTEXITCODE -eq 0) {
               $installOk = $true
               break
@@ -121,7 +121,7 @@ jobs:
 
           "VCPKG_ROOT=${{ github.workspace }}\vcpkg" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "VCPKG_TRIPLET=x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          "VCPKG_INSTALLED_DIR=${{ github.workspace }}\vcpkg\installed" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "VCPKG_INSTALLED_DIR=${{ github.workspace }}\vcpkg_installed" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Restore packages
         run: dotnet restore -r win-x64 -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained=true -p:BuildWithNetFrameworkHostedCompiler=true
@@ -130,7 +130,7 @@ jobs:
         uses: ./.github/actions/build-sha1-action
 
       - name: Build C++ core (InteropDLL)
-        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=true -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg\installed" -p:VcpkgTriplet=x64-windows -t:InteropDLL Nexen.sln
+        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=true -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg_installed" -p:VcpkgTriplet=x64-windows -t:InteropDLL Nexen.sln
 
       - name: Copy native libs from NuGet cache
         shell: pwsh
