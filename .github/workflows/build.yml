@@ -130,7 +130,7 @@ jobs:
         uses: ./.github/actions/build-sha1-action
 
       - name: Build C++ core (InteropDLL)
-        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=true -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg_installed" -p:VcpkgTriplet=x64-windows -t:InteropDLL Nexen.sln
+        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=true -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg_installed" -p:VcpkgTriplet=x64-windows -p:IncludePath="${{ github.workspace }}\vcpkg_installed\x64-windows\include;${{ github.workspace }}\vcpkg\installed\x64-windows\include;`$(IncludePath)" -t:InteropDLL Nexen.sln
 
       - name: Copy native libs from NuGet cache
         shell: pwsh
