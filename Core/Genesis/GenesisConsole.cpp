@@ -18,7 +18,9 @@
 #include "Utilities/Serializer.h"
 #include "Shared/EventType.h"
 #include <cstdlib>
+#ifdef _WIN32
 #include <excpt.h>
+#endif
 
 namespace {
 	bool HasSegaHeader(const vector<uint8_t>& romData) {
@@ -174,6 +176,7 @@ namespace {
 		}
 
 		sehCode = 0;
+		#ifdef _WIN32
 		__try {
 			cpu->Exec();
 			return true;
@@ -181,6 +184,10 @@ namespace {
 			sehCode = (uint32_t)_exception_code();
 			return false;
 		}
+		#else
+		cpu->Exec();
+		return true;
+		#endif
 	}
 }
 

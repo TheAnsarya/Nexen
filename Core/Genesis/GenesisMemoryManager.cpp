@@ -1457,10 +1457,14 @@ void GenesisMemoryManager::DetectStartupTitleSignature() {
 	_startupTitleClassValue = (uint8_t)titleClass;
 
 	if (!normalizedTitle.empty()) {
-		strncpy_s(_startupDetectedTitle, sizeof(_startupDetectedTitle), normalizedTitle.c_str(), _TRUNCATE);
+		size_t copyLen = std::min(normalizedTitle.size(), sizeof(_startupDetectedTitle) - 1);
+		memcpy(_startupDetectedTitle, normalizedTitle.c_str(), copyLen);
+		_startupDetectedTitle[copyLen] = '\0';
 	}
 	if (!normalizedProductCode.empty()) {
-		strncpy_s(_startupDetectedProductCode, sizeof(_startupDetectedProductCode), normalizedProductCode.c_str(), _TRUNCATE);
+		size_t copyLen = std::min(normalizedProductCode.size(), sizeof(_startupDetectedProductCode) - 1);
+		memcpy(_startupDetectedProductCode, normalizedProductCode.c_str(), copyLen);
+		_startupDetectedProductCode[copyLen] = '\0';
 	}
 }
 

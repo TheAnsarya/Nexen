@@ -2653,6 +2653,7 @@ continue;
 
 [Nexen] git commit everything; stablize and fix as many warnings as possible, and create a working build and release version 1.4.41 and run the github actions that build the artifacts for the release; continue;
 
+[Nexen] (Genesis/MegaDrive) The 1.4.41 artifact build action on github failed again, review the logs for `https://github.com/TheAnsarya/Nexen/actions/runs/25893106962`, fix the problems and get a build to complete so you can copy those artifacts to the 1.4.41 release at `https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.41` 
 
 
 
