@@ -2655,7 +2655,7 @@ continue;
 
 [Nexen] (Genesis/MegaDrive) The 1.4.41 artifact build action on github failed again, review the logs for `https://github.com/TheAnsarya/Nexen/actions/runs/25893106962`, fix the problems and get a build to complete so you can copy those artifacts to the 1.4.41 release at `https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.41` 
 
-
+[Nexen] (Genesis/MegaDrive) The 1.4.41 artifact build action on github failed again, review the logs for `https://github.com/TheAnsarya/Nexen/actions/runs/25894973493`, fix the problems and get a build to complete so you can copy those artifacts to the 1.4.41 release at `https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.41` 
 
 
 

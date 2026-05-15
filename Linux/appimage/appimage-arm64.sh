@@ -1,8 +1,8 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 export PUBLISHFLAGS="-r linux-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false -p:PublishReadyToRun=true"
 # Use clang-18 for C++23 support on ubuntu-22.04 with libc++ for <format>
-make -j$(nproc) -O LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++ ${NEXEN_EXTRA_CXXFLAGS:-}"
+make -j$(nproc) -O LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++ ${NEXEN_EXTRA_CXXFLAGS:-}" EXTRA_LDFLAGS="${NEXEN_EXTRA_LDFLAGS:-}"
 
 curl -SL https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -o appimagetool
 chmod +x appimagetool

@@ -90,12 +90,11 @@ jobs:
           git clone --depth 1 https://github.com/microsoft/vcpkg.git vcpkg
           .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
 
-          .\vcpkg\vcpkg.exe install --triplet x64-windows --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}\vcpkg_installed" --clean-after-build
-          .\vcpkg\vcpkg.exe install --triplet x64-windows-static --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}\vcpkg_installed" --clean-after-build
+          .\vcpkg\vcpkg.exe install --triplet x64-windows --x-manifest-root="${{ github.workspace }}" --clean-after-build
 
           "VCPKG_ROOT=${{ github.workspace }}\vcpkg" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "VCPKG_TRIPLET=x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          "VCPKG_INSTALLED_DIR=${{ github.workspace }}\vcpkg_installed" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "VCPKG_INSTALLED_DIR=${{ github.workspace }}\vcpkg\installed" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Restore packages
         run: dotnet restore -r win-x64 -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained=true -p:BuildWithNetFrameworkHostedCompiler=true
@@ -444,13 +443,14 @@ jobs:
           set -o pipefail
 
           VCPKG_INCLUDE="-I${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/include"
+          VCPKG_LINK="-L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lspng -lminiz -lz"
 
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
             CC_BIN="${CC:-gcc-14}"
             CXX_BIN="${CXX:-g++-14}"
-            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC="$CC_BIN" CXX="$CXX_BIN" EXTRA_CXXFLAGS="$VCPKG_INCLUDE" 2>&1 | tee build-linux.log
+            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC="$CC_BIN" CXX="$CXX_BIN" EXTRA_CXXFLAGS="$VCPKG_INCLUDE" EXTRA_LDFLAGS="$VCPKG_LINK" 2>&1 | tee build-linux.log
           else
-            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++ $VCPKG_INCLUDE" 2>&1 | tee build-linux.log
+            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++ $VCPKG_INCLUDE" EXTRA_LDFLAGS="$VCPKG_LINK" 2>&1 | tee build-linux.log
           fi
 
       - name: Capture Linux runtime dependency report
@@ -653,6 +653,7 @@ jobs:
         run: |
           set -o pipefail
           export NEXEN_EXTRA_CXXFLAGS="-I${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/include"
+          export NEXEN_EXTRA_LDFLAGS="-L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lspng -lminiz -lz"
           bash "${{ matrix.platform.script }}" 2>&1 | tee build-appimage.log
 
       - name: Capture runtime dependency report (AppImage publish)
@@ -861,8 +862,9 @@ jobs:
           # EXTRA_CXXFLAGS is appended to CXXFLAGS/CFLAGS alongside NEXENFLAGS in the makefile
           LIBCXX_FLAGS="-stdlib=libc++ -nostdinc++ -isystem ${LLVM_PREFIX}/include/c++/v1"
           LINK_FLAGS="-L${LLVM_PREFIX}/lib/c++ -Wl,-rpath,${LLVM_PREFIX}/lib/c++ -lc++ -lc++abi"
-          VCPKG_FLAGS="-I${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/include -L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lminiz"
-          make CC="$CC" CXX="$CXX" EXTRA_CXXFLAGS="${LIBCXX_FLAGS} ${LINK_FLAGS} ${VCPKG_FLAGS}" ${{ matrix.make_flags }} -j$(sysctl -n hw.logicalcpu)
+          VCPKG_INCLUDE="-I${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/include"
+          VCPKG_LINK="-L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lspng -lminiz -lz"
+          make CC="$CC" CXX="$CXX" EXTRA_CXXFLAGS="${LIBCXX_FLAGS} ${VCPKG_INCLUDE}" EXTRA_LDFLAGS="${LINK_FLAGS} ${VCPKG_LINK}" ${{ matrix.make_flags }} -j$(sysctl -n hw.logicalcpu)
 
       - name: Sign binary
         env:
