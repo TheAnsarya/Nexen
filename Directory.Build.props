@@ -31,6 +31,12 @@
 		<IncludePath>$(NexenVcpkgIncludeDir);$(IncludePath)</IncludePath>
 	</PropertyGroup>
 
+	<ItemDefinitionGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(NexenVcpkgInstalledRoot)'!='' and '$(NexenVcpkgTriplet)'!=''">
+		<Link>
+			<AdditionalLibraryDirectories>$(NexenVcpkgInstalledRoot)$(NexenVcpkgTriplet)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+		</Link>
+	</ItemDefinitionGroup>
+
 	<!-- Suppress NETSDK1233: GitHub Actions windows-latest has VS 2022 17.14 which
 	     the .NET 10 SDK considers unsupported. The build works correctly regardless;
 	     this just silences the spurious version-gate warning in CI. -->

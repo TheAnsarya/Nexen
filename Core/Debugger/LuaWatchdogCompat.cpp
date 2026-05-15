@@ -4,7 +4,6 @@
 #include "Debugger/LuaInterop.h"
 
 #if NEXEN_USE_PACKAGED_LUA
-
 #pragma comment(lib, "lua.lib")
 
 namespace {
