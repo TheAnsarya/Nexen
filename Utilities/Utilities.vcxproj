@@ -73,6 +73,9 @@
     <NexenUsePackagedSpng Condition="'$(NexenUsePackagedSpng)'==''">true</NexenUsePackagedSpng>
     <NexenUsePackagedSpngDefine Condition="'$(NexenUsePackagedSpng)'=='true'">1</NexenUsePackagedSpngDefine>
     <NexenUsePackagedSpngDefine Condition="'$(NexenUsePackagedSpng)'!='true'">0</NexenUsePackagedSpngDefine>
+    <NexenVcpkgTriplet Condition="'$(VcpkgTriplet)'!=''">$(VcpkgTriplet)</NexenVcpkgTriplet>
+    <NexenVcpkgTriplet Condition="'$(NexenVcpkgTriplet)'=='' and '$(Platform)'=='x64'">x64-windows</NexenVcpkgTriplet>
+    <NexenVcpkgIncludeDir Condition="'$(VcpkgInstalledDir)'!=''">$(VcpkgInstalledDir)$(NexenVcpkgTriplet)\include</NexenVcpkgIncludeDir>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -107,7 +110,7 @@
       <PreprocessorDefinitions>NEXEN_USE_PACKAGED_SPNG=$(NexenUsePackagedSpngDefine);_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <CallingConvention>Cdecl</CallingConvention>
-      <AdditionalIncludeDirectories>../</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;$(NexenVcpkgIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
@@ -128,7 +131,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NEXEN_USE_PACKAGED_SPNG=$(NexenUsePackagedSpngDefine);_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;$(NexenVcpkgIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -150,7 +153,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NEXEN_USE_PACKAGED_SPNG=$(NexenUsePackagedSpngDefine);NEXENRELEASE;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;$(NexenVcpkgIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpplatest</LanguageStandard>
@@ -172,7 +175,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NEXEN_USE_PACKAGED_SPNG=$(NexenUsePackagedSpngDefine);NEXENRELEASE;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;$(NexenVcpkgIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpplatest</LanguageStandard>
