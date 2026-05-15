@@ -103,7 +103,7 @@ jobs:
         uses: ./.github/actions/build-sha1-action
 
       - name: Build C++ core (InteropDLL)
-        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -t:InteropDLL Nexen.sln
+        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=true -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg\installed\" -p:VcpkgTriplet=x64-windows -t:InteropDLL Nexen.sln
 
       - name: Copy native libs from NuGet cache
         shell: pwsh
@@ -142,7 +142,7 @@ jobs:
         shell: pwsh
 
       - name: Build UI
-        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -t:UI Nexen.sln
+        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=true -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg\installed\" -p:VcpkgTriplet=x64-windows -t:UI Nexen.sln
 
       - name: Publish Nexen
         run: dotnet publish --no-restore -c Release -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained=true -p:PublishSingleFile="${{ matrix.platform.singleFile }}" -p:IncludeNativeLibrariesForSelfExtract="${{ matrix.platform.singleFile }}" -p:OptimizeUi="true" -r win-x64 -o build/publish UI/UI.csproj
@@ -443,7 +443,7 @@ jobs:
           set -o pipefail
 
           VCPKG_INCLUDE="-I${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/include"
-          VCPKG_LINK="-L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lspng -lminiz -lz"
+          VCPKG_LINK="-L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lspng_static -lminiz -lz"
 
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
             CC_BIN="${CC:-gcc-14}"
@@ -653,7 +653,7 @@ jobs:
         run: |
           set -o pipefail
           export NEXEN_EXTRA_CXXFLAGS="-I${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/include"
-          export NEXEN_EXTRA_LDFLAGS="-L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lspng -lminiz -lz"
+          export NEXEN_EXTRA_LDFLAGS="-L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lspng_static -lminiz -lz"
           bash "${{ matrix.platform.script }}" 2>&1 | tee build-appimage.log
 
       - name: Capture runtime dependency report (AppImage publish)
@@ -863,7 +863,7 @@ jobs:
           LIBCXX_FLAGS="-stdlib=libc++ -nostdinc++ -isystem ${LLVM_PREFIX}/include/c++/v1"
           LINK_FLAGS="-L${LLVM_PREFIX}/lib/c++ -Wl,-rpath,${LLVM_PREFIX}/lib/c++ -lc++ -lc++abi"
           VCPKG_INCLUDE="-I${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/include"
-          VCPKG_LINK="-L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lspng -lminiz -lz"
+          VCPKG_LINK="-L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lspng_static -lminiz -lz"
           make CC="$CC" CXX="$CXX" EXTRA_CXXFLAGS="${LIBCXX_FLAGS} ${VCPKG_INCLUDE}" EXTRA_LDFLAGS="${LINK_FLAGS} ${VCPKG_LINK}" ${{ matrix.make_flags }} -j$(sysctl -n hw.logicalcpu)
 
       - name: Sign binary
