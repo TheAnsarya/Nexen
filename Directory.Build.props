@@ -34,6 +34,7 @@
 	<ItemDefinitionGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(NexenVcpkgInstalledRoot)'!='' and '$(NexenVcpkgTriplet)'!=''">
 		<Link>
 			<AdditionalLibraryDirectories>$(NexenVcpkgInstalledRoot)$(NexenVcpkgTriplet)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+			<AdditionalDependencies Condition="'$(OS)'=='Windows_NT' and '$(NexenVcpkgTriplet)'=='x64-windows'">miniz.lib;%(AdditionalDependencies)</AdditionalDependencies>
 		</Link>
 	</ItemDefinitionGroup>
 
