@@ -2667,6 +2667,7 @@ Did you fix the windows problem and test the build beforehand? Or did you just r
 
 do the strict flow now: local Windows build validation first, then only trigger CI once local passes.
 
+The windows build is still broken, see the logs at `https://github.com/TheAnsarya/Nexen/actions/runs/25920296295/job/76187321262`; since the linux and macos builds are completed in other runs, can we just run the windows builds on github until we fix the issue, and then run everything at the end?; find and fix the windows build issues!; continue;
 
 
 

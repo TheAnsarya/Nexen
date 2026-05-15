@@ -3,6 +3,11 @@
 on:
   workflow_dispatch:
     inputs:
+      windows_only:
+        description: 'Run only Windows job (skip Linux/AppImage/macOS)'
+        required: true
+        default: true
+        type: boolean
       run_release:
         description: 'Create/update GitHub release after build'
         required: true
@@ -130,7 +135,7 @@ jobs:
         uses: ./.github/actions/build-sha1-action
 
       - name: Build C++ core (InteropDLL)
-        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=false -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg_installed" -p:VcpkgTriplet=x64-windows -p:IncludePath="${{ github.workspace }}\vcpkg_installed\x64-windows\include;${{ github.workspace }}\vcpkg\installed\x64-windows\include;`$(IncludePath)" -t:InteropDLL Nexen.sln
+        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=false -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg_installed" -p:VcpkgTriplet=x64-windows -t:InteropDLL Nexen.sln
 
       - name: Copy native libs from NuGet cache
         shell: pwsh
@@ -335,6 +340,7 @@ jobs:
 
 
   linux:
+    if: ${{ !inputs.windows_only }}
     strategy:
       matrix:
         compiler: [gcc, clang, clang_aot]
@@ -647,6 +653,7 @@ jobs:
             bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish/*.so*
 
   appimage:
+    if: ${{ !inputs.windows_only }}
     strategy:
       matrix:
         compiler: [clang_appimage]
@@ -878,6 +885,7 @@ jobs:
 
 
   macos:
+    if: ${{ !inputs.windows_only }}
     strategy:
       matrix:
         # NOTE: clang_aot temporarily disabled - .NET 10 ILC crashes on macOS ARM64
