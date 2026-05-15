@@ -346,7 +346,7 @@ jobs:
             triplet="arm64-linux"
           fi
 
-          ./vcpkg/vcpkg install miniz magic-enum --triplet "$triplet" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build
+          ./vcpkg/vcpkg install --triplet "$triplet" --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build
           echo "VCPKG_TRIPLET=$triplet" >> "$GITHUB_ENV"
           echo "VCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg_installed" >> "$GITHUB_ENV"
 
@@ -618,7 +618,7 @@ jobs:
             triplet="arm64-linux"
           fi
 
-          ./vcpkg/vcpkg install miniz magic-enum --triplet "$triplet" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build
+          ./vcpkg/vcpkg install --triplet "$triplet" --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build
           echo "VCPKG_TRIPLET=$triplet" >> "$GITHUB_ENV"
           echo "VCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg_installed" >> "$GITHUB_ENV"
 
@@ -825,7 +825,7 @@ jobs:
             triplet="x64-osx"
           fi
 
-          ./vcpkg/vcpkg install miniz magic-enum --triplet "$triplet" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build
+          ./vcpkg/vcpkg install --triplet "$triplet" --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build
           echo "VCPKG_TRIPLET=$triplet" >> "$GITHUB_ENV"
           echo "VCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg_installed" >> "$GITHUB_ENV"
 
