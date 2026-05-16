@@ -37,6 +37,6 @@ public static class SetupUsageProfileDefaults {
 		config.Debug.Integration.PansyUseCompression = false;
 		config.Debug.Integration.EnableFileWatching = true;
 		config.Debug.Integration.AutoReloadOnExternalChange = true;
-		config.Preferences.ShowDebugInfo = true;
+		config.Preferences.ShowDebugInfo = false;
 	}
 }

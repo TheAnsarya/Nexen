@@ -2711,8 +2711,9 @@ make "Save and Launch" label have bigger text, it's very small, the corners of t
 
 On the SNES emulator there is a script that auto starts that displays stats from the emulator, turn that off by default, at default we're just playing the game and  saving pnansy info; continue;
 
+run nexen to check snes emulation, SNES must always work
 
-
+There is still visial stats, audio stats, and misc stats, and some kind of audi wave graph, stop all of this nonsense, we want to play SNES games without weird displays; continue;
 
 
 

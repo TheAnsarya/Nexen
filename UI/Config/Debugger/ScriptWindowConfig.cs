@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,7 @@ using Avalonia.Media;
 using Nexen.Interop;
 using ReactiveUI.SourceGenerators;
 
-namespace Nexen.Config; 
+namespace Nexen.Config;
 public sealed partial class ScriptWindowConfig : BaseWindowConfig<ScriptWindowConfig> {
 	private const int MaxRecentScripts = 10;
 

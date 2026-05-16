@@ -299,7 +299,7 @@ void Emulator::OnBeforeSendFrame() {
 			_audioPlayerHud->Draw(GetFrameCount(), GetFps());
 		}
 
-		if (_stats && _settings->GetPreferences().ShowDebugInfo) {
+		if (_stats && _settings->GetPreferences().ShowDebugInfo && _debugger.lock()) {
 			double lastFrameTime = _lastFrameTimer.GetElapsedMS();
 			_lastFrameTimer.Reset();
 			_stats->DisplayStats(this, lastFrameTime);
