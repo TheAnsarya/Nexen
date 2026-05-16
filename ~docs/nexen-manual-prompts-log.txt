@@ -2705,6 +2705,8 @@ Fix these problems for the setup first start initialization: Hovering does not c
 
 This is way better; The button angled corners, should use an angle that points to the north more, so theres a smaller horizontal amount and have it start closer to the bottom left/top right; fix the "Start Fresh" button, angling the sides, ;  the "Save and Launch" button" should be much bigger with larger text because it is the default button to be clicked at the end, so we want it easy to be found and used; continue;
 
+buttons: The corners are angled, not the sides, fix that, angle the sides of the buttons, not just the corners so they are a parallelagram with slightly rounded corners; The "Cancel button needs larger text; the "Save and Launch" button needs larger text and a much bigger button, take up more horizontal space; push the Nexen logo to the left side of the window and add a big "X" icon in a circle button on the top right as a close button; continue;
+
 
 
 

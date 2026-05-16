@@ -37,20 +37,17 @@
 			<Setter Property="Template">
 				<ControlTemplate>
 					<Grid MinHeight="{TemplateBinding MinHeight}" Cursor="Hand">
-						<Path
-							x:Name="CardFill"
-							Data="M 8,0 L 100,0 L 100,58 L 92,66 L 0,66 L 0,8 Z"
-							Stretch="Fill"
-							Fill="{TemplateBinding Background}"
-						/>
-						<Path
-							x:Name="CardStroke"
-							Data="M 8,1 L 99,1 L 99,57 L 91,65 L 1,65 L 1,8 Z"
-							Stretch="Fill"
-							Stroke="{TemplateBinding BorderBrush}"
-							StrokeThickness="2"
-							Fill="Transparent"
-						/>
+						<Border
+							x:Name="CardBody"
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="2"
+							CornerRadius="9"
+						>
+							<Border.RenderTransform>
+								<SkewTransform AngleX="-9" />
+							</Border.RenderTransform>
+						</Border>
 						<ContentPresenter
 							Content="{TemplateBinding Content}"
 							ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -67,24 +64,24 @@
 			<Setter Property="Foreground" Value="#ffffffff" />
 		</Style>
 
-		<Style Selector="RadioButton.choiceCard:pointerover /template/ Path#CardFill">
-			<Setter Property="Fill" Value="#ff4a2d1a" />
+		<Style Selector="RadioButton.choiceCard:pointerover /template/ Border#CardBody">
+			<Setter Property="Background" Value="#ff4a2d1a" />
 		</Style>
 
-		<Style Selector="RadioButton.choiceCard:pointerover /template/ Path#CardStroke">
-			<Setter Property="Stroke" Value="#ffffbd64" />
+		<Style Selector="RadioButton.choiceCard:pointerover /template/ Border#CardBody">
+			<Setter Property="BorderBrush" Value="#ffffbd64" />
 		</Style>
 
 		<Style Selector="RadioButton.choiceCard:pointerover /template/ ContentPresenter TextBlock">
 			<Setter Property="Foreground" Value="#ffffe2b8" />
 		</Style>
 
-		<Style Selector="RadioButton.choiceCard:checked /template/ Path#CardFill">
-			<Setter Property="Fill" Value="#ffc46a18" />
+		<Style Selector="RadioButton.choiceCard:checked /template/ Border#CardBody">
+			<Setter Property="Background" Value="#ffc46a18" />
 		</Style>
 
-		<Style Selector="RadioButton.choiceCard:checked /template/ Path#CardStroke">
-			<Setter Property="Stroke" Value="#ffffd287" />
+		<Style Selector="RadioButton.choiceCard:checked /template/ Border#CardBody">
+			<Setter Property="BorderBrush" Value="#ffffd287" />
 		</Style>
 
 		<Style Selector="RadioButton.choiceCard:checked /template/ ContentPresenter TextBlock">
@@ -103,37 +100,35 @@
 			<Setter Property="Template">
 				<ControlTemplate>
 					<Grid MinHeight="{TemplateBinding MinHeight}" Cursor="Hand">
-						<Path
-							x:Name="ActionFill"
-							Data="M 8,0 L 100,0 L 100,46 L 92,54 L 0,54 L 0,8 Z"
-							Stretch="Fill"
-							Fill="{TemplateBinding Background}"
-						/>
-						<Path
-							x:Name="ActionStroke"
-							Data="M 8,1 L 99,1 L 99,45 L 91,53 L 1,53 L 1,8 Z"
-							Stretch="Fill"
-							Stroke="{TemplateBinding BorderBrush}"
-							StrokeThickness="2"
-							Fill="Transparent"
-						/>
+						<Border
+							x:Name="ActionBody"
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="2"
+							CornerRadius="10"
+						>
+							<Border.RenderTransform>
+								<SkewTransform AngleX="-9" />
+							</Border.RenderTransform>
+						</Border>
 						<ContentPresenter
 							Content="{TemplateBinding Content}"
 							ContentTemplate="{TemplateBinding ContentTemplate}"
 							HorizontalAlignment="Center"
 							VerticalAlignment="Center"
+							Margin="12,0"
 						/>
 					</Grid>
 				</ControlTemplate>
 			</Setter>
 		</Style>
 
-		<Style Selector="Button.angledAction:pointerover /template/ Path#ActionFill">
-			<Setter Property="Fill" Value="#ffc87423" />
+		<Style Selector="Button.angledAction:pointerover /template/ Border#ActionBody">
+			<Setter Property="Background" Value="#ffc87423" />
 		</Style>
 
-		<Style Selector="Button.angledAction:pointerover /template/ Path#ActionStroke">
-			<Setter Property="Stroke" Value="#ffffdfa8" />
+		<Style Selector="Button.angledAction:pointerover /template/ Border#ActionBody">
+			<Setter Property="BorderBrush" Value="#ffffdfa8" />
 		</Style>
 
 		<Style Selector="Button.angledAction.secondaryAction">
@@ -143,31 +138,67 @@
 		</Style>
 
 		<Style Selector="Button.angledAction.primaryAction">
-			<Setter Property="FontSize" Value="26" />
-			<Setter Property="Padding" Value="38,18" />
-			<Setter Property="MinHeight" Value="72" />
+			<Setter Property="FontSize" Value="30" />
+			<Setter Property="Padding" Value="52,20" />
+			<Setter Property="MinHeight" Value="84" />
+			<Setter Property="MinWidth" Value="420" />
 			<Setter Property="Background" Value="#ffd47a22" />
 			<Setter Property="BorderBrush" Value="#ffffe1aa" />
+		</Style>
+
+		<Style Selector="Button.angledAction.cancelAction">
+			<Setter Property="FontSize" Value="24" />
+			<Setter Property="Padding" Value="30,14" />
+			<Setter Property="MinHeight" Value="64" />
+		</Style>
+
+		<Style Selector="Button.closeCircle">
+			<Setter Property="Width" Value="56" />
+			<Setter Property="Height" Value="56" />
+			<Setter Property="Background" Value="#ffbe6321" />
+			<Setter Property="BorderBrush" Value="#ffffd89f" />
+			<Setter Property="BorderThickness" Value="2" />
+			<Setter Property="Foreground" Value="#ffffffff" />
+			<Setter Property="FontSize" Value="28" />
+			<Setter Property="FontWeight" Value="Bold" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border
+						Background="{TemplateBinding Background}"
+						BorderBrush="{TemplateBinding BorderBrush}"
+						BorderThickness="{TemplateBinding BorderThickness}"
+						CornerRadius="999"
+					>
+						<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="Button.closeCircle:pointerover">
+			<Setter Property="Background" Value="#ffcf7730" />
+			<Setter Property="BorderBrush" Value="#ffffe5bc" />
 		</Style>
 
 	</Window.Styles>
 
 	<Border BorderThickness="2" BorderBrush="#ff6b3f24" Background="#ff1d130d">
 		<Grid Margin="22" RowDefinitions="Auto,*,Auto">
-			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
-				<StackPanel Spacing="4">
+			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+				<Image
+					Grid.Column="0"
+					Source="/Assets/NexenIcon.ico"
+					Height="56"
+					Width="56"
+					VerticalAlignment="Top"
+				/>
+				<StackPanel Grid.Column="1" Spacing="4">
 					<TextBlock Text="Nexen" FontSize="14" Foreground="#ffefcfb6" />
 					<TextBlock Text="First Start Options" FontSize="34" FontWeight="Bold" />
 					<TextBlock Text="Pick what you need now. You can change everything later." Foreground="#ffefcfb6" FontSize="16" />
 				</StackPanel>
-				<Image
-					Grid.Column="1"
-					Source="/Assets/NexenIcon.ico"
-					Height="52"
-					Width="52"
-					VerticalAlignment="Top"
-				/>
-				<Border Grid.Row="1" Grid.ColumnSpan="2" IsVisible="{Binding HasResumedDraft}" Background="#ff3b2416" BorderBrush="#ffbf5e12" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,14,0,0">
+				<Button Grid.Column="2" Classes="closeCircle" Content="X" Click="Cancel_OnClick" HorizontalAlignment="Right" VerticalAlignment="Top" />
+				<Border Grid.Row="1" Grid.ColumnSpan="3" IsVisible="{Binding HasResumedDraft}" Background="#ff3b2416" BorderBrush="#ffbf5e12" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,14,0,0">
 					<DockPanel LastChildFill="False">
 						<TextBlock DockPanel.Dock="Left" Width="700" Text="Saved setup found. Continue or start over." TextWrapping="Wrap" Foreground="#ffffffff" FontSize="16" />
 						<Button DockPanel.Dock="Right" Classes="angledAction secondaryAction" Click="StartFresh_OnClick" Content="Start Fresh" />
@@ -285,7 +316,7 @@
 			</ScrollViewer>
 
 			<Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
-				<Button Classes="angledAction" Content="Cancel" Click="Cancel_OnClick" />
+				<Button Classes="angledAction cancelAction" Content="Cancel" Click="Cancel_OnClick" />
 				<TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Setup takes less than a minute." Foreground="#ffefcfb6" FontSize="20" FontWeight="SemiBold" />
 				<Button Grid.Column="2" Classes="angledAction primaryAction" HorizontalAlignment="Right" Click="btnOk_OnClick" Content="Save and Launch" />
 			</Grid>
