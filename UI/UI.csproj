@@ -130,9 +130,8 @@
 	<PackageReference Include="SharpCompress" Version="0.48.1" />
 	<PackageReference Include="StreamHash" Version="1.11.3" />
 		<PackageReference Include="Pansy.Core" Version="$(PansyCorePackageVersion)" />
-	<!-- Pin Tmds.DBus.Protocol (transitive from Avalonia on Linux) -->
-	<PackageReference Include="Tmds.DBus.Protocol" Version="0.93.0" />
-   </ItemGroup>
+	<!-- Keep DBus protocol transitive from Avalonia.FreeDesktop to avoid Linux runtime type-load mismatches. -->
+	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\seedlists\**\*.txt" Link="seedlists\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>

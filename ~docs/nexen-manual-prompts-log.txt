@@ -2675,12 +2675,15 @@ continue;
 
 The github build action failed: fix as many warnings as you can; remove the warning regression limit gate on the build and instead add a bit to the copilot instructions to fix warnings regularly; fix the issue and keep working towards a clean github artifact build for windows and make sure the 1.4.41 release is updated with those artifacts; continue;
 
+continue;
 
+damnit, you replaced the 1.4.41 description with the 1.4.39 description! fix that!
 
+make sure SNES emulation is fast and we've turned off debugging code that slows everything down, then run a completion and correctness pass on the SNES emulator, then make a stable build and release 1.4.42, creating a good title and a full description of changes and project description, and update readme.md files and other documentation; 
 
+continue;
 
-
-
+continue;
 
 
 
