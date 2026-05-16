@@ -50,10 +50,88 @@
 							StrokeThickness="2"
 							Fill="Transparent"
 						/>
-						<ContentPresenter Margin="20,10" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+						<ContentPresenter
+							Content="{TemplateBinding Content}"
+							ContentTemplate="{TemplateBinding ContentTemplate}"
+							Margin="20,10"
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Center"
+						/>
 					</Grid>
 				</ControlTemplate>
 			</Setter>
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard /template/ ContentPresenter TextBlock">
+			<Setter Property="Foreground" Value="#ffffffff" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:pointerover /template/ Path#CardFill">
+			<Setter Property="Fill" Value="#ff4a2d1a" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:pointerover /template/ Path#CardStroke">
+			<Setter Property="Stroke" Value="#ffffbd64" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:pointerover /template/ ContentPresenter TextBlock">
+			<Setter Property="Foreground" Value="#ffffe2b8" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:checked /template/ Path#CardFill">
+			<Setter Property="Fill" Value="#ffc46a18" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:checked /template/ Path#CardStroke">
+			<Setter Property="Stroke" Value="#ffffd287" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:checked /template/ ContentPresenter TextBlock">
+			<Setter Property="Foreground" Value="#ffffffff" />
+		</Style>
+
+		<Style Selector="Button.angledAction">
+			<Setter Property="Foreground" Value="#ffffffff" />
+			<Setter Property="Background" Value="#ffb65e18" />
+			<Setter Property="BorderBrush" Value="#ffffce87" />
+			<Setter Property="BorderThickness" Value="2" />
+			<Setter Property="Padding" Value="24,12" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="FontSize" Value="20" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Grid MinHeight="54" Cursor="Hand">
+						<Path
+							x:Name="ActionFill"
+							Data="M 12,0 L 100,0 L 100,44 L 88,54 L 0,54 L 0,12 Z"
+							Stretch="Fill"
+							Fill="{TemplateBinding Background}"
+						/>
+						<Path
+							x:Name="ActionStroke"
+							Data="M 12,1 L 99,1 L 99,43 L 87,53 L 1,53 L 1,12 Z"
+							Stretch="Fill"
+							Stroke="{TemplateBinding BorderBrush}"
+							StrokeThickness="2"
+							Fill="Transparent"
+						/>
+						<ContentPresenter
+							Content="{TemplateBinding Content}"
+							ContentTemplate="{TemplateBinding ContentTemplate}"
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center"
+						/>
+					</Grid>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="Button.angledAction:pointerover /template/ Path#ActionFill">
+			<Setter Property="Fill" Value="#ffc87423" />
+		</Style>
+
+		<Style Selector="Button.angledAction:pointerover /template/ Path#ActionStroke">
+			<Setter Property="Stroke" Value="#ffffdfa8" />
 		</Style>
 
 	</Window.Styles>
@@ -191,9 +269,9 @@
 			</ScrollViewer>
 
 			<Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
-				<Button Background="#ffe1852c" Foreground="White" FontWeight="SemiBold" Padding="24,12" MinHeight="46" Content="Cancel" Click="Cancel_OnClick" />
-				<TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Setup takes less than a minute." Foreground="#ffefcfb6" />
-				<Button Grid.Column="2" Background="#ffe1852c" Foreground="White" FontWeight="SemiBold" Padding="24,12" MinHeight="46" HorizontalAlignment="Right" Click="btnOk_OnClick" Content="Save and Launch" />
+				<Button Classes="angledAction" Content="Cancel" Click="Cancel_OnClick" />
+				<TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Setup takes less than a minute." Foreground="#ffefcfb6" FontSize="20" FontWeight="SemiBold" />
+				<Button Grid.Column="2" Classes="angledAction" HorizontalAlignment="Right" Click="btnOk_OnClick" Content="Save and Launch" />
 			</Grid>
 		</Grid>
 	</Border>
