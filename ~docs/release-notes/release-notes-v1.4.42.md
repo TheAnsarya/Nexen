@@ -1,4 +1,4 @@
-﻿# Nexen v1.4.42 Testing Release - Do Not Use For Validation
+# Nexen v1.4.42 Testing Release - Do Not Use For Validation
 
 > ⚠️ Warning: This is a bad release for testing and should not be used yet. Please wait for v1.5.0 for the recommended validation target.
 
@@ -36,7 +36,7 @@ Nexen v1.4.42 is a test-only stabilization release focused on CI reliability, re
 ### 📖 Release documentation updates
 
 - Updated `README.md` download and quick-start links from v1.4.41 to v1.4.42.
-- Refreshed release body template consumed by CI release job.
+- Refreshed CI release body template used by the release job.
 
 ## ✅ Validation Snapshot
 
@@ -57,7 +57,7 @@ Nexen v1.4.42 is a test-only stabilization release focused on CI reliability, re
 - Nexen-Linux-x64-AoT-v1.4.42.tar.gz
 - Nexen-macOS-ARM64-v1.4.42.zip
 
-## 🔗 Project Links
+## 🔗 Links
 
-- Changelog: https://github.com/TheAnsarya/Nexen/blob/master/CHANGELOG.md
-- Compare: https://github.com/TheAnsarya/Nexen/compare/v1.4.41...v1.4.42
+- Release tag: [v1.4.42](https://github.com/TheAnsarya/Nexen/releases/tag/v1.4.42)
+- Compare: [v1.4.41...v1.4.42](https://github.com/TheAnsarya/Nexen/compare/v1.4.41...v1.4.42)

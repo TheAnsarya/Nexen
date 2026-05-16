@@ -2685,6 +2685,7 @@ continue;
 
 continue;
 
+now that CI works, clean the repository up and fix warnings, and then prepare and release 1.4.42, with a TEST ONLY warning like the last few releases, and build all the artifacts and add them since this works now; continue;
 
 
 
