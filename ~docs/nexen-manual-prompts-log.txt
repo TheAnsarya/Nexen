@@ -2703,6 +2703,7 @@ We want these buttons to be reusable so we don't have to style each one individu
 
 Fix these problems for the setup first start initialization: Hovering does not change the UI display, there is no text in the buttons/options, selected option does not have brighter color changes, The three bottom labels "Cancel", "Setup takes less than a minute.", "Save and Launch" nedd larger text-size, and angle those buttons too; continue; Focus mainly on getting visible text on those buttons as well as fix all the other problems; continue;
 
+This is way better; The button angled corners, should use an angle that points to the north more, so theres a smaller horizontal amount and have it start closer to the bottom left/top right; fix the "Start Fresh" button, angling the sides, ;  the "Save and Launch" button" should be much bigger with larger text because it is the default button to be clicked at the end, so we want it easy to be found and used; continue;
 
 
 

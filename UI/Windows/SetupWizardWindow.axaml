@@ -33,18 +33,19 @@
 			<Setter Property="Padding" Value="0" />
 			<Setter Property="HorizontalAlignment" Value="Stretch" />
 			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+			<Setter Property="MinHeight" Value="66" />
 			<Setter Property="Template">
 				<ControlTemplate>
-					<Grid MinHeight="66" Cursor="Hand">
+					<Grid MinHeight="{TemplateBinding MinHeight}" Cursor="Hand">
 						<Path
 							x:Name="CardFill"
-							Data="M 14,0 L 100,0 L 100,52 L 86,66 L 0,66 L 0,14 Z"
+							Data="M 8,0 L 100,0 L 100,58 L 92,66 L 0,66 L 0,8 Z"
 							Stretch="Fill"
 							Fill="{TemplateBinding Background}"
 						/>
 						<Path
 							x:Name="CardStroke"
-							Data="M 14,1 L 99,1 L 99,51 L 85,65 L 1,65 L 1,14 Z"
+							Data="M 8,1 L 99,1 L 99,57 L 91,65 L 1,65 L 1,8 Z"
 							Stretch="Fill"
 							Stroke="{TemplateBinding BorderBrush}"
 							StrokeThickness="2"
@@ -98,18 +99,19 @@
 			<Setter Property="Padding" Value="24,12" />
 			<Setter Property="FontWeight" Value="SemiBold" />
 			<Setter Property="FontSize" Value="20" />
+			<Setter Property="MinHeight" Value="54" />
 			<Setter Property="Template">
 				<ControlTemplate>
-					<Grid MinHeight="54" Cursor="Hand">
+					<Grid MinHeight="{TemplateBinding MinHeight}" Cursor="Hand">
 						<Path
 							x:Name="ActionFill"
-							Data="M 12,0 L 100,0 L 100,44 L 88,54 L 0,54 L 0,12 Z"
+							Data="M 8,0 L 100,0 L 100,46 L 92,54 L 0,54 L 0,8 Z"
 							Stretch="Fill"
 							Fill="{TemplateBinding Background}"
 						/>
 						<Path
 							x:Name="ActionStroke"
-							Data="M 12,1 L 99,1 L 99,43 L 87,53 L 1,53 L 1,12 Z"
+							Data="M 8,1 L 99,1 L 99,45 L 91,53 L 1,53 L 1,8 Z"
 							Stretch="Fill"
 							Stroke="{TemplateBinding BorderBrush}"
 							StrokeThickness="2"
@@ -134,6 +136,20 @@
 			<Setter Property="Stroke" Value="#ffffdfa8" />
 		</Style>
 
+		<Style Selector="Button.angledAction.secondaryAction">
+			<Setter Property="FontSize" Value="16" />
+			<Setter Property="Padding" Value="18,8" />
+			<Setter Property="MinHeight" Value="42" />
+		</Style>
+
+		<Style Selector="Button.angledAction.primaryAction">
+			<Setter Property="FontSize" Value="26" />
+			<Setter Property="Padding" Value="38,18" />
+			<Setter Property="MinHeight" Value="72" />
+			<Setter Property="Background" Value="#ffd47a22" />
+			<Setter Property="BorderBrush" Value="#ffffe1aa" />
+		</Style>
+
 	</Window.Styles>
 
 	<Border BorderThickness="2" BorderBrush="#ff6b3f24" Background="#ff1d130d">
@@ -154,7 +170,7 @@
 				<Border Grid.Row="1" Grid.ColumnSpan="2" IsVisible="{Binding HasResumedDraft}" Background="#ff3b2416" BorderBrush="#ffbf5e12" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,14,0,0">
 					<DockPanel LastChildFill="False">
 						<TextBlock DockPanel.Dock="Left" Width="700" Text="Saved setup found. Continue or start over." TextWrapping="Wrap" Foreground="#ffffffff" FontSize="16" />
-						<Button DockPanel.Dock="Right" Background="#ffe1852c" Foreground="White" FontWeight="SemiBold" Padding="18,8" MinHeight="40" Click="StartFresh_OnClick" Content="Start Fresh" />
+						<Button DockPanel.Dock="Right" Classes="angledAction secondaryAction" Click="StartFresh_OnClick" Content="Start Fresh" />
 					</DockPanel>
 				</Border>
 			</Grid>
@@ -271,7 +287,7 @@
 			<Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
 				<Button Classes="angledAction" Content="Cancel" Click="Cancel_OnClick" />
 				<TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Setup takes less than a minute." Foreground="#ffefcfb6" FontSize="20" FontWeight="SemiBold" />
-				<Button Grid.Column="2" Classes="angledAction" HorizontalAlignment="Right" Click="btnOk_OnClick" Content="Save and Launch" />
+				<Button Grid.Column="2" Classes="angledAction primaryAction" HorizontalAlignment="Right" Click="btnOk_OnClick" Content="Save and Launch" />
 			</Grid>
 		</Grid>
 	</Border>
