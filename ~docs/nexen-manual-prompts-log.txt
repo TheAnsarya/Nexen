@@ -2707,6 +2707,7 @@ This is way better; The button angled corners, should use an angle that points t
 
 buttons: The corners are angled, not the sides, fix that, angle the sides of the buttons, not just the corners so they are a parallelagram with slightly rounded corners; The "Cancel button needs larger text; the "Save and Launch" button needs larger text and a much bigger button, take up more horizontal space; push the Nexen logo to the left side of the window and add a big "X" icon in a circle button on the top right as a close button; continue;
 
+make "Save and Launch" label have bigger text, it's very small, the corners of the angled buttons are cut off, push them in so they are visible, also increase the angle of the sides leaning to the right, make the window resizable and make it taller so we can see everything without scrolling;  the nexen icon should be bigger, to fit all three lines of text; there is a big circle on the top right that closes the window, but it doesn't have the cross/X icon and is too large; continue;
 
 
 
