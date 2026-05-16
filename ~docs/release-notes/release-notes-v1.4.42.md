@@ -1,4 +1,4 @@
-# Nexen v1.4.42 Testing Release - Do Not Use For Validation
+﻿# Nexen v1.4.42 Testing Release - Do Not Use For Validation
 
 > ⚠️ Warning: This is a bad release for testing and should not be used yet. Please wait for v1.5.0 for the recommended validation target.
 
