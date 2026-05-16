@@ -21,9 +21,9 @@ public static class SetupUsageProfileDefaults {
 	}
 
 	private static void ApplyPlayingDefaults(Configuration config) {
-		config.Debug.Integration.BackgroundCdlRecording = false;
-		config.Debug.Integration.AutoExportPansy = false;
-		config.Debug.Integration.SavePansyOnRomUnload = false;
+		config.Debug.Integration.BackgroundCdlRecording = true;
+		config.Debug.Integration.AutoExportPansy = true;
+		config.Debug.Integration.SavePansyOnRomUnload = true;
 		config.Debug.Integration.PansyUseCompression = false;
 		config.Debug.Integration.EnableFileWatching = false;
 		config.Debug.Integration.AutoReloadOnExternalChange = false;

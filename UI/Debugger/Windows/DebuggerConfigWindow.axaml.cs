@@ -39,7 +39,17 @@ public partial class DebuggerConfigWindow : NexenWindow {
 	}
 
 	public static void Open(DebugConfigWindowTab tab, Visual? parent) {
-		new DebuggerConfigWindow(new DebuggerConfigWindowViewModel(tab)).ShowCenteredDialog(parent as Visual);
+		DebuggerConfigWindow window = new(new DebuggerConfigWindowViewModel(tab));
+		try {
+			if (parent is not null) {
+				window.ShowCenteredDialog(parent);
+			} else {
+				window.Show();
+			}
+		} catch {
+			// Fall back to non-modal show rather than failing silently when owner resolution fails.
+			window.Show();
+		}
 	}
 
 	private void InitializeComponent() {

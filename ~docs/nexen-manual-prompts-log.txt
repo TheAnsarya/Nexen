@@ -2715,6 +2715,7 @@ run nexen to check snes emulation, SNES must always work
 
 There is still visial stats, audio stats, and misc stats, and some kind of audi wave graph, stop all of this nonsense, we want to play SNES games without weird displays; continue;
 
+Don't start with all those debug displays, but make sure pansy logging and export are turned on, the Debugger->Settings window is broken and doesn't do anything, fix it; continue;
 
 
 

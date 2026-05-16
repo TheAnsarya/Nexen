@@ -132,11 +132,11 @@ public partial class Configuration : ReactiveObject {
 			Lynx.InitializeDefaults(DefaultKeyMappings);
 		}
 
-		// Background CDL recording is now opt-in (disabled by default) for performance
-		// The full debugger was being initialized on every ROM load, adding 30-50% overhead
-		// See: https://github.com/TheAnsarya/Nexen/issues/419
+		// Ensure Pansy/CDL capture defaults remain enabled across upgraded configs.
 		if (ConfigUpgrade < (int)ConfigUpgradeHint.BackgroundCdlRecording) {
-			Debug.Integration.BackgroundCdlRecording = false;
+			Debug.Integration.BackgroundCdlRecording = true;
+			Debug.Integration.AutoExportPansy = true;
+			Debug.Integration.SavePansyOnRomUnload = true;
 		}
 
 		if (ConfigUpgrade < (int)ConfigUpgradeHint.ChannelFInput) {
