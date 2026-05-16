@@ -2709,6 +2709,7 @@ buttons: The corners are angled, not the sides, fix that, angle the sides of the
 
 make "Save and Launch" label have bigger text, it's very small, the corners of the angled buttons are cut off, push them in so they are visible, also increase the angle of the sides leaning to the right, make the window resizable and make it taller so we can see everything without scrolling;  the nexen icon should be bigger, to fit all three lines of text; there is a big circle on the top right that closes the window, but it doesn't have the cross/X icon and is too large; continue;
 
+On the SNES emulator there is a script that auto starts that displays stats from the emulator, turn that off by default, at default we're just playing the game and  saving pnansy info; continue;
 
 
 

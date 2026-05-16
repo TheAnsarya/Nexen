@@ -18,9 +18,9 @@ public sealed partial class ScriptWindowConfig : BaseWindowConfig<ScriptWindowCo
 
 	[Reactive] public partial double LogWindowHeight { get; set; } = 100;
 
-	[Reactive] public partial ScriptStartupBehavior ScriptStartupBehavior { get; set; } = ScriptStartupBehavior.ShowTutorial;
+	[Reactive] public partial ScriptStartupBehavior ScriptStartupBehavior { get; set; } = ScriptStartupBehavior.ShowBlankWindow;
 	[Reactive] public partial bool SaveScriptBeforeRun { get; set; } = true;
-	[Reactive] public partial bool AutoStartScriptOnLoad { get; set; } = true;
+	[Reactive] public partial bool AutoStartScriptOnLoad { get; set; } = false;
 	[Reactive] public partial bool AutoReloadScriptWhenFileChanges { get; set; } = true;
 	[Reactive] public partial bool AutoRestartScriptAfterPowerCycle { get; set; } = true;
 
