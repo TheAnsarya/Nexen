@@ -2697,7 +2697,9 @@ run Nexen so I can go through the initial setup and take notes so we can we mode
 
 [Nexen] (UI) go through the initial setup screen, The buttons' borders are not angled, there's just a slash character, so fix that, actualy change the UI (like padding, radius shit, like `https://stackoverflow.com/questions/64493860/how-to-create-a-button-with-the-top-left-and-bottom-right-corner-is-45-degrees-s`); I don't see any text or anything in the buttons; why don't we have labels? fix that!; from the "Where should Nexen save your data?" section, remove the reset button, we don't need it, make each section a little shorter, less height; and increase the text size of the very small text labels; continue;
 
+nope, 2, continue;
 
+We want these buttons to be reusable so we don't have to style each one individually. fix the class you can do it; continue;
 
 
 
