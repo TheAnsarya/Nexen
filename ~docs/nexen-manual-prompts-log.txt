@@ -2717,6 +2717,7 @@ There is still visial stats, audio stats, and misc stats, and some kind of audi 
 
 Don't start with all those debug displays, but make sure pansy logging and export are turned on, the Debugger->Settings window is broken and doesn't do anything, fix it; continue;
 
+visual/audio/misc stats or graph appears by default. that is wrong, fix it
 
 
 

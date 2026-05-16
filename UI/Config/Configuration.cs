@@ -147,6 +147,10 @@ public partial class Configuration : ReactiveObject {
 			Genesis.InitializeDefaults(DefaultKeyMappings);
 		}
 
+		if (ConfigUpgrade < (int)ConfigUpgradeHint.DisableStartupDebugStatsOverlay) {
+			Preferences.ShowDebugInfo = false;
+		}
+
 		ConfigUpgrade = (int)ConfigUpgradeHint.NextValue - 1;
 		Version = EmuApi.GetNexenVersion().ToString(3);
 	}
@@ -345,5 +349,6 @@ public enum ConfigUpgradeHint {
 	LynxInput,
 	ChannelFInput,
 	GenesisInput,
+	DisableStartupDebugStatsOverlay,
 	NextValue,
 }
