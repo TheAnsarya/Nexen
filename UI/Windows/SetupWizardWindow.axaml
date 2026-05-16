@@ -4,117 +4,273 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:m="clr-namespace:Nexen"
 	xmlns:vm="using:Nexen.ViewModels"
-	xmlns:c="using:Nexen.Controls"
 	xmlns:l="using:Nexen.Localization"
 	xmlns:v="using:Nexen.Views"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d"
 	x:Class="Nexen.Windows.SetupWizardWindow"
-	Width="520" Height="620"
-	MinWidth="460" MinHeight="560"
+	Width="980" Height="860"
+	MinWidth="860" MinHeight="720"
 	WindowDecorations="None"
 	CanResize="True"
 	WindowStartupLocation="CenterScreen"
 	x:DataType="vm:SetupWizardViewModel"
 	Title="{l:Translate wndTitle}"
 	Name="root"
+	Background="#ff1d130d"
+	Foreground="#ffffffff"
 >
 	<Design.DataContext>
 		<vm:SetupWizardViewModel />
 	</Design.DataContext>
 
-	<Border BorderThickness="3" BorderBrush="Gray">
-		<DockPanel Margin="10">
-			<DockPanel DockPanel.Dock="Top">
-				<Image
-					DockPanel.Dock="Right"
-					Source="/Assets/NexenIcon.ico"
-					Height="32"
-					Width="32"
-				/>
-				<StackPanel>
-					<TextBlock Text="{l:Translate lblNexen}" FontSize="12" />
-					<TextBlock Text="{l:Translate lblConfigWizard}" FontSize="18" />
+	<Window.Styles>
+		<Style Selector="RadioButton.choiceCard">
+			<Setter Property="Foreground" Value="#ffe1852c" />
+			<Setter Property="Background" Value="#ff2a1a10" />
+			<Setter Property="BorderBrush" Value="#ffbf5e12" />
+			<Setter Property="BorderThickness" Value="2" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Grid MinHeight="92" Cursor="Hand">
+						<Border x:Name="Card"
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="14"
+						/>
+						<Border x:Name="LeftAccent"
+							Width="10"
+							Height="56"
+							Background="#ff9e4c10"
+							HorizontalAlignment="Left"
+							VerticalAlignment="Center"
+							Margin="-6,0,0,0"
+						>
+							<Border.RenderTransform>
+								<SkewTransform AngleX="24" />
+							</Border.RenderTransform>
+						</Border>
+						<Border x:Name="RightAccent"
+							Width="10"
+							Height="56"
+							Background="#ff9e4c10"
+							HorizontalAlignment="Right"
+							VerticalAlignment="Center"
+							Margin="0,0,-6,0"
+						>
+							<Border.RenderTransform>
+								<SkewTransform AngleX="24" />
+							</Border.RenderTransform>
+						</Border>
+						<ContentPresenter Margin="18,12" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+					</Grid>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:pointerover /template/ Border#Card">
+			<Setter Property="Background" Value="#ff4a2d1a" />
+			<Setter Property="BorderBrush" Value="#ffe8a34c" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:pointerover /template/ ContentPresenter TextBlock">
+			<Setter Property="Foreground" Value="#ffffb45c" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:pointerover /template/ Border#LeftAccent">
+			<Setter Property="Background" Value="#ffffa93d" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:pointerover /template/ Border#RightAccent">
+			<Setter Property="Background" Value="#ffffa93d" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:checked /template/ Border#Card">
+			<Setter Property="Background" Value="#ffbf5e12" />
+			<Setter Property="BorderBrush" Value="#ffe7a24a" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:checked /template/ Border#LeftAccent">
+			<Setter Property="Background" Value="#ffffbe66" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:checked /template/ Border#RightAccent">
+			<Setter Property="Background" Value="#ffffbe66" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:checked /template/ ContentPresenter TextBlock">
+			<Setter Property="Foreground" Value="#ffffffff" />
+		</Style>
+	</Window.Styles>
+
+	<Border BorderThickness="2" BorderBrush="#ff6b3f24" Background="#ff1d130d">
+		<Grid Margin="22" RowDefinitions="Auto,*,Auto">
+			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto">
+				<StackPanel Spacing="4">
+					<TextBlock Text="Nexen" FontSize="14" Foreground="#ffefcfb6" />
+					<TextBlock Text="First Start Options" FontSize="34" FontWeight="Bold" />
+					<TextBlock Text="Pick what you need now. You can change everything later." Foreground="#ffefcfb6" />
 				</StackPanel>
-			</DockPanel>
-
-			<DockPanel DockPanel.Dock="Bottom">
-				<TextBlock
-					Foreground="CornflowerBlue"
-					Text="{l:Translate lblCancel}"
-					Cursor="Hand"
-					DockPanel.Dock="Left"
-					VerticalAlignment="Center"
-					Tapped="lblCancel_Tapped"
+				<Image
+					Grid.Column="1"
+					Source="/Assets/NexenIcon.ico"
+					Height="52"
+					Width="52"
+					VerticalAlignment="Top"
 				/>
-				<Button
-					MinWidth="70"
-					MinHeight="36"
-					HorizontalAlignment="Right"
-					HorizontalContentAlignment="Center"
-					Click="btnOk_OnClick"
-					Content="{l:Translate btnOk}"
-				/>
-			</DockPanel>
+				<Border Grid.Row="1" Grid.ColumnSpan="2" IsVisible="{Binding HasResumedDraft}" Background="#ff3b2416" BorderBrush="#ffbf5e12" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,14,0,0">
+					<DockPanel LastChildFill="False">
+						<TextBlock DockPanel.Dock="Left" Width="700" Text="Saved setup found. Continue or start over." TextWrapping="Wrap" Foreground="#ffffffff" FontSize="16" />
+						<Button DockPanel.Dock="Right" Background="#ffe1852c" Foreground="White" FontWeight="SemiBold" Padding="18,8" MinHeight="40" Click="StartFresh_OnClick" Content="Start Fresh" />
+					</DockPanel>
+				</Border>
+			</Grid>
 
-			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0" Margin="0 30 0 0">
-				<StackPanel>
-					<TextBlock Text="{l:Translate lblInitialSetup}" />
-					<Border IsVisible="{Binding HasResumedDraft}" Background="#22b7d3ff" BorderBrush="#66b7d3ff" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0 10 0 0">
-						<StackPanel>
-							<TextBlock Text="{l:Translate lblResumeDraftLoaded}" TextWrapping="Wrap" />
-							<Button HorizontalAlignment="Left" MinHeight="36" Margin="0 8 0 0" Click="StartFresh_OnClick" Content="{l:Translate btnStartFresh}" />
+			<ScrollViewer Grid.Row="1" Margin="0,20,0,20" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+				<StackPanel Spacing="14">
+					<Border Background="#ff2a1a10" BorderBrush="#ff6b3f24" BorderThickness="1" CornerRadius="12" Padding="16">
+						<StackPanel Spacing="10">
+							<TextBlock FontSize="20" FontWeight="SemiBold" Text="How will you use Nexen?" />
+							<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+								<RadioButton Classes="choiceCard" GroupName="PrimaryUsage" IsChecked="{Binding UsePlayingProfile}">
+									<StackPanel Spacing="6">
+										<TextBlock Text="Play Games" FontSize="21" FontWeight="SemiBold" />
+										<TextBlock Text="Good defaults for normal play." FontSize="14" Foreground="#ffefcfb6" />
+									</StackPanel>
+								</RadioButton>
+								<RadioButton Classes="choiceCard" GroupName="PrimaryUsage" IsChecked="{Binding UseDebuggingProfile}" Grid.Column="1">
+									<StackPanel Spacing="6">
+										<TextBlock Text="Hacking" FontSize="21" FontWeight="SemiBold" />
+										<TextBlock Text="More tools and debug-oriented defaults." FontSize="14" Foreground="#ffefcfb6" />
+									</StackPanel>
+								</RadioButton>
+							</Grid>
 						</StackPanel>
 					</Border>
 
-					<c:OptionSection Header="{l:Translate lblPrimaryUsage}" Margin="0 18 0 0">
-						<TextBlock Text="{l:Translate lblPrimaryUsageHint}" />
-						<StackPanel Margin="5 8 0 0">
-							<RadioButton Content="{l:Translate radPrimaryUsagePlaying}" IsChecked="{Binding UsePlayingProfile}" />
-							<TextBlock Text="{l:Translate lblPrimaryUsagePlayingHint}" Margin="24 2 0 8" TextWrapping="Wrap" Opacity="0.8" />
-							<RadioButton Content="{l:Translate radPrimaryUsageDebugging}" IsChecked="{Binding UseDebuggingProfile}" />
-							<TextBlock Text="{l:Translate lblPrimaryUsageDebuggingHint}" Margin="24 2 0 0" TextWrapping="Wrap" Opacity="0.8" />
+					<Border Background="#ff2a1a10" BorderBrush="#ff6b3f24" BorderThickness="1" CornerRadius="12" Padding="16">
+						<StackPanel Spacing="10">
+							<Grid ColumnDefinitions="*,Auto">
+								<TextBlock FontSize="20" FontWeight="SemiBold" Text="Where should Nexen save your data?" />
+								<Button Grid.Column="1" HorizontalAlignment="Right" Background="#ffbf5e12" Foreground="White" FontWeight="SemiBold" Padding="12,6" MinHeight="36" Click="ResetStorageToRecommended_OnClick" Content="↻ Reset" />
+							</Grid>
+							<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+								<RadioButton Classes="choiceCard" GroupName="Storage" IsChecked="{Binding StoreInUserProfile}">
+									<StackPanel Spacing="6">
+										<TextBlock Text="Use Documents (Recommended)" FontSize="19" FontWeight="SemiBold" TextWrapping="Wrap" />
+										<TextBlock Text="Best for most users." FontSize="14" Foreground="#ffefcfb6" />
+									</StackPanel>
+								</RadioButton>
+								<RadioButton Classes="choiceCard" GroupName="Storage" IsChecked="{Binding UsePortableMode}" Grid.Column="1" IsEnabled="{Binding CanUsePortableMode}">
+									<StackPanel Spacing="6">
+										<TextBlock Text="Use Current Folder" FontSize="19" FontWeight="SemiBold" />
+										<TextBlock Text="Keep data next to Nexen." FontSize="14" Foreground="#ffefcfb6" />
+									</StackPanel>
+								</RadioButton>
+							</Grid>
+							<TextBlock IsVisible="{Binding !CanUsePortableMode}" Foreground="#ffe1852c" Text="Portable mode is unavailable in AppImage environments." />
+							<StackPanel Orientation="Horizontal" Spacing="8">
+								<TextBlock Text="Selected path:" Foreground="#ffefcfb6" FontSize="18" FontWeight="SemiBold" />
+								<TextBlock Text="{Binding InstallLocation}" FontSize="18" FontWeight="SemiBold" />
+							</StackPanel>
 						</StackPanel>
-					</c:OptionSection>
+					</Border>
 
-					<c:OptionSection Header="{l:Translate lblStorageLocation}">
-						<TextBlock Text="{l:Translate lblStorageHint}" />
-						<StackPanel Margin="5 5 0 0">
-							<RadioButton Content="{l:Translate radStorageDocuments}" IsChecked="{Binding StoreInUserProfile}" />
-							<TextBlock Text="{l:Translate lblStorageDocumentsHint}" Margin="24 2 0 8" TextWrapping="Wrap" Opacity="0.8" />
-							<RadioButton Content="{l:Translate radStoragePortable}" IsChecked="{Binding !StoreInUserProfile}" IsEnabled="{Binding CanUsePortableMode}" />
-							<TextBlock Text="{l:Translate lblStoragePortableHint}" Margin="24 2 0 0" TextWrapping="Wrap" Opacity="0.8" IsEnabled="{Binding CanUsePortableMode}" />
-							<TextBlock Text="{l:Translate lblStoragePortableUnavailableHint}" Margin="24 6 0 0" TextWrapping="Wrap" Opacity="0.8" Foreground="DarkOrange" IsVisible="{Binding !CanUsePortableMode}" />
+					<Border Background="#ff2a1a10" BorderBrush="#ff6b3f24" BorderThickness="1" CornerRadius="12" Padding="16">
+						<StackPanel Spacing="10">
+							<TextBlock FontSize="20" FontWeight="SemiBold" Text="Configure input now?" />
+							<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+								<RadioButton Classes="choiceCard" GroupName="InputSetup" IsChecked="{Binding ConfigureInputMappingsNow}">
+									<StackPanel Spacing="6">
+										<TextBlock Text="Configure Input" FontSize="19" FontWeight="SemiBold" />
+										<TextBlock Text="Pick prompt style and keyboard mode." FontSize="14" Foreground="#ffefcfb6" />
+									</StackPanel>
+								</RadioButton>
+								<RadioButton Classes="choiceCard" GroupName="InputSetup" IsChecked="{Binding UseInputDefaultsNow}" Grid.Column="1">
+									<StackPanel Spacing="6">
+										<TextBlock Text="Use Defaults" FontSize="19" FontWeight="SemiBold" />
+										<TextBlock Text="Quick start with built-in input settings." FontSize="14" Foreground="#ffefcfb6" />
+									</StackPanel>
+								</RadioButton>
+							</Grid>
+
+							<StackPanel IsVisible="{Binding ConfigureInputMappingsNow}" Spacing="10" Margin="0,6,0,0">
+								<TextBlock FontSize="18" FontWeight="SemiBold" Text="Prompt Style" />
+								<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+									<RadioButton Classes="choiceCard" GroupName="ControllerStyle" IsChecked="{Binding UseXboxPromptStyle}">
+										<StackPanel Spacing="6">
+											<TextBlock Text="Xbox" FontSize="19" FontWeight="SemiBold" />
+											<TextBlock Text="A/B/X/Y labels" FontSize="14" Foreground="#ffefcfb6" />
+										</StackPanel>
+									</RadioButton>
+									<RadioButton Classes="choiceCard" GroupName="ControllerStyle" IsChecked="{Binding UsePlayStationPromptStyle}" Grid.Column="1">
+										<StackPanel Spacing="6">
+											<TextBlock Text="PlayStation" FontSize="19" FontWeight="SemiBold" />
+											<TextBlock Text="Cross/Circle/Square/Triangle" FontSize="14" Foreground="#ffefcfb6" />
+										</StackPanel>
+									</RadioButton>
+								</Grid>
+
+								<TextBlock FontSize="18" FontWeight="SemiBold" Text="Keyboard" />
+								<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+									<RadioButton Classes="choiceCard" GroupName="KeyboardStyle" IsChecked="{Binding EnableWasdMappings}">
+										<StackPanel Spacing="6">
+											<TextBlock Text="WASD" FontSize="19" FontWeight="SemiBold" />
+											<TextBlock Text="Use W/A/S/D keys" FontSize="14" Foreground="#ffefcfb6" />
+										</StackPanel>
+									</RadioButton>
+									<RadioButton Classes="choiceCard" GroupName="KeyboardStyle" IsChecked="{Binding EnableArrowMappings}" Grid.Column="1">
+										<StackPanel Spacing="6">
+											<TextBlock Text="Arrow Keys" FontSize="19" FontWeight="SemiBold" />
+											<TextBlock Text="Use arrow keys" FontSize="14" Foreground="#ffefcfb6" />
+										</StackPanel>
+									</RadioButton>
+								</Grid>
+							</StackPanel>
 						</StackPanel>
-						<StackPanel Orientation="Horizontal" Margin="0 10 0 4">
-							<TextBlock Text="{l:Translate lblDataLocation}" />
-							<TextBlock Foreground="CornflowerBlue" Margin="5 0 0 0" Text="{Binding InstallLocation}" />
+					</Border>
+
+					<Border Background="#ff2a1a10" BorderBrush="#ff6b3f24" BorderThickness="1" CornerRadius="12" Padding="16">
+						<StackPanel Spacing="10">
+							<TextBlock FontSize="20" FontWeight="SemiBold" Text="Final options" />
+
+							<StackPanel Spacing="6" IsVisible="{Binding !IsOsx}">
+								<TextBlock FontWeight="SemiBold" FontSize="18" Text="Create shortcut?" />
+								<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+									<RadioButton Classes="choiceCard" GroupName="Shortcut" IsChecked="{Binding CreateShortcutYes}">
+										<TextBlock Text="Yes" FontSize="21" FontWeight="SemiBold" />
+									</RadioButton>
+									<RadioButton Classes="choiceCard" GroupName="Shortcut" IsChecked="{Binding CreateShortcutNo}" Grid.Column="1">
+										<TextBlock Text="No" FontSize="21" FontWeight="SemiBold" />
+									</RadioButton>
+								</Grid>
+							</StackPanel>
+
+							<StackPanel Spacing="6">
+								<TextBlock FontWeight="SemiBold" FontSize="18" Text="Check updates?" />
+								<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+									<RadioButton Classes="choiceCard" GroupName="Updates" IsChecked="{Binding CheckForUpdatesYes}">
+										<TextBlock Text="Yes" FontSize="21" FontWeight="SemiBold" />
+									</RadioButton>
+									<RadioButton Classes="choiceCard" GroupName="Updates" IsChecked="{Binding CheckForUpdatesNo}" Grid.Column="1">
+										<TextBlock Text="No" FontSize="21" FontWeight="SemiBold" />
+									</RadioButton>
+								</Grid>
+							</StackPanel>
 						</StackPanel>
-						<Button HorizontalAlignment="Left" MinHeight="36" Click="ResetStorageToRecommended_OnClick" Content="{l:Translate btnStorageResetRecommended}" />
-					</c:OptionSection>
-
-					<c:OptionSection Header="{l:Translate lblInputMappings}">
-						<TextBlock Text="{l:Translate lblInputHint}" />
-						<CheckBox Content="{l:Translate chkCustomizeInputMappingsNow}" IsChecked="{Binding CustomizeInputMappingsNow}" Margin="0 8 0 0" />
-						<TextBlock Text="{l:Translate lblInputDefaultsHint}" Margin="24 2 0 0" TextWrapping="Wrap" Opacity="0.8" />
-						<Grid ColumnDefinitions="1*,1*,1*,1*" RowDefinitions="Auto,Auto" Margin="0 10 0 0" IsVisible="{Binding CustomizeInputMappingsNow}">
-							<Image Source="/Assets/XbIcon.png" Stretch="None" Tapped="XboxIcon_Tapped" Cursor="Hand" />
-							<Image Source="/Assets/PsIcon.png" Stretch="None" Grid.Column="1" Tapped="PsIcon_Tapped" Cursor="Hand" />
-							<Image Source="/Assets/WasdKeys.png" Stretch="None" Grid.Column="2" Tapped="WasdIcon_Tapped" Cursor="Hand" />
-							<Image Source="/Assets/ArrowKeys.png" Stretch="None" Grid.Column="3" Tapped="ArrowIcon_Tapped" Cursor="Hand" />
-							<CheckBox Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" IsChecked="{Binding EnableXboxMappings}" />
-							<CheckBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" IsChecked="{Binding EnablePsMappings}" />
-							<CheckBox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" IsChecked="{Binding EnableWasdMappings}" />
-							<CheckBox Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center" IsChecked="{Binding EnableArrowMappings}" />
-						</Grid>
-					</c:OptionSection>
-
-					<c:OptionSection Header="{l:Translate lblMiscOptions}" Margin="0 25 0 0" IsVisible="{Binding !IsOsx}">
-						<CheckBox Content="{l:Translate chkCreateShortcut}" IsChecked="{Binding CreateShortcut}" />
-						<CheckBox Content="{l:Translate chkCheckForUpdates}" IsChecked="{Binding CheckForUpdates}" />
-					</c:OptionSection>
+					</Border>
 				</StackPanel>
 			</ScrollViewer>
-		</DockPanel>
+
+			<Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+				<Button Background="#ffe1852c" Foreground="White" FontWeight="SemiBold" Padding="24,12" MinHeight="46" Content="Cancel" Click="Cancel_OnClick" />
+				<TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Setup takes less than a minute." Foreground="#ffefcfb6" />
+				<Button Grid.Column="2" Background="#ffe1852c" Foreground="White" FontWeight="SemiBold" Padding="24,12" MinHeight="46" HorizontalAlignment="Right" Click="btnOk_OnClick" Content="Save and Launch" />
+			</Grid>
+		</Grid>
 	</Border>
 </Window>

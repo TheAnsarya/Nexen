@@ -2687,8 +2687,11 @@ continue;
 
 now that CI works, clean the repository up and fix warnings, and then prepare and release 1.4.42, with a TEST ONLY warning like the last few releases, and build all the artifacts and add them since this works now; continue;
 
+run Nexen so I can go through the initial setup and take notes so we can we modenize it and make it easy to use; continue;
 
+[Nexen] (UI) go through the initial setup screen, convert to the orange, dark-orange, brown, dark-brown colors from the logo with white text; make it so it shows the whole options area, bigger window area, and I don't want to have scroll, get rid of scrolling unless the screen is small and we have to; Add "First Start Options" or something better as a header; use big buttons for the two options on each question, orange outlined (non-slected is dark-orange outlined) and brown and make the graphics for buttons awesome with rounded corners on the button and slanted/angled side borders; make a modern looking UI and simplify the questions; continue;
 
+[Nexen] (UI) go through the initial setup screen, use dark orange as the border for the non-selected option, set the background color in the button of the selected option to dark orange or something to show it's the selected one, make button text orange instead of black on hover, make whole button area inside of border clickable/hoverable, hide the blue/white radio button in the buttons, make then colors of the button brighten on hover, make the side borders of the buttons lean to the right (we want modern futuristic buttons looks, with angled side borders; simplify question labels further, make the text bigger and say simplier things like "How will you use Nexen?" ("Play Games", "Hacking"), "Where should Nexen save your data?" ("Use Documents (Recommended)", "Use Current Folder"), make "selected path" and value larger, move "reset" button to top right and change to emoji with a short "reset" label, then a "configue input" section, but simplify it, and simple one-line versions of "create shortcut" and "check updates" with simplier labels and big buttons; everything should be more understandable and easier to use; continue;
 
 
 

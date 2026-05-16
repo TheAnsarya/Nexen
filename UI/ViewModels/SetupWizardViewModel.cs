@@ -44,6 +44,89 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 		}
 	}
 
+	public bool UsePortableMode {
+		get => !StoreInUserProfile;
+		set {
+			if (value && CanUsePortableMode) {
+				StoreInUserProfile = false;
+			}
+		}
+	}
+
+	public bool ConfigureInputMappingsNow {
+		get => CustomizeInputMappingsNow;
+		set {
+			if (value) {
+				CustomizeInputMappingsNow = true;
+			}
+		}
+	}
+
+	public bool UseInputDefaultsNow {
+		get => !CustomizeInputMappingsNow;
+		set {
+			if (value) {
+				CustomizeInputMappingsNow = false;
+			}
+		}
+	}
+
+	public bool UseXboxPromptStyle {
+		get => EnableXboxMappings;
+		set {
+			if (value) {
+				EnableXboxMappings = true;
+				EnablePsMappings = false;
+			}
+		}
+	}
+
+	public bool UsePlayStationPromptStyle {
+		get => EnablePsMappings;
+		set {
+			if (value) {
+				EnablePsMappings = true;
+				EnableXboxMappings = false;
+			}
+		}
+	}
+
+	public bool CreateShortcutYes {
+		get => CreateShortcut;
+		set {
+			if (value) {
+				CreateShortcut = true;
+			}
+		}
+	}
+
+	public bool CreateShortcutNo {
+		get => !CreateShortcut;
+		set {
+			if (value) {
+				CreateShortcut = false;
+			}
+		}
+	}
+
+	public bool CheckForUpdatesYes {
+		get => CheckForUpdates;
+		set {
+			if (value) {
+				CheckForUpdates = true;
+			}
+		}
+	}
+
+	public bool CheckForUpdatesNo {
+		get => !CheckForUpdates;
+		set {
+			if (value) {
+				CheckForUpdates = false;
+			}
+		}
+	}
+
 	/// <summary>Gets or sets whether to store configuration in the user profile folder.</summary>
 	[Reactive] public partial bool StoreInUserProfile { get; set; } = true;
 
@@ -92,9 +175,38 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 
 		this.WhenAnyValue(x => x.StoreInUserProfile).Subscribe(x => InstallLocation = StoreInUserProfile ? ConfigManager.DefaultDocumentsFolder : ConfigManager.DefaultPortableFolder);
 
+		this.WhenAnyValue(x => x.StoreInUserProfile).Subscribe(_ => {
+			this.RaisePropertyChanged(nameof(UsePortableMode));
+		});
+
 		this.WhenAnyValue(x => x.PrimaryUsageProfile).Subscribe(_ => {
 			this.RaisePropertyChanged(nameof(UsePlayingProfile));
 			this.RaisePropertyChanged(nameof(UseDebuggingProfile));
+		});
+
+		this.WhenAnyValue(x => x.CustomizeInputMappingsNow).Subscribe(_ => {
+			this.RaisePropertyChanged(nameof(ConfigureInputMappingsNow));
+			this.RaisePropertyChanged(nameof(UseInputDefaultsNow));
+		});
+
+		this.WhenAnyValue(x => x.EnableXboxMappings).Subscribe(_ => {
+			this.RaisePropertyChanged(nameof(UseXboxPromptStyle));
+			this.RaisePropertyChanged(nameof(UsePlayStationPromptStyle));
+		});
+
+		this.WhenAnyValue(x => x.EnablePsMappings).Subscribe(_ => {
+			this.RaisePropertyChanged(nameof(UseXboxPromptStyle));
+			this.RaisePropertyChanged(nameof(UsePlayStationPromptStyle));
+		});
+
+		this.WhenAnyValue(x => x.CreateShortcut).Subscribe(_ => {
+			this.RaisePropertyChanged(nameof(CreateShortcutYes));
+			this.RaisePropertyChanged(nameof(CreateShortcutNo));
+		});
+
+		this.WhenAnyValue(x => x.CheckForUpdates).Subscribe(_ => {
+			this.RaisePropertyChanged(nameof(CheckForUpdatesYes));
+			this.RaisePropertyChanged(nameof(CheckForUpdatesNo));
 		});
 
 		this.WhenAnyValue(x => x.PrimaryUsageProfile).Skip(1).Subscribe(_ => {
@@ -132,6 +244,18 @@ public sealed partial class SetupWizardViewModel : ViewModelBase {
 		this.WhenAnyValue(x => x.EnableArrowMappings).Subscribe(x => {
 			if (x) {
 				EnableWasdMappings = false;
+			}
+		});
+
+		this.WhenAnyValue(x => x.EnableXboxMappings).Subscribe(x => {
+			if (x) {
+				EnablePsMappings = false;
+			}
+		});
+
+		this.WhenAnyValue(x => x.EnablePsMappings).Subscribe(x => {
+			if (x) {
+				EnableXboxMappings = false;
 			}
 		});
 

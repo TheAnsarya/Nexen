@@ -2,7 +2,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
@@ -52,7 +51,7 @@ public partial class SetupWizardWindow : NexenWindow {
 		}
 	}
 
-	private void lblCancel_Tapped(object? sender, TappedEventArgs e) {
+	private void Cancel_OnClick(object? sender, RoutedEventArgs e) {
 		Close();
 	}
 
@@ -63,22 +62,6 @@ public partial class SetupWizardWindow : NexenWindow {
 		}
 
 		base.OnClosing(e);
-	}
-
-	private void XboxIcon_Tapped(object? sender, TappedEventArgs e) {
-		_model.EnableXboxMappings = !_model.EnableXboxMappings;
-	}
-
-	private void PsIcon_Tapped(object? sender, TappedEventArgs e) {
-		_model.EnablePsMappings = !_model.EnablePsMappings;
-	}
-
-	private void WasdIcon_Tapped(object? sender, TappedEventArgs e) {
-		_model.EnableWasdMappings = !_model.EnableWasdMappings;
-	}
-
-	private void ArrowIcon_Tapped(object? sender, TappedEventArgs e) {
-		_model.EnableArrowMappings = !_model.EnableArrowMappings;
 	}
 
 	private void ResetStorageToRecommended_OnClick(object? sender, RoutedEventArgs e) {
