@@ -26,7 +26,7 @@
 
 	<Window.Styles>
 		<Style Selector="RadioButton.choiceCard">
-			<Setter Property="Foreground" Value="#ffe1852c" />
+			<Setter Property="Foreground" Value="#ffffffff" />
 			<Setter Property="Background" Value="#ff2a1a10" />
 			<Setter Property="BorderBrush" Value="#ffbf5e12" />
 			<Setter Property="BorderThickness" Value="2" />
@@ -35,40 +35,40 @@
 			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
 			<Setter Property="Template">
 				<ControlTemplate>
-					<Grid MinHeight="74" Cursor="Hand">
+					<Grid MinHeight="66" Cursor="Hand">
 						<Border x:Name="Card"
 							Background="{TemplateBinding Background}"
 							BorderBrush="{TemplateBinding BorderBrush}"
 							BorderThickness="{TemplateBinding BorderThickness}"
-							CornerRadius="14"
+							CornerRadius="11"
 						/>
 						<Border x:Name="LeftEdge"
-							Width="14"
-							Background="#22000000"
+							Width="18"
+							Background="#251a120c"
 							BorderBrush="{TemplateBinding BorderBrush}"
 							BorderThickness="2,2,0,2"
 							HorizontalAlignment="Left"
 							VerticalAlignment="Stretch"
-							Margin="-8,6,0,6"
+							Margin="-12,3,0,3"
 						>
 							<Border.RenderTransform>
-								<SkewTransform AngleX="-22" />
+								<SkewTransform AngleX="-30" />
 							</Border.RenderTransform>
 						</Border>
 						<Border x:Name="RightEdge"
-							Width="14"
-							Background="#22000000"
+							Width="18"
+							Background="#251a120c"
 							BorderBrush="{TemplateBinding BorderBrush}"
 							BorderThickness="0,2,2,2"
 							HorizontalAlignment="Right"
 							VerticalAlignment="Stretch"
-							Margin="0,6,-8,6"
+							Margin="0,3,-12,3"
 						>
 							<Border.RenderTransform>
-								<SkewTransform AngleX="24" />
+								<SkewTransform AngleX="30" />
 							</Border.RenderTransform>
 						</Border>
-						<ContentPresenter Margin="18,12" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+						<ContentPresenter Margin="16,9" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
 					</Grid>
 				</ControlTemplate>
 			</Setter>
@@ -80,7 +80,7 @@
 		</Style>
 
 		<Style Selector="RadioButton.choiceCard:pointerover /template/ ContentPresenter TextBlock">
-			<Setter Property="Foreground" Value="#ffffb45c" />
+			<Setter Property="Foreground" Value="#ffffc57b" />
 		</Style>
 
 		<Style Selector="RadioButton.choiceCard:pointerover /template/ Border#LeftEdge">
@@ -120,7 +120,7 @@
 
 		<Style Selector="TextBlock.cardHint">
 			<Setter Property="Foreground" Value="#ffefcfb6" />
-			<Setter Property="FontSize" Value="14" />
+			<Setter Property="FontSize" Value="16" />
 		</Style>
 	</Window.Styles>
 
@@ -130,7 +130,7 @@
 				<StackPanel Spacing="4">
 					<TextBlock Text="Nexen" FontSize="14" Foreground="#ffefcfb6" />
 					<TextBlock Text="First Start Options" FontSize="34" FontWeight="Bold" />
-					<TextBlock Text="Pick what you need now. You can change everything later." Foreground="#ffefcfb6" />
+					<TextBlock Text="Pick what you need now. You can change everything later." Foreground="#ffefcfb6" FontSize="16" />
 				</StackPanel>
 				<Image
 					Grid.Column="1"
@@ -147,9 +147,9 @@
 				</Border>
 			</Grid>
 
-			<ScrollViewer Grid.Row="1" Margin="0,20,0,20" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+			<ScrollViewer Grid.Row="1" Margin="0,16,0,16" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 				<Border Background="#ff2a1a10" BorderBrush="#ff6b3f24" BorderThickness="1" CornerRadius="12" Padding="16">
-					<StackPanel Spacing="14">
+					<StackPanel Spacing="12">
 						<TextBlock FontSize="20" FontWeight="SemiBold" Text="How will you use Nexen?" />
 						<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
 							<RadioButton Classes="choiceCard" GroupName="PrimaryUsage" IsChecked="{Binding UsePlayingProfile}">
@@ -168,9 +168,8 @@
 
 						<Border Height="1" Background="#553f2b1f" Margin="0,2,0,2" />
 
-						<Grid ColumnDefinitions="*,Auto">
+						<Grid ColumnDefinitions="*">
 							<TextBlock FontSize="20" FontWeight="SemiBold" Text="Where should Nexen save your data?" />
-							<Button Grid.Column="1" HorizontalAlignment="Right" Background="#ffbf5e12" Foreground="White" FontWeight="SemiBold" Padding="12,6" MinHeight="34" Click="ResetStorageToRecommended_OnClick" Content="↻ Reset" />
 						</Grid>
 						<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
 							<RadioButton Classes="choiceCard" GroupName="Storage" IsChecked="{Binding StoreInUserProfile}">
@@ -186,7 +185,7 @@
 								</StackPanel>
 							</RadioButton>
 						</Grid>
-						<TextBlock IsVisible="{Binding !CanUsePortableMode}" Foreground="#ffe1852c" Text="Portable mode is unavailable in AppImage environments." />
+							<TextBlock IsVisible="{Binding !CanUsePortableMode}" Foreground="#ffe1852c" FontSize="16" Text="Portable mode is unavailable in AppImage environments." />
 						<StackPanel Orientation="Horizontal" Spacing="8">
 							<TextBlock Text="Selected path:" Foreground="#ffefcfb6" FontSize="19" FontWeight="SemiBold" />
 							<TextBlock Text="{Binding InstallLocation}" FontSize="19" FontWeight="SemiBold" Foreground="#ffffffff" />
@@ -236,20 +235,20 @@
 
 						<Grid ColumnDefinitions="2*,*,*" ColumnSpacing="12" IsVisible="{Binding !IsOsx}">
 							<TextBlock VerticalAlignment="Center" FontSize="18" FontWeight="SemiBold" Text="Desktop Shortcut" />
-							<RadioButton Grid.Column="1" Classes="choiceCard" GroupName="Shortcut" IsChecked="{Binding CreateShortcutYes}" MinHeight="60">
+							<RadioButton Grid.Column="1" Classes="choiceCard" GroupName="Shortcut" IsChecked="{Binding CreateShortcutYes}" MinHeight="54">
 								<TextBlock Classes="cardTitle" FontSize="18" Text="Yes" />
 							</RadioButton>
-							<RadioButton Grid.Column="2" Classes="choiceCard" GroupName="Shortcut" IsChecked="{Binding CreateShortcutNo}" MinHeight="60">
+							<RadioButton Grid.Column="2" Classes="choiceCard" GroupName="Shortcut" IsChecked="{Binding CreateShortcutNo}" MinHeight="54">
 								<TextBlock Classes="cardTitle" FontSize="18" Text="No" />
 							</RadioButton>
 						</Grid>
 
 						<Grid ColumnDefinitions="2*,*,*" ColumnSpacing="12">
 							<TextBlock VerticalAlignment="Center" FontSize="18" FontWeight="SemiBold" Text="Auto Update" />
-							<RadioButton Grid.Column="1" Classes="choiceCard" GroupName="Updates" IsChecked="{Binding CheckForUpdatesYes}" MinHeight="60">
+							<RadioButton Grid.Column="1" Classes="choiceCard" GroupName="Updates" IsChecked="{Binding CheckForUpdatesYes}" MinHeight="54">
 								<TextBlock Classes="cardTitle" FontSize="18" Text="Yes" />
 							</RadioButton>
-							<RadioButton Grid.Column="2" Classes="choiceCard" GroupName="Updates" IsChecked="{Binding CheckForUpdatesNo}" MinHeight="60">
+							<RadioButton Grid.Column="2" Classes="choiceCard" GroupName="Updates" IsChecked="{Binding CheckForUpdatesNo}" MinHeight="54">
 								<TextBlock Classes="cardTitle" FontSize="18" Text="No" />
 							</RadioButton>
 						</Grid>
