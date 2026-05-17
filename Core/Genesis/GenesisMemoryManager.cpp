@@ -923,6 +923,9 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_z80RuntimeStateEpoch = 0;
 	_z80RuntimeLastTransitionClock = 0;
 	_z80BankReg = 0;
+	_ymAddressPort0 = 0;
+	_ymAddressPort1 = 0;
+	memset(_ymRegisters, 0, sizeof(_ymRegisters));
 	ApplyStartupEnvironmentProfile();
 	_z80Reset = sNexenGenesisPowerOnZ80ResetAsserted;
 	_startupLastDisplayEnabled = _vdp ? ((_vdp->GetState().Registers[VdpReg::ModeSet2] & 0x40) != 0) : false;
@@ -4455,8 +4458,10 @@ uint8_t GenesisMemoryManager::ReadZ80Window8(uint32_t addr) {
 	}
 
 	if (z80Addr < 0x6000u) {
-		// YM2612 status/data reads are currently modeled as not-busy/zeroed.
-		return 0x00;
+		// YM2612 status read ($4000/$4001 = part0, $4002/$4003 = part1).
+		uint8_t part = (uint8_t)((z80Addr >> 1) & 0x01u);
+		uint16_t statusReg = (uint16_t)((part ? 0x100u : 0x000u) | 0x27u);
+		return (uint8_t)(_ymRegisters[statusReg] & 0x03u);
 	}
 
 	if (z80Addr < 0x8000u) {
@@ -4490,7 +4495,19 @@ void GenesisMemoryManager::WriteZ80Window8(uint32_t addr, uint8_t value) {
 	}
 
 	if (z80Addr < 0x6000u) {
-		// YM2612 writes are accepted as side-effect-free for now.
+		// YM2612 writes: even lanes latch address, odd lanes write data.
+		uint8_t part = (uint8_t)((z80Addr >> 1) & 0x01u);
+		bool isAddressWrite = (z80Addr & 0x01u) == 0u;
+		if (isAddressWrite) {
+			if (part == 0u) {
+				_ymAddressPort0 = value;
+			} else {
+				_ymAddressPort1 = value;
+			}
+		} else {
+			uint16_t regIndex = (uint16_t)(part == 0u ? _ymAddressPort0 : (0x100u | _ymAddressPort1));
+			_ymRegisters[regIndex & 0x01FFu] = value;
+		}
 		return;
 	}
 
@@ -4775,16 +4792,9 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return effectiveValue;
 	}
 	if (effectiveAddr >= 0xA00000 && effectiveAddr <= 0xA0FFFF) {
-		if (IsYm2612Address(effectiveAddr)) {
-			uint8_t effectiveValue = 0x00;
-			_openBus = effectiveValue;
-			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x20);
-			return effectiveValue;
-		}
-
 		uint8_t effectiveValue = 0xFF;
 		if (IsZ80BusGranted()) {
-			effectiveValue = _z80Ram[effectiveAddr & 0x1FFF];
+			effectiveValue = ReadZ80Window8(effectiveAddr);
 		}
 		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x20);
@@ -5077,7 +5087,7 @@ void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
 	if (effectiveAddr >= 0xA00000 && effectiveAddr <= 0xA0FFFF) {
 		uint8_t effectiveValue = value;
 		if (IsZ80BusGranted()) {
-			_z80Ram[effectiveAddr & 0x1FFF] = effectiveValue;
+			WriteZ80Window8(effectiveAddr, effectiveValue);
 		}
 		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x20);
@@ -5193,6 +5203,9 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_z80BusReqDelayMclk);
 	SV(_z80ResumeDelayMclk);
 	SV(_z80BankReg);
+	SV(_ymAddressPort0);
+	SV(_ymAddressPort1);
+	SVArray(_ymRegisters, (uint32_t)sizeof(_ymRegisters));
 	SV(_romBankMapperEnabled);
 	SVArray(_romBankRegisters, (uint32_t)sizeof(_romBankRegisters));
 	SV(_ramEnable);

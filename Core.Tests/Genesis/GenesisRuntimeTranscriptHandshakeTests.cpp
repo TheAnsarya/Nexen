@@ -186,6 +186,19 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xA04003), 0x00u);
 		EXPECT_EQ(memoryManager.Read16(0xA04000), 0x0000u);
 		EXPECT_EQ(memoryManager.Read16(0xA04002), 0x0000u);
+
+		// Program YM status bits through register $27 on part 0 and part 1.
+		memoryManager.Write8(0xA04000, 0x27);
+		memoryManager.Write8(0xA04001, 0x03);
+		memoryManager.Write8(0xA04002, 0x27);
+		memoryManager.Write8(0xA04003, 0x02);
+
+		EXPECT_EQ(memoryManager.Read8(0xA04000), 0x03u);
+		EXPECT_EQ(memoryManager.Read8(0xA04001), 0x03u);
+		EXPECT_EQ(memoryManager.Read8(0xA04002), 0x02u);
+		EXPECT_EQ(memoryManager.Read8(0xA04003), 0x02u);
+		EXPECT_EQ(memoryManager.Read16(0xA04000), 0x0303u);
+		EXPECT_EQ(memoryManager.Read16(0xA04002), 0x0202u);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, DebugYm2612ReadDoesNotAliasZ80RamWindow) {
@@ -199,6 +212,11 @@ namespace {
 
 		EXPECT_EQ(memoryManager.DebugRead8(0xA04000), 0x00u);
 		EXPECT_EQ(memoryManager.DebugRead8(0xA04001), 0x00u);
+
+		memoryManager.DebugWrite8(0xA04000, 0x27);
+		memoryManager.DebugWrite8(0xA04001, 0x01);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA04000), 0x01u);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA04001), 0x01u);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, TmssCartRegisterReadReturnsFFAndPreservesTmssUnlockState) {
