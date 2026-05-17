@@ -1671,26 +1671,7 @@ uint16_t GenesisMemoryManager::GetEffectiveZ80BusReqAckDelayMclk(uint32_t frame)
 	}
 
 	if (_startupHybridBusHandoff) {
-		// Hybrid mode ramps from early->late in the first seconds of execution.
-		uint32_t span = _startupStrictPhaseStartFrame > _startupLogoPhaseEndFrame
-			? (_startupStrictPhaseStartFrame - _startupLogoPhaseEndFrame)
-			: 1u;
-		uint32_t pos = frame > _startupLogoPhaseEndFrame ? (frame - _startupLogoPhaseEndFrame) : 0u;
-		if (pos > span) {
-			pos = span;
-		}
-
-		int32_t early = (int32_t)_startupEarlyBusReqAckDelayMclk;
-		int32_t late = (int32_t)_startupLateBusReqAckDelayMclk;
-		int32_t delta = late - early;
-		int32_t blended = early + (int32_t)((delta * (int32_t)pos) / (int32_t)span);
-		if (blended < 0) {
-			blended = 0;
-		}
-		if (blended > 255) {
-			blended = 255;
-		}
-		return (uint16_t)blended;
+		return BlendStartupDelay(_startupEarlyBusReqAckDelayMclk, _startupLateBusReqAckDelayMclk, frame);
 	}
 
 	return _startupEarlyBusReqAckDelayMclk;
@@ -1710,28 +1691,33 @@ uint16_t GenesisMemoryManager::GetEffectiveZ80BusResumeDelayMclk(uint32_t frame)
 	}
 
 	if (_startupHybridBusHandoff) {
-		uint32_t span = _startupStrictPhaseStartFrame > _startupLogoPhaseEndFrame
-			? (_startupStrictPhaseStartFrame - _startupLogoPhaseEndFrame)
-			: 1u;
-		uint32_t pos = frame > _startupLogoPhaseEndFrame ? (frame - _startupLogoPhaseEndFrame) : 0u;
-		if (pos > span) {
-			pos = span;
-		}
-
-		int32_t early = (int32_t)_startupEarlyBusResumeDelayMclk;
-		int32_t late = (int32_t)_startupLateBusResumeDelayMclk;
-		int32_t delta = late - early;
-		int32_t blended = early + (int32_t)((delta * (int32_t)pos) / (int32_t)span);
-		if (blended < 0) {
-			blended = 0;
-		}
-		if (blended > 255) {
-			blended = 255;
-		}
-		return (uint16_t)blended;
+		return BlendStartupDelay(_startupEarlyBusResumeDelayMclk, _startupLateBusResumeDelayMclk, frame);
 	}
 
 	return _startupEarlyBusResumeDelayMclk;
+}
+
+uint16_t GenesisMemoryManager::BlendStartupDelay(uint16_t earlyDelay, uint16_t lateDelay, uint32_t frame) const {
+	// Hybrid mode ramps from early->late in the first seconds of execution.
+	uint32_t span = _startupStrictPhaseStartFrame > _startupLogoPhaseEndFrame
+		? (_startupStrictPhaseStartFrame - _startupLogoPhaseEndFrame)
+		: 1u;
+	uint32_t pos = frame > _startupLogoPhaseEndFrame ? (frame - _startupLogoPhaseEndFrame) : 0u;
+	if (pos > span) {
+		pos = span;
+	}
+
+	int32_t early = (int32_t)earlyDelay;
+	int32_t late = (int32_t)lateDelay;
+	int32_t delta = late - early;
+	int32_t blended = early + (int32_t)((delta * (int32_t)pos) / (int32_t)span);
+	if (blended < 0) {
+		blended = 0;
+	}
+	if (blended > 255) {
+		blended = 255;
+	}
+	return (uint16_t)blended;
 }
 
 void GenesisMemoryManager::RefreshStartupBusTiming(uint32_t frame, bool allowTrace, uint32_t addr, uint32_t pc, const char* sourceTag) {
@@ -2399,6 +2385,30 @@ uint32_t GenesisMemoryManager::WrapRomAddress(uint32_t addr) const {
 	return addr % _prgRomSize;
 }
 
+void GenesisMemoryManager::TranslateRomAddressPair(uint32_t addr, uint32_t& mappedAddrHi, uint32_t& mappedAddrLo) const {
+	mappedAddrHi = TranslateRomAddress(addr);
+
+	uint32_t effectiveAddr = addr & 0x3FFFFF;
+	if (!_romBankMapperEnabled) {
+		mappedAddrLo = WrapRomAddress(mappedAddrHi + 1);
+		return;
+	}
+
+	if (effectiveAddr < 0x080000 || effectiveAddr >= 0x3FFFFF) {
+		mappedAddrLo = TranslateRomAddress(addr + 1);
+		return;
+	}
+
+	uint32_t windowOffset = effectiveAddr - 0x080000;
+	uint32_t offsetInWindow = windowOffset % MapperWindowSize;
+	if (offsetInWindow != MapperWindowSize - 1) {
+		mappedAddrLo = WrapRomAddress(mappedAddrHi + 1);
+		return;
+	}
+
+	mappedAddrLo = TranslateRomAddress(addr + 1);
+}
+
 uint32_t GenesisMemoryManager::TranslateRomAddress(uint32_t addr) const {
 	if (_prgRomSize == 0) {
 		return 0;
@@ -2429,8 +2439,10 @@ void GenesisMemoryManager::AdvanceZ80BusArbitration(uint32_t masterClocks) {
 		return;
 	}
 
-	uint32_t frame = GetStartupFrame();
-	RefreshStartupBusTiming(frame, false, 0xA11100, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "arb");
+	if (_startupUseDynamicBusTiming) {
+		uint32_t frame = GetStartupFrame();
+		RefreshStartupBusTiming(frame, false, 0xA11100, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "arb");
+	}
 	_startupLastArbitrationMclk = (uint16_t)(masterClocks & 0xFFFFu);
 	_startupArbitrationDigest ^= (uint8_t)((masterClocks ^ _z80BusReqDelayMclk ^ _z80ResumeDelayMclk) & 0xFFu);
 
@@ -2464,10 +2476,14 @@ void GenesisMemoryManager::AdvanceZ80BusArbitration(uint32_t masterClocks) {
 }
 
 void GenesisMemoryManager::SetZ80BusRequest(bool request, bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag) {
-	uint32_t frame = GetStartupFrame();
-	RefreshStartupBusTiming(frame, allowTransitionLog, addr, pc, sourceTag);
-	uint16_t effectiveReqDelay = GetEffectiveZ80BusReqAckDelayMclk(frame);
-	uint16_t effectiveResumeDelay = GetEffectiveZ80BusResumeDelayMclk(frame);
+	uint16_t effectiveReqDelay = _z80BusReqAckDelayMclkSetting;
+	uint16_t effectiveResumeDelay = _z80BusResumeDelayMclkSetting;
+	if (_startupUseDynamicBusTiming) {
+		uint32_t frame = GetStartupFrame();
+		RefreshStartupBusTiming(frame, allowTransitionLog, addr, pc, sourceTag);
+		effectiveReqDelay = GetEffectiveZ80BusReqAckDelayMclk(frame);
+		effectiveResumeDelay = GetEffectiveZ80BusResumeDelayMclk(frame);
+	}
 
 	bool oldBusReq = _z80BusRequest;
 	_z80BusRequest = request;
@@ -2503,9 +2519,12 @@ void GenesisMemoryManager::SetZ80BusRequest(bool request, bool allowTransitionLo
 }
 
 void GenesisMemoryManager::SetZ80Reset(bool resetAsserted, bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag) {
-	uint32_t frame = GetStartupFrame();
-	RefreshStartupBusTiming(frame, allowTransitionLog, addr, pc, sourceTag);
-	uint16_t effectiveReqDelay = GetEffectiveZ80BusReqAckDelayMclk(frame);
+	uint16_t effectiveReqDelay = _z80BusReqAckDelayMclkSetting;
+	if (_startupUseDynamicBusTiming) {
+		uint32_t frame = GetStartupFrame();
+		RefreshStartupBusTiming(frame, allowTransitionLog, addr, pc, sourceTag);
+		effectiveReqDelay = GetEffectiveZ80BusReqAckDelayMclk(frame);
+	}
 
 	bool oldReset = _z80Reset;
 	_z80Reset = resetAsserted;
@@ -3598,8 +3617,9 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	}
 
 	if (addr < 0x400000) [[likely]] {
-		uint32_t mappedAddrHi = TranslateRomAddress(addr);
-		uint32_t mappedAddrLo = TranslateRomAddress(addr + 1);
+		uint32_t mappedAddrHi = 0;
+		uint32_t mappedAddrLo = 0;
+		TranslateRomAddressPair(addr, mappedAddrHi, mappedAddrLo);
 		uint8_t effectiveHighByte = _prgRom[mappedAddrHi];
 		uint8_t effectiveLowByte = _prgRom[mappedAddrLo];
 		uint16_t effectiveValue = ((uint16_t)effectiveHighByte << 8) | effectiveLowByte;

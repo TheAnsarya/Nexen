@@ -284,6 +284,8 @@ private:
 	uint8_t GetRamControlRegisterValue() const;
 	void WriteRamControlRegister(uint8_t value);
 	uint32_t WrapRomAddress(uint32_t addr) const;
+	void TranslateRomAddressPair(uint32_t addr, uint32_t& mappedAddrHi, uint32_t& mappedAddrLo) const;
+	uint16_t BlendStartupDelay(uint16_t earlyDelay, uint16_t lateDelay, uint32_t frame) const;
 	uint32_t TranslateRomAddress(uint32_t addr) const;
 	bool IsZ80BusGranted() const;
 	void AdvanceZ80BusArbitration(uint32_t masterClocks);
