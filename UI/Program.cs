@@ -21,9 +21,43 @@ class Program {
 	// SynchronizationContext-reliant code before AppMain is called: things aren't initialized
 	// yet and stuff might break.
 	private static bool _loggedNexenCoreLoadPath;
+	private static bool _linuxDbusImeFallbackApplied;
 
 	public static string OriginalFolder { get; private set; }
 	public static string[] CommandLineArgs { get; private set; } = [];
+
+	private static bool ShouldEnableX11Ime(bool forceDisableIme) {
+		if (forceDisableIme) {
+			return false;
+		}
+
+		string? envValue = Environment.GetEnvironmentVariable("NEXEN_X11_ENABLE_IME");
+		if (string.IsNullOrWhiteSpace(envValue)) {
+			return true;
+		}
+
+		envValue = envValue.Trim();
+		return envValue == "1"
+			|| envValue.Equals("true", StringComparison.OrdinalIgnoreCase)
+			|| envValue.Equals("yes", StringComparison.OrdinalIgnoreCase)
+			|| envValue.Equals("on", StringComparison.OrdinalIgnoreCase);
+	}
+
+	private static bool IsLinuxDbusImeTypeLoad(TypeLoadException ex) {
+		string message = ex.ToString();
+		return message.Contains("Tmds.DBus.Protocol.Connection", StringComparison.Ordinal)
+			|| message.Contains("Avalonia.FreeDesktop.DBusIme", StringComparison.Ordinal);
+	}
+
+	private static void StartDesktopLifetimeWithLinuxFallback(string[] args) {
+		try {
+			BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
+		} catch (TypeLoadException ex) when (OperatingSystem.IsLinux() && !_linuxDbusImeFallbackApplied && IsLinuxDbusImeTypeLoad(ex)) {
+			_linuxDbusImeFallbackApplied = true;
+			Log.Warn("Detected Linux DBus IME type-load mismatch. Retrying Avalonia startup with X11 IME disabled.");
+			BuildAvaloniaApp(forceDisableIme: true).StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
+		}
+	}
 
 	public static string ExePath {
 		get {
@@ -109,7 +143,7 @@ class Program {
 				// Native libs are available from the app's own directory (AppContext.BaseDirectory)
 				// via the DllImportResolver, so the wizard UI can render without extracting deps.
 				App.ShowConfigWindow = true;
-				BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
+				StartDesktopLifetimeWithLinuxFallback(args);
 
 				// Check if the wizard created a config file by checking both locations
 				// directly — do NOT call GetConfigFile() which accesses HomeFolder and
@@ -151,11 +185,11 @@ class Program {
 			if (instance.FirstInstance) {
 				Log.Info("Starting main application...");
 				Program.CommandLineArgs = (string[])args.Clone();
-				BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
+				StartDesktopLifetimeWithLinuxFallback(args);
 			} else {
 				Log.Info("Another instance is already running, showing dialog");
 				App.ShowAlreadyRunningDialog = true;
-				BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
+				StartDesktopLifetimeWithLinuxFallback(args);
 
 				if (App.AlreadyRunningCloseAndRestart) {
 					Log.Info("User chose to close and restart Nexen");
@@ -329,11 +363,16 @@ class Program {
 	}
 
 	// Avalonia configuration, don't remove; also used by visual designer.
-	public static AppBuilder BuildAvaloniaApp() {
+	public static AppBuilder BuildAvaloniaApp(bool forceDisableIme = false) {
 		// Ensure SVG support assembly is preserved by the trimmer/AOT
 		GC.KeepAlive(typeof(Svg.Skia.SKSvg).Assembly);
 		GC.KeepAlive(typeof(Avalonia.Svg.Skia.SvgImageExtension).Assembly);
 		GC.KeepAlive(typeof(Avalonia.Svg.Skia.Svg).Assembly);
+
+		bool enableX11Ime = ShouldEnableX11Ime(forceDisableIme);
+		if (OperatingSystem.IsLinux()) {
+			Log.Info($"X11 IME enabled: {enableX11Ime}");
+		}
 
 		return AppBuilder.Configure<App>()
 				.AfterSetup(_ => {
@@ -344,6 +383,7 @@ class Program {
 				.UsePlatformDetect()
 				.With(new Win32PlatformOptions { })
 				.With(new X11PlatformOptions {
+					EnableIme = enableX11Ime,
 					EnableInputFocusProxy = Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") == "gamescope",
 				})
 				.With(new AvaloniaNativePlatformOptions { RenderingMode = new AvaloniaNativeRenderingMode[] { AvaloniaNativeRenderingMode.OpenGl, AvaloniaNativeRenderingMode.Software } })
