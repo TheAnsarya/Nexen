@@ -2434,6 +2434,15 @@ bool GenesisMemoryManager::IsZ80BusGranted() const {
 	return _z80BusAck || _z80Reset;
 }
 
+uint8_t GenesisMemoryManager::GetZ80BusReqReadValue() const {
+	uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusAck);
+	return (uint8_t)(0xFE | ackStatus);
+}
+
+uint8_t GenesisMemoryManager::GetZ80ResetReadValue() const {
+	return _z80Reset ? 0x01 : 0x00;
+}
+
 void GenesisMemoryManager::AdvanceZ80BusArbitration(uint32_t masterClocks) {
 	if (masterClocks == 0) {
 		return;
@@ -3525,8 +3534,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
 		// Z80 bus request: bit 0 indicates bus grant, mirrored on both byte lanes.
-		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusAck);
-		uint8_t effectiveValue = (uint8_t)(0xFE | ackStatus);
+		uint8_t effectiveValue = GetZ80BusReqReadValue();
 		static uint64_t z80BusReqReadCount = 0;
 		z80BusReqReadCount++;
 		if (z80BusReqReadCount <= 256 || (z80BusReqReadCount % 2048) == 0) {
@@ -3535,7 +3543,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 				z80BusReqReadCount,
 				addr,
 				effectiveValue,
-				ackStatus,
+				GetZ80BusAckStatusBit(_z80BusAck),
 				pc,
 				_z80BusRequest ? 1 : 0,
 				_z80Reset ? 1 : 0));
@@ -3553,8 +3561,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
-		uint8_t resetStatus = _z80Reset ? 0x01 : 0x00;
-		uint8_t effectiveValue = resetStatus;
+		uint8_t effectiveValue = GetZ80ResetReadValue();
 		static uint64_t z80ResetReadCount = 0;
 		z80ResetReadCount++;
 		if (z80ResetReadCount <= 256 || (z80ResetReadCount % 2048) == 0) {
@@ -3563,7 +3570,7 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 				z80ResetReadCount,
 				addr,
 				effectiveValue,
-				resetStatus,
+				GetZ80ResetReadValue(),
 				pc,
 				_z80BusRequest ? 1 : 0,
 				_z80Reset ? 1 : 0));
@@ -3686,9 +3693,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		if (IsZ80BusGranted()) {
-			uint8_t effectiveHighByte = ReadZ80Window8(addr);
-			uint8_t effectiveLowByte = ReadZ80Window8(addr + 1);
-			uint16_t effectiveValue = (uint16_t)(((uint16_t)effectiveHighByte << 8) | effectiveLowByte);
+			uint16_t effectiveValue = ReadZ80Window16(addr);
 			_openBus = (uint8_t)(effectiveValue & 0xFF);
 			return effectiveValue;
 		}
@@ -3722,8 +3727,7 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	}
 
 	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
-		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusAck);
-		uint8_t busStatus = (uint8_t)(0xFE | ackStatus);
+		uint8_t busStatus = GetZ80BusReqReadValue();
 		uint16_t effectiveValue = (uint16_t)(((uint16_t)busStatus << 8) | busStatus);
 		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
 		TrackSegaCdHandshakeTranscript(addr, false, effectiveHighByte);
@@ -3739,7 +3743,8 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	}
 
 	if (IsZ80ResetAddress(addr)) [[unlikely]] {
-		uint16_t effectiveValue = _z80Reset ? 0x0101 : 0x0000;
+		uint8_t resetStatus = GetZ80ResetReadValue();
+		uint16_t effectiveValue = (uint16_t)(((uint16_t)resetStatus << 8) | resetStatus);
 		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
 		TrackSegaCdHandshakeTranscript(addr, false, effectiveHighByte);
 		if (_vdp) {
@@ -4511,6 +4516,29 @@ uint8_t GenesisMemoryManager::ReadZ80Window8(uint32_t addr) {
 	return 0xFF;
 }
 
+uint16_t GenesisMemoryManager::ReadZ80Window16(uint32_t addr) {
+	uint16_t z80Addr = (uint16_t)(addr & 0xFFFFu);
+	if (z80Addr < 0x3FFFu) {
+		uint8_t hi = _z80Ram[z80Addr & 0x1FFFu];
+		uint8_t lo = _z80Ram[(z80Addr + 1u) & 0x1FFFu];
+		return (uint16_t)(((uint16_t)hi << 8) | lo);
+	}
+
+	if (z80Addr >= 0x8000u && z80Addr < 0xFFFFu && _prgRom && _prgRomSize > 0) {
+		uint32_t physAddr = ((uint32_t)_z80BankReg << 15) | (z80Addr & 0x7FFFu);
+		uint32_t mappedAddrHi = 0;
+		uint32_t mappedAddrLo = 0;
+		TranslateRomAddressPair(physAddr, mappedAddrHi, mappedAddrLo);
+		uint8_t hi = _prgRom[mappedAddrHi];
+		uint8_t lo = _prgRom[mappedAddrLo];
+		return (uint16_t)(((uint16_t)hi << 8) | lo);
+	}
+
+	uint8_t hi = ReadZ80Window8(addr);
+	uint8_t lo = ReadZ80Window8(addr + 1u);
+	return (uint16_t)(((uint16_t)hi << 8) | lo);
+}
+
 void GenesisMemoryManager::WriteZ80Window8(uint32_t addr, uint8_t value) {
 	uint16_t z80Addr = (uint16_t)(addr & 0xFFFFu);
 
@@ -4806,13 +4834,14 @@ uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
 		return effectiveValue;
 	}
 	if (IsZ80BusReqAddress(effectiveAddr)) {
-		uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusAck);
-		uint8_t effectiveValue = (uint8_t)(0xFE | ackStatus);
+		uint8_t effectiveValue = GetZ80BusReqReadValue();
+		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x82);
 		return effectiveValue;
 	}
 	if (IsZ80ResetAddress(effectiveAddr)) {
-		uint8_t effectiveValue = _z80Reset ? 0x01 : 0x00;
+		uint8_t effectiveValue = GetZ80ResetReadValue();
+		_openBus = effectiveValue;
 		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x86);
 		return effectiveValue;
 	}
@@ -4936,7 +4965,25 @@ uint8_t GenesisMemoryManager::Peek8ForTrace(uint32_t addr) const {
 	}
 
 	if (effectiveAddr >= 0xA00000 && effectiveAddr <= 0xA0FFFF) {
-		return _z80Ram ? _z80Ram[effectiveAddr & 0x1FFF] : 0;
+		uint16_t z80Addr = (uint16_t)(effectiveAddr & 0xFFFFu);
+		if (z80Addr < 0x4000u) {
+			return _z80Ram ? _z80Ram[z80Addr & 0x1FFFu] : 0;
+		}
+
+		if (z80Addr >= 0x8000u && _prgRom && _prgRomSize > 0) {
+			uint32_t physAddr = ((uint32_t)_z80BankReg << 15) | (z80Addr & 0x7FFFu);
+			return _prgRom[TranslateRomAddress(physAddr)];
+		}
+
+		return 0xFF;
+	}
+
+	if (IsZ80BusReqAddress(effectiveAddr)) {
+		return GetZ80BusReqReadValue();
+	}
+
+	if (IsZ80ResetAddress(effectiveAddr)) {
+		return GetZ80ResetReadValue();
 	}
 
 	if (effectiveAddr >= 0xA10000 && effectiveAddr <= 0xA1001F) {

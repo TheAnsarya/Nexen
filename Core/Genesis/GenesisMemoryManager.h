@@ -287,6 +287,8 @@ private:
 	void TranslateRomAddressPair(uint32_t addr, uint32_t& mappedAddrHi, uint32_t& mappedAddrLo) const;
 	uint16_t BlendStartupDelay(uint16_t earlyDelay, uint16_t lateDelay, uint32_t frame) const;
 	uint32_t TranslateRomAddress(uint32_t addr) const;
+	uint8_t GetZ80BusReqReadValue() const;
+	uint8_t GetZ80ResetReadValue() const;
 	bool IsZ80BusGranted() const;
 	void AdvanceZ80BusArbitration(uint32_t masterClocks);
 	void SetZ80BusRequest(bool request, bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag);
@@ -322,6 +324,7 @@ private:
 	void WriteIoDataPort(uint8_t port, uint8_t value);
 	void WriteIoControlPort(uint8_t port, uint8_t value);
 	uint8_t ReadZ80Window8(uint32_t addr);
+	uint16_t ReadZ80Window16(uint32_t addr);
 	void WriteZ80Window8(uint32_t addr, uint8_t value);
 
 public:
