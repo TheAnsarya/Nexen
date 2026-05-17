@@ -686,6 +686,13 @@ void GenesisM68k::Exec() {
 		_lastSamePcStallOperandA = operandWordA;
 		_lastSamePcStallOperandB = operandWordB;
 		_lastSamePcStallDisasm = DisassembleM68kLine(prevPc, opcode, operandWordA, operandWordB, readWord);
+		string loopSignatureRow = std::format("{:06x}:{:04x}:{:04x}:{:04x}",
+			_lastSamePcStallPc & 0x00ffffff,
+			_lastSamePcStallOpcode,
+			_lastSamePcStallOperandA,
+			_lastSamePcStallOperandB);
+		_samePcLoopSignature = HashTraceText(1469598103934665603ull, loopSignatureRow);
+		_samePcLoopCaptureCount++;
 		_samePcStallEventCount++;
 		if (_samePcStallEventCount <= 64 || (_samePcStallEventCount % 1024) == 0) {
 			MessageManager::Log(std::format("[Genesis][M68K] Same-PC loop containment #{} pc=${:06x} op=${:04x} a=${:04x} b=${:04x} run={} disasm={}",
@@ -989,7 +996,7 @@ string GenesisM68k::BuildExecutionStallSummary() const {
 	}
 
 	string summary = std::format(
-		"traceCount={} digest={} forcedCycleFloors={} forcedClockAdvances={} lastPc=${:06x} lastOpcode=${:04x} lastDelta={} lastSr=${:04x} samePcEvents={}",
+		"traceCount={} digest={} forcedCycleFloors={} forcedClockAdvances={} lastPc=${:06x} lastOpcode=${:04x} lastDelta={} lastSr=${:04x} samePcEvents={} samePcCaptures={} samePcLoopSig={:016x}",
 		snapshot.size(),
 		BuildInstructionTraceDigest(),
 		forcedEntries,
@@ -998,7 +1005,9 @@ string GenesisM68k::BuildExecutionStallSummary() const {
 		lastEntry.Opcode,
 		lastEntry.InstructionCycleDelta,
 		lastEntry.StatusRegisterAfter,
-		_samePcStallEventCount);
+		_samePcStallEventCount,
+		_samePcLoopCaptureCount,
+		_samePcLoopSignature);
 
 	if (snapshot.size() >= 4) {
 		uint64_t loopHash = 1469598103934665603ull;
@@ -1015,14 +1024,17 @@ string GenesisM68k::BuildExecutionStallSummary() const {
 
 string GenesisM68k::BuildSamePcLoopSummary() const {
 	if (_samePcStallEventCount == 0) {
-		return std::format("samepc events=0 currentRun={} lastPc=${:06x} lastOpcode=${:04x}",
+		return std::format("samepc events=0 captures=0 loopSig={:016x} currentRun={} lastPc=${:06x} lastOpcode=${:04x}",
+			_samePcLoopSignature,
 			_samePcRunLength,
 			_lastRunPc & 0x00ffffff,
 			_lastRunOpcode);
 	}
 
-	return std::format("samepc events={} currentRun={} lastRun={} pc=${:06x} op=${:04x} a=${:04x} b=${:04x} disasm={}",
+	return std::format("samepc events={} captures={} loopSig={:016x} currentRun={} lastRun={} pc=${:06x} op=${:04x} a=${:04x} b=${:04x} disasm={}",
 		_samePcStallEventCount,
+		_samePcLoopCaptureCount,
+		_samePcLoopSignature,
 		_samePcRunLength,
 		_lastSamePcStallRunLength,
 		_lastSamePcStallPc & 0x00ffffff,
@@ -1142,6 +1154,8 @@ void GenesisM68k::Reset(bool softReset) {
 		_lastSamePcStallOperandA = 0;
 		_lastSamePcStallOperandB = 0;
 		_lastSamePcStallDisasm.clear();
+		_samePcLoopSignature = 0;
+		_samePcLoopCaptureCount = 0;
 		_addressErrorCount = 0;
 		_lastAddressErrorAddr = 0;
 		_lastAddressErrorPc = 0;
@@ -2761,6 +2775,8 @@ void GenesisM68k::Serialize(Serializer& s) {
 	SV(_lastSamePcStallOperandA);
 	SV(_lastSamePcStallOperandB);
 	SV(_lastSamePcStallDisasm);
+	SV(_samePcLoopSignature);
+	SV(_samePcLoopCaptureCount);
 	SV(_resetProbeCount);
 	SV(_lastResetVectorSp);
 	SV(_lastResetVectorPc);

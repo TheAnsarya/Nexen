@@ -2745,6 +2745,7 @@ yes do all three tasks, track everything in an overall batch issue, and focus on
 
 continue;
 
+continue; do several three isssue batches, like 4 or 5 but combine them into one issue; also, did you fix `https://github.com/TheAnsarya/Nexen/issues/2220`?; continue;
 
 
 

@@ -202,6 +202,42 @@ namespace {
 		return raw && (*raw == '1' || *raw == 'y' || *raw == 'Y' || *raw == 't' || *raw == 'T');
 	}
 
+	const char* GenesisStartupTitleClassName(uint8_t value) {
+		switch (value) {
+			case 1: return "sonic";
+			case 2: return "sonic1";
+			case 3: return "sonic2";
+			case 4: return "sonic3";
+			case 5: return "sonic-and-knuckles";
+			case 6: return "sonic-spinball";
+			default: return "unknown";
+		}
+	}
+
+	bool IsSonicStartupTitleClass(uint8_t value) {
+		return value >= 1 && value <= 6;
+	}
+
+	string BuildGenesisStartupRuntimeSummary(const GenesisMemoryManager* memoryManager) {
+		if (!memoryManager) {
+			return "mmu=missing";
+		}
+
+		return std::format("titleClass={}({}) title='{}' product='{}' hint={} autotune={} dynamic={} startupSeq={} startupDigest={:016x} arbDigest={:02x} arbEpoch={} arbMclk={}",
+			memoryManager->GetStartupTitleClassValue(),
+			GenesisStartupTitleClassName(memoryManager->GetStartupTitleClassValue()),
+			memoryManager->GetStartupDetectedTitle(),
+			memoryManager->GetStartupDetectedProductCode(),
+			memoryManager->GetStartupTitleHintUsed() ? 1 : 0,
+			memoryManager->GetStartupTitleAutotuneApplied() ? 1 : 0,
+			memoryManager->GetStartupUseDynamicBusTiming() ? 1 : 0,
+			memoryManager->GetStartupTraceSequence(),
+			memoryManager->GetStartupTraceDigest(),
+			memoryManager->GetStartupArbitrationDigest(),
+			memoryManager->GetStartupArbitrationEpoch(),
+			memoryManager->GetStartupLastArbitrationMclk());
+	}
+
 	bool TryExecWithSehGuard(GenesisM68k* cpu, uint32_t& sehCode) {
 		if (!cpu) {
 			return false;
@@ -235,8 +271,9 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 	string cpuBoundarySummary = _cpu ? _cpu->BuildDispatchBoundaryProbeSummary() : "cpuBoundary=missing";
 	string mmuFlowSummary = _memoryManager ? _memoryManager->BuildRuntimeFlowTraceSummary() : "enabled=0";
 	string mmuOpSummary = _memoryManager ? _memoryManager->BuildRuntimeOpTraceSummary() : "enabled=0";
+	string startupSummary = BuildGenesisStartupRuntimeSummary(_memoryManager.get());
 	return std::format(
-		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={} mmuOps={}",
+		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={} mmuOps={} startup={} sonicTraceArm={} sonicTraceArms={}",
 		_runFrameEntryCount,
 		_runFrameExitCount,
 		_runFrameEarlyAbortCount,
@@ -251,7 +288,10 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 		cpuSummary,
 		cpuBoundarySummary,
 		mmuFlowSummary,
-		mmuOpSummary);
+		mmuOpSummary,
+		startupSummary,
+		_sonicTraceEscalationArmed ? 1 : 0,
+		_sonicTraceEscalationCount);
 }
 
 LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
@@ -295,6 +335,8 @@ LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 	_emu->RegisterMemory(MemoryType::GenesisPaletteRam, _vdp->GetCramPointer(), 128);
 	_memoryManager->SetCpu(_cpu.get());
 	_cpu->Init(_emu, this, _memoryManager.get());
+	_sonicTraceEscalationArmed = false;
+	_sonicTraceEscalationCount = 0;
 	if (!IsGenesisAutoTraceDisabled()) {
 		_cpu->SetInstructionTraceCapacity(8192);
 		_cpu->SetInstructionTraceEnabled(true);
@@ -389,6 +431,20 @@ void GenesisConsole::RunFrame() {
 		_memoryManager->GetMasterClock(),
 		_cpu->BuildCrashProbeSummary());
 
+	if (!_sonicTraceEscalationArmed && _memoryManager && _cpu) {
+		uint8_t titleClass = _memoryManager->GetStartupTitleClassValue();
+		if (IsSonicStartupTitleClass(titleClass)) {
+			_cpu->ArmAggressiveFlowTrace(260000, 1, 320);
+			_memoryManager->ArmAggressiveTraceBurst(260000, 340000, 1, 1, 256, 320);
+			_sonicTraceEscalationArmed = true;
+			_sonicTraceEscalationCount++;
+			MessageManager::Log(std::format("[Genesis] RunFrame sonic trace escalation arm #{} titleClass={} startup={}",
+				_sonicTraceEscalationCount,
+				titleClass,
+				BuildGenesisStartupRuntimeSummary(_memoryManager.get())));
+		}
+	}
+
 	bool emitFrameEvents = _emu && _emu->IsEmulationThread();
 	if (emitFrameEvents) {
 		_emu->ProcessEvent(EventType::StartFrame, CpuType::Genesis);
@@ -429,7 +485,7 @@ void GenesisConsole::RunFrame() {
 					_runFrameFirstFailureBoundarySummary = _cpu->BuildDispatchBoundaryProbeSummary();
 					_runFrameFirstFailureBoundaryCaptureCount++;
 				}
-				MessageManager::Log(std::format("[Genesis] RunFrame hard-guard abort frame={} guard={} cap={} pc=${:06x} cycles={} stall={} cpuBoundary={} cpuTrace={} cpuLoop={} cpuAddr={} mmuFlow={} mmuOps={} mmuOpsWindow={}",
+				MessageManager::Log(std::format("[Genesis] RunFrame hard-guard abort frame={} guard={} cap={} pc=${:06x} cycles={} stall={} cpuBoundary={} cpuTrace={} cpuLoop={} cpuAddr={} startup={} mmuFlow={} mmuOps={} mmuOpsWindow={}",
 					frame,
 					guard,
 					hardInstructionCap,
@@ -440,6 +496,7 @@ void GenesisConsole::RunFrame() {
 					_cpu->BuildInstructionTraceWindow(10),
 					_cpu->BuildSamePcLoopSummary(),
 					_cpu->BuildAddressErrorSummary(),
+					BuildGenesisStartupRuntimeSummary(_memoryManager.get()),
 					_memoryManager->BuildRuntimeFlowTraceSummary(),
 					_memoryManager->BuildRuntimeOpTraceSummary(),
 					_memoryManager->BuildRuntimeOpTraceWindow(10)));
@@ -492,9 +549,10 @@ void GenesisConsole::RunFrame() {
 						guard,
 						forcedAdvancePulses,
 						_cpu->BuildInstructionTraceDigest()));
-					MessageManager::Log(std::format("[Genesis] RunFrame forced completion detail cpuTrace={} cpuLoop={} mmuOpsWindow={}",
+					MessageManager::Log(std::format("[Genesis] RunFrame forced completion detail cpuTrace={} cpuLoop={} startup={} mmuOpsWindow={}",
 						_cpu->BuildInstructionTraceWindow(8),
 						_cpu->BuildSamePcLoopSummary(),
+						BuildGenesisStartupRuntimeSummary(_memoryManager.get()),
 						_memoryManager->BuildRuntimeOpTraceWindow(8)));
 					break;
 				}
@@ -598,7 +656,7 @@ void GenesisConsole::RunFrame() {
 
 	ProcessEndOfFrame();
 	_runFrameExitCount++;
-	_runFrameLastExitSummary = std::format("exit={} frameBefore={} frameAfter={} guard={} hardGuardAbort={} stalls={} forcedAdvances={} pc=${:06x} cycles={} traceDigest={}",
+	_runFrameLastExitSummary = std::format("exit={} frameBefore={} frameAfter={} guard={} hardGuardAbort={} stalls={} forcedAdvances={} sonicTraceArms={} startupClass={} pc=${:06x} cycles={} traceDigest={}",
 		_runFrameExitCount,
 		frame,
 		nextFrame,
@@ -606,6 +664,8 @@ void GenesisConsole::RunFrame() {
 		hardGuardAbort ? 1 : 0,
 		_runFrameStallEventCount,
 		_runFrameForcedAdvanceCount,
+		_sonicTraceEscalationCount,
+		_memoryManager ? _memoryManager->GetStartupTitleClassValue() : 0,
 		_cpu->GetState().PC & 0x00ffffff,
 		_cpu->GetState().CycleCount,
 		_cpu->BuildInstructionTraceDigest());

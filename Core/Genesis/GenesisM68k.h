@@ -33,6 +33,8 @@ private:
 	uint16_t _lastSamePcStallOperandA = 0;
 	uint16_t _lastSamePcStallOperandB = 0;
 	string _lastSamePcStallDisasm = {};
+	uint64_t _samePcLoopSignature = 0;
+	uint64_t _samePcLoopCaptureCount = 0;
 	bool _debugForceNoCycleProgress = false;
 	uint64_t _resetProbeCount = 0;
 	uint32_t _lastResetVectorSp = 0;

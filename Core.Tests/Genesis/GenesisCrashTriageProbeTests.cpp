@@ -74,6 +74,8 @@ TEST(GenesisCrashTriageProbeTests, RunFrameCrashProbeSummaryReportsMissingCompon
 	EXPECT_NE(summary.find("cpuProbe="), std::string::npos);
 	EXPECT_NE(summary.find("mmuFlow=enabled=0"), std::string::npos);
 	EXPECT_NE(summary.find("mmuOps=enabled=0"), std::string::npos);
+	EXPECT_NE(summary.find("startup=mmu=missing"), std::string::npos);
+	EXPECT_NE(summary.find("sonicTraceArm=0"), std::string::npos);
 	EXPECT_NE(summary.find("abort_missing_component"), std::string::npos);
 }
 
@@ -202,4 +204,6 @@ TEST(GenesisCrashTriageProbeTests, CrashProbeSummaryContainsCpuProbeFieldAfterLo
 	EXPECT_NE(summaryBefore.find("mmuFlow=enabled=0"), std::string::npos);
 	EXPECT_NE(summaryBefore.find("mmuOps=enabled=0"), std::string::npos);
 	EXPECT_NE(summaryBefore.find("entryCount="), std::string::npos);
+	EXPECT_NE(summaryBefore.find("startup=titleClass="), std::string::npos);
+	EXPECT_NE(summaryBefore.find("sonicTraceArm="), std::string::npos);
 }

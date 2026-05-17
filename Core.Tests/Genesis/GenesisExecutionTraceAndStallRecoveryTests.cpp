@@ -251,6 +251,8 @@ TEST(GenesisExecutionTraceAndStallRecoveryTests, SamePcLoopSummaryReportsDefault
 	std::string summary = cpu.BuildSamePcLoopSummary();
 
 	EXPECT_NE(summary.find("events=0"), std::string::npos);
+	EXPECT_NE(summary.find("captures=0"), std::string::npos);
+	EXPECT_NE(summary.find("loopSig=0000000000000000"), std::string::npos);
 	EXPECT_NE(summary.find("currentRun=0"), std::string::npos);
 	EXPECT_NE(summary.find("lastPc=$ffffff"), std::string::npos);
 }
