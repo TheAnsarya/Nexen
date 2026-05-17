@@ -41,6 +41,13 @@ namespace {
 		return rom;
 	}
 
+	void WriteZ80BankShiftRegister(GenesisMemoryManager& memoryManager, uint16_t bankRegValue) {
+		for (uint32_t bit = 0; bit < 9; bit++) {
+			uint8_t bitValue = (uint8_t)((bankRegValue >> bit) & 0x01u);
+			memoryManager.Write8(0xA06000, bitValue);
+		}
+	}
+
 	RuntimeTranscriptSnapshot CaptureSnapshot(const GenesisMemoryManager& memoryManager) {
 		GenesisIoState io = memoryManager.GetIoState();
 
@@ -2504,6 +2511,19 @@ namespace {
 		EXPECT_EQ(memoryManager.Read8(0xA11100), 0xFFu);
 		EXPECT_EQ(memoryManager.Read8(0xA11101), 0xFFu);
 		EXPECT_EQ(memoryManager.Read16(0xA11100) & 0x0100u, 0x0100u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeZ80BankWindowReadsMappedRomAfterShiftWrites) {
+		Emulator emu;
+		std::vector<uint8_t> romData = BuildMapperPatternRom(8);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		EXPECT_EQ(memoryManager.Read8(0xA08000), 0x00u);
+
+		WriteZ80BankShiftRegister(memoryManager, 0x0010u);
+
+		EXPECT_EQ(memoryManager.Read8(0xA08000), 0x11u);
+		EXPECT_EQ(memoryManager.Read8(0xA08001), (uint8_t)(0x11u ^ 0x5Au));
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeWrite16LowLaneDoesNotReleaseReset) {

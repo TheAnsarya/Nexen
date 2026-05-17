@@ -64,6 +64,7 @@ private:
 	uint64_t _z80RuntimeTransitionCount = 0;
 	uint64_t _z80RuntimeStateEpoch = 0;
 	uint64_t _z80RuntimeLastTransitionClock = 0;
+	uint16_t _z80BankReg = 0;
 	bool _romBankMapperEnabled = false;
 	uint8_t _romBankRegisters[MapperBankWindowCount] = {};
 	bool _ramEnable = false;

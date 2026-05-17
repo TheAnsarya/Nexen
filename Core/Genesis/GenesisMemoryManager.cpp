@@ -922,6 +922,7 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_z80RuntimeTransitionCount = 0;
 	_z80RuntimeStateEpoch = 0;
 	_z80RuntimeLastTransitionClock = 0;
+	_z80BankReg = 0;
 	ApplyStartupEnvironmentProfile();
 	_z80Reset = sNexenGenesisPowerOnZ80ResetAsserted;
 	_startupLastDisplayEnabled = _vdp ? ((_vdp->GetState().Registers[VdpReg::ModeSet2] & 0x40) != 0) : false;
@@ -4473,7 +4474,10 @@ uint8_t GenesisMemoryManager::ReadZ80Window8(uint32_t addr) {
 		return 0xFF;
 	}
 
-	// Z80 banked ROM window is not modeled yet on the MMU path.
+	uint32_t physAddr = ((uint32_t)_z80BankReg << 15) | (z80Addr & 0x7FFFu);
+	if (_prgRom && _prgRomSize > 0) {
+		return _prgRom[TranslateRomAddress(physAddr)];
+	}
 	return 0xFF;
 }
 
@@ -4491,6 +4495,12 @@ void GenesisMemoryManager::WriteZ80Window8(uint32_t addr, uint8_t value) {
 	}
 
 	if (z80Addr < 0x8000u) {
+		if ((z80Addr & 0xFF00u) == 0x6000u) {
+			// 9-bit Z80 bank register shift latch: incoming bit enters bit8.
+			_z80BankReg = (uint16_t)(((_z80BankReg >> 1) | ((uint16_t)(value & 0x01u) << 8)) & 0x01FFu);
+			return;
+		}
+
 		if ((z80Addr & 0xFF00u) == 0x7F00u) {
 			uint8_t low = (uint8_t)(z80Addr & 0x00FFu);
 			if (low == 0x11u) {
@@ -5182,6 +5192,7 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_z80BusAck);
 	SV(_z80BusReqDelayMclk);
 	SV(_z80ResumeDelayMclk);
+	SV(_z80BankReg);
 	SV(_romBankMapperEnabled);
 	SVArray(_romBankRegisters, (uint32_t)sizeof(_romBankRegisters));
 	SV(_ramEnable);
