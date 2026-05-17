@@ -76,8 +76,14 @@ TEST(GenesisCrashTriageProbeTests, RunFrameCrashProbeSummaryReportsMissingCompon
 	EXPECT_NE(summary.find("mmuOps=enabled=0"), std::string::npos);
 	EXPECT_NE(summary.find("startup=mmu=missing"), std::string::npos);
 	EXPECT_NE(summary.find("sonicTraceArm=0"), std::string::npos);
+	EXPECT_NE(summary.find("sonicTraceLastArmFrame=0"), std::string::npos);
+	EXPECT_NE(summary.find("sonicTraceRearmWindow="), std::string::npos);
+	EXPECT_NE(summary.find("sonicCheckpointEnable=1"), std::string::npos);
+	EXPECT_NE(summary.find("sonicCheckpointInterval="), std::string::npos);
+	EXPECT_NE(summary.find("sonicCheckpointEndFrame="), std::string::npos);
 	EXPECT_NE(summary.find("sonicCheckpoints=0"), std::string::npos);
 	EXPECT_NE(summary.find("sonicLastCheckpointFrame=0"), std::string::npos);
+	EXPECT_NE(summary.find("sonicLastCheckpointPc=$000000"), std::string::npos);
 	EXPECT_NE(summary.find("abort_missing_component"), std::string::npos);
 }
 
@@ -208,6 +214,12 @@ TEST(GenesisCrashTriageProbeTests, CrashProbeSummaryContainsCpuProbeFieldAfterLo
 	EXPECT_NE(summaryBefore.find("entryCount="), std::string::npos);
 	EXPECT_NE(summaryBefore.find("startup=titleClass="), std::string::npos);
 	EXPECT_NE(summaryBefore.find("sonicTraceArm="), std::string::npos);
+	EXPECT_NE(summaryBefore.find("sonicTraceLastArmFrame="), std::string::npos);
+	EXPECT_NE(summaryBefore.find("sonicTraceRearmWindow="), std::string::npos);
+	EXPECT_NE(summaryBefore.find("sonicCheckpointEnable="), std::string::npos);
+	EXPECT_NE(summaryBefore.find("sonicCheckpointInterval="), std::string::npos);
+	EXPECT_NE(summaryBefore.find("sonicCheckpointEndFrame="), std::string::npos);
 	EXPECT_NE(summaryBefore.find("sonicCheckpoints="), std::string::npos);
 	EXPECT_NE(summaryBefore.find("sonicLastCheckpointFrame="), std::string::npos);
+	EXPECT_NE(summaryBefore.find("sonicLastCheckpointPc=$"), std::string::npos);
 }

@@ -36,8 +36,10 @@ private:
 	string _runFrameFirstFailureBoundarySummary = {};
 	bool _sonicTraceEscalationArmed = false;
 	uint64_t _sonicTraceEscalationCount = 0;
+	uint32_t _sonicTraceLastArmStartupFrame = 0;
 	uint64_t _sonicStartupCheckpointCount = 0;
 	uint32_t _sonicStartupLastCheckpointFrame = 0;
+	uint32_t _sonicStartupLastCheckpointPc = 0;
 
 public:
 	static vector<string> GetSupportedExtensions() { return {".md", ".gen", ".bin", ".smd"}; }

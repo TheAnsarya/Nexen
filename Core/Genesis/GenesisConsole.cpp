@@ -256,6 +256,42 @@ namespace {
 		return cached;
 	}
 
+	bool IsGenesisSonicStartupCheckpointEnabled() {
+		const char* raw = std::getenv("NEXEN_GENESIS_SONIC_CHECKPOINT_ENABLE");
+		if (!raw || !*raw) {
+			return true;
+		}
+
+		return *raw == '1' || *raw == 'y' || *raw == 'Y' || *raw == 't' || *raw == 'T';
+	}
+
+	uint32_t GetGenesisSonicTraceRearmFrameWindow() {
+		static uint32_t cached = 0;
+		if (cached != 0) {
+			return cached;
+		}
+
+		cached = 180;
+		const char* raw = std::getenv("NEXEN_GENESIS_SONIC_TRACE_REARM_FRAME_WINDOW");
+		if (!raw || !*raw) {
+			return cached;
+		}
+
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(raw, &end, 0);
+		if (end == raw || *end != '\0') {
+			return cached;
+		}
+
+		if (parsed < 30ul) {
+			parsed = 30ul;
+		} else if (parsed > 1800ul) {
+			parsed = 1800ul;
+		}
+		cached = (uint32_t)parsed;
+		return cached;
+	}
+
 	const char* GenesisStartupTitleClassName(uint8_t value) {
 		switch (value) {
 			case 1: return "sonic";
@@ -331,8 +367,12 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 	string mmuFlowSummary = _memoryManager ? _memoryManager->BuildRuntimeFlowTraceSummary() : "enabled=0";
 	string mmuOpSummary = _memoryManager ? _memoryManager->BuildRuntimeOpTraceSummary() : "enabled=0";
 	string startupSummary = BuildGenesisStartupRuntimeSummary(_memoryManager.get());
+	bool sonicCheckpointEnabled = IsGenesisSonicStartupCheckpointEnabled();
+	uint32_t sonicCheckpointInterval = GetGenesisSonicStartupCheckpointIntervalFrames();
+	uint32_t sonicCheckpointEndFrame = GetGenesisSonicStartupCheckpointEndFrame();
+	uint32_t sonicTraceRearmWindow = GetGenesisSonicTraceRearmFrameWindow();
 	return std::format(
-		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={} mmuOps={} startup={} sonicTraceArm={} sonicTraceArms={} sonicCheckpoints={} sonicLastCheckpointFrame={}",
+		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={} mmuOps={} startup={} sonicTraceArm={} sonicTraceArms={} sonicTraceLastArmFrame={} sonicTraceRearmWindow={} sonicCheckpointEnable={} sonicCheckpointInterval={} sonicCheckpointEndFrame={} sonicCheckpoints={} sonicLastCheckpointFrame={} sonicLastCheckpointPc=${:06x}",
 		_runFrameEntryCount,
 		_runFrameExitCount,
 		_runFrameEarlyAbortCount,
@@ -351,8 +391,14 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 		startupSummary,
 		_sonicTraceEscalationArmed ? 1 : 0,
 		_sonicTraceEscalationCount,
+		_sonicTraceLastArmStartupFrame,
+		sonicTraceRearmWindow,
+		sonicCheckpointEnabled ? 1 : 0,
+		sonicCheckpointInterval,
+		sonicCheckpointEndFrame,
 		_sonicStartupCheckpointCount,
-		_sonicStartupLastCheckpointFrame);
+		_sonicStartupLastCheckpointFrame,
+		_sonicStartupLastCheckpointPc & 0x00ffffff);
 }
 
 LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
@@ -398,8 +444,10 @@ LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 	_cpu->Init(_emu, this, _memoryManager.get());
 	_sonicTraceEscalationArmed = false;
 	_sonicTraceEscalationCount = 0;
+	_sonicTraceLastArmStartupFrame = 0;
 	_sonicStartupCheckpointCount = 0;
 	_sonicStartupLastCheckpointFrame = 0;
+	_sonicStartupLastCheckpointPc = 0;
 	if (!IsGenesisAutoTraceDisabled()) {
 		_cpu->SetInstructionTraceCapacity(8192);
 		_cpu->SetInstructionTraceEnabled(true);
@@ -446,6 +494,11 @@ void GenesisConsole::Reset() {
 	if (_psg) {
 		_psg->Reset();
 	}
+	_sonicTraceEscalationArmed = false;
+	_sonicTraceLastArmStartupFrame = 0;
+	_sonicStartupCheckpointCount = 0;
+	_sonicStartupLastCheckpointFrame = 0;
+	_sonicStartupLastCheckpointPc = 0;
 }
 
 void GenesisConsole::RunFrame() {
@@ -494,35 +547,47 @@ void GenesisConsole::RunFrame() {
 		_memoryManager->GetMasterClock(),
 		_cpu->BuildCrashProbeSummary());
 
-	if (!_sonicTraceEscalationArmed && _memoryManager && _cpu) {
+	if (_memoryManager && _cpu) {
 		uint8_t titleClass = _memoryManager->GetStartupTitleClassValue();
 		if (IsSonicStartupTitleClass(titleClass)) {
-			_cpu->ArmAggressiveFlowTrace(260000, 1, 320);
-			_memoryManager->ArmAggressiveTraceBurst(260000, 340000, 1, 1, 256, 320);
-			_sonicTraceEscalationArmed = true;
-			_sonicTraceEscalationCount++;
-			MessageManager::Log(std::format("[Genesis] RunFrame sonic trace escalation arm #{} titleClass={} startup={}",
-				_sonicTraceEscalationCount,
-				titleClass,
-				BuildGenesisStartupRuntimeSummary(_memoryManager.get())));
-		}
-	}
+			uint32_t startupFrame = _memoryManager->GetStartupFrameForDiagnostics();
+			uint32_t rearmWindow = GetGenesisSonicTraceRearmFrameWindow();
+			bool shouldArm = !_sonicTraceEscalationArmed;
+			if (!shouldArm && startupFrame >= (_sonicTraceLastArmStartupFrame + rearmWindow)) {
+				shouldArm = true;
+			}
 
-	if (_memoryManager && _cpu && IsSonicStartupTitleClass(_memoryManager->GetStartupTitleClassValue())) {
-		uint32_t startupFrame = _memoryManager->GetStartupFrameForDiagnostics();
-		uint32_t interval = GetGenesisSonicStartupCheckpointIntervalFrames();
-		uint32_t endFrame = GetGenesisSonicStartupCheckpointEndFrame();
-		if (startupFrame <= endFrame && (startupFrame % interval) == 0 && startupFrame != _sonicStartupLastCheckpointFrame) {
-			_sonicStartupLastCheckpointFrame = startupFrame;
-			_sonicStartupCheckpointCount++;
-			MessageManager::Log(std::format("[Genesis] Sonic startup checkpoint #{} frame={} pc=${:06x} cycles={} loop={} startup={} mmuFlow={}",
-				_sonicStartupCheckpointCount,
-				startupFrame,
-				_cpu->GetState().PC & 0x00ffffff,
-				_cpu->GetState().CycleCount,
-				_cpu->BuildSamePcLoopSummary(),
-				BuildGenesisStartupRuntimeSummary(_memoryManager.get()),
-				_memoryManager->BuildRuntimeFlowTraceSummary()));
+			if (shouldArm) {
+				_cpu->ArmAggressiveFlowTrace(260000, 1, 320);
+				_memoryManager->ArmAggressiveTraceBurst(260000, 340000, 1, 1, 256, 320);
+				_sonicTraceEscalationArmed = true;
+				_sonicTraceEscalationCount++;
+				_sonicTraceLastArmStartupFrame = startupFrame;
+				MessageManager::Log(std::format("[Genesis] RunFrame sonic trace escalation arm #{} titleClass={} startupFrame={} rearmWindow={} startup={}",
+					_sonicTraceEscalationCount,
+					titleClass,
+					startupFrame,
+					rearmWindow,
+					BuildGenesisStartupRuntimeSummary(_memoryManager.get())));
+			}
+
+			if (IsGenesisSonicStartupCheckpointEnabled()) {
+				uint32_t interval = GetGenesisSonicStartupCheckpointIntervalFrames();
+				uint32_t endFrame = GetGenesisSonicStartupCheckpointEndFrame();
+				if (startupFrame <= endFrame && (startupFrame % interval) == 0 && startupFrame != _sonicStartupLastCheckpointFrame) {
+					_sonicStartupLastCheckpointFrame = startupFrame;
+					_sonicStartupLastCheckpointPc = _cpu->GetState().PC & 0x00ffffff;
+					_sonicStartupCheckpointCount++;
+					MessageManager::Log(std::format("[Genesis] Sonic startup checkpoint #{} frame={} pc=${:06x} cycles={} loop={} startup={} mmuFlow={}",
+						_sonicStartupCheckpointCount,
+						startupFrame,
+						_sonicStartupLastCheckpointPc,
+						_cpu->GetState().CycleCount,
+						_cpu->BuildSamePcLoopSummary(),
+						BuildGenesisStartupRuntimeSummary(_memoryManager.get()),
+						_memoryManager->BuildRuntimeFlowTraceSummary()));
+				}
+			}
 		}
 	}
 
@@ -737,7 +802,7 @@ void GenesisConsole::RunFrame() {
 
 	ProcessEndOfFrame();
 	_runFrameExitCount++;
-	_runFrameLastExitSummary = std::format("exit={} frameBefore={} frameAfter={} guard={} hardGuardAbort={} stalls={} forcedAdvances={} sonicTraceArms={} sonicCheckpoints={} sonicLastCheckpointFrame={} startupClass={} startupFrame={} pc=${:06x} cycles={} traceDigest={}",
+	_runFrameLastExitSummary = std::format("exit={} frameBefore={} frameAfter={} guard={} hardGuardAbort={} stalls={} forcedAdvances={} sonicTraceArms={} sonicTraceLastArmFrame={} sonicCheckpoints={} sonicLastCheckpointFrame={} sonicLastCheckpointPc=${:06x} startupClass={} startupFrame={} pc=${:06x} cycles={} traceDigest={}",
 		_runFrameExitCount,
 		frame,
 		nextFrame,
@@ -746,8 +811,10 @@ void GenesisConsole::RunFrame() {
 		_runFrameStallEventCount,
 		_runFrameForcedAdvanceCount,
 		_sonicTraceEscalationCount,
+		_sonicTraceLastArmStartupFrame,
 		_sonicStartupCheckpointCount,
 		_sonicStartupLastCheckpointFrame,
+		_sonicStartupLastCheckpointPc & 0x00ffffff,
 		_memoryManager ? _memoryManager->GetStartupTitleClassValue() : 0,
 		_memoryManager ? _memoryManager->GetStartupFrameForDiagnostics() : 0,
 		_cpu->GetState().PC & 0x00ffffff,
