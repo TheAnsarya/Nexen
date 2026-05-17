@@ -164,10 +164,39 @@ namespace {
 
 		cached = 0;
 		const char* raw = std::getenv("NEXEN_GENESIS_SEH_DIAG_GUARD");
-		if (raw && (*raw == '1' || *raw == 'y' || *raw == 'Y' || *raw == 't' || *raw == 'T')) {
+		if (raw && (*raw == '1' || *raw == 'y' || *raw == 'Y' || *raw == 't' || *raw == 'T' || *raw == 'o' || *raw == 'O')) {
 			cached = 1;
 		}
 		return cached == 1;
+	}
+
+	bool ParseEnvEnabled(const char* key, bool defaultValue) {
+		const char* raw = std::getenv(key);
+		if (!raw || !*raw) {
+			return defaultValue;
+		}
+
+		return *raw == '1' || *raw == 'y' || *raw == 'Y' || *raw == 't' || *raw == 'T' || *raw == 'o' || *raw == 'O';
+	}
+
+	uint32_t ParseEnvUInt32Clamped(const char* key, uint32_t defaultValue, uint32_t minValue, uint32_t maxValue) {
+		char* end = nullptr;
+		const char* raw = std::getenv(key);
+		if (!raw || !*raw) {
+			return defaultValue;
+		}
+
+		unsigned long parsed = std::strtoul(raw, &end, 0);
+		if (end == raw || *end != '\0') {
+			return defaultValue;
+		}
+
+		if (parsed < minValue) {
+			parsed = minValue;
+		} else if (parsed > maxValue) {
+			parsed = maxValue;
+		}
+		return (uint32_t)parsed;
 	}
 
 	uint32_t GetGenesisRunFrameInstructionCap() {
@@ -198,8 +227,7 @@ namespace {
 	}
 
 	bool IsGenesisAutoTraceDisabled() {
-		const char* raw = std::getenv("NEXEN_GENESIS_DISABLE_AUTO_TRACE");
-		return raw && (*raw == '1' || *raw == 'y' || *raw == 'Y' || *raw == 't' || *raw == 'T');
+		return ParseEnvEnabled("NEXEN_GENESIS_DISABLE_AUTO_TRACE", false);
 	}
 
 	uint32_t GetGenesisSonicStartupCheckpointIntervalFrames() {
@@ -208,24 +236,7 @@ namespace {
 			return cached;
 		}
 
-		cached = 30;
-		const char* raw = std::getenv("NEXEN_GENESIS_SONIC_CHECKPOINT_INTERVAL_FRAMES");
-		if (!raw || !*raw) {
-			return cached;
-		}
-
-		char* end = nullptr;
-		unsigned long parsed = std::strtoul(raw, &end, 0);
-		if (end == raw || *end != '\0') {
-			return cached;
-		}
-
-		if (parsed < 1ul) {
-			parsed = 1ul;
-		} else if (parsed > 300ul) {
-			parsed = 300ul;
-		}
-		cached = (uint32_t)parsed;
+		cached = ParseEnvUInt32Clamped("NEXEN_GENESIS_SONIC_CHECKPOINT_INTERVAL_FRAMES", 30, 1, 300);
 		return cached;
 	}
 
@@ -235,34 +246,12 @@ namespace {
 			return cached;
 		}
 
-		cached = 900;
-		const char* raw = std::getenv("NEXEN_GENESIS_SONIC_CHECKPOINT_END_FRAME");
-		if (!raw || !*raw) {
-			return cached;
-		}
-
-		char* end = nullptr;
-		unsigned long parsed = std::strtoul(raw, &end, 0);
-		if (end == raw || *end != '\0') {
-			return cached;
-		}
-
-		if (parsed < 60ul) {
-			parsed = 60ul;
-		} else if (parsed > 3600ul) {
-			parsed = 3600ul;
-		}
-		cached = (uint32_t)parsed;
+		cached = ParseEnvUInt32Clamped("NEXEN_GENESIS_SONIC_CHECKPOINT_END_FRAME", 900, 60, 3600);
 		return cached;
 	}
 
 	bool IsGenesisSonicStartupCheckpointEnabled() {
-		const char* raw = std::getenv("NEXEN_GENESIS_SONIC_CHECKPOINT_ENABLE");
-		if (!raw || !*raw) {
-			return true;
-		}
-
-		return *raw == '1' || *raw == 'y' || *raw == 'Y' || *raw == 't' || *raw == 'T';
+		return ParseEnvEnabled("NEXEN_GENESIS_SONIC_CHECKPOINT_ENABLE", true);
 	}
 
 	uint32_t GetGenesisSonicTraceRearmFrameWindow() {
@@ -271,24 +260,105 @@ namespace {
 			return cached;
 		}
 
-		cached = 180;
-		const char* raw = std::getenv("NEXEN_GENESIS_SONIC_TRACE_REARM_FRAME_WINDOW");
-		if (!raw || !*raw) {
+		cached = ParseEnvUInt32Clamped("NEXEN_GENESIS_SONIC_TRACE_REARM_FRAME_WINDOW", 180, 30, 1800);
+		return cached;
+	}
+
+	uint32_t GetGenesisSonicTraceCpuCycles() {
+		static uint32_t cached = 0;
+		if (cached != 0) {
 			return cached;
 		}
 
-		char* end = nullptr;
-		unsigned long parsed = std::strtoul(raw, &end, 0);
-		if (end == raw || *end != '\0') {
+		cached = ParseEnvUInt32Clamped("NEXEN_GENESIS_SONIC_TRACE_CPU_CYCLES", 260000, 60000, 2000000);
+		return cached;
+	}
+
+	uint32_t GetGenesisSonicTraceMmuCycles() {
+		static uint32_t cached = 0;
+		if (cached != 0) {
 			return cached;
 		}
 
-		if (parsed < 30ul) {
-			parsed = 30ul;
-		} else if (parsed > 1800ul) {
-			parsed = 1800ul;
+		cached = ParseEnvUInt32Clamped("NEXEN_GENESIS_SONIC_TRACE_MMU_CYCLES", 340000, 60000, 3000000);
+		return cached;
+	}
+
+	uint32_t GetGenesisSonicTraceCpuStride() {
+		static uint32_t cached = 0;
+		if (cached != 0) {
+			return cached;
 		}
-		cached = (uint32_t)parsed;
+
+		cached = ParseEnvUInt32Clamped("NEXEN_GENESIS_SONIC_TRACE_CPU_STRIDE", 1, 1, 16);
+		return cached;
+	}
+
+	uint32_t GetGenesisSonicTraceMmuStride() {
+		static uint32_t cached = 0;
+		if (cached != 0) {
+			return cached;
+		}
+
+		cached = ParseEnvUInt32Clamped("NEXEN_GENESIS_SONIC_TRACE_MMU_STRIDE", 1, 1, 16);
+		return cached;
+	}
+
+	uint32_t GetGenesisSonicTraceCpuRing() {
+		static uint32_t cached = 0;
+		if (cached != 0) {
+			return cached;
+		}
+
+		cached = ParseEnvUInt32Clamped("NEXEN_GENESIS_SONIC_TRACE_CPU_RING", 320, 32, 4096);
+		return cached;
+	}
+
+	uint32_t GetGenesisSonicTraceMmuFlowRing() {
+		static uint32_t cached = 0;
+		if (cached != 0) {
+			return cached;
+		}
+
+		cached = ParseEnvUInt32Clamped("NEXEN_GENESIS_SONIC_TRACE_MMU_FLOW_RING", 256, 32, 4096);
+		return cached;
+	}
+
+	uint32_t GetGenesisSonicTraceMmuOpRing() {
+		static uint32_t cached = 0;
+		if (cached != 0) {
+			return cached;
+		}
+
+		cached = ParseEnvUInt32Clamped("NEXEN_GENESIS_SONIC_TRACE_MMU_OP_RING", 320, 32, 4096);
+		return cached;
+	}
+
+	bool IsGenesisSonicCheckpointIncludeOpWindowEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_SONIC_CHECKPOINT_INCLUDE_OP_WINDOW", false);
+	}
+
+	uint32_t GetGenesisSonicCheckpointOpWindowLines() {
+		static uint32_t cached = 0;
+		if (cached != 0) {
+			return cached;
+		}
+
+		cached = ParseEnvUInt32Clamped("NEXEN_GENESIS_SONIC_CHECKPOINT_OP_WINDOW_LINES", 6, 1, 32);
+		return cached;
+	}
+
+	bool IsGenesisSonicCheckpointIncludeCpuTraceEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_SONIC_CHECKPOINT_INCLUDE_CPU_TRACE", false);
+	}
+
+	uint32_t GetGenesisSonicCheckpointCpuTraceLines() {
+		static uint32_t cached = 0;
+		if (cached != 0) {
+			return cached;
+		}
+
+		cached = ParseEnvUInt32Clamped("NEXEN_GENESIS_SONIC_CHECKPOINT_CPU_TRACE_LINES", 6, 1, 32);
 		return cached;
 	}
 
@@ -371,8 +441,19 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 	uint32_t sonicCheckpointInterval = GetGenesisSonicStartupCheckpointIntervalFrames();
 	uint32_t sonicCheckpointEndFrame = GetGenesisSonicStartupCheckpointEndFrame();
 	uint32_t sonicTraceRearmWindow = GetGenesisSonicTraceRearmFrameWindow();
+	uint32_t sonicTraceCpuCycles = GetGenesisSonicTraceCpuCycles();
+	uint32_t sonicTraceMmuCycles = GetGenesisSonicTraceMmuCycles();
+	uint32_t sonicTraceCpuStride = GetGenesisSonicTraceCpuStride();
+	uint32_t sonicTraceMmuStride = GetGenesisSonicTraceMmuStride();
+	uint32_t sonicTraceCpuRing = GetGenesisSonicTraceCpuRing();
+	uint32_t sonicTraceMmuFlowRing = GetGenesisSonicTraceMmuFlowRing();
+	uint32_t sonicTraceMmuOpRing = GetGenesisSonicTraceMmuOpRing();
+	bool sonicCheckpointIncludeOpWindow = IsGenesisSonicCheckpointIncludeOpWindowEnabled();
+	uint32_t sonicCheckpointOpWindowLines = GetGenesisSonicCheckpointOpWindowLines();
+	bool sonicCheckpointIncludeCpuTrace = IsGenesisSonicCheckpointIncludeCpuTraceEnabled();
+	uint32_t sonicCheckpointCpuTraceLines = GetGenesisSonicCheckpointCpuTraceLines();
 	return std::format(
-		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={} mmuOps={} startup={} sonicTraceArm={} sonicTraceArms={} sonicTraceLastArmFrame={} sonicTraceRearmWindow={} sonicCheckpointEnable={} sonicCheckpointInterval={} sonicCheckpointEndFrame={} sonicCheckpoints={} sonicLastCheckpointFrame={} sonicLastCheckpointPc=${:06x}",
+		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={} mmuOps={} startup={} sonicTraceArm={} sonicTraceArms={} sonicTraceLastArmFrame={} sonicTraceRearmWindow={} sonicTraceCpuCycles={} sonicTraceMmuCycles={} sonicTraceCpuStride={} sonicTraceMmuStride={} sonicTraceCpuRing={} sonicTraceMmuFlowRing={} sonicTraceMmuOpRing={} sonicCheckpointEnable={} sonicCheckpointInterval={} sonicCheckpointEndFrame={} sonicCheckpointIncludeOpWindow={} sonicCheckpointOpWindowLines={} sonicCheckpointIncludeCpuTrace={} sonicCheckpointCpuTraceLines={} sonicCheckpoints={} sonicLastCheckpointFrame={} sonicLastCheckpointPc=${:06x}",
 		_runFrameEntryCount,
 		_runFrameExitCount,
 		_runFrameEarlyAbortCount,
@@ -393,9 +474,20 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 		_sonicTraceEscalationCount,
 		_sonicTraceLastArmStartupFrame,
 		sonicTraceRearmWindow,
+		sonicTraceCpuCycles,
+		sonicTraceMmuCycles,
+		sonicTraceCpuStride,
+		sonicTraceMmuStride,
+		sonicTraceCpuRing,
+		sonicTraceMmuFlowRing,
+		sonicTraceMmuOpRing,
 		sonicCheckpointEnabled ? 1 : 0,
 		sonicCheckpointInterval,
 		sonicCheckpointEndFrame,
+		sonicCheckpointIncludeOpWindow ? 1 : 0,
+		sonicCheckpointOpWindowLines,
+		sonicCheckpointIncludeCpuTrace ? 1 : 0,
+		sonicCheckpointCpuTraceLines,
 		_sonicStartupCheckpointCount,
 		_sonicStartupLastCheckpointFrame,
 		_sonicStartupLastCheckpointPc & 0x00ffffff);
@@ -552,22 +644,40 @@ void GenesisConsole::RunFrame() {
 		if (IsSonicStartupTitleClass(titleClass)) {
 			uint32_t startupFrame = _memoryManager->GetStartupFrameForDiagnostics();
 			uint32_t rearmWindow = GetGenesisSonicTraceRearmFrameWindow();
+			uint32_t traceCpuCycles = GetGenesisSonicTraceCpuCycles();
+			uint32_t traceMmuCycles = GetGenesisSonicTraceMmuCycles();
+			uint32_t traceCpuStride = GetGenesisSonicTraceCpuStride();
+			uint32_t traceMmuStride = GetGenesisSonicTraceMmuStride();
+			uint32_t traceCpuRing = GetGenesisSonicTraceCpuRing();
+			uint32_t traceMmuFlowRing = GetGenesisSonicTraceMmuFlowRing();
+			uint32_t traceMmuOpRing = GetGenesisSonicTraceMmuOpRing();
+			bool includeOpWindow = IsGenesisSonicCheckpointIncludeOpWindowEnabled();
+			uint32_t opWindowLines = GetGenesisSonicCheckpointOpWindowLines();
+			bool includeCpuTrace = IsGenesisSonicCheckpointIncludeCpuTraceEnabled();
+			uint32_t cpuTraceLines = GetGenesisSonicCheckpointCpuTraceLines();
 			bool shouldArm = !_sonicTraceEscalationArmed;
 			if (!shouldArm && startupFrame >= (_sonicTraceLastArmStartupFrame + rearmWindow)) {
 				shouldArm = true;
 			}
 
 			if (shouldArm) {
-				_cpu->ArmAggressiveFlowTrace(260000, 1, 320);
-				_memoryManager->ArmAggressiveTraceBurst(260000, 340000, 1, 1, 256, 320);
+				_cpu->ArmAggressiveFlowTrace(traceCpuCycles, traceCpuStride, traceCpuRing);
+				_memoryManager->ArmAggressiveTraceBurst(traceCpuCycles, traceMmuCycles, traceCpuStride, traceMmuStride, traceMmuFlowRing, traceMmuOpRing);
 				_sonicTraceEscalationArmed = true;
 				_sonicTraceEscalationCount++;
 				_sonicTraceLastArmStartupFrame = startupFrame;
-				MessageManager::Log(std::format("[Genesis] RunFrame sonic trace escalation arm #{} titleClass={} startupFrame={} rearmWindow={} startup={}",
+				MessageManager::Log(std::format("[Genesis] RunFrame sonic trace escalation arm #{} titleClass={} startupFrame={} rearmWindow={} cpuCycles={} mmuCycles={} cpuStride={} mmuStride={} cpuRing={} mmuFlowRing={} mmuOpRing={} startup={}",
 					_sonicTraceEscalationCount,
 					titleClass,
 					startupFrame,
 					rearmWindow,
+					traceCpuCycles,
+					traceMmuCycles,
+					traceCpuStride,
+					traceMmuStride,
+					traceCpuRing,
+					traceMmuFlowRing,
+					traceMmuOpRing,
 					BuildGenesisStartupRuntimeSummary(_memoryManager.get())));
 			}
 
@@ -578,14 +688,16 @@ void GenesisConsole::RunFrame() {
 					_sonicStartupLastCheckpointFrame = startupFrame;
 					_sonicStartupLastCheckpointPc = _cpu->GetState().PC & 0x00ffffff;
 					_sonicStartupCheckpointCount++;
-					MessageManager::Log(std::format("[Genesis] Sonic startup checkpoint #{} frame={} pc=${:06x} cycles={} loop={} startup={} mmuFlow={}",
+					MessageManager::Log(std::format("[Genesis] Sonic startup checkpoint #{} frame={} pc=${:06x} cycles={} loop={} startup={} mmuFlow={}{}{}",
 						_sonicStartupCheckpointCount,
 						startupFrame,
 						_sonicStartupLastCheckpointPc,
 						_cpu->GetState().CycleCount,
 						_cpu->BuildSamePcLoopSummary(),
 						BuildGenesisStartupRuntimeSummary(_memoryManager.get()),
-						_memoryManager->BuildRuntimeFlowTraceSummary()));
+						_memoryManager->BuildRuntimeFlowTraceSummary(),
+						includeOpWindow ? std::format(" mmuOpsWindow={}", _memoryManager->BuildRuntimeOpTraceWindow(opWindowLines)) : "",
+						includeCpuTrace ? std::format(" cpuTrace={}", _cpu->BuildInstructionTraceWindow(cpuTraceLines)) : ""));
 				}
 			}
 		}
