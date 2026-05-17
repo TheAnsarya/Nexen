@@ -316,6 +316,7 @@ public:
 	uint32_t GetInstructionFlowLogCount() const { return _instructionFlowLogCount; }
 	uint32_t GetInstructionFlowLogSkippedCount() const { return _instructionFlowLogSkipped; }
 	vector<string> GetRecentInstructionFlowLogs() const { return _recentInstructionFlowLogs; }
+	void ArmAggressiveFlowTrace(uint32_t limit, uint32_t stride = 1, uint32_t ringCapacity = 128);
 	string BuildCrashProbeSummary() const;
 	string BuildDispatchBoundaryProbeSummary() const;
 	string BuildInstructionFlowSummary() const;

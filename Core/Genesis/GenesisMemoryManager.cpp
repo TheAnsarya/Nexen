@@ -1406,6 +1406,27 @@ string GenesisMemoryManager::BuildRuntimeOpTraceWindow(uint32_t maxLines) const 
 	return window;
 }
 
+void GenesisMemoryManager::ArmAggressiveTraceBurst(uint32_t flowLimit, uint32_t opLimit, uint32_t flowStride, uint32_t opStride, uint32_t flowRing, uint32_t opRing) {
+	LoadRuntimeFlowTraceConfig();
+	LoadRuntimeOpTraceConfig();
+
+	_runtimeFlowTraceEnabled = true;
+	_runtimeOpTraceEnabled = true;
+	_runtimeFlowTraceLimit = std::clamp<uint32_t>(flowLimit, 512u, 5000000u);
+	_runtimeOpTraceLimit = std::clamp<uint32_t>(opLimit, 1024u, 5000000u);
+	_runtimeFlowTraceStride = std::clamp<uint32_t>(flowStride, 1u, 1000000u);
+	_runtimeOpTraceStride = std::clamp<uint32_t>(opStride, 1u, 1000000u);
+	_recentRuntimeFlowTraceCapacity = std::clamp<uint32_t>(flowRing, 32u, 512u);
+	_recentRuntimeOpTraceCapacity = std::clamp<uint32_t>(opRing, 32u, 768u);
+
+	if (_recentRuntimeFlowTraceLines.capacity() < _recentRuntimeFlowTraceCapacity) {
+		_recentRuntimeFlowTraceLines.reserve(_recentRuntimeFlowTraceCapacity);
+	}
+	if (_recentRuntimeOpTraceLines.capacity() < _recentRuntimeOpTraceCapacity) {
+		_recentRuntimeOpTraceLines.reserve(_recentRuntimeOpTraceCapacity);
+	}
+}
+
 void GenesisMemoryManager::DetectStartupTitleSignature() {
 	_startupTitleClassValue = (uint8_t)StartupTitleClass::Unknown;
 	_startupTitleAutotuneApplied = false;

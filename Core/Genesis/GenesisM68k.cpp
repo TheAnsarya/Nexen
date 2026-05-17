@@ -784,6 +784,17 @@ void GenesisM68k::MaybeLogInstructionFlow(uint32_t prePc, uint16_t opcode, uint1
 	_instructionFlowLogCount++;
 }
 
+void GenesisM68k::ArmAggressiveFlowTrace(uint32_t limit, uint32_t stride, uint32_t ringCapacity) {
+	LoadInstructionFlowLogConfig();
+	_instructionFlowLogEnabled = true;
+	_instructionFlowLogLimit = std::clamp<uint32_t>(limit, 256u, 5000000u);
+	_instructionFlowLogStride = std::clamp<uint32_t>(stride, 1u, 1000000u);
+	_recentInstructionFlowCapacity = std::clamp<uint32_t>(ringCapacity, 16u, 1024u);
+	if (_recentInstructionFlowLogs.capacity() < _recentInstructionFlowCapacity) {
+		_recentInstructionFlowLogs.reserve(_recentInstructionFlowCapacity);
+	}
+}
+
 void GenesisM68k::RecordInstructionTrace(uint32_t programCounterBefore, uint32_t programCounterAfter, uint16_t opcode, uint16_t operandWordA, uint16_t operandWordB, uint16_t statusRegisterBefore, uint16_t statusRegisterAfter, uint64_t cycleCountBefore, uint64_t cycleCountAfter, uint32_t d0Before, uint32_t d0After, uint32_t a0Before, uint32_t a0After, uint32_t a7Before, uint32_t a7After, bool forcedCycleFloor, bool stoppedBefore, bool stoppedAfter) {
 	if (!_instructionTraceEnabled || _instructionTraceCapacity == 0) {
 		return;

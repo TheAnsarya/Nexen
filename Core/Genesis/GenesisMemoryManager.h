@@ -423,6 +423,7 @@ public:
 	string BuildRuntimeFlowTraceSummary() const;
 	string BuildRuntimeOpTraceSummary() const;
 	string BuildRuntimeOpTraceWindow(uint32_t maxLines) const;
+	void ArmAggressiveTraceBurst(uint32_t flowLimit, uint32_t opLimit, uint32_t flowStride = 1, uint32_t opStride = 1, uint32_t flowRing = 128, uint32_t opRing = 192);
 	const vector<string>& GetRecentRuntimeOpTraceLines() const { return _recentRuntimeOpTraceLines; }
 	bool IsTmssLockedReadAllowedForAddr(uint32_t addr) const { return IsTmssLockedVdpReadAllowed(addr); }
 	bool IsTmssLockedWriteAllowedForAddr(uint32_t addr) const { return IsTmssLockedVdpWriteAllowed(addr); }

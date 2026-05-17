@@ -421,6 +421,8 @@ void GenesisConsole::RunFrame() {
 			guard++;
 			if (guard >= hardInstructionCap) {
 				hardGuardAbort = true;
+				_cpu->ArmAggressiveFlowTrace(120000, 1, 192);
+				_memoryManager->ArmAggressiveTraceBurst(180000, 260000, 1, 1, 192, 256);
 				_runFrameStallEventCount++;
 				_runFrameLastStallSummary = _cpu->BuildExecutionStallSummary();
 				if (_runFrameFirstFailureBoundarySummary.empty()) {
@@ -453,6 +455,8 @@ void GenesisConsole::RunFrame() {
 			}
 
 			if (stagnantIterations >= StagnantIterationThreshold) {
+				_cpu->ArmAggressiveFlowTrace(90000, 1, 160);
+				_memoryManager->ArmAggressiveTraceBurst(140000, 220000, 1, 1, 160, 224);
 				_runFrameStallEventCount++;
 				forcedAdvancePulses++;
 				_cpu->ForceClockAdvance(488);
