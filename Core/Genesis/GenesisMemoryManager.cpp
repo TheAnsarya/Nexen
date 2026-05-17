@@ -3400,21 +3400,13 @@ uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
 	}
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
-		if (IsYm2612Address(addr)) {
-			// YM2612 register window: even lanes are status ports, odd lanes are data ports.
-			// Until the MMU is wired to the FM core status API, keep status reads as not-busy.
-			uint8_t effectiveValue = 0x00;
-			_openBus = effectiveValue;
-			return effectiveValue;
-		}
-
 		// Z80 address space
 		static uint64_t z80WindowReadCount = 0;
 		z80WindowReadCount++;
 		if (IsZ80BusGranted()) {
-			uint32_t z80Addr = addr & 0x1FFF;
-			uint8_t effectiveValue = _z80Ram[z80Addr];
-			bool traceAccess = z80WindowReadCount <= 256 || (z80WindowReadCount % 4096) == 0 || (z80Addr >= 0x1ff0);
+			uint32_t z80Addr = addr & 0xFFFFu;
+			uint8_t effectiveValue = ReadZ80Window8(addr);
+			bool traceAccess = z80WindowReadCount <= 256 || (z80WindowReadCount % 4096) == 0 || (z80Addr >= 0xfff0);
 			if (traceAccess) {
 				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
 				MessageManager::Log(std::format("[Genesis][MMU] Z80 read #{} addr=${:06x} z80=${:04x} val=${:02x} pc=${:06x} busReq={} reset={} gate=allow",
@@ -3664,18 +3656,9 @@ uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
 	}
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
-		if (IsYm2612Address(addr)) {
-			uint8_t effectiveHighByte = 0x00;
-			uint8_t effectiveLowByte = 0x00;
-			uint16_t effectiveValue = (uint16_t)(((uint16_t)effectiveHighByte << 8) | effectiveLowByte);
-			_openBus = effectiveLowByte;
-			return effectiveValue;
-		}
-
 		if (IsZ80BusGranted()) {
-			uint32_t z80Addr = addr & 0x1FFF;
-			uint8_t effectiveHighByte = _z80Ram[z80Addr];
-			uint8_t effectiveLowByte = _z80Ram[(z80Addr + 1) & 0x1FFF];
+			uint8_t effectiveHighByte = ReadZ80Window8(addr);
+			uint8_t effectiveLowByte = ReadZ80Window8(addr + 1);
 			uint16_t effectiveValue = (uint16_t)(((uint16_t)effectiveHighByte << 8) | effectiveLowByte);
 			_openBus = (uint8_t)(effectiveValue & 0xFF);
 			return effectiveValue;
@@ -3913,17 +3896,12 @@ void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
 
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		uint8_t effectiveValue = value;
-		if (IsYm2612Address(addr)) {
-			_openBus = effectiveValue;
-			return;
-		}
-
 		static uint64_t z80WindowWriteCount = 0;
 		z80WindowWriteCount++;
 		if (IsZ80BusGranted()) {
-			uint32_t z80Addr = addr & 0x1FFF;
-			_z80Ram[z80Addr] = effectiveValue;
-			bool traceAccess = z80WindowWriteCount <= 256 || (z80WindowWriteCount % 4096) == 0 || (z80Addr >= 0x1ff0);
+			uint32_t z80Addr = addr & 0xFFFFu;
+			WriteZ80Window8(addr, effectiveValue);
+			bool traceAccess = z80WindowWriteCount <= 256 || (z80WindowWriteCount % 4096) == 0 || (z80Addr >= 0xfff0);
 			if (traceAccess) {
 				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
 				MessageManager::Log(std::format("[Genesis][MMU] Z80 write #{} addr=${:06x} z80=${:04x} val=${:02x} pc=${:06x} busReq={} reset={} gate=allow",
@@ -4184,15 +4162,9 @@ void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
 	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
 		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
 		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
-		if (IsYm2612Address(addr)) {
-			_openBus = effectiveLowByte;
-			return;
-		}
-
 		if (IsZ80BusGranted()) {
-			uint32_t z80Addr = addr & 0x1FFF;
-			_z80Ram[z80Addr] = effectiveHighByte;
-			_z80Ram[(z80Addr + 1) & 0x1FFF] = effectiveLowByte;
+			WriteZ80Window8(addr, effectiveHighByte);
+			WriteZ80Window8(addr + 1, effectiveLowByte);
 		}
 		_openBus = effectiveLowByte;
 		return;
@@ -4472,6 +4444,78 @@ void GenesisMemoryManager::WriteIoControlPort(uint8_t port, uint8_t value) {
 		_controlManager->WriteControlPort(port, effectiveValue);
 		SyncIoPadRuntimeState(port);
 	}
+}
+
+uint8_t GenesisMemoryManager::ReadZ80Window8(uint32_t addr) {
+	uint16_t z80Addr = (uint16_t)(addr & 0xFFFFu);
+
+	if (z80Addr < 0x4000u) {
+		return _z80Ram[z80Addr & 0x1FFFu];
+	}
+
+	if (z80Addr < 0x6000u) {
+		// YM2612 status/data reads are currently modeled as not-busy/zeroed.
+		return 0x00;
+	}
+
+	if (z80Addr < 0x8000u) {
+		if ((z80Addr & 0xFF00u) == 0x7F00u) {
+			uint8_t low = (uint8_t)(z80Addr & 0x00FFu);
+			if (low == 0x11u) {
+				return 0xFF;
+			}
+
+			uint32_t vdpAddr = 0xC00000u | low;
+			if (_vdp) {
+				return _vdp->ReadPortByte(vdpAddr);
+			}
+		}
+		return 0xFF;
+	}
+
+	// Z80 banked ROM window is not modeled yet on the MMU path.
+	return 0xFF;
+}
+
+void GenesisMemoryManager::WriteZ80Window8(uint32_t addr, uint8_t value) {
+	uint16_t z80Addr = (uint16_t)(addr & 0xFFFFu);
+
+	if (z80Addr < 0x4000u) {
+		_z80Ram[z80Addr & 0x1FFFu] = value;
+		return;
+	}
+
+	if (z80Addr < 0x6000u) {
+		// YM2612 writes are accepted as side-effect-free for now.
+		return;
+	}
+
+	if (z80Addr < 0x8000u) {
+		if ((z80Addr & 0xFF00u) == 0x7F00u) {
+			uint8_t low = (uint8_t)(z80Addr & 0x00FFu);
+			if (low == 0x11u) {
+				if (_psg) {
+					_psg->Write(value);
+				}
+				return;
+			}
+
+			uint32_t vdpAddr = 0xC00000u | low;
+			if (_vdp) {
+				uint32_t port = vdpAddr & 0x1Fu;
+				if (port < 0x04u) {
+					_vdp->WriteDataPortByte(value, (vdpAddr & 1u) == 0u);
+				} else if (port < 0x08u) {
+					_vdp->WriteControlPortByte(value, (vdpAddr & 1u) == 0u);
+				} else {
+					WriteVdpPort(vdpAddr, (uint16_t)value | ((uint16_t)value << 8));
+				}
+			}
+		}
+		return;
+	}
+
+	// Z80 banked ROM window writes are ignored on this path.
 }
 
 // I/O registers ($A10001-$A1001F)

@@ -311,6 +311,8 @@ private:
 	uint8_t ReadIoControlPort(uint8_t port);
 	void WriteIoDataPort(uint8_t port, uint8_t value);
 	void WriteIoControlPort(uint8_t port, uint8_t value);
+	uint8_t ReadZ80Window8(uint32_t addr);
+	void WriteZ80Window8(uint32_t addr, uint8_t value);
 
 public:
 	GenesisMemoryManager();
