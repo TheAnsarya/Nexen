@@ -36,6 +36,8 @@ private:
 	string _runFrameFirstFailureBoundarySummary = {};
 	bool _sonicTraceEscalationArmed = false;
 	uint64_t _sonicTraceEscalationCount = 0;
+	uint64_t _sonicStartupCheckpointCount = 0;
+	uint32_t _sonicStartupLastCheckpointFrame = 0;
 
 public:
 	static vector<string> GetSupportedExtensions() { return {".md", ".gen", ".bin", ".smd"}; }
@@ -60,6 +62,8 @@ public:
 	uint64_t GetRunFrameFirstFailureBoundaryCaptureCount() const { return _runFrameFirstFailureBoundaryCaptureCount; }
 	const string& GetRunFrameFirstFailureBoundarySummary() const { return _runFrameFirstFailureBoundarySummary; }
 	uint64_t GetSonicTraceEscalationCount() const { return _sonicTraceEscalationCount; }
+	uint64_t GetSonicStartupCheckpointCount() const { return _sonicStartupCheckpointCount; }
+	uint32_t GetSonicStartupLastCheckpointFrame() const { return _sonicStartupLastCheckpointFrame; }
 	string BuildRunFrameCrashProbeSummary() const;
 
 	LoadRomResult LoadRom(VirtualFile& romFile) override;

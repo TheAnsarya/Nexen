@@ -397,6 +397,7 @@ public:
 	uint16_t GetZ80BusReqAckDelaySettingMclk() const { return _z80BusReqAckDelayMclkSetting; }
 	uint16_t GetZ80BusResumeDelaySettingMclk() const { return _z80BusResumeDelayMclkSetting; }
 	uint32_t GetStartupWindowFrames() const { return _startupWindowFrames; }
+	uint32_t GetStartupFrameForDiagnostics() const { return GetStartupFrame(); }
 	uint32_t GetStartupBootRelaxFrames() const { return _startupBootRelaxFrames; }
 	uint32_t GetStartupLogoPhaseEndFrame() const { return _startupLogoPhaseEndFrame; }
 	uint32_t GetStartupStrictPhaseStartFrame() const { return _startupStrictPhaseStartFrame; }
