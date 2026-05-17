@@ -289,6 +289,7 @@ public:
 	void ClearInstructionTrace();
 	vector<GenesisInstructionTraceEntry> GetInstructionTraceSnapshot() const;
 	string BuildInstructionTraceDigest() const;
+	string BuildInstructionTraceWindow(uint32_t maxLines) const;
 	string BuildExecutionStallSummary() const;
 	uint64_t GetForcedCycleFloorCount() const { return _forcedCycleFloorCount; }
 	uint64_t GetForcedClockAdvanceCount() const { return _forcedClockAdvanceCount; }

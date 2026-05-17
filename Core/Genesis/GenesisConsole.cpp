@@ -170,6 +170,38 @@ namespace {
 		return cached == 1;
 	}
 
+	uint32_t GetGenesisRunFrameInstructionCap() {
+		static uint32_t cached = 0;
+		if (cached != 0) {
+			return cached;
+		}
+
+		cached = 5000000;
+		const char* raw = std::getenv("NEXEN_GENESIS_RUNFRAME_INSTR_CAP");
+		if (!raw || !*raw) {
+			return cached;
+		}
+
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(raw, &end, 0);
+		if (end == raw || *end != '\0') {
+			return cached;
+		}
+
+		if (parsed < 50000ul) {
+			parsed = 50000ul;
+		} else if (parsed > 50000000ul) {
+			parsed = 50000000ul;
+		}
+		cached = (uint32_t)parsed;
+		return cached;
+	}
+
+	bool IsGenesisAutoTraceDisabled() {
+		const char* raw = std::getenv("NEXEN_GENESIS_DISABLE_AUTO_TRACE");
+		return raw && (*raw == '1' || *raw == 'y' || *raw == 'Y' || *raw == 't' || *raw == 'T');
+	}
+
 	bool TryExecWithSehGuard(GenesisM68k* cpu, uint32_t& sehCode) {
 		if (!cpu) {
 			return false;
@@ -263,6 +295,10 @@ LoadRomResult GenesisConsole::LoadRom(VirtualFile& romFile) {
 	_emu->RegisterMemory(MemoryType::GenesisPaletteRam, _vdp->GetCramPointer(), 128);
 	_memoryManager->SetCpu(_cpu.get());
 	_cpu->Init(_emu, this, _memoryManager.get());
+	if (!IsGenesisAutoTraceDisabled()) {
+		_cpu->SetInstructionTraceCapacity(8192);
+		_cpu->SetInstructionTraceEnabled(true);
+	}
 	_cpu->Reset(false);
 	_memoryManager->LoadBattery();
 
@@ -366,9 +402,11 @@ void GenesisConsole::RunFrame() {
 	uint32_t stagnantIterations = 0;
 	uint32_t forcedAdvancePulses = 0;
 	bool trappedSehFault = false;
+	bool hardGuardAbort = false;
 	uint32_t trappedSehCode = 0;
 	constexpr uint32_t StagnantIterationThreshold = 250000;
 	constexpr uint32_t ForcedAdvancePulseLimit = 8;
+	const uint32_t hardInstructionCap = GetGenesisRunFrameInstructionCap();
 	bool sehGuardEnabled = IsGenesisSehDiagGuardEnabled();
 	auto runFrameLoop = [&]() {
 		while (frame == _vdp->GetFrameCount()) {
@@ -381,6 +419,28 @@ void GenesisConsole::RunFrame() {
 				_cpu->Exec();
 			}
 			guard++;
+			if (guard >= hardInstructionCap) {
+				hardGuardAbort = true;
+				_runFrameStallEventCount++;
+				_runFrameLastStallSummary = _cpu->BuildExecutionStallSummary();
+				if (_runFrameFirstFailureBoundarySummary.empty()) {
+					_runFrameFirstFailureBoundarySummary = _cpu->BuildDispatchBoundaryProbeSummary();
+					_runFrameFirstFailureBoundaryCaptureCount++;
+				}
+				MessageManager::Log(std::format("[Genesis] RunFrame hard-guard abort frame={} guard={} cap={} pc=${:06x} cycles={} stall={} cpuBoundary={} cpuTrace={} mmuFlow={} mmuOps={} mmuOpsWindow={}",
+					frame,
+					guard,
+					hardInstructionCap,
+					_cpu->GetState().PC & 0x00ffffff,
+					_cpu->GetState().CycleCount,
+					_runFrameLastStallSummary,
+					_runFrameFirstFailureBoundarySummary,
+					_cpu->BuildInstructionTraceWindow(10),
+					_memoryManager->BuildRuntimeFlowTraceSummary(),
+					_memoryManager->BuildRuntimeOpTraceSummary(),
+					_memoryManager->BuildRuntimeOpTraceWindow(10)));
+				break;
+			}
 
 			uint64_t currentClock = _memoryManager->GetMasterClock();
 			uint64_t currentCpuCycles = _cpu->GetState().CycleCount;
@@ -425,6 +485,9 @@ void GenesisConsole::RunFrame() {
 						guard,
 						forcedAdvancePulses,
 						_cpu->BuildInstructionTraceDigest()));
+					MessageManager::Log(std::format("[Genesis] RunFrame forced completion detail cpuTrace={} mmuOpsWindow={}",
+						_cpu->BuildInstructionTraceWindow(8),
+						_memoryManager->BuildRuntimeOpTraceWindow(8)));
 					break;
 				}
 			}
@@ -478,6 +541,9 @@ void GenesisConsole::RunFrame() {
 		MessageManager::Log(std::format("[Genesis] RunFrame SEH trapped {}", _runFrameLastExitSummary));
 		return;
 	}
+	if (hardGuardAbort) {
+		_runFrameEarlyAbortCount++;
+	}
 	_runFrameLastGuardIterations = guard;
 
 	uint32_t nextFrame = _vdp->GetFrameCount();
@@ -522,11 +588,12 @@ void GenesisConsole::RunFrame() {
 
 	ProcessEndOfFrame();
 	_runFrameExitCount++;
-	_runFrameLastExitSummary = std::format("exit={} frameBefore={} frameAfter={} guard={} stalls={} forcedAdvances={} pc=${:06x} cycles={} traceDigest={}",
+	_runFrameLastExitSummary = std::format("exit={} frameBefore={} frameAfter={} guard={} hardGuardAbort={} stalls={} forcedAdvances={} pc=${:06x} cycles={} traceDigest={}",
 		_runFrameExitCount,
 		frame,
 		nextFrame,
 		guard,
+		hardGuardAbort ? 1 : 0,
 		_runFrameStallEventCount,
 		_runFrameForcedAdvanceCount,
 		_cpu->GetState().PC & 0x00ffffff,

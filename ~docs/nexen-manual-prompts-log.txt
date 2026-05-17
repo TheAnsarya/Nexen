@@ -2719,8 +2719,9 @@ Don't start with all those debug displays, but make sure pansy logging and expor
 
 visual/audio/misc stats or graph appears by default. that is wrong, fix it
 
+create, prepare, and release a 1.4.43 version, build the artifacts and push them, clean snd release; continue;
 
-
+I don't see a build at `https://github.com/TheAnsarya/Nexen/actions/workflows/build.yml` but we should be doing a 1.4.43 build action on github, fix this; continue;
 
 
 

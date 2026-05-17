@@ -6,6 +6,7 @@
 #include "Shared/MessageManager.h"
 #include "Utilities/HexUtilities.h"
 #include "Utilities/Serializer.h"
+#include <algorithm>
 #include <cstdlib>
 #include <functional>
 
@@ -873,6 +874,40 @@ string GenesisM68k::BuildInstructionTraceDigest() const {
 		hash *= 1099511628211ull;
 	}
 	return std::format("{:016x}", hash);
+}
+
+string GenesisM68k::BuildInstructionTraceWindow(uint32_t maxLines) const {
+	auto snapshot = GetInstructionTraceSnapshot();
+	if (snapshot.empty()) {
+		return "trace-window=empty";
+	}
+
+	uint32_t clampedLines = std::clamp<uint32_t>(maxLines, 1u, 32u);
+	uint32_t startIndex = 0;
+	if (snapshot.size() > clampedLines) {
+		startIndex = (uint32_t)snapshot.size() - clampedLines;
+	}
+
+	string window = std::format("trace-window count={} lines={}", snapshot.size(), snapshot.size() - startIndex);
+	for (uint32_t i = startIndex; i < (uint32_t)snapshot.size(); i++) {
+		const GenesisInstructionTraceEntry& entry = snapshot[i];
+		window += std::format(" | #{:05} pc=${:06x} op=${:04x} a=${:04x} b=${:04x} next=${:06x} sr=${:04x}->{:04x} dcy={} d0=${:08x}->{:08x} a7=${:08x}->{:08x}",
+			entry.Sequence,
+			entry.ProgramCounterBefore,
+			entry.Opcode,
+			entry.OperandWordA,
+			entry.OperandWordB,
+			entry.ProgramCounterAfter,
+			entry.StatusRegisterBefore,
+			entry.StatusRegisterAfter,
+			entry.InstructionCycleDelta,
+			entry.D0Before,
+			entry.D0After,
+			entry.A7Before,
+			entry.A7After);
+	}
+
+	return window;
 }
 
 string GenesisM68k::BuildExecutionStallSummary() const {

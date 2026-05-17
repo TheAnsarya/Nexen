@@ -527,12 +527,12 @@ namespace {
 	static void LoadNexenStartupTraceConfigFromEnv() {
 		sNexenStartupTraceConfigLoaded = true;
 
-		// Profile defaults: tuned for startup/logo validation in the first 10 seconds.
-		sNexenGenesisStartupProfile = "logo-compat";
+		// Profile defaults: favor broader Sonic-era startup compatibility while preserving deterministic traces.
+		sNexenGenesisStartupProfile = "sonic-startup";
 		sNexenGenesisStartupProfileExplicit = false;
 		sNexenGenesisStartupRomAutotune = true;
 		sNexenGenesisStartupTitleHint.clear();
-		sNexenGenesisStartupProfileKind = StartupProfileKind::LogoCompat;
+		sNexenGenesisStartupProfileKind = StartupProfileKind::SonicStartup;
 		StartupProfileTuning tuning = BuildStartupProfileTuning(sNexenGenesisStartupProfileKind);
 
 		uint32_t value = 0;
@@ -2444,12 +2444,10 @@ void GenesisMemoryManager::SetZ80BusRequest(bool request, bool allowTransitionLo
 	if (request) {
 		_z80ResumeDelayMclk = 0;
 		if (_z80Reset) {
-			if (!_z80BusAck && _z80BusReqDelayMclk == 0) {
-				_z80BusReqDelayMclk = effectiveReqDelay;
-			}
-		} else {
 			_z80BusAck = true;
 			_z80BusReqDelayMclk = 0;
+		} else if (!_z80BusAck && _z80BusReqDelayMclk == 0) {
+			_z80BusReqDelayMclk = effectiveReqDelay;
 		}
 	} else {
 		_z80BusAck = false;

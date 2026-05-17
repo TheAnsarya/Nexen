@@ -1,4 +1,4 @@
-# Nexen v1.4.43 Release Notes
+﻿# Nexen v1.4.43 Release Notes
 
 Nexen v1.4.43 is a cleanup and stability release focused on startup UX, debugger settings reliability, and safer default metadata export behavior.
 
