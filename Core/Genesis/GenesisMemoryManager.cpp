@@ -878,6 +878,12 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 
 	// Register and allocate ROM
 	_prgRomSize = (uint32_t)romData.size();
+	_prgRomUseWrapMask = _prgRomSize != 0 && (_prgRomSize & (_prgRomSize - 1)) == 0;
+	_prgRomWrapMask = _prgRomSize > 0 ? (_prgRomSize - 1) : 0;
+	_romBankCount = (_prgRomSize + MapperWindowSize - 1) / MapperWindowSize;
+	if (_romBankCount == 0) {
+		_romBankCount = 1;
+	}
 	_prgRom = new uint8_t[_prgRomSize];
 	memcpy(_prgRom, romData.data(), _prgRomSize);
 	DetectStartupTitleSignature();
@@ -1044,14 +1050,9 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 }
 
 void GenesisMemoryManager::ResetRomBankMapper() {
-	uint32_t bankCount = (_prgRomSize + MapperWindowSize - 1) / MapperWindowSize;
-	if (bankCount == 0) {
-		bankCount = 1;
-	}
-
 	_romBankMapperEnabled = _prgRomSize > MapperWindowSize;
 	for (uint32_t i = 0; i < MapperBankWindowCount; i++) {
-		_romBankRegisters[i] = (uint8_t)((i + 1) % bankCount);
+		_romBankRegisters[i] = (uint8_t)((i + 1) % _romBankCount);
 	}
 }
 
@@ -2390,28 +2391,32 @@ bool GenesisMemoryManager::TryWriteRomBankRegister(uint32_t addr, uint8_t value)
 	return true;
 }
 
+uint32_t GenesisMemoryManager::WrapRomAddress(uint32_t addr) const {
+	if (_prgRomUseWrapMask) {
+		return addr & _prgRomWrapMask;
+	}
+
+	return addr % _prgRomSize;
+}
+
 uint32_t GenesisMemoryManager::TranslateRomAddress(uint32_t addr) const {
 	if (_prgRomSize == 0) {
 		return 0;
 	}
 
 	uint32_t effectiveAddr = addr & 0x3FFFFF;
-	uint32_t bankCount = (_prgRomSize + MapperWindowSize - 1) / MapperWindowSize;
-	if (bankCount == 0) {
-		bankCount = 1;
-	}
 
 	if (_romBankMapperEnabled && effectiveAddr >= 0x080000 && effectiveAddr < 0x400000) {
 		uint32_t windowOffset = effectiveAddr - 0x080000;
 		uint32_t slot = windowOffset / MapperWindowSize;
 		if (slot < MapperBankWindowCount) {
-			uint32_t bank = _romBankRegisters[slot] % bankCount;
+			uint32_t bank = _romBankRegisters[slot] % _romBankCount;
 			uint32_t mappedAddress = bank * MapperWindowSize + (windowOffset % MapperWindowSize);
-			return mappedAddress % _prgRomSize;
+			return WrapRomAddress(mappedAddress);
 		}
 	}
 
-	return effectiveAddr % _prgRomSize;
+	return WrapRomAddress(effectiveAddr);
 }
 
 bool GenesisMemoryManager::IsZ80BusGranted() const {

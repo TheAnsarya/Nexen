@@ -31,6 +31,9 @@ private:
 
 	uint8_t* _prgRom = nullptr;
 	uint32_t _prgRomSize = 0;
+	uint32_t _prgRomWrapMask = 0;
+	uint32_t _romBankCount = 1;
+	bool _prgRomUseWrapMask = false;
 
 	uint8_t* _workRam = nullptr;
 	uint8_t* _z80Ram = nullptr;
@@ -280,6 +283,7 @@ private:
 	bool IsRamControlRegister(uint32_t addr) const;
 	uint8_t GetRamControlRegisterValue() const;
 	void WriteRamControlRegister(uint8_t value);
+	uint32_t WrapRomAddress(uint32_t addr) const;
 	uint32_t TranslateRomAddress(uint32_t addr) const;
 	bool IsZ80BusGranted() const;
 	void AdvanceZ80BusArbitration(uint32_t masterClocks);

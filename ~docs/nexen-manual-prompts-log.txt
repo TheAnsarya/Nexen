@@ -2735,6 +2735,8 @@ continue;
 
 continue current work, and also find the problem described in `https://github.com/TheAnsarya/Nexen/issues/2220` and fix it; continue;
 
+I don't want updates to tests right now as a focus, just a basic amount of tests, but most changes should be to emulator code, compare repos and look for improvements we can make to regular code and do it; continue;
+
 
 
 
