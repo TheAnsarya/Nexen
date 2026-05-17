@@ -26,6 +26,13 @@ private:
 	uint32_t _samePcRunLength = 0;
 	uint32_t _lastRunPc = 0xffffffff;
 	uint16_t _lastRunOpcode = 0;
+	uint64_t _samePcStallEventCount = 0;
+	uint32_t _lastSamePcStallRunLength = 0;
+	uint32_t _lastSamePcStallPc = 0;
+	uint16_t _lastSamePcStallOpcode = 0;
+	uint16_t _lastSamePcStallOperandA = 0;
+	uint16_t _lastSamePcStallOperandB = 0;
+	string _lastSamePcStallDisasm = {};
 	bool _debugForceNoCycleProgress = false;
 	uint64_t _resetProbeCount = 0;
 	uint32_t _lastResetVectorSp = 0;
@@ -315,6 +322,7 @@ public:
 	string BuildInstructionTraceDigest() const;
 	string BuildInstructionTraceWindow(uint32_t maxLines) const;
 	string BuildExecutionStallSummary() const;
+	string BuildSamePcLoopSummary() const;
 	string BuildAddressErrorSummary() const;
 	uint64_t GetForcedCycleFloorCount() const { return _forcedCycleFloorCount; }
 	uint64_t GetForcedClockAdvanceCount() const { return _forcedClockAdvanceCount; }

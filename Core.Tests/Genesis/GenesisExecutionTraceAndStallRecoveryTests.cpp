@@ -246,6 +246,15 @@ TEST(GenesisExecutionTraceAndStallRecoveryTests, StallSummaryIncludesTraceDigest
 	EXPECT_NE(summary.find("lastOpcode="), std::string::npos);
 }
 
+TEST(GenesisExecutionTraceAndStallRecoveryTests, SamePcLoopSummaryReportsDefaultState) {
+	GenesisM68k cpu;
+	std::string summary = cpu.BuildSamePcLoopSummary();
+
+	EXPECT_NE(summary.find("events=0"), std::string::npos);
+	EXPECT_NE(summary.find("currentRun=0"), std::string::npos);
+	EXPECT_NE(summary.find("lastPc=$ffffff"), std::string::npos);
+}
+
 TEST(GenesisExecutionTraceAndStallRecoveryTests, ForcedClockAdvanceCounterIncrementsWhenInvoked) {
 	constexpr uint32_t InitialSp = 0x00fffe00;
 	constexpr uint32_t InitialPc = 0x00000100;

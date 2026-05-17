@@ -429,7 +429,7 @@ void GenesisConsole::RunFrame() {
 					_runFrameFirstFailureBoundarySummary = _cpu->BuildDispatchBoundaryProbeSummary();
 					_runFrameFirstFailureBoundaryCaptureCount++;
 				}
-				MessageManager::Log(std::format("[Genesis] RunFrame hard-guard abort frame={} guard={} cap={} pc=${:06x} cycles={} stall={} cpuBoundary={} cpuTrace={} cpuAddr={} mmuFlow={} mmuOps={} mmuOpsWindow={}",
+				MessageManager::Log(std::format("[Genesis] RunFrame hard-guard abort frame={} guard={} cap={} pc=${:06x} cycles={} stall={} cpuBoundary={} cpuTrace={} cpuLoop={} cpuAddr={} mmuFlow={} mmuOps={} mmuOpsWindow={}",
 					frame,
 					guard,
 					hardInstructionCap,
@@ -438,6 +438,7 @@ void GenesisConsole::RunFrame() {
 					_runFrameLastStallSummary,
 					_runFrameFirstFailureBoundarySummary,
 					_cpu->BuildInstructionTraceWindow(10),
+					_cpu->BuildSamePcLoopSummary(),
 					_cpu->BuildAddressErrorSummary(),
 					_memoryManager->BuildRuntimeFlowTraceSummary(),
 					_memoryManager->BuildRuntimeOpTraceSummary(),
@@ -463,12 +464,13 @@ void GenesisConsole::RunFrame() {
 				_cpu->ForceClockAdvance(488);
 				_runFrameForcedAdvanceCount++;
 				_runFrameLastStallSummary = _cpu->BuildExecutionStallSummary();
-				MessageManager::Log(std::format("[Genesis] RunFrame stall recovery #{} pulse={} frame={} guard={} summary={} masterClock={} cpuCycles={}",
+				MessageManager::Log(std::format("[Genesis] RunFrame stall recovery #{} pulse={} frame={} guard={} summary={} loop={} masterClock={} cpuCycles={}",
 					_runFrameStallEventCount,
 					forcedAdvancePulses,
 					frame,
 					guard,
 					_runFrameLastStallSummary,
+					_cpu->BuildSamePcLoopSummary(),
 					_memoryManager->GetMasterClock(),
 					_cpu->GetState().CycleCount));
 				stagnantIterations = 0;
@@ -490,8 +492,9 @@ void GenesisConsole::RunFrame() {
 						guard,
 						forcedAdvancePulses,
 						_cpu->BuildInstructionTraceDigest()));
-					MessageManager::Log(std::format("[Genesis] RunFrame forced completion detail cpuTrace={} mmuOpsWindow={}",
+					MessageManager::Log(std::format("[Genesis] RunFrame forced completion detail cpuTrace={} cpuLoop={} mmuOpsWindow={}",
 						_cpu->BuildInstructionTraceWindow(8),
+						_cpu->BuildSamePcLoopSummary(),
 						_memoryManager->BuildRuntimeOpTraceWindow(8)));
 					break;
 				}
@@ -500,7 +503,7 @@ void GenesisConsole::RunFrame() {
 			if ((guard % 50000) == 0) {
 				GenesisVdpState vdpState = _vdp->GetState();
 				GenesisIoState ioState = _memoryManager->GetIoState();
-				MessageManager::Log(std::format("[Genesis] RunFrame waiting frame={} guard={} pc=${:06x} cycles={} masterClock={} heartbeatPc=${:06x} heartbeatCycles={} heartbeatInstr={} z80Running={} z80RunnableCycles={} z80StalledCycles={} z80Transitions={} z80Epoch={} z80LastTransitionClock={} vdpVc={} vdpHc={} vdpStatus=${:04x} r1=${:02x} dmaActive={} dmaMode={} cpuAddr={}",
+				MessageManager::Log(std::format("[Genesis] RunFrame waiting frame={} guard={} pc=${:06x} cycles={} masterClock={} heartbeatPc=${:06x} heartbeatCycles={} heartbeatInstr={} z80Running={} z80RunnableCycles={} z80StalledCycles={} z80Transitions={} z80Epoch={} z80LastTransitionClock={} vdpVc={} vdpHc={} vdpStatus=${:04x} r1=${:02x} dmaActive={} dmaMode={} cpuLoop={} cpuAddr={}",
 					frame,
 					guard,
 					_cpu->GetState().PC & 0x00ffffff,
@@ -521,6 +524,7 @@ void GenesisConsole::RunFrame() {
 					vdpState.Registers[1],
 					vdpState.DmaActive ? 1 : 0,
 					vdpState.DmaMode,
+					_cpu->BuildSamePcLoopSummary(),
 					_cpu->BuildAddressErrorSummary()));
 			}
 		}

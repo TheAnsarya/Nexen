@@ -672,7 +672,31 @@ void GenesisM68k::Exec() {
 	_lastRunPc = prevPc;
 	_lastRunOpcode = opcode;
 
+	if (_samePcRunLength == 50000 || _samePcRunLength == 100000) {
+		ArmAggressiveFlowTrace(_samePcRunLength >= 100000 ? 180000u : 120000u, 1, 224);
+	}
+
 	if (_samePcRunLength >= 200000) {
+		auto readWord = [this](uint32_t addr) {
+			return PeekWord(addr);
+		};
+		_lastSamePcStallRunLength = _samePcRunLength;
+		_lastSamePcStallPc = prevPc;
+		_lastSamePcStallOpcode = opcode;
+		_lastSamePcStallOperandA = operandWordA;
+		_lastSamePcStallOperandB = operandWordB;
+		_lastSamePcStallDisasm = DisassembleM68kLine(prevPc, opcode, operandWordA, operandWordB, readWord);
+		_samePcStallEventCount++;
+		if (_samePcStallEventCount <= 64 || (_samePcStallEventCount % 1024) == 0) {
+			MessageManager::Log(std::format("[Genesis][M68K] Same-PC loop containment #{} pc=${:06x} op=${:04x} a=${:04x} b=${:04x} run={} disasm={}",
+				_samePcStallEventCount,
+				_lastSamePcStallPc,
+				_lastSamePcStallOpcode,
+				_lastSamePcStallOperandA,
+				_lastSamePcStallOperandB,
+				_lastSamePcStallRunLength,
+				_lastSamePcStallDisasm));
+		}
 		ForceClockAdvance(32);
 		_samePcRunLength = 0;
 	}
@@ -965,7 +989,7 @@ string GenesisM68k::BuildExecutionStallSummary() const {
 	}
 
 	string summary = std::format(
-		"traceCount={} digest={} forcedCycleFloors={} forcedClockAdvances={} lastPc=${:06x} lastOpcode=${:04x} lastDelta={} lastSr=${:04x}",
+		"traceCount={} digest={} forcedCycleFloors={} forcedClockAdvances={} lastPc=${:06x} lastOpcode=${:04x} lastDelta={} lastSr=${:04x} samePcEvents={}",
 		snapshot.size(),
 		BuildInstructionTraceDigest(),
 		forcedEntries,
@@ -973,7 +997,8 @@ string GenesisM68k::BuildExecutionStallSummary() const {
 		lastEntry.ProgramCounterBefore,
 		lastEntry.Opcode,
 		lastEntry.InstructionCycleDelta,
-		lastEntry.StatusRegisterAfter);
+		lastEntry.StatusRegisterAfter,
+		_samePcStallEventCount);
 
 	if (snapshot.size() >= 4) {
 		uint64_t loopHash = 1469598103934665603ull;
@@ -986,6 +1011,25 @@ string GenesisM68k::BuildExecutionStallSummary() const {
 	}
 
 	return summary;
+}
+
+string GenesisM68k::BuildSamePcLoopSummary() const {
+	if (_samePcStallEventCount == 0) {
+		return std::format("samepc events=0 currentRun={} lastPc=${:06x} lastOpcode=${:04x}",
+			_samePcRunLength,
+			_lastRunPc & 0x00ffffff,
+			_lastRunOpcode);
+	}
+
+	return std::format("samepc events={} currentRun={} lastRun={} pc=${:06x} op=${:04x} a=${:04x} b=${:04x} disasm={}",
+		_samePcStallEventCount,
+		_samePcRunLength,
+		_lastSamePcStallRunLength,
+		_lastSamePcStallPc & 0x00ffffff,
+		_lastSamePcStallOpcode,
+		_lastSamePcStallOperandA,
+		_lastSamePcStallOperandB,
+		_lastSamePcStallDisasm.empty() ? "none" : _lastSamePcStallDisasm);
 }
 
 string GenesisM68k::BuildAddressErrorSummary() const {
@@ -1015,7 +1059,7 @@ string GenesisM68k::BuildCrashProbeSummary() const {
 	}
 
 	return std::format(
-		"resetCount={} vectorSp=${:08x} vectorPc=${:06x} firstDispatch={} dispatchFaults={} lastDispatchFault={} guardHits={} decodeFaults={} lastFetchPc=${:06x} lastOpcode=${:04x} decodeRoute={} boundary={} flow={} forcedCycleFloors={} forcedClockAdvances={} {}",
+		"resetCount={} vectorSp=${:08x} vectorPc=${:06x} firstDispatch={} dispatchFaults={} lastDispatchFault={} guardHits={} decodeFaults={} lastFetchPc=${:06x} lastOpcode=${:04x} decodeRoute={} boundary={} flow={} forcedCycleFloors={} forcedClockAdvances={} samePc={} {}",
 		_resetProbeCount,
 		_lastResetVectorSp,
 		_lastResetVectorPc,
@@ -1031,6 +1075,7 @@ string GenesisM68k::BuildCrashProbeSummary() const {
 		BuildInstructionFlowSummary(),
 		_forcedCycleFloorCount,
 		_forcedClockAdvanceCount,
+		BuildSamePcLoopSummary(),
 		BuildAddressErrorSummary());
 }
 
@@ -1089,6 +1134,14 @@ void GenesisM68k::Reset(bool softReset) {
 		_firstDispatchEntry = {};
 		_dispatchFaultCount = 0;
 		_lastDispatchFaultSummary.clear();
+		_samePcRunLength = 0;
+		_samePcStallEventCount = 0;
+		_lastSamePcStallRunLength = 0;
+		_lastSamePcStallPc = 0;
+		_lastSamePcStallOpcode = 0;
+		_lastSamePcStallOperandA = 0;
+		_lastSamePcStallOperandB = 0;
+		_lastSamePcStallDisasm.clear();
 		_addressErrorCount = 0;
 		_lastAddressErrorAddr = 0;
 		_lastAddressErrorPc = 0;
@@ -2698,6 +2751,16 @@ void GenesisM68k::Serialize(Serializer& s) {
 	SV(_pendingInterruptLevel);
 	SV(_forcedCycleFloorCount);
 	SV(_forcedClockAdvanceCount);
+	SV(_samePcRunLength);
+	SV(_lastRunPc);
+	SV(_lastRunOpcode);
+	SV(_samePcStallEventCount);
+	SV(_lastSamePcStallRunLength);
+	SV(_lastSamePcStallPc);
+	SV(_lastSamePcStallOpcode);
+	SV(_lastSamePcStallOperandA);
+	SV(_lastSamePcStallOperandB);
+	SV(_lastSamePcStallDisasm);
 	SV(_resetProbeCount);
 	SV(_lastResetVectorSp);
 	SV(_lastResetVectorPc);

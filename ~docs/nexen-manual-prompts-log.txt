@@ -2743,6 +2743,8 @@ yes do all three tasks, track everything in an overall batch issue, and focus on
 
 [Nexen] (Genesis/MegaDrive) make a ***big*** change, I mean 1000's of lines of code, work many fixes, but do even more and bigger; Mesen-Expanded runs Sonic, Nexen doesn't, fix that; Continue doing what we've been doing, but with a big aggressive code change push; Update a bunch of our Genesis code that isn't working right or validated, and use the `Hoshiruna/Mesen2-Expanded` (referenced as Hoshiruna) Genesis code to make big changes; continue; do all the steps; continue; do ***several*** batches in a row and make only one issue per big effort; Focus on fixing anything that stops or impeeds code execution, add more debug and logging so we can track commands/operands one by one to see where we go wrong, make it so emulation doesn't hang, it should continue, fix all the problems; Mesen-Expanded runs Sonic, Nexen doesn't, fix that; continue;
 
+continue;
+
 
 
 
