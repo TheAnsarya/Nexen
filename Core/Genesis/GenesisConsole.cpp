@@ -429,7 +429,7 @@ void GenesisConsole::RunFrame() {
 					_runFrameFirstFailureBoundarySummary = _cpu->BuildDispatchBoundaryProbeSummary();
 					_runFrameFirstFailureBoundaryCaptureCount++;
 				}
-				MessageManager::Log(std::format("[Genesis] RunFrame hard-guard abort frame={} guard={} cap={} pc=${:06x} cycles={} stall={} cpuBoundary={} cpuTrace={} mmuFlow={} mmuOps={} mmuOpsWindow={}",
+				MessageManager::Log(std::format("[Genesis] RunFrame hard-guard abort frame={} guard={} cap={} pc=${:06x} cycles={} stall={} cpuBoundary={} cpuTrace={} cpuAddr={} mmuFlow={} mmuOps={} mmuOpsWindow={}",
 					frame,
 					guard,
 					hardInstructionCap,
@@ -438,6 +438,7 @@ void GenesisConsole::RunFrame() {
 					_runFrameLastStallSummary,
 					_runFrameFirstFailureBoundarySummary,
 					_cpu->BuildInstructionTraceWindow(10),
+					_cpu->BuildAddressErrorSummary(),
 					_memoryManager->BuildRuntimeFlowTraceSummary(),
 					_memoryManager->BuildRuntimeOpTraceSummary(),
 					_memoryManager->BuildRuntimeOpTraceWindow(10)));
@@ -499,7 +500,7 @@ void GenesisConsole::RunFrame() {
 			if ((guard % 50000) == 0) {
 				GenesisVdpState vdpState = _vdp->GetState();
 				GenesisIoState ioState = _memoryManager->GetIoState();
-				MessageManager::Log(std::format("[Genesis] RunFrame waiting frame={} guard={} pc=${:06x} cycles={} masterClock={} heartbeatPc=${:06x} heartbeatCycles={} heartbeatInstr={} z80Running={} z80RunnableCycles={} z80StalledCycles={} z80Transitions={} z80Epoch={} z80LastTransitionClock={} vdpVc={} vdpHc={} vdpStatus=${:04x} r1=${:02x} dmaActive={} dmaMode={}",
+				MessageManager::Log(std::format("[Genesis] RunFrame waiting frame={} guard={} pc=${:06x} cycles={} masterClock={} heartbeatPc=${:06x} heartbeatCycles={} heartbeatInstr={} z80Running={} z80RunnableCycles={} z80StalledCycles={} z80Transitions={} z80Epoch={} z80LastTransitionClock={} vdpVc={} vdpHc={} vdpStatus=${:04x} r1=${:02x} dmaActive={} dmaMode={} cpuAddr={}",
 					frame,
 					guard,
 					_cpu->GetState().PC & 0x00ffffff,
@@ -519,7 +520,8 @@ void GenesisConsole::RunFrame() {
 					vdpState.StatusRegister,
 					vdpState.Registers[1],
 					vdpState.DmaActive ? 1 : 0,
-					vdpState.DmaMode));
+					vdpState.DmaMode,
+					_cpu->BuildAddressErrorSummary()));
 			}
 		}
 	};

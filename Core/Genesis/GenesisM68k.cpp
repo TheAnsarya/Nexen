@@ -178,6 +178,37 @@ void GenesisM68k::Init(Emulator* emu, GenesisConsole* console, GenesisMemoryMana
 	_recentInstructionFlowLogs.reserve(_recentInstructionFlowCapacity);
 }
 
+bool GenesisM68k::CheckAddressError(uint32_t addr, uint8_t size, bool isWrite, const char* sourceTag) {
+	if (!_strictAddressErrorChecks || size <= 1) {
+		return false;
+	}
+
+	if ((addr & 0x01u) == 0u) {
+		return false;
+	}
+
+	_addressErrorCount++;
+	_lastAddressErrorAddr = addr & 0x00ffffffu;
+	_lastAddressErrorPc = _state.PC & 0x00ffffffu;
+	_lastAddressErrorSize = size;
+	_lastAddressErrorWrite = isWrite;
+	_lastAddressErrorSource = sourceTag ? sourceTag : "unknown";
+
+	if (_addressErrorCount <= 256 || (_addressErrorCount % 2048) == 0) {
+		MessageManager::Log(std::format("[Genesis][M68K] AddressError #{} src={} pc=${:06x} addr=${:06x} size={} write={} sr=${:04x}",
+			_addressErrorCount,
+			_lastAddressErrorSource,
+			_lastAddressErrorPc,
+			_lastAddressErrorAddr,
+			_lastAddressErrorSize,
+			_lastAddressErrorWrite ? 1 : 0,
+			_state.SR));
+	}
+
+	RaiseException(3);
+	return true;
+}
+
 // ===== Flag operations =====
 
 void GenesisM68k::SetFlags_Logical(uint32_t result, uint8_t size) {
@@ -957,6 +988,20 @@ string GenesisM68k::BuildExecutionStallSummary() const {
 	return summary;
 }
 
+string GenesisM68k::BuildAddressErrorSummary() const {
+	if (_addressErrorCount == 0) {
+		return "address-errors=0";
+	}
+
+	return std::format("address-errors={} lastSrc={} lastPc=${:06x} lastAddr=${:06x} lastSize={} lastWrite={}",
+		_addressErrorCount,
+		_lastAddressErrorSource.empty() ? "unknown" : _lastAddressErrorSource,
+		_lastAddressErrorPc,
+		_lastAddressErrorAddr,
+		_lastAddressErrorSize,
+		_lastAddressErrorWrite ? 1 : 0);
+}
+
 string GenesisM68k::BuildCrashProbeSummary() const {
 	string firstDispatchSummary = "none";
 	if (_firstDispatchCaptured) {
@@ -970,7 +1015,7 @@ string GenesisM68k::BuildCrashProbeSummary() const {
 	}
 
 	return std::format(
-		"resetCount={} vectorSp=${:08x} vectorPc=${:06x} firstDispatch={} dispatchFaults={} lastDispatchFault={} guardHits={} decodeFaults={} lastFetchPc=${:06x} lastOpcode=${:04x} decodeRoute={} boundary={} flow={} forcedCycleFloors={} forcedClockAdvances={}",
+		"resetCount={} vectorSp=${:08x} vectorPc=${:06x} firstDispatch={} dispatchFaults={} lastDispatchFault={} guardHits={} decodeFaults={} lastFetchPc=${:06x} lastOpcode=${:04x} decodeRoute={} boundary={} flow={} forcedCycleFloors={} forcedClockAdvances={} {}",
 		_resetProbeCount,
 		_lastResetVectorSp,
 		_lastResetVectorPc,
@@ -985,7 +1030,8 @@ string GenesisM68k::BuildCrashProbeSummary() const {
 		_lastDispatchBoundarySummary.empty() ? "none" : _lastDispatchBoundarySummary,
 		BuildInstructionFlowSummary(),
 		_forcedCycleFloorCount,
-		_forcedClockAdvanceCount);
+		_forcedClockAdvanceCount,
+		BuildAddressErrorSummary());
 }
 
 string GenesisM68k::BuildDispatchBoundaryProbeSummary() const {
@@ -1043,6 +1089,12 @@ void GenesisM68k::Reset(bool softReset) {
 		_firstDispatchEntry = {};
 		_dispatchFaultCount = 0;
 		_lastDispatchFaultSummary.clear();
+		_addressErrorCount = 0;
+		_lastAddressErrorAddr = 0;
+		_lastAddressErrorPc = 0;
+		_lastAddressErrorSize = 0;
+		_lastAddressErrorWrite = false;
+		_lastAddressErrorSource.clear();
 	}
 
 	_state.SR = 0x2700; // Supervisor mode, all interrupts masked
@@ -2673,6 +2725,13 @@ void GenesisM68k::Serialize(Serializer& s) {
 	SV(_instructionFlowLogCount);
 	SV(_instructionFlowLogSkipped);
 	SV(_lastInstructionFlowLogLine);
+	SV(_strictAddressErrorChecks);
+	SV(_addressErrorCount);
+	SV(_lastAddressErrorAddr);
+	SV(_lastAddressErrorPc);
+	SV(_lastAddressErrorSize);
+	SV(_lastAddressErrorWrite);
+	SV(_lastAddressErrorSource);
 	SV(_recentInstructionFlowCapacity);
 	uint32_t flowLineCount = (uint32_t)_recentInstructionFlowLogs.size();
 	SV(flowLineCount);

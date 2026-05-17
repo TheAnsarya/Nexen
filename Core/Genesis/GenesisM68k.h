@@ -57,6 +57,13 @@ private:
 	string _lastInstructionFlowLogLine = {};
 	vector<string> _recentInstructionFlowLogs = {};
 	uint32_t _recentInstructionFlowCapacity = 64;
+	bool _strictAddressErrorChecks = true;
+	uint64_t _addressErrorCount = 0;
+	uint32_t _lastAddressErrorAddr = 0;
+	uint32_t _lastAddressErrorPc = 0;
+	uint8_t _lastAddressErrorSize = 0;
+	bool _lastAddressErrorWrite = false;
+	string _lastAddressErrorSource = {};
 
 	// Prefetch
 	uint16_t _prefetch[2] = {};
@@ -69,11 +76,19 @@ private:
 		return _memoryManager->Read8(addr);
 	}
 	__forceinline uint16_t Read16(uint32_t addr) {
-		addr &= 0xfffffe; // Word-aligned
+		addr &= 0xffffff;
+		if (CheckAddressError(addr, 2, false, "read16")) {
+			return 0;
+		}
+		addr &= 0xfffffe;
 		AddCycles(4);
 		return _memoryManager->Read16(addr);
 	}
 	__forceinline uint32_t Read32(uint32_t addr) {
+		addr &= 0xffffff;
+		if (CheckAddressError(addr, 4, false, "read32")) {
+			return 0;
+		}
 		uint16_t hi = Read16(addr);
 		uint16_t lo = Read16(addr + 2);
 		return ((uint32_t)hi << 16) | lo;
@@ -84,11 +99,19 @@ private:
 		_memoryManager->Write8(addr, value);
 	}
 	__forceinline void Write16(uint32_t addr, uint16_t value) {
+		addr &= 0xffffff;
+		if (CheckAddressError(addr, 2, true, "write16")) {
+			return;
+		}
 		addr &= 0xfffffe;
 		AddCycles(4);
 		_memoryManager->Write16(addr, value);
 	}
 	__forceinline void Write32(uint32_t addr, uint32_t value) {
+		addr &= 0xffffff;
+		if (CheckAddressError(addr, 4, true, "write32")) {
+			return;
+		}
 		Write16(addr, (uint16_t)(value >> 16));
 		Write16(addr + 2, (uint16_t)(value & 0xffff));
 	}
@@ -175,6 +198,7 @@ private:
 
 	// ===== Instruction execution =====
 	void ExecuteInstruction(uint16_t opcode);
+	bool CheckAddressError(uint32_t addr, uint8_t size, bool isWrite, const char* sourceTag);
 	void RecordInstructionTrace(uint32_t programCounterBefore, uint32_t programCounterAfter, uint16_t opcode, uint16_t operandWordA, uint16_t operandWordB, uint16_t statusRegisterBefore, uint16_t statusRegisterAfter, uint64_t cycleCountBefore, uint64_t cycleCountAfter, uint32_t d0Before, uint32_t d0After, uint32_t a0Before, uint32_t a0After, uint32_t a7Before, uint32_t a7After, bool forcedCycleFloor, bool stoppedBefore, bool stoppedAfter);
 	uint16_t PeekWord(uint32_t addr) const;
 	void LoadInstructionFlowLogConfig();
@@ -291,6 +315,7 @@ public:
 	string BuildInstructionTraceDigest() const;
 	string BuildInstructionTraceWindow(uint32_t maxLines) const;
 	string BuildExecutionStallSummary() const;
+	string BuildAddressErrorSummary() const;
 	uint64_t GetForcedCycleFloorCount() const { return _forcedCycleFloorCount; }
 	uint64_t GetForcedClockAdvanceCount() const { return _forcedClockAdvanceCount; }
 	void ForceClockAdvance(uint32_t cycles);
