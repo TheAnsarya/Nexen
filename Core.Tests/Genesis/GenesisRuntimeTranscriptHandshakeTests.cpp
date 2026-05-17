@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "Genesis/GenesisM68kBoundaryScaffold.h"
 #include "Genesis/GenesisMemoryManager.h"
+#include "Genesis/GenesisPsg.h"
 #include "Shared/Emulator.h"
 
 namespace {
@@ -217,6 +218,48 @@ namespace {
 		memoryManager.DebugWrite8(0xA04001, 0x01);
 		EXPECT_EQ(memoryManager.DebugRead8(0xA04000), 0x01u);
 		EXPECT_EQ(memoryManager.DebugRead8(0xA04001), 0x01u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeZ80BridgePsgWriteAt7F11UpdatesPsgWhenBusGranted) {
+		Emulator emu;
+		emu.Initialize(false);
+		std::vector<uint8_t> romData(0x400000);
+		GenesisPsg psg(&emu, nullptr);
+		GenesisMemoryManager memoryManager;
+		memoryManager.Init(&emu, nullptr, romData, nullptr, nullptr, &psg);
+		auto& psgState = (psg.GetState)();
+
+		EXPECT_EQ(psgState.WriteCount, 0u);
+
+		memoryManager.Write8(0xA07F11, 0x90);
+		memoryManager.Write8(0xA07F11, 0x05);
+
+		EXPECT_EQ(psgState.WriteCount, 2u);
+		EXPECT_EQ(psgState.Channels[0].Volume, 0x05u);
+
+		// Release reset and relinquish bus; writes in the Z80 window should be blocked.
+		memoryManager.Write8(0xA11200, 0x01);
+		memoryManager.Write8(0xA11100, 0x00);
+		memoryManager.Write8(0xA07F11, 0x0Fu);
+		EXPECT_EQ(psgState.WriteCount, 2u);
+	}
+
+	TEST(GenesisRuntimeTranscriptHandshakeTests, RuntimeHandshakeZ80BridgeVdpWindowFallsBackToOpenBusWithoutVdp) {
+		Emulator emu;
+		std::vector<uint8_t> romData(0x400000);
+		GenesisMemoryManager memoryManager = CreateMemoryManager(emu, romData);
+
+		memoryManager.Write8(0xA00000, 0x5Au);
+		EXPECT_EQ(memoryManager.Read8(0xA00000), 0x5Au);
+
+		memoryManager.Write8(0xA07F12, 0x34);
+		EXPECT_EQ(memoryManager.GetOpenBus(), 0x34u);
+		EXPECT_EQ(memoryManager.Read8(0xA07F12), 0xFFu);
+		EXPECT_EQ(memoryManager.DebugRead8(0xA07F12), 0xFFu);
+
+		// VDP bridge fallback path must not alias Z80 RAM mirror bytes.
+		EXPECT_EQ(memoryManager.Read8(0xA00000), 0x5Au);
+		EXPECT_EQ(memoryManager.Read16(0xA07F12), 0xFFFFu);
 	}
 
 	TEST(GenesisRuntimeTranscriptHandshakeTests, TmssCartRegisterReadReturnsFFAndPreservesTmssUnlockState) {
