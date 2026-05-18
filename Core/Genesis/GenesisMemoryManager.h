@@ -71,6 +71,10 @@ private:
 	uint8_t _ymAddressPort0 = 0;
 	uint8_t _ymAddressPort1 = 0;
 	uint8_t _ymRegisters[0x200] = {};
+	uint8_t _ymStatusFlags = 0;
+	uint8_t _ymKeyOnMask = 0;
+	uint8_t _ymLastKeyOnValue = 0;
+	uint64_t _ymBusyUntilMclk = 0;
 	bool _romBankMapperEnabled = false;
 	uint8_t _romBankRegisters[MapperBankWindowCount] = {};
 	bool _ramEnable = false;
@@ -323,6 +327,8 @@ private:
 	uint8_t ReadIoControlPort(uint8_t port);
 	void WriteIoDataPort(uint8_t port, uint8_t value);
 	void WriteIoControlPort(uint8_t port, uint8_t value);
+	void UpdateYmStatusForDataWrite(uint16_t regIndex, uint8_t value);
+	uint8_t BuildYmStatusByte() const;
 	uint8_t ReadZ80Window8(uint32_t addr);
 	uint16_t ReadZ80Window16(uint32_t addr);
 	void WriteZ80Window8(uint32_t addr, uint8_t value);
@@ -389,6 +395,10 @@ public:
 	uint64_t GetZ80RuntimeTransitionCount() const { return _z80RuntimeTransitionCount; }
 	uint64_t GetZ80RuntimeStateEpoch() const { return _z80RuntimeStateEpoch; }
 	uint64_t GetZ80RuntimeLastTransitionClock() const { return _z80RuntimeLastTransitionClock; }
+	bool GetYmBusy() const { return _masterClock < _ymBusyUntilMclk; }
+	uint8_t GetYmStatusFlags() const { return _ymStatusFlags; }
+	uint8_t GetYmKeyOnMask() const { return _ymKeyOnMask; }
+	uint8_t GetYmLastKeyOnValue() const { return _ymLastKeyOnValue; }
 	bool GetZ80BusRequestLatched() const { return _z80BusRequest; }
 	bool GetZ80ResetAsserted() const { return _z80Reset; }
 	bool GetZ80BusAckLatched() const { return _z80BusAck; }

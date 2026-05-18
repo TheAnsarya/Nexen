@@ -2221,7 +2221,42 @@ BaseVideoFilter* GenesisConsole::GetVideoFilter(bool getDefaultFilter) {
 }
 
 AudioTrackInfo GenesisConsole::GetAudioTrackInfo() {
-	return AudioTrackInfo();
+	AudioTrackInfo info = {};
+	info.GameTitle = "Sega Genesis";
+	info.TrackNumber = 1;
+	info.TrackCount = 1;
+	if (!_memoryManager || !_vdp) {
+		info.SongTitle = "audio unavailable";
+		info.Comment = "missing memory or video subsystem";
+		return info;
+	}
+
+	uint8_t fmKeyOnMask = _memoryManager->GetYmKeyOnMask();
+	int fmActiveChannels = 0;
+	for (int i = 0; i < 6; i++) {
+		fmActiveChannels += (fmKeyOnMask & (1u << i)) ? 1 : 0;
+	}
+
+	int psgActiveChannels = 0;
+	if (_psg) {
+		const GenesisPsgState& psg = _psg->GetState();
+		for (int i = 0; i < 4; i++) {
+			if (psg.Channels[i].Volume < 0x0F) {
+				psgActiveChannels++;
+			}
+		}
+	}
+
+	info.SongTitle = std::format("FM {} /6 + PSG {} /4 active", fmActiveChannels, psgActiveChannels);
+	info.Comment = std::format("ymBusy={} ymStatus=${:02x} ymKeyOnMask=${:02x} ymLastKeyOn=${:02x}",
+		_memoryManager->GetYmBusy() ? 1 : 0,
+		_memoryManager->GetYmStatusFlags() & 0x03,
+		fmKeyOnMask,
+		_memoryManager->GetYmLastKeyOnValue());
+	info.Position = _vdp->GetFrameCount() / GetFps();
+	info.Length = 0;
+	info.FadeLength = 0;
+	return info;
 }
 
 void GenesisConsole::ProcessAudioPlayerAction(AudioPlayerActionParams p) {

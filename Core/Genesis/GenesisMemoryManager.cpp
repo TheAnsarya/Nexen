@@ -16,6 +16,8 @@
 #include <filesystem>
 
 namespace {
+	constexpr uint32_t YmBusyWriteMclk = 56;
+
 	__forceinline uint32_t ReadBe32(const vector<uint8_t>& data, size_t offset) {
 		size_t effectiveOffset = offset;
 		uint32_t byte0 = (uint32_t)data[effectiveOffset];
@@ -932,6 +934,10 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_ymAddressPort0 = 0;
 	_ymAddressPort1 = 0;
 	memset(_ymRegisters, 0, sizeof(_ymRegisters));
+	_ymStatusFlags = 0;
+	_ymKeyOnMask = 0;
+	_ymLastKeyOnValue = 0;
+	_ymBusyUntilMclk = 0;
 	ApplyStartupEnvironmentProfile();
 	_z80Reset = sNexenGenesisPowerOnZ80ResetAsserted;
 	_startupLastDisplayEnabled = _vdp ? ((_vdp->GetState().Registers[VdpReg::ModeSet2] & 0x40) != 0) : false;
@@ -4480,6 +4486,49 @@ void GenesisMemoryManager::WriteIoControlPort(uint8_t port, uint8_t value) {
 	}
 }
 
+void GenesisMemoryManager::UpdateYmStatusForDataWrite(uint16_t regIndex, uint8_t value) {
+	uint16_t normalizedReg = (uint16_t)(regIndex & 0x01FFu);
+	if (normalizedReg == 0x027u) {
+		if ((value & 0x10u) != 0u) {
+			_ymStatusFlags &= (uint8_t)~0x01u;
+		}
+		if ((value & 0x20u) != 0u) {
+			_ymStatusFlags &= (uint8_t)~0x02u;
+		}
+	}
+
+	if (normalizedReg == 0x028u) {
+		_ymLastKeyOnValue = value;
+		uint8_t rawChannel = (uint8_t)(value & 0x07u);
+		uint8_t channelIndex = 0xFFu;
+		switch (rawChannel) {
+			case 0: channelIndex = 0; break;
+			case 1: channelIndex = 1; break;
+			case 2: channelIndex = 2; break;
+			case 4: channelIndex = 3; break;
+			case 5: channelIndex = 4; break;
+			case 6: channelIndex = 5; break;
+		}
+
+		if (channelIndex < 6) {
+			uint8_t channelMask = (uint8_t)(1u << channelIndex);
+			if ((value & 0xF0u) != 0u) {
+				_ymKeyOnMask |= channelMask;
+			} else {
+				_ymKeyOnMask &= (uint8_t)~channelMask;
+			}
+		}
+	}
+}
+
+uint8_t GenesisMemoryManager::BuildYmStatusByte() const {
+	uint8_t status = (uint8_t)(_ymStatusFlags & 0x03u);
+	if (_masterClock < _ymBusyUntilMclk) {
+		status |= 0x80u;
+	}
+	return status;
+}
+
 uint8_t GenesisMemoryManager::ReadZ80Window8(uint32_t addr) {
 	uint16_t z80Addr = (uint16_t)(addr & 0xFFFFu);
 
@@ -4489,9 +4538,7 @@ uint8_t GenesisMemoryManager::ReadZ80Window8(uint32_t addr) {
 
 	if (z80Addr < 0x6000u) {
 		// YM2612 status read ($4000/$4001 = part0, $4002/$4003 = part1).
-		uint8_t part = (uint8_t)((z80Addr >> 1) & 0x01u);
-		uint16_t statusReg = (uint16_t)((part ? 0x100u : 0x000u) | 0x27u);
-		return (uint8_t)(_ymRegisters[statusReg] & 0x03u);
+		return BuildYmStatusByte();
 	}
 
 	if (z80Addr < 0x8000u) {
@@ -4551,6 +4598,7 @@ void GenesisMemoryManager::WriteZ80Window8(uint32_t addr, uint8_t value) {
 		// YM2612 writes: even lanes latch address, odd lanes write data.
 		uint8_t part = (uint8_t)((z80Addr >> 1) & 0x01u);
 		bool isAddressWrite = (z80Addr & 0x01u) == 0u;
+		_ymBusyUntilMclk = _masterClock + YmBusyWriteMclk;
 		if (isAddressWrite) {
 			if (part == 0u) {
 				_ymAddressPort0 = value;
@@ -4559,7 +4607,9 @@ void GenesisMemoryManager::WriteZ80Window8(uint32_t addr, uint8_t value) {
 			}
 		} else {
 			uint16_t regIndex = (uint16_t)(part == 0u ? _ymAddressPort0 : (0x100u | _ymAddressPort1));
-			_ymRegisters[regIndex & 0x01FFu] = value;
+			regIndex &= 0x01FFu;
+			_ymRegisters[regIndex] = value;
+			UpdateYmStatusForDataWrite(regIndex, value);
 		}
 		return;
 	}
@@ -5278,6 +5328,10 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_ymAddressPort0);
 	SV(_ymAddressPort1);
 	SVArray(_ymRegisters, (uint32_t)sizeof(_ymRegisters));
+	SV(_ymStatusFlags);
+	SV(_ymKeyOnMask);
+	SV(_ymLastKeyOnValue);
+	SV(_ymBusyUntilMclk);
 	SV(_romBankMapperEnabled);
 	SVArray(_romBankRegisters, (uint32_t)sizeof(_romBankRegisters));
 	SV(_ramEnable);

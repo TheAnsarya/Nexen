@@ -547,3 +547,53 @@ TEST(GenesisExecutionPipelineTests, StartupDisplayTransitionsTrackBusReqResetTim
 		EXPECT_GT(std::get<3>(runA), 0u);
 	}
 }
+
+TEST(GenesisExecutionPipelineTests, YmStatusReportsBusyImmediatelyAfterPortWriteAndClearsAfterClockAdvance) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-ym-busy.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	auto* mm = console.GetMemoryManager();
+	mm->Write8(0xA04000, 0x28); // YM port 0 address
+	mm->Write8(0xA04001, 0xF0); // YM key-on channel 0
+
+	uint8_t statusAfterWrite = mm->Read8(0xA04000);
+	EXPECT_NE(statusAfterWrite & 0x80, 0u);
+
+	mm->Exec(64);
+	uint8_t statusAfterAdvance = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterAdvance & 0x80, 0u);
+	EXPECT_EQ(mm->GetYmKeyOnMask() & 0x01, 0x01u);
+	EXPECT_EQ(mm->GetYmLastKeyOnValue(), 0xF0u);
+}
+
+TEST(GenesisExecutionPipelineTests, AudioTrackInfoReflectsYmAndPsgActivity) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-audio-track-info.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	auto* mm = console.GetMemoryManager();
+	mm->Write8(0xA04000, 0x28);
+	mm->Write8(0xA04001, 0xF2); // key-on channel 2
+	mm->Write8(0xA07F11, 0x90); // PSG latch/data write (non-silent attenuation)
+
+	AudioTrackInfo info = console.GetAudioTrackInfo();
+	EXPECT_EQ(info.GameTitle, "Sega Genesis");
+	EXPECT_NE(info.SongTitle.find("FM 1 /6"), std::string::npos);
+	EXPECT_NE(info.Comment.find("ymKeyOnMask=$04"), std::string::npos);
+	EXPECT_NE(info.Comment.find("ymLastKeyOn=$f2"), std::string::npos);
+	EXPECT_EQ(info.TrackNumber, 1u);
+	EXPECT_EQ(info.TrackCount, 1u);
+}
