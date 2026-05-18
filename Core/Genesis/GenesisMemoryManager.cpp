@@ -938,6 +938,16 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_ymKeyOnMask = 0;
 	_ymLastKeyOnValue = 0;
 	_ymBusyUntilMclk = 0;
+	_ymTimerAValue = 0;
+	_ymTimerBValue = 0;
+	_ymTimerARemaining = 0;
+	_ymTimerBRemaining = 0;
+	_ymTimerAAccumMclk = 0;
+	_ymTimerBAccumMclk = 0;
+	_ymTimerALoad = false;
+	_ymTimerBLoad = false;
+	_ymTimerAIrqEnable = false;
+	_ymTimerBIrqEnable = false;
 	ApplyStartupEnvironmentProfile();
 	_z80Reset = sNexenGenesisPowerOnZ80ResetAsserted;
 	_startupLastDisplayEnabled = _vdp ? ((_vdp->GetState().Registers[VdpReg::ModeSet2] & 0x40) != 0) : false;
@@ -945,6 +955,23 @@ void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<u
 	_tmssEnabled = _emu->GetSettings()->GetGenesisConfig().EnableTmss;
 	_tmssUnlocked = false;
 	_tmssVdpBlockLogged = false;
+	_ymAddressPort0 = 0;
+	_ymAddressPort1 = 0;
+	memset(_ymRegisters, 0, sizeof(_ymRegisters));
+	_ymStatusFlags = 0;
+	_ymKeyOnMask = 0;
+	_ymLastKeyOnValue = 0;
+	_ymBusyUntilMclk = _masterClock;
+	_ymTimerAValue = 0;
+	_ymTimerBValue = 0;
+	_ymTimerARemaining = 0;
+	_ymTimerBRemaining = 0;
+	_ymTimerAAccumMclk = 0;
+	_ymTimerBAccumMclk = 0;
+	_ymTimerALoad = false;
+	_ymTimerBLoad = false;
+	_ymTimerAIrqEnable = false;
+	_ymTimerBIrqEnable = false;
 	_segaCdSubCpuRunning = false;
 	_segaCdSubCpuBusRequest = false;
 	_segaCdSubCpuTransitionCount = 0;
@@ -4488,12 +4515,43 @@ void GenesisMemoryManager::WriteIoControlPort(uint8_t port, uint8_t value) {
 
 void GenesisMemoryManager::UpdateYmStatusForDataWrite(uint16_t regIndex, uint8_t value) {
 	uint16_t normalizedReg = (uint16_t)(regIndex & 0x01FFu);
+	if (normalizedReg == 0x024u) {
+		_ymTimerAValue = (uint16_t)((_ymTimerAValue & 0x0003u) | ((uint16_t)value << 2));
+	}
+
+	if (normalizedReg == 0x025u) {
+		_ymTimerAValue = (uint16_t)((_ymTimerAValue & 0x03FCu) | (value & 0x03u));
+	}
+
+	if (normalizedReg == 0x026u) {
+		_ymTimerBValue = value;
+	}
+
 	if (normalizedReg == 0x027u) {
+		bool prevLoadA = _ymTimerALoad;
+		bool prevLoadB = _ymTimerBLoad;
+		_ymTimerALoad = (value & 0x01u) != 0u;
+		_ymTimerBLoad = (value & 0x02u) != 0u;
+		_ymTimerAIrqEnable = (value & 0x04u) != 0u;
+		_ymTimerBIrqEnable = (value & 0x08u) != 0u;
+
+		if (_ymTimerALoad && !prevLoadA) {
+			uint16_t period = (uint16_t)(1024u - (_ymTimerAValue & 0x03FFu));
+			_ymTimerARemaining = period == 0 ? 1024u : period;
+			_ymTimerAAccumMclk = 0;
+		}
+
+		if (_ymTimerBLoad && !prevLoadB) {
+			uint16_t period = (uint16_t)(256u - _ymTimerBValue);
+			_ymTimerBRemaining = period == 0 ? 256u : period;
+			_ymTimerBAccumMclk = 0;
+		}
+
 		if ((value & 0x10u) != 0u) {
-			_ymStatusFlags &= (uint8_t)~0x01u;
+			_ymStatusFlags &= 0xFEu;
 		}
 		if ((value & 0x20u) != 0u) {
-			_ymStatusFlags &= (uint8_t)~0x02u;
+			_ymStatusFlags &= 0xFDu;
 		}
 	}
 
@@ -4515,7 +4573,47 @@ void GenesisMemoryManager::UpdateYmStatusForDataWrite(uint16_t regIndex, uint8_t
 			if ((value & 0xF0u) != 0u) {
 				_ymKeyOnMask |= channelMask;
 			} else {
-				_ymKeyOnMask &= (uint8_t)~channelMask;
+				_ymKeyOnMask = (uint8_t)(_ymKeyOnMask & (uint8_t)(0xFFu ^ channelMask));
+			}
+		}
+	}
+}
+
+void GenesisMemoryManager::AdvanceYmTimers(uint32_t masterClocks) {
+	if (masterClocks == 0) {
+		return;
+	}
+
+	if (_ymTimerALoad) {
+		_ymTimerAAccumMclk += masterClocks;
+		constexpr uint32_t TimerADivider = 144;
+		while (_ymTimerAAccumMclk >= TimerADivider) {
+			_ymTimerAAccumMclk -= TimerADivider;
+			if (_ymTimerARemaining <= 1u) {
+				uint16_t period = (uint16_t)(1024u - (_ymTimerAValue & 0x03FFu));
+				_ymTimerARemaining = period == 0 ? 1024u : period;
+				if (_ymTimerAIrqEnable) {
+					_ymStatusFlags |= 0x01u;
+				}
+			} else {
+				_ymTimerARemaining--;
+			}
+		}
+	}
+
+	if (_ymTimerBLoad) {
+		_ymTimerBAccumMclk += masterClocks;
+		constexpr uint32_t TimerBDivider = 1152;
+		while (_ymTimerBAccumMclk >= TimerBDivider) {
+			_ymTimerBAccumMclk -= TimerBDivider;
+			if (_ymTimerBRemaining <= 1u) {
+				uint16_t period = (uint16_t)(256u - _ymTimerBValue);
+				_ymTimerBRemaining = period == 0 ? 256u : period;
+				if (_ymTimerBIrqEnable) {
+					_ymStatusFlags |= 0x02u;
+				}
+			} else {
+				_ymTimerBRemaining--;
 			}
 		}
 	}
@@ -5332,6 +5430,16 @@ void GenesisMemoryManager::Serialize(Serializer& s) {
 	SV(_ymKeyOnMask);
 	SV(_ymLastKeyOnValue);
 	SV(_ymBusyUntilMclk);
+	SV(_ymTimerAValue);
+	SV(_ymTimerBValue);
+	SV(_ymTimerARemaining);
+	SV(_ymTimerBRemaining);
+	SV(_ymTimerAAccumMclk);
+	SV(_ymTimerBAccumMclk);
+	SV(_ymTimerALoad);
+	SV(_ymTimerBLoad);
+	SV(_ymTimerAIrqEnable);
+	SV(_ymTimerBIrqEnable);
 	SV(_romBankMapperEnabled);
 	SVArray(_romBankRegisters, (uint32_t)sizeof(_romBankRegisters));
 	SV(_ramEnable);

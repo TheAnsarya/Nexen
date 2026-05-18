@@ -75,6 +75,16 @@ private:
 	uint8_t _ymKeyOnMask = 0;
 	uint8_t _ymLastKeyOnValue = 0;
 	uint64_t _ymBusyUntilMclk = 0;
+	uint16_t _ymTimerAValue = 0;
+	uint8_t _ymTimerBValue = 0;
+	uint16_t _ymTimerARemaining = 0;
+	uint16_t _ymTimerBRemaining = 0;
+	uint32_t _ymTimerAAccumMclk = 0;
+	uint32_t _ymTimerBAccumMclk = 0;
+	bool _ymTimerALoad = false;
+	bool _ymTimerBLoad = false;
+	bool _ymTimerAIrqEnable = false;
+	bool _ymTimerBIrqEnable = false;
 	bool _romBankMapperEnabled = false;
 	uint8_t _romBankRegisters[MapperBankWindowCount] = {};
 	bool _ramEnable = false;
@@ -328,6 +338,7 @@ private:
 	void WriteIoDataPort(uint8_t port, uint8_t value);
 	void WriteIoControlPort(uint8_t port, uint8_t value);
 	void UpdateYmStatusForDataWrite(uint16_t regIndex, uint8_t value);
+	void AdvanceYmTimers(uint32_t masterClocks);
 	uint8_t BuildYmStatusByte() const;
 	uint8_t ReadZ80Window8(uint32_t addr);
 	uint16_t ReadZ80Window16(uint32_t addr);
@@ -376,6 +387,7 @@ public:
 			_controlManager->AdvanceMasterClock(cycles);
 		}
 		UpdateTmssUnlockWindow(cycles);
+		AdvanceYmTimers(cycles);
 		UpdateZ80RuntimeState(false, 0, 0, "exec");
 		EmitStartupCheckpointIfNeeded("exec");
 		if (_z80RuntimeRunning) {
