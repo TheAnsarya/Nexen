@@ -79,8 +79,8 @@ private:
 	uint8_t _ymTimerBValue = 0;
 	uint16_t _ymTimerARemaining = 0;
 	uint16_t _ymTimerBRemaining = 0;
-	uint32_t _ymTimerAAccumMclk = 0;
-	uint32_t _ymTimerBAccumMclk = 0;
+	uint64_t _ymTimerAAccumMclk = 0;
+	uint64_t _ymTimerBAccumMclk = 0;
 	bool _ymTimerALoad = false;
 	bool _ymTimerBLoad = false;
 	bool _ymTimerAIrqEnable = false;

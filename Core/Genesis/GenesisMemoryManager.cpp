@@ -16,7 +16,8 @@
 #include <filesystem>
 
 namespace {
-	constexpr uint32_t YmBusyWriteMclk = 56;
+	constexpr uint64_t YmBusyAlignCycles = 6;
+	constexpr uint64_t YmBusyWindowCycles = YmBusyAlignCycles * 32u;
 
 	__forceinline uint32_t ReadBe32(const vector<uint8_t>& data, size_t offset) {
 		size_t effectiveOffset = offset;
@@ -4528,20 +4529,18 @@ void GenesisMemoryManager::UpdateYmStatusForDataWrite(uint16_t regIndex, uint8_t
 	}
 
 	if (normalizedReg == 0x027u) {
-		bool prevLoadA = _ymTimerALoad;
-		bool prevLoadB = _ymTimerBLoad;
 		_ymTimerALoad = (value & 0x01u) != 0u;
 		_ymTimerBLoad = (value & 0x02u) != 0u;
 		_ymTimerAIrqEnable = (value & 0x04u) != 0u;
 		_ymTimerBIrqEnable = (value & 0x08u) != 0u;
 
-		if (_ymTimerALoad && !prevLoadA) {
+		if (_ymTimerALoad) {
 			uint16_t period = (uint16_t)(1024u - (_ymTimerAValue & 0x03FFu));
 			_ymTimerARemaining = period == 0 ? 1024u : period;
 			_ymTimerAAccumMclk = 0;
 		}
 
-		if (_ymTimerBLoad && !prevLoadB) {
+		if (_ymTimerBLoad) {
 			uint16_t period = (uint16_t)(256u - _ymTimerBValue);
 			_ymTimerBRemaining = period == 0 ? 256u : period;
 			_ymTimerBAccumMclk = 0;
@@ -4584,36 +4583,36 @@ void GenesisMemoryManager::AdvanceYmTimers(uint32_t masterClocks) {
 		return;
 	}
 
+	uint64_t ymMasterClocks = (uint64_t)masterClocks * 7u;
+
 	if (_ymTimerALoad) {
-		_ymTimerAAccumMclk += masterClocks;
-		constexpr uint32_t TimerADivider = 144;
-		while (_ymTimerAAccumMclk >= TimerADivider) {
-			_ymTimerAAccumMclk -= TimerADivider;
-			if (_ymTimerARemaining <= 1u) {
-				uint16_t period = (uint16_t)(1024u - (_ymTimerAValue & 0x03FFu));
-				_ymTimerARemaining = period == 0 ? 1024u : period;
-				if (_ymTimerAIrqEnable) {
-					_ymStatusFlags |= 0x01u;
-				}
-			} else {
-				_ymTimerARemaining--;
+		_ymTimerAAccumMclk += ymMasterClocks;
+		uint64_t aPeriodTicks = 1024u - (_ymTimerAValue & 0x03FFu);
+		if (aPeriodTicks == 0) {
+			aPeriodTicks = 1024u;
+		}
+		uint64_t aPeriod = aPeriodTicks * 24u;
+		while (_ymTimerAAccumMclk >= aPeriod) {
+			_ymTimerAAccumMclk -= aPeriod;
+			_ymTimerARemaining = (uint16_t)aPeriodTicks;
+			if (_ymTimerAIrqEnable) {
+				_ymStatusFlags |= 0x01u;
 			}
 		}
 	}
 
 	if (_ymTimerBLoad) {
-		_ymTimerBAccumMclk += masterClocks;
-		constexpr uint32_t TimerBDivider = 1152;
-		while (_ymTimerBAccumMclk >= TimerBDivider) {
-			_ymTimerBAccumMclk -= TimerBDivider;
-			if (_ymTimerBRemaining <= 1u) {
-				uint16_t period = (uint16_t)(256u - _ymTimerBValue);
-				_ymTimerBRemaining = period == 0 ? 256u : period;
-				if (_ymTimerBIrqEnable) {
-					_ymStatusFlags |= 0x02u;
-				}
-			} else {
-				_ymTimerBRemaining--;
+		_ymTimerBAccumMclk += ymMasterClocks;
+		uint64_t bPeriodTicks = 256u - _ymTimerBValue;
+		if (bPeriodTicks == 0) {
+			bPeriodTicks = 256u;
+		}
+		uint64_t bPeriod = bPeriodTicks * 384u;
+		while (_ymTimerBAccumMclk >= bPeriod) {
+			_ymTimerBAccumMclk -= bPeriod;
+			_ymTimerBRemaining = (uint16_t)bPeriodTicks;
+			if (_ymTimerBIrqEnable) {
+				_ymStatusFlags |= 0x02u;
 			}
 		}
 	}
@@ -4696,7 +4695,8 @@ void GenesisMemoryManager::WriteZ80Window8(uint32_t addr, uint8_t value) {
 		// YM2612 writes: even lanes latch address, odd lanes write data.
 		uint8_t part = (uint8_t)((z80Addr >> 1) & 0x01u);
 		bool isAddressWrite = (z80Addr & 0x01u) == 0u;
-		_ymBusyUntilMclk = _masterClock + YmBusyWriteMclk;
+		uint64_t alignedClock = ((_masterClock + YmBusyAlignCycles - 1u) / YmBusyAlignCycles) * YmBusyAlignCycles;
+		_ymBusyUntilMclk = alignedClock + YmBusyWindowCycles;
 		if (isAddressWrite) {
 			if (part == 0u) {
 				_ymAddressPort0 = value;

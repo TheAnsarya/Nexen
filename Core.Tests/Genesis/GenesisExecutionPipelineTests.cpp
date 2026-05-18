@@ -566,7 +566,11 @@ TEST(GenesisExecutionPipelineTests, YmStatusReportsBusyImmediatelyAfterPortWrite
 	uint8_t statusAfterWrite = mm->Read8(0xA04000);
 	EXPECT_NE(statusAfterWrite & 0x80, 0u);
 
-	mm->Exec(64);
+	mm->Exec(128);
+	uint8_t statusMidWindow = mm->Read8(0xA04000);
+	EXPECT_NE(statusMidWindow & 0x80, 0u);
+
+	mm->Exec(256);
 	uint8_t statusAfterAdvance = mm->Read8(0xA04000);
 	EXPECT_EQ(statusAfterAdvance & 0x80, 0u);
 	EXPECT_EQ(mm->GetYmKeyOnMask() & 0x01, 0x01u);
@@ -628,6 +632,38 @@ TEST(GenesisExecutionPipelineTests, YmTimerAStatusSetsOnOverflowAndClearsOnModeR
 	EXPECT_EQ(statusAfterReset & 0x01u, 0x00u);
 }
 
+TEST(GenesisExecutionPipelineTests, YmTimerAModeRewriteReloadsCounterWithoutTogglingLoadBit) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-ym-timera-reload.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	auto* mm = console.GetMemoryManager();
+	mm->Write8(0xA04000, 0x24);
+	mm->Write8(0xA04001, 0xFC);
+	mm->Write8(0xA04000, 0x25);
+	mm->Write8(0xA04001, 0x00);
+	mm->Write8(0xA04000, 0x27);
+	mm->Write8(0xA04001, 0x05); // load timer A + enable timer A status
+
+	mm->Exec(30);
+	mm->Write8(0xA04000, 0x27);
+	mm->Write8(0xA04001, 0x05); // rewrite mode with load still set; should reload A accumulator
+
+	mm->Exec(30);
+	uint8_t statusAfterRewrite = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterRewrite & 0x01u, 0x00u);
+
+	mm->Exec(30);
+	uint8_t statusAfterFullPeriod = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterFullPeriod & 0x01u, 0x01u);
+}
+
 TEST(GenesisExecutionPipelineTests, YmTimerBStatusSetsOnOverflowAndClearsOnModeResetBit) {
 	constexpr uint32_t InitialSp = 0x00fffe00;
 	constexpr uint32_t InitialPc = 0x00000100;
@@ -654,4 +690,34 @@ TEST(GenesisExecutionPipelineTests, YmTimerBStatusSetsOnOverflowAndClearsOnModeR
 	mm->Exec(128);
 	uint8_t statusAfterReset = mm->Read8(0xA04000);
 	EXPECT_EQ(statusAfterReset & 0x02u, 0x00u);
+}
+
+TEST(GenesisExecutionPipelineTests, YmTimerBModeRewriteReloadsCounterWithoutTogglingLoadBit) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-ym-timerb-reload.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	auto* mm = console.GetMemoryManager();
+	mm->Write8(0xA04000, 0x26);
+	mm->Write8(0xA04001, 0xF8);
+	mm->Write8(0xA04000, 0x27);
+	mm->Write8(0xA04001, 0x0A); // load timer B + enable timer B status
+
+	mm->Exec(250);
+	mm->Write8(0xA04000, 0x27);
+	mm->Write8(0xA04001, 0x0A); // rewrite mode with load still set; should reload B accumulator
+
+	mm->Exec(220);
+	uint8_t statusAfterRewrite = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterRewrite & 0x02u, 0x00u);
+
+	mm->Exec(240);
+	uint8_t statusAfterFullPeriod = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterFullPeriod & 0x02u, 0x02u);
 }

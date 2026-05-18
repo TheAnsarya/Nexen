@@ -2761,6 +2761,8 @@ stop doing testing and scaffolding bullshit! Make actual code changes that impro
 
 continue; do several three-task-batches, like 4 or 5 but combine them into one issue, don't do 3 tasks, do like 12 or more work efforts; Make actual code changes that improve emulation and implement new features and coverage; Don't make superstructure scaffold crap, only do things like: fix video processing so graphics and effects are working, or cpu basic running is working executing each operand and command or PC control or memory usage stuff, or interaction with the sound chip; continue;
 
+continue; do several three-task-batches, but combine them into one issue, don't do 3 tasks, do like 12 or more work efforts; Make actual code changes that improve emulation and implement new features and coverage; Don't make superstructure scaffold crap, only do things like: fix video processing so graphics and effects are working, or cpu basic running is working executing each operand and command or PC control or memory usage stuff, or interaction with the sound chip; the `Hoshiruna/Mesen2-Expanded` Genesis code should be used as a primary usage effort!; continue;
+
 
 
 
