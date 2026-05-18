@@ -588,6 +588,64 @@ namespace {
 		return cached;
 	}
 
+	bool IsGenesisRunFrameForcedCompletionDetailEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FORCED_COMPLETION_DETAIL_ENABLE", true);
+	}
+
+	bool IsGenesisRunFrameForcedCompletionIncludeCpuTraceEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FORCED_COMPLETION_INCLUDE_CPU_TRACE", true);
+	}
+
+	bool IsGenesisRunFrameForcedCompletionIncludeCpuLoopEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FORCED_COMPLETION_INCLUDE_CPU_LOOP", true);
+	}
+
+	bool IsGenesisRunFrameForcedCompletionIncludeStartupEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FORCED_COMPLETION_INCLUDE_STARTUP", true);
+	}
+
+	bool IsGenesisRunFrameForcedCompletionIncludeMmuFlowEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FORCED_COMPLETION_INCLUDE_MMU_FLOW", false);
+	}
+
+	bool IsGenesisRunFrameForcedCompletionIncludeMmuOpsEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FORCED_COMPLETION_INCLUDE_MMU_OPS", false);
+	}
+
+	bool IsGenesisRunFrameForcedCompletionIncludeMmuOpWindowEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FORCED_COMPLETION_INCLUDE_MMU_OP_WINDOW", true);
+	}
+
+	bool IsGenesisRunFrameForcedCompletionIncludeCpuBoundaryEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FORCED_COMPLETION_INCLUDE_CPU_BOUNDARY", false);
+	}
+
+	bool IsGenesisRunFrameForcedCompletionIncludeCpuAddrEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FORCED_COMPLETION_INCLUDE_CPU_ADDR", false);
+	}
+
+	bool IsGenesisRunFrameForcedCompletionIncludeTraceDigestEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FORCED_COMPLETION_INCLUDE_TRACE_DIGEST", true);
+	}
+
+	bool IsGenesisRunFrameFirstFailureIncludeCpuTraceEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FIRST_FAILURE_INCLUDE_CPU_TRACE", false);
+	}
+
+	uint32_t GetGenesisRunFrameFirstFailureCpuTraceLines() {
+		static uint32_t cached = 0;
+		if (cached != 0) {
+			return cached;
+		}
+
+		cached = ParseEnvUInt32Clamped("NEXEN_GENESIS_RUNFRAME_FIRST_FAILURE_CPU_TRACE_LINES", 4, 1, 64);
+		return cached;
+	}
+
+	bool IsGenesisRunFrameFirstFailureIncludeStartupEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FIRST_FAILURE_INCLUDE_STARTUP", false);
+	}
+
 	uint32_t GetGenesisRunFrameHardGuardTraceCpuCycles() {
 		static uint32_t cached = 0;
 		if (cached != 0) {
@@ -904,8 +962,21 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 	uint32_t runFrameStallMmuOpLines = GetGenesisRunFrameStallRecoveryMmuOpWindowLines();
 	bool runFrameStallIncludeCpuTrace = IsGenesisRunFrameStallRecoveryIncludeCpuTraceEnabled();
 	uint32_t runFrameStallCpuTraceLines = GetGenesisRunFrameStallRecoveryCpuTraceLines();
+	bool runFrameForcedCompletionDetailEnabled = IsGenesisRunFrameForcedCompletionDetailEnabled();
+	bool runFrameForcedCompletionIncludeCpuTrace = IsGenesisRunFrameForcedCompletionIncludeCpuTraceEnabled();
+	bool runFrameForcedCompletionIncludeCpuLoop = IsGenesisRunFrameForcedCompletionIncludeCpuLoopEnabled();
+	bool runFrameForcedCompletionIncludeStartup = IsGenesisRunFrameForcedCompletionIncludeStartupEnabled();
+	bool runFrameForcedCompletionIncludeMmuFlow = IsGenesisRunFrameForcedCompletionIncludeMmuFlowEnabled();
+	bool runFrameForcedCompletionIncludeMmuOps = IsGenesisRunFrameForcedCompletionIncludeMmuOpsEnabled();
+	bool runFrameForcedCompletionIncludeMmuOpWindow = IsGenesisRunFrameForcedCompletionIncludeMmuOpWindowEnabled();
+	bool runFrameForcedCompletionIncludeCpuBoundary = IsGenesisRunFrameForcedCompletionIncludeCpuBoundaryEnabled();
+	bool runFrameForcedCompletionIncludeCpuAddr = IsGenesisRunFrameForcedCompletionIncludeCpuAddrEnabled();
+	bool runFrameForcedCompletionIncludeTraceDigest = IsGenesisRunFrameForcedCompletionIncludeTraceDigestEnabled();
+	bool runFrameFirstFailureIncludeCpuTrace = IsGenesisRunFrameFirstFailureIncludeCpuTraceEnabled();
+	uint32_t runFrameFirstFailureCpuTraceLines = GetGenesisRunFrameFirstFailureCpuTraceLines();
+	bool runFrameFirstFailureIncludeStartup = IsGenesisRunFrameFirstFailureIncludeStartupEnabled();
 	return std::format(
-		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={} mmuOps={} startup={} sonicTraceArm={} sonicTraceArms={} sonicTraceLastArmFrame={} sonicTraceRearmWindow={} sonicTraceCpuCycles={} sonicTraceMmuCycles={} sonicTraceCpuStride={} sonicTraceMmuStride={} sonicTraceCpuRing={} sonicTraceMmuFlowRing={} sonicTraceMmuOpRing={} sonicCheckpointEnable={} sonicCheckpointInterval={} sonicCheckpointEndFrame={} sonicCheckpointIncludeOpWindow={} sonicCheckpointOpWindowLines={} sonicCheckpointIncludeCpuTrace={} sonicCheckpointCpuTraceLines={} runFrameStagnantIters={} runFrameForcedPulseLimit={} runFrameForcedPulseCycles={} runFrameFallbackPulses={} runFrameHardGuardCpuTraceLines={} runFrameHardGuardMmuOpLines={} runFrameForcedCompletionCpuTraceLines={} runFrameForcedCompletionMmuOpLines={} runFrameWaitLogEnable={} runFrameWaitLogInterval={} runFrameWaitIncludeMmuOpWindow={} runFrameWaitMmuOpLines={} runFrameWaitIncludeCpuTrace={} runFrameWaitCpuTraceLines={} runFrameHardGuardTraceCpuCycles={} runFrameHardGuardTraceCpuStride={} runFrameHardGuardTraceCpuRing={} runFrameHardGuardTraceMmuCpuCycles={} runFrameHardGuardTraceMmuCycles={} runFrameHardGuardTraceMmuCpuStride={} runFrameHardGuardTraceMmuStride={} runFrameHardGuardTraceMmuFlowRing={} runFrameHardGuardTraceMmuOpRing={} runFrameStallTraceCpuCycles={} runFrameStallTraceCpuStride={} runFrameStallTraceCpuRing={} runFrameStallTraceMmuCpuCycles={} runFrameStallTraceMmuCycles={} runFrameStallTraceMmuCpuStride={} runFrameStallTraceMmuStride={} runFrameStallTraceMmuFlowRing={} runFrameStallTraceMmuOpRing={} runFrameFrameAdvanceLogEnable={} runFrameFrameAdvanceLogModulo={} runFrameFrameAdvanceIncludeCpuTrace={} runFrameFrameAdvanceCpuTraceLines={} runFrameFrameAdvanceIncludeMmuOpWindow={} runFrameFrameAdvanceMmuOpLines={} runFrameSehMmuOpLines={} runFrameSehIncludeCpuTrace={} runFrameSehCpuTraceLines={} runFrameFirstFailureMmuOpLines={} runFrameStallIncludeMmuOpWindow={} runFrameStallMmuOpLines={} runFrameStallIncludeCpuTrace={} runFrameStallCpuTraceLines={} sonicCheckpoints={} sonicLastCheckpointFrame={} sonicLastCheckpointPc=${:06x}",
+		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={} mmuOps={} startup={} sonicTraceArm={} sonicTraceArms={} sonicTraceLastArmFrame={} sonicTraceRearmWindow={} sonicTraceCpuCycles={} sonicTraceMmuCycles={} sonicTraceCpuStride={} sonicTraceMmuStride={} sonicTraceCpuRing={} sonicTraceMmuFlowRing={} sonicTraceMmuOpRing={} sonicCheckpointEnable={} sonicCheckpointInterval={} sonicCheckpointEndFrame={} sonicCheckpointIncludeOpWindow={} sonicCheckpointOpWindowLines={} sonicCheckpointIncludeCpuTrace={} sonicCheckpointCpuTraceLines={} runFrameStagnantIters={} runFrameForcedPulseLimit={} runFrameForcedPulseCycles={} runFrameFallbackPulses={} runFrameHardGuardCpuTraceLines={} runFrameHardGuardMmuOpLines={} runFrameForcedCompletionCpuTraceLines={} runFrameForcedCompletionMmuOpLines={} runFrameWaitLogEnable={} runFrameWaitLogInterval={} runFrameWaitIncludeMmuOpWindow={} runFrameWaitMmuOpLines={} runFrameWaitIncludeCpuTrace={} runFrameWaitCpuTraceLines={} runFrameHardGuardTraceCpuCycles={} runFrameHardGuardTraceCpuStride={} runFrameHardGuardTraceCpuRing={} runFrameHardGuardTraceMmuCpuCycles={} runFrameHardGuardTraceMmuCycles={} runFrameHardGuardTraceMmuCpuStride={} runFrameHardGuardTraceMmuStride={} runFrameHardGuardTraceMmuFlowRing={} runFrameHardGuardTraceMmuOpRing={} runFrameStallTraceCpuCycles={} runFrameStallTraceCpuStride={} runFrameStallTraceCpuRing={} runFrameStallTraceMmuCpuCycles={} runFrameStallTraceMmuCycles={} runFrameStallTraceMmuCpuStride={} runFrameStallTraceMmuStride={} runFrameStallTraceMmuFlowRing={} runFrameStallTraceMmuOpRing={} runFrameFrameAdvanceLogEnable={} runFrameFrameAdvanceLogModulo={} runFrameFrameAdvanceIncludeCpuTrace={} runFrameFrameAdvanceCpuTraceLines={} runFrameFrameAdvanceIncludeMmuOpWindow={} runFrameFrameAdvanceMmuOpLines={} runFrameSehMmuOpLines={} runFrameSehIncludeCpuTrace={} runFrameSehCpuTraceLines={} runFrameFirstFailureMmuOpLines={} runFrameStallIncludeMmuOpWindow={} runFrameStallMmuOpLines={} runFrameStallIncludeCpuTrace={} runFrameStallCpuTraceLines={} runFrameForcedCompletionDetailEnable={} runFrameForcedCompletionIncludeCpuTrace={} runFrameForcedCompletionIncludeCpuLoop={} runFrameForcedCompletionIncludeStartup={} runFrameForcedCompletionIncludeMmuFlow={} runFrameForcedCompletionIncludeMmuOps={} runFrameForcedCompletionIncludeMmuOpWindow={} runFrameForcedCompletionIncludeCpuBoundary={} runFrameForcedCompletionIncludeCpuAddr={} runFrameForcedCompletionIncludeTraceDigest={} runFrameFirstFailureIncludeCpuTrace={} runFrameFirstFailureCpuTraceLines={} runFrameFirstFailureIncludeStartup={} sonicCheckpoints={} sonicLastCheckpointFrame={} sonicLastCheckpointPc=${:06x}",
 		_runFrameEntryCount,
 		_runFrameExitCount,
 		_runFrameEarlyAbortCount,
@@ -986,6 +1057,19 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 		runFrameStallMmuOpLines,
 		runFrameStallIncludeCpuTrace ? 1 : 0,
 		runFrameStallCpuTraceLines,
+		runFrameForcedCompletionDetailEnabled ? 1 : 0,
+		runFrameForcedCompletionIncludeCpuTrace ? 1 : 0,
+		runFrameForcedCompletionIncludeCpuLoop ? 1 : 0,
+		runFrameForcedCompletionIncludeStartup ? 1 : 0,
+		runFrameForcedCompletionIncludeMmuFlow ? 1 : 0,
+		runFrameForcedCompletionIncludeMmuOps ? 1 : 0,
+		runFrameForcedCompletionIncludeMmuOpWindow ? 1 : 0,
+		runFrameForcedCompletionIncludeCpuBoundary ? 1 : 0,
+		runFrameForcedCompletionIncludeCpuAddr ? 1 : 0,
+		runFrameForcedCompletionIncludeTraceDigest ? 1 : 0,
+		runFrameFirstFailureIncludeCpuTrace ? 1 : 0,
+		runFrameFirstFailureCpuTraceLines,
+		runFrameFirstFailureIncludeStartup ? 1 : 0,
 		_sonicStartupCheckpointCount,
 		_sonicStartupLastCheckpointFrame,
 		_sonicStartupLastCheckpointPc & 0x00ffffff);
@@ -1244,6 +1328,19 @@ void GenesisConsole::RunFrame() {
 	uint32_t stallMmuOpLines = GetGenesisRunFrameStallRecoveryMmuOpWindowLines();
 	bool stallIncludeCpuTrace = IsGenesisRunFrameStallRecoveryIncludeCpuTraceEnabled();
 	uint32_t stallCpuTraceLines = GetGenesisRunFrameStallRecoveryCpuTraceLines();
+	bool forcedCompletionDetailEnabled = IsGenesisRunFrameForcedCompletionDetailEnabled();
+	bool forcedCompletionIncludeCpuTrace = IsGenesisRunFrameForcedCompletionIncludeCpuTraceEnabled();
+	bool forcedCompletionIncludeCpuLoop = IsGenesisRunFrameForcedCompletionIncludeCpuLoopEnabled();
+	bool forcedCompletionIncludeStartup = IsGenesisRunFrameForcedCompletionIncludeStartupEnabled();
+	bool forcedCompletionIncludeMmuFlow = IsGenesisRunFrameForcedCompletionIncludeMmuFlowEnabled();
+	bool forcedCompletionIncludeMmuOps = IsGenesisRunFrameForcedCompletionIncludeMmuOpsEnabled();
+	bool forcedCompletionIncludeMmuOpWindow = IsGenesisRunFrameForcedCompletionIncludeMmuOpWindowEnabled();
+	bool forcedCompletionIncludeCpuBoundary = IsGenesisRunFrameForcedCompletionIncludeCpuBoundaryEnabled();
+	bool forcedCompletionIncludeCpuAddr = IsGenesisRunFrameForcedCompletionIncludeCpuAddrEnabled();
+	bool forcedCompletionIncludeTraceDigest = IsGenesisRunFrameForcedCompletionIncludeTraceDigestEnabled();
+	bool firstFailureIncludeCpuTrace = IsGenesisRunFrameFirstFailureIncludeCpuTraceEnabled();
+	uint32_t firstFailureCpuTraceLines = GetGenesisRunFrameFirstFailureCpuTraceLines();
+	bool firstFailureIncludeStartup = IsGenesisRunFrameFirstFailureIncludeStartupEnabled();
 	uint32_t hardGuardTraceCpuCycles = GetGenesisRunFrameHardGuardTraceCpuCycles();
 	uint32_t hardGuardTraceCpuStride = GetGenesisRunFrameHardGuardTraceCpuStride();
 	uint32_t hardGuardTraceCpuRing = GetGenesisRunFrameHardGuardTraceCpuRing();
@@ -1344,18 +1441,26 @@ void GenesisConsole::RunFrame() {
 							_runFrameFirstFailureBoundarySummary,
 							_memoryManager->BuildRuntimeFlowTraceSummary(),
 							_memoryManager->BuildRuntimeOpTraceSummary(),
-							_memoryManager->BuildRuntimeOpTraceWindow(firstFailureMmuOpLines)));
+							_memoryManager->BuildRuntimeOpTraceWindow(firstFailureMmuOpLines),
+							firstFailureIncludeCpuTrace ? std::format(" cpuTrace={}", _cpu->BuildInstructionTraceWindow(firstFailureCpuTraceLines)) : "",
+							firstFailureIncludeStartup ? std::format(" startup={}", BuildGenesisStartupRuntimeSummary(_memoryManager.get())) : ""));
 					}
-					MessageManager::Log(std::format("[Genesis] RunFrame forced completion frame={} guard={} pulses={} traceDigest={}",
+					MessageManager::Log(std::format("[Genesis] RunFrame forced completion frame={} guard={} pulses={}{}",
 						frame,
 						guard,
 						forcedAdvancePulses,
-						_cpu->BuildInstructionTraceDigest()));
-					MessageManager::Log(std::format("[Genesis] RunFrame forced completion detail cpuTrace={} cpuLoop={} startup={} mmuOpsWindow={}",
-						_cpu->BuildInstructionTraceWindow(forcedCompletionCpuTraceLines),
-						_cpu->BuildSamePcLoopSummary(),
-						BuildGenesisStartupRuntimeSummary(_memoryManager.get()),
-						_memoryManager->BuildRuntimeOpTraceWindow(forcedCompletionMmuOpWindowLines)));
+						forcedCompletionIncludeTraceDigest ? std::format(" traceDigest={}", _cpu->BuildInstructionTraceDigest()) : ""));
+					if (forcedCompletionDetailEnabled) {
+						MessageManager::Log(std::format("[Genesis] RunFrame forced completion detail{}{}{}{}{}{}{}{}",
+							forcedCompletionIncludeCpuTrace ? std::format(" cpuTrace={}", _cpu->BuildInstructionTraceWindow(forcedCompletionCpuTraceLines)) : "",
+							forcedCompletionIncludeCpuLoop ? std::format(" cpuLoop={}", _cpu->BuildSamePcLoopSummary()) : "",
+							forcedCompletionIncludeStartup ? std::format(" startup={}", BuildGenesisStartupRuntimeSummary(_memoryManager.get())) : "",
+							forcedCompletionIncludeMmuFlow ? std::format(" mmuFlow={}", _memoryManager->BuildRuntimeFlowTraceSummary()) : "",
+							forcedCompletionIncludeMmuOps ? std::format(" mmuOps={}", _memoryManager->BuildRuntimeOpTraceSummary()) : "",
+							forcedCompletionIncludeMmuOpWindow ? std::format(" mmuOpsWindow={}", _memoryManager->BuildRuntimeOpTraceWindow(forcedCompletionMmuOpWindowLines)) : "",
+							forcedCompletionIncludeCpuBoundary ? std::format(" cpuBoundary={}", _cpu->BuildDispatchBoundaryProbeSummary()) : "",
+							forcedCompletionIncludeCpuAddr ? std::format(" cpuAddr={}", _cpu->BuildAddressErrorSummary()) : ""));
+					}
 					break;
 				}
 			}
