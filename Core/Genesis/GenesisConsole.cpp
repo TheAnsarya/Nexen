@@ -516,6 +516,26 @@ namespace {
 		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FRAME_ADVANCE_INCLUDE_MMU_OP_WINDOW", false);
 	}
 
+	bool IsGenesisRunFrameFrameAdvanceIncludeCpuLoopEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FRAME_ADVANCE_INCLUDE_CPU_LOOP", false);
+	}
+
+	bool IsGenesisRunFrameFrameAdvanceIncludeCpuAddrEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FRAME_ADVANCE_INCLUDE_CPU_ADDR", false);
+	}
+
+	bool IsGenesisRunFrameFrameAdvanceIncludeHeartbeatEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FRAME_ADVANCE_INCLUDE_HEARTBEAT", false);
+	}
+
+	bool IsGenesisRunFrameFrameAdvanceIncludeZ80RuntimeEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FRAME_ADVANCE_INCLUDE_Z80_RUNTIME", false);
+	}
+
+	bool IsGenesisRunFrameFrameAdvanceIncludeVdpStateEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FRAME_ADVANCE_INCLUDE_VDP_STATE", false);
+	}
+
 	uint32_t GetGenesisRunFrameFrameAdvanceMmuOpWindowLines() {
 		static uint32_t cached = 0;
 		if (cached != 0) {
@@ -538,6 +558,34 @@ namespace {
 
 	bool IsGenesisRunFrameSehIncludeCpuTraceEnabled() {
 		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_SEH_INCLUDE_CPU_TRACE", false);
+	}
+
+	bool IsGenesisRunFrameSehIncludeCpuBoundaryEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_SEH_INCLUDE_CPU_BOUNDARY", true);
+	}
+
+	bool IsGenesisRunFrameSehIncludeCpuLoopEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_SEH_INCLUDE_CPU_LOOP", false);
+	}
+
+	bool IsGenesisRunFrameSehIncludeCpuAddrEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_SEH_INCLUDE_CPU_ADDR", false);
+	}
+
+	bool IsGenesisRunFrameSehIncludeStartupEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_SEH_INCLUDE_STARTUP", false);
+	}
+
+	bool IsGenesisRunFrameSehIncludeMmuFlowEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_SEH_INCLUDE_MMU_FLOW", true);
+	}
+
+	bool IsGenesisRunFrameSehIncludeMmuOpsEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_SEH_INCLUDE_MMU_OPS", true);
+	}
+
+	bool IsGenesisRunFrameSehIncludeMmuOpWindowEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_SEH_INCLUDE_MMU_OP_WINDOW", true);
 	}
 
 	uint32_t GetGenesisRunFrameSehCpuTraceLines() {
@@ -696,6 +744,38 @@ namespace {
 
 	bool IsGenesisRunFrameFirstFailureIncludeStartupEnabled() {
 		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FIRST_FAILURE_INCLUDE_STARTUP", false);
+	}
+
+	bool IsGenesisRunFrameFirstFailureIncludeCpuBoundaryEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FIRST_FAILURE_INCLUDE_CPU_BOUNDARY", true);
+	}
+
+	bool IsGenesisRunFrameFirstFailureIncludeMmuFlowEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FIRST_FAILURE_INCLUDE_MMU_FLOW", true);
+	}
+
+	bool IsGenesisRunFrameFirstFailureIncludeMmuOpsEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_FIRST_FAILURE_INCLUDE_MMU_OPS", true);
+	}
+
+	bool IsGenesisRunFrameStallRecoveryIncludeStartupEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_STALL_INCLUDE_STARTUP", false);
+	}
+
+	bool IsGenesisRunFrameStallRecoveryIncludeCpuBoundaryEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_STALL_INCLUDE_CPU_BOUNDARY", false);
+	}
+
+	bool IsGenesisRunFrameStallRecoveryIncludeMmuFlowEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_STALL_INCLUDE_MMU_FLOW", false);
+	}
+
+	bool IsGenesisRunFrameStallRecoveryIncludeMmuOpsEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_STALL_INCLUDE_MMU_OPS", false);
+	}
+
+	bool IsGenesisRunFrameStallRecoveryIncludeTraceDigestEnabled() {
+		return ParseEnvEnabled("NEXEN_GENESIS_RUNFRAME_STALL_INCLUDE_TRACE_DIGEST", false);
 	}
 
 	uint32_t GetGenesisRunFrameHardGuardTraceCpuCycles() {
@@ -1005,14 +1085,31 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 	bool runFrameFrameAdvanceIncludeCpuTrace = IsGenesisRunFrameFrameAdvanceIncludeCpuTraceEnabled();
 	uint32_t runFrameFrameAdvanceCpuTraceLines = GetGenesisRunFrameFrameAdvanceCpuTraceLines();
 	bool runFrameFrameAdvanceIncludeMmuOpWindow = IsGenesisRunFrameFrameAdvanceIncludeMmuOpWindowEnabled();
+	bool runFrameFrameAdvanceIncludeCpuLoop = IsGenesisRunFrameFrameAdvanceIncludeCpuLoopEnabled();
+	bool runFrameFrameAdvanceIncludeCpuAddr = IsGenesisRunFrameFrameAdvanceIncludeCpuAddrEnabled();
+	bool runFrameFrameAdvanceIncludeHeartbeat = IsGenesisRunFrameFrameAdvanceIncludeHeartbeatEnabled();
+	bool runFrameFrameAdvanceIncludeZ80Runtime = IsGenesisRunFrameFrameAdvanceIncludeZ80RuntimeEnabled();
+	bool runFrameFrameAdvanceIncludeVdpState = IsGenesisRunFrameFrameAdvanceIncludeVdpStateEnabled();
 	uint32_t runFrameFrameAdvanceMmuOpLines = GetGenesisRunFrameFrameAdvanceMmuOpWindowLines();
 	uint32_t runFrameSehMmuOpLines = GetGenesisRunFrameSehMmuOpWindowLines();
 	bool runFrameSehIncludeCpuTrace = IsGenesisRunFrameSehIncludeCpuTraceEnabled();
+	bool runFrameSehIncludeCpuBoundary = IsGenesisRunFrameSehIncludeCpuBoundaryEnabled();
+	bool runFrameSehIncludeCpuLoop = IsGenesisRunFrameSehIncludeCpuLoopEnabled();
+	bool runFrameSehIncludeCpuAddr = IsGenesisRunFrameSehIncludeCpuAddrEnabled();
+	bool runFrameSehIncludeStartup = IsGenesisRunFrameSehIncludeStartupEnabled();
+	bool runFrameSehIncludeMmuFlow = IsGenesisRunFrameSehIncludeMmuFlowEnabled();
+	bool runFrameSehIncludeMmuOps = IsGenesisRunFrameSehIncludeMmuOpsEnabled();
+	bool runFrameSehIncludeMmuOpWindow = IsGenesisRunFrameSehIncludeMmuOpWindowEnabled();
 	uint32_t runFrameSehCpuTraceLines = GetGenesisRunFrameSehCpuTraceLines();
 	uint32_t runFrameFirstFailureMmuOpLines = GetGenesisRunFrameFirstFailureMmuOpWindowLines();
 	bool runFrameStallIncludeMmuOpWindow = IsGenesisRunFrameStallRecoveryIncludeMmuOpWindowEnabled();
 	uint32_t runFrameStallMmuOpLines = GetGenesisRunFrameStallRecoveryMmuOpWindowLines();
 	bool runFrameStallIncludeCpuTrace = IsGenesisRunFrameStallRecoveryIncludeCpuTraceEnabled();
+	bool runFrameStallIncludeStartup = IsGenesisRunFrameStallRecoveryIncludeStartupEnabled();
+	bool runFrameStallIncludeCpuBoundary = IsGenesisRunFrameStallRecoveryIncludeCpuBoundaryEnabled();
+	bool runFrameStallIncludeMmuFlow = IsGenesisRunFrameStallRecoveryIncludeMmuFlowEnabled();
+	bool runFrameStallIncludeMmuOps = IsGenesisRunFrameStallRecoveryIncludeMmuOpsEnabled();
+	bool runFrameStallIncludeTraceDigest = IsGenesisRunFrameStallRecoveryIncludeTraceDigestEnabled();
 	uint32_t runFrameStallCpuTraceLines = GetGenesisRunFrameStallRecoveryCpuTraceLines();
 	bool runFrameHardGuardIncludeCpuBoundary = IsGenesisRunFrameHardGuardIncludeCpuBoundaryEnabled();
 	bool runFrameHardGuardIncludeCpuTrace = IsGenesisRunFrameHardGuardIncludeCpuTraceEnabled();
@@ -1040,8 +1137,11 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 	bool runFrameFirstFailureIncludeCpuTrace = IsGenesisRunFrameFirstFailureIncludeCpuTraceEnabled();
 	uint32_t runFrameFirstFailureCpuTraceLines = GetGenesisRunFrameFirstFailureCpuTraceLines();
 	bool runFrameFirstFailureIncludeStartup = IsGenesisRunFrameFirstFailureIncludeStartupEnabled();
+	bool runFrameFirstFailureIncludeCpuBoundary = IsGenesisRunFrameFirstFailureIncludeCpuBoundaryEnabled();
+	bool runFrameFirstFailureIncludeMmuFlow = IsGenesisRunFrameFirstFailureIncludeMmuFlowEnabled();
+	bool runFrameFirstFailureIncludeMmuOps = IsGenesisRunFrameFirstFailureIncludeMmuOpsEnabled();
 	return std::format(
-		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={} mmuOps={} startup={} sonicTraceArm={} sonicTraceArms={} sonicTraceLastArmFrame={} sonicTraceRearmWindow={} sonicTraceCpuCycles={} sonicTraceMmuCycles={} sonicTraceCpuStride={} sonicTraceMmuStride={} sonicTraceCpuRing={} sonicTraceMmuFlowRing={} sonicTraceMmuOpRing={} sonicCheckpointEnable={} sonicCheckpointInterval={} sonicCheckpointEndFrame={} sonicCheckpointIncludeOpWindow={} sonicCheckpointOpWindowLines={} sonicCheckpointIncludeCpuTrace={} sonicCheckpointCpuTraceLines={} runFrameStagnantIters={} runFrameForcedPulseLimit={} runFrameForcedPulseCycles={} runFrameFallbackPulses={} runFrameHardGuardCpuTraceLines={} runFrameHardGuardMmuOpLines={} runFrameForcedCompletionCpuTraceLines={} runFrameForcedCompletionMmuOpLines={} runFrameWaitLogEnable={} runFrameWaitLogInterval={} runFrameWaitIncludeMmuOpWindow={} runFrameWaitMmuOpLines={} runFrameWaitIncludeCpuTrace={} runFrameWaitCpuTraceLines={} runFrameHardGuardTraceCpuCycles={} runFrameHardGuardTraceCpuStride={} runFrameHardGuardTraceCpuRing={} runFrameHardGuardTraceMmuCpuCycles={} runFrameHardGuardTraceMmuCycles={} runFrameHardGuardTraceMmuCpuStride={} runFrameHardGuardTraceMmuStride={} runFrameHardGuardTraceMmuFlowRing={} runFrameHardGuardTraceMmuOpRing={} runFrameStallTraceCpuCycles={} runFrameStallTraceCpuStride={} runFrameStallTraceCpuRing={} runFrameStallTraceMmuCpuCycles={} runFrameStallTraceMmuCycles={} runFrameStallTraceMmuCpuStride={} runFrameStallTraceMmuStride={} runFrameStallTraceMmuFlowRing={} runFrameStallTraceMmuOpRing={} runFrameFrameAdvanceLogEnable={} runFrameFrameAdvanceLogModulo={} runFrameFrameAdvanceIncludeCpuTrace={} runFrameFrameAdvanceCpuTraceLines={} runFrameFrameAdvanceIncludeMmuOpWindow={} runFrameFrameAdvanceMmuOpLines={} runFrameSehMmuOpLines={} runFrameSehIncludeCpuTrace={} runFrameSehCpuTraceLines={} runFrameFirstFailureMmuOpLines={} runFrameStallIncludeMmuOpWindow={} runFrameStallMmuOpLines={} runFrameStallIncludeCpuTrace={} runFrameStallCpuTraceLines={} runFrameHardGuardIncludeCpuBoundary={} runFrameHardGuardIncludeCpuTrace={} runFrameHardGuardIncludeCpuLoop={} runFrameHardGuardIncludeCpuAddr={} runFrameHardGuardIncludeStartup={} runFrameHardGuardIncludeMmuFlow={} runFrameHardGuardIncludeMmuOps={} runFrameHardGuardIncludeMmuOpWindow={} runFrameWaitIncludeHeartbeat={} runFrameWaitIncludeZ80Runtime={} runFrameWaitIncludeVdpState={} runFrameWaitIncludeCpuLoop={} runFrameWaitIncludeCpuAddr={} runFrameForcedCompletionDetailEnable={} runFrameForcedCompletionIncludeCpuTrace={} runFrameForcedCompletionIncludeCpuLoop={} runFrameForcedCompletionIncludeStartup={} runFrameForcedCompletionIncludeMmuFlow={} runFrameForcedCompletionIncludeMmuOps={} runFrameForcedCompletionIncludeMmuOpWindow={} runFrameForcedCompletionIncludeCpuBoundary={} runFrameForcedCompletionIncludeCpuAddr={} runFrameForcedCompletionIncludeTraceDigest={} runFrameFirstFailureIncludeCpuTrace={} runFrameFirstFailureCpuTraceLines={} runFrameFirstFailureIncludeStartup={} sonicCheckpoints={} sonicLastCheckpointFrame={} sonicLastCheckpointPc=${:06x}",
+		"entryCount={} exitCount={} earlyAbortCount={} firstFailureCaptures={} firstFailureBoundary={} lastGuard={} stalls={} forcedAdvances={} stallSummary={} entrySummary={} exitSummary={} cpuProbe={} cpuBoundaryProbe={} mmuFlow={} mmuOps={} startup={} sonicTraceArm={} sonicTraceArms={} sonicTraceLastArmFrame={} sonicTraceRearmWindow={} sonicTraceCpuCycles={} sonicTraceMmuCycles={} sonicTraceCpuStride={} sonicTraceMmuStride={} sonicTraceCpuRing={} sonicTraceMmuFlowRing={} sonicTraceMmuOpRing={} sonicCheckpointEnable={} sonicCheckpointInterval={} sonicCheckpointEndFrame={} sonicCheckpointIncludeOpWindow={} sonicCheckpointOpWindowLines={} sonicCheckpointIncludeCpuTrace={} sonicCheckpointCpuTraceLines={} runFrameStagnantIters={} runFrameForcedPulseLimit={} runFrameForcedPulseCycles={} runFrameFallbackPulses={} runFrameHardGuardCpuTraceLines={} runFrameHardGuardMmuOpLines={} runFrameForcedCompletionCpuTraceLines={} runFrameForcedCompletionMmuOpLines={} runFrameWaitLogEnable={} runFrameWaitLogInterval={} runFrameWaitIncludeMmuOpWindow={} runFrameWaitMmuOpLines={} runFrameWaitIncludeCpuTrace={} runFrameWaitCpuTraceLines={} runFrameHardGuardTraceCpuCycles={} runFrameHardGuardTraceCpuStride={} runFrameHardGuardTraceCpuRing={} runFrameHardGuardTraceMmuCpuCycles={} runFrameHardGuardTraceMmuCycles={} runFrameHardGuardTraceMmuCpuStride={} runFrameHardGuardTraceMmuStride={} runFrameHardGuardTraceMmuFlowRing={} runFrameHardGuardTraceMmuOpRing={} runFrameStallTraceCpuCycles={} runFrameStallTraceCpuStride={} runFrameStallTraceCpuRing={} runFrameStallTraceMmuCpuCycles={} runFrameStallTraceMmuCycles={} runFrameStallTraceMmuCpuStride={} runFrameStallTraceMmuStride={} runFrameStallTraceMmuFlowRing={} runFrameStallTraceMmuOpRing={} runFrameFrameAdvanceLogEnable={} runFrameFrameAdvanceLogModulo={} runFrameFrameAdvanceIncludeCpuTrace={} runFrameFrameAdvanceCpuTraceLines={} runFrameFrameAdvanceIncludeMmuOpWindow={} runFrameFrameAdvanceMmuOpLines={} runFrameSehMmuOpLines={} runFrameSehIncludeCpuTrace={} runFrameSehCpuTraceLines={} runFrameFirstFailureMmuOpLines={} runFrameStallIncludeMmuOpWindow={} runFrameStallMmuOpLines={} runFrameStallIncludeCpuTrace={} runFrameStallCpuTraceLines={} runFrameHardGuardIncludeCpuBoundary={} runFrameHardGuardIncludeCpuTrace={} runFrameHardGuardIncludeCpuLoop={} runFrameHardGuardIncludeCpuAddr={} runFrameHardGuardIncludeStartup={} runFrameHardGuardIncludeMmuFlow={} runFrameHardGuardIncludeMmuOps={} runFrameHardGuardIncludeMmuOpWindow={} runFrameWaitIncludeHeartbeat={} runFrameWaitIncludeZ80Runtime={} runFrameWaitIncludeVdpState={} runFrameWaitIncludeCpuLoop={} runFrameWaitIncludeCpuAddr={} runFrameForcedCompletionDetailEnable={} runFrameForcedCompletionIncludeCpuTrace={} runFrameForcedCompletionIncludeCpuLoop={} runFrameForcedCompletionIncludeStartup={} runFrameForcedCompletionIncludeMmuFlow={} runFrameForcedCompletionIncludeMmuOps={} runFrameForcedCompletionIncludeMmuOpWindow={} runFrameForcedCompletionIncludeCpuBoundary={} runFrameForcedCompletionIncludeCpuAddr={} runFrameForcedCompletionIncludeTraceDigest={} runFrameFirstFailureIncludeCpuTrace={} runFrameFirstFailureCpuTraceLines={} runFrameFirstFailureIncludeStartup={} runFrameFrameAdvanceIncludeCpuLoop={} runFrameFrameAdvanceIncludeCpuAddr={} runFrameFrameAdvanceIncludeHeartbeat={} runFrameFrameAdvanceIncludeZ80Runtime={} runFrameFrameAdvanceIncludeVdpState={} runFrameSehIncludeCpuBoundary={} runFrameSehIncludeCpuLoop={} runFrameSehIncludeCpuAddr={} runFrameSehIncludeStartup={} runFrameSehIncludeMmuFlow={} runFrameSehIncludeMmuOps={} runFrameSehIncludeMmuOpWindow={} runFrameStallIncludeStartup={} runFrameStallIncludeCpuBoundary={} runFrameStallIncludeMmuFlow={} runFrameStallIncludeMmuOps={} runFrameStallIncludeTraceDigest={} runFrameFirstFailureIncludeCpuBoundary={} runFrameFirstFailureIncludeMmuFlow={} runFrameFirstFailureIncludeMmuOps={} sonicCheckpoints={} sonicLastCheckpointFrame={} sonicLastCheckpointPc=${:06x}",
 		_runFrameEntryCount,
 		_runFrameExitCount,
 		_runFrameEarlyAbortCount,
@@ -1148,6 +1248,26 @@ string GenesisConsole::BuildRunFrameCrashProbeSummary() const {
 		runFrameFirstFailureIncludeCpuTrace ? 1 : 0,
 		runFrameFirstFailureCpuTraceLines,
 		runFrameFirstFailureIncludeStartup ? 1 : 0,
+		runFrameFrameAdvanceIncludeCpuLoop ? 1 : 0,
+		runFrameFrameAdvanceIncludeCpuAddr ? 1 : 0,
+		runFrameFrameAdvanceIncludeHeartbeat ? 1 : 0,
+		runFrameFrameAdvanceIncludeZ80Runtime ? 1 : 0,
+		runFrameFrameAdvanceIncludeVdpState ? 1 : 0,
+		runFrameSehIncludeCpuBoundary ? 1 : 0,
+		runFrameSehIncludeCpuLoop ? 1 : 0,
+		runFrameSehIncludeCpuAddr ? 1 : 0,
+		runFrameSehIncludeStartup ? 1 : 0,
+		runFrameSehIncludeMmuFlow ? 1 : 0,
+		runFrameSehIncludeMmuOps ? 1 : 0,
+		runFrameSehIncludeMmuOpWindow ? 1 : 0,
+		runFrameStallIncludeStartup ? 1 : 0,
+		runFrameStallIncludeCpuBoundary ? 1 : 0,
+		runFrameStallIncludeMmuFlow ? 1 : 0,
+		runFrameStallIncludeMmuOps ? 1 : 0,
+		runFrameStallIncludeTraceDigest ? 1 : 0,
+		runFrameFirstFailureIncludeCpuBoundary ? 1 : 0,
+		runFrameFirstFailureIncludeMmuFlow ? 1 : 0,
+		runFrameFirstFailureIncludeMmuOps ? 1 : 0,
 		_sonicStartupCheckpointCount,
 		_sonicStartupLastCheckpointFrame,
 		_sonicStartupLastCheckpointPc & 0x00ffffff);
@@ -1400,16 +1520,33 @@ void GenesisConsole::RunFrame() {
 	bool frameAdvanceLogEnabled = IsGenesisRunFrameFrameAdvanceLogEnabled();
 	uint32_t frameAdvanceLogModulo = GetGenesisRunFrameFrameAdvanceLogModulo();
 	bool frameAdvanceIncludeCpuTrace = IsGenesisRunFrameFrameAdvanceIncludeCpuTraceEnabled();
+	bool frameAdvanceIncludeCpuLoop = IsGenesisRunFrameFrameAdvanceIncludeCpuLoopEnabled();
+	bool frameAdvanceIncludeCpuAddr = IsGenesisRunFrameFrameAdvanceIncludeCpuAddrEnabled();
+	bool frameAdvanceIncludeHeartbeat = IsGenesisRunFrameFrameAdvanceIncludeHeartbeatEnabled();
+	bool frameAdvanceIncludeZ80Runtime = IsGenesisRunFrameFrameAdvanceIncludeZ80RuntimeEnabled();
+	bool frameAdvanceIncludeVdpState = IsGenesisRunFrameFrameAdvanceIncludeVdpStateEnabled();
 	uint32_t frameAdvanceCpuTraceLines = GetGenesisRunFrameFrameAdvanceCpuTraceLines();
 	bool frameAdvanceIncludeMmuOpWindow = IsGenesisRunFrameFrameAdvanceIncludeMmuOpWindowEnabled();
 	uint32_t frameAdvanceMmuOpLines = GetGenesisRunFrameFrameAdvanceMmuOpWindowLines();
 	uint32_t sehMmuOpLines = GetGenesisRunFrameSehMmuOpWindowLines();
 	bool sehIncludeCpuTrace = IsGenesisRunFrameSehIncludeCpuTraceEnabled();
+	bool sehIncludeCpuBoundary = IsGenesisRunFrameSehIncludeCpuBoundaryEnabled();
+	bool sehIncludeCpuLoop = IsGenesisRunFrameSehIncludeCpuLoopEnabled();
+	bool sehIncludeCpuAddr = IsGenesisRunFrameSehIncludeCpuAddrEnabled();
+	bool sehIncludeStartup = IsGenesisRunFrameSehIncludeStartupEnabled();
+	bool sehIncludeMmuFlow = IsGenesisRunFrameSehIncludeMmuFlowEnabled();
+	bool sehIncludeMmuOps = IsGenesisRunFrameSehIncludeMmuOpsEnabled();
+	bool sehIncludeMmuOpWindow = IsGenesisRunFrameSehIncludeMmuOpWindowEnabled();
 	uint32_t sehCpuTraceLines = GetGenesisRunFrameSehCpuTraceLines();
 	uint32_t firstFailureMmuOpLines = GetGenesisRunFrameFirstFailureMmuOpWindowLines();
 	bool stallIncludeMmuOpWindow = IsGenesisRunFrameStallRecoveryIncludeMmuOpWindowEnabled();
 	uint32_t stallMmuOpLines = GetGenesisRunFrameStallRecoveryMmuOpWindowLines();
 	bool stallIncludeCpuTrace = IsGenesisRunFrameStallRecoveryIncludeCpuTraceEnabled();
+	bool stallIncludeStartup = IsGenesisRunFrameStallRecoveryIncludeStartupEnabled();
+	bool stallIncludeCpuBoundary = IsGenesisRunFrameStallRecoveryIncludeCpuBoundaryEnabled();
+	bool stallIncludeMmuFlow = IsGenesisRunFrameStallRecoveryIncludeMmuFlowEnabled();
+	bool stallIncludeMmuOps = IsGenesisRunFrameStallRecoveryIncludeMmuOpsEnabled();
+	bool stallIncludeTraceDigest = IsGenesisRunFrameStallRecoveryIncludeTraceDigestEnabled();
 	uint32_t stallCpuTraceLines = GetGenesisRunFrameStallRecoveryCpuTraceLines();
 	bool hardGuardIncludeCpuBoundary = IsGenesisRunFrameHardGuardIncludeCpuBoundaryEnabled();
 	bool hardGuardIncludeCpuTrace = IsGenesisRunFrameHardGuardIncludeCpuTraceEnabled();
@@ -1432,6 +1569,9 @@ void GenesisConsole::RunFrame() {
 	bool firstFailureIncludeCpuTrace = IsGenesisRunFrameFirstFailureIncludeCpuTraceEnabled();
 	uint32_t firstFailureCpuTraceLines = GetGenesisRunFrameFirstFailureCpuTraceLines();
 	bool firstFailureIncludeStartup = IsGenesisRunFrameFirstFailureIncludeStartupEnabled();
+	bool firstFailureIncludeCpuBoundary = IsGenesisRunFrameFirstFailureIncludeCpuBoundaryEnabled();
+	bool firstFailureIncludeMmuFlow = IsGenesisRunFrameFirstFailureIncludeMmuFlowEnabled();
+	bool firstFailureIncludeMmuOps = IsGenesisRunFrameFirstFailureIncludeMmuOpsEnabled();
 	uint32_t hardGuardTraceCpuCycles = GetGenesisRunFrameHardGuardTraceCpuCycles();
 	uint32_t hardGuardTraceCpuStride = GetGenesisRunFrameHardGuardTraceCpuStride();
 	uint32_t hardGuardTraceCpuRing = GetGenesisRunFrameHardGuardTraceCpuRing();
@@ -1509,7 +1649,7 @@ void GenesisConsole::RunFrame() {
 				_cpu->ForceClockAdvance(forcedAdvancePulseCycles);
 				_runFrameForcedAdvanceCount++;
 				_runFrameLastStallSummary = _cpu->BuildExecutionStallSummary();
-				MessageManager::Log(std::format("[Genesis] RunFrame stall recovery #{} pulse={} frame={} guard={} summary={} loop={} masterClock={} cpuCycles={}{}{}",
+				MessageManager::Log(std::format("[Genesis] RunFrame stall recovery #{} pulse={} frame={} guard={} summary={} loop={} masterClock={} cpuCycles={}{}{}{}{}{}{}{}",
 					_runFrameStallEventCount,
 					forcedAdvancePulses,
 					frame,
@@ -1519,7 +1659,12 @@ void GenesisConsole::RunFrame() {
 					_memoryManager->GetMasterClock(),
 					_cpu->GetState().CycleCount,
 					stallIncludeMmuOpWindow ? std::format(" mmuOpsWindow={}", _memoryManager->BuildRuntimeOpTraceWindow(stallMmuOpLines)) : "",
-					stallIncludeCpuTrace ? std::format(" cpuTrace={}", _cpu->BuildInstructionTraceWindow(stallCpuTraceLines)) : ""));
+					stallIncludeCpuTrace ? std::format(" cpuTrace={}", _cpu->BuildInstructionTraceWindow(stallCpuTraceLines)) : "",
+					stallIncludeStartup ? std::format(" startup={}", BuildGenesisStartupRuntimeSummary(_memoryManager.get())) : "",
+					stallIncludeCpuBoundary ? std::format(" cpuBoundary={}", _cpu->BuildDispatchBoundaryProbeSummary()) : "",
+					stallIncludeMmuFlow ? std::format(" mmuFlow={}", _memoryManager->BuildRuntimeFlowTraceSummary()) : "",
+					stallIncludeMmuOps ? std::format(" mmuOps={}", _memoryManager->BuildRuntimeOpTraceSummary()) : "",
+					stallIncludeTraceDigest ? std::format(" traceDigest={}", _cpu->BuildInstructionTraceDigest()) : ""));
 				stagnantIterations = 0;
 				lastProgressClock = _memoryManager->GetMasterClock();
 				lastProgressCpuCycles = _cpu->GetState().CycleCount;
@@ -1528,10 +1673,10 @@ void GenesisConsole::RunFrame() {
 					if (_runFrameFirstFailureBoundarySummary.empty()) {
 						_runFrameFirstFailureBoundarySummary = _cpu->BuildDispatchBoundaryProbeSummary();
 						_runFrameFirstFailureBoundaryCaptureCount++;
-						MessageManager::Log(std::format("[Genesis] RunFrame first-failure pair cpuBoundary={} mmuFlow={} mmuOps={} mmuOpsWindow={}{}{}",
-							_runFrameFirstFailureBoundarySummary,
-							_memoryManager->BuildRuntimeFlowTraceSummary(),
-							_memoryManager->BuildRuntimeOpTraceSummary(),
+						MessageManager::Log(std::format("[Genesis] RunFrame first-failure pair{}{}{} mmuOpsWindow={}{}{}",
+							firstFailureIncludeCpuBoundary ? std::format(" cpuBoundary={}", _runFrameFirstFailureBoundarySummary) : "",
+							firstFailureIncludeMmuFlow ? std::format(" mmuFlow={}", _memoryManager->BuildRuntimeFlowTraceSummary()) : "",
+							firstFailureIncludeMmuOps ? std::format(" mmuOps={}", _memoryManager->BuildRuntimeOpTraceSummary()) : "",
 							_memoryManager->BuildRuntimeOpTraceWindow(firstFailureMmuOpLines),
 							firstFailureIncludeCpuTrace ? std::format(" cpuTrace={}", _cpu->BuildInstructionTraceWindow(firstFailureCpuTraceLines)) : "",
 							firstFailureIncludeStartup ? std::format(" startup={}", BuildGenesisStartupRuntimeSummary(_memoryManager.get())) : ""));
@@ -1584,17 +1729,20 @@ void GenesisConsole::RunFrame() {
 			_runFrameFirstFailureBoundarySummary = _cpu->BuildDispatchBoundaryProbeSummary();
 			_runFrameFirstFailureBoundaryCaptureCount++;
 		}
-		_runFrameLastExitSummary = std::format("seh_guard_abort code=${:08x} frame={} guard={} pc=${:06x} cycles={} cpuBoundary={} mmuFlow={} mmuOps={} mmuOpsWindow={}{}",
+		_runFrameLastExitSummary = std::format("seh_guard_abort code=${:08x} frame={} guard={} pc=${:06x} cycles={}{}{}{}{}{}{}{}{}",
 			trappedSehCode,
 			frame,
 			guard,
 			_cpu->GetState().PC & 0x00ffffff,
 			_cpu->GetState().CycleCount,
-			_runFrameFirstFailureBoundarySummary,
-			_memoryManager->BuildRuntimeFlowTraceSummary(),
-			_memoryManager->BuildRuntimeOpTraceSummary(),
-			_memoryManager->BuildRuntimeOpTraceWindow(sehMmuOpLines),
-			sehIncludeCpuTrace ? std::format(" cpuTrace={}", _cpu->BuildInstructionTraceWindow(sehCpuTraceLines)) : "");
+			sehIncludeCpuBoundary ? std::format(" cpuBoundary={}", _runFrameFirstFailureBoundarySummary) : "",
+			sehIncludeMmuFlow ? std::format(" mmuFlow={}", _memoryManager->BuildRuntimeFlowTraceSummary()) : "",
+			sehIncludeMmuOps ? std::format(" mmuOps={}", _memoryManager->BuildRuntimeOpTraceSummary()) : "",
+			sehIncludeMmuOpWindow ? std::format(" mmuOpsWindow={}", _memoryManager->BuildRuntimeOpTraceWindow(sehMmuOpLines)) : "",
+			sehIncludeCpuTrace ? std::format(" cpuTrace={}", _cpu->BuildInstructionTraceWindow(sehCpuTraceLines)) : "",
+			sehIncludeCpuLoop ? std::format(" cpuLoop={}", _cpu->BuildSamePcLoopSummary()) : "",
+			sehIncludeCpuAddr ? std::format(" cpuAddr={}", _cpu->BuildAddressErrorSummary()) : "",
+			sehIncludeStartup ? std::format(" startup={}", BuildGenesisStartupRuntimeSummary(_memoryManager.get())) : "");
 		MessageManager::Log(std::format("[Genesis] RunFrame SEH trapped {}", _runFrameLastExitSummary));
 		return;
 	}
@@ -1614,14 +1762,20 @@ void GenesisConsole::RunFrame() {
 	}
 	if (frameAdvanceLogEnabled && (nextFrame % frameAdvanceLogModulo) == 0) {
 		GenesisVdpState vdpState = _vdp->GetState();
-		MessageManager::Log(std::format("[Genesis] Frame advanced to {} (deltaClock={}) display={} R1=${:02x} tmssUnlocked={}{}{}",
+		GenesisIoState ioState = _memoryManager->GetIoState();
+		MessageManager::Log(std::format("[Genesis] Frame advanced to {} (deltaClock={}) display={} R1=${:02x} tmssUnlocked={}{}{}{}{}{}{}{}",
 			nextFrame,
 			_memoryManager->GetMasterClock() - startClock,
 			(vdpState.Registers[1] & 0x40) ? "on" : "off",
 			vdpState.Registers[1],
 			_memoryManager->GetIoState().TmssUnlocked ? "true" : "false",
 			frameAdvanceIncludeCpuTrace ? std::format(" cpuTrace={}", _cpu->BuildInstructionTraceWindow(frameAdvanceCpuTraceLines)) : "",
-			frameAdvanceIncludeMmuOpWindow ? std::format(" mmuOpsWindow={}", _memoryManager->BuildRuntimeOpTraceWindow(frameAdvanceMmuOpLines)) : ""));
+			frameAdvanceIncludeMmuOpWindow ? std::format(" mmuOpsWindow={}", _memoryManager->BuildRuntimeOpTraceWindow(frameAdvanceMmuOpLines)) : "",
+			frameAdvanceIncludeCpuLoop ? std::format(" cpuLoop={}", _cpu->BuildSamePcLoopSummary()) : "",
+			frameAdvanceIncludeCpuAddr ? std::format(" cpuAddr={}", _cpu->BuildAddressErrorSummary()) : "",
+			frameAdvanceIncludeHeartbeat ? std::format(" heartbeatPc=${:06x} heartbeatCycles={} heartbeatInstr={}", ioState.CpuProgramCounterHeartbeat, ioState.CpuCycleHeartbeat, ioState.CpuInstructionHeartbeat) : "",
+			frameAdvanceIncludeZ80Runtime ? std::format(" z80Running={} z80RunnableCycles={} z80StalledCycles={} z80Transitions={}", _memoryManager->GetZ80RuntimeRunning() ? 1 : 0, _memoryManager->GetZ80RuntimeRunnableCycles(), _memoryManager->GetZ80RuntimeStalledCycles(), _memoryManager->GetZ80RuntimeTransitionCount()) : "",
+			frameAdvanceIncludeVdpState ? std::format(" vdpVc={} vdpHc={} vdpStatus=${:04x}", vdpState.VCounter, vdpState.HCounter, vdpState.StatusRegister) : ""));
 	}
 
 	if (emitFrameEvents) {
