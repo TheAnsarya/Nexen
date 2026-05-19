@@ -1852,13 +1852,13 @@ void GenesisVdp::ProcessDma() {
 	_state.StatusRegister |= VdpStatus::DmaBusy;
 
 	uint32_t wordsThisStep = _dmaRemainingWords;
+	bool activeDisplay = _lineDisplayEnabled && _scanline < _screenHeight;
 	if (_dmaLatchedMode == 0 || _dmaLatchedMode == 1) {
 		if (_dmaStartupDelayCyclesRemaining > 0) {
 			_dmaStartupDelayCyclesRemaining--;
 			return;
 		}
 
-		bool activeDisplay = _lineDisplayEnabled && _scanline < _screenHeight;
 		if (activeDisplay) {
 			_dmaBusCycleRemainder = 0;
 			if (!CanConsumeActiveDisplayDmaSlot()) {
@@ -1877,6 +1877,15 @@ void GenesisVdp::ProcessDma() {
 
 			wordsThisStep = std::min(_dmaRemainingWords, transferableWords);
 		}
+	}
+
+	if ((_dmaLatchedMode == 2 || _dmaLatchedMode == 3) && activeDisplay) {
+		if (!CanConsumeActiveDisplayDmaSlot()) {
+			return;
+		}
+
+		// During active display, internal DMA work is slot-paced.
+		wordsThisStep = 1;
 	}
 
 	if (wordsThisStep == 0) {
