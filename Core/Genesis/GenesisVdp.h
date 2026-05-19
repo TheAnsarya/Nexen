@@ -135,6 +135,7 @@ private:
 	bool IsH40Mode() const { return (_state.Registers[12] & 0x01) != 0; } // H40 = 320px, H32 = 256px
 	bool IsPalMode() const { return _totalLines == 313; }
 	bool IsInterlaceMode() const { return (_state.Registers[12] & 0x02) != 0; }
+	bool IsInterlace2Mode() const { return (_state.Registers[12] & 0x06) == 0x06; }
 	bool IsVBlankInterruptEnabled() const { return (_state.Registers[1] & 0x20) != 0; }
 	bool IsHBlankInterruptEnabled() const { return (_state.Registers[0] & 0x10) != 0; }
 	uint16_t GetPlaneWidth() const;

@@ -14,6 +14,13 @@ namespace {
 		return (uint8_t)(vdp.ReadHVCounter() >> 8);
 	}
 
+	static void AdvanceLines(GenesisVdp& vdp, uint64_t& targetClock, uint32_t lineCount) {
+		for (uint32_t i = 0; i < lineCount; i++) {
+			targetClock += 488u;
+			vdp.Run(targetClock);
+		}
+	}
+
 	TEST(GenesisVdpHvStatusParityTests, HCounterSequenceShowsH40WrapDiscontinuityNearHsync) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
@@ -94,55 +101,81 @@ namespace {
 		EXPECT_NE(liveAfterClear, latchedA);
 	}
 
-	TEST(GenesisVdpHvStatusParityTests, NtscVCounterUsesNonLinearWrapAfterLine234) {
+	TEST(GenesisVdpHvStatusParityTests, NtscVCounterWrapsFromEaToE5AtFirstWrappedLine) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
 		vdp.SetRegion(false);
 
 		WriteReg(vdp, 1, 0x44);
+		uint64_t targetClock = 0;
 
-		uint64_t lineClock = 0;
-		for (uint32_t line = 0; line < 236; line++) {
-			lineClock += 488;
-			vdp.Run(lineClock);
-		}
+		AdvanceLines(vdp, targetClock, 234);
+		EXPECT_EQ(ReadVCounter(vdp), 0xeau);
 
-		uint8_t vCounterAfterWrapPoint = ReadVCounter(vdp);
-		EXPECT_EQ(vCounterAfterWrapPoint, 0xe5u);
+		AdvanceLines(vdp, targetClock, 1);
+		EXPECT_EQ(ReadVCounter(vdp), 0xe5u);
 	}
 
-	TEST(GenesisVdpHvStatusParityTests, PalV28VCounterUsesNonLinearWrapAfterLine258) {
+	TEST(GenesisVdpHvStatusParityTests, PalV28VCounterWrapsFrom02ToCaAtFirstWrappedLine) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
 		vdp.SetRegion(true);
 
 		WriteReg(vdp, 1, 0x44); // V28
+		uint64_t targetClock = 0;
 
-		uint64_t lineClock = 0;
-		for (uint32_t line = 0; line < 260; line++) {
-			lineClock += 488;
-			vdp.Run(lineClock);
-		}
+		AdvanceLines(vdp, targetClock, 258);
+		EXPECT_EQ(ReadVCounter(vdp), 0x02u);
 
-		uint8_t vCounterAfterWrapPoint = ReadVCounter(vdp);
-		EXPECT_EQ(vCounterAfterWrapPoint, 0xcau);
+		AdvanceLines(vdp, targetClock, 1);
+		EXPECT_EQ(ReadVCounter(vdp), 0xcau);
 	}
 
-	TEST(GenesisVdpHvStatusParityTests, PalV30VCounterUsesNonLinearWrapAfterLine266) {
+	TEST(GenesisVdpHvStatusParityTests, PalV30VCounterWrapsFrom0aToD2AtFirstWrappedLine) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
 		vdp.SetRegion(true);
 
 		WriteReg(vdp, 1, 0x4c); // display on + V30
+		uint64_t targetClock = 0;
 
-		uint64_t lineClock = 0;
-		for (uint32_t line = 0; line < 268; line++) {
-			lineClock += 488;
-			vdp.Run(lineClock);
-		}
+		AdvanceLines(vdp, targetClock, 266);
+		EXPECT_EQ(ReadVCounter(vdp), 0x0au);
 
-		uint8_t vCounterAfterWrapPoint = ReadVCounter(vdp);
-		EXPECT_EQ(vCounterAfterWrapPoint, 0xd2u);
+		AdvanceLines(vdp, targetClock, 1);
+		EXPECT_EQ(ReadVCounter(vdp), 0xd2u);
+	}
+
+	TEST(GenesisVdpHvStatusParityTests, InterlaceMode1UsesMaskedVCounterInsteadOfDoubling) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+		vdp.SetRegion(false);
+
+		WriteReg(vdp, 12, 0x82); // interlace mode 1 (not interlace2)
+		WriteReg(vdp, 1, 0x44);
+		uint64_t targetClock = 0;
+
+		AdvanceLines(vdp, targetClock, 1);
+		EXPECT_EQ(ReadVCounter(vdp), 0x00u);
+
+		AdvanceLines(vdp, targetClock, 1);
+		EXPECT_EQ(ReadVCounter(vdp), 0x02u);
+	}
+
+	TEST(GenesisVdpHvStatusParityTests, InterlaceMode2DoublesVCounterAtLowLines) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+		vdp.SetRegion(false);
+
+		WriteReg(vdp, 12, 0x86); // interlace mode 2
+		WriteReg(vdp, 1, 0x44);
+		uint64_t targetClock = 0;
+
+		AdvanceLines(vdp, targetClock, 1);
+		EXPECT_EQ(ReadVCounter(vdp), 0x02u);
+
+		AdvanceLines(vdp, targetClock, 1);
+		EXPECT_EQ(ReadVCounter(vdp), 0x04u);
 	}
 
 	TEST(GenesisVdpHvStatusParityTests, StatusReadClearsVIntAndSpriteStickyFlags) {

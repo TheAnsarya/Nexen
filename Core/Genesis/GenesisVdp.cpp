@@ -499,24 +499,29 @@ uint8_t GenesisVdp::VCounterValue(uint32_t scanline) const {
 
 	if ((_state.StatusRegister & VdpStatus::PalMode) == 0) {
 		if (scanline > 234u) {
-			vc = (uint16_t)(0x1e4u + (scanline - 235u));
+			vc = (uint16_t)(0x1e5u + (scanline - 235u));
 		}
 	} else {
 		bool v30 = (_state.Registers[1] & 0x08u) != 0;
 		if (v30) {
 			if (scanline > 266u) {
-				vc = (uint16_t)(0x1d1u + (scanline - 267u));
+				vc = (uint16_t)(0x1d2u + (scanline - 267u));
 			}
 		} else {
 			if (scanline > 258u) {
-				vc = (uint16_t)(0x1c9u + (scanline - 259u));
+				vc = (uint16_t)(0x1cau + (scanline - 259u));
 			}
 		}
 	}
 
 	if (IsInterlaceMode()) {
-		vc = (uint16_t)(vc << 1);
-		if ((_state.StatusRegister & VdpStatus::OddFrame) != 0) {
+		if (IsInterlace2Mode()) {
+			vc = (uint16_t)(vc << 1);
+		} else {
+			vc &= 0x1FEu;
+		}
+
+		if ((vc & 0x100u) != 0) {
 			vc |= 1u;
 		}
 	}
