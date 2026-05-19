@@ -267,6 +267,7 @@ namespace {
 		vdp.Run(600);
 		uint16_t statusDrained = vdp.ReadControlPort();
 		EXPECT_NE((uint16_t)(statusDrained & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+		EXPECT_EQ((uint16_t)(statusDrained & (uint16_t)VdpStatus::FifoFull), (uint16_t)0);
 
 		uint8_t* vram = vdp.GetVramPointer();
 		EXPECT_EQ(vram[0x2200], 0x00u);

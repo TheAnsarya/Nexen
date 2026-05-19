@@ -1602,7 +1602,6 @@ void GenesisVdp::DrainWriteFifoOne() {
 
 void GenesisVdp::ApplyPortWrite(uint8_t accessMode, uint16_t address, uint16_t value) {
 	switch (accessMode & 0x0Fu) {
-		case 0x00:
 		case 0x01: {
 			uint32_t addr = address & 0xFFFFu;
 			uint32_t nextAddr = (addr + 1u) & 0xFFFFu;
