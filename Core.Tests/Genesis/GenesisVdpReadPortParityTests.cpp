@@ -258,6 +258,23 @@ namespace {
 		EXPECT_EQ(vram[0x0000], 0x34u);
 	}
 
+	TEST(GenesisVdpReadPortParityTests, Mode0DataWriteDoesNotMutateVramButStillAdvancesAddress) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 15, 0x02);
+		SetDataPortCommand(vdp, 0x00, 0x1234); // CD3..0 = 0000
+		GenesisVdpState beforeWrite = vdp.GetState();
+		vdp.WriteDataPort(0x7a55);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		EXPECT_EQ(vram[0x1234], 0x00u);
+		EXPECT_EQ(vram[0x1235], 0x00u);
+
+		GenesisVdpState state = vdp.GetState();
+		EXPECT_EQ((uint16_t)(state.AddressRegister - beforeWrite.AddressRegister), (uint16_t)beforeWrite.Registers[15]);
+	}
+
 	TEST(GenesisVdpReadPortParityTests, CramWriteMasksToHardwareColorBits) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
