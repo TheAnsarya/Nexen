@@ -1552,14 +1552,22 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 		} else {
 			ApplyPortWrite(accessMode, _addressReg, value);
 		}
-	} else if (!loggedUnsupportedMode) {
-		loggedUnsupportedMode = true;
-		MessageManager::Log(std::format("[Genesis][VDP] Data write used unsupported mode {} at addr ${:04x} value=${:04x} (dataWrite#{}, frame={})",
-			accessMode,
-			_addressReg,
-			value,
-			dataWriteCount,
-			_state.FrameCount));
+	} else {
+		if (!loggedUnsupportedMode) {
+			loggedUnsupportedMode = true;
+			MessageManager::Log(std::format("[Genesis][VDP] Data write used unsupported mode {} at addr ${:04x} value=${:04x} (dataWrite#{}, frame={})",
+				accessMode,
+				_addressReg,
+				value,
+				dataWriteCount,
+				_state.FrameCount));
+		}
+
+		bool activeDisplay = IsDisplayEnabled() && _scanline < _screenHeight;
+		if (activeDisplay) {
+			// Expanded parity: non-write CD modes still occupy FIFO during active display.
+			EnqueueWriteFifo(accessMode, _addressReg, value);
+		}
 	}
 
 	_addressReg += _autoIncrement;

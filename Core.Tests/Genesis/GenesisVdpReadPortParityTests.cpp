@@ -253,6 +253,26 @@ namespace {
 		EXPECT_NE((uint16_t)(emptyStatus & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
 	}
 
+	TEST(GenesisVdpReadPortParityTests, Mode0ActiveDisplayWriteQueuesFifoWithoutMutatingVram) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 1, 0x44); // Display on so writes in active display hit FIFO timing path
+		SetDataPortCommand(vdp, 0x00, 0x2200); // CD3..0 = 0000 (non-write mode)
+		vdp.WriteDataPort(0xdeadu);
+
+		uint16_t statusQueued = vdp.ReadControlPort();
+		EXPECT_EQ((uint16_t)(statusQueued & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+
+		vdp.Run(600);
+		uint16_t statusDrained = vdp.ReadControlPort();
+		EXPECT_NE((uint16_t)(statusDrained & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		EXPECT_EQ(vram[0x2200], 0x00u);
+		EXPECT_EQ(vram[0x2201], 0x00u);
+	}
+
 	TEST(GenesisVdpReadPortParityTests, VramWriteWrapsAcrossEndOfAddressSpace) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);
