@@ -806,7 +806,7 @@ namespace {
 		EXPECT_EQ(state.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
 
-	TEST(GenesisVdpDmaStartupLatencyTests, DmaFillToVsramUsesLatchedFillWordAndMasksTo07ff) {
+	TEST(GenesisVdpDmaStartupLatencyTests, DmaFillToVsramUsesLatchedFillWordWithoutMasking) {
 		vector<uint8_t> rom = BuildDmaSourceRom();
 
 		Emulator emu;
@@ -829,10 +829,10 @@ namespace {
 		vdp.WriteControlPort(0x0094);
 
 		vdp.WriteDataPort(0x1BCDu); // seed fill word
-		vdp.Run(80);
+		vdp.Run(80); // Run the DMA operation
 
 		GenesisVdpState state = vdp.GetState();
-		EXPECT_EQ(state.Vsram[0], (uint16_t)(0x1BCDu & 0x07FFu));
+		EXPECT_EQ(state.Vsram[0], 0x1BCDu); // Check the value in Vsram
 		EXPECT_EQ(state.Registers[15], 0x02);
 		EXPECT_FALSE(state.DmaActive);
 		EXPECT_EQ(state.Registers[19], 0x00);

@@ -1610,7 +1610,7 @@ void GenesisVdp::ApplyPortWrite(uint8_t accessMode, uint16_t address, uint16_t v
 		}
 		case 0x05: {
 			uint8_t idx = (uint8_t)((address >> 1) & 0x27u);
-			_vsram[idx] = value & 0x07FFu;
+			_vsram[idx] = value;
 			break;
 		}
 		default:
@@ -1908,7 +1908,7 @@ void GenesisVdp::ProcessDma() {
 				}
 				case 0x05: {
 					uint8_t idx = (uint8_t)((dmaDst >> 1) & 0x27u);
-					_vsram[idx] = word & 0x07FFu;
+					_vsram[idx] = word;
 					break;
 				}
 				default:
@@ -1952,7 +1952,7 @@ void GenesisVdp::ProcessDma() {
 				}
 				case 0x05u: {
 					uint8_t idx = (uint8_t)((addr >> 1) & 0x27u);
-					_vsram[idx] = (uint16_t)(fillWord & 0x07FFu);
+					_vsram[idx] = fillWord;
 					break;
 				}
 				default:

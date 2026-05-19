@@ -320,4 +320,16 @@ namespace {
 		uint16_t first = vdp.ReadDataPort();
 		EXPECT_EQ(first & 0x07ffu, 0x0333u);
 	}
+
+	TEST(GenesisVdpReadPortParityTests, VsramReadPreservesUpperBitsWrittenThroughPort) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		SetDataPortWriteVsram(vdp, 0x0000);
+		vdp.WriteDataPort(0xfabcu);
+
+		SetDataPortReadVsram(vdp, 0x0000);
+		uint16_t first = vdp.ReadDataPort();
+		EXPECT_EQ(first, 0xfabcu);
+	}
 }
