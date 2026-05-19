@@ -370,6 +370,7 @@ void GenesisVdp::Reset(bool hardReset) {
 	_dmaFillWord = 0;
 	_dmaFillByte = 0;
 	_dmaFillDataPending = false;
+	_dmaTriggerH40Mode = true;
 	_dmaStartupDelayCyclesRemaining = 0;
 	_dmaBusCycleRemainder = 0;
 	_dmaLastTransferScanline = 0xFFFF;
@@ -1665,6 +1666,7 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 		if ((_accessMode & 0x20) && (_state.Registers[1] & 0x10)) {
 			// DMA enabled
 			_state.DmaActive = true;
+			_dmaTriggerH40Mode = IsH40Mode();
 			uint8_t dmaMode = (uint8_t)((_state.Registers[23] >> 6) & 3u);
 			if (dmaMode == 2u) {
 				// Fill DMA can be seeded by an immediate data-port write before the first
@@ -1825,8 +1827,8 @@ void GenesisVdp::ProcessDma() {
 
 		if (_dmaLatchedMode <= 1) {
 			_state.DmaMode = 0;
-			// Startup latency approximation for 68K-bus DMA in the core-cycle domain.
-			_dmaStartupDelayCyclesRemaining = _lineH40Mode ? 7 : 9;
+			// Startup latency is latched from the mode at DMA trigger time.
+			_dmaStartupDelayCyclesRemaining = _dmaTriggerH40Mode ? 7 : 9;
 			_dmaBusCycleRemainder = 0;
 		} else if (_dmaLatchedMode == 2) {
 			_state.DmaMode = 1;
@@ -2002,6 +2004,7 @@ void GenesisVdp::ProcessDma() {
 	_state.DmaActive = false;
 	_dmaInitialized = false;
 	_dmaFillDataPending = false;
+	_dmaTriggerH40Mode = true;
 	_dmaStartupDelayCyclesRemaining = 0;
 	_dmaBusCycleRemainder = 0;
 	_dmaLastTransferScanline = 0xFFFF;
@@ -2069,6 +2072,7 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_dmaFillWord);
 	SV(_dmaFillByte);
 	SV(_dmaFillDataPending);
+	SV(_dmaTriggerH40Mode);
 	SV(_dmaStartupDelayCyclesRemaining);
 	SV(_dmaBusCycleRemainder);
 	SV(_dmaLastTransferScanline);

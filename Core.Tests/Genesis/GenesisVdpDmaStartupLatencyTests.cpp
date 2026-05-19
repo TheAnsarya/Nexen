@@ -26,6 +26,19 @@ namespace {
 		vdp.WriteControlPort(0x0080);
 	}
 
+	void ConfigureBusDmaTransferDisplayOff(GenesisVdp& vdp, bool h40Mode, uint8_t lengthLow) {
+		vdp.WriteControlPort(0x8110); // DMA enable, display disabled
+		vdp.WriteControlPort((uint16_t)(h40Mode ? 0x8c01 : 0x8c00));
+		vdp.WriteControlPort(0x8f02);
+		vdp.WriteControlPort((uint16_t)(0x9300 | lengthLow));
+		vdp.WriteControlPort(0x9400);
+		vdp.WriteControlPort(0x9500);
+		vdp.WriteControlPort(0x9600);
+		vdp.WriteControlPort(0x9700);
+		vdp.WriteControlPort(0x4000);
+		vdp.WriteControlPort(0x0080);
+	}
+
 	TEST(GenesisVdpDmaStartupLatencyTests, H40CompletesEarlierThanH32ForBusDmaStartupDelay) {
 		vector<uint8_t> romA = BuildDmaSourceRom();
 		vector<uint8_t> romB = BuildDmaSourceRom();
@@ -69,6 +82,60 @@ namespace {
 		EXPECT_FALSE(cycle42H32.DmaActive);
 		EXPECT_EQ(cycle42H32.Registers[19], 0x00);
 		EXPECT_EQ(cycle42H32.StatusRegister & VdpStatus::DmaBusy, 0);
+	}
+
+	TEST(GenesisVdpDmaStartupLatencyTests, BusDmaStartupDelayLatchesH40AtTriggerInBlankingDespitePostTriggerModeWrite) {
+		vector<uint8_t> rom = BuildDmaSourceRom();
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+
+		ConfigureBusDmaTransferDisplayOff(vdp, true, 0x01); // Trigger DMA in H40 blanking path
+		vdp.WriteControlPort(0x8c00); // Switch to H32 after trigger, before first Run()
+
+		vdp.Run(12);
+		GenesisVdpState cycle12 = vdp.GetState();
+		EXPECT_TRUE(cycle12.DmaActive);
+		EXPECT_EQ(cycle12.Registers[19], 0x01);
+		EXPECT_NE(cycle12.StatusRegister & VdpStatus::DmaBusy, 0);
+
+		vdp.Run(13);
+		GenesisVdpState cycle13 = vdp.GetState();
+		EXPECT_FALSE(cycle13.DmaActive);
+		EXPECT_EQ(cycle13.Registers[19], 0x00);
+		EXPECT_EQ(cycle13.StatusRegister & VdpStatus::DmaBusy, 0);
+	}
+
+	TEST(GenesisVdpDmaStartupLatencyTests, BusDmaStartupDelayLatchesH32AtTriggerInBlankingDespitePostTriggerModeWrite) {
+		vector<uint8_t> rom = BuildDmaSourceRom();
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+
+		ConfigureBusDmaTransferDisplayOff(vdp, false, 0x01); // Trigger DMA in H32 blanking path
+		vdp.WriteControlPort(0x8c01); // Switch to H40 after trigger, before first Run()
+
+		vdp.Run(13);
+		GenesisVdpState cycle13 = vdp.GetState();
+		EXPECT_TRUE(cycle13.DmaActive);
+		EXPECT_EQ(cycle13.Registers[19], 0x01);
+		EXPECT_NE(cycle13.StatusRegister & VdpStatus::DmaBusy, 0);
+
+		vdp.Run(14);
+		GenesisVdpState cycle14 = vdp.GetState();
+		EXPECT_FALSE(cycle14.DmaActive);
+		EXPECT_EQ(cycle14.Registers[19], 0x00);
+		EXPECT_EQ(cycle14.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
 
 	TEST(GenesisVdpDmaStartupLatencyTests, RemainingLengthAndBusyBitTransitionDeterministicallyAcrossDelay) {

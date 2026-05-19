@@ -83,6 +83,7 @@ private:
 	uint16_t _dmaFillWord = 0;
 	uint8_t _dmaFillByte = 0;
 	bool _dmaFillDataPending = false;
+	bool _dmaTriggerH40Mode = true;
 	uint8_t _dmaStartupDelayCyclesRemaining = 0;
 	uint8_t _dmaBusCycleRemainder = 0;
 	uint16_t _dmaLastTransferScanline = 0xFFFF;
