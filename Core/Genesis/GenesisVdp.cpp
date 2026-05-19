@@ -1518,7 +1518,7 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 				_state.FrameCount));
 		}
 
-		bool activeDisplay = _lineDisplayEnabled && _scanline < _screenHeight;
+		bool activeDisplay = IsDisplayEnabled() && _scanline < _screenHeight;
 		if (activeDisplay) {
 			EnqueueWriteFifo(accessMode, _addressReg, value);
 		} else {
@@ -1538,7 +1538,7 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 				_state.FrameCount));
 		}
 
-		bool activeDisplay = _lineDisplayEnabled && _scanline < _screenHeight;
+		bool activeDisplay = IsDisplayEnabled() && _scanline < _screenHeight;
 		if (activeDisplay) {
 			EnqueueWriteFifo(accessMode, _addressReg, value);
 		} else {
@@ -1559,7 +1559,7 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 					_state.FrameCount));
 			}
 
-			bool activeDisplay = _lineDisplayEnabled && _scanline < _screenHeight;
+			bool activeDisplay = IsDisplayEnabled() && _scanline < _screenHeight;
 			if (activeDisplay) {
 				EnqueueWriteFifo(accessMode, _addressReg, value);
 			} else {

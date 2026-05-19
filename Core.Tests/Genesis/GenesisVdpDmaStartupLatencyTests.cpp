@@ -4,6 +4,17 @@
 #include "Shared/Emulator.h"
 
 namespace {
+	void WriteReg(GenesisVdp& vdp, uint8_t reg, uint8_t value) {
+		vdp.WriteControlPort((uint16_t)(0x8000u | ((uint16_t)reg << 8) | value));
+	}
+
+	void SetDataPortWriteVram(GenesisVdp& vdp, uint16_t address) {
+		uint16_t first = (uint16_t)(0x4000u | (address & 0x3fffu));
+		uint16_t second = (uint16_t)(0x0000u | ((address >> 14) & 0x0003u));
+		vdp.WriteControlPort(first);
+		vdp.WriteControlPort(second);
+	}
+
 	vector<uint8_t> BuildDmaSourceRom(size_t size = 0x2000) {
 		vector<uint8_t> rom(size, 0);
 		for (size_t i = 0; i + 1 < rom.size(); i += 2) {
@@ -37,6 +48,64 @@ namespace {
 		vdp.WriteControlPort(0x9700);
 		vdp.WriteControlPort(0x4000);
 		vdp.WriteControlPort(0x0080);
+	}
+
+	TEST(GenesisVdpDmaStartupLatencyTests, MidLineDisplayDisableFlushesPendingWriteFifoWithoutWaitingExternalSlot) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 1, 0x50);  // DMA+display enable
+		WriteReg(vdp, 12, 0x81); // H40
+		WriteReg(vdp, 15, 0x02); // auto increment
+
+		SetDataPortWriteVram(vdp, 0x0100);
+		vdp.WriteDataPort(0x5aa5);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		EXPECT_EQ(vram[0x0100], 0x00);
+		EXPECT_EQ(vram[0x0101], 0x00);
+
+		// Disable display mid-line; FIFO write should drain on next cycle.
+		WriteReg(vdp, 1, 0x10);
+		vdp.Run(1);
+
+		EXPECT_EQ(vram[0x0100], 0x5a);
+		EXPECT_EQ(vram[0x0101], 0xa5);
+	}
+
+	TEST(GenesisVdpDmaStartupLatencyTests, MidLineDisplayEnableMakesSubsequentWriteWaitForExternalSlot) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 1, 0x10);  // DMA enable, display disabled
+		WriteReg(vdp, 12, 0x81); // H40
+		WriteReg(vdp, 15, 0x02); // auto increment
+
+		uint8_t* vram = vdp.GetVramPointer();
+
+		SetDataPortWriteVram(vdp, 0x0120);
+		vdp.WriteDataPort(0x1122);
+		EXPECT_EQ(vram[0x0120], 0x11);
+		EXPECT_EQ(vram[0x0121], 0x22);
+
+		// Enable display mid-line, then write again: this one should queue.
+		WriteReg(vdp, 1, 0x50);
+		SetDataPortWriteVram(vdp, 0x0122);
+		vdp.WriteDataPort(0x3344);
+		EXPECT_EQ(vram[0x0122], 0x00);
+		EXPECT_EQ(vram[0x0123], 0x00);
+
+		// With display enabled, queued writes should wait for an external slot.
+		vdp.Run(1);
+		EXPECT_EQ(vram[0x0122], 0x00);
+		EXPECT_EQ(vram[0x0123], 0x00);
+
+		for(int cycle = 2; cycle <= 400 && vram[0x0122] == 0x00 && vram[0x0123] == 0x00; cycle++) {
+			vdp.Run((uint64_t)cycle);
+		}
+
+		EXPECT_EQ(vram[0x0122], 0x33);
+		EXPECT_EQ(vram[0x0123], 0x44);
 	}
 
 	TEST(GenesisVdpDmaStartupLatencyTests, H40CompletesEarlierThanH32ForBusDmaStartupDelay) {
