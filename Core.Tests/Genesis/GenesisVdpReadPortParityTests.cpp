@@ -274,6 +274,50 @@ namespace {
 		EXPECT_EQ(vram[0x2201], 0x00u);
 	}
 
+	TEST(GenesisVdpReadPortParityTests, Mode4ActiveDisplayWriteQueuesFifoWithoutMutatingVsram) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 1, 0x44);
+		SetDataPortWriteVsram(vdp, 0x0000);
+		vdp.WriteDataPort(0x0555u);
+
+		SetDataPortReadVsram(vdp, 0x0000); // CD3..0 = 0100
+		vdp.WriteDataPort(0xa5a5u);
+
+		uint16_t statusQueued = vdp.ReadControlPort();
+		EXPECT_EQ((uint16_t)(statusQueued & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+
+		vdp.Run(600);
+		uint16_t statusDrained = vdp.ReadControlPort();
+		EXPECT_NE((uint16_t)(statusDrained & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+
+		GenesisVdpState state = vdp.GetState();
+		EXPECT_EQ(state.Vsram[0], 0x0555u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, Mode8ActiveDisplayWriteQueuesFifoWithoutMutatingCram) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 1, 0x44);
+		SetDataPortWriteCram(vdp, 0x0000);
+		vdp.WriteDataPort(0x0444u);
+
+		SetDataPortReadCram(vdp, 0x0000); // CD3..0 = 1000
+		vdp.WriteDataPort(0xbeefu);
+
+		uint16_t statusQueued = vdp.ReadControlPort();
+		EXPECT_EQ((uint16_t)(statusQueued & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+
+		vdp.Run(600);
+		uint16_t statusDrained = vdp.ReadControlPort();
+		EXPECT_NE((uint16_t)(statusDrained & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+
+		uint16_t* cram = vdp.GetCramPointer();
+		EXPECT_EQ(cram[0], 0x0444u);
+	}
+
 	TEST(GenesisVdpReadPortParityTests, VramWriteWrapsAcrossEndOfAddressSpace) {
 		GenesisVdp vdp;
 		vdp.Init(nullptr, nullptr, nullptr, nullptr);

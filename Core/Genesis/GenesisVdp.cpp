@@ -1534,7 +1534,7 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 		}
 	} else if (accessMode == 5) { // VSRAM write
 		uint8_t idx = (uint8_t)((_addressReg >> 1) & 0x27u);
-		uint16_t vsramValue = value & 0x07FF;
+		uint16_t vsramValue = value;
 
 		if (!loggedFirstNonZeroVsram && vsramValue != 0) {
 			loggedFirstNonZeroVsram = true;
