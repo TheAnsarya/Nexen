@@ -363,6 +363,7 @@ void GenesisVdp::Reset(bool hardReset) {
 	_firstControlWord = 0;
 	_dmaInitialized = false;
 	_dmaLatchedMode = 0;
+	_dmaLatchedDestCode = 0;
 	_dmaSourceReg23Latched = 0;
 	_dmaRemainingWords = 0;
 	_dmaSourceAddress = 0;
@@ -1667,6 +1668,7 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 			// DMA enabled
 			_state.DmaActive = true;
 			_dmaTriggerH40Mode = IsH40Mode();
+			_dmaLatchedDestCode = _accessMode & 0x0Fu;
 			uint8_t dmaMode = (uint8_t)((_state.Registers[23] >> 6) & 3u);
 			if (dmaMode == 2u) {
 				// Fill DMA can be seeded by an immediate data-port write before the first
@@ -1896,7 +1898,7 @@ void GenesisVdp::ProcessDma() {
 
 	if (_dmaLatchedMode == 0 || _dmaLatchedMode == 1) {
 		// 68K → VRAM/CRAM/VSRAM copy
-		uint8_t dmaDestCode = _accessMode & 0x0Fu;
+		uint8_t dmaDestCode = _dmaLatchedDestCode;
 		uint32_t dmaDst = _addressReg;
 		for (uint32_t i = 0; i < wordsThisStep; i++) {
 			// Expanded-compatible source progression: wrap within current 128KB source window.
@@ -1946,7 +1948,7 @@ void GenesisVdp::ProcessDma() {
 			return;
 		}
 
-		uint8_t dmaDestCode = _accessMode & 0x0Fu;
+		uint8_t dmaDestCode = _dmaLatchedDestCode;
 		uint8_t fillByte = _dmaFillByte;
 		uint16_t fillWord = _dmaFillWord;
 		uint32_t dmaDst = _addressReg;
@@ -2003,6 +2005,7 @@ void GenesisVdp::ProcessDma() {
 
 	_state.DmaActive = false;
 	_dmaInitialized = false;
+	_dmaLatchedDestCode = 0;
 	_dmaFillDataPending = false;
 	_dmaTriggerH40Mode = true;
 	_dmaStartupDelayCyclesRemaining = 0;
@@ -2065,6 +2068,7 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_state.DataPortBuffer);
 	SV(_dmaInitialized);
 	SV(_dmaLatchedMode);
+	SV(_dmaLatchedDestCode);
 	SV(_dmaSourceReg23Latched);
 	SV(_dmaRemainingWords);
 	SV(_dmaSourceAddress);

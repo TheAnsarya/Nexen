@@ -138,6 +138,37 @@ namespace {
 		EXPECT_EQ(cycle14.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
 
+	TEST(GenesisVdpDmaStartupLatencyTests, BusDmaDestinationRemainsLatchedAfterPostTriggerAccessModeWrite) {
+		vector<uint8_t> rom = BuildDmaSourceRom();
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+
+		ConfigureBusDmaTransferDisplayOff(vdp, true, 0x01); // trigger as VRAM destination
+
+		// Change live access mode after trigger to CRAM write (no DMA bit).
+		vdp.WriteControlPort(0xC000);
+		vdp.WriteControlPort(0x0000);
+
+		vdp.Run(40);
+
+		GenesisVdpState done = vdp.GetState();
+		uint8_t* vram = vdp.GetVramPointer();
+		uint16_t* cram = vdp.GetCramPointer();
+
+		EXPECT_FALSE(done.DmaActive);
+		EXPECT_EQ(done.Registers[19], 0x00);
+		EXPECT_EQ(done.StatusRegister & VdpStatus::DmaBusy, 0);
+		EXPECT_EQ(vram[0x0000], 0x00);
+		EXPECT_EQ(vram[0x0001], 0xFF);
+		EXPECT_EQ(cram[0], 0x0000);
+	}
+
 	TEST(GenesisVdpDmaStartupLatencyTests, RemainingLengthAndBusyBitTransitionDeterministicallyAcrossDelay) {
 		vector<uint8_t> rom = BuildDmaSourceRom();
 
@@ -330,6 +361,46 @@ namespace {
 		EXPECT_TRUE(state.DmaActive);
 		EXPECT_EQ(state.Registers[19], 0x02);
 		EXPECT_NE(state.StatusRegister & VdpStatus::DmaBusy, 0);
+		EXPECT_EQ(cram[0], 0x0000);
+	}
+
+	TEST(GenesisVdpDmaStartupLatencyTests, DmaFillDestinationRemainsLatchedAfterPostTriggerAccessModeWrite) {
+		vector<uint8_t> rom = BuildDmaSourceRom();
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+
+		vdp.WriteControlPort(0x8150); // DMA + display enable
+		vdp.WriteControlPort(0x8c01); // H40
+		vdp.WriteControlPort(0x8f02); // auto-increment = 2
+		vdp.WriteControlPort(0x9301); // length low = 1 unit
+		vdp.WriteControlPort(0x9400); // length high
+		vdp.WriteControlPort(0x9780); // fill mode (mode 2)
+
+		// Trigger as VRAM destination.
+		vdp.WriteControlPort(0x4000);
+		vdp.WriteControlPort(0x0080);
+
+		// Change live access mode to CRAM write (no DMA bit) before running DMA.
+		vdp.WriteControlPort(0xC000);
+		vdp.WriteControlPort(0x0000);
+
+		vdp.WriteDataPort(0xABCDu);
+		vdp.Run(80);
+
+		GenesisVdpState done = vdp.GetState();
+		uint8_t* vram = vdp.GetVramPointer();
+		uint16_t* cram = vdp.GetCramPointer();
+
+		EXPECT_FALSE(done.DmaActive);
+		EXPECT_EQ(done.Registers[19], 0x00);
+		EXPECT_EQ(done.StatusRegister & VdpStatus::DmaBusy, 0);
+		EXPECT_EQ(vram[0x0000], 0xAB);
 		EXPECT_EQ(cram[0], 0x0000);
 	}
 
