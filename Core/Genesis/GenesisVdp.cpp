@@ -672,7 +672,7 @@ void GenesisVdp::Run(uint64_t targetCycle) {
 		}
 
 		if (_writeFifoCount > 0) {
-			bool activeDisplay = _lineDisplayEnabled && _scanline < _screenHeight;
+			bool activeDisplay = IsDisplayEnabled() && _scanline < _screenHeight;
 			if (!activeDisplay || IsActiveDisplayExternalDmaSlot()) {
 				DrainWriteFifoOne();
 			}
@@ -1856,7 +1856,7 @@ void GenesisVdp::ProcessDma() {
 	_state.StatusRegister |= VdpStatus::DmaBusy;
 
 	uint32_t wordsThisStep = _dmaRemainingWords;
-	bool activeDisplay = _lineDisplayEnabled && _scanline < _screenHeight;
+	bool activeDisplay = IsDisplayEnabled() && _scanline < _screenHeight;
 	if (_dmaLatchedMode == 0 || _dmaLatchedMode == 1) {
 		if (_dmaStartupDelayCyclesRemaining > 0) {
 			_dmaStartupDelayCyclesRemaining--;

@@ -499,6 +499,51 @@ namespace {
 		EXPECT_EQ(afterSecondSlot.StatusRegister & VdpStatus::DmaBusy, 0);
 	}
 
+	TEST(GenesisVdpDmaStartupLatencyTests, MidLineDisplayDisableLetsFillProgressImmediatelyWithoutWaitingForNextExternalSlot) {
+		vector<uint8_t> rom = BuildDmaSourceRom();
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+
+		vdp.WriteControlPort(0x8150); // DMA + display enable
+		vdp.WriteControlPort(0x8c01); // H40
+		vdp.WriteControlPort(0x8f02); // auto-increment = 2
+		vdp.WriteControlPort(0x9302); // length low = 2 units
+		vdp.WriteControlPort(0x9400); // length high
+		vdp.WriteControlPort(0x9780); // fill mode (mode 2)
+
+		vdp.WriteControlPort(0x4000); // VRAM destination
+		vdp.WriteControlPort(0x0080); // DMA trigger
+		vdp.WriteDataPort(0xABCDu);   // seed fill word
+
+		uint8_t* vram = vdp.GetVramPointer();
+
+		// First transfer at first external slot in active display.
+		vdp.Run(41);
+		GenesisVdpState afterFirstSlot = vdp.GetState();
+		EXPECT_TRUE(afterFirstSlot.DmaActive);
+		EXPECT_EQ(afterFirstSlot.Registers[19], 0x01);
+		EXPECT_EQ(vram[0x0000], 0xAB);
+		EXPECT_EQ(vram[0x0002], 0x00);
+
+		// Disable display mid-line. Expanded behavior gates DMA by live display state,
+		// so fill should no longer wait for the next external slot.
+		vdp.WriteControlPort(0x8110); // DMA enable + display disabled
+
+		vdp.Run(42);
+		GenesisVdpState afterDisableAt42 = vdp.GetState();
+		EXPECT_FALSE(afterDisableAt42.DmaActive);
+		EXPECT_EQ(afterDisableAt42.Registers[19], 0x00);
+		EXPECT_EQ(afterDisableAt42.AddressRegister, 0x0004);
+		EXPECT_EQ(afterDisableAt42.StatusRegister & VdpStatus::DmaBusy, 0);
+		EXPECT_EQ(vram[0x0002], 0xAB);
+	}
+
 	TEST(GenesisVdpDmaStartupLatencyTests, ActiveDisplayVramCopyAdvancesOnlyOnExternalSlots) {
 		vector<uint8_t> rom = BuildDmaSourceRom();
 
