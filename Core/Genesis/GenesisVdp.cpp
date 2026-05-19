@@ -1310,12 +1310,8 @@ void GenesisVdp::PrimeReadBuffer() {
 		next = (uint16_t)(((uint16_t)_vram[addr] << 8) | _vram[(addr + 1u) & 0xFFFFu]);
 		_addressReg = (uint16_t)(_addressReg + _autoIncrement);
 	} else if (accessMode == 0x04u) {
-		uint8_t idx = (uint8_t)((_addressReg >> 1) & 0x3Fu);
-		if (idx < 40u) {
-			next = _vsram[idx];
-		} else {
-			next = 0;
-		}
+		uint8_t idx = (uint8_t)((_addressReg >> 1) & 0x27u);
+		next = _vsram[idx];
 		_addressReg = (uint16_t)(_addressReg + _autoIncrement);
 	} else if (accessMode == 0x08u) {
 		uint8_t idx = (uint8_t)((_addressReg >> 1) & 0x3Fu);
@@ -1537,26 +1533,24 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 			ApplyPortWrite(accessMode, _addressReg, value);
 		}
 	} else if (accessMode == 5) { // VSRAM write
-		uint8_t idx = (_addressReg / 2) & 0x3F;
-		if (idx < 40) {
-			uint16_t vsramValue = value & 0x07FF;
+		uint8_t idx = (uint8_t)((_addressReg >> 1) & 0x27u);
+		uint16_t vsramValue = value & 0x07FF;
 
-			if (!loggedFirstNonZeroVsram && vsramValue != 0) {
-				loggedFirstNonZeroVsram = true;
-				MessageManager::Log(std::format("[Genesis][VDP] First non-zero VSRAM write at idx {}: ${:04x} (raw=${:04x}, dataWrite#{}, frame={})",
-					idx,
-					vsramValue,
-					value,
-					dataWriteCount,
-					_state.FrameCount));
-			}
+		if (!loggedFirstNonZeroVsram && vsramValue != 0) {
+			loggedFirstNonZeroVsram = true;
+			MessageManager::Log(std::format("[Genesis][VDP] First non-zero VSRAM write at idx {}: ${:04x} (raw=${:04x}, dataWrite#{}, frame={})",
+				idx,
+				vsramValue,
+				value,
+				dataWriteCount,
+				_state.FrameCount));
+		}
 
-			bool activeDisplay = IsDisplayEnabled() && _scanline < _screenHeight;
-			if (activeDisplay) {
-				EnqueueWriteFifo(accessMode, _addressReg, value);
-			} else {
-				ApplyPortWrite(accessMode, _addressReg, value);
-			}
+		bool activeDisplay = IsDisplayEnabled() && _scanline < _screenHeight;
+		if (activeDisplay) {
+			EnqueueWriteFifo(accessMode, _addressReg, value);
+		} else {
+			ApplyPortWrite(accessMode, _addressReg, value);
 		}
 	} else if (!loggedUnsupportedMode) {
 		loggedUnsupportedMode = true;
@@ -1615,10 +1609,8 @@ void GenesisVdp::ApplyPortWrite(uint8_t accessMode, uint16_t address, uint16_t v
 			break;
 		}
 		case 0x05: {
-			uint8_t idx = (uint8_t)((address >> 1) & 0x3Fu);
-			if (idx < 40) {
-				_vsram[idx] = value & 0x07FFu;
-			}
+			uint8_t idx = (uint8_t)((address >> 1) & 0x27u);
+			_vsram[idx] = value & 0x07FFu;
 			break;
 		}
 		default:

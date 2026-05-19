@@ -29,6 +29,14 @@ namespace {
 		vdp.WriteControlPort(second);
 	}
 
+	static void SetDataPortWriteVsram(GenesisVdp& vdp, uint16_t address) {
+		// CD3..0 = 0101 (VSRAM write)
+		uint16_t first = (uint16_t)(0x4000u | (address & 0x3fffu));
+		uint16_t second = (uint16_t)(0x0010u | ((address >> 14) & 0x0003u));
+		vdp.WriteControlPort(first);
+		vdp.WriteControlPort(second);
+	}
+
 	static void SetDataPortReadVram(GenesisVdp& vdp, uint16_t address) {
 		SetDataPortCommand(vdp, 0x00, address);
 	}
@@ -288,5 +296,28 @@ namespace {
 		SetDataPortReadCram(vdp, 0x0000);
 		uint16_t first = vdp.ReadDataPort();
 		EXPECT_EQ(first, 0x0eeeu);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, VsramWriteMirrorsOutOfRangeAddressesUsingHardwareMask) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		SetDataPortWriteVsram(vdp, 0x0050); // (0x50 >> 1)=0x28 -> 0x28 & 0x27 = 0x20
+		vdp.WriteDataPort(0x06abu);
+
+		GenesisVdpState state = vdp.GetState();
+		EXPECT_EQ(state.Vsram[0x20], 0x06abu);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, VsramReadMirrorsOutOfRangeAddressesUsingHardwareMask) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		SetDataPortWriteVsram(vdp, 0x0040); // canonical address for index 0x20
+		vdp.WriteDataPort(0x0333u);
+
+		SetDataPortReadVsram(vdp, 0x0050); // mirrored address should map to same index 0x20
+		uint16_t first = vdp.ReadDataPort();
+		EXPECT_EQ(first & 0x07ffu, 0x0333u);
 	}
 }
