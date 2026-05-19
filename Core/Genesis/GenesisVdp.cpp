@@ -1468,36 +1468,13 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 	// DMA fill takes its fill byte from the first data-port write after the DMA command.
 	if (_state.DmaActive) {
 		uint8_t dmaMode = _dmaInitialized ? _dmaLatchedMode : (uint8_t)((_state.Registers[23] >> 6) & 3);
-		if (dmaMode == 2 && _dmaFillDataPending) {
+		if (dmaMode == 2) {
 			_dmaFillWord = value;
 			_dmaFillByte = (uint8_t)((value >> 8) & 0xFF);
 			_dmaFillDataPending = false;
 
-			// The first data-port write seeds DMA fill data and performs one destination write.
-			uint8_t dmaDestCode = _accessMode & 0x0Fu;
-			uint32_t fillAddr = _addressReg & 0xFFFFu;
-			switch (dmaDestCode) {
-				case 0x01u: {
-					if (fillAddr < VramSize) {
-						_vram[fillAddr] = _dmaFillByte;
-					}
-					break;
-				}
-				case 0x03u: {
-					uint8_t idx = (uint8_t)((fillAddr >> 1) & 0x3Fu);
-					_cram[idx] = (uint16_t)(_dmaFillWord & 0x0EEEu);
-					UpdatePaletteEntry(idx);
-					break;
-				}
-				case 0x05u: {
-					uint8_t idx = (uint8_t)((fillAddr >> 1) & 0x27u);
-					_vsram[idx] = (uint16_t)(_dmaFillWord & 0x07FFu);
-					break;
-				}
-				default:
-					break;
-			}
-			_addressReg += _autoIncrement;
+			// Match expanded behavior: first write only latches fill data; DMA fill writes
+			// are consumed by the DMA scheduler path, not directly by the seed write.
 
 			MessageManager::Log(std::format("[Genesis][VDP] Latched DMA fill byte ${:02x} at addr ${:04x} (frame={})",
 				_dmaFillByte,
@@ -1688,6 +1665,14 @@ void GenesisVdp::WriteControlPort(uint16_t value) {
 		if ((_accessMode & 0x20) && (_state.Registers[1] & 0x10)) {
 			// DMA enabled
 			_state.DmaActive = true;
+			uint8_t dmaMode = (uint8_t)((_state.Registers[23] >> 6) & 3u);
+			if (dmaMode == 2u) {
+				// Fill DMA can be seeded by an immediate data-port write before the first
+				// ProcessDma() tick, so arm pending state at trigger time.
+				_dmaFillDataPending = true;
+				_dmaFillWord = 0;
+				_dmaFillByte = 0;
+			}
 			_dmaInitialized = false;
 			_state.StatusRegister |= VdpStatus::DmaBusy;
 		} else {
@@ -1845,9 +1830,10 @@ void GenesisVdp::ProcessDma() {
 			_dmaBusCycleRemainder = 0;
 		} else if (_dmaLatchedMode == 2) {
 			_state.DmaMode = 1;
-			_dmaFillDataPending = true;
-			_dmaFillWord = 0;
-			_dmaFillByte = 0;
+			if (_dmaFillDataPending) {
+				_dmaFillWord = 0;
+				_dmaFillByte = 0;
+			}
 			_dmaStartupDelayCyclesRemaining = 0;
 			_dmaBusCycleRemainder = 0;
 		} else {
@@ -1945,9 +1931,8 @@ void GenesisVdp::ProcessDma() {
 		// uses the latched DMA startup source for transfer determinism.
 	} else if (_dmaLatchedMode == 2) {
 		if (_dmaFillDataPending) {
-			// In isolated/scaffold runs there may be no subsequent data-port write to seed fill data.
-			// Fall back to the current fill byte (default 0x00) to avoid a permanent DMA busy stall.
-			_dmaFillDataPending = false;
+			// DMA fill must wait for seed data from the next data-port write.
+			return;
 		}
 
 		uint8_t dmaDestCode = _accessMode & 0x0Fu;

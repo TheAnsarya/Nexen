@@ -233,6 +233,81 @@ namespace {
 		EXPECT_EQ(vram[0x0003], 0x78);
 	}
 
+	TEST(GenesisVdpDmaStartupLatencyTests, DmaFillWaitsForSeedDataBeforeAnyTransferProgress) {
+		vector<uint8_t> rom = BuildDmaSourceRom();
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+
+		vdp.WriteControlPort(0x8150); // DMA + display enable
+		vdp.WriteControlPort(0x8c01); // H40
+		vdp.WriteControlPort(0x8f02); // auto-increment = 2
+		vdp.WriteControlPort(0x9302); // length low = 2 units
+		vdp.WriteControlPort(0x9400); // length high
+		vdp.WriteControlPort(0x9780); // fill mode (mode 2)
+
+		// CRAM destination + DMA trigger.
+		vdp.WriteControlPort(0xC000);
+		vdp.WriteControlPort(0x0080);
+
+		// Without a seed write, fill DMA should remain armed but not advance.
+		vdp.Run(120);
+
+		GenesisVdpState state = vdp.GetState();
+		uint16_t* cram = vdp.GetCramPointer();
+		EXPECT_TRUE(state.DmaActive);
+		EXPECT_EQ(state.Registers[19], 0x02);
+		EXPECT_NE(state.StatusRegister & VdpStatus::DmaBusy, 0);
+		EXPECT_EQ(cram[0], 0x0000);
+	}
+
+	TEST(GenesisVdpDmaStartupLatencyTests, DmaFillSeedWriteOnlyArmsTransferWithoutImmediateWriteOrAddressAdvance) {
+		vector<uint8_t> rom = BuildDmaSourceRom();
+
+		Emulator emu;
+		emu.Initialize(false);
+		GenesisMemoryManager mm;
+		mm.Init(&emu, nullptr, rom, nullptr, nullptr, nullptr);
+
+		GenesisVdp vdp;
+		vdp.Init(&emu, nullptr, nullptr, &mm);
+
+		vdp.WriteControlPort(0x8150); // DMA + display enable
+		vdp.WriteControlPort(0x8c01); // H40
+		vdp.WriteControlPort(0x8f02); // auto-increment = 2
+		vdp.WriteControlPort(0x9301); // length low = 1 unit
+		vdp.WriteControlPort(0x9400); // length high
+		vdp.WriteControlPort(0x9780); // fill mode (mode 2)
+
+		// VRAM destination + DMA trigger.
+		vdp.WriteControlPort(0x4000);
+		vdp.WriteControlPort(0x0080);
+
+		GenesisVdpState beforeSeed = vdp.GetState();
+		EXPECT_EQ(beforeSeed.AddressRegister, 0x0000);
+
+		vdp.WriteDataPort(0xABCDu);
+
+		GenesisVdpState afterSeed = vdp.GetState();
+		uint8_t* vram = vdp.GetVramPointer();
+		EXPECT_EQ(afterSeed.AddressRegister, 0x0000);
+		EXPECT_EQ(vram[0x0000], 0x00);
+
+		vdp.Run(80);
+
+		GenesisVdpState afterDma = vdp.GetState();
+		EXPECT_FALSE(afterDma.DmaActive);
+		EXPECT_EQ(afterDma.AddressRegister, 0x0002);
+		EXPECT_EQ(afterDma.Registers[19], 0x00);
+		EXPECT_EQ(afterDma.StatusRegister & VdpStatus::DmaBusy, 0);
+		EXPECT_EQ(vram[0x0000], 0xAB);
+	}
+
 	TEST(GenesisVdpDmaStartupLatencyTests, DmaFillToCramUsesLatchedFillWordAndMasksTo0Eee) {
 		vector<uint8_t> rom = BuildDmaSourceRom();
 

@@ -2761,10 +2761,10 @@ stop doing testing and scaffolding bullshit! Make actual code changes that impro
 
 continue; do several three-task-batches, like 4 or 5 but combine them into one issue, don't do 3 tasks, do like 12 or more work efforts; Make actual code changes that improve emulation and implement new features and coverage; Don't make superstructure scaffold crap, only do things like: fix video processing so graphics and effects are working, or cpu basic running is working executing each operand and command or PC control or memory usage stuff, or interaction with the sound chip; continue;
 
+--- run x4
 continue; do several three-task-batches, but combine them into one issue, don't do 3 tasks, do like 12 or more work efforts; Make actual code changes that improve emulation and implement new features and coverage; Don't make superstructure scaffold crap, only do things like: fix video processing so graphics and effects are working, or cpu basic running is working executing each operand and command or PC control or memory usage stuff, or interaction with the sound chip; the `Hoshiruna/Mesen2-Expanded` Genesis code should be used as a primary usage effort!; continue;
 
-continue; do several three-task-batches, but combine them into one issue, don't do 3 tasks, do like 12 or more work efforts; Make actual code changes that improve emulation and implement new features and coverage; Don't make superstructure scaffold crap, only do things like: fix video processing so graphics and effects are working, or cpu basic running is working executing each operand and command or PC control or memory usage stuff, or interaction with the sound chip; the `Hoshiruna/Mesen2-Expanded` Genesis code should be used as a primary usage effort!; continue;
-continue; do several three-task-batches, but combine them into one issue, don't do 3 tasks, do like 12 or more work efforts; Make actual code changes that improve emulation and implement new features and coverage; Don't make superstructure scaffold crap, only do things like: fix video processing so graphics and effects are working, or cpu basic running is working executing each operand and command or PC control or memory usage stuff, or interaction with the sound chip; the `Hoshiruna/Mesen2-Expanded` Genesis code should be used as a primary usage effort!; continue;
+continue;
 
 
 
@@ -2969,15 +2969,6 @@ We've got partial pansy and cdl files for FFMQ (SNES) and so rerun peony and pop
 
 
 prepare for a release, and clean up and update documentation and fix as many warnings as you can; create
-
-*Oliver, *Albus, Axel, Cain, *Merlin, Mara, Khorus, Vex, Fenis, Biscuit
-0+0+495+282+0+678+510+233+549+572=3319
-625 * 5 = 3125
-3319 - 3125 = 194
-214
-
-Close!
-
 
 
 
