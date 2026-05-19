@@ -367,6 +367,7 @@ void GenesisVdp::Reset(bool hardReset) {
 	_dmaRemainingWords = 0;
 	_dmaSourceAddress = 0;
 	_dmaCopySourceAddress = 0;
+	_dmaFillWord = 0;
 	_dmaFillByte = 0;
 	_dmaFillDataPending = false;
 	_dmaStartupDelayCyclesRemaining = 0;
@@ -1468,13 +1469,33 @@ void GenesisVdp::WriteDataPort(uint16_t value) {
 	if (_state.DmaActive) {
 		uint8_t dmaMode = _dmaInitialized ? _dmaLatchedMode : (uint8_t)((_state.Registers[23] >> 6) & 3);
 		if (dmaMode == 2 && _dmaFillDataPending) {
+			_dmaFillWord = value;
 			_dmaFillByte = (uint8_t)((value >> 8) & 0xFF);
 			_dmaFillDataPending = false;
 
-			// The first data-port write both provides the fill byte and writes one byte to the destination.
-			uint32_t fillAddr = _addressReg & 0xFFFF;
-			if (fillAddr < VramSize) {
-				_vram[fillAddr] = _dmaFillByte;
+			// The first data-port write seeds DMA fill data and performs one destination write.
+			uint8_t dmaDestCode = _accessMode & 0x0Fu;
+			uint32_t fillAddr = _addressReg & 0xFFFFu;
+			switch (dmaDestCode) {
+				case 0x01u: {
+					if (fillAddr < VramSize) {
+						_vram[fillAddr] = _dmaFillByte;
+					}
+					break;
+				}
+				case 0x03u: {
+					uint8_t idx = (uint8_t)((fillAddr >> 1) & 0x3Fu);
+					_cram[idx] = (uint16_t)(_dmaFillWord & 0x0EEEu);
+					UpdatePaletteEntry(idx);
+					break;
+				}
+				case 0x05u: {
+					uint8_t idx = (uint8_t)((fillAddr >> 1) & 0x27u);
+					_vsram[idx] = (uint16_t)(_dmaFillWord & 0x07FFu);
+					break;
+				}
+				default:
+					break;
 			}
 			_addressReg += _autoIncrement;
 
@@ -1825,6 +1846,7 @@ void GenesisVdp::ProcessDma() {
 		} else if (_dmaLatchedMode == 2) {
 			_state.DmaMode = 1;
 			_dmaFillDataPending = true;
+			_dmaFillWord = 0;
 			_dmaFillByte = 0;
 			_dmaStartupDelayCyclesRemaining = 0;
 			_dmaBusCycleRemainder = 0;
@@ -1928,12 +1950,33 @@ void GenesisVdp::ProcessDma() {
 			_dmaFillDataPending = false;
 		}
 
-		// VRAM fill
+		uint8_t dmaDestCode = _accessMode & 0x0Fu;
 		uint8_t fillByte = _dmaFillByte;
+		uint16_t fillWord = _dmaFillWord;
 		uint32_t dmaDst = _addressReg;
 		for (uint32_t i = 0; i < wordsThisStep; i++) {
-			uint32_t addr = dmaDst & 0xFFFF;
-			if (addr < VramSize) _vram[addr] = fillByte;
+			uint32_t addr = dmaDst & 0xFFFFu;
+			switch (dmaDestCode) {
+				case 0x01u:
+					if (addr < VramSize) {
+						_vram[addr] = fillByte;
+					}
+					break;
+				case 0x03u: {
+					uint8_t idx = (uint8_t)((addr >> 1) & 0x3Fu);
+					_cram[idx] = (uint16_t)(fillWord & 0x0EEEu);
+					UpdatePaletteEntry(idx);
+					break;
+				}
+				case 0x05u: {
+					uint8_t idx = (uint8_t)((addr >> 1) & 0x27u);
+					_vsram[idx] = (uint16_t)(fillWord & 0x07FFu);
+					break;
+				}
+				default:
+					// Invalid fill destination still consumes DMA length and advances address.
+					break;
+			}
 			dmaDst += _autoIncrement;
 		}
 		_addressReg = (uint16_t)dmaDst;
@@ -2029,6 +2072,7 @@ void GenesisVdp::Serialize(Serializer& s) {
 	SV(_dmaRemainingWords);
 	SV(_dmaSourceAddress);
 	SV(_dmaCopySourceAddress);
+	SV(_dmaFillWord);
 	SV(_dmaFillByte);
 	SV(_dmaFillDataPending);
 	SV(_dmaStartupDelayCyclesRemaining);
